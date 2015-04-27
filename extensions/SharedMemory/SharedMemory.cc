@@ -35,11 +35,11 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
     IONotifyController_LT(id),
     heartbeatCheckTime(5000),
     histSaveTime(0),
-    wdt(0),
     activated(false),
     workready(false),
     dblogging(false),
-    msecPulsar(0)
+    msecPulsar(0),
+    confnode(0)
 {
     mutex_start.setName(myname + "_mutex_start");
 
@@ -49,14 +49,14 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
     if( cname.empty() )
         cname = ORepHelpers::getShortName( conf->oind->getMapName(id));
 
-    xmlNode* cnode = conf->getNode(cname);
-    if( cnode == NULL )
+    confnode = conf->getNode(cname);
+    if( confnode == NULL )
         throw SystemError("Not found conf-node for " + cname );
 
-    UniXML::iterator it(cnode);
+    UniXML::iterator it(confnode);
 
     // ----------------------
-    buildHistoryList(cnode);
+    buildHistoryList(confnode);
     signal_change_value().connect(sigc::mem_fun(*this, &SharedMemory::updateHistory));
     for( auto i=hist.begin(); i!=hist.end(); ++i )
         histmap[i->fuse_id].push_back(i);
@@ -90,18 +90,18 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 
     string wdt_dev = conf->getArgParam("--wdt-device");
     if( !wdt_dev.empty() )
-        wdt = new WDTInterface(wdt_dev);
+        wdt = make_shared<WDTInterface>(wdt_dev);
     else
         dwarn << myname << "(init): watchdog timer NOT USED (--wdt-device NULL)" << endl;
 
     dblogging = conf->getArgInt("--db-logging");
 
     e_filter = conf->getArgParam("--e-filter");
-    buildEventList(cnode);
+    buildEventList(confnode);
 
     evntPause = conf->getArgPInt("--e-startup-pause", 5000);
 
-    activateTimeout    = conf->getArgPInt("--activate-timeout", 10000);
+    activateTimeout = conf->getArgPInt("--activate-timeout", 10000);
 
     sidPulsar = DefaultObjectId;
     string p = conf->getArgParam("--pulsar-id",it.getProp("pulsar_id"));
@@ -128,8 +128,6 @@ SharedMemory::~SharedMemory()
         delete restorer;
         restorer = NULL;
     }
-
-    delete wdt;
 }
 
 // --------------------------------------------------------------------------------
@@ -251,6 +249,9 @@ bool SharedMemory::activateObject()
             for( auto& hit: it.hlst )
                 hit.ioit = myioEnd();
         }
+
+        // здесь или в startUp?
+        initFromReserv();
 
         activated = true;
     }
@@ -747,4 +748,125 @@ std::ostream& operator<<( std::ostream& os, const SharedMemory::HistoryInfo& h )
 
     return os;
 }
-// ------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+void SharedMemory::initFromReserv()
+{
+    UniXML::iterator it(confnode);
+    if( !it.find("ReservList") )
+    {
+        dinfo << myname << "(initFromReserv): <ReservList> not found... ignore.. " << endl;
+        return;
+    }
+
+    if( !it.goChildren() )
+    {
+        dwarn << myname << "(initFromReserv): <ReservList> EMPTY?... ignore.. " << endl;
+        return;
+    }
+
+    auto conf = uniset_conf();
+
+    for( ; it.getCurrent(); it++ )
+    {
+        ObjectId sm_id = DefaultObjectId;
+        ObjectId sm_node = DefaultObjectId;
+
+        std::string smName(it.getProp("name"));
+        if( !smName.empty() )
+            sm_id = conf->getControllerID(smName);
+        else
+            sm_id = getId();
+
+        if( sm_id == DefaultObjectId )
+        {
+            ostringstream err;
+            err << myname << "(initFromReserv): Not found ID for '" << smName << "'";
+            dcrit << err.str() << endl;
+            // throw SystemError(err.str());
+            raise(SIGTERM);
+        }
+
+        std::string smNode(it.getProp("node"));
+        if( !smNode.empty() )
+            sm_node = conf->getNodeID(smNode);
+        else
+            sm_node = conf->getLocalNode();
+
+        if( sm_node == DefaultObjectId )
+        {
+            ostringstream err;
+            err << myname << "(initFromReserv): Not found NodeID for '" << smNode << "'";
+            dcrit << err.str() << endl;
+            // throw SystemError(err.str());
+            raise(SIGTERM);
+        }
+
+
+        if( sm_id == getId() && sm_node == conf->getLocalNode() )
+        {
+            dcrit << myname << "(initFromReserv): Initialization of himself?!  ignore.." << endl;
+            continue;
+        }
+
+        if( initFromSM(sm_id,sm_node) )
+        {
+            dinfo << myname << "(initFromReserv): init from sm_id='" << smName << "' sm_node='" << smNode << "' [OK]" << endl;
+            return;
+        }
+
+        dinfo << myname << "(initFromReserv): init from sm_id='" << smName << "' sm_node='" << smNode << "' [FAILED]" << endl;
+    }
+
+    dwarn << myname << "(initFromReserv): FAILED INIT FROM <ReservList>" << endl;
+}
+// ----------------------------------------------------------------------------
+bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectId sm_node )
+{
+    dinfo << myname << "(initFromSM): init from sm_id='" << sm_id << "' sm_node='" << sm_node << "'" << endl;
+
+    // SENSORS MAP
+    try
+    {
+        IOController_i::SensorInfoSeq_var amap = ui->getSensorsMap(sm_id,sm_node);
+        int size = amap->length();
+        for( int i=0; i<size; i++ )
+        {
+            IOController_i::SensorIOInfo& ii(amap[i]);
+            try
+            {
+#if 0
+                // Вариант через setValue...
+                setValue(ii.si.id,ii.value,getId());
+#else
+
+                // Вариант с прямым обновлением внутреннего состояния
+                IOStateList::iterator io = myiofind(ii.si.id);
+                if( io == myioEnd() )
+                {
+                    dcrit << myname << "(initFromSM): not found sensor id=" << ii.si.id << "'" << endl;
+                    continue;
+                }
+
+                io->second->init(ii);
+#endif
+            }
+            catch( const Exception& ex )
+            {
+                dcrit << myname << "(initFromSM): " << ex << endl;
+            }
+            catch( const IOController_i::NameNotFound& ex )
+            {
+                dcrit << myname << "(initFromSM): not found sensor id=" << ii.si.id << "'" << endl;
+            }
+        }
+
+        return true;
+    }
+    catch( const UniSetTypes::Exception& ex )
+    {
+        dwarn << myname << "(initFromSM): " << ex << endl;
+    }
+
+    return false;
+}
+// ----------------------------------------------------------------------------

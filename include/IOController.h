@@ -303,6 +303,8 @@ class IOController:
 
             // функция обработки информации об изменении состояния датчика, от которого зависит данный
             void checkDepend( std::shared_ptr<USensorInfo>& it, IOController* );
+
+            void init( const IOController_i::SensorIOInfo& s );
         };
 };
 // --------------------------------------------------------------------------

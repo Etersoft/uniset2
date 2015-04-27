@@ -58,6 +58,9 @@
 				<item filter="a1" fuse_id="AlarmFuse1_S" fuse_invert="1" id="1" size="30"/>
 				<item filter="a2" fuse_id="AlarmFuse2_AS" fuse_value="2" id="2" size="30"/>
 			</History>
+			<ReservList>
+				<item node="localhost" name="ReservSharedMemory"/>
+			</ReservList>
 		</SharedMemory>
 		<UniExchange name="UniExchange">
 			<item name="UniExchange2" node="Node2"/>
@@ -279,6 +282,7 @@
 			<item id="5003" name="SharedMemory"/>
 			<item id="5001" name="UniExchange"/>
 			<item id="5002" name="UniExchange2"/>
+			<item id="5004" name="ReservSharedMemory"/>
 		</controllers>
 		<!-- ******************* Идентификаторы сервисов ***************** -->
 		<services name="Services">

@@ -156,6 +156,11 @@ class UInterface
         IOController_i::ShortMapSeq* getSensors( const UniSetTypes::ObjectId id,
                                                     const UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );
 
+        IOController_i::SensorInfoSeq* getSensorsMap( const UniSetTypes::ObjectId id,
+                                                    const UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );
+
+        IONotifyController_i::ThresholdsListSeq* getThresholdsList( const UniSetTypes::ObjectId id,
+                                                                    const UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );
         // ---------------------------------------------------------------
         // Работа с репозиторием
 

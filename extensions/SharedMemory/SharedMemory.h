@@ -29,6 +29,7 @@
     - \ref sec_SM_History
     - \ref sec_SM_Pulsar
     - \ref sec_SM_DBLog
+    - \ref sec_SM_ReservSM
 
     \section sec_SM_Conf Определение списка регистрируемых датчиков
       SM позволяет определять список датчиков, которые он будет предоставлять
@@ -253,6 +254,24 @@
        (реализованное в базовом классе IONotifyController).
        Параметр командной строки \b --db-logging 1 позволяет включить этот механизм
        (в свою очередь работа с БД требует отдельной настройки).
+
+       \section sec_SM_ReservSM Восстановление данных из резервных SM
+       Для повышения надёжности работы в SharedMemory предусмотрен механизм восстановления текущий состояний
+       из списка резервных SM. После того, как SM запускается и активизируется, но до того, как она
+       выдаст exit()=true и с ней можно будет работать, происходит попытка получить значения всех датчиков
+       от резервных SM. Список резервных SM задаётся в секции <ReservList>...</ReservList>.
+       При этом попытки получить значения идёт в порядке указанном в списке и прекращаются, при первом успешном
+       доступе.
+       \code
+       <SharedMemory ...>
+         ...
+         <ReservList>
+            <item name="SharedMemory" node="reservnode"/>
+            <item name="SharedMemory" node="reservnode2"/>
+            ...
+         </ReservList>
+       </SharedMemory>
+       \endcode
 */
 class SharedMemory:
     public IONotifyController_LT
@@ -357,12 +376,12 @@ class SharedMemory:
         virtual void timerInfo( const UniSetTypes::TimerMessage *tm ) override;
         virtual void askSensors( UniversalIO::UIOCommand cmd );
         void sendEvent( UniSetTypes::SystemMessage& sm );
+        void initFromReserv();
+        bool initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectId sm_node );
 
         // действия при завершении работы
         virtual void sigterm( int signo ) override;
         virtual bool activateObject() override;
-//        virtual void logging(UniSetTypes::SensorMessage& sm){}
-//        virtual void dumpToDB(){}
         bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
 
         void buildEventList( xmlNode* cnode );
@@ -410,7 +429,7 @@ class SharedMemory:
 
         typedef std::list<HeartBeatInfo> HeartBeatList;
         HeartBeatList hlist; // список датчиков "сердцебиения"
-        WDTInterface* wdt;
+        std::shared_ptr<WDTInterface> wdt;
         std::atomic_bool activated;
         std::atomic_bool workready;
 
@@ -438,6 +457,8 @@ class SharedMemory:
         IOStateList::iterator itPulsar;
         UniSetTypes::ObjectId sidPulsar;
         int msecPulsar;
+
+        xmlNode* confnode;
 
     private:
         HistorySlot m_historySignal;

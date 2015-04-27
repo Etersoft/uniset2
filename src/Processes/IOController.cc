@@ -617,6 +617,11 @@ const IOController::USensorInfo&
     return *this;
 }
 
+void IOController::USensorInfo::init( const IOController_i::SensorIOInfo& s )
+{
+    IOController::USensorInfo r(s);
+    (*this) = std::move(r);
+}
 // ----------------------------------------------------------------------------------------
 bool IOController::checkIOFilters( std::shared_ptr<USensorInfo>& ai, CORBA::Long& newvalue,
                                     UniSetTypes::ObjectId sup_id )

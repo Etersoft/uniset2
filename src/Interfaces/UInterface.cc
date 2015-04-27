@@ -1910,6 +1910,152 @@ IOController_i::ShortMapSeq* UInterface::getSensors( const UniSetTypes::ObjectId
     throw UniSetTypes::TimeOut(set_err("UI(getSensors): Timeout",id,node));
 }
 // -----------------------------------------------------------------------------
+IOController_i::SensorInfoSeq* UInterface::getSensorsMap( const UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
+{
+    if ( id == DefaultObjectId )
+        throw ORepFailed("UI(getSensorsMap): error node=UniSetTypes::DefaultObjectId");
+
+    if ( node == DefaultObjectId )
+        throw ORepFailed("UI(getSensorsMap): error node=UniSetTypes::DefaultObjectId");
+
+    try
+    {
+        CORBA::Object_var oref;
+        try
+        {
+            oref = rcache.resolve(id,node);
+        }
+        catch( const NameNotFound&  ){}
+
+        for( unsigned int i=0; i<uconf->getRepeatCount(); i++)
+        {
+            try
+            {
+                if( CORBA::is_nil(oref) )
+                    oref = resolve(id,node);
+
+                IOController_i_var iom = IOController_i::_narrow(oref);
+                return iom->getSensorsMap();
+            }
+            catch( const CORBA::TRANSIENT& ){}
+            catch( const CORBA::OBJECT_NOT_EXIST& ){}
+            catch( const CORBA::SystemException& ex ){}
+            msleep(uconf->getRepeatTimeout());
+            oref = CORBA::Object::_nil();
+        }
+    }
+    catch( const UniSetTypes::TimeOut& ){}
+    catch(const IOController_i::NameNotFound&  ex)
+    {
+        rcache.erase(id,node);
+        throw UniSetTypes::NameNotFound("UI(getSensorsMap): "+string(ex.err));
+    }
+    catch(const IOController_i::IOBadParam& ex)
+    {
+        rcache.erase(id, node);
+        throw UniSetTypes::IOBadParam("UI(getSensorsMap): "+string(ex.err));
+    }
+    catch(const ORepFailed& )
+    {
+        rcache.erase(id,node);
+        // не смогли получить ссылку на объект
+        throw UniSetTypes::IOBadParam(set_err("UI(getSensorsMap): resolve failed ",id,node));
+    }
+    catch(const CORBA::NO_IMPLEMENT& )
+    {
+        rcache.erase(id,node);
+        throw UniSetTypes::IOBadParam(set_err("UI(getSensorsMap): method no implement",id,node));
+    }
+    catch( const CORBA::OBJECT_NOT_EXIST& )
+    {
+        rcache.erase(id,node);
+        throw UniSetTypes::IOBadParam(set_err("UI(getSensorsMap): object not exist",id,node));
+    }
+    catch( const CORBA::COMM_FAILURE& ex )
+    {
+        // ошибка системы коммуникации
+    }
+    catch( const CORBA::SystemException& ex )
+    {
+        // ошибка системы коммуникации
+    }
+    rcache.erase(id,node);
+    throw UniSetTypes::TimeOut(set_err("UI(getSensorsMap): Timeout",id,node));
+}
+// -----------------------------------------------------------------------------
+IONotifyController_i::ThresholdsListSeq* UInterface::getThresholdsList( const UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
+{
+    if ( id == DefaultObjectId )
+        throw ORepFailed("UI(getThresholdsList): error node=UniSetTypes::DefaultObjectId");
+
+    if ( node == DefaultObjectId )
+        throw ORepFailed("UI(getThresholdsList): error node=UniSetTypes::DefaultObjectId");
+
+    try
+    {
+        CORBA::Object_var oref;
+        try
+        {
+            oref = rcache.resolve(id,node);
+        }
+        catch( const NameNotFound&  ){}
+
+        for( unsigned int i=0; i<uconf->getRepeatCount(); i++)
+        {
+            try
+            {
+                if( CORBA::is_nil(oref) )
+                    oref = resolve(id,node);
+
+                IONotifyController_i_var iom = IONotifyController_i::_narrow(oref);
+                return iom->getThresholdsList();
+            }
+            catch( const CORBA::TRANSIENT& ){}
+            catch( const CORBA::OBJECT_NOT_EXIST& ){}
+            catch( const CORBA::SystemException& ex ){}
+            msleep(uconf->getRepeatTimeout());
+            oref = CORBA::Object::_nil();
+        }
+    }
+    catch( const UniSetTypes::TimeOut& ){}
+    catch(const IOController_i::NameNotFound&  ex)
+    {
+        rcache.erase(id,node);
+        throw UniSetTypes::NameNotFound("UI(getThresholdsList): "+string(ex.err));
+    }
+    catch(const IOController_i::IOBadParam& ex)
+    {
+        rcache.erase(id, node);
+        throw UniSetTypes::IOBadParam("UI(getThresholdsList): "+string(ex.err));
+    }
+    catch(const ORepFailed& )
+    {
+        rcache.erase(id,node);
+        // не смогли получить ссылку на объект
+        throw UniSetTypes::IOBadParam(set_err("UI(getThresholdsList): resolve failed ",id,node));
+    }
+    catch(const CORBA::NO_IMPLEMENT& )
+    {
+        rcache.erase(id,node);
+        throw UniSetTypes::IOBadParam(set_err("UI(getThresholdsList): method no implement",id,node));
+    }
+    catch( const CORBA::OBJECT_NOT_EXIST& )
+    {
+        rcache.erase(id,node);
+        throw UniSetTypes::IOBadParam(set_err("UI(getThresholdsList): object not exist",id,node));
+    }
+    catch( const CORBA::COMM_FAILURE& ex )
+    {
+        // ошибка системы коммуникации
+    }
+    catch( const CORBA::SystemException& ex )
+    {
+        // ошибка системы коммуникации
+    }
+    rcache.erase(id,node);
+    throw UniSetTypes::TimeOut(set_err("UI(getThresholdsList): Timeout",id,node));
+}
+// -----------------------------------------------------------------------------
 bool UInterface::waitReady( const ObjectId id, int msec, int pmsec, const ObjectId node )
 {
     if( msec < 0 )
