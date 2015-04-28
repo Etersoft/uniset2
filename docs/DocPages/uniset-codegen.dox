@@ -202,21 +202,20 @@
 \endcode
 Тогда вместо \a ObjectName будет использоваться указанный префикс \a --test- (обратите внимание на то, что префикс задаётся с \b - в конце).
 
-Значения по умолчанию для \b входов (in_xxx) и \b выходов (out_xx) можно также опередять через аргументы командной строки:
+Значения по умолчанию для \b входов (in_xxx) и \b выходов (out_xx) можно также определять через аргументы командной строки:
 - \b --argprefix-xxxname-default val
 
 Дополнительно при помощи командной строки можно переопределять следующие свойства:
-- \b --argprefix-force-out
-- \b --argprefix-heartbeat-id
-- \b --argprefix-heartbeat-time
-- \b --argprefix-heartbeat-max
-- \b --argprefix-sleep-msec
-- \b --argprefix-resetMsgTime
-- \b --argprefix-sm-test-id
-- \b --argprefix-activate-timeout
-- \b --argprefix-startup-timeout
-- \b --argprefix-log
-
+- \b --argprefix-force-out  1/0
+- \b --argprefix-heartbeat-id sensorID
+- \b --argprefix-heartbeat-time msec
+- \b --argprefix-heartbeat-max  num
+- \b --argprefix-sleep-msec  msec
+- \b --argprefix-resetMsgTime msec
+- \b --argprefix-sm-test-id sensorID
+- \b --argprefix-activate-timeout msec
+- \b --argprefix-startup-timeout msec
+- \b --argprefix-log-[add|del]-levels xxx,xxx,xxx 
 
 
 \section pg_Codegen_Configuration Конфигурирование
