@@ -18,11 +18,11 @@ dumpingToDB(_dumpingToDB)
 {
     restorer = NULL;
 
-    NCRestorer_XML* askd = new NCRestorer_XML(askdump);
+    shared_ptr<NCRestorer_XML> askd = make_shared<NCRestorer_XML>(askdump);
     askd->setItemFilter(s_filterField, s_filterValue);
     askd->setConsumerFilter(c_filterField, c_filterValue);
 
-    restorer = askd;
+    restorer = std::static_pointer_cast<NCRestorer>(askd);
 
 /*
 //    askd->setReadItem( sigc::mem_fun(this,&NullController::readSItem) );
@@ -33,16 +33,9 @@ dumpingToDB(_dumpingToDB)
 }
 
 // --------------------------------------------------------------------------------
-
 NullController::~NullController()
 {
-    if( restorer != NULL )
-    {
-        delete restorer;
-        restorer=NULL;
-    }
 }
-
 // --------------------------------------------------------------------------------
 void NullController::dumpToDB()
 {

@@ -39,7 +39,6 @@ using namespace UniSetTypes;
 using namespace std;
 // ------------------------------------------------------------------------------------------
 IONotifyController::IONotifyController():
-restorer(NULL),
 askIOMutex("askIOMutex"),
 trshMutex("trshMutex"),
 maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 5))
@@ -47,7 +46,7 @@ maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 5))
 
 }
 
-IONotifyController::IONotifyController(const string& name, const string& section, NCRestorer* d ): 
+IONotifyController::IONotifyController(const string& name, const string& section, std::shared_ptr<NCRestorer> d ):
     IOController(name, section),
     restorer(d),
     askIOMutex(name+"askIOMutex"),
@@ -58,7 +57,7 @@ IONotifyController::IONotifyController(const string& name, const string& section
     addIOFilter( sigc::mem_fun(this,&IONotifyController::myIOFilter) );
 }
 
-IONotifyController::IONotifyController( ObjectId id, NCRestorer* d ):
+IONotifyController::IONotifyController( ObjectId id, std::shared_ptr<NCRestorer> d ):
     IOController(id),
     restorer(d),
     askIOMutex(string(uniset_conf()->oind->getMapName(id))+"_askIOMutex"),

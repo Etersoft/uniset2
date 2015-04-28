@@ -61,8 +61,7 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
     for( auto i=hist.begin(); i!=hist.end(); ++i )
         histmap[i->fuse_id].push_back(i);
     // ----------------------
-    restorer = NULL;
-    NCRestorer_XML* rxml = new NCRestorer_XML(datafile);
+    auto rxml = make_shared<NCRestorer_XML>(datafile);
 
     string s_field(conf->getArgParam("--s-filter-field"));
     string s_fvalue(conf->getArgParam("--s-filter-value"));
@@ -85,7 +84,7 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
     rxml->setConsumerFilter(c_field, c_fvalue);
     rxml->setThresholdsFilter(t_field, t_fvalue);
 
-    restorer = rxml;
+    restorer = std::static_pointer_cast<NCRestorer>(rxml);
     rxml->setReadItem( sigc::mem_fun(this,&SharedMemory::readItem) );
 
     string wdt_dev = conf->getArgParam("--wdt-device");
@@ -123,11 +122,6 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 
 SharedMemory::~SharedMemory()
 {
-    if( restorer )
-    {
-        delete restorer;
-        restorer = NULL;
-    }
 }
 
 // --------------------------------------------------------------------------------
@@ -834,8 +828,8 @@ bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectI
             IOController_i::SensorIOInfo& ii(amap[i]);
             try
             {
-#if 0
-                // Вариант через setValue...
+#if 1
+                // Вариант через setValue...(заодно внтури проверяются пороги)
                 setValue(ii.si.id,ii.value,getId());
 #else
 
@@ -848,6 +842,13 @@ bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectI
                 }
 
                 io->second->init(ii);
+
+                // проверка порогов
+                try
+                {
+                    checkThreshold(io,ii.si.id,true);
+                }
+                catch(...){}
 #endif
             }
             catch( const Exception& ex )

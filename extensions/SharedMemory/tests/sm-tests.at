@@ -1,0 +1,3 @@
+AT_SETUP([SharedMemory tests])
+AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/SharedMemory/tests tests.sh],[0],[ignore],[ignore])
+AT_CLEANUP

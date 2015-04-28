@@ -3,7 +3,7 @@
 ############################################################################
 
 if HAVE_EXTENTIONS
-SUBDIRS = lib include SharedMemory IOControl LogicProcessor \
+SUBDIRS = lib include SharedMemory SharedMemory/tests IOControl LogicProcessor \
 	ModbusMaster  ModbusSlave  SMViewer UniNetwork UNetUDP UNetUDP/tests DBServer-MySQL DBServer-SQLite \
 	RRDServer SharedMemoryPlus tests ModbusMaster/tests ModbusSlave/tests
 

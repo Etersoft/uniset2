@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UNISETPLC xmlns:xi="http://www.w3.org/2001/XInclude">
+	<UserData/>
+	<!-- Общие(стартовые) параметры по UniSet -->
+	<UniSet>
+		<NameService host="localhost" port="2809"/>
+		<LocalNode name="localhost"/>
+		<RootSection name="UNISET_SM"/>
+		<CountOfNet name="1"/>
+		<RepeatCount name="3"/>
+		<RepeatTimeoutMS name="50"/>
+		<WatchDogTime name="0"/>
+		<PingNodeTime name="0"/>
+		<AutoStartUpTime name="1"/>
+		<DumpStateTime name="10"/>
+		<SleepTickMS name="500"/>
+		<UniSetDebug levels="" name="ulog"/>
+		<ConfDir name="./"/>
+		<DataDir name="./"/>
+		<BinDir name="./"/>
+		<LogDir name="./"/>
+		<DocDir name="./"/>
+		<LockDir name="./"/>
+		<Services/>
+	</UniSet>
+	<dlog name="dlog"/>
+	<settings>
+		<ReservSharedMemory name="ReservSharedMemory" shmID="ReservSharedMemory"/>
+	</settings>
+	<ObjectsMap idfromfile="1">
+		<nodes port="2809" unet_broadcast_ip="192.168.1.255" unet_broadcast_ip2="192.168.122.255">
+			<item id="3000" dbserver="DBServer1" infserver="InfoServer" ip="127.0.0.1" name="localhost" textname="Локальный узел" unet_ignore="0" unet_port="2048"/>
+		</nodes>
+		<!-- ************************ Датчики ********************** -->
+		<sensors name="Sensors">
+			<item id="500" iotype="AI" name="AI_AS" priority="Medium" textname="AI" default="-50"/>
+			<item id="501" iotype="DI" name="DI_S" priority="Medium" textname="Digital input" default="1"/>
+			<item id="502" iotype="DO" name="DO_C" priority="Medium" textname="Digital output"/>
+			<item id="503" iotype="AI" name="AI1_AS" priority="Medium" textname="AI" default="390"/>
+			<item id="504" iotype="DI" name="Threshold1_S" priority="Medium" textname="Threshold"/>
+
+		</sensors>
+		<thresholds name="thresholds">
+			<sensor iotype="AI" name="AI1_AS">
+				<threshold hilimit="376" id="1" lowlimit="374" name="t1" sensibility="0" sid="Threshold1_S"/>
+			</sensor>
+		</thresholds>
+		<controllers name="Controllers">
+			<item id="5000" name="SharedMemory1"/>
+			<item id="5003" name="SharedMemory"/>
+			<item id="5001" name="UniExchange"/>
+			<item id="5002" name="UniExchange2"/>
+			<item id="5004" name="ReservSharedMemory"/>
+		</controllers>
+		<!-- ******************* Идентификаторы сервисов ***************** -->
+		<services name="Services">
+			<item id="5010" name="InfoServer"/>
+			<item id="5011" name="DBServer1"/>
+			<item id="5012" name="PrintServer"/>
+			<item id="5013" name="TimeService"/>
+		</services>
+		<!-- ******************* Идентификаторы объектов ***************** -->
+		<objects name="UniObjects">
+			<item id="6000" name="TestProc"/>
+		</objects>
+	</ObjectsMap>
+	<messages idfromfile="1" name="messages">
+	</messages>
+	<Calibrations name="Calibrations">
+	</Calibrations>
+</UNISETPLC>

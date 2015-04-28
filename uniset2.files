@@ -151,6 +151,11 @@ extensions/SharedMemory/SharedMemory.cc
 extensions/SharedMemory/SharedMemory.h
 extensions/SharedMemory/smemory.cc
 extensions/SharedMemory/test.xml
+extensions/SharedMemory/tests/Makefile.am
+extensions/SharedMemory/tests/test_sm.cc
+extensions/SharedMemory/tests/tests.cc
+extensions/SharedMemory/tests/NullSM.cc
+extensions/SharedMemory/tests/NullSM.h
 extensions/SharedMemoryPlus/Makefile.am
 extensions/SharedMemoryPlus/smemory-plus.cc
 extensions/SharedMemoryPlus/test.xml

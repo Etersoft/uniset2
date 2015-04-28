@@ -25,6 +25,7 @@
 #ifndef IONotifyController_H_
 #define IONotifyController_H_
 //---------------------------------------------------------------------------
+#include <memory>
 #include <unordered_map>
 #include <list>
 #include <string>
@@ -131,8 +132,8 @@ class IONotifyController:
 {
     public:
 
-        IONotifyController(const std::string& name, const std::string& section, NCRestorer* dumper=0);
-        IONotifyController(const UniSetTypes::ObjectId id, NCRestorer* dumper=0);
+        IONotifyController(const std::string& name, const std::string& section, std::shared_ptr<NCRestorer> dumper= nullptr );
+        IONotifyController(const UniSetTypes::ObjectId id, std::shared_ptr<NCRestorer> dumper=nullptr );
 
         virtual ~IONotifyController();
 
@@ -302,7 +303,7 @@ class IONotifyController:
         /*! чтение dump-файла */
         virtual void readDump();
 
-        NCRestorer* restorer;
+        std::shared_ptr<NCRestorer> restorer;
 
         void onChangeUndefinedState( std::shared_ptr<USensorInfo>& it, IOController* ic );
 
