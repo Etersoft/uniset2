@@ -457,19 +457,11 @@ void IOController::dumpToDB()
 //        uniset_mutex_lock lock(ioMutex, 100);
         for( auto li = ioList.begin(); li!=ioList.end(); ++li ) 
         {
-            uniset_rwmutex_rlock lock(li->second->val_lock);
-            SensorMessage sm;
-            sm.id           = li->second->si.id;
-            sm.node         = li->second->si.node;
-            sm.sensor_type  = li->second->type;
-            sm.value        = li->second->value;
-            sm.undefined    = li->second->undefined;
-            sm.priority     = (Message::Priority)li->second->priority;
-            sm.sm_tv_sec    = li->second->tv_sec;
-            sm.sm_tv_usec   = li->second->tv_usec;
-            sm.ci           = li->second->ci;
             if ( !li->second->dbignore )
+            {
+                SensorMessage sm(li->second->getSM());
                 logging(sm);
+            }
         }
     }    // unlock 
 }
@@ -679,8 +671,7 @@ IOController_i::SensorInfoSeq* IOController::getSensorSeq( const IDSeq& lst )
         auto it = ioList.find(lst[i]);
         if( it!=ioList.end() )
         {
-            uniset_rwmutex_rlock lock(it->second->val_lock);
-            (*res)[i] = *(it->second.get());
+            (*res)[i] = it->second->getSIO();
             continue;
         }
 

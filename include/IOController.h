@@ -305,6 +305,29 @@ class IOController:
             void checkDepend( std::shared_ptr<USensorInfo>& it, IOController* );
 
             void init( const IOController_i::SensorIOInfo& s );
+
+            inline IOController_i::SensorIOInfo getSIO()
+            {
+               UniSetTypes::uniset_rwmutex_rlock lock(val_lock);
+               IOController_i::SensorIOInfo s(*this);
+               return std::move(s);
+            }
+
+            inline UniSetTypes::SensorMessage getSM()
+            {
+                UniSetTypes::uniset_rwmutex_rlock lock(val_lock);
+                UniSetTypes::SensorMessage sm;
+                sm.id           = si.id;
+                sm.node         = si.node;
+                sm.sensor_type  = type;
+                sm.value        = value;
+                sm.undefined    = undefined;
+                sm.priority     = (UniSetTypes::Message::Priority)priority;
+                sm.sm_tv_sec    = tv_sec;
+                sm.sm_tv_usec   = tv_usec;
+                sm.ci           = ci;
+                return std::move(sm);
+            }
         };
 };
 // --------------------------------------------------------------------------

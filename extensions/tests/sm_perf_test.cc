@@ -45,19 +45,19 @@ void run_test(std::size_t concurrency, int bound, shared_ptr<SharedMemory>& shm 
     auto&& r_worker = [&shm,bound] {
 		int num = bound;
         while (num--) {
-            shm->getValue(11);
+            int v = shm->getValue(11);
         }
     };
 
     auto&& w_worker = [&shm,bound] {
 		int num = bound;
         while (num--) {
-            shm->setValue(11,123);
+            shm->setValue(11,num);
         }
     };
 
 	std::vector<std::thread> threads;
-    for (std::size_t i = 0; i < concurrency; ++i) {
+    for (std::size_t i = 0; i < concurrency-1; ++i) {
         threads.emplace_back(r_worker);
     }
     threads.emplace_back(w_worker);

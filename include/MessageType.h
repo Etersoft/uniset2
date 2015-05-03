@@ -62,6 +62,12 @@ namespace UniSetTypes
             ObjectId consumer;    // кому
             struct timeval tm;
 
+
+            Message( Message&& ) = default;
+            Message& operator=(Message&& ) = default;
+            Message( const Message& ) = default;
+            Message& operator=(const Message& ) = default;
+
             Message();
 
             // для оптимизации, делаем конструктор который не будет инициализировать свойства класса
@@ -83,6 +89,12 @@ namespace UniSetTypes
     class VoidMessage : public Message
     {
         public:
+
+            VoidMessage( VoidMessage&& ) = default;
+            VoidMessage& operator=(VoidMessage&& ) = default;
+            VoidMessage( const VoidMessage& ) = default;
+            VoidMessage& operator=( const VoidMessage& ) = default;
+
            // для оптимизации, делаем конструктор который не будет инициализировать свойства класса
            // это необходимо для VoidMessage, который конструируется при помощи memcpy
             VoidMessage( int dummy ):Message(dummy){}
@@ -128,6 +140,11 @@ namespace UniSetTypes
             bool threshold;  /*!< TRUE - сработал порог, FALSE - порог отключился */
             UniSetTypes::ThresholdId tid;
 
+            SensorMessage( SensorMessage&& ) = default;
+            SensorMessage& operator=(SensorMessage&& ) = default;
+            SensorMessage( const SensorMessage& ) = default;
+            SensorMessage& operator=( const SensorMessage& ) = default;
+
             SensorMessage();
             SensorMessage(ObjectId id, long value, const IOController_i::CalibrateInfo& ci=IOController_i::CalibrateInfo(),
                             Priority priority = Message::Medium,
@@ -161,6 +178,11 @@ namespace UniSetTypes
                 LogRotate    /*! переоткрыть файлы логов */
             };
 
+            SystemMessage( SystemMessage&& ) = default;
+            SystemMessage& operator=(SystemMessage&& ) = default;
+            SystemMessage( const SystemMessage& ) = default;
+            SystemMessage& operator=( const SystemMessage& ) = default;
+
             SystemMessage();
             SystemMessage(Command command, Priority priority = Message::High,
                             ObjectId consumer=UniSetTypes::DefaultObjectId);
@@ -181,6 +203,11 @@ namespace UniSetTypes
     class TimerMessage : public Message
     {
         public:
+            TimerMessage( TimerMessage&& ) = default;
+            TimerMessage& operator=(TimerMessage&& ) = default;
+            TimerMessage( const TimerMessage& ) = default;
+            TimerMessage& operator=( const TimerMessage& ) = default;
+
             TimerMessage();
             TimerMessage(UniSetTypes::TimerId id, Priority prior = Message::High,
                             ObjectId cons=UniSetTypes::DefaultObjectId);
@@ -212,6 +239,10 @@ namespace UniSetTypes
                     time_t in_confirm,
                     Priority in_priority = Message::Medium);
 
+            ConfirmMessage( ConfirmMessage&& ) = default;
+            ConfirmMessage& operator=(ConfirmMessage&& ) = default;
+            ConfirmMessage( const ConfirmMessage& ) = default;
+            ConfirmMessage& operator=( const ConfirmMessage& ) = default;
 
             long sensor_id;   /* ID датчика */
             double value;     /* значение датчика */
