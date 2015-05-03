@@ -36,74 +36,89 @@ class MySQLResult;
 // ----------------------------------------------------------------------------
 class MySQLInterface
 {
-    public:
+	public:
 
-            MySQLInterface();
-            ~MySQLInterface();
+		MySQLInterface();
+		~MySQLInterface();
 
-//            MySQLResult listFields( const std::string& table, const std::string& wild );
+		//            MySQLResult listFields( const std::string& table, const std::string& wild );
 
-            bool connect( const std::string& host, const std::string& user, const std::string& pswd,
-                            const std::string& dbname);
-            bool close();
+		bool connect( const std::string& host, const std::string& user, const std::string& pswd,
+					  const std::string& dbname);
+		bool close();
 
-            bool query_ok( const std::string& q );
+		bool query_ok( const std::string& q );
 
-            // \param finalize - освободить буфер после запроса
-            MySQLResult query( const std::string& q );
+		// \param finalize - освободить буфер после запроса
+		MySQLResult query( const std::string& q );
 
-            const std::string lastQuery();
-            bool insert( const std::string& q );
+		const std::string lastQuery();
+		bool insert( const std::string& q );
 
-            std::string addslashes(const std::string& str);
+		std::string addslashes(const std::string& str);
 
-            /*!
-                проверка связи с БД.
-                в случае отсутсвия попытка восстановить...
-            */
-            bool ping();
+		/*!
+		    проверка связи с БД.
+		    в случае отсутсвия попытка восстановить...
+		*/
+		bool ping();
 
-            /*! связь с БД установлена (была) */
-            bool isConnection();
+		/*! связь с БД установлена (была) */
+		bool isConnection();
 
-            int insert_id();
+		int insert_id();
 
-            const std::string error();
+		const std::string error();
 
-            // *******************
-            const char* gethostinfo();
-    protected:
+		// *******************
+		const char* gethostinfo();
+	protected:
 
-    private:
+	private:
 
-        MYSQL *mysql;
-        std::string lastQ;
-        bool connected;
+		MYSQL* mysql;
+		std::string lastQ;
+		bool connected;
 };
 // ----------------------------------------------------------------------------------
 class MySQLResult
 {
-    public:
-        MySQLResult(){}
-        MySQLResult( MYSQL_RES* r, bool finalize=true );
-        ~MySQLResult();
+	public:
+		MySQLResult() {}
+		MySQLResult( MYSQL_RES* r, bool finalize = true );
+		~MySQLResult();
 
-        typedef std::vector<std::string> COL;
-        typedef std::deque<COL> ROW;
+		typedef std::vector<std::string> COL;
+		typedef std::deque<COL> ROW;
 
-        typedef ROW::iterator iterator;
+		typedef ROW::iterator iterator;
 
-        inline iterator begin(){ return res.begin(); }
-        inline iterator end(){ return res.end(); }
+		inline iterator begin()
+		{
+			return res.begin();
+		}
+		inline iterator end()
+		{
+			return res.end();
+		}
 
-        inline operator bool(){ return !res.empty(); }
+		inline operator bool()
+		{
+			return !res.empty();
+		}
 
-        inline size_t size(){ return res.size(); }
-        inline bool empty(){ return res.empty(); }
+		inline size_t size()
+		{
+			return res.size();
+		}
+		inline bool empty()
+		{
+			return res.empty();
+		}
 
-    protected:
+	protected:
 
-        ROW res;
+		ROW res;
 };
 // ----------------------------------------------------------------------------------
 int num_cols( MySQLResult::iterator& );

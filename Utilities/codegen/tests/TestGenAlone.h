@@ -5,20 +5,20 @@
 #include "TestGenAlone_SK.h"
 // -----------------------------------------------------------------------------
 class TestGenAlone:
-    public TestGenAlone_SK
+	public TestGenAlone_SK
 {
-    public:
-        TestGenAlone( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::uniset_conf()->getNode("TestGenAlone") );
-        virtual ~TestGenAlone();
+	public:
+		TestGenAlone( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::uniset_conf()->getNode("TestGenAlone") );
+		virtual ~TestGenAlone();
 
 
-    protected:
-        virtual void step();
-        void sensorInfo( UniSetTypes::SensorMessage *sm );
-        void timerInfo( UniSetTypes::TimerMessage *tm );
-        virtual void sigterm( int signo );
+	protected:
+		virtual void step();
+		void sensorInfo( UniSetTypes::SensorMessage* sm );
+		void timerInfo( UniSetTypes::TimerMessage* tm );
+		virtual void sigterm( int signo );
 
-    private:
+	private:
 };
 // -----------------------------------------------------------------------------
 #endif // TestGenAlone_H_

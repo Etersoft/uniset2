@@ -1,6 +1,6 @@
 if HAVE_TESTS
 ############################################################################
-# This file is part of the UniSet library                                  #
+# This file is part of the UniSet library								  #
 ############################################################################
 
 #check_PROGRAMS = tests tests_with_conf
@@ -34,7 +34,7 @@ test_conftest.cc \
 test_ui.cc \
 test_iorfile.cc \
 test_messagetype.cc 
-     
+	 
 # threadtst_SOURCES = threadtst.cc
 # threadtst_LDADD 	= $(top_builddir)/lib/libUniSet2.la ${SIGC_LIBS} $(COMCPP_LIBS)
 # threadtst_CPPFLAGS	= -I$(top_builddir)/include ${SIGC_CFLAGS} $(COMCPP_CFLAGS)
@@ -54,3 +54,5 @@ include $(top_builddir)/testsuite/testcoverage-common.mk
 endif
 
 endif
+
+include $(top_builddir)/include.mk

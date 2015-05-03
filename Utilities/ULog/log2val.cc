@@ -5,18 +5,18 @@
 using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
-int main( int argc, char **argv )
+int main( int argc, char** argv )
 {
-    if( argc < 2 || (argc > 1 && ( !strcmp(argv[1],"--help") || !strcmp(argv[1],"-h"))) )
-    {
-        cout << "Usage: lo2gval [ info,warn,crit,level1...level9,init,repository,system,exception | any ]" << endl;
-        return 0;
-    }
+	if( argc < 2 || (argc > 1 && ( !strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))) )
+	{
+		cout << "Usage: lo2gval [ info,warn,crit,level1...level9,init,repository,system,exception | any ]" << endl;
+		return 0;
+	}
 
-    const string s(argv[1]);
+	const string s(argv[1]);
 
-    cout << (int)Debug::value(s) << endl;
+	cout << (int)Debug::value(s) << endl;
 
-    return 0;
+	return 0;
 }
 // --------------------------------------------------------------------------

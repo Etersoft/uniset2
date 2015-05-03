@@ -1,5 +1,5 @@
 ############################################################################
-# This file is part of the UniSet library                                  #
+# This file is part of the UniSet library								  #
 ############################################################################
 
 bin_PROGRAMS 			= xmltest

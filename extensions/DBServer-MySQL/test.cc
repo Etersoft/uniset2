@@ -8,50 +8,54 @@ using namespace std;
 // --------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-    std::string dbname("test-db");
-    if( argc > 1 )
-        dbname = string(argv[1]);
+	std::string dbname("test-db");
 
-    try
-    {
-        MySQLInterface db;
+	if( argc > 1 )
+		dbname = string(argv[1]);
 
-        if( !db.connect("localhost","dbadmin","dbadmin",dbname) )
-        {
-            cerr << "db connect error: " << db.error() << endl;
-            return 1;
-        }
+	try
+	{
+		MySQLInterface db;
+
+		if( !db.connect("localhost", "dbadmin", "dbadmin", dbname) )
+		{
+			cerr << "db connect error: " << db.error() << endl;
+			return 1;
+		}
 
 
-        stringstream q;
-        q << "SELECT * from main_history";
+		stringstream q;
+		q << "SELECT * from main_history";
 
-        MySQLResult r = db.query(q.str());
-        if( !r )
-        {
-            cerr << "db connect error: " << db.error() << endl;
-            return 1;
-        }
+		MySQLResult r = db.query(q.str());
 
-        for( MySQLResult::iterator it=r.begin(); it!=r.end(); it++ )
-        {
-            cout << "ROW: ";
-            MySQLResult::COL col(*it);
-            for( MySQLResult::COL::iterator cit = it->begin(); cit!=it->end(); cit++ )
-                cout << as_string(cit) << "(" << as_double(cit) << ")  |  ";
-            cout << endl;
-        }
+		if( !r )
+		{
+			cerr << "db connect error: " << db.error() << endl;
+			return 1;
+		}
 
-        db.close();
-    }
-    catch( const Exception& ex )
-    {
-        cerr << "(test): " << ex << endl;
-    }
-    catch( const std::exception& ex )
-    {
-        cerr << "(test): " << ex.what() << endl;
-    }
+		for( MySQLResult::iterator it = r.begin(); it != r.end(); it++ )
+		{
+			cout << "ROW: ";
+			MySQLResult::COL col(*it);
 
-    return 0;
+			for( MySQLResult::COL::iterator cit = it->begin(); cit != it->end(); cit++ )
+				cout << as_string(cit) << "(" << as_double(cit) << ")  |  ";
+
+			cout << endl;
+		}
+
+		db.close();
+	}
+	catch( const Exception& ex )
+	{
+		cerr << "(test): " << ex << endl;
+	}
+	catch( const std::exception& ex )
+	{
+		cerr << "(test): " << ex.what() << endl;
+	}
+
+	return 0;
 }

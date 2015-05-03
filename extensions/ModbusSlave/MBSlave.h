@@ -22,14 +22,14 @@
 // -----------------------------------------------------------------------------
 /*!
       \page page_ModbusSlave Реализация Modbus slave
-      
+
       - \ref sec_MBSlave_Comm
       - \ref sec_MBSlave_Conf
       - \ref sec_MBSlave_ConfList
       - \ref sec_MBSlave_FileTransfer
       - \ref sec_MBSlave_MEIRDI
       - \ref sec_MBSlave_DIAG
-      
+
       \section sec_MBSlave_Comm Общее описание Modbus slave
       Класс реализует базовые функции для протокола Modbus в slave режиме. Реализацию Modbus RTU - см. RTUExchange.
       Реализацию Modbus slave (TCP) - см. MBSlave. Список регистров с которыми работает процесс задаётся в конфигурационном файле
@@ -53,17 +53,17 @@
       \section  sec_MBSlave_Conf Конфигурирование ModbusTCP slave
 
       Конфигурирование процесса осуществляется либо параметрами командной строки либо
-      через настроечную секцию. 
+      через настроечную секцию.
 
       \par Секция с настройками
       При своём старте, в конфигурационном файле ищётся секция с названием объекта,
       в которой указываются настроечные параметры по умолчанию.
       Пример:
       \code
-        <MBSlave1 name="MBSlave1" addr="0x31" 
-        afterSendPause="0" 
-        reg_from_id="0" 
-        replyTimeout="60" 
+        <MBSlave1 name="MBSlave1" addr="0x31"
+        afterSendPause="0"
+        reg_from_id="0"
+        replyTimeout="60"
         askcount_id=""
         respond_invert=""
         respond_id=""
@@ -73,7 +73,7 @@
         force=""
         ...
       \endcode
-    
+
       - \b addr -  адрес данного устройства
       - \b afterSendPause - принудительная пауза после посылки ответа
       - \b reg_from_id - номер регистра брать из ID датчика
@@ -82,7 +82,7 @@
       - \b respond_id - идентификатор датчика наличия связи. Выставляется в "1" когда связь есть.
       - \b respond_invert - инвертировать логику выставления датчика связи (т.е. выставлять "1" - когда нет связи).
       - \b heartbeat_id - идентификтор датчика "сердцебиения". См. \ref sec_SM_HeartBeat
-      - \b initPause - пауза перед началом работы, после активации. По умолчанию 3000 мсек. 
+      - \b initPause - пауза перед началом работы, после активации. По умолчанию 3000 мсек.
       - \b force - [1,0] перезаписывать ли значения в SharedMemory каждый раз (а не по изменению).
       - \b timeout msec - таймаут, для определения отсутствия связи
 
@@ -110,39 +110,39 @@
       Далее приведены основные параметры:
 
       \b --xxx-name ID - идентификатор процесса.
-      
+
       \b --xxx-my-addr addr - slave-адрес для данного устройства.
-      
+
       \b --xxx-timeout или \b timeout msec  - таймаут на определение отсутсвия связи.
 
       \b --xxx-reply-timeout msec  - таймаут на формирование ответа.
-      
+
       \b --xxx-initPause или \b initPause msec - пауза перед началом работы, после активации. По умолчанию 50 мсек.
 
-      \b --xxx-force или \b force [1|0] 
+      \b --xxx-force или \b force [1|0]
        - 1 - перечитывать/перезаписывать значения входов из SharedMemory на каждом цикле
        - 0 - обновлять значения только по изменению
 
-      \b --xxx-reg-from-id или \b reg_from_id [1|0] 
+      \b --xxx-reg-from-id или \b reg_from_id [1|0]
        - 1 - в качестве регистра использовать идентификатор датчика
        - 0 - регистр брать из поля tcp_mbreg
-      
+
       \b --xxx-heartbeat-id или \b heartbeat_id ID - идентификатор датчика "сердцебиения" (см. \ref sec_SM_HeartBeat)
 
       \b --xxx-heartbeat-max или \b heartbeat_max val - сохраняемое значение счётчика "сердцебиения".
-      
+
       \b --xxx-activate-timeout msec . По умолчанию 2000. - время ожидания готовности SharedMemory к работе.
 
       \b --xxx-allow-setdatetime 0,1 - Включить функцию 0x50. Выставление даты и времени.
 
-      \par Настройки протокола RTU: 
+      \par Настройки протокола RTU:
 
       \b --xxx-dev devname  - файл устройства
 
       \b --xxx-speed        - Скорость обмена (9600,19920,38400,57600,115200)
 
       \par Настройки протокола TCP:
-    
+
       \b --xxx-inet-addr [xxx.xxx.xxx.xxx | hostname ]  - this modbus server address
 
       \b --xxx-inet-port num - this modbus server port. Default: 502.
@@ -150,18 +150,18 @@
       \section  sec_MBSlave_ConfList Конфигурирование списка регистров для ModbusSlave
       Конфигурационные параметры задаются в секции <sensors> конфигурационного файла.
       Список обрабатываемых регистров задаётся при помощи двух параметров командной строки
-      
+
       \b --xxx-filter-field  - задаёт фильтрующее поле для датчиков
-      
+
       \b --xxx-filter-value  - задаёт значение фильтрующего поля. Необязательный параметр.
 
       \warning Если в результате список будет пустым, процесс завершает работу.
 
       Пример конфигурационных параметров:
-  \code      
+  \code
   <sensors name="Sensors">
     ...
-    <item name="MySensor_S" textname="my sesnsor" iotype="DI" 
+    <item name="MySensor_S" textname="my sesnsor" iotype="DI"
           mbs="1" mbreg="1"
      />
     ...
@@ -179,7 +179,7 @@
    - \b mbs_iotype    - [DI,DO,AI,AO] - переназначить тип датчика. По умолчанию используется поле iotype.
    - \b mbs_nbyte     - [1|2] номер байта. Используется если mbs_vtype="byte".
 
-   - \b accessmode    - режим доступа к регистру. 
+   - \b accessmode    - режим доступа к регистру.
                         "ro" - read only
                         "wo" - write only
                         "rw" - read/write. Режим по умолчанию.
@@ -209,7 +209,7 @@
 
     \section sec_MBSlave_MEIRDI Поддержка "MODBUS Encapsulated Interface" (0x2B)[0x0E]
     \code
-            <MEI> 
+            <MEI>
                 <!-- ВНИМАНИЕ: должен заполняться в соответсвии со стандартом. ObjectID и DeviceID не случайны.. -->
                 <device id="0x01">
                     <object id="0" comm="VendorName">
@@ -254,242 +254,249 @@
 
 */
 // -----------------------------------------------------------------------------
-namespace std {
-template<>
-class hash<ModbusRTU::mbErrCode> {
-public:
-    size_t operator()(const ModbusRTU::mbErrCode &e) const
-    {
-        return std::hash<int>()((int)e);
-    }
-};
+namespace std
+{
+	template<>
+	class hash<ModbusRTU::mbErrCode>
+	{
+		public:
+			size_t operator()(const ModbusRTU::mbErrCode& e) const
+			{
+				return std::hash<int>()((int)e);
+			}
+	};
 }
 // -----------------------------------------------------------------------------
 /*! Реализация slave-интерфейса */
 class MBSlave:
-    public UniSetObject_LT
+	public UniSetObject_LT
 {
-    public:
-        MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr, const std::string& prefix="mbs" );
-        virtual ~MBSlave();
+	public:
+		MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr, const std::string& prefix = "mbs" );
+		virtual ~MBSlave();
 
-        /*! глобальная функция для инициализации объекта */
-        static std::shared_ptr<MBSlave> init_mbslave(int argc, const char* const* argv,
-                                      UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr,
-                                      const std::string& prefix="mbs" );
+		/*! глобальная функция для инициализации объекта */
+		static std::shared_ptr<MBSlave> init_mbslave(int argc, const char* const* argv,
+				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr,
+				const std::string& prefix = "mbs" );
 
-        /*! глобальная функция для вывода help-а */
-        static void help_print( int argc, const char* const* argv );
+		/*! глобальная функция для вывода help-а */
+		static void help_print( int argc, const char* const* argv );
 
-        static const int NoSafetyState=-1;
+		static const int NoSafetyState = -1;
 
-        enum AccessMode
-        {
-            amRW,
-            amRO,
-            amWO
-        };
+		enum AccessMode
+		{
+			amRW,
+			amRO,
+			amWO
+		};
 
-        struct BitRegProperty;
+		struct BitRegProperty;
 
-        struct IOProperty:
-            public IOBase
-        {
-            ModbusRTU::ModbusData mbreg;    /*!< регистр */
-            AccessMode amode;
-            VTypes::VType vtype;    /*!< type of value */
-            int wnum;               /*!< номер слова (для типов с размеров больше 2х байт */
-            int nbyte;              /*!< номер байта, который надо "сохранить" из "пришедщего в запросе" слова. [1-2] */
-            bool rawdata;           /*!< флаг, что в SM просто сохраняются 4-байта (актуально для типа F4)*/
-            std::shared_ptr<BitRegProperty> bitreg; /*!< указатель, как признак является ли данный регистр "сборным" из битовых */
+		struct IOProperty:
+			public IOBase
+		{
+			ModbusRTU::ModbusData mbreg;    /*!< регистр */
+			AccessMode amode;
+			VTypes::VType vtype;    /*!< type of value */
+			int wnum;               /*!< номер слова (для типов с размеров больше 2х байт */
+			int nbyte;              /*!< номер байта, который надо "сохранить" из "пришедщего в запросе" слова. [1-2] */
+			bool rawdata;           /*!< флаг, что в SM просто сохраняются 4-байта (актуально для типа F4)*/
+			std::shared_ptr<BitRegProperty> bitreg; /*!< указатель, как признак является ли данный регистр "сборным" из битовых */
 
-            IOProperty():
-                mbreg(0),
-                amode(amRW),
-                vtype(VTypes::vtUnknown),
-                wnum(0),
-                nbyte(0),
-                rawdata(false)
-            {}
+			IOProperty():
+				mbreg(0),
+				amode(amRW),
+				vtype(VTypes::vtUnknown),
+				wnum(0),
+				nbyte(0),
+				rawdata(false)
+			{}
 
-            friend std::ostream& operator<<( std::ostream& os, IOProperty& p );
-        };
-
-
-        struct BitRegProperty
-        {
-            typedef std::vector<IOProperty> BitSensorMap;
-
-            ModbusRTU::ModbusData mbreg; /*!< к какому регистру относятся биты */
-            BitSensorMap bvec;
-
-            BitRegProperty():mbreg(0),bvec(ModbusRTU::BitsPerData){}
-
-            /*! проверка привязан ли данный датчик, к какому-либо биту в этом слове */
-            bool check( const IOController_i::SensorInfo& si );
-
-            friend std::ostream& operator<<( std::ostream& os, BitRegProperty& p );
-            friend std::ostream& operator<<( std::ostream& os, BitRegProperty* p );
-        };
-
-        inline long getAskCount(){ return askCount; }
-
-    protected:
-
-        /*! обработка 0x01 */
-        ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query,
-                                                    ModbusRTU::ReadCoilRetMessage& reply );
-        /*! обработка 0x02 */
-        ModbusRTU::mbErrCode readInputStatus( ModbusRTU::ReadInputStatusMessage& query,
-                                                    ModbusRTU::ReadInputStatusRetMessage& reply );
-
-        /*! обработка 0x03 */
-        ModbusRTU::mbErrCode readOutputRegisters( ModbusRTU::ReadOutputMessage& query,
-                                                    ModbusRTU::ReadOutputRetMessage& reply );
-
-        /*! обработка 0x04 */
-        ModbusRTU::mbErrCode readInputRegisters( ModbusRTU::ReadInputMessage& query,
-                                                    ModbusRTU::ReadInputRetMessage& reply );
-
-        /*! обработка 0x05 */
-        ModbusRTU::mbErrCode forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
-                                                        ModbusRTU::ForceSingleCoilRetMessage& reply );
-
-        /*! обработка 0x0F */
-        ModbusRTU::mbErrCode forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
-                                                    ModbusRTU::ForceCoilsRetMessage& reply );
+			friend std::ostream& operator<<( std::ostream& os, IOProperty& p );
+		};
 
 
-        /*! обработка 0x10 */
-        ModbusRTU::mbErrCode writeOutputRegisters( ModbusRTU::WriteOutputMessage& query,
-                                                        ModbusRTU::WriteOutputRetMessage& reply );
+		struct BitRegProperty
+		{
+			typedef std::vector<IOProperty> BitSensorMap;
 
-        /*! обработка 0x06 */
-        ModbusRTU::mbErrCode writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
-                                                        ModbusRTU::WriteSingleOutputRetMessage& reply );
+			ModbusRTU::ModbusData mbreg; /*!< к какому регистру относятся биты */
+			BitSensorMap bvec;
 
-        /*! обработка запросов на чтение ошибок */
-//        ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query,
-//                                                            ModbusRTU::JournalCommandRetMessage& reply );
+			BitRegProperty(): mbreg(0), bvec(ModbusRTU::BitsPerData) {}
 
-        /*! обработка запроса на установку времени */
-        ModbusRTU::mbErrCode setDateTime( ModbusRTU::SetDateTimeMessage& query,
-                                                            ModbusRTU::SetDateTimeRetMessage& reply );
+			/*! проверка привязан ли данный датчик, к какому-либо биту в этом слове */
+			bool check( const IOController_i::SensorInfo& si );
 
-        /*! обработка запроса удалённого сервиса */
-        ModbusRTU::mbErrCode remoteService( ModbusRTU::RemoteServiceMessage& query,
-                                                            ModbusRTU::RemoteServiceRetMessage& reply );
+			friend std::ostream& operator<<( std::ostream& os, BitRegProperty& p );
+			friend std::ostream& operator<<( std::ostream& os, BitRegProperty* p );
+		};
 
-        ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query,
-                                                            ModbusRTU::FileTransferRetMessage& reply );
+		inline long getAskCount()
+		{
+			return askCount;
+		}
 
-        ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query,
-                                                        ModbusRTU::DiagnosticRetMessage& reply );
+	protected:
 
-        ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query,
-                                                        ModbusRTU::MEIMessageRetRDI& reply );
+		/*! обработка 0x01 */
+		ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query,
+											 ModbusRTU::ReadCoilRetMessage& reply );
+		/*! обработка 0x02 */
+		ModbusRTU::mbErrCode readInputStatus( ModbusRTU::ReadInputStatusMessage& query,
+											  ModbusRTU::ReadInputStatusRetMessage& reply );
 
-        /*! Проверка корректности регистра перед сохранением.
-            Вызывается для каждого регистра не зависимо от используемой функции (06 или 10)
-        */
-        virtual ModbusRTU::mbErrCode checkRegister( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val )
-        { return ModbusRTU::erNoError; }
+		/*! обработка 0x03 */
+		ModbusRTU::mbErrCode readOutputRegisters( ModbusRTU::ReadOutputMessage& query,
+				ModbusRTU::ReadOutputRetMessage& reply );
 
-        // т.к. в функциях (much_real_read,nuch_real_write) рассчёт на отсортированность IOMap
-        // то использовать unordered_map нельзя
-        typedef std::map<ModbusRTU::ModbusData,IOProperty> IOMap;
-        IOMap iomap;            /*!< список входов/выходов */
+		/*! обработка 0x04 */
+		ModbusRTU::mbErrCode readInputRegisters( ModbusRTU::ReadInputMessage& query,
+				ModbusRTU::ReadInputRetMessage& reply );
 
-        std::shared_ptr<ModbusServerSlot> mbslot;
-        ModbusRTU::ModbusAddr addr;            /*!< адрес данного узла */
+		/*! обработка 0x05 */
+		ModbusRTU::mbErrCode forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
+											  ModbusRTU::ForceSingleCoilRetMessage& reply );
 
-        xmlNode* cnode;
-        std::string s_field;
-        std::string s_fvalue;
-
-        std::shared_ptr<SMInterface> shm;
-
-        virtual void sysCommand( const UniSetTypes::SystemMessage *msg ) override;
-        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
-        void askSensors( UniversalIO::UIOCommand cmd );
-        void waitSMReady();
-        virtual void execute_rtu();
-        virtual void execute_tcp();
-
-        virtual bool activateObject() override;
-        virtual bool deactivateObject() override;
-
-        // действия при завершении работы
-        virtual void sigterm( int signo ) override;
-        virtual void finalThread();
-
-        virtual void initIterators();
-        bool initItem( UniXML::iterator& it );
-        bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
-
-        void readConfiguration();
-        bool check_item( UniXML::iterator& it );
-
-        ModbusRTU::mbErrCode real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val );
-        ModbusRTU::mbErrCode real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int& i, int count );
-        ModbusRTU::mbErrCode real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val );
-        ModbusRTU::mbErrCode much_real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count );
-        ModbusRTU::mbErrCode much_real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count );
-
-        ModbusRTU::mbErrCode real_read_it( IOMap::iterator& it, ModbusRTU::ModbusData& val );
-        ModbusRTU::mbErrCode real_bitreg_read_it( std::shared_ptr<BitRegProperty>& bp, ModbusRTU::ModbusData& val );
-        ModbusRTU::mbErrCode real_read_prop( IOProperty* p, ModbusRTU::ModbusData& val );
+		/*! обработка 0x0F */
+		ModbusRTU::mbErrCode forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
+				ModbusRTU::ForceCoilsRetMessage& reply );
 
 
-        ModbusRTU::mbErrCode real_write_it( IOMap::iterator& it, ModbusRTU::ModbusData* dat, int& i, int count );
+		/*! обработка 0x10 */
+		ModbusRTU::mbErrCode writeOutputRegisters( ModbusRTU::WriteOutputMessage& query,
+				ModbusRTU::WriteOutputRetMessage& reply );
 
-        MBSlave();
-        bool initPause;
-        UniSetTypes::uniset_rwmutex mutex_start;
-        std::shared_ptr< ThreadCreator<MBSlave> > thr;
+		/*! обработка 0x06 */
+		ModbusRTU::mbErrCode writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
+				ModbusRTU::WriteSingleOutputRetMessage& reply );
 
-        PassiveTimer ptHeartBeat;
-        UniSetTypes::ObjectId sidHeartBeat;
-        int maxHeartBeat;
-        IOController::IOStateList::iterator itHeartBeat;
-        UniSetTypes::ObjectId test_id;
+		/*! обработка запросов на чтение ошибок */
+		//        ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query,
+		//                                                            ModbusRTU::JournalCommandRetMessage& reply );
 
-        IOController::IOStateList::iterator itAskCount;
-        UniSetTypes::ObjectId askcount_id;
+		/*! обработка запроса на установку времени */
+		ModbusRTU::mbErrCode setDateTime( ModbusRTU::SetDateTimeMessage& query,
+										  ModbusRTU::SetDateTimeRetMessage& reply );
 
-        IOController::IOStateList::iterator itRespond;
-        UniSetTypes::ObjectId respond_id;
-        bool respond_invert;
+		/*! обработка запроса удалённого сервиса */
+		ModbusRTU::mbErrCode remoteService( ModbusRTU::RemoteServiceMessage& query,
+											ModbusRTU::RemoteServiceRetMessage& reply );
 
-        PassiveTimer ptTimeout;
-        long askCount;
-        typedef std::unordered_map<ModbusRTU::mbErrCode,unsigned int> ExchangeErrorMap;
-        ExchangeErrorMap errmap;     /*!< статистика обмена */
+		ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query,
+										   ModbusRTU::FileTransferRetMessage& reply );
 
-        std::atomic_bool activated;
-        std::atomic_bool cancelled;
-        int activateTimeout;
-        bool pingOK;
-        timeout_t wait_msec;
-        bool force;        /*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
+		ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query,
+										  ModbusRTU::DiagnosticRetMessage& reply );
 
-        bool mbregFromID;
+		ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query,
+									   ModbusRTU::MEIMessageRetRDI& reply );
 
-        typedef std::unordered_map<int,std::string> FileList;
-        FileList flist;
-        std::string prefix;
-        std::string prop_prefix;
+		/*! Проверка корректности регистра перед сохранением.
+		    Вызывается для каждого регистра не зависимо от используемой функции (06 или 10)
+		*/
+		virtual ModbusRTU::mbErrCode checkRegister( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val )
+		{
+			return ModbusRTU::erNoError;
+		}
 
-        ModbusRTU::ModbusData buf[ModbusRTU::MAXLENPACKET/2+1];  /*!< буфер для формирования ответов */
+		// т.к. в функциях (much_real_read,nuch_real_write) рассчёт на отсортированность IOMap
+		// то использовать unordered_map нельзя
+		typedef std::map<ModbusRTU::ModbusData, IOProperty> IOMap;
+		IOMap iomap;            /*!< список входов/выходов */
 
-        // данные для ответа на запрос 0x2B(43)/0x0E(14)
-        // 'MEI' - modbus encapsulated interface
-        // 'RDI' - read device identification
-        typedef std::unordered_map<int,std::string> MEIValMap;
-        typedef std::unordered_map<int,MEIValMap> MEIObjIDMap;
-        typedef std::unordered_map<int,MEIObjIDMap> MEIDevIDMap;
+		std::shared_ptr<ModbusServerSlot> mbslot;
+		ModbusRTU::ModbusAddr addr;            /*!< адрес данного узла */
 
-        MEIDevIDMap meidev;
+		xmlNode* cnode;
+		std::string s_field;
+		std::string s_fvalue;
+
+		std::shared_ptr<SMInterface> shm;
+
+		virtual void sysCommand( const UniSetTypes::SystemMessage* msg ) override;
+		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
+		void askSensors( UniversalIO::UIOCommand cmd );
+		void waitSMReady();
+		virtual void execute_rtu();
+		virtual void execute_tcp();
+
+		virtual bool activateObject() override;
+		virtual bool deactivateObject() override;
+
+		// действия при завершении работы
+		virtual void sigterm( int signo ) override;
+		virtual void finalThread();
+
+		virtual void initIterators();
+		bool initItem( UniXML::iterator& it );
+		bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
+
+		void readConfiguration();
+		bool check_item( UniXML::iterator& it );
+
+		ModbusRTU::mbErrCode real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val );
+		ModbusRTU::mbErrCode real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int& i, int count );
+		ModbusRTU::mbErrCode real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val );
+		ModbusRTU::mbErrCode much_real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count );
+		ModbusRTU::mbErrCode much_real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count );
+
+		ModbusRTU::mbErrCode real_read_it( IOMap::iterator& it, ModbusRTU::ModbusData& val );
+		ModbusRTU::mbErrCode real_bitreg_read_it( std::shared_ptr<BitRegProperty>& bp, ModbusRTU::ModbusData& val );
+		ModbusRTU::mbErrCode real_read_prop( IOProperty* p, ModbusRTU::ModbusData& val );
+
+
+		ModbusRTU::mbErrCode real_write_it( IOMap::iterator& it, ModbusRTU::ModbusData* dat, int& i, int count );
+
+		MBSlave();
+		bool initPause;
+		UniSetTypes::uniset_rwmutex mutex_start;
+		std::shared_ptr< ThreadCreator<MBSlave> > thr;
+
+		PassiveTimer ptHeartBeat;
+		UniSetTypes::ObjectId sidHeartBeat;
+		int maxHeartBeat;
+		IOController::IOStateList::iterator itHeartBeat;
+		UniSetTypes::ObjectId test_id;
+
+		IOController::IOStateList::iterator itAskCount;
+		UniSetTypes::ObjectId askcount_id;
+
+		IOController::IOStateList::iterator itRespond;
+		UniSetTypes::ObjectId respond_id;
+		bool respond_invert;
+
+		PassiveTimer ptTimeout;
+		long askCount;
+		typedef std::unordered_map<ModbusRTU::mbErrCode, unsigned int> ExchangeErrorMap;
+		ExchangeErrorMap errmap;     /*!< статистика обмена */
+
+		std::atomic_bool activated;
+		std::atomic_bool cancelled;
+		int activateTimeout;
+		bool pingOK;
+		timeout_t wait_msec;
+		bool force;        /*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
+
+		bool mbregFromID;
+
+		typedef std::unordered_map<int, std::string> FileList;
+		FileList flist;
+		std::string prefix;
+		std::string prop_prefix;
+
+		ModbusRTU::ModbusData buf[ModbusRTU::MAXLENPACKET / 2 + 1]; /*!< буфер для формирования ответов */
+
+		// данные для ответа на запрос 0x2B(43)/0x0E(14)
+		// 'MEI' - modbus encapsulated interface
+		// 'RDI' - read device identification
+		typedef std::unordered_map<int, std::string> MEIValMap;
+		typedef std::unordered_map<int, MEIValMap> MEIObjIDMap;
+		typedef std::unordered_map<int, MEIObjIDMap> MEIDevIDMap;
+
+		MEIDevIDMap meidev;
 };
 // -----------------------------------------------------------------------------
 #endif // _MBSlave_H_

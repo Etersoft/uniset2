@@ -20,7 +20,7 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 
 #include <chrono>
 #include <thread>
@@ -36,12 +36,12 @@ using namespace UniSetTypes;
 #define MUTEX_DEBUG(m) {}
 
 uniset_mutex::uniset_mutex():
-    nm("")
+	nm("")
 {
 }
 // -----------------------------------------------------------------------------
 uniset_mutex::uniset_mutex( const string& name ):
-    nm(name)
+	nm(name)
 {
 }
 // -----------------------------------------------------------------------------
@@ -51,73 +51,74 @@ uniset_mutex::~uniset_mutex()
 // -----------------------------------------------------------------------------
 std::ostream& UniSetTypes::operator<<(std::ostream& os, uniset_mutex& m )
 {
-    return os << m.name();
+	return os << m.name();
 }
 // -----------------------------------------------------------------------------
 void uniset_mutex::lock()
 {
-    m_lock.lock();
-    MUTEX_DEBUG(cerr << nm << " Locked.." << endl;)
+	m_lock.lock();
+	MUTEX_DEBUG(cerr << nm << " Locked.." << endl;)
 }
 // -----------------------------------------------------------------------------
 void uniset_mutex::unlock()
 {
-    m_lock.unlock();
-    MUTEX_DEBUG(cerr << nm << " Unlocked.." << endl;)
+	m_lock.unlock();
+	MUTEX_DEBUG(cerr << nm << " Unlocked.." << endl;)
 }
 // -----------------------------------------------------------------------------
 bool uniset_mutex::try_lock_for( const time_t& msec )
 {
-     return m_lock.try_lock_for( std::chrono::milliseconds(msec) );
+	return m_lock.try_lock_for( std::chrono::milliseconds(msec) );
 }
 // -----------------------------------------------------------------------------
 uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, const time_t timeMS ):
-    mutex(&m),
-    locked(false)
+	mutex(&m),
+	locked(false)
 {
 
-    if( timeMS == 0 )
-    {
-        mutex->lock();
-        locked = true;
-        return;
-    }
+	if( timeMS == 0 )
+	{
+		mutex->lock();
+		locked = true;
+		return;
+	}
 
-    if( !mutex->try_lock_for(timeMS) )
-    {
-        if( !mutex->name().empty() )
-        {
-            ulog9 << "(mutex_lock): вышло заданное время ожидания " 
-                << timeMS << " msec для " << mutex->name() << endl;
-        }
-        return;
-    }
+	if( !mutex->try_lock_for(timeMS) )
+	{
+		if( !mutex->name().empty() )
+		{
+			ulog9 << "(mutex_lock): вышло заданное время ожидания "
+				  << timeMS << " msec для " << mutex->name() << endl;
+		}
 
-    // здесь мы уже под защитой mutex..
-    locked = true;
+		return;
+	}
+
+	// здесь мы уже под защитой mutex..
+	locked = true;
 }
 // -----------------------------------------------------------------------------
 bool uniset_mutex_lock::lock_ok()
 {
-    return locked.load();
+	return locked.load();
 }
 // -----------------------------------------------------------------------------
 uniset_mutex_lock::~uniset_mutex_lock()
 {
-    if( locked )
-    {
-        mutex->unlock();
-        locked = false;
-    }
+	if( locked )
+	{
+		mutex->unlock();
+		locked = false;
+	}
 }
 // -----------------------------------------------------------------------------
 uniset_rwmutex::uniset_rwmutex( const std::string& name ):
-nm(name)
+	nm(name)
 {
 }
 
 uniset_rwmutex::uniset_rwmutex():
-nm("")
+	nm("")
 {
 }
 
@@ -127,69 +128,69 @@ uniset_rwmutex::~uniset_rwmutex()
 
 std::ostream& UniSetTypes::operator<<(std::ostream& os, uniset_rwmutex& m )
 {
-    return os << m.name();
+	return os << m.name();
 }
 
 void uniset_rwmutex::lock()
 {
-    MUTEX_DEBUG(cerr << nm << " prepare Locked.." << endl;)
-    m.writeLock();
-    MUTEX_DEBUG(cerr << nm << " Locked.." << endl;)
+	MUTEX_DEBUG(cerr << nm << " prepare Locked.." << endl;)
+	m.writeLock();
+	MUTEX_DEBUG(cerr << nm << " Locked.." << endl;)
 }
 void uniset_rwmutex::wrlock()
 {
-    MUTEX_DEBUG(cerr << nm << " prepare WRLocked.." << endl;)
-    m.writeLock();
-    MUTEX_DEBUG(cerr << nm << " WRLocked.." << endl;)
+	MUTEX_DEBUG(cerr << nm << " prepare WRLocked.." << endl;)
+	m.writeLock();
+	MUTEX_DEBUG(cerr << nm << " WRLocked.." << endl;)
 }
 
 void uniset_rwmutex::rlock()
 {
-    MUTEX_DEBUG(cerr << nm << " prepare RLocked.." << endl;)
-    m.readLock();
-    MUTEX_DEBUG(cerr << nm << " RLocked.." << endl;)
+	MUTEX_DEBUG(cerr << nm << " prepare RLocked.." << endl;)
+	m.readLock();
+	MUTEX_DEBUG(cerr << nm << " RLocked.." << endl;)
 }
 
 void uniset_rwmutex::unlock()
 {
-    m.unlock();
-    MUTEX_DEBUG(cerr << nm << " Unlocked.." << endl;)
+	m.unlock();
+	MUTEX_DEBUG(cerr << nm << " Unlocked.." << endl;)
 }
 
 bool uniset_rwmutex::try_rlock()
 {
-    return m.tryReadLock();
+	return m.tryReadLock();
 }
 
 bool uniset_rwmutex::try_wrlock()
 {
-    return m.tryWriteLock();
+	return m.tryWriteLock();
 }
 
 bool uniset_rwmutex::try_lock()
 {
-    return m.tryWriteLock();
+	return m.tryWriteLock();
 }
 // -------------------------------------------------------------------------------------------
 uniset_rwmutex_wrlock::uniset_rwmutex_wrlock( uniset_rwmutex& _m ):
-m(_m)
+	m(_m)
 {
-    m.wrlock();
+	m.wrlock();
 }
 
 uniset_rwmutex_wrlock::~uniset_rwmutex_wrlock()
 {
-    m.unlock();
+	m.unlock();
 }
 // -------------------------------------------------------------------------------------------
 uniset_rwmutex_rlock::uniset_rwmutex_rlock( uniset_rwmutex& _m ):
-m(_m)
+	m(_m)
 {
-    m.rlock();
+	m.rlock();
 }
 
 uniset_rwmutex_rlock::~uniset_rwmutex_rlock()
 {
-    m.unlock();
+	m.unlock();
 }
 // -----------------------------------------------------------------------------

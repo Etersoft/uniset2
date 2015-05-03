@@ -80,124 +80,128 @@
         }
     \endcode
  *
-*/ 
+*/
 //----------------------------------------------------------------------------------------
 template<class ThreadMaster>
 class ThreadCreator:
-    public ost::PosixThread
+	public ost::PosixThread
 {
-    public:
+	public:
 
-        /*! прототип функции вызова */
-        typedef void(ThreadMaster::* Action)(void);
+		/*! прототип функции вызова */
+		typedef void(ThreadMaster::* Action)(void);
 
-        ThreadCreator( ThreadMaster* m, Action a );
-        ~ThreadCreator();
+		ThreadCreator( ThreadMaster* m, Action a );
+		~ThreadCreator();
 
-        inline pid_t getTID(){ return pid; }
+		inline pid_t getTID()
+		{
+			return pid;
+		}
 
-        /*! \return 0 - sucess */
-        int setPriority( int prior );
+		/*! \return 0 - sucess */
+		int setPriority( int prior );
 
-        /*! \return < 0 - fail */
-        int getPriority();
+		/*! \return < 0 - fail */
+		int getPriority();
 
-        void stop();
+		void stop();
 
-        inline void setName( const std::string& name )
-        {
-            ost::PosixThread::setName( name.c_str() );
-        }
+		inline void setName( const std::string& name )
+		{
+			ost::PosixThread::setName( name.c_str() );
+		}
 
-        inline void setName( const char* name )
-        {
-            ost::PosixThread::setName( name );
-        }
+		inline void setName( const char* name )
+		{
+			ost::PosixThread::setName( name );
+		}
 
-        inline void setCancel( ost::Thread::Cancel mode )
-        {
-            ost::PosixThread::setCancel(mode);
-        }
+		inline void setCancel( ost::Thread::Cancel mode )
+		{
+			ost::PosixThread::setCancel(mode);
+		}
 
-        inline void setFinalAction( ThreadMaster* m, Action a )
-        {
-            finm = m;
-            finact = a;
-        }
+		inline void setFinalAction( ThreadMaster* m, Action a )
+		{
+			finm = m;
+			finact = a;
+		}
 
-        inline void setInitialAction( ThreadMaster* m, Action a )
-        {
-            initm = m;
-            initact = a;
-        }
+		inline void setInitialAction( ThreadMaster* m, Action a )
+		{
+			initm = m;
+			initact = a;
+		}
 
-    protected:
-        virtual void run();
-        virtual void final()
-        {
-            if( finm )
-                (finm->*finact)();
+	protected:
+		virtual void run();
+		virtual void final()
+		{
+			if( finm )
+				(finm->*finact)();
 
-            //delete this;
-        }
+			//delete this;
+		}
 
-        virtual void initial()
-        {
-            if( initm )
-                (initm->*initact)();
-        }
+		virtual void initial()
+		{
+			if( initm )
+				(initm->*initact)();
+		}
 
-    private:
-        ThreadCreator();
+	private:
+		ThreadCreator();
 
-        pid_t pid;
+		pid_t pid;
 
-        ThreadMaster* m;
-        Action act;
+		ThreadMaster* m;
+		Action act;
 
-        ThreadMaster* finm;
-        Action finact;
+		ThreadMaster* finm;
+		Action finact;
 
-        ThreadMaster* initm;
-        Action initact;
+		ThreadMaster* initm;
+		Action initact;
 };
 
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 ThreadCreator<ThreadMaster>::ThreadCreator( ThreadMaster* m, Action a ):
-    pid(-1),
-    m(m),
-    act(a),
-    finm(0),
-    finact(0),
-    initm(0),
-    initact(0)
+	pid(-1),
+	m(m),
+	act(a),
+	finm(0),
+	finact(0),
+	initm(0),
+	initact(0)
 {
 }
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 void ThreadCreator<ThreadMaster>::run()
 {
-    pid = getpid();
-    if( m )
-           (m->*act)();
+	pid = getpid();
+
+	if( m )
+		(m->*act)();
 }
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 void ThreadCreator<ThreadMaster>::stop()
 {
-    terminate();
+	terminate();
 }
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 ThreadCreator<ThreadMaster>::ThreadCreator():
-    pid(-1),
-    m(0),
-    act(0),
-    finm(0),
-    finact(0),
-    initm(0),
-    initact(0)
+	pid(-1),
+	m(0),
+	act(0),
+	finm(0),
+	finact(0),
+	initm(0),
+	initact(0)
 {
 }
 //----------------------------------------------------------------------------------------
@@ -209,13 +213,13 @@ ThreadCreator<ThreadMaster>::~ThreadCreator()
 template <class ThreadMaster>
 int ThreadCreator<ThreadMaster>::setPriority( int prior )
 {
-    return setpriority(PRIO_PROCESS, pid, prior );
+	return setpriority(PRIO_PROCESS, pid, prior );
 }
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 int ThreadCreator<ThreadMaster>::getPriority()
 {
-    return getpriority(PRIO_PROCESS, pid);
+	return getpriority(PRIO_PROCESS, pid);
 }
 //----------------------------------------------------------------------------------------
 #endif // ThreadCreator_h_

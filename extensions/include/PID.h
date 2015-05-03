@@ -15,49 +15,49 @@
 */
 class PID
 {
-    public:
-        PID();
-        ~PID();
+	public:
+		PID();
+		~PID();
 
-        /*! Выполнение очередного шага расчётов
-            \param X - входное значение
-            \param Z - заданное значение
-            \param Ts - интервал расчёта данных, [сек] (интервал между шагами расчёта).
-                Ts - должно быть больше нуля
-        */
-        void step( const double& X, const double& Z, const double& Ts );
+		/*! Выполнение очередного шага расчётов
+		    \param X - входное значение
+		    \param Z - заданное значение
+		    \param Ts - интервал расчёта данных, [сек] (интервал между шагами расчёта).
+		        Ts - должно быть больше нуля
+		*/
+		void step( const double& X, const double& Z, const double& Ts );
 
-        /*!    рестарт регулятора... */
-        void reset();
+		/*!    рестарт регулятора... */
+		void reset();
 
-        /*! пересчёт констант */
-        void recalc();
+		/*! пересчёт констант */
+		void recalc();
 
-        double Y;    /*!< расчётное выходное значение */
-        double Kc;    /*!< пропорциональный коэффициент */
-        double Ti;    /*!< постоянная времени интеграла, [сек] */
-        double Td;    /*!< постоянная времени дифференциала, [сек] */
+		double Y;    /*!< расчётное выходное значение */
+		double Kc;    /*!< пропорциональный коэффициент */
+		double Ti;    /*!< постоянная времени интеграла, [сек] */
+		double Td;    /*!< постоянная времени дифференциала, [сек] */
 
-        double vlim;     /*!< максимальное(минимальное) разрешённое значение (для любого растущего во времени коэффициента)
+		double vlim;     /*!< максимальное(минимальное) разрешённое значение (для любого растущего во времени коэффициента)
                             защита от переполнения
                          */
-        double d0;
-        double d1;
-        double d2;
-        double sub1;
-        double sub2;
-        double sub;
-        double prevTs;
+		double d0;
+		double d1;
+		double d2;
+		double sub1;
+		double sub2;
+		double sub;
+		double prevTs;
 
-        friend std::ostream& operator<<(std::ostream& os, PID& p );
+		friend std::ostream& operator<<(std::ostream& os, PID& p );
 
-        friend std::ostream& operator<<(std::ostream& os, PID* p )
-        {
-            return os << (*p);
-        }
+		friend std::ostream& operator<<(std::ostream& os, PID* p )
+		{
+			return os << (*p);
+		}
 
-    protected:
-    private:
+	protected:
+	private:
 };
 
 // -----------------------------------------------------------------------------

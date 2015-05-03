@@ -11,388 +11,408 @@ using namespace ModbusRTU;
 using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 ModbusTCPMaster::ModbusTCPMaster():
-tcp(nullptr),
-nTransaction(0),
-iaddr(""),
-force_disconnect(true)
+	tcp(nullptr),
+	nTransaction(0),
+	iaddr(""),
+	force_disconnect(true)
 {
-    setCRCNoCheckit(true);
-/*
-    dlog->addLevel(Debug::INFO);
-    dlog->addLevel(Debug::WARN);
-    dlog->addLevel(Debug::CRIT);
-*/
+	setCRCNoCheckit(true);
+	/*
+	    dlog->addLevel(Debug::INFO);
+	    dlog->addLevel(Debug::WARN);
+	    dlog->addLevel(Debug::CRIT);
+	*/
 }
 
 // -------------------------------------------------------------------------
 ModbusTCPMaster::~ModbusTCPMaster()
 {
-    if( isConnection() )
-        disconnect();
+	if( isConnection() )
+		disconnect();
 
-    tcp.reset();
+	tcp.reset();
 }
 // -------------------------------------------------------------------------
 int ModbusTCPMaster::getNextData( unsigned char* buf, int len )
 {
-    return ModbusTCPCore::getNextData(tcp.get(),qrecv,buf,len);
+	return ModbusTCPCore::getNextData(tcp.get(), qrecv, buf, len);
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::setChannelTimeout( timeout_t msec )
 {
-    if( tcp )
-        tcp->setTimeout(msec);
+	if( tcp )
+		tcp->setTimeout(msec);
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPMaster::sendData( unsigned char* buf, int len )
 {
-    return ModbusTCPCore::sendData(tcp.get(),buf,len);
+	return ModbusTCPCore::sendData(tcp.get(), buf, len);
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg, 
-                             ModbusMessage& reply, timeout_t timeout )
+mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
+								  ModbusMessage& reply, timeout_t timeout )
 {
-      try
-    {
-        if( iaddr.empty() )
-        {
-            if( dlog->is_warn() )
-                dlog->warn() << iaddr << "(ModbusTCPMaster::query): unknown ip address for server..." << endl;
-            return erTimeOut; // erHardwareError
-        }
+	try
+	{
+		if( iaddr.empty() )
+		{
+			if( dlog->is_warn() )
+				dlog->warn() << iaddr << "(ModbusTCPMaster::query): unknown ip address for server..." << endl;
 
-        if( !isConnection() )
-        {
-                if( dlog->is_info() )
-                    dlog->info() << iaddr << "(ModbusTCPMaster::query): no connection.. reconnnect..." << endl;
-                reconnect();
-        }
+			return erTimeOut; // erHardwareError
+		}
 
-        if( !isConnection() )
-        {
-            if( dlog->is_warn() )
-                dlog->warn() << iaddr << "(ModbusTCPMaster::query): not connected to server..." << endl;
-                return erTimeOut;
-        }
+		if( !isConnection() )
+		{
+			if( dlog->is_info() )
+				dlog->info() << iaddr << "(ModbusTCPMaster::query): no connection.. reconnnect..." << endl;
 
-        assert(timeout);
-        ptTimeout.setTiming(timeout);
+			reconnect();
+		}
 
-        tcp->setTimeout(timeout);
+		if( !isConnection() )
+		{
+			if( dlog->is_warn() )
+				dlog->warn() << iaddr << "(ModbusTCPMaster::query): not connected to server..." << endl;
 
-//        ost::Thread::setException(ost::Thread::throwException);
-//        ost::tpport_t port;
-//        cerr << "****** peer: " << tcp->getPeer(&port) << " err: " << tcp->getErrorNumber() << endl;
+			return erTimeOut;
+		}
 
-        if( nTransaction >= numeric_limits<ModbusRTU::ModbusData>::max() )
-            nTransaction = 0;
+		assert(timeout);
+		ptTimeout.setTiming(timeout);
 
-        ModbusTCP::MBAPHeader mh;
-        mh.tID = ++nTransaction;
-        mh.pID = 0;
-        mh.len = msg.len + szModbusHeader;
-//        mh.uID = addr;
-        if( crcNoCheckit )
-            mh.len -= szCRC;
+		tcp->setTimeout(timeout);
 
-        mh.swapdata();
-        // send TCP header
-        if( dlog->is_info() )
-        {
-            dlog->info() << iaddr << "(ModbusTCPMaster::query): send tcp header(" << sizeof(mh) <<"): ";
-            mbPrintMessage( *(dlog.get()), (ModbusByte*)(&mh), sizeof(mh));
-            dlog->info() << endl;
-        }
+		//        ost::Thread::setException(ost::Thread::throwException);
+		//        ost::tpport_t port;
+		//        cerr << "****** peer: " << tcp->getPeer(&port) << " err: " << tcp->getErrorNumber() << endl;
 
-        for( unsigned int i=0; i<2; i++ )
-        {
-            (*tcp) << mh;
+		if( nTransaction >= numeric_limits<ModbusRTU::ModbusData>::max() )
+			nTransaction = 0;
 
-            // send PDU
-            mbErrCode res = send(msg);
-            if( res!=erNoError )
-                return res;
+		ModbusTCP::MBAPHeader mh;
+		mh.tID = ++nTransaction;
+		mh.pID = 0;
+		mh.len = msg.len + szModbusHeader;
 
-            if( tcp->isPending(ost::Socket::pendingOutput,timeout) )
-                break;
+		//        mh.uID = addr;
+		if( crcNoCheckit )
+			mh.len -= szCRC;
 
-            if( dlog->is_info() )
-                dlog->info() << "(ModbusTCPMaster::query): no write pending.. reconnnect.." << endl;
+		mh.swapdata();
 
-            reconnect();
-            if( !isConnection() )
-            {
-                if( dlog->is_warn() )
-                    dlog->warn() << "(ModbusTCPMaster::query): not connected to server..." << endl;
-                return erTimeOut;
-            }
-            cleanInputStream();
+		// send TCP header
+		if( dlog->is_info() )
+		{
+			dlog->info() << iaddr << "(ModbusTCPMaster::query): send tcp header(" << sizeof(mh) << "): ";
+			mbPrintMessage( *(dlog.get()), (ModbusByte*)(&mh), sizeof(mh));
+			dlog->info() << endl;
+		}
 
-            if( dlog->is_info() )
-                dlog->info() << "(ModbusTCPMaster::query): no write pending.. reconnnect OK" << endl;
-        }
+		for( unsigned int i = 0; i < 2; i++ )
+		{
+			(*tcp) << mh;
 
-        mh.swapdata();
+			// send PDU
+			mbErrCode res = send(msg);
 
-        if( timeout != UniSetTimer::WaitUpTime )
-        {
-            timeout = ptTimeout.getLeft(timeout);
-            if( timeout == 0 )
-                return erTimeOut;
+			if( res != erNoError )
+				return res;
 
-            ptTimeout.setTiming(timeout);
-        }
+			if( tcp->isPending(ost::Socket::pendingOutput, timeout) )
+				break;
 
-        // чистим очередь
-//        cleanInputStream();
-        while( !qrecv.empty() )
-            qrecv.pop();
+			if( dlog->is_info() )
+				dlog->info() << "(ModbusTCPMaster::query): no write pending.. reconnnect.." << endl;
 
-        tcp->sync();
-        if( tcp->isPending(ost::Socket::pendingInput,timeout) ) 
-        {
-/*
-            unsigned char rbuf[100];
-            memset(rbuf,0,sizeof(rbuf));
-            int ret = getNextData(rbuf,sizeof(rbuf));
-            cerr << "ret=" << ret << " recv: ";
-            for( unsigned int i=0; i<sizeof(rbuf); i++ )
-                cerr << hex << " 0x" <<  (int)rbuf[i];
-            cerr << endl;
-*/
-            ModbusTCP::MBAPHeader rmh;
-            int ret = getNextData((unsigned char*)(&rmh),sizeof(rmh));
-            if( dlog->is_info() )
-            {
-                dlog->info() << "(ModbusTCPMaster::query): recv tcp header(" << ret << "): ";
-                mbPrintMessage( *(dlog.get()), (ModbusByte*)(&rmh), sizeof(rmh));
-                dlog->info(false) << endl;
-            }
+			reconnect();
 
-            if( ret < (int)sizeof(rmh) )
-            {
-                ost::tpport_t port;
-                if( dlog->is_warn() )
-                    dlog->warn() << "(ModbusTCPMaster::query): ret=" << (int)ret
-                            << " < rmh=" << (int)sizeof(rmh)
-                            << " errnum: " << tcp->getErrorNumber()
-                            << " perr: " << tcp->getPeer(&port)
-                            << " err: " << string(tcp->getErrorString())
-                            << endl;
+			if( !isConnection() )
+			{
+				if( dlog->is_warn() )
+					dlog->warn() << "(ModbusTCPMaster::query): not connected to server..." << endl;
 
-                disconnect();
-                return erTimeOut; // return erHardwareError;
-            }
+				return erTimeOut;
+			}
 
-            rmh.swapdata();
+			cleanInputStream();
 
-            if( rmh.tID != mh.tID )
-            {
-                cleanInputStream();
-                return  erBadReplyNodeAddress;
-            }
-            if( rmh.pID != 0 )
-            {
-                cleanInputStream();
-                return  erBadReplyNodeAddress;
-            }
-            //
+			if( dlog->is_info() )
+				dlog->info() << "(ModbusTCPMaster::query): no write pending.. reconnnect OK" << endl;
+		}
 
-            // timeout = ptTimeout.getLeft(timeout);
-            // в tcp ответе задержек уже не должно быть..
-            mbErrCode res = recv(addr,msg.func,reply,1); //timeout);
+		mh.swapdata();
 
-            if( force_disconnect )
-            {
-                if( dlog->is_info() )
-                    dlog->info() << "(query): force disconnect.." << endl;
+		if( timeout != UniSetTimer::WaitUpTime )
+		{
+			timeout = ptTimeout.getLeft(timeout);
 
-                disconnect();
-            }
+			if( timeout == 0 )
+				return erTimeOut;
 
-            return res;
-        }
+			ptTimeout.setTiming(timeout);
+		}
 
-        if( dlog->is_info() )
-            dlog->info() << "(query): input pending timeout " << endl;
+		// чистим очередь
+		//        cleanInputStream();
+		while( !qrecv.empty() )
+			qrecv.pop();
 
-        if( force_disconnect )
-        {
-            if( dlog->is_info() )
-                dlog->info() << "(query): force disconnect.." << endl;
+		tcp->sync();
 
-//            cleanInputStream();
-            disconnect();
-        }
+		if( tcp->isPending(ost::Socket::pendingInput, timeout) )
+		{
+			/*
+			            unsigned char rbuf[100];
+			            memset(rbuf,0,sizeof(rbuf));
+			            int ret = getNextData(rbuf,sizeof(rbuf));
+			            cerr << "ret=" << ret << " recv: ";
+			            for( unsigned int i=0; i<sizeof(rbuf); i++ )
+			                cerr << hex << " 0x" <<  (int)rbuf[i];
+			            cerr << endl;
+			*/
+			ModbusTCP::MBAPHeader rmh;
+			int ret = getNextData((unsigned char*)(&rmh), sizeof(rmh));
 
-        return erTimeOut;
-    }
-    catch( ModbusRTU::mbException& ex )
-    {
-        if( dlog->is_warn() )
-            dlog->warn() << "(query): " << ex << endl;
-    }
-    catch( SystemError& err )
-    {
-        if( dlog->is_warn() )
-            dlog->warn() << "(query): " << err << endl;
-    }
-    catch( const Exception& ex )
-    {
-        if( dlog->is_warn() )
-            dlog->warn() << "(query): " << ex << endl;
-    }
-    catch( const ost::SockException& e ) 
-    {
-        if( dlog->is_warn() )
-            dlog->warn() << "(query): tcp error: " << e.getString() << endl;
-        return erTimeOut;
-    }
-    catch( const std::exception& e )
-    {
-        if( dlog->is_warn() )
-            dlog->crit() << "(query): " << e.what() << std::endl;
-        return erTimeOut;
-    }
+			if( dlog->is_info() )
+			{
+				dlog->info() << "(ModbusTCPMaster::query): recv tcp header(" << ret << "): ";
+				mbPrintMessage( *(dlog.get()), (ModbusByte*)(&rmh), sizeof(rmh));
+				dlog->info(false) << endl;
+			}
 
-    return erTimeOut; // erHardwareError
+			if( ret < (int)sizeof(rmh) )
+			{
+				ost::tpport_t port;
+
+				if( dlog->is_warn() )
+					dlog->warn() << "(ModbusTCPMaster::query): ret=" << (int)ret
+								 << " < rmh=" << (int)sizeof(rmh)
+								 << " errnum: " << tcp->getErrorNumber()
+								 << " perr: " << tcp->getPeer(&port)
+								 << " err: " << string(tcp->getErrorString())
+								 << endl;
+
+				disconnect();
+				return erTimeOut; // return erHardwareError;
+			}
+
+			rmh.swapdata();
+
+			if( rmh.tID != mh.tID )
+			{
+				cleanInputStream();
+				return  erBadReplyNodeAddress;
+			}
+
+			if( rmh.pID != 0 )
+			{
+				cleanInputStream();
+				return  erBadReplyNodeAddress;
+			}
+
+			//
+
+			// timeout = ptTimeout.getLeft(timeout);
+			// в tcp ответе задержек уже не должно быть..
+			mbErrCode res = recv(addr, msg.func, reply, 1); //timeout);
+
+			if( force_disconnect )
+			{
+				if( dlog->is_info() )
+					dlog->info() << "(query): force disconnect.." << endl;
+
+				disconnect();
+			}
+
+			return res;
+		}
+
+		if( dlog->is_info() )
+			dlog->info() << "(query): input pending timeout " << endl;
+
+		if( force_disconnect )
+		{
+			if( dlog->is_info() )
+				dlog->info() << "(query): force disconnect.." << endl;
+
+			//            cleanInputStream();
+			disconnect();
+		}
+
+		return erTimeOut;
+	}
+	catch( ModbusRTU::mbException& ex )
+	{
+		if( dlog->is_warn() )
+			dlog->warn() << "(query): " << ex << endl;
+	}
+	catch( SystemError& err )
+	{
+		if( dlog->is_warn() )
+			dlog->warn() << "(query): " << err << endl;
+	}
+	catch( const Exception& ex )
+	{
+		if( dlog->is_warn() )
+			dlog->warn() << "(query): " << ex << endl;
+	}
+	catch( const ost::SockException& e )
+	{
+		if( dlog->is_warn() )
+			dlog->warn() << "(query): tcp error: " << e.getString() << endl;
+
+		return erTimeOut;
+	}
+	catch( const std::exception& e )
+	{
+		if( dlog->is_warn() )
+			dlog->crit() << "(query): " << e.what() << std::endl;
+
+		return erTimeOut;
+	}
+
+	return erTimeOut; // erHardwareError
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::cleanInputStream()
 {
-    unsigned char buf[100];
-    int ret=0;
-    do
-    {
-        ret = getNextData(buf,sizeof(buf));
-    }
-    while( ret > 0);
+	unsigned char buf[100];
+	int ret = 0;
+
+	do
+	{
+		ret = getNextData(buf, sizeof(buf));
+	}
+	while( ret > 0);
 }
 // -------------------------------------------------------------------------
 bool ModbusTCPMaster::checkConnection( const std::string& ip, int port, int timeout_msec )
 {
-    try
-    {
-        ostringstream s;
-        s << ip << ":" << port;
+	try
+	{
+		ostringstream s;
+		s << ip << ":" << port;
 
-        // Проверяем просто попыткой создать соединение..
-        UTCPStream t;
-        t.create(ip,port,true,timeout_msec);
-        t.disconnect();
-        return true;
-    }
-    catch(...)
-    {
-    }
+		// Проверяем просто попыткой создать соединение..
+		UTCPStream t;
+		t.create(ip, port, true, timeout_msec);
+		t.disconnect();
+		return true;
+	}
+	catch(...)
+	{
+	}
 
-    return false;
+	return false;
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::reconnect()
 {
-    if( dlog->is_info() )
-        dlog->info() << "(ModbusTCPMaster): reconnect " << iaddr << ":" << port << endl;
+	if( dlog->is_info() )
+		dlog->info() << "(ModbusTCPMaster): reconnect " << iaddr << ":" << port << endl;
 
-    if( tcp )
-    {
-        tcp->disconnect();
-        tcp.reset();
-    }
+	if( tcp )
+	{
+		tcp->disconnect();
+		tcp.reset();
+	}
 
-    try
-    {
-        tcp = make_shared<UTCPStream>();
-        tcp->create(iaddr,port,true,500);
-        tcp->setTimeout(replyTimeOut_ms);
-    }
-    catch( const std::exception& e )
-    {
-        if( dlog->debugging(Debug::CRIT) )
-        {
-            ostringstream s;
-            s << "(ModbusTCPMaster): connection " << s.str() << " error: " << e.what();
-            dlog->crit() << s.str() << std::endl;
-        }
-    }
-    catch( ... )
-    {
-        if( dlog->debugging(Debug::CRIT) )
-        {
-            ostringstream s;
-            s << "(ModbusTCPMaster): connection " << s.str() << " error: catch ...";
-            dlog->crit() << s.str() << std::endl;
-        }
-    }
+	try
+	{
+		tcp = make_shared<UTCPStream>();
+		tcp->create(iaddr, port, true, 500);
+		tcp->setTimeout(replyTimeOut_ms);
+	}
+	catch( const std::exception& e )
+	{
+		if( dlog->debugging(Debug::CRIT) )
+		{
+			ostringstream s;
+			s << "(ModbusTCPMaster): connection " << s.str() << " error: " << e.what();
+			dlog->crit() << s.str() << std::endl;
+		}
+	}
+	catch( ... )
+	{
+		if( dlog->debugging(Debug::CRIT) )
+		{
+			ostringstream s;
+			s << "(ModbusTCPMaster): connection " << s.str() << " error: catch ...";
+			dlog->crit() << s.str() << std::endl;
+		}
+	}
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::connect( const std::string& addr, int _port )
 {
-    ost::InetAddress ia(addr.c_str());
-    connect(ia,_port);
+	ost::InetAddress ia(addr.c_str());
+	connect(ia, _port);
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
 {
-    if( tcp )
-    {
-        disconnect();
-        tcp.reset();
-    }
+	if( tcp )
+	{
+		disconnect();
+		tcp.reset();
+	}
 
-//    if( !tcp )
-//    {
+	//    if( !tcp )
+	//    {
 
-        ostringstream s;
-        s << addr;
-        iaddr = s.str();
-        port = _port;
+	ostringstream s;
+	s << addr;
+	iaddr = s.str();
+	port = _port;
 
-        if( dlog->is_info() )
-            dlog->info() << "(ModbusTCPMaster): connect to " << iaddr << ":" << port << endl;
+	if( dlog->is_info() )
+		dlog->info() << "(ModbusTCPMaster): connect to " << iaddr << ":" << port << endl;
 
-        ost::Thread::setException(ost::Thread::throwException);
-        try
-        {
-            tcp = make_shared<UTCPStream>();
-            tcp->create(iaddr,port,true,500);
-            tcp->setTimeout(replyTimeOut_ms);
-        }
-        catch( const std::exception& e )
-        {
-            if( dlog->debugging(Debug::CRIT) )
-            {
-                ostringstream s;
-                s << "(ModbusTCPMaster): connection " << s.str() << " error: " << e.what();
-                dlog->crit() << s.str() << std::endl;
-            }
-        }
-        catch( ... )
-        {
-            if( dlog->debugging(Debug::CRIT) )
-            {
-                ostringstream s;
-                s << "(ModbusTCPMaster): connection " << s.str() << " error: catch ...";
-                dlog->crit() << s.str() << std::endl;
-            }
-        }
-//    }
+	ost::Thread::setException(ost::Thread::throwException);
+
+	try
+	{
+		tcp = make_shared<UTCPStream>();
+		tcp->create(iaddr, port, true, 500);
+		tcp->setTimeout(replyTimeOut_ms);
+	}
+	catch( const std::exception& e )
+	{
+		if( dlog->debugging(Debug::CRIT) )
+		{
+			ostringstream s;
+			s << "(ModbusTCPMaster): connection " << s.str() << " error: " << e.what();
+			dlog->crit() << s.str() << std::endl;
+		}
+	}
+	catch( ... )
+	{
+		if( dlog->debugging(Debug::CRIT) )
+		{
+			ostringstream s;
+			s << "(ModbusTCPMaster): connection " << s.str() << " error: catch ...";
+			dlog->crit() << s.str() << std::endl;
+		}
+	}
+
+	//    }
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::disconnect()
 {
-    if( dlog->is_info() )
-        dlog->info() << iaddr << "(ModbusTCPMaster): disconnect (" << iaddr << ":" << port <<")." << endl;
+	if( dlog->is_info() )
+		dlog->info() << iaddr << "(ModbusTCPMaster): disconnect (" << iaddr << ":" << port << ")." << endl;
 
-    if( !tcp )
-        return;
+	if( !tcp )
+		return;
 
-    tcp->disconnect();
-    tcp.reset();
+	tcp->disconnect();
+	tcp.reset();
 }
 // -------------------------------------------------------------------------
 bool ModbusTCPMaster::isConnection()
 {
-    return tcp && tcp->isConnected();
+	return tcp && tcp->isConnected();
 }
 // -------------------------------------------------------------------------

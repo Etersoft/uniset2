@@ -13,14 +13,14 @@
 #include "UniSetObject_LT.h"
 #include "Mutex.h"
 #include "MessageType.h"
-#include "ComediInterface.h" 
-#include "DigitalFilter.h" 
-#include "Calibration.h" 
-#include "SMInterface.h" 
+#include "ComediInterface.h"
+#include "DigitalFilter.h"
+#include "Calibration.h"
+#include "SMInterface.h"
 #include "SingleProcess.h"
-#include "IOController.h" 
-#include "IOBase.h" 
-#include "SharedMemory.h" 
+#include "IOController.h"
+#include "IOBase.h"
+#include "SharedMemory.h"
 // -----------------------------------------------------------------------------
 /*!
       \page page_IOControl (IOControl) Реализация процесса ввода/вывода
@@ -164,26 +164,29 @@
 /*! \todo (IOControl): Сделать обработку сигналов завершения */
 
 class CardList:
-    public std::vector<ComediInterface*>
+	public std::vector<ComediInterface*>
 {
-    public:
+	public:
 
-        CardList(int size) : std::vector<ComediInterface*>(size) { }
+		CardList(int size) : std::vector<ComediInterface * >(size) { }
 
-        ~CardList() {
-            for( unsigned int i=0; i<size(); i++ )
-                delete (*this)[i];
-        }
+		~CardList()
+		{
+			for( unsigned int i = 0; i < size(); i++ )
+				delete (*this)[i];
+		}
 
-        inline ComediInterface* getCard(int ncard) {
-            if( ncard >= 0 && ncard < (int)size() )
-                return (*this)[ncard];
-            return NULL;
-    }
+		inline ComediInterface* getCard(int ncard)
+		{
+			if( ncard >= 0 && ncard < (int)size() )
+				return (*this)[ncard];
+
+			return NULL;
+		}
 
 };
 
-/*! 
+/*!
     Процесс работы с картами в/в.
     Задачи:
     - опрос дискретных и аналоговых входов, выходов
@@ -199,198 +202,198 @@ class CardList:
     - тест ламп
 */
 class IOControl:
-    public UniSetObject
+	public UniSetObject
 {
-    public:
-        IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory> shm=nullptr, int numcards=2, const std::string& prefix="io" );
-        virtual ~IOControl();
+	public:
+		IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory> shm = nullptr, int numcards = 2, const std::string& prefix = "io" );
+		virtual ~IOControl();
 
-        /*! глобальная функция для инициализации объекта */
-        static std::shared_ptr<IOControl> init_iocontrol( int argc, const char* const* argv,
-                                            UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory> ic=nullptr,
-                                            const std::string& prefix="io" );
-        /*! глобальная функция для вывода help-а */
-        static void help_print( int argc, const char* const* argv );
+		/*! глобальная функция для инициализации объекта */
+		static std::shared_ptr<IOControl> init_iocontrol( int argc, const char* const* argv,
+				UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory> ic = nullptr,
+				const std::string& prefix = "io" );
+		/*! глобальная функция для вывода help-а */
+		static void help_print( int argc, const char* const* argv );
 
-        /*! Информация о входе/выходе */
-        struct IOInfo:
-            public IOBase
-        {
-            // т.к. IOBase содержит rwmutex с запрещённым конструктором копирования
-            // приходится здесь тоже объявлять разрешенными только операции "перемещения"
-            IOInfo( const IOInfo& r ) = delete;
-            IOInfo& operator=(const IOInfo& r) = delete;
-            IOInfo( IOInfo&& r ) = default;
-            IOInfo& operator=(IOInfo&& r) = default;
+		/*! Информация о входе/выходе */
+		struct IOInfo:
+			public IOBase
+		{
+			// т.к. IOBase содержит rwmutex с запрещённым конструктором копирования
+			// приходится здесь тоже объявлять разрешенными только операции "перемещения"
+			IOInfo( const IOInfo& r ) = delete;
+			IOInfo& operator=(const IOInfo& r) = delete;
+			IOInfo( IOInfo&& r ) = default;
+			IOInfo& operator=(IOInfo&& r) = default;
 
-            IOInfo():
-                subdev(DefaultSubdev),channel(DefaultChannel),
-                ncard(-1),
-                aref(0),
-                range(0),
-                lamp(false),
-                no_testlamp(false),
-                enable_testmode(false),
-                disable_testmode(false)
-            {}
-
-
-            int subdev;     /*!< (UNIO) подустройство (см. comedi_test для конкретной карты в/в) */
-            int channel;    /*!< (UNIO) канал [0...23] */
-            int ncard;      /*!< номер карты [1|2]. 0 - не определена. FIXME from Lav: -1 - не определена? */
-
-            /*! Вид поключения
-                0    - analog ref = analog ground
-                1    - analog ref = analog common
-                2    - analog ref = differential
-                3    - analog ref = other (undefined)
-            */
-            int aref;
-
-            /*! Измерительный диапазон
-                0    -  -10В - 10В
-                1    -  -5В - 5В
-                2    -  -2.5В - 2.5В
-                3    -  -1.25В - 1.25В
-            */
-            int range;
-
-            bool lamp;             /*!< признак, что данный выход является лампочкой (или сигнализатором) */
-            bool no_testlamp;      /*!< флаг исключения из 'проверки ламп' */
-            bool enable_testmode;  /*!< флаг для режима тестирования tmConfigEnable */
-            bool disable_testmode; /*!< флаг для режима тестирования tmConfigDisable */
-
-            friend std::ostream& operator<<(std::ostream& os, IOInfo& inf );
-        };
-
-        struct IOPriority
-        {
-            IOPriority(int p, int i):
-                priority(p),index(i){}
-
-            int priority;
-            int index;
-        };
-
-        enum TestModeID
-        {
-            tmNone        = 0,       /*!< тестовый режим отключён */
-            tmOffPoll    = 1,        /*!< отключить опрос */
-            tmConfigEnable    = 2,   /*!< специальный режим, в соответсвии с настройкой 'enable_testmode' */
-            tmConfigDisable    = 3,  /*!< специальный режим, в соответсвии с настройкой 'disable_testmode' */
-            tmOnlyInputs    = 4,     /*!< включены только входы */
-            tmOnlyOutputs    = 5     /*!< включены только выходы */
-        };
-
-        void execute();
-
-    protected:
-
-        void iopoll(); /*!< опрос карт в/в */
-        void ioread( IOInfo* it );
-        void check_testlamp();
-        void check_testmode();
-        void blink();
-
-        // действия при завершении работы
-        virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
-        virtual void askSensors( UniversalIO::UIOCommand cmd );
-        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
-        virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
-        virtual void sigterm( int signo ) override;
-        virtual bool activateObject() override;
-
-        // начальная инициализация выходов
-        void initOutputs();
-
-        // инициализация карты (каналов в/в)
-        void initIOCard();
-
-        // чтение файла конфигурации
-        void readConfiguration();
-        bool initIOItem( UniXML::iterator& it );
-        bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
-        void buildCardsList();
-
-        void waitSM();
-
-        bool checkCards( const std::string& func="" );
-
-        xmlNode* cnode; /*!< xml-узел в настроечном файле */
-
-        int polltime;   /*!< переодичность обновления данных (опроса карт в/в), [мсек] */
-        CardList cards; /*!< список карт - массив созданных ComediInterface */
-        bool noCards;
-
-        typedef std::vector<IOInfo> IOMap;
-        IOMap iomap;    /*!< список входов/выходов */
-
-        typedef std::deque<IOPriority> PIOMap;
-        PIOMap pmap;    /*!< список приоритетных входов/выходов */
-
-        unsigned int maxItem;    /*!< количество элементов (используется на момент инициализации) */
-        unsigned int maxHalf;
-        int filtersize;
-        float filterT;
-
-        std::string s_field;
-        std::string s_fvalue;
-
-        std::shared_ptr<SMInterface> shm;
-        UniSetTypes::ObjectId myid;
-        std::string prefix;
-
-        typedef std::list<IOInfo*> BlinkList;
-
-        void addBlink( IOInfo* it, BlinkList& lst );
-        void delBlink( IOInfo* it, BlinkList& lst );
-        void blink( BlinkList& lst, bool& bstate );
-
-        // обычное мигание
-        BlinkList lstBlink;
-        PassiveTimer ptBlink;
-        bool blink_state;
-
-        // мигание с двойной частотой
-        BlinkList lstBlink2;
-        PassiveTimer ptBlink2;
-        bool blink2_state;
-
-        // мигание с тройной частотой
-        BlinkList lstBlink3;
-        PassiveTimer ptBlink3;
-        bool blink3_state;
-
-        UniSetTypes::ObjectId testLamp_S;
-        Trigger trTestLamp;
-        bool isTestLamp;
-        IOController::IOStateList::iterator itTestLamp;
-
-        PassiveTimer ptHeartBeat;
-        UniSetTypes::ObjectId sidHeartBeat;
-        int maxHeartBeat;
-        IOController::IOStateList::iterator itHeartBeat;
-
-        bool force;            /*!< флаг, означающий, что надо сохранять в SM, даже если значение не менялось */
-        bool force_out;        /*!< флаг, включающий принудительное чтения выходов */
-        int smReadyTimeout;    /*!< время ожидания готовности SM к работе, мсек */
-        int defCardNum;        /*!< номер карты по умолчанию */
-        int maxCardNum;        /*! максимально разрешённый номер для карты */
-
-        UniSetTypes::uniset_mutex iopollMutex;
-        std::atomic_bool activated;
-        bool readconf_ok;
-        int activateTimeout;
-        UniSetTypes::ObjectId sidTestSMReady;
-        bool term;
+			IOInfo():
+				subdev(DefaultSubdev), channel(DefaultChannel),
+				ncard(-1),
+				aref(0),
+				range(0),
+				lamp(false),
+				no_testlamp(false),
+				enable_testmode(false),
+				disable_testmode(false)
+			{}
 
 
-        UniSetTypes::ObjectId testMode_as;
-        IOController::IOStateList::iterator itTestMode;
-        long testmode;
-        long prev_testmode;
+			int subdev;     /*!< (UNIO) подустройство (см. comedi_test для конкретной карты в/в) */
+			int channel;    /*!< (UNIO) канал [0...23] */
+			int ncard;      /*!< номер карты [1|2]. 0 - не определена. FIXME from Lav: -1 - не определена? */
 
-    private:
+			/*! Вид поключения
+			    0    - analog ref = analog ground
+			    1    - analog ref = analog common
+			    2    - analog ref = differential
+			    3    - analog ref = other (undefined)
+			*/
+			int aref;
+
+			/*! Измерительный диапазон
+			    0    -  -10В - 10В
+			    1    -  -5В - 5В
+			    2    -  -2.5В - 2.5В
+			    3    -  -1.25В - 1.25В
+			*/
+			int range;
+
+			bool lamp;             /*!< признак, что данный выход является лампочкой (или сигнализатором) */
+			bool no_testlamp;      /*!< флаг исключения из 'проверки ламп' */
+			bool enable_testmode;  /*!< флаг для режима тестирования tmConfigEnable */
+			bool disable_testmode; /*!< флаг для режима тестирования tmConfigDisable */
+
+			friend std::ostream& operator<<(std::ostream& os, IOInfo& inf );
+		};
+
+		struct IOPriority
+		{
+			IOPriority(int p, int i):
+				priority(p), index(i) {}
+
+			int priority;
+			int index;
+		};
+
+		enum TestModeID
+		{
+			tmNone        = 0,       /*!< тестовый режим отключён */
+			tmOffPoll    = 1,        /*!< отключить опрос */
+			tmConfigEnable    = 2,   /*!< специальный режим, в соответсвии с настройкой 'enable_testmode' */
+			tmConfigDisable    = 3,  /*!< специальный режим, в соответсвии с настройкой 'disable_testmode' */
+			tmOnlyInputs    = 4,     /*!< включены только входы */
+			tmOnlyOutputs    = 5     /*!< включены только выходы */
+		};
+
+		void execute();
+
+	protected:
+
+		void iopoll(); /*!< опрос карт в/в */
+		void ioread( IOInfo* it );
+		void check_testlamp();
+		void check_testmode();
+		void blink();
+
+		// действия при завершении работы
+		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void askSensors( UniversalIO::UIOCommand cmd );
+		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
+		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+		virtual void sigterm( int signo ) override;
+		virtual bool activateObject() override;
+
+		// начальная инициализация выходов
+		void initOutputs();
+
+		// инициализация карты (каналов в/в)
+		void initIOCard();
+
+		// чтение файла конфигурации
+		void readConfiguration();
+		bool initIOItem( UniXML::iterator& it );
+		bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
+		void buildCardsList();
+
+		void waitSM();
+
+		bool checkCards( const std::string& func = "" );
+
+		xmlNode* cnode; /*!< xml-узел в настроечном файле */
+
+		int polltime;   /*!< переодичность обновления данных (опроса карт в/в), [мсек] */
+		CardList cards; /*!< список карт - массив созданных ComediInterface */
+		bool noCards;
+
+		typedef std::vector<IOInfo> IOMap;
+		IOMap iomap;    /*!< список входов/выходов */
+
+		typedef std::deque<IOPriority> PIOMap;
+		PIOMap pmap;    /*!< список приоритетных входов/выходов */
+
+		unsigned int maxItem;    /*!< количество элементов (используется на момент инициализации) */
+		unsigned int maxHalf;
+		int filtersize;
+		float filterT;
+
+		std::string s_field;
+		std::string s_fvalue;
+
+		std::shared_ptr<SMInterface> shm;
+		UniSetTypes::ObjectId myid;
+		std::string prefix;
+
+		typedef std::list<IOInfo*> BlinkList;
+
+		void addBlink( IOInfo* it, BlinkList& lst );
+		void delBlink( IOInfo* it, BlinkList& lst );
+		void blink( BlinkList& lst, bool& bstate );
+
+		// обычное мигание
+		BlinkList lstBlink;
+		PassiveTimer ptBlink;
+		bool blink_state;
+
+		// мигание с двойной частотой
+		BlinkList lstBlink2;
+		PassiveTimer ptBlink2;
+		bool blink2_state;
+
+		// мигание с тройной частотой
+		BlinkList lstBlink3;
+		PassiveTimer ptBlink3;
+		bool blink3_state;
+
+		UniSetTypes::ObjectId testLamp_S;
+		Trigger trTestLamp;
+		bool isTestLamp;
+		IOController::IOStateList::iterator itTestLamp;
+
+		PassiveTimer ptHeartBeat;
+		UniSetTypes::ObjectId sidHeartBeat;
+		int maxHeartBeat;
+		IOController::IOStateList::iterator itHeartBeat;
+
+		bool force;            /*!< флаг, означающий, что надо сохранять в SM, даже если значение не менялось */
+		bool force_out;        /*!< флаг, включающий принудительное чтения выходов */
+		int smReadyTimeout;    /*!< время ожидания готовности SM к работе, мсек */
+		int defCardNum;        /*!< номер карты по умолчанию */
+		int maxCardNum;        /*! максимально разрешённый номер для карты */
+
+		UniSetTypes::uniset_mutex iopollMutex;
+		std::atomic_bool activated;
+		bool readconf_ok;
+		int activateTimeout;
+		UniSetTypes::ObjectId sidTestSMReady;
+		bool term;
+
+
+		UniSetTypes::ObjectId testMode_as;
+		IOController::IOStateList::iterator itTestMode;
+		long testmode;
+		long prev_testmode;
+
+	private:
 };
 // -----------------------------------------------------------------------------
 #endif // IOControl_H_

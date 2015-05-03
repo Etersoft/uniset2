@@ -43,168 +43,173 @@ using std::ios;
 
 /// Constructor, sets the debug level to t.
 DebugStream::DebugStream(Debug::type t)
-    : ostream(new debugbuf(cerr.rdbuf())),
-      dt(t), nullstream(new nullbuf), internal(new debugstream_internal),
-      show_datetime(true),show_logtype(true),
-      fname(""),
-      logname("")
+	: ostream(new debugbuf(cerr.rdbuf())),
+	  dt(t), nullstream(new nullbuf), internal(new debugstream_internal),
+	  show_datetime(true), show_logtype(true),
+	  fname(""),
+	  logname("")
 {
-    delete rdbuf(new teebuf(cerr.rdbuf(),&internal->sbuf));
-    internal->sbuf.signal_overflow().connect(sigc::mem_fun(*this, &DebugStream::sbuf_overflow));
+	delete rdbuf(new teebuf(cerr.rdbuf(), &internal->sbuf));
+	internal->sbuf.signal_overflow().connect(sigc::mem_fun(*this, &DebugStream::sbuf_overflow));
 }
 
 //--------------------------------------------------------------------------
 /// Constructor, sets the log file to f, and the debug level to t.
-DebugStream::DebugStream(char const * f, Debug::type t, bool truncate )
-    : ostream(new debugbuf(cerr.rdbuf())),
-      dt(t), nullstream(new nullbuf),
-      internal(new debugstream_internal),
-      show_datetime(true),show_logtype(true),
-      fname(""),
-      logname("")
+DebugStream::DebugStream(char const* f, Debug::type t, bool truncate )
+	: ostream(new debugbuf(cerr.rdbuf())),
+	  dt(t), nullstream(new nullbuf),
+	  internal(new debugstream_internal),
+	  show_datetime(true), show_logtype(true),
+	  fname(""),
+	  logname("")
 {
-    std::ios_base::openmode mode = ios::out;
-    mode |= truncate ? ios::trunc : ios::app;
+	std::ios_base::openmode mode = ios::out;
+	mode |= truncate ? ios::trunc : ios::app;
 
-    internal->fbuf.open(f, mode);
-    delete rdbuf(new threebuf(cerr.rdbuf(),
-                &internal->fbuf,&internal->sbuf));
+	internal->fbuf.open(f, mode);
+	delete rdbuf(new threebuf(cerr.rdbuf(),
+							  &internal->fbuf, &internal->sbuf));
 
-    internal->sbuf.signal_overflow().connect(sigc::mem_fun(*this, &DebugStream::sbuf_overflow));
+	internal->sbuf.signal_overflow().connect(sigc::mem_fun(*this, &DebugStream::sbuf_overflow));
 }
 //--------------------------------------------------------------------------
 void DebugStream::sbuf_overflow( const std::string& s )
 {
-    s_stream.emit(s);
+	s_stream.emit(s);
 }
 //--------------------------------------------------------------------------
 DebugStream::~DebugStream()
 {
-    delete nullstream.rdbuf(0); // Without this we leak
-    delete rdbuf(0);            // Without this we leak
-    delete internal;
+	delete nullstream.rdbuf(0); // Without this we leak
+	delete rdbuf(0);            // Without this we leak
+	delete internal;
 }
 
 //--------------------------------------------------------------------------
 const DebugStream& DebugStream::operator=( const DebugStream& r )
 {
-    if( r == *this )
-        return *this;
+	if( r == *this )
+		return *this;
 
-    dt = r.dt;
-    show_datetime = r.show_datetime;
-    fname = r.fname;
-    if( !r.fname.empty() )
-        logFile(fname);
+	dt = r.dt;
+	show_datetime = r.show_datetime;
+	fname = r.fname;
 
-    // s_stream = r.s_stream;
-    return *this;
+	if( !r.fname.empty() )
+		logFile(fname);
+
+	// s_stream = r.s_stream;
+	return *this;
 }
 //--------------------------------------------------------------------------
 /// Sets the debugstreams' logfile to f.
 void DebugStream::logFile( const std::string& f, bool truncate )
 {
-    fname = f;
-    if( internal ) {
-        internal->fbuf.close();
-    } else {
-        internal = new debugstream_internal;
-    }
+	fname = f;
 
-    if( !f.empty() )
-    {
-        std::ios_base::openmode mode = ios::out;
-        mode |= truncate ? ios::trunc : ios::app;
+	if( internal )
+	{
+		internal->fbuf.close();
+	}
+	else
+	{
+		internal = new debugstream_internal;
+	}
 
-        internal->fbuf.open(f.c_str(), mode);
-        delete rdbuf(new threebuf(cerr.rdbuf(),
-                &internal->fbuf,&internal->sbuf));
-    }
-    else
-        delete rdbuf(new teebuf(cerr.rdbuf(),&internal->sbuf));
+	if( !f.empty() )
+	{
+		std::ios_base::openmode mode = ios::out;
+		mode |= truncate ? ios::trunc : ios::app;
+
+		internal->fbuf.open(f.c_str(), mode);
+		delete rdbuf(new threebuf(cerr.rdbuf(),
+								  &internal->fbuf, &internal->sbuf));
+	}
+	else
+		delete rdbuf(new teebuf(cerr.rdbuf(), &internal->sbuf));
 }
 //--------------------------------------------------------------------------
-std::ostream & DebugStream::debug(Debug::type t) 
+std::ostream& DebugStream::debug(Debug::type t)
 {
-    if(dt & t)
-    {
-        if( show_datetime )
-            printDateTime(t);
+	if(dt & t)
+	{
+		if( show_datetime )
+			printDateTime(t);
 
-        if( show_logtype )
-            *this << "(" << std::setfill(' ') << std::setw(6) << t << "):  "; // "):\t";
+		if( show_logtype )
+			*this << "(" << std::setfill(' ') << std::setw(6) << t << "):  "; // "):\t";
 
-        return *this;
-    }
+		return *this;
+	}
 
-    return nullstream;
+	return nullstream;
 }
 //--------------------------------------------------------------------------
 std::ostream& DebugStream::operator()(Debug::type t)
 {
-    if(dt & t)
-        return *this;
+	if(dt & t)
+		return *this;
 
-    return nullstream;
+	return nullstream;
 }
 //--------------------------------------------------------------------------
 std::ostream& DebugStream::printDate(Debug::type t, char brk)
 {
-    if(dt && t)
-    {
-        time_t GMTime = time(NULL);
-        struct tm *tms = localtime(&GMTime);
-        return *this << std::setw(2) << std::setfill('0') << tms->tm_mday << brk
-                      << std::setw(2) << std::setfill('0') << tms->tm_mon+1 << brk
-                     << std::setw(4) << std::setfill('0') << tms->tm_year+1900;
-    }
-    
-    return nullstream;
+	if(dt && t)
+	{
+		time_t GMTime = time(NULL);
+		struct tm* tms = localtime(&GMTime);
+		return *this << std::setw(2) << std::setfill('0') << tms->tm_mday << brk
+			   << std::setw(2) << std::setfill('0') << tms->tm_mon + 1 << brk
+			   << std::setw(4) << std::setfill('0') << tms->tm_year + 1900;
+	}
+
+	return nullstream;
 }
 //--------------------------------------------------------------------------
 std::ostream& DebugStream::printTime(Debug::type t, char brk)
 {
-    if(dt && t)
-    {
-        time_t GMTime = time(NULL);
-        struct tm *tms = localtime(&GMTime);
-        return *this << std::setw(2) << std::setfill('0') << tms->tm_hour << brk
-                     << std::setw(2) << std::setfill('0') << tms->tm_min << brk
-                     << std::setw(2) << std::setfill('0') << tms->tm_sec;
-    }
-    
-    return nullstream;
+	if(dt && t)
+	{
+		time_t GMTime = time(NULL);
+		struct tm* tms = localtime(&GMTime);
+		return *this << std::setw(2) << std::setfill('0') << tms->tm_hour << brk
+			   << std::setw(2) << std::setfill('0') << tms->tm_min << brk
+			   << std::setw(2) << std::setfill('0') << tms->tm_sec;
+	}
+
+	return nullstream;
 }
 //--------------------------------------------------------------------------
 std::ostream& DebugStream::printDateTime(Debug::type t)
 {
-    if(dt & t)
-    {
-        time_t GMTime = time(NULL);
-        struct tm *tms = localtime(&GMTime);
-        return *this << std::setw(2) << std::setfill('0') << tms->tm_mday << "/"
-                     << std::setw(2) << std::setfill('0') << tms->tm_mon+1 << "/"
-                     << std::setw(4) << std::setfill('0') << tms->tm_year+1900 << " "
-                     << std::setw(2) << std::setfill('0') << tms->tm_hour << ":"
-                     << std::setw(2) << std::setfill('0') << tms->tm_min << ":"
-                     << std::setw(2) << std::setfill('0') << tms->tm_sec;
-    }
-    
-    return nullstream;
+	if(dt & t)
+	{
+		time_t GMTime = time(NULL);
+		struct tm* tms = localtime(&GMTime);
+		return *this << std::setw(2) << std::setfill('0') << tms->tm_mday << "/"
+			   << std::setw(2) << std::setfill('0') << tms->tm_mon + 1 << "/"
+			   << std::setw(4) << std::setfill('0') << tms->tm_year + 1900 << " "
+			   << std::setw(2) << std::setfill('0') << tms->tm_hour << ":"
+			   << std::setw(2) << std::setfill('0') << tms->tm_min << ":"
+			   << std::setw(2) << std::setfill('0') << tms->tm_sec;
+	}
+
+	return nullstream;
 }
 //--------------------------------------------------------------------------
 std::ostream& DebugStream::pos(int x, int y)
 {
-    if( !dt )
-        return nullstream;
+	if( !dt )
+		return nullstream;
 
-    return *this << "\033[" << y << ";" << x << "f";
+	return *this << "\033[" << y << ";" << x << "f";
 }
 
 //--------------------------------------------------------------------------
 DebugStream::StreamEvent_Signal DebugStream::signal_stream_event()
 {
-    return s_stream;
+	return s_stream;
 }
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
@@ -214,87 +219,93 @@ DebugStream::StreamEvent_Signal DebugStream::signal_stream_event()
 // Example debug stream
 DebugStream debugstream;
 
-int main(int, char **)
+int main(int, char**)
 {
-    /**
-       I have been running some tests on this to see how much overhead
-       this kind of permanent debug code has. My conclusion is: not
-       much. In all, but the most time critical code, this will have
-       close to no impact at all.
+	/**
+	   I have been running some tests on this to see how much overhead
+	   this kind of permanent debug code has. My conclusion is: not
+	   much. In all, but the most time critical code, this will have
+	   close to no impact at all.
 
-       In the tests that I have run the use of
-       if (debugstream.debugging(DebugStream::INFO))
-       debugstream << "some debug\n";
-       has close to no overhead when the debug level is not
-       DebugStream::INFO.
+	   In the tests that I have run the use of
+	   if (debugstream.debugging(DebugStream::INFO))
+	   debugstream << "some debug\n";
+	   has close to no overhead when the debug level is not
+	   DebugStream::INFO.
 
-       The overhead for
-       debugstream.debug(DebugStream::INFO) << "some debug\n";
-       is also very small when the debug level is not
-       DebugStream::INFO. However the overhead for this will increase
-       if complex debugging information is output.
+	   The overhead for
+	   debugstream.debug(DebugStream::INFO) << "some debug\n";
+	   is also very small when the debug level is not
+	   DebugStream::INFO. However the overhead for this will increase
+	   if complex debugging information is output.
 
-       The overhead when the debug level is DebugStream::INFO can be
-       significant, but since we then are running in debug mode it is
-       of no concern.
+	   The overhead when the debug level is DebugStream::INFO can be
+	   significant, but since we then are running in debug mode it is
+	   of no concern.
 
-       Why should we use this instead of the class Error that we already
-       have? First of all it uses C++ iostream and constructs, secondly
-       it will be a lot easier to output the debug info that we need
-       without a lot of manual conversions, thirdly we can now use
-       iomanipulators and the complete iostream formatting functions.
-       pluss it will work for all types that have a operator<<
-       defined, and can be used in functors that take a ostream & as
-       parameter. And there should be less need for temporary objects.
-       And one nice bonus is that we get a log file almost for
-       free.
+	   Why should we use this instead of the class Error that we already
+	   have? First of all it uses C++ iostream and constructs, secondly
+	   it will be a lot easier to output the debug info that we need
+	   without a lot of manual conversions, thirdly we can now use
+	   iomanipulators and the complete iostream formatting functions.
+	   pluss it will work for all types that have a operator<<
+	   defined, and can be used in functors that take a ostream & as
+	   parameter. And there should be less need for temporary objects.
+	   And one nice bonus is that we get a log file almost for
+	   free.
 
-       Some of the names are of course open to modifications. I will try
-       to use the names we already use in LyX.
-    */
-    // Just a few simple debugs to show how it can work.
-    debugstream << "Debug level set to Debug::NONE\n";
-    if (debugstream.debugging()) {
-        debugstream << "Something must be debugged\n";
-    }
-    debugstream.debug(Debug::WARN) << "more debug(WARN)\n";
-    debugstream.debug(Debug::INFO) << "even more debug(INFO)\n";
-    debugstream.debug(Debug::CRIT) << "even more debug(CRIT)\n";
-    debugstream.level(Debug::value("INFO"));
-    debugstream << "Setting debug level to Debug::INFO\n";
-    if (debugstream.debugging()) {
-        debugstream << "Something must be debugged\n";
-    }
-    debugstream.debug(Debug::WARN) << "more debug(WARN)\n";
-    debugstream.debug(Debug::INFO) << "even more debug(INFO)\n";
-    debugstream.debug(Debug::CRIT) << "even more debug(CRIT)\n";
-    debugstream.addLevel(Debug::type(Debug::CRIT |
-                     Debug::WARN));
-    debugstream << "Adding Debug::CRIT and Debug::WARN\n";
-    debugstream[Debug::WARN] << "more debug(WARN)\n";
-    debugstream[Debug::INFO] << "even more debug(INFO)\n";
-    debugstream[Debug::CRIT] << "even more debug(CRIT)\n";
-    debugstream.delLevel(Debug::INFO);
-    debugstream << "Removing Debug::INFO\n";
-    debugstream[Debug::WARN] << "more debug(WARN)\n";
-    debugstream[Debug::INFO] << "even more debug(INFO)\n";
-    debugstream[Debug::CRIT] << "even more debug(CRIT)\n";
-    debugstream.logFile("logfile");
-    debugstream << "Setting logfile to \"logfile\"\n";
-    debugstream << "Value: " << 123 << " " << "12\n";
-    int i = 0;
-    int * p = new int;
-    // note: the (void*) is needed on g++ 2.7.x since it does not
-    // support partial specialization. In egcs this should not be
-    // needed.
-    debugstream << "automatic " << &i
-            << ", free store " << p << endl;
-    delete p;
-    /*
-    for (int j = 0; j < 200000; ++j) {
-        DebugStream tmp;
-        tmp << "Test" << endl;
-    }
-    */
+	   Some of the names are of course open to modifications. I will try
+	   to use the names we already use in LyX.
+	*/
+	// Just a few simple debugs to show how it can work.
+	debugstream << "Debug level set to Debug::NONE\n";
+
+	if (debugstream.debugging())
+	{
+		debugstream << "Something must be debugged\n";
+	}
+
+	debugstream.debug(Debug::WARN) << "more debug(WARN)\n";
+	debugstream.debug(Debug::INFO) << "even more debug(INFO)\n";
+	debugstream.debug(Debug::CRIT) << "even more debug(CRIT)\n";
+	debugstream.level(Debug::value("INFO"));
+	debugstream << "Setting debug level to Debug::INFO\n";
+
+	if (debugstream.debugging())
+	{
+		debugstream << "Something must be debugged\n";
+	}
+
+	debugstream.debug(Debug::WARN) << "more debug(WARN)\n";
+	debugstream.debug(Debug::INFO) << "even more debug(INFO)\n";
+	debugstream.debug(Debug::CRIT) << "even more debug(CRIT)\n";
+	debugstream.addLevel(Debug::type(Debug::CRIT |
+									 Debug::WARN));
+	debugstream << "Adding Debug::CRIT and Debug::WARN\n";
+	debugstream[Debug::WARN] << "more debug(WARN)\n";
+	debugstream[Debug::INFO] << "even more debug(INFO)\n";
+	debugstream[Debug::CRIT] << "even more debug(CRIT)\n";
+	debugstream.delLevel(Debug::INFO);
+	debugstream << "Removing Debug::INFO\n";
+	debugstream[Debug::WARN] << "more debug(WARN)\n";
+	debugstream[Debug::INFO] << "even more debug(INFO)\n";
+	debugstream[Debug::CRIT] << "even more debug(CRIT)\n";
+	debugstream.logFile("logfile");
+	debugstream << "Setting logfile to \"logfile\"\n";
+	debugstream << "Value: " << 123 << " " << "12\n";
+	int i = 0;
+	int* p = new int;
+	// note: the (void*) is needed on g++ 2.7.x since it does not
+	// support partial specialization. In egcs this should not be
+	// needed.
+	debugstream << "automatic " << &i
+				<< ", free store " << p << endl;
+	delete p;
+	/*
+	for (int j = 0; j < 200000; ++j) {
+	    DebugStream tmp;
+	    tmp << "Test" << endl;
+	}
+	*/
 }
 #endif

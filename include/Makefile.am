@@ -10,3 +10,6 @@ devel_includedir = $(pkgincludedir)
 
 all-local:
 	test -L extensions || ln -s ../extensions/include extensions
+
+include $(top_builddir)/include.mk
+

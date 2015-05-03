@@ -29,105 +29,117 @@
 */
 class DelayTimer
 {
-    public:
-        DelayTimer():prevState(false),state(false),
-                onDelay(0),offDelay(0),waiting_on(false),waiting_off(false){}
+	public:
+		DelayTimer(): prevState(false), state(false),
+			onDelay(0), offDelay(0), waiting_on(false), waiting_off(false) {}
 
-        DelayTimer( timeout_t on_msec, timeout_t off_msec ):prevState(false),state(false),
-                onDelay(on_msec),offDelay(off_msec),waiting_on(false),waiting_off(false)
-        {
-        }
+		DelayTimer( timeout_t on_msec, timeout_t off_msec ): prevState(false), state(false),
+			onDelay(on_msec), offDelay(off_msec), waiting_on(false), waiting_off(false)
+		{
+		}
 
-        ~DelayTimer(){}
+		~DelayTimer() {}
 
-        inline void set( timeout_t on_msec, timeout_t off_msec )
-        {
-            onDelay = on_msec;
-            offDelay = off_msec;
-            waiting_on = false;
-            waiting_off = false;
-            state = false;
-        }
+		inline void set( timeout_t on_msec, timeout_t off_msec )
+		{
+			onDelay = on_msec;
+			offDelay = off_msec;
+			waiting_on = false;
+			waiting_off = false;
+			state = false;
+		}
 
-        // запустить часы (заново)
-        inline void reset()
-        {
-            pt.reset();
-            waiting_on = false;
-            waiting_off = false;
-            state = false;
-        }
+		// запустить часы (заново)
+		inline void reset()
+		{
+			pt.reset();
+			waiting_on = false;
+			waiting_off = false;
+			state = false;
+		}
 
-        inline bool check( bool st )
-        {
-            if( waiting_off )
-            {
-                if( pt.checkTime() )
-                {
-                    waiting_off = false;
-                    if( !st )
-                        state = false;
+		inline bool check( bool st )
+		{
+			if( waiting_off )
+			{
+				if( pt.checkTime() )
+				{
+					waiting_off = false;
 
-                    return state;
-                }
-                else if( st != prevState && !st )
-                    pt.reset();
+					if( !st )
+						state = false;
 
-                prevState = st;
-                return state;
-            }
+					return state;
+				}
+				else if( st != prevState && !st )
+					pt.reset();
 
-            if( waiting_on )
-            {
-                if( pt.checkTime() )
-                {
-                    waiting_on = false;
-                    if( st )
-                        state = true;
+				prevState = st;
+				return state;
+			}
 
-                        return state;
-                }
-                else if( st != prevState && st )
-                    pt.reset();
+			if( waiting_on )
+			{
+				if( pt.checkTime() )
+				{
+					waiting_on = false;
 
-                prevState = st;
-                return state;
-            }
+					if( st )
+						state = true;
 
-            if( state != st )
-            {
-                prevState = st;
-                if( st )
-                {
-                    pt.setTiming(onDelay);
-                    waiting_on = true;
-                }
-                else
-                {
-                    pt.setTiming(offDelay);
-                    waiting_off = true;
-                }
+					return state;
+				}
+				else if( st != prevState && st )
+					pt.reset();
 
-                if( pt.checkTime() )
-                    return st;
-            }
+				prevState = st;
+				return state;
+			}
 
-            return state;
-        }
+			if( state != st )
+			{
+				prevState = st;
 
-        inline bool get(){ return check(prevState); }
+				if( st )
+				{
+					pt.setTiming(onDelay);
+					waiting_on = true;
+				}
+				else
+				{
+					pt.setTiming(offDelay);
+					waiting_off = true;
+				}
 
-        inline timeout_t getOnDelay(){ return onDelay; }
-        inline timeout_t getOffDelay(){ return offDelay; }
+				if( pt.checkTime() )
+					return st;
+			}
 
-    protected:
-        PassiveTimer pt;
-        bool prevState;
-        bool state;
-        timeout_t onDelay;
-        timeout_t offDelay;
-        bool waiting_on;
-        bool waiting_off;
+			return state;
+		}
+
+		inline bool get()
+		{
+			return check(prevState);
+		}
+
+		inline timeout_t getOnDelay()
+		{
+			return onDelay;
+		}
+		inline timeout_t getOffDelay()
+		{
+			return offDelay;
+		}
+
+	protected:
+		PassiveTimer pt;
+		bool prevState;
+		bool state;
+		timeout_t onDelay;
+		timeout_t offDelay;
+		bool waiting_on;
+		bool waiting_off;
 };
 // --------------------------------------------------------------------------
 #endif

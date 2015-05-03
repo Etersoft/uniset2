@@ -5,21 +5,21 @@
 #include "Skel_SK.h"
 // -----------------------------------------------------------------------------
 class Skel:
-    public Skel_SK
+	public Skel_SK
 {
-    public:
-        Skel( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::uniset_conf()->getNode("Skel") );
-        virtual ~Skel();
+	public:
+		Skel( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::uniset_conf()->getNode("Skel") );
+		virtual ~Skel();
 
-    protected:
-        Skel();
+	protected:
+		Skel();
 
-        virtual void step();
-        virtual void sensorInfo( UniSetTypes::SensorMessage *sm );
-        virtual void timerInfo( UniSetTypes::TimerMessage *tm );
-        virtual void askSensors( UniversalIO::UIOCommand cmd );
+		virtual void step();
+		virtual void sensorInfo( UniSetTypes::SensorMessage* sm );
+		virtual void timerInfo( UniSetTypes::TimerMessage* tm );
+		virtual void askSensors( UniversalIO::UIOCommand cmd );
 
-    private:
+	private:
 };
 // -----------------------------------------------------------------------------
 #endif // Skel_H_

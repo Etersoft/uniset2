@@ -10,193 +10,204 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 SMDBServer::SMDBServer( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic,
-            const string& prefix ):
-DBServer_MySQL(objId),
-aiignore(false),
-prefix(prefix)
+						const string& prefix ):
+	DBServer_MySQL(objId),
+	aiignore(false),
+	prefix(prefix)
 {
-    if( objId == DefaultObjectId )
-        throw UniSetTypes::SystemError("(SMDBServer): objId=-1?!! Use --" + prefix + "-name" );
+	if( objId == DefaultObjectId )
+		throw UniSetTypes::SystemError("(SMDBServer): objId=-1?!! Use --" + prefix + "-name" );
 
-//    xmlNode* cnode = conf->getNode(myname);
-//    if( cnode == NULL )
-//        throw UniSetTypes::SystemError("(SMDBServer): Not found conf-node for " + myname );
-    xmlNode* cnode = conf->getNode("LocalDBServer");
-    if( !cnode )
-        throw NameNotFound(string(myname+"(init): <LocalDBServer> not found.."));
+	//    xmlNode* cnode = conf->getNode(myname);
+	//    if( cnode == NULL )
+	//        throw UniSetTypes::SystemError("(SMDBServer): Not found conf-node for " + myname );
+	xmlNode* cnode = conf->getNode("LocalDBServer");
 
-    shm = new SMInterface(shmId,&ui,objId,ic);
+	if( !cnode )
+		throw NameNotFound(string(myname + "(init): <LocalDBServer> not found.."));
 
-    UniXML::iterator it(cnode);
+	shm = new SMInterface(shmId, &ui, objId, ic);
 
-    db_locale = conf->getArgParam("--" + prefix + "-locale",it.getProp("locale"));
-    if( db_locale.empty() )
-        db_locale = "utf8";
+	UniXML::iterator it(cnode);
+
+	db_locale = conf->getArgParam("--" + prefix + "-locale", it.getProp("locale"));
+
+	if( db_locale.empty() )
+		db_locale = "utf8";
 
 
-// ********** HEARTBEAT *************
-    string heart = conf->getArgParam("--" + prefix + "-heartbeat-id",it.getProp("heartbeat_id"));
-    if( !heart.empty() )
-    {
-        sidHeartBeat = conf->getSensorID(heart);
-        if( sidHeartBeat == DefaultObjectId )
-        {
-            ostringstream err;
-            err << myname << ": ID not found ('HeartBeat') for " << heart;
-            dcrit << myname << "(init): " << err.str() << endl;
-            throw SystemError(err.str());
-        }
+	// ********** HEARTBEAT *************
+	string heart = conf->getArgParam("--" + prefix + "-heartbeat-id", it.getProp("heartbeat_id"));
 
-        int heartbeatTime = getHeartBeatTime();
-        if( heartbeatTime )
-            ptHeartBeat.setTiming(heartbeatTime);
-        else
-            ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
+	if( !heart.empty() )
+	{
+		sidHeartBeat = conf->getSensorID(heart);
 
-        maxHeartBeat = conf->getArgPInt("--" + prefix + "-heartbeat-max",it.getProp("heartbeat_max"), 10);
-        test_id = sidHeartBeat;
-    }
-    else
-    {
-        test_id = conf->getSensorID("TestMode_S");
-        if( test_id == DefaultObjectId )
-        {
-            ostringstream err;
-            err << myname << "(init): test_id unknown. 'TestMode_S' not found...";
-            dcrit << myname << "(init): " << err.str() << endl;
-            throw SystemError(err.str());
-        }
-    }
+		if( sidHeartBeat == DefaultObjectId )
+		{
+			ostringstream err;
+			err << myname << ": ID not found ('HeartBeat') for " << heart;
+			dcrit << myname << "(init): " << err.str() << endl;
+			throw SystemError(err.str());
+		}
 
-    dinfo << myname << "(init): test_id=" << test_id << endl;
+		int heartbeatTime = getHeartBeatTime();
+
+		if( heartbeatTime )
+			ptHeartBeat.setTiming(heartbeatTime);
+		else
+			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
+
+		maxHeartBeat = conf->getArgPInt("--" + prefix + "-heartbeat-max", it.getProp("heartbeat_max"), 10);
+		test_id = sidHeartBeat;
+	}
+	else
+	{
+		test_id = conf->getSensorID("TestMode_S");
+
+		if( test_id == DefaultObjectId )
+		{
+			ostringstream err;
+			err << myname << "(init): test_id unknown. 'TestMode_S' not found...";
+			dcrit << myname << "(init): " << err.str() << endl;
+			throw SystemError(err.str());
+		}
+	}
+
+	dinfo << myname << "(init): test_id=" << test_id << endl;
 }
 // -----------------------------------------------------------------------------
 SMDBServer::~SMDBServer()
 {
-    delete shm;
+	delete shm;
 }
 // -----------------------------------------------------------------------------
 void SMDBServer::waitSMReady()
 {
-    // waiting for SM is ready...
-    int ready_timeout = conf->getArgInt("--" + prefix + "-sm-ready-timeout","15000");
-    if( ready_timeout == 0 )
-        ready_timeout = 15000;
-    else if( ready_timeout < 0 )
-        ready_timeout = UniSetTimer::WaitUpTime;
+	// waiting for SM is ready...
+	int ready_timeout = conf->getArgInt("--" + prefix + "-sm-ready-timeout", "15000");
 
-    if( !shm->waitSMready(ready_timeout, 50) )
-    {
-        ostringstream err;
-        err << myname << "(waitSMReady): Wait SharedMemory failed. [ " << ready_timeout << " msec ]";
-        dcrit << err.str() << endl;
-        throw SystemError(err.str());
-    }
+	if( ready_timeout == 0 )
+		ready_timeout = 15000;
+	else if( ready_timeout < 0 )
+		ready_timeout = UniSetTimer::WaitUpTime;
+
+	if( !shm->waitSMready(ready_timeout, 50) )
+	{
+		ostringstream err;
+		err << myname << "(waitSMReady): Wait SharedMemory failed. [ " << ready_timeout << " msec ]";
+		dcrit << err.str() << endl;
+		throw SystemError(err.str());
+	}
 }
 // -----------------------------------------------------------------------------
 void SMDBServer::step()
 {
-//    DBServer_MySQL::step();
+	//    DBServer_MySQL::step();
 
-    if( sidHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
-    {
-        try
-        {
-            shm->localSaveValue(aitHeartBeat,sidHeartBeat,maxHeartBeat,getId());
-            ptHeartBeat.reset();
-        }
-        catch( const Exception& ex )
-        {
-            dcrit << myname << "(step): (hb) " << ex << std::endl;
-        }
-    }
+	if( sidHeartBeat != DefaultObjectId && ptHeartBeat.checkTime() )
+	{
+		try
+		{
+			shm->localSaveValue(aitHeartBeat, sidHeartBeat, maxHeartBeat, getId());
+			ptHeartBeat.reset();
+		}
+		catch( const Exception& ex )
+		{
+			dcrit << myname << "(step): (hb) " << ex << std::endl;
+		}
+	}
 }
 //--------------------------------------------------------------------------------
-void SMDBServer::initDB( DBInterface *db )
+void SMDBServer::initDB( DBInterface* db )
 {
-    {
-          std::ostringstream q;
-        q << "SET NAMES " << db_locale;
-        db->query(q.str());
-    }
-    
-    {
-        std::ostringstream q;
-        q << "SET CHARACTER SET " << db_locale;
-        db->query(q.str());
-    }
+	{
+		std::ostringstream q;
+		q << "SET NAMES " << db_locale;
+		db->query(q.str());
+	}
 
-    try
-    {
-        xmlNode* snode = conf->getXMLSensorsSection();
-        if(!snode)
-        {
-            dcrit << myname << ": section <sensors> not found.." << endl;
-            return;
-        }
+	{
+		std::ostringstream q;
+		q << "SET CHARACTER SET " << db_locale;
+		db->query(q.str());
+	}
 
-            UniXML::iterator it(snode);
-            if( !it.goChildren() )
-            {
-                dcrit << myname << ": section <sensors> empty?!.." << endl;
-                return;
-            }
+	try
+	{
+		xmlNode* snode = conf->getXMLSensorsSection();
 
-            for(;it.getCurrent(); it.goNext() )
-            {
-                // ??. DBTABLE ObjectsMap
-                std::ostringstream data;
-                data << " VALUES('";                            // ???? ???????
-                data << it.getProp("textname") << "','";    // name
-                data << it.getProp("name") << "','";        // rep_name
-                data << it.getProp("id") << "','";            // id (sensorid)
-                data << it.getIntProp("msg") << "')";            // msg [0:1]
+		if(!snode)
+		{
+			dcrit << myname << ": section <sensors> not found.." << endl;
+			return;
+		}
 
-                if( !writeToBase("INSERT IGNORE INTO ObjectsMap(name,rep_name,id,msg)"+data.str()) )
-                {
-                    dcrit << myname <<  "(insert) ObjectsMap msg error: "<< db->error() << std::endl;
-                    db->freeResult();
-                }
-            }
-    }
-    catch( const Exception& ex )
-    {
-        dcrit << myname << "(filling ObjectsMap): " << ex << std::endl;
-    }
-    catch( ...  )
-    {
-        dcrit << myname << "(filling ObjectsMap): catch ..." << std::endl;
-    }
+		UniXML::iterator it(snode);
+
+		if( !it.goChildren() )
+		{
+			dcrit << myname << ": section <sensors> empty?!.." << endl;
+			return;
+		}
+
+		for(; it.getCurrent(); it.goNext() )
+		{
+			// ??. DBTABLE ObjectsMap
+			std::ostringstream data;
+			data << " VALUES('";                            // ???? ???????
+			data << it.getProp("textname") << "','";    // name
+			data << it.getProp("name") << "','";        // rep_name
+			data << it.getProp("id") << "','";            // id (sensorid)
+			data << it.getIntProp("msg") << "')";            // msg [0:1]
+
+			if( !writeToBase("INSERT IGNORE INTO ObjectsMap(name,rep_name,id,msg)" + data.str()) )
+			{
+				dcrit << myname <<  "(insert) ObjectsMap msg error: " << db->error() << std::endl;
+				db->freeResult();
+			}
+		}
+	}
+	catch( const Exception& ex )
+	{
+		dcrit << myname << "(filling ObjectsMap): " << ex << std::endl;
+	}
+	catch( ...  )
+	{
+		dcrit << myname << "(filling ObjectsMap): catch ..." << std::endl;
+	}
 }
 //--------------------------------------------------------------------------------
 void SMDBServer::help_print( int argc, const char* const* argv )
 {
-    cout << "--dbserver-name    - ID for dbserver. Default: SMDBServer1. " << endl;
-    cout << "--dbserver-locale name   - DB locale. Default: koi8-r. " << endl;
-    cout << "--dbserver-heartbeat-id name   - ID for heartbeat sensor." << endl;
-    cout << "--dbserver-heartbeat-max val   - max value for heartbeat sensor." << endl;
+	cout << "--dbserver-name    - ID for dbserver. Default: SMDBServer1. " << endl;
+	cout << "--dbserver-locale name   - DB locale. Default: koi8-r. " << endl;
+	cout << "--dbserver-heartbeat-id name   - ID for heartbeat sensor." << endl;
+	cout << "--dbserver-heartbeat-max val   - max value for heartbeat sensor." << endl;
 }
 // -----------------------------------------------------------------------------
 SMDBServer* SMDBServer::init_smdbserver( int argc, const char* const* argv,
-                                            UniSetTypes::ObjectId icID, SharedMemory* ic,
-                                            const std::string& prefix )
+		UniSetTypes::ObjectId icID, SharedMemory* ic,
+		const std::string& prefix )
 {
-    string name = conf->getArgParam("--" + prefix + "-name","DBServer");
-    if( name.empty() )
-    {
-        cerr << "(SMDBServer): Unknown name'" << endl;
-        return 0;
-    }
+	string name = conf->getArgParam("--" + prefix + "-name", "DBServer");
 
-    ObjectId ID = conf->getServiceID(name);
-    if( ID == UniSetTypes::DefaultObjectId )
-    {
-        cerr << "(SMDBServer): Not found ID for '" << name
-            << " in '" << conf->getServicesSection() << "' section" << endl;
-        return 0;
-    }
+	if( name.empty() )
+	{
+		cerr << "(SMDBServer): Unknown name'" << endl;
+		return 0;
+	}
 
-    dinfo << "(SMDBServer): name = " << name << "(" << ID << ")" << endl;
-    return new SMDBServer(ID,icID,ic,prefix);
+	ObjectId ID = conf->getServiceID(name);
+
+	if( ID == UniSetTypes::DefaultObjectId )
+	{
+		cerr << "(SMDBServer): Not found ID for '" << name
+			 << " in '" << conf->getServicesSection() << "' section" << endl;
+		return 0;
+	}
+
+	dinfo << "(SMDBServer): name = " << name << "(" << ID << ")" << endl;
+	return new SMDBServer(ID, icID, ic, prefix);
 }
 // -----------------------------------------------------------------------------

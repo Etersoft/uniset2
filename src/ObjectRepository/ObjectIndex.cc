@@ -19,8 +19,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 // -----------------------------------------------------------------------------------------
-/*! 
-    \todo Добавить проверку на предельный номер id 
+/*!
+    \todo Добавить проверку на предельный номер id
 */
 // -----------------------------------------------------------------------------------------
 #include "ObjectIndex.h"
@@ -36,20 +36,21 @@ using namespace UniSetTypes;
 
 string ObjectIndex::getNameById( const ObjectId id )
 {
-    return getMapName(id);
+	return getMapName(id);
 }
 // -----------------------------------------------------------------------------------------
 std::string ObjectIndex::getBaseName( const std::string& fname )
 {
-    string::size_type pos = fname.rfind('/');
-    if( pos != string::npos )
-        return fname.substr(pos+1);
+	string::size_type pos = fname.rfind('/');
 
-    return fname;
+	if( pos != string::npos )
+		return fname.substr(pos + 1);
+
+	return fname;
 }
 // -----------------------------------------------------------------------------------------
 void ObjectIndex::initLocalNode( const ObjectId nodeid )
 {
-    nmLocalNode = getMapName(nodeid);
+	nmLocalNode = getMapName(nodeid);
 }
 // -----------------------------------------------------------------------------------------

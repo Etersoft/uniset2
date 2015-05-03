@@ -1,5 +1,5 @@
 ############################################################################
-# This file is part of the UniSet library                                  #
+# This file is part of the UniSet library								  #
 ############################################################################
 
 # Каталоги для размещения генерируемых CC- и HH-файлов соответственно
@@ -13,3 +13,5 @@ include $(top_builddir)/IDL/idl.mk
 
 idl_include_HEADERS = *.idl
 idl_includedir = $(datadir)/idl/@PACKAGE@/Processes
+
+include $(top_builddir)/include.mk

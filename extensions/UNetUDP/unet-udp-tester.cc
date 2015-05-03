@@ -9,22 +9,23 @@
 #include "UDPPacket.h"
 #include "PassiveTimer.h"
 // --------------------------------------------------------------------------
-static struct option longopts[] = {
-    { "help", no_argument, 0, 'h' },
-    { "send", required_argument, 0, 's' },
-    { "receive", required_argument, 0, 'r' },
-    { "proc-id", required_argument, 0, 'p' },
-    { "node-id", required_argument, 0, 'n' },
-    { "send-pause", required_argument, 0, 'x' },
-    { "timeout", required_argument, 0, 't' },
-    { "data-count", required_argument, 0, 'c' },
-    { "disable-broadcast", no_argument, 0, 'b' },
-    { "show-data", no_argument, 0, 'd' },
-    { "check-lost", no_argument, 0, 'l' },
-    { "verbode", required_argument, 0, 'v' },
-    { "num-cycles", required_argument, 0, 'z' },
-    { "prof", required_argument, 0, 'y' },
-    { NULL, 0, 0, 0 }
+static struct option longopts[] =
+{
+	{ "help", no_argument, 0, 'h' },
+	{ "send", required_argument, 0, 's' },
+	{ "receive", required_argument, 0, 'r' },
+	{ "proc-id", required_argument, 0, 'p' },
+	{ "node-id", required_argument, 0, 'n' },
+	{ "send-pause", required_argument, 0, 'x' },
+	{ "timeout", required_argument, 0, 't' },
+	{ "data-count", required_argument, 0, 'c' },
+	{ "disable-broadcast", no_argument, 0, 'b' },
+	{ "show-data", no_argument, 0, 'd' },
+	{ "check-lost", no_argument, 0, 'l' },
+	{ "verbode", required_argument, 0, 'v' },
+	{ "num-cycles", required_argument, 0, 'z' },
+	{ "prof", required_argument, 0, 'y' },
+	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
 using namespace std;
@@ -33,336 +34,348 @@ using namespace std::chrono;
 // --------------------------------------------------------------------------
 enum Command
 {
-    cmdNOP,
-    cmdSend,
-    cmdReceive
+	cmdNOP,
+	cmdSend,
+	cmdReceive
 };
 // --------------------------------------------------------------------------
 static bool split_addr( const string& addr, string& host, ost::tpport_t& port )
 {
-    string::size_type pos = addr.rfind(':');
-    if(  pos != string::npos )
-    {
-        host = addr.substr(0,pos);
-        string s_port(addr.substr(pos+1,addr.size()-1));
-        port = atoi(s_port.c_str());
-        return true;
-    }
+	string::size_type pos = addr.rfind(':');
 
-    return false;
+	if(  pos != string::npos )
+	{
+		host = addr.substr(0, pos);
+		string s_port(addr.substr(pos + 1, addr.size() - 1));
+		port = atoi(s_port.c_str());
+		return true;
+	}
+
+	return false;
 }
 // --------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
-    int optindex = 0;
-    int opt = 0;
-    Command cmd = cmdNOP;
-    int verb = 0;
-    std::string addr = "";
-    ost::tpport_t port=0;
-    int usecpause = 2000000;
-    timeout_t tout = TIMEOUT_INF;
-    bool broadcast = true;
-    int procID = 1;
-    int nodeID = 1;
-    size_t count = 50;
-    bool lost = false;
-    bool show = false;
-    int ncycles = -1;
-    unsigned int nprof = 0;
+	int optindex = 0;
+	int opt = 0;
+	Command cmd = cmdNOP;
+	int verb = 0;
+	std::string addr = "";
+	ost::tpport_t port = 0;
+	int usecpause = 2000000;
+	timeout_t tout = TIMEOUT_INF;
+	bool broadcast = true;
+	int procID = 1;
+	int nodeID = 1;
+	size_t count = 50;
+	bool lost = false;
+	bool show = false;
+	int ncycles = -1;
+	unsigned int nprof = 0;
 
-    while( (opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blvdz:y:",longopts,&optindex)) != -1 )
-    {
-        switch (opt)
-        {
-            case 'h':
-                cout << "-h|--help                - this message" << endl;
-                cout << "[-s|--send] host:port    - Send message." << endl;
-                cout << "[-c|--data-count] num    - Send num count of value. Default: 50." << endl;
-                cout << "[-r|--receive] host:port - Receive message." << endl;
-                cout << "[-p|--proc-id] id        - Set packet header. From 'procID'. Default: 1" << endl;
-                cout << "[-n|--node-id] id        - Set packet header. From 'nodeID'. Default: 1" << endl;
-                cout << "[-t|--timeout] msec      - timeout for receive. Default: 0 msec (waitup)." << endl;
-                cout << "[-x|--send-pause] msec   - pause for send packets. Default: 200 msec." << endl;
-                cout << "[-b|--disable-broadcast] - Disable broadcast mode." << endl;
-                cout << "[-l|--check-lost]        - Check the lost packets." << endl;
-                cout << "[-v|--verbose]           - verbose mode." << endl;
-                cout << "[-d|--show-data]         - show receive data." << endl;
-                cout << "[-z|--num-cycles] num    - Number of cycles of exchange. Default: -1 - infinitely." << endl;
-                cout << "[-y|--prof] num          - Print receive statistics every NUM packets (for -r only)" << endl;
-                cout << endl;
-            return 0;
+	while( (opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blvdz:y:", longopts, &optindex)) != -1 )
+	{
+		switch (opt)
+		{
+			case 'h':
+				cout << "-h|--help                - this message" << endl;
+				cout << "[-s|--send] host:port    - Send message." << endl;
+				cout << "[-c|--data-count] num    - Send num count of value. Default: 50." << endl;
+				cout << "[-r|--receive] host:port - Receive message." << endl;
+				cout << "[-p|--proc-id] id        - Set packet header. From 'procID'. Default: 1" << endl;
+				cout << "[-n|--node-id] id        - Set packet header. From 'nodeID'. Default: 1" << endl;
+				cout << "[-t|--timeout] msec      - timeout for receive. Default: 0 msec (waitup)." << endl;
+				cout << "[-x|--send-pause] msec   - pause for send packets. Default: 200 msec." << endl;
+				cout << "[-b|--disable-broadcast] - Disable broadcast mode." << endl;
+				cout << "[-l|--check-lost]        - Check the lost packets." << endl;
+				cout << "[-v|--verbose]           - verbose mode." << endl;
+				cout << "[-d|--show-data]         - show receive data." << endl;
+				cout << "[-z|--num-cycles] num    - Number of cycles of exchange. Default: -1 - infinitely." << endl;
+				cout << "[-y|--prof] num          - Print receive statistics every NUM packets (for -r only)" << endl;
+				cout << endl;
+				return 0;
 
-            case 'r':
-                cmd = cmdReceive;
-                addr = string(optarg);
-            break;
+			case 'r':
+				cmd = cmdReceive;
+				addr = string(optarg);
+				break;
 
-            case 's':
-                addr = string(optarg);
-                cmd = cmdSend;
-            break;
+			case 's':
+				addr = string(optarg);
+				cmd = cmdSend;
+				break;
 
-            case 't':
-                tout = atoi(optarg);
-            break;
+			case 't':
+				tout = atoi(optarg);
+				break;
 
-            case 'x':
-                usecpause = atoi(optarg)*1000;
-            break;
+			case 'x':
+				usecpause = atoi(optarg) * 1000;
+				break;
 
-            case 'y':
-                nprof = atoi(optarg);
-            break;
+			case 'y':
+				nprof = atoi(optarg);
+				break;
 
-            case 'c':
-                count = atoi(optarg);
-            break;
+			case 'c':
+				count = atoi(optarg);
+				break;
 
-            case 'p':
-                procID = atoi(optarg);
-            break;
+			case 'p':
+				procID = atoi(optarg);
+				break;
 
-            case 'n':
-                nodeID = atoi(optarg);
-            break;
+			case 'n':
+				nodeID = atoi(optarg);
+				break;
 
-            case 'b':
-                broadcast = false;
-            break;
+			case 'b':
+				broadcast = false;
+				break;
 
-            case 'd':
-                show = true;
-            break;
+			case 'd':
+				show = true;
+				break;
 
-            case 'l':
-                lost = true;
-            break;
+			case 'l':
+				lost = true;
+				break;
 
-            case 'v':
-                verb = 1;
-            break;
+			case 'v':
+				verb = 1;
+				break;
 
-            case 'z':
-                ncycles = atoi(optarg);
-            break;
+			case 'z':
+				ncycles = atoi(optarg);
+				break;
 
-            case '?':
-            default:
-                cerr << "? argumnet" << endl;
-                return 0;
-        }
-    }
+			case '?':
+			default:
+				cerr << "? argumnet" << endl;
+				return 0;
+		}
+	}
 
-    if( cmd == cmdNOP )
-    {
-        cerr << "No command... Use -h for help" << endl;
-        return -1;
-    }
+	if( cmd == cmdNOP )
+	{
+		cerr << "No command... Use -h for help" << endl;
+		return -1;
+	}
 
-    if( tout < 0 )
-        tout = TIMEOUT_INF;
+	if( tout < 0 )
+		tout = TIMEOUT_INF;
 
-    ost::Thread::setException(ost::Thread::throwException);
+	ost::Thread::setException(ost::Thread::throwException);
 
-    try
-    {
-        string s_host;
-        if( !split_addr(addr,s_host,port) )
-        {
-            cerr << "(main): Unknown 'host:port' for '" << addr << "'" << endl;
-            return 1;
-        }
+	try
+	{
+		string s_host;
 
-        if( verb )
-        {
-            cout << " host=" << s_host
-                << " port=" << port
-                << " timeout=";
-            if( tout == TIMEOUT_INF )
-                cout << "Waitup";
-            else
-                cout << tout;
+		if( !split_addr(addr, s_host, port) )
+		{
+			cerr << "(main): Unknown 'host:port' for '" << addr << "'" << endl;
+			return 1;
+		}
 
-            cout << " msecpause=" << usecpause/1000
-                << endl;
-        }
+		if( verb )
+		{
+			cout << " host=" << s_host
+				 << " port=" << port
+				 << " timeout=";
 
-        ost::IPV4Host host(s_host.c_str());
-//        udp.UDPTransmit::setBroadcast(broadcast);
+			if( tout == TIMEOUT_INF )
+				cout << "Waitup";
+			else
+				cout << tout;
 
-        switch( cmd )
-        {
-            case cmdReceive:
-            {
-                ost::UDPDuplex udp(host,port);
+			cout << " msecpause=" << usecpause / 1000
+				 << endl;
+		}
 
-//                char buf[UniSetUDP::MaxDataLen];
-                UniSetUDP::UDPMessage pack;
-                UniSetUDP::UDPPacket buf;
-                unsigned long prev_num=1;
+		ost::IPV4Host host(s_host.c_str());
+		//        udp.UDPTransmit::setBroadcast(broadcast);
 
-                int nc = 1;
-                if( ncycles > 0 )
-                    nc = ncycles;
+		switch( cmd )
+		{
+			case cmdReceive:
+			{
+				ost::UDPDuplex udp(host, port);
 
-                auto t_start = high_resolution_clock::now();
+				//                char buf[UniSetUDP::MaxDataLen];
+				UniSetUDP::UDPMessage pack;
+				UniSetUDP::UDPPacket buf;
+				unsigned long prev_num = 1;
 
-                unsigned int npack = 0;
-                while( nc )
-                {
-                    try
-                    {
-                        if( nprof > 0 && npack >= nprof )
-                        {
-                            auto t_end = high_resolution_clock::now();
-                            float sec = duration_cast<duration<float>>(t_end - t_start).count();
-                            cout << "Receive " << setw(5) << npack << " packets for " << setw(8) << sec << " sec "
-                                 << " [ 1 packet per " << setw(10) << ( sec / (float)npack ) << " sec ]" << endl;
-                            t_start = t_end;
-                            npack = 0;
-                        }
+				int nc = 1;
 
-                        if( !udp.isInputReady(tout) )
-                        {
-                            cout << "(recv): Timeout.." << endl;
-                            continue;
-                        }
+				if( ncycles > 0 )
+					nc = ncycles;
 
-                        size_t ret = udp.UDPReceive::receive( &(buf.data), sizeof(buf.data) );
-                        size_t sz = UniSetUDP::UDPMessage::getMessage(pack,buf);
-                        if( sz == 0 )
-                        {
-                            cerr << "(recv): FAILED header ret=" << ret
-                                << " sizeof=" << sz<< endl;
-                            continue;
-                        }
+				auto t_start = high_resolution_clock::now();
 
-                        if( lost )
-                        {
-                            if( prev_num != (pack.num-1) )
-                                cerr << "WARNING! Incorrect sequence of packets! current=" << pack.num
-                                    << " prev=" << prev_num << endl;
+				unsigned int npack = 0;
 
-                            prev_num = pack.num;
-                        }
+				while( nc )
+				{
+					try
+					{
+						if( nprof > 0 && npack >= nprof )
+						{
+							auto t_end = high_resolution_clock::now();
+							float sec = duration_cast<duration<float>>(t_end - t_start).count();
+							cout << "Receive " << setw(5) << npack << " packets for " << setw(8) << sec << " sec "
+								 << " [ 1 packet per " << setw(10) << ( sec / (float)npack ) << " sec ]" << endl;
+							t_start = t_end;
+							npack = 0;
+						}
 
-                        npack++;
+						if( !udp.isInputReady(tout) )
+						{
+							cout << "(recv): Timeout.." << endl;
+							continue;
+						}
 
-                        if( verb )
-                            cout << "receive OK:  "
-                                 << " bytes: " << ret << endl;
+						size_t ret = udp.UDPReceive::receive( &(buf.data), sizeof(buf.data) );
+						size_t sz = UniSetUDP::UDPMessage::getMessage(pack, buf);
 
-                        if( show )
-                            cout << "receive data: " << pack << endl;
-                    }
-                    catch( ost::SockException& e )
-                    {
-                        cerr << "(recv): " << e.getString() << " (" << addr << ")" << endl;
-                    }
-                    catch( ... )
-                    {
-                        cerr << "(recv): catch ..." << endl;
-                    }
+						if( sz == 0 )
+						{
+							cerr << "(recv): FAILED header ret=" << ret
+								 << " sizeof=" << sz << endl;
+							continue;
+						}
 
-                    if( ncycles > 0 )
-                    {
-                        nc--;
-                        if( nc <=0 )
-                            break;
-                    }
-                }
-            }
-            break;
+						if( lost )
+						{
+							if( prev_num != (pack.num - 1) )
+								cerr << "WARNING! Incorrect sequence of packets! current=" << pack.num
+									 << " prev=" << prev_num << endl;
 
-            case cmdSend:
-            {
-                ost::UDPSocket* udp;
-                  if( !broadcast )
-                    udp = new ost::UDPSocket();
-                else
-                    udp = new ost::UDPBroadcast(host,port);
+							prev_num = pack.num;
+						}
 
-                UniSetUDP::UDPMessage mypack;
-                mypack.nodeID = nodeID;
-                mypack.procID = procID;
+						npack++;
 
-                for( size_t i=0; i < count; i++ )
-                {
-                    UDPAData d(i,i);
-                    mypack.addAData(d);
-                }
+						if( verb )
+							cout << "receive OK:  "
+								 << " bytes: " << ret << endl;
 
-                for( unsigned int i=0; i < count; i++ )
-                    mypack.addDData(i,i);
+						if( show )
+							cout << "receive data: " << pack << endl;
+					}
+					catch( ost::SockException& e )
+					{
+						cerr << "(recv): " << e.getString() << " (" << addr << ")" << endl;
+					}
+					catch( ... )
+					{
+						cerr << "(recv): catch ..." << endl;
+					}
 
-                udp->setPeer(host,port);
-                unsigned long packetnum = 0;
+					if( ncycles > 0 )
+					{
+						nc--;
 
-                UniSetUDP::UDPPacket s_buf;
+						if( nc <= 0 )
+							break;
+					}
+				}
+			}
+			break;
 
-                int nc = 1;
-                if( ncycles > 0 )
-                    nc = ncycles;
+			case cmdSend:
+			{
+				ost::UDPSocket* udp;
 
-                while( nc )
-                {
-                    mypack.num = packetnum++;
-                    if( packetnum > UniSetUDP::MaxPacketNum )
-                        packetnum = 1;
+				if( !broadcast )
+					udp = new ost::UDPSocket();
+				else
+					udp = new ost::UDPBroadcast(host, port);
 
-                    try
-                    {
-                        if( udp->isPending(ost::Socket::pendingOutput,tout) )
-                        {
-                            mypack.transport_msg(s_buf);
+				UniSetUDP::UDPMessage mypack;
+				mypack.nodeID = nodeID;
+				mypack.procID = procID;
 
-                            if( verb )
-                                cout << "(send): to addr=" << addr << " d_count=" << mypack.dcount
-                                    << " a_count=" << mypack.acount << " bytes=" << s_buf.len << endl;
+				for( size_t i = 0; i < count; i++ )
+				{
+					UDPAData d(i, i);
+					mypack.addAData(d);
+				}
 
-                            size_t ret = udp->send((char*)&s_buf.data, s_buf.len);
-                            if( ret < s_buf.len )
-                                cerr << "(send): FAILED ret=" << ret << " < sizeof=" << s_buf.len << endl;
-                        }
-                    }
-                    catch( ost::SockException& e )
-                    {
-                        cerr << "(send): " << e.getString() << " (" << addr << ")" << endl;
-                    }
-                    catch( ... )
-                    {
-                        cerr << "(send): catch ..." << endl;
-                    }
+				for( unsigned int i = 0; i < count; i++ )
+					mypack.addDData(i, i);
 
-                    if( ncycles > 0 )
-                    {
-                        nc--;
-                        if( nc <=0 )
-                            break;
-                    }
+				udp->setPeer(host, port);
+				unsigned long packetnum = 0;
 
-                    usleep(usecpause);
-                }
-            }
-            break;
+				UniSetUDP::UDPPacket s_buf;
 
-            default:
-                cerr << endl << "Unknown command: '" << cmd << "'. Use -h for help" << endl;
-                return -1;
-            break;
-        }
-    }
-    catch( const std::exception& e )
-    {
-        cerr << "(main): " << e.what() << endl;
-    }
-    catch( ... )
-    {
-        cerr << "(main): catch ..." << endl;
-        return 1;
-    }
+				int nc = 1;
 
-    return 0;
+				if( ncycles > 0 )
+					nc = ncycles;
+
+				while( nc )
+				{
+					mypack.num = packetnum++;
+
+					if( packetnum > UniSetUDP::MaxPacketNum )
+						packetnum = 1;
+
+					try
+					{
+						if( udp->isPending(ost::Socket::pendingOutput, tout) )
+						{
+							mypack.transport_msg(s_buf);
+
+							if( verb )
+								cout << "(send): to addr=" << addr << " d_count=" << mypack.dcount
+									 << " a_count=" << mypack.acount << " bytes=" << s_buf.len << endl;
+
+							size_t ret = udp->send((char*)&s_buf.data, s_buf.len);
+
+							if( ret < s_buf.len )
+								cerr << "(send): FAILED ret=" << ret << " < sizeof=" << s_buf.len << endl;
+						}
+					}
+					catch( ost::SockException& e )
+					{
+						cerr << "(send): " << e.getString() << " (" << addr << ")" << endl;
+					}
+					catch( ... )
+					{
+						cerr << "(send): catch ..." << endl;
+					}
+
+					if( ncycles > 0 )
+					{
+						nc--;
+
+						if( nc <= 0 )
+							break;
+					}
+
+					usleep(usecpause);
+				}
+			}
+			break;
+
+			default:
+				cerr << endl << "Unknown command: '" << cmd << "'. Use -h for help" << endl;
+				return -1;
+				break;
+		}
+	}
+	catch( const std::exception& e )
+	{
+		cerr << "(main): " << e.what() << endl;
+	}
+	catch( ... )
+	{
+		cerr << "(main): catch ..." << endl;
+		return 1;
+	}
+
+	return 0;
 }
 // --------------------------------------------------------------------------

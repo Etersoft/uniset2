@@ -1,5 +1,5 @@
 ############################################################################
-# This file is part of the UniSet library                                  #
+# This file is part of the UniSet library								  #
 ############################################################################
 noinst_LTLIBRARIES 		= libServices.la
 libServices_la_CPPFLAGS	= $(SIGC_CFLAGS)
@@ -8,3 +8,6 @@ libServices_la_SOURCES 	= DBServer.cc
 
 local-clean:
 	rm -rf *iSK.cc
+
+
+include $(top_builddir)/include.mk

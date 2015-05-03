@@ -15,68 +15,72 @@ using namespace UniSetExtensions;
 // --------------------------------------------------------------------------
 int main(int argc, char* argv[] )
 {
-    Catch::Session session;
-    if( argc>1 && ( strcmp(argv[1],"--help")==0 || strcmp(argv[1],"-h")==0 ) )
-    {
-        cout << "--confile    - Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
-        SharedMemory::help_print(argc, argv);
-        cout << endl << endl << "--------------- CATCH HELP --------------" << endl;
-        session.showHelp("test_with_sm");
-        return 0;
-    }
+	Catch::Session session;
 
-    int returnCode = session.applyCommandLine( argc, argv, Catch::Session::OnUnusedOptions::Ignore );
-      if( returnCode != 0 ) // Indicates a command line error
-        return returnCode;
+	if( argc > 1 && ( strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0 ) )
+	{
+		cout << "--confile    - Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
+		SharedMemory::help_print(argc, argv);
+		cout << endl << endl << "--------------- CATCH HELP --------------" << endl;
+		session.showHelp("test_with_sm");
+		return 0;
+	}
 
-    try
-    {
-        uniset_init(argc,argv);
+	int returnCode = session.applyCommandLine( argc, argv, Catch::Session::OnUnusedOptions::Ignore );
 
-        UNetExchange* unet = UNetExchange::init_unetexchange(argc,argv,getSharedMemoryID());
-        if( !unet )
-            return 1;
+	if( returnCode != 0 ) // Indicates a command line error
+		return returnCode;
 
-        UniSetActivatorPtr act = UniSetActivator::Instance();
+	try
+	{
+		uniset_init(argc, argv);
 
-        act->addObject(static_cast<class UniSetObject*>(unet));
+		UNetExchange* unet = UNetExchange::init_unetexchange(argc, argv, getSharedMemoryID());
 
-        SystemMessage sm(SystemMessage::StartUp);
-        act->broadcast( sm.transport_msg() );
-        act->run(true);
+		if( !unet )
+			return 1;
 
-        int tout = 6000;
-        PassiveTimer pt(tout);
-        while( !pt.checkTime() && !act->exist() )
-            msleep(100);
+		UniSetActivatorPtr act = UniSetActivator::Instance();
 
-        if( !act->exist() )
-        {
-            cerr << "(tests_with_sm): SharedMemory not exist! (timeout=" << tout << ")" << endl;
-            return 1;
-        }
+		act->addObject(static_cast<class UniSetObject*>(unet));
 
-        int ret = session.run();
+		SystemMessage sm(SystemMessage::StartUp);
+		act->broadcast( sm.transport_msg() );
+		act->run(true);
 
-        act->oaDestroy();
-        return ret;
-    }
-    catch( const SystemError& err )
-    {
-        cerr << "(tests_with_sm): " << err << endl;
-    }
-    catch( const Exception& ex )
-    {
-        cerr << "(tests_with_sm): " << ex << endl;
-    }
-    catch( const std::exception& e )
-    {
-        cerr << "(tests_with_sm): " << e.what() << endl;
-    }
-    catch(...)
-    {
-        cerr << "(tests_with_sm): catch(...)" << endl;
-    }
+		int tout = 6000;
+		PassiveTimer pt(tout);
 
-    return 1;
+		while( !pt.checkTime() && !act->exist() )
+			msleep(100);
+
+		if( !act->exist() )
+		{
+			cerr << "(tests_with_sm): SharedMemory not exist! (timeout=" << tout << ")" << endl;
+			return 1;
+		}
+
+		int ret = session.run();
+
+		act->oaDestroy();
+		return ret;
+	}
+	catch( const SystemError& err )
+	{
+		cerr << "(tests_with_sm): " << err << endl;
+	}
+	catch( const Exception& ex )
+	{
+		cerr << "(tests_with_sm): " << ex << endl;
+	}
+	catch( const std::exception& e )
+	{
+		cerr << "(tests_with_sm): " << e.what() << endl;
+	}
+	catch(...)
+	{
+		cerr << "(tests_with_sm): catch(...)" << endl;
+	}
+
+	return 1;
 }

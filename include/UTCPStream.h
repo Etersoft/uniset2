@@ -6,17 +6,17 @@
 #include <cc++/socket.h>
 // -------------------------------------------------------------------------
 class UTCPStream:
-    public ost::TCPStream
+	public ost::TCPStream
 {
-    public:
+	public:
 
-        UTCPStream();
-        virtual ~UTCPStream();
+		UTCPStream();
+		virtual ~UTCPStream();
 
-        void create( const std::string& hname, int port, bool throwflag=false, timeout_t timer=0 );
+		void create( const std::string& hname, int port, bool throwflag = false, timeout_t timer = 0 );
 
-    protected:
-    private:
+	protected:
+	private:
 
 };
 // -------------------------------------------------------------------------

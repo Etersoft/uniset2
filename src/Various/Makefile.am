@@ -1,5 +1,5 @@
 ############################################################################
-# This file is part of the UniSet library                                  #
+# This file is part of the UniSet library								  #
 ############################################################################
 
 noinst_LTLIBRARIES = libVarious.la
@@ -11,3 +11,5 @@ libVarious_la_SOURCES 	= UniXML.cc MessageType.cc Configuration.cc \
 local-clean:
 	rm -rf *iSK.cc
 	
+
+include $(top_builddir)/include.mk

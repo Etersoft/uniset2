@@ -12,22 +12,22 @@ using namespace UniSetTypes;
 using namespace std;
 // ------------------------------------------------------------------------------------------
 SMonitor::SMonitor():
-    script("")
+	script("")
 {
 }
 
 SMonitor::SMonitor(ObjectId id):
-    UniSetObject_LT(id),
-    script("")
+	UniSetObject_LT(id),
+	script("")
 {
-    string sid(uniset_conf()->getArgParam("--sid"));
+	string sid(uniset_conf()->getArgParam("--sid"));
 
-    lst = UniSetTypes::getSInfoList(sid,uniset_conf());
+	lst = UniSetTypes::getSInfoList(sid, uniset_conf());
 
-    if( lst.empty() )
-        throw SystemError("Не задан список датчиков (--sid)");
+	if( lst.empty() )
+		throw SystemError("Не задан список датчиков (--sid)");
 
-    script = uniset_conf()->getArgParam("--script");
+	script = uniset_conf()->getArgParam("--script");
 }
 
 
@@ -37,79 +37,80 @@ SMonitor::~SMonitor()
 // ------------------------------------------------------------------------------------------
 void SMonitor::sigterm( int signo )
 {
-    cout << myname << "SMonitor: sigterm "<< endl;
+	cout << myname << "SMonitor: sigterm " << endl;
 }
 // ------------------------------------------------------------------------------------------
-void SMonitor::sysCommand( const SystemMessage *sm )
+void SMonitor::sysCommand( const SystemMessage* sm )
 {
-    switch(sm->command)
-    {
-        case SystemMessage::StartUp:
-        {
-            for( auto &it: lst )
-            {
-                if( it.si.node == DefaultObjectId )
-                    it.si.node = uniset_conf()->getLocalNode();
+	switch(sm->command)
+	{
+		case SystemMessage::StartUp:
+		{
+			for( auto& it : lst )
+			{
+				if( it.si.node == DefaultObjectId )
+					it.si.node = uniset_conf()->getLocalNode();
 
-                try
-                {
-                    if( it.si.id != DefaultObjectId )
-                        ui->askRemoteSensor(it.si.id,UniversalIO::UIONotify,it.si.node);
-                }
-                catch( const Exception& ex )
-                {
-                    cerr << myname << ":(askSensor): " << ex << endl;
-                    raise(SIGTERM);
-                }
-                catch(...)
-                {
-                    cerr << myname << ": НЕ СМОГ ЗАКАЗТЬ датчики "<< endl;
-                    raise(SIGTERM);
-                }
-            }
-        }
-        break;
+				try
+				{
+					if( it.si.id != DefaultObjectId )
+						ui->askRemoteSensor(it.si.id, UniversalIO::UIONotify, it.si.node);
+				}
+				catch( const Exception& ex )
+				{
+					cerr << myname << ":(askSensor): " << ex << endl;
+					raise(SIGTERM);
+				}
+				catch(...)
+				{
+					cerr << myname << ": НЕ СМОГ ЗАКАЗТЬ датчики " << endl;
+					raise(SIGTERM);
+				}
+			}
+		}
+		break;
 
-        case SystemMessage::FoldUp:
-        case SystemMessage::Finish:
-            break;
+		case SystemMessage::FoldUp:
+		case SystemMessage::Finish:
+			break;
 
-        case SystemMessage::WatchDog:
-            break;
+		case SystemMessage::WatchDog:
+			break;
 
-        default:
-            break;
-    }
+		default:
+			break;
+	}
 }
 // ------------------------------------------------------------------------------------------
 void SMonitor::sensorInfo( const SensorMessage* si )
 {
-    cout << "(" << setw(6) << si->id << "): " << setw(8) << timeToString(si->sm_tv_sec,":") 
-         << "(" << setw(6) << si->sm_tv_usec << "): ";
-    cout << setw(45) << uniset_conf()->oind->getMapName(si->id);
-    cout << "\tvalue=" << si->value << "\tfvalue=" << ( (float)si->value / pow(10.0,si->ci.precision) ) << endl;
+	cout << "(" << setw(6) << si->id << "): " << setw(8) << timeToString(si->sm_tv_sec, ":")
+		 << "(" << setw(6) << si->sm_tv_usec << "): ";
+	cout << setw(45) << uniset_conf()->oind->getMapName(si->id);
+	cout << "\tvalue=" << si->value << "\tfvalue=" << ( (float)si->value / pow(10.0, si->ci.precision) ) << endl;
 
-    if( !script.empty() )
-    {
-        ostringstream cmd;
-        // если задан полный путь или путь начиная с '.'
-        // то берём как есть, иначе прибавляем bindir из файла настроек
-        if( script[0] == '.' || script[0] == '/' )
-            cmd << script;
-        else
-            cmd << uniset_conf()->getBinDir() << script;
+	if( !script.empty() )
+	{
+		ostringstream cmd;
 
-        cmd << " " << si->id << " " << si->value << " " << si->sm_tv_sec << " " << si->sm_tv_usec;
+		// если задан полный путь или путь начиная с '.'
+		// то берём как есть, иначе прибавляем bindir из файла настроек
+		if( script[0] == '.' || script[0] == '/' )
+			cmd << script;
+		else
+			cmd << uniset_conf()->getBinDir() << script;
 
-        (void)system(cmd.str().c_str());
-//        if( WIFSIGNALED(ret) && (WTERMSIG(ret) == SIGINT || WTERMSIG(ret) == SIGQUIT))
-//        {
-//            cout << "finish..." << endl;
-//        }
-    }
+		cmd << " " << si->id << " " << si->value << " " << si->sm_tv_sec << " " << si->sm_tv_usec;
+
+		(void)system(cmd.str().c_str());
+		//        if( WIFSIGNALED(ret) && (WTERMSIG(ret) == SIGINT || WTERMSIG(ret) == SIGQUIT))
+		//        {
+		//            cout << "finish..." << endl;
+		//        }
+	}
 }
 // ------------------------------------------------------------------------------------------
-void SMonitor::timerInfo( const UniSetTypes::TimerMessage *tm )
+void SMonitor::timerInfo( const UniSetTypes::TimerMessage* tm )
 {
 
 }

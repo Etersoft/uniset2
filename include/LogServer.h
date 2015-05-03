@@ -19,7 +19,7 @@ class NullLogSession;
 LogReader. Читающих клиентов может быть скольугодно много, на каждого создаётся своя "сессия"(LogSession).
 При этом через лог сервер имеется возможность управлять включением или отключением определённых уровней логов,
 записью, отключением записи или ротацией файла с логами.  DebugStream за которым ведётся "слежение"
-задаётся в конструкторе для LogServer. 
+задаётся в конструкторе для LogServer.
 \code
    DebugStream mylog;
    LogServer logsrv(mylog);
@@ -52,49 +52,67 @@ LogReader. Читающих клиентов может быть скольуг�
 // -------------------------------------------------------------------------
 class LogServer
 {
-    public:
+	public:
 
-        LogServer( std::shared_ptr<DebugStream> log );
-        LogServer( std::shared_ptr<LogAgregator> log );
-        ~LogServer();
+		LogServer( std::shared_ptr<DebugStream> log );
+		LogServer( std::shared_ptr<LogAgregator> log );
+		~LogServer();
 
-        inline void setSessionTimeout( timeout_t msec ){ sessTimeout = msec; }
-        inline void setCmdTimeout( timeout_t msec ){ cmdTimeout = msec; }
-        inline void setOutTimeout( timeout_t msec ){ outTimeout = msec; }
-        inline void setSessionLog( Debug::type t ){ sessLogLevel = t; }
-        inline void setMaxSessionCount( int num ){ sessMaxCount = num; }
+		inline void setSessionTimeout( timeout_t msec )
+		{
+			sessTimeout = msec;
+		}
+		inline void setCmdTimeout( timeout_t msec )
+		{
+			cmdTimeout = msec;
+		}
+		inline void setOutTimeout( timeout_t msec )
+		{
+			outTimeout = msec;
+		}
+		inline void setSessionLog( Debug::type t )
+		{
+			sessLogLevel = t;
+		}
+		inline void setMaxSessionCount( int num )
+		{
+			sessMaxCount = num;
+		}
 
-        void run( const std::string& addr, ost::tpport_t port, bool thread=true );
+		void run( const std::string& addr, ost::tpport_t port, bool thread = true );
 
-        inline bool isRunning(){ return (thr && thr->isRunning()); }
+		inline bool isRunning()
+		{
+			return (thr && thr->isRunning());
+		}
 
-    protected:
-         LogServer();
+	protected:
+		LogServer();
 
-         void work();
-         void sessionFinished( std::shared_ptr<LogSession> s );
+		void work();
+		void sessionFinished( std::shared_ptr<LogSession> s );
 
-    private:
-        typedef std::list< std::shared_ptr<LogSession> > SessionList;
-        SessionList slist;
-        UniSetTypes::uniset_rwmutex mutSList;
+	private:
+		typedef std::list< std::shared_ptr<LogSession> > SessionList;
+		SessionList slist;
+		UniSetTypes::uniset_rwmutex mutSList;
 
-        timeout_t timeout;
-        timeout_t sessTimeout;
-        timeout_t cmdTimeout;
-        timeout_t outTimeout;
-        Debug::type sessLogLevel;
-        int sessMaxCount;
+		timeout_t timeout;
+		timeout_t sessTimeout;
+		timeout_t cmdTimeout;
+		timeout_t outTimeout;
+		Debug::type sessLogLevel;
+		int sessMaxCount;
 
-        std::atomic_bool cancelled;
-        DebugStream mylog;
-        ThreadCreator<LogServer>* thr;
+		std::atomic_bool cancelled;
+		DebugStream mylog;
+		ThreadCreator<LogServer>* thr;
 
-        ost::TCPSocket* tcp;
-        std::shared_ptr<DebugStream> elog;
-        std::ostream* oslog;
+		ost::TCPSocket* tcp;
+		std::shared_ptr<DebugStream> elog;
+		std::ostream* oslog;
 
-        std::shared_ptr<NullLogSession> nullsess;
+		std::shared_ptr<NullLogSession> nullsess;
 };
 // -------------------------------------------------------------------------
 #endif // LogServer_H_

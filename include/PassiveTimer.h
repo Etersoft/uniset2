@@ -20,7 +20,7 @@
 /*! \file
  *  \author Vitaly Lipatov, Pavel Vainerman
 */
-//---------------------------------------------------------------------------- 
+//----------------------------------------------------------------------------
 # ifndef PASSIVETIMER_H_
 # define PASSIVETIMER_H_
 //----------------------------------------------------------------------------
@@ -36,40 +36,48 @@
 /*! \class UniSetTimer
  * \brief Базовый интерфейс пасивных таймеров
  * \author Pavel Vainerman
-*/ 
+*/
 class UniSetTimer
 {
-    public:
-        virtual ~UniSetTimer(){};
+	public:
+		virtual ~UniSetTimer() {};
 
-        virtual bool checkTime()=0;                /*!< проверка наступления заданного времени */
-        virtual timeout_t setTiming( timeout_t timeMS )=0; /*!< установить таймер и запустить */
-        virtual void reset()=0;                    /*!< перезапустить таймер */
+		virtual bool checkTime() = 0;              /*!< проверка наступления заданного времени */
+		virtual timeout_t setTiming( timeout_t timeMS ) = 0; /*!< установить таймер и запустить */
+		virtual void reset() = 0;                  /*!< перезапустить таймер */
 
-        virtual timeout_t getCurrent()=0;         /*!< получить текущее значение таймера */
-        virtual timeout_t getInterval()=0;        /*!< получить интервал, на который установлен таймер, в мс */
-        timeout_t getLeft(timeout_t timeout)        /*< получить время, которое остается от timeout после прошествия времени getCurrent() */
-        {
-            timeout_t ct = getCurrent();
-            if( timeout <= ct )
-                return 0;
-            return timeout - ct;
-        }
+		virtual timeout_t getCurrent() = 0;       /*!< получить текущее значение таймера */
+		virtual timeout_t getInterval() = 0;      /*!< получить интервал, на который установлен таймер, в мс */
+		timeout_t getLeft(timeout_t timeout)        /*< получить время, которое остается от timeout после прошествия времени getCurrent() */
+		{
+			timeout_t ct = getCurrent();
 
-        // объявлены не чисто виртуальными т.к.
-        // некоторые классы могут не иметь подобных
-        // свойств.
-        virtual bool wait(timeout_t timeMS){ return 0;}     /*!< заснуть ожидая наступления времени */
-        virtual void terminate(){}                    /*!< прервать работу таймера */
-        virtual void stop(){ terminate(); };        /*!< завершить работу таймера */
+			if( timeout <= ct )
+				return 0;
 
-        /*! Время засыпания, до момента пока не будет вызвана функция прерывания
-         *  terminate() или stop()
-         */
-        static const timeout_t WaitUpTime = TIMEOUT_INF;
+			return timeout - ct;
+		}
 
-        /*! Минимальное время срабатывания. Задается в мсек. */
-        static const timeout_t MinQuantityTime = 10;
+		// объявлены не чисто виртуальными т.к.
+		// некоторые классы могут не иметь подобных
+		// свойств.
+		virtual bool wait(timeout_t timeMS)
+		{
+			return 0;   /*!< заснуть ожидая наступления времени */
+		}
+		virtual void terminate() {}                   /*!< прервать работу таймера */
+		virtual void stop()
+		{
+			terminate();
+		};        /*!< завершить работу таймера */
+
+		/*! Время засыпания, до момента пока не будет вызвана функция прерывания
+		 *  terminate() или stop()
+		 */
+		static const timeout_t WaitUpTime = TIMEOUT_INF;
+
+		/*! Минимальное время срабатывания. Задается в мсек. */
+		static const timeout_t MinQuantityTime = 10;
 };
 //----------------------------------------------------------------------------------------
 /*! \class PassiveTimer
@@ -80,38 +88,39 @@ class UniSetTimer
  * можно с помощью checkTime проверять, не наступило ли нужное время
  * \note Если timeMS<0, таймер никогда не сработает
  * \note timeMS=0 - таймер сработает сразу
-*/ 
-class PassiveTimer: 
-        public UniSetTimer
+*/
+class PassiveTimer:
+	public UniSetTimer
 {
-public:
-    PassiveTimer();
-    PassiveTimer( timeout_t timeMS );             /*!< установить таймер */
-    ~PassiveTimer();
+	public:
+		PassiveTimer();
+		PassiveTimer( timeout_t timeMS );             /*!< установить таймер */
+		~PassiveTimer();
 
 
-    virtual bool checkTime();                /*!< проверка наступления заданного времени */
-    virtual timeout_t setTiming( timeout_t timeMS );     /*!< установить таймер и запустить. timeMS = 0 вызовет немедленное срабатывание */
-    virtual void reset();                    /*!< перезапустить таймер */
+		virtual bool checkTime();                /*!< проверка наступления заданного времени */
+		virtual timeout_t setTiming( timeout_t timeMS );     /*!< установить таймер и запустить. timeMS = 0 вызовет немедленное срабатывание */
+		virtual void reset();                    /*!< перезапустить таймер */
 
-    virtual timeout_t getCurrent();                 /*!< получить текущее значение таймера, в мс */
-    virtual timeout_t getInterval()                /*!< получить интервал, на который установлен таймер, в мс */
-    {
-        // TODO: нужно убрать предположение, что нулевой интервал - выключенный таймер
-        if( timeSS == WaitUpTime )
-            return 0;
-        return timeSS*10;
-    }
+		virtual timeout_t getCurrent();                 /*!< получить текущее значение таймера, в мс */
+		virtual timeout_t getInterval()                /*!< получить интервал, на который установлен таймер, в мс */
+		{
+			// TODO: нужно убрать предположение, что нулевой интервал - выключенный таймер
+			if( timeSS == WaitUpTime )
+				return 0;
 
-    virtual void terminate();                /*!< прервать работу таймера */
+			return timeSS * 10;
+		}
 
-protected:
-    clock_t timeAct;    /*!< время срабатывания таймера, в тиках */
-    timeout_t timeSS;        /*!< интервал таймера, в сантисекундах */
-    clock_t timeStart;    /*!< время установки таймера (сброса) */
-private:
-    clock_t clock_ticks; // Количество тиков в секунду
-    clock_t times(); // Возвращает текущее время в тиках
+		virtual void terminate();                /*!< прервать работу таймера */
+
+	protected:
+		clock_t timeAct;    /*!< время срабатывания таймера, в тиках */
+		timeout_t timeSS;        /*!< интервал таймера, в сантисекундах */
+		clock_t timeStart;    /*!< время установки таймера (сброса) */
+	private:
+		clock_t clock_ticks; // Количество тиков в секунду
+		clock_t times(); // Возвращает текущее время в тиках
 };
 
 //----------------------------------------------------------------------------------------
@@ -123,24 +132,24 @@ private:
  * Механизм работает на основе std::condition_variable
  * \note Если таймер запущен в режиме ожидания (WaitUpTime), то он может быть выведен из него
  * ТОЛЬКО при помощи terminate().
-*/ 
+*/
 class PassiveCondTimer:
-        public PassiveTimer
-{ 
-    public:
+	public PassiveTimer
+{
+	public:
 
-        PassiveCondTimer();
-        ~PassiveCondTimer();
+		PassiveCondTimer();
+		~PassiveCondTimer();
 
-        virtual bool wait(timeout_t timeMS);    /*!< блокировать вызывающий поток на заданное время */
-        virtual void terminate();        /*!< прервать работу таймера */
+		virtual bool wait(timeout_t timeMS);    /*!< блокировать вызывающий поток на заданное время */
+		virtual void terminate();        /*!< прервать работу таймера */
 
-    protected:
+	protected:
 
-    private:
-        std::atomic_bool terminated;
-        std::mutex    m_working;
-        std::condition_variable cv_working;
+	private:
+		std::atomic_bool terminated;
+		std::mutex    m_working;
+		std::condition_variable cv_working;
 };
 //----------------------------------------------------------------------------------------
 
@@ -149,31 +158,31 @@ class PassiveCondTimer:
  * \author Pavel Vainerman
  * \par
  * Создан на основе сигнала (SIGALRM).
-*/ 
+*/
 class PassiveSigTimer:
-        public PassiveTimer
-{ 
-    public:
+	public PassiveTimer
+{
+	public:
 
-        PassiveSigTimer();
-        ~PassiveSigTimer();
+		PassiveSigTimer();
+		~PassiveSigTimer();
 
-        virtual bool wait(timeout_t timeMS); //throw(UniSetTypes::NotSetSignal);
-        virtual void terminate();
+		virtual bool wait(timeout_t timeMS); //throw(UniSetTypes::NotSetSignal);
+		virtual void terminate();
 
-    protected:
+	protected:
 
-    private:
-        struct itimerval mtimer;
-        pid_t pid;
+	private:
+		struct itimerval mtimer;
+		pid_t pid;
 
-//        bool terminated;
-        volatile sig_atomic_t terminated;
+		//        bool terminated;
+		volatile sig_atomic_t terminated;
 
-        void init();
+		void init();
 
-        static void callalrm(int signo );
-        static void call(int signo, siginfo_t *evp, void *ucontext);
+		static void callalrm(int signo );
+		static void call(int signo, siginfo_t* evp, void* ucontext);
 
 };
 

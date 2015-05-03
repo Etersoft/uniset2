@@ -20,3 +20,4 @@ noinst_PROGRAMS = @PACKAGE@-test-logserver @PACKAGE@-log-stdin
 @PACKAGE@_log2val_SOURCES = log2val.cc
 @PACKAGE@_log2val_LDADD = $(top_builddir)/lib/libUniSet2.la
 
+include $(top_builddir)/include.mk

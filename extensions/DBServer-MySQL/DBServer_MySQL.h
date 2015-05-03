@@ -20,7 +20,7 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #ifndef DBServer_MySQL_H_
 #define DBServer_MySQL_H_
 // --------------------------------------------------------------------------
@@ -32,7 +32,7 @@
 //------------------------------------------------------------------------------------------
 /*!
       \page page_DBServer_MySQL (DBServer_MySQL) Реализация сервиса ведения БД на основе MySQL
-  
+
       - \ref sec_DBS_Comm
       - \ref sec_DBS_Conf
       - \ref sec_DBS_Tables
@@ -131,62 +131,62 @@ CREATE TABLE `main_emergencyrecords` (
 
 \endcode
 */
-class DBServer_MySQL: 
-    public DBServer
+class DBServer_MySQL:
+	public DBServer
 {
-    public:
-        DBServer_MySQL( UniSetTypes::ObjectId id );
-        DBServer_MySQL();
-        ~DBServer_MySQL();
+	public:
+		DBServer_MySQL( UniSetTypes::ObjectId id );
+		DBServer_MySQL();
+		~DBServer_MySQL();
 
-        static const Debug::type DBLogInfoLevel = Debug::LEVEL9;
+		static const Debug::type DBLogInfoLevel = Debug::LEVEL9;
 
-    protected:
-        typedef std::map<int, std::string> DBTableMap;
+	protected:
+		typedef std::map<int, std::string> DBTableMap;
 
-        virtual void initDB(MySQLInterface *db){};
-        virtual void initDBTableMap(DBTableMap& tblMap){};
+		virtual void initDB(MySQLInterface* db) {};
+		virtual void initDBTableMap(DBTableMap& tblMap) {};
 
-        virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
-        virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
-        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
-        virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ) override;
+		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
+		virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ) override;
 
-        bool writeToBase( const string& query );
-        virtual void init_dbserver();
-        void createTables( MySQLInterface* db );
+		bool writeToBase( const string& query );
+		virtual void init_dbserver();
+		void createTables( MySQLInterface* db );
 
-        inline const char* tblName(int key)
-        {
-            return tblMap[key].c_str();
-        }
+		inline const char* tblName(int key)
+		{
+			return tblMap[key].c_str();
+		}
 
-        enum Timers
-        {
-            PingTimer,        /*!< таймер на переодическую проверку соединения  с сервером БД */
-            ReconnectTimer,   /*!< таймер на повторную попытку соединения с сервером БД (или восстановления связи) */
-            lastNumberOfTimer
-        };
+		enum Timers
+		{
+			PingTimer,        /*!< таймер на переодическую проверку соединения  с сервером БД */
+			ReconnectTimer,   /*!< таймер на повторную попытку соединения с сервером БД (или восстановления связи) */
+			lastNumberOfTimer
+		};
 
 
-        MySQLInterface *db;
-        int PingTime;
-        int ReconnectTime;
-        bool connect_ok;     /*! признак наличия соеднинения с сервером БД */
+		MySQLInterface* db;
+		int PingTime;
+		int ReconnectTime;
+		bool connect_ok;     /*! признак наличия соеднинения с сервером БД */
 
-        bool activate;
+		bool activate;
 
-        typedef std::queue<std::string> QueryBuffer;
+		typedef std::queue<std::string> QueryBuffer;
 
-        QueryBuffer qbuf;
-        unsigned int qbufSize; // размер буфера сообщений.
-        bool lastRemove;
+		QueryBuffer qbuf;
+		unsigned int qbufSize; // размер буфера сообщений.
+		bool lastRemove;
 
-        void flushBuffer();
-        UniSetTypes::uniset_rwmutex mqbuf;
+		void flushBuffer();
+		UniSetTypes::uniset_rwmutex mqbuf;
 
-    private:
-        DBTableMap tblMap;
+	private:
+		DBTableMap tblMap;
 
 };
 //------------------------------------------------------------------------------------------

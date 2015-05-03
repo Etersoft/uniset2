@@ -20,7 +20,7 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #include <sstream>
 #include "Debug.h"
 #include "Configuration.h"
@@ -33,10 +33,10 @@ using namespace UniversalIO;
 using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 Restorer_XML::Restorer_XML():
-i_filterField(""),
-i_filterValue(""),
-c_filterField(""),
-c_filterValue("")
+	i_filterField(""),
+	i_filterValue(""),
+	c_filterField(""),
+	c_filterValue("")
 {
 }
 // -----------------------------------------------------------------------------
@@ -47,106 +47,112 @@ Restorer_XML::~Restorer_XML()
 // -----------------------------------------------------------------------------
 void Restorer_XML::setItemFilter( const string& field, const string& val )
 {
-    i_filterField = field;
-    i_filterValue = val;
+	i_filterField = field;
+	i_filterValue = val;
 }
 // -----------------------------------------------------------------------------
 void Restorer_XML::setConsumerFilter( const string& field, const string& val )
 {
-    c_filterField = field;
-    c_filterValue = val;
+	c_filterField = field;
+	c_filterValue = val;
 }
 // -----------------------------------------------------------------------------
-bool Restorer_XML::getConsumerInfo( UniXML::iterator& it, 
-                                        ObjectId& cid, ObjectId& cnode )
+bool Restorer_XML::getConsumerInfo( UniXML::iterator& it,
+									ObjectId& cid, ObjectId& cnode )
 {
-    if( !check_consumer_item(it) )
-        return false;
+	if( !check_consumer_item(it) )
+		return false;
 
-    string cname( it.getProp("name"));
-    if( cname.empty() )
-    {
-        uwarn << "(Restorer_XML:getConsumerInfo): не указано имя заказчика..." << endl;
-        return false;
-    }
+	string cname( it.getProp("name"));
 
-    string otype(it.getProp("type"));
-    if( otype == "controllers" )
-        cname = uniset_conf()->getControllersSection()+"/"+cname;
-    else if( otype == "objects" )
-        cname = uniset_conf()->getObjectsSection()+"/"+cname;
-    else if( otype == "services" )
-        cname = uniset_conf()->getServicesSection()+"/"+cname;
-    else
-    {
-        uwarn << "(Restorer_XML:getConsumerInfo): неизвестный тип объекта " 
-                            << otype << endl;
-        return false;
-    }
+	if( cname.empty() )
+	{
+		uwarn << "(Restorer_XML:getConsumerInfo): не указано имя заказчика..." << endl;
+		return false;
+	}
 
-    cid = uniset_conf()->oind->getIdByName(cname);
-    if( cid == UniSetTypes::DefaultObjectId )
-    {
-        ucrit << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР заказчика -->" 
-                            << cname << endl;
-        return false;
-    }
+	string otype(it.getProp("type"));
 
-    string cnodename(it.getProp("node"));
-    if( !cnodename.empty() )
-        cnode = uniset_conf()->oind->getIdByName(cnodename);
-    else
-        cnode = uniset_conf()->getLocalNode();
+	if( otype == "controllers" )
+		cname = uniset_conf()->getControllersSection() + "/" + cname;
+	else if( otype == "objects" )
+		cname = uniset_conf()->getObjectsSection() + "/" + cname;
+	else if( otype == "services" )
+		cname = uniset_conf()->getServicesSection() + "/" + cname;
+	else
+	{
+		uwarn << "(Restorer_XML:getConsumerInfo): неизвестный тип объекта "
+			  << otype << endl;
+		return false;
+	}
 
-    if( cnode == UniSetTypes::DefaultObjectId )
-    {
-        ucrit << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла -->" 
-                            << cnodename << endl;
-        return false;
-    }
+	cid = uniset_conf()->oind->getIdByName(cname);
 
-    uinfo << "(Restorer_XML:getConsumerInfo): " << cname << ":" << cnodename << endl;
-    return true;
+	if( cid == UniSetTypes::DefaultObjectId )
+	{
+		ucrit << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР заказчика -->"
+			  << cname << endl;
+		return false;
+	}
+
+	string cnodename(it.getProp("node"));
+
+	if( !cnodename.empty() )
+		cnode = uniset_conf()->oind->getIdByName(cnodename);
+	else
+		cnode = uniset_conf()->getLocalNode();
+
+	if( cnode == UniSetTypes::DefaultObjectId )
+	{
+		ucrit << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла -->"
+			  << cnodename << endl;
+		return false;
+	}
+
+	uinfo << "(Restorer_XML:getConsumerInfo): " << cname << ":" << cnodename << endl;
+	return true;
 }
 // -----------------------------------------------------------------------------
 bool Restorer_XML::check_list_item( UniXML::iterator& it )
 {
-    return UniSetTypes::check_filter(it,i_filterField,i_filterValue);
+	return UniSetTypes::check_filter(it, i_filterField, i_filterValue);
 }
 // -----------------------------------------------------------------------------
 bool Restorer_XML::check_consumer_item( UniXML::iterator& it )
 {
-    return UniSetTypes::check_filter(it,c_filterField,c_filterValue);
+	return UniSetTypes::check_filter(it, c_filterField, c_filterValue);
 }
 // -----------------------------------------------------------------------------
-xmlNode* Restorer_XML::find_node( const std::shared_ptr<UniXML>& xml, xmlNode* root, 
-                                    const string& nodename, const string& nm )
+xmlNode* Restorer_XML::find_node( const std::shared_ptr<UniXML>& xml, xmlNode* root,
+								  const string& nodename, const string& nm )
 {
-    UniXML::iterator it(root);
-    if( it.goChildren() )
-    {
-        for( ;it;it.goNext() )
-        {
-            if( it.getName()==nodename )
-            {
-                if( nm.empty() )
-                    return it;
- 
-                if( xml->getProp(it, "name") == nm )
-                    return it;
-            }
-        }
-    }
-    return 0;
+	UniXML::iterator it(root);
+
+	if( it.goChildren() )
+	{
+		for( ; it; it.goNext() )
+		{
+			if( it.getName() == nodename )
+			{
+				if( nm.empty() )
+					return it;
+
+				if( xml->getProp(it, "name") == nm )
+					return it;
+			}
+		}
+	}
+
+	return 0;
 }
 // -----------------------------------------------------------------------------
 void Restorer_XML::setReadItem( ReaderSlot sl )
 {
-    rslot = sl;
+	rslot = sl;
 }
 // -----------------------------------------------------------------------------
 void Restorer_XML::setReadConsumerItem( ReaderSlot sl )
 {
-    cslot = sl;
+	cslot = sl;
 }
 // -----------------------------------------------------------------------------

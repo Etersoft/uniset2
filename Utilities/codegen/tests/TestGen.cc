@@ -5,7 +5,7 @@ using namespace std;
 using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 TestGen::TestGen( UniSetTypes::ObjectId id, xmlNode* confnode ):
-    TestGen_SK( id, confnode )
+	TestGen_SK( id, confnode )
 {
 }
 // -----------------------------------------------------------------------------
@@ -15,8 +15,8 @@ TestGen::~TestGen()
 // -----------------------------------------------------------------------------
 TestGen::TestGen()
 {
-    cerr << ": init failed!!!!!!!!!!!!!!!"<< endl;
-    throw Exception();
+	cerr << ": init failed!!!!!!!!!!!!!!!" << endl;
+	throw Exception();
 }
 // -----------------------------------------------------------------------------
 void TestGen::step()
@@ -27,18 +27,18 @@ void TestGen::step()
 	cout << dumpIO() << endl;
 }
 // -----------------------------------------------------------------------------
-void TestGen::sensorInfo( const SensorMessage *sm )
+void TestGen::sensorInfo( const SensorMessage* sm )
 {
-    if( sm->id == input1_s )
-        out_output1_c = in_input1_s; // sm->state
+	if( sm->id == input1_s )
+		out_output1_c = in_input1_s; // sm->state
 }
 // -----------------------------------------------------------------------------
-void TestGen::timerInfo( const TimerMessage *tm )
+void TestGen::timerInfo( const TimerMessage* tm )
 {
 }
 // -----------------------------------------------------------------------------
 void TestGen::sigterm( int signo )
 {
-    TestGen_SK::sigterm(signo);
+	TestGen_SK::sigterm(signo);
 }
 // -----------------------------------------------------------------------------

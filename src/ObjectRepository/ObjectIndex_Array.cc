@@ -19,8 +19,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 // -----------------------------------------------------------------------------------------
-/*! 
-    \todo Добавить проверку на предельный номер id 
+/*!
+    \todo Добавить проверку на предельный номер id
 */
 // -----------------------------------------------------------------------------------------
 #include <iomanip>
@@ -37,86 +37,90 @@ ObjectIndex_Array::~ObjectIndex_Array()
 
 }
 // -----------------------------------------------------------------------------------------
-ObjectIndex_Array::ObjectIndex_Array( const ObjectInfo *objectInfo ): 
-    objectInfo(objectInfo),
-    maxId(0)
+ObjectIndex_Array::ObjectIndex_Array( const ObjectInfo* objectInfo ):
+	objectInfo(objectInfo),
+	maxId(0)
 {
-    for (numOfObject=0;;numOfObject++)
-    {
-        if (!objectInfo[numOfObject].repName)
-            break;
-        assert (numOfObject==objectInfo[numOfObject].id);
-        mok[objectInfo[numOfObject].repName]=numOfObject;
-        maxId++;
-    }
+	for (numOfObject = 0;; numOfObject++)
+	{
+		if (!objectInfo[numOfObject].repName)
+			break;
+
+		assert (numOfObject == objectInfo[numOfObject].id);
+		mok[objectInfo[numOfObject].repName] = numOfObject;
+		maxId++;
+	}
 }
 // -----------------------------------------------------------------------------------------
 ObjectId ObjectIndex_Array::getIdByName( const string& name )
 {
-    auto it = mok.find(name);
-    if( it != mok.end() )
-        return it->second;
-        
-    return DefaultObjectId;
+	auto it = mok.find(name);
+
+	if( it != mok.end() )
+		return it->second;
+
+	return DefaultObjectId;
 }
 
 // -----------------------------------------------------------------------------------------
 string ObjectIndex_Array::getMapName( const ObjectId id )
 {
-    if( id!=UniSetTypes::DefaultObjectId && id>=0 && id<maxId )
-        return objectInfo[id].repName;
+	if( id != UniSetTypes::DefaultObjectId && id >= 0 && id < maxId )
+		return objectInfo[id].repName;
 
-    return "";
-//    throw OutOfRange("ObjectIndex_Array::getMapName OutOfRange");                
+	return "";
+	//    throw OutOfRange("ObjectIndex_Array::getMapName OutOfRange");
 }
-// -----------------------------------------------------------------------------------------        
+// -----------------------------------------------------------------------------------------
 string ObjectIndex_Array::getTextName( const ObjectId id )
 {
-    if( id!=UniSetTypes::DefaultObjectId && id>=0 && id<maxId )
-        return objectInfo[id].textName;
+	if( id != UniSetTypes::DefaultObjectId && id >= 0 && id < maxId )
+		return objectInfo[id].textName;
 
-    return "";
-//    throw OutOfRange("ObjectIndex_Array::getTextName OutOfRange");
+	return "";
+	//    throw OutOfRange("ObjectIndex_Array::getTextName OutOfRange");
 }
 // -----------------------------------------------------------------------------------------
 std::ostream& operator<<(std::ostream& os, ObjectIndex_Array& oi )
 {
-    return oi.printMap(os);
+	return oi.printMap(os);
 }
 // -----------------------------------------------------------------------------------------
 
 std::ostream& ObjectIndex_Array::printMap( std::ostream& os )
 {
-    auto oind = uniset_conf()->oind;
-    for( auto i=0;;i++)
-    {
-        if( !objectInfo[i].repName )
-            break;
+	auto oind = uniset_conf()->oind;
 
-        assert (i==objectInfo[i].id);
+	for( auto i = 0;; i++)
+	{
+		if( !objectInfo[i].repName )
+			break;
 
-        os  << setw(5) << objectInfo[i].id << "  " 
-            << setw(45) << oind->getBaseName(objectInfo[i].repName)
-            << "  " << objectInfo[i].textName << endl;
-    }
+		assert (i == objectInfo[i].id);
 
-    return os;
+		os  << setw(5) << objectInfo[i].id << "  "
+			<< setw(45) << oind->getBaseName(objectInfo[i].repName)
+			<< "  " << objectInfo[i].textName << endl;
+	}
+
+	return os;
 }
 // -----------------------------------------------------------------------------------------
 const ObjectInfo* ObjectIndex_Array::getObjectInfo( const ObjectId id )
 {
-    if( id!=UniSetTypes::DefaultObjectId && id>=0 && id<maxId )
-        return &(objectInfo[id]);
+	if( id != UniSetTypes::DefaultObjectId && id >= 0 && id < maxId )
+		return &(objectInfo[id]);
 
-    return NULL;
+	return NULL;
 }
 // -----------------------------------------------------------------------------------------
 const ObjectInfo* ObjectIndex_Array::getObjectInfo( const std::string& name )
 {
-    auto it = mok.find(name);
-    if( it != mok.end() )
-          return &(objectInfo[it->second]);
+	auto it = mok.find(name);
 
-    return NULL;
+	if( it != mok.end() )
+		return &(objectInfo[it->second]);
+
+	return NULL;
 }
 // ------------------------------------------------------------------------------------------

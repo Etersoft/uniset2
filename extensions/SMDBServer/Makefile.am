@@ -35,3 +35,5 @@ pkgconfig_DATA 	= libUniSet2SMDBServer.pc
 
 all-local:
 	ln -sf ../SMDBServer/$(devel_include_HEADERS) ../include
+
+include $(top_builddir)/include.mk

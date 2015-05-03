@@ -1,4 +1,4 @@
-// --------------------------------------------------------------------------    
+// --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
 #include <iostream>
 #include <cstring>
@@ -13,7 +13,7 @@
 using namespace std;
 // --------------------------------------------------------------------------
 WDTInterface::WDTInterface( const std::string& _dev ):
-    dev(_dev)
+	dev(_dev)
 {
 }
 // --------------------------------------------------------------------------
@@ -23,29 +23,31 @@ WDTInterface::~WDTInterface()
 // --------------------------------------------------------------------------
 bool WDTInterface::ping()
 {
-    int fd = open( dev.c_str(), O_WRONLY );
-    if( fd < 0 )
-    {
-        cerr << ": Unable to open device " << dev << " with err: " << strerror(errno) << endl;
-        return false;
-    }
+	int fd = open( dev.c_str(), O_WRONLY );
 
-    write(fd, (void*)CMD_PING, sizeof(CMD_PING));
-    close(fd);
-    return true;
+	if( fd < 0 )
+	{
+		cerr << ": Unable to open device " << dev << " with err: " << strerror(errno) << endl;
+		return false;
+	}
+
+	write(fd, (void*)CMD_PING, sizeof(CMD_PING));
+	close(fd);
+	return true;
 }
 // --------------------------------------------------------------------------
 bool WDTInterface::stop()
 {
-    int fd = open( dev.c_str(), O_WRONLY );
-    if( fd < 0 )
-    {
-        cerr << ": Unable to open device " << dev << " with err: " << strerror(errno) << endl;
-        return false;
-    }
-    
-    write(fd, (void*)CMD_STOP, sizeof(CMD_STOP));
-    close(fd);
-    return true;
+	int fd = open( dev.c_str(), O_WRONLY );
+
+	if( fd < 0 )
+	{
+		cerr << ": Unable to open device " << dev << " with err: " << strerror(errno) << endl;
+		return false;
+	}
+
+	write(fd, (void*)CMD_STOP, sizeof(CMD_STOP));
+	close(fd);
+	return true;
 }
 // ------------------------------------------------------------------------------------------

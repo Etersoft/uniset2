@@ -22,8 +22,10 @@ sqlite_test_SOURCES = test.cc
 devel_include_HEADERS = *.h
 devel_includedir = $(includedir)/@PACKAGE@/sqlite
 
-pkgconfigdir    = $(libdir)/pkgconfig
+pkgconfigdir	= $(libdir)/pkgconfig
 pkgconfig_DATA  = libUniSet2SQLite.pc
 
+include $(top_builddir)/include.mk
+
 endif
-                                
+								

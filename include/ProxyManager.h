@@ -20,7 +20,7 @@
 /*! \file
  * \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #ifndef ProxyManager_H_
 #define ProxyManager_H_
 //---------------------------------------------------------------------------
@@ -34,31 +34,31 @@ class PassiveObject;
 
 /*! \class ProxyManager
  *    Менеджер пассивных объектов, который выступает вместо них во всех внешних связях....
-*/ 
-class ProxyManager: 
-    public UniSetObject
-{   
+*/
+class ProxyManager:
+	public UniSetObject
+{
 
-    public:
-        ProxyManager( UniSetTypes::ObjectId id );
-        ~ProxyManager();
+	public:
+		ProxyManager( UniSetTypes::ObjectId id );
+		~ProxyManager();
 
-        void attachObject( PassiveObject* po, UniSetTypes::ObjectId id );
-        void detachObject( UniSetTypes::ObjectId id );
-    
-        std::shared_ptr<UInterface> uin;
+		void attachObject( PassiveObject* po, UniSetTypes::ObjectId id );
+		void detachObject( UniSetTypes::ObjectId id );
 
-    protected:
-        ProxyManager();    
-        virtual void processingMessage( UniSetTypes::VoidMessage* msg );
-        virtual void allMessage( UniSetTypes::VoidMessage* msg );
+		std::shared_ptr<UInterface> uin;
 
-        virtual bool activateObject();
-        virtual bool deactivateObject();
+	protected:
+		ProxyManager();
+		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
+		virtual void allMessage( UniSetTypes::VoidMessage* msg );
 
-    private:
-        typedef std::unordered_map<UniSetTypes::ObjectId, PassiveObject*> PObjectMap;
-        PObjectMap omap;
+		virtual bool activateObject();
+		virtual bool deactivateObject();
+
+	private:
+		typedef std::unordered_map<UniSetTypes::ObjectId, PassiveObject*> PObjectMap;
+		PObjectMap omap;
 };
 //----------------------------------------------------------------------------------------
 #endif // ProxyManager

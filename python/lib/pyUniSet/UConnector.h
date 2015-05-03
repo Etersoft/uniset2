@@ -7,32 +7,35 @@
 #include "UInterface.h"
 #include "UTypes.h"
 #include "UExceptions.h"
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 class UConnector
 {
-    public:
-      UConnector( int argc, char** argv, const char* xmlfile )throw(UException);
-      UConnector( UTypes::Params* p, const char* xmlfile )throw(UException);
-      ~UConnector();
+	public:
+		UConnector( int argc, char** argv, const char* xmlfile )throw(UException);
+		UConnector( UTypes::Params* p, const char* xmlfile )throw(UException);
+		~UConnector();
 
-      inline const char* getUIType(){ return "uniset"; }
+		inline const char* getUIType()
+		{
+			return "uniset";
+		}
 
-      const char* getConfFileName();
-      long getValue( long id, long node )throw(UException);
-      void setValue( long id, long val, long node )throw(UException);
+		const char* getConfFileName();
+		long getValue( long id, long node )throw(UException);
+		void setValue( long id, long val, long node )throw(UException);
 
-      long getSensorID( const char* );
-      long getNodeID( const char* );
-    
-      const char* getShortName( long id );
-      const char* getName( long id );
-      const char* getTextName( long id );
+		long getSensorID( const char* );
+		long getNodeID( const char* );
 
-      
-    private:
-      std::shared_ptr<UniSetTypes::Configuration> conf;
-      std::shared_ptr<UInterface> ui;
-      const char* xmlfile;
+		const char* getShortName( long id );
+		const char* getName( long id );
+		const char* getTextName( long id );
+
+
+	private:
+		std::shared_ptr<UniSetTypes::Configuration> conf;
+		std::shared_ptr<UInterface> ui;
+		const char* xmlfile;
 };
 //---------------------------------------------------------------------------
 #endif

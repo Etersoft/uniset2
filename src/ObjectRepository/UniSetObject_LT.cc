@@ -20,7 +20,7 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #include "Exceptions.h"
 #include "Debug.h"
 #include "PassiveTimer.h"
@@ -31,44 +31,44 @@ using namespace UniSetTypes;
 
 // ------------------------------------------------------------------------------------------
 UniSetObject_LT::UniSetObject_LT( UniSetTypes::ObjectId id ):
-UniSetObject(id),
-sleepTime(UniSetTimer::WaitUpTime)
+	UniSetObject(id),
+	sleepTime(UniSetTimer::WaitUpTime)
 {
 }
 // ------------------------------------------------------------------------------------------
 UniSetObject_LT::UniSetObject_LT():
-sleepTime(UniSetTimer::WaitUpTime) 
+	sleepTime(UniSetTimer::WaitUpTime)
 {
 }
 
 // ------------------------------------------------------------------------------------------
-UniSetObject_LT::~UniSetObject_LT() 
+UniSetObject_LT::~UniSetObject_LT()
 {
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject_LT::callback()
 {
-    // При реализации с использованием waitMessage() каждый раз при вызове askTimer() необходимо 
-    // проверять возвращаемое значение на UniSetTimers::WaitUpTime и вызывать termWaiting(), 
-    // чтобы избежать ситуации, когда процесс до заказа таймера 'спал'(в функции waitMessage()) и после 
-    // заказа продолжит спать(т.е. обработчик вызван не будет)...
-    try
-    {    
-        if( waitMessage(msg, sleepTime) )
-            processingMessage(&msg);
+	// При реализации с использованием waitMessage() каждый раз при вызове askTimer() необходимо
+	// проверять возвращаемое значение на UniSetTimers::WaitUpTime и вызывать termWaiting(),
+	// чтобы избежать ситуации, когда процесс до заказа таймера 'спал'(в функции waitMessage()) и после
+	// заказа продолжит спать(т.е. обработчик вызван не будет)...
+	try
+	{
+		if( waitMessage(msg, sleepTime) )
+			processingMessage(&msg);
 
-        sleepTime=lt.checkTimers(this);
-    }
-    catch( const Exception& ex )
-    {
-        ucrit << myname << "(callback): " << ex << endl;
-    }
+		sleepTime = lt.checkTimers(this);
+	}
+	catch( const Exception& ex )
+	{
+		ucrit << myname << "(callback): " << ex << endl;
+	}
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject_LT::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, short ticks, UniSetTypes::Message::Priority p )
 {
-    // проверяйте возвращаемое значение
-    if( lt.askTimer(timerid, timeMS, ticks, p) != UniSetTimer::WaitUpTime )
-        termWaiting();
+	// проверяйте возвращаемое значение
+	if( lt.askTimer(timerid, timeMS, ticks, p) != UniSetTimer::WaitUpTime )
+		termWaiting();
 }
 // ------------------------------------------------------------------------------------------

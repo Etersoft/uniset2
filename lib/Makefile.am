@@ -1,5 +1,5 @@
 ############################################################################
-# This file is part of the UniSet library                                  #
+# This file is part of the UniSet library								  #
 ############################################################################
 #LT_CURRENT=0
 #LT_REVISION=0
@@ -23,3 +23,5 @@ libUniSet2_la_LIBADD	= -lm \
  $(top_builddir)/src/Timers/libTimers.la \
  $(top_builddir)/src/Various/libVarious.la \
  $(top_builddir)/src/Log/libLog.la
+
+include $(top_builddir)/include.mk

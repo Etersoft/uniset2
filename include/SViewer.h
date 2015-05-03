@@ -32,36 +32,36 @@
 #include "UInterface.h"
 #include "PassiveTimer.h"
 //--------------------------------------------------------------------------------
-class SViewer 
-{   
-    public:
+class SViewer
+{
+	public:
 
-        SViewer(const std::string& ControllersSection, bool isShort=true);
-        virtual ~SViewer();
+		SViewer(const std::string& ControllersSection, bool isShort = true);
+		virtual ~SViewer();
 
-        void view();
-        void monitor( timeout_t timeoutMS=500 );
+		void view();
+		void monitor( timeout_t timeoutMS = 500 );
 
-    protected:
-        friend class SViewer_glade;
-        void on_SViewer_destroy();
+	protected:
+		friend class SViewer_glade;
+		void on_SViewer_destroy();
 
-        void readSection(const std::string& sec, const std::string& secRoot);
-        void getInfo(UniSetTypes::ObjectId id);
+		void readSection(const std::string& sec, const std::string& secRoot);
+		void getInfo(UniSetTypes::ObjectId id);
 
-        virtual void updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetTypes::ObjectId oid );
-        virtual void updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tlst, UniSetTypes::ObjectId oid );
+		virtual void updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetTypes::ObjectId oid );
+		virtual void updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tlst, UniSetTypes::ObjectId oid );
 
-        const std::string csec;
-        void printInfo(UniSetTypes::ObjectId id, const std::string& sname, long value, const std::string& owner,
-                        const std::string& txtname, const std::string& iotype);
+		const std::string csec;
+		void printInfo(UniSetTypes::ObjectId id, const std::string& sname, long value, const std::string& owner,
+					   const std::string& txtname, const std::string& iotype);
 
-        std::shared_ptr<UInterface> ui;
+		std::shared_ptr<UInterface> ui;
 
-    private:
-        ObjectRepository rep;
-        UInterface::CacheOfResolve cache;
-        bool isShort;
+	private:
+		ObjectRepository rep;
+		UInterface::CacheOfResolve cache;
+		bool isShort;
 
 };
 // --------------------------------------------------------------------------

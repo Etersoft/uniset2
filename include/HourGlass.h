@@ -43,7 +43,7 @@
     \par Пример использования.
     Допустим у вас есть сигнал "перегрев"(in_overheating) и вам необходимо выставить какой-то
     флаг о перегреве (isOverheating), если этот сигнал устойчиво держится в течение 10 секунд,
-    то check() станет "true". При этом если сигнал снимется на 5 секунд ("песок начнёт обратно пересыпаться"), 
+    то check() станет "true". При этом если сигнал снимется на 5 секунд ("песок начнёт обратно пересыпаться"),
     а потом опять выставиться, то до срабатывания check() == true уже останется 5 сек, а не 10 сек.
     Получается, что для срабатывания check()=true сигнал должен не колеблясь держаться больше заданного времени.
 \code
@@ -60,127 +60,139 @@
 */
 class HourGlass
 {
-    public:
-        HourGlass(): _state(false),_sand(0),_size(0){}
-        ~HourGlass(){}
+	public:
+		HourGlass(): _state(false), _sand(0), _size(0) {}
+		~HourGlass() {}
 
-        // запустить часы (заново)
-        inline void run( timeout_t msec )
-        {
-            t.setTiming(msec);
-            _state   = true;
-            _sand    = msec;
-            _size    = msec;
-        }
+		// запустить часы (заново)
+		inline void run( timeout_t msec )
+		{
+			t.setTiming(msec);
+			_state   = true;
+			_sand    = msec;
+			_size    = msec;
+		}
 
-        inline void reset()
-        {
-            run(_size);
-        }
+		inline void reset()
+		{
+			run(_size);
+		}
 
-        // "ёмкость" песочных часов..
-        inline int duration()
-        {
-            return _size;
-        }
-        // перевернуть часы
-        // true - засечь время
-        // false - перевернуть часы (обратный ход)
-        // возвращает аргумент (т.е. идёт ли отсчёт времени)
-        inline bool rotate( bool st )
-        {
-            if( st == _state )
-                return st;
+		// "ёмкость" песочных часов..
+		inline int duration()
+		{
+			return _size;
+		}
+		// перевернуть часы
+		// true - засечь время
+		// false - перевернуть часы (обратный ход)
+		// возвращает аргумент (т.е. идёт ли отсчёт времени)
+		inline bool rotate( bool st )
+		{
+			if( st == _state )
+				return st;
 
-            _state = st;
-            if( !_state )
-            {
-                timeout_t cur = t.getCurrent();
-                if( cur > _size )
-                    cur = _size;
+			_state = st;
 
-                _sand -= cur;
-                if( _sand < 0 )
-                    _sand = 0;
+			if( !_state )
+			{
+				timeout_t cur = t.getCurrent();
 
-                t.setTiming(cur);
-            }
-            else
-            {
-                timeout_t cur = t.getCurrent();
-                if( cur > _size )
-                    cur = _size;
-     
-                _sand += cur;
-                if( _sand > _size )
-                    _sand = _size;
+				if( cur > _size )
+					cur = _size;
 
-                t.setTiming(_sand);
-            }
-            return st;
-        }
+				_sand -= cur;
 
-        // получить прошедшее время
-        inline timeout_t current()
-        {
-            return t.getCurrent();
-        }
+				if( _sand < 0 )
+					_sand = 0;
 
-        // получить заданное время
-        inline timeout_t interval()
-        {
-            return t.getInterval();
-        }
+				t.setTiming(cur);
+			}
+			else
+			{
+				timeout_t cur = t.getCurrent();
 
-        // проверить наступление
-        inline bool check()
-        {
-            // пока часы не "стоят"
-            // всегда false
-            if( !_state )
-                return false;
+				if( cur > _size )
+					cur = _size;
 
-            return t.checkTime();
-        }
+				_sand += cur;
 
-        inline bool enabled(){ return _state; }
+				if( _sand > _size )
+					_sand = _size;
 
-        // текущее "насыпавшееся" количество "песка"
-        inline timeout_t amount()
-        {
-            return ( _size - remain() );
-        }
+				t.setTiming(_sand);
+			}
 
-        // остаток песка (времени)
-        inline timeout_t remain()
-        {
-            timeout_t c = t.getCurrent();
-            if( c > _size )
-                c = _size;
-            
-            // _state=false - означает, что песок пересыпается обратно..
-            if( !_state )
-            {
-                int ret = ( _sand + c );
-                if( ret > _size )
-                    return _size;
-                
-                return ret;
-            }
+			return st;
+		}
 
-            // _state=true  - означает, что песок пересыпается..
-            int ret = ( _sand - c );
-            if( ret < 0 )
-                return 0;
+		// получить прошедшее время
+		inline timeout_t current()
+		{
+			return t.getCurrent();
+		}
 
-            return ret;
-        }
+		// получить заданное время
+		inline timeout_t interval()
+		{
+			return t.getInterval();
+		}
 
-    protected:
-        PassiveTimer t;   /*!< таймер для отсчёта времени.. */
-        bool _state;      /*!< текущее "положение часов", true - прямое, false - обратное (перевёрнутое) */
-        int _sand;        /*!< сколько песка ещё осталось.. */
-        timeout_t _size;  /*!< размер часов */
+		// проверить наступление
+		inline bool check()
+		{
+			// пока часы не "стоят"
+			// всегда false
+			if( !_state )
+				return false;
+
+			return t.checkTime();
+		}
+
+		inline bool enabled()
+		{
+			return _state;
+		}
+
+		// текущее "насыпавшееся" количество "песка"
+		inline timeout_t amount()
+		{
+			return ( _size - remain() );
+		}
+
+		// остаток песка (времени)
+		inline timeout_t remain()
+		{
+			timeout_t c = t.getCurrent();
+
+			if( c > _size )
+				c = _size;
+
+			// _state=false - означает, что песок пересыпается обратно..
+			if( !_state )
+			{
+				int ret = ( _sand + c );
+
+				if( ret > _size )
+					return _size;
+
+				return ret;
+			}
+
+			// _state=true  - означает, что песок пересыпается..
+			int ret = ( _sand - c );
+
+			if( ret < 0 )
+				return 0;
+
+			return ret;
+		}
+
+	protected:
+		PassiveTimer t;   /*!< таймер для отсчёта времени.. */
+		bool _state;      /*!< текущее "положение часов", true - прямое, false - обратное (перевёрнутое) */
+		int _sand;        /*!< сколько песка ещё осталось.. */
+		timeout_t _size;  /*!< размер часов */
 };
 // --------------------------------------------------------------------------
 #endif

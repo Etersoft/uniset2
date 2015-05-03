@@ -3,8 +3,8 @@
 using namespace ModbusRTU;
 using namespace std;
 // -------------------------------------------------------------------------
-ModbusTCPServerSlot::ModbusTCPServerSlot( ost::InetAddress &ia, int port ):
-    ModbusTCPServer(ia,port)
+ModbusTCPServerSlot::ModbusTCPServerSlot( ost::InetAddress& ia, int port ):
+	ModbusTCPServer(ia, port)
 {
 }
 // -------------------------------------------------------------------------
@@ -13,148 +13,148 @@ ModbusTCPServerSlot::~ModbusTCPServerSlot()
 
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPServerSlot::readCoilStatus( ReadCoilMessage& query, 
-                                                ReadCoilRetMessage& reply )
+mbErrCode ModbusTCPServerSlot::readCoilStatus( ReadCoilMessage& query,
+		ReadCoilRetMessage& reply )
 {
-    if( !slReadCoil )
-        return erOperationFailed;
+	if( !slReadCoil )
+		return erOperationFailed;
 
-    return slReadCoil(query,reply);
+	return slReadCoil(query, reply);
 }
 
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPServerSlot::readInputStatus( ReadInputStatusMessage& query, 
-                                                ReadInputStatusRetMessage& reply )
+mbErrCode ModbusTCPServerSlot::readInputStatus( ReadInputStatusMessage& query,
+		ReadInputStatusRetMessage& reply )
 {
-    if( !slReadInputStatus )
-        return erOperationFailed;
+	if( !slReadInputStatus )
+		return erOperationFailed;
 
-    return slReadInputStatus(query,reply);
-}
-
-// -------------------------------------------------------------------------
-
-mbErrCode ModbusTCPServerSlot::readOutputRegisters( ReadOutputMessage& query, 
-                                                ReadOutputRetMessage& reply )
-{
-    if( !slReadOutputs )
-        return erOperationFailed;
-
-    return slReadOutputs(query,reply);
-}
-
-// -------------------------------------------------------------------------
-mbErrCode ModbusTCPServerSlot::readInputRegisters( ReadInputMessage& query, 
-                                                ReadInputRetMessage& reply )
-{
-    if( !slReadInputs )
-        return erOperationFailed;
-
-    return slReadInputs(query,reply);
-}
-
-// -------------------------------------------------------------------------
-mbErrCode ModbusTCPServerSlot::forceMultipleCoils( ForceCoilsMessage& query, 
-                                                ForceCoilsRetMessage& reply )
-{
-    if( !slForceCoils )
-        return erOperationFailed;
-
-    return slForceCoils(query,reply);
+	return slReadInputStatus(query, reply);
 }
 
 // -------------------------------------------------------------------------
 
-mbErrCode ModbusTCPServerSlot::writeOutputRegisters( WriteOutputMessage& query, 
-                                                WriteOutputRetMessage& reply )
+mbErrCode ModbusTCPServerSlot::readOutputRegisters( ReadOutputMessage& query,
+		ReadOutputRetMessage& reply )
 {
-    if( !slWriteOutputs )
-        return erOperationFailed;
+	if( !slReadOutputs )
+		return erOperationFailed;
 
-    return slWriteOutputs(query,reply);
+	return slReadOutputs(query, reply);
 }
 
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPServerSlot::diagnostics( DiagnosticMessage& query, 
-                                                DiagnosticRetMessage& reply )
+mbErrCode ModbusTCPServerSlot::readInputRegisters( ReadInputMessage& query,
+		ReadInputRetMessage& reply )
 {
-    if( !slDiagnostics )
-        return erOperationFailed;
+	if( !slReadInputs )
+		return erOperationFailed;
 
-    return slDiagnostics(query,reply);
-}
-// -------------------------------------------------------------------------
-ModbusRTU::mbErrCode ModbusTCPServerSlot::read4314( ModbusRTU::MEIMessageRDI& query, 
-                                        ModbusRTU::MEIMessageRetRDI& reply )
-{
-    if( !slMEIRDI )
-        return erOperationFailed;
-
-    return slMEIRDI(query,reply);
-}
-// -------------------------------------------------------------------------
-mbErrCode ModbusTCPServerSlot::forceSingleCoil( ForceSingleCoilMessage& query, 
-                                            ForceSingleCoilRetMessage& reply )
-{
-    if( !slForceSingleCoil )
-        return erOperationFailed;
-
-    return slForceSingleCoil(query,reply);
+	return slReadInputs(query, reply);
 }
 
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPServerSlot::writeOutputSingleRegister( WriteSingleOutputMessage& query, 
-                                                WriteSingleOutputRetMessage& reply )
+mbErrCode ModbusTCPServerSlot::forceMultipleCoils( ForceCoilsMessage& query,
+		ForceCoilsRetMessage& reply )
 {
-    if( !slWriteSingleOutputs )
-        return erOperationFailed;
+	if( !slForceCoils )
+		return erOperationFailed;
 
-    return slWriteSingleOutputs(query,reply);
+	return slForceCoils(query, reply);
 }
 
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPServerSlot::journalCommand( JournalCommandMessage& query, 
-                                                JournalCommandRetMessage& reply )
-{
-    if( !slJournalCommand )
-        return erOperationFailed;
 
-    return slJournalCommand(query,reply);
+mbErrCode ModbusTCPServerSlot::writeOutputRegisters( WriteOutputMessage& query,
+		WriteOutputRetMessage& reply )
+{
+	if( !slWriteOutputs )
+		return erOperationFailed;
+
+	return slWriteOutputs(query, reply);
+}
+
+// -------------------------------------------------------------------------
+mbErrCode ModbusTCPServerSlot::diagnostics( DiagnosticMessage& query,
+		DiagnosticRetMessage& reply )
+{
+	if( !slDiagnostics )
+		return erOperationFailed;
+
+	return slDiagnostics(query, reply);
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode ModbusTCPServerSlot::setDateTime( ModbusRTU::SetDateTimeMessage& query, 
-                                    ModbusRTU::SetDateTimeRetMessage& reply )
+ModbusRTU::mbErrCode ModbusTCPServerSlot::read4314( ModbusRTU::MEIMessageRDI& query,
+		ModbusRTU::MEIMessageRetRDI& reply )
 {
-    if( !slSetDateTime )
-        return erOperationFailed;
+	if( !slMEIRDI )
+		return erOperationFailed;
 
-    return slSetDateTime(query,reply);
+	return slMEIRDI(query, reply);
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode ModbusTCPServerSlot::remoteService( ModbusRTU::RemoteServiceMessage& query, 
-                                    ModbusRTU::RemoteServiceRetMessage& reply )
+mbErrCode ModbusTCPServerSlot::forceSingleCoil( ForceSingleCoilMessage& query,
+		ForceSingleCoilRetMessage& reply )
 {
-    if( !slRemoteService )
-        return erOperationFailed;
+	if( !slForceSingleCoil )
+		return erOperationFailed;
 
-    return slRemoteService(query,reply);
+	return slForceSingleCoil(query, reply);
+}
+
+// -------------------------------------------------------------------------
+mbErrCode ModbusTCPServerSlot::writeOutputSingleRegister( WriteSingleOutputMessage& query,
+		WriteSingleOutputRetMessage& reply )
+{
+	if( !slWriteSingleOutputs )
+		return erOperationFailed;
+
+	return slWriteSingleOutputs(query, reply);
+}
+
+// -------------------------------------------------------------------------
+mbErrCode ModbusTCPServerSlot::journalCommand( JournalCommandMessage& query,
+		JournalCommandRetMessage& reply )
+{
+	if( !slJournalCommand )
+		return erOperationFailed;
+
+	return slJournalCommand(query, reply);
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode ModbusTCPServerSlot::fileTransfer( ModbusRTU::FileTransferMessage& query, 
-                                    ModbusRTU::FileTransferRetMessage& reply )
+ModbusRTU::mbErrCode ModbusTCPServerSlot::setDateTime( ModbusRTU::SetDateTimeMessage& query,
+		ModbusRTU::SetDateTimeRetMessage& reply )
 {
-    if( !slFileTransfer )
-        return erOperationFailed;
+	if( !slSetDateTime )
+		return erOperationFailed;
 
-    return slFileTransfer(query,reply);
+	return slSetDateTime(query, reply);
+}
+// -------------------------------------------------------------------------
+ModbusRTU::mbErrCode ModbusTCPServerSlot::remoteService( ModbusRTU::RemoteServiceMessage& query,
+		ModbusRTU::RemoteServiceRetMessage& reply )
+{
+	if( !slRemoteService )
+		return erOperationFailed;
+
+	return slRemoteService(query, reply);
+}
+// -------------------------------------------------------------------------
+ModbusRTU::mbErrCode ModbusTCPServerSlot::fileTransfer( ModbusRTU::FileTransferMessage& query,
+		ModbusRTU::FileTransferRetMessage& reply )
+{
+	if( !slFileTransfer )
+		return erOperationFailed;
+
+	return slFileTransfer(query, reply);
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServerSlot::sigterm( int signo )
 {
-    try
-    {
-        terminate();
-    }
-    catch(...){}
+	try
+	{
+		terminate();
+	}
+	catch(...) {}
 }
 // -------------------------------------------------------------------------

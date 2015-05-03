@@ -21,7 +21,7 @@
  *  \brief файл реализации DB-сервера
  *  \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 
 #include <sys/time.h>
 #include <sstream>
@@ -36,61 +36,65 @@
 using namespace UniSetTypes;
 using namespace std;
 // ------------------------------------------------------------------------------------------
-DBServer::DBServer(ObjectId id): 
-    UniSetObject_LT(id)
+DBServer::DBServer(ObjectId id):
+	UniSetObject_LT(id)
 {
-    if( getId() == DefaultObjectId )
-    {
-        id = uniset_conf()->getDBServer();
-        if( id == DefaultObjectId )
-        {
-            ostringstream msg;
-            msg << "(DBServer): Запуск невозможен! НЕ ОПРЕДЕЛЁН ObjectId !!!!!\n";
-            throw Exception(msg.str());
-        }
-        setID(id);
-    }
+	if( getId() == DefaultObjectId )
+	{
+		id = uniset_conf()->getDBServer();
+
+		if( id == DefaultObjectId )
+		{
+			ostringstream msg;
+			msg << "(DBServer): Запуск невозможен! НЕ ОПРЕДЕЛЁН ObjectId !!!!!\n";
+			throw Exception(msg.str());
+		}
+
+		setID(id);
+	}
 }
 
-DBServer::DBServer(): 
-    UniSetObject_LT(uniset_conf()->getDBServer())
+DBServer::DBServer():
+	UniSetObject_LT(uniset_conf()->getDBServer())
 {
-    if( getId() == DefaultObjectId )
-    {
-        ObjectId id = uniset_conf()->getDBServer();
-        if( id == DefaultObjectId )
-        {
-            ostringstream msg;
-            msg << "(DBServer): Запуск невозможен! НЕ ОПРЕДЕЛЁН ObjectId !!!!!\n";
-            throw Exception(msg.str());
-        }
-        setID(id);
-    }
+	if( getId() == DefaultObjectId )
+	{
+		ObjectId id = uniset_conf()->getDBServer();
+
+		if( id == DefaultObjectId )
+		{
+			ostringstream msg;
+			msg << "(DBServer): Запуск невозможен! НЕ ОПРЕДЕЛЁН ObjectId !!!!!\n";
+			throw Exception(msg.str());
+		}
+
+		setID(id);
+	}
 }
 //--------------------------------------------------------------------------------------------
 DBServer::~DBServer()
 {
 }
 //--------------------------------------------------------------------------------------------
-void DBServer::processingMessage( UniSetTypes::VoidMessage *msg )
+void DBServer::processingMessage( UniSetTypes::VoidMessage* msg )
 {
-    switch(msg->type)
-    {
-        case Message::Confirm:
-            confirmInfo( reinterpret_cast<ConfirmMessage*>(msg) );
-        break;
+	switch(msg->type)
+	{
+		case Message::Confirm:
+			confirmInfo( reinterpret_cast<ConfirmMessage*>(msg) );
+			break;
 
-        default:
-            UniSetObject_LT::processingMessage(msg);
-            break;
-    }
+		default:
+			UniSetObject_LT::processingMessage(msg);
+			break;
+	}
 
 }
 //--------------------------------------------------------------------------------------------
 bool DBServer::activateObject()
 {
-    UniSetObject_LT::activateObject();
-    init_dbserver();
-    return true;
+	UniSetObject_LT::activateObject();
+	init_dbserver();
+	return true;
 }
 //--------------------------------------------------------------------------------------------

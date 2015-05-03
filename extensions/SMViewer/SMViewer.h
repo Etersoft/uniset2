@@ -8,18 +8,18 @@
 #include "SMInterface.h"
 //--------------------------------------------------------------------------------
 class SMViewer:
-    public SViewer
-{   
-    public:
-        SMViewer( UniSetTypes::ObjectId shmID );
-        virtual ~SMViewer();
+	public SViewer
+{
+	public:
+		SMViewer( UniSetTypes::ObjectId shmID );
+		virtual ~SMViewer();
 
-        void run();
+		void run();
 
-    protected:
+	protected:
 
-        std::shared_ptr<SMInterface> shm;
-    private:
+		std::shared_ptr<SMInterface> shm;
+	private:
 };
 // --------------------------------------------------------------------------
 #endif

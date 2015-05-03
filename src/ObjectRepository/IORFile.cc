@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 // -----------------------------------------------------------------------------------------
-/*! 
-    \todo Добавить проверку на предельный номер id 
+/*!
+    \todo Добавить проверку на предельный номер id
 */
 // -----------------------------------------------------------------------------------------
 #include <sstream>
@@ -39,39 +39,39 @@ IORFile::IORFile()
 // -----------------------------------------------------------------------------------------
 string IORFile::getIOR( const ObjectId id )
 {
-    string fname( getFileName(id) );
-    ifstream ior_file(fname.c_str());
-    string sior;
-    ior_file >> sior;
+	string fname( getFileName(id) );
+	ifstream ior_file(fname.c_str());
+	string sior;
+	ior_file >> sior;
 
-    return std::move(sior);
+	return std::move(sior);
 }
 // -----------------------------------------------------------------------------------------
 void IORFile::setIOR( const ObjectId id, const string& sior )
 {
-    string fname( getFileName(id) );
-    ofstream ior_file(fname.c_str(), ios::out | ios::trunc);
+	string fname( getFileName(id) );
+	ofstream ior_file(fname.c_str(), ios::out | ios::trunc);
 
-    if( !ior_file )
-    {
-        ucrit << "(IORFile): не смог открыть файл "+fname << endl;
-        throw TimeOut("(IORFile): не смог создать ior-файл "+fname);
-    }
+	if( !ior_file )
+	{
+		ucrit << "(IORFile): не смог открыть файл " + fname << endl;
+		throw TimeOut("(IORFile): не смог создать ior-файл " + fname);
+	}
 
-    ior_file << sior << endl;
-    ior_file.close();
+	ior_file << sior << endl;
+	ior_file.close();
 }
 // -----------------------------------------------------------------------------------------
 void IORFile::unlinkIOR( const ObjectId id )
 {
-    string fname( getFileName(id) );
-    unlink(fname.c_str());
+	string fname( getFileName(id) );
+	unlink(fname.c_str());
 }
 // -----------------------------------------------------------------------------------------
 string IORFile::getFileName( const ObjectId id )
 {
-    ostringstream fname;
-    fname << uniset_conf()->getLockDir() << id;
-    return std::move( fname.str() );
+	ostringstream fname;
+	fname << uniset_conf()->getLockDir() << id;
+	return std::move( fname.str() );
 }
 // -----------------------------------------------------------------------------------------

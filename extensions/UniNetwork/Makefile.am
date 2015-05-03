@@ -30,3 +30,5 @@ pkgconfig_DATA 	= libUniSet2Network.pc
 
 all-local:
 	ln -sf ../UniNetwork/$(devel_include_HEADERS) ../include
+
+include $(top_builddir)/include.mk

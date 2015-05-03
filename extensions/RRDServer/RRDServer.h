@@ -57,63 +57,63 @@
 \endcode
 */
 class RRDServer:
-    public UObject_SK
+	public UObject_SK
 {
-    public:
-        RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr,
-                    const std::string& prefix="rrd", std::shared_ptr<DebugStream> log=UniSetExtensions::dlog() );
-        virtual ~RRDServer();
+	public:
+		RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr,
+				   const std::string& prefix = "rrd", std::shared_ptr<DebugStream> log = UniSetExtensions::dlog() );
+		virtual ~RRDServer();
 
-        /*! глобальная функция для инициализации объекта */
-        static std::shared_ptr<RRDServer> init_rrdstorage( int argc, const char* const* argv,
-                            UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr,
-                            const std::string& prefix="rrd" );
+		/*! глобальная функция для инициализации объекта */
+		static std::shared_ptr<RRDServer> init_rrdstorage( int argc, const char* const* argv,
+				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr,
+				const std::string& prefix = "rrd" );
 
-        /*! глобальная функция для вывода help-а */
-        static void help_print( int argc, const char* const* argv );
+		/*! глобальная функция для вывода help-а */
+		static void help_print( int argc, const char* const* argv );
 
-    protected:
-        RRDServer();
+	protected:
+		RRDServer();
 
-        virtual void askSensors( UniversalIO::UIOCommand cmd ) override;
-        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
-        virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
-        virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void askSensors( UniversalIO::UIOCommand cmd ) override;
+		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
+		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
 
-        void initRRD( xmlNode* cnode, int tmID );
-        virtual void step() override;
+		void initRRD( xmlNode* cnode, int tmID );
+		virtual void step() override;
 
-        std::shared_ptr<SMInterface> shm;
+		std::shared_ptr<SMInterface> shm;
 
-        struct DSInfo
-        {
-            std::string dsname;
-            long value;
+		struct DSInfo
+		{
+			std::string dsname;
+			long value;
 
-            DSInfo( const std::string& dsname, long defval ):
-                dsname(dsname),value(defval){}
-        };
+			DSInfo( const std::string& dsname, long defval ):
+				dsname(dsname), value(defval) {}
+		};
 
-        typedef std::unordered_map<UniSetTypes::ObjectId,DSInfo> DSMap;
+		typedef std::unordered_map<UniSetTypes::ObjectId, DSInfo> DSMap;
 
-        struct RRDInfo
-        {
-            std::string filename;
-            long tid;
-            long sec;
-            DSMap dsmap;
+		struct RRDInfo
+		{
+			std::string filename;
+			long tid;
+			long sec;
+			DSMap dsmap;
 
-            RRDInfo( const std::string& fname, long tmID, long sec, const DSMap& ds ):
-                filename(fname),tid(tmID),sec(sec),dsmap(ds){}
-        };
+			RRDInfo( const std::string& fname, long tmID, long sec, const DSMap& ds ):
+				filename(fname), tid(tmID), sec(sec), dsmap(ds) {}
+		};
 
-        typedef std::list<RRDInfo> RRDList;
+		typedef std::list<RRDInfo> RRDList;
 
-        RRDList rrdlist;
+		RRDList rrdlist;
 
-    private:
+	private:
 
-        std::string prefix;
+		std::string prefix;
 };
 // -----------------------------------------------------------------------------
 #endif // _RRDServer_H_

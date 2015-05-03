@@ -51,61 +51,67 @@ typedef std::shared_ptr<UniSetActivator> UniSetActivatorPtr;
  *
 */
 class UniSetActivator:
-    public UniSetManager
+	public UniSetManager
 {
-    public:
+	public:
 
-        static UniSetActivatorPtr Instance( const UniSetTypes::ObjectId id=UniSetTypes::DefaultObjectId );
-        void Destroy();
+		static UniSetActivatorPtr Instance( const UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId );
+		void Destroy();
 
-        std::shared_ptr<UniSetActivator> get_aptr(){ return std::dynamic_pointer_cast<UniSetActivator>(get_ptr()); }
-        // ------------------------------------
-        virtual ~UniSetActivator();
+		std::shared_ptr<UniSetActivator> get_aptr()
+		{
+			return std::dynamic_pointer_cast<UniSetActivator>(get_ptr());
+		}
+		// ------------------------------------
+		virtual ~UniSetActivator();
 
-        virtual void run(bool thread);
-        virtual void stop();
-        virtual void uaDestroy(int signo=0);
+		virtual void run(bool thread);
+		virtual void stop();
+		virtual void uaDestroy(int signo = 0);
 
-        virtual UniSetTypes::ObjectType getType() override { return UniSetTypes::ObjectType("UniSetActivator"); }
+		virtual UniSetTypes::ObjectType getType() override
+		{
+			return UniSetTypes::ObjectType("UniSetActivator");
+		}
 
-        typedef sigc::signal<void,int> TerminateEvent_Signal;
-        TerminateEvent_Signal signal_terminate_event();
+		typedef sigc::signal<void, int> TerminateEvent_Signal;
+		TerminateEvent_Signal signal_terminate_event();
 
-    protected:
+	protected:
 
-        virtual void work();
+		virtual void work();
 
-        inline CORBA::ORB_ptr getORB()
-        {
-            return orb;
-        }
+		inline CORBA::ORB_ptr getORB()
+		{
+			return orb;
+		}
 
-        virtual void sysCommand( const UniSetTypes::SystemMessage *sm ) override;
+		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
 
-        // уносим в protected, т.к. Activator должен быть только один..
-        UniSetActivator();
-        UniSetActivator( const UniSetTypes::ObjectId id );
-        static std::shared_ptr<UniSetActivator> inst;
+		// уносим в protected, т.к. Activator должен быть только один..
+		UniSetActivator();
+		UniSetActivator( const UniSetTypes::ObjectId id );
+		static std::shared_ptr<UniSetActivator> inst;
 
-    private:
-        friend void terminate_thread();
-        friend void finished_thread();
-        friend std::shared_ptr<UniSetTypes::Configuration> UniSetTypes::uniset_init( int argc, const char* const* argv, const std::string& xmlfile );
+	private:
+		friend void terminate_thread();
+		friend void finished_thread();
+		friend std::shared_ptr<UniSetTypes::Configuration> UniSetTypes::uniset_init( int argc, const char* const* argv, const std::string& xmlfile );
 
-        static void terminated(int signo);
-        static void normalexit();
-        static void normalterminate();
-        static void set_signals(bool ask);
-        void term( int signo );
-        void init();
+		static void terminated(int signo);
+		static void normalexit();
+		static void normalterminate();
+		static void set_signals(bool ask);
+		void term( int signo );
+		void init();
 
-        std::shared_ptr< OmniThreadCreator<UniSetActivator> > orbthr;
+		std::shared_ptr< OmniThreadCreator<UniSetActivator> > orbthr;
 
-        CORBA::ORB_var orb;
-        TerminateEvent_Signal s_term;
+		CORBA::ORB_var orb;
+		TerminateEvent_Signal s_term;
 
-        std::atomic_bool omDestroy;
-        pid_t thpid; // pid orb потока
+		std::atomic_bool omDestroy;
+		pid_t thpid; // pid orb потока
 };
 //----------------------------------------------------------------------------------------
 #endif

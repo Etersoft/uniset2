@@ -39,208 +39,292 @@
 */
 namespace UniSetTypes
 {
-    /*!
-         Конфигуратор системы
-         \note В случае обнаружения критической ошибки в настроечном файле файле.
-         Вырабатывает исключение и прекращает работу.
-    */
-    class Configuration
-    {
-        public:
-            virtual ~Configuration();
+	/*!
+	     Конфигуратор системы
+	     \note В случае обнаружения критической ошибки в настроечном файле файле.
+	     Вырабатывает исключение и прекращает работу.
+	*/
+	class Configuration
+	{
+		public:
+			virtual ~Configuration();
 
-            /*! конфигурирование xml-файлом ( предпочтительный способ )    */
-            Configuration( int argc, const char* const* argv, const std::string& xmlfile="" );
+			/*! конфигурирование xml-файлом ( предпочтительный способ )    */
+			Configuration( int argc, const char* const* argv, const std::string& xmlfile = "" );
 
-            /*! конфигурирование xml-файлом    */
-            Configuration( int argc, const char* const* argv, std::shared_ptr<ObjectIndex> oind, const std::string& xmlfile="" );
+			/*! конфигурирование xml-файлом    */
+			Configuration( int argc, const char* const* argv, std::shared_ptr<ObjectIndex> oind, const std::string& xmlfile = "" );
 
-            /*! устаревший вариант, для поддержки старых проектов */
-            Configuration( int argc, const char* const* argv,
-                            const std::string& fileConf, UniSetTypes::ObjectInfo* objectsMap );
+			/*! устаревший вариант, для поддержки старых проектов */
+			Configuration( int argc, const char* const* argv,
+						   const std::string& fileConf, UniSetTypes::ObjectInfo* objectsMap );
 
-        /// Получить значение полей с путём path
-        std::string getField(const std::string& path);
-        /// Получить число из поле с путём path
-        int getIntField(const std::string& path);
-        /// Получить число из поле с путём path (или def, если значение <= 0)
-        int getPIntField(const std::string& path, int def);
+			/// Получить значение полей с путём path
+			std::string getField(const std::string& path);
+			/// Получить число из поле с путём path
+			int getIntField(const std::string& path);
+			/// Получить число из поле с путём path (или def, если значение <= 0)
+			int getPIntField(const std::string& path, int def);
 
-        xmlNode* findNode(xmlNode* node, const std::string& searchnode, const std::string& name="" );
+			xmlNode* findNode(xmlNode* node, const std::string& searchnode, const std::string& name = "" );
 
-        // Получить узел
-        xmlNode* getNode(const std::string& path);
-        // Получить указанное свойство пути
-        std::string getProp(xmlNode*, const std::string& name);
-        int getIntProp(xmlNode*, const std::string& name);
-        int getPIntProp(xmlNode*, const std::string& name, int def);
-        // Получить указанное свойство по имени узла
-        std::string getPropByNodeName(const std::string& nodename, const std::string& prop);
+			// Получить узел
+			xmlNode* getNode(const std::string& path);
+			// Получить указанное свойство пути
+			std::string getProp(xmlNode*, const std::string& name);
+			int getIntProp(xmlNode*, const std::string& name);
+			int getPIntProp(xmlNode*, const std::string& name, int def);
+			// Получить указанное свойство по имени узла
+			std::string getPropByNodeName(const std::string& nodename, const std::string& prop);
 
-        static std::ostream& help(std::ostream& os);
+			static std::ostream& help(std::ostream& os);
 
-        std::string getRootDir(); /*!< Получение каталога, в котором находится выполняющаяся программа */
-        inline int getArgc()const { return _argc; }
-        inline const char* const* getArgv() const { return _argv; }
-        inline ObjectId getDBServer() const { return localDBServer; }        /*!< получение идентификатора DBServer-а */
-        inline ObjectId getLocalNode() const { return localNode; }        /*!< получение идентификатора локального узла */
-        inline std::string getLocalNodeName() const { return localNodeName; }        /*!< получение название локального узла */
-        inline const std::string getNSName() const { return NSName; }
+			std::string getRootDir(); /*!< Получение каталога, в котором находится выполняющаяся программа */
+			inline int getArgc()const
+			{
+				return _argc;
+			}
+			inline const char* const* getArgv() const
+			{
+				return _argv;
+			}
+			inline ObjectId getDBServer() const
+			{
+				return localDBServer;    /*!< получение идентификатора DBServer-а */
+			}
+			inline ObjectId getLocalNode() const
+			{
+				return localNode;    /*!< получение идентификатора локального узла */
+			}
+			inline std::string getLocalNodeName() const
+			{
+				return localNodeName;    /*!< получение название локального узла */
+			}
+			inline const std::string getNSName() const
+			{
+				return NSName;
+			}
 
-        // repository
-        inline std::string getRootSection() const { return secRoot; }
-        inline std::string getSensorsSection() const { return secSensors; }
-        inline std::string getObjectsSection() const { return secObjects; }
-        inline std::string getControllersSection() const { return secControlles; }
-        inline std::string getServicesSection() const { return secServices; }
-        // xml
-        xmlNode* getXMLSensorsSection();
-        xmlNode* getXMLObjectsSection();
-        xmlNode* getXMLControllersSection();
-        xmlNode* getXMLServicesSection();
-        xmlNode* getXMLNodesSection();
-        xmlNode* getXMLObjectNode( UniSetTypes::ObjectId );
-        UniversalIO::IOType getIOType( UniSetTypes::ObjectId );
-        UniversalIO::IOType getIOType( const std::string& name );
+			// repository
+			inline std::string getRootSection() const
+			{
+				return secRoot;
+			}
+			inline std::string getSensorsSection() const
+			{
+				return secSensors;
+			}
+			inline std::string getObjectsSection() const
+			{
+				return secObjects;
+			}
+			inline std::string getControllersSection() const
+			{
+				return secControlles;
+			}
+			inline std::string getServicesSection() const
+			{
+				return secServices;
+			}
+			// xml
+			xmlNode* getXMLSensorsSection();
+			xmlNode* getXMLObjectsSection();
+			xmlNode* getXMLControllersSection();
+			xmlNode* getXMLServicesSection();
+			xmlNode* getXMLNodesSection();
+			xmlNode* getXMLObjectNode( UniSetTypes::ObjectId );
+			UniversalIO::IOType getIOType( UniSetTypes::ObjectId );
+			UniversalIO::IOType getIOType( const std::string& name );
 
-        // net
-        inline unsigned int getCountOfNet() const { return countOfNet; }
-        inline unsigned int getRepeatTimeout() const { return repeatTimeout; }
-        inline unsigned int getRepeatCount() const { return repeatCount; }
+			// net
+			inline unsigned int getCountOfNet() const
+			{
+				return countOfNet;
+			}
+			inline unsigned int getRepeatTimeout() const
+			{
+				return repeatTimeout;
+			}
+			inline unsigned int getRepeatCount() const
+			{
+				return repeatCount;
+			}
 
-        UniSetTypes::ObjectId getSensorID( const std::string& name );
-        UniSetTypes::ObjectId getControllerID( const std::string& name );
-        UniSetTypes::ObjectId getObjectID( const std::string& name );
-        UniSetTypes::ObjectId getServiceID( const std::string& name );
-        UniSetTypes::ObjectId getNodeID( const std::string& name );
+			UniSetTypes::ObjectId getSensorID( const std::string& name );
+			UniSetTypes::ObjectId getControllerID( const std::string& name );
+			UniSetTypes::ObjectId getObjectID( const std::string& name );
+			UniSetTypes::ObjectId getServiceID( const std::string& name );
+			UniSetTypes::ObjectId getNodeID( const std::string& name );
 
-        inline const std::string getConfFileName() const { return fileConfName; }
-        inline std::string getImagesDir() const { return imagesDir; }    // временно
+			inline const std::string getConfFileName() const
+			{
+				return fileConfName;
+			}
+			inline std::string getImagesDir() const
+			{
+				return imagesDir;    // временно
+			}
 
-        inline int getHeartBeatTime(){ return heartbeat_msec; }
+			inline int getHeartBeatTime()
+			{
+				return heartbeat_msec;
+			}
 
-        // dirs
-        inline const std::string getConfDir() const { return confDir; }
-        inline const std::string getDataDir() const { return dataDir; }
-        inline const std::string getBinDir() const { return binDir; }
-        inline const std::string getLogDir() const { return logDir; }
-        inline const std::string getLockDir() const { return lockDir; }
-        inline const std::string getDocDir() const { return docDir; }
+			// dirs
+			inline const std::string getConfDir() const
+			{
+				return confDir;
+			}
+			inline const std::string getDataDir() const
+			{
+				return dataDir;
+			}
+			inline const std::string getBinDir() const
+			{
+				return binDir;
+			}
+			inline const std::string getLogDir() const
+			{
+				return logDir;
+			}
+			inline const std::string getLockDir() const
+			{
+				return lockDir;
+			}
+			inline const std::string getDocDir() const
+			{
+				return docDir;
+			}
 
 
-        inline bool isLocalIOR() const { return localIOR; }
-        inline bool isTransientIOR() const { return transientIOR; }
+			inline bool isLocalIOR() const
+			{
+				return localIOR;
+			}
+			inline bool isTransientIOR() const
+			{
+				return transientIOR;
+			}
 
-        /*! получить значение указанного параметра, или значение по умолчанию */
-        std::string getArgParam(const std::string& name, const std::string& defval="");
-        /*! получить значение, если пустое, то defval, если defval="" return defval2 */
-        std::string getArg2Param(const std::string& name, const std::string& defval, const std::string& defval2="");
-        /*! получить числовое значение параметра, если не число, то 0. Если параметра нет, используется значение defval */
-        int getArgInt(const std::string& name, const std::string& defval="");
-        /*! получить числовое значение параметра, но если оно не положительное, вернуть defval */
-        int getArgPInt(const std::string& name, int defval);
-        int getArgPInt(const std::string& name, const std::string& strdefval, int defval);
+			/*! получить значение указанного параметра, или значение по умолчанию */
+			std::string getArgParam(const std::string& name, const std::string& defval = "");
+			/*! получить значение, если пустое, то defval, если defval="" return defval2 */
+			std::string getArg2Param(const std::string& name, const std::string& defval, const std::string& defval2 = "");
+			/*! получить числовое значение параметра, если не число, то 0. Если параметра нет, используется значение defval */
+			int getArgInt(const std::string& name, const std::string& defval = "");
+			/*! получить числовое значение параметра, но если оно не положительное, вернуть defval */
+			int getArgPInt(const std::string& name, int defval);
+			int getArgPInt(const std::string& name, const std::string& strdefval, int defval);
 
-        xmlNode* initLogStream( DebugStream& deb, const std::string& nodename );
-        xmlNode* initLogStream( std::shared_ptr<DebugStream> deb, const std::string& nodename );
-        xmlNode* initLogStream( DebugStream* deb, const std::string& nodename );
+			xmlNode* initLogStream( DebugStream& deb, const std::string& nodename );
+			xmlNode* initLogStream( std::shared_ptr<DebugStream> deb, const std::string& nodename );
+			xmlNode* initLogStream( DebugStream* deb, const std::string& nodename );
 
-        UniSetTypes::ListOfNode::const_iterator listNodesBegin()
-        {
-            return lnodes.begin();
-        }
+			UniSetTypes::ListOfNode::const_iterator listNodesBegin()
+			{
+				return lnodes.begin();
+			}
 
-        inline UniSetTypes::ListOfNode::const_iterator listNodesEnd()
-        {
-            return lnodes.end();
-        }
+			inline UniSetTypes::ListOfNode::const_iterator listNodesEnd()
+			{
+				return lnodes.end();
+			}
 
-        /*! интерфейс к карте объектов */
-        std::shared_ptr<ObjectIndex> oind;
+			/*! интерфейс к карте объектов */
+			std::shared_ptr<ObjectIndex> oind;
 
-        /*! интерфейс к работе с локальнымми ior-файлами */
-        std::shared_ptr<IORFile> iorfile;
+			/*! интерфейс к работе с локальнымми ior-файлами */
+			std::shared_ptr<IORFile> iorfile;
 
-        /*! указатель на конфигурационный xml */
-        inline const std::shared_ptr<UniXML> getConfXML() const { return unixml; }
+			/*! указатель на конфигурационный xml */
+			inline const std::shared_ptr<UniXML> getConfXML() const
+			{
+				return unixml;
+			}
 
-        inline CORBA::ORB_ptr getORB() const { return CORBA::ORB::_duplicate(orb); }
-        inline const CORBA::PolicyList getPolicy() const { return policyList; }
+			inline CORBA::ORB_ptr getORB() const
+			{
+				return CORBA::ORB::_duplicate(orb);
+			}
+			inline const CORBA::PolicyList getPolicy() const
+			{
+				return policyList;
+			}
 
-    protected:
-        Configuration();
+		protected:
+			Configuration();
 
-        virtual void initConfiguration(int argc, const char* const* argv);
+			virtual void initConfiguration(int argc, const char* const* argv);
 
-        void createNodesList();
-        virtual void initNode( UniSetTypes::NodeInfo& ninfo, UniXML::iterator& it);
+			void createNodesList();
+			virtual void initNode( UniSetTypes::NodeInfo& ninfo, UniXML::iterator& it);
 
-        void initRepSections();
-        std::string getRepSectionName(const std::string& sec, xmlNode* secnode=0 );
-        void setConfFileName( const std::string& fn="" );
-        void initParameters();
-        void setLocalNode( const std::string& nodename );
+			void initRepSections();
+			std::string getRepSectionName(const std::string& sec, xmlNode* secnode = 0 );
+			void setConfFileName( const std::string& fn = "" );
+			void initParameters();
+			void setLocalNode( const std::string& nodename );
 
-        std::string getPort( const std::string& port="" );
+			std::string getPort( const std::string& port = "" );
 
-        std::string rootDir;
-        std::shared_ptr<UniXML> unixml;
+			std::string rootDir;
+			std::shared_ptr<UniXML> unixml;
 
-        int _argc;
-        const char* const* _argv;
-        CORBA::ORB_var orb;
-        CORBA::PolicyList policyList;
+			int _argc;
+			const char* const* _argv;
+			CORBA::ORB_var orb;
+			CORBA::PolicyList policyList;
 
-        std::string NSName;        /*!< имя сервиса именования на ланной машине (обычно "NameService") */
-        unsigned int countOfNet;    /*!< количество резервных каналов */
-        unsigned int repeatCount;    /*!< количество попыток получить доступ к удаленному объекту
+			std::string NSName;        /*!< имя сервиса именования на ланной машине (обычно "NameService") */
+			unsigned int countOfNet;    /*!< количество резервных каналов */
+			unsigned int repeatCount;    /*!< количество попыток получить доступ к удаленному объекту
                                             прежде чем будет выработано исключение TimeOut.        */
 
-        unsigned int repeatTimeout;    /*!< пауза между попытками [мс] */
+			unsigned int repeatTimeout;    /*!< пауза между попытками [мс] */
 
-        UniSetTypes::ListOfNode lnodes;
+			UniSetTypes::ListOfNode lnodes;
 
-        // repository
-        std::string secRoot;
-        std::string secSensors;
-        std::string secObjects;
-        std::string secControlles;
-        std::string secServices;
+			// repository
+			std::string secRoot;
+			std::string secSensors;
+			std::string secObjects;
+			std::string secControlles;
+			std::string secServices;
 
-        // xml
-        xmlNode* xmlSensorsSec;
-        xmlNode* xmlObjectsSec;
-        xmlNode* xmlControllersSec;
-        xmlNode* xmlServicesSec;
-        xmlNode* xmlNodesSec;
+			// xml
+			xmlNode* xmlSensorsSec;
+			xmlNode* xmlObjectsSec;
+			xmlNode* xmlControllersSec;
+			xmlNode* xmlServicesSec;
+			xmlNode* xmlNodesSec;
 
-        ObjectId localDBServer;
-        ObjectId localNode;
+			ObjectId localDBServer;
+			ObjectId localNode;
 
-        std::string localNodeName;
-        std::string fileConfName;
-        std::string imagesDir;
+			std::string localNodeName;
+			std::string fileConfName;
+			std::string imagesDir;
 
-        std::string confDir;
-        std::string dataDir;
-        std::string binDir;
-        std::string logDir;
-        std::string docDir;
-        std::string lockDir;
-        bool localIOR;
-        bool transientIOR;
+			std::string confDir;
+			std::string dataDir;
+			std::string binDir;
+			std::string logDir;
+			std::string docDir;
+			std::string lockDir;
+			bool localIOR;
+			bool transientIOR;
 
-        int heartbeat_msec;
-    };
+			int heartbeat_msec;
+	};
 
-    /*! Глобальный указатель на конфигурацию (singleton) */
-    std::shared_ptr<Configuration> uniset_conf();
+	/*! Глобальный указатель на конфигурацию (singleton) */
+	std::shared_ptr<Configuration> uniset_conf();
 
-    /*! Глобальный объект для вывода логов */
-    std::shared_ptr<DebugStream> ulog();
+	/*! Глобальный объект для вывода логов */
+	std::shared_ptr<DebugStream> ulog();
 
-    /*! инициализация "глобальной" конфигурации */
-    std::shared_ptr<Configuration> uniset_init( int argc, const char* const* argv, const std::string& xmlfile="configure.xml" );
+	/*! инициализация "глобальной" конфигурации */
+	std::shared_ptr<Configuration> uniset_init( int argc, const char* const* argv, const std::string& xmlfile = "configure.xml" );
 
 }    // end of UniSetTypes namespace
 // --------------------------------------------------------------------------

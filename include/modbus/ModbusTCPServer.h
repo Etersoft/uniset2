@@ -16,86 +16,101 @@
 // -------------------------------------------------------------------------
 /*!    ModbusTCP server */
 class ModbusTCPServer:
-    public ModbusServer,
-    public ost::TCPSocket
+	public ModbusServer,
+	public ost::TCPSocket
 {
-    public:
-        ModbusTCPServer( ost::InetAddress &ia, int port=502 );
-        virtual ~ModbusTCPServer();
+	public:
+		ModbusTCPServer( ost::InetAddress& ia, int port = 502 );
+		virtual ~ModbusTCPServer();
 
-        /*! Однопоточная обработка (каждый запрос последовательно), с разрывом соединения в конце */
-        virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr mbaddr, timeout_t msecTimeout ) override;
+		/*! Однопоточная обработка (каждый запрос последовательно), с разрывом соединения в конце */
+		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr mbaddr, timeout_t msecTimeout ) override;
 
-        /*! Многопоточная обработка (создаётся по потоку для каждого "клиента") 
-         \ return TRUE - если запр*ос пришёл
-         \return FALSE - если timeout
-         */
-        virtual bool waitQuery( ModbusRTU::ModbusAddr mbaddr, timeout_t msec = UniSetTimer::WaitUpTime );
+		/*! Многопоточная обработка (создаётся по потоку для каждого "клиента")
+		 \ return TRUE - если запр*ос пришёл
+		 \return FALSE - если timeout
+		 */
+		virtual bool waitQuery( ModbusRTU::ModbusAddr mbaddr, timeout_t msec = UniSetTimer::WaitUpTime );
 
-        void setMaxSessions( unsigned int num );
-        inline unsigned int getMaxSessions(){ return maxSessions; }
+		void setMaxSessions( unsigned int num );
+		inline unsigned int getMaxSessions()
+		{
+			return maxSessions;
+		}
 
-        /*! установить timeout для поддержания соединения с "клиентом" (Default: 10 сек) */
-        void setSessionTimeout( timeout_t msec );
-        inline timeout_t getSessionTimeout(){ return sessTimeout; }
+		/*! установить timeout для поддержания соединения с "клиентом" (Default: 10 сек) */
+		void setSessionTimeout( timeout_t msec );
+		inline timeout_t getSessionTimeout()
+		{
+			return sessTimeout;
+		}
 
-        /*! текущее количество подключений */
-        unsigned getCountSessions();
+		/*! текущее количество подключений */
+		unsigned getCountSessions();
 
-        inline void setIgnoreAddrMode( bool st ){ ignoreAddr = st; }
-        inline bool getIgnoreAddrMode(){ return ignoreAddr; }
+		inline void setIgnoreAddrMode( bool st )
+		{
+			ignoreAddr = st;
+		}
+		inline bool getIgnoreAddrMode()
+		{
+			return ignoreAddr;
+		}
 
-        void cleanInputStream();
-        virtual void cleanupChannel() override { cleanInputStream(); }
+		void cleanInputStream();
+		virtual void cleanupChannel() override
+		{
+			cleanInputStream();
+		}
 
-        virtual void terminate() override;
+		virtual void terminate() override;
 
-        // Сбор статистики по соединениям...
-        struct SessionInfo
-        {
-            SessionInfo( const std::string& a, unsigned int ask ):iaddr(a),askCount(ask){}
+		// Сбор статистики по соединениям...
+		struct SessionInfo
+		{
+			SessionInfo( const std::string& a, unsigned int ask ): iaddr(a), askCount(ask) {}
 
-            std::string iaddr;
-            unsigned int askCount;
-        };
+			std::string iaddr;
+			unsigned int askCount;
+		};
 
-        typedef std::list<SessionInfo> Sessions;
+		typedef std::list<SessionInfo> Sessions;
 
-        void getSessions( Sessions& lst );
+		void getSessions( Sessions& lst );
 
-    protected:
+	protected:
 
-        virtual ModbusRTU::mbErrCode pre_send_request( ModbusRTU::ModbusMessage& request ) override;
-        virtual ModbusRTU::mbErrCode post_send_request( ModbusRTU::ModbusMessage& request ) override;
+		virtual ModbusRTU::mbErrCode pre_send_request( ModbusRTU::ModbusMessage& request ) override;
+		virtual ModbusRTU::mbErrCode post_send_request( ModbusRTU::ModbusMessage& request ) override;
 
-        // realisation (see ModbusServer.h)
-        virtual int getNextData( unsigned char* buf, int len ) override;
-        virtual void setChannelTimeout( timeout_t msec ) override;
-        virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override;
+		// realisation (see ModbusServer.h)
+		virtual int getNextData( unsigned char* buf, int len ) override;
+		virtual void setChannelTimeout( timeout_t msec ) override;
+		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override;
 
-        virtual ModbusRTU::mbErrCode tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPHeader& mhead );
-        void sessionFinished( ModbusTCPSession* s );
+		virtual ModbusRTU::mbErrCode tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPHeader& mhead );
+		void sessionFinished( ModbusTCPSession* s );
 
-        ost::tpport_t port;
-        ost::TCPStream tcp;
-        ost::InetAddress iaddr;
-        std::queue<unsigned char> qrecv;
-        ModbusTCP::MBAPHeader curQueryHeader;
+		ost::tpport_t port;
+		ost::TCPStream tcp;
+		ost::InetAddress iaddr;
+		std::queue<unsigned char> qrecv;
+		ModbusTCP::MBAPHeader curQueryHeader;
 
-        typedef std::list<ModbusTCPSession*> SessionList;
-        UniSetTypes::uniset_mutex sMutex;
-        SessionList slist;
+		typedef std::list<ModbusTCPSession*> SessionList;
+		UniSetTypes::uniset_mutex sMutex;
+		SessionList slist;
 
-        bool ignoreAddr;
+		bool ignoreAddr;
 
-        unsigned int maxSessions;
-        unsigned int sessCount;
+		unsigned int maxSessions;
+		unsigned int sessCount;
 
-        timeout_t sessTimeout;
+		timeout_t sessTimeout;
 
-    private:
+	private:
 
-        std::atomic_bool cancelled;
+		std::atomic_bool cancelled;
 };
 // -------------------------------------------------------------------------
 #endif // ModbusTCPServer_H_

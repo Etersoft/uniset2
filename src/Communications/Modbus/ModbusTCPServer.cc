@@ -8,395 +8,406 @@ using namespace std;
 using namespace ModbusRTU;
 using namespace UniSetTypes;
 // -------------------------------------------------------------------------
-ModbusTCPServer::ModbusTCPServer( ost::InetAddress &ia, int port ):
-    TCPSocket(ia,port),
-    iaddr(ia),
-    ignoreAddr(false),
-    maxSessions(10),
-    sessCount(0),
-    sessTimeout(10000),
-    cancelled(false)
+ModbusTCPServer::ModbusTCPServer( ost::InetAddress& ia, int port ):
+	TCPSocket(ia, port),
+	iaddr(ia),
+	ignoreAddr(false),
+	maxSessions(10),
+	sessCount(0),
+	sessTimeout(10000),
+	cancelled(false)
 {
-    setCRCNoCheckit(true);
+	setCRCNoCheckit(true);
 }
 
 // -------------------------------------------------------------------------
 ModbusTCPServer::~ModbusTCPServer()
 {
-    terminate();
-/*
-    {
-        uniset_mutex_lock l(sMutex);
-        for( auto& s: slist )
-        {
-            if( s->isRunning() )
-                s->ost::Thread::join();
-        }
-    }
-*/
+	terminate();
+	/*
+	    {
+	        uniset_mutex_lock l(sMutex);
+	        for( auto& s: slist )
+	        {
+	            if( s->isRunning() )
+	                s->ost::Thread::join();
+	        }
+	    }
+	*/
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::setMaxSessions( unsigned int num )
 {
-    if( num < sessCount )
-    {
-        uniset_mutex_lock l(sMutex);
+	if( num < sessCount )
+	{
+		uniset_mutex_lock l(sMutex);
 
-        int k = sessCount - num;
-        int d = 0;
+		int k = sessCount - num;
+		int d = 0;
 
-        for( SessionList::reverse_iterator i=slist.rbegin(); d<k && i!=slist.rend(); ++i,d++ )
-            delete *i;
+		for( SessionList::reverse_iterator i = slist.rbegin(); d < k && i != slist.rend(); ++i, d++ )
+			delete *i;
 
-        sessCount = num;
-    }
+		sessCount = num;
+	}
 
-    maxSessions = num;
+	maxSessions = num;
 }
 // -------------------------------------------------------------------------
 unsigned ModbusTCPServer::getCountSessions()
 {
-    return sessCount;
+	return sessCount;
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::setSessionTimeout( timeout_t msec )
 {
-    sessTimeout = msec;
+	sessTimeout = msec;
 }
 // -------------------------------------------------------------------------
 bool ModbusTCPServer::waitQuery( ModbusRTU::ModbusAddr mbaddr, timeout_t msec )
 {
-    if( msec == 0 )
-        msec = UniSetTimer::WaitUpTime;
+	if( msec == 0 )
+		msec = UniSetTimer::WaitUpTime;
 
-    if( sessCount >= maxSessions )
-        return false;
+	if( sessCount >= maxSessions )
+		return false;
 
-    if( cancelled )
-        return false;
+	if( cancelled )
+		return false;
 
-    try 
-    {
-        if( isPendingConnection(msec) )
-        {
-            if( cancelled )
-                return false;
+	try
+	{
+		if( isPendingConnection(msec) )
+		{
+			if( cancelled )
+				return false;
 
-            ModbusTCPSession* s = new ModbusTCPSession(*this,mbaddr,sessTimeout);
+			ModbusTCPSession* s = new ModbusTCPSession(*this, mbaddr, sessTimeout);
 
-            s->connectReadCoil( sigc::mem_fun(this, &ModbusTCPServer::readCoilStatus) );
-            s->connectReadInputStatus( sigc::mem_fun(this, &ModbusTCPServer::readInputStatus) );
-            s->connectReadOutput( sigc::mem_fun(this, &ModbusTCPServer::readOutputRegisters) );
-            s->connectReadInput( sigc::mem_fun(this, &ModbusTCPServer::readInputRegisters) );
-            s->connectForceSingleCoil( sigc::mem_fun(this, &ModbusTCPServer::forceSingleCoil) );
-            s->connectForceCoils( sigc::mem_fun(this, &ModbusTCPServer::forceMultipleCoils) );
-            s->connectWriteOutput( sigc::mem_fun(this, &ModbusTCPServer::writeOutputRegisters) );
-            s->connectWriteSingleOutput( sigc::mem_fun(this, &ModbusTCPServer::writeOutputSingleRegister) );
-            s->connectMEIRDI( sigc::mem_fun(this, &ModbusTCPServer::read4314) );
-            s->connectSetDateTime( sigc::mem_fun(this, &ModbusTCPServer::setDateTime) );
-            s->connectDiagnostics( sigc::mem_fun(this, &ModbusTCPServer::diagnostics) );    
-            s->connectFileTransfer( sigc::mem_fun(this, &ModbusTCPServer::fileTransfer) );  
-            s->connectJournalCommand( sigc::mem_fun(this, &ModbusTCPServer::journalCommand) );
-            s->connectRemoteService( sigc::mem_fun(this, &ModbusTCPServer::remoteService) );
-            s->connectFileTransfer( sigc::mem_fun(this, &ModbusTCPServer::fileTransfer) );
+			s->connectReadCoil( sigc::mem_fun(this, &ModbusTCPServer::readCoilStatus) );
+			s->connectReadInputStatus( sigc::mem_fun(this, &ModbusTCPServer::readInputStatus) );
+			s->connectReadOutput( sigc::mem_fun(this, &ModbusTCPServer::readOutputRegisters) );
+			s->connectReadInput( sigc::mem_fun(this, &ModbusTCPServer::readInputRegisters) );
+			s->connectForceSingleCoil( sigc::mem_fun(this, &ModbusTCPServer::forceSingleCoil) );
+			s->connectForceCoils( sigc::mem_fun(this, &ModbusTCPServer::forceMultipleCoils) );
+			s->connectWriteOutput( sigc::mem_fun(this, &ModbusTCPServer::writeOutputRegisters) );
+			s->connectWriteSingleOutput( sigc::mem_fun(this, &ModbusTCPServer::writeOutputSingleRegister) );
+			s->connectMEIRDI( sigc::mem_fun(this, &ModbusTCPServer::read4314) );
+			s->connectSetDateTime( sigc::mem_fun(this, &ModbusTCPServer::setDateTime) );
+			s->connectDiagnostics( sigc::mem_fun(this, &ModbusTCPServer::diagnostics) );
+			s->connectFileTransfer( sigc::mem_fun(this, &ModbusTCPServer::fileTransfer) );
+			s->connectJournalCommand( sigc::mem_fun(this, &ModbusTCPServer::journalCommand) );
+			s->connectRemoteService( sigc::mem_fun(this, &ModbusTCPServer::remoteService) );
+			s->connectFileTransfer( sigc::mem_fun(this, &ModbusTCPServer::fileTransfer) );
 
-            s->setAfterSendPause(aftersend_msec);
-            s->setReplyTimeout(replyTimeout_ms);
-            s->setRecvTimeout(recvTimeOut_ms);
-            s->setSleepPause(sleepPause_usec);
-            s->setCleanBeforeSend(cleanBeforeSend);
+			s->setAfterSendPause(aftersend_msec);
+			s->setReplyTimeout(replyTimeout_ms);
+			s->setRecvTimeout(recvTimeOut_ms);
+			s->setSleepPause(sleepPause_usec);
+			s->setCleanBeforeSend(cleanBeforeSend);
 
-            s->setLog(dlog);
-            s->connectFinalSession( sigc::mem_fun(this, &ModbusTCPServer::sessionFinished) );
+			s->setLog(dlog);
+			s->connectFinalSession( sigc::mem_fun(this, &ModbusTCPServer::sessionFinished) );
 
-            {
-                uniset_mutex_lock l(sMutex);
-                slist.push_back(s);
-                sessCount++;
-            }
+			{
+				uniset_mutex_lock l(sMutex);
+				slist.push_back(s);
+				sessCount++;
+			}
 
-            s->detach();
-            return true;
-        }
-    }
-    catch( ost::Exception& e )
-    {
-        if( dlog->is_warn() )
-            dlog->warn() << "(ModbusTCPServer): " << e.what() << endl;
-    }
+			s->detach();
+			return true;
+		}
+	}
+	catch( ost::Exception& e )
+	{
+		if( dlog->is_warn() )
+			dlog->warn() << "(ModbusTCPServer): " << e.what() << endl;
+	}
 
-    return false;
+	return false;
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout )
 {
-    PassiveTimer ptTimeout(timeout);
-    ModbusMessage buf;
-    mbErrCode res = erTimeOut;
+	PassiveTimer ptTimeout(timeout);
+	ModbusMessage buf;
+	mbErrCode res = erTimeOut;
 
-//  Thread::setException(Thread::throwException);
-//  #warning "Why timeout can be 0 there?"
-    assert(timeout);
+	//  Thread::setException(Thread::throwException);
+	//  #warning "Why timeout can be 0 there?"
+	assert(timeout);
 
-    ptTimeout.reset();
-    try 
-    {
-        if( isPendingConnection(timeout) )
-        {
-            tcp.connect(*this);
+	ptTimeout.reset();
 
-            if( timeout != UniSetTimer::WaitUpTime )
-            {
-                timeout = ptTimeout.getLeft(timeout);
-                if( timeout == 0 )
-                {
-                    tcp.disconnect();
-                    return erTimeOut;
-                }
+	try
+	{
+		if( isPendingConnection(timeout) )
+		{
+			tcp.connect(*this);
 
-                ptTimeout.setTiming(timeout);
-            }
+			if( timeout != UniSetTimer::WaitUpTime )
+			{
+				timeout = ptTimeout.getLeft(timeout);
 
-            if( tcp.isPending(Socket::pendingInput, timeout) )
-            {
-                memset(&curQueryHeader,0,sizeof(curQueryHeader));
-                res = tcp_processing(tcp,curQueryHeader);
-                if( res!=erNoError )
-                {
-                    tcp.disconnect();
-                    return res;
-                }
+				if( timeout == 0 )
+				{
+					tcp.disconnect();
+					return erTimeOut;
+				}
 
-                if( timeout != UniSetTimer::WaitUpTime )
-                {
-                    timeout = ptTimeout.getLeft(timeout);
-                    if( timeout == 0 )
-                    {
-                        tcp.disconnect();
-                        return erTimeOut;
-                    }
-                }
+				ptTimeout.setTiming(timeout);
+			}
 
-                if( !qrecv.empty() )
-                {
-                    // check addr
-                     unsigned char _addr = qrecv.front();
+			if( tcp.isPending(Socket::pendingInput, timeout) )
+			{
+				memset(&curQueryHeader, 0, sizeof(curQueryHeader));
+				res = tcp_processing(tcp, curQueryHeader);
 
-                    // для режима игнорирования RTU-адреса
-                    // просто подменяем его на то который пришёл
-                    // чтобы проверка всегда была успешной...
-                    if( ignoreAddr ) 
-                        addr = _addr;
-                    else if( _addr != addr )
-                    {
-                        res = erTimeOut;
-                        // На такие запросы просто не отвечаем...
-                        /*
-                        res = erBadReplyNodeAddress;
-                        tmProcessing.setTiming(replyTimeout_ms);
-                        ErrorRetMessage em( _addr, buf.func, res ); 
-                        buf = em.transport_msg();
-                        send(buf);
-                        printProcessingTime();
-                        if( aftersend_msec >= 0 )
-                            msleep(aftersend_msec);
-                        */
-                        tcp.disconnect();
-                        return res;
-                    }
-                }
+				if( res != erNoError )
+				{
+					tcp.disconnect();
+					return res;
+				}
 
-                res = recv( addr, buf, timeout );
+				if( timeout != UniSetTimer::WaitUpTime )
+				{
+					timeout = ptTimeout.getLeft(timeout);
 
-                if( res!=erNoError ) // && res!=erBadReplyNodeAddress )
-                {
-                    if( res < erInternalErrorCode )
-                    {
-                        ErrorRetMessage em( addr, buf.func, res ); 
-                        buf = em.transport_msg();
-                        send(buf);
-                        printProcessingTime();
-                    }
-                    else if( aftersend_msec >= 0 )
-                        msleep(aftersend_msec);
+					if( timeout == 0 )
+					{
+						tcp.disconnect();
+						return erTimeOut;
+					}
+				}
 
-                    tcp.disconnect();
-                    return res;
-                }
+				if( !qrecv.empty() )
+				{
+					// check addr
+					unsigned char _addr = qrecv.front();
 
-                if( timeout != UniSetTimer::WaitUpTime )
-                {
-                    timeout = ptTimeout.getLeft(timeout);
-                    if( timeout == 0 )
-                    {
-                        tcp.disconnect();
-                        return erTimeOut;
-                    }
-                }
+					// для режима игнорирования RTU-адреса
+					// просто подменяем его на то который пришёл
+					// чтобы проверка всегда была успешной...
+					if( ignoreAddr )
+						addr = _addr;
+					else if( _addr != addr )
+					{
+						res = erTimeOut;
+						// На такие запросы просто не отвечаем...
+						/*
+						res = erBadReplyNodeAddress;
+						tmProcessing.setTiming(replyTimeout_ms);
+						ErrorRetMessage em( _addr, buf.func, res );
+						buf = em.transport_msg();
+						send(buf);
+						printProcessingTime();
+						if( aftersend_msec >= 0 )
+						    msleep(aftersend_msec);
+						*/
+						tcp.disconnect();
+						return res;
+					}
+				}
 
-                if( res!=erNoError )
-                {
-                    tcp.disconnect();
-                    return res;
-                }
+				res = recv( addr, buf, timeout );
 
-                // processing message...
-                res = processing(buf);
-            }
+				if( res != erNoError ) // && res!=erBadReplyNodeAddress )
+				{
+					if( res < erInternalErrorCode )
+					{
+						ErrorRetMessage em( addr, buf.func, res );
+						buf = em.transport_msg();
+						send(buf);
+						printProcessingTime();
+					}
+					else if( aftersend_msec >= 0 )
+						msleep(aftersend_msec);
 
-//            tcp << "exiting now" << endl;
-            tcp.disconnect();
-        }
-    }
-    catch( ost::Exception& e )
-    {
-        cout << "(ModbusTCPServer): " << e.what() << endl;
-        return erInternalErrorCode;
-    }
+					tcp.disconnect();
+					return res;
+				}
 
-    return res;
+				if( timeout != UniSetTimer::WaitUpTime )
+				{
+					timeout = ptTimeout.getLeft(timeout);
+
+					if( timeout == 0 )
+					{
+						tcp.disconnect();
+						return erTimeOut;
+					}
+				}
+
+				if( res != erNoError )
+				{
+					tcp.disconnect();
+					return res;
+				}
+
+				// processing message...
+				res = processing(buf);
+			}
+
+			//            tcp << "exiting now" << endl;
+			tcp.disconnect();
+		}
+	}
+	catch( ost::Exception& e )
+	{
+		cout << "(ModbusTCPServer): " << e.what() << endl;
+		return erInternalErrorCode;
+	}
+
+	return res;
 }
 
 // --------------------------------------------------------------------------------
 void ModbusTCPServer::setChannelTimeout( timeout_t msec )
 {
-    tcp.setTimeout(msec);
+	tcp.setTimeout(msec);
 }
 // --------------------------------------------------------------------------------
 mbErrCode ModbusTCPServer::sendData( unsigned char* buf, int len )
 {
-    return ModbusTCPCore::sendData(&tcp,buf,len);
+	return ModbusTCPCore::sendData(&tcp, buf, len);
 }
 // -------------------------------------------------------------------------
 int ModbusTCPServer::getNextData( unsigned char* buf, int len )
 {
-    return ModbusTCPCore::getNextData(&tcp,qrecv,buf,len);
+	return ModbusTCPCore::getNextData(&tcp, qrecv, buf, len);
 }
 // --------------------------------------------------------------------------------
 
 mbErrCode ModbusTCPServer::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPHeader& mhead )
 {
-    if( !tcp.isConnected() )
-        return erTimeOut;
+	if( !tcp.isConnected() )
+		return erTimeOut;
 
-    // чистим очередь
-    while( !qrecv.empty() )
-        qrecv.pop();
+	// чистим очередь
+	while( !qrecv.empty() )
+		qrecv.pop();
 
-    unsigned int len = getNextData((unsigned char*)(&mhead),sizeof(mhead));
-    if( len < sizeof(mhead) )
-        return erInvalidFormat;
+	unsigned int len = getNextData((unsigned char*)(&mhead), sizeof(mhead));
 
-    mhead.swapdata();
+	if( len < sizeof(mhead) )
+		return erInvalidFormat;
 
-    if( dlog->is_info() )
-    {
-        dlog->info() << "(ModbusTCPServer::tcp_processing): recv tcp header(" << len << "): ";
-        mbPrintMessage( *(dlog.get()), (ModbusByte*)(&mhead), sizeof(mhead));
-        (*(dlog.get()))(Debug::INFO) << endl;
-    }
+	mhead.swapdata();
 
-    // check header
-    if( mhead.pID != 0 )
-        return erUnExpectedPacketType; // erTimeOut;
+	if( dlog->is_info() )
+	{
+		dlog->info() << "(ModbusTCPServer::tcp_processing): recv tcp header(" << len << "): ";
+		mbPrintMessage( *(dlog.get()), (ModbusByte*)(&mhead), sizeof(mhead));
+		(*(dlog.get()))(Debug::INFO) << endl;
+	}
 
-    len = ModbusTCPCore::readNextData(&tcp,qrecv,mhead.len);
+	// check header
+	if( mhead.pID != 0 )
+		return erUnExpectedPacketType; // erTimeOut;
 
-    if( len<mhead.len )
-    {
-        if( dlog->is_info() )
-            dlog->info() << "(ModbusTCPServer::tcp_processing): len(" << (int)len
-                    << ") < mhead.len(" << (int)mhead.len << ")" << endl;
+	len = ModbusTCPCore::readNextData(&tcp, qrecv, mhead.len);
 
-        return erInvalidFormat;
-    }
+	if( len < mhead.len )
+	{
+		if( dlog->is_info() )
+			dlog->info() << "(ModbusTCPServer::tcp_processing): len(" << (int)len
+						 << ") < mhead.len(" << (int)mhead.len << ")" << endl;
 
-    return erNoError;
+		return erInvalidFormat;
+	}
+
+	return erNoError;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode ModbusTCPServer::post_send_request( ModbusRTU::ModbusMessage& request )
 {
-    tcp << endl;
-    return erNoError;
+	tcp << endl;
+	return erNoError;
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPServer::pre_send_request( ModbusMessage& request )
 {
-    if( !tcp.isConnected() )
-        return erTimeOut;
+	if( !tcp.isConnected() )
+		return erTimeOut;
 
-    curQueryHeader.len = request.len + szModbusHeader;
+	curQueryHeader.len = request.len + szModbusHeader;
 
-    if( crcNoCheckit )
-        curQueryHeader.len -= szCRC;
+	if( crcNoCheckit )
+		curQueryHeader.len -= szCRC;
 
-    curQueryHeader.swapdata();
-    if( dlog->is_info() )
-    {
-        dlog->info() << "(ModbusTCPServer::pre_send_request): send tcp header: ";
-        mbPrintMessage( *(dlog.get()), (ModbusByte*)(&curQueryHeader), sizeof(curQueryHeader));
-        (*(dlog.get()))(Debug::INFO) << endl;
-    }
+	curQueryHeader.swapdata();
 
-    tcp << curQueryHeader;
-    curQueryHeader.swapdata();
+	if( dlog->is_info() )
+	{
+		dlog->info() << "(ModbusTCPServer::pre_send_request): send tcp header: ";
+		mbPrintMessage( *(dlog.get()), (ModbusByte*)(&curQueryHeader), sizeof(curQueryHeader));
+		(*(dlog.get()))(Debug::INFO) << endl;
+	}
 
-    return erNoError;
+	tcp << curQueryHeader;
+	curQueryHeader.swapdata();
+
+	return erNoError;
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::cleanInputStream()
 {
-    unsigned char buf[100];
-    int ret=0;
-    do
-    {
-        ret = getNextData(buf,sizeof(buf));
-    }
-    while( ret > 0);
+	unsigned char buf[100];
+	int ret = 0;
+
+	do
+	{
+		ret = getNextData(buf, sizeof(buf));
+	}
+	while( ret > 0);
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::terminate()
 {
-    cancelled = true;
+	cancelled = true;
 
-    if( dlog->is_info() )
-        dlog->info() << "(ModbusTCPServer): terminate..." << endl;
+	if( dlog->is_info() )
+		dlog->info() << "(ModbusTCPServer): terminate..." << endl;
 
-    if( tcp && tcp.isConnected() )
-        tcp.disconnect();
+	if( tcp && tcp.isConnected() )
+		tcp.disconnect();
 
-    uniset_mutex_lock l(sMutex);
-    for( auto &s: slist )
-    {
-        try
-        {
-            s->terminate();
-        }
-        catch(...){}
-    }
+	uniset_mutex_lock l(sMutex);
+
+	for( auto& s : slist )
+	{
+		try
+		{
+			s->terminate();
+		}
+		catch(...) {}
+	}
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::sessionFinished( ModbusTCPSession* s )
 {
-    uniset_mutex_lock l(sMutex);
-    for( auto i=slist.begin(); i!=slist.end(); ++i )
-    {
-        if( (*i) == s )
-        {
-            slist.erase(i);
-            sessCount--;
-            return;
-        }
-    }
+	uniset_mutex_lock l(sMutex);
+
+	for( auto i = slist.begin(); i != slist.end(); ++i )
+	{
+		if( (*i) == s )
+		{
+			slist.erase(i);
+			sessCount--;
+			return;
+		}
+	}
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::getSessions( Sessions& lst )
 {
-    uniset_mutex_lock l(sMutex);
-    for( auto &i: slist )
-    {
-        SessionInfo inf( i->getClientAddress(), i->getAskCount() );
-        lst.push_back(inf);
-    }
+	uniset_mutex_lock l(sMutex);
+
+	for( auto& i : slist )
+	{
+		SessionInfo inf( i->getClientAddress(), i->getAskCount() );
+		lst.push_back(inf);
+	}
 }
 // -------------------------------------------------------------------------

@@ -8,44 +8,44 @@
 #include "LogServerTypes.h"
 // -------------------------------------------------------------------------
 class LogAgregator:
-    public DebugStream
+	public DebugStream
 {
-    public:
+	public:
 
-        explicit LogAgregator( Debug::type t = Debug::NONE );
-        explicit LogAgregator( char const * f, Debug::type t = Debug::NONE );
+		explicit LogAgregator( Debug::type t = Debug::NONE );
+		explicit LogAgregator( char const* f, Debug::type t = Debug::NONE );
 
-        virtual ~LogAgregator();
+		virtual ~LogAgregator();
 
-        virtual void logFile( const std::string& f );
+		virtual void logFile( const std::string& f );
 
-        void add( std::shared_ptr<DebugStream> log );
-        std::shared_ptr<DebugStream> create( const std::string& logname );
+		void add( std::shared_ptr<DebugStream> log );
+		std::shared_ptr<DebugStream> create( const std::string& logname );
 
-        // Управление "подчинёнными" логами
-        void addLevel( const std::string& logname, Debug::type t );
-        void delLevel( const std::string& logname, Debug::type t );
-        void level( const std::string& logname, Debug::type t );
-
-
-        struct LogInfo
-        {
-            LogInfo():log(0),logfile(""){}
-            LogInfo( std::shared_ptr<DebugStream>& l ):log(l),logfile(l->getLogFile()){}
-            std::shared_ptr<DebugStream> log;
-            std::string logfile;
-        };
-
-        std::shared_ptr<DebugStream> getLog( const std::string& logname );
-        LogInfo getLogInfo( const std::string& logname );
-
-    protected:
-        void logOnEvent( const std::string& s );
+		// Управление "подчинёнными" логами
+		void addLevel( const std::string& logname, Debug::type t );
+		void delLevel( const std::string& logname, Debug::type t );
+		void level( const std::string& logname, Debug::type t );
 
 
-    private:
-        typedef std::unordered_map<std::string, LogInfo> LogMap;
-        LogMap lmap;
+		struct LogInfo
+		{
+			LogInfo(): log(0), logfile("") {}
+			LogInfo( std::shared_ptr<DebugStream>& l ): log(l), logfile(l->getLogFile()) {}
+			std::shared_ptr<DebugStream> log;
+			std::string logfile;
+		};
+
+		std::shared_ptr<DebugStream> getLog( const std::string& logname );
+		LogInfo getLogInfo( const std::string& logname );
+
+	protected:
+		void logOnEvent( const std::string& s );
+
+
+	private:
+		typedef std::unordered_map<std::string, LogInfo> LogMap;
+		LogMap lmap;
 };
 // -------------------------------------------------------------------------
 #endif // LogAgregator_H_

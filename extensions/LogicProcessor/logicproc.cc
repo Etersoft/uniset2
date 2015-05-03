@@ -7,47 +7,50 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-int main(int argc, const char **argv)
+int main(int argc, const char** argv)
 {
-    std::ios::sync_with_stdio(false);
-    try
-    {
-        auto conf = uniset_init( argc, argv );
+	std::ios::sync_with_stdio(false);
 
-        string logfilename(conf->getArgParam("--logicproc-logfile"));
-        if( logfilename.empty() )
-            logfilename = "logicproc.log";
+	try
+	{
+		auto conf = uniset_init( argc, argv );
 
-        std::ostringstream logname;
-        string dir(conf->getLogDir());
-        logname << dir << logfilename;
-        ulog()->logFile( logname.str() );
-        dlog()->logFile( logname.str() );
+		string logfilename(conf->getArgParam("--logicproc-logfile"));
 
-        string schema = conf->getArgParam("--schema");
-        if( schema.empty() )
-        {
-            dcrit << "schema-file not defined. Use --schema" << endl;
-            return 1;
-        }
+		if( logfilename.empty() )
+			logfilename = "logicproc.log";
 
-        LProcessor plc;
-        plc.execute(schema);
-        return 0;
-    }
-    catch( const LogicException& ex )
-    {
-        cerr << ex << endl;
-    }
-    catch( const Exception& ex )
-    {
-        cerr << ex << endl;
-    }
-    catch( ... )
-    {
-        cerr << " catch ... " << endl;
-    }
-    
-    return 1;
+		std::ostringstream logname;
+		string dir(conf->getLogDir());
+		logname << dir << logfilename;
+		ulog()->logFile( logname.str() );
+		dlog()->logFile( logname.str() );
+
+		string schema = conf->getArgParam("--schema");
+
+		if( schema.empty() )
+		{
+			dcrit << "schema-file not defined. Use --schema" << endl;
+			return 1;
+		}
+
+		LProcessor plc;
+		plc.execute(schema);
+		return 0;
+	}
+	catch( const LogicException& ex )
+	{
+		cerr << ex << endl;
+	}
+	catch( const Exception& ex )
+	{
+		cerr << ex << endl;
+	}
+	catch( ... )
+	{
+		cerr << " catch ... " << endl;
+	}
+
+	return 1;
 }
 // -----------------------------------------------------------------------------

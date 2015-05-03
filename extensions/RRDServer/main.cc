@@ -11,72 +11,76 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 int main( int argc, const char** argv )
 {
-    std::ios::sync_with_stdio(false);
-    if( argc>1 && (!strcmp(argv[1],"--help") || !strcmp(argv[1],"-h")) )
-    {
-        cout << "--smemory-id objectName  - SharedMemory objectID. Default: autodetect" << endl;
-        cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
-        cout << "--rrdstorage-logfile filename    - logfilename. Default: rrdstorage.log" << endl;
-        cout << endl;
-        RRDServer::help_print(argc, argv);
-        return 0;
-    }
+	std::ios::sync_with_stdio(false);
 
-    try
-    {
-        auto conf = uniset_init( argc, argv );
+	if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
+	{
+		cout << "--smemory-id objectName  - SharedMemory objectID. Default: autodetect" << endl;
+		cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
+		cout << "--rrdstorage-logfile filename    - logfilename. Default: rrdstorage.log" << endl;
+		cout << endl;
+		RRDServer::help_print(argc, argv);
+		return 0;
+	}
 
-        string logfilename(conf->getArgParam("--rrdstorage-logfile"));
-        if( logfilename.empty() )
-            logfilename = "rrdstorage.log";
+	try
+	{
+		auto conf = uniset_init( argc, argv );
 
-        std::ostringstream logname;
-        string dir(conf->getLogDir());
-        logname << dir << logfilename;
-        ulog()->logFile( logname.str() );
-        dlog()->logFile( logname.str() );
+		string logfilename(conf->getArgParam("--rrdstorage-logfile"));
 
-        ObjectId shmID = DefaultObjectId;
-        string sID = conf->getArgParam("--smemory-id");
-        if( !sID.empty() )
-            shmID = conf->getControllerID(sID);
-        else
-            shmID = getSharedMemoryID();
+		if( logfilename.empty() )
+			logfilename = "rrdstorage.log";
 
-        if( shmID == DefaultObjectId )
-        {
-            cerr << sID << "? SharedMemoryID not found in " << conf->getControllersSection() << " section" << endl;
-            return 1;
-        }
+		std::ostringstream logname;
+		string dir(conf->getLogDir());
+		logname << dir << logfilename;
+		ulog()->logFile( logname.str() );
+		dlog()->logFile( logname.str() );
 
-        auto db = RRDServer::init_rrdstorage(argc,argv,shmID);
-        if( !db )
-        {
-            dcrit << "(rrdstorage): init не прошёл..." << endl;
-            return 1;
-        }
+		ObjectId shmID = DefaultObjectId;
+		string sID = conf->getArgParam("--smemory-id");
 
-        auto act = UniSetActivator::Instance();
-        act->add(db);
+		if( !sID.empty() )
+			shmID = conf->getControllerID(sID);
+		else
+			shmID = getSharedMemoryID();
 
-        SystemMessage sm(SystemMessage::StartUp);
-        act->broadcast( sm.transport_msg() );
+		if( shmID == DefaultObjectId )
+		{
+			cerr << sID << "? SharedMemoryID not found in " << conf->getControllersSection() << " section" << endl;
+			return 1;
+		}
 
-        ulogany << "\n\n\n";
-        ulogany << "(main): -------------- RRDServer START -------------------------\n\n";
-        dlogany << "\n\n\n";
-        dlogany << "(main): -------------- RRDServer START -------------------------\n\n";
-        act->run(false);
-        return 0;
-    }
-    catch( UniSetTypes::Exception& ex )
-    {
-        dcrit << "(rrdstorage): " << ex << std::endl;
-    }
-    catch(...)
-    {
-        dcrit << "(rrdstorage): catch ..." << std::endl;
-    }
+		auto db = RRDServer::init_rrdstorage(argc, argv, shmID);
 
-    return 1;
+		if( !db )
+		{
+			dcrit << "(rrdstorage): init не прошёл..." << endl;
+			return 1;
+		}
+
+		auto act = UniSetActivator::Instance();
+		act->add(db);
+
+		SystemMessage sm(SystemMessage::StartUp);
+		act->broadcast( sm.transport_msg() );
+
+		ulogany << "\n\n\n";
+		ulogany << "(main): -------------- RRDServer START -------------------------\n\n";
+		dlogany << "\n\n\n";
+		dlogany << "(main): -------------- RRDServer START -------------------------\n\n";
+		act->run(false);
+		return 0;
+	}
+	catch( UniSetTypes::Exception& ex )
+	{
+		dcrit << "(rrdstorage): " << ex << std::endl;
+	}
+	catch(...)
+	{
+		dcrit << "(rrdstorage): catch ..." << std::endl;
+	}
+
+	return 1;
 }

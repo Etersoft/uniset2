@@ -36,26 +36,26 @@
 
 namespace UniSetTypes
 {
-    class LimitTimers:
-        public UniSetTypes::Exception
-    {
-        public:
-            LimitTimers():Exception("LimitTimers"){}
+	class LimitTimers:
+		public UniSetTypes::Exception
+	{
+		public:
+			LimitTimers(): Exception("LimitTimers") {}
 
-            /*! Конструктор позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-            LimitTimers(const std::string& err):Exception(err){}
-    };
+			/*! Конструктор позволяющий вывести в сообщении об ошибке дополнительную информацию err */
+			LimitTimers(const std::string& err): Exception(err) {}
+	};
 }
 //@}
 // end of UniSetException group
 //----------------------------------------------------------------------------------------
 
-/*! 
- * \brief Таймер 
+/*!
+ * \brief Таймер
  * \author Pavel Vainerman
  * \par
  * Создает поток, в котором происходит отсчет тактов (10ms). Позволяет заказывать до CallbackTimer::MAXCallbackTimer таймеров.
- * При срабатывании будет вызвана указанная функция с указанием \b Id таймера, который сработал. 
+ * При срабатывании будет вызвана указанная функция с указанием \b Id таймера, который сработал.
  * Функция обратного вызова должна удовлетворять шаблону CallbackTimer::Action.
  * Пример создания таймера:
  *
@@ -76,73 +76,76 @@ namespace UniSetTypes
  *
  * \note Каждый экземпляр класса CallbackTimer создает поток, поэтому \b желательно не создавать больше одного экземпляра,
  * для одного процесса (чтобы не порождать много потоков).
-*/ 
+*/
 template <class Caller>
 class CallbackTimer
 //    public PassiveTimer
-{ 
-    public:
+{
+	public:
 
-        /*! Максимальное количество таймеров */
-        static const unsigned int MAXCallbackTimer = 20;
+		/*! Максимальное количество таймеров */
+		static const unsigned int MAXCallbackTimer = 20;
 
-        /*! прототип функции вызова */
-        typedef void(Caller::* Action)( int id );
+		/*! прототип функции вызова */
+		typedef void(Caller::* Action)( int id );
 
-        CallbackTimer(Caller* r, Action a);
-        ~CallbackTimer();
+		CallbackTimer(Caller* r, Action a);
+		~CallbackTimer();
 
-        // Управление таймером
-        void run();        /*!< запуск таймера */
-        void terminate();  /*!< остановка    */
+		// Управление таймером
+		void run();        /*!< запуск таймера */
+		void terminate();  /*!< остановка    */
 
-        // Работа с таймерами (на основе интерфейса PassiveTimer)
-        void reset(int id);                 /*!< перезапустить таймер */
-        void setTiming(int id, int timrMS); /*!< установить таймер и запустить */
-        int getInterval(int id);            /*!< получить интервал, на который установлен таймер, в мс */
-        int getCurrent(int id);             /*!< получить текущее значение таймера */
+		// Работа с таймерами (на основе интерфейса PassiveTimer)
+		void reset(int id);                 /*!< перезапустить таймер */
+		void setTiming(int id, int timrMS); /*!< установить таймер и запустить */
+		int getInterval(int id);            /*!< получить интервал, на который установлен таймер, в мс */
+		int getCurrent(int id);             /*!< получить текущее значение таймера */
 
 
-        void add( int id, int timeMS )throw(UniSetTypes::LimitTimers); /*!< добавление нового таймера */
-        void remove( int id ); /*!< удаление таймера */
+		void add( int id, int timeMS )throw(UniSetTypes::LimitTimers); /*!< добавление нового таймера */
+		void remove( int id ); /*!< удаление таймера */
 
-    protected:
+	protected:
 
-        CallbackTimer();
-        void work();
+		CallbackTimer();
+		void work();
 
-        void startTimers();
-        void clearTimers();
+		void startTimers();
+		void clearTimers();
 
-    private:
+	private:
 
-        typedef CallbackTimer<Caller> CBT;
-        friend class ThreadCreator<CBT>;
-        Caller* cal;
-        Action act;
-        ThreadCreator<CBT> *thr;
+		typedef CallbackTimer<Caller> CBT;
+		friend class ThreadCreator<CBT>;
+		Caller* cal;
+		Action act;
+		ThreadCreator<CBT>* thr;
 
-        bool terminated;
+		bool terminated;
 
-        struct TimerInfo
-        {
-            TimerInfo(int id, PassiveTimer& pt):
-                id(id), pt(pt){};
+		struct TimerInfo
+		{
+			TimerInfo(int id, PassiveTimer& pt):
+				id(id), pt(pt) {};
 
-            int id;
-            PassiveTimer pt;
-        };
+			int id;
+			PassiveTimer pt;
+		};
 
-        typedef std::list<TimerInfo> TimersList;
-        TimersList lst;
+		typedef std::list<TimerInfo> TimersList;
+		TimersList lst;
 
-        // функция-объект для поиска по id
-        struct FindId_eq: public std::unary_function<TimerInfo, bool>
-        {
-            FindId_eq(const int id):id(id){}
-            inline bool operator()(const TimerInfo& ti) const{return ti.id==id;}
-            int id;
-        };
+		// функция-объект для поиска по id
+		struct FindId_eq: public std::unary_function<TimerInfo, bool>
+		{
+			FindId_eq(const int id): id(id) {}
+			inline bool operator()(const TimerInfo& ti) const
+			{
+				return ti.id == id;
+			}
+			int id;
+		};
 };
 
 #include "CallbackTimer.tcc"

@@ -23,18 +23,18 @@
         - \ref pgUNetUDP_Reserv
 
     \section pgUNetUDP_Common Общее описание
-        Обмен построен  на основе протокола UDP. 
+        Обмен построен  на основе протокола UDP.
         Основная идея заключается в том, что каждый узел на порту равном своему ID
     посылает в сеть UDP-пакеты содержащие данные считанные из локальной SM. Формат данных - это набор
-    пар [id,value]. Другие узлы принимают их. Помимо этого данный процесс запускает 
+    пар [id,value]. Другие узлы принимают их. Помимо этого данный процесс запускает
     по потоку приёма для каждого другого узла и ловит пакеты от них, сохраняя данные в SM.
 
-    \par 
-        При своём старте процесс считывает из секции \<nodes> список узлов которые необходимо "слушать", 
+    \par
+        При своём старте процесс считывает из секции \<nodes> список узлов которые необходимо "слушать",
     а также параметры своего узла. Открывает по потоку приёма на каждый узел и поток
     передачи для своих данных. Помимо этого такие же потоки для резервных каналов, если они включены
     (см. \ref pgUNetUDP_Reserv ).
-    
+
     \section pgUNetUDP_Conf Пример конфигурирования
         По умолчанию при считывании используется \b unet_broadcast_ip (указанный в секции \<nodes>)
     и \b id узла - в качестве порта.
@@ -55,144 +55,150 @@
     \section pgUNetUDP_Reserv Настройка резервного канала связи
         В текущей реализации поддерживается возможность обмена по двум подсетям (эзернет-каналам).
     Она основана на том, что, для каждого узла помимо основного "читателя",
-    создаётся дополнительный "читатель"(поток) слушающий другой ip-адрес и порт. 
-    А так же, для локального узла создаётся дополнительный "писатель"(поток), 
-    который посылает данные в (указанную) вторую подсеть. Для того, чтобы задействовать 
+    создаётся дополнительный "читатель"(поток) слушающий другой ip-адрес и порт.
+    А так же, для локального узла создаётся дополнительный "писатель"(поток),
+    который посылает данные в (указанную) вторую подсеть. Для того, чтобы задействовать
     второй канал, достаточно объявить в настройках переменные
-    \b unet_broadcast_ip2. А также в случае необходимости для конкретного узла 
+    \b unet_broadcast_ip2. А также в случае необходимости для конкретного узла
     можно указать \b unet_broadcast_ip2 и \b unet_port2.
 
     Переключение между "каналами" происходит по следующей логике:
 
-    При старте включается только первый канал. Второй канал работает в режиме "пассивного" чтения. 
-    Т.е. все пакеты принимаются, но данные в SharedMemory не сохраняются. 
-    Если во время работы пропадает связь по первому каналу, идёт переключение на второй канал. 
+    При старте включается только первый канал. Второй канал работает в режиме "пассивного" чтения.
+    Т.е. все пакеты принимаются, но данные в SharedMemory не сохраняются.
+    Если во время работы пропадает связь по первому каналу, идёт переключение на второй канал.
     Первый канал переводиться в "пассивный" режим, а второй канал, переводится в "нормальный"(активный)
-    режим. Далее работа ведётся по второму каналу, независимо от того, что связь на первом 
-    канале может восстановиться. Это сделано для защиты от постоянных перескакиваний 
-    с канала на канал. Работа на втором канале будет вестись, пока не пропадёт связь 
+    режим. Далее работа ведётся по второму каналу, независимо от того, что связь на первом
+    канале может восстановиться. Это сделано для защиты от постоянных перескакиваний
+    с канала на канал. Работа на втором канале будет вестись, пока не пропадёт связь
     на нём. Тогда будет попытка переключиться обратно на первый канал и так "по кругу".
 
     В свою очередь "писатели"(если они не отключены) всегда посылают данные в оба канала.
 */
 // -----------------------------------------------------------------------------
 class UNetExchange:
-    public UniSetObject_LT
+	public UniSetObject_LT
 {
-    public:
-        UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr, const std::string& prefix="unet" );
-        virtual ~UNetExchange();
+	public:
+		UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr, const std::string& prefix = "unet" );
+		virtual ~UNetExchange();
 
-        /*! глобальная функция для инициализации объекта */
-        static std::shared_ptr<UNetExchange> init_unetexchange( int argc, const char* const argv[],
-                                            UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=0, const std::string& prefix="unet" );
+		/*! глобальная функция для инициализации объекта */
+		static std::shared_ptr<UNetExchange> init_unetexchange( int argc, const char* const argv[],
+				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = 0, const std::string& prefix = "unet" );
 
-        /*! глобальная функция для вывода help-а */
-        static void help_print( int argc, const char* argv[] );
+		/*! глобальная функция для вывода help-а */
+		static void help_print( int argc, const char* argv[] );
 
-        bool checkExistUNetHost( const std::string& host, ost::tpport_t port );
+		bool checkExistUNetHost( const std::string& host, ost::tpport_t port );
 
-    protected:
+	protected:
 
-        xmlNode* cnode;
-        std::string s_field;
-        std::string s_fvalue;
+		xmlNode* cnode;
+		std::string s_field;
+		std::string s_fvalue;
 
-        std::shared_ptr<SMInterface> shm;
-        void step();
+		std::shared_ptr<SMInterface> shm;
+		void step();
 
-        void sysCommand( const UniSetTypes::SystemMessage *msg ) override;
-        void sensorInfo( const UniSetTypes::SensorMessage*sm ) override;
-        void timerInfo( const UniSetTypes::TimerMessage *tm ) override;
-        void askSensors( UniversalIO::UIOCommand cmd );
-        void waitSMReady();
-        void receiverEvent( const std::shared_ptr<UNetReceiver>& r, UNetReceiver::Event ev );
+		void sysCommand( const UniSetTypes::SystemMessage* msg ) override;
+		void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
+		void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+		void askSensors( UniversalIO::UIOCommand cmd );
+		void waitSMReady();
+		void receiverEvent( const std::shared_ptr<UNetReceiver>& r, UNetReceiver::Event ev );
 
-        virtual bool activateObject();
+		virtual bool activateObject();
 
-        // действия при завершении работы
-        virtual void sigterm( int signo );
+		// действия при завершении работы
+		virtual void sigterm( int signo );
 
-        void initIterators();
-        void startReceivers();
+		void initIterators();
+		void startReceivers();
 
-        enum Timer
-        {
-            tmStep
-        };
+		enum Timer
+		{
+			tmStep
+		};
 
-    private:
-        UNetExchange();
-        bool initPause;
-        UniSetTypes::uniset_rwmutex mutex_start;
+	private:
+		UNetExchange();
+		bool initPause;
+		UniSetTypes::uniset_rwmutex mutex_start;
 
-        PassiveTimer ptHeartBeat;
-        UniSetTypes::ObjectId sidHeartBeat;
-        int maxHeartBeat;
-        IOController::IOStateList::iterator itHeartBeat;
-        UniSetTypes::ObjectId test_id;
+		PassiveTimer ptHeartBeat;
+		UniSetTypes::ObjectId sidHeartBeat;
+		int maxHeartBeat;
+		IOController::IOStateList::iterator itHeartBeat;
+		UniSetTypes::ObjectId test_id;
 
-        int steptime;    /*!< периодичность вызова step, [мсек] */
+		int steptime;    /*!< периодичность вызова step, [мсек] */
 
-        std::atomic_bool activated;
-        int activateTimeout;
+		std::atomic_bool activated;
+		int activateTimeout;
 
-        struct ReceiverInfo
-        {
-            ReceiverInfo():r1(nullptr),r2(nullptr),
-                sidRespond(UniSetTypes::DefaultObjectId),
-                respondInvert(false),
-                sidLostPackets(UniSetTypes::DefaultObjectId),
-                sidChannelNum(UniSetTypes::DefaultObjectId)
-            {}
+		struct ReceiverInfo
+		{
+			ReceiverInfo(): r1(nullptr), r2(nullptr),
+				sidRespond(UniSetTypes::DefaultObjectId),
+				respondInvert(false),
+				sidLostPackets(UniSetTypes::DefaultObjectId),
+				sidChannelNum(UniSetTypes::DefaultObjectId)
+			{}
 
-            ReceiverInfo( const std::shared_ptr<UNetReceiver>& _r1, const std::shared_ptr<UNetReceiver>& _r2 ):
-                r1(_r1),r2(_r2),
-                sidRespond(UniSetTypes::DefaultObjectId),
-                respondInvert(false),
-                sidLostPackets(UniSetTypes::DefaultObjectId),
-                sidChannelNum(UniSetTypes::DefaultObjectId)
-            {}
+			ReceiverInfo( const std::shared_ptr<UNetReceiver>& _r1, const std::shared_ptr<UNetReceiver>& _r2 ):
+				r1(_r1), r2(_r2),
+				sidRespond(UniSetTypes::DefaultObjectId),
+				respondInvert(false),
+				sidLostPackets(UniSetTypes::DefaultObjectId),
+				sidChannelNum(UniSetTypes::DefaultObjectId)
+			{}
 
-            std::shared_ptr<UNetReceiver> r1;    /*!< приём по первому каналу */
-            std::shared_ptr<UNetReceiver> r2;    /*!< приём по второму каналу */
+			std::shared_ptr<UNetReceiver> r1;    /*!< приём по первому каналу */
+			std::shared_ptr<UNetReceiver> r2;    /*!< приём по второму каналу */
 
-            void step( const std::shared_ptr<SMInterface> shm, const std::string& myname );
+			void step( const std::shared_ptr<SMInterface> shm, const std::string& myname );
 
-            inline void setRespondID( UniSetTypes::ObjectId id, bool invert=false )
-            { 
-                sidRespond = id; 
-                respondInvert = invert;
-            }
-            inline void setLostPacketsID( UniSetTypes::ObjectId id ){ sidLostPackets = id; }
-            inline void setChannelNumID( UniSetTypes::ObjectId id ){ sidChannelNum = id; }
+			inline void setRespondID( UniSetTypes::ObjectId id, bool invert = false )
+			{
+				sidRespond = id;
+				respondInvert = invert;
+			}
+			inline void setLostPacketsID( UniSetTypes::ObjectId id )
+			{
+				sidLostPackets = id;
+			}
+			inline void setChannelNumID( UniSetTypes::ObjectId id )
+			{
+				sidChannelNum = id;
+			}
 
-            inline void initIterators( const std::shared_ptr<SMInterface> shm )
-            {
-                shm->initIterator(itLostPackets);
-                shm->initIterator(itRespond);
-                shm->initIterator(itChannelNum);
-            }
+			inline void initIterators( const std::shared_ptr<SMInterface> shm )
+			{
+				shm->initIterator(itLostPackets);
+				shm->initIterator(itRespond);
+				shm->initIterator(itChannelNum);
+			}
 
-            // Сводная информация по двум каналам
-            // сумма потерянных пакетов и наличие связи
-            // хотя бы по одному каналу, номер рабочего канала
-            // ( реализацию см. ReceiverInfo::step() )
-            UniSetTypes::ObjectId sidRespond;
-            IOController::IOStateList::iterator itRespond;
-            bool respondInvert;
-            UniSetTypes::ObjectId sidLostPackets;
-            IOController::IOStateList::iterator itLostPackets;
-            UniSetTypes::ObjectId sidChannelNum;
-            IOController::IOStateList::iterator itChannelNum;
-        };
+			// Сводная информация по двум каналам
+			// сумма потерянных пакетов и наличие связи
+			// хотя бы по одному каналу, номер рабочего канала
+			// ( реализацию см. ReceiverInfo::step() )
+			UniSetTypes::ObjectId sidRespond;
+			IOController::IOStateList::iterator itRespond;
+			bool respondInvert;
+			UniSetTypes::ObjectId sidLostPackets;
+			IOController::IOStateList::iterator itLostPackets;
+			UniSetTypes::ObjectId sidChannelNum;
+			IOController::IOStateList::iterator itChannelNum;
+		};
 
-        typedef std::deque<ReceiverInfo> ReceiverList;
-        ReceiverList recvlist;
+		typedef std::deque<ReceiverInfo> ReceiverList;
+		ReceiverList recvlist;
 
-        bool no_sender;  /*!< флаг отключения посылки сообщений (создания потока для посылки)*/
-        std::shared_ptr<UNetSender> sender;
-        std::shared_ptr<UNetSender> sender2;
+		bool no_sender;  /*!< флаг отключения посылки сообщений (создания потока для посылки)*/
+		std::shared_ptr<UNetSender> sender;
+		std::shared_ptr<UNetSender> sender2;
 };
 // -----------------------------------------------------------------------------
 #endif // UNetExchange_H_

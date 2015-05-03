@@ -33,6 +33,9 @@ AM_PROG_LIBTOOL
 LIBVER=2:0:0
 AC_SUBST(LIBVER)
 
+ASTYLE_OPT="-A1 -T -C -S -N -L -w -Y -M -f -p --mode=c --lineend=linux --align-reference=type --align-pointer=type --suffix=none --style=ansi"
+AC_SUBST(ASTYLE_OPT)
+
 # Checks for libraries.
 PKG_CHECK_MODULES(XML, libxml-2.0)
 PKG_CHECK_MODULES(OMNI, omniORB4)

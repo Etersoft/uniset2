@@ -20,85 +20,88 @@
  */
 class UNetSender
 {
-    public:
-        UNetSender( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi,
-                    const std::string& s_field="", const std::string& s_fvalue="" );
+	public:
+		UNetSender( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi,
+					const std::string& s_field = "", const std::string& s_fvalue = "" );
 
-        ~UNetSender();
+		~UNetSender();
 
-        struct UItem
-        {
-            UItem():
-                iotype(UniversalIO::UnknownIOType),
-                id(UniSetTypes::DefaultObjectId),
-                pack_ind(-1){}
+		struct UItem
+		{
+			UItem():
+				iotype(UniversalIO::UnknownIOType),
+				id(UniSetTypes::DefaultObjectId),
+				pack_ind(-1) {}
 
-            UniversalIO::IOType iotype;
-            UniSetTypes::ObjectId id;
-            IOController::IOStateList::iterator ioit;
-            int pack_ind;
+			UniversalIO::IOType iotype;
+			UniSetTypes::ObjectId id;
+			IOController::IOStateList::iterator ioit;
+			int pack_ind;
 
-            friend std::ostream& operator<<( std::ostream& os, UItem& p );
-        };
+			friend std::ostream& operator<<( std::ostream& os, UItem& p );
+		};
 
-        typedef std::vector<UItem> DMap;
+		typedef std::vector<UItem> DMap;
 
-        void start();
-        void stop();
+		void start();
+		void stop();
 
-        void send();
-        void real_send();
+		void send();
+		void real_send();
 
-        /*! (принудительно) обновить все данные (из SM) */
-        void updateFromSM();
+		/*! (принудительно) обновить все данные (из SM) */
+		void updateFromSM();
 
-        /*! Обновить значение по ID датчика */
-        void updateSensor( UniSetTypes::ObjectId id, long value );
+		/*! Обновить значение по ID датчика */
+		void updateSensor( UniSetTypes::ObjectId id, long value );
 
-        /*! Обновить значение по итератору */
-        void updateItem( DMap::iterator& it, long value );
+		/*! Обновить значение по итератору */
+		void updateItem( DMap::iterator& it, long value );
 
-        inline void setSendPause( int msec ){ sendpause = msec; }
+		inline void setSendPause( int msec )
+		{
+			sendpause = msec;
+		}
 
-        /*! заказать датчики */
-        void askSensors( UniversalIO::UIOCommand cmd );
+		/*! заказать датчики */
+		void askSensors( UniversalIO::UIOCommand cmd );
 
-        /*! инициализация  итераторов */
-        void initIterators();
+		/*! инициализация  итераторов */
+		void initIterators();
 
-    protected:
+	protected:
 
-        std::string s_field;
-        std::string s_fvalue;
+		std::string s_field;
+		std::string s_fvalue;
 
-        const std::shared_ptr<SMInterface> shm;
+		const std::shared_ptr<SMInterface> shm;
 
-        bool initItem( UniXML::iterator& it );
-        bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
+		bool initItem( UniXML::iterator& it );
+		bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
 
-        void readConfiguration();
+		void readConfiguration();
 
-    private:
-        UNetSender();
+	private:
+		UNetSender();
 
-        std::shared_ptr<ost::UDPBroadcast> udp;
-        ost::IPV4Address addr;
-        ost::tpport_t port;
-        std::string s_host;
+		std::shared_ptr<ost::UDPBroadcast> udp;
+		ost::IPV4Address addr;
+		ost::tpport_t port;
+		std::string s_host;
 
-        std::string myname;
-        int sendpause;
-        std::atomic_bool activated;
+		std::string myname;
+		int sendpause;
+		std::atomic_bool activated;
 
-        UniSetTypes::uniset_rwmutex pack_mutex;
-        UniSetUDP::UDPMessage mypack;
-        DMap dlist;
-        int maxItem;
-        unsigned long packetnum;
-        unsigned short lastcrc;
-        UniSetUDP::UDPPacket s_msg;
+		UniSetTypes::uniset_rwmutex pack_mutex;
+		UniSetUDP::UDPMessage mypack;
+		DMap dlist;
+		int maxItem;
+		unsigned long packetnum;
+		unsigned short lastcrc;
+		UniSetUDP::UDPPacket s_msg;
 
-        std::shared_ptr< ThreadCreator<UNetSender> > s_thr;    // send thread
+		std::shared_ptr< ThreadCreator<UNetSender> > s_thr;    // send thread
 };
 // -----------------------------------------------------------------------------
 #endif // UNetSender_H_

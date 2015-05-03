@@ -2,109 +2,127 @@
 #define UDPPacket_H_
 // -----------------------------------------------------------------------------
 #include <list>
-#include <limits> 
+#include <limits>
 #include <ostream>
 #include "UniSetTypes.h"
 // -----------------------------------------------------------------------------
 namespace UniSetUDP
 {
-    /*! Для оптимизации размера передаваемх данных, но с учётом того, что ID могут идти не подряд.
-        Сделан следующий формат:
-        Для аналоговых величин передаётся массив пар "id-value"(UDPAData).
-        Для булевых величин - отдельно массив ID и отдельно битовый массив со значениями,
-        (по количеству битов такого же размера).
+	/*! Для оптимизации размера передаваемх данных, но с учётом того, что ID могут идти не подряд.
+	    Сделан следующий формат:
+	    Для аналоговых величин передаётся массив пар "id-value"(UDPAData).
+	    Для булевых величин - отдельно массив ID и отдельно битовый массив со значениями,
+	    (по количеству битов такого же размера).
 
-        \todo Подумать на тему сделать два отдельных вида пакетов для булевых значений и для аналоговых,
-              чтобы уйти от преобразования UDPMessage --> UDPPacket --> UDPMessage.
-    */
+	    \todo Подумать на тему сделать два отдельных вида пакетов для булевых значений и для аналоговых,
+	          чтобы уйти от преобразования UDPMessage --> UDPPacket --> UDPMessage.
+	*/
 
 
-    const unsigned int UNETUDP_MAGICNUM = 0xfb07ee55; // идентификатор протокола
+	const unsigned int UNETUDP_MAGICNUM = 0xfb07ee55; // идентификатор протокола
 
-    struct UDPHeader
-    {
-        UDPHeader():magic(UNETUDP_MAGICNUM),num(0),nodeID(0),procID(0),dcount(0),acount(0){}
-        unsigned int magic;
-        unsigned long num;
-        long nodeID;
-        long procID;
-        size_t dcount; /*!< количество булевых величин */
-        size_t acount; /*!< количество аналоговых величин */
+	struct UDPHeader
+	{
+		UDPHeader(): magic(UNETUDP_MAGICNUM), num(0), nodeID(0), procID(0), dcount(0), acount(0) {}
+		unsigned int magic;
+		unsigned long num;
+		long nodeID;
+		long procID;
+		size_t dcount; /*!< количество булевых величин */
+		size_t acount; /*!< количество аналоговых величин */
 
-        friend std::ostream& operator<<( std::ostream& os, UDPHeader& p );
-        friend std::ostream& operator<<( std::ostream& os, UDPHeader* p );
-    }__attribute__((packed));
+		friend std::ostream& operator<<( std::ostream& os, UDPHeader& p );
+		friend std::ostream& operator<<( std::ostream& os, UDPHeader* p );
+	} __attribute__((packed));
 
-    static unsigned long MaxPacketNum = std::numeric_limits<unsigned long>::max();
+	static unsigned long MaxPacketNum = std::numeric_limits<unsigned long>::max();
 
-    struct UDPAData
-    {
-        UDPAData():id(UniSetTypes::DefaultObjectId),val(0){}
-        UDPAData(long id, long val):id(id),val(val){}
+	struct UDPAData
+	{
+		UDPAData(): id(UniSetTypes::DefaultObjectId), val(0) {}
+		UDPAData(long id, long val): id(id), val(val) {}
 
-        long id;
-        long val;
+		long id;
+		long val;
 
-        friend std::ostream& operator<<( std::ostream& os, UDPAData& p );
-    }__attribute__((packed));
+		friend std::ostream& operator<<( std::ostream& os, UDPAData& p );
+	} __attribute__((packed));
 
-    // Хотелось бы не вылезать за общий размер посылаемых пакетов 8192. (550,900 --> 8133)
-    // ------
-    // временное резрешение на A=800,D=5000! DI/DO
-    // 1500*8 + 5000*4 + 5000/8 = 32625 байт максимальный размер данных + служебные заголовки
+	// Хотелось бы не вылезать за общий размер посылаемых пакетов 8192. (550,900 --> 8133)
+	// ------
+	// временное резрешение на A=800,D=5000! DI/DO
+	// 1500*8 + 5000*4 + 5000/8 = 32625 байт максимальный размер данных + служебные заголовки
 
-    static const size_t MaxACount = 1500;
-    static const size_t MaxDCount = 5000;
-    static const size_t MaxDDataCount = 1 + MaxDCount / 8*sizeof(unsigned char);
+	static const size_t MaxACount = 1500;
+	static const size_t MaxDCount = 5000;
+	static const size_t MaxDDataCount = 1 + MaxDCount / 8 * sizeof(unsigned char);
 
-    struct UDPPacket
-    {
-        UDPPacket():len(0){}
+	struct UDPPacket
+	{
+		UDPPacket(): len(0) {}
 
-        int len;
-        unsigned char data[ sizeof(UDPHeader) + MaxDCount*sizeof(long) + MaxDDataCount + MaxACount*sizeof(UDPAData) ];
-    }__attribute__((packed));
+		int len;
+		unsigned char data[ sizeof(UDPHeader) + MaxDCount * sizeof(long) + MaxDDataCount + MaxACount * sizeof(UDPAData) ];
+	} __attribute__((packed));
 
-    static const int MaxDataLen = sizeof(UDPPacket);
+	static const int MaxDataLen = sizeof(UDPPacket);
 
-    struct UDPMessage:
-        public UDPHeader
-    {
-        UDPMessage();
+	struct UDPMessage:
+		public UDPHeader
+	{
+		UDPMessage();
 
-        UDPMessage( UDPPacket& p );
-        size_t transport_msg( UDPPacket& p );
-        static size_t getMessage( UDPMessage& m, UDPPacket& p );
+		UDPMessage( UDPPacket& p );
+		size_t transport_msg( UDPPacket& p );
+		static size_t getMessage( UDPMessage& m, UDPPacket& p );
 
-        size_t addDData( long id, bool val );
-        bool setDData( size_t index, bool val );
-        long dID( size_t index );
-        bool dValue( size_t index );
+		size_t addDData( long id, bool val );
+		bool setDData( size_t index, bool val );
+		long dID( size_t index );
+		bool dValue( size_t index );
 
-        // функции addAData возвращают индекс, по которому потом можно напрямую писать при помощи setAData(index)
-        size_t addAData( const UDPAData& dat );
-        size_t addAData( long id, long val );
-        bool setAData( size_t index, long val );
+		// функции addAData возвращают индекс, по которому потом можно напрямую писать при помощи setAData(index)
+		size_t addAData( const UDPAData& dat );
+		size_t addAData( long id, long val );
+		bool setAData( size_t index, long val );
 
-        inline bool isAFull(){ return (acount>=MaxACount); }
-        inline bool isDFull(){ return (dcount>=MaxDCount); }
+		inline bool isAFull()
+		{
+			return (acount >= MaxACount);
+		}
+		inline bool isDFull()
+		{
+			return (dcount >= MaxDCount);
+		}
 
-        inline bool isFull(){ return !((dcount<MaxDCount) && (acount<MaxACount)); }
-        inline int dsize(){ return dcount; }
-        inline int asize(){ return acount; }
-        unsigned short getDataCRC();
+		inline bool isFull()
+		{
+			return !((dcount < MaxDCount) && (acount < MaxACount));
+		}
+		inline int dsize()
+		{
+			return dcount;
+		}
+		inline int asize()
+		{
+			return acount;
+		}
+		unsigned short getDataCRC();
 
-        // количество байт в пакете с булевыми переменными...
-        int d_byte(){ return dcount*sizeof(long) + dcount; }
+		// количество байт в пакете с булевыми переменными...
+		int d_byte()
+		{
+			return dcount * sizeof(long) + dcount;
+		}
 
-        UDPAData a_dat[MaxACount]; /*!< аналоговые величины */
-        long d_id[MaxDCount];      /*!< список дискретных ID */
-        unsigned char d_dat[MaxDDataCount];  /*!< битовые значения */
+		UDPAData a_dat[MaxACount]; /*!< аналоговые величины */
+		long d_id[MaxDCount];      /*!< список дискретных ID */
+		unsigned char d_dat[MaxDDataCount];  /*!< битовые значения */
 
-        friend std::ostream& operator<<( std::ostream& os, UDPMessage& p );
-    };
+		friend std::ostream& operator<<( std::ostream& os, UDPMessage& p );
+	};
 
-    unsigned short makeCRC( unsigned char* buf, size_t len );
+	unsigned short makeCRC( unsigned char* buf, size_t len );
 }
 // -----------------------------------------------------------------------------
 #endif // UDPPacket_H_

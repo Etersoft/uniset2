@@ -52,4 +52,6 @@ UExceptions_wrap.cxx: UExceptions.i UExceptions.h
 clean-local:
 	rm -rf *.py* *_wrap.cxx
 
+include $(top_builddir)/include.mk
+
 endif

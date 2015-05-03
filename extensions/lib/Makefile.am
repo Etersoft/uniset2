@@ -7,3 +7,5 @@ libUniSet2Extensions_la_CPPFLAGS = $(SIGC_CFLAGS) -I$(top_builddir)/extensions/i
 libUniSet2Extensions_la_LIBADD   = $(SIGC_LIBS) $(top_builddir)/lib/libUniSet2.la
 libUniSet2Extensions_la_SOURCES  = Extensions.cc SMInterface.cc Calibration.cc SingleProcess.cc \
 	IOBase.cc DigitalFilter.cc PID.cc MTR.cc VTypes.cc UObject_SK.cc
+
+include $(top_builddir)/include.mk

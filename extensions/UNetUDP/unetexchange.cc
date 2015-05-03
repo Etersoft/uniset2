@@ -9,75 +9,79 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 int main( int argc, const char** argv )
 {
-    std::ios::sync_with_stdio(false);
-    try
-    {
-        if( argc>1 && (!strcmp(argv[1],"--help") || !strcmp(argv[1],"-h")) )
-        {
-            cout << "--smemory-id objectName  - SharedMemory objectID. Default: read from <SharedMemory>" << endl;
-            cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
-            cout << "--unet-logfile filename    - logfilename. Default: udpexchange.log" << endl;
-            cout << endl;
-            UNetExchange::help_print(argc,argv);
-            return 0;
-        }
+	std::ios::sync_with_stdio(false);
 
-        auto conf = uniset_init(argc,argv);
+	try
+	{
+		if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
+		{
+			cout << "--smemory-id objectName  - SharedMemory objectID. Default: read from <SharedMemory>" << endl;
+			cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
+			cout << "--unet-logfile filename    - logfilename. Default: udpexchange.log" << endl;
+			cout << endl;
+			UNetExchange::help_print(argc, argv);
+			return 0;
+		}
 
-        string logfilename(conf->getArgParam("--unet-logfile"));
-        if( logfilename.empty() )
-            logfilename = "udpexchange.log";
+		auto conf = uniset_init(argc, argv);
+
+		string logfilename(conf->getArgParam("--unet-logfile"));
+
+		if( logfilename.empty() )
+			logfilename = "udpexchange.log";
 
 
-        std::ostringstream logname;
-        string dir(conf->getLogDir());
-        logname << dir << logfilename;
-        ulog()->logFile( logname.str() );
-        UniSetExtensions::dlog()->logFile( logname.str() );
+		std::ostringstream logname;
+		string dir(conf->getLogDir());
+		logname << dir << logfilename;
+		ulog()->logFile( logname.str() );
+		UniSetExtensions::dlog()->logFile( logname.str() );
 
-        ObjectId shmID = DefaultObjectId;
-        string sID = conf->getArgParam("--smemory-id");
-        if( !sID.empty() )
-            shmID = conf->getControllerID(sID);
-        else
-            shmID = getSharedMemoryID();
+		ObjectId shmID = DefaultObjectId;
+		string sID = conf->getArgParam("--smemory-id");
 
-        if( shmID == DefaultObjectId )
-        {
-            cerr << sID << "? SharedMemoryID not found in " << conf->getControllersSection() << " section" << endl;
-            return 1;
-        }
+		if( !sID.empty() )
+			shmID = conf->getControllerID(sID);
+		else
+			shmID = getSharedMemoryID();
 
-        auto unet = UNetExchange::init_unetexchange(argc,argv,shmID);
-        if( !unet )
-        {
-            dcrit << "(unetexchange): init failed.." << endl;
-            return 1;
-        }
+		if( shmID == DefaultObjectId )
+		{
+			cerr << sID << "? SharedMemoryID not found in " << conf->getControllersSection() << " section" << endl;
+			return 1;
+		}
 
-        auto act = UniSetActivator::Instance();
-        act->add(unet);
+		auto unet = UNetExchange::init_unetexchange(argc, argv, shmID);
 
-        SystemMessage sm(SystemMessage::StartUp);
-        act->broadcast( sm.transport_msg() );
+		if( !unet )
+		{
+			dcrit << "(unetexchange): init failed.." << endl;
+			return 1;
+		}
 
-        ulogany << "\n\n\n";
-        ulogany << "(main): -------------- UDPRecevier START -------------------------\n\n";
-        dlogany << "\n\n\n";
-        dlogany << "(main): -------------- UDPReceiver START -------------------------\n\n";
+		auto act = UniSetActivator::Instance();
+		act->add(unet);
 
-        act->run(false);
-        on_sigchild(SIGTERM);
-    }
-    catch( const Exception& ex )
-    {
-        dcrit << "(unetexchange): " << ex << std::endl;
-    }
-    catch(...)
-    {
-        dcrit << "(unetexchange): catch ..." << std::endl;
-    }
+		SystemMessage sm(SystemMessage::StartUp);
+		act->broadcast( sm.transport_msg() );
 
-    on_sigchild(SIGTERM);
-    return 0;
+		ulogany << "\n\n\n";
+		ulogany << "(main): -------------- UDPRecevier START -------------------------\n\n";
+		dlogany << "\n\n\n";
+		dlogany << "(main): -------------- UDPReceiver START -------------------------\n\n";
+
+		act->run(false);
+		on_sigchild(SIGTERM);
+	}
+	catch( const Exception& ex )
+	{
+		dcrit << "(unetexchange): " << ex << std::endl;
+	}
+	catch(...)
+	{
+		dcrit << "(unetexchange): catch ..." << std::endl;
+	}
+
+	on_sigchild(SIGTERM);
+	return 0;
 }

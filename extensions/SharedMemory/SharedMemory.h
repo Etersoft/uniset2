@@ -274,194 +274,197 @@
        \endcode
 */
 class SharedMemory:
-    public IONotifyController_LT
+	public IONotifyController_LT
 {
-    public:
-        SharedMemory( UniSetTypes::ObjectId id, const std::string& datafile, const std::string& confname="" );
-        virtual ~SharedMemory();
+	public:
+		SharedMemory( UniSetTypes::ObjectId id, const std::string& datafile, const std::string& confname = "" );
+		virtual ~SharedMemory();
 
-        /*! глобальная функция для инициализации объекта */
-        static std::shared_ptr<SharedMemory> init_smemory( int argc, const char* const* argv );
-        /*! глобальная функция для вывода help-а */
-        static void help_print( int argc, const char* const* argv );
+		/*! глобальная функция для инициализации объекта */
+		static std::shared_ptr<SharedMemory> init_smemory( int argc, const char* const* argv );
+		/*! глобальная функция для вывода help-а */
+		static void help_print( int argc, const char* const* argv );
 
-        // функция определяет "готовность" SM к работе.
-        // должна использоваться другими процессами, для того,
-        // чтобы понять, когда можно получать от SM данные.
-        virtual CORBA::Boolean exist();
+		// функция определяет "готовность" SM к работе.
+		// должна использоваться другими процессами, для того,
+		// чтобы понять, когда можно получать от SM данные.
+		virtual CORBA::Boolean exist();
 
-        void addReadItem( Restorer_XML::ReaderSlot sl );
+		void addReadItem( Restorer_XML::ReaderSlot sl );
 
 
-        // ------------  HISTORY  --------------------
-        typedef std::deque<long> HBuffer;
+		// ------------  HISTORY  --------------------
+		typedef std::deque<long> HBuffer;
 
-        struct HistoryItem
-        {
-            HistoryItem( size_t bufsize=0 ):id(UniSetTypes::DefaultObjectId),buf(bufsize){}
-            HistoryItem( const UniSetTypes::ObjectId _id, const size_t bufsize, const long val ):id(_id),buf(bufsize,val){}
+		struct HistoryItem
+		{
+			HistoryItem( size_t bufsize = 0 ): id(UniSetTypes::DefaultObjectId), buf(bufsize) {}
+			HistoryItem( const UniSetTypes::ObjectId _id, const size_t bufsize, const long val ): id(_id), buf(bufsize, val) {}
 
-            inline void init( unsigned int size, long val )
-            {
-                if( size > 0 )
-                   buf.assign(size,val);
-            }
+			inline void init( unsigned int size, long val )
+			{
+				if( size > 0 )
+					buf.assign(size, val);
+			}
 
-            UniSetTypes::ObjectId id;
-            HBuffer buf;
+			UniSetTypes::ObjectId id;
+			HBuffer buf;
 
-            IOStateList::iterator ioit;
+			IOStateList::iterator ioit;
 
-            void add( long val, size_t size )
-            {
-                // т.е. буфер у нас уже заданного размера
-                // то просто удаляем очередную точку в начале
-                // и добавляем в конце
-                buf.pop_front();
-                buf.push_back(val);
-            }
-        };
+			void add( long val, size_t size )
+			{
+				// т.е. буфер у нас уже заданного размера
+				// то просто удаляем очередную точку в начале
+				// и добавляем в конце
+				buf.pop_front();
+				buf.push_back(val);
+			}
+		};
 
-        typedef std::list<HistoryItem> HistoryList;
+		typedef std::list<HistoryItem> HistoryList;
 
-        struct HistoryInfo
-        {
-            HistoryInfo():
-                id(0),
-                size(0),filter(""),
-                fuse_id(UniSetTypes::DefaultObjectId),
-                fuse_invert(false),fuse_use_val(false),fuse_val(0),
-                fuse_sec(0),fuse_usec(0)
-                {
-                      struct timeval tv;
-                      struct timezone tz;
-                      gettimeofday(&tv,&tz);
-                      fuse_sec = tv.tv_sec;
-                      fuse_usec = tv.tv_usec;
-                }
+		struct HistoryInfo
+		{
+			HistoryInfo():
+				id(0),
+				size(0), filter(""),
+				fuse_id(UniSetTypes::DefaultObjectId),
+				fuse_invert(false), fuse_use_val(false), fuse_val(0),
+				fuse_sec(0), fuse_usec(0)
+			{
+				struct timeval tv;
+				struct timezone tz;
+				gettimeofday(&tv, &tz);
+				fuse_sec = tv.tv_sec;
+				fuse_usec = tv.tv_usec;
+			}
 
-            long id;                        // ID
-            HistoryList hlst;               // history list
-            int size;
-            std::string filter;             // filter field
-            UniSetTypes::ObjectId fuse_id;  // fuse sesnsor
-            bool fuse_invert;
-            bool fuse_use_val;
-            long fuse_val;
-            // timestamp
-            long fuse_sec;
-            long fuse_usec;
-        };
+			long id;                        // ID
+			HistoryList hlst;               // history list
+			int size;
+			std::string filter;             // filter field
+			UniSetTypes::ObjectId fuse_id;  // fuse sesnsor
+			bool fuse_invert;
+			bool fuse_use_val;
+			long fuse_val;
+			// timestamp
+			long fuse_sec;
+			long fuse_usec;
+		};
 
-        friend std::ostream& operator<<( std::ostream& os, const HistoryInfo& h );
+		friend std::ostream& operator<<( std::ostream& os, const HistoryInfo& h );
 
-        typedef std::list<HistoryInfo> History;
+		typedef std::list<HistoryInfo> History;
 
-        // т.к. могуть быть одинаковые "детонаторы" для разных "историй" то,
-        // вводим не просто map, а "map списка историй".
-        // точнее итераторов-историй.
-        typedef std::list<History::iterator> HistoryItList;
-        typedef std::unordered_map<UniSetTypes::ObjectId,HistoryItList> HistoryFuseMap;
+		// т.к. могуть быть одинаковые "детонаторы" для разных "историй" то,
+		// вводим не просто map, а "map списка историй".
+		// точнее итераторов-историй.
+		typedef std::list<History::iterator> HistoryItList;
+		typedef std::unordered_map<UniSetTypes::ObjectId, HistoryItList> HistoryFuseMap;
 
-        typedef sigc::signal<void, const HistoryInfo&> HistorySlot;
-        HistorySlot signal_history(); /*!< сигнал о срабатывании условий "сброса" дампа истории */
+		typedef sigc::signal<void, const HistoryInfo&> HistorySlot;
+		HistorySlot signal_history(); /*!< сигнал о срабатывании условий "сброса" дампа истории */
 
-        inline int getHistoryStep(){ return histSaveTime; } /*!< период между точками "дампа", мсек */
+		inline int getHistoryStep()
+		{
+			return histSaveTime;    /*!< период между точками "дампа", мсек */
+		}
 
-    protected:
-        typedef std::list<Restorer_XML::ReaderSlot> ReadSlotList;
-        ReadSlotList lstRSlot;
+	protected:
+		typedef std::list<Restorer_XML::ReaderSlot> ReadSlotList;
+		ReadSlotList lstRSlot;
 
-        virtual void sysCommand( const UniSetTypes::SystemMessage *sm ) override;
-        virtual void timerInfo( const UniSetTypes::TimerMessage *tm ) override;
-        virtual void askSensors( UniversalIO::UIOCommand cmd );
-        void sendEvent( UniSetTypes::SystemMessage& sm );
-        void initFromReserv();
-        bool initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectId sm_node );
+		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+		virtual void askSensors( UniversalIO::UIOCommand cmd );
+		void sendEvent( UniSetTypes::SystemMessage& sm );
+		void initFromReserv();
+		bool initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectId sm_node );
 
-        // действия при завершении работы
-        virtual void sigterm( int signo ) override;
-        virtual bool activateObject() override;
-        bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
+		// действия при завершении работы
+		virtual void sigterm( int signo ) override;
+		virtual bool activateObject() override;
+		bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
 
-        void buildEventList( xmlNode* cnode );
-        void readEventList( const std::string& oname );
+		void buildEventList( xmlNode* cnode );
+		void readEventList( const std::string& oname );
 
-        UniSetTypes::uniset_rwmutex mutex_start;
+		UniSetTypes::uniset_rwmutex mutex_start;
 
-        struct HeartBeatInfo
-        {
-            HeartBeatInfo():
-                a_sid(UniSetTypes::DefaultObjectId),
-                d_sid(UniSetTypes::DefaultObjectId),
-                reboot_msec(UniSetTimer::WaitUpTime),
-                timer_running(false),
-                ptReboot(UniSetTimer::WaitUpTime)
-            {}
+		struct HeartBeatInfo
+		{
+			HeartBeatInfo():
+				a_sid(UniSetTypes::DefaultObjectId),
+				d_sid(UniSetTypes::DefaultObjectId),
+				reboot_msec(UniSetTimer::WaitUpTime),
+				timer_running(false),
+				ptReboot(UniSetTimer::WaitUpTime)
+			{}
 
-            UniSetTypes::ObjectId a_sid; // аналоговый счётчик
-            UniSetTypes::ObjectId d_sid; // дискретный датчик состояния процесса
-            IOStateList::iterator ioit;
+			UniSetTypes::ObjectId a_sid; // аналоговый счётчик
+			UniSetTypes::ObjectId d_sid; // дискретный датчик состояния процесса
+			IOStateList::iterator ioit;
 
-            int reboot_msec; /*!< Время в течение которого, процесс обязан подтвердить своё существование,
+			int reboot_msec; /*!< Время в течение которого, процесс обязан подтвердить своё существование,
                                 иначе будет произведена перезагрузка контроллера по WDT (в случае если он включён).
                                 Если данный параметр не указывать, то "не живость" процесса просто игнорируется
                                 (т.е. только отображение на GUI). */
 
-            bool timer_running;
-            PassiveTimer ptReboot;
-        };
+			bool timer_running;
+			PassiveTimer ptReboot;
+		};
 
-        enum Timers
-        {
-            tmHeartBeatCheck,
-            tmEvent,
-            tmHistory,
-            tmPulsar,
-            tmLastOfTimerID
-        };
+		enum Timers
+		{
+			tmHeartBeatCheck,
+			tmEvent,
+			tmHistory,
+			tmPulsar,
+			tmLastOfTimerID
+		};
 
-        int heartbeatCheckTime;
-        std::string heartbeat_node;
-        int histSaveTime;
+		int heartbeatCheckTime;
+		std::string heartbeat_node;
+		int histSaveTime;
 
-        void checkHeartBeat();
+		void checkHeartBeat();
 
-        typedef std::list<HeartBeatInfo> HeartBeatList;
-        HeartBeatList hlist; // список датчиков "сердцебиения"
-        std::shared_ptr<WDTInterface> wdt;
-        std::atomic_bool activated;
-        std::atomic_bool workready;
+		typedef std::list<HeartBeatInfo> HeartBeatList;
+		HeartBeatList hlist; // список датчиков "сердцебиения"
+		std::shared_ptr<WDTInterface> wdt;
+		std::atomic_bool activated;
+		std::atomic_bool workready;
 
-        typedef std::list<UniSetTypes::ObjectId> EventList;
-        EventList elst;
-        std::string e_filter;
-        int evntPause;
-        int activateTimeout;
+		typedef std::list<UniSetTypes::ObjectId> EventList;
+		EventList elst;
+		std::string e_filter;
+		int evntPause;
+		int activateTimeout;
 
-        virtual void loggingInfo( UniSetTypes::SensorMessage& sm ) override;
-        virtual void dumpOrdersList( const UniSetTypes::ObjectId sid, const IONotifyController::ConsumerListInfo& lst ) override {};
-        virtual void dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst ) override {}
+		virtual void loggingInfo( UniSetTypes::SensorMessage& sm ) override;
+		virtual void dumpOrdersList( const UniSetTypes::ObjectId sid, const IONotifyController::ConsumerListInfo& lst ) override {};
+		virtual void dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst ) override {}
 
-        bool dblogging;
+		bool dblogging;
 
-        History hist;
-        HistoryFuseMap histmap;  /*!< map для оптимизации поиска */
+		History hist;
+		HistoryFuseMap histmap;  /*!< map для оптимизации поиска */
 
-        virtual void updateHistory( std::shared_ptr<IOController::USensorInfo>& it, IOController* );
-        virtual void saveHistory();
+		virtual void updateHistory( std::shared_ptr<IOController::USensorInfo>& it, IOController* );
+		virtual void saveHistory();
 
-        void buildHistoryList( xmlNode* cnode );
-        void checkHistoryFilter( UniXML::iterator& it );
+		void buildHistoryList( xmlNode* cnode );
+		void checkHistoryFilter( UniXML::iterator& it );
 
-        IOStateList::iterator itPulsar;
-        UniSetTypes::ObjectId sidPulsar;
-        int msecPulsar;
+		IOStateList::iterator itPulsar;
+		UniSetTypes::ObjectId sidPulsar;
+		int msecPulsar;
 
-        xmlNode* confnode;
+		xmlNode* confnode;
 
-    private:
-        HistorySlot m_historySignal;
+	private:
+		HistorySlot m_historySignal;
 };
 // -----------------------------------------------------------------------------
 #endif // SharedMemory_H_

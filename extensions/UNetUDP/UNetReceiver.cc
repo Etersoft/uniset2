@@ -20,63 +20,64 @@ bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
 */
 // ------------------------------------------------------------------------------------------
 UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi ):
-shm(smi),
-recvpause(10),
-updatepause(100),
-recvTimeout(5000),
-prepareTime(2000),
-lostTimeout(200), /* 2*updatepause */
-lostPackets(0),
-sidRespond(UniSetTypes::DefaultObjectId),
-respondInvert(false),
-sidLostPackets(UniSetTypes::DefaultObjectId),
-activated(false),
-pnum(0),
-maxDifferens(20),
-waitClean(false),
-rnum(0),
-maxProcessingCount(100),
-lockUpdate(false),
-d_icache(UniSetUDP::MaxDCount),
-a_icache(UniSetUDP::MaxACount),
-d_cache_init_ok(false),
-a_cache_init_ok(false)
+	shm(smi),
+	recvpause(10),
+	updatepause(100),
+	recvTimeout(5000),
+	prepareTime(2000),
+	lostTimeout(200), /* 2*updatepause */
+	lostPackets(0),
+	sidRespond(UniSetTypes::DefaultObjectId),
+	respondInvert(false),
+	sidLostPackets(UniSetTypes::DefaultObjectId),
+	activated(false),
+	pnum(0),
+	maxDifferens(20),
+	waitClean(false),
+	rnum(0),
+	maxProcessingCount(100),
+	lockUpdate(false),
+	d_icache(UniSetUDP::MaxDCount),
+	a_icache(UniSetUDP::MaxACount),
+	d_cache_init_ok(false),
+	a_cache_init_ok(false)
 {
-    {
-        ostringstream s;
-        s << "R(" << setw(15) << s_host << ":" << setw(4) << port << ")";
-        myname = s.str();
-    }
+	{
+		ostringstream s;
+		s << "R(" << setw(15) << s_host << ":" << setw(4) << port << ")";
+		myname = s.str();
+	}
 
-    ost::Thread::setException(ost::Thread::throwException);
-    try
-    {
-//        ost::IPV4Cidr ci(s_host.c_str());
-//        addr = ci.getBroadcast();
-//        cerr << "****************** addr: " << addr << endl;
-        addr = s_host.c_str();
-        udp = make_shared<ost::UDPDuplex>(addr,port);
-    }
-    catch( const std::exception& e )
-    {
-        ostringstream s;
-        s << myname << ": " << e.what();
-        dcrit << s.str() << std::endl;
-        throw SystemError(s.str());
-    }
-    catch( ... )
-    {
-        ostringstream s;
-        s << myname << ": catch...";
-        dcrit << s.str() << std::endl;
-        throw SystemError(s.str());
-    }
+	ost::Thread::setException(ost::Thread::throwException);
 
-    r_thr = make_shared< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::receive);
-    u_thr = make_shared< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::update);
+	try
+	{
+		//        ost::IPV4Cidr ci(s_host.c_str());
+		//        addr = ci.getBroadcast();
+		//        cerr << "****************** addr: " << addr << endl;
+		addr = s_host.c_str();
+		udp = make_shared<ost::UDPDuplex>(addr, port);
+	}
+	catch( const std::exception& e )
+	{
+		ostringstream s;
+		s << myname << ": " << e.what();
+		dcrit << s.str() << std::endl;
+		throw SystemError(s.str());
+	}
+	catch( ... )
+	{
+		ostringstream s;
+		s << myname << ": catch...";
+		dcrit << s.str() << std::endl;
+		throw SystemError(s.str());
+	}
 
-    ptRecvTimeout.setTiming(recvTimeout);
-    ptPrepare.setTiming(prepareTime);
+	r_thr = make_shared< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::receive);
+	u_thr = make_shared< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::update);
+
+	ptRecvTimeout.setTiming(recvTimeout);
+	ptPrepare.setTiming(prepareTime);
 }
 // -----------------------------------------------------------------------------
 UNetReceiver::~UNetReceiver()
@@ -85,490 +86,512 @@ UNetReceiver::~UNetReceiver()
 // -----------------------------------------------------------------------------
 void UNetReceiver::setReceiveTimeout( timeout_t msec )
 {
-    uniset_rwmutex_wrlock l(tmMutex);
-    recvTimeout = msec;
-    ptRecvTimeout.setTiming(msec);
+	uniset_rwmutex_wrlock l(tmMutex);
+	recvTimeout = msec;
+	ptRecvTimeout.setTiming(msec);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setPrepareTime( timeout_t msec )
 {
-    prepareTime = msec;
-    ptPrepare.setTiming(msec);
+	prepareTime = msec;
+	ptPrepare.setTiming(msec);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setLostTimeout( timeout_t msec )
 {
-    lostTimeout = msec;
-    ptLostTimeout.setTiming(msec);
+	lostTimeout = msec;
+	ptLostTimeout.setTiming(msec);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setReceivePause( timeout_t msec )
 {
-    recvpause = msec;
+	recvpause = msec;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setUpdatePause( timeout_t msec )
 {
-    updatepause = msec;
+	updatepause = msec;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setMaxProcessingCount( int set )
 {
-    maxProcessingCount = set;
+	maxProcessingCount = set;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setMaxDifferens( unsigned long set )
 {
-    maxDifferens = set;
+	maxDifferens = set;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setRespondID( UniSetTypes::ObjectId id, bool invert )
 {
-    sidRespond = id;
-    respondInvert = invert;
-    shm->initIterator(itRespond);
+	sidRespond = id;
+	respondInvert = invert;
+	shm->initIterator(itRespond);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setLostPacketsID( UniSetTypes::ObjectId id )
 {
-    sidLostPackets = id;
-    shm->initIterator(itLostPackets);
+	sidLostPackets = id;
+	shm->initIterator(itLostPackets);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setLockUpdate( bool st )
-{ 
-    uniset_rwmutex_wrlock l(lockMutex);
-    lockUpdate = st;
-    if( !st )
-      ptPrepare.reset();
+{
+	uniset_rwmutex_wrlock l(lockMutex);
+	lockUpdate = st;
+
+	if( !st )
+		ptPrepare.reset();
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::resetTimeout()
-{ 
-    uniset_rwmutex_wrlock l(tmMutex);
-    ptRecvTimeout.reset();
-    trTimeout.change(false);
+{
+	uniset_rwmutex_wrlock l(tmMutex);
+	ptRecvTimeout.reset();
+	trTimeout.change(false);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::start()
 {
-    if( !activated )
-    {
-        activated = true;
-        u_thr->start();
-        r_thr->start();
-    }
-    else
-        forceUpdate();
+	if( !activated )
+	{
+		activated = true;
+		u_thr->start();
+		r_thr->start();
+	}
+	else
+		forceUpdate();
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::update()
 {
-    dinfo << myname << "(update): start.." << endl;
-    while(activated)
-    {
-        try
-        {
-            real_update();
-        }
-        catch( UniSetTypes::Exception& ex)
-        {
-            dcrit << myname << "(update): " << ex << std::endl;
-        }
-        catch(...)
-        {
-            dcrit << myname << "(update): catch ..." << std::endl;
-        }
+	dinfo << myname << "(update): start.." << endl;
 
-        if( sidRespond!=DefaultObjectId )
-        {
-            try
-            {
-                bool r = respondInvert ? !isRecvOK() : isRecvOK();
-                shm->localSetValue(itRespond,sidRespond,( r ? 1:0 ),shm->ID());
-            }
-            catch( const Exception& ex )
-            {
-                dcrit << myname << "(step): (respond) " << ex << std::endl;
-            }
-        }
+	while(activated)
+	{
+		try
+		{
+			real_update();
+		}
+		catch( UniSetTypes::Exception& ex)
+		{
+			dcrit << myname << "(update): " << ex << std::endl;
+		}
+		catch(...)
+		{
+			dcrit << myname << "(update): catch ..." << std::endl;
+		}
 
-        if( sidLostPackets!=DefaultObjectId )
-        {
-            try
-            {
-                shm->localSetValue(itLostPackets,sidLostPackets,getLostPacketsNum(),shm->ID());
-            }
-            catch( const Exception& ex )
-            {
-                dcrit << myname << "(step): (lostPackets) " << ex << std::endl;
-            }
-        }
+		if( sidRespond != DefaultObjectId )
+		{
+			try
+			{
+				bool r = respondInvert ? !isRecvOK() : isRecvOK();
+				shm->localSetValue(itRespond, sidRespond, ( r ? 1 : 0 ), shm->ID());
+			}
+			catch( const Exception& ex )
+			{
+				dcrit << myname << "(step): (respond) " << ex << std::endl;
+			}
+		}
 
-        msleep(updatepause);
-    }
+		if( sidLostPackets != DefaultObjectId )
+		{
+			try
+			{
+				shm->localSetValue(itLostPackets, sidLostPackets, getLostPacketsNum(), shm->ID());
+			}
+			catch( const Exception& ex )
+			{
+				dcrit << myname << "(step): (lostPackets) " << ex << std::endl;
+			}
+		}
+
+		msleep(updatepause);
+	}
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::forceUpdate()
 {
-    uniset_rwmutex_wrlock l(packMutex);
-    pnum = 0; // сбрасываем запомненый номер последнего обработанного пакета
-              // и тем самым заставляем обновить данные в SM (см. real_update)
+	uniset_rwmutex_wrlock l(packMutex);
+	pnum = 0; // сбрасываем запомненый номер последнего обработанного пакета
+	// и тем самым заставляем обновить данные в SM (см. real_update)
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::real_update()
 {
-    UniSetUDP::UDPMessage p;
-    // обрабатываем, пока очередь либо не опустеет,
-    // либо обнаружится "дырка" в последовательности,
-    // но при этом обрабатываем не больше maxProcessingCount
-    // за один раз..
-    int k = maxProcessingCount;
-    while( k>0 )
-    {
-        { // lock qpack
-            uniset_rwmutex_wrlock l(packMutex);
-            if( qpack.empty() )
-                return;
+	UniSetUDP::UDPMessage p;
+	// обрабатываем, пока очередь либо не опустеет,
+	// либо обнаружится "дырка" в последовательности,
+	// но при этом обрабатываем не больше maxProcessingCount
+	// за один раз..
+	int k = maxProcessingCount;
 
-            p = qpack.top();
-            unsigned long sub = labs(p.num - pnum);
-            if( pnum > 0 )
-            {
-                // если sub > maxDifferens
-                // значит это просто "разрыв"
-                // и нам ждать lostTimeout не надо
-                // сразу начинаем обрабатывать новые пакеты
-                // а если > 1 && < maxDifferens
-                // значит это временная "дырка"
-                // и надо подождать lostTimeout
-                // чтобы констатировать потерю пакета..
-                if( sub > 1 && sub < maxDifferens )
-                {
-                    // если p.num < pnum, то это какой-то "дубль",
-                    // т.к мы все пакеты <= pnum уже "отработали".
-                    // а значит можно не ждать, а откидывать пакет и
-                    // дальше работать..
-                    if( p.num < pnum )
-                    {
-                        qpack.pop();
-                        continue;
-                    }
+	while( k > 0 )
+	{
+		{
+			// lock qpack
+			uniset_rwmutex_wrlock l(packMutex);
 
-                    if( !ptLostTimeout.checkTime() )
-                        return;
+			if( qpack.empty() )
+				return;
 
-                    lostPackets += sub;
-                }
-                else if( p.num == pnum )
-                {
-                   /* а что делать если идут повторные пакеты ?!
-                    * для надёжности лучше обрабатывать..
-                    * для "оптимизации".. лучше игнорировать
-                    */
-                    qpack.pop(); // пока выбрали вариант "оптимизации" (выкидываем из очереди и идём дальше)
-                    continue;
-                }
+			p = qpack.top();
+			unsigned long sub = labs(p.num - pnum);
 
-                if( sub >= maxDifferens )
-                {
-                    // считаем сколько пакетов потеряли..
-                    if( p.num > pnum )
-                        lostPackets+=sub;
-                }
-            }
+			if( pnum > 0 )
+			{
+				// если sub > maxDifferens
+				// значит это просто "разрыв"
+				// и нам ждать lostTimeout не надо
+				// сразу начинаем обрабатывать новые пакеты
+				// а если > 1 && < maxDifferens
+				// значит это временная "дырка"
+				// и надо подождать lostTimeout
+				// чтобы констатировать потерю пакета..
+				if( sub > 1 && sub < maxDifferens )
+				{
+					// если p.num < pnum, то это какой-то "дубль",
+					// т.к мы все пакеты <= pnum уже "отработали".
+					// а значит можно не ждать, а откидывать пакет и
+					// дальше работать..
+					if( p.num < pnum )
+					{
+						qpack.pop();
+						continue;
+					}
 
-            ptLostTimeout.reset();
+					if( !ptLostTimeout.checkTime() )
+						return;
 
-            // удаляем из очереди, только если
-            // всё в порядке с последовательностью..
-            qpack.pop();
-            pnum = p.num;
-        } // unlock qpack
+					lostPackets += sub;
+				}
+				else if( p.num == pnum )
+				{
+					/* а что делать если идут повторные пакеты ?!
+					 * для надёжности лучше обрабатывать..
+					 * для "оптимизации".. лучше игнорировать
+					 */
+					qpack.pop(); // пока выбрали вариант "оптимизации" (выкидываем из очереди и идём дальше)
+					continue;
+				}
 
-        k--;
+				if( sub >= maxDifferens )
+				{
+					// считаем сколько пакетов потеряли..
+					if( p.num > pnum )
+						lostPackets += sub;
+				}
+			}
 
-//        cerr << myname << "(update): " << p.msg.header << endl;
+			ptLostTimeout.reset();
 
-        initDCache(p, !d_cache_init_ok);
-        initACache(p, !a_cache_init_ok);
+			// удаляем из очереди, только если
+			// всё в порядке с последовательностью..
+			qpack.pop();
+			pnum = p.num;
+		} // unlock qpack
 
-        // Обработка дискретных
-        size_t nbit = 0;
-        for( size_t i=0; i<p.dcount; i++, nbit++ )
-        {
-            try
-            {
+		k--;
 
-                long id = p.dID(i);
-                bool val = p.dValue(i);
+		//        cerr << myname << "(update): " << p.msg.header << endl;
 
-                ItemInfo& ii(d_icache[i]);
-                if( ii.id != id )
-                {
-                    dwarn << myname << "(update): reinit cache for sid=" << id << endl;
-                    ii.id = id;
-                    shm->initIterator(ii.ioit);
-                }
+		initDCache(p, !d_cache_init_ok);
+		initACache(p, !a_cache_init_ok);
 
-                // обновление данных в SM (блокировано)
-                {
-                    uniset_rwmutex_rlock l(lockMutex);
-                    if( lockUpdate )
-                        continue;
-                }
+		// Обработка дискретных
+		size_t nbit = 0;
 
-                shm->localSetValue(ii.ioit,id,val,shm->ID());
-            }
-            catch( UniSetTypes::Exception& ex)
-            {
-                dcrit << myname << "(update): " << ex << std::endl;
-            }
-            catch(...)
-            {
-                dcrit << myname << "(update): catch ..." << std::endl;
-            }
-        }
+		for( size_t i = 0; i < p.dcount; i++, nbit++ )
+		{
+			try
+			{
 
-        // Обработка аналоговых
-        for( size_t i=0; i<p.acount; i++ )
-        {
-            try
-            {
-                UniSetUDP::UDPAData& d = p.a_dat[i];
-                ItemInfo& ii(a_icache[i]);
-                if( ii.id != d.id )
-                {
-                    dwarn << myname << "(update): reinit cache for sid=" << d.id << endl;
-                    ii.id = d.id;
-                    shm->initIterator(ii.ioit);
-                }
+				long id = p.dID(i);
+				bool val = p.dValue(i);
 
-                // обновление данных в SM (блокировано)
-                {
-                    uniset_rwmutex_rlock l(lockMutex);
-                    if( lockUpdate )
-                        continue;
-                }
+				ItemInfo& ii(d_icache[i]);
 
-                shm->localSetValue(ii.ioit,d.id,d.val,shm->ID());
-            }
-            catch( UniSetTypes::Exception& ex)
-            {
-                dcrit << myname << "(update): " << ex << std::endl;
-            }
-            catch(...)
-            {
-                dcrit << myname << "(update): catch ..." << std::endl;
-            }
-        }
-    }
+				if( ii.id != id )
+				{
+					dwarn << myname << "(update): reinit cache for sid=" << id << endl;
+					ii.id = id;
+					shm->initIterator(ii.ioit);
+				}
+
+				// обновление данных в SM (блокировано)
+				{
+					uniset_rwmutex_rlock l(lockMutex);
+
+					if( lockUpdate )
+						continue;
+				}
+
+				shm->localSetValue(ii.ioit, id, val, shm->ID());
+			}
+			catch( UniSetTypes::Exception& ex)
+			{
+				dcrit << myname << "(update): " << ex << std::endl;
+			}
+			catch(...)
+			{
+				dcrit << myname << "(update): catch ..." << std::endl;
+			}
+		}
+
+		// Обработка аналоговых
+		for( size_t i = 0; i < p.acount; i++ )
+		{
+			try
+			{
+				UniSetUDP::UDPAData& d = p.a_dat[i];
+				ItemInfo& ii(a_icache[i]);
+
+				if( ii.id != d.id )
+				{
+					dwarn << myname << "(update): reinit cache for sid=" << d.id << endl;
+					ii.id = d.id;
+					shm->initIterator(ii.ioit);
+				}
+
+				// обновление данных в SM (блокировано)
+				{
+					uniset_rwmutex_rlock l(lockMutex);
+
+					if( lockUpdate )
+						continue;
+				}
+
+				shm->localSetValue(ii.ioit, d.id, d.val, shm->ID());
+			}
+			catch( UniSetTypes::Exception& ex)
+			{
+				dcrit << myname << "(update): " << ex << std::endl;
+			}
+			catch(...)
+			{
+				dcrit << myname << "(update): catch ..." << std::endl;
+			}
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------
 void UNetReceiver::stop()
 {
-    activated = false;
+	activated = false;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::receive()
 {
-    dinfo << myname << ": ******************* receive start" << endl;
+	dinfo << myname << ": ******************* receive start" << endl;
 
-    {
-        uniset_rwmutex_wrlock l(tmMutex);
-        ptRecvTimeout.setTiming(recvTimeout);
-    }
+	{
+		uniset_rwmutex_wrlock l(tmMutex);
+		ptRecvTimeout.setTiming(recvTimeout);
+	}
 
-    bool tout = false;
-    while( activated )
-    {
-        try
-        {
-            if( recv() )
-            {
-                uniset_rwmutex_wrlock l(tmMutex);
-                ptRecvTimeout.reset();
-            }
-        }
-        catch( UniSetTypes::Exception& ex)
-        {
-            dwarn << myname << "(receive): " << ex << std::endl;
-        }
-        catch( const std::exception& e )
-        {
-            dwarn << myname << "(receive): " << e.what()<< std::endl;
-        }
-/*
-        catch(...)
-        {
-            dwarn << myname << "(receive): catch ..." << std::endl;
-        }
-*/
-        // делаем через промежуточную переменную
-        // чтобы поскорее освободить mutex
-        {
-            uniset_rwmutex_rlock l(tmMutex);
-            tout = ptRecvTimeout.checkTime();
-        }
+	bool tout = false;
 
-        // только если "режим подготовки закончился, то можем генерировать "события"
-        if( ptPrepare.checkTime() && trTimeout.change(tout) )
-        {
-            if( tout )
-                slEvent(shared_from_this(),evTimeout);
-            else
-                slEvent(shared_from_this(),evOK);
-        }
+	while( activated )
+	{
+		try
+		{
+			if( recv() )
+			{
+				uniset_rwmutex_wrlock l(tmMutex);
+				ptRecvTimeout.reset();
+			}
+		}
+		catch( UniSetTypes::Exception& ex)
+		{
+			dwarn << myname << "(receive): " << ex << std::endl;
+		}
+		catch( const std::exception& e )
+		{
+			dwarn << myname << "(receive): " << e.what() << std::endl;
+		}
 
-        msleep(recvpause);
-    }
+		/*
+		        catch(...)
+		        {
+		            dwarn << myname << "(receive): catch ..." << std::endl;
+		        }
+		*/
+		// делаем через промежуточную переменную
+		// чтобы поскорее освободить mutex
+		{
+			uniset_rwmutex_rlock l(tmMutex);
+			tout = ptRecvTimeout.checkTime();
+		}
 
-    dinfo << myname << ": ************* receive FINISH **********" << endl;
+		// только если "режим подготовки закончился, то можем генерировать "события"
+		if( ptPrepare.checkTime() && trTimeout.change(tout) )
+		{
+			if( tout )
+				slEvent(shared_from_this(), evTimeout);
+			else
+				slEvent(shared_from_this(), evOK);
+		}
+
+		msleep(recvpause);
+	}
+
+	dinfo << myname << ": ************* receive FINISH **********" << endl;
 }
 // -----------------------------------------------------------------------------
 bool UNetReceiver::recv()
 {
-    if( !udp->isInputReady(recvTimeout) )
-        return false;
+	if( !udp->isInputReady(recvTimeout) )
+		return false;
 
-    size_t ret = udp->UDPReceive::receive((char*)(r_buf.data),sizeof(r_buf.data));
+	size_t ret = udp->UDPReceive::receive((char*)(r_buf.data), sizeof(r_buf.data));
 
-    size_t sz = UniSetUDP::UDPMessage::getMessage(pack,r_buf);
-    if( sz == 0 )
-    {
-        dcrit << myname << "(receive): FAILED RECEIVE DATA ret=" << ret << endl;
-        return false;
-    }
+	size_t sz = UniSetUDP::UDPMessage::getMessage(pack, r_buf);
 
-    if( pack.magic != UniSetUDP::UNETUDP_MAGICNUM )
-    {
-        // пакет не нашей "системы"
-        return false;
-    }
+	if( sz == 0 )
+	{
+		dcrit << myname << "(receive): FAILED RECEIVE DATA ret=" << ret << endl;
+		return false;
+	}
 
-    if( rnum>0 && labs(pack.num - rnum) > maxDifferens )
-    {
-        /* А что делать если мы уже ждём и ещё не "разгребли предыдущее".. а тут уже повторный "разрыв"
-         * Можно откинуть всё.. что сложили во временную очередь и заново "копить" (но тогда теряем информацию)
-         * А можно породолжать складывать во временную, но тогда есть риск "никогда" не разгрести временную
-         * очередь, при "частых обрывах". Потому-что update будет на каждом разрыве ждать ещё lostTimeout..
-         */
-        // Пока выбираю.. чистить qtmp. Это будет соотвествовать логике работы с картами у которых ограничен буфер приёма.
-        // Обычно "кольцевой". Т.е. если не успели обработать и "вынуть" из буфера информацию.. он будет переписан новыми данными
-        if( waitClean )
-        {
-            dcrit << myname << "(receive): reset qtmp.." << endl;
-            while( !qtmp.empty() )
-                qtmp.pop();
-        }
+	if( pack.magic != UniSetUDP::UNETUDP_MAGICNUM )
+	{
+		// пакет не нашей "системы"
+		return false;
+	}
 
-        waitClean = true;
-    }
+	if( rnum > 0 && labs(pack.num - rnum) > maxDifferens )
+	{
+		/* А что делать если мы уже ждём и ещё не "разгребли предыдущее".. а тут уже повторный "разрыв"
+		 * Можно откинуть всё.. что сложили во временную очередь и заново "копить" (но тогда теряем информацию)
+		 * А можно породолжать складывать во временную, но тогда есть риск "никогда" не разгрести временную
+		 * очередь, при "частых обрывах". Потому-что update будет на каждом разрыве ждать ещё lostTimeout..
+		 */
+		// Пока выбираю.. чистить qtmp. Это будет соотвествовать логике работы с картами у которых ограничен буфер приёма.
+		// Обычно "кольцевой". Т.е. если не успели обработать и "вынуть" из буфера информацию.. он будет переписан новыми данными
+		if( waitClean )
+		{
+			dcrit << myname << "(receive): reset qtmp.." << endl;
 
-    rnum = pack.num;
+			while( !qtmp.empty() )
+				qtmp.pop();
+		}
+
+		waitClean = true;
+	}
+
+	rnum = pack.num;
 
 #if 0
-    cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
-          << " header: " << pack.msg.header
-          << " waitClean=" << waitClean
-          << endl;
-    for( size_t i=0; i<pack.msg.header.dcount; i++ )
-    {
-        UniSetUDP::UDPData& d = pack.msg.dat[i];
-        cerr << "****** save id=" << d.id << " val=" << d.val << endl;
-    }
+	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
+		 << " header: " << pack.msg.header
+		 << " waitClean=" << waitClean
+		 << endl;
+
+	for( size_t i = 0; i < pack.msg.header.dcount; i++ )
+	{
+		UniSetUDP::UDPData& d = pack.msg.dat[i];
+		cerr << "****** save id=" << d.id << " val=" << d.val << endl;
+	}
+
 #endif
 
-    {    // lock qpack
-        uniset_rwmutex_wrlock l(packMutex);
-        if( !waitClean )
-        {
-            qpack.push(pack);
-            return true;
-        }
+	{
+		// lock qpack
+		uniset_rwmutex_wrlock l(packMutex);
 
-        if( !qpack.empty() )
-        {
-//            cerr << myname << "(receive): copy to qtmp..."
-//                              << " header: " << pack.msg.header
-//                              << endl;
-            qtmp.push(pack);
-        }
-        else
-        {
-//              cerr << myname << "(receive): copy from qtmp..." << endl;
-            // очередь освободилась..
-            // то копируем в неё всё что набралось...
-            while( !qtmp.empty() )
-            {
-                qpack.push(qtmp.top());
-                qtmp.pop();
-            }
+		if( !waitClean )
+		{
+			qpack.push(pack);
+			return true;
+		}
 
-            // не забываем и текущий поместить в очередь..
-            qpack.push(pack);
-            waitClean = false;
-        }
-    }    // unlock qpack
+		if( !qpack.empty() )
+		{
+			//            cerr << myname << "(receive): copy to qtmp..."
+			//                              << " header: " << pack.msg.header
+			//                              << endl;
+			qtmp.push(pack);
+		}
+		else
+		{
+			//              cerr << myname << "(receive): copy from qtmp..." << endl;
+			// очередь освободилась..
+			// то копируем в неё всё что набралось...
+			while( !qtmp.empty() )
+			{
+				qpack.push(qtmp.top());
+				qtmp.pop();
+			}
 
-    return true;
+			// не забываем и текущий поместить в очередь..
+			qpack.push(pack);
+			waitClean = false;
+		}
+	}    // unlock qpack
+
+	return true;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::initIterators()
 {
-    for( auto &it: d_icache )
-        shm->initIterator(it.ioit);
+	for( auto& it : d_icache )
+		shm->initIterator(it.ioit);
 
-    for( auto &it: a_icache )
-        shm->initIterator(it.ioit);
+	for( auto& it : a_icache )
+		shm->initIterator(it.ioit);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 {
-     if( !force && pack.dcount == d_icache.size() )
-          return;
+	if( !force && pack.dcount == d_icache.size() )
+		return;
 
-     dinfo << myname << ": init icache.." << endl;
-     d_cache_init_ok = true;
+	dinfo << myname << ": init icache.." << endl;
+	d_cache_init_ok = true;
 
-     d_icache.resize(pack.dcount);
-     for( size_t i=0; i<d_icache.size(); i++ )
-     {
-          ItemInfo& d(d_icache[i]);
+	d_icache.resize(pack.dcount);
 
-          if( d.id != pack.d_id[i] )
-          {
-                d.id = pack.d_id[i];
-                d.iotype = uniset_conf()->getIOType(d.id);
-                shm->initIterator(d.ioit);
-          }
-     }
+	for( size_t i = 0; i < d_icache.size(); i++ )
+	{
+		ItemInfo& d(d_icache[i]);
+
+		if( d.id != pack.d_id[i] )
+		{
+			d.id = pack.d_id[i];
+			d.iotype = uniset_conf()->getIOType(d.id);
+			shm->initIterator(d.ioit);
+		}
+	}
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
 {
-     if( !force && pack.acount == a_icache.size() )
-          return;
+	if( !force && pack.acount == a_icache.size() )
+		return;
 
-     dinfo << myname << ": init icache.." << endl;
-     a_cache_init_ok = true;
+	dinfo << myname << ": init icache.." << endl;
+	a_cache_init_ok = true;
 
-     a_icache.resize(pack.acount);
-     for( size_t i=0; i<a_icache.size(); i++ )
-     {
-          ItemInfo& d(a_icache[i]);
-          if( d.id != pack.a_dat[i].id )
-          {
-                d.id = pack.a_dat[i].id;
-                d.iotype = uniset_conf()->getIOType(d.id);
-                shm->initIterator(d.ioit);
-          }
-     }
+	a_icache.resize(pack.acount);
+
+	for( size_t i = 0; i < a_icache.size(); i++ )
+	{
+		ItemInfo& d(a_icache[i]);
+
+		if( d.id != pack.a_dat[i].id )
+		{
+			d.id = pack.a_dat[i].id;
+			d.iotype = uniset_conf()->getIOType(d.id);
+			shm->initIterator(d.ioit);
+		}
+	}
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::connectEvent( UNetReceiver::EventSlot sl )
 {
-    slEvent = sl;
+	slEvent = sl;
 }
 // -----------------------------------------------------------------------------

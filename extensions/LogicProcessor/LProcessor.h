@@ -31,8 +31,8 @@
       |    |   |----|     |
        ----       2 |     |--|
                |----|TAND3|  |
-       ----    |    |     |  |          
-      |    |   |     -----   |          
+       ----    |    |     |  |
+      |    |   |     -----   |
   1 --|TOR2|   |             |            1  ----       -------
   2 --|    |---              |    ----   ---|    |     |       |  out
       |    |                 | 1 |    |   2 |TOR5|-----| Delay |----
@@ -93,51 +93,51 @@
 // --------------------------------------------------------------------------
 class LProcessor
 {
-    public:
-        LProcessor( const std::string& name="" );
-        virtual ~LProcessor();
+	public:
+		LProcessor( const std::string& name = "" );
+		virtual ~LProcessor();
 
-        virtual void execute( const string& lfile );
+		virtual void execute( const string& lfile );
 
-    protected:
+	protected:
 
-        virtual void build( const string& lfile );
+		virtual void build( const string& lfile );
 
-        virtual void step();
+		virtual void step();
 
-        virtual void getInputs();
-        virtual void processing();
-        virtual void setOuts();
+		virtual void getInputs();
+		virtual void processing();
+		virtual void setOuts();
 
-        struct EXTInfo
-        {
-            UniSetTypes::ObjectId sid;
-            UniversalIO::IOType iotype;
-            bool state;
-            const Schema::EXTLink* lnk;
-        };
+		struct EXTInfo
+		{
+			UniSetTypes::ObjectId sid;
+			UniversalIO::IOType iotype;
+			bool state;
+			const Schema::EXTLink* lnk;
+		};
 
-        struct EXTOutInfo
-        {
-            UniSetTypes::ObjectId sid;
-            UniversalIO::IOType iotype;
-            const Schema::EXTOut* lnk;
-        };
+		struct EXTOutInfo
+		{
+			UniSetTypes::ObjectId sid;
+			UniversalIO::IOType iotype;
+			const Schema::EXTOut* lnk;
+		};
 
-        typedef std::list<EXTInfo> EXTList;
-        typedef std::list<EXTOutInfo> OUTList;
+		typedef std::list<EXTInfo> EXTList;
+		typedef std::list<EXTOutInfo> OUTList;
 
-        EXTList extInputs;
-        OUTList extOuts;
-        SchemaXML sch;
+		EXTList extInputs;
+		OUTList extOuts;
+		SchemaXML sch;
 
-        UInterface ui;
-        int sleepTime;
-        int smReadyTimeout;     /*!< время ожидания готовности SM */
+		UInterface ui;
+		int sleepTime;
+		int smReadyTimeout;     /*!< время ожидания готовности SM */
 
-        std::string logname;
+		std::string logname;
 
-    private:
+	private:
 
 
 };

@@ -18,61 +18,64 @@
 // -----------------------------------------------------------------------------
 /*! Реализация многоптоточного slave-интерфейса */
 class MBTCPMultiSlave:
-    public MBSlave
+	public MBSlave
 {
-    public:
-        MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr, const std::string& prefix="mbs" );
-        virtual ~MBTCPMultiSlave();
+	public:
+		MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr, const std::string& prefix = "mbs" );
+		virtual ~MBTCPMultiSlave();
 
-        /*! глобальная функция для инициализации объекта */
-        static std::shared_ptr<MBTCPMultiSlave> init_mbslave( int argc, const char* const* argv,
-                                            UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr,
-                                            const std::string& prefix="mbs" );
+		/*! глобальная функция для инициализации объекта */
+		static std::shared_ptr<MBTCPMultiSlave> init_mbslave( int argc, const char* const* argv,
+				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr,
+				const std::string& prefix = "mbs" );
 
-        /*! глобальная функция для вывода help-а */
-        static void help_print( int argc, const char* const* argv );
+		/*! глобальная функция для вывода help-а */
+		static void help_print( int argc, const char* const* argv );
 
-    protected:
-        virtual void execute_tcp() override;
-        virtual void initIterators() override;
-        virtual bool deactivateObject() override;
-        virtual void sigterm( int signo ) override;
+	protected:
+		virtual void execute_tcp() override;
+		virtual void initIterators() override;
+		virtual bool deactivateObject() override;
+		virtual void sigterm( int signo ) override;
 
-        timeout_t sessTimeout;  /*!< таймаут на сессию */
-        timeout_t waitTimeout;
-        ModbusTCPServer::Sessions sess; /*!< список открытых сессий */
-        unsigned int sessMaxNum;
+		timeout_t sessTimeout;  /*!< таймаут на сессию */
+		timeout_t waitTimeout;
+		ModbusTCPServer::Sessions sess; /*!< список открытых сессий */
+		unsigned int sessMaxNum;
 
-        struct ClientInfo
-        {
-            ClientInfo():iaddr(""),respond_s(UniSetTypes::DefaultObjectId),invert(false),
-              askCount(0),askcount_s(UniSetTypes::DefaultObjectId){ ptTimeout.setTiming(0); }
+		struct ClientInfo
+		{
+			ClientInfo(): iaddr(""), respond_s(UniSetTypes::DefaultObjectId), invert(false),
+				askCount(0), askcount_s(UniSetTypes::DefaultObjectId)
+			{
+				ptTimeout.setTiming(0);
+			}
 
-            std::string iaddr;
+			std::string iaddr;
 
-            UniSetTypes::ObjectId respond_s;
-            IOController::IOStateList::iterator respond_it;
-            bool invert;
-            PassiveTimer ptTimeout;
-            timeout_t tout;
+			UniSetTypes::ObjectId respond_s;
+			IOController::IOStateList::iterator respond_it;
+			bool invert;
+			PassiveTimer ptTimeout;
+			timeout_t tout;
 
-            long askCount;
-            UniSetTypes::ObjectId askcount_s;
-            IOController::IOStateList::iterator askcount_it;
+			long askCount;
+			UniSetTypes::ObjectId askcount_s;
+			IOController::IOStateList::iterator askcount_it;
 
-            inline void initIterators( const std::shared_ptr<SMInterface>& shm )
-            {
-                shm->initIterator( respond_it );
-                shm->initIterator( askcount_it );
-            }
-        };
+			inline void initIterators( const std::shared_ptr<SMInterface>& shm )
+			{
+				shm->initIterator( respond_it );
+				shm->initIterator( askcount_it );
+			}
+		};
 
-        typedef std::unordered_map<std::string,ClientInfo> ClientsMap;
-        ClientsMap cmap;
+		typedef std::unordered_map<std::string, ClientInfo> ClientsMap;
+		ClientsMap cmap;
 
 
-        UniSetTypes::ObjectId sesscount_id;
-        IOController::IOStateList::iterator sesscount_it;
+		UniSetTypes::ObjectId sesscount_id;
+		IOController::IOStateList::iterator sesscount_it;
 };
 // -----------------------------------------------------------------------------
 #endif // _MBTCPMultiSlave_H_

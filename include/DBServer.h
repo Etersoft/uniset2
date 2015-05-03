@@ -20,7 +20,7 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #ifndef DBServer_H_
 #define DBServer_H_
 // --------------------------------------------------------------------------
@@ -46,23 +46,23 @@
 */
 
 /*! Прототип реализации сервиса ведения БД */
-class DBServer: 
-    public UniSetObject_LT
+class DBServer:
+	public UniSetObject_LT
 {
-    public:
-        DBServer( UniSetTypes::ObjectId id );
-        DBServer();
-        ~DBServer();
+	public:
+		DBServer( UniSetTypes::ObjectId id );
+		DBServer();
+		~DBServer();
 
-    protected:
+	protected:
 
-        virtual void processingMessage( UniSetTypes::VoidMessage* msg ) override;
-        virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ){}
+		virtual void processingMessage( UniSetTypes::VoidMessage* msg ) override;
+		virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ) {}
 
-        virtual bool activateObject() override;
-        virtual void init_dbserver(){};
+		virtual bool activateObject() override;
+		virtual void init_dbserver() {};
 
-    private:
+	private:
 };
 //------------------------------------------------------------------------------------------
 #endif

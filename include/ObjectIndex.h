@@ -19,7 +19,7 @@
 /*! \file
  * \author Vitaly Lipatov
  */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #ifndef ObjcetIndex_H_
 #define ObjcetIndex_H_
 // --------------------------------------------------------------------------
@@ -29,48 +29,51 @@
 // --------------------------------------------------------------------------
 namespace UniSetTypes
 {
-class ObjectIndex
-{
-    public:
-        ObjectIndex(){};
-        virtual ~ObjectIndex(){};
+	class ObjectIndex
+	{
+		public:
+			ObjectIndex() {};
+			virtual ~ObjectIndex() {};
 
-        // info
-        virtual const ObjectInfo* getObjectInfo( const UniSetTypes::ObjectId )=0;
-        virtual const ObjectInfo* getObjectInfo( const std::string& name )=0;
+			// info
+			virtual const ObjectInfo* getObjectInfo( const UniSetTypes::ObjectId ) = 0;
+			virtual const ObjectInfo* getObjectInfo( const std::string& name ) = 0;
 
-        static std::string getBaseName( const std::string& fname );
+			static std::string getBaseName( const std::string& fname );
 
-        // object id
-        virtual ObjectId getIdByName(const std::string& name)=0;
-        virtual std::string getNameById( const UniSetTypes::ObjectId id );
+			// object id
+			virtual ObjectId getIdByName(const std::string& name) = 0;
+			virtual std::string getNameById( const UniSetTypes::ObjectId id );
 
-        // node
-        inline std::string getNodeName( const UniSetTypes::ObjectId id )
-        {
-            return getNameById(id);
-        }
+			// node
+			inline std::string getNodeName( const UniSetTypes::ObjectId id )
+			{
+				return getNameById(id);
+			}
 
-        inline ObjectId getNodeId( const std::string& name ) { return getIdByName(name); }
+			inline ObjectId getNodeId( const std::string& name )
+			{
+				return getIdByName(name);
+			}
 
-        // src name
-        virtual std::string getMapName( const UniSetTypes::ObjectId id )=0;
-        virtual std::string getTextName( const UniSetTypes::ObjectId id )=0;
+			// src name
+			virtual std::string getMapName( const UniSetTypes::ObjectId id ) = 0;
+			virtual std::string getTextName( const UniSetTypes::ObjectId id ) = 0;
 
-        //
-        virtual std::ostream& printMap(std::ostream& os)=0;
+			//
+			virtual std::ostream& printMap(std::ostream& os) = 0;
 
-        void initLocalNode( const UniSetTypes::ObjectId nodeid );
+			void initLocalNode( const UniSetTypes::ObjectId nodeid );
 
-    protected:
-        std::string nmLocalNode;    // для оптимизации
+		protected:
+			std::string nmLocalNode;    // для оптимизации
 
-    private:
+		private:
 
-};
+	};
 
 
-// -----------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------
 }    // end of namespace
 // -----------------------------------------------------------------------------------------
 #endif

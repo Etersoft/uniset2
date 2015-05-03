@@ -20,7 +20,7 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 
 #include <unistd.h>
 #include <sstream>
@@ -31,39 +31,43 @@ using namespace std;
 // ------------------------------------------------------------------------------------------
 
 PassiveCondTimer::PassiveCondTimer():
-    terminated(ATOMIC_VAR_INIT(1))
+	terminated(ATOMIC_VAR_INIT(1))
 {
 }
 // ------------------------------------------------------------------------------------------
 PassiveCondTimer::~PassiveCondTimer()
 {
-    terminate();
+	terminate();
 }
 // ------------------------------------------------------------------------------------------
 void PassiveCondTimer::terminate()
 {
-    {
-        std::unique_lock<std::mutex> lk(m_working);
-        terminated = true;
-    }
-    cv_working.notify_all();
+	{
+		std::unique_lock<std::mutex> lk(m_working);
+		terminated = true;
+	}
+	cv_working.notify_all();
 }
 // ------------------------------------------------------------------------------------------
 bool PassiveCondTimer::wait( timeout_t time_msec )
 {
-    std::unique_lock<std::mutex> lk(m_working);
-    terminated = false;
+	std::unique_lock<std::mutex> lk(m_working);
+	terminated = false;
 
-    timeout_t t_msec = PassiveTimer::setTiming(time_msec); // вызываем для совместимости с обычным PassiveTimer-ом
-    if( time_msec == WaitUpTime )
-    {
-        while( !terminated )
-            cv_working.wait(lk);
-    }
-    else
-        cv_working.wait_for(lk, std::chrono::milliseconds(t_msec), [&](){ return (terminated == true); } );
+	timeout_t t_msec = PassiveTimer::setTiming(time_msec); // вызываем для совместимости с обычным PassiveTimer-ом
 
-    terminated = true;
-    return true;
+	if( time_msec == WaitUpTime )
+	{
+		while( !terminated )
+			cv_working.wait(lk);
+	}
+	else
+		cv_working.wait_for(lk, std::chrono::milliseconds(t_msec), [&]()
+	{
+		return (terminated == true);
+	} );
+
+	terminated = true;
+	return true;
 }
 // ------------------------------------------------------------------------------------------

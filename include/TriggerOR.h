@@ -70,50 +70,53 @@
 
     \endcode
 */
-template<class Caller, typename InputType=int>
+template<class Caller, typename InputType = int>
 class TriggerOR
 {
-    public:
+	public:
 
-        /*!
-            прототип функции вызова
-            \param newstate - новое состояние 'выхода'
-        */
-        typedef void(Caller::* Action)(bool newstate);
+		/*!
+		    прототип функции вызова
+		    \param newstate - новое состояние 'выхода'
+		*/
+		typedef void(Caller::* Action)(bool newstate);
 
-        TriggerOR(Caller* r, Action a);
-        ~TriggerOR();
+		TriggerOR(Caller* r, Action a);
+		~TriggerOR();
 
-        inline bool state(){ return out; }
+		inline bool state()
+		{
+			return out;
+		}
 
-        bool getState(InputType in);
-        bool commit(InputType in, bool state);
+		bool getState(InputType in);
+		bool commit(InputType in, bool state);
 
-        void add(InputType in, bool state);
-        void remove(InputType in);
+		void add(InputType in, bool state);
+		void remove(InputType in);
 
-        typedef std::unordered_map<InputType, bool> InputMap;
+		typedef std::unordered_map<InputType, bool> InputMap;
 
-        inline typename InputMap::const_iterator begin()
-        {
-            return inputs.begin();
-        }
+		inline typename InputMap::const_iterator begin()
+		{
+			return inputs.begin();
+		}
 
-        inline typename InputMap::const_iterator end()
-        {
-            return inputs.end();
-        }
+		inline typename InputMap::const_iterator end()
+		{
+			return inputs.end();
+		}
 
-        void update();
-        void reset();
+		void update();
+		void reset();
 
-    protected:
-        void check();
+	protected:
+		void check();
 
-        InputMap inputs; // список входов
-        bool out;
-        Caller* cal;
-        Action act;
+		InputMap inputs; // список входов
+		bool out;
+		Caller* cal;
+		Action act;
 };
 
 //---------------------------------------------------------------------------

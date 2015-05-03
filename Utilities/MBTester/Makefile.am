@@ -19,3 +19,5 @@ bin_PROGRAMS 	= @PACKAGE@-mbrtutest @PACKAGE@-mbrtuslave-echo \
 
 #@PACKAGE@_mbtest2_SOURCES 	= mbtester2.cc
 #@PACKAGE@_mbtest2_LDADD 	= $(top_builddir)/lib/libUniSet2.la
+
+include $(top_builddir)/include.mk

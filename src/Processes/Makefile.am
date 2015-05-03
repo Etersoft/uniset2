@@ -1,5 +1,5 @@
 ############################################################################
-# This file is part of the UniSet library                                  #
+# This file is part of the UniSet library								  #
 ############################################################################
 
 noinst_LTLIBRARIES 			= libProcesses.la
@@ -10,3 +10,6 @@ libProcesses_la_SOURCES		= IOController_iSK.cc IOController.cc IONotifyControlle
 
 local-clean:
 	rm -rf *iSK.cc
+
+
+include $(top_builddir)/include.mk

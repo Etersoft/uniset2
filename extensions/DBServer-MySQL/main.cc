@@ -8,63 +8,66 @@ using namespace std;
 // --------------------------------------------------------------------------
 static void short_usage()
 {
-    cout << "Usage: uniset-mysql-dbserver [--name ObjectId] [--confile configure.xml]\n";
+	cout << "Usage: uniset-mysql-dbserver [--name ObjectId] [--confile configure.xml]\n";
 }
 // --------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-    std::ios::sync_with_stdio(false);
-    try
-    {
-        if( argc > 1 && !strcmp(argv[1],"--help") )
-        {
-            short_usage();
-            return 0;
-        }
+	std::ios::sync_with_stdio(false);
 
-        auto conf = uniset_init(argc,argv,"configure.xml");
+	try
+	{
+		if( argc > 1 && !strcmp(argv[1], "--help") )
+		{
+			short_usage();
+			return 0;
+		}
 
-        ObjectId ID = conf->getDBServer();
+		auto conf = uniset_init(argc, argv, "configure.xml");
 
-        // определяем ID объекта
-        string name = conf->getArgParam("--name");
-        if( !name.empty())
-        {
-            if( ID != UniSetTypes::DefaultObjectId )
-            {
-                uwarn << "(DBServer::main): переопределяем ID заданный в "
-                        << conf->getConfFileName() << endl;
-            }
+		ObjectId ID = conf->getDBServer();
 
-            ID = conf->oind->getIdByName(conf->getServicesSection()+"/"+name);
-            if( ID == UniSetTypes::DefaultObjectId )
-            {
-                cerr << "(DBServer::main): идентификатор '" << name
-                    << "' не найден в конф. файле!"
-                    << " в секции " << conf->getServicesSection() << endl;
-                return 1;
-            }
-        }
-        else if( ID == UniSetTypes::DefaultObjectId )
-        {
-            cerr << "(DBServer::main): Не удалось определить ИДЕНТИФИКАТОР сервера" << endl;
-            short_usage();
-            return 1;
-        }
+		// определяем ID объекта
+		string name = conf->getArgParam("--name");
 
-        DBServer_MySQL dbs(ID);
-        auto act = UniSetActivator::Instance();
-        act->add(dbs.get_ptr());
-        act->run(false);
-    }
-    catch( const std::exception& ex )
-    {
-        cerr << "(DBServer::main): " << ex.what() << endl;
-    }
-    catch(...)
-    {
-        cerr << "(DBServer::main): catch ..." << endl;
-    }
+		if( !name.empty())
+		{
+			if( ID != UniSetTypes::DefaultObjectId )
+			{
+				uwarn << "(DBServer::main): переопределяем ID заданный в "
+					  << conf->getConfFileName() << endl;
+			}
 
-    return 0;
+			ID = conf->oind->getIdByName(conf->getServicesSection() + "/" + name);
+
+			if( ID == UniSetTypes::DefaultObjectId )
+			{
+				cerr << "(DBServer::main): идентификатор '" << name
+					 << "' не найден в конф. файле!"
+					 << " в секции " << conf->getServicesSection() << endl;
+				return 1;
+			}
+		}
+		else if( ID == UniSetTypes::DefaultObjectId )
+		{
+			cerr << "(DBServer::main): Не удалось определить ИДЕНТИФИКАТОР сервера" << endl;
+			short_usage();
+			return 1;
+		}
+
+		DBServer_MySQL dbs(ID);
+		auto act = UniSetActivator::Instance();
+		act->add(dbs.get_ptr());
+		act->run(false);
+	}
+	catch( const std::exception& ex )
+	{
+		cerr << "(DBServer::main): " << ex.what() << endl;
+	}
+	catch(...)
+	{
+		cerr << "(DBServer::main): catch ..." << endl;
+	}
+
+	return 0;
 }

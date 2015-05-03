@@ -19,7 +19,7 @@
 /*! \file
  * \author Pavel Vainerman
  */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #ifndef ObjectIndex_XML_H_
 #define ObjectIndex_XML_H_
 // --------------------------------------------------------------------------
@@ -33,35 +33,35 @@
 namespace UniSetTypes
 {
 
-/*! \todo Проверить функции этого класса на повторную входимость */
-class ObjectIndex_XML:
-    public ObjectIndex
-{
-    public:
-        ObjectIndex_XML(const std::string& xmlfile, int minSize=1000 );
-        ObjectIndex_XML( const std::shared_ptr<UniXML>& xml, int minSize=1000 );
-        virtual ~ObjectIndex_XML();
+	/*! \todo Проверить функции этого класса на повторную входимость */
+	class ObjectIndex_XML:
+		public ObjectIndex
+	{
+		public:
+			ObjectIndex_XML(const std::string& xmlfile, int minSize = 1000 );
+			ObjectIndex_XML( const std::shared_ptr<UniXML>& xml, int minSize = 1000 );
+			virtual ~ObjectIndex_XML();
 
-        virtual const UniSetTypes::ObjectInfo* getObjectInfo( const ObjectId ) override;
-        virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string& name ) override;
-        virtual ObjectId getIdByName( const std::string& name ) override;
-        virtual std::string getMapName( const ObjectId id ) override;
-        virtual std::string getTextName( const ObjectId id ) override;
+			virtual const UniSetTypes::ObjectInfo* getObjectInfo( const ObjectId ) override;
+			virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string& name ) override;
+			virtual ObjectId getIdByName( const std::string& name ) override;
+			virtual std::string getMapName( const ObjectId id ) override;
+			virtual std::string getTextName( const ObjectId id ) override;
 
-        virtual std::ostream& printMap(std::ostream& os) override;
-        friend std::ostream& operator<<(std::ostream& os, ObjectIndex_XML& oi );
+			virtual std::ostream& printMap(std::ostream& os) override;
+			friend std::ostream& operator<<(std::ostream& os, ObjectIndex_XML& oi );
 
-    protected:
-        void build( const std::shared_ptr<UniXML>& xml );
-        unsigned int read_section( const std::shared_ptr<UniXML>& xml, const std::string& sec, unsigned int ind );
-        unsigned int read_nodes( const std::shared_ptr<UniXML>& xml, const std::string& sec, unsigned int ind );
+		protected:
+			void build( const std::shared_ptr<UniXML>& xml );
+			unsigned int read_section( const std::shared_ptr<UniXML>& xml, const std::string& sec, unsigned int ind );
+			unsigned int read_nodes( const std::shared_ptr<UniXML>& xml, const std::string& sec, unsigned int ind );
 
-    private:
-        typedef std::unordered_map<std::string, ObjectId> MapObjectKey;
-        MapObjectKey mok; // для обратного писка
-        std::vector<ObjectInfo> omap; // для прямого поиска
-};
-// -----------------------------------------------------------------------------------------
+		private:
+			typedef std::unordered_map<std::string, ObjectId> MapObjectKey;
+			MapObjectKey mok; // для обратного писка
+			std::vector<ObjectInfo> omap; // для прямого поиска
+	};
+	// -----------------------------------------------------------------------------------------
 }    // end of namespace
 // -----------------------------------------------------------------------------------------
 #endif

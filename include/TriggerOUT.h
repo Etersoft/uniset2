@@ -81,50 +81,50 @@
 
     \endcode
 */
-template<class Caller, typename OutIdType=int, typename ValueType=bool>
+template<class Caller, typename OutIdType = int, typename ValueType = bool>
 class TriggerOUT
 {
-    public:
+	public:
 
-        /*! прототип функции вызова
-            \param out - идентификатор 'выхода'
-            \param val - новое значение
-        */
-        typedef void(Caller::* Action)(OutIdType out, ValueType val);
+		/*! прототип функции вызова
+		    \param out - идентификатор 'выхода'
+		    \param val - новое значение
+		*/
+		typedef void(Caller::* Action)(OutIdType out, ValueType val);
 
-        TriggerOUT(Caller* r, Action a);
-        ~TriggerOUT();
+		TriggerOUT(Caller* r, Action a);
+		~TriggerOUT();
 
 
-        /*! получить текущее значение указанного 'выхода' */
-        bool getState(OutIdType out);
+		/*! получить текущее значение указанного 'выхода' */
+		bool getState(OutIdType out);
 
-        /*! установить значение одного из 'выходов'
-            \param out - идентификатор 'выхода'
-            \param val - новое значение
-        */
-        void set(OutIdType out, ValueType val);
+		/*! установить значение одного из 'выходов'
+		    \param out - идентификатор 'выхода'
+		    \param val - новое значение
+		*/
+		void set(OutIdType out, ValueType val);
 
-        /*! добавить новый 'выход' и установить начальное значение.
-            \param out - идентификатор 'выхода'
-            \param val - новое значение
-        */
-        void add(OutIdType out, ValueType val);
+		/*! добавить новый 'выход' и установить начальное значение.
+		    \param out - идентификатор 'выхода'
+		    \param val - новое значение
+		*/
+		void add(OutIdType out, ValueType val);
 
-        /*! удалить указанный 'выход' */
-        void remove(OutIdType out);
+		/*! удалить указанный 'выход' */
+		void remove(OutIdType out);
 
-        void update();
-        void reset();
+		void update();
+		void reset();
 
-    protected:
-        void resetOuts( OutIdType outIgnore );
+	protected:
+		void resetOuts( OutIdType outIgnore );
 
-        typedef std::unordered_map<OutIdType, ValueType> OutList;
-        OutList outs; // список выходов
+		typedef std::unordered_map<OutIdType, ValueType> OutList;
+		OutList outs; // список выходов
 
-        Caller* cal;
-        Action act;
+		Caller* cal;
+		Action act;
 
 };
 

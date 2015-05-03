@@ -29,3 +29,4 @@ bin_PROGRAMS 		= @PACKAGE@-smemory-plus
 
 @PACKAGE@_smemory_plus_SOURCES = smemory-plus.cc
 
+include $(top_builddir)/include.mk

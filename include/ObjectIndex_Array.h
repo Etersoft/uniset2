@@ -19,7 +19,7 @@
 /*! \file
  * \author Vitaly Lipatov
  */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #ifndef ObjectIndex_Array_H_
 #define ObjectIndex_Array_H_
 // --------------------------------------------------------------------------
@@ -32,37 +32,37 @@
 // --------------------------------------------------------------------------
 namespace UniSetTypes
 {
-/*!
-    \todo Проверить функции этого класса на повторную входимость
-    \bug При обращении к objectsMap[0].textName срабатывает исключение(видимо какое-то из std).
-        Требуется дополнительное изучение.
-*/
-class ObjectIndex_Array:
-    public ObjectIndex
-{
-    public:
-        ObjectIndex_Array(const ObjectInfo* objectInfo);
-        virtual ~ObjectIndex_Array();
+	/*!
+	    \todo Проверить функции этого класса на повторную входимость
+	    \bug При обращении к objectsMap[0].textName срабатывает исключение(видимо какое-то из std).
+	        Требуется дополнительное изучение.
+	*/
+	class ObjectIndex_Array:
+		public ObjectIndex
+	{
+		public:
+			ObjectIndex_Array(const ObjectInfo* objectInfo);
+			virtual ~ObjectIndex_Array();
 
-        virtual const ObjectInfo* getObjectInfo( const ObjectId ) override;
-        virtual const ObjectInfo* getObjectInfo( const std::string& name ) override;
-        virtual ObjectId getIdByName( const std::string& name ) override;
-        virtual std::string getMapName( const ObjectId id ) override;
-        virtual std::string getTextName( const ObjectId id ) override;
+			virtual const ObjectInfo* getObjectInfo( const ObjectId ) override;
+			virtual const ObjectInfo* getObjectInfo( const std::string& name ) override;
+			virtual ObjectId getIdByName( const std::string& name ) override;
+			virtual std::string getMapName( const ObjectId id ) override;
+			virtual std::string getTextName( const ObjectId id ) override;
 
-        virtual std::ostream& printMap(std::ostream& os) override;
-        friend std::ostream& operator<<(std::ostream& os, ObjectIndex_Array& oi );
+			virtual std::ostream& printMap(std::ostream& os) override;
+			friend std::ostream& operator<<(std::ostream& os, ObjectIndex_Array& oi );
 
-    private:
+		private:
 
-        int numOfObject;
-        typedef std::unordered_map<std::string, ObjectId> MapObjectKey;
-        MapObjectKey::iterator MapObjectKeyIterator;
-        MapObjectKey mok;
-        const ObjectInfo *objectInfo;
-        int maxId;
-};
-// -----------------------------------------------------------------------------------------
+			int numOfObject;
+			typedef std::unordered_map<std::string, ObjectId> MapObjectKey;
+			MapObjectKey::iterator MapObjectKeyIterator;
+			MapObjectKey mok;
+			const ObjectInfo* objectInfo;
+			int maxId;
+	};
+	// -----------------------------------------------------------------------------------------
 }    // end of namespace
 // -----------------------------------------------------------------------------------------
 #endif

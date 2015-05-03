@@ -1,4 +1,4 @@
-noinst_PROGRAMS = smemory-test         
+noinst_PROGRAMS = smemory-test		 
 smemory_test_LDADD = $(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
@@ -15,3 +15,5 @@ TestProc_SK.cc: testproc.src.xml
 
 clean-local:
 	rm -rf *_SK.cc *_SK.h
+
+include $(top_builddir)/include.mk

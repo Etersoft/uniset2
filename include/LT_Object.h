@@ -91,97 +91,97 @@ class UniSetObject;
 
     \warning Точность работы определяется переодичностью вызова обработчика.
     \sa TimerService
-*/ 
+*/
 class LT_Object
 {
-    public:
-        LT_Object();
-        virtual ~LT_Object();
+	public:
+		LT_Object();
+		virtual ~LT_Object();
 
 
-        /*! заказ таймера
-            \param timerid - идентификатор таймера
-            \param timeMS - период. 0 - означает отказ от таймера
-            \param ticks - количество уведомлений. "-1"- постоянно
-            \param p - приоритет присылаемого сообщения
-            \return Возвращает время [мсек] оставшееся до срабатывания очередного таймера
-        */
-        timeout_t askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks=-1,
-                        UniSetTypes::Message::Priority p=UniSetTypes::Message::High );
+		/*! заказ таймера
+		    \param timerid - идентификатор таймера
+		    \param timeMS - период. 0 - означает отказ от таймера
+		    \param ticks - количество уведомлений. "-1"- постоянно
+		    \param p - приоритет присылаемого сообщения
+		    \return Возвращает время [мсек] оставшееся до срабатывания очередного таймера
+		*/
+		timeout_t askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks = -1,
+							UniSetTypes::Message::Priority p = UniSetTypes::Message::High );
 
 
-        /*!
-            основная функция обработки.
-            \param obj - указатель на объект, которому посылается уведомление
-            \return Возвращает время [мсек] оставшееся до срабатывания очередного таймера
-        */
-        timeout_t checkTimers( UniSetObject* obj );
+		/*!
+		    основная функция обработки.
+		    \param obj - указатель на объект, которому посылается уведомление
+		    \return Возвращает время [мсек] оставшееся до срабатывания очередного таймера
+		*/
+		timeout_t checkTimers( UniSetObject* obj );
 
-        /*! получить текущее время ожидания */
-        //inline timeout_t getSleepTimeMS(){ return sleepTime; }
+		/*! получить текущее время ожидания */
+		//inline timeout_t getSleepTimeMS(){ return sleepTime; }
 
-    protected:
+	protected:
 
-        /*! Информация о таймере */
-        struct TimerInfo
-        {
-            TimerInfo():id(0), curTimeMS(0), priority(UniSetTypes::Message::High){};
-            TimerInfo(UniSetTypes::TimerId id, timeout_t timeMS, short cnt, UniSetTypes::Message::Priority p):
-                id(id),
-                curTimeMS(timeMS),
-                priority(p),
-                curTick(cnt-1)
-            {
-                tmr.setTiming(timeMS);
-            };
+		/*! Информация о таймере */
+		struct TimerInfo
+		{
+			TimerInfo(): id(0), curTimeMS(0), priority(UniSetTypes::Message::High) {};
+			TimerInfo(UniSetTypes::TimerId id, timeout_t timeMS, short cnt, UniSetTypes::Message::Priority p):
+				id(id),
+				curTimeMS(timeMS),
+				priority(p),
+				curTick(cnt - 1)
+			{
+				tmr.setTiming(timeMS);
+			};
 
-            inline void reset()
-            {
-                curTimeMS = tmr.getInterval();
-                tmr.reset();
-            }
+			inline void reset()
+			{
+				curTimeMS = tmr.getInterval();
+				tmr.reset();
+			}
 
-            UniSetTypes::TimerId id;    /*!<  идентификатор таймера */
-            timeout_t curTimeMS;        /*!<  остаток времени */
-            UniSetTypes::Message::Priority priority; /*!<  приоритет посылаемого сообщения */
+			UniSetTypes::TimerId id;    /*!<  идентификатор таймера */
+			timeout_t curTimeMS;        /*!<  остаток времени */
+			UniSetTypes::Message::Priority priority; /*!<  приоритет посылаемого сообщения */
 
-            /*!
-             * текущий такт
-             * \note Если задано количество -1 то сообщения будут поылатся постоянно
-            */
-            clock_t curTick;
+			/*!
+			 * текущий такт
+			 * \note Если задано количество -1 то сообщения будут поылатся постоянно
+			*/
+			clock_t curTick;
 
-            // таймер с меньшим временем ожидания имеет больший приоритет
-            bool operator < ( const TimerInfo& ti ) const
-            {
-                return curTimeMS > ti.curTimeMS;
-            }
+			// таймер с меньшим временем ожидания имеет больший приоритет
+			bool operator < ( const TimerInfo& ti ) const
+			{
+				return curTimeMS > ti.curTimeMS;
+			}
 
-            PassiveTimer tmr;
-        };
+			PassiveTimer tmr;
+		};
 
-        class Timer_eq: public std::unary_function<TimerInfo, bool>
-        {
-            public:
-                Timer_eq(UniSetTypes::TimerId t):tid(t){}
+		class Timer_eq: public std::unary_function<TimerInfo, bool>
+		{
+			public:
+				Timer_eq(UniSetTypes::TimerId t): tid(t) {}
 
-            inline bool operator()(const TimerInfo& ti) const
-            {
-                return ( ti.id == tid );
-            }
+				inline bool operator()(const TimerInfo& ti) const
+				{
+					return ( ti.id == tid );
+				}
 
-            protected:
-                UniSetTypes::TimerId tid;
-        };
+			protected:
+				UniSetTypes::TimerId tid;
+		};
 
-        typedef std::deque<TimerInfo> TimersList;
+		typedef std::deque<TimerInfo> TimersList;
 
-    private:
-        TimersList tlst;
-        /*! замок для блокирования совместного доступа к cписку таймеров */
-        UniSetTypes::uniset_rwmutex lstMutex;
-        timeout_t sleepTime; /*!< текущее время ожидания */
-        PassiveTimer tmLast;
+	private:
+		TimersList tlst;
+		/*! замок для блокирования совместного доступа к cписку таймеров */
+		UniSetTypes::uniset_rwmutex lstMutex;
+		timeout_t sleepTime; /*!< текущее время ожидания */
+		PassiveTimer tmLast;
 };
 //--------------------------------------------------------------------------
 #endif

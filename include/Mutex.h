@@ -20,7 +20,7 @@
 /*! \file
  * \author Pavel Vainerman
  */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #ifndef UniSet_MUTEX_H_
 #define UniSet_MUTEX_H_
 // -----------------------------------------------------------------------------------------
@@ -32,114 +32,126 @@
 // -----------------------------------------------------------------------------------------
 namespace UniSetTypes
 {
-    class uniset_mutex
-    {
-        public:
-            uniset_mutex();
-            uniset_mutex( const std::string& name );
-            ~uniset_mutex();
+	class uniset_mutex
+	{
+		public:
+			uniset_mutex();
+			uniset_mutex( const std::string& name );
+			~uniset_mutex();
 
-            void lock();
-            void unlock();
-            bool try_lock_for( const time_t& msec );
+			void lock();
+			void unlock();
+			bool try_lock_for( const time_t& msec );
 
-            inline std::string name(){ return nm; }
-            inline void setName( const std::string& name ){ nm = name; }
+			inline std::string name()
+			{
+				return nm;
+			}
+			inline void setName( const std::string& name )
+			{
+				nm = name;
+			}
 
-        protected:
+		protected:
 
-        private:
-            friend class uniset_mutex_lock;
-            uniset_mutex(const uniset_mutex& r) = delete;
-            uniset_mutex &operator=(const uniset_mutex& r) = delete;
-            std::string nm;
-            std::timed_mutex m_lock;
-     };
+		private:
+			friend class uniset_mutex_lock;
+			uniset_mutex(const uniset_mutex& r) = delete;
+			uniset_mutex& operator=(const uniset_mutex& r) = delete;
+			std::string nm;
+			std::timed_mutex m_lock;
+	};
 
-    std::ostream& operator<<(std::ostream& os, uniset_mutex& m );
-    // -------------------------------------------------------------------------
-    /*! \class uniset_mutex_lock
-     *  \author Pavel Vainerman
-     *
-     *  Предназначен для блокирования совместного доступа. Как пользоваться см. \ref MutexHowToPage
-     *  \note Если ресурс уже занят, то lock ждет его освобождения...
-    */
-    class uniset_mutex_lock
-    {
-        public:
-            uniset_mutex_lock( uniset_mutex& m, const time_t timeoutMS=0 );
-            ~uniset_mutex_lock();
+	std::ostream& operator<<(std::ostream& os, uniset_mutex& m );
+	// -------------------------------------------------------------------------
+	/*! \class uniset_mutex_lock
+	 *  \author Pavel Vainerman
+	 *
+	 *  Предназначен для блокирования совместного доступа. Как пользоваться см. \ref MutexHowToPage
+	 *  \note Если ресурс уже занят, то lock ждет его освобождения...
+	*/
+	class uniset_mutex_lock
+	{
+		public:
+			uniset_mutex_lock( uniset_mutex& m, const time_t timeoutMS = 0 );
+			~uniset_mutex_lock();
 
-            bool lock_ok();
+			bool lock_ok();
 
-        private:
-            uniset_mutex* mutex;
-            std::atomic_bool locked;
+		private:
+			uniset_mutex* mutex;
+			std::atomic_bool locked;
 
-            uniset_mutex_lock(const uniset_mutex_lock&)=delete;
-            uniset_mutex_lock& operator=(const uniset_mutex_lock&)=delete;
-    };
+			uniset_mutex_lock(const uniset_mutex_lock&) = delete;
+			uniset_mutex_lock& operator=(const uniset_mutex_lock&) = delete;
+	};
 
-    // -------------------------------------------------------------------------
-    // rwmutex..
-    class uniset_rwmutex
-    {
-        public:
-            uniset_rwmutex( const std::string& name );
-            uniset_rwmutex();
-            ~uniset_rwmutex();
+	// -------------------------------------------------------------------------
+	// rwmutex..
+	class uniset_rwmutex
+	{
+		public:
+			uniset_rwmutex( const std::string& name );
+			uniset_rwmutex();
+			~uniset_rwmutex();
 
-            void lock();
-            void unlock();
+			void lock();
+			void unlock();
 
-            void wrlock();
-            void rlock();
+			void wrlock();
+			void rlock();
 
-            bool try_lock();
-            bool try_rlock();
-            bool try_wrlock();
+			bool try_lock();
+			bool try_rlock();
+			bool try_wrlock();
 
-            uniset_rwmutex( const uniset_rwmutex& r ) = delete;
-            uniset_rwmutex& operator=(const uniset_rwmutex& r)=delete;
+			uniset_rwmutex( const uniset_rwmutex& r ) = delete;
+			uniset_rwmutex& operator=(const uniset_rwmutex& r) = delete;
 
-            uniset_rwmutex( uniset_rwmutex&& r ) = default;
-            uniset_rwmutex& operator=(uniset_rwmutex&& r)=default;
+			uniset_rwmutex( uniset_rwmutex&& r ) = default;
+			uniset_rwmutex& operator=(uniset_rwmutex&& r) = default;
 
-            inline std::string name(){ return nm; }
-            inline void setName( const std::string& name ){ nm = name; }
+			inline std::string name()
+			{
+				return nm;
+			}
+			inline void setName( const std::string& name )
+			{
+				nm = name;
+			}
 
-        private:
-            std::string nm;
-            friend class uniset_rwmutex_lock;
-            ost::ThreadLock m;
-    };
+		private:
+			std::string nm;
+			friend class uniset_rwmutex_lock;
+			ost::ThreadLock m;
+	};
 
-    std::ostream& operator<<(std::ostream& os, uniset_rwmutex& m );
-    // -------------------------------------------------------------------------
-    class uniset_rwmutex_wrlock
-    {
-        public:
-            uniset_rwmutex_wrlock( uniset_rwmutex& m );
-            ~uniset_rwmutex_wrlock();
+	std::ostream& operator<<(std::ostream& os, uniset_rwmutex& m );
+	// -------------------------------------------------------------------------
+	class uniset_rwmutex_wrlock
+	{
+		public:
+			uniset_rwmutex_wrlock( uniset_rwmutex& m );
+			~uniset_rwmutex_wrlock();
 
-        private:
-            uniset_rwmutex_wrlock(const uniset_rwmutex_wrlock&)=delete;
-            uniset_rwmutex_wrlock& operator=(const uniset_rwmutex_wrlock&)=delete;
-            uniset_rwmutex& m;
-    };
+		private:
+			uniset_rwmutex_wrlock(const uniset_rwmutex_wrlock&) = delete;
+			uniset_rwmutex_wrlock& operator=(const uniset_rwmutex_wrlock&) = delete;
+			uniset_rwmutex& m;
+	};
 
-    class uniset_rwmutex_rlock
-    {
-        public:
-            uniset_rwmutex_rlock( uniset_rwmutex& m );
-            ~uniset_rwmutex_rlock();
+	class uniset_rwmutex_rlock
+	{
+		public:
+			uniset_rwmutex_rlock( uniset_rwmutex& m );
+			~uniset_rwmutex_rlock();
 
-        private:
-            uniset_rwmutex_rlock(const uniset_rwmutex_rlock&)=delete;
-            uniset_rwmutex_rlock& operator=(const uniset_rwmutex_rlock&)=delete;
-            uniset_rwmutex& m;
-    };
-    // -------------------------------------------------------------------------
+		private:
+			uniset_rwmutex_rlock(const uniset_rwmutex_rlock&) = delete;
+			uniset_rwmutex_rlock& operator=(const uniset_rwmutex_rlock&) = delete;
+			uniset_rwmutex& m;
+	};
+	// -------------------------------------------------------------------------
 } // end of UniSetTypes namespace
 
 #endif

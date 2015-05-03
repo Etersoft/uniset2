@@ -3,7 +3,7 @@ if HAVE_TESTS
 noinst_PROGRAMS = tests-with-sm
 
 tests_with_sm_SOURCES   = tests_with_sm.cc test_mbslave.cc
-tests_with_sm_LDADD     = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
+tests_with_sm_LDADD	 = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/extensions/ModbusSlave/libUniSet2MBSlave.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 	$(SIGC_LIBS) $(COMCPP_LIBS)
@@ -21,9 +21,11 @@ include $(top_builddir)/testsuite/testsuite-common.mk
 
 check-local: atconfig package.m4 $(TESTSUITE) mbslave-tests.at
 	$(SHELL) $(TESTSUITE) $(TESTSUITEFLAGS)
-    
+	
 clean-local:
 	rm -rf $(CLEANFILES)
 	rm -rf $(COVERAGE_REPORT_DIR) 
+
+include $(top_builddir)/include.mk
 
 endif

@@ -21,7 +21,7 @@
  * \brief Создатель потоков
  * \author Pavel Vainerman
  */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #ifndef OmniThreadCreator_h_
 #define OmniThreadCreator_h_
 //---------------------------------------------------------------------------
@@ -86,63 +86,75 @@
         }
     \endcode
  *
-*/ 
+*/
 //----------------------------------------------------------------------------------------
 template<class ThreadMaster>
 class OmniThreadCreator:
-    public omni_thread
+	public omni_thread
 {
-    public:
+	public:
 
-        /*! прототип функции вызова */
-        typedef void(ThreadMaster::* Action)();
+		/*! прототип функции вызова */
+		typedef void(ThreadMaster::* Action)();
 
-        OmniThreadCreator( const std::shared_ptr<ThreadMaster>& m, Action a, bool undetached=false );
-        ~OmniThreadCreator(){}
+		OmniThreadCreator( const std::shared_ptr<ThreadMaster>& m, Action a, bool undetached = false );
+		~OmniThreadCreator() {}
 
-       inline bool isRunning(){ return state()==omni_thread::STATE_RUNNING; }
-       inline void stop(){ exit(0); }
-       inline pid_t getTID(){ return id(); }
+		inline bool isRunning()
+		{
+			return state() == omni_thread::STATE_RUNNING;
+		}
+		inline void stop()
+		{
+			exit(0);
+		}
+		inline pid_t getTID()
+		{
+			return id();
+		}
 
-        inline void join(){ omni_thread::join(NULL); }
+		inline void join()
+		{
+			omni_thread::join(NULL);
+		}
 
-    protected:
-        void* run_undetached(void *x)
-        {
-            if(m)
-                (m.get()->*act)();
+	protected:
+		void* run_undetached(void* x)
+		{
+			if(m)
+				(m.get()->*act)();
 
-            return (void*)0;
-        }
+			return (void*)0;
+		}
 
-        virtual void run(void* arg)
-        {
-            if(m)
-                (m.get()->*act)();
-        }
+		virtual void run(void* arg)
+		{
+			if(m)
+				(m.get()->*act)();
+		}
 
-    private:
-        OmniThreadCreator();
-        std::shared_ptr<ThreadMaster> m;
-        Action act;
+	private:
+		OmniThreadCreator();
+		std::shared_ptr<ThreadMaster> m;
+		Action act;
 };
 
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 OmniThreadCreator<ThreadMaster>::OmniThreadCreator( const std::shared_ptr<ThreadMaster>& _m, Action a, bool undetach  ):
-    omni_thread(),
-    m(_m),
-    act(a)
+	omni_thread(),
+	m(_m),
+	act(a)
 {
-    if(undetach)
-         start_undetached();
+	if(undetach)
+		start_undetached();
 }
 //----------------------------------------------------------------------------------------
 
 template <class ThreadMaster>
 OmniThreadCreator<ThreadMaster>::OmniThreadCreator():
-    m(0),
-    act(0)
+	m(0),
+	act(0)
 {
 }
 //----------------------------------------------------------------------------------------

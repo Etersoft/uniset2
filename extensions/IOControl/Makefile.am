@@ -47,5 +47,7 @@ pkgconfig_DATA 	= libUniSet2IOControl.pc
 all-local:
 	ln -sf ../IOControl/$(devel_include_HEADERS) ../include
 
+include $(top_builddir)/include.mk
+
 endif
 # end of ENABLE_IO

@@ -36,4 +36,6 @@ pkgconfig_DATA 	= libUniSet2RRDServer.pc
 all-local:
 	ln -sf ../RRDServer/$(devel_include_HEADERS) ../include
 
+include $(top_builddir)/include.mk
+
 endif

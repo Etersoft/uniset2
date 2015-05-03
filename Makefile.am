@@ -1,5 +1,5 @@
 ############################################################################
-# This file is part of the UniSet library                                  #
+# This file is part of the UniSet library								  #
 ############################################################################
 
 FIRSTSUBDIRS=IDL
@@ -24,3 +24,5 @@ if HAVE_COVERAGE
 COVERAGE_DIRS=$(COVERAGE_DEFAULT_DIRS)
 include $(top_builddir)/testsuite/testcoverage-common.mk
 endif
+
+include $(top_builddir)/include.mk

@@ -5,26 +5,26 @@
 #include <UniSetObject_LT.h>
 #include "UniSetTypes.h"
 // -----------------------------------------------------------------------------
-class SMonitor: 
-    public UniSetObject_LT
+class SMonitor:
+	public UniSetObject_LT
 {
-    public:
+	public:
 
-        SMonitor( UniSetTypes::ObjectId id );
-        ~SMonitor();
+		SMonitor( UniSetTypes::ObjectId id );
+		~SMonitor();
 
-        // -----
-    protected:
-        virtual void sysCommand( const UniSetTypes::SystemMessage *sm ) override;
-        virtual void sensorInfo( const UniSetTypes::SensorMessage *si ) override;
-        virtual void timerInfo( const UniSetTypes::TimerMessage *tm ) override;
-        virtual void sigterm( int signo ) override;
-        SMonitor();
+		// -----
+	protected:
+		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void sensorInfo( const UniSetTypes::SensorMessage* si ) override;
+		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+		virtual void sigterm( int signo ) override;
+		SMonitor();
 
-    private:
-        typedef std::list<UniSetTypes::ParamSInfo> MyIDList;
-        MyIDList lst;
-        std::string script;
+	private:
+		typedef std::list<UniSetTypes::ParamSInfo> MyIDList;
+		MyIDList lst;
+		std::string script;
 };
 // -----------------------------------------------------------------------------
 #endif

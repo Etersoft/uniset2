@@ -1,32 +1,35 @@
 #ifndef UExceptions_H_
 #define UExceptions_H_
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 struct UException
 {
-    UException(){}
-    UException( const std::string& e ):err(e){}
-    UException( const char* e ):err( std::string(e)){}
-    ~UException(){}
-    
-    const char* getError(){ return err.c_str(); }
-    
-    std::string err;
+	UException() {}
+	UException( const std::string& e ): err(e) {}
+	UException( const char* e ): err( std::string(e)) {}
+	~UException() {}
+
+	const char* getError()
+	{
+		return err.c_str();
+	}
+
+	std::string err;
 };
 //---------------------------------------------------------------------------
 struct UTimeOut:
-    public UException
+	public UException
 {
-    UTimeOut():UException("UTimeOut"){}
-    UTimeOut( const std::string& e ):UException(e){}
-    ~UTimeOut(){}
+	UTimeOut(): UException("UTimeOut") {}
+	UTimeOut( const std::string& e ): UException(e) {}
+	~UTimeOut() {}
 };
 //---------------------------------------------------------------------------
 struct USysError:
-    public UException
+	public UException
 {
-    USysError():UException("USysError"){}
-    USysError( const std::string& e ):UException(e){}
-    ~USysError(){}
+	USysError(): UException("USysError") {}
+	USysError( const std::string& e ): UException(e) {}
+	~USysError() {}
 };
 //---------------------------------------------------------------------------
 #endif

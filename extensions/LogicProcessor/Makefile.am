@@ -44,4 +44,7 @@ all-local:
 	ln -sf ../LogicProcessor/$(devel_include_HEADERS) ../include
 
 SUBDIRS=tests
+
+include $(top_builddir)/include.mk
+
 endif

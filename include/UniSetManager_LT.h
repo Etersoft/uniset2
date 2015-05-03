@@ -31,33 +31,33 @@
 //---------------------------------------------------------------------------
 /*!
     Реализация базового класса с использованием локальных таймеров
-*/ 
+*/
 class UniSetManager_LT:
-    public UniSetManager
+	public UniSetManager
 {
-    public:
-        UniSetManager_LT( UniSetTypes::ObjectId id );
-        UniSetManager_LT();
-        virtual ~UniSetManager_LT();
+	public:
+		UniSetManager_LT( UniSetTypes::ObjectId id );
+		UniSetManager_LT();
+		virtual ~UniSetManager_LT();
 
-    protected:
+	protected:
 
-        /*! заказ локального таймера
-            \param timerid - идентификатор таймера
-            \param timeMS - период. 0 - означает отказ от таймера
-            \param ticks - количество уведомлений. "-1"- постоянно
-            \return Возвращает время [мсек] оставшееся до срабатывания
-            очередного таймера
-        */
-        void askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, short ticks=-1,
-                        UniSetTypes::Message::Priority p=UniSetTypes::Message::High );
+		/*! заказ локального таймера
+		    \param timerid - идентификатор таймера
+		    \param timeMS - период. 0 - означает отказ от таймера
+		    \param ticks - количество уведомлений. "-1"- постоянно
+		    \return Возвращает время [мсек] оставшееся до срабатывания
+		    очередного таймера
+		*/
+		void askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, short ticks = -1,
+					   UniSetTypes::Message::Priority p = UniSetTypes::Message::High );
 
-        /*! функция вызываемая из потока */
-        virtual void callback();
+		/*! функция вызываемая из потока */
+		virtual void callback();
 
-        int sleepTime;
-        LT_Object lt;
-    private:
+		int sleepTime;
+		LT_Object lt;
+	private:
 };
 //--------------------------------------------------------------------------
 #endif

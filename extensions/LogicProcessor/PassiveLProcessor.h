@@ -13,46 +13,46 @@
 // --------------------------------------------------------------------------
 /*! Реализация LogicProccessor основанная на заказе датчиков */
 class PassiveLProcessor:
-    public UniSetObject_LT,
-    protected LProcessor
+	public UniSetObject_LT,
+	protected LProcessor
 {
-    public:
+	public:
 
-        PassiveLProcessor( std::string schema, UniSetTypes::ObjectId objId,
-                            UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr, const std::string& prefix="lproc" );
-        virtual ~PassiveLProcessor();
+		PassiveLProcessor( std::string schema, UniSetTypes::ObjectId objId,
+						   UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr, const std::string& prefix = "lproc" );
+		virtual ~PassiveLProcessor();
 
-        enum Timers
-        {
-            tidStep
-        };
+		enum Timers
+		{
+			tidStep
+		};
 
-    protected:
-        PassiveLProcessor():shm(0),maxHeartBeat(0){};
+	protected:
+		PassiveLProcessor(): shm(0), maxHeartBeat(0) {};
 
-        virtual void step();
-        virtual void getInputs();
-        virtual void setOuts();
+		virtual void step();
+		virtual void getInputs();
+		virtual void setOuts();
 
-        void sysCommand( const UniSetTypes::SystemMessage *msg ) override;
-        void sensorInfo( const UniSetTypes::SensorMessage*sm ) override;
-        void timerInfo( const UniSetTypes::TimerMessage *tm ) override;
-        void askSensors( const UniversalIO::UIOCommand cmd );
-//        void initOutput();
+		void sysCommand( const UniSetTypes::SystemMessage* msg ) override;
+		void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
+		void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+		void askSensors( const UniversalIO::UIOCommand cmd );
+		//        void initOutput();
 
-        // действия при завершении работы
-        virtual void sigterm( int signo ) override;
-        void initIterators();
-        virtual bool activateObject() override;
+		// действия при завершении работы
+		virtual void sigterm( int signo ) override;
+		void initIterators();
+		virtual bool activateObject() override;
 
-        std::shared_ptr<SMInterface> shm;
+		std::shared_ptr<SMInterface> shm;
 
-    private:
-        PassiveTimer ptHeartBeat;
-        UniSetTypes::ObjectId sidHeartBeat;
-        int maxHeartBeat;
-        IOController::IOStateList::iterator itHeartBeat;
-        UniSetTypes::uniset_mutex mutex_start;
+	private:
+		PassiveTimer ptHeartBeat;
+		UniSetTypes::ObjectId sidHeartBeat;
+		int maxHeartBeat;
+		IOController::IOStateList::iterator itHeartBeat;
+		UniSetTypes::uniset_mutex mutex_start;
 };
 // ---------------------------------------------------------------------------
 #endif

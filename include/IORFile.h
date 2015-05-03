@@ -19,7 +19,7 @@
 /*! \file
  * \author Pavel Vainerman
  */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #ifndef IORFile_H_
 #define IORFile_H_
 // --------------------------------------------------------------------------
@@ -29,25 +29,25 @@
 // --------------------------------------------------------------------------
 namespace UniSetTypes
 {
-/*! Класс работы с файлами содержащими IOR объекта 
-    \todo Для оптимизации можно сделать кэширование id:node > filename
-*/
-class IORFile
-{
-    public:
-        IORFile();
+	/*! Класс работы с файлами содержащими IOR объекта
+	    \todo Для оптимизации можно сделать кэширование id:node > filename
+	*/
+	class IORFile
+	{
+		public:
+			IORFile();
 
-        static std::string getIOR( const ObjectId id );
-        static void setIOR( const ObjectId id, const std::string& sior );
-        static void unlinkIOR( const ObjectId id );
+			static std::string getIOR( const ObjectId id );
+			static void setIOR( const ObjectId id, const std::string& sior );
+			static void unlinkIOR( const ObjectId id );
 
-        static std::string getFileName( const ObjectId id );
+			static std::string getFileName( const ObjectId id );
 
-    protected:
+		protected:
 
-    private:
-};
-// -----------------------------------------------------------------------------------------
+		private:
+	};
+	// -----------------------------------------------------------------------------------------
 }    // end of namespace
 // -----------------------------------------------------------------------------------------
 #endif

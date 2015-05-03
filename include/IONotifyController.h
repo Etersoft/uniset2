@@ -21,7 +21,7 @@
  * \brief Реализация IONotifyController_i
  * \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #ifndef IONotifyController_H_
 #define IONotifyController_H_
 //---------------------------------------------------------------------------
@@ -39,7 +39,7 @@ class NCRestorer;
 //---------------------------------------------------------------------------
 /*!
     \page page_IONotifyController Хранение информации о состоянии с уведомлениями об изменении (IONotifyController)
-    
+
     Класс IONotifyController расширяет набор задач класса IOController.
     Для ознакомления с базовыми функциями см. \ref page_IOController
 
@@ -53,8 +53,8 @@ class NCRestorer;
     Главной задачей класса IONotifyController является уведомление
 объектов (заказчиков) об изменении состояния датчика (входа или выхода).
 
-Механизм функционирует по следующей логике: 
-"заказчики" уведомляют \b IONC о том, об изменении какого именно датчика 
+Механизм функционирует по следующей логике:
+"заказчики" уведомляют \b IONC о том, об изменении какого именно датчика
 они хотят получать уведомление.
 После чего, если данный датчик меняет своё состояние, заказчику посылается
 сообщение UniSetTypes::SensorMessage содержащее информацию о текущем(новом) состоянии датчика,
@@ -67,13 +67,13 @@ class NCRestorer;
     \section sec_NC_Consumers  Заказчики
 В качестве "заказчиков" могут выступать любые UniSet-объекты (UniSetObject),
 обладающие "обратным адресом" (идентификатором), по которому присылается
-уведомление об изменении состояния. Свой обратный адрес, объекты указывают 
+уведомление об изменении состояния. Свой обратный адрес, объекты указывают
 непосредственно при заказе (см. IONotifyController::askSensor).
 
 Помимо "динамического" заказа во время работы процессов, существует возможность
-задавать список заказчиков на этапе конфигурирования системы ("статический" способ). 
+задавать список заказчиков на этапе конфигурирования системы ("статический" способ).
 Для этого в конфигурационном файле, в секции \b <sensors> у каждого датчика предусмотрена
-специальная секция \b <consumers>. 
+специальная секция \b <consumers>.
 \code
 <sensors>
 ...
@@ -89,7 +89,7 @@ class NCRestorer;
 \endcode
 "Статический" способ заказа гарантирует, что при перезапуске
 \b IONC список заказчиков будет восстановлен по конфигурационному файлу.
-    
+
     \section sec_NC_Thresholds Пороговые датчики
 
     \section sec_NC_Depends Механизм зависимостей между датчиками
@@ -117,224 +117,227 @@ class NCRestorer;
 */
 //---------------------------------------------------------------------------
 /*! \class IONotifyController
- * \todo Сделать логирование выходов 
- 
+ * \todo Сделать логирование выходов
+
  \section AskSensors Заказ датчиков
 
     ....
     ConsumerMaxAttempts - максимальное число неудачных
-попыток послать сообщение "заказчику". Настраивается в 
+попыток послать сообщение "заказчику". Настраивается в
 конфигурационном файле. По умолчанию = 5.
-*/ 
-class IONotifyController: 
-    public IOController,
-    public POA_IONotifyController_i
+*/
+class IONotifyController:
+	public IOController,
+	public POA_IONotifyController_i
 {
-    public:
+	public:
 
-        IONotifyController(const std::string& name, const std::string& section, std::shared_ptr<NCRestorer> dumper= nullptr );
-        IONotifyController(const UniSetTypes::ObjectId id, std::shared_ptr<NCRestorer> dumper=nullptr );
+		IONotifyController(const std::string& name, const std::string& section, std::shared_ptr<NCRestorer> dumper = nullptr );
+		IONotifyController(const UniSetTypes::ObjectId id, std::shared_ptr<NCRestorer> dumper = nullptr );
 
-        virtual ~IONotifyController();
+		virtual ~IONotifyController();
 
-        virtual UniSetTypes::ObjectType getType() override { return UniSetTypes::ObjectType("IONotifyController"); }
-        virtual void askSensor(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd) override;
+		virtual UniSetTypes::ObjectType getType() override
+		{
+			return UniSetTypes::ObjectType("IONotifyController");
+		}
+		virtual void askSensor(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd) override;
 
-        virtual void askThreshold(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci,
-                                    UniSetTypes::ThresholdId tid,
-                                    CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Boolean invert,
-                                    UniversalIO::UIOCommand cmd ) override;
+		virtual void askThreshold(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci,
+								  UniSetTypes::ThresholdId tid,
+								  CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Boolean invert,
+								  UniversalIO::UIOCommand cmd ) override;
 
-        virtual IONotifyController_i::ThresholdInfo getThresholdInfo( const UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid ) override;
-        virtual IONotifyController_i::ThresholdList* getThresholds(const UniSetTypes::ObjectId sid ) override;
-        virtual IONotifyController_i::ThresholdsListSeq* getThresholdsList() override;
+		virtual IONotifyController_i::ThresholdInfo getThresholdInfo( const UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid ) override;
+		virtual IONotifyController_i::ThresholdList* getThresholds(const UniSetTypes::ObjectId sid ) override;
+		virtual IONotifyController_i::ThresholdsListSeq* getThresholdsList() override;
 
-        virtual UniSetTypes::IDSeq* askSensorsSeq(const UniSetTypes::IDSeq& lst,
-                                                    const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd) override;
+		virtual UniSetTypes::IDSeq* askSensorsSeq(const UniSetTypes::IDSeq& lst,
+				const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd) override;
 
-        // --------------------------------------------
+		// --------------------------------------------
 
-        // функция для работы напрямую черех iterator (оптимизация)
-        virtual void localSetValue( IOController::IOStateList::iterator& it,
-                                    UniSetTypes::ObjectId sid,
-                                    CORBA::Long value, UniSetTypes::ObjectId sup_id ) override;
+		// функция для работы напрямую черех iterator (оптимизация)
+		virtual void localSetValue( IOController::IOStateList::iterator& it,
+									UniSetTypes::ObjectId sid,
+									CORBA::Long value, UniSetTypes::ObjectId sup_id ) override;
 
-        // --------------------------------------------
+		// --------------------------------------------
 
-        /*! Информация о заказчике */
-        struct ConsumerInfoExt:
-            public    UniSetTypes::ConsumerInfo
-        {
-            ConsumerInfoExt( const UniSetTypes::ConsumerInfo& ci,
-                            UniSetObject_i_ptr ref=0, int maxAttemtps = 10 ):
-                UniSetTypes::ConsumerInfo(ci),
-                ref(ref),attempt(maxAttemtps){}
+		/*! Информация о заказчике */
+		struct ConsumerInfoExt:
+			public    UniSetTypes::ConsumerInfo
+		{
+			ConsumerInfoExt( const UniSetTypes::ConsumerInfo& ci,
+							 UniSetObject_i_ptr ref = 0, int maxAttemtps = 10 ):
+				UniSetTypes::ConsumerInfo(ci),
+				ref(ref), attempt(maxAttemtps) {}
 
-            UniSetObject_i_var ref;
-            int attempt;
+			UniSetObject_i_var ref;
+			int attempt;
 
-            ConsumerInfoExt( const ConsumerInfoExt& ) = default;
-            ConsumerInfoExt& operator=( const ConsumerInfoExt& ) = default;
-            ConsumerInfoExt( ConsumerInfoExt&& ) = default;
-            ConsumerInfoExt& operator=(ConsumerInfoExt&& ) = default;
-        };
+			ConsumerInfoExt( const ConsumerInfoExt& ) = default;
+			ConsumerInfoExt& operator=( const ConsumerInfoExt& ) = default;
+			ConsumerInfoExt( ConsumerInfoExt&& ) = default;
+			ConsumerInfoExt& operator=(ConsumerInfoExt&& ) = default;
+		};
 
-        typedef std::list<ConsumerInfoExt> ConsumerList;
+		typedef std::list<ConsumerInfoExt> ConsumerList;
 
-        struct ConsumerListInfo
-        {
-            ConsumerListInfo():mut("ConsumerInfoMutex"){}
-            ConsumerList clst;
-            UniSetTypes::uniset_rwmutex mut;
+		struct ConsumerListInfo
+		{
+			ConsumerListInfo(): mut("ConsumerInfoMutex") {}
+			ConsumerList clst;
+			UniSetTypes::uniset_rwmutex mut;
 
-            ConsumerListInfo( const ConsumerListInfo& ) = delete;
-            ConsumerListInfo& operator=( const ConsumerListInfo& ) = delete;
-            ConsumerListInfo( ConsumerListInfo&& ) = default;
-            ConsumerListInfo& operator=(ConsumerListInfo&& ) = default;
-        };
+			ConsumerListInfo( const ConsumerListInfo& ) = delete;
+			ConsumerListInfo& operator=( const ConsumerListInfo& ) = delete;
+			ConsumerListInfo( ConsumerListInfo&& ) = default;
+			ConsumerListInfo& operator=(ConsumerListInfo&& ) = default;
+		};
 
-        /*! словарь: датчик -> список потребителей */
-        typedef std::unordered_map<UniSetTypes::KeyType,ConsumerListInfo> AskMap;
+		/*! словарь: датчик -> список потребителей */
+		typedef std::unordered_map<UniSetTypes::KeyType, ConsumerListInfo> AskMap;
 
 
-        /*! Информация о пороговом значении */
-        struct ThresholdInfoExt:
-            public IONotifyController_i::ThresholdInfo
-        {
-            ThresholdInfoExt( UniSetTypes::ThresholdId tid, CORBA::Long low, CORBA::Long hi, bool inv,
-                                UniSetTypes::ObjectId _sid=UniSetTypes::DefaultObjectId ):
-            sid(_sid),
-            invert(inv)
-            {
-                id       = tid;
-                hilimit  = hi;
-                lowlimit = low;
-                state    = IONotifyController_i::NormalThreshold;
-            }
+		/*! Информация о пороговом значении */
+		struct ThresholdInfoExt:
+			public IONotifyController_i::ThresholdInfo
+		{
+			ThresholdInfoExt( UniSetTypes::ThresholdId tid, CORBA::Long low, CORBA::Long hi, bool inv,
+							  UniSetTypes::ObjectId _sid = UniSetTypes::DefaultObjectId ):
+				sid(_sid),
+				invert(inv)
+			{
+				id       = tid;
+				hilimit  = hi;
+				lowlimit = low;
+				state    = IONotifyController_i::NormalThreshold;
+			}
 
-            ConsumerListInfo clst; /*!< список заказчиков данного порога */
+			ConsumerListInfo clst; /*!< список заказчиков данного порога */
 
-            /*! идентификатор дискретного датчика связанного с данным порогом */
-            UniSetTypes::ObjectId sid;
+			/*! идентификатор дискретного датчика связанного с данным порогом */
+			UniSetTypes::ObjectId sid;
 
-            /*! итератор в списке датчиков (для оптимально-быстрого доступа) */
-            IOController::IOStateList::iterator sit;
+			/*! итератор в списке датчиков (для оптимально-быстрого доступа) */
+			IOController::IOStateList::iterator sit;
 
-            /*! инверсная логика */
-            bool invert;
+			/*! инверсная логика */
+			bool invert;
 
-            inline bool operator== ( const ThresholdInfo& r ) const
-            {
-                return ((id == r.id) &&
-                        (hilimit == r.hilimit) &&
-                        (lowlimit == r.lowlimit) &&
-                        (invert == r.invert) );
-            }
+			inline bool operator== ( const ThresholdInfo& r ) const
+			{
+				return ((id == r.id) &&
+						(hilimit == r.hilimit) &&
+						(lowlimit == r.lowlimit) &&
+						(invert == r.invert) );
+			}
 
-            operator IONotifyController_i::ThresholdInfo()
-            {
-                IONotifyController_i::ThresholdInfo r;
-                r.id = id;
-                r.hilimit = hilimit;
-                r.lowlimit = lowlimit;
-                r.invert = invert;
-                r.tv_sec = tv_sec;
-                r.tv_usec = tv_usec;
-                r.state = state;
-                return r;
-            }
+			operator IONotifyController_i::ThresholdInfo()
+			{
+				IONotifyController_i::ThresholdInfo r;
+				r.id = id;
+				r.hilimit = hilimit;
+				r.lowlimit = lowlimit;
+				r.invert = invert;
+				r.tv_sec = tv_sec;
+				r.tv_usec = tv_usec;
+				r.state = state;
+				return r;
+			}
 
-            ThresholdInfoExt( const ThresholdInfoExt& ) = delete;
-            ThresholdInfoExt& operator=( const ThresholdInfoExt& ) = delete;
-            ThresholdInfoExt( ThresholdInfoExt&& ) = default;
-            ThresholdInfoExt& operator=(ThresholdInfoExt&& ) = default;
-        };
+			ThresholdInfoExt( const ThresholdInfoExt& ) = delete;
+			ThresholdInfoExt& operator=( const ThresholdInfoExt& ) = delete;
+			ThresholdInfoExt( ThresholdInfoExt&& ) = default;
+			ThresholdInfoExt& operator=(ThresholdInfoExt&& ) = default;
+		};
 
-        /*! список порогов (информация по каждому порогу) */
-        typedef std::list<ThresholdInfoExt> ThresholdExtList;
+		/*! список порогов (информация по каждому порогу) */
+		typedef std::list<ThresholdInfoExt> ThresholdExtList;
 
-        struct ThresholdsListInfo
-        {
-            ThresholdsListInfo(){}
-            ThresholdsListInfo( const IOController_i::SensorInfo& si, ThresholdExtList&& list,
-                                UniversalIO::IOType t=UniversalIO::AI ):
-                si(si),type(t),list( std::move(list) ){}
+		struct ThresholdsListInfo
+		{
+			ThresholdsListInfo() {}
+			ThresholdsListInfo( const IOController_i::SensorInfo& si, ThresholdExtList&& list,
+								UniversalIO::IOType t = UniversalIO::AI ):
+				si(si), type(t), list( std::move(list) ) {}
 
-            UniSetTypes::uniset_rwmutex mut;
-            IOController_i::SensorInfo si;  /*!< аналоговый датчик */
-            std::shared_ptr<USensorInfo> ait;
-            UniversalIO::IOType type;
-            ThresholdExtList list;   /*!< список порогов по данному аналоговому датчику */
-        };
+			UniSetTypes::uniset_rwmutex mut;
+			IOController_i::SensorInfo si;  /*!< аналоговый датчик */
+			std::shared_ptr<USensorInfo> ait;
+			UniversalIO::IOType type;
+			ThresholdExtList list;   /*!< список порогов по данному аналоговому датчику */
+		};
 
-        /*! словарь: аналоговый датчик --> список порогов по нему */
-        typedef std::unordered_map<UniSetTypes::KeyType,ThresholdsListInfo> AskThresholdMap;
+		/*! словарь: аналоговый датчик --> список порогов по нему */
+		typedef std::unordered_map<UniSetTypes::KeyType, ThresholdsListInfo> AskThresholdMap;
 
-    protected:
-        IONotifyController();
-        virtual bool activateObject() override;
-        virtual void initItem( IOStateList::iterator& it, IOController* ic );
+	protected:
+		IONotifyController();
+		virtual bool activateObject() override;
+		virtual void initItem( IOStateList::iterator& it, IOController* ic );
 
-        // ФИЛЬТРЫ
-        bool myIOFilter(std::shared_ptr<USensorInfo>& ai, CORBA::Long newvalue, UniSetTypes::ObjectId sup_id);
+		// ФИЛЬТРЫ
+		bool myIOFilter(std::shared_ptr<USensorInfo>& ai, CORBA::Long newvalue, UniSetTypes::ObjectId sup_id);
 
-        //! посылка информации об изменении состояния датчика
-        virtual void send( ConsumerListInfo& lst, UniSetTypes::SensorMessage& sm );
+		//! посылка информации об изменении состояния датчика
+		virtual void send( ConsumerListInfo& lst, UniSetTypes::SensorMessage& sm );
 
-        //! проверка срабатывания пороговых датчиков
-        virtual void checkThreshold( IOStateList::iterator& li, const UniSetTypes::ObjectId sid, bool send=true );
+		//! проверка срабатывания пороговых датчиков
+		virtual void checkThreshold( IOStateList::iterator& li, const UniSetTypes::ObjectId sid, bool send = true );
 
-        //! поиск информации о пороговом датчике
-        ThresholdExtList::iterator findThreshold( const UniSetTypes::ObjectId sid, const UniSetTypes::ThresholdId tid );
+		//! поиск информации о пороговом датчике
+		ThresholdExtList::iterator findThreshold( const UniSetTypes::ObjectId sid, const UniSetTypes::ThresholdId tid );
 
-        //! сохранение информации об изменении состояния датчика в базу
-        virtual void loggingInfo( UniSetTypes::SensorMessage& sm );
+		//! сохранение информации об изменении состояния датчика в базу
+		virtual void loggingInfo( UniSetTypes::SensorMessage& sm );
 
-        /*! сохранение списка заказчиков
-            По умолчанию делает dump, если объявлен dumper.
-        */
-        virtual void dumpOrdersList( const UniSetTypes::ObjectId sid, const IONotifyController::ConsumerListInfo& lst );
+		/*! сохранение списка заказчиков
+		    По умолчанию делает dump, если объявлен dumper.
+		*/
+		virtual void dumpOrdersList( const UniSetTypes::ObjectId sid, const IONotifyController::ConsumerListInfo& lst );
 
-        /*! сохранение списка заказчиков пороговых датчиков
-            По умолчанию делает dump, если объявлен dumper.
-        */
-        virtual void dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst );
+		/*! сохранение списка заказчиков пороговых датчиков
+		    По умолчанию делает dump, если объявлен dumper.
+		*/
+		virtual void dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst );
 
-        /*! чтение dump-файла */
-        virtual void readDump();
+		/*! чтение dump-файла */
+		virtual void readDump();
 
-        std::shared_ptr<NCRestorer> restorer;
+		std::shared_ptr<NCRestorer> restorer;
 
-        void onChangeUndefinedState( std::shared_ptr<USensorInfo>& it, IOController* ic );
+		void onChangeUndefinedState( std::shared_ptr<USensorInfo>& it, IOController* ic );
 
-    private:
-        friend class NCRestorer;
+	private:
+		friend class NCRestorer;
 
-        //----------------------
-        bool addConsumer(ConsumerListInfo& lst, const UniSetTypes::ConsumerInfo& cons );     //!< добавить потребителя сообщения
-        bool removeConsumer(ConsumerListInfo& lst, const UniSetTypes::ConsumerInfo& cons );  //!< удалить потребителя сообщения
+		//----------------------
+		bool addConsumer(ConsumerListInfo& lst, const UniSetTypes::ConsumerInfo& cons );     //!< добавить потребителя сообщения
+		bool removeConsumer(ConsumerListInfo& lst, const UniSetTypes::ConsumerInfo& cons );  //!< удалить потребителя сообщения
 
-        //! обработка заказа
-        void ask(AskMap& askLst, const UniSetTypes::ObjectId sid,
-                    const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
+		//! обработка заказа
+		void ask(AskMap& askLst, const UniSetTypes::ObjectId sid,
+				 const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
 
-         /*! добавить новый порог для датчика */
-        bool addThreshold(ThresholdExtList& lst, ThresholdInfoExt&& ti, const UniSetTypes::ConsumerInfo& ci);
-        /*! удалить порог для датчика */
-        bool removeThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci);
+		/*! добавить новый порог для датчика */
+		bool addThreshold(ThresholdExtList& lst, ThresholdInfoExt&& ti, const UniSetTypes::ConsumerInfo& ci);
+		/*! удалить порог для датчика */
+		bool removeThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci);
 
-        AskMap askIOList; /*!< список потребителей по аналоговым датчикам */
-        AskThresholdMap askTMap; /*!< список порогов по аналоговым датчикам */
+		AskMap askIOList; /*!< список потребителей по аналоговым датчикам */
+		AskThresholdMap askTMap; /*!< список порогов по аналоговым датчикам */
 
-        /*! замок для блокирования совместного доступа к cписку потребителей датчиков */
-        UniSetTypes::uniset_rwmutex askIOMutex;
-        /*! замок для блокирования совместного доступа к cписку потребителей пороговых датчиков */
-        UniSetTypes::uniset_rwmutex trshMutex;
+		/*! замок для блокирования совместного доступа к cписку потребителей датчиков */
+		UniSetTypes::uniset_rwmutex askIOMutex;
+		/*! замок для блокирования совместного доступа к cписку потребителей пороговых датчиков */
+		UniSetTypes::uniset_rwmutex trshMutex;
 
-        int maxAttemtps; /*! timeout for consumer */
+		int maxAttemtps; /*! timeout for consumer */
 
-        sigc::connection conInit;
-        sigc::connection conUndef;
+		sigc::connection conInit;
+		sigc::connection conUndef;
 };
 // --------------------------------------------------------------------------
 #endif

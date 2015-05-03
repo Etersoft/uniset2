@@ -11,7 +11,7 @@ testsuite: atconfig package.m4 $(TESTSUITE_AT)
 CLEANFILES=*.log package.m4 $(TESTSUITE)
 
 package.m4: Makefile
-	:;{ \
+	@:;{ \
 	  echo '# Signature of the current package.' && \
 	  echo 'm4_define([AT_PACKAGE_NAME],      [$(PACKAGE_NAME)])' && \
 	  echo 'm4_define([AT_PACKAGE_TARNAME],   [$(PACKAGE_TARNAME)])' && \
@@ -23,7 +23,7 @@ package.m4: Makefile
 	  echo 'm4_define([AT_TOP_BUILDDIR],       [$(top_builddir)))])' && \
 	  echo 'm4_define([AT_TESTSUITE_DIR], [$(TESTSUITE_DIR))])'; \
 	} > $@-t
-	mv $@-t $@
+	@mv $@-t $@
 
 atconfig: $(top_builddir)/config.status
 	cd $(top_builddir) && ./config.status $(abs_srcdir)/$@
