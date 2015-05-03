@@ -1995,7 +1995,7 @@ MBExchange::RTUDevice* MBExchange::addDev( RTUDeviceMap& mp, ModbusRTU::ModbusAd
 		return 0;
 	}
 
-	mp.insert(RTUDeviceMap::value_type(a, d));
+	mp.insert( std::make_pair(a, d) );
 	return d;
 }
 // ------------------------------------------------------------------------------------------
@@ -2040,7 +2040,7 @@ MBExchange::RegInfo* MBExchange::addReg( RegMap& mp, RegID id, ModbusRTU::Modbus
 	ri->mbreg = r;
 	ri->id = id;
 
-	mp.insert(RegMap::value_type(id, ri));
+	mp.insert(std::make_pair(id, ri));
 	ri->rit = mp.find(id);
 
 	return ri;

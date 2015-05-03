@@ -168,8 +168,8 @@ void ObjectIndex_idXML::read_section( const std::shared_ptr<UniXML>& xml, const 
 		inf.textName = uni_strdup(textname);
 		inf.data = (void*)(xmlNode*)(it);
 
-		mok.insert(MapObjectKey::value_type(name, inf.id)); // mok[name] = inf.id;
-		omap.insert(MapObjects::value_type(inf.id, std::move(inf)));    // omap[inf.id] = inf;
+		mok.emplace(name, inf.id);
+		omap.emplace(inf.id, std::move(inf));
 	}
 }
 // ------------------------------------------------------------------------------------------
@@ -220,8 +220,8 @@ void ObjectIndex_idXML::read_nodes( const std::shared_ptr<UniXML>& xml, const st
 		inf.textName = uni_strdup(textname);
 		inf.data = (void*)(xmlNode*)(it);
 
-		omap.insert(MapObjects::value_type(inf.id, inf));   // omap[inf.id] = inf;
-		mok.insert(MapObjectKey::value_type(name, inf.id)); // mok[name] = inf.id;
+		omap.emplace(inf.id, inf);
+		mok.emplace(name, inf.id);
 	}
 }
 // ------------------------------------------------------------------------------------------

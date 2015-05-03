@@ -216,9 +216,9 @@ UniSetTypes::IDList UniSetTypes::explode( const string& str, char sep )
 	return l;
 }
 // -------------------------------------------------------------------------
-std::list<std::string> UniSetTypes::explode_str( const string& str, char sep )
+std::vector<std::string> UniSetTypes::explode_str( const string& str, char sep )
 {
-	std::list<std::string> l;
+	std::vector<std::string> v;
 
 	string::size_type prev = 0;
 	string::size_type pos = 0;
@@ -230,13 +230,13 @@ std::list<std::string> UniSetTypes::explode_str( const string& str, char sep )
 
 		if( !s.empty() )
 		{
-			l.emplace_back(s);
+			v.emplace_back(s);
 			prev = pos + 1;
 		}
 	}
 	while( pos != string::npos );
 
-	return l;
+	return v;
 }
 // ------------------------------------------------------------------------------------------
 bool UniSetTypes::is_digit( const std::string& s )

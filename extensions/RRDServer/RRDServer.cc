@@ -161,7 +161,7 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 			}
 
 			DSInfo ds(dsname, it1.getIntProp("default"));
-			dsmap.insert( DSMap::value_type(sid, ds) );
+			dsmap.emplace(sid, ds);
 		}
 
 		if( dslist.empty() )

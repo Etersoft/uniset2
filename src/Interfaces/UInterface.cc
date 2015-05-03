@@ -1109,7 +1109,7 @@ void UInterface::CacheOfResolve::cache( const ObjectId id, const ObjectId node, 
 	auto it = mcache.find(k);
 
 	if( it == mcache.end() )
-		mcache.insert(CacheMap::value_type(k, Info(ptr)));
+		mcache.emplace(k, Info(ptr));
 	else
 	{
 		it->second.ptr = ptr; // CORBA::Object::_duplicate(ptr);

@@ -57,7 +57,7 @@ void ProxyManager::attachObject( PassiveObject* po, UniSetTypes::ObjectId id )
 	auto it = omap.find(id);
 
 	if( it == omap.end() )
-		omap.insert(PObjectMap::value_type(id, po));
+		omap.emplace(id, po);
 }
 // -------------------------------------------------------------------------
 void ProxyManager::detachObject( UniSetTypes::ObjectId id )

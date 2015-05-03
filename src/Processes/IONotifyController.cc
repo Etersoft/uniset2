@@ -212,7 +212,7 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
 				ConsumerListInfo lst; // создаем новый список
 				addConsumer(lst, cons);
 				// более оптимальный способ(при условии вставки первый раз)
-				askLst.insert(AskMap::value_type(sid, std::move(lst)));
+				askLst.emplace(sid, std::move(lst));
 
 				try
 				{
@@ -565,7 +565,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
 					}
 
 					// т.к. делаем move... то надо гарантировать, что дальше уже tli не используется..
-					askTMap.insert(AskThresholdMap::value_type(sid, std::move(tli)));
+					askTMap.emplace(sid, std::move(tli));
 				}
 				else
 				{

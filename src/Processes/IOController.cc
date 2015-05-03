@@ -395,7 +395,7 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& ainf, bool forc
 		ai->value    = ai->default_val;
 
 		// более оптимальный способ(при условии вставки первый раз)
-		ioList.insert( IOStateList::value_type(ainf->si.id, std::move(ai) ));
+		ioList.emplace( IOStateList::value_type(ainf->si.id, std::move(ai) ));
 	}
 
 	try

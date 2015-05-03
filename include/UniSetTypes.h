@@ -30,6 +30,7 @@
 #include <cstdio>
 #include <string>
 #include <list>
+#include <vector>
 #include <limits>
 #include <ostream>
 #include <unistd.h>
@@ -171,7 +172,7 @@ namespace UniSetTypes
 
 	/*! Разбивка строки по указанному символу */
 	IDList explode( const std::string& str, char sep = ',' );
-	std::list<std::string> explode_str( const std::string& str, char sep = ',' );
+	std::vector<std::string> explode_str( const std::string& str, char sep = ',' );
 
 	struct ParamSInfo
 	{
