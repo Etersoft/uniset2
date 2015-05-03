@@ -12,7 +12,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt28.1
+Release: alt28.2
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -409,6 +409,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Thu Apr 23 2015 Pavel Vainerman <pv@etersoft.ru> 2.0-alt28.2
+- unet-udp: special build... change maximum for digital and analog data. Set A=1500, D=5000.
+
 * Thu Apr 23 2015 Pavel Vainerman <pv@etersoft.ru> 2.0-alt28.1
 - unet-udp: special build... change maximum for digital and analog data. Set A=800, D=5000.
 

@@ -6,6 +6,7 @@
 	- \ref pg_Codegen_SMap
 	- \ref pg_Codegen_MsgMap
 	- \ref pg_Codegen_Variables
+	- \ref pg_Codegen_argprefix
 	- \ref pg_Codegen_Configuration
 	- \ref pg_Codegen_TestMode
     - \ref pg_Codegen_Make
@@ -75,7 +76,7 @@
   	<set name="msg-count" val="20"/>
 	<set name="sleep-msec" val="150"/>
   </settings>
-  <variables arg_prefix="test-">
+  <variables>
       <!-- type = [int,str,bool,float]
          int:  max,min,no_range_exception=[0,1]
          str:
@@ -168,9 +169,6 @@
  - \b const - const="1" - сгенерировать как константу.
  - \b private | \b public | \b protected - Область видимости. По умолчанию: \b protected.
 
-Помимо этого в самой секции \<variables> можно указать свойство \b arg_prefix="...", которое используется при инициализации
-при помощи аргументов командной строки.
-
 В генерируемом коде для каждой переменной происходит её инициализация по следующему шаблону (псевдокод):
 \code
   varname = conf->getArgParam("--'arg_prefix'varname'",it.getProp("'varname'"));
@@ -186,6 +184,38 @@
 
 По умолчанию эти поля генерируются как \b protected. Но если есть необходимость, то можно указать свойство \b public="1" или
 \b private="1" и тогда они будут иметь соответствующую область видимости.
+
+
+\section pg_Codegen_argprefix Аргументы командной строки
+  Для возможности переопределять различные парамеры при помощи аргументов командной строки, сделан следующий механизм.
+В сгенерированном конструкторе (файл xx_SK.h) можно задать последний аргумент \b argprefix. Если он равен "", то в качестве
+префикса используется ObjectName. Все переменные из секции \a <variables> можно переопределять аргументом
+\b --prefix-varname \b val.  В общем случае это будет: \b --ObjectName-varname \b val.
+
+Помимо этого \b argprefix можно задать в секции  <settings>
+\code
+  <settings>
+      ...
+      <set name="arg-prefix" val="test-"/>
+      ...
+  </settings>
+\endcode
+Тогда вместо \a ObjectName будет использоваться указанный префикс \a --test- (обратите внимание на то, что префикс задаётся с \b - в конце).
+
+Значения по умолчанию для \b входов (in_xxx) и \b выходов (out_xx) можно также определять через аргументы командной строки:
+- \b --argprefix-xxxname-default val
+
+Дополнительно при помощи командной строки можно переопределять следующие свойства:
+- \b --argprefix-force-out  1/0
+- \b --argprefix-heartbeat-id sensorID
+- \b --argprefix-heartbeat-time msec
+- \b --argprefix-heartbeat-max  num
+- \b --argprefix-sleep-msec  msec
+- \b --argprefix-resetMsgTime msec
+- \b --argprefix-sm-test-id sensorID
+- \b --argprefix-activate-timeout msec
+- \b --argprefix-startup-timeout msec
+- \b --argprefix-log-[add|del]-levels xxx,xxx,xxx 
 
 
 \section pg_Codegen_Configuration Конфигурирование
