@@ -412,6 +412,7 @@ tests/test_ui.cc
 tests/test_unixml.cc
 tests/test_utypes.cc
 tests/test_logserver.cc
+tests/test_tcpcheck.cc
 tests/tests-junit.xml
 tests/tests.cc
 tests/tests_bad_config.xml

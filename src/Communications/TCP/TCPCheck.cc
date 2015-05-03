@@ -3,11 +3,12 @@
 #include "UniSetTypes.h"
 #include "PassiveTimer.h"
 #include "TCPCheck.h"
+#include "UTCPStream.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 // -----------------------------------------------------------------------------
 TCPCheck::TCPCheck():
-	iaddr(""), tout_msec(0)
+	tout_msec(0)
 {
 }
 // -----------------------------------------------------------------------------
@@ -16,19 +17,24 @@ TCPCheck::~TCPCheck()
 
 }
 // -----------------------------------------------------------------------------
-bool TCPCheck::check( const std::string& ip, int port, timeout_t tout, timeout_t sleep_msec )
-{
-	ostringstream s;
-	s << ip << ":" << port;
-	return check(s.str(), tout, sleep_msec);
-}
-// -----------------------------------------------------------------------------
 bool TCPCheck::check( const std::string& _iaddr, timeout_t tout, timeout_t sleep_msec )
 {
-	iaddr = iaddr;
+	auto v = UniSetTypes::explode_str(_iaddr, ':');
+
+	if( v.size() < 2 )
+		return false;
+
+	return check( v[0], UniSetTypes::uni_atoi(v[1]), tout, sleep_msec );
+}
+// -----------------------------------------------------------------------------
+bool TCPCheck::check( const std::string& _ip, int _port, timeout_t tout, timeout_t sleep_msec )
+{
+	ip = _ip;
+	port = _port;
 	tout_msec = tout;
 
 	setResult(false);
+
 	ThreadCreator<TCPCheck> t(this, &TCPCheck::check_thread);
 	t.setCancel(ost::Thread::cancelDeferred);
 	t.start();
@@ -41,7 +47,7 @@ bool TCPCheck::check( const std::string& _iaddr, timeout_t tout, timeout_t sleep
 	if( t.isRunning() ) // !getResult() )
 		t.stop();
 
-	return getResult();
+	return result;
 }
 // -----------------------------------------------------------------------------
 void TCPCheck::check_thread()
@@ -51,7 +57,8 @@ void TCPCheck::check_thread()
 	try
 	{
 		ost::Thread::setException(ost::Thread::throwException);
-		ost::TCPStream t(iaddr.c_str(), ost::Socket::IPV4, 536, true, tout_msec);
+		UTCPStream t;
+		t.create(ip, port, true, tout_msec);
 		setResult(true);
 		t.disconnect();
 	}

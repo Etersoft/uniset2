@@ -25,7 +25,8 @@ test_pulse.cc \
 test_modbustypes.cc \
 test_utypes.cc \
 test_mutex.cc \
-test_logserver.cc
+test_logserver.cc \
+test_tcpcheck.cc
 
 tests_with_conf_LDADD   = $(top_builddir)/lib/libUniSet2.la
 tests_with_conf_CPPFLAGS = -I$(top_builddir)/include
