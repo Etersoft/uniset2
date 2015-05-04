@@ -25,11 +25,9 @@ void InitTest()
 TEST_CASE("[SM]: init from reserv", "[sm][reserv]")
 {
 	InitTest();
-	/*
-		CHECK( ui->getValue(500) == -50 );
-		CHECK( ui->getValue(501) == 1 );
-		CHECK( ui->getValue(502) == 390 );
-		CHECK( ui->getValue(503) == 1 );
-	*/
+	CHECK( ui->getValue(500) == -50 );
+	CHECK( ui->getValue(501) == 1 );
+	CHECK( ui->getValue(503) == 390 );
+	CHECK( ui->getValue(504) == 1 );
 }
 // -----------------------------------------------------------------------------
