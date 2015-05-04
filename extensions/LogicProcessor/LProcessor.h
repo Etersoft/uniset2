@@ -112,11 +112,10 @@ class LProcessor
 			canceled = true;
 		}
 
-		inline std::shared_ptr<SchemaXML> getScheme()
+		inline std::shared_ptr<SchemaXML> getSchema()
 		{
 			return sch;
 		}
-
 
 		inline int getSleepTime()
 		{

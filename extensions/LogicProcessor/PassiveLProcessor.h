@@ -18,7 +18,7 @@ class PassiveLProcessor:
 {
 	public:
 
-		PassiveLProcessor( std::string schema, UniSetTypes::ObjectId objId,
+		PassiveLProcessor( UniSetTypes::ObjectId objId,
 						   UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr, const std::string& prefix = "lproc" );
 		virtual ~PassiveLProcessor();
 
@@ -26,6 +26,12 @@ class PassiveLProcessor:
 		{
 			tidStep
 		};
+
+		static void help_print( int argc, const char* const* argv );
+
+		static std::shared_ptr<PassiveLProcessor> init_plproc( int argc, const char* const* argv,
+                UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr,
+				const std::string& prefix = "plproc" );
 
 	protected:
 		PassiveLProcessor(): shm(0), maxHeartBeat(0) {};

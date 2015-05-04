@@ -6,7 +6,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
-PassiveLProcessor::PassiveLProcessor( std::string lfile, UniSetTypes::ObjectId objId,
+PassiveLProcessor::PassiveLProcessor( UniSetTypes::ObjectId objId,
 									  UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic, const std::string& prefix ):
 	UniSetObject_LT(objId),
 	shm(nullptr)
@@ -15,6 +15,25 @@ PassiveLProcessor::PassiveLProcessor( std::string lfile, UniSetTypes::ObjectId o
 
 	logname = myname;
 	shm = make_shared<SMInterface>(shmID, UniSetObject_LT::ui, objId, ic);
+
+	string conf_name(conf->getArgParam("--" + prefix + "-confnode", myname));
+
+	xmlNode* confnode = conf->getNode(conf_name);
+
+	if( confnode == NULL )
+		throw SystemError("Not found conf-node for " + conf_name );
+
+	UniXML::iterator it(confnode);
+
+	confnode = conf->getNode(myname);
+	string lfile = conf->getArgParam("--" + prefix + "-schema",it.getProp("schema"));
+	if( lfile.empty() )
+	{
+		ostringstream err;
+		err << myname << "(init): Unknown schema file.. Use: --" << prefix + "-schema";
+		throw SystemError(err.str());
+	}
+
 	build(lfile);
 
 	// ********** HEARTBEAT *************
@@ -232,3 +251,41 @@ void PassiveLProcessor::sigterm( int signo )
 	}
 }
 // -------------------------------------------------------------------------
+void PassiveLProcessor::help_print( int argc, const char* const* argv )
+{
+	cout << "Default: prefix='plproc'" << endl;
+	cout << "--prefix-name  name        - ObjectID. По умолчанию: PassiveProcessor1" << endl;
+	cout << "--prefix-confnode cnode    - Возможность задать настроечный узел в configure.xml. По умолчанию: name" << endl;
+	cout << endl;
+	cout << "--prefix-schema file       - Файл с логической схемой." << endl;
+	cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
+	cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
+
+}
+// -----------------------------------------------------------------------------
+std::shared_ptr<PassiveLProcessor> PassiveLProcessor::init_plproc( int argc, const char* const* argv,
+		UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic,
+		const std::string& prefix )
+{
+	auto conf = uniset_conf();
+	string name = conf->getArgParam("--" + prefix + "-name", "PassiveProcessor1");
+
+	if( name.empty() )
+	{
+		cerr << "(plproc): Не задан name'" << endl;
+		return 0;
+	}
+
+	ObjectId ID = conf->getObjectID(name);
+
+	if( ID == UniSetTypes::DefaultObjectId )
+	{
+		cerr << "(plproc): идентификатор '" << name
+			 << "' не найден в конф. файле!"
+			 << " в секции " << conf->getObjectsSection() << endl;
+		return 0;
+	}
+
+	dinfo << "(plproc): name = " << name << "(" << ID << ")" << endl;
+	return make_shared<PassiveLProcessor>(ID, shmID, ic, prefix);
+}

@@ -5,7 +5,7 @@ else
 # не забывайте править версию в2.pc-файле
 ULPROC_VER=@LIBVER@
 
-lib_LTLIBRARIES 			= libUniSet2LProcessor.la
+lib_LTLIBRARIES = libUniSet2LProcessor.la
 libUniSet2LProcessor_la_LDFLAGS  = -version-info $(ULPROC_VER)
 libUniSet2LProcessor_la_LIBADD	= $(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la $(SIGC_LIBS)
@@ -14,8 +14,7 @@ libUniSet2LProcessor_la_CXXFLAGS	= -I$(top_builddir)/extensions/include \
 libUniSet2LProcessor_la_SOURCES 	= Element.cc TOR.cc TAND.cc TDelay.cc TNOT.cc \
 Schema.cc SchemaXML.cc LProcessor.cc PassiveLProcessor.cc
 
-
-bin_PROGRAMS 		= @PACKAGE@-logicproc @PACKAGE@-plogicproc
+bin_PROGRAMS = @PACKAGE@-logicproc @PACKAGE@-plogicproc
 
 @PACKAGE@_logicproc_SOURCES = logicproc.cc
 @PACKAGE@_logicproc_LDADD   = libUniSet2LProcessor.la \

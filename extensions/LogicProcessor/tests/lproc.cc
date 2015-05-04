@@ -176,7 +176,7 @@ TEST_CASE("Logic processor: lp", "[LogicProcessor][logic]")
 	LPRunner p;
 	auto lp = p.get();
 
-	auto sch = lp->getScheme();
+	auto sch = lp->getSchema();
 
 	CHECK( sch != nullptr );
 

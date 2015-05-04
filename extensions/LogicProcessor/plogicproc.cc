@@ -13,11 +13,21 @@ int main(int argc, const char** argv)
 {
 	std::ios::sync_with_stdio(false);
 
+	if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
+	{
+		cout << "--smemory-id objectName  - SharedMemory objectID. Default: autodetect" << endl;
+		cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
+		cout << "--plproc-logfile filename   - logfilename. Default: mbslave.log" << endl;
+		cout << endl;
+		PassiveLProcessor::help_print(argc, argv);
+		return 0;
+	}
+
 	try
 	{
 		auto conf = uniset_init( argc, argv );
 
-		string logfilename(conf->getArgParam("--logicproc-logfile"));
+		string logfilename(conf->getArgParam("--plproc-logfile"));
 
 		if( logfilename.empty() )
 			logfilename = "logicproc.log";
@@ -50,32 +60,10 @@ int main(int argc, const char** argv)
 			return 1;
 		}
 
-		cout << "init smemory: " << sID << " ID: " << shmID << endl;
-
-		string name = conf->getArgParam("--name", "LProcessor");
-
-		if( name.empty() )
-		{
-			cerr << "(plogicproc): Не задан name'" << endl;
-			return 1;
-		}
-
-		ObjectId ID = conf->getObjectID(name);
-
-		if( ID == UniSetTypes::DefaultObjectId )
-		{
-			cerr << "(plogicproc): идентификатор '" << name
-				 << "' не найден в конф. файле!"
-				 << " в секции " << conf->getObjectsSection() << endl;
-			return 1;
-		}
-
-		cout << "init name: " << name << " ID: " << ID << endl;
-
-		PassiveLProcessor plc(schema, ID, shmID);
+		auto plp = PassiveLProcessor::init_plproc(argc,argv,shmID);
 
 		auto act = UniSetActivator::Instance();
-		act->add(plc.get_ptr());
+		act->add(plp);
 
 		SystemMessage sm(SystemMessage::StartUp);
 		act->broadcast( sm.transport_msg() );
