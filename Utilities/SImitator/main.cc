@@ -50,7 +50,7 @@ int main( int argc, char** argv )
 			return 1;
 		}
 
-		std::list<UniSetTypes::ParamSInfo> lst = UniSetTypes::getSInfoList(sid, conf);
+		auto lst = UniSetTypes::getSInfoList(sid, conf);
 
 		if( lst.empty() )
 		{
@@ -60,21 +60,21 @@ int main( int argc, char** argv )
 
 		std::list<ExtInfo> l;
 
-		for( std::list<UniSetTypes::ParamSInfo>::iterator it = lst.begin(); it != lst.end(); ++it )
+		for( auto&& it: lst )
 		{
-			UniversalIO::IOType t = conf->getIOType( it->si.id );
+			UniversalIO::IOType t = conf->getIOType( it.si.id );
 
 			if( t != UniversalIO::AI && t != UniversalIO::AO )
 			{
-				cerr << endl << "Неверный типа датчика '" << t << "' для id='" << it->fname << "'. Тип должен быть AI или AO." << endl << endl;
+				cerr << endl << "Неверный типа датчика '" << t << "' для id='" << it.fname << "'. Тип должен быть AI или AO." << endl << endl;
 				return 1;
 			}
 
-			if( it->si.node == DefaultObjectId )
-				it->si.node = conf->getLocalNode();
+			if( it.si.node == DefaultObjectId )
+				it.si.node = conf->getLocalNode();
 
 			ExtInfo i;
-			i.si = it->si;
+			i.si = it.si;
 			i.iotype = t;
 			l.push_back(i);
 		}
@@ -129,15 +129,15 @@ int main( int argc, char** argv )
 
 				cout << "\r" << " i = " << j << "     " << flush;
 
-				for( std::list<ExtInfo>::iterator it = l.begin(); it != l.end(); ++it )
+				for( const auto& it: l )
 				{
 					try
 					{
-						ui.setValue(it->si, j, DefaultObjectId);
+						ui.setValue(it.si, j, DefaultObjectId);
 					}
 					catch( const Exception& ex )
 					{
-						cerr << endl << "save id=" << it->fname << " " << ex << endl;
+						cerr << endl << "save id=" << it.fname << " " << ex << endl;
 					}
 				}
 

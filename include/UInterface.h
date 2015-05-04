@@ -80,7 +80,7 @@ class UInterface
 		//! Выставление состояния датчика
 		void setValue ( const UniSetTypes::ObjectId id, long value, const UniSetTypes::ObjectId node ) const throw(UI_THROW_EXCEPTIONS);
 		void setValue ( const UniSetTypes::ObjectId id, long value ) const;
-		void setValue ( IOController_i::SensorInfo& si, long value, const UniSetTypes::ObjectId supplier );
+		void setValue ( const IOController_i::SensorInfo& si, long value, const UniSetTypes::ObjectId supplier );
 
 		// fast - это удалённый вызов "без подтверждения", он быстрее, но менее надёжен
 		// т.к. вызывающий никогда не узнает об ошибке, если она была (датчик такой не найдён и т.п.)

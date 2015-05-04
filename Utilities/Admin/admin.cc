@@ -1,4 +1,5 @@
 // --------------------------------------------------------------------------
+#include <memory>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -57,7 +58,7 @@ static struct option longopts[] =
 string conffile("configure.xml");
 
 // --------------------------------------------------------------------------
-static bool commandToAll( const string& section, ObjectRepository* rep, Command cmd );
+static bool commandToAll( const string& section, std::shared_ptr<ObjectRepository> rep, Command cmd );
 static void createSections( const std::shared_ptr<UniSetTypes::Configuration> c );
 // --------------------------------------------------------------------------
 int omap();
@@ -212,12 +213,10 @@ int main(int argc, char** argv)
 
 					verb = true;
 					Command cmd = Exist;
-					ObjectRepository* rep = new ObjectRepository(conf);
+					auto rep = make_shared<ObjectRepository>(conf);
 					commandToAll(conf->getServicesSection(), rep, (Command)cmd);
 					commandToAll(conf->getControllersSection(), rep, (Command)cmd);
 					commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
-					delete rep;
-					//                    cout<<"(exist): done"<<endl;
 				}
 
 				return 0;
@@ -229,11 +228,10 @@ int main(int argc, char** argv)
 					UInterface ui(conf);
 
 					Command cmd = StartUp;
-					ObjectRepository* rep = new ObjectRepository(conf);
+					auto rep = make_shared<ObjectRepository>(conf);
 					commandToAll(conf->getServicesSection(), rep, (Command)cmd);
 					commandToAll(conf->getControllersSection(), rep, (Command)cmd);
 					commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
-					delete rep;
 				}
 
 				return 0;
@@ -253,11 +251,10 @@ int main(int argc, char** argv)
 					UInterface ui(conf);
 
 					Command cmd = Finish;
-					ObjectRepository* rep = new ObjectRepository(conf);
+					auto rep = make_shared<ObjectRepository>(conf);
 					commandToAll(conf->getServicesSection(), rep, (Command)cmd);
 					commandToAll(conf->getControllersSection(), rep, (Command)cmd);
 					commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
-					delete rep;
 
 					if( verb )
 						cout << "(finish): done" << endl;
@@ -289,11 +286,10 @@ int main(int argc, char** argv)
 					UInterface ui(conf);
 
 					Command cmd = FoldUp;
-					ObjectRepository* rep = new ObjectRepository(conf);
+					auto rep = make_shared<ObjectRepository>(conf);
 					commandToAll(conf->getServicesSection(), rep, (Command)cmd);
 					commandToAll(conf->getControllersSection(), rep, (Command)cmd);
 					commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
-					delete rep;
 					//                    cout<<"(foldUp): done"<<endl;
 				}
 
@@ -345,7 +341,7 @@ int main(int argc, char** argv)
 }
 
 // ==============================================================================================
-static bool commandToAll(const string& section, ObjectRepository* rep, Command cmd)
+static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository> rep, Command cmd)
 {
 	if( verb )
 		cout << "\n||=======********  " << section << "  ********=========||\n" << endl;
@@ -520,29 +516,27 @@ int setValue( const string& args, UInterface& ui )
 {
 	int err = 0;
 	auto conf = ui.getConf();
-
-	typedef std::list<UniSetTypes::ParamSInfo> SList;
-	SList sl = UniSetTypes::getSInfoList(args, conf);
+	auto sl = UniSetTypes::getSInfoList(args, conf);
 
 	if( verb )
 		cout << "====== setValue ======" << endl;
 
-	for( SList::iterator it = sl.begin(); it != sl.end(); ++it )
+	for( auto && it : sl )
 	{
 		try
 		{
-			UniversalIO::IOType t = conf->getIOType(it->si.id);
+			UniversalIO::IOType t = conf->getIOType(it.si.id);
 
 			if( verb )
 			{
-				cout << "  value: " << it->val << endl;
-				cout << "   name: (" << it->si.id << ") " << it->fname << endl;
+				cout << "  value: " << it.val << endl;
+				cout << "   name: (" << it.si.id << ") " << it.fname << endl;
 				cout << " iotype: " << t << endl;
-				cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
+				cout << "   text: " << conf->oind->getTextName(it.si.id) << "\n\n";
 			}
 
-			if( it->si.node == DefaultObjectId )
-				it->si.node = conf->getLocalNode();
+			if( it.si.node == DefaultObjectId )
+				it.si.node = conf->getLocalNode();
 
 			switch(t)
 			{
@@ -550,18 +544,18 @@ int setValue( const string& args, UInterface& ui )
 				case UniversalIO::DO:
 				case UniversalIO::AI:
 				case UniversalIO::AO:
-					ui.setValue(it->si.id, it->val, it->si.node);
+					ui.setValue(it.si.id, it.val, it.si.node);
 					break;
 
 				default:
 					if( !quiet )
-						cerr << "FAILED: Unknown 'iotype' for " << it->fname << endl;
+						cerr << "FAILED: Unknown 'iotype' for " << it.fname << endl;
 
 					err = 1;
 					break;
 			}
 		}
-		catch(Exception& ex)
+		catch( const Exception& ex )
 		{
 			if( !quiet )
 				cerr << "(setValue): " << ex << endl;;
@@ -579,27 +573,26 @@ int getValue( const string& args, UInterface& ui )
 	int err = 0;
 
 	auto conf = ui.getConf();
-	typedef std::list<UniSetTypes::ParamSInfo> SList;
-	SList sl = UniSetTypes::getSInfoList( args, conf );
+	auto sl = UniSetTypes::getSInfoList( args, conf );
 
 	if( !quiet )
 		cout << "====== getValue ======" << endl;
 
-	for( SList::iterator it = sl.begin(); it != sl.end(); ++it )
+	for( auto && it : sl )
 	{
 		try
 		{
-			UniversalIO::IOType t = conf->getIOType(it->si.id);
+			UniversalIO::IOType t = conf->getIOType(it.si.id);
 
 			if( !quiet )
 			{
-				cout << "   name: (" << it->si.id << ") " << it->fname << endl;
+				cout << "   name: (" << it.si.id << ") " << it.fname << endl;
 				cout << "   iotype: " << t << endl;
-				cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
+				cout << "   text: " << conf->oind->getTextName(it.si.id) << "\n\n";
 			}
 
-			if( it->si.node == DefaultObjectId )
-				it->si.node = conf->getLocalNode();
+			if( it.si.node == DefaultObjectId )
+				it.si.node = conf->getLocalNode();
 
 			switch(t)
 			{
@@ -608,15 +601,15 @@ int getValue( const string& args, UInterface& ui )
 				case UniversalIO::AO:
 				case UniversalIO::AI:
 					if( !quiet )
-						cout << "  value: " << ui.getValue(it->si.id, it->si.node) << endl;
+						cout << "  value: " << ui.getValue(it.si.id, it.si.node) << endl;
 					else
-						cout << ui.getValue(it->si.id, it->si.node);
+						cout << ui.getValue(it.si.id, it.si.node);
 
 					break;
 
 				default:
 					if( !quiet )
-						cerr << "FAILED: Unknown 'iotype' for " << it->fname << endl;
+						cerr << "FAILED: Unknown 'iotype' for " << it.fname << endl;
 
 					err = 1;
 					break;
@@ -638,27 +631,26 @@ int getCalibrate( const std::string& args, UInterface& ui )
 {
 	int err = 0;
 	auto conf = ui.getConf();
-	typedef std::list<UniSetTypes::ParamSInfo> SList;
-	SList sl = UniSetTypes::getSInfoList( args, conf );
+	auto sl = UniSetTypes::getSInfoList( args, conf );
 
 	if( !quiet )
 		cout << "====== getCalibrate ======" << endl;
 
-	for( SList::iterator it = sl.begin(); it != sl.end(); ++it )
+	for( auto && it : sl )
 	{
-		if( it->si.node == DefaultObjectId )
-			it->si.node = conf->getLocalNode();
+		if( it.si.node == DefaultObjectId )
+			it.si.node = conf->getLocalNode();
 
 		try
 		{
 			if( !quiet )
 			{
-				cout << "      name: (" << it->si.id << ") " << it->fname << endl;
-				cout << "      text: " << conf->oind->getTextName(it->si.id) << "\n";
+				cout << "      name: (" << it.si.id << ") " << it.fname << endl;
+				cout << "      text: " << conf->oind->getTextName(it.si.id) << "\n";
 				cout << "калибровка: ";
 			}
 
-			IOController_i::CalibrateInfo ci = ui.getCalibrateInfo(it->si);
+			IOController_i::CalibrateInfo ci = ui.getCalibrateInfo(it.si);
 
 			if( !quiet )
 				cout << ci << endl;
@@ -682,27 +674,26 @@ int getRawValue( const std::string& args, UInterface& ui )
 {
 	int err = 0;
 	auto conf = ui.getConf();
-	typedef std::list<UniSetTypes::ParamSInfo> SList;
-	SList sl = UniSetTypes::getSInfoList( args, conf );
+	auto sl = UniSetTypes::getSInfoList( args, conf );
 
 	if( !quiet )
 		cout << "====== getRawValue ======" << endl;
 
-	for( SList::iterator it = sl.begin(); it != sl.end(); ++it )
+	for( auto && it : sl )
 	{
-		if( it->si.node == DefaultObjectId )
-			it->si.node = conf->getLocalNode();
+		if( it.si.node == DefaultObjectId )
+			it.si.node = conf->getLocalNode();
 
 		try
 		{
 			if( !quiet )
 			{
-				cout << "   name: (" << it->si.id << ") " << it->fname << endl;
-				cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
-				cout << "  value: " << ui.getRawValue(it->si) << endl;
+				cout << "   name: (" << it.si.id << ") " << it.fname << endl;
+				cout << "   text: " << conf->oind->getTextName(it.si.id) << "\n\n";
+				cout << "  value: " << ui.getRawValue(it.si) << endl;
 			}
 			else
-				cout << ui.getRawValue(it->si);
+				cout << ui.getRawValue(it.si);
 		}
 		catch( const Exception& ex )
 		{
@@ -724,11 +715,10 @@ int logRotate( const string& arg, UInterface& ui )
 	// посылка всем
 	if( arg.empty() || (arg.c_str())[0] != '-' )
 	{
-		ObjectRepository* rep = new ObjectRepository(conf);
+		auto rep = make_shared<ObjectRepository>(conf);
 		commandToAll(conf->getServicesSection(), rep, (Command)LogRotate);
 		commandToAll(conf->getControllersSection(), rep, (Command)LogRotate);
 		commandToAll(conf->getObjectsSection(), rep, (Command)LogRotate);
-		delete rep;
 	}
 	else // посылка определённому объекту
 	{
@@ -761,11 +751,10 @@ int configure( const string& arg, UInterface& ui )
 	// посылка всем
 	if( arg.empty() || (arg.c_str())[0] != '-' )
 	{
-		ObjectRepository* rep = new ObjectRepository(conf);
+		auto rep = make_shared<ObjectRepository>(conf);
 		commandToAll(conf->getServicesSection(), rep, (Command)Configure);
 		commandToAll(conf->getControllersSection(), rep, (Command)Configure);
 		commandToAll(conf->getObjectsSection(), rep, (Command)Configure);
-		delete rep;
 	}
 	else // посылка определённому объекту
 	{

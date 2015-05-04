@@ -179,7 +179,7 @@ using namespace UniSetTypes;
 		END_FUNC(SMInterface::getThresholdsList)
 	}
 	// --------------------------------------------------------------------------
-	void SMInterface::setUndefinedState( IOController_i::SensorInfo& si, bool undefined,
+	void SMInterface::setUndefinedState( const IOController_i::SensorInfo& si, bool undefined,
 										 UniSetTypes::ObjectId sup_id )
 	{
 		if( ic )

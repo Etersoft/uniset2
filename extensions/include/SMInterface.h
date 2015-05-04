@@ -16,7 +16,7 @@ class SMInterface
 		~SMInterface();
 
 		void setValue ( UniSetTypes::ObjectId, long value );
-		void setUndefinedState( IOController_i::SensorInfo& si, bool undefined, UniSetTypes::ObjectId supplier );
+		void setUndefinedState( const IOController_i::SensorInfo& si, bool undefined, UniSetTypes::ObjectId supplier );
 
 		long getValue ( UniSetTypes::ObjectId id );
 

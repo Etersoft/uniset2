@@ -159,11 +159,6 @@ TEST_CASE("Function (0x04): 'read input registers or memories or read word outpu
 		ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr, tREG, 1);
 		REQUIRE( ret.data[0] == 10 );
 	}
-	SECTION("Test: read one reg..")
-	{
-		ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr, tREG, 1);
-		REQUIRE( ret.data[0] == 10 );
-	}
 	SECTION("Test: read many registers..")
 	{
 		ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr, tREG, 4);

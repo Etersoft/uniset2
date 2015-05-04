@@ -365,7 +365,7 @@ void UInterface::setValue( const ObjectId name, long value ) const
 }
 
 
-void UInterface::setValue( IOController_i::SensorInfo& si, long value, const UniSetTypes::ObjectId supplier )
+void UInterface::setValue( const IOController_i::SensorInfo& si, long value, const UniSetTypes::ObjectId supplier )
 {
 	ObjectId old = myid;
 
