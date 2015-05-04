@@ -243,14 +243,17 @@ bool SharedMemory::activateObject()
 		res = IONotifyController_LT::activateObject();
 
 		// инициализируем указатели
-		for( auto& it : hlist )
-			it.ioit = myioEnd();
+		for( auto&& it : hlist )
+		{
+			it.a_it = myioEnd();
+			it.d_it = myioEnd();
+		}
 
 		itPulsar = myioEnd();
 
 		for( auto& it : hist )
 		{
-			for( auto& hit : it.hlst )
+			for( auto&& hit : it.hlst )
 				hit.ioit = myioEnd();
 		}
 
@@ -294,15 +297,15 @@ void SharedMemory::checkHeartBeat()
 	{
 		try
 		{
-			long val = localGetValue(it.ioit, it.a_sid);
-			val --;
+			long val = localGetValue(it.a_it, it.a_sid);
+			val--;
 
 			if( val < -1 )
 				val = -1;
 
-			localSetValue(it.ioit, it.a_sid, val, getId());
+			localSetValue(it.a_it, it.a_sid, val, getId());
 
-			localSetValue(it.ioit, it.d_sid, ( val >= 0 ? true : false), getId());
+			localSetValue(it.d_it, it.d_sid, ( val >= 0 ? true : false), getId());
 
 			// проверяем нужна ли "перезагрузка" по данному датчику
 			if( wdt && it.ptReboot.getInterval() )

@@ -404,12 +404,13 @@ class SharedMemory:
 
 			UniSetTypes::ObjectId a_sid; // аналоговый счётчик
 			UniSetTypes::ObjectId d_sid; // дискретный датчик состояния процесса
-			IOStateList::iterator ioit;
+			IOStateList::iterator a_it;
+			IOStateList::iterator d_it;
 
 			int reboot_msec; /*!< Время в течение которого, процесс обязан подтвердить своё существование,
                                 иначе будет произведена перезагрузка контроллера по WDT (в случае если он включён).
                                 Если данный параметр не указывать, то "не живость" процесса просто игнорируется
-                                (т.е. только отображение на GUI). */
+								(т.е. только сброс датчика heartbeat (d_sid) в ноль). */
 
 			bool timer_running;
 			PassiveTimer ptReboot;

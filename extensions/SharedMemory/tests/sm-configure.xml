@@ -42,7 +42,9 @@
 			<item id="502" iotype="DO" name="DO_C" priority="Medium" textname="Digital output"/>
 			<item id="503" iotype="AI" name="AI1_AS" priority="Medium" textname="AI"/>
 			<item id="504" iotype="DI" name="Threshold1_S" priority="Medium" textname="Threshold"/>
-
+			<item id="505" iotype="DI" name="Pulsar_S" priority="Medium" textname="pulsar"/>
+			<item heartbeat="1" heartbeat_ds_name="Heartbeat_S" heartbeat_node="localhost" id="506" iotype="AI" name="Heart_Counter_AS" textname="Heartbeat counter"/>
+			<item id="507" iotype="DI" name="Heartbeat_S" textname="Heartbeat"/>
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI1_AS">
