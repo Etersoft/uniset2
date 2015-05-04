@@ -26,7 +26,7 @@ bool run_test_server()
 	return true;
 }
 // --------------------------------------------------------
-TEST_CASE("TCPCheck", "[tcpcheck]" )
+TEST_CASE("TCPCheck::check", "[tcpcheck][tcpcheck_check]" )
 {
 	TCPCheck t;
 
@@ -40,6 +40,19 @@ TEST_CASE("TCPCheck", "[tcpcheck]" )
 
 	CHECK_FALSE( t.check("dummy_host_name", port, 300) );
 	CHECK_FALSE( t.check("dummy_host_name:2048", 300) );
+
+	cancel = true;
+	CHECK( res.get() );
+}
+// --------------------------------------------------------
+TEST_CASE("TCPCheck::ping", "[tcpcheck][tcpcheck_ping]" )
+{
+	TCPCheck t;
+
+	auto res = std::async(std::launch::async, run_test_server);
+
+	CHECK( t.ping(host) );
+	CHECK_FALSE( t.ping("dummy_host_name") );
 
 	cancel = true;
 	CHECK( res.get() );
