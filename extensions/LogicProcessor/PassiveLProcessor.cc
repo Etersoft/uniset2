@@ -200,7 +200,7 @@ void PassiveLProcessor::setOuts()
 	{
 		try
 		{
-			shm->setValue( it.sid, it.lnk->from->getOut() );
+			shm->setValue( it.sid, it.el->getOut() );
 		}
 		catch( const Exception& ex )
 		{

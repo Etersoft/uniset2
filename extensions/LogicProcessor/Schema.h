@@ -1,6 +1,7 @@
 #ifndef Schema_H_
 #define Schema_H_
 // --------------------------------------------------------------------------
+#include <memory>
 #include <unordered_map>
 #include "Element.h"
 #include "Schema.h"
@@ -11,46 +12,9 @@ class Schema
 		Schema();
 		virtual ~Schema();
 
-		Element* manage( Element* el );
-		void remove( Element* el );
+		std::shared_ptr<Element> manage( std::shared_ptr<Element> el );
 
-		// внутренее соединения
-		// между элементами
-		struct INLink
-		{
-			INLink(Element* f, Element* t, int ni):
-				from(f), to(t), numInput(ni) {}
-			INLink(): from(0), to(0), numInput(0) {}
-
-			Element* from;
-			Element* to;
-			int numInput;
-		};
-
-		// внешнее соединение
-		// что-то на вход элемента
-		struct EXTLink
-		{
-			EXTLink(std::string n, Element* t, int ni):
-				name(n), to(t), numInput(ni) {}
-			EXTLink(): name(""), to(0), numInput(0) {}
-
-			std::string name;
-			Element* to;
-			int numInput;
-		};
-
-		// наружный выход
-		struct EXTOut
-		{
-			EXTOut(std::string n, Element* f):
-				name(n), from(f) {}
-			EXTOut(): name(""), from(0) {}
-
-			std::string name;
-			Element* from;
-		};
-
+		void remove( std::shared_ptr<Element> el );
 
 		void link( Element::ElementID rootID, Element::ElementID childID, int numIn );
 		void unlink( Element::ElementID rootID, Element::ElementID childID );
@@ -59,7 +23,11 @@ class Schema
 		void setIn( Element::ElementID ID, int inNum, bool state );
 		bool getOut( Element::ElementID ID );
 
-		typedef std::unordered_map<Element::ElementID, Element*> ElementMap;
+		struct INLink;
+		struct EXTLink;
+		struct EXTOut;
+
+		typedef std::unordered_map<Element::ElementID, std::shared_ptr<Element>> ElementMap;
 		typedef std::list<INLink> InternalList;
 		typedef std::list<EXTLink> ExternalList;
 		typedef std::list<EXTOut> OutputsList;
@@ -141,9 +109,47 @@ class Schema
 		}
 
 		// find
-		Element* find(Element::ElementID id);
-		Element* findExtLink(const std::string& name);
-		Element* findOut(const std::string& name);
+		std::shared_ptr<Element> find(Element::ElementID id);
+		std::shared_ptr<Element> findExtLink(const std::string& name);
+		std::shared_ptr<Element> findOut(const std::string& name);
+
+		// -----------------------------------------------
+		// внутренее соединения
+		// между элементами
+		struct INLink
+		{
+			INLink(std::shared_ptr<Element> f, std::shared_ptr<Element> t, int ni):
+				numInput(ni) {}
+			INLink(): numInput(0) {}
+
+			std::shared_ptr<Element> from;
+			std::shared_ptr<Element> to;
+			int numInput;
+		};
+
+		// внешнее соединение
+		// что-то на вход элемента
+		struct EXTLink
+		{
+			EXTLink( const std::string& n, std::shared_ptr<Element> t, int ni):
+				name(n), to(t), numInput(ni) {}
+			EXTLink(): name(""), numInput(0) {}
+
+			std::string name;
+			std::shared_ptr<Element> to;
+			int numInput;
+		};
+
+		// наружный выход
+		struct EXTOut
+		{
+			EXTOut( const std::string n, std::shared_ptr<Element> f):
+				name(n), from(f) {}
+			EXTOut(): name("") {}
+
+			std::string name;
+			std::shared_ptr<Element> from;
+		};
 
 	protected:
 		ElementMap emap; // список элеметов
@@ -166,6 +172,4 @@ class SchemaXML:
 	protected:
 };
 // ---------------------------------------------------------------------------
-
-
 #endif

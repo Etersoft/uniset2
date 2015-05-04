@@ -13,20 +13,12 @@ Schema::Schema()
 
 Schema::~Schema()
 {
-	for( auto& it : emap )
-	{
-		if( it.second != 0 )
-		{
-			delete it.second;
-			it.second = 0;
-		}
-	}
 }
 // -------------------------------------------------------------------------
 void Schema::link( Element::ElementID rootID, Element::ElementID childID, int numIn )
 {
-	Element* e1 = 0;
-	Element* e2 = 0;
+	std::shared_ptr<Element> e1;
+	std::shared_ptr<Element> e2;
 
 	auto it = emap.find(rootID);
 
@@ -58,8 +50,8 @@ void Schema::link( Element::ElementID rootID, Element::ElementID childID, int nu
 // -------------------------------------------------------------------------
 void Schema::unlink( Element::ElementID rootID, Element::ElementID childID )
 {
-	Element* e1(0);
-	Element* e2(0);
+	std::shared_ptr<Element> e1;
+	std::shared_ptr<Element> e2;
 
 	auto it = emap.find(rootID);
 
@@ -86,7 +78,7 @@ void Schema::unlink( Element::ElementID rootID, Element::ElementID childID )
 	e1->delChildOut(e2);
 
 	// удаляем из списка соединений
-	for( auto lit = inLinks.begin(); lit != inLinks.end(); ++lit )
+	for( auto && lit = inLinks.begin(); lit != inLinks.end(); ++lit )
 	{
 		if( lit->from == e1 && lit->to == e2 )
 		{
@@ -107,7 +99,7 @@ void Schema::extlink( const string& name, Element::ElementID childID, int numIn 
 		throw LogicException(msg.str());
 	}
 
-	Element* el(it->second);
+	auto el(it->second);
 
 	//     добавляем новое соединение
 	//    el->addInput(numIn);
@@ -117,7 +109,7 @@ void Schema::extlink( const string& name, Element::ElementID childID, int numIn 
 	extLinks.push_front( EXTLink(name, el, numIn) );
 }
 // -------------------------------------------------------------------------
-Element* Schema::manage( Element* el )
+std::shared_ptr<Element> Schema::manage( std::shared_ptr<Element> el )
 {
 	dinfo << "Schema: manage new element id=" << el->getId()
 		  << " type=" << el->getType()
@@ -127,19 +119,19 @@ Element* Schema::manage( Element* el )
 	return el;
 }
 // -------------------------------------------------------------------------
-void Schema::remove( Element* el )
+void Schema::remove( std::shared_ptr<Element> el )
 {
-	for( auto it = emap.begin(); it != emap.end(); ++it )
+	for( auto && it = emap.begin(); it != emap.end(); ++it )
 	{
-		if( it->second != el )
+		if( it->second == el )
 		{
 			emap.erase(it);
-			return;
+			break;
 		}
 	}
 
 	// помечаем внутренние связи
-	for( auto& lit : inLinks )
+	for( auto && lit : inLinks )
 	{
 		if( lit.from == el )
 			lit.from = 0;
@@ -149,7 +141,7 @@ void Schema::remove( Element* el )
 	}
 
 	// помечаем внешние связи
-	for( auto& lit : extLinks )
+	for( auto && lit : extLinks )
 	{
 		if( lit.to == el )
 			lit.to = 0;
@@ -177,25 +169,37 @@ bool Schema::getOut( Element::ElementID ID )
 	throw LogicException(msg.str());
 }
 // -------------------------------------------------------------------------
-Element* Schema::find( Element::ElementID id )
+std::shared_ptr<Element> Schema::find( Element::ElementID id )
 {
 	auto it = emap.find(id);
 
 	if( it != emap.end() )
 		return it->second;
 
-	return 0;
+	return nullptr;
 }
 // -------------------------------------------------------------------------
-Element* Schema::findExtLink( const string& name )
+std::shared_ptr<Element> Schema::findExtLink( const string& name )
 {
 	// помечаем внешние связи
-	for( auto& it : extLinks )
+	for( const auto& it : extLinks )
 	{
 		if( it.name == name )
 			return it.to;
 	}
 
-	return 0;
+	return nullptr;
+}
+// -------------------------------------------------------------------------
+std::shared_ptr<Element> Schema::findOut( const string& name )
+{
+	// помечаем внешние связи
+	for( const auto& it : outList )
+	{
+		if( it.name == name )
+			return it.from;
+	}
+
+	return nullptr;
 }
 // -------------------------------------------------------------------------

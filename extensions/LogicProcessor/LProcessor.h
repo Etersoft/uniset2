@@ -85,7 +85,8 @@
     Логика исполняется в порядке следования в файле, сверху вниз (в порядке считывания из файла).
 */
 // --------------------------------------------------------------------------
-#include <map>
+#include <list>
+#include <atomic>
 #include "UniSetTypes.h"
 #include "UInterface.h"
 #include "Element.h"
@@ -97,7 +98,30 @@ class LProcessor
 		LProcessor( const std::string& name = "" );
 		virtual ~LProcessor();
 
-		virtual void execute( const string& lfile );
+		void open( const std::string& lfile );
+
+		inline bool isOpen()
+		{
+			return !fSchema.empty();
+		}
+
+		virtual void execute( const std::string& lfile = "" );
+
+		virtual void terminate()
+		{
+			canceled = true;
+		}
+
+		inline std::shared_ptr<SchemaXML> getScheme()
+		{
+			return sch;
+		}
+
+
+		inline int getSleepTime()
+		{
+			return sleepTime;
+		}
 
 	protected:
 
@@ -114,14 +138,15 @@ class LProcessor
 			UniSetTypes::ObjectId sid;
 			UniversalIO::IOType iotype;
 			bool state;
-			const Schema::EXTLink* lnk;
+			std::shared_ptr<Element> el;
+			int numInput = { -1};
 		};
 
 		struct EXTOutInfo
 		{
 			UniSetTypes::ObjectId sid;
 			UniversalIO::IOType iotype;
-			const Schema::EXTOut* lnk;
+			std::shared_ptr<Element> el;
 		};
 
 		typedef std::list<EXTInfo> EXTList;
@@ -129,7 +154,8 @@ class LProcessor
 
 		EXTList extInputs;
 		OUTList extOuts;
-		SchemaXML sch;
+
+		std::shared_ptr<SchemaXML> sch;
 
 		UInterface ui;
 		int sleepTime;
@@ -137,9 +163,11 @@ class LProcessor
 
 		std::string logname;
 
+		std::atomic_bool canceled = {false};
+
+		std::string fSchema = {""};
+
 	private:
-
-
 };
 // ---------------------------------------------------------------------------
 #endif

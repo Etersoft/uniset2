@@ -1,12 +1,13 @@
 #include <sstream>
 #include <iostream>
 #include "UniXML.h"
+#include "Extensions.h"
 #include "Schema.h"
 #include "TDelay.h"
 
 // -------------------------------------------------------------------------
 using namespace std;
-
+using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
 SchemaXML::SchemaXML()
 {
@@ -55,18 +56,18 @@ void SchemaXML::read( const string& xmlfile )
 		int inCount = xml.getPIntProp(it, "inCount", 1);
 
 		if( type == "OR" )
-			manage( new TOR(ID, inCount) );
+			manage( make_shared<TOR>(ID, inCount) );
 		else if( type == "AND" )
-			manage( new TAND(ID, inCount) );
+			manage( make_shared<TAND>(ID, inCount) );
 		else if( type == "Delay" )
 		{
 			int delayMS = xml.getIntProp(it, "delayMS");
-			manage( new TDelay(ID, delayMS, inCount) );
+			manage( make_shared<TDelay>(ID, delayMS, inCount) );
 		}
 		else if( type == "NOT" )
 		{
 			bool defout = xml.getIntProp(it, "default_out_state");
-			manage( new TNOT(ID, defout) );
+			manage( make_shared<TNOT>(ID, defout) );
 		}
 		else
 		{
@@ -104,26 +105,26 @@ void SchemaXML::read( const string& xmlfile )
 
 		if( type == "ext" )
 		{
-			cout << "SchemaXML: set EXTlink: from=" << fID << " to=" << tID << " toInput=" << toIn  << endl;
+			dinfo << "SchemaXML: set EXTlink: from=" << fID << " to=" << tID << " toInput=" << toIn  << endl;
 			extlink(fID, tID, toIn);
 		}
 		else if( type == "int" )
 		{
-			cout << "SchemaXML: set INTlink: from=" << fID << " to=" << tID << " toInput=" << toIn  << endl;
+			dinfo << "SchemaXML: set INTlink: from=" << fID << " to=" << tID << " toInput=" << toIn  << endl;
 			link(fID, tID, toIn);
 		}
 		else if( type == "out" )
 		{
-			Element* el = find(fID);
+			auto el = find(fID);
 
-			if( el == 0 )
+			if( !el )
 			{
 				ostringstream msg;
 				msg << "(SchemaXML::read): НЕ НАЙДЕН ЭЛЕМЕНТ С ID=" << fID;
 				throw LogicException(msg.str());
 			}
 
-			cout << "SchemaXML: set Out: from=" << fID << " to=" << tID << endl;
+			dinfo << "SchemaXML: set Out: from=" << fID << " to=" << tID << endl;
 			outList.push_front( EXTOut(tID, el) );
 		}
 	}

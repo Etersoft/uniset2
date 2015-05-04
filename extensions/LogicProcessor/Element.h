@@ -1,6 +1,7 @@
 #ifndef Element_H_
 #define Element_H_
 // --------------------------------------------------------------------------
+#include <memory>
 #include <string>
 #include <list>
 #include <ostream>
@@ -53,10 +54,10 @@ class Element
 			return "?type?";
 		}
 
-		virtual Element* find( ElementID id );
+		virtual std::shared_ptr<Element> find( ElementID id );
 
-		virtual void addChildOut( Element* el, int in_num );
-		virtual void delChildOut( Element* el );
+		virtual void addChildOut( std::shared_ptr<Element> el, int in_num );
+		virtual void delChildOut( std::shared_ptr<Element> el );
 		inline int outCount()
 		{
 			return outs.size();
@@ -71,12 +72,15 @@ class Element
 
 		friend std::ostream& operator<<(std::ostream& os, Element& el )
 		{
-			return os << el.getType() << "(" << el.getId() << ")";
+			return os << "[" << el.getType() << "]" << el.getId();
 		}
 
-		friend std::ostream& operator<<(std::ostream& os, Element* el )
+		friend std::ostream& operator<<(std::ostream& os, std::shared_ptr<Element> el )
 		{
-			return os << (*el);
+			if( el )
+				return os << (*(el.get()));
+
+			return os;
 		}
 
 	protected:
@@ -84,11 +88,11 @@ class Element
 
 		struct ChildInfo
 		{
-			ChildInfo(Element* e, int n):
+			ChildInfo(std::shared_ptr<Element> e, int n):
 				el(e), num(n) {}
 			ChildInfo(): el(0), num(0) {}
 
-			Element* el;
+			std::shared_ptr<Element> el;
 			int num;
 		};
 

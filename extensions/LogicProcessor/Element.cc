@@ -7,9 +7,9 @@ using namespace std;
 const Element::ElementID Element::DefaultElementID = "?id?";
 // -------------------------------------------------------------------------
 
-void Element::addChildOut( Element* el, int num )
+void Element::addChildOut( std::shared_ptr<Element> el, int num )
 {
-	if( el == this )
+	if( el.get() == this )
 	{
 		ostringstream msg;
 		msg << "(" << myid << "): ПОПТКА СДЕЛАТь ССЫЛКУ НА САМОГО СЕБЯ!!!";
@@ -17,7 +17,7 @@ void Element::addChildOut( Element* el, int num )
 	}
 
 
-	for( auto& it : outs )
+	for( const auto& it : outs )
 	{
 		if( it.el == el )
 		{
@@ -37,10 +37,10 @@ void Element::addChildOut( Element* el, int num )
 		throw LogicException(msg.str());
 	}
 
-	outs.push_front(ChildInfo(el, num));
+	outs.emplace_front(el, num);
 }
 // -------------------------------------------------------------------------
-void Element::delChildOut( Element* el )
+void Element::delChildOut( std::shared_ptr<Element> el )
 {
 	for( auto it = outs.begin(); it != outs.end(); ++it )
 	{
@@ -55,32 +55,23 @@ void Element::delChildOut( Element* el )
 // -------------------------------------------------------------------------
 void Element::setChildOut()
 {
-	bool _myout(getOut());
+	bool _myout = getOut();
 
-	for( auto& it : outs )
-	{
-		//        try
-		//        {
+	for( auto && it : outs )
 		it.el->setIn(it.num, _myout);
-		//        }
-		//        catch(...){}
-	}
 }
 // -------------------------------------------------------------------------
-Element* Element::find( ElementID id )
+std::shared_ptr<Element> Element::find( ElementID id )
 {
-	for( auto& it : outs )
+	for( const auto& it : outs )
 	{
 		if( it.el->getId() == id )
 			return it.el;
 
-		Element* el( it.el->find(id) );
-
-		if( el != NULL )
-			return el;
+		return it.el->find(id);
 	}
 
-	return 0;
+	return nullptr;
 }
 // -------------------------------------------------------------------------
 void Element::addInput(int num, bool state)

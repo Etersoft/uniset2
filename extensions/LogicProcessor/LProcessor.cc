@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include "Configuration.h"
 #include "Extensions.h"
 #include "PassiveTimer.h"
@@ -19,17 +20,33 @@ LProcessor::LProcessor( const std::string& name ):
 		smReadyTimeout = 60000;
 	else if( smReadyTimeout < 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
+
+	sch = make_shared<SchemaXML>();
 }
 
 LProcessor::~LProcessor()
 {
 }
 // -------------------------------------------------------------------------
-void LProcessor::execute( const string& lfile )
+void LProcessor::open( const string& lfile )
 {
-	build(lfile);
+	if( isOpen() )
+	{
+		ostringstream err;
+		err << logname << "(execute): already opened from '" << fSchema << "'" << endl;
+		throw SystemError(err.str());
+	}
 
-	while(1)
+	fSchema = lfile;
+	build(lfile);
+}
+// -------------------------------------------------------------------------
+void LProcessor::execute( const std::string& lfile )
+{
+	if( !lfile.empty() )
+		open(lfile);
+
+	while( !canceled )
 	{
 		try
 		{
@@ -63,11 +80,11 @@ void LProcessor::build( const string& lfile )
 {
 	auto conf = uniset_conf();
 
-	sch.read(lfile);
+	sch->read(lfile);
 
 	// составляем карту внешних входов
 	// считая, что в поле name записано название датчика
-	for( Schema::EXTiterator it = sch.extBegin(); it != sch.extEnd(); ++it )
+	for( auto it = sch->extBegin(); it != sch->extEnd(); ++it )
 	{
 		UniSetTypes::ObjectId sid = conf->getSensorID(it->name);
 
@@ -80,8 +97,9 @@ void LProcessor::build( const string& lfile )
 		EXTInfo ei;
 		ei.sid = sid;
 		ei.state = false;
-		ei.lnk = &(*it);
+		ei.el = it->to;
 		ei.iotype = conf->getIOType(sid);
+		ei.numInput = it->numInput;
 
 		if( ei.iotype == UniversalIO::UnknownIOType )
 		{
@@ -92,7 +110,7 @@ void LProcessor::build( const string& lfile )
 		extInputs.push_front(ei);
 	}
 
-	for( Schema::OUTiterator it = sch.outBegin(); it != sch.outEnd(); ++it )
+	for( auto it = sch->outBegin(); it != sch->outEnd(); ++it )
 	{
 		UniSetTypes::ObjectId sid = conf->getSensorID(it->name);
 
@@ -104,7 +122,7 @@ void LProcessor::build( const string& lfile )
 
 		EXTOutInfo ei;
 		ei.sid = sid;
-		ei.lnk = &(*it);
+		ei.el = it->from;
 		ei.iotype = conf->getIOType(sid);
 
 		if( ei.iotype == UniversalIO::UnknownIOType )
@@ -115,7 +133,6 @@ void LProcessor::build( const string& lfile )
 
 		extOuts.push_front(ei);
 	}
-
 }
 // -------------------------------------------------------------------------
 /*!
@@ -138,22 +155,24 @@ void LProcessor::getInputs()
 void LProcessor::processing()
 {
 	// выcтавляем все внешние входы
-	for( auto& it : extInputs )
-		it.lnk->to->setIn(it.lnk->numInput, it.state);
+	for( const auto& it : extInputs )
+		it.el->setIn(it.numInput, it.state);
 
 	// проходим по всем элементам
-	for( auto& it : sch )
+	for_each( sch->begin(), sch->end(), [](Schema::ElementMap::value_type it)
+	{
 		it.second->tick();
+	} );
 }
 // -------------------------------------------------------------------------
 void LProcessor::setOuts()
 {
 	// выcтавляем выходы
-	for( auto& it : extOuts )
+	for( const auto& it : extOuts )
 	{
 		try
 		{
-			ui.setValue(it.sid, it.lnk->from->getOut(), DefaultObjectId);
+			ui.setValue(it.sid, it.el->getOut(), DefaultObjectId);
 		}
 		catch( const Exception& ex )
 		{

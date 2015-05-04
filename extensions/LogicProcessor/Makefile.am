@@ -43,7 +43,7 @@ pkgconfig_DATA 	= libUniSet2LogicProcessor.pc
 all-local:
 	ln -sf ../LogicProcessor/$(devel_include_HEADERS) ../include
 
-SUBDIRS=tests
+# SUBDIRS=tests
 
 include $(top_builddir)/include.mk
 
