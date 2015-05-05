@@ -26,35 +26,49 @@ bool run_test_server()
 	return true;
 }
 // --------------------------------------------------------
+// вспомогательный класс для гарантированного завершения потока..
+class TSRunner
+{
+	public:
+		TSRunner()
+		{
+			cancel = false;
+			res = std::async(std::launch::async,run_test_server);
+		}
+
+		~TSRunner()
+		{
+			cancel = true;
+			res.get();
+		}
+
+	private:
+		std::future<bool> res;
+};
+// -----------------------------------------------------------------------------
 TEST_CASE("TCPCheck::check", "[tcpcheck][tcpcheck_check]" )
 {
 	TCPCheck t;
-
-	auto res = std::async(std::launch::async, run_test_server);
+	TSRunner tserv;
 
 	ostringstream ia;
 	ia << host << ":" << port;
 
+	msleep(200);
 	CHECK( t.check(host, port, 300) );
 	CHECK( t.check(ia.str(), 300) );
 
 	CHECK_FALSE( t.check("dummy_host_name", port, 300) );
 	CHECK_FALSE( t.check("dummy_host_name:2048", 300) );
-
-	cancel = true;
-	CHECK( res.get() );
 }
 // --------------------------------------------------------
 TEST_CASE("TCPCheck::ping", "[tcpcheck][tcpcheck_ping]" )
 {
 	TCPCheck t;
+	TSRunner tserv;
 
-	auto res = std::async(std::launch::async, run_test_server);
-
+	msleep(200);
 	CHECK( t.ping(host) );
 	CHECK_FALSE( t.ping("dummy_host_name") );
-
-	cancel = true;
-	CHECK( res.get() );
 }
 // --------------------------------------------------------
