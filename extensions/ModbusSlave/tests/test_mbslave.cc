@@ -940,7 +940,7 @@ TEST_CASE("access mode", "[modbus][mbslvae][mbtcpslave]")
 	}
 }
 // -------------------------------------------------------------
-TEST_CASE("Read(0x03,0x04): nbit", "[modbus][mbslave][mbtcpslave][nbit]")
+TEST_CASE("Read(0x03,0x04): nbit", "[modbus][mbslave][mbtcpslave][readnbit]")
 {
 	using namespace VTypes;
 	InitTest();
@@ -963,6 +963,68 @@ TEST_CASE("Read(0x03,0x04): nbit", "[modbus][mbslave][mbtcpslave][nbit]")
 			REQUIRE( d[0] == 1 );
 			REQUIRE( d[1] == 1 );
 			REQUIRE( d[5] == 1 );
+		}
+	}
+}
+
+// -------------------------------------------------------------
+TEST_CASE("Write(0x06,0x10): nbit", "[modbus][mbslave][mbtcpslave][writenbit]")
+{
+	using namespace VTypes;
+	InitTest();
+
+	SECTION("Test: read nbit..")
+	{
+		ModbusRTU::ModbusData tREG = 128;
+
+		SECTION("Test: write06")
+		{
+			ModbusRTU::WriteSingleOutputRetMessage  ret = mb->write06(slaveaddr, tREG,3);
+			REQUIRE( ret.start == tREG );
+			REQUIRE( ret.data == 3 );
+			REQUIRE( ui->getValue(2020) == 1 );
+			REQUIRE( ui->getValue(2021) == 1 );
+			REQUIRE( ui->getValue(2022) == 0 );
+
+			ret = mb->write06(slaveaddr, tREG,0);
+			REQUIRE( ret.start == tREG );
+			REQUIRE( ret.data == 0 );
+			REQUIRE( ui->getValue(2020) == 0 );
+			REQUIRE( ui->getValue(2021) == 0 );
+			REQUIRE( ui->getValue(2022) == 0 );
+		}
+
+		SECTION("Test: write10")
+		{
+			ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
+
+			msg.addData(3);
+			msg.addData(3);
+			ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
+			REQUIRE( ret.start == tREG );
+			REQUIRE( ret.quant == 2 );
+
+			REQUIRE( ui->getValue(2020) == 1 );
+			REQUIRE( ui->getValue(2021) == 1 );
+			REQUIRE( ui->getValue(2022) == 0 );
+			REQUIRE( ui->getValue(2023) == 1 );
+			REQUIRE( ui->getValue(2024) == 1 );
+			REQUIRE( ui->getValue(2025) == 0 );
+
+			ModbusRTU::WriteOutputMessage msg2(slaveaddr, tREG);
+
+			msg2.addData(0);
+			msg2.addData(0);
+			ModbusRTU::WriteOutputRetMessage ret2 = mb->write10(msg2);
+			REQUIRE( ret2.start == tREG );
+			REQUIRE( ret2.quant == 2 );
+
+			REQUIRE( ui->getValue(2020) == 0 );
+			REQUIRE( ui->getValue(2021) == 0 );
+			REQUIRE( ui->getValue(2022) == 0 );
+			REQUIRE( ui->getValue(2023) == 0 );
+			REQUIRE( ui->getValue(2024) == 0 );
+			REQUIRE( ui->getValue(2025) == 0 );
 		}
 	}
 }

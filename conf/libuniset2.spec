@@ -12,7 +12,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt29
+Release: alt30
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -409,6 +409,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Fri May 08 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt30
+- ModbusSlave: added support nbit='' for 0x06 and 0x10 function (setbug #7337)
+
 * Tue May 05 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt29
 - SM: add reserv mechanism for initializing (setbug #7289)
 - SM: fixed bug in 'heartbeat'

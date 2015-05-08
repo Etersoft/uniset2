@@ -153,10 +153,18 @@
 			<item id="2015" default="2222" accessmode="wo" mbs="1" mbreg="125" iotype="AI" name="TestAccessMode2" textname="Тестовый регистр для проверки access mode"/>
 			<item id="2016" default="1000" accessmode="rw" mbs="1" mbreg="126" iotype="AI" name="TestAccessMode3" textname="Тестовый регистр для проверки access mode"/>
 
-			<!-- nbit test -->
-			<item id="2017" default="1" mbs="1" mbreg="127" nbit="0" iotype="AI" name="Test nbit 0" textname="Тестовый регистр для проверки nbit"/>
-			<item id="2018" default="1" mbs="1" mbreg="127" nbit="1" iotype="DI" name="Test nbit 1" textname="Тестовый регистр для проверки nbit"/>
-			<item id="2019" default="1" mbs="1" mbreg="127" nbit="5" iotype="AI" name="Test nbit 5" textname="Тестовый регистр для проверки nbit"/>
+			<!-- nbit read test -->
+			<item id="2017" default="1" mbs="1" mbreg="127" nbit="0" iotype="AI" name="Test read nbit 0" textname="Тестовый регистр для проверки чтения nbit"/>
+			<item id="2018" default="1" mbs="1" mbreg="127" nbit="1" iotype="DI" name="Test read nbit 1" textname="Тестовый регистр для проверки чтения nbit"/>
+			<item id="2019" default="1" mbs="1" mbreg="127" nbit="5" iotype="AI" name="Test read nbit 5" textname="Тестовый регистр для проверки чтения nbit"/>
+
+			<!-- nbit write test -->
+			<item id="2020" mbs="1" mbreg="128" nbit="0" iotype="AI" name="Test write nbit 0" textname="Тестовый регистр для проверки записи nbit"/>
+			<item id="2021" mbs="1" mbreg="128" nbit="1" iotype="DI" name="Test write nbit 1" textname="Тестовый регистр для проверки записи nbit"/>
+			<item id="2022" mbs="1" mbreg="128" nbit="5" iotype="AI" name="Test write nbit 5" textname="Тестовый регистр для проверки записи nbit"/>
+			<item id="2023" mbs="1" mbreg="129" nbit="0" iotype="AI" name="Test write nbit 0 (reg2)" textname="Тестовый регистр для проверки записи nbit (reg 2)"/>
+			<item id="2024" mbs="1" mbreg="129" nbit="1" iotype="DI" name="Test write nbit 1 (reg2)" textname="Тестовый регистр для проверки записи nbit (reg 2)"/>
+			<item id="2025" mbs="1" mbreg="129" nbit="5" iotype="AI" name="Test write nbit 5 (reg2)" textname="Тестовый регистр для проверки записи nbit (reg 2)"/>
 
 			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
 

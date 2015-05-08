@@ -449,6 +449,8 @@ class MBSlave:
 
 
 		ModbusRTU::mbErrCode real_write_it( IOMap::iterator& it, ModbusRTU::ModbusData* dat, int& i, int count );
+		ModbusRTU::mbErrCode real_bitreg_write_it( std::shared_ptr<BitRegProperty>& bp, const ModbusRTU::ModbusData val );
+		ModbusRTU::mbErrCode real_write_prop( IOProperty* p, ModbusRTU::ModbusData* dat, int& i, int count );
 
 		MBSlave();
 		bool initPause;
