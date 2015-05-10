@@ -35,7 +35,7 @@ class TCPCheck
 		 * \note Вызывается через system()! Это может быть опасно с точки зрения безопасности..
 		 * \todo Возможно стоит написать свою реализацию ping
 		 */
-		bool ping( const std::string& _ip, timeout_t tout = 1000, timeout_t sleep_msec = 200, const std::string& ping_argc="-c 1 -w 0.1 -q -n" );
+		bool ping( const std::string& _ip, timeout_t tout = 1000, timeout_t sleep_msec = 200, const std::string& ping_argc = "-c 1 -w 0.1 -q -n" );
 
 	protected:
 
@@ -52,7 +52,7 @@ class TCPCheck
 		int port = {0};
 		int tout_msec;
 
-		std::string ping_args={"-c 1 -w 0.1 -q -n"};
+		std::string ping_args = {"-c 1 -w 0.1 -q -n"};
 };
 // -----------------------------------------------------------------------------
 #endif // _TCPCheck_H_

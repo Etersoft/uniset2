@@ -60,7 +60,7 @@ int main( int argc, char** argv )
 
 		std::list<ExtInfo> l;
 
-		for( auto&& it: lst )
+		for( auto && it : lst )
 		{
 			UniversalIO::IOType t = conf->getIOType( it.si.id );
 
@@ -129,7 +129,7 @@ int main( int argc, char** argv )
 
 				cout << "\r" << " i = " << j << "     " << flush;
 
-				for( const auto& it: l )
+				for( const auto& it : l )
 				{
 					try
 					{

@@ -1285,7 +1285,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_it( IOMap::iterator& it, ModbusRTU::Mod
 	if( p->bitreg )
 		return real_bitreg_write_it(p->bitreg, dat[i++]);
 
-	return real_write_prop(p,dat,i,count);
+	return real_write_prop(p, dat, i, count);
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::real_bitreg_write_it( std::shared_ptr<BitRegProperty>& bp, const ModbusRTU::ModbusData val )
@@ -1302,13 +1302,13 @@ ModbusRTU::mbErrCode MBSlave::real_bitreg_write_it( std::shared_ptr<BitRegProper
 		if( p->si.id == DefaultObjectId )
 			continue;
 
-		ModbusRTU::ModbusData dat[]={d[i]};
+		ModbusRTU::ModbusData dat[] = {d[i]};
 
 		dinfo << myname << "(real_bitreg_write_it): set " << ModbusRTU::dat2str(bp->mbreg) << "(" << (int)bp->mbreg << ")"
-				 << " bit[" << i << "]=" << (int)dat[0]  << " sid=" << p->si.id << endl;
+			  << " bit[" << i << "]=" << (int)dat[0]  << " sid=" << p->si.id << endl;
 
-		int k=0;
-		real_write_prop(p,dat,k,1);
+		int k = 0;
+		real_write_prop(p, dat, k, 1);
 	}
 
 	return ModbusRTU::erNoError;
@@ -1317,6 +1317,7 @@ ModbusRTU::mbErrCode MBSlave::real_bitreg_write_it( std::shared_ptr<BitRegProper
 ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusData* dat, int& i, int count )
 {
 	ModbusRTU::ModbusData mbval = dat[i++];
+
 	try
 	{
 		if( p->amode == MBSlave::amRO )

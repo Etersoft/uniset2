@@ -33,7 +33,7 @@ class TSRunner
 		TSRunner()
 		{
 			cancel = false;
-			res = std::async(std::launch::async,run_test_server);
+			res = std::async(std::launch::async, run_test_server);
 		}
 
 		~TSRunner()

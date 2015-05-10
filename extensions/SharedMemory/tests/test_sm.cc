@@ -37,13 +37,13 @@ TEST_CASE("[SM]: get/set", "[sm][getset]")
 {
 	InitTest();
 
-	ui->setValue(500,30);
+	ui->setValue(500, 30);
 	CHECK( ui->getValue(500) == 30 );
 
-	ui->setValue(500,-30);
+	ui->setValue(500, -30);
 	CHECK( ui->getValue(500) == -30 );
 
-	ui->setValue(500,0);
+	ui->setValue(500, 0);
 	CHECK( ui->getValue(500) == 0 );
 }
 // -----------------------------------------------------------------------------
@@ -51,19 +51,20 @@ TEST_CASE("[SM]: threshold", "[sm][threshold]")
 {
 	InitTest();
 
-	ui->setValue(503,30);
+	ui->setValue(503, 30);
 	CHECK( ui->getValue(504) == 0 );
 
-	ui->setValue(503,400);
+	ui->setValue(503, 400);
 	CHECK( ui->getValue(504) == 1 );
 
-	ui->setValue(503,25);
+	ui->setValue(503, 25);
 	CHECK( ui->getValue(504) == 0 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[SM]: pulsar", "[sm][pulsar]")
 {
 	InitTest();
+
 	while( ui->getValue(505) )
 		msleep(50);
 
@@ -81,13 +82,13 @@ TEST_CASE("[SM]: heartbeat", "[sm][heartbeat]")
 	InitTest();
 	CHECK_FALSE( ui->getValue(507) );
 
-	ui->setValue(506,2);
+	ui->setValue(506, 2);
 	msleep(500);
 	CHECK( ui->getValue(507) );
 	msleep(2000);
 	CHECK_FALSE( ui->getValue(507) );
 
-	ui->setValue(506,4);
+	ui->setValue(506, 4);
 	msleep(2000);
 	CHECK( ui->getValue(507) );
 }
