@@ -20,7 +20,9 @@ libUniSet2IOControl_la_SOURCES = ComediInterface.cc IOControl.cc
 
 @PACKAGE@_iocontrol_LDADD = libUniSet2IOControl.la \
 	$(top_builddir)/lib/libUniSet2.la \
-	$(top_builddir)/extensions/lib/libUniSet2Extensions.la $(COMEDI_LIBS) $(SIGC_LIBS) $(COMCPP_LIBS) -lm
+	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
+	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
+	$(COMEDI_LIBS) $(SIGC_LIBS) $(COMCPP_LIBS) -lm
 @PACKAGE@_iocontrol_CXXFLAGS = $(COMEDI_CFLAGS) $(SIGC_CFLAGS) $(COMCPP_CFLAGS) \
 	-I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/SharedMemory
@@ -34,6 +36,7 @@ libUniSet2IOControl_la_SOURCES = ComediInterface.cc IOControl.cc
 @PACKAGE@_iocalibr_LDADD 		= $(COMEDI_LIBS) \
 	$(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
+	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 	-lm
 @PACKAGE@_iocalibr_SOURCES 	= iocalibr.cc
 
