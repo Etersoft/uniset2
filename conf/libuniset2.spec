@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt24.1
+Release: alt30
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -444,6 +444,38 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Fri May 08 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt30
+- ModbusSlave: added support nbit='' for 0x06 and 0x10 function (setbug #7337)
+
+* Tue May 05 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt29
+- SM: add reserv mechanism for initializing (setbug #7289)
+- SM: fixed bug in 'heartbeat'
+- SM: add tests
+- minor fixes
+- refactoring
+- add new tests
+
+* Thu Apr 23 2015 Pavel Vainerman <pv@etersoft.ru> 2.0-alt28.2
+- unet-udp: special build... change maximum for digital and analog data. Set A=1500, D=5000.
+
+* Thu Apr 23 2015 Pavel Vainerman <pv@etersoft.ru> 2.0-alt28.1
+- unet-udp: special build... change maximum for digital and analog data. Set A=800, D=5000.
+
+* Mon Apr 20 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt28
+- optimization: use std::unordered_map instead of std::map
+
+* Thu Apr 16 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt27
+- (UniXML): refactoring UniXML::iterator::find..
+
+* Thu Apr 09 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt26
+- (ModbusSlave): added support nbit
+- (ModbusSlave): added support 0x01 (readCoilStatus) function
+- (ModbusSlave): minor fixes
+
+* Tue Apr 07 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt25
+- fixed bug in 'MBSlave' (thank`s Alexandr Hanadeev)
+- add --xxx-set-prop-prefix for MBSlave 
+
 * Sat Apr 04 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt24.1
 - test pgsql extension build
 
