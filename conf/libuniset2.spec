@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt30
+Release: alt31
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -27,8 +27,9 @@ Packager: Pavel Vainerman <pv@altlinux.ru>
 Source: %name-%version.tar
 
 # manually removed: glibc-devel-static
-# Automatically added by buildreq on Fri Nov 26 2010
-BuildRequires: libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel xsltproc catch
+# Automatically added by buildreq on Mon May 11 2015
+# optimized out: fontconfig gcc-c++ libcloog-isl4 libstdc++-devel libwayland-client libwayland-server libxml2-devel pkg-config python-base python-devel python-module-omniidl python-modules
+BuildRequires: libcommoncpp2-devel libomniORB-devel libsigc++2-devel
 
 %if_enabled io
 BuildRequires: libcomedi-devel
@@ -36,7 +37,7 @@ BuildRequires: libcomedi-devel
 
 %if_enabled mysql
 # Using old package name instead of libmysqlclient-devel it absent in branch 5.0 for yauza
-BuildRequires: libMySQL-devel
+BuildRequires: libmysqlclient-devel
 %endif
 
 %if_enabled sqlite
@@ -44,7 +45,7 @@ BuildRequires: libsqlite3-devel
 %endif
 
 %if_enabled pgsql
-BuildRequires: postgresql9.3-devel libpq5.6-devel
+BuildRequires: libpqxx-devel
 %endif
 
 %if_enabled rrd
@@ -444,6 +445,12 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Mon May 11 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt31
+- Calibrations: fixed bug
+- LogSession: fixed bug
+- PQSQL: minor fixes, update requires
+- make style
+
 * Fri May 08 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt30
 - ModbusSlave: added support nbit='' for 0x06 and 0x10 function (setbug #7337)
 
