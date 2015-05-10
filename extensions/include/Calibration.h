@@ -68,6 +68,9 @@ class Calibration
 		/*! Тип для хранения значения */
 		typedef float TypeOfValue;
 
+		/*! выход за границы диапазона (TypeOfValue) */
+		static const TypeOfValue ValueOutOfRange;
+
 		/*! выход за границы диапазона */
 		static const long outOfRange;
 
@@ -75,7 +78,7 @@ class Calibration
 		    Получение калиброванного значения
 		    \param raw - сырое значение
 		    \param crop_raw - обрезать переданное значение по крайним точкам
-		    \return Возвращает калиброванное
+			\return Возвращает калиброванное или outOfRange
 		*/
 		long getValue( long raw, bool crop_raw = false );
 
@@ -199,11 +202,11 @@ class Calibration
 				bool checkY( const TypeOfValue& y ) const;
 
 				// функции могут вернуть OutOfRange
-				TypeOfValue getY( const TypeOfValue& x ) const;         /*!< получить значение Y */
-				TypeOfValue getX( const TypeOfValue& y ) const;        /*!< получить значение X */
+				TypeOfValue getY( const TypeOfValue& x ) const;	  /*!< получить значение Y */
+				TypeOfValue getX( const TypeOfValue& y ) const;   /*!< получить значение X */
 
-				TypeOfValue calcY( const TypeOfValue& x ) const;     /*!< расчитать значение для x */
-				TypeOfValue calcX( const TypeOfValue& y ) const;     /*!< расчитать значение для y */
+				TypeOfValue calcY( const TypeOfValue& x ) const;  /*!< расчитать значение для x */
+				TypeOfValue calcX( const TypeOfValue& y ) const;  /*!< расчитать значение для y */
 
 				inline bool operator < ( const Part& p ) const
 				{
