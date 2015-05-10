@@ -16,13 +16,11 @@ using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 LogSession::~LogSession()
 {
-	cancelled = true;
-
 	if( isRunning() )
 	{
+		cancelled = true;
+		ost::Thread::join();
 		disconnect();
-		//        if( isRunning() )
-		//            ost::Thread::join();
 	}
 }
 // -------------------------------------------------------------------------
@@ -277,8 +275,6 @@ void LogSession::final()
 	{
 
 	}
-
-	delete this;
 }
 // -------------------------------------------------------------------------
 void LogSession::connectFinalSession( FinalSlot sl )
