@@ -1,6 +1,7 @@
 %def_enable docs
 %def_enable mysql
 %def_enable sqlite
+%def_enable pgsql
 %def_enable python
 %def_enable rrd
 %def_enable io
@@ -12,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt30
+Release: alt31
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -26,8 +27,9 @@ Packager: Pavel Vainerman <pv@altlinux.ru>
 Source: %name-%version.tar
 
 # manually removed: glibc-devel-static
-# Automatically added by buildreq on Fri Nov 26 2010
-BuildRequires: libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel xsltproc catch
+# Automatically added by buildreq on Mon May 11 2015
+# optimized out: fontconfig gcc-c++ libcloog-isl4 libstdc++-devel libwayland-client libwayland-server libxml2-devel pkg-config python-base python-devel python-module-omniidl python-modules
+BuildRequires: libcommoncpp2-devel libomniORB-devel libsigc++2-devel
 
 %if_enabled io
 BuildRequires: libcomedi-devel
@@ -35,11 +37,15 @@ BuildRequires: libcomedi-devel
 
 %if_enabled mysql
 # Using old package name instead of libmysqlclient-devel it absent in branch 5.0 for yauza
-BuildRequires: libMySQL-devel
+BuildRequires: libmysqlclient-devel
 %endif
 
 %if_enabled sqlite
 BuildRequires: libsqlite3-devel
+%endif
+
+%if_enabled pgsql
+BuildRequires: libpqxx-devel
 %endif
 
 %if_enabled rrd
@@ -175,6 +181,24 @@ Requires: %name-extension-common = %version-%release
 Libraries needed to develop for uniset SQLite
 %endif
 
+%if_enabled pgsql
+%package extension-pgsql
+Group: Development/Databases
+Summary: PostgreSQL-dbserver implementatioin for UniSet
+Requires: %name-extension-common = %version-%release
+
+%description extension-pgsql
+PostgreSQL dbserver for %name
+
+%package extension-pgsql-devel
+Group: Development/Databases
+Summary: Libraries needed to develop for uniset PostgreSQL
+Requires: %name-extension-common-devel = %version-%release
+
+%description extension-pgsql-devel
+Libraries needed to develop for uniset PostgreSQL
+%endif
+
 %if_enabled rrd
 %package extension-rrd
 Group: Development/C++
@@ -241,7 +265,7 @@ SharedMemoryPlus extension ('all in one') for libuniset
 
 %build
 %autoreconf
-%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests}
+%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests}
 %make
 
 %install
@@ -292,6 +316,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %if_enabled sqlite
 %_includedir/%oname/sqlite/
 %endif
+%if_enabled pgsql
+%_includedir/%oname/pgsql/
+%endif
 
 %_libdir/libUniSet2.so
 %_datadir/idl/%oname/
@@ -313,6 +340,15 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %files extension-sqlite-devel
 %_pkgconfigdir/libUniSet2SQLite.pc
+%endif
+
+%if_enabled pgsql
+%files extension-pgsql
+%_bindir/%oname-pgsql-*dbserver
+%_libdir/*-pgsql.so*
+
+%files extension-pgsql-devel
+%_pkgconfigdir/libUniSet2PostgreSQL.pc
 %endif
 
 %if_enabled python
@@ -409,6 +445,12 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Mon May 11 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt31
+- Calibrations: fixed bug
+- LogSession: fixed bug
+- PQSQL: minor fixes, update requires
+- make style
+
 * Fri May 08 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt30
 - ModbusSlave: added support nbit='' for 0x06 and 0x10 function (setbug #7337)
 
@@ -440,6 +482,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 * Tue Apr 07 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt25
 - fixed bug in 'MBSlave' (thank`s Alexandr Hanadeev)
 - add --xxx-set-prop-prefix for MBSlave 
+
+* Sat Apr 04 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt24.1
+- test pgsql extension build
 
 * Thu Apr 02 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt24
 - codegen: modify interface for messages (setMsg())
@@ -497,6 +542,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - refactoring "exit process"
 - fixed bug in specfile: --enable-doc --> --enable-docs
 - transition to use shared_ptr wherever possible
+
+* Sat Dec 20 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt10.1
+- added PostgreSQL support
 
 * Mon Nov 24 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt10
 - use shared_ptr 

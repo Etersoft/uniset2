@@ -60,7 +60,7 @@ int main(int argc, const char** argv)
 			return 1;
 		}
 
-		auto plp = PassiveLProcessor::init_plproc(argc,argv,shmID);
+		auto plp = PassiveLProcessor::init_plproc(argc, argv, shmID);
 
 		auto act = UniSetActivator::Instance();
 		act->add(plp);

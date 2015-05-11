@@ -19,6 +19,14 @@ extensions/DBServer-SQLite/SQLiteInterface.cc
 extensions/DBServer-SQLite/SQLiteInterface.h
 extensions/DBServer-SQLite/test.cc
 extensions/DBServer-SQLite/test.xml
+extensions/DBServer-PostgreSQL/DBServer_PostgreSQL.cc
+extensions/DBServer-PostgreSQL/DBServer_PostgreSQL.h
+extensions/DBServer-PostgreSQL/libUniSet2PostgreSQL.pc.in
+extensions/DBServer-PostgreSQL/main.cc
+extensions/DBServer-PostgreSQL/Makefile.am
+extensions/DBServer-PostgreSQL/PostgreSQLInterface.cc
+extensions/DBServer-PostgreSQL/PostgreSQLInterface.h
+extensions/DBServer-PostgreSQL/test.cc
 extensions/include/Calibration.h
 extensions/include/ComediInterface.h
 extensions/include/DigitalFilter.h

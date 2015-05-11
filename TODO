@@ -46,6 +46,10 @@ uniset-codegen:  добавить ключ --gen-sensor-name для генери
 
 - перевести PassiveTimer на использование crono:: (c++11)
 
+SQL:
+====
+- добавить  работу с History (при передаче указателя на SM в конструкторе).
+
 Version 2.1
 ============
 - smonit запись значений в файл (csv?,sqlite?)

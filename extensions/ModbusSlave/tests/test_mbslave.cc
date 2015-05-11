@@ -979,14 +979,14 @@ TEST_CASE("Write(0x06,0x10): nbit", "[modbus][mbslave][mbtcpslave][writenbit]")
 
 		SECTION("Test: write06")
 		{
-			ModbusRTU::WriteSingleOutputRetMessage  ret = mb->write06(slaveaddr, tREG,3);
+			ModbusRTU::WriteSingleOutputRetMessage  ret = mb->write06(slaveaddr, tREG, 3);
 			REQUIRE( ret.start == tREG );
 			REQUIRE( ret.data == 3 );
 			REQUIRE( ui->getValue(2020) == 1 );
 			REQUIRE( ui->getValue(2021) == 1 );
 			REQUIRE( ui->getValue(2022) == 0 );
 
-			ret = mb->write06(slaveaddr, tREG,0);
+			ret = mb->write06(slaveaddr, tREG, 0);
 			REQUIRE( ret.start == tREG );
 			REQUIRE( ret.data == 0 );
 			REQUIRE( ui->getValue(2020) == 0 );

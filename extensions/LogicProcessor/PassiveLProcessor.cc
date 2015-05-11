@@ -26,7 +26,8 @@ PassiveLProcessor::PassiveLProcessor( UniSetTypes::ObjectId objId,
 	UniXML::iterator it(confnode);
 
 	confnode = conf->getNode(myname);
-	string lfile = conf->getArgParam("--" + prefix + "-schema",it.getProp("schema"));
+	string lfile = conf->getArgParam("--" + prefix + "-schema", it.getProp("schema"));
+
 	if( lfile.empty() )
 	{
 		ostringstream err;

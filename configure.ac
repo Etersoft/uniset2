@@ -81,6 +81,23 @@ fi
 
 AM_CONDITIONAL(DISABLE_MYSQL, test ${buildmysql} = false)
 
+#check pgsql support
+AC_MSG_CHECKING([postgresql support])
+buildpgsql=true
+AC_ARG_ENABLE(pgsql, AC_HELP_STRING([--disable-pgsql], [disable PostgreSQL support]),
+[ if test $enableval = yes; then buildpgsql=true; else buildpgsql=false; fi],[ buildpgsql=true; ])
+
+if test ${buildpgsql} = true; then
+	AC_MSG_RESULT([enabled])
+	PKG_CHECK_MODULES(PGSQL,libpqxx)
+	AC_SUBST(PGSQL_LIBS)
+	AC_SUBST(PGSQL_CFLAGS)
+else
+	AC_MSG_RESULT([disabled])
+fi
+
+AM_CONDITIONAL(DISABLE_PGSQL, test ${buildpgsql} = false)
+
 
 #check rrd support
 AC_MSG_CHECKING([rrd support])
@@ -330,6 +347,8 @@ AC_CONFIG_FILES([Makefile
 				 extensions/DBServer-MySQL/libUniSet2MySQL.pc
 				 extensions/DBServer-SQLite/Makefile
 				 extensions/DBServer-SQLite/libUniSet2SQLite.pc
+				 extensions/DBServer-PostgreSQL/Makefile
+				 extensions/DBServer-PostgreSQL/libUniSet2PostgreSQL.pc
 				 extensions/IOControl/Makefile
 				 extensions/IOControl/libUniSet2IOControl.pc
 				 extensions/ModbusMaster/Makefile

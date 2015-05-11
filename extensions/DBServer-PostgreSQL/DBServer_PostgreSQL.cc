@@ -1,34 +1,10 @@
-/* This file is part of the UniSet project
- * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Pavel Vainerman
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- */
-// --------------------------------------------------------------------------
-/*! \file
- *  \brief файл реализации DB-сервера
- *  \author Pavel Vainerman
-*/
-// --------------------------------------------------------------------------
 #include <sys/time.h>
 #include <sstream>
 #include <iomanip>
 #include <cmath>
 
 #include "ORepHelpers.h"
-#include "DBServer_MySQL.h"
+#include "DBServer_PostgreSQL.h"
 #include "Configuration.h"
 #include "Debug.h"
 #include "UniXML.h"
@@ -38,9 +14,8 @@ using namespace std;
 // --------------------------------------------------------------------------
 #define dblog if( ulog()->debugging(DBLogInfoLevel) ) ulog()->debug(DBLogInfoLevel)
 // --------------------------------------------------------------------------
-DBServer_MySQL::DBServer_MySQL(ObjectId id):
+DBServer_PostgreSQL::DBServer_PostgreSQL(ObjectId id, const std::string& prefix ):
 	DBServer(id),
-	db(new MySQLInterface()),
 	PingTime(300000),
 	ReconnectTime(180000),
 	connect_ok(false),
@@ -48,19 +23,18 @@ DBServer_MySQL::DBServer_MySQL(ObjectId id):
 	qbufSize(200),
 	lastRemove(false)
 {
+	db = make_shared<PostgreSQLInterface>();
+
 	if( getId() == DefaultObjectId )
 	{
 		ostringstream msg;
-		msg << "(DBServer_MySQL): init failed! Unknown ID!" << endl;
+		msg << "(DBServer_PostgreSQL): init failed! Unknown ID!" << endl;
 		throw Exception(msg.str());
 	}
-
-	mqbuf.setName(myname  + "_qbufMutex");
 }
 
-DBServer_MySQL::DBServer_MySQL():
+DBServer_PostgreSQL::DBServer_PostgreSQL():
 	DBServer(uniset_conf()->getDBServer()),
-	db(new MySQLInterface()),
 	PingTime(300000),
 	ReconnectTime(180000),
 	connect_ok(false),
@@ -68,27 +42,24 @@ DBServer_MySQL::DBServer_MySQL():
 	qbufSize(200),
 	lastRemove(false)
 {
+	db = make_shared<PostgreSQLInterface>();
+
 	//    init();
 	if( getId() == DefaultObjectId )
 	{
 		ostringstream msg;
-		msg << "(DBServer_MySQL): init failed! Unknown ID!" << endl;
+		msg << "(DBServer_PostgreSQL): init failed! Unknown ID!" << endl;
 		throw Exception(msg.str());
 	}
-
-	mqbuf.setName(myname  + "_qbufMutex");
 }
 //--------------------------------------------------------------------------------------------
-DBServer_MySQL::~DBServer_MySQL()
+DBServer_PostgreSQL::~DBServer_PostgreSQL()
 {
-	if( db != NULL )
-	{
+	if( db )
 		db->close();
-		delete db;
-	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::sysCommand( const UniSetTypes::SystemMessage* sm )
+void DBServer_PostgreSQL::sysCommand( const UniSetTypes::SystemMessage* sm )
 {
 	switch( sm->command )
 	{
@@ -115,7 +86,7 @@ void DBServer_MySQL::sysCommand( const UniSetTypes::SystemMessage* sm )
 }
 
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
+void DBServer_PostgreSQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 {
 	try
 	{
@@ -139,20 +110,19 @@ void DBServer_MySQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 	{
 		ucrit << myname << "(update_confirm): " << ex << endl;
 	}
-	catch( const std::exception& ex )
+	catch( ... )
 	{
-		ucrit << myname << "(update_confirm): exception: " << ex.what() << endl;
+		ucrit << myname << "(update_confirm):  catch..." << endl;
 	}
 }
 //--------------------------------------------------------------------------------------------
-bool DBServer_MySQL::writeToBase( const string& query )
+bool DBServer_PostgreSQL::writeToBase( const string& query )
 {
 	dblog << myname << "(writeToBase): " << query << endl;
 
-	//    cout << "DBServer_MySQL: " << query << endl;
 	if( !db || !connect_ok )
 	{
-		uniset_rwmutex_wrlock l(mqbuf);
+		uniset_mutex_lock l(mqbuf, 200);
 		qbuf.push(query);
 
 		if( qbuf.size() > qbufSize )
@@ -165,7 +135,6 @@ bool DBServer_MySQL::writeToBase( const string& query )
 				qlost = qbuf.front();
 
 			qbuf.pop();
-
 			ucrit << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
 				  << ") overflow! lost query: " << qlost << endl;
 		}
@@ -177,67 +146,54 @@ bool DBServer_MySQL::writeToBase( const string& query )
 	flushBuffer();
 
 	// А теперь собственно запрос..
-	db->query(query);
-
-	// Дело в том что на INSERT И UPDATE запросы
-	// db->query() может возвращать false и надо самому
-	// отдельно проверять действительно ли произошла ошибка
-	// см. MySQLInterface::query.
-	string err(db->error());
-
-	if( err.empty() )
+	if( db->insertAndSaveRowid(query) )
 		return true;
 
 	return false;
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::flushBuffer()
+void DBServer_PostgreSQL::flushBuffer()
 {
-	uniset_rwmutex_wrlock l(mqbuf);
+	uniset_mutex_lock l(mqbuf, 400);
 
 	// Сперва пробуем очистить всё что накопилось в очереди до этого...
 	while( !qbuf.empty() )
 	{
-		db->query( qbuf.front() );
-
-		// Дело в том что на INSERT И UPDATE запросы
-		// db->query() может возвращать false и надо самому
-		// отдельно проверять действительно ли произошла ошибка
-		// см. MySQLInterface::query.
-		string err(db->error());
-
-		if( !err.empty() )
-			ucrit << myname << "(writeToBase): error: " << err <<
-				  " lost query: " << qbuf.front() << endl;
+		if(!db->insertAndSaveRowid( qbuf.front() ))
+		{
+			ucrit << myname << "(writeToBase): error: " << db->error() << " lost query: " << qbuf.front() << endl;
+		}
 
 		qbuf.pop();
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::sensorInfo( const UniSetTypes::SensorMessage* si )
+void DBServer_PostgreSQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 {
 	try
 	{
+#if 0
 		// если время не было выставлено (указываем время сохранения в БД)
-		if( !si->tm.tv_sec )
+		struct timeval tm = si->tm;
+
+		if( !tm.tv_sec )
 		{
 			struct timezone tz;
-			gettimeofday( const_cast<struct timeval*>(&si->tm), &tz);
+			gettimeofday(&tm, &tz);
 		}
 
-		float val = (float)si->value / (float)pow10(si->ci.precision);
-
-		// см. DBTABLE AnalogSensors, DigitalSensors
+#endif
+		// см. main_history
 		ostringstream data;
 		data << "INSERT INTO " << tblName(si->type)
 			 << "(date, time, time_usec, sensor_id, value, node) VALUES( '"
 			 // Поля таблицы
 			 << dateToString(si->sm_tv_sec, "-") << "','"   //  date
 			 << timeToString(si->sm_tv_sec, ":") << "','"   //  time
-			 << si->sm_tv_usec << "','"                //  time_usec
-			 << si->id << "','"                    //  sensor_id
-			 << val << "','"                //  value
-			 << si->node << "')";                //  node
+			 << si->sm_tv_usec << "',"                //  time_usec
+			 << si->id << ","                    //  sensor_id
+			 << si->value << ","                //  value
+			 << si->node << ")";                //  node
 
 		dblog << myname << "(insert_main_history): " << data.str() << endl;
 
@@ -250,13 +206,13 @@ void DBServer_MySQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 	{
 		ucrit << myname << "(insert_main_history): " << ex << endl;
 	}
-	catch( const std::exception& ex )
+	catch( ... )
 	{
-		ucrit << myname << "(insert_main_history): catch: " << ex.what() << endl;
+		ucrit << myname << "(insert_main_history): catch ..." << endl;
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::init_dbserver()
+void DBServer_PostgreSQL::init_dbserver()
 {
 	DBServer::init_dbserver();
 	dblog << myname << "(init): ..." << endl;
@@ -316,19 +272,15 @@ void DBServer_MySQL::init_dbserver()
 
 	if( !db->connect(dbnode, user, password, dbname) )
 	{
-		//        ostringstream err;
-		ucrit << myname
-			  << "(init): DB connection error: "
-			  << db->error() << endl;
-		//        throw Exception( string(myname+"(init): не смогли создать соединение с БД "+db->error()) );
-		askTimer(DBServer_MySQL::ReconnectTimer, ReconnectTime);
+		uwarn << myname << "(init): DB connection error: " << db->error() << endl;
+		askTimer(DBServer_PostgreSQL::ReconnectTimer, ReconnectTime);
 	}
 	else
 	{
 		dblog << myname << "(init): connect [OK]" << endl;
 		connect_ok = true;
-		askTimer(DBServer_MySQL::ReconnectTimer, 0);
-		askTimer(DBServer_MySQL::PingTimer, PingTime);
+		askTimer(DBServer_PostgreSQL::ReconnectTimer, 0);
+		askTimer(DBServer_PostgreSQL::PingTimer, PingTime);
 		//        createTables(db);
 		initDB(db);
 		initDBTableMap(tblMap);
@@ -336,11 +288,11 @@ void DBServer_MySQL::init_dbserver()
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::createTables( MySQLInterface* db )
+void DBServer_PostgreSQL::createTables( std::shared_ptr<PostgreSQLInterface>& db )
 {
 	auto conf = uniset_conf();
 
-	UniXML::iterator it( conf->getNode("Tables") );
+	UniXML_iterator it( conf->getNode("Tables") );
 
 	if(!it)
 	{
@@ -352,28 +304,30 @@ void DBServer_MySQL::createTables( MySQLInterface* db )
 	{
 		if( it.getName() != "comment" )
 		{
-			dblog << myname  << "(createTables): create " << it.getName() << endl;
+			ucrit << myname  << "(createTables): create " << it.getName() << endl;
 			ostringstream query;
 			query << "CREATE TABLE " << conf->getProp(it, "name") << "(" << conf->getProp(it, "create") << ")";
 
 			if( !db->query(query.str()) )
+			{
 				ucrit << myname << "(createTables): error: \t\t" << db->error() << endl;
+			}
 		}
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::timerInfo( const UniSetTypes::TimerMessage* tm )
+void DBServer_PostgreSQL::timerInfo( const UniSetTypes::TimerMessage* tm )
 {
 	switch( tm->id )
 	{
-		case DBServer_MySQL::PingTimer:
+		case DBServer_PostgreSQL::PingTimer:
 		{
 			if( !db->ping() )
 			{
 				uwarn << myname << "(timerInfo): DB lost connection.." << endl;
 				connect_ok = false;
-				askTimer(DBServer_MySQL::PingTimer, 0);
-				askTimer(DBServer_MySQL::ReconnectTimer, ReconnectTime);
+				askTimer(DBServer_PostgreSQL::PingTimer, 0);
+				askTimer(DBServer_PostgreSQL::ReconnectTimer, ReconnectTime);
 			}
 			else
 			{
@@ -383,7 +337,7 @@ void DBServer_MySQL::timerInfo( const UniSetTypes::TimerMessage* tm )
 		}
 		break;
 
-		case DBServer_MySQL::ReconnectTimer:
+		case DBServer_PostgreSQL::ReconnectTimer:
 		{
 			dblog << myname << "(timerInfo): reconnect timer" << endl;
 
@@ -392,8 +346,8 @@ void DBServer_MySQL::timerInfo( const UniSetTypes::TimerMessage* tm )
 				if( db->ping() )
 				{
 					connect_ok = true;
-					askTimer(DBServer_MySQL::ReconnectTimer, 0);
-					askTimer(DBServer_MySQL::PingTimer, PingTime);
+					askTimer(DBServer_PostgreSQL::ReconnectTimer, 0);
+					askTimer(DBServer_PostgreSQL::PingTimer, PingTime);
 				}
 
 				connect_ok = false;
@@ -410,3 +364,49 @@ void DBServer_MySQL::timerInfo( const UniSetTypes::TimerMessage* tm )
 	}
 }
 //--------------------------------------------------------------------------------------------
+void DBServer_PostgreSQL::sigterm( int signo )
+{
+	if( db && connect_ok )
+	{
+		try
+		{
+			flushBuffer();
+		}
+		catch(...) {}
+	}
+
+	DBServer::sigterm(signo);
+}
+//--------------------------------------------------------------------------------------------
+std::shared_ptr<DBServer_PostgreSQL> DBServer_PostgreSQL::init_dbserver( int argc, const char* const* argv,
+		const std::string& prefix )
+{
+	auto conf = uniset_conf();
+
+	ObjectId ID = conf->getDBServer();
+
+	string name = conf->getArgParam("--" + prefix + "-name", "");
+
+	if( !name.empty() )
+	{
+		ObjectId ID = conf->getObjectID(name);
+
+		if( ID == UniSetTypes::DefaultObjectId )
+		{
+			ucrit << "(DBServer_PostgreSQL): Unknown ObjectID for '" << name << endl;
+			return 0;
+		}
+	}
+
+	uinfo << "(DBServer_PostgreSQL): name = " << name << "(" << ID << ")" << endl;
+	return make_shared<DBServer_PostgreSQL>(ID, prefix);
+}
+// -----------------------------------------------------------------------------
+void DBServer_PostgreSQL::help_print( int argc, const char* const* argv )
+{
+	auto conf = uniset_conf();
+
+	cout << "Default: prefix='pgsql'" << endl;
+	cout << "--prefix-name objectID     - ObjectID. Default: 'conf->getDBServer()'" << endl;
+}
+// -----------------------------------------------------------------------------

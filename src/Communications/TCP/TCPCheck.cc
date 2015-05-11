@@ -54,6 +54,7 @@ bool TCPCheck::check( const std::string& _ip, int _port, timeout_t tout, timeout
 void TCPCheck::check_thread()
 {
 	setResult(false);
+
 	try
 	{
 		ost::Thread::setException(ost::Thread::throwException);
@@ -98,6 +99,6 @@ void TCPCheck::ping_thread()
 	int ret = system(cmd.str().c_str());
 	int res = WEXITSTATUS(ret);
 
-	setResult((res==0));
+	setResult((res == 0));
 }
 // -----------------------------------------------------------------------------

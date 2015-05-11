@@ -10,7 +10,8 @@
 using namespace std;
 using namespace UniSetTypes;
 // ----------------------------------------------------------------------------
-const long Calibration::outOfRange = std::numeric_limits<Calibration::TypeOfValue>::max();
+const Calibration::TypeOfValue Calibration::ValueOutOfRange = std::numeric_limits<Calibration::TypeOfValue>::max();
+const long Calibration::outOfRange = std::numeric_limits<long>::max();
 // ----------------------------------------------------------------------------
 Calibration::Part::Part():
 	k(0)
@@ -63,7 +64,7 @@ bool Calibration::Part::checkY( const TypeOfValue& y ) const
 Calibration::TypeOfValue Calibration::Part::getY( const TypeOfValue& x ) const
 {
 	if( !checkX(x) )
-		return Calibration::outOfRange;
+		return Calibration::ValueOutOfRange;
 
 	if( x == left_x() )
 		return left_y();
@@ -77,7 +78,7 @@ Calibration::TypeOfValue Calibration::Part::getY( const TypeOfValue& x ) const
 Calibration::TypeOfValue Calibration::Part::getX( const TypeOfValue& y ) const
 {
 	if( !checkY(y) )
-		return Calibration::outOfRange;
+		return Calibration::ValueOutOfRange;
 
 	if( y == left_y() )
 		return left_x();
@@ -307,7 +308,7 @@ long Calibration::getValue( long raw, bool crop_raw )
 
 	TypeOfValue q = fit->getY(raw);
 
-	if( q != outOfRange )
+	if( q != ValueOutOfRange )
 	{
 		if( szCache )
 			insertToCache(raw, tRound(q) );
@@ -347,7 +348,7 @@ long Calibration::getRawValue( long cal, bool range )
 	{
 		TypeOfValue q = it.getX(cal);
 
-		if( q != outOfRange )
+		if( q != ValueOutOfRange )
 			return tRound(q);
 	}
 

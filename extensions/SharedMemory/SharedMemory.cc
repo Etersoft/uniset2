@@ -243,7 +243,7 @@ bool SharedMemory::activateObject()
 		res = IONotifyController_LT::activateObject();
 
 		// инициализируем указатели
-		for( auto&& it : hlist )
+		for( auto && it : hlist )
 		{
 			it.a_it = myioEnd();
 			it.d_it = myioEnd();
@@ -253,7 +253,7 @@ bool SharedMemory::activateObject()
 
 		for( auto& it : hist )
 		{
-			for( auto&& hit : it.hlst )
+			for( auto && hit : it.hlst )
 				hit.ioit = myioEnd();
 		}
 
