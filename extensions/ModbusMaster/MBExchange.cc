@@ -185,6 +185,7 @@ void MBExchange::help_print( int argc, const char* const* argv )
 	cout << "--prefix-polltime msec          - Пауза между опросами. По умолчанию 100 мсек." << endl;
 	cout << "--prefix-recv-timeout msec      - Таймаут на приём одного сообщения" << endl;
 	cout << "--prefix-timeout msec           - Таймаут для определения отсутствия соединения" << endl;
+	cout << "--prefix-aftersend-pause msec   - Пауза после посылки запроса (каждого). По умолчанию: 0." << endl;
 	cout << "--prefix-reopen-timeout msec    - Таймаут для 'переоткрытия соединения' при отсутсвия соединения msec милисекунд. По умолчанию 10 сек." << endl;
 	cout << "--prefix-heartbeat-id  name     - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
 	cout << "--prefix-heartbeat-max val      - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
