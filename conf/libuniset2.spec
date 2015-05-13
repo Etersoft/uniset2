@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt31
+Release: alt32
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -445,6 +445,10 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Wed May 13 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt32
+- sync from 1.x/master: ModbusMaster: fixed bug: unstable timeout...( thank`s ilyap@etersoft.ru)
+- make style
+
 * Mon May 11 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt31
 - Calibrations: fixed bug
 - LogSession: fixed bug

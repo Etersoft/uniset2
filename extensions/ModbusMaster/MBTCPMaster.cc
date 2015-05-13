@@ -149,11 +149,13 @@ void MBTCPMaster::poll_thread()
 		ptTimeout.reset();
 	}
 
+	// ждём начала работы..(см. MBExchange::activateObject)
 	while( !checkProcActive() )
 	{
-		uniset_mutex_lock l(mutex_start, 3000);
+		UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
 	}
 
+	// работаем
 	while( checkProcActive() )
 	{
 		try

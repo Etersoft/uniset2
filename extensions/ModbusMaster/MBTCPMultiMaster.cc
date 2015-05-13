@@ -330,6 +330,13 @@ void MBTCPMultiMaster::poll_thread()
 		ptTimeout.reset();
 	}
 
+	// ждём начала работы..(см. MBExchange::activateObject)
+	while( !checkProcActive() )
+	{
+		UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
+	}
+
+	// работаем..
 	while( checkProcActive() )
 	{
 		try
