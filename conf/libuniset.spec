@@ -8,7 +8,7 @@
 
 Name: libuniset
 Version: 1.8
-Release: alt5
+Release: alt6
 Summary: UniSet - library for building distributed industrial control systems
 
 License: GPL
@@ -339,6 +339,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 
 %changelog
+* Wed May 13 2015 Pavel Vainerman <pv@altlinux.ru> 1.8-alt6
+- ModbusMaster: fixed bug: unstable timeout...( thank`s ilyap@etersoft.ru)
+
 * Thu Mar 19 2015 Pavel Vainerman <pv@altlinux.ru> 1.8-alt5
 - unetudp: fxied critial bug in "switching channels" (thank`s Alexey Surov)
 
