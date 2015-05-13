@@ -213,9 +213,18 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 			//
 
-			// timeout = ptTimeout.getLeft(timeout);
-			// в tcp ответе задержек уже не должно быть..
-			mbErrCode res = recv(addr, msg.func, reply, 1); //timeout);
+			timeout = ptTimeout.getLeft(timeout);
+
+			if( timeout <= 0 )
+			{
+
+				if( dlog->is_warn() )
+					dlog->warn() << "(ModbusTCPMaster::query): processing reply timeout.." << endl;
+
+				return erTimeOut; // return erHardwareError;
+			}
+
+			mbErrCode res = recv(addr, msg.func, reply, timeout);
 
 			if( force_disconnect )
 			{
