@@ -190,8 +190,8 @@ void MBExchange::help_print( int argc, const char* const* argv )
 	cout << "--prefix-heartbeat-id  name     - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
 	cout << "--prefix-heartbeat-max val      - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
 	cout << "--prefix-ready-timeout msec     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
-	cout << "--prefix-force 0,1              - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
-	cout << "--prefix-force-out 0,1          - Считывать значения 'выходов' кажый раз SM (а не по изменению)" << endl;
+	cout << "--prefix-force 0,1              - Сохранять значения в SM на каждом шаге, независимо от, того менялось ли значение" << endl;
+	cout << "--prefix-force-out 0,1          - Считывать значения 'выходов' из SM на каждом шаге (а не по изменению)" << endl;
 	cout << "--prefix-initPause msec         - Задержка перед инициализацией (время на активизация процесса)" << endl;
 	cout << "--prefix-no-query-optimization 0,1 - Не оптимизировать запросы (не объединять соседние регистры в один запрос)" << endl;
 	cout << "--prefix-reg-from-id 0,1        - Использовать в качестве регистра sensor ID" << endl;
