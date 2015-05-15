@@ -79,23 +79,18 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 
 	// int recv_timeout = conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")));
 
-	string saddr = conf->getArgParam("--" + prefix + "-my-addr", it.getProp("addr"));
+	addr = ModbusRTU::str2mbAddr(conf->getArg2Param("--" + prefix + "-my-addr", it.getProp("addr"),"0x01"));
 
-	if( saddr.empty() )
-		addr = 0x01;
-	else
-		addr = ModbusRTU::str2mbAddr(saddr);
+	default_mbfunc = conf->getArgPInt("--" + prefix + "-default-mbfunc", it.getProp("default_mbfunc"),0);
 
 	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id", it.getProp("reg_from_id"));
+	checkMBFunc = conf->getArgInt("--" + prefix + "-check-mbfunc", it.getProp("check_mbfunc"));
 	dinfo << myname << "(init): mbregFromID=" << mbregFromID << endl;
 
 	respond_id = conf->getSensorID(conf->getArgParam("--" + prefix + "-respond-id", it.getProp("respond_id")));
 	respond_invert = conf->getArgInt("--" + prefix + "-respond-invert", it.getProp("respond_invert"));
 
-	timeout_t reply_tout = conf->getArgInt("--" + prefix + "-reply-timeout", it.getProp("replyTimeout"));
-
-	if( reply_tout == 0 )
-		reply_tout = 3000;
+	timeout_t reply_tout = conf->getArgPInt("--" + prefix + "-reply-timeout", it.getProp("replyTimeout"),3000);
 
 	timeout_t aftersend_pause = conf->getArgInt("--" + prefix + "-aftersend-pause", it.getProp("afterSendPause"));
 
@@ -902,6 +897,10 @@ bool MBSlave::initItem( UniXML::iterator& it )
 		p.mbreg = ModbusRTU::str2mbData(r);
 	}
 
+	int mbfunc = IOBase::initIntProp(it, "mbfunc", prop_prefix, false, default_mbfunc);
+
+	p.regID = ModbusRTU::genRegID(p.mbreg,mbfunc);
+
 	p.amode = MBSlave::amRW;
 	string am(IOBase::initProp(it, "accessmode", prop_prefix, false));
 
@@ -923,7 +922,7 @@ bool MBSlave::initItem( UniXML::iterator& it )
 			return false;
 		}
 
-		auto i = iomap.find(p.mbreg);
+		auto i = iomap.find(p.regID);
 
 		if( i != iomap.end() )
 		{
@@ -965,7 +964,7 @@ bool MBSlave::initItem( UniXML::iterator& it )
 
 			p_dummy.bitreg->bvec[nbit] = std::move(p);
 			dinfo << myname << "(initItem): add bit register: " << p_dummy.bitreg.get() << endl;
-			iomap[mbreg] = std::move(p_dummy);
+			iomap[p.regID] = std::move(p_dummy);
 		}
 
 		return true;
@@ -978,7 +977,7 @@ bool MBSlave::initItem( UniXML::iterator& it )
 		p.vtype = VTypes::vtUnknown;
 		p.wnum = 0;
 		dinfo << myname << "(initItem): add " << p << endl;
-		iomap[p.mbreg] = std::move(p);
+		iomap[p.regID] = std::move(p);
 	}
 	else
 	{
@@ -1021,7 +1020,8 @@ bool MBSlave::initItem( UniXML::iterator& it )
 			p.mbreg += i;
 			p.wnum += i;
 			dinfo << myname << "(initItem): add " << p << endl;
-			iomap[p.mbreg] = std::move(p);
+			p.regID = genRegID(p.mbreg,mbfunc);
+			iomap[p.regID] = std::move(p);
 		}
 	}
 
@@ -1056,7 +1056,6 @@ void MBSlave::initIterators()
 		}
 	}
 
-
 	shm->initIterator(itHeartBeat);
 	shm->initIterator(itAskCount);
 	shm->initIterator(itRespond);
@@ -1084,11 +1083,14 @@ void MBSlave::help_print( int argc, const char* const* argv )
 	cout << "--prefix-reply-timeout msec      - Контрольное время для формирования ответа. " << endl
 		 << "                                   Если обработка запроса превысит это время, ответ не будет послан (timeout)." << endl
 		 << "                                   По умолчанию: 3 сек" << endl;
+
+	cout << "--prefix-default-mbfunc [0..255] - Функция по умолчанию, если не указан параметр mbfunc в настройках регистра. Только если включён контроль функций. " << endl;
+	cout << "--prefix-check-mbfunc  [0|1]     - Включить контроль (обработку) свойства mbfunc. По умолчанию: отключён." << endl;
 	cout << "--prefix-set-prop-prefix [val]   - Использовать для свойств указанный или пустой префикс." << endl;
 
 	cout << "--prefix-allow-setdatetime - On set date and time (0x50) modbus function" << endl;
-	cout << "--prefix-my-addr      - адрес текущего узла" << endl;
-	cout << "--prefix-type [RTU|TCP] - modbus server type." << endl;
+	cout << "--prefix-my-addr           - адрес текущего узла" << endl;
+	cout << "--prefix-type [RTU|TCP]    - modbus server type." << endl;
 
 	cout << " Настройки протокола RTU: " << endl;
 	cout << "--prefix-dev devname  - файл устройства" << endl;
@@ -1150,7 +1152,8 @@ std::ostream& operator<<( std::ostream& os, MBSlave::IOProperty& p )
 		<< " wnum=" << p.wnum
 		<< " nbyte=" << p.nbyte
 		<< " safety=" << p.safety
-		<< " invert=" << p.invert;
+		<< " invert=" << p.invert
+		<< " regID=" << p.regID;
 
 	if( p.stype == UniversalIO::AI || p.stype == UniversalIO::AO )
 	{
@@ -1180,7 +1183,7 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage&
 	}
 
 	// Фомирование ответа:
-	ModbusRTU::mbErrCode ret = much_real_read(query.start, buf, query.count);
+	ModbusRTU::mbErrCode ret = much_real_read(query.start, buf, query.count, query.func);
 
 	if( ret == ModbusRTU::erNoError )
 	{
@@ -1198,7 +1201,7 @@ ModbusRTU::mbErrCode MBSlave::writeOutputRegisters( ModbusRTU::WriteOutputMessag
 	dinfo << myname << "(writeOutputRegisters): " << query << endl;
 
 	// Формирование ответа:
-	ModbusRTU::mbErrCode ret = much_real_write(query.start, query.data, query.quant);
+	ModbusRTU::mbErrCode ret = much_real_write(query.start, query.data, query.quant, query.func);
 
 	if( ret == ModbusRTU::erNoError )
 		reply.set(query.start, query.quant);
@@ -1211,7 +1214,7 @@ ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( ModbusRTU::WriteSingleO
 {
 	dinfo << myname << "(writeOutputSingleRegisters): " << query << endl;
 
-	ModbusRTU::mbErrCode ret = real_write(query.start, query.data);
+	ModbusRTU::mbErrCode ret = real_write(query.start, query.data, query.func);
 
 	if( ret == ModbusRTU::erNoError )
 		reply.set(query.start, query.data);
@@ -1219,8 +1222,8 @@ ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( ModbusRTU::WriteSingleO
 	return ret;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::much_real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
-		int count )
+ModbusRTU::mbErrCode MBSlave::much_real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
+		int count, const int fn )
 {
 	dinfo << myname << "(much_real_write): write mbID="
 		  << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")" << " count=" << count << endl;
@@ -1228,13 +1231,16 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( ModbusRTU::ModbusData reg, Modbus
 	int i = 0;
 	auto it = iomap.end();
 
+	int mbfunc = checkMBFunc ? fn : default_mbfunc;
+	ModbusRTU::RegID regID = genRegID(reg,mbfunc);
+
 	for( ; i < count; i++ )
 	{
-		it = iomap.find(reg + i);
+		it = iomap.find(regID);
 
 		if( it != iomap.end() )
 		{
-			reg += i;
+			regID += i;
 			break;
 		}
 	}
@@ -1242,9 +1248,9 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( ModbusRTU::ModbusData reg, Modbus
 	if( it == iomap.end() )
 		return ModbusRTU::erBadDataAddress;
 
-	for( ; (it != iomap.end()) && (i < count); i++, reg++ )
+	for( ; (it != iomap.end()) && (i < count); i++, regID++ )
 	{
-		if( it->first == reg )
+		if( it->first == regID )
 		{
 			real_write_it(it, dat, i, count);
 			--i; // т.к. внутри real_write_it будет сделан ++
@@ -1255,14 +1261,14 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( ModbusRTU::ModbusData reg, Modbus
 	return ModbusRTU::erNoError;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::real_write(  ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val )
+ModbusRTU::mbErrCode MBSlave::real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val, const int fn )
 {
 	ModbusRTU::ModbusData dat[1] = {val};
 	int i = 0;
-	return real_write(reg, dat, i, 1);
+	return real_write(reg, dat, i, 1, fn);
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int& i, int count )
+ModbusRTU::mbErrCode MBSlave::real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int& i, int count, const int fn )
 {
 	ModbusRTU::ModbusData mbval = dat[i];
 
@@ -1271,7 +1277,9 @@ ModbusRTU::mbErrCode MBSlave::real_write( ModbusRTU::ModbusData reg, ModbusRTU::
 		  << " data=" << ModbusRTU::dat2str(mbval)
 		  << "(" << (int)mbval << ")" << endl;
 
-	auto it = iomap.find(reg);
+	ModbusRTU::RegID regID = checkMBFunc ? genRegID(reg,fn) : genRegID(reg,default_mbfunc);
+
+	auto it = iomap.find(regID);
 	return real_write_it(it, dat, i, count);
 }
 // -------------------------------------------------------------------------
@@ -1520,22 +1528,25 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 	return ModbusRTU::erTimeOut;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::much_real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
-		int count )
+ModbusRTU::mbErrCode MBSlave::much_real_read( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
+		int count, const int fn )
 {
 	dinfo << myname << "(much_real_read): read mbID="
-		  << ModbusRTU::dat2str(reg) << "(" << (int)reg << ") " << " count=" << count << endl;
+		  << ModbusRTU::dat2str(reg) << "(" << (int)reg << ") " << " count=" << count
+		  << " mbfunc=" << fn << endl;
+
+	int mbfunc = checkMBFunc ? fn : default_mbfunc;
 
 	auto it = iomap.end();
 	int i = 0;
+	ModbusRTU::RegID regID = genRegID(reg,mbfunc);
 
 	for( ; i < count; i++ )
 	{
-		it = iomap.find(reg + i);
-
+		it = iomap.find(regID+i);
 		if( it != iomap.end() )
 		{
-			reg += i;
+			regID += i;
 			break;
 		}
 
@@ -1547,12 +1558,12 @@ ModbusRTU::mbErrCode MBSlave::much_real_read( ModbusRTU::ModbusData reg, ModbusR
 
 	ModbusRTU::ModbusData val = 0;
 
-	for( ; (it != iomap.end()) && (i < count); i++, reg++ )
+	for( ; (it != iomap.end()) && (i < count); i++, regID++ )
 	{
 		val = 0;
 
 		// если регистры идут не подряд, то просто вернём ноль
-		if( it->first == reg )
+		if( it->first == regID )
 		{
 			real_read_it(it, val);
 			++it;
@@ -1572,12 +1583,14 @@ ModbusRTU::mbErrCode MBSlave::much_real_read( ModbusRTU::ModbusData reg, ModbusR
 	return ModbusRTU::erNoError;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val )
+ModbusRTU::mbErrCode MBSlave::real_read( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val, const int fn )
 {
 	dinfo << myname << "(real_read): read mbID="
-		  << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")" << endl;
+		  << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")"  << " fn=" << fn << endl;
 
-	auto it = iomap.find(reg);
+	ModbusRTU::RegID regID = checkMBFunc ? genRegID(reg,fn) : genRegID(reg,default_mbfunc);
+
+	auto it = iomap.find(regID);
 	return real_read_it(it, val);
 }
 // -------------------------------------------------------------------------
@@ -1586,10 +1599,10 @@ ModbusRTU::mbErrCode MBSlave::real_read_it( IOMap::iterator& it, ModbusRTU::Modb
 	if( it == iomap.end() )
 		return ModbusRTU::erBadDataAddress;
 
-	dinfo << myname << "(real_read_it): read mbID="
-		  << ModbusRTU::dat2str(it->first) << "(" << (int)it->first << ")" << endl;
-
 	IOProperty* p(&it->second);
+
+	dinfo << myname << "(real_read_it): read mbID="
+		  << ModbusRTU::dat2str(p->mbreg) << "(" << (int)(p->mbreg) << ")" << endl;
 
 	if( p->bitreg )
 		return real_bitreg_read_it(p->bitreg, val);
@@ -1766,7 +1779,7 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query, ReadInputRetMess
 	if( query.count <= 1 )
 	{
 		ModbusRTU::ModbusData d = 0;
-		ModbusRTU::mbErrCode ret = real_read(query.start, d);
+		ModbusRTU::mbErrCode ret = real_read(query.start, d,query.func);
 
 		if( ret == ModbusRTU::erNoError )
 			reply.addData(d);
@@ -1777,7 +1790,7 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query, ReadInputRetMess
 	}
 
 	// Фомирование ответа:
-	ModbusRTU::mbErrCode ret = much_real_read(query.start, buf, query.count);
+	ModbusRTU::mbErrCode ret = much_real_read(query.start, buf, query.count, query.func);
 
 	if( ret == ModbusRTU::erNoError )
 	{
@@ -1825,7 +1838,7 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 		if( query.count <= 1 )
 		{
 			ModbusRTU::ModbusData d = 0;
-			ModbusRTU::mbErrCode ret = real_read(query.start, d);
+			ModbusRTU::mbErrCode ret = real_read(query.start, d,query.func);
 			reply.addData(0);
 
 			if( ret == ModbusRTU::erNoError )
@@ -1837,7 +1850,7 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 			return ret;
 		}
 
-		much_real_read(query.start, buf, query.count);
+		much_real_read(query.start, buf, query.count, query.func);
 		int bnum = 0;
 		unsigned int i = 0;
 
@@ -1890,7 +1903,7 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 		if( query.count <= 1 )
 		{
 			ModbusRTU::ModbusData d = 0;
-			ModbusRTU::mbErrCode ret = real_read(query.start, d);
+			ModbusRTU::mbErrCode ret = real_read(query.start, d, query.func);
 			reply.addData(0);
 
 			if( ret == ModbusRTU::erNoError )
@@ -1902,7 +1915,7 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 			return ret;
 		}
 
-		much_real_read(query.start, buf, query.count);
+		much_real_read(query.start, buf, query.count, query.func);
 		int bnum = 0;
 		unsigned int i = 0;
 
@@ -1960,7 +1973,7 @@ ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& 
 		for( auto k = 0; k < ModbusRTU::BitsPerByte && nbit < query.quant; k++, nbit++ )
 		{
 			// ModbusRTU::mbErrCode ret =
-			real_write(query.start + nbit, (b[k] ? 1 : 0) );
+			real_write(query.start + nbit, (b[k] ? 1 : 0), query.func );
 			//if( ret == ModbusRTU::erNoError )
 		}
 	}
@@ -1977,7 +1990,7 @@ ModbusRTU::mbErrCode MBSlave::forceSingleCoil( ModbusRTU::ForceSingleCoilMessage
 {
 	dinfo << myname << "(forceSingleCoil): " << query << endl;
 
-	ModbusRTU::mbErrCode ret = real_write(query.start, (query.cmd() ? 1 : 0) );
+	ModbusRTU::mbErrCode ret = real_write(query.start, (query.cmd() ? 1 : 0), query.func );
 
 	if( ret == ModbusRTU::erNoError )
 		reply.set(query.start, query.data);

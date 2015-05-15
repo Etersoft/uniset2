@@ -454,7 +454,7 @@ TEST_CASE("(0x10): write register outputs or memories", "[modbus][mbslave][mbtcp
 	}
 }
 
-TEST_CASE("Read(0x03,0x04): vtypes..", "[modbus][mbslave][mbtcpslave]")
+TEST_CASE("Read(0x03,0x04): vtypes..", "[modbus][mbslave][mbread][mbtcpslave]")
 {
 	using namespace VTypes;
 	InitTest();
@@ -475,6 +475,7 @@ TEST_CASE("Read(0x03,0x04): vtypes..", "[modbus][mbslave][mbtcpslave]")
 			REQUIRE( (int)i2 == -100000 );
 		}
 	}
+#if 0
 	SECTION("Test: read vtype 'I2r'")
 	{
 		ModbusRTU::ModbusData tREG = 102;
@@ -603,6 +604,7 @@ TEST_CASE("Read(0x03,0x04): vtypes..", "[modbus][mbslave][mbtcpslave]")
 			REQUIRE(  (unsigned short)b == 200 );
 		}
 	}
+#endif
 }
 
 // -------------------------------------------------------------

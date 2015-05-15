@@ -304,6 +304,7 @@ class MBSlave:
 			int nbyte;              /*!< номер байта, который надо "сохранить" из "пришедщего в запросе" слова. [1-2] */
 			bool rawdata;           /*!< флаг, что в SM просто сохраняются 4-байта (актуально для типа F4)*/
 			std::shared_ptr<BitRegProperty> bitreg; /*!< указатель, как признак является ли данный регистр "сборным" из битовых */
+			ModbusRTU::RegID regID;
 
 			IOProperty():
 				mbreg(0),
@@ -311,7 +312,8 @@ class MBSlave:
 				vtype(VTypes::vtUnknown),
 				wnum(0),
 				nbyte(0),
-				rawdata(false)
+				rawdata(false),
+				regID(0)
 			{}
 
 			friend std::ostream& operator<<( std::ostream& os, IOProperty& p );
@@ -404,7 +406,7 @@ class MBSlave:
 
 		// т.к. в функциях (much_real_read,nuch_real_write) рассчёт на отсортированность IOMap
 		// то использовать unordered_map нельзя
-		typedef std::map<ModbusRTU::ModbusData, IOProperty> IOMap;
+		typedef std::map<ModbusRTU::RegID, IOProperty> IOMap;
 		IOMap iomap;            /*!< список входов/выходов */
 
 		std::shared_ptr<ModbusServerSlot> mbslot;
@@ -413,6 +415,7 @@ class MBSlave:
 		xmlNode* cnode;
 		std::string s_field;
 		std::string s_fvalue;
+		int default_mbfunc={0}; // функция по умолчанию, для вычисления RegID
 
 		std::shared_ptr<SMInterface> shm;
 
@@ -437,16 +440,15 @@ class MBSlave:
 		void readConfiguration();
 		bool check_item( UniXML::iterator& it );
 
-		ModbusRTU::mbErrCode real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val );
-		ModbusRTU::mbErrCode real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int& i, int count );
-		ModbusRTU::mbErrCode real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val );
-		ModbusRTU::mbErrCode much_real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count );
-		ModbusRTU::mbErrCode much_real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count );
+		ModbusRTU::mbErrCode real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val, const int fn=0 );
+		ModbusRTU::mbErrCode real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int& i, int count, const int fn=0  );
+		ModbusRTU::mbErrCode real_read( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val, const int fn=0  );
+		ModbusRTU::mbErrCode much_real_read( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count, const int fn=0  );
+		ModbusRTU::mbErrCode much_real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count, const int fn=0  );
 
 		ModbusRTU::mbErrCode real_read_it( IOMap::iterator& it, ModbusRTU::ModbusData& val );
 		ModbusRTU::mbErrCode real_bitreg_read_it( std::shared_ptr<BitRegProperty>& bp, ModbusRTU::ModbusData& val );
 		ModbusRTU::mbErrCode real_read_prop( IOProperty* p, ModbusRTU::ModbusData& val );
-
 
 		ModbusRTU::mbErrCode real_write_it( IOMap::iterator& it, ModbusRTU::ModbusData* dat, int& i, int count );
 		ModbusRTU::mbErrCode real_bitreg_write_it( std::shared_ptr<BitRegProperty>& bp, const ModbusRTU::ModbusData val );
@@ -482,7 +484,8 @@ class MBSlave:
 		timeout_t wait_msec;
 		bool force;        /*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
 
-		bool mbregFromID;
+		bool mbregFromID={0};
+		bool checkMBFunc={0};
 
 		typedef std::unordered_map<int, std::string> FileList;
 		FileList flist;

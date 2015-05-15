@@ -93,9 +93,7 @@ class MBExchange:
 		typedef std::list<RSProperty> PList;
 		static std::ostream& print_plist( std::ostream& os, const PList& p );
 
-		typedef unsigned long RegID;
-
-		typedef std::map<RegID, RegInfo*> RegMap;
+		typedef std::map<ModbusRTU::RegID, RegInfo*> RegMap;
 		struct RegInfo
 		{
 			// т.к. RSProperty содержит rwmutex с запрещённым конструктором копирования
@@ -117,7 +115,7 @@ class MBExchange:
 			ModbusRTU::ModbusData mbreg;            /*!< регистр */
 			ModbusRTU::SlaveFunctionCode mbfunc;    /*!< функция для чтения/записи */
 			PList slst;
-			RegID id;
+			ModbusRTU::RegID id;
 
 			RTUDevice* dev;
 
@@ -204,8 +202,6 @@ class MBExchange:
 		void printMap(RTUDeviceMap& d);
 
 		// ----------------------------------
-		static RegID genRegID( const ModbusRTU::ModbusData r, const int fn );
-
 		enum Timer
 		{
 			tmExchange
@@ -276,7 +272,7 @@ class MBExchange:
 		void initOffsetList();
 
 		RTUDevice* addDev( RTUDeviceMap& dmap, ModbusRTU::ModbusAddr a, UniXML::iterator& it );
-		RegInfo* addReg( RegMap& rmap, RegID id, ModbusRTU::ModbusData r, UniXML::iterator& it, RTUDevice* dev );
+		RegInfo* addReg( RegMap& rmap, ModbusRTU::RegID id, ModbusRTU::ModbusData r, UniXML::iterator& it, RTUDevice* dev );
 		RSProperty* addProp( PList& plist, RSProperty&& p );
 
 		bool initMTRitem( UniXML::iterator& it, RegInfo* p );

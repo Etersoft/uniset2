@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <string>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <iomanip>
 #include "modbus/ModbusTypes.h"
@@ -3556,5 +3557,17 @@ std::string ModbusRTU::rdi2str( int id )
 	ostringstream s;
 	s << id;
 	return s.str();
+}
+// -----------------------------------------------------------------------
+ModbusRTU::RegID ModbusRTU::genRegID( const ModbusRTU::ModbusData mbreg, const int fn )
+{
+	// диапазоны:
+	// mbreg: 0..65535
+	// fn: 0...255
+	int max = numeric_limits<ModbusRTU::ModbusData>::max(); // по идее 65535
+	int fn_max = numeric_limits<ModbusRTU::ModbusByte>::max(); // по идее 255
+
+	// fn необходимо привести к диапазону 0..max
+	return max + mbreg + max + UniSetTypes::lcalibrate(fn, 0, fn_max, 0, max, false);
 }
 // -----------------------------------------------------------------------

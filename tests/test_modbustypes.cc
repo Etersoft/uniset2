@@ -1,8 +1,9 @@
 #include <catch.hpp>
 
+#include <limits>
 #include "modbus/ModbusTypes.h"
 using namespace std;
-
+// ---------------------------------------------------------------
 TEST_CASE("WriteOutputMessage", "[modbus][WriteOutputMessage]" )
 {
 	SECTION("WriteOutputMessage: limit the amount of data verification")
@@ -19,7 +20,7 @@ TEST_CASE("WriteOutputMessage", "[modbus][WriteOutputMessage]" )
 
 	WARN("Tests for 'Modbus types' incomplete..");
 }
-
+// ---------------------------------------------------------------
 TEST_CASE("Modbus  helpers", "[modbus][helpers]" )
 {
 	using namespace ModbusRTU;
@@ -70,7 +71,7 @@ TEST_CASE("Modbus  helpers", "[modbus][helpers]" )
 		REQUIRE( b2str(-1) == "ff" );
 	}
 }
-
+// ---------------------------------------------------------------
 #if 0
 /*! \TODO Надо ещё подумать как тут протестировать */
 TEST_CASE("dat2f", "[modbus]" )
@@ -81,7 +82,7 @@ TEST_CASE("dat2f", "[modbus]" )
 	//    REQUIRE( dat2f(0xff,0xff) == 0.0f );
 }
 #endif
-
+// ---------------------------------------------------------------
 TEST_CASE("isWriteFunction", "[modbus][isWriteFunction]" )
 {
 	using namespace ModbusRTU;
@@ -104,8 +105,28 @@ TEST_CASE("isWriteFunction", "[modbus][isWriteFunction]" )
 	CHECK_FALSE( isWriteFunction(fnJournalCommand) );
 	CHECK_FALSE( isWriteFunction(fnFileTransfer) );
 }
-
+// ---------------------------------------------------------------
 TEST_CASE("checkCRC", "[modbus][checkCRC]" )
 {
 	// ModbusCRC checkCRC( ModbusByte* start, int len );
 }
+// ---------------------------------------------------------------
+#if 0
+#warning VERY LONG TIME TEST
+TEST_CASE("genRegID", "[modbus][genRegID]" )
+{
+	int max_reg = numeric_limits<ModbusRTU::ModbusData>::max();
+	int max_fn = numeric_limits<ModbusRTU::ModbusByte>::max();
+
+	ModbusRTU::RegID prevID = ModbusRTU::genRegID(0,0);
+	for( int f=1; f<max_fn; f++ )
+	{
+		ModbusRTU::RegID minID = ModbusRTU::genRegID(0,f);
+		REQUIRE( minID > prevID );
+
+		for( int r=1; r<max_reg; r++ )
+			REQUIRE( ModbusRTU::genRegID(r,f) == minID+r );
+	}
+}
+#endif
+// ---------------------------------------------------------------

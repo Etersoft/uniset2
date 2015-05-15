@@ -472,24 +472,6 @@ bool MBExchange::checkPoll( bool wrFunc )
 	return true;
 }
 // -----------------------------------------------------------------------------
-MBExchange::RegID MBExchange::genRegID( const ModbusRTU::ModbusData mbreg, const int fn )
-{
-	// формула для вычисления ID
-	// требования:
-	//  1. ID > диапазона возможных регистров
-	//  2. одинаковые регистры, но разные функции должны давать разный ID
-	//  3. регистры идущие подряд, должна давать ID идущие тоже подряд
-
-	// Вообще диапазоны:
-	// mbreg: 0..65535
-	// fn: 0...255
-	int max = numeric_limits<ModbusRTU::ModbusData>::max(); // по идее 65535
-	int fn_max = numeric_limits<ModbusRTU::ModbusByte>::max(); // по идее 255
-
-	// fn необходимо привести к диапазону 0..max
-	return max + mbreg + max + UniSetTypes::lcalibrate(fn, 0, fn_max, 0, max, false);
-}
-// ------------------------------------------------------------------------------------------
 void MBExchange::printMap( MBExchange::RTUDeviceMap& m )
 {
 	cout << "devices: " << endl;
@@ -566,7 +548,7 @@ void MBExchange::rtuQueryOptimization( RTUDeviceMap& m )
 		for( auto it = d->regmap.begin(); it != d->regmap.end(); ++it )
 		{
 			auto beg = it;
-			RegID id = it->second->id; // или собственно it->first
+			ModbusRTU::RegID id = it->second->id; // или собственно it->first
 			beg->second->q_num = 1;
 			beg->second->q_count = 1;
 			++it;
@@ -2000,7 +1982,7 @@ MBExchange::RTUDevice* MBExchange::addDev( RTUDeviceMap& mp, ModbusRTU::ModbusAd
 	return d;
 }
 // ------------------------------------------------------------------------------------------
-MBExchange::RegInfo* MBExchange::addReg( RegMap& mp, RegID id, ModbusRTU::ModbusData r,
+MBExchange::RegInfo* MBExchange::addReg( RegMap& mp, ModbusRTU::RegID id, ModbusRTU::ModbusData r,
 		UniXML::iterator& xmlit, MBExchange::RTUDevice* dev )
 {
 	auto it = mp.find(id);
@@ -2332,7 +2314,7 @@ bool MBExchange::initItem( UniXML::iterator& it )
 	// требования:
 	//  - ID > диапазона возможных регитров
 	//  - разные функции должны давать разный ID
-	RegID rID = genRegID(mbreg, fn);
+	ModbusRTU::RegID rID = ModbusRTU::genRegID(mbreg, fn);
 
 	RegInfo* ri = addReg(dev->regmap, rID, mbreg, it, dev);
 
@@ -2424,7 +2406,7 @@ bool MBExchange::initItem( UniXML::iterator& it )
 
 		for( auto i = 1; i < p1->rnum; i++ )
 		{
-			RegID id1 = genRegID(mbreg + i, ri->mbfunc);
+			ModbusRTU::RegID id1 = ModbusRTU::genRegID(mbreg + i, ri->mbfunc);
 			RegInfo* r = addReg(dev->regmap, id1, mbreg + i, it, dev);
 			r->q_num = i + 1;
 			r->q_count = 1;
