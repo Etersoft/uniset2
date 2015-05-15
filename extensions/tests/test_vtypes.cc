@@ -2,11 +2,25 @@
 
 #include <limits>
 #include "VTypes.h"
-
+// -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 using namespace VTypes;
-
+// -----------------------------------------------------------------------------
+TEST_CASE("VTypes: wsize test", "[vtypes][wsize]")
+{
+	REQUIRE( F2::wsize() == 2 );
+	REQUIRE( F2r::wsize() == 2 );
+	REQUIRE( F4::wsize() == 4 );
+	REQUIRE( Byte::wsize() == 1 );
+	REQUIRE( Unsigned::wsize() == 1 );
+	REQUIRE( Signed::wsize() == 1 );
+	REQUIRE( I2::wsize() == 2 );
+	REQUIRE( I2r::wsize() == 2 );
+	REQUIRE( U2::wsize() == 2 );
+	REQUIRE( U2r::wsize() == 2 );
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("VTypes: I2", "[vtypes][I2]")
 {
 	SECTION("Default constructor")
@@ -33,7 +47,7 @@ TEST_CASE("VTypes: I2", "[vtypes][I2]")
 		REQUIRE( (int)v2 == -65536 );
 	}
 }
-
+// -----------------------------------------------------------------------------
 TEST_CASE("VTypes: I2r", "[vtypes][I2r]")
 {
 	SECTION("Default constructor")
@@ -68,7 +82,7 @@ TEST_CASE("VTypes: I2r", "[vtypes][I2r]")
 
 	}
 }
-
+// -----------------------------------------------------------------------------
 TEST_CASE("VTypes: U2", "[vtypes][U2]")
 {
 	SECTION("Default constructor")
@@ -101,7 +115,7 @@ TEST_CASE("VTypes: U2", "[vtypes][U2]")
 		REQUIRE( (unsigned int)v2 == 0xffff0000 );
 	}
 }
-
+// -----------------------------------------------------------------------------
 TEST_CASE("VTypes: U2r", "[vtypes][U2r]")
 {
 	SECTION("Default constructor")
@@ -155,7 +169,7 @@ TEST_CASE("VTypes: F2", "[vtypes][F2]")
 		REQUIRE( (float)v2 == f );
 	}
 }
-
+// -----------------------------------------------------------------------------
 TEST_CASE("VTypes: F2r", "[vtypes][F2r]")
 {
 	SECTION("Default constructor")
@@ -187,7 +201,7 @@ TEST_CASE("VTypes: F2r", "[vtypes][F2r]")
 		REQUIRE( (float)v2 == f );
 	}
 }
-
+// -----------------------------------------------------------------------------
 TEST_CASE("VTypes: F4", "[vtypes][F4]")
 {
 	SECTION("Default constructor")
@@ -233,7 +247,7 @@ TEST_CASE("VTypes: F4", "[vtypes][F4]")
 		}
 	}
 }
-
+// -----------------------------------------------------------------------------
 TEST_CASE("VTypes: Byte", "[vtypes][byte]")
 {
 	SECTION("Default constructor")
@@ -260,7 +274,7 @@ TEST_CASE("VTypes: Byte", "[vtypes][byte]")
 		REQUIRE( (unsigned char)v[0] == 255 );
 	}
 }
-
+// -----------------------------------------------------------------------------
 TEST_CASE("VTypes: Unsigned", "[vtypes][unsigned]")
 {
 	SECTION("Default constructor")
@@ -281,7 +295,7 @@ TEST_CASE("VTypes: Unsigned", "[vtypes][unsigned]")
 		REQUIRE( (unsigned short)v == 65535 );
 	}
 }
-
+// -----------------------------------------------------------------------------
 TEST_CASE("VTypes: Signed", "[vtypes][signed]")
 {
 	SECTION("Default constructor")
@@ -302,3 +316,4 @@ TEST_CASE("VTypes: Signed", "[vtypes][signed]")
 		REQUIRE( (signed short)v == (signed short)d );
 	}
 }
+// -----------------------------------------------------------------------------

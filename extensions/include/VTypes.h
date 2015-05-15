@@ -259,7 +259,7 @@ namespace VTypes
 			/*! размер в словах */
 			static int wsize()
 			{
-				return sizeof(unsigned short);
+				return 1;
 			}
 			/*! тип значения */
 			static VType type()
@@ -298,7 +298,7 @@ namespace VTypes
 			/*! размер в словах */
 			static int wsize()
 			{
-				return sizeof(signed short);
+				return 1;
 			}
 			/*! тип значения */
 			static VType type()
