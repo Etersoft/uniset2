@@ -1030,6 +1030,13 @@ TEST_CASE("Write(0x06,0x10): nbit", "[modbus][mbslave][mbtcpslave][writenbit]")
 		}
 	}
 }
+// -------------------------------------------------------------
+TEST_CASE("check-mbfunc", "[modbus][mbslave][mbtcpslave][mbfunc]")
+{
+	using namespace VTypes;
+	InitTest();
 
+	//...
+}
 // -------------------------------------------------------------
 /*! \todo Доделать тесты на считывание с разными prop_prefix.. */

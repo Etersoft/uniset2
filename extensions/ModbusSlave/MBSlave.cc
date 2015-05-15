@@ -79,9 +79,9 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 
 	// int recv_timeout = conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")));
 
-	addr = ModbusRTU::str2mbAddr(conf->getArg2Param("--" + prefix + "-my-addr", it.getProp("addr"),"0x01"));
+	addr = ModbusRTU::str2mbAddr(conf->getArg2Param("--" + prefix + "-my-addr", it.getProp("addr"), "0x01"));
 
-	default_mbfunc = conf->getArgPInt("--" + prefix + "-default-mbfunc", it.getProp("default_mbfunc"),0);
+	default_mbfunc = conf->getArgPInt("--" + prefix + "-default-mbfunc", it.getProp("default_mbfunc"), 0);
 
 	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id", it.getProp("reg_from_id"));
 	checkMBFunc = conf->getArgInt("--" + prefix + "-check-mbfunc", it.getProp("check_mbfunc"));
@@ -90,7 +90,7 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 	respond_id = conf->getSensorID(conf->getArgParam("--" + prefix + "-respond-id", it.getProp("respond_id")));
 	respond_invert = conf->getArgInt("--" + prefix + "-respond-invert", it.getProp("respond_invert"));
 
-	timeout_t reply_tout = conf->getArgPInt("--" + prefix + "-reply-timeout", it.getProp("replyTimeout"),3000);
+	timeout_t reply_tout = conf->getArgPInt("--" + prefix + "-reply-timeout", it.getProp("replyTimeout"), 3000);
 
 	timeout_t aftersend_pause = conf->getArgInt("--" + prefix + "-aftersend-pause", it.getProp("afterSendPause"));
 
@@ -899,7 +899,7 @@ bool MBSlave::initItem( UniXML::iterator& it )
 
 	int mbfunc = IOBase::initIntProp(it, "mbfunc", prop_prefix, false, default_mbfunc);
 
-	p.regID = ModbusRTU::genRegID(p.mbreg,mbfunc);
+	p.regID = ModbusRTU::genRegID(p.mbreg, mbfunc);
 
 	p.amode = MBSlave::amRW;
 	string am(IOBase::initProp(it, "accessmode", prop_prefix, false));
@@ -958,16 +958,35 @@ bool MBSlave::initItem( UniXML::iterator& it )
 			IOProperty p_dummy;
 			p_dummy.bitreg = make_shared<BitRegProperty>();
 			p_dummy.bitreg->mbreg = mbreg;
-
+			p_dummy.regID = p.regID;
 			p.vtype = VTypes::vtUnknown;
 			p.wnum = 0;
 
-			p_dummy.bitreg->bvec[nbit] = std::move(p);
+			p_dummy.bitreg->bvec[nbit] = std::move(p); // после этого p использовать нельзя!
+
 			dinfo << myname << "(initItem): add bit register: " << p_dummy.bitreg.get() << endl;
-			iomap[p.regID] = std::move(p_dummy);
+			iomap[p_dummy.regID] = std::move(p_dummy);
 		}
 
 		return true;
+	}
+
+	auto i = iomap.find(p.regID);
+
+	if( i != iomap.end() )
+	{
+		ostringstream err;
+		err << myname << "(initItem): FAIL ADD sid='" << it.getProp("name") << "'(" << p.si.id << ")"
+			<< " reg='" << ModbusRTU::dat2str(p.mbreg) << "(" << (int)p.mbreg << ")"
+			<< " mbfunc=" << mbfunc << " --> regID=" << p.regID
+			<< " ALREADY ADDED! for sid='" << uniset_conf()->oind->getMapName(i->second.si.id) << "'("
+			<< i->second.si.id << ") regID=" << i->first
+			<< " reg='" << ModbusRTU::dat2str(i->second.mbreg) << "(" << (int)i->second.mbreg << ")"
+			<< " wnum=" << i->second.wnum;
+
+		dcrit << err.str() << endl;
+		//throw SystemError( err.str() );
+		abort();
 	}
 
 	string vt(IOBase::initProp(it, "vtype", prop_prefix, false));
@@ -1015,13 +1034,37 @@ bool MBSlave::initItem( UniXML::iterator& it )
 		p.vtype = v;
 		p.wnum = 0;
 
-		for( auto i = 0; i < VTypes::wsize(p.vtype); i++ )
+		// копируем минимум полей, который нужен для обработки.. т.к. нам другие не понадобятся..
+		int p_wnum = 0;
+		ModbusData p_mbreg = p.mbreg;
+		IOController_i::SensorInfo p_si = p.si;
+		UniversalIO::IOType p_stype = p.stype;
+		VTypes::VType p_vtype = p.vtype;
+
+		int wsz = VTypes::wsize(p_vtype );
+		int p_regID = p.regID;
+
+		// после std::move  p - использовать нельзя!
+		dinfo << myname << "(initItem): add " << p << endl;
+
+		iomap[p_regID] = std::move(p);
+
+		if( wsz > 1 )
 		{
-			p.mbreg += i;
-			p.wnum += i;
-			dinfo << myname << "(initItem): add " << p << endl;
-			p.regID = genRegID(p.mbreg,mbfunc);
-			iomap[p.regID] = std::move(p);
+			for( int i = 1; i < wsz; i++ )
+			{
+				IOProperty p_dummy;
+				p_dummy.mbreg = p_mbreg + i;
+				p_dummy.wnum = p_wnum + i;
+				p_dummy.si = p_si;
+				p_dummy.stype = p_stype;
+				p_dummy.vtype = p_vtype;
+				p_regID = genRegID(p_dummy.mbreg, mbfunc);
+				p_dummy.regID  = p_regID;
+
+				dinfo << myname << "(initItem): add " << p_dummy << endl;
+				iomap[p_regID] = std::move(p_dummy);
+			}
 		}
 	}
 
@@ -1232,7 +1275,7 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( const ModbusRTU::ModbusData reg, 
 	auto it = iomap.end();
 
 	int mbfunc = checkMBFunc ? fn : default_mbfunc;
-	ModbusRTU::RegID regID = genRegID(reg,mbfunc);
+	ModbusRTU::RegID regID = genRegID(reg, mbfunc);
 
 	for( ; i < count; i++ )
 	{
@@ -1277,7 +1320,7 @@ ModbusRTU::mbErrCode MBSlave::real_write( const ModbusRTU::ModbusData reg, Modbu
 		  << " data=" << ModbusRTU::dat2str(mbval)
 		  << "(" << (int)mbval << ")" << endl;
 
-	ModbusRTU::RegID regID = checkMBFunc ? genRegID(reg,fn) : genRegID(reg,default_mbfunc);
+	ModbusRTU::RegID regID = checkMBFunc ? genRegID(reg, fn) : genRegID(reg, default_mbfunc);
 
 	auto it = iomap.find(regID);
 	return real_write_it(it, dat, i, count);
@@ -1439,6 +1482,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 
 			VTypes::F2 f2(d, VTypes::F2::wsize());
 			delete[] d;
+
 			IOBase::processingFasAI( p, (float)f2, shm, force );
 		}
 		else if( p->vtype == VTypes::vtF2r )
@@ -1473,6 +1517,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 
 			VTypes::F4 f4(d, VTypes::F4::wsize());
 			delete[] d;
+
 			IOBase::processingFasAI( p, (float)f4, shm, force );
 		}
 		else if( p->vtype == VTypes::vtByte )
@@ -1539,11 +1584,12 @@ ModbusRTU::mbErrCode MBSlave::much_real_read( const ModbusRTU::ModbusData reg, M
 
 	auto it = iomap.end();
 	int i = 0;
-	ModbusRTU::RegID regID = genRegID(reg,mbfunc);
+	ModbusRTU::RegID regID = genRegID(reg, mbfunc);
 
 	for( ; i < count; i++ )
 	{
-		it = iomap.find(regID+i);
+		it = iomap.find(regID + i);
+
 		if( it != iomap.end() )
 		{
 			regID += i;
@@ -1588,7 +1634,7 @@ ModbusRTU::mbErrCode MBSlave::real_read( const ModbusRTU::ModbusData reg, Modbus
 	dinfo << myname << "(real_read): read mbID="
 		  << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")"  << " fn=" << fn << endl;
 
-	ModbusRTU::RegID regID = checkMBFunc ? genRegID(reg,fn) : genRegID(reg,default_mbfunc);
+	ModbusRTU::RegID regID = checkMBFunc ? genRegID(reg, fn) : genRegID(reg, default_mbfunc);
 
 	auto it = iomap.find(regID);
 	return real_read_it(it, val);
@@ -1779,7 +1825,7 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query, ReadInputRetMess
 	if( query.count <= 1 )
 	{
 		ModbusRTU::ModbusData d = 0;
-		ModbusRTU::mbErrCode ret = real_read(query.start, d,query.func);
+		ModbusRTU::mbErrCode ret = real_read(query.start, d, query.func);
 
 		if( ret == ModbusRTU::erNoError )
 			reply.addData(d);
@@ -1838,7 +1884,7 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 		if( query.count <= 1 )
 		{
 			ModbusRTU::ModbusData d = 0;
-			ModbusRTU::mbErrCode ret = real_read(query.start, d,query.func);
+			ModbusRTU::mbErrCode ret = real_read(query.start, d, query.func);
 			reply.addData(0);
 
 			if( ret == ModbusRTU::erNoError )
