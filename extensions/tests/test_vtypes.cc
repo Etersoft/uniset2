@@ -19,6 +19,18 @@ TEST_CASE("VTypes: wsize test", "[vtypes][wsize]")
 	REQUIRE( I2r::wsize() == 2 );
 	REQUIRE( U2::wsize() == 2 );
 	REQUIRE( U2r::wsize() == 2 );
+
+
+	REQUIRE( VTypes::wsize(vtF2) == 2 );
+	REQUIRE( VTypes::wsize(vtF2r) == 2 );
+	REQUIRE( VTypes::wsize(vtF4) == 4 );
+	REQUIRE( VTypes::wsize(vtByte) == 1 );
+	REQUIRE( VTypes::wsize(vtUnsigned) == 1 );
+	REQUIRE( VTypes::wsize(vtSigned) == 1 );
+	REQUIRE( VTypes::wsize(vtI2) == 2 );
+	REQUIRE( VTypes::wsize(vtI2r) == 2 );
+	REQUIRE( VTypes::wsize(vtU2) == 2 );
+	REQUIRE( VTypes::wsize(vtU2r) == 2 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("VTypes: I2", "[vtypes][I2]")

@@ -82,7 +82,7 @@ namespace VTypes
 		return "vtUnknown";
 	}
 	// -------------------------------------------------------------------------
-	int wsize(  VType t )
+	int wsize( VType t )
 	{
 		if( t == vtByte )
 			return Byte::wsize();
