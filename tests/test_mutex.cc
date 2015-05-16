@@ -1,7 +1,10 @@
 #include <catch.hpp>
 // -----------------------------------------------------------------------------
 #include <iostream>
+#include <thread>
+#include <future>
 #include "Mutex.h"
+#include "UniSetTypes.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -171,5 +174,54 @@ TEST_CASE("uniset_rwmutex_{wr|r}lock", "[mutex][basic]" )
 
 	uniset_rwmutex_wrlock l1(m);
 	CHECK_FALSE( m.try_lock() );
+}
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+uniset_rwmutex g_mutex;
+
+bool writer_thread( int num )
+{
+	uniset_rwmutex_wrlock l(g_mutex);
+	msleep(1000);
+	return true;
+}
+
+bool reader_thread( int num )
+{
+	uniset_rwmutex_rlock l(g_mutex);
+	msleep(50);
+	return true;
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("uniset_rwmutex_{wr|r} thread lock", "[mutex][threadlock][basic]" )
+{
+	g_mutex.rlock();
+
+	std::vector< std::future<bool> > vw(3);
+	for( int w=0; w<3; w++ )
+		vw.push_back( std::async(std::launch::async, writer_thread,w) );
+
+	std::vector< std::future<bool> > vr(3);
+	for( int r=0; r<5; r++ )
+		vr.push_back( std::async(std::launch::async, reader_thread,r) );
+
+	msleep(10);
+
+	// read захватывают сразу без задержек..
+	for( auto&& i: vr )
+	{
+		if( i.valid()  )
+			REQUIRE( i.get() == true );
+	}
+
+	// теперь отпускаю mutex
+	g_mutex.unlock();
+
+	// проверяем что write-ы завершают работу.
+	for( auto& i: vw )
+	{
+		if( i.valid() )
+			REQUIRE( i.get() == true );
+	}
 }
 // -----------------------------------------------------------------------------

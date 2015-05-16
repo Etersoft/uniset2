@@ -372,8 +372,7 @@ long IOBase::processingAsAO( IOBase* it, const std::shared_ptr<SMInterface>& shm
 			if( cal && cal->maxRaw != cal->minRaw ) // задана калибровка
 			{
 				// Калибруем в обратную сторону!!!
-				val = UniSetTypes::lcalibrate(val,
-											  cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
+				val = UniSetTypes::lcalibrate(val, cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
 			}
 		}
 	}
@@ -521,7 +520,7 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SM
 	if( sid == DefaultObjectId )
 	{
 		if( dlog && dlog->is_crit() )
-			dlog->crit() << myname << "(readItem): (" << DefaultObjectId << ") Не удалось получить ID для датчика: "
+			dlog->crit() << myname << "(readItem): (" << DefaultObjectId << ") Unknown Sensor ID for "
 						 << sname << endl;
 
 		return false;
@@ -549,7 +548,6 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SM
 
 	msec = initIntProp(it, "offdelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
 	b->ptOffDelay.setTiming(msec);
-
 
 	b->front = false;
 	std::string front_t( initProp(it, "iofront", prefix, init_prefix_only) );
@@ -583,8 +581,8 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SM
 	if( b->stype == UniversalIO::UnknownIOType )
 	{
 		if( dlog && dlog->is_crit() )
-			dlog->crit() << myname << "(IOBase::readItem): неизвестный iotype=: "
-						 << initProp(it, "iotype", prefix, init_prefix_only) << " для " << sname << endl;
+			dlog->crit() << myname << "(IOBase::readItem): Unknown iotype=: "
+						 << initProp(it, "iotype", prefix, init_prefix_only) << " for " << sname << endl;
 
 		return false;
 	}
