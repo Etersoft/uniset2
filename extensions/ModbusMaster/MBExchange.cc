@@ -933,7 +933,6 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			}
 
 			it--;
-
 		}
 		break;
 

@@ -127,6 +127,12 @@
        - 1 - в качестве регистра использовать идентификатор датчика
        - 0 - регистр брать из поля tcp_mbreg
 
+	  \b --xxx-default-mbfunc или \b default_mbfunc [0...255] - Функция подставляемая по умолчанию, если не указан параметр mbfunc. Действует только если включён контроль функций (check-mbfunc).
+	  \b --xxx-check-mbfunc [0|1] -
+	   - 1 - включить контроль (обработку) свойства mbfunc. По умолчанию: отключёна. Если контроль включён то разрешено
+	   использовать один и тот же регистр но \b для \b разных \b функций.
+	   - 0 - игнорировать свойство mbfunc..
+
       \b --xxx-heartbeat-id или \b heartbeat_id ID - идентификатор датчика "сердцебиения" (см. \ref sec_SM_HeartBeat)
 
       \b --xxx-heartbeat-max или \b heartbeat_max val - сохраняемое значение счётчика "сердцебиения".
@@ -415,7 +421,7 @@ class MBSlave:
 		xmlNode* cnode;
 		std::string s_field;
 		std::string s_fvalue;
-		int default_mbfunc={0}; // функция по умолчанию, для вычисления RegID
+		int default_mbfunc = {0}; // функция по умолчанию, для вычисления RegID
 
 		std::shared_ptr<SMInterface> shm;
 
@@ -440,11 +446,11 @@ class MBSlave:
 		void readConfiguration();
 		bool check_item( UniXML::iterator& it );
 
-		ModbusRTU::mbErrCode real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val, const int fn=0 );
-		ModbusRTU::mbErrCode real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int& i, int count, const int fn=0  );
-		ModbusRTU::mbErrCode real_read( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val, const int fn=0  );
-		ModbusRTU::mbErrCode much_real_read( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count, const int fn=0  );
-		ModbusRTU::mbErrCode much_real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count, const int fn=0  );
+		ModbusRTU::mbErrCode real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val, const int fn = 0 );
+		ModbusRTU::mbErrCode real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int& i, int count, const int fn = 0  );
+		ModbusRTU::mbErrCode real_read( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val, const int fn = 0  );
+		ModbusRTU::mbErrCode much_real_read( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count, const int fn = 0  );
+		ModbusRTU::mbErrCode much_real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count, const int fn = 0  );
 
 		ModbusRTU::mbErrCode real_read_it( IOMap::iterator& it, ModbusRTU::ModbusData& val );
 		ModbusRTU::mbErrCode real_bitreg_read_it( std::shared_ptr<BitRegProperty>& bp, ModbusRTU::ModbusData& val );
@@ -484,8 +490,8 @@ class MBSlave:
 		timeout_t wait_msec;
 		bool force;        /*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
 
-		bool mbregFromID={0};
-		bool checkMBFunc={0};
+		bool mbregFromID = {0};
+		bool checkMBFunc = {0};
 
 		typedef std::unordered_map<int, std::string> FileList;
 		FileList flist;

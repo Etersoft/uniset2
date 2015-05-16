@@ -309,7 +309,7 @@ class MBExchange:
 
 		UniSetTypes::ObjectId sidExchangeMode; /*!< иденидентификатор для датчика режима работы */
 		IOController::IOStateList::iterator itExchangeMode;
-		long exchangeMode; /*!< режим работы см. ExchangeMode */
+		long exchangeMode = {emNone}; /*!< режим работы см. ExchangeMode */
 
 		std::atomic_bool activated;
 		int activateTimeout;

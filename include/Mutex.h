@@ -123,7 +123,7 @@ namespace UniSetTypes
 		private:
 			std::string nm;
 			friend class uniset_rwmutex_lock;
-			ost::ThreadLock m;
+			ost::ThreadLock m; // это рекурсивный mutex (!)
 	};
 
 	std::ostream& operator<<(std::ostream& os, uniset_rwmutex& m );
