@@ -13,9 +13,7 @@ using namespace UniSetExtensions;
 MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
 						  const std::shared_ptr<SharedMemory> ic, const std::string& prefix ):
 	MBExchange(objId, shmId, ic, prefix),
-	force_disconnect(true),
-	mbtcp(nullptr),
-	pollThread(0)
+	force_disconnect(true)
 {
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(MBTCPMaster): objId=-1?!! Use --" + prefix + "-name" );
@@ -55,7 +53,7 @@ MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shm
 	else
 		ic->addReadItem( sigc::mem_fun(this, &MBTCPMaster::readItem) );
 
-	pollThread = new ThreadCreator<MBTCPMaster>(this, &MBTCPMaster::poll_thread);
+	pollThread = make_shared<ThreadCreator<MBTCPMaster>>(this, &MBTCPMaster::poll_thread);
 	pollThread->setFinalAction(this, &MBTCPMaster::final_thread);
 
 	if( dlog()->is_info() )
@@ -71,9 +69,6 @@ MBTCPMaster::~MBTCPMaster()
 		if( pollThread->isRunning() )
 			pollThread->join();
 	}
-
-	delete pollThread;
-	mbtcp.reset();
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
@@ -195,9 +190,6 @@ void MBTCPMaster::sigterm( int signo )
 
 		if( pollThread->isRunning() )
 			pollThread->join();
-
-		delete pollThread;
-		pollThread = 0;
 	}
 
 	try

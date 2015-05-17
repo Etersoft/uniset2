@@ -198,17 +198,19 @@ TEST_CASE("uniset_rwmutex_{wr|r} thread lock", "[mutex][threadlock][basic]" )
 	g_mutex.rlock();
 
 	std::vector< std::future<bool> > vw(3);
-	for( int w=0; w<3; w++ )
-		vw.push_back( std::async(std::launch::async, writer_thread,w) );
+
+	for( int w = 0; w < 3; w++ )
+		vw.push_back( std::async(std::launch::async, writer_thread, w) );
 
 	std::vector< std::future<bool> > vr(3);
-	for( int r=0; r<5; r++ )
-		vr.push_back( std::async(std::launch::async, reader_thread,r) );
+
+	for( int r = 0; r < 5; r++ )
+		vr.push_back( std::async(std::launch::async, reader_thread, r) );
 
 	msleep(10);
 
 	// read захватывают сразу без задержек..
-	for( auto&& i: vr )
+	for( auto && i : vr )
 	{
 		if( i.valid()  )
 			REQUIRE( i.get() == true );
@@ -218,7 +220,7 @@ TEST_CASE("uniset_rwmutex_{wr|r} thread lock", "[mutex][threadlock][basic]" )
 	g_mutex.unlock();
 
 	// проверяем что write-ы завершают работу.
-	for( auto& i: vw )
+	for( auto& i : vw )
 	{
 		if( i.valid() )
 			REQUIRE( i.get() == true );

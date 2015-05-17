@@ -118,14 +118,15 @@ TEST_CASE("genRegID", "[modbus][genRegID]" )
 	int max_reg = numeric_limits<ModbusRTU::ModbusData>::max();
 	int max_fn = numeric_limits<ModbusRTU::ModbusByte>::max();
 
-	ModbusRTU::RegID prevID = ModbusRTU::genRegID(0,0);
-	for( int f=1; f<max_fn; f++ )
+	ModbusRTU::RegID prevID = ModbusRTU::genRegID(0, 0);
+
+	for( int f = 1; f < max_fn; f++ )
 	{
-		ModbusRTU::RegID minID = ModbusRTU::genRegID(0,f);
+		ModbusRTU::RegID minID = ModbusRTU::genRegID(0, f);
 		REQUIRE( minID > prevID );
 
-		for( int r=1; r<max_reg; r++ )
-			REQUIRE( ModbusRTU::genRegID(r,f) == minID+r );
+		for( int r = 1; r < max_reg; r++ )
+			REQUIRE( ModbusRTU::genRegID(r, f) == minID + r );
 	}
 }
 #endif

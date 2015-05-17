@@ -223,6 +223,7 @@ bool RTUExchange::poll()
 		}
 
 		int prev_numreply = d->numreply;
+
 		if( d->dtype == MBExchange::dtRTU188 )
 		{
 			if( !d->rtu )

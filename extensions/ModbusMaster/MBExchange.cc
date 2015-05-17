@@ -2674,7 +2674,7 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
 	dinfo << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
 	int tout = it.getPIntProp("timeout", ptTimeout.getInterval() );
 
-	d->second->resp_Delay.set(0,tout); // ставим время на отпускание.. см. checkRespond()
+	d->second->resp_Delay.set(0, tout); // ставим время на отпускание.. см. checkRespond()
 	d->second->resp_invert = it.getIntProp("invert");
 	return true;
 }
@@ -3005,6 +3005,7 @@ bool MBExchange::poll()
 					  << " for sensors: ";
 				print_plist(dlog()->level3(), it->second->slst)
 						<< endl << " err: " << ex << endl;
+
 				if( ex.err == ModbusRTU::erTimeOut && !d->ask_every_reg )
 					break;
 			}
@@ -3070,16 +3071,16 @@ bool MBExchange::RTUDevice::checkRespond()
 {
 	bool prev = resp_state;
 
-	resp_state = resp_Delay.check( prev_numreply!=numreply );
+	resp_state = resp_Delay.check( prev_numreply != numreply );
 
 	prev_numreply.store(numreply);
 
-	return (prev!=resp_state);
+	return (prev != resp_state);
 }
 // -----------------------------------------------------------------------------
 void MBExchange::updateRespondSensors()
 {
-	for( const auto& it1: rmap )
+	for( const auto& it1 : rmap )
 	{
 		RTUDevice* d(it1.second);
 

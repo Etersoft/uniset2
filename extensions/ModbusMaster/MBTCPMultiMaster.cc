@@ -13,9 +13,7 @@ using namespace UniSetExtensions;
 MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
 									const std::shared_ptr<SharedMemory> ic, const std::string& prefix ):
 	MBExchange(objId, shmId, ic, prefix),
-	force_disconnect(true),
-	pollThread(0),
-	checkThread(0)
+	force_disconnect(true)
 {
 	tcpMutex.setName(myname + "_tcpMutex");
 
@@ -131,9 +129,9 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 	else
 		ic->addReadItem( sigc::mem_fun(this, &MBTCPMultiMaster::readItem) );
 
-	pollThread = new ThreadCreator<MBTCPMultiMaster>(this, &MBTCPMultiMaster::poll_thread);
+	pollThread = make_shared<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::poll_thread);
 	pollThread->setFinalAction(this, &MBTCPMultiMaster::final_thread);
-	checkThread = new ThreadCreator<MBTCPMultiMaster>(this, &MBTCPMultiMaster::check_thread);
+	checkThread = make_shared<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::check_thread);
 	checkThread->setFinalAction(this, &MBTCPMultiMaster::final_thread);
 
 
@@ -153,8 +151,6 @@ MBTCPMultiMaster::~MBTCPMultiMaster()
 
 		if( pollThread->isRunning() )
 			pollThread->join();
-
-		delete pollThread;
 	}
 
 	if( checkThread )
@@ -163,15 +159,9 @@ MBTCPMultiMaster::~MBTCPMultiMaster()
 
 		if( checkThread->isRunning() )
 			checkThread->join();
-
-		delete checkThread;
 	}
 
-	for( auto& it : mblist )
-	{
-		it.mbtcp.reset(); // = nullptr;
-		mbi = mblist.rend();
-	}
+	mbi = mblist.rend();
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
