@@ -322,9 +322,9 @@ class MBExchange:
 
 		std::string prefix;
 
-		timeout_t stat_time;         /*!< время сбора статистики обмена */
-		int poll_count;
-		PassiveTimer ptStatistic;   /*!< таймер для сбора статистики обмена */
+		timeout_t stat_time;      /*!< время сбора статистики обмена */
+		unsigned int poll_count;
+		PassiveTimer ptStatistic; /*!< таймер для сбора статистики обмена */
 
 		std::string prop_prefix;  /*!< префикс для считывания параметров обмена */
 

@@ -64,7 +64,7 @@ MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId
 
 	default_timeout = conf->getArgPInt("--" + prefix + "-timeout", it.getProp("timeout"), 5000);
 
-	int tout = conf->getArgPInt("--" + prefix + "-reopen-timeout", it.getProp("reopen_timeout"), default_timeout*2);
+	int tout = conf->getArgPInt("--" + prefix + "-reopen-timeout", it.getProp("reopen_timeout"), default_timeout * 2);
 	ptReopen.setTiming(tout);
 
 	aftersend_pause = conf->getArgPInt("--" + prefix + "-aftersend-pause", it.getProp("aftersend_pause"), 0);
@@ -1027,7 +1027,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 
 			ModbusRTU::WriteOutputMessage msg(dev->mbaddr, p->mbreg);
 
-			for( auto i = 0; i < p->q_count; i++, it++ )
+			for( unsigned int i = 0; i < p->q_count; i++, it++ )
 				msg.addData(it->second->mbval);
 
 			it--;

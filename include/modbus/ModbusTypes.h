@@ -22,10 +22,10 @@ namespace ModbusRTU
 {
 	// Базовые типы
 	typedef unsigned char ModbusByte;    /*!< modbus-байт */
-	const int BitsPerByte = 8;
+	const unsigned short BitsPerByte = 8;
 	typedef unsigned char ModbusAddr;    /*!< адрес узла в modbus-сети */
 	typedef unsigned short ModbusData;    /*!< размер данных в modbus-сообщениях */
-	const int BitsPerData = 16;
+	const unsigned short BitsPerData = 16;
 	typedef unsigned short ModbusCRC;    /*!< размер CRC16 в modbus-сообщениях */
 
 	// ---------------------------------------------------------------------
@@ -33,44 +33,44 @@ namespace ModbusRTU
 	enum SlaveFunctionCode
 	{
 		fnUnknown                = 0x00,
-		fnReadCoilStatus        = 0x01, /*!< read coil status */
+		fnReadCoilStatus         = 0x01, /*!< read coil status */
 		fnReadInputStatus        = 0x02, /*!< read input status */
 		fnReadOutputRegisters    = 0x03, /*!< read register outputs or memories or read word outputs or memories */
-		fnReadInputRegisters    = 0x04, /*!< read input registers or memories or read word outputs or memories */
+		fnReadInputRegisters     = 0x04, /*!< read input registers or memories or read word outputs or memories */
 		fnForceSingleCoil        = 0x05, /*!< forces a single coil to either ON or OFF */
 		fnWriteOutputSingleRegister = 0x06,    /*!< write register outputs or memories */
 		fnDiagnostics            = 0x08, /*!< Diagnostics (Serial Line only) */
-		fnForceMultipleCoils    = 0x0F,    /*!< force multiple coils */
-		fnWriteOutputRegisters    = 0x10,    /*!< write register outputs or memories */
-		fnReadFileRecord        = 0x14,    /*!< read file record */
+		fnForceMultipleCoils     = 0x0F,    /*!< force multiple coils */
+		fnWriteOutputRegisters   = 0x10,    /*!< write register outputs or memories */
+		fnReadFileRecord         = 0x14,    /*!< read file record */
 		fnWriteFileRecord        = 0x15,    /*!< write file record */
 		fnMEI                    = 0x2B, /*!< Modbus Encapsulated Interface */
 		fnSetDateTime            = 0x50, /*!< set date and time */
-		fnRemoteService            = 0x53,    /*!< call remote service */
-		fnJournalCommand        = 0x65,    /*!< read,write,delete alarm journal */
-		fnFileTransfer            = 0x66    /*!< file transfer */
+		fnRemoteService          = 0x53,    /*!< call remote service */
+		fnJournalCommand         = 0x65,    /*!< read,write,delete alarm journal */
+		fnFileTransfer           = 0x66    /*!< file transfer */
 	};
 
 	/*! Коды диагностически подфункций (для запроса 0x08) */
 	enum DiagnosticsSubFunction
 	{
-		subEcho = 0x00,         /*!< (0) Return Query Data (echo) */
-		dgRestartComm = 0x01,     /*!< (1) Restart Communications Option */
-		dgDiagReg = 0x02,         /*!< (2) Return Diagnostic Register */
+		subEcho = 0x00,          /*!< (0) Return Query Data (echo) */
+		dgRestartComm = 0x01,    /*!< (1) Restart Communications Option */
+		dgDiagReg = 0x02,        /*!< (2) Return Diagnostic Register */
 		dgChangeASCII = 0x03,    /*!< (3) Change ASCII Input Delimiter */
 		dgForceListen = 0x04,    /*!< (4) Force Listen Only Mode */
 		// 05.. 09 RESERVED
-		dgClearCounters = 0x0A,     /*!< (10)Clear Counters and Diagnostic Register */
-		dgBusMsgCount = 0x0B,        /*!< (11) Return Bus Message Count */
-		dgBusErrCount = 0x0C,        /*!< (12) Return Bus Communication Error Count */
-		dgBusExceptCount = 0x0D,    /*!< (13) Return Bus Exception Error Count */
+		dgClearCounters = 0x0A,  /*!< (10)Clear Counters and Diagnostic Register */
+		dgBusMsgCount = 0x0B,    /*!< (11) Return Bus Message Count */
+		dgBusErrCount = 0x0C,    /*!< (12) Return Bus Communication Error Count */
+		dgBusExceptCount = 0x0D, /*!< (13) Return Bus Exception Error Count */
 		dgMsgSlaveCount = 0x0E,        /*!< (14) Return Slave Message Count */
 		dgNoNoResponseCount = 0x0F,    /*!< (15) Return Slave No Response Count */
 		dgSlaveNAKCount = 0x10,        /*!< (16) Return Slave NAK Count */
-		dgSlaveBusyCount = 0x11,        /*!< (17) Return Slave Busy Count */
-		dgBusCharOverrunCount = 0x12,    /*!< (18) Return Bus Character Overrun Count */
+		dgSlaveBusyCount = 0x11,       /*!< (17) Return Slave Busy Count */
+		dgBusCharOverrunCount = 0x12,  /*!< (18) Return Bus Character Overrun Count */
 		// = 0x13,    /*!<  RESERVED */
-		dgClearOverrunCounter = 0x14    /*!< (20) Clear Overrun Counter and FlagN.A. */
+		dgClearOverrunCounter = 0x14   /*!< (20) Clear Overrun Counter and FlagN.A. */
 								// 21 ...65535 RESERVED
 	};
 
@@ -121,9 +121,9 @@ namespace ModbusRTU
 	enum
 	{
 		/*! максимальное количество данных в пакете (c учётом контрольной суммы) */
-		MAXLENPACKET     = 508,    /*!< максимальная длина пакета 512 - header(2) - CRC(2) */
-		BroadcastAddr    = 255,    /*!< адрес для широковещательных сообщений */
-		MAXDATALEN        = 127    /*!< максимальное число слов, которое можно запросить.
+		MAXLENPACKET     = 508, /*!< максимальная длина пакета 512 - header(2) - CRC(2) */
+		BroadcastAddr    = 255, /*!< адрес для широковещательных сообщений */
+		MAXDATALEN       = 127  /*!< максимальное число слов, которое можно запросить.
                                     Связано с тем, что в ответе есть поле bcnt - количество байт
                                     Соответственно максимум туда можно записать только 255
                                 */
