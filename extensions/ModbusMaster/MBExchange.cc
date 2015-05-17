@@ -3040,7 +3040,7 @@ bool MBExchange::poll()
 
 	if( stat_time > 0 && ptStatistic.checkTime() )
 	{
-		cout << endl << "(poll statistic): number of calls is " << poll_count << " (poll time: " << stat_time << " sec)" << endl << endl;
+		dlog9 << endl << "(poll statistic): number of calls is " << poll_count << " (poll time: " << stat_time << " sec)" << endl << endl;
 		ptStatistic.reset();
 		poll_count = 0;
 	}
@@ -3091,7 +3091,7 @@ bool MBExchange::RTUDevice::checkRespond()
 		return (prev != resp_state);
 	}
 
-	if( resp_trTimeout.hi(resp_state && !resp_real) )
+	if( resp_trTimeout.hi(resp_state && !resp_real) || resp_real )
 		resp_ptTimeout.reset();
 
 	if( resp_real )
@@ -3125,7 +3125,7 @@ void MBExchange::updateRespondSensors()
 		RTUDevice* d(it1->second);
 
 		if( chanTimeout )
-			it1->second->resp_real = false;
+			d->resp_real = false;
 
 		dlog4 << myname << ": check respond addr=" << ModbusRTU::addr2str(d->mbaddr)
 			  << " respond_id=" << d->resp_id
