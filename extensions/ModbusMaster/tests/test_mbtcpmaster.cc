@@ -512,6 +512,20 @@ TEST_CASE("MBTCPMaster: exchangeMode", "[modbus][exchangemode][mbmaster][mbtcpma
 	}
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: check respond resnsor", "[modbus][respond][mbmaster][mbtcpmaster]")
+{
+	InitTest();
+	mbs->disableExchange(false);
+	msleep(1100);
+	CHECK( ui->getValue(slaveNotRespond) == 0 );
+	mbs->disableExchange(true);
+	msleep(1100);
+	CHECK( ui->getValue(slaveNotRespond) == 1 );
+	mbs->disableExchange(false);
+	msleep(1100);
+	CHECK( ui->getValue(slaveNotRespond) == 0 );
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMaster: iobase functions", "[modbus][iobase][mbmaster][mbtcpmaster]")
 {
 	WARN("Test of 'iobase functions'..not yet.. ");

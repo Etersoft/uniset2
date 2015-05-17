@@ -9,6 +9,7 @@
 #include "IONotifyController.h"
 #include "UniSetObject_LT.h"
 #include "PassiveTimer.h"
+#include "DelayTimer.h"
 #include "Trigger.h"
 #include "Mutex.h"
 #include "Calibration.h"
@@ -156,15 +157,14 @@ class MBExchange:
 				resp_id(UniSetTypes::DefaultObjectId),
 				resp_state(false),
 				resp_invert(false),
-				resp_real(false),
-				resp_init(false),
+				numreply(0),
+				prev_numreply(0),
 				ask_every_reg(false),
 				mode_id(UniSetTypes::DefaultObjectId),
 				mode(emNone),
 				speed(ComPort::ComSpeed38400),
 				rtu(0)
 			{
-				resp_trTimeout.change(false);
 			}
 
 			bool respnond;
@@ -173,15 +173,19 @@ class MBExchange:
 
 			DeviceType dtype;    /*!< тип устройства */
 
+			// resp - respond..(контроль наличия связи)
 			UniSetTypes::ObjectId resp_id;
 			IOController::IOStateList::iterator resp_it;
-			PassiveTimer resp_ptTimeout;
-			Trigger resp_trTimeout;
+			DelayTimer resp_Delay; // таймер для формирования задержки на отпускание (пропадание связи)
 			bool resp_state;
 			bool resp_invert;
-			bool resp_real;
-			bool resp_init;
-			bool ask_every_reg;
+			std::atomic<unsigned int> numreply; // количество успешных запросов..
+			std::atomic<unsigned int> prev_numreply;
+
+			//
+			bool ask_every_reg; /*!< опрашивать ли каждый регистр, независимо от результата опроса предыдущего. По умолчанию false - прервать опрос при первом же timeout */
+
+			// режим работы
 			UniSetTypes::ObjectId mode_id;
 			IOController::IOStateList::iterator mode_it;
 			long mode; // режим работы с устройством (см. ExchangeMode)

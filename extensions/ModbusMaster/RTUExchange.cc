@@ -184,12 +184,6 @@ bool RTUExchange::poll()
 			uniset_rwmutex_wrlock l(pollMutex);
 			pollActivated = false;
 			mb = initMB(false);
-
-			if( !mb )
-			{
-				for( auto& it : rmap )
-					it.second->resp_real = false;
-			}
 		}
 
 		if( !checkProcActive() )
@@ -228,6 +222,7 @@ bool RTUExchange::poll()
 			mbrtu->setSpeed(d->speed);
 		}
 
+		int prev_numreply = d->numreply;
 		if( d->dtype == MBExchange::dtRTU188 )
 		{
 			if( !d->rtu )
@@ -243,15 +238,14 @@ bool RTUExchange::poll()
 					mb->cleanupChannel();
 
 				d->rtu->poll(mbrtu);
-				d->resp_real = true;
+				d->numreply++;
 			}
 			catch( ModbusRTU::mbException& ex )
 			{
-				if( d->resp_real )
+				if( d->numreply != d->prev_numreply )
 				{
 					dlog3 << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
 						  << " -> " << ex << endl;
-					d->resp_real = false;
 				}
 			}
 		}
@@ -259,8 +253,6 @@ bool RTUExchange::poll()
 		{
 			dlog3 << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr)
 				  << " regs=" << d->regmap.size() << endl;
-
-			d->resp_real = false;
 
 			for( auto it = d->regmap.begin(); it != d->regmap.end(); ++it )
 			{
@@ -272,21 +264,16 @@ bool RTUExchange::poll()
 							mb->cleanupChannel();
 
 						if( pollRTU(d, it) )
-							d->resp_real = true;
+							d->numreply++;
 					}
 				}
 				catch( ModbusRTU::mbException& ex )
 				{
-					//                    if( d->resp_real )
-					//                    {
 					dlog3 << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
 						  << " reg=" << ModbusRTU::dat2str(it->second->mbreg)
 						  << " for sensors: ";
 					print_plist(dlog()->level3(), it->second->slst);
 					dlog()->level3() << " err: " << ex << endl;
-
-					//        d->resp_real = false;
-					//                    }
 				}
 
 				if( it == d->regmap.end() )
@@ -297,7 +284,7 @@ bool RTUExchange::poll()
 			}
 		}
 
-		if( d->resp_real )
+		if( d->numreply != prev_numreply )
 			allNotRespond = false;
 	}
 

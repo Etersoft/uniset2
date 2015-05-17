@@ -495,7 +495,7 @@ std::ostream& operator<<( std::ostream& os, MBExchange::RTUDevice& d )
 	os  << "addr=" << ModbusRTU::addr2str(d.mbaddr)
 		<< " type=" << d.dtype
 		<< " respond_id=" << d.resp_id
-		<< " respond_timeout=" << d.resp_ptTimeout.getInterval()
+		<< " respond_timeout=" << d.resp_Delay.getOffDelay()
 		<< " respond_state=" << d.resp_state
 		<< " respond_invert=" << d.resp_invert
 		<< endl;
@@ -2672,8 +2672,9 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
 	}
 
 	dinfo << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
-	int tout = it.getPIntProp("timeout", 5000);
-	d->second->resp_ptTimeout.setTiming(tout);
+	int tout = it.getPIntProp("timeout", ptTimeout.getInterval() );
+
+	d->second->resp_Delay.set(0,tout); // ставим время на отпускание.. см. checkRespond()
 	d->second->resp_invert = it.getIntProp("invert");
 	return true;
 }
@@ -2945,12 +2946,6 @@ bool MBExchange::poll()
 			uniset_rwmutex_wrlock l(pollMutex);
 			pollActivated = false;
 			mb = initMB(false);
-
-			if( !mb )
-			{
-				for( auto it = rmap.begin(); it != rmap.end(); ++it )
-					it->second->resp_real = false;
-			}
 		}
 
 		if( !checkProcActive() )
@@ -2985,7 +2980,7 @@ bool MBExchange::poll()
 		dlog3 << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr)
 			  << " regs=" << d->regmap.size() << endl;
 
-		d->resp_real = false;
+		int prev_numreply = d->numreply.load();
 
 		for( auto it = d->regmap.begin(); it != d->regmap.end(); ++it )
 		{
@@ -2993,38 +2988,28 @@ bool MBExchange::poll()
 				return false;
 
 			if( exchangeMode == emSkipExchange )
-			{
-				d->resp_real = false;
 				continue;
-			}
 
 			try
 			{
 				if( d->dtype == MBExchange::dtRTU || d->dtype == MBExchange::dtMTR )
 				{
 					if( pollRTU(d, it) )
-						d->resp_real = true;
+						d->numreply++;
 				}
 			}
 			catch( ModbusRTU::mbException& ex )
 			{
-				//                if( d->resp_real )
-				//                {
 				dlog3 << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
 					  << " reg=" << ModbusRTU::dat2str(it->second->mbreg)
 					  << " for sensors: ";
 				print_plist(dlog()->level3(), it->second->slst)
 						<< endl << " err: " << ex << endl;
-
-				// d->resp_real = false;
 				if( ex.err == ModbusRTU::erTimeOut && !d->ask_every_reg )
 					break;
-
-				if( ex.err == ModbusRTU::erNoError )
-					d->resp_real = true;
 			}
 
-			if( d->resp_real )
+			if( d->numreply != prev_numreply )
 				allNotRespond = false;
 
 			if( it == d->regmap.end() )
@@ -3085,52 +3070,26 @@ bool MBExchange::RTUDevice::checkRespond()
 {
 	bool prev = resp_state;
 
-	if( resp_ptTimeout.getInterval() <= 0 )
-	{
-		resp_state = resp_real;
-		return (prev != resp_state);
-	}
+	resp_state = resp_Delay.check( prev_numreply!=numreply );
 
-	if( resp_trTimeout.hi(resp_state && !resp_real) || resp_real )
-		resp_ptTimeout.reset();
+	prev_numreply.store(numreply);
 
-	if( resp_real )
-		resp_state = true;
-	else if( resp_state && !resp_real && resp_ptTimeout.checkTime() )
-		resp_state = false;
-
-	// если ещё не инициализировали значение в SM
-	// то возвращаем true, чтобы оно принудительно сохранилось
-	if( !resp_init )
-	{
-		resp_state = resp_real;
-		resp_init = true;
-		prev = resp_state;
-		return true;
-	}
-
-	return ( prev != resp_state );
+	return (prev!=resp_state);
 }
 // -----------------------------------------------------------------------------
 void MBExchange::updateRespondSensors()
 {
-	bool chanTimeout = false;
+	for( const auto& it1: rmap )
 	{
-		uniset_rwmutex_rlock l(pollMutex);
-		chanTimeout = pollActivated && ptTimeout.checkTime();
-	}
-
-	for( auto it1 = rmap.begin(); it1 != rmap.end(); ++it1 )
-	{
-		RTUDevice* d(it1->second);
-
-		if( chanTimeout )
-			d->resp_real = false;
+		RTUDevice* d(it1.second);
 
 		dlog4 << myname << ": check respond addr=" << ModbusRTU::addr2str(d->mbaddr)
 			  << " respond_id=" << d->resp_id
-			  << " real=" << d->resp_real
 			  << " state=" << d->resp_state
+			  << " [timeout=" << d->resp_Delay.getOffDelay()
+			  << " numreply=" << d->numreply
+			  << " prev_numreply=" << d->prev_numreply
+			  << " ]"
 			  << endl;
 
 		if( d->checkRespond() && d->resp_id != DefaultObjectId  )
