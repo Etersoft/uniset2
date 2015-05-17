@@ -180,11 +180,7 @@ bool RTUExchange::poll()
 {
 	if( !mb )
 	{
-		{
-			uniset_rwmutex_wrlock l(pollMutex);
-			pollActivated = false;
-			mb = initMB(false);
-		}
+		mb = initMB(false);
 
 		if( !checkProcActive() )
 			return false;
@@ -192,12 +188,6 @@ bool RTUExchange::poll()
 		updateSM();
 		allInitOK = false;
 		return false;
-	}
-
-	{
-		uniset_rwmutex_wrlock l(pollMutex);
-		pollActivated = true;
-		ptTimeout.reset();
 	}
 
 	if( !allInitOK )
@@ -222,7 +212,7 @@ bool RTUExchange::poll()
 			mbrtu->setSpeed(d->speed);
 		}
 
-		int prev_numreply = d->numreply;
+		unsigned int prev_numreply = d->numreply;
 
 		if( d->dtype == MBExchange::dtRTU188 )
 		{

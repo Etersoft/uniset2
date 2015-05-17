@@ -137,7 +137,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 
 	// Т.к. при "многоканальном" доступе к slave, смена канала должна происходит сразу после
 	// неудачной попытки запросов по одному из каналов, то ПЕРЕОПРЕДЕЛЯЕМ reopen, на timeout..
-	ptReopen.setTiming(ptTimeout.getInterval());
+	ptReopen.setTiming(default_timeout);
 
 	if( dlog()->is_info() )
 		printMap(rmap);
@@ -315,11 +315,6 @@ void MBTCPMultiMaster::sysCommand( const UniSetTypes::SystemMessage* sm )
 // -----------------------------------------------------------------------------
 void MBTCPMultiMaster::poll_thread()
 {
-	{
-		uniset_rwmutex_wrlock l(pollMutex);
-		ptTimeout.reset();
-	}
-
 	// ждём начала работы..(см. MBExchange::activateObject)
 	while( !checkProcActive() )
 	{
@@ -406,6 +401,40 @@ void MBTCPMultiMaster::initIterators()
 	for( auto& it : mblist )
 		shm->initIterator(it.respond_it);
 }
+// -----------------------------------------------------------------------------
+void MBTCPMultiMaster::sigterm( int signo )
+{
+	if( pollThread )
+	{
+		pollThread->stop();
+
+		if( pollThread->isRunning() )
+			pollThread->join();
+	}
+
+	if( checkThread )
+	{
+		checkThread->stop();
+
+		if( checkThread->isRunning() )
+			checkThread->join();
+	}
+
+	try
+	{
+		MBExchange::sigterm(signo);
+	}
+	catch( const std::exception& ex )
+	{
+		cerr << "catch: " << ex.what() << endl;
+	}
+	catch( ... )
+	{
+		std::exception_ptr p = std::current_exception();
+		std::clog << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
+	}
+}
+
 // -----------------------------------------------------------------------------
 void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
 {

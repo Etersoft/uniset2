@@ -331,9 +331,8 @@ class MBExchange:
 		std::shared_ptr<ModbusClient> mb;
 
 		// определение timeout для соединения
-		PassiveTimer ptTimeout;
-		bool pollActivated;
-		int recv_timeout;
+		timeout_t recv_timeout;
+		timeout_t default_timeout;
 
 		int aftersend_pause;
 

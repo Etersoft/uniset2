@@ -230,9 +230,12 @@ class MBTCPMultiMaster:
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
 		virtual void initIterators() override;
 		virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;
+		virtual void sigterm( int signo ) override;
+
 		void poll_thread();
 		void check_thread();
 		void final_thread();
+
 
 		UniSetTypes::uniset_rwmutex mbMutex;
 		bool force_disconnect;

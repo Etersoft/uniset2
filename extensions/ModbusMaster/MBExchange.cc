@@ -28,8 +28,7 @@ MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId
 	prefix(prefix),
 	poll_count(0),
 	prop_prefix(""),
-	mb(nullptr),
-	pollActivated(false)
+	mb(nullptr)
 {
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(MBExchange): objId=-1?!! Use --" + prefix + "-name" );
@@ -63,13 +62,9 @@ MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId
 
 	recv_timeout = conf->getArgPInt("--" + prefix + "-recv-timeout", it.getProp("recv_timeout"), 500);
 
-	int tout = conf->getArgPInt("--" + prefix + "-timeout", it.getProp("timeout"), 5000);
-	// для совместимости со старым RTUExchange
-	// надо обратывать и all-timeout
-	tout = conf->getArgPInt("--" + prefix + "-all-timeout", it.getProp("all_timeout"), tout);
-	ptTimeout.setTiming(tout);
+	default_timeout = conf->getArgPInt("--" + prefix + "-timeout", it.getProp("timeout"), 5000);
 
-	tout = conf->getArgPInt("--" + prefix + "-reopen-timeout", it.getProp("reopen_timeout"), 10000);
+	int tout = conf->getArgPInt("--" + prefix + "-reopen-timeout", it.getProp("reopen_timeout"), default_timeout*2);
 	ptReopen.setTiming(tout);
 
 	aftersend_pause = conf->getArgPInt("--" + prefix + "-aftersend-pause", it.getProp("aftersend_pause"), 0);
@@ -2672,7 +2667,7 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
 	}
 
 	dinfo << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
-	int tout = it.getPIntProp("timeout", ptTimeout.getInterval() );
+	int tout = it.getPIntProp("timeout", default_timeout );
 
 	d->second->resp_Delay.set(0, tout); // ставим время на отпускание.. см. checkRespond()
 	d->second->resp_invert = it.getIntProp("invert");
@@ -2942,11 +2937,7 @@ bool MBExchange::poll()
 {
 	if( !mb )
 	{
-		{
-			uniset_rwmutex_wrlock l(pollMutex);
-			pollActivated = false;
-			mb = initMB(false);
-		}
+		mb = initMB(false);
 
 		if( !checkProcActive() )
 			return false;
@@ -2954,12 +2945,6 @@ bool MBExchange::poll()
 		updateSM();
 		allInitOK = false;
 		return false;
-	}
-
-	{
-		uniset_rwmutex_wrlock l(pollMutex);
-		pollActivated = true;
-		ptTimeout.reset();
 	}
 
 	if( !allInitOK )
@@ -2980,7 +2965,7 @@ bool MBExchange::poll()
 		dlog3 << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr)
 			  << " regs=" << d->regmap.size() << endl;
 
-		int prev_numreply = d->numreply.load();
+		unsigned int prev_numreply = d->numreply.load();
 
 		for( auto it = d->regmap.begin(); it != d->regmap.end(); ++it )
 		{
@@ -3029,11 +3014,6 @@ bool MBExchange::poll()
 		dlog9 << endl << "(poll statistic): number of calls is " << poll_count << " (poll time: " << stat_time << " sec)" << endl << endl;
 		ptStatistic.reset();
 		poll_count = 0;
-	}
-
-	{
-		uniset_rwmutex_wrlock l(pollMutex);
-		pollActivated = false;
 	}
 
 	if( !checkProcActive() )

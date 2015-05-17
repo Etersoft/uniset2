@@ -139,11 +139,6 @@ void MBTCPMaster::final_thread()
 // -----------------------------------------------------------------------------
 void MBTCPMaster::poll_thread()
 {
-	{
-		uniset_rwmutex_wrlock l(pollMutex);
-		ptTimeout.reset();
-	}
-
 	// ждём начала работы..(см. MBExchange::activateObject)
 	while( !checkProcActive() )
 	{
