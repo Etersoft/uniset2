@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt34
+Release: alt34.1
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -445,6 +445,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Mon May 18 2015 Pavel Vainerman <pv@etersoft.ru> 2.0-alt34.1
+- (ModbusSlave): fixed bug in readOutputRegisters
+
 * Mon May 18 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt34
 - (ModbusMaster): fixed bug in 'set respond senror mechanism'
 - (ModbusMaster): refactoring
