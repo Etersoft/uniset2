@@ -166,6 +166,18 @@
 			<item id="2024" mbs="1" mbreg="129" nbit="1" iotype="DI" name="Test write nbit 1 (reg2)" textname="Тестовый регистр для проверки записи nbit (reg 2)"/>
 			<item id="2025" mbs="1" mbreg="129" nbit="5" iotype="AI" name="Test write nbit 5 (reg2)" textname="Тестовый регистр для проверки записи nbit (reg 2)"/>
 
+			<!-- read 03 count=10 -->
+			<item default="1" id="2026" mbs="1" mbreg="130" iotype="AI" name="Test_CountRead03_1" textname="Тестовый регистр для 0x03"/>
+			<item default="2" id="2027" mbs="1" mbreg="131" iotype="AI" name="Test_CountRead03_2" textname="Тестовый регистр для 0x03"/>
+			<item default="3" id="2028" mbs="1" mbreg="132" iotype="AI" name="Test_CountRead03_3" textname="Тестовый регистр для 0x03"/>
+			<item default="4" id="2029" mbs="1" mbreg="133" iotype="AI" name="Test_CountRead03_4" textname="Тестовый регистр для 0x03"/>
+			<item default="5" id="2030" mbs="1" mbreg="134" iotype="AI" name="Test_CountRead03_5" textname="Тестовый регистр для 0x03"/>
+			<item default="6" id="2031" mbs="1" mbreg="135" iotype="AI" name="Test_CountRead03_6" textname="Тестовый регистр для 0x03"/>
+			<item default="7" id="2032" mbs="1" mbreg="136" iotype="AI" name="Test_CountRead03_7" textname="Тестовый регистр для 0x03"/>
+			<item default="8" id="2033" mbs="1" mbreg="137" iotype="AI" name="Test_CountRead03_8" textname="Тестовый регистр для 0x03"/>
+			<item default="9" id="2034" mbs="1" mbreg="138" iotype="AI" name="Test_CountRead03_9" textname="Тестовый регистр для 0x03"/>
+			<item default="10" id="2035" mbs="1" mbreg="139" iotype="AI" name="Test_CountRead03_10" textname="Тестовый регистр для 0x03"/>
+
 			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
 
 		</sensors>

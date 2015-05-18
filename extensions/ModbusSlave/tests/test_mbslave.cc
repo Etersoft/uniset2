@@ -1031,12 +1031,40 @@ TEST_CASE("Write(0x06,0x10): nbit", "[modbus][mbslave][mbtcpslave][writenbit]")
 	}
 }
 // -------------------------------------------------------------
+#if 0
 TEST_CASE("check-mbfunc", "[modbus][mbslave][mbtcpslave][mbfunc]")
 {
 	using namespace VTypes;
 	InitTest();
 
 	//...
+}
+#endif
+// -------------------------------------------------------------
+TEST_CASE("read03(04) 10 registers", "[modbus][mbslave][mbtcpslave][readmore]")
+{
+	using namespace VTypes;
+	InitTest();
+
+	ModbusRTU::ModbusData tREG = 130;
+	int num = 10;
+
+	SECTION("Test: read03")
+	{
+		ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr, tREG, num);
+		for( int i=0; i<num; i++ )
+		{
+			REQUIRE( ret.data[i] == (i+1) );
+		}
+	}
+	SECTION("Test: read04")
+	{
+		ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr, tREG, num);
+		for( int i=0; i<num; i++ )
+		{
+			REQUIRE( ret.data[i] == (i+1) );
+		}
+	}
 }
 // -------------------------------------------------------------
 /*! \todo Доделать тесты на считывание с разными prop_prefix.. */

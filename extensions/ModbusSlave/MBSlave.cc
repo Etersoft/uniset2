@@ -1580,12 +1580,14 @@ ModbusRTU::mbErrCode MBSlave::much_real_read( const ModbusRTU::ModbusData reg, M
 		  << ModbusRTU::dat2str(reg) << "(" << (int)reg << ") " << " count=" << count
 		  << " mbfunc=" << fn << endl;
 
-	int mbfunc = checkMBFunc ? fn : default_mbfunc;
-
 	auto it = iomap.end();
 	int i = 0;
+
+	int mbfunc = checkMBFunc ? fn : default_mbfunc;
 	ModbusRTU::RegID regID = genRegID(reg, mbfunc);
 
+	// ищем регистр.. "пропуская дырки"..
+	// ведь запросить могут начиная с "несуществующего регистра"
 	for( ; i < count; i++ )
 	{
 		it = iomap.find(regID + i);
