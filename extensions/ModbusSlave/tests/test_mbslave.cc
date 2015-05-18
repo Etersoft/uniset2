@@ -1081,4 +1081,28 @@ TEST_CASE("read03(04) 10 registers", "[modbus][mbslave][mbtcpslave][readmore]")
 
 }
 // -------------------------------------------------------------
+TEST_CASE("write10: 10 registers", "[modbus][mbslave][mbtcpslave][writemore]")
+{
+	using namespace VTypes;
+	InitTest();
+
+	UniSetTypes::ObjectId id = 2036;
+	int offset = 2;
+	ModbusRTU::ModbusData tREG = 150 - offset; // реальные регистры начинаются с 150
+	int num = 10;
+
+	ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
+	for( int i=1; i<=num; i++ )
+		msg.addData(i);
+
+	ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == num );
+
+	for( int i=0; i<num; i++ )
+	{
+		REQUIRE( (signed short)ui->getValue(id+i) == (i+1) );
+	}
+}
+// -------------------------------------------------------------
 /*! \todo Доделать тесты на считывание с разными prop_prefix.. */

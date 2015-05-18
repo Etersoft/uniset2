@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt34.1
+Release: alt34.2
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -445,6 +445,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Mon May 18 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt34.2
+- (ModbusSlave): fixed bug in much_real_write (mbfunc=0x10 processing)
+
 * Mon May 18 2015 Pavel Vainerman <pv@etersoft.ru> 2.0-alt34.1
 - (ModbusSlave): fixed bug in readOutputRegisters
 
@@ -458,7 +461,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - (ModbusSlave): added support mbfunc.. (use RegID)
 
 * Wed May 13 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt32
-- sync from 1.x/master: ModbusMaster: fixed bug: unstable timeout...( thank`s ilyap@etersoft.ru)
+- sync from 1.x/master: ModbusMaster: fixed bug: unstable timeout...(thank`s ilyap@etersoft.ru)
 - make style
 
 * Mon May 11 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt31

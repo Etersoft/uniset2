@@ -1283,9 +1283,11 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( const ModbusRTU::ModbusData reg, 
 	int mbfunc = checkMBFunc ? fn : default_mbfunc;
 	ModbusRTU::RegID regID = genRegID(reg, mbfunc);
 
+	// ищем регистр.. "пропуская дырки"..
+	// ведь запросить могут начиная с "несуществующего регистра"
 	for( ; i < count; i++ )
 	{
-		it = iomap.find(regID);
+		it = iomap.find(regID+i);
 
 		if( it != iomap.end() )
 		{
