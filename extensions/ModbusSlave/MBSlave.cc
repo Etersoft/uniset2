@@ -85,7 +85,10 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 
 	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id", it.getProp("reg_from_id"));
 	checkMBFunc = conf->getArgInt("--" + prefix + "-check-mbfunc", it.getProp("check_mbfunc"));
-	dinfo << myname << "(init): mbregFromID=" << mbregFromID << endl;
+	dinfo << myname << "(init): mbregFromID=" << mbregFromID
+		  << " checkMBFunc=" << checkMBFunc
+		  << " default_mbfunc=" << default_mbfunc
+		  << endl;
 
 	respond_id = conf->getSensorID(conf->getArgParam("--" + prefix + "-respond-id", it.getProp("respond_id")));
 	respond_invert = conf->getArgInt("--" + prefix + "-respond-invert", it.getProp("respond_invert"));
@@ -899,6 +902,9 @@ bool MBSlave::initItem( UniXML::iterator& it )
 
 	int mbfunc = IOBase::initIntProp(it, "mbfunc", prop_prefix, false, default_mbfunc);
 
+	if( !checkMBFunc )
+		mbfunc = default_mbfunc;
+
 	p.regID = ModbusRTU::genRegID(p.mbreg, mbfunc);
 
 	p.amode = MBSlave::amRW;
@@ -1215,7 +1221,7 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage&
 	if( query.count <= 1 )
 	{
 		ModbusRTU::ModbusData d = 0;
-		ModbusRTU::mbErrCode ret = real_read(query.start, d);
+		ModbusRTU::mbErrCode ret = real_read(query.start, d, query.func);
 
 		if( ret == ModbusRTU::erNoError )
 			reply.addData(d);
@@ -1633,10 +1639,15 @@ ModbusRTU::mbErrCode MBSlave::much_real_read( const ModbusRTU::ModbusData reg, M
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::real_read( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val, const int fn )
 {
-	dinfo << myname << "(real_read): read mbID="
-		  << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")"  << " fn=" << fn << endl;
-
 	ModbusRTU::RegID regID = checkMBFunc ? genRegID(reg, fn) : genRegID(reg, default_mbfunc);
+
+	dinfo << myname << "(real_read): read mbID="
+		  << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")"  << " fn=" << fn
+		  << " regID=" << regID
+		  << " default_mbfunc=" << default_mbfunc
+		  << " checkMBFunc=" << checkMBFunc
+		  << endl;
+
 
 	auto it = iomap.find(regID);
 	return real_read_it(it, val);
