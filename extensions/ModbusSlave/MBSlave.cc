@@ -902,6 +902,9 @@ bool MBSlave::initItem( UniXML::iterator& it )
 
 	int mbfunc = IOBase::initIntProp(it, "mbfunc", prop_prefix, false, default_mbfunc);
 
+	if( !checkMBFunc )
+		mbfunc = default_mbfunc;
+
 	p.regID = ModbusRTU::genRegID(p.mbreg, mbfunc);
 
 	p.amode = MBSlave::amRW;
@@ -1636,10 +1639,15 @@ ModbusRTU::mbErrCode MBSlave::much_real_read( const ModbusRTU::ModbusData reg, M
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::real_read( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val, const int fn )
 {
-	dinfo << myname << "(real_read): read mbID="
-		  << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")"  << " fn=" << fn << endl;
-
 	ModbusRTU::RegID regID = checkMBFunc ? genRegID(reg, fn) : genRegID(reg, default_mbfunc);
+
+	dinfo << myname << "(real_read): read mbID="
+		  << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")"  << " fn=" << fn
+		  << " regID=" << regID
+		  << " default_mbfunc=" << default_mbfunc
+		  << " checkMBFunc=" << checkMBFunc
+		  << endl;
+
 
 	auto it = iomap.find(regID);
 	return real_read_it(it, val);
