@@ -85,7 +85,10 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 
 	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id", it.getProp("reg_from_id"));
 	checkMBFunc = conf->getArgInt("--" + prefix + "-check-mbfunc", it.getProp("check_mbfunc"));
-	dinfo << myname << "(init): mbregFromID=" << mbregFromID << endl;
+	dinfo << myname << "(init): mbregFromID=" << mbregFromID
+		  << " checkMBFunc=" << checkMBFunc
+		  << " default_mbfunc=" << default_mbfunc
+		  << endl;
 
 	respond_id = conf->getSensorID(conf->getArgParam("--" + prefix + "-respond-id", it.getProp("respond_id")));
 	respond_invert = conf->getArgInt("--" + prefix + "-respond-invert", it.getProp("respond_invert"));
@@ -1215,7 +1218,7 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage&
 	if( query.count <= 1 )
 	{
 		ModbusRTU::ModbusData d = 0;
-		ModbusRTU::mbErrCode ret = real_read(query.start, d);
+		ModbusRTU::mbErrCode ret = real_read(query.start, d, query.func);
 
 		if( ret == ModbusRTU::erNoError )
 			reply.addData(d);

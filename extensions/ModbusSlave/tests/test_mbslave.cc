@@ -1049,7 +1049,7 @@ TEST_CASE("read03(04) 10 registers", "[modbus][mbslave][mbtcpslave][readmore]")
 	ModbusRTU::ModbusData tREG = 130;
 	int num = 10;
 
-	SECTION("Test: read03")
+	SECTION("Test: read03 num=10")
 	{
 		ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr, tREG, num);
 		for( int i=0; i<num; i++ )
@@ -1057,6 +1057,13 @@ TEST_CASE("read03(04) 10 registers", "[modbus][mbslave][mbtcpslave][readmore]")
 			REQUIRE( ret.data[i] == (i+1) );
 		}
 	}
+
+	SECTION("Test: read03 num=1")
+	{
+		ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr, tREG, 1);
+		REQUIRE( ret.data[0] == 1 );
+	}
+
 	SECTION("Test: read04")
 	{
 		ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr, tREG, num);
@@ -1065,6 +1072,13 @@ TEST_CASE("read03(04) 10 registers", "[modbus][mbslave][mbtcpslave][readmore]")
 			REQUIRE( ret.data[i] == (i+1) );
 		}
 	}
+
+	SECTION("Test: read04 num=1")
+	{
+		ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr, tREG, 1);
+		REQUIRE( ret.data[0] == 1 );
+	}
+
 }
 // -------------------------------------------------------------
 /*! \todo Доделать тесты на считывание с разными prop_prefix.. */
