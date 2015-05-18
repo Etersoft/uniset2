@@ -61,7 +61,7 @@ ostream& UniSetTypes::Configuration::help(ostream& os)
 	os << "\n Debug command:\n";
 	print_help(os, 25, "  [debname]", "имя DebugStream указанное в конфигурационном файле\n");
 	print_help(os, 25, "--[debname]-no-debug", "отключение логов\n");
-	print_help(os, 25, "--[debname]-log-in-file", "перенаправление лога в файл\n");
+	print_help(os, 25, "--[debname]-logfile", "перенаправление лога в файл\n");
 	print_help(os, 25, "--[debname]-add-levels", "добавить уровень вывода логов\n");
 	print_help(os, 25, "--[debname]-del-levels", "удалить уровень вывода логов\n");
 	print_help(os, 25, "--uniport num", "использовать заданный порт (переопеределяет 'defaultport' заданный в конф. файле в разделе <nodes>)\n");
@@ -69,7 +69,7 @@ ostream& UniSetTypes::Configuration::help(ostream& os)
 	print_help(os, 25, "--transientIOR {1,0}", "использовать генерируемые IOR(не постоянные). Переопределяет параметр в конфигурационном файле. Default=1\n");
 
 	return os << "\nПример использования:\t myUniSetProgram "
-		   << "--ulog-add-levels level1,info,system,warn --ulog-log-in-file myprogrpam.log\n\n";
+		   << "--ulog-add-levels level1,info,system,warn --ulog-logfile myprogrpam.log\n\n";
 }
 // -------------------------------------------------------------------------
 namespace UniSetTypes
@@ -872,14 +872,14 @@ namespace UniSetTypes
 		}
 
 		// теперь смотрим командную строку
-		string log_in("--" + debname + "-log-in-file");
+		string logfile("--" + debname + "-logfile");
 		string add_level("--" + debname + "-add-levels");
 		string del_level("--" + debname + "-del-levels");
 
 		// смотрим командную строку
 		for (int i = 1; i < (_argc - 1); i++)
 		{
-			if( log_in == _argv[i] )        // "--debug-log_in_file"
+			if( logfile == _argv[i] )        // "--debug-logfile"
 			{
 				deb->logFile(_argv[i + 1]);
 			}

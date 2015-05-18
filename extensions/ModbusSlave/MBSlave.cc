@@ -1727,7 +1727,7 @@ ModbusRTU::mbErrCode MBSlave::real_read_prop( IOProperty* p, ModbusRTU::ModbusDa
 				// оптимизируем и проверку не делаем
 				// считая, что при "загрузке" всё было правильно
 				// инициализировано
-				// if( p->wnum >=0 && p->wnum < f4.wsize()
+				// if( p->wnum >=0 && p->wnum < f2.wsize()
 				val = f2.raw.v[p->wnum];
 			}
 			else if( p->vtype == VTypes::vtF2r )
@@ -1737,7 +1737,7 @@ ModbusRTU::mbErrCode MBSlave::real_read_prop( IOProperty* p, ModbusRTU::ModbusDa
 				// оптимизируем и проверку не делаем
 				// считая, что при "загрузке" всё было правильно
 				// инициализировано
-				// if( p->wnum >=0 && p->wnum < f4.wsize()
+				// if( p->wnum >=0 && p->wnum < f2.wsize()
 				val = f2.raw_backorder.v[p->wnum];
 			}
 			else if( p->vtype == VTypes::vtF4 )
