@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt34.3
+Release: alt34.4
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -445,6 +445,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Wed May 20 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt34.4
+- (ModbusSlave): fixed bug in much_real_write (again)
+
 * Tue May 19 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt34.3
 - (ModbusSlave): add 'optimize write function mechanism' (and --prefix-no-mbfunc-optimization 0,1)
 
