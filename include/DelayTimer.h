@@ -132,6 +132,11 @@ class DelayTimer
 			return offDelay;
 		}
 
+		inline timeout_t getCurrent()
+		{
+			return pt.getCurrent();
+		}
+
 	protected:
 		PassiveTimer pt;
 		bool prevState;

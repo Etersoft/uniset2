@@ -490,7 +490,7 @@ std::ostream& operator<<( std::ostream& os, MBExchange::RTUDevice& d )
 	os  << "addr=" << ModbusRTU::addr2str(d.mbaddr)
 		<< " type=" << d.dtype
 		<< " respond_id=" << d.resp_id
-		<< " respond_timeout=" << d.resp_Delay.getOffDelay()
+		<< " respond_timeout=" << d.resp_Delay.getOnDelay()
 		<< " respond_state=" << d.resp_state
 		<< " respond_invert=" << d.resp_invert
 		<< endl;
@@ -2669,7 +2669,7 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
 	dinfo << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
 	int tout = it.getPIntProp("timeout", default_timeout );
 
-	d->second->resp_Delay.set(0, tout); // ставим время на отпускание.. см. checkRespond()
+	d->second->resp_Delay.set(tout,false);
 	d->second->resp_invert = it.getIntProp("invert");
 	return true;
 }
@@ -3051,10 +3051,19 @@ bool MBExchange::RTUDevice::checkRespond()
 {
 	bool prev = resp_state;
 
-	resp_state = resp_Delay.check( prev_numreply != numreply );
+	resp_state = !resp_Delay.check( prev_numreply == numreply );
 
 	prev_numreply.store(numreply);
 
+	dlog4 << "(checkRespond): addr=" << ModbusRTU::addr2str(mbaddr)
+		  << " respond_id=" << resp_id
+		  << " state=" << resp_state
+		  << " current=" << resp_Delay.getCurrent()
+		  << " [ timeout=" << resp_Delay.getOnDelay()
+		  << " numreply=" << numreply
+		  << " prev_numreply=" << prev_numreply
+		  << " ]"
+		  << endl;
 	return (prev != resp_state);
 }
 // -----------------------------------------------------------------------------
@@ -3064,20 +3073,23 @@ void MBExchange::updateRespondSensors()
 	{
 		RTUDevice* d(it1.second);
 
-		dlog4 << myname << ": check respond addr=" << ModbusRTU::addr2str(d->mbaddr)
-			  << " respond_id=" << d->resp_id
-			  << " state=" << d->resp_state
-			  << " [timeout=" << d->resp_Delay.getOffDelay()
-			  << " numreply=" << d->numreply
-			  << " prev_numreply=" << d->prev_numreply
-			  << " ]"
-			  << endl;
-
-		if( d->checkRespond() && d->resp_id != DefaultObjectId  )
+		if( d->resp_id != DefaultObjectId && d->checkRespond() )
 		{
 			try
 			{
 				bool set = d->resp_invert ? !d->resp_state : d->resp_state;
+
+				dlog4 << myname << ": SAVE NEW respond state=" << set
+					  << " for addr=" << ModbusRTU::addr2str(d->mbaddr)
+					  << " respond_id=" << d->resp_id
+					  << " state=" << d->resp_state
+					  << " [ invert=" << d->resp_invert
+					  << " timeout=" << d->resp_Delay.getOnDelay()
+					  << " numreply=" << d->numreply
+					  << " prev_numreply=" << d->prev_numreply
+					  << " ]"
+					  << endl;
+
 				shm->localSetValue(d->resp_it, d->resp_id, ( set ? 1 : 0 ), getId());
 			}
 			catch( const Exception& ex )
