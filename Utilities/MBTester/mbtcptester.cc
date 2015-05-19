@@ -28,6 +28,7 @@ static struct option longopts[] =
 	{ "port", required_argument, 0, 'p' },
 	{ "persistent-connection", no_argument, 0, 'o' },
 	{ "num-cycles", required_argument, 0, 'l' },
+	{ "sleep-msec", required_argument, 0, 's' },
 
 	{ NULL, 0, 0, 0 }
 };
@@ -38,7 +39,12 @@ static void print_help()
 	printf("[--write05] slaveaddr reg val  - write val to reg for slaveaddr\n");
 	printf("[--write06] slaveaddr reg val  - write val to reg for slaveaddr\n");
 	printf("[--write0F] slaveaddr reg val  - write val to reg for slaveaddr\n");
-	printf("[--write10] slaveaddr reg val count  - write val to reg for slaveaddr\n");
+	printf("[--write10] slaveaddr reg val1...valN  - write values to reg for slaveaddr\n");
+	printf("             val: INTEGER   - INT value > 0 (2 byte)(example: 123)\n");
+	printf("             val: mINTEGER  - INT value < 0 (2 byte)(example: m2344)\n");
+	printf("             val: bVAL      - 8bit value (example: b0000011)\n");
+	printf("             val: fVAL      - float value (4 byte)(example: f123.05)\n");
+	printf("             val: rVAL      - (revert) float value /backorder(word1,word2)/(4 byte)(example: r123.05)\n");
 	printf("[--read01] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--read02] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--read03] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
@@ -53,6 +59,7 @@ static void print_help()
 	printf("[-o|--persistent-connection]    - Use persistent-connection.\n");
 	printf("[-l|--num-cycles] num           - Number of cycles of exchange. Default: -1 - infinitely.\n");
 	printf("[-v|--verbose]                  - Print all messages to stdout\n");
+	printf("[-s|--sleep-msec]               - send pause. Default: 200 msec\n");
 }
 // --------------------------------------------------------------------------
 enum Command
@@ -86,6 +93,21 @@ int main( int argc, char** argv )
 	int port = 502;
 	ModbusRTU::ModbusData reg = 0;
 	int val = 0;
+	int sleep_msec = 500;
+
+	union DValue
+	{
+		int v;
+		float f;
+	};
+
+	struct DataInfo
+	{
+		DValue d={0};
+		char type={'i'}; // i - integer, f - float, r - revert float
+	};
+
+	vector<DataInfo> data;
 	ModbusRTU::ModbusData count = 1;
 	ModbusRTU::ModbusAddr myaddr = 0x01;
 	ModbusRTU::ModbusAddr slaveaddr = 0x00;
@@ -186,28 +208,45 @@ int main( int argc, char** argv )
 
 					reg = ModbusRTU::str2mbData(argv[optind]);
 
-					if( checkArg(optind + 1, argc, argv) )
+					for( int o=optind + 1; o<argc; o++ )
 					{
-						if( (argv[optind + 1])[0] == 'b' )
+						DataInfo dval;
+						char* arg= checkArg(o, argc, argv);
+
+						if( arg == 0 )
+							break;
+
+						if( arg[0] == 'b' )
 						{
-							string v(argv[optind + 1]);
+							dval.type = 'i';
+							string v(arg);
 							string sb(v, 1);
 							ModbusRTU::DataBits d(sb);
-							val = d.mbyte();
+							dval.d.v = d.mbyte();
 						}
-						else if( (argv[optind + 1])[0] == 'm' )
+						else if( arg[0] == 'm' )
 						{
-							string v(argv[optind + 1]);
+							dval.type = 'i';
+							string v(arg);
 							string sb(v, 1);
-							val = -1 * ModbusRTU::str2mbData(sb);
+							dval.d.v = -1 * ModbusRTU::str2mbData(sb);
+						}
+						else if( arg[0] == 'f' || arg[0] == 'r' )
+						{
+							dval.type = arg[0];
+							string v(arg);
+							string sb(v, 1);
+							dval.d.f = atof(sb.c_str());
 						}
 						else
-							val = ModbusRTU::str2mbData(argv[optind + 1]);
+						{
+							dval.type = 'i';
+							dval.d.v = ModbusRTU::str2mbData(arg);
+						}
+
+						data.push_back(dval);
+						val = dval.d.v;
 					}
-
-					if( cmd == cmdWrite10 && checkArg(optind + 2, argc, argv) )
-						count = ModbusRTU::str2mbData(argv[optind + 2]);
-
 					break;
 
 				case 'i':
@@ -220,6 +259,10 @@ int main( int argc, char** argv )
 
 				case 't':
 					tout = uni_atoi(optarg);
+					break;
+
+				case 's':
+					sleep_msec = uni_atoi(optarg);
 					break;
 
 				case 'a':
@@ -491,15 +534,35 @@ int main( int argc, char** argv )
 						{
 							cout << "write10: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
 								 << " reg=" << ModbusRTU::dat2str(reg)
-								 << " val=" << ModbusRTU::dat2str(val)
-								 << " count=" << count
-								 << endl;
+								 << " data[" << data.size() << "]{ ";
+							for( const auto& v: data )
+							{
+								if( v.type == 'f' )
+									cout << v.d.f << "f ";
+								else
+									cout << ModbusRTU::dat2str(v.d.v) << " ";
+							}
+
+							cout << "}" << endl;
 						}
 
 						ModbusRTU::WriteOutputMessage msg(slaveaddr, reg);
 
-						for( int i = 0; i < count; i++ )
-							msg.addData(val);
+						for( const auto& v: data )
+						{
+							if( v.type == 'f' || v.type == 'r' )
+							{
+								ModbusRTU::ModbusData d[2];
+								memcpy(&d,&(v.d.f),std::min(sizeof(d),sizeof(v.d.f)));
+								if( v.type == 'r' )
+									std::swap(d[0],d[1]);
+
+								msg.addData(d[0]);
+								msg.addData(d[1]);
+							}
+							else
+								msg.addData(v.d.v);
+						}
 
 						ModbusRTU::WriteOutputRetMessage  ret = mb.write10(msg);
 
@@ -558,7 +621,7 @@ int main( int argc, char** argv )
 					break;
 			}
 
-			msleep(200);
+			msleep(sleep_msec);
 
 		} // end of while
 
