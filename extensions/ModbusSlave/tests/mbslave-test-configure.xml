@@ -193,10 +193,10 @@
 			<item id="2046" mbs="1" mbreg="158" iotype="AO" name="Test_CountWrite10_9" textname="Тестовый регистр для 0x10"/>
 			<item id="2047" mbs="1" mbreg="159" iotype="AO" name="Test_CountWrite10_10" textname="Тестовый регистр для 0x10"/>
 
-
 			<!-- ещё тест -->
 			<item id="2048" mbs="1" mbreg="258" iotype="AO" name="Test_CountWrite10_11" textname="Тестовый регистр для 0x10"/>
 			<item id="2049" mbs="1" mbreg="257" iotype="AO" name="Test_CountWrite10_12" textname="Тестовый регистр для 0x10"/>
+			<item id="2050" mbs="1" mbreg="259" iotype="AO" vtype="F2" name="Test_CountWrite10_F2" textname="Тестовый регистр для 0x10(F2)"/>
 
 			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
 

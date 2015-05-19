@@ -1124,4 +1124,25 @@ TEST_CASE("write10: more..", "[modbus][mbslave][mbtcpslave][write10]")
 	REQUIRE( (signed short)ui->getValue(2049) == 10 );
 }
 // -------------------------------------------------------------
+TEST_CASE("(0x10): write register outputs or memories [F2]", "[modbus][mbslave][F2][mbtcpslave]")
+{
+	InitTest();
+	ObjectId tID = 2050;
+	ModbusRTU::ModbusData tREG = 259;
+
+	using namespace VTypes;
+
+	float f = 200.0;
+	F2 f2(f);
+
+	ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
+	msg.addData(f2.raw.v[0]);
+	msg.addData(f2.raw.v[1]);
+	ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == 2 );
+
+	REQUIRE( ui->getValue(tID) == 200 );
+}
+// -------------------------------------------------------------
 /*! \todo Доделать тесты на считывание с разными prop_prefix.. */

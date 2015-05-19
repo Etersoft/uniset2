@@ -1215,7 +1215,7 @@ std::ostream& operator<<( std::ostream& os, MBSlave::BitRegProperty& p )
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, MBSlave::IOProperty& p )
 {
-	os  << " reg=" << ModbusRTU::dat2str(p.mbreg) << "(" << (int)p.mbreg << ")"
+	os  << "reg=" << ModbusRTU::dat2str(p.mbreg) << "(" << (int)p.mbreg << ")"
 		<< " sid=" << p.si.id
 		<< " stype=" << p.stype
 		<< " wnum=" << p.wnum
@@ -1321,13 +1321,28 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( const ModbusRTU::ModbusData reg, 
 	if( it == iomap.end() )
 		return ModbusRTU::erBadDataAddress;
 
-	for( ; (it != iomap.end()) && (i < count); i++, regID++ )
+	int prev_i = i;
+	int sub = 0;
+	for( ; (it != iomap.end()) && (i < count); )
 	{
 		if( it->first == regID )
 		{
+			prev_i = i;
+
 			real_write_it(it, dat, i, count);
-			--i; // т.к. внутри real_write_it будет сделан ++
-			++it;
+
+			sub = (i-prev_i);
+
+			// если при обработке i не сдвигали..
+			// значит сами делаем ++
+			if( sub == 0 )
+			{
+				sub = 1;
+				i++;
+			}
+
+			std::advance(it,sub);
+			regID += sub;
 		}
 	}
 
@@ -1364,7 +1379,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_it( IOMap::iterator& it, ModbusRTU::Mod
 	IOProperty* p(&it->second);
 
 	if( p->bitreg )
-		return real_bitreg_write_it(p->bitreg, dat[i++]);
+		return real_bitreg_write_it(p->bitreg, dat[i]);
 
 	return real_write_prop(p, dat, i, count);
 }
@@ -1397,7 +1412,9 @@ ModbusRTU::mbErrCode MBSlave::real_bitreg_write_it( std::shared_ptr<BitRegProper
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusData* dat, int& i, int count )
 {
-	ModbusRTU::ModbusData mbval = dat[i++];
+	ModbusRTU::ModbusData mbval = dat[i];
+
+	dinfo << myname << "(real_write_prop): val=" << mbval << " " << (*p) << endl;
 
 	try
 	{
@@ -1431,7 +1448,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 		}
 		else if( p->vtype == VTypes::vtI2 )
 		{
-			if( (i + VTypes::I2::wsize() - 1) > count )
+			if( (i + VTypes::I2::wsize()) > count )
 			{
 				i += VTypes::I2::wsize();
 				return ModbusRTU::erInvalidFormat;
@@ -1440,7 +1457,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 			ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::I2::wsize()];
 
 			for( int k = 0; k < VTypes::I2::wsize(); k++, i++ )
-				d[k] = dat[i - 1];
+				d[k] = dat[i];
 
 			VTypes::I2 i2(d, VTypes::I2::wsize());
 			delete[] d;
@@ -1448,7 +1465,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 		}
 		else if( p->vtype == VTypes::vtI2r )
 		{
-			if( (i + VTypes::I2r::wsize() - 1) > count )
+			if( (i + VTypes::I2r::wsize()) > count )
 			{
 				i += VTypes::I2r::wsize();
 				return ModbusRTU::erInvalidFormat;
@@ -1457,7 +1474,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 			ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::I2r::wsize()];
 
 			for( int k = 0; k < VTypes::I2r::wsize(); k++, i++ )
-				d[k] = dat[i - 1];
+				d[k] = dat[i];
 
 			VTypes::I2r i2r(d, VTypes::I2r::wsize());
 			delete[] d;
@@ -1465,7 +1482,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 		}
 		else if( p->vtype == VTypes::vtU2 )
 		{
-			if( (i + VTypes::U2::wsize() - 1) > count )
+			if( (i + VTypes::U2::wsize()) > count )
 			{
 				i += VTypes::U2::wsize();
 				return ModbusRTU::erInvalidFormat;
@@ -1474,7 +1491,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 			ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::U2::wsize()];
 
 			for( int k = 0; k < VTypes::U2::wsize(); k++, i++ )
-				d[k] = dat[i - 1];
+				d[k] = dat[i];
 
 			VTypes::U2 u2(d, VTypes::U2::wsize());
 			delete[] d;
@@ -1482,7 +1499,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 		}
 		else if( p->vtype == VTypes::vtU2r )
 		{
-			if( (i + VTypes::U2r::wsize() - 1) > count )
+			if( (i + VTypes::U2r::wsize()) > count )
 			{
 				i += VTypes::U2r::wsize();
 				return ModbusRTU::erInvalidFormat;
@@ -1491,7 +1508,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 			ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::U2r::wsize()];
 
 			for( int k = 0; k < VTypes::U2r::wsize(); k++, i++ )
-				d[k] = dat[i - 1];
+				d[k] = dat[i];
 
 			VTypes::U2r u2r(d, VTypes::U2r::wsize());
 			delete[] d;
@@ -1499,7 +1516,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 		}
 		else if( p->vtype == VTypes::vtF2 )
 		{
-			if( (i + VTypes::F2::wsize() - 1) > count )
+			if( (i + VTypes::F2::wsize()) > count )
 			{
 				i += VTypes::F2::wsize();
 				return ModbusRTU::erInvalidFormat;
@@ -1508,7 +1525,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 			ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::F2::wsize()];
 
 			for( int k = 0; k < VTypes::F2::wsize(); k++, i++ )
-				d[k] = dat[i - 1];
+				d[k] = dat[i];
 
 			VTypes::F2 f2(d, VTypes::F2::wsize());
 			delete[] d;
@@ -1517,7 +1534,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 		}
 		else if( p->vtype == VTypes::vtF2r )
 		{
-			if( (i + VTypes::F2r::wsize() - 1) > count )
+			if( (i + VTypes::F2r::wsize()) > count )
 			{
 				i += VTypes::F2r::wsize();
 				return ModbusRTU::erInvalidFormat;
@@ -1526,7 +1543,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 			ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::F2r::wsize()];
 
 			for( int k = 0; k < VTypes::F2r::wsize(); k++, i++ )
-				d[k] = dat[i - 1];
+				d[k] = dat[i];
 
 			VTypes::F2r f2r(d, VTypes::F2r::wsize());
 			delete[] d;
@@ -1534,7 +1551,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 		}
 		else if( p->vtype == VTypes::vtF4 )
 		{
-			if( (i + VTypes::F4::wsize() - 1) > count )
+			if( (i + VTypes::F4::wsize()) > count )
 			{
 				i += VTypes::F4::wsize();
 				return ModbusRTU::erInvalidFormat;
@@ -1543,7 +1560,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 			ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::F4::wsize()];
 
 			for( int k = 0; k < VTypes::F4::wsize(); k++, i++ )
-				d[k] = dat[i - 1];
+				d[k] = dat[i];
 
 			VTypes::F4 f4(d, VTypes::F4::wsize());
 			delete[] d;
