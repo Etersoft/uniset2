@@ -571,3 +571,41 @@ TEST_CASE("MBTCPMaster: 0x66 (file transfer)", "[modbus][0x66][mbmaster][mbtcpma
 	WARN("Test of '0x66'..not yet.. ");
 }
 // -----------------------------------------------------------------------------
+#if 0
+TEST_CASE("MBTCPMaster: 0x10 (F2)", "[modbus][0x10][F2][mbmaster][mbtcpmaster]")
+{
+	InitTest();
+
+	ui->setValue(1027, 100);
+	REQUIRE( ui->getValue(1027) == 100 );
+	msleep(polltime + 200);
+	ModbusRTU::WriteOutputMessage q = mbs->getLastWriteOutput();
+	REQUIRE( q.addr == slaveADDR );
+	REQUIRE( q.start == 41 );
+	REQUIRE( q.quant == 2 );
+
+	VTypes::F2 f2(q.data,VTypes::F2::wsize());
+	float f = f2;
+	REQUIRE( f == 100 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: 0x10 (F4)", "[modbus][0x10][F4][mbmaster][mbtcpmaster]")
+{
+	InitTest();
+
+	long v = 10000000;
+
+	ui->setValue(1028, v);
+	REQUIRE( ui->getValue(1028) == v );
+	msleep(polltime + 200);
+	ModbusRTU::WriteOutputMessage q = mbs->getLastWriteOutput();
+	REQUIRE( q.addr == slaveADDR );
+	REQUIRE( q.start == 45 );
+	REQUIRE( q.quant == 4 );
+
+	VTypes::F4 f4(q.data,VTypes::F4::wsize());
+	float f = f4;
+	REQUIRE( f == v );
+}
+#endif
+// -----------------------------------------------------------------------------
