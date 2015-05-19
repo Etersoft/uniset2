@@ -420,17 +420,14 @@ float IOBase::processingFasAO( IOBase* it, const std::shared_ptr<SMInterface>& s
 
 	float fval = val;
 
-	if( it->stype == UniversalIO::AO ||
-			it->stype == UniversalIO::AI )
+	if( it->stype == UniversalIO::AO || it->stype == UniversalIO::AI )
 	{
-
 		IOController_i::CalibrateInfo* cal( &(it->cal) );
 
 		if( cal->maxRaw != cal->minRaw ) // задана калибровка
 		{
 			// Калибруем в обратную сторону!!!
-			fval = UniSetTypes::fcalibrate(fval,
-										   cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
+			fval = UniSetTypes::fcalibrate(fval, cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
 		}
 
 		if( !it->noprecision && it->cal.precision > 0 )

@@ -1052,9 +1052,10 @@ TEST_CASE("read03(04) 10 registers", "[modbus][mbslave][mbtcpslave][readmore]")
 	SECTION("Test: read03 num=10")
 	{
 		ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr, tREG, num);
-		for( int i=0; i<num; i++ )
+
+		for( int i = 0; i < num; i++ )
 		{
-			REQUIRE( ret.data[i] == (i+1) );
+			REQUIRE( ret.data[i] == (i + 1) );
 		}
 	}
 
@@ -1067,9 +1068,10 @@ TEST_CASE("read03(04) 10 registers", "[modbus][mbslave][mbtcpslave][readmore]")
 	SECTION("Test: read04")
 	{
 		ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr, tREG, num);
-		for( int i=0; i<num; i++ )
+
+		for( int i = 0; i < num; i++ )
 		{
-			REQUIRE( ret.data[i] == (i+1) );
+			REQUIRE( ret.data[i] == (i + 1) );
 		}
 	}
 
@@ -1092,16 +1094,17 @@ TEST_CASE("write10: 10 registers", "[modbus][mbslave][mbtcpslave][writemore]")
 	int num = 10;
 
 	ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
-	for( int i=1; i<=num; i++ )
+
+	for( int i = 1; i <= num; i++ )
 		msg.addData(i);
 
 	ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
 	REQUIRE( ret.start == tREG );
 	REQUIRE( ret.quant == num );
 
-	for( int i=0; i<num; i++ )
+	for( int i = 0; i < num; i++ )
 	{
-		REQUIRE( (signed short)ui->getValue(id+i) == (i+1) );
+		REQUIRE( (signed short)ui->getValue(id + i) == (i + 1) );
 	}
 }
 // -------------------------------------------------------------

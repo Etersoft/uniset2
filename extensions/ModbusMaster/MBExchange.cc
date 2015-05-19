@@ -2669,7 +2669,7 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
 	dinfo << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
 	int tout = it.getPIntProp("timeout", default_timeout );
 
-	d->second->resp_Delay.set(tout,false);
+	d->second->resp_Delay.set(tout, false);
 	d->second->resp_invert = it.getIntProp("invert");
 	return true;
 }

@@ -139,3 +139,37 @@ TEST_CASE("[DelayTimer]: debounce", "[DelayTimer]" )
 	CHECK_FALSE( dt.check(false) );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("[DelayTimer]: zero time", "[DelayTimer]" )
+{
+	SECTION( "ondelay=0" )
+	{
+		DelayTimer dt(0, 100);
+		CHECK_FALSE( dt.get() );
+		CHECK_FALSE( dt.check(false) );
+		CHECK( dt.check(true) );
+		CHECK( dt.check(false) );
+		CHECK( dt.check(true) );
+		CHECK( dt.check(false) );
+		msleep(80);
+		CHECK( dt.check(false) );
+		msleep(40);
+		CHECK_FALSE( dt.check(false) );
+		CHECK( dt.check(true) );
+	}
+
+	SECTION( "offdelay=0" )
+	{
+		DelayTimer dt(100, 0);
+		CHECK_FALSE( dt.get() );
+		CHECK_FALSE( dt.check(false) );
+		CHECK_FALSE( dt.check(true) );
+		CHECK_FALSE( dt.check(false) );
+		CHECK_FALSE( dt.check(true) );
+		msleep(80);
+		CHECK_FALSE( dt.check(true) );
+		msleep(40);
+		CHECK( dt.check(true) );
+		CHECK_FALSE( dt.check(false) );
+	}
+}
+// -----------------------------------------------------------------------------

@@ -85,7 +85,7 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 
 	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id", it.getProp("reg_from_id"));
 	checkMBFunc = conf->getArgInt("--" + prefix + "-check-mbfunc", it.getProp("check_mbfunc"));
-	noMBFuncOptimize= conf->getArgInt("--" + prefix + "-no-mbfunc-optimization", it.getProp("no_mbfunc_optimization"));
+	noMBFuncOptimize = conf->getArgInt("--" + prefix + "-no-mbfunc-optimization", it.getProp("no_mbfunc_optimization"));
 	dinfo << myname << "(init): mbregFromID=" << mbregFromID
 		  << " checkMBFunc=" << checkMBFunc
 		  << " default_mbfunc=" << default_mbfunc
@@ -1090,6 +1090,7 @@ int MBSlave::getOptimizeWriteFunction( const int fn )
 
 	if( fn == ModbusRTU::fnWriteOutputSingleRegister ) // 0x06 --> 0x10
 		return ModbusRTU::fnWriteOutputRegisters;
+
 	if( fn == ModbusRTU::fnForceSingleCoil ) // 0x05 --> 0x0F
 		return ModbusRTU::fnForceMultipleCoils;
 
@@ -1309,7 +1310,7 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( const ModbusRTU::ModbusData reg, 
 	// ведь запросить могут начиная с "несуществующего регистра"
 	for( ; i < count; i++ )
 	{
-		it = iomap.find(regID+i);
+		it = iomap.find(regID + i);
 
 		if( it != iomap.end() )
 		{
@@ -1323,6 +1324,7 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( const ModbusRTU::ModbusData reg, 
 
 	int prev_i = i;
 	int sub = 0;
+
 	for( ; (it != iomap.end()) && (i < count); )
 	{
 		if( it->first == regID )
@@ -1331,7 +1333,7 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( const ModbusRTU::ModbusData reg, 
 
 			real_write_it(it, dat, i, count);
 
-			sub = (i-prev_i);
+			sub = (i - prev_i);
 
 			// если при обработке i не сдвигали..
 			// значит сами делаем ++
@@ -1341,8 +1343,13 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( const ModbusRTU::ModbusData reg, 
 				i++;
 			}
 
-			std::advance(it,sub);
+			std::advance(it, sub);
 			regID += sub;
+		}
+		else
+		{
+			regID++;
+			i++;
 		}
 	}
 

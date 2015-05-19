@@ -584,7 +584,7 @@ TEST_CASE("MBTCPMaster: 0x10 (F2)", "[modbus][0x10][F2][mbmaster][mbtcpmaster]")
 	REQUIRE( q.start == 41 );
 	REQUIRE( q.quant == 2 );
 
-	VTypes::F2 f2(q.data,VTypes::F2::wsize());
+	VTypes::F2 f2(q.data, VTypes::F2::wsize());
 	float f = f2;
 	REQUIRE( f == 100 );
 }
@@ -603,7 +603,7 @@ TEST_CASE("MBTCPMaster: 0x10 (F4)", "[modbus][0x10][F4][mbmaster][mbtcpmaster]")
 	REQUIRE( q.start == 45 );
 	REQUIRE( q.quant == 4 );
 
-	VTypes::F4 f4(q.data,VTypes::F4::wsize());
+	VTypes::F4 f4(q.data, VTypes::F4::wsize());
 	float f = f4;
 	REQUIRE( f == v );
 }

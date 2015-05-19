@@ -103,8 +103,8 @@ int main( int argc, char** argv )
 
 	struct DataInfo
 	{
-		DValue d={0};
-		char type={'i'}; // i - integer, f - float, r - revert float
+		DValue d = {0};
+		char type = {'i'}; // i - integer, f - float, r - revert float
 	};
 
 	vector<DataInfo> data;
@@ -208,10 +208,10 @@ int main( int argc, char** argv )
 
 					reg = ModbusRTU::str2mbData(argv[optind]);
 
-					for( int o=optind + 1; o<argc; o++ )
+					for( int o = optind + 1; o < argc; o++ )
 					{
 						DataInfo dval;
-						char* arg= checkArg(o, argc, argv);
+						char* arg = checkArg(o, argc, argv);
 
 						if( arg == 0 )
 							break;
@@ -247,6 +247,7 @@ int main( int argc, char** argv )
 						data.push_back(dval);
 						val = dval.d.v;
 					}
+
 					break;
 
 				case 'i':
@@ -535,7 +536,8 @@ int main( int argc, char** argv )
 							cout << "write10: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
 								 << " reg=" << ModbusRTU::dat2str(reg)
 								 << " data[" << data.size() << "]{ ";
-							for( const auto& v: data )
+
+							for( const auto& v : data )
 							{
 								if( v.type == 'f' )
 									cout << v.d.f << "f ";
@@ -548,14 +550,15 @@ int main( int argc, char** argv )
 
 						ModbusRTU::WriteOutputMessage msg(slaveaddr, reg);
 
-						for( const auto& v: data )
+						for( const auto& v : data )
 						{
 							if( v.type == 'f' || v.type == 'r' )
 							{
 								ModbusRTU::ModbusData d[2];
-								memcpy(&d,&(v.d.f),std::min(sizeof(d),sizeof(v.d.f)));
+								memcpy(&d, &(v.d.f), std::min(sizeof(d), sizeof(v.d.f)));
+
 								if( v.type == 'r' )
-									std::swap(d[0],d[1]);
+									std::swap(d[0], d[1]);
 
 								msg.addData(d[0]);
 								msg.addData(d[1]);
