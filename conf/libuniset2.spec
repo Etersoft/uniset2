@@ -446,7 +446,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %changelog
 * Wed May 20 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt34.4
-- (ModbusSlave): fixed bug in much_real_write (again)
+- (ModbusSlave): fixed bug in much_real_write (again) (thank`s hd@nio14)
+- (DelayTimer): fixed critical bug in logic (thank`s ilyap@etersoft.ru)
 
 * Tue May 19 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt34.3
 - (ModbusSlave): add 'optimize write function mechanism' (and --prefix-no-mbfunc-optimization 0,1)
