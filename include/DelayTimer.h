@@ -60,6 +60,8 @@ class DelayTimer
 
 		inline bool check( bool st )
 		{
+			prevState = st;
+
 			if( waiting_off )
 			{
 				if( pt.checkTime() )
@@ -71,10 +73,9 @@ class DelayTimer
 
 					return state;
 				}
-				else if( st != prevState && !st )
-					pt.reset();
+				else if( st )
+					waiting_off = false;
 
-				prevState = st;
 				return state;
 			}
 
@@ -89,17 +90,14 @@ class DelayTimer
 
 					return state;
 				}
-				else if( st != prevState && st )
-					pt.reset();
+				else if( !st )
+					waiting_on = false;
 
-				prevState = st;
 				return state;
 			}
 
 			if( state != st )
 			{
-				prevState = st;
-
 				if( st )
 				{
 					pt.setTiming(onDelay);
@@ -111,8 +109,12 @@ class DelayTimer
 					waiting_off = true;
 				}
 
+				// на случае если таймеры  = 0..
 				if( pt.checkTime() )
+				{
+					state = st;
 					return st;
+				}
 			}
 
 			return state;

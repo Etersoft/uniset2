@@ -128,5 +128,14 @@ TEST_CASE("[DelayTimer]: debounce", "[DelayTimer]" )
 	msleep(40);
 	CHECK_FALSE( dt.check(false) );
 	CHECK_FALSE( dt.get() );
+
+	// проверяем срабатвание (одноразовый скачок)
+	CHECK_FALSE( dt.check(true) );
+	CHECK_FALSE( dt.check(false) );
+	msleep(160);
+	CHECK_FALSE( dt.check(true) );
+	CHECK_FALSE( dt.check(false) );
+	msleep(160);
+	CHECK_FALSE( dt.check(false) );
 }
 // -----------------------------------------------------------------------------
