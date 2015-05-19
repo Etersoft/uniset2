@@ -186,14 +186,21 @@
 			<item id="2039" mbs="1" mbreg="151" iotype="AI" name="Test_CountWrite10_2" textname="Тестовый регистр для 0x10"/>
 			<item id="2040" mbs="1" mbreg="152" iotype="AI" name="Test_CountWrite10_3" textname="Тестовый регистр для 0x10"/>
 			<item id="2041" mbs="1" mbreg="153" iotype="AI" name="Test_CountWrite10_4" textname="Тестовый регистр для 0x10"/>
-			<item id="2042" mbs="1" mbreg="154" iotype="AI" name="Test_CountWrite10_5" textname="Тестовый регистр для 0x10"/>
-			<item id="2043" mbs="1" mbreg="155" iotype="AI" name="Test_CountWrite10_6" textname="Тестовый регистр для 0x10"/>
-			<item id="2044" mbs="1" mbreg="156" iotype="AI" name="Test_CountWrite10_7" textname="Тестовый регистр для 0x10"/>
-			<item id="2045" mbs="1" mbreg="157" iotype="AI" name="Test_CountWrite10_8" textname="Тестовый регистр для 0x10"/>
-			<item id="2046" mbs="1" mbreg="158" iotype="AI" name="Test_CountWrite10_9" textname="Тестовый регистр для 0x10"/>
-			<item id="2047" mbs="1" mbreg="159" iotype="AI" name="Test_CountWrite10_10" textname="Тестовый регистр для 0x10"/>
+			<item id="2042" mbs="1" mbreg="154" iotype="AO" name="Test_CountWrite10_5" textname="Тестовый регистр для 0x10"/>
+			<item id="2043" mbs="1" mbreg="155" iotype="AO" name="Test_CountWrite10_6" textname="Тестовый регистр для 0x10"/>
+			<item id="2044" mbs="1" mbreg="156" iotype="AO" name="Test_CountWrite10_7" textname="Тестовый регистр для 0x10"/>
+			<item id="2045" mbs="1" mbreg="157" iotype="AO" name="Test_CountWrite10_8" textname="Тестовый регистр для 0x10"/>
+			<item id="2046" mbs="1" mbreg="158" iotype="AO" name="Test_CountWrite10_9" textname="Тестовый регистр для 0x10"/>
+			<item id="2047" mbs="1" mbreg="159" iotype="AO" name="Test_CountWrite10_10" textname="Тестовый регистр для 0x10"/>
+
+
+			<!-- ещё тест -->
+			<item id="2048" mbs="1" mbreg="258" iotype="AO" name="Test_CountWrite10_11" textname="Тестовый регистр для 0x10"/>
+			<item id="2049" mbs="1" mbreg="257" iotype="AO" name="Test_CountWrite10_12" textname="Тестовый регистр для 0x10"/>
 
 			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
+
+
 
 		</sensors>
 		<thresholds/>

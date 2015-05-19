@@ -1105,4 +1105,23 @@ TEST_CASE("write10: 10 registers", "[modbus][mbslave][mbtcpslave][writemore]")
 	}
 }
 // -------------------------------------------------------------
+TEST_CASE("write10: more..", "[modbus][mbslave][mbtcpslave][write10]")
+{
+	using namespace VTypes;
+	InitTest();
+
+	ModbusRTU::ModbusData tREG = 257;
+
+	ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
+	msg.addData(10);
+	msg.addData(11);
+
+	ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == 2 );
+
+	REQUIRE( (signed short)ui->getValue(2048) == 11 );
+	REQUIRE( (signed short)ui->getValue(2049) == 10 );
+}
+// -------------------------------------------------------------
 /*! \todo Доделать тесты на считывание с разными prop_prefix.. */

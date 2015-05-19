@@ -492,6 +492,9 @@ class MBSlave:
 
 		bool mbregFromID = {0};
 		bool checkMBFunc = {0};
+		bool noMBFuncOptimize = {0}; // флаг отключающий принудительное преобразование функций (0x06->0x10, 0x05->0x0F) см. initItem()
+
+		int getOptimizeWriteFunction( const int fn ); // функция возвращает оптимизированную функцию (если оптимизация включена)
 
 		typedef std::unordered_map<int, std::string> FileList;
 		FileList flist;

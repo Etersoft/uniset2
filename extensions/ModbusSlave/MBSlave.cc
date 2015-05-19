@@ -85,9 +85,11 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 
 	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id", it.getProp("reg_from_id"));
 	checkMBFunc = conf->getArgInt("--" + prefix + "-check-mbfunc", it.getProp("check_mbfunc"));
+	noMBFuncOptimize= conf->getArgInt("--" + prefix + "-no-mbfunc-optimization", it.getProp("no_mbfunc_optimization"));
 	dinfo << myname << "(init): mbregFromID=" << mbregFromID
 		  << " checkMBFunc=" << checkMBFunc
 		  << " default_mbfunc=" << default_mbfunc
+		  << " noMBFuncOptimize=" << noMBFuncOptimize
 		  << endl;
 
 	respond_id = conf->getSensorID(conf->getArgParam("--" + prefix + "-respond-id", it.getProp("respond_id")));
@@ -905,6 +907,10 @@ bool MBSlave::initItem( UniXML::iterator& it )
 	if( !checkMBFunc )
 		mbfunc = default_mbfunc;
 
+	// т.к. можно читать сразу несколько регистров независимо от того
+	// как они обозначены в файле делаем принудительное преобразование в "многорегистровые" функции
+	mbfunc = getOptimizeWriteFunction(mbfunc);
+
 	p.regID = ModbusRTU::genRegID(p.mbreg, mbfunc);
 
 	p.amode = MBSlave::amRW;
@@ -1077,6 +1083,19 @@ bool MBSlave::initItem( UniXML::iterator& it )
 	return true;
 }
 // ------------------------------------------------------------------------------------------
+int MBSlave::getOptimizeWriteFunction( const int fn )
+{
+	if( noMBFuncOptimize )
+		return fn;
+
+	if( fn == ModbusRTU::fnWriteOutputSingleRegister ) // 0x06 --> 0x10
+		return ModbusRTU::fnWriteOutputRegisters;
+	if( fn == ModbusRTU::fnForceSingleCoil ) // 0x05 --> 0x0F
+		return ModbusRTU::fnForceMultipleCoils;
+
+	return fn;
+}
+// ------------------------------------------------------------------------------------------
 bool MBSlave::BitRegProperty::check( const IOController_i::SensorInfo& si )
 {
 	for( auto& i : bvec )
@@ -1135,6 +1154,7 @@ void MBSlave::help_print( int argc, const char* const* argv )
 
 	cout << "--prefix-default-mbfunc [0..255] - Функция по умолчанию, если не указан параметр mbfunc в настройках регистра. Только если включён контроль функций. " << endl;
 	cout << "--prefix-check-mbfunc  [0|1]     - Включить контроль (обработку) свойства mbfunc. По умолчанию: отключён." << endl;
+	cout << "--prefix-no-mbfunc-optimization [0|1] - Отключить принудельное преобразование функций 0x06->0x10,0x05->0x0F" << endl;
 	cout << "--prefix-set-prop-prefix [val]   - Использовать для свойств указанный или пустой префикс." << endl;
 
 	cout << "--prefix-allow-setdatetime - On set date and time (0x50) modbus function" << endl;
@@ -1250,7 +1270,8 @@ ModbusRTU::mbErrCode MBSlave::writeOutputRegisters( ModbusRTU::WriteOutputMessag
 	dinfo << myname << "(writeOutputRegisters): " << query << endl;
 
 	// Формирование ответа:
-	ModbusRTU::mbErrCode ret = much_real_write(query.start, query.data, query.quant, query.func);
+	int fn = getOptimizeWriteFunction(query.func);
+	ModbusRTU::mbErrCode ret = much_real_write(query.start, query.data, query.quant, fn);
 
 	if( ret == ModbusRTU::erNoError )
 		reply.set(query.start, query.quant);
@@ -1263,7 +1284,8 @@ ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( ModbusRTU::WriteSingleO
 {
 	dinfo << myname << "(writeOutputSingleRegisters): " << query << endl;
 
-	ModbusRTU::mbErrCode ret = real_write(query.start, query.data, query.func);
+	int fn = getOptimizeWriteFunction(query.func);
+	ModbusRTU::mbErrCode ret = real_write(query.start, query.data, fn);
 
 	if( ret == ModbusRTU::erNoError )
 		reply.set(query.start, query.data);
@@ -1275,7 +1297,7 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( const ModbusRTU::ModbusData reg, 
 		int count, const int fn )
 {
 	dinfo << myname << "(much_real_write): write mbID="
-		  << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")" << " count=" << count << endl;
+		  << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")" << " count=" << count << " fn=" << fn << endl;
 
 	int i = 0;
 	auto it = iomap.end();
@@ -2027,6 +2049,8 @@ ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& 
 	ModbusRTU::mbErrCode ret = ModbusRTU::erNoError;
 	int nbit = 0;
 
+	int fn = getOptimizeWriteFunction(query.func);
+
 	for( unsigned int i = 0; i < query.bcnt; i++ )
 	{
 		ModbusRTU::DataBits b(query.data[i]);
@@ -2034,7 +2058,7 @@ ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& 
 		for( auto k = 0; k < ModbusRTU::BitsPerByte && nbit < query.quant; k++, nbit++ )
 		{
 			// ModbusRTU::mbErrCode ret =
-			real_write(query.start + nbit, (b[k] ? 1 : 0), query.func );
+			real_write(query.start + nbit, (b[k] ? 1 : 0), fn);
 			//if( ret == ModbusRTU::erNoError )
 		}
 	}
@@ -2051,7 +2075,8 @@ ModbusRTU::mbErrCode MBSlave::forceSingleCoil( ModbusRTU::ForceSingleCoilMessage
 {
 	dinfo << myname << "(forceSingleCoil): " << query << endl;
 
-	ModbusRTU::mbErrCode ret = real_write(query.start, (query.cmd() ? 1 : 0), query.func );
+	int fn = getOptimizeWriteFunction(query.func);
+	ModbusRTU::mbErrCode ret = real_write(query.start, (query.cmd() ? 1 : 0), fn );
 
 	if( ret == ModbusRTU::erNoError )
 		reply.set(query.start, query.data);
