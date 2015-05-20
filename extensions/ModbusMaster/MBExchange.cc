@@ -2965,7 +2965,7 @@ bool MBExchange::poll()
 		dlog3 << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr)
 			  << " regs=" << d->regmap.size() << endl;
 
-		unsigned int prev_numreply = d->numreply.load();
+		d->prev_numreply.store(d->numreply);
 
 		for( auto it = d->regmap.begin(); it != d->regmap.end(); ++it )
 		{
@@ -2980,7 +2980,10 @@ bool MBExchange::poll()
 				if( d->dtype == MBExchange::dtRTU || d->dtype == MBExchange::dtMTR )
 				{
 					if( pollRTU(d, it) )
+					{
 						d->numreply++;
+						allNotRespond = false;
+					}
 				}
 			}
 			catch( ModbusRTU::mbException& ex )
@@ -2994,9 +2997,6 @@ bool MBExchange::poll()
 				if( ex.err == ModbusRTU::erTimeOut && !d->ask_every_reg )
 					break;
 			}
-
-			if( d->numreply != prev_numreply )
-				allNotRespond = false;
 
 			if( it == d->regmap.end() )
 				break;
@@ -3050,10 +3050,7 @@ bool MBExchange::poll()
 bool MBExchange::RTUDevice::checkRespond()
 {
 	bool prev = resp_state;
-
 	resp_state = !resp_Delay.check( prev_numreply == numreply );
-
-	prev_numreply.store(numreply);
 
 	dlog4 << "(checkRespond): addr=" << ModbusRTU::addr2str(mbaddr)
 		  << " respond_id=" << resp_id
@@ -3064,6 +3061,7 @@ bool MBExchange::RTUDevice::checkRespond()
 		  << " prev_numreply=" << prev_numreply
 		  << " ]"
 		  << endl;
+
 	return (prev != resp_state);
 }
 // -----------------------------------------------------------------------------

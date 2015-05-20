@@ -212,7 +212,7 @@ bool RTUExchange::poll()
 			mbrtu->setSpeed(d->speed);
 		}
 
-		unsigned int prev_numreply = d->numreply;
+		d->prev_numreply.store(d->numreply);
 
 		if( d->dtype == MBExchange::dtRTU188 )
 		{
@@ -230,6 +230,7 @@ bool RTUExchange::poll()
 
 				d->rtu->poll(mbrtu);
 				d->numreply++;
+				allNotRespond = false;
 			}
 			catch( ModbusRTU::mbException& ex )
 			{
@@ -255,7 +256,10 @@ bool RTUExchange::poll()
 							mb->cleanupChannel();
 
 						if( pollRTU(d, it) )
+						{
 							d->numreply++;
+							allNotRespond = false;
+						}
 					}
 				}
 				catch( ModbusRTU::mbException& ex )
@@ -274,9 +278,6 @@ bool RTUExchange::poll()
 					return false;
 			}
 		}
-
-		if( d->numreply != prev_numreply )
-			allNotRespond = false;
 	}
 
 	// update SharedMemory...
