@@ -60,7 +60,7 @@ int main(int argc, const char** argv)
 
 		if( !s )
 		{
-			dcrit << "(mbslave): init не прошёл..." << endl;
+			dcrit << "(mbmultislave): init не прошёл..." << endl;
 			return 1;
 		}
 
@@ -79,19 +79,19 @@ int main(int argc, const char** argv)
 	}
 	catch( const SystemError& err )
 	{
-		dcrit << "(mbslave): " << err << endl;
+		dcrit << "(mbmultislave): " << err << endl;
 	}
 	catch( const Exception& ex )
 	{
-		dcrit << "(mbslave): " << ex << endl;
+		dcrit << "(mbmultislave): " << ex << endl;
 	}
 	catch( const std::exception& e )
 	{
-		dcrit << "(mbslave): " << e.what() << endl;
+		dcrit << "(mbmultislave): " << e.what() << endl;
 	}
 	catch(...)
 	{
-		dcrit << "(mbslave): catch(...)" << endl;
+		dcrit << "(mbmultislave): catch(...)" << endl;
 	}
 
 	return 1;

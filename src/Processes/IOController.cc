@@ -637,7 +637,7 @@ void IOController::USensorInfo::init( const IOController_i::SensorIOInfo& s )
 bool IOController::checkIOFilters( std::shared_ptr<USensorInfo>& ai, CORBA::Long& newvalue,
 								   UniSetTypes::ObjectId sup_id )
 {
-	for( auto& it : iofilters )
+	for( const auto& it : iofilters )
 	{
 		if( it(ai, newvalue, sup_id) == false )
 			return false;
@@ -764,7 +764,7 @@ IOController_i::ShortMapSeq* IOController::getSensors()
 
 	int i = 0;
 
-	for( auto& it : ioList )
+	for( const auto& it : ioList )
 	{
 		IOController_i::ShortMap m;
 		{

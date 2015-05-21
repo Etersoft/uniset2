@@ -17,10 +17,11 @@ MBTCPMultiSlave::MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::Obje
 {
 	auto conf = uniset_conf();
 
-	cnode = conf->getNode(myname);
+	string conf_name(conf->getArgParam("--" + prefix + "-confnode", myname));
+	cnode = conf->getNode(conf_name);
 
 	if( cnode == NULL )
-		throw UniSetTypes::SystemError("(MBSlave): Not found conf-node for " + myname );
+		throw UniSetTypes::SystemError("(MBTCPMultiSlave): Not found conf-node for " + myname );
 
 	UniXML::iterator it(cnode);
 
@@ -114,7 +115,7 @@ void MBTCPMultiSlave::help_print( int argc, const char* const* argv )
 	cout << "--prefix-wait-timeout msec      - Время ожидания очередного соединения и обновление статистики работы. По умолчанию: 4 сек." << endl;
 	cout << "--prefix-session-timeout msec   - Таймаут на закрытие соединения с 'клиентом', если от него нет запросов. По умолчанию: 10 сек." << endl;
 	cout << "--prefix-session-maxnum num     - Маскимальное количество соединений. По умолчанию: 10." << endl;
-	cout << "--prefix-session-count-id  id - Датчик для отслеживания текущего количества соединений." << endl;
+	cout << "--prefix-session-count-id  id   - Датчик для отслеживания текущего количества соединений." << endl;
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<MBTCPMultiSlave> MBTCPMultiSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID,
@@ -157,7 +158,7 @@ void MBTCPMultiSlave::execute_tcp()
 	if( dlog()->is_level9() )
 		sslot->setLog(dlog());
 
-	for( auto& i : cmap )
+	for( auto && i : cmap )
 		i.second.ptTimeout.reset();
 
 	sslot->setMaxSessions( sessMaxNum );
@@ -174,7 +175,7 @@ void MBTCPMultiSlave::execute_tcp()
 			sess.clear();
 			sslot->getSessions(sess);
 
-			for( auto& s : sess )
+			for( auto && s : sess )
 			{
 				auto i = cmap.find( s.iaddr );
 
@@ -191,9 +192,9 @@ void MBTCPMultiSlave::execute_tcp()
 			}
 
 			// а теперь проходим по списку и выставляем датчики..
-			for( auto& it : cmap )
+			for( const auto& it : cmap )
 			{
-				ClientInfo& c(it.second);
+				auto c = it.second;
 
 				dlog4 << myname << "(work): " << c.iaddr << " resp=" << (c.invert ? c.ptTimeout.checkTime() : !c.ptTimeout.checkTime())
 					  << " askcount=" << c.askCount

@@ -87,9 +87,9 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
 {
 	uniset_rwmutex_wrlock l(lst.mut);
 
-	for( auto it = lst.clst.begin(); it != lst.clst.end(); ++it )
+	for( const auto& it :  lst.clst )
 	{
-		if( it->id == ci.id && it->node == ci.node )
+		if( it.id == ci.id && it.node == ci.node )
 			return false;
 	}
 

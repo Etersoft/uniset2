@@ -177,6 +177,7 @@ class MBExchange:
 			UniSetTypes::ObjectId resp_id;
 			IOController::IOStateList::iterator resp_it;
 			DelayTimer resp_Delay; // таймер для формирования задержки на отпускание (пропадание связи)
+			PassiveTimer resp_ptInit; // таймер для формирования задержки на инициализацию связи (задержка на выставление датчика связи после запуска)
 			bool resp_state;
 			bool resp_invert;
 			std::atomic<unsigned int> numreply; // количество успешных запросов..

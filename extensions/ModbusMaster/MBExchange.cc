@@ -2671,6 +2671,10 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
 
 	d->second->resp_Delay.set(tout, false);
 	d->second->resp_invert = it.getIntProp("invert");
+
+	int init_tout = it.getPIntProp("respondInitTimeout", tout);
+	d->second->resp_ptInit.setTiming(init_tout);
+
 	return true;
 }
 // -----------------------------------------------------------------------------
@@ -3050,7 +3054,7 @@ bool MBExchange::poll()
 bool MBExchange::RTUDevice::checkRespond()
 {
 	bool prev = resp_state;
-	resp_state = !resp_Delay.check( prev_numreply == numreply );
+	resp_state = !resp_Delay.check( prev_numreply == numreply ) && numreply != 0;
 
 	dlog4 << "(checkRespond): addr=" << ModbusRTU::addr2str(mbaddr)
 		  << " respond_id=" << resp_id
@@ -3071,7 +3075,7 @@ void MBExchange::updateRespondSensors()
 	{
 		RTUDevice* d(it1.second);
 
-		if( d->resp_id != DefaultObjectId && d->checkRespond() )
+		if( d->resp_id != DefaultObjectId && (d->checkRespond() || d->resp_ptInit.checkTime()) )
 		{
 			try
 			{
@@ -3089,6 +3093,10 @@ void MBExchange::updateRespondSensors()
 					  << endl;
 
 				shm->localSetValue(d->resp_it, d->resp_id, ( set ? 1 : 0 ), getId());
+
+				// если первый раз инициализация прошла.. отключаем таймер
+				if( d->resp_ptInit.checkTime() )
+					d->resp_ptInit.setTiming( PassiveTimer::WaitUpTime );
 			}
 			catch( const Exception& ex )
 			{
