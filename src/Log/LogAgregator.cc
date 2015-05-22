@@ -14,9 +14,9 @@ LogAgregator::LogAgregator( Debug::type t ):
 	delete rdbuf(new teebuf(&internal->nbuf, &internal->sbuf));
 }
 // -------------------------------------------------------------------------
-void LogAgregator::logFile( const std::string& f )
+void LogAgregator::logFile( const std::string& f, bool truncate )
 {
-	DebugStream::logFile(f);
+	DebugStream::logFile(f,truncate);
 
 	if( !f.empty() )
 		delete rdbuf(new teebuf(&internal->fbuf, &internal->sbuf));

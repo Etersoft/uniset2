@@ -17,7 +17,7 @@ class LogAgregator:
 
 		virtual ~LogAgregator();
 
-		virtual void logFile( const std::string& f );
+		virtual void logFile( const std::string& f, bool truncate = false ) override;
 
 		void add( std::shared_ptr<DebugStream> log );
 		std::shared_ptr<DebugStream> create( const std::string& logname );
