@@ -10,4 +10,5 @@ cd ../../Utilities/Admin/
 
 cd -
 
-time -p ./uniset2-start.sh -f ./sm_perf_test $* --confile tests_with_sm.xml --e-startup-pause 10
+#time -p ./uniset2-start.sh -vcall --dump-instr=yes --simulate-cache=yes --collect-jumps=yes ./sm_perf_test $* --confile sm_perf_test.xml --e-startup-pause 10
+./uniset2-start.sh -f ./sm_perf_test $* --confile sm_perf_test.xml --e-startup-pause 10 > sm_test_gprof.log

@@ -1,4 +1,5 @@
 #include <memory>
+#include <chrono>
 #include <string>
 #include "Debug.h"
 #include "UniSetActivator.h"
@@ -15,6 +16,7 @@ static shared_ptr<SMInterface> smi;
 static shared_ptr<SharedMemory> shm;
 static shared_ptr<UInterface> ui;
 static ObjectId myID = 6000;
+static ObjectId begSensorID = 50000;
 // --------------------------------------------------------------------------
 shared_ptr<SharedMemory> shmInstance()
 {
@@ -45,36 +47,35 @@ void run_test(std::size_t concurrency, int bound, shared_ptr<SharedMemory>& shm 
 	auto&& r_worker = [&shm, bound]
 	{
 		int num = bound;
+		ObjectId sid = begSensorID + rand()%10000;
 
 		while (num--)
 		{
-			int v = shm->getValue(11);
+			int v = shm->getValue(sid);
 		}
 	};
 
 	auto&& w_worker = [&shm, bound]
 	{
 		int num = bound;
+		ObjectId sid = begSensorID + rand()%10000;
 
 		while (num--)
 		{
-			shm->setValue(11, num);
+			shm->setValue(sid, num);
 		}
 	};
 
 	std::vector<std::thread> threads;
 
-	for (std::size_t i = 0; i < concurrency - 1; ++i)
-	{
+	for (std::size_t i = 0; i < concurrency/2 - 1; ++i)
 		threads.emplace_back(r_worker);
-	}
 
-	threads.emplace_back(w_worker);
+	for (std::size_t i = 0; i < concurrency/2 - 1; ++i)
+		threads.emplace_back(w_worker);
 
 	for (auto && thread : threads)
-	{
 		thread.join();
-	}
 }
 // --------------------------------------------------------------------------
 int main(int argc, char* argv[] )
@@ -95,7 +96,7 @@ int main(int argc, char* argv[] )
 		act->broadcast( sm.transport_msg() );
 		act->run(true);
 
-		int tout = 6000;
+		int tout = 10000;
 		PassiveTimer pt(tout);
 
 		while( !pt.checkTime() && !act->exist() )
@@ -107,9 +108,14 @@ int main(int argc, char* argv[] )
 			return 1;
 		}
 
-		run_test(8, 1000000, shm);
+		std::chrono::time_point<std::chrono::system_clock> start, end;
+		start = std::chrono::system_clock::now();
+		run_test(50, 1000000, shm);
+		end = std::chrono::system_clock::now();
+ 
+		int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+		std::cout << "elapsed time: " << elapsed_seconds << " ms\n";
 		return 0;
-
 	}
 	catch( const SystemError& err )
 	{
