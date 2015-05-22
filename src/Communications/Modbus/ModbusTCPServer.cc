@@ -24,16 +24,6 @@ ModbusTCPServer::ModbusTCPServer( ost::InetAddress& ia, int port ):
 ModbusTCPServer::~ModbusTCPServer()
 {
 	terminate();
-	/*
-	    {
-	        uniset_mutex_lock l(sMutex);
-	        for( auto& s: slist )
-	        {
-	            if( s->isRunning() )
-	                s->ost::Thread::join();
-	        }
-	    }
-	*/
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::setMaxSessions( unsigned int num )
@@ -375,7 +365,7 @@ void ModbusTCPServer::terminate()
 
 	uniset_mutex_lock l(sMutex);
 
-	for( auto& s : slist )
+	for( const auto& s : slist )
 	{
 		try
 		{
@@ -404,7 +394,7 @@ void ModbusTCPServer::getSessions( Sessions& lst )
 {
 	uniset_mutex_lock l(sMutex);
 
-	for( auto& i : slist )
+	for( const auto& i : slist )
 	{
 		SessionInfo inf( i->getClientAddress(), i->getAskCount() );
 		lst.push_back(inf);

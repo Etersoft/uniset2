@@ -13,7 +13,6 @@ using namespace UniSetExtensions;
 void SharedMemory::help_print( int argc, const char* const* argv )
 {
 	cout << "--smemory-id           - SharedMemeory ID" << endl;
-	cout << "--logfile fname        - выводить логи в файл fname. По умолчанию smemory.log" << endl;
 	cout << "--datfile fname        - Файл с картой датчиков. По умолчанию configure.xml" << endl;
 	cout << "--s-filter-field       - Фильтр для загрузки списка датчиков." << endl;
 	cout << "--s-filter-value       - Значение фильтра для загрузки списка датчиков." << endl;
@@ -29,6 +28,18 @@ void SharedMemory::help_print( int argc, const char* const* argv )
 	cout << "--sm-no-history        - отключить ведение истории (аварийного следа)" << endl;
 	cout << "--pulsar-id            - датчик 'мигания'" << endl;
 	cout << "--pulsar-msec          - период 'мигания'. По умолчанию: 5000." << endl;
+	cout << endl;
+	cout << " Logs: " << endl;
+	cout << "--sm-log-...            - log control" << endl;
+	cout << "         add-levels ..." << endl;
+	cout << "         del-levels ..." << endl;
+	cout << "         set-levels ..." << endl;
+	cout << "         logfile filaname" << endl;
+	cout << "         no-debug " << endl;
+	cout << " LogServer: " << endl;
+	cout << "--sm-run-logserver       - run logserver. Default: localhost:id" << endl;
+	cout << "--sm-logserver-host ip   - listen ip. Default: localhost" << endl;
+	cout << "--sm-logserver-port num  - listen port. Default: ID" << endl;
 }
 // -----------------------------------------------------------------------------
 SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std::string& confname ):
@@ -55,7 +66,25 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 	if( confnode == NULL )
 		throw SystemError("Not found conf-node for " + cname );
 
+	string prefix="sm";
+
+	smlog = make_shared<DebugStream>();
+	conf->initLogStream(smlog,prefix+"-log");
+
+	loga = make_shared<LogAgregator>();
+	loga->add(smlog);
+	loga->add(ulog());
+
+	logserv = make_shared<LogServer>(loga);
+
 	UniXML::iterator it(confnode);
+
+	// ----------------------
+	if( findArgParam("--" + prefix + "-run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
+	{
+		logserv_host = conf->getArg2Param("--" + prefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
+		logserv_port = conf->getArgPInt("--" + prefix + "-logserver-port", it.getProp("logserverPort"), getId());
+	}
 
 	// ----------------------
 	buildHistoryList(confnode);
@@ -78,10 +107,10 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 
 	if( heartbeat_node.empty() )
 	{
-		dwarn << myname << "(init): --heartbeat-node NULL ===> heartbeat NOT USED..." << endl;
+		smwarn << myname << "(init): --heartbeat-node NULL ===> heartbeat NOT USED..." << endl;
 	}
 	else
-		dinfo << myname << "(init): heartbeat-node: " << heartbeat_node << endl;
+		sminfo << myname << "(init): heartbeat-node: " << heartbeat_node << endl;
 
 	heartbeatCheckTime = conf->getArgInt("--heartbeat-check-time", "1000");
 
@@ -97,7 +126,7 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 	if( !wdt_dev.empty() )
 		wdt = make_shared<WDTInterface>(wdt_dev);
 	else
-		dwarn << myname << "(init): watchdog timer NOT USED (--wdt-device NULL)" << endl;
+		smwarn << myname << "(init): watchdog timer NOT USED (--wdt-device NULL)" << endl;
 
 	dblogging = conf->getArgInt("--db-logging");
 
@@ -119,7 +148,7 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 		{
 			ostringstream err;
 			err << myname << ": ID not found ('pulsar') for " << p;
-			dcrit << myname << "(init): " << err.str() << endl;
+			smcrit << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 
@@ -166,6 +195,12 @@ void SharedMemory::sysCommand( const SystemMessage* sm )
 	{
 		case SystemMessage::StartUp:
 		{
+			if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
+			{
+				sminfo << myname << "(init): run log server " << logserv_host << ":" << logserv_port << endl;
+				logserv->run(logserv_host, logserv_port, true);
+			}
+
 			PassiveTimer ptAct(activateTimeout);
 
 			while( !activated && !ptAct.checkTime() )
@@ -175,7 +210,7 @@ void SharedMemory::sysCommand( const SystemMessage* sm )
 			}
 
 			if( !activated  )
-				dcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
+				smcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 
 			// подождать пока пройдёт инициализация
 			// см. activateObject()
@@ -207,26 +242,13 @@ void SharedMemory::sysCommand( const SystemMessage* sm )
 }
 
 // ------------------------------------------------------------------------------------------
-
-void SharedMemory::askSensors( UniversalIO::UIOCommand cmd )
+bool SharedMemory::deactivateObject()
 {
-	/*
-	    for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
-	    {
-	        if( sm->id == it->fuse_id )
-	        {
-	            try
-	            {
-	                ui->askState( SID, cmd);
-	            }
-	            catch( const Exception& ex )
-	            {
-	                dlog.crit() << myname << "(askSensors): " << ex << endl;
-	            }
-	    }
-	*/
-}
+	if( logserv )
+		logserv = nullptr;
 
+	return IONotifyController_LT::deactivateObject();
+}
 // ------------------------------------------------------------------------------------------
 bool SharedMemory::activateObject()
 {
@@ -326,11 +348,11 @@ void SharedMemory::checkHeartBeat()
 		}
 		catch( const Exception& ex )
 		{
-			dcrit << myname << "(checkHeartBeat): " << ex << endl;
+			smcrit << myname << "(checkHeartBeat): " << ex << endl;
 		}
 		catch(...)
 		{
-			dcrit << myname << "(checkHeartBeat): ..." << endl;
+			smcrit << myname << "(checkHeartBeat): ..." << endl;
 		}
 	}
 
@@ -370,7 +392,7 @@ bool SharedMemory::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterato
 			<< ") указан неверно ("
 			<< it.getProp("iotype") << ") должен быть 'AI'";
 
-		dcrit << msg.str() << endl;
+		smcrit << msg.str() << endl;
 		kill(getpid(), SIGTERM);
 		//        throw NameNotFound(msg.str());
 	};
@@ -385,7 +407,7 @@ bool SharedMemory::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterato
 		{
 			ostringstream msg;
 			msg << "(SharedMemory::readItem): дискретный датчик (heartbeat_ds_name) связанный с " << it.getProp("name");
-			dwarn << msg.str() << endl;
+			smwarn << msg.str() << endl;
 		}
 	}
 	else
@@ -399,7 +421,7 @@ bool SharedMemory::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterato
 
 			// Если уж задали имя для датчика, то он должен существовать..
 			// поэтому завершаем процесс, если не нашли..
-			dcrit << msg.str() << endl;
+			smcrit << msg.str() << endl;
 			kill(getpid(), SIGTERM);
 			//            throw NameNotFound(msg.str());
 		}
@@ -414,7 +436,7 @@ bool SharedMemory::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterato
 		msg << "(SharedMemory::readItem): НЕ УКАЗАН id для "
 			<< it.getProp("name") << " секция " << sec;
 
-		dcrit << msg.str() << endl;
+		smcrit << msg.str() << endl;
 		kill(getpid(), SIGTERM);
 		//        throw NameNotFound(msg.str());
 	};
@@ -469,7 +491,7 @@ void SharedMemory::readEventList( const std::string& oname )
 
 	if( enode == NULL )
 	{
-		dwarn << myname << "(readEventList): " << oname << " не найден..." << endl;
+		smwarn << myname << "(readEventList): " << oname << " не найден..." << endl;
 		return;
 	}
 
@@ -477,7 +499,7 @@ void SharedMemory::readEventList( const std::string& oname )
 
 	if( !it.goChildren() )
 	{
-		dwarn << myname << "(readEventList): <eventlist> пустой..." << endl;
+		smwarn << myname << "(readEventList): <eventlist> пустой..." << endl;
 		return;
 	}
 
@@ -490,11 +512,11 @@ void SharedMemory::readEventList( const std::string& oname )
 
 		if( oid != 0 )
 		{
-			dinfo << myname << "(readEventList): add " << it.getProp("name") << endl;
+			sminfo << myname << "(readEventList): add " << it.getProp("name") << endl;
 			elst.push_back(oid);
 		}
 		else
-			dcrit << myname << "(readEventList): Не найден ID для "
+			smcrit << myname << "(readEventList): Не найден ID для "
 				  << it.getProp("name") << endl;
 	}
 }
@@ -518,7 +540,7 @@ void SharedMemory::sendEvent( UniSetTypes::SystemMessage& sm )
 		}
 
 		if(!ok)
-			dcrit << myname << "(sendEvent): Объект " << it << " НЕДОСТУПЕН" << endl;
+			smcrit << myname << "(sendEvent): Объект " << it << " НЕДОСТУПЕН" << endl;
 	}
 }
 // -----------------------------------------------------------------------------
@@ -535,13 +557,13 @@ void SharedMemory::loggingInfo( SensorMessage& sm )
 // -----------------------------------------------------------------------------
 void SharedMemory::buildHistoryList( xmlNode* cnode )
 {
-	dinfo << myname << "(buildHistoryList): ..."  << endl;
+	sminfo << myname << "(buildHistoryList): ..."  << endl;
 
 	const std::shared_ptr<UniXML> xml = uniset_conf()->getConfXML();
 
 	if( !xml )
 	{
-		dwarn << myname << "(buildHistoryList): xml=NULL?!" << endl;
+		smwarn << myname << "(buildHistoryList): xml=NULL?!" << endl;
 		return;
 	}
 
@@ -549,7 +571,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 
 	if( !n )
 	{
-		dwarn << myname << "(buildHistoryList): <History> not found. ignore..." << endl;
+		smwarn << myname << "(buildHistoryList): <History> not found. ignore..." << endl;
 		hist.clear();
 		return;
 	}
@@ -560,7 +582,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 
 	if( no_history )
 	{
-		dwarn << myname << "(buildHistoryList): no_history='1'.. history skipped..." << endl;
+		smwarn << myname << "(buildHistoryList): no_history='1'.. history skipped..." << endl;
 		hist.clear();
 		return;
 	}
@@ -572,7 +594,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 
 	if( !it.goChildren() )
 	{
-		dwarn << myname << "(buildHistoryList): <History> empty. ignore..." << endl;
+		smwarn << myname << "(buildHistoryList): <History> empty. ignore..." << endl;
 		return;
 	}
 
@@ -594,7 +616,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 
 		if( hi.fuse_id == DefaultObjectId )
 		{
-			dwarn << myname << "(buildHistory): not found sensor ID for "
+			smwarn << myname << "(buildHistory): not found sensor ID for "
 				  << it.getProp("fuse_id")
 				  << " history item id=" << it.getProp("id")
 				  << " ..ignore.." << endl;
@@ -611,7 +633,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 			hi.fuse_val    = it.getIntProp("fuse_value");
 		}
 
-		dinfo << myname << "(buildHistory): add fuse_id=" << hi.fuse_id
+		sminfo << myname << "(buildHistory): add fuse_id=" << hi.fuse_id
 			  << " fuse_val=" << hi.fuse_val
 			  << " fuse_use_val=" << hi.fuse_use_val
 			  << " fuse_invert=" << hi.fuse_invert
@@ -621,7 +643,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 		hist.push_back(hi);
 	}
 
-	dinfo << myname << "(buildHistoryList): history logs count=" << hist.size() << endl;
+	sminfo << myname << "(buildHistoryList): history logs count=" << hist.size() << endl;
 }
 // -----------------------------------------------------------------------------
 void SharedMemory::checkHistoryFilter( UniXML::iterator& xit )
@@ -642,7 +664,7 @@ void SharedMemory::checkHistoryFilter( UniXML::iterator& xit )
 
 		if( id == DefaultObjectId )
 		{
-			dwarn << myname << "(checkHistoryFilter): not found sensor ID for " << xit.getProp("name") << endl;
+			smwarn << myname << "(checkHistoryFilter): not found sensor ID for " << xit.getProp("name") << endl;
 			continue;
 		}
 
@@ -698,7 +720,7 @@ void SharedMemory::updateHistory( std::shared_ptr<USensorInfo>& s_it, IOControll
 		sm_tv_usec = s_it->tv_usec;
 	}
 
-	dinfo << myname << "(updateHistory): "
+	sminfo << myname << "(updateHistory): "
 		  << " sid=" << s_it->si.id
 		  << " value=" << value
 		  << endl;
@@ -717,7 +739,7 @@ void SharedMemory::updateHistory( std::shared_ptr<USensorInfo>& s_it, IOControll
 
 			if( st )
 			{
-				dinfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
+				sminfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
 				it->fuse_sec = sm_tv_sec;
 				it->fuse_usec = sm_tv_usec;
@@ -736,7 +758,7 @@ void SharedMemory::updateHistory( std::shared_ptr<USensorInfo>& s_it, IOControll
 
 				if( !st )
 				{
-					dinfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
+					sminfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
 					it->fuse_sec = sm_tv_sec;
 					it->fuse_usec = sm_tv_usec;
@@ -747,7 +769,7 @@ void SharedMemory::updateHistory( std::shared_ptr<USensorInfo>& s_it, IOControll
 			{
 				if( value == it->fuse_val )
 				{
-					dinfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
+					sminfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
 					it->fuse_sec = sm_tv_sec;
 					it->fuse_usec = sm_tv_usec;
@@ -786,13 +808,13 @@ void SharedMemory::initFromReserv()
 
 	if( !it.find("ReservList") )
 	{
-		dinfo << myname << "(initFromReserv): <ReservList> not found... ignore.. " << endl;
+		sminfo << myname << "(initFromReserv): <ReservList> not found... ignore.. " << endl;
 		return;
 	}
 
 	if( !it.goChildren() )
 	{
-		dwarn << myname << "(initFromReserv): <ReservList> EMPTY?... ignore.. " << endl;
+		smwarn << myname << "(initFromReserv): <ReservList> EMPTY?... ignore.. " << endl;
 		return;
 	}
 
@@ -814,7 +836,7 @@ void SharedMemory::initFromReserv()
 		{
 			ostringstream err;
 			err << myname << "(initFromReserv): Not found ID for '" << smName << "'";
-			dcrit << err.str() << endl;
+			smcrit << err.str() << endl;
 			// throw SystemError(err.str());
 			raise(SIGTERM);
 		}
@@ -830,7 +852,7 @@ void SharedMemory::initFromReserv()
 		{
 			ostringstream err;
 			err << myname << "(initFromReserv): Not found NodeID for '" << smNode << "'";
-			dcrit << err.str() << endl;
+			smcrit << err.str() << endl;
 			// throw SystemError(err.str());
 			raise(SIGTERM);
 		}
@@ -838,25 +860,25 @@ void SharedMemory::initFromReserv()
 
 		if( sm_id == getId() && sm_node == conf->getLocalNode() )
 		{
-			dcrit << myname << "(initFromReserv): Initialization of himself?!  ignore.." << endl;
+			smcrit << myname << "(initFromReserv): Initialization of himself?!  ignore.." << endl;
 			continue;
 		}
 
 		if( initFromSM(sm_id, sm_node) )
 		{
-			dinfo << myname << "(initFromReserv): init from sm_id='" << smName << "' sm_node='" << smNode << "' [OK]" << endl;
+			sminfo << myname << "(initFromReserv): init from sm_id='" << smName << "' sm_node='" << smNode << "' [OK]" << endl;
 			return;
 		}
 
-		dinfo << myname << "(initFromReserv): init from sm_id='" << smName << "' sm_node='" << smNode << "' [FAILED]" << endl;
+		sminfo << myname << "(initFromReserv): init from sm_id='" << smName << "' sm_node='" << smNode << "' [FAILED]" << endl;
 	}
 
-	dwarn << myname << "(initFromReserv): FAILED INIT FROM <ReservList>" << endl;
+	smwarn << myname << "(initFromReserv): FAILED INIT FROM <ReservList>" << endl;
 }
 // ----------------------------------------------------------------------------
 bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectId sm_node )
 {
-	dinfo << myname << "(initFromSM): init from sm_id='" << sm_id << "' sm_node='" << sm_node << "'" << endl;
+	sminfo << myname << "(initFromSM): init from sm_id='" << sm_id << "' sm_node='" << sm_node << "'" << endl;
 
 	// SENSORS MAP
 	try
@@ -880,7 +902,7 @@ bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectI
 
 				if( io == myioEnd() )
 				{
-					dcrit << myname << "(initFromSM): not found sensor id=" << ii.si.id << "'" << endl;
+					smcrit << myname << "(initFromSM): not found sensor id=" << ii.si.id << "'" << endl;
 					continue;
 				}
 
@@ -897,11 +919,11 @@ bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectI
 			}
 			catch( const Exception& ex )
 			{
-				dcrit << myname << "(initFromSM): " << ex << endl;
+				smcrit << myname << "(initFromSM): " << ex << endl;
 			}
 			catch( const IOController_i::NameNotFound& ex )
 			{
-				dcrit << myname << "(initFromSM): not found sensor id=" << ii.si.id << "'" << endl;
+				smcrit << myname << "(initFromSM): not found sensor id=" << ii.si.id << "'" << endl;
 			}
 		}
 
@@ -909,7 +931,7 @@ bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectI
 	}
 	catch( const UniSetTypes::Exception& ex )
 	{
-		dwarn << myname << "(initFromSM): " << ex << endl;
+		smwarn << myname << "(initFromSM): " << ex << endl;
 	}
 
 	return false;

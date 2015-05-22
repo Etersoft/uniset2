@@ -19,7 +19,6 @@
 #include "IOBase.h"
 #include "VTypes.h"
 #include "ThreadCreator.h"
-#include "LogAgregator.h"
 #include "LogServer.h"
 #include "modbus/MBLogSugar.h"
 // -----------------------------------------------------------------------------

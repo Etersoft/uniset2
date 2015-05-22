@@ -12,10 +12,9 @@ LogServer::~LogServer()
 {
 	if( nullsess )
 		nullsess->cancel();
-
 	{
 		// uniset_rwmutex_wrlock l(mutSList);
-		for( auto& i : slist )
+		for( const auto& i : slist )
 		{
 			if( i->isRunning() )
 				i->cancel();
@@ -24,17 +23,14 @@ LogServer::~LogServer()
 
 	cancelled = true;
 
+	if( tcp && !slist.empty() )
+		tcp->reject();
+
 	if( thr )
-	{
 		thr->stop();
 
-		if( thr->isRunning() )
-			thr->join();
-
-		delete thr;
-	}
-
 	delete tcp;
+	tcp = 0;
 }
 // -------------------------------------------------------------------------
 LogServer::LogServer( std::shared_ptr<LogAgregator> log ):
@@ -110,7 +106,7 @@ void LogServer::run( const std::string& addr, ost::tpport_t port, bool thread )
 		work();
 	else
 	{
-		thr = new ThreadCreator<LogServer>(this, &LogServer::work);
+		thr = make_shared<ThreadCreator<LogServer>>(this, &LogServer::work);
 		thr->start();
 	}
 }
@@ -125,6 +121,7 @@ void LogServer::work()
 		{
 			while( !cancelled && tcp->isPendingConnection(timeout) )
 			{
+				if( cancelled ) break;
 				{
 					uniset_rwmutex_wrlock l(mutSList);
 					int sz = slist.size();
@@ -148,6 +145,8 @@ void LogServer::work()
 						continue;
 					}
 				}
+
+				if( cancelled ) break;
 
 				auto s = make_shared<LogSession>(*tcp, elog, sessTimeout, cmdTimeout, outTimeout);
 				s->setSessionLogLevel(sessLogLevel);
@@ -178,7 +177,7 @@ void LogServer::work()
 
 	{
 		//      uniset_rwmutex_wrlock l(mutSList);
-		for( auto& i : slist )
+		for( const auto& i : slist )
 			i->disconnect();
 
 		if( nullsess )

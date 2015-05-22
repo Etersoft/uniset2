@@ -11,6 +11,10 @@
 #include "PassiveTimer.h"
 #include "NCRestorer.h"
 #include "WDTInterface.h"
+#include "LogServer.h"
+#include "DebugStream.h"
+#include "SMLogSugar.h"
+#include "LogAgregator.h"
 // -----------------------------------------------------------------------------
 
 /*! \page page_SharedMemory Реализация разделямой между процессами памяти (SharedMemory)
@@ -377,7 +381,7 @@ class SharedMemory:
 
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
 		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
-		virtual void askSensors( UniversalIO::UIOCommand cmd );
+		virtual void askSensors( UniversalIO::UIOCommand cmd ){};
 		void sendEvent( UniSetTypes::SystemMessage& sm );
 		void initFromReserv();
 		bool initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectId sm_node );
@@ -385,6 +389,7 @@ class SharedMemory:
 		// действия при завершении работы
 		virtual void sigterm( int signo ) override;
 		virtual bool activateObject() override;
+		virtual bool deactivateObject() override;
 		bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
 
 		void buildEventList( xmlNode* cnode );
@@ -463,6 +468,12 @@ class SharedMemory:
 		int msecPulsar;
 
 		xmlNode* confnode;
+
+		std::shared_ptr<LogAgregator> loga;
+		std::shared_ptr<DebugStream> smlog;
+		std::shared_ptr<LogServer> logserv;
+		std::string logserv_host = {""};
+		int logserv_port = {0};
 
 	private:
 		HistorySlot m_historySignal;

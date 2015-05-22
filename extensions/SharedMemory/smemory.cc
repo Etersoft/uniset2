@@ -23,10 +23,13 @@ int main(int argc, const char** argv)
 	{
 		auto conf = uniset_init(argc, argv);
 
-		string logfilename = conf->getArgParam("--logfile", "smemory.log");
-		string logname( conf->getLogDir() + logfilename );
-		ulog()->logFile( logname );
-		dlog()->logFile( logname );
+		string logfilename = conf->getArgParam("--logfile", "");
+		if( !logfilename.empty() )
+		{
+			string logname( conf->getLogDir() + logfilename );
+			ulog()->logFile( logname );
+			dlog()->logFile( logname );
+		}
 
 		auto shm = SharedMemory::init_smemory(argc, argv);
 

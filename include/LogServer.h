@@ -106,7 +106,7 @@ class LogServer
 
 		std::atomic_bool cancelled;
 		DebugStream mylog;
-		ThreadCreator<LogServer>* thr;
+		std::shared_ptr< ThreadCreator<LogServer> > thr;
 
 		ost::TCPSocket* tcp;
 		std::shared_ptr<DebugStream> elog;
