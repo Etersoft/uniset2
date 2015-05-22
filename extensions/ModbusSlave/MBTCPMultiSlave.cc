@@ -158,7 +158,7 @@ void MBTCPMultiSlave::execute_tcp()
 	if( dlog()->is_level9() )
 		sslot->setLog(dlog());
 
-	for( auto && i : cmap )
+	for( auto&& i : cmap )
 		i.second.ptTimeout.reset();
 
 	sslot->setMaxSessions( sessMaxNum );
@@ -175,7 +175,7 @@ void MBTCPMultiSlave::execute_tcp()
 			sess.clear();
 			sslot->getSessions(sess);
 
-			for( auto && s : sess )
+			for( auto&& s : sess )
 			{
 				auto i = cmap.find( s.iaddr );
 
@@ -318,7 +318,7 @@ void MBTCPMultiSlave::initIterators()
 
 	shm->initIterator(sesscount_it);
 
-	for( auto& i : cmap )
+	for( auto&& i : cmap )
 		i.second.initIterators(shm);
 }
 // -----------------------------------------------------------------------------

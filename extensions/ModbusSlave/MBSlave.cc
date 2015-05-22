@@ -29,7 +29,7 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 	prop_prefix("")
 {
 	if( objId == DefaultObjectId )
-		throw UniSetTypes::SystemError("(MBSlave): objId=-1?!! Use --mbs-name" );
+		throw UniSetTypes::SystemError("(MBSlave): objId=-1?!! Use --" + prefix + "-name" );
 
 	auto conf = uniset_conf();
 	mutex_start.setName(myname + "_mutex_start");
@@ -148,7 +148,7 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 		mbtcp->setAfterSendPause(aftersend_pause);
 		mbtcp->setReplyTimeout(reply_tout);
 
-		mbslot = mbslot = std::static_pointer_cast<ModbusServerSlot>(mbtcp);
+		mbslot = std::static_pointer_cast<ModbusServerSlot>(mbtcp);
 		thr = make_shared< ThreadCreator<MBSlave> >(this, &MBSlave::execute_tcp);
 		thr->setFinalAction(this, &MBSlave::finalThread);
 		dinfo << myname << "(init): init TCP connection ok. " << " inet=" << iaddr << " port=" << port << endl;
@@ -157,7 +157,7 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 			mbtcp->setLog(dlog());
 	}
 	else
-		throw UniSetTypes::SystemError(myname + "(MBSlave): Unknown slave type. Use: --mbs-type [RTU|TCP]");
+		throw UniSetTypes::SystemError(myname + "(MBSlave): Unknown slave type. Use: --" + prefix + "-type [RTU|TCP]");
 
 	mbslot->connectReadCoil( sigc::mem_fun(this, &MBSlave::readCoilStatus) );
 	mbslot->connectReadInputStatus( sigc::mem_fun(this, &MBSlave::readInputStatus) );
