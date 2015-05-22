@@ -50,10 +50,22 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 
 	no_sender = conf->getArgInt("--" + prefix + "-nosender", it.getProp("nosender"));
 
-	xmlNode* nodes = conf->getXMLNodesSection();
+	std::string nconfname = conf->getArg2Param("--" + prefix + "-nodes-confnode", it.getProp("nodesConfNode"),"nodes");
+
+	xmlNode* nodes = 0;
+
+	if( nconfname == "nodes" )
+		nodes = conf->getXMLNodesSection();
+	else
+	{
+		auto xml = conf->getConfXML();
+		nodes = conf->findNode(xml->getFirstNode(), nconfname);
+	}
+
+	dinfo << myname << "(init):  init from <" << nconfname << ">" << endl;
 
 	if( !nodes )
-		throw UniSetTypes::SystemError("(UNetExchange): Not found <nodes>");
+		throw UniSetTypes::SystemError("(UNetExchange): Not found confnode <" + nconfname +">");
 
 	UniXML::iterator n_it(nodes);
 

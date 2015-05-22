@@ -167,6 +167,12 @@
 				<item rra="RRA:MAX:0.5:1:4320"/>
 			</rrd>
 		</RRDServer1>
+
+		<specnet unet_broadcast_ip="192.168.1.255" unet_broadcast_ip2="192.168.122.255">
+			<item id="3100" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="0" unet_port="2048"/>
+			<item id="3101" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="0" unet_port="2048"/>
+		</specnet>
+
 	</settings>
 	<ObjectsMap idfromfile="1">
 		<!--
@@ -342,6 +348,23 @@
 			<item id="6061" name="TestProc50"/>
 			<item id="6062" name="MBSlave2"/>
 			<item id="6063" name="MBMultiSlave1"/>
+			<item id="6064" name="MBMultiSlave2"/>
+			<item id="6065" name="MBMultiSlave3"/>
+			<item id="6066" name="MBMultiSlave4"/>
+			<item id="6067" name="MBMultiSlave5"/>
+			<item id="6068" name="MBMultiSlave6"/>
+			<item id="6069" name="MBMultiSlave7"/>
+			<item id="6070" name="MBMultiSlave8"/>
+			<item id="6071" name="MBMultiSlave9"/>
+			<item id="6072" name="MBMultiSlave10"/>
+			<item id="6080" name="MBSlave3"/>
+			<item id="6081" name="MBSlave4"/>
+			<item id="6082" name="MBSlave5"/>
+			<item id="6083" name="MBSlave6"/>
+			<item id="6084" name="MBSlave7"/>
+			<item id="6085" name="MBSlave8"/>
+			<item id="6086" name="MBSlave9"/>
+			<item id="6087" name="MBSlave10"/>
 		</objects>
 	</ObjectsMap>
 	<messages idfromfile="1" name="messages">
