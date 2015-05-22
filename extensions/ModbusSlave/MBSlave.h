@@ -19,6 +19,9 @@
 #include "IOBase.h"
 #include "VTypes.h"
 #include "ThreadCreator.h"
+#include "LogAgregator.h"
+#include "LogServer.h"
+#include "modbus/MBLogSugar.h"
 // -----------------------------------------------------------------------------
 /*!
       \page page_ModbusSlave Реализация Modbus slave
@@ -511,6 +514,11 @@ class MBSlave:
 		typedef std::unordered_map<int, MEIObjIDMap> MEIDevIDMap;
 
 		MEIDevIDMap meidev;
+
+		std::shared_ptr<DebugStream> mblog;
+		std::shared_ptr<LogServer> logserv;
+		std::string logserv_host = {""};
+		int logserv_port = {0};
 };
 // -----------------------------------------------------------------------------
 #endif // _MBSlave_H_

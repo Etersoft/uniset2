@@ -21,6 +21,9 @@
 #include "MTR.h"
 #include "RTUStorage.h"
 #include "modbus/ModbusClient.h"
+#include "modbus/MBLogSugar.h"
+#include "LogAgregator.h"
+#include "LogServer.h"
 // -----------------------------------------------------------------------------
 /*!
     \par Базовый класс для реализация обмена по протоколу Modbus [RTU|TCP].
@@ -192,7 +195,7 @@ class MBExchange:
 			long mode; // режим работы с устройством (см. ExchangeMode)
 
 			// return TRUE if state changed
-			bool checkRespond();
+			bool checkRespond( std::shared_ptr<DebugStream>& log );
 
 			// специфические поля для RS
 			ComPort::Speed speed;
@@ -348,6 +351,11 @@ class MBExchange:
 		std::string defaultMBtype;
 		std::string defaultMBaddr;
 		bool defaultMBinitOK; // флаг определяющий нужно ли ждать "первого обмена" или при запуске сохранять в SM значение default.
+
+		std::shared_ptr<DebugStream> mblog;
+		std::shared_ptr<LogServer> logserv;
+		std::string logserv_host = {""};
+		int logserv_port = {0};
 
 	private:
 		MBExchange();

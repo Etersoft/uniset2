@@ -23,7 +23,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 	auto conf = uniset_conf();
 
 	prop_prefix = initPropPrefix("tcp_");
-	dinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
+	mbinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
 	UniXML::iterator it(cnode);
 
@@ -38,7 +38,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 	{
 		ostringstream err;
 		err << myname << "(init): not found <GateList>";
-		dcrit << err.str() << endl;
+		mbcrit << err.str() << endl;
 		throw UniSetTypes::SystemError(err.str());
 	}
 
@@ -46,7 +46,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 	{
 		ostringstream err;
 		err << myname << "(init): empty <GateList> ?!";
-		dcrit << err.str() << endl;
+		mbcrit << err.str() << endl;
 		throw UniSetTypes::SystemError(err.str());
 	}
 
@@ -59,7 +59,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		{
 			ostringstream err;
 			err << myname << "(init): ip='' in <GateList>";
-			dcrit << err.str() << endl;
+			mbcrit << err.str() << endl;
 			throw UniSetTypes::SystemError(err.str());
 		}
 
@@ -69,7 +69,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		{
 			ostringstream err;
 			err << myname << "(init): ERROR: port=''" << sinf.port << " for ip='" << sinf.ip << "' in <GateList>";
-			dcrit << err.str() << endl;
+			mbcrit << err.str() << endl;
 			throw UniSetTypes::SystemError(err.str());
 		}
 
@@ -81,7 +81,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 			{
 				ostringstream err;
 				err << myname << "(init): ERROR: Unknown SensorID for '" << it1.getProp("respond") << "' in <GateList>";
-				dcrit << err.str() << endl;
+				mbcrit << err.str() << endl;
 				throw UniSetTypes::SystemError(err.str());
 			}
 		}
@@ -101,19 +101,19 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		n << sinf.ip << ":" << sinf.port;
 		sinf.myname = n.str();
 
-		if( dlog()->is_level9() )
-			sinf.mbtcp->setLog(dlog());
+		if( mblog->is_level9() )
+			sinf.mbtcp->setLog(mblog);
 
 		mblist.push_back(sinf);
 
-		dinfo << myname << "(init): add slave channel " << sinf.myname << endl;
+		mbinfo << myname << "(init): add slave channel " << sinf.myname << endl;
 	}
 
 	if( mblist.empty() )
 	{
 		ostringstream err;
 		err << myname << "(init): empty <GateList>!";
-		dcrit << err.str() << endl;
+		mbcrit << err.str() << endl;
 		throw UniSetTypes::SystemError(err.str());
 	}
 
@@ -139,7 +139,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 	// неудачной попытки запросов по одному из каналов, то ПЕРЕОПРЕДЕЛЯЕМ reopen, на timeout..
 	ptReopen.setTiming(default_timeout);
 
-	if( dlog()->is_info() )
+	if( mblog->is_info() )
 		printMap(rmap);
 }
 // -----------------------------------------------------------------------------
@@ -175,7 +175,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 		if( mbi == mblist.rend() )
 			mbi = mblist.rbegin();
 
-		mbi->init();
+		mbi->init(mblog);
 		mb = mbi->mbtcp;
 		return mbi->mbtcp;
 	}
@@ -189,13 +189,13 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 		{
 			mbi->ignore = true;
 			mbi->ptIgnoreTimeout.reset();
-			dwarn << myname << "(initMB): set ignore=true for " << mbi->ip << ":" << mbi->port << endl;
+			mbwarn << myname << "(initMB): set ignore=true for " << mbi->ip << ":" << mbi->port << endl;
 		}
 
 		// Если по текущему каналу связь есть, то возвращаем его
 		if( mbi != mblist.rend() && !mbi->ignore && mbi->respond )
 		{
-			if( mbi->mbtcp->isConnection() || ( !mbi->mbtcp->isConnection() && mbi->init()) )
+			if( mbi->mbtcp->isConnection() || ( !mbi->mbtcp->isConnection() && mbi->init(mblog)) )
 			{
 				if( !mbi->ignore  )
 				{
@@ -221,7 +221,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 	{
 		uniset_rwmutex_wrlock l(tcpMutex);
 
-		if( it->respond && it->init() )
+		if( it->respond && it->init(mblog) )
 		{
 			if( it->ignore )
 			{
@@ -257,13 +257,13 @@ bool MBTCPMultiMaster::MBSlaveInfo::check()
 	return mbtcp->checkConnection(ip, port);
 }
 // -----------------------------------------------------------------------------
-bool MBTCPMultiMaster::MBSlaveInfo::init()
+bool MBTCPMultiMaster::MBSlaveInfo::init( std::shared_ptr<DebugStream>& mblog )
 {
 	try
 	{
 		ost::Thread::setException(ost::Thread::throwException);
 
-		dinfo << myname << "(init): connect..." << endl;
+		mbinfo << myname << "(init): connect..." << endl;
 
 		mbtcp->connect(ip, port);
 		mbtcp->setForceDisconnect(force_disconnect);
@@ -277,7 +277,7 @@ bool MBTCPMultiMaster::MBSlaveInfo::init()
 			mbtcp->setAfterSendPause(aftersend_pause);
 
 			if( mbtcp->isConnection() )
-				dinfo << "(init): " << myname << " connect OK" << endl;
+				mbinfo << "(init): " << myname << " connect OK" << endl;
 
 			initOK = true;
 		}
@@ -285,15 +285,15 @@ bool MBTCPMultiMaster::MBSlaveInfo::init()
 	}
 	catch( ModbusRTU::mbException& ex )
 	{
-		dwarn << "(init): " << ex << endl;
+		mbwarn << "(init): " << ex << endl;
 	}
 	catch( const ost::Exception& e )
 	{
-		dwarn << myname << "(init): Can`t create socket " << ip << ":" << port << " err: " << e.getString() << endl;
+		mbwarn << myname << "(init): Can`t create socket " << ip << ":" << port << " err: " << e.getString() << endl;
 	}
 	catch(...)
 	{
-		dwarn << "(init): " << myname << " catch ..." << endl;
+		mbwarn << "(init): " << myname << " catch ..." << endl;
 	}
 
 	initOK = false;
@@ -353,7 +353,7 @@ void MBTCPMultiMaster::check_thread()
 			try
 			{
 				bool r = it->check();
-				dinfo << myname << "(check): " << it->myname << " " << ( r ? "OK" : "FAIL" ) << endl;
+				mbinfo << myname << "(check): " << it->myname << " " << ( r ? "OK" : "FAIL" ) << endl;
 
 				try
 				{
@@ -365,11 +365,11 @@ void MBTCPMultiMaster::check_thread()
 				}
 				catch( const Exception& ex )
 				{
-					dcrit << myname << "(check): (respond) " << ex << std::endl;
+					mbcrit << myname << "(check): (respond) " << ex << std::endl;
 				}
 				catch( const std::exception& ex )
 				{
-					dcrit << myname << "(check): (respond) " << ex.what() << std::endl;
+					mbcrit << myname << "(check): (respond) " << ex.what() << std::endl;
 				}
 
 
@@ -380,7 +380,7 @@ void MBTCPMultiMaster::check_thread()
 			}
 			catch( const std::exception& ex )
 			{
-				dcrit << myname << "(check): (respond) " << ex.what() << std::endl;
+				mbcrit << myname << "(check): (respond) " << ex.what() << std::endl;
 			}
 
 			if( !checkProcActive() )

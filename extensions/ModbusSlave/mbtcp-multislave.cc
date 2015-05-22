@@ -21,7 +21,7 @@ int main(int argc, const char** argv)
 	{
 		cout << "--smemory-id objectName  - SharedMemory objectID. Default: autodetect" << endl;
 		cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
-		cout << "--mbs-logfile filename    - logfilename. Default: mbslave.log" << endl;
+		cout << "--mbs-logfile filename   - logfilename" << endl;
 		cout << endl;
 		MBSlave::help_print(argc, argv);
 		return 0;
@@ -33,14 +33,14 @@ int main(int argc, const char** argv)
 
 		string logfilename(conf->getArgParam("--mbs-logfile"));
 
-		if( logfilename.empty() )
-			logfilename = "mbslave.log";
-
-		std::ostringstream logname;
-		string dir(conf->getLogDir());
-		logname << dir << logfilename;
-		ulog()->logFile( logname.str() );
-		dlog()->logFile( logname.str() );
+		if( !logfilename.empty() )
+		{
+			std::ostringstream logname;
+			string dir(conf->getLogDir());
+			logname << dir << logfilename;
+			ulog()->logFile( logname.str() );
+			dlog()->logFile( logname.str() );
+		}
 
 		ObjectId shmID = DefaultObjectId;
 		string sID = conf->getArgParam("--smemory-id");

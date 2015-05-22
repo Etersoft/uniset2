@@ -17,7 +17,7 @@ int main( int argc, const char** argv )
 	{
 		cout << "--smemory-id objectName  - SharedMemory objectID. Default: autodetect" << endl;
 		cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
-		cout << "--mbtcp-logfile filename    - logfilename. Default: mbtcpmaster.log" << endl;
+		cout << "--mbtcp-logfile filename  - logfilename" << endl;
 		cout << endl;
 		MBTCPMaster::help_print(argc, argv);
 		return 0;
@@ -29,14 +29,14 @@ int main( int argc, const char** argv )
 
 		string logfilename(conf->getArgParam("--mbtcp-logfile"));
 
-		if( logfilename.empty() )
-			logfilename = "mbtcpmaster.log";
-
-		std::ostringstream logname;
-		string dir(conf->getLogDir());
-		logname << dir << logfilename;
-		ulog()->logFile( logname.str() );
-		dlog()->logFile( logname.str() );
+		if( !logfilename.empty() )
+		{
+			std::ostringstream logname;
+			string dir(conf->getLogDir());
+			logname << dir << logfilename;
+			ulog()->logFile( logname.str() );
+			dlog()->logFile( logname.str() );
+		}
 
 		ObjectId shmID = DefaultObjectId;
 		string sID = conf->getArgParam("--smemory-id");

@@ -22,7 +22,7 @@ MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shm
 
 	// префикс для "свойств" - по умолчанию "tcp_";
 	prop_prefix = initPropPrefix("tcp_");
-	dinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
+	mbinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
 	UniXML::iterator it(cnode);
 
@@ -39,10 +39,10 @@ MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shm
 	if( port <= 0 )
 		throw UniSetTypes::SystemError(myname + "(MBMaster): Unknown inet port...(Use: " + tmp + ")" );
 
-	dinfo << myname << "(init): gateway " << iaddr << ":" << port << endl;
+	mbinfo << myname << "(init): gateway " << iaddr << ":" << port << endl;
 
 	force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection", it.getProp("persistent_connection")) ? false : true;
-	dinfo << myname << "(init): persisten-connection=" << (!force_disconnect) << endl;
+	mbinfo << myname << "(init): persisten-connection=" << (!force_disconnect) << endl;
 
 	if( shm->isLocalwork() )
 	{
@@ -56,7 +56,7 @@ MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shm
 	pollThread = make_shared<ThreadCreator<MBTCPMaster>>(this, &MBTCPMaster::poll_thread);
 	pollThread->setFinalAction(this, &MBTCPMaster::final_thread);
 
-	if( dlog()->is_info() )
+	if( mblog->is_info() )
 		printMap(rmap);
 }
 // -----------------------------------------------------------------------------
@@ -97,20 +97,20 @@ std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
 		mbtcp->setSleepPause(sleepPause_usec);
 		mbtcp->setAfterSendPause(aftersend_pause);
 
-		dinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
+		mbinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
 
-		if( dlog()->is_level9() )
-			mbtcp->setLog(dlog());
+		if( mblog->is_level9() )
+			mbtcp->setLog(mblog);
 	}
 	catch( ModbusRTU::mbException& ex )
 	{
-		dwarn << "(init): " << ex << endl;
+		mbwarn << "(init): " << ex << endl;
 		mb = nullptr;
 		mbtcp = nullptr;
 	}
 	catch( const ost::Exception& e )
 	{
-		dwarn << myname << "(init): Can`t create socket " << iaddr << ":" << port << " err: " << e.getString() << endl;
+		mbwarn << myname << "(init): Can`t create socket " << iaddr << ":" << port << " err: " << e.getString() << endl;
 		mb = nullptr;
 		mbtcp = nullptr;
 	}

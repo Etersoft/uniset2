@@ -55,7 +55,7 @@ MBTCPMultiSlave::MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::Obje
 			{
 				ostringstream err;
 				err << myname << "(init): Unknown ip=''";
-				dcrit << err.str() << endl;
+				mbcrit << err.str() << endl;
 				throw SystemError(err.str());
 			}
 
@@ -71,7 +71,7 @@ MBTCPMultiSlave::MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::Obje
 				{
 					ostringstream err;
 					err << myname << "(init): Not found sensor ID for " << cit.getProp("respond");
-					dcrit << err.str() << endl;
+					mbcrit << err.str() << endl;
 					throw SystemError(err.str());
 				}
 			}
@@ -84,7 +84,7 @@ MBTCPMultiSlave::MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::Obje
 				{
 					ostringstream err;
 					err << myname << "(init): Not found sensor ID for " << cit.getProp("askcount");
-					dcrit << err.str() << endl;
+					mbcrit << err.str() << endl;
 					throw SystemError(err.str());
 				}
 			}
@@ -98,7 +98,7 @@ MBTCPMultiSlave::MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::Obje
 			}
 
 			cmap[c.iaddr] = c;
-			dinfo << myname << "(init): add client: " << c.iaddr << " respond=" << c.respond_s << " askcount=" << c.askcount_s << endl;
+			mbinfo << myname << "(init): add client: " << c.iaddr << " respond=" << c.respond_s << " askcount=" << c.askcount_s << endl;
 		}
 	}
 }
@@ -150,20 +150,20 @@ void MBTCPMultiSlave::execute_tcp()
 
 	if( !sslot )
 	{
-		dcrit << myname << "(execute_tcp): DYNAMIC CAST ERROR (mbslot --> ModbusTCPServerSlot)" << std::endl;
+		mbcrit << myname << "(execute_tcp): DYNAMIC CAST ERROR (mbslot --> ModbusTCPServerSlot)" << std::endl;
 		raise(SIGTERM);
 		return;
 	}
 
-	if( dlog()->is_level9() )
-		sslot->setLog(dlog());
+	if( mblog->is_level9() )
+		sslot->setLog(mblog);
 
-	for( auto&& i : cmap )
+	for( auto && i : cmap )
 		i.second.ptTimeout.reset();
 
 	sslot->setMaxSessions( sessMaxNum );
 
-	dinfo << myname << "(execute_tcp): thread running.." << endl;
+	mbinfo << myname << "(execute_tcp): thread running.." << endl;
 
 	while( !cancelled )
 	{
@@ -175,7 +175,7 @@ void MBTCPMultiSlave::execute_tcp()
 			sess.clear();
 			sslot->getSessions(sess);
 
-			for( auto&& s : sess )
+			for( auto && s : sess )
 			{
 				auto i = cmap.find( s.iaddr );
 
@@ -196,7 +196,7 @@ void MBTCPMultiSlave::execute_tcp()
 			{
 				auto c = it.second;
 
-				dlog4 << myname << "(work): " << c.iaddr << " resp=" << (c.invert ? c.ptTimeout.checkTime() : !c.ptTimeout.checkTime())
+				mblog4 << myname << "(work): " << c.iaddr << " resp=" << (c.invert ? c.ptTimeout.checkTime() : !c.ptTimeout.checkTime())
 					  << " askcount=" << c.askCount
 					  << endl;
 
@@ -210,7 +210,7 @@ void MBTCPMultiSlave::execute_tcp()
 					}
 					catch( const Exception& ex )
 					{
-						dcrit << myname << "(execute_tcp): " << ex << std::endl;
+						mbcrit << myname << "(execute_tcp): " << ex << std::endl;
 					}
 				}
 
@@ -222,7 +222,7 @@ void MBTCPMultiSlave::execute_tcp()
 					}
 					catch( const Exception& ex )
 					{
-						dcrit << myname << "(execute_tcp): " << ex << std::endl;
+						mbcrit << myname << "(execute_tcp): " << ex << std::endl;
 					}
 				}
 			}
@@ -245,7 +245,7 @@ void MBTCPMultiSlave::execute_tcp()
 			prev = res;
 
 			if( res != ModbusRTU::erNoError && res != ModbusRTU::erTimeOut )
-				dlog[Debug::WARN] << myname << "(execute_tcp): " << ModbusRTU::mbErr2Str(res) << endl;
+				mblog[Debug::WARN] << myname << "(execute_tcp): " << ModbusRTU::mbErr2Str(res) << endl;
 
 #endif
 
@@ -261,7 +261,7 @@ void MBTCPMultiSlave::execute_tcp()
 				}
 				catch( const Exception& ex )
 				{
-					dcrit << myname << "(execute_tcp): (hb) " << ex << std::endl;
+					mbcrit << myname << "(execute_tcp): (hb) " << ex << std::endl;
 				}
 			}
 
@@ -278,7 +278,7 @@ void MBTCPMultiSlave::execute_tcp()
 				}
 				catch( const Exception& ex )
 				{
-					dcrit << myname << "(execute_rtu): (respond) " << ex << std::endl;
+					mbcrit << myname << "(execute_rtu): (respond) " << ex << std::endl;
 				}
 			}
 
@@ -290,7 +290,7 @@ void MBTCPMultiSlave::execute_tcp()
 				}
 				catch( const Exception& ex )
 				{
-					dcrit << myname << "(execute_rtu): (askCount) " << ex << std::endl;
+					mbcrit << myname << "(execute_rtu): (askCount) " << ex << std::endl;
 				}
 			}
 
@@ -302,14 +302,14 @@ void MBTCPMultiSlave::execute_tcp()
 				}
 				catch( const Exception& ex )
 				{
-					dcrit << myname << "(execute_rtu): (sessCount) " << ex << std::endl;
+					mbcrit << myname << "(execute_rtu): (sessCount) " << ex << std::endl;
 				}
 			}
 		}
 		catch(...) {}
 	}
 
-	dinfo << myname << "(execute_tcp): thread stopped.." << endl;
+	mbinfo << myname << "(execute_tcp): thread stopped.." << endl;
 }
 // -----------------------------------------------------------------------------
 void MBTCPMultiSlave::initIterators()
@@ -318,7 +318,7 @@ void MBTCPMultiSlave::initIterators()
 
 	shm->initIterator(sesscount_it);
 
-	for( auto&& i : cmap )
+	for( auto && i : cmap )
 		i.second.initIterators(shm);
 }
 // -----------------------------------------------------------------------------

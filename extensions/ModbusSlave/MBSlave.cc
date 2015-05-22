@@ -34,6 +34,10 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 	auto conf = uniset_conf();
 	mutex_start.setName(myname + "_mutex_start");
 
+	mblog = make_shared<DebugStream>();
+	conf->initLogStream(mblog, prefix + "-log");
+	logserv = make_shared<LogServer>(mblog);
+
 	//    xmlNode* cnode = conf->getNode(myname);
 
 	string conf_name(conf->getArgParam("--" + prefix + "-confnode", myname));
@@ -46,11 +50,17 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 
 	UniXML::iterator it(cnode);
 
+	if( findArgParam("--" + prefix + "-run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
+	{
+		logserv_host = conf->getArg2Param("--" + prefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
+		logserv_port = conf->getArgPInt("--" + prefix + "-logserver-port", it.getProp("logserverPort"), getId());
+	}
+
 	// определяем фильтр
 	s_field = conf->getArgParam("--" + prefix + "-filter-field");
 	s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
-	dinfo << myname << "(init): read s_field='" << s_field
-		  << "' s_fvalue='" << s_fvalue << "'" << endl;
+	mbinfo << myname << "(init): read s_field='" << s_field
+		   << "' s_fvalue='" << s_fvalue << "'" << endl;
 
 	// префикс для "свойств" - по умолчанию
 	prop_prefix = "";
@@ -73,7 +83,7 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 			prop_prefix = "";
 	}
 
-	dinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
+	mbinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
 	force = conf->getArgInt("--" + prefix + "-force", it.getProp("force"));
 
@@ -86,11 +96,11 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id", it.getProp("reg_from_id"));
 	checkMBFunc = conf->getArgInt("--" + prefix + "-check-mbfunc", it.getProp("check_mbfunc"));
 	noMBFuncOptimize = conf->getArgInt("--" + prefix + "-no-mbfunc-optimization", it.getProp("no_mbfunc_optimization"));
-	dinfo << myname << "(init): mbregFromID=" << mbregFromID
-		  << " checkMBFunc=" << checkMBFunc
-		  << " default_mbfunc=" << default_mbfunc
-		  << " noMBFuncOptimize=" << noMBFuncOptimize
-		  << endl;
+	mbinfo << myname << "(init): mbregFromID=" << mbregFromID
+		   << " checkMBFunc=" << checkMBFunc
+		   << " default_mbfunc=" << default_mbfunc
+		   << " noMBFuncOptimize=" << noMBFuncOptimize
+		   << endl;
 
 	respond_id = conf->getSensorID(conf->getArgParam("--" + prefix + "-respond-id", it.getProp("respond_id")));
 	respond_invert = conf->getArgInt("--" + prefix + "-respond-invert", it.getProp("respond_invert"));
@@ -122,13 +132,13 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 		rs->setRecvTimeout(2000);
 		rs->setAfterSendPause(aftersend_pause);
 		rs->setReplyTimeout(reply_tout);
-		rs->setLog(dlog());
+		rs->setLog(mblog);
 
 		mbslot = std::static_pointer_cast<ModbusServerSlot>(rs);
 		thr = make_shared< ThreadCreator<MBSlave> >(this, &MBSlave::execute_rtu);
 		thr->setFinalAction(this, &MBSlave::finalThread);
-		dinfo << myname << "(init): type=RTU myaddr=" << ModbusRTU::addr2str(addr)
-			  << " dev=" << dev << " speed=" << speed << endl;
+		mbinfo << myname << "(init): type=RTU myaddr=" << ModbusRTU::addr2str(addr)
+			   << " dev=" << dev << " speed=" << speed << endl;
 	}
 	else if( stype == "TCP" )
 	{
@@ -139,8 +149,8 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 
 		int port = conf->getArgPInt("--" + prefix + "-inet-port", it.getProp("iport"), 502);
 
-		dinfo << myname << "(init): type=TCP myaddr=" << ModbusRTU::addr2str(addr)
-			  << " inet=" << iaddr << " port=" << port << endl;
+		mbinfo << myname << "(init): type=TCP myaddr=" << ModbusRTU::addr2str(addr)
+			   << " inet=" << iaddr << " port=" << port << endl;
 
 		ost::InetAddress ia(iaddr.c_str());
 		auto mbtcp = make_shared<ModbusTCPServerSlot>(ia, port);
@@ -151,10 +161,10 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 		mbslot = std::static_pointer_cast<ModbusServerSlot>(mbtcp);
 		thr = make_shared< ThreadCreator<MBSlave> >(this, &MBSlave::execute_tcp);
 		thr->setFinalAction(this, &MBSlave::finalThread);
-		dinfo << myname << "(init): init TCP connection ok. " << " inet=" << iaddr << " port=" << port << endl;
+		mbinfo << myname << "(init): init TCP connection ok. " << " inet=" << iaddr << " port=" << port << endl;
 
-		if( dlog()->is_level9() )
-			mbtcp->setLog(dlog());
+		if( mblog->is_level9() )
+			mbtcp->setLog(mblog);
 	}
 	else
 		throw UniSetTypes::SystemError(myname + "(MBSlave): Unknown slave type. Use: --" + prefix + "-type [RTU|TCP]");
@@ -184,7 +194,7 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
-		dinfo << myname << "(init): iomap size = " << iomap.size() << endl;
+		mbinfo << myname << "(init): iomap size = " << iomap.size() << endl;
 	}
 	else
 	{
@@ -204,7 +214,7 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 		{
 			ostringstream err;
 			err << myname << ": не найден идентификатор для датчика 'HeartBeat' " << heart;
-			dcrit << myname << "(init): " << err.str() << endl;
+			mbcrit << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 
@@ -226,14 +236,14 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 		{
 			ostringstream err;
 			err << myname << ": test_id unknown. 'TestMode_S' not found...";
-			dcrit << myname << "(init): " << err.str() << endl;
+			mbcrit << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 	}
 
 	askcount_id = conf->getSensorID(conf->getArgParam("--" + prefix + "-askcount-id", it.getProp("askcount_id")));
-	dinfo << myname << ": init askcount_id=" << askcount_id << endl;
-	dinfo << myname << ": init test_id=" << test_id << endl;
+	mbinfo << myname << ": init askcount_id=" << askcount_id << endl;
+	mbinfo << myname << ": init test_id=" << test_id << endl;
 
 	wait_msec = conf->getHeartBeatTime() - 100;
 
@@ -245,7 +255,7 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 	timeout_t msec = conf->getArgPInt("--" + prefix + "-timeout", it.getProp("timeout"), 3000);
 	ptTimeout.setTiming(msec);
 
-	dinfo << myname << "(init): rs-timeout=" << msec << " msec" << endl;
+	mbinfo << myname << "(init): rs-timeout=" << msec << " msec" << endl;
 
 	// build file list...
 	xmlNode* fnode = 0;
@@ -266,7 +276,7 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 
 				if( nm.empty() )
 				{
-					dwarn << myname << "(build file list): ignore empty name... " << endl;
+					mbwarn << myname << "(build file list): ignore empty name... " << endl;
 					continue;
 				}
 
@@ -274,7 +284,7 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 
 				if( id == 0 )
 				{
-					dwarn << myname << "(build file list): FAILED ID for " << nm << "... ignore..." << endl;
+					mbwarn << myname << "(build file list): FAILED ID for " << nm << "... ignore..." << endl;
 					continue;
 				}
 
@@ -290,19 +300,19 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 						nm = dir + nm;
 				}
 
-				dinfo << myname << "(init):       add to filelist: "
-					  << "id=" << id
-					  << " file=" << nm
-					  << endl;
+				mbinfo << myname << "(init):       add to filelist: "
+					   << "id=" << id
+					   << " file=" << nm
+					   << endl;
 
 				flist[id] = nm;
 			}
 		}
 		else
-			dinfo << myname << "(init): <filelist> empty..." << endl;
+			mbinfo << myname << "(init): <filelist> empty..." << endl;
 	}
 	else
-		dinfo << myname << "(init): <filelist> not found..." << endl;
+		mbinfo << myname << "(init): <filelist> not found..." << endl;
 
 
 	// Формирование "карты" ответов на запрос 0x2B(43)/0x0E(14)
@@ -336,7 +346,7 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 			{
 				if( dit.getProp("id").empty() )
 				{
-					dwarn << myname << "(init): read <MEI>. Unknown <device id=''>. Ignore.." << endl;
+					mbwarn << myname << "(init): read <MEI>. Unknown <device id=''>. Ignore.." << endl;
 					continue;
 				}
 
@@ -346,7 +356,7 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 
 				if( oit.goChildren() )
 				{
-					dwarn << myname << "(init): MEI: read dev='" << devID << "'" << endl;
+					mbwarn << myname << "(init): MEI: read dev='" << devID << "'" << endl;
 					MEIObjIDMap meiomap;
 
 					// Object ID list..
@@ -354,10 +364,10 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 					{
 						if( dit.getProp("id").empty() )
 						{
-							dwarn << myname
-								  << "(init): read <MEI>. Unknown <object id='' (for device id='"
-								  << devID << "'). Ignore.."
-								  << endl;
+							mbwarn << myname
+								   << "(init): read <MEI>. Unknown <object id='' (for device id='"
+								   << devID << "'). Ignore.."
+								   << endl;
 
 							continue;
 						}
@@ -367,7 +377,7 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 
 						if( sit.goChildren() )
 						{
-							dinfo << myname << "(init): MEI: read obj='" << objID << "'" << endl;
+							mbinfo << myname << "(init): MEI: read obj='" << objID << "'" << endl;
 							MEIValMap meivmap;
 
 							// request (string) list..
@@ -377,11 +387,11 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 
 								if( sit.getProp("id").empty() )
 								{
-									dwarn << myname << "(init): MEI: dev='" << devID
-										  << "' obj='" << objID << "'"
-										  << ". Unknown id='' for value='" << sit.getProp("value") << "'"
-										  << ". Set objID='" << objID << "'"
-										  << endl;
+									mbwarn << myname << "(init): MEI: dev='" << devID
+										   << "' obj='" << objID << "'"
+										   << ". Unknown id='' for value='" << sit.getProp("value") << "'"
+										   << ". Set objID='" << objID << "'"
+										   << endl;
 								}
 								else
 									vid = sit.getIntProp("id");
@@ -401,10 +411,10 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 		}
 
 		if( !meidev.empty() )
-			dinfo << myname << "(init): <MEI> init ok." << endl;
+			mbinfo << myname << "(init): <MEI> init ok." << endl;
 	}
 	else
-		dinfo << myname << "(init): <MEI> empty..." << endl;
+		mbinfo << myname << "(init): <MEI> empty..." << endl;
 
 }
 // -----------------------------------------------------------------------------
@@ -439,7 +449,7 @@ void MBSlave::waitSMReady()
 	{
 		ostringstream err;
 		err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
-		dcrit << err.str() << endl;
+		mbcrit << err.str() << endl;
 		//        throw SystemError(err.str());
 		raise(SIGTERM);
 		terminate();
@@ -475,7 +485,7 @@ void MBSlave::execute_rtu()
 			prev = res;
 
 			if( res != ModbusRTU::erNoError && res != ModbusRTU::erTimeOut )
-				dwarn << myname << "(execute_rtu): " << ModbusRTU::mbErr2Str(res) << endl;
+				mbwarn << myname << "(execute_rtu): " << ModbusRTU::mbErr2Str(res) << endl;
 
 			if( !activated )
 				continue;
@@ -489,8 +499,8 @@ void MBSlave::execute_rtu()
 				}
 				catch( const Exception& ex )
 				{
-					dcrit << myname
-						  << "(execute_rtu): (hb) " << ex << std::endl;
+					mbcrit << myname
+						   << "(execute_rtu): (hb) " << ex << std::endl;
 				}
 			}
 
@@ -507,7 +517,7 @@ void MBSlave::execute_rtu()
 				}
 				catch( const Exception& ex )
 				{
-					dcrit << myname << "(execute_rtu): (respond) " << ex << std::endl;
+					mbcrit << myname << "(execute_rtu): (respond) " << ex << std::endl;
 				}
 			}
 
@@ -519,7 +529,7 @@ void MBSlave::execute_rtu()
 				}
 				catch( const Exception& ex )
 				{
-					dcrit << myname << "(execute_rtu): (askCount) " << ex << std::endl;
+					mbcrit << myname << "(execute_rtu): (askCount) " << ex << std::endl;
 				}
 			}
 
@@ -536,7 +546,7 @@ void MBSlave::execute_tcp()
 
 	ModbusRTU::mbErrCode prev = erNoError;
 
-	dinfo << myname << "(execute_tcp): thread running.." << endl;
+	mbinfo << myname << "(execute_tcp): thread running.." << endl;
 
 	while( !cancelled )
 	{
@@ -560,7 +570,7 @@ void MBSlave::execute_tcp()
 			prev = res;
 
 			if( res != ModbusRTU::erNoError && res != ModbusRTU::erTimeOut )
-				dwarn << myname << "(execute_tcp): " << ModbusRTU::mbErr2Str(res) << endl;
+				mbwarn << myname << "(execute_tcp): " << ModbusRTU::mbErr2Str(res) << endl;
 
 			if( !activated )
 				continue;
@@ -574,7 +584,7 @@ void MBSlave::execute_tcp()
 				}
 				catch( const Exception& ex )
 				{
-					dcrit << myname << "(execute_tcp): (hb) " << ex << std::endl;
+					mbcrit << myname << "(execute_tcp): (hb) " << ex << std::endl;
 				}
 			}
 
@@ -591,8 +601,8 @@ void MBSlave::execute_tcp()
 				}
 				catch( const Exception& ex )
 				{
-					dcrit << myname
-						  << "(execute_rtu): (respond) " << ex << std::endl;
+					mbcrit << myname
+						   << "(execute_rtu): (respond) " << ex << std::endl;
 				}
 			}
 
@@ -604,8 +614,8 @@ void MBSlave::execute_tcp()
 				}
 				catch( const Exception& ex )
 				{
-					dcrit << myname
-						  << "(execute_tcp): (askCount) " << ex << std::endl;
+					mbcrit << myname
+						   << "(execute_tcp): (askCount) " << ex << std::endl;
 				}
 			}
 
@@ -614,11 +624,11 @@ void MBSlave::execute_tcp()
 		}
 		catch( const std::exception& ex )
 		{
-			dcrit << myname << "(execute_tcp): " << ex.what() << endl;
+			mbcrit << myname << "(execute_tcp): " << ex.what() << endl;
 		}
 	}
 
-	dinfo << myname << "(execute_tcp): thread stopped.." << endl;
+	mbinfo << myname << "(execute_tcp): thread stopped.." << endl;
 }
 // -------------------------------------------------------------------------
 void MBSlave::sysCommand( const UniSetTypes::SystemMessage* sm )
@@ -629,9 +639,15 @@ void MBSlave::sysCommand( const UniSetTypes::SystemMessage* sm )
 		{
 			if( iomap.empty() )
 			{
-				dcrit << myname << "(sysCommand): iomap EMPTY! terminated..." << endl;
+				mbcrit << myname << "(sysCommand): iomap EMPTY! terminated..." << endl;
 				raise(SIGTERM);
 				return;
+			}
+
+			if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
+			{
+				mbinfo << myname << "(init): run log server " << logserv_host << ":" << logserv_port << endl;
+				logserv->run(logserv_host, logserv_port, true);
 			}
 
 			waitSMReady();
@@ -652,7 +668,7 @@ void MBSlave::sysCommand( const UniSetTypes::SystemMessage* sm )
 
 			if( !activated )
 			{
-				dcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
+				mbcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 			}
 			else
 			{
@@ -684,23 +700,13 @@ void MBSlave::sysCommand( const UniSetTypes::SystemMessage* sm )
 
 		case SystemMessage::LogRotate:
 		{
-			// переоткрываем логи
-			ulogany << myname << "(sysCommand): logRotate" << std::endl;
-			string fname(ulog()->getLogFile());
+			mblogany << myname << "(sysCommand): logRotate" << std::endl;
+			string fname = mblog->getLogFile();
 
 			if( !fname.empty() )
 			{
-				ulog()->logFile(fname, true);
-				ulogany << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << std::endl;
-			}
-
-			dlogany << myname << "(sysCommand): logRotate" << std::endl;
-			fname = dlog()->getLogFile();
-
-			if( !fname.empty() )
-			{
-				dlog()->logFile(fname, true);
-				dlogany << myname << "(sysCommand): ***************** dlog LOG ROTATE *****************" << std::endl;
+				mblog->logFile(fname, true);
+				mblogany << myname << "(sysCommand): ***************** mblog LOG ROTATE *****************" << std::endl;
 			}
 		}
 		break;
@@ -719,7 +725,7 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
 			<< "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение "
 			<< activateTimeout << " мсек";
 
-		dcrit << err.str() << endl;
+		mbcrit << err.str() << endl;
 		kill(SIGTERM, getpid());   // прерываем (перезапускаем) процесс...
 		throw SystemError(err.str());
 	}
@@ -737,7 +743,7 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
 		}
 		catch( const UniSetTypes::Exception& ex )
 		{
-			dwarn << myname << "(askSensors): " << ex << std::endl;
+			mbwarn << myname << "(askSensors): " << ex << std::endl;
 		}
 		catch(...) {}
 	}
@@ -785,8 +791,8 @@ void MBSlave::sensorInfo( const UniSetTypes::SensorMessage* sm )
 			// вообще этого не может случиться
 			// потому-что корректность проверяется при загрузке
 			if( i != sz )
-				dcrit << myname << "(sensorInfo): update failed for sid=" << sm->id
-					  << " (i=" << i << " sz=" << sz << ")" << endl;
+				mbcrit << myname << "(sensorInfo): update failed for sid=" << sm->id
+					   << " (i=" << i << " sz=" << sz << ")" << endl;
 
 			return;
 		}
@@ -811,7 +817,7 @@ bool MBSlave::activateObject()
 // ------------------------------------------------------------------------------------------
 bool MBSlave::deactivateObject()
 {
-	dinfo << myname << "(deactivateObject): ..." << endl;
+	mbinfo << myname << "(deactivateObject): ..." << endl;
 
 	activated = false;
 	cancelled = true;
@@ -828,7 +834,7 @@ bool MBSlave::deactivateObject()
 // ------------------------------------------------------------------------------------------
 void MBSlave::sigterm( int signo )
 {
-	dinfo << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
+	mbinfo << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
 	activated = false;
 	cancelled = true;
 
@@ -858,7 +864,7 @@ void MBSlave::readConfiguration()
 
 	if( !it.goChildren() )
 	{
-		dcrit << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
+		mbcrit << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
 		return;
 	}
 
@@ -884,7 +890,7 @@ bool MBSlave::initItem( UniXML::iterator& it )
 {
 	IOProperty p;
 
-	if( !IOBase::initItem( static_cast<IOBase*>(&p), it, shm, prop_prefix, false, dlog(), myname) )
+	if( !IOBase::initItem( static_cast<IOBase*>(&p), it, shm, prop_prefix, false, mblog, myname) )
 		return false;
 
 	if( mbregFromID )
@@ -895,7 +901,7 @@ bool MBSlave::initItem( UniXML::iterator& it )
 
 		if( r.empty() )
 		{
-			dcrit << myname << "(initItem): Unknown '" << prop_prefix << "mbreg' for " << it.getProp("name") << endl;
+			mbcrit << myname << "(initItem): Unknown '" << prop_prefix << "mbreg' for " << it.getProp("name") << endl;
 			return false;
 		}
 
@@ -927,10 +933,10 @@ bool MBSlave::initItem( UniXML::iterator& it )
 	{
 		if( nbit < 0 || nbit >= ModbusRTU::BitsPerData )
 		{
-			dcrit << myname << "(initItem): BAD " << prop_prefix << "nbit=" << nbit << ". Must be  0 <= nbit < " << ModbusRTU::BitsPerData
-				  << " for '"
-				  << it.getProp("name")
-				  << "'" << endl;
+			mbcrit << myname << "(initItem): BAD " << prop_prefix << "nbit=" << nbit << ". Must be  0 <= nbit < " << ModbusRTU::BitsPerData
+				   << " for '"
+				   << it.getProp("name")
+				   << "'" << endl;
 			return false;
 		}
 
@@ -940,28 +946,28 @@ bool MBSlave::initItem( UniXML::iterator& it )
 		{
 			if( !i->second.bitreg )
 			{
-				dcrit << myname << "(initItem): BAD USE " << prop_prefix << "nbit=" << nbit
-					  << " (for '"
-					  << it.getProp("name")
-					  << "') SENSOR ALREADY ADDED sid='" << i->second.si.id << "'"
-					  << "(" << uniset_conf()->oind->getMapName(i->second.si.id) << ")"
-					  << endl;
+				mbcrit << myname << "(initItem): BAD USE " << prop_prefix << "nbit=" << nbit
+					   << " (for '"
+					   << it.getProp("name")
+					   << "') SENSOR ALREADY ADDED sid='" << i->second.si.id << "'"
+					   << "(" << uniset_conf()->oind->getMapName(i->second.si.id) << ")"
+					   << endl;
 				return false;
 			}
 
 			if( i->second.bitreg->check(p.si) )
 			{
-				dcrit << myname << "(initItem): BIT " << prop_prefix << "nbit=" << nbit
-					  << " (for "
-					  << it.getProp("name")
-					  << ") ALREADY IN USE for sid='" << i->second.bitreg->bvec[nbit].si.id << "'"
-					  << "(" << uniset_conf()->oind->getMapName(i->second.bitreg->bvec[nbit].si.id) << ")"
-					  << endl;
+				mbcrit << myname << "(initItem): BIT " << prop_prefix << "nbit=" << nbit
+					   << " (for "
+					   << it.getProp("name")
+					   << ") ALREADY IN USE for sid='" << i->second.bitreg->bvec[nbit].si.id << "'"
+					   << "(" << uniset_conf()->oind->getMapName(i->second.bitreg->bvec[nbit].si.id) << ")"
+					   << endl;
 				return false;
 			}
 
 			i->second.bitreg->bvec[nbit] = std::move(p);
-			dinfo << myname << "(initItem): add new bit: " << i->second.bitreg.get() << endl;
+			mbinfo << myname << "(initItem): add new bit: " << i->second.bitreg.get() << endl;
 			return true;
 		}
 		else
@@ -976,7 +982,7 @@ bool MBSlave::initItem( UniXML::iterator& it )
 
 			p_dummy.bitreg->bvec[nbit] = std::move(p); // после этого p использовать нельзя!
 
-			dinfo << myname << "(initItem): add bit register: " << p_dummy.bitreg.get() << endl;
+			mbinfo << myname << "(initItem): add bit register: " << p_dummy.bitreg.get() << endl;
 			iomap[p_dummy.regID] = std::move(p_dummy);
 		}
 
@@ -996,7 +1002,7 @@ bool MBSlave::initItem( UniXML::iterator& it )
 			<< " reg='" << ModbusRTU::dat2str(i->second.mbreg) << "(" << (int)i->second.mbreg << ")"
 			<< " wnum=" << i->second.wnum;
 
-		dcrit << err.str() << endl;
+		mbcrit << err.str() << endl;
 		//throw SystemError( err.str() );
 		abort();
 	}
@@ -1007,7 +1013,7 @@ bool MBSlave::initItem( UniXML::iterator& it )
 	{
 		p.vtype = VTypes::vtUnknown;
 		p.wnum = 0;
-		dinfo << myname << "(initItem): add " << p << endl;
+		mbinfo << myname << "(initItem): add " << p << endl;
 		iomap[p.regID] = std::move(p);
 	}
 	else
@@ -1016,9 +1022,9 @@ bool MBSlave::initItem( UniXML::iterator& it )
 
 		if( v == VTypes::vtUnknown )
 		{
-			dcrit << myname << "(initItem): Unknown rtuVType=" << vt << " for "
-				  << it.getProp("name")
-				  << endl;
+			mbcrit << myname << "(initItem): Unknown rtuVType=" << vt << " for "
+				   << it.getProp("name")
+				   << endl;
 
 			return false;
 		}
@@ -1028,17 +1034,17 @@ bool MBSlave::initItem( UniXML::iterator& it )
 
 			if( p.nbyte <= 0 )
 			{
-				dcrit << myname << "(initItem): Unknown " << prop_prefix << "nbyte='' for "
-					  << it.getProp("name")
-					  << endl;
+				mbcrit << myname << "(initItem): Unknown " << prop_prefix << "nbyte='' for "
+					   << it.getProp("name")
+					   << endl;
 				return false;
 			}
 			else if( p.nbyte > 2 )
 			{
-				dcrit << myname << "(initItem): BAD " << prop_prefix << "nbyte='" << p.nbyte << "' for "
-					  << it.getProp("name")
-					  << ". Must be [1,2]."
-					  << endl;
+				mbcrit << myname << "(initItem): BAD " << prop_prefix << "nbyte='" << p.nbyte << "' for "
+					   << it.getProp("name")
+					   << ". Must be [1,2]."
+					   << endl;
 				return false;
 			}
 		}
@@ -1057,7 +1063,7 @@ bool MBSlave::initItem( UniXML::iterator& it )
 		int p_regID = p.regID;
 
 		// после std::move  p - использовать нельзя!
-		dinfo << myname << "(initItem): add " << p << endl;
+		mbinfo << myname << "(initItem): add " << p << endl;
 
 		iomap[p_regID] = std::move(p);
 
@@ -1074,7 +1080,7 @@ bool MBSlave::initItem( UniXML::iterator& it )
 				p_regID = genRegID(p_dummy.mbreg, mbfunc);
 				p_dummy.regID  = p_regID;
 
-				dinfo << myname << "(initItem): add " << p_dummy << endl;
+				mbinfo << myname << "(initItem): add " << p_dummy << endl;
 				iomap[p_regID] = std::move(p_dummy);
 			}
 		}
@@ -1169,6 +1175,18 @@ void MBSlave::help_print( int argc, const char* const* argv )
 	cout << " Настройки протокола TCP: " << endl;
 	cout << "--prefix-inet-addr [xxx.xxx.xxx.xxx | hostname ]  - this modbus server address" << endl;
 	cout << "--prefix-inet-port num - this modbus server port. Default: 502" << endl;
+	cout << endl;
+	cout << " Logs: " << endl;
+	cout << "--prefix-log-...            - log control" << endl;
+	cout << "             add-levels ...  " << endl;
+	cout << "             del-levels ...  " << endl;
+	cout << "             set-levels ...  " << endl;
+	cout << "             logfile filanme " << endl;
+	cout << "             no-debug " << endl;
+	cout << " LogServer: " << endl;
+	cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;
+	cout << "--prefix-logserver-host ip  - listen ip. Default: localhost" << endl;
+	cout << "--prefix-logserver-port num - listen port. Default: ID" << endl;
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<MBSlave> MBSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID,
@@ -1237,7 +1255,7 @@ std::ostream& operator<<( std::ostream& os, MBSlave::IOProperty& p )
 ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage& query,
 		ModbusRTU::ReadOutputRetMessage& reply )
 {
-	dinfo << myname << "(readOutputRegisters): " << query << endl;
+	mbinfo << myname << "(readOutputRegisters): " << query << endl;
 
 	if( query.count <= 1 )
 	{
@@ -1268,7 +1286,7 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage&
 ModbusRTU::mbErrCode MBSlave::writeOutputRegisters( ModbusRTU::WriteOutputMessage& query,
 		ModbusRTU::WriteOutputRetMessage& reply )
 {
-	dinfo << myname << "(writeOutputRegisters): " << query << endl;
+	mbinfo << myname << "(writeOutputRegisters): " << query << endl;
 
 	// Формирование ответа:
 	int fn = getOptimizeWriteFunction(query.func);
@@ -1283,7 +1301,7 @@ ModbusRTU::mbErrCode MBSlave::writeOutputRegisters( ModbusRTU::WriteOutputMessag
 ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
 		ModbusRTU::WriteSingleOutputRetMessage& reply )
 {
-	dinfo << myname << "(writeOutputSingleRegisters): " << query << endl;
+	mbinfo << myname << "(writeOutputSingleRegisters): " << query << endl;
 
 	int fn = getOptimizeWriteFunction(query.func);
 	ModbusRTU::mbErrCode ret = real_write(query.start, query.data, fn);
@@ -1297,8 +1315,8 @@ ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( ModbusRTU::WriteSingleO
 ModbusRTU::mbErrCode MBSlave::much_real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
 		int count, const int fn )
 {
-	dinfo << myname << "(much_real_write): write mbID="
-		  << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")" << " count=" << count << " fn=" << fn << endl;
+	mbinfo << myname << "(much_real_write): write mbID="
+		   << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")" << " count=" << count << " fn=" << fn << endl;
 
 	int i = 0;
 	auto it = iomap.end();
@@ -1367,10 +1385,10 @@ ModbusRTU::mbErrCode MBSlave::real_write( const ModbusRTU::ModbusData reg, Modbu
 {
 	ModbusRTU::ModbusData mbval = dat[i];
 
-	dinfo << myname << "(write): save mbID="
-		  << ModbusRTU::dat2str(reg)
-		  << " data=" << ModbusRTU::dat2str(mbval)
-		  << "(" << (int)mbval << ")" << endl;
+	mbinfo << myname << "(write): save mbID="
+		   << ModbusRTU::dat2str(reg)
+		   << " data=" << ModbusRTU::dat2str(mbval)
+		   << "(" << (int)mbval << ")" << endl;
 
 	ModbusRTU::RegID regID = checkMBFunc ? genRegID(reg, fn) : genRegID(reg, default_mbfunc);
 
@@ -1393,8 +1411,8 @@ ModbusRTU::mbErrCode MBSlave::real_write_it( IOMap::iterator& it, ModbusRTU::Mod
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::real_bitreg_write_it( std::shared_ptr<BitRegProperty>& bp, const ModbusRTU::ModbusData val )
 {
-	dinfo << myname << "(real_bitreg_write_it): write mbID="
-		  << ModbusRTU::dat2str(bp->mbreg) << "(" << (int)bp->mbreg << ") val=" << val << endl;
+	mbinfo << myname << "(real_bitreg_write_it): write mbID="
+		   << ModbusRTU::dat2str(bp->mbreg) << "(" << (int)bp->mbreg << ") val=" << val << endl;
 
 	ModbusRTU::DataBits16 d(val);
 
@@ -1407,8 +1425,8 @@ ModbusRTU::mbErrCode MBSlave::real_bitreg_write_it( std::shared_ptr<BitRegProper
 
 		ModbusRTU::ModbusData dat[] = {d[i]};
 
-		dinfo << myname << "(real_bitreg_write_it): set " << ModbusRTU::dat2str(bp->mbreg) << "(" << (int)bp->mbreg << ")"
-			  << " bit[" << i << "]=" << (int)dat[0]  << " sid=" << p->si.id << endl;
+		mbinfo << myname << "(real_bitreg_write_it): set " << ModbusRTU::dat2str(bp->mbreg) << "(" << (int)bp->mbreg << ")"
+			   << " bit[" << i << "]=" << (int)dat[0]  << " sid=" << p->si.id << endl;
 
 		int k = 0;
 		real_write_prop(p, dat, k, 1);
@@ -1421,7 +1439,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 {
 	ModbusRTU::ModbusData mbval = dat[i];
 
-	dinfo << myname << "(real_write_prop): val=" << mbval << " " << (*p) << endl;
+	mbinfo << myname << "(real_write_prop): val=" << mbval << " " << (*p) << endl;
 
 	try
 	{
@@ -1598,29 +1616,29 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 	}
 	catch( UniSetTypes::NameNotFound& ex )
 	{
-		dwarn << myname << "(write): " << ex << endl;
+		mbwarn << myname << "(write): " << ex << endl;
 		return ModbusRTU::erBadDataAddress;
 	}
 	catch( UniSetTypes::OutOfRange& ex )
 	{
-		dwarn << myname << "(write): " << ex << endl;
+		mbwarn << myname << "(write): " << ex << endl;
 		return ModbusRTU::erBadDataValue;
 	}
 	catch( const Exception& ex )
 	{
 		if( pingOK )
-			dcrit << myname << "(write): " << ex << endl;
+			mbcrit << myname << "(write): " << ex << endl;
 	}
 	catch( const CORBA::SystemException& ex )
 	{
 		if( pingOK )
-			dcrit << myname << "(write): СORBA::SystemException: "
-				  << ex.NP_minorString() << endl;
+			mbcrit << myname << "(write): СORBA::SystemException: "
+				   << ex.NP_minorString() << endl;
 	}
 	catch(...)
 	{
 		if( pingOK )
-			dcrit << myname << "(write) catch ..." << endl;
+			mbcrit << myname << "(write) catch ..." << endl;
 	}
 
 	pingOK = false;
@@ -1630,9 +1648,9 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 ModbusRTU::mbErrCode MBSlave::much_real_read( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
 		int count, const int fn )
 {
-	dinfo << myname << "(much_real_read): read mbID="
-		  << ModbusRTU::dat2str(reg) << "(" << (int)reg << ") " << " count=" << count
-		  << " mbfunc=" << fn << endl;
+	mbinfo << myname << "(much_real_read): read mbID="
+		   << ModbusRTU::dat2str(reg) << "(" << (int)reg << ") " << " count=" << count
+		   << " mbfunc=" << fn << endl;
 
 	auto it = iomap.end();
 	int i = 0;
@@ -1689,12 +1707,12 @@ ModbusRTU::mbErrCode MBSlave::real_read( const ModbusRTU::ModbusData reg, Modbus
 {
 	ModbusRTU::RegID regID = checkMBFunc ? genRegID(reg, fn) : genRegID(reg, default_mbfunc);
 
-	dinfo << myname << "(real_read): read mbID="
-		  << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")"  << " fn=" << fn
-		  << " regID=" << regID
-		  << " default_mbfunc=" << default_mbfunc
-		  << " checkMBFunc=" << checkMBFunc
-		  << endl;
+	mbinfo << myname << "(real_read): read mbID="
+		   << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")"  << " fn=" << fn
+		   << " regID=" << regID
+		   << " default_mbfunc=" << default_mbfunc
+		   << " checkMBFunc=" << checkMBFunc
+		   << endl;
 
 
 	auto it = iomap.find(regID);
@@ -1708,8 +1726,8 @@ ModbusRTU::mbErrCode MBSlave::real_read_it( IOMap::iterator& it, ModbusRTU::Modb
 
 	IOProperty* p(&it->second);
 
-	dinfo << myname << "(real_read_it): read mbID="
-		  << ModbusRTU::dat2str(p->mbreg) << "(" << (int)(p->mbreg) << ")" << endl;
+	mbinfo << myname << "(real_read_it): read mbID="
+		   << ModbusRTU::dat2str(p->mbreg) << "(" << (int)(p->mbreg) << ")" << endl;
 
 	if( p->bitreg )
 		return real_bitreg_read_it(p->bitreg, val);
@@ -1719,8 +1737,8 @@ ModbusRTU::mbErrCode MBSlave::real_read_it( IOMap::iterator& it, ModbusRTU::Modb
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::real_bitreg_read_it( std::shared_ptr<BitRegProperty>& bp, ModbusRTU::ModbusData& val )
 {
-	dinfo << myname << "(real_bitreg_read_it): read mbID="
-		  << ModbusRTU::dat2str(bp->mbreg) << "(" << (int)bp->mbreg << ")" << endl;
+	mbinfo << myname << "(real_bitreg_read_it): read mbID="
+		   << ModbusRTU::dat2str(bp->mbreg) << "(" << (int)bp->mbreg << ")" << endl;
 
 	ModbusRTU::DataBits16 d;
 
@@ -1849,29 +1867,29 @@ ModbusRTU::mbErrCode MBSlave::real_read_prop( IOProperty* p, ModbusRTU::ModbusDa
 	}
 	catch( UniSetTypes::NameNotFound& ex )
 	{
-		dwarn << myname << "(real_read_it): " << ex << endl;
+		mbwarn << myname << "(real_read_it): " << ex << endl;
 		return ModbusRTU::erBadDataAddress;
 	}
 	catch( UniSetTypes::OutOfRange& ex )
 	{
-		dwarn << myname << "(real_read_it): " << ex << endl;
+		mbwarn << myname << "(real_read_it): " << ex << endl;
 		return ModbusRTU::erBadDataValue;
 	}
 	catch( const Exception& ex )
 	{
 		if( pingOK )
-			dcrit << myname << "(real_read_it): " << ex << endl;
+			mbcrit << myname << "(real_read_it): " << ex << endl;
 	}
 	catch( const CORBA::SystemException& ex )
 	{
 		if( pingOK )
-			dcrit << myname << "(real_read_it): CORBA::SystemException: "
-				  << ex.NP_minorString() << endl;
+			mbcrit << myname << "(real_read_it): CORBA::SystemException: "
+				   << ex.NP_minorString() << endl;
 	}
 	catch(...)
 	{
 		if( pingOK )
-			dcrit << myname << "(real_read_it) catch ..." << endl;
+			mbcrit << myname << "(real_read_it) catch ..." << endl;
 	}
 
 	pingOK = false;
@@ -1881,7 +1899,7 @@ ModbusRTU::mbErrCode MBSlave::real_read_prop( IOProperty* p, ModbusRTU::ModbusDa
 
 mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query, ReadInputRetMessage& reply )
 {
-	dinfo << myname << "(readInputRegisters): " << query << endl;
+	mbinfo << myname << "(readInputRegisters): " << query << endl;
 
 	if( query.count <= 1 )
 	{
@@ -1911,7 +1929,7 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query, ReadInputRetMess
 ModbusRTU::mbErrCode MBSlave::setDateTime( ModbusRTU::SetDateTimeMessage& query,
 		ModbusRTU::SetDateTimeRetMessage& reply )
 {
-	return ModbusServer::replySetDateTime(query, reply, dlog());
+	return ModbusServer::replySetDateTime(query, reply, mblog);
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::remoteService( ModbusRTU::RemoteServiceMessage& query,
@@ -1924,7 +1942,7 @@ ModbusRTU::mbErrCode MBSlave::remoteService( ModbusRTU::RemoteServiceMessage& qu
 ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& query,
 		ModbusRTU::FileTransferRetMessage& reply )
 {
-	dinfo << myname << "(fileTransfer): " << query << endl;
+	mbinfo << myname << "(fileTransfer): " << query << endl;
 
 	auto it = flist.find(query.numfile);
 
@@ -1932,13 +1950,13 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
 		return ModbusRTU::erBadDataValue;
 
 	std::string fname(it->second);
-	return ModbusServer::replyFileTransfer( fname, query, reply, dlog() );
+	return ModbusServer::replyFileTransfer( fname, query, reply, mblog );
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 		ReadCoilRetMessage& reply )
 {
-	dinfo << myname << "(readCoilStatus): " << query << endl;
+	mbinfo << myname << "(readCoilStatus): " << query << endl;
 
 	try
 	{
@@ -1976,24 +1994,24 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 	}
 	catch( UniSetTypes::NameNotFound& ex )
 	{
-		dwarn << myname << "(readCoilStatus): " << ex << endl;
+		mbwarn << myname << "(readCoilStatus): " << ex << endl;
 		return ModbusRTU::erBadDataAddress;
 	}
 	catch( const Exception& ex )
 	{
 		if( pingOK )
-			dcrit << myname << "(readCoilStatus): " << ex << endl;
+			mbcrit << myname << "(readCoilStatus): " << ex << endl;
 	}
 	catch( const CORBA::SystemException& ex )
 	{
 		if( pingOK )
-			dcrit << myname << "(readCoilStatus): СORBA::SystemException: "
-				  << ex.NP_minorString() << endl;
+			mbcrit << myname << "(readCoilStatus): СORBA::SystemException: "
+				   << ex.NP_minorString() << endl;
 	}
 	catch(...)
 	{
 		if( pingOK )
-			dcrit << myname << "(readCoilStatus): catch ..." << endl;
+			mbcrit << myname << "(readCoilStatus): catch ..." << endl;
 	}
 
 	pingOK = false;
@@ -2003,7 +2021,7 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 		ReadInputStatusRetMessage& reply )
 {
-	dinfo << myname << "(readInputStatus): " << query << endl;
+	mbinfo << myname << "(readInputStatus): " << query << endl;
 
 	try
 	{
@@ -2041,24 +2059,24 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 	}
 	catch( UniSetTypes::NameNotFound& ex )
 	{
-		dwarn << myname << "(readInputStatus): " << ex << endl;
+		mbwarn << myname << "(readInputStatus): " << ex << endl;
 		return ModbusRTU::erBadDataAddress;
 	}
 	catch( const Exception& ex )
 	{
 		if( pingOK )
-			dcrit << myname << "(readInputStatus): " << ex << endl;
+			mbcrit << myname << "(readInputStatus): " << ex << endl;
 	}
 	catch( const CORBA::SystemException& ex )
 	{
 		if( pingOK )
-			dcrit << myname << "(readInputStatus): СORBA::SystemException: "
-				  << ex.NP_minorString() << endl;
+			mbcrit << myname << "(readInputStatus): СORBA::SystemException: "
+				   << ex.NP_minorString() << endl;
 	}
 	catch(...)
 	{
 		if( pingOK )
-			dcrit << myname << "(readInputStatus): catch ..." << endl;
+			mbcrit << myname << "(readInputStatus): catch ..." << endl;
 	}
 
 	pingOK = false;
@@ -2068,7 +2086,7 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
 		ModbusRTU::ForceCoilsRetMessage& reply )
 {
-	dinfo << myname << "(forceMultipleCoils): " << query << endl;
+	mbinfo << myname << "(forceMultipleCoils): " << query << endl;
 
 	ModbusRTU::mbErrCode ret = ModbusRTU::erNoError;
 	int nbit = 0;
@@ -2097,7 +2115,7 @@ ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& 
 ModbusRTU::mbErrCode MBSlave::forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
 		ModbusRTU::ForceSingleCoilRetMessage& reply )
 {
-	dinfo << myname << "(forceSingleCoil): " << query << endl;
+	mbinfo << myname << "(forceSingleCoil): " << query << endl;
 
 	int fn = getOptimizeWriteFunction(query.func);
 	ModbusRTU::mbErrCode ret = real_write(query.start, (query.cmd() ? 1 : 0), fn );
@@ -2154,7 +2172,7 @@ ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
 ModbusRTU::mbErrCode MBSlave::read4314( ModbusRTU::MEIMessageRDI& query,
 										ModbusRTU::MEIMessageRetRDI& reply )
 {
-	dinfo << "(read4314): " << query << endl;
+	mbinfo << "(read4314): " << query << endl;
 
 	//    if( query.devID <= rdevMinNum || query.devID >= rdevMaxNum )
 	//        return erOperationFailed;

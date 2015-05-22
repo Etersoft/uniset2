@@ -4,7 +4,7 @@
 --confile test.xml \
 --mbtcp-name MBMaster1 \
 --smemory-id SharedMemory \
---dlog-add-levels system,info,crit,warn,level4,level3 \
+--mbtcp-log-add-levels system,info,crit,warn,level4,level3 \
 --mbtcp-set-prop-prefix \
 --mbtcp-filter-field rs \
 --mbtcp-filter-value 5 \
@@ -15,6 +15,7 @@
 --mbtcp-polltime 3000 \
 --mbtcp-force-out 1 \
 --ulog-add-levels system \
+--mbtcp-run-logserver \
 $*
 
 #--mbtcp-exchange-mode-id MB1_Mode_AS \

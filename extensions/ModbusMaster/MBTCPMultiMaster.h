@@ -267,7 +267,7 @@ class MBTCPMultiMaster:
 				return priority < mbs.priority;
 			}
 
-			bool init();
+			bool init( std::shared_ptr<DebugStream>& mblog );
 			bool check();
 
 			int recv_timeout;
