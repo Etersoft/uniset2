@@ -26,7 +26,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 
 	unetlog = make_shared<DebugStream>();
 	unetlog->setLogName(myname);
-	conf->initLogStream(unetlog,prefix+"-log");
+	conf->initLogStream(unetlog, prefix + "-log");
 
 	loga = make_shared<LogAgregator>();
 	loga->add(unetlog);
@@ -38,7 +38,8 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 	UniXML::iterator it(cnode);
 
 	logserv = make_shared<LogServer>(loga);
-	logserv->init( prefix+"-logserver", cnode );
+	logserv->init( prefix + "-logserver", cnode );
+
 	if( findArgParam("--" + prefix + "-run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
 	{
 		logserv_host = conf->getArg2Param("--" + prefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
@@ -49,12 +50,12 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 	s_field = conf->getArgParam("--" + prefix + "-filter-field");
 	s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
 	unetinfo << myname << "(init): read filter-field='" << s_field
-		  << "' filter-value='" << s_fvalue << "'" << endl;
+			 << "' filter-value='" << s_fvalue << "'" << endl;
 
 	const string n_field(conf->getArgParam("--" + prefix + "-nodes-filter-field"));
 	const string n_fvalue(conf->getArgParam("--" + prefix + "-nodes-filter-value"));
 	unetinfo << myname << "(init): read nodes-filter-field='" << n_field
-		  << "' nodes-filter-value='" << n_fvalue << "'" << endl;
+			 << "' nodes-filter-value='" << n_fvalue << "'" << endl;
 
 	int recvTimeout = conf->getArgPInt("--" + prefix + "-recv-timeout", it.getProp("recvTimeout"), 5000);
 	int prepareTime = conf->getArgPInt("--" + prefix + "-preapre-time", it.getProp("prepareTime"), 2000);
@@ -68,7 +69,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 
 	no_sender = conf->getArgInt("--" + prefix + "-nosender", it.getProp("nosender"));
 
-	std::string nconfname = conf->getArg2Param("--" + prefix + "-nodes-confnode", it.getProp("nodesConfNode"),"nodes");
+	std::string nconfname = conf->getArg2Param("--" + prefix + "-nodes-confnode", it.getProp("nodesConfNode"), "nodes");
 
 	xmlNode* nodes = 0;
 
@@ -83,7 +84,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 	unetinfo << myname << "(init):  init from <" << nconfname << ">" << endl;
 
 	if( !nodes )
-		throw UniSetTypes::SystemError("(UNetExchange): Not found confnode <" + nconfname +">");
+		throw UniSetTypes::SystemError("(UNetExchange): Not found confnode <" + nconfname + ">");
 
 	UniXML::iterator n_it(nodes);
 
@@ -152,7 +153,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 			if( no_sender )
 			{
 				unetinfo << myname << "(init): sender OFF for this node...("
-					  << n_it.getProp("name") << ")" << endl;
+						 << n_it.getProp("name") << ")" << endl;
 				continue;
 			}
 
@@ -306,7 +307,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 		}
 
 		unetinfo << myname << "(init): (node='" << n << "') add receiver "
-			  << h2 << ":" << p2 << endl;
+				 << h2 << ":" << p2 << endl;
 		auto r = make_shared<UNetReceiver>(h, p, shm);
 
 		loga->add(r->getLog());
@@ -333,7 +334,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 			if( !h2.empty() ) // создаём читателя впо второму каналу
 			{
 				unetinfo << myname << "(init): (node='" << n << "') add reserv receiver "
-					  << h2 << ":" << p2 << endl;
+						 << h2 << ":" << p2 << endl;
 
 				r2 = make_shared<UNetReceiver>(h2, p2, shm);
 
@@ -487,7 +488,7 @@ void UNetExchange::step()
 		}
 	}
 
-	for( auto&& it : recvlist )
+	for( auto && it : recvlist )
 		it.step(shm, myname, unetlog);
 }
 

@@ -119,7 +119,10 @@ class UNetReceiver:
 		typedef sigc::slot<void, const std::shared_ptr<UNetReceiver>&, Event> EventSlot;
 		void connectEvent( EventSlot sl );
 
-		inline std::shared_ptr<DebugStream> getLog(){ return unetlog; }
+		inline std::shared_ptr<DebugStream> getLog()
+		{
+			return unetlog;
+		}
 
 	protected:
 

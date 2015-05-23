@@ -70,7 +70,10 @@ class UNetSender
 		/*! инициализация  итераторов */
 		void initIterators();
 
-		inline std::shared_ptr<DebugStream> getLog(){ return unetlog; }
+		inline std::shared_ptr<DebugStream> getLog()
+		{
+			return unetlog;
+		}
 
 	protected:
 

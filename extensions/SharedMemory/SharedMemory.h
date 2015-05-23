@@ -380,7 +380,7 @@ class SharedMemory:
 
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
 		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
-		virtual void askSensors( UniversalIO::UIOCommand cmd ){};
+		virtual void askSensors( UniversalIO::UIOCommand cmd ) {};
 		void sendEvent( UniSetTypes::SystemMessage& sm );
 		void initFromReserv();
 		bool initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectId sm_node );

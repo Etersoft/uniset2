@@ -57,7 +57,8 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 	UniXML::iterator it(cnode);
 
 	logserv = make_shared<LogServer>(loga);
-	logserv->init( prefix+"-logserver", cnode );
+	logserv->init( prefix + "-logserver", cnode );
+
 	if( findArgParam("--" + prefix + "-run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
 	{
 		logserv_host = conf->getArg2Param("--" + prefix + "-logserver-host", it.getProp("logserverHost"), "localhost");

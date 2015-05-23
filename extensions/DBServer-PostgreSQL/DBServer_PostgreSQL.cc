@@ -14,7 +14,7 @@ using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
 DBServer_PostgreSQL::DBServer_PostgreSQL(ObjectId id, const std::string& prefix ):
-	DBServer(id,prefix),
+	DBServer(id, prefix),
 	PingTime(300000),
 	ReconnectTime(180000),
 	connect_ok(false),
@@ -90,6 +90,7 @@ void DBServer_PostgreSQL::sysCommand( const UniSetTypes::SystemMessage* sm )
 void DBServer_PostgreSQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 {
 	DBServer::confirmInfo(cem);
+
 	try
 	{
 		ostringstream data;
@@ -138,7 +139,7 @@ bool DBServer_PostgreSQL::writeToBase( const string& query )
 
 			qbuf.pop();
 			dbcrit << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
-				  << ") overflow! lost query: " << qlost << endl;
+				   << ") overflow! lost query: " << qlost << endl;
 		}
 
 		return false;
@@ -268,9 +269,9 @@ void DBServer_PostgreSQL::initDBServer()
 		dbnode = "localhost";
 
 	dbinfo <<  myname << "(init): connect dbnode=" << dbnode
-		  << "\tdbname=" << dbname
-		  << " pingTime=" << PingTime
-		  << " ReconnectTime=" << ReconnectTime << endl;
+		   << "\tdbname=" << dbname
+		   << " pingTime=" << PingTime
+		   << " ReconnectTime=" << ReconnectTime << endl;
 
 	if( !db->connect(dbnode, user, password, dbname) )
 	{

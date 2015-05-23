@@ -285,7 +285,7 @@ bool RTUExchange::poll()
 	updateSM();
 
 	// check thresholds
-	for( auto&& t : thrlist )
+	for( auto && t : thrlist )
 	{
 		if( !checkProcActive() )
 			return false;
@@ -358,7 +358,7 @@ bool RTUExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
 		{
 			d->second->speed = defSpeed;
 			mbcrit << myname << "(initDeviceInfo): Unknown speed=" << s <<
-				  " for addr=" << ModbusRTU::addr2str(a) << endl;
+				   " for addr=" << ModbusRTU::addr2str(a) << endl;
 			return false;
 		}
 	}

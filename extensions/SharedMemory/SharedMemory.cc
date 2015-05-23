@@ -68,11 +68,11 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 	if( confnode == NULL )
 		throw SystemError("Not found conf-node for " + cname );
 
-	string prefix="sm";
+	string prefix = "sm";
 
 	smlog = make_shared<DebugStream>();
 	smlog->setLogName(myname);
-	conf->initLogStream(smlog,prefix+"-log");
+	conf->initLogStream(smlog, prefix + "-log");
 
 	loga = make_shared<LogAgregator>();
 	loga->add(smlog);
@@ -82,7 +82,8 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 	UniXML::iterator it(confnode);
 
 	logserv = make_shared<LogServer>(loga);
-	logserv->init( prefix+"-logserver", confnode );
+	logserv->init( prefix + "-logserver", confnode );
+
 	// ----------------------
 	if( findArgParam("--" + prefix + "-run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
 	{
@@ -521,7 +522,7 @@ void SharedMemory::readEventList( const std::string& oname )
 		}
 		else
 			smcrit << myname << "(readEventList): Не найден ID для "
-				  << it.getProp("name") << endl;
+				   << it.getProp("name") << endl;
 	}
 }
 // -----------------------------------------------------------------------------
@@ -621,9 +622,9 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 		if( hi.fuse_id == DefaultObjectId )
 		{
 			smwarn << myname << "(buildHistory): not found sensor ID for "
-				  << it.getProp("fuse_id")
-				  << " history item id=" << it.getProp("id")
-				  << " ..ignore.." << endl;
+				   << it.getProp("fuse_id")
+				   << " history item id=" << it.getProp("id")
+				   << " ..ignore.." << endl;
 			continue;
 		}
 
@@ -638,10 +639,10 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 		}
 
 		sminfo << myname << "(buildHistory): add fuse_id=" << hi.fuse_id
-			  << " fuse_val=" << hi.fuse_val
-			  << " fuse_use_val=" << hi.fuse_use_val
-			  << " fuse_invert=" << hi.fuse_invert
-			  << endl;
+			   << " fuse_val=" << hi.fuse_val
+			   << " fuse_use_val=" << hi.fuse_use_val
+			   << " fuse_invert=" << hi.fuse_invert
+			   << endl;
 
 		// WARNING: no check duplicates...
 		hist.push_back(hi);
@@ -725,9 +726,9 @@ void SharedMemory::updateHistory( std::shared_ptr<USensorInfo>& s_it, IOControll
 	}
 
 	sminfo << myname << "(updateHistory): "
-		  << " sid=" << s_it->si.id
-		  << " value=" << value
-		  << endl;
+		   << " sid=" << s_it->si.id
+		   << " value=" << value
+		   << endl;
 
 	for( auto& it1 : i->second )
 	{

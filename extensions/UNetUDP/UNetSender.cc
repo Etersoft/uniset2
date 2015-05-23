@@ -37,7 +37,7 @@ UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, con
 	//    s_field = conf->getArgParam("--udp-filter-field");
 	//    s_fvalue = conf->getArgParam("--udp-filter-value");
 	unetinfo << myname << "(init): read filter-field='" << s_field
-		  << "' filter-value='" << s_fvalue << "'" << endl;
+			 << "' filter-value='" << s_fvalue << "'" << endl;
 
 	unetinfo << "(UNetSender): UDP set to " << s_host << ":" << port << endl;
 
@@ -295,7 +295,7 @@ bool UNetSender::initItem( UniXML::iterator& it )
 	if( sid == DefaultObjectId )
 	{
 		unetcrit << myname << "(readItem): ID not found for "
-			  << sname << endl;
+				 << sname << endl;
 		return false;
 	}
 
@@ -317,8 +317,8 @@ bool UNetSender::initItem( UniXML::iterator& it )
 		if ( p.pack_ind >= UniSetUDP::MaxDCount )
 		{
 			unetcrit << myname
-				  << "(readItem): OVERFLOW! MAX UDP DIGITAL DATA LIMIT! max="
-				  << UniSetUDP::MaxDCount << endl;
+					 << "(readItem): OVERFLOW! MAX UDP DIGITAL DATA LIMIT! max="
+					 << UniSetUDP::MaxDCount << endl;
 
 			raise(SIGTERM);
 			return false;
@@ -331,8 +331,8 @@ bool UNetSender::initItem( UniXML::iterator& it )
 		if ( p.pack_ind >= UniSetUDP::MaxACount )
 		{
 			unetcrit << myname
-				  << "(readItem): OVERFLOW! MAX UDP ANALOG DATA LIMIT! max="
-				  << UniSetUDP::MaxACount << endl;
+					 << "(readItem): OVERFLOW! MAX UDP ANALOG DATA LIMIT! max="
+					 << UniSetUDP::MaxACount << endl;
 			raise(SIGTERM);
 			return false;
 		}

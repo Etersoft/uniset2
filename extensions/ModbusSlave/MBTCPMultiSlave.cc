@@ -198,8 +198,8 @@ void MBTCPMultiSlave::execute_tcp()
 				auto c = it.second;
 
 				mblog4 << myname << "(work): " << c.iaddr << " resp=" << (c.invert ? c.ptTimeout.checkTime() : !c.ptTimeout.checkTime())
-					  << " askcount=" << c.askCount
-					  << endl;
+					   << " askcount=" << c.askCount
+					   << endl;
 
 
 				if( c.respond_s != DefaultObjectId )

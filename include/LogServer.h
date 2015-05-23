@@ -87,7 +87,7 @@ class LogServer
 			return (thr && thr->isRunning());
 		}
 
-		void init( const std::string& prefix, xmlNode* cnode=0 );
+		void init( const std::string& prefix, xmlNode* cnode = 0 );
 
 		static std::string help_print( const std::string& prefix );
 

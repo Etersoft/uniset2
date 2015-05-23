@@ -38,7 +38,7 @@ using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
 DBServer_MySQL::DBServer_MySQL(ObjectId id, const std::string& prefix ):
-	DBServer(id,prefix),
+	DBServer(id, prefix),
 	PingTime(300000),
 	ReconnectTime(180000),
 	connect_ok(false),
@@ -59,7 +59,7 @@ DBServer_MySQL::DBServer_MySQL(ObjectId id, const std::string& prefix ):
 }
 
 DBServer_MySQL::DBServer_MySQL( const std::string& prefix ):
-	DBServer_MySQL(uniset_conf()->getDBServer(),prefix)
+	DBServer_MySQL(uniset_conf()->getDBServer(), prefix)
 {
 }
 //--------------------------------------------------------------------------------------------
@@ -150,7 +150,7 @@ bool DBServer_MySQL::writeToBase( const string& query )
 			qbuf.pop();
 
 			dbcrit << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
-				  << ") overflow! lost query: " << qlost << endl;
+				   << ") overflow! lost query: " << qlost << endl;
 		}
 
 		return false;
@@ -191,7 +191,7 @@ void DBServer_MySQL::flushBuffer()
 
 		if( !err.empty() )
 			dbcrit << myname << "(writeToBase): error: " << err <<
-				  " lost query: " << qbuf.front() << endl;
+				   " lost query: " << qbuf.front() << endl;
 
 		qbuf.pop();
 	}
@@ -293,16 +293,16 @@ void DBServer_MySQL::initDBServer()
 		dbnode = "localhost";
 
 	dbinfo << myname << "(init): connect dbnode=" << dbnode
-		  << "\tdbname=" << dbname
-		  << " pingTime=" << PingTime
-		  << " ReconnectTime=" << ReconnectTime << endl;
+		   << "\tdbname=" << dbname
+		   << " pingTime=" << PingTime
+		   << " ReconnectTime=" << ReconnectTime << endl;
 
 	if( !db->connect(dbnode, user, password, dbname) )
 	{
 		//        ostringstream err;
 		dbcrit << myname
-			  << "(init): DB connection error: "
-			  << db->error() << endl;
+			   << "(init): DB connection error: "
+			   << db->error() << endl;
 		//        throw Exception( string(myname+"(init): не смогли создать соединение с БД "+db->error()) );
 		askTimer(DBServer_MySQL::ReconnectTimer, ReconnectTime);
 	}

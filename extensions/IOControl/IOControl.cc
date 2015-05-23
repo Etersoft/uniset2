@@ -60,7 +60,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 
 	iolog = make_shared<DebugStream>();
 	iolog->setLogName(myname);
-	conf->initLogStream(iolog,prefix+"-log");
+	conf->initLogStream(iolog, prefix + "-log");
 
 	loga = make_shared<LogAgregator>();
 	loga->add(iolog);
@@ -76,7 +76,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	UniXML::iterator it(cnode);
 
 	logserv = make_shared<LogServer>(loga);
-	logserv->init( prefix+"-logserver", cnode );
+	logserv->init( prefix + "-logserver", cnode );
+
 	if( findArgParam("--" + prefix + "-run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
 	{
 		logserv_host = conf->getArg2Param("--" + prefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
@@ -107,8 +108,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 			if( cards[i] == NULL )
 			{
 				iolog3 << myname << "(init): Card N" << i
-					  << " DISABLED! dev='"
-					  << iodev << "'" << endl;
+					   << " DISABLED! dev='"
+					   << iodev << "'" << endl;
 			}
 		}
 		else
@@ -141,8 +142,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 					if( !stype.empty() )
 					{
 						ioinfo << myname
-							  << "(init): card" << i
-							  << " subdev" << s << " set type " << stype << endl;
+							   << "(init): card" << i
+							   << " subdev" << s << " set type " << stype << endl;
 
 						cards[i]->configureSubdev(s - 1, st);
 					}
@@ -206,7 +207,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	s_fvalue = conf->getArgParam("--" + prefix + "-s-filter-value");
 
 	ioinfo << myname << "(init): read s_field='" << s_field
-		  << "' s_fvalue='" << s_fvalue << "'" << endl;
+		   << "' s_fvalue='" << s_fvalue << "'" << endl;
 
 	int blink_msec = conf->getArgPInt("--" + prefix + "-blink-time", it.getProp("blink-time"), 300);
 	ptBlink.setTiming(blink_msec);
@@ -232,8 +233,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	{
 		sidTestSMReady = conf->getSensorID("TestMode_S");
 		iowarn << myname
-			  << "(init): Unknown ID for sm-ready-test-sid (--" << prefix << "-sm-ready-test-sid)."
-			  << " Use 'TestMode_S'" << endl;
+			   << "(init): Unknown ID for sm-ready-test-sid (--" << prefix << "-sm-ready-test-sid)."
+			   << " Use 'TestMode_S'" << endl;
 	}
 	else
 		ioinfo << myname << "(init): test-sid: " << sm_ready_sid << endl;
@@ -421,7 +422,7 @@ void IOControl::execute()
 		catch( const CORBA::SystemException& ex )
 		{
 			iolog3 << myname << "(execute): CORBA::SystemException: "
-				  << ex.NP_minorString() << endl;
+				   << ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
@@ -538,11 +539,11 @@ void IOControl::ioread( IOInfo* it )
 			int val = card->getAnalogChannel(it->subdev, it->channel, it->range, it->aref);
 
 			iolog3 << myname << "(iopoll): read AI "
-				  << " sid=" << it->si.id
-				  << " subdev=" << it->subdev
-				  << " chan=" << it->channel
-				  << " val=" << val
-				  << endl;
+				   << " sid=" << it->si.id
+				   << " subdev=" << it->subdev
+				   << " chan=" << it->channel
+				   << " val=" << val
+				   << endl;
 
 			IOBase::processingAsAI( ib, val, shm, force );
 		}
@@ -676,7 +677,7 @@ void IOControl::ioread( IOInfo* it )
 	catch( const CORBA::SystemException& ex )
 	{
 		iolog3 << myname << "(iopoll): СORBA::SystemException: "
-			  << ex.NP_minorString() << endl;
+			   << ex.NP_minorString() << endl;
 	}
 }
 // --------------------------------------------------------------------------------
@@ -729,9 +730,9 @@ bool IOControl::initIOItem( UniXML::iterator& it )
 	if( c.empty() || inf.ncard < 0 || inf.ncard >= (int)cards.size() )
 	{
 		iolog3 << myname
-			  << "(initIOItem): Unknown or bad card number ("
-			  << inf.ncard << ") for " << it.getProp("name")
-			  << " set default=" << defCardNum << endl;
+			   << "(initIOItem): Unknown or bad card number ("
+			   << inf.ncard << ") for " << it.getProp("name")
+			   << " set default=" << defCardNum << endl;
 		inf.ncard = defCardNum;
 	}
 
@@ -777,8 +778,8 @@ bool IOControl::initIOItem( UniXML::iterator& it )
 		IOPriority p(prior, maxItem);
 		pmap.push_back(p);
 		iolog3 << myname << "(readItem): add to priority list: " <<
-			  it.getProp("name")
-			  << " priority=" << prior << endl;
+			   it.getProp("name")
+			   << " priority=" << prior << endl;
 	}
 
 	// значит это пороговый датчик..
@@ -786,7 +787,7 @@ bool IOControl::initIOItem( UniXML::iterator& it )
 	{
 		iomap[maxItem++] = std::move(inf);
 		iolog3 << myname << "(readItem): add threshold '" << it.getProp("name")
-			  << " for '" << uniset_conf()->oind->getNameById(inf.t_ai) << endl;
+			   << " for '" << uniset_conf()->oind->getNameById(inf.t_ai) << endl;
 		return true;
 	}
 
@@ -795,7 +796,7 @@ bool IOControl::initIOItem( UniXML::iterator& it )
 	if( inf.channel < 0 || inf.channel > 32 )
 	{
 		iowarn << myname << "(readItem): Unknown channel: " << inf.channel
-			  << " for " << it.getProp("name") << endl;
+			   << " for " << it.getProp("name") << endl;
 		return false;
 	}
 
@@ -814,8 +815,8 @@ bool IOControl::initIOItem( UniXML::iterator& it )
 		if( inf.range < 0 || inf.range > 3 )
 		{
 			iocrit << myname << "(readItem): Unknown 'range': " << inf.range
-				  << " for " << it.getProp("name")
-				  << " Must be range=[0..3]" << endl;
+				   << " for " << it.getProp("name")
+				   << " Must be range=[0..3]" << endl;
 			return false;
 		}
 
@@ -824,8 +825,8 @@ bool IOControl::initIOItem( UniXML::iterator& it )
 		if( inf.aref < 0 || inf.aref > 3 )
 		{
 			iocrit << myname << "(readItem): Unknown 'aref': " << inf.aref
-				  << " for " << it.getProp("name")
-				  << ". Must be aref=[0..3]" << endl;
+				   << " for " << it.getProp("name")
+				   << ". Must be aref=[0..3]" << endl;
 			return false;
 		}
 	}
@@ -1389,7 +1390,7 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 void IOControl::sensorInfo( const UniSetTypes::SensorMessage* sm )
 {
 	iolog1 << myname << "(sensorInfo): sm->id=" << sm->id
-		  << " val=" << sm->value << endl;
+		   << " val=" << sm->value << endl;
 
 	if( force_out )
 		return;
@@ -1410,8 +1411,8 @@ void IOControl::sensorInfo( const UniSetTypes::SensorMessage* sm )
 		if( it.si.id == sm->id )
 		{
 			ioinfo << myname << "(sensorInfo): sid=" << sm->id
-				  << " value=" << sm->value
-				  << endl;
+				   << " value=" << sm->value
+				   << endl;
 
 			if( it.stype == UniversalIO::AO )
 			{
@@ -1512,7 +1513,7 @@ void IOControl::sensorInfo( const UniSetTypes::SensorMessage* sm )
 			else if( it.stype == UniversalIO::DO )
 			{
 				iolog1 << myname << "(sensorInfo): DO: sm->id=" << sm->id
-					  << " val=" << sm->value << endl;
+					   << " val=" << sm->value << endl;
 
 				uniset_rwmutex_wrlock lock(it.val_lock);
 				it.value = sm->value ? 1 : 0;
@@ -1627,7 +1628,7 @@ void IOControl::buildCardsList()
 		{
 			cards[cardnum] = NULL;
 			iolog3 << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
-				  << " DISABLED! ignore=1" << endl;
+				   << " DISABLED! ignore=1" << endl;
 			continue;
 		}
 
@@ -1638,7 +1639,7 @@ void IOControl::buildCardsList()
 		{
 			cards[cardnum] = NULL;
 			iolog3 << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
-				  << " DISABLED! (" << s.str() << ")" << endl;
+				   << " DISABLED! (" << s.str() << ")" << endl;
 			continue;
 		}
 
@@ -1648,8 +1649,8 @@ void IOControl::buildCardsList()
 		{
 			cards[cardnum] = NULL;
 			iolog3 << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
-				  << " DISABLED! iodev='"
-				  << iodev << "'" << endl;
+				   << " DISABLED! iodev='"
+				   << iodev << "'" << endl;
 			continue;
 		}
 
@@ -1710,14 +1711,14 @@ void IOControl::buildCardsList()
 				{
 					// для Grayhill конфигурирование не требуется
 					ioinfo << myname << "(buildCardsList): card=" << it.getProp("card")
-						  << "(" << cname << ")"
-						  << " init subdev" << i << " 'GRAYHILL'" << endl;
+						   << "(" << cname << ")"
+						   << " init subdev" << i << " 'GRAYHILL'" << endl;
 					continue;
 				}
 
 				ioinfo << myname << "(buildCardsList): card=" << it.getProp("card")
-					  << "(" << cname << ")"
-					  << " init subdev" << i << " " << it.getProp(s.str()) << endl;
+					   << "(" << cname << ")"
+					   << " init subdev" << i << " " << it.getProp(s.str()) << endl;
 				cards[cardnum]->configureSubdev(i - 1, st);
 			}
 		}

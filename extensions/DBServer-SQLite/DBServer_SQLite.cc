@@ -38,7 +38,7 @@ using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
 DBServer_SQLite::DBServer_SQLite( ObjectId id, const std::string& prefix ):
-	DBServer(id,prefix),
+	DBServer(id, prefix),
 	PingTime(300000),
 	ReconnectTime(180000),
 	connect_ok(false),
@@ -57,7 +57,7 @@ DBServer_SQLite::DBServer_SQLite( ObjectId id, const std::string& prefix ):
 }
 
 DBServer_SQLite::DBServer_SQLite( const std::string& prefix ):
-	DBServer_SQLite(uniset_conf()->getDBServer(),prefix)
+	DBServer_SQLite(uniset_conf()->getDBServer(), prefix)
 {
 }
 //--------------------------------------------------------------------------------------------
@@ -147,7 +147,7 @@ bool DBServer_SQLite::writeToBase( const string& query )
 			qbuf.pop();
 
 			dbcrit << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
-				  << ") overflow! lost query: " << qlost << endl;
+				   << ") overflow! lost query: " << qlost << endl;
 		}
 
 		return false;
@@ -173,7 +173,7 @@ void DBServer_SQLite::flushBuffer()
 		if( !db->insert(qbuf.front()) )
 		{
 			dbcrit << myname << "(writeToBase): error: " << db->error() <<
-				  " lost query: " << qbuf.front() << endl;
+				   " lost query: " << qbuf.front() << endl;
 		}
 
 		qbuf.pop();
@@ -270,15 +270,15 @@ void DBServer_SQLite::initDBServer()
 		lastRemove = false;
 
 	dbinfo <<  myname << "(init): connect dbfile=" << dbfile
-		  << " pingTime=" << PingTime
-		  << " ReconnectTime=" << ReconnectTime << endl;
+		   << " pingTime=" << PingTime
+		   << " ReconnectTime=" << ReconnectTime << endl;
 
 	if( !db->connect(dbfile, false) )
 	{
 		//        ostringstream err;
 		dbcrit << myname
-			  << "(init): DB connection error: "
-			  << db->error() << endl;
+			   << "(init): DB connection error: "
+			   << db->error() << endl;
 		//        throw Exception( string(myname+"(init): не смогли создать соединение с БД "+db->error()) );
 		askTimer(DBServer_SQLite::ReconnectTimer, ReconnectTime);
 	}
@@ -323,6 +323,7 @@ void DBServer_SQLite::createTables( SQLiteInterface* db )
 void DBServer_SQLite::timerInfo( const UniSetTypes::TimerMessage* tm )
 {
 	DBServer::timerInfo(tm);
+
 	switch( tm->id )
 	{
 		case DBServer_SQLite::PingTimer:

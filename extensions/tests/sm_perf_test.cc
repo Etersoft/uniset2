@@ -47,7 +47,7 @@ void run_test(std::size_t concurrency, int bound, shared_ptr<SharedMemory>& shm 
 	auto&& r_worker = [&shm, bound]
 	{
 		int num = bound;
-		ObjectId sid = begSensorID + rand()%10000;
+		ObjectId sid = begSensorID + rand() % 10000;
 
 		while (num--)
 		{
@@ -58,7 +58,7 @@ void run_test(std::size_t concurrency, int bound, shared_ptr<SharedMemory>& shm 
 	auto&& w_worker = [&shm, bound]
 	{
 		int num = bound;
-		ObjectId sid = begSensorID + rand()%10000;
+		ObjectId sid = begSensorID + rand() % 10000;
 
 		while (num--)
 		{
@@ -68,10 +68,10 @@ void run_test(std::size_t concurrency, int bound, shared_ptr<SharedMemory>& shm 
 
 	std::vector<std::thread> threads;
 
-	for (std::size_t i = 0; i < concurrency/2 - 1; ++i)
+	for (std::size_t i = 0; i < concurrency / 2 - 1; ++i)
 		threads.emplace_back(r_worker);
 
-	for (std::size_t i = 0; i < concurrency/2 - 1; ++i)
+	for (std::size_t i = 0; i < concurrency / 2 - 1; ++i)
 		threads.emplace_back(w_worker);
 
 	for (auto && thread : threads)
@@ -112,8 +112,8 @@ int main(int argc, char* argv[] )
 		start = std::chrono::system_clock::now();
 		run_test(50, 1000000, shm);
 		end = std::chrono::system_clock::now();
- 
-		int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+
+		int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 		std::cout << "elapsed time: " << elapsed_seconds << " ms\n";
 		return 0;
 	}

@@ -13,6 +13,7 @@ LogServer::~LogServer()
 {
 	if( nullsess )
 		nullsess->cancel();
+
 	{
 		// uniset_rwmutex_wrlock l(mutSList);
 		for( const auto& i : slist )
@@ -123,6 +124,7 @@ void LogServer::work()
 			while( !cancelled && tcp->isPendingConnection(timeout) )
 			{
 				if( cancelled ) break;
+
 				{
 					uniset_rwmutex_wrlock l(mutSList);
 					int sz = slist.size();

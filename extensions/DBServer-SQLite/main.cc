@@ -20,13 +20,13 @@ int main(int argc, char** argv)
 		if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
 		{
 			cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
-			DBServer_SQLite::help_print(argc,argv);
+			DBServer_SQLite::help_print(argc, argv);
 			return 0;
 		}
 
 		auto conf = uniset_init(argc, argv, "configure.xml");
 
-		auto db = DBServer_SQLite::init_dbserver(argc,argv);
+		auto db = DBServer_SQLite::init_dbserver(argc, argv);
 
 		auto act = UniSetActivator::Instance();
 		act->add(db);

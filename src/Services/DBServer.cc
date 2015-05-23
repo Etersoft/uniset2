@@ -58,7 +58,7 @@ DBServer::DBServer( ObjectId id, const std::string& prefix ):
 
 	dblog = make_shared<DebugStream>();
 	dblog->setLogName(myname);
-	conf->initLogStream(dblog,prefix+"-log");
+	conf->initLogStream(dblog, prefix + "-log");
 
 	loga = make_shared<LogAgregator>();
 	loga->add(dblog);
@@ -69,7 +69,8 @@ DBServer::DBServer( ObjectId id, const std::string& prefix ):
 	UniXML::iterator it(cnode);
 
 	logserv = make_shared<LogServer>(loga);
-	logserv->init( prefix+"-logserver", cnode );
+	logserv->init( prefix + "-logserver", cnode );
+
 	if( findArgParam("--" + prefix + "-run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
 	{
 		logserv_host = conf->getArg2Param("--" + prefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
@@ -111,9 +112,10 @@ bool DBServer::activateObject()
 void DBServer::sysCommand( const UniSetTypes::SystemMessage* sm )
 {
 	UniSetObject_LT::sysCommand(sm);
+
 	if(  sm->command == SystemMessage::StartUp )
 	{
-	if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
+		if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
 		{
 			dbinfo << myname << "(init): run log server " << logserv_host << ":" << logserv_port << endl;
 			logserv->run(logserv_host, logserv_port, true);

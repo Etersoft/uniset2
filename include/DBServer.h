@@ -53,8 +53,8 @@ class DBServer:
 	public UniSetObject_LT
 {
 	public:
-		DBServer( UniSetTypes::ObjectId id, const std::string& prefix="db" );
-		DBServer( const std::string& prefix="db" );
+		DBServer( UniSetTypes::ObjectId id, const std::string& prefix = "db" );
+		DBServer( const std::string& prefix = "db" );
 		~DBServer();
 
 		static std::string help_print();
@@ -66,7 +66,7 @@ class DBServer:
 		virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ) {}
 
 		virtual bool activateObject() override;
-		virtual void initDBServer(){};
+		virtual void initDBServer() {};
 
 
 		std::shared_ptr<LogAgregator> loga;
