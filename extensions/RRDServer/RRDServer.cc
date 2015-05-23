@@ -12,13 +12,29 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 RRDServer::RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic,
-					  const string& prefix, std::shared_ptr<DebugStream> log ):
+					  const string& prefix ):
 	UObject_SK(objId, cnode),
 	prefix(prefix)
 {
+	auto conf = uniset_conf();
+
 	shm = make_shared<SMInterface>(shmId, ui, objId, ic);
-	mylog = log;
+
+	loga = make_shared<LogAgregator>();
+	loga->add(mylog);
+	loga->add(ulog());
+	loga->add(dlog());
+
 	UniXML::iterator it(cnode);
+
+	logserv = make_shared<LogServer>(loga);
+	logserv->init( prefix+"-logserver", cnode );
+	if( findArgParam("--" + prefix + "-run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
+	{
+		logserv_host = conf->getArg2Param("--" + prefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
+		logserv_port = conf->getArgPInt("--" + prefix + "-logserver-port", it.getProp("logserverPort"), getId());
+	}
+
 
 	UniXML::iterator it1(cnode);
 
@@ -231,6 +247,19 @@ void RRDServer::help_print( int argc, const char* const* argv )
 	cout << "--prefix-confnode    - configuration section name. Default: <NAME name='NAME'...> " << endl;
 	cout << "--prefix-heartbeat-id name   - ID for heartbeat sensor." << endl;
 	cout << "--prefix-heartbeat-max val   - max value for heartbeat sensor." << endl;
+	cout << endl;
+	cout << " Logs: " << endl;
+	cout << "--prefix-log-...            - log control" << endl;
+	cout << "             add-levels ...  " << endl;
+	cout << "             del-levels ...  " << endl;
+	cout << "             set-levels ...  " << endl;
+	cout << "             logfile filanme " << endl;
+	cout << "             no-debug " << endl;
+	cout << " LogServer: " << endl;
+	cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;
+	cout << "--prefix-logserver-host ip  - listen ip. Default: localhost" << endl;
+	cout << "--prefix-logserver-port num - listen port. Default: ID" << endl;
+	cout << LogServer::help_print("prefix-logserver") << endl;
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<RRDServer> RRDServer::init_rrdstorage( int argc, const char* const* argv,
@@ -295,7 +324,13 @@ void RRDServer::sysCommand( const UniSetTypes::SystemMessage* sm )
 
 	if( sm->command == SystemMessage::StartUp || sm->command == SystemMessage::WatchDog )
 	{
-		for( auto& it : rrdlist )
+		if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
+		{
+			myinfo << myname << "(init): run log server " << logserv_host << ":" << logserv_port << endl;
+			logserv->run(logserv_host, logserv_port, true);
+		}
+
+		for( auto&& it : rrdlist )
 		{
 			try
 			{

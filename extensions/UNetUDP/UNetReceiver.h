@@ -119,9 +119,12 @@ class UNetReceiver:
 		typedef sigc::slot<void, const std::shared_ptr<UNetReceiver>&, Event> EventSlot;
 		void connectEvent( EventSlot sl );
 
+		inline std::shared_ptr<DebugStream> getLog(){ return unetlog; }
+
 	protected:
 
 		const std::shared_ptr<SMInterface> shm;
+		std::shared_ptr<DebugStream> unetlog;
 
 		bool recv();
 		void step();
@@ -142,7 +145,6 @@ class UNetReceiver:
 			}
 		};
 		typedef std::priority_queue<UniSetUDP::UDPMessage, std::vector<UniSetUDP::UDPMessage>, PacketCompare> PacketQueue;
-
 
 	private:
 		UNetReceiver();

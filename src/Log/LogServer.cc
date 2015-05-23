@@ -4,6 +4,7 @@
 #include "Exceptions.h"
 #include "LogSession.h"
 #include "LogAgregator.h"
+#include "Configuration.h"
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -199,3 +200,28 @@ void LogServer::sessionFinished( std::shared_ptr<LogSession> s )
 	}
 }
 // -------------------------------------------------------------------------
+void LogServer::init( const std::string& prefix, xmlNode* cnode )
+{
+	auto conf = uniset_conf();
+
+	// можем на cnode==0 не проверять, т.е. UniXML::iterator корректно отрабатывает эту ситуацию
+	UniXML::iterator it(cnode);
+
+	timeout_t sessTimeout = conf->getArgPInt("--" + prefix + "-session-timeout", it.getProp("sessTimeout"), 3600000);
+	timeout_t cmdTimeout = conf->getArgPInt("--" + prefix + "-cmd-timeout", it.getProp("cmdTimeout"), 2000);
+	timeout_t outTimeout = conf->getArgPInt("--" + prefix + "-out-timeout", it.getProp("outTimeout"), 2000);
+
+	setSessionTimeout(sessTimeout);
+	setCmdTimeout(cmdTimeout);
+	setOutTimeout(outTimeout);
+}
+// -----------------------------------------------------------------------------
+std::string LogServer::help_print( const std::string& prefix )
+{
+	ostringstream h;
+	h << "--" << prefix << "-session-timeout msec  - Timeout for session. Default: 10 min." << endl;
+	h << "--" << prefix << "-cmd-timeout msec      - Timeout for wait command. Default: 2000 msec." << endl;
+	h << "--" << prefix << "-out-timeout msec      - Timeout for send to client. Default: 2000 msec." << endl;
+	return std::move( h.str() );
+}
+// -----------------------------------------------------------------------------

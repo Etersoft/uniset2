@@ -21,9 +21,9 @@
 #include "MTR.h"
 #include "RTUStorage.h"
 #include "modbus/ModbusClient.h"
-#include "modbus/MBLogSugar.h"
 #include "LogAgregator.h"
 #include "LogServer.h"
+#include "LogAgregator.h"
 // -----------------------------------------------------------------------------
 /*!
     \par Базовый класс для реализация обмена по протоколу Modbus [RTU|TCP].
@@ -352,6 +352,7 @@ class MBExchange:
 		std::string defaultMBaddr;
 		bool defaultMBinitOK; // флаг определяющий нужно ли ждать "первого обмена" или при запуске сохранять в SM значение default.
 
+		std::shared_ptr<LogAgregator> loga;
 		std::shared_ptr<DebugStream> mblog;
 		std::shared_ptr<LogServer> logserv;
 		std::string logserv_host = {""};

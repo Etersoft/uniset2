@@ -5,6 +5,7 @@
 #include "MBTCPMultiSlave.h"
 #include "modbus/ModbusRTUSlaveSlot.h"
 #include "modbus/ModbusTCPServerSlot.h"
+#include "modbus/MBLogSugar.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;

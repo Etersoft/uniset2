@@ -17,25 +17,12 @@ int main( int argc, const char** argv )
 		{
 			cout << "--smemory-id objectName  - SharedMemory objectID. Default: read from <SharedMemory>" << endl;
 			cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
-			cout << "--unet-logfile filename    - logfilename. Default: udpexchange.log" << endl;
 			cout << endl;
 			UNetExchange::help_print(argc, argv);
 			return 0;
 		}
 
 		auto conf = uniset_init(argc, argv);
-
-		string logfilename(conf->getArgParam("--unet-logfile"));
-
-		if( logfilename.empty() )
-			logfilename = "udpexchange.log";
-
-
-		std::ostringstream logname;
-		string dir(conf->getLogDir());
-		logname << dir << logfilename;
-		ulog()->logFile( logname.str() );
-		UniSetExtensions::dlog()->logFile( logname.str() );
 
 		ObjectId shmID = DefaultObjectId;
 		string sID = conf->getArgParam("--smemory-id");

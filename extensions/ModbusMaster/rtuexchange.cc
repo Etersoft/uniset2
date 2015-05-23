@@ -17,24 +17,12 @@ int main( int argc, char** argv )
 		{
 			cout << "--smemory-id objectName  - SharedMemory objectID. Default: read from <SharedMemory>" << endl;
 			cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
-			cout << "--rs-logfile filename    - logfilename. Default: rtuexchange.log" << endl;
 			cout << endl;
 			RTUExchange::help_print(argc, argv);
 			return 0;
 		}
 
 		auto conf = uniset_init( argc, argv );
-
-		string logfilename(conf->getArgParam("--rs-logfile"));
-
-		if( logfilename.empty() )
-			logfilename = "rtuexchange.log";
-
-		std::ostringstream logname;
-		string dir(conf->getLogDir());
-		logname << dir << logfilename;
-		ulog()->logFile( logname.str() );
-		dlog()->logFile( logname.str() );
 
 		ObjectId shmID = DefaultObjectId;
 		string sID = conf->getArgParam("--smemory-id");

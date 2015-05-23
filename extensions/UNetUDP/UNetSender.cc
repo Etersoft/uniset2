@@ -3,6 +3,7 @@
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UNetSender.h"
+#include "UNetLogSugar.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -28,13 +29,17 @@ UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, con
 		myname = s.str();
 	}
 
+	unetlog = make_shared<DebugStream>();
+	unetlog->setLogName(myname);
+
+
 	// определяем фильтр
 	//    s_field = conf->getArgParam("--udp-filter-field");
 	//    s_fvalue = conf->getArgParam("--udp-filter-value");
-	dinfo << myname << "(init): read filter-field='" << s_field
+	unetinfo << myname << "(init): read filter-field='" << s_field
 		  << "' filter-value='" << s_fvalue << "'" << endl;
 
-	dinfo << "(UNetSender): UDP set to " << s_host << ":" << port << endl;
+	unetinfo << "(UNetSender): UDP set to " << s_host << ":" << port << endl;
 
 	ost::Thread::setException(ost::Thread::throwException);
 
@@ -47,14 +52,14 @@ UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, con
 	{
 		ostringstream s;
 		s << myname << ": " << e.what();
-		dcrit << s.str() << std::endl;
+		unetcrit << s.str() << std::endl;
 		throw SystemError(s.str());
 	}
 	catch( ... )
 	{
 		ostringstream s;
 		s << myname << ": catch...";
-		dcrit << s.str() << std::endl;
+		unetcrit << s.str() << std::endl;
 		throw SystemError(s.str());
 	}
 
@@ -65,7 +70,7 @@ UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, con
 	{
 		readConfiguration();
 		dlist.resize(maxItem);
-		dinfo << myname << "(init): dlist size = " << dlist.size() << endl;
+		unetinfo << myname << "(init): dlist size = " << dlist.size() << endl;
 	}
 	else
 	{
@@ -75,10 +80,10 @@ UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, con
 			ic->addReadItem( sigc::mem_fun(this, &UNetSender::readItem) );
 		else
 		{
-			dwarn << myname << "(init): Failed to convert the pointer 'IONotifyController' -> 'SharedMemory'" << endl;
+			unetwarn << myname << "(init): Failed to convert the pointer 'IONotifyController' -> 'SharedMemory'" << endl;
 			readConfiguration();
 			dlist.resize(maxItem);
-			dinfo << myname << "(init): dlist size = " << dlist.size() << endl;
+			unetinfo << myname << "(init): dlist size = " << dlist.size() << endl;
 		}
 	}
 
@@ -141,7 +146,7 @@ void UNetSender::updateItem( DMap::iterator& it, long value )
 void UNetSender::send()
 {
 	dlist.resize(maxItem);
-	dinfo << myname << "(send): dlist size = " << dlist.size() << endl;
+	unetinfo << myname << "(send): dlist size = " << dlist.size() << endl;
 
 	/*
 	    ost::IPV4Broadcast h = s_host.c_str();
@@ -153,7 +158,7 @@ void UNetSender::send()
 	    {
 	        ostringstream s;
 	        s << e.getString() << ": " << e.getSystemErrorString();
-	        dcrit << myname << "(poll): " << s.str() << endl;
+			unetcrit << myname << "(poll): " << s.str() << endl;
 	        throw SystemError(s.str());
 	    }
 	*/
@@ -168,25 +173,25 @@ void UNetSender::send()
 		}
 		catch( ost::SockException& e )
 		{
-			dwarn << myname << "(send): " << e.getString() << endl;
+			unetwarn << myname << "(send): " << e.getString() << endl;
 		}
 		catch( UniSetTypes::Exception& ex)
 		{
-			dwarn << myname << "(send): " << ex << std::endl;
+			unetwarn << myname << "(send): " << ex << std::endl;
 		}
 		catch( const std::exception& e )
 		{
-			dwarn << myname << "(send): " << e.what() << std::endl;
+			unetwarn << myname << "(send): " << e.what() << std::endl;
 		}
 		catch(...)
 		{
-			dwarn << myname << "(send): catch ..." << std::endl;
+			unetwarn << myname << "(send): catch ..." << std::endl;
 		}
 
 		msleep(sendpause);
 	}
 
-	dinfo << "************* execute FINISH **********" << endl;
+	unetinfo << "************* execute FINISH **********" << endl;
 }
 // -----------------------------------------------------------------------------
 // #define UNETUDP_DISABLE_OPTIMIZATION_N1
@@ -217,7 +222,7 @@ void UNetSender::real_send()
 	size_t ret = udp->send( (char*)s_msg.data, s_msg.len );
 
 	if( ret < s_msg.len )
-		dcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;
+		unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;
 }
 // -----------------------------------------------------------------------------
 void UNetSender::stop()
@@ -289,7 +294,7 @@ bool UNetSender::initItem( UniXML::iterator& it )
 
 	if( sid == DefaultObjectId )
 	{
-		dcrit << myname << "(readItem): ID not found for "
+		unetcrit << myname << "(readItem): ID not found for "
 			  << sname << endl;
 		return false;
 	}
@@ -299,7 +304,7 @@ bool UNetSender::initItem( UniXML::iterator& it )
 
 	if( p.iotype == UniversalIO::UnknownIOType )
 	{
-		dcrit << myname << "(readItem): Unknown iotype for sid=" << sid << endl;
+		unetcrit << myname << "(readItem): Unknown iotype for sid=" << sid << endl;
 		return false;
 	}
 
@@ -311,7 +316,7 @@ bool UNetSender::initItem( UniXML::iterator& it )
 
 		if ( p.pack_ind >= UniSetUDP::MaxDCount )
 		{
-			dcrit << myname
+			unetcrit << myname
 				  << "(readItem): OVERFLOW! MAX UDP DIGITAL DATA LIMIT! max="
 				  << UniSetUDP::MaxDCount << endl;
 
@@ -325,7 +330,7 @@ bool UNetSender::initItem( UniXML::iterator& it )
 
 		if ( p.pack_ind >= UniSetUDP::MaxACount )
 		{
-			dcrit << myname
+			unetcrit << myname
 				  << "(readItem): OVERFLOW! MAX UDP ANALOG DATA LIMIT! max="
 				  << UniSetUDP::MaxACount << endl;
 			raise(SIGTERM);
@@ -339,7 +344,7 @@ bool UNetSender::initItem( UniXML::iterator& it )
 	dlist[maxItem] = p;
 	maxItem++;
 
-	dinfo << myname << "(initItem): add " << p << endl;
+	unetinfo << myname << "(initItem): add " << p << endl;
 
 	return true;
 }

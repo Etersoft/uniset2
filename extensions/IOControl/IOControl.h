@@ -21,6 +21,9 @@
 #include "IOController.h"
 #include "IOBase.h"
 #include "SharedMemory.h"
+#include "LogServer.h"
+#include "DebugStream.h"
+#include "LogAgregator.h"
 // -----------------------------------------------------------------------------
 /*!
       \page page_IOControl (IOControl) Реализация процесса ввода/вывода
@@ -392,6 +395,12 @@ class IOControl:
 		IOController::IOStateList::iterator itTestMode;
 		long testmode;
 		long prev_testmode;
+
+		std::shared_ptr<LogAgregator> loga;
+		std::shared_ptr<DebugStream> iolog;
+		std::shared_ptr<LogServer> logserv;
+		std::string logserv_host = {""};
+		int logserv_port = {0};
 
 	private:
 };

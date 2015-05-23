@@ -5,6 +5,7 @@
 #include "MBSlave.h"
 #include "modbus/ModbusRTUSlaveSlot.h"
 #include "modbus/ModbusTCPServerSlot.h"
+#include "modbus/MBLogSugar.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -35,8 +36,13 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 	mutex_start.setName(myname + "_mutex_start");
 
 	mblog = make_shared<DebugStream>();
+	mblog->setLogName(myname);
 	conf->initLogStream(mblog, prefix + "-log");
-	logserv = make_shared<LogServer>(mblog);
+
+	loga = make_shared<LogAgregator>();
+	loga->add(mblog);
+	loga->add(ulog());
+	loga->add(dlog());
 
 	//    xmlNode* cnode = conf->getNode(myname);
 
@@ -50,6 +56,8 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 
 	UniXML::iterator it(cnode);
 
+	logserv = make_shared<LogServer>(loga);
+	logserv->init( prefix+"-logserver", cnode );
 	if( findArgParam("--" + prefix + "-run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
 	{
 		logserv_host = conf->getArg2Param("--" + prefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
@@ -1187,6 +1195,7 @@ void MBSlave::help_print( int argc, const char* const* argv )
 	cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;
 	cout << "--prefix-logserver-host ip  - listen ip. Default: localhost" << endl;
 	cout << "--prefix-logserver-port num - listen port. Default: ID" << endl;
+	cout << LogServer::help_print("prefix-logserver") << endl;
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<MBSlave> MBSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID,

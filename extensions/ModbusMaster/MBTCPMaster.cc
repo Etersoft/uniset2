@@ -5,6 +5,7 @@
 #include <Exceptions.h>
 #include <extensions/Extensions.h>
 #include "MBTCPMaster.h"
+#include "modbus/MBLogSugar.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;

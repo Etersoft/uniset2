@@ -14,6 +14,10 @@
 #include "ThreadCreator.h"
 #include "UNetReceiver.h"
 #include "UNetSender.h"
+#include "LogServer.h"
+#include "DebugStream.h"
+#include "UNetLogSugar.h"
+#include "LogAgregator.h"
 // -----------------------------------------------------------------------------
 /*!
     \page pageUNetExchangeUDP Сетевой обмен на основе UDP (UNetUDP)
@@ -160,7 +164,7 @@ class UNetExchange:
 			std::shared_ptr<UNetReceiver> r1;    /*!< приём по первому каналу */
 			std::shared_ptr<UNetReceiver> r2;    /*!< приём по второму каналу */
 
-			void step( const std::shared_ptr<SMInterface> shm, const std::string& myname );
+			void step( const std::shared_ptr<SMInterface> shm, const std::string& myname, std::shared_ptr<DebugStream>& log );
 
 			inline void setRespondID( UniSetTypes::ObjectId id, bool invert = false )
 			{
@@ -202,6 +206,12 @@ class UNetExchange:
 		bool no_sender;  /*!< флаг отключения посылки сообщений (создания потока для посылки)*/
 		std::shared_ptr<UNetSender> sender;
 		std::shared_ptr<UNetSender> sender2;
+
+		std::shared_ptr<LogAgregator> loga;
+		std::shared_ptr<DebugStream> unetlog;
+		std::shared_ptr<LogServer> logserv;
+		std::string logserv_host = {""};
+		int logserv_port = {0};
 };
 // -----------------------------------------------------------------------------
 #endif // UNetExchange_H_

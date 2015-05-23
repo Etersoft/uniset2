@@ -5,6 +5,7 @@
 #include "SharedMemory.h"
 #include "Extensions.h"
 #include "ORepHelpers.h"
+#include "SMLogSugar.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -40,6 +41,7 @@ void SharedMemory::help_print( int argc, const char* const* argv )
 	cout << "--sm-run-logserver       - run logserver. Default: localhost:id" << endl;
 	cout << "--sm-logserver-host ip   - listen ip. Default: localhost" << endl;
 	cout << "--sm-logserver-port num  - listen port. Default: ID" << endl;
+	cout << LogServer::help_print("sm-logserver") << endl;
 }
 // -----------------------------------------------------------------------------
 SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std::string& confname ):
@@ -69,16 +71,18 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 	string prefix="sm";
 
 	smlog = make_shared<DebugStream>();
+	smlog->setLogName(myname);
 	conf->initLogStream(smlog,prefix+"-log");
 
 	loga = make_shared<LogAgregator>();
 	loga->add(smlog);
 	loga->add(ulog());
-
-	logserv = make_shared<LogServer>(loga);
+	loga->add(dlog());
 
 	UniXML::iterator it(confnode);
 
+	logserv = make_shared<LogServer>(loga);
+	logserv->init( prefix+"-logserver", confnode );
 	// ----------------------
 	if( findArgParam("--" + prefix + "-run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
 	{

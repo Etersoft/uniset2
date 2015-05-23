@@ -7,6 +7,7 @@
 #include <memory>
 #include <cc++/socket.h>
 #include "Mutex.h"
+#include "UniXML.h"
 #include "DebugStream.h"
 #include "ThreadCreator.h"
 class LogSession;
@@ -85,6 +86,10 @@ class LogServer
 		{
 			return (thr && thr->isRunning());
 		}
+
+		void init( const std::string& prefix, xmlNode* cnode=0 );
+
+		static std::string help_print( const std::string& prefix );
 
 	protected:
 		LogServer();

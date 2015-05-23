@@ -20,7 +20,7 @@
 #include "VTypes.h"
 #include "ThreadCreator.h"
 #include "LogServer.h"
-#include "modbus/MBLogSugar.h"
+#include "LogAgregator.h"
 // -----------------------------------------------------------------------------
 /*!
       \page page_ModbusSlave Реализация Modbus slave
@@ -514,6 +514,7 @@ class MBSlave:
 
 		MEIDevIDMap meidev;
 
+		std::shared_ptr<LogAgregator> loga;
 		std::shared_ptr<DebugStream> mblog;
 		std::shared_ptr<LogServer> logserv;
 		std::string logserv_host = {""};

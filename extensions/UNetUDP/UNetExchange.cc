@@ -2,6 +2,7 @@
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UNetExchange.h"
+#include "UNetLogSugar.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -23,19 +24,36 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 	if( cnode == NULL )
 		throw UniSetTypes::SystemError("(UNetExchange): Not found conf-node for " + myname );
 
+	unetlog = make_shared<DebugStream>();
+	unetlog->setLogName(myname);
+	conf->initLogStream(unetlog,prefix+"-log");
+
+	loga = make_shared<LogAgregator>();
+	loga->add(unetlog);
+	loga->add(ulog());
+	loga->add(dlog());
+
 	shm = make_shared<SMInterface>(shmId, ui, objId, ic);
 
 	UniXML::iterator it(cnode);
 
+	logserv = make_shared<LogServer>(loga);
+	logserv->init( prefix+"-logserver", cnode );
+	if( findArgParam("--" + prefix + "-run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
+	{
+		logserv_host = conf->getArg2Param("--" + prefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
+		logserv_port = conf->getArgPInt("--" + prefix + "-logserver-port", it.getProp("logserverPort"), getId());
+	}
+
 	// определяем фильтр
 	s_field = conf->getArgParam("--" + prefix + "-filter-field");
 	s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
-	dinfo << myname << "(init): read filter-field='" << s_field
+	unetinfo << myname << "(init): read filter-field='" << s_field
 		  << "' filter-value='" << s_fvalue << "'" << endl;
 
 	const string n_field(conf->getArgParam("--" + prefix + "-nodes-filter-field"));
 	const string n_fvalue(conf->getArgParam("--" + prefix + "-nodes-filter-value"));
-	dinfo << myname << "(init): read nodes-filter-field='" << n_field
+	unetinfo << myname << "(init): read nodes-filter-field='" << n_field
 		  << "' nodes-filter-value='" << n_fvalue << "'" << endl;
 
 	int recvTimeout = conf->getArgPInt("--" + prefix + "-recv-timeout", it.getProp("recvTimeout"), 5000);
@@ -62,7 +80,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 		nodes = conf->findNode(xml->getFirstNode(), nconfname);
 	}
 
-	dinfo << myname << "(init):  init from <" << nconfname << ">" << endl;
+	unetinfo << myname << "(init):  init from <" << nconfname << ">" << endl;
 
 	if( !nodes )
 		throw UniSetTypes::SystemError("(UNetExchange): Not found confnode <" + nconfname +">");
@@ -79,7 +97,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 	{
 		if( n_it.getIntProp("unet_ignore") )
 		{
-			dinfo << myname << "(init): unet_ignore.. for " << n_it.getProp("name") << endl;
+			unetinfo << myname << "(init): unet_ignore.. for " << n_it.getProp("name") << endl;
 			continue;
 		}
 
@@ -108,12 +126,12 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 		{
 			ostringstream err;
 			err << myname << "(init): Unknown broadcast IP for " << n_it.getProp("name");
-			dcrit << err.str() << endl;
+			unetcrit << err.str() << endl;
 			throw UniSetTypes::SystemError(err.str());
 		}
 
 		if( h2.empty() )
-			dinfo << myname << "(init): ip2 not used..." << endl;
+			unetinfo << myname << "(init): ip2 not used..." << endl;
 
 		// Если указано поле unet_port - используем его
 		// Иначе port = идентификатору узла
@@ -133,23 +151,25 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 		{
 			if( no_sender )
 			{
-				dinfo << myname << "(init): sender OFF for this node...("
+				unetinfo << myname << "(init): sender OFF for this node...("
 					  << n_it.getProp("name") << ")" << endl;
 				continue;
 			}
 
-			dinfo << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
+			unetinfo << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
 			sender = make_shared<UNetSender>(h, p, shm, s_field, s_fvalue);
 			sender->setSendPause(sendpause);
+			loga->add(sender->getLog());
 
 			try
 			{
 				// создаём "писателя" для второго канала если задан
 				if( !h2.empty() )
 				{
-					dinfo << myname << "(init): init sender2.. my node " << n_it.getProp("name") << endl;
+					unetinfo << myname << "(init): init sender2.. my node " << n_it.getProp("name") << endl;
 					sender2 = make_shared<UNetSender>(h2, p2, shm, s_field, s_fvalue);
 					sender2->setSendPause(sendpause);
+					loga->add(sender2->getLog());
 				}
 			}
 			catch(...)
@@ -157,17 +177,17 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 				// т.е. это "резервный канал", то игнорируем ошибку его создания
 				// при запуске "интерфейс" может быть и не доступен...
 				sender2 = 0;
-				dcrit << myname << "(ignore): DON`T CREATE 'UNetSender' for " << h2 << ":" << p2 << endl;
+				unetcrit << myname << "(ignore): DON`T CREATE 'UNetSender' for " << h2 << ":" << p2 << endl;
 			}
 
 			continue;
 		}
 
-		dinfo << myname << "(init): add UNetReceiver for " << h << ":" << p << endl;
+		unetinfo << myname << "(init): add UNetReceiver for " << h << ":" << p << endl;
 
 		if( checkExistUNetHost(h, p) )
 		{
-			dinfo << myname << "(init): " << h << ":" << p << " already added! Ignore.." << endl;
+			unetinfo << myname << "(init): " << h << ":" << p << " already added! Ignore.." << endl;
 			continue;
 		}
 
@@ -184,7 +204,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 			{
 				ostringstream err;
 				err << myname << ": Unknown RespondID.. Not found id for '" << s_resp_id << "'" << endl;
-				dcrit << myname << "(init): " << err.str() << endl;
+				unetcrit << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
 		}
@@ -200,7 +220,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 			{
 				ostringstream err;
 				err << myname << ": Unknown RespondID(2).. Not found id for '" << s_resp2_id << "'" << endl;
-				dcrit << myname << "(init): " << err.str() << endl;
+				unetcrit << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
 		}
@@ -216,7 +236,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 			{
 				ostringstream err;
 				err << myname << ": Unknown LostPacketsID.. Not found id for '" << s_lp_id << "'" << endl;
-				dcrit << myname << "(init): " << err.str() << endl;
+				unetcrit << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
 		}
@@ -232,7 +252,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 			{
 				ostringstream err;
 				err << myname << ": Unknown LostPacketsID(2).. Not found id for '" << s_lp2_id << "'" << endl;
-				dcrit << myname << "(init): " << err.str() << endl;
+				unetcrit << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
 		}
@@ -248,7 +268,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 			{
 				ostringstream err;
 				err << myname << ": Unknown LostPacketsID(comm).. Not found id for '" << s_lp_comm_id << "'" << endl;
-				dcrit << myname << "(init): " << err.str() << endl;
+				unetcrit << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
 		}
@@ -264,7 +284,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 			{
 				ostringstream err;
 				err << myname << ": Unknown RespondID(comm).. Not found id for '" << s_resp_comm_id << "'" << endl;
-				dcrit << myname << "(init): " << err.str() << endl;
+				unetcrit << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
 		}
@@ -280,14 +300,16 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 			{
 				ostringstream err;
 				err << myname << ": Unknown NumChannelID.. Not found id for '" << s_numchannel_id << "'" << endl;
-				dcrit << myname << "(init): " << err.str() << endl;
+				unetcrit << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
 		}
 
-		dinfo << myname << "(init): (node='" << n << "') add receiver "
+		unetinfo << myname << "(init): (node='" << n << "') add receiver "
 			  << h2 << ":" << p2 << endl;
 		auto r = make_shared<UNetReceiver>(h, p, shm);
+
+		loga->add(r->getLog());
 
 		// на всякий принудительно разблокируем,
 		// чтобы не зависеть от значения по умолчанию
@@ -310,10 +332,12 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 		{
 			if( !h2.empty() ) // создаём читателя впо второму каналу
 			{
-				dinfo << myname << "(init): (node='" << n << "') add reserv receiver "
+				unetinfo << myname << "(init): (node='" << n << "') add reserv receiver "
 					  << h2 << ":" << p2 << endl;
 
 				r2 = make_shared<UNetReceiver>(h2, p2, shm);
+
+				loga->add(r2->getLog());
 
 				// т.к. это резервный канал (по началу блокируем его)
 				r2->setLockUpdate(true);
@@ -334,7 +358,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 			// т.е. это "резервный канал", то игнорируем ошибку его создания
 			// при запуске "интерфейс" может быть и не доступен...
 			r2 = 0;
-			dcrit << myname << "(ignore): DON`T CREATE 'UNetReceiver' for " << h2 << ":" << p2 << endl;
+			unetcrit << myname << "(ignore): DON`T CREATE 'UNetReceiver' for " << h2 << ":" << p2 << endl;
 		}
 
 		ReceiverInfo ri(r, r2);
@@ -356,7 +380,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 		{
 			ostringstream err;
 			err << myname << ": не найден идентификатор для датчика 'HeartBeat' " << heart;
-			dcrit << myname << "(init): " << err.str() << endl;
+			unetcrit << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 
@@ -378,12 +402,12 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 		{
 			ostringstream err;
 			err << myname << "(init): test_id unknown. 'TestMode_S' not found...";
-			dcrit << myname << "(init): " << err.str() << endl;
+			unetcrit << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 	}
 
-	dinfo << myname << "(init): test_id=" << test_id << endl;
+	unetinfo << myname << "(init): test_id=" << test_id << endl;
 
 	activateTimeout    = conf->getArgPInt("--" + prefix + "-activate-timeout", 20000);
 }
@@ -431,7 +455,7 @@ void UNetExchange::waitSMReady()
 	{
 		ostringstream err;
 		err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
-		dcrit << err.str() << endl;
+		unetcrit << err.str() << endl;
 		throw SystemError(err.str());
 	}
 }
@@ -459,16 +483,16 @@ void UNetExchange::step()
 		}
 		catch( const Exception& ex )
 		{
-			dcrit << myname << "(step): (hb) " << ex << std::endl;
+			unetcrit << myname << "(step): (hb) " << ex << std::endl;
 		}
 	}
 
-	for( auto& it : recvlist )
-		it.step(shm, myname);
+	for( auto&& it : recvlist )
+		it.step(shm, myname, unetlog);
 }
 
 // -----------------------------------------------------------------------------
-void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface> shm, const std::string& myname )
+void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface> shm, const std::string& myname, std::shared_ptr<DebugStream>& unetlog )
 {
 	try
 	{
@@ -484,7 +508,7 @@ void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface> shm, c
 	}
 	catch( const Exception& ex )
 	{
-		dcrit << myname << "(ReceiverInfo::step): (respond): " << ex << std::endl;
+		unetcrit << myname << "(ReceiverInfo::step): (respond): " << ex << std::endl;
 	}
 
 	try
@@ -504,7 +528,7 @@ void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface> shm, c
 	}
 	catch( const Exception& ex )
 	{
-		dcrit << myname << "(ReceiverInfo::step): (lostpackets): " << ex << std::endl;
+		unetcrit << myname << "(ReceiverInfo::step): (lostpackets): " << ex << std::endl;
 	}
 
 	try
@@ -524,7 +548,7 @@ void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface> shm, c
 	}
 	catch( const Exception& ex )
 	{
-		dcrit << myname << "(ReceiverInfo::step): (channelnum): " << ex << std::endl;
+		unetcrit << myname << "(ReceiverInfo::step): (channelnum): " << ex << std::endl;
 	}
 }
 // -----------------------------------------------------------------------------
@@ -534,6 +558,12 @@ void UNetExchange::sysCommand( const UniSetTypes::SystemMessage* sm )
 	{
 		case SystemMessage::StartUp:
 		{
+			if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
+			{
+				unetinfo << myname << "(init): run log server " << logserv_host << ":" << logserv_port << endl;
+				logserv->run(logserv_host, logserv_port, true);
+			}
+
 			waitSMReady();
 
 			// подождать пока пройдёт инициализация датчиков
@@ -551,7 +581,7 @@ void UNetExchange::sysCommand( const UniSetTypes::SystemMessage* sm )
 			}
 
 			if( !activated )
-				dcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
+				unetcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 
 			{
 				UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
@@ -594,23 +624,13 @@ void UNetExchange::sysCommand( const UniSetTypes::SystemMessage* sm )
 
 		case SystemMessage::LogRotate:
 		{
-			// переоткрываем логи
-			ulogany << myname << "(sysCommand): logRotate" << std::endl;
-			string fname(ulog()->getLogFile());
+			unetlogany << myname << "(sysCommand): logRotate" << std::endl;
+			string fname = unetlog->getLogFile();
 
 			if( !fname.empty() )
 			{
-				ulog()->logFile(fname, true);
-				ulogany << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << std::endl;
-			}
-
-			dlogany << myname << "(sysCommand): logRotate" << std::endl;
-			fname = dlog()->getLogFile();
-
-			if( !fname.empty() )
-			{
-				dlog()->logFile(fname, true);
-				dlogany << myname << "(sysCommand): ***************** dlog LOG ROTATE *****************" << std::endl;
+				unetlog->logFile(fname, true);
+				unetlogany << myname << "(sysCommand): ***************** dlog LOG ROTATE *****************" << std::endl;
 			}
 		}
 		break;
@@ -629,7 +649,7 @@ void UNetExchange::askSensors( UniversalIO::UIOCommand cmd )
 			<< "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение "
 			<< activateTimeout << " мсек";
 
-		dcrit << err.str() << endl;
+		unetcrit << err.str() << endl;
 		kill(SIGTERM, getpid());   // прерываем (перезапускаем) процесс...
 		throw SystemError(err.str());
 	}
@@ -668,7 +688,7 @@ bool UNetExchange::activateObject()
 // ------------------------------------------------------------------------------------------
 void UNetExchange::sigterm( int signo )
 {
-	dinfo << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
+	unetinfo << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
 	activated = false;
 
 	for( auto& it : recvlist )
@@ -736,6 +756,19 @@ void UNetExchange::help_print( int argc, const char* argv[] )
 	cout << "--prefix-sm-ready-timeout msec  - Время ожидание я готовности SM к работе. По умолчанию 15000" << endl;
 	cout << "--prefix-filter-field name      - Название фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
 	cout << "--prefix-filter-value name      - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
+	cout << endl;
+	cout << " Logs: " << endl;
+	cout << "--prefix-log-...            - log control" << endl;
+	cout << "             add-levels ..." << endl;
+	cout << "             del-levels ..." << endl;
+	cout << "             set-levels ..." << endl;
+	cout << "             logfile filaname" << endl;
+	cout << "             no-debug " << endl;
+	cout << " LogServer: " << endl;
+	cout << "--prefix-run-logserver       - run logserver. Default: localhost:id" << endl;
+	cout << "--prefix-logserver-host ip   - listen ip. Default: localhost" << endl;
+	cout << "--prefix-logserver-port num  - listen port. Default: ID" << endl;
+	cout << LogServer::help_print("prefix-logserver") << endl;
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<UNetExchange> UNetExchange::init_unetexchange( int argc, const char* const argv[], UniSetTypes::ObjectId icID,

@@ -13,7 +13,6 @@
 #include "WDTInterface.h"
 #include "LogServer.h"
 #include "DebugStream.h"
-#include "SMLogSugar.h"
 #include "LogAgregator.h"
 // -----------------------------------------------------------------------------
 

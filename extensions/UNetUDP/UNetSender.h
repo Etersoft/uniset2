@@ -12,6 +12,7 @@
 #include "SharedMemory.h"
 #include "ThreadCreator.h"
 #include "UDPPacket.h"
+#include "DebugStream.h"
 // -----------------------------------------------------------------------------
 /*
  *    ОПТИМИЗАЦИЯ N1: Для оптимизации обработки посылаемых пакетов (на стороне UNetReceiver) следана следующая логика:
@@ -69,12 +70,15 @@ class UNetSender
 		/*! инициализация  итераторов */
 		void initIterators();
 
+		inline std::shared_ptr<DebugStream> getLog(){ return unetlog; }
+
 	protected:
 
 		std::string s_field;
 		std::string s_fvalue;
 
 		const std::shared_ptr<SMInterface> shm;
+		std::shared_ptr<DebugStream> unetlog;
 
 		bool initItem( UniXML::iterator& it );
 		bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );

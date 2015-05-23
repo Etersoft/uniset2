@@ -835,7 +835,7 @@ namespace UniSetTypes
 
 		if( dnode == NULL )
 			deb->any() << "(Configuration)(initLogStream):  WARNING! Not found conf. section for log '" << _debname  << "'" << endl;
-		else
+		else if( deb->getLogName().empty() )
 		{
 			if( !getProp(dnode, "name").empty() )
 			{
@@ -855,6 +855,8 @@ namespace UniSetTypes
 			}
 		}
 
+		string debug_file("");
+
 		// смотрим настройки файла
 		if( dnode )
 		{
@@ -865,10 +867,7 @@ namespace UniSetTypes
 			else
 				deb->addLevel(Debug::NONE);
 
-			string debug_file(getProp(dnode, "file"));
-
-			if( !debug_file.empty() )
-				deb->logFile(debug_file);
+			debug_file = getProp(dnode, "file");
 		}
 
 		// теперь смотрим командную строку
@@ -881,7 +880,7 @@ namespace UniSetTypes
 		{
 			if( logfile == _argv[i] )        // "--debug-logfile"
 			{
-				deb->logFile(_argv[i + 1]);
+				debug_file = string(_argv[i + 1]);
 			}
 			else if( add_level == _argv[i] )    // "--debug-add-levels"
 			{
@@ -892,6 +891,9 @@ namespace UniSetTypes
 				deb->delLevel(Debug::value(_argv[i + 1]));
 			}
 		}
+
+		if( !debug_file.empty() )
+			deb->logFile(debug_file);
 
 		return dnode;
 	}

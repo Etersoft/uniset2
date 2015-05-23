@@ -3,6 +3,7 @@
 #include <sstream>
 #include "Extensions.h"
 #include "RTUExchange.h"
+#include "modbus/MBLogSugar.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -43,7 +44,7 @@ RTUExchange::RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shm
 			prop_prefix = "";
 	}
 
-	dinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
+	mbinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
 	UniXML::iterator it(cnode);
 
@@ -139,7 +140,7 @@ std::shared_ptr<ModbusClient> RTUExchange::initMB( bool reopen )
 		mbrtu->setSleepPause(sleepPause_usec);
 		mbrtu->setAfterSendPause(aftersend_pause);
 
-		dinfo << myname << "(init): dev=" << devname << " speed=" << ComPort::getSpeed( mbrtu->getSpeed() ) << endl;
+		mbinfo << myname << "(init): dev=" << devname << " speed=" << ComPort::getSpeed( mbrtu->getSpeed() ) << endl;
 	}
 	catch( const Exception& ex )
 	{
@@ -147,7 +148,7 @@ std::shared_ptr<ModbusClient> RTUExchange::initMB( bool reopen )
 		//    delete mbrtu;
 		mbrtu = 0;
 
-		dwarn << myname << "(init): " << ex << endl;
+		mbwarn << myname << "(init): " << ex << endl;
 	}
 	catch(...)
 	{
@@ -155,7 +156,7 @@ std::shared_ptr<ModbusClient> RTUExchange::initMB( bool reopen )
 		//            delete mbrtu;
 		mbrtu = 0;
 
-		dinfo << myname << "(init): catch...." << endl;
+		mbinfo << myname << "(init): catch...." << endl;
 	}
 
 	mb = mbrtu;
@@ -284,7 +285,7 @@ bool RTUExchange::poll()
 	updateSM();
 
 	// check thresholds
-	for( auto& t : thrlist )
+	for( auto&& t : thrlist )
 	{
 		if( !checkProcActive() )
 			return false;
@@ -297,7 +298,7 @@ bool RTUExchange::poll()
 
 	if( allNotRespond && ptReopen.checkTime() )
 	{
-		dwarn << myname << ": REOPEN timeout..(" << ptReopen.getInterval() << ")" << endl;
+		mbwarn << myname << ": REOPEN timeout..(" << ptReopen.getInterval() << ")" << endl;
 
 		mb = initMB(true);
 		ptReopen.reset();
@@ -343,7 +344,7 @@ bool RTUExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
 
 	if( d == m.end() )
 	{
-		dwarn << myname << "(initDeviceInfo): not found device for addr=" << ModbusRTU::addr2str(a) << endl;
+		mbwarn << myname << "(initDeviceInfo): not found device for addr=" << ModbusRTU::addr2str(a) << endl;
 		return false;
 	}
 
@@ -356,7 +357,7 @@ bool RTUExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
 		if( d->second->speed == ComPort::ComSpeed0 )
 		{
 			d->second->speed = defSpeed;
-			dcrit << myname << "(initDeviceInfo): Unknown speed=" << s <<
+			mbcrit << myname << "(initDeviceInfo): Unknown speed=" << s <<
 				  " for addr=" << ModbusRTU::addr2str(a) << endl;
 			return false;
 		}

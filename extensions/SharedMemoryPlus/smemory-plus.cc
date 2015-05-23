@@ -47,12 +47,6 @@ int main( int argc, const char** argv )
 	{
 		auto conf = uniset_init(argc, argv);
 
-		string logfilename = conf->getArgParam("--logfile", "smemory-plus.log");
-		string logname( conf->getLogDir() + logfilename );
-		UniSetExtensions::dlog()->logFile( logname );
-		ulog()->logFile( logname );
-		dlog()->logFile( logname );
-
 		auto act = UniSetActivator::Instance();
 		//act->signal_terminate_event().connect( &activator_terminate );
 		// ------------ SharedMemory ----------------
@@ -243,18 +237,6 @@ int main( int argc, const char** argv )
 			i->start();
 
 #endif
-
-		auto la = make_shared<LogAgregator>();
-		la->add(ulog());
-		la->add(dlog());
-
-		auto logserver = run_logserver("smplus", la);
-
-		if( logserver == 0 )
-		{
-			cerr << "(smemory-plus): run logserver for 'smplus' FAILED" << endl;
-			return 1;
-		}
 
 		act->run(false);
 
