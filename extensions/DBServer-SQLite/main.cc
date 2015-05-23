@@ -17,57 +17,28 @@ int main(int argc, char** argv)
 
 	try
 	{
-		if( argc > 1 && !strcmp(argv[1], "--help") )
+		if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
 		{
-			short_usage();
+			cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
+			DBServer_SQLite::help_print(argc,argv);
 			return 0;
 		}
 
 		auto conf = uniset_init(argc, argv, "configure.xml");
 
-		ObjectId ID = conf->getDBServer();
-
-		// определяем ID объекта
-		string name = conf->getArgParam("--name");
-
-		if( !name.empty())
-		{
-			if( ID != UniSetTypes::DefaultObjectId )
-			{
-				uwarn << "(DBServer::main): переопределяем ID заданнй в "
-					  << conf->getConfFileName() << endl;
-			}
-
-			ID = conf->oind->getIdByName(conf->getServicesSection() + "/" + name);
-
-			if( ID == UniSetTypes::DefaultObjectId )
-			{
-				cerr << "(DBServer::main): идентификатор '" << name
-					 << "' не найден в конф. файле!"
-					 << " в секции " << conf->getServicesSection() << endl;
-				return 1;
-			}
-		}
-		else if( ID == UniSetTypes::DefaultObjectId )
-		{
-			cerr << "(DBServer::main): Не удалось определить ИДЕНТИФИКАТОР сервера" << endl;
-			short_usage();
-			return 1;
-		}
-
-		DBServer_SQLite dbs(ID);
+		auto db = DBServer_SQLite::init_dbserver(argc,argv);
 
 		auto act = UniSetActivator::Instance();
-		act->add(dbs.get_ptr());
+		act->add(db);
 		act->run(false);
 	}
 	catch( const std::exception& ex )
 	{
-		cerr << "(DBServer::main): " << ex.what() << endl;
+		cerr << "(DBServer_SQLite::main): " << ex.what() << endl;
 	}
 	catch(...)
 	{
-		cerr << "(DBServer::main): catch ..." << endl;
+		cerr << "(DBServer_SQLite::main): catch ..." << endl;
 	}
 
 	return 0;

@@ -32,16 +32,13 @@
 #include "Configuration.h"
 #include "Debug.h"
 #include "UniXML.h"
+#include "DBLogSugar.h"
 // --------------------------------------------------------------------------
-#define dblog if( ulog()->debugging(DBLogInfoLevel) ) (*(ulog().get()))[DBLogInfoLevel]
 using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
-const Debug::type DBLEVEL = Debug::LEVEL1;
-// --------------------------------------------------------------------------
-DBServer_SQLite::DBServer_SQLite( ObjectId id ):
-	DBServer(id),
-	db(new SQLiteInterface()),
+DBServer_SQLite::DBServer_SQLite( ObjectId id, const std::string& prefix ):
+	DBServer(id,prefix),
 	PingTime(300000),
 	ReconnectTime(180000),
 	connect_ok(false),
@@ -55,35 +52,19 @@ DBServer_SQLite::DBServer_SQLite( ObjectId id ):
 		msg << "(DBServer_SQLite): init failed! Unknown ID!" << endl;
 		throw Exception(msg.str());
 	}
+
+	db = make_shared<SQLiteInterface>();
 }
 
-DBServer_SQLite::DBServer_SQLite():
-	DBServer(uniset_conf()->getDBServer()),
-	db(new SQLiteInterface()),
-	PingTime(300000),
-	ReconnectTime(180000),
-	connect_ok(false),
-	activate(true),
-	qbufSize(200),
-	lastRemove(false)
+DBServer_SQLite::DBServer_SQLite( const std::string& prefix ):
+	DBServer_SQLite(uniset_conf()->getDBServer(),prefix)
 {
-	//    init();
-	if( getId() == DefaultObjectId )
-	{
-		ostringstream msg;
-		msg << "(DBServer_SQLite): init failed! Unknown ID!" << endl;
-		throw Exception(msg.str());
-	}
 }
 //--------------------------------------------------------------------------------------------
 DBServer_SQLite::~DBServer_SQLite()
 {
-	if( db != NULL )
-	{
+	if( db )
 		db->close();
-		delete db;
-		db = 0;
-	}
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_SQLite::sysCommand( const UniSetTypes::SystemMessage* sm )
@@ -127,26 +108,26 @@ void DBServer_SQLite::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 			 << " AND time='" << timeToString(cem->time, ":") << " '"
 			 << " AND time_usec='" << cem->time_usec << " '";
 
-		dblog << myname << "(update_confirm): " << data.str() << endl;
+		dbinfo <<  myname << "(update_confirm): " << data.str() << endl;
 
 		if( !writeToBase(data.str()) )
 		{
-			ucrit << myname << "(update_confirm):  db error: " << db->error() << endl;
+			dbcrit << myname << "(update_confirm):  db error: " << db->error() << endl;
 		}
 	}
 	catch( const Exception& ex )
 	{
-		ucrit << myname << "(update_confirm): " << ex << endl;
+		dbcrit << myname << "(update_confirm): " << ex << endl;
 	}
 	catch( const std::exception& ex )
 	{
-		ucrit << myname << "(update_confirm):  catch: " << ex.what() << endl;
+		dbcrit << myname << "(update_confirm):  catch: " << ex.what() << endl;
 	}
 }
 //--------------------------------------------------------------------------------------------
 bool DBServer_SQLite::writeToBase( const string& query )
 {
-	dblog << myname << "(writeToBase): " << query << endl;
+	dbinfo <<  myname << "(writeToBase): " << query << endl;
 
 	//    cout << "DBServer_SQLite: " << query << endl;
 	if( !db || !connect_ok )
@@ -165,7 +146,7 @@ bool DBServer_SQLite::writeToBase( const string& query )
 
 			qbuf.pop();
 
-			ucrit << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
+			dbcrit << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
 				  << ") overflow! lost query: " << qlost << endl;
 		}
 
@@ -191,7 +172,7 @@ void DBServer_SQLite::flushBuffer()
 	{
 		if( !db->insert(qbuf.front()) )
 		{
-			ucrit << myname << "(writeToBase): error: " << db->error() <<
+			dbcrit << myname << "(writeToBase): error: " << db->error() <<
 				  " lost query: " << qbuf.front() << endl;
 		}
 
@@ -224,27 +205,27 @@ void DBServer_SQLite::sensorInfo( const UniSetTypes::SensorMessage* si )
 			 << val << "','"                //  value
 			 << si->node << "')";                //  node
 
-		dblog << myname << "(insert_main_history): " << data.str() << endl;
+		dbinfo <<  myname << "(insert_main_history): " << data.str() << endl;
 
 		if( !writeToBase(data.str()) )
 		{
-			ucrit << myname <<  "(insert) sensor msg error: " << db->error() << endl;
+			dbcrit << myname <<  "(insert) sensor msg error: " << db->error() << endl;
 		}
 	}
 	catch( const Exception& ex )
 	{
-		ucrit << myname << "(insert_main_history): " << ex << endl;
+		dbcrit << myname << "(insert_main_history): " << ex << endl;
 	}
 	catch( const std::exception& ex )
 	{
-		ucrit << myname << "(insert_main_history): catch:" << ex.what() << endl;
+		dbcrit << myname << "(insert_main_history): catch:" << ex.what() << endl;
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_SQLite::init_dbserver()
+void DBServer_SQLite::initDBServer()
 {
-	DBServer::init_dbserver();
-	dblog << myname << "(init): ..." << endl;
+	DBServer::initDBServer();
+	dbinfo <<  myname << "(init): ..." << endl;
 
 	if( connect_ok )
 	{
@@ -271,7 +252,7 @@ void DBServer_SQLite::init_dbserver()
 
 	UniXML::iterator it(node);
 
-	dblog << myname << "(init): init connection.." << endl;
+	dbinfo <<  myname << "(init): init connection.." << endl;
 	string dbfile(conf->getProp(node, "dbfile"));
 
 	tblMap[UniSetTypes::Message::SensorInfo] = "main_history";
@@ -288,14 +269,14 @@ void DBServer_SQLite::init_dbserver()
 	else
 		lastRemove = false;
 
-	dblog << myname << "(init): connect dbfile=" << dbfile
+	dbinfo <<  myname << "(init): connect dbfile=" << dbfile
 		  << " pingTime=" << PingTime
 		  << " ReconnectTime=" << ReconnectTime << endl;
 
 	if( !db->connect(dbfile, false) )
 	{
 		//        ostringstream err;
-		ucrit << myname
+		dbcrit << myname
 			  << "(init): DB connection error: "
 			  << db->error() << endl;
 		//        throw Exception( string(myname+"(init): не смогли создать соединение с БД "+db->error()) );
@@ -303,7 +284,7 @@ void DBServer_SQLite::init_dbserver()
 	}
 	else
 	{
-		dblog << myname << "(init): connect [OK]" << endl;
+		dbinfo <<  myname << "(init): connect [OK]" << endl;
 		connect_ok = true;
 		askTimer(DBServer_SQLite::ReconnectTimer, 0);
 		askTimer(DBServer_SQLite::PingTimer, PingTime);
@@ -321,7 +302,7 @@ void DBServer_SQLite::createTables( SQLiteInterface* db )
 
 	if(!it)
 	{
-		ucrit << myname << ": section <Tables> not found.." << endl;
+		dbcrit << myname << ": section <Tables> not found.." << endl;
 		throw Exception();
 	}
 
@@ -329,25 +310,26 @@ void DBServer_SQLite::createTables( SQLiteInterface* db )
 	{
 		if( it.getName() != "comment" )
 		{
-			dblog << myname  << "(createTables): create " << it.getName() << endl;
+			dbinfo <<  myname  << "(createTables): create " << it.getName() << endl;
 			ostringstream query;
 			query << "CREATE TABLE " << conf->getProp(it, "name") << "(" << conf->getProp(it, "create") << ")";
 
 			if( !db->query(query.str()) )
-				ucrit << myname << "(createTables): error: \t\t" << db->error() << endl;
+				dbcrit << myname << "(createTables): error: \t\t" << db->error() << endl;
 		}
 	}
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_SQLite::timerInfo( const UniSetTypes::TimerMessage* tm )
 {
+	DBServer::timerInfo(tm);
 	switch( tm->id )
 	{
 		case DBServer_SQLite::PingTimer:
 		{
 			if( !db->ping() )
 			{
-				uwarn << myname << "(timerInfo): DB lost connection.." << endl;
+				dbwarn << myname << "(timerInfo): DB lost connection.." << endl;
 				connect_ok = false;
 				askTimer(DBServer_SQLite::PingTimer, 0);
 				askTimer(DBServer_SQLite::ReconnectTimer, ReconnectTime);
@@ -355,14 +337,14 @@ void DBServer_SQLite::timerInfo( const UniSetTypes::TimerMessage* tm )
 			else
 			{
 				connect_ok = true;
-				dblog << myname << "(timerInfo): DB ping ok" << endl;
+				dbinfo <<  myname << "(timerInfo): DB ping ok" << endl;
 			}
 		}
 		break;
 
 		case DBServer_SQLite::ReconnectTimer:
 		{
-			dblog << myname << "(timerInfo): reconnect timer" << endl;
+			dbinfo <<  myname << "(timerInfo): reconnect timer" << endl;
 
 			if( db->isConnection() )
 			{
@@ -374,16 +356,46 @@ void DBServer_SQLite::timerInfo( const UniSetTypes::TimerMessage* tm )
 				}
 
 				connect_ok = false;
-				uwarn << myname << "(timerInfo): DB no connection.." << endl;
+				dbwarn << myname << "(timerInfo): DB no connection.." << endl;
 			}
 			else
-				init_dbserver();
+				initDBServer();
 		}
 		break;
 
 		default:
-			uwarn << myname << "(timerInfo): Unknown TimerID=" << tm->id << endl;
+			dbwarn << myname << "(timerInfo): Unknown TimerID=" << tm->id << endl;
 			break;
 	}
 }
 //--------------------------------------------------------------------------------------------
+std::shared_ptr<DBServer_SQLite> DBServer_SQLite::init_dbserver( int argc, const char* const* argv, const std::string& prefix )
+{
+	auto conf = uniset_conf();
+
+	ObjectId ID = conf->getDBServer();
+
+	string name = conf->getArgParam("--" + prefix + "-name", "");
+
+	if( !name.empty() )
+	{
+		ObjectId ID = conf->getObjectID(name);
+
+		if( ID == UniSetTypes::DefaultObjectId )
+		{
+			cerr << "(DBServer_SQLite): Unknown ObjectID for '" << name << endl;
+			return 0;
+		}
+	}
+
+	uinfo << "(DBServer_SQLite): name = " << name << "(" << ID << ")" << endl;
+	return make_shared<DBServer_SQLite>(ID, prefix);
+}
+// -----------------------------------------------------------------------------
+void DBServer_SQLite::help_print( int argc, const char* const* argv )
+{
+	cout << "Default: prefix='sqlite'" << endl;
+	cout << "--prefix-name objectID     - ObjectID. Default: 'conf->getDBServer()'" << endl;
+	cout << DBServer::help_print() << endl;
+}
+// -----------------------------------------------------------------------------

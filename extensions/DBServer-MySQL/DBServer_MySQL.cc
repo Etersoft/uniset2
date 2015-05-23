@@ -32,15 +32,13 @@
 #include "Configuration.h"
 #include "Debug.h"
 #include "UniXML.h"
+#include "DBLogSugar.h"
 // --------------------------------------------------------------------------
 using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
-#define dblog if( ulog()->debugging(DBLogInfoLevel) ) ulog()->debug(DBLogInfoLevel)
-// --------------------------------------------------------------------------
-DBServer_MySQL::DBServer_MySQL(ObjectId id):
-	DBServer(id),
-	db(new MySQLInterface()),
+DBServer_MySQL::DBServer_MySQL(ObjectId id, const std::string& prefix ):
+	DBServer(id,prefix),
 	PingTime(300000),
 	ReconnectTime(180000),
 	connect_ok(false),
@@ -54,42 +52,27 @@ DBServer_MySQL::DBServer_MySQL(ObjectId id):
 		msg << "(DBServer_MySQL): init failed! Unknown ID!" << endl;
 		throw Exception(msg.str());
 	}
+
+	db = make_shared<MySQLInterface>();
 
 	mqbuf.setName(myname  + "_qbufMutex");
 }
 
-DBServer_MySQL::DBServer_MySQL():
-	DBServer(uniset_conf()->getDBServer()),
-	db(new MySQLInterface()),
-	PingTime(300000),
-	ReconnectTime(180000),
-	connect_ok(false),
-	activate(true),
-	qbufSize(200),
-	lastRemove(false)
+DBServer_MySQL::DBServer_MySQL( const std::string& prefix ):
+	DBServer_MySQL(uniset_conf()->getDBServer(),prefix)
 {
-	//    init();
-	if( getId() == DefaultObjectId )
-	{
-		ostringstream msg;
-		msg << "(DBServer_MySQL): init failed! Unknown ID!" << endl;
-		throw Exception(msg.str());
-	}
-
-	mqbuf.setName(myname  + "_qbufMutex");
 }
 //--------------------------------------------------------------------------------------------
 DBServer_MySQL::~DBServer_MySQL()
 {
-	if( db != NULL )
-	{
+	if( db )
 		db->close();
-		delete db;
-	}
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::sysCommand( const UniSetTypes::SystemMessage* sm )
 {
+	DBServer::sysCommand(sm);
+
 	switch( sm->command )
 	{
 		case SystemMessage::StartUp:
@@ -128,26 +111,26 @@ void DBServer_MySQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 			 << " AND time='" << timeToString(cem->time, ":") << " '"
 			 << " AND time_usec='" << cem->time_usec << " '";
 
-		dblog << myname << "(update_confirm): " << data.str() << endl;
+		dbinfo << myname << "(update_confirm): " << data.str() << endl;
 
 		if( !writeToBase(data.str()) )
 		{
-			ucrit << myname << "(update_confirm):  db error: " << db->error() << endl;
+			dbcrit << myname << "(update_confirm):  db error: " << db->error() << endl;
 		}
 	}
 	catch( const Exception& ex )
 	{
-		ucrit << myname << "(update_confirm): " << ex << endl;
+		dbcrit << myname << "(update_confirm): " << ex << endl;
 	}
 	catch( const std::exception& ex )
 	{
-		ucrit << myname << "(update_confirm): exception: " << ex.what() << endl;
+		dbcrit << myname << "(update_confirm): exception: " << ex.what() << endl;
 	}
 }
 //--------------------------------------------------------------------------------------------
 bool DBServer_MySQL::writeToBase( const string& query )
 {
-	dblog << myname << "(writeToBase): " << query << endl;
+	dbinfo << myname << "(writeToBase): " << query << endl;
 
 	//    cout << "DBServer_MySQL: " << query << endl;
 	if( !db || !connect_ok )
@@ -166,7 +149,7 @@ bool DBServer_MySQL::writeToBase( const string& query )
 
 			qbuf.pop();
 
-			ucrit << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
+			dbcrit << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
 				  << ") overflow! lost query: " << qlost << endl;
 		}
 
@@ -207,7 +190,7 @@ void DBServer_MySQL::flushBuffer()
 		string err(db->error());
 
 		if( !err.empty() )
-			ucrit << myname << "(writeToBase): error: " << err <<
+			dbcrit << myname << "(writeToBase): error: " << err <<
 				  " lost query: " << qbuf.front() << endl;
 
 		qbuf.pop();
@@ -239,27 +222,27 @@ void DBServer_MySQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 			 << val << "','"                //  value
 			 << si->node << "')";                //  node
 
-		dblog << myname << "(insert_main_history): " << data.str() << endl;
+		dbinfo << myname << "(insert_main_history): " << data.str() << endl;
 
 		if( !writeToBase(data.str()) )
 		{
-			ucrit << myname <<  "(insert) sensor msg error: " << db->error() << endl;
+			dbcrit << myname << "(insert) sensor msg error: " << db->error() << endl;
 		}
 	}
 	catch( const Exception& ex )
 	{
-		ucrit << myname << "(insert_main_history): " << ex << endl;
+		dbcrit << myname << "(insert_main_history): " << ex << endl;
 	}
 	catch( const std::exception& ex )
 	{
-		ucrit << myname << "(insert_main_history): catch: " << ex.what() << endl;
+		dbcrit << myname << "(insert_main_history): catch: " << ex.what() << endl;
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::init_dbserver()
+void DBServer_MySQL::initDBServer()
 {
-	DBServer::init_dbserver();
-	dblog << myname << "(init): ..." << endl;
+	DBServer::initDBServer();
+	dbinfo << myname << "(init): ..." << endl;
 
 	if( connect_ok )
 	{
@@ -286,7 +269,7 @@ void DBServer_MySQL::init_dbserver()
 
 	UniXML::iterator it(node);
 
-	dblog << myname << "(init): init connection.." << endl;
+	dbinfo << myname << "(init): init connection.." << endl;
 	string dbname(conf->getProp(node, "dbname"));
 	string dbnode(conf->getProp(node, "dbnode"));
 	string user(conf->getProp(node, "dbuser"));
@@ -309,7 +292,7 @@ void DBServer_MySQL::init_dbserver()
 	if( dbnode.empty() )
 		dbnode = "localhost";
 
-	dblog << myname << "(init): connect dbnode=" << dbnode
+	dbinfo << myname << "(init): connect dbnode=" << dbnode
 		  << "\tdbname=" << dbname
 		  << " pingTime=" << PingTime
 		  << " ReconnectTime=" << ReconnectTime << endl;
@@ -317,7 +300,7 @@ void DBServer_MySQL::init_dbserver()
 	if( !db->connect(dbnode, user, password, dbname) )
 	{
 		//        ostringstream err;
-		ucrit << myname
+		dbcrit << myname
 			  << "(init): DB connection error: "
 			  << db->error() << endl;
 		//        throw Exception( string(myname+"(init): не смогли создать соединение с БД "+db->error()) );
@@ -325,7 +308,7 @@ void DBServer_MySQL::init_dbserver()
 	}
 	else
 	{
-		dblog << myname << "(init): connect [OK]" << endl;
+		dbinfo << myname << "(init): connect [OK]" << endl;
 		connect_ok = true;
 		askTimer(DBServer_MySQL::ReconnectTimer, 0);
 		askTimer(DBServer_MySQL::PingTimer, PingTime);
@@ -344,7 +327,7 @@ void DBServer_MySQL::createTables( MySQLInterface* db )
 
 	if(!it)
 	{
-		ucrit << myname << ": section <Tables> not found.." << endl;
+		dbcrit << myname << ": section <Tables> not found.." << endl;
 		throw Exception();
 	}
 
@@ -352,25 +335,27 @@ void DBServer_MySQL::createTables( MySQLInterface* db )
 	{
 		if( it.getName() != "comment" )
 		{
-			dblog << myname  << "(createTables): create " << it.getName() << endl;
+			dbinfo << myname  << "(createTables): create " << it.getName() << endl;
 			ostringstream query;
 			query << "CREATE TABLE " << conf->getProp(it, "name") << "(" << conf->getProp(it, "create") << ")";
 
 			if( !db->query(query.str()) )
-				ucrit << myname << "(createTables): error: \t\t" << db->error() << endl;
+				dbcrit << myname << "(createTables): error: \t\t" << db->error() << endl;
 		}
 	}
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::timerInfo( const UniSetTypes::TimerMessage* tm )
 {
+	DBServer::timerInfo(tm);
+
 	switch( tm->id )
 	{
 		case DBServer_MySQL::PingTimer:
 		{
 			if( !db->ping() )
 			{
-				uwarn << myname << "(timerInfo): DB lost connection.." << endl;
+				dbwarn << myname << "(timerInfo): DB lost connection.." << endl;
 				connect_ok = false;
 				askTimer(DBServer_MySQL::PingTimer, 0);
 				askTimer(DBServer_MySQL::ReconnectTimer, ReconnectTime);
@@ -378,14 +363,14 @@ void DBServer_MySQL::timerInfo( const UniSetTypes::TimerMessage* tm )
 			else
 			{
 				connect_ok = true;
-				dblog << myname << "(timerInfo): DB ping ok" << endl;
+				dbinfo << myname << "(timerInfo): DB ping ok" << endl;
 			}
 		}
 		break;
 
 		case DBServer_MySQL::ReconnectTimer:
 		{
-			dblog << myname << "(timerInfo): reconnect timer" << endl;
+			dbinfo << myname << "(timerInfo): reconnect timer" << endl;
 
 			if( db->isConnection() )
 			{
@@ -397,16 +382,46 @@ void DBServer_MySQL::timerInfo( const UniSetTypes::TimerMessage* tm )
 				}
 
 				connect_ok = false;
-				uwarn << myname << "(timerInfo): DB no connection.." << endl;
+				dbwarn << myname << "(timerInfo): DB no connection.." << endl;
 			}
 			else
-				init_dbserver();
+				initDBServer();
 		}
 		break;
 
 		default:
-			uwarn << myname << "(timerInfo): Unknown TimerID=" << tm->id << endl;
+			dbwarn << myname << "(timerInfo): Unknown TimerID=" << tm->id << endl;
 			break;
 	}
 }
 //--------------------------------------------------------------------------------------------
+std::shared_ptr<DBServer_MySQL> DBServer_MySQL::init_dbserver( int argc, const char* const* argv, const std::string& prefix )
+{
+	auto conf = uniset_conf();
+
+	ObjectId ID = conf->getDBServer();
+
+	string name = conf->getArgParam("--" + prefix + "-name", "");
+
+	if( !name.empty() )
+	{
+		ObjectId ID = conf->getObjectID(name);
+
+		if( ID == UniSetTypes::DefaultObjectId )
+		{
+			cerr << "(DBServer_MySQL): Unknown ObjectID for '" << name << endl;
+			return 0;
+		}
+	}
+
+	uinfo << "(DBServer_MySQL): name = " << name << "(" << ID << ")" << endl;
+	return make_shared<DBServer_MySQL>(ID, prefix);
+}
+// -----------------------------------------------------------------------------
+void DBServer_MySQL::help_print( int argc, const char* const* argv )
+{
+	cout << "Default: prefix='mysql'" << endl;
+	cout << "--prefix-name objectID     - ObjectID. Default: 'conf->getDBServer()'" << endl;
+	cout << DBServer::help_print() << endl;
+}
+// -----------------------------------------------------------------------------

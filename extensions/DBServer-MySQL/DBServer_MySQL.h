@@ -135,16 +135,21 @@ class DBServer_MySQL:
 	public DBServer
 {
 	public:
-		DBServer_MySQL( UniSetTypes::ObjectId id );
-		DBServer_MySQL();
-		~DBServer_MySQL();
+		DBServer_MySQL( UniSetTypes::ObjectId id, const std::string& prefix );
+		DBServer_MySQL( const std::string& prefix );
+		virtual ~DBServer_MySQL();
 
-		static const Debug::type DBLogInfoLevel = Debug::LEVEL9;
+		/*! глобальная функция для инициализации объекта */
+		static std::shared_ptr<DBServer_MySQL> init_dbserver( int argc, const char* const* argv, const std::string& prefix = "mysql" );
+
+		/*! глобальная функция для вывода help-а */
+		static void help_print( int argc, const char* const* argv );
 
 	protected:
 		typedef std::map<int, std::string> DBTableMap;
 
-		virtual void initDB(MySQLInterface* db) {};
+		virtual void initDBServer() override;
+		virtual void initDB( std::shared_ptr<MySQLInterface>& db ) {};
 		virtual void initDBTableMap(DBTableMap& tblMap) {};
 
 		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
@@ -153,7 +158,6 @@ class DBServer_MySQL:
 		virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ) override;
 
 		bool writeToBase( const string& query );
-		virtual void init_dbserver();
 		void createTables( MySQLInterface* db );
 
 		inline const char* tblName(int key)
@@ -169,7 +173,7 @@ class DBServer_MySQL:
 		};
 
 
-		MySQLInterface* db;
+		std::shared_ptr<MySQLInterface> db;
 		int PingTime;
 		int ReconnectTime;
 		bool connect_ok;     /*! признак наличия соеднинения с сервером БД */

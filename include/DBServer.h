@@ -26,6 +26,9 @@
 // --------------------------------------------------------------------------
 #include "UniSetTypes.h"
 #include "UniSetObject_LT.h"
+#include "LogServer.h"
+#include "DebugStream.h"
+#include "LogAgregator.h"
 //------------------------------------------------------------------------------------------
 /*!
      \page ServicesPage
@@ -50,17 +53,27 @@ class DBServer:
 	public UniSetObject_LT
 {
 	public:
-		DBServer( UniSetTypes::ObjectId id );
-		DBServer();
+		DBServer( UniSetTypes::ObjectId id, const std::string& prefix="db" );
+		DBServer( const std::string& prefix="db" );
 		~DBServer();
+
+		static std::string help_print();
 
 	protected:
 
 		virtual void processingMessage( UniSetTypes::VoidMessage* msg ) override;
+		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
 		virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ) {}
 
 		virtual bool activateObject() override;
-		virtual void init_dbserver() {};
+		virtual void initDBServer(){};
+
+
+		std::shared_ptr<LogAgregator> loga;
+		std::shared_ptr<DebugStream> dblog;
+		std::shared_ptr<LogServer> logserv;
+		std::string logserv_host = {""};
+		int logserv_port = {0};
 
 	private:
 };

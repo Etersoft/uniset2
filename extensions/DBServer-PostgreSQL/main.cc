@@ -8,15 +8,17 @@ using namespace std;
 // --------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
+	std::ios::sync_with_stdio(false);
 	try
 	{
-		if( argc > 1 && !strcmp(argv[1], "--help") )
+		if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
 		{
+			cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
 			DBServer_PostgreSQL::help_print(argc, argv);
 			return 0;
 		}
 
-		auto conf = uniset_init(argc, argv, "configure.xml");
+		auto conf = uniset_init(argc, argv);
 
 		auto dbs = DBServer_PostgreSQL::init_dbserver(argc, argv);
 		auto act = UniSetActivator::Instance();

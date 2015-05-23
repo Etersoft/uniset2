@@ -15,8 +15,6 @@ class DBServer_PostgreSQL:
 		DBServer_PostgreSQL();
 		virtual ~DBServer_PostgreSQL();
 
-		static const Debug::type DBLogInfoLevel = Debug::LEVEL9;
-
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<DBServer_PostgreSQL> init_dbserver( int argc, const char* const* argv, const std::string& prefix = "pgsql" );
 
@@ -26,6 +24,7 @@ class DBServer_PostgreSQL:
 	protected:
 		typedef std::map<int, std::string> DBTableMap;
 
+		virtual void initDBServer() override;
 		virtual void initDB( std::shared_ptr<PostgreSQLInterface>& db ) {};
 		virtual void initDBTableMap(DBTableMap& tblMap) {};
 
@@ -36,7 +35,6 @@ class DBServer_PostgreSQL:
 		virtual void sigterm( int signo ) override;
 
 		bool writeToBase( const string& query );
-		virtual void init_dbserver();
 		void createTables( std::shared_ptr<PostgreSQLInterface>& db );
 
 		inline const char* tblName(int key)

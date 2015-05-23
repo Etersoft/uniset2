@@ -8,14 +8,13 @@
 #include "Configuration.h"
 #include "Debug.h"
 #include "UniXML.h"
+#include "DBLogSugar.h"
 // --------------------------------------------------------------------------
 using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
-#define dblog if( ulog()->debugging(DBLogInfoLevel) ) ulog()->debug(DBLogInfoLevel)
-// --------------------------------------------------------------------------
 DBServer_PostgreSQL::DBServer_PostgreSQL(ObjectId id, const std::string& prefix ):
-	DBServer(id),
+	DBServer(id,prefix),
 	PingTime(300000),
 	ReconnectTime(180000),
 	connect_ok(false),
@@ -61,6 +60,8 @@ DBServer_PostgreSQL::~DBServer_PostgreSQL()
 //--------------------------------------------------------------------------------------------
 void DBServer_PostgreSQL::sysCommand( const UniSetTypes::SystemMessage* sm )
 {
+	DBServer::sysCommand(sm);
+
 	switch( sm->command )
 	{
 		case SystemMessage::StartUp:
@@ -88,6 +89,7 @@ void DBServer_PostgreSQL::sysCommand( const UniSetTypes::SystemMessage* sm )
 //--------------------------------------------------------------------------------------------
 void DBServer_PostgreSQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 {
+	DBServer::confirmInfo(cem);
 	try
 	{
 		ostringstream data;
@@ -99,26 +101,26 @@ void DBServer_PostgreSQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 			 << " AND time='" << timeToString(cem->time, ":") << " '"
 			 << " AND time_usec='" << cem->time_usec << " '";
 
-		dblog << myname << "(update_confirm): " << data.str() << endl;
+		dbinfo << myname << "(update_confirm): " << data.str() << endl;
 
 		if( !writeToBase(data.str()) )
 		{
-			ucrit << myname << "(update_confirm):  db error: " << db->error() << endl;
+			dbcrit << myname << "(update_confirm):  db error: " << db->error() << endl;
 		}
 	}
 	catch( const Exception& ex )
 	{
-		ucrit << myname << "(update_confirm): " << ex << endl;
+		dbcrit << myname << "(update_confirm): " << ex << endl;
 	}
 	catch( ... )
 	{
-		ucrit << myname << "(update_confirm):  catch..." << endl;
+		dbcrit << myname << "(update_confirm):  catch..." << endl;
 	}
 }
 //--------------------------------------------------------------------------------------------
 bool DBServer_PostgreSQL::writeToBase( const string& query )
 {
-	dblog << myname << "(writeToBase): " << query << endl;
+	dbinfo << myname << "(writeToBase): " << query << endl;
 
 	if( !db || !connect_ok )
 	{
@@ -135,7 +137,7 @@ bool DBServer_PostgreSQL::writeToBase( const string& query )
 				qlost = qbuf.front();
 
 			qbuf.pop();
-			ucrit << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
+			dbcrit << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
 				  << ") overflow! lost query: " << qlost << endl;
 		}
 
@@ -161,7 +163,7 @@ void DBServer_PostgreSQL::flushBuffer()
 	{
 		if(!db->insertAndSaveRowid( qbuf.front() ))
 		{
-			ucrit << myname << "(writeToBase): error: " << db->error() << " lost query: " << qbuf.front() << endl;
+			dbcrit << myname << "(writeToBase): error: " << db->error() << " lost query: " << qbuf.front() << endl;
 		}
 
 		qbuf.pop();
@@ -195,27 +197,27 @@ void DBServer_PostgreSQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 			 << si->value << ","                //  value
 			 << si->node << ")";                //  node
 
-		dblog << myname << "(insert_main_history): " << data.str() << endl;
+		dbinfo <<  myname << "(insert_main_history): " << data.str() << endl;
 
 		if( !writeToBase(data.str()) )
 		{
-			ucrit << myname <<  "(insert) sensor msg error: " << db->error() << endl;
+			dbcrit << myname <<  "(insert) sensor msg error: " << db->error() << endl;
 		}
 	}
 	catch( const Exception& ex )
 	{
-		ucrit << myname << "(insert_main_history): " << ex << endl;
+		dbcrit << myname << "(insert_main_history): " << ex << endl;
 	}
 	catch( ... )
 	{
-		ucrit << myname << "(insert_main_history): catch ..." << endl;
+		dbcrit << myname << "(insert_main_history): catch ..." << endl;
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_PostgreSQL::init_dbserver()
+void DBServer_PostgreSQL::initDBServer()
 {
-	DBServer::init_dbserver();
-	dblog << myname << "(init): ..." << endl;
+	DBServer::initDBServer();
+	dbinfo <<  myname << "(init): ..." << endl;
 
 	if( connect_ok )
 	{
@@ -242,7 +244,7 @@ void DBServer_PostgreSQL::init_dbserver()
 
 	UniXML::iterator it(node);
 
-	dblog << myname << "(init): init connection.." << endl;
+	dbinfo <<  myname << "(init): init connection.." << endl;
 	string dbname(conf->getProp(node, "dbname"));
 	string dbnode(conf->getProp(node, "dbnode"));
 	string user(conf->getProp(node, "dbuser"));
@@ -265,19 +267,19 @@ void DBServer_PostgreSQL::init_dbserver()
 	if( dbnode.empty() )
 		dbnode = "localhost";
 
-	dblog << myname << "(init): connect dbnode=" << dbnode
+	dbinfo <<  myname << "(init): connect dbnode=" << dbnode
 		  << "\tdbname=" << dbname
 		  << " pingTime=" << PingTime
 		  << " ReconnectTime=" << ReconnectTime << endl;
 
 	if( !db->connect(dbnode, user, password, dbname) )
 	{
-		uwarn << myname << "(init): DB connection error: " << db->error() << endl;
+		dbwarn << myname << "(init): DB connection error: " << db->error() << endl;
 		askTimer(DBServer_PostgreSQL::ReconnectTimer, ReconnectTime);
 	}
 	else
 	{
-		dblog << myname << "(init): connect [OK]" << endl;
+		dbinfo <<  myname << "(init): connect [OK]" << endl;
 		connect_ok = true;
 		askTimer(DBServer_PostgreSQL::ReconnectTimer, 0);
 		askTimer(DBServer_PostgreSQL::PingTimer, PingTime);
@@ -296,7 +298,7 @@ void DBServer_PostgreSQL::createTables( std::shared_ptr<PostgreSQLInterface>& db
 
 	if(!it)
 	{
-		ucrit << myname << ": section <Tables> not found.." << endl;
+		dbcrit << myname << ": section <Tables> not found.." << endl;
 		throw Exception();
 	}
 
@@ -304,13 +306,13 @@ void DBServer_PostgreSQL::createTables( std::shared_ptr<PostgreSQLInterface>& db
 	{
 		if( it.getName() != "comment" )
 		{
-			ucrit << myname  << "(createTables): create " << it.getName() << endl;
+			dbcrit << myname  << "(createTables): create " << it.getName() << endl;
 			ostringstream query;
 			query << "CREATE TABLE " << conf->getProp(it, "name") << "(" << conf->getProp(it, "create") << ")";
 
 			if( !db->query(query.str()) )
 			{
-				ucrit << myname << "(createTables): error: \t\t" << db->error() << endl;
+				dbcrit << myname << "(createTables): error: \t\t" << db->error() << endl;
 			}
 		}
 	}
@@ -318,13 +320,15 @@ void DBServer_PostgreSQL::createTables( std::shared_ptr<PostgreSQLInterface>& db
 //--------------------------------------------------------------------------------------------
 void DBServer_PostgreSQL::timerInfo( const UniSetTypes::TimerMessage* tm )
 {
+	DBServer::timerInfo(tm);
+
 	switch( tm->id )
 	{
 		case DBServer_PostgreSQL::PingTimer:
 		{
 			if( !db->ping() )
 			{
-				uwarn << myname << "(timerInfo): DB lost connection.." << endl;
+				dbwarn << myname << "(timerInfo): DB lost connection.." << endl;
 				connect_ok = false;
 				askTimer(DBServer_PostgreSQL::PingTimer, 0);
 				askTimer(DBServer_PostgreSQL::ReconnectTimer, ReconnectTime);
@@ -332,14 +336,14 @@ void DBServer_PostgreSQL::timerInfo( const UniSetTypes::TimerMessage* tm )
 			else
 			{
 				connect_ok = true;
-				dblog << myname << "(timerInfo): DB ping ok" << endl;
+				dbinfo <<  myname << "(timerInfo): DB ping ok" << endl;
 			}
 		}
 		break;
 
 		case DBServer_PostgreSQL::ReconnectTimer:
 		{
-			dblog << myname << "(timerInfo): reconnect timer" << endl;
+			dbinfo <<  myname << "(timerInfo): reconnect timer" << endl;
 
 			if( db->isConnection() )
 			{
@@ -351,15 +355,15 @@ void DBServer_PostgreSQL::timerInfo( const UniSetTypes::TimerMessage* tm )
 				}
 
 				connect_ok = false;
-				uwarn << myname << "(timerInfo): DB no connection.." << endl;
+				dbwarn << myname << "(timerInfo): DB no connection.." << endl;
 			}
 			else
-				init_dbserver();
+				initDBServer();
 		}
 		break;
 
 		default:
-			uwarn << myname << "(timerInfo): Unknown TimerID=" << tm->id << endl;
+			dbwarn << myname << "(timerInfo): Unknown TimerID=" << tm->id << endl;
 			break;
 	}
 }
@@ -393,7 +397,7 @@ std::shared_ptr<DBServer_PostgreSQL> DBServer_PostgreSQL::init_dbserver( int arg
 
 		if( ID == UniSetTypes::DefaultObjectId )
 		{
-			ucrit << "(DBServer_PostgreSQL): Unknown ObjectID for '" << name << endl;
+			cerr << "(DBServer_PostgreSQL): Unknown ObjectID for '" << name << endl;
 			return 0;
 		}
 	}
@@ -404,9 +408,8 @@ std::shared_ptr<DBServer_PostgreSQL> DBServer_PostgreSQL::init_dbserver( int arg
 // -----------------------------------------------------------------------------
 void DBServer_PostgreSQL::help_print( int argc, const char* const* argv )
 {
-	auto conf = uniset_conf();
-
 	cout << "Default: prefix='pgsql'" << endl;
 	cout << "--prefix-name objectID     - ObjectID. Default: 'conf->getDBServer()'" << endl;
+	cout << DBServer::help_print() << endl;
 }
 // -----------------------------------------------------------------------------

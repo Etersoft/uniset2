@@ -135,16 +135,21 @@ class DBServer_SQLite:
 	public DBServer
 {
 	public:
-		DBServer_SQLite( UniSetTypes::ObjectId id );
-		DBServer_SQLite();
-		~DBServer_SQLite();
+		DBServer_SQLite( UniSetTypes::ObjectId id, const std::string& prefix );
+		DBServer_SQLite( const std::string& prefix );
+		virtual ~DBServer_SQLite();
 
-		static const Debug::type DBLogInfoLevel = Debug::LEVEL9;
+		/*! глобальная функция для инициализации объекта */
+		static std::shared_ptr<DBServer_SQLite> init_dbserver( int argc, const char* const* argv, const std::string& prefix = "sqlite" );
+
+		/*! глобальная функция для вывода help-а */
+		static void help_print( int argc, const char* const* argv );
 
 	protected:
 		typedef std::map<int, std::string> DBTableMap;
 
-		virtual void initDB( SQLiteInterface* db ) {};
+		virtual void initDBServer() override;
+		virtual void initDB( std::shared_ptr<SQLiteInterface>& db ) {};
 		virtual void initDBTableMap(DBTableMap& tblMap) {};
 
 		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
@@ -153,7 +158,6 @@ class DBServer_SQLite:
 		virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ) override;
 
 		bool writeToBase( const string& query );
-		virtual void init_dbserver();
 		void createTables( SQLiteInterface* db );
 
 		inline const char* tblName(int key)
@@ -169,7 +173,7 @@ class DBServer_SQLite:
 		};
 
 
-		SQLiteInterface* db;
+		std::shared_ptr<SQLiteInterface> db;
 		int PingTime;
 		int ReconnectTime;
 		bool connect_ok;     /*! признак наличия соеднинения с сервером БД */
