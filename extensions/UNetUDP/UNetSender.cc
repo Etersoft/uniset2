@@ -357,17 +357,13 @@ std::ostream& operator<<( std::ostream& os, UNetSender::UItem& p )
 // -----------------------------------------------------------------------------
 void UNetSender::initIterators()
 {
-	auto it = dlist.begin();
-
-	for( ; it != dlist.end(); ++it )
-		shm->initIterator(it->ioit);
+	for( auto&& it: dlist )
+		shm->initIterator(it.ioit);
 }
 // -----------------------------------------------------------------------------
 void UNetSender::askSensors( UniversalIO::UIOCommand cmd )
 {
-	auto it = dlist.begin();
-
-	for( ; it != dlist.end(); ++it )
-		shm->askSensor(it->id, cmd);
+	for( auto&& it: dlist  )
+		shm->askSensor(it.id, cmd);
 }
 // -----------------------------------------------------------------------------

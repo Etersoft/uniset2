@@ -541,10 +541,10 @@ bool UNetReceiver::recv()
 // -----------------------------------------------------------------------------
 void UNetReceiver::initIterators()
 {
-	for( auto& it : d_icache )
+	for( auto&& it : d_icache )
 		shm->initIterator(it.ioit);
 
-	for( auto& it : a_icache )
+	for( auto&& it : a_icache )
 		shm->initIterator(it.ioit);
 }
 // -----------------------------------------------------------------------------
@@ -558,6 +558,8 @@ void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 
 	d_icache.resize(pack.dcount);
 
+	auto conf = uniset_conf();
+
 	for( size_t i = 0; i < d_icache.size(); i++ )
 	{
 		ItemInfo& d(d_icache[i]);
@@ -565,7 +567,7 @@ void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 		if( d.id != pack.d_id[i] )
 		{
 			d.id = pack.d_id[i];
-			d.iotype = uniset_conf()->getIOType(d.id);
+			d.iotype = conf->getIOType(d.id);
 			shm->initIterator(d.ioit);
 		}
 	}
@@ -581,6 +583,8 @@ void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
 
 	a_icache.resize(pack.acount);
 
+	auto conf = uniset_conf();
+
 	for( size_t i = 0; i < a_icache.size(); i++ )
 	{
 		ItemInfo& d(a_icache[i]);
@@ -588,7 +592,7 @@ void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
 		if( d.id != pack.a_dat[i].id )
 		{
 			d.id = pack.a_dat[i].id;
-			d.iotype = uniset_conf()->getIOType(d.id);
+			d.iotype = conf->getIOType(d.id);
 			shm->initIterator(d.ioit);
 		}
 	}
