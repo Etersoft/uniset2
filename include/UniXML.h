@@ -44,7 +44,7 @@ class UniXML_iterator:
 		UniXML_iterator(xmlNode* node) :
 			curNode(node)
 		{}
-		UniXML_iterator() {}
+		UniXML_iterator():curNode(0) {}
 
 		std::string getProp2( const std::string& name, const std::string& defval = "" );
 		std::string getProp( const std::string& name );
@@ -89,16 +89,16 @@ class UniXML_iterator:
 		}
 #endif
 		// Перейти к следующему узлу
-		UniXML_iterator operator+(int);
-		UniXML_iterator operator++(int);
-		UniXML_iterator operator+=(int);
-		UniXML_iterator operator++();
+		UniXML_iterator& operator+(int);
+		UniXML_iterator& operator++(int);
+		UniXML_iterator& operator+=(int);
+		UniXML_iterator& operator++();
 
 		// Перейти к предыдущему узлу
-		UniXML_iterator operator-(int);
-		UniXML_iterator operator--(int);
-		UniXML_iterator operator--();
-		UniXML_iterator operator-=(int);
+		UniXML_iterator& operator-(int);
+		UniXML_iterator& operator--(int);
+		UniXML_iterator& operator--();
+		UniXML_iterator& operator-=(int);
 
 		/*! Перейти на один уровень выше
 		    \note Если перейти не удалось, итератор остаётся указывать на прежний узел

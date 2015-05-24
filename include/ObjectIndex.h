@@ -66,7 +66,7 @@ namespace UniSetTypes
 			void initLocalNode( const UniSetTypes::ObjectId nodeid );
 
 		protected:
-			std::string nmLocalNode;    // для оптимизации
+			std::string nmLocalNode={""};    // поле для оптимизации получения LocalNode
 
 		private:
 

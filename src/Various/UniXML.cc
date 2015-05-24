@@ -552,22 +552,22 @@ xmlNode* UniXML_iterator::findX( xmlNode* root, const std::string& searchnode, b
 	return NULL;
 }
 // -------------------------------------------------------------------------
-UniXML_iterator UniXML_iterator::operator++()
+UniXML_iterator& UniXML_iterator::operator++()
 {
 	return (*this) + 1;
 }
 // -------------------------------------------------------------------------
-UniXML_iterator UniXML_iterator::operator++(int)
+UniXML_iterator& UniXML_iterator::operator++(int)
 {
 	return (*this) + 1;
 }
 // -------------------------------------------------------------------------
-UniXML_iterator UniXML_iterator::operator+=(int s)
+UniXML_iterator& UniXML_iterator::operator+=(int s)
 {
 	return (*this) + s;
 }
 // -------------------------------------------------------------------------
-UniXML_iterator UniXML_iterator::operator+(int step)
+UniXML_iterator& UniXML_iterator::operator+(int step)
 {
 	int i = 0;
 
@@ -587,23 +587,23 @@ UniXML_iterator UniXML_iterator::operator+(int step)
 	return *this;
 }
 // -------------------------------------------------------------------------
-UniXML_iterator UniXML_iterator::operator--(int)
+UniXML_iterator& UniXML_iterator::operator--(int)
 {
 	return (*this) - 1;
 }
 
-UniXML_iterator UniXML_iterator::operator--()
+UniXML_iterator& UniXML_iterator::operator--()
 {
 	return (*this) - 1;
 }
 
-UniXML_iterator UniXML_iterator::operator-=(int s)
+UniXML_iterator& UniXML_iterator::operator-=(int s)
 {
 	return (*this) - s;
 }
 // -------------------------------------------------------------------------
 
-UniXML_iterator UniXML_iterator::operator-(int step)
+UniXML_iterator& UniXML_iterator::operator-(int step)
 {
 	int i = 0;
 

@@ -274,9 +274,12 @@ AC_SUBST(COV_CFLAGS)
 AM_CONDITIONAL(HAVE_COVERAGE, test ${buildgcov} = true)
 AM_CONDITIONAL(HAVE_TESTS, test ${buildtests} = true)
 
+# -Weffc++
+CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Wctor-dtor-privacy -Woverloaded-virtual"
+
 # export
 LDFLAGS="${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS}"
-CXXFLAGS="-pedantic -Wall -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} -I\$(top_builddir)/include -Wnon-virtual-dtor -Wctor-dtor-privacy -Woverloaded-virtual "
+CXXFLAGS="-pedantic -Wall -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} -I\$(top_builddir)/include $CXX_EXTRA_FLAGS"
 
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)
