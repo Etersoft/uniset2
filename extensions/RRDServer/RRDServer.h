@@ -7,9 +7,6 @@
 #include "SMInterface.h"
 #include "SharedMemory.h"
 #include "extensions/Extensions.h"
-#include "LogAgregator.h"
-#include "LogServer.h"
-#include "LogAgregator.h"
 // -----------------------------------------------------------------------------
 /*!
     \page page_RRDServer Реализация RRD хранилища
@@ -113,11 +110,6 @@ class RRDServer:
 		typedef std::list<RRDInfo> RRDList;
 
 		RRDList rrdlist;
-
-		std::shared_ptr<LogAgregator> loga;
-		std::shared_ptr<LogServer> logserv;
-		std::string logserv_host = {""};
-		int logserv_port = {0};
 
 	private:
 

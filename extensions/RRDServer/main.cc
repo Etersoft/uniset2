@@ -27,17 +27,6 @@ int main( int argc, const char** argv )
 	{
 		auto conf = uniset_init( argc, argv );
 
-		string logfilename(conf->getArgParam("--rrdstorage-logfile"));
-
-		if( logfilename.empty() )
-			logfilename = "rrdstorage.log";
-
-		std::ostringstream logname;
-		string dir(conf->getLogDir());
-		logname << dir << logfilename;
-		ulog()->logFile( logname.str() );
-		dlog()->logFile( logname.str() );
-
 		ObjectId shmID = DefaultObjectId;
 		string sID = conf->getArgParam("--smemory-id");
 

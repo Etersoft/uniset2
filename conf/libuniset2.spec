@@ -446,7 +446,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %changelog
 * Sun May 24 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt35
-- add supported LogServer for: SharedMemory,RRDServer,MBTCPMaster,MBSlave,UNetExchange,IOControl
+- add supported LogServer for: 
+   SharedMemory,RRDServer,MBTCPMaster,MBSlave,UNetExchange,IOControl,
+   codegen,DBServer_xxx
 
 * Wed May 20 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt34.4
 - (ModbusSlave): fixed bug in much_real_write (again) (thank`s hd@nio14)

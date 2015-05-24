@@ -244,7 +244,7 @@
 <xsl:template name="COMMON-HEAD-PROTECTED">
 		virtual void callback() override;
 		virtual void processingMessage( UniSetTypes::VoidMessage* msg ) override;
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ){};
 		virtual void askSensors( UniversalIO::UIOCommand cmd ){}
 		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override{}
 		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override{}
@@ -260,6 +260,7 @@
 		void preAskSensors( UniversalIO::UIOCommand cmd );
 		void preSensorInfo( const UniSetTypes::SensorMessage* sm );
 		void preTimerInfo( const UniSetTypes::TimerMessage* tm );
+		void preSysCommand( const UniSetTypes::SystemMessage* sm );
 		void waitSM( int wait_msec, UniSetTypes::ObjectId testID = UniSetTypes::DefaultObjectId );
 
 		void resetMsg();
@@ -302,6 +303,12 @@
 		
 		IOController_i::SensorInfo si;
 		bool forceOut; /*!&lt; флаг принудительного обноления "выходов" */
+		
+		std::shared_ptr&lt;LogAgregator&gt; loga;
+		std::shared_ptr&lt;DebugStream&gt; smlog;
+		std::shared_ptr&lt;LogServer&gt; logserv;
+		std::string logserv_host = {""};
+		int logserv_port = {0};
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PRIVATE">
@@ -330,7 +337,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( UniSetTypes::Voi
 			break;
 
 			case Message::SysCommand:
-				sysCommand( reinterpret_cast&lt;SystemMessage*&gt;(_msg) );
+				preSysCommand( reinterpret_cast&lt;SystemMessage*&gt;(_msg) );
 			break;
 
 			default:
@@ -343,19 +350,25 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( UniSetTypes::Voi
 	}
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( const SystemMessage* _sm )
+void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage* _sm )
 {
 	switch( _sm->command )
 	{
 		case SystemMessage::WatchDog:
-			ulogany &lt;&lt; myname &lt;&lt; "(sysCommand): WatchDog" &lt;&lt; endl;
+			ulogany &lt;&lt; myname &lt;&lt; "(preSysCommand): WatchDog" &lt;&lt; endl;
 			if( !active || !ptStartUpTimeout.checkTime() )
 			{
-                uwarn &lt;&lt; myname &lt;&lt; "(sysCommand): игнорируем WatchDog, потому-что только-что стартанули" &lt;&lt; endl;
+                uwarn &lt;&lt; myname &lt;&lt; "(preSysCommand): игнорируем WatchDog, потому-что только-что стартанули" &lt;&lt; endl;
 				break;
 			}
 		case SystemMessage::StartUp:
 		{
+			if( !logserv_host.empty() &amp;&amp; logserv_port != 0 &amp;&amp; !logserv-&gt;isRunning() )
+			{
+				myinfo &lt;&lt; myname &lt;&lt; "(preSysCommand): run log server " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port &lt;&lt; endl;
+				logserv-&gt;run(logserv_host, logserv_port, true);
+			}
+
 			waitSM(smReadyTimeout);
 			ptStartUpTimeout.reset();
 			// т.к. для io-переменных важно соблюдать последовательность!
@@ -377,12 +390,12 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( const SystemMessage* _s
 		case SystemMessage::LogRotate:
 		{
 			// переоткрываем логи
-			mylogany &lt;&lt; myname &lt;&lt; "(sysCommand): logRotate" &lt;&lt; endl;
+			mylogany &lt;&lt; myname &lt;&lt; "(preSysCommand): logRotate" &lt;&lt; endl;
 			string fname( mylog->getLogFile() );
 			if( !fname.empty() )
 			{
 				mylog->logFile(fname.c_str(),true);
-				mylogany &lt;&lt; myname &lt;&lt; "(sysCommand): ***************** mylog LOG ROTATE *****************" &lt;&lt; endl;
+				mylogany &lt;&lt; myname &lt;&lt; "(preSysCommand): ***************** mylog LOG ROTATE *****************" &lt;&lt; endl;
 			}
 		}
 		break;
@@ -390,6 +403,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( const SystemMessage* _s
 		default:
 			break;
 	}
+	
+	sysCommand(_sm);
 }
 // -----------------------------------------------------------------------------
 <xsl:if test="normalize-space($TESTMODE)!=''">
@@ -410,7 +425,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::activateObject()
 {
 	// блокирование обработки Startup 
 	// пока не пройдёт инициализация датчиков
-	// см. sysCommand()
+	// см. preSysCommand()
 	{
 		activated = false;
 		<xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>::activateObject();</xsl:if>
@@ -550,6 +565,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 #include <xsl:call-template name="preinclude"/>Configuration.h<xsl:call-template name="postinclude"/>
 #include <xsl:call-template name="preinclude"/>Exceptions.h<xsl:call-template name="postinclude"/>
 #include <xsl:call-template name="preinclude"/>ORepHelpers.h<xsl:call-template name="postinclude"/>
+#include <xsl:call-template name="preinclude"/>LogServer.h<xsl:call-template name="postinclude"/>
+#include <xsl:call-template name="preinclude"/>DebugStream.h<xsl:call-template name="postinclude"/>
+#include <xsl:call-template name="preinclude"/>LogAgregator.h<xsl:call-template name="postinclude"/>
 #include "<xsl:value-of select="$SK_H_FILENAME"/>"
 
 // -----------------------------------------------------------------------------
@@ -690,6 +708,13 @@ end_private(false)
 		conf->initLogStream(mylog,s.str());
 	}
 
+	loga = make_shared&lt;LogAgregator&gt;();
+	loga-&gt;add(mylog);
+	loga-&gt;add(ulog());
+
+	logserv = make_shared&lt;LogServer&gt;(loga);
+	logserv-&gt;init( argprefix + "-logserver", confnode );
+
 <xsl:for-each select="//smap/item">
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
@@ -726,6 +751,13 @@ end_private(false)
 
 	UniXML::iterator it(cnode);
 
+	// ------- init logserver ---
+	if( findArgParam("--" + argprefix + "-run-logserver", conf-&gt;getArgc(), conf-&gt;getArgv()) != -1 )
+	{
+		logserv_host = conf-&gt;getArg2Param("--" + argprefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
+		logserv_port = conf-&gt;getArgPInt("--" + argprefix + "-logserver-port", it.getProp("logserverPort"), getId());
+	}
+	
 	forceOut = conf->getArgPInt("--" + argprefix + "force-out",it.getProp("forceOut"),false);
 
 	string heart = conf->getArgParam("--" + argprefix + "heartbeat-id",it.getProp("heartbeat_id"));
@@ -1066,9 +1098,15 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
         s &lt;&lt; argprefix &lt;&lt; "log";
         conf->initLogStream(mylog, s.str());
     }
-    	
-	si.node = conf->getLocalNode();
 
+    loga = make_shared&lt;LogAgregator&gt;();
+	loga-&gt;add(mylog);
+	loga-&gt;add(ulog());
+
+	logserv = make_shared&lt;LogServer&gt;(loga);
+	logserv-&gt;init( argprefix + "-logserver", confnode );
+	
+	si.node = conf->getLocalNode();
 
 <xsl:for-each select="//sensors/item">
 	<xsl:call-template name="setmsg">
@@ -1078,6 +1116,13 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 
 	UniXML::iterator it(cnode);
 
+	// ------- init logserver ---
+	if( findArgParam("--" + argprefix + "-run-logserver", conf-&gt;getArgc(), conf-&gt;getArgv()) != -1 )
+	{
+		logserv_host = conf-&gt;getArg2Param("--" + argprefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
+		logserv_port = conf-&gt;getArgPInt("--" + argprefix + "-logserver-port", it.getProp("logserverPort"), getId());
+	}
+	
     forceOut = conf->getArgPInt("--" + argprefix + "force-out",it.getProp("forceOut"),false);
 
 	string heart = conf->getArgParam("--" + argprefix + "heartbeat-id",it.getProp("heartbeat_id"));

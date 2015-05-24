@@ -13,29 +13,14 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 RRDServer::RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic,
 					  const string& prefix ):
-	UObject_SK(objId, cnode),
+	UObject_SK(objId, cnode, string(prefix+"-")),
 	prefix(prefix)
 {
 	auto conf = uniset_conf();
 
 	shm = make_shared<SMInterface>(shmId, ui, objId, ic);
 
-	loga = make_shared<LogAgregator>();
-	loga->add(mylog);
-	loga->add(ulog());
-	loga->add(dlog());
-
 	UniXML::iterator it(cnode);
-
-	logserv = make_shared<LogServer>(loga);
-	logserv->init( prefix + "-logserver", cnode );
-
-	if( findArgParam("--" + prefix + "-run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
-	{
-		logserv_host = conf->getArg2Param("--" + prefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
-		logserv_port = conf->getArgPInt("--" + prefix + "-logserver-port", it.getProp("logserverPort"), getId());
-	}
-
 
 	UniXML::iterator it1(cnode);
 
@@ -325,12 +310,6 @@ void RRDServer::sysCommand( const UniSetTypes::SystemMessage* sm )
 
 	if( sm->command == SystemMessage::StartUp || sm->command == SystemMessage::WatchDog )
 	{
-		if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
-		{
-			myinfo << myname << "(init): run log server " << logserv_host << ":" << logserv_port << endl;
-			logserv->run(logserv_host, logserv_port, true);
-		}
-
 		for( auto && it : rrdlist )
 		{
 			try
