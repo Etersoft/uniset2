@@ -168,6 +168,35 @@ void LogSession::run()
 
 							break;
 
+						case LogServerTypes::cmdList:
+						{
+							if( isPending(Socket::pendingOutput, cmdTimeout) )
+							{
+								ostringstream s;
+								s << "List of managed logs:" << endl;
+								s << "=====================" << endl;
+								auto lag = dynamic_pointer_cast<LogAgregator>(log);
+
+								if( !lag )
+								{
+									s << log->getLogName() << endl;
+								}
+								else
+								{
+									auto lst = lag->getLogList();
+
+									for( const auto& i : lst )
+										s << i->getLogName() << endl;
+								}
+
+								s << "=====================" << endl;
+
+								*tcp() << s.str();
+								tcp()->sync();
+							}
+						}
+						break;
+
 						case LogServerTypes::cmdOffLogFile:
 						{
 							if( !logfile.empty() )

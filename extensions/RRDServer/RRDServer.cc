@@ -13,7 +13,7 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 RRDServer::RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic,
 					  const string& prefix ):
-	UObject_SK(objId, cnode, string(prefix+"-")),
+	UObject_SK(objId, cnode, string(prefix + "-")),
 	prefix(prefix)
 {
 	auto conf = uniset_conf();

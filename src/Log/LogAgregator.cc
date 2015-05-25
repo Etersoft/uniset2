@@ -108,3 +108,13 @@ LogAgregator::LogInfo LogAgregator::getLogInfo( const std::string& logname )
 	return LogInfo();
 }
 // -------------------------------------------------------------------------
+std::list<std::shared_ptr<DebugStream>> LogAgregator::getLogList()
+{
+	std::list< std::shared_ptr<DebugStream> > l;
+
+	for( auto && i : lmap )
+		l.push_back(i.second.log);
+
+	return std::move(l);
+}
+// -------------------------------------------------------------------------

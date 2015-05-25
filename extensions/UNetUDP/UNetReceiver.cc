@@ -541,10 +541,10 @@ bool UNetReceiver::recv()
 // -----------------------------------------------------------------------------
 void UNetReceiver::initIterators()
 {
-	for( auto&& it : d_icache )
+	for( auto && it : d_icache )
 		shm->initIterator(it.ioit);
 
-	for( auto&& it : a_icache )
+	for( auto && it : a_icache )
 		shm->initIterator(it.ioit);
 }
 // -----------------------------------------------------------------------------

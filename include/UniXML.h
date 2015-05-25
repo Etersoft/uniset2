@@ -44,7 +44,7 @@ class UniXML_iterator:
 		UniXML_iterator(xmlNode* node) :
 			curNode(node)
 		{}
-		UniXML_iterator():curNode(0) {}
+		UniXML_iterator(): curNode(0) {}
 
 		std::string getProp2( const std::string& name, const std::string& defval = "" );
 		std::string getProp( const std::string& name );

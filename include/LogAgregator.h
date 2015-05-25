@@ -3,6 +3,7 @@
 // -------------------------------------------------------------------------
 #include <string>
 #include <memory>
+#include <list>
 #include <unordered_map>
 #include "DebugStream.h"
 #include "LogServerTypes.h"
@@ -38,6 +39,8 @@ class LogAgregator:
 
 		std::shared_ptr<DebugStream> getLog( const std::string& logname );
 		LogInfo getLogInfo( const std::string& logname );
+
+		std::list<std::shared_ptr<DebugStream>> getLogList();
 
 	protected:
 		void logOnEvent( const std::string& s );

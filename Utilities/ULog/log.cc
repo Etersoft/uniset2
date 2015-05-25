@@ -21,6 +21,7 @@ static struct option longopts[] =
 	{ "set", required_argument, 0, 's' },
 	{ "off", required_argument, 0, 'o' },
 	{ "on", required_argument, 0, 'n' },
+	{ "list", no_argument, 0, 'm' },
 	{ "rotate", required_argument, 0, 'r' },
 	{ "logname", required_argument, 0, 'l' },
 	{ "command-only", no_argument, 0, 'b' },
@@ -49,10 +50,13 @@ static void print_help()
 	printf("--off, -o                        - Off the write log file (if enabled).\n");
 	printf("--on, -n                         - On the write log file (if before disabled).\n");
 	printf("--rotate, -r                     - rotate log file.\n");
+	printf("--list, -m                       - List of managed logs.\n");
 }
 // --------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
+	std::ios::sync_with_stdio(false);
+
 	int optindex = 0;
 	int opt = 0;
 	int verb = 0;
@@ -69,7 +73,7 @@ int main( int argc, char** argv )
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:p:i:d:s:l:onrbx:w:", longopts, &optindex)) != -1 )
+		while( (opt = getopt_long(argc, argv, "hvma:p:i:d:s:l:onrbx:w:", longopts, &optindex)) != -1 )
 		{
 			switch (opt)
 			{
@@ -97,6 +101,10 @@ int main( int argc, char** argv )
 					sdata = string(optarg);
 				}
 				break;
+
+				case 'm':
+					cmd = LogServerTypes::cmdList;
+					break;
 
 				case 'o':
 					cmd = LogServerTypes::cmdOffLogFile;
