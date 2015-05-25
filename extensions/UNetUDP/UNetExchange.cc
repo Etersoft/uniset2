@@ -743,20 +743,24 @@ void UNetExchange::initIterators()
 void UNetExchange::help_print( int argc, const char* argv[] )
 {
 	cout << "Default prefix='unet'" << endl;
-	cout << "--prefix-name NameID            - Идентификтора процесса." << endl;
-	cout << "--prefix-recv-timeout msec      - Время для фиксации события 'отсутсвие связи'" << endl;
-	cout << "--prefix-prepare-time msec      - Время необходимое на подготовку (восстановление связи) при переключении на другой канал" << endl;
-	cout << "--prefix-lost-timeout msec      - Время ожидания заполнения 'дырки' между пакетами. По умолчанию 5000 мсек." << endl;
-	cout << "--prefix-recvpause msec         - Пауза между приёмами. По умолчанию 10" << endl;
-	cout << "--prefix-sendpause msec         - Пауза между посылками. По умолчанию 100" << endl;
-	cout << "--prefix-updatepause msec       - Пауза между обновлением информации в SM (Корелирует с recvpause и sendpause). По умолчанию 100" << endl;
-	cout << "--prefix-steptime msec          - Пауза между обновлением информации о связи с узлами." << endl;
-	cout << "--prefix-maxdifferense num      - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;
-	cout << "--prefix-maxprocessingcount num - время на ожидание старта SM" << endl;
-	cout << "--prefix-nosender [0,1]         - Отключить посылку." << endl;
-	cout << "--prefix-sm-ready-timeout msec  - Время ожидание я готовности SM к работе. По умолчанию 15000" << endl;
-	cout << "--prefix-filter-field name      - Название фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
-	cout << "--prefix-filter-value name      - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
+	cout << "--prefix-name NameID             - Идентификтора процесса." << endl;
+	cout << "--prefix-recv-timeout msec       - Время для фиксации события 'отсутсвие связи'" << endl;
+	cout << "--prefix-prepare-time msec       - Время необходимое на подготовку (восстановление связи) при переключении на другой канал" << endl;
+	cout << "--prefix-lost-timeout msec       - Время ожидания заполнения 'дырки' между пакетами. По умолчанию 5000 мсек." << endl;
+	cout << "--prefix-recvpause msec          - Пауза между приёмами. По умолчанию 10" << endl;
+	cout << "--prefix-sendpause msec          - Пауза между посылками. По умолчанию 100" << endl;
+	cout << "--prefix-updatepause msec        - Пауза между обновлением информации в SM (Корелирует с recvpause и sendpause). По умолчанию 100" << endl;
+	cout << "--prefix-steptime msec           - Пауза между обновлением информации о связи с узлами." << endl;
+	cout << "--prefix-maxdifferense num       - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;
+	cout << "--prefix-maxprocessingcount num  - время на ожидание старта SM" << endl;
+	cout << "--prefix-nosender [0,1]          - Отключить посылку." << endl;
+	cout << "--prefix-sm-ready-timeout msec   - Время ожидание я готовности SM к работе. По умолчанию 15000" << endl;
+	cout << "--prefix-filter-field name       - Название фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
+	cout << "--prefix-filter-value name       - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
+	cout << endl;
+	cout << "--prefix-nodes-confnode name     - <Узел> откуда считывается список узлов. Default: <nodes>" << endl;
+	cout << "--prefix-nodes-filter-field name - Фильтрующее поле для списка узлов" << endl;
+	cout << "--prefix-nodes-filter-value name - Значение фильтрующего поля для списка узлов" << endl;
 	cout << endl;
 	cout << " Logs: " << endl;
 	cout << "--prefix-log-...            - log control" << endl;
