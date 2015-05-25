@@ -59,27 +59,13 @@ PassiveSigTimer::~PassiveSigTimer()
 // ------------------------------------------------------------------------------------------
 void PassiveSigTimer::init()
 {
-	/*
-	    struct itimerval val;
-	    struct sigaction action;
-	    sigemptyset(&action.sa_mask);
-
-	    action.sa_handler = (void(*)(int))callalrm;
-	    action.sa_flags = SA_RESETHAND;//SA_RESTART;
-
-	    if( sigaction(SIGALRM, &action, 0) == -1)
-	    {
-	        cerr << "PassiveSigTimer: error sigaction" << endl;
-	        throw NotSetSignal("PassiveTimer: errir sigaction");
-	    }
-	*/
 }
 // ------------------------------------------------------------------------------------------
 void PassiveSigTimer::terminate()
 {
 	if (!terminated)
 	{
-		timeAct = 0;
+		t_msec = 0;
 		terminated = 1;
 		//        cout << "PassiveTimer("<< pid <<"): прерываю работу "<< endl;
 		kill(pid, SIGALRM);

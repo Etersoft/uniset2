@@ -349,6 +349,9 @@ class MBSlave:
 			return askCount;
 		}
 
+		inline std::shared_ptr<LogAgregator> getLogAggregator(){ return loga; }
+		inline std::shared_ptr<DebugStream> log(){ return mblog; }
+
 	protected:
 
 		/*! обработка 0x01 */

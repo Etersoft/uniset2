@@ -21,40 +21,22 @@
  *  \author Pavel Vainerman
 */
 // --------------------------------------------------------------------------
-#include <time.h>
-#include <sys/times.h>
-#include <stdio.h>
+#include <cstdio>
 #include <unistd.h>
 #include "PassiveTimer.h"
 
 //----------------------------------------------------------------------------------------
-// CLK_TCK устарела по новому стандарту
-#ifndef CLK_TCK
-#define CLK_TCK sysconf(_SC_CLK_TCK)
-#endif
-//----------------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
-
 PassiveTimer::PassiveTimer( ):
-	timeAct(0),
-	timeSS(0),
-	timeStart(0),
-	clock_ticks(sysconf(_SC_CLK_TCK))
+	PassiveTimer(WaitUpTime)
 {
-	setTiming(WaitUpTime);
-}
 
+}
 //------------------------------------------------------------------------------
 
-PassiveTimer::PassiveTimer( timeout_t timeMS ):
-	timeAct(0),
-	timeSS(0),
-	timeStart(0),
-	clock_ticks(sysconf(_SC_CLK_TCK))
+PassiveTimer::PassiveTimer( timeout_t msec ):
+	t_msec(msec)
 {
-	//    printf("const =%d\n",timeMS);
-	setTiming( timeMS );
+	setTiming(msec);
 }
 
 //------------------------------------------------------------------------------
@@ -65,63 +47,38 @@ PassiveTimer::~PassiveTimer()
 //------------------------------------------------------------------------------
 bool PassiveTimer::checkTime()
 {
-	//    printf("times=%d, act=%d\n",times(0),timeAct);
-	//    printf("%d\n",timeSS); msleep(10);
-
-	if( timeSS == WaitUpTime )
+	if( t_msec == WaitUpTime )
 		return false;
 
-	if( times() >= timeAct )
+	if( t_msec == 0 )
 		return true;
 
-	return false;
+	return ( std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - t_start).count() >= t_msec );
 }
 
 //------------------------------------------------------------------------------
 // Установить время таймера
-timeout_t PassiveTimer::setTiming( timeout_t timeMS )
+timeout_t PassiveTimer::setTiming( timeout_t msec )
 {
-	if( timeMS == WaitUpTime )
-		timeSS = WaitUpTime;
-	else
-	{
-		timeSS = timeMS / 10; // задержка в сантисекундах
-
-		if (timeMS % 10)
-			timeSS++; // Округляем в большую сторону
-	}
-
+	t_msec = msec;
 	PassiveTimer::reset();
 	return getInterval();
 }
-
 //------------------------------------------------------------------------------
 // Запустить таймер
 void PassiveTimer::reset(void)
 {
-	timeStart = times();
-
-	if( timeSS == WaitUpTime)
-		return;
-
-	timeAct = (timeSS * clock_ticks) / 100 + timeStart;
+	t_start = std::chrono::high_resolution_clock::now();
 }
 //------------------------------------------------------------------------------
 // получить текущее значение таймера
 timeout_t PassiveTimer::getCurrent()
 {
-	return (times() - timeStart) * 1000 / clock_ticks;
+	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - t_start).count();
 }
 //------------------------------------------------------------------------------
 void PassiveTimer::terminate()
 {
-	timeAct = 0;
+	t_msec = WaitUpTime;
 }
-
 //------------------------------------------------------------------------------
-clock_t PassiveTimer::times()
-{
-	// Не в Linux запрещено вызывать с NULL
-	struct tms tm;
-	return ::times(&tm);
-}

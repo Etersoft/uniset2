@@ -27,13 +27,13 @@ TEST_CASE("Pulse", "[Test for class 'Pulse' - impulse generator]" )
 		CHECK( p.step() );
 
 		msleep(30);
-		CHECK_FALSE( p.step() );
+		CHECK_FALSE( p.step() ); // 10 - OFF
 
 		msleep(70);
-		CHECK( p.step() );
+		CHECK( p.step() ); // 20 - ON
 
 		msleep(100);
-		CHECK_FALSE( p.step() );
+		CHECK_FALSE( p.step() ); // 20 OFF
 
 		p.set(false);
 		msleep(100);
@@ -44,7 +44,7 @@ TEST_CASE("Pulse", "[Test for class 'Pulse' - impulse generator]" )
 		p.set(true);
 		msleep(70);
 		CHECK( p.step() );
-		msleep(30);
+		msleep(40);
 		CHECK_FALSE( p.step() );
 
 		p.reset();

@@ -3,7 +3,7 @@
 #include "PassiveTimer.h"
 #include "UniSetTypes.h"
 using namespace std;
-
+// -----------------------------------------------------------------------------
 TEST_CASE("PassiveTimer", "[PassiveTimer]" )
 {
 	SECTION( "Default constructor" )
@@ -74,3 +74,18 @@ TEST_CASE("PassiveTimer", "[PassiveTimer]" )
 		CHECK( pt2.checkTime() );
 	}
 }
+// -----------------------------------------------------------------------------
+TEST_CASE("PassiveTimer: 1 msec", "[PassiveTimer][msec]" )
+{
+	PassiveTimer pt(1);
+	pt.reset();
+	msleep(1);
+	CHECK( pt.checkTime() );
+
+	pt.setTiming(2);
+	msleep(1);
+	CHECK_FALSE( pt.checkTime() );
+	msleep(1);
+	CHECK( pt.checkTime() );
+}
+// -----------------------------------------------------------------------------

@@ -53,12 +53,17 @@ class Pulse
 			if( ostate && t1.checkTime() )
 			{
 				ostate = false;
-				t0.setTiming(t0_msec);
+
+				// учитываем что step мог вызваться гораздо позже..
+				t0.setTiming( t0_msec - t1.getCurrent()%t1.getInterval() );
 			}
-			else if( !ostate && t0.checkTime() )
+
+			if( !ostate && t0.checkTime() )
 			{
-				t1.setTiming(t1_msec);
 				ostate = true;
+
+				// учитываем что step мог вызваться гораздо позже..
+				t1.setTiming(t1_msec - t0.getCurrent()%t0.getInterval() );
 			}
 
 			return ostate;
@@ -66,7 +71,7 @@ class Pulse
 
 		inline bool out()
 		{
-			return ostate;
+			return step(); // ostate;
 		}
 
 		inline void set( bool state )
@@ -88,7 +93,7 @@ class Pulse
 			return os     << " idOn=" << p.isOn
 				   << " t1=" << p.t1.getInterval()
 				   << " t0=" << p.t0.getInterval()
-				   << " out=" << p.ostate;
+				   << " out=" << p.out();
 		}
 
 		friend std::ostream& operator<<(std::ostream& os, Pulse* p )

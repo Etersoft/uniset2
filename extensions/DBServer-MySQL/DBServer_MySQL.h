@@ -145,6 +145,9 @@ class DBServer_MySQL:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
+		inline std::shared_ptr<LogAgregator> getLogAggregator(){ return loga; }
+		inline std::shared_ptr<DebugStream> log(){ return dblog; }
+
 	protected:
 		typedef std::map<int, std::string> DBTableMap;
 
