@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt35
+Release: alt35.1
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -445,6 +445,11 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Tue May 26 2015 Pavel Vainerman <pv@etersoft.ru> 2.0-alt35.1
+- PassiveTimer: uset chrono
+- LogServer: add --list function
+- minor fixes
+
 * Sun May 24 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt35
 - add supported LogServer for: 
    SharedMemory,RRDServer,MBTCPMaster,MBSlave,UNetExchange,IOControl,
