@@ -23,7 +23,7 @@ devel_includedir = $(pkgincludedir)/extensions
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSet2SharedMemory.pc
 
-all-local:
-	ln -sf ../SharedMemory/$(devel_include_HEADERS) ../include
+#all-local:
+#	ln -sf ../SharedMemory/$(devel_include_HEADERS) ../include
 
 include $(top_builddir)/include.mk

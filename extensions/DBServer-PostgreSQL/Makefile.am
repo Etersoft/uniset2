@@ -22,7 +22,7 @@ pgsql_test_SOURCES = test.cc
 
 # install
 devel_include_HEADERS = *.h
-devel_includedir = $(includedir)/@PACKAGE@/pgsql
+devel_includedir = $(includedir)/@PACKAGE@/extensions/pgsql
 
 pkgconfigdir    = $(libdir)/pkgconfig
 pkgconfig_DATA  = libUniSet2PostgreSQL.pc

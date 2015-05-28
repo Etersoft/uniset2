@@ -19,7 +19,7 @@ mysql_test_SOURCES = test.cc
 
 # install
 devel_include_HEADERS = *.h
-devel_includedir = $(includedir)/@PACKAGE@/mysql
+devel_includedir = $(includedir)/@PACKAGE@/extensions/mysql
 
 pkgconfigdir	= $(libdir)/pkgconfig
 pkgconfig_DATA  = libUniSet2MySQL.pc

@@ -12,8 +12,8 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.0
-Release: alt35.1
+Version: 2.1
+Release: alt1
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -310,15 +310,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_includedir/%oname/*.hh
 %_includedir/%oname/*.tcc
 %_includedir/%oname/modbus/
-%if_enabled mysql
-%_includedir/%oname/mysql/
-%endif
-%if_enabled sqlite
-%_includedir/%oname/sqlite/
-%endif
-%if_enabled pgsql
-%_includedir/%oname/pgsql/
-%endif
 
 %_libdir/libUniSet2.so
 %_datadir/idl/%oname/
@@ -331,6 +322,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %files extension-mysql-devel
 %_pkgconfigdir/libUniSet2MySQL.pc
+%dir %_includedir/%oname/extensions/mysql
+%_includedir/%oname/extensions/mysql/
 %endif
 
 %if_enabled sqlite
@@ -340,6 +333,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %files extension-sqlite-devel
 %_pkgconfigdir/libUniSet2SQLite.pc
+%dir %_includedir/%oname/extensions/sqlite
+%_includedir/%oname/extensions/sqlite/
 %endif
 
 %if_enabled pgsql
@@ -349,6 +344,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %files extension-pgsql-devel
 %_pkgconfigdir/libUniSet2PostgreSQL.pc
+%dir %_includedir/%oname/extensions/pgsql
+%_includedir/%oname/extensions/pgsql/
 %endif
 
 %if_enabled python
@@ -397,6 +394,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %files extension-logicproc-devel
 %_pkgconfigdir/libUniSet2Log*.pc
 %_libdir/libUniSet2LP*.so
+%dir %_includedir/%oname/extensions/logicproc
+%_includedir/%oname/extensions/logicproc/
 %endif
 
 %if_enabled rrd
@@ -407,6 +406,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %files extension-rrd-devel
 %_pkgconfigdir/libUniSet2RRD*.pc
 %_libdir/libUniSet2RRD*.so
+%dir %_includedir/%oname/extensions/rrd
+%_includedir/%oname/extensions/rrd/
 %endif
 
 %if_enabled io
@@ -419,6 +420,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %files extension-io-devel
 %_libdir/libUniSet2IO*.so
 %_pkgconfigdir/libUniSet2IO*.pc
+%dir %_includedir/%oname/extensions/io
+%_includedir/%oname/extensions/io/
 %endif
 
 %files extension-common-devel
@@ -437,6 +440,13 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_pkgconfigdir/libUniSet2Network*.pc
 %_pkgconfigdir/libUniSet2UNet*.pc
 
+%exclude %_includedir/%oname/extensions/mysql
+%exclude %_includedir/%oname/extensions/sqlite
+%exclude %_includedir/%oname/extensions/pgsql
+%exclude %_includedir/%oname/extensions/logicproc
+%exclude %_includedir/%oname/extensions/io
+%exclude %_includedir/%oname/extensions/rrd
+
 #%_pkgconfigdir/libUniSet2SMDBServer.pc
 #%_pkgconfigdir/libUniSet2*.pc
 %exclude %_pkgconfigdir/libUniSet2.pc
@@ -445,6 +455,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Thu May 28 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt1
+- repack header files..
+
 * Tue May 26 2015 Pavel Vainerman <pv@etersoft.ru> 2.0-alt35.1
 - PassiveTimer: uset chrono
 - LogServer: add --list function

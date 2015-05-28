@@ -83,7 +83,7 @@ devel_includedir = $(pkgincludedir)/extensions
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSet2MBTCPMaster.pc libUniSet2RTU.pc
 
-all-local:
-	ln -sf ../ModbusMaster/$(devel_include_HEADERS) ../include
+#all-local:
+#	ln -sf ../ModbusMaster/$(devel_include_HEADERS) ../include
 
 include $(top_builddir)/include.mk

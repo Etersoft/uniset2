@@ -8,4 +8,4 @@ Description: Support library for UniSet2RRDServer
 Requires: libUniSet2Extensions librrd
 Version: @VERSION@
 Libs: -L${libdir} -lUniSet2RRDServer
-Cflags: -I${includedir}/@PACKAGE@
+Cflags: -I${includedir}/@PACKAGE@/extensions/rrd

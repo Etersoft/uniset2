@@ -28,13 +28,13 @@ libUniSet2RRDServer_la_SOURCES 	= RRDServer.cc
 
 # install
 devel_include_HEADERS = *.h
-devel_includedir = $(pkgincludedir)/extensions
+devel_includedir = $(pkgincludedir)/extensions/rrd
 
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSet2RRDServer.pc
 
-all-local:
-	ln -sf ../RRDServer/$(devel_include_HEADERS) ../include
+#all-local:
+#	ln -sf ../RRDServer/$(devel_include_HEADERS) ../include
 
 include $(top_builddir)/include.mk
 

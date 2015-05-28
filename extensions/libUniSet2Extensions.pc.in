@@ -5,7 +5,7 @@ includedir=@includedir@
 
 Name: libUniSet2Extensions
 Description: Support library for UniSet2 Extensions
-Requires: libUniSet2 comedilib
+Requires: libUniSet2
 Version: @VERSION@
 Libs: -L${libdir} -lUniSet2Extensions
 Cflags: -I${includedir}/@PACKAGE@

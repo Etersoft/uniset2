@@ -20,7 +20,7 @@ sqlite_test_SOURCES = test.cc
 
 # install
 devel_include_HEADERS = *.h
-devel_includedir = $(includedir)/@PACKAGE@/sqlite
+devel_includedir = $(includedir)/@PACKAGE@/extensions/sqlite
 
 pkgconfigdir	= $(libdir)/pkgconfig
 pkgconfig_DATA  = libUniSet2SQLite.pc

@@ -5,7 +5,7 @@ includedir=@includedir@
 
 Name: libUniSet2IOControl
 Description: Support library for UniSet2IOControl
-Requires: libUniSet2Extensions
+Requires: libUniSet2Extensions comedilib
 Version: @VERSION@
 Libs: -L${libdir} -lUniSet2IOControl
-Cflags: -I${includedir}/@PACKAGE@
+Cflags: -I${includedir}/@PACKAGE@/extensions/io

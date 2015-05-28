@@ -33,8 +33,8 @@ devel_includedir = $(pkgincludedir)/extensions
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSet2MBSlave.pc
 
-all-local:
-	ln -sf ../ModbusSlave/$(devel_include_HEADERS) ../include
+#all-local:
+#	ln -sf ../ModbusSlave/$(devel_include_HEADERS) ../include
 
 include $(top_builddir)/include.mk
 

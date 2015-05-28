@@ -8,4 +8,4 @@ Description: Support library for UniSet2LogicProcessor
 Requires: libUniSet2Extensions
 Version: @VERSION@
 Libs: -L${libdir} -lUniSet2LProcessor
-Cflags: -I${includedir}/@PACKAGE@
+Cflags: -I${includedir}/@PACKAGE@/extensions/logicproc

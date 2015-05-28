@@ -19,7 +19,7 @@ libUniSet2Network_la_SOURCES = UniExchange.cc
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 	$(COMCPP_LIBS)
-@PACKAGE@_network_CPPFLAGS	= $(SIGC_CFLAGS) $(COMCPP_CFLAGS) -I$(top_builddir)/extensions/include
+@PACKAGE@_network_CPPFLAGS	= $(SIGC_CFLAGS) $(COMCPP_CFLAGS) -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory
 @PACKAGE@_network_SOURCES 	= uninet.cc
 
 # install
@@ -29,7 +29,7 @@ devel_includedir = $(pkgincludedir)/extensions
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSet2Network.pc
 
-all-local:
-	ln -sf ../UniNetwork/$(devel_include_HEADERS) ../include
+#all-local:
+#	ln -sf ../UniNetwork/$(devel_include_HEADERS) ../include
 
 include $(top_builddir)/include.mk

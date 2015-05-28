@@ -31,7 +31,7 @@ devel_includedir = $(pkgincludedir)/extensions
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSet2UNetUDP.pc
 
-all-local:
-	ln -sf ../UNetUDP/$(devel_include_HEADERS) ../include
+#all-local:
+#	ln -sf ../UNetUDP/$(devel_include_HEADERS) ../include
 
 include $(top_builddir)/include.mk
