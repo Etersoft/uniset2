@@ -79,8 +79,15 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		// "сердцебиение"
 		if( idHeartBeat!=DefaultObjectId &amp;&amp; ptHeartBeat.checkTime() )
 		{
-			ui->setValue(idHeartBeat,maxHeartBeat,UniversalIO::AI);
-			ptHeartBeat.reset();
+			try
+			{
+				ui->setValue(idHeartBeat,maxHeartBeat);
+				ptHeartBeat.reset();
+			}
+			catch( Exception&amp; ex )
+			{
+				ucrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
+			}
 		}
 
 		// обновление выходов

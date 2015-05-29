@@ -355,10 +355,10 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 	switch( _sm->command )
 	{
 		case SystemMessage::WatchDog:
-			ulogany &lt;&lt; myname &lt;&lt; "(preSysCommand): WatchDog" &lt;&lt; endl;
+			uinfo &lt;&lt; myname &lt;&lt; "(preSysCommand): WatchDog" &lt;&lt; endl;
 			if( !active || !ptStartUpTimeout.checkTime() )
 			{
-                uwarn &lt;&lt; myname &lt;&lt; "(preSysCommand): игнорируем WatchDog, потому-что только-что стартанули" &lt;&lt; endl;
+				uwarn &lt;&lt; myname &lt;&lt; "(preSysCommand): игнорируем WatchDog, потому-что только-что стартанули" &lt;&lt; endl;
 				break;
 			}
 		case SystemMessage::StartUp:

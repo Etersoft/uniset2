@@ -17,6 +17,7 @@ check-local: atconfig package.m4 $(TESTSUITE) sm-tests.at
 clean-local:
 	rm -rf $(CLEANFILES)
 	rm -rf $(COVERAGE_REPORT_DIR)
+	rm -rf *_SK.*
 
 TestObject_SK.cc TestObject.h: testobject.src.xml
 	$(UNISET_CODEGEN) -l $(top_builddir)/Utilities/codegen -n TestObject --topdir $(top_builddir)/ --ask --no-main testobject.src.xml

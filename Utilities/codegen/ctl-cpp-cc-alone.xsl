@@ -82,8 +82,15 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		// "сердцебиение"
 		if( idHeartBeat!=DefaultObjectId &amp;&amp; ptHeartBeat.checkTime() )
 		{
-			ui->setValue(idHeartBeat,maxHeartBeat,UniversalIO::AI);
-			ptHeartBeat.reset();
+			try
+			{
+				ui->setValue(idHeartBeat,maxHeartBeat);
+				ptHeartBeat.reset();
+			}
+			catch( const Exception&amp; ex )
+			{
+				ucrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
+			}
 		}
 
 		// обновление выходов
@@ -103,7 +110,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 	}
 	catch( const std::exception&amp;ex )
 	{
-        ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
+        ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;  endl;
 	}
 
 	if( !active )

@@ -167,6 +167,7 @@ extensions/SharedMemory/tests/NullSM.h
 extensions/SharedMemory/tests/TestObject.cc
 extensions/SharedMemory/tests/TestObject.h
 extensions/SharedMemory/tests/testobject.src.xml
+extensions/SharedMemory/tests/sm-configure.xml
 extensions/SharedMemoryPlus/Makefile.am
 extensions/SharedMemoryPlus/smemory-plus.cc
 extensions/SharedMemoryPlus/test.xml

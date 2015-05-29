@@ -15,6 +15,12 @@ class TestObject:
 		void askNotifyFirstNotNull();
 
 		inline bool getEvnt(){ return evntIsOK; }
+
+		void stopHeartbeat();
+		void runHeartbeat( int max=3 );
+
+		inline timeout_t getHeartbeatTime(){ return ptHeartBeat.getInterval(); }
+
 	protected:
 		TestObject();
 

@@ -35,3 +35,13 @@ void TestObject::sysCommand( const UniSetTypes::SystemMessage* sm )
 			evntIsOK = true;
 }
 // -----------------------------------------------------------------------------
+void TestObject::stopHeartbeat()
+{
+	maxHeartBeat = 0;
+}
+// -----------------------------------------------------------------------------
+void TestObject::runHeartbeat( int max )
+{
+	maxHeartBeat = max;
+}
+// -----------------------------------------------------------------------------

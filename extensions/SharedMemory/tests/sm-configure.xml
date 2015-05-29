@@ -30,7 +30,7 @@
                 <item node="localhost" name="ReservSharedMemory"/>
             </ReservList>		
 		</SharedMemory>
-		<TestObject name="TestObject" sensor_s="DI2_S" output_c="AO2_C"/>
+		<TestObject name="TestObject" sensor_s="DI2_S" output_c="AO2_C" heartbeat_id="TO_Heartbeat_Counter" heartbeatTime="500" heartbeat_max="5"/>
 	</settings>
 	<ObjectsMap idfromfile="1">
 		<nodes port="2809" unet_broadcast_ip="192.168.1.255" unet_broadcast_ip2="192.168.122.255">
@@ -48,7 +48,8 @@
 			<item id="507" iotype="DI" name="Heartbeat_S" textname="Heartbeat"/>
 			<item id="508" iotype="AI" name="AO2_C" priority="Medium" textname="TestObject test"/>
 			<item id="509" iotype="DI" name="DI2_S" priority="Medium" textname="TestObject test"/>
-
+			<item heartbeat="1" heartbeat_ds_name="TO_Heartbeat_DS" heartbeat_node="localhost" id="510" iotype="AI" name="TO_Heartbeat_Counter" textname="TestObject: heartbeat counter"/>
+			<item id="511" iotype="DI" name="TO_Heartbeat_DS" textname="TestObject: heartbeat"/>
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI1_AS">

@@ -112,15 +112,15 @@ TEST_CASE("[SM]: askSensors", "[sm][ask]")
 	CHECK( obj->in_sensor_s );
 
 	ui->setValue(509, 0);
-	msleep(200);
+	msleep(300);
 	CHECK_FALSE( obj->in_sensor_s );
 
 	obj->out_output_c = 1200;
-	msleep(200);
+	msleep(300);
 	REQUIRE( ui->getValue(508) == 1200 );
 
 	obj->out_output_c = 100;
-	msleep(200);
+	msleep(300);
 	REQUIRE( ui->getValue(508) == 100 );
 }
 // -----------------------------------------------------------------------------
@@ -156,5 +156,24 @@ TEST_CASE("[SM]: askDoNotNotify", "[sm][ask]")
 	obj->askNotifyFirstNotNull();
 	msleep(200);
 	CHECK( obj->in_sensor_s ); // должно придти т.к. равно "1"
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[SM]: heartbeat test N2", "[sm][heartbeat]")
+{
+	InitTest();
+
+	obj->runHeartbeat(5);
+	msleep(obj->getHeartbeatTime() + 100);
+	CHECK( ui->getValue(511) );
+
+	obj->runHeartbeat(2);
+	obj->stopHeartbeat();
+	msleep(3000);
+	CHECK_FALSE( ui->getValue(511) );
+
+	obj->runHeartbeat(5);
+	msleep(obj->getHeartbeatTime() + 100);
+	msleep(1500);
+	CHECK( ui->getValue(511) );
 }
 // -----------------------------------------------------------------------------

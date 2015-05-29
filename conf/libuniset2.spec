@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.1
-Release: alt1
+Release: alt2
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -455,6 +455,11 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Sat May 30 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt2
+- (optimization): TransportMessage change format
+- (uniset-codegen): minor fixes
+- (SharedMemory): add new tests
+
 * Thu May 28 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt1
 - repack header files..
 
