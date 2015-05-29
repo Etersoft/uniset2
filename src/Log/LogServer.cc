@@ -51,8 +51,7 @@ LogServer::LogServer( std::shared_ptr<DebugStream> log ):
 	cancelled(false),
 	thr(0),
 	tcp(0),
-	elog(log),
-	oslog(0)
+	elog(log)
 {
 }
 // -------------------------------------------------------------------------

@@ -34,7 +34,7 @@ static void print_help()
 // --------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
-	std::ios::sync_with_stdio(false);
+//	std::ios::sync_with_stdio(false);
 
 	int optindex = 0;
 	int opt = 0;

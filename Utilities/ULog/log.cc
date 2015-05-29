@@ -55,7 +55,7 @@ static void print_help()
 // --------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
-	std::ios::sync_with_stdio(false);
+//	std::ios::sync_with_stdio(false); // нельзя отключать.. тогда "обмен с сервером" рассинхронизируется
 
 	int optindex = 0;
 	int opt = 0;

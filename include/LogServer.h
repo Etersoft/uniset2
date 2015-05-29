@@ -115,8 +115,6 @@ class LogServer
 
 		ost::TCPSocket* tcp;
 		std::shared_ptr<DebugStream> elog;
-		std::ostream* oslog;
-
 		std::shared_ptr<NullLogSession> nullsess;
 };
 // -------------------------------------------------------------------------

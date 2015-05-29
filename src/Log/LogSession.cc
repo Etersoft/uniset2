@@ -85,10 +85,7 @@ void LogSession::run()
 		slog.crit() << peername << "(run): LOG NULL!!" << endl;
 
 
-	// ptSessionTimeout.setTiming(sessTimeout);
-
 	setKeepAlive(true);
-	//    setTimeout(sessTimeout);
 
 	// Команды могут посылаться только в начале сессии..
 	if( isPending(Socket::pendingInput, cmdTimeout) )
@@ -241,7 +238,7 @@ void LogSession::run()
 
 			// чтобы не застревать на посылке в сеть..
 			// делаем через промежуточный буффер (stringstream)
-			ostringstream sbuf;
+			sbuf.str("");
 			bool send = false;
 			{
 				std::unique_lock<std::mutex> lk(log_mutex);

@@ -25,6 +25,8 @@ void TestGen::step()
 	cout << "str: " << str(input2_s) << endl;
 	cout << "===========" << endl;
 	cout << dumpIO() << endl;
+
+	myinfo << str(input2_s) << endl;
 }
 // -----------------------------------------------------------------------------
 void TestGen::sensorInfo( const SensorMessage* sm )

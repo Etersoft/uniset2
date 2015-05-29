@@ -25,6 +25,9 @@ std::ostream& LogServerTypes::operator<<(std::ostream& os, LogServerTypes::Comma
 		case LogServerTypes::cmdOnLogFile:
 			return os << "cmdOnLogFile";
 
+		case LogServerTypes::cmdList:
+			return os << "cmdList";
+
 		default:
 			return os << "Unknown";
 	}

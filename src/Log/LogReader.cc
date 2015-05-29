@@ -176,11 +176,7 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 			{
 				if( tcp->isPending(ost::Socket::pendingOutput, outTimeout) )
 				{
-					rlog.info() << "(LogReader): ** send command: logname='" << msg.logname << "' cmd='" << msg.cmd << "' data='" << msg.data << "'" << endl;
-
-					//               LogServerTypes::lsMessage msg;
-					//               msg.cmd = cmd;
-					//               msg.data = data;
+					rlog.info() << "(LogReader): ** send command: cmd='" << msg.cmd << "' logname='" << msg.logname << "' data='" << msg.data << "'" << endl;
 					for( size_t i = 0; i < sizeof(msg); i++ )
 						(*tcp) << ((unsigned char*)(&msg))[i];
 
@@ -190,14 +186,14 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 				else
 					rlog.warn() << "(LogReader): **** SEND COMMAND ('" << msg.cmd << "' FAILED!" << endl;
 
-				if( cmdonly )
+				if( cmdonly && msg.cmd!=LogServerTypes::cmdList )
 				{
 					disconnect();
 					return;
 				}
 			}
 
-			while( !cmdonly && tcp->isPending(ost::Socket::pendingInput, inTimeout) )
+			while( (!cmdonly || msg.cmd==LogServerTypes::cmdList) && tcp->isPending(ost::Socket::pendingInput, inTimeout) )
 			{
 				int n = tcp->peek( buf, sizeof(buf) - 1 );
 
@@ -206,6 +202,9 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 					tcp->read(buf, n);
 					buf[n] = '\0';
 					log << buf;
+
+					if( msg.cmd==LogServerTypes::cmdList )
+						break;
 				}
 				else
 					break;
@@ -223,6 +222,9 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 		{
 			cerr << "(LogReader): " << ex.what() << endl;
 		}
+
+		if( cmdonly )
+			break;
 
 		if( readcount > 0 )
 			n--;

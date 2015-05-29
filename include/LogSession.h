@@ -72,6 +72,7 @@ class LogSession:
 		std::atomic_bool cancelled;
 
 		DebugStream slog;
+		std::ostringstream sbuf;
 
 		std::mutex              log_mutex;
 		std::condition_variable log_event;
