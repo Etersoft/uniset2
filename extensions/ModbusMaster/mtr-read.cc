@@ -58,7 +58,7 @@ static void readMTR( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
 
 int main( int argc, char** argv )
 {
-	std::ios::sync_with_stdio(false);
+//	std::ios::sync_with_stdio(false);
 	Command cmd = cmdNOP;
 	int optindex = 0;
 	int opt = 0;
