@@ -159,6 +159,9 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 			{
 				rlog.warn() << "(LogReader): **** connection timeout.." << endl;
 
+				if( cmdonly )
+					return;
+
 				if( readcount > 0 )
 					n--;
 

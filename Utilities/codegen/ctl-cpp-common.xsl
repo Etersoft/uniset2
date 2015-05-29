@@ -713,7 +713,7 @@ end_private(false)
 	loga-&gt;add(ulog());
 
 	logserv = make_shared&lt;LogServer&gt;(loga);
-	logserv-&gt;init( argprefix + "-logserver", confnode );
+	logserv-&gt;init( argprefix + "logserver", confnode );
 
 <xsl:for-each select="//smap/item">
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
@@ -752,10 +752,10 @@ end_private(false)
 	UniXML::iterator it(cnode);
 
 	// ------- init logserver ---
-	if( findArgParam("--" + argprefix + "-run-logserver", conf-&gt;getArgc(), conf-&gt;getArgv()) != -1 )
+	if( findArgParam("--" + argprefix + "run-logserver", conf-&gt;getArgc(), conf-&gt;getArgv()) != -1 )
 	{
-		logserv_host = conf-&gt;getArg2Param("--" + argprefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
-		logserv_port = conf-&gt;getArgPInt("--" + argprefix + "-logserver-port", it.getProp("logserverPort"), getId());
+		logserv_host = conf-&gt;getArg2Param("--" + argprefix + "logserver-host", it.getProp("logserverHost"), "localhost");
+		logserv_port = conf-&gt;getArgPInt("--" + argprefix + "logserver-port", it.getProp("logserverPort"), getId());
 	}
 	
 	forceOut = conf->getArgPInt("--" + argprefix + "force-out",it.getProp("forceOut"),false);
@@ -1104,7 +1104,7 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 	loga-&gt;add(ulog());
 
 	logserv = make_shared&lt;LogServer&gt;(loga);
-	logserv-&gt;init( argprefix + "-logserver", confnode );
+	logserv-&gt;init( argprefix + "logserver", confnode );
 	
 	si.node = conf->getLocalNode();
 
@@ -1117,10 +1117,10 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 	UniXML::iterator it(cnode);
 
 	// ------- init logserver ---
-	if( findArgParam("--" + argprefix + "-run-logserver", conf-&gt;getArgc(), conf-&gt;getArgv()) != -1 )
+	if( findArgParam("--" + argprefix + "run-logserver", conf-&gt;getArgc(), conf-&gt;getArgv()) != -1 )
 	{
-		logserv_host = conf-&gt;getArg2Param("--" + argprefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
-		logserv_port = conf-&gt;getArgPInt("--" + argprefix + "-logserver-port", it.getProp("logserverPort"), getId());
+		logserv_host = conf-&gt;getArg2Param("--" + argprefix + "logserver-host", it.getProp("logserverHost"), "localhost");
+		logserv_port = conf-&gt;getArgPInt("--" + argprefix + "logserver-port", it.getProp("logserverPort"), getId());
 	}
 	
     forceOut = conf->getArgPInt("--" + argprefix + "force-out",it.getProp("forceOut"),false);

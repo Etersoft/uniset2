@@ -104,6 +104,7 @@ int main( int argc, char** argv )
 
 				case 'm':
 					cmd = LogServerTypes::cmdList;
+					cmdonly = 1;
 					break;
 
 				case 'o':
