@@ -47,6 +47,7 @@
         struct TransportMessage
         {
             RawDataOfTransportMessage data;
+            ObjectId consumer;
         };
 
 

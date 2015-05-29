@@ -379,7 +379,8 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
 */
 void IONotifyController::send( ConsumerListInfo& lst, UniSetTypes::SensorMessage& sm )
 {
-	TransportMessage tmsg;
+	TransportMessage tmsg(sm.transport_msg());
+
 	uniset_rwmutex_wrlock l(lst.mut);
 
 	for( auto li = lst.clst.begin(); li != lst.clst.end(); ++li )
@@ -394,16 +395,8 @@ void IONotifyController::send( ConsumerListInfo& lst, UniSetTypes::SensorMessage
 					li->ref = UniSetObject_i::_narrow(op);
 				}
 
-				sm.consumer = li->id;
-
-				// Для оптимизации, чтобы избежать лишее копирование и создание TransportMessage
-				// не используем sm.transport_msg()
-				// а формируем TransportMessage самостоятельно..
-
-				assert(sizeof(UniSetTypes::RawDataOfTransportMessage) >= sizeof(sm));
-				std::memcpy(&tmsg.data, &sm, sizeof(sm));
+				tmsg.consumer = li->id;
 				li->ref->push( tmsg );
-
 				li->attempt = maxAttemtps; // reinit attempts
 				break;
 			}

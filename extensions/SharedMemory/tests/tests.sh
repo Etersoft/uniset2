@@ -7,6 +7,6 @@
 ./uniset2-start.sh -f ./uniset2-admin --confile ./reserv-sm-configure.xml --exist | grep -q UNISET_SM/Controllers || exit 1
 
 
-./uniset2-start.sh -f ./tests $* -- --confile ./sm-configure.xml --pulsar-id Pulsar_S --pulsar-msec 1000 \
+./uniset2-start.sh -f ./tests $* -- --confile ./sm-configure.xml --pulsar-id Pulsar_S --pulsar-msec 1000 --e-filter evnt_test \
 --heartbeat-node localhost --heartbeat-check-time 1000 
 #--dlog-add-levels any

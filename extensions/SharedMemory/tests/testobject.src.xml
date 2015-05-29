@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Cell>
+  <settings>
+	<set name="class-name" val="TestObject"/>
+	<set name="msg-count" val="30"/>
+	<set name="sleep-msec" val="150"/>
+  </settings>
+  <variables>
+  </variables>
+  <smap>
+    <item name="sensor_s" vartype="in" iotype="DI" comment="Test input"/>
+    <item name="output_c" vartype="out" iotype="AO" comment="Test output"/>
+  </smap>
+
+  <msgmap>
+  </msgmap>
+</Cell>

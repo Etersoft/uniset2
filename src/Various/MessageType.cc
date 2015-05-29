@@ -82,6 +82,7 @@ namespace UniSetTypes
 	{
 		assert(sizeof(VoidMessage) >= sizeof(UniSetTypes::RawDataOfTransportMessage));
 		memcpy(this, &tm.data, sizeof(tm.data));
+		consumer = tm.consumer;
 	}
 
 	VoidMessage::VoidMessage()

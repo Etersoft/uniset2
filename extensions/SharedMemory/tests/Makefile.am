@@ -2,7 +2,7 @@ if HAVE_TESTS
 
 noinst_PROGRAMS = tests
 
-tests_SOURCES   = tests.cc NullSM.cc test_sm.cc
+tests_SOURCES   = tests.cc NullSM.cc TestObject_SK.cc TestObject.cc test_sm.cc
 tests_LDADD	 = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 	$(SIGC_LIBS) $(COMCPP_LIBS)
@@ -17,6 +17,9 @@ check-local: atconfig package.m4 $(TESTSUITE) sm-tests.at
 clean-local:
 	rm -rf $(CLEANFILES)
 	rm -rf $(COVERAGE_REPORT_DIR)
+
+TestObject_SK.cc TestObject.h: testobject.src.xml
+	$(UNISET_CODEGEN) -l $(top_builddir)/Utilities/codegen -n TestObject --topdir $(top_builddir)/ --ask --no-main testobject.src.xml
 
 include $(top_builddir)/include.mk
 

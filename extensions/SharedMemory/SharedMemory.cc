@@ -528,16 +528,18 @@ void SharedMemory::readEventList( const std::string& oname )
 // -----------------------------------------------------------------------------
 void SharedMemory::sendEvent( UniSetTypes::SystemMessage& sm )
 {
-	for( auto& it : elst )
+	TransportMessage tm(sm.transport_msg());
+
+	for( const auto& it : elst )
 	{
 		bool ok = false;
-		sm.consumer = it;
+		tm.consumer = it;
 
 		for( unsigned int i = 0; i < 2; i++ )
 		{
 			try
 			{
-				ui->send(it, std::move(sm.transport_msg()) );
+				ui->send(it,tm);
 				ok = true;
 				break;
 			}

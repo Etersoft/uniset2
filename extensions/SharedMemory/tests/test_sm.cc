@@ -3,23 +3,27 @@
 #include <memory>
 #include "UniSetTypes.h"
 #include "UInterface.h"
+#include "TestObject.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 static shared_ptr<UInterface> ui;
+extern shared_ptr<TestObject> obj;
 // -----------------------------------------------------------------------------
 void InitTest()
 {
 	auto conf = uniset_conf();
-	CHECK( conf != nullptr );
+	REQUIRE( conf != nullptr );
 
 	if( !ui )
 	{
 		ui = make_shared<UInterface>();
-		CHECK( ui->getObjectIndex() != nullptr );
-		CHECK( ui->getConf() == conf );
+		REQUIRE( ui->getObjectIndex() != nullptr );
+		REQUIRE( ui->getConf() == conf );
 	}
+
+	REQUIRE( obj != nullptr );
 }
 // -----------------------------------------------------------------------------
 /*
@@ -91,5 +95,66 @@ TEST_CASE("[SM]: heartbeat", "[sm][heartbeat]")
 	ui->setValue(506, 4);
 	msleep(2000);
 	CHECK( ui->getValue(507) );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[SM]: event", "[sm][event]")
+{
+	// SM при старте должна была прислать..
+	// здесь просто проверяем
+	CHECK( obj->getEvnt() );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[SM]: askSensors", "[sm][ask]")
+{
+	InitTest();
+	ui->setValue(509, 1);
+	msleep(200);
+	CHECK( obj->in_sensor_s );
+
+	ui->setValue(509, 0);
+	msleep(200);
+	CHECK_FALSE( obj->in_sensor_s );
+
+	obj->out_output_c = 1200;
+	msleep(200);
+	REQUIRE( ui->getValue(508) == 1200 );
+
+	obj->out_output_c = 100;
+	msleep(200);
+	REQUIRE( ui->getValue(508) == 100 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[SM]: askDoNotNotify", "[sm][ask]")
+{
+	InitTest();
+
+	ui->setValue(509, 1);
+	msleep(200);
+	CHECK( obj->in_sensor_s );
+
+	obj->askDoNotNotify();
+
+	ui->setValue(509, 0); // !!
+	msleep(200);
+	CHECK( obj->in_sensor_s ); //не поменялось значение
+
+	obj->askNotifyChange();
+	msleep(200);
+	CHECK( obj->in_sensor_s ); // не менялось..
+	ui->setValue(509, 1);
+	msleep(200);
+	CHECK( obj->in_sensor_s );
+	ui->setValue(509, 0);
+	msleep(200);
+	CHECK_FALSE( obj->in_sensor_s );
+
+	obj->askDoNotNotify();
+	ui->setValue(509, 1);
+	msleep(200);
+	CHECK_FALSE( obj->in_sensor_s );
+
+	obj->askNotifyFirstNotNull();
+	msleep(200);
+	CHECK( obj->in_sensor_s ); // должно придти т.к. равно "1"
 }
 // -----------------------------------------------------------------------------

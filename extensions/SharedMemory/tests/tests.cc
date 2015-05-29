@@ -8,10 +8,13 @@
 #include "SharedMemory.h"
 #include "Extensions.h"
 #include "NullSM.h"
+#include "TestObject.h"
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
+// --------------------------------------------------------------------------
+std::shared_ptr<TestObject> obj;
 // --------------------------------------------------------------------------
 int main(int argc, char* argv[] )
 {
@@ -51,6 +54,19 @@ int main(int argc, char* argv[] )
 			cerr << "Not found ID for 'ReservSharedMemory'" << endl;
 			return 1;
 		}
+
+		ObjectId o_id = conf->getObjectID("TestObject");
+
+		if( o_id == DefaultObjectId )
+		{
+			cerr << "Not found ID for 'TestObject'" << endl;
+			return 1;
+		}
+
+		xmlNode* o_node = conf->getNode("TestObject");
+
+		obj = make_shared<TestObject>(o_id,o_node);
+		act->add(obj);
 
 		auto nullsm = make_shared<NullSM>(ns_id, "reserv-sm-configure.xml");
 		act->add(nullsm);

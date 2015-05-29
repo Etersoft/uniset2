@@ -30,6 +30,7 @@
                 <item node="localhost" name="ReservSharedMemory"/>
             </ReservList>		
 		</SharedMemory>
+		<TestObject name="TestObject" sensor_s="DI2_S" output_c="AO2_C"/>
 	</settings>
 	<ObjectsMap idfromfile="1">
 		<nodes port="2809" unet_broadcast_ip="192.168.1.255" unet_broadcast_ip2="192.168.122.255">
@@ -45,6 +46,9 @@
 			<item id="505" iotype="DI" name="Pulsar_S" priority="Medium" textname="pulsar"/>
 			<item heartbeat="1" heartbeat_ds_name="Heartbeat_S" heartbeat_node="localhost" id="506" iotype="AI" name="Heart_Counter_AS" textname="Heartbeat counter"/>
 			<item id="507" iotype="DI" name="Heartbeat_S" textname="Heartbeat"/>
+			<item id="508" iotype="AI" name="AO2_C" priority="Medium" textname="TestObject test"/>
+			<item id="509" iotype="DI" name="DI2_S" priority="Medium" textname="TestObject test"/>
+
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI1_AS">
@@ -68,6 +72,7 @@
 		<!-- ******************* Идентификаторы объектов ***************** -->
 		<objects name="UniObjects">
 			<item id="6000" name="TestProc"/>
+			<item id="6001" name="TestObject" evnt_test="1"/>
 		</objects>
 	</ObjectsMap>
 	<messages idfromfile="1" name="messages">

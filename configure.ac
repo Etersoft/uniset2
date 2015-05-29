@@ -203,7 +203,7 @@ AC_SUBST(DOXYGEN)
 AM_CONDITIONAL(HAVE_DOXYGEN, test x$DOXYGEN != x)
 
 if test "x$UNISET_CODEGEN" = x ; then
-	UNISET_CODEGEN="sh \$(top_builddir)/Utilities/codegen/uniset-codegen --path \$(top_builddir)/Utilities/codegen/"
+	UNISET_CODEGEN="sh \$(top_builddir)/Utilities/codegen/uniset2-codegen --path \$(top_builddir)/Utilities/codegen/"
 fi
 AC_SUBST(UNISET_CODEGEN)
 echo "UNISET_CODEGEN: $UNISET_CODEGEN"
