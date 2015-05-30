@@ -55,7 +55,7 @@ class Pulse
 				ostate = false;
 
 				// учитываем что step мог вызваться гораздо позже..
-				t0.setTiming( t0_msec - t1.getCurrent()%t1.getInterval() );
+				t0.setTiming( t0_msec - t1.getCurrent() % t1.getInterval() );
 			}
 
 			if( !ostate && t0.checkTime() )
@@ -63,7 +63,7 @@ class Pulse
 				ostate = true;
 
 				// учитываем что step мог вызваться гораздо позже..
-				t1.setTiming(t1_msec - t0.getCurrent()%t0.getInterval() );
+				t1.setTiming(t1_msec - t0.getCurrent() % t0.getInterval() );
 			}
 
 			return ostate;

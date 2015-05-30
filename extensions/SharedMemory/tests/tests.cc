@@ -65,7 +65,7 @@ int main(int argc, char* argv[] )
 
 		xmlNode* o_node = conf->getNode("TestObject");
 
-		obj = make_shared<TestObject>(o_id,o_node);
+		obj = make_shared<TestObject>(o_id, o_node);
 		act->add(obj);
 
 		auto nullsm = make_shared<NullSM>(ns_id, "reserv-sm-configure.xml");

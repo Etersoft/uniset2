@@ -13,6 +13,7 @@ int main( int argc, const char** argv )
 		auto conf = uniset_init(argc, argv);
 
 		xmlNode* cnode = conf->getNode("Skel");
+
 		if( cnode == NULL )
 		{
 			cerr << "(Skel): not found <Skel> in conffile" << endl;

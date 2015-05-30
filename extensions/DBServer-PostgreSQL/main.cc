@@ -8,7 +8,7 @@ using namespace std;
 // --------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-//	std::ios::sync_with_stdio(false);
+	//	std::ios::sync_with_stdio(false);
 
 	try
 	{

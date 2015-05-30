@@ -149,6 +149,7 @@ void LogSession::run()
 					}
 
 					s << "=====================" << endl;
+
 					if( isPending(Socket::pendingOutput, cmdTimeout) )
 					{
 
@@ -158,7 +159,7 @@ void LogSession::run()
 				}
 
 				// обрабатываем команды только если нашли log
-				for( auto&& li: loglist )
+				for( auto && li : loglist )
 				{
 					// Обработка команд..
 					// \warning Работа с логом ведётся без mutex-а, хотя он разделяется отдельными потоками
@@ -166,15 +167,15 @@ void LogSession::run()
 					{
 						case LogServerTypes::cmdSetLevel:
 							li.log->level( (Debug::type)msg.data );
-						break;
+							break;
 
 						case LogServerTypes::cmdAddLevel:
 							li.log->addLevel( (Debug::type)msg.data );
-						break;
+							break;
 
 						case LogServerTypes::cmdDelLevel:
 							li.log->delLevel( (Debug::type)msg.data );
-						break;
+							break;
 
 						case LogServerTypes::cmdRotate:
 						{
@@ -184,11 +185,11 @@ void LogSession::run()
 						break;
 
 						case LogServerTypes::cmdList: // обработали выше (в начале)
-						break;
+							break;
 
 						case LogServerTypes::cmdOffLogFile:
 							li.log->logFile("");
-						break;
+							break;
 
 						case LogServerTypes::cmdOnLogFile:
 						{

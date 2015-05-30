@@ -374,8 +374,14 @@ class SharedMemory:
 			return histSaveTime;    /*!< период между точками "дампа", мсек */
 		}
 
-		inline std::shared_ptr<LogAgregator> getLogAggregator(){ return loga; }
-		inline std::shared_ptr<DebugStream> log(){ return smlog; }
+		inline std::shared_ptr<LogAgregator> getLogAggregator()
+		{
+			return loga;
+		}
+		inline std::shared_ptr<DebugStream> log()
+		{
+			return smlog;
+		}
 
 	protected:
 		typedef std::list<Restorer_XML::ReaderSlot> ReadSlotList;

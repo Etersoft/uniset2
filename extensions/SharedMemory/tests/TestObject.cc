@@ -32,7 +32,7 @@ void TestObject::sysCommand( const UniSetTypes::SystemMessage* sm )
 {
 	// фиксируем что SM прислала WDT при своём запуске
 	if( sm->command == SystemMessage::WatchDog )
-			evntIsOK = true;
+		evntIsOK = true;
 }
 // -----------------------------------------------------------------------------
 void TestObject::stopHeartbeat()

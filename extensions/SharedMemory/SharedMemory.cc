@@ -539,7 +539,7 @@ void SharedMemory::sendEvent( UniSetTypes::SystemMessage& sm )
 		{
 			try
 			{
-				ui->send(it,tm);
+				ui->send(it, tm);
 				ok = true;
 				break;
 			}

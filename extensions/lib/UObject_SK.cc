@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */
 // --------------------------------------------------------------------------
-// generate timestamp: 2015-05-24+03:00
+// generate timestamp: 2015-05-30+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include "Configuration.h"
@@ -117,17 +117,17 @@ UObject_SK::UObject_SK( ObjectId id, xmlNode* cnode, const std::string& _argpref
 	loga->add(ulog());
 
 	logserv = make_shared<LogServer>(loga);
-	logserv->init( argprefix + "-logserver", confnode );
+	logserv->init( argprefix + "logserver", confnode );
 
 
 
 	UniXML::iterator it(cnode);
 
 	// ------- init logserver ---
-	if( findArgParam("--" + argprefix + "-run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
+	if( findArgParam("--" + argprefix + "run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
 	{
-		logserv_host = conf->getArg2Param("--" + argprefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
-		logserv_port = conf->getArgPInt("--" + argprefix + "-logserver-port", it.getProp("logserverPort"), getId());
+		logserv_host = conf->getArg2Param("--" + argprefix + "logserver-host", it.getProp("logserverHost"), "localhost");
+		logserv_port = conf->getArgPInt("--" + argprefix + "logserver-port", it.getProp("logserverPort"), getId());
 	}
 
 	forceOut = conf->getArgPInt("--" + argprefix + "force-out", it.getProp("forceOut"), false);
@@ -309,7 +309,7 @@ void UObject_SK::preSysCommand( const SystemMessage* _sm )
 	switch( _sm->command )
 	{
 		case SystemMessage::WatchDog:
-			ulogany << myname << "(preSysCommand): WatchDog" << endl;
+			uinfo << myname << "(preSysCommand): WatchDog" << endl;
 
 			if( !active || !ptStartUpTimeout.checkTime() )
 			{
@@ -458,8 +458,15 @@ void UObject_SK::callback()
 		// "сердцебиение"
 		if( idHeartBeat != DefaultObjectId && ptHeartBeat.checkTime() )
 		{
-			ui->setValue(idHeartBeat, maxHeartBeat, UniversalIO::AI);
-			ptHeartBeat.reset();
+			try
+			{
+				ui->setValue(idHeartBeat, maxHeartBeat);
+				ptHeartBeat.reset();
+			}
+			catch( const Exception& ex )
+			{
+				ucrit << myname << "(execute): " << ex << endl;
+			}
 		}
 
 		// обновление выходов

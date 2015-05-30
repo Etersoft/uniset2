@@ -217,8 +217,14 @@ class MBExchange:
 
 		void execute();
 
-		inline std::shared_ptr<LogAgregator> getLogAggregator(){ return loga; }
-		inline std::shared_ptr<DebugStream> log(){ return mblog; }
+		inline std::shared_ptr<LogAgregator> getLogAggregator()
+		{
+			return loga;
+		}
+		inline std::shared_ptr<DebugStream> log()
+		{
+			return mblog;
+		}
 
 	protected:
 		virtual void step();

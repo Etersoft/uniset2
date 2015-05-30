@@ -72,8 +72,14 @@ class RRDServer:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
-		inline std::shared_ptr<LogAgregator> getLogAggregator(){ return loga; }
-		inline std::shared_ptr<DebugStream> log(){ return mylog; }
+		inline std::shared_ptr<LogAgregator> getLogAggregator()
+		{
+			return loga;
+		}
+		inline std::shared_ptr<DebugStream> log()
+		{
+			return mylog;
+		}
 
 	protected:
 		RRDServer();

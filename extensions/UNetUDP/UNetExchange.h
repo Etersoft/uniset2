@@ -99,8 +99,14 @@ class UNetExchange:
 
 		bool checkExistUNetHost( const std::string& host, ost::tpport_t port );
 
-		inline std::shared_ptr<LogAgregator> getLogAggregator(){ return loga; }
-		inline std::shared_ptr<DebugStream> log(){ return unetlog; }
+		inline std::shared_ptr<LogAgregator> getLogAggregator()
+		{
+			return loga;
+		}
+		inline std::shared_ptr<DebugStream> log()
+		{
+			return unetlog;
+		}
 
 	protected:
 

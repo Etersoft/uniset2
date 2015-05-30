@@ -113,7 +113,7 @@ std::list<LogAgregator::LogInfo> LogAgregator::getLogList()
 {
 	std::list<LogAgregator::LogInfo> l;
 
-	for( auto&& i : lmap )
+	for( auto && i : lmap )
 		l.push_back(i.second);
 
 	return std::move(l);
@@ -122,10 +122,12 @@ std::list<LogAgregator::LogInfo> LogAgregator::getLogList()
 std::list<LogAgregator::LogInfo> LogAgregator::getLogList( const std::string& regex_str )
 {
 	std::list<LogAgregator::LogInfo> l;
+
 	try
 	{
 		std::regex rule(regex_str);
-		for( auto&& i : lmap )
+
+		for( auto && i : lmap )
 		{
 			if( std::regex_match(i.second.log->getLogName(), rule) )
 				l.push_back(i.second);
