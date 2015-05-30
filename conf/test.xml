@@ -53,6 +53,9 @@
 			t_check_s="Threshold1_S"
 			log_c="LogLevel_S"
 			log_s="LogLevel_S"
+			input1_s="Input5_S"
+			input2_s="Input6_S"
+			output2_c="DO2_C"
 		/>
 
 		<IOControl name="IOControl"/>

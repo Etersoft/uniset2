@@ -14,10 +14,10 @@ class Skel:
 	protected:
 		Skel();
 
-		virtual void step();
-		virtual void sensorInfo( UniSetTypes::SensorMessage* sm );
-		virtual void timerInfo( UniSetTypes::TimerMessage* tm );
-		virtual void askSensors( UniversalIO::UIOCommand cmd );
+		virtual void step() override;
+		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
+		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+		virtual void askSensors( UniversalIO::UIOCommand cmd ) override;
 
 	private:
 };

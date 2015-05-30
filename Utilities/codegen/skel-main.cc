@@ -1,4 +1,5 @@
 #include <sstream>
+#include <memory>
 #include <UniSetActivator.h>
 #include "Skel.h"
 // -----------------------------------------------------------------------------
@@ -11,30 +12,27 @@ int main( int argc, const char** argv )
 	{
 		auto conf = uniset_init(argc, argv);
 
-		string logfilename = conf->getArgParam("--logfile", "Skel.log");
-		string logname( conf->getLogDir() + logfilename );
-		ulog.logFile( logname.c_str() );
-
-		auto act = UniSetActivator::Instance();
 		xmlNode* cnode = conf->getNode("Skel");
-
 		if( cnode == NULL )
 		{
-			dlog.crit() << "(Skel): not found <Skel> in conffile" << endl;
+			cerr << "(Skel): not found <Skel> in conffile" << endl;
 			return 1;
 		}
 
-		Skel o("Skel", cnode);
-		act.add(o.get_ptr());
+		auto o = make_shared<Skel>("Skel", cnode);
+
+		auto act = UniSetActivator::Instance();
+		act->add(o);
 
 		SystemMessage sm(SystemMessage::StartUp);
-		act.broadcast( sm.transport_msg() );
+		act->broadcast( sm.transport_msg() );
 
 		ulogany << "\n\n\n";
 		ulogany << "(Skel::main): -------------- Skel START -------------------------\n\n";
 		dlogany << "\n\n\n";
 		dlogany << "(Skel::main): -------------- Skel START -------------------------\n\n";
 		act->run(false);
+		return 0;
 	}
 	catch( const std::exception& ex )
 	{
@@ -45,6 +43,6 @@ int main( int argc, const char** argv )
 		cerr << "(Skel::main): catch(...)" << endl;
 	}
 
-	return 0;
+	return 1;
 }
 // -----------------------------------------------------------------------------

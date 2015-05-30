@@ -27,6 +27,7 @@ void TestGen::step()
 	cout << dumpIO() << endl;
 
 	myinfo << str(input2_s) << endl;
+	ulog()->info() << "ulog: " << str(input2_s) << endl;
 }
 // -----------------------------------------------------------------------------
 void TestGen::sensorInfo( const SensorMessage* sm )

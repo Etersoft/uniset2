@@ -40,11 +40,10 @@ using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 int main( int argc,char* argv[] )
 {
-	if( argc>1 &amp;&amp; !strcmp(argv[1],"--help") )
+	if( argc>1 &amp;&amp; ( strcmp(argv[1],"--help")==0 || strcmp(argv[1],"-h")==0 ) )
 	{
 		cout &lt;&lt; "--name name		- ID процесса. По умолчанию IOController1." &lt;&lt; endl;
 		cout &lt;&lt; "--confile fname	- Конф. файл. по умолчанию configure.xml" &lt;&lt; endl;
-		cout &lt;&lt; "--logfile fname	- выводить логи в файл fname. По умолчанию <xsl:value-of select="$CLASSNAME"/>.log"  &lt;&lt; endl;
 		return 0;
 	}
 
@@ -53,7 +52,7 @@ int main( int argc,char* argv[] )
 		auto conf = uniset_init(argc, argv);
 
 		// определяем ID объекта
-		ObjectId ID(DefaultObjectId);
+		ObjectId ID = DefaultObjectId;
 		string name = conf->getArgParam("--name","<xsl:value-of select="normalize-space($OID)"/>");
 		if( !name.empty() )
 			ID = conf->getObjectID(name);
@@ -66,19 +65,15 @@ int main( int argc,char* argv[] )
 			return 1;
 		}
 	
-		<xsl:value-of select="$CLASSNAME"/> obj(ID);
-
-		string logfilename = conf->getArgParam("--logfile","<xsl:value-of select="$CLASSNAME"/>.log");
-		string logname( conf->getLogDir() + logfilename );
-		obj.mylog->logFile( logname.c_str() );
+		auto obj = make_shared&lt;<xsl:value-of select="$CLASSNAME"/>&gt;(ID);
 
 		auto act = UniSetActivator::Instance();
-		act-&gt;add(obj.get_ptr());
+		act-&gt;add(obj);
 
 		SystemMessage sm(SystemMessage::StartUp);
 		act-&gt;broadcast( sm.transport_msg() );
 		act-&gt;run(false);
-		pause();	// пауза, чтобы дочерние потоки успели завершить работу
+		return 0;
 	}
 	catch( const Exception&amp; ex )
 	{
@@ -93,7 +88,7 @@ int main( int argc,char* argv[] )
 		cerr &lt;&lt; "(main): catch ..." &lt;&lt; endl;
 	}
 
-	return 0;
+	return 1;
 }
 </xsl:template>
 </xsl:stylesheet>

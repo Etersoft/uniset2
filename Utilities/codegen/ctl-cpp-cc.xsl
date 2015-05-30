@@ -87,7 +87,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 				ui->setValue(idHeartBeat,maxHeartBeat);
 				ptHeartBeat.reset();
 			}
-			catch( Exception&amp; ex )
+			catch( const Exception&amp; ex )
 			{
 				ucrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
 			}
