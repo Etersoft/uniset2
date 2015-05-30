@@ -40,7 +40,8 @@ class LogAgregator:
 		std::shared_ptr<DebugStream> getLog( const std::string& logname );
 		LogInfo getLogInfo( const std::string& logname );
 
-		std::list<std::shared_ptr<DebugStream>> getLogList();
+		std::list<LogInfo> getLogList();
+		std::list<LogInfo> getLogList( const std::string& regexp_str );
 
 	protected:
 		void logOnEvent( const std::string& s );

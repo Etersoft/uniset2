@@ -459,6 +459,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - (optimization): TransportMessage change format
 - (uniset-codegen): minor fixes
 - (SharedMemory): add new tests
+- (LogServer): add regexp support for logname
 
 * Thu May 28 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt1
 - repack header files..

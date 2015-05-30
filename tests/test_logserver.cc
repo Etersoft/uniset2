@@ -94,6 +94,17 @@ TEST_CASE("LogAgregator", "[LogServer][LogAgregator]" )
 
 	log2->any() << test_msg2;
 	REQUIRE( la_msg.str() == test_msg2 );
+
+	auto lst = la->getLogList();
+	REQUIRE( lst.size() == 2 );
+
+	// Проверка поиска по регулярным выражениям
+	auto lst2 = la->getLogList("lo.*");
+	REQUIRE( lst2.size() == 2 );
+
+	auto lst3 = la->getLogList("log\\d{1}");
+	REQUIRE( lst3.size() == 2 );
+
 }
 // --------------------------------------------------------------------------
 TEST_CASE("LogServer", "[LogServer]" )

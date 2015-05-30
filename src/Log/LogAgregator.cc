@@ -1,4 +1,5 @@
 #include <memory>
+#include <regex>
 #include "DebugExtBuf.h"
 #include "LogAgregator.h"
 // -------------------------------------------------------------------------
@@ -108,12 +109,32 @@ LogAgregator::LogInfo LogAgregator::getLogInfo( const std::string& logname )
 	return LogInfo();
 }
 // -------------------------------------------------------------------------
-std::list<std::shared_ptr<DebugStream>> LogAgregator::getLogList()
+std::list<LogAgregator::LogInfo> LogAgregator::getLogList()
 {
-	std::list< std::shared_ptr<DebugStream> > l;
+	std::list<LogAgregator::LogInfo> l;
 
-	for( auto && i : lmap )
-		l.push_back(i.second.log);
+	for( auto&& i : lmap )
+		l.push_back(i.second);
+
+	return std::move(l);
+}
+// -------------------------------------------------------------------------
+std::list<LogAgregator::LogInfo> LogAgregator::getLogList( const std::string& regex_str )
+{
+	std::list<LogAgregator::LogInfo> l;
+	try
+	{
+		std::regex rule(regex_str);
+		for( auto&& i : lmap )
+		{
+			if( std::regex_match(i.second.log->getLogName(), rule) )
+				l.push_back(i.second);
+		}
+	}
+	catch( const std::exception& ex )
+	{
+		cerr << "(LogAgregator::getLogList): " << ex.what() << std::endl;
+	}
 
 	return std::move(l);
 }

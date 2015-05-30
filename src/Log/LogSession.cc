@@ -2,6 +2,7 @@
 #include <memory>
 #include <string>
 #include <sstream>
+#include <regex>
 #include <fcntl.h>
 #include <errno.h>
 #include <cstring>
@@ -102,10 +103,9 @@ void LogSession::run()
 			else
 			{
 				slog.info() << peername << "(run): receive command: '" << msg.cmd << "'" << endl;
-
 				string cmdLogName(msg.logname);
-				auto cmdlog = log;
-				string logfile(log->getLogFile());
+
+				std::list<LogAgregator::LogInfo> loglist;
 
 				if( !cmdLogName.empty () )
 				{
@@ -113,98 +113,87 @@ void LogSession::run()
 
 					if( lag )
 					{
-						LogAgregator::LogInfo inf = lag->getLogInfo(cmdLogName);
-
-						if( inf.log )
-						{
-							cmdlog = inf.log;
-							logfile = inf.logfile;
-						}
+						if( cmdLogName == "ALL" )
+							loglist = lag->getLogList();
 						else
-						{
-							// если имя задали, но такого лога не нашлось
-							// то игнорируем команду
-							cmdlog = 0;
-							logfile = "";
-						}
+							loglist = lag->getLogList(cmdLogName);
 					}
 					else
 					{
-						// если имя лога задали, а оно не совпадает с текущим
-						// игнорируем команду
-						if( log->getLogFile() != cmdLogName )
+						if( cmdLogName == "ALL" || log->getLogFile() == cmdLogName )
 						{
-							cmdlog = 0;
-							logfile = "";
+							LogAgregator::LogInfo log0(log);
+							loglist.push_back(log0);
 						}
 					}
 				}
 
+				// это команда по всем логам..
+				if( msg.cmd == LogServerTypes::cmdList )
+				{
+					ostringstream s;
+					s << "List of managed logs:" << endl;
+					s << "=====================" << endl;
+					auto lag = dynamic_pointer_cast<LogAgregator>(log);
+
+					if( !lag )
+					{
+						s << log->getLogName() << endl;
+					}
+					else
+					{
+						auto lst = lag->getLogList();
+
+						for( const auto& i : lst )
+							s << i.log->getLogName() << endl;
+					}
+
+					s << "=====================" << endl;
+					if( isPending(Socket::pendingOutput, cmdTimeout) )
+					{
+
+						*tcp() << s.str();
+						tcp()->sync();
+					}
+				}
+
 				// обрабатываем команды только если нашли log
-				if( cmdlog )
+				for( auto&& li: loglist )
 				{
 					// Обработка команд..
 					// \warning Работа с логом ведётся без mutex-а, хотя он разделяется отдельными потоками
 					switch( msg.cmd )
 					{
 						case LogServerTypes::cmdSetLevel:
-							cmdlog->level( (Debug::type)msg.data );
-							break;
+							li.log->level( (Debug::type)msg.data );
+						break;
 
 						case LogServerTypes::cmdAddLevel:
-							cmdlog->addLevel( (Debug::type)msg.data );
-							break;
+							li.log->addLevel( (Debug::type)msg.data );
+						break;
 
 						case LogServerTypes::cmdDelLevel:
-							cmdlog->delLevel( (Debug::type)msg.data );
-							break;
+							li.log->delLevel( (Debug::type)msg.data );
+						break;
 
 						case LogServerTypes::cmdRotate:
-							if( !logfile.empty() )
-								cmdlog->logFile(logfile, true);
-
-							break;
-
-						case LogServerTypes::cmdList:
 						{
-							if( isPending(Socket::pendingOutput, cmdTimeout) )
-							{
-								ostringstream s;
-								s << "List of managed logs:" << endl;
-								s << "=====================" << endl;
-								auto lag = dynamic_pointer_cast<LogAgregator>(log);
-
-								if( !lag )
-								{
-									s << log->getLogName() << endl;
-								}
-								else
-								{
-									auto lst = lag->getLogList();
-
-									for( const auto& i : lst )
-										s << i->getLogName() << endl;
-								}
-
-								s << "=====================" << endl;
-
-								*tcp() << s.str();
-								tcp()->sync();
-							}
+							if( !li.logfile.empty() )
+								li.log->logFile(li.logfile, true);
 						}
 						break;
 
+						case LogServerTypes::cmdList: // обработали выше (в начале)
+						break;
+
 						case LogServerTypes::cmdOffLogFile:
-						{
-							if( !logfile.empty() )
-								cmdlog->logFile("");
-						}
+							li.log->logFile("");
 						break;
 
 						case LogServerTypes::cmdOnLogFile:
 						{
-							if( !logfile.empty() )
-								cmdlog->logFile(logfile);
+							if( !li.logfile.empty() )
+								li.log->logFile(li.logfile);
 						}
 						break;
 
