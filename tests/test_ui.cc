@@ -33,8 +33,8 @@ TEST_CASE("UInterface", "[UInterface]")
 	REQUIRE_THROWS_AS( ui.getValue(sid, 100), UniSetTypes::Exception );
 
 	REQUIRE_THROWS_AS( ui.resolve(sid), UniSetTypes::ORepFailed );
-	REQUIRE_THROWS_AS( ui.resolve(sid, 10), UniSetTypes::ORepFailed );
-	REQUIRE_THROWS_AS( ui.resolve(sid, DefaultObjectId), UniSetTypes::ORepFailed );
+	REQUIRE_THROWS_AS( ui.resolve(sid, 10), UniSetTypes::ResolveNameError );
+	REQUIRE_THROWS_AS( ui.resolve(sid, DefaultObjectId), ResolveNameError );
 
 	TransportMessage tm( SensorMessage(sid, 10).transport_msg() );
 

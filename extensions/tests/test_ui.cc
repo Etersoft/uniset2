@@ -86,8 +86,8 @@ TEST_CASE("UInterface", "[UInterface]")
 	SECTION( "resolve" )
 	{
 		REQUIRE_NOTHROW( ui.resolve(sid) );
-		REQUIRE_THROWS_AS( ui.resolve(sid, 10), UniSetTypes::ORepFailed );
-		REQUIRE_THROWS_AS( ui.resolve(sid, DefaultObjectId), UniSetTypes::ORepFailed );
+		REQUIRE_THROWS_AS( ui.resolve(sid, 10), UniSetTypes::ResolveNameError );
+		REQUIRE_THROWS_AS( ui.resolve(sid, DefaultObjectId), UniSetTypes::ResolveNameError );
 	}
 
 	SECTION( "send" )

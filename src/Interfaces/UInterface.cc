@@ -122,8 +122,12 @@ throw(UI_THROW_EXCEPTIONS)
 	if ( id == DefaultObjectId )
 		throw ORepFailed("UI(getValue): error id=UniSetTypes::DefaultObjectId");
 
-	if ( node == DefaultObjectId )
-		throw ORepFailed("UI(getValue): error node=UniSetTypes::DefaultObjectId");
+	if( node == DefaultObjectId )
+	{
+		ostringstream err;
+		err << "UI(getValue): id='" << id << "' error: node=UniSetTypes::DefaultObjectId";
+		throw ORepFailed(err.str());
+	}
 
 	try
 	{
@@ -286,10 +290,14 @@ void UInterface::setValue( const ObjectId id, long value, const ObjectId node ) 
 throw(UI_THROW_EXCEPTIONS)
 {
 	if ( id == DefaultObjectId )
-		throw ORepFailed("UI(setValue): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(setValue): error: id=UniSetTypes::DefaultObjectId");
 
 	if ( node == DefaultObjectId )
-		throw ORepFailed("UI(setValue): error node=UniSetTypes::DefaultObjectId");
+	{
+		ostringstream err;
+		err << "UI(askRemoteSensor): id='" << id << "' error: node=UniSetTypes::DefaultObjectId";
+		throw ORepFailed(err.str());
+	}
 
 	try
 	{
@@ -485,10 +493,14 @@ void UInterface::askRemoteSensor( const ObjectId id, UniversalIO::UIOCommand cmd
 		throw UniSetTypes::IOBadParam("UI(askRemoteSensor): unknown back ID");
 
 	if ( id == DefaultObjectId )
-		throw ORepFailed("UI(askRemoteSensor): id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(askRemoteSensor): error: id=UniSetTypes::DefaultObjectId");
 
 	if ( node == DefaultObjectId )
-		throw ORepFailed("UI(askRemoteSensor): error node=UniSetTypes::DefaultObjectId");
+	{
+		ostringstream err;
+		err << "UI(askRemoteSensor): id='" << id << "' error: node=UniSetTypes::DefaultObjectId";
+		throw ORepFailed(err.str());
+	}
 
 	try
 	{
@@ -578,10 +590,14 @@ IOType UInterface::getIOType( const ObjectId id, const ObjectId node ) const
 throw(UI_THROW_EXCEPTIONS)
 {
 	if ( id == DefaultObjectId )
-		throw ORepFailed("UI(getIOType): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(getIOType): error: id=UniSetTypes::DefaultObjectId");
 
-	if ( node == DefaultObjectId )
-		throw ORepFailed("UI(getIOType): error node=UniSetTypes::DefaultObjectId");
+	if( node == DefaultObjectId )
+	{
+		ostringstream err;
+		err << "UI(getIOType): id='" << id << "' error: node=UniSetTypes::DefaultObjectId";
+		throw ORepFailed(err.str());
+	}
 
 	try
 	{
@@ -667,8 +683,12 @@ throw(UI_THROW_EXCEPTIONS)
 	if ( name == DefaultObjectId )
 		throw ORepFailed("UI(getType): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
 
-	if ( node == DefaultObjectId )
-		throw ORepFailed("UI(getType): error node=UniSetTypes::DefaultObjectId");
+	if( node == DefaultObjectId )
+	{
+		ostringstream err;
+		err << "UI(getType): id='" << name << "' error: node=UniSetTypes::DefaultObjectId";
+		throw ORepFailed(err.str());
+	}
 
 	try
 	{
@@ -795,8 +815,12 @@ throw(ResolveNameError, UniSetTypes::TimeOut )
 	if ( rid == DefaultObjectId )
 		throw ResolveNameError("UI(resolve): ID=UniSetTypes::DefaultObjectId");
 
-	if ( node == DefaultObjectId )
-		throw ResolveNameError("UI(resolve): error node=UniSetTypes::DefaultObjectId");
+	if( node == DefaultObjectId )
+	{
+		ostringstream err;
+		err << "UI(resolve): id='" << rid << "' error: node=UniSetTypes::DefaultObjectId";
+		throw ResolveNameError(err.str());
+	}
 
 	CosNaming::NamingContext_var ctx;
 	rcache.erase(rid, node);
@@ -932,8 +956,12 @@ throw(UI_THROW_EXCEPTIONS)
 	if ( name == DefaultObjectId )
 		throw ORepFailed("UI(send): ERROR: id=UniSetTypes::DefaultObjectId");
 
-	if ( node == DefaultObjectId )
-		throw ORepFailed("UI(send): error node=UniSetTypes::DefaultObjectId");
+	if( node == DefaultObjectId )
+	{
+		ostringstream err;
+		err << "UI(send): id='" << name << "' error: node=UniSetTypes::DefaultObjectId";
+		throw ORepFailed(err.str());
+	}
 
 	try
 	{
@@ -1005,8 +1033,12 @@ IOController_i::ShortIOInfo UInterface::getChangedTime( const ObjectId id, const
 	if( id == DefaultObjectId )
 		throw ORepFailed("UI(getChangedTime): Unknown id=UniSetTypes::DefaultObjectId");
 
-	if ( node == DefaultObjectId )
-		throw ORepFailed("UI(getChangedTime): error node=UniSetTypes::DefaultObjectId");
+	if( node == DefaultObjectId )
+	{
+		ostringstream err;
+		err << "UI(getChangedTime): id='" << id << "' error: node=UniSetTypes::DefaultObjectId";
+		throw ORepFailed(err.str());
+	}
 
 	try
 	{
@@ -1239,10 +1271,14 @@ void UInterface::askRemoteThreshold( const ObjectId sid, const ObjectId node,
 		throw UniSetTypes::IOBadParam("UI(askRemoteThreshold): unknown back ID");
 
 	if ( sid == DefaultObjectId )
-		throw ORepFailed("UI(askRemoteThreshold): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(askRemoteThreshold): error: id=UniSetTypes::DefaultObjectId");
 
-	if ( node == DefaultObjectId )
-		throw ORepFailed("UI(askRemoteThreshold): error node=UniSetTypes::DefaultObjectId");
+	if( node == DefaultObjectId )
+	{
+		ostringstream err;
+		err << "UI(askRemoteThreshold): id='" << sid << "' error: node=UniSetTypes::DefaultObjectId";
+		throw ORepFailed(err.str());
+	}
 
 	try
 	{
@@ -1332,7 +1368,14 @@ IONotifyController_i::ThresholdInfo
 UInterface::getThresholdInfo( const IOController_i::SensorInfo& si, const UniSetTypes::ThresholdId tid ) const
 {
 	if ( si.id == DefaultObjectId )
-		throw ORepFailed("UI(getThresholdInfo): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(getThresholdInfo): error: id=UniSetTypes::DefaultObjectId");
+
+	if( si.node == DefaultObjectId )
+	{
+		ostringstream err;
+		err << "UI(getThresholdInfo): id='" << si.id << "' error: node=UniSetTypes::DefaultObjectId";
+		throw ORepFailed(err.str());
+	}
 
 	try
 	{
@@ -1406,10 +1449,14 @@ UInterface::getThresholdInfo( const IOController_i::SensorInfo& si, const UniSet
 long UInterface::getRawValue( const IOController_i::SensorInfo& si )
 {
 	if ( si.id == DefaultObjectId )
-		throw ORepFailed("UI(getRawValue): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(getRawValue): error: id=UniSetTypes::DefaultObjectId");
 
-	if ( si.node == DefaultObjectId )
-		throw ORepFailed("UI(cgetRawValue): error node=UniSetTypes::DefaultObjectId");
+	if( si.node == DefaultObjectId )
+	{
+		ostringstream err;
+		err << "UI(getRawValue): id='" << si.id << "' error: node=UniSetTypes::DefaultObjectId";
+		throw ORepFailed(err.str());
+	}
 
 	try
 	{
@@ -1491,10 +1538,14 @@ void UInterface::calibrate(const IOController_i::SensorInfo& si,
 	//        throw UniSetTypes::IOBadParam("UI(askTreshold): неизвестен ID администратора");
 
 	if( si.id == DefaultObjectId )
-		throw ORepFailed("UI(calibrate): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(calibrate): error: id=UniSetTypes::DefaultObjectId");
 
 	if( si.node == DefaultObjectId )
-		throw ORepFailed("UI(calibrate): error node=UniSetTypes::DefaultObjectId");
+	{
+		ostringstream err;
+		err << "UI(calibrate): id='" << si.id << "' error: node=UniSetTypes::DefaultObjectId";
+		throw ORepFailed(err.str());
+	}
 
 	try
 	{
@@ -1571,8 +1622,12 @@ IOController_i::CalibrateInfo UInterface::getCalibrateInfo( const IOController_i
 	if ( si.id == DefaultObjectId )
 		throw ORepFailed("UI(getCalibrateInfo): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
 
-	if ( si.node == DefaultObjectId )
-		throw ORepFailed("UI(getCalibrateInfo): error node=UniSetTypes::DefaultObjectId");
+	if( si.node == DefaultObjectId )
+	{
+		ostringstream err;
+		err << "UI(getCalibrateInfo): id='" << si.id << "' error: node=UniSetTypes::DefaultObjectId";
+		throw ORepFailed(err.str());
+	}
 
 	try
 	{
@@ -1900,8 +1955,12 @@ IOController_i::ShortMapSeq* UInterface::getSensors( const UniSetTypes::ObjectId
 	if ( id == DefaultObjectId )
 		throw ORepFailed("UI(getSensors): error node=UniSetTypes::DefaultObjectId");
 
-	if ( node == DefaultObjectId )
-		throw ORepFailed("UI(getSensors): error node=UniSetTypes::DefaultObjectId");
+	if( node == DefaultObjectId )
+	{
+		ostringstream err;
+		err << "UI(getSensors): id='" << id << "' error: node=UniSetTypes::DefaultObjectId";
+		throw ORepFailed(err.str());
+	}
 
 	try
 	{
@@ -1972,13 +2031,17 @@ IOController_i::ShortMapSeq* UInterface::getSensors( const UniSetTypes::ObjectId
 	throw UniSetTypes::TimeOut(set_err("UI(getSensors): Timeout", id, node));
 }
 // -----------------------------------------------------------------------------
-IOController_i::SensorInfoSeq* UInterface::getSensorsMap( const UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
+IOController_i::SensorInfoSeq* UInterface::getSensorsMap( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node )
 {
 	if ( id == DefaultObjectId )
 		throw ORepFailed("UI(getSensorsMap): error node=UniSetTypes::DefaultObjectId");
 
-	if ( node == DefaultObjectId )
-		throw ORepFailed("UI(getSensorsMap): error node=UniSetTypes::DefaultObjectId");
+	if( node == DefaultObjectId )
+	{
+		ostringstream err;
+		err << "UI(getSensorsMap): id='" << id << "' error: node=UniSetTypes::DefaultObjectId";
+		throw ORepFailed(err.str());
+	}
 
 	try
 	{
@@ -2048,13 +2111,17 @@ IOController_i::SensorInfoSeq* UInterface::getSensorsMap( const UniSetTypes::Obj
 	throw UniSetTypes::TimeOut(set_err("UI(getSensorsMap): Timeout", id, node));
 }
 // -----------------------------------------------------------------------------
-IONotifyController_i::ThresholdsListSeq* UInterface::getThresholdsList( const UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
+IONotifyController_i::ThresholdsListSeq* UInterface::getThresholdsList( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node )
 {
 	if ( id == DefaultObjectId )
 		throw ORepFailed("UI(getThresholdsList): error node=UniSetTypes::DefaultObjectId");
 
-	if ( node == DefaultObjectId )
-		throw ORepFailed("UI(getThresholdsList): error node=UniSetTypes::DefaultObjectId");
+	if( node == DefaultObjectId )
+	{
+		ostringstream err;
+		err << "UI(getThresholdsList): id='" << id << "' error: node=UniSetTypes::DefaultObjectId";
+		throw ORepFailed(err.str());
+	}
 
 	try
 	{
