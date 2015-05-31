@@ -13,7 +13,7 @@ static void short_usage()
 // --------------------------------------------------------------------------
 int main(int argc, const char** argv)
 {
-	std::ios::sync_with_stdio(false);
+//	std::ios::sync_with_stdio(false);
 
 	try
 	{
