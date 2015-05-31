@@ -7,7 +7,7 @@
 // -------------------------------------------------------------------------
 namespace LogServerTypes
 {
-	const unsigned int MAGICNUM = 0x20140904;
+	const unsigned int MAGICNUM = 0x20150531;
 	enum Command
 	{
 		cmdNOP,         /*!< отсутствие команды */

@@ -8,19 +8,120 @@
 #include "DebugStream.h"
 #include "LogServerTypes.h"
 // -------------------------------------------------------------------------
+/*!
+	\page page_LogAgregator Агрегатор логов (LogAgregator)
+
+	- \ref sec_LogA_Comm
+	- \ref sec_LogA_Hierarchy
+	- \ref sec_LogA_Regexp
+
+	\section sec_LogA_Comm Общее описание
+	LogAgregator это класс предназначенный для объединения нескольких DebugStream
+	в один поток. При этом LogAgregator сам является DebugStream и обладает всеми его свойствами.
+
+	LogAgregator позволяет управлять каждым из своих логов в отдельности по имени лога.
+	\code
+	std::shared_ptr<DebugStream> dlog1 = std::make_shared<DebugStream>();
+	std::shared_ptr<DebugStream> dlog2 = std::make_shared<DebugStream>();
+
+	std::shared_ptr<DebugStream> la1 = make_shared<LogAgregator>("la1");
+	la1->add(dlog1,"dlog1");
+	la1->add(dlog1,"dlog2");
+
+	// Работа с логами через агрегатор
+	la1->addLevel("dlog1",Debug::INFO);
+	\endcode
+
+	Помимо этого при помощи агрегатора можно сразу создавать дочерние логи
+	\code
+	auto log10 = la1->create("dlog10");
+	log10->warn() << "WARNING MESSAGE" << endl;
+	\endcode
+
+	\section sec_LogA_Hierarchy Иерархия агрегаторов
+
+	Агрегатор позволяет строить иерархии из агрегаторов.
+	При добавлении дочернего агрегатора, все обращения к подчинённым логам другого агрегатора происходят
+	по имени включающим в себя имя дочернего агрегатора.
+	Пример:
+	\code
+	// Где-то в программе есть DebugStream (логи)
+	std::shared_ptr<DebugStream> dlog1 = std::make_shared<DebugStream>();
+	std::shared_ptr<DebugStream> dlog2 = std::make_shared<DebugStream>();
+	std::shared_ptr<DebugStream> dlog3 = std::make_shared<DebugStream>();
+	std::shared_ptr<DebugStream> dlog4 = std::make_shared<DebugStream>();
+
+	std::shared_ptr<LogAgregator> la1 = make_shared<LogAgregator>("la1");
+	la1->add(dlog1,"dlog1");
+	la1->add(dlog1,"dlog2");
+
+	// Работа с логами через агрегатор
+	la1->addLevel("dlog1",Debug::INFO);
+	..
+	// При этом можно выводить и напрямую в агрегатор
+	la1->info() << "INFO MESSAGE" << endl;
+	...
+	std::shared_ptr<LogAgregator> la2 = make_shared<LogAgregator>("la2");
+	la2->add(dlog1,"dlog3");
+	la2->add(dlog1,"dlog4");
+	// работа напрямую...
+	la2->addLevel("dlog4",Debug::WARN);
+
+	// Добавление второго агрегатора в первый..
+	la1->add(la2);
+	...
+	// теперь для обращения к логам второго агрегатора через первый..
+	// нужно добавлять его имя и разделитель "/" (LogAgregator::sep)
+	la1->addLevel("la2/dlog4",Debug::CRIT);
+	\endcode
+
+	\note Все эти свойства в полной мере используются при управлении логами через LogServer.
+	В обычной "жизни" агрегатор вряд ли особо нужен.
+
+
+	\section sec_LogA_Regexp Управление логами с использованием регулярных выражений
+	Агрегатор позволяет получать список подчинённых ему потоков (DebugStream) по именам удовлетворяющим
+	заданному регулярному выражению. Пример:
+	Предположим что иерархия подчинённых потоков выглядит следующим образом
+	\code
+	log1
+	log2
+	log3
+	loga2/log1
+	loga2/log2
+	loga2/loga3/log1
+	loga2/loga3/log2
+	loga2/loga3/log3
+	...
+	\endode
+	Для управления логами можно получить например список всех подчинённых потоков для loga3
+	\code
+	auto lst = la->getLogList(".*loga3.*");
+	for( auto&& l: lst )
+	{
+		..что-то делать..
+	}
+	\endcode
+	\note Полнота и формат поддерживаемых регулярных выражений зависит от поддержки компилятором стандарта с++11 (класс <regex>).
+*/
+// -------------------------------------------------------------------------
 class LogAgregator:
 	public DebugStream
 {
 	public:
 
-		explicit LogAgregator( Debug::type t = Debug::NONE );
-		explicit LogAgregator( char const* f, Debug::type t = Debug::NONE );
+		const std::string sep={"/"}; /*< раздедитель для имён подчинённых агрегаторов */
+
+		explicit LogAgregator( const std::string& name, Debug::type t );
+		explicit LogAgregator( const std::string& name="" );
 
 		virtual ~LogAgregator();
 
 		virtual void logFile( const std::string& f, bool truncate = false ) override;
 
-		void add( std::shared_ptr<DebugStream> log );
+		void add( std::shared_ptr<LogAgregator> log, const std::string& lname="" );
+		void add( std::shared_ptr<DebugStream> log, const std::string& lname="" );
+
 		std::shared_ptr<DebugStream> create( const std::string& logname );
 
 		// Управление "подчинёнными" логами
@@ -28,13 +129,21 @@ class LogAgregator:
 		void delLevel( const std::string& logname, Debug::type t );
 		void level( const std::string& logname, Debug::type t );
 
-
 		struct LogInfo
 		{
-			LogInfo(): log(0), logfile("") {}
-			LogInfo( std::shared_ptr<DebugStream>& l ): log(l), logfile(l->getLogFile()) {}
+			LogInfo(): log(0), logfile(""),logname("") {}
+			LogInfo( std::shared_ptr<DebugStream>& l, const std::string& lname="" ):
+				log(l), logfile(l->getLogFile()),logname(lname.empty()?l->getLogName():lname) {}
+
 			std::shared_ptr<DebugStream> log;
 			std::string logfile;
+			std::string logname;
+
+			// для сортировки "по алфавиту"
+			inline bool operator < ( const LogInfo& r ) const
+			{
+				return logname < r.logname;
+			}
 		};
 
 		std::shared_ptr<DebugStream> getLog( const std::string& logname );
@@ -45,6 +154,8 @@ class LogAgregator:
 
 	protected:
 		void logOnEvent( const std::string& s );
+		void addLog( std::shared_ptr<DebugStream> l, const std::string& lname );
+		void addLogAgregator( std::shared_ptr<LogAgregator> la, const std::string& lname );
 
 
 	private:

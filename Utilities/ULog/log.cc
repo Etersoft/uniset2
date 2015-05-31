@@ -20,10 +20,10 @@ static struct option longopts[] =
 	{ "del", required_argument, 0, 'd' },
 	{ "set", required_argument, 0, 's' },
 	{ "off", required_argument, 0, 'o' },
-	{ "on", required_argument, 0, 'n' },
-	{ "list", no_argument, 0, 'm' },
+	{ "on", required_argument, 0, 'e' },
+	{ "list", no_argument, 0, 'l' },
 	{ "rotate", required_argument, 0, 'r' },
-	{ "logname", required_argument, 0, 'l' },
+	{ "logname", required_argument, 0, 'n' },
 	{ "command-only", no_argument, 0, 'b' },
 	{ "timeout", required_argument, 0, 'w' },
 	{ "reconnect-delay", required_argument, 0, 'x' },
@@ -36,7 +36,7 @@ static void print_help()
 	printf("-v, --verbose               - Print all messages to stdout\n");
 	printf("[-i|--iaddr] addr           - LogServer ip or hostname.\n");
 	printf("[-p|--port] port            - LogServer port.\n");
-	printf("[-l|--logname] name         - Send command only for 'logname'.\n");
+	printf("[-n|--logname] name         - Send command only for 'logname'.\n");
 	printf("[-b|--command-only]         - Send command and break. (No read logs).\n");
 	printf("[-w|--timeout] msec         - Timeout for wait data. Default: 0 - endless waiting\n");
 	printf("[-x|--reconnect-delay] msec - Pause for repeat connect to LogServer. Default: 5000 msec.\n");
@@ -48,9 +48,9 @@ static void print_help()
 	printf("[--del | -d] info,warn,crit,...  - Delete log levels.\n");
 	printf("[--set | -s] info,warn,crit,...  - Set log levels.\n");
 	printf("--off, -o                        - Off the write log file (if enabled).\n");
-	printf("--on, -n                         - On the write log file (if before disabled).\n");
+	printf("--on, -e                         - On(enable) the write log file (if before disabled).\n");
 	printf("--rotate, -r                     - rotate log file.\n");
-	printf("--list, -m                       - List of managed logs.\n");
+	printf("--list, -l                       - List of managed logs.\n");
 }
 // --------------------------------------------------------------------------
 int main( int argc, char** argv )
@@ -73,7 +73,7 @@ int main( int argc, char** argv )
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hvma:p:i:d:s:l:onrbx:w:", longopts, &optindex)) != -1 )
+		while( (opt = getopt_long(argc, argv, "hvla:p:i:d:s:n:eorbx:w:", longopts, &optindex)) != -1 )
 		{
 			switch (opt)
 			{
@@ -102,7 +102,7 @@ int main( int argc, char** argv )
 				}
 				break;
 
-				case 'm':
+				case 'l':
 					cmd = LogServerTypes::cmdList;
 					cmdonly = 1;
 					break;
@@ -111,7 +111,7 @@ int main( int argc, char** argv )
 					cmd = LogServerTypes::cmdOffLogFile;
 					break;
 
-				case 'n':
+				case 'e':
 					cmd = LogServerTypes::cmdOnLogFile;
 					break;
 
@@ -123,7 +123,7 @@ int main( int argc, char** argv )
 					addr = string(optarg);
 					break;
 
-				case 'l':
+				case 'n':
 					logname = string(optarg);
 					break;
 
@@ -171,7 +171,7 @@ int main( int argc, char** argv )
 			data = (int)Debug::value(sdata);
 
 			if( verb )
-				cout << "SEND COMMAND: '" << (LogServerTypes::Command)cmd << " data='" << sdata << "'" << endl;
+				cout << "SEND COMMAND: '" << (LogServerTypes::Command)cmd << " data='" << sdata << "'(" << (int)data << ")" << endl;
 		}
 
 		lr.readlogs( addr, port, (LogServerTypes::Command)cmd, data, logname, verb );

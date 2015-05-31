@@ -243,3 +243,25 @@ TEST_CASE("MaxSessions", "[LogServer]" )
 		r2_thr->join();
 }
 // --------------------------------------------------------------------------
+TEST_CASE("Logagregator regexp", "[LogAgregator]" )
+{
+	auto la = make_shared<LogAgregator>();
+	auto log1 = la->create("log1");
+	auto log2 = la->create("log2");
+	auto log3 = la->create("a3/log1");
+	auto log4 = la->create("a3/log2");
+	auto log5 = la->create("a3/log3");
+	auto log6 = la->create("a3/a4/log1");
+	auto log7 = la->create("a3/a4/log2");
+
+	auto lst = la->getLogList(".*/a4/.*");
+	REQUIRE( lst.size() == 2 );
+
+	lst = la->getLogList("a3/.*");
+	REQUIRE( lst.size() == 5 );
+
+	lst = la->getLogList(".*log1.*");
+	REQUIRE( lst.size() == 3 );
+}
+
+// --------------------------------------------------------------------------

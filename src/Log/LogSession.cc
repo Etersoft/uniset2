@@ -49,6 +49,10 @@ LogSession::LogSession( ost::TCPSocket& server, std::shared_ptr<DebugStream>& _l
 		log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
 	else
 		slog.crit() << "LOG NULL!!" << endl;
+
+	auto ag = dynamic_pointer_cast<LogAgregator>(log);
+	if( ag )
+		alog = ag;
 }
 // -------------------------------------------------------------------------
 void LogSession::logOnEvent( const std::string& s )
@@ -109,14 +113,12 @@ void LogSession::run()
 
 				if( !cmdLogName.empty () )
 				{
-					auto lag = dynamic_pointer_cast<LogAgregator>(log);
-
-					if( lag )
+					if( alog ) // если у нас "агрегатор", то работаем с его списком потоков
 					{
 						if( cmdLogName == "ALL" )
-							loglist = lag->getLogList();
+							loglist = alog->getLogList();
 						else
-							loglist = lag->getLogList(cmdLogName);
+							loglist = alog->getLogList(cmdLogName);
 					}
 					else
 					{
@@ -134,21 +136,25 @@ void LogSession::run()
 					ostringstream s;
 					s << "List of managed logs:" << endl;
 					s << "=====================" << endl;
-					auto lag = dynamic_pointer_cast<LogAgregator>(log);
-
-					if( !lag )
+					if( !alog )
 					{
 						s << log->getLogName() << endl;
 					}
 					else
 					{
-						auto lst = lag->getLogList();
+						std::list<LogAgregator::LogInfo> lst;
+						if( cmdLogName.empty() || cmdLogName == "ALL" )
+							lst = alog->getLogList();
+						else
+							lst = alog->getLogList(cmdLogName);
+
+						// красиво отсортируем сперва..
+						lst.sort([](const LogAgregator::LogInfo & a, const LogAgregator::LogInfo & b) { return a.logname < b.logname; });
 
 						for( const auto& i : lst )
-							s << i.log->getLogName() << endl;
+							s << i.logname << endl;
 					}
-
-					s << "=====================" << endl;
+					s << "=====================" << endl << endl;
 
 					if( isPending(Socket::pendingOutput, cmdTimeout) )
 					{
@@ -158,7 +164,7 @@ void LogSession::run()
 					}
 				}
 
-				// обрабатываем команды только если нашли log
+				// обрабатываем команды только если нашли подходящие логи
 				for( auto && li : loglist )
 				{
 					// Обработка команд..

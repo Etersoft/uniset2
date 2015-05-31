@@ -91,13 +91,12 @@ int main( int argc, char** argv )
 			//            dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
 		}
 
-		auto la = make_shared<LogAgregator>();
-
+		auto la = make_shared<LogAgregator>("la");
+		cerr << "create LogAgregator: " << la->getLogName() << endl;
 
 		auto dlog = make_shared<DebugStream>();
 		dlog->setLogName("dlog");
 		la->add(dlog);
-
 		auto dlog2 = la->create("dlog2");
 
 
@@ -115,11 +114,30 @@ int main( int argc, char** argv )
 
 		}
 
+		auto la2 = make_shared<LogAgregator>("la2");
+		
+		cerr << "create LogAgregator: " << la2->getLogName() << endl;
+		
+		auto dlog3 = la2->create("dlog3");
+		auto dlog4 = la2->create("dlog4");
+		la->add(la2);
+
+
+		if( la->getLog("la2/dlog3") == nullptr )
+		{
+			cerr << "Not found 'la2/dlog3'" << endl;
+			return 1;
+
+		}
+
+
 		LogServer ls(la);
 		ls.setMaxSessionCount(msess);
 
 		dlog->addLevel(Debug::ANY);
 		dlog2->addLevel(Debug::ANY);
+		dlog3->addLevel(Debug::ANY);
+		dlog4->addLevel(Debug::ANY);
 
 		ls.run( addr, port, true );
 
@@ -139,6 +157,14 @@ int main( int argc, char** argv )
 			dlog2->info() << ": dlog2: INFO message" << endl;
 			dlog2->warn() << ": dlog2: WARN message" << endl;
 			dlog2->crit() << ": dlog2: CRIT message" << endl;
+
+			dlog3->info() << ": dlog3: INFO message" << endl;
+			dlog3->warn() << ": dlog3: WARN message" << endl;
+			dlog3->crit() << ": dlog3: CRIT message" << endl;
+
+			dlog4->info() << ": dlog4: INFO message" << endl;
+			dlog4->warn() << ": dlog4: WARN message" << endl;
+			dlog4->crit() << ": dlog4: CRIT message" << endl;
 
 			msleep(delay);
 		}

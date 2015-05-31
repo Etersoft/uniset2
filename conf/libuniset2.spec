@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.1
-Release: alt2
+Release: alt3
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -455,6 +455,12 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Sun May 31 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt3
+- (LogAgregator):
+  - added support agregator hierarchy
+  - add docs
+  - add new tests
+
 * Sat May 30 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt2
 - (optimization): TransportMessage change format
 - (uniset-codegen): minor fixes
@@ -470,7 +476,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - minor fixes
 
 * Sun May 24 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt35
-- add supported LogServer for: 
+- added support LogServer for: 
    SharedMemory,RRDServer,MBTCPMaster,MBSlave,UNetExchange,IOControl,
    codegen,DBServer_xxx
 

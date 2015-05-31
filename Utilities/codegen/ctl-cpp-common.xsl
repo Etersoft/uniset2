@@ -171,48 +171,50 @@
 
 		virtual bool setMsg( UniSetTypes::ObjectId code, bool state = true );
 
-		std::shared_ptr&lt;DebugStream&gt; mylog;
+		inline std::shared_ptr&lt;DebugStream&gt; log(){ return mylog; }
+		inline std::shared_ptr&lt;LogAgregator&gt; logAgregator(){ return loga; }
+
 		void init_dlog( std::shared_ptr&lt;DebugStream&gt; d );
 
         // "синтаксический сахар"..для логов
         #ifndef myinfo 
-        	#define myinfo if( mylog->debugging(Debug::INFO) ) mylog->info() 
+        	#define myinfo if( log()->debugging(Debug::INFO) ) log()->info() 
         #endif
         #ifndef mywarn
-	        #define mywarn if( mylog->debugging(Debug::WARN) ) mylog->warn()
+	        #define mywarn if( log()->debugging(Debug::WARN) ) log()->warn()
         #endif
         #ifndef mycrit
-    	    #define mycrit if( mylog->debugging(Debug::CRIT) ) mylog->crit()
+    	    #define mycrit if( log()->debugging(Debug::CRIT) ) log()->crit()
         #endif
         #ifndef mylog1
-        	#define mylog1 if( mylog->debugging(Debug::LEVEL1) ) mylog->level1()
+        	#define mylog1 if( log()->debugging(Debug::LEVEL1) ) log()->level1()
         #endif
         #ifndef mylog2
-	        #define mylog2 if( mylog->debugging(Debug::LEVEL2) ) mylog->level2()
+	        #define mylog2 if( log()->debugging(Debug::LEVEL2) ) log()->level2()
         #endif
         #ifndef mylog3
-    	    #define mylog3 if( mylog->debugging(Debug::LEVEL3) ) mylog->level3()
+    	    #define mylog3 if( log()->debugging(Debug::LEVEL3) ) log()->level3()
         #endif
         #ifndef mylog4
-        	#define mylog4 if( mylog->debugging(Debug::LEVEL4) ) mylog->level4()
+        	#define mylog4 if( log()->debugging(Debug::LEVEL4) ) log()->level4()
         #endif
         #ifndef mylog5
-	        #define mylog5 if( mylog->debugging(Debug::LEVEL5) ) mylog->level5()
+	        #define mylog5 if( log()->debugging(Debug::LEVEL5) ) log()->level5()
         #endif
         #ifndef mylog6
-    	    #define mylog6 if( mylog->debugging(Debug::LEVEL6) ) mylog->level6()
+    	    #define mylog6 if( log()->debugging(Debug::LEVEL6) ) log()->level6()
         #endif
         #ifndef mylog7
-        	#define mylog7 if( mylog->debugging(Debug::LEVEL7) ) mylog->level7()
+        	#define mylog7 if( log()->debugging(Debug::LEVEL7) ) log()->level7()
         #endif
         #ifndef mylog8
-	        #define mylog8 if( mylog->debugging(Debug::LEVEL8) ) mylog->level8()
+	        #define mylog8 if( log()->debugging(Debug::LEVEL8) ) log()->level8()
         #endif
         #ifndef mylog9
-    	    #define mylog9 if( mylog->debugging(Debug::LEVEL9) ) mylog->level9()
+    	    #define mylog9 if( log()->debugging(Debug::LEVEL9) ) log()->level9()
         #endif
         #ifndef mylogany
-        	#define mylogany mylog->any()
+        	#define mylogany log()->any()
         #endif
         
         // Вспомогательные функции для удобства логирования
@@ -305,7 +307,7 @@
 		bool forceOut; /*!&lt; флаг принудительного обноления "выходов" */
 		
 		std::shared_ptr&lt;LogAgregator&gt; loga;
-		std::shared_ptr&lt;DebugStream&gt; smlog;
+		std::shared_ptr&lt;DebugStream&gt; mylog;
 		std::shared_ptr&lt;LogServer&gt; logserv;
 		std::string logserv_host = {""};
 		int logserv_port = {0};
@@ -391,7 +393,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 		{
 			// переоткрываем логи
 			mylogany &lt;&lt; myname &lt;&lt; "(preSysCommand): logRotate" &lt;&lt; endl;
-			string fname( mylog->getLogFile() );
+			string fname( log()->getLogFile() );
 			if( !fname.empty() )
 			{
 				mylog->logFile(fname.c_str(),true);
@@ -708,7 +710,7 @@ end_private(false)
 		conf->initLogStream(mylog,s.str());
 	}
 
-	loga = make_shared&lt;LogAgregator&gt;();
+	loga = make_shared&lt;LogAgregator&gt;(myname+"-loga");
 	loga-&gt;add(mylog);
 	loga-&gt;add(ulog());
 
@@ -1099,7 +1101,7 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
         conf->initLogStream(mylog, s.str());
     }
 
-    loga = make_shared&lt;LogAgregator&gt;();
+	loga = make_shared&lt;LogAgregator&gt;(myname+"-loga");
 	loga-&gt;add(mylog);
 	loga-&gt;add(ulog());
 

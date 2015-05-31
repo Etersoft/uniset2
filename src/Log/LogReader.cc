@@ -202,6 +202,7 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 				{
 					tcp->read(buf, n);
 					buf[n] = '\0';
+
 					log << buf;
 
 					if( msg.cmd == LogServerTypes::cmdList )

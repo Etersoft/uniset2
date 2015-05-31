@@ -10,6 +10,7 @@
 #include <mutex>
 #include "Mutex.h"
 #include "DebugStream.h"
+#include "LogAgregator.h"
 #include "PassiveTimer.h"
 // -------------------------------------------------------------------------
 /*! Реализация "сессии" для клиентов LogServer. */
@@ -66,6 +67,7 @@ class LogSession:
 		std::string peername;
 		std::string caddr;
 		std::shared_ptr<DebugStream> log;
+		std::shared_ptr<LogAgregator> alog;
 
 		//        PassiveTimer ptSessionTimeout;
 		FinalSlot slFin;
