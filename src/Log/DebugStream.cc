@@ -105,7 +105,10 @@ const DebugStream& DebugStream::operator=( const DebugStream& r )
 /// Sets the debugstreams' logfile to f.
 void DebugStream::logFile( const std::string& f, bool truncate )
 {
-	fname = f;
+	if( !f.empty() && f != fname )
+		fname = f;
+
+	isWriteLogFile = !f.empty();
 
 	if( internal )
 	{

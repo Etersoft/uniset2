@@ -136,6 +136,18 @@ class DebugStream : public std::ostream
 			return fname;
 		}
 
+		// имя лог файла можно установить отдельно, но не вклчать запись..
+		inline void setLogFile( const std::string& n ){ fname = n; }
+
+		// включена ли запись лог-файла
+		inline bool isOnLogFile(){ return isWriteLogFile; }
+
+		// включить запись лог файла
+		inline void onLogFile( bool truncate=false ){ logFile(fname,truncate); }
+
+		// отключить запись логфайла
+		inline void offLogFile(){ logFile(""); }
+
 		/// Returns true if t is part of the current debug level.
 		inline bool debugging(Debug::type t = Debug::ANY) const
 		{
@@ -258,6 +270,8 @@ class DebugStream : public std::ostream
 
 		StreamEvent_Signal s_stream;
 		std::string logname;
+
+		bool isWriteLogFile = { false };
 };
 
 #endif

@@ -92,7 +92,6 @@ int main( int argc, char** argv )
 		}
 
 		auto la = make_shared<LogAgregator>("la");
-		cerr << "create LogAgregator: " << la->getLogName() << endl;
 
 		auto dlog = make_shared<DebugStream>();
 		dlog->setLogName("dlog");
@@ -116,12 +115,9 @@ int main( int argc, char** argv )
 
 		auto la2 = make_shared<LogAgregator>("la2");
 		
-		cerr << "create LogAgregator: " << la2->getLogName() << endl;
-		
 		auto dlog3 = la2->create("dlog3");
 		auto dlog4 = la2->create("dlog4");
 		la->add(la2);
-
 
 		if( la->getLog("la2/dlog3") == nullptr )
 		{
@@ -130,6 +126,21 @@ int main( int argc, char** argv )
 
 		}
 
+		auto la3 = make_shared<LogAgregator>("la3");
+		
+		auto dlog5 = la3->create("dlog5");
+		auto dlog6 = la3->create("dlog6");
+		la->add(la3);
+
+#if 0
+		cout << la << endl;
+		
+		cout << "************ " << endl;
+		auto lst = la->getLogList();
+		for( const auto& l: lst )
+			cout << l.name << endl;
+		return 0;
+#endif
 
 		LogServer ls(la);
 		ls.setMaxSessionCount(msess);

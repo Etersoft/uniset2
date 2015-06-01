@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <list>
+#include <vector>
 #include <unordered_map>
 #include "DebugStream.h"
 #include "LogServerTypes.h"
@@ -110,7 +111,7 @@ class LogAgregator:
 {
 	public:
 
-		const std::string sep={"/"}; /*< раздедитель для имён подчинённых агрегаторов */
+		const std::string sep= {"/"}; /*< раздедитель для имён подчинённых агрегаторов */
 
 		explicit LogAgregator( const std::string& name, Debug::type t );
 		explicit LogAgregator( const std::string& name="" );
@@ -128,38 +129,48 @@ class LogAgregator:
 		void addLevel( const std::string& logname, Debug::type t );
 		void delLevel( const std::string& logname, Debug::type t );
 		void level( const std::string& logname, Debug::type t );
+		void offLogFile( const std::string& logname );
+		void onLogFile( const std::string& logname );
 
-		struct LogInfo
+		std::shared_ptr<DebugStream> getLog( const std::string& logname );
+
+		friend std::ostream& operator<<(std::ostream& os, LogAgregator& la );
+		friend std::ostream& operator<<(std::ostream& os, std::shared_ptr<LogAgregator> la );
+
+		static std::vector<std::string> split_first( const std::string& lname, const std::string s = "/" );
+
+		struct iLog
 		{
-			LogInfo(): log(0), logfile(""),logname("") {}
-			LogInfo( std::shared_ptr<DebugStream>& l, const std::string& lname="" ):
-				log(l), logfile(l->getLogFile()),logname(lname.empty()?l->getLogName():lname) {}
-
+			iLog( std::shared_ptr<DebugStream>& l, const std::string& nm ):log(l),name(nm){}
 			std::shared_ptr<DebugStream> log;
-			std::string logfile;
-			std::string logname;
+			std::string name;
 
 			// для сортировки "по алфавиту"
-			inline bool operator < ( const LogInfo& r ) const
+			inline bool operator < ( const iLog& r ) const
 			{
-				return logname < r.logname;
+				return name < r.name;
 			}
 		};
 
-		std::shared_ptr<DebugStream> getLog( const std::string& logname );
-		LogInfo getLogInfo( const std::string& logname );
-
-		std::list<LogInfo> getLogList();
-		std::list<LogInfo> getLogList( const std::string& regexp_str );
+		std::list<iLog> getLogList();
+		std::list<iLog> getLogList( const std::string& regexp_str );
 
 	protected:
 		void logOnEvent( const std::string& s );
 		void addLog( std::shared_ptr<DebugStream> l, const std::string& lname );
 		void addLogAgregator( std::shared_ptr<LogAgregator> la, const std::string& lname );
 
+		// поиск лога по составному логу.."agregator/agregator2/.../logname"
+		std::shared_ptr<DebugStream> findLog( const std::string& lname );
+
+		// вывод в виде "дерева"
+		std::ostream& print_tree(std::ostream& os, const std::string& g_tab="");
+
+		// получить список с именами (длинными) и с указателями на логи
+		std::list<iLog> makeLogNameList( const std::string& prefix );
 
 	private:
-		typedef std::unordered_map<std::string, LogInfo> LogMap;
+		typedef std::unordered_map<std::string,std::shared_ptr<DebugStream>> LogMap;
 		LogMap lmap;
 };
 // -------------------------------------------------------------------------

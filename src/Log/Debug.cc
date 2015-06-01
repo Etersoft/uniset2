@@ -13,6 +13,7 @@
 #endif
 
 #include <iomanip>
+#include <sstream>
 
 #include "Debug.h"
 //#include "gettext.h"
@@ -109,7 +110,6 @@ void Debug::showLevel(ostream& o, Debug::type level)
 			  << "' (" << errorTags[i].desc << ')' << endl;
 }
 
-
 void Debug::showTags(ostream& os)
 {
 	for (int i = 0 ; i < numErrorTags ; ++i)
@@ -130,6 +130,36 @@ std::ostream& operator<<(std::ostream& os, Debug::type level )
 	}
 
 	return os << "???Debuglevel"; // << "(" << int(level) << ")";
+}
+
+std::string Debug::str( Debug::type level )
+{
+	if( level == Debug::NONE )
+		return "NONE";
+
+	if( level == Debug::ANY )
+		return "ANY";
+
+	std::ostringstream s;
+	bool first = true;
+
+	for (int i = 0 ; i < numErrorTags ; ++i)
+	{
+		if (errorTags[i].level != Debug::ANY
+				&& errorTags[i].level != Debug::NONE
+				&& errorTags[i].level & level)
+		{
+			if( first )
+			{
+				first = false;
+				s << errorTags[i].name;
+			}
+			else
+				s << "," << errorTags[i].name;
+		}
+	}
+
+	return s.str();
 }
 
 

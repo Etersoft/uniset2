@@ -205,8 +205,8 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 
 					log << buf;
 
-					if( msg.cmd == LogServerTypes::cmdList )
-						break;
+//					if( msg.cmd == LogServerTypes::cmdList )
+//						break;
 				}
 				else
 					break;

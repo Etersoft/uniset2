@@ -109,7 +109,7 @@ void LogSession::run()
 				slog.info() << peername << "(run): receive command: '" << msg.cmd << "'" << endl;
 				string cmdLogName(msg.logname);
 
-				std::list<LogAgregator::LogInfo> loglist;
+				std::list<LogAgregator::iLog> loglist;
 
 				if( !cmdLogName.empty () )
 				{
@@ -124,8 +124,8 @@ void LogSession::run()
 					{
 						if( cmdLogName == "ALL" || log->getLogFile() == cmdLogName )
 						{
-							LogAgregator::LogInfo log0(log);
-							loglist.push_back(log0);
+							LogAgregator::iLog llog(log,log->getLogName());
+							loglist.push_back(llog);
 						}
 					}
 				}
@@ -142,66 +142,54 @@ void LogSession::run()
 					}
 					else
 					{
-						std::list<LogAgregator::LogInfo> lst;
-						if( cmdLogName.empty() || cmdLogName == "ALL" )
-							lst = alog->getLogList();
-						else
-							lst = alog->getLogList(cmdLogName);
-
-						// красиво отсортируем сперва..
-						lst.sort([](const LogAgregator::LogInfo & a, const LogAgregator::LogInfo & b) { return a.logname < b.logname; });
-
-						for( const auto& i : lst )
-							s << i.logname << endl;
+						s << alog << endl;
 					}
 					s << "=====================" << endl << endl;
 
 					if( isPending(Socket::pendingOutput, cmdTimeout) )
 					{
-
 						*tcp() << s.str();
 						tcp()->sync();
 					}
+
+					// по идее вывели список и завершили работу..
+					cancelled = true;
+					disconnect();
+					return;
 				}
 
 				// обрабатываем команды только если нашли подходящие логи
-				for( auto && li : loglist )
+				for( auto&& l : loglist )
 				{
 					// Обработка команд..
 					// \warning Работа с логом ведётся без mutex-а, хотя он разделяется отдельными потоками
 					switch( msg.cmd )
 					{
 						case LogServerTypes::cmdSetLevel:
-							li.log->level( (Debug::type)msg.data );
+							l.log->level( (Debug::type)msg.data );
 							break;
 
 						case LogServerTypes::cmdAddLevel:
-							li.log->addLevel( (Debug::type)msg.data );
+							l.log->addLevel( (Debug::type)msg.data );
 							break;
 
 						case LogServerTypes::cmdDelLevel:
-							li.log->delLevel( (Debug::type)msg.data );
+							l.log->delLevel( (Debug::type)msg.data );
 							break;
 
 						case LogServerTypes::cmdRotate:
-						{
-							if( !li.logfile.empty() )
-								li.log->logFile(li.logfile, true);
-						}
+							l.log->onLogFile(true);
 						break;
 
 						case LogServerTypes::cmdList: // обработали выше (в начале)
-							break;
+						break;
 
 						case LogServerTypes::cmdOffLogFile:
-							li.log->logFile("");
-							break;
+							l.log->offLogFile();
+						break;
 
 						case LogServerTypes::cmdOnLogFile:
-						{
-							if( !li.logfile.empty() )
-								li.log->logFile(li.logfile);
-						}
+							l.log->onLogFile();
 						break;
 
 						default:

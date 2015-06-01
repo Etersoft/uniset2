@@ -96,6 +96,8 @@ struct Debug
 	static void showTags(std::ostream& o);
 
 	friend std::ostream& operator<<(std::ostream& os, Debug::type level );
+
+	static std::string str( Debug::type level );
 };
 
 
