@@ -100,8 +100,10 @@ std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
 
 		mbinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
 
-		if( mblog->is_level9() )
-			mbtcp->setLog(mblog);
+		auto l = loga->create(myname+"-exchangelog");
+		mbtcp->setLog(l);
+		if( ic )
+			ic->logAgregator()->add(loga);
 	}
 	catch( ModbusRTU::mbException& ex )
 	{

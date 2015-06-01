@@ -102,11 +102,12 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		n << sinf.ip << ":" << sinf.port;
 		sinf.myname = n.str();
 
-		if( mblog->is_level9() )
-			sinf.mbtcp->setLog(mblog);
+		auto l = loga->create(sinf.myname);
+		sinf.mbtcp->setLog(l);
+		if( ic )
+			ic->logAgregator()->add(loga);
 
 		mblist.push_back(sinf);
-
 		mbinfo << myname << "(init): add slave channel " << sinf.myname << endl;
 	}
 

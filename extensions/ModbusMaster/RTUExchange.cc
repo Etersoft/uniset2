@@ -131,8 +131,10 @@ std::shared_ptr<ModbusClient> RTUExchange::initMB( bool reopen )
 		if( defSpeed != ComPort::ComSpeed0 )
 			mbrtu->setSpeed(defSpeed);
 
-		if( dlog()->is_level9() )
-			mbrtu->setLog(dlog());
+		auto l = loga->create(myname+"-exchangelog");
+		mbrtu->setLog(l);
+		if( ic )
+			ic->logAgregator()->add(loga);
 
 		if( recv_timeout > 0 )
 			mbrtu->setTimeout(recv_timeout);

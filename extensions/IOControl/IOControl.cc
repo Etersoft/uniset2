@@ -62,7 +62,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	iolog->setLogName(myname);
 	conf->initLogStream(iolog, prefix + "-log");
 
-	loga = make_shared<LogAgregator>();
+	loga = make_shared<LogAgregator>(myname+"-loga");
 	loga->add(iolog);
 	loga->add(ulog());
 	loga->add(dlog());
@@ -83,6 +83,9 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		logserv_host = conf->getArg2Param("--" + prefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
 		logserv_port = conf->getArgPInt("--" + prefix + "-logserver-port", it.getProp("logserverPort"), getId());
 	}
+
+	if( ic )
+		ic->logAgregator()->add(loga);
 
 	noCards = true;
 

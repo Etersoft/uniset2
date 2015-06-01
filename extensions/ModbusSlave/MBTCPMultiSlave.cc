@@ -156,8 +156,8 @@ void MBTCPMultiSlave::execute_tcp()
 		return;
 	}
 
-	if( mblog->is_level9() )
-		sslot->setLog(mblog);
+	auto l = loga->create(myname+"-exchangelog");
+	sslot->setLog(l);
 
 	for( auto && i : cmap )
 		i.second.ptTimeout.reset();

@@ -39,7 +39,7 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 	mblog->setLogName(myname);
 	conf->initLogStream(mblog, prefix + "-log");
 
-	loga = make_shared<LogAgregator>();
+	loga = make_shared<LogAgregator>(myname+"-loga");
 	loga->add(mblog);
 	loga->add(ulog());
 	loga->add(dlog());
@@ -64,6 +64,9 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 		logserv_host = conf->getArg2Param("--" + prefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
 		logserv_port = conf->getArgPInt("--" + prefix + "-logserver-port", it.getProp("logserverPort"), getId());
 	}
+
+	if( ic )
+		ic->logAgregator()->add(loga);
 
 	// определяем фильтр
 	s_field = conf->getArgParam("--" + prefix + "-filter-field");

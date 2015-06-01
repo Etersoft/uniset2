@@ -18,6 +18,9 @@ RRDServer::RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::
 {
 	auto conf = uniset_conf();
 
+	if( ic )
+		ic->logAgregator()->add(logAgregator());
+
 	shm = make_shared<SMInterface>(shmId, ui, objId, ic);
 
 	UniXML::iterator it(cnode);

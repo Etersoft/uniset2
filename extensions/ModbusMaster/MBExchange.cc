@@ -14,7 +14,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
-						const std::shared_ptr<SharedMemory> ic, const std::string& prefix ):
+						const std::shared_ptr<SharedMemory> _ic, const std::string& prefix ):
 	UniSetObject_LT(objId),
 	allInitOK(false),
 	initPause(0),
@@ -29,7 +29,8 @@ MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId
 	prefix(prefix),
 	poll_count(0),
 	prop_prefix(""),
-	mb(nullptr)
+	mb(nullptr),
+	ic(_ic)
 {
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(MBExchange): objId=-1?!! Use --" + prefix + "-name" );
@@ -50,7 +51,7 @@ MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId
 	mblog->setLogName(myname);
 	conf->initLogStream(mblog, prefix + "-log");
 
-	loga = make_shared<LogAgregator>();
+	loga = make_shared<LogAgregator>(myname+"-loga");
 	loga->add(mblog);
 	loga->add(ulog());
 	loga->add(dlog());
@@ -65,6 +66,9 @@ MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId
 		logserv_host = conf->getArg2Param("--" + prefix + "-logserver-host", it.getProp("logserverHost"), "localhost");
 		logserv_port = conf->getArgPInt("--" + prefix + "-logserver-port", it.getProp("logserverPort"), getId());
 	}
+
+	if( ic )
+		ic->logAgregator()->add(loga);
 
 	// определяем фильтр
 	s_field = conf->getArgParam("--" + prefix + "-filter-field");

@@ -28,7 +28,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 	unetlog->setLogName(myname);
 	conf->initLogStream(unetlog, prefix + "-log");
 
-	loga = make_shared<LogAgregator>();
+	loga = make_shared<LogAgregator>(myname+"-loga");
 	loga->add(unetlog);
 	loga->add(ulog());
 	loga->add(dlog());
@@ -411,6 +411,9 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 	unetinfo << myname << "(init): test_id=" << test_id << endl;
 
 	activateTimeout    = conf->getArgPInt("--" + prefix + "-activate-timeout", 20000);
+
+	if( ic )
+		ic->logAgregator()->add(loga);
 }
 // -----------------------------------------------------------------------------
 UNetExchange::~UNetExchange()
