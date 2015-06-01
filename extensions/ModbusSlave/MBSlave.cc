@@ -39,7 +39,7 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 	mblog->setLogName(myname);
 	conf->initLogStream(mblog, prefix + "-log");
 
-	loga = make_shared<LogAgregator>(myname+"-loga");
+	loga = make_shared<LogAgregator>(myname + "-loga");
 	loga->add(mblog);
 	loga->add(ulog());
 	loga->add(dlog());

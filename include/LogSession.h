@@ -68,6 +68,7 @@ class LogSession:
 		std::string caddr;
 		std::shared_ptr<DebugStream> log;
 		std::shared_ptr<LogAgregator> alog;
+		sigc::connection conn;
 
 		//        PassiveTimer ptSessionTimeout;
 		FinalSlot slFin;

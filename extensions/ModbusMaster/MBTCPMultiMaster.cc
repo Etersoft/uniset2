@@ -104,6 +104,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 
 		auto l = loga->create(sinf.myname);
 		sinf.mbtcp->setLog(l);
+
 		if( ic )
 			ic->logAgregator()->add(loga);
 

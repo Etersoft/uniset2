@@ -100,8 +100,9 @@ std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
 
 		mbinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
 
-		auto l = loga->create(myname+"-exchangelog");
+		auto l = loga->create(myname + "-exchangelog");
 		mbtcp->setLog(l);
+
 		if( ic )
 			ic->logAgregator()->add(loga);
 	}

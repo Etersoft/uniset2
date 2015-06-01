@@ -3,6 +3,7 @@
 // -------------------------------------------------------------------------
 #include <string>
 #include <memory>
+#include <regex>
 #include <list>
 #include <vector>
 #include <unordered_map>
@@ -111,17 +112,17 @@ class LogAgregator:
 {
 	public:
 
-		const std::string sep= {"/"}; /*< раздедитель для имён подчинённых агрегаторов */
+		const std::string sep = {"/"}; /*< раздедитель для имён подчинённых агрегаторов */
 
 		explicit LogAgregator( const std::string& name, Debug::type t );
-		explicit LogAgregator( const std::string& name="" );
+		explicit LogAgregator( const std::string& name = "" );
 
 		virtual ~LogAgregator();
 
 		virtual void logFile( const std::string& f, bool truncate = false ) override;
 
-		void add( std::shared_ptr<LogAgregator> log, const std::string& lname="" );
-		void add( std::shared_ptr<DebugStream> log, const std::string& lname="" );
+		void add( std::shared_ptr<LogAgregator> log, const std::string& lname = "" );
+		void add( std::shared_ptr<DebugStream> log, const std::string& lname = "" );
 
 		std::shared_ptr<DebugStream> create( const std::string& logname );
 
@@ -132,16 +133,12 @@ class LogAgregator:
 		void offLogFile( const std::string& logname );
 		void onLogFile( const std::string& logname );
 
+		// найти лог..
 		std::shared_ptr<DebugStream> getLog( const std::string& logname );
-
-		friend std::ostream& operator<<(std::ostream& os, LogAgregator& la );
-		friend std::ostream& operator<<(std::ostream& os, std::shared_ptr<LogAgregator> la );
-
-		static std::vector<std::string> split_first( const std::string& lname, const std::string s = "/" );
 
 		struct iLog
 		{
-			iLog( std::shared_ptr<DebugStream>& l, const std::string& nm ):log(l),name(nm){}
+			iLog( std::shared_ptr<DebugStream>& l, const std::string& nm ): log(l), name(nm) {}
 			std::shared_ptr<DebugStream> log;
 			std::string name;
 
@@ -155,6 +152,11 @@ class LogAgregator:
 		std::list<iLog> getLogList();
 		std::list<iLog> getLogList( const std::string& regexp_str );
 
+		friend std::ostream& operator<<(std::ostream& os, LogAgregator& la );
+		friend std::ostream& operator<<(std::ostream& os, std::shared_ptr<LogAgregator> la );
+
+		static std::vector<std::string> splitFirst( const std::string& lname, const std::string s = "/" );
+
 	protected:
 		void logOnEvent( const std::string& s );
 		void addLog( std::shared_ptr<DebugStream> l, const std::string& lname );
@@ -164,13 +166,13 @@ class LogAgregator:
 		std::shared_ptr<DebugStream> findLog( const std::string& lname );
 
 		// вывод в виде "дерева"
-		std::ostream& print_tree(std::ostream& os, const std::string& g_tab="");
+		std::ostream& printTree(std::ostream& os, const std::string& g_tab = "");
 
 		// получить список с именами (длинными) и с указателями на логи
 		std::list<iLog> makeLogNameList( const std::string& prefix );
 
 	private:
-		typedef std::unordered_map<std::string,std::shared_ptr<DebugStream>> LogMap;
+		typedef std::unordered_map<std::string, std::shared_ptr<DebugStream>> LogMap;
 		LogMap lmap;
 };
 // -------------------------------------------------------------------------

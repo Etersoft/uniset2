@@ -114,7 +114,7 @@ int main( int argc, char** argv )
 		}
 
 		auto la2 = make_shared<LogAgregator>("la2");
-		
+
 		auto dlog3 = la2->create("dlog3");
 		auto dlog4 = la2->create("dlog4");
 		la->add(la2);
@@ -127,18 +127,20 @@ int main( int argc, char** argv )
 		}
 
 		auto la3 = make_shared<LogAgregator>("la3");
-		
+
 		auto dlog5 = la3->create("dlog5");
 		auto dlog6 = la3->create("dlog6");
 		la->add(la3);
 
 #if 0
 		cout << la << endl;
-		
+
 		cout << "************ " << endl;
 		auto lst = la->getLogList();
-		for( const auto& l: lst )
+
+		for( const auto& l : lst )
 			cout << l.name << endl;
+
 		return 0;
 #endif
 

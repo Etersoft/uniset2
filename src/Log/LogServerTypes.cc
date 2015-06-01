@@ -28,6 +28,9 @@ std::ostream& LogServerTypes::operator<<(std::ostream& os, LogServerTypes::Comma
 		case LogServerTypes::cmdList:
 			return os << "cmdList";
 
+		case LogServerTypes::cmdFilterMode:
+			return os << "cmdFilterMode";
+
 		default:
 			return os << "Unknown";
 	}

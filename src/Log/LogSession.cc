@@ -46,11 +46,12 @@ LogSession::LogSession( ost::TCPSocket& server, std::shared_ptr<DebugStream>& _l
 
 	//slog.addLevel(Debug::ANY);
 	if( log )
-		log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
+		conn = log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
 	else
 		slog.crit() << "LOG NULL!!" << endl;
 
 	auto ag = dynamic_pointer_cast<LogAgregator>(log);
+
 	if( ag )
 		alog = ag;
 }
@@ -124,7 +125,7 @@ void LogSession::run()
 					{
 						if( cmdLogName == "ALL" || log->getLogFile() == cmdLogName )
 						{
-							LogAgregator::iLog llog(log,log->getLogName());
+							LogAgregator::iLog llog(log, log->getLogName());
 							loglist.push_back(llog);
 						}
 					}
@@ -136,14 +137,23 @@ void LogSession::run()
 					ostringstream s;
 					s << "List of managed logs:" << endl;
 					s << "=====================" << endl;
+
 					if( !alog )
 					{
 						s << log->getLogName() << endl;
 					}
 					else
 					{
-						s << alog << endl;
+						if( !cmdLogName.empty() )
+						{
+							auto lst = alog->getLogList(cmdLogName);
+							for( const auto& l: lst )
+								s << l.name << " [ " << Debug::str(l.log->level()) << " ]" << endl;
+						}
+						else
+							s << alog << endl;
 					}
+
 					s << "=====================" << endl << endl;
 
 					if( isPending(Socket::pendingOutput, cmdTimeout) )
@@ -158,8 +168,15 @@ void LogSession::run()
 					return;
 				}
 
+				if( msg.cmd == LogServerTypes::cmdFilterMode )
+				{
+					// отлючаем старый обработчик
+					if( conn )
+						conn.disconnect();
+				}
+
 				// обрабатываем команды только если нашли подходящие логи
-				for( auto&& l : loglist )
+				for( auto && l : loglist )
 				{
 					// Обработка команд..
 					// \warning Работа с логом ведётся без mutex-а, хотя он разделяется отдельными потоками
@@ -179,18 +196,22 @@ void LogSession::run()
 
 						case LogServerTypes::cmdRotate:
 							l.log->onLogFile(true);
-						break;
+							break;
 
 						case LogServerTypes::cmdList: // обработали выше (в начале)
-						break;
+							break;
 
 						case LogServerTypes::cmdOffLogFile:
 							l.log->offLogFile();
-						break;
+							break;
 
 						case LogServerTypes::cmdOnLogFile:
 							l.log->onLogFile();
-						break;
+							break;
+
+						case LogServerTypes::cmdFilterMode:
+							l.log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
+							break;
 
 						default:
 							slog.warn() << peername << "(run): Unknown command '" << msg.cmd << "'" << endl;

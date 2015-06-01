@@ -51,7 +51,7 @@ MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId
 	mblog->setLogName(myname);
 	conf->initLogStream(mblog, prefix + "-log");
 
-	loga = make_shared<LogAgregator>(myname+"-loga");
+	loga = make_shared<LogAgregator>(myname + "-loga");
 	loga->add(mblog);
 	loga->add(ulog());
 	loga->add(dlog());

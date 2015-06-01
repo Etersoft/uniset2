@@ -62,7 +62,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	iolog->setLogName(myname);
 	conf->initLogStream(iolog, prefix + "-log");
 
-	loga = make_shared<LogAgregator>(myname+"-loga");
+	loga = make_shared<LogAgregator>(myname + "-loga");
 	loga->add(iolog);
 	loga->add(ulog());
 	loga->add(dlog());

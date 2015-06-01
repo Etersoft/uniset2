@@ -17,7 +17,8 @@ namespace LogServerTypes
 		cmdRotate,      /*!< пересоздать файл с логами */
 		cmdOffLogFile,  /*!< отключить запись файла логов (если включена) */
 		cmdOnLogFile,   /*!< включить запись файла логов (если была отключена) */
-		cmdList			/*!< вывести список контролируемых логов */
+		cmdList,		/*!< вывести список контролируемых логов */
+		cmdFilterMode	/*!< включить режим работы "фильтр" - вывод только от интересующих логов, заданных в lognmae (regexp) */
 		// cmdSetLogFile
 	};
 
@@ -33,7 +34,7 @@ namespace LogServerTypes
 		Command cmd;
 		unsigned int data;
 
-		static const size_t MAXLOGNAME = 20;
+		static const size_t MAXLOGNAME = 30;
 		char logname[MAXLOGNAME + 1]; // +1 reserverd for '\0'
 
 		void setLogName( const std::string& name );

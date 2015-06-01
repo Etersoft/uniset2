@@ -14,6 +14,7 @@ static struct option longopts[] =
 {
 	{ "help", no_argument, 0, 'h' },
 	{ "verbose", no_argument, 0, 'v' },
+	{ "filter", required_argument, 0, 'f' },
 	{ "iaddr", required_argument, 0, 'i' },
 	{ "port", required_argument, 0, 'p' },
 	{ "add", required_argument, 0, 'a' },
@@ -21,9 +22,9 @@ static struct option longopts[] =
 	{ "set", required_argument, 0, 's' },
 	{ "off", required_argument, 0, 'o' },
 	{ "on", required_argument, 0, 'e' },
-	{ "list", no_argument, 0, 'l' },
-	{ "rotate", required_argument, 0, 'r' },
-	{ "logname", required_argument, 0, 'n' },
+	{ "list", optional_argument, 0, 'l' },
+	{ "rotate", optional_argument, 0, 'r' },
+	{ "logfilter", required_argument, 0, 'n' },
 	{ "command-only", no_argument, 0, 'b' },
 	{ "timeout", required_argument, 0, 'w' },
 	{ "reconnect-delay", required_argument, 0, 'x' },
@@ -36,7 +37,6 @@ static void print_help()
 	printf("-v, --verbose               - Print all messages to stdout\n");
 	printf("[-i|--iaddr] addr           - LogServer ip or hostname.\n");
 	printf("[-p|--port] port            - LogServer port.\n");
-	printf("[-n|--logname] name         - Send command only for 'logname'.\n");
 	printf("[-b|--command-only]         - Send command and break. (No read logs).\n");
 	printf("[-w|--timeout] msec         - Timeout for wait data. Default: 0 - endless waiting\n");
 	printf("[-x|--reconnect-delay] msec - Pause for repeat connect to LogServer. Default: 5000 msec.\n");
@@ -44,14 +44,19 @@ static void print_help()
 	printf("\n");
 	printf("Commands:\n");
 
-	printf("[--add | -a] info,warn,crit,...  - Add log levels.\n");
-	printf("[--del | -d] info,warn,crit,...  - Delete log levels.\n");
-	printf("[--set | -s] info,warn,crit,...  - Set log levels.\n");
-	printf("--off, -o                        - Off the write log file (if enabled).\n");
-	printf("--on, -e                         - On(enable) the write log file (if before disabled).\n");
-	printf("--rotate, -r                     - rotate log file.\n");
-	printf("--list, -l                       - List of managed logs.\n");
+	printf("[--add | -a] info,warn,crit,... [logfilter] - Add log levels.\n");
+	printf("[--del | -d] info,warn,crit,... [logfilter] - Delete log levels.\n");
+	printf("[--set | -s] info,warn,crit,... [logfilter] - Set log levels.\n");
+	printf("--off, -o [logfilter]                       - Off the write log file (if enabled).\n");
+	printf("--on, -e  [logfilter]                       - On(enable) the write log file (if before disabled).\n");
+	printf("--rotate, -r [logfilter]                    - rotate log file.\n");
+	printf("--list, -l   [logfilter]                    - List of managed logs.\n");
+	printf("--filter, -f logfilter                      - ('filter mode'). View log only from 'logfilter'(regexp)\n");
+	printf("\n");
+	printf("Note: 'logfilter' -  regexp for name of log. Default: ALL logs.\n");
 }
+// --------------------------------------------------------------------------
+static char* checkArg( int i, int argc, char* argv[] );
 // --------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
@@ -67,13 +72,13 @@ int main( int argc, char** argv )
 	int data = 0;
 	string sdata("");
 	int cmdonly = 0;
-	string logname("");
+	string logfilter("");
 	timeout_t tout = 0;
 	timeout_t rdelay = 5000;
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hvla:p:i:d:s:n:eorbx:w:", longopts, &optindex)) != -1 )
+		while( (opt = getopt_long(argc, argv, "hvlf:a:p:i:d:s:n:eorbx:w:", longopts, &optindex)) != -1 )
 		{
 			switch (opt)
 			{
@@ -85,6 +90,12 @@ int main( int argc, char** argv )
 				{
 					cmd = LogServerTypes::cmdAddLevel;
 					sdata = string(optarg);
+					char* arg2 = checkArg(optind, argc, argv);
+
+					if( arg2 )
+						logfilter = string(arg2);
+					else
+						logfilter = "";
 				}
 				break;
 
@@ -92,6 +103,12 @@ int main( int argc, char** argv )
 				{
 					cmd = LogServerTypes::cmdDelLevel;
 					sdata = string(optarg);
+					char* arg2 = checkArg(optind, argc, argv);
+
+					if( arg2 )
+						logfilter = string(arg2);
+					else
+						logfilter = "";
 				}
 				break;
 
@@ -99,32 +116,73 @@ int main( int argc, char** argv )
 				{
 					cmd = LogServerTypes::cmdSetLevel;
 					sdata = string(optarg);
+					char* arg2 = checkArg(optind, argc, argv);
+
+					if( arg2 )
+						logfilter = string(arg2);
+					else
+						logfilter = "";
 				}
 				break;
 
 				case 'l':
+				{
 					cmd = LogServerTypes::cmdList;
 					cmdonly = 1;
-					break;
+					char* arg2 = checkArg(optind, argc, argv);
+
+					if( arg2 )
+						logfilter = string(arg2);
+					else
+						logfilter = "";
+				}
+				break;
 
 				case 'o':
+				{
 					cmd = LogServerTypes::cmdOffLogFile;
-					break;
+					char* arg2 = checkArg(optind, argc, argv);
+
+					if( arg2 )
+						logfilter = string(arg2);
+					else
+						logfilter = "";
+				}
+				break;
+
+				case 'f':
+				{
+					cmd = LogServerTypes::cmdFilterMode;
+					logfilter = string(optarg);
+				}
+				break;
 
 				case 'e':
+				{
 					cmd = LogServerTypes::cmdOnLogFile;
-					break;
+					char* arg2 = checkArg(optind, argc, argv);
+
+					if( arg2 )
+						logfilter = string(arg2);
+					else
+						logfilter = "";
+				}
+				break;
 
 				case 'r':
+				{
 					cmd = LogServerTypes::cmdRotate;
-					break;
+					char* arg2 = checkArg(optind, argc, argv);
+
+					if( arg2 )
+						logfilter = string(arg2);
+					else
+						logfilter = "";
+				}
+				break;
 
 				case 'i':
 					addr = string(optarg);
-					break;
-
-				case 'n':
-					logname = string(optarg);
 					break;
 
 				case 'b':
@@ -149,7 +207,7 @@ int main( int argc, char** argv )
 
 				case '?':
 				default:
-					printf("? argumnet\n");
+					printf("Unknown argumnet\n");
 					return 0;
 			}
 		}
@@ -174,7 +232,7 @@ int main( int argc, char** argv )
 				cout << "SEND COMMAND: '" << (LogServerTypes::Command)cmd << " data='" << sdata << "'(" << (int)data << ")" << endl;
 		}
 
-		lr.readlogs( addr, port, (LogServerTypes::Command)cmd, data, logname, verb );
+		lr.readlogs( addr, port, (LogServerTypes::Command)cmd, data, logfilter, verb );
 	}
 	catch( const SystemError& err )
 	{
@@ -188,6 +246,14 @@ int main( int argc, char** argv )
 	{
 		cerr << "(log): catch(...)" << endl;
 	}
+
+	return 0;
+}
+// --------------------------------------------------------------------------
+char* checkArg( int i, int argc, char* argv[] )
+{
+	if( i < argc && (argv[i])[0] != '-' )
+		return argv[i];
 
 	return 0;
 }

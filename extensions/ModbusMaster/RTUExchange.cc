@@ -131,8 +131,9 @@ std::shared_ptr<ModbusClient> RTUExchange::initMB( bool reopen )
 		if( defSpeed != ComPort::ComSpeed0 )
 			mbrtu->setSpeed(defSpeed);
 
-		auto l = loga->create(myname+"-exchangelog");
+		auto l = loga->create(myname + "-exchangelog");
 		mbrtu->setLog(l);
+
 		if( ic )
 			ic->logAgregator()->add(loga);
 

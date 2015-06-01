@@ -28,7 +28,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 	unetlog->setLogName(myname);
 	conf->initLogStream(unetlog, prefix + "-log");
 
-	loga = make_shared<LogAgregator>(myname+"-loga");
+	loga = make_shared<LogAgregator>(myname + "-loga");
 	loga->add(unetlog);
 	loga->add(ulog());
 	loga->add(dlog());

@@ -1,6 +1,5 @@
 #include <memory>
 #include <iomanip>
-#include <regex>
 #include <sstream>
 #include "DebugExtBuf.h"
 #include "LogAgregator.h"
@@ -8,7 +7,7 @@
 using namespace std;
 // -------------------------------------------------------------------------
 LogAgregator::LogAgregator( const std::string& name ):
-	LogAgregator(name,Debug::ANY)
+	LogAgregator(name, Debug::ANY)
 {
 }
 // ------------------------------------------------------------------------
@@ -63,43 +62,26 @@ std::shared_ptr<DebugStream> LogAgregator::create( const std::string& logname )
 void LogAgregator::add( std::shared_ptr<DebugStream> l, const std::string& lname )
 {
 	auto lag = std::dynamic_pointer_cast<LogAgregator>(l);
+
 	if( lag )
-		addLogAgregator(lag, (lname.empty() ? l->getLogName(): lname) );
+		addLogAgregator(lag, (lname.empty() ? l->getLogName() : lname) );
 	else
-		addLog(l,(lname.empty() ? l->getLogName(): lname));
+		addLog(l, (lname.empty() ? l->getLogName() : lname));
 }
 // ------------------------------------------------------------------------
 void LogAgregator::add( std::shared_ptr<LogAgregator> loga, const std::string& lname  )
 {
-	addLogAgregator(loga, (lname.empty() ? loga->getLogName(): lname) );
+	addLogAgregator(loga, (lname.empty() ? loga->getLogName() : lname) );
 }
 // -------------------------------------------------------------------------
 void LogAgregator::addLogAgregator( std::shared_ptr<LogAgregator> la, const std::string& lname )
 {
 	auto i = lmap.find(lname);
+
 	if( i != lmap.end() )
 		return;
 
-	addLog(la,lname);
-#if 0
-	auto lst = la->getLogList();
-	for( auto&& l: lst )
-	{
-		auto lag = std::dynamic_pointer_cast<LogAgregator>(l.log);
-		if( lag )
-		{
-			std::ostringstream s;
-			s << lname << sep << lag->getLogName();
-			addLogAgregator(lag,s.str()); // рекурсия..
-		}
-		else
-		{
-			std::ostringstream s;
-			s << lname << sep << l.log->getLogName();
-			addLog(l.log,s.str());
-		}
-	}
-#endif
+	addLog(la, lname);
 }
 // ------------------------------------------------------------------------
 void LogAgregator::addLog( std::shared_ptr<DebugStream> l, const std::string& lname )
@@ -161,7 +143,7 @@ std::shared_ptr<DebugStream> LogAgregator::getLog( const std::string& logname )
 	return findLog(logname);
 }
 // -------------------------------------------------------------------------
-std::ostream& LogAgregator::print_tree( std::ostream& os, const std::string& g_tab )
+std::ostream& LogAgregator::printTree( std::ostream& os, const std::string& g_tab )
 {
 	ostringstream s;
 	s << "   ." << g_tab;
@@ -170,17 +152,22 @@ std::ostream& LogAgregator::print_tree( std::ostream& os, const std::string& g_t
 
 	os << g_tab << getLogName() << sep << endl; // << setw(6) << " " << "[ " << Debug::str(DebugStream::level()) << " ]" << endl;
 	std::list<std::shared_ptr<DebugStream>> lst;
-	for( const auto& l: lmap )
+
+	for( const auto& l : lmap )
 		lst.push_back(l.second);
 
-	lst.sort([](const std::shared_ptr<DebugStream>& a, const std::shared_ptr<DebugStream>& b) { return a->getLogName() < b->getLogName(); });
+	lst.sort([](const std::shared_ptr<DebugStream>& a, const std::shared_ptr<DebugStream>& b)
+	{
+		return a->getLogName() < b->getLogName();
+	});
 
-	for( auto&& l: lst )
+	for( auto && l : lst )
 	{
 		auto ag = dynamic_pointer_cast<LogAgregator>(l);
+
 		if( ag )
 		{
-			ag->print_tree(os,s_tab);
+			ag->printTree(os, s_tab);
 		}
 		else
 			os << s_tab << l->getLogName() << " [ " << Debug::str(l->level()) << " ]" << endl;
@@ -191,7 +178,7 @@ std::ostream& LogAgregator::print_tree( std::ostream& os, const std::string& g_t
 // -------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, LogAgregator& la )
 {
-	la.print_tree(os);
+	la.printTree(os,"");
 	return os;
 }
 // -------------------------------------------------------------------------
@@ -200,26 +187,28 @@ std::ostream& operator<<(std::ostream& os, std::shared_ptr<LogAgregator> la )
 	return os << *(la.get());
 }
 // -------------------------------------------------------------------------
-std::vector<std::string> LogAgregator::split_first( const std::string& lname, const std::string s )
+std::vector<std::string> LogAgregator::splitFirst( const std::string& lname, const std::string s )
 {
 	string::size_type pos = lname.find(s);
+
 	if( pos == string::npos )
 	{
-		vector<string> v{lname,""};
+		vector<string> v{lname, ""};
 		return std::move(v);
 	}
 
-	vector<string> v={lname.substr(0, pos), lname.substr(pos+1, lname.length()) };
+	vector<string> v = {lname.substr(0, pos), lname.substr(pos + 1, lname.length()) };
 	return std::move(v);
 }
 // -------------------------------------------------------------------------
 std::shared_ptr<DebugStream> LogAgregator::findLog( const std::string& lname )
 {
-	auto v = split_first(lname,sep);
+	auto v = splitFirst(lname, sep);
 
 	if( v[1].empty() )
 	{
 		auto l = lmap.find(lname);
+
 		if( l == lmap.end() )
 			return nullptr;
 
@@ -227,10 +216,12 @@ std::shared_ptr<DebugStream> LogAgregator::findLog( const std::string& lname )
 	}
 
 	auto l = lmap.find(v[0]);
+
 	if( l == lmap.end() )
 		return nullptr;
 
 	auto ag = dynamic_pointer_cast<LogAgregator>(l->second);
+
 	if( !ag )
 		return l->second;
 
@@ -246,7 +237,8 @@ std::list<LogAgregator::iLog> LogAgregator::getLogList( const std::string& regex
 		std::regex rule(regex_str);
 
 		auto lst = getLogList();
-		for( const auto& i: lst )
+
+		for( const auto& i : lst )
 		{
 			if( std::regex_match(i.name, rule) )
 			{
@@ -265,7 +257,10 @@ std::list<LogAgregator::iLog> LogAgregator::getLogList( const std::string& regex
 std::list<LogAgregator::iLog> LogAgregator::getLogList()
 {
 	std::list<LogAgregator::iLog> lst = makeLogNameList("");
-	lst.sort([](const LogAgregator::iLog& a, const LogAgregator::iLog& b) { return a.name < b.name; });
+	lst.sort([](const LogAgregator::iLog & a, const LogAgregator::iLog & b)
+	{
+		return a.name < b.name;
+	});
 	return std::move(lst);
 }
 // -------------------------------------------------------------------------
@@ -278,17 +273,18 @@ std::list<LogAgregator::iLog> LogAgregator::makeLogNameList( const std::string& 
 
 	string p(s.str());
 
-	string p2(p+sep);
+	string p2(p + sep);
 
-	for( auto&& l : lmap )
+	for( auto && l : lmap )
 	{
 		auto ag = dynamic_pointer_cast<LogAgregator>(l.second);
+
 		if( ag )
 			lst.splice(lst.end(), ag->makeLogNameList(p2));
 		else
 		{
-			std::string nm(p2+l.second->getLogName());
-			LogAgregator::iLog il(l.second,std::move(nm) );
+			std::string nm(p2 + l.second->getLogName());
+			LogAgregator::iLog il(l.second, std::move(nm) );
 			lst.push_back( std::move(il) );
 		}
 	}
@@ -299,6 +295,7 @@ std::list<LogAgregator::iLog> LogAgregator::makeLogNameList( const std::string& 
 void LogAgregator::offLogFile( const std::string& logname )
 {
 	auto l = findLog(logname);
+
 	if( l )
 		l->offLogFile();
 }
@@ -306,7 +303,9 @@ void LogAgregator::offLogFile( const std::string& logname )
 void LogAgregator::onLogFile( const std::string& logname )
 {
 	auto l = findLog(logname);
+
 	if( l )
 		l->onLogFile();
 }
 // -------------------------------------------------------------------------
+

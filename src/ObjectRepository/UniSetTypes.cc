@@ -213,7 +213,7 @@ UniSetTypes::IDList UniSetTypes::explode( const string& str, char sep )
 	}
 	while( pos != string::npos );
 
-	return l;
+	return std::move(l);
 }
 // -------------------------------------------------------------------------
 std::vector<std::string> UniSetTypes::explode_str( const string& str, char sep )
@@ -236,7 +236,7 @@ std::vector<std::string> UniSetTypes::explode_str( const string& str, char sep )
 	}
 	while( pos != string::npos );
 
-	return v;
+	return std::move(v);
 }
 // ------------------------------------------------------------------------------------------
 bool UniSetTypes::is_digit( const std::string& s )

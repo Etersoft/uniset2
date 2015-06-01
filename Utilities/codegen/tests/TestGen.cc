@@ -40,13 +40,13 @@ void TestGen::timerInfo( const TimerMessage* tm )
 {
 	if( tm->id == 1 )
 	{
-		askTimer(1,0);
-		askTimer(2,3000);
+		askTimer(1, 0);
+		askTimer(2, 3000);
 	}
 	else if( tm->id == 2 )
 	{
-		askTimer(1,2000);
-		askTimer(2,0);
+		askTimer(1, 2000);
+		askTimer(2, 0);
 	}
 }
 // -----------------------------------------------------------------------------
@@ -58,6 +58,6 @@ void TestGen::sigterm( int signo )
 void TestGen::sysCommand( const UniSetTypes::SystemMessage* sm )
 {
 	if( sm->command == SystemMessage::StartUp )
-		askTimer(1,2000);
+		askTimer(1, 2000);
 }
 // -----------------------------------------------------------------------------

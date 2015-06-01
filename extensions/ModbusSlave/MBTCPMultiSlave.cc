@@ -156,7 +156,7 @@ void MBTCPMultiSlave::execute_tcp()
 		return;
 	}
 
-	auto l = loga->create(myname+"-exchangelog");
+	auto l = loga->create(myname + "-exchangelog");
 	sslot->setLog(l);
 
 	for( auto && i : cmap )
