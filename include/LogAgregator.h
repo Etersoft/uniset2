@@ -157,6 +157,9 @@ class LogAgregator:
 
 		static std::vector<std::string> splitFirst( const std::string& lname, const std::string s = "/" );
 
+		std::ostream& printLogList( std::ostream& os, const std::string& regexp_str = "" );
+		static std::ostream& printLogList( std::ostream& os, std::list<iLog>& lst );
+
 	protected:
 		void logOnEvent( const std::string& s );
 		void addLog( std::shared_ptr<DebugStream> l, const std::string& lname );

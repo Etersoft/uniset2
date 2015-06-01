@@ -143,14 +143,39 @@ std::shared_ptr<DebugStream> LogAgregator::getLog( const std::string& logname )
 	return findLog(logname);
 }
 // -------------------------------------------------------------------------
+std::ostream& LogAgregator::printLogList( std::ostream& os, const std::string& regexp_str )
+{
+	std::list<iLog> lst;
+
+	if( regexp_str.empty() )
+		lst = getLogList();
+	else
+		lst = getLogList(regexp_str);
+}
+// -------------------------------------------------------------------------
+std::ostream& LogAgregator::printLogList( std::ostream& os, std::list<iLog>& lst )
+{
+	std::string::size_type max_width = 1;
+
+	for( const auto& l : lst )
+		max_width = std::max(max_width, l.name.length() );
+
+	for( const auto& l : lst )
+		os << std::left << setw(max_width) << l.name << std::left << " [ " << Debug::str(l.log->level()) << " ]" << endl;
+
+	return os;
+}
+// -------------------------------------------------------------------------
 std::ostream& LogAgregator::printTree( std::ostream& os, const std::string& g_tab )
 {
+	const std::string::size_type tab_width = 15;
+
 	ostringstream s;
-	s << "   ." << g_tab;
+	s << "       ." << g_tab;
 
 	string s_tab(s.str());
 
-	os << g_tab << getLogName() << sep << endl; // << setw(6) << " " << "[ " << Debug::str(DebugStream::level()) << " ]" << endl;
+	os << std::left << g_tab << getLogName() << sep << endl; // << setw(6) << " " << "[ " << Debug::str(DebugStream::level()) << " ]" << endl;
 	std::list<std::shared_ptr<DebugStream>> lst;
 
 	for( const auto& l : lmap )
@@ -166,11 +191,9 @@ std::ostream& LogAgregator::printTree( std::ostream& os, const std::string& g_ta
 		auto ag = dynamic_pointer_cast<LogAgregator>(l);
 
 		if( ag )
-		{
 			ag->printTree(os, s_tab);
-		}
 		else
-			os << s_tab << l->getLogName() << " [ " << Debug::str(l->level()) << " ]" << endl;
+			os << s_tab << setw(tab_width) << std::right << l->getLogName() << std::left << " [ " << Debug::str(l->level()) << " ]" << endl;
 	}
 
 	return os;
@@ -178,7 +201,7 @@ std::ostream& LogAgregator::printTree( std::ostream& os, const std::string& g_ta
 // -------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, LogAgregator& la )
 {
-	la.printTree(os,"");
+	la.printTree(os, "");
 	return os;
 }
 // -------------------------------------------------------------------------

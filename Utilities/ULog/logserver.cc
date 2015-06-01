@@ -1,5 +1,6 @@
 // --------------------------------------------------------------------------
 #include <string>
+#include <iomanip>
 #include <getopt.h>
 #include "Debug.h"
 #include "UniSetTypes.h"
@@ -132,15 +133,25 @@ int main( int argc, char** argv )
 		auto dlog6 = la3->create("dlog6");
 		la->add(la3);
 
+		for( int i = 0; i < 15; i++ )
+		{
+			ostringstream s;
+			s << i;
+
+			auto l = make_shared<LogAgregator>("LongLongNameWith" + s.str());
+			l->create("dlog1");
+			l->create("shortdlog2");
+			l->create("longnamedlog3");
+
+			la->add(l);
+		}
+
+
 #if 0
 		cout << la << endl;
 
 		cout << "************ " << endl;
-		auto lst = la->getLogList();
-
-		for( const auto& l : lst )
-			cout << l.name << endl;
-
+		la->printLogList(cout);
 		return 0;
 #endif
 

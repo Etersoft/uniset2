@@ -51,7 +51,7 @@ void run_test(std::size_t concurrency, int bound, shared_ptr<SharedMemory>& shm 
 
 		while (num--)
 		{
-			int v = shm->getValue(sid);
+			shm->getValue(sid);
 		}
 	};
 

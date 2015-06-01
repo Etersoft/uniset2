@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <memory>
 #include <string>
 #include <sstream>
@@ -112,48 +113,30 @@ void LogSession::run()
 
 				std::list<LogAgregator::iLog> loglist;
 
-				if( !cmdLogName.empty () )
+				if( alog ) // если у нас "агрегатор", то работаем с его списком потоков
 				{
-					if( alog ) // если у нас "агрегатор", то работаем с его списком потоков
-					{
-						if( cmdLogName == "ALL" )
-							loglist = alog->getLogList();
-						else
-							loglist = alog->getLogList(cmdLogName);
-					}
+					if( cmdLogName.empty() || cmdLogName == "ALL" )
+						loglist = alog->getLogList();
 					else
+						loglist = alog->getLogList(cmdLogName);
+				}
+				else
+				{
+					if( cmdLogName.empty() || cmdLogName == "ALL" || log->getLogFile() == cmdLogName )
 					{
-						if( cmdLogName == "ALL" || log->getLogFile() == cmdLogName )
-						{
-							LogAgregator::iLog llog(log, log->getLogName());
-							loglist.push_back(llog);
-						}
+						LogAgregator::iLog llog(log, log->getLogName());
+						loglist.push_back(llog);
 					}
 				}
 
-				// это команда по всем логам..
+				// если команда "вывести список"
+				// выводим и завершаем работу
 				if( msg.cmd == LogServerTypes::cmdList )
 				{
 					ostringstream s;
-					s << "List of managed logs:" << endl;
+					s << "List of managed logs(filter='" << cmdLogName << "'):" << endl;
 					s << "=====================" << endl;
-
-					if( !alog )
-					{
-						s << log->getLogName() << endl;
-					}
-					else
-					{
-						if( !cmdLogName.empty() )
-						{
-							auto lst = alog->getLogList(cmdLogName);
-							for( const auto& l: lst )
-								s << l.name << " [ " << Debug::str(l.log->level()) << " ]" << endl;
-						}
-						else
-							s << alog << endl;
-					}
-
+					LogAgregator::printLogList(s,loglist);
 					s << "=====================" << endl << endl;
 
 					if( isPending(Socket::pendingOutput, cmdTimeout) )
@@ -162,7 +145,7 @@ void LogSession::run()
 						tcp()->sync();
 					}
 
-					// по идее вывели список и завершили работу..
+					// вывели список и завершили работу..
 					cancelled = true;
 					disconnect();
 					return;
@@ -217,6 +200,38 @@ void LogSession::run()
 							slog.warn() << peername << "(run): Unknown command '" << msg.cmd << "'" << endl;
 							break;
 					}
+				}
+
+				// Выводим итоговый получившийся список (с учётом выполненных команд)
+				ostringstream s;
+				if( msg.cmd == LogServerTypes::cmdFilterMode )
+				{
+					s << "List of managed logs(filter='" << cmdLogName << "'):" << endl;
+					s << "=====================" << endl;
+					LogAgregator::printLogList(s,loglist);
+					s << "=====================" << endl << endl;
+				}
+				else
+				{
+					s << "List of managed logs:" << endl;
+					s << "=====================" << endl;
+
+					// выводим полный список
+					if( alog )
+					{
+						auto lst = alog->getLogList();
+						LogAgregator::printLogList(s,lst);
+					}
+					else
+						s << log->getLogName() << " [" << Debug::str(log->level()) << " ]" << endl;
+
+					s << "=====================" << endl << endl;
+				}
+
+				if( isPending(Socket::pendingOutput, cmdTimeout) )
+				{
+					*tcp() << s.str();
+					tcp()->sync();
 				}
 			}
 		}
