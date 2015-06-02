@@ -94,18 +94,16 @@ TEST_CASE("LogAgregator", "[LogServer][LogAgregator]" )
 
 	log2->any() << test_msg2;
 	REQUIRE( la_msg.str() == test_msg2 );
-#if 0
+
 	auto lst = la->getLogList();
 	REQUIRE( lst.size() == 2 );
 
 	// Проверка поиска по регулярным выражениям
-	auto lst2 = la->getLogList("lo.*");
+	auto lst2 = la->getLogList("/lo.*");
 	REQUIRE( lst2.size() == 2 );
 
-	auto lst3 = la->getLogList("log\\d{1}");
+	auto lst3 = la->getLogList("/log\\d{1}");
 	REQUIRE( lst3.size() == 2 );
-#endif
-
 }
 // --------------------------------------------------------------------------
 TEST_CASE("LogServer", "[LogServer]" )
@@ -170,7 +168,7 @@ TEST_CASE("LogServer", "[LogServer]" )
 	}
 
 	g_read_cancel = true;
-
+	msleep(readTimeout);
 	if( r_thr->joinable() )
 		r_thr->join();
 }
@@ -236,6 +234,7 @@ TEST_CASE("MaxSessions", "[LogServer]" )
 	}
 
 	g_read_cancel = true;
+	msleep(readTimeout);
 
 	if( r1_thr->joinable() )
 		r1_thr->join();

@@ -95,7 +95,7 @@ void LogSession::run()
 	setKeepAlive(true);
 
 	// Команды могут посылаться только в начале сессии..
-	if( isPending(Socket::pendingInput, cmdTimeout) )
+	while( isPending(Socket::pendingInput, cmdTimeout) )
 	{
 		LogServerTypes::lsMessage msg;
 
@@ -105,137 +105,142 @@ void LogSession::run()
 			ssize_t ret = readData( &msg, sizeof(msg) );
 
 			if( ret != sizeof(msg) || msg.magic != LogServerTypes::MAGICNUM )
+			{
 				slog.warn() << peername << "(run): BAD MESSAGE..." << endl;
+				continue;
+			}
+
+			slog.info() << peername << "(run): receive command: '" << msg.cmd << "'" << endl;
+			string cmdLogName(msg.logname);
+
+			std::list<LogAgregator::iLog> loglist;
+
+			if( alog ) // если у нас "агрегатор", то работаем с его списком потоков
+			{
+				if( cmdLogName.empty() || cmdLogName == "ALL" )
+					loglist = alog->getLogList();
+				else
+					loglist = alog->getLogList(cmdLogName);
+			}
 			else
 			{
-				slog.info() << peername << "(run): receive command: '" << msg.cmd << "'" << endl;
-				string cmdLogName(msg.logname);
-
-				std::list<LogAgregator::iLog> loglist;
-
-				if( alog ) // если у нас "агрегатор", то работаем с его списком потоков
+				if( cmdLogName.empty() || cmdLogName == "ALL" || log->getLogFile() == cmdLogName )
 				{
-					if( cmdLogName.empty() || cmdLogName == "ALL" )
-						loglist = alog->getLogList();
-					else
-						loglist = alog->getLogList(cmdLogName);
+					LogAgregator::iLog llog(log, log->getLogName());
+					loglist.push_back(llog);
 				}
-				else
+			}
+
+			if( msg.cmd == LogServerTypes::cmdFilterMode )
+			{
+				// отлючаем старый обработчик
+				if( conn )
+					conn.disconnect();
+			}
+
+			// обрабатываем команды только если нашли подходящие логи
+			for( auto && l : loglist )
+			{
+				// Обработка команд..
+				// \warning Работа с логом ведётся без mutex-а, хотя он разделяется отдельными потоками
+				switch( msg.cmd )
 				{
-					if( cmdLogName.empty() || cmdLogName == "ALL" || log->getLogFile() == cmdLogName )
-					{
-						LogAgregator::iLog llog(log, log->getLogName());
-						loglist.push_back(llog);
-					}
+					case LogServerTypes::cmdSetLevel:
+						l.log->level( (Debug::type)msg.data );
+						break;
+
+					case LogServerTypes::cmdAddLevel:
+						l.log->addLevel( (Debug::type)msg.data );
+						break;
+
+					case LogServerTypes::cmdDelLevel:
+						l.log->delLevel( (Debug::type)msg.data );
+						break;
+
+					case LogServerTypes::cmdRotate:
+						l.log->onLogFile(true);
+						break;
+
+					case LogServerTypes::cmdList: // обработали выше (в начале)
+						break;
+
+					case LogServerTypes::cmdOffLogFile:
+						l.log->offLogFile();
+						break;
+
+					case LogServerTypes::cmdOnLogFile:
+						l.log->onLogFile();
+						break;
+
+					case LogServerTypes::cmdFilterMode:
+						l.log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
+						break;
+
+					default:
+						slog.warn() << peername << "(run): Unknown command '" << msg.cmd << "'" << endl;
+						break;
 				}
+			} // end if for
 
-				// если команда "вывести список"
-				// выводим и завершаем работу
-				if( msg.cmd == LogServerTypes::cmdList )
-				{
-					ostringstream s;
-					s << "List of managed logs(filter='" << cmdLogName << "'):" << endl;
-					s << "=====================" << endl;
-					LogAgregator::printLogList(s,loglist);
-					s << "=====================" << endl << endl;
-
-					if( isPending(Socket::pendingOutput, cmdTimeout) )
-					{
-						*tcp() << s.str();
-						tcp()->sync();
-					}
-
-					// вывели список и завершили работу..
-					cancelled = true;
-					disconnect();
-					return;
-				}
-
-				if( msg.cmd == LogServerTypes::cmdFilterMode )
-				{
-					// отлючаем старый обработчик
-					if( conn )
-						conn.disconnect();
-				}
-
-				// обрабатываем команды только если нашли подходящие логи
-				for( auto && l : loglist )
-				{
-					// Обработка команд..
-					// \warning Работа с логом ведётся без mutex-а, хотя он разделяется отдельными потоками
-					switch( msg.cmd )
-					{
-						case LogServerTypes::cmdSetLevel:
-							l.log->level( (Debug::type)msg.data );
-							break;
-
-						case LogServerTypes::cmdAddLevel:
-							l.log->addLevel( (Debug::type)msg.data );
-							break;
-
-						case LogServerTypes::cmdDelLevel:
-							l.log->delLevel( (Debug::type)msg.data );
-							break;
-
-						case LogServerTypes::cmdRotate:
-							l.log->onLogFile(true);
-							break;
-
-						case LogServerTypes::cmdList: // обработали выше (в начале)
-							break;
-
-						case LogServerTypes::cmdOffLogFile:
-							l.log->offLogFile();
-							break;
-
-						case LogServerTypes::cmdOnLogFile:
-							l.log->onLogFile();
-							break;
-
-						case LogServerTypes::cmdFilterMode:
-							l.log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
-							break;
-
-						default:
-							slog.warn() << peername << "(run): Unknown command '" << msg.cmd << "'" << endl;
-							break;
-					}
-				}
-
-				// Выводим итоговый получившийся список (с учётом выполненных команд)
+			// если команда "вывести список"
+			// выводим и завершаем работу
+			if( msg.cmd == LogServerTypes::cmdList )
+			{
 				ostringstream s;
-				if( msg.cmd == LogServerTypes::cmdFilterMode )
-				{
-					s << "List of managed logs(filter='" << cmdLogName << "'):" << endl;
-					s << "=====================" << endl;
-					LogAgregator::printLogList(s,loglist);
-					s << "=====================" << endl << endl;
-				}
-				else
-				{
-					s << "List of managed logs:" << endl;
-					s << "=====================" << endl;
-
-					// выводим полный список
-					if( alog )
-					{
-						auto lst = alog->getLogList();
-						LogAgregator::printLogList(s,lst);
-					}
-					else
-						s << log->getLogName() << " [" << Debug::str(log->level()) << " ]" << endl;
-
-					s << "=====================" << endl << endl;
-				}
+				s << "List of managed logs(filter='" << cmdLogName << "'):" << endl;
+				s << "=====================" << endl;
+				LogAgregator::printLogList(s, loglist);
+				s << "=====================" << endl << endl;
 
 				if( isPending(Socket::pendingOutput, cmdTimeout) )
 				{
 					*tcp() << s.str();
 					tcp()->sync();
 				}
+
+				// вывели список и завершили работу..
+				//		cancelled = true;
+				//		disconnect();
+				//		return;
 			}
 		}
+	} // end of while pending input (cmd processing)..
+
+#if 0
+	// Выводим итоговый получившийся список (с учётом выполненных команд)
+	ostringstream s;
+
+	if( msg.cmd == LogServerTypes::cmdFilterMode )
+	{
+		s << "List of managed logs(filter='" << cmdLogName << "'):" << endl;
+		s << "=====================" << endl;
+		LogAgregator::printLogList(s, loglist);
+		s << "=====================" << endl << endl;
 	}
+	else
+	{
+		s << "List of managed logs:" << endl;
+		s << "=====================" << endl;
+
+		// выводим полный список
+		if( alog )
+		{
+			auto lst = alog->getLogList();
+			LogAgregator::printLogList(s, lst);
+		}
+		else
+			s << log->getLogName() << " [" << Debug::str(log->level()) << " ]" << endl;
+
+		s << "=====================" << endl << endl;
+	}
+
+	if( isPending(Socket::pendingOutput, cmdTimeout) )
+	{
+		*tcp() << s.str();
+		tcp()->sync();
+	}
+
+#endif
 
 	cancelled = false;
 

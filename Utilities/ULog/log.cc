@@ -1,5 +1,6 @@
 // --------------------------------------------------------------------------
 #include <string>
+#include <vector>
 #include <getopt.h>
 #include "Debug.h"
 #include "UniSetTypes.h"
@@ -25,7 +26,7 @@ static struct option longopts[] =
 	{ "list", optional_argument, 0, 'l' },
 	{ "rotate", optional_argument, 0, 'r' },
 	{ "logfilter", required_argument, 0, 'n' },
-	{ "command-only", no_argument, 0, 'b' },
+	{ "command-only", no_argument, 0, 'c' },
 	{ "timeout", required_argument, 0, 'w' },
 	{ "reconnect-delay", required_argument, 0, 'x' },
 	{ NULL, 0, 0, 0 }
@@ -37,7 +38,7 @@ static void print_help()
 	printf("-v, --verbose               - Print all messages to stdout\n");
 	printf("[-i|--iaddr] addr           - LogServer ip or hostname.\n");
 	printf("[-p|--port] port            - LogServer port.\n");
-	printf("[-b|--command-only]         - Send command and break. (No read logs).\n");
+	printf("[-c|--command-only]         - Send command and break. (No read logs).\n");
 	printf("[-w|--timeout] msec         - Timeout for wait data. Default: 0 - endless waiting\n");
 	printf("[-x|--reconnect-delay] msec - Pause for repeat connect to LogServer. Default: 5000 msec.\n");
 
@@ -58,6 +59,7 @@ static void print_help()
 // --------------------------------------------------------------------------
 static char* checkArg( int i, int argc, char* argv[] );
 // --------------------------------------------------------------------------
+// --------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
 	//	std::ios::sync_with_stdio(false); // нельзя отключать.. тогда "обмен с сервером" рассинхронизируется
@@ -68,11 +70,10 @@ int main( int argc, char** argv )
 	string addr("localhost");
 	int port = 3333;
 	DebugStream dlog;
-	int cmd = LogServerTypes::cmdNOP;
-	int data = 0;
-	string sdata("");
-	int cmdonly = 0;
+	vector<LogReader::Command> vcmd;
 	string logfilter("");
+	LogServerTypes::Command cmd = LogServerTypes::cmdNOP;
+	int cmdonly = 0;
 	timeout_t tout = 0;
 	timeout_t rdelay = 5000;
 
@@ -88,96 +89,109 @@ int main( int argc, char** argv )
 
 				case 'a':
 				{
-					cmd = LogServerTypes::cmdAddLevel;
-					sdata = string(optarg);
+					LogServerTypes::Command cmd = LogServerTypes::cmdAddLevel;
+					std::string filter("");
+					std::string d = string(optarg);
 					char* arg2 = checkArg(optind, argc, argv);
 
 					if( arg2 )
-						logfilter = string(arg2);
-					else
-						logfilter = "";
+						filter = string(arg2);
+
+					vcmd.push_back( LogReader::Command(cmd, (int)Debug::value(d), filter) );
 				}
 				break;
 
 				case 'd':
 				{
-					cmd = LogServerTypes::cmdDelLevel;
-					sdata = string(optarg);
+					LogServerTypes::Command cmd = LogServerTypes::cmdDelLevel;
+					std::string filter("");
+					std::string d = string(optarg);
 					char* arg2 = checkArg(optind, argc, argv);
 
 					if( arg2 )
-						logfilter = string(arg2);
-					else
-						logfilter = "";
+						filter = string(arg2);
+
+					vcmd.push_back( LogReader::Command(cmd, (int)Debug::value(d), filter) );
 				}
 				break;
 
 				case 's':
 				{
-					cmd = LogServerTypes::cmdSetLevel;
-					sdata = string(optarg);
+					LogServerTypes::Command cmd = LogServerTypes::cmdSetLevel;
+					std::string filter("");
+					std::string d = string(optarg);
 					char* arg2 = checkArg(optind, argc, argv);
 
 					if( arg2 )
-						logfilter = string(arg2);
-					else
-						logfilter = "";
+						filter = string(arg2);
+
+					vcmd.push_back( LogReader::Command(cmd, (int)Debug::value(d), filter) );
 				}
 				break;
 
 				case 'l':
 				{
-					cmd = LogServerTypes::cmdList;
 					cmdonly = 1;
+					cmd = LogServerTypes::cmdList;
+					std::string filter("");
 					char* arg2 = checkArg(optind, argc, argv);
 
 					if( arg2 )
-						logfilter = string(arg2);
-					else
-						logfilter = "";
+						filter = string(arg2);
+
+					logfilter = filter;
 				}
 				break;
 
 				case 'o':
 				{
-					cmd = LogServerTypes::cmdOffLogFile;
+					LogServerTypes::Command cmd = LogServerTypes::cmdOffLogFile;
+					std::string filter("");
 					char* arg2 = checkArg(optind, argc, argv);
 
 					if( arg2 )
-						logfilter = string(arg2);
-					else
-						logfilter = "";
+						filter = string(arg2);
+
+					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
+				}
+				break;
+
+				case 'e':
+				{
+					LogServerTypes::Command cmd = LogServerTypes::cmdOnLogFile;
+					std::string filter("");
+					char* arg2 = checkArg(optind, argc, argv);
+
+					if( arg2 )
+						filter = string(arg2);
+
+					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
 				}
 				break;
 
 				case 'f':
 				{
 					cmd = LogServerTypes::cmdFilterMode;
-					logfilter = string(optarg);
-				}
-				break;
-
-				case 'e':
-				{
-					cmd = LogServerTypes::cmdOnLogFile;
+					std::string filter("");
 					char* arg2 = checkArg(optind, argc, argv);
 
 					if( arg2 )
-						logfilter = string(arg2);
-					else
-						logfilter = "";
+						filter = string(arg2);
+
+					logfilter = filter;
 				}
 				break;
 
 				case 'r':
 				{
-					cmd = LogServerTypes::cmdRotate;
+					LogServerTypes::Command cmd = LogServerTypes::cmdRotate;
+					std::string filter("");
 					char* arg2 = checkArg(optind, argc, argv);
 
 					if( arg2 )
-						logfilter = string(arg2);
-					else
-						logfilter = "";
+						filter = string(arg2);
+
+					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
 				}
 				break;
 
@@ -185,7 +199,7 @@ int main( int argc, char** argv )
 					addr = string(optarg);
 					break;
 
-				case 'b':
+				case 'c':
 					cmdonly = 1;
 					break;
 
@@ -223,16 +237,12 @@ int main( int argc, char** argv )
 		lr.setCommandOnlyMode(cmdonly);
 		lr.setinTimeout(tout);
 		lr.setReconnectDelay(rdelay);
+		
+		if( !vcmd.empty() )
+			lr.sendCommand(addr, port, vcmd, cmdonly, verb);
 
-		if( !sdata.empty() )
-		{
-			data = (int)Debug::value(sdata);
-
-			if( verb )
-				cout << "SEND COMMAND: '" << (LogServerTypes::Command)cmd << " data='" << sdata << "'(" << (int)data << ")" << endl;
-		}
-
-		lr.readlogs( addr, port, (LogServerTypes::Command)cmd, data, logfilter, verb );
+		if( !cmdonly )
+			lr.readlogs( addr, port, cmd, logfilter, verb );
 	}
 	catch( const SystemError& err )
 	{

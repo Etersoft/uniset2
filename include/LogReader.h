@@ -3,6 +3,7 @@
 // -------------------------------------------------------------------------
 #include <string>
 #include <queue>
+#include <vector>
 #include <cc++/socket.h>
 #include "UTCPStream.h"
 #include "DebugStream.h"
@@ -15,13 +16,20 @@ class LogReader
 		LogReader();
 		~LogReader();
 
-		void readlogs( const std::string& addr, ost::tpport_t port,
-					   LogServerTypes::Command c = LogServerTypes::cmdNOP,
-					   int data = 0,
-					   const std::string& logname = "",
-					   bool verbose = false );
+		struct Command
+		{
+			Command( LogServerTypes::Command c, unsigned int d, const std::string& f = "" ): cmd(c), data(d), logfilter(f) {}
 
-		void readlogs( const std::string& addr, ost::tpport_t port, LogServerTypes::lsMessage& m, bool verbose = false );
+			LogServerTypes::Command cmd = { LogServerTypes::cmdNOP };
+			unsigned int data = {0};
+			std::string logfilter = { "" };
+		};
+
+		void sendCommand( const std::string& addr, ost::tpport_t port,
+						  std::vector<Command>& vcmd, bool cmd_only = true,
+						  bool verbose = false );
+
+		void readlogs( const std::string& addr, ost::tpport_t port, LogServerTypes::Command c = LogServerTypes::cmdNOP, const std::string logfilter = "", bool verbose = false );
 
 		bool isConnection();
 
@@ -58,6 +66,7 @@ class LogReader
 		void connect( ost::InetAddress addr, ost::tpport_t port, timeout_t tout = TIMEOUT_INF );
 		void disconnect();
 		void logOnEvent( const std::string& s );
+		void sendCommand(LogServerTypes::lsMessage& msg, bool verbose = false );
 
 		timeout_t inTimeout;
 		timeout_t outTimeout;
