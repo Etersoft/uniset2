@@ -107,6 +107,10 @@
 	\note Полнота и формат поддерживаемых регулярных выражений зависит от поддержки компилятором стандарта с++11 (класс <regex>).
 */
 // -------------------------------------------------------------------------
+/* Т.к. в других агрегаторах может тоже встречаться такие же логи, приходится отдельно вести
+ * учёт подключений (conmap) и подключаться к потокам напрямую, а не к агрегатору
+ * иначе будет происходить дублирование информации на экране (логи смешиваются от разных агрегаторов)
+*/
 class LogAgregator:
 	public DebugStream
 {
@@ -135,6 +139,7 @@ class LogAgregator:
 
 		// найти лог..
 		std::shared_ptr<DebugStream> getLog( const std::string& logname );
+		bool logExist( std::shared_ptr<DebugStream>& l );
 
 		struct iLog
 		{
@@ -162,7 +167,7 @@ class LogAgregator:
 
 	protected:
 		void logOnEvent( const std::string& s );
-		void addLog( std::shared_ptr<DebugStream> l, const std::string& lname );
+		void addLog( std::shared_ptr<DebugStream> l, const std::string& lname, bool connect );
 		void addLogAgregator( std::shared_ptr<LogAgregator> la, const std::string& lname );
 
 		// поиск лога по составному логу.."agregator/agregator2/.../logname"
@@ -177,6 +182,9 @@ class LogAgregator:
 	private:
 		typedef std::unordered_map<std::string, std::shared_ptr<DebugStream>> LogMap;
 		LogMap lmap;
+
+		typedef std::unordered_map<std::shared_ptr<DebugStream>,sigc::connection> ConnectionMap;
+		ConnectionMap conmap;
 };
 // -------------------------------------------------------------------------
 #endif // LogAgregator_H_

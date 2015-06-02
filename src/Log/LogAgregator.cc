@@ -54,7 +54,8 @@ std::shared_ptr<DebugStream> LogAgregator::create( const std::string& logname )
 
 	auto l = std::make_shared<DebugStream>();
 	l->setLogName(logname);
-	l->signal_stream_event().connect( sigc::mem_fun(this, &LogAgregator::logOnEvent) );
+	auto conn = l->signal_stream_event().connect( sigc::mem_fun(this, &LogAgregator::logOnEvent) );
+	conmap.emplace(l,conn);
 	lmap[logname] = l;
 	return l;
 }
@@ -66,7 +67,7 @@ void LogAgregator::add( std::shared_ptr<DebugStream> l, const std::string& lname
 	if( lag )
 		addLogAgregator(lag, (lname.empty() ? l->getLogName() : lname) );
 	else
-		addLog(l, (lname.empty() ? l->getLogName() : lname));
+		addLog(l, (lname.empty() ? l->getLogName() : lname), true);
 }
 // ------------------------------------------------------------------------
 void LogAgregator::add( std::shared_ptr<LogAgregator> loga, const std::string& lname  )
@@ -81,32 +82,36 @@ void LogAgregator::addLogAgregator( std::shared_ptr<LogAgregator> la, const std:
 	if( i != lmap.end() )
 		return;
 
-	addLog(la, lname);
+	auto lst = la->getLogList();
+	for( auto&& l: lst )
+	{
+		auto c = conmap.find(l.log);
+		if( c == conmap.end() )
+		{
+			auto conn = l.log->signal_stream_event().connect( sigc::mem_fun(this, &LogAgregator::logOnEvent) );
+			conmap.emplace(l.log,conn);
+		}
+	}
+
+	addLog(la, lname, false);
 }
 // ------------------------------------------------------------------------
-void LogAgregator::addLog( std::shared_ptr<DebugStream> l, const std::string& lname )
+void LogAgregator::addLog( std::shared_ptr<DebugStream> l, const std::string& lname, bool connect )
 {
 	auto i = lmap.find(lname);
 
 	if( i != lmap.end() )
 		return;
 
-	bool have = false;
-
-	// пока делаем "не оптимальный поиск" / пробегаем по всему списку, зато не храним дополнительный map /
-	// на то, чтобы не подключаться к одному логу дважды,
-	// иначе будет дублироваие при выводе потом (на экран)
-	for( const auto& i : lmap )
+	if( connect )
 	{
-		if( i.second == l )
+		auto c = conmap.find(l);
+		if( c == conmap.end() )
 		{
-			have = true;
-			break;
+			auto conn = l->signal_stream_event().connect( sigc::mem_fun(this, &LogAgregator::logOnEvent) );
+			conmap.emplace(l,conn);
 		}
 	}
-
-	if( !have )
-		l->signal_stream_event().connect( sigc::mem_fun(this, &LogAgregator::logOnEvent) );
 
 	lmap[lname] = l;
 }
@@ -222,6 +227,25 @@ std::vector<std::string> LogAgregator::splitFirst( const std::string& lname, con
 
 	vector<string> v = {lname.substr(0, pos), lname.substr(pos + 1, lname.length()) };
 	return std::move(v);
+}
+// -------------------------------------------------------------------------
+bool LogAgregator::logExist( std::shared_ptr<DebugStream>& log )
+{
+	for( const auto& l: lmap )
+	{
+		if( l.second == log )
+			return true;
+
+		bool res = false;
+		auto ag = dynamic_pointer_cast<LogAgregator>(l.second);
+		if( ag )
+			res = ag->logExist(log);
+
+		if( res )
+			return true;
+	}
+
+	return false;
 }
 // -------------------------------------------------------------------------
 std::shared_ptr<DebugStream> LogAgregator::findLog( const std::string& lname )

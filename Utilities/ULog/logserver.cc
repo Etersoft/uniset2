@@ -114,10 +114,16 @@ int main( int argc, char** argv )
 
 		}
 
+		la->add(dlog);
+
 		auto la2 = make_shared<LogAgregator>("la2");
 
 		auto dlog3 = la2->create("dlog3");
 		auto dlog4 = la2->create("dlog4");
+
+		la2->add(dlog);
+		la2->add(dlog2);
+		
 		la->add(la2);
 
 		if( la->getLog("la2/dlog3") == nullptr )
@@ -132,7 +138,7 @@ int main( int argc, char** argv )
 		auto dlog5 = la3->create("dlog5");
 		auto dlog6 = la3->create("dlog6");
 		la->add(la3);
-
+#if 0
 		for( int i = 0; i < 15; i++ )
 		{
 			ostringstream s;
@@ -145,7 +151,7 @@ int main( int argc, char** argv )
 
 			la->add(l);
 		}
-
+#endif
 
 #if 0
 		cout << la << endl;

@@ -132,6 +132,8 @@ void LogReader::sendCommand( const std::string& _addr, ost::tpport_t _port, std:
 	if( outTimeout == 0 )
 		outTimeout = TIMEOUT_INF;
 
+	std::string listfilter("");
+
 	for( const auto& c : vcmd )
 	{
 		if( c.cmd == LogServerTypes::cmdNOP )
@@ -175,6 +177,13 @@ void LogReader::sendCommand( const std::string& _addr, ost::tpport_t _port, std:
 					continue;
 				}
 
+				if( c.cmd == LogServerTypes::cmdList )
+				{
+					listfilter = c.logfilter;
+					n=0;
+					continue;
+				}
+
 				sendCommand(msg, verbose);
 				break;
 			}
@@ -193,37 +202,31 @@ void LogReader::sendCommand( const std::string& _addr, ost::tpport_t _port, std:
 
 	// после команд.. выводим список текущий..
 
-	timeout_t reply_timeout = 4000; // TIMEOUT_INF;
+	timeout_t reply_timeout = 1000; // TIMEOUT_INF;
 
 	LogServerTypes::lsMessage msg;
 	msg.cmd = LogServerTypes::cmdList;
 	msg.data = 0;
-	msg.setLogName("ALL");
+	msg.setLogName( (listfilter.empty() ? "ALL" : listfilter) );
 	sendCommand(msg, verbose);
 
 	// теперь ждём ответ..
 	try
 	{
-		int a = 3;
+		int a = 1;
 
 		while( a > 0 && tcp->isPending(ost::Socket::pendingInput, reply_timeout) )
 		{
-			int n = 0;
-
-			do
+			int n = tcp->peek( buf, sizeof(buf) - 1 );
+			if( n > 0 )
 			{
-				n = tcp->peek( buf, sizeof(buf) - 1 );
+				tcp->read(buf, n);
+				buf[n] = '\0';
 
-				if( n > 0 )
-				{
-					tcp->read(buf, n);
-					buf[n] = '\0';
-
-					log << buf;
-					a--;
-				}
+				log << buf;
 			}
-			while( n > 0 );
+
+			a--;
 		}
 
 		// rlog.warn() << "(LogReader): ...wait reply timeout..." << endl;

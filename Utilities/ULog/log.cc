@@ -76,6 +76,7 @@ int main( int argc, char** argv )
 	int cmdonly = 0;
 	timeout_t tout = 0;
 	timeout_t rdelay = 5000;
+	bool cmdlist = false;
 
 	try
 	{
@@ -132,14 +133,14 @@ int main( int argc, char** argv )
 				case 'l':
 				{
 					cmdonly = 1;
-					cmd = LogServerTypes::cmdList;
 					std::string filter("");
 					char* arg2 = checkArg(optind, argc, argv);
 
 					if( arg2 )
 						filter = string(arg2);
 
-					logfilter = filter;
+					vcmd.push_back( LogReader::Command(LogServerTypes::cmdList,0, filter) );
+					cmdlist = true;
 				}
 				break;
 
@@ -237,7 +238,16 @@ int main( int argc, char** argv )
 		lr.setCommandOnlyMode(cmdonly);
 		lr.setinTimeout(tout);
 		lr.setReconnectDelay(rdelay);
-		
+
+/*		
+		if( cmdlist && vcmd.size() == 1 )
+		{
+			cmdonly = 1;
+			lr.setReadCount(1);
+			lr.sendCommand(addr, port, vcmd, cmdonly, verb);
+			return 0;
+		}
+*/		
 		if( !vcmd.empty() )
 			lr.sendCommand(addr, port, vcmd, cmdonly, verb);
 
