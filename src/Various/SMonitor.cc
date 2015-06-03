@@ -84,10 +84,23 @@ void SMonitor::sysCommand( const SystemMessage* sm )
 // ------------------------------------------------------------------------------------------
 void SMonitor::sensorInfo( const SensorMessage* si )
 {
-	cout << "(" << setw(6) << si->id << "): " << setw(8) << timeToString(si->sm_tv_sec, ":")
-		 << "(" << setw(6) << si->sm_tv_usec << "): ";
-	cout << setw(45) << uniset_conf()->oind->getMapName(si->id);
-	cout << "\tvalue=" << si->value << "\tfvalue=" << ( (float)si->value / pow(10.0, si->ci.precision) ) << endl;
+	auto conf = uniset_conf();
+
+	string s_sup("");
+
+	if( si->supplier == UniSetTypes::AdminID )
+		s_sup = "uniset-admin";
+	else
+		s_sup = ORepHelpers::getShortName(conf->oind->getMapName(si->supplier));
+
+	cout << "(" << setw(6) << si->id << "):"
+		 << "[(" << std::right << setw(5) << si->supplier << ")"
+		 << std::left << setw(20) << s_sup <<  "] "
+		 << std::right << setw(8) << timeToString(si->sm_tv_sec, ":")
+		 << "(" << setw(6) << si->sm_tv_usec << "): "
+		 << std::right << setw(45) << conf->oind->getMapName(si->id)
+		 << "    value:" << std::right << setw(9) << si->value
+		 << "    fvalue:" << std::right << setw(12) << ( (float)si->value / pow(10.0, si->ci.precision) ) << endl;
 
 	if( !script.empty() )
 	{
@@ -98,7 +111,7 @@ void SMonitor::sensorInfo( const SensorMessage* si )
 		if( script[0] == '.' || script[0] == '/' )
 			cmd << script;
 		else
-			cmd << uniset_conf()->getBinDir() << script;
+			cmd << conf->getBinDir() << script;
 
 		cmd << " " << si->id << " " << si->value << " " << si->sm_tv_sec << " " << si->sm_tv_usec;
 

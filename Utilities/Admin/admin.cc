@@ -49,6 +49,7 @@ static struct option longopts[] =
 	{ "getValue", required_argument, 0, 'g' },
 	{ "getRawValue", required_argument, 0, 'w' },
 	{ "getCalibrate", required_argument, 0, 'y' },
+	{ "getChangedTime", required_argument, 0, 't' },
 	{ "oinfo", required_argument, 0, 'p' },
 	{ "verbose", no_argument, 0, 'v' },
 	{ "quiet", no_argument, 0, 'q' },
@@ -67,6 +68,7 @@ int logRotate( const string& args, UInterface& ui );
 int setValue( const string& args, UInterface& ui );
 int getValue( const string& args, UInterface& ui );
 int getRawValue( const string& args, UInterface& ui );
+int getChangedTime( const string& args, UInterface& ui );
 int getState( const string& args, UInterface& ui );
 int getCalibrate( const string& args, UInterface& ui );
 int oinfo( const string& args, UInterface& ui );
@@ -111,6 +113,7 @@ static void usage()
 	cout << endl;
 	print_help(36, "-w|--getRawValue id1@node1=val,id2@node2=val2,id3=val3,.. ", "Получить 'сырое' значение.\n");
 	print_help(36, "-y|--getCalibrate id1@node1=val,id2@node2=val2,id3=val3,.. ", "Получить параметры калибровки.\n");
+	print_help(36, "-t|--getChangedTime id1@node1=val,id2@node2=val2,id3=val3,.. ", "Получить время последнего изменения.\n");
 	print_help(36, "-v|--verbose", "Подробный вывод логов.\n");
 	print_help(36, "-q|--quiet", "Выводит только результат.\n");
 	cout << endl;
@@ -174,6 +177,7 @@ int main(int argc, char** argv)
 				{
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
+					ui.initBackId(UniSetTypes::AdminID);
 					return setValue(optarg, ui);
 				}
 				break;
@@ -183,6 +187,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --getValue='"<<optarg<<"'"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
+					ui.initBackId(UniSetTypes::AdminID);
 					return getValue(optarg, ui);
 				}
 				break;
@@ -192,7 +197,17 @@ int main(int argc, char** argv)
 					//                cout<<"(main):received option --getRawValue='"<<optarg<<"'"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
+					ui.initBackId(UniSetTypes::AdminID);
 					return getRawValue(optarg, ui);
+				}
+				break;
+
+				case 't':    //--getChangedTime
+				{
+					auto conf = uniset_init(argc, argv, conffile);
+					UInterface ui(conf);
+					ui.initBackId(UniSetTypes::AdminID);
+					return getChangedTime(optarg, ui);
 				}
 				break;
 
@@ -201,6 +216,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --oinfo='"<<optarg<<"'"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
+					ui.initBackId(UniSetTypes::AdminID);
 					return oinfo(optarg, ui);
 				}
 				break;
@@ -210,6 +226,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --exist"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
+					ui.initBackId(UniSetTypes::AdminID);
 
 					verb = true;
 					Command cmd = Exist;
@@ -226,6 +243,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --start"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
+					ui.initBackId(UniSetTypes::AdminID);
 
 					Command cmd = StartUp;
 					auto rep = make_shared<ObjectRepository>(conf);
@@ -240,6 +258,7 @@ int main(int argc, char** argv)
 				{
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
+					ui.initBackId(UniSetTypes::AdminID);
 					return configure(optarg, ui);
 				}
 				break;
@@ -249,6 +268,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --finish"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
+					ui.initBackId(UniSetTypes::AdminID);
 
 					Command cmd = Finish;
 					auto rep = make_shared<ObjectRepository>(conf);
@@ -266,6 +286,7 @@ int main(int argc, char** argv)
 				{
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
+					ui.initBackId(UniSetTypes::AdminID);
 					return logRotate(optarg, ui);
 				}
 				break;
@@ -275,6 +296,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --getCalibrate='"<<optarg<<"'"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
+					ui.initBackId(UniSetTypes::AdminID);
 					return getCalibrate(optarg, ui);
 				}
 				break;
@@ -284,6 +306,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --foldUp"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
+					ui.initBackId(UniSetTypes::AdminID);
 
 					Command cmd = FoldUp;
 					auto rep = make_shared<ObjectRepository>(conf);
@@ -699,6 +722,44 @@ int getRawValue( const std::string& args, UInterface& ui )
 		{
 			if( !quiet )
 				cerr << "(getRawValue): " << ex << endl;;
+
+			err = 1;
+		}
+	}
+
+	return err;
+}
+
+// --------------------------------------------------------------------------------------
+int getChangedTime( const std::string& args, UInterface& ui )
+{
+	int err = 0;
+	auto conf = ui.getConf();
+	auto sl = UniSetTypes::getSInfoList( args, conf );
+
+	if( !quiet )
+		cout << "====== getChangedTime ======" << endl;
+
+	for( auto && it : sl )
+	{
+		if( it.si.node == DefaultObjectId )
+			it.si.node = conf->getLocalNode();
+
+		try
+		{
+			if( !quiet )
+			{
+				cout << "   name: (" << it.si.id << ") " << it.fname << endl;
+				cout << "   text: " << conf->oind->getTextName(it.si.id) << "\n\n";
+				cout << ui.getChangedTime(it.si.id,it.si.node) << endl;
+			}
+			else
+				cout << ui.getChangedTime(it.si.id,it.si.node);
+		}
+		catch( const Exception& ex )
+		{
+			if( !quiet )
+				cerr << "(getChangedTime): " << ex << endl;;
 
 			err = 1;
 		}

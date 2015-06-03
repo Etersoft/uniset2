@@ -286,9 +286,12 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 		// lock
 		uniset_rwmutex_wrlock lock(usi->val_lock);
 
+		usi->supplier = sup_id; // запоминаем того кто изменил
+
 		// фильтрам может потребоваться измениять исходное значение (например для усреднения)
 		// поэтому передаём (и затем сохраняем) напрямую(ссылку) value (а не const value)
 		bool blocked = ( usi->blocked || usi->undefined );
+
 
 		if( checkIOFilters(usi, value, sup_id) || blocked )
 		{
@@ -393,6 +396,7 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& ainf, bool forc
 		ai->tv_sec   = tm.tv_sec;
 		ai->tv_usec  = tm.tv_usec;
 		ai->value    = ai->default_val;
+		ai->supplier = getId();
 
 		// более оптимальный способ(при условии вставки первый раз)
 		ioList.emplace( IOStateList::value_type(ainf->si.id, std::move(ai) ));
@@ -471,7 +475,7 @@ void IOController::dumpToDB()
 		{
 			if ( !li->second->dbignore )
 			{
-				SensorMessage sm(li->second->getSM());
+				SensorMessage sm(li->second->makeSensorMessage());
 				logging(sm);
 			}
 		}
@@ -692,7 +696,7 @@ IOController_i::SensorInfoSeq* IOController::getSensorSeq( const IDSeq& lst )
 
 		if( it != ioList.end() )
 		{
-			(*res)[i] = it->second->getSIO();
+			(*res)[i] = it->second->makeSensorIOInfo();
 			continue;
 		}
 
@@ -739,10 +743,12 @@ IOController_i::ShortIOInfo IOController::getChangedTime( UniSetTypes::ObjectId 
 	if( ait != ioList.end() )
 	{
 		IOController_i::ShortIOInfo i;
-		uniset_rwmutex_rlock lock(ait->second->val_lock);
-		i.value = ait->second->value;
-		i.tv_sec = ait->second->tv_sec;
-		i.tv_usec = ait->second->tv_usec;
+		auto s = ait->second;
+		uniset_rwmutex_rlock lock(s->val_lock);
+		i.value = s->value;
+		i.tv_sec = s->tv_sec;
+		i.tv_usec = s->tv_usec;
+		i.supplier = s->supplier;
 		return i;
 	}
 
@@ -829,15 +835,17 @@ IOController::ChangeUndefinedStateSignal IOController::signal_change_undefined_s
 void IOController::USensorInfo::checkDepend( std::shared_ptr<USensorInfo>& d_it, IOController* ic )
 {
 	bool changed = false;
+	ObjectId sup_id = ic->getId();
 	{
 		uniset_rwmutex_wrlock lock(val_lock);
 		bool prev = blocked;
 		uniset_rwmutex_rlock dlock(d_it->val_lock);
 		blocked = ( d_it->value == d_value ) ? false : true;
 		changed = ( prev != blocked );
+		sup_id = d_it->supplier;
 	}
 
 	if( changed )
-		ic->localSetValue( it, si.id, real_value, ic->getId() );
+		ic->localSetValue( it, si.id, real_value, sup_id );
 }
 // -----------------------------------------------------------------------------

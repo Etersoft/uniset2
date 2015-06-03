@@ -94,7 +94,7 @@ interface IOController_i : UniSetManager_i
     CalibrateInfo getCalibrateInfo( in UniSetTypes::ObjectId sid ) raises(NameNotFound);
 
     // --- Интерфес получения информации о всех датчиках ---
-    /*! Информация об аналоговом датчике */
+    /*! Информация датчике */
     struct SensorIOInfo
     {
         long value;                   /*!< значение */
@@ -108,6 +108,7 @@ interface IOController_i : UniSetManager_i
         CalibrateInfo ci;             /*!< калибровочные параметры */
         long tv_sec;                  /*!< время последнего изменения датчика, секунды (gettimeofday) */
         long tv_usec;                 /*!< время последнего изменения датчика, мксек (gettimeofday) */
+        UniSetTypes::ObjectId supplier;  /*!< идентификатор объекта изменившего состояние датчика */
         boolean dbignore;             /*!< не сохранять изменения в БД */
     };
 
@@ -138,12 +139,13 @@ interface IOController_i : UniSetManager_i
     UniSetTypes::IDSeq setOutputSeq( in OutSeq lst, in UniSetTypes::ObjectId sup_id );
 
 
-    /*! Информация о дискретном датчике */
+    /*! Информация о датчике */
     struct ShortIOInfo
     {
         long value;
         long tv_sec;    /*!< время последнего изменения датчика, секунды (gettimeofday) */
         long tv_usec;   /*!< время последнего изменения датчика, мксек (gettimeofday) */
+        UniSetTypes::ObjectId supplier; /*!< идентификатор того, кто менял датчик (последний раз) */
     };
 
     ShortIOInfo getChangedTime( in UniSetTypes::ObjectId sid ) raises(NameNotFound);

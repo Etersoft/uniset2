@@ -10,7 +10,7 @@ class TestProc:
 	public TestProc_SK
 {
 	public:
-		TestProc( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::conf->getNode("TestProc") );
+		TestProc( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::uniset_conf()->getNode("TestProc") );
 		virtual ~TestProc();
 
 	protected:

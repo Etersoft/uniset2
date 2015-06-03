@@ -458,3 +458,11 @@ std::ostream& UniSetTypes::operator<<( std::ostream& os, const IONotifyControlle
 	return os;
 }
 // -------------------------------------------------------------------------
+std::ostream& UniSetTypes::operator<<( std::ostream& os, const IOController_i::ShortIOInfo& s )
+{
+	os << setw(10) << dateToString(s.tv_sec)
+	   << " " << setw(8) << timeToString(s.tv_sec) << "." << s.tv_usec
+	   << " [ value=" << s.value << " supplier=" << s.supplier << " ]";
+
+	return os;
+}

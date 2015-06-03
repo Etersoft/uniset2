@@ -46,7 +46,7 @@ namespace UniSetTypes
 				TheLastFieldOfTypeOfMessage // Обязательно оставьте последним
 			};
 
-			int type;    // Содержание сообщения (тип)
+			int type = { Unused };    // Содержание сообщения (тип)
 
 			enum Priority
 			{
@@ -56,10 +56,10 @@ namespace UniSetTypes
 				Super
 			};
 
-			Priority priority;
-			ObjectId node;        // откуда
-			ObjectId supplier;    // от кого
-			ObjectId consumer;    // кому
+			Priority priority = { Medium };
+			ObjectId node = { UniSetTypes::DefaultObjectId };      // откуда
+			ObjectId supplier = { UniSetTypes::DefaultObjectId };  // от кого
+			ObjectId consumer = { UniSetTypes::DefaultObjectId };  // кому
 			struct timeval tm;
 
 

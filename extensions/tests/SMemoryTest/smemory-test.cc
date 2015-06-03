@@ -20,13 +20,7 @@ int main(int argc, const char** argv)
 
 	try
 	{
-		string confile = UniSetTypes::getArgParam( "--confile", argc, argv, "configure.xml" );
-		conf = new Configuration(argc, argv, confile);
-
-		string logfilename = conf->getArgParam("--logfile", "smemory.log");
-		string logname( conf->getLogDir() + logfilename );
-		ulog()->logFile( logname );
-		dlog()->logFile( logname );
+		auto conf = uniset_init(argc, argv);
 
 		auto shm = SharedMemory::init_smemory(argc, argv);
 
@@ -45,9 +39,9 @@ int main(int argc, const char** argv)
 			s << "TestProc" << i;
 
 			cout << "..create " << s.str() << endl;
-			TestProc* tp = new TestProc(conf->getObjectID(s.str()));
-			tp->init_dlog(dlog);
-			act->add(tp->get_ptr());
+			auto tp = make_shared<TestProc>( conf->getObjectID(s.str()));
+//			tp->init_dlog(dlog());
+			act->add(tp);
 		}
 
 		SystemMessage sm(SystemMessage::StartUp);

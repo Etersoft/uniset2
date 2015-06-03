@@ -106,7 +106,7 @@ void TestProc::timerInfo( const TimerMessage* tm )
 		cerr << "LOGLEVEL: [" << (int)(*lit) << "] " << (*lit) << endl;
 
 		for( auto& it : loglevels )
-			mylog[it] << myname << ": test log print..." << endl;
+			mylog->debug(it) << myname << ": test log print..." << endl;
 
 		cerr << "======= END LOG PRINT ======" << endl;
 	}
@@ -138,7 +138,7 @@ void TestProc::test_undefined_state()
 	undef ^= true;
 
 	si.id = undef_c;
-	si.node = conf->getLocalNode();
+	si.node = uniset_conf()->getLocalNode();
 	cerr << myname << ": set undefined=" << undef << endl;
 	ui->setUndefinedState( si, undef, getId() );
 }

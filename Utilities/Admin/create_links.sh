@@ -12,6 +12,7 @@ ln -s -f admin.sh msgmap
 ln -s -f admin.sh setValue
 ln -s -f admin.sh getValue
 ln -s -f admin.sh getRawValue
+ln -s -f admin.sh getChangedTime
 ln -s -f admin.sh getCalibrate
 ln -s -f admin.sh help
 ln -s -f admin.sh oinfo

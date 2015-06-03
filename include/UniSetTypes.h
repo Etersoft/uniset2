@@ -58,6 +58,8 @@ namespace UniSetTypes
 	const ThresholdId DefaultThresholdId = -1;      /*!< идентификатор порогов по умолчанию */
 	const ThresholdId DefaultTimerId = -1;      /*!< идентификатор таймера по умолчанию */
 
+	const ObjectId AdminID = -2; /*!< сервисный идентификатор используемый утилитой admin */
+
 	typedef unsigned long KeyType;    /*!< уникальный ключ объекта */
 
 	/*! генератор уникального положительного ключа
@@ -87,6 +89,7 @@ namespace UniSetTypes
 	UniversalIO::IOType getIOType( const std::string& s );
 	std::ostream& operator<<( std::ostream& os, const UniversalIO::IOType t );
 	std::ostream& operator<<( std::ostream& os, const IONotifyController_i::ThresholdInfo& ti );
+	std::ostream& operator<<( std::ostream& os, const IOController_i::ShortIOInfo& s );
 
 	/*! Команды для управления лампочками */
 	enum LampCommand

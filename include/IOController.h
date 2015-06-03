@@ -192,7 +192,8 @@ class IOController:
 		inline IOController_i::SensorIOInfo
 		SensorIOInfo(long v, UniversalIO::IOType t, const IOController_i::SensorInfo& si,
 					 UniSetTypes::Message::Priority p = UniSetTypes::Message::Medium,
-					 long defval = 0, IOController_i::CalibrateInfo* ci = 0 )
+					 long defval = 0, IOController_i::CalibrateInfo* ci = 0,
+					 UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId )
 		{
 			IOController_i::SensorIOInfo ai;
 			ai.si = si;
@@ -202,6 +203,7 @@ class IOController:
 			ai.default_val = defval;
 			ai.real_value = v;
 			ai.blocked = false;
+			ai.supplier = sup_id;
 
 			if( ci != 0 )
 				ai.ci = *ci;
@@ -295,6 +297,7 @@ class IOController:
 				dbignore = false;
 				undefined = false;
 				blocked = false;
+				supplier = UniSetTypes::DefaultObjectId;
 			}
 
 			virtual ~USensorInfo() {}
@@ -332,19 +335,20 @@ class IOController:
 
 			void init( const IOController_i::SensorIOInfo& s );
 
-			inline IOController_i::SensorIOInfo getSIO()
+			inline IOController_i::SensorIOInfo makeSensorIOInfo()
 			{
 				UniSetTypes::uniset_rwmutex_rlock lock(val_lock);
 				IOController_i::SensorIOInfo s(*this);
 				return std::move(s);
 			}
 
-			inline UniSetTypes::SensorMessage getSM()
+			inline UniSetTypes::SensorMessage makeSensorMessage()
 			{
-				UniSetTypes::uniset_rwmutex_rlock lock(val_lock);
 				UniSetTypes::SensorMessage sm;
+
+				UniSetTypes::uniset_rwmutex_rlock lock(val_lock);
 				sm.id           = si.id;
-				sm.node         = si.node;
+				sm.node         = si.node; // uniset_conf()->getLocalNode()?
 				sm.sensor_type  = type;
 				sm.value        = value;
 				sm.undefined    = undefined;
@@ -352,6 +356,7 @@ class IOController:
 				sm.sm_tv_sec    = tv_sec;
 				sm.sm_tv_usec   = tv_usec;
 				sm.ci           = ci;
+				sm.supplier     = supplier;
 				return std::move(sm);
 			}
 		};
