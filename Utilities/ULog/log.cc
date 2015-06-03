@@ -80,7 +80,7 @@ int main( int argc, char** argv )
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hvlf:a:p:i:d:s:n:eorbx:w:", longopts, &optindex)) != -1 )
+		while( (opt = getopt_long(argc, argv, "chvlf:a:p:i:d:s:n:eorbx:w:", longopts, &optindex)) != -1 )
 		{
 			switch (opt)
 			{
