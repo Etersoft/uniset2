@@ -202,7 +202,7 @@ void LogReader::sendCommand( const std::string& _addr, ost::tpport_t _port, std:
 
 	// после команд.. выводим список текущий..
 
-	timeout_t reply_timeout = 1000; // TIMEOUT_INF;
+	timeout_t reply_timeout = 2000; // TIMEOUT_INF;
 
 	LogServerTypes::lsMessage msg;
 	msg.cmd = LogServerTypes::cmdList;
@@ -213,7 +213,7 @@ void LogReader::sendCommand( const std::string& _addr, ost::tpport_t _port, std:
 	// теперь ждём ответ..
 	try
 	{
-		int a = 1;
+		int a = 2;
 
 		while( a > 0 && tcp->isPending(ost::Socket::pendingInput, reply_timeout) )
 		{
