@@ -345,6 +345,12 @@ void LogReader::logOnEvent( const std::string& s )
 // -------------------------------------------------------------------------
 void LogReader::sendCommand(LogServerTypes::lsMessage& msg, bool verbose )
 {
+	if( !tcp )
+	{
+		cerr << "(LogReader::sendCommand): tcp=NULL! no connection?!" << endl;
+		return;
+	}
+
 	try
 	{
 		if( tcp->isPending(ost::Socket::pendingOutput, outTimeout) )
