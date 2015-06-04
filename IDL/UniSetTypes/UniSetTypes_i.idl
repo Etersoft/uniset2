@@ -59,8 +59,8 @@
             ObjectId id;
             boolean connected;
             ObjectId dbserver;
-            string host;
-            string port;
+            string<30> host;
+            string<10> port;
         };
 
         /*! информация об объекте */

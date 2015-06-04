@@ -169,6 +169,8 @@
 		void askSensor( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );
 		void updateValues();
 
+		virtual UniSetTypes::SimpleInfo* getInfo() override;
+
 		virtual bool setMsg( UniSetTypes::ObjectId code, bool state = true );
 
 		inline std::shared_ptr&lt;DebugStream&gt; log(){ return mylog; }
@@ -409,6 +411,20 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 	sysCommand(_sm);
 }
 // -----------------------------------------------------------------------------
+UniSetTypes::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo()
+{
+	UniSetTypes::SimpleInfo_var i = <xsl:if test="normalize-space($BASECLASS)=''">UniSetObject::getInfo();</xsl:if>
+	
+	ostringstream inf;
+	
+	inf &lt;&lt; i->info &lt;&lt; endl;
+	inf &lt;&lt; dumpIO() &lt;&lt; endl;
+	
+	i->info =  inf.str().c_str();
+	
+	return i._retn();
+}
+// -----------------------------------------------------------------------------
 <xsl:if test="normalize-space($TESTMODE)!=''">
 bool <xsl:value-of select="$CLASSNAME"/>_SK::checkTestMode()
 {
@@ -564,6 +580,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 // generate timestamp: <xsl:value-of select="date:date()"/>
 // -----------------------------------------------------------------------------
 #include &lt;memory&gt;
+#include &lt;iomanip&gt;
 #include <xsl:call-template name="preinclude"/>Configuration.h<xsl:call-template name="postinclude"/>
 #include <xsl:call-template name="preinclude"/>Exceptions.h<xsl:call-template name="postinclude"/>
 #include <xsl:call-template name="preinclude"/>ORepHelpers.h<xsl:call-template name="postinclude"/>
@@ -974,7 +991,10 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 	ostringstream s;
 	s &lt;&lt; myname &lt;&lt; ": " &lt;&lt; endl;
 	<xsl:for-each select="//smap/item">
-	s &lt;&lt; "   " &lt;&lt; strval(<xsl:value-of select="@name"/>) &lt;&lt; endl;
+		s &lt;&lt; "    " &lt;&lt; setw(20) &lt;&lt; std::right &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"
+				&lt;&lt; "(" &lt;&lt; setw(20) &lt;&lt; std::left &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")"
+				&lt;&lt; std::right &lt;&lt; " = " &lt;&lt; setw(6) &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>
+				&lt;&lt; endl;
 	</xsl:for-each>
 	return s.str();
 }
