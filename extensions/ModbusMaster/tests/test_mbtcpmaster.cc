@@ -599,7 +599,7 @@ TEST_CASE("MBTCPMaster: 0x66 (file transfer)", "[modbus][0x66][mbmaster][mbtcpma
 	WARN("Test of '0x66'..not yet.. ");
 }
 // -----------------------------------------------------------------------------
-//#if 1
+#if 0
 TEST_CASE("MBTCPMaster: 0x10 (F2)", "[modbus][0x10][F2][mbmaster][mbtcpmaster]")
 {
 	InitTest();
@@ -617,7 +617,6 @@ TEST_CASE("MBTCPMaster: 0x10 (F2)", "[modbus][0x10][F2][mbmaster][mbtcpmaster]")
 	REQUIRE( f == 11.2f );
 }
 // -----------------------------------------------------------------------------
-#if 0
 TEST_CASE("MBTCPMaster: 0x10 (F4)", "[modbus][0x10][F4][mbmaster][mbtcpmaster]")
 {
 	InitTest();
@@ -636,7 +635,6 @@ TEST_CASE("MBTCPMaster: 0x10 (F4)", "[modbus][0x10][F4][mbmaster][mbtcpmaster]")
 	float f = f4;
 	REQUIRE( f == v );
 }
-#endif
 // -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMaster: FasAO -> FasAI", "[modbus][float]")
 {
@@ -662,4 +660,5 @@ TEST_CASE("MBTCPMaster: FasAO -> FasAI", "[modbus][float]")
 	float f3 = IOBase::processingFasAO( &ib, smi, true );
 	REQUIRE( f3 == 11.6f );
 }
+#endif
 // -----------------------------------------------------------------------------
