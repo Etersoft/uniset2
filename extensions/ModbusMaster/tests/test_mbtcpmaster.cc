@@ -16,10 +16,13 @@ static string addr("127.0.0.1"); // conf->getArgParam("--mbs-inet-addr");
 static ModbusRTU::ModbusAddr slaveADDR = 0x01;
 static shared_ptr<MBTCPTestServer> mbs;
 static shared_ptr<UInterface> ui;
+static std::shared_ptr<SMInterface> smi;
 static ObjectId mbID = 6004; // MBTCPMaster1
 static int polltime = 100; // conf->getArgInt("--mbtcp-polltime");
 static ObjectId slaveNotRespond = 10; // Slave_Not_Respond_S
 static const ObjectId exchangeMode = 11; // MBTCPMaster_Mode_AS
+// -----------------------------------------------------------------------------
+extern std::shared_ptr<SharedMemory> shm;
 // -----------------------------------------------------------------------------
 static void InitTest()
 {
@@ -33,6 +36,17 @@ static void InitTest()
 		CHECK( ui->getObjectIndex() != nullptr );
 		CHECK( ui->getConf() == conf );
 		CHECK( ui->waitReady(slaveNotRespond, 8000) );
+	}
+
+	if( !smi )
+	{
+		if( shm == nullptr )
+			throw SystemError("SharedMemory don`t initialize..");
+
+		if( ui == nullptr )
+			throw SystemError("UInterface don`t initialize..");
+
+		smi = make_shared<SMInterface>(shm->getId(), ui, mbID, shm );
 	}
 
 	if( !mbs )
@@ -65,6 +79,20 @@ static void InitTest()
 		msleep(2000);
 		CHECK( ui->getValue(slaveNotRespond) == 0 );
 	}
+}
+// -----------------------------------------------------------------------------
+static bool init_iobase( IOBase* ib, const std::string& sensor )
+{
+	InitTest();
+
+	auto conf = uniset_conf();
+	xmlNode* snode = conf->getXMLObjectNode( conf->getSensorID(sensor) );
+	CHECK( snode != 0 );
+	UniXML::iterator it(snode);
+	smi->initIterator(ib->d_it);
+	smi->initIterator(ib->ioit);
+	smi->initIterator(ib->t_ait);
+	return IOBase::initItem(ib, it, smi, "", false);
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMaster: 0x01 (read coil status)", "[modbus][0x01][mbmaster][mbtcpmaster]")
@@ -571,13 +599,13 @@ TEST_CASE("MBTCPMaster: 0x66 (file transfer)", "[modbus][0x66][mbmaster][mbtcpma
 	WARN("Test of '0x66'..not yet.. ");
 }
 // -----------------------------------------------------------------------------
-#if 0
+//#if 1
 TEST_CASE("MBTCPMaster: 0x10 (F2)", "[modbus][0x10][F2][mbmaster][mbtcpmaster]")
 {
 	InitTest();
 
-	ui->setValue(1027, 100);
-	REQUIRE( ui->getValue(1027) == 100 );
+	ui->setValue(1027, 112);
+	REQUIRE( ui->getValue(1027) == 112 );
 	msleep(polltime + 200);
 	ModbusRTU::WriteOutputMessage q = mbs->getLastWriteOutput();
 	REQUIRE( q.addr == slaveADDR );
@@ -586,9 +614,10 @@ TEST_CASE("MBTCPMaster: 0x10 (F2)", "[modbus][0x10][F2][mbmaster][mbtcpmaster]")
 
 	VTypes::F2 f2(q.data, VTypes::F2::wsize());
 	float f = f2;
-	REQUIRE( f == 100 );
+	REQUIRE( f == 11.2f );
 }
 // -----------------------------------------------------------------------------
+#if 0
 TEST_CASE("MBTCPMaster: 0x10 (F4)", "[modbus][0x10][F4][mbmaster][mbtcpmaster]")
 {
 	InitTest();
@@ -608,4 +637,29 @@ TEST_CASE("MBTCPMaster: 0x10 (F4)", "[modbus][0x10][F4][mbmaster][mbtcpmaster]")
 	REQUIRE( f == v );
 }
 #endif
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: FasAO -> FasAI", "[modbus][float]")
+{
+	InitTest();
+
+	IOBase ib;
+	CHECK( init_iobase(&ib, "TestWrite1027_F2") );
+
+	ui->setValue(1027, 116);
+	REQUIRE( ui->getValue(1027) == 116 );
+	msleep(polltime + 200);
+	ModbusRTU::WriteOutputMessage q = mbs->getLastWriteOutput();
+	REQUIRE( q.addr == slaveADDR );
+	REQUIRE( q.start == 41 );
+	REQUIRE( q.quant == 2 );
+
+	float f2 = mbs->getF2TestValue();
+
+	ui->setValue(1027, 0);
+	IOBase::processingFasAI( &ib, f2, smi, true );
+	REQUIRE( ui->getValue(1027) == 116 );
+
+	float f3 = IOBase::processingFasAO( &ib, smi, true );
+	REQUIRE( f3 == 11.6f );
+}
 // -----------------------------------------------------------------------------

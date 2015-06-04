@@ -494,3 +494,20 @@ TEST_CASE("IOBase with SM", "[iobase][extensions]")
 	// processingThreshold
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("[IOBase]: FasAO --> FasAI", "[iobase][float]")
+{
+	CHECK( uniset_conf() != nullptr );
+
+	IOBase ib;
+	CHECK( init_iobase(&ib, "FasAI_S") );
+
+	shm->setValue(119, 232);
+	float f = IOBase::processingFasAO(&ib, shm, true);
+
+	CHECK( f == 23.2f );
+
+	IOBase::processingFasAI(&ib, f, shm, true);
+
+	CHECK(shm->getValue(119) == 232 );
+}
+// -----------------------------------------------------------------------------

@@ -2,6 +2,7 @@
 #include <sstream>
 #include <UniSetTypes.h>
 #include "MBTCPTestServer.h"
+#include "VTypes.h"
 #include "uniset-config.h"
 // -------------------------------------------------------------------------
 #ifndef PACKAGE_URL
@@ -352,6 +353,13 @@ ModbusRTU::mbErrCode MBTCPTestServer::writeOutputRegisters( ModbusRTU::WriteOutp
 	ModbusRTU::mbErrCode ret = ModbusRTU::erNoError;
 	reply.set(query.start, query.quant);
 	lastWriteOutputQ = query;
+
+	if( query.start == 41 )
+	{
+		VTypes::F2 f2(query.data,VTypes::F2::wsize());
+		f2_test_value = (float)f2;
+	}
+
 	return ret;
 }
 

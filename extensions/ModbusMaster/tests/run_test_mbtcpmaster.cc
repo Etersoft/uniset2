@@ -8,10 +8,13 @@
 #include "SharedMemory.h"
 #include "Extensions.h"
 #include "MBTCPMaster.h"
+#include "SMInterface.h"
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
+// --------------------------------------------------------------------------
+std::shared_ptr<SharedMemory> shm;
 // --------------------------------------------------------------------------
 int main(int argc, char* argv[] )
 {
@@ -38,7 +41,7 @@ int main(int argc, char* argv[] )
 
 		bool apart = findArgParam("--apart", argc, argv) != -1;
 
-		auto shm = SharedMemory::init_smemory(argc, argv);
+		shm = SharedMemory::init_smemory(argc, argv);
 
 		if( !shm )
 			return 1;

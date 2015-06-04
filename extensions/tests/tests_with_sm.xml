@@ -267,6 +267,11 @@
 			<item id="117" iotype="DI" name="AsDI2_S" textname="AsDI2"/>
 			<item id="118" iotype="DO" name="AsDO_S" textname="AsDO"/>
 
+			<!-- FasAO -> FasAI -->
+			<item id="119" iotype="AI" name="FasAI_S" textname="FasAI" precision="1"/>
+			<item id="120" iotype="AI" name="FasAO_S" textname="FasAO" precsision="1"/>
+			
+
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI_AS">

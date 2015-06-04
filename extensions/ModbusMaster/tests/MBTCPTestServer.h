@@ -64,6 +64,8 @@ class MBTCPTestServer
 
 		friend std::ostream& operator<<(std::ostream& os, const MBTCPTestServer* m );
 
+		inline float getF2TestValue(){ return f2_test_value; }
+
 	protected:
 		// действия при завершении работы
 		void sigterm( int signo );
@@ -133,6 +135,8 @@ class MBTCPTestServer
 		int lastWriteOutputSingleRegister;
 		ModbusRTU::ForceCoilsMessage lastForceCoilsQ;
 		ModbusRTU::WriteOutputMessage lastWriteOutputQ;
+		float f2_test_value = {0.0};
+
 #if 0
 		typedef std::map<ModbusRTU::mbErrCode, unsigned int> ExchangeErrorMap;
 		ExchangeErrorMap errmap;     /*!< статистика обмена */
