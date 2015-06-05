@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.1
-Release: alt6
+Release: alt7
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -455,6 +455,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Fri Jun 05 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt7
+- (ModbusSlave): fixed bug in read0x function (for float and precision)
+
 * Thu Jun 04 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt6
 - (smonit): print supplier, change print format 
 - (admin): add getChangedTime function

@@ -413,7 +413,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 // -----------------------------------------------------------------------------
 UniSetTypes::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo()
 {
-	UniSetTypes::SimpleInfo_var i = <xsl:if test="normalize-space($BASECLASS)=''">UniSetObject::getInfo();</xsl:if>
+	<xsl:if test="not(normalize-space($BASECLASS)='')">UniSetTypes::SimpleInfo_var i = <xsl:value-of select="$BASECLASS"/>::getInfo();</xsl:if>
+	<xsl:if test="normalize-space($BASECLASS)=''">UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo();</xsl:if>
 	
 	ostringstream inf;
 	
