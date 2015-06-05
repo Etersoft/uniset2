@@ -23,6 +23,7 @@ struct IOBase
 	// приходится здесь тоже объявлять разрешенными только операции "перемещения"
 	IOBase( const IOBase& r ) = delete;
 	IOBase& operator=(const IOBase& r) = delete;
+
 	IOBase( IOBase&& r ) = default;
 	IOBase& operator=(IOBase&& r) = default;
 
@@ -144,6 +145,9 @@ struct IOBase
 	IOController::IOStateList::iterator ioit;
 	UniSetTypes::uniset_rwmutex val_lock;     /*!< блокировка на время "работы" со значением */
 
+	IOBase make_iobase_copy();
+	void create_from_iobase( const IOBase& b );
+
 	friend std::ostream& operator<<(std::ostream& os, const IOBase& inf );
 
 	static void processingFasAI( IOBase* it, float new_val, const std::shared_ptr<SMInterface>& shm, bool force );
@@ -168,6 +172,7 @@ struct IOBase
 	// helpes
 	static std::string initProp( UniXML::iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const std::string& defval = "" );
 	static int initIntProp( UniXML::iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const int defval = 0 );
+
 };
 
 // -----------------------------------------------------------------------------

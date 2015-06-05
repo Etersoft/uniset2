@@ -985,12 +985,23 @@ bool MBSlave::initItem( UniXML::iterator& it )
 		else
 		{
 			ModbusData mbreg = p.mbreg;
+			IOBase b = p.make_iobase_copy();
+
+			AccessMode p_amode = p.amode;
+			VTypes::VType p_vtype = p.vtype;
+			int p_nbyte = p.nbyte;
+			bool p_rawdata = p.rawdata;
+
 			IOProperty p_dummy;
+			p_dummy.create_from_iobase(b);
 			p_dummy.bitreg = make_shared<BitRegProperty>();
 			p_dummy.bitreg->mbreg = mbreg;
 			p_dummy.regID = p.regID;
 			p.vtype = VTypes::vtUnknown;
 			p.wnum = 0;
+			p_dummy.amode = p_amode;
+			p_dummy.nbyte = p_nbyte;
+			p_dummy.rawdata = p_rawdata;
 
 			p_dummy.bitreg->bvec[nbit] = std::move(p); // после этого p использовать нельзя!
 
@@ -1067,11 +1078,14 @@ bool MBSlave::initItem( UniXML::iterator& it )
 		// копируем минимум полей, который нужен для обработки.. т.к. нам другие не понадобятся..
 		int p_wnum = 0;
 		ModbusData p_mbreg = p.mbreg;
-		IOController_i::SensorInfo p_si = p.si;
-		UniversalIO::IOType p_stype = p.stype;
-		VTypes::VType p_vtype = p.vtype;
+		IOBase p_base(p.make_iobase_copy());
 
-		int wsz = VTypes::wsize(p_vtype );
+		AccessMode p_amode = p.amode;
+		VTypes::VType p_vtype = p.vtype;
+		int p_nbyte = p.nbyte;
+		bool p_rawdata = p.rawdata;
+
+		int wsz = VTypes::wsize(p.vtype);
 		int p_regID = p.regID;
 
 		// после std::move  p - использовать нельзя!
@@ -1084,11 +1098,13 @@ bool MBSlave::initItem( UniXML::iterator& it )
 			for( int i = 1; i < wsz; i++ )
 			{
 				IOProperty p_dummy;
+				p_dummy.create_from_iobase(p_base);
 				p_dummy.mbreg = p_mbreg + i;
 				p_dummy.wnum = p_wnum + i;
-				p_dummy.si = p_si;
-				p_dummy.stype = p_stype;
 				p_dummy.vtype = p_vtype;
+				p_dummy.amode = p_amode;
+				p_dummy.nbyte = p_nbyte;
+				p_dummy.rawdata = p_rawdata;
 				p_regID = genRegID(p_dummy.mbreg, mbfunc);
 				p_dummy.regID  = p_regID;
 
@@ -1802,6 +1818,7 @@ ModbusRTU::mbErrCode MBSlave::real_read_prop( IOProperty* p, ModbusRTU::ModbusDa
 			else if( p->vtype == VTypes::vtF2 )
 			{
 				float f = IOBase::processingFasAO(p, shm, force);
+
 				VTypes::F2 f2(f);
 				// оптимизируем и проверку не делаем
 				// считая, что при "загрузке" всё было правильно

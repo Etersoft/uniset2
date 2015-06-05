@@ -1159,6 +1159,7 @@ TEST_CASE("(0x10): write register outputs or memories [F2](precision)", "[modbus
 	float f = 200.4;
 	F2 f2(f);
 
+	// write..
 	ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
 	msg.addData(f2.raw.v[0]);
 	msg.addData(f2.raw.v[1]);
@@ -1167,6 +1168,15 @@ TEST_CASE("(0x10): write register outputs or memories [F2](precision)", "[modbus
 	REQUIRE( ret.quant == 2 );
 
 	REQUIRE( ui->getValue(tID) == 2004 );
+
+	// read..
+	ui->setValue(tID,203);
+
+	ModbusRTU::ReadOutputRetMessage ret2 = mb->read03(slaveaddr, tREG, 2);
+
+	F2 r_f2(ret2.data,F2::wsize());
+
+	REQUIRE( (float)r_f2 == 20.3f );
 }
 // -------------------------------------------------------------
 /*! \todo Доделать тесты на считывание с разными prop_prefix.. */

@@ -742,3 +742,80 @@ std::ostream& operator<<( std::ostream& os, const IOBase::FrontType& f )
 	return os;
 }
 // -----------------------------------------------------------------------------
+IOBase IOBase::make_iobase_copy()
+{
+	IOBase b;
+	b.si = si;
+	b.cal = cal;
+	b.stype = stype;
+	b.cdiagram = cdiagram;
+	b.breaklim = breaklim;
+	b.value = value;
+	b.craw = craw;
+	b.cprev = cprev;
+	b.safety = safety;
+	b.defval = defval;
+	b.df = df;
+	b.nofilter = nofilter;
+	b.f_median = f_median;
+	b.f_ls = f_ls;
+	b.f_filter_iir = f_filter_iir;
+	b.ignore = ignore;
+	b.invert = invert;
+	b.noprecision = noprecision;
+	b.calcrop = calcrop;
+	b.d_id = d_id;
+	b.d_value = d_value;
+	b.d_off_value = d_off_value;
+	b.d_iotype = d_iotype;
+	b.t_ai = t_ai;
+	b.front_type = front_type;
+	b.front_prev_state = front_prev_state;
+	b.front_state = front_state;
+	b.rawdata = rawdata;
+
+	b.debounce_pause = debounce_pause;
+	b.debounce_state = debounce_state;
+	b.ondelay_state = ondelay_state;
+	b.offdelay_state = offdelay_state;
+
+	return std::move(b);
+}
+// ------------------------------------------------------------------------------------------
+void IOBase::create_from_iobase( const IOBase& b )
+{
+	si = b.si;
+	cal = b.cal;
+	stype = b.stype;
+	cdiagram = b.cdiagram;
+	breaklim = b.breaklim;
+	value = b.value;
+	craw = b.craw;
+	cprev = b.cprev;
+	safety = b.safety;
+	defval = b.defval;
+	df = b.df;
+	nofilter = b.nofilter;
+	f_median = b.f_median;
+	f_ls = b.f_ls;
+	f_filter_iir = b.f_filter_iir;
+	ignore = b.ignore;
+	invert = b.invert;
+	noprecision = b.noprecision;
+	calcrop = b.calcrop;
+	d_id = b.d_id;
+	d_value = b.d_value;
+	d_off_value = b.d_off_value;
+	d_iotype = b.d_iotype;
+	t_ai = b.t_ai;
+	front_type = b.front_type;
+	front_prev_state = b.front_prev_state;
+	front_state = b.front_state;
+	rawdata = b.rawdata;
+
+	debounce_pause = b.debounce_pause;
+	debounce_state = b.debounce_state;
+	ondelay_state = b.ondelay_state;
+	offdelay_state = b.offdelay_state;
+}
+// ------------------------------------------------------------------------------------------
