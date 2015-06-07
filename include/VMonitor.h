@@ -88,7 +88,7 @@
 	 private:
 		int myvar1;
 		bool myvar2;
-		logn myvar3;
+		long myvar3;
 		...
 		VMonitor vmon;
   }

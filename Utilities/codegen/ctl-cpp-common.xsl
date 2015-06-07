@@ -260,6 +260,8 @@
 		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override{}
 		virtual void sigterm( int signo ) override;
 		virtual bool activateObject() override;
+		virtual std::string getMonitInfo(){ return ""; } /*!&lt; пользовательская информация выводимая в getInfo() */
+		
 		virtual void testMode( bool state );
 		void updatePreviousValues();
 		void checkSensors();
@@ -432,6 +434,7 @@ UniSetTypes::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo()
 	inf &lt;&lt; i->info &lt;&lt; endl;
 	inf &lt;&lt; dumpIO() &lt;&lt; endl;
 	inf &lt;&lt; vmon.pretty_str() &lt;&lt; endl;
+	inf &lt;&lt; getMonitInfo() &lt;&lt; endl;
 	
 	i->info =  inf.str().c_str();
 	
