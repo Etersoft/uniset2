@@ -226,6 +226,8 @@ class MBTCPMultiMaster:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
+		virtual UniSetTypes::SimpleInfo* getInfo() override;
+
 	protected:
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
 		virtual void initIterators() override;
@@ -280,6 +282,8 @@ class MBTCPMultiMaster:
 			bool initOK;
 			bool ignore; // игнорировать данное соединение (обычно флаг выставляется на время ignoreTimeout, если узел не отвечает, хотя связь есть.
 			PassiveTimer ptIgnoreTimeout;
+
+			const std::string getShortInfo() const;
 		};
 
 		typedef std::list<MBSlaveInfo> MBGateList;

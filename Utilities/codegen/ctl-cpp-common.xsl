@@ -432,6 +432,7 @@ UniSetTypes::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo()
 	ostringstream inf;
 	
 	inf &lt;&lt; i->info &lt;&lt; endl;
+	inf &lt;&lt; "LogServer: " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port &lt;&lt; endl;
 	inf &lt;&lt; dumpIO() &lt;&lt; endl;
 	inf &lt;&lt; vmon.pretty_str() &lt;&lt; endl;
 	inf &lt;&lt; getMonitInfo() &lt;&lt; endl;
@@ -881,6 +882,15 @@ end_private(false)
 	// ----------
 	</xsl:for-each>
 	// ===================== end of &lt;variables&gt; =====================
+
+	vmonit(sleep_msec);
+	vmonit(resetMsgTime);
+	vmonit(forceOut);
+	vmonit(argprefix);
+	vmonit(idHeartBeat);
+	vmonit(maxHeartBeat);
+	vmonit(activateTimeout);
+	vmonit(smReadyTimeout);
 }
 
 // -----------------------------------------------------------------------------

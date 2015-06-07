@@ -14,6 +14,11 @@
 #include "LogServer.h"
 #include "DebugStream.h"
 #include "LogAgregator.h"
+#include "VMonitor.h"
+// -----------------------------------------------------------------------------
+#ifndef vmonit
+#define vmonit( var ) vmon.add( #var, var )
+#endif
 // -----------------------------------------------------------------------------
 
 /*! \page page_SharedMemory Реализация разделямой между процессами памяти (SharedMemory)
@@ -291,7 +296,9 @@ class SharedMemory:
 		// функция определяет "готовность" SM к работе.
 		// должна использоваться другими процессами, для того,
 		// чтобы понять, когда можно получать от SM данные.
-		virtual CORBA::Boolean exist();
+		virtual CORBA::Boolean exist() override;
+
+		virtual UniSetTypes::SimpleInfo* getInfo() override;
 
 		void addReadItem( Restorer_XML::ReaderSlot sl );
 
@@ -482,6 +489,8 @@ class SharedMemory:
 		std::shared_ptr<LogServer> logserv;
 		std::string logserv_host = {""};
 		int logserv_port = {0};
+
+		VMonitor vmon;
 
 	private:
 		HistorySlot m_historySignal;

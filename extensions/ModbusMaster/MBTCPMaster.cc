@@ -245,3 +245,16 @@ std::shared_ptr<MBTCPMaster> MBTCPMaster::init_mbmaster( int argc, const char* c
 	return make_shared<MBTCPMaster>(ID, icID, ic, prefix);
 }
 // -----------------------------------------------------------------------------
+UniSetTypes::SimpleInfo* MBTCPMaster::getInfo()
+{
+	UniSetTypes::SimpleInfo_var i = MBExchange::getInfo();
+
+	ostringstream inf;
+
+	inf << i->info << endl;
+	inf << "poll: " << iaddr << ":" << port << endl;
+
+	i->info = inf.str().c_str();
+	return i._retn();
+}
+// ----------------------------------------------------------------------------

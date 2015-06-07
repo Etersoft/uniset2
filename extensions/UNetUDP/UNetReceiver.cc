@@ -1,5 +1,6 @@
 #include <sstream>
 #include <iomanip>
+#include <iomanip>
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UNetReceiver.h"
@@ -601,5 +602,20 @@ void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
 void UNetReceiver::connectEvent( UNetReceiver::EventSlot sl )
 {
 	slEvent = sl;
+}
+// -----------------------------------------------------------------------------
+const std::string UNetReceiver::getShortInfo() const
+{
+	// warning: будет вызываться из другого потока
+	// (считаем что чтение безопасно)
+
+	ostringstream s;
+
+	s << setw(15) << std::right << getAddress() << ":" << std::left << setw(6) << getPort()
+	  << ( isLockUpdate() ? "PASSIVE" : "ACTIVE" )
+	  << " recvOK=" << isRecvOK()
+	  << " lostPackets=" << setw(6) << getLostPacketsNum();
+
+	return std::move(s.str());
 }
 // -----------------------------------------------------------------------------

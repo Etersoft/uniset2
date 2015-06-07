@@ -1,4 +1,5 @@
 #include <sstream>
+#include <iomanip>
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UNetExchange.h"
@@ -414,6 +415,11 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 
 	if( ic )
 		ic->logAgregator()->add(loga);
+
+
+	vmonit(s_field);
+	vmonit(s_fvalue);
+	vmonit(maxHeartBeat);
 }
 // -----------------------------------------------------------------------------
 UNetExchange::~UNetExchange()
@@ -886,3 +892,36 @@ void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceive
 	}
 }
 // -----------------------------------------------------------------------------
+UniSetTypes::SimpleInfo* UNetExchange::getInfo()
+{
+	UniSetTypes::SimpleInfo_var i = UniSetObject_LT::getInfo();
+
+	ostringstream inf;
+
+	inf << i->info << endl;
+	inf << vmon.pretty_str() << endl;
+	inf << endl;
+	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
+	inf << endl;
+	inf << "Receivers: " << endl;
+	for( const auto& r: recvlist )
+	{
+		inf << "[ " << endl;
+		inf << "  chan1: " << ( r.r1 ? r.r1->getShortInfo() : "disable" ) << endl;
+		inf << "  chan2: " << ( r.r2 ? r.r2->getShortInfo() : "disable" ) << endl;
+		inf << "]" << endl;
+	}
+	inf << endl;
+
+	inf << "Senders: " << endl;
+	inf << "[ " << endl;
+	inf << "  chan1: " << ( sender ? sender->getShortInfo() : "disable" ) << endl;
+	inf << "  chan2: " << ( sender2 ? sender2->getShortInfo() : "disable" ) << endl;
+	inf << "]" << endl;
+	inf << endl;
+
+	i->info = inf.str().c_str();
+	return i._retn();
+}
+// ----------------------------------------------------------------------------
+

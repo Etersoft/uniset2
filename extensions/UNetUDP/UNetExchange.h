@@ -18,6 +18,11 @@
 #include "DebugStream.h"
 #include "UNetLogSugar.h"
 #include "LogAgregator.h"
+#include "VMonitor.h"
+// -----------------------------------------------------------------------------
+#ifndef vmonit
+#define vmonit( var ) vmon.add( #var, var )
+#endif
 // -----------------------------------------------------------------------------
 /*!
     \page pageUNetExchangeUDP Сетевой обмен на основе UDP (UNetUDP)
@@ -107,6 +112,8 @@ class UNetExchange:
 		{
 			return unetlog;
 		}
+
+		virtual UniSetTypes::SimpleInfo* getInfo() override;
 
 	protected:
 
@@ -221,6 +228,8 @@ class UNetExchange:
 		std::shared_ptr<LogServer> logserv;
 		std::string logserv_host = {""};
 		int logserv_port = {0};
+
+		VMonitor vmon;
 };
 // -----------------------------------------------------------------------------
 #endif // UNetExchange_H_

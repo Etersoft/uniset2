@@ -31,15 +31,20 @@ MBTCPMultiSlave::MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::Obje
 	if( waitTimeout == 0 )
 		waitTimeout = 4000;
 
+	vmonit(waitTimeout);
 	sessTimeout = conf->getArgInt("--" + prefix + "-session-timeout", it.getProp("sessTimeout"));
 
 	if( sessTimeout == 0 )
 		sessTimeout = 10000;
 
+	vmonit(sessTimeout);
+
 	sessMaxNum = conf->getArgInt("--" + prefix + "-session-maxnum", it.getProp("sessMaxNum"));
 
 	if( sessMaxNum == 0 )
 		sessMaxNum = 10;
+
+	vmonit(sessMaxNum);
 
 	sesscount_id = conf->getSensorID( conf->getArgParam("--" + prefix + "-session-count-id", it.getProp("sesscount")) );
 
@@ -349,3 +354,28 @@ void MBTCPMultiSlave::sigterm( int signo )
 	MBSlave::sigterm(signo);
 }
 // -----------------------------------------------------------------------------
+const std::string MBTCPMultiSlave::ClientInfo::getShortInfo() const
+{
+	ostringstream s;
+
+	s << iaddr << " askCount=" << askCount;
+
+	return std::move(s.str());
+}
+// -----------------------------------------------------------------------------
+UniSetTypes::SimpleInfo* MBTCPMultiSlave::getInfo()
+{
+	UniSetTypes::SimpleInfo_var i = MBSlave::getInfo();
+
+	ostringstream inf;
+
+	inf << i->info << endl;
+	inf << "Clients: " << endl;
+	for( const auto& m: cmap )
+		inf << "   " << m.second.getShortInfo() << endl;
+	inf << endl;
+
+	i->info = inf.str().c_str();
+	return i._retn();
+}
+// ----------------------------------------------------------------------------

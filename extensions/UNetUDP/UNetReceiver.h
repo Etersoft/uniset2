@@ -54,7 +54,7 @@ class UNetReceiver:
 {
 	public:
 		UNetReceiver( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi );
-		~UNetReceiver();
+		virtual ~UNetReceiver();
 
 		void start();
 		void stop();
@@ -62,25 +62,25 @@ class UNetReceiver:
 		void receive();
 		void update();
 
-		inline std::string getName()
+		inline const std::string getName() const
 		{
 			return myname;
 		}
 
 		// блокировать сохранение данных в SM
 		void setLockUpdate( bool st );
-		inline bool isLockUpdate()
+		inline bool isLockUpdate() const
 		{
 			return lockUpdate;
 		}
 
 		void resetTimeout();
 
-		inline bool isRecvOK()
+		inline bool isRecvOK() const
 		{
 			return !ptRecvTimeout.checkTime();
 		}
-		inline unsigned long getLostPacketsNum()
+		inline unsigned long getLostPacketsNum() const
 		{
 			return lostPackets;
 		}
@@ -99,11 +99,11 @@ class UNetReceiver:
 
 		void forceUpdate(); // пересохранить очередной пакет в SM даже если данные не менялись
 
-		inline ost::IPV4Address getAddress()
+		inline ost::IPV4Address getAddress() const
 		{
 			return addr;
 		}
-		inline ost::tpport_t getPort()
+		inline ost::tpport_t getPort() const
 		{
 			return port;
 		}
@@ -122,6 +122,8 @@ class UNetReceiver:
 		{
 			return unetlog;
 		}
+
+		virtual const std::string getShortInfo() const;
 
 	protected:
 

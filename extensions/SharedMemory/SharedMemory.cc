@@ -159,6 +159,17 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 
 		msecPulsar = conf->getArgPInt("--pulsar-msec", it.getProp("pulsar_msec"), 5000);
 	}
+
+	// Мониторинг переменных
+	vmonit(sidPulsar);
+	vmonit(msecPulsar);
+	vmonit(activateTimeout);
+	vmonit(evntPause);
+	vmonit(heartbeatCheckTime);
+	vmonit(histSaveTime);
+	vmonit(dblogging);
+	vmonit(heartbeatCheckTime);
+	vmonit(heartbeat_node);
 }
 
 // --------------------------------------------------------------------------------
@@ -942,5 +953,20 @@ bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectI
 	}
 
 	return false;
+}
+// ----------------------------------------------------------------------------
+UniSetTypes::SimpleInfo* SharedMemory::getInfo()
+{
+	UniSetTypes::SimpleInfo_var i = IONotifyController_LT::getInfo();
+
+	ostringstream inf;
+
+	inf << i->info << endl;
+	inf << vmon.pretty_str() << endl;
+	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
+
+
+	i->info = inf.str().c_str();
+	return i._retn();
 }
 // ----------------------------------------------------------------------------
