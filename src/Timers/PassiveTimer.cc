@@ -45,7 +45,7 @@ PassiveTimer::~PassiveTimer()
 
 }
 //------------------------------------------------------------------------------
-bool PassiveTimer::checkTime()
+bool PassiveTimer::checkTime() const
 {
 	if( t_msec == WaitUpTime )
 		return false;

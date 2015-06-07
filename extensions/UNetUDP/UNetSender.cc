@@ -367,3 +367,18 @@ void UNetSender::askSensors( UniversalIO::UIOCommand cmd )
 		shm->askSensor(it.id, cmd);
 }
 // -----------------------------------------------------------------------------
+const std::string UNetSender::getShortInfo() const
+{
+	// warning: будет вызываться из другого потока
+	// (считаем что чтение безопасно)
+
+	ostringstream s;
+
+	s << setw(15) << std::right << getAddress() << ":" << std::left << setw(6) << getPort()
+	  << " packetnum=" << packetnum
+	  << " lastcrc=" << setw(6) << lastcrc;
+
+	return std::move(s.str());
+}
+// -----------------------------------------------------------------------------
+

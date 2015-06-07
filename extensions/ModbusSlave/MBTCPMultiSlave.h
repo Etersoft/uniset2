@@ -32,6 +32,8 @@ class MBTCPMultiSlave:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
+		UniSetTypes::SimpleInfo* getInfo() override;
+
 	protected:
 		virtual void execute_tcp() override;
 		virtual void initIterators() override;
@@ -68,6 +70,8 @@ class MBTCPMultiSlave:
 				shm->initIterator( respond_it );
 				shm->initIterator( askcount_it );
 			}
+
+			const std::string getShortInfo() const;
 		};
 
 		typedef std::unordered_map<std::string, ClientInfo> ClientsMap;

@@ -26,6 +26,7 @@
 #include <string>
 #include <ostream>
 #include <unordered_map>
+#include "UniSetTypes.h"
 // --------------------------------------------------------------------------
 #ifndef VMON_DEF_FUNC
 #define VMON_DEF_FUNC(T) void add( const std::string& name, const T& v )
@@ -45,6 +46,11 @@
 	std::unordered_map<const T*,const std::string> m_##T; \
 	std::unordered_map<const unsigned T*,const std::string> m_unsigned_##T
 #endif
+
+#ifndef VMON_DEF_MAP3
+#define VMON_DEF_MAP3(T,M) std::unordered_map<const T*,const std::string> m_##M
+#endif
+
 // --------------------------------------------------------------------------
 /* EXAMPLE HELPER MACROS
 
@@ -111,9 +117,13 @@ class VMonitor
 		VMON_DEF_FUNC2(int);
 		VMON_DEF_FUNC2(long);
 		VMON_DEF_FUNC2(short);
+		VMON_DEF_FUNC2(char);
 		VMON_DEF_FUNC(bool);
 		VMON_DEF_FUNC(float);
 		VMON_DEF_FUNC(double);
+//		VMON_DEF_FUNC(UniSetTypes::ObjectId); // <--- long
+
+		void add( const std::string& name, const std::string& v );
 
 	protected:
 
@@ -122,9 +132,12 @@ class VMonitor
 		VMON_DEF_MAP2(int);
 		VMON_DEF_MAP2(long);
 		VMON_DEF_MAP2(short);
+		VMON_DEF_MAP2(char);
 		VMON_DEF_MAP(bool);
 		VMON_DEF_MAP(float);
 		VMON_DEF_MAP(double);
+		// VMON_DEF_MAP3(UniSetTypes::ObjectId,ObjectId); // <-- long
+		VMON_DEF_MAP3(std::string,string);
 };
 // --------------------------------------------------------------------------
 #endif

@@ -42,7 +42,7 @@ class UniSetTimer
 	public:
 		virtual ~UniSetTimer() {};
 
-		virtual bool checkTime() = 0;						/*!< проверка наступления заданного времени */
+		virtual bool checkTime() const = 0;						/*!< проверка наступления заданного времени */
 		virtual timeout_t setTiming( timeout_t msec ) = 0;	/*!< установить таймер и запустить */
 		virtual void reset() = 0;							/*!< перезапустить таймер */
 
@@ -100,7 +100,7 @@ class PassiveTimer:
 		virtual ~PassiveTimer();
 
 
-		virtual bool checkTime(); /*!< проверка наступления заданного времени */
+		virtual bool checkTime() const; /*!< проверка наступления заданного времени */
 		virtual timeout_t setTiming( timeout_t msec );     /*!< установить таймер и запустить. timeMS = 0 вызовет немедленное срабатывание */
 		virtual void reset(); /*!< перезапустить таймер */
 

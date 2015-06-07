@@ -76,9 +76,14 @@ MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId
 	mbinfo << myname << "(init): read fileter-field='" << s_field
 		   << "' filter-value='" << s_fvalue << "'" << endl;
 
+	vmonit(s_field);
+	vmonit(s_fvalue);
+
 	prop_prefix = initPropPrefix();
+	vmonit(prop_prefix);
 
 	stat_time = conf->getArgPInt("--" + prefix + "-statistic-sec", it.getProp("statistic_sec"), 0);
+	vmonit(stat_time);
 
 	if( stat_time > 0 )
 		ptStatistic.setTiming(stat_time * 1000);
@@ -89,15 +94,20 @@ MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId
 
 	int tout = conf->getArgPInt("--" + prefix + "-reopen-timeout", it.getProp("reopen_timeout"), default_timeout * 2);
 	ptReopen.setTiming(tout);
+	vmonit(recv_timeout);
 
 	aftersend_pause = conf->getArgPInt("--" + prefix + "-aftersend-pause", it.getProp("aftersend_pause"), 0);
+	vmonit(aftersend_pause);
 
 	noQueryOptimization = conf->getArgInt("--" + prefix + "-no-query-optimization", it.getProp("no_query_optimization"));
+	vmonit(noQueryOptimization);
 
 	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id", it.getProp("reg_from_id"));
 	mbinfo << myname << "(init): mbregFromID=" << mbregFromID << endl;
+	vmonit(mbregFromID);
 
 	polltime = conf->getArgPInt("--" + prefix + "-polltime", it.getProp("polltime"), 100);
+	vmonit(polltime);
 
 	initPause = conf->getArgPInt("--" + prefix + "-initPause", it.getProp("initPause"), 3000);
 
@@ -105,11 +115,18 @@ MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId
 
 	force = conf->getArgInt("--" + prefix + "-force", it.getProp("force"));
 	force_out = conf->getArgInt("--" + prefix + "-force-out", it.getProp("force_out"));
+	vmonit(force);
+	vmonit(force_out);
 
 	defaultMBtype = conf->getArg2Param("--" + prefix + "-default-mbtype", it.getProp("default_mbtype"), "rtu");
 	defaultMBaddr = conf->getArg2Param("--" + prefix + "-default-mbaddr", it.getProp("default_mbaddr"), "");
 
+	vmonit(defaultMBtype);
+	vmonit(defaultMBaddr);
+
 	defaultMBinitOK = conf->getArgPInt("--" + prefix + "-default-mbinit-ok", it.getProp("default_mbinitOK"), 0);
+
+	vmonit(defaultMBinitOK);
 
 	// ********** HEARTBEAT *************
 	string heart = conf->getArgParam("--" + prefix + "-heartbeat-id", it.getProp("heartbeat_id"));
@@ -167,6 +184,8 @@ MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId
 	}
 
 	activateTimeout    = conf->getArgPInt("--" + prefix + "-activate-timeout", 20000);
+
+	vmonit(allInitOK);
 }
 // -----------------------------------------------------------------------------
 std::string MBExchange::initPropPrefix( const std::string& def_prop_prefix )
@@ -3191,3 +3210,17 @@ std::ostream& operator<<( std::ostream& os, const MBExchange::ExchangeMode& em )
 	return os;
 }
 // -----------------------------------------------------------------------------
+UniSetTypes::SimpleInfo* MBExchange::getInfo()
+{
+	UniSetTypes::SimpleInfo_var i = UniSetObject_LT::getInfo();
+
+	ostringstream inf;
+
+	inf << i->info << endl;
+	inf << vmon.pretty_str() << endl;
+	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
+	i->info = inf.str().c_str();
+	return i._retn();
+}
+// ----------------------------------------------------------------------------
+

@@ -206,6 +206,8 @@ class MBTCPMaster:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
+		virtual UniSetTypes::SimpleInfo* getInfo() override;
+
 	protected:
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
 		virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;

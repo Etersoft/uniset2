@@ -14,6 +14,7 @@ using namespace ModbusRTU;
 // -----------------------------------------------------------------------------
 MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic, const string& prefix ):
 	UniSetObject_LT(objId),
+	addr(0x01),
 	initPause(0),
 	test_id(DefaultObjectId),
 	askcount_id(DefaultObjectId),
@@ -74,6 +75,9 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 	mbinfo << myname << "(init): read s_field='" << s_field
 		   << "' s_fvalue='" << s_fvalue << "'" << endl;
 
+	vmonit(s_field);
+	vmonit(s_fvalue);
+
 	// префикс для "свойств" - по умолчанию
 	prop_prefix = "";
 
@@ -95,13 +99,18 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 			prop_prefix = "";
 	}
 
+	vmonit(prop_prefix);
+
 	mbinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
 	force = conf->getArgInt("--" + prefix + "-force", it.getProp("force"));
 
 	// int recv_timeout = conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")));
 
+	vmonit(force);
+
 	addr = ModbusRTU::str2mbAddr(conf->getArg2Param("--" + prefix + "-my-addr", it.getProp("addr"), "0x01"));
+	vmonit(addr);
 
 	default_mbfunc = conf->getArgPInt("--" + prefix + "-default-mbfunc", it.getProp("default_mbfunc"), 0);
 
@@ -113,6 +122,11 @@ MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, cons
 		   << " default_mbfunc=" << default_mbfunc
 		   << " noMBFuncOptimize=" << noMBFuncOptimize
 		   << endl;
+
+	vmonit(default_mbfunc);
+	vmonit(checkMBFunc);
+	vmonit(noMBFuncOptimize);
+
 
 	respond_id = conf->getSensorID(conf->getArgParam("--" + prefix + "-respond-id", it.getProp("respond_id")));
 	respond_invert = conf->getArgInt("--" + prefix + "-respond-invert", it.getProp("respond_invert"));
@@ -2226,3 +2240,19 @@ ModbusRTU::mbErrCode MBSlave::read4314( ModbusRTU::MEIMessageRDI& query,
 	return erNoError;
 }
 // -------------------------------------------------------------------------
+UniSetTypes::SimpleInfo* MBSlave::getInfo()
+{
+	UniSetTypes::SimpleInfo_var i = UniSetObject_LT::getInfo();
+
+	ostringstream inf;
+
+	inf << i->info << endl;
+	inf << vmon.pretty_str() << endl;
+	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
+
+	i->info = inf.str().c_str();
+	return i._retn();
+}
+// ----------------------------------------------------------------------------
+
+

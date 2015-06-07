@@ -24,6 +24,11 @@
 #include "LogAgregator.h"
 #include "LogServer.h"
 #include "LogAgregator.h"
+#include "VMonitor.h"
+// -----------------------------------------------------------------------------
+#ifndef vmonit
+#define vmonit( var ) vmon.add( #var, var )
+#endif
 // -----------------------------------------------------------------------------
 /*!
     \par Базовый класс для реализация обмена по протоколу Modbus [RTU|TCP].
@@ -226,6 +231,8 @@ class MBExchange:
 			return mblog;
 		}
 
+		virtual UniSetTypes::SimpleInfo* getInfo() override;
+
 	protected:
 		virtual void step();
 		virtual void sysCommand( const UniSetTypes::SystemMessage* msg ) override;
@@ -367,6 +374,8 @@ class MBExchange:
 		std::string logserv_host = {""};
 		int logserv_port = {0};
 		const std::shared_ptr<SharedMemory> ic;
+
+		VMonitor vmon;
 
 	private:
 		MBExchange();

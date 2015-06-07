@@ -21,6 +21,11 @@
 #include "ThreadCreator.h"
 #include "LogServer.h"
 #include "LogAgregator.h"
+#include "VMonitor.h"
+// -----------------------------------------------------------------------------
+#ifndef vmonit
+#define vmonit( var ) vmon.add( #var, var )
+#endif
 // -----------------------------------------------------------------------------
 /*!
       \page page_ModbusSlave Реализация Modbus slave
@@ -358,6 +363,8 @@ class MBSlave:
 			return mblog;
 		}
 
+		virtual UniSetTypes::SimpleInfo* getInfo() override;
+
 	protected:
 
 		/*! обработка 0x01 */
@@ -427,7 +434,7 @@ class MBSlave:
 		IOMap iomap;            /*!< список входов/выходов */
 
 		std::shared_ptr<ModbusServerSlot> mbslot;
-		ModbusRTU::ModbusAddr addr;            /*!< адрес данного узла */
+		ModbusRTU::ModbusAddr addr = { 0x01 };       /*!< адрес данного узла */
 
 		xmlNode* cnode;
 		std::string s_field;
@@ -528,6 +535,7 @@ class MBSlave:
 		std::shared_ptr<LogServer> logserv;
 		std::string logserv_host = {""};
 		int logserv_port = {0};
+		VMonitor vmon;
 };
 // -----------------------------------------------------------------------------
 #endif // _MBSlave_H_

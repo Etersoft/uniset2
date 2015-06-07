@@ -25,7 +25,7 @@ class UNetSender
 		UNetSender( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi,
 					const std::string& s_field = "", const std::string& s_fvalue = "" );
 
-		~UNetSender();
+		virtual ~UNetSender();
 
 		struct UItem
 		{
@@ -73,6 +73,18 @@ class UNetSender
 		inline std::shared_ptr<DebugStream> getLog()
 		{
 			return unetlog;
+		}
+
+		virtual const std::string getShortInfo() const;
+
+
+		inline ost::IPV4Address getAddress() const
+		{
+			return addr;
+		}
+		inline ost::tpport_t getPort() const
+		{
+			return port;
 		}
 
 	protected:

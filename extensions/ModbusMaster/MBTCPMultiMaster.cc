@@ -482,3 +482,27 @@ std::shared_ptr<MBTCPMultiMaster> MBTCPMultiMaster::init_mbmaster( int argc, con
 	return make_shared<MBTCPMultiMaster>(ID, icID, ic, prefix);
 }
 // -----------------------------------------------------------------------------
+const std::string MBTCPMultiMaster::MBSlaveInfo::getShortInfo() const
+{
+	ostringstream s;
+	s << myname << " respond=" << respond;
+	return std::move(s.str());
+}
+// -----------------------------------------------------------------------------
+UniSetTypes::SimpleInfo* MBTCPMultiMaster::getInfo()
+{
+	UniSetTypes::SimpleInfo_var i = MBExchange::getInfo();
+
+	ostringstream inf;
+
+	inf << i->info << endl;
+	inf << "Gates: " << endl;
+	for( const auto& m: mblist )
+		inf << "   " << m.getShortInfo() << endl;
+	inf << endl;
+
+	i->info = inf.str().c_str();
+	return i._retn();
+}
+// ----------------------------------------------------------------------------
+
