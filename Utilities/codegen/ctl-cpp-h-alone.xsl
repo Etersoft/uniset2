@@ -38,6 +38,9 @@
 #define <xsl:value-of select="$CLASSNAME"/>_SK_H_
 // -----------------------------------------------------------------------------
 #include &lt;memory&gt;
+#include &lt;string&gt;
+#include &lt;sstream&gt;
+#include &lt;unordered_map&gt;
 <xsl:if test="normalize-space($BASECLASS)!=''">#include <xsl:call-template name="preinclude"/><xsl:value-of select="normalize-space($BASECLASS)"/>.h<xsl:call-template name="postinclude"/></xsl:if>
 <xsl:if test="normalize-space($BASECLASS)=''">#include <xsl:call-template name="preinclude"/>UniSetObject.h<xsl:call-template name="postinclude"/></xsl:if>
 #include <xsl:call-template name="preinclude"/>LT_Object.h<xsl:call-template name="postinclude"/>
@@ -47,6 +50,7 @@
 #include <xsl:call-template name="preinclude"/>LogServer.h<xsl:call-template name="postinclude"/>
 #include <xsl:call-template name="preinclude"/>DebugStream.h<xsl:call-template name="postinclude"/>
 #include <xsl:call-template name="preinclude"/>LogAgregator.h<xsl:call-template name="postinclude"/>
+#include <xsl:call-template name="preinclude"/>VMonitor.h<xsl:call-template name="postinclude"/>
 // -----------------------------------------------------------------------------
 class <xsl:value-of select="$CLASSNAME"/>_SK:
 	<xsl:if test="normalize-space($BASECLASS)!=''">public <xsl:value-of select="normalize-space($BASECLASS)"/>,</xsl:if>

@@ -14,6 +14,8 @@
 	- \ref pg_Codegen_Templ_Alone
 	- \ref pg_Codegen_log
 	- \ref pg_Codegen_loglevel
+	- \ref pg_Codegen_logserver
+	- \ref pg_Codegen_vmonitor
 
 \section pg_Codegen_Common Общее описание утилиты uniset-codegen
  Утилита uniset-codegen предназначена для генерирования "скелета" процесса управления на основе
@@ -400,4 +402,88 @@ MyClass_SK.cc: myclass.src.xml
     4117
 \endcode
    Т.е. для того, чтобы включить указанные логи в датчик нужно записать число \b 4117
+   
+   
+   \section pg_Codegen_logserver Удалённое управление логами
+   Для возможности удалённого управления логами (включением, отключением, просмотром, и т.п.) в каждом объекте
+   предусмотрена возможность запуска LogServer, который \b запускается на порту \b равном \b ID-объекта.
+   По умолчанию LogServer не запускается (выключен). Для его запуска необходимо указать:
+   \code
+		--argprefix-run-logserver   
+   \endcode
+   Дополнительно доступны следующие аргументы:
+   \code
+      --argprefix-logserver-host   - по умолчанию localhost
+      --argprefix-logserver-port   - по умолчанию ID-объекта
+   \endcode
+   
+   Непосредственно управление логами производиться при помощи утилиты \b uniset2-log
+   \code
+	-h, --help                  - this message
+	-v, --verbose               - Print all messages to stdout
+	[-i|--iaddr] addr           - LogServer ip or hostname.
+	[-p|--port] port            - LogServer port.
+	[-c|--command-only]         - Send command and break. (No read logs).
+	[-w|--timeout] msec         - Timeout for wait data. Default: 0 - endless waiting
+	[-x|--reconnect-delay] msec - Pause for repeat connect to LogServer. Default: 5000 msec.
+
+	Commands:
+	[--add | -a] info,warn,crit,... [logfilter] - Add log levels.
+	[--del | -d] info,warn,crit,... [logfilter] - Delete log levels.
+	[--set | -s] info,warn,crit,... [logfilter] - Set log levels.
+	--off, -o [logfilter]                       - Off the write log file (if enabled).
+	--on, -e  [logfilter]                       - On(enable) the write log file (if before disabled).
+	--rotate, -r [logfilter]                    - rotate log file.
+	--list, -l   [logfilter]                    - List of managed logs.
+	--filter, -f logfilter                      - ('filter mode'). View log only from 'logfilter'(regexp)
+
+	Note: 'logfilter' -  regexp for name of log. Default: ALL logs.
+   \endcode
+   
+   \section pg_Codegen_vmonitor Мониторинг состояния внутренних переменных
+   В генерируемом коде встроена поддержка удалённого просмотра (монторинга) внутреннего состояния \b ВСЕХ in_xx и out_xxx переменных,
+   а также переменных определённых пользователем. Для этого достаточно использовать утилиту uniset2-vmonit
+   \code
+		Usage: uniset2-vmonit [-s watch_sec] OBJECT_ID[@node] [uniset-admin-options]
+   \endcode
+      Где можно указать (-s sec) как часто обновлять информацию и собственно указать ID (или name) объекта (процесса).
+ 
+      Утилита требует наличия в системе утилиты watch и на самом деле является обёрткой над утилитой uniset2-admin.
+      
+      Например для отслеживания процесса 12000 утилита запускается так:
+      \code
+		uniset2-vmonit 12000
+      \endcode
+      \note При локальной наладке обычно запуск производиться так: uniset2-start.sh -f uniset2-vmonit ObjectID
+      
+      \subsection pg_Codegen_vmonitor_myvar Добавление своих переменных в "мониторинг".
+      Для добавления своей переменной в "мониторинг" достаточно \b один \b раз (например в конструкторе своего класса)
+      вызвать функцию (на самом деле макрос) \b vmonit(var);
+      Пример:
+      \code
+      class MyClass:
+			public MyClass_SK:
+	  {
+	      public:
+	          MyClass(...)
+	          {
+	            vmonit(my_bool);
+	            vmonit(my_int);
+	            vmonit(my_long);
+	            vmonit(my_double);
+	            vmonit(my_float);
+	          }
+	          
+	      private:
+	         bool my_bool;
+	         int my_int;
+	         long my_long;
+	         double my_double;
+	         float my_float;
+		     ...
+		}
+      \endcode
+      После этого они появяться в выводе утилиты uniset2-vmonit
+      
+      \warning На данный момент поддерживаются только простые типы переменных (bool,short,int,long,double,float см. VMonitor)
 */

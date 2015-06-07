@@ -34,6 +34,7 @@ TestProc::TestProc():
 // -----------------------------------------------------------------------------
 void TestProc::step()
 {
+	snap(undef);
 }
 // -----------------------------------------------------------------------------
 void TestProc::sysCommand( const UniSetTypes::SystemMessage* sm )

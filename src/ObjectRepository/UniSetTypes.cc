@@ -116,8 +116,22 @@ long UniSetTypes::setoutregion(long ret, long calMin, long calMax)
 }
 
 // -------------------------------------------------------------------------
+UniSetTypes::IDList::IDList( std::vector<std::string>&& svec ):
+	UniSetTypes::IDList::IDList()
+{
+	for( const auto& s: svec )
+		add( uni_atoi(s) );
+}
+// ------------------------------------------------------------------
+UniSetTypes::IDList::IDList( std::vector<std::string>& svec ):
+	UniSetTypes::IDList::IDList()
+{
+	for( const auto& s: svec )
+		add( uni_atoi(s) );
+}
+// -------------------------------------------------------------------------
 UniSetTypes::IDList::IDList():
-	node(UniSetTypes::uniset_conf()->getLocalNode())
+	node( (UniSetTypes::uniset_conf() ? UniSetTypes::uniset_conf()->getLocalNode() : DefaultObjectId) )
 {
 
 }
@@ -195,24 +209,7 @@ bool UniSetTypes::file_exist( const std::string& filename )
 // -------------------------------------------------------------------------
 UniSetTypes::IDList UniSetTypes::explode( const string& str, char sep )
 {
-	UniSetTypes::IDList l;
-
-	string::size_type prev = 0;
-	string::size_type pos = 0;
-
-	do
-	{
-		pos = str.find(sep, prev);
-		string s(str.substr(prev, pos - prev));
-
-		if( !s.empty() )
-		{
-			l.add( uni_atoi(s) );
-			prev = pos + 1;
-		}
-	}
-	while( pos != string::npos );
-
+	UniSetTypes::IDList l( explode_str(str,sep) );
 	return std::move(l);
 }
 // -------------------------------------------------------------------------
@@ -222,10 +219,29 @@ std::vector<std::string> UniSetTypes::explode_str( const string& str, char sep )
 
 	string::size_type prev = 0;
 	string::size_type pos = 0;
+	string::size_type sz = str.size();
 
 	do
 	{
+		if( prev >= sz )
+			break;
+
 		pos = str.find(sep, prev);
+
+		if( pos == string::npos )
+		{
+			string s(str.substr(prev, sz-prev));
+			if( !s.empty() )
+				v.emplace_back(s);
+			break;
+		}
+
+		if( pos == 0 )
+		{
+			prev = 1;
+			continue;
+		}
+
 		string s(str.substr(prev, pos - prev));
 
 		if( !s.empty() )
@@ -260,7 +276,7 @@ std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str,
 
 	auto lst = UniSetTypes::explode_str(str, ',');
 
-	for( auto it : lst )
+	for( const auto& it : lst )
 	{
 		UniSetTypes::ParamSInfo item;
 

@@ -183,7 +183,7 @@ class LogAgregator:
 		typedef std::unordered_map<std::string, std::shared_ptr<DebugStream>> LogMap;
 		LogMap lmap;
 
-		typedef std::unordered_map<std::shared_ptr<DebugStream>,sigc::connection> ConnectionMap;
+		typedef std::unordered_map<std::shared_ptr<DebugStream>, sigc::connection> ConnectionMap;
 		ConnectionMap conmap;
 };
 // -------------------------------------------------------------------------

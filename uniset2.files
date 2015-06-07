@@ -204,6 +204,7 @@ extensions/tests/tests_with_sm.h
 extensions/tests/tests_with_sm.xml
 extensions/tests/u.xml
 extensions/tests/sm_perf_test.cc
+extensions/tests/develop.cc
 extensions/UNetUDP/tests/Makefile.am
 extensions/UNetUDP/tests/test_unetudp.cc
 extensions/UNetUDP/tests/tests_individual_process.cc
@@ -287,6 +288,7 @@ include/Pulse.h
 include/Restorer.h
 include/RunLock.h
 include/SMonitor.h
+include/VMonitor.h
 include/SViewer.h
 include/TCPCheck.h
 include/ThreadCreator.h
@@ -394,6 +396,7 @@ src/Various/Mutex.cc
 src/Various/Restorer_XML.cc
 src/Various/RunLock.cc
 src/Various/SMonitor.cc
+src/Various/VMonitor.cc
 src/Various/SViewer.cc
 src/Various/UniXML.cc
 src/Various/WDTInterface.cc

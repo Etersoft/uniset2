@@ -218,10 +218,13 @@
         #ifndef mylogany
         	#define mylogany log()->any()
         #endif
+        #ifndef vmonit
+            #define vmonit( var ) vmon.add( #var, var )
+        #endif
         
         // Вспомогательные функции для удобства логирования
         // ------------------------------------------------------------
-        /*!&lt; вывод в строку значение всех входов и выходов в формате 
+        /*! вывод в строку значение всех входов и выходов в формате
            ObjectName: 
               in_xxx  = val
               in_xxx2 = val
@@ -230,17 +233,20 @@
         */
         std::string dumpIO();
         
-        /*!&lt; Вывод в строку названия входа/выхода в формате: in_xxx(SensorName) 
+        /*! Вывод в строку названия входа/выхода в формате: in_xxx(SensorName) 
            \param id           - идентификатор датчика
            \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
         */
         std::string str( UniSetTypes::ObjectId id, bool showLinkName=true );
         
-        /*!&lt; Вывод значения входа/выхода в формате: in_xxx(SensorName)=val 
+        /*! Вывод значения входа/выхода в формате: in_xxx(SensorName)=val 
            \param id           - идентификатор датчика
            \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
         */
         std::string strval( UniSetTypes::ObjectId id, bool showLinkName=true );        
+        
+        /*! Вывод состояния внутренних переменных */
+        inline std::string dumpVars(){ return std::move(vmon.pretty_str()); }
         // ------------------------------------------------------------
         
 </xsl:template>
@@ -313,6 +319,11 @@
 		std::shared_ptr&lt;LogServer&gt; logserv;
 		std::string logserv_host = {""};
 		int logserv_port = {0};
+
+		// snap
+		bool no_snap = {false};
+		
+		VMonitor vmon;
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PRIVATE">
@@ -420,6 +431,7 @@ UniSetTypes::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo()
 	
 	inf &lt;&lt; i->info &lt;&lt; endl;
 	inf &lt;&lt; dumpIO() &lt;&lt; endl;
+	inf &lt;&lt; vmon.pretty_str() &lt;&lt; endl;
 	
 	i->info =  inf.str().c_str();
 	
@@ -997,6 +1009,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 				&lt;&lt; std::right &lt;&lt; " = " &lt;&lt; setw(6) &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>
 				&lt;&lt; endl;
 	</xsl:for-each>
+
 	return s.str();
 }
 // ----------------------------------------------------------------------------

@@ -21,6 +21,8 @@ class TestGen:
 		virtual void sigterm( int signo ) override;
 
 	private:
+	 	bool bool_var = { false };
+	 	int int_var = {0};
 };
 // -----------------------------------------------------------------------------
 #endif // TestGen_H_

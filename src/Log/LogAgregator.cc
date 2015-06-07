@@ -156,6 +156,8 @@ std::ostream& LogAgregator::printLogList( std::ostream& os, const std::string& r
 		lst = getLogList();
 	else
 		lst = getLogList(regexp_str);
+
+	return printLogList(os,lst);
 }
 // -------------------------------------------------------------------------
 std::ostream& LogAgregator::printLogList( std::ostream& os, std::list<iLog>& lst )

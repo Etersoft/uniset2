@@ -106,14 +106,14 @@ static void usage()
 	cout << endl;
 	print_help(36, "-r|--configure [FullObjName] ", "Посылка SystemMessage::ReConfiguration всем объектам (процессам) или заданному по имени (FullObjName).\n");
 	print_help(36, "-l|--logrotate [FullObjName] ", "Посылка SystemMessage::LogRotate всем объектам (процессам) или заданному по имени (FullObjName).\n");
-	print_help(36, "-p|--oinfo OID ", "Получить информацию об объекте (SimpleInfo).\n");
+	print_help(36, "-p|--oinfo id1@node1,id2@node2,id3,...", "Получить информацию об объектах (SimpleInfo).\n");
 	cout << endl;
 	print_help(48, "-x|--setValue id1@node1=val,id2@node2=val2,id3=val3,.. ", "Выставить значения датчиков\n");
 	print_help(36, "-g|--getValue id1@node1,id2@node2,id3,id4 ", "Получить значения датчиков.\n");
 	cout << endl;
-	print_help(36, "-w|--getRawValue id1@node1=val,id2@node2=val2,id3=val3,.. ", "Получить 'сырое' значение.\n");
-	print_help(36, "-y|--getCalibrate id1@node1=val,id2@node2=val2,id3=val3,.. ", "Получить параметры калибровки.\n");
-	print_help(36, "-t|--getChangedTime id1@node1=val,id2@node2=val2,id3=val3,.. ", "Получить время последнего изменения.\n");
+	print_help(36, "-w|--getRawValue id1@node1,id2@node2,id3,.. ", "Получить 'сырое' значение.\n");
+	print_help(36, "-y|--getCalibrate id1@node1,id2@node2,id3,.. ", "Получить параметры калибровки.\n");
+	print_help(36, "-t|--getChangedTime id1@node1,id2@node2,id3,.. ", "Получить время последнего изменения.\n");
 	print_help(36, "-v|--verbose", "Подробный вывод логов.\n");
 	print_help(36, "-q|--quiet", "Выводит только результат.\n");
 	cout << endl;
@@ -442,9 +442,9 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 					case Exist:
 					{
 						if( obj->exist() )
-							cout << setw(55) << ob << "   <--- exist ok\n";
+							cout << "(" << setw(6) << obj->getId() << ")" << setw(55) << ob << "   <--- exist ok\n";
 						else
-							cout << setw(55) << ob << "   <--- exist NOT OK\n";
+							cout << "(" << setw(6) << obj->getId() << ")" << setw(55) << ob << "   <--- exist NOT OK\n";
 					}
 					break;
 
@@ -840,30 +840,38 @@ int configure( const string& arg, UInterface& ui )
 }
 
 // --------------------------------------------------------------------------------------
-int oinfo( const string& arg, UInterface& ui )
+int oinfo( const string& args, UInterface& ui )
 {
-	UniSetTypes::ObjectId oid(uni_atoi(arg));
+	auto conf = uniset_conf();
+	auto sl = UniSetTypes::getSInfoList( args, conf );
 
-	if( oid == 0 )
+	for( auto&& it : sl )
 	{
-		if( !quiet )
-			cout << "(oinfo): Не задан OID!" << endl;
+		if( it.si.node == DefaultObjectId )
+			it.si.node = conf->getLocalNode();
 
-		return 1;
-	}
+		try
+		{
+			UniSetTypes::ObjectVar o = ui.resolve(it.si.id,it.si.node);
+			UniSetObject_i_var obj = UniSetObject_i::_narrow(o);
 
-	UniSetTypes::ObjectVar o = ui.resolve(oid);
-	UniSetObject_i_var obj = UniSetObject_i::_narrow(o);
+			if(CORBA::is_nil(obj))
+			{
+				if( !quiet )
+					cout << "(oinfo): объект '" << it.si.id << "' недоступен" << endl;
+			}
+			else
+			{
+				SimpleInfo_var inf = obj->getInfo();
+				cout << inf->info << endl;
+			}
+		}
+		catch( const Exception& ex )
+		{
+			cout << "ID='" << it.si.id << "' ERROR: " << ex << endl;
+		}
 
-	if(CORBA::is_nil(obj))
-	{
-		if( !quiet )
-			cout << "(oinfo): объект " << oid << " недоступен" << endl;
-	}
-	else
-	{
-		SimpleInfo_var inf = obj->getInfo();
-		cout << inf->info << endl;
+		cout << endl << endl;
 	}
 
 	return 0;

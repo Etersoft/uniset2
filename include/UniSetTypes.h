@@ -106,6 +106,9 @@ namespace UniSetTypes
 	class IDList
 	{
 		public:
+
+			IDList( std::vector<std::string>& v );
+			IDList( std::vector<std::string>&& v );
 			IDList();
 			~IDList();
 

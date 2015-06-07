@@ -4,7 +4,7 @@ if HAVE_TESTS
 ############################################################################
 
 #check_PROGRAMS = tests tests_with_conf
-noinst_PROGRAMS = tests tests_with_conf
+noinst_PROGRAMS = tests tests_with_conf develop
 
 #umutex threadtst dlog
 tests_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(SIGC_LIBS) $(COMCPP_LIBS)
@@ -23,7 +23,6 @@ test_triggerAND.cc \
 test_triggerOUT.cc \
 test_pulse.cc \
 test_modbustypes.cc \
-test_utypes.cc \
 test_mutex.cc \
 test_logserver.cc \
 test_tcpcheck.cc
@@ -34,12 +33,21 @@ tests_with_conf_SOURCES = tests_with_conf.cc \
 test_conftest.cc \
 test_ui.cc \
 test_iorfile.cc \
-test_messagetype.cc 
-	 
+test_messagetype.cc \
+test_utypes.cc
+
 # threadtst_SOURCES = threadtst.cc
 # threadtst_LDADD 	= $(top_builddir)/lib/libUniSet2.la ${SIGC_LIBS} $(COMCPP_LIBS)
 # threadtst_CPPFLAGS	= -I$(top_builddir)/include ${SIGC_CFLAGS} $(COMCPP_CFLAGS)
 # 
+
+
+develop_LDADD   = $(top_builddir)/lib/libUniSet2.la
+develop_CPPFLAGS = -I$(top_builddir)/include
+develop_SOURCES  = develop.cc
+
+
+
 include $(top_builddir)/testsuite/testsuite-common.mk
 
 check-local: atconfig package.m4 $(TESTSUITE)

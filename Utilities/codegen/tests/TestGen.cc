@@ -7,6 +7,8 @@ using namespace UniSetTypes;
 TestGen::TestGen( UniSetTypes::ObjectId id, xmlNode* confnode ):
 	TestGen_SK( id, confnode )
 {
+	vmonit(int_var);
+	vmonit(bool_var);
 }
 // -----------------------------------------------------------------------------
 TestGen::~TestGen()
@@ -28,6 +30,12 @@ void TestGen::step()
 
 	myinfo << str(input2_s) << endl;
 	ulog()->info() << "ulog: " << str(input2_s) << endl;
+	
+	int_var++;
+	bool_var^=true;
+	cout << vmon << endl;
+	
+//	cout << vmon.pretty_str() << endl;
 }
 // -----------------------------------------------------------------------------
 void TestGen::sensorInfo( const SensorMessage* sm )

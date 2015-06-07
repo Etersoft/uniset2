@@ -1,0 +1,130 @@
+/* File: This file is part of the UniSet project
+ * Copyright (C) 2002 Vitaly Lipatov, Pavel Vainerman
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+// --------------------------------------------------------------------------
+/*! \file
+ * \author Pavel Vainerman
+ */
+// --------------------------------------------------------------------------
+#ifndef VMonitor_H_
+#define VMonitor_H_
+// --------------------------------------------------------------------------
+#include <string>
+#include <ostream>
+#include <unordered_map>
+// --------------------------------------------------------------------------
+#ifndef VMON_DEF_FUNC
+#define VMON_DEF_FUNC(T) void add( const std::string& name, const T& v )
+#endif
+#ifndef VMON_DEF_FUNC2
+#define VMON_DEF_FUNC2(T) \
+	void add( const std::string& name, const T& v );\
+	void add( const std::string& name, const unsigned T& v )
+#endif
+
+#ifndef VMON_DEF_MAP
+#define VMON_DEF_MAP(T) std::unordered_map<const T*,const std::string> m_##T
+#endif
+
+#ifndef VMON_DEF_MAP2
+#define VMON_DEF_MAP2(T) \
+	std::unordered_map<const T*,const std::string> m_##T; \
+	std::unordered_map<const unsigned T*,const std::string> m_unsigned_##T
+#endif
+// --------------------------------------------------------------------------
+/* EXAMPLE HELPER MACROS
+
+#ifndef vmonit
+#define vmonit( var ) add( #var, var )
+#endif
+
+*/
+// --------------------------------------------------------------------------
+/*! Вспомогательный класс для реализации "мониторинга" состояния переменных стандартных(!) типов.
+ * Необходимые переменные добавляются при помощи функции add() (специально перегруженной под разные типы).
+ * Для удобства использования должен быть определён макрос примерно следующего вида
+ \code
+  #define vmonit( var ) vmon.add( #var, var )
+ \endcode
+ * При условии, что в классе создан объект VMonitor с именем vmon.
+ \code
+  class MyClass
+  {
+	 public:
+
+		MyClass()
+		{
+		   // сделать один раз для нужных переменных
+		   vmonit(myvar1);
+		   vmonit(myvar2)
+		   vmonit(myvar3);
+		}
+
+		...
+
+		void printState()
+		{
+		  cout << vmon.get_pretty_str() << endl;
+		  // или
+		  cout << vmon.str() << endl;
+		  // или
+		  cout << vmon << endl;
+		}
+
+	 private:
+		int myvar1;
+		bool myvar2;
+		logn myvar3;
+		...
+		VMonitor vmon;
+  }
+ \endcode
+ *
+ *
+ * \todo Нужно добавить поддержку "пользователских типов" (возможно нужно использовать variadic templates)
+*/
+class VMonitor
+{
+	public:
+		VMonitor(){}
+
+		friend std::ostream& operator<<(std::ostream& os, VMonitor& m );
+
+		std::string str();
+		std::string pretty_str();
+
+		// функции добавления..
+		VMON_DEF_FUNC2(int);
+		VMON_DEF_FUNC2(long);
+		VMON_DEF_FUNC2(short);
+		VMON_DEF_FUNC(bool);
+		VMON_DEF_FUNC(float);
+		VMON_DEF_FUNC(double);
+
+	protected:
+
+	private:
+
+		VMON_DEF_MAP2(int);
+		VMON_DEF_MAP2(long);
+		VMON_DEF_MAP2(short);
+		VMON_DEF_MAP(bool);
+		VMON_DEF_MAP(float);
+		VMON_DEF_MAP(double);
+};
+// --------------------------------------------------------------------------
+#endif

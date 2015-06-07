@@ -1,0 +1,36 @@
+#!/bin/sh
+
+WATCH=/usr/bin/watch
+
+[ -z $WATCH_SEC ] && WATCH_SEC=5
+
+
+if [ ! -e $WATCH ]; then
+	echo "SORRY: $WATCH not found!!"
+	exit 1
+fi
+
+print_usage()
+{
+    [ "$1" = 0 ] || exec >&2
+    
+    echo "Usage: ${0##*/} [-s watch_sec] ObjectID1[@node],ObjectID2,.."
+#    echo ""
+#    uniset2-admin --help
+
+    [ -n "$1" ] && exit "$1" || exit
+}
+
+
+[ -z "$1" ]  && print_usage 1
+
+#parse command line options
+case "$1" in
+	-h|--help) print_usage 0;;
+	-s|--sec) shift; WATCH_SEC=$1; shift;;
+esac
+
+OID=$1
+shift
+
+$WATCH -n $WATCH_SEC uniset2-admin --oinfo ${OID} $*
