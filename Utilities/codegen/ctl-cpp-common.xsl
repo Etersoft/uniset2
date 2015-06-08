@@ -865,6 +865,10 @@ end_private(false)
 
 	// ===================== &lt;variables&gt; =====================
 	<xsl:for-each select="//variables/item">
+	<xsl:if test="normalize-space(@no_vmonit)=''">
+	vmonit(<xsl:value-of select="@name"/>);
+	</xsl:if>
+	
 	<xsl:if test="normalize-space(@min)!=''">
 	if( <xsl:value-of select="@name"/> &lt; <xsl:value-of select="@min"/> )
 	{

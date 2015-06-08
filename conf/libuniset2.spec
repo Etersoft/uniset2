@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.1
-Release: alt7.3
+Release: alt7.4
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -456,6 +456,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Mon Jun 08 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt7.4
+- (codegen): add no_vmonit="1" flag for <variables>
+
 * Sun Jun 07 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt7.3
 - (vmonitor): added support vmonitor for standart components
 (SharedMemory,ModbusSlave,ModbusMaster,UNetUDP)

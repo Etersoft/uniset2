@@ -35,7 +35,7 @@
 		<item name="test_long" type="long" max="100" default="110" no_range_exception="1"/>
 		<item name="test_float" type="float" max="100.0" default="50.0" />
 		<item name="test_double" type="double" max="100.340" default="52.044" />
-		<item name="test_bool" type="bool" private="1"/>
+		<item name="test_bool" type="bool" private="1" no_vmonit="1"/>
 		<item name="test_str" type="str" default="ddd"/>
   </variables>
   <smap>

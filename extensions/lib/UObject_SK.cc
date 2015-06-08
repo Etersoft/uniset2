@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2015-06-07+03:00
+// generate timestamp: 2015-06-08+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -181,6 +181,15 @@ end_private(false)
 	// ===================== <variables> =====================
 	
 	// ===================== end of <variables> =====================
+
+	vmonit(sleep_msec);
+	vmonit(resetMsgTime);
+	vmonit(forceOut);
+	vmonit(argprefix);
+	vmonit(idHeartBeat);
+	vmonit(maxHeartBeat);
+	vmonit(activateTimeout);
+	vmonit(smReadyTimeout);
 }
 
 // -----------------------------------------------------------------------------
@@ -364,6 +373,7 @@ UniSetTypes::SimpleInfo* UObject_SK::getInfo()
 	ostringstream inf;
 	
 	inf << i->info << endl;
+	inf << "LogServer: " << logserv_host << ":" << logserv_port << endl;
 	inf << dumpIO() << endl;
 	inf << vmon.pretty_str() << endl;
 	inf << getMonitInfo() << endl;
