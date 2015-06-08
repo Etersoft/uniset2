@@ -29,12 +29,16 @@
 #include "UniSetTypes.h"
 // --------------------------------------------------------------------------
 #ifndef VMON_DEF_FUNC
-#define VMON_DEF_FUNC(T) void add( const std::string& name, const T& v )
+#define VMON_DEF_FUNC(T) \
+	void add( const std::string& name, const T& v );\
+	const std::string pretty_str( const std::string& name, const T* v )
 #endif
 #ifndef VMON_DEF_FUNC2
 #define VMON_DEF_FUNC2(T) \
 	void add( const std::string& name, const T& v );\
-	void add( const std::string& name, const unsigned T& v )
+	void add( const std::string& name, const unsigned T& v );\
+	const std::string pretty_str( const std::string& name, const T* v );\
+	const std::string pretty_str( const std::string& name, const unsigned T* v )
 #endif
 
 #ifndef VMON_DEF_MAP
@@ -124,6 +128,10 @@ class VMonitor
 //		VMON_DEF_FUNC(UniSetTypes::ObjectId); // <--- long
 
 		void add( const std::string& name, const std::string& v );
+		const std::string pretty_str( const std::string& name, const std::string* v );
+
+		inline int getNameWidth(){ return nameWidth; }
+		inline void setNameWidth( int w ){ nameWidth = w; }
 
 	protected:
 
@@ -138,6 +146,8 @@ class VMonitor
 		VMON_DEF_MAP(double);
 		// VMON_DEF_MAP3(UniSetTypes::ObjectId,ObjectId); // <-- long
 		VMON_DEF_MAP3(std::string,string);
+
+		int nameWidth = { 30 };
 };
 // --------------------------------------------------------------------------
 #endif

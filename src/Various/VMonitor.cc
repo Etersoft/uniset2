@@ -7,6 +7,13 @@
 #define VMON_IMPL_ADD(T) void VMonitor::add( const std::string& name, const T& v ) \
 {\
 	m_##T.emplace(&v,name); \
+} \
+\
+const std::string VMonitor::pretty_str( const std::string& name, const T* v ) \
+{ \
+	std::ostringstream s; \
+	s << std::right << std::setw(nameWidth) << name << std::left << " = " << std::right << std::setw(6) << *(v); \
+	return std::move(s.str()); \
 }
 // --------------------------------------------------------------------------
 #define VMON_IMPL_ADD2(T) \
@@ -17,11 +24,29 @@ void VMonitor::add( const std::string& name, const T& v ) \
 void VMonitor::add( const std::string& name, const unsigned T& v ) \
 {\
 	m_unsigned_##T.emplace(&v,name); \
+} \
+const std::string VMonitor::pretty_str( const std::string& name, const T* v ) \
+{ \
+	std::ostringstream s; \
+	s << std::right << std::setw(nameWidth) << name << std::left << " = " << std::right << std::setw(6) << *(v); \
+	return std::move(s.str()); \
+} \
+const std::string VMonitor::pretty_str( const std::string& name, const unsigned T* v ) \
+{ \
+	std::ostringstream s; \
+	s << std::right << std::setw(nameWidth) << name << std::left << " = " << std::right << std::setw(6) << *(v); \
+	return std::move(s.str()); \
 }
 // --------------------------------------------------------------------------
 #define VMON_IMPL_ADD3(T,M) void VMonitor::add( const std::string& name, const T& v ) \
 {\
 	m_##M.emplace(&v,name); \
+} \
+const std::string VMonitor::pretty_str( const std::string& name, const T* v ) \
+{ \
+	std::ostringstream s; \
+	s << std::right << std::setw(nameWidth) << name << std::left << " = " << std::right << std::setw(6) << *(v); \
+	return std::move(s.str()); \
 }
 // --------------------------------------------------------------------------
 #define VMON_IMPL_PRN(M,T) \
@@ -51,25 +76,25 @@ void VMonitor::add( const std::string& name, const unsigned T& v ) \
 #define VMON_IMPL_PRET(T) \
 {\
 	for( const auto& e: m_##T ) \
-	   os << std::right << std::setw(25) << e.second << std::left << " = " << std::right << std::setw(6) << *(e.first) << std::endl;\
+	   os << pretty_str(e.second,e.first) << std::endl;\
 }
 // --------------------------------------------------------------------------
 #define VMON_IMPL_PRET2(T) \
 {\
 	for( const auto& e: m_##T ) \
-	   os << std::right << std::setw(25) << e.second << std::left << " = " << std::right << std::setw(6) << *(e.first) << std::endl;\
+	   os << pretty_str(e.second,e.first) << std::endl;\
 \
 	for( const auto& e: m_unsigned_##T ) \
-	   os << std::right << std::setw(25) << e.second << std::left << " = " << std::right << std::setw(6) << *(e.first) << std::endl;\
+	   os << pretty_str(e.second,e.first) << std::endl;\
 }
 // --------------------------------------------------------------------------
 #define VMON_IMPL_PRET_CHAR \
 {\
 	for( const auto& e: m_char ) \
-	   os << std::right << std::setw(25) << e.second << std::left << " = " << std::right << std::setw(6) << (int)(*(e.first)) << std::endl;\
+	   os << std::right << std::setw(nameWidth) << e.second << std::left << " = " << std::right << std::setw(6) << (int)(*(e.first)) << std::endl;\
 \
 	for( const auto& e: m_unsigned_char ) \
-	   os << std::right << std::setw(25) << e.second << std::left << " = " << std::right << std::setw(6) << (int)(*(e.first)) << std::endl;\
+	   os << std::right << std::setw(nameWidth) << e.second << std::left << " = " << std::right << std::setw(6) << (int)(*(e.first)) << std::endl;\
 }
 // --------------------------------------------------------------------------
 VMON_IMPL_ADD2(int)

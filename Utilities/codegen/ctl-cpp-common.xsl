@@ -1021,8 +1021,8 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 	ostringstream s;
 	s &lt;&lt; myname &lt;&lt; ": " &lt;&lt; endl;
 	<xsl:for-each select="//smap/item">
-		s &lt;&lt; "    " &lt;&lt; setw(20) &lt;&lt; std::right &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"
-				&lt;&lt; "(" &lt;&lt; setw(20) &lt;&lt; std::left &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")"
+		s &lt;&lt; "    " &lt;&lt; setw(30) &lt;&lt; std::right &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"
+				&lt;&lt; "(" &lt;&lt; setw(30) &lt;&lt; std::left &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")"
 				&lt;&lt; std::right &lt;&lt; " = " &lt;&lt; setw(6) &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>
 				&lt;&lt; endl;
 	</xsl:for-each>

@@ -14,7 +14,8 @@ print_usage()
 {
     [ "$1" = 0 ] || exec >&2
     
-    echo "Usage: ${0##*/} [-s watch_sec] ObjectID1[@node],ObjectID2,.."
+    echo "Usage: ${0##*/} [-s watch_sec | -d] ObjectID1[@node],ObjectID2,.."
+    echo " -d - dump state. Print state and exit"
 #    echo ""
 #    uniset2-admin --help
 
@@ -25,12 +26,15 @@ print_usage()
 [ -z "$1" ]  && print_usage 1
 
 #parse command line options
+dump=
 case "$1" in
 	-h|--help) print_usage 0;;
 	-s|--sec) shift; WATCH_SEC=$1; shift;;
+	-d|--dump) dump=1; shift;;
 esac
 
 OID=$1
 shift
 
-$WATCH -n $WATCH_SEC uniset2-admin --oinfo ${OID} $*
+[ -z "$dump" ] && $WATCH -n $WATCH_SEC uniset2-admin --oinfo ${OID} $*
+[ -n "$dump" ] && uniset2-admin --oinfo ${OID} $*
