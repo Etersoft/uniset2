@@ -27,7 +27,7 @@ class ModbusTCPServer:
 		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr mbaddr, timeout_t msecTimeout ) override;
 
 		/*! Многопоточная обработка (создаётся по потоку для каждого "клиента")
-		 \ return TRUE - если запр*ос пришёл
+		 \return TRUE - если запр*ос пришёл
 		 \return FALSE - если timeout
 		 */
 		virtual bool waitQuery( ModbusRTU::ModbusAddr mbaddr, timeout_t msec = UniSetTimer::WaitUpTime );

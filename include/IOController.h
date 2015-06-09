@@ -43,12 +43,14 @@ class IOController:
 
 		IOController( const std::string& name, const std::string& section );
 		IOController( const UniSetTypes::ObjectId id );
-		~IOController();
+		virtual ~IOController();
 
 		virtual UniSetTypes::ObjectType getType() override
 		{
 			return UniSetTypes::ObjectType("IOController");
 		}
+
+		virtual UniSetTypes::SimpleInfo* getInfo() override;
 
 		virtual CORBA::Long getValue( UniSetTypes::ObjectId sid ) override;
 

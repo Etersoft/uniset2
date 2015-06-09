@@ -303,7 +303,7 @@ ModbusMessage ReadCoilMessage::transport_msg()
 	memcpy(&(mm.data[last]), &crc, szCRC);
 
 	mm.len = szData();
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 ReadCoilMessage::ReadCoilMessage( ModbusMessage& m )
@@ -568,7 +568,7 @@ ModbusMessage ReadCoilRetMessage::transport_msg()
 
 	// длина сообщения...
 	mm.len = ind;
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 int ReadCoilRetMessage::szData()
@@ -620,7 +620,7 @@ ModbusMessage ReadInputStatusMessage::transport_msg()
 	memcpy(&(mm.data[last]), &crc, szCRC);
 
 	mm.len = szData();
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 ReadInputStatusMessage::ReadInputStatusMessage( ModbusMessage& m )
@@ -767,7 +767,7 @@ ModbusMessage ReadInputStatusRetMessage::transport_msg()
 
 	// длина сообщения...
 	mm.len = ind;
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 int ReadInputStatusRetMessage::szData()
@@ -822,7 +822,7 @@ ModbusMessage ReadOutputMessage::transport_msg()
 	// длина сообщения...
 	mm.len = szData();
 
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 ReadOutputMessage::ReadOutputMessage( ModbusMessage& m )
@@ -985,7 +985,7 @@ ModbusMessage ReadOutputRetMessage::transport_msg()
 	// длина сообщения...
 	mm.len = ind;
 
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 int ReadOutputRetMessage::szData()
@@ -1040,7 +1040,7 @@ ModbusMessage ReadInputMessage::transport_msg()
 
 	// длина сообщения...
 	mm.len = szData();
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 ReadInputMessage::ReadInputMessage( ModbusMessage& m )
@@ -1186,7 +1186,7 @@ ModbusMessage ReadInputRetMessage::transport_msg()
 
 	// длина сообщения...
 	mm.len = ind;
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 int ReadInputRetMessage::szData()
@@ -1300,7 +1300,7 @@ ModbusMessage ForceCoilsMessage::transport_msg()
 
 	// длина сообщения...
 	mm.len = ind;
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 
@@ -1463,7 +1463,7 @@ ModbusMessage ForceCoilsRetMessage::transport_msg()
 	// длина сообщения...
 	mm.len = szData();
 
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceCoilsRetMessage& m )
@@ -1546,7 +1546,7 @@ ModbusMessage WriteOutputMessage::transport_msg()
 
 	// длина сообщения...
 	mm.len = ind;
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 
@@ -1722,7 +1722,7 @@ ModbusMessage WriteOutputRetMessage::transport_msg()
 	// длина сообщения...
 	mm.len = szData();
 
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteOutputRetMessage& m )
@@ -1756,7 +1756,7 @@ ModbusMessage ForceSingleCoilMessage::transport_msg()
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[last]), &crc, szCRC);
 	mm.len = szData();
-	return mm;
+	return std::move(mm);
 }
 // --------------------------------------------------------------------------------
 
@@ -1891,7 +1891,7 @@ ModbusMessage ForceSingleCoilRetMessage::transport_msg()
 	// длина сообщения...
 	mm.len = szData();
 
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceSingleCoilRetMessage& m )
@@ -1926,7 +1926,7 @@ ModbusMessage WriteSingleOutputMessage::transport_msg()
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[last]), &crc, szCRC);
 	mm.len = szData();
-	return mm;
+	return std::move(mm);
 }
 // --------------------------------------------------------------------------------
 
@@ -2068,7 +2068,7 @@ ModbusMessage WriteSingleOutputRetMessage::transport_msg()
 	// длина сообщения...
 	mm.len = szData();
 
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteSingleOutputRetMessage& m )
@@ -2195,7 +2195,7 @@ ModbusMessage JournalCommandRetMessage::transport_msg()
 
 	// длина сообщения...
 	mm.len = ind;
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 int JournalCommandRetMessage::szData()
@@ -2436,7 +2436,7 @@ ModbusMessage SetDateTimeMessage::transport_msg()
 	memcpy(&(mm.data[bcnt]), &crc, szCRC);
 	// длина сообщения...
 	mm.len = szData(); // bcnt + szCRC
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 SetDateTimeRetMessage::SetDateTimeRetMessage( ModbusMessage& m )
@@ -2513,7 +2513,7 @@ ModbusMessage SetDateTimeRetMessage::transport_msg()
 	// длина сообщения...
 	mm.len = szData(); // bcnt + szCRC
 
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 RemoteServiceMessage::RemoteServiceMessage( ModbusMessage& m )
@@ -2635,7 +2635,7 @@ ModbusMessage RemoteServiceRetMessage::transport_msg()
 
 	// длина сообщения...
 	mm.len = ind;
-	return mm;
+	return std::move(mm)
 }
 // -------------------------------------------------------------------------
 ReadFileRecordMessage::ReadFileRecordMessage( ModbusMessage& m )
@@ -2742,7 +2742,7 @@ ModbusMessage FileTransferMessage::transport_msg()
 
 	// длина сообщения...
 	mm.len = szData();
-	return mm;
+	return std::move(mm);
 }
 // -------------------------------------------------------------------------
 FileTransferMessage::FileTransferMessage( ModbusMessage& m )
@@ -2903,7 +2903,7 @@ ModbusMessage FileTransferRetMessage::transport_msg()
 
 	// длина сообщения...
 	mm.len = ind;
-	return mm;
+	return std::move(mm);
 }
 // -----------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, FileTransferRetMessage& m )

@@ -182,7 +182,6 @@ interface IONotifyController_i : IOController_i
     };
 
     /*! Универсальная функция заказа уведомления об изменнии датчика.
-     *    Позволяет заказывать как дискретные так и аналоговые датчики
      * \sa UniversalIO::UniversalIOController::askSensor()
     */
     void askSensor(in UniSetTypes::ObjectId sid, in UniSetTypes::ConsumerInfo ci, in UniversalIO::UIOCommand cmd ) raises(NameNotFound,IOBadParam);

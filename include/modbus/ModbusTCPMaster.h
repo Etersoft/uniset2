@@ -38,6 +38,9 @@ class ModbusTCPMaster:
 			cleanInputStream();
 		}
 
+		inline std::string getAddress(){ return iaddr; }
+		inline int getPort(){ return port; }
+
 	protected:
 
 		virtual int getNextData( unsigned char* buf, int len ) override;
