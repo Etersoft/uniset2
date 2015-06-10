@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.1
-Release: alt7.5
+Release: alt7.6
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -456,6 +456,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Wed Jun 10 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt7.6
+- fixed libUniSet2Extensions.pc
+
 * Tue Jun 09 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt7.5
 - minor fixes
 - VMonitor: add new helper functions pretty_str(..)
