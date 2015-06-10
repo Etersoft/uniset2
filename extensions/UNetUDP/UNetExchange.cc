@@ -904,13 +904,15 @@ UniSetTypes::SimpleInfo* UNetExchange::getInfo()
 	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
 	inf << endl;
 	inf << "Receivers: " << endl;
-	for( const auto& r: recvlist )
+
+	for( const auto& r : recvlist )
 	{
 		inf << "[ " << endl;
 		inf << "  chan1: " << ( r.r1 ? r.r1->getShortInfo() : "disable" ) << endl;
 		inf << "  chan2: " << ( r.r2 ? r.r2->getShortInfo() : "disable" ) << endl;
 		inf << "]" << endl;
 	}
+
 	inf << endl;
 
 	inf << "Senders: " << endl;

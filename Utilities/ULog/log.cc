@@ -139,7 +139,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(LogServerTypes::cmdList,0, filter) );
+					vcmd.push_back( LogReader::Command(LogServerTypes::cmdList, 0, filter) );
 					cmdlist = true;
 				}
 				break;
@@ -239,15 +239,15 @@ int main( int argc, char** argv )
 		lr.setinTimeout(tout);
 		lr.setReconnectDelay(rdelay);
 
-/*		
-		if( cmdlist && vcmd.size() == 1 )
-		{
-			cmdonly = 1;
-			lr.setReadCount(1);
-			lr.sendCommand(addr, port, vcmd, cmdonly, verb);
-			return 0;
-		}
-*/		
+		/*
+				if( cmdlist && vcmd.size() == 1 )
+				{
+					cmdonly = 1;
+					lr.setReadCount(1);
+					lr.sendCommand(addr, port, vcmd, cmdonly, verb);
+					return 0;
+				}
+		*/
 		if( !vcmd.empty() )
 			lr.sendCommand(addr, port, vcmd, cmdonly, verb);
 

@@ -1170,11 +1170,11 @@ TEST_CASE("(0x10): write register outputs or memories [F2](precision)", "[modbus
 	REQUIRE( ui->getValue(tID) == 2004 );
 
 	// read..
-	ui->setValue(tID,203);
+	ui->setValue(tID, 203);
 
 	ModbusRTU::ReadOutputRetMessage ret2 = mb->read03(slaveaddr, tREG, 2);
 
-	F2 r_f2(ret2.data,F2::wsize());
+	F2 r_f2(ret2.data, F2::wsize());
 
 	REQUIRE( (float)r_f2 == 20.3f );
 }

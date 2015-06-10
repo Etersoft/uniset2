@@ -356,7 +356,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::writeOutputRegisters( ModbusRTU::WriteOutp
 
 	if( query.start == 41 )
 	{
-		VTypes::F2 f2(query.data,VTypes::F2::wsize());
+		VTypes::F2 f2(query.data, VTypes::F2::wsize());
 		f2_test_value = (float)f2;
 	}
 

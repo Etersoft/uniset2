@@ -160,6 +160,7 @@ void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
 	if( cmd == UniversalIO::UIONotify || (cmd == UIONotifyFirstNotNull && li->second->value) )
 	{
 		SensorMessage  smsg(li->second->makeSensorMessage());
+
 		try
 		{
 			ui->send(ci.id, std::move(smsg.transport_msg()), ci.node);

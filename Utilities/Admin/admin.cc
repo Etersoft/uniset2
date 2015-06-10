@@ -751,10 +751,10 @@ int getChangedTime( const std::string& args, UInterface& ui )
 			{
 				cout << "   name: (" << it.si.id << ") " << it.fname << endl;
 				cout << "   text: " << conf->oind->getTextName(it.si.id) << "\n\n";
-				cout << ui.getChangedTime(it.si.id,it.si.node) << endl;
+				cout << ui.getChangedTime(it.si.id, it.si.node) << endl;
 			}
 			else
-				cout << ui.getChangedTime(it.si.id,it.si.node);
+				cout << ui.getChangedTime(it.si.id, it.si.node);
 		}
 		catch( const Exception& ex )
 		{
@@ -845,14 +845,14 @@ int oinfo( const string& args, UInterface& ui )
 	auto conf = uniset_conf();
 	auto sl = UniSetTypes::getSInfoList( args, conf );
 
-	for( auto&& it : sl )
+	for( auto && it : sl )
 	{
 		if( it.si.node == DefaultObjectId )
 			it.si.node = conf->getLocalNode();
 
 		try
 		{
-			UniSetTypes::ObjectVar o = ui.resolve(it.si.id,it.si.node);
+			UniSetTypes::ObjectVar o = ui.resolve(it.si.id, it.si.node);
 			UniSetObject_i_var obj = UniSetObject_i::_narrow(o);
 
 			if(CORBA::is_nil(obj))

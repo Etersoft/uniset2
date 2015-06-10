@@ -38,8 +38,14 @@ class ModbusTCPMaster:
 			cleanInputStream();
 		}
 
-		inline std::string getAddress(){ return iaddr; }
-		inline int getPort(){ return port; }
+		inline std::string getAddress()
+		{
+			return iaddr;
+		}
+		inline int getPort()
+		{
+			return port;
+		}
 
 	protected:
 

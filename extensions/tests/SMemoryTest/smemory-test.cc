@@ -40,7 +40,7 @@ int main(int argc, const char** argv)
 
 			cout << "..create " << s.str() << endl;
 			auto tp = make_shared<TestProc>( conf->getObjectID(s.str()));
-//			tp->init_dlog(dlog());
+			//			tp->init_dlog(dlog());
 			act->add(tp);
 		}
 

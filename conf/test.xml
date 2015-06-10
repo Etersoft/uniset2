@@ -176,6 +176,7 @@
 			<item id="3101" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="0" unet_port="2048"/>
 		</specnet>
 
+		<GroupAnalogSensors name="TestGroup" ok_c="D106_S"/>
 	</settings>
 	<ObjectsMap idfromfile="1">
 		<!--
@@ -261,6 +262,13 @@
 			<item id="100" iotype="AI" name="AI100_AS" textname="AI100" mbaddr="0x01" mbfunc="0x03" mbreg="100" mbtype="rtu" tcp="6" vtype="F2" precision="1" mbtcp="3"/>
 			<item id="102" iotype="AI" name="AI102_AS" textname="AI101" mbaddr="0x01" mbfunc="0x03" mbreg="102" mbtype="rtu" tcp="6"/>
 			<item id="103" iotype="AI" name="AI103_AS" textname="AI102" mbaddr="0x01" mbfunc="0x03" mbreg="99" mbtype="rtu" tcp="6"/>
+
+			<item id="104" iotype="AI" name="AI104_AS" textname="AI104" ag="2" ag_min="100" ag_max="120"/>
+			<item id="105" iotype="AI" name="AI105_AS" textname="AI105" ag="1" ag_min="0" ag_max="40" ag_status="AI107_AS"/>
+			<item id="106" iotype="DI" name="D106_S" textname="D106"/>
+			<item id="107" iotype="AI" name="AI107_AS" textname="AI107" default="1"/>
+			<item id="108" iotype="AI" name="AI108_AS" textname="AI108" ag="1" ag_min="30" ag_max="40" ag_invert="1"/>
+
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI_AS">
@@ -368,6 +376,7 @@
 			<item id="6085" name="MBSlave8"/>
 			<item id="6086" name="MBSlave9"/>
 			<item id="6087" name="MBSlave10"/>
+			<item id="6088" name="TestGroup"/>
 		</objects>
 	</ObjectsMap>
 	<messages idfromfile="1" name="messages">

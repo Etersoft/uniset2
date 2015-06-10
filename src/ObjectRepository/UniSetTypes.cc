@@ -119,14 +119,14 @@ long UniSetTypes::setoutregion(long ret, long calMin, long calMax)
 UniSetTypes::IDList::IDList( std::vector<std::string>&& svec ):
 	UniSetTypes::IDList::IDList()
 {
-	for( const auto& s: svec )
+	for( const auto& s : svec )
 		add( uni_atoi(s) );
 }
 // ------------------------------------------------------------------
 UniSetTypes::IDList::IDList( std::vector<std::string>& svec ):
 	UniSetTypes::IDList::IDList()
 {
-	for( const auto& s: svec )
+	for( const auto& s : svec )
 		add( uni_atoi(s) );
 }
 // -------------------------------------------------------------------------
@@ -209,7 +209,7 @@ bool UniSetTypes::file_exist( const std::string& filename )
 // -------------------------------------------------------------------------
 UniSetTypes::IDList UniSetTypes::explode( const string& str, char sep )
 {
-	UniSetTypes::IDList l( explode_str(str,sep) );
+	UniSetTypes::IDList l( explode_str(str, sep) );
 	return std::move(l);
 }
 // -------------------------------------------------------------------------
@@ -230,9 +230,11 @@ std::vector<std::string> UniSetTypes::explode_str( const string& str, char sep )
 
 		if( pos == string::npos )
 		{
-			string s(str.substr(prev, sz-prev));
+			string s(str.substr(prev, sz - prev));
+
 			if( !s.empty() )
 				v.emplace_back(s);
+
 			break;
 		}
 

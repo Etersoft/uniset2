@@ -78,29 +78,29 @@ TEST_CASE("UniSetTypes: explode", "[utypes][explode]" )
 {
 	const std::string str1("id1/wed/wedwed/");
 
-	auto t1 = UniSetTypes::explode_str(str1,'/');
+	auto t1 = UniSetTypes::explode_str(str1, '/');
 	CHECK( t1.size() == 3 );
 
-	auto t2 = UniSetTypes::explode_str(str1,'.');
+	auto t2 = UniSetTypes::explode_str(str1, '.');
 	CHECK( t2.size() == 1 );
 
 	const std::string str2("id1/wed/wedwed/f");
 
-	auto t3 = UniSetTypes::explode_str(str2,'/');
+	auto t3 = UniSetTypes::explode_str(str2, '/');
 	CHECK( t3.size() == 4 );
 
 	const std::string str3("/id1/wed/wedwed/");
 
-	auto t4 = UniSetTypes::explode_str(str3,'/');
+	auto t4 = UniSetTypes::explode_str(str3, '/');
 	CHECK( t4.size() == 3 );
 
 
 	const std::string str4("");
-	auto t5 = UniSetTypes::explode_str(str4,'/');
+	auto t5 = UniSetTypes::explode_str(str4, '/');
 	CHECK( t5.size() == 0 );
 
 	const std::string str5("/");
-	auto t6 = UniSetTypes::explode_str(str5,'/');
+	auto t6 = UniSetTypes::explode_str(str5, '/');
 	CHECK( t6.size() == 0 );
 }
 // -----------------------------------------------------------------------------

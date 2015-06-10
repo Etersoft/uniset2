@@ -11,7 +11,7 @@ class VMon
 {
 	public:
 
-		std::tuple<std::unordered_map<const Args*,const std::string>...> m_tuple;
+		std::tuple<std::unordered_map<const Args*, const std::string>...> m_tuple;
 };
 
 // ------------------------------------------------------------------------------
@@ -19,9 +19,9 @@ using namespace std;
 
 int main( int argc, const char** argv )
 {
-//	VMon<int,double,char> vmon;
+	//	VMon<int,double,char> vmon;
 
-//	cout << std::get<0>(vmon.m_tuple).size() << endl;
+	//	cout << std::get<0>(vmon.m_tuple).size() << endl;
 
 	return 0;
 }

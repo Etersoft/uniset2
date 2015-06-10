@@ -371,8 +371,10 @@ UniSetTypes::SimpleInfo* MBTCPMultiSlave::getInfo()
 
 	inf << i->info << endl;
 	inf << "Clients: " << endl;
-	for( const auto& m: cmap )
+
+	for( const auto& m : cmap )
 		inf << "   " << m.second.getShortInfo() << endl;
+
 	inf << endl;
 
 	i->info = inf.str().c_str();

@@ -64,7 +64,10 @@ class MBTCPTestServer
 
 		friend std::ostream& operator<<(std::ostream& os, const MBTCPTestServer* m );
 
-		inline float getF2TestValue(){ return f2_test_value; }
+		inline float getF2TestValue()
+		{
+			return f2_test_value;
+		}
 
 	protected:
 		// действия при завершении работы

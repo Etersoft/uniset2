@@ -123,7 +123,7 @@ int main( int argc, char** argv )
 
 		la2->add(dlog);
 		la2->add(dlog2);
-		
+
 		la->add(la2);
 
 		if( la->getLog("la2/dlog3") == nullptr )
@@ -139,6 +139,7 @@ int main( int argc, char** argv )
 		auto dlog6 = la3->create("dlog6");
 		la->add(la3);
 #if 0
+
 		for( int i = 0; i < 15; i++ )
 		{
 			ostringstream s;
@@ -151,6 +152,7 @@ int main( int argc, char** argv )
 
 			la->add(l);
 		}
+
 #endif
 
 #if 0

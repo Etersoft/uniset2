@@ -497,8 +497,10 @@ UniSetTypes::SimpleInfo* MBTCPMultiMaster::getInfo()
 
 	inf << i->info << endl;
 	inf << "Gates: " << endl;
-	for( const auto& m: mblist )
+
+	for( const auto& m : mblist )
 		inf << "   " << m.getShortInfo() << endl;
+
 	inf << endl;
 
 	i->info = inf.str().c_str();

@@ -180,7 +180,7 @@ void LogReader::sendCommand( const std::string& _addr, ost::tpport_t _port, std:
 				if( c.cmd == LogServerTypes::cmdList )
 				{
 					listfilter = c.logfilter;
-					n=0;
+					n = 0;
 					continue;
 				}
 
@@ -218,6 +218,7 @@ void LogReader::sendCommand( const std::string& _addr, ost::tpport_t _port, std:
 		while( a > 0 && tcp->isPending(ost::Socket::pendingInput, reply_timeout) )
 		{
 			int n = tcp->peek( buf, sizeof(buf) - 1 );
+
 			if( n > 0 )
 			{
 				tcp->read(buf, n);
@@ -280,7 +281,7 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 			{
 				rlog.warn() << "(LogReader): **** connection timeout.." << endl;
 
-				if( rcount>0 && readcount > 0 )
+				if( rcount > 0 && readcount > 0 )
 					rcount--;
 
 				if( rcount == 0 )
@@ -299,6 +300,7 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 			while( tcp->isPending(ost::Socket::pendingInput, inTimeout) )
 			{
 				int n = tcp->peek( buf, sizeof(buf) - 1 );
+
 				if( n > 0 )
 				{
 					tcp->read(buf, n);
@@ -307,18 +309,19 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 					log << buf;
 				}
 
-				if( rcount>0 && readcount > 0 )
+				if( rcount > 0 && readcount > 0 )
 					rcount--;
 
-				if( readcount>0 && rcount==0 )
+				if( readcount > 0 && rcount == 0 )
 					break;
 			}
 
-			if( rcount>0 && readcount > 0 )
+			if( rcount > 0 && readcount > 0 )
 				rcount--;
 
 			if( rcount != 0 )
 				rlog.warn() << "(LogReader): ...connection timeout..." << endl;
+
 			disconnect();
 		}
 		catch( const ost::SockException& e )
@@ -330,7 +333,7 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 			cerr << "(LogReader): " << ex.what() << endl;
 		}
 
-		if( rcount==0 && readcount > 0 )
+		if( rcount == 0 && readcount > 0 )
 			break;
 	}
 

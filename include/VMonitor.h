@@ -110,7 +110,7 @@
 class VMonitor
 {
 	public:
-		VMonitor(){}
+		VMonitor() {}
 
 		friend std::ostream& operator<<(std::ostream& os, VMonitor& m );
 
@@ -125,13 +125,19 @@ class VMonitor
 		VMON_DEF_FUNC(bool);
 		VMON_DEF_FUNC(float);
 		VMON_DEF_FUNC(double);
-//		VMON_DEF_FUNC(UniSetTypes::ObjectId); // <--- long
+		//		VMON_DEF_FUNC(UniSetTypes::ObjectId); // <--- long
 
 		void add( const std::string& name, const std::string& v );
 		const std::string pretty_str( const std::string& name, const std::string* v );
 
-		inline int getNameWidth(){ return nameWidth; }
-		inline void setNameWidth( int w ){ nameWidth = w; }
+		inline int getNameWidth()
+		{
+			return nameWidth;
+		}
+		inline void setNameWidth( int w )
+		{
+			nameWidth = w;
+		}
 
 	protected:
 
@@ -145,7 +151,7 @@ class VMonitor
 		VMON_DEF_MAP(float);
 		VMON_DEF_MAP(double);
 		// VMON_DEF_MAP3(UniSetTypes::ObjectId,ObjectId); // <-- long
-		VMON_DEF_MAP3(std::string,string);
+		VMON_DEF_MAP3(std::string, string);
 
 		int nameWidth = { 30 };
 };

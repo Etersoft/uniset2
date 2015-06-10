@@ -30,12 +30,12 @@ void TestGen::step()
 
 	myinfo << str(input2_s) << endl;
 	ulog()->info() << "ulog: " << str(input2_s) << endl;
-	
+
 	int_var++;
-	bool_var^=true;
+	bool_var ^= true;
 	cout << vmon << endl;
-	
-//	cout << vmon.pretty_str() << endl;
+
+	//	cout << vmon.pretty_str() << endl;
 }
 // -----------------------------------------------------------------------------
 void TestGen::sensorInfo( const SensorMessage* sm )

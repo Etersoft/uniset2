@@ -169,6 +169,7 @@ TEST_CASE("LogServer", "[LogServer]" )
 
 	g_read_cancel = true;
 	msleep(readTimeout);
+
 	if( r_thr->joinable() )
 		r_thr->join();
 }

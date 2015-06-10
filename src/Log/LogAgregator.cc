@@ -55,7 +55,7 @@ std::shared_ptr<DebugStream> LogAgregator::create( const std::string& logname )
 	auto l = std::make_shared<DebugStream>();
 	l->setLogName(logname);
 	auto conn = l->signal_stream_event().connect( sigc::mem_fun(this, &LogAgregator::logOnEvent) );
-	conmap.emplace(l,conn);
+	conmap.emplace(l, conn);
 	lmap[logname] = l;
 	return l;
 }
@@ -83,13 +83,15 @@ void LogAgregator::addLogAgregator( std::shared_ptr<LogAgregator> la, const std:
 		return;
 
 	auto lst = la->getLogList();
-	for( auto&& l: lst )
+
+	for( auto && l : lst )
 	{
 		auto c = conmap.find(l.log);
+
 		if( c == conmap.end() )
 		{
 			auto conn = l.log->signal_stream_event().connect( sigc::mem_fun(this, &LogAgregator::logOnEvent) );
-			conmap.emplace(l.log,conn);
+			conmap.emplace(l.log, conn);
 		}
 	}
 
@@ -106,10 +108,11 @@ void LogAgregator::addLog( std::shared_ptr<DebugStream> l, const std::string& ln
 	if( connect )
 	{
 		auto c = conmap.find(l);
+
 		if( c == conmap.end() )
 		{
 			auto conn = l->signal_stream_event().connect( sigc::mem_fun(this, &LogAgregator::logOnEvent) );
-			conmap.emplace(l,conn);
+			conmap.emplace(l, conn);
 		}
 	}
 
@@ -157,7 +160,7 @@ std::ostream& LogAgregator::printLogList( std::ostream& os, const std::string& r
 	else
 		lst = getLogList(regexp_str);
 
-	return printLogList(os,lst);
+	return printLogList(os, lst);
 }
 // -------------------------------------------------------------------------
 std::ostream& LogAgregator::printLogList( std::ostream& os, std::list<iLog>& lst )
@@ -233,13 +236,14 @@ std::vector<std::string> LogAgregator::splitFirst( const std::string& lname, con
 // -------------------------------------------------------------------------
 bool LogAgregator::logExist( std::shared_ptr<DebugStream>& log )
 {
-	for( const auto& l: lmap )
+	for( const auto& l : lmap )
 	{
 		if( l.second == log )
 			return true;
 
 		bool res = false;
 		auto ag = dynamic_pointer_cast<LogAgregator>(l.second);
+
 		if( ag )
 			res = ag->logExist(log);
 
