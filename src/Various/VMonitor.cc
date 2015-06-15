@@ -9,11 +9,15 @@
 		m_##T.emplace(&v,name); \
 	} \
 	\
-	const std::string VMonitor::pretty_str( const std::string& name, const T* v ) \
+	const std::string VMonitor::pretty_str( const std::string& name, const T* v, int nwidth ) \
 	{ \
 		std::ostringstream s; \
-		s << std::right << std::setw(nameWidth) << name << std::left << " = " << std::right << std::setw(6) << *(v); \
+		s << std::right << std::setw(nwidth) << name << std::left << " = " << std::right << std::setw(6) << *(v); \
 		return std::move(s.str()); \
+	} \
+	const std::string VMonitor::pretty_str( const std::string& name, const T& v, int nwidth ) \
+	{ \
+		return pretty_str(name,&v,nwidth); \
 	}
 // --------------------------------------------------------------------------
 #define VMON_IMPL_ADD2(T) \
@@ -25,28 +29,40 @@
 	{\
 		m_unsigned_##T.emplace(&v,name); \
 	} \
-	const std::string VMonitor::pretty_str( const std::string& name, const T* v ) \
+	const std::string VMonitor::pretty_str( const std::string& name, const T* v, int nwidth ) \
 	{ \
 		std::ostringstream s; \
-		s << std::right << std::setw(nameWidth) << name << std::left << " = " << std::right << std::setw(6) << *(v); \
+		s << std::right << std::setw(nwidth) << name << std::left << " = " << std::right << std::setw(6) << *(v); \
 		return std::move(s.str()); \
 	} \
-	const std::string VMonitor::pretty_str( const std::string& name, const unsigned T* v ) \
+	const std::string VMonitor::pretty_str( const std::string& name, const unsigned T* v, int nwidth ) \
 	{ \
 		std::ostringstream s; \
-		s << std::right << std::setw(nameWidth) << name << std::left << " = " << std::right << std::setw(6) << *(v); \
+		s << std::right << std::setw(nwidth) << name << std::left << " = " << std::right << std::setw(6) << *(v); \
 		return std::move(s.str()); \
+	} \
+	const std::string VMonitor::pretty_str( const std::string& name, const T& v, int nwidth ) \
+	{ \
+		return pretty_str(name,&v,nwidth); \
+	} \
+	const std::string VMonitor::pretty_str( const std::string& name, const unsigned T& v, int nwidth ) \
+	{ \
+		return pretty_str(name,&v,nwidth); \
 	}
 // --------------------------------------------------------------------------
 #define VMON_IMPL_ADD3(T,M) void VMonitor::add( const std::string& name, const T& v ) \
 	{\
 		m_##M.emplace(&v,name); \
 	} \
-	const std::string VMonitor::pretty_str( const std::string& name, const T* v ) \
+	const std::string VMonitor::pretty_str( const std::string& name, const T* v, int nwidth ) \
 	{ \
 		std::ostringstream s; \
-		s << std::right << std::setw(nameWidth) << name << std::left << " = " << std::right << std::setw(6) << *(v); \
+		s << std::right << std::setw(nwidth) << name << std::left << " = " << std::right << std::setw(6) << *(v); \
 		return std::move(s.str()); \
+	} \
+	const std::string VMonitor::pretty_str( const std::string& name, const T& v, int nwidth ) \
+	{ \
+		return pretty_str(name,&v,nwidth); \
 	}
 // --------------------------------------------------------------------------
 #define VMON_IMPL_PRN(M,T) \
@@ -91,10 +107,10 @@
 #define VMON_IMPL_PRET_CHAR \
 	{\
 		for( const auto& e: m_char ) \
-			os << std::right << std::setw(nameWidth) << e.second << std::left << " = " << std::right << std::setw(6) << (int)(*(e.first)) << std::endl;\
+			os << std::right << std::setw(NameWidth) << e.second << std::left << " = " << std::right << std::setw(6) << (int)(*(e.first)) << std::endl;\
 		\
 		for( const auto& e: m_unsigned_char ) \
-			os << std::right << std::setw(nameWidth) << e.second << std::left << " = " << std::right << std::setw(6) << (int)(*(e.first)) << std::endl;\
+			os << std::right << std::setw(NameWidth) << e.second << std::left << " = " << std::right << std::setw(6) << (int)(*(e.first)) << std::endl;\
 	}
 // --------------------------------------------------------------------------
 VMON_IMPL_ADD2(int)

@@ -31,14 +31,17 @@
 #ifndef VMON_DEF_FUNC
 #define VMON_DEF_FUNC(T) \
 	void add( const std::string& name, const T& v );\
-	const std::string pretty_str( const std::string& name, const T* v )
+	static const std::string pretty_str( const std::string& name, const T* v, int width = NameWidth ); \
+	static const std::string pretty_str( const std::string& name, const T& v, int width = NameWidth )
 #endif
 #ifndef VMON_DEF_FUNC2
 #define VMON_DEF_FUNC2(T) \
 	void add( const std::string& name, const T& v );\
 	void add( const std::string& name, const unsigned T& v );\
-	const std::string pretty_str( const std::string& name, const T* v );\
-	const std::string pretty_str( const std::string& name, const unsigned T* v )
+	static const std::string pretty_str( const std::string& name, const T* v, int width = NameWidth );\
+	static const std::string pretty_str( const std::string& name, const unsigned T* v, int width = NameWidth ); \
+	static const std::string pretty_str( const std::string& name, const T& v, int width = NameWidth );\
+	static const std::string pretty_str( const std::string& name, const unsigned T& v, int width = NameWidth )
 #endif
 
 #ifndef VMON_DEF_MAP
@@ -114,6 +117,8 @@ class VMonitor
 
 		friend std::ostream& operator<<(std::ostream& os, VMonitor& m );
 
+		static const int NameWidth = { 30 };
+
 		std::string str();
 		std::string pretty_str();
 
@@ -128,17 +133,10 @@ class VMonitor
 		//		VMON_DEF_FUNC(UniSetTypes::ObjectId); // <--- long
 
 		void add( const std::string& name, const std::string& v );
-		const std::string pretty_str( const std::string& name, const std::string* v );
 
-		inline int getNameWidth()
-		{
-			return nameWidth;
-		}
-		inline void setNameWidth( int w )
-		{
-			nameWidth = w;
-		}
-
+		static const std::string pretty_str( const std::string& name, const std::string* v, int width = NameWidth );
+		static const std::string pretty_str( const std::string& name, const std::string& v, int width = NameWidth );
+		
 	protected:
 
 	private:
@@ -152,8 +150,6 @@ class VMonitor
 		VMON_DEF_MAP(double);
 		// VMON_DEF_MAP3(UniSetTypes::ObjectId,ObjectId); // <-- long
 		VMON_DEF_MAP3(std::string, string);
-
-		int nameWidth = { 30 };
 };
 // --------------------------------------------------------------------------
 #endif
