@@ -325,7 +325,7 @@ std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str,
 			else
 				item.si.id = conf->getSensorID(s_id);
 
-			if( is_digit(s_node.c_str()) )
+			if( is_digit(s_node) )
 				item.si.node = uni_atoi(s_node);
 			else
 				item.si.node = conf->getNodeID(s_node);
@@ -342,7 +342,67 @@ std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str,
 	return std::move(res);
 }
 // --------------------------------------------------------------------------------------
+std::list<UniSetTypes::ConsumerInfo> UniSetTypes::getObjectsList( const string& str, std::shared_ptr<Configuration> conf )
+{
+	if( conf == nullptr )
+		conf = uniset_conf();
 
+	std::list<UniSetTypes::ConsumerInfo> res;
+
+	auto lst = UniSetTypes::explode_str(str, ',');
+
+	for( const auto& it : lst )
+	{
+		UniSetTypes::ConsumerInfo item;
+
+		auto t = UniSetTypes::explode_str(it, '@');
+
+		if( t.size() == 1 )
+		{
+			std::string s_id(*(t.begin()));
+
+			if( is_digit(s_id) )
+				item.id = uni_atoi(s_id);
+			else
+			{
+				item.id = conf->getObjectID(s_id);
+				if( item.id == DefaultObjectId )
+					item.id = conf->getControllerID(s_id);
+			}
+
+			item.node = DefaultObjectId;
+		}
+		else if( t.size() == 2 )
+		{
+			std::string s_id = *(t.begin());
+			std::string s_node = *(++t.begin());
+
+			if( is_digit(s_id) )
+				item.id = uni_atoi(s_id);
+			else
+			{
+				item.id = conf->getObjectID(s_id);
+				if( item.id == DefaultObjectId )
+					item.id = conf->getControllerID(s_id);
+			}
+
+			if( is_digit(s_node) )
+				item.node = uni_atoi(s_node);
+			else
+				item.node = conf->getNodeID(s_node);
+		}
+		else
+		{
+			cerr << "WARNING: parse error for '" << it << "'. IGNORE..." << endl;
+			continue;
+		}
+
+		res.push_back(item);
+	}
+
+	return std::move(res);
+}
+// --------------------------------------------------------------------------------------
 UniversalIO::IOType UniSetTypes::getIOType( const std::string& stype )
 {
 	if ( stype == "DI" || stype == "di" )

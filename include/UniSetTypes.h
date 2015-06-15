@@ -192,6 +192,11 @@ namespace UniSetTypes
 	  Если @node не указано, возвращается node=DefaultObjectId */
 	std::list<ParamSInfo> getSInfoList( const std::string& s, std::shared_ptr<UniSetTypes::Configuration> conf = nullptr );
 
+
+	/*! Функция разбора строки вида: id1@node1,id2@node2,...
+	  Если @node не указано, возвращается node=DefaultObjectId */
+	std::list<UniSetTypes::ConsumerInfo> getObjectsList( const std::string& s, std::shared_ptr<UniSetTypes::Configuration> conf = nullptr );
+
 	/*! проверка является текст в строке - числом..*/
 	bool is_digit( const std::string& s );
 

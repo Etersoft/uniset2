@@ -843,22 +843,22 @@ int configure( const string& arg, UInterface& ui )
 int oinfo( const string& args, UInterface& ui )
 {
 	auto conf = uniset_conf();
-	auto sl = UniSetTypes::getSInfoList( args, conf );
+	auto sl = UniSetTypes::getObjectsList( args, conf );
 
 	for( auto && it : sl )
 	{
-		if( it.si.node == DefaultObjectId )
-			it.si.node = conf->getLocalNode();
+		if( it.node == DefaultObjectId )
+			it.node = conf->getLocalNode();
 
 		try
 		{
-			UniSetTypes::ObjectVar o = ui.resolve(it.si.id, it.si.node);
+			UniSetTypes::ObjectVar o = ui.resolve(it.id, it.node);
 			UniSetObject_i_var obj = UniSetObject_i::_narrow(o);
 
 			if(CORBA::is_nil(obj))
 			{
 				if( !quiet )
-					cout << "(oinfo): объект '" << it.si.id << "' недоступен" << endl;
+					cout << "(oinfo): объект '" << it.id << "' недоступен" << endl;
 			}
 			else
 			{
@@ -868,7 +868,7 @@ int oinfo( const string& args, UInterface& ui )
 		}
 		catch( const Exception& ex )
 		{
-			cout << "ID='" << it.si.id << "' ERROR: " << ex << endl;
+			cout << "ID='" << it.id << "' ERROR: " << ex << endl;
 		}
 
 		cout << endl << endl;

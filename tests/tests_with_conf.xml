@@ -55,15 +55,18 @@
 	textname 	- текстовое имя датчика
 -->
 	<nodes port="2809">
-		<item id="1000" name="localhost"	alias="" textname="Локальный узел"	ip="127.0.0.1"/>
-		<item id="1001" name="node2"			alias="" textname="Локальный узел"	ip="127.0.0.1"/>
+		<item id="1000" name="localhost" alias="" textname="Локальный узел" ip="127.0.0.1"/>
+		<item id="1001" name="node2" alias="" textname="Локальный узел N2" ip="127.0.0.1"/>
+		<item id="1002" name="node3" alias="" textname="Локальный узел N3" ip="127.0.0.1"/>
 	</nodes>
 
 	<!-- ************************ Датчики ********************** -->
 	<sensors name="Sensors">
 		<item id="1" name="Input1_S" textname="Команда 1" node="" iotype="DI" priority="Medium" default="1" />
 		<item id="4" name="Input2_S" textname="Команда 2" node="" iotype="DI" priority="Medium" />
+		<item id="5" name="Input5_S" textname="Команда 2" node="" iotype="DI" priority="Medium" />
 		<item id="140" name="Input3_S" textname="Команда 3" node="" iotype="DI" priority="Medium"/>
+		<item id="141" name="Input4_S" textname="Команда 4" node="" iotype="DI" priority="Medium"/>
 	</sensors>
 
 	<thresholds name="thresholds">
@@ -81,6 +84,9 @@
 	<!-- ******************* Идентификаторы объектов ***************** -->
 	<objects name="UniObjects">
 		<item id="100" name="TestProc"/>
+		<item id="101" name="TestProc2"/>
+		<item id="102" name="TestProc3"/>
+		<item id="103" name="TestProc4"/>
 	</objects>
 </ObjectsMap>
 

@@ -106,9 +106,53 @@ TEST_CASE("UniSetTypes: explode", "[utypes][explode]" )
 // -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: getSInfoList", "[utypes][getsinfo]" )
 {
-	const std::string str1("id1@node1,id2,234,234@node5,45@245");
+	const std::string str1("Input4_S@node2,Input1_S,5,5@node3,6@1001");
 
 	auto t1 = UniSetTypes::getSInfoList(str1);
+
 	CHECK( t1.size() == 5 );
+
+	vector<UniSetTypes::ParamSInfo> v(t1.begin(),t1.end());
+
+	REQUIRE( v[0].si.id == 141 );
+	REQUIRE( v[0].si.node == 1001 );
+
+	REQUIRE( v[1].si.id == 1 );
+	REQUIRE( v[1].si.node == DefaultObjectId );
+
+	REQUIRE( v[2].si.id == 5 );
+	REQUIRE( v[2].si.node == DefaultObjectId );
+
+	REQUIRE( v[3].si.id == 5 );
+	REQUIRE( v[3].si.node == 1002 );
+
+	REQUIRE( v[4].si.id == 6 );
+	REQUIRE( v[4].si.node == 1001 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: getObjectsList", "[utypes][getolist]" )
+{
+	const std::string str1("TestProc@node2,TestProc,102,102@node3,103@1001");
+
+	auto t1 = UniSetTypes::getObjectsList(str1);
+
+	CHECK( t1.size() == 5 );
+
+	vector<UniSetTypes::ConsumerInfo> v(t1.begin(),t1.end());
+
+	REQUIRE( v[0].id == 100 );
+	REQUIRE( v[0].node == 1001 );
+
+	REQUIRE( v[1].id == 100 );
+	REQUIRE( v[1].node == DefaultObjectId );
+
+	REQUIRE( v[2].id == 102 );
+	REQUIRE( v[2].node == DefaultObjectId );
+
+	REQUIRE( v[3].id == 102 );
+	REQUIRE( v[3].node == 1002 );
+
+	REQUIRE( v[4].id == 103 );
+	REQUIRE( v[4].node == 1001 );
 }
 // -----------------------------------------------------------------------------
