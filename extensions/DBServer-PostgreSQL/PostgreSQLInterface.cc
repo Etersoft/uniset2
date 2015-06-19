@@ -152,45 +152,45 @@ bool PostgreSQLInterface::isConnection()
 	return (db && db->is_open());
 }
 // -----------------------------------------------------------------------------------------
-int num_cols( PostgreSQLResult::iterator& it )
+int PostgreSQLResult::num_cols( const PostgreSQLResult::iterator& it )
 {
 	return it->size();
 }
 // -----------------------------------------------------------------------------------------
-int as_int( PostgreSQLResult::iterator& it, int col )
+int PostgreSQLResult::as_int( const PostgreSQLResult::iterator& it, int col )
 {
 	//    if( col<0 || col >it->size() )
 	//        return 0;
 	return uni_atoi( (*it)[col] );
 }
 // -----------------------------------------------------------------------------------------
-double as_double( PostgreSQLResult::iterator& it, int col )
+double PostgreSQLResult::as_double( const PostgreSQLResult::iterator& it, int col )
 {
 	return atof( ((*it)[col]).c_str() );
 }
 // -----------------------------------------------------------------------------------------
-string as_string( PostgreSQLResult::iterator& it, int col )
+std::string PostgreSQLResult::as_string( const PostgreSQLResult::iterator& it, int col )
 {
 	return ((*it)[col]);
 }
 // -----------------------------------------------------------------------------------------
-int as_int( PostgreSQLResult::COL::iterator& it )
+int PostgreSQLResult::as_int( const PostgreSQLResult::COL::iterator& it )
 {
 	return uni_atoi( (*it) );
 }
 // -----------------------------------------------------------------------------------------
-double as_double( PostgreSQLResult::COL::iterator& it )
+double PostgreSQLResult::as_double( const PostgreSQLResult::COL::iterator& it )
 {
 	return atof( (*it).c_str() );
 }
 // -----------------------------------------------------------------------------------------
-std::string as_string( PostgreSQLResult::COL::iterator& it )
+std::string PostgreSQLResult::as_string( const PostgreSQLResult::COL::iterator& it )
 {
 	return (*it);
 }
 // -----------------------------------------------------------------------------------------
 #if 0
-PostgreSQLResult::COL get_col( PostgreSQLResult::ROW::iterator& it )
+PostgreSQLResult::COL PostgreSQLResult::get_col( const PostgreSQLResult::ROW::iterator& it )
 {
 	return (*it);
 }

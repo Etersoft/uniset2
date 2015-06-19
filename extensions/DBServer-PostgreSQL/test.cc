@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 			PostgreSQLResult::COL col(*it);
 
 			for( PostgreSQLResult::COL::iterator cit = it->begin(); cit != it->end(); cit++ )
-				cout << as_string(cit) << "(" << as_double(cit) << ")  |  ";
+				cout << PostgreSQLResult::as_string(cit) << "(" << PostgreSQLResult::as_double(cit) << ")  |  ";
 
 			cout << endl;
 		}

@@ -201,45 +201,45 @@ bool SQLiteInterface::isConnection()
 	return connected;
 }
 // -----------------------------------------------------------------------------------------
-int num_cols( SQLiteResult::iterator& it )
+int SQLiteResult::num_cols( const SQLiteResult::iterator& it )
 {
 	return it->size();
 }
 // -----------------------------------------------------------------------------------------
-int as_int( SQLiteResult::iterator& it, int col )
+int SQLiteResult::as_int( const SQLiteResult::iterator& it, int col )
 {
 	//    if( col<0 || col >it->size() )
 	//        return 0;
 	return uni_atoi( (*it)[col] );
 }
 // -----------------------------------------------------------------------------------------
-double as_double( SQLiteResult::iterator& it, int col )
+double SQLiteResult::as_double( const SQLiteResult::iterator& it, int col )
 {
 	return atof( ((*it)[col]).c_str() );
 }
 // -----------------------------------------------------------------------------------------
-string as_string( SQLiteResult::iterator& it, int col )
+string SQLiteResult::as_string( const SQLiteResult::iterator& it, int col )
 {
 	return ((*it)[col]);
 }
 // -----------------------------------------------------------------------------------------
-int as_int( SQLiteResult::COL::iterator& it )
+int SQLiteResult::as_int( const SQLiteResult::COL::iterator& it )
 {
 	return uni_atoi( (*it) );
 }
 // -----------------------------------------------------------------------------------------
-double as_double( SQLiteResult::COL::iterator& it )
+double SQLiteResult::as_double( const SQLiteResult::COL::iterator& it )
 {
 	return atof( (*it).c_str() );
 }
 // -----------------------------------------------------------------------------------------
-std::string as_string( SQLiteResult::COL::iterator& it )
+std::string SQLiteResult::as_string( const SQLiteResult::COL::iterator& it )
 {
 	return (*it);
 }
 // -----------------------------------------------------------------------------------------
 #if 0
-SQLiteResult::COL get_col( SQLiteResult::ROW::iterator& it )
+SQLiteResult::COL SQLiteResult::get_col( SQLiteResult::ROW::iterator& it )
 {
 	return (*it);
 }

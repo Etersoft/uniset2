@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 			MySQLResult::COL col(*it);
 
 			for( MySQLResult::COL::iterator cit = it->begin(); cit != it->end(); cit++ )
-				cout << as_string(cit) << "(" << as_double(cit) << ")  |  ";
+				cout << MySQLResult::as_string(cit) << "(" << MySQLResult::as_double(cit) << ")  |  ";
 
 			cout << endl;
 		}

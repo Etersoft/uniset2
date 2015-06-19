@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 			SQLiteResult::COL col(*it);
 
 			for( SQLiteResult::COL::iterator cit = it->begin(); cit != it->end(); cit++ )
-				cout << as_string(cit) << "(" << as_double(cit) << ")  |  ";
+				cout << SQLiteResult::as_string(cit) << "(" << SQLiteResult::as_double(cit) << ")  |  ";
 
 			cout << endl;
 		}

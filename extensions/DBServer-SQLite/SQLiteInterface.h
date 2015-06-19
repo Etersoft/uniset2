@@ -59,7 +59,7 @@
             cout << "ROW: ";
             SQLiteResult::COL col(*it);
             for( SQLiteResult::COL::iterator cit = it->begin(); cit!=it->end(); cit++ )
-                cout << as_string(cit) << "(" << as_double(cit) << ")  |  ";
+				cout << SQLiteResult::as_string(cit) << "(" << SQLiteResult::as_double(cit) << ")  |  ";
             cout << endl;
         }
 
@@ -172,21 +172,24 @@ class SQLiteResult
 			return res.empty();
 		}
 
+
+		// ----------------------------------------------------------------------------
+		static int num_cols( const SQLiteResult::iterator& );
+		// ROW
+		static int as_int( const SQLiteResult::iterator&, int col );
+		static double as_double( const SQLiteResult::iterator&, int col );
+		static std::string as_string( const SQLiteResult::iterator&, int col );
+		// ----------------------------------------------------------------------------
+		// COL
+		static int as_int( const SQLiteResult::COL::iterator& );
+		static double as_double( const SQLiteResult::COL::iterator& );
+		static std::string as_string( const SQLiteResult::COL::iterator& );
+
 	protected:
 
 		ROW res;
 };
 // ----------------------------------------------------------------------------
-int num_cols( SQLiteResult::iterator& );
-// ROW
-int as_int( SQLiteResult::iterator&, int col );
-double as_double( SQLiteResult::iterator&, int col );
-std::string as_string( SQLiteResult::iterator&, int col );
-// ----------------------------------------------------------------------------
-// COL
-int as_int( SQLiteResult::COL::iterator& );
-double as_double( SQLiteResult::COL::iterator& );
-std::string as_string( SQLiteResult::COL::iterator& );
 // ----------------------------------------------------------------------------
 #endif
 // ----------------------------------------------------------------------------------

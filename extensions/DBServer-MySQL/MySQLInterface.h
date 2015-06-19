@@ -116,20 +116,23 @@ class MySQLResult
 			return res.empty();
 		}
 
+		// ----------------------------------------------------------------------------
+		// ROW
+		static int as_int( const MySQLResult::iterator&, int col );
+		static double as_double( const MySQLResult::iterator&, int col );
+		static std::string as_string( const MySQLResult::iterator&, int col );
+		// ----------------------------------------------------------------------------
+		// COL
+		static int num_cols( const MySQLResult::iterator& );
+
+		static int as_int( const MySQLResult::COL::iterator& );
+		static double as_double(const  MySQLResult::COL::iterator& );
+		static std::string as_string( const MySQLResult::COL::iterator& );
+		// ----------------------------------------------------------------------------
+
 	protected:
 
 		ROW res;
 };
 // ----------------------------------------------------------------------------------
-int num_cols( MySQLResult::iterator& );
-// ROW
-int as_int( MySQLResult::iterator&, int col );
-double as_double( MySQLResult::iterator&, int col );
-std::string as_text( MySQLResult::iterator&, int col );
-// ----------------------------------------------------------------------------
-// COL
-int as_int( MySQLResult::COL::iterator& );
-double as_double( MySQLResult::COL::iterator& );
-std::string as_string( MySQLResult::COL::iterator& );
-// ----------------------------------------------------------------------------
 #endif

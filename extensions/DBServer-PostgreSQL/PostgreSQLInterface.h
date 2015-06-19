@@ -78,21 +78,24 @@ class PostgreSQLResult
 			return row.empty();
 		}
 
+		// ----------------------------------------------------------------------------
+		// ROW
+		static int as_int( const PostgreSQLResult::iterator&, int col );
+		static double as_double( const PostgreSQLResult::iterator&, int col );
+		static std::string as_string( const PostgreSQLResult::iterator&, int col );
+		// ----------------------------------------------------------------------------
+		// COL
+		static int num_cols( const PostgreSQLResult::iterator& );
+
+		static int as_int( const PostgreSQLResult::COL::iterator& );
+		static double as_double( const PostgreSQLResult::COL::iterator& );
+		static std::string as_string(const  PostgreSQLResult::COL::iterator& );
+		//----------------------------------------------------------------------------
+
 	protected:
 
 		ROW row;
 };
 // ----------------------------------------------------------------------------
-int num_cols( PostgreSQLResult::iterator& );
-// ROW
-int as_int( PostgreSQLResult::iterator&, int col );
-double as_double( PostgreSQLResult::iterator&, int col );
-std::string as_text( PostgreSQLResult::iterator&, int col );
-// ----------------------------------------------------------------------------
-// COL
-int as_int( PostgreSQLResult::COL::iterator& );
-double as_double( PostgreSQLResult::COL::iterator& );
-std::string as_string( PostgreSQLResult::COL::iterator& );
-//----------------------------------------------------------------------------
 #endif
 // ----------------------------------------------------------------------------------

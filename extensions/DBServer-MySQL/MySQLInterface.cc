@@ -173,39 +173,39 @@ string MySQLInterface::addslashes( const string& str )
 	return tmp.str();
 }
 // -----------------------------------------------------------------------------------------
-int num_cols( MySQLResult::iterator& it )
+int MySQLResult::num_cols( const MySQLResult::iterator& it )
 {
 	return it->size();
 }
 // -----------------------------------------------------------------------------------------
-int as_int( MySQLResult::iterator& it, int col )
+int MySQLResult::as_int( const MySQLResult::iterator& it, int col )
 {
 	//    if( col<0 || col >it->size() )
 	//        return 0;
 	return uni_atoi( (*it)[col] );
 }
 // -----------------------------------------------------------------------------------------
-double as_double( MySQLResult::iterator& it, int col )
+double as_double( const MySQLResult::iterator& it, int col )
 {
 	return atof( ((*it)[col]).c_str() );
 }
 // -----------------------------------------------------------------------------------------
-string as_string( MySQLResult::iterator& it, int col )
+string MySQLResult::as_string( const MySQLResult::iterator& it, int col )
 {
 	return ((*it)[col]);
 }
 // -----------------------------------------------------------------------------------------
-int as_int( MySQLResult::COL::iterator& it )
+int MySQLResult::as_int( const MySQLResult::COL::iterator& it )
 {
 	return uni_atoi( (*it) );
 }
 // -----------------------------------------------------------------------------------------
-double as_double( MySQLResult::COL::iterator& it )
+double MySQLResult::as_double( const MySQLResult::COL::iterator& it )
 {
 	return atof( (*it).c_str() );
 }
 // -----------------------------------------------------------------------------------------
-std::string as_string( MySQLResult::COL::iterator& it )
+std::string MySQLResult::as_string( const MySQLResult::COL::iterator& it )
 {
 	return (*it);
 }
