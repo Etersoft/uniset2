@@ -483,6 +483,24 @@ TEST_CASE("[IOBase::calibration]: asDI, asDO", "[iobase][di][do][extensions]")
 	}
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("[IOBase]: FasAI to DI", "[iobase][floatToDI]")
+{
+	CHECK( uniset_conf() != nullptr );
+
+	IOBase ib;
+	CHECK( init_iobase(&ib, "FasDI_S") );
+
+	float f=23.23;
+
+	IOBase::processingFasAI(&ib, f, shm, true);
+
+	CHECK(shm->getValue(121) == 1 );
+
+	f = 0;
+	IOBase::processingFasAI(&ib, f, shm, true);
+	CHECK(shm->getValue(121) == 0 );
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("IOBase with SM", "[iobase][extensions]")
 {
 	WARN("IOBase with SM: Not all tests implemented!");

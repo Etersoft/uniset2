@@ -12,10 +12,11 @@ cd -
 --mbtcp-name MBTCPMaster1 \
 --smemory-id SharedMemory \
 --mbtcp-filter-field mb \
---mbtcp-filter-value 1 \
+--mbtcp-filter-value 2 \
 --mbtcp-gateway-iaddr localhost \
 --mbtcp-gateway-port 20048 \
 --mbtcp-polltime 50 --mbtcp-recv-timeout 500
+#--mbtcp-log-add-levels any
 #--mbtcp-default-mbinit-ok 1
 #--dlog-add-levels any
 

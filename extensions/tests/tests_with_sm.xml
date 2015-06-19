@@ -270,6 +270,7 @@
 			<!-- FasAO -> FasAI -->
 			<item id="119" iotype="AI" name="FasAI_S" textname="FasAI" precision="1"/>
 			<item id="120" iotype="AI" name="FasAO_S" textname="FasAO" precsision="1"/>
+			<item id="121" iotype="DI" name="FasDI_S" textname="FasDI"/>
 			
 
 		</sensors>

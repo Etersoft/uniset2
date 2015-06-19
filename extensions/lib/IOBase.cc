@@ -176,63 +176,69 @@ bool IOBase::check_front( bool val )
 // -----------------------------------------------------------------------------
 void IOBase::processingAsAI( IOBase* it, long val, const std::shared_ptr<SMInterface>& shm, bool force )
 {
-	// проверка на обрыв
-	if( it->check_channel_break(val) )
-	{
-		uniset_rwmutex_wrlock lock(it->val_lock);
-		it->value = ChannelBreakValue;
-		shm->localSetUndefinedState(it->ioit, true, it->si.id);
-		return;
-	}
-
-	// проверка зависимости
-	if( !it->check_depend(shm) )
-		val = it->d_off_value;
+	if( it->stype == UniversalIO::DI || it->stype == UniversalIO::DO )
+		val = (val ? 1.0 : 0.0);
 	else
 	{
-		if( !it->nofilter && it->df.size() > 1 )
+		// проверка на обрыв
+		if( it->check_channel_break(val) )
 		{
-			if( it->f_median )
-				val = it->df.median(val);
-			else if( it->f_filter_iir )
-				val = it->df.filterIIR(val);
-			else if( it->f_ls )
-				val = it->df.leastsqr(val);
-			else
-				val = it->df.filterRC(val);
+			uniset_rwmutex_wrlock lock(it->val_lock);
+			it->value = ChannelBreakValue;
+			shm->localSetUndefinedState(it->ioit, true, it->si.id);
+			return;
 		}
 
-		if( !it->rawdata )
+		// проверка зависимости
+		if( !it->check_depend(shm) )
+			val = it->d_off_value;
+		else
 		{
-			if( it->cdiagram )    // задана специальная калибровочная диаграмма
+			if( !it->nofilter && it->df.size() > 1 )
 			{
-				if( it->craw != val )
+				if( it->f_median )
+					val = it->df.median(val);
+				else if( it->f_filter_iir )
+					val = it->df.filterIIR(val);
+				else if( it->f_ls )
+					val = it->df.leastsqr(val);
+				else
+					val = it->df.filterRC(val);
+			}
+
+			if( !it->rawdata )
+			{
+				if( it->cdiagram )    // задана специальная калибровочная диаграмма
 				{
-					it->craw = val;
-					val = it->cdiagram->getValue(val, it->calcrop);
-					it->cprev = val;
+					if( it->craw != val )
+					{
+						it->craw = val;
+						val = it->cdiagram->getValue(val, it->calcrop);
+						it->cprev = val;
+					}
+					else
+						val = it->cprev;        // просто передаём предыдущее значение
 				}
 				else
-					val = it->cprev;        // просто передаём предыдущее значение
+				{
+					IOController_i::CalibrateInfo* cal( &(it->cal) );
+
+					if( cal->maxRaw != cal->minRaw ) // задана обычная калибровка
+						val = UniSetTypes::lcalibrate(val, cal->minRaw, cal->maxRaw, cal->minCal, cal->maxCal, it->calcrop);
+				}
+
+				if( !it->noprecision && it->cal.precision > 0 )
+					val *= lround(pow10(it->cal.precision));
 			}
-			else
-			{
-				IOController_i::CalibrateInfo* cal( &(it->cal) );
+		} // end of 'check_depend'
 
-				if( cal->maxRaw != cal->minRaw ) // задана обычная калибровка
-					val = UniSetTypes::lcalibrate(val, cal->minRaw, cal->maxRaw, cal->minCal, cal->maxCal, it->calcrop);
-			}
+	}
 
-			if( !it->noprecision && it->cal.precision > 0 )
-				val *= lround(pow10(it->cal.precision));
-		}
-	} // end of 'check_depend'
-
-	// если предыдущее значение "обрыв",
-	// то сбрасываем признак
 	{
 		uniset_rwmutex_wrlock lock(it->val_lock);
 
+		// если предыдущее значение "обрыв",
+		// то сбрасываем признак
 		if( it->value == ChannelBreakValue )
 			shm->localSetUndefinedState(it->ioit, false, it->si.id);
 
@@ -248,51 +254,56 @@ void IOBase::processingFasAI( IOBase* it, float fval, const std::shared_ptr<SMIn
 {
 	long val = lroundf(fval);
 
-	if( it->rawdata )
-	{
-		val = 0;
-		memcpy(&val, &fval, std::min(sizeof(val), sizeof(fval)));
-	}
-	else if( it->cal.precision > 0 && !it->noprecision )
-		val = lroundf( fval * pow10(it->cal.precision) );
-
-	// проверка на обрыв
-	if( it->check_channel_break(val) )
-	{
-		uniset_rwmutex_wrlock lock(it->val_lock);
-		it->value = ChannelBreakValue;
-		shm->localSetUndefinedState(it->ioit, true, it->si.id);
-		return;
-	}
-
-	// проверка зависимости
-	if( !it->check_depend(shm) )
-		val = it->d_off_value;
+	if( it->stype == UniversalIO::DI || it->stype == UniversalIO::DO )
+		val = (fval!=0 ? 1.0 : 0.0);
 	else
 	{
-		// Читаем с использованием фильтра...
-		if( !it->nofilter )
+		if( it->rawdata )
 		{
-			if( it->df.size() > 1 )
-				it->df.add(val);
+			val = 0;
+			memcpy(&val, &fval, std::min(sizeof(val), sizeof(fval)));
+		}
+		else if( it->cal.precision > 0 && !it->noprecision )
+			val = lroundf( fval * pow10(it->cal.precision) );
 
-			val = it->df.filterRC(val);
+		// проверка на обрыв
+		if( it->check_channel_break(val) )
+		{
+			uniset_rwmutex_wrlock lock(it->val_lock);
+			it->value = ChannelBreakValue;
+			shm->localSetUndefinedState(it->ioit, true, it->si.id);
+			return;
 		}
 
-		if( !it->rawdata )
+		// проверка зависимости
+		if( !it->check_depend(shm) )
+			val = it->d_off_value;
+		else
 		{
-			IOController_i::CalibrateInfo* cal( &(it->cal) );
+			// Читаем с использованием фильтра...
+			if( !it->nofilter )
+			{
+				if( it->df.size() > 1 )
+					it->df.add(val);
 
-			if( cal->maxRaw != cal->minRaw ) // задана обычная калибровка
-				val = UniSetTypes::lcalibrate(val, cal->minRaw, cal->maxRaw, cal->minCal, cal->maxCal, it->calcrop);
+				val = it->df.filterRC(val);
+			}
+
+			if( !it->rawdata )
+			{
+				IOController_i::CalibrateInfo* cal( &(it->cal) );
+
+				if( cal->maxRaw != cal->minRaw ) // задана обычная калибровка
+					val = UniSetTypes::lcalibrate(val, cal->minRaw, cal->maxRaw, cal->minCal, cal->maxCal, it->calcrop);
+			}
 		}
 	}
 
-	// если предыдущее значение "обрыв",
-	// то сбрасываем признак
 	{
 		uniset_rwmutex_wrlock lock(it->val_lock);
 
+		// если предыдущее значение "обрыв",
+		// то сбрасываем признак
 		if( it->value == ChannelBreakValue )
 			shm->localSetUndefinedState(it->ioit, false, it->si.id);
 
@@ -433,6 +444,8 @@ float IOBase::processingFasAO( IOBase* it, const std::shared_ptr<SMInterface>& s
 		if( !it->noprecision && it->cal.precision > 0 )
 			return ( fval / pow10(it->cal.precision) );
 	}
+	else // if( it->stype == UniversalIO::DI || it->stype == UniversalIO::DO )
+		fval = val ? 1.0 : 0.0;
 
 	return fval;
 }

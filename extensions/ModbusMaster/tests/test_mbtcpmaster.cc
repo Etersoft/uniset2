@@ -599,7 +599,7 @@ TEST_CASE("MBTCPMaster: 0x66 (file transfer)", "[modbus][0x66][mbmaster][mbtcpma
 	WARN("Test of '0x66'..not yet.. ");
 }
 // -----------------------------------------------------------------------------
-#if 0
+#if 1
 TEST_CASE("MBTCPMaster: 0x10 (F2)", "[modbus][0x10][F2][mbmaster][mbtcpmaster]")
 {
 	InitTest();
@@ -661,4 +661,22 @@ TEST_CASE("MBTCPMaster: FasAO -> FasAI", "[modbus][float]")
 	REQUIRE( f3 == 11.6f );
 }
 #endif
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: F2 to DI", "[modbus][ftodi]")
+{
+	InitTest();
+
+	CHECK( ui->isExist(mbID) );
+	mbs->setReply(10);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1028) == 1 );
+
+	mbs->setReply(0);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1028) == 0 );
+
+	mbs->setReply(10);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1028) == 1 );
+}
 // -----------------------------------------------------------------------------
