@@ -88,7 +88,7 @@ DebugStream::~DebugStream()
 //--------------------------------------------------------------------------
 const DebugStream& DebugStream::operator=( const DebugStream& r )
 {
-	if( r == *this )
+	if( &r == this )
 		return *this;
 
 	dt = r.dt;

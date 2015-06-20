@@ -396,7 +396,7 @@ namespace UniSetTypes
 					uri << "corbaname::" << getProp(nsnode, "host") << ":" << defPort;
 
 					if( !omni::omniInitialReferences::setFromArgs(ns_name.str().c_str(), uri.str().c_str()) )
-						cerr << "**********************!!!! FAILED ADD name=" << ns_name << " uri=" << uri.str() << endl;
+						cerr << "**********************!!!! FAILED ADD name=" << ns_name.str() << " uri=" << uri.str() << endl;
 				}
 
 				i++;

@@ -124,10 +124,10 @@ namespace ORepHelpers
 		{
 			ostringstream err;
 			err << "OREPHELPER(getContext): поймали omniORB::fatalException:";
-			uwarn <<  err << endl;
-			uwarn << "  file: " << fe.file() << endl;
-			uwarn << "  line: " << fe.line() << endl;
-			uwarn << "  mesg: " << fe.errmsg() << endl;
+			err << "  file: " << fe.file() << endl;
+			err << "  line: " << fe.line() << endl;
+			err << "  mesg: " << fe.errmsg() << endl;
+			uwarn << err.str() << endl;
 			throw ORepFailed(err.str());
 		}
 

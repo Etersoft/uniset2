@@ -138,7 +138,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 					if( !stype.empty() && st == ComediInterface::Unknown )
 					{
 						ostringstream err;
-						err << "Unknown subdev type '" << stype << " for " << t1;
+						err << "Unknown subdev type '" << stype << " for " << t1.str();
 						throw SystemError(err.str());
 					}
 

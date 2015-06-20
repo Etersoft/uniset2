@@ -13,7 +13,7 @@ class LogicException:
 {
 	public:
 		LogicException(): UniSetTypes::Exception("LogicException") {}
-		LogicException(std::string err): UniSetTypes::Exception(err) {}
+		LogicException( const std::string err): UniSetTypes::Exception(err) {}
 };
 
 
@@ -54,7 +54,7 @@ class Element
 			return "?type?";
 		}
 
-		virtual std::shared_ptr<Element> find( ElementID id );
+		virtual std::shared_ptr<Element> find( const ElementID id );
 
 		virtual void addChildOut( std::shared_ptr<Element> el, int in_num );
 		virtual void delChildOut( std::shared_ptr<Element> el );
