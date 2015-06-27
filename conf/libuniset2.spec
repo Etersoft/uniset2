@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.1
-Release: alt8
+Release: alt8.1
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -456,6 +456,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Sun Jun 28 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt8.1
+- VMonitor: added output information in the form of two columns
+
 * Sat Jun 20 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt8
 - release
 

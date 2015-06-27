@@ -85,7 +85,7 @@ struct Debug
 	/** A function to convert symbolic string names on debug levels
 	    to their numerical value.
 	*/
-	static Debug::type value(string const& val);
+	static Debug::type value(std::string const& val);
 
 	/** Display the tags and descriptions of the current debug level
 	    of ds

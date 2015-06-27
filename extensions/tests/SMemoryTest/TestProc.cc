@@ -19,6 +19,7 @@ TestProc::TestProc( UniSetTypes::ObjectId id, xmlNode* confnode ):
 
 	lit = loglevels.begin();
 	out_log_c = (*lit);
+	vmonit(undef);
 }
 // -----------------------------------------------------------------------------
 TestProc::~TestProc()
@@ -34,7 +35,6 @@ TestProc::TestProc():
 // -----------------------------------------------------------------------------
 void TestProc::step()
 {
-	snap(undef);
 }
 // -----------------------------------------------------------------------------
 void TestProc::sysCommand( const UniSetTypes::SystemMessage* sm )

@@ -118,6 +118,7 @@ class VMonitor
 		friend std::ostream& operator<<(std::ostream& os, VMonitor& m );
 
 		static const int NameWidth = { 30 };
+		static const int ColCount = { 2 };
 
 		std::string str();
 		std::string pretty_str();

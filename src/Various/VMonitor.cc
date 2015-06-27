@@ -1,6 +1,7 @@
 // --------------------------------------------------------------------------
 #include <string>
 #include <sstream>
+#include <vector>
 #include <iomanip>
 #include "VMonitor.h"
 // --------------------------------------------------------------------------
@@ -91,26 +92,76 @@
 // --------------------------------------------------------------------------
 #define VMON_IMPL_PRET(T) \
 	{\
+		std::vector<std::string> v(m_char.size()+m_unsigned_char.size());\
+		std::ostringstream s;\
 		for( const auto& e: m_##T ) \
-			os << pretty_str(e.second,e.first) << std::endl;\
+		{\
+			s.str("");\
+			s << pretty_str(e.second,e.first);\
+			v.push_back(s.str()); \
+		}\
+		\
+		int n = 0;\
+		for( const auto& e: v ) \
+		{\
+			os << e; \
+			if( (n++)%ColCount ) \
+				os << std::endl; \
+		} \
 	}
 // --------------------------------------------------------------------------
 #define VMON_IMPL_PRET2(T) \
 	{\
+		std::vector<std::string> v(m_char.size()+m_unsigned_char.size());\
+		std::ostringstream s;\
 		for( const auto& e: m_##T ) \
-			os << pretty_str(e.second,e.first) << std::endl;\
+		{\
+			s.str("");\
+			s << pretty_str(e.second,e.first);\
+			v.push_back(s.str());\
+		}\
 		\
 		for( const auto& e: m_unsigned_##T ) \
-			os << pretty_str(e.second,e.first) << std::endl;\
+		{\
+			s.str("");\
+			s << pretty_str(e.second,e.first);\
+			v.push_back(s.str());\
+		}\
+		\
+		int n = 0;\
+		for( const auto& e: v ) \
+		{\
+			os << e; \
+			if( (n++)%ColCount ) \
+				os << std::endl; \
+		} \
 	}
 // --------------------------------------------------------------------------
 #define VMON_IMPL_PRET_CHAR \
 	{\
+		std::vector<std::string> v(m_char.size()+m_unsigned_char.size());\
+		std::ostringstream s;\
 		for( const auto& e: m_char ) \
-			os << std::right << std::setw(NameWidth) << e.second << std::left << " = " << std::right << std::setw(6) << (int)(*(e.first)) << std::endl;\
+		{\
+			s.str("");\
+			s << std::right << std::setw(NameWidth) << e.second << std::left << " = " << std::right << std::setw(6) << (int)(*(e.first));\
+			v.push_back(s.str());\
+		}\
 		\
 		for( const auto& e: m_unsigned_char ) \
-			os << std::right << std::setw(NameWidth) << e.second << std::left << " = " << std::right << std::setw(6) << (int)(*(e.first)) << std::endl;\
+		{\
+			s.str("");\
+			s << std::right << std::setw(NameWidth) << e.second << std::left << " = " << std::right << std::setw(6) << (int)(*(e.first));\
+			v.push_back(s.str()); \
+		}\
+		\
+		int n = 0;\
+		for( const auto& e: v ) \
+		{\
+			os << e; \
+			if( (n++)%ColCount ) \
+				os << std::endl; \
+		} \
 	}
 // --------------------------------------------------------------------------
 VMON_IMPL_ADD2(int)

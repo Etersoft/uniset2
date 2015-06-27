@@ -434,7 +434,9 @@ UniSetTypes::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo()
 	inf &lt;&lt; i->info &lt;&lt; endl;
 	inf &lt;&lt; "LogServer: " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port &lt;&lt; endl;
 	inf &lt;&lt; dumpIO() &lt;&lt; endl;
+	inf &lt;&lt; endl;
 	inf &lt;&lt; vmon.pretty_str() &lt;&lt; endl;
+	inf &lt;&lt; endl;
 	inf &lt;&lt; getMonitInfo() &lt;&lt; endl;
 	
 	i->info =  inf.str().c_str();
@@ -1020,14 +1022,26 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 {
 	ostringstream s;
 	s &lt;&lt; myname &lt;&lt; ": " &lt;&lt; endl;
+
+	std::vector&lt;std::string&gt; v;
+	ostringstream s1;
 	<xsl:for-each select="//smap/item">
-		s &lt;&lt; "    " &lt;&lt; setw(30) &lt;&lt; std::right &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"
+		s1.str("");
+		s1 &lt;&lt; "    " &lt;&lt; setw(30) &lt;&lt; std::right &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"
 				&lt;&lt; "(" &lt;&lt; setw(30) &lt;&lt; std::left &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")"
-				&lt;&lt; std::right &lt;&lt; " = " &lt;&lt; setw(6) &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>
-				&lt;&lt; endl;
+				&lt;&lt; std::right &lt;&lt; " = " &lt;&lt; setw(6) &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
+		v.push_back(s1.str());
 	</xsl:for-each>
 
-	return s.str();
+	int n = 0;
+	for( const auto&amp; e: v )
+	{
+		s &lt;&lt; e;
+		if( (n++)%2 )
+			s &lt;&lt; std::endl;
+	}
+	
+	return std::move(s.str());
 }
 // ----------------------------------------------------------------------------
 std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( UniSetTypes::ObjectId id, bool showLinkName )
@@ -1038,7 +1052,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( UniSetTypes::ObjectId 
 	{
 		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>";
 		if( showLinkName ) s &lt;&lt; "(" &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")";
-		return s.str();
+		return std::move(s.str());
 	}
 	</xsl:for-each>	
 	return "";
@@ -1054,7 +1068,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::strval( UniSetTypes::Object
 		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>";
 		if( showLinkName ) s &lt;&lt; "(" &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")";		
 		s &lt;&lt; "=" &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
-		return s.str();
+		return std::move(s.str());
 	}
 	</xsl:for-each>	
 	return "";
@@ -1319,14 +1333,28 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 	ostringstream s;
 	s &lt;&lt; myname &lt;&lt; ": " &lt;&lt; endl;
 	
+	ostringstream s1;
+	vector&lt;std::string&gt; v;
+	
 	<xsl:for-each select="//sensors/item/consumers/consumer">
 	<xsl:if test="normalize-space(../../@msg)!='1'">
 	<xsl:if test="normalize-space(@name)=$OID">
-	s &lt;&lt; "   " &lt;&lt; strval(<xsl:value-of select="../../@name"/>) &lt;&lt; endl;
+	s1.str("");
+	s1 &lt;&lt; "   " &lt;&lt; strval(<xsl:value-of select="../../@name"/>);
+	v.push_back(s1.str());
 	</xsl:if>
 	</xsl:if>
 	</xsl:for-each>
-	return s.str();
+	
+	int n=0;
+	for( const auto&amp; e: v )
+	{
+		s &lt;&lt; e;
+		if( (++n)%2 )
+		  s &lt;&lt; endl;
+	}
+	
+	return std::move(s.str());
 }
 // ----------------------------------------------------------------------------
 std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( UniSetTypes::ObjectId id, bool showLinkName )
@@ -1339,7 +1367,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( UniSetTypes::ObjectId 
 	{
 		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>";
 		if( showLinkName ) s &lt;&lt; "(<xsl:value-of select="../../@name"/>)";
-		return s.str();
+		return std::move(s.str());
 	}
 	</xsl:if>
 	</xsl:if>
@@ -1358,7 +1386,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::strval( UniSetTypes::Object
 		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>";
 		if( showLinkName ) s &lt;&lt; "(<xsl:value-of select="../../@name"/>)";
 		s &lt;&lt; "=" &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>;
-		return s.str();
+		return std::move(s.str());
 	}
 	</xsl:if>
 	</xsl:if>
