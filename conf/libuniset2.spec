@@ -1,7 +1,7 @@
 %def_enable docs
 %def_enable mysql
 %def_enable sqlite
-%def_enable pgsql
+%def_disable pgsql
 %def_enable python
 %def_enable rrd
 %def_enable io
@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.1
-Release: alt8.1
+Release: alt9
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -456,6 +456,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Tue Jun 30 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt9
+- temporary disable pgsql interface
+
 * Sun Jun 28 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt8.1
 - VMonitor: added output information in the form of two columns
 
