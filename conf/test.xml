@@ -83,8 +83,8 @@
 				<item addr="0x01" invert="0" respondSensor="RespondRTU_S" timeout="5000" modeSensor="MB1_Mode_AS"/>
 			</DeviceList>
 			<GateList>
-				<item ip="127.0.0.1" port="2048" recv_timeout="200"/>
-				<item ip="127.0.0.1" port="2049" recv_timeout="200"/>
+				<item ip="127.0.0.1" port="2048" recv_timeout="200" invert="1" respondSensor="MM1_Not_Respond_S"/>
+				<item ip="127.0.0.1" port="2049" recv_timeout="200" invert="1" respondSensor="MM2_Not_Respond_S"/>
 			</GateList>
 		</MBMultiMaster1>
 
@@ -268,6 +268,9 @@
 			<item id="106" iotype="DI" name="D106_S" textname="D106"/>
 			<item id="107" iotype="AI" name="AI107_AS" textname="AI107" default="1"/>
 			<item id="108" iotype="AI" name="AI108_AS" textname="AI108" ag="1" ag_min="30" ag_max="40" ag_invert="1"/>
+
+			<item id="109" iotype="DI" name="MM1_Not_Respond_S" priority="Medium" textname="multimaster test sensor"/>
+			<item id="110" iotype="DI" name="MM2_Not_Respond_S" priority="Medium" textname="multimaster test sensor"/>
 
 		</sensors>
 		<thresholds name="thresholds">

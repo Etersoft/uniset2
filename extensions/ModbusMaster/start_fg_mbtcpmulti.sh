@@ -15,6 +15,7 @@
 --mbtcp-force-disconnect 1 \
 --mbtcp-polltime 1000 \
 --mbtcp-force-out 1 \
+--mbtcp-log-add-levels any \
 $*
 
 #--mbtcp-exchange-mode-id MB1_Mode_AS \

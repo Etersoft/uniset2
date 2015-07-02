@@ -187,19 +187,21 @@ void SViewer::getInfo( ObjectId id )
 			return;
 		}
 
-		IOController_i::SensorInfoSeq_var amap = ioc->getSensorsMap();
-		IONotifyController_i::ThresholdsListSeq_var tlst = ioc->getThresholdsList();
 
 		try
 		{
+			IOController_i::SensorInfoSeq_var amap = ioc->getSensorsMap();
 			updateSensors(amap, id);
 		}
+		catch( IOController_i::NameNotFound ){}
 		catch(...) {}
 
 		try
 		{
+			IONotifyController_i::ThresholdsListSeq_var tlst = ioc->getThresholdsList();
 			updateThresholds(tlst, id);
 		}
+		catch( IOController_i::NameNotFound ){}
 		catch(...) {}
 
 		return;

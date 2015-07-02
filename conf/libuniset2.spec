@@ -1,7 +1,7 @@
 %def_enable docs
 %def_enable mysql
 %def_enable sqlite
-%def_disable pgsql
+%def_enable pgsql
 %def_enable python
 %def_enable rrd
 %def_enable io
@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.1
-Release: alt9
+Release: alt10
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -456,6 +456,10 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Fri Jul 03 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt10
+- fixed bug in ModbusMultiMaster (setbug #7596)
+- enable pgsql interface
+
 * Tue Jun 30 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt9
 - temporary disable pgsql interface
 

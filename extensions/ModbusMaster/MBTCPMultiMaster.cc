@@ -74,14 +74,14 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 			throw UniSetTypes::SystemError(err.str());
 		}
 
-		if( !it1.getProp("respond").empty() )
+		if( !it1.getProp("respondSensor").empty() )
 		{
-			sinf.respond_id = conf->getSensorID( it1.getProp("respond") );
+			sinf.respond_id = conf->getSensorID( it1.getProp("respondSensor") );
 
 			if( sinf.respond_id == DefaultObjectId )
 			{
 				ostringstream err;
-				err << myname << "(init): ERROR: Unknown SensorID for '" << it1.getProp("respond") << "' in <GateList>";
+				err << myname << "(init): ERROR: Unknown SensorID for '" << it1.getProp("respondSensor") << "' in <GateList>";
 				mbcrit << err.str() << endl;
 				throw UniSetTypes::SystemError(err.str());
 			}
@@ -94,7 +94,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		sinf.recv_timeout = it1.getPIntProp("recv_timeout", recv_timeout);
 		sinf.aftersend_pause = it1.getPIntProp("aftersend_pause", aftersend_pause);
 		sinf.sleepPause_usec = it1.getPIntProp("sleepPause_usec", sleepPause_usec);
-		sinf.respond_invert = it1.getPIntProp("respond_invert", 0);
+		sinf.respond_invert = it1.getPIntProp("invert", 0);
 
 		sinf.force_disconnect = it.getPIntProp("persistent_connection", !force_disconnect) ? false : true;
 
@@ -357,13 +357,15 @@ void MBTCPMultiMaster::check_thread()
 			{
 				bool r = it->check();
 				mbinfo << myname << "(check): " << it->myname << " " << ( r ? "OK" : "FAIL" ) << endl;
+				cerr << "respond_init=" << it->respond_init << endl;
 
 				try
 				{
-					if( it->respond_id != DefaultObjectId && (force_out || r != it->respond) )
+					if( it->respond_id != DefaultObjectId && (force_out || !it->respond_init || r != it->respond) )
 					{
 						bool set = it->respond_invert ? !it->respond : it->respond;
 						shm->localSetValue(it->respond_it, it->respond_id, (set ? 1 : 0), getId());
+						it->respond_init = true;
 					}
 				}
 				catch( const Exception& ex )

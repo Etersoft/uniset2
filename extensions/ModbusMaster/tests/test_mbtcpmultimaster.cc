@@ -127,11 +127,16 @@ TEST_CASE("MBTCPMultiMaster: rotate channel", "[modbus][mbmaster][mbtcpmultimast
 	mbs1->disableExchange(true);
 	msleep(4000); // --mbtcp-timeout 3000 (см. run_test_mbtcmultipmaster.sh)
 	REQUIRE( ui->getValue(1003) == 10 );
+	REQUIRE( ui->getValue(12) == true );
+	REQUIRE( ui->getValue(13) == false );
 	mbs1->disableExchange(false);
 	mbs2->disableExchange(true);
 	msleep(4000); // --mbtcp-timeout 3000 (см. run_test_mbtcmultipmaster.sh)
 	REQUIRE( ui->getValue(1003) == 100 );
+	REQUIRE( ui->getValue(12) == false );
+
 	mbs2->disableExchange(false);
 	REQUIRE( ui->getValue(1003) == 100 );
+	REQUIRE( ui->getValue(13) == true );
 }
 // -----------------------------------------------------------------------------

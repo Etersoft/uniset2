@@ -263,6 +263,7 @@ class MBTCPMultiMaster:
 			UniSetTypes::ObjectId respond_id;
 			IOController::IOStateList::iterator respond_it;
 			bool respond_invert;
+			bool respond_init = { false };
 
 			inline bool operator < ( const MBSlaveInfo& mbs ) const
 			{
