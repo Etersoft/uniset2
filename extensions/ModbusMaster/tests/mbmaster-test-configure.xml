@@ -111,7 +111,7 @@
 			<item id="1027" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="41" mbfunc="0x10" vtype="F2" iotype="AO" name="TestWrite10_F2" textname="Тестовый регистр для 0x10"/>
 			<item id="1028" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="45" mbfunc="0x10" vtype="F4" iotype="AO" name="TestWrite10_F4" textname="Тестовый регистр для 0x10"/>
 -->			
-			<item id="1027" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="41" mbfunc="0x10" vtype="F2" iotype="AO" name="TestWrite1027_F2" precision="1" textname="F2: Тестовый регистр для 0x10"/>
+			<item id="1027" mb="2" mbtype="rtu" mbaddr="0x01" mbreg="41" mbfunc="0x10" vtype="F2" iotype="AO" name="TestWrite1027_F2" precision="1" textname="F2: Тестовый регистр для 0x10"/>
 			<item id="1028" mb="2" mbtype="rtu" mbaddr="0x01" mbreg="47" mbfunc="0x03" vtype="F2" iotype="DI" name="TestWrite1028_F2" textname="F2: Тестовый регистр для 0x10"/>
 
 			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
