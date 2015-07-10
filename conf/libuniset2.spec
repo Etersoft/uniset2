@@ -426,7 +426,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %endif
 
 %files extension-common-devel
-%_includedir/%oname/extensions/
+%_includedir/%oname/extensions/*.*
 %_libdir/libUniSet2Extensions.so
 %_libdir/libUniSet2MB*.so
 %_libdir/libUniSet2RT*.so
@@ -441,12 +441,12 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_pkgconfigdir/libUniSet2Network*.pc
 %_pkgconfigdir/libUniSet2UNet*.pc
 
-%exclude %_includedir/%oname/extensions/mysql
-%exclude %_includedir/%oname/extensions/sqlite
-%exclude %_includedir/%oname/extensions/pgsql
-%exclude %_includedir/%oname/extensions/logicproc
-%exclude %_includedir/%oname/extensions/io
-%exclude %_includedir/%oname/extensions/rrd
+#%exclude %_includedir/%oname/extensions/mysql
+#%exclude %_includedir/%oname/extensions/sqlite
+#%exclude %_includedir/%oname/extensions/pgsql
+#%exclude %_includedir/%oname/extensions/logicproc
+#%exclude %_includedir/%oname/extensions/io
+#%exclude %_includedir/%oname/extensions/rrd
 
 #%_pkgconfigdir/libUniSet2SMDBServer.pc
 #%_pkgconfigdir/libUniSet2*.pc
