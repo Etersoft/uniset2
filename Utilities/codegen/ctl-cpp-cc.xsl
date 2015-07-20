@@ -119,6 +119,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId sid, long val )
 {
+    if( _sid == UniSetTypes::DefaultObjectId )
+        return;
+        
 	<xsl:for-each select="//smap/item">
 		<xsl:if test="normalize-space(@vartype)='out'">
 		if( sid == <xsl:value-of select="@name"/> )
