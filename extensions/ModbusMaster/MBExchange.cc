@@ -125,6 +125,7 @@ MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId
 	vmonit(defaultMBaddr);
 
 	defaultMBinitOK = conf->getArgPInt("--" + prefix + "-default-mbinit-ok", it.getProp("default_mbinitOK"), 0);
+	maxQueryCount = conf->getArgPInt("--" + prefix + "-query-max-count", it.getProp("queryMaxCount"), ModbusRTU::MAXDATALEN);
 
 	vmonit(defaultMBinitOK);
 
@@ -241,6 +242,7 @@ void MBExchange::help_print( int argc, const char* const* argv )
 	cout << "--prefix-default-mbtype [rtu|rtu188|mtr]  - У датчиков которых не задан 'mbtype' использовать данный. По умолчанию: 'rtu'" << endl;
 	cout << "--prefix-default-mbadd addr     - У датчиков которых не задан 'mbaddr' использовать данный. По умолчанию: ''" << endl;
 	cout << "--prefix-default-mbinit-ok 0,1  - Флаг инициализации. 1 - не ждать первого обмена с устройством, а сохранить при старте в SM значение 'default'" << endl;
+	cout << "--prefix-query-max-count max    - Максимальное количество запрашиваемых за один раз региистров (При условии no-query-optimization=0). По умолчанию: " << ModbusRTU::MAXDATALEN << "." << endl;
 	cout << endl;
 	cout << " Logs: " << endl;
 	cout << "--prefix-log-...            - log control" << endl;
@@ -613,7 +615,7 @@ void MBExchange::rtuQueryOptimization( RTUDeviceMap& m )
 
 				beg->second->q_count++;
 
-				if( beg->second->q_count >= ModbusRTU::MAXDATALEN  )
+				if( beg->second->q_count >= maxQueryCount )
 					break;
 
 				id = it->second->id;
@@ -706,10 +708,10 @@ bool MBExchange::preInitRead( InitList::iterator& p )
 			   << " q_count=" << q_count
 			   << endl;
 
-		if( q_count > ModbusRTU::MAXDATALEN )
+		if( q_count > maxQueryCount /* ModbusRTU::MAXDATALEN */ )
 		{
 			mblog3 << myname << "(preInitRead): count(" << q_count
-				   << ") > MAXDATALEN(" << ModbusRTU::MAXDATALEN
+				   << ") > MAXDATALEN(" << maxQueryCount /* ModbusRTU::MAXDATALEN */
 				   << " ..ignore..."
 				   << endl;
 		}
@@ -951,10 +953,10 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			   << " mbval=" << p->mbval
 			   << endl;
 
-		if( p->q_count > ModbusRTU::MAXDATALEN )
+		if( p->q_count > maxQueryCount /* ModbusRTU::MAXDATALEN */ )
 		{
 			mblog3 << myname << "(pollRTU): count(" << p->q_count
-				   << ") > MAXDATALEN(" << ModbusRTU::MAXDATALEN
+				   << ") > MAXDATALEN(" << maxQueryCount /* ModbusRTU::MAXDATALEN */
 				   << " ..ignore..."
 				   << endl;
 		}

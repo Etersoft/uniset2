@@ -1,7 +1,7 @@
 %def_enable docs
 %def_enable mysql
 %def_enable sqlite
-%def_enable pgsql
+%def_disable pgsql
 %def_enable python
 %def_enable rrd
 %def_enable io
@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.1
-Release: alt10
+Release: alt11
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -456,6 +456,11 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Tue Jul 21 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt11
+- minor fixes in uniset2-codegen
+- ModbusMaster: add --prefix-query-max-count val - the maximum 
+  number of requested registers in one query
+
 * Fri Jul 03 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt10
 - fixed bug in ModbusMultiMaster (setbug #7596)
 - enable pgsql interface

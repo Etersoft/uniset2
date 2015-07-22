@@ -324,6 +324,7 @@ class MBExchange:
 		bool mbregFromID;
 		int polltime;    /*!< переодичность обновления данных, [мсек] */
 		timeout_t sleepPause_usec;
+		int maxQueryCount; /*!< максимальное количество регистров для одного запроса */
 
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;
