@@ -229,9 +229,9 @@ AC_ARG_ENABLE(tests, AC_HELP_STRING([--disable-tests], [disable tests build]),
 
 if test ${buildtests} = true; then
     AC_MSG_RESULT([yes])
-    AC_LANG_PUSH([C++])
-    AC_CHECK_HEADERS([catch.hpp],,exit)
-    AC_LANG_POP([C++])
+#    AC_LANG_PUSH([C++])
+#    AC_CHECK_HEADERS([catch.hpp],,exit)
+#    AC_LANG_POP([C++])
 
 	dnl Initialize test suite
 	AC_CONFIG_TESTDIR(testsuite)

@@ -1,7 +1,7 @@
 %def_enable docs
 %def_enable mysql
 %def_enable sqlite
-%def_disable pgsql
+%def_enable pgsql
 %def_enable python
 %def_enable rrd
 %def_enable io
