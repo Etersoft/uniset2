@@ -1,5 +1,6 @@
 #!/bin/sh
 
+PROG="${0##*/}"
 WATCH=/usr/bin/watch
 
 [ -z $WATCH_SEC ] && WATCH_SEC=5
@@ -23,24 +24,38 @@ print_usage()
     [ -n "$1" ] && exit "$1" || exit
 }
 
-
-[ -z "$1" ]  && print_usage 1
-
 #parse command line options
+TEMP=`getopt -n $PROG -o h,d,c:,s: -l help,dump,confile:,watch_sec: -- "$@"` || exit 1
+eval set -- "$TEMP"
+
 dump=
 confile=
-case "$1" in
-	-h|--help) print_usage 0;;
-	-s|--sec) shift; WATCH_SEC=$1; shift;;
-	-d|--dump) dump=1; shift;;
-	-c|--confile) shift; confile=$1; shift;;
-esac
-
-OID=$1
-shift
+while :; do
+    case "$1" in
+	-h|--help) print_usage 0
+	    ;;
+	-d|--dump)
+	    dump=1
+	    ;;
+	-s|--watch_sec)
+	    shift
+		WATCH_SEC="$1"
+	    ;;
+	-c|--confile)
+	    shift
+		confile="$1"
+	    ;;
+	--) shift; break
+	;;
+	*) "unrecognized option: $1"
+	exit 1
+	;;
+    esac
+    shift
+done
 
 [ -n "$confile" ] && confile="--confile $confile"
 
 
-[ -z "$dump" ] && $WATCH -n $WATCH_SEC uniset2-admin $confile --oinfo ${OID} $*
-[ -n "$dump" ] && uniset2-admin $confile --oinfo ${OID} $*
+[ -z "$dump" ] && $WATCH -n $WATCH_SEC uniset2-admin $confile --oinfo $*
+[ -n "$dump" ] && uniset2-admin $confile --oinfo $*
