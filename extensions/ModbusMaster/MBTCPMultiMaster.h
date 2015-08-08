@@ -42,7 +42,7 @@
          <item addr="0x02" respondSensor="RTU2_Respond_FS" timeout="2000" invert="0"/>
          </DeviceList>
          <GateList>
-            <item ip="" port="" respond_id="" priority=""/>
+			<item ip="" port="" respond_id="" priority="" force=""/>
             <item ip="" port="" respond_id="" priority="" respond_invert="1"/>
          <GateList>
     </MBMaster1>
@@ -65,6 +65,7 @@
       - \b respond - датчик связи по данному каналу (помимо обобщённого)
       - \b priority - приоритет канала (чем больше число, тем выше приоритет)
       - \b respond_invert - инвертировать датчик связи (DI)
+	  - \b force [1,0] - "1" - обновлять значение датчика связи в SM принудительно на каждом цикле проверки ("0" - только по изменению).
 
       \par Параметры запуска
 
@@ -265,6 +266,7 @@ class MBTCPMultiMaster:
 			IOController::IOStateList::iterator respond_it;
 			bool respond_invert;
 			bool respond_init = { false };
+			bool respond_force = { false }; // флаг означающий принудительно обновлять значение датчика связи на каждом цикле проверки
 
 			inline bool operator < ( const MBSlaveInfo& mbs ) const
 			{

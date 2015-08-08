@@ -95,6 +95,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		sinf.aftersend_pause = it1.getPIntProp("aftersend_pause", aftersend_pause);
 		sinf.sleepPause_usec = it1.getPIntProp("sleepPause_usec", sleepPause_usec);
 		sinf.respond_invert = it1.getPIntProp("invert", 0);
+		sinf.respond_force = it1.getPIntProp("force", 0);
 
 		sinf.force_disconnect = it.getPIntProp("persistent_connection", !force_disconnect) ? false : true;
 
@@ -264,9 +265,6 @@ void MBTCPMultiMaster::final_thread()
 
 bool MBTCPMultiMaster::MBSlaveInfo::check()
 {
-	if( use )
-		return true;
-
 	return mbtcp->checkConnection(ip, port, recv_timeout);
 }
 // -----------------------------------------------------------------------------
@@ -365,13 +363,16 @@ void MBTCPMultiMaster::check_thread()
 		{
 			try
 			{
+				if( it->use ) // игнорируем текущий mbtcp
+					continue;
+
 				bool r = it->check();
 				mbinfo << myname << "(check): " << it->myname << " " << ( r ? "OK" : "FAIL" ) << endl;
 				cerr << "respond_init=" << it->respond_init << endl;
 
 				try
 				{
-					if( it->respond_id != DefaultObjectId && (force_out || !it->respond_init || r != it->respond) )
+					if( it->respond_id != DefaultObjectId && (it->respond_force || !it->respond_init || r != it->respond) )
 					{
 						bool set = it->respond_invert ? !it->respond : it->respond;
 						shm->localSetValue(it->respond_it, it->respond_id, (set ? 1 : 0), getId());

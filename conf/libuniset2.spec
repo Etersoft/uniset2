@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.1
-Release: alt12
+Release: alt13
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -456,6 +456,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Sat Aug 08 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt13
+- (ModbusMultiMaster): minor fixes (add "force" for <GateList>)
+
 * Sat Aug 08 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt12
 - (Modbus): minor fixes in ModbusMultiMaster
 
