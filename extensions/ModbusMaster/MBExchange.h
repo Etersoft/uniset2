@@ -188,6 +188,7 @@ class MBExchange:
 			PassiveTimer resp_ptInit; // таймер для формирования задержки на инициализацию связи (задержка на выставление датчика связи после запуска)
 			bool resp_state;
 			bool resp_invert;
+			bool resp_force = { false };
 			std::atomic<unsigned int> numreply; // количество успешных запросов..
 			std::atomic<unsigned int> prev_numreply;
 

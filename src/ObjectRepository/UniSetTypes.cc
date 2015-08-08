@@ -366,6 +366,7 @@ std::list<UniSetTypes::ConsumerInfo> UniSetTypes::getObjectsList( const string& 
 			else
 			{
 				item.id = conf->getObjectID(s_id);
+
 				if( item.id == DefaultObjectId )
 					item.id = conf->getControllerID(s_id);
 			}
@@ -382,6 +383,7 @@ std::list<UniSetTypes::ConsumerInfo> UniSetTypes::getObjectsList( const string& 
 			else
 			{
 				item.id = conf->getObjectID(s_id);
+
 				if( item.id == DefaultObjectId )
 					item.id = conf->getControllerID(s_id);
 			}

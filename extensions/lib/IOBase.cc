@@ -255,7 +255,7 @@ void IOBase::processingFasAI( IOBase* it, float fval, const std::shared_ptr<SMIn
 	long val = lroundf(fval);
 
 	if( it->stype == UniversalIO::DI || it->stype == UniversalIO::DO )
-		val = (fval!=0 ? 1.0 : 0.0);
+		val = (fval != 0 ? 1.0 : 0.0);
 	else
 	{
 		if( it->rawdata )

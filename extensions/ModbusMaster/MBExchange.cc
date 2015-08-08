@@ -2728,6 +2728,7 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
 
 	d->second->resp_Delay.set(tout, false);
 	d->second->resp_invert = it.getIntProp("invert");
+	d->second->resp_force =  it.getIntProp("force");
 
 	int init_tout = it.getPIntProp("respondInitTimeout", tout);
 	d->second->resp_ptInit.setTiming(init_tout);
@@ -3001,7 +3002,9 @@ bool MBExchange::poll()
 
 		updateSM();
 		allInitOK = false;
-		return false;
+
+		if( !mb )
+			return false;
 	}
 
 	if( !allInitOK )
@@ -3119,7 +3122,7 @@ bool MBExchange::RTUDevice::checkRespond( std::shared_ptr<DebugStream>& mblog )
 		   << " ]"
 		   << endl;
 
-	return (prev != resp_state);
+	return (prev != resp_state || resp_force);
 }
 // -----------------------------------------------------------------------------
 void MBExchange::updateRespondSensors()

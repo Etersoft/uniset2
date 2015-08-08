@@ -112,7 +112,7 @@ TEST_CASE("UniSetTypes: getSInfoList", "[utypes][getsinfo]" )
 
 	CHECK( t1.size() == 5 );
 
-	vector<UniSetTypes::ParamSInfo> v(t1.begin(),t1.end());
+	vector<UniSetTypes::ParamSInfo> v(t1.begin(), t1.end());
 
 	REQUIRE( v[0].si.id == 141 );
 	REQUIRE( v[0].si.node == 1001 );
@@ -138,7 +138,7 @@ TEST_CASE("UniSetTypes: getObjectsList", "[utypes][getolist]" )
 
 	CHECK( t1.size() == 5 );
 
-	vector<UniSetTypes::ConsumerInfo> v(t1.begin(),t1.end());
+	vector<UniSetTypes::ConsumerInfo> v(t1.begin(), t1.end());
 
 	REQUIRE( v[0].id == 100 );
 	REQUIRE( v[0].node == 1001 );

@@ -238,7 +238,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		}
 
 		if( dlog->is_info() )
-			dlog->info() << "(query): input pending timeout " << endl;
+			dlog->info() << "(query): input pending timeout=" << timeout << endl;
 
 		if( force_disconnect )
 		{

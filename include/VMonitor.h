@@ -137,7 +137,7 @@ class VMonitor
 
 		static const std::string pretty_str( const std::string& name, const std::string* v, int width = NameWidth );
 		static const std::string pretty_str( const std::string& name, const std::string& v, int width = NameWidth );
-		
+
 	protected:
 
 	private:

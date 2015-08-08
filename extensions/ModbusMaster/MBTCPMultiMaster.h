@@ -38,7 +38,7 @@
       \code
     <MBMaster1 name="MBMaster1" gateway_iaddr="127.0.0.1" gateway_port="30000" polltime="200">
          <DeviceList>
-             <item addr="0x01" respondSensor="RTU1_Not_Respond_FS" timeout="2000" invert="1"/>
+			 <item addr="0x01" respondSensor="RTU1_Not_Respond_FS" force="0" timeout="2000" invert="1"/>
          <item addr="0x02" respondSensor="RTU2_Respond_FS" timeout="2000" invert="0"/>
          </DeviceList>
          <GateList>
@@ -53,6 +53,7 @@
       - \b timeout msec - таймаут, для определения отсутствия связи
       - \b invert - инвертировать логику. По умолчанию датчик выставляется в "1" при \b наличии связи.
       - \b respondSensor - идентификатор датчика связи (DI).
+	  - \b force [1,0] - "1" - обновлять значение датчика связи в SM принудительно на каждом цикле проверки ("0" - только по изменению).
       - \b modeSensor - идентификатор датчика режима работы (см. MBExchange::ExchangeMode).
       - \b ask_every_reg - 1 - опрашивать ВСЕ регистры подряд, не обращая внимания на timeout. По умолчанию - "0" Т.е. опрос устройства (на текущем шаге цикла опроса), прерывается на первом же регистре, при опросе которого возникнет timeout.
 
@@ -252,7 +253,7 @@ class MBTCPMultiMaster:
 				respond(false), respond_id(UniSetTypes::DefaultObjectId), respond_invert(false),
 				recv_timeout(200), aftersend_pause(0), sleepPause_usec(100),
 				force_disconnect(true),
-				myname(""), initOK(false), ignore(false) {}
+				myname(""), use(false), initOK(false), ignore(false) {}
 
 			std::string ip;
 			int port;
@@ -272,6 +273,10 @@ class MBTCPMultiMaster:
 
 			bool init( std::shared_ptr<DebugStream>& mblog );
 			bool check();
+			inline void setUse( bool st )
+			{
+				use = st;
+			}
 
 			int recv_timeout;
 			int aftersend_pause;
@@ -280,8 +285,9 @@ class MBTCPMultiMaster:
 
 			std::string myname;
 
-			bool initOK;
-			bool ignore; // игнорировать данное соединение (обычно флаг выставляется на время ignoreTimeout, если узел не отвечает, хотя связь есть.
+			bool use = { false }; // флаг используется ли в данный момент этот канал
+			bool initOK = { false };
+			bool ignore = { false }; // игнорировать данное соединение (обычно флаг выставляется на время ignoreTimeout, если узел не отвечает, хотя связь есть.
 			PassiveTimer ptIgnoreTimeout;
 
 			const std::string getShortInfo() const;

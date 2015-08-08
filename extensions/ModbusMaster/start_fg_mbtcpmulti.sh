@@ -8,11 +8,8 @@
 --mbtcp-set-prop-prefix \
 --mbtcp-filter-field rs \
 --mbtcp-filter-value 5 \
---mbtcp-gateway-iaddr server \
---mbtcp-gateway-port 2048 \
---mbtcp-recv-timeout 3000 \
+--mbtcp-recv-timeout 1000 \
 --mbtcp-timeout 2000 \
---mbtcp-force-disconnect 1 \
 --mbtcp-polltime 1000 \
 --mbtcp-force-out 1 \
 --mbtcp-log-add-levels any \

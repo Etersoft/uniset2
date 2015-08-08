@@ -105,12 +105,13 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		auto l = loga->create(sinf.myname);
 		sinf.mbtcp->setLog(l);
 
-		if( ic )
-			ic->logAgregator()->add(loga);
-
 		mblist.push_back(sinf);
 		mbinfo << myname << "(init): add slave channel " << sinf.myname << endl;
 	}
+
+	if( ic )
+		ic->logAgregator()->add(loga);
+
 
 	if( mblist.empty() )
 	{
@@ -190,6 +191,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 		// тогда выставляем ему признак игнорирования
 		if( mbi != mblist.rend() && reopen )
 		{
+			mbi->setUse(false);
 			mbi->ignore = true;
 			mbi->ptIgnoreTimeout.reset();
 			mbwarn << myname << "(initMB): set ignore=true for " << mbi->ip << ":" << mbi->port << endl;
@@ -203,15 +205,19 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 				if( !mbi->ignore  )
 				{
 					mb = mbi->mbtcp;
+					mbi->setUse(true);
 					return mbi->mbtcp;
 				}
 
 				if( mbi->ptIgnoreTimeout.checkTime() )
 				{
 					mbi->ignore = false;
+					mbi->setUse(true);
 					mb = mbi->mbtcp;
 					return mbi->mbtcp;
 				}
+
+				mbi->setUse(false);
 			}
 		}
 
@@ -236,6 +242,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 
 			mbi = it;
 			mb = mbi->mbtcp;
+			mbi->setUse(true);
 			return it->mbtcp;
 		}
 	}
@@ -257,7 +264,10 @@ void MBTCPMultiMaster::final_thread()
 
 bool MBTCPMultiMaster::MBSlaveInfo::check()
 {
-	return mbtcp->checkConnection(ip, port);
+	if( use )
+		return true;
+
+	return mbtcp->checkConnection(ip, port, recv_timeout);
 }
 // -----------------------------------------------------------------------------
 bool MBTCPMultiMaster::MBSlaveInfo::init( std::shared_ptr<DebugStream>& mblog )

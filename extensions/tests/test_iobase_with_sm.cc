@@ -490,7 +490,7 @@ TEST_CASE("[IOBase]: FasAI to DI", "[iobase][floatToDI]")
 	IOBase ib;
 	CHECK( init_iobase(&ib, "FasDI_S") );
 
-	float f=23.23;
+	float f = 23.23;
 
 	IOBase::processingFasAI(&ib, f, shm, true);
 

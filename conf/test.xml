@@ -83,8 +83,8 @@
 				<item addr="0x01" invert="0" respondSensor="RespondRTU_S" timeout="5000" modeSensor="MB1_Mode_AS"/>
 			</DeviceList>
 			<GateList>
-				<item ip="127.0.0.1" port="2048" recv_timeout="200" invert="1" respondSensor="MM1_Not_Respond_S"/>
-				<item ip="127.0.0.1" port="2049" recv_timeout="200" invert="1" respondSensor="MM2_Not_Respond_S"/>
+				<item ip="localhost" port="2048" recv_timeout="800" invert="1" respondSensor="MM1_Not_Respond_S"/>
+				<item ip="localhost" port="2049" recv_timeout="800" invert="1" respondSensor="MM2_Not_Respond_S"/>
 			</GateList>
 		</MBMultiMaster1>
 
