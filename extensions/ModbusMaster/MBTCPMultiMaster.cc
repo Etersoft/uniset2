@@ -368,7 +368,6 @@ void MBTCPMultiMaster::check_thread()
 
 				bool r = it->check();
 				mbinfo << myname << "(check): " << it->myname << " " << ( r ? "OK" : "FAIL" ) << endl;
-				cerr << "respond_init=" << it->respond_init << endl;
 
 				try
 				{

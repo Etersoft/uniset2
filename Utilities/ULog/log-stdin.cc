@@ -80,7 +80,7 @@ int main( int argc, char* argv[], char* envp[] )
 			if( r > 0 )
 			{
 				buf[r] = '\0';
-				(*(log.get())) << buf;
+				log->any() << buf;
 			}
 		}
 	}

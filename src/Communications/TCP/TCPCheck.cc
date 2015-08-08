@@ -60,6 +60,7 @@ void TCPCheck::check_thread()
 		ost::Thread::setException(ost::Thread::throwException);
 		UTCPStream t;
 		t.create(ip, port, true, tout_msec);
+		t.setKeepAliveParams( (tout_msec > 1000 ? tout_msec/1000 : 1) );
 		setResult(true);
 		t.disconnect();
 	}

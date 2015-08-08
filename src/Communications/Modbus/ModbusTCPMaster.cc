@@ -105,7 +105,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		if( dlog->is_info() )
 		{
 			dlog->info() << iaddr << "(ModbusTCPMaster::query): send tcp header(" << sizeof(mh) << "): ";
-			mbPrintMessage( *(dlog.get()), (ModbusByte*)(&mh), sizeof(mh));
+			mbPrintMessage( dlog->info(), (ModbusByte*)(&mh), sizeof(mh));
 			dlog->info() << endl;
 		}
 
@@ -177,7 +177,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 			if( dlog->is_info() )
 			{
 				dlog->info() << "(ModbusTCPMaster::query): recv tcp header(" << ret << "): ";
-				mbPrintMessage( *(dlog.get()), (ModbusByte*)(&rmh), sizeof(rmh));
+				mbPrintMessage( dlog->info(), (ModbusByte*)(&rmh), sizeof(rmh));
 				dlog->info(false) << endl;
 			}
 
@@ -306,6 +306,7 @@ bool ModbusTCPMaster::checkConnection( const std::string& ip, int port, int time
 		// Проверяем просто попыткой создать соединение..
 		UTCPStream t;
 		t.create(ip, port, true, timeout_msec);
+		t.setKeepAliveParams( (timeout_msec > 1000 ? timeout_msec/1000 : 1),1,1);
 		t.disconnect();
 		return true;
 	}
@@ -332,6 +333,7 @@ void ModbusTCPMaster::reconnect()
 		tcp = make_shared<UTCPStream>();
 		tcp->create(iaddr, port, true, 500);
 		tcp->setTimeout(replyTimeOut_ms);
+		tcp->setKeepAliveParams((replyTimeOut_ms > 1000 ? replyTimeOut_ms/1000 : 1));
 	}
 	catch( const std::exception& e )
 	{
@@ -385,6 +387,7 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
 		tcp = make_shared<UTCPStream>();
 		tcp->create(iaddr, port, true, 500);
 		tcp->setTimeout(replyTimeOut_ms);
+		tcp->setKeepAliveParams((replyTimeOut_ms > 1000 ? replyTimeOut_ms/1000 : 1));
 	}
 	catch( const std::exception& e )
 	{

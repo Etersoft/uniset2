@@ -91,7 +91,7 @@ int main( int argc, char* argv[], char* envp[] )
 					if( r > 0 )
 					{
 						buf[r] = '\0';
-						(*(zlog.get())) << buf;
+						zlog->any() << buf;
 					}
 				}
 

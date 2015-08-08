@@ -288,8 +288,8 @@ mbErrCode ModbusTCPServer::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPH
 	if( dlog->is_info() )
 	{
 		dlog->info() << "(ModbusTCPServer::tcp_processing): recv tcp header(" << len << "): ";
-		mbPrintMessage( *(dlog.get()), (ModbusByte*)(&mhead), sizeof(mhead));
-		(*(dlog.get()))(Debug::INFO) << endl;
+		mbPrintMessage( dlog->info(), (ModbusByte*)(&mhead), sizeof(mhead));
+		dlog->info() << endl;
 	}
 
 	// check header
@@ -331,8 +331,8 @@ mbErrCode ModbusTCPServer::pre_send_request( ModbusMessage& request )
 	if( dlog->is_info() )
 	{
 		dlog->info() << "(ModbusTCPServer::pre_send_request): send tcp header: ";
-		mbPrintMessage( *(dlog.get()), (ModbusByte*)(&curQueryHeader), sizeof(curQueryHeader));
-		(*(dlog.get()))(Debug::INFO) << endl;
+		mbPrintMessage( dlog->info(), (ModbusByte*)(&curQueryHeader), sizeof(curQueryHeader));
+		dlog->info() << endl;
 	}
 
 	tcp << curQueryHeader;
