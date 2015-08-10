@@ -337,7 +337,7 @@ int main(int argc, char** argv)
 	catch( const CORBA::SystemException& ex )
 	{
 		if( !quiet )
-			cerr << "поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
+			cerr << "поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
 	}
 	catch( const CORBA::Exception& )
 	{
@@ -348,7 +348,7 @@ int main(int argc, char** argv)
 	{
 		if( !quiet )
 		{
-			cerr << "поймали omniORB::fatalException:" << endl;
+			cerr << "поймали omniORB::fatalException: " << endl;
 			cerr << "  file: " << fe.file() << endl;
 			cerr << "  line: " << fe.line() << endl;
 			cerr << "  mesg: " << fe.errmsg() << endl;
@@ -488,6 +488,11 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 				if( !quiet )
 					cerr << setw(55) << ob  << "   <--- недоступен!!(CORBA::SystemException): " << ex.NP_minorString() << endl;
 			}
+			catch( const std::exception& ex )
+			{
+				if( !quiet )
+					cerr << "std::exception: " << ex.what() << endl;
+			}
 		}
 	}
 	catch( ORepFailed )
@@ -528,6 +533,12 @@ int omap()
 		if( !quiet )
 			cerr << " configuration init failed: " << ex << endl;
 
+		return 1;
+	}
+	catch( const std::exception& ex )
+	{
+		if( !quiet )
+			cerr << "std::exception: " << ex.what() << endl;
 		return 1;
 	}
 
@@ -583,6 +594,12 @@ int setValue( const string& args, UInterface& ui )
 			if( !quiet )
 				cerr << "(setValue): " << ex << endl;;
 
+			err = 1;
+		}
+		catch( const std::exception& ex )
+		{
+			if( !quiet )
+				cerr << "std::exception: " << ex.what() << endl;
 			err = 1;
 		}
 	}
@@ -645,6 +662,12 @@ int getValue( const string& args, UInterface& ui )
 
 			err = 1;
 		}
+		catch( const std::exception& ex )
+		{
+			if( !quiet )
+				cerr << "std::exception: " << ex.what() << endl;
+			err = 1;
+		}
 	}
 
 	return err;
@@ -687,6 +710,12 @@ int getCalibrate( const std::string& args, UInterface& ui )
 
 			err = 1;
 		}
+		catch( const std::exception& ex )
+		{
+			if( !quiet )
+				cerr << "std::exception: " << ex.what() << endl;
+			err = 1;
+		}
 	}
 
 	return err;
@@ -723,6 +752,12 @@ int getRawValue( const std::string& args, UInterface& ui )
 			if( !quiet )
 				cerr << "(getRawValue): " << ex << endl;;
 
+			err = 1;
+		}
+		catch( const std::exception& ex )
+		{
+			if( !quiet )
+				cerr << "std::exception: " << ex.what() << endl;
 			err = 1;
 		}
 	}
@@ -763,6 +798,41 @@ int getChangedTime( const std::string& args, UInterface& ui )
 
 			err = 1;
 		}
+		catch( const CORBA::SystemException& ex )
+		{
+			if( !quiet )
+				cerr << "CORBA::SystemException: " << ex.NP_minorString() << endl;
+			err = 1;
+		}
+		catch( const CORBA::Exception& )
+		{
+			if( !quiet )
+				cerr << "CORBA::Exception." << endl;
+			err = 1;
+		}
+		catch( const omniORB::fatalException& fe )
+		{
+			if( !quiet )
+			{
+				cerr << "omniORB::fatalException: " << endl;
+				cerr << "  file: " << fe.file() << endl;
+				cerr << "  line: " << fe.line() << endl;
+				cerr << "  mesg: " << fe.errmsg() << endl;
+			}
+			err = 1;
+		}
+		catch( const std::exception& ex )
+		{
+			if( !quiet )
+				cerr << "std::exception: " << ex.what() << endl;
+			err = 1;
+		}
+		catch(...)
+		{
+			if( !quiet )
+				cerr << "Unknown exception.." << endl;
+			err = 1;
+		}		
 	}
 
 	return err;
@@ -868,9 +938,40 @@ int oinfo( const string& args, UInterface& ui )
 		}
 		catch( const Exception& ex )
 		{
-			cout << "ID='" << it.id << "' ERROR: " << ex << endl;
+			if( !quiet )
+				cout << "ID='" << it.id << "' ERROR: " << ex << endl;
 		}
-
+		catch( const CORBA::SystemException& ex )
+		{
+			if( !quiet )
+				cerr << "CORBA::SystemException: " << ex.NP_minorString() << endl;
+		}
+		catch( const CORBA::Exception& )
+		{
+			if( !quiet )
+				cerr << "CORBA::Exception." << endl;
+		}
+		catch( const omniORB::fatalException& fe )
+		{
+			if( !quiet )
+			{
+				cerr << "omniORB::fatalException:" << endl;
+				cerr << "  file: " << fe.file() << endl;
+				cerr << "  line: " << fe.line() << endl;
+				cerr << "  mesg: " << fe.errmsg() << endl;
+			}
+		}
+		catch( const std::exception& ex )
+		{
+			if( !quiet )
+				cerr << "std::exception: " << ex.what() << endl;
+		}
+		catch(...)
+		{
+			if( !quiet )
+				cerr << "Unknown exception.." << endl;
+		}
+	        
 		cout << endl << endl;
 	}
 
