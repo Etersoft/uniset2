@@ -32,7 +32,7 @@
       в которой указываются настроечные параметры по умолчанию.
       Пример:
       \code
-    <MBMaster1 name="MBMaster1" gateway_iaddr="127.0.0.1" gateway_port="30000" polltime="200">
+    <MBMaster1 name="MBMaster1" gateway_iaddr="127.0.0.1" gateway_port="30000" polltime="200" exchangeModeID="...">
          <DeviceList>
              <item addr="0x01" respondSensor="RTU1_Not_Respond_FS" timeout="2000" invert="1"/>
          <item addr="0x02" respondSensor="RTU2_Respond_FS" timeout="2000" invert="0"/>
@@ -46,7 +46,7 @@
       - \b invert - инвертировать логику. По умолчанию датчик выставляется в "1" при \b наличии связи.
       - \b respondSensor - идентификатор датчика связи.
 	  - \b respondInitTimeout - msec, время на инициализацию связи после запуска процесса. Т.е. только после этого времени будет выставлен(обновлён) датчик наличия связи. По умолчанию время равно timeout.
-      - \b modeSensor - идентификатор датчика режима работы (см. MBExchange::ExchangeMode).
+      - \b exchangeModeID - идентификатор датчика режима работы (см. MBExchange::ExchangeMode).
       - \b ask_every_reg - 1 - опрашивать ВСЕ регистры подряд, не обращая внимания на timeout. По умолчанию - "0" Т.е. опрос устройства (на текущем шаге цикла опроса), прерывается на первом же регистре, при опросе которого возникнет timeout.
 
       \par Параметры запуска
@@ -177,7 +177,7 @@
     - \b emSkipExchnage - отключить обмен (при этом данные "из SM" обновляются).
 
     Режимы переключаются при помощи датчика, который можно задать либо аргументом командной строки
-    \b --prefix-exchange-mode-id либо в конф. файле параметром \b echangeModeID="". Константы определяющие режимы объявлены в MBTCPMaster::ExchangeMode.
+    \b --prefix-exchange-mode-id либо в конф. файле параметром \b exchangeModeID="". Константы определяющие режимы объявлены в MBTCPMaster::ExchangeMode.
 
 */
 // -----------------------------------------------------------------------------
