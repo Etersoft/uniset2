@@ -941,6 +941,9 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		return false;
 	}
 
+	if( p->pollfactor>1 && ncycle%p->pollfactor!=0 )
+		return false;
+
 	if( mblog->is_level3() )
 	{
 		mblog3 << myname << "(pollRTU): poll "
@@ -951,6 +954,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			   << " mb_initOK=" << p->mb_initOK
 			   << " sm_initOK=" << p->sm_initOK
 			   << " mbval=" << p->mbval
+			   << " pollfactor=" << p->pollfactor
 			   << endl;
 
 		if( p->q_count > maxQueryCount /* ModbusRTU::MAXDATALEN */ )
@@ -2176,6 +2180,8 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML::iterator& it,  MBExchange::RTU
 {
 	r->dev = dev;
 	r->mbval = IOBase::initIntProp(it, "default", prop_prefix, false);
+	r->pollfactor = IOBase::initIntProp(it, "pollfactor", prop_prefix, false,0);
+
 
 	if( dev->dtype == MBExchange::dtRTU )
 	{
@@ -3013,6 +3019,7 @@ bool MBExchange::poll()
 	if( !checkProcActive() )
 		return false;
 
+	ncycle++;
 	bool allNotRespond = true;
 
 	for( auto it1 = rmap.begin(); it1 != rmap.end(); ++it1 )

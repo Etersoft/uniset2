@@ -151,6 +151,11 @@ class MBExchange:
 			// Флаг sm_init означает, что писать в устройство нельзя, т.к. значение в "карте регистров"
 			// ещё не инициализировано из SM
 			bool sm_initOK;    /*!< инициализировалось ли значение из SM */
+
+			/*! приоритет опроса, 0,1 - высший,
+			 * 1...n - задаёт "часоту" опроса. Т.е. каждые 1...n циклов
+			*/
+			int pollfactor = { 0 };
 		};
 
 		friend std::ostream& operator<<( std::ostream& os, RegInfo& r );
@@ -378,6 +383,8 @@ class MBExchange:
 		const std::shared_ptr<SharedMemory> ic;
 
 		VMonitor vmon;
+
+		unsigned long ncycle = { 0 }; /*!< текущий номер цикла опроса */
 
 	private:
 		MBExchange();

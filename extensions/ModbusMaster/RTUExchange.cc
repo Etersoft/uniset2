@@ -200,6 +200,7 @@ bool RTUExchange::poll()
 	if( !checkProcActive() )
 		return false;
 
+	ncycle++;
 	bool allNotRespond = true;
 	ComPort::Speed s = mbrtu->getSpeed();
 
