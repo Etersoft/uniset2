@@ -467,13 +467,13 @@ const std::string UNetSender::getShortInfo() const
 	s << setw(15) << std::right << getAddress() << ":" << std::left << setw(6) << getPort()
 	  << " lastpacknum=" << packetnum
 	  << " lastcrc=" << setw(6) << lastcrc
-	  << " items=" << maxItem
+	  << " items=" << maxItem << " maxAData=" << getADataSize() << " maxDData=" << getDDataSize()
 	  << endl
-	  << "\t   packs: [sendfactor]=count: "
+	  << "\t   packs([sendfactor]=num): "
 	  << endl;
 
 	for( auto i = mypacks.begin(); i != mypacks.end(); ++i )
-		s << "      \t\t[" << i->first << "]=" << i->second.size() << endl;
+		s << "        \t\t[" << i->first << "]=" << i->second.size() << endl;
 
 	return std::move(s.str());
 }

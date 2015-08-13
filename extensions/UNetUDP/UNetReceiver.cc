@@ -668,8 +668,9 @@ const std::string UNetReceiver::getShortInfo() const
 	ostringstream s;
 
 	s << setw(15) << std::right << getAddress() << ":" << std::left << setw(6) << getPort()
-	  << ( isLockUpdate() ? "PASSIVE" : "ACTIVE" )
-	  << " recvOK=" << isRecvOK()
+	  << "[ " << setw(7) << ( isLockUpdate() ? "PASSIVE" : "ACTIVE" ) << " ]"
+	  << "    recvOK=" << isRecvOK()
+	  << " receivepack=" << rnum
 	  << " lostPackets=" << setw(6) << getLostPacketsNum()
 	  << endl
 	  << "\t["

@@ -159,7 +159,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 			}
 
 			unetinfo << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
-			sender = make_shared<UNetSender>(h, p, shm, s_field, s_fvalue);
+			sender = make_shared<UNetSender>(h, p, shm, s_field, s_fvalue, prefix);
 			sender->setSendPause(sendpause);
 			loga->add(sender->getLog());
 
@@ -169,7 +169,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 				if( !h2.empty() )
 				{
 					unetinfo << myname << "(init): init sender2.. my node " << n_it.getProp("name") << endl;
-					sender2 = make_shared<UNetSender>(h2, p2, shm, s_field, s_fvalue);
+					sender2 = make_shared<UNetSender>(h2, p2, shm, s_field, s_fvalue, prefix);
 					sender2->setSendPause(sendpause);
 					loga->add(sender2->getLog());
 				}
@@ -908,8 +908,8 @@ UniSetTypes::SimpleInfo* UNetExchange::getInfo()
 	for( const auto& r : recvlist )
 	{
 		inf << "[ " << endl;
-		inf << "  chan1: " << ( r.r1 ? r.r1->getShortInfo() : "disable" ) << endl;
-		inf << "  chan2: " << ( r.r2 ? r.r2->getShortInfo() : "disable" ) << endl;
+		inf << "  chan1: " << ( r.r1 ? r.r1->getShortInfo() : "[ DISABLED ]" ) << endl;
+		inf << "  chan2: " << ( r.r2 ? r.r2->getShortInfo() : "[ DISABLED ]" ) << endl;
 		inf << "]" << endl;
 	}
 
@@ -917,8 +917,8 @@ UniSetTypes::SimpleInfo* UNetExchange::getInfo()
 
 	inf << "Senders: " << endl;
 	inf << "[ " << endl;
-	inf << "  chan1: " << ( sender ? sender->getShortInfo() : "disable" ) << endl;
-	inf << "  chan2: " << ( sender2 ? sender2->getShortInfo() : "disable" ) << endl;
+	inf << "  chan1: " << ( sender ? sender->getShortInfo() : "[ DISABLED ]" ) << endl;
+	inf << "  chan2: " << ( sender2 ? sender2->getShortInfo() : "[ DISABLED ]" ) << endl;
 	inf << "]" << endl;
 	inf << endl;
 
