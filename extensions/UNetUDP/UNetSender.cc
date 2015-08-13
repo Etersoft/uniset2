@@ -244,7 +244,6 @@ void UNetSender::real_send(UniSetUDP::UDPMessage& mypack)
 
 #endif
 
-
 	if( packetnum > UniSetUDP::MaxPacketNum )
 		packetnum = 1;
 
@@ -453,7 +452,7 @@ void UNetSender::askSensors( UniversalIO::UIOCommand cmd )
 		shm->askSensor(it.id, cmd);
 }
 // -----------------------------------------------------------------------------
-int UNetSender::getDataPackCount()
+int UNetSender::getDataPackCount() const
 {
 	return mypacks.size();
 }

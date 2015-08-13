@@ -306,7 +306,7 @@ void UNetReceiver::real_update()
 		initACache(p, !a_cache_init_ok);
 
 		// Обработка дискретных
-		ItemVecInfo& d_iv = d_icache_map[p.getDataID()];
+		CacheInfo& d_iv = d_icache_map[p.getDataID()];
 
 		for( size_t i = 0; i < p.dcount; i++ )
 		{
@@ -315,7 +315,7 @@ void UNetReceiver::real_update()
 				long id = p.dID(i);
 				bool val = p.dValue(i);
 
-				ItemInfo& ii(d_iv.cache[i]);
+				CacheItem& ii(d_iv.cache[i]);
 
 				if( ii.id != id )
 				{
@@ -345,7 +345,7 @@ void UNetReceiver::real_update()
 		}
 
 		// Обработка аналоговых
-		ItemVecInfo& a_iv = a_icache_map[p.getDataID()];
+		CacheInfo& a_iv = a_icache_map[p.getDataID()];
 
 		for( size_t i = 0; i < p.acount; i++ )
 		{
@@ -353,7 +353,7 @@ void UNetReceiver::real_update()
 			{
 				UniSetUDP::UDPAData& d = p.a_dat[i];
 
-				ItemInfo& ii(a_iv.cache[i]);
+				CacheItem& ii(a_iv.cache[i]);
 
 				if( ii.id != d.id )
 				{
@@ -546,7 +546,7 @@ void UNetReceiver::initIterators()
 {
 	for( auto mit = d_icache_map.begin(); mit != d_icache_map.end(); ++mit )
 	{
-		ItemVec& d_icache(mit->second.cache);
+		CacheList& d_icache(mit->second.cache);
 
 		for( auto && it : d_icache )
 			shm->initIterator(it.ioit);
@@ -554,7 +554,7 @@ void UNetReceiver::initIterators()
 
 	for( auto mit = a_icache_map.begin(); mit != a_icache_map.end(); ++mit )
 	{
-		ItemVec& a_icache(mit->second.cache);
+		CacheList& a_icache(mit->second.cache);
 
 		for( auto && it : a_icache )
 			shm->initIterator(it.ioit);
@@ -563,7 +563,7 @@ void UNetReceiver::initIterators()
 // -----------------------------------------------------------------------------
 void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 {
-	ItemVecInfo& d_info(d_icache_map[pack.getDataID()]);
+	CacheInfo& d_info(d_icache_map[pack.getDataID()]);
 
 	if( !force && pack.dcount == d_info.cache.size() )
 		return;
@@ -575,7 +575,7 @@ void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 
 		for( ; it != d_icache_map.end(); ++it )
 		{
-			ItemVecInfo& d_info(it->second);
+			CacheInfo& d_info(it->second);
 			d_cache_init_ok = d_cache_init_ok && d_info.cache_init_ok;
 
 			if(d_cache_init_ok == false)
@@ -595,7 +595,7 @@ void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 
 	for( size_t i = 0; i < sz; i++ )
 	{
-		ItemInfo& d(d_info.cache[i]);
+		CacheItem& d(d_info.cache[i]);
 
 		if( d.id != pack.d_id[i] )
 		{
@@ -608,7 +608,7 @@ void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 // -----------------------------------------------------------------------------
 void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
 {
-	ItemVecInfo& a_info(a_icache_map[pack.getDataID()]);
+	CacheInfo& a_info(a_icache_map[pack.getDataID()]);
 
 	if( !force && pack.acount == a_info.cache.size() )
 		return;
@@ -620,7 +620,7 @@ void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
 
 		for( ; it != a_icache_map.end(); ++it )
 		{
-			ItemVecInfo& a_info(it->second);
+			CacheInfo& a_info(it->second);
 			a_cache_init_ok = a_cache_init_ok && a_info.cache_init_ok;
 
 			if(a_cache_init_ok == false)
@@ -640,7 +640,7 @@ void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
 
 	for( size_t i = 0; i < sz; i++ )
 	{
-		ItemInfo& d(a_info.cache[i]);
+		CacheItem& d(a_info.cache[i]);
 
 		if( d.id != pack.a_dat[i].id )
 		{

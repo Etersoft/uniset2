@@ -214,29 +214,29 @@ class UNetReceiver:
 		Trigger trTimeout;
 		UniSetTypes::uniset_rwmutex tmMutex;
 
-		struct ItemInfo
+		struct CacheItem
 		{
 			long id;
 			IOController::IOStateList::iterator ioit;
 			UniversalIO::IOType iotype;
 
-			ItemInfo():
+			CacheItem():
 				id(UniSetTypes::DefaultObjectId), iotype(UniversalIO::UnknownIOType) {}
 		};
 
-		typedef std::vector<ItemInfo> ItemVec;
-		struct ItemVecInfo
+		typedef std::vector<CacheItem> CacheList;
+		struct CacheInfo
 		{
-			ItemVecInfo():
+			CacheInfo():
 				cache_init_ok(false)
 			{
 			}
 			bool cache_init_ok;
-			ItemVec cache;
+			CacheList cache;
 		};
-		typedef std::unordered_map<long, ItemVecInfo> ItemVecInfoMap;
-		ItemVecInfoMap d_icache_map;     /*!< кэш итераторов для булевых */
-		ItemVecInfoMap a_icache_map;     /*!< кэш итераторов для аналоговых */
+		typedef std::unordered_map<long, CacheInfo> CacheMap;
+		CacheMap d_icache_map;     /*!< кэш итераторов для булевых */
+		CacheMap a_icache_map;     /*!< кэш итераторов для аналоговых */
 
 		bool d_cache_init_ok;
 		bool a_cache_init_ok;

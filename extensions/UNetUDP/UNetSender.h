@@ -17,7 +17,7 @@
 /*
  *    Распределение датчиков по пакетам
  *    =========================================================================
- *	  Все пересылаемые данные разбиваются в группы по частоте посылки("sendfactor").
+ *	  Все пересылаемые данные разбиваются на группы по частоте посылки("sendfactor").
  *    Частота посылки кратна sendpause, задаётся для каждого датчика, при помощи свойства prefix_sendfactor.
  *    Внутри каждой группы пакеты набираются по мере "заполнения".
  *
@@ -64,7 +64,7 @@ class UNetSender
 
 		typedef std::vector<UItem> DMap;
 
-		int getDataPackCount();
+		int getDataPackCount() const;
 
 		void start();
 		void stop();
@@ -112,11 +112,11 @@ class UNetSender
 			return port;
 		}
 
-		inline size_t getADataSize()
+		inline size_t getADataSize() const
 		{
 			return maxAData;
 		}
-		inline size_t getDDataSize()
+		inline size_t getDDataSize() const
 		{
 			return maxDData;
 		}
@@ -150,7 +150,6 @@ class UNetSender
 
 		UniSetTypes::uniset_rwmutex pack_mutex;
 
-		// int - sendfactor
 		typedef std::unordered_map<sendfactor_t, std::vector<UniSetUDP::UDPMessage>> Packs;
 
 		Packs mypacks;

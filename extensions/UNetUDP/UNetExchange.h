@@ -30,7 +30,7 @@
         - \ref pgUNetUDP_Common
         - \ref pgUNetUDP_Conf
         - \ref pgUNetUDP_Reserv
-		- \ref pgUNetUDP_SendFactor
+        - \ref pgUNetUDP_SendFactor
 
     \section pgUNetUDP_Common Общее описание
         Обмен построен  на основе протокола UDP.
