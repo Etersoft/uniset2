@@ -240,8 +240,12 @@ int main(int argc, char* argv[])
 
 						if( sz == 0 )
 						{
-							cerr << "(recv): FAILED header ret=" << ret
-								 << " sizeof=" << sz << endl;
+							if( pack.magic != UniSetUDP::UNETUDP_MAGICNUM )
+								cerr << "(recv): BAD PROTOCOL VERSION! [ need version '" << UniSetUDP::UNETUDP_MAGICNUM << "']" << endl;
+							else
+								cerr << "(recv): FAILED header ret=" << ret
+									 << " sizeof=" << sz << endl;
+
 							continue;
 						}
 

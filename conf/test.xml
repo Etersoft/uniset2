@@ -212,7 +212,7 @@
 			<item id="60" iotype="DI" name="Input60_S" priority="Medium" textname="Команда 61" iofront="10"/>
 			<item id="7" iotype="DO" name="DO_C" priority="Medium" textname="Digital output"/>
 			<item id="8" iotype="DO" name="DO1_C" priority="Medium" textname="Digital output"/>
-			<item default="1000" id="9" iotype="AO" name="AO_AS" precision="2" priority="Medium" rs="2" rs_channel="1" rs_jack="j1" rs_mbaddr="0x01" rs_mbfunc="0x06" rs_mbreg="0x02" rs_mbtype="rtu188" textname="Analog output"/>
+			<item default="1000" id="9" iotype="AO" name="AO_AS" precision="2" priority="Medium" unet_sendfactor="2" rs="2" rs_channel="1" rs_jack="j1" rs_mbaddr="0x01" rs_mbfunc="0x06" rs_mbreg="0x02" rs_mbtype="rtu188" textname="Analog output"/>
 			<item default="378" id="10" iotype="AI" mbaddr="0x01" mbfunc="0x04" mbreg="0x01" mbtype="rtu" name="AI_AS" precision="45" priority="Medium" rs="1" textname="Analog input" vtype="F2">
 				<consumers>
 					<consumer cfilter="test1" name="TestProc" type="objects"/>

@@ -1,6 +1,5 @@
 #include <sstream>
 #include <iomanip>
-#include <iomanip>
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UNetReceiver.h"
@@ -39,8 +38,6 @@ UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port,
 	rnum(0),
 	maxProcessingCount(100),
 	lockUpdate(false),
-	d_icache(UniSetUDP::MaxDCount),
-	a_icache(UniSetUDP::MaxACount),
 	d_cache_init_ok(false),
 	a_cache_init_ok(false)
 {
@@ -52,6 +49,9 @@ UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port,
 
 	unetlog = make_shared<DebugStream>();
 	unetlog->setLogName(myname);
+
+	auto conf = uniset_conf();
+	conf->initLogStream(unetlog, myname);
 
 	ost::Thread::setException(ost::Thread::throwException);
 
@@ -306,17 +306,16 @@ void UNetReceiver::real_update()
 		initACache(p, !a_cache_init_ok);
 
 		// Обработка дискретных
-		size_t nbit = 0;
+		ItemVecInfo& d_iv = d_icache_map[p.getDataID()];
 
-		for( size_t i = 0; i < p.dcount; i++, nbit++ )
+		for( size_t i = 0; i < p.dcount; i++ )
 		{
 			try
 			{
-
 				long id = p.dID(i);
 				bool val = p.dValue(i);
 
-				ItemInfo& ii(d_icache[i]);
+				ItemInfo& ii(d_iv.cache[i]);
 
 				if( ii.id != id )
 				{
@@ -335,7 +334,7 @@ void UNetReceiver::real_update()
 
 				shm->localSetValue(ii.ioit, id, val, shm->ID());
 			}
-			catch( UniSetTypes::Exception& ex)
+			catch( const UniSetTypes::Exception& ex)
 			{
 				unetcrit << myname << "(update): " << ex << std::endl;
 			}
@@ -346,12 +345,15 @@ void UNetReceiver::real_update()
 		}
 
 		// Обработка аналоговых
+		ItemVecInfo& a_iv = a_icache_map[p.getDataID()];
+
 		for( size_t i = 0; i < p.acount; i++ )
 		{
 			try
 			{
 				UniSetUDP::UDPAData& d = p.a_dat[i];
-				ItemInfo& ii(a_icache[i]);
+
+				ItemInfo& ii(a_iv.cache[i]);
 
 				if( ii.id != d.id )
 				{
@@ -370,7 +372,7 @@ void UNetReceiver::real_update()
 
 				shm->localSetValue(ii.ioit, d.id, d.val, shm->ID());
 			}
-			catch( UniSetTypes::Exception& ex)
+			catch( const UniSetTypes::Exception& ex)
 			{
 				unetcrit << myname << "(update): " << ex << std::endl;
 			}
@@ -542,28 +544,58 @@ bool UNetReceiver::recv()
 // -----------------------------------------------------------------------------
 void UNetReceiver::initIterators()
 {
-	for( auto && it : d_icache )
-		shm->initIterator(it.ioit);
+	for( auto mit = d_icache_map.begin(); mit != d_icache_map.end(); ++mit )
+	{
+		ItemVec& d_icache(mit->second.cache);
 
-	for( auto && it : a_icache )
-		shm->initIterator(it.ioit);
+		for( auto && it : d_icache )
+			shm->initIterator(it.ioit);
+	}
+
+	for( auto mit = a_icache_map.begin(); mit != a_icache_map.end(); ++mit )
+	{
+		ItemVec& a_icache(mit->second.cache);
+
+		for( auto && it : a_icache )
+			shm->initIterator(it.ioit);
+	}
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 {
-	if( !force && pack.dcount == d_icache.size() )
+	ItemVecInfo& d_info(d_icache_map[pack.getDataID()]);
+
+	if( !force && pack.dcount == d_info.cache.size() )
 		return;
 
-	unetinfo << myname << ": init icache.." << endl;
-	d_cache_init_ok = true;
+	if( d_info.cache_init_ok && pack.dcount == d_info.cache.size() )
+	{
+		d_cache_init_ok = true;
+		auto it = d_icache_map.begin();
 
-	d_icache.resize(pack.dcount);
+		for( ; it != d_icache_map.end(); ++it )
+		{
+			ItemVecInfo& d_info(it->second);
+			d_cache_init_ok = d_cache_init_ok && d_info.cache_init_ok;
 
+			if(d_cache_init_ok == false)
+				break;
+		}
+
+		return;
+	}
+
+	unetinfo << myname << ": init dcache for " << pack.getDataID() << endl;
+
+	d_info.cache_init_ok = true;
+	d_info.cache.resize(pack.dcount);
+
+	size_t sz = d_info.cache.size();
 	auto conf = uniset_conf();
 
-	for( size_t i = 0; i < d_icache.size(); i++ )
+	for( size_t i = 0; i < sz; i++ )
 	{
-		ItemInfo& d(d_icache[i]);
+		ItemInfo& d(d_info.cache[i]);
 
 		if( d.id != pack.d_id[i] )
 		{
@@ -576,19 +608,39 @@ void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 // -----------------------------------------------------------------------------
 void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
 {
-	if( !force && pack.acount == a_icache.size() )
+	ItemVecInfo& a_info(a_icache_map[pack.getDataID()]);
+
+	if( !force && pack.acount == a_info.cache.size() )
 		return;
 
-	unetinfo << myname << ": init icache.." << endl;
-	a_cache_init_ok = true;
+	if( a_info.cache_init_ok && pack.acount == a_info.cache.size() )
+	{
+		a_cache_init_ok = true;
+		auto it = a_icache_map.begin();
 
-	a_icache.resize(pack.acount);
+		for( ; it != a_icache_map.end(); ++it )
+		{
+			ItemVecInfo& a_info(it->second);
+			a_cache_init_ok = a_cache_init_ok && a_info.cache_init_ok;
 
+			if(a_cache_init_ok == false)
+				break;
+		}
+
+		return;
+	}
+
+	unetinfo << myname << ": init icache for " << pack.getDataID() << endl;
+	a_info.cache_init_ok = true;
 	auto conf = uniset_conf();
 
-	for( size_t i = 0; i < a_icache.size(); i++ )
+	a_info.cache.resize(pack.acount);
+
+	size_t sz = a_info.cache.size();
+
+	for( size_t i = 0; i < sz; i++ )
 	{
-		ItemInfo& d(a_icache[i]);
+		ItemInfo& d(a_info.cache[i]);
 
 		if( d.id != pack.a_dat[i].id )
 		{

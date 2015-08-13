@@ -187,7 +187,7 @@ bool UDPMessage::setDData( size_t index, bool val )
 	return true;
 }
 // -----------------------------------------------------------------------------
-long UDPMessage::dID( size_t index )
+long UDPMessage::dID( size_t index ) const
 {
 	if( index >= MaxDCount )
 		return UniSetTypes::DefaultObjectId;
@@ -195,7 +195,7 @@ long UDPMessage::dID( size_t index )
 	return d_id[index];
 }
 // -----------------------------------------------------------------------------
-bool UDPMessage::dValue( size_t index )
+bool UDPMessage::dValue( size_t index ) const
 {
 	if( index >= MaxDCount )
 		return UniSetTypes::DefaultObjectId;
@@ -235,19 +235,19 @@ size_t UDPMessage::transport_msg( UDPPacket& p )
 	return i;
 }
 // -----------------------------------------------------------------------------
-long UDPMessage::getDataID()
+long UDPMessage::getDataID() const
 {
-    // в качестве идентификатора берётся ID первого датчика в данных
-    // приоритет имеет аналоговые датчики
+	// в качестве идентификатора берётся ID первого датчика в данных
+	// приоритет имеет аналоговые датчики
 
-    if( acount > 0 )
-        return a_dat[0].id;
+	if( acount > 0 )
+		return a_dat[0].id;
 
-    if( dcount > 0 )
-        return d_id[0];
+	if( dcount > 0 )
+		return d_id[0];
 
-    // если нет данных(?) просто возвращаем номер пакета
-    return num;
+	// если нет данных(?) просто возвращаем номер пакета
+	return num;
 }
 // -----------------------------------------------------------------------------
 UDPMessage::UDPMessage( UDPPacket& p )

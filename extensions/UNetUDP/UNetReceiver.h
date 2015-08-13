@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <queue>
+#include <unordered_map>
 #include <cc++/socket.h>
 #include <sigc++/sigc++.h>
 #include "UniSetObject_LT.h"
@@ -224,8 +225,18 @@ class UNetReceiver:
 		};
 
 		typedef std::vector<ItemInfo> ItemVec;
-		ItemVec d_icache;    /*!< кэш итераторов для булевых */
-		ItemVec a_icache;    /*!< кэш итераторов для аналоговых */
+		struct ItemVecInfo
+		{
+			ItemVecInfo():
+				cache_init_ok(false)
+			{
+			}
+			bool cache_init_ok;
+			ItemVec cache;
+		};
+		typedef std::unordered_map<long, ItemVecInfo> ItemVecInfoMap;
+		ItemVecInfoMap d_icache_map;     /*!< кэш итераторов для булевых */
+		ItemVecInfoMap a_icache_map;     /*!< кэш итераторов для аналоговых */
 
 		bool d_cache_init_ok;
 		bool a_cache_init_ok;

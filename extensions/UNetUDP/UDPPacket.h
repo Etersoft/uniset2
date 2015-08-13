@@ -19,7 +19,7 @@ namespace UniSetUDP
 	*/
 
 
-	const unsigned int UNETUDP_MAGICNUM = 0xfb07ee55; // идентификатор протокола
+	const unsigned int UNETUDP_MAGICNUM = 0x1337A1D; // идентификатор протокола
 
 	struct UDPHeader
 	{
@@ -78,39 +78,40 @@ namespace UniSetUDP
 
 		size_t addDData( long id, bool val );
 		bool setDData( size_t index, bool val );
-		long dID( size_t index );
-		bool dValue( size_t index );
+		long dID( size_t index ) const;
+		bool dValue( size_t index ) const;
 
 		// функции addAData возвращают индекс, по которому потом можно напрямую писать при помощи setAData(index)
 		size_t addAData( const UDPAData& dat );
 		size_t addAData( long id, long val );
 		bool setAData( size_t index, long val );
 
-		inline bool isAFull()
+		long getDataID( ) const; /*!< получение "уникального" идентификатора данных этого пакета */
+		inline bool isAFull() const
 		{
 			return (acount >= MaxACount);
 		}
-		inline bool isDFull()
+		inline bool isDFull() const
 		{
 			return (dcount >= MaxDCount);
 		}
 
-		inline bool isFull()
+		inline bool isFull() const
 		{
 			return !((dcount < MaxDCount) && (acount < MaxACount));
 		}
-		inline int dsize()
+		inline int dsize() const
 		{
 			return dcount;
 		}
-		inline int asize()
+		inline int asize() const
 		{
 			return acount;
 		}
 		unsigned short getDataCRC();
 
 		// количество байт в пакете с булевыми переменными...
-		int d_byte()
+		int d_byte() const
 		{
 			return dcount * sizeof(long) + dcount;
 		}

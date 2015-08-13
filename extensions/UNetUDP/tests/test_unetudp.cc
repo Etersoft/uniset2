@@ -103,7 +103,7 @@ TEST_CASE("[UNetUDP]: queue sort", "[unetudp][packetqueue]")
 	UniSetUDP::UDPMessage m4;
 	m4.num = 100;
 
-	// специально сладываем в обратном порядке
+	// специально складываем в обратном порядке
 	// чтобы проверить "сортировку"
 	q.push(m1);
 	q.push(m3);

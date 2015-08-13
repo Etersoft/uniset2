@@ -10,17 +10,22 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi,
-						const std::string& s_f, const std::string& s_val ):
+						const std::string& s_f, const std::string& s_val, const std::string& s_prefix,
+						size_t maxDCount, size_t maxACount ):
 	s_field(s_f),
 	s_fvalue(s_val),
+	prefix(s_prefix),
 	shm(smi),
 	s_host(s_host),
 	sendpause(150),
+	packsendpause(5),
 	activated(false),
 	dlist(100),
 	maxItem(0),
 	packetnum(1),
-	lastcrc(0)
+	lastcrc(0),
+	maxAData(maxACount),
+	maxDData(maxDCount)
 {
 
 	{
@@ -32,6 +37,8 @@ UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, con
 	unetlog = make_shared<DebugStream>();
 	unetlog->setLogName(myname);
 
+	auto conf = uniset_conf();
+	conf->initLogStream(unetlog, myname);
 
 	// определяем фильтр
 	//    s_field = conf->getArgParam("--udp-filter-field");
@@ -65,6 +72,14 @@ UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, con
 
 	s_thr = make_shared< ThreadCreator<UNetSender> >(this, &UNetSender::send);
 
+	mypacks[0].resize(1);
+	packs_anum[0] = 0;
+	packs_dnum[0] = 0;
+	UniSetUDP::UDPMessage& mypack(mypacks[0][0]);
+	// выставляем поля, которые не меняются
+	mypack.nodeID = uniset_conf()->getLocalNode();
+	mypack.procID = shm->ID();
+
 	// -------------------------------
 	if( shm->isLocalwork() )
 	{
@@ -86,11 +101,6 @@ UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, con
 			unetinfo << myname << "(init): dlist size = " << dlist.size() << endl;
 		}
 	}
-
-
-	// выставляем поля, которые не меняются
-	mypack.nodeID = uniset_conf()->getLocalNode();
-	mypack.procID = shm->ID();
 }
 // -----------------------------------------------------------------------------
 UNetSender::~UNetSender()
@@ -134,11 +144,15 @@ void UNetSender::updateItem( DMap::iterator& it, long value )
 	if( it->iotype == UniversalIO::DI || it->iotype == UniversalIO::DO )
 	{
 		UniSetTypes::uniset_rwmutex_wrlock l(pack_mutex);
+		auto& pk = mypacks[it->pack_sendfactor];
+		UniSetUDP::UDPMessage& mypack(pk[it->pack_num]);
 		mypack.setDData(it->pack_ind, value);
 	}
 	else if( it->iotype == UniversalIO::AI || it->iotype == UniversalIO::AO )
 	{
 		UniSetTypes::uniset_rwmutex_wrlock l(pack_mutex);
+		auto& pk = mypacks[it->pack_sendfactor];
+		UniSetUDP::UDPMessage& mypack(pk[it->pack_num]);
 		mypack.setAData(it->pack_ind, value);
 	}
 }
@@ -162,6 +176,9 @@ void UNetSender::send()
 	        throw SystemError(s.str());
 	    }
 	*/
+
+	ncycle = 0;
+
 	while( activated )
 	{
 		try
@@ -169,7 +186,22 @@ void UNetSender::send()
 			if( !shm->isLocalwork() )
 				updateFromSM();
 
-			real_send();
+			for( auto && it : mypacks )
+			{
+				if( it.first > 1 && (ncycle % it.first) != 0 )
+					continue;
+
+				auto& pk = it.second;
+				int size = pk.size();
+
+				for(int i = 0; i < size; ++i)
+				{
+					real_send(pk[i]);
+					msleep(packsendpause);
+				}
+			}
+
+			ncycle++;
 		}
 		catch( ost::SockException& e )
 		{
@@ -196,7 +228,7 @@ void UNetSender::send()
 // -----------------------------------------------------------------------------
 // #define UNETUDP_DISABLE_OPTIMIZATION_N1
 
-void UNetSender::real_send()
+void UNetSender::real_send(UniSetUDP::UDPMessage& mypack)
 {
 	UniSetTypes::uniset_rwmutex_rlock l(pack_mutex);
 #ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
@@ -211,6 +243,7 @@ void UNetSender::real_send()
 	}
 
 #endif
+
 
 	if( packetnum > UniSetUDP::MaxPacketNum )
 		packetnum = 1;
@@ -299,8 +332,13 @@ bool UNetSender::initItem( UniXML::iterator& it )
 		return false;
 	}
 
+	int priority = it.getPIntProp(prefix + "_sendfactor", 0);
+
+	auto pk = mypacks[priority];
+
 	UItem p;
 	p.iotype = UniSetTypes::getIOType(it.getProp("iotype"));
+	p.pack_sendfactor = priority;
 
 	if( p.iotype == UniversalIO::UnknownIOType )
 	{
@@ -312,7 +350,30 @@ bool UNetSender::initItem( UniXML::iterator& it )
 
 	if( p.iotype == UniversalIO::DI || p.iotype == UniversalIO::DO )
 	{
+		int dnum = packs_dnum[priority];
+
+		if( pk.size() <= dnum )
+			pk.resize(dnum + 1);
+
+		UniSetUDP::UDPMessage& mypack(pk[dnum]);
+
 		p.pack_ind = mypack.addDData(sid, 0);
+
+		if( p.pack_ind >= maxDData )
+		{
+			dnum++;
+
+			if( dnum >= pk.size() )
+				pk.resize(dnum + 1);
+
+			UniSetUDP::UDPMessage& mypack( pk[dnum] );
+			p.pack_ind = mypack.addDData(sid, 0);
+			mypack.nodeID = uniset_conf()->getLocalNode();
+			mypack.procID = shm->ID();
+		}
+
+		p.pack_num = dnum;
+		packs_anum[priority] = dnum;
 
 		if ( p.pack_ind >= UniSetUDP::MaxDCount )
 		{
@@ -326,17 +387,43 @@ bool UNetSender::initItem( UniXML::iterator& it )
 	}
 	else if( p.iotype == UniversalIO::AI || p.iotype == UniversalIO::AO )
 	{
+		int anum = packs_anum[priority];
+
+		if( pk.size() <= anum )
+			pk.resize(anum + 1);
+
+		UniSetUDP::UDPMessage& mypack(pk[anum]);
+
 		p.pack_ind = mypack.addAData(sid, 0);
+
+		if( p.pack_ind >= maxAData )
+		{
+			anum++;
+
+			if( anum >= pk.size() )
+				pk.resize(anum + 1);
+
+			UniSetUDP::UDPMessage& mypack(pk[anum]);
+			p.pack_ind = mypack.addAData(sid, 0);
+			mypack.nodeID = uniset_conf()->getLocalNode();
+			mypack.procID = shm->ID();
+		}
+
+		p.pack_num = anum;
+		packs_anum[priority] = anum;
 
 		if ( p.pack_ind >= UniSetUDP::MaxACount )
 		{
 			unetcrit << myname
 					 << "(readItem): OVERFLOW! MAX UDP ANALOG DATA LIMIT! max="
 					 << UniSetUDP::MaxACount << endl;
+
 			raise(SIGTERM);
 			return false;
 		}
 	}
+
+	mypacks[priority] = pk;
 
 	if( maxItem >= dlist.size() )
 		dlist.resize(maxItem + 10);
@@ -345,7 +432,6 @@ bool UNetSender::initItem( UniXML::iterator& it )
 	maxItem++;
 
 	unetinfo << myname << "(initItem): add " << p << endl;
-
 	return true;
 }
 
@@ -367,6 +453,11 @@ void UNetSender::askSensors( UniversalIO::UIOCommand cmd )
 		shm->askSensor(it.id, cmd);
 }
 // -----------------------------------------------------------------------------
+int UNetSender::getDataPackCount()
+{
+	return mypacks.size();
+}
+// -----------------------------------------------------------------------------
 const std::string UNetSender::getShortInfo() const
 {
 	// warning: будет вызываться из другого потока
@@ -381,4 +472,3 @@ const std::string UNetSender::getShortInfo() const
 	return std::move(s.str());
 }
 // -----------------------------------------------------------------------------
-
