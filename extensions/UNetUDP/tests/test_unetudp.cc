@@ -319,13 +319,13 @@ TEST_CASE("[UNetUDP]: check packets 'hole'", "[unetudp][udphole]")
 
 	int lastnum = s_numpack - 1;
 
-	// искуственно делаем дырку в два пакета
+	// искусственно делаем дырку в два пакета
 	s_numpack = lastnum + 3;
 	UniSetUDP::UDPMessage pack_hole;
 	pack_hole.addAData(8, 30);
 	send(pack_hole); // пакет с дыркой
 
-	msleep(120);
+	msleep(80);
 	REQUIRE( ui->getValue(8) == 15 );
 	REQUIRE( ui->getValue(node2_lostpackets_as) == nlost );
 
@@ -333,7 +333,7 @@ TEST_CASE("[UNetUDP]: check packets 'hole'", "[unetudp][udphole]")
 	UniSetUDP::UDPMessage pack1;
 	pack1.addAData(8, 21);
 	send(pack1); // заполняем первую дырку..// дырка закроется.. пакет тут же обработается
-	msleep(120);
+	msleep(100);
 	REQUIRE( ui->getValue(8) == 21 );
 	REQUIRE( ui->getValue(node2_lostpackets_as) == nlost );
 

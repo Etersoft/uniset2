@@ -270,6 +270,7 @@ void UNetReceiver::real_update()
 					if( !ptLostTimeout.checkTime() )
 						return;
 
+					unetwarn << myname << "(update): lostTimeout(" << ptLostTimeout.getInterval() << ")! pnum=" << p.num << " lost " << sub << " packets " << endl;
 					lostPackets += sub;
 				}
 				else if( p.num == pnum )
@@ -286,7 +287,10 @@ void UNetReceiver::real_update()
 				{
 					// считаем сколько пакетов потеряли..
 					if( p.num > pnum )
+					{
 						lostPackets += sub;
+						unetwarn << myname << "(update): sub=" <<  sub << " > maxDifferenst(" << maxDifferens << ")! lost " << sub << " packets " << endl;
+					}
 				}
 			}
 
@@ -546,7 +550,7 @@ void UNetReceiver::initIterators()
 {
 	for( auto mit = d_icache_map.begin(); mit != d_icache_map.end(); ++mit )
 	{
-		CacheList& d_icache(mit->second.cache);
+		CacheVec& d_icache(mit->second.cache);
 
 		for( auto && it : d_icache )
 			shm->initIterator(it.ioit);
@@ -554,7 +558,7 @@ void UNetReceiver::initIterators()
 
 	for( auto mit = a_icache_map.begin(); mit != a_icache_map.end(); ++mit )
 	{
-		CacheList& a_icache(mit->second.cache);
+		CacheVec& a_icache(mit->second.cache);
 
 		for( auto && it : a_icache )
 			shm->initIterator(it.ioit);
@@ -666,7 +670,18 @@ const std::string UNetReceiver::getShortInfo() const
 	s << setw(15) << std::right << getAddress() << ":" << std::left << setw(6) << getPort()
 	  << ( isLockUpdate() ? "PASSIVE" : "ACTIVE" )
 	  << " recvOK=" << isRecvOK()
-	  << " lostPackets=" << setw(6) << getLostPacketsNum();
+	  << " lostPackets=" << setw(6) << getLostPacketsNum()
+	  << endl
+	  << "\t["
+	  << " recvTimeout=" << setw(6) << recvTimeout
+	  << " prepareTime=" << setw(6) << prepareTime
+	  << " lostTimeout=" << setw(6) << lostTimeout
+	  << " recvpause=" << setw(6) << recvpause
+	  << " updatepause=" << setw(6) << updatepause
+	  << " maxDifferens=" << setw(6) << maxDifferens
+	  << " maxProcessingCount=" << setw(6) << maxProcessingCount
+	  << " waitClean=" << waitClean
+	  << " ]";
 
 	return std::move(s.str());
 }

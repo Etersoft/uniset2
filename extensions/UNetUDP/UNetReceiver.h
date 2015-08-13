@@ -162,7 +162,7 @@ class UNetReceiver:
 	private:
 		UNetReceiver();
 
-		int recvpause;        /*!< пауза меджду приёмами пакетов, [мсек] */
+		int recvpause;      /*!< пауза меджду приёмами пакетов, [мсек] */
 		int updatepause;    /*!< переодичность обновления данных в SM, [мсек] */
 
 		std::shared_ptr<ost::UDPReceive> udp;
@@ -224,7 +224,7 @@ class UNetReceiver:
 				id(UniSetTypes::DefaultObjectId), iotype(UniversalIO::UnknownIOType) {}
 		};
 
-		typedef std::vector<CacheItem> CacheList;
+		typedef std::vector<CacheItem> CacheVec;
 		struct CacheInfo
 		{
 			CacheInfo():
@@ -232,8 +232,9 @@ class UNetReceiver:
 			{
 			}
 			bool cache_init_ok;
-			CacheList cache;
+			CacheVec cache;
 		};
+		// ключом является UDPMessage::getDataID()
 		typedef std::unordered_map<long, CacheInfo> CacheMap;
 		CacheMap d_icache_map;     /*!< кэш итераторов для булевых */
 		CacheMap a_icache_map;     /*!< кэш итераторов для аналоговых */

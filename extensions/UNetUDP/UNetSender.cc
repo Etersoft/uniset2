@@ -465,8 +465,15 @@ const std::string UNetSender::getShortInfo() const
 	ostringstream s;
 
 	s << setw(15) << std::right << getAddress() << ":" << std::left << setw(6) << getPort()
-	  << " packetnum=" << packetnum
-	  << " lastcrc=" << setw(6) << lastcrc;
+	  << " lastpacknum=" << packetnum
+	  << " lastcrc=" << setw(6) << lastcrc
+	  << " items=" << maxItem
+	  << endl
+	  << "\t   packs: [sendfactor]=count: "
+	  << endl;
+
+	for( auto i = mypacks.begin(); i != mypacks.end(); ++i )
+		s << "      \t\t[" << i->first << "]=" << i->second.size() << endl;
 
 	return std::move(s.str());
 }
