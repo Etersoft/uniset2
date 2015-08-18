@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.1
-Release: alt15
+Release: alt15.2
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -456,6 +456,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Fri Aug 14 2015 Pavel Vainerman <pv@etersoft.ru> 2.1-alt15.2
+- up build
+
 * Wed Aug 12 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt15
 - (Modbus): add new property "pollfactor" (see docs)
 
