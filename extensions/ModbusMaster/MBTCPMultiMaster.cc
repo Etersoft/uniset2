@@ -367,7 +367,7 @@ void MBTCPMultiMaster::check_thread()
 					continue;
 
 				bool r = it->check();
-				mbinfo << myname << "(check): " << it->myname << " " << ( r ? "OK" : "FAIL" ) << endl;
+				mblog4 << myname << "(check): " << it->myname << " " << ( r ? "OK" : "FAIL" ) << endl;
 
 				try
 				{
