@@ -41,7 +41,10 @@ int ModbusTCPMaster::getNextData( unsigned char* buf, int len )
 void ModbusTCPMaster::setChannelTimeout( timeout_t msec )
 {
 	if( tcp )
+	{
 		tcp->setTimeout(msec);
+		tcp->setKeepAliveParams((msec > 1000 ? msec/1000 : 1));
+	}
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPMaster::sendData( unsigned char* buf, int len )

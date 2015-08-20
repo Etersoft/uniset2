@@ -1,5 +1,4 @@
 // --------------------------------------------------------------------------
-// --------------------------------------------------------------------------
 #include <string>
 #include <getopt.h>
 #include "Debug.h"
@@ -29,6 +28,7 @@ static struct option longopts[] =
 	{ "persistent-connection", no_argument, 0, 'o' },
 	{ "num-cycles", required_argument, 0, 'l' },
 	{ "sleep-msec", required_argument, 0, 's' },
+	{ "check", no_argument, 0, 'n' },
 
 	{ NULL, 0, 0, 0 }
 };
@@ -60,6 +60,7 @@ static void print_help()
 	printf("[-l|--num-cycles] num           - Number of cycles of exchange. Default: -1 - infinitely.\n");
 	printf("[-v|--verbose]                  - Print all messages to stdout\n");
 	printf("[-s|--sleep-msec]               - send pause. Default: 200 msec\n");
+	printf("[-n|--check]                    - Check connection for (-i)ip (-p)port\n");
 }
 // --------------------------------------------------------------------------
 enum Command
@@ -75,12 +76,11 @@ enum Command
 	cmdWrite06,
 	cmdWrite0F,
 	cmdWrite10,
-	cmdDiag
+	cmdDiag,
+	cmdCheck
 };
 // --------------------------------------------------------------------------
 static char* checkArg( int ind, int argc, char* argv[] );
-// --------------------------------------------------------------------------
-
 int main( int argc, char** argv )
 {
 	//	std::ios::sync_with_stdio(false);
@@ -121,7 +121,7 @@ int main( int argc, char** argv )
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:w:z:r:x:c:b:d:s:t:p:i:ol:d:e:u:", longopts, &optindex)) != -1 )
+		while( (opt = getopt_long(argc, argv, "hvna:w:z:r:x:c:b:d:s:t:p:i:ol:d:e:u:", longopts, &optindex)) != -1 )
 		{
 			switch (opt)
 			{
@@ -136,6 +136,7 @@ int main( int argc, char** argv )
 				case 'b':
 					if( cmd == cmdNOP )
 						cmd = cmdRead02;
+
 
 				case 'r':
 					if( cmd == cmdNOP )
@@ -160,6 +161,10 @@ int main( int argc, char** argv )
 					if( checkArg(optind + 1, argc, argv) )
 						count = uni_atoi(argv[optind + 1]);
 				}
+				break;
+
+				case 'n':
+					cmd = cmdCheck;
 				break;
 
 				case 'e':
@@ -601,6 +606,13 @@ int main( int argc, char** argv )
 						}
 					}
 					break;
+					
+					case cmdCheck:
+					{
+						bool res = ModbusTCPMaster::checkConnection(iaddr,port,tout);
+						cout << iaddr << ":" << port << " connection " << (res ? "OK" : "FAIL") << endl;
+					}
+					break;
 
 					case cmdNOP:
 					default:
@@ -660,5 +672,10 @@ char* checkArg( int i, int argc, char* argv[] )
 		return argv[i];
 
 	return 0;
+}
+// --------------------------------------------------------------------------
+void ping( const std::string& iaddr, int port )
+{
+	cerr << "ping2: check connection " << ModbusTCPMaster::checkConnection(iaddr,port,1000) << endl;
 }
 // --------------------------------------------------------------------------
