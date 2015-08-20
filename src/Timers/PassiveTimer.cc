@@ -72,7 +72,7 @@ void PassiveTimer::reset(void)
 }
 //------------------------------------------------------------------------------
 // получить текущее значение таймера
-timeout_t PassiveTimer::getCurrent()
+timeout_t PassiveTimer::getCurrent() const
 {
 	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - t_start).count();
 }

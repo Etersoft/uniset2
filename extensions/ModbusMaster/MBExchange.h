@@ -164,7 +164,6 @@ class MBExchange:
 		struct RTUDevice
 		{
 			RTUDevice():
-				respnond(false),
 				mbaddr(0),
 				dtype(dtUnknown),
 				resp_id(UniSetTypes::DefaultObjectId),
@@ -180,7 +179,6 @@ class MBExchange:
 			{
 			}
 
-			bool respnond;
 			ModbusRTU::ModbusAddr mbaddr;    /*!< адрес устройства */
 			RegMap regmap;
 
@@ -211,6 +209,8 @@ class MBExchange:
 			// специфические поля для RS
 			ComPort::Speed speed;
 			RTUStorage* rtu;
+
+			std::string getShortInfo() const;
 		};
 
 		friend std::ostream& operator<<( std::ostream& os, RTUDevice& d );

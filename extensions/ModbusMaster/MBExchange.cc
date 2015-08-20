@@ -3231,8 +3231,27 @@ UniSetTypes::SimpleInfo* MBExchange::getInfo()
 	inf << i->info << endl;
 	inf << vmon.pretty_str() << endl;
 	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
+
+	inf << "Devices:" << endl;
+	for( const auto& it: rmap )
+		inf << "  " <<  it.second->getShortInfo() << endl;
+
 	i->info = inf.str().c_str();
 	return i._retn();
 }
 // ----------------------------------------------------------------------------
+std::string MBExchange::RTUDevice::getShortInfo() const
+{
+	ostringstream s;
 
+	s << "mbaddr=" << ModbusRTU::addr2str(mbaddr) << ":"
+	  << " resp_state=" << resp_state
+	  << " (resp_id=" << resp_id << " resp_force=" << resp_force
+	  << " resp_invert=" << resp_invert
+	  << " numreply=" << numreply
+	  << " timeout=" << resp_Delay.getOnDelay()
+	  << " type=" << dtype
+	  << ")" << endl;
+	return std::move( s.str() );
+}
+// ----------------------------------------------------------------------------

@@ -497,7 +497,11 @@ std::shared_ptr<MBTCPMultiMaster> MBTCPMultiMaster::init_mbmaster( int argc, con
 const std::string MBTCPMultiMaster::MBSlaveInfo::getShortInfo() const
 {
 	ostringstream s;
-	s << myname << " respond=" << respond;
+	s << myname << " respond=" << respond
+		<< " (respond_id=" << respond_id << " respond_invert=" << respond_invert
+		<< " recv_timeout=" << recv_timeout
+		<< " use=" << use << " ignore=" << ignore << " priority=" << priority << ")";
+
 	return std::move(s.str());
 }
 // -----------------------------------------------------------------------------
