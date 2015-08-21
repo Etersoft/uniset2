@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.1
-Release: alt16.2
+Release: alt17
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -456,6 +456,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Fri Aug 21 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt17
+- up build
+
 * Fri Aug 21 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt16.2
 - (ModbusTCP): fixed bug in update respond sensor in SharedMemory
 
