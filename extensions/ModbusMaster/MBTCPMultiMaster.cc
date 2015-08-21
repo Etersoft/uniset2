@@ -363,17 +363,16 @@ void MBTCPMultiMaster::check_thread()
 		{
 			try
 			{
-				if( it->use ) // игнорируем текущий mbtcp
-					continue;
+				// Если use=1" связь не проверяем и считаем что связь есть..
+				bool r = ( it->use ? true : it->check() );
 
-				bool r = it->check();
 				mblog4 << myname << "(check): " << it->myname << " " << ( r ? "OK" : "FAIL" ) << endl;
 
 				try
 				{
 					if( it->respond_id != DefaultObjectId && (it->respond_force || !it->respond_init || r != it->respond) )
 					{
-						bool set = it->respond_invert ? !it->respond : it->respond;
+						bool set = it->respond_invert ? !r : r;
 						shm->localSetValue(it->respond_it, it->respond_id, (set ? 1 : 0), getId());
 						it->respond_init = true;
 					}

@@ -3138,7 +3138,7 @@ void MBExchange::updateRespondSensors()
 	{
 		RTUDevice* d(it1.second);
 
-		if( d->resp_id != DefaultObjectId && (d->checkRespond(mblog) || d->resp_ptInit.checkTime()) )
+		if( d->resp_id != DefaultObjectId && (d->checkRespond(mblog) || d->resp_force || d->resp_ptInit.checkTime()) )
 		{
 			try
 			{

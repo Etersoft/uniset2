@@ -280,6 +280,7 @@ class MBTCPMultiMaster:
 			bool check();
 			inline void setUse( bool st )
 			{
+				respond_init = !( st && !use );
 				use = st;
 			}
 
