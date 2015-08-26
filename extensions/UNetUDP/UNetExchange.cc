@@ -745,7 +745,7 @@ void UNetExchange::initIterators()
 	if( sender2 )
 		sender2->initIterators();
 
-	for( auto&& it : recvlist )
+	for( auto && it : recvlist )
 		it.initIterators(shm);
 }
 // -----------------------------------------------------------------------------
@@ -814,7 +814,7 @@ std::shared_ptr<UNetExchange> UNetExchange::init_unetexchange( int argc, const c
 // -----------------------------------------------------------------------------
 void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceiver::Event ev )
 {
-	for( auto&& it : recvlist )
+	for( auto && it : recvlist )
 	{
 		if( it.r1 == r )
 		{

@@ -165,7 +165,7 @@ int main( int argc, char** argv )
 
 				case 'n':
 					cmd = cmdCheck;
-				break;
+					break;
 
 				case 'e':
 				{
@@ -606,10 +606,10 @@ int main( int argc, char** argv )
 						}
 					}
 					break;
-					
+
 					case cmdCheck:
 					{
-						bool res = ModbusTCPMaster::checkConnection(iaddr,port,tout);
+						bool res = ModbusTCPMaster::checkConnection(iaddr, port, tout);
 						cout << iaddr << ":" << port << " connection " << (res ? "OK" : "FAIL") << endl;
 					}
 					break;
@@ -676,6 +676,6 @@ char* checkArg( int i, int argc, char* argv[] )
 // --------------------------------------------------------------------------
 void ping( const std::string& iaddr, int port )
 {
-	cerr << "ping2: check connection " << ModbusTCPMaster::checkConnection(iaddr,port,1000) << endl;
+	cerr << "ping2: check connection " << ModbusTCPMaster::checkConnection(iaddr, port, 1000) << endl;
 }
 // --------------------------------------------------------------------------

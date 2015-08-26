@@ -289,7 +289,7 @@ bool SharedMemory::activateObject()
 
 		itPulsar = myioEnd();
 
-		for( auto&& it : hist )
+		for( auto && it : hist )
 		{
 			for( auto && hit : it.hlst )
 				hit.ioit = myioEnd();
@@ -331,7 +331,7 @@ void SharedMemory::checkHeartBeat()
 
 	bool wdtpingOK = true;
 
-	for( auto&& it : hlist )
+	for( auto && it : hlist )
 	{
 		try
 		{
@@ -378,7 +378,7 @@ void SharedMemory::checkHeartBeat()
 // ------------------------------------------------------------------------------------------
 bool SharedMemory::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec )
 {
-	for( auto&& r : lstRSlot )
+	for( auto && r : lstRSlot )
 	{
 		try
 		{
@@ -666,7 +666,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 // -----------------------------------------------------------------------------
 void SharedMemory::checkHistoryFilter( UniXML::iterator& xit )
 {
-	for( auto&& it : hist )
+	for( auto && it : hist )
 	{
 		if( xit.getProp(it.filter).empty() )
 			continue;
@@ -701,9 +701,9 @@ void SharedMemory::saveHistory()
 	if( hist.empty() )
 		return;
 
-	for( auto&& it : hist )
+	for( auto && it : hist )
 	{
-		for( auto&& hit : it.hlst )
+		for( auto && hit : it.hlst )
 		{
 			try
 			{
@@ -743,7 +743,7 @@ void SharedMemory::updateHistory( std::shared_ptr<USensorInfo>& s_it, IOControll
 		   << " value=" << value
 		   << endl;
 
-	for( auto&& it1 : i->second )
+	for( auto && it1 : i->second )
 	{
 		History::iterator it = it1;
 

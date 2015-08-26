@@ -559,7 +559,7 @@ void MBSlave::execute_rtu()
 				}
 			}
 
-			for( auto&& it : iomap )
+			for( auto && it : iomap )
 				IOBase::processingThreshold(&it.second, shm, force);
 		}
 		catch(...) {}
@@ -645,7 +645,7 @@ void MBSlave::execute_tcp()
 				}
 			}
 
-			for( auto&& it : iomap )
+			for( auto && it : iomap )
 				IOBase::processingThreshold(&it.second, shm, force);
 		}
 		catch( const std::exception& ex )

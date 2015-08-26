@@ -945,7 +945,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		return false;
 	}
 
-	if( p->pollfactor>1 && ncycle%p->pollfactor!=0 )
+	if( p->pollfactor > 1 && ncycle % p->pollfactor != 0 )
 		return false;
 
 	if( mblog->is_level3() )
@@ -2090,7 +2090,7 @@ MBExchange::RegInfo* MBExchange::addReg( RegMap& mp, ModbusRTU::RegID id, Modbus
 // ------------------------------------------------------------------------------------------
 MBExchange::RSProperty* MBExchange::addProp( PList& plist, RSProperty&& p )
 {
-	for( auto&& it : plist )
+	for( auto && it : plist )
 	{
 		if( it.si.id == p.si.id && it.si.node == p.si.node )
 			return &it;
@@ -2184,7 +2184,7 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML::iterator& it,  MBExchange::RTU
 {
 	r->dev = dev;
 	r->mbval = IOBase::initIntProp(it, "default", prop_prefix, false);
-	r->pollfactor = IOBase::initIntProp(it, "pollfactor", prop_prefix, false,0);
+	r->pollfactor = IOBase::initIntProp(it, "pollfactor", prop_prefix, false, 0);
 
 
 	if( dev->dtype == MBExchange::dtRTU )
@@ -2969,7 +2969,7 @@ void MBExchange::sensorInfo( const UniSetTypes::SensorMessage* sm )
 			if( !isWriteFunction(it.second->mbfunc) )
 				continue;
 
-			for( auto&& i : it.second->slst )
+			for( auto && i : it.second->slst )
 			{
 				if( sm->id == i.si.id && sm->node == i.si.node )
 				{
@@ -3237,7 +3237,8 @@ UniSetTypes::SimpleInfo* MBExchange::getInfo()
 	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
 
 	inf << "Devices:" << endl;
-	for( const auto& it: rmap )
+
+	for( const auto& it : rmap )
 		inf << "  " <<  it.second->getShortInfo() << endl;
 
 	i->info = inf.str().c_str();

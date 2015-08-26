@@ -415,7 +415,7 @@ void MBTCPMultiMaster::initIterators()
 {
 	MBExchange::initIterators();
 
-	for( auto&& it : mblist )
+	for( auto && it : mblist )
 		shm->initIterator(it.respond_it);
 }
 // -----------------------------------------------------------------------------
@@ -500,9 +500,9 @@ const std::string MBTCPMultiMaster::MBSlaveInfo::getShortInfo() const
 {
 	ostringstream s;
 	s << myname << " respond=" << respond
-		<< " (respond_id=" << respond_id << " respond_invert=" << respond_invert
-		<< " recv_timeout=" << recv_timeout << " resp_force=" << respond_force
-		<< " use=" << use << " ignore=" << ignore << " priority=" << priority << ")";
+	  << " (respond_id=" << respond_id << " respond_invert=" << respond_invert
+	  << " recv_timeout=" << recv_timeout << " resp_force=" << respond_force
+	  << " use=" << use << " ignore=" << ignore << " priority=" << priority << ")";
 
 	return std::move(s.str());
 }
@@ -514,7 +514,7 @@ UniSetTypes::SimpleInfo* MBTCPMultiMaster::getInfo()
 	ostringstream inf;
 
 	inf << i->info << endl;
-	inf << "Gates: " << (checktime<=0 ? "/ check connections DISABLED /" : "") << endl;
+	inf << "Gates: " << (checktime <= 0 ? "/ check connections DISABLED /" : "") << endl;
 
 	for( const auto& m : mblist )
 		inf << "   " << m.getShortInfo() << endl;
