@@ -96,6 +96,9 @@ MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId
 	ptReopen.setTiming(tout);
 	vmonit(recv_timeout);
 
+	int reinit_tout = conf->getArgPInt("--" + prefix + "-reinit-timeout", it.getProp("reinit_timeout"), default_timeout);
+	ptInitChannel.setTiming(reinit_tout);
+
 	aftersend_pause = conf->getArgPInt("--" + prefix + "-aftersend-pause", it.getProp("aftersend_pause"), 0);
 	vmonit(aftersend_pause);
 
@@ -316,7 +319,8 @@ void MBExchange::step()
 	if( !checkProcActive() )
 		return;
 
-	updateRespondSensors();
+	if( ptInitChannel.checkTime() )
+		updateRespondSensors();
 
 	if( sidHeartBeat != DefaultObjectId && ptHeartBeat.checkTime() )
 	{

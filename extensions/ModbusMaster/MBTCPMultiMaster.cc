@@ -171,6 +171,9 @@ MBTCPMultiMaster::~MBTCPMultiMaster()
 // -----------------------------------------------------------------------------
 std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 {
+	if( mb )
+		ptInitChannel.reset();
+
 	// просто движемся по кругу (т.к. связь не проверяется)
 	// движемся в обратном порядке, т.к. сортировка по возрастанию приоритета
 	if( checktime <= 0 )

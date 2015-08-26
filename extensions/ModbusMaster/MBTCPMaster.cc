@@ -81,6 +81,7 @@ std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
 
 		mbtcp.reset();
 		mb.reset();
+		ptInitChannel.reset();
 	}
 
 	try
