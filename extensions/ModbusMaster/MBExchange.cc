@@ -2086,7 +2086,7 @@ MBExchange::RegInfo* MBExchange::addReg( RegMap& mp, ModbusRTU::RegID id, Modbus
 // ------------------------------------------------------------------------------------------
 MBExchange::RSProperty* MBExchange::addProp( PList& plist, RSProperty&& p )
 {
-	for( auto& it : plist )
+	for( auto&& it : plist )
 	{
 		if( it.si.id == p.si.id && it.si.node == p.si.node )
 			return &it;
@@ -2409,7 +2409,7 @@ bool MBExchange::initItem( UniXML::iterator& it )
 			ostringstream sl;
 			sl << "[ ";
 
-			for( auto& i : ri->slst )
+			for( const auto& i : ri->slst )
 				sl << ORepHelpers::getShortName(conf->oind->getMapName(i.si.id)) << ",";
 
 			sl << "]";
@@ -2960,12 +2960,12 @@ void MBExchange::sensorInfo( const UniSetTypes::SensorMessage* sm )
 		if( force_out )
 			continue;
 
-		for( auto& it : d->regmap )
+		for( const auto& it : d->regmap )
 		{
 			if( !isWriteFunction(it.second->mbfunc) )
 				continue;
 
-			for( auto& i : it.second->slst )
+			for( auto&& i : it.second->slst )
 			{
 				if( sm->id == i.si.id && sm->node == i.si.node )
 				{

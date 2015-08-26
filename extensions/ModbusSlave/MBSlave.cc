@@ -559,7 +559,7 @@ void MBSlave::execute_rtu()
 				}
 			}
 
-			for( auto& it : iomap )
+			for( auto&& it : iomap )
 				IOBase::processingThreshold(&it.second, shm, force);
 		}
 		catch(...) {}
@@ -645,7 +645,7 @@ void MBSlave::execute_tcp()
 				}
 			}
 
-			for( auto& it : iomap )
+			for( auto&& it : iomap )
 				IOBase::processingThreshold(&it.second, shm, force);
 		}
 		catch( const std::exception& ex )
@@ -759,9 +759,9 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
 	if( force )
 		return;
 
-	for( auto& it : iomap )
+	for( const auto& it : iomap )
 	{
-		IOProperty* p(&it.second);
+		const IOProperty* p(&it.second);
 
 		try
 		{
@@ -1147,7 +1147,7 @@ int MBSlave::getOptimizeWriteFunction( const int fn )
 // ------------------------------------------------------------------------------------------
 bool MBSlave::BitRegProperty::check( const IOController_i::SensorInfo& si )
 {
-	for( auto& i : bvec )
+	for( const auto& i : bvec )
 	{
 		if( i.si.id == si.id && i.si.node == si.node )
 			return true;
@@ -1267,7 +1267,7 @@ std::ostream& operator<<( std::ostream& os, MBSlave::BitRegProperty& p )
 {
 	os  << " reg=" << ModbusRTU::dat2str(p.mbreg) << "(" << (int)p.mbreg << ")[ ";
 
-	for( auto& i : p.bvec )
+	for( const auto& i : p.bvec )
 		os << "'" << i.si.id << "' ";
 
 	os << "]";

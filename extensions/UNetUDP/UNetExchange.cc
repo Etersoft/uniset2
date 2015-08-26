@@ -430,7 +430,7 @@ bool UNetExchange::checkExistUNetHost( const std::string& addr, ost::tpport_t po
 {
 	ost::IPV4Address a1(addr.c_str());
 
-	for( auto& it : recvlist )
+	for( const auto& it : recvlist )
 	{
 		if( it.r1->getAddress() == a1.getAddress() && it.r1->getPort() == port )
 			return true;
@@ -441,7 +441,7 @@ bool UNetExchange::checkExistUNetHost( const std::string& addr, ost::tpport_t po
 // -----------------------------------------------------------------------------
 void UNetExchange::startReceivers()
 {
-	for( auto& it : recvlist )
+	for( const auto& it : recvlist )
 	{
 		if( it.r1 )
 			it.r1->start();
@@ -701,7 +701,7 @@ void UNetExchange::sigterm( int signo )
 	unetinfo << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
 	activated = false;
 
-	for( auto& it : recvlist )
+	for( const auto& it : recvlist )
 	{
 		try
 		{
@@ -745,7 +745,7 @@ void UNetExchange::initIterators()
 	if( sender2 )
 		sender2->initIterators();
 
-	for( auto& it : recvlist )
+	for( auto&& it : recvlist )
 		it.initIterators(shm);
 }
 // -----------------------------------------------------------------------------
@@ -814,7 +814,7 @@ std::shared_ptr<UNetExchange> UNetExchange::init_unetexchange( int argc, const c
 // -----------------------------------------------------------------------------
 void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceiver::Event ev )
 {
-	for( auto& it : recvlist )
+	for( auto&& it : recvlist )
 	{
 		if( it.r1 == r )
 		{

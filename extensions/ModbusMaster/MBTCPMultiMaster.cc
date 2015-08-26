@@ -412,7 +412,7 @@ void MBTCPMultiMaster::initIterators()
 {
 	MBExchange::initIterators();
 
-	for( auto& it : mblist )
+	for( auto&& it : mblist )
 		shm->initIterator(it.respond_it);
 }
 // -----------------------------------------------------------------------------
