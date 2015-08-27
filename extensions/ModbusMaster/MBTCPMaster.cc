@@ -253,7 +253,7 @@ UniSetTypes::SimpleInfo* MBTCPMaster::getInfo()
 	ostringstream inf;
 
 	inf << i->info << endl;
-	inf << "poll: " << iaddr << ":" << port << endl;
+	inf << "poll: " << iaddr << ":" << port << " pesrsistent-connection=" << ( force_disconnect ? "NO" : "YES" ) << endl;
 
 	i->info = inf.str().c_str();
 	return i._retn();

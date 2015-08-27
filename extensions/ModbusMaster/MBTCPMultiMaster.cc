@@ -502,7 +502,9 @@ const std::string MBTCPMultiMaster::MBSlaveInfo::getShortInfo() const
 	s << myname << " respond=" << respond
 	  << " (respond_id=" << respond_id << " respond_invert=" << respond_invert
 	  << " recv_timeout=" << recv_timeout << " resp_force=" << respond_force
-	  << " use=" << use << " ignore=" << ignore << " priority=" << priority << ")";
+	  << " use=" << use << " ignore=" << ignore << " priority=" << priority 
+	  << " persistent-connection=" << !force_disconnect
+	  << ")";
 
 	return std::move(s.str());
 }
