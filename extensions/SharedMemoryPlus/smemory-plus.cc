@@ -9,7 +9,7 @@
 #include "Extensions.h"
 #include "RTUExchange.h"
 #include "MBSlave.h"
-#include "MBTCPMultiSlave.h"
+#include "MBTCPPersistentSlave.h"
 #include "MBTCPMaster.h"
 #include "SharedMemory.h"
 //#include "UniExchange.h"
@@ -215,7 +215,7 @@ int main( int argc, const char** argv )
 
 				dinfo << "(smemory-plus): add MBTCPMultiSlave(" << p.str() << ")" << endl;
 
-				auto mbs = MBTCPMultiSlave::init_mbslave(argc, argv, shm->getId(), shm, p.str());
+				auto mbs = MBTCPPersistentSlave::init_mbslave(argc, argv, shm->getId(), shm, p.str());
 
 				if( !mbs )
 					return 1;

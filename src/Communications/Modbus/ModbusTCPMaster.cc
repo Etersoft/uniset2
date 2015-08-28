@@ -189,12 +189,16 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				ost::tpport_t port;
 
 				if( dlog->is_warn() )
+				{
+					const char* err = tcp->getErrorString();
+
 					dlog->warn() << "(ModbusTCPMaster::query): ret=" << (int)ret
 								 << " < rmh=" << (int)sizeof(rmh)
 								 << " errnum: " << tcp->getErrorNumber()
 								 << " perr: " << tcp->getPeer(&port)
-								 << " err: " << string(tcp->getErrorString())
+								 << " err: " << (err ? string(err) : "")
 								 << endl;
+				}
 
 				disconnect();
 				return erTimeOut; // return erHardwareError;

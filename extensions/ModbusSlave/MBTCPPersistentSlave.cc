@@ -2,7 +2,7 @@
 #include <sstream>
 #include "Exceptions.h"
 #include "Extensions.h"
-#include "MBTCPMultiSlave.h"
+#include "MBTCPPersistentSlave.h"
 #include "modbus/ModbusRTUSlaveSlot.h"
 #include "modbus/ModbusTCPServerSlot.h"
 #include "modbus/MBLogSugar.h"
@@ -12,7 +12,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 using namespace ModbusRTU;
 // -----------------------------------------------------------------------------
-MBTCPMultiSlave::MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic, const string& prefix ):
+MBTCPPersistentSlave::MBTCPPersistentSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic, const string& prefix ):
 	MBSlave(objId, shmId, ic, prefix),
 	sesscount_id(DefaultObjectId)
 {
@@ -22,7 +22,7 @@ MBTCPMultiSlave::MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::Obje
 	cnode = conf->getNode(conf_name);
 
 	if( cnode == NULL )
-		throw UniSetTypes::SystemError("(MBTCPMultiSlave): Not found conf-node for " + myname );
+		throw UniSetTypes::SystemError("(MBTCPPersistentSlave): Not found conf-node for " + myname );
 
 	UniXML::iterator it(cnode);
 
@@ -31,18 +31,20 @@ MBTCPMultiSlave::MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::Obje
 	if( waitTimeout == 0 )
 		waitTimeout = 4000;
 
+	ptUpdateInfo.setTiming(waitTimeout);
+
 	vmonit(waitTimeout);
 	sessTimeout = conf->getArgInt("--" + prefix + "-session-timeout", it.getProp("sessTimeout"));
 
 	if( sessTimeout == 0 )
-		sessTimeout = 10000;
+		sessTimeout = 2000;
 
 	vmonit(sessTimeout);
 
 	sessMaxNum = conf->getArgInt("--" + prefix + "-session-maxnum", it.getProp("sessMaxNum"));
 
 	if( sessMaxNum == 0 )
-		sessMaxNum = 10;
+		sessMaxNum = 3;
 
 	vmonit(sessMaxNum);
 
@@ -109,11 +111,11 @@ MBTCPMultiSlave::MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::Obje
 	}
 }
 // -----------------------------------------------------------------------------
-MBTCPMultiSlave::~MBTCPMultiSlave()
+MBTCPPersistentSlave::~MBTCPPersistentSlave()
 {
 }
 // -----------------------------------------------------------------------------
-void MBTCPMultiSlave::help_print( int argc, const char* const* argv )
+void MBTCPPersistentSlave::help_print( int argc, const char* const* argv )
 {
 	MBSlave::help_print(argc, argv);
 
@@ -124,7 +126,7 @@ void MBTCPMultiSlave::help_print( int argc, const char* const* argv )
 	cout << "--prefix-session-count-id  id   - Датчик для отслеживания текущего количества соединений." << endl;
 }
 // -----------------------------------------------------------------------------
-std::shared_ptr<MBTCPMultiSlave> MBTCPMultiSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID,
+std::shared_ptr<MBTCPPersistentSlave> MBTCPPersistentSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID,
 		const std::shared_ptr<SharedMemory> ic, const string& prefix )
 {
 	auto conf = uniset_conf();
@@ -147,10 +149,10 @@ std::shared_ptr<MBTCPMultiSlave> MBTCPMultiSlave::init_mbslave( int argc, const 
 	}
 
 	dinfo << "(mbslave): name = " << name << "(" << ID << ")" << endl;
-	return make_shared<MBTCPMultiSlave>(ID, icID, ic, prefix);
+	return make_shared<MBTCPPersistentSlave>(ID, icID, ic, prefix);
 }
 // -----------------------------------------------------------------------------
-void MBTCPMultiSlave::execute_tcp()
+void MBTCPPersistentSlave::execute_tcp()
 {
 	auto sslot = dynamic_pointer_cast<ModbusTCPServerSlot>(mbslot);
 
@@ -176,6 +178,13 @@ void MBTCPMultiSlave::execute_tcp()
 		try
 		{
 			sslot->waitQuery( addr, waitTimeout );
+
+			// если слишком быстро обработали запрос
+			// то ничего не делаем..
+			if( !ptUpdateInfo.checkTime() )
+				continue;
+
+			ptUpdateInfo.reset();
 
 			// Обновляем информацию по соединениям
 			sess.clear();
@@ -318,7 +327,7 @@ void MBTCPMultiSlave::execute_tcp()
 	mbinfo << myname << "(execute_tcp): thread stopped.." << endl;
 }
 // -----------------------------------------------------------------------------
-void MBTCPMultiSlave::initIterators()
+void MBTCPPersistentSlave::initIterators()
 {
 	MBSlave::initIterators();
 
@@ -328,7 +337,7 @@ void MBTCPMultiSlave::initIterators()
 		i.second.initIterators(shm);
 }
 // -----------------------------------------------------------------------------
-bool MBTCPMultiSlave::deactivateObject()
+bool MBTCPPersistentSlave::deactivateObject()
 {
 	if( mbslot )
 	{
@@ -341,7 +350,7 @@ bool MBTCPMultiSlave::deactivateObject()
 	return MBSlave::deactivateObject();
 }
 // -----------------------------------------------------------------------------
-void MBTCPMultiSlave::sigterm( int signo )
+void MBTCPPersistentSlave::sigterm( int signo )
 {
 	if( mbslot )
 	{
@@ -354,7 +363,7 @@ void MBTCPMultiSlave::sigterm( int signo )
 	MBSlave::sigterm(signo);
 }
 // -----------------------------------------------------------------------------
-const std::string MBTCPMultiSlave::ClientInfo::getShortInfo() const
+const std::string MBTCPPersistentSlave::ClientInfo::getShortInfo() const
 {
 	ostringstream s;
 
@@ -363,7 +372,7 @@ const std::string MBTCPMultiSlave::ClientInfo::getShortInfo() const
 	return std::move(s.str());
 }
 // -----------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* MBTCPMultiSlave::getInfo()
+UniSetTypes::SimpleInfo* MBTCPPersistentSlave::getInfo()
 {
 	UniSetTypes::SimpleInfo_var i = MBSlave::getInfo();
 

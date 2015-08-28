@@ -2,7 +2,7 @@
 #include <sstream>
 #include <string>
 #include <cc++/socket.h>
-#include "MBTCPMultiSlave.h"
+#include "MBTCPPersistentSlave.h"
 #include "Configuration.h"
 #include "Debug.h"
 #include "UniSetActivator.h"
@@ -56,7 +56,7 @@ int main(int argc, const char** argv)
 			return 1;
 		}
 
-		auto s = MBTCPMultiSlave::init_mbslave(argc, argv, shmID);
+		auto s = MBTCPPersistentSlave::init_mbslave(argc, argv, shmID);
 
 		if( !s )
 		{
@@ -70,9 +70,9 @@ int main(int argc, const char** argv)
 		act->broadcast( sm.transport_msg() );
 
 		ulogany << "\n\n\n";
-		ulogany << "(main): -------------- MBTCPMultiSlave START -------------------------\n\n";
+		ulogany << "(main): -------------- MBTCPPersistentSlave START -------------------------\n\n";
 		dlogany << "\n\n\n";
-		dlogany << "(main): -------------- MBTCPMultiSlave START -------------------------\n\n";
+		dlogany << "(main): -------------- MBTCPPersistentSlave START -------------------------\n\n";
 
 		act->run(false);
 		return 0;

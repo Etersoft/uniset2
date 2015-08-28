@@ -1,4 +1,4 @@
-bin_PROGRAMS = @PACKAGE@-mbslave @PACKAGE@-mbtcp-multislave
+bin_PROGRAMS = @PACKAGE@-mbslave @PACKAGE@-mbtcp-persistentslave
 
 # не забывайте править версию в2.pc-файле
 UMBS_VER=@LIBVER@
@@ -10,7 +10,7 @@ libUniSet2MBSlave_la_LIBADD		= $(top_builddir)/lib/libUniSet2.la \
 								$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 								$(SIGC_LIBS) $(COMCPP_LIBS)
 libUniSet2MBSlave_la_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
-libUniSet2MBSlave_la_SOURCES 	= MBSlave.cc MBTCPMultiSlave.cc
+libUniSet2MBSlave_la_SOURCES 	= MBSlave.cc MBTCPPersistentSlave.cc
 
 @PACKAGE@_mbslave_SOURCES 	= mbslave.cc
 @PACKAGE@_mbslave_LDADD 	= libUniSet2MBSlave.la $(top_builddir)/lib/libUniSet2.la \
@@ -19,12 +19,12 @@ libUniSet2MBSlave_la_SOURCES 	= MBSlave.cc MBTCPMultiSlave.cc
 									$(SIGC_LIBS) $(COMCPP_LIBS)
 @PACKAGE@_mbslave_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
 
-@PACKAGE@_mbtcp_multislave_SOURCES 	= mbtcp-multislave.cc
-@PACKAGE@_mbtcp_multislave_LDADD 	= libUniSet2MBSlave.la $(top_builddir)/lib/libUniSet2.la \
+@PACKAGE@_mbtcp_persistentslave_SOURCES 	= mbtcp-persistentslave.cc
+@PACKAGE@_mbtcp_persistentslave_LDADD 	= libUniSet2MBSlave.la $(top_builddir)/lib/libUniSet2.la \
 									$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 									$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 									$(SIGC_LIBS) $(COMCPP_LIBS)
-@PACKAGE@_mbtcp_multislave_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
+@PACKAGE@_mbtcp_persistentslave_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
 
 # install
 devel_include_HEADERS = *.h
