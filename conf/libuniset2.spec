@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.1
-Release: alt19
+Release: alt20
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -456,6 +456,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Sat Aug 29 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt20
+- (ModbusSession): add setKeepAliveParams()
+
 * Sat Aug 29 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt19
 - (ModbusSlave): rename ModbusMultiSlave --> ModbusPersistentSlave, minor fixes
 
