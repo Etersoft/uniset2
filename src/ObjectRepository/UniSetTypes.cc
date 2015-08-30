@@ -126,8 +126,19 @@ UniSetTypes::IDList::IDList( std::vector<std::string>&& svec ):
 UniSetTypes::IDList::IDList( std::vector<std::string>& svec ):
 	UniSetTypes::IDList::IDList()
 {
+	auto conf = uniset_conf();
+
 	for( const auto& s : svec )
-		add( uni_atoi(s) );
+	{
+		ObjectId id;
+
+		if( is_digit(s) )
+			id = uni_atoi(s);
+		else
+			id = conf->getSensorID(s);
+
+		add(id);
+	}
 }
 // -------------------------------------------------------------------------
 UniSetTypes::IDList::IDList():
