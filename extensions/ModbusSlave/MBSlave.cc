@@ -1906,7 +1906,7 @@ ModbusRTU::mbErrCode MBSlave::real_read_prop( IOProperty* p, ModbusRTU::ModbusDa
 		else
 			return ModbusRTU::erBadDataAddress;
 
-		mbinfo << myname << "(real_read_prop): read OK. sid=" << p->si.id << " val=" << val << endl;
+		mblog3 << myname << "(real_read_prop): read OK. sid=" << p->si.id << " val=" << val << endl;
 		pingOK = true;
 		return ModbusRTU::erNoError;
 	}
