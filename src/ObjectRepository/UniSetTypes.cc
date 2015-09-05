@@ -499,7 +499,7 @@ int UniSetTypes::uni_atoi( const char* str )
 	// чтобы корректно обрабатывать большие числа типа std::numeric_limits<unsigned int>::max()
 	// \warning есть сомнения, что на 64bit-тах это будет корректно работать..
 
-	int n = 0;
+	unsigned int n = 0;
 
 	if( strlen(str) > 2 )
 	{
@@ -511,7 +511,7 @@ int UniSetTypes::uni_atoi( const char* str )
 	}
 
 	n = std::atoll(str); // универсальнее получать unsigned..чтобы не потерять "большие числа"..
-	return n;
+	return n; // а возвращаем int..
 }
 //--------------------------------------------------------------------------------------------
 char* UniSetTypes::uni_strdup( const string& src )

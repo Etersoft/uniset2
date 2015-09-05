@@ -1906,35 +1906,38 @@ ModbusRTU::mbErrCode MBSlave::real_read_prop( IOProperty* p, ModbusRTU::ModbusDa
 		else
 			return ModbusRTU::erBadDataAddress;
 
+		mbinfo << myname << "(real_read_prop): read OK. sid=" << p->si.id << " val=" << val << endl;
 		pingOK = true;
 		return ModbusRTU::erNoError;
 	}
 	catch( UniSetTypes::NameNotFound& ex )
 	{
-		mbwarn << myname << "(real_read_it): " << ex << endl;
+		mbwarn << myname << "(real_read_prop): " << ex << endl;
 		return ModbusRTU::erBadDataAddress;
 	}
 	catch( UniSetTypes::OutOfRange& ex )
 	{
-		mbwarn << myname << "(real_read_it): " << ex << endl;
+		mbwarn << myname << "(real_read_prop): " << ex << endl;
 		return ModbusRTU::erBadDataValue;
 	}
 	catch( const Exception& ex )
 	{
 		if( pingOK )
-			mbcrit << myname << "(real_read_it): " << ex << endl;
+			mbcrit << myname << "(real_read_prop): " << ex << endl;
 	}
 	catch( const CORBA::SystemException& ex )
 	{
 		if( pingOK )
-			mbcrit << myname << "(real_read_it): CORBA::SystemException: "
+			mbcrit << myname << "(real_read_prop): CORBA::SystemException: "
 				   << ex.NP_minorString() << endl;
 	}
 	catch(...)
 	{
 		if( pingOK )
-			mbcrit << myname << "(real_read_it) catch ..." << endl;
+			mbcrit << myname << "(real_read_prop) catch ..." << endl;
 	}
+
+	mbwarn << myname << "(real_read_prop): read sid=" << p->si.id << " FAILED!!" << endl;
 
 	pingOK = false;
 	return ModbusRTU::erTimeOut;
@@ -2249,6 +2252,8 @@ UniSetTypes::SimpleInfo* MBSlave::getInfo()
 	inf << i->info << endl;
 	inf << vmon.pretty_str() << endl;
 	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
+	inf	<< " iomap=" << iomap.size() << endl;
+	inf << "Statistic: askCount=" << askCount << " pingOK=" << pingOK << endl;
 
 	i->info = inf.str().c_str();
 	return i._retn();
