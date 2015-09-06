@@ -70,7 +70,7 @@ RTUExchange::RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shm
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
-		rtuQueryOptimization(rmap);
+		rtuQueryOptimization(devices);
 		initDeviceList();
 	}
 	else
@@ -79,7 +79,7 @@ RTUExchange::RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shm
 	initMB(false);
 
 	if( dlog()->is_info() )
-		printMap(rmap);
+		printMap(devices);
 }
 // -----------------------------------------------------------------------------
 void RTUExchange::help_print( int argc, const char* const* argv )
@@ -204,9 +204,9 @@ bool RTUExchange::poll()
 	bool allNotRespond = true;
 	ComPort::Speed s = mbrtu->getSpeed();
 
-	for( auto it1 : rmap )
+	for( auto it1 : devices )
 	{
-		RTUDevice* d(it1.second);
+		auto d = it1.second;
 
 		if( d->mode_id != DefaultObjectId && d->mode == emSkipExchange )
 			continue;
@@ -221,7 +221,7 @@ bool RTUExchange::poll()
 
 		if( d->dtype == MBExchange::dtRTU188 )
 		{
-			if( !d->rtu )
+			if( !d->rtu188 )
 				continue;
 
 			dlog3 << myname << "(pollRTU188): poll RTU188 "
@@ -233,7 +233,7 @@ bool RTUExchange::poll()
 				if( rs_pre_clean )
 					mb->cleanupChannel();
 
-				d->rtu->poll(mbrtu);
+				d->rtu188->poll(mbrtu);
 				d->numreply++;
 				allNotRespond = false;
 			}
@@ -249,38 +249,46 @@ bool RTUExchange::poll()
 		else
 		{
 			dlog3 << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr)
-				  << " regs=" << d->regmap.size() << endl;
+				  << " regs=" << d->pollmap.size() << endl;
 
-			for( auto it = d->regmap.begin(); it != d->regmap.end(); ++it )
+			for( auto&& m: d->pollmap )
 			{
-				try
-				{
-					if( d->dtype == RTUExchange::dtRTU || d->dtype == RTUExchange::dtMTR )
-					{
-						if( rs_pre_clean )
-							mb->cleanupChannel();
+				if( m.first!=0 && (ncycle % m.first) != 0 )
+					continue;
 
-						if( pollRTU(d, it) )
+				auto rmap = m.second;
+
+				for( auto&& it = rmap->begin(); it != rmap->end(); ++it )
+				{
+					try
+					{
+						if( d->dtype == RTUExchange::dtRTU || d->dtype == RTUExchange::dtMTR )
 						{
-							d->numreply++;
-							allNotRespond = false;
+							if( rs_pre_clean )
+								mb->cleanupChannel();
+
+							if( pollRTU(d, it) )
+							{
+								d->numreply++;
+								allNotRespond = false;
+							}
 						}
 					}
-				}
-				catch( ModbusRTU::mbException& ex )
-				{
-					dlog3 << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
-						  << " reg=" << ModbusRTU::dat2str(it->second->mbreg)
-						  << " for sensors: ";
-					print_plist(dlog()->level3(), it->second->slst);
-					dlog()->level3() << " err: " << ex << endl;
-				}
+					catch( ModbusRTU::mbException& ex )
+					{
+						dlog3 << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
+							  << " reg=" << ModbusRTU::dat2str(it->second->mbreg)
+							  << " for sensors: ";
+						print_plist(dlog()->level3(), it->second->slst);
+						dlog()->level3() << " err: " << ex << endl;
+					}
 
-				if( it == d->regmap.end() )
-					break;
+					if( it == rmap->end() )
+						break;
 
-				if( !checkProcActive() )
-					return false;
+					if( !checkProcActive() )
+						return false;
+				}
 			}
 		}
 	}

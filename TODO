@@ -37,8 +37,6 @@ Version 2.0
 - unetudp: добавить возмоность привязать номера текущего посылаемого и принимаемого пакетов к датчику
 
 - ModbusMaster: встроить возможность задать 'pulsar' (регистр сердцебиения)
-- ModbusMaster: сделать RegMap unordered_map-ом по pollfactor 
-(список регистров опроса формироваать по приоритету опроса и каждому такому списку уже применять oprimization-query)
 
 - IOBase: выдавать warning если заданые одновременно jardelay,ondelay и offdelay
 

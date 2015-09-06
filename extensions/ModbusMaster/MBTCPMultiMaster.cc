@@ -128,7 +128,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
-		rtuQueryOptimization(rmap);
+		rtuQueryOptimization(devices);
 		initDeviceList();
 	}
 	else
@@ -145,7 +145,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 	ptReopen.setTiming(default_timeout);
 
 	if( mblog->is_info() )
-		printMap(rmap);
+		printMap(devices);
 }
 // -----------------------------------------------------------------------------
 MBTCPMultiMaster::~MBTCPMultiMaster()

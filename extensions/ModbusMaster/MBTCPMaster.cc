@@ -48,7 +48,7 @@ MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shm
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
-		rtuQueryOptimization(rmap);
+		rtuQueryOptimization(devices);
 		initDeviceList();
 	}
 	else
@@ -58,7 +58,7 @@ MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shm
 	pollThread->setFinalAction(this, &MBTCPMaster::final_thread);
 
 	if( mblog->is_info() )
-		printMap(rmap);
+		printMap(devices);
 }
 // -----------------------------------------------------------------------------
 MBTCPMaster::~MBTCPMaster()
