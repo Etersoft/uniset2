@@ -299,7 +299,7 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 
 			while( tcp->isPending(ost::Socket::pendingInput, inTimeout) )
 			{
-				int n = tcp->peek( buf, sizeof(buf) - 1 );
+				ssize_t n = tcp->peek( buf, sizeof(buf) - 1 );
 
 				if( n > 0 )
 				{
@@ -308,6 +308,8 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 
 					log << buf;
 				}
+				else if( n == 0 && readcount <=0 )
+					break;
 
 				if( rcount > 0 && readcount > 0 )
 					rcount--;

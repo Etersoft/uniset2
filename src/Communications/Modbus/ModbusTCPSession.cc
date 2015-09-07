@@ -84,8 +84,16 @@ void ModbusTCPSession::run()
 	ModbusRTU::mbErrCode res = erTimeOut;
 	cancelled = false;
 
+	char pbuf[3];
+
 	while( !cancelled && isPending(Socket::pendingInput, timeout) )
 	{
+		ssize_t n = peek( pbuf, sizeof(pbuf) );
+
+		// кажется сервер закрыл канал
+		if( n == 0 )
+			break;
+
 		res = receive(addr, timeout);
 
 		if( res == erSessionClosed )

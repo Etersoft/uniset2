@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.1
-Release: alt22
+Release: alt23
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -456,6 +456,10 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Mon Sep 07 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt23
+- (ModbusPersistentSlave): fixed bug in end connection processing
+- (uniset-log): fixed bug in end connection processing
+
 * Sun Sep 06 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt22
 - refactoring (use shared_ptr), change pollfactor realisation..
 
