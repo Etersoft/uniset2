@@ -29,10 +29,11 @@ LogServer::~LogServer()
 		tcp->reject();
 
 	if( thr )
+	{
 		thr->stop();
-
-	delete tcp;
-	tcp = 0;
+		if( thr->isRunning() )
+			thr->join();
+	}
 }
 // -------------------------------------------------------------------------
 LogServer::LogServer( std::shared_ptr<LogAgregator> log ):
@@ -74,17 +75,7 @@ void LogServer::run( const std::string& addr, ost::tpport_t port, bool thread )
 	try
 	{
 		ost::InetAddress iaddr(addr.c_str());
-		tcp = new ost::TCPSocket(iaddr, port);
-#if 0
-
-		if( !nullsess )
-		{
-			ostringstream err;
-			err << "(LOG SERVER): Exceeded the limit on the number of sessions = " << sessMaxCount << endl;
-			nullsess = make_shared<NullLogSession>(err.str());
-		}
-
-#endif
+		tcp = make_shared<ost::TCPSocket>(iaddr, port);
 	}
 	catch( ost::Socket* socket )
 	{
@@ -138,26 +129,28 @@ void LogServer::work()
 							ostringstream err;
 							err << "(LOG SERVER): Exceeded the limit on the number of sessions = " << sessMaxCount << endl;
 							nullsess = make_shared<NullLogSession>(err.str());
-							nullsess->detach(); // start();
+							//nullsess->detach();
+							nullsess->start();
 						}
 						else
 							nullsess->setMessage(err.str());
 
-						nullsess->add(*tcp);
+						nullsess->add(*(tcp.get())); // опасно передавать "сырой указатель", теряем контроль
 						continue;
 					}
 				}
 
 				if( cancelled ) break;
 
-				auto s = make_shared<LogSession>(*tcp, elog, sessTimeout, cmdTimeout, outTimeout);
+				auto s = make_shared<LogSession>( *(tcp.get()), elog, sessTimeout, cmdTimeout, outTimeout);
 				s->setSessionLogLevel(sessLogLevel);
 				{
 					uniset_rwmutex_wrlock l(mutSList);
 					slist.push_back(s);
 				}
 				s->connectFinalSession( sigc::mem_fun(this, &LogServer::sessionFinished) );
-				s->detach();
+				//s->detach();
+				s->start();
 			}
 		}
 		catch( ost::Socket* socket )
@@ -175,6 +168,10 @@ void LogServer::work()
 			else
 				cerr << "client socket failed" << endl;
 		}
+		catch( const std::exception& ex )
+		{
+			cerr << "catch exception: " << ex.what() << endl;
+		}
 	}
 
 	{
@@ -184,6 +181,12 @@ void LogServer::work()
 
 		if( nullsess )
 			nullsess->cancel();
+	}
+
+	for( const auto& i : slist )
+	{
+		if( i->isRunning() )
+			i->ost::Thread::join();
 	}
 }
 // -------------------------------------------------------------------------

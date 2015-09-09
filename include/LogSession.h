@@ -70,6 +70,8 @@ class LogSession:
 		std::shared_ptr<LogAgregator> alog;
 		sigc::connection conn;
 
+		std::shared_ptr<LogSession> myptr;
+
 		//        PassiveTimer ptSessionTimeout;
 		FinalSlot slFin;
 		std::atomic_bool cancelled;

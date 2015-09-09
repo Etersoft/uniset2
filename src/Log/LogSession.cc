@@ -18,9 +18,9 @@ using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 LogSession::~LogSession()
 {
+	cancelled = true;
 	if( isRunning() )
 	{
-		cancelled = true;
 		ost::Thread::join();
 		disconnect();
 	}
@@ -73,6 +73,10 @@ void LogSession::run()
 	if( cancelled )
 		return;
 
+	// удерживаем указатель на себя, пока работает поток..
+	myptr = shared_from_this();
+
+	cancelled = false;
 	{
 		ost::tpport_t p;
 		ost::InetAddress iaddr = getIPV4Peer(&p);
@@ -95,7 +99,7 @@ void LogSession::run()
 	setKeepAlive(true);
 
 	// Команды могут посылаться только в начале сессии..
-	while( isPending(Socket::pendingInput, cmdTimeout) )
+	while( !cancelled && isPending(Socket::pendingInput, cmdTimeout) )
 	{
 		LogServerTypes::lsMessage msg;
 
@@ -242,8 +246,6 @@ void LogSession::run()
 
 #endif
 
-	cancelled = false;
-
 	while( !cancelled && isConnected() ) // !ptSessionTimeout.checkTime()
 	{
 		// проверка только ради проверки "целостности" соединения
@@ -307,18 +309,22 @@ void LogSession::run()
 
 	disconnect();
 
+	cancelled = true;
 	if( slog.debugging(Debug::INFO) )
 		slog[Debug::INFO] << peername << "(run): thread stopping..." << endl;
+
+	myptr = 0;
 }
 // -------------------------------------------------------------------------
 void LogSession::final()
 {
 	tcp()->sync();
 
+	cancelled = true;
+
 	try
 	{
 		auto s = shared_from_this();
-
 		if( s )
 			slFin(s);
 	}
@@ -344,8 +350,8 @@ NullLogSession::~NullLogSession()
 {
 	cancelled = true;
 
-	if( isRunning() )
-		exit(); // terminate();
+//	if( isRunning() )
+//		exit(); // terminate();
 }
 // ---------------------------------------------------------------------
 void NullLogSession::add( ost::TCPSocket& sock )
