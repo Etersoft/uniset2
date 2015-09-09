@@ -200,6 +200,9 @@ void LogReader::sendCommand( const std::string& _addr, ost::tpport_t _port, std:
 		}
 	} // end for send all command
 
+	if( !isConnection() )
+		return;
+
 	// после команд.. выводим список текущий..
 
 	timeout_t reply_timeout = 2000; // TIMEOUT_INF;
