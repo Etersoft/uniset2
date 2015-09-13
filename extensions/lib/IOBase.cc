@@ -550,14 +550,28 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SM
 	b->breaklim = initIntProp(it, "breaklim", prefix, init_prefix_only);
 	b->rawdata  = initIntProp(it, "rawdata", prefix, init_prefix_only);
 
-	long msec = initIntProp(it, "debouncedelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
-	b->ptDebounce.setTiming(msec);
+	long d_msec = initIntProp(it, "debouncedelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
+	b->ptDebounce.setTiming(d_msec);
 
-	msec = initIntProp(it, "ondelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
-	b->ptOnDelay.setTiming(msec);
+	long d_on_msec = initIntProp(it, "ondelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
+	b->ptOnDelay.setTiming(d_on_msec);
 
-	msec = initIntProp(it, "offdelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
-	b->ptOffDelay.setTiming(msec);
+	long d_off_msec = initIntProp(it, "offdelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
+	b->ptOffDelay.setTiming(d_off_msec);
+
+
+	if( dlog && d_msec != UniSetTimer::WaitUpTime
+			&& d_on_msec != UniSetTimer::WaitUpTime
+			&& d_off_msec != UniSetTimer::WaitUpTime )
+	{
+		dlog->warn() << myname <<"(IOBase::readItem): "
+						<< " 'debouncedelay' is used in conjunction with the 'ondelay' and 'offdelay'. Sure?"
+						<< " [ debouncedelay=" << d_msec
+						<< " ondelay=" << d_on_msec
+						<< " offdelay=" << d_off_msec
+						<< " ]"	<< endl;
+	}
+
 
 	b->front = false;
 	std::string front_t( initProp(it, "iofront", prefix, init_prefix_only) );

@@ -38,9 +38,6 @@ Version 2.0
 
 - ModbusMaster: встроить возможность задать 'pulsar' (регистр сердцебиения)
 
-- IOBase: выдавать warning если заданые одновременно jardelay,ondelay и offdelay
-
-
 - ТЕСТЫ! ТЕСТЫ! ТЕСТЫ!
 
 - Перевести взаимодействие PassiveObject <--> ProxyManager на shared_ptr (или weak_ptr).
