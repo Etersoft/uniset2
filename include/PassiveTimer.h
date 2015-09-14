@@ -113,7 +113,7 @@ class PassiveTimer:
 		virtual void terminate(); /*!< прервать работу таймера */
 
 	protected:
-		timeout_t t_msec;  /*!< интервал таймера, в милисекундах */
+		timeout_t t_msec = { 0 };  /*!< интервал таймера, в милисекундах */
 		std::chrono::high_resolution_clock::time_point t_start;	/*!< время установки таймера (сброса) */
 
 	private:

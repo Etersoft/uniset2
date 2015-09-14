@@ -29,7 +29,7 @@
 PassiveTimer::PassiveTimer( ):
 	PassiveTimer(WaitUpTime)
 {
-
+	reset();
 }
 //------------------------------------------------------------------------------
 
