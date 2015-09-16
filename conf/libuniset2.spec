@@ -12,8 +12,8 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.1
-Release: alt25
+Version: 2.2
+Release: alt1
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -456,6 +456,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Thu Sep 17 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt1
+- new UNetUDP: support 'sendfactor'
+
 * Mon Sep 14 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt25
 - (PassiveTimer): fixed bug in default init
 - (Pulse): refactoring

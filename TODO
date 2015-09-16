@@ -43,7 +43,7 @@ Version 2.0
 - Перевести взаимодействие PassiveObject <--> ProxyManager на shared_ptr (или weak_ptr).
 
 uniset-codegen:  добавить ключ --gen-sensor-name для генерирования name_Item.. (чтобы можно было в логах использовать текстовые названия)
-
+uniset-codegen: перенести инициализацию полей в header (c++11) и "разгрузить конструкторы"
 
 
 SQL:
