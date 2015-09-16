@@ -13,7 +13,6 @@ LogReader::LogReader():
 	inTimeout(10000),
 	outTimeout(6000),
 	reconDelay(5000),
-	tcp(0),
 	iaddr(""),
 	cmdonly(false),
 	readcount(0)
@@ -50,9 +49,8 @@ void LogReader::connect( ost::InetAddress addr, ost::tpport_t _port, timeout_t m
 {
 	if( tcp )
 	{
-		(*tcp) << endl;
+		(*tcp.get()) << endl;
 		disconnect();
-		delete tcp;
 		tcp = 0;
 	}
 
@@ -71,7 +69,7 @@ void LogReader::connect( ost::InetAddress addr, ost::tpport_t _port, timeout_t m
 
 	try
 	{
-		tcp = new UTCPStream();
+		tcp = make_shared<UTCPStream>();
 		tcp->create(iaddr, port, true, 500);
 		tcp->setTimeout(msec);
 		tcp->setKeepAlive(true);
@@ -85,7 +83,6 @@ void LogReader::connect( ost::InetAddress addr, ost::tpport_t _port, timeout_t m
 			rlog.crit() << s.str() << std::endl;
 		}
 
-		delete tcp;
 		tcp = 0;
 	}
 	catch( ... )
@@ -110,7 +107,6 @@ void LogReader::disconnect()
 		rlog.info() << iaddr << "(LogReader): disconnect." << endl;
 
 	tcp->disconnect();
-	delete tcp;
 	tcp = 0;
 }
 // -------------------------------------------------------------------------
@@ -199,6 +195,9 @@ void LogReader::sendCommand( const std::string& _addr, ost::tpport_t _port, std:
 			n--;
 		}
 	} // end for send all command
+
+	if( !isConnection() )
+		return;
 
 	// после команд.. выводим список текущий..
 
@@ -299,7 +298,7 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 
 			while( tcp->isPending(ost::Socket::pendingInput, inTimeout) )
 			{
-				int n = tcp->peek( buf, sizeof(buf) - 1 );
+				ssize_t n = tcp->peek( buf, sizeof(buf) - 1 );
 
 				if( n > 0 )
 				{
@@ -308,6 +307,8 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 
 					log << buf;
 				}
+				else if( n == 0 && readcount <=0 )
+					break;
 
 				if( rcount > 0 && readcount > 0 )
 					rcount--;

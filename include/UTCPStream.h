@@ -16,7 +16,7 @@ class UTCPStream:
 		void create( const std::string& hname, int port, bool throwflag = false, timeout_t timer = 0 );
 
 		// set keepalive params
-		void setKeepAliveParams( timeout_t timeout_sec = 5, int conn_keepcnt = 1, int keepintvl=2 );
+		void setKeepAliveParams( timeout_t timeout_sec = 5, int conn_keepcnt = 1, int keepintvl = 2 );
 
 	protected:
 

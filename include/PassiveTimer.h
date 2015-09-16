@@ -46,8 +46,8 @@ class UniSetTimer
 		virtual timeout_t setTiming( timeout_t msec ) = 0;	/*!< установить таймер и запустить */
 		virtual void reset() = 0;							/*!< перезапустить таймер */
 
-		virtual timeout_t getCurrent() = 0;       /*!< получить текущее значение таймера */
-		virtual timeout_t getInterval() = 0;      /*!< получить интервал, на который установлен таймер, в мс */
+		virtual timeout_t getCurrent() const = 0;       /*!< получить текущее значение таймера */
+		virtual timeout_t getInterval() const = 0;      /*!< получить интервал, на который установлен таймер, в мс */
 		timeout_t getLeft(timeout_t timeout)      /*!< получить время, которое остается от timeout после прошествия времени getCurrent() */
 		{
 			timeout_t ct = getCurrent();
@@ -104,8 +104,8 @@ class PassiveTimer:
 		virtual timeout_t setTiming( timeout_t msec );     /*!< установить таймер и запустить. timeMS = 0 вызовет немедленное срабатывание */
 		virtual void reset(); /*!< перезапустить таймер */
 
-		virtual timeout_t getCurrent();  /*!< получить текущее значение таймера, в мс */
-		virtual timeout_t getInterval()  /*!< получить интервал, на который установлен таймер, в мс */
+		virtual timeout_t getCurrent() const override;  /*!< получить текущее значение таймера, в мс */
+		virtual timeout_t getInterval() const override  /*!< получить интервал, на который установлен таймер, в мс */
 		{
 			return (t_msec != UniSetTimer::WaitUpTime ? t_msec : 0);
 		}
@@ -113,7 +113,7 @@ class PassiveTimer:
 		virtual void terminate(); /*!< прервать работу таймера */
 
 	protected:
-		timeout_t t_msec;  /*!< интервал таймера, в милисекундах */
+		timeout_t t_msec = { 0 };  /*!< интервал таймера, в милисекундах */
 		std::chrono::high_resolution_clock::time_point t_start;	/*!< время установки таймера (сброса) */
 
 	private:

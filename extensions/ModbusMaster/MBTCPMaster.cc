@@ -48,7 +48,7 @@ MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shm
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
-		rtuQueryOptimization(rmap);
+		rtuQueryOptimization(devices);
 		initDeviceList();
 	}
 	else
@@ -58,7 +58,7 @@ MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shm
 	pollThread->setFinalAction(this, &MBTCPMaster::final_thread);
 
 	if( mblog->is_info() )
-		printMap(rmap);
+		printMap(devices);
 }
 // -----------------------------------------------------------------------------
 MBTCPMaster::~MBTCPMaster()
@@ -81,6 +81,7 @@ std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
 
 		mbtcp.reset();
 		mb.reset();
+		ptInitChannel.reset();
 	}
 
 	try
@@ -252,7 +253,7 @@ UniSetTypes::SimpleInfo* MBTCPMaster::getInfo()
 	ostringstream inf;
 
 	inf << i->info << endl;
-	inf << "poll: " << iaddr << ":" << port << endl;
+	inf << "poll: " << iaddr << ":" << port << " pesrsistent-connection=" << ( force_disconnect ? "NO" : "YES" ) << endl;
 
 	i->info = inf.str().c_str();
 	return i._retn();

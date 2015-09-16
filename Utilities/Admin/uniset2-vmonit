@@ -25,11 +25,12 @@ print_usage()
 }
 
 #parse command line options
-TEMP=`getopt -n $PROG -o h,d,c:,s: -l help,dump,confile:,watch_sec: -- "$@"` || exit 1
+TEMP=`getopt -n $PROG -o h,d,c:,s: -l help,dump,confile:,watch_sec:,uniset-port: -- "$@"` || exit 1
 eval set -- "$TEMP"
 
 dump=
 confile=
+uport=
 while :; do
     case "$1" in
 	-h|--help) print_usage 0
@@ -45,6 +46,10 @@ while :; do
 	    shift
 		confile="$1"
 	    ;;
+	--uniset-port)
+	    shift
+	    uport="--uniset-port $1"
+	    ;;
 	--) shift; break
 	;;
 	*) "unrecognized option: $1"
@@ -57,5 +62,5 @@ done
 [ -n "$confile" ] && confile="--confile $confile"
 
 
-[ -z "$dump" ] && $WATCH -n $WATCH_SEC uniset2-admin $confile --oinfo $*
-[ -n "$dump" ] && uniset2-admin $confile --oinfo $*
+[ -z "$dump" ] && $WATCH -n $WATCH_SEC uniset2-admin $confile --oinfo $* -- $uport
+[ -n "$dump" ] && uniset2-admin $confile --oinfo $* -- $uport

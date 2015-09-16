@@ -27,8 +27,8 @@ void UTCPStream::setKeepAliveParams(timeout_t timeout_sec, int keepcnt, int keep
 {
 	SOCKET fd = TCPStream::so;
 	int enable = 1;
-	setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE,(void*)&enable,sizeof(enable));
-	setsockopt(fd, SOL_TCP, TCP_KEEPCNT, (void *) &keepcnt, sizeof(keepcnt));
+	setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void*)&enable, sizeof(enable));
+	setsockopt(fd, SOL_TCP, TCP_KEEPCNT, (void*) &keepcnt, sizeof(keepcnt));
 	setsockopt(fd, SOL_TCP, TCP_KEEPINTVL, (void*) &keepintvl, sizeof (keepintvl));
 	setsockopt(fd, SOL_TCP, TCP_KEEPIDLE, (void*) &timeout_sec, sizeof (timeout_sec));
 }

@@ -105,7 +105,7 @@ namespace UniSetTypes
 		localNode(UniSetTypes::DefaultObjectId),
 		localNodeName(""),
 		fileConfName(""),
-		heartbeat_msec(10000)
+		heartbeat_msec(3000)
 	{
 		//    ulog.crit()<< " configuration FAILED!!!!!!!!!!!!!!!!!" << endl;
 		//    throw Exception();
@@ -622,7 +622,7 @@ namespace UniSetTypes
 			heartbeat_msec = hit.getIntProp("msec");
 
 			if( heartbeat_msec <= 0 )
-				heartbeat_msec = 5000;
+				heartbeat_msec = 3000;
 		}
 	}
 	// -------------------------------------------------------------------------

@@ -8,11 +8,13 @@
 --mbtcp-set-prop-prefix \
 --mbtcp-filter-field rs \
 --mbtcp-filter-value 5 \
---mbtcp-recv-timeout 1000 \
+--mbtcp-recv-timeout 7000 \
 --mbtcp-timeout 2000 \
---mbtcp-polltime 1000 \
+--mbtcp-polltime 2000 \
 --mbtcp-force-out 1 \
 --mbtcp-log-add-levels any \
+--mbtcp-persistent-connection 1 \
+--mbtcp-run-logserver \
 $*
 
 #--mbtcp-exchange-mode-id MB1_Mode_AS \

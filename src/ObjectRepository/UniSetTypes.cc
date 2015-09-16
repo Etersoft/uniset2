@@ -126,8 +126,19 @@ UniSetTypes::IDList::IDList( std::vector<std::string>&& svec ):
 UniSetTypes::IDList::IDList( std::vector<std::string>& svec ):
 	UniSetTypes::IDList::IDList()
 {
+	auto conf = uniset_conf();
+
 	for( const auto& s : svec )
-		add( uni_atoi(s) );
+	{
+		ObjectId id;
+
+		if( is_digit(s) )
+			id = uni_atoi(s);
+		else
+			id = conf->getSensorID(s);
+
+		add(id);
+	}
 }
 // -------------------------------------------------------------------------
 UniSetTypes::IDList::IDList():
@@ -488,7 +499,7 @@ int UniSetTypes::uni_atoi( const char* str )
 	// чтобы корректно обрабатывать большие числа типа std::numeric_limits<unsigned int>::max()
 	// \warning есть сомнения, что на 64bit-тах это будет корректно работать..
 
-	int n = 0;
+	unsigned int n = 0;
 
 	if( strlen(str) > 2 )
 	{
@@ -500,7 +511,7 @@ int UniSetTypes::uni_atoi( const char* str )
 	}
 
 	n = std::atoll(str); // универсальнее получать unsigned..чтобы не потерять "большие числа"..
-	return n;
+	return n; // а возвращаем int..
 }
 //--------------------------------------------------------------------------------------------
 char* UniSetTypes::uni_strdup( const string& src )

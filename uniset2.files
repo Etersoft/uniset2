@@ -41,7 +41,7 @@ extensions/include/MBExchange.h
 extensions/include/MBSlave.h
 extensions/include/MBTCPMaster.h
 extensions/include/MBTCPMultiMaster.h
-extensions/include/MBTCPMultiSlave.h
+extensions/include/MBTCPPersistentSlave.h
 extensions/include/MTR.h
 extensions/include/PassiveLProcessor.h
 extensions/include/PID.h
@@ -144,9 +144,9 @@ extensions/ModbusSlave/Makefile.am
 extensions/ModbusSlave/MBSlave.cc
 extensions/ModbusSlave/mbslave.cc
 extensions/ModbusSlave/MBSlave.h
-extensions/ModbusSlave/mbtcp-multislave.cc
-extensions/ModbusSlave/MBTCPMultiSlave.cc
-extensions/ModbusSlave/MBTCPMultiSlave.h
+extensions/ModbusSlave/mbtcp-persistentslave.cc
+extensions/ModbusSlave/MBTCPPersistentSlave.cc
+extensions/ModbusSlave/MBTCPPersistentSlave.h
 extensions/ModbusSlave/test.xml
 extensions/RRDServer/libUniSet2RRDServer.pc.in
 extensions/RRDServer/main.cc

@@ -539,6 +539,7 @@ int omap()
 	{
 		if( !quiet )
 			cerr << "std::exception: " << ex.what() << endl;
+
 		return 1;
 	}
 
@@ -600,6 +601,7 @@ int setValue( const string& args, UInterface& ui )
 		{
 			if( !quiet )
 				cerr << "std::exception: " << ex.what() << endl;
+
 			err = 1;
 		}
 	}
@@ -666,6 +668,7 @@ int getValue( const string& args, UInterface& ui )
 		{
 			if( !quiet )
 				cerr << "std::exception: " << ex.what() << endl;
+
 			err = 1;
 		}
 	}
@@ -714,6 +717,7 @@ int getCalibrate( const std::string& args, UInterface& ui )
 		{
 			if( !quiet )
 				cerr << "std::exception: " << ex.what() << endl;
+
 			err = 1;
 		}
 	}
@@ -758,6 +762,7 @@ int getRawValue( const std::string& args, UInterface& ui )
 		{
 			if( !quiet )
 				cerr << "std::exception: " << ex.what() << endl;
+
 			err = 1;
 		}
 	}
@@ -802,12 +807,14 @@ int getChangedTime( const std::string& args, UInterface& ui )
 		{
 			if( !quiet )
 				cerr << "CORBA::SystemException: " << ex.NP_minorString() << endl;
+
 			err = 1;
 		}
 		catch( const CORBA::Exception& )
 		{
 			if( !quiet )
 				cerr << "CORBA::Exception." << endl;
+
 			err = 1;
 		}
 		catch( const omniORB::fatalException& fe )
@@ -819,20 +826,23 @@ int getChangedTime( const std::string& args, UInterface& ui )
 				cerr << "  line: " << fe.line() << endl;
 				cerr << "  mesg: " << fe.errmsg() << endl;
 			}
+
 			err = 1;
 		}
 		catch( const std::exception& ex )
 		{
 			if( !quiet )
 				cerr << "std::exception: " << ex.what() << endl;
+
 			err = 1;
 		}
 		catch(...)
 		{
 			if( !quiet )
 				cerr << "Unknown exception.." << endl;
+
 			err = 1;
-		}		
+		}
 	}
 
 	return err;
@@ -971,7 +981,7 @@ int oinfo( const string& args, UInterface& ui )
 			if( !quiet )
 				cerr << "Unknown exception.." << endl;
 		}
-	        
+
 		cout << endl << endl;
 	}
 

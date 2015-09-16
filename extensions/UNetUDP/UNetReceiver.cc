@@ -285,8 +285,8 @@ void UNetReceiver::real_update()
 
 				if( sub >= maxDifferens )
 				{
-					// считаем сколько пакетов потеряли..
-					if( p.num > pnum )
+					// считаем сколько пакетов потеряли.. (pnum=0 - означает что мы только что запустились...)
+					if( pnum != 0 && p.num > pnum )
 					{
 						lostPackets += sub;
 						unetwarn << myname << "(update): sub=" <<  sub << " > maxDifferenst(" << maxDifferens << ")! lost " << sub << " packets " << endl;

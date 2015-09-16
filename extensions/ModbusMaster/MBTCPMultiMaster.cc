@@ -128,7 +128,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
-		rtuQueryOptimization(rmap);
+		rtuQueryOptimization(devices);
 		initDeviceList();
 	}
 	else
@@ -145,7 +145,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 	ptReopen.setTiming(default_timeout);
 
 	if( mblog->is_info() )
-		printMap(rmap);
+		printMap(devices);
 }
 // -----------------------------------------------------------------------------
 MBTCPMultiMaster::~MBTCPMultiMaster()
@@ -171,6 +171,9 @@ MBTCPMultiMaster::~MBTCPMultiMaster()
 // -----------------------------------------------------------------------------
 std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 {
+	if( mb )
+		ptInitChannel.reset();
+
 	// просто движемся по кругу (т.к. связь не проверяется)
 	// движемся в обратном порядке, т.к. сортировка по возрастанию приоритета
 	if( checktime <= 0 )
@@ -363,17 +366,16 @@ void MBTCPMultiMaster::check_thread()
 		{
 			try
 			{
-				if( it->use ) // игнорируем текущий mbtcp
-					continue;
+				// Если use=1" связь не проверяем и считаем что связь есть..
+				bool r = ( it->use ? true : it->check() );
 
-				bool r = it->check();
-				mbinfo << myname << "(check): " << it->myname << " " << ( r ? "OK" : "FAIL" ) << endl;
+				mblog4 << myname << "(check): " << it->myname << " " << ( r ? "OK" : "FAIL" ) << endl;
 
 				try
 				{
 					if( it->respond_id != DefaultObjectId && (it->respond_force || !it->respond_init || r != it->respond) )
 					{
-						bool set = it->respond_invert ? !it->respond : it->respond;
+						bool set = it->respond_invert ? !r : r;
 						shm->localSetValue(it->respond_it, it->respond_id, (set ? 1 : 0), getId());
 						it->respond_init = true;
 					}
@@ -413,7 +415,7 @@ void MBTCPMultiMaster::initIterators()
 {
 	MBExchange::initIterators();
 
-	for( auto& it : mblist )
+	for( auto && it : mblist )
 		shm->initIterator(it.respond_it);
 }
 // -----------------------------------------------------------------------------
@@ -497,7 +499,13 @@ std::shared_ptr<MBTCPMultiMaster> MBTCPMultiMaster::init_mbmaster( int argc, con
 const std::string MBTCPMultiMaster::MBSlaveInfo::getShortInfo() const
 {
 	ostringstream s;
-	s << myname << " respond=" << respond;
+	s << myname << " respond=" << respond
+	  << " (respond_id=" << respond_id << " respond_invert=" << respond_invert
+	  << " recv_timeout=" << recv_timeout << " resp_force=" << respond_force
+	  << " use=" << use << " ignore=" << ignore << " priority=" << priority 
+	  << " persistent-connection=" << !force_disconnect
+	  << ")";
+
 	return std::move(s.str());
 }
 // -----------------------------------------------------------------------------
@@ -508,7 +516,7 @@ UniSetTypes::SimpleInfo* MBTCPMultiMaster::getInfo()
 	ostringstream inf;
 
 	inf << i->info << endl;
-	inf << "Gates: " << endl;
+	inf << "Gates: " << (checktime <= 0 ? "/ check connections DISABLED /" : "") << endl;
 
 	for( const auto& m : mblist )
 		inf << "   " << m.getShortInfo() << endl;

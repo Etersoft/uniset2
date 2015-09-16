@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.1
-Release: alt15.1
+Release: alt25
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -456,6 +456,50 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Mon Sep 14 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt25
+- (PassiveTimer): fixed bug in default init
+- (Pulse): refactoring
+
+* Thu Sep 10 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt24
+- (LogServer): refactoring (more use shared_ptr)
+
+* Mon Sep 07 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt23
+- (ModbusPersistentSlave): fixed bug in end connection processing
+- (uniset-log): fixed bug in end connection processing
+
+* Sun Sep 06 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt22
+- refactoring (use shared_ptr), change pollfactor realisation..
+
+* Sat Sep 05 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt21
+- (modbus slave): add more logs.. 
+
+* Sat Aug 29 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt20
+- (ModbusSession): add setKeepAliveParams()
+
+* Sat Aug 29 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt19
+- (ModbusSlave): rename ModbusMultiSlave --> ModbusPersistentSlave, minor fixes
+
+* Thu Aug 27 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt18
+- (ModbusExchange):  add reinit_timeout timer..
+
+* Fri Aug 21 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt17
+- up build
+
+* Fri Aug 21 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt16.2
+- (ModbusTCP): fixed bug in update respond sensor in SharedMemory
+
+* Thu Aug 20 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt16.1
+- (ModbusTCP): add more vmonit parameters
+
+* Thu Aug 20 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt16
+- (modbustcptest): add 'check' for connection
+
+* Tue Aug 18 2015 Pavel Vainerman <pv@altlinux.ru> 2.1-alt15.3
+- minor build
+
+* Fri Aug 14 2015 Pavel Vainerman <pv@etersoft.ru> 2.1-alt15.2
+- up build
+
 * Thu Aug 13 2015 Pavel Vainerman <pv@etersoft.ru> 2.1-alt15.1
 - test build for new UNetUDP
 

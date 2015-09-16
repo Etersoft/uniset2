@@ -10,6 +10,10 @@ TEST_CASE("Pulse", "[Test for class 'Pulse' - impulse generator]" )
 	{
 		// Работа без задержки..(нулевые задержки)
 		Pulse p;
+		
+		REQUIRE( p.getT1() == 0 );
+		REQUIRE( p.getT0() == 0 );
+
 		CHECK_FALSE( p.out() );
 
 		p.step();
@@ -51,5 +55,18 @@ TEST_CASE("Pulse", "[Test for class 'Pulse' - impulse generator]" )
 		CHECK( p.step() );
 		msleep(110);
 		CHECK_FALSE( p.step() );
+
+		// проверка того, что при познем вызове step
+		// тоже всё будет хорошо..
+		p.reset();
+		CHECK( p.step() );
+		msleep(110);
+		CHECK_FALSE( p.step() );
+		msleep(2050);
+		CHECK( p.step() );
+		msleep(110);
+		CHECK_FALSE( p.step() );
+		msleep(70);
+		CHECK( p.step() );
 	}
 }

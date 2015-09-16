@@ -125,16 +125,16 @@ class DelayTimer
 			return check(prevState);
 		}
 
-		inline timeout_t getOnDelay()
+		inline timeout_t getOnDelay() const
 		{
 			return onDelay;
 		}
-		inline timeout_t getOffDelay()
+		inline timeout_t getOffDelay() const
 		{
 			return offDelay;
 		}
 
-		inline timeout_t getCurrent()
+		inline timeout_t getCurrent() const
 		{
 			return pt.getCurrent();
 		}

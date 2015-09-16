@@ -7,6 +7,8 @@
 #include "modbus/ModbusTCPSession.h"
 #include "modbus/ModbusTCPCore.h"
 #include "UniSetTypes.h"
+// glibc..
+#include <netinet/tcp.h>
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace ModbusRTU;
@@ -30,12 +32,30 @@ ModbusTCPSession::ModbusTCPSession( ost::TCPSocket& server, ModbusRTU::ModbusAdd
 	askCount(0)
 {
 	setCRCNoCheckit(true);
+
+	timeout_t tout = timeout/1000;
+	if( tout <=0 )
+		tout = 3;
+
+	setKeepAlive(true);
+	setLinger(true);
+	setKeepAliveParams(tout);
 }
 // -------------------------------------------------------------------------
 unsigned int ModbusTCPSession::getAskCount()
 {
 	uniset_rwmutex_rlock l(mAsk);
 	return askCount;
+}
+// -------------------------------------------------------------------------
+void ModbusTCPSession::setKeepAliveParams( timeout_t timeout_sec, int keepcnt, int keepintvl )
+{
+	SOCKET fd = TCPSession::so;
+	int enable = 1;
+	setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void*)&enable, sizeof(enable));
+	setsockopt(fd, SOL_TCP, TCP_KEEPCNT, (void*) &keepcnt, sizeof(keepcnt));
+	setsockopt(fd, SOL_TCP, TCP_KEEPINTVL, (void*) &keepintvl, sizeof (keepintvl));
+	setsockopt(fd, SOL_TCP, TCP_KEEPIDLE, (void*) &timeout_sec, sizeof (timeout_sec));
 }
 // -------------------------------------------------------------------------
 void ModbusTCPSession::run()
@@ -64,8 +84,16 @@ void ModbusTCPSession::run()
 	ModbusRTU::mbErrCode res = erTimeOut;
 	cancelled = false;
 
+	char pbuf[3];
+
 	while( !cancelled && isPending(Socket::pendingInput, timeout) )
 	{
+		ssize_t n = peek( pbuf, sizeof(pbuf) );
+
+		// кажется сервер закрыл канал
+		if( n == 0 )
+			break;
+
 		res = receive(addr, timeout);
 
 		if( res == erSessionClosed )

@@ -87,6 +87,9 @@
                                                    (после этого идёт попытка реинициализировать соединение)
                                                    По умолчанию 5000 мсек.
 
+	  \b --xxx-reinit-timeout или \b reinit_timeout msec  - таймаут на реинициализацию канала связи (после потери связи)
+												   По умолчанию timeout мсек.
+
       \b --xxx-no-query-optimization или \b no_query_optimization   - [1|0] отключить оптимизацию запросов
 
        Оптимизация заключается в том, что регистры идущие подряд автоматически запрашиваются/записываются одним запросом.
@@ -280,6 +283,7 @@ class MBTCPMultiMaster:
 			bool check();
 			inline void setUse( bool st )
 			{
+				respond_init = !( st && !use );
 				use = st;
 			}
 

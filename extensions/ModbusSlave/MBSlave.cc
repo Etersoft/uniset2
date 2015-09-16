@@ -559,7 +559,7 @@ void MBSlave::execute_rtu()
 				}
 			}
 
-			for( auto& it : iomap )
+			for( auto && it : iomap )
 				IOBase::processingThreshold(&it.second, shm, force);
 		}
 		catch(...) {}
@@ -645,7 +645,7 @@ void MBSlave::execute_tcp()
 				}
 			}
 
-			for( auto& it : iomap )
+			for( auto && it : iomap )
 				IOBase::processingThreshold(&it.second, shm, force);
 		}
 		catch( const std::exception& ex )
@@ -759,9 +759,9 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
 	if( force )
 		return;
 
-	for( auto& it : iomap )
+	for( const auto& it : iomap )
 	{
-		IOProperty* p(&it.second);
+		const IOProperty* p(&it.second);
 
 		try
 		{
@@ -1147,7 +1147,7 @@ int MBSlave::getOptimizeWriteFunction( const int fn )
 // ------------------------------------------------------------------------------------------
 bool MBSlave::BitRegProperty::check( const IOController_i::SensorInfo& si )
 {
-	for( auto& i : bvec )
+	for( const auto& i : bvec )
 	{
 		if( i.si.id == si.id && i.si.node == si.node )
 			return true;
@@ -1267,7 +1267,7 @@ std::ostream& operator<<( std::ostream& os, MBSlave::BitRegProperty& p )
 {
 	os  << " reg=" << ModbusRTU::dat2str(p.mbreg) << "(" << (int)p.mbreg << ")[ ";
 
-	for( auto& i : p.bvec )
+	for( const auto& i : p.bvec )
 		os << "'" << i.si.id << "' ";
 
 	os << "]";
@@ -1906,35 +1906,38 @@ ModbusRTU::mbErrCode MBSlave::real_read_prop( IOProperty* p, ModbusRTU::ModbusDa
 		else
 			return ModbusRTU::erBadDataAddress;
 
+		mblog3 << myname << "(real_read_prop): read OK. sid=" << p->si.id << " val=" << val << endl;
 		pingOK = true;
 		return ModbusRTU::erNoError;
 	}
 	catch( UniSetTypes::NameNotFound& ex )
 	{
-		mbwarn << myname << "(real_read_it): " << ex << endl;
+		mbwarn << myname << "(real_read_prop): " << ex << endl;
 		return ModbusRTU::erBadDataAddress;
 	}
 	catch( UniSetTypes::OutOfRange& ex )
 	{
-		mbwarn << myname << "(real_read_it): " << ex << endl;
+		mbwarn << myname << "(real_read_prop): " << ex << endl;
 		return ModbusRTU::erBadDataValue;
 	}
 	catch( const Exception& ex )
 	{
 		if( pingOK )
-			mbcrit << myname << "(real_read_it): " << ex << endl;
+			mbcrit << myname << "(real_read_prop): " << ex << endl;
 	}
 	catch( const CORBA::SystemException& ex )
 	{
 		if( pingOK )
-			mbcrit << myname << "(real_read_it): CORBA::SystemException: "
+			mbcrit << myname << "(real_read_prop): CORBA::SystemException: "
 				   << ex.NP_minorString() << endl;
 	}
 	catch(...)
 	{
 		if( pingOK )
-			mbcrit << myname << "(real_read_it) catch ..." << endl;
+			mbcrit << myname << "(real_read_prop) catch ..." << endl;
 	}
+
+	mbwarn << myname << "(real_read_prop): read sid=" << p->si.id << " FAILED!!" << endl;
 
 	pingOK = false;
 	return ModbusRTU::erTimeOut;
@@ -2249,6 +2252,8 @@ UniSetTypes::SimpleInfo* MBSlave::getInfo()
 	inf << i->info << endl;
 	inf << vmon.pretty_str() << endl;
 	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
+	inf	<< " iomap=" << iomap.size() << endl;
+	inf << "Statistic: askCount=" << askCount << " pingOK=" << pingOK << endl;
 
 	i->info = inf.str().c_str();
 	return i._retn();

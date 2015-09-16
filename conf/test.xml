@@ -78,9 +78,9 @@
 				<item addr="0x01" invert="0" respondSensor="RespondRTU_S" timeout="5000" modeSensor="MB1_Mode_AS"/>
 			</DeviceList>
 		</MBMaster1>
-		<MBMultiMaster1 levels="info,warn,crit" name="MBMaster1" poll_time="200" reply_timeout="60">
+		<MBMultiMaster1 levels="info,warn,crit" name="MBMaster1" polltime="200">
 			<DeviceList>
-				<item addr="0x01" invert="0" respondSensor="RespondRTU_S" timeout="5000" modeSensor="MB1_Mode_AS"/>
+				<item addr="0x01" invert="1" force="0" respondSensor="RespondRTU_S" timeout="1000" modeSensor="MB1_Mode_AS"/>
 			</DeviceList>
 			<GateList>
 				<item ip="localhost" port="2048" recv_timeout="800" invert="1" respondSensor="MM1_Not_Respond_S"/>

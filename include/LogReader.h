@@ -2,6 +2,7 @@
 #define LogReader_H_
 // -------------------------------------------------------------------------
 #include <string>
+#include <memory>
 #include <queue>
 #include <vector>
 #include <cc++/socket.h>
@@ -73,7 +74,7 @@ class LogReader
 		timeout_t reconDelay;
 
 	private:
-		UTCPStream* tcp;
+		std::shared_ptr<UTCPStream> tcp;
 		std::string iaddr;
 		ost::tpport_t port;
 		bool cmdonly;

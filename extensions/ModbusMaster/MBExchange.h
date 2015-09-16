@@ -4,7 +4,7 @@
 #include <ostream>
 #include <string>
 #include <map>
-#include <vector>
+#include <unordered_map>
 #include <memory>
 #include "IONotifyController.h"
 #include "UniSetObject_LT.h"
@@ -84,7 +84,7 @@ class MBExchange:
 			RSProperty():
 				nbit(-1), vType(VTypes::vtUnknown),
 				rnum(VTypes::wsize(VTypes::vtUnknown)),
-				nbyte(0), reg(0)
+				nbyte(0)
 			{}
 
 			// т.к. IOBase содержит rwmutex с запрещённым конструктором копирования
@@ -94,7 +94,7 @@ class MBExchange:
 			RSProperty( RSProperty&& r ) = default;
 			RSProperty& operator=(RSProperty&& r) = default;
 
-			RegInfo* reg;
+			std::shared_ptr<RegInfo> reg;
 		};
 
 		friend std::ostream& operator<<( std::ostream& os, const RSProperty& p );
@@ -102,7 +102,7 @@ class MBExchange:
 		typedef std::list<RSProperty> PList;
 		static std::ostream& print_plist( std::ostream& os, const PList& p );
 
-		typedef std::map<ModbusRTU::RegID, RegInfo*> RegMap;
+		typedef std::map<ModbusRTU::RegID, std::shared_ptr<RegInfo>> RegMap;
 		struct RegInfo
 		{
 			// т.к. RSProperty содержит rwmutex с запрещённым конструктором копирования
@@ -126,7 +126,7 @@ class MBExchange:
 			PList slst;
 			ModbusRTU::RegID id;
 
-			RTUDevice* dev;
+			std::shared_ptr<RTUDevice> dev;
 
 			// only for RTU188
 			RTUStorage::RTUJack rtuJack;
@@ -151,11 +151,6 @@ class MBExchange:
 			// Флаг sm_init означает, что писать в устройство нельзя, т.к. значение в "карте регистров"
 			// ещё не инициализировано из SM
 			bool sm_initOK;    /*!< инициализировалось ли значение из SM */
-
-			/*! приоритет опроса, 0,1 - высший,
-			 * 1...n - задаёт "часоту" опроса. Т.е. каждые 1...n циклов
-			*/
-			int pollfactor = { 0 };
 		};
 
 		friend std::ostream& operator<<( std::ostream& os, RegInfo& r );
@@ -164,7 +159,6 @@ class MBExchange:
 		struct RTUDevice
 		{
 			RTUDevice():
-				respnond(false),
 				mbaddr(0),
 				dtype(dtUnknown),
 				resp_id(UniSetTypes::DefaultObjectId),
@@ -176,13 +170,12 @@ class MBExchange:
 				mode_id(UniSetTypes::DefaultObjectId),
 				mode(emNone),
 				speed(ComPort::ComSpeed38400),
-				rtu(0)
+				rtu188(0)
 			{
 			}
 
-			bool respnond;
 			ModbusRTU::ModbusAddr mbaddr;    /*!< адрес устройства */
-			RegMap regmap;
+			std::unordered_map<unsigned int, std::shared_ptr<RegMap>> pollmap;
 
 			DeviceType dtype;    /*!< тип устройства */
 
@@ -210,12 +203,14 @@ class MBExchange:
 
 			// специфические поля для RS
 			ComPort::Speed speed;
-			RTUStorage* rtu;
+			std::shared_ptr<RTUStorage> rtu188;
+
+			std::string getShortInfo() const;
 		};
 
 		friend std::ostream& operator<<( std::ostream& os, RTUDevice& d );
 
-		typedef std::map<ModbusRTU::ModbusAddr, RTUDevice*> RTUDeviceMap;
+		typedef std::map<ModbusRTU::ModbusAddr, std::shared_ptr<RTUDevice>> RTUDeviceMap;
 
 		friend std::ostream& operator<<( std::ostream& os, RTUDeviceMap& d );
 		void printMap(RTUDeviceMap& d);
@@ -256,14 +251,14 @@ class MBExchange:
 			InitRegInfo():
 				dev(0), mbreg(0),
 				mbfunc(ModbusRTU::fnUnknown),
-				initOK(false), ri(0)
+				initOK(false)
 			{}
 			RSProperty p;
-			RTUDevice* dev;
+			std::shared_ptr<RTUDevice> dev;
 			ModbusRTU::ModbusData mbreg;
 			ModbusRTU::SlaveFunctionCode mbfunc;
 			bool initOK;
-			RegInfo* ri;
+			std::shared_ptr<RegInfo> ri;
 		};
 		typedef std::list<InitRegInfo> InitList;
 
@@ -272,14 +267,14 @@ class MBExchange:
 		bool initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty* p );
 		bool allInitOK;
 
-		RTUDeviceMap rmap;
+		RTUDeviceMap devices;
 		InitList initRegList;    /*!< список регистров для инициализации */
 		UniSetTypes::uniset_rwmutex pollMutex;
 
 		virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) = 0;
 
 		virtual bool poll();
-		bool pollRTU( RTUDevice* dev, RegMap::iterator& it );
+		bool pollRTU( std::shared_ptr<RTUDevice>& dev, RegMap::iterator& it );
 
 		void updateSM();
 		void updateRTU(RegMap::iterator& it);
@@ -301,15 +296,15 @@ class MBExchange:
 		void initDeviceList();
 		void initOffsetList();
 
-		RTUDevice* addDev( RTUDeviceMap& dmap, ModbusRTU::ModbusAddr a, UniXML::iterator& it );
-		RegInfo* addReg( RegMap& rmap, ModbusRTU::RegID id, ModbusRTU::ModbusData r, UniXML::iterator& it, RTUDevice* dev );
+		std::shared_ptr<RTUDevice> addDev( RTUDeviceMap& dmap, ModbusRTU::ModbusAddr a, UniXML::iterator& it );
+		std::shared_ptr<RegInfo> addReg(std::shared_ptr<RegMap>& devices, ModbusRTU::RegID id, ModbusRTU::ModbusData r, UniXML::iterator& it, std::shared_ptr<RTUDevice> dev );
 		RSProperty* addProp( PList& plist, RSProperty&& p );
 
-		bool initMTRitem( UniXML::iterator& it, RegInfo* p );
-		bool initRTU188item( UniXML::iterator& it, RegInfo* p );
+		bool initMTRitem(UniXML::iterator& it, std::shared_ptr<RegInfo>& p );
+		bool initRTU188item(UniXML::iterator& it, std::shared_ptr<RegInfo>& p );
 		bool initRSProperty( RSProperty& p, UniXML::iterator& it );
-		bool initRegInfo( RegInfo* r, UniXML::iterator& it, RTUDevice* dev  );
-		bool initRTUDevice( RTUDevice* d, UniXML::iterator& it );
+		bool initRegInfo(std::shared_ptr<RegInfo>& r, UniXML::iterator& it, std::shared_ptr<RTUDevice>& dev  );
+		bool initRTUDevice( std::shared_ptr<RTUDevice>& d, UniXML::iterator& it );
 		virtual bool initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML::iterator& it );
 
 		std::string initPropPrefix( const std::string& def_prop_prefix = "" );
@@ -365,6 +360,8 @@ class MBExchange:
 
 		PassiveTimer ptReopen; /*!< таймер для переоткрытия соединения */
 		Trigger trReopen;
+
+		PassiveTimer ptInitChannel; /*!< таймер не реинициализацию канала связи */
 
 		// т.к. пороговые датчики не связаны напрямую с обменом, создаём для них отдельный список
 		// и отдельно его проверяем потом

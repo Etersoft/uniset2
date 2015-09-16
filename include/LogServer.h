@@ -113,7 +113,7 @@ class LogServer
 		DebugStream mylog;
 		std::shared_ptr< ThreadCreator<LogServer> > thr;
 
-		ost::TCPSocket* tcp;
+		std::shared_ptr<ost::TCPSocket> tcp;
 		std::shared_ptr<DebugStream> elog;
 		std::shared_ptr<NullLogSession> nullsess;
 };

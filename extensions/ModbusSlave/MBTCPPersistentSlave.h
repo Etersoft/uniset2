@@ -1,31 +1,31 @@
 // -----------------------------------------------------------------------------
-#ifndef _MBTCPMultiSlave_H_
-#define _MBTCPMultiSlave_H_
+#ifndef _MBTCPPersistentSlave_H_
+#define _MBTCPPersistentSlave_H_
 // -----------------------------------------------------------------------------
 #include <unordered_map>
 #include "MBSlave.h"
 #include "modbus/ModbusTCPServer.h"
 // -----------------------------------------------------------------------------
 /*!
-        <MBTCPMultiSlave ....sesscount="">
+        <MBTCPPersistentSlave ....sesscount="">
             <clients>
                 <item ip="" respond="" invert="1" askcount=""/>
                 <item ip="" respond="" invert="1" askcount=""/>
                 <item ip="" respond="" invert="1" askcount=""/>
             </clients>
-        </MBTCPMultiSlave>
+        </MBTCPPersistentSlave>
 */
 // -----------------------------------------------------------------------------
 /*! Реализация многоптоточного slave-интерфейса */
-class MBTCPMultiSlave:
+class MBTCPPersistentSlave:
 	public MBSlave
 {
 	public:
-		MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr, const std::string& prefix = "mbs" );
-		virtual ~MBTCPMultiSlave();
+		MBTCPPersistentSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr, const std::string& prefix = "mbs" );
+		virtual ~MBTCPPersistentSlave();
 
 		/*! глобальная функция для инициализации объекта */
-		static std::shared_ptr<MBTCPMultiSlave> init_mbslave( int argc, const char* const* argv,
+		static std::shared_ptr<MBTCPPersistentSlave> init_mbslave( int argc, const char* const* argv,
 				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr,
 				const std::string& prefix = "mbs" );
 
@@ -44,6 +44,7 @@ class MBTCPMultiSlave:
 		timeout_t waitTimeout;
 		ModbusTCPServer::Sessions sess; /*!< список открытых сессий */
 		unsigned int sessMaxNum;
+		PassiveTimer ptUpdateInfo;
 
 		struct ClientInfo
 		{
@@ -82,5 +83,5 @@ class MBTCPMultiSlave:
 		IOController::IOStateList::iterator sesscount_it;
 };
 // -----------------------------------------------------------------------------
-#endif // _MBTCPMultiSlave_H_
+#endif // _MBTCPPersistentSlave_H_
 // -----------------------------------------------------------------------------

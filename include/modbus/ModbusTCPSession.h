@@ -40,6 +40,8 @@ class ModbusTCPSession:
 			return caddr;
 		}
 
+		void setKeepAliveParams( timeout_t timeout_sec = 3, int conn_keepcnt = 2, int keepintvl = 2 );
+
 	protected:
 		virtual void run();
 		virtual void final();
