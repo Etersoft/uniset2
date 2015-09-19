@@ -59,8 +59,8 @@ static struct option longopts[] =
 string conffile("configure.xml");
 
 // --------------------------------------------------------------------------
-static bool commandToAll( const string& section, std::shared_ptr<ObjectRepository> rep, Command cmd );
-static void createSections( const std::shared_ptr<UniSetTypes::Configuration> c );
+static bool commandToAll( const string& section, std::shared_ptr<ObjectRepository>& rep, Command cmd );
+static void createSections(const std::shared_ptr<Configuration>& c );
 // --------------------------------------------------------------------------
 int omap();
 int configure( const string& args, UInterface& ui );
@@ -364,7 +364,7 @@ int main(int argc, char** argv)
 }
 
 // ==============================================================================================
-static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository> rep, Command cmd)
+static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository>& rep, Command cmd)
 {
 	if( verb )
 		cout << "\n||=======********  " << section << "  ********=========||\n" << endl;
@@ -504,7 +504,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 }
 
 // ==============================================================================================
-static void createSections( const std::shared_ptr<UniSetTypes::Configuration> rconf )
+static void createSections( const std::shared_ptr<UniSetTypes::Configuration>& rconf )
 {
 	ObjectRepositoryFactory repf(rconf);
 

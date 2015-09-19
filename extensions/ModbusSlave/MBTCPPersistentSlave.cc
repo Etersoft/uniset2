@@ -12,7 +12,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 using namespace ModbusRTU;
 // -----------------------------------------------------------------------------
-MBTCPPersistentSlave::MBTCPPersistentSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic, const string& prefix ):
+MBTCPPersistentSlave::MBTCPPersistentSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic, const string& prefix ):
 	MBSlave(objId, shmId, ic, prefix),
 	sesscount_id(DefaultObjectId)
 {
@@ -127,7 +127,7 @@ void MBTCPPersistentSlave::help_print( int argc, const char* const* argv )
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<MBTCPPersistentSlave> MBTCPPersistentSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID,
-		const std::shared_ptr<SharedMemory> ic, const string& prefix )
+		const std::shared_ptr<SharedMemory>& ic, const string& prefix )
 {
 	auto conf = uniset_conf();
 	string name = conf->getArgParam("--" + prefix + "-name", "MBSlave1");

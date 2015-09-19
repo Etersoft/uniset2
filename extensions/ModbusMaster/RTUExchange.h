@@ -14,12 +14,12 @@ class RTUExchange:
 {
 	public:
 		RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID,
-					 const std::shared_ptr<SharedMemory> ic = nullptr, const std::string& prefix = "rs" );
+					 const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "rs" );
 		virtual ~RTUExchange();
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<RTUExchange> init_rtuexchange( int argc, const char* const* argv,
-				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr,
+				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 				const std::string& prefix = "rs" );
 
 		/*! глобальная функция для вывода help-а */

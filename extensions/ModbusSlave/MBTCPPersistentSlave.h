@@ -21,12 +21,12 @@ class MBTCPPersistentSlave:
 	public MBSlave
 {
 	public:
-		MBTCPPersistentSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr, const std::string& prefix = "mbs" );
+		MBTCPPersistentSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "mbs" );
 		virtual ~MBTCPPersistentSlave();
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<MBTCPPersistentSlave> init_mbslave( int argc, const char* const* argv,
-				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr,
+				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 				const std::string& prefix = "mbs" );
 
 		/*! глобальная функция для вывода help-а */

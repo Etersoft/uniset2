@@ -12,7 +12,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 using namespace ModbusRTU;
 // -----------------------------------------------------------------------------
-MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic, const string& prefix ):
+MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic, const string& prefix ):
 	UniSetObject_LT(objId),
 	addr(0x01),
 	initPause(0),
@@ -1232,8 +1232,8 @@ void MBSlave::help_print( int argc, const char* const* argv )
 	cout << LogServer::help_print("prefix-logserver") << endl;
 }
 // -----------------------------------------------------------------------------
-std::shared_ptr<MBSlave> MBSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID,
-		const std::shared_ptr<SharedMemory> ic, const string& prefix )
+std::shared_ptr<MBSlave> MBSlave::init_mbslave(int argc, const char* const* argv, UniSetTypes::ObjectId icID,
+		const std::shared_ptr<SharedMemory>& ic, const string& prefix )
 {
 	auto conf = uniset_conf();
 	string name = conf->getArgParam("--" + prefix + "-name", "MBSlave1");

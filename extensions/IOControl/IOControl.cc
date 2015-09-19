@@ -23,8 +23,8 @@ std::ostream& operator<<( std::ostream& os, IOControl::IOInfo& inf )
 }
 // -----------------------------------------------------------------------------
 
-IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
-					  const std::shared_ptr<SharedMemory> ic, int numcards, const std::string& prefix_ ):
+IOControl::IOControl(UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
+					  const std::shared_ptr<SharedMemory>& ic, int numcards, const std::string& prefix_ ):
 	UniSetObject(id),
 	polltime(150),
 	cards(11),
@@ -533,7 +533,7 @@ void IOControl::ioread( IOInfo* it )
 		return;
 	}
 
-	IOBase* ib = &(*it);
+	IOBase* ib = static_cast<IOBase*>(it);
 
 	try
 	{
@@ -588,7 +588,7 @@ void IOControl::ioread( IOInfo* it )
 							delBlink(it, lstBlink3);
 						}
 
-						if( it->no_testlamp || (!it->no_testlamp && !isTestLamp) )
+						if( it->no_testlamp || !isTestLamp )
 							card->setDigitalChannel(it->subdev, it->channel, 0);
 					}
 					break;
@@ -604,7 +604,7 @@ void IOControl::ioread( IOInfo* it )
 							delBlink(it, lstBlink3);
 						}
 
-						if( it->no_testlamp || (!it->no_testlamp && !isTestLamp) )
+						if( it->no_testlamp || !isTestLamp )
 							card->setDigitalChannel(it->subdev, it->channel, 1);
 					}
 					break;
@@ -657,7 +657,7 @@ void IOControl::ioread( IOInfo* it )
 		{
 			bool set = IOBase::processingAsDO(ib, shm, force_out);
 
-			if( !it->lamp || (it->lamp && !isTestLamp) )
+			if( !it->lamp || !isTestLamp )
 				card->setDigitalChannel(it->subdev, it->channel, set);
 		}
 	}
@@ -1158,8 +1158,8 @@ void IOControl::check_testlamp()
 }
 
 // -----------------------------------------------------------------------------
-std::shared_ptr<IOControl> IOControl::init_iocontrol( int argc, const char* const* argv,
-		UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory> ic,
+std::shared_ptr<IOControl> IOControl::init_iocontrol(int argc, const char* const* argv,
+		UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
 		const std::string& prefix )
 {
 	auto conf = uniset_conf();

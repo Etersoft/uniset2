@@ -34,6 +34,7 @@ DBServer_PostgreSQL::DBServer_PostgreSQL(ObjectId id, const std::string& prefix 
 
 DBServer_PostgreSQL::DBServer_PostgreSQL():
 	DBServer(uniset_conf()->getDBServer()),
+	db(make_shared<PostgreSQLInterface>()),
 	PingTime(300000),
 	ReconnectTime(180000),
 	connect_ok(false),
@@ -41,7 +42,6 @@ DBServer_PostgreSQL::DBServer_PostgreSQL():
 	qbufSize(200),
 	lastRemove(false)
 {
-	db = make_shared<PostgreSQLInterface>();
 
 	//    init();
 	if( getId() == DefaultObjectId )

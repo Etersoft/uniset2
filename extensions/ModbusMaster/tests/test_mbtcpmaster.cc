@@ -65,7 +65,7 @@ static void InitTest()
 		catch( const std::exception& ex )
 		{
 			cerr << "(mbs): Can`t create socket " << addr << ":" << port << " err: " << ex.what() << endl;
-			throw ex;
+			throw;
 		}
 
 		//mbs->setVerbose(true);

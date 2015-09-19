@@ -208,12 +208,12 @@ class IOControl:
 	public UniSetObject
 {
 	public:
-		IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory> shm = nullptr, int numcards = 2, const std::string& prefix = "io" );
+		IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr, int numcards = 2, const std::string& prefix = "io" );
 		virtual ~IOControl();
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<IOControl> init_iocontrol( int argc, const char* const* argv,
-				UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory> ic = nullptr,
+				UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 				const std::string& prefix = "io" );
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );

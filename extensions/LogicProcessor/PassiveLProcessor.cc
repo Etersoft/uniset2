@@ -7,7 +7,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
 PassiveLProcessor::PassiveLProcessor( UniSetTypes::ObjectId objId,
-									  UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic, const std::string& prefix ):
+									  UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
 	UniSetObject_LT(objId),
 	shm(nullptr)
 {
@@ -24,8 +24,6 @@ PassiveLProcessor::PassiveLProcessor( UniSetTypes::ObjectId objId,
 		throw SystemError("Not found conf-node for " + conf_name );
 
 	UniXML::iterator it(confnode);
-
-	confnode = conf->getNode(myname);
 	string lfile = conf->getArgParam("--" + prefix + "-schema", it.getProp("schema"));
 
 	if( lfile.empty() )
@@ -62,7 +60,7 @@ PassiveLProcessor::PassiveLProcessor( UniSetTypes::ObjectId objId,
 		maxHeartBeat = conf->getArgPInt("--" + prefix + "-heartbeat-max", "10", 10);
 	}
 }
-
+// -------------------------------------------------------------------------
 PassiveLProcessor::~PassiveLProcessor()
 {
 
@@ -264,8 +262,8 @@ void PassiveLProcessor::help_print( int argc, const char* const* argv )
 
 }
 // -----------------------------------------------------------------------------
-std::shared_ptr<PassiveLProcessor> PassiveLProcessor::init_plproc( int argc, const char* const* argv,
-		UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic,
+std::shared_ptr<PassiveLProcessor> PassiveLProcessor::init_plproc(int argc, const char* const* argv,
+		UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic,
 		const std::string& prefix )
 {
 	auto conf = uniset_conf();
@@ -290,3 +288,4 @@ std::shared_ptr<PassiveLProcessor> PassiveLProcessor::init_plproc( int argc, con
 	dinfo << "(plproc): name = " << name << "(" << ID << ")" << endl;
 	return make_shared<PassiveLProcessor>(ID, shmID, ic, prefix);
 }
+// -----------------------------------------------------------------------------

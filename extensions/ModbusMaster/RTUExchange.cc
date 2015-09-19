@@ -9,7 +9,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-RTUExchange::RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic,
+RTUExchange::RTUExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
 						  const std::string& prefix_ ):
 	MBExchange(objId, shmId, ic, prefix_),
 	mbrtu(0),
@@ -320,8 +320,8 @@ bool RTUExchange::poll()
 	return !allNotRespond;
 }
 // -----------------------------------------------------------------------------
-std::shared_ptr<RTUExchange> RTUExchange::init_rtuexchange( int argc, const char* const* argv, UniSetTypes::ObjectId icID,
-		const std::shared_ptr<SharedMemory> ic, const std::string& prefix )
+std::shared_ptr<RTUExchange> RTUExchange::init_rtuexchange(int argc, const char* const* argv, UniSetTypes::ObjectId icID,
+		const std::shared_ptr<SharedMemory>& ic, const std::string& prefix )
 {
 	auto conf = uniset_conf();
 

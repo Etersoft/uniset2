@@ -127,7 +127,7 @@ bool IOBase::check_on_delay( bool val )
 
 	// обновляем значение только если наступило время
 	// или если оно "0"...
-	if( !val || (val && ptOnDelay.checkTime()) )
+	if( !val || ptOnDelay.checkTime() )
 		ondelay_state = val;
 
 	// возвращаем ТЕКУЩЕЕ, А НЕ НОВОЕ значение
@@ -147,7 +147,7 @@ bool IOBase::check_off_delay( bool val )
 
 	// обновляем значение только если наступило время
 	// или если оно "1"...
-	if( val || (!val && ptOffDelay.checkTime()) )
+	if( val || ptOffDelay.checkTime() )
 		offdelay_state = val;
 
 	// возвращаем ТЕКУЩЕЕ, А НЕ НОВОЕ значение

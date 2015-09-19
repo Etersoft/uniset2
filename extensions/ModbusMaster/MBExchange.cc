@@ -13,8 +13,8 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
-						const std::shared_ptr<SharedMemory> _ic, const std::string& prefix ):
+MBExchange::MBExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
+						const std::shared_ptr<SharedMemory>& _ic, const std::string& prefix ):
 	UniSetObject_LT(objId),
 	allInitOK(false),
 	initPause(0),

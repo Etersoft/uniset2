@@ -102,12 +102,12 @@ class UNetExchange:
 	public UniSetObject_LT
 {
 	public:
-		UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr, const std::string& prefix = "unet" );
+		UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "unet" );
 		virtual ~UNetExchange();
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<UNetExchange> init_unetexchange( int argc, const char* const argv[],
-				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = 0, const std::string& prefix = "unet" );
+				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = 0, const std::string& prefix = "unet" );
 
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* argv[] );
@@ -190,7 +190,7 @@ class UNetExchange:
 			std::shared_ptr<UNetReceiver> r1;    /*!< приём по первому каналу */
 			std::shared_ptr<UNetReceiver> r2;    /*!< приём по второму каналу */
 
-			void step( const std::shared_ptr<SMInterface> shm, const std::string& myname, std::shared_ptr<DebugStream>& log );
+			void step(const std::shared_ptr<SMInterface>& shm, const std::string& myname, std::shared_ptr<DebugStream>& log );
 
 			inline void setRespondID( UniSetTypes::ObjectId id, bool invert = false )
 			{
@@ -206,7 +206,7 @@ class UNetExchange:
 				sidChannelNum = id;
 			}
 
-			inline void initIterators( const std::shared_ptr<SMInterface> shm )
+			inline void initIterators( const std::shared_ptr<SMInterface>& shm )
 			{
 				shm->initIterator(itLostPackets);
 				shm->initIterator(itRespond);

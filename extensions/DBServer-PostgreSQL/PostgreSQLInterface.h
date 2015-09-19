@@ -46,7 +46,7 @@ class PostgreSQLInterface
 class PostgreSQLResult
 {
 	public:
-		PostgreSQLResult() {}
+		PostgreSQLResult(){}
 		PostgreSQLResult( const pqxx::result& res );
 		~PostgreSQLResult();
 

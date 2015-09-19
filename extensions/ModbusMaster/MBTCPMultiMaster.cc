@@ -12,7 +12,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
-									const std::shared_ptr<SharedMemory> ic, const std::string& prefix ):
+									const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
 	MBExchange(objId, shmId, ic, prefix),
 	force_disconnect(true)
 {
@@ -204,7 +204,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 		// Если по текущему каналу связь есть, то возвращаем его
 		if( mbi != mblist.rend() && !mbi->ignore && mbi->respond )
 		{
-			if( mbi->mbtcp->isConnection() || ( !mbi->mbtcp->isConnection() && mbi->init(mblog)) )
+			if( mbi->mbtcp->isConnection() || mbi->init(mblog) )
 			{
 				if( !mbi->ignore  )
 				{
@@ -469,7 +469,7 @@ void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<MBTCPMultiMaster> MBTCPMultiMaster::init_mbmaster( int argc, const char* const* argv,
-		UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory> ic,
+		UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
 		const std::string& prefix )
 {
 	auto conf = uniset_conf();

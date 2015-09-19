@@ -248,6 +248,7 @@
         /*! Вывод состояния внутренних переменных */
         inline std::string dumpVars(){ return std::move(vmon.pretty_str()); }
         // ------------------------------------------------------------
+        std::string help();
         
 </xsl:template>
 
@@ -528,6 +529,14 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 		}
 	}
 </xsl:if>
+}
+// ----------------------------------------------------------------------------
+std::string <xsl:value-of select="$CLASSNAME"/>_SK::help()
+{
+	ostringstream s;
+	
+	
+	return std::move(s.str());
 }
 // ----------------------------------------------------------------------------
 </xsl:template>

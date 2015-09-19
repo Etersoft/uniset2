@@ -136,7 +136,7 @@ class DBServer_MySQL:
 {
 	public:
 		DBServer_MySQL( UniSetTypes::ObjectId id, const std::string& prefix );
-		DBServer_MySQL( const std::string& prefix );
+		explicit DBServer_MySQL( const std::string& prefix );
 		virtual ~DBServer_MySQL();
 
 		/*! глобальная функция для инициализации объекта */

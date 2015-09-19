@@ -11,7 +11,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-RRDServer::RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic,
+RRDServer::RRDServer(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
 					  const string& prefix ):
 	UObject_SK(objId, cnode, string(prefix + "-")),
 	prefix(prefix)
@@ -251,8 +251,8 @@ void RRDServer::help_print( int argc, const char* const* argv )
 	cout << LogServer::help_print("prefix-logserver") << endl;
 }
 // -----------------------------------------------------------------------------
-std::shared_ptr<RRDServer> RRDServer::init_rrdstorage( int argc, const char* const* argv,
-		UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory> ic,
+std::shared_ptr<RRDServer> RRDServer::init_rrdstorage(int argc, const char* const* argv,
+		UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
 		const std::string& prefix )
 {
 	auto conf = uniset_conf();

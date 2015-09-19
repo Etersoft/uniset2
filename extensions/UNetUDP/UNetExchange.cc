@@ -9,7 +9,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic, const std::string& prefix ):
+UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
 	UniSetObject_LT(objId),
 	initPause(0),
 	activated(false),
@@ -502,7 +502,7 @@ void UNetExchange::step()
 }
 
 // -----------------------------------------------------------------------------
-void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface> shm, const std::string& myname, std::shared_ptr<DebugStream>& unetlog )
+void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface>& shm, const std::string& myname, std::shared_ptr<DebugStream>& unetlog )
 {
 	try
 	{
@@ -785,8 +785,8 @@ void UNetExchange::help_print( int argc, const char* argv[] )
 	cout << LogServer::help_print("prefix-logserver") << endl;
 }
 // -----------------------------------------------------------------------------
-std::shared_ptr<UNetExchange> UNetExchange::init_unetexchange( int argc, const char* const argv[], UniSetTypes::ObjectId icID,
-		const std::shared_ptr<SharedMemory> ic, const std::string& prefix )
+std::shared_ptr<UNetExchange> UNetExchange::init_unetexchange(int argc, const char* const argv[], UniSetTypes::ObjectId icID,
+		const std::shared_ptr<SharedMemory>& ic, const std::string& prefix )
 {
 	auto conf = uniset_conf();
 

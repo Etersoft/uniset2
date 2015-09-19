@@ -58,7 +58,7 @@ MBTCPTestServer::MBTCPTestServer( ModbusAddr myaddr, const string& inetaddr, int
 	catch( const std::exception& ex )
 	{
 		cerr << "(MBTCPTestServer::init): Can`t create socket " << addr << ":" << port << " err: " << ex.what() << endl;
-		throw ex;
+		throw;
 	}
 
 	//    sslot->initLog(conf,name,logfile);

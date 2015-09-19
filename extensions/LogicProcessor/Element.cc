@@ -61,7 +61,7 @@ void Element::setChildOut()
 		it.el->setIn(it.num, _myout);
 }
 // -------------------------------------------------------------------------
-std::shared_ptr<Element> Element::find( const ElementID id )
+std::shared_ptr<Element> Element::find(const ElementID& id )
 {
 	for( const auto& it : outs )
 	{

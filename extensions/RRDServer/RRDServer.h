@@ -60,13 +60,13 @@ class RRDServer:
 	public UObject_SK
 {
 	public:
-		RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr,
+		RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 				   const std::string& prefix = "rrd" );
 		virtual ~RRDServer();
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<RRDServer> init_rrdstorage( int argc, const char* const* argv,
-				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic = nullptr,
+				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 				const std::string& prefix = "rrd" );
 
 		/*! глобальная функция для вывода help-а */

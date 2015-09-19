@@ -67,7 +67,7 @@ static void InitTest()
 		catch( const std::exception& ex )
 		{
 			cerr << "(mb1): Can`t create socket " << addr << ":" << port << " err: " << ex.what() << endl;
-			throw ex;
+			throw;
 		}
 
 		CHECK( mbs1 != nullptr );
@@ -99,7 +99,7 @@ static void InitTest()
 		catch( const std::exception& ex )
 		{
 			cerr << "(mb2): Can`t create socket " << addr << ":" << port << " err: " << ex.what() << endl;
-			throw ex;
+			throw;
 		}
 
 		CHECK( mbs2 != nullptr );

@@ -143,7 +143,7 @@ class Schema
 		// наружный выход
 		struct EXTOut
 		{
-			EXTOut( const std::string n, std::shared_ptr<Element> f):
+			EXTOut( const std::string& n, std::shared_ptr<Element>& f):
 				name(n), from(f) {}
 			EXTOut(): name("") {}
 
