@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.2
-Release: alt1
+Release: alt2
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -456,6 +456,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Sun Sep 20 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt2
+- minor fixes after 'cppcheck'
+
 * Thu Sep 17 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt1
 - new UNetUDP: support 'sendfactor'
 
