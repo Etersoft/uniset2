@@ -136,7 +136,7 @@ class DBServer_SQLite:
 {
 	public:
 		DBServer_SQLite( UniSetTypes::ObjectId id, const std::string& prefix );
-		DBServer_SQLite( const std::string& prefix );
+		explicit DBServer_SQLite( const std::string& prefix );
 		virtual ~DBServer_SQLite();
 
 		/*! глобальная функция для инициализации объекта */

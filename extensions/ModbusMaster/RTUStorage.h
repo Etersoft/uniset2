@@ -13,7 +13,7 @@ class ModbusRTUMaster;
 class RTUStorage
 {
 	public:
-		RTUStorage( ModbusRTU::ModbusAddr addr );
+		explicit RTUStorage( ModbusRTU::ModbusAddr addr );
 		~RTUStorage();
 
 		void poll( const std::shared_ptr<ModbusRTUMaster>& mb )

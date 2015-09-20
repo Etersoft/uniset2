@@ -47,7 +47,7 @@ class PostgreSQLResult
 {
 	public:
 		PostgreSQLResult(){}
-		PostgreSQLResult( const pqxx::result& res );
+		explicit PostgreSQLResult( const pqxx::result& res );
 		~PostgreSQLResult();
 
 		typedef std::vector<std::string> COL;

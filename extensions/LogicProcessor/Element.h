@@ -13,7 +13,7 @@ class LogicException:
 {
 	public:
 		LogicException(): UniSetTypes::Exception("LogicException") {}
-		LogicException( const std::string& err): UniSetTypes::Exception(err) {}
+		explicit LogicException( const std::string& err): UniSetTypes::Exception(err) {}
 };
 
 
@@ -31,7 +31,7 @@ class Element
 			internal
 		};
 
-		Element( ElementID id ): myid(id) {};
+		explicit Element( const ElementID& id ): myid(id) {};
 		virtual ~Element() {};
 
 

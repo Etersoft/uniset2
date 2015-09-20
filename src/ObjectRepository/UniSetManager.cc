@@ -42,7 +42,7 @@ using namespace std;
 class MPush: public unary_function< const std::shared_ptr<UniSetManager>& , bool>
 {
 	public:
-		MPush(const UniSetTypes::TransportMessage& msg): msg(msg) {}
+		explicit MPush(const UniSetTypes::TransportMessage& msg): msg(msg) {}
 		bool operator()( const std::shared_ptr<UniSetManager>& m ) const
 		{
 			try
@@ -68,7 +68,7 @@ class MPush: public unary_function< const std::shared_ptr<UniSetManager>& , bool
 class OPush: public unary_function< const std::shared_ptr<UniSetObject>& , bool>
 {
 	public:
-		OPush(const UniSetTypes::TransportMessage& msg): msg(msg) {}
+		explicit OPush(const UniSetTypes::TransportMessage& msg): msg(msg) {}
 		bool operator()( const std::shared_ptr<UniSetObject>& o ) const
 		{
 			try

@@ -72,7 +72,7 @@ namespace UniSetUDP
 	{
 		UDPMessage();
 
-		UDPMessage( UDPPacket& p );
+		explicit UDPMessage( UDPPacket& p );
 		size_t transport_msg( UDPPacket& p );
 		static size_t getMessage( UDPMessage& m, UDPPacket& p );
 

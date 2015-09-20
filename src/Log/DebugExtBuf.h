@@ -216,7 +216,7 @@ class debugbuf : public streambuf
 {
 	public:
 		///
-		debugbuf(streambuf* b)
+		explicit debugbuf(streambuf* b)
 			: streambuf(), sb(b) {}
 	protected:
 #ifdef MODERN_STL_STREAMS
@@ -277,7 +277,7 @@ class stringsigbuf : public streambuf
 		}
 
 		///
-		stringsigbuf( stringbuf* b )
+		explicit stringsigbuf( stringbuf* b )
 			: streambuf(), sb(b) {}
 
 		typedef sigc::signal<void, const std::string&> StrBufOverflow_Signal;

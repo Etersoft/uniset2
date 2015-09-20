@@ -4,8 +4,8 @@
 struct UException
 {
 	UException() {}
-	UException( const std::string& e ): err(e) {}
-	UException( const char* e ): err( std::string(e)) {}
+	explicit UException( const std::string& e ): err(e) {}
+	explicit UException( const char* e ): err( std::string(e)) {}
 	~UException() {}
 
 	const char* getError()
@@ -20,7 +20,7 @@ struct UTimeOut:
 	public UException
 {
 	UTimeOut(): UException("UTimeOut") {}
-	UTimeOut( const std::string& e ): UException(e) {}
+	explicit UTimeOut( const std::string& e ): UException(e) {}
 	~UTimeOut() {}
 };
 //---------------------------------------------------------------------------
@@ -28,7 +28,7 @@ struct USysError:
 	public UException
 {
 	USysError(): UException("USysError") {}
-	USysError( const std::string& e ): UException(e) {}
+	explicit USysError( const std::string& e ): UException(e) {}
 	~USysError() {}
 };
 //---------------------------------------------------------------------------

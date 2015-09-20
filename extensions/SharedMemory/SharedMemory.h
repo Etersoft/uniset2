@@ -308,7 +308,7 @@ class SharedMemory:
 
 		struct HistoryItem
 		{
-			HistoryItem( size_t bufsize = 0 ): id(UniSetTypes::DefaultObjectId), buf(bufsize) {}
+			explicit HistoryItem( size_t bufsize = 0 ): id(UniSetTypes::DefaultObjectId), buf(bufsize) {}
 			HistoryItem( const UniSetTypes::ObjectId _id, const size_t bufsize, const long val ): id(_id), buf(bufsize, val) {}
 
 			inline void init( unsigned int size, long val )

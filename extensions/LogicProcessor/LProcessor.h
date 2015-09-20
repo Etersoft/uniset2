@@ -95,7 +95,7 @@
 class LProcessor
 {
 	public:
-		LProcessor( const std::string& name = "" );
+		explicit LProcessor( const std::string& name = "" );
 		virtual ~LProcessor();
 
 		void open( const std::string& lfile );

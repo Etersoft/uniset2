@@ -292,7 +292,7 @@ struct CInfo
 	{
 	}
 
-	CInfo( ConfirmMessage& cm ):
+	explicit CInfo( ConfirmMessage& cm ):
 		sensor_id(cm.sensor_id),
 		value(cm.value),
 		time(cm.time),

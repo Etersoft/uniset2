@@ -10,7 +10,7 @@
 class ComediInterface
 {
 	public:
-		ComediInterface( const std::string& dev );
+		explicit ComediInterface( const std::string& dev );
 		~ComediInterface();
 
 		int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND )

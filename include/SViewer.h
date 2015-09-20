@@ -36,7 +36,7 @@ class SViewer
 {
 	public:
 
-		SViewer(const std::string& ControllersSection, bool isShort = true);
+		explicit SViewer(const std::string& ControllersSection, bool isShort = true);
 		virtual ~SViewer();
 
 		void view();
