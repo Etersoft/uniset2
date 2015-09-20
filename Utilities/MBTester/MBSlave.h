@@ -100,7 +100,7 @@ class MBSlave
 
 		bool verbose;
 #if 0
-		typedef std::map<ModbusRTU::mbErrCode, unsigned int> ExchangeErrorMap;
+		typedef std::unordered_map<ModbusRTU::mbErrCode, unsigned int> ExchangeErrorMap;
 		ExchangeErrorMap errmap;     /*!< статистика обмена */
 		ModbusRTU::mbErrCode prev;
 
@@ -110,7 +110,7 @@ class MBSlave
 		long askCount;    /*!< количество принятых запросов */
 
 
-		typedef std::map<int, std::string> FileList;
+		typedef std::unordered_map<int, std::string> FileList;
 		FileList flist;
 #endif
 		long replyVal;

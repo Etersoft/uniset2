@@ -4,6 +4,7 @@
 // -----------------------------------------------------------------------------
 #include <string>
 #include <map>
+#include <unordered_map>
 #include <list>
 #include <ostream>
 #include <cstring>
@@ -103,7 +104,7 @@ namespace MTR
 	// ---------------------------
 	// вспомогательные функции и типы данных
 	typedef std::list<ModbusRTU::ModbusData> DataList;
-	typedef std::map<ModbusRTU::ModbusData, DataList> DataMap;
+	typedef std::unordered_map<ModbusRTU::ModbusData, DataList> DataMap;
 	const int attempts = 3; //
 	static const ModbusRTU::ModbusData skip[] = {48, 49, 59};  // registers which should not write
 

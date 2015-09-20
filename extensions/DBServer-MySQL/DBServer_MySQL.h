@@ -24,7 +24,7 @@
 #ifndef DBServer_MySQL_H_
 #define DBServer_MySQL_H_
 // --------------------------------------------------------------------------
-#include <map>
+#include <unordered_map>
 #include <queue>
 #include "UniSetTypes.h"
 #include "MySQLInterface.h"
@@ -155,7 +155,7 @@ class DBServer_MySQL:
 		}
 
 	protected:
-		typedef std::map<int, std::string> DBTableMap;
+		typedef std::unordered_map<int, std::string> DBTableMap;
 
 		virtual void initDBServer() override;
 		virtual void initDB( std::shared_ptr<MySQLInterface>& db ) {};

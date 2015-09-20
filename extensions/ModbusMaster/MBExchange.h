@@ -210,7 +210,7 @@ class MBExchange:
 
 		friend std::ostream& operator<<( std::ostream& os, RTUDevice& d );
 
-		typedef std::map<ModbusRTU::ModbusAddr, std::shared_ptr<RTUDevice>> RTUDeviceMap;
+		typedef std::unordered_map<ModbusRTU::ModbusAddr, std::shared_ptr<RTUDevice>> RTUDeviceMap;
 
 		friend std::ostream& operator<<( std::ostream& os, RTUDeviceMap& d );
 		void printMap(RTUDeviceMap& d);
