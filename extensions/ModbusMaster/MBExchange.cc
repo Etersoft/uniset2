@@ -3029,6 +3029,9 @@ bool MBExchange::poll()
 
 		if( !mb )
 			return false;
+
+		for( auto it1 = devices.begin(); it1 != devices.end(); ++it1 )
+			it1->second->resp_ptInit.reset();
 	}
 
 	if( !allInitOK )
@@ -3152,10 +3155,11 @@ bool MBExchange::RTUDevice::checkRespond( std::shared_ptr<DebugStream>& mblog )
 		   << " [ timeout=" << resp_Delay.getOnDelay()
 		   << " numreply=" << numreply
 		   << " prev_numreply=" << prev_numreply
+		   << " resp_ptInit=" << resp_ptInit.checkTime()
 		   << " ]"
 		   << endl;
 
-	return (prev != resp_state || resp_force);
+	return ((prev != resp_state || resp_force ) && resp_ptInit.checkTime());
 }
 // -----------------------------------------------------------------------------
 void MBExchange::updateRespondSensors()
@@ -3164,7 +3168,7 @@ void MBExchange::updateRespondSensors()
 	{
 		auto d(it1.second);
 
-		if( d->resp_id != DefaultObjectId && (d->checkRespond(mblog) || d->resp_force || d->resp_ptInit.checkTime()) )
+		if( d->resp_id != DefaultObjectId && d->checkRespond(mblog) )
 		{
 			try
 			{
@@ -3182,10 +3186,6 @@ void MBExchange::updateRespondSensors()
 					   << endl;
 
 				shm->localSetValue(d->resp_it, d->resp_id, ( set ? 1 : 0 ), getId());
-
-				// если первый раз инициализация прошла.. отключаем таймер
-				if( d->resp_ptInit.checkTime() )
-					d->resp_ptInit.setTiming( PassiveTimer::WaitUpTime );
 			}
 			catch( const Exception& ex )
 			{
