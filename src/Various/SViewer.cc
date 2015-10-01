@@ -237,7 +237,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
 				name = ORepHelpers::getShortName(name);
 
 			string txtname( uniset_conf()->oind->getTextName(amap[i].si.id) );
-			printInfo( amap[i].si.id, name, amap[i].value, owner, txtname, "AI");
+			printInfo( amap[i].si.id, name, amap[i].value, owner, txtname, (amap[i].type == UniversalIO::AI ? "AI" : "DI") );
 		}
 	}
 
@@ -257,7 +257,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
 				name = ORepHelpers::getShortName(name);
 
 			string txtname( uniset_conf()->oind->getTextName(amap[i].si.id) );
-			printInfo( amap[i].si.id, name, amap[i].value, owner, txtname, "AO");
+			printInfo( amap[i].si.id, name, amap[i].value, owner, txtname, (amap[i].type == UniversalIO::AO ? "AO" : "DO"));
 		}
 	}
 
