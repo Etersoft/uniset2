@@ -21,11 +21,12 @@ static struct option longopts[] =
 // --------------------------------------------------------------------------
 static void print_help()
 {
-	printf("-h|--help              - this message\n");
-	printf("[-t|--timeout] msec  - Timeout. Default: 2000.\n");
-	printf("[-v|--verbose]       - Print all messages to stdout\n");
-	printf("[-d|--device] dev    - use device dev. Default: /dev/ttyS0\n");
-	printf("[-a|--myaddr] addr   - Modbus address for this slave. Default: 0x01.\n");
+	printf("-h|--help                       - this message\n");
+	printf("[-t|--timeout] msec             - Timeout. Default: 2000.\n");
+	printf("[-v|--verbose]                  - Print all messages to stdout\n");
+	printf("[-d|--device] dev               - use device dev. Default: /dev/ttyS0\n");
+	printf("[-a|--myaddr] addr1,addr2,...   - Modbus address for this slave. Default: 0x01.\n");
+	printf("                     myaddr=255 - Reply to all RTU-addresses.\n");
 	printf("[-s|--speed] speed   - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
 	printf("[-v|--verbose]       - Print all messages to stdout\n");
 	printf("[-g|--f485]          - Use 485 Fastwel\n");
@@ -40,7 +41,7 @@ int main( int argc, char** argv )
 	int f485 = 0;
 	string dev("/dev/ttyS0");
 	string speed("38400");
-	ModbusRTU::ModbusAddr myaddr = 0x01;
+	std::string myaddr("0x01");
 	int tout = 2000;
 	DebugStream dlog;
 
@@ -68,7 +69,7 @@ int main( int argc, char** argv )
 					break;
 
 				case 'a':
-					myaddr = ModbusRTU::str2mbAddr(optarg);
+					myaddr = string(optarg);
 					break;
 
 				case 'v':
@@ -86,10 +87,15 @@ int main( int argc, char** argv )
 			}
 		}
 
+		auto avec = UniSetTypes::explode_str(myaddr,',');
+		std::unordered_set<ModbusRTU::ModbusAddr> vaddr;
+		for( const auto& a: avec )
+			vaddr.emplace( ModbusRTU::str2mbAddr(a) );
+
 		if( verb )
 		{
 			cout << "(init): dev=" << dev << " speed=" << speed
-				 << " myaddr=" << ModbusRTU::addr2str(myaddr)
+				 << " myaddr=" << ModbusServer::vaddr2str(vaddr)
 				 << " timeout=" << tout << " msec "
 				 << endl;
 
@@ -110,20 +116,20 @@ int main( int argc, char** argv )
 				return 1;
 			}
 
-			MBSlave mbs(cp, myaddr, speed);
+			MBSlave mbs(cp, vaddr, speed);
 			mbs.setLog(dlog);
 			mbs.setVerbose(verb);
 			mbs.execute();
 		}
 		else
 		{
-			MBSlave mbs(myaddr, dev, speed);
+			MBSlave mbs(vaddr, dev, speed);
 			mbs.setLog(dlog);
 			mbs.setVerbose(verb);
 			mbs.execute();
 		}
 	}
-	catch( ModbusRTU::mbException& ex )
+	catch( const ModbusRTU::mbException& ex )
 	{
 		cerr << "(mbtester): " << ex << endl;
 	}

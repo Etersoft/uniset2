@@ -22,9 +22,9 @@ ModbusTCPSession::~ModbusTCPSession()
 		ost::Thread::join();
 }
 // -------------------------------------------------------------------------
-ModbusTCPSession::ModbusTCPSession( ost::TCPSocket& server, ModbusRTU::ModbusAddr a, timeout_t timeout ):
+ModbusTCPSession::ModbusTCPSession(ost::TCPSocket& server, const std::unordered_set<ModbusAddr>& a, timeout_t timeout ):
 	TCPSession(server),
-	addr(a),
+	vaddr(a),
 	timeout(timeout),
 	peername(""),
 	caddr(""),
@@ -94,7 +94,7 @@ void ModbusTCPSession::run()
 		if( n == 0 )
 			break;
 
-		res = receive(addr, timeout);
+		res = receive(vaddr, timeout);
 
 		if( res == erSessionClosed )
 			break;
@@ -118,7 +118,7 @@ void ModbusTCPSession::run()
 		dlog->info() << peername << "(run): thread stopping..." << endl;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode ModbusTCPSession::receive( ModbusRTU::ModbusAddr addr, timeout_t msec )
+ModbusRTU::mbErrCode ModbusTCPSession::receive( const std::unordered_set<ModbusAddr>& vmbaddr, timeout_t msec )
 {
 	ModbusRTU::mbErrCode res = erTimeOut;
 	ptTimeout.setTiming(msec);
@@ -138,28 +138,16 @@ ModbusRTU::mbErrCode ModbusTCPSession::receive( ModbusRTU::ModbusAddr addr, time
 				return erTimeOut;
 		}
 
-		if( !qrecv.empty() )
-		{
-			// check addr
-			unsigned char _addr = qrecv.front();
+		if( qrecv.empty() )
+			return erTimeOut;
 
-			// для режима игнорирования RTU-адреса
-			// просто подменяем его на то который пришёл
-			// чтобы проверка всегда была успешной...
-			if( ignoreAddr )
-				addr = _addr;
-			else if( _addr != addr )
-			{
-				// На такие запросы просто не отвечаем...
-				return erTimeOut;
-			}
-		}
+		unsigned char q_addr = qrecv.front();
 
 		if( cancelled )
 			return erSessionClosed;
 
 		memset(&buf, 0, sizeof(buf));
-		res = recv( addr, buf, msec );
+		res = recv( vmbaddr, buf, msec );
 
 		if( cancelled )
 			return erSessionClosed;
@@ -168,7 +156,7 @@ ModbusRTU::mbErrCode ModbusTCPSession::receive( ModbusRTU::ModbusAddr addr, time
 		{
 			if( res < erInternalErrorCode )
 			{
-				ErrorRetMessage em( addr, buf.func, res );
+				ErrorRetMessage em( q_addr, buf.func, res );
 				buf = em.transport_msg();
 				send(buf);
 				printProcessingTime();

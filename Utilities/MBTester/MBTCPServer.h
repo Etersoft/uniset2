@@ -1,7 +1,7 @@
 #ifndef MBTCPServer_H_
 #define MBTCPServer_H_
 // -------------------------------------------------------------------------
-//#include <map>
+#include <unordered_set>
 #include <string>
 #include "modbus/ModbusTCPServerSlot.h"
 
@@ -10,7 +10,7 @@
 class MBTCPServer
 {
 	public:
-		MBTCPServer( ModbusRTU::ModbusAddr myaddr, const std::string& inetaddr, int port = 502, bool verbose = false );
+		MBTCPServer( const std::unordered_set<ModbusRTU::ModbusAddr>& myaddr, const std::string& inetaddr, int port = 502, bool verbose = false );
 		~MBTCPServer();
 
 		inline void setVerbose( bool state )
@@ -23,14 +23,8 @@ class MBTCPServer
 			replyVal = val;
 		}
 
-		inline void setIgnoreAddrMode( bool state )
-		{
-			if( sslot )
-				sslot->setIgnoreAddrMode(state);
-		}
-
 		void execute();    /*!< основной цикл работы */
-		void setLog( std::shared_ptr<DebugStream> dlog );
+		void setLog( std::shared_ptr<DebugStream>& dlog );
 
 	protected:
 		// действия при завершении работы
@@ -93,7 +87,7 @@ class MBTCPServer
 
 		/*! интерфейс ModbusSlave для обмена по RS */
 		ModbusTCPServerSlot* sslot;
-		ModbusRTU::ModbusAddr addr;            /*!< адрес данного узла */
+		std::unordered_set<ModbusRTU::ModbusAddr> vaddr; /*!< адреса данного узла */
 
 		bool verbose;
 		long replyVal;

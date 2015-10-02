@@ -2,6 +2,7 @@
 // -----------------------------------------------------------------------------
 #include <time.h>
 #include <limits>
+#include <unordered_set>
 #include "UniSetTypes.h"
 #include "MBTCPMultiMaster.h"
 // -----------------------------------------------------------------------------
@@ -22,10 +23,10 @@ using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 static ModbusRTU::ModbusAddr slaveaddr = 0x01; // conf->getArgInt("--mbs-my-addr");
 static int port = 20053; // conf->getArgInt("--mbs-inet-port");
-static string addr("127.0.0.1"); // conf->getArgParam("--mbs-inet-addr");
+static string iaddr("127.0.0.1"); // conf->getArgParam("--mbs-inet-addr");
 static int port2 = 20055;
-static string addr2("127.0.0.1");
-static ModbusRTU::ModbusAddr slaveADDR = 0x01;
+static string iaddr2("127.0.0.1");
+static unordered_set<ModbusRTU::ModbusAddr> slaveADDR = { 0x01 };
 static shared_ptr<MBTCPTestServer> mbs1;
 static shared_ptr<MBTCPTestServer> mbs2;
 static shared_ptr<UInterface> ui;
@@ -55,18 +56,18 @@ static void InitTest()
 		try
 		{
 			ost::Thread::setException(ost::Thread::throwException);
-			mbs1 = make_shared<MBTCPTestServer>(slaveADDR, addr, port, false);
+			mbs1 = make_shared<MBTCPTestServer>(slaveADDR, iaddr, port, false);
 		}
 		catch( const ost::SockException& e )
 		{
 			ostringstream err;
-			err << "(mb1): Can`t create socket " << addr << ":" << port << " err: " << e.getString() << endl;
+			err << "(mb1): Can`t create socket " << iaddr << ":" << port << " err: " << e.getString() << endl;
 			cerr << err.str() << endl;
 			throw SystemError(err.str());
 		}
 		catch( const std::exception& ex )
 		{
-			cerr << "(mb1): Can`t create socket " << addr << ":" << port << " err: " << ex.what() << endl;
+			cerr << "(mb1): Can`t create socket " << iaddr << ":" << port << " err: " << ex.what() << endl;
 			throw;
 		}
 
@@ -87,18 +88,18 @@ static void InitTest()
 		try
 		{
 			ost::Thread::setException(ost::Thread::throwException);
-			mbs2 = make_shared<MBTCPTestServer>(slaveADDR, addr2, port2, false);
+			mbs2 = make_shared<MBTCPTestServer>(slaveADDR, iaddr2, port2, false);
 		}
 		catch( const ost::SockException& e )
 		{
 			ostringstream err;
-			err << "(mb2): Can`t create socket " << addr << ":" << port << " err: " << e.getString() << endl;
+			err << "(mb2): Can`t create socket " << iaddr << ":" << port << " err: " << e.getString() << endl;
 			cerr << err.str() << endl;
 			throw SystemError(err.str());
 		}
 		catch( const std::exception& ex )
 		{
-			cerr << "(mb2): Can`t create socket " << addr << ":" << port << " err: " << ex.what() << endl;
+			cerr << "(mb2): Can`t create socket " << iaddr << ":" << port << " err: " << ex.what() << endl;
 			throw;
 		}
 

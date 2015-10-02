@@ -3,6 +3,7 @@
 #define MBSlave_H_
 // -------------------------------------------------------------------------
 #include <map>
+#include <unordered_set>
 #include <string>
 #include "modbus/ModbusRTUSlaveSlot.h"
 
@@ -11,7 +12,7 @@
 class MBSlave
 {
 	public:
-		MBSlave( ModbusRTU::ModbusAddr addr, const std::string& dev, const std::string& speed, bool use485 = false );
+		MBSlave( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, const std::string& dev, const std::string& speed, bool use485 = false );
 		~MBSlave();
 
 		inline void setVerbose( bool state )
@@ -96,7 +97,7 @@ class MBSlave
 
 		/*! интерфейс ModbusRTUSlave для обмена по RS */
 		ModbusRTUSlaveSlot* rscomm;
-		ModbusRTU::ModbusAddr addr;            /*!< адрес данного узла */
+		std::unordered_set<ModbusRTU::ModbusAddr> vaddr;  /*!< адреса на которые отвечаем */
 
 		bool verbose;
 #if 0

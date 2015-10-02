@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------
 #include <string>
 #include <queue>
+#include <unordered_map>
 #include <cc++/socket.h>
 #include "ModbusServerSlot.h"
 #include "ModbusServer.h"
@@ -16,7 +17,7 @@ class ModbusTCPSession:
 {
 	public:
 
-		ModbusTCPSession( ost::TCPSocket& server, ModbusRTU::ModbusAddr mbaddr, timeout_t timeout );
+		ModbusTCPSession( ost::TCPSocket& server, const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t timeout );
 		virtual ~ModbusTCPSession();
 
 		void cleanInputStream();
@@ -27,7 +28,7 @@ class ModbusTCPSession:
 		}
 		virtual void terminate();
 
-		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msecTimeout );
+		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msecTimeout );
 
 		typedef sigc::slot<void, ModbusTCPSession*> FinalSlot;
 
@@ -99,7 +100,7 @@ class ModbusTCPSession:
 	private:
 		std::queue<unsigned char> qrecv;
 		ModbusTCP::MBAPHeader curQueryHeader;
-		ModbusRTU::ModbusAddr addr;
+		std::unordered_set<ModbusRTU::ModbusAddr> vaddr;
 		PassiveTimer ptTimeout;
 		timeout_t timeout;
 		ModbusRTU::ModbusMessage buf;

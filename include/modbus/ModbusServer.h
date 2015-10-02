@@ -3,6 +3,7 @@
 #define ModbusServer_H_
 // -------------------------------------------------------------------------
 #include <string>
+#include <unordered_set>
 
 #include "Debug.h"
 #include "Mutex.h"
@@ -22,12 +23,20 @@ class ModbusServer
 
 
 		/*! обработать очередное сообщение
-		    \param addr         - адрес для которого принимать сообщения
-		    \param msecTimeout     - время ожидания прихода очередного сообщения в мсек.
+			\param vaddr        - вектор адресов для которых принимать сообщения
+			\param msecTimeout  - время ожидания прихода очередного сообщения в мсек.
 		    \return Возвращает код ошибки из ModbusRTU::mbErrCode
 		*/
-		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msecTimeout ) = 0;
+		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, timeout_t msecTimeout ) = 0;
 
+		/*! Проверка входит ли данный адрес в список
+		  * \param vaddr - вектор адресов
+		  * \param addr - адрес который ищем
+		  * \return TRUE - если найден
+		  * \warning Если addr=ModbusRTU::BroadcastAddr то всегда возвращается TRUE!
+		*/
+		static bool checkAddr( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, const ModbusRTU::ModbusAddr addr );
+		static std::string vaddr2str( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr );
 
 		/*! Установка паузы после посылки
 		    \return старое значение
@@ -245,7 +254,7 @@ class ModbusServer
 		virtual ModbusRTU::mbErrCode processing( ModbusRTU::ModbusMessage& buf );
 
 		/*! принять сообщение из канала */
-		ModbusRTU::mbErrCode recv( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& buf, timeout_t timeout );
+		ModbusRTU::mbErrCode recv(const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, ModbusRTU::ModbusMessage& buf, timeout_t timeout );
 		ModbusRTU::mbErrCode recv_pdu( ModbusRTU::ModbusMessage& rbuf, timeout_t timeout );
 
 		UniSetTypes::uniset_mutex recvMutex;

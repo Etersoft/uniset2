@@ -63,7 +63,7 @@ ModbusRTUSlave::~ModbusRTUSlave()
 		delete port;
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusRTUSlave::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout )
+mbErrCode ModbusRTUSlave::receive(const std::unordered_set<ModbusAddr>& vmbaddr, timeout_t timeout )
 {
 	uniset_mutex_lock lck(recvMutex, timeout);
 
@@ -80,7 +80,7 @@ mbErrCode ModbusRTUSlave::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout
 
 	do
 	{
-		res = recv(addr, buf, timeout);
+		res = recv(vmbaddr, buf, timeout);
 
 		if( res != erNoError && res != erBadReplyNodeAddress )
 		{
@@ -94,9 +94,9 @@ mbErrCode ModbusRTUSlave::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout
 				printProcessingTime();
 			}
 
-			//            dlog->warn() << "(receive): " << mbErr2Str(res) << endl;
-			//            cerr << "**** (receive): " << mbErr2Str(res) << endl;
-			usleep(10000);
+			if( aftersend_msec >= 0 )
+				msleep(aftersend_msec);
+//			usleep(10000);
 			return res;
 		}
 

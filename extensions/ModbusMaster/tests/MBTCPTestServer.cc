@@ -18,9 +18,9 @@ std::ostream& operator<<(std::ostream& os, const MBTCPTestServer* m )
 	return os << m->myname;
 }
 // -------------------------------------------------------------------------
-MBTCPTestServer::MBTCPTestServer( ModbusAddr myaddr, const string& inetaddr, int port, bool verb ):
+MBTCPTestServer::MBTCPTestServer( const std::unordered_set<ModbusAddr>& _vaddr, const string& inetaddr, int port, bool verb ):
 	sslot(NULL),
-	addr(myaddr),
+	vaddr(_vaddr),
 	verbose(verb),
 	replyVal(-1),
 	forceSingleCoilCmd(false),
@@ -51,13 +51,13 @@ MBTCPTestServer::MBTCPTestServer( ModbusAddr myaddr, const string& inetaddr, int
 	catch( const ost::SockException& e )
 	{
 		ostringstream err;
-		err << "(MBTCPTestServer::init): Can`t create socket " << addr << ":" << port << " err: " << e.getString() << endl;
+		err << "(MBTCPTestServer::init): Can`t create socket " << inetaddr << ":" << port << " err: " << e.getString() << endl;
 		cerr << err.str() << endl;
 		throw SystemError(err.str());
 	}
 	catch( const std::exception& ex )
 	{
-		cerr << "(MBTCPTestServer::init): Can`t create socket " << addr << ":" << port << " err: " << ex.what() << endl;
+		cerr << "(MBTCPTestServer::init): Can`t create socket " << inetaddr << ":" << port << " err: " << ex.what() << endl;
 		throw;
 	}
 
@@ -119,7 +119,7 @@ void MBTCPTestServer::execute()
 	// Работа...
 	while(1)
 	{
-		ModbusRTU::mbErrCode res = sslot->receive( addr, UniSetTimer::WaitUpTime );
+		ModbusRTU::mbErrCode res = sslot->receive( vaddr, UniSetTimer::WaitUpTime );
 #if 0
 
 		// собираем статистику обмена

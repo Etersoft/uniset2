@@ -173,11 +173,13 @@ void MBTCPPersistentSlave::execute_tcp()
 
 	mbinfo << myname << "(execute_tcp): thread running.." << endl;
 
+
+
 	while( !cancelled )
 	{
 		try
 		{
-			sslot->waitQuery( addr, waitTimeout );
+			sslot->waitQuery( vaddr, waitTimeout );
 
 			// если слишком быстро обработали запрос
 			// то ничего не делаем..

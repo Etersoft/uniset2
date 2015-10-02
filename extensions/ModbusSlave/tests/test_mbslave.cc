@@ -9,7 +9,8 @@
 using namespace std;
 using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
-static ModbusRTU::ModbusAddr slaveaddr = 0x01; // conf->getArgInt("--mbs-my-addr");
+static ModbusRTU::ModbusAddr slaveaddr = 0x01;
+static ModbusRTU::ModbusAddr slaveaddr2 = 0x02;
 static int port = 20048; // conf->getArgInt("--mbs-inet-port");
 static string addr("127.0.0.1"); // conf->getArgParam("--mbs-inet-addr");
 static ObjectId slaveID = 6004; // conf->getObjectID( conf->getArgParam("--mbs-name"));
@@ -1177,6 +1178,21 @@ TEST_CASE("(0x10): write register outputs or memories [F2](precision)", "[modbus
 	F2 r_f2(ret2.data, F2::wsize());
 
 	REQUIRE( (float)r_f2 == 20.3f );
+}
+// -------------------------------------------------------------
+TEST_CASE("Multi adress check", "[modbus][mbslave][multiaddress]")
+{
+	using namespace VTypes;
+	InitTest();
+
+	ModbusRTU::ModbusData tREG = 130;
+	int num = 10;
+
+	ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr, tREG, 1);
+	REQUIRE( ret.data[0] == 1 );
+
+	ModbusRTU::ReadOutputRetMessage ret2 = mb->read03(slaveaddr2, tREG, 1);
+	REQUIRE( ret2.data[0] == 1 );
 }
 // -------------------------------------------------------------
 /*! \todo Доделать тесты на считывание с разными prop_prefix.. */

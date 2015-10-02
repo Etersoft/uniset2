@@ -106,7 +106,11 @@ int main( int argc, char** argv )
 			dlog->addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
 		}
 
-		MBSlave mbs(myaddr, dev, speed, use485);
+		/*! \todo Доделать возможность задавать много адресов для ответа */
+		std::unordered_set<ModbusRTU::ModbusAddr> vaddr;
+		vaddr.emplace(myaddr);
+
+		MBSlave mbs(vaddr, dev, speed, use485);
 		mbs.setLog(dlog);
 		mbs.setVerbose(verb);
 

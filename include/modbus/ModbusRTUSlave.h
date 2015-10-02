@@ -3,6 +3,7 @@
 #define ModbusRTUSlave_H_
 // -------------------------------------------------------------------------
 #include <string>
+#include <unordered_set>
 #include "Mutex.h"
 #include "Debug.h"
 #include "Configuration.h"
@@ -31,7 +32,7 @@ class ModbusRTUSlave:
 		void setSpeed( const std::string& s );
 		ComPort::Speed getSpeed();
 
-		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msecTimeout ) override;
+		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msecTimeout ) override;
 
 		virtual void cleanupChannel() override
 		{

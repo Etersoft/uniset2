@@ -4,6 +4,7 @@
 #include <string>
 #include <atomic>
 #include <ostream>
+#include <unordered_set>
 #include "ThreadCreator.h"
 #include "modbus/ModbusTCPServerSlot.h"
 // -------------------------------------------------------------------------
@@ -11,7 +12,7 @@
 class MBTCPTestServer
 {
 	public:
-		MBTCPTestServer( ModbusRTU::ModbusAddr myaddr, const std::string& inetaddr, int port = 502, bool verbose = false );
+		MBTCPTestServer( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, const std::string& inetaddr, int port = 502, bool verbose = false );
 		~MBTCPTestServer();
 
 		inline void setVerbose( bool state )
@@ -130,7 +131,7 @@ class MBTCPTestServer
 
 		/*! интерфейс ModbusSlave для обмена по RS */
 		ModbusTCPServerSlot* sslot;
-		ModbusRTU::ModbusAddr addr;            /*!< адрес данного узла */
+		std::unordered_set<ModbusRTU::ModbusAddr> vaddr; /*!< адреса данного узла */
 
 		bool verbose;
 		long replyVal;

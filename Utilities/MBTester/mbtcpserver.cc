@@ -15,7 +15,6 @@ static struct option longopts[] =
 	{ "verbose", no_argument, 0, 'v' },
 	{ "myaddr", required_argument, 0, 'a' },
 	{ "port", required_argument, 0, 'p' },
-	{ "reply-all", no_argument, 0, 'r' },
 	{ "const-reply", required_argument, 0, 'c' },
 	{ NULL, 0, 0, 0 }
 };
@@ -23,13 +22,13 @@ static struct option longopts[] =
 static void print_help()
 {
 	printf("Example: uniset-mbtcpserver-echo -i localhost -p 2049 -v \n");
-	printf("-h|--help                 - this message\n");
-	printf("[-v|--verbose]          - Print all messages to stdout\n");
-	printf("[-i|--iaddr] ip         - Server listen ip. Default 127.0.0.1\n");
-	printf("[-a|--myaddr] addr      - Modbus address for master. Default: 0x01.\n");
-	printf("[-r|--reply-all]        - Reply to all RTU-addresses.\n");
-	printf("[-p|--port] port        - Server port. Default: 502.\n");
-	printf("[-c|--const-reply] val  - Reply 'val' for all queries\n");
+	printf("-h|--help                      - this message\n");
+	printf("[-v|--verbose]                 - Print all messages to stdout\n");
+	printf("[-i|--iaddr] ip                - Server listen ip. Default 127.0.0.1\n");
+	printf("[-a|--myaddr] addr1,addr2,...  - Modbus address for master. Default: 0x01.\n");
+	printf("                    myaddr=255 - Reply to all RTU-addresses.\n");
+	printf("[-p|--port] port               - Server port. Default: 502.\n");
+	printf("[-c|--const-reply] val         - Reply 'val' for all queries\n");
 }
 // --------------------------------------------------------------------------
 int main( int argc, char** argv )
@@ -40,16 +39,15 @@ int main( int argc, char** argv )
 	int verb = 0;
 	int port = 502;
 	string iaddr("127.0.0.1");
-	ModbusRTU::ModbusAddr myaddr = 0x01;
+	string myaddr("0x01");
 	auto dlog = make_shared<DebugStream>();
-	bool ignoreAddr = false;
 	int replyVal = -1;
 
 	ost::Thread::setException(ost::Thread::throwException);
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:p:i:brc:", longopts, &optindex)) != -1 )
+		while( (opt = getopt_long(argc, argv, "hva:p:i:bc:", longopts, &optindex)) != -1 )
 		{
 			switch (opt)
 			{
@@ -66,15 +64,11 @@ int main( int argc, char** argv )
 					break;
 
 				case 'a':
-					myaddr = ModbusRTU::str2mbAddr(optarg);
+					myaddr = string(optarg);
 					break;
 
 				case 'v':
 					verb = 1;
-					break;
-
-				case 'r':
-					ignoreAddr = true;
 					break;
 
 				case 'c':
@@ -88,19 +82,23 @@ int main( int argc, char** argv )
 			}
 		}
 
+		auto avec = UniSetTypes::explode_str(myaddr,',');
+		std::unordered_set<ModbusRTU::ModbusAddr> vaddr;
+		for( const auto& a: avec )
+			vaddr.emplace( ModbusRTU::str2mbAddr(a) );
+
 		if( verb )
 		{
 			cout << "(init): iaddr: " << iaddr << ":" << port
-				 << " myaddr=" << ModbusRTU::addr2str(myaddr)
+				 << " myaddr=" << ModbusServer::vaddr2str(vaddr)
 				 << endl;
 
 			dlog->addLevel( Debug::ANY );
 		}
 
-		MBTCPServer mbs(myaddr, iaddr, port, verb);
+		MBTCPServer mbs(vaddr, iaddr, port, verb);
 		mbs.setLog(dlog);
 		mbs.setVerbose(verb);
-		mbs.setIgnoreAddrMode(ignoreAddr);
 
 		if( replyVal != -1 )
 			mbs.setReply(replyVal);

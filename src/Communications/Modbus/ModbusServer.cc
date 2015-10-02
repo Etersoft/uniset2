@@ -66,6 +66,26 @@ timeout_t ModbusServer::setAfterSendPause( timeout_t msec )
 	return old;
 }
 // --------------------------------------------------------------------------------
+bool ModbusServer::checkAddr(const std::unordered_set<ModbusAddr>& vaddr, const ModbusRTU::ModbusAddr addr )
+{
+	if( addr == ModbusRTU::BroadcastAddr )
+		return true;
+
+	auto i = vaddr.find(addr);
+	return (i!=vaddr.end());
+}
+// --------------------------------------------------------------------------------
+std::string ModbusServer::vaddr2str( const std::unordered_set<ModbusAddr>& vaddr )
+{
+	ostringstream s;
+	s << "[ ";
+	for( const auto& a: vaddr )
+		s << addr2str(a) << " ";
+	s <<"]";
+
+	return std::move(s.str());
+}
+// --------------------------------------------------------------------------------
 mbErrCode ModbusServer::processing( ModbusMessage& buf )
 {
 	if( buf.func == fnReadCoilStatus )
@@ -540,7 +560,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 }
 
 // -------------------------------------------------------------------------
-mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, timeout_t timeout )
+mbErrCode ModbusServer::recv( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, ModbusMessage& rbuf, timeout_t timeout )
 {
 	assert(timeout);
 
@@ -563,7 +583,7 @@ mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, t
 		{
 			bcnt = getNextData((unsigned char*)(&rbuf), sizeof(ModbusAddr));
 
-			if( bcnt > 0 && ( rbuf.addr == addr || (onBroadcast && rbuf.addr == BroadcastAddr) || addr == BroadcastAddr ) )
+			if( bcnt > 0 && checkAddr(vaddr,rbuf.addr) )
 			{
 				begin = true;
 				break;
@@ -579,12 +599,12 @@ mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, t
 		            // Lav: конечно стоит, нам же надо буфер чистить
 		*/
 		// Проверка кому адресован пакет... (только если не включён режим отвечать на любые адреса)
-		if( addr != BroadcastAddr && rbuf.addr != addr && rbuf.addr != BroadcastAddr )
+		if( !(onBroadcast && rbuf.addr == BroadcastAddr) && !checkAddr(vaddr,rbuf.addr) )
 		{
 			if( dlog->is_warn() )
 			{
 				ostringstream err;
-				err << "(recv): BadNodeAddress. my= " << addr2str(addr)
+				err << "(recv): BadNodeAddress. my= " << vaddr2str(vaddr)
 					<< " msg.addr=" << addr2str(rbuf.addr);
 				dlog->warn() << err.str() << endl;
 			}

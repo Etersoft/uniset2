@@ -33,7 +33,7 @@
             </History>
         </SharedMemory>
         
-		<MBSlave1 addr="0x31" aftersend-pause="0" device="/dev/ttyS0" name="MBSlave1" poll_time="200" reply_timeout="60" speed="9600">
+		<MBSlave1 default_mbaddr="0x01" aftersend-pause="0" device="/dev/ttyS0" name="MBSlave1" poll_time="200" reply_timeout="60" speed="9600">
 			<filelist>
 				<!-- Список файлов разрешённых для передачи по modbus
 			directory - каталог где лежит файл. Можно не задавать
@@ -198,6 +198,9 @@
 			<item id="2049" mbs="1" mbreg="257" iotype="AO" name="Test_CountWrite10_12" textname="Тестовый регистр для 0x10"/>
 			<item id="2050" mbs="1" mbreg="259" iotype="AO" vtype="F2" name="Test_CountWrite10_F2" textname="Тестовый регистр для 0x10(F2)"/>
 			<item id="2051" mbs="1" mbreg="261" iotype="AO" vtype="F2" precision="1" name="Test_CountWrite10_F2prec" textname="Тестовый регистр для 0x10(F2)(prec)"/>
+
+
+			<item id="2053" mbs="1" mbaddr="0x02" mbreg="130" default="1" iotype="AO" name="Test_SlaveAddr2" textname="Тестовый регистр для проверки работы со вторым адресом (mbreg)"/>
 
 			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
 

@@ -8,6 +8,9 @@
 #include <map>
 #include <unordered_map>
 #include <vector>
+#include <condition_variable>
+#include <atomic>
+#include <mutex>
 #include "UniSetObject_LT.h"
 #include "modbus/ModbusTypes.h"
 #include "modbus/ModbusServerSlot.h"
@@ -67,7 +70,7 @@
       в которой указываются настроечные параметры по умолчанию.
       Пример:
       \code
-        <MBSlave1 name="MBSlave1" addr="0x31"
+		<MBSlave1 name="MBSlave1" default_mbaddr="0x31"
         afterSendPause="0"
         reg_from_id="0"
         replyTimeout="60"
@@ -81,7 +84,7 @@
         ...
       \endcode
 
-	  - \b addr -  адрес данного устройства. Если указан адрес 255 - ответ будет на любые сообщения.
+	  - \b default_mbaddr - адрес по умолчанию для данного устройства. Если указан адрес 255 - ответ будет на любые сообщения.
       - \b afterSendPause - принудительная пауза после посылки ответа
       - \b reg_from_id - номер регистра брать из ID датчика
       - \b replyTimeout - таймаут на формирование ответа. Если ответ на запрос будет сформирован за большее время, он не будет отослан.
@@ -118,9 +121,9 @@
 
       \b --xxx-name ID - идентификатор процесса.
 
-	  \b --xxx-my-addr addr - slave-адрес для данного устройства. Если указан адрес 255 - ответ будет на любые сообщения.
+	  \b --xxx-default-mbaddr addr1 - slave-адрес по умолчанию для данного устройства. Если указан адрес 255 - ответ будет на любые сообщения.
 
-      \b --xxx-timeout или \b timeout msec  - таймаут на определение отсутсвия связи.
+	  \b --xxx-timeout или \b timeout msec  - таймаут на определение отсутсвия связи.
 
       \b --xxx-reply-timeout msec  - таймаут на формирование ответа.
 
@@ -175,8 +178,11 @@
   <sensors name="Sensors">
     ...
     <item name="MySensor_S" textname="my sesnsor" iotype="DI"
-          mbs="1" mbreg="1"
+		  mbs="1" mbs_mbaddr="0x02" mbs_mbreg="1"
      />
+	<item name="MySensor2_S" textname="my sesnsor 2" iotype="DI"
+		  mbs="1" mbs_mbaddr="0x01" mbs_mbreg="1"
+	 />
     ...
   </sensors>
 \endcode
@@ -184,6 +190,7 @@
    \warning По умолчанию для свойств используется заданный в конструктроре префикс "mbs_".
 
   К основным параметрам настройки датчиков относятся следующие (префикс \b mbs_ - для примера):
+   - \b mbs_mbadrr    - адрес к которому относиться данный регистр. Если не используется параметр \b default_mbaddr.
    - \b mbs_mbreg     - запрашиваемый/записываемый регистр. Если не используется параметр \b reg_from_id.
 
    Помимо этого можно задавать следующие параметры:
@@ -430,11 +437,15 @@ class MBSlave:
 
 		// т.к. в функциях (much_real_read,nuch_real_write) рассчёт на отсортированность IOMap
 		// то использовать unordered_map нельзя
-		typedef std::map<ModbusRTU::RegID, IOProperty> IOMap;
-		IOMap iomap;            /*!< список входов/выходов */
+		typedef std::map<ModbusRTU::RegID, IOProperty> RegMap;
+
+		typedef std::unordered_map<ModbusRTU::ModbusAddr,RegMap> IOMap;
+
+		IOMap iomap;  /*!< список входов/выходов по адресам */
 
 		std::shared_ptr<ModbusServerSlot> mbslot;
-		ModbusRTU::ModbusAddr addr = { 0x01 };       /*!< адрес данного узла */
+		std::unordered_set<ModbusRTU::ModbusAddr> vaddr; /*!< адреса данного узла */
+		std::string default_mbaddr;
 
 		xmlNode* cnode;
 		std::string s_field;
@@ -464,17 +475,17 @@ class MBSlave:
 		void readConfiguration();
 		bool check_item( UniXML::iterator& it );
 
-		ModbusRTU::mbErrCode real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val, const int fn = 0 );
-		ModbusRTU::mbErrCode real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int& i, int count, const int fn = 0  );
-		ModbusRTU::mbErrCode real_read( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val, const int fn = 0  );
-		ModbusRTU::mbErrCode much_real_read( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count, const int fn = 0  );
-		ModbusRTU::mbErrCode much_real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count, const int fn = 0  );
+		ModbusRTU::mbErrCode real_write( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val, const int fn = 0 );
+		ModbusRTU::mbErrCode real_write( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int& i, int count, const int fn = 0  );
+		ModbusRTU::mbErrCode real_read( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val, const int fn = 0  );
+		ModbusRTU::mbErrCode much_real_read( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count, const int fn = 0  );
+		ModbusRTU::mbErrCode much_real_write( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count, const int fn = 0  );
 
-		ModbusRTU::mbErrCode real_read_it( IOMap::iterator& it, ModbusRTU::ModbusData& val );
+		ModbusRTU::mbErrCode real_read_it( RegMap& rmap, RegMap::iterator& it, ModbusRTU::ModbusData& val );
 		ModbusRTU::mbErrCode real_bitreg_read_it( std::shared_ptr<BitRegProperty>& bp, ModbusRTU::ModbusData& val );
 		ModbusRTU::mbErrCode real_read_prop( IOProperty* p, ModbusRTU::ModbusData& val );
 
-		ModbusRTU::mbErrCode real_write_it( IOMap::iterator& it, ModbusRTU::ModbusData* dat, int& i, int count );
+		ModbusRTU::mbErrCode real_write_it(RegMap& rmap, RegMap::iterator& it, ModbusRTU::ModbusData* dat, int& i, int count );
 		ModbusRTU::mbErrCode real_bitreg_write_it( std::shared_ptr<BitRegProperty>& bp, const ModbusRTU::ModbusData val );
 		ModbusRTU::mbErrCode real_write_prop( IOProperty* p, ModbusRTU::ModbusData* dat, int& i, int count );
 
@@ -482,6 +493,9 @@ class MBSlave:
 		bool initPause;
 		UniSetTypes::uniset_rwmutex mutex_start;
 		std::shared_ptr< ThreadCreator<MBSlave> > thr;
+
+		std::mutex mutexStartNotify;
+		std::condition_variable startNotifyEvent;
 
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;

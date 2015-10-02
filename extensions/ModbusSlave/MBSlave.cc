@@ -14,7 +14,6 @@ using namespace ModbusRTU;
 // -----------------------------------------------------------------------------
 MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic, const string& prefix ):
 	UniSetObject_LT(objId),
-	addr(0x01),
 	initPause(0),
 	test_id(DefaultObjectId),
 	askcount_id(DefaultObjectId),
@@ -109,9 +108,7 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 
 	vmonit(force);
 
-	addr = ModbusRTU::str2mbAddr(conf->getArg2Param("--" + prefix + "-my-addr", it.getProp("addr"), "0x01"));
-	vmonit(addr);
-
+	default_mbaddr = conf->getArg2Param("--" + prefix + "-default-mbaddr", it.getProp("default_mbaddr"), "");
 	default_mbfunc = conf->getArgPInt("--" + prefix + "-default-mbfunc", it.getProp("default_mbfunc"), 0);
 
 	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id", it.getProp("reg_from_id"));
@@ -120,13 +117,14 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 	mbinfo << myname << "(init): mbregFromID=" << mbregFromID
 		   << " checkMBFunc=" << checkMBFunc
 		   << " default_mbfunc=" << default_mbfunc
+		   << " default_mbaddr=" << default_mbaddr
 		   << " noMBFuncOptimize=" << noMBFuncOptimize
 		   << endl;
 
+	vmonit(default_mbaddr);
 	vmonit(default_mbfunc);
 	vmonit(checkMBFunc);
 	vmonit(noMBFuncOptimize);
-
 
 	respond_id = conf->getSensorID(conf->getArgParam("--" + prefix + "-respond-id", it.getProp("respond_id")));
 	respond_invert = conf->getArgInt("--" + prefix + "-respond-invert", it.getProp("respond_invert"));
@@ -159,13 +157,11 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 		rs->setAfterSendPause(aftersend_pause);
 		rs->setReplyTimeout(reply_tout);
 		rs->setLog(mblog);
-		rs->setBroadcastMode( addr == ModbusRTU::BroadcastAddr );
 
 		mbslot = std::static_pointer_cast<ModbusServerSlot>(rs);
 		thr = make_shared< ThreadCreator<MBSlave> >(this, &MBSlave::execute_rtu);
 		thr->setFinalAction(this, &MBSlave::finalThread);
-		mbinfo << myname << "(init): type=RTU myaddr=" << ModbusRTU::addr2str(addr)
-			   << " dev=" << dev << " speed=" << speed << endl;
+		mbinfo << myname << "(init): type=RTU dev=" << dev << " speed=" << speed << endl;
 	}
 	else if( stype == "TCP" )
 	{
@@ -176,15 +172,13 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 
 		int port = conf->getArgPInt("--" + prefix + "-inet-port", it.getProp("iport"), 502);
 
-		mbinfo << myname << "(init): type=TCP myaddr=" << ModbusRTU::addr2str(addr)
-			   << " inet=" << iaddr << " port=" << port << endl;
+		mbinfo << myname << "(init): type=TCP inet=" << iaddr << " port=" << port << endl;
 
 		ost::InetAddress ia(iaddr.c_str());
 		auto mbtcp = make_shared<ModbusTCPServerSlot>(ia, port);
 
 		mbtcp->setAfterSendPause(aftersend_pause);
 		mbtcp->setReplyTimeout(reply_tout);
-		mbtcp->setBroadcastMode( addr == ModbusRTU::BroadcastAddr );
 
 		mbslot = std::static_pointer_cast<ModbusServerSlot>(mbtcp);
 		thr = make_shared< ThreadCreator<MBSlave> >(this, &MBSlave::execute_tcp);
@@ -222,7 +216,8 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
-		mbinfo << myname << "(init): iomap size = " << iomap.size() << endl;
+		mbinfo << myname << "(init): iomap size = " << iomap.size()
+			  << " myaddr=" << ModbusServer::vaddr2str(vaddr) << endl;
 	}
 	else
 	{
@@ -491,11 +486,32 @@ void MBSlave::execute_rtu()
 
 	ModbusRTU::mbErrCode prev = erNoError;
 
+	// ждём чтобы прошла инициализация
+	// потому-что нужно чтобы наполнилась таблица адресов (vaddr)
+	if( !shm->isLocalwork() )
+	{
+		std::unique_lock<std::mutex> locker(mutexStartNotify);
+		while( !activated )
+			startNotifyEvent.wait(locker);
+	}
+
+	if( vaddr.empty() )
+	{
+		mbcrit << "(execute_rtu): Unknown my modbus adresses!" << endl;
+		raise(SIGTERM);
+		return;
+	}
+
+	mbinfo << myname << "(execute_rtu): thread running.."
+			<< " iomap size = " << iomap.size()
+			<< " myaddr=" << ModbusServer::vaddr2str(vaddr)
+		   << endl;
+
 	while( !cancelled )
 	{
 		try
 		{
-			ModbusRTU::mbErrCode res = rscomm->receive( addr, wait_msec );
+			ModbusRTU::mbErrCode res = rscomm->receive( vaddr, wait_msec );
 
 			if( res != ModbusRTU::erTimeOut )
 				ptTimeout.reset();
@@ -561,8 +577,11 @@ void MBSlave::execute_rtu()
 				}
 			}
 
-			for( auto && it : iomap )
-				IOBase::processingThreshold(&it.second, shm, force);
+			for( auto&& rmap: iomap )
+			{
+				for( auto&& it: rmap.second )
+					IOBase::processingThreshold(&it.second, shm, force);
+			}
 		}
 		catch(...) {}
 	}
@@ -574,13 +593,32 @@ void MBSlave::execute_tcp()
 
 	ModbusRTU::mbErrCode prev = erNoError;
 
-	mbinfo << myname << "(execute_tcp): thread running.." << endl;
+	// ждём чтобы прошла инициализация
+	// потому-что нужно чтобы наполнилась таблица адресов (vaddr)
+	if( !shm->isLocalwork() )
+	{
+		std::unique_lock<std::mutex> locker(mutexStartNotify);
+		while( !activated )
+			startNotifyEvent.wait(locker);
+	}
+
+	if( vaddr.empty() )
+	{
+		mbcrit << "(execute_rtu): Unknown my modbus adresses!" << endl;
+		raise(SIGTERM);
+		return;
+	}
+
+	mbinfo << myname << "(execute_tcp): thread running.."
+			<< " iomap size = " << iomap.size()
+			<< " myaddr=" << ModbusServer::vaddr2str(vaddr)
+		   << endl;
 
 	while( !cancelled )
 	{
 		try
 		{
-			ModbusRTU::mbErrCode res = sslot->receive( addr, wait_msec );
+			ModbusRTU::mbErrCode res = sslot->receive( vaddr, wait_msec );
 
 			if( res != ModbusRTU::erTimeOut )
 				ptTimeout.reset();
@@ -647,8 +685,11 @@ void MBSlave::execute_tcp()
 				}
 			}
 
-			for( auto && it : iomap )
-				IOBase::processingThreshold(&it.second, shm, force);
+			for( auto&& rmap: iomap )
+			{
+				for( auto&& it : rmap.second )
+					IOBase::processingThreshold(&it.second, shm, force);
+			}
 		}
 		catch( const std::exception& ex )
 		{
@@ -761,68 +802,75 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
 	if( force )
 		return;
 
-	for( const auto& it : iomap )
+	for( const auto& rmap: iomap )
 	{
-		const IOProperty* p(&it.second);
+		for( const auto& it : rmap.second )
+		{
+			const IOProperty* p(&it.second);
 
-		try
-		{
-			shm->askSensor(p->si.id, cmd);
+			try
+			{
+				shm->askSensor(p->si.id, cmd);
+			}
+			catch( const UniSetTypes::Exception& ex )
+			{
+				mbwarn << myname << "(askSensors): " << ex << std::endl;
+			}
+			catch(...) {}
 		}
-		catch( const UniSetTypes::Exception& ex )
-		{
-			mbwarn << myname << "(askSensors): " << ex << std::endl;
-		}
-		catch(...) {}
 	}
 }
 // ------------------------------------------------------------------------------------------
 void MBSlave::sensorInfo( const UniSetTypes::SensorMessage* sm )
 {
-	for( auto it = iomap.begin(); it != iomap.end(); ++it )
+	for( auto&& regs: iomap )
 	{
-		if( it->second.si.id == sm->id )
+		auto& rmap = regs.second;
+		for( auto it =rmap.begin(); it != rmap.end(); ++it )
 		{
-			IOProperty* p(&it->second);
-
-			if( p->stype == UniversalIO::DO ||
-					p->stype == UniversalIO::DI )
+			if( it->second.si.id == sm->id )
 			{
-				uniset_rwmutex_wrlock lock(p->val_lock);
-				p->value = sm->value ? 1 : 0;
-			}
-			else if( p->stype == UniversalIO::AO ||
-					 p->stype == UniversalIO::AI )
-			{
-				uniset_rwmutex_wrlock lock(p->val_lock);
-				p->value = sm->value;
-			}
+				IOProperty* p(&it->second);
 
-			int sz = VTypes::wsize(p->vtype);
-
-			if( sz < 1 )
-				return;
-
-			// если размер больше одного слова
-			// то надо обновить значение "везде"
-			// они если "всё верно инициализировано" идут подряд
-			int i = 0;
-
-			for( ; i < sz && it != iomap.end(); i++, it++ )
-			{
-				p  = &it->second;
-
-				if( p->si.id == sm->id )
+				if( p->stype == UniversalIO::DO ||
+						p->stype == UniversalIO::DI )
+				{
+					uniset_rwmutex_wrlock lock(p->val_lock);
+					p->value = sm->value ? 1 : 0;
+				}
+				else if( p->stype == UniversalIO::AO ||
+						 p->stype == UniversalIO::AI )
+				{
+					uniset_rwmutex_wrlock lock(p->val_lock);
 					p->value = sm->value;
+				}
+
+				int sz = VTypes::wsize(p->vtype);
+
+				if( sz < 1 )
+					return;
+
+				// если размер больше одного слова
+				// то надо обновить значение "везде"
+				// они если "всё верно инициализировано" идут подряд
+				int i = 0;
+
+				for( ; i < sz && it != rmap.end(); i++, it++ )
+				{
+					p  = &it->second;
+
+					if( p->si.id == sm->id )
+						p->value = sm->value;
+				}
+
+				// вообще этого не может случиться
+				// потому-что корректность проверяется при загрузке
+				if( i != sz )
+					mbcrit << myname << "(sensorInfo): update failed for sid=" << sm->id
+						   << " (i=" << i << " sz=" << sz << ")" << endl;
+
+				return;
 			}
-
-			// вообще этого не может случиться
-			// потому-что корректность проверяется при загрузке
-			if( i != sz )
-				mbcrit << myname << "(sensorInfo): update failed for sid=" << sm->id
-					   << " (i=" << i << " sz=" << sz << ")" << endl;
-
-			return;
 		}
 	}
 }
@@ -838,6 +886,7 @@ bool MBSlave::activateObject()
 		UniSetObject_LT::activateObject();
 		initIterators();
 		activated = true;
+		startNotifyEvent.notify_all();
 	}
 
 	return true;
@@ -921,6 +970,21 @@ bool MBSlave::initItem( UniXML::iterator& it )
 	if( !IOBase::initItem( static_cast<IOBase*>(&p), it, shm, prop_prefix, false, mblog, myname) )
 		return false;
 
+	std::string s_mbaddr = IOBase::initProp(it, "mbaddr", prop_prefix, false, default_mbaddr);
+
+	if( s_mbaddr.empty() )
+	{
+		mbcrit << myname << "(initItem): Unknown '" << prop_prefix << "mbaddr' for " << it.getProp("name") << endl;
+		return false;
+	}
+
+	ModbusAddr mbaddr = ModbusRTU::str2mbAddr(s_mbaddr);
+
+	// наполняем "таблицу" адресов устройства
+	vaddr.emplace(mbaddr); // вставляем всегда (независимо есть или нет уже элемент)
+
+	RegMap& rmap = iomap[mbaddr]; // создаём элемент (если его ещё нет) и сразу используем
+
 	if( mbregFromID )
 		p.mbreg = p.si.id;
 	else
@@ -968,9 +1032,9 @@ bool MBSlave::initItem( UniXML::iterator& it )
 			return false;
 		}
 
-		auto i = iomap.find(p.regID);
+		auto i = rmap.find(p.regID);
 
-		if( i != iomap.end() )
+		if( i != rmap.end() )
 		{
 			if( !i->second.bitreg )
 			{
@@ -1004,7 +1068,6 @@ bool MBSlave::initItem( UniXML::iterator& it )
 			IOBase b = p.make_iobase_copy();
 
 			AccessMode p_amode = p.amode;
-			VTypes::VType p_vtype = p.vtype;
 			int p_nbyte = p.nbyte;
 			bool p_rawdata = p.rawdata;
 
@@ -1022,15 +1085,15 @@ bool MBSlave::initItem( UniXML::iterator& it )
 			p_dummy.bitreg->bvec[nbit] = std::move(p); // после этого p использовать нельзя!
 
 			mbinfo << myname << "(initItem): add bit register: " << p_dummy.bitreg.get() << endl;
-			iomap[p_dummy.regID] = std::move(p_dummy);
+			rmap[p_dummy.regID] = std::move(p_dummy);
 		}
 
 		return true;
 	}
 
-	auto i = iomap.find(p.regID);
+	auto i = rmap.find(p.regID);
 
-	if( i != iomap.end() )
+	if( i != rmap.end() )
 	{
 		ostringstream err;
 		err << myname << "(initItem): FAIL ADD sid='" << it.getProp("name") << "'(" << p.si.id << ")"
@@ -1053,7 +1116,7 @@ bool MBSlave::initItem( UniXML::iterator& it )
 		p.vtype = VTypes::vtUnknown;
 		p.wnum = 0;
 		mbinfo << myname << "(initItem): add " << p << endl;
-		iomap[p.regID] = std::move(p);
+		rmap[p.regID] = std::move(p);
 	}
 	else
 	{
@@ -1107,7 +1170,7 @@ bool MBSlave::initItem( UniXML::iterator& it )
 		// после std::move  p - использовать нельзя!
 		mbinfo << myname << "(initItem): add " << p << endl;
 
-		iomap[p_regID] = std::move(p);
+		rmap[p_regID] = std::move(p);
 
 		if( wsz > 1 )
 		{
@@ -1125,7 +1188,7 @@ bool MBSlave::initItem( UniXML::iterator& it )
 				p_dummy.regID  = p_regID;
 
 				mbinfo << myname << "(initItem): add " << p_dummy << endl;
-				iomap[p_regID] = std::move(p_dummy);
+				rmap[p_regID] = std::move(p_dummy);
 			}
 		}
 	}
@@ -1160,18 +1223,23 @@ bool MBSlave::BitRegProperty::check( const IOController_i::SensorInfo& si )
 // ------------------------------------------------------------------------------------------
 void MBSlave::initIterators()
 {
-	auto it = iomap.begin();
-
-	for( ; it != iomap.end(); ++it )
+	for( auto&& regs: iomap )
 	{
-		shm->initIterator(it->second.ioit);
+		auto& rmap = regs.second;
 
-		if( it->second.bitreg )
+		auto it = rmap.begin();
+
+		for( ; it != rmap.end(); ++it )
 		{
-			auto b = it->second.bitreg;
+			shm->initIterator(it->second.ioit);
 
-			for( auto i = b->bvec.begin(); i != b->bvec.end(); ++ i )
-				shm->initIterator(i->ioit);
+			if( it->second.bitreg )
+			{
+				auto b = it->second.bitreg;
+
+				for( auto i = b->bvec.begin(); i != b->bvec.end(); ++ i )
+					shm->initIterator(i->ioit);
+			}
 		}
 	}
 
@@ -1302,10 +1370,17 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage&
 {
 	mbinfo << myname << "(readOutputRegisters): " << query << endl;
 
+	auto regmap = iomap.find(query.addr);
+	if( regmap == iomap.end() )
+	{
+		mbinfo << myname << "(readOutputRegisters): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
+		return ModbusRTU::erTimeOut;
+	}
+
 	if( query.count <= 1 )
 	{
 		ModbusRTU::ModbusData d = 0;
-		ModbusRTU::mbErrCode ret = real_read(query.start, d, query.func);
+		ModbusRTU::mbErrCode ret = real_read(regmap->second, query.start, d, query.func);
 
 		if( ret == ModbusRTU::erNoError )
 			reply.addData(d);
@@ -1316,7 +1391,7 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage&
 	}
 
 	// Фомирование ответа:
-	ModbusRTU::mbErrCode ret = much_real_read(query.start, buf, query.count, query.func);
+	ModbusRTU::mbErrCode ret = much_real_read(regmap->second, query.start, buf, query.count, query.func);
 
 	if( ret == ModbusRTU::erNoError )
 	{
@@ -1333,9 +1408,16 @@ ModbusRTU::mbErrCode MBSlave::writeOutputRegisters( ModbusRTU::WriteOutputMessag
 {
 	mbinfo << myname << "(writeOutputRegisters): " << query << endl;
 
+	auto regmap = iomap.find(query.addr);
+	if( regmap == iomap.end() )
+	{
+		mbinfo << myname << "(writeOutputRegisters): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
+		return ModbusRTU::erTimeOut;
+	}
+
 	// Формирование ответа:
 	int fn = getOptimizeWriteFunction(query.func);
-	ModbusRTU::mbErrCode ret = much_real_write(query.start, query.data, query.quant, fn);
+	ModbusRTU::mbErrCode ret = much_real_write(regmap->second, query.start, query.data, query.quant, fn);
 
 	if( ret == ModbusRTU::erNoError )
 		reply.set(query.start, query.quant);
@@ -1348,8 +1430,15 @@ ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( ModbusRTU::WriteSingleO
 {
 	mbinfo << myname << "(writeOutputSingleRegisters): " << query << endl;
 
+	auto regmap = iomap.find(query.addr);
+	if( regmap == iomap.end() )
+	{
+		mbinfo << myname << "(writeOutputRegisters): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
+		return ModbusRTU::erTimeOut;
+	}
+
 	int fn = getOptimizeWriteFunction(query.func);
-	ModbusRTU::mbErrCode ret = real_write(query.start, query.data, fn);
+	ModbusRTU::mbErrCode ret = real_write(regmap->second, query.start, query.data, fn);
 
 	if( ret == ModbusRTU::erNoError )
 		reply.set(query.start, query.data);
@@ -1357,14 +1446,14 @@ ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( ModbusRTU::WriteSingleO
 	return ret;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::much_real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
+ModbusRTU::mbErrCode MBSlave::much_real_write( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
 		int count, const int fn )
 {
 	mbinfo << myname << "(much_real_write): write mbID="
 		   << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")" << " count=" << count << " fn=" << fn << endl;
 
 	int i = 0;
-	auto it = iomap.end();
+	auto it = rmap.end();
 
 	int mbfunc = checkMBFunc ? fn : default_mbfunc;
 	ModbusRTU::RegID regID = genRegID(reg, mbfunc);
@@ -1373,28 +1462,28 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( const ModbusRTU::ModbusData reg, 
 	// ведь запросить могут начиная с "несуществующего регистра"
 	for( ; i < count; i++ )
 	{
-		it = iomap.find(regID + i);
+		it = rmap.find(regID + i);
 
-		if( it != iomap.end() )
+		if( it != rmap.end() )
 		{
 			regID += i;
 			break;
 		}
 	}
 
-	if( it == iomap.end() )
+	if( it == rmap.end() )
 		return ModbusRTU::erBadDataAddress;
 
 	int prev_i = i;
 	int sub = 0;
 
-	for( ; (it != iomap.end()) && (i < count); )
+	for( ; (it != rmap.end()) && (i < count); )
 	{
 		if( it->first == regID )
 		{
 			prev_i = i;
 
-			real_write_it(it, dat, i, count);
+			real_write_it(rmap, it, dat, i, count);
 
 			sub = (i - prev_i);
 
@@ -1419,14 +1508,14 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( const ModbusRTU::ModbusData reg, 
 	return ModbusRTU::erNoError;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val, const int fn )
+ModbusRTU::mbErrCode MBSlave::real_write( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val, const int fn )
 {
 	ModbusRTU::ModbusData dat[1] = {val};
 	int i = 0;
-	return real_write(reg, dat, i, 1, fn);
+	return real_write(rmap, reg, dat, i, 1, fn);
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::real_write( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int& i, int count, const int fn )
+ModbusRTU::mbErrCode MBSlave::real_write( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int& i, int count, const int fn )
 {
 	ModbusRTU::ModbusData mbval = dat[i];
 
@@ -1437,13 +1526,13 @@ ModbusRTU::mbErrCode MBSlave::real_write( const ModbusRTU::ModbusData reg, Modbu
 
 	ModbusRTU::RegID regID = checkMBFunc ? genRegID(reg, fn) : genRegID(reg, default_mbfunc);
 
-	auto it = iomap.find(regID);
-	return real_write_it(it, dat, i, count);
+	auto it = rmap.find(regID);
+	return real_write_it(rmap, it, dat, i, count);
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::real_write_it( IOMap::iterator& it, ModbusRTU::ModbusData* dat, int& i, int count )
+ModbusRTU::mbErrCode MBSlave::real_write_it( RegMap& rmap, RegMap::iterator& it, ModbusRTU::ModbusData* dat, int& i, int count )
 {
-	if( it == iomap.end() )
+	if( it == rmap.end() )
 		return ModbusRTU::erBadDataAddress;
 
 	IOProperty* p(&it->second);
@@ -1690,14 +1779,14 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 	return ModbusRTU::erTimeOut;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::much_real_read( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
+ModbusRTU::mbErrCode MBSlave::much_real_read( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
 		int count, const int fn )
 {
 	mbinfo << myname << "(much_real_read): read mbID="
 		   << ModbusRTU::dat2str(reg) << "(" << (int)reg << ") " << " count=" << count
 		   << " mbfunc=" << fn << endl;
 
-	auto it = iomap.end();
+	auto it = rmap.end();
 	int i = 0;
 
 	int mbfunc = checkMBFunc ? fn : default_mbfunc;
@@ -1707,9 +1796,9 @@ ModbusRTU::mbErrCode MBSlave::much_real_read( const ModbusRTU::ModbusData reg, M
 	// ведь запросить могут начиная с "несуществующего регистра"
 	for( ; i < count; i++ )
 	{
-		it = iomap.find(regID + i);
+		it = rmap.find(regID + i);
 
-		if( it != iomap.end() )
+		if( it != rmap.end() )
 		{
 			regID += i;
 			break;
@@ -1718,19 +1807,19 @@ ModbusRTU::mbErrCode MBSlave::much_real_read( const ModbusRTU::ModbusData reg, M
 		dat[i] = 0;
 	}
 
-	if( it == iomap.end() )
+	if( it == rmap.end() )
 		return ModbusRTU::erBadDataAddress;
 
 	ModbusRTU::ModbusData val = 0;
 
-	for( ; (it != iomap.end()) && (i < count); i++, regID++ )
+	for( ; (it != rmap.end()) && (i < count); i++, regID++ )
 	{
 		val = 0;
 
 		// если регистры идут не подряд, то просто вернём ноль
 		if( it->first == regID )
 		{
-			real_read_it(it, val);
+			real_read_it(rmap, it, val);
 			++it;
 		}
 
@@ -1748,7 +1837,7 @@ ModbusRTU::mbErrCode MBSlave::much_real_read( const ModbusRTU::ModbusData reg, M
 	return ModbusRTU::erNoError;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::real_read( const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val, const int fn )
+ModbusRTU::mbErrCode MBSlave::real_read( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val, const int fn )
 {
 	ModbusRTU::RegID regID = checkMBFunc ? genRegID(reg, fn) : genRegID(reg, default_mbfunc);
 
@@ -1760,13 +1849,13 @@ ModbusRTU::mbErrCode MBSlave::real_read( const ModbusRTU::ModbusData reg, Modbus
 		   << endl;
 
 
-	auto it = iomap.find(regID);
-	return real_read_it(it, val);
+	auto it = rmap.find(regID);
+	return real_read_it(rmap, it, val);
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::real_read_it( IOMap::iterator& it, ModbusRTU::ModbusData& val )
+ModbusRTU::mbErrCode MBSlave::real_read_it( RegMap& rmap, RegMap::iterator& it, ModbusRTU::ModbusData& val )
 {
-	if( it == iomap.end() )
+	if( it == rmap.end() )
 		return ModbusRTU::erBadDataAddress;
 
 	IOProperty* p(&it->second);
@@ -1950,10 +2039,17 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query, ReadInputRetMess
 {
 	mbinfo << myname << "(readInputRegisters): " << query << endl;
 
+	auto regmap = iomap.find(query.addr);
+	if( regmap == iomap.end() )
+	{
+		mbinfo << myname << "(readInputRegisters): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
+		return ModbusRTU::erTimeOut;
+	}
+
 	if( query.count <= 1 )
 	{
 		ModbusRTU::ModbusData d = 0;
-		ModbusRTU::mbErrCode ret = real_read(query.start, d, query.func);
+		ModbusRTU::mbErrCode ret = real_read(regmap->second, query.start, d, query.func);
 
 		if( ret == ModbusRTU::erNoError )
 			reply.addData(d);
@@ -1964,7 +2060,7 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query, ReadInputRetMess
 	}
 
 	// Фомирование ответа:
-	ModbusRTU::mbErrCode ret = much_real_read(query.start, buf, query.count, query.func);
+	ModbusRTU::mbErrCode ret = much_real_read(regmap->second, query.start, buf, query.count, query.func);
 
 	if( ret == ModbusRTU::erNoError )
 	{
@@ -2007,12 +2103,19 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 {
 	mbinfo << myname << "(readCoilStatus): " << query << endl;
 
+	auto regmap = iomap.find(query.addr);
+	if( regmap == iomap.end() )
+	{
+		mbinfo << myname << "(readCoilStatus): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
+		return ModbusRTU::erTimeOut;
+	}
+
 	try
 	{
 		if( query.count <= 1 )
 		{
 			ModbusRTU::ModbusData d = 0;
-			ModbusRTU::mbErrCode ret = real_read(query.start, d, query.func);
+			ModbusRTU::mbErrCode ret = real_read(regmap->second,query.start, d, query.func);
 			reply.addData(0);
 
 			if( ret == ModbusRTU::erNoError )
@@ -2024,7 +2127,7 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 			return ret;
 		}
 
-		much_real_read(query.start, buf, query.count, query.func);
+		much_real_read(regmap->second, query.start, buf, query.count, query.func);
 		int bnum = 0;
 		unsigned int i = 0;
 
@@ -2072,12 +2175,19 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 {
 	mbinfo << myname << "(readInputStatus): " << query << endl;
 
+	auto regmap = iomap.find(query.addr);
+	if( regmap == iomap.end() )
+	{
+		mbinfo << myname << "(readInputStatus): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
+		return ModbusRTU::erTimeOut;
+	}
+
 	try
 	{
 		if( query.count <= 1 )
 		{
 			ModbusRTU::ModbusData d = 0;
-			ModbusRTU::mbErrCode ret = real_read(query.start, d, query.func);
+			ModbusRTU::mbErrCode ret = real_read(regmap->second, query.start, d, query.func);
 			reply.addData(0);
 
 			if( ret == ModbusRTU::erNoError )
@@ -2089,7 +2199,7 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 			return ret;
 		}
 
-		much_real_read(query.start, buf, query.count, query.func);
+		much_real_read(regmap->second, query.start, buf, query.count, query.func);
 		int bnum = 0;
 		unsigned int i = 0;
 
@@ -2137,6 +2247,13 @@ ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& 
 {
 	mbinfo << myname << "(forceMultipleCoils): " << query << endl;
 
+	auto regmap = iomap.find(query.addr);
+	if( regmap == iomap.end() )
+	{
+		mbinfo << myname << "(forceMultipleCoils): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
+		return ModbusRTU::erTimeOut;
+	}
+
 	ModbusRTU::mbErrCode ret = ModbusRTU::erNoError;
 	int nbit = 0;
 
@@ -2149,7 +2266,7 @@ ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& 
 		for( auto k = 0; k < ModbusRTU::BitsPerByte && nbit < query.quant; k++, nbit++ )
 		{
 			// ModbusRTU::mbErrCode ret =
-			real_write(query.start + nbit, (b[k] ? 1 : 0), fn);
+			real_write(regmap->second, query.start + nbit, (b[k] ? 1 : 0), fn);
 			//if( ret == ModbusRTU::erNoError )
 		}
 	}
@@ -2166,8 +2283,15 @@ ModbusRTU::mbErrCode MBSlave::forceSingleCoil( ModbusRTU::ForceSingleCoilMessage
 {
 	mbinfo << myname << "(forceSingleCoil): " << query << endl;
 
+	auto regmap = iomap.find(query.addr);
+	if( regmap == iomap.end() )
+	{
+		mbinfo << myname << "(forceSingleCoil): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
+		return ModbusRTU::erTimeOut;
+	}
+
 	int fn = getOptimizeWriteFunction(query.func);
-	ModbusRTU::mbErrCode ret = real_write(query.start, (query.cmd() ? 1 : 0), fn );
+	ModbusRTU::mbErrCode ret = real_write(regmap->second, query.start, (query.cmd() ? 1 : 0), fn );
 
 	if( ret == ModbusRTU::erNoError )
 		reply.set(query.start, query.data);
@@ -2254,7 +2378,7 @@ UniSetTypes::SimpleInfo* MBSlave::getInfo()
 	inf << i->info << endl;
 	inf << vmon.pretty_str() << endl;
 	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
-	inf	<< " iomap=" << iomap.size() << endl;
+	inf << "iomap=" << iomap.size() << " myaddr: " << ModbusServer::vaddr2str(vaddr) << endl;
 	inf << "Statistic: askCount=" << askCount << " pingOK=" << pingOK << endl;
 
 	i->info = inf.str().c_str();

@@ -54,7 +54,7 @@ void ModbusTCPServer::setSessionTimeout( timeout_t msec )
 	sessTimeout = msec;
 }
 // -------------------------------------------------------------------------
-bool ModbusTCPServer::waitQuery( ModbusRTU::ModbusAddr mbaddr, timeout_t msec )
+bool ModbusTCPServer::waitQuery(const std::unordered_set<ModbusAddr>& vmbaddr, timeout_t msec )
 {
 	if( msec == 0 )
 		msec = UniSetTimer::WaitUpTime;
@@ -72,7 +72,7 @@ bool ModbusTCPServer::waitQuery( ModbusRTU::ModbusAddr mbaddr, timeout_t msec )
 			if( cancelled )
 				return false;
 
-			ModbusTCPSession* s = new ModbusTCPSession(*this, mbaddr, sessTimeout);
+			ModbusTCPSession* s = new ModbusTCPSession(*this, vmbaddr, sessTimeout);
 
 			s->connectReadCoil( sigc::mem_fun(this, &ModbusTCPServer::readCoilStatus) );
 			s->connectReadInputStatus( sigc::mem_fun(this, &ModbusTCPServer::readInputStatus) );
@@ -118,7 +118,7 @@ bool ModbusTCPServer::waitQuery( ModbusRTU::ModbusAddr mbaddr, timeout_t msec )
 	return false;
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout )
+mbErrCode ModbusTCPServer::receive(const std::unordered_set<ModbusAddr>& vmbaddr, timeout_t timeout )
 {
 	PassiveTimer ptTimeout(timeout);
 	ModbusMessage buf;
@@ -171,46 +171,21 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeou
 					}
 				}
 
-				if( !qrecv.empty() )
+				if( qrecv.empty() )
 				{
-					// check addr
-					unsigned char _addr = qrecv.front();
-
-					// для режима игнорирования RTU-адреса
-					// просто подменяем его на то который пришёл
-					// чтобы проверка всегда была успешной...
-					if( ignoreAddr  )
-						addr = _addr;
-					else if( (onBroadcast && _addr == BroadcastAddr) ||  addr==ModbusRTU::BroadcastAddr )
-					{
-						// нормально обрабатываем..
-					}
-					else if( _addr != addr )
-					{
-						res = erTimeOut;
-						// На такие запросы просто не отвечаем...
-						/*
-						res = erBadReplyNodeAddress;
-						tmProcessing.setTiming(replyTimeout_ms);
-						ErrorRetMessage em( _addr, buf.func, res );
-						buf = em.transport_msg();
-						send(buf);
-						printProcessingTime();
-						if( aftersend_msec >= 0 )
-						    msleep(aftersend_msec);
-						*/
-						tcp.disconnect();
-						return res;
-					}
+					tcp.disconnect();
+					return erTimeOut;
 				}
 
-				res = recv( addr, buf, timeout );
+				unsigned char q_addr = qrecv.front();
+
+				res = recv( vmbaddr, buf, timeout );
 
 				if( res != erNoError ) // && res!=erBadReplyNodeAddress )
 				{
 					if( res < erInternalErrorCode )
 					{
-						ErrorRetMessage em( addr, buf.func, res );
+						ErrorRetMessage em( q_addr, buf.func, res );
 						buf = em.transport_msg();
 						send(buf);
 						printProcessingTime();
@@ -247,9 +222,10 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeou
 			tcp.disconnect();
 		}
 	}
-	catch( ost::Exception& e )
+	catch( const ost::Exception& e )
 	{
-		cout << "(ModbusTCPServer): " << e.what() << endl;
+		if( dlog->is_crit() )
+			dlog->crit() << "(ModbusTCPServer): " << e.what() << endl;
 		return erInternalErrorCode;
 	}
 

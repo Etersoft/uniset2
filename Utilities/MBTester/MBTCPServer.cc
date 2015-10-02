@@ -15,9 +15,9 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
-MBTCPServer::MBTCPServer( ModbusAddr myaddr, const string& inetaddr, int port, bool verb ):
+MBTCPServer::MBTCPServer(const std::unordered_set<ModbusAddr>& myaddr, const string& inetaddr, int port, bool verb ):
 	sslot(NULL),
-	addr(myaddr),
+	vaddr(myaddr),
 	//    prev(ModbusRTU::erNoError),
 	//    askCount(0),
 	verbose(verb),
@@ -66,7 +66,7 @@ MBTCPServer::~MBTCPServer()
 	delete sslot;
 }
 // -------------------------------------------------------------------------
-void MBTCPServer::setLog( std::shared_ptr<DebugStream> dlog )
+void MBTCPServer::setLog(std::shared_ptr<DebugStream>& dlog )
 {
 	if( sslot )
 		sslot->setLog(dlog);
@@ -77,7 +77,7 @@ void MBTCPServer::execute()
 	// Работа...
 	while(1)
 	{
-		ModbusRTU::mbErrCode res = sslot->receive( addr, UniSetTimer::WaitUpTime );
+		ModbusRTU::mbErrCode res = sslot->receive( vaddr, UniSetTimer::WaitUpTime );
 #if 0
 
 		// собираем статистику обмена

@@ -15,9 +15,9 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
-MBSlave::MBSlave( ModbusRTU::ModbusAddr addr, const std::string& dev, const std::string& speed, bool use485 ):
+MBSlave::MBSlave(const std::unordered_set<ModbusAddr>& _vaddr, const std::string& dev, const std::string& speed, bool use485 ):
 	rscomm(NULL),
-	addr(addr),
+	vaddr(_vaddr),
 	//    prev(ModbusRTU::erNoError),
 	//    askCount(0),
 	verbose(false),
@@ -31,7 +31,7 @@ MBSlave::MBSlave( ModbusRTU::ModbusAddr addr, const std::string& dev, const std:
 
 	if( verbose )
 		cout << "(init): "
-			 << " addr=" << ModbusRTU::addr2str(addr)
+			 << " addr=" << ModbusServer::vaddr2str(vaddr)
 			 << " dev=" << dev
 			 << " speed=" << speed;
 
@@ -80,7 +80,7 @@ void MBSlave::execute()
 	// Работа...
 	while(1)
 	{
-		ModbusRTU::mbErrCode res = rscomm->receive( addr, UniSetTimer::WaitUpTime );
+		ModbusRTU::mbErrCode res = rscomm->receive( vaddr, UniSetTimer::WaitUpTime );
 #if 0
 
 		// собираем статистику обмена

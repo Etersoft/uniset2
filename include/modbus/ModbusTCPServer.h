@@ -24,13 +24,13 @@ class ModbusTCPServer:
 		virtual ~ModbusTCPServer();
 
 		/*! Однопоточная обработка (каждый запрос последовательно), с разрывом соединения в конце */
-		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr mbaddr, timeout_t msecTimeout ) override;
+		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msecTimeout ) override;
 
 		/*! Многопоточная обработка (создаётся по потоку для каждого "клиента")
-		 \return TRUE - если запр*ос пришёл
+		 \return TRUE - если запрос пришёл
 		 \return FALSE - если timeout
 		 */
-		virtual bool waitQuery( ModbusRTU::ModbusAddr mbaddr, timeout_t msec = UniSetTimer::WaitUpTime );
+		virtual bool waitQuery( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msec = UniSetTimer::WaitUpTime );
 
 		void setMaxSessions( unsigned int num );
 		inline unsigned int getMaxSessions()

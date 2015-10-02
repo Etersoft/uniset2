@@ -2,6 +2,7 @@
 // -----------------------------------------------------------------------------
 #include <time.h>
 #include <memory>
+#include <unordered_set>
 #include <limits>
 #include "UniSetTypes.h"
 #include "MBTCPTestServer.h"
@@ -12,8 +13,9 @@ using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 static ModbusRTU::ModbusAddr slaveaddr = 0x01; // conf->getArgInt("--mbs-my-addr");
 static int port = 20048; // conf->getArgInt("--mbs-inet-port");
-static string addr("127.0.0.1"); // conf->getArgParam("--mbs-inet-addr");
-static ModbusRTU::ModbusAddr slaveADDR = 0x01;
+static string iaddr("127.0.0.1"); // conf->getArgParam("--mbs-inet-addr");
+static const ModbusRTU::ModbusAddr slaveADDR = 0x01;
+static unordered_set<ModbusRTU::ModbusAddr> vaddr = { slaveADDR };
 static shared_ptr<MBTCPTestServer> mbs;
 static shared_ptr<UInterface> ui;
 static std::shared_ptr<SMInterface> smi;
@@ -53,18 +55,18 @@ static void InitTest()
 	{
 		try
 		{
-			mbs = make_shared<MBTCPTestServer>(slaveADDR, addr, port, false);
+			mbs = make_shared<MBTCPTestServer>(vaddr, iaddr, port, false);
 		}
 		catch( const ost::SockException& e )
 		{
 			ostringstream err;
-			err << "(mbs): Can`t create socket " << addr << ":" << port << " err: " << e.getString() << endl;
+			err << "(mbs): Can`t create socket " << iaddr << ":" << port << " err: " << e.getString() << endl;
 			cerr << err.str() << endl;
 			throw SystemError(err.str());
 		}
 		catch( const std::exception& ex )
 		{
-			cerr << "(mbs): Can`t create socket " << addr << ":" << port << " err: " << ex.what() << endl;
+			cerr << "(mbs): Can`t create socket " << iaddr << ":" << port << " err: " << ex.what() << endl;
 			throw;
 		}
 
