@@ -563,7 +563,7 @@ mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, t
 		{
 			bcnt = getNextData((unsigned char*)(&rbuf), sizeof(ModbusAddr));
 
-			if( bcnt > 0 && ( rbuf.addr == addr || (onBroadcast && rbuf.addr == BroadcastAddr) ) )
+			if( bcnt > 0 && ( rbuf.addr == addr || (onBroadcast && rbuf.addr == BroadcastAddr) || addr == BroadcastAddr ) )
 			{
 				begin = true;
 				break;
@@ -578,8 +578,8 @@ mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, t
 		/*! \todo Подумать Может стоит всё-таки получать весь пакет, а проверять кому он адресован на уровне выше?!
 		            // Lav: конечно стоит, нам же надо буфер чистить
 		*/
-		// Проверка кому адресован пакет...
-		if( rbuf.addr != addr && rbuf.addr != BroadcastAddr )
+		// Проверка кому адресован пакет... (только если не включён режим отвечать на любые адреса)
+		if( addr != BroadcastAddr && rbuf.addr != addr && rbuf.addr != BroadcastAddr )
 		{
 			if( dlog->is_warn() )
 			{

@@ -179,8 +179,12 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeou
 					// для режима игнорирования RTU-адреса
 					// просто подменяем его на то который пришёл
 					// чтобы проверка всегда была успешной...
-					if( ignoreAddr )
+					if( ignoreAddr  )
 						addr = _addr;
+					else if( (onBroadcast && _addr == BroadcastAddr) ||  addr==ModbusRTU::BroadcastAddr )
+					{
+						// нормально обрабатываем..
+					}
 					else if( _addr != addr )
 					{
 						res = erTimeOut;

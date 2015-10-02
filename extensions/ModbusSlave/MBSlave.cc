@@ -159,6 +159,7 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 		rs->setAfterSendPause(aftersend_pause);
 		rs->setReplyTimeout(reply_tout);
 		rs->setLog(mblog);
+		rs->setBroadcastMode( addr == ModbusRTU::BroadcastAddr );
 
 		mbslot = std::static_pointer_cast<ModbusServerSlot>(rs);
 		thr = make_shared< ThreadCreator<MBSlave> >(this, &MBSlave::execute_rtu);
@@ -183,6 +184,7 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 
 		mbtcp->setAfterSendPause(aftersend_pause);
 		mbtcp->setReplyTimeout(reply_tout);
+		mbtcp->setBroadcastMode( addr == ModbusRTU::BroadcastAddr );
 
 		mbslot = std::static_pointer_cast<ModbusServerSlot>(mbtcp);
 		thr = make_shared< ThreadCreator<MBSlave> >(this, &MBSlave::execute_tcp);
