@@ -957,7 +957,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
-		mycrit &lt;&lt; myname &lt;&lt; "(setMsg): попытка послать сообщение с DefaultObjectId" &lt;&lt; endl;
+		mylog8 &lt;&lt; myname &lt;&lt; "(setMsg): попытка послать сообщение с DefaultObjectId" &lt;&lt; endl;
 		return false;	
 	}
 
@@ -1317,7 +1317,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
-        mycrit  &lt;&lt; myname &lt;&lt; "(setMsg): попытка послать сообщение с DefaultObjectId" &lt;&lt; endl;
+        mylog8  &lt;&lt; myname &lt;&lt; "(setMsg): попытка послать сообщение с DefaultObjectId" &lt;&lt; endl;
 		return false;	
 	}
 

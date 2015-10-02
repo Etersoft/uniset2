@@ -458,6 +458,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %changelog
 * Fri Oct 02 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt4
 - (ModbusSlave): added support setBroadcastMode() // addr = 255
+- (codegen): change log for 'unknown message id' crit --> level8
 
 * Mon Sep 21 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt3
 - (ModbusMaster): modify check "not respond" mechanism
