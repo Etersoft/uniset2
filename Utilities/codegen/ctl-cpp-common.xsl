@@ -106,7 +106,7 @@
 			<xsl:when test="$GENTYPE='A'">
 			if( _code == mid_<xsl:value-of select="../../@name"/> )
 			{				
-                mylog8 &lt;&lt; "<xsl:value-of select="../../@name"/>" &lt;&lt; endl;
+                mylog8 &lt;&lt; myname &lt;&lt; "send '<xsl:value-of select="../../@name"/>'**************************************************************************************////////////////////" &lt;&lt; endl;
 				m_<xsl:value-of select="../../@name"/> = _state;
 				try
 				{
