@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.2
-Release: alt5
+Release: alt6
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -456,6 +456,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Mon Oct 05 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt6
+- (ModbusServer): add helper function addr2vaddr()
+
 * Fri Oct 02 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt5
 - (ModbusSlave): added support for multiple addresses for MBSlave
 

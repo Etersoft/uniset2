@@ -26,6 +26,13 @@ ModbusTCPServer::~ModbusTCPServer()
 	terminate();
 }
 // -------------------------------------------------------------------------
+std::unordered_set<ModbusAddr> ModbusTCPServer::addr2vaddr(ModbusAddr& mbaddr)
+{
+	std::unordered_set<ModbusRTU::ModbusAddr> v;
+	v.emplace(mbaddr);
+	return std::move(v);
+}
+// -------------------------------------------------------------------------
 void ModbusTCPServer::setMaxSessions( unsigned int num )
 {
 	if( num < sessCount )
