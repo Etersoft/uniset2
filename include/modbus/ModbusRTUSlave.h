@@ -34,6 +34,9 @@ class ModbusRTUSlave:
 
 		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msecTimeout ) override;
 
+		// перегруженная версия
+		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msec ) override;
+
 		virtual void cleanupChannel() override
 		{
 			if(port) port->cleanupChannel();

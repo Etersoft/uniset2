@@ -22,12 +22,17 @@ class ModbusServer
 		void setLog( std::shared_ptr<DebugStream> dlog );
 
 
+		std::unordered_set<ModbusRTU::ModbusAddr> addr2vaddr( ModbusRTU::ModbusAddr& mbaddr );
+
 		/*! обработать очередное сообщение
 			\param vaddr        - вектор адресов для которых принимать сообщения
 			\param msecTimeout  - время ожидания прихода очередного сообщения в мсек.
 		    \return Возвращает код ошибки из ModbusRTU::mbErrCode
 		*/
 		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, timeout_t msecTimeout ) = 0;
+
+		// перегруженная версия с "одним" адресом
+		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msec );
 
 		/*! Проверка входит ли данный адрес в список
 		  * \param vaddr - вектор адресов

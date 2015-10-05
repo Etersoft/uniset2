@@ -1494,6 +1494,19 @@ void ModbusServer::setLog( std::shared_ptr<DebugStream> l )
 {
 	this->dlog = l;
 }
+
+std::unordered_set<ModbusAddr> ModbusServer::addr2vaddr(ModbusAddr& mbaddr)
+{
+	std::unordered_set<ModbusRTU::ModbusAddr> v;
+	v.emplace(mbaddr);
+	return std::move(v);
+}
+// -------------------------------------------------------------------------
+mbErrCode ModbusServer::receive( ModbusAddr a, timeout_t msec )
+{
+	auto v = addr2vaddr(a);
+	return receive(v,msec);
+}
 // -------------------------------------------------------------------------
 
 void ModbusServer::initLog( UniSetTypes::Configuration* conf,

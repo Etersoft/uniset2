@@ -111,7 +111,11 @@ mbErrCode ModbusRTUSlave::receive(const std::unordered_set<ModbusAddr>& vmbaddr,
 
 	return processing(buf);
 }
-
+// --------------------------------------------------------------------------------
+mbErrCode ModbusRTUSlave::receive(ModbusAddr addr, timeout_t msec)
+{
+	return ModbusServer::receive(addr,msec);
+}
 // --------------------------------------------------------------------------------
 ComPort::Speed ModbusRTUSlave::getSpeed()
 {
