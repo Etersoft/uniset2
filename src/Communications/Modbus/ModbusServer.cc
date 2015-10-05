@@ -1502,7 +1502,7 @@ std::unordered_set<ModbusAddr> ModbusServer::addr2vaddr(ModbusAddr& mbaddr)
 	return std::move(v);
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusServer::receive( ModbusAddr a, timeout_t msec )
+mbErrCode ModbusServer::receive_one( ModbusAddr a, timeout_t msec )
 {
 	auto v = addr2vaddr(a);
 	return receive(v,msec);

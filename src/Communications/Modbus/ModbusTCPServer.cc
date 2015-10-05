@@ -232,12 +232,6 @@ mbErrCode ModbusTCPServer::receive(const std::unordered_set<ModbusAddr>& vmbaddr
 	return res;
 }
 // --------------------------------------------------------------------------------
-mbErrCode ModbusTCPServer::receive(ModbusAddr addr, timeout_t msec)
-{
-	return ModbusServer::receive(addr,msec);
-}
-
-// --------------------------------------------------------------------------------
 void ModbusTCPServer::setChannelTimeout( timeout_t msec )
 {
 	tcp.setTimeout(msec);

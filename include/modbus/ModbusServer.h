@@ -31,8 +31,8 @@ class ModbusServer
 		*/
 		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, timeout_t msecTimeout ) = 0;
 
-		// перегруженная версия с "одним" адресом
-		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msec );
+		// версия с "одним" адресом
+		virtual ModbusRTU::mbErrCode receive_one( const ModbusRTU::ModbusAddr addr, timeout_t msec );
 
 		/*! Проверка входит ли данный адрес в список
 		  * \param vaddr - вектор адресов

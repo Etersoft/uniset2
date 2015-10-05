@@ -26,9 +26,6 @@ class ModbusTCPServer:
 		/*! Однопоточная обработка (каждый запрос последовательно), с разрывом соединения в конце */
 		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msecTimeout ) override;
 
-		// перегруженная версия
-		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msec ) override;
-
 		/*! Многопоточная обработка (создаётся по потоку для каждого "клиента")
 		 \return TRUE - если запрос пришёл
 		 \return FALSE - если timeout
