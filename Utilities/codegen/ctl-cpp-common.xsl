@@ -965,7 +965,10 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 
     // взводим автоматический сброс
     if( _state )
+    {
         ptResetMsg.reset();
+        trResetMsg.hi(false);
+    }
 
 	<xsl:for-each select="//msgmap/item">
 	if( _code == <xsl:value-of select="@name"/> )
@@ -995,6 +998,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
 {
+    mylog8 &lt;&lt; myname &lt;&lt; "(resetMsg): reset messages.." &lt;&lt; endl;
 // reset messages
 <xsl:for-each select="//msgmap/item">
 	m_<xsl:value-of select="@name"/> = 0;
@@ -1304,6 +1308,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updatePreviousValues()
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
 {
+    mylog8 &lt;&lt; myname &lt;&lt; "(resetMsg): reset messages.." &lt;&lt; endl;
 // reset messages
 <xsl:for-each select="//sensors/item">
 	<xsl:call-template name="setmsg">
@@ -1325,7 +1330,10 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 
     // взводим таймер автоматического сброса
     if( _state )
+    {
         ptResetMsg.reset();
+        trResetMsg.hi(false);
+    }
     
 <xsl:for-each select="//sensors/item">
 	<xsl:call-template name="setmsg">

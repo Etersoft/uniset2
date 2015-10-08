@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.2
-Release: alt7
+Release: alt8
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -456,6 +456,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Thu Oct 08 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt8
+- (uniset-codegen): minor fixes in resetMsg()  mechanism
+
 * Mon Oct 05 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt7
 - (ModbusServer): rename receive(ModbusAddress addr..) --> receive_one(ModbusAddress addr..)
 
