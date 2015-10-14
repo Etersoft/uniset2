@@ -1036,18 +1036,44 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 	ostringstream s;
 	s &lt;&lt; myname &lt;&lt; ": " &lt;&lt; endl;
 
-	std::vector&lt;std::string&gt; v;
+	std::list&lt;std::string&gt; v_in;
 	ostringstream s1;
 	<xsl:for-each select="//smap/item">
+	<xsl:sort select="@name" order="ascending" data-type="text"/>
+	<xsl:if test="normalize-space(@vartype)='in'">
 		s1.str("");
 		s1 &lt;&lt; "    " &lt;&lt; setw(30) &lt;&lt; std::right &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"
-				&lt;&lt; "(" &lt;&lt; setw(30) &lt;&lt; std::left &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")"
+				&lt;&lt; " ( " &lt;&lt; setw(30) &lt;&lt; std::left &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; " )"
 				&lt;&lt; std::right &lt;&lt; " = " &lt;&lt; setw(6) &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
-		v.push_back(s1.str());
+		v_in.push_back(s1.str());
+	</xsl:if>
+	</xsl:for-each>
+	
+	std::list&lt;std::string&gt; v_out;
+	<xsl:for-each select="//smap/item">
+	<xsl:sort select="@name" order="ascending" data-type="text"/>
+	<xsl:if test="normalize-space(@vartype)='out'">
+		s1.str("");
+		s1 &lt;&lt; "    " &lt;&lt; setw(30) &lt;&lt; std::right &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"
+				&lt;&lt; " ( " &lt;&lt; setw(30) &lt;&lt; std::left &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; " )"
+				&lt;&lt; std::right &lt;&lt; " = " &lt;&lt; setw(6) &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
+		v_out.push_back(s1.str());
+	</xsl:if>
 	</xsl:for-each>
 
+	s &lt;&lt; endl;
+
 	int n = 0;
-	for( const auto&amp; e: v )
+	for( const auto&amp; e: v_in )
+	{
+		s &lt;&lt; e;
+		if( (n++)%2 )
+			s &lt;&lt; std::endl;
+	}
+	
+	s &lt;&lt; endl;
+	n = 0;
+	for( const auto&amp; e: v_out )
 	{
 		s &lt;&lt; e;
 		if( (n++)%2 )
@@ -1354,6 +1380,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 	vector&lt;std::string&gt; v;
 	
 	<xsl:for-each select="//sensors/item/consumers/consumer">
+	<xsl:sort select="../../@name" order="ascending" data-type="text"/>
 	<xsl:if test="normalize-space(../../@msg)!='1'">
 	<xsl:if test="normalize-space(@name)=$OID">
 	s1.str("");
@@ -1363,6 +1390,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 	</xsl:if>
 	</xsl:for-each>
 	
+	std::sort(std::begin(v),std::end(v));
 	int n=0;
 	for( const auto&amp; e: v )
 	{
@@ -1401,7 +1429,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::strval( UniSetTypes::Object
 	if( id == <xsl:value-of select="../../@name"/> )
 	{
 		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>";
-		if( showLinkName ) s &lt;&lt; "(<xsl:value-of select="../../@name"/>)";
+		if( showLinkName ) s &lt;&lt; " ( <xsl:value-of select="../../@name"/> )";
 		s &lt;&lt; "=" &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>;
 		return std::move(s.str());
 	}

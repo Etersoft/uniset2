@@ -24,6 +24,7 @@
 #define VMonitor_H_
 // --------------------------------------------------------------------------
 #include <string>
+#include <list>
 #include <ostream>
 #include <unordered_map>
 #include "UniSetTypes.h"
@@ -120,8 +121,14 @@ class VMonitor
 		static const int NameWidth = { 30 };
 		static const int ColCount = { 2 };
 
+		/*! вывести все элементы в "простом формате" (строки "varname = value") */
 		std::string str();
-		std::string pretty_str();
+
+		/*! вывести все элементы "с форматированием" (отсортированные по алфавиту)
+		 * \param namewidth - ширина резервируемая под "имя"
+		 * \param colnum - количество столбцов вывода
+		 */
+		std::string pretty_str( int namewidth=NameWidth, int colnum=ColCount );
 
 		// функции добавления..
 		VMON_DEF_FUNC2(int);
@@ -138,6 +145,8 @@ class VMonitor
 		static const std::string pretty_str( const std::string& name, const std::string* v, int width = NameWidth );
 		static const std::string pretty_str( const std::string& name, const std::string& v, int width = NameWidth );
 
+		std::list<std::pair<std::string,std::string>> getList();
+
 	protected:
 
 	private:
@@ -149,7 +158,6 @@ class VMonitor
 		VMON_DEF_MAP(bool);
 		VMON_DEF_MAP(float);
 		VMON_DEF_MAP(double);
-		// VMON_DEF_MAP3(UniSetTypes::ObjectId,ObjectId); // <-- long
 		VMON_DEF_MAP3(std::string, string);
 };
 // --------------------------------------------------------------------------
