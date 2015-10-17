@@ -268,7 +268,7 @@ void IOController::localSetValue( IOController::IOStateList::iterator& li,
 	if( li == ioList.end() )
 	{
 		ostringstream err;
-		err << myname << "(localSaveValue): Unknown sensor (" << sid << ")"
+		err << myname << "(localSetValue): Unknown sensor (" << sid << ")"
 			<< "name: " << uniset_conf()->oind->getNameById(sid);
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
