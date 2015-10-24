@@ -22,8 +22,13 @@ before_install:
   - sudo apt-get -qq update
   - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+  # hack for broken libcomedi
+  - wget http://launchpadlibrarian.net/213890956/libcomedi0_0.10.2-3_i386.deb
+  - wget http://launchpadlibrarian.net/213890952/libcomedi-dev_0.10.2-3_i386.deb
+  - sudo dpkg -i libcomedi0_0.10.2-3_i386.deb libcomedi-dev_0.10.2-3_i386.deb
 install:
-  - sudo apt-get install libcomedi-dev libcommoncpp2-dev libmysqlclient-dev libomniorb4-dev omniidl libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev
+  # - libcomedi-dev 
+  - sudo apt-get install libcommoncpp2-dev libmysqlclient-dev libomniorb4-dev omniidl libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev
 
 before_script:
   - autoreconf -fiv
