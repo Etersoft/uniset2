@@ -50,7 +50,7 @@ UExceptions_wrap.cxx: UExceptions.i UExceptions.h
 	swig -python -c++ -classic UExceptions.i
 
 clean-local:
-	rm -rf *.py* *_wrap.cxx
+	rm -rf *.py*
 
 include $(top_builddir)/include.mk
 
