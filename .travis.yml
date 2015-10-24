@@ -1,7 +1,7 @@
 language: c++
 
 compiler:
-  - clang
+#  - clang
   - gcc
 
 cache:
@@ -24,14 +24,14 @@ before_install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 
 install:
-  - sudo apt-get install libcomedi-dev libcommoncpp2-dev libmysqlclient-dev libomniorb4-dev omniidl libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev
+  - sudo apt-get install catch libcomedi-dev libcommoncpp2-dev libmysqlclient-dev libomniorb4-dev omniidl libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev
 
 before_script:
   - export CXXFLAGS='-pipe -O2 -pedantic -Wall'
   # due broken comedi
   - export CXXFLAGS="$CXXFLAGS -Wl,--unresolved-symbols=ignore-in-shared-libs"
   - autoreconf -fiv
-  - ./configure --disable-tests
+  - ./configure --enable-tests --enable-mysql --enable-sqlite --enable-rrd --enable-io --enable-logicproc
 
 script:
   - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make && make check ; fi
