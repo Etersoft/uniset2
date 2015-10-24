@@ -200,7 +200,6 @@ class UniXML
 
 		~UniXML();
 
-		xmlNode* cur;
 		xmlDoc* doc;
 		inline std::string getFileName()
 		{

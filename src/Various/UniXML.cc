@@ -77,8 +77,6 @@ void UniXML::newDoc(const string& root_node, string xml_ver)
 	//assert(doc != NULL);
 	if(doc == NULL)
 		throw NameNotFound("UniXML(open): не смогли создать doc=" + root_node);
-
-	cur = getFirstNode();
 }
 
 void UniXML::open(const string& _filename)
@@ -98,7 +96,6 @@ void UniXML::open(const string& _filename)
 	//For include: <xi:include href="test2.xml"/>
 	xmlXIncludeProcess(doc);
 
-	cur = getFirstNode();
 	filename = _filename;
 }
 
