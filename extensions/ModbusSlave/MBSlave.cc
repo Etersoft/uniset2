@@ -461,7 +461,7 @@ void MBSlave::finalThread()
 void MBSlave::waitSMReady()
 {
 	// waiting for SM is ready...
-	int ready_timeout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "15000");
+	timeout_t ready_timeout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "15000");
 
 	if( ready_timeout == 0 )
 		ready_timeout = 15000;

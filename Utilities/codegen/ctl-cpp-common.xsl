@@ -308,9 +308,9 @@
 		/*! получить текстовое свойство из конф. файла по привязанной confnode */
 		inline const std::string getProp(const std::string&amp; name) { return UniSetTypes::uniset_conf()->getProp(confnode, name); }
 
-		int smReadyTimeout; 	/*!&lt; время ожидания готовности SM */
+		timeout_t smReadyTimeout; 	/*!&lt; время ожидания готовности SM */
 		std::atomic_bool activated;
-		int activateTimeout;	/*!&lt; время ожидания готовности UniSetObject к работе */
+		timeout_t activateTimeout;	/*!&lt; время ожидания готовности UniSetObject к работе */
 		PassiveTimer ptStartUpTimeout;	/*!&lt; время на блокировку обработки WatchDog, если недавно был StartUp */
 		int askPause; /*!&lt; пауза между неудачными попытками заказать датчики */
 		

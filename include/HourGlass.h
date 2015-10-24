@@ -94,6 +94,7 @@ class HourGlass
 
 			_state = st;
 
+			// TODO 24.10.2015 Lav: follow code is very simular to remain function
 			if( !_state )
 			{
 				timeout_t cur = t.getCurrent();
@@ -171,7 +172,7 @@ class HourGlass
 			// _state=false - означает, что песок пересыпается обратно..
 			if( !_state )
 			{
-				int ret = ( _sand + c );
+				timeout_t ret = ( _sand + c );
 
 				if( ret > _size )
 					return _size;
@@ -191,7 +192,7 @@ class HourGlass
 	protected:
 		PassiveTimer t;   /*!< таймер для отсчёта времени.. */
 		bool _state;      /*!< текущее "положение часов", true - прямое, false - обратное (перевёрнутое) */
-		int _sand;        /*!< сколько песка ещё осталось.. */
+		timeout_t _sand;        /*!< сколько песка ещё осталось.. */
 		timeout_t _size;  /*!< размер часов */
 };
 // --------------------------------------------------------------------------
