@@ -71,7 +71,7 @@ BuildRequires: doxygen
 BuildRequires: catch
 %endif
 
-%set_verify_elf_method textrel=strict,rpath=strict,unresolved=strict
+#set_verify_elf_method textrel=strict,rpath=strict,unresolved=strict
 
 %description
 UniSet is a library for distributed control systems.
@@ -330,7 +330,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %files extension-mysql-devel
 %_pkgconfigdir/libUniSet2MySQL.pc
-%dir %_includedir/%oname/extensions/mysql
 %_includedir/%oname/extensions/mysql/
 %endif
 
@@ -341,7 +340,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %files extension-sqlite-devel
 %_pkgconfigdir/libUniSet2SQLite.pc
-%dir %_includedir/%oname/extensions/sqlite
 %_includedir/%oname/extensions/sqlite/
 %endif
 
@@ -352,21 +350,17 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %files extension-pgsql-devel
 %_pkgconfigdir/libUniSet2PostgreSQL.pc
-%dir %_includedir/%oname/extensions/pgsql
 %_includedir/%oname/extensions/pgsql/
 %endif
 
 %if_enabled python
 %files -n python-module-%oname
-%dir %python_sitelibdir/%oname
-%python_sitelibdir/*
-%python_sitelibdir/%oname/*
-
+%python_sitelibdir/%oname/
 %endif
 
 %if_enabled docs
 %files docs
-%_docdir/%oname
+%_docdir/%oname/
 %endif
 
 %files extension-common
@@ -402,7 +396,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %files extension-logicproc-devel
 %_pkgconfigdir/libUniSet2Log*.pc
 %_libdir/libUniSet2LP*.so
-%dir %_includedir/%oname/extensions/logicproc
 %_includedir/%oname/extensions/logicproc/
 %endif
 
@@ -414,7 +407,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %files extension-rrd-devel
 %_pkgconfigdir/libUniSet2RRD*.pc
 %_libdir/libUniSet2RRD*.so
-%dir %_includedir/%oname/extensions/rrd
 %_includedir/%oname/extensions/rrd/
 %endif
 
@@ -428,11 +420,11 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %files extension-io-devel
 %_libdir/libUniSet2IO*.so
 %_pkgconfigdir/libUniSet2IO*.pc
-%dir %_includedir/%oname/extensions/io
 %_includedir/%oname/extensions/io/
 %endif
 
 %files extension-common-devel
+%id %_includedir/%oname/extensions/
 %_includedir/%oname/extensions/*.*
 %_libdir/libUniSet2Extensions.so
 %_libdir/libUniSet2MB*.so
@@ -447,13 +439,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_pkgconfigdir/libUniSet2Shared*.pc
 %_pkgconfigdir/libUniSet2Network*.pc
 %_pkgconfigdir/libUniSet2UNet*.pc
-
-#%exclude %_includedir/%oname/extensions/mysql
-#%exclude %_includedir/%oname/extensions/sqlite
-#%exclude %_includedir/%oname/extensions/pgsql
-#%exclude %_includedir/%oname/extensions/logicproc
-#%exclude %_includedir/%oname/extensions/io
-#%exclude %_includedir/%oname/extensions/rrd
 
 #%_pkgconfigdir/libUniSet2SMDBServer.pc
 #%_pkgconfigdir/libUniSet2*.pc
