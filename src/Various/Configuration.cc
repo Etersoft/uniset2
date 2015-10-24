@@ -195,9 +195,10 @@ namespace UniSetTypes
 		xmlNodesSec = 0;
 		// -------------------------------------------------------------------------
 		char curdir[FILENAME_MAX];
-		getcwd(curdir, FILENAME_MAX);
-
-		rootDir = string(curdir) + "/";
+		if( getcwd(curdir, FILENAME_MAX) == NULL )
+			rootDir = "";
+		else
+			rootDir = string(curdir) + "/";
 
 		{
 			ostringstream s;
