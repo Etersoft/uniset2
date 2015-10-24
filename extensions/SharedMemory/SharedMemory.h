@@ -412,8 +412,9 @@ class SharedMemory:
 
 		UniSetTypes::uniset_rwmutex mutex_start;
 
-		struct HeartBeatInfo
+		class HeartBeatInfo
 		{
+			public:
 			HeartBeatInfo():
 				a_sid(UniSetTypes::DefaultObjectId),
 				d_sid(UniSetTypes::DefaultObjectId),

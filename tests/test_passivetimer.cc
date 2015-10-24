@@ -33,6 +33,13 @@ TEST_CASE("PassiveTimer", "[PassiveTimer]" )
 		REQUIRE( pt.getLeft(100) == 100 );
 	}
 
+	SECTION( "Init WaitUpTime" )
+	{
+		PassiveTimer pt(UniSetTimer::WaitUpTime);
+		REQUIRE( pt.getInterval() == 0 ); // TIMEOUT_INF );
+		REQUIRE( pt.getLeft(100) == 100 );
+	}
+
 	SECTION( "Init < 0 " )
 	{
 		PassiveTimer pt(-10);
