@@ -246,13 +246,13 @@ xmlNode* UniXML::nextNode(xmlNode* n)
 	if (n->next)
 		return n->next;
 
-	for(; n->parent && !n->next && n;)
+	for(; n && n->parent && !n->next;)
 		n = n->parent;
 
-	if (n->next)
+	if (n && n->next)
 		n = n->next;
 
-	if (!n->name)
+	if (n && !n->name)
 		n = 0;
 
 	return n;
