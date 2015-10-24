@@ -688,7 +688,6 @@ static const std::string init3_str( const std::string&amp; s1, const std::string
 <xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK( ObjectId id, xmlNode* cnode, const std::string&amp; _argprefix ):
 <xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>(id),</xsl:if>
 <xsl:if test="normalize-space($BASECLASS)=''">UniSetObject(id),</xsl:if>
-argprefix( (_argprefix.empty() ? myname+"-" : _argprefix) ),
 // Инициализация идентификаторов (имена берутся из конф. файла)
 <xsl:for-each select="//smap/item">
 <xsl:if test="normalize-space(@vartype)!='io'">
@@ -715,6 +714,7 @@ prev_m_<xsl:value-of select="normalize-space(@name)"/>(false),
 </xsl:for-each>
 sleep_msec(<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>),
 active(true),
+argprefix( (_argprefix.empty() ? myname+"-" : _argprefix) ),
 <xsl:if test="normalize-space($TESTMODE)!=''">
 isTestMode(false),
 idTestMode_S(uniset_conf()->getSensorID("TestMode_S")),
@@ -1160,7 +1160,6 @@ forceOut(false)
 <xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK( ObjectId id, xmlNode* cnode, const string&amp; _argprefix ):
 <xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>(id),</xsl:if>
 <xsl:if test="normalize-space($BASECLASS)=''">UniSetObject(id),</xsl:if>
-argprefix( (_argprefix.empty() ? myname+"-" : _argprefix) ),
 // Инициализация идентификаторов (имена берутся из конф. файла)
 <xsl:for-each select="//sensors/item">
 	<xsl:call-template name="setvar">
@@ -1175,6 +1174,7 @@ argprefix( (_argprefix.empty() ? myname+"-" : _argprefix) ),
 </xsl:for-each>
 sleep_msec(<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>),
 active(true),
+argprefix( (_argprefix.empty() ? myname+"-" : _argprefix) ),
 <xsl:if test="normalize-space($TESTMODE)!=''">
 isTestMode(false),
 idTestMode_S(uniset_conf()->getSensorID("TestMode_S")),
