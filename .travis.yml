@@ -17,7 +17,7 @@ env:
 
 before_script:
   - autoreconf -fiv
-  - ./configure
+  - ./configure --disable-tests
 
 script:
   - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make && make check ; fi
@@ -26,12 +26,12 @@ script:
 addons:
   apt:
     packages:
-    - libpopt-dev
+      - libcomedi-dev libcommoncpp2-dev libmysqlclient-dev libomniorb4-dev libpqxx-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev
   coverity_scan:
     project:
       name: "Etersoft/uniset2"
       description: "UniSet2 build submitted via Travis CI"
     notification_email: lav@etersoft.ru
-    build_command_prepend: "./configure; make clean"
+    build_command_prepend: "./configure --disable-tests; make clean"
     build_command: make -j4
     branch_pattern: coverity_scan
