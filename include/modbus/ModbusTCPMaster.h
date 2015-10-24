@@ -61,9 +61,9 @@ class ModbusTCPMaster:
 		ModbusRTU::ModbusData nTransaction;
 		std::queue<unsigned char> qrecv;
 		PassiveTimer ptTimeout;
-		std::string iaddr;
-		int port;
-		bool force_disconnect;
+		std::string iaddr = { "" };
+		int port = { 0 };
+		bool force_disconnect = { false };
 };
 // -------------------------------------------------------------------------
 #endif // ModbusTCPMaster_H_

@@ -766,7 +766,7 @@ ObjectType UInterface::getType( const ObjectId name ) const
 }
 
 // ------------------------------------------------------------------------------------------------------------
-void UInterface::registered( const ObjectId id, const ObjectPtr oRef, bool force ) const throw(ORepFailed)
+void UInterface::registered( const ObjectId id, const ObjectPtr oRef, bool force ) const throw(UniSetTypes::ORepFailed)
 {
 	// если влючён режим использования локальных файлов
 	// то пишем IOR в файл

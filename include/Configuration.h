@@ -267,54 +267,54 @@ namespace UniSetTypes
 
 			std::string getPort( const std::string& port = "" );
 
-			std::string rootDir;
+			std::string rootDir = { "" };
 			std::shared_ptr<UniXML> unixml;
 
-			int _argc;
+			int _argc = { 0 };
 			const char* const* _argv;
 			CORBA::ORB_var orb;
 			CORBA::PolicyList policyList;
 
-			std::string NSName;        /*!< имя сервиса именования на ланной машине (обычно "NameService") */
-			unsigned int countOfNet;    /*!< количество резервных каналов */
-			unsigned int repeatCount;    /*!< количество попыток получить доступ к удаленному объекту
+			std::string NSName = { "" };        /*!< имя сервиса именования на ланной машине (обычно "NameService") */
+			unsigned int countOfNet = { 1 };    /*!< количество резервных каналов */
+			unsigned int repeatCount = { 3 };    /*!< количество попыток получить доступ к удаленному объекту
                                             прежде чем будет выработано исключение TimeOut.        */
 
-			unsigned int repeatTimeout;    /*!< пауза между попытками [мс] */
+			unsigned int repeatTimeout = { 50 };    /*!< пауза между попытками [мс] */
 
 			UniSetTypes::ListOfNode lnodes;
 
 			// repository
-			std::string secRoot;
-			std::string secSensors;
-			std::string secObjects;
-			std::string secControlles;
-			std::string secServices;
+			std::string secRoot = { "" };
+			std::string secSensors = { "" };
+			std::string secObjects = { "" };
+			std::string secControlles = { "" };
+			std::string secServices = { "" };
 
 			// xml
-			xmlNode* xmlSensorsSec;
-			xmlNode* xmlObjectsSec;
-			xmlNode* xmlControllersSec;
-			xmlNode* xmlServicesSec;
-			xmlNode* xmlNodesSec;
+			xmlNode* xmlSensorsSec = { 0 };
+			xmlNode* xmlObjectsSec = { 0 };
+			xmlNode* xmlControllersSec = { 0 };
+			xmlNode* xmlServicesSec = { 0 };
+			xmlNode* xmlNodesSec = { 0 };
 
-			ObjectId localDBServer;
-			ObjectId localNode;
+			ObjectId localDBServer = { UniSetTypes::DefaultObjectId };
+			ObjectId localNode = { UniSetTypes::DefaultObjectId };
 
-			std::string localNodeName;
-			std::string fileConfName;
-			std::string imagesDir;
+			std::string localNodeName = { "" };
+			std::string fileConfName = { "" };
+			std::string imagesDir = { "" };
 
-			std::string confDir;
-			std::string dataDir;
-			std::string binDir;
-			std::string logDir;
-			std::string docDir;
-			std::string lockDir;
-			bool localIOR;
-			bool transientIOR;
+			std::string confDir = { "" };
+			std::string dataDir = { "" };
+			std::string binDir = { "" };
+			std::string logDir = { "" };
+			std::string docDir = { "" };
+			std::string lockDir = { "" };
+			bool localIOR = { false };
+			bool transientIOR = { false };
 
-			int heartbeat_msec;
+			int heartbeat_msec = { 3000 };
 	};
 
 	/*! Глобальный указатель на конфигурацию (singleton) */

@@ -123,6 +123,7 @@ namespace ModbusRTU
 		/*! максимальное количество данных в пакете (c учётом контрольной суммы) */
 		MAXLENPACKET     = 508, /*!< максимальная длина пакета 512 - header(2) - CRC(2) */
 		BroadcastAddr    = 255, /*!< адрес для широковещательных сообщений */
+		MAXPDULEN       = 253, // 255 - 2(CRC)
 		MAXDATALEN       = 125  /*!< максимальное число слов, которое можно запросить.
                                     Связано с тем, что в ответе есть поле bcnt - количество байт
                                     Соответственно максимум туда можно записать только 255
@@ -266,9 +267,9 @@ namespace ModbusRTU
 	struct ReadCoilMessage:
 		public ModbusHeader
 	{
-		ModbusData start;
-		ModbusData count;
-		ModbusCRC crc;
+		ModbusData start = { 0 };
+		ModbusData count = { 0 };
+		ModbusCRC crc = { 0 };
 
 		// ------- to slave -------
 		ReadCoilMessage( ModbusAddr addr, ModbusData start, ModbusData count );
@@ -297,7 +298,7 @@ namespace ModbusRTU
 	struct ReadCoilRetMessage:
 		public ModbusHeader
 	{
-		ModbusByte bcnt;                /*!< numbers of bytes */
+		ModbusByte bcnt = { 0 };          /*!< numbers of bytes */
 		ModbusByte data[MAXLENPACKET];    /*!< данные */
 
 		// ------- from slave -------
@@ -314,7 +315,7 @@ namespace ModbusRTU
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
 		static int getDataLen( ModbusMessage& m );
-		ModbusCRC crc;
+		ModbusCRC crc = { 0 };
 
 		// ------- to master -------
 		ReadCoilRetMessage( ModbusAddr _from );
@@ -348,7 +349,7 @@ namespace ModbusRTU
 		/*! проверка на переполнение */
 		inline bool isFull()
 		{
-			return ( (int)bcnt >= MAXLENPACKET );
+			return ( (int)bcnt >= MAXPDULEN );
 		}
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
@@ -365,9 +366,9 @@ namespace ModbusRTU
 	struct ReadInputStatusMessage:
 		public ModbusHeader
 	{
-		ModbusData start;
-		ModbusData count;
-		ModbusCRC crc;
+		ModbusData start = { 0 };
+		ModbusData count = { 0 };
+		ModbusCRC crc = { 0 };
 
 		// ------- to slave -------
 		ReadInputStatusMessage( ModbusAddr addr, ModbusData start, ModbusData count );
@@ -394,7 +395,7 @@ namespace ModbusRTU
 	struct ReadInputStatusRetMessage:
 		public ModbusHeader
 	{
-		ModbusByte bcnt;                /*!< numbers of bytes */
+		ModbusByte bcnt = { 0 };          /*!< numbers of bytes */
 		ModbusByte data[MAXLENPACKET];    /*!< данные */
 
 		// ------- from slave -------
@@ -411,7 +412,7 @@ namespace ModbusRTU
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
 		static int getDataLen( ModbusMessage& m );
-		ModbusCRC crc;
+		ModbusCRC crc = { 0 };
 
 		// ------- to master -------
 		ReadInputStatusRetMessage( ModbusAddr _from );
@@ -445,7 +446,7 @@ namespace ModbusRTU
 		/*! проверка на переполнение */
 		inline bool isFull()
 		{
-			return ( (int)bcnt >= MAXLENPACKET );
+			return ( (int)bcnt >= MAXPDULEN );
 		}
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
@@ -463,9 +464,9 @@ namespace ModbusRTU
 	struct ReadOutputMessage:
 		public ModbusHeader
 	{
-		ModbusData start;
-		ModbusData count;
-		ModbusCRC crc;
+		ModbusData start = { 0 };
+		ModbusData count = { 0 };
+		ModbusCRC crc = { 0 };
 
 		// ------- to slave -------
 		ReadOutputMessage( ModbusAddr addr, ModbusData start, ModbusData count );
@@ -492,7 +493,7 @@ namespace ModbusRTU
 	struct ReadOutputRetMessage:
 		public ModbusHeader
 	{
-		ModbusByte bcnt;                                    /*!< numbers of bytes */
+		ModbusByte bcnt = { 0 };                             /*!< numbers of bytes */
 		ModbusData data[MAXLENPACKET / sizeof(ModbusData)];  /*!< данные */
 
 		// ------- from slave -------
@@ -510,7 +511,7 @@ namespace ModbusRTU
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
 		static int getDataLen( ModbusMessage& m );
-		ModbusCRC crc;
+		ModbusCRC crc = { 0 };
 
 		// ------- to master -------
 		ReadOutputRetMessage( ModbusAddr _from );
@@ -541,7 +542,7 @@ namespace ModbusRTU
 		// преобразовании в ModbusMessage.
 		// Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно.
 		// Используйте специальную функцию transport_msg()
-		int    count;    /*!< фактическое количество данных в сообщении */
+		int    count = { 0 };    /*!< фактическое количество данных в сообщении */
 	};
 
 	std::ostream& operator<<(std::ostream& os, ReadOutputRetMessage& m );
@@ -551,9 +552,9 @@ namespace ModbusRTU
 	struct ReadInputMessage:
 		public ModbusHeader
 	{
-		ModbusData start;
-		ModbusData count;
-		ModbusCRC crc;
+		ModbusData start = { 0 };
+		ModbusData count = { 0 };
+		ModbusCRC crc = { 0 };
 
 		// ------- to slave -------
 		ReadInputMessage( ModbusAddr addr, ModbusData start, ModbusData count );
@@ -581,7 +582,7 @@ namespace ModbusRTU
 	struct ReadInputRetMessage:
 		public ModbusHeader
 	{
-		ModbusByte bcnt;                                    /*!< numbers of bytes */
+		ModbusByte bcnt = { 0 };                                    /*!< numbers of bytes */
 		ModbusData data[MAXLENPACKET / sizeof(ModbusData)];  /*!< данные */
 
 		// ------- from slave -------
@@ -599,7 +600,7 @@ namespace ModbusRTU
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
 		static int getDataLen( ModbusMessage& m );
-		ModbusCRC crc;
+		ModbusCRC crc = { 0 };
 
 		// ------- to master -------
 		ReadInputRetMessage( ModbusAddr _from );
@@ -632,7 +633,7 @@ namespace ModbusRTU
 		// преобразовании в ModbusMessage.
 		// Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно.
 		// Используйте специальную функцию transport_msg()
-		int    count;    /*!< фактическое количество данных в сообщении */
+		int count = { 0 };    /*!< фактическое количество данных в сообщении */
 	};
 
 	std::ostream& operator<<(std::ostream& os, ReadInputRetMessage& m );
@@ -642,12 +643,12 @@ namespace ModbusRTU
 	struct ForceCoilsMessage:
 		public ModbusHeader
 	{
-		ModbusData start;    /*!< стартовый адрес записи */
-		ModbusData quant;    /*!< количество записываемых битов */
-		ModbusByte bcnt;    /*!< количество байт данных */
+		ModbusData start = { 0 };    /*!< стартовый адрес записи */
+		ModbusData quant = { 0 };    /*!< количество записываемых битов */
+		ModbusByte bcnt = { 0 };    /*!< количество байт данных */
 		/*! данные */
 		ModbusByte data[MAXLENPACKET - sizeof(ModbusData) * 2 - sizeof(ModbusByte)];
-		ModbusCRC crc;        /*!< контрольная сумма */
+		ModbusCRC crc = { 0 };        /*!< контрольная сумма */
 
 		// ------- to slave -------
 		ForceCoilsMessage( ModbusAddr addr, ModbusData start );
@@ -684,7 +685,7 @@ namespace ModbusRTU
 		void clear();
 		inline bool isFull()
 		{
-			return ( (int)bcnt >= MAXLENPACKET );
+			return ( (int)bcnt >= MAXPDULEN );
 		}
 
 		// ------- from master -------
@@ -721,9 +722,9 @@ namespace ModbusRTU
 	struct ForceCoilsRetMessage:
 		public ModbusHeader
 	{
-		ModbusData start;     /*!< записанный начальный адрес */
-		ModbusData quant;    /*!< количество записанных битов */
-		ModbusCRC crc;
+		ModbusData start = { 0 };    /*!< записанный начальный адрес */
+		ModbusData quant = { 0 };    /*!< количество записанных битов */
+		ModbusCRC crc = { 0 };
 
 		// ------- from slave -------
 		ForceCoilsRetMessage( ModbusMessage& m );
@@ -761,12 +762,12 @@ namespace ModbusRTU
 	struct WriteOutputMessage:
 		public ModbusHeader
 	{
-		ModbusData start;    /*!< стартовый адрес записи */
-		ModbusData quant;    /*!< количество слов данных */
-		ModbusByte bcnt;    /*!< количество байт данных */
+		ModbusData start = { 0 };    /*!< стартовый адрес записи */
+		ModbusData quant = { 0 };    /*!< количество слов данных */
+		ModbusByte bcnt = { 0 };    /*!< количество байт данных */
 		/*! данные */
 		ModbusData data[MAXLENPACKET / sizeof(ModbusData) - sizeof(ModbusData) * 2 - sizeof(ModbusByte)];
-		ModbusCRC crc;        /*!< контрольная сумма */
+		ModbusCRC crc = { 0 };        /*!< контрольная сумма */
 
 		// ------- to slave -------
 		WriteOutputMessage( ModbusAddr addr, ModbusData start );
@@ -815,14 +816,14 @@ namespace ModbusRTU
 	struct WriteOutputRetMessage:
 		public ModbusHeader
 	{
-		ModbusData start;     /*!< записанный начальный адрес */
-		ModbusData quant;    /*!< количество записанных слов данных */
+		ModbusData start = { 0 };     /*!< записанный начальный адрес */
+		ModbusData quant = { 0 };    /*!< количество записанных слов данных */
 
 		// ------- from slave -------
 		WriteOutputRetMessage( ModbusMessage& m );
 		WriteOutputRetMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
-		ModbusCRC crc;
+		ModbusCRC crc = { 0 };
 
 		// ------- to master -------
 		/*!
@@ -854,9 +855,9 @@ namespace ModbusRTU
 	struct ForceSingleCoilMessage:
 		public ModbusHeader
 	{
-		ModbusData start;    /*!< стартовый адрес записи */
-		ModbusData data;    /*!< команда ON - true | OFF - false */
-		ModbusCRC crc;        /*!< контрольная сумма */
+		ModbusData start = { 0 };   /*!< стартовый адрес записи */
+		ModbusData data = { 0 };    /*!< команда ON - true | OFF - false */
+		ModbusCRC crc = { 0 };      /*!< контрольная сумма */
 
 		/*! получить значение команды */
 		inline bool cmd()
@@ -906,9 +907,9 @@ namespace ModbusRTU
 	struct ForceSingleCoilRetMessage:
 		public ModbusHeader
 	{
-		ModbusData start;     /*!< записанный начальный адрес */
-		ModbusData data;     /*!< данные */
-		ModbusCRC crc;
+		ModbusData start = { 0 };     /*!< записанный начальный адрес */
+		ModbusData data = { 0 };     /*!< данные */
+		ModbusCRC crc = { 0 };
 
 		/*! получить значение команды */
 		inline bool cmd()
@@ -951,9 +952,9 @@ namespace ModbusRTU
 	struct WriteSingleOutputMessage:
 		public ModbusHeader
 	{
-		ModbusData start;    /*!< стартовый адрес записи */
-		ModbusData data;    /*!< данные */
-		ModbusCRC crc;        /*!< контрольная сумма */
+		ModbusData start = { 0 };    /*!< стартовый адрес записи */
+		ModbusData data = { 0 };    /*!< данные */
+		ModbusCRC crc = { 0 };        /*!< контрольная сумма */
 
 
 		// ------- to slave -------
@@ -997,9 +998,9 @@ namespace ModbusRTU
 	struct WriteSingleOutputRetMessage:
 		public ModbusHeader
 	{
-		ModbusData start;     /*!< записанный начальный адрес */
-		ModbusData data;     /*!< записанные данные */
-		ModbusCRC crc;
+		ModbusData start = { 0 };     /*!< записанный начальный адрес */
+		ModbusData data = { 0 };     /*!< записанные данные */
+		ModbusCRC crc = { 0 };
 
 
 		// ------- from slave -------
@@ -1036,7 +1037,7 @@ namespace ModbusRTU
 	struct DiagnosticMessage:
 		public ModbusHeader
 	{
-		ModbusData subf;
+		ModbusData subf = { 0 };
 		ModbusData data[MAXLENPACKET / sizeof(ModbusData)];  /*!< данные */
 
 		// ------- from slave -------
@@ -1053,7 +1054,7 @@ namespace ModbusRTU
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
 		static int getDataLen( ModbusMessage& m );
-		ModbusCRC crc;
+		ModbusCRC crc = { 0 };
 
 		// ------- to master -------
 		DiagnosticMessage( ModbusAddr _from, DiagnosticsSubFunction subf, ModbusData d = 0 );
@@ -1085,7 +1086,7 @@ namespace ModbusRTU
 		// преобразовании в ModbusMessage.
 		// Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно.
 		// Используйте специальную функцию transport_msg()
-		int    count;    /*!< фактическое количество данных в сообщении */
+		int    count = { 0 };    /*!< фактическое количество данных в сообщении */
 	};
 	std::ostream& operator<<(std::ostream& os, DiagnosticMessage& m );
 	std::ostream& operator<<(std::ostream& os, DiagnosticMessage* m );
@@ -1110,7 +1111,7 @@ namespace ModbusRTU
 		ModbusByte devID;     /*!< Read Device ID code */
 		ModbusByte objID;     /*!< Object Id */
 
-		ModbusCRC crc;        /*!< контрольная сумма */
+		ModbusCRC crc = { 0 };        /*!< контрольная сумма */
 
 		// ------- to slave -------
 		MEIMessageRDI( ModbusAddr addr, ModbusByte devID, ModbusByte objID );
@@ -1169,7 +1170,7 @@ namespace ModbusRTU
 		ModbusByte objNum;     /*!< Number of objects */
 
 		RDIObjectList dlist;
-		ModbusCRC crc;
+		ModbusCRC crc = { 0 };
 
 		// ------- from slave -------
 		MEIMessageRetRDI();
@@ -1205,7 +1206,7 @@ namespace ModbusRTU
 		/*! проверка на переполнение */
 		inline bool isFull()
 		{
-			return ( bcnt >= MAXLENPACKET );
+			return ( bcnt >= MAXPDULEN );
 		}
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
@@ -1214,7 +1215,7 @@ namespace ModbusRTU
 		/*! преобразование для посылки в сеть */
 		ModbusMessage transport_msg();
 
-		int bcnt; /*! размер данных в байтах, внутреннее служебное поле */
+		int bcnt = { 0 }; /*! размер данных в байтах, внутреннее служебное поле */
 	};
 
 	std::ostream& operator<<(std::ostream& os, MEIMessageRetRDI& m );
@@ -1228,9 +1229,9 @@ namespace ModbusRTU
 	struct JournalCommandMessage:
 		public ModbusHeader
 	{
-		ModbusData cmd;            /*!< код операции */
-		ModbusData num;            /*!< номер записи */
-		ModbusCRC crc;
+		ModbusData cmd = { 0 };            /*!< код операции */
+		ModbusData num = { 0 };            /*!< номер записи */
+		ModbusCRC crc = { 0 };
 
 		// -------------
 		JournalCommandMessage( ModbusMessage& m );
@@ -1251,7 +1252,7 @@ namespace ModbusRTU
 	struct JournalCommandRetMessage:
 		public ModbusHeader
 	{
-		ModbusByte bcnt;                    /*!< numbers of bytes */
+		ModbusByte bcnt = { 0 };                    /*!< numbers of bytes */
 		//        ModbusByte data[MAXLENPACKET-1];    /*!< данные */
 
 		// В связи со спецификой реализации ответной части (т.е. modbus master)
@@ -1290,7 +1291,7 @@ namespace ModbusRTU
 		// преобразовании в ModbusMessage.
 		// Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно.
 		// Используйте специальную функцию transport_msg()
-		int    count;    /*!< фактическое количество данных в сообщении */
+		int count = { 0 };    /*!< фактическое количество данных в сообщении */
 	};
 
 	std::ostream& operator<<(std::ostream& os, JournalCommandRetMessage& m );
@@ -1316,15 +1317,15 @@ namespace ModbusRTU
 	struct SetDateTimeMessage:
 		public ModbusHeader
 	{
-		ModbusByte hour;    /*!< часы [0..23] */
-		ModbusByte min;        /*!< минуты [0..59] */
-		ModbusByte sec;        /*!< секунды [0..59] */
-		ModbusByte day;        /*!< день [1..31] */
-		ModbusByte mon;        /*!< месяц [1..12] */
-		ModbusByte year;    /*!< год [0..99] */
-		ModbusByte century;    /*!< столетие [19-20] */
+		ModbusByte hour = { 0 };    /*!< часы [0..23] */
+		ModbusByte min = { 0 };        /*!< минуты [0..59] */
+		ModbusByte sec = { 0 };        /*!< секунды [0..59] */
+		ModbusByte day = { 1 };        /*!< день [1..31] */
+		ModbusByte mon = { 1 };        /*!< месяц [1..12] */
+		ModbusByte year = { 0 };    /*!< год [0..99] */
+		ModbusByte century = { 20 };    /*!< столетие [19-20] */
 
-		ModbusCRC crc;
+		ModbusCRC crc = { 0 };
 
 		// ------- to slave -------
 		SetDateTimeMessage( ModbusAddr addr );
@@ -1374,11 +1375,11 @@ namespace ModbusRTU
 	struct RemoteServiceMessage:
 		public ModbusHeader
 	{
-		ModbusByte bcnt;    /*!< количество байт */
+		ModbusByte bcnt = { 0 };    /*!< количество байт */
 
 		/*! данные */
 		ModbusByte data[MAXLENPACKET - sizeof(ModbusByte)];
-		ModbusCRC crc;        /*!< контрольная сумма */
+		ModbusCRC crc = { 0 };        /*!< контрольная сумма */
 
 		// -----------
 		RemoteServiceMessage( ModbusMessage& m );
@@ -1407,7 +1408,7 @@ namespace ModbusRTU
 	struct RemoteServiceRetMessage:
 		public ModbusHeader
 	{
-		ModbusByte bcnt;    /*!< количество байт */
+		ModbusByte bcnt = { 0 };    /*!< количество байт */
 		/*! данные */
 		ModbusByte data[MAXLENPACKET - sizeof(ModbusByte)];
 
@@ -1439,7 +1440,7 @@ namespace ModbusRTU
 		// Это поле не входит в стандарт modbus
 		// оно вспомогательное и игнорируется при
 		// преобразовании в ModbusMessage.
-		unsigned int    count;    /*!< фактическое количество данных в сообщении */
+		unsigned int count = { 0 };    /*!< фактическое количество данных в сообщении */
 	};
 	// -----------------------------------------------------------------------
 
@@ -1454,11 +1455,11 @@ namespace ModbusRTU
 			ModbusData reglen;  /*!< registers length */
 		} __attribute__((packed));
 
-		ModbusByte bcnt;    /*!< количество байт 0x07 to 0xF5 */
+		ModbusByte bcnt = { 0 };    /*!< количество байт 0x07 to 0xF5 */
 
 		/*! данные */
 		SubRequest data[MAXLENPACKET / sizeof(SubRequest) - sizeof(ModbusByte)];
-		ModbusCRC crc;        /*!< контрольная сумма */
+		ModbusCRC crc = { 0 };        /*!< контрольная сумма */
 
 		// -----------
 		ReadFileRecordMessage( ModbusMessage& m );
@@ -1483,7 +1484,7 @@ namespace ModbusRTU
 		bool checkFormat();
 
 		// это поле служебное и не используется в релальном обмене
-		int count; /*!< фактическое количество данных */
+		int count = { 0 }; /*!< фактическое количество данных */
 	};
 
 	std::ostream& operator<<(std::ostream& os, ReadFileRecordMessage& m );
@@ -1493,9 +1494,9 @@ namespace ModbusRTU
 	struct FileTransferMessage:
 		public ModbusHeader
 	{
-		ModbusData numfile;     /*!< file number 0x0000 to 0xFFFF */
-		ModbusData numpacket;      /*!< number of packet */
-		ModbusCRC crc;            /*!< контрольная сумма */
+		ModbusData numfile = { 0 };     /*!< file number 0x0000 to 0xFFFF */
+		ModbusData numpacket = { 0 };   /*!< number of packet */
+		ModbusCRC crc = { 0 };          /*!< контрольная сумма */
 
 		// ------- to slave -------
 		FileTransferMessage( ModbusAddr addr, ModbusData numfile, ModbusData numpacket );
@@ -1537,7 +1538,7 @@ namespace ModbusRTU
 		FileTransferRetMessage( ModbusMessage& m );
 		FileTransferRetMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
-		ModbusCRC crc;
+		ModbusCRC crc = { 0 };
 		static int szHead()
 		{
 			return sizeof(ModbusByte);
@@ -1576,7 +1577,7 @@ namespace ModbusTCP
 		ModbusRTU::ModbusData    len; /*!< lenght */
 		/*        ModbusRTU::ModbusByte    uID; */ /*!< unit ID */ /* <------- see ModbusHeader */
 
-		MBAPHeader(): tID(0), pID(0) /*,uID(0) */ {}
+		MBAPHeader(): tID(0), pID(0), len(0) /*,uID(0) */ {}
 
 		void swapdata();
 

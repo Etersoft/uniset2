@@ -994,7 +994,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			{
 				int onum = 0;
 
-				while( rlen < sizeof(rbuf) && onum < mPreRDI.objNum )
+				while( (rlen+2) < sizeof(rbuf) && onum < mPreRDI.objNum )
 				{
 					// сперва получаем два байта, для определения длины последующих данных
 					int szDataLen = 2; // object id + len
@@ -1351,7 +1351,7 @@ mbErrCode ModbusClient::send( ModbusMessage& msg )
 	}
 
 	// Пауза, чтобы не ловить свою посылку
-	if( aftersend_msec >= 0 )
+	if( aftersend_msec > 0 )
 		msleep(aftersend_msec);
 
 	//#warning Разобраться с паузой после посылки...

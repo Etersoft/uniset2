@@ -48,8 +48,11 @@ int main( int argc, char** argv )
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:d:s:c:", longopts, &optindex)) != -1 )
+		while(1)
 		{
+			opt = getopt_long(argc, argv, "hva:d:s:c:", longopts, &optindex);
+			if( opt == -1 )
+				break;
 			switch (opt)
 			{
 				case 'h':

@@ -128,7 +128,7 @@ class VMonitor
 		 * \param namewidth - ширина резервируемая под "имя"
 		 * \param colnum - количество столбцов вывода
 		 */
-		std::string pretty_str( int namewidth=NameWidth, int colnum=ColCount );
+		std::string pretty_str( int namewidth = NameWidth, int colnum = ColCount );
 
 		// функции добавления..
 		VMON_DEF_FUNC2(int);
@@ -145,7 +145,7 @@ class VMonitor
 		static const std::string pretty_str( const std::string& name, const std::string* v, int width = NameWidth );
 		static const std::string pretty_str( const std::string& name, const std::string& v, int width = NameWidth );
 
-		std::list<std::pair<std::string,std::string>> getList();
+		std::list<std::pair<std::string, std::string>> getList();
 
 	protected:
 

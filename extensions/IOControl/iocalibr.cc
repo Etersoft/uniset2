@@ -83,8 +83,12 @@ int main(int argc, char* argv[])
 	int optindex = 0;
 	int opt = 0;
 
-	while( (opt = getopt_long(argc, argv, "hr:s:d:a:x:o:f:n:i:c:", longopts, &optindex)) != -1 )
+	while(1)
 	{
+		opt = getopt_long(argc, argv, "hr:s:d:a:x:o:f:n:i:c:", longopts, &optindex);
+		if( opt == -1 )
+			break;
+
 		switch (opt)
 		{
 			case 'h':

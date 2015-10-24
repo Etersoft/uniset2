@@ -69,16 +69,16 @@ class LogReader
 		void logOnEvent( const std::string& s );
 		void sendCommand(LogServerTypes::lsMessage& msg, bool verbose = false );
 
-		timeout_t inTimeout;
-		timeout_t outTimeout;
-		timeout_t reconDelay;
+		timeout_t inTimeout = { 10000 };
+		timeout_t outTimeout = { 6000 };
+		timeout_t reconDelay = { 5000 };
 
 	private:
 		std::shared_ptr<UTCPStream> tcp;
-		std::string iaddr;
-		ost::tpport_t port;
-		bool cmdonly;
-		unsigned int readcount; // количество циклов чтения
+		std::string iaddr = { "" };
+		ost::tpport_t port = { 0 };
+		bool cmdonly { false };
+		unsigned int readcount = { 0 }; // количество циклов чтения
 
 		DebugStream rlog;
 		DebugStream log; // рабочий лог в который выводиться полученная информация..

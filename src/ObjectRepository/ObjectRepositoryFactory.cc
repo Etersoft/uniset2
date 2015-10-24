@@ -232,6 +232,11 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
 
 	ctx->list(how_many, bl, bi);
 
+	// хитрая проверка на null приобращении к bl
+	// coverity говорит потенциально это возможно
+	// т.к. там возвращается указатель, который по умолчанию null
+	if( !bl.operator->() )
+		return false;
 
 	if( how_many > bl->length() )
 		how_many = bl->length();
@@ -241,7 +246,7 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
 	for(unsigned int i = 0; i < how_many; i++)
 	{
 
-		if(    bl[i].binding_type == CosNaming::nobject)
+		if( bl[i].binding_type == CosNaming::nobject)
 		{
 			//            cout <<"удаляем "<< omniURI::nameToString(bl[i].binding_name) << endl;
 			ctx->unbind(bl[i].binding_name);
@@ -301,7 +306,9 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
 	}
 
 
-	bi->destroy(); // ??
+	if( !CORBA::is_nil(bi) )
+		bi->destroy(); // ??
+
 	return rem;
 }
 

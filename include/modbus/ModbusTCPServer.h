@@ -91,7 +91,7 @@ class ModbusTCPServer:
 		virtual ModbusRTU::mbErrCode tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPHeader& mhead );
 		void sessionFinished( ModbusTCPSession* s );
 
-		ost::tpport_t port;
+		ost::tpport_t port = { 0 };
 		ost::TCPStream tcp;
 		ost::InetAddress iaddr;
 		std::queue<unsigned char> qrecv;
@@ -101,12 +101,12 @@ class ModbusTCPServer:
 		UniSetTypes::uniset_mutex sMutex;
 		SessionList slist;
 
-		bool ignoreAddr;
+		bool ignoreAddr = { false };
 
-		unsigned int maxSessions;
-		unsigned int sessCount;
+		unsigned int maxSessions = { 5 };
+		unsigned int sessCount = { 0 };
 
-		timeout_t sessTimeout;
+		timeout_t sessTimeout = { 10000 }; // msec
 
 	private:
 

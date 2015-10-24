@@ -167,7 +167,7 @@ class UNetReceiver:
 
 		std::shared_ptr<ost::UDPReceive> udp;
 		ost::IPV4Address addr;
-		ost::tpport_t port;
+		ost::tpport_t port = { 0 };
 		std::string myname;
 
 		UniSetTypes::uniset_rwmutex pollMutex;
@@ -177,15 +177,15 @@ class UNetReceiver:
 		timeout_t prepareTime;
 		timeout_t lostTimeout;
 		PassiveTimer ptLostTimeout;
-		unsigned long lostPackets; /*!< счётчик потерянных пакетов */
+		unsigned long lostPackets = { 0 }; /*!< счётчик потерянных пакетов */
 
-		UniSetTypes::ObjectId sidRespond;
+		UniSetTypes::ObjectId sidRespond = { UniSetTypes::DefaultObjectId };
 		IOController::IOStateList::iterator itRespond;
-		bool respondInvert;
+		bool respondInvert = { false };
 		UniSetTypes::ObjectId sidLostPackets;
 		IOController::IOStateList::iterator itLostPackets;
 
-		std::atomic_bool activated;
+		std::atomic_bool activated = { false };
 
 		std::shared_ptr< ThreadCreator<UNetReceiver> > r_thr;        // receive thread
 		std::shared_ptr< ThreadCreator<UNetReceiver> > u_thr;        // update thread
@@ -199,15 +199,15 @@ class UNetReceiver:
 		/*! максимальная разница межд номерами пакетов, при которой считается, что счётчик пакетов
 		 * прошёл через максимум или сбился...
 		 */
-		unsigned long maxDifferens;
+		unsigned long maxDifferens = { 20 };
 
 		PacketQueue qtmp;    /*!< очередь на время обработки(очистки) основной очереди */
-		bool waitClean;        /*!< флаг означающий, что ждём очистики очереди до конца */
-		unsigned long rnum;    /*!< текущий номер принятого сообщения, для проверки "переполнения" или "сбоя" счётчика */
+		bool waitClean = { false };    /*!< флаг означающий, что ждём очистики очереди до конца */
+		unsigned long rnum = { 0 };    /*!< текущий номер принятого сообщения, для проверки "переполнения" или "сбоя" счётчика */
 
 		int maxProcessingCount; /*!< максимальное число обрабатываемых за один раз сообщений */
 
-		bool lockUpdate; /*!< флаг блокировки сохранения принятых данных в SM */
+		bool lockUpdate = { false }; /*!< флаг блокировки сохранения принятых данных в SM */
 		UniSetTypes::uniset_rwmutex lockMutex;
 
 		EventSlot slEvent;
@@ -239,8 +239,8 @@ class UNetReceiver:
 		CacheMap d_icache_map;     /*!< кэш итераторов для булевых */
 		CacheMap a_icache_map;     /*!< кэш итераторов для аналоговых */
 
-		bool d_cache_init_ok;
-		bool a_cache_init_ok;
+		bool d_cache_init_ok = { false };
+		bool a_cache_init_ok = { false };
 
 		void initDCache( UniSetUDP::UDPMessage& pack, bool force = false );
 		void initACache( UniSetUDP::UDPMessage& pack, bool force = false );

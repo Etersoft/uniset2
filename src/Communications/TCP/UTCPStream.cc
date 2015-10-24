@@ -23,14 +23,24 @@ UTCPStream::UTCPStream():
 {
 }
 // -------------------------------------------------------------------------
-void UTCPStream::setKeepAliveParams(timeout_t timeout_sec, int keepcnt, int keepintvl )
+bool UTCPStream::setKeepAliveParams(timeout_t timeout_sec, int keepcnt, int keepintvl )
 {
 	SOCKET fd = TCPStream::so;
 	int enable = 1;
-	setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void*)&enable, sizeof(enable));
-	setsockopt(fd, SOL_TCP, TCP_KEEPCNT, (void*) &keepcnt, sizeof(keepcnt));
-	setsockopt(fd, SOL_TCP, TCP_KEEPINTVL, (void*) &keepintvl, sizeof (keepintvl));
-	setsockopt(fd, SOL_TCP, TCP_KEEPIDLE, (void*) &timeout_sec, sizeof (timeout_sec));
+	bool ok = true;
+	if( setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void*)&enable, sizeof(enable)) == -1 )
+		ok = false;
+
+	if( setsockopt(fd, SOL_TCP, TCP_KEEPCNT, (void*) &keepcnt, sizeof(keepcnt)) == -1 )
+		ok = false;
+
+	if( setsockopt(fd, SOL_TCP, TCP_KEEPINTVL, (void*) &keepintvl, sizeof (keepintvl)) == -1 )
+		ok = false;
+
+	if( setsockopt(fd, SOL_TCP, TCP_KEEPIDLE, (void*) &timeout_sec, sizeof (timeout_sec)) == -1 )
+		ok = false;
+
+	return ok;
 }
 // -------------------------------------------------------------------------
 void UTCPStream::create( const std::string& hname, int port, bool throwflag, timeout_t t )

@@ -123,9 +123,9 @@ class UNetSender
 
 	protected:
 
-		std::string s_field;
-		std::string s_fvalue;
-		std::string prefix;
+		std::string s_field = { "" };
+		std::string s_fvalue = { "" };
+		std::string prefix = { "" };
 
 		const std::shared_ptr<SMInterface> shm;
 		std::shared_ptr<DebugStream> unetlog;
@@ -140,13 +140,13 @@ class UNetSender
 
 		std::shared_ptr<ost::UDPBroadcast> udp;
 		ost::IPV4Address addr;
-		ost::tpport_t port;
-		std::string s_host;
+		ost::tpport_t port = { 0 };
+		std::string s_host = { "" };
 
-		std::string myname;
-		int sendpause;
-		int packsendpause;
-		std::atomic_bool activated;
+		std::string myname = { "" };
+		int sendpause = { 150 };
+		int packsendpause = { 5 };
+		std::atomic_bool activated = { false };
 
 		UniSetTypes::uniset_rwmutex pack_mutex;
 
@@ -156,13 +156,13 @@ class UNetSender
 		std::unordered_map<sendfactor_t, int> packs_anum;
 		std::unordered_map<sendfactor_t, int> packs_dnum;
 		DMap dlist;
-		int maxItem;
-		unsigned long packetnum; /*!< номер очередного посылаемого пакета */
-		unsigned short lastcrc;
+		int maxItem = { 0 };
+		unsigned long packetnum = { 1 }; /*!< номер очередного посылаемого пакета */
+		unsigned short lastcrc = { 0 };
 		UniSetUDP::UDPPacket s_msg;
 
-		size_t maxAData;
-		size_t maxDData;
+		size_t maxAData = { UniSetUDP::MaxACount };
+		size_t maxDData = { UniSetUDP::MaxDCount };
 
 		std::shared_ptr< ThreadCreator<UNetSender> > s_thr;    // send thread
 

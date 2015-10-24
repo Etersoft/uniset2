@@ -190,7 +190,7 @@ mbErrCode ModbusTCPServer::receive(const std::unordered_set<ModbusAddr>& vmbaddr
 						send(buf);
 						printProcessingTime();
 					}
-					else if( aftersend_msec >= 0 )
+					else if( aftersend_msec > 0 )
 						msleep(aftersend_msec);
 
 					tcp.disconnect();
@@ -274,6 +274,15 @@ mbErrCode ModbusTCPServer::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPH
 	// check header
 	if( mhead.pID != 0 )
 		return erUnExpectedPacketType; // erTimeOut;
+
+	if( mhead.len > ModbusRTU::MAXLENPACKET )
+	{
+		if( dlog->is_info() )
+			dlog->info() << "(ModbusTCPServer::tcp_processing): len(" << (int)mhead.len
+						 << ") < MAXLENPACKET(" << ModbusRTU::MAXLENPACKET << ")" << endl;
+
+		return erInvalidFormat;
+	}
 
 	len = ModbusTCPCore::readNextData(&tcp, qrecv, mhead.len);
 

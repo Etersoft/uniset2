@@ -56,16 +56,17 @@ class LogSession:
 		void logOnEvent( const std::string& s );
 		void readStream();
 
-		timeout_t sessTimeout;
-		timeout_t cmdTimeout;
-		timeout_t outTimeout;
-		timeout_t delayTime;
+		// msec
+		timeout_t sessTimeout = { 10000 };
+		timeout_t cmdTimeout = { 2000 };
+		timeout_t outTimeout = { 2000 };
+		timeout_t delayTime = { 2000 };
 
 	private:
 		typedef std::deque<std::string> LogBuffer;
 		LogBuffer lbuf;
-		std::string peername;
-		std::string caddr;
+		std::string peername = { "" };
+		std::string caddr = { "" };
 		std::shared_ptr<DebugStream> log;
 		std::shared_ptr<LogAgregator> alog;
 		sigc::connection conn;
@@ -74,7 +75,7 @@ class LogSession:
 
 		//        PassiveTimer ptSessionTimeout;
 		FinalSlot slFin;
-		std::atomic_bool cancelled;
+		std::atomic_bool cancelled = { false };
 
 		DebugStream slog;
 		std::ostringstream sbuf;

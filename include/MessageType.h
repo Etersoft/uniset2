@@ -60,7 +60,7 @@ namespace UniSetTypes
 			ObjectId node = { UniSetTypes::DefaultObjectId };      // откуда
 			ObjectId supplier = { UniSetTypes::DefaultObjectId };  // от кого
 			ObjectId consumer = { UniSetTypes::DefaultObjectId };  // кому
-			struct timeval tm;
+			struct timeval tm = { 0, 0 };
 
 
 			Message( Message&& ) = default;

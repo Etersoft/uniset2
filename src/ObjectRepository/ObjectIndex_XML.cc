@@ -67,7 +67,7 @@ ObjectId ObjectIndex_XML::getIdByName( const string& name )
 // -----------------------------------------------------------------------------------------
 string ObjectIndex_XML::getMapName( const ObjectId id )
 {
-	if( (unsigned)id < omap.size() && (unsigned)id >= 0 )
+	if( (unsigned)id < omap.size() && (unsigned)id > 0 )
 		return omap[id].repName;
 
 	return "";
@@ -75,7 +75,7 @@ string ObjectIndex_XML::getMapName( const ObjectId id )
 // -----------------------------------------------------------------------------------------
 string ObjectIndex_XML::getTextName( const ObjectId id )
 {
-	if( (unsigned)id < omap.size() && (unsigned)id >= 0 )
+	if( (unsigned)id < omap.size() && (unsigned)id > 0 )
 		return omap[id].textName;
 
 	return "";
@@ -287,7 +287,7 @@ unsigned int ObjectIndex_XML::read_nodes( const std::shared_ptr<UniXML>& xml, co
 // ------------------------------------------------------------------------------------------
 const ObjectInfo* ObjectIndex_XML::getObjectInfo( const ObjectId id )
 {
-	if( (unsigned)id < omap.size() && (unsigned)id >= 0 )
+	if( (unsigned)id < omap.size() && (unsigned)id > 0 )
 		return &omap[id];
 
 	return NULL;

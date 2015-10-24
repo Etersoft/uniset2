@@ -223,7 +223,7 @@ bool UniXML::save(const string& filename, int level)
 
 	// Если файл уже существует, переименовываем его в *.xml.bak
 	string bakfilename(fn + ".bak");
-	rename(fn.c_str(), bakfilename.c_str());
+	(void)rename(fn.c_str(), bakfilename.c_str());
 	//    int res = ::xmlSaveFormatFileEnc(fn.c_str(), doc, ExternalEncoding.c_str(), level);
 	// Write in UTF-8 without XML encoding in the header */
 	int res = ::xmlSaveFormatFile(fn.c_str(), doc, level);

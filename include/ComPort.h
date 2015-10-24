@@ -112,18 +112,18 @@ class ComPort
 
 		static const int BufSize = 8192;
 		unsigned char buf[BufSize];
-		int curSym;
-		int bufLength;
-		int fd;
-		int uTimeout;
-		bool waiting;
-		Speed speed;
-		std::string dev;
+		int curSym = { 0 };
+		int bufLength = { 0 };
+		int fd = { -1 };
+		int uTimeout = { 0 };
+		bool waiting = { false };
+		Speed speed = ComSpeed38400;
+		std::string dev = { "" };
 
 		virtual unsigned char m_receiveByte( bool wait );
 
 	private:
-		struct termios oldTermios;
+		struct termios oldTermios = { 0 };
 };
 // --------------------------------------------------------------------------
 #endif // _COMPORT_H_

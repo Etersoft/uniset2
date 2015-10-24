@@ -1534,7 +1534,7 @@ ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string& fname,
 
 	int fd = open(fname.c_str(), O_RDONLY | O_NONBLOCK );
 
-	if( fd <= 0 )
+	if( fd < 0 )
 	{
 		if( dlog && dlog->is_warn() )
 			(*dlog)[Debug::WARN] << "(replyFileTransfer): open '" << fname << "' with error: " << strerror(errno) << endl;
@@ -1608,10 +1608,10 @@ ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessa
 		t.tm_mon     = query.mon - 1;
 		//        t.tm_year     = (query.century>19) ? query.year + query.century*10 - 1900 : query.year;
 		t.tm_year     = (query.century > 19) ? query.year + 2000 - 1900 : query.year;
-		set.tv_sec = mktime(&t);
+		set.tv_sec = mktime(&t); // может вернуть -1 (!)
 		set.tv_usec = 0;
 
-		if( settimeofday(&set, &tz) == 0 )
+		if( set.tv_sec >=0 && settimeofday(&set, &tz) == 0 )
 		{
 			// подтверждаем сохранение
 			// в ответе возвращаем установленное время...
@@ -1677,7 +1677,7 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 		return erHardwareError;
 	}
 
-	if( aftersend_msec >= 0 )
+	if( aftersend_msec > 0 )
 		msleep(aftersend_msec);
 
 	return post_send_request(msg);

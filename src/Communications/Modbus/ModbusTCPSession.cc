@@ -52,10 +52,10 @@ void ModbusTCPSession::setKeepAliveParams( timeout_t timeout_sec, int keepcnt, i
 {
 	SOCKET fd = TCPSession::so;
 	int enable = 1;
-	setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void*)&enable, sizeof(enable));
-	setsockopt(fd, SOL_TCP, TCP_KEEPCNT, (void*) &keepcnt, sizeof(keepcnt));
-	setsockopt(fd, SOL_TCP, TCP_KEEPINTVL, (void*) &keepintvl, sizeof (keepintvl));
-	setsockopt(fd, SOL_TCP, TCP_KEEPIDLE, (void*) &timeout_sec, sizeof (timeout_sec));
+	(void)setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void*)&enable, sizeof(enable));
+	(void)setsockopt(fd, SOL_TCP, TCP_KEEPCNT, (void*) &keepcnt, sizeof(keepcnt));
+	(void)setsockopt(fd, SOL_TCP, TCP_KEEPINTVL, (void*) &keepintvl, sizeof (keepintvl));
+	(void)setsockopt(fd, SOL_TCP, TCP_KEEPIDLE, (void*) &timeout_sec, sizeof (timeout_sec));
 }
 // -------------------------------------------------------------------------
 void ModbusTCPSession::run()
@@ -161,7 +161,7 @@ ModbusRTU::mbErrCode ModbusTCPSession::receive( const std::unordered_set<ModbusA
 				send(buf);
 				printProcessingTime();
 			}
-			else if( aftersend_msec >= 0 )
+			else if( aftersend_msec > 0 )
 				msleep(aftersend_msec);
 
 			return res;
@@ -174,9 +174,6 @@ ModbusRTU::mbErrCode ModbusTCPSession::receive( const std::unordered_set<ModbusA
 			if( msec == 0 )
 				return erTimeOut;
 		}
-
-		if( res != erNoError )
-			return res;
 
 		if( cancelled )
 			return erSessionClosed;
@@ -235,6 +232,15 @@ mbErrCode ModbusTCPSession::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAP
 	// check header
 	if( mhead.pID != 0 )
 		return erUnExpectedPacketType; // erTimeOut;
+
+	if( mhead.len > ModbusRTU::MAXLENPACKET )
+	{
+		if( dlog->is_info() )
+			dlog->info() << "(ModbusTCPServer::tcp_processing): len(" << (int)mhead.len
+						 << ") < MAXLENPACKET(" << ModbusRTU::MAXLENPACKET << ")" << endl;
+
+		return erInvalidFormat;
+	}
 
 	len = ModbusTCPCore::readNextData(&tcp, qrecv, mhead.len);
 

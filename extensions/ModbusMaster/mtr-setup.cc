@@ -102,8 +102,12 @@ int main( int argc, char** argv )
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hvw:r:x:d:s:t:l:n:yb:e:x:z:", longopts, &optindex)) != -1 )
+		while(1)
 		{
+			opt = getopt_long(argc, argv, "hvw:r:x:d:s:t:l:n:yb:e:x:z:", longopts, &optindex);
+			if( opt == -1 )
+				break;
+
 			switch (opt)
 			{
 				case 'h':

@@ -366,6 +366,12 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned 
 	CosNaming::BindingIterator_var bi;
 	ctx->list(how_many, bl, bi);
 
+	// хитрая проверка на null приобращении к bl
+	// coverity говорит потенциально это возможно
+	// т.к. там возвращается указатель, который по умолчанию null
+	if( !bl.operator->() )
+		return false;
+
 	bool res = true;
 
 	if(how_many >= bl->length())

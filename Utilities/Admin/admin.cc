@@ -138,8 +138,13 @@ int main(int argc, char** argv)
 		int optindex = 0;
 		char opt = 0;
 
-		while( (opt = getopt_long(argc, argv, "hc:beosfur:l:i:x:g:w:y:p:vq", longopts, &optindex)) != -1 )
+		while(1)
 		{
+			opt = getopt_long(argc, argv, "hc:beosfur:l:i:x:g:w:y:p:vq", longopts, &optindex);
+
+			if( opt == -1 )
+				break;
+
 			switch (opt) //разбираем параметры
 			{
 				case 'h':    //--help
@@ -369,6 +374,8 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 	if( verb )
 		cout << "\n||=======********  " << section << "  ********=========||\n" << endl;
 
+	std::ios_base::fmtflags old_flags = cout.flags();
+
 	try
 	{
 		ListObjectName ls;
@@ -474,6 +481,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 						if( !quiet )
 							cout << "неизвестная команда -" << cmd << endl;
 
+						cout.setf(old_flags);
 						return false;
 					}
 				}
@@ -497,9 +505,11 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 	}
 	catch( ORepFailed )
 	{
+		cout.setf(old_flags);
 		return false;
 	}
 
+	cout.setf(old_flags);
 	return true;
 }
 
@@ -521,6 +531,7 @@ static void createSections( const std::shared_ptr<UniSetTypes::Configuration>& r
 // ==============================================================================================
 int omap()
 {
+	std::ios_base::fmtflags old_flags = cout.flags();
 	try
 	{
 		cout.setf(ios::left, ios::adjustfield);
@@ -533,6 +544,7 @@ int omap()
 		if( !quiet )
 			cerr << " configuration init failed: " << ex << endl;
 
+		cout.setf(old_flags);
 		return 1;
 	}
 	catch( const std::exception& ex )
@@ -540,9 +552,11 @@ int omap()
 		if( !quiet )
 			cerr << "std::exception: " << ex.what() << endl;
 
+		cout.setf(old_flags);
 		return 1;
 	}
 
+	cout.setf(old_flags);
 	return 0;
 }
 

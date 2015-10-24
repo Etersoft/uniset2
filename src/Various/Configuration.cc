@@ -718,7 +718,7 @@ namespace UniSetTypes
 		}
 
 		UniXML::iterator it(node);
-		it.goChildren();
+		(void)it.goChildren();
 
 		// определяем порт
 		string defPort(getPort(unixml->getProp(node, "port")));
@@ -927,6 +927,7 @@ namespace UniSetTypes
 	// -------------------------------------------------------------------------
 	string Configuration::getRepSectionName( const string& sec, xmlNode* secnode )
 	{
+		secnode = 0;
 		xmlNode* node = unixml->findNode(unixml->getFirstNode(), sec);
 
 		if( node == NULL )

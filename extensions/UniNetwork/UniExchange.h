@@ -58,9 +58,9 @@ class UniExchange:
 		virtual void askSensors( UniversalIO::UIOCommand cmd );
 		virtual void sigterm( int signo ) override;
 
-		xmlNode* cnode;
-		std::string s_field;
-		std::string s_fvalue;
+		xmlNode* cnode = { 0 };
+		std::string s_field = { "" };
+		std::string s_fvalue = { "" };
 		std::shared_ptr<SMInterface> shm;
 
 		struct SInfo
@@ -118,13 +118,13 @@ class UniExchange:
 		void updateLocalData();
 		void initIterators();
 
-		int polltime;
+		int polltime = { 200 };
 		PassiveTimer ptUpdate;
-		bool init_ok;
+		bool init_ok = { false };
 
 		SList mymap;
-		size_t maxIndex;
-		int smReadyTimeout;
+		size_t maxIndex = { 0 };
+		int smReadyTimeout = { 15000 }; // msec
 
 	private:
 };

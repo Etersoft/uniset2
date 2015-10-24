@@ -64,6 +64,7 @@ struct IOBase
 		si.id = UniSetTypes::DefaultObjectId;
 		si.node = UniSetTypes::DefaultObjectId;
 		cal.minRaw = cal.maxRaw = cal.minCal = cal.maxCal = cal.precision = 0;
+		ti.invert = false;
 	}
 
 	bool check_channel_break( long val );     /*!< проверка обрыва провода */

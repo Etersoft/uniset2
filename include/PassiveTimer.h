@@ -169,11 +169,11 @@ class PassiveSigTimer:
 	protected:
 
 	private:
-		struct itimerval mtimer;
-		pid_t pid;
+		struct itimerval mtimer = { {0, 0}, {0, 0} };
+		pid_t pid = { 0 };
 
 		//        bool terminated;
-		volatile sig_atomic_t terminated;
+		volatile sig_atomic_t terminated = { 0 };
 
 		void init();
 

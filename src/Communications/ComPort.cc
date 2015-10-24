@@ -345,7 +345,7 @@ void ComPort::cleanupChannel()
 	bool old_waiting = waiting;
 	waiting = false;
 	int mask = fcntl(fd, F_GETFL);
-	fcntl(fd, F_SETFL, O_NONBLOCK);
+	(void)fcntl(fd, F_SETFL, O_NONBLOCK);
 
 	try
 	{
@@ -357,7 +357,7 @@ void ComPort::cleanupChannel()
 	}
 	catch(...) {}
 
-	fcntl(fd, F_SETFL, mask);
+	(void)fcntl(fd, F_SETFL, mask);
 	waiting = old_waiting;
 }
 // --------------------------------------------------------------------------------

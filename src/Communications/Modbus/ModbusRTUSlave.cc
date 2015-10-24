@@ -94,7 +94,7 @@ mbErrCode ModbusRTUSlave::receive(const std::unordered_set<ModbusAddr>& vmbaddr,
 				printProcessingTime();
 			}
 
-			if( aftersend_msec >= 0 )
+			if( aftersend_msec > 0 )
 				msleep(aftersend_msec);
 //			usleep(10000);
 			return res;
@@ -105,9 +105,6 @@ mbErrCode ModbusRTUSlave::receive(const std::unordered_set<ModbusAddr>& vmbaddr,
 		// то ждать следующий...
 	}
 	while( res == erBadReplyNodeAddress );
-
-	if( res != erNoError )
-		return res;
 
 	return processing(buf);
 }

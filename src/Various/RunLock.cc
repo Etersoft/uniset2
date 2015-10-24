@@ -39,14 +39,16 @@ RunLock::~RunLock()
 }
 
 // --------------------------------------------------------------------------
-bool RunLock::isLocked(const string& name)
+bool RunLock::isLocked( const string& name )
 {
 	FILE* out = fopen( string(name + ".lock" ).c_str(), "r" );
 
 	if( out )
 	{
 		char ptr[10];
-		fscanf( out, "%9s", ptr );
+		int n = fscanf( out, "%9s", ptr );
+		if( n < 1 )
+			return false;
 
 		DIR* d = opendir( "/proc" );
 		dirent* dir;

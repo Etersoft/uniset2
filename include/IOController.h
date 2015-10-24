@@ -294,6 +294,7 @@ class IOController:
 			{
 				d_si.id = UniSetTypes::DefaultObjectId;
 				d_si.node = UniSetTypes::DefaultObjectId;
+				default_val = 0;
 				value = default_val;
 				real_value = default_val;
 				dbignore = false;

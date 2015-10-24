@@ -68,8 +68,12 @@ int main(int argc, char* argv[])
 
 	memset(chan, -1, sizeof(chan));
 
-	while( (opt = getopt_long(argc, argv, "habvr:w:i:o:s:d:c:p:m:q:x:z:", longopts, &optindex)) != -1 )
+	while(1)
 	{
+		opt = getopt_long(argc, argv, "habvr:w:i:o:s:d:c:p:m:q:x:z:", longopts, &optindex);
+		if( opt == -1 )
+			break;
+
 		switch (opt)
 		{
 			case 'h':

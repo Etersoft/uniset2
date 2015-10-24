@@ -185,6 +185,8 @@ std::ostream& LogAgregator::printTree( std::ostream& os, const std::string& g_ta
 
 	string s_tab(s.str());
 
+	std::ios_base::fmtflags old_flags = os.flags();
+
 	os << std::left << g_tab << getLogName() << sep << endl; // << setw(6) << " " << "[ " << Debug::str(DebugStream::level()) << " ]" << endl;
 	std::list<std::shared_ptr<DebugStream>> lst;
 
@@ -206,6 +208,7 @@ std::ostream& LogAgregator::printTree( std::ostream& os, const std::string& g_ta
 			os << s_tab << setw(tab_width) << std::right << l->getLogName() << std::left << " [ " << Debug::str(l->level()) << " ]" << endl;
 	}
 
+	os.setf(old_flags);
 	return os;
 }
 // -------------------------------------------------------------------------

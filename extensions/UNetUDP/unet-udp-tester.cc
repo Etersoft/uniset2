@@ -73,8 +73,12 @@ int main(int argc, char* argv[])
 	int ncycles = -1;
 	unsigned int nprof = 0;
 
-	while( (opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blvdz:y:", longopts, &optindex)) != -1 )
+	while(1)
 	{
+		opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blvdz:y:", longopts, &optindex);
+		if( opt == -1 )
+			break;
+
 		switch (opt)
 		{
 			case 'h':

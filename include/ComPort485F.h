@@ -46,7 +46,7 @@ class ComPort485F:
 		int gpio_num;
 		bool tmit_ctrl_on;
 		PassiveTimer ptRecv;
-		int tout_msec;
+		int tout_msec = { 2000 };
 };
 // --------------------------------------------------------------------------
 #endif // _COMPORT_E_H_

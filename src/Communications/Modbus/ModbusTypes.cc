@@ -500,7 +500,7 @@ void ReadCoilRetMessage::init( ModbusMessage& m )
 
 	bcnt = m.data[0];
 
-	if( bcnt > MAXLENPACKET )
+	if( bcnt > MAXPDULEN )
 		throw mbException(erPacketTooLong);
 
 	memcpy(&data, &(m.data[1]), bcnt);
@@ -702,7 +702,7 @@ void ReadInputStatusRetMessage::init( ModbusMessage& m )
 
 	bcnt = m.data[0];
 
-	if( bcnt > MAXLENPACKET )
+	if( bcnt > MAXPDULEN )
 		throw mbException(erPacketTooLong);
 
 	memcpy(&data, &(m.data[1]), bcnt);

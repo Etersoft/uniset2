@@ -102,21 +102,21 @@ class ModbusTCPSession:
 		ModbusTCP::MBAPHeader curQueryHeader;
 		std::unordered_set<ModbusRTU::ModbusAddr> vaddr;
 		PassiveTimer ptTimeout;
-		timeout_t timeout;
+		timeout_t timeout = { 0 };
 		ModbusRTU::ModbusMessage buf;
 
-		bool ignoreAddr;
-		std::string peername;
+		bool ignoreAddr = { false };
+		std::string peername = { "" };
 
-		std::string caddr;
+		std::string caddr = { "" };
 
 		FinalSlot slFin;
 
-		std::atomic_bool cancelled;
+		std::atomic_bool cancelled = { false };
 
 		// статистика
 		UniSetTypes::uniset_rwmutex mAsk;
-		unsigned int askCount;
+		unsigned int askCount = { 0 };
 };
 // -------------------------------------------------------------------------
 #endif // ModbusTCPSession_H_
