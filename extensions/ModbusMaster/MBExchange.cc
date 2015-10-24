@@ -690,7 +690,7 @@ bool MBExchange::preInitRead( InitList::iterator& p )
 		return true;
 
 	auto dev = p->dev;
-	int q_count = p->p.rnum;
+	unsigned int q_count = p->p.rnum;
 
 	if( mblog->is_level3()  )
 	{
@@ -730,13 +730,13 @@ bool MBExchange::preInitRead( InitList::iterator& p )
 		{
 			ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr, p->mbreg, q_count);
 			ModbusRTU::ModbusData* dat = new ModbusRTU::ModbusData[q_count];
-			int m = 0;
+			unsigned int m = 0;
 
 			for( unsigned int i = 0; i < ret.bcnt; i++ )
 			{
 				ModbusRTU::DataBits b(ret.data[i]);
 
-				for( int k = 0; k < ModbusRTU::BitsPerByte && m < q_count; k++, m++ )
+				for( unsigned int k = 0; k < ModbusRTU::BitsPerByte && m < q_count; k++, m++ )
 					dat[m] = b[k];
 			}
 
@@ -749,13 +749,13 @@ bool MBExchange::preInitRead( InitList::iterator& p )
 		{
 			ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr, p->mbreg, q_count);
 			ModbusRTU::ModbusData* dat = new ModbusRTU::ModbusData[q_count];
-			int m = 0;
+			unsigned int m = 0;
 
 			for( unsigned int i = 0; i < ret.bcnt; i++ )
 			{
 				ModbusRTU::DataBits b(ret.data[i]);
 
-				for( int k = 0; k < ModbusRTU::BitsPerByte && m < q_count; k++, m++ )
+				for( unsigned int k = 0; k < ModbusRTU::BitsPerByte && m < q_count; k++, m++ )
 					dat[m] = b[k];
 			}
 
@@ -998,9 +998,9 @@ bool MBExchange::pollRTU( std::shared_ptr<RTUDevice>& dev, RegMap::iterator& it 
 		case ModbusRTU::fnReadInputStatus:
 		{
 			ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr, p->mbreg, p->q_count);
-			int m = 0;
+			unsigned int m = 0;
 
-			for( auto i = 0; i < ret.bcnt; i++ )
+			for( uint i = 0; i < ret.bcnt; i++ )
 			{
 				ModbusRTU::DataBits b(ret.data[i]);
 
@@ -1018,7 +1018,7 @@ bool MBExchange::pollRTU( std::shared_ptr<RTUDevice>& dev, RegMap::iterator& it 
 		case ModbusRTU::fnReadCoilStatus:
 		{
 			ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr, p->mbreg, p->q_count);
-			int m = 0;
+			unsigned int m = 0;
 
 			for( auto i = 0; i < ret.bcnt; i++ )
 			{
