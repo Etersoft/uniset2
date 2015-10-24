@@ -2,6 +2,7 @@
 
 autoreconf -fiv
 
+epm assure clang
 export CXX=clang++
 export CC=clang
 
