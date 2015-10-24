@@ -26,7 +26,15 @@ script:
 addons:
   apt:
     packages:
-      - libcomedi-dev libcommoncpp2-dev libmysqlclient-dev libomniorb4-dev libpqxx-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev
+      - libcomedi-dev
+      - libcommoncpp2-dev
+      - libmysqlclient-dev
+      - libomniorb4-dev
+      - libpqxx-dev
+      - librrd-dev
+      - libsigc++-2.0-dev
+      - libsqlite3-dev
+      - python-dev
   coverity_scan:
     project:
       name: "Etersoft/uniset2"
