@@ -64,6 +64,10 @@ BuildRequires(pre): rpm-build-python
 BuildRequires: doxygen
 %endif
 
+%if_enabled tests
+BuildRequires: catch
+%endif
+
 %set_verify_elf_method textrel=strict,rpath=strict,unresolved=strict
 
 %description
