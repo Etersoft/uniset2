@@ -390,23 +390,29 @@ ModbusRTU::mbErrCode MBTCPServer::fileTransfer( ModbusRTU::FileTransferMessage& 
 
 	int fd = open(fname.c_str(), O_RDONLY | O_NONBLOCK );
 
-	if( fd <= 0 )
+	if( fd < 0 )
 	{
 		dwarn << "(fileTransfer): open '" << fname << "' with error: " << strerror(errno) << endl;
 		return ModbusRTU::erOperationFailed;
 	}
 
 	int seek = query.numpacket * ModbusRTU::FileTransferRetMessage::MaxDataLen;
-	(void)lseek(fd, seek, SEEK_SET);
+	int ret = lseek(fd, seek, SEEK_SET);
+	if( ret < 0 )
+	{
+		close(fd);
+		dwarn << "(fileTransfer): open '" << fname << "' with error: " << strerror(errno) << endl;
+		return ModbusRTU::erOperationFailed;
+	}
 
 	ModbusRTU::ModbusByte buf[ModbusRTU::FileTransferRetMessage::MaxDataLen];
 
-	int ret = ::read(fd, &buf, sizeof(buf));
+	ret = ::read(fd, &buf, sizeof(buf));
 
 	if( ret < 0 )
 	{
-		dwarn << "(fileTransfer): read from '" << fname << "' with error: " << strerror(errno) << endl;
 		close(fd);
+		dwarn << "(fileTransfer): read from '" << fname << "' with error: " << strerror(errno) << endl;
 		return ModbusRTU::erOperationFailed;
 	}
 
@@ -420,8 +426,8 @@ ModbusRTU::mbErrCode MBTCPServer::fileTransfer( ModbusRTU::FileTransferMessage& 
 
 	if( fstat(fd, &fs) < 0 )
 	{
-		dwarn << "(fileTransfer): fstat for '" << fname << "' with error: " << strerror(errno) << endl;
 		close(fd);
+		dwarn << "(fileTransfer): fstat for '" << fname << "' with error: " << strerror(errno) << endl;
 		return ModbusRTU::erOperationFailed;
 	}
 

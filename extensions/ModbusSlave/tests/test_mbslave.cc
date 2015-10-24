@@ -2,6 +2,7 @@
 // -----------------------------------------------------------------------------
 #include <time.h>
 #include <limits>
+#include <memory>
 #include "MBSlave.h"
 #include "UniSetTypes.h"
 #include "modbus/ModbusTCPMaster.h"
@@ -14,26 +15,26 @@ static ModbusRTU::ModbusAddr slaveaddr2 = 0x02;
 static int port = 20048; // conf->getArgInt("--mbs-inet-port");
 static string addr("127.0.0.1"); // conf->getArgParam("--mbs-inet-addr");
 static ObjectId slaveID = 6004; // conf->getObjectID( conf->getArgParam("--mbs-name"));
-static ModbusTCPMaster* mb = nullptr;
-static UInterface* ui = nullptr;
+static std::shared_ptr<ModbusTCPMaster> mb;
+static std::shared_ptr<UInterface> ui;
 // -----------------------------------------------------------------------------
 static void InitTest()
 {
 	auto conf = uniset_conf();
 	CHECK( conf != nullptr );
 
-	if( ui == nullptr )
+	if( !ui )
 	{
-		ui = new UInterface();
+		ui = std::make_shared<UInterface>();
 		// UI понадобиться для проверки записанных в SM значений.
 		CHECK( ui->getObjectIndex() != nullptr );
 		CHECK( ui->getConf() == conf );
 		CHECK( ui->waitReady(slaveID, 5000) );
 	}
 
-	if( mb == nullptr )
+	if( !mb )
 	{
-		mb = new ModbusTCPMaster();
+		mb = std::make_shared<ModbusTCPMaster>();
 		ost::InetAddress ia(addr.c_str());
 		mb->setTimeout(2000);
 		REQUIRE_NOTHROW( mb->connect(ia, port) );

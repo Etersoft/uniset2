@@ -445,11 +445,11 @@ class MBSlave:
 
 		std::shared_ptr<ModbusServerSlot> mbslot;
 		std::unordered_set<ModbusRTU::ModbusAddr> vaddr; /*!< адреса данного узла */
-		std::string default_mbaddr;
+		std::string default_mbaddr = { "" };
 
-		xmlNode* cnode;
-		std::string s_field;
-		std::string s_fvalue;
+		xmlNode* cnode = { 0 };
+		std::string s_field = { "" };
+		std::string s_fvalue = { "" };
 		int default_mbfunc = {0}; // функция по умолчанию, для вычисления RegID
 
 		std::shared_ptr<SMInterface> shm;
@@ -490,7 +490,7 @@ class MBSlave:
 		ModbusRTU::mbErrCode real_write_prop( IOProperty* p, ModbusRTU::ModbusData* dat, int& i, int count );
 
 		MBSlave();
-		bool initPause;
+		timeout_t initPause = { 3000 };
 		UniSetTypes::uniset_rwmutex mutex_start;
 		std::shared_ptr< ThreadCreator<MBSlave> > thr;
 
@@ -498,29 +498,29 @@ class MBSlave:
 		std::condition_variable startNotifyEvent;
 
 		PassiveTimer ptHeartBeat;
-		UniSetTypes::ObjectId sidHeartBeat;
-		int maxHeartBeat;
+		UniSetTypes::ObjectId sidHeartBeat = { UniSetTypes::DefaultObjectId };
+		int maxHeartBeat = { 10 };
 		IOController::IOStateList::iterator itHeartBeat;
-		UniSetTypes::ObjectId test_id;
+		UniSetTypes::ObjectId test_id = { UniSetTypes::DefaultObjectId };
 
 		IOController::IOStateList::iterator itAskCount;
-		UniSetTypes::ObjectId askcount_id;
+		UniSetTypes::ObjectId askcount_id = { UniSetTypes::DefaultObjectId };
 
 		IOController::IOStateList::iterator itRespond;
-		UniSetTypes::ObjectId respond_id;
-		bool respond_invert;
+		UniSetTypes::ObjectId respond_id = { UniSetTypes::DefaultObjectId };
+		bool respond_invert = { false };
 
 		PassiveTimer ptTimeout;
-		long askCount;
+		long askCount = { 0 };
 		typedef std::unordered_map<ModbusRTU::mbErrCode, unsigned int> ExchangeErrorMap;
 		ExchangeErrorMap errmap;     /*!< статистика обмена */
 
-		std::atomic_bool activated;
-		std::atomic_bool cancelled;
-		int activateTimeout;
-		bool pingOK;
-		timeout_t wait_msec;
-		bool force;        /*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
+		std::atomic_bool activated = { false };
+		std::atomic_bool cancelled = { false };
+		int activateTimeout = { 20000 }; // msec
+		bool pingOK = { false };
+		timeout_t wait_msec = { 3000 };
+		bool force = { false };        /*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
 
 		bool mbregFromID = {0};
 		bool checkMBFunc = {0};
@@ -530,8 +530,8 @@ class MBSlave:
 
 		typedef std::unordered_map<int, std::string> FileList;
 		FileList flist;
-		std::string prefix;
-		std::string prop_prefix;
+		std::string prefix = { "" };
+		std::string prop_prefix = { "" };
 
 		ModbusRTU::ModbusData buf[ModbusRTU::MAXLENPACKET / 2 + 1]; /*!< буфер для формирования ответов */
 

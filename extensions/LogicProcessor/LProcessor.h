@@ -157,10 +157,10 @@ class LProcessor
 		std::shared_ptr<SchemaXML> sch;
 
 		UInterface ui;
-		int sleepTime;
-		int smReadyTimeout;     /*!< время ожидания готовности SM */
+		int sleepTime = { 200 };
+		int smReadyTimeout = { 30000 } ;     /*!< время ожидания готовности SM, мсек */
 
-		std::string logname;
+		std::string logname = { "" };
 
 		std::atomic_bool canceled = {false};
 

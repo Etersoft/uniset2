@@ -322,11 +322,11 @@ class IOControl:
 
 		bool checkCards( const std::string& func = "" );
 
-		xmlNode* cnode; /*!< xml-узел в настроечном файле */
+		xmlNode* cnode = { 0 }; /*!< xml-узел в настроечном файле */
 
-		int polltime;   /*!< переодичность обновления данных (опроса карт в/в), [мсек] */
+		int polltime = { 150 };   /*!< переодичность обновления данных (опроса карт в/в), [мсек] */
 		CardList cards; /*!< список карт - массив созданных ComediInterface */
-		bool noCards;
+		bool noCards = { false };
 
 		typedef std::vector<IOInfo> IOMap;
 		IOMap iomap;    /*!< список входов/выходов */
@@ -334,16 +334,16 @@ class IOControl:
 		typedef std::deque<IOPriority> PIOMap;
 		PIOMap pmap;    /*!< список приоритетных входов/выходов */
 
-		unsigned int maxItem;    /*!< количество элементов (используется на момент инициализации) */
-		unsigned int maxHalf;
-		int filtersize;
-		float filterT;
+		unsigned int maxItem = { 0 };    /*!< количество элементов (используется на момент инициализации) */
+		unsigned int maxHalf = { 0 };
+		int filtersize = { 0 };
+		float filterT = { 0.0 };
 
 		std::string s_field;
 		std::string s_fvalue;
 
 		std::shared_ptr<SMInterface> shm;
-		UniSetTypes::ObjectId myid;
+		UniSetTypes::ObjectId myid = { UniSetTypes::DefaultObjectId };
 		std::string prefix;
 
 		typedef std::list<IOInfo*> BlinkList;
@@ -355,46 +355,46 @@ class IOControl:
 		// обычное мигание
 		BlinkList lstBlink;
 		PassiveTimer ptBlink;
-		bool blink_state;
+		bool blink_state = { false };
 
 		// мигание с двойной частотой
 		BlinkList lstBlink2;
 		PassiveTimer ptBlink2;
-		bool blink2_state;
+		bool blink2_state = { false };
 
 		// мигание с тройной частотой
 		BlinkList lstBlink3;
 		PassiveTimer ptBlink3;
-		bool blink3_state;
+		bool blink3_state = { false };
 
-		UniSetTypes::ObjectId testLamp_S;
+		UniSetTypes::ObjectId testLamp_s = { UniSetTypes::DefaultObjectId };
 		Trigger trTestLamp;
-		bool isTestLamp;
+		bool isTestLamp = { false };
 		IOController::IOStateList::iterator itTestLamp;
 
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;
-		int maxHeartBeat;
+		int maxHeartBeat = { 10 };
 		IOController::IOStateList::iterator itHeartBeat;
 
-		bool force;            /*!< флаг, означающий, что надо сохранять в SM, даже если значение не менялось */
-		bool force_out;        /*!< флаг, включающий принудительное чтения выходов */
-		timeout_t smReadyTimeout;    /*!< время ожидания готовности SM к работе, мсек */
-		int defCardNum;        /*!< номер карты по умолчанию */
-		int maxCardNum;        /*! максимально разрешённый номер для карты */
+		bool force = { false };            /*!< флаг, означающий, что надо сохранять в SM, даже если значение не менялось */
+		bool force_out = { false };        /*!< флаг, включающий принудительное чтения выходов */
+		timeout_t smReadyTimeout = { 15000 };    /*!< время ожидания готовности SM к работе, мсек */
+		int defCardNum = { -1 };        /*!< номер карты по умолчанию */
+		int maxCardNum = { 10 };        /*! максимально разрешённый номер для карты */
 
 		UniSetTypes::uniset_mutex iopollMutex;
-		std::atomic_bool activated;
-		bool readconf_ok;
+		std::atomic_bool activated = { false };
+		bool readconf_ok = { false };
 		int activateTimeout;
-		UniSetTypes::ObjectId sidTestSMReady;
-		bool term;
+		UniSetTypes::ObjectId sidTestSMReady = { UniSetTypes::DefaultObjectId };
+		bool term = { false };
 
 
-		UniSetTypes::ObjectId testMode_as;
+		UniSetTypes::ObjectId testMode_as = { UniSetTypes::DefaultObjectId };
 		IOController::IOStateList::iterator itTestMode;
-		long testmode;
-		long prev_testmode;
+		long testmode = { false };
+		long prev_testmode = { false };
 
 		std::shared_ptr<LogAgregator> loga;
 		std::shared_ptr<DebugStream> iolog;

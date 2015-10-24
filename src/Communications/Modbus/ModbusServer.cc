@@ -1543,18 +1543,27 @@ ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string& fname,
 	}
 
 	int seek = query.numpacket * ModbusRTU::FileTransferRetMessage::MaxDataLen;
-	(void)lseek(fd, seek, SEEK_SET);
+	int ret = lseek(fd, seek, SEEK_SET);
+
+	if( ret == -1 )
+	{
+		close(fd);
+		if( dlog && dlog->is_warn() )
+			(*dlog)[Debug::WARN] << "(replyFileTransfer): open '" << fname << "' with error: " << strerror(errno) << endl;
+
+		return ModbusRTU::erOperationFailed;
+	}
 
 	ModbusRTU::ModbusByte buf[ModbusRTU::FileTransferRetMessage::MaxDataLen];
 
-	int ret = ::read(fd, &buf, sizeof(buf));
+	ret = ::read(fd, &buf, sizeof(buf));
 
 	if( ret < 0 )
 	{
+		close(fd);
 		if( dlog && dlog->is_warn() )
 			(*dlog)[Debug::WARN] << "(replyFileTransfer): read from '" << fname << "' with error: " << strerror(errno) << endl;
 
-		close(fd);
 		return ModbusRTU::erOperationFailed;
 	}
 
@@ -1562,10 +1571,10 @@ ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string& fname,
 
 	if( fstat(fd, &fs) < 0 )
 	{
+		close(fd);
 		if( dlog && dlog->is_warn() )
 			(*dlog)[Debug::WARN] << "(replyFileTransfer): fstat for '" << fname << "' with error: " << strerror(errno) << endl;
 
-		close(fd);
 		return ModbusRTU::erOperationFailed;
 	}
 

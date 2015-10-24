@@ -17,7 +17,7 @@ MBExchange::MBExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
 						const std::shared_ptr<SharedMemory>& _ic, const std::string& prefix ):
 	UniSetObject_LT(objId),
 	allInitOK(false),
-	initPause(0),
+	initPause(3000),
 	force(false),
 	force_out(false),
 	mbregFromID(false),

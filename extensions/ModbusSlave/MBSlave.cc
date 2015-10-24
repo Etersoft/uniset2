@@ -14,7 +14,7 @@ using namespace ModbusRTU;
 // -----------------------------------------------------------------------------
 MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic, const string& prefix ):
 	UniSetObject_LT(objId),
-	initPause(0),
+	initPause(3000),
 	test_id(DefaultObjectId),
 	askcount_id(DefaultObjectId),
 	respond_id(DefaultObjectId),

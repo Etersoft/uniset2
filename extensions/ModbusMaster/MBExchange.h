@@ -311,41 +311,41 @@ class MBExchange:
 
 		void rtuQueryOptimization( RTUDeviceMap& m );
 
-		xmlNode* cnode;
+		xmlNode* cnode = { 0 };
 		std::string s_field;
 		std::string s_fvalue;
 
 		std::shared_ptr<SMInterface> shm;
 
-		bool initPause;
+		timeout_t initPause = { 3000 };
 		UniSetTypes::uniset_rwmutex mutex_start;
 
-		bool force;        /*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
-		bool force_out;    /*!< флаг означающий, принудительного чтения выходов */
-		bool mbregFromID;
-		int polltime;    /*!< переодичность обновления данных, [мсек] */
+		bool force =  { false };        /*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
+		bool force_out = { false };    /*!< флаг означающий, принудительного чтения выходов */
+		bool mbregFromID = { false };
+		int polltime = { 100 };    /*!< переодичность обновления данных, [мсек] */
 		timeout_t sleepPause_usec;
-		unsigned int maxQueryCount; /*!< максимальное количество регистров для одного запроса */
+		unsigned int maxQueryCount = { ModbusRTU::MAXDATALEN }; /*!< максимальное количество регистров для одного запроса */
 
 		PassiveTimer ptHeartBeat;
-		UniSetTypes::ObjectId sidHeartBeat;
-		int maxHeartBeat;
+		UniSetTypes::ObjectId sidHeartBeat = { UniSetTypes::DefaultObjectId };
+		int maxHeartBeat = { 10 };
 		IOController::IOStateList::iterator itHeartBeat;
-		UniSetTypes::ObjectId test_id;
+		UniSetTypes::ObjectId test_id = { UniSetTypes::DefaultObjectId };
 
-		UniSetTypes::ObjectId sidExchangeMode; /*!< иденидентификатор для датчика режима работы */
+		UniSetTypes::ObjectId sidExchangeMode = { UniSetTypes::DefaultObjectId }; /*!< иденидентификатор для датчика режима работы */
 		IOController::IOStateList::iterator itExchangeMode;
 		long exchangeMode = {emNone}; /*!< режим работы см. ExchangeMode */
 
-		std::atomic_bool activated;
-		int activateTimeout;
-		bool noQueryOptimization;
-		bool no_extimer;
+		std::atomic_bool activated = { false };
+		int activateTimeout = { 20000 }; // msec
+		bool noQueryOptimization = { false };
+		bool no_extimer = { false };
 
 		std::string prefix;
 
-		timeout_t stat_time;      /*!< время сбора статистики обмена */
-		unsigned int poll_count;
+		timeout_t stat_time = { 0 };      /*!< время сбора статистики обмена, 0 - отключена */
+		unsigned int poll_count = { 0 };
 		PassiveTimer ptStatistic; /*!< таймер для сбора статистики обмена */
 
 		std::string prop_prefix;  /*!< префикс для считывания параметров обмена */
@@ -353,10 +353,10 @@ class MBExchange:
 		std::shared_ptr<ModbusClient> mb;
 
 		// определение timeout для соединения
-		timeout_t recv_timeout;
-		timeout_t default_timeout;
+		timeout_t recv_timeout = { 500 }; // msec
+		timeout_t default_timeout = { 5000 }; // msec
 
-		int aftersend_pause;
+		int aftersend_pause = { 0 };
 
 		PassiveTimer ptReopen; /*!< таймер для переоткрытия соединения */
 		Trigger trReopen;
@@ -370,7 +370,7 @@ class MBExchange:
 
 		std::string defaultMBtype;
 		std::string defaultMBaddr;
-		bool defaultMBinitOK; // флаг определяющий нужно ли ждать "первого обмена" или при запуске сохранять в SM значение default.
+		bool defaultMBinitOK = { false }; // флаг определяющий нужно ли ждать "первого обмена" или при запуске сохранять в SM значение default.
 
 		std::shared_ptr<LogAgregator> loga;
 		std::shared_ptr<DebugStream> mblog;

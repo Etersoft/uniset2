@@ -43,51 +43,52 @@ bool RunLock::isLocked( const string& name )
 {
 	FILE* out = fopen( string(name + ".lock" ).c_str(), "r" );
 
-	if( out )
+	if( out == NULL )
+		return false;
+
+	char ptr[10];
+	int n = fscanf( out, "%9s", ptr );
+	if( n < 1 )
 	{
-		char ptr[10];
-		int n = fscanf( out, "%9s", ptr );
-		if( n < 1 )
-			return false;
-
-		DIR* d = opendir( "/proc" );
-		dirent* dir;
-
-		while((dir = readdir(d)))
-		{
-			if( !strcmp( ptr, dir->d_name ) )
-			{
-				// по хорошему здесь надо бы проверять
-				// статус на зомби
-				/*
-				                string path(dir->d_name);
-				                path = "/proc/" + path + "/status";
-				                FILE *out_st = fopen( path.c_str(), "r" );
-				                if(out_st)
-				                {
-				                    char ptr_st[1000];
-				                    fread(ptr_st, sizeof(ptr_st), 1, out_st);
-				                    string str(ptr_st);
-				                    if(str.find(exename) == str.npos)
-				                    {
-				                        fclose(out_st);
-				                        break;
-				                    }
-				                }
-				*/
-				uinfo << "(RunLock): programm " << name << " already run" << endl;
-
-				fclose(out);
-				closedir(d);
-				return true;
-			}
-		}
-
 		fclose(out);
-		closedir(d);
+		return false;
 	}
 
-	return false;
+	DIR* d = opendir( "/proc" );
+	dirent* dir;
+
+	while((dir = readdir(d)))
+	{
+		if( !strcmp( ptr, dir->d_name ) )
+		{
+			// по хорошему здесь надо бы проверять
+			// статус на зомби
+			/*
+								string path(dir->d_name);
+								path = "/proc/" + path + "/status";
+								FILE *out_st = fopen( path.c_str(), "r" );
+								if(out_st)
+								{
+									char ptr_st[1000];
+									fread(ptr_st, sizeof(ptr_st), 1, out_st);
+									string str(ptr_st);
+									if(str.find(exename) == str.npos)
+									{
+										fclose(out_st);
+										break;
+									}
+								}
+				*/
+			uinfo << "(RunLock): programm " << name << " already run" << endl;
+
+			fclose(out);
+			closedir(d);
+			return true;
+		}
+	}
+
+	fclose(out);
+	closedir(d);
 }
 // --------------------------------------------------------------------------
 bool RunLock::lock( const string& name )

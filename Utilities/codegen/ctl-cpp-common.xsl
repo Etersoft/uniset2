@@ -846,6 +846,9 @@ end_private(false)
 	</xsl:if>
 	</xsl:for-each>
 	
+	si.id = UniSetTypes::DefaultObjectId;
+	si.node = conf->getLocalNode();
+	
 	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>", <xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>);
 
 	string s_resetTime("<xsl:call-template name="settings"><xsl:with-param name="varname" select="'resetMsgTime'"/></xsl:call-template>");
@@ -1252,6 +1255,8 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 		maxHeartBeat = conf->getArgPInt("--" + argprefix + "heartbeat-max",it.getProp("heartbeat_max"), 10);
 	}
 
+	si.id = UniSetTypes::DefaultObjectId;
+	si.node = conf->getLocalNode();
 
 	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec","<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>", <xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>);
 

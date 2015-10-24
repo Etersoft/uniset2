@@ -37,7 +37,7 @@ IOControl::IOControl(UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	blink_state(true),
 	blink2_state(true),
 	blink3_state(true),
-	testLamp_S(UniSetTypes::DefaultObjectId),
+	testLamp_s(UniSetTypes::DefaultObjectId),
 	isTestLamp(false),
 	sidHeartBeat(UniSetTypes::DefaultObjectId),
 	force(false),
@@ -173,9 +173,9 @@ IOControl::IOControl(UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 
 	if( !testlamp.empty() )
 	{
-		testLamp_S = conf->getSensorID(testlamp);
+		testLamp_s = conf->getSensorID(testlamp);
 
-		if( testLamp_S == DefaultObjectId )
+		if( testLamp_s == DefaultObjectId )
 		{
 			ostringstream err;
 			err << myname << ": Unkown ID for " << testlamp;
@@ -557,7 +557,7 @@ void IOControl::ioread( IOInfo* it )
 
 			// немного оптимизации
 			// сразу выставляем.сбрасываем флаг тестирования
-			if( it->si.id == testLamp_S )
+			if( it->si.id == testLamp_s )
 				isTestLamp = set;
 		}
 		else if( it->stype == UniversalIO::AO )
@@ -1094,13 +1094,13 @@ void IOControl::check_testmode()
 // -----------------------------------------------------------------------------
 void IOControl::check_testlamp()
 {
-	if( testLamp_S == DefaultObjectId )
+	if( testLamp_s == DefaultObjectId )
 		return;
 
 	try
 	{
 		if( force_out )
-			isTestLamp = shm->localGetValue( itTestLamp, testLamp_S );
+			isTestLamp = shm->localGetValue( itTestLamp, testLamp_s );
 
 		if( !trTestLamp.change(isTestLamp) )
 			return; // если состояние не менялось, то продолжаем работу...
@@ -1348,8 +1348,8 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 
 	try
 	{
-		if( testLamp_S != DefaultObjectId )
-			shm->askSensor(testLamp_S, cmd);
+		if( testLamp_s != DefaultObjectId )
+			shm->askSensor(testLamp_s, cmd);
 	}
 	catch( const Exception& ex)
 	{
@@ -1398,7 +1398,7 @@ void IOControl::sensorInfo( const UniSetTypes::SensorMessage* sm )
 	if( force_out )
 		return;
 
-	if( sm->id == testLamp_S )
+	if( sm->id == testLamp_s )
 	{
 		ioinfo << myname << "(sensorInfo): test_lamp=" << sm->value << endl;
 		isTestLamp = (bool)sm->value;

@@ -59,12 +59,18 @@ int main(int argc, char* argv[] )
 		int tout = 6000;
 		PassiveTimer pt(tout);
 
-		while( !pt.checkTime() && !act->exist() )
+		while( !pt.checkTime() && !act->exist() && !mbs->exist() )
 			msleep(100);
 
 		if( !act->exist() )
 		{
 			cerr << "(tests_with_sm): SharedMemory not exist! (timeout=" << tout << ")" << endl;
+			return 1;
+		}
+
+		if( !mbs->exist() )
+		{
+			cerr << "(tests_with_sm): ModbusSlave not exist! (timeout=" << tout << ")" << endl;
 			return 1;
 		}
 
