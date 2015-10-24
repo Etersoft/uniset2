@@ -2,6 +2,6 @@
 
 autoreconf -fiv
 
-export CXXFLAGS='-pipe -O2 -pedantic -Wall -std=c++11'
+export CXXFLAGS='-pipe -O2 -pedantic -Wall'
 
 ./configure --enable-maintainer-mode --prefix=/usr $*

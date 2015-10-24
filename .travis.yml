@@ -18,6 +18,10 @@ env:
    - secure: "KrqAnUjd5+AjMOGnWvtyt0BF0BIkJMwJ0i/4X+VdI3sWYDy4rKZETh4uZLfgQmxBFHbQqCGLSdhM+Mbjt2LF/F5L1GqJELjXMYPxfiaXy2o1KJPZGYAn8Lm/FeTh2GPBkvHAOYrNpY758zKibZeTuIrr7fTiei8iRxELdtXRx/zNKyF3AacuqULrlziaQaUjJWaamwtbLuXWxJ2SsKq0cWNVwhp/SYLBvn4oZ5d6hWZWHav4mGo793nANKN4b6/0iLxOZVxBwdxE8o4bAgqs8Q+mTAeqJ19STCgq9unIMU8QvE5xu/PlR3Z1qJJRBTl3l8eiitW5y92DoJHj6AR3vit7YTTaXSD570CW+p5ZV9e+u/5s3nAZa5S1Qyk4mlEzDxDYv/3HoItC4Llqz3LqBhMHRf0i6ELBzOmsHRoWrG8ANSu5QhilepNbi73NQgp9mOoV7WtlfN/q1Vn3RCCWOb4ZIXEQPhmI9yLbDHOigzKvr2Oe/WSN5aitFBb49alaWzLsObuSVsPOnKfCBKQqqmai7O8asCIWA+FhSeKev7LKgKicK+dGF/Rwdp309MPghBXCiN5uH1AN4D350hIyvOHhC2ZrWgHqXPOjaRwo+J26oX9SFahOopZ/dfLxGyf1R3uX2Ao2AIm2gN0VSTuh41obocVE1pV8SOgF0olzRU8="
 
 before_install:
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  - sudo apt-get -qq update
+  - sudo apt-get -qq install g++-4.8
+install:
   - sudo apt-get install libcomedi-dev libcommoncpp2-dev libmysqlclient-dev libomniorb4-dev omniidl libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev
 
 before_script:
