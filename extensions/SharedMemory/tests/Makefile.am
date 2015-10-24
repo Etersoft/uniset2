@@ -2,7 +2,7 @@ if HAVE_TESTS
 
 noinst_PROGRAMS = tests
 
-tests_SOURCES   = tests.cc NullSM.cc TestObject_SK.cc TestObject.cc test_sm.cc
+tests_SOURCES   = NullSM.cc TestObject_SK.cc TestObject.cc tests.cc test_sm.cc
 tests_LDADD	 = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 	$(SIGC_LIBS) $(COMCPP_LIBS)
