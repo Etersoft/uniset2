@@ -278,9 +278,9 @@ AM_CONDITIONAL(HAVE_TESTS, test ${buildtests} = true)
 CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Wctor-dtor-privacy -Woverloaded-virtual"
 
 # export
-LDFLAGS="$LDFLAGS ${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS}"
+LDFLAGS="$LDFLAGS ${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS} $(COMCPP_LIBS)"
 # all developer liked options add to autogen.sh, please
-CXXFLAGS="$CXXFLAGS -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} -I\$(top_builddir)/include $CXX_EXTRA_FLAGS"
+CXXFLAGS="$CXXFLAGS -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} $(COMCPP_CFLAGS) -I\$(top_builddir)/include $CXX_EXTRA_FLAGS"
 
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)
