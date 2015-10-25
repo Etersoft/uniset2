@@ -31,6 +31,9 @@ Source: %name-%version.tar
 # optimized out: fontconfig gcc-c++ libcloog-isl4 libstdc++-devel libwayland-client libwayland-server libxml2-devel pkg-config python-base python-devel python-module-omniidl python-modules
 BuildRequires: libcommoncpp2-devel libomniORB-devel libsigc++2-devel
 
+# for uniset2-codegen
+BuildPreReq: xsltproc
+
 # due -std=c++11 using
 BuildPreReq: gcc5 >= 4.8
 
