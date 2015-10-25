@@ -96,4 +96,22 @@ TEST_CASE("HourGlass", "[HourGlass]" )
 		REQUIRE( hg.amount() == 100 );
 		CHECK( hg.check() );
 	}
+
+	SECTION( "Check delay" )
+	{
+		// выставляем часы на 100.. а check вызываем через 130..
+		// должно корректно отработать и вернуть true..
+		HourGlass hg;
+		hg.run(100);
+		msleep(130);
+		CHECK( hg.check() );
+		REQUIRE( hg.remain() == 0 );
+		REQUIRE( hg.amount() == 100 );
+		CHECK_FALSE( hg.rotate(false) );
+		CHECK_FALSE( hg.check() );
+		msleep(130);
+		REQUIRE( hg.remain() == 100 ); // песок весь просыпался обратно
+		REQUIRE( hg.amount() == 0 );
+		REQUIRE( hg.interval() == 100 );
+	}
 }
