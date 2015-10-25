@@ -157,8 +157,8 @@ class LProcessor
 		std::shared_ptr<SchemaXML> sch;
 
 		UInterface ui;
-		int sleepTime = { 200 };
-		int smReadyTimeout = { 30000 } ;     /*!< время ожидания готовности SM, мсек */
+		timeout_t sleepTime = { 200 };
+		timeout_t smReadyTimeout = { 30000 } ;     /*!< время ожидания готовности SM, мсек */
 
 		std::string logname = { "" };
 
