@@ -139,12 +139,6 @@ TEST_CASE("Logic processor: elements", "[LogicProcessor][elements]")
 		e.setDelay(0);
 		e.setIn(1, true);
 		CHECK( e.getOut() );
-
-		// delay < 0 === 0
-		e.setIn(1, false);
-		e.setDelay(-10);
-		e.setIn(1, true);
-		CHECK( e.getOut() );
 	}
 }
 // -----------------------------------------------------------------------------

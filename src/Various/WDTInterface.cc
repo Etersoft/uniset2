@@ -31,7 +31,14 @@ bool WDTInterface::ping()
 		return false;
 	}
 
-	write(fd, (void*)CMD_PING, sizeof(CMD_PING));
+	int ret = write(fd, (void*)CMD_PING, sizeof(CMD_PING));
+	if( ret == -1 )
+	{
+		cerr << ": Unable to open device " << dev << " with err: " << strerror(errno) << endl;
+		close(fd);
+		return false;
+	}
+
 	close(fd);
 	return true;
 }
@@ -46,7 +53,14 @@ bool WDTInterface::stop()
 		return false;
 	}
 
-	write(fd, (void*)CMD_STOP, sizeof(CMD_STOP));
+	int ret = write(fd, (void*)CMD_STOP, sizeof(CMD_STOP));
+	if( ret == -1 )
+	{
+		cerr << ": Unable to open device " << dev << " with err: " << strerror(errno) << endl;
+		close(fd);
+		return false;
+	}
+
 	close(fd);
 	return true;
 }

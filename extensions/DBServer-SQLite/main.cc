@@ -6,11 +6,6 @@
 using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
-static void short_usage()
-{
-	cout << "Usage: uniset-mysql-dbserver [--name ObjectId] [--confile configure.xml]\n";
-}
-// --------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
 	//	std::ios::sync_with_stdio(false);

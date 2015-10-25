@@ -550,13 +550,13 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SM
 	b->breaklim = initIntProp(it, "breaklim", prefix, init_prefix_only);
 	b->rawdata  = initIntProp(it, "rawdata", prefix, init_prefix_only);
 
-	long d_msec = initIntProp(it, "debouncedelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
+	timeout_t d_msec = initIntProp(it, "debouncedelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
 	b->ptDebounce.setTiming(d_msec);
 
-	long d_on_msec = initIntProp(it, "ondelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
+	timeout_t d_on_msec = initIntProp(it, "ondelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
 	b->ptOnDelay.setTiming(d_on_msec);
 
-	long d_off_msec = initIntProp(it, "offdelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
+	timeout_t d_off_msec = initIntProp(it, "offdelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
 	b->ptOffDelay.setTiming(d_off_msec);
 
 

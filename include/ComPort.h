@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <string>
+#include <cc++/thread.h> // for use timeout_t
 // --------------------------------------------------------------------------
 class ComPort
 {
@@ -88,8 +89,8 @@ class ComPort
 		void setCharacterSize(CharacterSize);
 		void setStopBits(StopBits sBit);
 
-		virtual void setTimeout(int msec);
-		inline int getTimeout()
+		virtual void setTimeout( timeout_t msec );
+		inline timeout_t getTimeout()
 		{
 			return uTimeout / 1000;    // msec
 		}
@@ -99,8 +100,8 @@ class ComPort
 		virtual unsigned char receiveByte();
 		virtual void sendByte(unsigned char x);
 
-		virtual int receiveBlock(unsigned char* msg, int len);
-		virtual int sendBlock(unsigned char* msg, int len);
+		virtual size_t receiveBlock(unsigned char* msg, size_t len);
+		virtual size_t sendBlock(unsigned char* msg, size_t len);
 
 		void setBlocking(bool blocking);
 
@@ -115,7 +116,7 @@ class ComPort
 		int curSym = { 0 };
 		int bufLength = { 0 };
 		int fd = { -1 };
-		int uTimeout = { 0 };
+		timeout_t uTimeout = { 0 };
 		bool waiting = { false };
 		Speed speed = ComSpeed38400;
 		std::string dev = { "" };

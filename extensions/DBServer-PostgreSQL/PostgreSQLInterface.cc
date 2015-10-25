@@ -207,7 +207,7 @@ PostgreSQLResult::PostgreSQLResult( const pqxx::result& res )
 	{
 		COL col;
 
-		for( int i = 0; i < c.size(); i++ )
+		for( size_t i = 0; i < c.size(); i++ )
 			col.push_back( c[i].as<string>() );
 
 		row.push_back(col);

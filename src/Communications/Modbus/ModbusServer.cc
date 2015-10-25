@@ -751,7 +751,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		setChannelTimeout(10); // 10 msec
 
 		// Получаем остальную часть сообщения
-		int rlen = getNextData((unsigned char*)(rbuf.data), rbuf.len);
+		size_t rlen = getNextData((unsigned char*)(rbuf.data), rbuf.len);
 
 		if( rlen < rbuf.len )
 		{

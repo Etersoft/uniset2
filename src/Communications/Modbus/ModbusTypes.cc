@@ -2521,7 +2521,7 @@ void MEIMessageRetRDI::init( ModbusMessage& m )
 
 	bcnt = 0;
 	dlist.clear();
-	int i = 6;
+	size_t i = 6;
 
 	if( objNum > 0 )
 	{

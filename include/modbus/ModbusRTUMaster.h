@@ -46,7 +46,7 @@ class ModbusRTUMaster:
 		    \param len     - size of buf
 		    \return real data lenght ( must be <= len )
 		*/
-		virtual int getNextData( unsigned char* buf, int len ) override;
+		virtual size_t getNextData( unsigned char* buf, int len ) override;
 
 		/*! set timeout for send/receive data */
 		virtual void setChannelTimeout( timeout_t msec ) override;

@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2015-10-14+03:00
+// generate timestamp: 2015-10-25+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -67,7 +67,6 @@ static const std::string init3_str( const std::string& s1, const std::string& s2
 // -----------------------------------------------------------------------------
 UObject_SK::UObject_SK( ObjectId id, xmlNode* cnode, const std::string& _argprefix ):
 UniSetObject(id),
-argprefix( (_argprefix.empty() ? myname+"-" : _argprefix) ),
 // Инициализация идентификаторов (имена берутся из конф. файла)
 
 // Используемые идентификаторы сообщений (имена берутся из конф. файла)
@@ -76,6 +75,7 @@ argprefix( (_argprefix.empty() ? myname+"-" : _argprefix) ),
 
 sleep_msec(150),
 active(true),
+argprefix( (_argprefix.empty() ? myname+"-" : _argprefix) ),
 
 idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
@@ -154,6 +154,9 @@ end_private(false)
 
 	// Инициализация значений
 	
+	
+	si.id = UniSetTypes::DefaultObjectId;
+	si.node = conf->getLocalNode();
 	
 	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec","150", 150);
 

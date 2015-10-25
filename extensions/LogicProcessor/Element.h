@@ -124,7 +124,7 @@ class TOR:
 {
 
 	public:
-		TOR( ElementID id, int numbers = 0, bool st = false );
+		TOR( ElementID id, unsigned int numbers = 0, bool st = false );
 		virtual ~TOR();
 
 		virtual void setIn( int num, bool state ) override;

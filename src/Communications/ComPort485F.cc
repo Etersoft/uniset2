@@ -80,7 +80,7 @@ ComPort485F::ComPort485F( const string& dev, int gpio_num, bool tmit_ctrl ):
 	}
 }
 // --------------------------------------------------------------------------------
-void ComPort485F::setTimeout( int msec )
+void ComPort485F::setTimeout( timeout_t msec )
 {
 	tout_msec = msec;
 	ComPort::setTimeout(msec);
@@ -152,7 +152,7 @@ unsigned char ComPort485F::m_receiveByte( bool wait )
 	return x;
 }
 // --------------------------------------------------------------------------------
-int ComPort485F::sendBlock( unsigned char* msg, int len )
+size_t ComPort485F::sendBlock(unsigned char* msg, size_t len )
 {
 	if( tmit_ctrl_on )
 	{
@@ -160,7 +160,7 @@ int ComPort485F::sendBlock( unsigned char* msg, int len )
 		gpio_low_set_value(gpio_num, 1);
 	}
 
-	int r = 0;
+	size_t r = 0;
 
 	try
 	{

@@ -11,7 +11,7 @@ class TDelay:
 {
 
 	public:
-		TDelay( Element::ElementID id, int delayMS = 0, int inCount = 0 );
+		TDelay( Element::ElementID id, timeout_t delayMS = 0, unsigned int inCount = 0 );
 		virtual ~TDelay();
 
 
@@ -23,8 +23,8 @@ class TDelay:
 			return "Delay";
 		}
 
-		void setDelay( int timeMS );
-		inline int getDelay()
+		void setDelay( timeout_t timeMS );
+		inline timeout_t getDelay()
 		{
 			return delay;
 		}
@@ -34,7 +34,7 @@ class TDelay:
 
 		bool myout;
 		PassiveTimer pt;
-		int delay;
+		timeout_t delay;
 
 	private:
 };

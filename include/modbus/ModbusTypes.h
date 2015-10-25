@@ -175,7 +175,7 @@ namespace ModbusRTU
 		ModbusByte data[MAXLENPACKET + szCRC];   /*!< данные */
 
 		// Это поле вспомогательное и игнорируется при пересылке
-		int len;    /*!< фактическая длина */
+		size_t len;    /*!< фактическая длина */
 	} __attribute__((packed));
 
 	std::ostream& operator<<(std::ostream& os, ModbusMessage& m );

@@ -89,6 +89,7 @@ bool RunLock::isLocked( const string& name )
 
 	fclose(out);
 	closedir(d);
+	return false;
 }
 // --------------------------------------------------------------------------
 bool RunLock::lock( const string& name )

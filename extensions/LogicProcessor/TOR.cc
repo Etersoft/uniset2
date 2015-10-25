@@ -6,7 +6,7 @@
 using namespace std;
 using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
-TOR::TOR(ElementID id, int num, bool st):
+TOR::TOR(ElementID id, unsigned int num, bool st):
 	Element(id),
 	myout(false)
 {

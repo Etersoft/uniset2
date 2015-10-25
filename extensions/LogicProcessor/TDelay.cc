@@ -5,7 +5,7 @@
 using namespace std;
 using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
-TDelay::TDelay( Element::ElementID id, int delayMS, int inCount):
+TDelay::TDelay( Element::ElementID id, timeout_t delayMS, unsigned int inCount):
 	Element(id),
 	myout(false),
 	delay(delayMS)
@@ -78,7 +78,7 @@ bool TDelay::getOut()
 	return myout;
 }
 // -------------------------------------------------------------------------
-void TDelay::setDelay( int timeMS )
+void TDelay::setDelay( timeout_t timeMS )
 {
 	delay = timeMS;
 }

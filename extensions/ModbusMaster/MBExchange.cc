@@ -1052,8 +1052,8 @@ bool MBExchange::pollRTU( std::shared_ptr<RTUDevice>& dev, RegMap::iterator& it 
 				return true;
 			}
 
-			//            cerr << "**** mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
-			ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr, p->mbreg, p->mbval);
+			// игнорируем return т.к. в случае ошибки будет исключение..
+			(void)mb->write06(dev->mbaddr, p->mbreg, p->mbval);
 		}
 		break;
 
@@ -1081,7 +1081,9 @@ bool MBExchange::pollRTU( std::shared_ptr<RTUDevice>& dev, RegMap::iterator& it 
 				msg.addData(it->second->mbval);
 
 			it--;
-			ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
+
+			// игнорируем return т.к. в случае ошибки будет исключение..
+			(void)mb->write10(msg);
 		}
 		break;
 
@@ -1101,7 +1103,8 @@ bool MBExchange::pollRTU( std::shared_ptr<RTUDevice>& dev, RegMap::iterator& it 
 				return true;
 			}
 
-			ModbusRTU::ForceSingleCoilRetMessage ret = mb->write05(dev->mbaddr, p->mbreg, p->mbval);
+			// игнорируем return т.к. в случае ошибки будет исключение..
+			(void)mb->write05(dev->mbaddr, p->mbreg, p->mbval);
 		}
 		break;
 
@@ -1120,7 +1123,8 @@ bool MBExchange::pollRTU( std::shared_ptr<RTUDevice>& dev, RegMap::iterator& it 
 				msg.addBit( (it->second->mbval ? true : false) );
 
 			it--;
-			ModbusRTU::ForceCoilsRetMessage ret = mb->write0F(msg);
+			// игнорируем return т.к. в случае ошибки будет исключение..
+			(void)mb->write0F(msg);
 		}
 		break;
 

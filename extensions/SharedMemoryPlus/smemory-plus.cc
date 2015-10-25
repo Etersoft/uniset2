@@ -28,7 +28,6 @@ using namespace UniSetExtensions;
 const unsigned int MaxAddNum = 10;
 // --------------------------------------------------------------------------
 static void help_print( int argc, const char* argv[] );
-static std::shared_ptr<LogServer> run_logserver( const std::string& cnamem, std::shared_ptr<LogAgregator>& log );
 #ifdef UNISET_ENABLE_IO
 std::list< ThreadCreator<IOControl>* > lst_iothr;
 #endif
@@ -293,51 +292,5 @@ void help_print( int argc, const char* argv[] )
 	cout << endl << "###### Common options ######" << endl;
 	cout << "--confile            - Use confile. Default: configure.xml" << endl;
 	cout << "--logfile            - Use logfile. Default: smemory-plus.log" << endl;
-}
-// -----------------------------------------------------------------------------
-std::shared_ptr<LogServer> run_logserver( const std::string& cname, std::shared_ptr<LogAgregator>& log )
-{
-	auto conf = uniset_conf();
-	auto xml = conf->getConfXML();
-	xmlNode* cnode = conf->findNode(xml->getFirstNode(), "LogServer", cname);
-
-	if( cnode == 0 )
-	{
-		cerr << "(init_ulogserver): Not found xmlnode for '" << cname << "'" << endl;
-		return 0;
-
-	}
-
-	UniXML::iterator it(cnode);
-
-	auto ls = make_shared<LogServer>( log );
-
-	timeout_t sessTimeout = conf->getArgPInt("--" + cname + "-session-timeout", it.getProp("sessTimeout"), 3600000);
-	timeout_t cmdTimeout = conf->getArgPInt("--" + cname + "-cmd-timeout", it.getProp("cmdTimeout"), 2000);
-	timeout_t outTimeout = conf->getArgPInt("--" + cname + "-out-timeout", it.getProp("outTimeout"), 2000);
-
-	ls->setSessionTimeout(sessTimeout);
-	ls->setCmdTimeout(cmdTimeout);
-	ls->setOutTimeout(outTimeout);
-
-	std::string host = conf->getArgParam("--" + cname + "-host", it.getProp("host"));
-
-	if( host.empty() )
-	{
-		cerr << "(init_ulogserver): " << cname << ": unknown host.." << endl;
-		return nullptr;
-	}
-
-	ost::tpport_t port = conf->getArgPInt("--" + cname + "-port", it.getProp("port"), 0);
-
-	if( port == 0 )
-	{
-		cerr << "(init_ulogserver): " << cname << ": unknown port.." << endl;
-		return nullptr;
-	}
-
-	cout << "logserver: " << host << ":" << port << endl;
-	ls->run(host, port, true);
-	return ls;
 }
 // -----------------------------------------------------------------------------

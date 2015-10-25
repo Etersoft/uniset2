@@ -61,7 +61,7 @@ namespace UniSetUDP
 	{
 		UDPPacket(): len(0) {}
 
-		int len;
+		size_t len;
 		unsigned char data[ sizeof(UDPHeader) + MaxDCount * sizeof(long) + MaxDDataCount + MaxACount * sizeof(UDPAData) ];
 	} __attribute__((packed));
 

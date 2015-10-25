@@ -303,7 +303,9 @@ void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const char* n
 		{
 			case ModbusRTU::fnWriteOutputSingleRegister:
 			{
-				ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(mbaddr, mbreg, val);
+				// ModbusRTU::WriteSingleOutputRetMessage ret =
+				// игнорируем return т.к. если будет ошибка, то будет исключение
+				(void)mb->write06(mbaddr, mbreg, val);
 			}
 			break;
 
@@ -311,13 +313,17 @@ void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const char* n
 			{
 				ModbusRTU::WriteOutputMessage msg(mbaddr, mbreg);
 				msg.addData(val);
-				ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
+				//ModbusRTU::WriteOutputRetMessage ret =
+				// игнорируем return т.к. если будет ошибка, то будет исключение
+				(void)mb->write10(msg);
 			}
 			break;
 
 			case ModbusRTU::fnForceSingleCoil:
 			{
-				ModbusRTU::ForceSingleCoilRetMessage ret = mb->write05(mbaddr, mbreg, val);
+				// ModbusRTU::ForceSingleCoilRetMessage ret =
+				// игнорируем return т.к. если будет ошибка, то будет исключение
+				(void)mb->write05(mbaddr, mbreg, val);
 			}
 			break;
 
@@ -325,7 +331,9 @@ void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const char* n
 			{
 				ModbusRTU::ForceCoilsMessage msg(mbaddr, mbreg);
 				msg.addBit( (val ? true : false) );
-				ModbusRTU::ForceCoilsRetMessage ret = mb->write0F(msg);
+				// ModbusRTU::ForceCoilsRetMessage ret =
+				// игнорируем return т.к. если будет ошибка, то будет исключение
+				(void)mb->write0F(msg);
 			}
 			break;
 
@@ -338,7 +346,7 @@ void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const char* n
 			break;
 		}
 	}
-	catch( ModbusRTU::mbException& ex )
+	catch( const ModbusRTU::mbException& ex )
 	{
 		if( ex.err != ModbusRTU::erTimeOut )
 			throw UTimeOut();
@@ -347,9 +355,9 @@ void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const char* n
 		err << ex;
 		throw UException(err.str());
 	}
-	catch(...)
+	catch( const std::exception& ex )
 	{
-		throw UException("(mbwrite): catch...");
+		throw UException("(mbwrite): catch " + std::string(ex.what()) );
 	}
 }
 //---------------------------------------------------------------------------

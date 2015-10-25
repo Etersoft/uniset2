@@ -49,8 +49,10 @@ _pyUExceptions_la_LIBADD 	= $(UNISET_LIBS) $(UNISET_EXT_LIBS) $(PYTHON_LIBS)
 UExceptions_wrap.cxx: UExceptions.i UExceptions.h
 	swig -python -c++ -classic UExceptions.i
 
-clean-local:
-	rm -rf *.py*
+# Специальное правило для удаления сгенерированного кода
+# для дальнейшей перегенерации
+clean-gen:
+	rm -rf *.py* *_wrap.cxx
 
 include $(top_builddir)/include.mk
 

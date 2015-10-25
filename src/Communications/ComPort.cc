@@ -271,18 +271,18 @@ void ComPort::sendByte(unsigned char x)
 }
 // --------------------------------------------------------------------------------
 // Lav: убрать, переделать в receiveBlock
-void ComPort::setTimeout( int msec )
+void ComPort::setTimeout( timeout_t msec )
 {
 	uTimeout = msec * 1000;
 }
 // --------------------------------------------------------------------------------
 // Lav: ситуация, когда отправлено меньше запрошенного, не типична и должна
 // генерировать исключение
-int ComPort::sendBlock(unsigned char* msg, int len)
+size_t ComPort::sendBlock(unsigned char* msg, size_t len)
 {
 	//    fcntl(fd,F_SETFL,0);
 
-	int sndLen =::write(fd, msg, len);
+	ssize_t sndLen =::write(fd, msg, len);
 
 	//    fcntl(fd,F_SETFL,O_NONBLOCK);
 
@@ -298,9 +298,9 @@ int ComPort::sendBlock(unsigned char* msg, int len)
 // --------------------------------------------------------------------------------
 // Lav: ожидание задавать третим необязательным параметром
 // Lav: Никогда не возвращаТЬ меньше запрошенного (кроме 0)
-int ComPort::receiveBlock(unsigned char* msg, int len)
+size_t ComPort::receiveBlock(unsigned char* msg, size_t len)
 {
-	int k;
+	size_t k = 0;
 
 	if(!len)
 		return 0;

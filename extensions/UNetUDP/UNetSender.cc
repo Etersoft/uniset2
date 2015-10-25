@@ -349,7 +349,7 @@ bool UNetSender::initItem( UniXML::iterator& it )
 
 	if( p.iotype == UniversalIO::DI || p.iotype == UniversalIO::DO )
 	{
-		int dnum = packs_dnum[priority];
+		size_t dnum = packs_dnum[priority];
 
 		if( pk.size() <= dnum )
 			pk.resize(dnum + 1);
@@ -386,7 +386,7 @@ bool UNetSender::initItem( UniXML::iterator& it )
 	}
 	else if( p.iotype == UniversalIO::AI || p.iotype == UniversalIO::AO )
 	{
-		int anum = packs_anum[priority];
+		size_t anum = packs_anum[priority];
 
 		if( pk.size() <= anum )
 			pk.resize(anum + 1);
@@ -452,7 +452,7 @@ void UNetSender::askSensors( UniversalIO::UIOCommand cmd )
 		shm->askSensor(it.id, cmd);
 }
 // -----------------------------------------------------------------------------
-int UNetSender::getDataPackCount() const
+size_t UNetSender::getDataPackCount() const
 {
 	return mypacks.size();
 }

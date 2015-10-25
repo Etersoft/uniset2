@@ -108,7 +108,7 @@ int ModbusRTUMaster::getTimeout()
 	return port->getTimeout();
 }
 // -------------------------------------------------------------------------
-int ModbusRTUMaster::getNextData( unsigned char* buf, int len )
+size_t ModbusRTUMaster::getNextData( unsigned char* buf, int len )
 {
 	//    if( !port ) return 0;
 	return port->receiveBlock(buf, len);

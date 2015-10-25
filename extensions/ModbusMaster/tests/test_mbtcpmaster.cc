@@ -83,20 +83,6 @@ static void InitTest()
 	}
 }
 // -----------------------------------------------------------------------------
-static bool init_iobase( IOBase* ib, const std::string& sensor )
-{
-	InitTest();
-
-	auto conf = uniset_conf();
-	xmlNode* snode = conf->getXMLObjectNode( conf->getSensorID(sensor) );
-	CHECK( snode != 0 );
-	UniXML::iterator it(snode);
-	smi->initIterator(ib->d_it);
-	smi->initIterator(ib->ioit);
-	smi->initIterator(ib->t_ait);
-	return IOBase::initItem(ib, it, smi, "", false);
-}
-// -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMaster: 0x01 (read coil status)", "[modbus][0x01][mbmaster][mbtcpmaster]")
 {
 	InitTest();
@@ -602,6 +588,21 @@ TEST_CASE("MBTCPMaster: 0x66 (file transfer)", "[modbus][0x66][mbmaster][mbtcpma
 }
 // -----------------------------------------------------------------------------
 #if 0
+// -----------------------------------------------------------------------------
+static bool init_iobase( IOBase* ib, const std::string& sensor )
+{
+	InitTest();
+
+	auto conf = uniset_conf();
+	xmlNode* snode = conf->getXMLObjectNode( conf->getSensorID(sensor) );
+	CHECK( snode != 0 );
+	UniXML::iterator it(snode);
+	smi->initIterator(ib->d_it);
+	smi->initIterator(ib->ioit);
+	smi->initIterator(ib->t_ait);
+	return IOBase::initItem(ib, it, smi, "", false);
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMaster: 0x10 (F2)", "[modbus][0x10][F2][mbmaster][mbtcpmaster]")
 {
 	InitTest();

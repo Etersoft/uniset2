@@ -33,7 +33,7 @@ ModbusTCPMaster::~ModbusTCPMaster()
 	tcp.reset();
 }
 // -------------------------------------------------------------------------
-int ModbusTCPMaster::getNextData( unsigned char* buf, int len )
+size_t ModbusTCPMaster::getNextData( unsigned char* buf, int len )
 {
 	return ModbusTCPCore::getNextData(tcp.get(), qrecv, buf, len);
 }

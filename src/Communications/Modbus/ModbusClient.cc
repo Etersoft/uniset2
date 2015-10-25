@@ -419,7 +419,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				rbuf.len -= szCRC;
 
-			int rlen = getNextData((unsigned char*)(&(rbuf.data)), rbuf.len);
+			size_t rlen = getNextData((unsigned char*)(&(rbuf.data)), rbuf.len);
 
 			if( rlen < rbuf.len )
 			{
@@ -555,7 +555,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 		setChannelTimeout(10); // 10 msec
 
 		// Получаем остальную часть сообщения
-		int rlen = getNextData((unsigned char*)(rbuf.data), rbuf.len);
+		size_t rlen = getNextData((unsigned char*)(rbuf.data), rbuf.len);
 
 		if( rlen < rbuf.len )
 		{
@@ -992,7 +992,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 
 			if( mPreRDI.objNum > 0 )
 			{
-				int onum = 0;
+				size_t onum = 0;
 
 				while( (rlen+2) < sizeof(rbuf) && onum < mPreRDI.objNum )
 				{

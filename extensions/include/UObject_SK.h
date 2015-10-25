@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2015-10-14+03:00
+// generate timestamp: 2015-10-25+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -191,9 +191,9 @@ class UObject_SK:
 		/*! получить текстовое свойство из конф. файла по привязанной confnode */
 		inline const std::string getProp(const std::string& name) { return UniSetTypes::uniset_conf()->getProp(confnode, name); }
 
-		int smReadyTimeout; 	/*!< время ожидания готовности SM */
+		timeout_t smReadyTimeout; 	/*!< время ожидания готовности SM */
 		std::atomic_bool activated;
-		int activateTimeout;	/*!< время ожидания готовности UniSetObject к работе */
+		timeout_t activateTimeout;	/*!< время ожидания готовности UniSetObject к работе */
 		PassiveTimer ptStartUpTimeout;	/*!< время на блокировку обработки WatchDog, если недавно был StartUp */
 		int askPause; /*!< пауза между неудачными попытками заказать датчики */
 		

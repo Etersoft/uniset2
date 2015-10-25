@@ -115,7 +115,11 @@ void SMonitor::sensorInfo( const SensorMessage* si )
 
 		cmd << " " << si->id << " " << si->value << " " << si->sm_tv_sec << " " << si->sm_tv_usec;
 
-		(void)system(cmd.str().c_str());
+		int ret = system(cmd.str().c_str());
+		int res = WEXITSTATUS(ret);
+		if( res != 0 )
+			cerr << "run script '" <<cmd.str() << "' failed.." << endl;
+
 		//        if( WIFSIGNALED(ret) && (WTERMSIG(ret) == SIGINT || WTERMSIG(ret) == SIGQUIT))
 		//        {
 		//            cout << "finish..." << endl;

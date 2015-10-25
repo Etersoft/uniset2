@@ -170,7 +170,7 @@ class ModbusClient
 		    \param len     - size of buf
 		    \return real data lenght ( must be <= len )
 		*/
-		virtual int getNextData( unsigned char* buf, int len ) = 0;
+		virtual size_t getNextData( unsigned char* buf, int len ) = 0;
 
 		/*! set timeout for send/receive data */
 		virtual void setChannelTimeout( timeout_t msec ) = 0;

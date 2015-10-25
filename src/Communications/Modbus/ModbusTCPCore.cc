@@ -3,7 +3,7 @@
 using namespace std;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
-int ModbusTCPCore::readNextData( ost::TCPStream* tcp,
+size_t ModbusTCPCore::readNextData( ost::TCPStream* tcp,
 								 std::queue<unsigned char>& qrecv, int max )
 {
 	if( !tcp || !tcp->isConnected() )
@@ -25,9 +25,9 @@ int ModbusTCPCore::readNextData( ost::TCPStream* tcp,
 	return i;
 }
 // ------------------------------------------------------------------------
-int ModbusTCPCore::getNextData( ost::TCPStream* tcp,
+size_t ModbusTCPCore::getNextData(ost::TCPStream* tcp,
 								std::queue<unsigned char>& qrecv,
-								unsigned char* buf, int len )
+								unsigned char* buf, size_t len )
 {
 	if( !tcp || !tcp->isConnected() )
 		return 0;
@@ -43,7 +43,7 @@ int ModbusTCPCore::getNextData( ost::TCPStream* tcp,
 			return 0;
 	}
 
-	int i = 0;
+	size_t i = 0;
 
 	for( ; i < len && !qrecv.empty(); i++ )
 	{
@@ -54,14 +54,14 @@ int ModbusTCPCore::getNextData( ost::TCPStream* tcp,
 	return i;
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPCore::sendData( ost::TCPStream* tcp, unsigned char* buf, int len )
+mbErrCode ModbusTCPCore::sendData(ost::TCPStream* tcp, unsigned char* buf, size_t len )
 {
 	if( !tcp || !tcp->isConnected() )
 		return erTimeOut;
 
 	try
 	{
-		for( auto i = 0; i < len; i++ )
+		for( size_t i = 0; i < len; i++ )
 			(*tcp) << buf[i];
 
 		return erNoError;

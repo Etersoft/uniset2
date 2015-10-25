@@ -48,15 +48,15 @@ class UNetSender
 			UItem():
 				iotype(UniversalIO::UnknownIOType),
 				id(UniSetTypes::DefaultObjectId),
-				pack_num(-1),
-				pack_ind(-1),
+				pack_num(0),
+				pack_ind(0),
 				pack_sendfactor(0) {}
 
 			UniversalIO::IOType iotype;
 			UniSetTypes::ObjectId id;
 			IOController::IOStateList::iterator ioit;
-			int pack_num;
-			int pack_ind;
+			size_t pack_num;
+			size_t pack_ind;
 			sendfactor_t pack_sendfactor = { 0 };
 
 			friend std::ostream& operator<<( std::ostream& os, UItem& p );
@@ -64,7 +64,7 @@ class UNetSender
 
 		typedef std::vector<UItem> DMap;
 
-		int getDataPackCount() const;
+		size_t getDataPackCount() const;
 
 		void start();
 		void stop();
@@ -144,8 +144,8 @@ class UNetSender
 		std::string s_host = { "" };
 
 		std::string myname = { "" };
-		int sendpause = { 150 };
-		int packsendpause = { 5 };
+		timeout_t sendpause = { 150 };
+		timeout_t packsendpause = { 5 };
 		std::atomic_bool activated = { false };
 
 		UniSetTypes::uniset_rwmutex pack_mutex;
@@ -153,11 +153,11 @@ class UNetSender
 		typedef std::unordered_map<sendfactor_t, std::vector<UniSetUDP::UDPMessage>> Packs;
 
 		Packs mypacks;
-		std::unordered_map<sendfactor_t, int> packs_anum;
-		std::unordered_map<sendfactor_t, int> packs_dnum;
+		std::unordered_map<sendfactor_t, size_t> packs_anum;
+		std::unordered_map<sendfactor_t, size_t> packs_dnum;
 		DMap dlist;
-		int maxItem = { 0 };
-		unsigned long packetnum = { 1 }; /*!< номер очередного посылаемого пакета */
+		size_t maxItem = { 0 };
+		size_t packetnum = { 1 }; /*!< номер очередного посылаемого пакета */
 		unsigned short lastcrc = { 0 };
 		UniSetUDP::UDPPacket s_msg;
 
