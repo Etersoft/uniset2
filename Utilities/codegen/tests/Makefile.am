@@ -13,10 +13,10 @@ GENERATED=TestGen_SK.h TestGen_SK.cc TestGen-main.cc
 GENERATED2=TestGenAlone_SK.h TestGenAlone_SK.cc TestGenAlone-main.cc
 GENUOBJ=UObject_SK.cc UObject_SK.h
 
-TestGen_SK.cc TestGen_SK.h: ../@PACKAGE@-codegen testgen.src.xml ../*.xsl
+TestGen-main.cc TestGen_SK.cc TestGen_SK.h: ../@PACKAGE@-codegen testgen.src.xml ../*.xsl
 	../@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen --local-include -n TestGen testgen.src.xml
 
-TestGenAlone_SK.cc TestGenAlone_SK.h: ../@PACKAGE@-codegen testgen-alone.src.xml ../*.xsl
+TestGenAlone-main.cc TestGenAlone_SK.cc TestGenAlone_SK.h: ../@PACKAGE@-codegen testgen-alone.src.xml ../*.xsl
 	../@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen --local-include --alone -n TestGenAlone testgen-alone.src.xml
 
 $(GENUOBJ): ../@PACKAGE@-codegen uobject.src.xml ../*.xsl

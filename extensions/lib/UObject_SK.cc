@@ -167,11 +167,13 @@ end_private(false)
 	resetMsgTime = uni_atoi(init3_str(conf->getArgParam("--" + argprefix + "resetMsgTime"),conf->getProp(cnode,"resetMsgTime"),s_resetTime));
 	ptResetMsg.setTiming(resetMsgTime);
 
-	smReadyTimeout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","");
-	if( smReadyTimeout == 0 )
+	int sm_tout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","");
+	if( sm_tout == 0 )
 		smReadyTimeout = 60000;
-	else if( smReadyTimeout < 0 )
+	else if( sm_tout < 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
+	else
+		smReadyTimeout = sm_tout;
 
 	smTestID = conf->getSensorID(init3_str(conf->getArgParam("--" + argprefix + "sm-test-id"),conf->getProp(cnode,"smTestID"),""));
 	

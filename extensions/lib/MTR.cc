@@ -612,21 +612,30 @@ namespace MTR
 	}
 	std::ostream& operator<<(std::ostream& os, MTR::T8& t )
 	{
-		return os << setfill('0') << hex
+		std::ios_base::fmtflags old_flags = os.flags();
+		os << setfill('0') << hex
 			   << setw(2) << t.hour() << ":" << setw(2) << t.min()
 			   << " " << setw(2) << t.day() << "/" << setw(2) << t.mon();
+		os.setf(old_flags);
+		return os;
 	}
 	std::ostream& operator<<(std::ostream& os, MTR::T9& t )
 	{
-		return os << setfill('0') << hex
+		std::ios_base::fmtflags old_flags = os.flags();
+		os << setfill('0') << hex
 			   << setw(2) << t.hour() << ":" << setw(2) << t.min()
 			   << ":" << setw(2) << t.sec() << "." << setw(2) << t.ssec();
+		os.setf(old_flags);
+		return os;
 	}
 	std::ostream& operator<<(std::ostream& os, MTR::T10& t )
 	{
-		return os << setfill('0') << dec
+		std::ios_base::fmtflags old_flags = os.flags();
+		os << setfill('0') << dec
 			   << setw(4) << t.year() << "/" << setw(2) << t.mon()
 			   << "/" << setw(2) << t.day();
+		os.setf(old_flags);
+		return os;
 	}
 	std::ostream& operator<<(std::ostream& os, MTR::T16& t )
 	{
