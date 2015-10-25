@@ -55,7 +55,7 @@ class UniSetManager_LT:
 		/*! функция вызываемая из потока */
 		virtual void callback();
 
-		int sleepTime;
+		timeout_t sleepTime;
 		LT_Object lt;
 	private:
 };

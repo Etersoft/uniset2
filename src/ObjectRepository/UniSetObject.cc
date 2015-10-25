@@ -49,7 +49,7 @@ using namespace UniSetTypes;
 // ------------------------------------------------------------------------------------------
 UniSetObject::UniSetObject():
 	msgpid(0),
-	reg(false),
+	regOK(false),
 	active(0),
 	threadcreate(false),
 	myid(UniSetTypes::DefaultObjectId),
@@ -69,7 +69,7 @@ UniSetObject::UniSetObject():
 // ------------------------------------------------------------------------------------------
 UniSetObject::UniSetObject( ObjectId id ):
 	msgpid(0),
-	reg(false),
+	regOK(false),
 	active(0),
 	threadcreate(true),
 	myid(id),
@@ -102,7 +102,7 @@ UniSetObject::UniSetObject( ObjectId id ):
 
 UniSetObject::UniSetObject( const string& name, const string& section ):
 	msgpid(0),
-	reg(false),
+	regOK(false),
 	active(0),
 	threadcreate(true),
 	myid(UniSetTypes::DefaultObjectId),
@@ -382,7 +382,7 @@ void UniSetObject::registered()
 				    объект станет недоступен другим, а знать об этом не будет!!!
 				*/
 				ucrit << myname << "(registered): replace object (ObjectNameAlready)" << endl;
-				reg = true;
+				regOK = true;
 				unregister();
 			}
 		}
@@ -399,7 +399,7 @@ void UniSetObject::registered()
 		throw ORepFailed(err.c_str());
 	}
 
-	reg = true;
+	regOK = true;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::unregister()
@@ -410,7 +410,7 @@ void UniSetObject::unregister()
 	if( myid == UniSetTypes::DefaultObjectId )
 	{
 		uinfo << myname << "(unregister): myid=DefaultObjectId \n";
-		reg = false;
+		regOK = false;
 		return;
 	}
 
@@ -420,7 +420,7 @@ void UniSetObject::unregister()
 		if( !oref )
 		{
 			uwarn << myname << "(unregister): oref NULL!" << endl;
-			reg = false;
+			regOK = false;
 			return;
 		}
 	}
@@ -437,7 +437,7 @@ void UniSetObject::unregister()
 		uwarn << myname << ": don`t registration in object repository" << endl;
 	}
 
-	reg = false;
+	regOK = false;
 }
 // ------------------------------------------------------------------------------------------
 CORBA::Boolean UniSetObject::exist()

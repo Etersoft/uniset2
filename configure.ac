@@ -274,7 +274,7 @@ AC_SUBST(COV_CFLAGS)
 AM_CONDITIONAL(HAVE_COVERAGE, test ${buildgcov} = true)
 AM_CONDITIONAL(HAVE_TESTS, test ${buildtests} = true)
 
-# -Weffc++
+# -Weffc++ -Wno-unused-variable"
 CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Wctor-dtor-privacy -Woverloaded-virtual -Werror"
 
 # export

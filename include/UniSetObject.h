@@ -181,11 +181,9 @@ class UniSetObject:
 
 		void setID(UniSetTypes::ObjectId id);
 
-
-		void setMaxSizeOfMessageQueue( unsigned int s )
+		void setMaxSizeOfMessageQueue( size_t s )
 		{
-			if( s >= 0 )
-				SizeOfMessageQueue = s;
+			SizeOfMessageQueue = s;
 		}
 
 		inline unsigned int getMaxSizeOfMessageQueue()
@@ -193,10 +191,9 @@ class UniSetObject:
 			return SizeOfMessageQueue;
 		}
 
-		void setMaxCountRemoveOfMessage( unsigned int m )
+		void setMaxCountRemoveOfMessage( size_t m )
 		{
-			if( m >= 0 )
-				MaxCountRemoveOfMessage = m;
+			MaxCountRemoveOfMessage = m;
 		}
 
 		inline unsigned int getMaxCountRemoveOfMessage()
@@ -270,7 +267,7 @@ class UniSetObject:
 		void init_object();
 
 		pid_t msgpid; // pid потока обработки сообщений
-		bool reg;
+		bool regOK = { false };
 		std::atomic_bool active;
 
 		bool threadcreate;
@@ -290,13 +287,13 @@ class UniSetObject:
 		mutable UniSetTypes::uniset_rwmutex refmutex;
 
 		/*! размер очереди сообщений (при превышении происходит очистка) */
-		unsigned int SizeOfMessageQueue;
-		/*! сколько сообщений удалять при очисте*/
-		unsigned int MaxCountRemoveOfMessage;
+		size_t SizeOfMessageQueue;
+		/*! сколько сообщений удалять при очисте */
+		size_t MaxCountRemoveOfMessage;
 
 		// статистическая информация
-		unsigned long stMaxQueueMessages;    /*<! Максимальное число сообщений хранившихся в очереди */
-		unsigned long stCountOfQueueFull;     /*!< количество переполнений очереди сообщений */
+		size_t stMaxQueueMessages;    /*<! Максимальное число сообщений хранившихся в очереди */
+		size_t stCountOfQueueFull;    /*!< количество переполнений очереди сообщений */
 
 		std::atomic_bool a_working;
 		std::mutex    m_working;
