@@ -25,7 +25,7 @@ before_install:
 
 install:
   # have no catch package
-  - sudo apt-get install libcomedi-dev libcommoncpp2-dev libmysqlclient-dev libomniorb4-dev omniidl libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev
+  - sudo apt-get install libcomedi-dev libcommoncpp2-dev libmysqlclient-dev libomniorb4-dev omniidl xsltproc libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev
   - wget http://download.etersoft.ru/pub/people/lav/catch.hpp -O include/catch.hpp
 
 before_script:
