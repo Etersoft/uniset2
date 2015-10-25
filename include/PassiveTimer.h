@@ -99,7 +99,6 @@ class PassiveTimer:
 		PassiveTimer( timeout_t msec ); /*!< установить таймер */
 		virtual ~PassiveTimer();
 
-
 		virtual bool checkTime() const; /*!< проверка наступления заданного времени */
 		virtual timeout_t setTiming( timeout_t msec );     /*!< установить таймер и запустить. timeMS = 0 вызовет немедленное срабатывание */
 		virtual void reset(); /*!< перезапустить таймер */
@@ -113,8 +112,15 @@ class PassiveTimer:
 		virtual void terminate(); /*!< прервать работу таймера */
 
 	protected:
-		timeout_t t_msec = { 0 };  /*!< интервал таймера, в милисекундах */
+		timeout_t t_msec = { 0 };  /*!< интервал таймера, в милисекундах (для "пользователей") */
+
+		// Т.к. НЕ ВЕСЬ КОД переведён на использование std::chrono
+		// везде используется timeout_t (и WaitUpTime)
+		// отделяем внутреннее (теперь уже стандартное >= c++11)
+		// представление для работы со временем (std::chrono)
+		// и тип (t_msec) для "пользователей"
 		std::chrono::high_resolution_clock::time_point t_start;	/*!< время установки таймера (сброса) */
+		std::chrono::milliseconds t_inner_msec;	/*!< время установки таймера, мсек (в единицах std::chrono) */
 
 	private:
 };

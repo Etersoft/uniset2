@@ -50,7 +50,7 @@ TEST_CASE("PassiveTimer", "[PassiveTimer]" )
 	SECTION( "Check working" )
 	{
 		PassiveTimer pt(100);
-		msleep(120); // т.к. точность +-10 мсек.. делаем паузу 60.. а проверяем 50
+		msleep(120); // т.к. точность +-10 мсек.. делаем паузу больше чем задана..
 		REQUIRE( pt.getCurrent() >= 110 );
 		CHECK( pt.checkTime() );
 		INFO("Check reset");

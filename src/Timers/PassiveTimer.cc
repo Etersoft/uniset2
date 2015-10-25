@@ -53,7 +53,7 @@ bool PassiveTimer::checkTime() const
 	if( t_msec == 0 )
 		return true;
 
-	return ( std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - t_start).count() >= t_msec );
+	return ( std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - t_start).count() >= t_inner_msec.count() );
 }
 
 //------------------------------------------------------------------------------
@@ -61,6 +61,12 @@ bool PassiveTimer::checkTime() const
 timeout_t PassiveTimer::setTiming( timeout_t msec )
 {
 	t_msec = msec;
+
+	// не знаю как по другому
+	// приходиться делать это через промежуточную переменную
+	std::chrono::milliseconds ms(msec);
+	t_inner_msec = std::move(ms);
+
 	PassiveTimer::reset();
 	return getInterval();
 }
