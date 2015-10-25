@@ -303,7 +303,10 @@ void DBServer_PostgreSQL::createTables( std::shared_ptr<PostgreSQLInterface>& db
 		throw Exception();
 	}
 
-	for( it.goChildren(); it; it.goNext() )
+	if( !it.goChildren() )
+		return;
+
+	for( ; it; it.goNext() )
 	{
 		if( it.getName() != "comment" )
 		{

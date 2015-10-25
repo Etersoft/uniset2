@@ -1569,12 +1569,15 @@ void IOControl::buildCardsList()
 	UniXML::iterator it1(nnode);
 	it1.goChildren();
 
-	for( ; it1.getCurrent(); it1.goNext() )
+	if( it1.goChildren() )
 	{
-		if( it1.getProp("name") == conf->getLocalNodeName() )
+		for( ; it1.getCurrent(); it1.goNext() )
 		{
-			mynode = it1.getCurrent();
-			break;
+			if( it1.getProp("name") == conf->getLocalNodeName() )
+			{
+				mynode = it1.getCurrent();
+				break;
+			}
 		}
 	}
 

@@ -421,7 +421,7 @@ int main( int argc, char** argv )
 
 						cout << "(reply): count=" << ModbusRTU::dat2str(ret.count) << endl;
 
-						for( int i = 0; i < ret.count; i++ )
+						for( size_t i = 0; i < ret.count; i++ )
 						{
 							cout << i << ": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i])
 								 << " ("
@@ -449,7 +449,7 @@ int main( int argc, char** argv )
 
 						cout << "(reply): count=" << ModbusRTU::dat2str(ret.count) << endl;
 
-						for( int i = 0; i < ret.count; i++ )
+						for( size_t i = 0; i < ret.count; i++ )
 						{
 							cout << i << ": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i])
 								 << " ("

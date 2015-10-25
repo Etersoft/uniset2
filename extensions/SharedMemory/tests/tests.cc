@@ -18,24 +18,24 @@ std::shared_ptr<TestObject> obj;
 // --------------------------------------------------------------------------
 int main(int argc, char* argv[] )
 {
-	Catch::Session session;
-
-	if( argc > 1 && ( strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0 ) )
-	{
-		cout << "--confile    - Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
-		SharedMemory::help_print(argc, argv);
-		cout << endl << endl << "--------------- CATCH HELP --------------" << endl;
-		session.showHelp("tests");
-		return 0;
-	}
-
-	int returnCode = session.applyCommandLine( argc, argv, Catch::Session::OnUnusedOptions::Ignore );
-
-	if( returnCode != 0 ) // Indicates a command line error
-		return returnCode;
-
 	try
 	{
+		Catch::Session session;
+
+		if( argc > 1 && ( strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0 ) )
+		{
+			cout << "--confile    - Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
+			SharedMemory::help_print(argc, argv);
+			cout << endl << endl << "--------------- CATCH HELP --------------" << endl;
+			session.showHelp("tests");
+			return 0;
+		}
+
+		int returnCode = session.applyCommandLine( argc, argv, Catch::Session::OnUnusedOptions::Ignore );
+
+		if( returnCode != 0 ) // Indicates a command line error
+			return returnCode;
+
 		auto conf = uniset_init(argc, argv);
 
 		auto shm = SharedMemory::init_smemory(argc, argv);

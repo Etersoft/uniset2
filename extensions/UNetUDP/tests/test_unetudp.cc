@@ -158,12 +158,14 @@ TEST_CASE("[UNetUDP]: UDPMessage", "[unetudp][udpmessage]")
 	{
 		// создаём сообщение, преобразуем к Package.. потом обратно.. проверяём, что информация не исказилась
 		UniSetUDP::UDPMessage u;
-		int a = u.addAData(100, 100);
-		int d = u.addDData(110, true);
+		size_t a = u.addAData(100, 100);
+		size_t d = u.addDData(110, true);
 
 		UniSetUDP::UDPPacket p;
 		size_t len = u.transport_msg(p);
 		CHECK( len != 0 );
+		CHECK( a < UniSetUDP::MaxACount );
+		CHECK( a < UniSetUDP::MaxDCount );
 
 		UniSetUDP::UDPMessage u2(p);
 		REQUIRE( u2.a_dat[a].id == 100 );
@@ -194,7 +196,7 @@ TEST_CASE("[UNetUDP]: check sender", "[unetudp][sender]")
 		REQUIRE( pack.asize() == 4 );
 		REQUIRE( pack.dsize() == 2 );
 
-		for( int i = 0; i < pack.asize(); i++ )
+		for( size_t i = 0; i < pack.asize(); i++ )
 		{
 			REQUIRE( pack.a_dat[i].val == i + 1 );
 		}

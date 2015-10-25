@@ -51,7 +51,7 @@ const char* UConnector::getConfFileName()
 {
 	//    return xmlfile;
 	if( conf )
-		return conf->getConfFileName().c_str();
+		return  UniSetTypes::uni_strdup(conf->getConfFileName());
 
 	return "";
 
@@ -73,12 +73,10 @@ long UConnector::getValue( long id, long node )throw(UException)
 	{
 		throw UException(ex.what());
 	}
-	catch( ... )
+	catch( std::exception& ex )
 	{
-		throw UException("(getValue): catch...");
+		throw UException(ex.what());
 	}
-
-	throw UException("(getValue): unknown error");
 }
 //---------------------------------------------------------------------------
 void UConnector::setValue( long id, long val, long node )throw(UException)
@@ -98,9 +96,9 @@ void UConnector::setValue( long id, long val, long node )throw(UException)
 	{
 		throw UException(ex.what());
 	}
-	catch( ... )
+	catch( std::exception& ex )
 	{
-		throw UException("(setValue): catch...");
+		throw UException(ex.what());
 	}
 }
 //---------------------------------------------------------------------------
@@ -123,7 +121,7 @@ long UConnector::getNodeID( const char* name )
 const char* UConnector::getName( long id )
 {
 	if( conf )
-		return conf->oind->getMapName(id).c_str();
+		return  UniSetTypes::uni_strdup(conf->oind->getMapName(id));
 
 	return "";
 }
@@ -131,7 +129,7 @@ const char* UConnector::getName( long id )
 const char* UConnector::getShortName( long id )
 {
 	if( conf )
-		return ORepHelpers::getShortName(conf->oind->getMapName(id)).c_str();
+		return  UniSetTypes::uni_strdup(ORepHelpers::getShortName(conf->oind->getMapName(id)));
 
 	return "";
 }
@@ -139,7 +137,7 @@ const char* UConnector::getShortName( long id )
 const char* UConnector::getTextName( long id )
 {
 	if( conf )
-		return conf->oind->getTextName(id).c_str();
+		return UniSetTypes::uni_strdup(conf->oind->getTextName(id));
 
 	return "";
 }

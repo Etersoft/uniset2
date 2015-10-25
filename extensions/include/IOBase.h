@@ -65,6 +65,12 @@ struct IOBase
 		si.node = UniSetTypes::DefaultObjectId;
 		cal.minRaw = cal.maxRaw = cal.minCal = cal.maxCal = cal.precision = 0;
 		ti.invert = false;
+		ti.hilimit = 0;
+		ti.lowlimit = 0;
+		ti.id = UniSetTypes::DefaultObjectId;
+		ti.state = IONotifyController_i::NormalThreshold;
+		ti.tv_sec = 0;
+		ti.tv_usec = 0;
 	}
 
 	bool check_channel_break( long val );     /*!< проверка обрыва провода */

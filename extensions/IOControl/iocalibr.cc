@@ -188,7 +188,13 @@ int main(int argc, char* argv[])
 
 		cout << "\r" << "data: " << setw(5) << data << "        " << flush;
 
-		int temp = read(fd, &buf, sizeof(buf));
+		ssize_t temp = read(fd, &buf, sizeof(buf));
+		if( temp == -1 )
+		{
+			close(fd);
+			cerr << "can't read from stdin.. error: " << strerror(errno) << endl;
+			exit(EXIT_FAILURE);
+		}
 
 		if(temp == 1)
 			readCalibr(data);
@@ -319,9 +325,21 @@ void readCalibr(int fixed)
 	cout << "    Enter calibrated value for data=" << fixed << "\n    cal = " << flush;
 	int f = open("/dev/stdin", O_RDONLY );
 
-	memset(rbuf, 0, sizeof(rbuf));
-	int temp = read(f, &rbuf, sizeof(rbuf));
+	if( f == -1 )
+	{
+		cerr << "read calibrate fail.. error: " << strerror(errno) << endl;
+		return;
+	}
 
+	memset(rbuf, 0, sizeof(rbuf));
+	ssize_t temp = read(f, &rbuf, sizeof(rbuf));
+
+	if( temp == -1 )
+	{
+		cerr << "read calibrate fail.. error: " << strerror(errno) << endl;
+		close(f);
+		return;
+	}
 	if (temp > 1)
 	{
 		int s;
@@ -336,6 +354,8 @@ void readCalibr(int fixed)
 	}
 	else
 		cout << "        you must input only any digits!" << endl;
+
+	close(f);
 }
 
 // --------------------------------------------------------------------------
@@ -533,7 +553,7 @@ void sortData(bool rise, bool cal)
 		list<int>::iterator ite;
 		int tt = *(temp.begin());
 
-		for(itl = temp.end(); itl != temp.begin(); --itl)
+		for(itl = --temp.end(); itl != temp.begin(); --itl)
 		{
 			if(tt == *itl)continue;
 

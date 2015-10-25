@@ -293,6 +293,7 @@ namespace MTR
 			T5( long v )
 			{
 				raw.lval = v;
+				val = raw.u2.val * pow( (long)10, (long)raw.u2.exp );
 			}
 
 			T5( const ModbusRTU::ModbusData* data, int size )
@@ -355,6 +356,7 @@ namespace MTR
 			T6( long v )
 			{
 				raw.lval = v;
+				val = raw.u2.val * pow( (long)10, (long)raw.u2.exp );
 			}
 
 			T6( const ModbusRTU::ModbusData* data, int size )
@@ -381,7 +383,7 @@ namespace MTR
 				return mtT6;
 			}
 			// ------------------------------------------
-			double val;
+			double val = { 0.0 };
 			T6mem raw;
 	};
 	std::ostream& operator<<(std::ostream& os, T6& t );
@@ -417,6 +419,7 @@ namespace MTR
 			T7( const long v )
 			{
 				raw.lval = v;
+				val = raw.u2.val * pow( (long)10, (long) - 4 );
 			}
 
 			T7( const ModbusRTU::ModbusData* data, int size )
@@ -443,7 +446,7 @@ namespace MTR
 				return mtT7;
 			}
 			// ------------------------------------------
-			double val;
+			double val = { 0.0 };
 			T7mem raw;
 	};
 	std::ostream& operator<<(std::ostream& os, T7& t );

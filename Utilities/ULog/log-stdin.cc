@@ -79,7 +79,7 @@ int main( int argc, char* argv[], char* envp[] )
 
 		while( true )
 		{
-			size_t r = read(fileno(stdin), buf, sizeof(buf) - 1);
+			ssize_t r = read(fileno(stdin), buf, sizeof(buf) - 1);
 
 			if( r > 0 )
 			{

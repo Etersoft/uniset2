@@ -997,8 +997,8 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 				while( (rlen+2) < sizeof(rbuf) && onum < mPreRDI.objNum )
 				{
 					// сперва получаем два байта, для определения длины последующих данных
-					int szDataLen = 2; // object id + len
-					int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])), szDataLen);
+					size_t szDataLen = 2; // object id + len
+					size_t rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])), szDataLen);
 
 					if( rlen1 < szDataLen )
 					{

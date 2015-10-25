@@ -166,9 +166,6 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	if( tout < 0 )
-		tout = TIMEOUT_INF;
-
 	ost::Thread::setException(ost::Thread::throwException);
 
 	try

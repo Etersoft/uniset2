@@ -6,10 +6,10 @@
 
 int main( int argc, char* argv[] )
 {
-	Catch::Session session;
-
 	try
 	{
+		Catch::Session session;
+
 		UniSetTypes::uniset_init(argc, argv);
 
 		int returnCode = session.applyCommandLine( argc, argv, Catch::Session::OnUnusedOptions::Ignore );

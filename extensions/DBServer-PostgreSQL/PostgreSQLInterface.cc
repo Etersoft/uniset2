@@ -203,11 +203,11 @@ PostgreSQLResult::~PostgreSQLResult()
 // -----------------------------------------------------------------------------------------
 PostgreSQLResult::PostgreSQLResult( const pqxx::result& res )
 {
-	for (result::const_iterator c = res.begin(); c != res.end(); ++c)
+	for( result::const_iterator c = res.begin(); c != res.end(); ++c )
 	{
 		COL col;
 
-		for( pqxx::result::tuple::size_type i = 0; i < c.size(); i++ )
+		for( auto i = 0; i < c.size(); i++ )
 			col.push_back( c[i].as<string>() );
 
 		row.push_back(col);

@@ -858,11 +858,13 @@ end_private(false)
 	resetMsgTime = uni_atoi(init3_str(conf->getArgParam("--" + argprefix + "resetMsgTime"),conf->getProp(cnode,"resetMsgTime"),s_resetTime));
 	ptResetMsg.setTiming(resetMsgTime);
 
-	smReadyTimeout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
-	if( smReadyTimeout == 0 )
+	int sm_tout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
+	if( sm_tout == 0 )
 		smReadyTimeout = 60000;
-	else if( smReadyTimeout &lt; 0 )
+	else if( sm_tout &lt; 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
+	else
+		smReadyTimeout = sm_tout;
 
 	smTestID = conf->getSensorID(init3_str(conf->getArgParam("--" + argprefix + "sm-test-id"),conf->getProp(cnode,"smTestID"),""));
 	<xsl:for-each select="//smap/item">
@@ -1267,11 +1269,13 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 	resetMsgTime = uni_atoi(init3_str(conf->getArgParam("--" + argprefix + "resetMsgTime"),conf->getProp(cnode,"resetMsgTime"),s_resetTime));
 	ptResetMsg.setTiming(resetMsgTime);
 
-	smReadyTimeout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
-	if( smReadyTimeout == 0 )
+	int sm_tout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
+	if( sm_tout == 0 )
 		smReadyTimeout = 60000;
-	else if( smReadyTimeout &lt; 0 )
+	else if( sm_tout &lt; 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
+	else
+		smReadyTimeout = sm_tout;
 
 	smTestID = conf->getSensorID(init3_str(conf->getArgParam("--" + argprefix + "sm-test-id"),conf->getProp(cnode,"smTestID"),""));
 
@@ -1454,11 +1458,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::strval( UniSetTypes::Object
         {
         <xsl:if test="normalize-space($onlymsg)=''">
         </xsl:if>
-          // приходится искуственно использовать третий параметр,
-          // что-бы компилятор выбрал
-          // правильный(для аналоговых) конструктор у SensorMessage
-            IOController_i::CalibrateInfo _ci;
-            SensorMessage _sm( <xsl:value-of select="@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, _ci);
+            SensorMessage _sm( <xsl:value-of select="@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> );
             _sm.sensor_type = UniversalIO::AI;
             sensorInfo(&amp;_sm);
         }

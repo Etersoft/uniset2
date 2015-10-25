@@ -306,7 +306,10 @@ void DBServer_SQLite::createTables( SQLiteInterface* db )
 		throw Exception();
 	}
 
-	for( it.goChildren(); it; it.goNext() )
+	if( !it.goChildren() )
+		return;
+
+	for( ; it; it.goNext() )
 	{
 		if( it.getName() != "comment" )
 		{

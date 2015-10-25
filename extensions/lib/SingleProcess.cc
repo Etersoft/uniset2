@@ -69,6 +69,8 @@ void SingleProcess::set_signals( bool ask )
 	struct sigaction act, oact;
 	sigemptyset(&act.sa_mask);
 
+	act.sa_flags = SA_RESETHAND;
+
 	// добавляем сигналы, которые будут игнорироваться
 	// при обработке сигнала
 	sigaddset(&act.sa_mask, SIGINT);

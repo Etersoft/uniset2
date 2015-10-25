@@ -28,6 +28,8 @@ namespace UniSetUDP
 		unsigned long num;
 		long nodeID;
 		long procID;
+
+		//!\todo может лучше использовать системно-независимый unsigned long, чем size_t?
 		size_t dcount; /*!< количество булевых величин */
 		size_t acount; /*!< количество аналоговых величин */
 
@@ -35,7 +37,7 @@ namespace UniSetUDP
 		friend std::ostream& operator<<( std::ostream& os, UDPHeader* p );
 	} __attribute__((packed));
 
-	const unsigned long MaxPacketNum = std::numeric_limits<unsigned long>::max();
+	const size_t MaxPacketNum = std::numeric_limits<size_t>::max();
 
 	struct UDPAData
 	{
@@ -100,18 +102,18 @@ namespace UniSetUDP
 		{
 			return !((dcount < MaxDCount) && (acount < MaxACount));
 		}
-		inline int dsize() const
+		inline size_t dsize() const
 		{
 			return dcount;
 		}
-		inline int asize() const
+		inline size_t asize() const
 		{
 			return acount;
 		}
 		unsigned short getDataCRC();
 
 		// количество байт в пакете с булевыми переменными...
-		int d_byte() const
+		size_t d_byte() const
 		{
 			return dcount * sizeof(long) + dcount;
 		}

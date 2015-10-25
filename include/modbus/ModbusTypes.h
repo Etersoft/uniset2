@@ -542,7 +542,7 @@ namespace ModbusRTU
 		// преобразовании в ModbusMessage.
 		// Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно.
 		// Используйте специальную функцию transport_msg()
-		int    count = { 0 };    /*!< фактическое количество данных в сообщении */
+		size_t count = { 0 };    /*!< фактическое количество данных в сообщении */
 	};
 
 	std::ostream& operator<<(std::ostream& os, ReadOutputRetMessage& m );
@@ -633,7 +633,7 @@ namespace ModbusRTU
 		// преобразовании в ModbusMessage.
 		// Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно.
 		// Используйте специальную функцию transport_msg()
-		int count = { 0 };    /*!< фактическое количество данных в сообщении */
+		size_t count = { 0 };    /*!< фактическое количество данных в сообщении */
 	};
 
 	std::ostream& operator<<(std::ostream& os, ReadInputRetMessage& m );
@@ -1291,7 +1291,7 @@ namespace ModbusRTU
 		// преобразовании в ModbusMessage.
 		// Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно.
 		// Используйте специальную функцию transport_msg()
-		int count = { 0 };    /*!< фактическое количество данных в сообщении */
+		size_t count = { 0 };    /*!< фактическое количество данных в сообщении */
 	};
 
 	std::ostream& operator<<(std::ostream& os, JournalCommandRetMessage& m );
@@ -1440,7 +1440,7 @@ namespace ModbusRTU
 		// Это поле не входит в стандарт modbus
 		// оно вспомогательное и игнорируется при
 		// преобразовании в ModbusMessage.
-		unsigned int count = { 0 };    /*!< фактическое количество данных в сообщении */
+		size_t count = { 0 };    /*!< фактическое количество данных в сообщении */
 	};
 	// -----------------------------------------------------------------------
 
@@ -1484,7 +1484,7 @@ namespace ModbusRTU
 		bool checkFormat();
 
 		// это поле служебное и не используется в релальном обмене
-		int count = { 0 }; /*!< фактическое количество данных */
+		size_t count = { 0 }; /*!< фактическое количество данных */
 	};
 
 	std::ostream& operator<<(std::ostream& os, ReadFileRecordMessage& m );

@@ -260,7 +260,7 @@ ModbusMessage ErrorRetMessage::transport_msg()
 
 	memcpy(&mm.data, &ecode, sizeof(ecode));
 
-	int ind = sizeof(ecode);
+	size_t ind = sizeof(ecode);
 
 	// пересчитываем CRC по перевёрнутым данным
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + ind );
@@ -308,7 +308,7 @@ ModbusMessage ReadCoilMessage::transport_msg()
 	// копируем данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
 
-	int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
+	size_t last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
 
 	// копируем
 	memcpy(mm.data, &d, last);
@@ -509,7 +509,7 @@ void ReadCoilRetMessage::init( ModbusMessage& m )
 // -------------------------------------------------------------------------
 int ReadCoilRetMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
+	if( m.len == 0 )
 		return 0;
 
 	return m.data[0];
@@ -572,7 +572,7 @@ ModbusMessage ReadCoilRetMessage::transport_msg()
 	memcpy(&mm, this, szModbusHeader);
 
 	memcpy(&mm.data, &bcnt, sizeof(bcnt));
-	int ind = sizeof(bcnt);
+	size_t ind = sizeof(bcnt);
 
 	// копируем данные
 	memcpy(&(mm.data[ind]), data, bcnt);
@@ -627,7 +627,7 @@ ModbusMessage ReadInputStatusMessage::transport_msg()
 	// копируем данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
 
-	int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
+	size_t last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
 
 	// копируем
 	memcpy(mm.data, &d, last);
@@ -711,7 +711,7 @@ void ReadInputStatusRetMessage::init( ModbusMessage& m )
 // -------------------------------------------------------------------------
 int ReadInputStatusRetMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
+	if( m.len == 0 )
 		return 0;
 
 	return m.data[0];
@@ -774,7 +774,7 @@ ModbusMessage ReadInputStatusRetMessage::transport_msg()
 	memcpy(&mm, this, szModbusHeader);
 
 	memcpy(&mm.data, &bcnt, sizeof(bcnt));
-	int ind = sizeof(bcnt);
+	size_t ind = sizeof(bcnt);
 
 	// копируем данные
 	memcpy(&(mm.data[ind]), data, bcnt);
@@ -830,7 +830,7 @@ ModbusMessage ReadOutputMessage::transport_msg()
 	// копируем данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
 
-	int last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
+	size_t last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
 
 	// копируем
 	memcpy(mm.data, &d, last);
@@ -929,7 +929,7 @@ void ReadOutputRetMessage::init( ModbusMessage& m )
 // -------------------------------------------------------------------------
 int ReadOutputRetMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
+	if( m.len == 0 )
 		return 0;
 
 	return m.data[0];
@@ -974,7 +974,7 @@ ModbusMessage ReadOutputRetMessage::transport_msg()
 	// копируем заголовок и данные
 	memcpy(&mm, this, szModbusHeader);
 
-	int ind = 0;
+	size_t ind = 0;
 	bcnt    = count * sizeof(ModbusData);
 
 	// copy bcnt
@@ -982,27 +982,23 @@ ModbusMessage ReadOutputRetMessage::transport_msg()
 	ind += sizeof(bcnt);
 
 	// копируем данные
-	//    int dlen = count*sizeof(ModbusData);
-	//    прямое копирование
-	//    memcpy(&(mm.data[sizeof(bcnt)]),data,dlen);
+	if( count > 0 )
+	{
+		// Создаём временно массив, переворачиваем байты
+		ModbusData* dtmp = new ModbusData[count];
 
-	// Создаём временно массив, переворачиваем байты
-	ModbusData* dtmp = new ModbusData[count];
+		for( size_t i = 0; i < count; i++ )
+			dtmp[i] = SWAPSHORT(data[i]);
 
-	for( ssize_t i = 0; i < count; i++ )
-		dtmp[i] = SWAPSHORT(data[i]);
+		// копируем
+		memcpy(&(mm.data[ind]), dtmp, bcnt);
 
-	// копируем
-	memcpy(&(mm.data[ind]), dtmp, bcnt);
+		delete[] dtmp;
 
-	delete[] dtmp;
-
-	ind += bcnt;
-
+		ind += bcnt;
+	}
 	// пересчитываем CRC по перевёрнутым данным
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(bcnt) + bcnt );
-
-	//    crc = SWAPSHORT(crc);
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[ind]), &crc, szCRC);
@@ -1051,7 +1047,7 @@ ModbusMessage ReadInputMessage::transport_msg()
 	// копируем данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
 
-	int last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
+	size_t last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
 
 	// копируем
 	memcpy(mm.data, &d, last);
@@ -1145,13 +1141,13 @@ void ReadInputRetMessage::init( ModbusMessage& m )
 void ReadInputRetMessage::swapData()
 {
 	// переворачиваем данные
-	for( ssize_t i = 0; i < count; i++ )
+	for( size_t i = 0; i < count; i++ )
 		data[i] = SWAPSHORT(data[i]);
 }
 // -------------------------------------------------------------------------
 int ReadInputRetMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
+	if( m.len == 0 )
 		return 0;
 
 	return m.data[0];
@@ -1191,26 +1187,28 @@ ModbusMessage ReadInputRetMessage::transport_msg()
 	// копируем заголовок и данные
 	memcpy(&mm, this, szModbusHeader);
 
-	int ind = 0;
+	size_t ind = 0;
 	bcnt    = count * sizeof(ModbusData);
 
 	// copy bcnt
 	memcpy(&mm.data, &bcnt, sizeof(bcnt));
 	ind += sizeof(bcnt);
 
-	// Создаём временно массив, переворачиваем байты
-	ModbusData* dtmp = new ModbusData[count];
+	if( count > 0 )
+	{
+		// Создаём временно массив, переворачиваем байты
+		ModbusData* dtmp = new ModbusData[count];
 
-	for( ssize_t i = 0; i < count; i++ )
-		dtmp[i] = SWAPSHORT(data[i]);
+		for( size_t i = 0; i < count; i++ )
+			dtmp[i] = SWAPSHORT(data[i]);
 
-	// копируем
-	memcpy(&(mm.data[ind]), dtmp, bcnt);
+		// копируем
+		memcpy(&(mm.data[ind]), dtmp, bcnt);
 
-	delete[] dtmp;
+		delete[] dtmp;
 
-	ind += bcnt;
-
+		ind += bcnt;
+	}
 	// пересчитываем CRC по перевёрнутым данным
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(bcnt) + bcnt );
 
@@ -1315,7 +1313,7 @@ ModbusMessage ForceCoilsMessage::transport_msg()
 	// копируем заголовок
 	memcpy(&mm, this, szModbusHeader);
 
-	int ind = 0;
+	size_t ind = 0;
 
 	// данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
@@ -1403,7 +1401,7 @@ size_t ForceCoilsMessage::szData()
 // -------------------------------------------------------------------------
 int ForceCoilsMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
+	if( m.len == 0 )
 		return 0;
 
 	ForceCoilsMessage wm(m);
@@ -1490,7 +1488,7 @@ ModbusMessage ForceCoilsRetMessage::transport_msg()
 
 	// данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
-	int last(sizeof(d));
+	size_t last = sizeof(d);
 	// копируем
 	memcpy(mm.data, &d, last);
 
@@ -1550,7 +1548,7 @@ ModbusMessage WriteOutputMessage::transport_msg()
 	// копируем заголовок
 	memcpy(&mm, this, szModbusHeader);
 
-	int ind = 0;
+	size_t ind = 0;
 
 	// данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
@@ -1567,7 +1565,7 @@ ModbusMessage WriteOutputMessage::transport_msg()
 	// Создаём временно массив, переворачиваем байты
 	ModbusData* dtmp = new ModbusData[quant];
 
-	for( ssize_t i = 0; i < quant; i++ )
+	for( size_t i = 0; i < quant; i++ )
 		dtmp[i] = SWAPSHORT(data[i]);
 
 	// копируем данные
@@ -1749,7 +1747,7 @@ ModbusMessage WriteOutputRetMessage::transport_msg()
 
 	// данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
-	int last(sizeof(d));
+	size_t last = sizeof(d);
 	// копируем
 	memcpy(mm.data, &d, last);
 
@@ -1788,7 +1786,7 @@ ModbusMessage ForceSingleCoilMessage::transport_msg()
 	ModbusMessage mm;
 	memcpy(&mm, this, szModbusHeader);
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
-	int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
+	size_t last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
 	memcpy(mm.data, &d, last);
 	// пересчитываем CRC по перевёрнутым данным
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + last );
@@ -1917,7 +1915,7 @@ ModbusMessage ForceSingleCoilRetMessage::transport_msg()
 	// копируем данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
 
-	int last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
+	size_t last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
 
 	// копируем
 	memcpy(mm.data, &d, last);
@@ -1959,7 +1957,7 @@ ModbusMessage WriteSingleOutputMessage::transport_msg()
 	ModbusMessage mm;
 	memcpy(&mm, this, szModbusHeader);
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
-	int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
+	size_t last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
 	memcpy(mm.data, &d, last);
 	// пересчитываем CRC по перевёрнутым данным
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + last );
@@ -2095,7 +2093,7 @@ ModbusMessage WriteSingleOutputRetMessage::transport_msg()
 	// копируем данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
 
-	int last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
+	size_t last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
 
 	// копируем
 	memcpy(mm.data, &d, last);
@@ -2217,7 +2215,7 @@ void DiagnosticMessage::init( ModbusMessage& m )
 // -------------------------------------------------------------------------
 int DiagnosticMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
+	if( m.len == 0 )
 		return 0;
 
 	// data[0] = subfunction
@@ -2267,24 +2265,27 @@ ModbusMessage DiagnosticMessage::transport_msg()
 	// копируем заголовок и данные
 	memcpy(&mm, this, szModbusHeader);
 
-	int ind = 0;
+	size_t ind = 0;
 	// copy bcnt
 	ModbusData d = SWAPSHORT(subf);
 	memcpy(&mm.data, &d, sizeof(d));
 	ind += sizeof(subf);
 
-	// Создаём временно массив, переворачиваем байты
-	ModbusData* dtmp = new ModbusData[count];
+	if( count > 0 )
+	{
+		// Создаём временно массив, переворачиваем байты
+		ModbusData* dtmp = new ModbusData[count];
 
-	for( ssize_t i = 0; i < count; i++ )
-		dtmp[i] = SWAPSHORT(data[i]);
+		for( ssize_t i = 0; i < count; i++ )
+			dtmp[i] = SWAPSHORT(data[i]);
 
-	// копируем
-	memcpy(&(mm.data[ind]), dtmp, sizeof(ModbusData)*count);
+		// копируем
+		memcpy(&(mm.data[ind]), dtmp, sizeof(ModbusData)*count);
 
-	delete[] dtmp;
+		delete[] dtmp;
 
-	ind += sizeof(ModbusData) * count;
+		ind += sizeof(ModbusData) * count;
+	}
 
 	// пересчитываем CRC по перевёрнутым данным
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(subf) + sizeof(ModbusData) * count );
@@ -2380,7 +2381,7 @@ ModbusMessage MEIMessageRDI::transport_msg()
 	mm.data[0] = type;
 	mm.data[1] = devID;
 	mm.data[2] = objID;
-	int ind = 3;
+	size_t ind = 3;
 
 	// пересчитываем CRC по перевёрнутым данным
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + ind );
@@ -2606,7 +2607,7 @@ ModbusMessage MEIMessageRetRDI::transport_msg()
 	mm.data[3] = mf;
 	mm.data[4] = objID;
 	mm.data[5] = objNum;
-	int ind = 6;
+	size_t ind = 6;
 
 	for( auto it = dlist.begin(); it != dlist.end() && ind <= MAXLENPACKET; ++it )
 	{
@@ -2762,7 +2763,7 @@ ModbusMessage JournalCommandRetMessage::transport_msg()
 	// копируем заголовок и данные
 	memcpy(&mm, this, szModbusHeader);
 
-	int ind = 0;
+	size_t ind = 0;
 	bcnt    = count * sizeof(ModbusData);
 
 	// copy bcnt
@@ -2772,18 +2773,21 @@ ModbusMessage JournalCommandRetMessage::transport_msg()
 	// --------------------
 	// копируем данные
 	// --------------------
-	// копирование с переворотом данных (для ModbusData)
-	ModbusData* dtmp = new ModbusData[count];
+	if( count > 0 )
+	{
+		// копирование с переворотом данных (для ModbusData)
+		ModbusData* dtmp = new ModbusData[count];
 
-	for( ssize_t i = 0; i < count; i++ )
-		dtmp[i] = SWAPSHORT(data[i]);
+		for( size_t i = 0; i < count; i++ )
+			dtmp[i] = SWAPSHORT(data[i]);
 
-	// копируем
-	memcpy(&(mm.data[ind]), dtmp, bcnt);
+		// копируем
+		memcpy(&(mm.data[ind]), dtmp, bcnt);
 
-	delete[] dtmp;
+		delete[] dtmp;
 
-	ind += bcnt;
+		ind += bcnt;
+	}
 
 	// пересчитываем CRC по данным
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + ind );
@@ -3025,7 +3029,7 @@ ModbusMessage SetDateTimeMessage::transport_msg()
 	    mm.data[5] = year;
 	    mm.data[6] = century;
 	*/
-	int bcnt = 7;
+	size_t bcnt = 7;
 	memcpy( mm.data, &hour, bcnt );
 
 	// пересчитываем CRC
@@ -3099,7 +3103,7 @@ ModbusMessage SetDateTimeRetMessage::transport_msg()
 	    mm.data[5] = year;
 	    mm.data[6] = century;
 	*/
-	int bcnt = 7;
+	size_t bcnt = 7;
 	memcpy( mm.data, &hour, bcnt );
 
 	// пересчитываем CRC
@@ -3211,7 +3215,7 @@ ModbusMessage RemoteServiceRetMessage::transport_msg()
 	// копируем заголовок и данные
 	memcpy(&mm, this, szModbusHeader);
 
-	int ind = 0;
+	size_t ind = 0;
 	bcnt    = count * sizeof(ModbusByte);
 
 	// copy bcnt
@@ -3277,7 +3281,7 @@ void ReadFileRecordMessage::init( ModbusMessage& m )
 
 	count = bcnt / sizeof(SubRequest);
 
-	for( ssize_t i = 0; i < count; i++ )
+	for( size_t i = 0; i < count; i++ )
 	{
 		data[i].numfile = SWAPSHORT(data[i].numfile);
 		data[i].numrec = SWAPSHORT(data[i].numrec);
@@ -3329,7 +3333,7 @@ ModbusMessage FileTransferMessage::transport_msg()
 
 	// копируем данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(numfile), SWAPSHORT(numpacket) };
-	int last = sizeof(d);
+	size_t last = sizeof(d);
 	memcpy(mm.data, &d, last);
 
 	// пересчитываем CRC по перевёрнутым данным
@@ -3469,7 +3473,7 @@ ModbusMessage FileTransferRetMessage::transport_msg()
 	// копируем заголовок и данные
 	memcpy(&mm, this, szModbusHeader);
 
-	int ind = 0;
+	size_t ind = 0;
 	bcnt = szData() - szCRC - 1; // -1 - это сам байт содержащий количество байт (bcnt)...
 
 	// copy bcnt

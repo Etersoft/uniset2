@@ -102,10 +102,7 @@ class HourGlass
 				if( cur > _size )
 					cur = _size;
 
-				_sand -= cur;
-
-				if( _sand < 0 )
-					_sand = 0;
+				_sand = ( _sand > cur ) ? (_sand - cur) : 0;
 
 				t.setTiming(cur);
 			}
