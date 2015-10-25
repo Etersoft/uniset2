@@ -36,7 +36,8 @@ before_script:
   - ./configure --enable-tests --enable-mysql --enable-sqlite --enable-rrd --enable-io --enable-logicproc
 
 script:
-  - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make && make check ; fi
+  - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make ; fi
+  #- if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make check ; fi
 
 
 addons:
@@ -56,6 +57,6 @@ addons:
       name: "Etersoft/uniset2"
       description: "UniSet2 build submitted via Travis CI"
     notification_email: lav@etersoft.ru
-    build_command_prepend: "./configure --disable-tests; make clean"
+    build_command_prepend: "make clean"
     build_command: make -j4
     branch_pattern: coverity_scan
