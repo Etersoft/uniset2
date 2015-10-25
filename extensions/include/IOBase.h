@@ -173,7 +173,7 @@ struct IOBase
 	// helpes
 	static std::string initProp( UniXML::iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const std::string& defval = "" );
 	static int initIntProp( UniXML::iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const int defval = 0 );
-
+	static timeout_t initTimeoutProp( UniXML::iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const timeout_t defval);
 };
 
 // -----------------------------------------------------------------------------

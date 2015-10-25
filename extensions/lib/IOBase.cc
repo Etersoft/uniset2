@@ -510,6 +510,22 @@ int IOBase::initIntProp( UniXML::iterator& it, const std::string& prop, const st
 	return defval;
 }
 // -----------------------------------------------------------------------------
+timeout_t IOBase::initTimeoutProp( UniXML::iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const timeout_t defval )
+{
+	string pp(prefix + prop);
+
+	if( !it.getProp(pp).empty() )
+		return it.getIntProp(pp);
+
+	if( prefonly )
+		return defval;
+
+	if( !it.getProp(prop).empty() )
+		return it.getIntProp(prop);
+
+	return defval;
+}
+// -----------------------------------------------------------------------------
 bool IOBase::initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SMInterface>& shm, const std::string& prefix,
 					   bool init_prefix_only,
 					   std::shared_ptr<DebugStream> dlog, std::string myname,
@@ -550,15 +566,14 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SM
 	b->breaklim = initIntProp(it, "breaklim", prefix, init_prefix_only);
 	b->rawdata  = initIntProp(it, "rawdata", prefix, init_prefix_only);
 
-	timeout_t d_msec = initIntProp(it, "debouncedelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
+	timeout_t d_msec = initTimeoutProp(it, "debouncedelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
 	b->ptDebounce.setTiming(d_msec);
 
-	timeout_t d_on_msec = initIntProp(it, "ondelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
+	timeout_t d_on_msec = initTimeoutProp(it, "ondelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
 	b->ptOnDelay.setTiming(d_on_msec);
 
-	timeout_t d_off_msec = initIntProp(it, "offdelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
+	timeout_t d_off_msec = initTimeoutProp(it, "offdelay", prefix, init_prefix_only, UniSetTimer::WaitUpTime);
 	b->ptOffDelay.setTiming(d_off_msec);
-
 
 	if( dlog && d_msec != UniSetTimer::WaitUpTime
 			&& d_on_msec != UniSetTimer::WaitUpTime
