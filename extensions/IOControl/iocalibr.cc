@@ -168,6 +168,13 @@ int main(int argc, char* argv[])
 	//    insn_config(card,subdev,chan,100,range,aref);
 
 	int fd = open("/dev/stdin", O_NONBLOCK | O_RDONLY );
+
+	if( fd == -1 )
+	{
+		cerr << "can't open 'stdin'.. error: " << strerror(errno) << endl;
+		exit(EXIT_FAILURE);
+	}
+
 	helpPrint();
 
 	if( openFileXml.length() > 1 && nodeXml.length() > 1)
@@ -480,6 +487,7 @@ void openXML()
 // --------------------------------------------------------------------------
 void dispDiagram()
 {
+	std::ios_base::fmtflags old_flags = cout.flags();
 	cout.setf( ios::right, ios::adjustfield );
 	cout << endl << "=================================" << endl;
 	cout << "|      data    |   calibrated    |" << endl;
@@ -494,6 +502,7 @@ void dispDiagram()
 
 	cout << "=================================" << endl;
 	cout << sortedMass.size() << "    " << massDat.size() << endl;
+	cout.setf(old_flags);
 }
 
 // --------------------------------------------------------------------------
@@ -512,7 +521,7 @@ void sortData(bool rise, bool cal)
 		temp.sort();
 		list<int>::iterator itl;
 		list<int>::iterator ite;
-		int tt = *(temp.end());
+		int tt = *(--temp.end());
 
 		for(itl = temp.begin(); itl != temp.end(); itl++)
 		{

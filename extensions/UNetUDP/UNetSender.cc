@@ -244,7 +244,9 @@ void UNetSender::real_send(UniSetUDP::UDPMessage& mypack)
 
 #endif
 
-	if( packetnum > UniSetUDP::MaxPacketNum )
+	// при переходе через ноль (когда счётчик перевалит через UniSetUDP::MaxPacketNum..
+	// делаем номер пакета "1"
+	if( packetnum == 0 )
 		packetnum = 1;
 
 	if( !udp->isPending(ost::Socket::pendingOutput) )

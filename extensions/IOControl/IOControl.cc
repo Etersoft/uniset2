@@ -221,13 +221,14 @@ IOControl::IOControl(UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	int blink3_msec = conf->getArgPInt("--" + prefix + "-blink3-time", it.getProp("blink3-time"), 100);
 	ptBlink3.setTiming(blink3_msec);
 
-	smReadyTimeout = conf->getArgInt("--" + prefix + "-sm-ready-timeout", it.getProp("ready_timeout"));
+	int sm_tout = conf->getArgInt("--" + prefix + "-sm-ready-timeout", it.getProp("ready_timeout"));
 
-	if( smReadyTimeout == 0 )
+	if( sm_tout == 0 )
 		smReadyTimeout = 15000;
-	else if( smReadyTimeout < 0 )
+	else if( sm_tout < 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
-
+	else
+		smReadyTimeout = sm_tout;
 
 	string sm_ready_sid = conf->getArgParam("--" + prefix + "-sm-ready-test-sid", it.getProp("sm_ready_test_sid"));
 	sidTestSMReady = conf->getSensorID(sm_ready_sid);
@@ -1567,7 +1568,6 @@ void IOControl::buildCardsList()
 
 	xmlNode* mynode = 0;
 	UniXML::iterator it1(nnode);
-	it1.goChildren();
 
 	if( it1.goChildren() )
 	{

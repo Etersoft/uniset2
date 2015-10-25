@@ -365,7 +365,7 @@ void RRDServer::timerInfo( const UniSetTypes::TimerMessage* tm )
 				mycrit << err.str() << endl;
 			}
 
-			delete argv;
+			delete[] argv;
 			break;
 		}
 	}

@@ -14,12 +14,14 @@ LProcessor::LProcessor( const std::string& name ):
 {
 	auto conf = uniset_conf();
 	sleepTime = conf->getArgPInt("--sleepTime", 200);
-	smReadyTimeout = conf->getArgInt("--sm-ready-timeout", "");
+	int tout = conf->getArgInt("--sm-ready-timeout", "");
 
-	if( smReadyTimeout == 0 )
+	if( tout == 0 )
 		smReadyTimeout = 60000;
-	else if( smReadyTimeout < 0 )
+	else if( tout < 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
+	else
+		smReadyTimeout = tout;
 
 	sch = make_shared<SchemaXML>();
 }

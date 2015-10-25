@@ -454,11 +454,12 @@ void UNetExchange::startReceivers()
 void UNetExchange::waitSMReady()
 {
 	// waiting for SM is ready...
-	timeout_t ready_timeout = uniset_conf()->getArgInt("--unet-sm-ready-timeout", "15000");
+	int tout = uniset_conf()->getArgInt("--unet-sm-ready-timeout", "15000");
 
-	if( ready_timeout == 0 )
-		ready_timeout = 15000;
-	else if( ready_timeout < 0 )
+	timeout_t ready_timeout = 15000;
+	if( tout > 0 )
+		ready_timeout = tout;
+	else if( tout < 0 )
 		ready_timeout = UniSetTimer::WaitUpTime;
 
 	if( !shm->waitSMready(ready_timeout, 50) )

@@ -264,7 +264,8 @@ class IONotifyController:
 				si(si), type(t), list( std::move(list) ) {}
 
 			UniSetTypes::uniset_rwmutex mut;
-			IOController_i::SensorInfo si;  /*!< аналоговый датчик */
+
+			IOController_i::SensorInfo si = { UniSetTypes::DefaultObjectId, UniSetTypes::DefaultObjectId };
 			std::shared_ptr<USensorInfo> ait;
 			UniversalIO::IOType type = { UniversalIO::AI };
 			ThresholdExtList list;   /*!< список порогов по данному аналоговому датчику */

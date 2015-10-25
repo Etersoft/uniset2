@@ -56,6 +56,14 @@ static bool split_addr( const string& addr, string& host, ost::tpport_t& port )
 // --------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
+
+	size_t n = UniSetUDP::MaxPacketNum;
+	cout << "n=" << n << endl;
+	n++;
+	cout << "n++=" << n << endl;
+	return 0;
+
+
 	int optindex = 0;
 	int opt = 0;
 	Command cmd = cmdNOP;
@@ -70,7 +78,7 @@ int main(int argc, char* argv[])
 	size_t count = 50;
 	bool lost = false;
 	bool show = false;
-	int ncycles = -1;
+	size_t ncycles = 0;
 	unsigned int nprof = 0;
 
 	while(1)
@@ -311,11 +319,11 @@ int main(int argc, char* argv[])
 					mypack.addDData(i, i);
 
 				udp->setPeer(host, port);
-				unsigned long packetnum = 0;
+				size_t packetnum = 0;
 
 				UniSetUDP::UDPPacket s_buf;
 
-				int nc = 1;
+				size_t nc = 1;
 
 				if( ncycles > 0 )
 					nc = ncycles;

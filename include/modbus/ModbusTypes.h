@@ -185,8 +185,8 @@ namespace ModbusRTU
 	struct ErrorRetMessage:
 		public ModbusHeader
 	{
-		ModbusByte ecode;
-		ModbusCRC crc;
+		ModbusByte ecode = { erNoError };
+		ModbusCRC crc = { 0 };
 
 		// ------- from slave -------
 		ErrorRetMessage( ModbusMessage& m );

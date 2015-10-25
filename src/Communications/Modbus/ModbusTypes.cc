@@ -1650,7 +1650,7 @@ size_t WriteOutputMessage::szData()
 // -------------------------------------------------------------------------
 int WriteOutputMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
+	if( m.len == 0 )
 		return 0;
 
 	// копируем только часть заголовка возвращаем count
@@ -1845,7 +1845,7 @@ size_t ForceSingleCoilMessage::szData()
 // -------------------------------------------------------------------------
 int ForceSingleCoilMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
+	if( m.len == 0 )
 		return 0;
 
 	return sizeof(ModbusData); // data;
@@ -2017,7 +2017,7 @@ size_t WriteSingleOutputMessage::szData()
 // -------------------------------------------------------------------------
 int WriteSingleOutputMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
+	if( m.len == 0 )
 		return 0;
 
 	return sizeof(ModbusData); // data;
@@ -3148,7 +3148,7 @@ size_t RemoteServiceMessage::szData()
 // -------------------------------------------------------------------------
 int RemoteServiceMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
+	if( m.len == 0 )
 		return 0;
 
 	//    RemoteServiceMessage wm(m);
@@ -3297,7 +3297,7 @@ size_t ReadFileRecordMessage::szData()
 // -------------------------------------------------------------------------
 int ReadFileRecordMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
+	if( m.len == 0 )
 		return 0;
 
 	return (int)(m.data[0]);
@@ -3409,16 +3409,17 @@ void FileTransferRetMessage::init( ModbusMessage& m )
 	memcpy(&numfile, &(m.data[1]), sizeof(ModbusData));
 	memcpy(&numpacks, &(m.data[1 + sizeof(ModbusData)]), sizeof(ModbusData));
 	memcpy(&packet, &(m.data[1 + 2 * sizeof(ModbusData)]), sizeof(ModbusData));
-	numfile     = SWAPSHORT(numfile);
-	numpacks     = SWAPSHORT(numpacks);
-	packet         = SWAPSHORT(packet);
-	dlen         = m.data[7];
+	numfile  = SWAPSHORT(numfile);
+	numpacks = SWAPSHORT(numpacks);
+	packet   = SWAPSHORT(packet);
+	dlen     = m.data[7];
 	memcpy(data, &(m.data[8]), dlen);
 
 	memcpy(&crc, &(m.data[8 + dlen]), szCRC);
 }
 // -----------------------------------------------------------------------
 FileTransferRetMessage::FileTransferRetMessage( ModbusAddr _from ):
+	bcnt(0),
 	numfile(0),
 	numpacks(0),
 	packet(0),

@@ -99,6 +99,7 @@ namespace UniSetTypes
 
 	Configuration::Configuration():
 		oind(NULL),
+		_argv(nullptr),
 		NSName("NameService"),
 		repeatCount(2), repeatTimeout(100),
 		localDBServer(UniSetTypes::DefaultObjectId),

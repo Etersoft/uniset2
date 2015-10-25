@@ -243,7 +243,7 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 
 		int heartbeatTime = conf->getArgPInt("--" + prefix + "-heartbeat-time", it.getProp("heartbeatTime"), conf->getHeartBeatTime());
 
-		if( heartbeatTime )
+		if( heartbeatTime > 0 )
 			ptHeartBeat.setTiming(heartbeatTime);
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
@@ -461,11 +461,11 @@ void MBSlave::finalThread()
 void MBSlave::waitSMReady()
 {
 	// waiting for SM is ready...
-	timeout_t ready_timeout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "15000");
-
-	if( ready_timeout == 0 )
-		ready_timeout = 15000;
-	else if( ready_timeout < 0 )
+	int tout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "15000");
+	timeout_t ready_timeout = 15000;
+	if( ready_timeout > 0 )
+		ready_timeout = tout;
+	else if( tout < 0 )
 		ready_timeout = UniSetTimer::WaitUpTime;
 
 	if( !shm->waitSMready(ready_timeout, 50) )

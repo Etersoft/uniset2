@@ -56,14 +56,14 @@ class MBTCPPersistentSlave:
 
 			std::string iaddr;
 
-			UniSetTypes::ObjectId respond_s;
+			UniSetTypes::ObjectId respond_s = { UniSetTypes::DefaultObjectId };
 			IOController::IOStateList::iterator respond_it;
-			bool invert;
+			bool invert = { false };
 			PassiveTimer ptTimeout;
-			timeout_t tout;
+			timeout_t tout = { 2000 };
 
 			long askCount;
-			UniSetTypes::ObjectId askcount_s;
+			UniSetTypes::ObjectId askcount_s = { UniSetTypes::DefaultObjectId };
 			IOController::IOStateList::iterator askcount_it;
 
 			inline void initIterators( const std::shared_ptr<SMInterface>& shm )

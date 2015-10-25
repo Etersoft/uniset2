@@ -57,12 +57,14 @@ UniExchange::UniExchange(UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID,
 
 	ptUpdate.setTiming(updatetime);
 
-	smReadyTimeout = conf->getArgInt("--io-sm-ready-timeout", it.getProp("ready_timeout"));
+	int sm_tout = conf->getArgInt("--io-sm-ready-timeout", it.getProp("ready_timeout"));
 
-	if( smReadyTimeout == 0 )
+	if( sm_tout == 0 )
 		smReadyTimeout = 15000;
-	else if( smReadyTimeout < 0 )
+	else if( sm_tout < 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
+	else
+		smReadyTimeout = sm_tout;
 
 	dinfo << myname << "(init): smReadyTimeout=" << smReadyTimeout << endl;
 

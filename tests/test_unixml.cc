@@ -119,7 +119,7 @@ TEST_CASE("UniXML::iterator", "[unixml][iterator][basic]" )
 	CHECK( it.getName() == "UNISETPLC" );
 
 	it = uxml.begin();
-	it.goChildren();
+	REQUIRE( it.goChildren() == true );
 	it.goEnd();
 	CHECK( it.getName() == "EndSection" );
 	it.goBegin();
@@ -155,7 +155,8 @@ TEST_CASE("UniXML::iterator::find", "[unixml][iterator-find][basic]" )
 	//   REQUIRE( it.getProp("name") == "Test4" );
 
 	UniXML::iterator sIt(it);
-	sIt.goChildren();
+
+	REQUIRE( sIt.goChildren() == true );
 
 	CHECK( sIt.find("subnode") );
 	REQUIRE( sIt.getProp("name") == "Test5" );

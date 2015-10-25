@@ -136,7 +136,7 @@ int main(int argc, char** argv)
 	try
 	{
 		int optindex = 0;
-		char opt = 0;
+		int opt = 0;
 
 		while(1)
 		{

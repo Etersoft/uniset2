@@ -160,15 +160,15 @@ class UNetExchange:
 		UniSetTypes::uniset_rwmutex mutex_start;
 
 		PassiveTimer ptHeartBeat;
-		UniSetTypes::ObjectId sidHeartBeat;
-		timeout_t maxHeartBeat;
+		UniSetTypes::ObjectId sidHeartBeat = { UniSetTypes::DefaultObjectId };
+		timeout_t maxHeartBeat = 10;
 		IOController::IOStateList::iterator itHeartBeat;
-		UniSetTypes::ObjectId test_id;
+		UniSetTypes::ObjectId test_id = { UniSetTypes::DefaultObjectId };
 
-		timeout_t steptime;    /*!< периодичность вызова step, [мсек] */
+		timeout_t steptime = { 1000 };    /*!< периодичность вызова step, [мсек] */
 
-		std::atomic_bool activated;
-		timeout_t activateTimeout;
+		std::atomic_bool activated = { false };
+		timeout_t activateTimeout = { 20000 }; // msec
 
 		struct ReceiverInfo
 		{

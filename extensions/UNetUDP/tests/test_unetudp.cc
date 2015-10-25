@@ -164,8 +164,8 @@ TEST_CASE("[UNetUDP]: UDPMessage", "[unetudp][udpmessage]")
 		UniSetUDP::UDPPacket p;
 		size_t len = u.transport_msg(p);
 		CHECK( len != 0 );
-		CHECK( a < UniSetUDP::MaxACount );
-		CHECK( a < UniSetUDP::MaxDCount );
+		REQUIRE( a < UniSetUDP::MaxACount );
+		REQUIRE( a < UniSetUDP::MaxDCount );
 
 		UniSetUDP::UDPMessage u2(p);
 		REQUIRE( u2.a_dat[a].id == 100 );

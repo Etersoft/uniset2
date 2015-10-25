@@ -331,7 +331,10 @@ void DBServer_MySQL::createTables( MySQLInterface* db )
 		throw Exception();
 	}
 
-	for( it.goChildren(); it; it.goNext() )
+	if( !it.goChildren() )
+		return;
+
+	for( ; it; it.goNext() )
 	{
 		if( it.getName() != "comment" )
 		{

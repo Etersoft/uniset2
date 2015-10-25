@@ -74,8 +74,6 @@ long pyUInterface::getValue( long id )throw(UException)
 	{
 		throw UException(ex.what());
 	}
-
-	throw UException("(getValue): unknown error");
 }
 //---------------------------------------------------------------------------
 void pyUInterface::setValue( long id, long val )throw(UException)

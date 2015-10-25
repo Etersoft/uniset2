@@ -162,8 +162,8 @@ class UNetReceiver:
 	private:
 		UNetReceiver();
 
-		int recvpause;      /*!< пауза меджду приёмами пакетов, [мсек] */
-		int updatepause;    /*!< переодичность обновления данных в SM, [мсек] */
+		timeout_t recvpause = { 10 };      /*!< пауза меджду приёмами пакетов, [мсек] */
+		timeout_t updatepause = { 100 };    /*!< переодичность обновления данных в SM, [мсек] */
 
 		std::shared_ptr<ost::UDPReceive> udp;
 		ost::IPV4Address addr;
@@ -173,11 +173,11 @@ class UNetReceiver:
 		UniSetTypes::uniset_rwmutex pollMutex;
 		PassiveTimer ptRecvTimeout;
 		PassiveTimer ptPrepare;
-		timeout_t recvTimeout;
-		timeout_t prepareTime;
-		timeout_t lostTimeout;
+		timeout_t recvTimeout = { 5000 }; // msec
+		timeout_t prepareTime = { 2000 };
+		timeout_t lostTimeout = { 200 };
 		PassiveTimer ptLostTimeout;
-		unsigned long lostPackets = { 0 }; /*!< счётчик потерянных пакетов */
+		size_t lostPackets = { 0 }; /*!< счётчик потерянных пакетов */
 
 		UniSetTypes::ObjectId sidRespond = { UniSetTypes::DefaultObjectId };
 		IOController::IOStateList::iterator itRespond;
@@ -194,18 +194,18 @@ class UNetReceiver:
 		UniSetUDP::UDPMessage pack;        /*!< просто буфер для получения очередного сообщения */
 		UniSetUDP::UDPPacket r_buf;
 		UniSetTypes::uniset_rwmutex packMutex; /*!< mutex для работы с очередью */
-		unsigned long pnum;    /*!< текущий номер обработанного сообщения, для проверки непрерывности последовательности пакетов */
+		size_t pnum = { 0 };    /*!< текущий номер обработанного сообщения, для проверки непрерывности последовательности пакетов */
 
 		/*! максимальная разница межд номерами пакетов, при которой считается, что счётчик пакетов
 		 * прошёл через максимум или сбился...
 		 */
-		unsigned long maxDifferens = { 20 };
+		size_t maxDifferens = { 20 };
 
 		PacketQueue qtmp;    /*!< очередь на время обработки(очистки) основной очереди */
 		bool waitClean = { false };    /*!< флаг означающий, что ждём очистики очереди до конца */
-		unsigned long rnum = { 0 };    /*!< текущий номер принятого сообщения, для проверки "переполнения" или "сбоя" счётчика */
+		size_t rnum = { 0 };    /*!< текущий номер принятого сообщения, для проверки "переполнения" или "сбоя" счётчика */
 
-		int maxProcessingCount; /*!< максимальное число обрабатываемых за один раз сообщений */
+		size_t maxProcessingCount = { 100 }; /*!< максимальное число обрабатываемых за один раз сообщений */
 
 		bool lockUpdate = { false }; /*!< флаг блокировки сохранения принятых данных в SM */
 		UniSetTypes::uniset_rwmutex lockMutex;

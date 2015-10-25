@@ -19,9 +19,13 @@ int main( int argc, char* argv[] )
 
 		return session.run();
 	}
-	catch( UniSetTypes::Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		std::cerr << ex << std::endl;
+	}
+	catch( const std::exception& ex )
+	{
+		std::cerr << ex.what() << std::endl;
 	}
 
 	return 1;

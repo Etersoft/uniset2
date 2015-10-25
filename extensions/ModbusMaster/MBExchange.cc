@@ -268,11 +268,11 @@ MBExchange::~MBExchange()
 void MBExchange::waitSMReady()
 {
 	// waiting for SM is ready...
-	timeout_t ready_timeout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "15000");
-
-	if( ready_timeout == 0 )
-		ready_timeout = 15000;
-	else if( ready_timeout < 0 )
+	int tout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "15000");
+	timeout_t ready_timeout = 15000;
+	if( ready_timeout > 0 )
+		ready_timeout = tout;
+	else if( tout < 0 )
 		ready_timeout = UniSetTimer::WaitUpTime;
 
 	if( !shm->waitSMready(ready_timeout, 50) )
