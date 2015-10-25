@@ -156,19 +156,19 @@ class UNetExchange:
 
 	private:
 		UNetExchange();
-		bool initPause;
+		timeout_t initPause;
 		UniSetTypes::uniset_rwmutex mutex_start;
 
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;
-		int maxHeartBeat;
+		timeout_t maxHeartBeat;
 		IOController::IOStateList::iterator itHeartBeat;
 		UniSetTypes::ObjectId test_id;
 
-		int steptime;    /*!< периодичность вызова step, [мсек] */
+		timeout_t steptime;    /*!< периодичность вызова step, [мсек] */
 
 		std::atomic_bool activated;
-		int activateTimeout;
+		timeout_t activateTimeout;
 
 		struct ReceiverInfo
 		{

@@ -41,7 +41,7 @@ class UNetSender
 
 		virtual ~UNetSender();
 
-		typedef int sendfactor_t;
+		typedef size_t sendfactor_t;
 
 		struct UItem
 		{
@@ -166,7 +166,7 @@ class UNetSender
 
 		std::shared_ptr< ThreadCreator<UNetSender> > s_thr;    // send thread
 
-		unsigned long ncycle = { 0 }; /*!< номер цикла посылки */
+		size_t ncycle = { 0 }; /*!< номер цикла посылки */
 
 };
 // -----------------------------------------------------------------------------

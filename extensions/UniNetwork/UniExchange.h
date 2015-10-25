@@ -118,13 +118,13 @@ class UniExchange:
 		void updateLocalData();
 		void initIterators();
 
-		int polltime = { 200 };
+		timeout_t polltime = { 200 };
 		PassiveTimer ptUpdate;
 		bool init_ok = { false };
 
 		SList mymap;
 		size_t maxIndex = { 0 };
-		int smReadyTimeout = { 15000 }; // msec
+		timeout_t smReadyTimeout = { 15000 }; // msec
 
 	private:
 };
