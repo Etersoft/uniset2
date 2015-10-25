@@ -58,6 +58,9 @@ fi
 
 AM_CONDITIONAL(DISABLE_SQLITE, test ${buildsqlite} = false)
 
+# check xsltproc
+AC_CHECK_PROG([XSLTPROC],[xsltproc],[yes])
+test "x$XSLTPROC" = "x" && AC_MSG_ERROR([*** xsltproc not found.])
 
 # check IDL compiler
 AC_PATH_PROG([IDL], [omniidl])
@@ -274,8 +277,8 @@ AC_SUBST(COV_CFLAGS)
 AM_CONDITIONAL(HAVE_COVERAGE, test ${buildgcov} = true)
 AM_CONDITIONAL(HAVE_TESTS, test ${buildtests} = true)
 
-# -Weffc++ -Wno-unused-variable"
-CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Wctor-dtor-privacy -Woverloaded-virtual -Werror"
+# -Weffc++ -Wno-unused-variable -Werror
+CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Wctor-dtor-privacy -Woverloaded-virtual -Werror=overflow"
 
 # export
 LDFLAGS="$LDFLAGS ${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS} ${COMCPP_LIBS}"
