@@ -26,7 +26,7 @@ before_install:
 install:
   # have no catch package
   - sudo apt-get install libcomedi-dev libcommoncpp2-dev libmysqlclient-dev libomniorb4-dev omniidl xsltproc libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev
-  - wget https://github.com/philsquared/Catch/blob/master/single_include/catch.hpp -O include/catch.hpp
+  - wget https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp -O include/catch.hpp
 
 before_script:
   - export CXXFLAGS='-pipe -O2 -pedantic -Wall'
