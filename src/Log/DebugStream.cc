@@ -43,7 +43,7 @@ using std::ios;
 
 /// Constructor, sets the debug level to t.
 DebugStream::DebugStream(Debug::type t)
-	: ostream(new debugbuf(cerr.rdbuf())),
+	: /* ostream(new debugbuf(cerr.rdbuf())),*/
 	  dt(t), nullstream(new nullbuf), internal(new debugstream_internal),
 	  show_datetime(true), show_logtype(true),
 	  fname(""),
@@ -56,7 +56,7 @@ DebugStream::DebugStream(Debug::type t)
 //--------------------------------------------------------------------------
 /// Constructor, sets the log file to f, and the debug level to t.
 DebugStream::DebugStream(char const* f, Debug::type t, bool truncate )
-	: ostream(new debugbuf(cerr.rdbuf())),
+	: /* ostream(new debugbuf(cerr.rdbuf())), */
 	  dt(t), nullstream(new nullbuf),
 	  internal(new debugstream_internal),
 	  show_datetime(true), show_logtype(true),

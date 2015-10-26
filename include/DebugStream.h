@@ -269,19 +269,19 @@ class DebugStream : public std::ostream
 
 		// private:
 		/// The current debug level
-		Debug::type dt;
+		Debug::type dt = { Debug::NONE };
 		/// The no-op stream.
 		std::ostream nullstream;
 		///
 		struct debugstream_internal;
 		///
-		debugstream_internal* internal;
-		bool show_datetime;
-		bool show_logtype;
-		std::string fname;
+		debugstream_internal* internal = { 0 };
+		bool show_datetime = { true };
+		bool show_logtype = { true };
+		std::string fname = { "" };
 
 		StreamEvent_Signal s_stream;
-		std::string logname;
+		std::string logname = { "" };
 
 		bool isWriteLogFile = { false };
 };
