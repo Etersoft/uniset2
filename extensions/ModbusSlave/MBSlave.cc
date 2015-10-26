@@ -463,7 +463,7 @@ void MBSlave::waitSMReady()
 	// waiting for SM is ready...
 	int tout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "15000");
 	timeout_t ready_timeout = 15000;
-	if( ready_timeout > 0 )
+	if( tout > 0 )
 		ready_timeout = tout;
 	else if( tout < 0 )
 		ready_timeout = UniSetTimer::WaitUpTime;

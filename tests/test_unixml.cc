@@ -113,7 +113,7 @@ TEST_CASE("UniXML::iterator", "[unixml][iterator][basic]" )
 	REQUIRE( sIt.getProp("name") == "Test5" );
 
 	it = uxml.begin();
-	it.goChildren();
+	REQUIRE( it.goChildren() == true );
 	CHECK( it.getName() == "UserData" );
 	it.goParent();
 	CHECK( it.getName() == "UNISETPLC" );

@@ -56,14 +56,6 @@ static bool split_addr( const string& addr, string& host, ost::tpport_t& port )
 // --------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
-
-	size_t n = UniSetUDP::MaxPacketNum;
-	cout << "n=" << n << endl;
-	n++;
-	cout << "n++=" << n << endl;
-	return 0;
-
-
 	int optindex = 0;
 	int opt = 0;
 	Command cmd = cmdNOP;
@@ -332,7 +324,9 @@ int main(int argc, char* argv[])
 				{
 					mypack.num = packetnum++;
 
-					if( packetnum > UniSetUDP::MaxPacketNum )
+					// при переходе черех максимум (UniSetUDP::MaxPacketNum)
+					// пакет опять должен иметь номер "1"
+					if( packetnum == 0 )
 						packetnum = 1;
 
 					try
