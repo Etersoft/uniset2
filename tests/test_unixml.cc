@@ -68,7 +68,7 @@ TEST_CASE("UniXML::iterator", "[unixml][iterator][basic]" )
 
 	it = uxml.begin();
 	CHECK( it.getName() == "UNISETPLC" );
-	it.goChildren();
+	REQUIRE(it.goChildren() == true );
 	CHECK( it.getName() == "UserData" );
 
 	it += 4;
