@@ -175,8 +175,8 @@ namespace UniSetTypes
 		if( fileConf.empty() )
 			setConfFileName();
 
-		ObjectIndex_Array* _oi = new ObjectIndex_Array(omap);
-		oind = shared_ptr<ObjectIndex>(_oi);
+		shared_ptr<ObjectIndex_Array> _oi = make_shared<ObjectIndex_Array>(omap);
+		oind = static_pointer_cast<ObjectIndex>(_oi);
 
 		initConfiguration(argc, argv);
 	}
@@ -212,7 +212,7 @@ namespace UniSetTypes
 
 			try
 			{
-				if( unixml == nullptr )
+				if( !unixml )
 					unixml = make_shared<UniXML>();
 
 				if( !unixml->isOpen() )
@@ -247,13 +247,13 @@ namespace UniSetTypes
 					{
 						if( it.getIntProp("idfromfile") == 0 )
 						{
-							ObjectIndex_XML* oi = new ObjectIndex_XML(unixml); //(fileConfName);
-							oind = shared_ptr<ObjectIndex>(oi);
+							shared_ptr<ObjectIndex_XML> oi = make_shared<ObjectIndex_XML>(unixml); //(fileConfName);
+							oind = static_pointer_cast<ObjectIndex>(oi);
 						}
 						else
 						{
-							ObjectIndex_idXML* oi = new ObjectIndex_idXML(unixml); //(fileConfName);
-							oind = shared_ptr<ObjectIndex>(oi);
+							shared_ptr<ObjectIndex_idXML> oi = make_shared<ObjectIndex_idXML>(unixml); //(fileConfName);
+							oind = static_pointer_cast<ObjectIndex>(oi);
 						}
 					}
 					catch( const Exception& ex )
