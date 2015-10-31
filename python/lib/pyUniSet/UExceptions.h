@@ -8,9 +8,9 @@ struct UException
 	explicit UException( const char* e ): err( std::string(e)) {}
 	~UException() {}
 
-	const char* getError()
+	const std::string getError()
 	{
-		return err.c_str();
+		return err;
 	}
 
 	std::string err;

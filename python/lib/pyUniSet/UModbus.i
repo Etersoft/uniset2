@@ -3,6 +3,7 @@
 *    to regenerate the wrappers run:
 *    swig -python UInterface.i
 ***********************************************************/
+%include <std_string.i>
 
 %module pyUModbus
 %{

@@ -38,21 +38,16 @@
 class ObjectRepositoryFactory: private ObjectRepository
 {
 	public:
-		//              ObjectRepositoryFactory();
-		//            ObjectRepositoryFactory(int* argc=argc_ptr, char* **argv=argv_ptr); // параметры инициализации ORB
+
 		ObjectRepositoryFactory( const std::shared_ptr<UniSetTypes::Configuration>& conf );
 		~ObjectRepositoryFactory();
 
 		//! Создание секции
-		bool createSection(const char* name, const char* in_section )throw(UniSetTypes::ORepFailed, UniSetTypes::InvalidObjectName);
-		/*! \overload */
 		bool createSection(const std::string& name, const std::string& in_section)throw(UniSetTypes::ORepFailed, UniSetTypes::InvalidObjectName);
 		/*! Создание секции по полному имени */
 		bool createSectionF(const std::string& fullName)throw(UniSetTypes::ORepFailed, UniSetTypes::InvalidObjectName);
 
 		//! Функция создания секции в корневом 'каталоге'
-		bool createRootSection(const char* name);
-		/*! \overload */
 		bool createRootSection(const std::string& name);
 
 
@@ -76,7 +71,7 @@ class ObjectRepositoryFactory: private ObjectRepository
 
 	private:
 		/*! Создание нового контекста(секции) */
-		bool createContext(const char* cname, CosNaming::NamingContext_ptr ctx);
+		bool createContext( const std::string& cname, CosNaming::NamingContext_ptr ctx);
 };
 //};
 

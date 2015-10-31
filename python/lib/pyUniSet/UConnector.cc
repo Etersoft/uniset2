@@ -3,7 +3,7 @@
 // --------------------------------------------------------------------------
 using namespace std;
 // --------------------------------------------------------------------------
-UConnector::UConnector( UTypes::Params* p, const char* xfile )throw(UException):
+UConnector::UConnector( UTypes::Params* p, const std::string& xfile )throw(UException):
 	conf(0),
 	ui(0),
 	xmlfile(xfile)
@@ -23,7 +23,7 @@ UConnector::UConnector( UTypes::Params* p, const char* xfile )throw(UException):
 	}
 }
 //---------------------------------------------------------------------------
-UConnector::UConnector( int argc, char** argv, const char* xfile )throw(UException):
+UConnector::UConnector(int argc, char** argv, const string& xfile )throw(UException):
 	conf(0),
 	ui(0),
 	xmlfile(xfile)
@@ -47,11 +47,11 @@ UConnector::~UConnector()
 {
 }
 // --------------------------------------------------------------------------
-const char* UConnector::getConfFileName()
+string UConnector::getConfFileName()
 {
 	//    return xmlfile;
 	if( conf )
-		return  UniSetTypes::uni_strdup(conf->getConfFileName());
+		return conf->getConfFileName();
 
 	return "";
 
@@ -102,7 +102,7 @@ void UConnector::setValue( long id, long val, long node )throw(UException)
 	}
 }
 //---------------------------------------------------------------------------
-long UConnector::getSensorID( const char* name )
+long UConnector::getSensorID(const string& name )
 {
 	if( conf )
 		return conf->getSensorID(name);
@@ -110,7 +110,7 @@ long UConnector::getSensorID( const char* name )
 	return UTypes::DefaultID;
 }
 //---------------------------------------------------------------------------
-long UConnector::getNodeID( const char* name )
+long UConnector::getNodeID(const string& name )
 {
 	if( conf )
 		return conf->getNodeID(name);
@@ -118,26 +118,26 @@ long UConnector::getNodeID( const char* name )
 	return UTypes::DefaultID;
 }
 //---------------------------------------------------------------------------
-const char* UConnector::getName( long id )
+string UConnector::getName( long id )
 {
 	if( conf )
-		return  UniSetTypes::uni_strdup(conf->oind->getMapName(id));
+		return conf->oind->getMapName(id);
 
 	return "";
 }
 //---------------------------------------------------------------------------
-const char* UConnector::getShortName( long id )
+string UConnector::getShortName( long id )
 {
 	if( conf )
-		return  UniSetTypes::uni_strdup(ORepHelpers::getShortName(conf->oind->getMapName(id)));
+		return ORepHelpers::getShortName(conf->oind->getMapName(id));
 
 	return "";
 }
 //---------------------------------------------------------------------------
-const char* UConnector::getTextName( long id )
+string UConnector::getTextName( long id )
 {
 	if( conf )
-		return UniSetTypes::uni_strdup(conf->oind->getTextName(id));
+		return conf->oind->getTextName(id);
 
 	return "";
 }

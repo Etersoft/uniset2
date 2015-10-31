@@ -3,6 +3,7 @@
 *    to regenerate the wrappers run:
 *    swig -python UException.i
 ***********************************************************/
+%include <std_string.i>
 
 %module pyUExceptions
 %{

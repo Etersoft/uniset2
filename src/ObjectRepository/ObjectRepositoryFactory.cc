@@ -51,25 +51,23 @@ ObjectRepositoryFactory::~ObjectRepositoryFactory()
  * \param section - полное имя секции начиная с Root.
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepositoryFactory::createSection( const char* name, const char* in_section)throw(ORepFailed, InvalidObjectName )
+bool ObjectRepositoryFactory::createSection(const string& name, const string& in_section)throw(ORepFailed, InvalidObjectName)
 {
-
-	const string str(name);
-	char bad = ORepHelpers::checkBadSymbols(str);
+	char bad = ORepHelpers::checkBadSymbols(name);
 
 	if (bad != 0)
 	{
 		ostringstream err;
-		err << "ObjectRepository(registration): (InvalidObjectName) " << str;
+		err << "ObjectRepository(registration): (InvalidObjectName) " << name;
 		err << " содержит недопустимый символ " << bad;
 		throw ( InvalidObjectName(err.str().c_str()) );
 	}
 
 	ulogrep << "CreateSection: name = " << name << "  in section = " << in_section << endl;
 
-	if( sizeof(in_section) == 0 )
+	if( in_section.empty() )
 	{
-		ulogrep << "CreateSection: in_section=0" << endl;
+		ulogrep << "CreateSection: in_section..empty" << endl;
 		return createRootSection(name);
 	}
 
@@ -78,12 +76,6 @@ bool ObjectRepositoryFactory::createSection( const char* name, const char* in_se
 	CosNaming::NamingContext_var ctx = ORepHelpers::getContext(in_section, argc, argv, uconf->getNSName() );
 	return createContext( name, ctx.in() );
 }
-
-bool ObjectRepositoryFactory::createSection(const string& name, const string& in_section)throw(ORepFailed, InvalidObjectName)
-{
-	return createSection(name.c_str(), in_section.c_str());
-}
-
 // -------------------------------------------------------------------------------------------------------
 /*!
  * \param fullName - полное имя создаваемой секции
@@ -108,23 +100,16 @@ bool ObjectRepositoryFactory::createSectionF(const string& fullName)throw(ORepFa
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-bool ObjectRepositoryFactory::createRootSection(const char* name)
+bool ObjectRepositoryFactory::createRootSection( const string& name )
 {
 	CORBA::ORB_var orb = uconf->getORB();
 	CosNaming::NamingContext_var ctx = ORepHelpers::getRootNamingContext(orb, uconf->getNSName());
 	return createContext(name, ctx);
 }
-
-bool ObjectRepositoryFactory::createRootSection(const string& name)
-{
-	return createRootSection( name.c_str() );
-}
-
 // -----------------------------------------------------------------------------------------------------------
-bool ObjectRepositoryFactory::createContext(const char* cname, CosNaming::NamingContext_ptr ctx)
+bool ObjectRepositoryFactory::createContext( const string& cname, CosNaming::NamingContext_ptr ctx )
 {
-
-	CosNaming::Name_var nc = omniURI::stringToName(cname);
+	CosNaming::Name_var nc = omniURI::stringToName(cname.c_str());
 
 	try
 	{

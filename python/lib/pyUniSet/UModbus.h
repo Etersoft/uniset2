@@ -13,14 +13,13 @@
 class UModbus
 {
 	public:
-		//      UModbus( int argc, char** argv )throw(UException);
-		//      UModbus( UTypes::Params* p )throw(UException);
+
 		UModbus();
 		~UModbus();
 
-		inline const char* getUIType()
+		inline std::string getUIType()
 		{
-			return "modbus";
+			return string("modbus");
 		}
 
 		inline bool isWriteFunction( int mbfunc )
@@ -29,9 +28,9 @@ class UModbus
 		}
 
 		// выставление паметров связи, без установления соединения (!)
-		void prepare( const char* ip, int port )throw(UException);
+		void prepare( const std::string& ip, int port )throw(UException);
 
-		void connect( const char* ip, int port )throw(UException);
+		void connect( const std::string& ip, int port )throw(UException);
 		inline int conn_port()
 		{
 			return port;
@@ -56,8 +55,8 @@ class UModbus
 		 * будет сделано переподключение..
 		 */
 		long mbread( int addr, int mbreg, int mbfunc,
-					 const char* vtype, int nbit = -1,
-					 const char* ip = 0, int port = -1 )throw(UException);
+					 const std::string& vtype, int nbit = -1,
+					 const std::string& ip = "", int port = -1 )throw(UException);
 
 		long getWord( int addr, int mbreg, int mbfunc = 0x4 )throw(UException);
 		long getByte( int addr, int mbreg, int mbfunc = 0x4 )throw(UException);
@@ -68,7 +67,7 @@ class UModbus
 		 * чтобы были заданы в UModbus::connect(). Если заданы другие ip и port,
 		 * будет сделана переподключение..
 		*/
-		void mbwrite( int addr, int mbreg, int val, int mbfunc, const char* ip = 0, int port = -1 )throw(UException);
+		void mbwrite( int addr, int mbreg, int val, int mbfunc, const std::string& ip = "", int port = -1 )throw(UException);
 
 	protected:
 		long data2value( VTypes::VType vt, ModbusRTU::ModbusData* data );

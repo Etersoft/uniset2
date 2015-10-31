@@ -112,11 +112,6 @@ class ThreadCreator:
 			ost::PosixThread::setName( name.c_str() );
 		}
 
-		inline void setName( const char* name )
-		{
-			ost::PosixThread::setName( name );
-		}
-
 		inline void setCancel( ost::Thread::Cancel mode )
 		{
 			ost::PosixThread::setCancel(mode);

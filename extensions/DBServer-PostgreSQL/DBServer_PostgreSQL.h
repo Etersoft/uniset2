@@ -46,9 +46,9 @@ class DBServer_PostgreSQL:
 		bool writeToBase( const string& query );
 		void createTables( std::shared_ptr<PostgreSQLInterface>& db );
 
-		inline const char* tblName(int key)
+		inline std::string tblName(int key)
 		{
-			return tblMap[key].c_str();
+			return tblMap[key];
 		}
 
 		enum Timers

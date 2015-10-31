@@ -52,16 +52,14 @@ UModbus::~UModbus()
 	delete mb;
 }
 // --------------------------------------------------------------------------
-void UModbus::prepare( const char* _ip, int _port )throw(UException)
+void UModbus::prepare( const string& _ip, int _port )throw(UException)
 {
 	if( !mb )
 		throw UException("(connect): mb=NULL?!");
 
-	string s(_ip);
-
 	if( mb->isConnection() )
 	{
-		if( _port == port && s == ip )
+		if( _port == port && _ip == ip )
 			return;
 
 		mb->disconnect();
@@ -69,28 +67,26 @@ void UModbus::prepare( const char* _ip, int _port )throw(UException)
 
 	//cerr << "************** Prepare: " << string(_ip) << ":" << port << endl;
 	// strncpy(char *dest, const char *src, size_t n);
-	ip = s;
+	ip = _ip;
 	port = _port;
 }
 // --------------------------------------------------------------------------
-void UModbus::connect( const char* _ip, int _port )throw(UException)
+void UModbus::connect( const string& _ip, int _port )throw(UException)
 {
 	if( !mb )
 		throw UException("(connect): mb=NULL?!");
 
-	string s(_ip);
-
 	if( mb->isConnection() )
 	{
-		if( _port == port && s == ip )
+		if( _port == port && _ip == ip )
 			return;
 
 		mb->disconnect();
 	}
 
-	ip = s;
+	ip = _ip;
 	port = _port;
-	ost::InetAddress ia(_ip);
+	ost::InetAddress ia(_ip.c_str());
 
 	try
 	{
@@ -126,13 +122,12 @@ bool UModbus::getBit( int addr, int mbreg, int mbfunc )throw(UException)
 	return mbread(addr, mbreg, mbfunc, "unsigned");
 }
 // --------------------------------------------------------------------------
-long UModbus::mbread( int mbaddr, int mbreg, int mbfunc, const char* s_vtype, int nbit,
-					  const char* new_ip, int new_port )throw(UException)
+long UModbus::mbread(int mbaddr, int mbreg, int mbfunc, const string& s_vtype, int nbit,
+					  const string& new_ip, int new_port )throw(UException)
 {
 	using namespace VTypes;
 
-	//    const char* n_ip = strcmp(new_ip,"") ? new_ip : ip;
-	const char* n_ip = (new_ip != 0) ? new_ip : ip.c_str();
+	string n_ip( ( new_ip.empty() ? ip : new_ip ) );
 	int n_port = ( new_port > 0 ) ? new_port : port;
 
 	connect(n_ip, n_port);
@@ -290,9 +285,9 @@ long UModbus::data2value( VTypes::VType vtype, ModbusRTU::ModbusData* data )
 	return 0;
 }
 //---------------------------------------------------------------------------
-void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const char* new_ip, int new_port )throw(UException)
+void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const string& new_ip, int new_port )throw(UException)
 {
-	const char* n_ip = (new_ip != 0) ? new_ip : ip.c_str();
+	string n_ip( ( new_ip.empty() ? ip : new_ip ) );
 	int n_port = ( new_port > 0 ) ? new_port : port;
 
 	connect(n_ip, n_port);

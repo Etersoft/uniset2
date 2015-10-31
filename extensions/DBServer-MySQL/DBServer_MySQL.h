@@ -169,7 +169,7 @@ class DBServer_MySQL:
 		bool writeToBase( const string& query );
 		void createTables( MySQLInterface* db );
 
-		inline const char* tblName(int key)
+		inline std::string tblName( int key )
 		{
 			return tblMap[key].c_str();
 		}

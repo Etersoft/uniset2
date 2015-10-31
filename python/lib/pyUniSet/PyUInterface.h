@@ -7,20 +7,20 @@
 // --------------------------------------------------------------------------
 namespace pyUInterface
 {
-	void uniset_init_params( UTypes::Params* p, const char* xmlfile )throw(UException);
-	void uniset_init( int argc, char** argv, const char* xmlfile )throw(UException);
+	void uniset_init_params( UTypes::Params* p, const std::string& xmlfile )throw(UException);
+	void uniset_init( int argc, char** argv, const std::string& xmlfile )throw(UException);
 
 	//---------------------------------------------------------------------------
 	long getValue( long id )throw(UException);
 	void setValue( long id, long val )throw(UException);
 
-	long getSensorID( const char* );
+	long getSensorID(  const std::string& name );
 
-	const char* getShortName( long id );
-	const char* getName( long id );
-	const char* getTextName( long id );
+	std::string getShortName( long id );
+	std::string getName( long id );
+	std::string getTextName( long id );
 
-	const char* getConfFileName();
+	std::string getConfFileName();
 
 }
 //---------------------------------------------------------------------------

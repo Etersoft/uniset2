@@ -169,9 +169,9 @@ class DBServer_SQLite:
 		bool writeToBase( const string& query );
 		void createTables( SQLiteInterface* db );
 
-		inline const char* tblName(int key)
+		inline std::string tblName(int key)
 		{
-			return tblMap[key].c_str();
+			return tblMap[key];
 		}
 
 		enum Timers

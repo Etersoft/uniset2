@@ -10,13 +10,13 @@ using namespace std;
 //---------------------------------------------------------------------------
 static UInterface* ui = 0;
 //---------------------------------------------------------------------------
-void pyUInterface::uniset_init_params( UTypes::Params* p, const char* xmlfile )throw(UException)
+void pyUInterface::uniset_init_params( UTypes::Params* p, const std::string& xmlfile )throw(UException)
 {
 	pyUInterface::uniset_init(p->argc, p->argv, xmlfile);
 }
 //---------------------------------------------------------------------------
 
-void pyUInterface::uniset_init( int argc, char* argv[], const char* xmlfile )throw(UException)
+void pyUInterface::uniset_init( int argc, char* argv[], const std::string& xmlfile )throw(UException)
 {
 	try
 	{
@@ -118,7 +118,7 @@ void pyUInterface::setValue( long id, long val )throw(UException)
 	}
 }
 //---------------------------------------------------------------------------
-long pyUInterface::getSensorID( const char* name )
+long pyUInterface::getSensorID(const string& name )
 {
 	auto conf = UniSetTypes::uniset_conf();
 
@@ -128,42 +128,42 @@ long pyUInterface::getSensorID( const char* name )
 	return UniSetTypes::DefaultObjectId;
 }
 //---------------------------------------------------------------------------
-const char* pyUInterface::getName( long id )
+std::string pyUInterface::getName( long id )
 {
 	auto conf = UniSetTypes::uniset_conf();
 
 	if( conf )
-		return  UniSetTypes::uni_strdup(conf->oind->getMapName(id));
+		return conf->oind->getMapName(id);
 
 	return "";
 }
 //---------------------------------------------------------------------------
-const char* pyUInterface::getShortName( long id )
+string pyUInterface::getShortName( long id )
 {
 	auto conf = UniSetTypes::uniset_conf();
 
 	if( conf )
-		return UniSetTypes::uni_strdup(ORepHelpers::getShortName(conf->oind->getMapName(id)));
+		return ORepHelpers::getShortName(conf->oind->getMapName(id));
 
 	return "";
 }
 //---------------------------------------------------------------------------
-const char* pyUInterface::getTextName( long id )
+std::string pyUInterface::getTextName( long id )
 {
 	auto conf = UniSetTypes::uniset_conf();
 
 	if( conf )
-		return UniSetTypes::uni_strdup(conf->oind->getTextName(id));
+		return conf->oind->getTextName(id);
 
 	return "";
 }
 //---------------------------------------------------------------------------
-const char* pyUInterface::getConfFileName()
+string pyUInterface::getConfFileName()
 {
 	auto conf = UniSetTypes::uniset_conf();
 
 	if( conf )
-		return UniSetTypes::uni_strdup(conf->getConfFileName());
+		return conf->getConfFileName();
 
 	return "";
 

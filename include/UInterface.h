@@ -199,13 +199,9 @@ class UInterface
 		// Работа с ID, Name
 
 		/*! получение идентификатора объекта по имени */
-		inline UniSetTypes::ObjectId getIdByName( const char* name ) const
-		{
-			return oind->getIdByName(name);
-		}
 		inline UniSetTypes::ObjectId getIdByName( const std::string& name ) const
 		{
-			return getIdByName(name.c_str());
+			return oind->getIdByName(name);
 		}
 
 		/*! получение имени по идентификатору объекта */

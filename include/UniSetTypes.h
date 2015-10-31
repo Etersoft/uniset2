@@ -189,7 +189,7 @@ namespace UniSetTypes
 
 	/*! Функция разбора строки вида: id1@node1=val1,id2@node2=val2,...
 	   Если '=' не указано, возвращается val=0
-	  Если @node не указано, возвращается node=DefaultObjectId */
+	   Если @node не указано, возвращается node=DefaultObjectId */
 	std::list<ParamSInfo> getSInfoList( const std::string& s, std::shared_ptr<UniSetTypes::Configuration> conf = nullptr );
 
 
