@@ -366,7 +366,7 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& ainf, bool forc
 		ostringstream err;
 		err << "(IOCOntroller::ioRegistration): КОНТРОЛЛЕРУ НЕ ЗАДАН ObjectId. Регистрация невозможна.";
 		uwarn << err.str() << endl;
-		throw ResolveNameError(err.str().c_str());
+		throw ResolveNameError(err.str());
 	}
 
 	{
@@ -382,7 +382,7 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& ainf, bool forc
 				ostringstream err;
 				err << "Попытка повторной регистрации датчика(" << ainf->si.id << "). имя: "
 					<< uniset_conf()->oind->getNameById(ainf->si.id);
-				throw ObjectNameAlready(err.str().c_str());
+				throw ObjectNameAlready(err.str());
 			}
 		}
 

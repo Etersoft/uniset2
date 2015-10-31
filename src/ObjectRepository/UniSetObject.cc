@@ -85,8 +85,8 @@ UniSetObject::UniSetObject( ObjectId id ):
 	if (myid >= 0)
 	{
 		string myfullname = ui->getNameById(id);
-		myname = ORepHelpers::getShortName(myfullname.c_str());
-		section = ORepHelpers::getSectionName(myfullname.c_str());
+		myname = ORepHelpers::getShortName(myfullname);
+		section = ORepHelpers::getSectionName(myfullname);
 	}
 	else
 	{
@@ -196,8 +196,8 @@ void UniSetObject::setID( UniSetTypes::ObjectId id )
 		throw ObjectNameAlready("ObjectId already set(setID)");
 
 	string myfullname = ui->getNameById(id);
-	myname = ORepHelpers::getShortName(myfullname.c_str());
-	section = ORepHelpers::getSectionName(myfullname.c_str());
+	myname = ORepHelpers::getShortName(myfullname);
+	section = ORepHelpers::getSectionName(myfullname);
 	myid = id;
 	ui->initBackId(myid);
 }
@@ -347,7 +347,7 @@ void UniSetObject::registered()
 	{
 		uwarn << myname << "(registered): unknown my manager" << endl;
 		string err(myname + ": unknown my manager");
-		throw ORepFailed(err.c_str());
+		throw ORepFailed(err);
 	}
 
 	{
@@ -390,13 +390,13 @@ void UniSetObject::registered()
 	catch( ORepFailed )
 	{
 		string err(myname + ": don`t registration in object reposotory");
-		throw ORepFailed(err.c_str());
+		throw ORepFailed(err);
 	}
 	catch( const Exception& ex )
 	{
 		uwarn << myname << "(registered):  " << ex << endl;
 		string err(myname + ": don`t registration in object reposotory");
-		throw ORepFailed(err.c_str());
+		throw ORepFailed(err);
 	}
 
 	regOK = true;
@@ -741,7 +741,7 @@ bool UniSetObject::activate()
 	if( poa == NULL || CORBA::is_nil(poa) )
 	{
 		string err(myname + ": не задан менеджер");
-		throw ORepFailed(err.c_str());
+		throw ORepFailed(err);
 	}
 
 	if( uniset_conf()->isTransientIOR() )
@@ -931,8 +931,8 @@ UniSetTypes::SimpleInfo* UniSetObject::getInfo()
 	//    info << "\n";
 
 	SimpleInfo* res = new SimpleInfo();
-	res->info     =  info.str().c_str(); // CORBA::string_dup(info.str().c_str());
-	res->id     =  myid;
+	res->info =  info.str().c_str(); // CORBA::string_dup(info.str().c_str());
+	res->id   =  myid;
 
 	return res; // ._retn();
 }

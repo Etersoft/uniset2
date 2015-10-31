@@ -48,11 +48,6 @@ ObjectIndex_XML::ObjectIndex_XML( const std::shared_ptr<UniXML>& xml, int minSiz
 // -----------------------------------------------------------------------------------------
 ObjectIndex_XML::~ObjectIndex_XML()
 {
-	for( auto& it : omap )
-	{
-		delete[] it.repName;
-		delete[] it.textName;
-	}
 }
 // -----------------------------------------------------------------------------------------
 ObjectId ObjectIndex_XML::getIdByName( const string& name )
@@ -92,7 +87,7 @@ std::ostream& ObjectIndex_XML::printMap( std::ostream& os )
 
 	for( auto it = omap.begin(); it != omap.end(); ++it )
 	{
-		if( it->repName == NULL )
+		if( it->repName.empty() )
 			continue;
 
 		os  << setw(5) << it->id << "  "
@@ -186,9 +181,8 @@ unsigned int ObjectIndex_XML::read_section( const std::shared_ptr<UniXML>& xml, 
 		// name
 		ostringstream n;
 		n << secname << xml->getProp(it, "name");
-		delete[] omap[ind].repName;
 		const string name(n.str());
-		omap[ind].repName = uni_strdup(name);
+		omap[ind].repName = name;
 
 		// mok
 		mok[name] = ind; // mok[omap[ind].repName] = ind;
@@ -199,8 +193,7 @@ unsigned int ObjectIndex_XML::read_section( const std::shared_ptr<UniXML>& xml, 
 		if( textname.empty() )
 			textname = xml->getProp(it, "name");
 
-		delete[] omap[ind].textName;
-		omap[ind].textName = uni_strdup(textname);
+		omap[ind].textName = textname;
 
 		omap[ind].data = (void*)(xmlNode*)it;
 
@@ -255,8 +248,7 @@ unsigned int ObjectIndex_XML::read_nodes( const std::shared_ptr<UniXML>& xml, co
 		omap[ind].id = ind;
 		string nodename(xml->getProp(it, "name"));
 
-		delete[] omap[ind].repName;
-		omap[ind].repName = uni_strdup(nodename);
+		omap[ind].repName = nodename;
 
 		// textname
 		string textname(xml->getProp(it, "textname"));
@@ -264,8 +256,7 @@ unsigned int ObjectIndex_XML::read_nodes( const std::shared_ptr<UniXML>& xml, co
 		if( textname.empty() )
 			textname = nodename;
 
-		delete[] omap[ind].textName;
-		omap[ind].textName = uni_strdup(textname);
+		omap[ind].textName = textname;
 		omap[ind].data = (void*)(xmlNode*)(it);
 		//
 		mok[omap[ind].repName] = ind;

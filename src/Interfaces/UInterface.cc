@@ -864,7 +864,7 @@ throw(ResolveNameError, UniSetTypes::TimeOut )
 					if( CORBA::is_nil(orb) )
 						orb = uconf->getORB();
 
-					ctx = ORepHelpers::getRootNamingContext( orb, nodeName.c_str() );
+					ctx = ORepHelpers::getRootNamingContext( orb, nodeName );
 					break;
 				}
 				//                catch( const CORBA::COMM_FAILURE& ex )

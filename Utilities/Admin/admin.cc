@@ -379,7 +379,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 	try
 	{
 		ListObjectName ls;
-		rep->list(section.c_str(), &ls);
+		rep->list(section, &ls);
 
 		if( ls.empty() )
 		{
@@ -401,7 +401,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 		{
 			string ob(*li);
 			buf = section + "/" + ob;
-			fullName = buf.c_str();
+			fullName = buf;
 
 			try
 			{

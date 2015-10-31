@@ -43,7 +43,7 @@ ObjectIndex_Array::ObjectIndex_Array( const ObjectInfo* objectInfo ):
 {
 	for (numOfObject = 0;; numOfObject++)
 	{
-		if (!objectInfo[numOfObject].repName)
+		if( objectInfo[numOfObject].repName.empty() )
 			break;
 
 		assert (numOfObject == objectInfo[numOfObject].id);
@@ -93,7 +93,7 @@ std::ostream& ObjectIndex_Array::printMap( std::ostream& os )
 
 	for( auto i = 0;; i++)
 	{
-		if( !objectInfo[i].repName )
+		if( objectInfo[i].repName.empty() )
 			break;
 
 		assert (i == objectInfo[i].id);

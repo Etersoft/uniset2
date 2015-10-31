@@ -143,11 +143,11 @@ namespace UniSetTypes
 	{
 		ObjectInfo():
 			id(DefaultObjectId),
-			repName(0), textName(0), data(0) {}
+			repName(""), textName(""), data(0) {}
 
 		ObjectId id;        /*!< идентификатор */
-		char* repName;      /*!< текстовое имя для регистрации в репозитории */
-		char* textName;     /*!< текстовое имя */
+		std::string repName;      /*!< текстовое имя для регистрации в репозитории */
+		std::string textName;     /*!< текстовое имя */
 		void* data;
 
 		inline bool operator < ( const ObjectInfo& o ) const

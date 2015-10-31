@@ -26,11 +26,6 @@ ObjectIndex_idXML::ObjectIndex_idXML( const shared_ptr<UniXML>& xml )
 // -----------------------------------------------------------------------------------------
 ObjectIndex_idXML::~ObjectIndex_idXML()
 {
-	for( auto& it : omap )
-	{
-		delete[] it.second.repName;
-		delete[] it.second.textName;
-	}
 }
 // -----------------------------------------------------------------------------------------
 ObjectId ObjectIndex_idXML::getIdByName( const string& name )
@@ -74,7 +69,7 @@ std::ostream& ObjectIndex_idXML::printMap( std::ostream& os )
 
 	for( auto it = omap.begin(); it != omap.end(); ++it )
 	{
-		if( it->second.repName == NULL )
+		if( it->second.repName.empty() )
 			continue;
 
 		os  << setw(5) << it->second.id << "  "
@@ -158,14 +153,14 @@ void ObjectIndex_idXML::read_section( const std::shared_ptr<UniXML>& xml, const 
 		ostringstream n;
 		n << secname << it.getProp("name");
 		const string name(n.str());
-		inf.repName = uni_strdup(name);
+		inf.repName = name;
 
 		string textname(xml->getProp(it, "textname"));
 
 		if( textname.empty() )
 			textname = xml->getProp(it, "name");
 
-		inf.textName = uni_strdup(textname);
+		inf.textName = textname;
 		inf.data = (void*)(xmlNode*)(it);
 
 		mok.emplace(name, inf.id);
@@ -209,7 +204,7 @@ void ObjectIndex_idXML::read_nodes( const std::shared_ptr<UniXML>& xml, const st
 		}
 
 		string name(it.getProp("name"));
-		inf.repName = uni_strdup(name);
+		inf.repName = name;
 
 		// textname
 		string textname(xml->getProp(it, "textname"));
@@ -217,7 +212,7 @@ void ObjectIndex_idXML::read_nodes( const std::shared_ptr<UniXML>& xml, const st
 		if( textname.empty() )
 			textname = name;
 
-		inf.textName = uni_strdup(textname);
+		inf.textName = textname;
 		inf.data = (void*)(xmlNode*)(it);
 
 		omap.emplace(inf.id, inf);
