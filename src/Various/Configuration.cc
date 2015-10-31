@@ -929,9 +929,9 @@ namespace UniSetTypes
 	// -------------------------------------------------------------------------
 	string Configuration::getRepSectionName( const string& sec, xmlNode* secnode )
 	{
-		xmlNode* node = unixml->findNode(unixml->getFirstNode(), sec);
+		secnode = unixml->findNode(unixml->getFirstNode(), sec);
 
-		if( node == NULL )
+		if( secnode == NULL )
 		{
 			ostringstream msg;
 			msg << "Configuration(initRepSections): Not found section '" << sec << "' in " << fileConfName;
@@ -939,12 +939,10 @@ namespace UniSetTypes
 			throw SystemError(msg.str());
 		}
 
-		secnode = node;
-
-		string ret(unixml->getProp(node, "section"));
+		string ret(unixml->getProp(secnode, "section"));
 
 		if( ret.empty() )
-			ret = unixml->getProp(node, "name");
+			ret = unixml->getProp(secnode, "name");
 
 		return std::move(ret);
 	}
