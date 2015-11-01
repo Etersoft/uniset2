@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.2
-Release: alt9
+Release: alt10
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -451,6 +451,11 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Fri Oct 30 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt10
+- fixes after coverity scan..
+- minor fixes
+- use char* --> std::string
+
 * Wed Oct 14 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt9
 - new release
 
