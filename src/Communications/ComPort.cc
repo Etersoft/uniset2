@@ -246,13 +246,23 @@ unsigned char ComPort::m_receiveByte( bool wait )
 // Перенести в receiveBlock (определяется через timeout == 0)
 void ComPort::setBlocking(bool blocking)
 {
-	if(blocking)
+	if( blocking )
 	{
-		fcntl(fd, F_SETFL, 0);
+		if( fcntl(fd, F_SETFL, 0) == -1 )
+		{
+			string str = "setBlocking: err: ";
+			str += strerror(errno);
+			throw UniSetTypes::SystemError(str.c_str());
+		}
 	}
 	else
 	{
-		fcntl(fd, F_SETFL, O_NONBLOCK);
+		if( fcntl(fd, F_SETFL, O_NONBLOCK) == -1 )
+		{
+			string str = "setBlocking: err: ";
+			str += strerror(errno);
+			throw UniSetTypes::SystemError(str.c_str());
+		}
 	}
 }
 // --------------------------------------------------------------------------------
