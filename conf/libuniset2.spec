@@ -35,7 +35,8 @@ BuildRequires: libcommoncpp2-devel libomniORB-devel libsigc++2-devel
 BuildPreReq: xsltproc
 
 # due -std=c++11 using
-BuildPreReq: gcc5 >= 4.8
+# BuildPreReq: gcc5 >= 4.8
+# Must be gcc >= 4.7
 
 %if_enabled io
 BuildRequires: libcomedi-devel
@@ -427,7 +428,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %endif
 
 %files extension-common-devel
-%id %_includedir/%oname/extensions/
+#%id %_includedir/%oname/extensions/
 %_includedir/%oname/extensions/*.*
 %_libdir/libUniSet2Extensions.so
 %_libdir/libUniSet2MB*.so
