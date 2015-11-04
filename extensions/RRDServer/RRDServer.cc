@@ -58,8 +58,13 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 	string fv( it.getProp("filter_value") );
 	string cf( it.getProp("ds_field") );
 
+	string ds(cf + "_dsname");
+
 	if( cf.empty() )
+	{
 		cf = ff + fv + "_ds";
+		ds = ff + fv + "_dsname";
+	}
 
 	int rrdstep = it.getPIntProp("step", 5);
 	int lastup =  it.getPIntProp("lastup", 0);
@@ -79,7 +84,7 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 	{
 		ostringstream err;
 		err << myname << "(init): rrd='" << fname << "' Unknown RRA list";
-		mycrit << err.str();
+		mycrit << err.str() << endl;
 		throw SystemError(err.str());
 	}
 
@@ -91,7 +96,7 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 		{
 			ostringstream err;
 			err << myname << "(init): rrd='" << fname << "' Unkown RRA item.. <item rra='...'";
-			mycrit << err.str();
+			mycrit << err.str() << endl;
 			throw SystemError(err.str());
 		}
 
@@ -116,7 +121,7 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 		{
 			ostringstream err;
 			err << myname << "(init): Not found section <sensors>";
-			mycrit << err.str();
+			mycrit << err.str() << endl;
 			throw SystemError(err.str());
 		}
 
@@ -126,7 +131,7 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 		{
 			ostringstream err;
 			err << myname << "(init): section <sensors> empty?!";
-			mycrit << err.str();
+			mycrit << err.str() << endl;
 			throw SystemError(err.str());
 		}
 
@@ -146,11 +151,23 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 			{
 				ostringstream err;
 				err << myname << "(init): Unknown create parameters ('" << cf << "')";
-				mycrit << err.str();
+				mycrit << err.str() << endl;
 				throw SystemError(err.str());
 			}
 
-			std::string dsname(it1.getProp("name"));
+			std::string dsname(it1.getProp(ds));
+			if( dsname.empty() )
+				dsname = it1.getProp("name");
+
+			if( dsname.size() > RRD_MAX_DSNAME_LEN )
+			{
+				ostringstream err;
+				err << myname << "(init): DSNAME=" << dsname << "(" << dsname.size()
+					<< ") > RRD_MAX_NAME_SIZE(" << RRD_MAX_DSNAME_LEN << ")";
+				mycrit << err.str() << endl;
+				throw SystemError(err.str());
+			}
+
 			ostringstream nm;
 			nm << "DS:" << dsname << ":" << a;
 			dslist.push_back(nm.str());

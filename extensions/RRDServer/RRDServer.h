@@ -13,6 +13,7 @@
 
       - \ref sec_RRD_Comm
       - \ref sec_RRD_Conf
+	  - \ref sec_RRD_DSName
 
     \section sec_RRD_Comm Общее описание RRDServer
 
@@ -51,10 +52,14 @@
         <item id="54" iotype="AI" name="AI54_S" textname="AI sensor 54" rrd="1" rrd1_ds="GAUGE:20:U:U"/>
         <item id="55" iotype="AI" name="AI55_S" textname="AI sensor 55" rrd="1" rrd1_ds="GAUGE:20:U:U"/>
         <item id="56" iotype="AI" name="AI56_S" textname="AI sensor 56" rrd="2" rrd2_ds="COUNTER:20:U:U"/>
-        <item id="57" iotype="AI" name="AI57_S" textname="AI sensor 57" rrd="2" rrd2_ds="DERIVE:20:U:U"/>
+		<item id="57" iotype="AI" name="AI57_S" rrd2_dsname='A57MyRRDName' textname="AI sensor 57" rrd="2" rrd2_ds="DERIVE:20:U:U"/>
         ...
     </sensors>
 \endcode
+
+  \section sec_RRD_DSName Именование параметров
+   По умолчанию в качестве имени параметра берётся поле \b 'ds_field'_dsname='', если это поле не указано, то берётся \b name датчика.
+   \warning Имя не может превышать RRDServer::RRD_MAX_DSNAME_LEN.
 */
 class RRDServer:
 	public UObject_SK
@@ -80,6 +85,8 @@ class RRDServer:
 		{
 			return mylog;
 		}
+
+		const size_t RRD_MAX_DSNAME_LEN = 19; /*!< максимальная длинна имени в RRD */
 
 	protected:
 		RRDServer();
