@@ -23,7 +23,8 @@ ModbusTCPServer::ModbusTCPServer( ost::InetAddress& ia, int port ):
 // -------------------------------------------------------------------------
 ModbusTCPServer::~ModbusTCPServer()
 {
-	terminate();
+	if( !cancelled )
+		terminate();
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::setMaxSessions( unsigned int num )
@@ -110,6 +111,11 @@ bool ModbusTCPServer::waitQuery(const std::unordered_set<ModbusAddr>& vmbaddr, t
 		}
 	}
 	catch( ost::Exception& e )
+	{
+		if( dlog->is_warn() )
+			dlog->warn() << "(ModbusTCPServer): " << e.what() << endl;
+	}
+	catch( std::exception& e )
 	{
 		if( dlog->is_warn() )
 			dlog->warn() << "(ModbusTCPServer): " << e.what() << endl;

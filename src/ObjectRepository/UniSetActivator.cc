@@ -94,6 +94,7 @@ static std::shared_ptr<std::thread> g_term_thread;
 static std::shared_ptr<std::thread> g_fini_thread;
 static std::shared_ptr<std::thread> g_kill_thread;
 static const int TERMINATE_TIMEOUT = 3; //  время отведенное на завершение процесса [сек]
+static const int THREAD_TERMINATE_PAUSE = 500; // [мсек] пауза при завершении потока (см. work())
 static const int KILL_TIMEOUT = 8;
 // ------------------------------------------------------------------------------------------
 static void activator_terminate( int signo )
@@ -198,15 +199,21 @@ void terminate_thread()
 			g_fini_thread = make_shared<std::thread>(finished_thread);
 		}
 
+
+		ulogsys << "(TERMINATE THREAD): call terminated.." << endl << flush;
+		g_act->terminated(g_signo);
+
+#if 0
 		try
 		{
-			ulogsys << "TERMINATE THREAD: destroy.." << endl;
-			g_act->orb->shutdown(true);
-			ulogsys << "TERMINATE THREAD: destroy ok.." << endl;
+			ulogsys << "TERMINATE THREAD: orb shutdown.." << endl;
+			if( g_act->orb )
+				g_act->orb->shutdown(true);
+			ulogsys << "TERMINATE THREAD: orb shutdown ok.." << endl;
 		}
 		catch( const omniORB::fatalException& fe )
 		{
-			ulogsys << "(TERMINATE THREAD): : поймали omniORB::fatalException:" << endl;
+			ulogsys << "(TERMINATE THREAD): : omniORB::fatalException:" << endl;
 			ulogsys << "(TERMINATE THREAD):   file: " << fe.file() << endl;
 			ulogsys << "(TERMINATE THREAD):   line: " << fe.line() << endl;
 			ulogsys << "(TERMINATE THREAD):   mesg: " << fe.errmsg() << endl;
@@ -215,10 +222,7 @@ void terminate_thread()
 		{
 			ulogsys << "(TERMINATE THREAD): " << ex.what() << endl;
 		}
-
-		ulogsys << "(TERMINATE THREAD): call terminated.." << endl << flush;
-		g_act->terminated(g_signo);
-
+#endif
 		if( g_fini_thread && g_fini_thread->joinable() )
 			g_fini_thread->join();
 
@@ -234,7 +238,7 @@ void terminate_thread()
 			}
 			catch( const omniORB::fatalException& fe )
 			{
-				ulogsys << "(TERMINATE THREAD): : поймали omniORB::fatalException:" << endl;
+				ulogsys << "(TERMINATE THREAD): : omniORB::fatalException:" << endl;
 				ulogsys << "(TERMINATE THREAD):   file: " << fe.file() << endl;
 				ulogsys << "(TERMINATE THREAD):   line: " << fe.line() << endl;
 				ulogsys << "(TERMINATE THREAD):   mesg: " << fe.errmsg() << endl;
@@ -329,7 +333,7 @@ UniSetActivator::~UniSetActivator()
 		}
 		g_signo = 0;
 		g_termevent.notify_one();
-		ulogsys << myname << "(run): wait done.." << endl;
+		ulogsys << myname << "(~UniSetActivator): wait done.." << endl;
 #if 1
 		//        if( g_term_thread->joinable() )
 		//            g_term_thread->join();
@@ -341,7 +345,7 @@ UniSetActivator::~UniSetActivator()
 
 #endif
 
-		ulogsys << myname << "(run): wait done OK." << endl;
+		ulogsys << myname << "(~UniSetActivator): wait done OK." << endl;
 	}
 }
 // ------------------------------------------------------------------------------------------
@@ -381,7 +385,8 @@ void UniSetActivator::uaDestroy(int signo)
 	try
 	{
 		ulogsys << myname << "(uaDestroy): shutdown orb...  " << endl;
-		orb->shutdown(true);
+		if( orb )
+			orb->shutdown(true);
 		ulogsys << myname << "(uaDestroy): shutdown ok." << endl;
 	}
 	catch( const omniORB::fatalException& fe )
@@ -391,12 +396,12 @@ void UniSetActivator::uaDestroy(int signo)
 		ucrit << myname << "(uaDestroy):   line: " << fe.line() << endl;
 		ucrit << myname << "(uaDestroy):   mesg: " << fe.errmsg() << endl;
 	}
-	catch(...)
+	catch( const std::exception& ex )
 	{
-		ulogsys << myname << "(uaDestroy): orb shutdown: catch... " << endl;
+		ucrit << myname << "(uaDestroy): " << ex.what() << endl;
 	}
 
-	ulogsys << myname << "(stop): shutdown ok." << endl;
+	ulogsys << myname << "(uaDestroy): begin..." << endl;
 }
 
 // ------------------------------------------------------------------------------------------
@@ -522,8 +527,10 @@ void UniSetActivator::work()
 	if( orbthr )
 	{
 		// HACK: почему-то мы должны тут застрять,
-		// где-то что-то некорректно с уничтожением потока..
-		pause();
+		// иначе "где-то" возникает "гонка" с потоком завершения
+		// и мы получаем SIGABRT уже на самом завершении
+		// (помоему как-то связано с завершением потоков)
+		msleep(THREAD_TERMINATE_PAUSE); // pause();
 	}
 }
 // ------------------------------------------------------------------------------------------
@@ -618,6 +625,7 @@ void UniSetActivator::terminated( int signo )
 		ulogsys << "(terminated): " << ex.what() << endl;
 	}
 
+	g_term = true;
 	ulogsys << "terminated ok.." << endl;
 }
 // ------------------------------------------------------------------------------------------

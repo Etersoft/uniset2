@@ -323,7 +323,10 @@ void MBTCPPersistentSlave::execute_tcp()
 				}
 			}
 		}
-		catch(...) {}
+		catch( std::exception& ex)
+		{
+			mbwarn << myname << "(execute_tcp): " << ex.what() << endl;
+		}
 	}
 
 	mbinfo << myname << "(execute_tcp): thread stopped.." << endl;

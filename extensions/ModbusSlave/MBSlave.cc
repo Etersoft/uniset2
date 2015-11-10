@@ -904,7 +904,10 @@ bool MBSlave::deactivateObject()
 		if( mbslot )
 			mbslot->sigterm(SIGTERM);
 	}
-	catch(...) {}
+	catch( std::exception& ex)
+	{
+		mbwarn << myname << "(deactivateObject): " << ex.what() << endl;
+	}
 
 	return UniSetObject_LT::deactivateObject();
 }
@@ -920,7 +923,10 @@ void MBSlave::sigterm( int signo )
 		if( mbslot )
 			mbslot->sigterm(signo);
 	}
-	catch(...) {}
+	catch( std::exception& ex)
+	{
+		mbwarn << myname << "SIGTERM(" << signo << "): " << ex.what() << endl;
+	}
 
 	UniSetObject_LT::sigterm(signo);
 }

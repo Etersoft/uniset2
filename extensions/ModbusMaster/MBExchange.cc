@@ -329,11 +329,14 @@ void MBExchange::sigterm( int signo )
 	{
 		UniSetObject_LT::sigterm(signo);
 	}
-	catch( ... )
+	catch( std::exception& ex)
 	{
+		mbwarn << myname << "SIGTERM(" << signo << "): "  << ex.what() << endl;
+	}
+//	{
 		//        std::exception_ptr p = std::current_exception();
 		//        std::clog <<(p ? p.__cxa_exception_type()->name() : "null") << std::endl;
-	}
+//	}
 }
 // ------------------------------------------------------------------------------------------
 void MBExchange::readConfiguration()

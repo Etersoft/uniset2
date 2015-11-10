@@ -343,13 +343,19 @@ void MBTCPMultiMaster::poll_thread()
 			if( sidExchangeMode != DefaultObjectId && force )
 				exchangeMode = shm->localGetValue(itExchangeMode, sidExchangeMode);
 		}
-		catch(...) {}
+		catch( std::exception& ex )
+		{
+			mbwarn << myname << "(poll_thread): "  << ex.what() << endl;
+		}
 
 		try
 		{
 			poll();
 		}
-		catch(...) {}
+		catch( std::exception& ex)
+		{
+			mbwarn << myname << "(poll_thread): "  << ex.what() << endl;
+		}
 
 		if( !checkProcActive() )
 			break;
@@ -443,13 +449,13 @@ void MBTCPMultiMaster::sigterm( int signo )
 	}
 	catch( const std::exception& ex )
 	{
-		cerr << "catch: " << ex.what() << endl;
+		mbcrit << myname << "(sigterm): " << ex.what() << std::endl;
 	}
-	catch( ... )
-	{
-		std::exception_ptr p = std::current_exception();
-		std::clog << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
-	}
+//	catch( ... )
+//	{
+//		std::exception_ptr p = std::current_exception();
+//		std::clog << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
+//	}
 }
 
 // -----------------------------------------------------------------------------

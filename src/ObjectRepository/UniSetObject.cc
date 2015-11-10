@@ -132,6 +132,7 @@ UniSetObject::UniSetObject( const string& name, const string& section ):
 // ------------------------------------------------------------------------------------------
 UniSetObject::~UniSetObject()
 {
+#if 0
 	try
 	{
 		deactivate();
@@ -155,6 +156,7 @@ UniSetObject::~UniSetObject()
 		}
 		catch(...) {}
 	}
+#endif
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::init_object()
@@ -638,7 +640,10 @@ bool UniSetObject::deactivate()
 		{
 			deactivateObject();
 		}
-		catch(...) {}
+		catch( std::exception& ex )
+		{
+			uwarn << myname << "(deactivate): " << ex.what() << endl;
+		}
 
 		return true;
 	}
@@ -685,7 +690,10 @@ bool UniSetObject::deactivate()
 				{
 					deactivateObject();
 				}
-				catch(...) {}
+				catch( std::exception& ex )
+				{
+					uwarn << myname << "(deactivate): " << ex.what() << endl;
+				}
 
 				unregister();
 				PortableServer::ObjectId_var oid = poamngr->servant_to_id(static_cast<PortableServer::ServantBase*>(this));
@@ -713,10 +721,11 @@ bool UniSetObject::deactivate()
 	{
 		uwarn << myname << "(deactivate): " << ex << endl;
 	}
-	catch(...)
+	catch( std::exception& ex )
 	{
-		uwarn << myname << "(deactivate): " << " catch ..." << endl;
+		uwarn << myname << "(deactivate): " << ex.what() << endl;
 	}
+
 
 	return false;
 }

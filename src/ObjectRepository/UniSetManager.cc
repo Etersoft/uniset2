@@ -117,43 +117,6 @@ UniSetManager::UniSetManager(const string& name, const string& section):
 // ------------------------------------------------------------------------------------------
 UniSetManager::~UniSetManager()
 {
-	try
-	{
-		objects(deactiv);
-	}
-	catch(...) {}
-
-	try
-	{
-		managers(deactiv);
-	}
-	catch(...) {}
-
-#if 0
-
-	/*
-	# НЕ МЫ СОЗДАВАЛИ.. НЕ НАМ И УНИЧТОЖАТЬ!
-	# нужно перейти на shared_ptr<>..
-	*/
-	for( auto& i : olist )
-	{
-		try
-		{
-			delete i;
-		}
-		catch(...) {}
-	}
-
-	for( auto& i : mlist )
-	{
-		try
-		{
-			delete i;
-		}
-		catch(...) {}
-	}
-
-#endif
 	olist.clear();
 	mlist.clear();
 }

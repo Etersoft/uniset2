@@ -116,6 +116,8 @@ void ModbusTCPSession::run()
 
 	if( dlog->is_info() )
 		dlog->info() << peername << "(run): thread stopping..." << endl;
+
+	cancelled = true;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode ModbusTCPSession::receive( const std::unordered_set<ModbusAddr>& vmbaddr, timeout_t msec )
