@@ -71,6 +71,9 @@ class Trigger
 
 			return false;
 		}
+
+		inline bool get(){ return oldstate; }
+
 	private:
 		bool oldstate; /*!< предыдущее состояние */
 };
