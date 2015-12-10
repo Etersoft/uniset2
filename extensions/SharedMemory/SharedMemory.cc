@@ -140,7 +140,7 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 
 	evntPause = conf->getArgPInt("--e-startup-pause", 5000);
 
-	activateTimeout = conf->getArgPInt("--activate-timeout", 10000);
+	activateTimeout = conf->getArgPInt("--activate-timeout", 30000);
 
 	sidPulsar = DefaultObjectId;
 	string p = conf->getArgParam("--pulsar-id", it.getProp("pulsar_id"));
