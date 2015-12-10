@@ -328,10 +328,17 @@
 		bool no_snap = {false};
 		
 		VMonitor vmon;
+
+		<xsl:if test="normalize-space($VARMAP)='1'">
+		/*! Получить указатель на переменную храняющую значение, по идентификатору */
+		long* pvar( UniSetTypes::ObjectId id );
+		</xsl:if>
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PRIVATE">
-
+		<xsl:if test="normalize-space($VARMAP)='1'">
+		std::unordered_map&lt;UniSetTypes::ObjectId,long*&gt; vmap;
+		</xsl:if>
 </xsl:template>
 
 <xsl:template name="COMMON-CC-FILE">
@@ -454,12 +461,24 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::checkTestMode()
 }
 // -----------------------------------------------------------------------------
 </xsl:if>
+<xsl:if test="normalize-space($VARMAP)='1'">
+long* <xsl:value-of select="$CLASSNAME"/>_SK::getVariable( UniSetTypes::ObjectId id )
+{
+	auto i = vmap.find(id);
+	if( i!= vmap.end() )
+		return i->second;
+
+	return nullptr;
+}
+</xsl:if>
+// -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::sigterm( int signo )
 {
 	<xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>::sigterm(signo);</xsl:if>
 	<xsl:if test="normalize-space($BASECLASS)=''">UniSetObject::sigterm(signo);</xsl:if>
 	active = false;
 }
+
 // -----------------------------------------------------------------------------
 bool <xsl:value-of select="$CLASSNAME"/>_SK::activateObject()
 {
@@ -779,6 +798,10 @@ end_private(false)
 		</xsl:if>
 		node_<xsl:value-of select="normalize-space(@name)"/> = conf->getLocalNode();
 	}
+
+	<xsl:if test="normalize-space($VARMAP)='1'">
+	vmap.emplace(<xsl:value-of select="normalize-space(@name)"/>,&amp;<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>);
+	</xsl:if>
 
 </xsl:for-each>
 

@@ -27,6 +27,7 @@ Valid options are:
   -m, --main        - filename for main.cc. Default: main.cc
   -n, --name        - filename for *_SK files (base class implementation). Default: xmlfilename_SK
   --ask             - Use 'ask' templates. See the documentation.
+  --gen-varmap	    - generate variable map. For function: long* getVariable(ObjectId)
   --alone           - Use 'alone' templates. See the documentation.
   --no-main         - Don't generate main.cc
 
@@ -39,7 +40,7 @@ EOF
 }
 
 #parse command line options
-TEMP=`getopt -n $PROG -o h,n:,m:,a,l:,z -l help,name:,main:,no-main,topdir:,path:,alone,ask,no-ask,local:,local-include,add-cc-include,add-hh-include,make-skel:,no-makefile -- "$@"` || exit 1
+TEMP=`getopt -n $PROG -o h,n:,m:,a,l:,z -l help,name:,main:,no-main,topdir:,path:,alone,ask,no-ask,local:,local-include,add-cc-include,add-hh-include,make-skel:,no-makefile,gen-varmap -- "$@"` || exit 1
 eval set -- "$TEMP"
 
 name=
@@ -67,6 +68,8 @@ skel_c="skel.cc"
 skel_m="skel-main.cc"
 skel_xml="skel.src.xml"
 skel_make="skel-Makefile.am"
+
+varmap=0
 
 while :; do
     case "$1" in
@@ -112,6 +115,10 @@ while :; do
 	--no-ask|-z)
 		ask=
 		;;
+
+	--gen-varmap)
+		varmap=1
+	    ;;
 
 	-l|--local)
 		shift
@@ -191,6 +198,7 @@ PARAMS=$( echo \
 		--stringparam XML_FILENAME "${fname}" \
 		--stringparam CNAME "${name}" \
 		--stringparam LOCALINC "${localinc}" \
+		--stringparam VARMAP "${varmap}" \
 		$xsltpath \
 		)
 #		--stringparam ADD_CC_INC "${add_cc_inc}" \
