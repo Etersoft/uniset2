@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2015-10-25+03:00
+// generate timestamp: 2015-12-14+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -165,6 +165,7 @@ class UObject_SK:
 		void preTimerInfo( const UniSetTypes::TimerMessage* tm );
 		void preSysCommand( const UniSetTypes::SystemMessage* sm );
 		void waitSM( int wait_msec, UniSetTypes::ObjectId testID = UniSetTypes::DefaultObjectId );
+		void initFromSM();
 
 		void resetMsg();
 		Trigger trResetMsg;

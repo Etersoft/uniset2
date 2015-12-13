@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2015-10-25+03:00
+// generate timestamp: 2015-12-14+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -367,6 +367,7 @@ void UObject_SK::preSysCommand( const SystemMessage* _sm )
 			// т.к. для io-переменных важно соблюдать последовательность!
 			// сперва обновить входы.. а потом уже выходы
 			updateValues();
+			initFromSM(); // потом обновить, то, что помеченно как инициализируемое из SM
 			updateOutputs(true); // принудительное обновление выходов
 			preAskSensors(UniversalIO::UIONotify);
 			askSensors(UniversalIO::UIONotify);
@@ -574,6 +575,11 @@ void UObject_SK::preSensorInfo( const UniSetTypes::SensorMessage* _sm )
 	
 	
 	sensorInfo(_sm);
+}
+// -----------------------------------------------------------------------------
+void UObject_SK::initFromSM()
+{
+	
 }
 // -----------------------------------------------------------------------------
 void UObject_SK::askSensor( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )

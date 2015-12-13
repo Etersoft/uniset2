@@ -275,6 +275,7 @@
 		void preTimerInfo( const UniSetTypes::TimerMessage* tm );
 		void preSysCommand( const UniSetTypes::SystemMessage* sm );
 		void waitSM( int wait_msec, UniSetTypes::ObjectId testID = UniSetTypes::DefaultObjectId );
+		void initFromSM();
 
 		void resetMsg();
 		Trigger trResetMsg;
@@ -390,9 +391,10 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 			waitSM(smReadyTimeout);
 			ptStartUpTimeout.reset();
 			// т.к. для io-переменных важно соблюдать последовательность!
-			// сперва обновить входы.. а потом уже выходы
+			// сперва обновить входы..
 			updateValues();
-			updateOutputs(true); // принудительное обновление выходов
+			initFromSM(); // потом обновить значения переменных, помеченных как инициализируемые из SM
+			updateOutputs(true); // а потом уже выходы (принудительное обновление)
 			preAskSensors(UniversalIO::UIONotify);
 			askSensors(UniversalIO::UIONotify);
 			active = true;

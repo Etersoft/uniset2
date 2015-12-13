@@ -181,6 +181,25 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( const UniSetTypes::S
 	sensorInfo(_sm);
 }
 // -----------------------------------------------------------------------------
+void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
+{
+	<xsl:for-each select="//smap/item">
+	<xsl:if test="normalize-space(@initFromSM)!=''">
+	if( <xsl:value-of select="@name"/> != UniSetTypes::DefaultObjectId )
+	{
+		try
+		{
+			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui->getValue(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
+		}
+		catch( std::exception&amp; ex )
+		{
+			mycrit &lt;&lt; myname &lt;&lt; "(initFromSM): " &lt;&lt; ex.what() &lt;&lt; endl;
+		}
+	}
+	</xsl:if>
+	</xsl:for-each>
+}
+// -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::askSensor( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )
 {
 	ui->askRemoteSensor(_sid,_cmd,_node,getId());
