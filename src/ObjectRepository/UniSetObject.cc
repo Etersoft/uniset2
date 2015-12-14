@@ -840,18 +840,20 @@ void UniSetObject::work()
 // ------------------------------------------------------------------------------------------
 void UniSetObject::callback()
 {
+	// При реализации с использованием waitMessage() каждый раз при вызове askTimer() необходимо
+	// проверять возвращаемое значение на UniSetTimers::WaitUpTime и вызывать termWaiting(),
+	// чтобы избежать ситуации, когда процесс до заказа таймера 'спал'(в функции waitMessage()) и после
+	// заказа продолжит спать(т.е. обработчик вызван не будет)...
 	try
 	{
-		if( waitMessage(msg) )
+		if( waitMessage(msg, sleepTime) )
 			processingMessage(&msg);
+
+		sleepTime = checkTimers(this);
 	}
 	catch( const Exception& ex )
 	{
-		ucrit << ex << endl;
-	}
-	catch( const std::exception& ex )
-	{
-		ucrit << ex.what() << endl;
+		ucrit << myname << "(callback): " << ex << endl;
 	}
 }
 // ------------------------------------------------------------------------------------------
@@ -911,6 +913,16 @@ void UniSetObject::processingMessage( UniSetTypes::VoidMessage* msg )
 	        ucrit <<(p ? p.__cxa_exception_type()->name() : "null") << std::endl;
 	    }
 	*/
+}
+// ------------------------------------------------------------------------------------------
+timeout_t UniSetObject::askTimer( TimerId timerid, timeout_t timeMS, clock_t ticks, Message::Priority p )
+{
+	timeout_t tsleep = LT_Object::askTimer(timerid, timeMS, ticks, p);
+
+	if( tsleep != UniSetTimer::WaitUpTime )
+		termWaiting();
+
+	return tsleep;
 }
 // ------------------------------------------------------------------------------------------
 

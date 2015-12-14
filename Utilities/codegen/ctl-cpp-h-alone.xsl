@@ -43,7 +43,6 @@
 #include &lt;unordered_map&gt;
 <xsl:if test="normalize-space($BASECLASS)!=''">#include <xsl:call-template name="preinclude"/><xsl:value-of select="normalize-space($BASECLASS)"/>.h<xsl:call-template name="postinclude"/></xsl:if>
 <xsl:if test="normalize-space($BASECLASS)=''">#include <xsl:call-template name="preinclude"/>UniSetObject.h<xsl:call-template name="postinclude"/></xsl:if>
-#include <xsl:call-template name="preinclude"/>LT_Object.h<xsl:call-template name="postinclude"/>
 #include <xsl:call-template name="preinclude"/>UniXML.h<xsl:call-template name="postinclude"/>
 #include <xsl:call-template name="preinclude"/>Trigger.h<xsl:call-template name="postinclude"/>
 #include <xsl:call-template name="preinclude"/>UInterface.h<xsl:call-template name="postinclude"/>
@@ -53,9 +52,8 @@
 #include <xsl:call-template name="preinclude"/>VMonitor.h<xsl:call-template name="postinclude"/>
 // -----------------------------------------------------------------------------
 class <xsl:value-of select="$CLASSNAME"/>_SK:
-	<xsl:if test="normalize-space($BASECLASS)!=''">public <xsl:value-of select="normalize-space($BASECLASS)"/>,</xsl:if>
-	<xsl:if test="normalize-space($BASECLASS)=''">public UniSetObject,</xsl:if>
-	public LT_Object
+	<xsl:if test="normalize-space($BASECLASS)!=''">public <xsl:value-of select="normalize-space($BASECLASS)"/></xsl:if>
+	<xsl:if test="normalize-space($BASECLASS)=''">public UniSetObject</xsl:if>
 {
 	public:
 		<xsl:if test="not(normalize-space($OID))=''">

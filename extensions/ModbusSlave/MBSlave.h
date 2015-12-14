@@ -11,7 +11,7 @@
 #include <condition_variable>
 #include <atomic>
 #include <mutex>
-#include "UniSetObject_LT.h"
+#include "UniSetObject.h"
 #include "modbus/ModbusTypes.h"
 #include "modbus/ModbusServerSlot.h"
 #include "PassiveTimer.h"
@@ -289,7 +289,7 @@ namespace std
 // -----------------------------------------------------------------------------
 /*! Реализация slave-интерфейса */
 class MBSlave:
-	public UniSetObject_LT
+	public UniSetObject
 {
 	public:
 		MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "mbs" );

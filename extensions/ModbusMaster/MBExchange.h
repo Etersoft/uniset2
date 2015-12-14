@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <memory>
 #include "IONotifyController.h"
-#include "UniSetObject_LT.h"
+#include "UniSetObject.h"
 #include "PassiveTimer.h"
 #include "DelayTimer.h"
 #include "Trigger.h"
@@ -34,7 +34,7 @@
     \par Базовый класс для реализация обмена по протоколу Modbus [RTU|TCP].
 */
 class MBExchange:
-	public UniSetObject_LT
+	public UniSetObject
 {
 	public:
 		MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,

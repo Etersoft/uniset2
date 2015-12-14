@@ -10,7 +10,7 @@
 #include "PassiveTimer.h"
 #include "Trigger.h"
 #include "IONotifyController.h"
-#include "UniSetObject_LT.h"
+#include "UniSetObject.h"
 #include "Mutex.h"
 #include "MessageType.h"
 #include "ComediInterface.h"

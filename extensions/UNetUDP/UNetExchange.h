@@ -6,7 +6,7 @@
 #include <queue>
 #include <deque>
 #include <cc++/socket.h>
-#include "UniSetObject_LT.h"
+#include "UniSetObject.h"
 #include "Trigger.h"
 #include "Mutex.h"
 #include "SMInterface.h"
@@ -99,7 +99,7 @@
 */
 // -----------------------------------------------------------------------------
 class UNetExchange:
-	public UniSetObject_LT
+	public UniSetObject
 {
 	public:
 		UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "unet" );

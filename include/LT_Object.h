@@ -44,7 +44,7 @@ class UniSetObject;
 
     \par Основной принцип
         Проверяет список таймеров и при срабатывании формирует стандартное уведомление UniSetTypes::TimerMessage,
-    которое помещается в очередь указанному объекту. Каждый раз пересортировывает список и возвращает время оставшееся
+	которое помещается в очередь указанному объекту. При проверке таймеров, определяется минимальное время оставшееся
     до очередного срабатывания. Если в списке не остаётся ни одного таймера - возвращает UniSetTimers::WaitUpTime.
 
     Примерный код использования выглядит так:
@@ -91,6 +91,8 @@ class UniSetObject;
 
     \warning Точность работы определяется переодичностью вызова обработчика.
     \sa TimerService
+
+	\todo Подумать.. может перейти на unordered_map
 */
 class LT_Object
 {
@@ -106,7 +108,7 @@ class LT_Object
 		    \param p - приоритет присылаемого сообщения
 		    \return Возвращает время [мсек] оставшееся до срабатывания очередного таймера
 		*/
-		timeout_t askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks = -1,
+		virtual timeout_t askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks = -1,
 							UniSetTypes::Message::Priority p = UniSetTypes::Message::High );
 
 
@@ -119,6 +121,19 @@ class LT_Object
 
 		/*! получить текущее время ожидания */
 		//inline timeout_t getSleepTimeMS(){ return sleepTime; }
+
+
+		/*! получить время на которое установлен таймер timerid
+		 * \param timerid - идентификатор таймера
+		 * \return 0 - если таймер не найден, время (мсек) если таймер есть.
+		 */
+		timeout_t getTimeInterval( UniSetTypes::TimerId timerid );
+
+		/*! получить оставшееся время для таймера timerid
+		 * \param timerid - идентификатор таймера
+		 * \return 0 - если таймер не найден, время (мсек) если таймер есть.
+		 */
+		timeout_t getTimeLeft( UniSetTypes::TimerId timerid );
 
 	protected:
 
@@ -176,11 +191,12 @@ class LT_Object
 
 		typedef std::deque<TimerInfo> TimersList;
 
+		timeout_t sleepTime; /*!< текущее время ожидания */
+
 	private:
 		TimersList tlst;
 		/*! замок для блокирования совместного доступа к cписку таймеров */
 		UniSetTypes::uniset_rwmutex lstMutex;
-		timeout_t sleepTime; /*!< текущее время ожидания */
 		PassiveTimer tmLast;
 };
 //--------------------------------------------------------------------------

@@ -6,7 +6,7 @@
 #include <string>
 #include <memory>
 #include <deque>
-#include "IONotifyController_LT.h"
+#include "IONotifyController.h"
 #include "Mutex.h"
 #include "PassiveTimer.h"
 #include "NCRestorer.h"
@@ -282,7 +282,7 @@
        \endcode
 */
 class SharedMemory:
-	public IONotifyController_LT
+	public IONotifyController
 {
 	public:
 		SharedMemory( UniSetTypes::ObjectId id, const std::string& datafile, const std::string& confname = "" );

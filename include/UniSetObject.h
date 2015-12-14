@@ -45,6 +45,7 @@
 #include "UInterface.h"
 #include "UniSetObject_i.hh"
 #include "ThreadCreator.h"
+#include "LT_Object.h"
 
 //---------------------------------------------------------------------------
 //#include <omnithread.h>
@@ -68,7 +69,8 @@ typedef std::list< std::shared_ptr<UniSetObject> > ObjectsList;     /*!< Спи�
 */
 class UniSetObject:
 	public std::enable_shared_from_this<UniSetObject>,
-	public POA_UniSetObject_i
+	public POA_UniSetObject_i,
+	public LT_Object
 {
 	public:
 		UniSetObject(const std::string& name, const std::string& section);
@@ -120,6 +122,9 @@ class UniSetObject:
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) {}
 		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) {}
 		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) {}
+
+		virtual timeout_t askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks = -1,
+							UniSetTypes::Message::Priority p = UniSetTypes::Message::High ) override;
 
 		/*! Получить сообщение */
 		bool receiveMessage( UniSetTypes::VoidMessage& vm );

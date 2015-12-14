@@ -4,7 +4,7 @@
 #include <map>
 #include <memory>
 #include "UniSetTypes.h"
-#include "UniSetObject_LT.h"
+#include "UniSetObject.h"
 #include "Extensions.h"
 #include "SharedMemory.h"
 #include "UInterface.h"
@@ -13,7 +13,7 @@
 // --------------------------------------------------------------------------
 /*! Реализация LogicProccessor основанная на заказе датчиков */
 class PassiveLProcessor:
-	public UniSetObject_LT,
+	public UniSetObject,
 	protected LProcessor
 {
 	public:

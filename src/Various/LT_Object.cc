@@ -126,6 +126,32 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
 	return sleepTime;
 }
 // ------------------------------------------------------------------------------------------
+timeout_t LT_Object::getTimeInterval( TimerId timerid )
+{
+	// lock
+	uniset_rwmutex_rlock lock(lstMutex);
+	for( const auto& li: tlst )
+	{
+		if( li.id == timerid )
+			return li.tmr.getInterval();
+	}
+
+	return 0;
+}
+// ------------------------------------------------------------------------------------------
+timeout_t LT_Object::getTimeLeft(TimerId timerid)
+{
+	// lock
+	uniset_rwmutex_rlock lock(lstMutex);
+	for( const auto& li: tlst )
+	{
+		if( li.id == timerid )
+			return li.curTimeMS;
+	}
+
+	return 0;
+}
+// ------------------------------------------------------------------------------------------
 
 timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks, UniSetTypes::Message::Priority p )
 {

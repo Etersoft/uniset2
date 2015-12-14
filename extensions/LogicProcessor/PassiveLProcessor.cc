@@ -8,13 +8,13 @@ using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
 PassiveLProcessor::PassiveLProcessor( UniSetTypes::ObjectId objId,
 									  UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
-	UniSetObject_LT(objId),
+	UniSetObject(objId),
 	shm(nullptr)
 {
 	auto conf = uniset_conf();
 
 	logname = myname;
-	shm = make_shared<SMInterface>(shmID, UniSetObject_LT::ui, objId, ic);
+	shm = make_shared<SMInterface>(shmID, UniSetObject::ui, objId, ic);
 
 	string conf_name(conf->getArgParam("--" + prefix + "-confnode", myname));
 
@@ -199,7 +199,7 @@ bool PassiveLProcessor::activateObject()
 	// см. sysCommand()
 	{
 		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
-		UniSetObject_LT::activateObject();
+		UniSetObject::activateObject();
 		initIterators();
 	}
 

@@ -38,7 +38,7 @@ using namespace UniSetTypes;
 using namespace std;
 // ------------------------------------------------------------------------------------------
 DBServer::DBServer( ObjectId id, const std::string& prefix ):
-	UniSetObject_LT(id)
+	UniSetObject(id)
 {
 	if( getId() == DefaultObjectId )
 	{
@@ -96,7 +96,7 @@ void DBServer::processingMessage( UniSetTypes::VoidMessage* msg )
 			break;
 
 		default:
-			UniSetObject_LT::processingMessage(msg);
+			UniSetObject::processingMessage(msg);
 			break;
 	}
 
@@ -104,14 +104,14 @@ void DBServer::processingMessage( UniSetTypes::VoidMessage* msg )
 //--------------------------------------------------------------------------------------------
 bool DBServer::activateObject()
 {
-	UniSetObject_LT::activateObject();
+	UniSetObject::activateObject();
 	initDBServer();
 	return true;
 }
 //--------------------------------------------------------------------------------------------
 void DBServer::sysCommand( const UniSetTypes::SystemMessage* sm )
 {
-	UniSetObject_LT::sysCommand(sm);
+	UniSetObject::sysCommand(sm);
 
 	if(  sm->command == SystemMessage::StartUp )
 	{

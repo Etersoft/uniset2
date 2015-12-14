@@ -2,11 +2,11 @@
 #define SMonitor_H_
 // -----------------------------------------------------------------------------
 #include <list>
-#include <UniSetObject_LT.h>
+#include <UniSetObject.h>
 #include "UniSetTypes.h"
 // -----------------------------------------------------------------------------
 class SMonitor:
-	public UniSetObject_LT
+	public UniSetObject
 {
 	public:
 

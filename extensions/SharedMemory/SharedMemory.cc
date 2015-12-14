@@ -45,7 +45,7 @@ void SharedMemory::help_print( int argc, const char* const* argv )
 }
 // -----------------------------------------------------------------------------
 SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std::string& confname ):
-	IONotifyController_LT(id),
+	IONotifyController(id),
 	heartbeatCheckTime(5000),
 	histSaveTime(0),
 	activated(false),
@@ -263,7 +263,7 @@ bool SharedMemory::deactivateObject()
 	if( logserv )
 		logserv = nullptr;
 
-	return IONotifyController_LT::deactivateObject();
+	return IONotifyController::deactivateObject();
 }
 // ------------------------------------------------------------------------------------------
 bool SharedMemory::activateObject()
@@ -278,7 +278,7 @@ bool SharedMemory::activateObject()
 		activated = false;
 
 		UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
-		res = IONotifyController_LT::activateObject();
+		res = IONotifyController::activateObject();
 
 		// инициализируем указатели
 		for( auto && it : hlist )
@@ -316,7 +316,7 @@ void SharedMemory::sigterm( int signo )
 		wdt->stop();
 
 	//    raise(SIGKILL);
-	IONotifyController_LT::sigterm(signo);
+	IONotifyController::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------
 void SharedMemory::checkHeartBeat()
@@ -570,7 +570,7 @@ void SharedMemory::addReadItem( Restorer_XML::ReaderSlot sl )
 void SharedMemory::loggingInfo( SensorMessage& sm )
 {
 	if( dblogging )
-		IONotifyController_LT::loggingInfo(sm);
+		IONotifyController::loggingInfo(sm);
 }
 // -----------------------------------------------------------------------------
 void SharedMemory::buildHistoryList( xmlNode* cnode )
@@ -957,7 +957,7 @@ bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectI
 // ----------------------------------------------------------------------------
 UniSetTypes::SimpleInfo* SharedMemory::getInfo()
 {
-	UniSetTypes::SimpleInfo_var i = IONotifyController_LT::getInfo();
+	UniSetTypes::SimpleInfo_var i = IONotifyController::getInfo();
 
 	ostringstream inf;
 

@@ -25,7 +25,7 @@
 #define DBServer_H_
 // --------------------------------------------------------------------------
 #include "UniSetTypes.h"
-#include "UniSetObject_LT.h"
+#include "UniSetObject.h"
 #include "LogServer.h"
 #include "DebugStream.h"
 #include "LogAgregator.h"
@@ -50,7 +50,7 @@
 
 /*! Прототип реализации сервиса ведения БД */
 class DBServer:
-	public UniSetObject_LT
+	public UniSetObject
 {
 	public:
 		DBServer( UniSetTypes::ObjectId id, const std::string& prefix = "db" );

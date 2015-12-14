@@ -15,7 +15,7 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 MBExchange::MBExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
 						const std::shared_ptr<SharedMemory>& _ic, const std::string& prefix ):
-	UniSetObject_LT(objId),
+	UniSetObject(objId),
 	allInitOK(false),
 	initPause(3000),
 	force(false),
@@ -327,7 +327,7 @@ void MBExchange::sigterm( int signo )
 
 	try
 	{
-		UniSetObject_LT::sigterm(signo);
+		UniSetObject::sigterm(signo);
 	}
 	catch( std::exception& ex)
 	{
@@ -2766,7 +2766,7 @@ bool MBExchange::activateObject()
 	{
 		setProcActive(false);
 		UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
-		UniSetObject_LT::activateObject();
+		UniSetObject::activateObject();
 
 		if( !shm->isLocalwork() )
 			rtuQueryOptimization(devices);
@@ -3257,7 +3257,7 @@ std::ostream& operator<<( std::ostream& os, const MBExchange::ExchangeMode& em )
 // -----------------------------------------------------------------------------
 UniSetTypes::SimpleInfo* MBExchange::getInfo()
 {
-	UniSetTypes::SimpleInfo_var i = UniSetObject_LT::getInfo();
+	UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo();
 
 	ostringstream inf;
 

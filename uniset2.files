@@ -261,7 +261,6 @@ include/Exceptions.h
 include/HourGlass.h
 include/IOController.h
 include/IONotifyController.h
-include/IONotifyController_LT.h
 include/IORFile.h
 include/LogAgregator.h
 include/LogReader.h
@@ -299,9 +298,7 @@ include/TriggerOUT.h
 include/UInterface.h
 include/UniSetActivator.h
 include/UniSetManager.h
-include/UniSetManager_LT.h
 include/UniSetObject.h
-include/UniSetObject_LT.h
 include/UniSetTypes.h
 include/UniXML.h
 include/UTCPStream.h
@@ -370,13 +367,10 @@ src/ObjectRepository/PassiveObject.cc
 src/ObjectRepository/ProxyManager.cc
 src/ObjectRepository/UniSetActivator.cc
 src/ObjectRepository/UniSetManager.cc
-src/ObjectRepository/UniSetManager_LT.cc
 src/ObjectRepository/UniSetObject.cc
-src/ObjectRepository/UniSetObject_LT.cc
 src/ObjectRepository/UniSetTypes.cc
 src/Processes/IOController.cc
 src/Processes/IONotifyController.cc
-src/Processes/IONotifyController_LT.cc
 src/Processes/Makefile.am
 src/Processes/NCRestorer.cc
 src/Processes/NCRestorer_XML.cc

@@ -17,7 +17,7 @@ SMonitor::SMonitor():
 }
 
 SMonitor::SMonitor(ObjectId id):
-	UniSetObject_LT(id),
+	UniSetObject(id),
 	script("")
 {
 	string sid(uniset_conf()->getArgParam("--sid"));

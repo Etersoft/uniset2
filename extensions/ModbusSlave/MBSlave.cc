@@ -13,7 +13,7 @@ using namespace UniSetExtensions;
 using namespace ModbusRTU;
 // -----------------------------------------------------------------------------
 MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic, const string& prefix ):
-	UniSetObject_LT(objId),
+	UniSetObject(objId),
 	initPause(3000),
 	test_id(DefaultObjectId),
 	askcount_id(DefaultObjectId),
@@ -883,7 +883,7 @@ bool MBSlave::activateObject()
 	{
 		activated = false;
 		UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
-		UniSetObject_LT::activateObject();
+		UniSetObject::activateObject();
 		initIterators();
 		activated = true;
 		startNotifyEvent.notify_all();
@@ -909,7 +909,7 @@ bool MBSlave::deactivateObject()
 		mbwarn << myname << "(deactivateObject): " << ex.what() << endl;
 	}
 
-	return UniSetObject_LT::deactivateObject();
+	return UniSetObject::deactivateObject();
 }
 // ------------------------------------------------------------------------------------------
 void MBSlave::sigterm( int signo )
@@ -928,7 +928,7 @@ void MBSlave::sigterm( int signo )
 		mbwarn << myname << "SIGTERM(" << signo << "): " << ex.what() << endl;
 	}
 
-	UniSetObject_LT::sigterm(signo);
+	UniSetObject::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------
 void MBSlave::readConfiguration()
@@ -2377,7 +2377,7 @@ ModbusRTU::mbErrCode MBSlave::read4314( ModbusRTU::MEIMessageRDI& query,
 // -------------------------------------------------------------------------
 UniSetTypes::SimpleInfo* MBSlave::getInfo()
 {
-	UniSetTypes::SimpleInfo_var i = UniSetObject_LT::getInfo();
+	UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo();
 
 	ostringstream inf;
 

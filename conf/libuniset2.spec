@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.2
-Release: alt11
+Release: alt12
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -452,6 +452,10 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Mon Dec 14 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt12
+- refactoring: remove xxx_LT classes
+- add new function for LT_Object
+
 * Tue Nov 03 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt11
 - RRDServer: add support 'dsname', check RRD_MAX_DSNAME_LEN
 

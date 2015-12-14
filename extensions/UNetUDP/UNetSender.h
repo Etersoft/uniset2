@@ -6,7 +6,7 @@
 #include <vector>
 #include <unordered_map>
 #include <cc++/socket.h>
-#include "UniSetObject_LT.h"
+#include "UniSetObject.h"
 #include "Trigger.h"
 #include "Mutex.h"
 #include "SMInterface.h"

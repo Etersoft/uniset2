@@ -365,10 +365,10 @@ void UObject_SK::preSysCommand( const SystemMessage* _sm )
 			waitSM(smReadyTimeout);
 			ptStartUpTimeout.reset();
 			// т.к. для io-переменных важно соблюдать последовательность!
-			// сперва обновить входы.. а потом уже выходы
+			// сперва обновить входы..
 			updateValues();
-			initFromSM(); // потом обновить, то, что помеченно как инициализируемое из SM
-			updateOutputs(true); // принудительное обновление выходов
+			initFromSM(); // потом обновить значения переменных, помеченных как инициализируемые из SM
+			updateOutputs(true); // а потом уже выходы (принудительное обновление)
 			preAskSensors(UniversalIO::UIONotify);
 			askSensors(UniversalIO::UIONotify);
 			active = true;

@@ -18,7 +18,6 @@
 #include <unordered_map>
 #include <sstream>
 #include "UniSetObject.h"
-#include "LT_Object.h"
 #include "UniXML.h"
 #include "Trigger.h"
 #include "DebugStream.h"
@@ -27,8 +26,7 @@
 #include "VMonitor.h"
 // -----------------------------------------------------------------------------
 class UObject_SK:
-	public UniSetObject,
-	public LT_Object
+	public UniSetObject
 {
 	public:
 		UObject_SK( UniSetTypes::ObjectId id, xmlNode* node=UniSetTypes::uniset_conf()->getNode("UObject"), const std::string& argprefix="" );

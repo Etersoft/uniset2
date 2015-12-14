@@ -10,7 +10,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
-	UniSetObject_LT(objId),
+	UniSetObject(objId),
 	initPause(0),
 	activated(false),
 	no_sender(false)
@@ -689,7 +689,7 @@ bool UNetExchange::activateObject()
 	{
 		activated = false;
 		UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
-		UniSetObject_LT::activateObject();
+		UniSetObject::activateObject();
 		initIterators();
 		activated = true;
 	}
@@ -733,7 +733,7 @@ void UNetExchange::sigterm( int signo )
 	}
 	catch(...) {}
 
-	UniSetObject_LT::sigterm(signo);
+	UniSetObject::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------
 void UNetExchange::initIterators()
@@ -895,7 +895,7 @@ void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceive
 // -----------------------------------------------------------------------------
 UniSetTypes::SimpleInfo* UNetExchange::getInfo()
 {
-	UniSetTypes::SimpleInfo_var i = UniSetObject_LT::getInfo();
+	UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo();
 
 	ostringstream inf;
 
