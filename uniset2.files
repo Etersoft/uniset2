@@ -231,7 +231,11 @@ extensions/UniNetwork/uninet.cc
 extensions/libUniSet2Extensions.pc.in
 extensions/Makefile.am
 IDL/Processes/Makefile.am
+IDL/Processes/IOController_i.idl
 IDL/UniSetTypes/Makefile.am
+IDL/UniSetTypes/UniSetTypes_i.idl
+IDL/UniSetTypes/UniSetObject_i.idl
+IDL/UniSetTypes/UniSetManager_i.idl
 IDL/Makefile.am
 include/modbus/Makefile.am
 include/modbus/ModbusClient.h

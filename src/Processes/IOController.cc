@@ -849,7 +849,7 @@ void IOController::USensorInfo::checkDepend( std::shared_ptr<USensorInfo>& d_it,
 		ic->localSetValue( it, si.id, real_value, sup_id );
 }
 // -----------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* IOController::getInfo()
+UniSetTypes::SimpleInfo* IOController::getInfo( ::CORBA::Long userparam )
 {
 	UniSetTypes::SimpleInfo_var i = UniSetManager::getInfo();
 
@@ -858,7 +858,6 @@ UniSetTypes::SimpleInfo* IOController::getInfo()
 	inf << i->info << endl;
 	inf << "isPingDBServer = " << isPingDBServer << endl;
 	inf << "ioListSize = " << ioList.size() << endl;
-
 
 	i->info = inf.str().c_str();
 	return i._retn();

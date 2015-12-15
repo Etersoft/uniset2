@@ -955,16 +955,15 @@ bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectI
 	return false;
 }
 // ----------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* SharedMemory::getInfo()
+UniSetTypes::SimpleInfo* SharedMemory::getInfo( CORBA::Long userparam )
 {
-	UniSetTypes::SimpleInfo_var i = IONotifyController::getInfo();
+	UniSetTypes::SimpleInfo_var i = IONotifyController::getInfo(userparam);
 
 	ostringstream inf;
 
 	inf << i->info << endl;
 	inf << vmon.pretty_str() << endl;
 	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
-
 
 	i->info = inf.str().c_str();
 	return i._retn();

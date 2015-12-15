@@ -123,7 +123,7 @@ class UNetExchange:
 			return unetlog;
 		}
 
-		virtual UniSetTypes::SimpleInfo* getInfo() override;
+		virtual UniSetTypes::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
 
 	protected:
 

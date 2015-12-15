@@ -3255,9 +3255,9 @@ std::ostream& operator<<( std::ostream& os, const MBExchange::ExchangeMode& em )
 	return os;
 }
 // -----------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* MBExchange::getInfo()
+UniSetTypes::SimpleInfo* MBExchange::getInfo( CORBA::Long userparam )
 {
-	UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo();
+	UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo(userparam);
 
 	ostringstream inf;
 

@@ -926,7 +926,7 @@ timeout_t UniSetObject::askTimer( TimerId timerid, timeout_t timeMS, clock_t tic
 }
 // ------------------------------------------------------------------------------------------
 
-UniSetTypes::SimpleInfo* UniSetObject::getInfo()
+UniSetTypes::SimpleInfo* UniSetObject::getInfo( ::CORBA::Long userparam )
 {
 	ostringstream info;
 	info.setf(ios::left, ios::adjustfield);

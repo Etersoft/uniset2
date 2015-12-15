@@ -71,7 +71,7 @@ int getRawValue( const string& args, UInterface& ui );
 int getChangedTime( const string& args, UInterface& ui );
 int getState( const string& args, UInterface& ui );
 int getCalibrate( const string& args, UInterface& ui );
-int oinfo( const string& args, UInterface& ui );
+int oinfo(const string& args, UInterface& ui , int userparam );
 // --------------------------------------------------------------------------
 static void print_help(int width, const string& cmd, const string& help, const string& tab = " " )
 {
@@ -106,7 +106,8 @@ static void usage()
 	cout << endl;
 	print_help(36, "-r|--configure [FullObjName] ", "Посылка SystemMessage::ReConfiguration всем объектам (процессам) или заданному по имени (FullObjName).\n");
 	print_help(36, "-l|--logrotate [FullObjName] ", "Посылка SystemMessage::LogRotate всем объектам (процессам) или заданному по имени (FullObjName).\n");
-	print_help(36, "-p|--oinfo id1@node1,id2@node2,id3,...", "Получить информацию об объектах (SimpleInfo).\n");
+	print_help(36, "-p|--oinfo id1@node1,id2@node2,id3,... [userparam]", "Получить информацию об объектах (SimpleInfo). \n userparam - необязательный параметр передаваемый в getInfo() каждому объекту\n");
+	print_help(36, "", "userparam - необязательный параметр передаваемый в getInfo() каждому объекту\n");
 	cout << endl;
 	print_help(48, "-x|--setValue id1@node1=val,id2@node2=val2,id3=val3,.. ", "Выставить значения датчиков\n");
 	print_help(36, "-g|--getValue id1@node1,id2@node2,id3,id4 ", "Получить значения датчиков.\n");
@@ -140,7 +141,7 @@ int main(int argc, char** argv)
 
 		while(1)
 		{
-			opt = getopt_long(argc, argv, "hc:beosfur:l:i:x:g:w:y:p:vq", longopts, &optindex);
+			opt = getopt_long(argc, argv, "hc:beosfur:l:i::x:g:w:y:p:vq", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -222,7 +223,12 @@ int main(int argc, char** argv)
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
 					ui.initBackId(UniSetTypes::AdminID);
-					return oinfo(optarg, ui);
+
+					int userparam = 0;
+					if( optind < argc )
+						userparam = uni_atoi(argv[optind]);
+
+					return oinfo(optarg, ui, userparam);
 				}
 				break;
 
@@ -934,7 +940,7 @@ int configure( const string& arg, UInterface& ui )
 }
 
 // --------------------------------------------------------------------------------------
-int oinfo( const string& args, UInterface& ui )
+int oinfo( const string& args, UInterface& ui, int userparam )
 {
 	auto conf = uniset_conf();
 	auto sl = UniSetTypes::getObjectsList( args, conf );
@@ -956,7 +962,7 @@ int oinfo( const string& args, UInterface& ui )
 			}
 			else
 			{
-				SimpleInfo_var inf = obj->getInfo();
+				SimpleInfo_var inf = obj->getInfo(userparam);
 				cout << inf->info << endl;
 			}
 		}

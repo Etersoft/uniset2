@@ -893,9 +893,9 @@ void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceive
 	}
 }
 // -----------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* UNetExchange::getInfo()
+UniSetTypes::SimpleInfo* UNetExchange::getInfo( CORBA::Long userparam )
 {
-	UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo();
+	UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo(userparam);
 
 	ostringstream inf;
 

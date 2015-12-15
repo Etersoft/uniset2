@@ -234,7 +234,7 @@ class MBTCPMultiMaster:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
-		virtual UniSetTypes::SimpleInfo* getInfo() override;
+		virtual UniSetTypes::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
 
 	protected:
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;

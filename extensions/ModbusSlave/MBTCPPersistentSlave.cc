@@ -377,9 +377,9 @@ const std::string MBTCPPersistentSlave::ClientInfo::getShortInfo() const
 	return std::move(s.str());
 }
 // -----------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* MBTCPPersistentSlave::getInfo()
+UniSetTypes::SimpleInfo* MBTCPPersistentSlave::getInfo( CORBA::Long userparam )
 {
-	UniSetTypes::SimpleInfo_var i = MBSlave::getInfo();
+	UniSetTypes::SimpleInfo_var i = MBSlave::getInfo(userparam);
 
 	ostringstream inf;
 

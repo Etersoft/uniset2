@@ -103,7 +103,7 @@ class UniSetObject:
 		{
 			return UniSetTypes::ObjectType("UniSetObject");
 		}
-		virtual UniSetTypes::SimpleInfo* getInfo() override;
+		virtual UniSetTypes::SimpleInfo* getInfo( ::CORBA::Long userparam = 0 ) override;
 		friend std::ostream& operator<<(std::ostream& os, UniSetObject& obj );
 
 		//! поместить сообщение в очередь

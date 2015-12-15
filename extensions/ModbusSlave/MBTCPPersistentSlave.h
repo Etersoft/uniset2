@@ -32,7 +32,7 @@ class MBTCPPersistentSlave:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
-		UniSetTypes::SimpleInfo* getInfo() override;
+		UniSetTypes::SimpleInfo* getInfo( CORBA::Long userparam ) override;
 
 	protected:
 		virtual void execute_tcp() override;

@@ -46,6 +46,7 @@
         void broadcast(in UniSetTypes::TransportMessage msg);
 
         /*! получение информации о состоянии подчиненных объектов(менеджеров)
+         * \param userparam - Необязательный пользовательский параметр (см. UniSetObject_i::getInfo()).
          * \param MaxLength  - ограничение размера возвращаемой
          * последовательности структур SimpleInfo.
          * \note Если у менеджера количество подчиненных объектов
@@ -60,7 +61,7 @@
          * \todo Подумать насчет применения итератора, при слишком
          * большом( >1000 ) количестве подчиненных объектов...
          */
-        UniSetTypes::SimpleInfoSeq getObjectsInfo( in long MaxLength );
+        UniSetTypes::SimpleInfoSeq getObjectsInfo( in long MaxLength, in long userparam );
     };
 
 //};    // end of module UniSet

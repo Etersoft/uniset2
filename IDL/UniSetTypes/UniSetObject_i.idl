@@ -41,7 +41,11 @@
     {
         UniSetTypes::ObjectId getId();       /*!< получение идентификатора объекта */
         UniSetTypes::ObjectType getType();   /*!< получение типа объекта */
-        UniSetTypes::SimpleInfo getInfo();   /*!< получение информации о внутреннем состоянии объекта */
+
+        /*! получение информации о внутреннем состоянии объекта
+            \param userparam - Необязательный пользовательский параметр
+        */
+        UniSetTypes::SimpleInfo getInfo( in long userparam );
 
         boolean exist();   /*!< проверка существования объекта */
 

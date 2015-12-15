@@ -298,7 +298,7 @@ class SharedMemory:
 		// чтобы понять, когда можно получать от SM данные.
 		virtual CORBA::Boolean exist() override;
 
-		virtual UniSetTypes::SimpleInfo* getInfo() override;
+		virtual UniSetTypes::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
 
 		void addReadItem( Restorer_XML::ReaderSlot sl );
 

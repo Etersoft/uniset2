@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2015-12-14+03:00
+// generate timestamp: 2015-12-15+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -39,7 +39,7 @@ class UObject_SK:
 		void askSensor( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );
 		void updateValues();
 
-		virtual UniSetTypes::SimpleInfo* getInfo() override;
+		virtual UniSetTypes::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
 
 		virtual bool setMsg( UniSetTypes::ObjectId code, bool state = true );
 

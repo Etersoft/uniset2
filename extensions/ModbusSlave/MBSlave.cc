@@ -2375,9 +2375,9 @@ ModbusRTU::mbErrCode MBSlave::read4314( ModbusRTU::MEIMessageRDI& query,
 	return erNoError;
 }
 // -------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* MBSlave::getInfo()
+UniSetTypes::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
 {
-	UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo();
+	UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo(userparam);
 
 	ostringstream inf;
 

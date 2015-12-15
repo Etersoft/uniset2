@@ -514,12 +514,12 @@ int UniSetManager::objectsCount()
 
 // ------------------------------------------------------------------------------------------
 int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, SimpleInfoSeq* seq,
-								   int begin, const long uplimit )
+								   int begin, const long uplimit, CORBA::Long userparam )
 {
 	auto ind = begin;
 
 	// получаем у самого менджера
-	SimpleInfo_var msi = mngr->getInfo();
+	SimpleInfo_var msi = mngr->getInfo(userparam);
 	(*seq)[ind] = msi;
 
 	ind++;
@@ -531,7 +531,7 @@ int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, S
 	{
 		try
 		{
-			SimpleInfo_var si = (*it)->getInfo();
+			SimpleInfo_var si = (*it)->getInfo(userparam);
 			(*seq)[ind] = si;
 			ind++;
 
@@ -555,7 +555,7 @@ int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, S
 	// а далее у его менеджеров (рекурсивно)
 	for( auto& i : mlist )
 	{
-		ind = getObjectsInfo(i, seq, ind, uplimit);
+		ind = getObjectsInfo(i, seq, ind, uplimit, userparam );
 
 		if( ind > uplimit )
 			break;
@@ -565,7 +565,7 @@ int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, S
 }
 // ------------------------------------------------------------------------------------------
 
-SimpleInfoSeq* UniSetManager::getObjectsInfo( CORBA::Long maxlength )
+SimpleInfoSeq* UniSetManager::getObjectsInfo(CORBA::Long maxlength , CORBA::Long userparam )
 {
 	SimpleInfoSeq* res = new SimpleInfoSeq();    // ЗА ОСВОБОЖДЕНИЕ ПАМЯТИ ОТВЕЧАЕТ КЛИЕНТ!!!!!!
 	// поэтому ему лучше пользоваться при получении _var-классом
@@ -580,7 +580,7 @@ SimpleInfoSeq* UniSetManager::getObjectsInfo( CORBA::Long maxlength )
 	int ind = 0;
 	const int limit = length;
 
-	ind = getObjectsInfo( get_mptr(), res, ind, limit );
+	ind = getObjectsInfo( get_mptr(), res, ind, limit, userparam );
 	return res;
 }
 

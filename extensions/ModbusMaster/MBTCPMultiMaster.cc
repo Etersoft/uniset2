@@ -515,9 +515,9 @@ const std::string MBTCPMultiMaster::MBSlaveInfo::getShortInfo() const
 	return std::move(s.str());
 }
 // -----------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* MBTCPMultiMaster::getInfo()
+UniSetTypes::SimpleInfo* MBTCPMultiMaster::getInfo( CORBA::Long userparam )
 {
-	UniSetTypes::SimpleInfo_var i = MBExchange::getInfo();
+	UniSetTypes::SimpleInfo_var i = MBExchange::getInfo(userparam);
 
 	ostringstream inf;
 

@@ -169,7 +169,7 @@
 		void askSensor( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );
 		void updateValues();
 
-		virtual UniSetTypes::SimpleInfo* getInfo() override;
+		virtual UniSetTypes::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
 
 		virtual bool setMsg( UniSetTypes::ObjectId code, bool state = true );
 
@@ -427,10 +427,10 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 	sysCommand(_sm);
 }
 // -----------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo()
+UniSetTypes::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( CORBA::Long userparam )
 {
-	<xsl:if test="not(normalize-space($BASECLASS)='')">UniSetTypes::SimpleInfo_var i = <xsl:value-of select="$BASECLASS"/>::getInfo();</xsl:if>
-	<xsl:if test="normalize-space($BASECLASS)=''">UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo();</xsl:if>
+	<xsl:if test="not(normalize-space($BASECLASS)='')">UniSetTypes::SimpleInfo_var i = <xsl:value-of select="$BASECLASS"/>::getInfo(userparam);</xsl:if>
+	<xsl:if test="normalize-space($BASECLASS)=''">UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo(userparam);</xsl:if>
 	
 	ostringstream inf;
 	
