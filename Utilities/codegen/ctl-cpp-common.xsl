@@ -330,8 +330,10 @@
 		VMonitor vmon;
 
 		<xsl:if test="normalize-space($VARMAP)='1'">
-		/*! Получить указатель на переменную храняющую значение, по идентификатору */
-		long* pvar( UniSetTypes::ObjectId id );
+		/*! Получить указатель на переменную храняющую значение, по идентификатору 
+		 * \return nullptr если элемент не найден
+		*/
+		long* valptr( UniSetTypes::ObjectId id );
 		</xsl:if>
 </xsl:template>
 
@@ -365,7 +367,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( UniSetTypes::Voi
 			case Message::SysCommand:
 				preSysCommand( reinterpret_cast&lt;SystemMessage*&gt;(_msg) );
 			break;
-
+                                                                                        
 			default:
 				break;
 		}	
@@ -462,7 +464,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::checkTestMode()
 // -----------------------------------------------------------------------------
 </xsl:if>
 <xsl:if test="normalize-space($VARMAP)='1'">
-long* <xsl:value-of select="$CLASSNAME"/>_SK::getVariable( UniSetTypes::ObjectId id )
+long* <xsl:value-of select="$CLASSNAME"/>_SK::valptr( UniSetTypes::ObjectId id )
 {
 	auto i = vmap.find(id);
 	if( i!= vmap.end() )

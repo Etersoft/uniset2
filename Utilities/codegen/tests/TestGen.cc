@@ -10,7 +10,7 @@ TestGen::TestGen( UniSetTypes::ObjectId id, xmlNode* confnode ):
 	vmonit(int_var);
 	vmonit(bool_var);
 
-	long* i = getVariable(input2_s);
+	long* i = valptr(input2_s);
 	if( !i )
 		cerr << "input2_s NOT FOUND!!!" << endl;
 	else
