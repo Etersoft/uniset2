@@ -428,7 +428,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %endif
 
 %files extension-common-devel
-#%id %_includedir/%oname/extensions/
 %_includedir/%oname/extensions/*.*
 %_libdir/libUniSet2Extensions.so
 %_libdir/libUniSet2MB*.so
@@ -455,7 +454,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 * Mon Dec 14 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt12
 - refactoring: remove xxx_LT classes
 - add new function for LT_Object
-- add userparam for UniSetObject::getInfo( int userparam )
+- add userparam for UniSetObject::getInfo( int userparam)
+- codegen: add function: long* valptr(ObjectId) and --gen-vmap parameter
 
 * Tue Nov 03 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt11
 - RRDServer: add support 'dsname', check RRD_MAX_DSNAME_LEN
