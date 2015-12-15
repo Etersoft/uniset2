@@ -152,7 +152,7 @@ class UniSetManager:
 		typedef UniSetManagerList::iterator MListIterator;
 
 		int getObjectsInfo(const std::shared_ptr<UniSetManager>& mngr, UniSetTypes::SimpleInfoSeq* seq,
-							int begin, const long uplimit, CORBA::Long userparam );
+						   int begin, const long uplimit, CORBA::Long userparam );
 
 		PortableServer::POA_var poa;
 		PortableServer::POAManager_var pman;

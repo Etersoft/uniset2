@@ -10,7 +10,7 @@ TEST_CASE("Pulse", "[Test for class 'Pulse' - impulse generator]" )
 	{
 		// Работа без задержки..(нулевые задержки)
 		Pulse p;
-		
+
 		REQUIRE( p.getT1() == 0 );
 		REQUIRE( p.getT0() == 0 );
 

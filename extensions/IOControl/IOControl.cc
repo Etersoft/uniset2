@@ -24,7 +24,7 @@ std::ostream& operator<<( std::ostream& os, IOControl::IOInfo& inf )
 // -----------------------------------------------------------------------------
 
 IOControl::IOControl(UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
-					  const std::shared_ptr<SharedMemory>& ic, int numcards, const std::string& prefix_ ):
+					 const std::shared_ptr<SharedMemory>& ic, int numcards, const std::string& prefix_ ):
 	UniSetObject(id),
 	polltime(150),
 	cards(11),

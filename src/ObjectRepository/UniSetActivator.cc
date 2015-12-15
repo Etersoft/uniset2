@@ -204,11 +204,14 @@ void terminate_thread()
 		g_act->terminated(g_signo);
 
 #if 0
+
 		try
 		{
 			ulogsys << "TERMINATE THREAD: orb shutdown.." << endl;
+
 			if( g_act->orb )
 				g_act->orb->shutdown(true);
+
 			ulogsys << "TERMINATE THREAD: orb shutdown ok.." << endl;
 		}
 		catch( const omniORB::fatalException& fe )
@@ -222,7 +225,9 @@ void terminate_thread()
 		{
 			ulogsys << "(TERMINATE THREAD): " << ex.what() << endl;
 		}
+
 #endif
+
 		if( g_fini_thread && g_fini_thread->joinable() )
 			g_fini_thread->join();
 
@@ -385,8 +390,10 @@ void UniSetActivator::uaDestroy(int signo)
 	try
 	{
 		ulogsys << myname << "(uaDestroy): shutdown orb...  " << endl;
+
 		if( orb )
 			orb->shutdown(true);
+
 		ulogsys << myname << "(uaDestroy): shutdown ok." << endl;
 	}
 	catch( const omniORB::fatalException& fe )

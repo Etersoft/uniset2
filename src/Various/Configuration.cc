@@ -196,6 +196,7 @@ namespace UniSetTypes
 		xmlNodesSec = 0;
 		// -------------------------------------------------------------------------
 		char curdir[FILENAME_MAX];
+
 		if( getcwd(curdir, FILENAME_MAX) == NULL )
 			rootDir = "";
 		else

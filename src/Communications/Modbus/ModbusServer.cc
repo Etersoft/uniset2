@@ -72,16 +72,18 @@ bool ModbusServer::checkAddr(const std::unordered_set<ModbusAddr>& vaddr, const 
 		return true;
 
 	auto i = vaddr.find(addr);
-	return (i!=vaddr.end());
+	return (i != vaddr.end());
 }
 // --------------------------------------------------------------------------------
 std::string ModbusServer::vaddr2str( const std::unordered_set<ModbusAddr>& vaddr )
 {
 	ostringstream s;
 	s << "[ ";
-	for( const auto& a: vaddr )
+
+	for( const auto& a : vaddr )
 		s << addr2str(a) << " ";
-	s <<"]";
+
+	s << "]";
 
 	return std::move(s.str());
 }
@@ -583,7 +585,7 @@ mbErrCode ModbusServer::recv( const std::unordered_set<ModbusRTU::ModbusAddr>& v
 		{
 			bcnt = getNextData((unsigned char*)(&rbuf), sizeof(ModbusAddr));
 
-			if( bcnt > 0 && checkAddr(vaddr,rbuf.addr) )
+			if( bcnt > 0 && checkAddr(vaddr, rbuf.addr) )
 			{
 				begin = true;
 				break;
@@ -599,7 +601,7 @@ mbErrCode ModbusServer::recv( const std::unordered_set<ModbusRTU::ModbusAddr>& v
 		            // Lav: конечно стоит, нам же надо буфер чистить
 		*/
 		// Проверка кому адресован пакет... (только если не включён режим отвечать на любые адреса)
-		if( !(onBroadcast && rbuf.addr == BroadcastAddr) && !checkAddr(vaddr,rbuf.addr) )
+		if( !(onBroadcast && rbuf.addr == BroadcastAddr) && !checkAddr(vaddr, rbuf.addr) )
 		{
 			if( dlog->is_warn() )
 			{
@@ -1505,7 +1507,7 @@ std::unordered_set<ModbusAddr> ModbusServer::addr2vaddr(ModbusAddr& mbaddr)
 mbErrCode ModbusServer::receive_one( ModbusAddr a, timeout_t msec )
 {
 	auto v = addr2vaddr(a);
-	return receive(v,msec);
+	return receive(v, msec);
 }
 // -------------------------------------------------------------------------
 
@@ -1548,6 +1550,7 @@ ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string& fname,
 	if( ret == -1 )
 	{
 		close(fd);
+
 		if( dlog && dlog->is_warn() )
 			(*dlog)[Debug::WARN] << "(replyFileTransfer): open '" << fname << "' with error: " << strerror(errno) << endl;
 
@@ -1561,6 +1564,7 @@ ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string& fname,
 	if( ret < 0 )
 	{
 		close(fd);
+
 		if( dlog && dlog->is_warn() )
 			(*dlog)[Debug::WARN] << "(replyFileTransfer): read from '" << fname << "' with error: " << strerror(errno) << endl;
 
@@ -1572,6 +1576,7 @@ ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string& fname,
 	if( fstat(fd, &fs) < 0 )
 	{
 		close(fd);
+
 		if( dlog && dlog->is_warn() )
 			(*dlog)[Debug::WARN] << "(replyFileTransfer): fstat for '" << fname << "' with error: " << strerror(errno) << endl;
 
@@ -1620,7 +1625,7 @@ ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessa
 		set.tv_sec = mktime(&t); // может вернуть -1 (!)
 		set.tv_usec = 0;
 
-		if( set.tv_sec >=0 && settimeofday(&set, &tz) == 0 )
+		if( set.tv_sec >= 0 && settimeofday(&set, &tz) == 0 )
 		{
 			// подтверждаем сохранение
 			// в ответе возвращаем установленное время...

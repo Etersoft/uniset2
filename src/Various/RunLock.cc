@@ -48,6 +48,7 @@ bool RunLock::isLocked( const string& name )
 
 	char ptr[10];
 	int n = fscanf( out, "%9s", ptr );
+
 	if( n < 1 )
 	{
 		fclose(out);

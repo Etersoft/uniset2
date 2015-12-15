@@ -105,6 +105,7 @@ int main( int argc, char** argv )
 		while(1)
 		{
 			opt = getopt_long(argc, argv, "hvw:r:x:d:s:t:l:n:yb:e:x:z:", longopts, &optindex);
+
 			if( opt == -1 )
 				break;
 

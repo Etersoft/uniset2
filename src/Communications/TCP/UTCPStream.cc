@@ -28,6 +28,7 @@ bool UTCPStream::setKeepAliveParams(timeout_t timeout_sec, int keepcnt, int keep
 	SOCKET fd = TCPStream::so;
 	int enable = 1;
 	bool ok = true;
+
 	if( setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void*)&enable, sizeof(enable)) == -1 )
 		ok = false;
 

@@ -10,7 +10,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 RTUExchange::RTUExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
-						  const std::string& prefix_ ):
+						 const std::string& prefix_ ):
 	MBExchange(objId, shmId, ic, prefix_),
 	mbrtu(0),
 	defSpeed(ComPort::ComSpeed38400),
@@ -251,14 +251,14 @@ bool RTUExchange::poll()
 			dlog3 << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr)
 				  << " regs=" << d->pollmap.size() << endl;
 
-			for( auto&& m: d->pollmap )
+			for( auto && m : d->pollmap )
 			{
-				if( m.first!=0 && (ncycle % m.first) != 0 )
+				if( m.first != 0 && (ncycle % m.first) != 0 )
 					continue;
 
 				auto rmap = m.second;
 
-				for( auto&& it = rmap->begin(); it != rmap->end(); ++it )
+				for( auto && it = rmap->begin(); it != rmap->end(); ++it )
 				{
 					try
 					{

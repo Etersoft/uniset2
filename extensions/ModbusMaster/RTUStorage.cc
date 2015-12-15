@@ -132,8 +132,10 @@ void RTUStorage::poll( const std::shared_ptr<ModbusRTUMaster>& mb ) throw( Modbu
 						for( unsigned int i = 0; i < 8; i++ )
 						{
 							int k = i + 8 * b;
-							if( k>=48 )
+
+							if( k >= 48 )
 								break;
+
 							unio_do[k] = bits[i];
 						}
 					}
@@ -152,8 +154,10 @@ void RTUStorage::poll( const std::shared_ptr<ModbusRTUMaster>& mb ) throw( Modbu
 						for( unsigned int i = 0; i < 8; i++ )
 						{
 							int k = i + 8 * b;
-							if( k>=48 )
+
+							if( k >= 48 )
 								break;
+
 							unio_di[k] = bits[i];
 						}
 					}

@@ -997,6 +997,7 @@ ModbusMessage ReadOutputRetMessage::transport_msg()
 
 		ind += bcnt;
 	}
+
 	// пересчитываем CRC по перевёрнутым данным
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(bcnt) + bcnt );
 
@@ -1209,6 +1210,7 @@ ModbusMessage ReadInputRetMessage::transport_msg()
 
 		ind += bcnt;
 	}
+
 	// пересчитываем CRC по перевёрнутым данным
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(bcnt) + bcnt );
 

@@ -398,6 +398,7 @@ ModbusRTU::mbErrCode MBTCPServer::fileTransfer( ModbusRTU::FileTransferMessage& 
 
 	int seek = query.numpacket * ModbusRTU::FileTransferRetMessage::MaxDataLen;
 	int ret = lseek(fd, seek, SEEK_SET);
+
 	if( ret < 0 )
 	{
 		close(fd);

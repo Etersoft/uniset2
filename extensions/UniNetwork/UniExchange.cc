@@ -18,7 +18,7 @@ UniExchange::NetNodeInfo::NetNodeInfo():
 }
 // --------------------------------------------------------------------------
 UniExchange::UniExchange(UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID,
-						  const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
+						 const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
 	IOController(id),
 	polltime(200),
 	mymap(1),

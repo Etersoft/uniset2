@@ -133,6 +133,7 @@ UniSetObject::UniSetObject( const string& name, const string& section ):
 UniSetObject::~UniSetObject()
 {
 #if 0
+
 	try
 	{
 		deactivate();
@@ -156,6 +157,7 @@ UniSetObject::~UniSetObject()
 		}
 		catch(...) {}
 	}
+
 #endif
 }
 // ------------------------------------------------------------------------------------------

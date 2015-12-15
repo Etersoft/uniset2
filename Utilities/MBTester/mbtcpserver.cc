@@ -50,6 +50,7 @@ int main( int argc, char** argv )
 		while(1)
 		{
 			opt = getopt_long(argc, argv, "hva:p:i:bc:", longopts, &optindex);
+
 			if( opt != -1 )
 				break;
 
@@ -86,9 +87,10 @@ int main( int argc, char** argv )
 			}
 		}
 
-		auto avec = UniSetTypes::explode_str(myaddr,',');
+		auto avec = UniSetTypes::explode_str(myaddr, ',');
 		std::unordered_set<ModbusRTU::ModbusAddr> vaddr;
-		for( const auto& a: avec )
+
+		for( const auto& a : avec )
 			vaddr.emplace( ModbusRTU::str2mbAddr(a) );
 
 		if( verb )

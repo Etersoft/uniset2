@@ -217,7 +217,7 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 	{
 		readConfiguration();
 		mbinfo << myname << "(init): iomap size = " << iomap.size()
-			  << " myaddr=" << ModbusServer::vaddr2str(vaddr) << endl;
+			   << " myaddr=" << ModbusServer::vaddr2str(vaddr) << endl;
 	}
 	else
 	{
@@ -463,6 +463,7 @@ void MBSlave::waitSMReady()
 	// waiting for SM is ready...
 	int tout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "15000");
 	timeout_t ready_timeout = 15000;
+
 	if( tout > 0 )
 		ready_timeout = tout;
 	else if( tout < 0 )
@@ -491,6 +492,7 @@ void MBSlave::execute_rtu()
 	if( !shm->isLocalwork() )
 	{
 		std::unique_lock<std::mutex> locker(mutexStartNotify);
+
 		while( !activated )
 			startNotifyEvent.wait(locker);
 	}
@@ -503,8 +505,8 @@ void MBSlave::execute_rtu()
 	}
 
 	mbinfo << myname << "(execute_rtu): thread running.."
-			<< " iomap size = " << iomap.size()
-			<< " myaddr=" << ModbusServer::vaddr2str(vaddr)
+		   << " iomap size = " << iomap.size()
+		   << " myaddr=" << ModbusServer::vaddr2str(vaddr)
 		   << endl;
 
 	while( !cancelled )
@@ -577,9 +579,9 @@ void MBSlave::execute_rtu()
 				}
 			}
 
-			for( auto&& rmap: iomap )
+			for( auto && rmap : iomap )
 			{
-				for( auto&& it: rmap.second )
+				for( auto && it : rmap.second )
 					IOBase::processingThreshold(&it.second, shm, force);
 			}
 		}
@@ -598,6 +600,7 @@ void MBSlave::execute_tcp()
 	if( !shm->isLocalwork() )
 	{
 		std::unique_lock<std::mutex> locker(mutexStartNotify);
+
 		while( !activated )
 			startNotifyEvent.wait(locker);
 	}
@@ -610,8 +613,8 @@ void MBSlave::execute_tcp()
 	}
 
 	mbinfo << myname << "(execute_tcp): thread running.."
-			<< " iomap size = " << iomap.size()
-			<< " myaddr=" << ModbusServer::vaddr2str(vaddr)
+		   << " iomap size = " << iomap.size()
+		   << " myaddr=" << ModbusServer::vaddr2str(vaddr)
 		   << endl;
 
 	while( !cancelled )
@@ -685,9 +688,9 @@ void MBSlave::execute_tcp()
 				}
 			}
 
-			for( auto&& rmap: iomap )
+			for( auto && rmap : iomap )
 			{
-				for( auto&& it : rmap.second )
+				for( auto && it : rmap.second )
 					IOBase::processingThreshold(&it.second, shm, force);
 			}
 		}
@@ -802,7 +805,7 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
 	if( force )
 		return;
 
-	for( const auto& rmap: iomap )
+	for( const auto& rmap : iomap )
 	{
 		for( const auto& it : rmap.second )
 		{
@@ -823,10 +826,11 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
 // ------------------------------------------------------------------------------------------
 void MBSlave::sensorInfo( const UniSetTypes::SensorMessage* sm )
 {
-	for( auto&& regs: iomap )
+	for( auto && regs : iomap )
 	{
 		auto& rmap = regs.second;
-		for( auto it =rmap.begin(); it != rmap.end(); ++it )
+
+		for( auto it = rmap.begin(); it != rmap.end(); ++it )
 		{
 			if( it->second.si.id == sm->id )
 			{
@@ -1229,7 +1233,7 @@ bool MBSlave::BitRegProperty::check( const IOController_i::SensorInfo& si )
 // ------------------------------------------------------------------------------------------
 void MBSlave::initIterators()
 {
-	for( auto&& regs: iomap )
+	for( auto && regs : iomap )
 	{
 		auto& rmap = regs.second;
 
@@ -1377,6 +1381,7 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage&
 	mbinfo << myname << "(readOutputRegisters): " << query << endl;
 
 	auto regmap = iomap.find(query.addr);
+
 	if( regmap == iomap.end() )
 	{
 		mbinfo << myname << "(readOutputRegisters): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
@@ -1415,6 +1420,7 @@ ModbusRTU::mbErrCode MBSlave::writeOutputRegisters( ModbusRTU::WriteOutputMessag
 	mbinfo << myname << "(writeOutputRegisters): " << query << endl;
 
 	auto regmap = iomap.find(query.addr);
+
 	if( regmap == iomap.end() )
 	{
 		mbinfo << myname << "(writeOutputRegisters): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
@@ -1437,6 +1443,7 @@ ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( ModbusRTU::WriteSingleO
 	mbinfo << myname << "(writeOutputSingleRegisters): " << query << endl;
 
 	auto regmap = iomap.find(query.addr);
+
 	if( regmap == iomap.end() )
 	{
 		mbinfo << myname << "(writeOutputRegisters): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
@@ -2046,6 +2053,7 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query, ReadInputRetMess
 	mbinfo << myname << "(readInputRegisters): " << query << endl;
 
 	auto regmap = iomap.find(query.addr);
+
 	if( regmap == iomap.end() )
 	{
 		mbinfo << myname << "(readInputRegisters): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
@@ -2110,6 +2118,7 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 	mbinfo << myname << "(readCoilStatus): " << query << endl;
 
 	auto regmap = iomap.find(query.addr);
+
 	if( regmap == iomap.end() )
 	{
 		mbinfo << myname << "(readCoilStatus): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
@@ -2121,7 +2130,7 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 		if( query.count <= 1 )
 		{
 			ModbusRTU::ModbusData d = 0;
-			ModbusRTU::mbErrCode ret = real_read(regmap->second,query.start, d, query.func);
+			ModbusRTU::mbErrCode ret = real_read(regmap->second, query.start, d, query.func);
 			reply.addData(0);
 
 			if( ret == ModbusRTU::erNoError )
@@ -2182,6 +2191,7 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 	mbinfo << myname << "(readInputStatus): " << query << endl;
 
 	auto regmap = iomap.find(query.addr);
+
 	if( regmap == iomap.end() )
 	{
 		mbinfo << myname << "(readInputStatus): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
@@ -2254,6 +2264,7 @@ ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& 
 	mbinfo << myname << "(forceMultipleCoils): " << query << endl;
 
 	auto regmap = iomap.find(query.addr);
+
 	if( regmap == iomap.end() )
 	{
 		mbinfo << myname << "(forceMultipleCoils): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;
@@ -2290,6 +2301,7 @@ ModbusRTU::mbErrCode MBSlave::forceSingleCoil( ModbusRTU::ForceSingleCoilMessage
 	mbinfo << myname << "(forceSingleCoil): " << query << endl;
 
 	auto regmap = iomap.find(query.addr);
+
 	if( regmap == iomap.end() )
 	{
 		mbinfo << myname << "(forceSingleCoil): Unknown addr=" << ModbusRTU::addr2str(query.addr) << endl;

@@ -39,6 +39,7 @@ int main( int argc, char* argv[], char* envp[] )
 		while(1)
 		{
 			opt = getopt_long(argc, argv, "hvi:p:", longopts, &optindex);
+
 			if( opt == -1 )
 				break;
 

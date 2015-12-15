@@ -33,8 +33,9 @@ ModbusTCPSession::ModbusTCPSession(ost::TCPSocket& server, const std::unordered_
 {
 	setCRCNoCheckit(true);
 
-	timeout_t tout = timeout/1000;
-	if( tout <=0 )
+	timeout_t tout = timeout / 1000;
+
+	if( tout <= 0 )
 		tout = 3;
 
 	setKeepAlive(true);

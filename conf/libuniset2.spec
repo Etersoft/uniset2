@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.2
-Release: alt12
+Release: alt13
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -451,6 +451,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Wed Dec 16 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt13
+- set public for UniSetObject::askTimer 
+
 * Mon Dec 14 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt12
 - refactoring: remove xxx_LT classes
 - add new function for LT_Object

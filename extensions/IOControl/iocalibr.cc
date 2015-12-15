@@ -86,6 +86,7 @@ int main(int argc, char* argv[])
 	while(1)
 	{
 		opt = getopt_long(argc, argv, "hr:s:d:a:x:o:f:n:i:c:", longopts, &optindex);
+
 		if( opt == -1 )
 			break;
 
@@ -196,6 +197,7 @@ int main(int argc, char* argv[])
 		cout << "\r" << "data: " << setw(5) << data << "        " << flush;
 
 		ssize_t temp = read(fd, &buf, sizeof(buf));
+
 		if( temp == -1 )
 		{
 			close(fd);
@@ -347,6 +349,7 @@ void readCalibr(int fixed)
 		close(f);
 		return;
 	}
+
 	if (temp > 1)
 	{
 		int s;

@@ -307,7 +307,7 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 
 					log << buf;
 				}
-				else if( n == 0 && readcount <=0 )
+				else if( n == 0 && readcount <= 0 )
 					break;
 
 				if( rcount > 0 && readcount > 0 )

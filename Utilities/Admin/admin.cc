@@ -225,6 +225,7 @@ int main(int argc, char** argv)
 					ui.initBackId(UniSetTypes::AdminID);
 
 					int userparam = 0;
+
 					if( optind < argc )
 						userparam = uni_atoi(argv[optind]);
 
@@ -538,6 +539,7 @@ static void createSections( const std::shared_ptr<UniSetTypes::Configuration>& r
 int omap()
 {
 	std::ios_base::fmtflags old_flags = cout.flags();
+
 	try
 	{
 		cout.setf(ios::left, ios::adjustfield);

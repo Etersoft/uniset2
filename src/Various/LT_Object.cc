@@ -130,7 +130,8 @@ timeout_t LT_Object::getTimeInterval( TimerId timerid )
 {
 	// lock
 	uniset_rwmutex_rlock lock(lstMutex);
-	for( const auto& li: tlst )
+
+	for( const auto& li : tlst )
 	{
 		if( li.id == timerid )
 			return li.tmr.getInterval();
@@ -143,7 +144,8 @@ timeout_t LT_Object::getTimeLeft(TimerId timerid)
 {
 	// lock
 	uniset_rwmutex_rlock lock(lstMutex);
-	for( const auto& li: tlst )
+
+	for( const auto& li : tlst )
 	{
 		if( li.id == timerid )
 			return li.curTimeMS;

@@ -109,7 +109,7 @@ class LT_Object
 		    \return Возвращает время [мсек] оставшееся до срабатывания очередного таймера
 		*/
 		virtual timeout_t askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks = -1,
-							UniSetTypes::Message::Priority p = UniSetTypes::Message::High );
+									UniSetTypes::Message::Priority p = UniSetTypes::Message::High );
 
 
 		/*!

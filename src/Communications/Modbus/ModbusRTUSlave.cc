@@ -96,7 +96,8 @@ mbErrCode ModbusRTUSlave::receive(const std::unordered_set<ModbusAddr>& vmbaddr,
 
 			if( aftersend_msec > 0 )
 				msleep(aftersend_msec);
-//			usleep(10000);
+
+			//			usleep(10000);
 			return res;
 		}
 

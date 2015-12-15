@@ -116,15 +116,15 @@ class UniSetObject:
 			return (UniSetTypes::ObjectPtr)CORBA::Object::_duplicate(oref);
 		}
 
+		virtual timeout_t askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks = -1,
+									UniSetTypes::Message::Priority p = UniSetTypes::Message::High ) override;
+
 	protected:
 		/*! обработка приходящих сообщений */
 		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) {}
 		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) {}
 		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) {}
-
-		virtual timeout_t askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks = -1,
-							UniSetTypes::Message::Priority p = UniSetTypes::Message::High ) override;
 
 		/*! Получить сообщение */
 		bool receiveMessage( UniSetTypes::VoidMessage& vm );

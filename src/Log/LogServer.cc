@@ -31,6 +31,7 @@ LogServer::~LogServer()
 	if( thr )
 	{
 		thr->stop();
+
 		if( thr->isRunning() )
 			thr->join();
 	}

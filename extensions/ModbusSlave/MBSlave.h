@@ -439,7 +439,7 @@ class MBSlave:
 		// то использовать unordered_map нельзя
 		typedef std::map<ModbusRTU::RegID, IOProperty> RegMap;
 
-		typedef std::unordered_map<ModbusRTU::ModbusAddr,RegMap> IOMap;
+		typedef std::unordered_map<ModbusRTU::ModbusAddr, RegMap> IOMap;
 
 		IOMap iomap;  /*!< список входов/выходов по адресам */
 

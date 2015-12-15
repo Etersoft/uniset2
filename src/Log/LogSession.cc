@@ -19,6 +19,7 @@ using namespace UniSetTypes;
 LogSession::~LogSession()
 {
 	cancelled = true;
+
 	if( isRunning() )
 	{
 		ost::Thread::join();
@@ -310,6 +311,7 @@ void LogSession::run()
 	disconnect();
 
 	cancelled = true;
+
 	if( slog.debugging(Debug::INFO) )
 		slog[Debug::INFO] << peername << "(run): thread stopping..." << endl;
 
@@ -325,6 +327,7 @@ void LogSession::final()
 	try
 	{
 		auto s = shared_from_this();
+
 		if( s )
 			slFin(s);
 	}
@@ -350,8 +353,8 @@ NullLogSession::~NullLogSession()
 {
 	cancelled = true;
 
-//	if( isRunning() )
-//		exit(); // terminate();
+	//	if( isRunning() )
+	//		exit(); // terminate();
 }
 // ---------------------------------------------------------------------
 void NullLogSession::add( ost::TCPSocket& sock )

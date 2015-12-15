@@ -14,7 +14,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 MBExchange::MBExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
-						const std::shared_ptr<SharedMemory>& _ic, const std::string& prefix ):
+					   const std::shared_ptr<SharedMemory>& _ic, const std::string& prefix ):
 	UniSetObject(objId),
 	allInitOK(false),
 	initPause(3000),
@@ -270,6 +270,7 @@ void MBExchange::waitSMReady()
 	// waiting for SM is ready...
 	int tout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "15000");
 	timeout_t ready_timeout = 15000;
+
 	if( tout > 0 )
 		ready_timeout = tout;
 	else if( tout < 0 )
@@ -333,10 +334,11 @@ void MBExchange::sigterm( int signo )
 	{
 		mbwarn << myname << "SIGTERM(" << signo << "): "  << ex.what() << endl;
 	}
-//	{
-		//        std::exception_ptr p = std::current_exception();
-		//        std::clog <<(p ? p.__cxa_exception_type()->name() : "null") << std::endl;
-//	}
+
+	//	{
+	//        std::exception_ptr p = std::current_exception();
+	//        std::clog <<(p ? p.__cxa_exception_type()->name() : "null") << std::endl;
+	//	}
 }
 // ------------------------------------------------------------------------------------------
 void MBExchange::readConfiguration()
@@ -405,9 +407,10 @@ void MBExchange::initIterators()
 		shm->initIterator(d->resp_it);
 		shm->initIterator(d->mode_it);
 
-		for( auto&& m: d->pollmap )
+		for( auto && m : d->pollmap )
 		{
 			auto& regmap = m.second;
+
 			for( auto it = regmap->begin(); it != regmap->end(); ++it )
 			{
 				for( auto it2 = it->second->slst.begin(); it2 != it->second->slst.end(); ++it2 )
@@ -432,9 +435,10 @@ void MBExchange::initValues()
 	{
 		auto d = it1->second;
 
-		for( auto&& m: d->pollmap )
+		for( auto && m : d->pollmap )
 		{
 			auto regmap = m.second;
+
 			for( auto it = regmap->begin(); it != regmap->end(); ++it )
 			{
 				for( auto it2 = it->second->slst.begin(); it2 != it->second->slst.end(); ++it2 )
@@ -543,9 +547,9 @@ std::ostream& operator<<( std::ostream& os, MBExchange::RTUDevice& d )
 
 	os << "  regs: " << endl;
 
-	for( const auto& m: d.pollmap )
+	for( const auto& m : d.pollmap )
 	{
-		for( const auto& it: *(m.second) )
+		for( const auto& it : * (m.second) )
 			os << "     " << it.second << endl;
 	}
 
@@ -581,11 +585,11 @@ void MBExchange::rtuQueryOptimization( RTUDeviceMap& dm )
 
 	mbinfo << myname << "(rtuQueryOptimization): optimization..." << endl;
 
-	for( auto&& it1: dm )
+	for( auto && it1 : dm )
 	{
 		auto d = it1.second;
 
-		for( auto&& m: d->pollmap )
+		for( auto && m : d->pollmap )
 		{
 			auto& regmap = m.second;
 
@@ -1184,7 +1188,7 @@ void MBExchange::updateSM()
 		}
 
 
-		for( auto&& m: d->pollmap )
+		for( auto && m : d->pollmap )
 		{
 			auto& regmap = m.second;
 
@@ -1242,7 +1246,7 @@ void MBExchange::updateRTU( RegMap::iterator& rit )
 {
 	auto& r = rit->second;
 
-	for( auto&& it: r->slst )
+	for( auto && it : r->slst )
 		updateRSProperty( &it, false );
 
 }
@@ -2375,10 +2379,11 @@ bool MBExchange::initItem( UniXML::iterator& it )
 	std::shared_ptr<RegMap> rmap;
 
 	auto rit = dev->pollmap.find(pollfactor);
+
 	if( rit == dev->pollmap.end() )
 	{
 		rmap = make_shared<RegMap>();
-		dev->pollmap.emplace(pollfactor,rmap);
+		dev->pollmap.emplace(pollfactor, rmap);
 	}
 	else
 		rmap = rit->second;
@@ -2933,9 +2938,10 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 		if( force_out )
 			return;
 
-		for( auto&& m: d->pollmap )
+		for( auto && m : d->pollmap )
 		{
 			auto& regmap = m.second;
+
 			for( auto it = regmap->begin(); it != regmap->end(); ++it )
 			{
 				if( !isWriteFunction(it->second->mbfunc) )
@@ -2984,7 +2990,7 @@ void MBExchange::sensorInfo( const UniSetTypes::SensorMessage* sm )
 		{
 			auto&& regmap = m.second;
 
-			for( const auto& it: (*regmap) )
+			for( const auto& it : (*regmap) )
 			{
 				if( !isWriteFunction(it.second->mbfunc) )
 					continue;
@@ -3062,9 +3068,9 @@ bool MBExchange::poll()
 
 		d->prev_numreply.store(d->numreply);
 
-		for( auto&& m: d->pollmap )
+		for( auto && m : d->pollmap )
 		{
-			if( m.first>1 && (ncycle % m.first) != 0 )
+			if( m.first > 1 && (ncycle % m.first) != 0 )
 				continue;
 
 			auto&& regmap = m.second;

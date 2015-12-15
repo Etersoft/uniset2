@@ -4,7 +4,7 @@ using namespace std;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
 size_t ModbusTCPCore::readNextData( ost::TCPStream* tcp,
-								 std::queue<unsigned char>& qrecv, int max )
+									std::queue<unsigned char>& qrecv, int max )
 {
 	if( !tcp || !tcp->isConnected() )
 		return 0;
@@ -26,8 +26,8 @@ size_t ModbusTCPCore::readNextData( ost::TCPStream* tcp,
 }
 // ------------------------------------------------------------------------
 size_t ModbusTCPCore::getNextData(ost::TCPStream* tcp,
-								std::queue<unsigned char>& qrecv,
-								unsigned char* buf, size_t len )
+								  std::queue<unsigned char>& qrecv,
+								  unsigned char* buf, size_t len )
 {
 	if( !tcp || !tcp->isConnected() )
 		return 0;

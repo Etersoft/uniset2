@@ -117,8 +117,9 @@ void SMonitor::sensorInfo( const SensorMessage* si )
 
 		int ret = system(cmd.str().c_str());
 		int res = WEXITSTATUS(ret);
+
 		if( res != 0 )
-			cerr << "run script '" <<cmd.str() << "' failed.." << endl;
+			cerr << "run script '" << cmd.str() << "' failed.." << endl;
 
 		//        if( WIFSIGNALED(ret) && (WTERMSIG(ret) == SIGINT || WTERMSIG(ret) == SIGQUIT))
 		//        {

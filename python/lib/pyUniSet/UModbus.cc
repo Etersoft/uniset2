@@ -123,7 +123,7 @@ bool UModbus::getBit( int addr, int mbreg, int mbfunc )throw(UException)
 }
 // --------------------------------------------------------------------------
 long UModbus::mbread(int mbaddr, int mbreg, int mbfunc, const string& s_vtype, int nbit,
-					  const string& new_ip, int new_port )throw(UException)
+					 const string& new_ip, int new_port )throw(UException)
 {
 	using namespace VTypes;
 

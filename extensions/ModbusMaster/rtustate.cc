@@ -47,6 +47,7 @@ int main( int argc, char** argv )
 		while(1)
 		{
 			opt = getopt_long(argc, argv, "hva:d:s:t:q:", longopts, &optindex);
+
 			if( opt == -1 )
 				break;
 

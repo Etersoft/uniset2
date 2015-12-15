@@ -12,7 +12,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 RRDServer::RRDServer(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
-					  const string& prefix ):
+					 const string& prefix ):
 	UObject_SK(objId, cnode, string(prefix + "-")),
 	prefix(prefix)
 {
@@ -156,6 +156,7 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 			}
 
 			std::string dsname(it1.getProp(ds));
+
 			if( dsname.empty() )
 				dsname = it1.getProp("name");
 

@@ -451,11 +451,12 @@ void MBTCPMultiMaster::sigterm( int signo )
 	{
 		mbcrit << myname << "(sigterm): " << ex.what() << std::endl;
 	}
-//	catch( ... )
-//	{
-//		std::exception_ptr p = std::current_exception();
-//		std::clog << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
-//	}
+
+	//	catch( ... )
+	//	{
+	//		std::exception_ptr p = std::current_exception();
+	//		std::clog << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
+	//	}
 }
 
 // -----------------------------------------------------------------------------
@@ -508,7 +509,7 @@ const std::string MBTCPMultiMaster::MBSlaveInfo::getShortInfo() const
 	s << myname << " respond=" << respond
 	  << " (respond_id=" << respond_id << " respond_invert=" << respond_invert
 	  << " recv_timeout=" << recv_timeout << " resp_force=" << respond_force
-	  << " use=" << use << " ignore=" << ignore << " priority=" << priority 
+	  << " use=" << use << " ignore=" << ignore << " priority=" << priority
 	  << " persistent-connection=" << !force_disconnect
 	  << ")";
 

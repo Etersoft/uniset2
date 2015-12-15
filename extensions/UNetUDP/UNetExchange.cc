@@ -457,6 +457,7 @@ void UNetExchange::waitSMReady()
 	int tout = uniset_conf()->getArgInt("--unet-sm-ready-timeout", "15000");
 
 	timeout_t ready_timeout = 15000;
+
 	if( tout > 0 )
 		ready_timeout = tout;
 	else if( tout < 0 )

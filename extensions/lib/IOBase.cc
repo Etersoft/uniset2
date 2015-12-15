@@ -579,12 +579,12 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SM
 			&& d_on_msec != UniSetTimer::WaitUpTime
 			&& d_off_msec != UniSetTimer::WaitUpTime )
 	{
-		dlog->warn() << myname <<"(IOBase::readItem): "
-						<< " 'debouncedelay' is used in conjunction with the 'ondelay' and 'offdelay'. Sure?"
-						<< " [ debouncedelay=" << d_msec
-						<< " ondelay=" << d_on_msec
-						<< " offdelay=" << d_off_msec
-						<< " ]"	<< endl;
+		dlog->warn() << myname << "(IOBase::readItem): "
+					 << " 'debouncedelay' is used in conjunction with the 'ondelay' and 'offdelay'. Sure?"
+					 << " [ debouncedelay=" << d_msec
+					 << " ondelay=" << d_on_msec
+					 << " offdelay=" << d_off_msec
+					 << " ]"	<< endl;
 	}
 
 

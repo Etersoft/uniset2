@@ -232,6 +232,7 @@ mbErrCode ModbusTCPServer::receive(const std::unordered_set<ModbusAddr>& vmbaddr
 	{
 		if( dlog->is_crit() )
 			dlog->crit() << "(ModbusTCPServer): " << e.what() << endl;
+
 		return erInternalErrorCode;
 	}
 

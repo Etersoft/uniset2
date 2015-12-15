@@ -70,13 +70,13 @@
 #define VMON_MAKE_PAIR(vlist, T) \
 	{\
 		for( const auto& e: m_##T ) \
-			 vlist.push_back( std::make_pair(e.second, std::to_string(*(e.first))) );\
+			vlist.push_back( std::make_pair(e.second, std::to_string(*(e.first))) );\
 	}
 // --------------------------------------------------------------------------
 #define VMON_MAKE_PAIR_S(vlist, T) \
 	{\
 		for( const auto& e: m_##T ) \
-			 vlist.push_back( std::make_pair(e.second,*e.first) );\
+			vlist.push_back( std::make_pair(e.second,*e.first) );\
 	}
 // --------------------------------------------------------------------------
 #define VMON_MAKE_PAIR2(vlist, T) \
@@ -113,9 +113,12 @@ std::ostream& operator<<( std::ostream& os, VMonitor& m )
 {
 	auto vlist = m.getList();
 	// сортируем по алфавиту
-	vlist.sort( []( const std::pair<std::string,std::string> &a, const std::pair<std::string,std::string> &b ) { return a.first < b.first; });
+	vlist.sort( []( const std::pair<std::string, std::string>& a, const std::pair<std::string, std::string>& b )
+	{
+		return a.first < b.first;
+	});
 
-	for( const auto& e: vlist )
+	for( const auto& e : vlist )
 		os << e.first << " = " << e.second;
 
 	return os;
@@ -130,15 +133,15 @@ std::string VMonitor::str()
 // --------------------------------------------------------------------------
 std::list<std::pair<std::string, std::string> > VMonitor::getList()
 {
-	std::list<std::pair<std::string,std::string>> vlist;
-	VMON_MAKE_PAIR2(vlist,int);
-	VMON_MAKE_PAIR2(vlist,long);
-	VMON_MAKE_PAIR2(vlist,short);
+	std::list<std::pair<std::string, std::string>> vlist;
+	VMON_MAKE_PAIR2(vlist, int);
+	VMON_MAKE_PAIR2(vlist, long);
+	VMON_MAKE_PAIR2(vlist, short);
 	VMON_MAKE_PAIR_CHAR(vlist);
-	VMON_MAKE_PAIR(vlist,bool);
-	VMON_MAKE_PAIR(vlist,float);
-	VMON_MAKE_PAIR(vlist,double);
-	VMON_MAKE_PAIR_S(vlist,string);
+	VMON_MAKE_PAIR(vlist, bool);
+	VMON_MAKE_PAIR(vlist, float);
+	VMON_MAKE_PAIR(vlist, double);
+	VMON_MAKE_PAIR_S(vlist, string);
 	return std::move(vlist);
 }
 // --------------------------------------------------------------------------
@@ -148,13 +151,18 @@ std::string VMonitor::pretty_str( int namewidth, int colnum )
 	std::ostringstream os;
 
 	// сортируем по алфавиту
-	vlist.sort( []( const std::pair<std::string,std::string> &a, const std::pair<std::string,std::string> &b ) { return a.first < b.first; });
+	vlist.sort( []( const std::pair<std::string, std::string>& a, const std::pair<std::string, std::string>& b )
+	{
+		return a.first < b.first;
+	});
 
 	int n = 0;
-	for( const auto& e: vlist )
+
+	for( const auto& e : vlist )
 	{
 		os << std::right << std::setw(namewidth) << e.first << std::left << " = " << std::right << std::setw(10) << e.second;
-		if( (n++)%colnum )
+
+		if( (n++) % colnum )
 			os << std::endl;
 	}
 

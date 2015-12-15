@@ -11,6 +11,7 @@ TestGen::TestGen( UniSetTypes::ObjectId id, xmlNode* confnode ):
 	vmonit(bool_var);
 
 	long* i = valptr(input2_s);
+
 	if( !i )
 		cerr << "input2_s NOT FOUND!!!" << endl;
 	else

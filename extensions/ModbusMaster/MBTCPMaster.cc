@@ -12,7 +12,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 MBTCPMaster::MBTCPMaster(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
-						  const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
+						 const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
 	MBExchange(objId, shmId, ic, prefix),
 	force_disconnect(true)
 {

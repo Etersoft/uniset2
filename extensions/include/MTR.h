@@ -296,7 +296,7 @@ namespace MTR
 				val = raw.u2.val * pow( (long)10, (long)raw.u2.exp );
 			}
 
-			T5( const ModbusRTU::ModbusData* data, int size ):val(0)
+			T5( const ModbusRTU::ModbusData* data, int size ): val(0)
 			{
 				if( size >= u2size )
 				{

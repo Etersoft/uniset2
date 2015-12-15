@@ -415,26 +415,26 @@ class SharedMemory:
 		class HeartBeatInfo
 		{
 			public:
-			HeartBeatInfo():
-				a_sid(UniSetTypes::DefaultObjectId),
-				d_sid(UniSetTypes::DefaultObjectId),
-				reboot_msec(UniSetTimer::WaitUpTime),
-				timer_running(false),
-				ptReboot(UniSetTimer::WaitUpTime)
-			{}
+				HeartBeatInfo():
+					a_sid(UniSetTypes::DefaultObjectId),
+					d_sid(UniSetTypes::DefaultObjectId),
+					reboot_msec(UniSetTimer::WaitUpTime),
+					timer_running(false),
+					ptReboot(UniSetTimer::WaitUpTime)
+				{}
 
-			UniSetTypes::ObjectId a_sid; // аналоговый счётчик
-			UniSetTypes::ObjectId d_sid; // дискретный датчик состояния процесса
-			IOStateList::iterator a_it;
-			IOStateList::iterator d_it;
+				UniSetTypes::ObjectId a_sid; // аналоговый счётчик
+				UniSetTypes::ObjectId d_sid; // дискретный датчик состояния процесса
+				IOStateList::iterator a_it;
+				IOStateList::iterator d_it;
 
-			timeout_t reboot_msec; /*!< Время в течение которого процесс обязан подтвердить своё существование,
+				timeout_t reboot_msec; /*!< Время в течение которого процесс обязан подтвердить своё существование,
                                 иначе будет произведена перезагрузка контроллера по WDT (в случае если он включён).
                                 Если данный параметр не указывать, то "не живость" процесса просто игнорируется
 								(т.е. только сброс датчика heartbeat (d_sid) в ноль). */
 
-			bool timer_running;
-			PassiveTimer ptReboot;
+				bool timer_running;
+				PassiveTimer ptReboot;
 		};
 
 		enum Timers
