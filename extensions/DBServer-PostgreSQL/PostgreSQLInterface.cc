@@ -28,7 +28,7 @@ bool PostgreSQLInterface::ping()
 	return db && db->is_open();
 }
 // -----------------------------------------------------------------------------------------
-bool PostgreSQLInterface::connect( const string& host, const string& user, const string& pswd, const string& dbname)
+bool PostgreSQLInterface::nconnect( const string& host, const string& user, const string& pswd, const string& dbname)
 {
 	if( db )
 		return true;
@@ -105,10 +105,10 @@ bool PostgreSQLInterface::insertAndSaveRowid( const string& q )
 	return false;
 }
 // -----------------------------------------------------------------------------------------
-PostgreSQLResult PostgreSQLInterface::query( const string& q )
+DBResult PostgreSQLInterface::query( const string& q )
 {
 	if( !db )
-		return PostgreSQLResult();
+		return DBResult();
 
 	try
 	{
@@ -116,17 +116,19 @@ PostgreSQLResult PostgreSQLInterface::query( const string& q )
 
 		/* Execute SQL query */
 		result res( n.exec(q) );
-		return PostgreSQLResult(res);
+		DBResult dbres;
+		makeResult(dbres, res);
+		return dbres;
 	}
 	catch( const std::exception& e )
 	{
 		lastE = string(e.what());
 	}
 
-	return PostgreSQLResult();
+	return DBResult();
 }
 // -----------------------------------------------------------------------------------------
-string PostgreSQLInterface::error()
+const string PostgreSQLInterface::error()
 {
 	return lastE;
 }
@@ -152,65 +154,26 @@ bool PostgreSQLInterface::isConnection()
 	return (db && db->is_open());
 }
 // -----------------------------------------------------------------------------------------
-int PostgreSQLResult::num_cols( const PostgreSQLResult::iterator& it )
-{
-	return it->size();
-}
-// -----------------------------------------------------------------------------------------
-int PostgreSQLResult::as_int( const PostgreSQLResult::iterator& it, int col )
-{
-	//    if( col<0 || col >it->size() )
-	//        return 0;
-	return uni_atoi( (*it)[col] );
-}
-// -----------------------------------------------------------------------------------------
-double PostgreSQLResult::as_double( const PostgreSQLResult::iterator& it, int col )
-{
-	return atof( ((*it)[col]).c_str() );
-}
-// -----------------------------------------------------------------------------------------
-std::string PostgreSQLResult::as_string( const PostgreSQLResult::iterator& it, int col )
-{
-	return ((*it)[col]);
-}
-// -----------------------------------------------------------------------------------------
-int PostgreSQLResult::as_int( const PostgreSQLResult::COL::iterator& it )
-{
-	return uni_atoi( (*it) );
-}
-// -----------------------------------------------------------------------------------------
-double PostgreSQLResult::as_double( const PostgreSQLResult::COL::iterator& it )
-{
-	return atof( (*it).c_str() );
-}
-// -----------------------------------------------------------------------------------------
-std::string PostgreSQLResult::as_string( const PostgreSQLResult::COL::iterator& it )
-{
-	return (*it);
-}
-// -----------------------------------------------------------------------------------------
-#if 0
-PostgreSQLResult::COL PostgreSQLResult::get_col( const PostgreSQLResult::ROW::iterator& it )
-{
-	return (*it);
-}
-#endif
-// -----------------------------------------------------------------------------------------
-PostgreSQLResult::~PostgreSQLResult()
-{
-
-}
-// -----------------------------------------------------------------------------------------
-PostgreSQLResult::PostgreSQLResult( const pqxx::result& res )
+void PostgreSQLInterface::makeResult(DBResult& dbres, const pqxx::result& res )
 {
 	for( result::const_iterator c = res.begin(); c != res.end(); ++c )
 	{
-		COL col;
+		DBResult::COL col;
 
 		for( pqxx::result::tuple::size_type i = 0; i < c.size(); i++ )
 			col.push_back( c[i].as<string>() );
 
-		row.push_back(col);
+		dbres.row().push_back(col);
 	}
+}
+// -----------------------------------------------------------------------------------------
+extern "C" DBInterface* create_postgresqlinterface()
+{
+	return new PostgreSQLInterface();
+}
+// -----------------------------------------------------------------------------------------
+extern "C" void destroy_postgresqlinterface(DBInterface* p)
+{
+	delete p;
 }
 // -----------------------------------------------------------------------------------------

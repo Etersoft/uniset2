@@ -52,6 +52,20 @@ bool SQLiteInterface::ping()
 	return db && ( sqlite3_db_status(db, 0, NULL, NULL, 0) == SQLITE_OK );
 }
 // -----------------------------------------------------------------------------------------
+bool SQLiteInterface::connect( const std::string& param )
+{
+	std::string dbfile;
+	std::string::size_type pos = param.find_first_of(":");
+	if( pos != std::string::npos )
+	{
+		dbfile = param.substr(0, pos);
+		std::string create_str = param.substr(pos + 1, std::string::npos);
+		if( create_str == "true" )
+			return connect( dbfile, true );
+	}
+	return connect( dbfile, false );
+}
+// -----------------------------------------------------------------------------------------
 bool SQLiteInterface::connect( const string& dbfile, bool create )
 {
 	// т.к. sqlite3 по умолчанию, создаёт файл при открытии, то проверим "сами"
@@ -133,10 +147,10 @@ bool SQLiteInterface::checkResult( int rc )
 	return true;
 }
 // -----------------------------------------------------------------------------------------
-SQLiteResult SQLiteInterface::query( const string& q )
+DBResult SQLiteInterface::query( const string& q )
 {
 	if( !db )
-		return SQLiteResult();
+		return DBResult();
 
 	// char* errmsg = 0;
 	sqlite3_stmt* pStmt;
@@ -149,12 +163,14 @@ SQLiteResult SQLiteInterface::query( const string& q )
 	{
 		sqlite3_finalize(pStmt);
 		queryok = false;
-		return SQLiteResult();
+		return DBResult();
 	}
 
 	lastQ = q;
 	queryok = true;
-	return SQLiteResult(pStmt, true);
+	DBResult dbres;
+	makeResult(dbres, pStmt, true);
+	return dbres;
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::wait( sqlite3_stmt* stmt, int result )
@@ -175,7 +191,7 @@ bool SQLiteInterface::wait( sqlite3_stmt* stmt, int result )
 	return false;
 }
 // -----------------------------------------------------------------------------------------
-string SQLiteInterface::error()
+const string SQLiteInterface::error()
 {
 	if( db )
 		lastE = sqlite3_errmsg(db);
@@ -188,7 +204,7 @@ const string SQLiteInterface::lastQuery()
 	return lastQ;
 }
 // -----------------------------------------------------------------------------------------
-int SQLiteInterface::insert_id()
+double SQLiteInterface::insert_id()
 {
 	if( !db )
 		return 0;
@@ -201,56 +217,7 @@ bool SQLiteInterface::isConnection()
 	return connected;
 }
 // -----------------------------------------------------------------------------------------
-int SQLiteResult::num_cols( const SQLiteResult::iterator& it )
-{
-	return it->size();
-}
-// -----------------------------------------------------------------------------------------
-int SQLiteResult::as_int( const SQLiteResult::iterator& it, int col )
-{
-	//    if( col<0 || col >it->size() )
-	//        return 0;
-	return uni_atoi( (*it)[col] );
-}
-// -----------------------------------------------------------------------------------------
-double SQLiteResult::as_double( const SQLiteResult::iterator& it, int col )
-{
-	return atof( ((*it)[col]).c_str() );
-}
-// -----------------------------------------------------------------------------------------
-string SQLiteResult::as_string( const SQLiteResult::iterator& it, int col )
-{
-	return ((*it)[col]);
-}
-// -----------------------------------------------------------------------------------------
-int SQLiteResult::as_int( const SQLiteResult::COL::iterator& it )
-{
-	return uni_atoi( (*it) );
-}
-// -----------------------------------------------------------------------------------------
-double SQLiteResult::as_double( const SQLiteResult::COL::iterator& it )
-{
-	return atof( (*it).c_str() );
-}
-// -----------------------------------------------------------------------------------------
-std::string SQLiteResult::as_string( const SQLiteResult::COL::iterator& it )
-{
-	return (*it);
-}
-// -----------------------------------------------------------------------------------------
-#if 0
-SQLiteResult::COL SQLiteResult::get_col( SQLiteResult::ROW::iterator& it )
-{
-	return (*it);
-}
-#endif
-// -----------------------------------------------------------------------------------------
-SQLiteResult::~SQLiteResult()
-{
-
-}
-// -----------------------------------------------------------------------------------------
-SQLiteResult::SQLiteResult( sqlite3_stmt* s, bool finalize )
+void SQLiteInterface::makeResult(DBResult& dbres, sqlite3_stmt* s, bool finalize )
 {
 	do
 	{
@@ -264,7 +231,7 @@ SQLiteResult::SQLiteResult( sqlite3_stmt* s, bool finalize )
 			return;
 		}
 
-		COL c;
+		DBResult::COL c;
 
 		for( int i = 0; i < n; i++ )
 		{
@@ -276,11 +243,21 @@ SQLiteResult::SQLiteResult( sqlite3_stmt* s, bool finalize )
 				c.push_back("");
 		}
 
-		res.push_back(c);
+		dbres.row().push_back(c);
 	}
 	while( sqlite3_step(s) == SQLITE_ROW );
 
 	if( finalize )
 		sqlite3_finalize(s);
+}
+// -----------------------------------------------------------------------------------------
+extern "C" DBInterface* create_sqliteinterface()
+{
+	return new SQLiteInterface();
+}
+// -----------------------------------------------------------------------------------------
+extern "C" void destroy_sqliteinterface(DBInterface* p)
+{
+	delete p;
 }
 // -----------------------------------------------------------------------------------------

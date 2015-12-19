@@ -31,29 +31,28 @@
 //#warning Для использования mysql_create нужен define USE_OLD_FUNCTIONS
 //#define USE_OLD_FUNCTIONS
 #include <mysql/mysql.h>
+#include <DBInterface.h>
 // ----------------------------------------------------------------------------
-class MySQLResult;
-// ----------------------------------------------------------------------------
-class MySQLInterface
+class MySQLInterface : public DBNetInterface
 {
 	public:
 
 		MySQLInterface();
 		~MySQLInterface();
 
-		//            MySQLResult listFields( const std::string& table, const std::string& wild );
+		//            DBResult listFields( const std::string& table, const std::string& wild );
 
-		bool connect( const std::string& host, const std::string& user, const std::string& pswd,
-					  const std::string& dbname);
-		bool close();
+		bool nconnect( const std::string& host, const std::string& user, const std::string& pswd,
+					  const std::string& dbname) override;
+		bool close() override;
 
 		bool query_ok( const std::string& q );
 
 		// \param finalize - освободить буфер после запроса
-		MySQLResult query( const std::string& q );
+		DBResult query( const std::string& q ) override;
 
-		const std::string lastQuery();
-		bool insert( const std::string& q );
+		const std::string lastQuery() override;
+		bool insert( const std::string& q ) override;
 
 		std::string addslashes(const std::string& str);
 
@@ -61,14 +60,14 @@ class MySQLInterface
 		    проверка связи с БД.
 		    в случае отсутсвия попытка восстановить...
 		*/
-		bool ping();
+		bool ping() override;
 
 		/*! связь с БД установлена (была) */
-		bool isConnection();
+		bool isConnection() override;
 
-		int insert_id();
+		double insert_id() override;
 
-		const std::string error();
+		const std::string error() override;
 
 		// *******************
 		const char* gethostinfo();
@@ -76,63 +75,10 @@ class MySQLInterface
 
 	private:
 
+		void makeResult(DBResult& dbres, MYSQL_RES* r, bool finalize = true );
 		MYSQL* mysql;
 		std::string lastQ;
 		bool connected;
-};
-// ----------------------------------------------------------------------------------
-class MySQLResult
-{
-	public:
-		MySQLResult() {}
-		MySQLResult( MYSQL_RES* r, bool finalize = true );
-		~MySQLResult();
-
-		typedef std::vector<std::string> COL;
-		typedef std::deque<COL> ROW;
-
-		typedef ROW::iterator iterator;
-
-		inline iterator begin()
-		{
-			return res.begin();
-		}
-		inline iterator end()
-		{
-			return res.end();
-		}
-
-		inline operator bool()
-		{
-			return !res.empty();
-		}
-
-		inline size_t size()
-		{
-			return res.size();
-		}
-		inline bool empty()
-		{
-			return res.empty();
-		}
-
-		// ----------------------------------------------------------------------------
-		// ROW
-		static int as_int( const MySQLResult::iterator&, int col );
-		static double as_double( const MySQLResult::iterator&, int col );
-		static std::string as_string( const MySQLResult::iterator&, int col );
-		// ----------------------------------------------------------------------------
-		// COL
-		static int num_cols( const MySQLResult::iterator& );
-
-		static int as_int( const MySQLResult::COL::iterator& );
-		static double as_double(const  MySQLResult::COL::iterator& );
-		static std::string as_string( const MySQLResult::COL::iterator& );
-		// ----------------------------------------------------------------------------
-
-	protected:
-
-		ROW res;
 };
 // ----------------------------------------------------------------------------------
 #endif

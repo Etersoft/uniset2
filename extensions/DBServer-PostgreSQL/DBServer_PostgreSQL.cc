@@ -273,7 +273,7 @@ void DBServer_PostgreSQL::initDBServer()
 		   << " pingTime=" << PingTime
 		   << " ReconnectTime=" << ReconnectTime << endl;
 
-	if( !db->connect(dbnode, user, password, dbname) )
+	if( !db->nconnect(dbnode, user, password, dbname) )
 	{
 		dbwarn << myname << "(init): DB connection error: " << db->error() << endl;
 		askTimer(DBServer_PostgreSQL::ReconnectTimer, ReconnectTime);

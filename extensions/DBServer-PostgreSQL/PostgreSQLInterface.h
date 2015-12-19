@@ -8,93 +8,39 @@
 #include <iostream>
 #include <pqxx/pqxx>
 #include <PassiveTimer.h>
+#include <DBInterface.h>
 // ----------------------------------------------------------------------------
-class PostgreSQLResult;
-// ----------------------------------------------------------------------------
-class PostgreSQLInterface
+class PostgreSQLInterface : public DBNetInterface
 {
 	public:
 
 		PostgreSQLInterface();
 		~PostgreSQLInterface();
 
-		bool connect( const std::string& host, const std::string& user, const std::string& pswd, const std::string& dbname );
-		bool close();
-		bool isConnection();
-		bool ping(); // проверка доступности БД
+		bool nconnect( const std::string& host, const std::string& user, const std::string& pswd, const std::string& dbname ) override;
+		bool close() override;
+		bool isConnection() override;
+		bool ping() override; // проверка доступности БД
 
-		PostgreSQLResult query( const std::string& q );
-		const std::string lastQuery();
+		DBResult query( const std::string& q ) override;
+		const std::string lastQuery() override;
 
-		bool insert( const std::string& q );
+		bool insert( const std::string& q ) override;
 		bool insertAndSaveRowid( const std::string& q );
-		double insert_id();
+		double insert_id() override;
 		void save_inserted_id( const pqxx::result& res );
 
-		std::string error();
+		const std::string error() override;
 
 	protected:
 
 	private:
 
+		void makeResult(DBResult& dbres, const pqxx::result& res );
 		std::shared_ptr<pqxx::connection> db;
 		std::string lastQ;
 		std::string lastE;
 		double last_inserted_id;
-};
-// ----------------------------------------------------------------------------------
-class PostgreSQLResult
-{
-	public:
-		PostgreSQLResult() {}
-		explicit PostgreSQLResult( const pqxx::result& res );
-		~PostgreSQLResult();
-
-		typedef std::vector<std::string> COL;
-		typedef std::list<COL> ROW;
-
-		typedef ROW::iterator iterator;
-
-		inline iterator begin()
-		{
-			return row.begin();
-		}
-		inline iterator end()
-		{
-			return row.end();
-		}
-
-		inline operator bool()
-		{
-			return !row.empty();
-		}
-
-		inline int size()
-		{
-			return row.size();
-		}
-		inline bool empty()
-		{
-			return row.empty();
-		}
-
-		// ----------------------------------------------------------------------------
-		// ROW
-		static int as_int( const PostgreSQLResult::iterator&, int col );
-		static double as_double( const PostgreSQLResult::iterator&, int col );
-		static std::string as_string( const PostgreSQLResult::iterator&, int col );
-		// ----------------------------------------------------------------------------
-		// COL
-		static int num_cols( const PostgreSQLResult::iterator& );
-
-		static int as_int( const PostgreSQLResult::COL::iterator& );
-		static double as_double( const PostgreSQLResult::COL::iterator& );
-		static std::string as_string(const  PostgreSQLResult::COL::iterator& );
-		//----------------------------------------------------------------------------
-
-	protected:
-
-		ROW row;
 };
 // ----------------------------------------------------------------------------
 #endif

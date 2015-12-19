@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 		stringstream q;
 		q << "SELECT * from main_history";
 
-		SQLiteResult r = db.query(q.str());
+		DBResult r = db.query(q.str());
 
 		if( !r )
 		{
@@ -29,13 +29,13 @@ int main(int argc, char** argv)
 			return 1;
 		}
 
-		for( SQLiteResult::iterator it = r.begin(); it != r.end(); it++ )
+		for( DBResult::iterator it = r.begin(); it != r.end(); it++ )
 		{
 			cout << "ROW: ";
-			SQLiteResult::COL col(*it);
+			DBResult::COL col(*it);
 
-			for( SQLiteResult::COL::iterator cit = it->begin(); cit != it->end(); cit++ )
-				cout << SQLiteResult::as_string(cit) << "(" << SQLiteResult::as_double(cit) << ")  |  ";
+			for( DBResult::COL::iterator cit = it->begin(); cit != it->end(); cit++ )
+				cout << DBResult::as_string(cit) << "(" << DBResult::as_double(cit) << ")  |  ";
 
 			cout << endl;
 		}

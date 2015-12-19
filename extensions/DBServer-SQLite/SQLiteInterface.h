@@ -30,6 +30,7 @@
 #include <iostream>
 #include <sqlite3.h>
 #include "PassiveTimer.h"
+#include <DBInterface.h>
 // ----------------------------------------------------------------------------
 /*!  \page SQLiteIntarface  Интерфейс к SQLite
 
@@ -47,19 +48,19 @@
         stringstream q;
         q << "SELECT * from main_history";
 
-        SQLiteResult r = db.query(q.str());
+        DBResult r = db.query(q.str());
         if( !r )
         {
             cerr << "db connect error: " << db.error() << endl;
             return 1;
         }
 
-        for( SQLiteResult::iterator it=r.begin(); it!=r.end(); it++ )
+        for( DBResult::iterator it=r.begin(); it!=r.end(); it++ )
         {
             cout << "ROW: ";
-            SQLiteResult::COL col(*it);
-            for( SQLiteResult::COL::iterator cit = it->begin(); cit!=it->end(); cit++ )
-				cout << SQLiteResult::as_string(cit) << "(" << SQLiteResult::as_double(cit) << ")  |  ";
+            DBResult::COL col(*it);
+            for( DBResult::COL::iterator cit = it->begin(); cit!=it->end(); cit++ )
+				cout << DBResult::as_string(cit) << "(" << DBResult::as_double(cit) << ")  |  ";
             cout << endl;
         }
 
@@ -81,19 +82,18 @@
 // PRAGMA journal_mode = MEMORY
 // При этом конечно есть риск потерять данные при выключении..
 // ----------------------------------------------------------------------------
-class SQLiteResult;
-// ----------------------------------------------------------------------------
-class SQLiteInterface
+class SQLiteInterface : public DBInterface
 {
 	public:
 
 		SQLiteInterface();
 		~SQLiteInterface();
 
-		bool connect( const std::string& dbfile, bool create = false );
-		bool close();
-		bool isConnection();
-		bool ping(); // проверка доступности БД
+		bool connect( const std::string& param ) override;
+		bool connect( const std::string& dbfile, bool create );
+		bool close() override;
+		bool isConnection() override;
+		bool ping() override; // проверка доступности БД
 
 		void setOperationTimeout( timeout_t msec );
 		inline timeout_t getOperationTimeout()
@@ -110,13 +110,13 @@ class SQLiteInterface
 			return opCheckPause;
 		}
 
-		SQLiteResult query( const std::string& q );
-		const std::string lastQuery();
+		DBResult query( const std::string& q ) override;
+		const std::string lastQuery() override;
 
-		bool insert( const std::string& q );
-		int insert_id();
+		bool insert( const std::string& q ) override;
+		double insert_id() override;
 
-		std::string error();
+		const std::string error() override;
 
 	protected:
 
@@ -125,6 +125,7 @@ class SQLiteInterface
 
 	private:
 
+		void makeResult(DBResult& dbres, sqlite3_stmt* s, bool finalize = true );
 		sqlite3* db;
 		// sqlite3_stmt* curStmt;
 
@@ -135,59 +136,6 @@ class SQLiteInterface
 
 		timeout_t opTimeout;
 		timeout_t opCheckPause;
-};
-// ----------------------------------------------------------------------------------
-class SQLiteResult
-{
-	public:
-		SQLiteResult() {}
-		SQLiteResult( sqlite3_stmt* s, bool finalize = true );
-		~SQLiteResult();
-
-		typedef std::vector<std::string> COL;
-		typedef std::deque<COL> ROW;
-
-		typedef ROW::iterator iterator;
-
-		inline iterator begin()
-		{
-			return res.begin();
-		}
-		inline iterator end()
-		{
-			return res.end();
-		}
-
-		inline operator bool()
-		{
-			return !res.empty();
-		}
-
-		inline int size()
-		{
-			return res.size();
-		}
-		inline bool empty()
-		{
-			return res.empty();
-		}
-
-
-		// ----------------------------------------------------------------------------
-		static int num_cols( const SQLiteResult::iterator& );
-		// ROW
-		static int as_int( const SQLiteResult::iterator&, int col );
-		static double as_double( const SQLiteResult::iterator&, int col );
-		static std::string as_string( const SQLiteResult::iterator&, int col );
-		// ----------------------------------------------------------------------------
-		// COL
-		static int as_int( const SQLiteResult::COL::iterator& );
-		static double as_double( const SQLiteResult::COL::iterator& );
-		static std::string as_string( const SQLiteResult::COL::iterator& );
-
-	protected:
-
-		ROW res;
 };
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------

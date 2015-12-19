@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 	{
 		PostgreSQLInterface db;
 
-		if( !db.connect("localhost", "dbadmin", "dbadmin", dbname) )
+		if( !db.nconnect("localhost", "dbadmin", "dbadmin", dbname) )
 		{
 			cerr << "db connect error: " << db.error() << endl;
 			return 1;
@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 		stringstream q;
 		q << "SELECT * from main_history";
 
-		PostgreSQLResult r = db.query(q.str());
+		DBResult r = db.query(q.str());
 
 		if( !r )
 		{
@@ -35,13 +35,13 @@ int main(int argc, char** argv)
 			return 1;
 		}
 
-		for( PostgreSQLResult::iterator it = r.begin(); it != r.end(); it++ )
+		for( DBResult::iterator it = r.begin(); it != r.end(); it++ )
 		{
 			cout << "ROW: ";
-			PostgreSQLResult::COL col(*it);
+			DBResult::COL col(*it);
 
-			for( PostgreSQLResult::COL::iterator cit = it->begin(); cit != it->end(); cit++ )
-				cout << PostgreSQLResult::as_string(cit) << "(" << PostgreSQLResult::as_double(cit) << ")  |  ";
+			for( DBResult::COL::iterator cit = it->begin(); cit != it->end(); cit++ )
+				cout << DBResult::as_string(cit) << "(" << DBResult::as_double(cit) << ")  |  ";
 
 			cout << endl;
 		}
