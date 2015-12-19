@@ -13,9 +13,9 @@ class DBResult;
 class DBInterface
 {
 	public:
-	  
-		DBInterface(){};
-		virtual ~DBInterface(){};
+
+		DBInterface() {};
+		virtual ~DBInterface() {};
 
 		// Функция подключения к БД, параметры подключения зависят от типа БД
 		virtual bool connect( const std::string& param ) = 0;
@@ -33,10 +33,10 @@ class DBInterface
 class DBNetInterface : public DBInterface
 {
 	public:
-	  
-		DBNetInterface(){};
-		virtual ~DBNetInterface(){};
-		
+
+		DBNetInterface() {};
+		virtual ~DBNetInterface() {};
+
 		// Для сетевых БД параметры должны быть в формате user@host:pswd:dbname
 		virtual bool connect( const std::string& param );
 		virtual bool nconnect( const std::string& host, const std::string& user, const std::string& pswd, const std::string& dbname ) = 0;
@@ -45,14 +45,14 @@ class DBNetInterface : public DBInterface
 class DBResult
 {
 	public:
-	  
+
 		DBResult() {}
-		virtual ~DBResult(){};
+		virtual ~DBResult() {};
 
 		typedef std::vector<std::string> COL;
 		typedef std::deque<COL> ROW;
 		typedef ROW::iterator iterator;
-		
+
 		ROW& row();
 		iterator begin();
 		iterator end();
@@ -74,7 +74,7 @@ class DBResult
 		// ----------------------------------------------------------------------------
 
 	protected:
-		
+
 		ROW row_;
 };
 // the types of the class factories

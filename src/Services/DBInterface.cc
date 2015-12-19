@@ -8,20 +8,28 @@ bool DBNetInterface::connect( const std::string& param )
 	std::string dbname;
 	std::string::size_type pos = param.find_first_of("@");
 	std::string::size_type prev = 0;
+
 	if( pos != std::string::npos )
 		user = param.substr(prev, pos);
+
 	prev = pos + 1;
 	pos = param.find_first_of(":", prev);
+
 	if( pos != std::string::npos )
 		host = param.substr(prev, pos);
+
 	prev = pos + 1;
 	pos = param.find_first_of(":", prev);
+
 	if( pos != std::string::npos )
 		pswd = param.substr(prev, pos);
+
 	prev = pos + 1;
 	pos = param.find_first_of(":", prev);
+
 	if( pos != std::string::npos )
 		dbname = param.substr(prev, pos);
+
 	return nconnect( host, user, pswd, dbname );
 }
 //--------------------------------------------------------------------------------------------

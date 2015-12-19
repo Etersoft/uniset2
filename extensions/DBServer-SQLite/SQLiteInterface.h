@@ -82,18 +82,19 @@
 // PRAGMA journal_mode = MEMORY
 // При этом конечно есть риск потерять данные при выключении..
 // ----------------------------------------------------------------------------
-class SQLiteInterface : public DBInterface
+class SQLiteInterface:
+	public DBInterface
 {
 	public:
 
 		SQLiteInterface();
 		~SQLiteInterface();
 
-		bool connect( const std::string& param ) override;
+		virtual bool connect( const std::string& param ) override;
 		bool connect( const std::string& dbfile, bool create );
-		bool close() override;
-		bool isConnection() override;
-		bool ping() override; // проверка доступности БД
+		virtual bool close() override;
+		virtual bool isConnection() override;
+		virtual bool ping() override; // проверка доступности БД
 
 		void setOperationTimeout( timeout_t msec );
 		inline timeout_t getOperationTimeout()
@@ -110,13 +111,13 @@ class SQLiteInterface : public DBInterface
 			return opCheckPause;
 		}
 
-		DBResult query( const std::string& q ) override;
-		const std::string lastQuery() override;
+		virtual DBResult query( const std::string& q ) override;
+		virtual const std::string lastQuery() override;
 
-		bool insert( const std::string& q ) override;
-		double insert_id() override;
+		virtual bool insert( const std::string& q ) override;
+		virtual double insert_id() override;
 
-		const std::string error() override;
+		virtual const std::string error() override;
 
 	protected:
 
