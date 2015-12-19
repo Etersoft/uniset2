@@ -447,6 +447,17 @@ UniSetTypes::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( CORBA:
 	inf &lt;&lt; "LogServer: " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port &lt;&lt; endl;
 	inf &lt;&lt; dumpIO() &lt;&lt; endl;
 	inf &lt;&lt; endl;
+	auto timers = getTimersList();
+	inf &lt;&lt; "Timers[" &lt;&lt; timers.size() &lt;&lt; "]:" &lt;&lt; endl;
+	for( const auto&amp; t: timers )
+	{
+		inf &lt;&lt; "     " &lt;&lt; "[" &lt;&lt; t.id  &lt;&lt; "]: msec="
+			&lt;&lt; setw(6) &lt;&lt; t.tmr.getInterval()
+			&lt;&lt; "    timeleft="  &lt;&lt; setw(6) &lt;&lt; t.curTimeMS
+			&lt;&lt; "    tick="  &lt;&lt; setw(3) &lt;&lt; ( t.curTick>=0 ? t.curTick : -1 )
+			&lt;&lt; endl;
+	}
+	inf &lt;&lt; endl;
 	inf &lt;&lt; vmon.pretty_str() &lt;&lt; endl;
 	inf &lt;&lt; endl;
 	inf &lt;&lt; getMonitInfo() &lt;&lt; endl;
