@@ -45,7 +45,7 @@ MySQLInterface::~MySQLInterface()
 }
 
 // -----------------------------------------------------------------------------------------
-bool MySQLInterface::connect( const string& host, const string& user, const string& pswd, const string& dbname)
+bool MySQLInterface::nconnect( const string& host, const string& user, const string& pswd, const string& dbname)
 {
 	if( !mysql_real_connect(mysql, host.c_str(), user.c_str(), pswd.c_str(), dbname.c_str(), 0, NULL, 0) )
 	{
@@ -76,24 +76,25 @@ bool MySQLInterface::insert( const string& q )
 	return true;
 }
 // -----------------------------------------------------------------------------------------
-MySQLResult MySQLInterface::query( const std::string& q )
+DBResult MySQLInterface::query( const std::string& q )
 {
 	if( !mysql )
-		return MySQLResult();
+		return DBResult();
 
 	if( mysql_query(mysql, q.c_str()) )
 	{
 		cerr << error() << endl;
-		return MySQLResult();
+		return DBResult();
 	}
 
 	lastQ = q;
 	MYSQL_RES* res = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
 
 	if( !res || mysql_num_rows(res) == 0 )
-		return MySQLResult();
-
-	return MySQLResult(res, true);
+		return DBResult();
+	DBResult dbres;
+	makeResult(dbres, res, true);
+	return dbres;
 }
 // -----------------------------------------------------------------------------------------
 bool MySQLInterface::query_ok( const string& q )
@@ -129,7 +130,7 @@ const string MySQLInterface::lastQuery()
 	return lastQ;
 }
 // -----------------------------------------------------------------------------------------
-int MySQLInterface::insert_id()
+double MySQLInterface::insert_id()
 {
 	if( !mysql )
 		return 0;
@@ -173,71 +174,32 @@ string MySQLInterface::addslashes( const string& str )
 	return tmp.str();
 }
 // -----------------------------------------------------------------------------------------
-int MySQLResult::num_cols( const MySQLResult::iterator& it )
+void MySQLInterface::makeResult(DBResult& dbres, MYSQL_RES* myres, bool finalize )
 {
-	return it->size();
-}
-// -----------------------------------------------------------------------------------------
-int MySQLResult::as_int( const MySQLResult::iterator& it, int col )
-{
-	//    if( col<0 || col >it->size() )
-	//        return 0;
-	return uni_atoi( (*it)[col] );
-}
-// -----------------------------------------------------------------------------------------
-double as_double( const MySQLResult::iterator& it, int col )
-{
-	return atof( ((*it)[col]).c_str() );
-}
-// -----------------------------------------------------------------------------------------
-string MySQLResult::as_string( const MySQLResult::iterator& it, int col )
-{
-	return ((*it)[col]);
-}
-// -----------------------------------------------------------------------------------------
-int MySQLResult::as_int( const MySQLResult::COL::iterator& it )
-{
-	return uni_atoi( (*it) );
-}
-// -----------------------------------------------------------------------------------------
-double MySQLResult::as_double( const MySQLResult::COL::iterator& it )
-{
-	return atof( (*it).c_str() );
-}
-// -----------------------------------------------------------------------------------------
-std::string MySQLResult::as_string( const MySQLResult::COL::iterator& it )
-{
-	return (*it);
-}
-// -----------------------------------------------------------------------------------------
-#if 0
-MySQLResult::COL get_col( MySQLResult::ROW::iterator& it )
-{
-	return (*it);
-}
-#endif
-// -----------------------------------------------------------------------------------------
-MySQLResult::~MySQLResult()
-{
-
-}
-// -----------------------------------------------------------------------------------------
-MySQLResult::MySQLResult( MYSQL_RES* myres, bool finalize )
-{
-	MYSQL_ROW row;
+	MYSQL_ROW mysql_row;
 	unsigned int nfields = mysql_num_fields(myres);
 
-	while( (row = mysql_fetch_row(myres)) )
+	while( (mysql_row = mysql_fetch_row(myres)) )
 	{
-		COL c;
+		DBResult::COL c;
 
 		for( unsigned int i = 0; i < nfields; i++ )
-			c.push_back( (row[i] != 0 ? string(row[i]) : "") );
+			c.push_back( (mysql_row[i] != 0 ? string(mysql_row[i]) : "") );
 
-		res.push_back(c);
+		dbres.row().push_back(c);
 	}
 
 	if( finalize )
 		mysql_free_result(myres);
+}
+// -----------------------------------------------------------------------------------------
+extern "C" DBInterface* create_mysqlinterface()
+{
+	return new MySQLInterface();
+}
+// -----------------------------------------------------------------------------------------
+extern "C" void destroy_mysqlinterface(DBInterface* p)
+{
+	delete p;
 }
 // -----------------------------------------------------------------------------------------

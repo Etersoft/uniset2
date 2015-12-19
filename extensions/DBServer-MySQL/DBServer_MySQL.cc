@@ -297,7 +297,7 @@ void DBServer_MySQL::initDBServer()
 		   << " pingTime=" << PingTime
 		   << " ReconnectTime=" << ReconnectTime << endl;
 
-	if( !db->connect(dbnode, user, password, dbname) )
+	if( !db->nconnect(dbnode, user, password, dbname) )
 	{
 		//        ostringstream err;
 		dbcrit << myname
