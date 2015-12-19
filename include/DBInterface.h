@@ -14,8 +14,8 @@ class DBInterface
 {
 	public:
 
-		DBInterface(){};
-		virtual ~DBInterface(){};
+		DBInterface() {};
+		virtual ~DBInterface() {};
 
 		// Функция подключения к БД, параметры подключения зависят от типа БД
 		virtual bool connect( const std::string& param ) = 0;
@@ -34,8 +34,8 @@ class DBNetInterface : public DBInterface
 {
 	public:
 
-		DBNetInterface(){};
-		virtual ~DBNetInterface(){};
+		DBNetInterface() {};
+		virtual ~DBNetInterface() {};
 
 		// Для сетевых БД параметры должны быть в формате user@host:pswd:dbname
 		virtual bool connect( const std::string& param );
@@ -47,7 +47,7 @@ class DBResult
 	public:
 
 		DBResult() {}
-		virtual ~DBResult(){};
+		virtual ~DBResult() {};
 
 		typedef std::vector<std::string> COL;
 		typedef std::deque<COL> ROW;

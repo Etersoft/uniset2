@@ -56,13 +56,16 @@ bool SQLiteInterface::connect( const std::string& param )
 {
 	std::string dbfile;
 	std::string::size_type pos = param.find_first_of(":");
+
 	if( pos != std::string::npos )
 	{
 		dbfile = param.substr(0, pos);
 		std::string create_str = param.substr(pos + 1, std::string::npos);
+
 		if( create_str == "true" )
 			return connect( dbfile, true );
 	}
+
 	return connect( dbfile, false );
 }
 // -----------------------------------------------------------------------------------------

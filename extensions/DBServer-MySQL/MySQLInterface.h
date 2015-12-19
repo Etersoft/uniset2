@@ -33,7 +33,8 @@
 #include <mysql/mysql.h>
 #include <DBInterface.h>
 // ----------------------------------------------------------------------------
-class MySQLInterface : public DBNetInterface
+class MySQLInterface:
+	public DBNetInterface
 {
 	public:
 
@@ -42,17 +43,17 @@ class MySQLInterface : public DBNetInterface
 
 		//            DBResult listFields( const std::string& table, const std::string& wild );
 
-		bool nconnect( const std::string& host, const std::string& user, const std::string& pswd,
-					  const std::string& dbname) override;
-		bool close() override;
+		virtual bool nconnect( const std::string& host, const std::string& user, const std::string& pswd,
+							   const std::string& dbname) override;
+		virtual bool close() override;
 
 		bool query_ok( const std::string& q );
 
 		// \param finalize - освободить буфер после запроса
-		DBResult query( const std::string& q ) override;
+		virtual DBResult query( const std::string& q ) override;
 
-		const std::string lastQuery() override;
-		bool insert( const std::string& q ) override;
+		virtual const std::string lastQuery() override;
+		virtual bool insert( const std::string& q ) override;
 
 		std::string addslashes(const std::string& str);
 
@@ -60,14 +61,14 @@ class MySQLInterface : public DBNetInterface
 		    проверка связи с БД.
 		    в случае отсутсвия попытка восстановить...
 		*/
-		bool ping() override;
+		virtual bool ping() override;
 
 		/*! связь с БД установлена (была) */
-		bool isConnection() override;
+		virtual bool isConnection() override;
 
-		double insert_id() override;
+		virtual double insert_id() override;
 
-		const std::string error() override;
+		virtual const std::string error() override;
 
 		// *******************
 		const char* gethostinfo();

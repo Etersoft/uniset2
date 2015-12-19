@@ -92,6 +92,7 @@ DBResult MySQLInterface::query( const std::string& q )
 
 	if( !res || mysql_num_rows(res) == 0 )
 		return DBResult();
+
 	DBResult dbres;
 	makeResult(dbres, res, true);
 	return dbres;
