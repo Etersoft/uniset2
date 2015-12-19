@@ -193,6 +193,8 @@ class LT_Object
 
 		timeout_t sleepTime; /*!< текущее время ожидания */
 
+		TimersList getTimersList();
+
 	private:
 		TimersList tlst;
 		/*! замок для блокирования совместного доступа к cписку таймеров */

@@ -34,8 +34,8 @@ using namespace UniSetTypes;
 
 // -----------------------------------------------------------------------------
 LT_Object::LT_Object():
-	lstMutex("LT_Object::lstMutex"),
-	sleepTime(UniSetTimer::WaitUpTime)
+	sleepTime(UniSetTimer::WaitUpTime),
+	lstMutex("LT_Object::lstMutex")
 {
 	tmLast.setTiming(UniSetTimer::WaitUpTime);
 }
@@ -152,6 +152,13 @@ timeout_t LT_Object::getTimeLeft(TimerId timerid)
 	}
 
 	return 0;
+}
+// ------------------------------------------------------------------------------------------
+LT_Object::TimersList LT_Object::getTimersList()
+{
+	uniset_rwmutex_rlock l(lstMutex);
+	TimersList lst(tlst);
+	return std::move(lst);
 }
 // ------------------------------------------------------------------------------------------
 
