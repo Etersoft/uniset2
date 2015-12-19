@@ -538,6 +538,12 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 * Sun Dec 27 2015 Igor Vlasenko <viy@altlinux.ru> 2.2-alt13.1
 - NMU: rebuild with libpqxx 4
 
+* Sat Dec 19 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt15
+- (codegen): added to display information about the timers
+
+* Sat Dec 19 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt14
+- (uzum): refactoring DBInterface..
+
 * Wed Dec 16 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt13
 - set public for UniSetObject::askTimer 
 
