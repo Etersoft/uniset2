@@ -34,7 +34,6 @@ bool DBNetInterface::connect( const std::string& param )
 		dbname = param.substr(prev, pos - prev);
 		break;
 	}
-
 	return nconnect( host, user, pswd, dbname );
 }
 //--------------------------------------------------------------------------------------------
