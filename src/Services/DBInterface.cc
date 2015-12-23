@@ -2,34 +2,34 @@
 // ------------------------------------------------------------------------------------------
 bool DBNetInterface::connect( const std::string& param )
 {
-	std::string host;
-	std::string user;
-	std::string pswd;
-	std::string dbname;
-	std::string::size_type pos = param.find_first_of("@");
-	std::string::size_type prev = 0;
+	std::string host = "";
+	std::string user = "";
+	std::string pswd = "";
+	std::string dbname = "";
+	for(;;)
+	{
+		std::string::size_type pos = param.find_first_of("@");
+		user = param.substr(0, pos);
+		if( pos == std::string::npos )
+			break;
 
-	if( pos != std::string::npos )
-		user = param.substr(prev, pos);
+		std::string::size_type prev = pos + 1;
+		pos = param.find_first_of(":", prev);
+		host = param.substr(prev, pos - prev);
+		if( pos == std::string::npos )
+			break;
 
-	prev = pos + 1;
-	pos = param.find_first_of(":", prev);
+		prev = pos + 1;
+		pos = param.find_first_of(":", prev);
+		pswd = param.substr(prev, pos - prev);
+		if( pos == std::string::npos )
+			break;
 
-	if( pos != std::string::npos )
-		host = param.substr(prev, pos);
-
-	prev = pos + 1;
-	pos = param.find_first_of(":", prev);
-
-	if( pos != std::string::npos )
-		pswd = param.substr(prev, pos);
-
-	prev = pos + 1;
-	pos = param.find_first_of(":", prev);
-
-	if( pos != std::string::npos )
-		dbname = param.substr(prev, pos);
-
+		prev = pos + 1;
+		pos = param.find_first_of(":", prev);
+		dbname = param.substr(prev, pos - prev);
+		break;
+	}
 	return nconnect( host, user, pswd, dbname );
 }
 //--------------------------------------------------------------------------------------------
