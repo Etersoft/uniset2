@@ -538,6 +538,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 * Sun Dec 27 2015 Igor Vlasenko <viy@altlinux.ru> 2.2-alt13.1
 - NMU: rebuild with libpqxx 4
 
+* Wed Dec 23 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt16
+- fixed bug in DBNetInterface (uzum)
+
 * Sat Dec 19 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt15
 - (codegen): added to display information about the timers
 
