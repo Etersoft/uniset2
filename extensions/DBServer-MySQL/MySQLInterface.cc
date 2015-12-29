@@ -177,6 +177,13 @@ string MySQLInterface::addslashes( const string& str )
 // -----------------------------------------------------------------------------------------
 void MySQLInterface::makeResult(DBResult& dbres, MYSQL_RES* myres, bool finalize )
 {
+	if( !myres )
+	{
+		if( finalize )
+			mysql_free_result(myres);
+		return;
+	}
+	
 	MYSQL_ROW mysql_row;
 	unsigned int nfields = mysql_num_fields(myres);
 
