@@ -179,8 +179,6 @@ void MBTCPPersistentSlave::execute_tcp()
 		return;
 	}
 
-	auto l = loga->create(myname + "-exchangelog");
-	sslot->setLog(l);
 
 	for( auto && i : cmap )
 		i.second.ptTimeout.reset();
@@ -189,13 +187,14 @@ void MBTCPPersistentSlave::execute_tcp()
 
 	mbinfo << myname << "(execute_tcp): thread running.." << endl;
 
-
-
 	while( !cancelled )
 	{
 		try
 		{
-			sslot->waitQuery( vaddr, waitTimeout );
+#warning MBTCPPersistentSlave: Из этой функции нет возврата..
+			sslot->mainLoop( vaddr );
+
+// ========== В текущей реализации КОД НИЖЕ не будет вызван... по крайней мере пока не завершится процесс ====
 
 			// если слишком быстро обработали запрос
 			// то ничего не делаем..

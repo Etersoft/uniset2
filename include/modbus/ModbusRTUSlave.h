@@ -44,7 +44,7 @@ class ModbusRTUSlave:
 	protected:
 
 		// realisation (see ModbusServer.h)
-		virtual int getNextData( unsigned char* buf, int len ) override;
+		virtual size_t getNextData( unsigned char* buf, int len ) override;
 		virtual void setChannelTimeout( timeout_t msec ) override;
 		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override;
 

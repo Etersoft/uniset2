@@ -5,6 +5,7 @@
 #include <string>
 #include <queue>
 #include <cc++/socket.h>
+#include <ev++.h>
 #include "Mutex.h"
 #include "Debug.h"
 #include "Configuration.h"
@@ -12,12 +13,11 @@
 #include "ModbusTypes.h"
 #include "ModbusServer.h"
 #include "ModbusTCPSession.h"
-
+#include "UTCPStream.h"
 // -------------------------------------------------------------------------
-/*!    ModbusTCP server */
+/*! ModbusTCP server */
 class ModbusTCPServer:
-	public ModbusServer,
-	public ost::TCPSocket
+	public ModbusServer
 {
 	public:
 		ModbusTCPServer( ost::InetAddress& ia, int port = 502 );
@@ -26,11 +26,8 @@ class ModbusTCPServer:
 		/*! Однопоточная обработка (каждый запрос последовательно), с разрывом соединения в конце */
 		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msecTimeout ) override;
 
-		/*! Многопоточная обработка (создаётся по потоку для каждого "клиента")
-		 \return TRUE - если запрос пришёл
-		 \return FALSE - если timeout
-		 */
-		virtual bool waitQuery( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msec = UniSetTimer::WaitUpTime );
+		/*! Поддержка большого количества соединений (постоянных) */
+		virtual void mainLoop( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr );
 
 		void setMaxSessions( unsigned int num );
 		inline unsigned int getMaxSessions()
@@ -89,19 +86,19 @@ class ModbusTCPServer:
 
 	protected:
 
+		virtual void ioAccept(ev::io &watcher, int revents);
 		virtual ModbusRTU::mbErrCode pre_send_request( ModbusRTU::ModbusMessage& request ) override;
 		virtual ModbusRTU::mbErrCode post_send_request( ModbusRTU::ModbusMessage& request ) override;
 
 		// realisation (see ModbusServer.h)
-		virtual int getNextData( unsigned char* buf, int len ) override;
+		virtual size_t getNextData( unsigned char* buf, int len ) override;
 		virtual void setChannelTimeout( timeout_t msec ) override;
 		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override;
 
-		virtual ModbusRTU::mbErrCode tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPHeader& mhead );
+		virtual ModbusRTU::mbErrCode tcp_processing( UTCPStream& tcp, ModbusTCP::MBAPHeader& mhead );
 		void sessionFinished( ModbusTCPSession* s );
 
 		ost::tpport_t port = { 0 };
-		ost::TCPStream tcp;
 		ost::InetAddress iaddr;
 		std::queue<unsigned char> qrecv;
 		ModbusTCP::MBAPHeader curQueryHeader;
@@ -116,6 +113,12 @@ class ModbusTCPServer:
 		unsigned int sessCount = { 0 };
 
 		timeout_t sessTimeout = { 10000 }; // msec
+
+		ev::default_loop* evloop = { 0 };
+		ev::io io;
+		int sock = { -1 };
+
+		const std::unordered_set<ModbusRTU::ModbusAddr>* vmbaddr;
 
 	private:
 

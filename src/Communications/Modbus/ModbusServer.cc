@@ -48,6 +48,7 @@ ModbusServer::ModbusServer():
 	    dlog->addLevel(Debug::CRIT);
 	    dlog->addLevel(Debug::INFO);
 	*/
+
 }
 
 // -------------------------------------------------------------------------

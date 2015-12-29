@@ -51,14 +51,12 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 	auto conf = uniset_conf();
 	mutex_start.setName(myname + "_mutex_start");
 
-	mblog = make_shared<DebugStream>();
-	mblog->setLogName(myname);
-	conf->initLogStream(mblog, prefix + "-log");
-
 	loga = make_shared<LogAgregator>(myname + "-loga");
-	loga->add(mblog);
 	loga->add(ulog());
 	loga->add(dlog());
+
+	mblog = loga->create(myname);
+	conf->initLogStream(mblog, prefix + "-log");
 
 	//    xmlNode* cnode = conf->getNode(myname);
 
@@ -172,12 +170,18 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 		rs->setRecvTimeout(2000);
 		rs->setAfterSendPause(aftersend_pause);
 		rs->setReplyTimeout(reply_tout);
-		rs->setLog(mblog);
+		// rs->setLog(mblog);
 
 		mbslot = std::static_pointer_cast<ModbusServerSlot>(rs);
 		thr = make_shared< ThreadCreator<MBSlave> >(this, &MBSlave::execute_rtu);
 		thr->setFinalAction(this, &MBSlave::finalThread);
 		mbinfo << myname << "(init): type=RTU dev=" << dev << " speed=" << speed << endl;
+
+		ostringstream n;
+		n << prefix << "-exchangelog";
+		auto l = loga->create(n.str());
+		rs->setLog(l);
+		conf->initLogStream(l, prefix + "-exchangelog");
 	}
 	else if( stype == "TCP" )
 	{
@@ -201,8 +205,11 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 		thr->setFinalAction(this, &MBSlave::finalThread);
 		mbinfo << myname << "(init): init TCP connection ok. " << " inet=" << iaddr << " port=" << port << endl;
 
-		if( mblog->is_level9() )
-			mbtcp->setLog(mblog);
+		ostringstream n;
+		n << prefix << "-exchangelog";
+		auto l = loga->create(n.str());
+		mbtcp->setLog(l);
+		conf->initLogStream(l, prefix + "-exchangelog");
 	}
 	else
 		throw UniSetTypes::SystemError(myname + "(MBSlave): Unknown slave type. Use: --" + prefix + "-type [RTU|TCP]");

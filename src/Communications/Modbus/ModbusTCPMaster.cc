@@ -124,22 +124,25 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		if( dlog->is_info() )
 		{
 			dlog->info() << iaddr << "(ModbusTCPMaster::query): send tcp header(" << sizeof(mh) << "): ";
-			mbPrintMessage( dlog->info(), (ModbusByte*)(&mh), sizeof(mh));
-			dlog->info() << endl;
+			mbPrintMessage( dlog->info(false), (ModbusByte*)(&mh), sizeof(mh));
+			dlog->info(false) << endl;
 		}
 
 		for( unsigned int i = 0; i < 2; i++ )
 		{
-			(*tcp) << mh;
-
-			// send PDU
-			mbErrCode res = send(msg);
-
-			if( res != erNoError )
-				return res;
-
 			if( tcp->isPending(ost::Socket::pendingOutput, timeout) )
-				break;
+			{
+				tcp->writeData(&mh,sizeof(mh));
+
+				// send PDU
+				mbErrCode res = send(msg);
+
+				if( res != erNoError )
+					return res;
+
+				if( tcp->isPending(ost::Socket::pendingOutput, timeout) )
+					break;
+			}
 
 			if( dlog->is_info() )
 				dlog->info() << "(ModbusTCPMaster::query): no write pending.. reconnnect.." << endl;
@@ -187,7 +190,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 			if( dlog->is_info() )
 			{
 				dlog->info() << "(ModbusTCPMaster::query): recv tcp header(" << ret << "): ";
-				mbPrintMessage( dlog->info(), (ModbusByte*)(&rmh), sizeof(rmh));
+				mbPrintMessage( dlog->info(false), (ModbusByte*)(&rmh), sizeof(rmh));
 				dlog->info(false) << endl;
 			}
 
@@ -324,6 +327,7 @@ bool ModbusTCPMaster::checkConnection( const std::string& ip, int port, int time
 		UTCPStream t;
 		t.create(ip, port, true, timeout_msec);
 		t.setKeepAliveParams( (timeout_msec > 1000 ? timeout_msec / 1000 : 1), 1, 1);
+		t.setNoDelay(true);
 		t.disconnect();
 		return true;
 	}
@@ -351,6 +355,7 @@ void ModbusTCPMaster::reconnect()
 		tcp->create(iaddr, port, true, 500);
 		tcp->setTimeout(replyTimeOut_ms);
 		tcp->setKeepAliveParams((replyTimeOut_ms > 1000 ? replyTimeOut_ms / 1000 : 1));
+		tcp->setNoDelay(true);
 	}
 	catch( const std::exception& e )
 	{
@@ -405,6 +410,7 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
 		tcp->create(iaddr, port, true, 500);
 		tcp->setTimeout(replyTimeOut_ms);
 		tcp->setKeepAliveParams((replyTimeOut_ms > 1000 ? replyTimeOut_ms / 1000 : 1));
+		tcp->setNoDelay(true);
 	}
 	catch( const std::exception& e )
 	{

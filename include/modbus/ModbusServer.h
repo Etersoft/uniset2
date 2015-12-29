@@ -20,7 +20,7 @@ class ModbusServer
 
 		void initLog( UniSetTypes::Configuration* conf, const std::string& name, const std::string& logfile = "" );
 		void setLog( std::shared_ptr<DebugStream> dlog );
-
+		inline std::shared_ptr<DebugStream> log(){ return dlog; }
 
 		std::unordered_set<ModbusRTU::ModbusAddr> addr2vaddr( ModbusRTU::ModbusAddr& mbaddr );
 
@@ -229,13 +229,13 @@ class ModbusServer
 		virtual ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query,
 				ModbusRTU::FileTransferRetMessage& reply ) = 0;
 
-		/*! get next data block from channel ot recv buffer
+		/*! get next data block from channel or recv buffer
 		    \param begin - get from position
 		    \param buf  - buffer for data
 		    \param len     - size of buf
 		    \return real data lenght ( must be <= len )
 		*/
-		virtual int getNextData( unsigned char* buf, int len ) = 0;
+		virtual size_t getNextData( unsigned char* buf, int len ) = 0;
 
 		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) = 0;
 

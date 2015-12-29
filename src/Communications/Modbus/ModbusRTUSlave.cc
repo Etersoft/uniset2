@@ -147,7 +147,7 @@ void ModbusRTUSlave::setSpeed( const std::string& s )
 		port->setSpeed(s);
 }
 // --------------------------------------------------------------------------------
-int ModbusRTUSlave::getNextData( unsigned char* buf, int len )
+size_t ModbusRTUSlave::getNextData( unsigned char* buf, int len )
 {
 	//    if( !port ) return 0;
 	return port->receiveBlock(buf, len);

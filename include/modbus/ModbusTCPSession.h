@@ -5,19 +5,33 @@
 #include <string>
 #include <queue>
 #include <unordered_map>
-#include <cc++/socket.h>
+#include <ev++.h>
 #include "ModbusServerSlot.h"
 #include "ModbusServer.h"
 #include "PassiveTimer.h"
 // -------------------------------------------------------------------------
+/*!
+ * \brief The ModbusTCPSession class
+ * Класс рассчитан на совместную работу с ModbusTCPServer, т.к. построен на основе libev,
+ * и главный цикл (default_loop) находиться там.
+ *
+ * Текущая реализация не доведена до совершенства использования "событий".
+ * И рассчитывает, что данные от клиента приходят все сразу, а так как сокеты не блокирующие,
+ * то попыток чтения делается несколько с небольшой паузой, что нехорошо, т.к. отнимает время у
+ * других "клиентов", ведь сервер по сути однопоточный (!)
+ * Альтернативной реализацией могло быть быть.. чтение по событиям и складывание в отдельную очередь,
+ * а обработку делать по мере достаточного накопления данных во входной очереди, но это требует асинхронный
+ * парсинг данных протокола modbus (т.е. мы анализируем очередной байт и решаем сколько нам нужно ещё
+ * "подождать" данных.. чтобы пойти на следующий шаг), это в результате будет слишком сложная реализация.
+ * В конце-концов пока нет рассчёта на >1000 подключений (хотя libev позволяет держать >10k).
+ */
 class ModbusTCPSession:
 	public ModbusServerSlot,
-	public ModbusServer,
-	public ost::TCPSession
+	public ModbusServer
 {
 	public:
 
-		ModbusTCPSession( ost::TCPSocket& server, const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t timeout );
+		ModbusTCPSession( int sock, const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t timeout );
 		virtual ~ModbusTCPSession();
 
 		void cleanInputStream();
@@ -41,19 +55,55 @@ class ModbusTCPSession:
 			return caddr;
 		}
 
-		void setKeepAliveParams( timeout_t timeout_sec = 3, int conn_keepcnt = 2, int keepintvl = 2 );
+		void run();
 
 	protected:
-		virtual void run();
+
+		// -------------------------------------------
+		// author:
+		//   Buffer class - allow for output buffering such that it can be written out into async pieces
+		struct Buffer
+		{
+			unsigned char *data;
+			ssize_t len;
+			ssize_t pos;
+
+			Buffer( const unsigned char *bytes, ssize_t nbytes )
+			{
+				pos = 0;
+				len = nbytes;
+				data = new unsigned char[nbytes];
+				memcpy(data, bytes, nbytes);
+			}
+
+			virtual ~Buffer()
+			{
+				delete [] data;
+			}
+
+			unsigned char *dpos()
+			{
+				return data + pos;
+			}
+
+			ssize_t nbytes()
+			{
+				return len - pos;
+			}
+		};
+
+		void callback( ev::io &watcher, int revents );
+		void idleCallback( ev::idle &watcher, int revents );
+		virtual void readEvent( ev::io &watcher );
+		virtual void writeEvent( ev::io &watcher );
 		virtual void final();
 
-		virtual int getNextData( unsigned char* buf, int len );
+		virtual size_t getNextData( unsigned char* buf, int len ) override;
 		virtual void setChannelTimeout( timeout_t msec );
-		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len );
-		virtual ModbusRTU::mbErrCode tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPHeader& mhead );
+		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override;
+		virtual ModbusRTU::mbErrCode tcp_processing(ModbusTCP::MBAPHeader& mhead );
 		virtual ModbusRTU::mbErrCode pre_send_request( ModbusRTU::ModbusMessage& request );
 		virtual ModbusRTU::mbErrCode post_send_request( ModbusRTU::ModbusMessage& request );
-
 
 		virtual ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query,
 				ModbusRTU::ReadCoilRetMessage& reply );
@@ -104,6 +154,11 @@ class ModbusTCPSession:
 		PassiveTimer ptTimeout;
 		timeout_t timeout = { 0 };
 		ModbusRTU::ModbusMessage buf;
+
+		ev::io  io;
+		int    sfd;
+		std::queue<Buffer*> qsend;
+		ev::idle  idle;
 
 		bool ignoreAddr = { false };
 		std::string peername = { "" };

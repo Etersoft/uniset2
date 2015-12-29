@@ -41,6 +41,25 @@ class UTCPStream:
 		bool isSetLinger();
 		void forceDisconnect(); // disconnect() без ожидания (с отключением SO_LINGER)
 
+		/*!
+		 * Enable/disable delaying packets (Nagle algorithm)
+		 *
+		 * @return true on success.
+		 * @param enable disable Nagle algorithm when set to true.
+		 */
+		bool setNoDelay(bool enable);
+
+		// --------------------------------------------------------------------
+		// Пришлось вынести эти функции read/write[Data] в public
+		// т.к. они сразу "посылают" данные в канал, в отличие от operator<<
+		// который у TCPStream (или std::iostream?) буферизует их и из-за этого
+		// не позволяет работать с отправкой коротких сообщений
+		// --------------------------------------------------------------------
+		ssize_t writeData( const void* buf, size_t len, timeout_t t=0 );
+		ssize_t readData( void * buf,size_t len,char separator=0,timeout_t t=0 );
+
+		int getSocket();
+
 	protected:
 
 	private:

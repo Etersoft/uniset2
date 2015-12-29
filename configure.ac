@@ -41,6 +41,7 @@ PKG_CHECK_MODULES(XML, libxml-2.0)
 PKG_CHECK_MODULES(OMNI, omniORB4)
 PKG_CHECK_MODULES(SIGC, sigc++-2.0)
 PKG_CHECK_MODULES(COMCPP, libccgnu2)
+PKG_CHECK_MODULES(EV, libev)
 
 
 #check sqlite support
@@ -384,6 +385,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/ModbusSlave/Makefile
 				 extensions/ModbusSlave/libUniSet2MBSlave.pc
 				 extensions/ModbusSlave/tests/Makefile
+				 extensions/ModbusSlave/epoll-test/Makefile
 				 extensions/LogicProcessor/Makefile
 				 extensions/LogicProcessor/libUniSet2LogicProcessor.pc
 				 extensions/LogicProcessor/tests/Makefile

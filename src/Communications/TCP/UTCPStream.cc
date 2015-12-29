@@ -73,6 +73,26 @@ void UTCPStream::forceDisconnect()
 	Socket::flags.linger = f;
 }
 // -------------------------------------------------------------------------
+bool UTCPStream::setNoDelay(bool enable)
+{
+	return ( TCPStream::setNoDelay(enable) == 0 );
+}
+// -------------------------------------------------------------------------
+ssize_t UTCPStream::writeData(const void* buf, size_t len, timeout_t t)
+{
+	return TCPStream::writeData(buf,len,t);
+}
+// -------------------------------------------------------------------------
+ssize_t UTCPStream::readData(void* buf, size_t len, char separator, timeout_t t)
+{
+	return TCPStream::readData(buf,len,separator,t);
+}
+// -------------------------------------------------------------------------
+int UTCPStream::getSocket()
+{
+	return TCPStream::so;
+}
+// -------------------------------------------------------------------------
 void UTCPStream::create( const std::string& hname, int port, bool throwflag, timeout_t t )
 {
 	family = ost::Socket::IPV4;
