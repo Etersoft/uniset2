@@ -229,6 +229,13 @@ bool SQLiteInterface::isConnection()
 // -----------------------------------------------------------------------------------------
 void SQLiteInterface::makeResult(DBResult& dbres, sqlite3_stmt* s, bool finalize )
 {
+	if( !s )
+	{
+		if( finalize )
+			sqlite3_finalize(s);
+		return;
+	}
+		
 	do
 	{
 		int n = sqlite3_data_count(s);
