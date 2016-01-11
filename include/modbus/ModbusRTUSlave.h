@@ -40,6 +40,7 @@ class ModbusRTUSlave:
 		}
 
 		virtual void terminate() override;
+		virtual bool isAcive() override;
 
 	protected:
 

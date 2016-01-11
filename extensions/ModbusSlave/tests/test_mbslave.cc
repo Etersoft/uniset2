@@ -38,6 +38,7 @@ static void InitTest()
 		ost::InetAddress ia(addr.c_str());
 		mb->setTimeout(2000);
 		REQUIRE_NOTHROW( mb->connect(ia, port) );
+		msleep(5000);
 	}
 }
 // -----------------------------------------------------------------------------

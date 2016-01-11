@@ -34,7 +34,7 @@ MBTCPServer::MBTCPServer(const std::unordered_set<ModbusAddr>& myaddr, const str
 		cout << "(init): "
 			 << " addr: " << ia << ":" << port << endl;
 
-	sslot     = new ModbusTCPServerSlot(ia, port);
+	sslot = new ModbusTCPServerSlot(ia, port);
 
 	//    sslot->initLog(conf,name,logfile);
 
@@ -53,9 +53,8 @@ MBTCPServer::MBTCPServer(const std::unordered_set<ModbusAddr>& myaddr, const str
 	sslot->connectRemoteService( sigc::mem_fun(this, &MBTCPServer::remoteService) );
 	sslot->connectFileTransfer( sigc::mem_fun(this, &MBTCPServer::fileTransfer) );
 
-	sslot->setRecvTimeout(6000);
-	//    sslot->setAfterSendPause(afterSend);
-	sslot->setReplyTimeout(10000);
+	//	sslot->setRecvTimeout(6000);
+	//	sslot->setReplyTimeout(10000);
 
 	// build file list...
 }
@@ -74,29 +73,7 @@ void MBTCPServer::setLog(std::shared_ptr<DebugStream>& dlog )
 // -------------------------------------------------------------------------
 void MBTCPServer::execute()
 {
-	// Работа...
-	while(1)
-	{
-		ModbusRTU::mbErrCode res = sslot->receive( vaddr, UniSetTimer::WaitUpTime );
-#if 0
-
-		// собираем статистику обмена
-		if( prev != ModbusRTU::erTimeOut )
-		{
-			//  с проверкой на переполнение
-			askCount = askCount >= numeric_limits<long>::max() ? 0 : askCount + 1;
-
-			if( res != ModbusRTU::erNoError )
-				++errmap[res];
-
-			prev = res;
-		}
-
-#endif
-
-		if( verbose && res != ModbusRTU::erNoError && res != ModbusRTU::erTimeOut )
-			cerr << "(execute::receive): " << ModbusRTU::mbErr2Str(res) << endl;
-	}
+	sslot->run( vaddr, false );
 }
 // -------------------------------------------------------------------------
 void MBTCPServer::sigterm( int signo )

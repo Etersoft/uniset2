@@ -20,7 +20,10 @@ class ModbusServer
 
 		void initLog( UniSetTypes::Configuration* conf, const std::string& name, const std::string& logfile = "" );
 		void setLog( std::shared_ptr<DebugStream> dlog );
-		inline std::shared_ptr<DebugStream> log(){ return dlog; }
+		inline std::shared_ptr<DebugStream> log()
+		{
+			return dlog;
+		}
 
 		std::unordered_set<ModbusRTU::ModbusAddr> addr2vaddr( ModbusRTU::ModbusAddr& mbaddr );
 
@@ -109,6 +112,8 @@ class ModbusServer
 
 		virtual void cleanupChannel() {}
 		virtual void terminate() {}
+
+		virtual bool isAcive() = 0;
 
 	protected:
 

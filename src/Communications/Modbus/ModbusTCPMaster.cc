@@ -132,7 +132,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		{
 			if( tcp->isPending(ost::Socket::pendingOutput, timeout) )
 			{
-				tcp->writeData(&mh,sizeof(mh));
+				tcp->writeData(&mh, sizeof(mh));
 
 				// send PDU
 				mbErrCode res = send(msg);

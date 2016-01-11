@@ -23,9 +23,7 @@
 #include "UTCPStream.h"
 #include "PassiveTimer.h"
 #include "UniSetTypes.h"
-
-// glibc..
-#include <netinet/tcp.h>
+#include "UTCPCore.h"
 // -------------------------------------------------------------------------
 using namespace std;
 // -------------------------------------------------------------------------
@@ -41,23 +39,7 @@ UTCPStream::UTCPStream():
 // -------------------------------------------------------------------------
 bool UTCPStream::setKeepAliveParams(timeout_t timeout_sec, int keepcnt, int keepintvl )
 {
-	SOCKET fd = TCPStream::so;
-	int enable = 1;
-	bool ok = true;
-
-	if( setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void*)&enable, sizeof(enable)) == -1 )
-		ok = false;
-
-	if( setsockopt(fd, SOL_TCP, TCP_KEEPCNT, (void*) &keepcnt, sizeof(keepcnt)) == -1 )
-		ok = false;
-
-	if( setsockopt(fd, SOL_TCP, TCP_KEEPINTVL, (void*) &keepintvl, sizeof (keepintvl)) == -1 )
-		ok = false;
-
-	if( setsockopt(fd, SOL_TCP, TCP_KEEPIDLE, (void*) &timeout_sec, sizeof (timeout_sec)) == -1 )
-		ok = false;
-
-	return ok;
+	return UTCPCore::setKeepAliveParams(so, timeout_sec, keepcnt, keepintvl);
 }
 // -------------------------------------------------------------------------
 bool UTCPStream::isSetLinger()
@@ -80,12 +62,12 @@ bool UTCPStream::setNoDelay(bool enable)
 // -------------------------------------------------------------------------
 ssize_t UTCPStream::writeData(const void* buf, size_t len, timeout_t t)
 {
-	return TCPStream::writeData(buf,len,t);
+	return TCPStream::writeData(buf, len, t);
 }
 // -------------------------------------------------------------------------
 ssize_t UTCPStream::readData(void* buf, size_t len, char separator, timeout_t t)
 {
-	return TCPStream::readData(buf,len,separator,t);
+	return TCPStream::readData(buf, len, separator, t);
 }
 // -------------------------------------------------------------------------
 int UTCPStream::getSocket()

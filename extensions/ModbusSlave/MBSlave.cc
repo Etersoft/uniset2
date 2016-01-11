@@ -195,12 +195,12 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 		mbinfo << myname << "(init): type=TCP inet=" << iaddr << " port=" << port << endl;
 
 		ost::InetAddress ia(iaddr.c_str());
-		auto mbtcp = make_shared<ModbusTCPServerSlot>(ia, port);
+		tcpserver = make_shared<ModbusTCPServerSlot>(ia, port);
 
-		mbtcp->setAfterSendPause(aftersend_pause);
-		mbtcp->setReplyTimeout(reply_tout);
+		tcpserver->setAfterSendPause(aftersend_pause);
+		tcpserver->setReplyTimeout(reply_tout);
 
-		mbslot = std::static_pointer_cast<ModbusServerSlot>(mbtcp);
+		mbslot = std::static_pointer_cast<ModbusServerSlot>(tcpserver);
 		thr = make_shared< ThreadCreator<MBSlave> >(this, &MBSlave::execute_tcp);
 		thr->setFinalAction(this, &MBSlave::finalThread);
 		mbinfo << myname << "(init): init TCP connection ok. " << " inet=" << iaddr << " port=" << port << endl;
@@ -208,8 +208,30 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 		ostringstream n;
 		n << prefix << "-exchangelog";
 		auto l = loga->create(n.str());
-		mbtcp->setLog(l);
+		tcpserver->setLog(l);
 		conf->initLogStream(l, prefix + "-exchangelog");
+
+		updateStatTime = conf->getArgInt("--" + prefix + "-update-stat-time", it.getProp("updateStatTime"));
+
+		if( updateStatTime == 0 )
+			updateStatTime = 4000;
+
+		vmonit(updateStatTime);
+		sessTimeout = conf->getArgInt("--" + prefix + "-session-timeout", it.getProp("sessTimeout"));
+
+		if( sessTimeout == 0 )
+			sessTimeout = 2000;
+
+		vmonit(sessTimeout);
+
+		sessMaxNum = conf->getArgInt("--" + prefix + "-session-maxnum", it.getProp("sessMaxNum"));
+
+		if( sessMaxNum == 0 )
+			sessMaxNum = 3;
+
+		vmonit(sessMaxNum);
+
+		sesscount_id = conf->getSensorID( conf->getArgParam("--" + prefix + "-session-count-id", it.getProp("sesscount")) );
 	}
 	else
 		throw UniSetTypes::SystemError(myname + "(MBSlave): Unknown slave type. Use: --" + prefix + "-type [RTU|TCP]");
@@ -468,11 +490,31 @@ MBSlave::~MBSlave()
 {
 	cancelled = true;
 
+	if( tcpserver )
+	{
+		if( !tcpCancelled )
+		{
+			sigterm(SIGTERM);
+			timeout_t waitPause = updateStatTime / 10;
+
+			// специально делаем больше шагов(15).. чтобы с запасом..
+			for( int i = 0; i < 15 && !tcpCancelled; i++ )
+				msleep(waitPause);
+		}
+
+		if( !tcpCancelled )
+		{
+			dcrit << myname << "(~): TCP NOT CANCELED" << endl;
+		}
+	}
+
 	if( thr && thr->isRunning() )
 	{
 		thr->stop();
 		//        thr->join();
 	}
+
+
 }
 // -----------------------------------------------------------------------------
 void MBSlave::finalThread()
@@ -559,48 +601,7 @@ void MBSlave::execute_rtu()
 			if( !activated )
 				continue;
 
-			if( sidHeartBeat != DefaultObjectId && ptHeartBeat.checkTime() )
-			{
-				try
-				{
-					shm->localSetValue(itHeartBeat, sidHeartBeat, maxHeartBeat, getId());
-					ptHeartBeat.reset();
-				}
-				catch( const Exception& ex )
-				{
-					mbcrit << myname
-						   << "(execute_rtu): (hb) " << ex << std::endl;
-				}
-			}
-
-			if( respond_id != DefaultObjectId )
-			{
-				bool state = ptTimeout.checkTime() ? false : true;
-
-				if( respond_invert )
-					state ^= true;
-
-				try
-				{
-					shm->localSetValue(itRespond, respond_id, state, getId());
-				}
-				catch( const Exception& ex )
-				{
-					mbcrit << myname << "(execute_rtu): (respond) " << ex << std::endl;
-				}
-			}
-
-			if( askcount_id != DefaultObjectId )
-			{
-				try
-				{
-					shm->localSetValue(itAskCount, askcount_id, askCount, getId());
-				}
-				catch( const Exception& ex )
-				{
-					mbcrit << myname << "(execute_rtu): (askCount) " << ex << std::endl;
-				}
-			}
+			updateStatistics();
 
 			for( auto && rmap : iomap )
 			{
@@ -608,15 +609,21 @@ void MBSlave::execute_rtu()
 					IOBase::processingThreshold(&it.second, shm, force);
 			}
 		}
-		catch(...) {}
+		catch( std::exception& ex )
+		{
+			dcrit << myname << "(execute_rtu): " << ex.what() << endl;
+		}
 	}
 }
 // -------------------------------------------------------------------------
 void MBSlave::execute_tcp()
 {
-	auto sslot = dynamic_pointer_cast<ModbusTCPServerSlot>(mbslot);
-
-	ModbusRTU::mbErrCode prev = erNoError;
+	if( !tcpserver )
+	{
+		mbcrit << myname << "(execute_tcp): DYNAMIC CAST ERROR (mbslot --> ModbusTCPServerSlot)" << std::endl;
+		raise(SIGTERM);
+		return;
+	}
 
 	// ждём чтобы прошла инициализация
 	// потому-что нужно чтобы наполнилась таблица адресов (vaddr)
@@ -628,101 +635,168 @@ void MBSlave::execute_tcp()
 			startNotifyEvent.wait(locker);
 	}
 
-	if( vaddr.empty() )
-	{
-		mbcrit << "(execute_rtu): Unknown my modbus adresses!" << endl;
-		raise(SIGTERM);
-		return;
-	}
+	for( auto && i : cmap )
+		i.second.ptTimeout.reset();
 
-	mbinfo << myname << "(execute_tcp): thread running.."
-		   << " myaddr=" << ModbusServer::vaddr2str(vaddr)
-		   << endl;
+	tcpserver->setMaxSessions( sessMaxNum );
 
-	while( !cancelled )
+	// Чтобы не создавать отдельный поток для tcpserver (или для обновления статистики)
+	// воспользуемся таймером tcpserver-а..
+	tcpserver->setTimer(updateStatTime);
+	tcpserver->signal_timer().connect( sigc::mem_fun(this, &MBSlave::updateTCPStatistics) );
+
+	mbinfo << myname << "(execute_tcp): run tcpserver.." << endl;
+
+	tcpCancelled = false;
+
+	tcpserver->run( vaddr );
+
+	tcpCancelled = true;
+
+	mbinfo << myname << "(execute_tcp): tcpserver stopped.." << endl;
+}
+// -------------------------------------------------------------------------
+void MBSlave::updateStatistics()
+{
+	try
 	{
-		try
+		if( sidHeartBeat != DefaultObjectId && ptHeartBeat.checkTime() )
 		{
-			ModbusRTU::mbErrCode res = sslot->receive( vaddr, wait_msec );
-
-			if( res != ModbusRTU::erTimeOut )
-				ptTimeout.reset();
-
-			// собираем статистику обмена
-			if( prev != ModbusRTU::erTimeOut )
+			try
 			{
-				//  с проверкой на переполнение
-				askCount = askCount >= numeric_limits<long>::max() ? 0 : askCount + 1;
-
-				if( res != ModbusRTU::erNoError )
-					++errmap[res];
+				shm->localSetValue(itHeartBeat, sidHeartBeat, maxHeartBeat, getId());
+				ptHeartBeat.reset();
 			}
-
-			prev = res;
-
-			if( res != ModbusRTU::erNoError && res != ModbusRTU::erTimeOut )
-				mbwarn << myname << "(execute_tcp): " << ModbusRTU::mbErr2Str(res) << endl;
-
-			if( !activated )
-				continue;
-
-			if( sidHeartBeat != DefaultObjectId && ptHeartBeat.checkTime() )
+			catch( const Exception& ex )
 			{
-				try
-				{
-					shm->localSetValue(itHeartBeat, sidHeartBeat, maxHeartBeat, getId());
-					ptHeartBeat.reset();
-				}
-				catch( const Exception& ex )
-				{
-					mbcrit << myname << "(execute_tcp): (hb) " << ex << std::endl;
-				}
-			}
-
-			if( respond_id != DefaultObjectId )
-			{
-				bool state = ptTimeout.checkTime() ? false : true;
-
-				if( respond_invert )
-					state ^= true;
-
-				try
-				{
-					shm->localSetValue(itRespond, respond_id, state, getId());
-				}
-				catch( const Exception& ex )
-				{
-					mbcrit << myname
-						   << "(execute_rtu): (respond) " << ex << std::endl;
-				}
-			}
-
-			if( askcount_id != DefaultObjectId )
-			{
-				try
-				{
-					shm->localSetValue(itAskCount, askcount_id, askCount, getId());
-				}
-				catch( const Exception& ex )
-				{
-					mbcrit << myname
-						   << "(execute_tcp): (askCount) " << ex << std::endl;
-				}
-			}
-
-			for( auto && rmap : iomap )
-			{
-				for( auto && it : rmap.second )
-					IOBase::processingThreshold(&it.second, shm, force);
+				mbcrit << myname << "(updateStatistics): (hb) " << ex << std::endl;
 			}
 		}
-		catch( const std::exception& ex )
+
+		if( respond_id != DefaultObjectId )
 		{
-			mbcrit << myname << "(execute_tcp): " << ex.what() << endl;
+			bool state = ptTimeout.checkTime() ? false : true;
+
+			if( respond_invert )
+				state ^= true;
+
+			try
+			{
+				shm->localSetValue(itRespond, respond_id, (state ? 1 : 0), getId());
+			}
+			catch( const Exception& ex )
+			{
+				mbcrit << myname << "(updateStatistics): (respond) " << ex << std::endl;
+			}
+		}
+
+		if( askcount_id != DefaultObjectId )
+		{
+			try
+			{
+				shm->localSetValue(itAskCount, askcount_id, askCount, getId());
+			}
+			catch( const Exception& ex )
+			{
+				mbcrit << myname << "(updateStatistics): (askCount) " << ex << std::endl;
+			}
+		}
+
+		if( sesscount_id != DefaultObjectId )
+		{
+			try
+			{
+				shm->localSetValue(sesscount_it, sesscount_id, tcpserver->getCountSessions(), getId());
+			}
+			catch( const Exception& ex )
+			{
+				mbcrit << myname << "(updateStatistics): (sessCount) " << ex << std::endl;
+			}
 		}
 	}
+	catch( std::exception& ex)
+	{
+		mbwarn << myname << "(updateStatistics): " << ex.what() << endl;
+	}
+}
+// -------------------------------------------------------------------------
+void MBSlave::updateTCPStatistics()
+{
+	try
+	{
+		if( !tcpserver )
+			return;
 
-	mbinfo << myname << "(execute_tcp): thread stopped.." << endl;
+		// Обновляем информацию по соединениям
+		sess.clear();
+		tcpserver->getSessions(sess);
+
+		for( auto && s : sess )
+		{
+			if( !activated || cancelled )
+				return;
+
+			auto i = cmap.find( s.iaddr );
+
+			if( i != cmap.end() )
+			{
+				// если ещё в списке, значит отвечает (т.е. сбрасываем таймер)
+				if( i->second.tout == 0 )
+					i->second.ptTimeout.setTiming( updateStatTime );
+				else
+					i->second.ptTimeout.reset();
+
+				i->second.askCount = s.askCount;
+			}
+		}
+
+		// а теперь проходим по списку и выставляем датчики..
+		for( const auto& it : cmap )
+		{
+			if( !activated || cancelled )
+				return;
+
+			auto c = it.second;
+
+			mblog4 << myname << "(work): " << c.iaddr << " resp=" << (c.invert ? c.ptTimeout.checkTime() : !c.ptTimeout.checkTime())
+				   << " askcount=" << c.askCount
+				   << endl;
+
+			if( c.respond_s != DefaultObjectId )
+			{
+				try
+				{
+					bool st = c.invert ? c.ptTimeout.checkTime() : !c.ptTimeout.checkTime();
+					shm->localSetValue(c.respond_it, c.respond_s, st, getId());
+				}
+				catch( const Exception& ex )
+				{
+					mbcrit << myname << "(updateStatistics): " << ex << std::endl;
+				}
+			}
+
+			if( c.askcount_s != DefaultObjectId )
+			{
+				try
+				{
+					shm->localSetValue(c.askcount_it, c.askcount_s, c.askCount, getId());
+				}
+				catch( const Exception& ex )
+				{
+					mbcrit << myname << "(updateStatistics): " << ex << std::endl;
+				}
+			}
+		}
+
+		if( !activated || cancelled )
+			return;
+
+		updateStatistics();
+	}
+	catch( std::exception& ex)
+	{
+		mbwarn << myname << "(updateStatistics): " << ex.what() << endl;
+	}
 }
 // -------------------------------------------------------------------------
 void MBSlave::sysCommand( const UniSetTypes::SystemMessage* sm )
@@ -925,14 +999,19 @@ bool MBSlave::deactivateObject()
 	activated = false;
 	cancelled = true;
 
-	try
+	if( tcpserver && tcpserver->isAcive() )
+		tcpserver->sigterm(SIGTERM);
+	else
 	{
-		if( mbslot )
-			mbslot->sigterm(SIGTERM);
-	}
-	catch( std::exception& ex)
-	{
-		mbwarn << myname << "(deactivateObject): " << ex.what() << endl;
+		try
+		{
+			if( mbslot )
+				mbslot->sigterm(SIGTERM);
+		}
+		catch( std::exception& ex)
+		{
+			mbwarn << myname << "(deactivateObject): " << ex.what() << endl;
+		}
 	}
 
 	return UniSetObject::deactivateObject();
@@ -944,14 +1023,24 @@ void MBSlave::sigterm( int signo )
 	activated = false;
 	cancelled = true;
 
-	try
+	if( tcpserver )
 	{
-		if( mbslot )
-			mbslot->sigterm(signo);
+		cancelled = true;
+
+		if( tcpserver && tcpserver->isAcive() )
+			tcpserver->sigterm(signo);
 	}
-	catch( std::exception& ex)
+	else
 	{
-		mbwarn << myname << "SIGTERM(" << signo << "): " << ex.what() << endl;
+		try
+		{
+			if( mbslot )
+				mbslot->sigterm(signo);
+		}
+		catch( std::exception& ex)
+		{
+			mbwarn << myname << "SIGTERM(" << signo << "): " << ex.what() << endl;
+		}
 	}
 
 	UniSetObject::sigterm(signo);
@@ -1278,6 +1367,12 @@ void MBSlave::initIterators()
 	shm->initIterator(itHeartBeat);
 	shm->initIterator(itAskCount);
 	shm->initIterator(itRespond);
+
+	// for TCPServer
+	shm->initIterator(sesscount_it);
+
+	for( auto && i : cmap )
+		i.second.initIterators(shm);
 }
 // -----------------------------------------------------------------------------
 void MBSlave::help_print( int argc, const char* const* argv )
@@ -1319,6 +1414,10 @@ void MBSlave::help_print( int argc, const char* const* argv )
 	cout << " Настройки протокола TCP: " << endl;
 	cout << "--prefix-inet-addr [xxx.xxx.xxx.xxx | hostname ]  - this modbus server address" << endl;
 	cout << "--prefix-inet-port num - this modbus server port. Default: 502" << endl;
+	cout << "--prefix-update-stat-time msec  - Период обновления статистики работы. По умолчанию: 4 сек." << endl;
+	cout << "--prefix-session-timeout msec   - Таймаут на закрытие соединения с 'клиентом', если от него нет запросов. По умолчанию: 10 сек." << endl;
+	cout << "--prefix-session-maxnum num     - Маскимальное количество соединений. По умолчанию: 10." << endl;
+	cout << "--prefix-session-count-id  id   - Датчик для отслеживания текущего количества соединений." << endl;
 	cout << endl;
 	cout << " Logs: " << endl;
 	cout << "--prefix-log-...            - log control" << endl;
@@ -2409,6 +2508,15 @@ ModbusRTU::mbErrCode MBSlave::read4314( ModbusRTU::MEIMessageRDI& query,
 	return erNoError;
 }
 // -------------------------------------------------------------------------
+const std::string MBSlave::ClientInfo::getShortInfo() const
+{
+	ostringstream s;
+
+	s << iaddr << " askCount=" << askCount;
+
+	return std::move(s.str());
+}
+// -------------------------------------------------------------------------
 UniSetTypes::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
 {
 	UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo(userparam);
@@ -2442,9 +2550,81 @@ UniSetTypes::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
 	}
 
 
+	if( tcpserver )
+	{
+		inf << "TCP Clients: " << endl;
+
+		for( const auto& m : cmap )
+			inf << "   " << m.second.getShortInfo() << endl;
+
+		inf << endl;
+	}
+
 	i->info = inf.str().c_str();
 	return i._retn();
 }
 // ----------------------------------------------------------------------------
+void MBSlave::initTCPClients( UniXML::iterator confnode )
+{
+	auto conf = uniset_conf();
+	UniXML::iterator cit(confnode);
 
+	if( cit.find("clients") && cit.goChildren() )
+	{
+		for( ; cit; cit++ )
+		{
+			ClientInfo c;
+			c.iaddr = cit.getProp("ip");
 
+			if( c.iaddr.empty() )
+			{
+				ostringstream err;
+				err << myname << "(init): Unknown ip=''";
+				mbcrit << err.str() << endl;
+				throw SystemError(err.str());
+			}
+
+			// resolve (если получиться)
+			ost::InetAddress ia(c.iaddr.c_str());
+			c.iaddr = string( ia.getHostname() );
+
+			if( !cit.getProp("respond").empty() )
+			{
+				c.respond_s = conf->getSensorID(cit.getProp("respond"));
+
+				if( c.respond_s == DefaultObjectId )
+				{
+					ostringstream err;
+					err << myname << "(init): Not found sensor ID for " << cit.getProp("respond");
+					mbcrit << err.str() << endl;
+					throw SystemError(err.str());
+				}
+			}
+
+			if( !cit.getProp("askcount").empty() )
+			{
+				c.askcount_s = conf->getSensorID(cit.getProp("askcount"));
+
+				if( c.askcount_s == DefaultObjectId )
+				{
+					ostringstream err;
+					err << myname << "(init): Not found sensor ID for " << cit.getProp("askcount");
+					mbcrit << err.str() << endl;
+					throw SystemError(err.str());
+				}
+			}
+
+			c.invert = cit.getIntProp("invert");
+
+			if( !cit.getProp("timeout").empty() )
+			{
+				c.tout = cit.getIntProp("timeout");
+				c.ptTimeout.setTiming(c.tout);
+			}
+
+			cmap[c.iaddr] = c;
+			mbinfo << myname << "(init): add client: " << c.iaddr << " respond=" << c.respond_s << " askcount=" << c.askcount_s << endl;
+		}
+	}
+}
+// ----------------------------------------------------------------------------

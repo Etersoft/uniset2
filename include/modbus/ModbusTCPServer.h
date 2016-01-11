@@ -6,6 +6,7 @@
 #include <queue>
 #include <cc++/socket.h>
 #include <ev++.h>
+#include <sigc++/sigc++.h>
 #include "Mutex.h"
 #include "Debug.h"
 #include "Configuration.h"
@@ -13,9 +14,16 @@
 #include "ModbusTypes.h"
 #include "ModbusServer.h"
 #include "ModbusTCPSession.h"
-#include "UTCPStream.h"
+#include "ThreadCreator.h"
+#include "UTCPSocket.h"
 // -------------------------------------------------------------------------
-/*! ModbusTCP server */
+/*! ModbusTCPServer
+ * Реализация сервера на основе libev. Подерживается "много" соединений (постоянных).
+ * Хоть класс и наследуется от ModbusServer на самом деле он не реализует его функции,
+ * каждое соединение обслуживается классом ModbusTCPSession.
+ * Но собственно реализаия функций одна на всех, это следует учитывать при реализации обработчиков,
+ * т.к.из многих "соединений" будут вызываться одни и теже обработатчики.
+*/
 class ModbusTCPServer:
 	public ModbusServer
 {
@@ -23,11 +31,13 @@ class ModbusTCPServer:
 		ModbusTCPServer( ost::InetAddress& ia, int port = 502 );
 		virtual ~ModbusTCPServer();
 
-		/*! Однопоточная обработка (каждый запрос последовательно), с разрывом соединения в конце */
-		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msecTimeout ) override;
+		// функция receive пока не поддерживается...
+		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, timeout_t msecTimeout ) override;
 
-		/*! Поддержка большого количества соединений (постоянных) */
-		virtual void mainLoop( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr );
+		/*! Запуск сервера
+		 * \param thread - создавать ли отдельный поток
+		 */
+		void run( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, bool thread = false );
 
 		void setMaxSessions( unsigned int num );
 		inline unsigned int getMaxSessions()
@@ -54,13 +64,7 @@ class ModbusTCPServer:
 			return ignoreAddr;
 		}
 
-		void cleanInputStream();
-		virtual void cleanupChannel() override
-		{
-			cleanInputStream();
-		}
-
-		virtual void terminate() override;
+		virtual void terminate();
 
 		// Сбор статистики по соединениям...
 		struct SessionInfo
@@ -84,41 +88,73 @@ class ModbusTCPServer:
 			return port;
 		}
 
+		virtual bool isAcive() override;
+
+		// -------------------------------------------------
+		// Таймер.
+		// Т.к. mainLoop() "бесконечный", то сделана возможность
+		// подключиться к сигналу "таймера", например для обновления статистики по сессиям
+		// \warning Следует иметь ввиду, что обработчик сигнала, должен быть максимально коротким
+		// т.к. на это время останавливается работа основного потока (mainLoop)
+		// -------------------------------------------------
+		typedef sigc::signal<void> TimerSignal;
+		TimerSignal signal_timer();
+
+		void setTimer( timeout_t msec );
+		inline timeout_t getTimer()
+		{
+			return tmTime;
+		}
+
 	protected:
 
-		virtual void ioAccept(ev::io &watcher, int revents);
-		virtual ModbusRTU::mbErrCode pre_send_request( ModbusRTU::ModbusMessage& request ) override;
-		virtual ModbusRTU::mbErrCode post_send_request( ModbusRTU::ModbusMessage& request ) override;
+		virtual void mainLoop();
+		virtual void ioAccept(ev::io& watcher, int revents);
+		void onTimer( ev::timer& t, int revents );
 
-		// realisation (see ModbusServer.h)
-		virtual size_t getNextData( unsigned char* buf, int len ) override;
-		virtual void setChannelTimeout( timeout_t msec ) override;
-		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override;
-
-		virtual ModbusRTU::mbErrCode tcp_processing( UTCPStream& tcp, ModbusTCP::MBAPHeader& mhead );
 		void sessionFinished( ModbusTCPSession* s );
+
+		virtual size_t getNextData( unsigned char* buf, int len ) override
+		{
+			return 0;
+		}
+
+		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override
+		{
+			return  ModbusRTU::erHardwareError;
+		}
+
+		/*! set timeout for receive data */
+		virtual void setChannelTimeout( timeout_t msec ) override {};
 
 		ost::tpport_t port = { 0 };
 		ost::InetAddress iaddr;
+		std::string myname;
 		std::queue<unsigned char> qrecv;
 		ModbusTCP::MBAPHeader curQueryHeader;
 
-		typedef std::list<ModbusTCPSession*> SessionList;
 		UniSetTypes::uniset_mutex sMutex;
+		typedef std::list<ModbusTCPSession*> SessionList;
 		SessionList slist;
 
 		bool ignoreAddr = { false };
 
-		unsigned int maxSessions = { 5 };
+		unsigned int maxSessions = { 100 };
 		unsigned int sessCount = { 0 };
 
 		timeout_t sessTimeout = { 10000 }; // msec
 
-		ev::default_loop* evloop = { 0 };
+		std::shared_ptr<ev::default_loop> evloop;
 		ev::io io;
-		int sock = { -1 };
+		std::shared_ptr<UTCPSocket> sock;
+		ev::timer ioTimer;
 
 		const std::unordered_set<ModbusRTU::ModbusAddr>* vmbaddr;
+		std::shared_ptr< ThreadCreator<ModbusTCPServer> > thrMainLoop;
+		TimerSignal m_timer_signal;
+
+		timeout_t tmTime_msec = { TIMEOUT_INF }; // время по умолчанию для таймера (TimerSignal)
+		double tmTime = { 0.0 };
 
 	private:
 

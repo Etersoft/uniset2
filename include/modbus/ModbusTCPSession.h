@@ -9,6 +9,7 @@
 #include "ModbusServerSlot.h"
 #include "ModbusServer.h"
 #include "PassiveTimer.h"
+#include "USocket.h"
 // -------------------------------------------------------------------------
 /*!
  * \brief The ModbusTCPSession class
@@ -36,13 +37,13 @@ class ModbusTCPSession:
 
 		void cleanInputStream();
 
-		virtual void cleanupChannel()
+		virtual void cleanupChannel() override
 		{
 			cleanInputStream();
 		}
-		virtual void terminate();
+		virtual void terminate() override;
 
-		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msecTimeout );
+		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msecTimeout ) override;
 
 		typedef sigc::slot<void, ModbusTCPSession*> FinalSlot;
 
@@ -55,7 +56,10 @@ class ModbusTCPSession:
 			return caddr;
 		}
 
+		void setSessionTimeout( double t );
+
 		void run();
+		virtual bool isAcive() override;
 
 	protected:
 
@@ -64,11 +68,11 @@ class ModbusTCPSession:
 		//   Buffer class - allow for output buffering such that it can be written out into async pieces
 		struct Buffer
 		{
-			unsigned char *data;
+			unsigned char* data;
 			ssize_t len;
 			ssize_t pos;
 
-			Buffer( const unsigned char *bytes, ssize_t nbytes )
+			Buffer( const unsigned char* bytes, ssize_t nbytes )
 			{
 				pos = 0;
 				len = nbytes;
@@ -81,7 +85,7 @@ class ModbusTCPSession:
 				delete [] data;
 			}
 
-			unsigned char *dpos()
+			unsigned char* dpos()
 			{
 				return data + pos;
 			}
@@ -92,18 +96,18 @@ class ModbusTCPSession:
 			}
 		};
 
-		void callback( ev::io &watcher, int revents );
-		void idleCallback( ev::idle &watcher, int revents );
-		virtual void readEvent( ev::io &watcher );
-		virtual void writeEvent( ev::io &watcher );
+		void callback( ev::io& watcher, int revents );
+		void onTimeout( ev::timer& watcher, int revents );
+		virtual void readEvent( ev::io& watcher );
+		virtual void writeEvent( ev::io& watcher );
 		virtual void final();
 
 		virtual size_t getNextData( unsigned char* buf, int len ) override;
 		virtual void setChannelTimeout( timeout_t msec );
 		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override;
 		virtual ModbusRTU::mbErrCode tcp_processing(ModbusTCP::MBAPHeader& mhead );
-		virtual ModbusRTU::mbErrCode pre_send_request( ModbusRTU::ModbusMessage& request );
-		virtual ModbusRTU::mbErrCode post_send_request( ModbusRTU::ModbusMessage& request );
+		virtual ModbusRTU::mbErrCode pre_send_request( ModbusRTU::ModbusMessage& request ) override;
+		virtual ModbusRTU::mbErrCode post_send_request( ModbusRTU::ModbusMessage& request ) override;
 
 		virtual ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query,
 				ModbusRTU::ReadCoilRetMessage& reply );
@@ -156,9 +160,10 @@ class ModbusTCPSession:
 		ModbusRTU::ModbusMessage buf;
 
 		ev::io  io;
-		int    sfd;
+		std::shared_ptr<USocket> sock;
 		std::queue<Buffer*> qsend;
-		ev::idle  idle;
+		ev::timer ioTimeout;
+		double sessTimeout = { 10.0 };
 
 		bool ignoreAddr = { false };
 		std::string peername = { "" };

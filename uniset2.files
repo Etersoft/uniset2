@@ -146,9 +146,6 @@ extensions/ModbusSlave/Makefile.am
 extensions/ModbusSlave/MBSlave.cc
 extensions/ModbusSlave/mbslave.cc
 extensions/ModbusSlave/MBSlave.h
-extensions/ModbusSlave/mbtcp-persistentslave.cc
-extensions/ModbusSlave/MBTCPPersistentSlave.cc
-extensions/ModbusSlave/MBTCPPersistentSlave.h
 extensions/ModbusSlave/test.xml
 extensions/RRDServer/libUniSet2RRDServer.pc.in
 extensions/RRDServer/main.cc
@@ -311,7 +308,10 @@ include/UniSetManager.h
 include/UniSetObject.h
 include/UniSetTypes.h
 include/UniXML.h
+include/UTCPCore.h
 include/UTCPStream.h
+include/UTCPSocket.h
+include/USocket.h
 include/WDTInterface.h
 lib/Makefile.am
 python/examples/test.xml
@@ -349,7 +349,10 @@ src/Communications/Modbus/ModbusTCPTypes.cc
 src/Communications/Modbus/ModbusTypes.cc
 src/Communications/TCP/Makefile.am
 src/Communications/TCP/TCPCheck.cc
+src/Communications/TCP/UTCPCore.cc
 src/Communications/TCP/UTCPStream.cc
+src/Communications/TCP/UTCPSocket.cc
+src/Communications/TCP/USocket.cc
 src/Communications/ComPort.cc
 src/Communications/ComPort485F.cc
 src/Communications/Makefile.am

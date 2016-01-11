@@ -79,7 +79,6 @@ MBTCPTestServer::MBTCPTestServer( const std::unordered_set<ModbusAddr>& _vaddr, 
 	sslot->connectFileTransfer( sigc::mem_fun(this, &MBTCPTestServer::fileTransfer) );
 
 	sslot->setRecvTimeout(6000);
-	//    sslot->setAfterSendPause(afterSend);
 	sslot->setReplyTimeout(10000);
 
 	// build file list...
@@ -114,32 +113,7 @@ void MBTCPTestServer::runThread()
 void MBTCPTestServer::execute()
 {
 	isrunning = true;
-
-	//    cerr << "******************** MBTCPTestServer(" << myname << ") running... " << endl;
-	// Работа...
-	while(1)
-	{
-		ModbusRTU::mbErrCode res = sslot->receive( vaddr, UniSetTimer::WaitUpTime );
-#if 0
-
-		// собираем статистику обмена
-		if( prev != ModbusRTU::erTimeOut )
-		{
-			//  с проверкой на переполнение
-			askCount = askCount >= numeric_limits<long>::max() ? 0 : askCount + 1;
-
-			if( res != ModbusRTU::erNoError )
-				++errmap[res];
-
-			prev = res;
-		}
-
-#endif
-
-		if( verbose && res != ModbusRTU::erNoError && res != ModbusRTU::erTimeOut )
-			cerr << "(execute::receive): " << ModbusRTU::mbErr2Str(res) << endl;
-	}
-
+	sslot->run( vaddr );
 	isrunning = false;
 }
 // -------------------------------------------------------------------------

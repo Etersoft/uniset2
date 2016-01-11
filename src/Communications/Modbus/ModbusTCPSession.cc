@@ -33,26 +33,44 @@ using namespace UniSetTypes;
 ModbusTCPSession::~ModbusTCPSession()
 {
 	cancelled = true;
+
 	if( io.is_active() )
 		io.stop();
 
-	if( idle.is_active() )
-		idle.stop();
-
-	if( sfd > 0 )
-		close(sfd);
+	if( ioTimeout.is_active() )
+		ioTimeout.stop();
 }
 // -------------------------------------------------------------------------
-ModbusTCPSession::ModbusTCPSession(int sock, const std::unordered_set<ModbusAddr>& a, timeout_t timeout ):
+ModbusTCPSession::ModbusTCPSession( int sfd, const std::unordered_set<ModbusAddr>& a, timeout_t timeout ):
 	vaddr(a),
 	timeout(timeout),
-	sfd(sock),
 	peername(""),
 	caddr(""),
 	cancelled(false),
 	askCount(0)
 {
-	fcntl(sfd, F_SETFL, fcntl(sfd, F_GETFL, 0) | O_NONBLOCK);
+	try
+	{
+		sock = make_shared<USocket>(sfd);
+		ost::tpport_t p;
+		ost::InetAddress iaddr = sock->getIPV4Peer(&p);
+
+		// resolve..
+		caddr = string( iaddr.getHostname() );
+
+		ostringstream s;
+		s << iaddr << ":" << p;
+		peername = s.str();
+	}
+	catch( const ost::SockException& ex )
+	{
+		ostringstream err;
+		err << ex.what();
+		dlog->crit() << "(ModbusTCPSession): err: " << err.str() << endl;
+		throw SystemError(err.str());
+	}
+
+	sock->setCompletion(false); // fcntl(sfd, F_SETFL, fcntl(sfd, F_GETFL, 0) | O_NONBLOCK);
 	setCRCNoCheckit(true);
 
 	timeout_t tout = timeout / 1000;
@@ -61,7 +79,7 @@ ModbusTCPSession::ModbusTCPSession(int sock, const std::unordered_set<ModbusAddr
 		tout = 3;
 
 	io.set<ModbusTCPSession, &ModbusTCPSession::callback>(this);
-	idle.set<ModbusTCPSession, &ModbusTCPSession::idleCallback>(this);
+	ioTimeout.set<ModbusTCPSession, &ModbusTCPSession::onTimeout>(this);
 }
 // -------------------------------------------------------------------------
 unsigned int ModbusTCPSession::getAskCount()
@@ -69,22 +87,36 @@ unsigned int ModbusTCPSession::getAskCount()
 	uniset_rwmutex_rlock l(mAsk);
 	return askCount;
 }
+
+void ModbusTCPSession::setSessionTimeout( double t )
+{
+	sessTimeout = t;
+
+	if( ioTimeout.is_active() )
+		ioTimeout.start(t);
+}
 // -------------------------------------------------------------------------
 void ModbusTCPSession::run()
 {
 	if( dlog->is_info() )
 		dlog->info() << peername << "(run): run session.." << endl;
 
-	io.start(sfd, ev::READ);
-	//idle.start();
+	io.start(sock->getSocket(), ev::READ);
+	ioTimeout.start(sessTimeout);
 }
 // -------------------------------------------------------------------------
-void ModbusTCPSession::callback( ev::io &watcher, int revents )
+bool ModbusTCPSession::isAcive()
+{
+	return io.is_active();
+}
+// -------------------------------------------------------------------------
+void ModbusTCPSession::callback( ev::io& watcher, int revents )
 {
 	if( EV_ERROR & revents )
 	{
 		if( dlog->is_crit() )
 			dlog->crit() << peername << "(callback): EVENT ERROR.." << endl;
+
 		return;
 	}
 
@@ -97,25 +129,31 @@ void ModbusTCPSession::callback( ev::io &watcher, int revents )
 	if( qsend.empty() )
 		io.set(ev::READ);
 	else
-		io.set(ev::READ|ev::WRITE);
+		io.set(ev::READ | ev::WRITE);
 
 	if( cancelled )
 	{
-		dlog->info() << peername << ": stop session... disconnect.." << endl;
+		if( dlog->is_info() )
+			dlog->info() << peername << ": stop session... disconnect.." << endl;
+
 		io.stop();
-		//close(sfd);
-		idle.stop();
+		ioTimeout.stop();
 		final();
 		delete this;
 	}
+	else
+		ioTimeout.start(sessTimeout); // restart timer..
 }
 // -------------------------------------------------------------------------
-void ModbusTCPSession::idleCallback(ev::idle& watcher, int revents)
+void ModbusTCPSession::onTimeout( ev::timer& watcher, int revents )
 {
-	cerr << "idle..." << endl;
+	if( dlog->is_info() )
+		dlog->info() << peername << ": timeout connection activity.." << endl;
+
+	terminate();
 }
 // -------------------------------------------------------------------------
-void ModbusTCPSession::readEvent( ev::io &watcher )
+void ModbusTCPSession::readEvent( ev::io& watcher )
 {
 	ModbusRTU::mbErrCode res = receive(vaddr, timeout);
 
@@ -140,14 +178,17 @@ void ModbusTCPSession::writeEvent( ev::io& watcher )
 	Buffer* buffer = qsend.front();
 
 	ssize_t ret = write(watcher.fd, buffer->dpos(), buffer->nbytes());
+
 	if( ret < 0 )
 	{
 		if( dlog->is_warn() )
 			dlog->warn() << peername << "(writeEvent): write to socket error: " << strerror(errno) << endl;
+
 		return;
 	}
 
 	buffer->pos += ret;
+
 	if( buffer->nbytes() == 0 )
 	{
 		qsend.pop();
@@ -229,20 +270,20 @@ void ModbusTCPSession::final()
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPSession::sendData( unsigned char* buf, int len )
 {
-	qsend.push( new Buffer(buf,len) );
+	qsend.push( new Buffer(buf, len) );
 	return erNoError;
 }
 // -------------------------------------------------------------------------
 size_t ModbusTCPSession::getNextData( unsigned char* buf, int len )
 {
-	ssize_t res = ModbusTCPCore::getDataFD( sfd, qrecv, buf, len );
+	ssize_t res = ModbusTCPCore::getDataFD( sock->getSocket(), qrecv, buf, len );
 
 	if( res > 0 )
 		return res;
 
 	if( res < 0 )
 	{
-		if( errno!=EAGAIN && dlog->is_warn() )
+		if( errno != EAGAIN && dlog->is_warn() )
 			dlog->warn() << peername << "(getNextData): read from socket error(" << errno << "): " << strerror(errno) << endl;
 
 		return 0;
@@ -295,12 +336,13 @@ mbErrCode ModbusTCPSession::tcp_processing( ModbusTCP::MBAPHeader& mhead )
 		return erInvalidFormat;
 	}
 
-	len = ModbusTCPCore::readDataFD( sfd, qrecv, mhead.len );
+	len = ModbusTCPCore::readDataFD( sock->getSocket(), qrecv, mhead.len );
+
 	if( len == 0 )
 	{
 		// делаем ещё одну попытку чтения через некоторое время
 		msleep(5);
-		len = ModbusTCPCore::readDataFD( sfd, qrecv, mhead.len );
+		len = ModbusTCPCore::readDataFD( sock->getSocket(), qrecv, mhead.len );
 	}
 
 	if( len < mhead.len )
@@ -336,7 +378,7 @@ mbErrCode ModbusTCPSession::pre_send_request( ModbusMessage& request )
 		dlog->info(false) << endl;
 	}
 
-	sendData((unsigned char*)(&curQueryHeader),sizeof(curQueryHeader));
+	sendData((unsigned char*)(&curQueryHeader), sizeof(curQueryHeader));
 	curQueryHeader.swapdata();
 
 	return erNoError;
@@ -356,15 +398,17 @@ void ModbusTCPSession::cleanInputStream()
 // -------------------------------------------------------------------------
 void ModbusTCPSession::terminate()
 {
-	ModbusServer::terminate();
-
 	if( dlog->is_info() )
 		dlog->info() << peername << "(terminate)..." << endl;
 
 	cancelled = true;
 	io.stop();
-	idle.stop();
-	close(sfd);
+	ioTimeout.stop();
+
+	ModbusServer::terminate();
+
+	sock.reset(); // close..
+	final();
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPSession::readCoilStatus( ReadCoilMessage& query,
@@ -505,8 +549,7 @@ ModbusRTU::mbErrCode ModbusTCPSession::fileTransfer( ModbusRTU::FileTransferMess
 // -------------------------------------------------------------------------
 void ModbusTCPSession::setChannelTimeout( timeout_t msec )
 {
-	// setTimeout(msec);
-#warning NOT YET!!
+	setSessionTimeout(msec);
 }
 // -------------------------------------------------------------------------
 void ModbusTCPSession::connectFinalSession( FinalSlot sl )

@@ -29,6 +29,8 @@
 #include "UniSetObject.h"
 #include "modbus/ModbusTypes.h"
 #include "modbus/ModbusServerSlot.h"
+#include "modbus/ModbusTCPServer.h"
+#include "modbus/ModbusTCPServerSlot.h"
 #include "PassiveTimer.h"
 #include "Trigger.h"
 #include "Mutex.h"
@@ -53,7 +55,8 @@
       - \ref sec_MBSlave_ConfList
       - \ref sec_MBSlave_FileTransfer
       - \ref sec_MBSlave_MEIRDI
-      - \ref sec_MBSlave_DIAG
+	  - \ref sec_MBSlave_DIAG
+	  - \ref sec_MBSlave_TCP
 
       \section sec_MBSlave_Comm Общее описание Modbus slave
       Класс реализует базовые функции для протокола Modbus в slave режиме. Реализацию Modbus RTU - см. RTUExchange.
@@ -286,6 +289,16 @@
 
     \section sec_MBSlave_DIAG Диагностические функции (0x08)
 
+	\section sec_MBSlave_TCP  Настройка TCPServer
+	\code
+	<MBTCPPersistentSlave ....sesscount="">
+			<clients>
+				<item ip="" respond="" invert="1" askcount=""/>
+				<item ip="" respond="" invert="1" askcount=""/>
+				<item ip="" respond="" invert="1" askcount=""/>
+			</clients>
+	</MBTCPPersistentSlave>
+	\endcode
 
 */
 // -----------------------------------------------------------------------------
@@ -475,6 +488,8 @@ class MBSlave:
 		void waitSMReady();
 		virtual void execute_rtu();
 		virtual void execute_tcp();
+		virtual void updateStatistics();
+		virtual void updateTCPStatistics();
 
 		virtual bool activateObject() override;
 		virtual bool deactivateObject() override;
@@ -565,6 +580,53 @@ class MBSlave:
 		std::string logserv_host = {""};
 		int logserv_port = {0};
 		VMonitor vmon;
+
+		// ----------------------------------------------------------------------------
+		// TCPServer section..
+		void initTCPClients( UniXML::iterator confnode );
+
+		timeout_t sessTimeout;  /*!< таймаут на сессию */
+		timeout_t updateStatTime;
+		ModbusTCPServer::Sessions sess; /*!< список открытых сессий */
+		unsigned int sessMaxNum;
+		std::shared_ptr<ModbusTCPServerSlot> tcpserver;
+
+		struct ClientInfo
+		{
+			ClientInfo(): iaddr(""), respond_s(UniSetTypes::DefaultObjectId), invert(false),
+				askCount(0), askcount_s(UniSetTypes::DefaultObjectId)
+			{
+				ptTimeout.setTiming(0);
+			}
+
+			std::string iaddr;
+
+			UniSetTypes::ObjectId respond_s = { UniSetTypes::DefaultObjectId };
+			IOController::IOStateList::iterator respond_it;
+			bool invert = { false };
+			PassiveTimer ptTimeout;
+			timeout_t tout = { 2000 };
+
+			long askCount;
+			UniSetTypes::ObjectId askcount_s = { UniSetTypes::DefaultObjectId };
+			IOController::IOStateList::iterator askcount_it;
+
+			inline void initIterators( const std::shared_ptr<SMInterface>& shm )
+			{
+				shm->initIterator( respond_it );
+				shm->initIterator( askcount_it );
+			}
+
+			const std::string getShortInfo() const;
+		};
+
+		typedef std::unordered_map<std::string, ClientInfo> ClientsMap;
+		ClientsMap cmap;
+
+		UniSetTypes::ObjectId sesscount_id;
+		IOController::IOStateList::iterator sesscount_it;
+
+		std::atomic_bool tcpCancelled = { true };
 };
 // -----------------------------------------------------------------------------
 #endif // _MBSlave_H_

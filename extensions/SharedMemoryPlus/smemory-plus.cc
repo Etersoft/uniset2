@@ -24,7 +24,6 @@
 #include "Extensions.h"
 #include "RTUExchange.h"
 #include "MBSlave.h"
-#include "MBTCPPersistentSlave.h"
 #include "MBTCPMaster.h"
 #include "SharedMemory.h"
 //#include "UniExchange.h"
@@ -207,35 +206,6 @@ int main( int argc, const char** argv )
 			dinfo << "(smemory-plus): add UNetExchnage.." << endl;
 
 			act->add(unet);
-		}
-
-		// ------------- MBTCPMultiSlave --------------
-
-		for( unsigned int i = 0; i < MaxAddNum; i++ )
-		{
-			stringstream s;
-			s << "--add-mbmultislave";
-
-			if( i > 0 ) s << i;
-
-			bool add_mbslave = findArgParam(s.str(), argc, argv) != -1;
-
-			if( add_mbslave )
-			{
-				stringstream p;
-				p << "mbms";
-
-				if( i > 0 ) p << i;
-
-				dinfo << "(smemory-plus): add MBTCPMultiSlave(" << p.str() << ")" << endl;
-
-				auto mbs = MBTCPPersistentSlave::init_mbslave(argc, argv, shm->getId(), shm, p.str());
-
-				if( !mbs )
-					return 1;
-
-				act->add(mbs);
-			}
 		}
 
 		// ---------------------------------------
