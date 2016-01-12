@@ -283,6 +283,12 @@
 			</item>
 			<item id="112" iotype="DI" name="MQTT_DI_S" textname="MQTT test DI" mqtt="1"/>
 
+			<item id="2052" mbtcp="3" mbaddr="1" mbreg="263" iotype="AI" name="AIForThresholds" textname="Тестовый регистр для проверки пороговых датчиков"/>
+			<item id="2053" mbtcp="3" mbaddr="1" iotype="DI" name="Threshold1" textname="Порог N1" threshold_aid="AIForThresholds" lowlimit="20" hilimit="25" />
+			<item id="2054" mbtcp="3" mbaddr="1" iotype="DI" name="Threshold2" textname="Порог N2" threshold_aid="AIForThresholds" lowlimit="20" hilimit="25" threshold_invert="1"/>
+
+			<item id="2055" mbtcp="3" mbaddr="2" mbreg="263" iotype="AI" name="AIMBADD2" textname="Тестовый регистр для проверки чтения по второму устройству"/>
+
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI_AS">

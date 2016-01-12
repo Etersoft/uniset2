@@ -199,8 +199,12 @@
 			<item id="2050" mbs="1" mbreg="259" iotype="AO" vtype="F2" name="Test_CountWrite10_F2" textname="Тестовый регистр для 0x10(F2)"/>
 			<item id="2051" mbs="1" mbreg="261" iotype="AO" vtype="F2" precision="1" name="Test_CountWrite10_F2prec" textname="Тестовый регистр для 0x10(F2)(prec)"/>
 
-
 			<item id="2053" mbs="1" mbaddr="0x02" mbreg="130" default="1" iotype="AO" name="Test_SlaveAddr2" textname="Тестовый регистр для проверки работы со вторым адресом (mbreg)"/>
+
+			<!-- thresholds -->
+			<item id="2054" mbs="1" mbreg="263" iotype="AI" name="AIForThresholds" textname="Тестовый регистр для проверки пороговых датчиков"/>
+			<item id="2055" mbs="1" iotype="DI" name="Threshold1" textname="Порог N1" threshold_aid="AIForThresholds" lowlimit="20" hilimit="25" />
+			<item id="2056" mbs="1" iotype="DI" name="Threshold2" textname="Порог N2" threshold_aid="AIForThresholds" lowlimit="20" hilimit="25" threshold_invert="1"/>
 
 			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
 

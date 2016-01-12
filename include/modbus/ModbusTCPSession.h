@@ -37,19 +37,12 @@ class ModbusTCPSession:
 
 		void cleanInputStream();
 
-		virtual void cleanupChannel() override
-		{
-			cleanInputStream();
-		}
+		virtual void cleanupChannel() override;
 		virtual void terminate() override;
-
-		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msecTimeout ) override;
 
 		typedef sigc::slot<void, ModbusTCPSession*> FinalSlot;
 
 		void connectFinalSession( FinalSlot sl );
-
-		unsigned int getAskCount();
 
 		inline std::string getClientAddress()
 		{
@@ -58,10 +51,14 @@ class ModbusTCPSession:
 
 		void setSessionTimeout( double t );
 
+		// запуск обработки входящих запросов
 		void run();
+
 		virtual bool isAcive() override;
 
 	protected:
+
+		virtual ModbusRTU::mbErrCode realReceive( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msecTimeout ) override;
 
 		// -------------------------------------------
 		// author:
@@ -173,10 +170,6 @@ class ModbusTCPSession:
 		FinalSlot slFin;
 
 		std::atomic_bool cancelled = { false };
-
-		// статистика
-		UniSetTypes::uniset_rwmutex mAsk;
-		unsigned int askCount = { 0 };
 };
 // -------------------------------------------------------------------------
 #endif // ModbusTCPSession_H_

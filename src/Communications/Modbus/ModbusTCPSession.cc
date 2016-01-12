@@ -46,8 +46,7 @@ ModbusTCPSession::ModbusTCPSession( int sfd, const std::unordered_set<ModbusAddr
 	timeout(timeout),
 	peername(""),
 	caddr(""),
-	cancelled(false),
-	askCount(0)
+	cancelled(false)
 {
 	try
 	{
@@ -82,12 +81,6 @@ ModbusTCPSession::ModbusTCPSession( int sfd, const std::unordered_set<ModbusAddr
 	ioTimeout.set<ModbusTCPSession, &ModbusTCPSession::onTimeout>(this);
 }
 // -------------------------------------------------------------------------
-unsigned int ModbusTCPSession::getAskCount()
-{
-	uniset_rwmutex_rlock l(mAsk);
-	return askCount;
-}
-
 void ModbusTCPSession::setSessionTimeout( double t )
 {
 	sessTimeout = t;
@@ -155,19 +148,8 @@ void ModbusTCPSession::onTimeout( ev::timer& watcher, int revents )
 // -------------------------------------------------------------------------
 void ModbusTCPSession::readEvent( ev::io& watcher )
 {
-	ModbusRTU::mbErrCode res = receive(vaddr, timeout);
-
-	if( res == erSessionClosed )
-	{
+	if( receive(vaddr, timeout) == erSessionClosed )
 		cancelled = true;
-		return;
-	}
-
-	if( res != erTimeOut )
-	{
-		uniset_rwmutex_wrlock l(mAsk);
-		askCount++;
-	}
 }
 // -------------------------------------------------------------------------
 void ModbusTCPSession::writeEvent( ev::io& watcher )
@@ -196,7 +178,7 @@ void ModbusTCPSession::writeEvent( ev::io& watcher )
 	}
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode ModbusTCPSession::receive( const std::unordered_set<ModbusAddr>& vmbaddr, timeout_t msec )
+ModbusRTU::mbErrCode ModbusTCPSession::realReceive( const std::unordered_set<ModbusAddr>& vmbaddr, timeout_t msec )
 {
 	ModbusRTU::mbErrCode res = erTimeOut;
 	ptTimeout.setTiming(msec);
@@ -394,6 +376,11 @@ void ModbusTCPSession::cleanInputStream()
 		ret = getNextData(buf, sizeof(buf));
 	}
 	while( ret > 0);
+}
+// -------------------------------------------------------------------------
+void ModbusTCPSession::cleanupChannel()
+{
+	cleanInputStream();
 }
 // -------------------------------------------------------------------------
 void ModbusTCPSession::terminate()

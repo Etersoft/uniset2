@@ -32,8 +32,6 @@ class ModbusRTUSlave:
 		void setSpeed( const std::string& s );
 		ComPort::Speed getSpeed();
 
-		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msecTimeout ) override;
-
 		virtual void cleanupChannel() override
 		{
 			if(port) port->cleanupChannel();
@@ -43,6 +41,8 @@ class ModbusRTUSlave:
 		virtual bool isAcive() override;
 
 	protected:
+
+		virtual ModbusRTU::mbErrCode realReceive( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msecTimeout ) override;
 
 		// realisation (see ModbusServer.h)
 		virtual size_t getNextData( unsigned char* buf, int len ) override;

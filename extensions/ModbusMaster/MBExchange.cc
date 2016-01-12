@@ -2128,9 +2128,7 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML::iterator& it )
 	// тогда заносим его в отдельный список
 	if( p.t_ai != DefaultObjectId )
 	{
-		// испольуем конструктор копирования
-		// IOBase b( *(static_cast<IOBase*>(&p)));
-		thrlist.push_back( std::move(p) );
+		thrlist.emplace_back( std::move(p) );
 		return true;
 	}
 

@@ -67,7 +67,7 @@ void ModbusTCPServer::setMaxSessions( unsigned int num )
 	maxSessions = num;
 }
 // -------------------------------------------------------------------------
-unsigned ModbusTCPServer::getCountSessions()
+size_t ModbusTCPServer::getCountSessions()
 {
 	return sessCount;
 }
@@ -280,6 +280,8 @@ void ModbusTCPServer::ioAccept(ev::io& watcher, int revents)
 		s->setSleepPause(sleepPause_usec);
 		s->setCleanBeforeSend(cleanBeforeSend);
 		s->setSessionTimeout( (double)sessTimeout / 1000. );
+		s->signal_post_receive().connect( sigc::mem_fun(this, &ModbusTCPServer::postReceiveEvent) );
+		s->signal_pre_receive().connect( sigc::mem_fun(this, &ModbusTCPServer::preReceiveEvent) );
 
 		s->setLog(dlog);
 		s->connectFinalSession( sigc::mem_fun(this, &ModbusTCPServer::sessionFinished) );
@@ -323,8 +325,21 @@ void ModbusTCPServer::onTimer( ev::timer& t, int revents )
 }
 // -------------------------------------------------------------------------
 
-mbErrCode  ModbusTCPServer::receive( const std::unordered_set<ModbusAddr>& vaddr, timeout_t msecTimeout )
+mbErrCode  ModbusTCPServer::realReceive( const std::unordered_set<ModbusAddr>& vaddr, timeout_t msecTimeout )
 {
 	return ModbusRTU::erOperationFailed;
+}
+// -------------------------------------------------------------------------
+void ModbusTCPServer::postReceiveEvent( mbErrCode res )
+{
+	m_post_signal.emit(res);
+}
+// -------------------------------------------------------------------------
+mbErrCode ModbusTCPServer::preReceiveEvent(const std::unordered_set<ModbusAddr> vaddr, timeout_t tout)
+{
+	if( m_pre_signal.empty() )
+		return ModbusRTU::erNoError;
+
+	return m_pre_signal.emit(vaddr,tout);
 }
 // -------------------------------------------------------------------------

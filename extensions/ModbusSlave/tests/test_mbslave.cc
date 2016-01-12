@@ -1184,17 +1184,46 @@ TEST_CASE("(0x10): write register outputs or memories [F2](precision)", "[modbus
 // -------------------------------------------------------------
 TEST_CASE("Multi adress check", "[modbus][mbslave][multiaddress]")
 {
-	using namespace VTypes;
 	InitTest();
 
 	ModbusRTU::ModbusData tREG = 130;
-	int num = 10;
 
 	ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr, tREG, 1);
 	REQUIRE( ret.data[0] == 1 );
 
 	ModbusRTU::ReadOutputRetMessage ret2 = mb->read03(slaveaddr2, tREG, 1);
 	REQUIRE( ret2.data[0] == 1 );
+}
+// -------------------------------------------------------------
+TEST_CASE("Thresholds", "[modbus][mbslave][thresholds]")
+{
+	InitTest();
+
+	ModbusRTU::ModbusData tREG = 263;
+
+	// формируем порог
+	ModbusRTU::WriteSingleOutputRetMessage  ret = mb->write06(slaveaddr, tREG, 26);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.data == 26 );
+	REQUIRE( ui->getValue(2054) == 26 );
+	REQUIRE( ui->getValue(2055) == 1 );
+	REQUIRE( ui->getValue(2056) == 0 );
+
+	// отпускаем порог
+	ret = mb->write06(slaveaddr, tREG, 19);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.data == 19 );
+	REQUIRE( ui->getValue(2054) == 19 );
+	REQUIRE( ui->getValue(2055) == 0 );
+	REQUIRE( ui->getValue(2056) == 1 );
+
+	// формируем порог
+	ret = mb->write06(slaveaddr, tREG, 500);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.data == 500 );
+	REQUIRE( ui->getValue(2054) == 500 );
+	REQUIRE( ui->getValue(2055) == 1 );
+	REQUIRE( ui->getValue(2056) == 0 );
 }
 // -------------------------------------------------------------
 /*! \todo Доделать тесты на считывание с разными prop_prefix.. */

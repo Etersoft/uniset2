@@ -550,8 +550,6 @@ void MBSlave::execute_rtu()
 {
 	auto rscomm = dynamic_pointer_cast<ModbusRTUSlaveSlot>(mbslot);
 
-	ModbusRTU::mbErrCode prev = erNoError;
-
 	// ждём чтобы прошла инициализация
 	// потому-что нужно чтобы наполнилась таблица адресов (vaddr)
 	if( !shm->isLocalwork() )
@@ -583,18 +581,6 @@ void MBSlave::execute_rtu()
 			if( res != ModbusRTU::erTimeOut )
 				ptTimeout.reset();
 
-			// собираем статистику обмена
-			if( prev != ModbusRTU::erTimeOut )
-			{
-				//  с проверкой на переполнение
-				askCount = askCount >= numeric_limits<long>::max() ? 0 : askCount + 1;
-
-				if( res != ModbusRTU::erNoError )
-					++errmap[res];
-			}
-
-			prev = res;
-
 			if( res != ModbusRTU::erNoError && res != ModbusRTU::erTimeOut )
 				mbwarn << myname << "(execute_rtu): " << ModbusRTU::mbErr2Str(res) << endl;
 
@@ -602,12 +588,7 @@ void MBSlave::execute_rtu()
 				continue;
 
 			updateStatistics();
-
-			for( auto && rmap : iomap )
-			{
-				for( auto && it : rmap.second )
-					IOBase::processingThreshold(&it.second, shm, force);
-			}
+			updateThresholds();
 		}
 		catch( std::exception& ex )
 		{
@@ -642,8 +623,11 @@ void MBSlave::execute_tcp()
 
 	// Чтобы не создавать отдельный поток для tcpserver (или для обновления статистики)
 	// воспользуемся таймером tcpserver-а..
-	tcpserver->setTimer(updateStatTime);
 	tcpserver->signal_timer().connect( sigc::mem_fun(this, &MBSlave::updateTCPStatistics) );
+	tcpserver->setTimer(updateStatTime);
+
+	// для обновления пороговых датчиков
+	tcpserver->signal_post_receive().connect( sigc::mem_fun(this, &MBSlave::postReceiveEvent) );
 
 	mbinfo << myname << "(execute_tcp): run tcpserver.." << endl;
 
@@ -728,10 +712,21 @@ void MBSlave::updateTCPStatistics()
 			return;
 
 		// Обновляем информацию по соединениям
-		sess.clear();
-		tcpserver->getSessions(sess);
+		{
+			uniset_mutex_lock l(sessMutex);
+			sess.clear();
+			tcpserver->getSessions(sess);
+		}
 
-		for( auto && s : sess )
+		askCount = tcpserver->getAskCount();
+
+		// если список сессий не пустой.. значит связь есть..
+		if( !sess.empty() )
+			ptTimeout.reset(); // см. updateStatistics()
+
+		// суммарное количество по всем
+		askCount = 0;
+		for( const auto& s : sess )
 		{
 			if( !activated || cancelled )
 				return;
@@ -797,6 +792,26 @@ void MBSlave::updateTCPStatistics()
 	{
 		mbwarn << myname << "(updateStatistics): " << ex.what() << endl;
 	}
+}
+// -------------------------------------------------------------------------
+void MBSlave::updateThresholds()
+{
+	for( auto&& i: thrlist )
+	{
+		try
+		{
+			IOBase::processingThreshold(&i, shm, force);
+		}
+		catch( std::exception& ex )
+		{
+			mbwarn << myname << "(updateThresholds): " << ex.what() << endl;
+		}
+	}
+}
+// -------------------------------------------------------------------------
+void MBSlave::postReceiveEvent( ModbusRTU::mbErrCode res )
+{
+	updateThresholds();
 }
 // -------------------------------------------------------------------------
 void MBSlave::sysCommand( const UniSetTypes::SystemMessage* sm )
@@ -1090,6 +1105,13 @@ bool MBSlave::initItem( UniXML::iterator& it )
 
 	if( !IOBase::initItem( static_cast<IOBase*>(&p), it, shm, prop_prefix, false, mblog, myname) )
 		return false;
+
+	if( p.t_ai != DefaultObjectId )
+	{
+		// это пороговый датчик.. вносим его в список
+		thrlist.emplace_back(std::move(p));
+		return true;
+	}
 
 	std::string s_mbaddr = IOBase::initProp(it, "mbaddr", prop_prefix, false, default_mbaddr);
 
@@ -2441,6 +2463,10 @@ ModbusRTU::mbErrCode MBSlave::forceSingleCoil( ModbusRTU::ForceSingleCoilMessage
 ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
 		ModbusRTU::DiagnosticRetMessage& reply )
 {
+	auto mbserver = dynamic_pointer_cast<ModbusServer>(mbslot);
+	if( !mbserver )
+		return ModbusRTU::erHardwareError;
+
 	if( query.subf == ModbusRTU::subEcho )
 	{
 		reply = query;
@@ -2450,7 +2476,7 @@ ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
 	if( query.subf == ModbusRTU::dgBusErrCount )
 	{
 		reply = query;
-		reply.data[0] = errmap[ModbusRTU::erBadCheckSum];
+		reply.data[0] =  mbserver->getErrCount(ModbusRTU::erBadCheckSum);
 		return ModbusRTU::erNoError;
 	}
 
@@ -2464,15 +2490,15 @@ ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
 	if( query.subf == ModbusRTU::dgSlaveNAKCount )
 	{
 		reply = query;
-		reply.data[0] = errmap[erOperationFailed];
+		reply.data[0] =  mbserver->getErrCount(erOperationFailed);
 		return ModbusRTU::erNoError;
 	}
 
 	if( query.subf == ModbusRTU::dgClearCounters )
 	{
-		askCount = 0;
-		errmap[erOperationFailed] = 0;
-		errmap[ModbusRTU::erBadCheckSum] = 0;
+		mbserver->resetAskCounter();
+		mbserver->resetErrCount(erOperationFailed,0);
+		mbserver->resetErrCount(ModbusRTU::erBadCheckSum,0);
 		// другие счётчики пока не сбрасываем..
 		reply = query;
 		return ModbusRTU::erNoError;
@@ -2552,7 +2578,13 @@ UniSetTypes::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
 
 	if( tcpserver )
 	{
-		inf << "TCP Clients: " << endl;
+		size_t snum = 0;
+		{
+			uniset_mutex_lock l(sessMutex);
+			snum = sess.size();
+		}
+
+		inf << "TCP Clients[" << snum << "]:" << endl;
 
 		for( const auto& m : cmap )
 			inf << "   " << m.second.getShortInfo() << endl;

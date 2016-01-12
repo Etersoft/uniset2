@@ -48,7 +48,6 @@ ModbusServer::ModbusServer():
 	    dlog->addLevel(Debug::CRIT);
 	    dlog->addLevel(Debug::INFO);
 	*/
-
 }
 
 // -------------------------------------------------------------------------
@@ -577,7 +576,6 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 	printProcessingTime();
 	return erUnExpectedPacketType;
 }
-
 // -------------------------------------------------------------------------
 mbErrCode ModbusServer::recv( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, ModbusMessage& rbuf, timeout_t timeout )
 {
@@ -1521,13 +1519,56 @@ std::unordered_set<ModbusAddr> ModbusServer::addr2vaddr(ModbusAddr& mbaddr)
 	return std::move(v);
 }
 // -------------------------------------------------------------------------
+mbErrCode ModbusServer::receive(const std::unordered_set<ModbusAddr>& vaddr, timeout_t msecTimeout)
+{
+	// приходиться делать специальное исключение для кода erSessionClosed
+	// т.к. это означает, что клиент ничего не посылал (read=0) и отвалился (закрыл канал).
+	// т.е. собственно события receive и не было..
+	// Это актуально для TCPServe-а.. (но вообще это получается какой-то архитектурный изъян)
+
+	mbErrCode ret = erNoError;
+
+	if( !m_pre_signal.empty() )
+	{
+		ret = m_pre_signal.emit(vaddr,msecTimeout);
+		if( ret != erNoError && ret != erSessionClosed )
+		{
+			errmap[ret] +=1;
+			return ret;
+		}
+	}
+
+	ret = realReceive(vaddr,msecTimeout);
+
+	// собираем статистику..
+	if( ret != erTimeOut && ret != erSessionClosed )
+		askCount++;
+
+	if( ret != erNoError && ret != erSessionClosed )
+		errmap[ret] +=1;
+
+	if( ret != erSessionClosed )
+		m_post_signal.emit(ret);
+
+	return ret;
+}
+// -------------------------------------------------------------------------
 mbErrCode ModbusServer::receive_one( ModbusAddr a, timeout_t msec )
 {
 	auto v = addr2vaddr(a);
 	return receive(v, msec);
 }
 // -------------------------------------------------------------------------
-
+ModbusServer::PreReceiveSignal ModbusServer::signal_pre_receive()
+{
+	return m_pre_signal;
+}
+// -------------------------------------------------------------------------
+ModbusServer::PostReceiveSignal ModbusServer::signal_post_receive()
+{
+	return m_post_signal;
+}
+// -------------------------------------------------------------------------
 void ModbusServer::initLog( UniSetTypes::Configuration* conf,
 							const std::string& lname, const string& logfile )
 {
@@ -1616,6 +1657,37 @@ ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string& fname,
 	}
 
 	return ModbusRTU::erNoError;
+}
+// -------------------------------------------------------------------------
+ModbusServer::ExchangeErrorMap ModbusServer::getErrorMap()
+{
+	ExchangeErrorMap m(errmap);
+	return std::move(m);
+}
+// -------------------------------------------------------------------------
+size_t ModbusServer::getErrCount( mbErrCode e )
+{
+	auto i = errmap.find(e);
+	if( i == errmap.end() )
+		return 0;
+
+	return i->second;
+}
+// -------------------------------------------------------------------------
+size_t ModbusServer::resetErrCount( mbErrCode e, size_t set )
+{
+	auto i = errmap.find(e);
+	if( i == errmap.end() )
+		return 0;
+
+	size_t ret = i->second;
+	i->second = set;
+	return ret;
+}
+// -------------------------------------------------------------------------
+void ModbusServer::resetAskCounter()
+{
+	askCount = 0;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessage& query,

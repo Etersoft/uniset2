@@ -302,19 +302,6 @@
 
 */
 // -----------------------------------------------------------------------------
-namespace std
-{
-	template<>
-	class hash<ModbusRTU::mbErrCode>
-	{
-		public:
-			size_t operator()(const ModbusRTU::mbErrCode& e) const
-			{
-				return std::hash<int>()((int)e);
-			}
-	};
-}
-// -----------------------------------------------------------------------------
 /*! Реализация slave-интерфейса */
 class MBSlave:
 	public UniSetObject
@@ -471,6 +458,11 @@ class MBSlave:
 
 		IOMap iomap;  /*!< список входов/выходов по адресам */
 
+		// т.к. пороговые датчики не связаны напрямую с обменом, создаём для них отдельный список
+		// и отдельно его проверяем потом
+		typedef std::list<IOBase> ThresholdList;
+		ThresholdList thrlist;
+
 		std::shared_ptr<ModbusServerSlot> mbslot;
 		std::unordered_set<ModbusRTU::ModbusAddr> vaddr; /*!< адреса данного узла */
 		std::string default_mbaddr = { "" };
@@ -490,6 +482,8 @@ class MBSlave:
 		virtual void execute_tcp();
 		virtual void updateStatistics();
 		virtual void updateTCPStatistics();
+		virtual void updateThresholds();
+		virtual void postReceiveEvent( ModbusRTU::mbErrCode res );
 
 		virtual bool activateObject() override;
 		virtual bool deactivateObject() override;
@@ -542,8 +536,6 @@ class MBSlave:
 
 		PassiveTimer ptTimeout;
 		long askCount = { 0 };
-		typedef std::unordered_map<ModbusRTU::mbErrCode, unsigned int> ExchangeErrorMap;
-		ExchangeErrorMap errmap;     /*!< статистика обмена */
 
 		std::atomic_bool activated = { false };
 		std::atomic_bool cancelled = { false };
@@ -588,6 +580,7 @@ class MBSlave:
 		timeout_t sessTimeout;  /*!< таймаут на сессию */
 		timeout_t updateStatTime;
 		ModbusTCPServer::Sessions sess; /*!< список открытых сессий */
+		UniSetTypes::uniset_mutex sessMutex;
 		unsigned int sessMaxNum;
 		std::shared_ptr<ModbusTCPServerSlot> tcpserver;
 

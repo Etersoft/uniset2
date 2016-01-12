@@ -4,12 +4,27 @@
 // -------------------------------------------------------------------------
 #include <string>
 #include <unordered_set>
+#include <unordered_map>
+#include <sigc++/sigc++.h>
 
 #include "Debug.h"
 #include "Mutex.h"
 #include "Configuration.h"
 #include "PassiveTimer.h"
 #include "ModbusTypes.h"
+// -------------------------------------------------------------------------
+namespace std
+{
+	template<>
+	class hash<ModbusRTU::mbErrCode>
+	{
+		public:
+			size_t operator()(const ModbusRTU::mbErrCode& e) const
+			{
+				return std::hash<int>()(e);
+			}
+	};
+}
 // -------------------------------------------------------------------------
 /*!    Modbus server interface */
 class ModbusServer
@@ -32,10 +47,24 @@ class ModbusServer
 			\param msecTimeout  - время ожидания прихода очередного сообщения в мсек.
 		    \return Возвращает код ошибки из ModbusRTU::mbErrCode
 		*/
-		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, timeout_t msecTimeout ) = 0;
+		ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, timeout_t msecTimeout );
 
 		// версия с "одним" адресом
 		virtual ModbusRTU::mbErrCode receive_one( const ModbusRTU::ModbusAddr addr, timeout_t msec );
+
+
+		// ---------------------------------------------------------------------------------------
+		// сигналы по обработке событий приёма сообщения.
+		// ---------------------------------------------------------------------------------------
+		// сигнал вызова receive, ДО обработки realReceive()
+		// \return ModbusRTU::errNoError, тогда обработка продолжиться.
+		typedef sigc::signal<ModbusRTU::mbErrCode,const std::unordered_set<ModbusRTU::ModbusAddr>, timeout_t> PreReceiveSignal;
+		PreReceiveSignal signal_pre_receive();
+
+		// сигнал после обработки realReceive()
+		typedef sigc::signal<void,ModbusRTU::mbErrCode> PostReceiveSignal;
+		PostReceiveSignal signal_post_receive();
+		// ---------------------------------------------------------------------------------------
 
 		/*! Проверка входит ли данный адрес в список
 		  * \param vaddr - вектор адресов
@@ -115,7 +144,20 @@ class ModbusServer
 
 		virtual bool isAcive() = 0;
 
+		// ------------ Статистика ---------------
+		typedef std::unordered_map<ModbusRTU::mbErrCode, size_t> ExchangeErrorMap;
+
+		ExchangeErrorMap getErrorMap();
+		size_t getErrCount( ModbusRTU::mbErrCode e );
+		size_t resetErrCount( ModbusRTU::mbErrCode e, size_t set=0 );
+
+		inline size_t getAskCount() { return askCount; }
+		void resetAskCounter();
+
 	protected:
+
+		/*! реализация получения очередного сообщения */
+		virtual ModbusRTU::mbErrCode realReceive( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, timeout_t msecTimeout ) = 0;
 
 		/*! Обработка запроса на чтение данных (0x01).
 		    \param query - запрос
@@ -244,7 +286,6 @@ class ModbusServer
 
 		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) = 0;
 
-
 		/*! set timeout for receive data */
 		virtual void setChannelTimeout( timeout_t msec ) = 0;
 
@@ -280,6 +321,13 @@ class ModbusServer
 		PassiveTimer tmProcessing;
 
 		std::shared_ptr<DebugStream> dlog;
+
+		// статистика сервера
+		size_t askCount;
+		ExchangeErrorMap errmap;     /*!< статистика ошибок обмена */
+
+		PreReceiveSignal m_pre_signal;
+		PostReceiveSignal m_post_signal;
 
 	private:
 

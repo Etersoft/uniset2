@@ -79,52 +79,7 @@ ModbusRTUSlave::~ModbusRTUSlave()
 		delete port;
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusRTUSlave::receive(const std::unordered_set<ModbusAddr>& vmbaddr, timeout_t timeout )
-{
-	uniset_mutex_lock lck(recvMutex, timeout);
 
-	if( !lck.lock_ok() )
-	{
-		if( dlog->is_crit() )
-			dlog->crit() << "(ModbusRTUSlave::receive): Don`t lock " << recvMutex << endl;
-
-		return erTimeOut;
-	}
-
-	ModbusMessage buf;
-	mbErrCode res = erBadReplyNodeAddress;
-
-	do
-	{
-		res = recv(vmbaddr, buf, timeout);
-
-		if( res != erNoError && res != erBadReplyNodeAddress )
-		{
-			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
-			// то посылаем
-			if( res < erInternalErrorCode )
-			{
-				ErrorRetMessage em( buf.addr, buf.func, res );
-				buf = em.transport_msg();
-				send(buf);
-				printProcessingTime();
-			}
-
-			if( aftersend_msec > 0 )
-				msleep(aftersend_msec);
-
-			//			usleep(10000);
-			return res;
-		}
-
-		// если полученный пакет адресован
-		// не данному узлу (и не широковещательный)
-		// то ждать следующий...
-	}
-	while( res == erBadReplyNodeAddress );
-
-	return processing(buf);
-}
 // --------------------------------------------------------------------------------
 ComPort::Speed ModbusRTUSlave::getSpeed()
 {
@@ -189,5 +144,53 @@ void ModbusRTUSlave::terminate()
 bool ModbusRTUSlave::isAcive()
 {
 	return false;
+}
+// -------------------------------------------------------------------------
+mbErrCode ModbusRTUSlave::realReceive(const std::unordered_set<ModbusAddr>& vmbaddr, timeout_t timeout )
+{
+	{
+		uniset_mutex_lock lck(recvMutex, timeout);
+
+		if( !lck.lock_ok() )
+		{
+			if( dlog->is_crit() )
+				dlog->crit() << "(ModbusRTUSlave::receive): Don`t lock " << recvMutex << endl;
+
+			return erTimeOut;
+		}
+
+		ModbusMessage buf;
+		mbErrCode res = erBadReplyNodeAddress;
+
+		do
+		{
+			res = recv(vmbaddr, buf, timeout);
+
+			if( res != erNoError && res != erBadReplyNodeAddress )
+			{
+				// Если ошибка подразумевает посылку ответа с сообщением об ошибке
+				// то посылаем
+				if( res < erInternalErrorCode )
+				{
+					ErrorRetMessage em( buf.addr, buf.func, res );
+					buf = em.transport_msg();
+					send(buf);
+					printProcessingTime();
+				}
+
+				if( aftersend_msec > 0 )
+					msleep(aftersend_msec);
+
+				return res;
+			}
+
+			// если полученный пакет адресован
+			// не данному узлу (и не широковещательный)
+			// то ждать следующий...
+		}
+		while( res == erBadReplyNodeAddress );
+
+		return processing(buf);
+	}
 }
 // -------------------------------------------------------------------------

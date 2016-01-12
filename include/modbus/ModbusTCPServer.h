@@ -31,16 +31,13 @@ class ModbusTCPServer:
 		ModbusTCPServer( ost::InetAddress& ia, int port = 502 );
 		virtual ~ModbusTCPServer();
 
-		// функция receive пока не поддерживается...
-		virtual ModbusRTU::mbErrCode receive( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, timeout_t msecTimeout ) override;
-
 		/*! Запуск сервера
 		 * \param thread - создавать ли отдельный поток
 		 */
 		void run( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, bool thread = false );
 
-		void setMaxSessions( unsigned int num );
-		inline unsigned int getMaxSessions()
+		void setMaxSessions( size_t num );
+		inline size_t getMaxSessions()
 		{
 			return maxSessions;
 		}
@@ -53,7 +50,7 @@ class ModbusTCPServer:
 		}
 
 		/*! текущее количество подключений */
-		unsigned getCountSessions();
+		size_t getCountSessions();
 
 		inline void setIgnoreAddrMode( bool st )
 		{
@@ -108,6 +105,9 @@ class ModbusTCPServer:
 
 	protected:
 
+		// функция receive пока не поддерживается...
+		virtual ModbusRTU::mbErrCode realReceive( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, timeout_t msecTimeout ) override;
+
 		virtual void mainLoop();
 		virtual void ioAccept(ev::io& watcher, int revents);
 		void onTimer( ev::timer& t, int revents );
@@ -139,8 +139,8 @@ class ModbusTCPServer:
 
 		bool ignoreAddr = { false };
 
-		unsigned int maxSessions = { 100 };
-		unsigned int sessCount = { 0 };
+		size_t maxSessions = { 100 };
+		size_t sessCount = { 0 };
 
 		timeout_t sessTimeout = { 10000 }; // msec
 
@@ -157,6 +157,9 @@ class ModbusTCPServer:
 		double tmTime = { 0.0 };
 
 	private:
+		// транслирование сигналов от Sessions..
+		void postReceiveEvent( ModbusRTU::mbErrCode res );
+		ModbusRTU::mbErrCode preReceiveEvent( const std::unordered_set<ModbusRTU::ModbusAddr> vaddr, timeout_t tout );
 
 		std::atomic_bool cancelled;
 };

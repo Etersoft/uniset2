@@ -23,3 +23,4 @@ Utilities/codegen
 Utilities/codegen/tests
 Utilities/MBTester
 Utilities/NullController
+/usr/include/sigc++-2.0/
