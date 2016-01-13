@@ -90,7 +90,7 @@ LogSession::LogSession( int sfd, std::shared_ptr<DebugStream>& _log, timeout_t _
 
 	io.set<LogSession, &LogSession::callback>(this);
 	cmdTimer.set<LogSession, &LogSession::onCmdTimeout>(this);
-	asyncEvent.set<LogSession,&LogSession::event>(this);
+	asyncEvent.set<LogSession, &LogSession::event>(this);
 }
 // -------------------------------------------------------------------------
 void LogSession::logOnEvent( const std::string& s )
@@ -100,6 +100,7 @@ void LogSession::logOnEvent( const std::string& s )
 
 	std::unique_lock<std::mutex> lk(logbuf_mutex);
 	logbuf.emplace(new UTCPCore::Buffer(s));
+
 	if( asyncEvent.is_active() )
 		asyncEvent.send();
 }
@@ -112,7 +113,7 @@ void LogSession::run()
 		mylog.info() << peername << "(run): run session.." << endl;
 
 	io.start(sock->getSocket(), ev::READ);
-	cmdTimer.start( cmdTimeout/1000. );
+	cmdTimer.start( cmdTimeout / 1000. );
 	// asyncEvent.start(); // слать логи начинаем только после обработки команд.. если есть..
 }
 // -------------------------------------------------------------------------
@@ -122,17 +123,21 @@ void LogSession::terminate()
 		mylog.info() << peername << "(terminate)..." << endl;
 
 	cancelled = true;
-	std::unique_lock<std::mutex> lk(logbuf_mutex);
+
 	{
+		std::unique_lock<std::mutex> lk2(io_mutex);
+		io.stop();
+		cmdTimer.stop();
+		asyncEvent.stop();
+		conn.disconnect();
+	}
+
+	{
+		std::unique_lock<std::mutex> lk(logbuf_mutex);
+
 		while( !logbuf.empty() )
 			logbuf.pop();
 	}
-
-	std::unique_lock<std::mutex> lk2(io_mutex);
-	io.stop();
-	cmdTimer.stop();
-	asyncEvent.stop();
-	conn.disconnect();
 
 	sock.reset(); // close..
 	final();
@@ -196,6 +201,7 @@ void LogSession::writeEvent( ev::io& watcher )
 		return;
 
 	auto buffer = logbuf.front();
+
 	if( !buffer )
 		return;
 
@@ -226,6 +232,7 @@ void LogSession::writeEvent( ev::io& watcher )
 	}
 
 	std::unique_lock<std::mutex> lk1(io_mutex);
+
 	if( logbuf.empty() )
 		io.set(ev::READ);
 	else
@@ -268,6 +275,7 @@ void LogSession::readEvent( ev::io& watcher )
 	{
 		if( mylog.is_warn() )
 			mylog.warn() << peername << "(readEvent): BAD MESSAGE..." << endl;
+
 		return;
 	}
 
@@ -356,38 +364,38 @@ void LogSession::cmdProcessing( const string& cmdLogName, const LogServerTypes::
 		{
 			case LogServerTypes::cmdSetLevel:
 				l.log->level( (Debug::type)msg.data );
-			break;
+				break;
 
 			case LogServerTypes::cmdAddLevel:
 				l.log->addLevel( (Debug::type)msg.data );
-			break;
+				break;
 
 			case LogServerTypes::cmdDelLevel:
 				l.log->delLevel( (Debug::type)msg.data );
-			break;
+				break;
 
 			case LogServerTypes::cmdRotate:
 				l.log->onLogFile(true);
-			break;
+				break;
 
 			case LogServerTypes::cmdList: // обработали выше (в начале)
-			break;
+				break;
 
 			case LogServerTypes::cmdOffLogFile:
 				l.log->offLogFile();
-			break;
+				break;
 
 			case LogServerTypes::cmdOnLogFile:
 				l.log->onLogFile();
-			break;
+				break;
 
 			case LogServerTypes::cmdFilterMode:
 				l.log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
-			break;
+				break;
 
 			default:
 				mylog.warn() << peername << "(run): Unknown command '" << msg.cmd << "'" << endl;
-			break;
+				break;
 		}
 	} // end if for
 

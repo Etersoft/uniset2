@@ -55,7 +55,7 @@ class ModbusTCPSession:
 		// запуск обработки входящих запросов
 		void run();
 
-		virtual bool isAcive() override;
+		virtual bool isActive() override;
 
 	protected:
 

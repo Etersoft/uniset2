@@ -13,8 +13,8 @@
 class EventWatcher
 {
 	public:
-		EventWatcher(){}
-		virtual ~EventWatcher(){}
+		EventWatcher() {}
+		~EventWatcher() {}
 };
 // -------------------------------------------------------------------------
 /*!

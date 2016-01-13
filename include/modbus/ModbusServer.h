@@ -58,11 +58,11 @@ class ModbusServer
 		// ---------------------------------------------------------------------------------------
 		// сигнал вызова receive, ДО обработки realReceive()
 		// \return ModbusRTU::errNoError, тогда обработка продолжиться.
-		typedef sigc::signal<ModbusRTU::mbErrCode,const std::unordered_set<ModbusRTU::ModbusAddr>, timeout_t> PreReceiveSignal;
+		typedef sigc::signal<ModbusRTU::mbErrCode, const std::unordered_set<ModbusRTU::ModbusAddr>, timeout_t> PreReceiveSignal;
 		PreReceiveSignal signal_pre_receive();
 
 		// сигнал после обработки realReceive()
-		typedef sigc::signal<void,ModbusRTU::mbErrCode> PostReceiveSignal;
+		typedef sigc::signal<void, ModbusRTU::mbErrCode> PostReceiveSignal;
 		PostReceiveSignal signal_post_receive();
 		// ---------------------------------------------------------------------------------------
 
@@ -142,16 +142,19 @@ class ModbusServer
 		virtual void cleanupChannel() {}
 		virtual void terminate() {}
 
-		virtual bool isAcive() = 0;
+		virtual bool isActive() = 0;
 
 		// ------------ Статистика ---------------
 		typedef std::unordered_map<ModbusRTU::mbErrCode, size_t> ExchangeErrorMap;
 
 		ExchangeErrorMap getErrorMap();
 		size_t getErrCount( ModbusRTU::mbErrCode e );
-		size_t resetErrCount( ModbusRTU::mbErrCode e, size_t set=0 );
+		size_t resetErrCount( ModbusRTU::mbErrCode e, size_t set = 0 );
 
-		inline size_t getAskCount() { return askCount; }
+		inline size_t getAskCount()
+		{
+			return askCount;
+		}
 		void resetAskCounter();
 
 	protected:

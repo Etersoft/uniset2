@@ -27,8 +27,6 @@ MBTCPTestServer::MBTCPTestServer( const std::unordered_set<ModbusAddr>& _vaddr, 
 	lastWriteOutputSingleRegister(0),
 	lastForceCoilsQ(0, 0),
 	lastWriteOutputQ(0, 0),
-	thr(0),
-	isrunning(false),
 	disabled(false)
 {
 	ost::InetAddress ia(inetaddr.c_str());
@@ -87,15 +85,8 @@ MBTCPTestServer::MBTCPTestServer( const std::unordered_set<ModbusAddr>& _vaddr, 
 // -------------------------------------------------------------------------
 MBTCPTestServer::~MBTCPTestServer()
 {
-	if( thr )
-	{
-		thr->stop();
-
-		if( thr->isRunning() )
-			thr->join();
-	}
-
-	delete sslot;
+	if( sslot )
+		sslot->terminate();
 }
 // -------------------------------------------------------------------------
 void MBTCPTestServer::setLog( std::shared_ptr<DebugStream> dlog )
@@ -104,21 +95,16 @@ void MBTCPTestServer::setLog( std::shared_ptr<DebugStream> dlog )
 		sslot->setLog(dlog);
 }
 // -------------------------------------------------------------------------
-void MBTCPTestServer::runThread()
-{
-	thr = new ThreadCreator<MBTCPTestServer>(this, &MBTCPTestServer::execute);
-	thr->start();
-}
-// -------------------------------------------------------------------------
 void MBTCPTestServer::execute()
 {
-	isrunning = true;
-	sslot->run( vaddr );
-	isrunning = false;
+	if( sslot )
+		sslot->run( vaddr, true );
 }
 // -------------------------------------------------------------------------
 void MBTCPTestServer::sigterm( int signo )
 {
+	if( sslot )
+		sslot->terminate();
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBTCPTestServer::readCoilStatus( ReadCoilMessage& query,

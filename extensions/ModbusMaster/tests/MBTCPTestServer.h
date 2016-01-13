@@ -5,7 +5,6 @@
 #include <atomic>
 #include <ostream>
 #include <unordered_set>
-#include "ThreadCreator.h"
 #include "modbus/ModbusTCPServerSlot.h"
 // -------------------------------------------------------------------------
 /*! Реализация MBTCPTestServer для тестирования */
@@ -31,14 +30,12 @@ class MBTCPTestServer
 				sslot->setIgnoreAddrMode(state);
 		}
 
-		void runThread(); /*!< запуск с отдельным потоком */
-
 		void execute();    /*!< основной цикл работы */
 		void setLog( std::shared_ptr<DebugStream> dlog );
 
 		inline bool isRunning()
 		{
-			return isrunning;
+			return ( sslot && sslot->isActive() );
 		}
 
 		inline void disableExchange( bool set = true )
@@ -157,8 +154,6 @@ class MBTCPTestServer
 #endif
 
 	private:
-		ThreadCreator<MBTCPTestServer>* thr;
-		std::atomic_bool isrunning;
 		bool disabled;
 		std::string myname;
 };

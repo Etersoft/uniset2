@@ -572,6 +572,7 @@ class MBSlave:
 		std::string logserv_host = {""};
 		int logserv_port = {0};
 		VMonitor vmon;
+		std::string mbtype = { "" };
 
 		// ----------------------------------------------------------------------------
 		// TCPServer section..

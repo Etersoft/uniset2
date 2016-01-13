@@ -147,9 +147,9 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 
 	timeout_t aftersend_pause = conf->getArgInt("--" + prefix + "-aftersend-pause", it.getProp("afterSendPause"));
 
-	string stype = conf->getArgParam("--" + prefix + "-type", it.getProp("type"));
+	mbtype = conf->getArgParam("--" + prefix + "-type", it.getProp("type"));
 
-	if( stype == "RTU" )
+	if( mbtype == "RTU" )
 	{
 		// ---------- init RS ----------
 		string dev    = conf->getArgParam("--" + prefix + "-dev", it.getProp("device"));
@@ -183,7 +183,7 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 		rs->setLog(l);
 		conf->initLogStream(l, prefix + "-exchangelog");
 	}
-	else if( stype == "TCP" )
+	else if( mbtype == "TCP" )
 	{
 		string iaddr = conf->getArgParam("--" + prefix + "-inet-addr", it.getProp("iaddr"));
 
@@ -201,8 +201,8 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 		tcpserver->setReplyTimeout(reply_tout);
 
 		mbslot = std::static_pointer_cast<ModbusServerSlot>(tcpserver);
-		thr = make_shared< ThreadCreator<MBSlave> >(this, &MBSlave::execute_tcp);
-		thr->setFinalAction(this, &MBSlave::finalThread);
+		//thr = make_shared< ThreadCreator<MBSlave> >(this, &MBSlave::execute_tcp);
+		//thr->setFinalAction(this, &MBSlave::finalThread);
 		mbinfo << myname << "(init): init TCP connection ok. " << " inet=" << iaddr << " port=" << port << endl;
 
 		ostringstream n;
@@ -490,31 +490,14 @@ MBSlave::~MBSlave()
 {
 	cancelled = true;
 
-	if( tcpserver )
-	{
-		if( !tcpCancelled )
-		{
-			sigterm(SIGTERM);
-			timeout_t waitPause = updateStatTime / 10;
-
-			// специально делаем больше шагов(15).. чтобы с запасом..
-			for( int i = 0; i < 15 && !tcpCancelled; i++ )
-				msleep(waitPause);
-		}
-
-		if( !tcpCancelled )
-		{
-			dcrit << myname << "(~): TCP NOT CANCELED" << endl;
-		}
-	}
+	if( tcpserver && tcpserver->isActive() )
+		tcpserver->terminate();
 
 	if( thr && thr->isRunning() )
 	{
 		thr->stop();
 		//        thr->join();
 	}
-
-
 }
 // -----------------------------------------------------------------------------
 void MBSlave::finalThread()
@@ -633,11 +616,10 @@ void MBSlave::execute_tcp()
 
 	tcpCancelled = false;
 
-	tcpserver->run( vaddr );
+	tcpserver->run( vaddr, true );
 
-	tcpCancelled = true;
-
-	mbinfo << myname << "(execute_tcp): tcpserver stopped.." << endl;
+	//	tcpCancelled = true;
+	//	mbinfo << myname << "(execute_tcp): tcpserver stopped.." << endl;
 }
 // -------------------------------------------------------------------------
 void MBSlave::updateStatistics()
@@ -726,6 +708,7 @@ void MBSlave::updateTCPStatistics()
 
 		// суммарное количество по всем
 		askCount = 0;
+
 		for( const auto& s : sess )
 		{
 			if( !activated || cancelled )
@@ -796,7 +779,7 @@ void MBSlave::updateTCPStatistics()
 // -------------------------------------------------------------------------
 void MBSlave::updateThresholds()
 {
-	for( auto&& i: thrlist )
+	for( auto && i : thrlist )
 	{
 		try
 		{
@@ -857,7 +840,11 @@ void MBSlave::sysCommand( const UniSetTypes::SystemMessage* sm )
 			{
 				UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
 				askSensors(UniversalIO::UIONotify);
-				thr->start();
+
+				if( mbtype == "RTU" && thr )
+					thr->start();
+				else if( mbtype == "TCP")
+					execute_tcp();
 			}
 
 			break;
@@ -1011,12 +998,13 @@ bool MBSlave::deactivateObject()
 {
 	mbinfo << myname << "(deactivateObject): ..." << endl;
 
+	if( cancelled )
+		return UniSetObject::deactivateObject();
+
 	activated = false;
 	cancelled = true;
 
-	if( tcpserver && tcpserver->isAcive() )
-		tcpserver->sigterm(SIGTERM);
-	else
+	if( mbtype == "RTU" )
 	{
 		try
 		{
@@ -1029,21 +1017,30 @@ bool MBSlave::deactivateObject()
 		}
 	}
 
+
 	return UniSetObject::deactivateObject();
 }
 // ------------------------------------------------------------------------------------------
 void MBSlave::sigterm( int signo )
 {
 	mbinfo << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
+
+	if( cancelled )
+	{
+		UniSetObject::sigterm(signo);
+		return;
+	}
+
 	activated = false;
 	cancelled = true;
 
 	if( tcpserver )
 	{
 		cancelled = true;
+		cerr << "********* MBSlave::sigterm" << endl;
 
-		if( tcpserver && tcpserver->isAcive() )
-			tcpserver->sigterm(signo);
+		if( tcpserver->isActive() )
+			tcpserver->terminate();
 	}
 	else
 	{
@@ -2464,6 +2461,7 @@ ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
 		ModbusRTU::DiagnosticRetMessage& reply )
 {
 	auto mbserver = dynamic_pointer_cast<ModbusServer>(mbslot);
+
 	if( !mbserver )
 		return ModbusRTU::erHardwareError;
 
@@ -2497,8 +2495,8 @@ ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
 	if( query.subf == ModbusRTU::dgClearCounters )
 	{
 		mbserver->resetAskCounter();
-		mbserver->resetErrCount(erOperationFailed,0);
-		mbserver->resetErrCount(ModbusRTU::erBadCheckSum,0);
+		mbserver->resetErrCount(erOperationFailed, 0);
+		mbserver->resetErrCount(ModbusRTU::erBadCheckSum, 0);
 		// другие счётчики пока не сбрасываем..
 		reply = query;
 		return ModbusRTU::erNoError;

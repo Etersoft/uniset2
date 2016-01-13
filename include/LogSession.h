@@ -34,7 +34,7 @@ class LogSession
 	public:
 
 		LogSession(int sock, std::shared_ptr<DebugStream>& log, timeout_t cmdTimeout = 2000 );
-		virtual ~LogSession();
+		~LogSession();
 
 		typedef sigc::slot<void, LogSession*> FinalSlot;
 		void connectFinalSession( FinalSlot sl );

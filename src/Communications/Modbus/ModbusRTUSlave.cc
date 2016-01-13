@@ -141,7 +141,7 @@ void ModbusRTUSlave::terminate()
 	catch(...) {}
 }
 // -------------------------------------------------------------------------
-bool ModbusRTUSlave::isAcive()
+bool ModbusRTUSlave::isActive()
 {
 	return false;
 }

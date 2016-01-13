@@ -1530,22 +1530,23 @@ mbErrCode ModbusServer::receive(const std::unordered_set<ModbusAddr>& vaddr, tim
 
 	if( !m_pre_signal.empty() )
 	{
-		ret = m_pre_signal.emit(vaddr,msecTimeout);
+		ret = m_pre_signal.emit(vaddr, msecTimeout);
+
 		if( ret != erNoError && ret != erSessionClosed )
 		{
-			errmap[ret] +=1;
+			errmap[ret] += 1;
 			return ret;
 		}
 	}
 
-	ret = realReceive(vaddr,msecTimeout);
+	ret = realReceive(vaddr, msecTimeout);
 
 	// собираем статистику..
 	if( ret != erTimeOut && ret != erSessionClosed )
 		askCount++;
 
 	if( ret != erNoError && ret != erSessionClosed )
-		errmap[ret] +=1;
+		errmap[ret] += 1;
 
 	if( ret != erSessionClosed )
 		m_post_signal.emit(ret);
@@ -1668,6 +1669,7 @@ ModbusServer::ExchangeErrorMap ModbusServer::getErrorMap()
 size_t ModbusServer::getErrCount( mbErrCode e )
 {
 	auto i = errmap.find(e);
+
 	if( i == errmap.end() )
 		return 0;
 
@@ -1677,6 +1679,7 @@ size_t ModbusServer::getErrCount( mbErrCode e )
 size_t ModbusServer::resetErrCount( mbErrCode e, size_t set )
 {
 	auto i = errmap.find(e);
+
 	if( i == errmap.end() )
 		return 0;
 

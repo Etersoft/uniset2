@@ -27,7 +27,6 @@ using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 LogServer::~LogServer()
 {
-	cerr << myname << "  ~LogServer() " << endl;
 	if( running )
 		terminate();
 }
@@ -84,18 +83,19 @@ void LogServer::terminate()
 	running = false;
 
 	if( evloop )
-	{
-		cerr << myname << ": terminate evloop.." << endl;
 		evloop->terminate(this);
-	}
 }
 // -------------------------------------------------------------------------
 void LogServer::run( const std::string& _addr, ost::tpport_t _port, bool thread )
 {
 	addr = _addr;
 	port = _port;
+
 	if( !running )
 	{
+		if( !thread )
+			running = true;
+
 		mainLoop( thread );
 		running = true;
 	}
@@ -107,6 +107,7 @@ void LogServer::mainLoop( bool thread )
 	{
 		if( elog->is_crit() )
 			elog->crit() << myname << "(LogServer::mainLoopt): ALREADY RUNNING.." << endl;
+
 		return;
 	}
 
@@ -131,6 +132,7 @@ void LogServer::mainLoop( bool thread )
 
 		if( mylog.is_crit() )
 			mylog.crit() << myname << "(LogServer): " << err.str() << endl;
+
 		throw SystemError( err.str() );
 	}
 
@@ -140,7 +142,7 @@ void LogServer::mainLoop( bool thread )
 	io.set<LogServer, &LogServer::ioAccept>(this);
 	io.start(sock->getSocket(), ev::READ);
 
-	// скобки специально чтобы пораньшк выйти из "зоны" видимости
+	// скобки специально чтобы пораньше освободить evloop (выйти из "зоны" видимости)
 	{
 		evloop = DefaultEventLoop::inst();
 		evloop->run( this, thread );
@@ -168,6 +170,7 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 
 	{
 		uniset_rwmutex_wrlock l(mutSList);
+
 		if( slist.size() >= sessMaxCount )
 		{
 			if( mylog.is_crit() )

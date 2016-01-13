@@ -111,6 +111,8 @@ class ModbusTCPServer:
 		virtual ModbusRTU::mbErrCode realReceive( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, timeout_t msecTimeout ) override;
 
 		virtual void mainLoop();
+		void finish();
+
 		virtual void ioAccept(ev::io& watcher, int revents);
 		void onTimer( ev::timer& t, int revents );
 

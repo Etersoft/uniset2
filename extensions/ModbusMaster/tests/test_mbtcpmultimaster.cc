@@ -73,7 +73,7 @@ static void InitTest()
 
 		CHECK( mbs1 != nullptr );
 		mbs1->setReply(0);
-		mbs1->runThread();
+		mbs1->execute();
 
 		for( int i = 0; !mbs1->isRunning() && i < 10; i++ )
 			msleep(200);
@@ -105,7 +105,7 @@ static void InitTest()
 
 		CHECK( mbs2 != nullptr );
 		mbs2->setReply(0);
-		mbs2->runThread();
+		mbs2->execute();
 
 		for( int i = 0; !mbs2->isRunning() && i < 10; i++ )
 			msleep(200);

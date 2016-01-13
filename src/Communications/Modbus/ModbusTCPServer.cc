@@ -45,8 +45,8 @@ ModbusTCPServer::ModbusTCPServer( ost::InetAddress& ia, int _port ):
 // -------------------------------------------------------------------------
 ModbusTCPServer::~ModbusTCPServer()
 {
-	if( evloop )
-		evloop->terminate(this);
+	if( cancelled )
+		finish();
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::setMaxSessions( unsigned int num )
@@ -120,7 +120,7 @@ void ModbusTCPServer::mainLoop()
 
 	{
 		evloop = DefaultEventLoop::inst();
-		evloop->run(this,false);
+		evloop->run(this, false);
 	}
 
 	if( dlog->is_info() )
@@ -130,6 +130,11 @@ void ModbusTCPServer::mainLoop()
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::terminate()
+{
+	finish();
+}
+// -------------------------------------------------------------------------
+void ModbusTCPServer::finish()
 {
 	if( cancelled )
 		return;
@@ -187,7 +192,7 @@ void ModbusTCPServer::getSessions( Sessions& lst )
 	}
 }
 // -------------------------------------------------------------------------
-bool ModbusTCPServer::isAcive()
+bool ModbusTCPServer::isActive()
 {
 	return !cancelled;
 }
@@ -328,6 +333,6 @@ mbErrCode ModbusTCPServer::preReceiveEvent(const std::unordered_set<ModbusAddr> 
 	if( m_pre_signal.empty() )
 		return ModbusRTU::erNoError;
 
-	return m_pre_signal.emit(vaddr,tout);
+	return m_pre_signal.emit(vaddr, tout);
 }
 // -------------------------------------------------------------------------

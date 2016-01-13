@@ -98,7 +98,7 @@ void ModbusTCPSession::run()
 	ioTimeout.start(sessTimeout);
 }
 // -------------------------------------------------------------------------
-bool ModbusTCPSession::isAcive()
+bool ModbusTCPSession::isActive()
 {
 	return io.is_active();
 }

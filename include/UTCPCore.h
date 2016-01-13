@@ -24,7 +24,8 @@ namespace UTCPCore
 		{
 			pos = 0;
 			len = nbytes;
-			if( len <=0 ) // ??!!
+
+			if( len <= 0 ) // ??!!
 				return;
 
 			data = new unsigned char[nbytes];
@@ -36,7 +37,7 @@ namespace UTCPCore
 			pos = 0;
 			len = s.length();
 
-			if( len <=0 ) // ??!!
+			if( len <= 0 ) // ??!!
 				return;
 
 			data = new unsigned char[len];

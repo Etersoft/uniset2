@@ -72,7 +72,7 @@ static void InitTest()
 
 		//mbs->setVerbose(true);
 		CHECK( mbs != nullptr );
-		mbs->runThread();
+		mbs->execute();
 
 		for( int i = 0; !mbs->isRunning() && i < 10; i++ )
 			msleep(200);

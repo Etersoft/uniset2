@@ -230,11 +230,11 @@ TEST_CASE("MaxSessions", "[LogServer]" )
 
 	{
 		uniset_mutex_lock l(r2_mutex);
-/*
-		// Ищем часть сообщения об ошибке: '(LOG SERVER): Exceeded the limit on the number of sessions = 1'
-		size_t pos = msg2.str().find("Exceeded the limit");
-		REQUIRE( pos != std::string::npos );
-*/
+		/*
+				// Ищем часть сообщения об ошибке: '(LOG SERVER): Exceeded the limit on the number of sessions = 1'
+				size_t pos = msg2.str().find("Exceeded the limit");
+				REQUIRE( pos != std::string::npos );
+		*/
 		// ничего не получили..
 		REQUIRE( msg2.str() == "" );
 	}

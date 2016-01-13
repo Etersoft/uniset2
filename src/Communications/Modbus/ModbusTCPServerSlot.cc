@@ -171,6 +171,6 @@ void ModbusTCPServerSlot::sigterm( int signo )
 	{
 		terminate();
 	}
-	catch(...) {}
+	catch( std::exception& ex ) {}
 }
 // -------------------------------------------------------------------------

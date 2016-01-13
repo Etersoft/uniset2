@@ -19,6 +19,7 @@
     \todo Разобратся с тем как отвечать на неправильные запросы!
         Формат ответных сообщений!!! Коды ошибок!!!
     \todo Доработать terminate, чтобы можно было прервать ожидание
+	\todo Перейти на libev..
 */
 class ModbusRTUSlave:
 	public ModbusServer
@@ -38,7 +39,7 @@ class ModbusRTUSlave:
 		}
 
 		virtual void terminate() override;
-		virtual bool isAcive() override;
+		virtual bool isActive() override;
 
 	protected:
 

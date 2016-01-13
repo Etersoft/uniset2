@@ -31,8 +31,9 @@ void DefaultEventLoop::run( EventWatcher* s, bool thread )
 
 	{
 		std::unique_lock<std::mutex> lk(m_run_mutex);
+
 		if( !thr )
-			thr = make_shared<std::thread>( [=] { defaultLoop(); } );
+			thr = make_shared<std::thread>( [ = ] { defaultLoop(); } );
 	}
 
 	{
@@ -43,6 +44,7 @@ void DefaultEventLoop::run( EventWatcher* s, bool thread )
 	if( !thread )
 	{
 		std::unique_lock<std::mutex> lk(m_mutex);
+
 		while( !m_notify )
 			m_event.wait(lk);
 
@@ -60,7 +62,8 @@ void DefaultEventLoop::terminate( EventWatcher* s )
 {
 	cerr << "(DefaultEventLoop::defaultLoop): terminate.." << endl;
 	std::unique_lock<std::mutex> lk(m_slist_mutex);
-	for( auto i=slist.begin(); i!=slist.end(); i++ )
+
+	for( auto i = slist.begin(); i != slist.end(); i++ )
 	{
 		if( (*i) == s )
 		{
@@ -77,6 +80,7 @@ void DefaultEventLoop::finish()
 {
 	cerr << "(DefaultEventLoop::fini): TERMINATE EVENT LOOP.." << endl;
 	cancelled = true;
+
 	if( !evloop )
 		return;
 
@@ -84,7 +88,7 @@ void DefaultEventLoop::finish()
 	evloop->break_loop(ev::ALL);
 
 	std::unique_lock<std::mutex> lk(m_mutex);
-	m_event.wait_for(lk, std::chrono::seconds(3), [=]()
+	m_event.wait_for(lk, std::chrono::seconds(1), [ = ]()
 	{
 		return (m_notify == true);
 	} );

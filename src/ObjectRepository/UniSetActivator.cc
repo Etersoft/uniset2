@@ -37,7 +37,6 @@
 #include "Debug.h"
 #include "Configuration.h"
 #include "Mutex.h"
-
 // ------------------------------------------------------------------------------------------
 using namespace UniSetTypes;
 using namespace std;

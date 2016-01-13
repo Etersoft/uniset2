@@ -276,8 +276,10 @@ void SharedMemory::sysCommand( const SystemMessage* sm )
 // ------------------------------------------------------------------------------------------
 bool SharedMemory::deactivateObject()
 {
-	if( logserv )
-		logserv = nullptr;
+	cerr << myname << "************* deactivateObject()..." << endl;
+	workready = false;
+//	if( logserv && logserv->isRunning() )
+//		logserv->terminate();
 
 	return IONotifyController::deactivateObject();
 }
@@ -317,7 +319,7 @@ bool SharedMemory::activateObject()
 		activated = true;
 	}
 
-	cerr << "************************** activate: " << pt.getCurrent() << " msec " << endl;
+	cout << myname << ": ********** activate: " << pt.getCurrent() << " msec " << endl;
 	return res;
 }
 // ------------------------------------------------------------------------------------------
@@ -328,10 +330,14 @@ CORBA::Boolean SharedMemory::exist()
 // ------------------------------------------------------------------------------------------
 void SharedMemory::sigterm( int signo )
 {
+	cerr << myname << "************* SIGTERM...." << endl;
+	workready = false;
 	if( signo == SIGTERM && wdt )
 		wdt->stop();
 
-	//    raise(SIGKILL);
+	if( logserv && logserv->isRunning() )
+		logserv->terminate();
+
 	IONotifyController::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------
