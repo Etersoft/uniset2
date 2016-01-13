@@ -33,6 +33,7 @@ UTCPSocket::UTCPSocket( int sock ):
 	}
 
 	Socket::state = CONNECTED;
+	init();
 }
 // -------------------------------------------------------------------------
 UTCPSocket::UTCPSocket( const std::string& hname, unsigned backlog, unsigned mss ):

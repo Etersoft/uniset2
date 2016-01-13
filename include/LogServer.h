@@ -21,10 +21,14 @@
 #include <string>
 #include <memory>
 #include <cc++/socket.h>
+#include <ev++.h>
 #include "Mutex.h"
 #include "UniXML.h"
 #include "DebugStream.h"
 #include "ThreadCreator.h"
+#include "UTCPSocket.h"
+#include "DefaultEventLoop.h"
+// -------------------------------------------------------------------------
 class LogSession;
 class LogAgregator;
 class NullLogSession;
@@ -66,7 +70,8 @@ LogReader. Читающих клиентов может быть скольуг�
     Это сделано для "оптимизации передачи" (чтобы не передавать каждый байт)
 */
 // -------------------------------------------------------------------------
-class LogServer
+class LogServer:
+	public EventWatcher
 {
 	public:
 
@@ -74,18 +79,11 @@ class LogServer
 		LogServer( std::shared_ptr<LogAgregator> log );
 		~LogServer();
 
-		inline void setSessionTimeout( timeout_t msec )
-		{
-			sessTimeout = msec;
-		}
 		inline void setCmdTimeout( timeout_t msec )
 		{
 			cmdTimeout = msec;
 		}
-		inline void setOutTimeout( timeout_t msec )
-		{
-			outTimeout = msec;
-		}
+
 		inline void setSessionLog( Debug::type t )
 		{
 			sessLogLevel = t;
@@ -96,10 +94,11 @@ class LogServer
 		}
 
 		void run( const std::string& addr, ost::tpport_t port, bool thread = true );
+		void terminate();
 
 		inline bool isRunning()
 		{
-			return (thr && thr->isRunning());
+			return (evloop && evloop->isActive());
 		}
 
 		void init( const std::string& prefix, xmlNode* cnode = 0 );
@@ -109,8 +108,9 @@ class LogServer
 	protected:
 		LogServer();
 
-		void work();
-		void sessionFinished( std::shared_ptr<LogSession> s );
+		void mainLoop( bool thread );
+		void ioAccept( ev::io& watcher, int revents );
+		void sessionFinished( LogSession* s );
 
 	private:
 		typedef std::list< std::shared_ptr<LogSession> > SessionList;
@@ -118,19 +118,22 @@ class LogServer
 		UniSetTypes::uniset_rwmutex mutSList;
 
 		timeout_t timeout;
-		timeout_t sessTimeout;
 		timeout_t cmdTimeout;
-		timeout_t outTimeout;
 		Debug::type sessLogLevel;
-		int sessMaxCount;
+		size_t sessMaxCount = { 10 };
 
-		std::atomic_bool cancelled;
+		std::atomic_bool running = { false };
 		DebugStream mylog;
-		std::shared_ptr< ThreadCreator<LogServer> > thr;
+		ev::io io;
 
-		std::shared_ptr<ost::TCPSocket> tcp;
-		std::shared_ptr<DebugStream> elog;
-		std::shared_ptr<NullLogSession> nullsess;
+		std::shared_ptr<UTCPSocket> sock;
+		std::shared_ptr<DebugStream> elog; // eventlog..
+
+		std::string myname = { "LogServer" };
+		std::string addr;
+		ost::tpport_t port;
+
+		std::shared_ptr<DefaultEventLoop> evloop;
 };
 // -------------------------------------------------------------------------
 #endif // LogServer_H_

@@ -171,6 +171,7 @@ int main( int argc, char** argv )
 		LogServer ls(la);
 		ls.setMaxSessionCount(msess);
 
+
 		dlog->addLevel(Debug::ANY);
 		dlog2->addLevel(Debug::ANY);
 		dlog3->addLevel(Debug::ANY);
@@ -205,7 +206,6 @@ int main( int argc, char** argv )
 
 			msleep(delay);
 		}
-
 	}
 	catch( const SystemError& err )
 	{

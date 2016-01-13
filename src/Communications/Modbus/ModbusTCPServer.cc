@@ -46,7 +46,7 @@ ModbusTCPServer::ModbusTCPServer( ost::InetAddress& ia, int _port ):
 ModbusTCPServer::~ModbusTCPServer()
 {
 	if( evloop )
-		evloop->break_loop();
+		evloop->terminate(this);
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::setMaxSessions( unsigned int num )
@@ -118,24 +118,13 @@ void ModbusTCPServer::mainLoop()
 	if( dlog->is_info() )
 		dlog->info() << myname << "(ModbusTCPServer): run main loop.." << endl;
 
-	evloop = make_shared<ev::default_loop>();
-
-	while( !cancelled )
 	{
-		try
-		{
-			evloop->run();
-		}
-		catch( std::exception& ex )
-		{
-			dlog->crit() << myname << "(ModbusTCPServer::mainLoop): " << ex.what() << endl;
-		}
+		evloop = DefaultEventLoop::inst();
+		evloop->run(this,false);
 	}
 
-	dlog->info() << myname << "(ModbusTCPServer::mainLoop): MAIN EVENT LOOP EXIT ****************" << endl;
-
-	//shutdown(sock, SHUT_RDWR);
-	//close(sock);
+	if( dlog->is_info() )
+		dlog->info() << myname << "(ModbusTCPServer): main loop exit.." << endl;
 
 	cancelled = true;
 }
@@ -153,10 +142,6 @@ void ModbusTCPServer::terminate()
 	ioTimer.stop();
 	io.stop();
 
-	if( evloop )
-		evloop->break_loop();
-
-
 	auto lst(slist);
 
 	// Копируем сперва себе список сессий..
@@ -171,6 +156,9 @@ void ModbusTCPServer::terminate()
 		}
 		catch( std::exception& ex ) {}
 	}
+
+	if( evloop )
+		evloop->terminate(this);
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::sessionFinished( ModbusTCPSession* s )

@@ -16,6 +16,7 @@
 #include "ModbusTCPSession.h"
 #include "ThreadCreator.h"
 #include "UTCPSocket.h"
+#include "DefaultEventLoop.h"
 // -------------------------------------------------------------------------
 /*! ModbusTCPServer
  * Реализация сервера на основе libev. Подерживается "много" соединений (постоянных).
@@ -25,6 +26,7 @@
  * т.к.из многих "соединений" будут вызываться одни и теже обработатчики.
 */
 class ModbusTCPServer:
+	public EventWatcher,
 	public ModbusServer
 {
 	public:
@@ -144,7 +146,7 @@ class ModbusTCPServer:
 
 		timeout_t sessTimeout = { 10000 }; // msec
 
-		std::shared_ptr<ev::default_loop> evloop;
+		std::shared_ptr<DefaultEventLoop> evloop;
 		ev::io io;
 		std::shared_ptr<UTCPSocket> sock;
 		ev::timer ioTimer;

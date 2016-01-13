@@ -10,6 +10,7 @@
 #include "ModbusServer.h"
 #include "PassiveTimer.h"
 #include "USocket.h"
+#include "UTCPCore.h"
 // -------------------------------------------------------------------------
 /*!
  * \brief The ModbusTCPSession class
@@ -59,39 +60,6 @@ class ModbusTCPSession:
 	protected:
 
 		virtual ModbusRTU::mbErrCode realReceive( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msecTimeout ) override;
-
-		// -------------------------------------------
-		// author:
-		//   Buffer class - allow for output buffering such that it can be written out into async pieces
-		struct Buffer
-		{
-			unsigned char* data;
-			ssize_t len;
-			ssize_t pos;
-
-			Buffer( const unsigned char* bytes, ssize_t nbytes )
-			{
-				pos = 0;
-				len = nbytes;
-				data = new unsigned char[nbytes];
-				memcpy(data, bytes, nbytes);
-			}
-
-			virtual ~Buffer()
-			{
-				delete [] data;
-			}
-
-			unsigned char* dpos()
-			{
-				return data + pos;
-			}
-
-			ssize_t nbytes()
-			{
-				return len - pos;
-			}
-		};
 
 		void callback( ev::io& watcher, int revents );
 		void onTimeout( ev::timer& watcher, int revents );
@@ -158,7 +126,7 @@ class ModbusTCPSession:
 
 		ev::io  io;
 		std::shared_ptr<USocket> sock;
-		std::queue<Buffer*> qsend;
+		std::queue<UTCPCore::Buffer*> qsend;
 		ev::timer ioTimeout;
 		double sessTimeout = { 10.0 };
 

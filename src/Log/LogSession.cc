@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <cstring>
 #include <cc++/socket.h>
+#include "Exceptions.h"
 #include "LogSession.h"
 #include "UniSetTypes.h"
 #include "LogServerTypes.h"
@@ -36,67 +37,39 @@ LogSession::~LogSession()
 {
 	cancelled = true;
 
-	if( isRunning() )
-	{
-		ost::Thread::join();
-		disconnect();
-	}
-}
-// -------------------------------------------------------------------------
-LogSession::LogSession( ost::TCPSocket& server ):
-	TCPSession(server)
-{
+	conn.disconnect();
 
+	if( io.is_active() )
+		io.stop();
+
+	if( cmdTimer.is_active() )
+		cmdTimer.stop();
+
+	if( asyncEvent.is_active() )
+		asyncEvent.stop();
 }
 // -------------------------------------------------------------------------
-LogSession::LogSession( ost::TCPSocket& server, std::shared_ptr<DebugStream>& _log, timeout_t _sessTimeout, timeout_t _cmdTimeout, timeout_t _outTimeout, timeout_t _delay ):
-	TCPSession(server),
-	sessTimeout(_sessTimeout),
+LogSession::LogSession( int sfd, std::shared_ptr<DebugStream>& _log, timeout_t _cmdTimeout ):
 	cmdTimeout(_cmdTimeout),
-	outTimeout(_outTimeout),
-	delayTime(_delay),
 	peername(""),
 	caddr(""),
-	log(_log),
-	cancelled(false)
+	log(_log)
 {
-	log_notify = ATOMIC_VAR_INIT(0);
-
-	//slog.addLevel(Debug::ANY);
 	if( log )
 		conn = log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
 	else
-		slog.crit() << "LOG NULL!!" << endl;
+		mylog.crit() << "LOG NULL!!" << endl;
 
 	auto ag = dynamic_pointer_cast<LogAgregator>(log);
 
 	if( ag )
 		alog = ag;
-}
-// -------------------------------------------------------------------------
-void LogSession::logOnEvent( const std::string& s )
-{
+
+	try
 	{
-		std::unique_lock<std::mutex> lk(log_mutex);
-		lbuf.push_back(s);
-		log_notify = true;
-	}
-
-	log_event.notify_one();
-}
-// -------------------------------------------------------------------------
-void LogSession::run()
-{
-	if( cancelled )
-		return;
-
-	// удерживаем указатель на себя, пока работает поток..
-	myptr = shared_from_this();
-
-	cancelled = false;
-	{
+		sock = make_shared<USocket>(sfd);
 		ost::tpport_t p;
-		ost::InetAddress iaddr = getIPV4Peer(&p);
+		ost::InetAddress iaddr = sock->getIPV4Peer(&p);
 
 		// resolve..
 		caddr = string( iaddr.getHostname() );
@@ -105,127 +78,205 @@ void LogSession::run()
 		s << iaddr << ":" << p;
 		peername = s.str();
 	}
-
-	if( slog.debugging(Debug::INFO) )
-		slog[Debug::INFO] << peername << "(run): run thread of sessions.." << endl;
-
-	if( !log )
-		slog.crit() << peername << "(run): LOG NULL!!" << endl;
-
-
-	setKeepAlive(true);
-
-	// Команды могут посылаться только в начале сессии..
-	while( !cancelled && isPending(Socket::pendingInput, cmdTimeout) )
+	catch( const ost::SockException& ex )
 	{
-		LogServerTypes::lsMessage msg;
+		ostringstream err;
+		err << ex.what();
+		mylog.crit() << "(LogSession): err: " << err.str() << endl;
+		throw SystemError(err.str());
+	}
 
-		// проверяем канал..(если данных нет, значит "клиент отвалился"...
-		if( peek( (void*)(&msg), sizeof(msg)) > 0 )
+	sock->setCompletion(false);
+
+	io.set<LogSession, &LogSession::callback>(this);
+	cmdTimer.set<LogSession, &LogSession::onCmdTimeout>(this);
+	asyncEvent.set<LogSession,&LogSession::event>(this);
+}
+// -------------------------------------------------------------------------
+void LogSession::logOnEvent( const std::string& s )
+{
+	if( cancelled )
+		return;
+
+	std::unique_lock<std::mutex> lk(logbuf_mutex);
+	logbuf.emplace(new UTCPCore::Buffer(s));
+	if( asyncEvent.is_active() )
+		asyncEvent.send();
+}
+// -------------------------------------------------------------------------
+void LogSession::run()
+{
+	setSessionLogLevel(Debug::ANY);
+
+	if( mylog.is_info() )
+		mylog.info() << peername << "(run): run session.." << endl;
+
+	io.start(sock->getSocket(), ev::READ);
+	cmdTimer.start( cmdTimeout/1000. );
+	// asyncEvent.start(); // слать логи начинаем только после обработки команд.. если есть..
+}
+// -------------------------------------------------------------------------
+void LogSession::terminate()
+{
+	if( mylog.is_info() )
+		mylog.info() << peername << "(terminate)..." << endl;
+
+	cancelled = true;
+	std::unique_lock<std::mutex> lk(logbuf_mutex);
+	{
+		while( !logbuf.empty() )
+			logbuf.pop();
+	}
+
+	std::unique_lock<std::mutex> lk2(io_mutex);
+	io.stop();
+	cmdTimer.stop();
+	asyncEvent.stop();
+	conn.disconnect();
+
+	sock.reset(); // close..
+	final();
+}
+// -------------------------------------------------------------------------
+void LogSession::event( ev::async& watcher, int revents )
+{
+	if( EV_ERROR & revents )
+	{
+		if( mylog.is_crit() )
+			mylog.crit() << peername << "(event): EVENT ERROR.." << endl;
+
+		return;
+	}
+
+	//writeEvent(io);
+	std::unique_lock<std::mutex> lk(io_mutex);
+	io.set(ev::READ | ev::WRITE);
+}
+// ---------------------------------------------------------------------
+void LogSession::callback( ev::io& watcher, int revents )
+{
+	if( EV_ERROR & revents )
+	{
+		if( mylog.is_crit() )
+			mylog.crit() << peername << "(callback): EVENT ERROR.." << endl;
+
+		return;
+	}
+
+	if (revents & EV_READ)
+		readEvent(watcher);
+
+	if (revents & EV_WRITE)
+		writeEvent(watcher);
+
+	if( cancelled )
+	{
+		if( mylog.is_info() )
+			mylog.info() << peername << ": stop session... disconnect.." << endl;
+
+		std::unique_lock<std::mutex> lk(io_mutex);
+		io.stop();
 		{
-			ssize_t ret = readData( &msg, sizeof(msg) );
-
-			if( ret != sizeof(msg) || msg.magic != LogServerTypes::MAGICNUM )
-			{
-				slog.warn() << peername << "(run): BAD MESSAGE..." << endl;
-				continue;
-			}
-
-			slog.info() << peername << "(run): receive command: '" << msg.cmd << "'" << endl;
-			string cmdLogName(msg.logname);
-
-			std::list<LogAgregator::iLog> loglist;
-
-			if( alog ) // если у нас "агрегатор", то работаем с его списком потоков
-			{
-				if( cmdLogName.empty() || cmdLogName == "ALL" )
-					loglist = alog->getLogList();
-				else
-					loglist = alog->getLogList(cmdLogName);
-			}
-			else
-			{
-				if( cmdLogName.empty() || cmdLogName == "ALL" || log->getLogFile() == cmdLogName )
-				{
-					LogAgregator::iLog llog(log, log->getLogName());
-					loglist.push_back(llog);
-				}
-			}
-
-			if( msg.cmd == LogServerTypes::cmdFilterMode )
-			{
-				// отлючаем старый обработчик
-				if( conn )
-					conn.disconnect();
-			}
-
-			// обрабатываем команды только если нашли подходящие логи
-			for( auto && l : loglist )
-			{
-				// Обработка команд..
-				// \warning Работа с логом ведётся без mutex-а, хотя он разделяется отдельными потоками
-				switch( msg.cmd )
-				{
-					case LogServerTypes::cmdSetLevel:
-						l.log->level( (Debug::type)msg.data );
-						break;
-
-					case LogServerTypes::cmdAddLevel:
-						l.log->addLevel( (Debug::type)msg.data );
-						break;
-
-					case LogServerTypes::cmdDelLevel:
-						l.log->delLevel( (Debug::type)msg.data );
-						break;
-
-					case LogServerTypes::cmdRotate:
-						l.log->onLogFile(true);
-						break;
-
-					case LogServerTypes::cmdList: // обработали выше (в начале)
-						break;
-
-					case LogServerTypes::cmdOffLogFile:
-						l.log->offLogFile();
-						break;
-
-					case LogServerTypes::cmdOnLogFile:
-						l.log->onLogFile();
-						break;
-
-					case LogServerTypes::cmdFilterMode:
-						l.log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
-						break;
-
-					default:
-						slog.warn() << peername << "(run): Unknown command '" << msg.cmd << "'" << endl;
-						break;
-				}
-			} // end if for
-
-			// если команда "вывести список"
-			// выводим и завершаем работу
-			if( msg.cmd == LogServerTypes::cmdList )
-			{
-				ostringstream s;
-				s << "List of managed logs(filter='" << cmdLogName << "'):" << endl;
-				s << "=====================" << endl;
-				LogAgregator::printLogList(s, loglist);
-				s << "=====================" << endl << endl;
-
-				if( isPending(Socket::pendingOutput, cmdTimeout) )
-				{
-					*tcp() << s.str();
-					tcp()->sync();
-				}
-
-				// вывели список и завершили работу..
-				//		cancelled = true;
-				//		disconnect();
-				//		return;
-			}
+			std::unique_lock<std::mutex> lk(logbuf_mutex);
+			asyncEvent.stop();
+			conn.disconnect();
 		}
-	} // end of while pending input (cmd processing)..
+		final();
+	}
+}
+// -------------------------------------------------------------------------
+void LogSession::writeEvent( ev::io& watcher )
+{
+	if( cancelled )
+		return;
+
+	std::unique_lock<std::mutex> lk(logbuf_mutex);
+
+	if( logbuf.empty() )
+		return;
+
+	auto buffer = logbuf.front();
+	if( !buffer )
+		return;
+
+	ssize_t ret = write(watcher.fd, buffer->dpos(), buffer->nbytes());
+
+	if( ret < 0 )
+	{
+		if( mylog.is_warn() )
+			mylog.warn() << peername << "(writeEvent): write to socket error(" << errno << "): " << strerror(errno) << endl;
+
+		if( errno == EPIPE )
+		{
+			if( mylog.is_warn() )
+				mylog.warn() << peername << "(writeEvent): write error.. terminate session.." << endl;
+
+			cancelled = true;
+		}
+
+		return;
+	}
+
+	buffer->pos += ret;
+
+	if( buffer->nbytes() == 0 )
+	{
+		logbuf.pop();
+		delete buffer;
+	}
+
+	std::unique_lock<std::mutex> lk1(io_mutex);
+	if( logbuf.empty() )
+		io.set(ev::READ);
+	else
+		io.set(ev::READ | ev::WRITE);
+}
+// -------------------------------------------------------------------------
+size_t LogSession::readData( unsigned char* buf, int len )
+{
+	ssize_t res = read( sock->getSocket(), buf, len );
+
+	if( res > 0 )
+		return res;
+
+	if( res < 0 )
+	{
+		if( errno != EAGAIN && mylog.is_warn() )
+			mylog.warn() << peername << "(readData): read from socket error(" << errno << "): " << strerror(errno) << endl;
+
+		return 0;
+	}
+
+	mylog.info() << peername << "(readData): client disconnected.." << endl;
+	cancelled = true;
+	return 0;
+}
+// --------------------------------------------------------------------------------
+void LogSession::readEvent( ev::io& watcher )
+{
+	if( cancelled )
+		return;
+
+	LogServerTypes::lsMessage msg;
+
+	size_t ret = readData( (unsigned char*)(&msg), sizeof(msg) );
+
+	if( cancelled )
+		return;
+
+	if( ret != sizeof(msg) || msg.magic != LogServerTypes::MAGICNUM )
+	{
+		if( mylog.is_warn() )
+			mylog.warn() << peername << "(readEvent): BAD MESSAGE..." << endl;
+		return;
+	}
+
+	if( mylog.is_info() )
+		mylog.info() << peername << "(run): receive command: '" << msg.cmd << "'" << endl;
+
+	string cmdLogName(msg.logname);
+
+	cmdProcessing(cmdLogName, msg);
 
 #if 0
 	// Выводим итоговый получившийся список (с учётом выполненных команд)
@@ -263,94 +314,109 @@ void LogSession::run()
 
 #endif
 
-	while( !cancelled && isConnected() ) // !ptSessionTimeout.checkTime()
+	std::unique_lock<std::mutex> lk(io_mutex);
+	cmdTimer.stop();
+	io.set(ev::WRITE);
+	asyncEvent.start();
+}
+// --------------------------------------------------------------------------------
+void LogSession::cmdProcessing( const string& cmdLogName, const LogServerTypes::lsMessage& msg )
+{
+	std::list<LogAgregator::iLog> loglist;
+
+	if( alog ) // если у нас "агрегатор", то работаем с его списком потоков
 	{
-		// проверка только ради проверки "целостности" соединения
-		if( isPending(Socket::pendingInput, 10) )
+		if( cmdLogName.empty() || cmdLogName == "ALL" )
+			loglist = alog->getLogList();
+		else
+			loglist = alog->getLogList(cmdLogName);
+	}
+	else
+	{
+		if( cmdLogName.empty() || cmdLogName == "ALL" || log->getLogFile() == cmdLogName )
 		{
-			char buf[10];
-
-			// проверяем канал..(если данных нет, значит "клиент отвалился"...
-			if( peek(buf, sizeof(buf)) <= 0 )
-				break;
-		}
-
-		if( isPending(Socket::pendingOutput, outTimeout) )
-		{
-			//slog.info() << peername << "(run): send.." << endl;
-			//      ptSessionTimeout.reset();
-
-			// чтобы не застревать на посылке в сеть..
-			// делаем через промежуточный буффер (stringstream)
-			sbuf.str("");
-			bool send = false;
-			{
-				std::unique_lock<std::mutex> lk(log_mutex);
-
-				// uniset_rwmutex_wrlock l(mLBuf);
-				if( !lbuf.empty() )
-				{
-					slog.info() << peername << "(run): send messages.." << endl;
-
-					while( !lbuf.empty() )
-					{
-						sbuf << lbuf.front();
-						lbuf.pop_front();
-					}
-
-					send = true;
-				}
-			}
-
-			if( send )
-			{
-				*tcp() << sbuf.str();
-				tcp()->sync();
-			}
-
-			{
-				std::unique_lock<std::mutex> lk(log_mutex);
-				log_event.wait_for(lk, std::chrono::milliseconds(outTimeout), [&]()
-				{
-					return (log_notify == true || cancelled);
-				} );
-			}
-
-			if( cancelled )
-				break;
+			LogAgregator::iLog llog(log, log->getLogName());
+			loglist.push_back(llog);
 		}
 	}
 
-	if( slog.debugging(Debug::INFO) )
-		slog[Debug::INFO] << peername << "(run): stop thread of sessions..disconnect.." << endl;
+	if( msg.cmd == LogServerTypes::cmdFilterMode )
+	{
+		// отлючаем старый обработчик
+		if( conn )
+			conn.disconnect();
+	}
 
-	disconnect();
+	// обрабатываем команды только если нашли подходящие логи
+	for( auto && l : loglist )
+	{
+		// Обработка команд..
+		// \warning Работа с логом ведётся без mutex-а, хотя он разделяется отдельными потоками
+		switch( msg.cmd )
+		{
+			case LogServerTypes::cmdSetLevel:
+				l.log->level( (Debug::type)msg.data );
+			break;
 
-	cancelled = true;
+			case LogServerTypes::cmdAddLevel:
+				l.log->addLevel( (Debug::type)msg.data );
+			break;
 
-	if( slog.debugging(Debug::INFO) )
-		slog[Debug::INFO] << peername << "(run): thread stopping..." << endl;
+			case LogServerTypes::cmdDelLevel:
+				l.log->delLevel( (Debug::type)msg.data );
+			break;
 
-	myptr = 0;
+			case LogServerTypes::cmdRotate:
+				l.log->onLogFile(true);
+			break;
+
+			case LogServerTypes::cmdList: // обработали выше (в начале)
+			break;
+
+			case LogServerTypes::cmdOffLogFile:
+				l.log->offLogFile();
+			break;
+
+			case LogServerTypes::cmdOnLogFile:
+				l.log->onLogFile();
+			break;
+
+			case LogServerTypes::cmdFilterMode:
+				l.log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
+			break;
+
+			default:
+				mylog.warn() << peername << "(run): Unknown command '" << msg.cmd << "'" << endl;
+			break;
+		}
+	} // end if for
+
+	// если команда "вывести список"
+	// выводим и завершаем работу
+	if( msg.cmd == LogServerTypes::cmdList )
+	{
+		ostringstream s;
+		s << "List of managed logs(filter='" << cmdLogName << "'):" << endl;
+		s << "=====================" << endl;
+		LogAgregator::printLogList(s, loglist);
+		s << "=====================" << endl << endl;
+
+		std::unique_lock<std::mutex> lk(logbuf_mutex);
+		logbuf.push(new UTCPCore::Buffer(s.str()));
+		std::unique_lock<std::mutex> lk1(io_mutex);
+		io.set(ev::WRITE);
+	}
+}
+// -------------------------------------------------------------------------
+void LogSession::onCmdTimeout(ev::timer& watcher, int revents)
+{
+	io.set(ev::WRITE);
+	asyncEvent.start();
 }
 // -------------------------------------------------------------------------
 void LogSession::final()
 {
-	tcp()->sync();
-
-	cancelled = true;
-
-	try
-	{
-		auto s = shared_from_this();
-
-		if( s )
-			slFin(s);
-	}
-	catch( const std::bad_weak_ptr )
-	{
-
-	}
+	slFin(this);
 }
 // -------------------------------------------------------------------------
 void LogSession::connectFinalSession( FinalSlot sl )
@@ -358,103 +424,9 @@ void LogSession::connectFinalSession( FinalSlot sl )
 	slFin = sl;
 }
 // ---------------------------------------------------------------------
-// ---------------------------------------------------------------------
-NullLogSession::NullLogSession( const std::string& _msg ):
-	msg(_msg),
-	cancelled(false)
+bool LogSession::isAcive()
 {
-}
-// ---------------------------------------------------------------------
-NullLogSession::~NullLogSession()
-{
-	cancelled = true;
-
-	//	if( isRunning() )
-	//		exit(); // terminate();
-}
-// ---------------------------------------------------------------------
-void NullLogSession::add( ost::TCPSocket& sock )
-{
-	uniset_rwmutex_wrlock l(smutex);
-	auto s = make_shared<ost::TCPStream>();
-	s->connect(sock);
-	slist.push_back(s);
-}
-// ---------------------------------------------------------------------
-void NullLogSession::setMessage( const std::string& _msg )
-{
-	uniset_rwmutex_wrlock l(smutex);
-	msg = _msg;
-}
-// ---------------------------------------------------------------------
-void NullLogSession::run()
-{
-	while( !cancelled )
-	{
-		{
-			// lock slist
-			uniset_rwmutex_wrlock l(smutex);
-
-			for( auto i = slist.begin(); !cancelled && i != slist.end(); ++i )
-			{
-				auto s(*i);
-
-				if( s->isPending(ost::Socket::pendingInput, 10) )
-				{
-					char buf[10];
-
-					// проверяем канал..(если данных нет, значит "клиент отвалился"...
-					if( s->peek(buf, sizeof(buf)) <= 0 )
-					{
-						i = slist.erase(i);
-						continue;
-					}
-				}
-
-				if( s->isPending(ost::Socket::pendingOutput) )
-				{
-					(*s.get()) << msg << endl;
-					s->sync();
-					s->disconnect(); // послали сообщение и закрываем соединение..
-				}
-			}
-
-			slist.clear();
-		} // unlock slist
-
-		if( cancelled )
-			break;
-
-		msleep(5000); // делаем паузу, чтобы освободить на время "список"..
-	}
-
-	{
-		uniset_rwmutex_wrlock l(smutex);
-
-		for( auto i = slist.begin(); i != slist.end(); ++i )
-		{
-			auto s(*i);
-
-			if( s )
-				s->disconnect();
-		}
-	}
-}
-// ---------------------------------------------------------------------
-void NullLogSession::final()
-{
-#if 0
-	{
-		uniset_rwmutex_wrlock l(smutex);
-
-		for( auto i = slist.begin(); i != slist.end(); ++i )
-		{
-			auto s(*i);
-
-			if( s )
-				s->disconnect();
-		}
-	}
-#endif
+	std::unique_lock<std::mutex> lk(io_mutex);
+	return io.is_active();
 }
 // ---------------------------------------------------------------------

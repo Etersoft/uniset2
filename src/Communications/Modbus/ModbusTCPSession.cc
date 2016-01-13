@@ -157,7 +157,7 @@ void ModbusTCPSession::writeEvent( ev::io& watcher )
 	if( qsend.empty() )
 		return;
 
-	Buffer* buffer = qsend.front();
+	UTCPCore::Buffer* buffer = qsend.front();
 
 	ssize_t ret = write(watcher.fd, buffer->dpos(), buffer->nbytes());
 
@@ -252,7 +252,7 @@ void ModbusTCPSession::final()
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPSession::sendData( unsigned char* buf, int len )
 {
-	qsend.push( new Buffer(buf, len) );
+	qsend.push( new UTCPCore::Buffer(buf, len) );
 	return erNoError;
 }
 // -------------------------------------------------------------------------
