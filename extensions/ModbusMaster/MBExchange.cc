@@ -181,7 +181,7 @@ MBExchange::MBExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
 		if( sidExchangeMode == DefaultObjectId )
 		{
 			ostringstream err;
-			err << myname << ": ID not found ('ExchangeMode') for " << emode;
+			err << myname << ": ID not found ('exchangeModeID') for " << emode;
 			mbcrit << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
