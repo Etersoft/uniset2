@@ -73,11 +73,9 @@ UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port,
 
 	try
 	{
-		//        ost::IPV4Cidr ci(s_host.c_str());
-		//        addr = ci.getBroadcast();
-		//        cerr << "****************** addr: " << addr << endl;
 		addr = s_host.c_str();
-		udp = make_shared<ost::UDPDuplex>(addr, port);
+		udp = make_shared<UDPDuplexU>(addr, port);
+		udp->setReceiveCompletion(false); // делаем неблокирующее чтение (нужно для libev)
 	}
 	catch( const std::exception& e )
 	{
@@ -94,8 +92,10 @@ UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port,
 		throw SystemError(s.str());
 	}
 
-	r_thr = make_shared< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::receive);
-	u_thr = make_shared< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::update);
+	//r_thr = make_shared< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::receive);
+	//u_thr = make_shared< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::update);
+	evReceive.set<UNetReceiver, &UNetReceiver::callback>(this);
+	evUpdate.set<UNetReceiver, &UNetReceiver::updateEvent>(this);
 
 	ptRecvTimeout.setTiming(recvTimeout);
 	ptPrepare.setTiming(prepareTime);
@@ -132,6 +132,9 @@ void UNetReceiver::setReceivePause( timeout_t msec )
 void UNetReceiver::setUpdatePause( timeout_t msec )
 {
 	updatepause = msec;
+	updateTime = (double)updatepause/1000.0;
+	if( evUpdate.is_active() )
+		evUpdate.start(updateTime);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setMaxProcessingCount( int set )
@@ -178,69 +181,25 @@ void UNetReceiver::start()
 	if( !activated )
 	{
 		activated = true;
-		u_thr->start();
-		r_thr->start();
+		//u_thr->start();
+		//r_thr->start();
+		evReceive.start(udp->getReceiveSocket(),ev::READ);
+		evUpdate.start( updateTime );
+		evloop = DefaultEventLoop::inst();
+		evloop->run( this, true );
 	}
 	else
 		forceUpdate();
-}
-// -----------------------------------------------------------------------------
-void UNetReceiver::update()
-{
-	unetinfo << myname << "(update): start.." << endl;
-
-	while(activated)
-	{
-		try
-		{
-			real_update();
-		}
-		catch( UniSetTypes::Exception& ex)
-		{
-			unetcrit << myname << "(update): " << ex << std::endl;
-		}
-		catch(...)
-		{
-			unetcrit << myname << "(update): catch ..." << std::endl;
-		}
-
-		if( sidRespond != DefaultObjectId )
-		{
-			try
-			{
-				bool r = respondInvert ? !isRecvOK() : isRecvOK();
-				shm->localSetValue(itRespond, sidRespond, ( r ? 1 : 0 ), shm->ID());
-			}
-			catch( const Exception& ex )
-			{
-				unetcrit << myname << "(step): (respond) " << ex << std::endl;
-			}
-		}
-
-		if( sidLostPackets != DefaultObjectId )
-		{
-			try
-			{
-				shm->localSetValue(itLostPackets, sidLostPackets, getLostPacketsNum(), shm->ID());
-			}
-			catch( const Exception& ex )
-			{
-				unetcrit << myname << "(step): (lostPackets) " << ex << std::endl;
-			}
-		}
-
-		msleep(updatepause);
-	}
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::forceUpdate()
 {
 	uniset_rwmutex_wrlock l(packMutex);
 	pnum = 0; // сбрасываем запомненый номер последнего обработанного пакета
-	// и тем самым заставляем обновить данные в SM (см. real_update)
+	// и тем самым заставляем обновить данные в SM (см. update)
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::real_update()
+void UNetReceiver::update()
 {
 	UniSetUDP::UDPMessage p;
 	// обрабатываем, пока очередь либо не опустеет,
@@ -403,72 +362,121 @@ void UNetReceiver::real_update()
 		}
 	}
 }
+// -----------------------------------------------------------------------------
+void UNetReceiver::callback( ev::io& watcher, int revents )
+{
+	if( EV_ERROR & revents )
+	{
+		unetcrit << myname << "(callback): EVENT ERROR.." << endl;
+		return;
+	}
 
+	if( revents & EV_READ )
+		readEvent(watcher);
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::readEvent( ev::io& watcher )
+{
+	if( !activated )
+		return;
+
+	cerr << "******** readEvent..." << endl;
+
+	bool tout = false;
+	try
+	{
+		if( receive() )
+		{
+			uniset_rwmutex_wrlock l(tmMutex);
+			ptRecvTimeout.reset();
+		}
+	}
+	catch( UniSetTypes::Exception& ex)
+	{
+		unetwarn << myname << "(receive): " << ex << std::endl;
+	}
+	catch( const std::exception& e )
+	{
+		unetwarn << myname << "(receive): " << e.what() << std::endl;
+	}
+
+	// делаем через промежуточную переменную
+	// чтобы поскорее освободить mutex
+	{
+		uniset_rwmutex_rlock l(tmMutex);
+		tout = ptRecvTimeout.checkTime();
+	}
+
+	// только если "режим подготовки закончился, то можем генерировать "события"
+	if( ptPrepare.checkTime() && trTimeout.change(tout) )
+	{
+		if( tout )
+			slEvent(shared_from_this(), evTimeout);
+		else
+			slEvent(shared_from_this(), evOK);
+	}
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::updateEvent(ev::periodic& tm, int revents )
+{
+	if( EV_ERROR & revents )
+	{
+		unetcrit << myname << "(callback): EVENT ERROR.." << endl;
+		return;
+	}
+
+	if( !activated )
+		return;
+
+	// взводим
+	tm.start(updateTime);
+
+	// собственно обработка события
+	try
+	{
+		update();
+	}
+	catch( std::exception& ex )
+	{
+		unetcrit << myname << "(update): " << ex.what() << std::endl;
+	}
+
+	if( sidRespond != DefaultObjectId )
+	{
+		try
+		{
+			bool r = respondInvert ? !isRecvOK() : isRecvOK();
+			shm->localSetValue(itRespond, sidRespond, ( r ? 1 : 0 ), shm->ID());
+		}
+		catch( const std::exception& ex )
+		{
+			unetcrit << myname << "(step): (respond) " << ex.what() << std::endl;
+		}
+	}
+
+	if( sidLostPackets != DefaultObjectId )
+	{
+		try
+		{
+			shm->localSetValue(itLostPackets, sidLostPackets, getLostPacketsNum(), shm->ID());
+		}
+		catch( const std::exception& ex )
+		{
+			unetcrit << myname << "(step): (lostPackets) " << ex.what() << std::endl;
+		}
+	}
+}
 // -----------------------------------------------------------------------------
 void UNetReceiver::stop()
 {
 	activated = false;
+	evReceive.stop();
+	evUpdate.stop();
+	if( evloop )
+		evloop->terminate(this);
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::receive()
-{
-	unetinfo << myname << ": ******************* receive start" << endl;
-
-	{
-		uniset_rwmutex_wrlock l(tmMutex);
-		ptRecvTimeout.setTiming(recvTimeout);
-	}
-
-	bool tout = false;
-
-	while( activated )
-	{
-		try
-		{
-			if( recv() )
-			{
-				uniset_rwmutex_wrlock l(tmMutex);
-				ptRecvTimeout.reset();
-			}
-		}
-		catch( UniSetTypes::Exception& ex)
-		{
-			unetwarn << myname << "(receive): " << ex << std::endl;
-		}
-		catch( const std::exception& e )
-		{
-			unetwarn << myname << "(receive): " << e.what() << std::endl;
-		}
-
-		/*
-		        catch(...)
-		        {
-					unetwarn << myname << "(receive): catch ..." << std::endl;
-		        }
-		*/
-		// делаем через промежуточную переменную
-		// чтобы поскорее освободить mutex
-		{
-			uniset_rwmutex_rlock l(tmMutex);
-			tout = ptRecvTimeout.checkTime();
-		}
-
-		// только если "режим подготовки закончился, то можем генерировать "события"
-		if( ptPrepare.checkTime() && trTimeout.change(tout) )
-		{
-			if( tout )
-				slEvent(shared_from_this(), evTimeout);
-			else
-				slEvent(shared_from_this(), evOK);
-		}
-
-		msleep(recvpause);
-	}
-
-	unetinfo << myname << ": ************* receive FINISH **********" << endl;
-}
-// -----------------------------------------------------------------------------
-bool UNetReceiver::recv()
+bool UNetReceiver::receive()
 {
 	if( !udp->isInputReady(recvTimeout) )
 		return false;

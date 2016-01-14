@@ -124,21 +124,10 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 			continue;
 
 		// Если указано поле unet_broadcast_ip непосредственно у узла - берём его
-		// если указано общий broadcast ip для всех узлов - берём его
-		string h("");
-		string h2("");
+		// если не указано берём общий broadcast_ip
 
-		if( !default_ip.empty() )
-			h = default_ip;
-
-		if( !n_it.getProp("unet_broadcast_ip").empty() )
-			h = n_it.getProp("unet_broadcast_ip");
-
-		if( !default_ip2.empty() )
-			h2 = default_ip2;
-
-		if( !n_it.getProp("unet_broadcast_ip2").empty() )
-			h2 = n_it.getProp("unet_broadcast_ip2");
+		string h = { n_it.getProp2("unet_broadcast_ip",default_ip) };
+		string h2 = { n_it.getProp2("unet_broadcast_ip2",default_ip2) };
 
 		if( h.empty() )
 		{
@@ -153,15 +142,10 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 
 		// Если указано поле unet_port - используем его
 		// Иначе port = идентификатору узла
-		int p = n_it.getIntProp("id");
+		int p = n_it.getPIntProp("unet_port",n_it.getIntProp("id"));
 
-		if( !n_it.getProp("unet_port").empty() )
-			p = n_it.getIntProp("unet_port");
-
-		int p2 = p; // по умолчанию порт на втором канале такой же как на первом
-
-		if( !n_it.getProp("unet_port2").empty() )
-			p2 = n_it.getIntProp("unet_port2");
+		// по умолчанию порт на втором канале такой же как на первом (если не задан отдельно)
+		int p2 = n_it.getPIntProp("unet_port2",p);
 
 		string n(n_it.getProp("name"));
 
@@ -323,8 +307,8 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 			}
 		}
 
-		unetinfo << myname << "(init): (node='" << n << "') add receiver "
-				 << h2 << ":" << p2 << endl;
+		unetinfo << myname << "(init): (node='" << n << "') add  basic receiver "
+				 << h << ":" << p << endl;
 		auto r = make_shared<UNetReceiver>(h, p, shm);
 
 		loga->add(r->getLog());

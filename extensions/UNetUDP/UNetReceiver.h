@@ -24,13 +24,15 @@
 #include <unordered_map>
 #include <cc++/socket.h>
 #include <sigc++/sigc++.h>
+#include <ev++.h>
 #include "UniSetObject.h"
 #include "Trigger.h"
 #include "Mutex.h"
 #include "SMInterface.h"
 #include "SharedMemory.h"
-#include "ThreadCreator.h"
 #include "UDPPacket.h"
+#include "DefaultEventLoop.h"
+#include "UDPCore.h"
 // -----------------------------------------------------------------------------
 /*  Основная идея: сделать проверку очерёдности пакетов, но при этом использовать UDP.
  * ===============
@@ -75,7 +77,8 @@
 */
 // -----------------------------------------------------------------------------
 class UNetReceiver:
-	public std::enable_shared_from_this<UNetReceiver>
+	public std::enable_shared_from_this<UNetReceiver>,
+	public EventWatcher
 {
 	public:
 		UNetReceiver( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi );
@@ -83,9 +86,6 @@ class UNetReceiver:
 
 		void start();
 		void stop();
-
-		void receive();
-		void update();
 
 		inline const std::string getName() const
 		{
@@ -155,9 +155,12 @@ class UNetReceiver:
 		const std::shared_ptr<SMInterface> shm;
 		std::shared_ptr<DebugStream> unetlog;
 
-		bool recv();
+		bool receive();
 		void step();
-		void real_update();
+		void update();
+		void callback( ev::io& watcher, int revents );
+		void readEvent( ev::io& watcher );
+		void updateEvent( ev::periodic& watcher, int revents );
 
 		void initIterators();
 
@@ -181,10 +184,14 @@ class UNetReceiver:
 		timeout_t recvpause = { 10 };      /*!< пауза меджду приёмами пакетов, [мсек] */
 		timeout_t updatepause = { 100 };    /*!< переодичность обновления данных в SM, [мсек] */
 
-		std::shared_ptr<ost::UDPReceive> udp;
+		std::shared_ptr<UDPDuplexU> udp;
 		ost::IPV4Address addr;
 		ost::tpport_t port = { 0 };
 		std::string myname;
+		ev::io evReceive;
+		ev::periodic evUpdate;
+		std::shared_ptr<DefaultEventLoop> evloop;
+		double updateTime = { 0.0 };
 
 		UniSetTypes::uniset_rwmutex pollMutex;
 		PassiveTimer ptRecvTimeout;
@@ -202,9 +209,6 @@ class UNetReceiver:
 		IOController::IOStateList::iterator itLostPackets;
 
 		std::atomic_bool activated = { false };
-
-		std::shared_ptr< ThreadCreator<UNetReceiver> > r_thr;        // receive thread
-		std::shared_ptr< ThreadCreator<UNetReceiver> > u_thr;        // update thread
 
 		PacketQueue qpack;    /*!< очередь принятых пакетов (отсортированных по возрастанию номера пакета) */
 		UniSetUDP::UDPMessage pack;        /*!< просто буфер для получения очередного сообщения */

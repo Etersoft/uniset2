@@ -313,6 +313,7 @@ include/UTCPCore.h
 include/UTCPStream.h
 include/UTCPSocket.h
 include/USocket.h
+include/UDPCore.h
 include/WDTInterface.h
 lib/Makefile.am
 python/examples/test.xml

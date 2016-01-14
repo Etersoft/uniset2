@@ -189,7 +189,7 @@
 	priority 	- приоритет сообщения об изменении данного датчика
 	textname 	- текстовое имя датчика
 -->
-		<nodes port="2809" unet_broadcast_ip="192.168.1.255" unet_broadcast_ip2="192.168.122.255">
+		<nodes port="2809" unet_broadcast_ip="127.255.255.255" unet_broadcast_ip2="192.168.56.255">
 			<item id="3000" dbserver="DBServer1" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="0" unet_port="2048">
 				<iocards>
 					<item card="1" name="DI32"/>
@@ -198,8 +198,8 @@
 				</iocards>
 			</item>
 			<item id="3001" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode1" textname="Локальный узел" unet_ignore="0" unet_port="2049"/>
-			<item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="0" unet_ip="192.168.56.255" unet_port="3001" unet_respond_id="Input1_S" unet_respond_invert="1"/>
-			<item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_ignore="0" unet_ip="192.168.56.255" unet_port="3002"/>
+			<item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="0" unet_port="3001" unet_respond_id="Input1_S" unet_respond_invert="1"/>
+			<item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_ignore="0" unet_port="3002"/>
 		</nodes>
 		<!-- ************************ Датчики ********************** -->
 		<sensors name="Sensors">

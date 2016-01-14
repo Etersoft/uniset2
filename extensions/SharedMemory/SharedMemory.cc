@@ -276,7 +276,6 @@ void SharedMemory::sysCommand( const SystemMessage* sm )
 // ------------------------------------------------------------------------------------------
 bool SharedMemory::deactivateObject()
 {
-	cerr << myname << "************* deactivateObject()..." << endl;
 	workready = false;
 //	if( logserv && logserv->isRunning() )
 //		logserv->terminate();
