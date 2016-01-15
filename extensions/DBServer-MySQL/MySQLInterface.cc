@@ -40,7 +40,14 @@ MySQLInterface::MySQLInterface():
 
 MySQLInterface::~MySQLInterface()
 {
-	close();
+	try
+	{
+		close();
+	}
+	catch( ... ) // пропускаем все необработанные исключения, если требуется обработать нужно вызывать close() до деструктора
+	{
+		cerr << "MySQLInterface::~MySQLInterface(): an error occured while closing connection!" << endl;
+	}
 	delete mysql;
 }
 
@@ -194,13 +201,8 @@ void MySQLInterface::makeResult(DBResult& dbres, MYSQL_RES* myres, bool finalize
 		mysql_free_result(myres);
 }
 // -----------------------------------------------------------------------------------------
-extern "C" DBInterface* create_mysqlinterface()
+extern "C" std::shared_ptr<DBInterface> create_mysqlinterface()
 {
-	return new MySQLInterface();
-}
-// -----------------------------------------------------------------------------------------
-extern "C" void destroy_mysqlinterface(DBInterface* p)
-{
-	delete p;
+	return std::shared_ptr<DBInterface>(new MySQLInterface(), DBInterfaceDeleter());
 }
 // -----------------------------------------------------------------------------------------

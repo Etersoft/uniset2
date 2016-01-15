@@ -77,9 +77,17 @@ class DBResult
 
 		ROW row_;
 };
+// ----------------------------------------------------------------------------------
+struct DBInterfaceDeleter
+{
+	void operator()(DBInterface* p) const
+	{
+		try{ delete p; } catch(...) {}
+	}
+};
+// ----------------------------------------------------------------------------------
 // the types of the class factories
-typedef DBInterface* create_dbinterface_t();
-typedef void destroy_dbinterface_t(DBInterface*);
+typedef std::shared_ptr<DBInterface> create_dbinterface_t();
 // --------------------------------------------------------------------------
 #endif // DBInterface_H_
 // --------------------------------------------------------------------------
