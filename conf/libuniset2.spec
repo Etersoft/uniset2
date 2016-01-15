@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.2
-Release: alt16
+Release: alt17
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -451,6 +451,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Fri Jan 15 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt17
+- rebuild new version
+
 * Wed Dec 23 2015 Pavel Vainerman <pv@altlinux.ru> 2.2-alt16
 - fixed bug in DBNetInterface (uzum)
 
