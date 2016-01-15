@@ -62,7 +62,7 @@ class LogSession
 		}
 
 		// запуск обработки входящих запросов
-		void run();
+		void run( ev::loop_ref& loop );
 		void terminate();
 
 		bool isAcive();
@@ -93,8 +93,9 @@ class LogSession
 		std::shared_ptr<LogAgregator> alog;
 		sigc::connection conn;
 
-		ev::io  io;
 		std::shared_ptr<USocket> sock;
+
+		ev::io  io;
 		ev::timer  cmdTimer;
 		ev::async  asyncEvent;
 		std::mutex io_mutex;

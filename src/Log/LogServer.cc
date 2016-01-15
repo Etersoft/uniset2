@@ -27,8 +27,6 @@ using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 LogServer::~LogServer()
 {
-	if( running )
-		terminate();
 }
 // -------------------------------------------------------------------------
 LogServer::LogServer( std::shared_ptr<LogAgregator> log ):
@@ -55,15 +53,10 @@ LogServer::LogServer():
 {
 }
 // -------------------------------------------------------------------------
-void LogServer::terminate()
+void LogServer::evfinish()
 {
-	if( !running )
-		return;
-
 	if( mylog.is_info() )
 		mylog.info() << myname << "(LogServer): terminate..." << endl;
-
-	io.stop();
 
 	auto lst(slist);
 
@@ -80,37 +73,24 @@ void LogServer::terminate()
 		catch( std::exception& ex ) {}
 	}
 
-	running = false;
-
-	if( evloop )
-		evloop->terminate(this);
+	io.stop();
+	cerr << "LOGServer: finished..." << endl;
 }
 // -------------------------------------------------------------------------
 void LogServer::run( const std::string& _addr, ost::tpport_t _port, bool thread )
 {
 	addr = _addr;
 	port = _port;
-
-	if( !running )
-	{
-		if( !thread )
-			running = true;
-
-		mainLoop( thread );
-		running = true;
-	}
+	evrun(thread);
 }
 // -------------------------------------------------------------------------
-void LogServer::mainLoop( bool thread )
+void LogServer::terminate()
 {
-	if( running )
-	{
-		if( elog->is_crit() )
-			elog->crit() << myname << "(LogServer::mainLoopt): ALREADY RUNNING.." << endl;
-
-		return;
-	}
-
+	evstop();
+}
+// -------------------------------------------------------------------------
+void LogServer::evprepare()
+{
 	try
 	{
 		ost::InetAddress iaddr(addr.c_str());
@@ -137,32 +117,26 @@ void LogServer::mainLoop( bool thread )
 	}
 
 	sock->setCompletion(false);
-	UTCPCore::setKeepAliveParams(sock->getSocket());
 
 	io.set<LogServer, &LogServer::ioAccept>(this);
+	io.set(loop);
 	io.start(sock->getSocket(), ev::READ);
-
-	// скобки специально чтобы пораньше освободить evloop (выйти из "зоны" видимости)
-	{
-		evloop = DefaultEventLoop::inst();
-		evloop->run( this, thread );
-	}
 }
 // -------------------------------------------------------------------------
 void LogServer::ioAccept( ev::io& watcher, int revents )
 {
-	if (EV_ERROR & revents)
+	if( EV_ERROR & revents )
 	{
-		if( elog->is_crit() )
-			elog->crit() << myname << "(LogServer::ioAccept): invalid event" << endl;
+		if( mylog.is_crit() )
+			mylog.crit() << myname << "(LogServer::ioAccept): invalid event" << endl;
 
 		return;
 	}
 
-	if( !running )
+	if( !evIsActive() )
 	{
-		if( elog->is_crit() )
-			elog->crit() << myname << "(LogServer::ioAccept): terminate work.." << endl;
+		if( mylog.is_crit() )
+			mylog.crit() << myname << "(LogServer::ioAccept): terminate work.." << endl;
 
 		sock->reject();
 		return;
@@ -190,7 +164,7 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 			uniset_rwmutex_wrlock l(mutSList);
 			slist.push_back(s);
 		}
-		s->run();
+		s->run(loop);
 	}
 	catch( const std::exception& ex )
 	{

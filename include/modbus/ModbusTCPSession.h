@@ -53,7 +53,7 @@ class ModbusTCPSession:
 		void setSessionTimeout( double t );
 
 		// запуск обработки входящих запросов
-		void run();
+		void run( ev::loop_ref& loop );
 
 		virtual bool isActive() override;
 
@@ -125,9 +125,10 @@ class ModbusTCPSession:
 		ModbusRTU::ModbusMessage buf;
 
 		ev::io  io;
+		ev::timer ioTimeout;
+
 		std::shared_ptr<USocket> sock;
 		std::queue<UTCPCore::Buffer*> qsend;
-		ev::timer ioTimeout;
 		double sessTimeout = { 10.0 };
 
 		bool ignoreAddr = { false };

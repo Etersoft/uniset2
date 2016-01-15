@@ -31,8 +31,7 @@ ModbusTCPServer::ModbusTCPServer( ost::InetAddress& ia, int _port ):
 	ignoreAddr(false),
 	maxSessions(10),
 	sessCount(0),
-	sessTimeout(10000),
-	cancelled(false)
+	sessTimeout(10000)
 {
 	setCRCNoCheckit(true);
 	{
@@ -40,13 +39,14 @@ ModbusTCPServer::ModbusTCPServer( ost::InetAddress& ia, int _port ):
 		s << iaddr << ":" << port;
 		myname = s.str();
 	}
+
+	io.set<ModbusTCPServer, &ModbusTCPServer::ioAccept>(this);
+	ioTimer.set<ModbusTCPServer, &ModbusTCPServer::onTimer>(this);
 }
 
 // -------------------------------------------------------------------------
 ModbusTCPServer::~ModbusTCPServer()
 {
-	if( cancelled )
-		finish();
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::setMaxSessions( unsigned int num )
@@ -80,18 +80,15 @@ void ModbusTCPServer::setSessionTimeout( timeout_t msec )
 void ModbusTCPServer::run( const std::unordered_set<ModbusAddr>& _vmbaddr, bool thread )
 {
 	vmbaddr = &_vmbaddr;
-
-	if( !thread )
-	{
-		mainLoop();
-		return;
-	}
-
-	thrMainLoop = make_shared< ThreadCreator<ModbusTCPServer> >(this, &ModbusTCPServer::mainLoop);
-	thrMainLoop->start();
+	evrun(thread);
 }
 // -------------------------------------------------------------------------
-void ModbusTCPServer::mainLoop()
+bool ModbusTCPServer::isActive()
+{
+	return evIsActive();
+}
+// -------------------------------------------------------------------------
+void ModbusTCPServer::evprepare()
 {
 	try
 	{
@@ -107,39 +104,24 @@ void ModbusTCPServer::mainLoop()
 
 	sock->setCompletion(false);
 
-	io.set<ModbusTCPServer, &ModbusTCPServer::ioAccept>(this);
+	io.set(loop);
 	io.start(sock->getSocket(), ev::READ);
 
-	ioTimer.set<ModbusTCPServer, &ModbusTCPServer::onTimer>(this);
+	ioTimer.set(loop);
 
-	if( tmTime != TIMEOUT_INF )
+	if( tmTime_msec != TIMEOUT_INF )
 		ioTimer.start(tmTime);
-
-	if( dlog->is_info() )
-		dlog->info() << myname << "(ModbusTCPServer): run main loop.." << endl;
-
-	{
-		evloop = DefaultEventLoop::inst();
-		evloop->run(this, false);
-	}
-
-	if( dlog->is_info() )
-		dlog->info() << myname << "(ModbusTCPServer): main loop exit.." << endl;
-
-	cancelled = true;
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::terminate()
 {
-	finish();
+	evstop();
 }
 // -------------------------------------------------------------------------
-void ModbusTCPServer::finish()
+void ModbusTCPServer::evfinish()
 {
-	if( cancelled )
+	if( !io.is_active() )
 		return;
-
-	cancelled = true;
 
 	if( dlog->is_info() )
 		dlog->info() << myname << "(ModbusTCPServer): terminate..." << endl;
@@ -161,9 +143,6 @@ void ModbusTCPServer::finish()
 		}
 		catch( std::exception& ex ) {}
 	}
-
-	if( evloop )
-		evloop->terminate(this);
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::sessionFinished( ModbusTCPSession* s )
@@ -192,11 +171,6 @@ void ModbusTCPServer::getSessions( Sessions& lst )
 	}
 }
 // -------------------------------------------------------------------------
-bool ModbusTCPServer::isActive()
-{
-	return !cancelled;
-}
-// -------------------------------------------------------------------------
 ModbusTCPServer::TimerSignal ModbusTCPServer::signal_timer()
 {
 	return m_timer_signal;
@@ -204,17 +178,19 @@ ModbusTCPServer::TimerSignal ModbusTCPServer::signal_timer()
 // -------------------------------------------------------------------------
 void ModbusTCPServer::setTimer( timeout_t msec )
 {
-	tmTime = msec;
+	tmTime_msec = msec;
 
 	if( msec == TIMEOUT_INF )
 	{
 		tmTime = 0;
-		ioTimer.stop();
+		if( ioTimer.is_active() )
+			ioTimer.stop();
 	}
 	else
 	{
 		tmTime = (double)msec / 1000.;
-		ioTimer.start( tmTime );
+		if( ioTimer.is_active() )
+			ioTimer.start( tmTime );
 	}
 }
 // -------------------------------------------------------------------------
@@ -228,7 +204,7 @@ void ModbusTCPServer::ioAccept(ev::io& watcher, int revents)
 		return;
 	}
 
-	if( cancelled )
+	if( !evIsActive() )
 	{
 		if( dlog->is_crit() )
 			dlog->crit() << myname << "(ModbusTCPServer::ioAccept): terminate work.." << endl;
@@ -284,7 +260,7 @@ void ModbusTCPServer::ioAccept(ev::io& watcher, int revents)
 			slist.push_back(s);
 		}
 
-		s->run();
+		s->run(loop);
 		sessCount++;
 	}
 	catch( Exception& ex )
@@ -314,7 +290,7 @@ void ModbusTCPServer::onTimer( ev::timer& t, int revents )
 			dlog->crit() << myname << "(onTimer): " << ex.what() << endl;
 	}
 
-	ioTimer.start(tmTime); // restart timer
+	t.start(tmTime); // restart timer
 }
 // -------------------------------------------------------------------------
 

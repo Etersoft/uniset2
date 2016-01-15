@@ -89,12 +89,15 @@ void ModbusTCPSession::setSessionTimeout( double t )
 		ioTimeout.start(t);
 }
 // -------------------------------------------------------------------------
-void ModbusTCPSession::run()
+void ModbusTCPSession::run( ev::loop_ref& loop )
 {
 	if( dlog->is_info() )
 		dlog->info() << peername << "(run): run session.." << endl;
 
+	io.set(loop);
 	io.start(sock->getSocket(), ev::READ);
+
+	ioTimeout.set(loop);
 	ioTimeout.start(sessTimeout);
 }
 // -------------------------------------------------------------------------

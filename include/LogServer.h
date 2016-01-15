@@ -27,7 +27,7 @@
 #include "DebugStream.h"
 #include "ThreadCreator.h"
 #include "UTCPSocket.h"
-#include "DefaultEventLoop.h"
+#include "EventLoopServer.h"
 // -------------------------------------------------------------------------
 class LogSession;
 class LogAgregator;
@@ -71,7 +71,7 @@ LogReader. Читающих клиентов может быть скольуг�
 */
 // -------------------------------------------------------------------------
 class LogServer:
-	public EventWatcher
+	public EventLoopServer
 {
 	public:
 
@@ -98,7 +98,7 @@ class LogServer:
 
 		inline bool isRunning()
 		{
-			return (evloop && evloop->isActive());
+			return evIsActive();
 		}
 
 		void init( const std::string& prefix, xmlNode* cnode = 0 );
@@ -108,7 +108,9 @@ class LogServer:
 	protected:
 		LogServer();
 
-		void mainLoop( bool thread );
+		virtual void evprepare() override;
+		virtual void evfinish() override;
+
 		void ioAccept( ev::io& watcher, int revents );
 		void sessionFinished( LogSession* s );
 
@@ -122,7 +124,6 @@ class LogServer:
 		Debug::type sessLogLevel;
 		size_t sessMaxCount = { 10 };
 
-		std::atomic_bool running = { false };
 		DebugStream mylog;
 		ev::io io;
 
@@ -132,8 +133,6 @@ class LogServer:
 		std::string myname = { "LogServer" };
 		std::string addr;
 		ost::tpport_t port;
-
-		std::shared_ptr<DefaultEventLoop> evloop;
 };
 // -------------------------------------------------------------------------
 #endif // LogServer_H_

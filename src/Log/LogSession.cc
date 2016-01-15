@@ -105,16 +105,19 @@ void LogSession::logOnEvent( const std::string& s )
 		asyncEvent.send();
 }
 // -------------------------------------------------------------------------
-void LogSession::run()
+void LogSession::run( ev::loop_ref& loop )
 {
 	setSessionLogLevel(Debug::ANY);
 
 	if( mylog.is_info() )
 		mylog.info() << peername << "(run): run session.." << endl;
 
+	asyncEvent.set(loop);
+	cmdTimer.set(loop);
+
+	io.set(loop);
 	io.start(sock->getSocket(), ev::READ);
 	cmdTimer.start( cmdTimeout / 1000. );
-	// asyncEvent.start(); // слать логи начинаем только после обработки команд.. если есть..
 }
 // -------------------------------------------------------------------------
 void LogSession::terminate()

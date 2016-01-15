@@ -277,8 +277,9 @@ void SharedMemory::sysCommand( const SystemMessage* sm )
 bool SharedMemory::deactivateObject()
 {
 	workready = false;
-//	if( logserv && logserv->isRunning() )
-//		logserv->terminate();
+
+	if( logserv && logserv->isRunning() )
+		logserv->terminate();
 
 	return IONotifyController::deactivateObject();
 }
@@ -329,7 +330,6 @@ CORBA::Boolean SharedMemory::exist()
 // ------------------------------------------------------------------------------------------
 void SharedMemory::sigterm( int signo )
 {
-	cerr << myname << "************* SIGTERM...." << endl;
 	workready = false;
 	if( signo == SIGTERM && wdt )
 		wdt->stop();

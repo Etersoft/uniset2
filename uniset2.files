@@ -269,7 +269,7 @@ include/HourGlass.h
 include/IOController.h
 include/IONotifyController.h
 include/IORFile.h
-include/DefaultEventLoop.h
+include/EventLoopServer.h
 include/LogAgregator.h
 include/LogReader.h
 include/LogServer.h
@@ -389,7 +389,7 @@ src/Processes/IONotifyController.cc
 src/Processes/Makefile.am
 src/Processes/NCRestorer.cc
 src/Processes/NCRestorer_XML.cc
-src/Processes/DefaultEventLoop.cc
+src/Processes/EventLoopServer.cc
 src/Services/DBServer.cc
 src/Services/Makefile.am
 src/Timers/Makefile.am

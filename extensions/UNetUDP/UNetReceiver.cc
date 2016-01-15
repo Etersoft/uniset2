@@ -74,8 +74,8 @@ UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port,
 	try
 	{
 		addr = s_host.c_str();
-		udp = make_shared<UDPDuplexU>(addr, port);
-		udp->setReceiveCompletion(false); // делаем неблокирующее чтение (нужно для libev)
+		udp = make_shared<UDPReceiveU>(addr, port);
+		udp->setCompletion(false); // делаем неблокирующее чтение (нужно для libev)
 	}
 	catch( const std::exception& e )
 	{
@@ -92,8 +92,6 @@ UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port,
 		throw SystemError(s.str());
 	}
 
-	//r_thr = make_shared< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::receive);
-	//u_thr = make_shared< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::update);
 	evReceive.set<UNetReceiver, &UNetReceiver::callback>(this);
 	evUpdate.set<UNetReceiver, &UNetReceiver::updateEvent>(this);
 
@@ -103,6 +101,8 @@ UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port,
 // -----------------------------------------------------------------------------
 UNetReceiver::~UNetReceiver()
 {
+	evReceive.stop();
+	evUpdate.stop();
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setReceiveTimeout( timeout_t msec )
@@ -178,18 +178,29 @@ void UNetReceiver::resetTimeout()
 // -----------------------------------------------------------------------------
 void UNetReceiver::start()
 {
+	unetinfo << myname << ":... start... " << endl;
 	if( !activated )
 	{
 		activated = true;
-		//u_thr->start();
-		//r_thr->start();
-		evReceive.start(udp->getReceiveSocket(),ev::READ);
-		evUpdate.start( updateTime );
-		evloop = DefaultEventLoop::inst();
-		evloop->run( this, true );
+		evrun(true);
 	}
 	else
 		forceUpdate();
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::evprepare()
+{
+	evReceive.set(loop);
+	evReceive.start(udp->getSocket(),ev::READ);
+
+	evUpdate.set(loop);
+	evUpdate.start( updateTime );
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::evfinish()
+{
+	evReceive.stop();
+	evUpdate.stop();
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::forceUpdate()
@@ -380,8 +391,6 @@ void UNetReceiver::readEvent( ev::io& watcher )
 	if( !activated )
 		return;
 
-	cerr << "******** readEvent..." << endl;
-
 	bool tout = false;
 	try
 	{
@@ -469,19 +478,32 @@ void UNetReceiver::updateEvent(ev::periodic& tm, int revents )
 // -----------------------------------------------------------------------------
 void UNetReceiver::stop()
 {
+	unetinfo << myname << ": stop.." << endl;
 	activated = false;
-	evReceive.stop();
-	evUpdate.stop();
-	if( evloop )
-		evloop->terminate(this);
+	evstop();
 }
 // -----------------------------------------------------------------------------
 bool UNetReceiver::receive()
 {
-	if( !udp->isInputReady(recvTimeout) )
-		return false;
+//	if( !udp->isInputReady(recvTimeout) )
+//		return false;
 
-	size_t ret = udp->UDPReceive::receive((char*)(r_buf.data), sizeof(r_buf.data));
+	//udp->UDPReceive::receive((char*)(r_buf.data), sizeof(r_buf.data));
+
+	//ssize_t ret = ::recv(udp->getSocket(),r_buf.data,sizeof(r_buf.data),0);
+	ssize_t ret = udp->receive(r_buf.data,sizeof(r_buf.data));
+
+	if( ret < 0 )
+	{
+		unetcrit << myname << "(receive): recv err(" << errno << "): " << strerror(errno) << endl;
+		return false;
+	}
+
+	if( ret == 0 )
+	{
+		unetwarn << myname << "(receive): disconnected?!... recv 0 byte.." << endl;
+		return false;
+	}
 
 	size_t sz = UniSetUDP::UDPMessage::getMessage(pack, r_buf);
 
