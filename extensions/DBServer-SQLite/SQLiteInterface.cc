@@ -43,7 +43,14 @@ SQLiteInterface::SQLiteInterface():
 
 SQLiteInterface::~SQLiteInterface()
 {
-	close();
+	try
+	{
+		close();
+	}
+	catch( ... ) // пропускаем все необработанные исключения, если требуется обработать нужно вызывать close() до деструктора
+	{
+		cerr << "MySQLInterface::~MySQLInterface(): an error occured while closing connection!" << endl;
+	}
 }
 
 // -----------------------------------------------------------------------------------------
@@ -261,13 +268,8 @@ void SQLiteInterface::makeResult(DBResult& dbres, sqlite3_stmt* s, bool finalize
 		sqlite3_finalize(s);
 }
 // -----------------------------------------------------------------------------------------
-extern "C" DBInterface* create_sqliteinterface()
+extern "C" std::shared_ptr<DBInterface> create_sqliteinterface()
 {
-	return new SQLiteInterface();
-}
-// -----------------------------------------------------------------------------------------
-extern "C" void destroy_sqliteinterface(DBInterface* p)
-{
-	delete p;
+	return std::shared_ptr<DBInterface>(new SQLiteInterface(), DBInterfaceDeleter());
 }
 // -----------------------------------------------------------------------------------------

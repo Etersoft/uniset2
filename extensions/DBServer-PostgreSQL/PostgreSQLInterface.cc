@@ -19,7 +19,14 @@ PostgreSQLInterface::PostgreSQLInterface():
 
 PostgreSQLInterface::~PostgreSQLInterface()
 {
-	close();
+	try
+	{
+		close();
+	}
+	catch( ... ) // пропускаем все необработанные исключения, если требуется обработать нужно вызывать close() до деструктора
+	{
+		cerr << "MySQLInterface::~MySQLInterface(): an error occured while closing connection!" << endl;
+	}
 }
 
 // -----------------------------------------------------------------------------------------
@@ -167,13 +174,8 @@ void PostgreSQLInterface::makeResult(DBResult& dbres, const pqxx::result& res )
 	}
 }
 // -----------------------------------------------------------------------------------------
-extern "C" DBInterface* create_postgresqlinterface()
+extern "C" std::shared_ptr<DBInterface> create_postgresqlinterface()
 {
-	return new PostgreSQLInterface();
-}
-// -----------------------------------------------------------------------------------------
-extern "C" void destroy_postgresqlinterface(DBInterface* p)
-{
-	delete p;
+	return std::shared_ptr<DBInterface>(new PostgreSQLInterface(), DBInterfaceDeleter());
 }
 // -----------------------------------------------------------------------------------------
