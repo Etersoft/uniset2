@@ -12,8 +12,7 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.2
-Release: alt13.1
+Release: alt17
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -451,6 +450,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Fri Jan 15 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt17
+- rebuild new version
+
 * Sun Dec 27 2015 Igor Vlasenko <viy@altlinux.ru> 2.2-alt13.1
 - NMU: rebuild with libpqxx 4
 
