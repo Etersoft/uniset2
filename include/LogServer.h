@@ -27,7 +27,7 @@
 #include "DebugStream.h"
 #include "ThreadCreator.h"
 #include "UTCPSocket.h"
-#include "EventLoopServer.h"
+#include "CommonEventLoop.h"
 // -------------------------------------------------------------------------
 class LogSession;
 class LogAgregator;
@@ -68,16 +68,19 @@ LogReader. Читающих клиентов может быть скольуг�
 
 \warning Логи отдаются "клиентам" только целоиком строкой. Т.е. по сети информация передаваться не будет пока не будет записан "endl".
     Это сделано для "оптимизации передачи" (чтобы не передавать каждый байт)
+
+\warning Т.к. LogServer в основном только отдаёт "клиентам" логи, то он реализован с использованием CommonEventLoop,
+т.е. у всех LogServer будет ОДИН ОБЩИЙ event loop.
 */
 // -------------------------------------------------------------------------
 class LogServer:
-	public EventLoopServer
+	protected EvWatcher
 {
 	public:
 
 		LogServer( std::shared_ptr<DebugStream> log );
 		LogServer( std::shared_ptr<LogAgregator> log );
-		~LogServer();
+		virtual ~LogServer();
 
 		inline void setCmdTimeout( timeout_t msec )
 		{
@@ -98,7 +101,7 @@ class LogServer:
 
 		inline bool isRunning()
 		{
-			return evIsActive();
+			return isrunning;
 		}
 
 		void init( const std::string& prefix, xmlNode* cnode = 0 );
@@ -108,8 +111,9 @@ class LogServer:
 	protected:
 		LogServer();
 
-		virtual void evprepare() override;
-		virtual void evfinish() override;
+		virtual void evprepare( const ev::loop_ref& loop ) override;
+		virtual void evfinish( const ev::loop_ref& loop ) override;
+		virtual std::string wname(){ return myname; }
 
 		void ioAccept( ev::io& watcher, int revents );
 		void sessionFinished( LogSession* s );
@@ -127,12 +131,17 @@ class LogServer:
 		DebugStream mylog;
 		ev::io io;
 
+		// делаем loop общим.. одним на всех!
+		static CommonEventLoop loop;
+
 		std::shared_ptr<UTCPSocket> sock;
 		std::shared_ptr<DebugStream> elog; // eventlog..
 
 		std::string myname = { "LogServer" };
 		std::string addr;
 		ost::tpport_t port;
+
+		std::atomic_bool isrunning = { false };
 };
 // -------------------------------------------------------------------------
 #endif // LogServer_H_

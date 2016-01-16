@@ -62,7 +62,7 @@ class LogSession
 		}
 
 		// запуск обработки входящих запросов
-		void run( ev::loop_ref& loop );
+		void run( const ev::loop_ref& loop );
 		void terminate();
 
 		bool isAcive();

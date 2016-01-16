@@ -105,7 +105,7 @@ void LogSession::logOnEvent( const std::string& s )
 		asyncEvent.send();
 }
 // -------------------------------------------------------------------------
-void LogSession::run( ev::loop_ref& loop )
+void LogSession::run( const ev::loop_ref& loop )
 {
 	setSessionLogLevel(Debug::ANY);
 

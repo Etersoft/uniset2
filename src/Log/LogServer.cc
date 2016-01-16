@@ -25,6 +25,8 @@
 using namespace std;
 using namespace UniSetTypes;
 // -------------------------------------------------------------------------
+CommonEventLoop LogServer::loop;
+// -------------------------------------------------------------------------
 LogServer::~LogServer()
 {
 }
@@ -53,7 +55,7 @@ LogServer::LogServer():
 {
 }
 // -------------------------------------------------------------------------
-void LogServer::evfinish()
+void LogServer::evfinish(const ev::loop_ref& loop )
 {
 	if( mylog.is_info() )
 		mylog.info() << myname << "(LogServer): terminate..." << endl;
@@ -74,6 +76,7 @@ void LogServer::evfinish()
 	}
 
 	io.stop();
+	isrunning = false;
 	cerr << "LOGServer: finished..." << endl;
 }
 // -------------------------------------------------------------------------
@@ -81,15 +84,22 @@ void LogServer::run( const std::string& _addr, ost::tpport_t _port, bool thread 
 {
 	addr = _addr;
 	port = _port;
-	evrun(thread);
+
+	{
+		ostringstream s;
+		s << _addr << ":" << _port;
+		myname = s.str();
+	}
+
+	loop.evrun(this, thread);
 }
 // -------------------------------------------------------------------------
 void LogServer::terminate()
 {
-	evstop();
+	loop.evstop(this);
 }
 // -------------------------------------------------------------------------
-void LogServer::evprepare()
+void LogServer::evprepare( const ev::loop_ref& eloop )
 {
 	try
 	{
@@ -103,7 +113,7 @@ void LogServer::evprepare()
 		ost::InetAddress saddr = (ost::InetAddress)socket->getPeer(&port);
 		ostringstream err;
 
-		err << "socket error " << saddr.getHostname() << ":" << port << " = " << errnum;
+		err << myname << "(evprepare): socket error(" << errnum << "): ";
 
 		if( errnum == ost::Socket::errBindingFailed )
 			err << "bind failed; port busy" << endl;
@@ -111,7 +121,7 @@ void LogServer::evprepare()
 			err << "client socket failed" << endl;
 
 		if( mylog.is_crit() )
-			mylog.crit() << myname << "(LogServer): " << err.str() << endl;
+			mylog.crit() << err.str() << endl;
 
 		throw SystemError( err.str() );
 	}
@@ -119,8 +129,9 @@ void LogServer::evprepare()
 	sock->setCompletion(false);
 
 	io.set<LogServer, &LogServer::ioAccept>(this);
-	io.set(loop);
+	io.set( eloop );
 	io.start(sock->getSocket(), ev::READ);
+	isrunning = true;
 }
 // -------------------------------------------------------------------------
 void LogServer::ioAccept( ev::io& watcher, int revents )
@@ -133,7 +144,7 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 		return;
 	}
 
-	if( !evIsActive() )
+	if( !loop.evIsActive() )
 	{
 		if( mylog.is_crit() )
 			mylog.crit() << myname << "(LogServer::ioAccept): terminate work.." << endl;
@@ -164,7 +175,8 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 			uniset_rwmutex_wrlock l(mutSList);
 			slist.push_back(s);
 		}
-		s->run(loop);
+
+		s->run(loop.evloop());
 	}
 	catch( const std::exception& ex )
 	{
