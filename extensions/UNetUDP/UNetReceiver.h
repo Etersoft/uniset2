@@ -163,7 +163,10 @@ class UNetReceiver:
 		void updateEvent( ev::periodic& watcher, int revents );
 		virtual void evprepare( const ev::loop_ref& eloop ) override;
 		virtual void evfinish(const ev::loop_ref& eloop ) override;
-		virtual std::string wname(){ return myname; }
+		virtual std::string wname()
+		{
+			return myname;
+		}
 
 		void initIterators();
 

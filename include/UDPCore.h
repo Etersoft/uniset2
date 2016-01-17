@@ -12,13 +12,16 @@ class UDPSocketU:
 {
 	public:
 
-		UDPSocketU( const ost::IPV4Address &bind, ost::tpport_t port):
-			ost::UDPSocket(bind,port)
+		UDPSocketU( const ost::IPV4Address& bind, ost::tpport_t port):
+			ost::UDPSocket(bind, port)
 		{}
 
-		virtual ~UDPSocketU(){}
+		virtual ~UDPSocketU() {}
 
-		inline SOCKET getSocket(){ return ost::UDPSocket::so; }
+		inline SOCKET getSocket()
+		{
+			return ost::UDPSocket::so;
+		}
 };
 // -------------------------------------------------------------------------
 class UDPReceiveU:
@@ -26,14 +29,20 @@ class UDPReceiveU:
 {
 	public:
 
-		UDPReceiveU( const ost::IPV4Address &bind, ost::tpport_t port):
-			ost::UDPReceive(bind,port)
+		UDPReceiveU( const ost::IPV4Address& bind, ost::tpport_t port):
+			ost::UDPReceive(bind, port)
 		{}
 
-		virtual ~UDPReceiveU(){}
+		virtual ~UDPReceiveU() {}
 
-		inline SOCKET getSocket(){ return ost::UDPReceive::so; }
-		inline void setCompletion( bool set ){ ost::UDPReceive::setCompletion(set); }
+		inline SOCKET getSocket()
+		{
+			return ost::UDPReceive::so;
+		}
+		inline void setCompletion( bool set )
+		{
+			ost::UDPReceive::setCompletion(set);
+		}
 };
 // -------------------------------------------------------------------------
 class UDPDuplexU:
@@ -41,14 +50,20 @@ class UDPDuplexU:
 {
 	public:
 
-		UDPDuplexU(const ost::IPV4Address &bind, ost::tpport_t port):
-			ost::UDPDuplex(bind,port)
+		UDPDuplexU(const ost::IPV4Address& bind, ost::tpport_t port):
+			ost::UDPDuplex(bind, port)
 		{}
 
-		virtual ~UDPDuplexU(){}
+		virtual ~UDPDuplexU() {}
 
-		SOCKET getReceiveSocket(){ return ost::UDPReceive::so; }
-		void setReceiveCompletion( bool set ){ ost::UDPReceive::setCompletion(set); }
+		SOCKET getReceiveSocket()
+		{
+			return ost::UDPReceive::so;
+		}
+		void setReceiveCompletion( bool set )
+		{
+			ost::UDPReceive::setCompletion(set);
+		}
 };
 // -------------------------------------------------------------------------
 #endif // UDPReceiveU_H_

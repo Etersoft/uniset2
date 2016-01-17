@@ -12,18 +12,21 @@
 class EvWatcher
 {
 	public:
-		EvWatcher(){}
-		virtual ~EvWatcher(){}
+		EvWatcher() {}
+		virtual ~EvWatcher() {}
 
 		// подготовка перед запуском loop
 		// запуск своих ev::xxx.start()
-		virtual void evprepare( const ev::loop_ref& ){}
+		virtual void evprepare( const ev::loop_ref& ) {}
 
 		// действия при завершении
 		// завершение своих ev::xxx.stop()
-		virtual void evfinish( const ev::loop_ref& ){}
+		virtual void evfinish( const ev::loop_ref& ) {}
 
-		virtual std::string wname(){ return ""; }
+		virtual std::string wname()
+		{
+			return "";
+		}
 };
 // -------------------------------------------------------------------------
 /*!
@@ -52,7 +55,10 @@ class CommonEventLoop
 		/*! \return TRUE - если это был последний EvWatcher и loop остановлен */
 		bool evstop( EvWatcher* w );
 
-		inline const ev::loop_ref evloop(){ return loop; }
+		inline const ev::loop_ref evloop()
+		{
+			return loop;
+		}
 
 	protected:
 

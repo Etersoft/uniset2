@@ -532,6 +532,13 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 * Mon Jan 18 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt19
 - rebuild new version
 
+* Mon Jan 18 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt17.2.3.alt1
+- add supported libev:
+  - refactoring ModbusSlave (use libev)
+  - refactoring LogServer (use libev)
+  - refactoring UNetReceiver (use libev)
+- minor fixes
+
 * Fri Jan 15 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt17
 - rebuild new version
 

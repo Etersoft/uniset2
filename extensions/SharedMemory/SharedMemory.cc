@@ -331,6 +331,7 @@ CORBA::Boolean SharedMemory::exist()
 void SharedMemory::sigterm( int signo )
 {
 	workready = false;
+
 	if( signo == SIGTERM && wdt )
 		wdt->stop();
 

@@ -19,6 +19,7 @@ CommonEventLoop::~CommonEventLoop()
 	{
 		cancelled = true;
 		evterm.send();
+
 		if( thr )
 		{
 			thr->join();
@@ -49,6 +50,7 @@ bool CommonEventLoop::evrun(EvWatcher* w, bool thread )
 
 		// ждём..
 		std::unique_lock<std::mutex> locker(prep_mutex);
+
 		while( !prep_notify )
 			prep_event.wait(locker);
 
@@ -64,6 +66,7 @@ bool CommonEventLoop::evrun(EvWatcher* w, bool thread )
 
 	// ожидаем завершения основного потока..
 	std::unique_lock<std::mutex> locker(term_mutex);
+
 	while( !term_notify )
 		term_event.wait(locker);
 
@@ -84,6 +87,7 @@ bool CommonEventLoop::evstop( EvWatcher* w )
 		return false;
 
 	std::unique_lock<std::mutex> l(wlist_mutex);
+
 	try
 	{
 		w->evfinish(loop); // для этого Watcher это уже finish..
@@ -112,6 +116,7 @@ bool CommonEventLoop::evstop( EvWatcher* w )
 			cancelled = false;
 		}
 	}
+
 	return true;
 }
 // -------------------------------------------------------------------------
@@ -142,7 +147,7 @@ void CommonEventLoop::onStop()
 	// потому-что onStop будет вызываться
 	// из evstop, где он уже будет под "блокировкой"
 	// т.е. чтобы не получить deadlock
-	for( const auto& w: wlist )
+	for( const auto& w : wlist )
 	{
 		try
 		{

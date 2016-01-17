@@ -23,11 +23,11 @@ class EventLoopServer
 	protected:
 		// действия при завершении
 		// завершение своих ev::xxx.stop()
-		virtual void evfinish(){}
+		virtual void evfinish() {}
 
 		// подготовка перед запуском loop
 		// запусу своих ev::xxx.start()
-		virtual void evprepare(){}
+		virtual void evprepare() {}
 
 		// Управление потоком событий
 		void evrun( bool thread = true );

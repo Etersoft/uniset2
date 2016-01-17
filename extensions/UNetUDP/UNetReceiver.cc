@@ -132,7 +132,8 @@ void UNetReceiver::setReceivePause( timeout_t msec )
 void UNetReceiver::setUpdatePause( timeout_t msec )
 {
 	updatepause = msec;
-	updateTime = (double)updatepause/1000.0;
+	updateTime = (double)updatepause / 1000.0;
+
 	if( evUpdate.is_active() )
 		evUpdate.start(updateTime);
 }
@@ -179,10 +180,11 @@ void UNetReceiver::resetTimeout()
 void UNetReceiver::start()
 {
 	unetinfo << myname << ":... start... " << endl;
+
 	if( !activated )
 	{
 		activated = true;
-		loop.evrun(this,true);
+		loop.evrun(this, true);
 	}
 	else
 		forceUpdate();
@@ -191,7 +193,7 @@ void UNetReceiver::start()
 void UNetReceiver::evprepare( const ev::loop_ref& eloop )
 {
 	evReceive.set(eloop);
-	evReceive.start(udp->getSocket(),ev::READ);
+	evReceive.start(udp->getSocket(), ev::READ);
 
 	evUpdate.set(eloop);
 	evUpdate.start( updateTime );
@@ -200,6 +202,7 @@ void UNetReceiver::evprepare( const ev::loop_ref& eloop )
 void UNetReceiver::evfinish( const ev::loop_ref& eloop )
 {
 	activated = false;
+
 	if( evReceive.is_active() )
 		evReceive.stop();
 
@@ -399,6 +402,7 @@ void UNetReceiver::readEvent( ev::io& watcher )
 		return;
 
 	bool tout = false;
+
 	try
 	{
 		if( receive() )
@@ -427,6 +431,7 @@ void UNetReceiver::readEvent( ev::io& watcher )
 	if( ptPrepare.checkTime() && trTimeout.change(tout) )
 	{
 		auto w = shared_from_this();
+
 		if( w )
 		{
 			if( tout )
@@ -496,13 +501,13 @@ void UNetReceiver::stop()
 // -----------------------------------------------------------------------------
 bool UNetReceiver::receive()
 {
-//	if( !udp->isInputReady(recvTimeout) )
-//		return false;
+	//	if( !udp->isInputReady(recvTimeout) )
+	//		return false;
 
 	//udp->UDPReceive::receive((char*)(r_buf.data), sizeof(r_buf.data));
 
 	//ssize_t ret = ::recv(udp->getSocket(),r_buf.data,sizeof(r_buf.data),0);
-	ssize_t ret = udp->receive(r_buf.data,sizeof(r_buf.data));
+	ssize_t ret = udp->receive(r_buf.data, sizeof(r_buf.data));
 
 	if( ret < 0 )
 	{

@@ -183,12 +183,14 @@ void ModbusTCPServer::setTimer( timeout_t msec )
 	if( msec == TIMEOUT_INF )
 	{
 		tmTime = 0;
+
 		if( ioTimer.is_active() )
 			ioTimer.stop();
 	}
 	else
 	{
 		tmTime = (double)msec / 1000.;
+
 		if( ioTimer.is_active() )
 			ioTimer.start( tmTime );
 	}

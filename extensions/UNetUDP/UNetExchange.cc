@@ -126,8 +126,8 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 		// Если указано поле unet_broadcast_ip непосредственно у узла - берём его
 		// если не указано берём общий broadcast_ip
 
-		string h = { n_it.getProp2("unet_broadcast_ip",default_ip) };
-		string h2 = { n_it.getProp2("unet_broadcast_ip2",default_ip2) };
+		string h = { n_it.getProp2("unet_broadcast_ip", default_ip) };
+		string h2 = { n_it.getProp2("unet_broadcast_ip2", default_ip2) };
 
 		if( h.empty() )
 		{
@@ -142,10 +142,10 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 
 		// Если указано поле unet_port - используем его
 		// Иначе port = идентификатору узла
-		int p = n_it.getPIntProp("unet_port",n_it.getIntProp("id"));
+		int p = n_it.getPIntProp("unet_port", n_it.getIntProp("id"));
 
 		// по умолчанию порт на втором канале такой же как на первом (если не задан отдельно)
-		int p2 = n_it.getPIntProp("unet_port2",p);
+		int p2 = n_it.getPIntProp("unet_port2", p);
 
 		string n(n_it.getProp("name"));
 

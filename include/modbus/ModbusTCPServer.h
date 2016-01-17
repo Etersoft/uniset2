@@ -88,8 +88,6 @@ class ModbusTCPServer:
 			return port;
 		}
 
-		virtual bool isAcive() override;
-
 		// -------------------------------------------------
 		// Таймер.
 		// Т.к. eventLoop() "бесконечный", то сделана возможность

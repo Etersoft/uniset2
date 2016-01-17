@@ -41,6 +41,7 @@ void EventLoopServer::evstop()
 {
 	cancelled = true;
 	evterm.send();
+
 	if( thr )
 	{
 		thr->join();

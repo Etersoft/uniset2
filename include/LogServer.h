@@ -113,7 +113,10 @@ class LogServer:
 
 		virtual void evprepare( const ev::loop_ref& loop ) override;
 		virtual void evfinish( const ev::loop_ref& loop ) override;
-		virtual std::string wname(){ return myname; }
+		virtual std::string wname()
+		{
+			return myname;
+		}
 
 		void ioAccept( ev::io& watcher, int revents );
 		void sessionFinished( LogSession* s );

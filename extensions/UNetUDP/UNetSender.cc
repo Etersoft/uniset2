@@ -287,6 +287,7 @@ void UNetSender::real_send(UniSetUDP::UDPMessage& mypack)
 void UNetSender::stop()
 {
 	activated = false;
+
 	//    s_thr->stop();
 	if( s_thr )
 		s_thr->join();
