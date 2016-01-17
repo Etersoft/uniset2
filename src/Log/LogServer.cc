@@ -29,6 +29,8 @@ CommonEventLoop LogServer::loop;
 // -------------------------------------------------------------------------
 LogServer::~LogServer()
 {
+	if( isrunning )
+		loop.evstop(this);
 }
 // -------------------------------------------------------------------------
 LogServer::LogServer( std::shared_ptr<LogAgregator> log ):
@@ -55,10 +57,13 @@ LogServer::LogServer():
 {
 }
 // -------------------------------------------------------------------------
-void LogServer::evfinish(const ev::loop_ref& loop )
+void LogServer::evfinish( const ev::loop_ref& loop )
 {
+	if( !isrunning )
+		return;
+
 	if( mylog.is_info() )
-		mylog.info() << myname << "(LogServer): terminate..." << endl;
+		mylog.info() << myname << "(evfinish): terminate..." << endl;
 
 	auto lst(slist);
 
@@ -77,7 +82,11 @@ void LogServer::evfinish(const ev::loop_ref& loop )
 
 	io.stop();
 	isrunning = false;
-	cerr << "LOGServer: finished..." << endl;
+
+	sock.reset();
+
+	if( mylog.is_info() )
+		mylog.info() << myname << "(LogServer): finished." << endl;
 }
 // -------------------------------------------------------------------------
 void LogServer::run( const std::string& _addr, ost::tpport_t _port, bool thread )
@@ -101,6 +110,17 @@ void LogServer::terminate()
 // -------------------------------------------------------------------------
 void LogServer::evprepare( const ev::loop_ref& eloop )
 {
+	if( sock )
+	{
+		ostringstream err;
+		err << myname << "(evprepare): socket ALREADY BINDINNG..";
+
+		if( mylog.is_crit() )
+			mylog.crit() << err.str() << endl;
+
+		throw SystemError( err.str() );
+	}
+
 	try
 	{
 		ost::InetAddress iaddr(addr.c_str());
@@ -144,7 +164,7 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 		return;
 	}
 
-	if( !loop.evIsActive() )
+	if( !isrunning )
 	{
 		if( mylog.is_crit() )
 			mylog.crit() << myname << "(LogServer::ioAccept): terminate work.." << endl;
@@ -176,7 +196,7 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 			slist.push_back(s);
 		}
 
-		s->run(loop.evloop());
+		s->run(watcher.loop);
 	}
 	catch( const std::exception& ex )
 	{

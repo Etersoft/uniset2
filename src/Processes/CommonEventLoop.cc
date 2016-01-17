@@ -8,6 +8,9 @@ CommonEventLoop::CommonEventLoop()
 {
 	evterm.set(loop);
 	evterm.set<CommonEventLoop, &CommonEventLoop::onStop>(this);
+
+	evprep.set(loop);
+	evprep.set<CommonEventLoop, &CommonEventLoop::onPrepare>(this);
 }
 // -------------------------------------------------------------------------
 CommonEventLoop::~CommonEventLoop()
@@ -24,11 +27,12 @@ CommonEventLoop::~CommonEventLoop()
 	}
 }
 // ---------------------------------------------------------------------------
-void CommonEventLoop::evrun( EvWatcher* w, bool thread )
+bool CommonEventLoop::evrun( EvWatcher* w, bool thread )
 {
 	if( !w )
-		return;
+		return false;
 
+	bool ret = false;
 	{
 		std::unique_lock<std::mutex> l(wlist_mutex);
 		wlist.push_back(w);
@@ -39,19 +43,34 @@ void CommonEventLoop::evrun( EvWatcher* w, bool thread )
 			std::this_thread::sleep_for(std::chrono::milliseconds(30));
 		}
 
-		w->evprepare(loop);
+		// ожидаем обработки evprepare (которая будет в defaultLoop)
+		wprep = w;
+		evprep.send(); // будим default loop
+
+		// ждём..
+		std::unique_lock<std::mutex> locker(prep_mutex);
+		while( !prep_notify )
+			prep_event.wait(locker);
+
+		prep_notify = false;
+		// если стал nullptr - значит evprepare отработал нормально
+		ret = ( wprep == nullptr );
 	}
 
-	if( !thread )
-	{
-		// ожидаем завершения основного потока..
-		std::unique_lock<std::mutex> locker(term_mutex);
-		while( !term_notify )
-			term_event.wait(locker);
+	// если ждать завершения не надо (thread=true)
+	// или evprepare не удалось.. выходим..
+	if( thread || !ret )
+		return ret;
 
-		if( thr && thr->joinable() )
-			thr->join();
-	}
+	// ожидаем завершения основного потока..
+	std::unique_lock<std::mutex> locker(term_mutex);
+	while( !term_notify )
+		term_event.wait(locker);
+
+	if( thr && thr->joinable() )
+		thr->join();
+
+	return true;
 }
 // ---------------------------------------------------------------------------
 bool CommonEventLoop::evIsActive()
@@ -66,26 +85,59 @@ bool CommonEventLoop::evstop( EvWatcher* w )
 	{
 		if( (*i) == w )
 		{
+			try
+			{
+				w->evfinish(loop); // для этого Watcher это уже finish..
+			}
+			catch( std::exception& ex )
+			{
+				cerr << "(CommonEventLoop::evfinish): evfinish err: " << ex.what() << endl;
+			}
+
 			wlist.erase(i);
 			break;
 		}
 	}
 
 	if( !wlist.empty() )
-	{
-		w->evfinish(loop); // для этого Watcher это уже finish..
 		return false;
-	}
 
-	cancelled = true;
-	evterm.send();
-	if( thr )
+	if( isrunning || !cancelled )
 	{
-		thr->join();
-		thr = nullptr;
+		cancelled = true;
+		evterm.send();
+
+		if( thr )
+		{
+			if( thr->joinable() )
+				thr->join();
+
+			thr = nullptr;  // после этого можно уже запускать заново поток..
+			cancelled = false;
+		}
+	}
+	return true;
+}
+// -------------------------------------------------------------------------
+void CommonEventLoop::onPrepare()
+{
+	if( wprep )
+	{
+		try
+		{
+			wprep->evprepare(loop);
+		}
+		catch( std::exception& ex )
+		{
+			cerr << "(CommonEventLoop::onPrepare): evfinish err: " << ex.what() << endl;
+		}
+
+		wprep = nullptr;
 	}
 
-	return true;
+	// будим всех ожидающих..
+	prep_notify = true;
+	prep_event.notify_all();
 }
 // -------------------------------------------------------------------------
 void CommonEventLoop::onStop()
@@ -107,6 +159,7 @@ void CommonEventLoop::onStop()
 	}
 
 	evterm.stop();
+	evprep.stop();
 	loop.break_loop(ev::ALL);
 }
 // -------------------------------------------------------------------------
@@ -116,7 +169,8 @@ void CommonEventLoop::defaultLoop()
 	isrunning = true;
 
 	evterm.start();
-	cerr << "************* CommonEventLoop::defaultLoop() *************" << endl;
+	evprep.start();
+
 	while( !cancelled )
 	{
 		try
@@ -129,11 +183,12 @@ void CommonEventLoop::defaultLoop()
 		}
 	}
 
-	cerr << "************* CommonEventLoop::defaultLoop() EXIT *************" << endl;
 	cancelled = true;
 	isrunning = false;
 
-	// будим всех ожидающих..
+	evterm.stop();
+	evprep.stop();
+
 	term_notify = true;
 	term_event.notify_all();
 }

@@ -171,23 +171,15 @@ int main( int argc, char** argv )
 		LogServer ls(la);
 		ls.setMaxSessionCount(msess);
 
-		LogServer ls2(la);
-		ls2.setMaxSessionCount(msess);
-
-
 		dlog->addLevel(Debug::ANY);
 		dlog2->addLevel(Debug::ANY);
 		dlog3->addLevel(Debug::ANY);
 		dlog4->addLevel(Debug::ANY);
 
 		ls.run( addr, port, true );
-		ls2.run( addr, 4444, true );
 
 		if( verb )
-		{
 			ls.setSessionLog(Debug::ANY);
-			ls2.setSessionLog(Debug::ANY);
-		}
 
 		unsigned int i = 0;
 

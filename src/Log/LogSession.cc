@@ -184,6 +184,7 @@ void LogSession::callback( ev::io& watcher, int revents )
 
 		std::unique_lock<std::mutex> lk(io_mutex);
 		io.stop();
+		cmdTimer.stop();
 		{
 			std::unique_lock<std::mutex> lk(logbuf_mutex);
 			asyncEvent.stop();

@@ -30,7 +30,12 @@ class EvWatcher
  * \brief The CommonEventLoop class
  * Реализация общего eventloop для всех использующих libev.
  * Каждый класс который хочет подключиться к "потоку", должен наследоваться от класса Watcher
- * и при необходимости переопределить функции prepare и finish
+ * и при необходимости переопределить функции evprepare и evfinish
+ *
+ * Т.к. evprepare необходимо вызывать из потока в котором крутится event loop (иначе libev не работает),
+ * а функция run() в общем случае вызывается "откуда угодно" и может быть вызвана в том числе уже после
+ * запуска event loop, то задействован механизм асинхронного уведомления (см. evprep, onPrepapre) и ожидания
+ * на condition_variable, когда произойдёт инициализация (см. реализацию evrun()).
  */
 class CommonEventLoop
 {
@@ -41,7 +46,8 @@ class CommonEventLoop
 
 		bool evIsActive();
 
-		void evrun( EvWatcher* w, bool thread = true );
+		/*! \return TRUE - если всё удалось. return актуален только для случая когда thread = true */
+		bool evrun( EvWatcher* w, bool thread = true );
 
 		/*! \return TRUE - если это был последний EvWatcher и loop остановлен */
 		bool evstop( EvWatcher* s );
@@ -53,6 +59,7 @@ class CommonEventLoop
 	private:
 
 		void onStop();
+		void onPrepare();
 		void defaultLoop();
 
 		std::atomic_bool cancelled = { false };
@@ -68,6 +75,13 @@ class CommonEventLoop
 
 		std::mutex wlist_mutex;
 		std::list<EvWatcher*> wlist;
+
+		// готовящийся Watcher..(он может быть только один, единицу времени)
+		EvWatcher* wprep = { nullptr };
+		ev::async evprep;
+		std::condition_variable prep_event;
+		std::mutex              prep_mutex;
+		std::atomic_bool prep_notify = { false };
 };
 // -------------------------------------------------------------------------
 #endif // CommonEventLoop_H_
