@@ -207,11 +207,17 @@ void UNetSender::send()
 				if( it.first > 1 && (ncycle % it.first) != 0 )
 					continue;
 
+				if( !activated )
+					break;
+
 				auto& pk = it.second;
 				int size = pk.size();
 
 				for(int i = 0; i < size; ++i)
 				{
+					if( !activated )
+						break;
+
 					real_send(pk[i]);
 					msleep(packsendpause);
 				}
@@ -235,6 +241,9 @@ void UNetSender::send()
 		{
 			unetwarn << myname << "(send): catch ..." << std::endl;
 		}
+
+		if( !activated )
+			break;
 
 		msleep(sendpause);
 	}
@@ -279,6 +288,8 @@ void UNetSender::stop()
 {
 	activated = false;
 	//    s_thr->stop();
+	if( s_thr )
+		s_thr->join();
 }
 // -----------------------------------------------------------------------------
 void UNetSender::start()

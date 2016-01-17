@@ -25,6 +25,8 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
+CommonEventLoop UNetReceiver::loop;
+// -----------------------------------------------------------------------------
 /*
 bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
                                             const UniSetUDP::UDPMessage& rhs) const
@@ -101,8 +103,6 @@ UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port,
 // -----------------------------------------------------------------------------
 UNetReceiver::~UNetReceiver()
 {
-	evReceive.stop();
-	evUpdate.stop();
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setReceiveTimeout( timeout_t msec )
@@ -182,25 +182,32 @@ void UNetReceiver::start()
 	if( !activated )
 	{
 		activated = true;
-		evrun(true);
+		loop.evrun(this,true);
 	}
 	else
 		forceUpdate();
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::evprepare()
+void UNetReceiver::evprepare( const ev::loop_ref& eloop )
 {
-	evReceive.set(loop);
+	evReceive.set(eloop);
 	evReceive.start(udp->getSocket(),ev::READ);
 
-	evUpdate.set(loop);
+	evUpdate.set(eloop);
 	evUpdate.start( updateTime );
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::evfinish()
+void UNetReceiver::evfinish( const ev::loop_ref& eloop )
 {
-	evReceive.stop();
-	evUpdate.stop();
+	activated = false;
+	if( evReceive.is_active() )
+		evReceive.stop();
+
+	if( evUpdate.is_active() )
+		evUpdate.stop();
+
+	//udp->disconnect();
+	udp = nullptr;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::forceUpdate()
@@ -419,10 +426,14 @@ void UNetReceiver::readEvent( ev::io& watcher )
 	// только если "режим подготовки закончился, то можем генерировать "события"
 	if( ptPrepare.checkTime() && trTimeout.change(tout) )
 	{
-		if( tout )
-			slEvent(shared_from_this(), evTimeout);
-		else
-			slEvent(shared_from_this(), evOK);
+		auto w = shared_from_this();
+		if( w )
+		{
+			if( tout )
+				slEvent(w, evTimeout);
+			else
+				slEvent(w, evOK);
+		}
 	}
 }
 // -----------------------------------------------------------------------------
@@ -480,7 +491,7 @@ void UNetReceiver::stop()
 {
 	unetinfo << myname << ": stop.." << endl;
 	activated = false;
-	evstop();
+	loop.evstop(this);
 }
 // -----------------------------------------------------------------------------
 bool UNetReceiver::receive()

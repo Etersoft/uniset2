@@ -698,11 +698,21 @@ bool UNetExchange::activateObject()
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-void UNetExchange::sigterm( int signo )
+bool UNetExchange::deactivateObject()
 {
-	unetinfo << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
-	activated = false;
+	if( activated )
+	{
+		unetinfo << myname << "(deactivateObject): disactivate.." << endl;
+		activated = false;
+		termReceivers();
+		termSenders();
+	}
 
+	return UniSetObject::deactivateObject();
+}
+// ------------------------------------------------------------------------------------------
+void UNetExchange::termReceivers()
+{
 	for( const auto& it : recvlist )
 	{
 		try
@@ -719,7 +729,10 @@ void UNetExchange::sigterm( int signo )
 		}
 		catch(...) {}
 	}
-
+}
+// ------------------------------------------------------------------------------------------
+void UNetExchange::termSenders()
+{
 	try
 	{
 		if( sender )
@@ -733,6 +746,15 @@ void UNetExchange::sigterm( int signo )
 			sender2->stop();
 	}
 	catch(...) {}
+}
+// ------------------------------------------------------------------------------------------
+void UNetExchange::sigterm( int signo )
+{
+	unetinfo << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
+	activated = false;
+
+	termReceivers();
+	termSenders();
 
 	UniSetObject::sigterm(signo);
 }

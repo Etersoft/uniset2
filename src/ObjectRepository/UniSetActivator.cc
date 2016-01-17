@@ -462,22 +462,6 @@ void UniSetActivator::stop()
 
 	deactivate();
 
-	try
-	{
-		deactivateObject();
-	}
-	catch( const omniORB::fatalException& fe )
-	{
-		ucrit << myname << "(stop): : поймали omniORB::fatalException:" << endl;
-		ucrit << myname << "(stop):   file: " << fe.file() << endl;
-		ucrit << myname << "(stop):   line: " << fe.line() << endl;
-		ucrit << myname << "(stop):   mesg: " << fe.errmsg() << endl;
-	}
-	catch( const std::exception& ex )
-	{
-		ucrit << myname << "(stop): " << ex.what() << endl;
-	}
-
 	ulogsys << myname << "(stop): deactivate ok.  " << endl;
 	ulogsys << myname << "(stop): discard request..." << endl;
 

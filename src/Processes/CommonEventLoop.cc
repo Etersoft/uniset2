@@ -27,7 +27,7 @@ CommonEventLoop::~CommonEventLoop()
 	}
 }
 // ---------------------------------------------------------------------------
-bool CommonEventLoop::evrun( EvWatcher* w, bool thread )
+bool CommonEventLoop::evrun(EvWatcher* w, bool thread )
 {
 	if( !w )
 		return false;
@@ -80,24 +80,20 @@ bool CommonEventLoop::evIsActive()
 // -------------------------------------------------------------------------
 bool CommonEventLoop::evstop( EvWatcher* w )
 {
-	std::unique_lock<std::mutex> l(wlist_mutex);
-	for( auto i = wlist.begin(); i!=wlist.end(); i++ )
-	{
-		if( (*i) == w )
-		{
-			try
-			{
-				w->evfinish(loop); // для этого Watcher это уже finish..
-			}
-			catch( std::exception& ex )
-			{
-				cerr << "(CommonEventLoop::evfinish): evfinish err: " << ex.what() << endl;
-			}
+	if( !w )
+		return false;
 
-			wlist.erase(i);
-			break;
-		}
+	std::unique_lock<std::mutex> l(wlist_mutex);
+	try
+	{
+		w->evfinish(loop); // для этого Watcher это уже finish..
 	}
+	catch( std::exception& ex )
+	{
+		cerr << "(CommonEventLoop::evfinish): evfinish err: " << ex.what() << endl;
+	}
+
+	wlist.remove(w);
 
 	if( !wlist.empty() )
 		return false;

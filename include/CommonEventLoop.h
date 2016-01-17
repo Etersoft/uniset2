@@ -50,7 +50,7 @@ class CommonEventLoop
 		bool evrun( EvWatcher* w, bool thread = true );
 
 		/*! \return TRUE - если это был последний EvWatcher и loop остановлен */
-		bool evstop( EvWatcher* s );
+		bool evstop( EvWatcher* w );
 
 		inline const ev::loop_ref evloop(){ return loop; }
 
@@ -76,7 +76,8 @@ class CommonEventLoop
 		std::mutex wlist_mutex;
 		std::list<EvWatcher*> wlist;
 
-		// готовящийся Watcher..(он может быть только один, единицу времени)
+		// готовящийся Watcher..он может быть только один в единицу времени
+		// это гарантирует prep_mutex
 		EvWatcher* wprep = { nullptr };
 		ev::async evprep;
 		std::condition_variable prep_event;

@@ -31,7 +31,7 @@
 #include "SMInterface.h"
 #include "SharedMemory.h"
 #include "UDPPacket.h"
-#include "EventLoopServer.h"
+#include "CommonEventLoop.h"
 #include "UDPCore.h"
 // -----------------------------------------------------------------------------
 /*  Основная идея: сделать проверку очерёдности пакетов, но при этом использовать UDP.
@@ -77,8 +77,8 @@
 */
 // -----------------------------------------------------------------------------
 class UNetReceiver:
-	public std::enable_shared_from_this<UNetReceiver>,
-	public EventLoopServer
+	protected EvWatcher,
+	public std::enable_shared_from_this<UNetReceiver>
 {
 	public:
 		UNetReceiver( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi );
@@ -161,8 +161,9 @@ class UNetReceiver:
 		void callback( ev::io& watcher, int revents );
 		void readEvent( ev::io& watcher );
 		void updateEvent( ev::periodic& watcher, int revents );
-		virtual void evfinish() override;
-		virtual void evprepare() override;
+		virtual void evprepare( const ev::loop_ref& eloop ) override;
+		virtual void evfinish(const ev::loop_ref& eloop ) override;
+		virtual std::string wname(){ return myname; }
 
 		void initIterators();
 
@@ -192,6 +193,10 @@ class UNetReceiver:
 		std::string myname;
 		ev::io evReceive;
 		ev::periodic evUpdate;
+
+		// делаем loop общим.. одним на всех!
+		static CommonEventLoop loop;
+
 		double updateTime = { 0.0 };
 
 		UniSetTypes::uniset_rwmutex pollMutex;

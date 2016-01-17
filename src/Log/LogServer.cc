@@ -207,7 +207,6 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 void LogServer::sessionFinished( LogSession* s )
 {
 	uniset_rwmutex_wrlock l(mutSList);
-
 	for( SessionList::iterator i = slist.begin(); i != slist.end(); ++i )
 	{
 		if( i->get() == s )

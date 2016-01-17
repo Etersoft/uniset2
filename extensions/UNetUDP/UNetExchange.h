@@ -157,10 +157,13 @@ class UNetExchange:
 		void waitSMReady();
 		void receiverEvent( const std::shared_ptr<UNetReceiver>& r, UNetReceiver::Event ev );
 
-		virtual bool activateObject();
+		virtual bool activateObject() override;
+		virtual bool deactivateObject() override;
 
 		// действия при завершении работы
 		virtual void sigterm( int signo );
+		void termSenders();
+		void termReceivers();
 
 		void initIterators();
 		void startReceivers();
@@ -170,7 +173,7 @@ class UNetExchange:
 			tmStep
 		};
 
-	private:
+    private:
 		UNetExchange();
 		timeout_t initPause;
 		UniSetTypes::uniset_rwmutex mutex_start;
