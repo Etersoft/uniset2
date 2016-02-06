@@ -135,10 +135,10 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 			throw SystemError(err.str());
 		}
 
-		DSMap dsmap;
+		DSList dslist;
 
 		// список параметров входящих в RRD
-		std::list<std::string> dslist;
+		std::list<std::string> rrdparamist;
 
 		for(; it1.getCurrent(); it1.goNext() )
 		{
@@ -171,7 +171,7 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 
 			ostringstream nm;
 			nm << "DS:" << dsname << ":" << a;
-			dslist.push_back(nm.str());
+			rrdparamist.push_back(nm.str());
 
 			ObjectId sid = conf->getSensorID( it1.getProp("name") );
 
@@ -183,11 +183,11 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 				throw SystemError(err.str());
 			}
 
-			DSInfo ds(dsname, it1.getIntProp("default"));
-			dsmap.emplace(sid, ds);
+			auto ds = make_shared<DSInfo>(sid, dsname, it1.getIntProp("default"));
+			dslist.push_back(ds);
 		}
 
-		if( dslist.empty() )
+		if( rrdparamist.empty() )
 		{
 			ostringstream err;
 			err << myname << "(init): Not found RRD items...";
@@ -195,12 +195,12 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 			throw SystemError(err.str());
 		}
 
-		char argc = dslist.size() + rralist.size();
+		char argc = rrdparamist.size() + rralist.size();
 		char** argv = new char* [ argc ];
 
 		int k = 0;
 
-		for( auto& i : dslist )
+		for( auto& i : rrdparamist )
 			argv[k++] = strdup(i.c_str());
 
 		for( auto& i : rralist )
@@ -234,17 +234,8 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 
 		delete[] argv;
 
-		rrdlist.emplace_back(fname, tmID, rrdstep, dsmap);
+		rrdlist.emplace_back(fname, tmID, rrdstep, dslist);
 	}
-	/*    catch( const Exception& ex )
-	    {
-	        mycrit << myname << "(init) " << ex << std::endl;
-	    }
-	    catch( ...  )
-	    {
-	        mycrit << myname << "(init): catch ..." << std::endl;
-	    }
-	*/
 }
 //--------------------------------------------------------------------------------
 void RRDServer::help_print( int argc, const char* const* argv )
@@ -352,7 +343,7 @@ void RRDServer::sensorInfo( const UniSetTypes::SensorMessage* sm )
 		auto s = it.dsmap.find(sm->id);
 
 		if( s != it.dsmap.end() )
-			s->second.value = sm->value;
+			s->second->value = sm->value;
 
 		// продолжаем искать по другим rrd, т.к. датчик может входить в несколько..
 	}
@@ -367,14 +358,17 @@ void RRDServer::timerInfo( const UniSetTypes::TimerMessage* tm )
 			ostringstream v;
 			v << time(0);
 
-			for( auto& s : it.dsmap )
-				v << ":" << s.second.value;
+			// здесь идём по списку (а не dsmap)
+			// т.к. важна последовательность
+			for( const auto& s : it.dslist )
+				v << ":" << s->value;
 
 			myinfo << myname << "(update): '" << it.filename << "' " << v.str() << endl;
 
 			rrd_clear_error();
 
-			const char* argv = uni_strdup(v.str().c_str());
+			const std::string tmp(v.str()); // надежда на RVO оптимизацию
+			const char* argv = tmp.c_str();
 
 			if( rrd_update_r(it.filename.c_str(), NULL, 1, &argv) < 0 )
 			{
@@ -383,9 +377,16 @@ void RRDServer::timerInfo( const UniSetTypes::TimerMessage* tm )
 				mycrit << err.str() << endl;
 			}
 
-			delete[] argv;
 			break;
 		}
 	}
+}
+// -----------------------------------------------------------------------------
+RRDServer::RRDInfo::RRDInfo(const string& fname, long tmID, long sec, const RRDServer::DSList& lst):
+	filename(fname), tid(tmID), sec(sec), dslist(lst)
+{
+	// фомируем dsmap
+	for( auto&& i: dslist )
+		dsmap.emplace(i->sid,i);
 }
 // -----------------------------------------------------------------------------
