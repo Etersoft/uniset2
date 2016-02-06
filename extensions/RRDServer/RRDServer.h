@@ -2,6 +2,7 @@
 #define _RRDServer_H_
 // -----------------------------------------------------------------------------
 #include <unordered_map>
+#include <list>
 #include <memory>
 #include "UObject_SK.h"
 #include "SMInterface.h"
@@ -103,14 +104,21 @@ class RRDServer:
 
 		struct DSInfo
 		{
+			UniSetTypes::ObjectId sid;
 			std::string dsname;
 			long value;
 
-			DSInfo( const std::string& dsname, long defval ):
-				dsname(dsname), value(defval) {}
+			DSInfo( UniSetTypes::ObjectId id, const std::string& dsname, long defval ):
+				sid(id), dsname(dsname), value(defval) {}
 		};
 
-		typedef std::unordered_map<UniSetTypes::ObjectId, DSInfo> DSMap;
+		// Т.к. RRD требует чтобы данные записывались именно в том порядке в котором они были добавлены
+		// при инициализации и при этом, нам нужен быстрый доступ в обработчике sensorInfo.
+		// То создаём list<> для последовательного прохода по элементам в нужном порядке
+		// и unordered_map<> для быстрого доступа к элементам в sensorInfo
+		// При этом используем shared_ptr чтобы элементы указывали на один и тот же DSInfo
+		typedef std::unordered_map<UniSetTypes::ObjectId, std::shared_ptr<DSInfo>> DSMap;
+		typedef std::list<std::shared_ptr<DSInfo>> DSList;
 
 		struct RRDInfo
 		{
@@ -118,9 +126,9 @@ class RRDServer:
 			long tid;
 			long sec;
 			DSMap dsmap;
+			DSList dslist;
 
-			RRDInfo( const std::string& fname, long tmID, long sec, const DSMap& ds ):
-				filename(fname), tid(tmID), sec(sec), dsmap(ds) {}
+			RRDInfo( const std::string& fname, long tmID, long sec, const DSList& lst );
 		};
 
 		typedef std::list<RRDInfo> RRDList;
