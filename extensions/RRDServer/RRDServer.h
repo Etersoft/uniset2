@@ -52,7 +52,7 @@
         <item id="54" iotype="AI" name="AI54_S" textname="AI sensor 54" rrd="1" rrd1_ds="GAUGE:20:U:U"/>
         <item id="55" iotype="AI" name="AI55_S" textname="AI sensor 55" rrd="1" rrd1_ds="GAUGE:20:U:U"/>
         <item id="56" iotype="AI" name="AI56_S" textname="AI sensor 56" rrd="2" rrd2_ds="COUNTER:20:U:U"/>
-		<item id="57" iotype="AI" name="AI57_S" rrd2_dsname='A57MyRRDName' textname="AI sensor 57" rrd="2" rrd2_ds="DERIVE:20:U:U"/>
+		<item id="57" iotype="AI" name="AI57_S" rrd2_ds_dsname='A57MyRRDName' textname="AI sensor 57" rrd="2" rrd2_ds="DERIVE:20:U:U"/>
         ...
     </sensors>
 \endcode

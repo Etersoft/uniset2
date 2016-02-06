@@ -173,12 +173,12 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 			nm << "DS:" << dsname << ":" << a;
 			dslist.push_back(nm.str());
 
-			ObjectId sid = conf->getSensorID( dsname );
+			ObjectId sid = conf->getSensorID( it1.getProp("name") );
 
 			if( sid == DefaultObjectId )
 			{
 				ostringstream err;
-				err << myname << "(init): Unknown SensorID for '" << dsname << "'";
+				err << myname << "(init): Unknown SensorID for '" << it1.getProp("name") << "'";
 				mycrit << err.str();
 				throw SystemError(err.str());
 			}
