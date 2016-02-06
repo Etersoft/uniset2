@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.2
-Release: alt19
+Release: alt20
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -451,6 +451,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Sat Feb 06 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt20
+- RRDServer: fixed bug for long name processing..
+
 * Mon Jan 18 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt19
 - rebuild new version
 
