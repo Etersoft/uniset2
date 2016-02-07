@@ -21,14 +21,41 @@
 	MQTT - это..
 
 	Данная реализация построена на использованиие билиотеки mosquitto.
+	Издатель публикует события по каждому изменению датчика в указанном топике.
 
 	\section sec_MQTT_Conf Настройка MQTTPublisher
+
+	Топик для публикации событий имеет вид: ROOTPROJECT/topicsensors/sensorname, где
+	- \b ROOTPROJECT - это название корневой uniset-секции заданное в configure.xml (RootSection="..")
+	- \b topicsensors - это название секции для публикации в MQTT-сервере (брокере).
+	Название можно задать при помощи аргумента конмадной строки --prefix-mqtt-topicsensors
+	или в настроечной секции topicsensors="..". По умолчанию topicsensors='sensors'.
+
+	Какие датчики "публиковать" можно задавать при помощи filter-field и filter-value параметров.
+	--prefix-filter-field - задаёт фильтрующее поле для датчиков
+	--prefix-filter-value - задаётзначение фильтрующего поля для датчиков. Необязательнй параметр.
+
+	Либо можно указать в настроечной секции: filterField=".." filterValue=".."
+
+	По умолчанию загружаются и публикуются ВСЕ датчики из секции <sensors> конфигурационного файла.
+
+	Сервер для публикации указывается параметрами:
+	--prefix-mqtt-host ip|hostname - По умолчаню "localhost"
+	--prefix-mqtt-port num  - По умолчанию: 1883 (mosquitto)
+
+	Но можно задать и в настроечной секции: mqttHost=".." и mqttPort=".."
+
+	Помимо этого можно задать время проверки соединения, параметром
+	--prefix-mqtt-keepalive sec - По умолчанию: 60
+	или и в настроечной секции: mqttKeepAlive=".."
+
+	Для запуска издателя, неоходимо наличие в configure.xml секции: <ObjectName name="ObjectName" ...параметры">.
 
 	\todo Доделать контрольный таймер (контроль наличия соединения с сервером)
 */
 class MQTTPublisher:
-	public UObject_SK,
-	public mosqpp::mosquittopp
+	protected mosqpp::mosquittopp,
+	public UObject_SK
 {
 	public:
 		MQTTPublisher( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,

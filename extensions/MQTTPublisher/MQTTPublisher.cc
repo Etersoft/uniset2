@@ -9,8 +9,8 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
 					 const string& prefix ):
-	UObject_SK(objId, cnode, string(prefix + "-")),
 	mosquittopp(NULL),
+	UObject_SK(objId, cnode, string(prefix + "-")),
 	prefix(prefix)
 {
 	auto conf = uniset_conf();
@@ -22,7 +22,7 @@ MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSet
 
 	UniXML::iterator it(cnode);
 
-	topicsensors = conf->getRootSection() + "/" + conf->getArg2Param("--" + prefix + "topic-sensors", it.getProp("topicsensors"), "sensors");
+	topicsensors = conf->getRootSection() + "/" + conf->getArg2Param("--" + argprefix + "mqtt-topic-sensors", it.getProp("topicsensors"), "sensors");
 
 	string ff = conf->getArg2Param("--" + argprefix + "filter-field", it.getProp("filterField"), "");
 	string fv = conf->getArg2Param("--" + argprefix + "filter-value", it.getProp("filterValue"), "");
@@ -84,8 +84,8 @@ MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSet
 	// Работа с MQTT
 	mosqpp::lib_init();
 	host = conf->getArg2Param("--" + argprefix + "mqtt-host", it.getProp("mqttHost"), "localhost");
-	port = conf->getArgPInt("--" + argprefix + "-mqtt-port", it.getProp("mqttPort"), 1883);
-	keepalive = conf->getArgPInt("--" + argprefix + "-mqtt-keepalive", it.getProp("mqttKeepAlive"), 60);
+	port = conf->getArgPInt("--" + argprefix + "mqtt-port", it.getProp("mqttPort"), 1883);
+	keepalive = conf->getArgPInt("--" + argprefix + "mqtt-keepalive", it.getProp("mqttKeepAlive"), 60);
 
 // см. sysCommad()
 //	connect_async(host.c_str(),port,keepalive);
@@ -138,9 +138,11 @@ void MQTTPublisher::help_print( int argc, const char* const* argv )
 	cout << "--prefix-filter-value        - Значение фильтра для загрузки списка датчиков." << endl;
 	cout << endl;
 	cout << " MQTT: " << endl;
-	cout << "--prefix-mqtt-host host      - host(ip) MQTT Broker (server). Default: localhost" << endl;
-	cout << "--prefix-mqtt-port port      - port for MQTT Broker (server). Default: 1883" << endl;
-	cout << "--prefix-mqtt-keepalive val  - keepalive for connection to MQTT Broker (server). Default: 60" << endl;
+	cout << "--prefix-mqtt-topic-sensors name  - Name for topic. Default: 'sensors'" << endl;
+	cout << "                                    Result topic: ROOT_NAME_PRROJECT/topicsensors/sensorname'" << endl;
+	cout << "--prefix-mqtt-host host           - host(ip) MQTT Broker (server). Default: localhost" << endl;
+	cout << "--prefix-mqtt-port port           - port for MQTT Broker (server). Default: 1883" << endl;
+	cout << "--prefix-mqtt-keepalive val       - keepalive for connection to MQTT Broker (server). Default: 60" << endl;
 	cout << endl;
 	cout << " Logs: " << endl;
 	cout << "--prefix-log-...            - log control" << endl;
