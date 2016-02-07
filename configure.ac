@@ -185,6 +185,25 @@ fi
 
 AM_CONDITIONAL(DISABLE_PYTHON, test ${buildpython} = false)
 
+#check mqtt support
+AC_MSG_CHECKING([mqtt support])
+buildmqtt=true
+AC_ARG_ENABLE(mqtt, AC_HELP_STRING([--disable-mqtt], [disable MQTT support]),
+[ if test $enableval = yes; then buildmqtt=true; else buildmqtt=false; fi],[ buildmqtt=true; ])
+
+if test ${buildmqtt} = true; then
+	AC_MSG_RESULT([enabled])
+	AC_CHECK_HEADER(mosquittopp.h)
+	MQTT_LIBS=-lmosquittopp
+	MQTT_CFLAGS=
+	AC_SUBST(MQTT_LIBS)
+	AC_SUBST(MQTT_CFLAGS)
+else
+	AC_MSG_RESULT([disabled])
+fi
+
+AM_CONDITIONAL(DISABLE_MQTT, test ${buildmqtt} = false)
+
 
 # check Doxygen
 DOXYGEN=""
@@ -380,6 +399,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/SharedMemoryPlus/Makefile
 				 extensions/RRDServer/Makefile
 				 extensions/RRDServer/libUniSet2RRDServer.pc
+				 extensions/MQTTPublisher/Makefile
 				 extensions/tests/Makefile
 				 extensions/tests/SMemoryTest/Makefile
 				 testsuite/Makefile

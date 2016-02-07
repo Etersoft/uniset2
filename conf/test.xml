@@ -177,6 +177,8 @@
 		</specnet>
 
 		<GroupAnalogSensors name="TestGroup" ok_c="D106_S"/>
+
+		<MQTTPublisher1 name="MQTTPublisher" />
 	</settings>
 	<ObjectsMap idfromfile="1">
 		<!--
@@ -271,6 +273,9 @@
 
 			<item id="109" iotype="DI" name="MM1_Not_Respond_S" priority="Medium" textname="multimaster test sensor"/>
 			<item id="110" iotype="DI" name="MM2_Not_Respond_S" priority="Medium" textname="multimaster test sensor"/>
+
+			<item id="111" iotype="AI" name="MQTT_AI_AS" textname="MQTT test AI" mqtt="1"/>
+			<item id="112" iotype="DI" name="MQTT_DI_S" textname="MQTT test DI" mqtt="1"/>
 
 		</sensors>
 		<thresholds name="thresholds">
@@ -380,6 +385,7 @@
 			<item id="6086" name="MBSlave9"/>
 			<item id="6087" name="MBSlave10"/>
 			<item id="6088" name="TestGroup"/>
+			<item id="6089" name="MQTTPublisher1"/>
 		</objects>
 	</ObjectsMap>
 	<messages idfromfile="1" name="messages">

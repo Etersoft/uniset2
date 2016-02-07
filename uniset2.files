@@ -46,6 +46,7 @@ extensions/include/MTR.h
 extensions/include/PassiveLProcessor.h
 extensions/include/PID.h
 extensions/include/RRDServer.h
+extensions/include/MQTTPublisher.h
 extensions/include/RTUExchange.h
 extensions/include/RTUStorage.h
 extensions/include/Schema.h
@@ -153,6 +154,10 @@ extensions/RRDServer/main.cc
 extensions/RRDServer/Makefile.am
 extensions/RRDServer/RRDServer.cc
 extensions/RRDServer/RRDServer.h
+extensions/MQTTPublisher/main.cc
+extensions/MQTTPublisher/Makefile.am
+extensions/MQTTPublisher/MQTTPublisher.cc
+extensions/MQTTPublisher/MQTTPublisher.h
 extensions/SharedMemory/libUniSet2SharedMemory.pc.in
 extensions/SharedMemory/Makefile.am
 extensions/SharedMemory/SharedMemory.cc

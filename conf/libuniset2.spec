@@ -8,6 +8,7 @@
 %def_enable logicproc
 #%def_enable modbus
 %def_disable tests
+%def_enable mqtt
 
 %define oname uniset2
 
@@ -57,6 +58,10 @@ BuildRequires: libpqxx-devel
 
 %if_enabled rrd
 BuildRequires: librrd-devel
+%endif
+
+%if_enabled mqtt
+BuildRequires: mosquitto-devel
 %endif
 
 %if_enabled python
@@ -263,6 +268,17 @@ Requires: %name-extension-common-devel = %version-%release
 Libraries needed to develop for uniset IOControl (io)
 %endif
 
+%if_enabled mqtt
+%package extension-mqtt
+Group: Development/C++
+Summary: MQTTpublisher from UniSet
+Requires: %name-extension-common = %version-%release
+
+%description extension-mqtt
+MQTT for %name
+%endif
+
+
 %package extension-smplus
 Group: Development/C++
 Summary: libUniSet2 SharedMemoryPlus extension ('all in one')
@@ -271,12 +287,13 @@ Requires: %name-extension-common = %version-%release
 %description extension-smplus
 SharedMemoryPlus extension ('all in one') for libuniset
 
+
 %prep
 %setup
 
 %build
 %autoreconf
-%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests}
+%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt}
 %make
 
 %install
