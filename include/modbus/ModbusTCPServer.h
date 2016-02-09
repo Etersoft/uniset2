@@ -78,6 +78,9 @@ class ModbusTCPServer:
 
 		void getSessions( Sessions& lst );
 
+		inline ost::InetAddress getInetAddress(){ return iaddr; }
+		inline ost::tpport_t getInetPort(){ return port; }
+
 	protected:
 
 		virtual ModbusRTU::mbErrCode pre_send_request( ModbusRTU::ModbusMessage& request ) override;

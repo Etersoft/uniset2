@@ -8,8 +8,9 @@ using namespace std;
 using namespace ModbusRTU;
 using namespace UniSetTypes;
 // -------------------------------------------------------------------------
-ModbusTCPServer::ModbusTCPServer( ost::InetAddress& ia, int port ):
-	TCPSocket(ia, port),
+ModbusTCPServer::ModbusTCPServer( ost::InetAddress& ia, int _port ):
+	TCPSocket(ia, _port),
+	port(_port),
 	iaddr(ia),
 	ignoreAddr(false),
 	maxSessions(10),
