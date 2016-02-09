@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.2
-Release: alt21
+Release: alt22
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -451,6 +451,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Tue Feb 09 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt22
+- ModbusSlave(TCP): add show ip:port to vmonit setbug #9012
+
 * Sat Feb 06 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt21
 - RRDServer: fixed bug in write sequence to rrd base
 

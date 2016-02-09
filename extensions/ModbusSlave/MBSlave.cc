@@ -2391,13 +2391,30 @@ UniSetTypes::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
 {
 	UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo(userparam);
 
+	auto sslot = dynamic_pointer_cast<ModbusTCPServerSlot>(mbslot);
+
+
 	ostringstream inf;
 
 	inf << i->info << endl;
+
+	if( sslot ) // т.е. если у нас tcp
+	{
+		ost::InetAddress iaddr = sslot->getInetAddress();
+		inf << "TCPModbusSlave: " << iaddr << endl;
+	}
+
 	inf << vmon.pretty_str() << endl;
+
 	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
 	inf << "iomap=" << iomap.size() << " myaddr: " << ModbusServer::vaddr2str(vaddr) << endl;
 	inf << "Statistic: askCount=" << askCount << " pingOK=" << pingOK << endl;
+	if( sslot ) // т.е. если у нас tcp
+	{
+		ost::InetAddress iaddr = sslot->getInetAddress();
+		inf << "TCP: " << iaddr << ":" << sslot->getInetPort() << endl;
+	}
+
 
 	i->info = inf.str().c_str();
 	return i._retn();
