@@ -162,6 +162,21 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 </xsl:for-each>
 }
 // -----------------------------------------------------------------------------
+UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID()
+{
+	if( smTestID != DefaultObjectId )
+		return smTestID;
+
+	<xsl:for-each select="//sensors/item/consumers/consumer">
+	<xsl:if test="normalize-space(@name)=$OID">
+		if( <xsl:value-of select="../../@name"/> != DefaultObjectId )
+			return <xsl:value-of select="../../@name"/>;
+	</xsl:if>
+	</xsl:for-each>
+
+	return DefaultObjectId;
+}
+// -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOCommand _cmd )
 {
 	PassiveTimer ptAct(activateTimeout);
