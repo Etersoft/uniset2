@@ -276,6 +276,7 @@
 		void preSysCommand( const UniSetTypes::SystemMessage* sm );
 		void waitSM( int wait_msec, UniSetTypes::ObjectId testID = UniSetTypes::DefaultObjectId );
 		void initFromSM();
+		UniSetTypes::ObjectId getSMTestID();
 
 		void resetMsg();
 		Trigger trResetMsg;
@@ -913,6 +914,9 @@ end_private(false)
 	</xsl:if>
 	</xsl:for-each>
 
+	if( smTestID == DefaultObjectId )
+		smTestID = getSMTestID();
+	
 	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 20000);
 
 	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 10000);
@@ -1060,6 +1064,19 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
 		}
 	}
 </xsl:for-each>
+}
+// -----------------------------------------------------------------------------
+UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID()
+{	
+	if( smTestID != DefaultObjectId )
+		return smTestID;
+		
+	<xsl:for-each select="//smap/item">
+	if( <xsl:value-of select="@name"/> != DefaultObjectId )
+		return <xsl:value-of select="@name"/>;
+	</xsl:for-each>
+	
+	return DefaultObjectId;
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
@@ -1318,6 +1335,9 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 
 	smTestID = conf->getSensorID(init3_str(conf->getArgParam("--" + argprefix + "sm-test-id"),conf->getProp(cnode,"smTestID"),""));
 
+	if( smTestID == DefaultObjectId )
+		smTestID = getSMTestID();
+	
 	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 20000);
 
 	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 10000);
