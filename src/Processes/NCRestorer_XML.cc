@@ -156,8 +156,6 @@ void NCRestorer_XML::read_list( const std::shared_ptr<UniXML>& xml, xmlNode* nod
 			{
 				try
 				{
-
-
 					ioRegistration(ic, uinf, true);
 				}
 				catch( const Exception& ex )
@@ -509,11 +507,11 @@ bool NCRestorer_XML::getThresholdInfo( const std::shared_ptr<UniXML>& xml, xmlNo
 		}
 	}
 
-	ti.id             = uit.getIntProp("id");
+	ti.id           = uit.getIntProp("id");
 	ti.lowlimit     = uit.getIntProp("lowlimit");
-	ti.hilimit         = uit.getIntProp("hilimit");
-	ti.invert         = uit.getIntProp("invert");
-	ti.state         = IONotifyController_i::NormalThreshold;
+	ti.hilimit      = uit.getIntProp("hilimit");
+	ti.invert       = uit.getIntProp("invert");
+	ti.state        = IONotifyController_i::NormalThreshold;
 	return true;
 }
 // ------------------------------------------------------------------------------------------

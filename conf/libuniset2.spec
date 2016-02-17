@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.2
-Release: alt22
+Release: alt23
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -451,6 +451,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Wed Feb 17 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt23
+- IONotifyController: fixed buf for init thresholdslist
+
 * Tue Feb 09 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt22
 - ModbusSlave(TCP): add show ip:port to vmonit setbug #9012
 
