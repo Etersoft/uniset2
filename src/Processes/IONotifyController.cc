@@ -528,6 +528,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
 					tli.si.node = uniset_conf()->getLocalNode();
 					tli.list   = std::move(lst);
 					tli.type   = li->second->type;
+					tli.ait	   = li->second;
 
 					// после этого вызова ti использовать нельзя
 					addThreshold(tli.list, std::move(ti), ci);
@@ -863,11 +864,18 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( UniSetTy
 	}
 	catch( const Exception& ex )
 	{
-		uwarn << myname << "(getThresholdsList): для датчика "
+		uwarn << myname << "(getThresholds): для датчика "
 			  << uniset_conf()->oind->getNameById(it->second.si.id)
 			  << " " << ex << endl;
 	}
-
+/*
+	catch( const IOController_i::NameNotFound& ex )
+	{
+		uwarn << myname << "(getThresholds): IOController_i::NameNotFound.. for sid"
+			  << uniset_conf()->oind->getNameById(it->second.si.id)
+			  << endl;
+	}
+*/
 	res->tlist.length( it->second.list.size() );
 
 	unsigned int k = 0;
@@ -903,14 +911,22 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 			try
 			{
 				(*res)[i].si    = it->second.si;
-				(*res)[i].value = IOController::localGetValue(it->second.ait, it->second.si.id);
+				(*res)[i].value = IOController::localGetValue(it->second.ait,it->second.si.id);
 				(*res)[i].type  = it->second.type;
 			}
 			catch( const std::exception& ex )
 			{
-				uwarn << myname << "(getThresholdsList): для датчика "
+				uwarn << myname << "(getThresholdsList): for sid="
 					  << uniset_conf()->oind->getNameById(it->second.si.id)
 					  << " " << ex.what() << endl;
+				continue;
+			}
+			catch( const IOController_i::NameNotFound& ex )
+			{
+				uwarn << myname << "(getThresholdsList): IOController_i::NameNotFound.. for sid="
+					  << uniset_conf()->oind->getNameById(it->second.si.id)
+					  << endl;
+
 				continue;
 			}
 

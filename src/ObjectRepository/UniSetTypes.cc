@@ -557,3 +557,18 @@ std::ostream& UniSetTypes::operator<<( std::ostream& os, const IOController_i::S
 
 	return os;
 }
+// -------------------------------------------------------------------------
+std::ostream& UniSetTypes::operator<<( std::ostream& os, const IONotifyController_i::ThresholdState& s )
+{
+	if( s == IONotifyController_i::LowThreshold )
+		return os << "low";
+
+	if( s == IONotifyController_i::HiThreshold )
+		return os << "hi";
+
+	if( s == IONotifyController_i::NormalThreshold )
+		return os << "norm";
+
+	return os << "Unknown";
+}
+// -------------------------------------------------------------------------

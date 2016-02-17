@@ -90,6 +90,7 @@ namespace UniSetTypes
 	std::ostream& operator<<( std::ostream& os, const UniversalIO::IOType t );
 	std::ostream& operator<<( std::ostream& os, const IONotifyController_i::ThresholdInfo& ti );
 	std::ostream& operator<<( std::ostream& os, const IOController_i::ShortIOInfo& s );
+	std::ostream& operator<<( std::ostream& os, const IONotifyController_i::ThresholdState& s);
 
 	/*! Команды для управления лампочками */
 	enum LampCommand

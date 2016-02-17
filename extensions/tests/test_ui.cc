@@ -190,6 +190,12 @@ TEST_CASE("UInterface", "[UInterface]")
 		REQUIRE( ti3.hilimit == 40 );
 
 		REQUIRE_THROWS_AS( ui.getThresholdInfo(sid, 10), UniSetTypes::NameNotFound );
+
+		// проверяем thresholds который был сформирован из секции <thresholds>
+		ui.setValue(10, 378);
+		REQUIRE( ui.getValue(13) == 1 );
+		ui.setValue(10, 0);
+		REQUIRE( ui.getValue(13) == 0 );
 	}
 
 	SECTION( "calibration" )

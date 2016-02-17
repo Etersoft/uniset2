@@ -120,6 +120,13 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, std::shared_ptr<IOCon
 	for( auto& it : lst )
 		it.sit = ic->myioEnd();
 
+	try
+	{
+		auto i =  ic->find(inf->si.id);
+		ic->askTMap[inf->si.id].ait = i->second;
+	}
+	catch(...){}
+
 	ic->askTMap[inf->si.id].si   = inf->si;
 	ic->askTMap[inf->si.id].type = inf->type;
 	ic->askTMap[inf->si.id].list = std::move(lst);
