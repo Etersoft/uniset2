@@ -86,7 +86,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 			}
 			catch( const Exception&amp; ex )
 			{
-				ucrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
+				mycrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
 			}
 		}
 
@@ -96,16 +96,16 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 	}
 	catch( const Exception&amp; ex )
 	{
-        ucrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
+        mycrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
 	}
 	catch( const CORBA::SystemException&amp; ex )
 	{
-        ucrit &lt;&lt; myname &lt;&lt; "(execute): СORBA::SystemException: "
+        mycrit &lt;&lt; myname &lt;&lt; "(execute): СORBA::SystemException: "
 			&lt;&lt; ex.NP_minorString() &lt;&lt; endl;
 	}
     catch( const std::exception&amp;ex )
     {
-        ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
+        mycrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
     }
 
 	if( !active )
@@ -189,7 +189,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 	}
 
 	if( !activated )
-		ucrit &lt;&lt; myname
+		mycrit &lt;&lt; myname
 			&lt;&lt; "(preAskSensors): ************* don`t activated?! ************" &lt;&lt; endl;
 
 	for( ;; )
@@ -207,11 +207,11 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 		}
 		catch( const Exception&amp; ex )
 		{
-            ucrit &lt;&lt; myname &lt;&lt; "(preAskSensors): " &lt;&lt; ex &lt;&lt; endl;
+            mycrit &lt;&lt; myname &lt;&lt; "(preAskSensors): " &lt;&lt; ex &lt;&lt; endl;
 		}
     	catch( const std::exception&amp;ex )
 	    {
-    	    ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
+    	    mycrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
 	    }
     	msleep(askPause);
 	}
@@ -268,7 +268,7 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 	}
 	catch( const Exception&amp; ex )
 	{
-		ucrit &lt;&lt; myname &lt;&lt; "(getValue): " &lt;&lt; ex &lt;&lt; endl;
+		mycrit &lt;&lt; myname &lt;&lt; "(getValue): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
 	}
 }
@@ -322,7 +322,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
 	}
 	catch( const Exception&amp; ex )
 	{
-		ucrit &lt;&lt; myname &lt;&lt; "(getdata): " &lt;&lt; ex &lt;&lt; endl;
+		mycrit &lt;&lt; myname &lt;&lt; "(getdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
 	}
 </xsl:template>
@@ -357,7 +357,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
 			}
 			catch( const Exception&amp; ex )
 			{
-				ucrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
+				mycrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
 				throw;
 			}
 </xsl:template>
@@ -372,7 +372,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
 	}
 	catch( const Exception&amp; ex )
 	{
-		ucrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
+		mycrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
 	}
 </xsl:template>

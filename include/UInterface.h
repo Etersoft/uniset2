@@ -189,11 +189,13 @@ class UInterface
 		bool isExist( const UniSetTypes::ObjectId id ) const;
 		bool isExist( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const;
 
+		// used for check 'isExist'
 		bool waitReady( const UniSetTypes::ObjectId id, int msec, int pause = 5000,
-						const UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );     // used exist
+						const UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );
 
+		// used for check 'getValue'
 		bool waitWorking( const UniSetTypes::ObjectId id, int msec, int pause = 3000,
-						  const UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );     // used getValue
+						  const UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );
 
 		// ---------------------------------------------------------------
 		// Работа с ID, Name

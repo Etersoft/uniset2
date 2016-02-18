@@ -89,7 +89,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 			}
 			catch( const Exception&amp; ex )
 			{
-				ucrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
+				mycrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
 			}
 		}
 
@@ -99,16 +99,16 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 	}
 	catch( const Exception&amp; ex )
 	{
-        ucrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
+        mycrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
 	}
 	catch( const CORBA::SystemException&amp; ex )
 	{
-        ucrit &lt;&lt; myname &lt;&lt; "(execute): СORBA::SystemException: "
+        mycrit &lt;&lt; myname &lt;&lt; "(execute): СORBA::SystemException: "
 			&lt;&lt; ex.NP_minorString() &lt;&lt; endl;
 	}
     catch( const std::exception&amp;ex )
     {
-        ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
+        mycrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
     }
 
 	if( !active )
@@ -222,7 +222,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 	}
 	catch( const Exception&amp; ex )
 	{
-        ucrit &lt;&lt; myname &lt;&lt; "(getdata): " &lt;&lt; ex &lt;&lt; endl;
+        mycrit &lt;&lt; myname &lt;&lt; "(getdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
 	}
 </xsl:template>
@@ -239,7 +239,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 	}
 	catch( const Exception&amp; ex )
 	{
-        ucrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
+        mycrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
 	}
 </xsl:template>
@@ -257,7 +257,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 	}
 	catch( const Exception&amp; ex )
 	{
-        ucrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
+        mycrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
 	}
 </xsl:template>
@@ -274,7 +274,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 	}
 	catch( const Exception&amp; ex )
 	{
-        ucrit &lt;&lt; myname &lt;&lt; "(setmsg): " &lt;&lt; ex &lt;&lt; endl;
+        mycrit &lt;&lt; myname &lt;&lt; "(setmsg): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
 	}
 </xsl:template>

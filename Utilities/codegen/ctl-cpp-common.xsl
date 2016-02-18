@@ -95,7 +95,7 @@
 			</xsl:when>
 			<xsl:when test="$GENTYPE='CHECK'">
 				<xsl:if test="normalize-space(@no_check_id)!='1'">
-				<xsl:if test="normalize-space(../../@id)=''">uwarn &lt;&lt; myname &lt;&lt; ": Not found (Message)OID for mid_<xsl:value-of select="normalize-space(../../@name)"/>" &lt;&lt; endl;
+				<xsl:if test="normalize-space(../../@id)=''">mywarn &lt;&lt; myname &lt;&lt; ": Not found (Message)OID for mid_<xsl:value-of select="normalize-space(../../@name)"/>" &lt;&lt; endl;
 				</xsl:if>
 				</xsl:if>
 			</xsl:when>
@@ -117,7 +117,7 @@
 				}
 			    catch( const std::exception&amp;ex )
 			    {
-			        ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
+			        mycrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
 			    }
 				return false;
 			}
@@ -375,7 +375,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( UniSetTypes::Voi
 	}
 	catch( const Exception&amp; ex )
 	{
-		ucrit  &lt;&lt; myname &lt;&lt; "(processingMessage): " &lt;&lt; ex &lt;&lt; endl;
+		mycrit  &lt;&lt; myname &lt;&lt; "(processingMessage): " &lt;&lt; ex &lt;&lt; endl;
 	}
 }
 // -----------------------------------------------------------------------------
@@ -384,10 +384,10 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 	switch( _sm->command )
 	{
 		case SystemMessage::WatchDog:
-			uinfo &lt;&lt; myname &lt;&lt; "(preSysCommand): WatchDog" &lt;&lt; endl;
+			myinfo &lt;&lt; myname &lt;&lt; "(preSysCommand): WatchDog" &lt;&lt; endl;
 			if( !active || !ptStartUpTimeout.checkTime() )
 			{
-				uwarn &lt;&lt; myname &lt;&lt; "(preSysCommand): игнорируем WatchDog, потому-что только-что стартанули" &lt;&lt; endl;
+				mywarn &lt;&lt; myname &lt;&lt; "(preSysCommand): игнорируем WatchDog, потому-что только-что стартанули" &lt;&lt; endl;
 				break;
 			}
 		case SystemMessage::StartUp:
@@ -528,18 +528,18 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 	if( _testID == DefaultObjectId )
 		return;
 		
-	uinfo &lt;&lt; myname &lt;&lt; "(waitSM): waiting SM ready "
+	myinfo &lt;&lt; myname &lt;&lt; "(waitSM): waiting SM ready "
 			&lt;&lt; wait_msec &lt;&lt; " msec"
 			&lt;&lt; " testID=" &lt;&lt; _testID &lt;&lt; endl;
 		
-	if( !ui->waitReady(_testID,wait_msec) )
+	if( !ui->waitWorking(_testID,wait_msec) )
 	{
 		ostringstream err;
 		err &lt;&lt; myname 
 			&lt;&lt; "(waitSM): Не дождались готовности(exist) SharedMemory к работе в течение " 
 			&lt;&lt; wait_msec &lt;&lt; " мсек";
 
-        ucrit &lt;&lt; err.str() &lt;&lt; endl;
+        mycrit &lt;&lt; err.str() &lt;&lt; endl;
 //		terminate();
 //		abort();
 		raise(SIGTERM);
@@ -557,7 +557,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 				&lt;&lt; "(waitSM): Не дождались готовности(work) SharedMemory к работе в течение " 
 				&lt;&lt; wait_msec &lt;&lt; " мсек";
 	
-            ucrit &lt;&lt; err.str() &lt;&lt; endl;
+            mycrit &lt;&lt; err.str() &lt;&lt; endl;
 //			terminate();
 //			abort();
 			raise(SIGTERM);
@@ -706,7 +706,7 @@ forceOut(false),
 </xsl:for-each>
 end_private(false)
 {
-	ucrit &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
+	mycrit &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
 	throw Exception( string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
@@ -931,14 +931,14 @@ end_private(false)
 	<xsl:if test="normalize-space(@min)!=''">
 	if( <xsl:value-of select="@name"/> &lt; <xsl:value-of select="@min"/> )
 	{
-        uwarn &lt;&lt; myname &lt;&lt; ": RANGE WARNING: <xsl:value-of select="@name"/>=" &lt;&lt; <xsl:value-of select="@name"/> &lt;&lt; " &lt; <xsl:value-of select="@min"/>" &lt;&lt; endl;
+        mywarn &lt;&lt; myname &lt;&lt; ": RANGE WARNING: <xsl:value-of select="@name"/>=" &lt;&lt; <xsl:value-of select="@name"/> &lt;&lt; " &lt; <xsl:value-of select="@min"/>" &lt;&lt; endl;
 		<xsl:if test="normalize-space(@no_range_exception)=''">throw UniSetTypes::SystemError(myname+"(init): <xsl:value-of select="@name"/> &lt; <xsl:value-of select="@min"/>");</xsl:if>
 	}
 	</xsl:if>
 	<xsl:if test="normalize-space(@max)!=''">
 	if( <xsl:value-of select="@name"/> &gt; <xsl:value-of select="@max"/> )
 	{
-        uwarn &lt;&lt; myname &lt;&lt; ": RANGE WARNING: <xsl:value-of select="@name"/>=" &lt;&lt; <xsl:value-of select="@name"/> &lt;&lt; " &gt; <xsl:value-of select="@max"/>" &lt;&lt; endl;
+        mywarn &lt;&lt; myname &lt;&lt; ": RANGE WARNING: <xsl:value-of select="@name"/>=" &lt;&lt; <xsl:value-of select="@name"/> &lt;&lt; " &gt; <xsl:value-of select="@max"/>" &lt;&lt; endl;
 		<xsl:if test="normalize-space(@no_range_exception)=''">throw UniSetTypes::SystemError(myname+"(init): <xsl:value-of select="@name"/> &gt; <xsl:value-of select="@max"/>");</xsl:if>
 	}
 	</xsl:if>
