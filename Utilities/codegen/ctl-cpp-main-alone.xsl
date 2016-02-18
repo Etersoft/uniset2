@@ -81,7 +81,7 @@ int main( int argc,char* argv[] )
 	}
     catch( const std::exception&amp;ex )
     {
-        ucrit &lt;&lt; "(main): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
+        cerr &lt;&lt; "(main): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
     }
 	catch(...)
 	{

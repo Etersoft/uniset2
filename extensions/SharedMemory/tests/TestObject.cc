@@ -7,6 +7,7 @@ using namespace UniSetTypes;
 TestObject::TestObject( UniSetTypes::ObjectId objId, xmlNode* cnode ):
 	TestObject_SK(objId, cnode)
 {
+	vmonit(evntIsOK);
 }
 // -----------------------------------------------------------------------------
 TestObject::~TestObject()
