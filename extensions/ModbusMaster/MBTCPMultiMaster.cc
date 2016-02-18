@@ -200,12 +200,9 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 		// сперва надо обновить все ignore
 		// т.к. фактически флаги выставляются и сбрасываются только здесь
 		for( auto it = mblist.rbegin(); it != mblist.rend(); ++it )
-		{
-			if( it->ignore && it->ptIgnoreTimeout.checkTime() )
-				it->ignore = false;
-		}
+			it->ignore = !it->ptIgnoreTimeout.checkTime();
 
-		// если reopen=true - значит почему текущему каналу нет (хотя соединение есть)
+		// если reopen=true - значит почему-то по текущему каналу связи нет (хотя соединение есть)
 		// тогда выставляем ему признак игнорирования
 		if( mbi != mblist.rend() && reopen )
 		{
@@ -215,30 +212,21 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 			mbwarn << myname << "(initMB): set ignore=true for " << mbi->ip << ":" << mbi->port << endl;
 		}
 
-		// Если по текущему каналу связь есть, то возвращаем его
+		// Если по текущему каналу связь есть (и мы его не игнорируем), то возвращаем его
 		if( mbi != mblist.rend() && !mbi->ignore && mbi->respond )
 		{
-			if( mbi->mbtcp->isConnection() || mbi->init(mblog) )
+			// ещё раз проверим соединение (в неблокирующем режиме)
+			mbi->respond = mbi->check();
+
+			if( mbi->respond && (mbi->mbtcp->isConnection() || mbi->init(mblog)) )
 			{
-				if( !mbi->ignore  )
-				{
-					mblog4 << myname << "(initMB): SELECT CHANNEL " << mbi->ip << ":" << mbi->port << endl;
-
-					mb = mbi->mbtcp;
-					mbi->setUse(true);
-					return mbi->mbtcp;
-				}
-
-				if( mbi->ptIgnoreTimeout.checkTime() )
-				{
-					mbi->ignore = false;
-					mbi->setUse(true);
-					mb = mbi->mbtcp;
-					return mbi->mbtcp;
-				}
-
-				mbi->setUse(false);
+				mblog4 << myname << "(initMB): SELECT CHANNEL " << mbi->ip << ":" << mbi->port << endl;
+				mb = mbi->mbtcp;
+				mbi->setUse(true);
+				return mbi->mbtcp;
 			}
+
+			mbi->setUse(false);
 		}
 
 		if( mbi != mblist.rend() )
