@@ -248,6 +248,25 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 		}
 	}
 
+	// если дошли сюда.. значит не нашли ни одного канала..
+	// но т.к. мы пропускали те, которые в ignore
+	// значит сейчас просто находим первый у кого есть связь и делаем его главным
+	for( auto it = mblist.rbegin(); it != mblist.rend(); ++it )
+	{
+		uniset_rwmutex_wrlock l(tcpMutex);
+
+		if( it->respond && it->check() && it->init(mblog) )
+		{
+			mbi = it;
+			mb = mbi->mbtcp;
+			mbi->ignore = false;
+			mbi->setUse(true);
+			mblog4 << myname << "(initMB): SELECT CHANNEL " << mbi->ip << ":" << mbi->port << endl;
+			return it->mbtcp;
+		}
+	}
+
+	// значит всё-таки связи реально нет...
 	{
 		uniset_rwmutex_wrlock l(tcpMutex);
 		mbi = mblist.rend();
