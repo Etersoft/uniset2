@@ -117,6 +117,14 @@ static void InitTest()
 // -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMultiMaster: rotate channel", "[modbus][mbmaster][mbtcpmultimaster]")
 {
+	// Т.к. respond/notrespond проверяется по возможности создать соединение
+	// а мы имитируем отключение просто отключением обмена
+	// то датчик связи всё-равно будет показывать что канал1 доступен
+	// поэтому датчик 12 - не проверяем..
+	// а просто проверяем что теперь значение приходит по другому каналу
+	// (см. setReply)
+	// ----------------------------
+
 	InitTest();
 	CHECK( ui->isExist(mbID) );
 
@@ -126,28 +134,19 @@ TEST_CASE("MBTCPMultiMaster: rotate channel", "[modbus][mbmaster][mbtcpmultimast
 	msleep(polltime + 1000);
 	REQUIRE( ui->getValue(1003) == 100 );
 	mbs1->disableExchange(true);
+	mbs2->disableExchange(false);
 	msleep(4000); // --mbtcp-timeout 3000 (см. run_test_mbtcmultipmaster.sh)
 	REQUIRE( ui->getValue(1003) == 10 );
 
-	// Т.к. respond/notrespond проверяется по возможности создать соединение
-	// а мы имитируем отключение просто отключением обмена
-	// то датчик связи всё-равно будет показывать что канал1 доступен
-	// поэтому датчик 12 - не проверяем..
-	// а просто проверяем что теперь значение приходит по другому каналу
-	// (см. setReply)
-	// ----------------------------
-
-
-	// REQUIRE( ui->getValue(12) == true );
-	REQUIRE( ui->getValue(13) == false );
+	// проверяем что канал остался на втором, хотя на первом мы включили связь
 	mbs1->disableExchange(false);
+	mbs2->disableExchange(false);
+	msleep(4000); // --mbtcp-timeout 3000 (см. run_test_mbtcmultipmaster.sh)
+	REQUIRE( ui->getValue(1003) == 10 );
+
 	mbs2->disableExchange(true);
+	mbs1->disableExchange(false);
 	msleep(4000); // --mbtcp-timeout 3000 (см. run_test_mbtcmultipmaster.sh)
 	REQUIRE( ui->getValue(1003) == 100 );
-//	REQUIRE( ui->getValue(12) == false );
-
-	mbs2->disableExchange(false);
-	REQUIRE( ui->getValue(1003) == 100 );
-//	REQUIRE( ui->getValue(13) == true );
 }
 // -----------------------------------------------------------------------------
