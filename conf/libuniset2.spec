@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.2
-Release: alt23
+Release: alt24
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -451,6 +451,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Thu Feb 18 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt24
+- modbustcpserver-echo: fixed bug for options
+
 * Wed Feb 17 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt23
 - IONotifyController: fixed buf for init thresholdslist
 

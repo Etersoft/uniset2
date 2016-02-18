@@ -51,7 +51,7 @@ int main( int argc, char** argv )
 		{
 			opt = getopt_long(argc, argv, "hva:p:i:bc:", longopts, &optindex);
 
-			if( opt != -1 )
+			if( opt == -1 )
 				break;
 
 			switch (opt)
