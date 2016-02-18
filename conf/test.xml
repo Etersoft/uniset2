@@ -75,7 +75,7 @@
 		</UniExchange>
 		<MBMaster1 iaddr="127.0.0.1" levels="info,warn,crit" name="MBMaster1" poll_time="200" port="30000" reply_timeout="60">
 			<DeviceList>
-				<item addr="0x01" invert="0" respondSensor="RespondRTU_S" timeout="5000" modeSensor="MB1_Mode_AS"/>
+				<item addr="0x01" invert="1" respondSensor="RespondRTU_S" timeout="5000" modeSensor="MB1_Mode_AS"/>
 			</DeviceList>
 		</MBMaster1>
 		<MBMultiMaster1 levels="info,warn,crit" name="MBMaster1" polltime="200">
