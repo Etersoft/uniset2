@@ -5,6 +5,10 @@
 #include <string>
 #include <cc++/socket.h>
 // -------------------------------------------------------------------------
+/*! Специальная "обёртка" над ost::TCPStream, устанавливающая ещё и параметры KeepAlive,
+ * для открытого сокета.
+ * \note Правда это linux-only
+*/
 class UTCPStream:
 	public ost::TCPStream
 {
