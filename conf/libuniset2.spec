@@ -453,6 +453,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %changelog
 * Thu Feb 18 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt24
 - modbustcpserver-echo: fixed bug for options
+- ModbusTCPMultiMaster: add new logs, 
+   add ignore option for GateList, modify change channel logic
 
 * Wed Feb 17 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt23
 - IONotifyController: fixed buf for init thresholdslist

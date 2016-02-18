@@ -31,7 +31,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 	checktime = conf->getArgPInt("--" + prefix + "-checktime", it.getProp("checktime"), 5000);
 	force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection", it.getProp("persistent_connection")) ? false : true;
 
-	int ignore_timeout = conf->getArgPInt("--" + prefix + "-ignore-timeout", it.getProp("ignoreTimeout"), ptReopen.getInterval());
+	int ignore_timeout = conf->getArgPInt("--" + prefix + "-ignore-timeout", it.getProp("ignore_timeout"), ptReopen.getInterval());
 
 	UniXML::iterator it1(it);
 
@@ -53,6 +53,12 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 
 	for( ; it1.getCurrent(); it1++ )
 	{
+		if( it1.getIntProp("ignore") )
+		{
+			mbinfo << myname << "(init): IGNORE " <<  it1.getProp("ip") << ":" << it1.getProp("port") << endl;
+			continue;
+		}
+
 		MBSlaveInfo sinf;
 		sinf.ip = it1.getProp("ip");
 
@@ -191,6 +197,14 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 	{
 		uniset_rwmutex_wrlock l(tcpMutex);
 
+		// сперва надо обновить все ignore-ы
+		// т.к. фактически флаги выставляются и сбрасываются только здесь
+		for( auto it = mblist.rbegin(); it != mblist.rend(); ++it )
+		{
+			if( it->ignore && it->ptIgnoreTimeout.checkTime() )
+				it->ignore = false;
+		}
+
 		// если reopen=true - значит почему текущему каналу нет (хотя соединение есть)
 		// тогда выставляем ему признак игнорирования
 		if( mbi != mblist.rend() && reopen )
@@ -208,6 +222,8 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 			{
 				if( !mbi->ignore  )
 				{
+					mblog4 << myname << "(initMB): SELECT CHANNEL " << mbi->ip << ":" << mbi->port << endl;
+
 					mb = mbi->mbtcp;
 					mbi->setUse(true);
 					return mbi->mbtcp;
@@ -234,19 +250,12 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 	{
 		uniset_rwmutex_wrlock l(tcpMutex);
 
-		if( it->respond && it->init(mblog) )
+		if( it->respond && !it->ignore && it->init(mblog) )
 		{
-			if( it->ignore )
-			{
-				if( !it->ptIgnoreTimeout.checkTime() )
-					continue;
-
-				it->ignore = false;
-			}
-
 			mbi = it;
 			mb = mbi->mbtcp;
 			mbi->setUse(true);
+			mblog4 << myname << "(initMB): SELECT CHANNEL " << mbi->ip << ":" << mbi->port << endl;
 			return it->mbtcp;
 		}
 	}
@@ -372,6 +381,9 @@ void MBTCPMultiMaster::check_thread()
 		{
 			try
 			{
+				// сбрасываем флаг ignore..раз время вышло.
+				it->ignore = !it->ptIgnoreTimeout.checkTime();
+
 				// Если use=1" связь не проверяем и считаем что связь есть..
 				bool r = ( it->use ? true : it->check() );
 
@@ -507,9 +519,13 @@ const std::string MBTCPMultiMaster::MBSlaveInfo::getShortInfo() const
 {
 	ostringstream s;
 	s << myname << " respond=" << respond
-	  << " (respond_id=" << respond_id << " respond_invert=" << respond_invert
-	  << " recv_timeout=" << recv_timeout << " resp_force=" << respond_force
-	  << " use=" << use << " ignore=" << ignore << " priority=" << priority
+	  << " (respond_id=" << respond_id
+	  << " respond_invert=" << respond_invert
+	  << " recv_timeout=" << recv_timeout
+	  << " resp_force=" << respond_force
+	  << " use=" << use
+	  << " ignore=" << ( ptIgnoreTimeout.checkTime() ? "0":"1")
+	  << " priority=" << priority
 	  << " persistent-connection=" << !force_disconnect
 	  << ")";
 

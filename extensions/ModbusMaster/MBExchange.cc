@@ -3187,7 +3187,7 @@ void MBExchange::updateRespondSensors()
 			{
 				bool set = d->resp_invert ? !d->resp_state : d->resp_state;
 
-				mblog4 << myname << ": SAVE NEW respond state=" << set
+				mblog4 << myname << ": SAVE NEW " << (d->resp_invert ? "NOT" : "") << " respond state=" << set
 					   << " for addr=" << ModbusRTU::addr2str(d->mbaddr)
 					   << " respond_id=" << d->resp_id
 					   << " state=" << d->resp_state
