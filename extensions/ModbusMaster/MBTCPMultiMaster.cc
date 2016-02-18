@@ -197,7 +197,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 	{
 		uniset_rwmutex_wrlock l(tcpMutex);
 
-		// сперва надо обновить все ignore-ы
+		// сперва надо обновить все ignore
 		// т.к. фактически флаги выставляются и сбрасываются только здесь
 		for( auto it = mblist.rbegin(); it != mblist.rend(); ++it )
 		{

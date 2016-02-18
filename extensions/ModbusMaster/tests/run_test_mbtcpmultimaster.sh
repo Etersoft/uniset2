@@ -13,7 +13,7 @@ cd -
 --smemory-id SharedMemory \
 --mbtcp-filter-field mb \
 --mbtcp-filter-value 1 \
---mbtcp-polltime 50 --mbtcp-recv-timeout 500 --mbtcp-timeout 3000 --mbtcp-ignore-timeout 3000 --dlog-add-levels warn,crit
+--mbtcp-polltime 50 --mbtcp-recv-timeout 500 --mbtcp-checktime 1000 --mbtcp-timeout 3000 --mbtcp-ignore-timeout 3000 --dlog-add-levels warn,crit
 # --dlog-add-levels any
 #--mbtcp-force-out 1
 #--dlog-add-levels any
