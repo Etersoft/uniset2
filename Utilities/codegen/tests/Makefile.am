@@ -13,6 +13,8 @@ GENERATED=TestGen_SK.h TestGen_SK.cc TestGen-main.cc
 GENERATED2=TestGenAlone_SK.h TestGenAlone_SK.cc TestGenAlone-main.cc
 GENUOBJ=UObject_SK.cc UObject_SK.h
 
+BUILT_SOURCES=$(GENERATED) $(GENERATED2) $(GENOBJ)
+
 TestGen-main.cc TestGen_SK.cc TestGen_SK.h: ../@PACKAGE@-codegen testgen.src.xml ../*.xsl
 	../@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen --gen-varmap --local-include -n TestGen testgen.src.xml
 

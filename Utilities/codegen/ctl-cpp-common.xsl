@@ -532,7 +532,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 			&lt;&lt; wait_msec &lt;&lt; " msec"
 			&lt;&lt; " testID=" &lt;&lt; _testID &lt;&lt; endl;
 		
-	if( !ui->waitWorking(_testID,wait_msec) )
+	// waitReady можно использовать т.к. датчик это по сути IONotifyController
+	if( !ui-&gt;waitReady(_testID,wait_msec) )
 	{
 		ostringstream err;
 		err &lt;&lt; myname 
@@ -547,24 +548,19 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 //		throw SystemError(err.str());
 	}
 
-<xsl:if test="normalize-space($TESTMODE)!=''">
-	if( idTestMode_S != DefaultObjectId )
+	if( !ui->waitWorking(_testID,wait_msec) )
 	{
-		if( !ui->waitWorking(idTestMode_S,wait_msec) )
-		{
-			ostringstream err;
-			err &lt;&lt; myname 
-				&lt;&lt; "(waitSM): Не дождались готовности(work) SharedMemory к работе в течение " 
-				&lt;&lt; wait_msec &lt;&lt; " мсек";
+		ostringstream err;
+		err &lt;&lt; myname
+			&lt;&lt; "(waitSM): Не дождались готовности(work) SharedMemory к работе в течение "
+			&lt;&lt; wait_msec &lt;&lt; " мсек";
 	
-            mycrit &lt;&lt; err.str() &lt;&lt; endl;
-//			terminate();
-//			abort();
-			raise(SIGTERM);
-//			throw SystemError(err.str());
-		}
+		mycrit &lt;&lt; err.str() &lt;&lt; endl;
+//		terminate();
+//		abort();
+		raise(SIGTERM);
+//		throw SystemError(err.str());
 	}
-</xsl:if>
 }
 // ----------------------------------------------------------------------------
 std::string <xsl:value-of select="$CLASSNAME"/>_SK::help()
