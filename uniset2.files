@@ -475,6 +475,7 @@ Utilities/MBTester/mbtcpserver.cc
 Utilities/MBTester/MBTCPServer.cc
 Utilities/MBTester/MBTCPServer.h
 Utilities/MBTester/mbtcptester.cc
+Utilities/MBTester/mbtcpconnection.cc
 Utilities/NullController/main.cc
 Utilities/NullController/Makefile.am
 Utilities/NullController/NullController.cc

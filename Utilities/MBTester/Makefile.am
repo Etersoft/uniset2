@@ -2,6 +2,9 @@ bin_PROGRAMS 	= @PACKAGE@-mbrtutest @PACKAGE@-mbrtuslave-echo \
 		@PACKAGE@-mbtcpserver-echo @PACKAGE@-mbtcptest
 #@PACKAGE@-mbtest
 
+noinst_PROGRAMS 	= mbtcp-test-connection
+
+
 @PACKAGE@_mbrtutest_SOURCES 	= mbrtutester.cc
 @PACKAGE@_mbrtutest_LDADD 	= $(top_builddir)/lib/libUniSet2.la
 
@@ -19,5 +22,9 @@ bin_PROGRAMS 	= @PACKAGE@-mbrtutest @PACKAGE@-mbrtuslave-echo \
 
 #@PACKAGE@_mbtest2_SOURCES 	= mbtester2.cc
 #@PACKAGE@_mbtest2_LDADD 	= $(top_builddir)/lib/libUniSet2.la
+
+mbtcp_test_connection_SOURCES 	= mbtcpconnection.cc
+mbtcp_test_connection_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(COMCPP_LIBS)
+mbtcp_test_connection_CPPFLAGS = $(COMCPP_CFLAGS)
 
 include $(top_builddir)/include.mk
