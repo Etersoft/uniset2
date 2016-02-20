@@ -165,15 +165,6 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 		if( tcp->isPending(ost::Socket::pendingInput, timeout) )
 		{
-			/*
-			            unsigned char rbuf[100];
-			            memset(rbuf,0,sizeof(rbuf));
-			            int ret = getNextData(rbuf,sizeof(rbuf));
-			            cerr << "ret=" << ret << " recv: ";
-			            for( unsigned int i=0; i<sizeof(rbuf); i++ )
-			                cerr << hex << " 0x" <<  (int)rbuf[i];
-			            cerr << endl;
-			*/
 			ModbusTCP::MBAPHeader rmh;
 			int ret = getNextData((unsigned char*)(&rmh), sizeof(rmh));
 
@@ -238,7 +229,10 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				if( dlog->is_info() )
 					dlog->info() << "(query): force disconnect.." << endl;
 
-				tcp->forceDisconnect();
+				// при штатном обмене..лучше дождаться конца "посылки"..
+				// поэтому применяем disconnect(), а не forceDisconnect()
+				// (с учётом выставленной опции setLinger(true))
+				tcp->disconnect(); 	// tcp->forceDisconnect();
 			}
 
 			return res;
