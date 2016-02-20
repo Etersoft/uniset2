@@ -13,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.2
-Release: alt26
+Release: alt27
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -451,6 +451,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Sat Feb 20 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt27
+- (ModbusTCP): add forceDisconnect() func for tcp connection
+
 * Fri Feb 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt26
 - (codegen): revert waitSM logic..
 
