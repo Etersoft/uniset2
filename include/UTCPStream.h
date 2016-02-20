@@ -23,6 +23,9 @@ class UTCPStream:
 		// return true if OK
 		bool setKeepAliveParams( timeout_t timeout_sec = 5, int conn_keepcnt = 1, int keepintvl = 2 );
 
+		bool isSetLinger();
+		void forceDisconnect(); // disconnect() без ожидания (с отключением SO_LINGER)
+
 	protected:
 
 	private:

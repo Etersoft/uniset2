@@ -230,7 +230,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 		}
 
 		if( mbi != mblist.rend() )
-			mbi->mbtcp->disconnect();
+			mbi->mbtcp->forceDisconnect();
 	}
 
 	// проходим по списку (в обратном порядке, т.к. самый приоритетный в конце)

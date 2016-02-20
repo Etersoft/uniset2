@@ -200,7 +200,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 								 << endl;
 				}
 
-				disconnect();
+				tcp->forceDisconnect();
 				return erTimeOut; // return erHardwareError;
 			}
 
@@ -238,7 +238,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				if( dlog->is_info() )
 					dlog->info() << "(query): force disconnect.." << endl;
 
-				disconnect();
+				tcp->forceDisconnect();
 			}
 
 			return res;
@@ -253,7 +253,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				dlog->info() << "(query): force disconnect.." << endl;
 
 			//            cleanInputStream();
-			disconnect();
+			tcp->forceDisconnect();
 		}
 
 		return erTimeOut;
@@ -331,7 +331,7 @@ void ModbusTCPMaster::reconnect()
 
 	if( tcp )
 	{
-		tcp->disconnect();
+		tcp->forceDisconnect();
 		tcp.reset();
 	}
 
@@ -427,6 +427,18 @@ void ModbusTCPMaster::disconnect()
 		return;
 
 	tcp->disconnect();
+	tcp.reset();
+}
+// -------------------------------------------------------------------------
+void ModbusTCPMaster::forceDisconnect()
+{
+	if( dlog->is_info() )
+		dlog->info() << iaddr << "(ModbusTCPMaster): FORCE disconnect (" << iaddr << ":" << port << ")." << endl;
+
+	if( !tcp )
+		return;
+
+	tcp->forceDisconnect();
 	tcp.reset();
 }
 // -------------------------------------------------------------------------

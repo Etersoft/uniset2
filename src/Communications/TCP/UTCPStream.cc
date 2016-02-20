@@ -44,6 +44,19 @@ bool UTCPStream::setKeepAliveParams(timeout_t timeout_sec, int keepcnt, int keep
 	return ok;
 }
 // -------------------------------------------------------------------------
+bool UTCPStream::isSetLinger()
+{
+	return Socket::flags.linger;
+}
+// -------------------------------------------------------------------------
+void UTCPStream::forceDisconnect()
+{
+	bool f = Socket::flags.linger;
+	Socket::flags.linger = false;
+	disconnect();
+	Socket::flags.linger = f;
+}
+// -------------------------------------------------------------------------
 void UTCPStream::create( const std::string& hname, int port, bool throwflag, timeout_t t )
 {
 	family = ost::Socket::IPV4;
