@@ -143,36 +143,6 @@ void MQTTPublisher::sysCommand(const SystemMessage* sm)
 	}
 }
 //--------------------------------------------------------------------------------
-string MQTTPublisher::replace( const std::string& text, MQTTPublisher::MQTTTextInfo* ti, MQTTPublisher::RangeInfo* ri, long value )
-{
-	std::string txt(text);
-
-	ostringstream v;
-	v << value;
-
-	ostringstream id;
-	id << ti->sid;
-
-	ostringstream r;
-	r << "[" << ri->rmin << ":" << ri->rmax << "]";
-
-	ostringstream smin;
-	smin << ri->rmin;
-
-	ostringstream smax;
-	smax << ri->rmax;
-
-	txt = replace_all(txt, "%v", v.str());
-	txt = replace_all(txt, "%n", ti->xmlnode.getProp("name"));
-	txt = replace_all(txt, "%t", ti->xmlnode.getProp("textname"));
-	txt = replace_all(txt, "%i", id.str());
-	txt = replace_all(txt, "%rmin", smin.str());
-	txt = replace_all(txt, "%rmax", smax.str());
-	txt = replace_all(txt, "%r", r.str());
-
-	return std::move(txt);
-}
-//--------------------------------------------------------------------------------
 void MQTTPublisher::help_print( int argc, const char* const* argv )
 {
 	cout << " Default prefix='mqtt'" << endl;
@@ -306,27 +276,7 @@ void MQTTPublisher::sensorInfo( const UniSetTypes::SensorMessage* sm )
 	auto t = textpublist.find(sm->id);
 
 	if( t != textpublist.end() )
-	{
-		auto rlist = t->second.rlist;
-
-		for( auto &&  r : rlist )
-		{
-			if( r.check(sm->value) )
-			{
-				string tmsg = replace(r.text, &(t->second), &r, sm->value);
-
-				//subscribe(NULL, i.second.pubname.c_str());
-				myinfo << "(sensorInfo): publish: topic='" << t->second.pubname << "' msg='" << tmsg << "'" << endl;
-
-				int ret = publish(NULL, t->second.pubname.c_str(), tmsg.size(), tmsg.c_str(), 1, false);
-
-				if( ret != MOSQ_ERR_SUCCESS )
-				{
-					mycrit << myname << "(sensorInfo): PUBLISH FAILED: err(" << ret << "): " << mosqpp::strerror(ret) << endl;
-				}
-			}
-		}
-	}
+		t->second.check(this, sm->value, mylog, myname);
 }
 // -----------------------------------------------------------------------------
 MQTTPublisher::MQTTTextInfo::MQTTTextInfo( const string& rootsec, UniXML::iterator s, UniXML::iterator i ):
@@ -386,4 +336,57 @@ bool MQTTPublisher::RangeInfo::check( long val ) const
 {
 	return ( val >= rmin && val <= rmax );
 }
-// -----------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
+void MQTTPublisher::MQTTTextInfo::check( mosqpp::mosquittopp* serv, long value , std::shared_ptr<DebugStream>& log , const string& myname )
+{
+	for( auto && r : rlist )
+	{
+		if( r.check(value) )
+		{
+			string tmsg = replace(&r, value);
+
+			//subscribe(NULL, i.second.pubname.c_str());
+			if( log->is_info() )
+				log->info() << myname << "(check): publish: topic='" << pubname << "' msg='" << tmsg << "'" << endl;
+
+			int ret = serv->publish(NULL, pubname.c_str(), tmsg.size(), tmsg.c_str(), 1, false);
+
+			if( ret != MOSQ_ERR_SUCCESS )
+			{
+				if( log->is_crit() )
+					log->crit() << myname << "(check): PUBLISH FAILED: err(" << ret << "): " << mosqpp::strerror(ret) << endl;
+			}
+		}
+	}
+}
+//--------------------------------------------------------------------------------
+std::string MQTTPublisher::MQTTTextInfo::replace( RangeInfo* ri, long value )
+{
+	std::string txt(ri->text);
+
+	ostringstream v;
+	v << value;
+
+	ostringstream id;
+	id << sid;
+
+	ostringstream r;
+	r << "[" << ri->rmin << ":" << ri->rmax << "]";
+
+	ostringstream smin;
+	smin << ri->rmin;
+
+	ostringstream smax;
+	smax << ri->rmax;
+
+	txt = replace_all(txt, "%v", v.str());
+	txt = replace_all(txt, "%n", xmlnode.getProp("name"));
+	txt = replace_all(txt, "%t", xmlnode.getProp("textname"));
+	txt = replace_all(txt, "%i", id.str());
+	txt = replace_all(txt, "%rmin", smin.str());
+	txt = replace_all(txt, "%rmax", smax.str());
+	txt = replace_all(txt, "%r", r.str());
+
+	return std::move(txt);
+}
+//--------------------------------------------------------------------------------

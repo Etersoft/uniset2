@@ -100,15 +100,6 @@ class MQTTPublisher:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
-		inline std::shared_ptr<LogAgregator> getLogAggregator()
-		{
-			return loga;
-		}
-		inline std::shared_ptr<DebugStream> log()
-		{
-			return mylog;
-		}
-
 		virtual void on_connect(int rc) override;
 		virtual void on_message(const struct mosquitto_message* message) override;
 		virtual void on_subscribe(int mid, int qos_count, const int* granted_qos) override;
@@ -155,11 +146,13 @@ class MQTTPublisher:
 
 			// одиночные сообщения просто имитируются min=max=val
 			std::list<RangeInfo> rlist; // список сообщений..
+
+			void check( mosqpp::mosquittopp* serv, long value, std::shared_ptr<DebugStream>& log, const std::string& myname );
+
+			std::string replace( RangeInfo* ri, long value );
 		};
 
 		typedef std::unordered_map<UniSetTypes::ObjectId, MQTTTextInfo> MQTTTextMap;
-
-		std::string replace( const std::string& text, MQTTTextInfo* ti, RangeInfo* r, long value );
 
 		MQTTMap publist;
 		MQTTTextMap textpublist;
