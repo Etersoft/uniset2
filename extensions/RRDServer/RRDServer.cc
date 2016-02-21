@@ -386,7 +386,7 @@ RRDServer::RRDInfo::RRDInfo(const string& fname, long tmID, long sec, const RRDS
 	filename(fname), tid(tmID), sec(sec), dslist(lst)
 {
 	// фомируем dsmap
-	for( auto&& i: dslist )
-		dsmap.emplace(i->sid,i);
+	for( auto && i : dslist )
+		dsmap.emplace(i->sid, i);
 }
 // -----------------------------------------------------------------------------

@@ -485,12 +485,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 * Wed Feb 17 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt23
 - IONotifyController: fixed buf for init thresholdslist
 
-* Mon Jan 18 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt19
-- rebuild new version
-
-* Fri Jan 15 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt17
-- rebuild new version
-
 * Tue Feb 09 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt22
 - ModbusSlave(TCP): add show ip:port to vmonit setbug #9012
 

@@ -199,7 +199,7 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
 		}    // unlock
 
 		uinfo << "(LT_askTimer): поступил заказ на таймер([" << timerid << "]"
-			  << getTimerName(timerid) <<") " << timeMS << " [мс]\n";
+			  << getTimerName(timerid) << ") " << timeMS << " [мс]\n";
 	}
 	else // отказ (при timeMS == 0)
 	{

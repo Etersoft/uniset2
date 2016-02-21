@@ -59,7 +59,7 @@ class MQTTPublisher:
 {
 	public:
 		MQTTPublisher( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
-				   const std::string& prefix = "mqtt" );
+					   const std::string& prefix = "mqtt" );
 		virtual ~MQTTPublisher();
 
 		/*! глобальная функция для инициализации объекта */
@@ -81,8 +81,8 @@ class MQTTPublisher:
 
 
 		virtual void on_connect(int rc) override;
-		virtual void on_message(const struct mosquitto_message *message) override;
-		virtual void on_subscribe(int mid, int qos_count, const int *granted_qos) override;
+		virtual void on_message(const struct mosquitto_message* message) override;
+		virtual void on_subscribe(int mid, int qos_count, const int* granted_qos) override;
 
 	protected:
 		MQTTPublisher();

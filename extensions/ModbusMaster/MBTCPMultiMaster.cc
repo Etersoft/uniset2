@@ -531,7 +531,7 @@ const std::string MBTCPMultiMaster::MBSlaveInfo::getShortInfo() const
 	  << " recv_timeout=" << recv_timeout
 	  << " resp_force=" << respond_force
 	  << " use=" << use
-	  << " ignore=" << ( ptIgnoreTimeout.checkTime() ? "0":"1")
+	  << " ignore=" << ( ptIgnoreTimeout.checkTime() ? "0" : "1")
 	  << " priority=" << priority
 	  << " persistent-connection=" << !force_disconnect
 	  << ")";

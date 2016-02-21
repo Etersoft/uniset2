@@ -2409,6 +2409,7 @@ UniSetTypes::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
 	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
 	inf << "iomap=" << iomap.size() << " myaddr: " << ModbusServer::vaddr2str(vaddr) << endl;
 	inf << "Statistic: askCount=" << askCount << " pingOK=" << pingOK << endl;
+
 	if( sslot ) // т.е. если у нас tcp
 	{
 		ost::InetAddress iaddr = sslot->getInetAddress();

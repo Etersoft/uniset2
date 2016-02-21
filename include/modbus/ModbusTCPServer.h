@@ -78,8 +78,14 @@ class ModbusTCPServer:
 
 		void getSessions( Sessions& lst );
 
-		inline ost::InetAddress getInetAddress(){ return iaddr; }
-		inline ost::tpport_t getInetPort(){ return port; }
+		inline ost::InetAddress getInetAddress()
+		{
+			return iaddr;
+		}
+		inline ost::tpport_t getInetPort()
+		{
+			return port;
+		}
 
 	protected:
 

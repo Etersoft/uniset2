@@ -48,6 +48,7 @@ MySQLInterface::~MySQLInterface()
 	{
 		cerr << "MySQLInterface::~MySQLInterface(): an error occured while closing connection!" << endl;
 	}
+
 	delete mysql;
 }
 
@@ -188,6 +189,7 @@ void MySQLInterface::makeResult(DBResult& dbres, MYSQL_RES* myres, bool finalize
 	{
 		if( finalize )
 			mysql_free_result(myres);
+
 		return;
 	}
 

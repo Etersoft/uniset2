@@ -196,7 +196,10 @@ class LT_Object
 		TimersList getTimersList();
 
 		/*! пользовательская функция для вывода названия таймера */
-		virtual std::string getTimerName( int id ){ return ""; }
+		virtual std::string getTimerName( int id )
+		{
+			return "";
+		}
 
 	private:
 		TimersList tlst;

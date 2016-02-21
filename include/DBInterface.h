@@ -82,7 +82,11 @@ struct DBInterfaceDeleter
 {
 	void operator()(DBInterface* p) const
 	{
-		try{ delete p; } catch(...) {}
+		try
+		{
+			delete p;
+		}
+		catch(...) {}
 	}
 };
 // ----------------------------------------------------------------------------------

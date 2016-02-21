@@ -233,6 +233,7 @@ void SQLiteInterface::makeResult(DBResult& dbres, sqlite3_stmt* s, bool finalize
 	{
 		if( finalize )
 			sqlite3_finalize(s);
+
 		return;
 	}
 

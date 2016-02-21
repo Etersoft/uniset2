@@ -8,7 +8,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
-					 const string& prefix ):
+							 const string& prefix ):
 	mosquittopp(NULL),
 	UObject_SK(objId, cnode, string(prefix + "-")),
 	prefix(prefix)
@@ -30,6 +30,7 @@ MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSet
 	myinfo << myname << "(init): filter-field=" << ff << " filter-value=" << fv << endl;
 
 	xmlNode* senssec = conf->getXMLSensorsSection();
+
 	if( !senssec )
 	{
 		ostringstream err;
@@ -39,6 +40,7 @@ MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSet
 	}
 
 	UniXML::iterator sit(senssec);
+
 	if( !sit.goChildren() )
 	{
 		ostringstream err;
@@ -48,6 +50,7 @@ MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSet
 	}
 
 	ostringstream pubname;
+
 	for( ; sit.getCurrent(); sit++ )
 	{
 		if( !UniSetTypes::check_filter(sit, ff, fv) )
@@ -55,6 +58,7 @@ MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSet
 
 		std::string sname = sit.getProp("name");
 		ObjectId sid = conf->getSensorID(sname);
+
 		if( sid == DefaultObjectId )
 		{
 			ostringstream err;
@@ -66,7 +70,7 @@ MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSet
 		pubname.str("");
 		pubname << topicsensors << "/" << sname;
 
-		MQTTInfo m(sid,pubname.str());
+		MQTTInfo m(sid, pubname.str());
 		publist.emplace(sid, std::move(m) );
 
 		if( smTestID == DefaultObjectId )
@@ -87,9 +91,9 @@ MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSet
 	port = conf->getArgPInt("--" + argprefix + "mqtt-port", it.getProp("mqttPort"), 1883);
 	keepalive = conf->getArgPInt("--" + argprefix + "mqtt-keepalive", it.getProp("mqttKeepAlive"), 60);
 
-// см. sysCommad()
-//	connect_async(host.c_str(),port,keepalive);
-//	loop_start();
+	// см. sysCommad()
+	//	connect_async(host.c_str(),port,keepalive);
+	//	loop_start();
 }
 // -----------------------------------------------------------------------------
 MQTTPublisher::~MQTTPublisher()
@@ -117,11 +121,12 @@ bool MQTTPublisher::deactivateObject()
 void MQTTPublisher::sysCommand(const SystemMessage* sm)
 {
 	UObject_SK::sysCommand(sm);
+
 	if( sm->command == SystemMessage::StartUp || sm->command == SystemMessage::WatchDog )
 	{
 		if( !connectOK )
 		{
-			connect_async(host.c_str(),port,keepalive);
+			connect_async(host.c_str(), port, keepalive);
 			loop_start();
 		}
 	}
@@ -165,10 +170,11 @@ void MQTTPublisher::on_connect(int rc)
 
 	if( connectOK )
 		askSensors(UniversalIO::UIONotify);
-//	else
-//	{
-//		askTimer(reconnectTimer,reconnectTime);
-//	}
+
+	//	else
+	//	{
+	//		askTimer(reconnectTimer,reconnectTime);
+	//	}
 }
 // -----------------------------------------------------------------------------
 void MQTTPublisher::on_message( const mosquitto_message* message )
@@ -220,7 +226,8 @@ std::shared_ptr<MQTTPublisher> MQTTPublisher::init_mqttpublisher(int argc, const
 void MQTTPublisher::askSensors( UniversalIO::UIOCommand cmd )
 {
 	UObject_SK::askSensors(cmd);
-	for( const auto& i: publist )
+
+	for( const auto& i : publist )
 	{
 		try
 		{
@@ -236,6 +243,7 @@ void MQTTPublisher::askSensors( UniversalIO::UIOCommand cmd )
 void MQTTPublisher::sensorInfo( const UniSetTypes::SensorMessage* sm )
 {
 	auto i = publist.find(sm->id);
+
 	if( i == publist.end() )
 		return;
 
@@ -247,7 +255,8 @@ void MQTTPublisher::sensorInfo( const UniSetTypes::SensorMessage* sm )
 	//subscribe(NULL, i.second.pubname.c_str());
 	myinfo << "(sensorInfo): publish: topic='" << i->second.pubname << "' msg='" << tmsg.c_str() << "'" << endl;
 
-	int ret = publish(NULL,i->second.pubname.c_str(),tmsg.size(),tmsg.c_str(),1,false);
+	int ret = publish(NULL, i->second.pubname.c_str(), tmsg.size(), tmsg.c_str(), 1, false);
+
 	if( ret != MOSQ_ERR_SUCCESS )
 	{
 		mycrit << myname << "(sensorInfo): PUBLISH FAILED: err(" << ret << "): " << mosqpp::strerror(ret) << endl;

@@ -868,14 +868,15 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( UniSetTy
 			  << uniset_conf()->oind->getNameById(it->second.si.id)
 			  << " " << ex << endl;
 	}
-/*
-	catch( const IOController_i::NameNotFound& ex )
-	{
-		uwarn << myname << "(getThresholds): IOController_i::NameNotFound.. for sid"
-			  << uniset_conf()->oind->getNameById(it->second.si.id)
-			  << endl;
-	}
-*/
+
+	/*
+		catch( const IOController_i::NameNotFound& ex )
+		{
+			uwarn << myname << "(getThresholds): IOController_i::NameNotFound.. for sid"
+				  << uniset_conf()->oind->getNameById(it->second.si.id)
+				  << endl;
+		}
+	*/
 	res->tlist.length( it->second.list.size() );
 
 	unsigned int k = 0;
@@ -911,7 +912,7 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 			try
 			{
 				(*res)[i].si    = it->second.si;
-				(*res)[i].value = IOController::localGetValue(it->second.ait,it->second.si.id);
+				(*res)[i].value = IOController::localGetValue(it->second.ait, it->second.si.id);
 				(*res)[i].type  = it->second.type;
 			}
 			catch( const std::exception& ex )
