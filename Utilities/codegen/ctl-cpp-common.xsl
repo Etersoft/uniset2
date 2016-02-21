@@ -335,12 +335,37 @@
 		 * \return nullptr если элемент не найден
 		*/
 		long* valptr( UniSetTypes::ObjectId id );
+
+		/*! Получить id по переменной храняющей значение
+		 * \return DefaultObjectId элемент не найден или если нет привязки
+		*/
+		UniSetTypes::ObjectId idval( long* vptr ); // работа по указателю
+		UniSetTypes::ObjectId idval( long&amp; vptr ); // работа по ссылке..
 		</xsl:if>
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PRIVATE">
 		<xsl:if test="normalize-space($VARMAP)='1'">
+		class PtrMapHashFn
+		{
+			public:
+			size_t operator() (long* const&amp; key) const
+			{
+				return std::hash&lt;long*&gt;()(key);
+			}
+		};
+
+		class PtrMapEqualFn
+		{
+			public:
+				bool operator() (long* const&amp; i1, long* const&amp; i2) const
+			{
+				return (i1 == i2);
+			}
+		};
+
 		std::unordered_map&lt;UniSetTypes::ObjectId,long*&gt; vmap;
+		std::unordered_map&lt;long*,const UniSetTypes::ObjectId*,PtrMapHashFn,PtrMapEqualFn&gt; ptrmap;
 		</xsl:if>
 </xsl:template>
 
@@ -484,6 +509,24 @@ long* <xsl:value-of select="$CLASSNAME"/>_SK::valptr( UniSetTypes::ObjectId id )
 		return i->second;
 
 	return nullptr;
+}
+
+UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::idval( long* p )
+{
+	auto i = ptrmap.find(p);
+	if( i!= ptrmap.end() )
+		return *(i->second);
+
+	return UniSetTypes::DefaultObjectId;
+}
+
+UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::idval( long&amp; p )
+{
+	auto i = ptrmap.find(&amp;p);
+	if( i!= ptrmap.end() )
+		return *(i->second);
+
+	return UniSetTypes::DefaultObjectId;
 }
 </xsl:if>
 // -----------------------------------------------------------------------------
@@ -812,6 +855,7 @@ end_private(false)
 
 	<xsl:if test="normalize-space($VARMAP)='1'">
 	vmap.emplace(<xsl:value-of select="normalize-space(@name)"/>,&amp;<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>);
+	ptrmap.emplace(&amp;<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>,&amp;<xsl:value-of select="normalize-space(@name)"/>);
 	</xsl:if>
 
 </xsl:for-each>

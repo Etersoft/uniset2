@@ -12,10 +12,14 @@ TestGen::TestGen( UniSetTypes::ObjectId id, xmlNode* confnode ):
 
 	long* i = valptr(input2_s);
 
+	ObjectId d = idval(in_input2_s);
+	ObjectId d2 = idval(&in_input2_s);
+	ObjectId d3 = idval(i);
+
 	if( !i )
 		cerr << "input2_s NOT FOUND!!!" << endl;
 	else
-		cerr << "input2_s=" << (*i) << endl;
+		cerr << "input2_s=" << (*i)  << " d=" << d << " d2=" << d2 << " d3=" << d3 << " input2_s=" << input2_s << endl;
 }
 // -----------------------------------------------------------------------------
 TestGen::~TestGen()
