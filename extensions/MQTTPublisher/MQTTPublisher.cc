@@ -77,6 +77,7 @@ MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSet
 			smTestID = sid;
 
 		UniXML::iterator i(sit);
+
 		if( !i.goChildren() )
 			continue;
 
@@ -84,7 +85,7 @@ MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSet
 			continue;
 
 		MQTTTextInfo mi(topicsensors, sit, i);
-		textpublist.emplace(sid,std::move(mi) );
+		textpublist.emplace(sid, std::move(mi) );
 	}
 
 	if( publist.empty() )
@@ -161,13 +162,13 @@ string MQTTPublisher::replace( const std::string& text, MQTTPublisher::MQTTTextI
 	ostringstream smax;
 	smax << ri->rmax;
 
-	txt = replace_all(txt,"%v",v.str());
-	txt = replace_all(txt,"%n",ti->xmlnode.getProp("name"));
-	txt = replace_all(txt,"%t",ti->xmlnode.getProp("textname"));
-	txt = replace_all(txt,"%i",id.str());
-	txt = replace_all(txt,"%rmin",smin.str());
-	txt = replace_all(txt,"%rmax",smax.str());
-	txt = replace_all(txt,"%r",r.str());
+	txt = replace_all(txt, "%v", v.str());
+	txt = replace_all(txt, "%n", ti->xmlnode.getProp("name"));
+	txt = replace_all(txt, "%t", ti->xmlnode.getProp("textname"));
+	txt = replace_all(txt, "%i", id.str());
+	txt = replace_all(txt, "%rmin", smin.str());
+	txt = replace_all(txt, "%rmax", smax.str());
+	txt = replace_all(txt, "%r", r.str());
 
 	return std::move(txt);
 }
@@ -283,6 +284,7 @@ void MQTTPublisher::askSensors( UniversalIO::UIOCommand cmd )
 void MQTTPublisher::sensorInfo( const UniSetTypes::SensorMessage* sm )
 {
 	auto i = publist.find(sm->id);
+
 	if( i != publist.end() )
 	{
 		ostringstream m;
@@ -302,14 +304,16 @@ void MQTTPublisher::sensorInfo( const UniSetTypes::SensorMessage* sm )
 	}
 
 	auto t = textpublist.find(sm->id);
+
 	if( t != textpublist.end() )
 	{
 		auto rlist = t->second.rlist;
-		for( auto&&  r: rlist )
+
+		for( auto &&  r : rlist )
 		{
 			if( r.check(sm->value) )
 			{
-				string tmsg = replace(r.text,&(t->second),&r,sm->value);
+				string tmsg = replace(r.text, &(t->second), &r, sm->value);
 
 				//subscribe(NULL, i.second.pubname.c_str());
 				myinfo << "(sensorInfo): publish: topic='" << t->second.pubname << "' msg='" << tmsg << "'" << endl;
@@ -342,6 +346,7 @@ MQTTPublisher::MQTTTextInfo::MQTTTextInfo( const string& rootsec, UniXML::iterat
 	}
 
 	std::string subtopic(i.getProp("subtopic"));
+
 	if( !subtopic.empty() )
 		pubname = rootsec + "/" + subtopic;
 	else
@@ -358,19 +363,21 @@ MQTTPublisher::MQTTTextInfo::MQTTTextInfo( const string& rootsec, UniXML::iterat
 	{
 		long min = 0;
 		long max = 0;
+
 		if( i.getName() == "range" )
 		{
 			min = i.getIntProp("min");
 			max = i.getIntProp("max");
+
 			if( min > max )
-				std::swap(min,max);
+				std::swap(min, max);
 		}
 		else
 		{
 			min = max = i.getIntProp("value");
 		}
 
-		RangeInfo r(min,max,i.getProp("text"));
+		RangeInfo r(min, max, i.getProp("text"));
 		rlist.push_back( std::move(r) );
 	}
 }

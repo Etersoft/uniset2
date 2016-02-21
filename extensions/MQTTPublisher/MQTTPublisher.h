@@ -21,7 +21,7 @@
 
 	MQTT - это..
 
-	Данная реализация построена на использованиие билиотеки mosquitto.
+	Данная реализация построена на использованиие библиотеки mosquitto.
 	Издатель публикует события по каждому изменению датчика в указанном топике.
 
 	\section sec_MQTT_Conf Настройка MQTTPublisher
@@ -32,7 +32,7 @@
 	Название можно задать при помощи аргумента конмадной строки --prefix-mqtt-topicsensors
 	или в настроечной секции topicsensors="..". По умолчанию topicsensors='sensors'.
 
-	Какие датчики "публиковать" можно задавать при помощи filter-field и filter-value параметров.
+	События по каким датчикам "публиковать" можно задавать при помощи filter-field и filter-value параметров.
 	--prefix-filter-field - задаёт фильтрующее поле для датчиков
 	--prefix-filter-value - задаётзначение фильтрующего поля для датчиков. Необязательнй параметр.
 
@@ -47,42 +47,41 @@
 	Но можно задать и в настроечной секции: mqttHost=".." и mqttPort=".."
 
 	Помимо этого можно задать время проверки соединения, параметром
-	--prefix-mqtt-keepalive sec - По умолчанию: 60
-	или и в настроечной секции: mqttKeepAlive=".."
+	--prefix-mqtt-keepalive sec - По умолчанию: 60 или и в настроечной секции: mqttKeepAlive=".."
 
 	Для запуска издателя, неоходимо наличие в configure.xml секции: <ObjectName name="ObjectName" ...параметры">.
 
 	\todo Доделать контрольный таймер (контроль наличия соединения с сервером)
 
 	\section sec_MQTT_Text Генерирование текстовых сообщений
-	В данном классе реализована возможность сопоставлять значения датчиков текстовым сообщениям, посылаемым на сервер.
-	Для этого необходимо в настроечной секции для датчика создать секцию <mqtt>
+	Имеется возможность сопоставлять значения датчиков текстовым сообщениям, посылаемым на сервер.
+	Для этого необходимо в настроечной секции для датчика создать подсекцию <mqtt>. Пример:
 	\code
-	<item id="10" name="MySensor1" .....>
+	<item id="10" name="MySensor1" filter_field="filter_value"...>
 		<mqtt subtopic="myevent">
 			<msg value="12" text="My text for value %v"/>
 			<msg value="13" text="My text for value %v"/>
 			<msg value="14" text="My text for value %v"/>
-			<range min="10" max="20" text="My text for value %r. Value = %v"
+			<range min="10" max="20" text="My text for range %r. %n = %v"/>
 		<mqtt>
 	</item>
 	\endcode
 	 - \b range - задаёт диапазон включающий [min,max]
+	 - \b subtopic - задаёт подраздел в корневом топике (см. topicsensors). Т.е. полный топик для публикации текстовых сообщений
+	будет иметь вид ROOTPROJECT/topicsensors/sensorname/textevent или если задано поле \subtopic то
+	события будут опубликованы в ROOTPROJECT/topicsensors/subtopic
 
 	При этом в тексте можно применять следующие "подстановки":
-	- \b %v - текущее значение
+	- \b %v - текущее значение (value)
 	- \b %n - name
 	- \b %t - textname
 	- \b %i - ID
-	- \b %r - заданный диапазон (range). Заменяется на "[min:max]". Действует только для диапазонов.
-	- \b %rmin - минимальное значение диапазона (range min). Действует только для диапазонов.
-	- \b %rmax - максимальное значение диапазона (range max). Действует только для диапазонов.
+	- \b %r - заданный диапазон (range). Заменяется на "[min:max]"
+	- \b %rmin - минимальное значение диапазона (range min)
+	- \b %rmax - максимальное значение диапазона (range max)
 
-	\note Если заданные "одиночные" значения совпадают с диапазоном, то будет сгенерировано несколько сообщений.
+	\note Если заданные "одиночные" значения совпадают с диапазоном, то будет сгенерировано несколько сообщений. Т.е. диапазоны могут пересекатся.
 
-	Поле \b subtopic - задаёт подраздел в корневом топике (см. topicsensors). Т.е. полный топик для публикации текстовых сообщений
-	будет иметь вид ROOTPROJECT/topicsensors/sensorname/textevent или если задано поле \subtopic то
-	события будут опубликованы в ROOTPROJECT/topicsensors/subtopic
 */
 class MQTTPublisher:
 	protected mosqpp::mosquittopp,
@@ -138,7 +137,7 @@ class MQTTPublisher:
 
 		struct RangeInfo
 		{
-			RangeInfo( long min, long max, const std::string& t ): rmin(min), rmax(max), text(t){}
+			RangeInfo( long min, long max, const std::string& t ): rmin(min), rmax(max), text(t) {}
 
 			long rmin;
 			long rmax;
