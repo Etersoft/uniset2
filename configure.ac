@@ -400,6 +400,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/RRDServer/Makefile
 				 extensions/RRDServer/libUniSet2RRDServer.pc
 				 extensions/MQTTPublisher/Makefile
+				 extensions/MQTTPublisher/libUniSet2MQTTPublisher.pc
 				 extensions/tests/Makefile
 				 extensions/tests/SMemoryTest/Makefile
 				 testsuite/Makefile

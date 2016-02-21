@@ -30,8 +30,8 @@ libUniSet2MQTTPublisher_la_SOURCES 	= MQTTPublisher.cc
 devel_include_HEADERS = *.h
 devel_includedir = $(pkgincludedir)/extensions/mqtt
 
-#pkgconfigdir 	= $(libdir)/pkgconfig
-#pkgconfig_DATA 	= libUniSet2MQTTPublisher.pc
+pkgconfigdir 	= $(libdir)/pkgconfig
+pkgconfig_DATA 	= libUniSet2MQTTPublisher.pc
 
 #all-local:
 #	ln -sf ../MQTTPublisher/$(devel_include_HEADERS) ../include

@@ -8,13 +8,13 @@
 %def_enable logicproc
 #%def_enable modbus
 %def_disable tests
-%def_enable mqtt
+%def_disable mqtt
 
 %define oname uniset2
 
 Name: libuniset2
 Version: 2.2
-Release: alt27
+Release: alt28
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -276,6 +276,14 @@ Requires: %name-extension-common = %version-%release
 
 %description extension-mqtt
 MQTT for %name
+
+%package extension-mqtt-devel
+Group: Development/C++
+Summary: Libraries needed to develop for uniset MQTT extension
+Requires: %name-extension-common-devel = %version-%release
+
+%description extension-mqtt-devel
+Libraries needed to develop for uniset MQTT extension
 %endif
 
 
@@ -444,6 +452,17 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_includedir/%oname/extensions/io/
 %endif
 
+%if_enabled mqtt
+%files extension-mqtt
+%_bindir/%oname-mqtt*
+%_libdir/libUniSet2MQTTPublisher*.so.*
+
+%files extension-mqtt-devel
+%_pkgconfigdir/libUniSet2MQTTPublisher*.pc
+%_libdir/libUniSet2MQTTPublisher*.so
+%_includedir/%oname/extensions/mqtt/
+%endif
+
 %files extension-common-devel
 %_includedir/%oname/extensions/*.*
 %_libdir/libUniSet2Extensions.so
@@ -468,6 +487,10 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Sun Feb 21 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt28
+- build with MQTTPublisher
+- default mqtt extention disabled
+
 * Sat Feb 20 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt27
 - (ModbusTCP): add forceDisconnect() func for tcp connection
 
