@@ -274,7 +274,13 @@
 			<item id="109" iotype="DI" name="MM1_Not_Respond_S" priority="Medium" textname="multimaster test sensor"/>
 			<item id="110" iotype="DI" name="MM2_Not_Respond_S" priority="Medium" textname="multimaster test sensor"/>
 
-			<item id="111" iotype="AI" name="MQTT_AI_AS" textname="MQTT test AI" mqtt="1"/>
+			<item id="111" iotype="AI" name="MQTT_AI_AS" textname="MQTT test AI" mqtt="1">
+				<mqtt>
+					<msg value="1" text="Hello %v"/>
+					<range min="2" max="5" text="Range Hello %v %r (min=%rmin max=%rmax)"/>
+					<range min="2" max="3" text="Range Hello %t = %v"/>
+				</mqtt>
+			</item>
 			<item id="112" iotype="DI" name="MQTT_DI_S" textname="MQTT test DI" mqtt="1"/>
 
 		</sensors>

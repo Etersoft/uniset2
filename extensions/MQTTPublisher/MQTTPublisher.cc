@@ -75,6 +75,16 @@ MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSet
 
 		if( smTestID == DefaultObjectId )
 			smTestID = sid;
+
+		UniXML::iterator i(sit);
+		if( !i.goChildren() )
+			continue;
+
+		if( !i.find("mqtt") )
+			continue;
+
+		MQTTTextInfo mi(topicsensors, sit, i);
+		textpublist.emplace(sid,std::move(mi) );
 	}
 
 	if( publist.empty() )
@@ -130,6 +140,36 @@ void MQTTPublisher::sysCommand(const SystemMessage* sm)
 			loop_start();
 		}
 	}
+}
+//--------------------------------------------------------------------------------
+string MQTTPublisher::replace( const std::string& text, MQTTPublisher::MQTTTextInfo* ti, MQTTPublisher::RangeInfo* ri, long value )
+{
+	std::string txt(text);
+
+	ostringstream v;
+	v << value;
+
+	ostringstream id;
+	id << ti->sid;
+
+	ostringstream r;
+	r << "[" << ri->rmin << ":" << ri->rmax << "]";
+
+	ostringstream smin;
+	smin << ri->rmin;
+
+	ostringstream smax;
+	smax << ri->rmax;
+
+	txt = replace_all(txt,"%v",v.str());
+	txt = replace_all(txt,"%n",ti->xmlnode.getProp("name"));
+	txt = replace_all(txt,"%t",ti->xmlnode.getProp("textname"));
+	txt = replace_all(txt,"%i",id.str());
+	txt = replace_all(txt,"%rmin",smin.str());
+	txt = replace_all(txt,"%rmax",smax.str());
+	txt = replace_all(txt,"%r",r.str());
+
+	return std::move(txt);
 }
 //--------------------------------------------------------------------------------
 void MQTTPublisher::help_print( int argc, const char* const* argv )
@@ -243,23 +283,100 @@ void MQTTPublisher::askSensors( UniversalIO::UIOCommand cmd )
 void MQTTPublisher::sensorInfo( const UniSetTypes::SensorMessage* sm )
 {
 	auto i = publist.find(sm->id);
-
-	if( i == publist.end() )
-		return;
-
-	ostringstream m;
-	m << sm->value;
-
-	string tmsg(m.str());
-
-	//subscribe(NULL, i.second.pubname.c_str());
-	myinfo << "(sensorInfo): publish: topic='" << i->second.pubname << "' msg='" << tmsg.c_str() << "'" << endl;
-
-	int ret = publish(NULL, i->second.pubname.c_str(), tmsg.size(), tmsg.c_str(), 1, false);
-
-	if( ret != MOSQ_ERR_SUCCESS )
+	if( i != publist.end() )
 	{
-		mycrit << myname << "(sensorInfo): PUBLISH FAILED: err(" << ret << "): " << mosqpp::strerror(ret) << endl;
+		ostringstream m;
+		m << sm->value;
+
+		string tmsg(m.str());
+
+		//subscribe(NULL, i.second.pubname.c_str());
+		myinfo << "(sensorInfo): publish: topic='" << i->second.pubname << "' msg='" << tmsg.c_str() << "'" << endl;
+
+		int ret = publish(NULL, i->second.pubname.c_str(), tmsg.size(), tmsg.c_str(), 1, false);
+
+		if( ret != MOSQ_ERR_SUCCESS )
+		{
+			mycrit << myname << "(sensorInfo): PUBLISH FAILED: err(" << ret << "): " << mosqpp::strerror(ret) << endl;
+		}
 	}
+
+	auto t = textpublist.find(sm->id);
+	if( t != textpublist.end() )
+	{
+		auto rlist = t->second.rlist;
+		for( auto&&  r: rlist )
+		{
+			if( r.check(sm->value) )
+			{
+				string tmsg = replace(r.text,&(t->second),&r,sm->value);
+
+				//subscribe(NULL, i.second.pubname.c_str());
+				myinfo << "(sensorInfo): publish: topic='" << t->second.pubname << "' msg='" << tmsg << "'" << endl;
+
+				int ret = publish(NULL, t->second.pubname.c_str(), tmsg.size(), tmsg.c_str(), 1, false);
+
+				if( ret != MOSQ_ERR_SUCCESS )
+				{
+					mycrit << myname << "(sensorInfo): PUBLISH FAILED: err(" << ret << "): " << mosqpp::strerror(ret) << endl;
+				}
+			}
+		}
+	}
+}
+// -----------------------------------------------------------------------------
+MQTTPublisher::MQTTTextInfo::MQTTTextInfo( const string& rootsec, UniXML::iterator s, UniXML::iterator i ):
+	xmlnode(s)
+{
+	auto conf = uniset_conf();
+	sid = conf->getSensorID(s.getProp("name"));
+
+	string sname(s.getProp("name"));
+
+
+	if( sid == DefaultObjectId )
+	{
+		ostringstream err;
+		err << "(MQTTTextInfo): Unknown ID for " << sname;
+		throw SystemError(err.str());
+	}
+
+	std::string subtopic(i.getProp("subtopic"));
+	if( !subtopic.empty() )
+		pubname = rootsec + "/" + subtopic;
+	else
+		pubname = rootsec + "/" + sname + "/textevent";
+
+	if( !i.goChildren() )
+	{
+		ostringstream err;
+		err << "(MQTTTextInfo): INIT FAIL! empty list <mqtt> for " << sname;
+		throw SystemError(err.str());
+	}
+
+	for( ; i.getCurrent(); i++ )
+	{
+		long min = 0;
+		long max = 0;
+		if( i.getName() == "range" )
+		{
+			min = i.getIntProp("min");
+			max = i.getIntProp("max");
+			if( min > max )
+				std::swap(min,max);
+		}
+		else
+		{
+			min = max = i.getIntProp("value");
+		}
+
+		RangeInfo r(min,max,i.getProp("text"));
+		rlist.push_back( std::move(r) );
+	}
+}
+// -----------------------------------------------------------------------------
+bool MQTTPublisher::RangeInfo::check( long val ) const
+{
+	return ( val >= rmin && val <= rmax );
 }
 // -----------------------------------------------------------------------------

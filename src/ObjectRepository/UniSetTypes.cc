@@ -572,3 +572,21 @@ std::ostream& UniSetTypes::operator<<( std::ostream& os, const IONotifyControlle
 	return os << "Unknown";
 }
 // -------------------------------------------------------------------------
+std::string UniSetTypes::replace_all( const std::string& src, const std::string& from, const std::string& to )
+{
+	string res(src);
+	if( from.empty() )
+		 return std::move(res);
+
+	 size_t pos = res.find(from,pos);
+
+	 while( pos != std::string::npos )
+	 {
+		 res.replace(pos, from.length(), to);
+		 pos += to.length();
+		 pos = res.find(from,pos);
+	 }
+
+	 return std::move(res);
+}
+// -------------------------------------------------------------------------

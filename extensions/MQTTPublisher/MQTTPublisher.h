@@ -15,6 +15,7 @@
 
 	  - \ref sec_MQTT_Comm
 	  - \ref sec_MQTT_Conf
+	  - \ref sec_MQTT_Text
 
 	\section sec_MQTT_Comm Общее описание MQTTPublisher
 
@@ -52,6 +53,36 @@
 	Для запуска издателя, неоходимо наличие в configure.xml секции: <ObjectName name="ObjectName" ...параметры">.
 
 	\todo Доделать контрольный таймер (контроль наличия соединения с сервером)
+
+	\section sec_MQTT_Text Генерирование текстовых сообщений
+	В данном классе реализована возможность сопоставлять значения датчиков текстовым сообщениям, посылаемым на сервер.
+	Для этого необходимо в настроечной секции для датчика создать секцию <mqtt>
+	\code
+	<item id="10" name="MySensor1" .....>
+		<mqtt subtopic="myevent">
+			<msg value="12" text="My text for value %v"/>
+			<msg value="13" text="My text for value %v"/>
+			<msg value="14" text="My text for value %v"/>
+			<range min="10" max="20" text="My text for value %r. Value = %v"
+		<mqtt>
+	</item>
+	\endcode
+	 - \b range - задаёт диапазон включающий [min,max]
+
+	При этом в тексте можно применять следующие "подстановки":
+	- \b %v - текущее значение
+	- \b %n - name
+	- \b %t - textname
+	- \b %i - ID
+	- \b %r - заданный диапазон (range). Заменяется на "[min:max]". Действует только для диапазонов.
+	- \b %rmin - минимальное значение диапазона (range min). Действует только для диапазонов.
+	- \b %rmax - максимальное значение диапазона (range max). Действует только для диапазонов.
+
+	\note Если заданные "одиночные" значения совпадают с диапазоном, то будет сгенерировано несколько сообщений.
+
+	Поле \b subtopic - задаёт подраздел в корневом топике (см. topicsensors). Т.е. полный топик для публикации текстовых сообщений
+	будет иметь вид ROOTPROJECT/topicsensors/sensorname/textevent или если задано поле \subtopic то
+	события будут опубликованы в ROOTPROJECT/topicsensors/subtopic
 */
 class MQTTPublisher:
 	protected mosqpp::mosquittopp,
@@ -79,7 +110,6 @@ class MQTTPublisher:
 			return mylog;
 		}
 
-
 		virtual void on_connect(int rc) override;
 		virtual void on_message(const struct mosquitto_message* message) override;
 		virtual void on_subscribe(int mid, int qos_count, const int* granted_qos) override;
@@ -106,7 +136,34 @@ class MQTTPublisher:
 
 		typedef std::unordered_map<UniSetTypes::ObjectId, MQTTInfo> MQTTMap;
 
+		struct RangeInfo
+		{
+			RangeInfo( long min, long max, const std::string& t ): rmin(min), rmax(max), text(t){}
+
+			long rmin;
+			long rmax;
+			std::string text;
+			bool check( long val ) const;
+		};
+
+		struct MQTTTextInfo
+		{
+			UniSetTypes::ObjectId sid;
+			std::string pubname;
+			UniXML::iterator xmlnode;
+
+			MQTTTextInfo( const std::string& rootsec, UniXML::iterator s, UniXML::iterator i );
+
+			// одиночные сообщения просто имитируются min=max=val
+			std::list<RangeInfo> rlist; // список сообщений..
+		};
+
+		typedef std::unordered_map<UniSetTypes::ObjectId, MQTTTextInfo> MQTTTextMap;
+
+		std::string replace( const std::string& text, MQTTTextInfo* ti, RangeInfo* r, long value );
+
 		MQTTMap publist;
+		MQTTTextMap textpublist;
 
 	private:
 

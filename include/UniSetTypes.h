@@ -201,6 +201,12 @@ namespace UniSetTypes
 	/*! проверка является текст в строке - числом..*/
 	bool is_digit( const std::string& s );
 
+	/*! замена всех вхождений подстроки
+	 * \param src - исходная строка
+	 * \param from - подстрока которая ищется (для замены)
+	 * \param to - строка на которую будет сделана замена
+	*/
+	std::string replace_all( const std::string& src, const std::string& from, const std::string& to );
 	// ---------------------------------------------------------------
 	// Работа с командной строкой
 
