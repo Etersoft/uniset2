@@ -26,11 +26,12 @@
 
 	\section sec_MQTT_Conf Настройка MQTTPublisher
 
-	Топик для публикации событий имеет вид: ROOTPROJECT/topicsensors/sensorname, где
-	- \b ROOTPROJECT - это название корневой uniset-секции заданное в configure.xml (RootSection="..")
-	- \b topicsensors - это название секции для публикации в MQTT-сервере (брокере).
-	Название можно задать при помощи аргумента конмадной строки --prefix-mqtt-topicsensors
-	или в настроечной секции topicsensors="..". По умолчанию topicsensors='sensors'.
+	Топик для публикации событий имеет вид: TOPIC
+	- \b TOPIC - заданный topic.
+
+	Топик можно задать при помощи аргумента комадной строки --prefix-mqtt-topic или в настроечной секции topic="..".
+	По умолчанию берётся ROOTPROJECT/sensors/sensorname, где
+	ROOTPROJECT - это название корневой uniset-секции заданное в configure.xml (RootSection="..")
 
 	События по каким датчикам "публиковать" можно задавать при помощи filter-field и filter-value параметров.
 	--prefix-filter-field - задаёт фильтрующее поле для датчиков
@@ -160,7 +161,7 @@ class MQTTPublisher:
 	private:
 
 		std::string prefix;
-		std::string topicsensors; // "топик" для публикации датчиков
+		std::string topic; // "топик" для публикации датчиков
 		bool connectOK = { false };
 		std::string host = { "localhost" };
 		int port = { 1883 };

@@ -22,7 +22,17 @@ MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSet
 
 	UniXML::iterator it(cnode);
 
-	topicsensors = conf->getRootSection() + "/" + conf->getArg2Param("--" + argprefix + "mqtt-topic-sensors", it.getProp("topicsensors"), "sensors");
+	std::string t = conf->getArg2Param("--" + argprefix + "mqtt-topic", it.getProp("topic"), "");
+
+	{
+		ostringstream s;
+		if( t.empty() )
+			s <<  conf->getRootSection() << "/sensors";
+		else
+			s << t;
+
+		topic = s.str();
+	}
 
 	string ff = conf->getArg2Param("--" + argprefix + "filter-field", it.getProp("filterField"), "");
 	string fv = conf->getArg2Param("--" + argprefix + "filter-value", it.getProp("filterValue"), "");
@@ -68,7 +78,7 @@ MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSet
 		}
 
 		pubname.str("");
-		pubname << topicsensors << "/" << sname;
+		pubname << topic << "/" << sname;
 
 		MQTTInfo m(sid, pubname.str());
 		publist.emplace(sid, std::move(m) );
@@ -84,7 +94,7 @@ MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSet
 		if( !i.find("mqtt") )
 			continue;
 
-		MQTTTextInfo mi(topicsensors, sit, i);
+		MQTTTextInfo mi(topic, sit, i);
 		textpublist.emplace(sid, std::move(mi) );
 	}
 
@@ -154,8 +164,7 @@ void MQTTPublisher::help_print( int argc, const char* const* argv )
 	cout << "--prefix-filter-value        - Значение фильтра для загрузки списка датчиков." << endl;
 	cout << endl;
 	cout << " MQTT: " << endl;
-	cout << "--prefix-mqtt-topic-sensors name  - Name for topic. Default: 'sensors'" << endl;
-	cout << "                                    Result topic: ROOT_NAME_PRROJECT/topicsensors/sensorname'" << endl;
+	cout << "--prefix-mqtt-topic name     - Name for topic. Default: ROOT_NAME_PRROJECT/sensors/sensorname'" << endl;
 	cout << "--prefix-mqtt-host host           - host(ip) MQTT Broker (server). Default: localhost" << endl;
 	cout << "--prefix-mqtt-port port           - port for MQTT Broker (server). Default: 1883" << endl;
 	cout << "--prefix-mqtt-keepalive val       - keepalive for connection to MQTT Broker (server). Default: 60" << endl;
