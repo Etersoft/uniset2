@@ -546,7 +546,7 @@ void UNetReceiver::checkConnectionEvent( ev::periodic& tm, int revents )
 	if( !activated )
 		return;
 
-	unetinfo << myname << "(checkConnectionEvent): check connection..(checkConnectionTime=" << checkConnectionTime << ")" << endl;
+	unetinfo << myname << "(checkConnectionEvent): check connection event.." << endl;
 
 	uniset_mutex_lock l(checkConnMutex);
 	if( !createConnection(false) )

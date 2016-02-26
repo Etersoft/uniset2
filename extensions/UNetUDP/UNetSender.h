@@ -47,11 +47,24 @@
  *    ОПТИМИЗАЦИЯ N1: Для оптимизации обработки посылаемых пакетов (на стороне UNetReceiver) сделана следующая логика:
  *                  Номер очередного посылаемого пакета меняется (увеличивается) только, если изменились данные с момента
                     последней посылки. Для этого по данным каждый раз производится расчёт UNetUDP::makeCRC() и сравнивается с последним..
+ *
+ *
+ * Создание соединения
+ * ======================================
+ * Попытка создать соединение производиться сразу в конструкторе, если это не получается,
+ * то в потоке "посылки", с заданным периодом (checkConnectionTime) идёт попытка создать соединение..
+ * и так бесконечно, пока не получиться. Это важно для систем, где в момент загрузки программы
+ * (в момент создания объекта UNetSender) ещё может быть не поднята сеть или какой-то сбой с сетью и требуется
+ * ожидание (без вылета программы) пока "внешняя система мониторинга" не поднимет сеть).
+ * Если такая логика не требуется, то можно задать в конструкторе флаг nocheckconnection=true,
+ * тогда при создании объекта UNetSender, в конструкторе будет
+ * выкинуто исключение при неудачной попытке создания соединения.
+ * \warning setCheckConnectionPause(msec) должно быть кратно sendpause!
  */
 class UNetSender
 {
 	public:
-		UNetSender( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi,
+		UNetSender( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection=false,
 					const std::string& s_field = "", const std::string& s_fvalue = "", const std::string& prefix = "unet",
 					size_t maxDCount = UniSetUDP::MaxDCount, size_t maxACount = UniSetUDP::MaxACount );
 
@@ -106,6 +119,8 @@ class UNetSender
 			packsendpause = msec;
 		}
 
+		void setCheckConnectionPause( int msec );
+
 		/*! заказать датчики */
 		void askSensors( UniversalIO::UIOCommand cmd );
 
@@ -151,6 +166,8 @@ class UNetSender
 
 		void readConfiguration();
 
+		bool createConnection( bool throwEx );
+
 	private:
 		UNetSender();
 
@@ -163,6 +180,7 @@ class UNetSender
 		timeout_t sendpause = { 150 };
 		timeout_t packsendpause = { 5 };
 		std::atomic_bool activated = { false };
+		PassiveTimer ptCheckConnection;
 
 		UniSetTypes::uniset_rwmutex pack_mutex;
 

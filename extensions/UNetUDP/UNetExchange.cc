@@ -160,8 +160,9 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 			}
 
 			unetinfo << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
-			sender = make_shared<UNetSender>(h, p, shm, s_field, s_fvalue, prefix);
+			sender = make_shared<UNetSender>(h, p, shm, false, s_field, s_fvalue, prefix);
 			sender->setSendPause(sendpause);
+			sender->setCheckConnectionPause(checkConnectionPause);
 			loga->add(sender->getLog());
 
 			try
@@ -170,8 +171,9 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 				if( !h2.empty() )
 				{
 					unetinfo << myname << "(init): init sender2.. my node " << n_it.getProp("name") << endl;
-					sender2 = make_shared<UNetSender>(h2, p2, shm, s_field, s_fvalue, prefix);
+					sender2 = make_shared<UNetSender>(h2, p2, shm, false, s_field, s_fvalue, prefix);
 					sender2->setSendPause(sendpause);
+					sender2->setCheckConnectionPause(checkConnectionPause);
 					loga->add(sender2->getLog());
 				}
 			}

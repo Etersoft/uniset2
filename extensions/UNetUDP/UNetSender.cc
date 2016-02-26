@@ -25,9 +25,9 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi,
-						const std::string& s_f, const std::string& s_val, const std::string& s_prefix,
-						size_t maxDCount, size_t maxACount ):
+UNetSender::UNetSender(const std::string& s_host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi,
+					   bool nocheckConnection, const std::string& s_f, const std::string& s_val,
+					   const std::string& s_prefix, size_t maxDCount, size_t maxACount ):
 	s_field(s_f),
 	s_fvalue(s_val),
 	prefix(s_prefix),
@@ -64,27 +64,10 @@ UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, con
 
 	unetinfo << "(UNetSender): UDP set to " << s_host << ":" << port << endl;
 
-	ost::Thread::setException(ost::Thread::throwException);
+	addr = s_host.c_str();
 
-	try
-	{
-		addr = s_host.c_str();
-		udp = make_shared<ost::UDPBroadcast>(addr, port);
-	}
-	catch( const std::exception& e )
-	{
-		ostringstream s;
-		s << myname << ": " << e.what();
-		unetcrit << s.str() << std::endl;
-		throw SystemError(s.str());
-	}
-	catch( ... )
-	{
-		ostringstream s;
-		s << myname << ": catch...";
-		unetcrit << s.str() << std::endl;
-		throw SystemError(s.str());
-	}
+	ptCheckConnection.setTiming(10000); // default 10 сек
+	createConnection(nocheckConnection);
 
 	s_thr = make_shared< ThreadCreator<UNetSender> >(this, &UNetSender::send);
 
@@ -121,6 +104,40 @@ UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, con
 // -----------------------------------------------------------------------------
 UNetSender::~UNetSender()
 {
+}
+// -----------------------------------------------------------------------------
+bool UNetSender::createConnection( bool throwEx )
+{
+	ost::Thread::setException(ost::Thread::throwException);
+
+	unetinfo << myname << "(createConnection): .." << endl;
+
+	try
+	{
+		udp = make_shared<ost::UDPBroadcast>(addr, port);
+	}
+	catch( const std::exception& e )
+	{
+		ostringstream s;
+		s << myname << "(createConnection): " << e.what();
+		unetcrit << s.str() << std::endl;
+		if( throwEx )
+			throw SystemError(s.str());
+
+		udp = nullptr;
+	}
+	catch( ... )
+	{
+		ostringstream s;
+		s << myname << "(createConnection): catch...";
+		unetcrit << s.str() << std::endl;
+		if( throwEx )
+			throw SystemError(s.str());
+
+		udp = nullptr;
+	}
+
+	return (udp != nullptr);
 }
 // -----------------------------------------------------------------------------
 void UNetSender::updateFromSM()
@@ -173,30 +190,40 @@ void UNetSender::updateItem( DMap::iterator& it, long value )
 	}
 }
 // -----------------------------------------------------------------------------
+void UNetSender::setCheckConnectionPause( int msec )
+{
+	if( msec > 0 )
+		ptCheckConnection.setTiming(msec);
+}
+// -----------------------------------------------------------------------------
 void UNetSender::send()
 {
 	dlist.resize(maxItem);
 	unetinfo << myname << "(send): dlist size = " << dlist.size() << endl;
-
-	/*
-	    ost::IPV4Broadcast h = s_host.c_str();
-	    try
-	    {
-	        udp->setPeer(h,port);
-	    }
-	    catch( ost::SockException& e )
-	    {
-	        ostringstream s;
-	        s << e.getString() << ": " << e.getSystemErrorString();
-			unetcrit << myname << "(poll): " << s.str() << endl;
-	        throw SystemError(s.str());
-	    }
-	*/
-
 	ncycle = 0;
+
+	ptCheckConnection.reset();
 
 	while( activated )
 	{
+		if( !udp )
+		{
+			if( !ptCheckConnection.checkTime() )
+			{
+				msleep(sendpause);
+				continue;
+			}
+
+			unetinfo << myname << "(send): check connection event.." << endl;
+
+			if( !createConnection(false) )
+			{
+				ptCheckConnection.reset();
+				msleep(sendpause);
+				continue;
+			}
+		}
+
 		try
 		{
 			if( !shm->isLocalwork() )
@@ -274,7 +301,7 @@ void UNetSender::real_send(UniSetUDP::UDPMessage& mypack)
 	if( packetnum == 0 )
 		packetnum = 1;
 
-	if( !udp->isPending(ost::Socket::pendingOutput) )
+	if( !udp || !udp->isPending(ost::Socket::pendingOutput) )
 		return;
 
 	mypack.transport_msg(s_msg);
