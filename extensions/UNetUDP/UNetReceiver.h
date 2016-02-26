@@ -74,6 +74,17 @@
  * \todo Сделать защиту от бесконечного ожидания "очистки" основной очереди.
  * =========================================================================
  * ОПТИМИЗАЦИЯ N1: см. UNetSender.h. Если номер последнего принятого пакета не менялся.. не обрабатываем..
+ *
+ * Создание соединения (открытие сокета)
+ * ======================================
+ * Попытка создать сокет производиться сразу в конструкторе, если это не получается,
+ * то создаётся таймер (evCheckConnection), который периодически (checkConnectionTime) пытается вновь
+ * открыть сокет.. и так бесконечно, пока не получиться. Это важно для систем, где в момент загрузки программы
+ * (в момент создания объекта UNetReceiver) ещё может быть не поднята сеть или какой-то сбой с сетью и требуется
+ * ожидание (без вылета программы) пока "внешняя система мониторинга" не поднимет сеть).
+ * Если такая логика не требуется, то можно задать в конструкторе
+ * последним аргументом флаг nocheckconnection=true, тогда при создании объекта UNetReceiver, в конструкторе будет
+ * выкинуто исключение при неудачной попытке создания соединения.
 */
 // -----------------------------------------------------------------------------
 class UNetReceiver:
@@ -81,7 +92,7 @@ class UNetReceiver:
 	public std::enable_shared_from_this<UNetReceiver>
 {
 	public:
-		UNetReceiver( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi );
+		UNetReceiver( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection=false );
 		virtual ~UNetReceiver();
 
 		void start();
@@ -115,6 +126,7 @@ class UNetReceiver:
 		void setUpdatePause( timeout_t msec );
 		void setLostTimeout( timeout_t msec );
 		void setPrepareTime( timeout_t msec );
+		void setCheckConnectionPause( timeout_t msec );
 		void setMaxDifferens( unsigned long set );
 
 		void setRespondID( UniSetTypes::ObjectId id, bool invert = false );
@@ -161,14 +173,16 @@ class UNetReceiver:
 		void callback( ev::io& watcher, int revents );
 		void readEvent( ev::io& watcher );
 		void updateEvent( ev::periodic& watcher, int revents );
+		void checkConnectionEvent( ev::periodic& watcher, int revents );
 		virtual void evprepare( const ev::loop_ref& eloop ) override;
 		virtual void evfinish(const ev::loop_ref& eloop ) override;
-		virtual std::string wname()
+		virtual std::string wname() override
 		{
 			return myname;
 		}
 
 		void initIterators();
+		bool createConnection( bool throwEx = false );
 
 	public:
 
@@ -196,11 +210,14 @@ class UNetReceiver:
 		std::string myname;
 		ev::io evReceive;
 		ev::periodic evUpdate;
+		ev::periodic evCheckConnection;
 
 		// делаем loop общим.. одним на всех!
 		static CommonEventLoop loop;
 
-		double updateTime = { 0.0 };
+		double updateTime = { 0.01 };
+		double checkConnectionTime = { 10.0 }; // sec
+		UniSetTypes::uniset_mutex checkConnMutex;
 
 		UniSetTypes::uniset_rwmutex pollMutex;
 		PassiveTimer ptRecvTimeout;

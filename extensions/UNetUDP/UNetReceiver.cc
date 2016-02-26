@@ -38,7 +38,7 @@ bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
 }
 */
 // ------------------------------------------------------------------------------------------
-UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi ):
+UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection ):
 	shm(smi),
 	recvpause(10),
 	updatepause(100),
@@ -65,40 +65,16 @@ UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port,
 		myname = s.str();
 	}
 
+	addr = s_host.c_str();
+
 	unetlog = make_shared<DebugStream>();
 	unetlog->setLogName(myname);
 
 	auto conf = uniset_conf();
 	conf->initLogStream(unetlog, myname);
 
-	ost::Thread::setException(ost::Thread::throwException);
-
-	try
-	{
-		addr = s_host.c_str();
-		udp = make_shared<UDPReceiveU>(addr, port);
-		udp->setCompletion(false); // делаем неблокирующее чтение (нужно для libev)
-	}
-	catch( const std::exception& e )
-	{
-		ostringstream s;
-		s << myname << ": " << e.what();
-		unetcrit << s.str() << std::endl;
-		throw SystemError(s.str());
-	}
-	catch( ... )
-	{
-		ostringstream s;
-		s << myname << ": catch...";
-		unetcrit << s.str() << std::endl;
-		throw SystemError(s.str());
-	}
-
-	evReceive.set<UNetReceiver, &UNetReceiver::callback>(this);
-	evUpdate.set<UNetReceiver, &UNetReceiver::updateEvent>(this);
-
-	ptRecvTimeout.setTiming(recvTimeout);
-	ptPrepare.setTiming(prepareTime);
+	if( !createConnection(nocheckConnection /* <-- это флаг throwEx */) )
+		evCheckConnection.set<UNetReceiver, &UNetReceiver::checkConnectionEvent>(this);
 }
 // -----------------------------------------------------------------------------
 UNetReceiver::~UNetReceiver()
@@ -118,6 +94,14 @@ void UNetReceiver::setPrepareTime( timeout_t msec )
 	ptPrepare.setTiming(msec);
 }
 // -----------------------------------------------------------------------------
+void UNetReceiver::setCheckConnectionPause( timeout_t msec )
+{
+	checkConnectionTime = (double)msec / 1000.0;
+
+	if( evCheckConnection.is_active() )
+		evCheckConnection.start(0,checkConnectionTime);
+}
+// -----------------------------------------------------------------------------
 void UNetReceiver::setLostTimeout( timeout_t msec )
 {
 	lostTimeout = msec;
@@ -135,7 +119,7 @@ void UNetReceiver::setUpdatePause( timeout_t msec )
 	updateTime = (double)updatepause / 1000.0;
 
 	if( evUpdate.is_active() )
-		evUpdate.start(updateTime);
+		evUpdate.start(0,updateTime);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setMaxProcessingCount( int set )
@@ -177,6 +161,51 @@ void UNetReceiver::resetTimeout()
 	trTimeout.change(false);
 }
 // -----------------------------------------------------------------------------
+bool UNetReceiver::createConnection( bool throwEx )
+{
+	if( !activated )
+		return false;
+
+	ost::Thread::setException(ost::Thread::throwException);
+
+	try
+	{
+		udp = make_shared<UDPReceiveU>(addr, port);
+		udp->setCompletion(false); // делаем неблокирующее чтение (нужно для libev)
+		evReceive.set<UNetReceiver, &UNetReceiver::callback>(this);
+		evUpdate.set<UNetReceiver, &UNetReceiver::updateEvent>(this);
+
+		if( evCheckConnection.is_active() )
+			evCheckConnection.stop();
+
+		ptRecvTimeout.setTiming(recvTimeout);
+		ptPrepare.setTiming(prepareTime);
+		if( activated )
+			evprepare(loop.evloop());
+	}
+	catch( const std::exception& e )
+	{
+		ostringstream s;
+		s << myname << "(createConnection): " << e.what();
+		unetcrit << s.str() << std::endl;
+		if( throwEx )
+			throw SystemError(s.str());
+
+		udp = nullptr;
+	}
+	catch( ... )
+	{
+		ostringstream s;
+		s << myname << "(createConnection): catch...";
+		unetcrit << s.str() << std::endl;
+		if( throwEx )
+			throw SystemError(s.str());
+		udp = nullptr;
+	}
+
+	return ( udp!=nullptr );
+}
+// -----------------------------------------------------------------------------
 void UNetReceiver::start()
 {
 	unetinfo << myname << ":... start... " << endl;
@@ -192,16 +221,30 @@ void UNetReceiver::start()
 // -----------------------------------------------------------------------------
 void UNetReceiver::evprepare( const ev::loop_ref& eloop )
 {
-	evReceive.set(eloop);
-	evReceive.start(udp->getSocket(), ev::READ);
+	if( !udp )
+	{
+		evCheckConnection.set(eloop);
+		evCheckConnection.start(0,checkConnectionTime);
+	}
+	else
+	{
+		evReceive.set(eloop);
+		evReceive.start(udp->getSocket(), ev::READ);
 
-	evUpdate.set(eloop);
-	evUpdate.start( updateTime );
+		evUpdate.set(eloop);
+		evUpdate.start( 0, updateTime );
+	}
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::evfinish( const ev::loop_ref& eloop )
 {
 	activated = false;
+
+	{
+		uniset_mutex_lock l(checkConnMutex);
+		if( evCheckConnection.is_active() )
+			evCheckConnection.stop();
+	}
 
 	if( evReceive.is_active() )
 		evReceive.stop();
@@ -442,7 +485,7 @@ void UNetReceiver::readEvent( ev::io& watcher )
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::updateEvent(ev::periodic& tm, int revents )
+void UNetReceiver::updateEvent( ev::periodic& tm, int revents )
 {
 	if( EV_ERROR & revents )
 	{
@@ -453,8 +496,8 @@ void UNetReceiver::updateEvent(ev::periodic& tm, int revents )
 	if( !activated )
 		return;
 
-	// взводим
-	tm.start(updateTime);
+	// взводим таймер опять..
+	tm.again();
 
 	// собственно обработка события
 	try
@@ -490,6 +533,24 @@ void UNetReceiver::updateEvent(ev::periodic& tm, int revents )
 			unetcrit << myname << "(step): (lostPackets) " << ex.what() << std::endl;
 		}
 	}
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::checkConnectionEvent( ev::periodic& tm, int revents )
+{
+	if( EV_ERROR & revents )
+	{
+		unetcrit << myname << "(checkConnectionEvent): EVENT ERROR.." << endl;
+		return;
+	}
+
+	if( !activated )
+		return;
+
+	unetinfo << myname << "(checkConnectionEvent): check connection..(checkConnectionTime=" << checkConnectionTime << ")" << endl;
+
+	uniset_mutex_lock l(checkConnMutex);
+	if( !createConnection(false) )
+		tm.again();
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::stop()

@@ -83,6 +83,7 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 	steptime = conf->getArgPInt("--" + prefix + "-steptime", it.getProp("steptime"), 1000);
 	int maxDiff = conf->getArgPInt("--" + prefix + "-maxdifferense", it.getProp("maxDifferense"), 100);
 	int maxProcessingCount = conf->getArgPInt("--" + prefix + "-maxprocessingcount", it.getProp("maxProcessingCount"), 100);
+	int checkConnectionPause = conf->getArgPInt("--" + prefix + "-checkconnection-pause", it.getProp("checkConnectionPause"), 10000);
 
 	no_sender = conf->getArgInt("--" + prefix + "-nosender", it.getProp("nosender"));
 
@@ -322,6 +323,7 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 		r->setLostTimeout(lostTimeout);
 		r->setReceivePause(recvpause);
 		r->setUpdatePause(updatepause);
+		r->setCheckConnectionPause(checkConnectionPause);
 		r->setMaxDifferens(maxDiff);
 		r->setMaxProcessingCount(maxProcessingCount);
 		r->setRespondID(resp_id, resp_invert);
@@ -348,6 +350,7 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 				r2->setLostTimeout(lostTimeout);
 				r2->setReceivePause(recvpause);
 				r2->setUpdatePause(updatepause);
+				r2->setCheckConnectionPause(checkConnectionPause);
 				r2->setMaxDifferens(maxDiff);
 				r2->setMaxProcessingCount(maxProcessingCount);
 				r2->setRespondID(resp2_id, resp_invert);
@@ -784,6 +787,7 @@ void UNetExchange::help_print( int argc, const char* argv[] )
 	cout << "--prefix-sendpause msec          - Пауза между посылками. По умолчанию 100" << endl;
 	cout << "--prefix-updatepause msec        - Пауза между обновлением информации в SM (Корелирует с recvpause и sendpause). По умолчанию 100" << endl;
 	cout << "--prefix-steptime msec           - Пауза между обновлением информации о связи с узлами." << endl;
+	cout << "--prefix-checkconnection-pause msec  - Пауза между попытками открыть соединение (если это не удалось до этого). По умолчанию: 10000 (10 сек)" << endl;
 	cout << "--prefix-maxdifferense num       - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;
 	cout << "--prefix-maxprocessingcount num  - время на ожидание старта SM" << endl;
 	cout << "--prefix-nosender [0,1]          - Отключить посылку." << endl;
