@@ -59,7 +59,9 @@ class LogReader
 
 		DebugStream::StreamEvent_Signal signal_stream_event();
 
-		void setLogLevel( Debug::type );
+		void setLogLevel( Debug::type t );
+
+		inline std::shared_ptr<DebugStream> log(){ return outlog; }
 
 	protected:
 
@@ -81,7 +83,7 @@ class LogReader
 		unsigned int readcount = { 0 }; // количество циклов чтения
 
 		DebugStream rlog;
-		DebugStream log; // рабочий лог в который выводиться полученная информация..
+		std::shared_ptr<DebugStream> outlog; // рабочий лог в который выводиться полученная информация..
 
 		DebugStream::StreamEvent_Signal m_logsig;
 };

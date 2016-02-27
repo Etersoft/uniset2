@@ -244,7 +244,7 @@ TEST_CASE("MaxSessions", "[LogServer]" )
 		r2_thr->join();
 }
 // --------------------------------------------------------------------------
-TEST_CASE("Logagregator regexp", "[LogAgregator]" )
+TEST_CASE("LogAgregator regexp", "[LogAgregator]" )
 {
 	auto la = make_shared<LogAgregator>("ROOT");
 	auto log1 = la->create("log1");

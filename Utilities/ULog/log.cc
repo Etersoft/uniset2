@@ -27,8 +27,10 @@ static struct option longopts[] =
 	{ "rotate", optional_argument, 0, 'r' },
 	{ "logfilter", required_argument, 0, 'n' },
 	{ "command-only", no_argument, 0, 'c' },
-	{ "timeout", required_argument, 0, 'w' },
+	{ "timeout", required_argument, 0, 't' },
 	{ "reconnect-delay", required_argument, 0, 'x' },
+	{ "logfile", required_argument, 0, 'w' },
+	{ "logfile-truncate", required_argument, 0, 'z' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -39,8 +41,10 @@ static void print_help()
 	printf("[-i|--iaddr] addr           - LogServer ip or hostname.\n");
 	printf("[-p|--port] port            - LogServer port.\n");
 	printf("[-c|--command-only]         - Send command and break. (No read logs).\n");
-	printf("[-w|--timeout] msec         - Timeout for wait data. Default: 0 - endless waiting\n");
+	printf("[-t|--timeout] msec         - Timeout for wait data. Default: 0 - endless waiting\n");
 	printf("[-x|--reconnect-delay] msec - Pause for repeat connect to LogServer. Default: 5000 msec.\n");
+	printf("[-w|--logfile] logfile      - Save log to 'logfile'.\n");
+	printf("[-z|--logfile-truncate]     - Truncate log file before write. Use with -w|--logfile \n");
 
 	printf("\n");
 	printf("Commands:\n");
@@ -76,12 +80,14 @@ int main( int argc, char** argv )
 	int cmdonly = 0;
 	timeout_t tout = 0;
 	timeout_t rdelay = 5000;
+	string logfile("");
+	bool logtruncate = false;
 
 	try
 	{
 		while(1)
 		{
-			opt = getopt_long(argc, argv, "chvlf:a:p:i:d:s:n:eorbx:w:", longopts, &optindex);
+			opt = getopt_long(argc, argv, "chvlf:a:p:i:d:s:n:eorbx:w:zt:", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -215,8 +221,16 @@ int main( int argc, char** argv )
 					rdelay = uni_atoi(optarg);
 					break;
 
-				case 'w':
+				case 't':
 					tout = uni_atoi(optarg);
+					break;
+
+				case 'w':
+					logfile = string(optarg);
+					break;
+
+				case 'z':
+					logtruncate = true;
 					break;
 
 				case 'v':
@@ -241,6 +255,9 @@ int main( int argc, char** argv )
 		lr.setCommandOnlyMode(cmdonly);
 		lr.setinTimeout(tout);
 		lr.setReconnectDelay(rdelay);
+
+		if( !logfile.empty() )
+			lr.log()->logFile(logfile,logtruncate);
 
 		if( !vcmd.empty() )
 			lr.sendCommand(addr, port, vcmd, cmdonly, verb);

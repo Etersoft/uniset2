@@ -17,8 +17,10 @@ LogReader::LogReader():
 	cmdonly(false),
 	readcount(0)
 {
-	log.level(Debug::ANY);
-	log.signal_stream_event().connect( sigc::mem_fun(this, &LogReader::logOnEvent) );
+	outlog = std::make_shared<DebugStream>();
+
+	outlog->level(Debug::ANY);
+	outlog->signal_stream_event().connect( sigc::mem_fun(this, &LogReader::logOnEvent) );
 }
 
 // -------------------------------------------------------------------------
@@ -30,14 +32,13 @@ LogReader::~LogReader()
 // -------------------------------------------------------------------------
 void LogReader::setLogLevel( Debug::type t )
 {
-	log.level(t);
+	outlog->level(t);
 }
 // -------------------------------------------------------------------------
 DebugStream::StreamEvent_Signal LogReader::signal_stream_event()
 {
 	return m_logsig;
 }
-
 // -------------------------------------------------------------------------
 void LogReader::connect( const std::string& addr, ost::tpport_t _port, timeout_t msec )
 {
@@ -223,7 +224,7 @@ void LogReader::sendCommand( const std::string& _addr, ost::tpport_t _port, std:
 				tcp->read(buf, n);
 				buf[n] = '\0';
 
-				log << buf;
+				outlog->any(false) << buf;
 			}
 
 			a--;
@@ -305,7 +306,7 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 					tcp->read(buf, n);
 					buf[n] = '\0';
 
-					log << buf;
+					outlog->any(false) << buf;
 				}
 				else if( n == 0 && readcount <= 0 )
 					break;
