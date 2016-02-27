@@ -16,7 +16,7 @@ using namespace UniSetExtensions;
 // --------------------------------------------------------------------------
 std::shared_ptr<TestObject> obj;
 // --------------------------------------------------------------------------
-int main(int argc, char* argv[] )
+int main(int argc, const char* argv[] )
 {
 	try
 	{
