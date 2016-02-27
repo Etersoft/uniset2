@@ -38,10 +38,11 @@ bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
 }
 */
 // ------------------------------------------------------------------------------------------
-UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection ):
+UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t _port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection ):
 	shm(smi),
 	recvpause(10),
 	updatepause(100),
+	port(_port),
 	recvTimeout(5000),
 	prepareTime(2000),
 	lostTimeout(200), /* 2*updatepause */

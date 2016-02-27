@@ -8,6 +8,7 @@
 #include <cc++/socket.h>
 #include "UDPPacket.h"
 #include "PassiveTimer.h"
+#include "UDPCore.h"
 // --------------------------------------------------------------------------
 static struct option longopts[] =
 {
@@ -201,7 +202,7 @@ int main(int argc, char* argv[])
 		{
 			case cmdReceive:
 			{
-				ost::UDPDuplex udp(host, port);
+				UDPReceiveU udp(host, port);
 
 				//                char buf[UniSetUDP::MaxDataLen];
 				UniSetUDP::UDPMessage pack;

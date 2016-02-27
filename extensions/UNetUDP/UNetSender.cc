@@ -25,14 +25,15 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-UNetSender::UNetSender(const std::string& s_host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi,
+UNetSender::UNetSender(const std::string& _host, const ost::tpport_t _port, const std::shared_ptr<SMInterface>& smi,
 					   bool nocheckConnection, const std::string& s_f, const std::string& s_val,
 					   const std::string& s_prefix, size_t maxDCount, size_t maxACount ):
 	s_field(s_f),
 	s_fvalue(s_val),
 	prefix(s_prefix),
 	shm(smi),
-	s_host(s_host),
+	port(_port),
+	s_host(_host),
 	sendpause(150),
 	packsendpause(5),
 	activated(false),
@@ -56,9 +57,6 @@ UNetSender::UNetSender(const std::string& s_host, const ost::tpport_t port, cons
 	auto conf = uniset_conf();
 	conf->initLogStream(unetlog, myname);
 
-	// определяем фильтр
-	//    s_field = conf->getArgParam("--udp-filter-field");
-	//    s_fvalue = conf->getArgParam("--udp-filter-value");
 	unetinfo << myname << "(init): read filter-field='" << s_field
 			 << "' filter-value='" << s_fvalue << "'" << endl;
 
@@ -280,7 +278,7 @@ void UNetSender::send()
 // -----------------------------------------------------------------------------
 // #define UNETUDP_DISABLE_OPTIMIZATION_N1
 
-void UNetSender::real_send(UniSetUDP::UDPMessage& mypack)
+void UNetSender::real_send( UniSetUDP::UDPMessage& mypack )
 {
 	UniSetTypes::uniset_rwmutex_rlock l(pack_mutex);
 #ifdef UNETUDP_DISABLE_OPTIMIZATION_N1

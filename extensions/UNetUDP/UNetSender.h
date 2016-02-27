@@ -171,7 +171,7 @@ class UNetSender
 	private:
 		UNetSender();
 
-		std::shared_ptr<ost::UDPBroadcast> udp;
+		std::shared_ptr<ost::UDPBroadcast> udp = { nullptr };
 		ost::IPV4Address addr;
 		ost::tpport_t port = { 0 };
 		std::string s_host = { "" };

@@ -1,5 +1,6 @@
 #include <catch.hpp>
 // -----------------------------------------------------------------------------
+#include <memory>
 #include <cc++/socket.h>
 #include "UniSetTypes.h"
 #include "UInterface.h"
@@ -15,10 +16,10 @@ using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 static int port = 3000;
 static ost::IPV4Host host("127.255.255.255");
-static UInterface* ui = nullptr;
+static shared_ptr<UInterface> ui = nullptr;
 static ObjectId aid = 2;
-static ost::UDPDuplex* udp_r = nullptr;
-static ost::UDPBroadcast* udp_s = nullptr;
+static std::shared_ptr<UDPReceiveU> udp_r = nullptr;
+static shared_ptr<ost::UDPBroadcast> udp_s = nullptr;
 static int s_port = 3003; // Node2
 static int s_nodeID = 3003;
 static int s_procID = 123;
@@ -36,7 +37,7 @@ void InitTest()
 
 	if( ui == nullptr )
 	{
-		ui = new UInterface();
+		ui = make_shared<UInterface>();
 		// UI понадобиться для проверки записанных в SM значений.
 		CHECK( ui->getObjectIndex() != nullptr );
 		CHECK( ui->getConf() == conf );
@@ -44,10 +45,10 @@ void InitTest()
 	}
 
 	if( udp_r == nullptr )
-		udp_r = new ost::UDPDuplex(host, port);
+		udp_r = make_shared<UDPReceiveU>(host, port);
 
 	if( udp_s == nullptr )
-		udp_s = new ost::UDPBroadcast(host, s_port);
+		udp_s = make_shared<ost::UDPBroadcast>(host, s_port);
 }
 // -----------------------------------------------------------------------------
 // pnum - минималный номер ожидаемого пакета ( 0 - любой пришедщий )
