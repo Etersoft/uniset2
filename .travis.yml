@@ -25,7 +25,7 @@ before_install:
 
 install:
   # have no catch package
-  - sudo apt-get install libcomedi-dev libcommoncpp2-dev libmysqlclient-dev libomniorb4-dev omniidl xsltproc libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev
+  - sudo apt-get install libcomedi-dev libcommoncpp2-dev libmysqlclient-dev libomniorb4-dev omniidl xsltproc libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev libmosquittopp0-dev
   - wget https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp -O include/catch.hpp
 
 before_script:
@@ -33,7 +33,7 @@ before_script:
   # due broken comedi
   - export CXXFLAGS="$CXXFLAGS -Wl,--unresolved-symbols=ignore-in-shared-libs"
   - autoreconf -fiv
-  - ./configure --enable-tests --enable-mysql --enable-sqlite --enable-rrd --enable-io --enable-logicproc --disable-python
+  - ./configure --enable-tests --enable-mysql --enable-sqlite --enable-rrd --enable-io --enable-logicproc --disable-python --disable-mqtt
 
 script:
   - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make ; fi
@@ -52,6 +52,7 @@ addons:
 #      - libsigc++-2.0-dev
 #      - libsqlite3-dev
 #      - python-dev
+#      - libmosquittopp0-dev
   coverity_scan:
     project:
       name: "Etersoft/uniset2"
