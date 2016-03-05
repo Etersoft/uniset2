@@ -8,7 +8,7 @@
  *           Copyright 1995-2000 The LyX Team.
  *
  * ====================================================== */
-// (c) 2002 adapted for UniSet by Lav, GNU GPL license
+// (c) 2002 adapted for UniSet by Lav, GNU LGPL license
 
 #ifndef LYXDEBUG_H
 #define LYXDEBUG_H

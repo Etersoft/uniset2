@@ -18,7 +18,7 @@ Release: alt28
 
 Summary: UniSet - library for building distributed industrial control systems
 
-License: GPL
+License: LGPL
 Group: Development/C++
 Url: http://wiki.etersoft.ru/UniSet
 

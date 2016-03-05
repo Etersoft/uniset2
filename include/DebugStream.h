@@ -9,8 +9,8 @@
 // Primarily developed for use in the LyX Project http://www.lyx.org/
 // but should be adaptable to any project.
 
-// (c) 2002 adapted for UniSet by Lav, GNU GPL license
-// Modify for UniSet by pv@eterspft.ru, GNU GPL license
+// (c) 2002 adapted for UniSet by Lav, GNU LGPL license
+// Modify for UniSet by pv@eterspft.ru, GNU LGPL license
 
 #ifndef DEBUGSTREAM_H
 #define DEBUGSTREAM_H

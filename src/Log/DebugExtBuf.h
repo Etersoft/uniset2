@@ -8,7 +8,7 @@
 // Primarily developed for use in the LyX Project http://www.lyx.org/
 // but should be adaptable to any project.
 
-// (c) 2002 adapted for UniSet by Lav, GNU GPL license
+// (c) 2002 adapted for UniSet by Lav, GNU LGPL license
 
 //#define TEST_DEBUGSTREAM
 
