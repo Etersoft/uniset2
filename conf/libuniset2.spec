@@ -61,7 +61,7 @@ BuildRequires: librrd-devel
 %endif
 
 %if_enabled mqtt
-BuildRequires: mosquitto-devel
+BuildRequires: libmosquitto-devel
 %endif
 
 %if_enabled python
