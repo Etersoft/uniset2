@@ -14,7 +14,7 @@
 
 Name: libuniset2
 Version: 2.2
-Release: alt28
+Release: alt29
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -487,6 +487,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Mon Mar 07 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt29
+- minor fixes
+
 * Sun Feb 21 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt28
 - build with MQTTPublisher
 - default mqtt extention disabled
