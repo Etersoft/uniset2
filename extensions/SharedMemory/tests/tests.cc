@@ -47,6 +47,7 @@ int main(int argc, const char* argv[] )
 
 		act->add(shm);
 
+/*
 		ObjectId ns_id = conf->getControllerID("ReservSharedMemory");
 
 		if( ns_id == DefaultObjectId )
@@ -55,6 +56,9 @@ int main(int argc, const char* argv[] )
 			return 1;
 		}
 
+		auto nullsm = make_shared<NullSM>(ns_id, "reserv-sm-configure.xml");
+		act->add(nullsm);
+*/
 		ObjectId o_id = conf->getObjectID("TestObject");
 
 		if( o_id == DefaultObjectId )
@@ -68,9 +72,6 @@ int main(int argc, const char* argv[] )
 		obj = make_shared<TestObject>(o_id, o_node);
 		act->add(obj);
 
-		auto nullsm = make_shared<NullSM>(ns_id, "reserv-sm-configure.xml");
-		act->add(nullsm);
-
 		SystemMessage sm(SystemMessage::StartUp);
 		act->broadcast( sm.transport_msg() );
 		act->run(true);
@@ -78,10 +79,10 @@ int main(int argc, const char* argv[] )
 		int tout = 6000;
 		PassiveTimer pt(tout);
 
-		while( !pt.checkTime() && !act->exist() )
+		while( !pt.checkTime() && !shm->exist() )
 			msleep(100);
 
-		if( !act->exist() )
+		if( !shm->exist() )
 		{
 			cerr << "(tests): SharedMemory not exist! (timeout=" << tout << ")" << endl;
 			return 1;
