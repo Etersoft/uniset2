@@ -203,6 +203,7 @@ class MBExchange:
 			bool resp_state;
 			bool resp_invert;
 			bool resp_force = { false };
+			Trigger trInitOK; // триггер для "инициализации"
 			std::atomic<unsigned int> numreply; // количество успешных запросов..
 			std::atomic<unsigned int> prev_numreply;
 

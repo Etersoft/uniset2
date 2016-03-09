@@ -3187,7 +3187,12 @@ bool MBExchange::RTUDevice::checkRespond( std::shared_ptr<DebugStream>& mblog )
 		   << " ]"
 		   << endl;
 
-	return ((prev != resp_state || resp_force ) && resp_ptInit.checkTime());
+	// если только что прошла "инициализация" возвращаем true
+	// чтобы датчик в SM обновился..
+	if( trInitOK.hi(resp_ptInit.checkTime()) )
+		return true;
+
+	return ((prev != resp_state || resp_force ) && trInitOK.get() );
 }
 // -----------------------------------------------------------------------------
 void MBExchange::updateRespondSensors()
