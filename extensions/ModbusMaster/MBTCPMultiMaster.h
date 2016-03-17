@@ -82,6 +82,7 @@
       - \b priority - приоритет канала (чем больше число, тем выше приоритет)
       - \b respond_invert - инвертировать датчик связи (DI)
 	  - \b force [1,0] - "1" - обновлять значение датчика связи в SM принудительно на каждом цикле проверки ("0" - только по изменению).
+	  - \b timeout - таймаут на определение отсутсвия связи для данного канала. По умолчанию берётся глобальный.
 
       \par Параметры запуска
 
@@ -291,6 +292,7 @@ class MBTCPMultiMaster:
 			bool respond_invert;
 			bool respond_init = { false };
 			bool respond_force = { false }; // флаг означающий принудительно обновлять значение датчика связи на каждом цикле проверки
+			DelayTimer respondDelay;
 
 			inline bool operator < ( const MBSlaveInfo& mbs ) const
 			{

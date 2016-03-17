@@ -16,6 +16,7 @@
 // -------------------------------------------------------------------------
 #include <cmath>
 #include <limits>
+#include <iomanip>
 #include <sstream>
 #include <Exceptions.h>
 #include <extensions/Extensions.h>
@@ -117,6 +118,10 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		sinf.sleepPause_usec = it1.getPIntProp("sleepPause_usec", sleepPause_usec);
 		sinf.respond_invert = it1.getPIntProp("invert", 0);
 		sinf.respond_force = it1.getPIntProp("force", 0);
+		int tout = it1.getPIntProp("timeout", default_timeout);
+
+		// делаем только задержку на отпускание..
+		sinf.respondDelay.set(0, (tout >= 0 ? tout : default_timeout));
 
 		sinf.force_disconnect = it.getPIntProp("persistent_connection", !force_disconnect) ? false : true;
 
@@ -409,7 +414,15 @@ void MBTCPMultiMaster::check_thread()
 				// Если use=1" связь не проверяем и считаем что связь есть..
 				bool r = ( it->use ? true : it->check() );
 
-				mblog4 << myname << "(check): " << it->myname << " " << ( r ? "OK" : "FAIL" ) << endl;
+				mblog4 << myname << "(check): " << it->myname << " " << setw(4) << ( r ? "OK" : "FAIL" )
+					   << " [ respondDelay=" << it->respondDelay.check( r )
+					   << " offDelay=" << it->respondDelay.getOffDelay()
+					   << " ]"
+					   << endl;
+
+				// задержка на выставление "пропажи связи"
+				if( it->respond_init )
+					r = it->respondDelay.check( r );
 
 				try
 				{
@@ -422,13 +435,12 @@ void MBTCPMultiMaster::check_thread()
 				}
 				catch( const Exception& ex )
 				{
-					mbcrit << myname << "(check): (respond) " << ex << std::endl;
+					mbcrit << myname << "(check): (respond) " << it->myname << " : " << ex << std::endl;
 				}
 				catch( const std::exception& ex )
 				{
-					mbcrit << myname << "(check): (respond) " << ex.what() << std::endl;
+					mbcrit << myname << "(check): (respond) " << it->myname << " : " << ex.what() << std::endl;
 				}
-
 
 				{
 					uniset_rwmutex_wrlock l(tcpMutex);
@@ -437,7 +449,7 @@ void MBTCPMultiMaster::check_thread()
 			}
 			catch( const std::exception& ex )
 			{
-				mbcrit << myname << "(check): (respond) " << ex.what() << std::endl;
+				mbcrit << myname << "(check): (respond) "  << it->myname << " : " << ex.what() << std::endl;
 			}
 
 			if( !checkProcActive() )

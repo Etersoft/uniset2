@@ -3311,6 +3311,7 @@ std::string MBExchange::RTUDevice::getShortInfo() const
 	  << " numreply=" << numreply
 	  << " timeout=" << resp_Delay.getOnDelay()
 	  << " type=" << dtype
+	  << " ask_every_reg=" << ask_every_reg
 	  << ")" << endl;
 	return std::move( s.str() );
 }
