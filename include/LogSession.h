@@ -98,7 +98,6 @@ class LogSession
 		ev::io  io;
 		ev::timer  cmdTimer;
 		ev::async  asyncEvent;
-		std::mutex io_mutex;
 
 		FinalSlot slFin;
 		std::atomic_bool cancelled = { false };

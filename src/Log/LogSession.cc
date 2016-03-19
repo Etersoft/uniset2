@@ -128,7 +128,6 @@ void LogSession::terminate()
 	cancelled = true;
 
 	{
-		std::unique_lock<std::mutex> lk2(io_mutex);
 		io.stop();
 		cmdTimer.stop();
 		asyncEvent.stop();
@@ -156,8 +155,6 @@ void LogSession::event( ev::async& watcher, int revents )
 		return;
 	}
 
-	//writeEvent(io);
-	std::unique_lock<std::mutex> lk(io_mutex);
 	io.set(ev::READ | ev::WRITE);
 }
 // ---------------------------------------------------------------------
@@ -182,7 +179,6 @@ void LogSession::callback( ev::io& watcher, int revents )
 		if( mylog.is_info() )
 			mylog.info() << peername << ": stop session... disconnect.." << endl;
 
-		std::unique_lock<std::mutex> lk(io_mutex);
 		io.stop();
 		cmdTimer.stop();
 		{
@@ -234,8 +230,6 @@ void LogSession::writeEvent( ev::io& watcher )
 		logbuf.pop();
 		delete buffer;
 	}
-
-	std::unique_lock<std::mutex> lk1(io_mutex);
 
 	if( logbuf.empty() )
 		io.set(ev::READ);
@@ -326,9 +320,7 @@ void LogSession::readEvent( ev::io& watcher )
 
 #endif
 
-	std::unique_lock<std::mutex> lk(io_mutex);
 	cmdTimer.stop();
-	io.set(ev::WRITE);
 	asyncEvent.start();
 }
 // --------------------------------------------------------------------------------
@@ -413,9 +405,11 @@ void LogSession::cmdProcessing( const string& cmdLogName, const LogServerTypes::
 		LogAgregator::printLogList(s, loglist);
 		s << "=====================" << endl << endl;
 
-		std::unique_lock<std::mutex> lk(logbuf_mutex);
-		logbuf.push(new UTCPCore::Buffer(s.str()));
-		std::unique_lock<std::mutex> lk1(io_mutex);
+		{
+			std::unique_lock<std::mutex> lk(logbuf_mutex);
+			logbuf.push(new UTCPCore::Buffer(s.str()));
+		}
+
 		io.set(ev::WRITE);
 	}
 }
@@ -438,7 +432,6 @@ void LogSession::connectFinalSession( FinalSlot sl )
 // ---------------------------------------------------------------------
 bool LogSession::isAcive()
 {
-	std::unique_lock<std::mutex> lk(io_mutex);
 	return io.is_active();
 }
 // ---------------------------------------------------------------------

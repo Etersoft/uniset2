@@ -9,7 +9,7 @@ smemory_test_CPPFLAGS = -I$(top_builddir)/include \
 	$(SIGC_CFLAGS) $(COMCPP_CFLAGS)
 smemory_test_SOURCES = TestProc_SK.cc TestProc.cc smemory-test.cc
 
-BUILT_SOURCES=TestProc_SK.cc TestProc_SK.hh
+BUILT_SOURCES=TestProc_SK.cc TestProc_SK.h
 
 TestProc_SK.cc: testproc.src.xml
 #	./uniset2-codegen --ask -n TestProc --local-include --topdir $(top_builddir)/ --no-main testproc.src.xml

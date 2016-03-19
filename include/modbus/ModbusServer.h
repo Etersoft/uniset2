@@ -40,7 +40,7 @@ class ModbusServer
 			return dlog;
 		}
 
-		std::unordered_set<ModbusRTU::ModbusAddr> addr2vaddr( ModbusRTU::ModbusAddr& mbaddr );
+		static std::unordered_set<ModbusRTU::ModbusAddr> addr2vaddr( ModbusRTU::ModbusAddr& mbaddr );
 
 		/*! обработать очередное сообщение
 			\param vaddr        - вектор адресов для которых принимать сообщения
