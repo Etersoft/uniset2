@@ -16,10 +16,10 @@ int main( int argc, const char** argv )
 		if( argc > 1 && ( !strcmp(argv[1], "--help") || !strcmp(argv[1], "-h") ) )
 		{
 			cout << "Usage: uniset-smonit [ args ] --sid id1@node1,Sensor2@node2,id2,sensorname3,... " << endl
-			     << "Args: " << endl
+				 << "Args: " << endl
 				 << " --confile confilename - Default: configure.xml" << endl
 				 << " --name XXX - name for smonit. Default: TestProc" << endl;
-				 //                 << " --script scriptname \n"
+			//                 << " --script scriptname \n"
 			return 0;
 		}
 

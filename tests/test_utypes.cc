@@ -160,17 +160,17 @@ TEST_CASE("UniSetTypes: replace_all", "[utypes][replace_all]" )
 {
 	const std::string str1("Text %p test text %p");
 
-	std::string res = UniSetTypes::replace_all(str1,"%p","my");
+	std::string res = UniSetTypes::replace_all(str1, "%p", "my");
 	REQUIRE( res == "Text my test text my" );
 
 	const std::string str2("Text %rlong test text %rlong");
-	res = UniSetTypes::replace_all(str2,"%rlong","2");
+	res = UniSetTypes::replace_all(str2, "%rlong", "2");
 	REQUIRE( res == "Text 2 test text 2" );
 
-	res = UniSetTypes::replace_all(str2,"","my");
+	res = UniSetTypes::replace_all(str2, "", "my");
 	REQUIRE( res == str2 );
 
-	res = UniSetTypes::replace_all(str2,"not found","my");
+	res = UniSetTypes::replace_all(str2, "not found", "my");
 	REQUIRE( res == str2 );
 }
 // -----------------------------------------------------------------------------

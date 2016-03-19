@@ -41,6 +41,7 @@ MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSet
 
 	{
 		ostringstream s;
+
 		if( t.empty() )
 			s <<  conf->getRootSection() << "/sensors";
 		else

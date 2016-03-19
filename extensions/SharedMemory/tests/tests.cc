@@ -47,18 +47,18 @@ int main(int argc, const char* argv[] )
 
 		act->add(shm);
 
-/*
-		ObjectId ns_id = conf->getControllerID("ReservSharedMemory");
+		/*
+				ObjectId ns_id = conf->getControllerID("ReservSharedMemory");
 
-		if( ns_id == DefaultObjectId )
-		{
-			cerr << "Not found ID for 'ReservSharedMemory'" << endl;
-			return 1;
-		}
+				if( ns_id == DefaultObjectId )
+				{
+					cerr << "Not found ID for 'ReservSharedMemory'" << endl;
+					return 1;
+				}
 
-		auto nullsm = make_shared<NullSM>(ns_id, "reserv-sm-configure.xml");
-		act->add(nullsm);
-*/
+				auto nullsm = make_shared<NullSM>(ns_id, "reserv-sm-configure.xml");
+				act->add(nullsm);
+		*/
 		ObjectId o_id = conf->getObjectID("TestObject");
 
 		if( o_id == DefaultObjectId )

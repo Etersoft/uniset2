@@ -92,7 +92,7 @@ class UNetReceiver:
 	public std::enable_shared_from_this<UNetReceiver>
 {
 	public:
-		UNetReceiver( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection=false );
+		UNetReceiver( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection = false );
 		virtual ~UNetReceiver();
 
 		void start();

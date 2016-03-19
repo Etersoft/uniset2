@@ -119,6 +119,7 @@ bool UNetSender::createConnection( bool throwEx )
 		ostringstream s;
 		s << myname << "(createConnection): " << e.what();
 		unetcrit << s.str() << std::endl;
+
 		if( throwEx )
 			throw SystemError(s.str());
 
@@ -129,6 +130,7 @@ bool UNetSender::createConnection( bool throwEx )
 		ostringstream s;
 		s << myname << "(createConnection): catch...";
 		unetcrit << s.str() << std::endl;
+
 		if( throwEx )
 			throw SystemError(s.str());
 

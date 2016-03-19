@@ -64,7 +64,7 @@
 class UNetSender
 {
 	public:
-		UNetSender( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection=false,
+		UNetSender( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection = false,
 					const std::string& s_field = "", const std::string& s_fvalue = "", const std::string& prefix = "unet",
 					size_t maxDCount = UniSetUDP::MaxDCount, size_t maxACount = UniSetUDP::MaxACount );
 

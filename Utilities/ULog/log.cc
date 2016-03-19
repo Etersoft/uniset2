@@ -257,7 +257,7 @@ int main( int argc, char** argv )
 		lr.setReconnectDelay(rdelay);
 
 		if( !logfile.empty() )
-			lr.log()->logFile(logfile,logtruncate);
+			lr.log()->logFile(logfile, logtruncate);
 
 		if( !vcmd.empty() )
 			lr.sendCommand(addr, port, vcmd, cmdonly, verb);

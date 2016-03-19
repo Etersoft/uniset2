@@ -77,7 +77,10 @@ class LogReader
 
 		void setLogLevel( Debug::type t );
 
-		inline std::shared_ptr<DebugStream> log(){ return outlog; }
+		inline std::shared_ptr<DebugStream> log()
+		{
+			return outlog;
+		}
 
 	protected:
 

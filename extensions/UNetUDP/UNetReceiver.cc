@@ -100,7 +100,7 @@ void UNetReceiver::setCheckConnectionPause( timeout_t msec )
 	checkConnectionTime = (double)msec / 1000.0;
 
 	if( evCheckConnection.is_active() )
-		evCheckConnection.start(0,checkConnectionTime);
+		evCheckConnection.start(0, checkConnectionTime);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setLostTimeout( timeout_t msec )
@@ -120,7 +120,7 @@ void UNetReceiver::setUpdatePause( timeout_t msec )
 	updateTime = (double)updatepause / 1000.0;
 
 	if( evUpdate.is_active() )
-		evUpdate.start(0,updateTime);
+		evUpdate.start(0, updateTime);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setMaxProcessingCount( int set )
@@ -181,6 +181,7 @@ bool UNetReceiver::createConnection( bool throwEx )
 
 		ptRecvTimeout.setTiming(recvTimeout);
 		ptPrepare.setTiming(prepareTime);
+
 		if( activated )
 			evprepare(loop.evloop());
 	}
@@ -189,6 +190,7 @@ bool UNetReceiver::createConnection( bool throwEx )
 		ostringstream s;
 		s << myname << "(createConnection): " << e.what();
 		unetcrit << s.str() << std::endl;
+
 		if( throwEx )
 			throw SystemError(s.str());
 
@@ -199,12 +201,14 @@ bool UNetReceiver::createConnection( bool throwEx )
 		ostringstream s;
 		s << myname << "(createConnection): catch...";
 		unetcrit << s.str() << std::endl;
+
 		if( throwEx )
 			throw SystemError(s.str());
+
 		udp = nullptr;
 	}
 
-	return ( udp!=nullptr );
+	return ( udp != nullptr );
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::start()
@@ -225,7 +229,7 @@ void UNetReceiver::evprepare( const ev::loop_ref& eloop )
 	if( !udp )
 	{
 		evCheckConnection.set(eloop);
-		evCheckConnection.start(0,checkConnectionTime);
+		evCheckConnection.start(0, checkConnectionTime);
 	}
 	else
 	{
@@ -243,6 +247,7 @@ void UNetReceiver::evfinish( const ev::loop_ref& eloop )
 
 	{
 		uniset_mutex_lock l(checkConnMutex);
+
 		if( evCheckConnection.is_active() )
 			evCheckConnection.stop();
 	}
@@ -550,6 +555,7 @@ void UNetReceiver::checkConnectionEvent( ev::periodic& tm, int revents )
 	unetinfo << myname << "(checkConnectionEvent): check connection event.." << endl;
 
 	uniset_mutex_lock l(checkConnMutex);
+
 	if( !createConnection(false) )
 		tm.again();
 }
