@@ -130,7 +130,7 @@ size_t ModbusTCPCore::getDataFD( int fd, std::queue<unsigned char>& qrecv,
 
 		size_t ret = ModbusTCPCore::readDataFD(fd, qrecv, len, attempts);
 
-		if( ret == 0 )
+		if( ret == 0 && qrecv.empty() )
 			return 0;
 	}
 
