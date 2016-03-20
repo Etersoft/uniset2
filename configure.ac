@@ -407,6 +407,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/MQTTPublisher/libUniSet2MQTTPublisher.pc
 				 extensions/tests/Makefile
 				 extensions/tests/SMemoryTest/Makefile
+				 extensions/tests/MBSlaveTest/Makefile
 				 testsuite/Makefile
 				 python/lib/Makefile
 				 python/lib/pyUniSet/Makefile

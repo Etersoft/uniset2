@@ -1903,29 +1903,29 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 	}
 	catch( UniSetTypes::NameNotFound& ex )
 	{
-		mbwarn << myname << "(write): " << ex << endl;
+		mbwarn << myname << "(real_write_prop): " << ex << endl;
 		return ModbusRTU::erBadDataAddress;
 	}
 	catch( UniSetTypes::OutOfRange& ex )
 	{
-		mbwarn << myname << "(write): " << ex << endl;
+		mbwarn << myname << "(real_write_prop): " << ex << endl;
 		return ModbusRTU::erBadDataValue;
 	}
 	catch( const Exception& ex )
 	{
 		if( pingOK )
-			mbcrit << myname << "(write): " << ex << endl;
+			mbcrit << myname << "(real_write_prop): " << ex << endl;
 	}
 	catch( const CORBA::SystemException& ex )
 	{
 		if( pingOK )
-			mbcrit << myname << "(write): СORBA::SystemException: "
+			mbcrit << myname << "(real_write_prop): СORBA::SystemException: "
 				   << ex.NP_minorString() << endl;
 	}
 	catch(...)
 	{
 		if( pingOK )
-			mbcrit << myname << "(write) catch ..." << endl;
+			mbcrit << myname << "(real_write_prop) catch ..." << endl;
 	}
 
 	pingOK = false;

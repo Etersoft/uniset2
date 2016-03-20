@@ -191,6 +191,12 @@ extensions/tests/SMemoryTest/test.xml
 extensions/tests/SMemoryTest/TestProc.cc
 extensions/tests/SMemoryTest/TestProc.h
 extensions/tests/SMemoryTest/testproc.src.xml
+extensions/tests/SMemoryTest/Makefile.am
+extensions/tests/MBSlaveTest/mbslave-test.cc
+extensions/tests/MBSlaveTest/test.xml
+extensions/tests/MBSlaveTest/TestProc.cc
+extensions/tests/MBSlaveTest/TestProc.h
+extensions/tests/MBSlaveTest/testproc.src.xml
 extensions/tests/Makefile.am
 extensions/tests/test.xml
 extensions/tests/test_calibration.cc

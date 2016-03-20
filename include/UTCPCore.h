@@ -16,7 +16,7 @@ namespace UTCPCore
 	// Buffer class - allow for output buffering such that it can be written out into async pieces
 	struct Buffer
 	{
-		unsigned char* data;
+		unsigned char* data = { 0 };
 		ssize_t len;
 		ssize_t pos;
 
