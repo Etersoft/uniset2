@@ -495,6 +495,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 * Sun Mar 20 2016 Pavel Vainerman <pv@etersoft.ru> 2.2-alt29.2
 - rebuild
 
+* Sun Mar 20 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt29.1
+- test build
+
 * Sat Mar 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt28.4
 - test build
 
