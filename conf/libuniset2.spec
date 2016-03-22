@@ -14,7 +14,7 @@
 
 Name: libuniset2
 Version: 2.2
-Release: alt30
+Release: alt31
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -486,6 +486,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Wed Mar 23 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt31
+- IONotifyContoller: fixed bug in depend (notify)(setbug #9302)
+
 * Tue Mar 22 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt30
 - minor fixes in DealyTimer and MBExchange (not respond logic)
 

@@ -215,7 +215,7 @@ void SharedMemory::timerInfo( const TimerMessage* tm )
 		{
 			bool st = (bool)localGetValue(itPulsar, sidPulsar);
 			st ^= true;
-			localSetValue(itPulsar, sidPulsar, (st ? 1 : 0), getId() );
+			localSetValueIt(itPulsar, sidPulsar, (st ? 1 : 0), getId() );
 		}
 	}
 }
@@ -357,9 +357,9 @@ void SharedMemory::checkHeartBeat()
 			if( val < -1 )
 				val = -1;
 
-			localSetValue(it.a_it, it.a_sid, val, getId());
+			localSetValueIt(it.a_it, it.a_sid, val, getId());
 
-			localSetValue(it.d_it, it.d_sid, ( val >= 0 ? true : false), getId());
+			localSetValueIt(it.d_it, it.d_sid, ( val >= 0 ? true : false), getId());
 
 			// проверяем нужна ли "перезагрузка" по данному датчику
 			if( wdt && it.ptReboot.getInterval() )

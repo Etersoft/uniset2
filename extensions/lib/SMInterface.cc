@@ -236,11 +236,7 @@ using namespace UniSetTypes;
 		if( !ic )
 			return setValue(sid, value);
 
-		//    CHECK_IC_PTR(localSetValue)
-		IOController_i::SensorInfo si;
-		si.id = sid;
-		si.node = ui->getConf()->getLocalNode();
-		ic->localSetValue(it, si.id, value, sup_id);
+		ic->localSetValueIt(it, sid, value, sup_id);
 	}
 	// --------------------------------------------------------------------------
 	long SMInterface::localGetValue( IOController::IOStateList::iterator& it, UniSetTypes::ObjectId sid )

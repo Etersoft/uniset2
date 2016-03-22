@@ -82,7 +82,10 @@ int main(int argc, const char* argv[] )
 		while( !pt.checkTime() && !shm->exist() )
 			msleep(100);
 
-		if( !shm->exist() )
+		while( !pt.checkTime() && !obj->exist() )
+			msleep(100);
+
+		if( !shm->exist() || !obj->exist() )
 		{
 			cerr << "(tests): SharedMemory not exist! (timeout=" << tout << ")" << endl;
 			return 1;

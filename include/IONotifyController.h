@@ -154,11 +154,10 @@ class IONotifyController:
 
 		// --------------------------------------------
 
-		// функция для работы напрямую черех iterator (оптимизация)
-		virtual void localSetValue( IOController::IOStateList::iterator& it,
+		// функция для работы напрямую с указателем (оптимизация)
+		virtual void localSetValue( std::shared_ptr<USensorInfo>& usi,
 									UniSetTypes::ObjectId sid,
 									CORBA::Long value, UniSetTypes::ObjectId sup_id ) override;
-
 		// --------------------------------------------
 
 		/*! Информация о заказчике */
@@ -283,7 +282,8 @@ class IONotifyController:
 		virtual void send( ConsumerListInfo& lst, UniSetTypes::SensorMessage& sm );
 
 		//! проверка срабатывания пороговых датчиков
-		virtual void checkThreshold( IOStateList::iterator& li, const UniSetTypes::ObjectId sid, bool send = true );
+		virtual void checkThreshold( std::shared_ptr<USensorInfo>& usi, const UniSetTypes::ObjectId sid, bool send = true );
+		virtual void checkThreshold(IOController::IOStateList::iterator& li, const UniSetTypes::ObjectId sid, bool send_msg=true );
 
 		//! поиск информации о пороговом датчике
 		ThresholdExtList::iterator findThreshold( const UniSetTypes::ObjectId sid, const UniSetTypes::ThresholdId tid );

@@ -275,16 +275,16 @@ bool IONotifyController::myIOFilter( std::shared_ptr<USensorInfo>& ai,
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
+void IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInfo>& usi,
 										UniSetTypes::ObjectId sid,
 										CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
-	// Если датчик не найден сдесь сработает исключение
 	long prevValue = 0;
 
 	try
 	{
-		prevValue = IOController::localGetValue( li, sid );
+		// Если датчик не найден сдесь сработает исключение
+		prevValue = IOController::localGetValue( usi, sid );
 	}
 	catch( IOController_i::Undefined )
 	{
@@ -293,46 +293,35 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
 		prevValue = value + 1;
 	}
 
-
-	if( li == myioEnd() ) // ???
-	{
-		ostringstream err;
-		err << myname << "(localSetValue):  вход(выход) с именем "
-			<< uniset_conf()->oind->getNameById(sid) << " не найден";
-
-		uinfo << err.str() << endl;
-		throw IOController_i::NameNotFound(err.str().c_str());
-	}
-
-	IOController::localSetValue(li, sid, value, sup_id);
+	IOController::localSetValue(usi, sid, value, sup_id);
 
 	// сравниваем именно с li->second->value
 	// т.к. фактическое сохранённое значение может быть изменено
 	// фильтрами или блокировками..
-	SensorMessage sm(sid, li->second->value);
+	SensorMessage sm(sid, usi->value);
 	{
 		// lock
-		uniset_rwmutex_rlock lock(li->second->val_lock);
+		uniset_rwmutex_rlock lock(usi->val_lock);
 
-		if( prevValue == li->second->value )
+		if( prevValue == usi->value )
 			return;
 
 		// Рассылаем уведомления только в слуае изменения значения
 		sm.id           = sid;
 		sm.node         = uniset_conf()->getLocalNode();
-		sm.value        = li->second->value;
-		sm.undefined    = li->second->undefined;
-		sm.priority     = (Message::Priority)li->second->priority;
+		sm.value        = usi->value;
+		sm.undefined    = usi->undefined;
+		sm.priority     = (Message::Priority)usi->priority;
 		sm.supplier     = sup_id; // owner_id
-		sm.sensor_type  = li->second->type;
-		sm.sm_tv_sec    = li->second->tv_sec;
-		sm.sm_tv_usec   = li->second->tv_usec;
-		sm.ci           = li->second->ci;
+		sm.sensor_type  = usi->type;
+		sm.sm_tv_sec    = usi->tv_sec;
+		sm.sm_tv_usec   = usi->tv_usec;
+		sm.ci           = usi->ci;
 	} // unlock
 
 	try
 	{
-		if( !li->second->dbignore )
+		if( !usi->dbignore )
 			loggingInfo(sm);
 	}
 	catch(...) {}
@@ -348,11 +337,11 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
 	// проверка порогов
 	try
 	{
-		checkThreshold(li, sid, true);
+		checkThreshold(usi, sid, true);
 	}
 	catch(...) {}
 }
-// ------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------
 /*!
     \note В случае зависания в функции push, будут остановлены рассылки другим объектам.
     Возможно нужно ввести своего агента на удалённой стороне, который будет заниматься
@@ -682,7 +671,20 @@ bool IONotifyController::removeThreshold( ThresholdExtList& lst, ThresholdInfoEx
 	return false;
 }
 // --------------------------------------------------------------------------------------------------------------
-void IONotifyController::checkThreshold( IOStateList::iterator& li,
+void IONotifyController::checkThreshold( IOController::IOStateList::iterator& li,
+		const UniSetTypes::ObjectId sid,
+		bool send_msg )
+{
+	if( li == myioEnd() )
+		li = myiofind(sid);
+
+	if( li == myioEnd() )
+		return; // ???
+
+	checkThreshold(li->second,sid,send_msg);
+}
+// --------------------------------------------------------------------------------------------------------------
+void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorInfo>& s,
 		const UniSetTypes::ObjectId sid,
 		bool send_msg )
 {
@@ -699,14 +701,6 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
 		if( lst->second.list.empty() )
 			return;
 	}
-
-	if( li == myioEnd() )
-		li = myiofind(sid);
-
-	if( li == myioEnd() )
-		return; // ???
-
-	auto s = li->second;
 
 	SensorMessage sm(s->makeSensorMessage());
 
@@ -766,7 +760,7 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
 			{
 				try
 				{
-					localSetValue(it->sit, it->sid, (sm.threshold ? 1 : 0), s->supplier);
+					localSetValueIt(it->sit, it->sid, (sm.threshold ? 1 : 0), s->supplier);
 				}
 				catch( UniSetTypes::Exception& ex )
 				{

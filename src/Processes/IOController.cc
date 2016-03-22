@@ -240,7 +240,7 @@ void IOController::fastSetValue( UniSetTypes::ObjectId sid, CORBA::Long value, U
 	try
 	{
 		auto li = ioList.end();
-		localSetValue( li, sid, value, sup_id );
+		localSetValueIt( li, sid, value, sup_id );
 	}
 	catch(...) {}
 }
@@ -248,10 +248,10 @@ void IOController::fastSetValue( UniSetTypes::ObjectId sid, CORBA::Long value, U
 void IOController::setValue( UniSetTypes::ObjectId sid, CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
 	auto li = ioList.end();
-	localSetValue( li, sid, value, sup_id );
+	localSetValueIt( li, sid, value, sup_id );
 }
 // ------------------------------------------------------------------------------------------
-void IOController::localSetValue( IOController::IOStateList::iterator& li,
+void IOController::localSetValueIt( IOController::IOStateList::iterator& li,
 								  UniSetTypes::ObjectId sid,
 								  CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
@@ -289,12 +289,15 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 		// поэтому передаём (и затем сохраняем) напрямую(ссылку) value (а не const value)
 		bool blocked = ( usi->blocked || usi->undefined );
 
-
 		if( checkIOFilters(usi, value, sup_id) || blocked )
 		{
-			uinfo << myname << ": save sensor value (" << sid << ")"
+			ulog4 << myname << ": save sensor value (" << sid << ")"
 				  << " name: " << uniset_conf()->oind->getNameById(sid)
-				  << " value=" << value << endl;
+				  << " newvalue=" << value
+				  << " value=" << usi->value
+				  << " blocked=" << usi->blocked
+				  << " real_value=" << usi->real_value
+				  << endl;
 
 			long prev = usi->value;
 
@@ -721,7 +724,7 @@ IDSeq* IOController::setOutputSeq(const IOController_i::OutSeq& lst, ObjectId su
 
 			if( it != ioList.end() )
 			{
-				localSetValue(it, sid, lst[i].value, sup_id);
+				localSetValueIt(it, sid, lst[i].value, sup_id);
 				continue;
 			}
 		}
@@ -841,6 +844,15 @@ void IOController::USensorInfo::checkDepend( std::shared_ptr<USensorInfo>& d_it,
 		changed = ( prev != blocked );
 		sup_id = d_it->supplier;
 	}
+
+	ulog4 << ic->getName() << "(checkDepend): check si.id=" << si.id
+		  << " d_it->value=" << d_it->value
+		  << " d_value=" << d_value
+		  << " d_off_value=" << d_off_value
+		  << " blocked=" << blocked
+		  << " changed=" << changed
+		  << " real_value=" << real_value
+		  << endl;
 
 	if( changed )
 		ic->localSetValue( it, si.id, real_value, sup_id );
