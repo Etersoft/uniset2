@@ -95,22 +95,32 @@ class DelayTimer
 
 			if( state != st )
 			{
+				waiting_on = false;
+				waiting_off = false;
+
 				if( st )
 				{
+					if( onDelay <=0 )
+					{
+						pt.setTiming(0);
+						state = st;
+						return st;
+					}
+
 					pt.setTiming(onDelay);
 					waiting_on = true;
 				}
 				else
 				{
+					if( offDelay <=0 )
+					{
+						pt.setTiming(0);
+						state = st;
+						return st;
+					}
+
 					pt.setTiming(offDelay);
 					waiting_off = true;
-				}
-
-				// на случае если таймеры  = 0..
-				if( pt.checkTime() )
-				{
-					state = st;
-					return st;
 				}
 			}
 

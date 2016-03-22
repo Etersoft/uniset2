@@ -554,7 +554,7 @@ std::ostream& operator<<( std::ostream& os, MBExchange::RTUDevice& d )
 	os  << "addr=" << ModbusRTU::addr2str(d.mbaddr)
 		<< " type=" << d.dtype
 		<< " respond_id=" << d.resp_id
-		<< " respond_timeout=" << d.resp_Delay.getOnDelay()
+		<< " respond_timeout=" << d.resp_Delay.getOffDelay()
 		<< " respond_state=" << d.resp_state
 		<< " respond_invert=" << d.resp_invert
 		<< endl;
@@ -2768,7 +2768,7 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
 	mbinfo << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
 	int tout = it.getPIntProp("timeout", default_timeout );
 
-	d->second->resp_Delay.set(tout, false);
+	d->second->resp_Delay.set(0, tout);
 	d->second->resp_invert = it.getIntProp("invert");
 	d->second->resp_force =  it.getIntProp("force");
 
@@ -3174,13 +3174,14 @@ bool MBExchange::poll()
 bool MBExchange::RTUDevice::checkRespond( std::shared_ptr<DebugStream>& mblog )
 {
 	bool prev = resp_state;
-	resp_state = !resp_Delay.check( prev_numreply == numreply ) && numreply != 0;
+	resp_state = resp_Delay.check( prev_numreply != numreply ) && numreply != 0;
 
 	mblog4 << "(checkRespond): addr=" << ModbusRTU::addr2str(mbaddr)
 		   << " respond_id=" << resp_id
 		   << " state=" << resp_state
 		   << " current=" << resp_Delay.getCurrent()
-		   << " [ timeout=" << resp_Delay.getOnDelay()
+		   << " delay_check=" << resp_Delay.get()
+		   << " [ timeout=" << resp_Delay.getOffDelay()
 		   << " numreply=" << numreply
 		   << " prev_numreply=" << prev_numreply
 		   << " resp_ptInit=" << resp_ptInit.checkTime()
@@ -3309,7 +3310,7 @@ std::string MBExchange::RTUDevice::getShortInfo() const
 	  << " (resp_id=" << resp_id << " resp_force=" << resp_force
 	  << " resp_invert=" << resp_invert
 	  << " numreply=" << numreply
-	  << " timeout=" << resp_Delay.getOnDelay()
+	  << " timeout=" << resp_Delay.getOffDelay()
 	  << " type=" << dtype
 	  << " ask_every_reg=" << ask_every_reg
 	  << ")" << endl;
