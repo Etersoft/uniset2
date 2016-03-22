@@ -8,9 +8,8 @@
 --mbtcp-set-prop-prefix \
 --mbtcp-filter-field rs \
 --mbtcp-filter-value 5 \
---mbtcp-recv-timeout 7000 \
---mbtcp-timeout 2000 \
---mbtcp-polltime 2000 \
+--mbtcp-recv-timeout 500 \
+--mbtcp-polltime 200 \
 --mbtcp-force-out 1 \
 --mbtcp-log-add-levels level4,warn,crit \
 --mbtcp-persistent-connection 1 \

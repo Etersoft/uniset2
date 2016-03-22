@@ -4,15 +4,16 @@
 --confile test.xml \
 --mbtcp-name MBMaster1 \
 --smemory-id SharedMemory \
---mbtcp-log-add-levels system,info,crit,warn,level4,level3 \
+--mbtcp-log-add-levels level4 \
 --mbtcp-set-prop-prefix \
 --mbtcp-filter-field rs \
 --mbtcp-filter-value 5 \
 --mbtcp-gateway-iaddr localhost \
 --mbtcp-gateway-port 2048 \
---mbtcp-recv-timeout 5000 \
+--mbtcp-recv-timeout 900 \
+--mbtcp-polltime 200 \
+--mbtcp-polltime 200 \
 --mbtcp-force-disconnect 1 \
---mbtcp-polltime 3000 \
 --mbtcp-force-out 1 \
 --ulog-add-levels system \
 --mbtcp-run-logserver \

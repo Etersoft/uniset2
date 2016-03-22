@@ -52,7 +52,7 @@
       в которой указываются настроечные параметры по умолчанию.
       Пример:
       \code
-    <MBMaster1 name="MBMaster1" polltime="200" exchangeModeID="..">
+	<MBMaster1 name="MBMaster1" polltime="200" channelTimeout="..." exchangeModeID="..">
          <DeviceList>
 			 <item addr="0x01" respondSensor="RTU1_Not_Respond_FS" force="0" timeout="2000" invert="1"/>
          <item addr="0x02" respondSensor="RTU2_Respond_FS" timeout="2000" invert="0"/>
@@ -63,6 +63,8 @@
          <GateList>
     </MBMaster1>
       \endcode
+	  - \b channelTimeout - умолчательный timeout для переключения каналов. По умолчанию: берётся общий defaultTimeout.
+
       Секция <DeviceList> позволяет задать параметры обмена с конкретным RTU-устройством.
 
       - \b addr -  адрес устройства для которого, задаются параметры
@@ -293,6 +295,7 @@ class MBTCPMultiMaster:
 			bool respond_init = { false };
 			bool respond_force = { false }; // флаг означающий принудительно обновлять значение датчика связи на каждом цикле проверки
 			DelayTimer respondDelay;
+			timeout_t channel_timeout = { 0 };
 
 			inline bool operator < ( const MBSlaveInfo& mbs ) const
 			{

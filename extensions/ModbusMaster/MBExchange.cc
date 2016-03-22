@@ -104,12 +104,13 @@ MBExchange::MBExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
 		ptStatistic.setTiming(stat_time * 1000);
 
 	recv_timeout = conf->getArgPInt("--" + prefix + "-recv-timeout", it.getProp("recv_timeout"), 500);
+	vmonit(recv_timeout);
 
 	default_timeout = conf->getArgPInt("--" + prefix + "-timeout", it.getProp("timeout"), 5000);
+	vmonit(default_timeout);
 
 	int tout = conf->getArgPInt("--" + prefix + "-reopen-timeout", it.getProp("reopen_timeout"), default_timeout * 2);
 	ptReopen.setTiming(tout);
-	vmonit(recv_timeout);
 
 	int reinit_tout = conf->getArgPInt("--" + prefix + "-reinit-timeout", it.getProp("reinit_timeout"), default_timeout);
 	ptInitChannel.setTiming(reinit_tout);
@@ -3179,7 +3180,7 @@ bool MBExchange::RTUDevice::checkRespond( std::shared_ptr<DebugStream>& mblog )
 	mblog4 << "(checkRespond): addr=" << ModbusRTU::addr2str(mbaddr)
 		   << " respond_id=" << resp_id
 		   << " state=" << resp_state
-		   << " current=" << resp_Delay.getCurrent()
+		   << " check=" << (prev_numreply != numreply)
 		   << " delay_check=" << resp_Delay.get()
 		   << " [ timeout=" << resp_Delay.getOffDelay()
 		   << " numreply=" << numreply
@@ -3213,7 +3214,7 @@ void MBExchange::updateRespondSensors()
 					   << " respond_id=" << d->resp_id
 					   << " state=" << d->resp_state
 					   << " [ invert=" << d->resp_invert
-					   << " timeout=" << d->resp_Delay.getOnDelay()
+					   << " timeout=" << d->resp_Delay.getOffDelay()
 					   << " numreply=" << d->numreply
 					   << " prev_numreply=" << d->prev_numreply
 					   << " ]"
@@ -3291,9 +3292,10 @@ UniSetTypes::SimpleInfo* MBExchange::getInfo( CORBA::Long userparam )
 	inf << i->info << endl;
 	inf << vmon.pretty_str() << endl;
 	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
+	inf << "Parameters: reopenTimeout=" << ptReopen.getInterval()
+		<< endl;
 
-	inf << "Devices:" << endl;
-
+	inf << "Devices: " << endl;
 	for( const auto& it : devices )
 		inf << "  " <<  it.second->getShortInfo() << endl;
 

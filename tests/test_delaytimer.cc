@@ -187,5 +187,16 @@ TEST_CASE("[DelayTimer]: zero time", "[DelayTimer]" )
 		msleep(40);
 		CHECK( dt.check(true) );
 	}
+
+	SECTION("off delay")
+	{
+		DelayTimer dt(0,2000);
+		PassiveTimer pt;
+		dt.check(true);
+		while( dt.check(false) )
+			msleep(100);
+
+		REQUIRE( pt.getCurrent() >= 2000 );
+	}
 }
 // -----------------------------------------------------------------------------

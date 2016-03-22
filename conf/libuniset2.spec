@@ -488,6 +488,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %changelog
 * Wed Mar 23 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt31
 - IONotifyContoller: fixed bug in depend (notify)(setbug #9302)
+- ModbusMultiMaster: fixed bug for change channel (timeout)
 
 * Tue Mar 22 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt30
 - minor fixes in DealyTimer and MBExchange (not respond logic)

@@ -49,6 +49,11 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 
 	int ignore_timeout = conf->getArgPInt("--" + prefix + "-ignore-timeout", it.getProp("ignore_timeout"), ptReopen.getInterval());
 
+	// Т.к. при "многоканальном" доступе к slave, смена канала должна происходит сразу после
+	// неудачной попытки запросов по одному из каналов, то ПЕРЕОПРЕДЕЛЯЕМ reopen, на channel-timeout..
+	int channelTimeout = conf->getArgPInt("--" + prefix + "-default-channel-timeout", it.getProp("channelTimeout"),default_timeout);
+	ptReopen.setTiming(channelTimeout);
+
 	UniXML::iterator it1(it);
 
 	if( !it1.find("GateList") )
@@ -118,10 +123,12 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		sinf.sleepPause_usec = it1.getPIntProp("sleepPause_usec", sleepPause_usec);
 		sinf.respond_invert = it1.getPIntProp("invert", 0);
 		sinf.respond_force = it1.getPIntProp("force", 0);
-		int tout = it1.getPIntProp("timeout", default_timeout);
+
+		int tout = it1.getPIntProp("timeout", channelTimeout);
+		sinf.channel_timeout = (tout >= 0 ? tout : channelTimeout);
 
 		// делаем только задержку на отпускание..
-		sinf.respondDelay.set(0, (tout >= 0 ? tout : default_timeout));
+		sinf.respondDelay.set(0, sinf.channel_timeout);
 
 		sinf.force_disconnect = it.getPIntProp("persistent_connection", !force_disconnect) ? false : true;
 
@@ -165,10 +172,10 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 	checkThread = make_shared<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::check_thread);
 	checkThread->setFinalAction(this, &MBTCPMultiMaster::final_thread);
 
-
 	// Т.к. при "многоканальном" доступе к slave, смена канала должна происходит сразу после
-	// неудачной попытки запросов по одному из каналов, то ПЕРЕОПРЕДЕЛЯЕМ reopen, на timeout..
-	ptReopen.setTiming(default_timeout);
+	// неудачной попытки запросов по одному из каналов, то ПЕРЕОПРЕДЕЛЯЕМ reopen, на channel-timeout..
+	int tout = conf->getArgPInt("--" + prefix + "-default-channel-timeout", it.getProp("channelTimeout"),default_timeout);
+	ptReopen.setTiming(tout);
 
 	if( mblog->is_info() )
 		printMap(devices);
@@ -210,6 +217,10 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 			mbi = mblist.rbegin();
 
 		mbi->init(mblog);
+
+		// переопределяем timeout на данный канал
+		ptReopen.setTiming( mbi->channel_timeout );
+
 		mb = mbi->mbtcp;
 		return mbi->mbtcp;
 	}
@@ -243,6 +254,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 				mblog4 << myname << "(initMB): SELECT CHANNEL " << mbi->ip << ":" << mbi->port << endl;
 				mb = mbi->mbtcp;
 				mbi->setUse(true);
+				ptReopen.setTiming( mbi->channel_timeout );
 				return mbi->mbtcp;
 			}
 
@@ -263,6 +275,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 			mbi = it;
 			mb = mbi->mbtcp;
 			mbi->setUse(true);
+			ptReopen.setTiming( mbi->channel_timeout );
 			mblog4 << myname << "(initMB): SELECT CHANNEL " << mbi->ip << ":" << mbi->port << endl;
 			return it->mbtcp;
 		}
@@ -281,6 +294,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 			mb = mbi->mbtcp;
 			mbi->ignore = false;
 			mbi->setUse(true);
+			ptReopen.setTiming( mbi->channel_timeout );
 			mblog4 << myname << "(initMB): SELECT CHANNEL " << mbi->ip << ":" << mbi->port << endl;
 			return it->mbtcp;
 		}
@@ -416,7 +430,9 @@ void MBTCPMultiMaster::check_thread()
 
 				mblog4 << myname << "(check): " << it->myname << " " << setw(4) << ( r ? "OK" : "FAIL" )
 					   << " [ respondDelay=" << it->respondDelay.check( r )
-					   << " offDelay=" << it->respondDelay.getOffDelay()
+					   << " timeout=" << it->channel_timeout
+					   << " use=" << it->use
+					   << " ignore=" << it->ignore
 					   << " ]"
 					   << endl;
 
