@@ -27,7 +27,7 @@ Valid options are:
   -m, --main        - filename for main.cc. Default: main.cc
   -n, --name        - filename for *_SK files (base class implementation). Default: xmlfilename_SK
   --ask             - Use 'ask' templates. See the documentation.
-  --gen-varmap	    - generate variable map. For function: long* getVariable(ObjectId)
+  --gen-varmap	    - generate variable map. For function: long* valptr(ObjectId)
   --alone           - Use 'alone' templates. See the documentation.
   --no-main         - Don't generate main.cc
 
