@@ -629,7 +629,6 @@ void MBSlave::execute_tcp()
 	}
 
 	mbinfo << myname << "(execute_tcp): thread running.."
-		   << " iomap size = " << iomap.size()
 		   << " myaddr=" << ModbusServer::vaddr2str(vaddr)
 		   << endl;
 
@@ -2423,7 +2422,10 @@ UniSetTypes::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
 	inf << vmon.pretty_str() << endl;
 
 	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
-	inf << "iomap=" << iomap.size() << " myaddr: " << ModbusServer::vaddr2str(vaddr) << endl;
+	inf << "iomap[" << iomap.size() << "]: " << endl;
+	for( const auto& m: iomap )
+		inf << "  " << ModbusRTU::addr2str(m.first) << ": iomap=" << m.second.size() << endl;
+	inf << " myaddr: " << ModbusServer::vaddr2str(vaddr) << endl;
 	inf << "Statistic: askCount=" << askCount << " pingOK=" << pingOK << endl;
 
 	if( sslot ) // т.е. если у нас tcp
