@@ -104,6 +104,8 @@ class ModbusTCPServer:
 			return tmTime;
 		}
 
+		void iowait( timeout_t msec ); // ожидание (при этом время отдаётся eventloop-у)
+
 	protected:
 
 		// функция receive пока не поддерживается...
@@ -156,6 +158,8 @@ class ModbusTCPServer:
 
 		timeout_t tmTime_msec = { TIMEOUT_INF }; // время по умолчанию для таймера (TimerSignal)
 		double tmTime = { 0.0 };
+
+		PassiveTimer ptWait;
 
 	private:
 		// транслирование сигналов от Sessions..

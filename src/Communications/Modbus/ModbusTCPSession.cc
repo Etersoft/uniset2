@@ -89,6 +89,13 @@ void ModbusTCPSession::setSessionTimeout( double t )
 		ioTimeout.start(t);
 }
 // -------------------------------------------------------------------------
+void ModbusTCPSession::iowait( timeout_t msec )
+{
+	ptWait.setTiming(msec);
+	while( !ptWait.checkTime() )
+		io.loop.iteration();
+}
+// -------------------------------------------------------------------------
 void ModbusTCPSession::run( ev::loop_ref& loop )
 {
 	if( dlog->is_info() )
@@ -225,7 +232,7 @@ ModbusRTU::mbErrCode ModbusTCPSession::realReceive( const std::unordered_set<Mod
 				printProcessingTime();
 			}
 			else if( aftersend_msec > 0 )
-				msleep(aftersend_msec);
+				iowait(aftersend_msec);
 
 			return res;
 		}
@@ -321,14 +328,14 @@ mbErrCode ModbusTCPSession::tcp_processing( ModbusTCP::MBAPHeader& mhead )
 		return erInvalidFormat;
 	}
 
-	len = ModbusTCPCore::readDataFD( sock->getSocket(), qrecv, mhead.len );
-
-	if( len == 0 )
+	pt.setTiming(10);
+	do
 	{
-		// делаем ещё одну попытку чтения через некоторое время
-		msleep(5);
 		len = ModbusTCPCore::readDataFD( sock->getSocket(), qrecv, mhead.len );
+		if( len == 0 )
+			io.loop.iteration();
 	}
+	while( len == 0 && !pt.checkTime() );
 
 	if( len < mhead.len )
 	{

@@ -57,6 +57,8 @@ class ModbusTCPSession:
 
 		virtual bool isActive() override;
 
+		void iowait( timeout_t msec );
+
 	protected:
 
 		virtual ModbusRTU::mbErrCode realReceive( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msecTimeout ) override;
@@ -116,7 +118,7 @@ class ModbusTCPSession:
 		virtual ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query,
 				ModbusRTU::FileTransferRetMessage& reply );
 
-	private:
+    private:
 		std::queue<unsigned char> qrecv;
 		ModbusTCP::MBAPHeader curQueryHeader;
 		std::unordered_set<ModbusRTU::ModbusAddr> vaddr;
@@ -139,6 +141,8 @@ class ModbusTCPSession:
 		FinalSlot slFin;
 
 		std::atomic_bool cancelled = { false };
+		PassiveTimer pt;
+		PassiveTimer ptWait;
 };
 // -------------------------------------------------------------------------
 #endif // ModbusTCPSession_H_

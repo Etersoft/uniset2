@@ -612,7 +612,9 @@ void MBSlave::execute_tcp()
 	// для обновления пороговых датчиков
 	tcpserver->signal_post_receive().connect( sigc::mem_fun(this, &MBSlave::postReceiveEvent) );
 
-	mbinfo << myname << "(execute_tcp): run tcpserver.." << endl;
+	mbinfo << myname << "(execute_tcp): run tcpserver ("
+		   << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort()
+		   <<")" << endl;
 
 	tcpCancelled = false;
 
