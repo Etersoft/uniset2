@@ -104,9 +104,10 @@ class ModbusTCPServer:
 			return tmTime;
 		}
 
-		void iowait( timeout_t msec ); // ожидание (при этом время отдаётся eventloop-у)
-
 	protected:
+
+		// ожидание (при этом время отдаётся eventloop-у)
+		virtual void iowait( timeout_t msec ) override;
 
 		// функция receive пока не поддерживается...
 		virtual ModbusRTU::mbErrCode realReceive( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, timeout_t msecTimeout ) override;

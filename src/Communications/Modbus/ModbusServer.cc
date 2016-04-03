@@ -35,7 +35,7 @@ ModbusServer::ModbusServer():
 	recvTimeOut_ms(50),
 	replyTimeout_ms(2000),
 	aftersend_msec(0),
-	sleepPause_usec(100),
+	sleepPause_msec(10),
 	onBroadcast(false),
 	crcNoCheckit(false),
 	cleanBeforeSend(false)
@@ -606,7 +606,7 @@ mbErrCode ModbusServer::recv( const std::unordered_set<ModbusRTU::ModbusAddr>& v
 				break;
 			}
 
-			usleep(sleepPause_usec);
+			iowait(sleepPause_msec);
 		}
 
 		if( !begin )
@@ -1581,8 +1581,8 @@ void ModbusServer::initLog( UniSetTypes::Configuration* conf,
 // -------------------------------------------------------------------------
 void ModbusServer::printProcessingTime()
 {
-	if( dlog->is_info() )
-		dlog->info() << "(processingTime): " << tmProcessing.getCurrent() << " [msec] (lim: " << tmProcessing.getInterval() << ")" << endl;
+	if( dlog->is_level9() )
+		dlog->level9() << "(processingTime): " << tmProcessing.getCurrent() << " [msec] (lim: " << tmProcessing.getInterval() << ")" << endl;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string& fname,
@@ -1693,6 +1693,11 @@ void ModbusServer::resetAskCounter()
 	askCount = 0;
 }
 // -------------------------------------------------------------------------
+void ModbusServer::iowait( timeout_t msec )
+{
+	msleep(msec);
+}
+// -------------------------------------------------------------------------
 ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessage& query,
 		ModbusRTU::SetDateTimeRetMessage& reply,
 		std::shared_ptr<DebugStream> dlog )
@@ -1784,7 +1789,7 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 	}
 
 	if( aftersend_msec > 0 )
-		msleep(aftersend_msec);
+		iowait(aftersend_msec);
 
 	return post_send_request(msg);
 }

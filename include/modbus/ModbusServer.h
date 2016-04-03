@@ -89,9 +89,9 @@ class ModbusServer
 		void setRecvTimeout( timeout_t msec );
 
 		/*! установить паузу при ожидании символа */
-		inline void setSleepPause( timeout_t usec )
+		inline void setSleepPause( timeout_t msec )
 		{
-			sleepPause_usec = usec;
+			sleepPause_msec = msec;
 		}
 
 		inline void setCRCNoCheckit( bool set )
@@ -158,6 +158,9 @@ class ModbusServer
 		void resetAskCounter();
 
 	protected:
+
+		virtual void iowait( timeout_t usec );
+
 
 		/*! реализация получения очередного сообщения */
 		virtual ModbusRTU::mbErrCode realReceive( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, timeout_t msecTimeout ) = 0;
@@ -315,7 +318,7 @@ class ModbusServer
 		timeout_t recvTimeOut_ms;        /*!< таймаут на приём */
 		timeout_t replyTimeout_ms;    /*!< таймаут на формирование ответа */
 		timeout_t aftersend_msec;        /*!< пауза после посылки ответа */
-		timeout_t sleepPause_usec;     /*!< пауза между попытками чтения символа из канала */
+		timeout_t sleepPause_msec;     /*!< пауза между попытками чтения символа из канала */
 		bool onBroadcast;        /*!< включен режим работы с broadcst-сообщениями */
 		bool crcNoCheckit;
 		bool cleanBeforeSend;

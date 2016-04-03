@@ -255,7 +255,7 @@ void ModbusTCPServer::ioAccept(ev::io& watcher, int revents)
 		s->setAfterSendPause(aftersend_msec);
 		s->setReplyTimeout(replyTimeout_ms);
 		s->setRecvTimeout(recvTimeOut_ms);
-		s->setSleepPause(sleepPause_usec);
+		s->setSleepPause(sleepPause_msec);
 		s->setCleanBeforeSend(cleanBeforeSend);
 		s->setSessionTimeout( (double)sessTimeout / 1000. );
 		s->signal_post_receive().connect( sigc::mem_fun(this, &ModbusTCPServer::postReceiveEvent) );

@@ -2589,6 +2589,12 @@ UniSetTypes::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
 		for( const auto& m : cmap )
 			inf << "   " << m.second.getShortInfo() << endl;
 
+		{
+			uniset_mutex_lock l(sessMutex);
+			inf << "TCP sessions[" << sess.size() << "]:" << endl;
+			for( const auto& m : sess )
+				inf << "   " << m.iaddr << " askCount=" << m.askCount << endl;
+		}
 		inf << endl;
 	}
 
