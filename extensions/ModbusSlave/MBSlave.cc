@@ -227,7 +227,7 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 		sessMaxNum = conf->getArgInt("--" + prefix + "-session-maxnum", it.getProp("sessMaxNum"));
 
 		if( sessMaxNum == 0 )
-			sessMaxNum = 3;
+			sessMaxNum = 5;
 
 		vmonit(sessMaxNum);
 
@@ -2591,7 +2591,7 @@ UniSetTypes::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
 
 		{
 			uniset_mutex_lock l(sessMutex);
-			inf << "TCP sessions[" << sess.size() << "]:" << endl;
+			inf << "TCP sessions[" << sess.size() << "]: max=" << sessMaxNum << " updateStatTime=" << updateStatTime << endl;
 			for( const auto& m : sess )
 				inf << "   " << m.iaddr << " askCount=" << m.askCount << endl;
 		}

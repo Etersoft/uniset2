@@ -130,7 +130,7 @@ MBExchange::MBExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
 
 	initPause = conf->getArgPInt("--" + prefix + "-initPause", it.getProp("initPause"), 3000);
 
-	sleepPause_usec = conf->getArgPInt("--" + prefix + "-sleepPause-usec", it.getProp("sleepPause"), 100);
+	sleepPause_msec = conf->getArgPInt("--" + prefix + "-sleepPause-msec", it.getProp("sleepPause"), 10);
 
 	force = conf->getArgInt("--" + prefix + "-force", it.getProp("force"));
 	force_out = conf->getArgInt("--" + prefix + "-force-out", it.getProp("force_out"));
@@ -3134,7 +3134,10 @@ bool MBExchange::poll()
 
 	if( stat_time > 0 && ptStatistic.checkTime() )
 	{
-		mblog9 << endl << "(poll statistic): number of calls is " << poll_count << " (poll time: " << stat_time << " sec)" << endl << endl;
+		ostringstream s;
+		s << "number of calls is " << poll_count << " (poll time: " << stat_time << " sec)";
+		statInfo = std::move(s.str());
+		mblog9 << myname << "(stat): " << statInfo << endl;
 		ptStatistic.reset();
 		poll_count = 0;
 	}
@@ -3292,6 +3295,9 @@ UniSetTypes::SimpleInfo* MBExchange::getInfo( CORBA::Long userparam )
 	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
 	inf << "Parameters: reopenTimeout=" << ptReopen.getInterval()
 		<< endl;
+
+	if( stat_time > 0 )
+		inf << "Statistics: " << statInfo << endl;
 
 	inf << "Devices: " << endl;
 	for( const auto& it : devices )

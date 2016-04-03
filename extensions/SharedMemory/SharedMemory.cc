@@ -38,7 +38,6 @@ void SharedMemory::help_print( int argc, const char* const* argv )
 	cout << "--wdt-device           - Использовать в качестве WDT указанный файл." << endl;
 	cout << "--heartbeat-node       - Загружать heartbeat датчики для указанного узла." << endl;
 	cout << "--heartbeat-check-time - период проверки 'счётчиков'. По умолчанию 1000 мсек" << endl;
-	cout << "--lock-rvalue-pause-msec - пауза между проверкой rw-блокировки на разрешение чтения" << endl;
 	cout << "--e-filter             - фильтр для считывания <eventlist>" << endl;
 	cout << "--e-startup-pause      - пауза перед посылкой уведомления о старте SM. (По умолчанию: 1500 мсек)." << endl;
 	cout << "--activate-timeout     - время ожидания активизации (По умолчанию: 15000 мсек)." << endl;

@@ -111,7 +111,7 @@ std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
 		if( recv_timeout > 0 )
 			mbtcp->setTimeout(recv_timeout);
 
-		mbtcp->setSleepPause(sleepPause_usec);
+		mbtcp->setSleepPause(sleepPause_msec);
 		mbtcp->setAfterSendPause(aftersend_pause);
 
 		mbinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;

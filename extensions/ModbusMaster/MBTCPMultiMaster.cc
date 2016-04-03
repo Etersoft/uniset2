@@ -120,7 +120,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		sinf.ptIgnoreTimeout.setTiming( it1.getPIntProp("ignore_timeout", ignore_timeout) );
 		sinf.recv_timeout = it1.getPIntProp("recv_timeout", recv_timeout);
 		sinf.aftersend_pause = it1.getPIntProp("aftersend_pause", aftersend_pause);
-		sinf.sleepPause_usec = it1.getPIntProp("sleepPause_usec", sleepPause_usec);
+		sinf.sleepPause_usec = it1.getPIntProp("sleepPause_msec", sleepPause_msec);
 		sinf.respond_invert = it1.getPIntProp("invert", 0);
 		sinf.respond_force = it1.getPIntProp("force", 0);
 

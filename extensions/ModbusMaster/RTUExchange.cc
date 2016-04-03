@@ -78,7 +78,7 @@ RTUExchange::RTUExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmI
 	transmitCtl = conf->getArgInt("--" + prefix + "-transmit-ctl", it.getProp("transmitCtl"));
 	defSpeed = ComPort::getSpeed(speed);
 
-	sleepPause_usec = conf->getArgPInt("--" + prefix + "-sleepPause-usec", it.getProp("slepePause"), 100);
+	sleepPause_msec = conf->getArgPInt("--" + prefix + "-sleepPause-usec", it.getProp("slepePause"), 100);
 
 	rs_pre_clean = conf->getArgInt("--" + prefix + "-pre-clean", it.getProp("pre_clean"));
 
@@ -155,7 +155,7 @@ std::shared_ptr<ModbusClient> RTUExchange::initMB( bool reopen )
 		if( recv_timeout > 0 )
 			mbrtu->setTimeout(recv_timeout);
 
-		mbrtu->setSleepPause(sleepPause_usec);
+		mbrtu->setSleepPause(sleepPause_msec);
 		mbrtu->setAfterSendPause(aftersend_pause);
 
 		mbinfo << myname << "(init): dev=" << devname << " speed=" << ComPort::getSpeed( mbrtu->getSpeed() ) << endl;

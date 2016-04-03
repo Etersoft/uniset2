@@ -341,7 +341,7 @@ class MBExchange:
 		bool force_out = { false };    /*!< флаг означающий, принудительного чтения выходов */
 		bool mbregFromID = { false };
 		int polltime = { 100 };    /*!< переодичность обновления данных, [мсек] */
-		timeout_t sleepPause_usec;
+		timeout_t sleepPause_msec;
 		unsigned int maxQueryCount = { ModbusRTU::MAXDATALEN }; /*!< максимальное количество регистров для одного запроса */
 
 		PassiveTimer ptHeartBeat;
@@ -364,6 +364,7 @@ class MBExchange:
 		timeout_t stat_time = { 0 };      /*!< время сбора статистики обмена, 0 - отключена */
 		unsigned int poll_count = { 0 };
 		PassiveTimer ptStatistic; /*!< таймер для сбора статистики обмена */
+		std::string statInfo = { "" };
 
 		std::string prop_prefix;  /*!< префикс для считывания параметров обмена */
 
