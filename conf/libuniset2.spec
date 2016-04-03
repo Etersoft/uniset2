@@ -13,7 +13,8 @@
 %define oname uniset2
 
 Name: libuniset2
-Release: alt31
+Version: 2.2
+Release: alt31.2
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -485,6 +486,12 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Thu Mar 31 2016 Pavel Vainerman <pv@etersoft.ru> 2.2-alt31.2
+- test build
+
+* Tue Mar 29 2016 Pavel Vainerman <pv@etersoft.ru> 2.2-alt31.1
+- test build
+
 * Wed Mar 23 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt31
 - IONotifyContoller: fixed bug in depend (notify)(setbug #9302)
 - ModbusMultiMaster: fixed bug for change channel (timeout)
