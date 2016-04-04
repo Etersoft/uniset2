@@ -92,6 +92,7 @@ void ModbusTCPSession::setSessionTimeout( double t )
 void ModbusTCPSession::iowait( timeout_t msec )
 {
 	ptWait.setTiming(msec);
+
 	while( !ptWait.checkTime() )
 		io.loop.iteration();
 }
@@ -329,9 +330,11 @@ mbErrCode ModbusTCPSession::tcp_processing( ModbusTCP::MBAPHeader& mhead )
 	}
 
 	pt.setTiming(10);
+
 	do
 	{
 		len = ModbusTCPCore::readDataFD( sock->getSocket(), qrecv, mhead.len );
+
 		if( len == 0 )
 			io.loop.iteration();
 	}

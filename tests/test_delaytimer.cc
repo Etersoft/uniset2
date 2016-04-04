@@ -190,9 +190,10 @@ TEST_CASE("[DelayTimer]: zero time", "[DelayTimer]" )
 
 	SECTION("off delay")
 	{
-		DelayTimer dt(0,2000);
+		DelayTimer dt(0, 2000);
 		PassiveTimer pt;
 		dt.check(true);
+
 		while( dt.check(false) )
 			msleep(100);
 

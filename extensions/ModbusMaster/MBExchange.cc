@@ -3300,6 +3300,7 @@ UniSetTypes::SimpleInfo* MBExchange::getInfo( CORBA::Long userparam )
 		inf << "Statistics: " << statInfo << endl;
 
 	inf << "Devices: " << endl;
+
 	for( const auto& it : devices )
 		inf << "  " <<  it.second->getShortInfo() << endl;
 

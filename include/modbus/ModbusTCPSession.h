@@ -118,7 +118,7 @@ class ModbusTCPSession:
 		virtual ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query,
 				ModbusRTU::FileTransferRetMessage& reply );
 
-    private:
+	private:
 		std::queue<unsigned char> qrecv;
 		ModbusTCP::MBAPHeader curQueryHeader;
 		std::unordered_set<ModbusRTU::ModbusAddr> vaddr;

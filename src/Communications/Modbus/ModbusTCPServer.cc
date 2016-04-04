@@ -199,6 +199,7 @@ void ModbusTCPServer::setTimer( timeout_t msec )
 void ModbusTCPServer::iowait( timeout_t msec )
 {
 	ptWait.setTiming(msec);
+
 	while( !ptWait.checkTime() )
 		io.loop.iteration();
 }

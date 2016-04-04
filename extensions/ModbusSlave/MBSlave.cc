@@ -614,7 +614,7 @@ void MBSlave::execute_tcp()
 
 	mbinfo << myname << "(execute_tcp): run tcpserver ("
 		   << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort()
-		   <<")" << endl;
+		   << ")" << endl;
 
 	tcpCancelled = false;
 
@@ -2564,8 +2564,10 @@ UniSetTypes::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
 
 	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
 	inf << "iomap[" << iomap.size() << "]: " << endl;
-	for( const auto& m: iomap )
+
+	for( const auto& m : iomap )
 		inf << "  " << ModbusRTU::addr2str(m.first) << ": iomap=" << m.second.size() << endl;
+
 	inf << " myaddr: " << ModbusServer::vaddr2str(vaddr) << endl;
 	inf << "Statistic: askCount=" << askCount << " pingOK=" << pingOK << endl;
 
@@ -2592,6 +2594,7 @@ UniSetTypes::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
 		{
 			uniset_mutex_lock l(sessMutex);
 			inf << "TCP sessions[" << sess.size() << "]: max=" << sessMaxNum << " updateStatTime=" << updateStatTime << endl;
+
 			for( const auto& m : sess )
 				inf << "   " << m.iaddr << " askCount=" << m.askCount << endl;
 		}

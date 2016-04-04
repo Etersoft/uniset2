@@ -141,13 +141,13 @@ class IOController:
 
 		// доступ к элементам через итератор
 		virtual void localSetValueIt( IOStateList::iterator& it, const UniSetTypes::ObjectId sid,
-									CORBA::Long value, UniSetTypes::ObjectId sup_id );
+									  CORBA::Long value, UniSetTypes::ObjectId sup_id );
 
 		virtual long localGetValue( IOStateList::iterator& it, const UniSetTypes::ObjectId sid );
 
 		// вариант с указателем
 		virtual void localSetValue( std::shared_ptr<USensorInfo>& usi, UniSetTypes::ObjectId sid,
-							CORBA::Long value, UniSetTypes::ObjectId sup_id );
+									CORBA::Long value, UniSetTypes::ObjectId sup_id );
 
 		long localGetValue( std::shared_ptr<USensorInfo>& it, const UniSetTypes::ObjectId sid );
 

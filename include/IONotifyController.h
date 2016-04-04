@@ -283,7 +283,7 @@ class IONotifyController:
 
 		//! проверка срабатывания пороговых датчиков
 		virtual void checkThreshold( std::shared_ptr<USensorInfo>& usi, const UniSetTypes::ObjectId sid, bool send = true );
-		virtual void checkThreshold(IOController::IOStateList::iterator& li, const UniSetTypes::ObjectId sid, bool send_msg=true );
+		virtual void checkThreshold(IOController::IOStateList::iterator& li, const UniSetTypes::ObjectId sid, bool send_msg = true );
 
 		//! поиск информации о пороговом датчике
 		ThresholdExtList::iterator findThreshold( const UniSetTypes::ObjectId sid, const UniSetTypes::ThresholdId tid );

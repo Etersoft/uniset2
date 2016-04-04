@@ -186,30 +186,30 @@ TEST_CASE("[SM]: depend test", "[sm][depend]")
 	REQUIRE( ui->getValue(513) == 0 );
 
 	// проверяем что датчик DI работает
-	ui->setValue(513,1);
+	ui->setValue(513, 1);
 	msleep(300);
 	REQUIRE( obj->in_dependDI_s == 1 );
-	ui->setValue(513,0);
+	ui->setValue(513, 0);
 	msleep(300);
 	REQUIRE( obj->in_dependDI_s == 0 );
 
 	// проверяем что датчик AI не работает, т.к. забклоирован
-	ui->setValue(512,100);
+	ui->setValue(512, 100);
 	REQUIRE( ui->getValue(512) == 1000 );
 	msleep(300);
 	REQUIRE( obj->in_dependAI_s == 1000 );
-	ui->setValue(512,50);
+	ui->setValue(512, 50);
 	REQUIRE( ui->getValue(512) == 1000 );
 	msleep(300);
 	REQUIRE( obj->in_dependAI_s == 1000 );
 
 	// проверяем что после разблолокирования датчик принимает текущее значение
 	// и процесс приходит sensorInfo
-	ui->setValue(512,40); // выставляем значение (находясь под блокировкой)
+	ui->setValue(512, 40); // выставляем значение (находясь под блокировкой)
 	REQUIRE( obj->in_dependAI_s == 1000 ); // у процесса пока блокированное значение
 
 	// ----- разблокируем
-	ui->setValue(514,1);
+	ui->setValue(514, 1);
 	msleep(300);
 	REQUIRE( ui->getValue(514) == 1 );
 
@@ -220,14 +220,14 @@ TEST_CASE("[SM]: depend test", "[sm][depend]")
 
 	// dependDI наоборот заблокировался
 	REQUIRE( ui->getValue(513) == 0 );
-	ui->setValue(513,1);
+	ui->setValue(513, 1);
 	msleep(300);
 	REQUIRE( ui->getValue(513) == 0 );
 	REQUIRE( obj->in_dependDI_s == 0 );
 
 
 	// ----- блокируем
-	ui->setValue(514,0);
+	ui->setValue(514, 0);
 	msleep(300);
 	REQUIRE( ui->getValue(514) == 0 );
 

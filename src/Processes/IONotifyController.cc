@@ -681,7 +681,7 @@ void IONotifyController::checkThreshold( IOController::IOStateList::iterator& li
 	if( li == myioEnd() )
 		return; // ???
 
-	checkThreshold(li->second,sid,send_msg);
+	checkThreshold(li->second, sid, send_msg);
 }
 // --------------------------------------------------------------------------------------------------------------
 void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorInfo>& s,

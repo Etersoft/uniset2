@@ -74,6 +74,7 @@ void TestProc::sysCommand( const UniSetTypes::SystemMessage* sm )
 		askTimer(tmCheck, checkTime);
 		askTimer(tmCheckWorking, checkWorkingTime);
 		askTimer(tmLogControl, checkLogTime);
+
 		if( mbthr )
 			mbthr->start();
 

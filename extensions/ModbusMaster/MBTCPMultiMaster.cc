@@ -51,7 +51,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 
 	// Т.к. при "многоканальном" доступе к slave, смена канала должна происходит сразу после
 	// неудачной попытки запросов по одному из каналов, то ПЕРЕОПРЕДЕЛЯЕМ reopen, на channel-timeout..
-	int channelTimeout = conf->getArgPInt("--" + prefix + "-default-channel-timeout", it.getProp("channelTimeout"),default_timeout);
+	int channelTimeout = conf->getArgPInt("--" + prefix + "-default-channel-timeout", it.getProp("channelTimeout"), default_timeout);
 	ptReopen.setTiming(channelTimeout);
 
 	UniXML::iterator it1(it);
@@ -174,7 +174,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 
 	// Т.к. при "многоканальном" доступе к slave, смена канала должна происходит сразу после
 	// неудачной попытки запросов по одному из каналов, то ПЕРЕОПРЕДЕЛЯЕМ reopen, на channel-timeout..
-	int tout = conf->getArgPInt("--" + prefix + "-default-channel-timeout", it.getProp("channelTimeout"),default_timeout);
+	int tout = conf->getArgPInt("--" + prefix + "-default-channel-timeout", it.getProp("channelTimeout"), default_timeout);
 	ptReopen.setTiming(tout);
 
 	if( mblog->is_info() )

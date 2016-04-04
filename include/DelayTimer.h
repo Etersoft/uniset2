@@ -100,7 +100,7 @@ class DelayTimer
 
 				if( st )
 				{
-					if( onDelay <=0 )
+					if( onDelay <= 0 )
 					{
 						pt.setTiming(0);
 						state = st;
@@ -112,7 +112,7 @@ class DelayTimer
 				}
 				else
 				{
-					if( offDelay <=0 )
+					if( offDelay <= 0 )
 					{
 						pt.setTiming(0);
 						state = st;

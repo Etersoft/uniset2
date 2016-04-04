@@ -252,8 +252,8 @@ void IOController::setValue( UniSetTypes::ObjectId sid, CORBA::Long value, UniSe
 }
 // ------------------------------------------------------------------------------------------
 void IOController::localSetValueIt( IOController::IOStateList::iterator& li,
-								  UniSetTypes::ObjectId sid,
-								  CORBA::Long value, UniSetTypes::ObjectId sup_id )
+									UniSetTypes::ObjectId sid,
+									CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
 	if( sup_id == UniSetTypes::DefaultObjectId )
 		sup_id = getId();
