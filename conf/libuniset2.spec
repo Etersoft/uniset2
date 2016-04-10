@@ -14,7 +14,7 @@
 
 Name: libuniset2
 Version: 2.2
-Release: alt31.4
+Release: alt31.5
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -486,7 +486,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
-* Sun Apr 10 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt31.4
+* Sun Apr 10 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt31.5
 - LogSession: add buffer limit.. (200 messages, ~30kB)
 
 * Sun Apr 03 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt31.3
