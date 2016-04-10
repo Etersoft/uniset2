@@ -33,7 +33,7 @@ class LogSession
 {
 	public:
 
-		LogSession(int sock, std::shared_ptr<DebugStream>& log, timeout_t cmdTimeout = 2000 );
+		LogSession(int sock, std::shared_ptr<DebugStream>& log, timeout_t cmdTimeout = 2000, timeout_t checkConnectionTime = 10000 );
 		~LogSession();
 
 		typedef sigc::slot<void, LogSession*> FinalSlot;
@@ -87,11 +87,13 @@ class LogSession
 		size_t readData( unsigned char* buf, int len );
 		void cmdProcessing( const std::string& cmdLogName, const LogServerTypes::lsMessage& msg );
 		void onCmdTimeout( ev::timer& watcher, int revents );
+		void onCheckConnectionTimer( ev::timer& watcher, int revents );
 		void final();
 
 		void logOnEvent( const std::string& s );
 
 		timeout_t cmdTimeout = { 2000 };
+		float checkConnectionTime = { 10. }; // время на проверку живости соединения..(сек)
 
 		// Т.к. сообщений может быть ОЧЕНЬ МНОГО.. сеть медленная
 		// очередь может не успевать рассасываться,
@@ -124,6 +126,7 @@ class LogSession
 		ev::io  io;
 		ev::timer  cmdTimer;
 		ev::async  asyncEvent;
+		ev::timer  checkConnectionTimer;
 
 		FinalSlot slFin;
 		std::atomic_bool cancelled = { false };

@@ -45,12 +45,16 @@ LogSession::~LogSession()
 	if( cmdTimer.is_active() )
 		cmdTimer.stop();
 
+	if( checkConnectionTimer.is_active() )
+		checkConnectionTimer.stop();
+
 	if( asyncEvent.is_active() )
 		asyncEvent.stop();
 }
 // -------------------------------------------------------------------------
-LogSession::LogSession( int sfd, std::shared_ptr<DebugStream>& _log, timeout_t _cmdTimeout ):
+LogSession::LogSession( int sfd, std::shared_ptr<DebugStream>& _log, timeout_t _cmdTimeout, timeout_t _checkConnectionTime ):
 	cmdTimeout(_cmdTimeout),
+	checkConnectionTime(_checkConnectionTime/1000.),
 	peername(""),
 	caddr(""),
 	log(_log)
@@ -86,6 +90,7 @@ LogSession::LogSession( int sfd, std::shared_ptr<DebugStream>& _log, timeout_t _
 	io.set<LogSession, &LogSession::callback>(this);
 	cmdTimer.set<LogSession, &LogSession::onCmdTimeout>(this);
 	asyncEvent.set<LogSession, &LogSession::event>(this);
+	checkConnectionTimer.set<LogSession, &LogSession::onCheckConnectionTimer>(this);
 
 	if( log )
 		conn = log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
@@ -144,10 +149,12 @@ void LogSession::run( const ev::loop_ref& loop )
 
 	asyncEvent.set(loop);
 	cmdTimer.set(loop);
+	checkConnectionTimer.set(loop);
 
 	io.set(loop);
 	io.start(sock->getSocket(), ev::READ);
 	cmdTimer.start( cmdTimeout / 1000. );
+	checkConnectionTimer.start( checkConnectionTime );
 }
 // -------------------------------------------------------------------------
 void LogSession::terminate()
@@ -232,6 +239,7 @@ void LogSession::writeEvent( ev::io& watcher )
 		if( logbuf.empty() )
 		{
 			io.set(EV_NONE);
+			checkConnectionTimer.start( checkConnectionTime ); // restart timer
 			return;
 		}
 
@@ -277,9 +285,13 @@ void LogSession::writeEvent( ev::io& watcher )
 		if( logbuf.empty() )
 		{
 			io.set(EV_NONE);
+			checkConnectionTimer.start( checkConnectionTime ); // restart timer
 			return;
 		}
 	}
+
+	if( checkConnectionTimer.is_active() )
+		checkConnectionTimer.stop();
 
 	io.set(ev::WRITE);
 	//io.set(ev::READ | ev::WRITE);
@@ -370,6 +382,7 @@ void LogSession::readEvent( ev::io& watcher )
 
 	cmdTimer.stop();
 	asyncEvent.start();
+	checkConnectionTimer.start( checkConnectionTime ); // restart timer
 }
 // --------------------------------------------------------------------------------
 void LogSession::cmdProcessing( const string& cmdLogName, const LogServerTypes::lsMessage& msg )
@@ -462,10 +475,43 @@ void LogSession::cmdProcessing( const string& cmdLogName, const LogServerTypes::
 	}
 }
 // -------------------------------------------------------------------------
-void LogSession::onCmdTimeout(ev::timer& watcher, int revents)
+void LogSession::onCmdTimeout( ev::timer& watcher, int revents )
 {
+	if( EV_ERROR & revents )
+	{
+		if( mylog.is_crit() )
+			mylog.crit() << peername << "(onCmdTimeout): EVENT ERROR.." << endl;
+
+		return;
+	}
+
 	io.set(ev::WRITE);
 	asyncEvent.start();
+}
+// -------------------------------------------------------------------------
+void LogSession::onCheckConnectionTimer( ev::timer& watcher, int revents )
+{
+	if( EV_ERROR & revents )
+	{
+		if( mylog.is_crit() )
+			mylog.crit() << peername << "(onCheckConnectionTimer): EVENT ERROR.." << endl;
+
+		return;
+	}
+
+	std::unique_lock<std::mutex> lk(logbuf_mutex);
+	if( !logbuf.empty() )
+	{
+		checkConnectionTimer.start( checkConnectionTime ); // restart timer
+		return;
+	}
+
+	// если клиент уже отвалился.. то при попытке write.. сессия будет закрыта.
+	ostringstream err;
+	err <<  "..logclient ping message.." << endl;
+	logbuf.emplace(new UTCPCore::Buffer(std::move(err.str())));
+	io.set(ev::WRITE);
+	checkConnectionTimer.start( checkConnectionTime ); // restart timer
 }
 // -------------------------------------------------------------------------
 void LogSession::final()
