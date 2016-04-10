@@ -108,6 +108,8 @@ class LogServer:
 
 		static std::string help_print( const std::string& prefix );
 
+		std::string getShortInfo();
+
 	protected:
 		LogServer();
 

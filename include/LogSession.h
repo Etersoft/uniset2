@@ -61,11 +61,21 @@ class LogSession
 			mylog.delLevel(t);
 		}
 
+		//! Установить размер буфера для сообщений (количество записей. Не размер в байтах!!)
+		void setMaxBufSize( size_t num );
+
+		inline size_t getMaxBufSize()
+		{
+			return maxRecordsNum;
+		}
+
 		// запуск обработки входящих запросов
 		void run( const ev::loop_ref& loop );
 		void terminate();
 
 		bool isAcive();
+
+		std::string getShortInfo();
 
 	protected:
 		LogSession( ost::TCPSocket& server );
@@ -83,9 +93,25 @@ class LogSession
 
 		timeout_t cmdTimeout = { 2000 };
 
+		// Т.к. сообщений может быть ОЧЕНЬ МНОГО.. сеть медленная
+		// очередь может не успевать рассасываться,
+		// то потенциально может "скушаться" вся память.
+		// Поэтому приходиться ограничить доступное количество записей.
+		// Рассчитываем, что средний размер одного сообщения 150 символов (байт)
+		// тогда выделяем буфер на 200 сообщений (~ 30кB)
+		// На самом деле сообщения могут быть совершенно разные..
+		size_t maxRecordsNum = { 30000 }; // максимальное количество сообщение в очереди
+
 	private:
 		std::queue<UTCPCore::Buffer*> logbuf;
 		std::mutex logbuf_mutex;
+		bool lostMsg = { false };
+
+		// статистика по использованию буфера
+		size_t maxCount = { 0 }; // максимальное количество побывавшее в очереди
+		size_t minSizeMsg = { 0 }; // минимальная встретившаяся длинна сообщения
+		size_t maxSizeMsg = { 0 }; // максимальная встретившаяся длинна сообщения
+		size_t numLostMsg = { 0 }; // количество потерянных сообщений
 
 		std::string peername = { "" };
 		std::string caddr = { "" };

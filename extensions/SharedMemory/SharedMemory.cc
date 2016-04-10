@@ -984,7 +984,10 @@ UniSetTypes::SimpleInfo* SharedMemory::getInfo( CORBA::Long userparam )
 
 	inf << i->info << endl;
 	inf << vmon.pretty_str() << endl;
-	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
+	if( logserv )
+		inf << logserv->getShortInfo() << endl;
+	else
+		inf << "No logserver running." << endl;
 
 	i->info = inf.str().c_str();
 	return i._retn();

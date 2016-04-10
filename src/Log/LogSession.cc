@@ -55,11 +55,6 @@ LogSession::LogSession( int sfd, std::shared_ptr<DebugStream>& _log, timeout_t _
 	caddr(""),
 	log(_log)
 {
-	if( log )
-		conn = log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
-	else
-		mylog.crit() << "LOG NULL!!" << endl;
-
 	auto ag = dynamic_pointer_cast<LogAgregator>(log);
 
 	if( ag )
@@ -91,15 +86,50 @@ LogSession::LogSession( int sfd, std::shared_ptr<DebugStream>& _log, timeout_t _
 	io.set<LogSession, &LogSession::callback>(this);
 	cmdTimer.set<LogSession, &LogSession::onCmdTimeout>(this);
 	asyncEvent.set<LogSession, &LogSession::event>(this);
+
+	if( log )
+		conn = log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
+	else
+		mylog.crit() << "LOG NULL!!" << endl;
 }
 // -------------------------------------------------------------------------
 void LogSession::logOnEvent( const std::string& s )
 {
-	if( cancelled )
+	if( cancelled || s.empty() )
 		return;
 
-	std::unique_lock<std::mutex> lk(logbuf_mutex);
-	logbuf.emplace(new UTCPCore::Buffer(s));
+	{ // чтобы поменьше удерживать mutex
+		std::unique_lock<std::mutex> lk(logbuf_mutex);
+
+		// собираем статистику..
+		// --------------------------
+		if( s.size() < minSizeMsg || minSizeMsg==0 )
+			minSizeMsg = s.size();
+		if( s.size() > maxSizeMsg )
+			maxSizeMsg = s.size();
+
+		if( logbuf.size() > maxCount )
+			maxCount = logbuf.size();
+		// --------------------------
+
+		// проверяем на переполнение..
+		if( logbuf.size() >= maxRecordsNum )
+		{
+			numLostMsg++;
+			if( !lostMsg )
+			{
+				ostringstream err;
+				err <<  "The buffer is full. Message is lost...(size of buffer " << maxRecordsNum << ")" << endl;
+				logbuf.emplace(new UTCPCore::Buffer(std::move(err.str())));
+				lostMsg = true;
+			}
+
+			return;
+		}
+
+		lostMsg = false;
+		logbuf.emplace(new UTCPCore::Buffer(s));
+	}
 
 	if( asyncEvent.is_active() )
 		asyncEvent.send();
@@ -136,7 +166,6 @@ void LogSession::terminate()
 
 	{
 		std::unique_lock<std::mutex> lk(logbuf_mutex);
-
 		while( !logbuf.empty() )
 			logbuf.pop();
 	}
@@ -155,7 +184,7 @@ void LogSession::event( ev::async& watcher, int revents )
 		return;
 	}
 
-	io.set(ev::READ | ev::WRITE);
+	io.set(ev::WRITE);
 }
 // ---------------------------------------------------------------------
 void LogSession::callback( ev::io& watcher, int revents )
@@ -195,12 +224,19 @@ void LogSession::writeEvent( ev::io& watcher )
 	if( cancelled )
 		return;
 
-	std::unique_lock<std::mutex> lk(logbuf_mutex);
+	UTCPCore::Buffer* buffer = 0;
 
-	if( logbuf.empty() )
-		return;
+	{
+		std::unique_lock<std::mutex> lk(logbuf_mutex);
 
-	auto buffer = logbuf.front();
+		if( logbuf.empty() )
+		{
+			io.set(EV_NONE);
+			return;
+		}
+
+		buffer = logbuf.front();
+	}
 
 	if( !buffer )
 		return;
@@ -227,14 +263,26 @@ void LogSession::writeEvent( ev::io& watcher )
 
 	if( buffer->nbytes() == 0 )
 	{
-		logbuf.pop();
+		{
+			std::unique_lock<std::mutex> lk(logbuf_mutex);
+			logbuf.pop();
+		}
+
 		delete buffer;
 	}
 
-	if( logbuf.empty() )
-		io.set(ev::READ);
-	else
-		io.set(ev::READ | ev::WRITE);
+
+	{
+		std::unique_lock<std::mutex> lk(logbuf_mutex);
+		if( logbuf.empty() )
+		{
+			io.set(EV_NONE);
+			return;
+		}
+	}
+
+	io.set(ev::WRITE);
+	//io.set(ev::READ | ev::WRITE);
 }
 // -------------------------------------------------------------------------
 size_t LogSession::readData( unsigned char* buf, int len )
@@ -340,7 +388,7 @@ void LogSession::cmdProcessing( const string& cmdLogName, const LogServerTypes::
 		if( cmdLogName.empty() || cmdLogName == "ALL" || log->getLogFile() == cmdLogName )
 		{
 			LogAgregator::iLog llog(log, log->getLogName());
-			loglist.push_back(llog);
+			loglist.emplace_back(llog);
 		}
 	}
 
@@ -407,7 +455,7 @@ void LogSession::cmdProcessing( const string& cmdLogName, const LogServerTypes::
 
 		{
 			std::unique_lock<std::mutex> lk(logbuf_mutex);
-			logbuf.push(new UTCPCore::Buffer(s.str()));
+			logbuf.emplace(new UTCPCore::Buffer(s.str()));
 		}
 
 		io.set(ev::WRITE);
@@ -430,8 +478,35 @@ void LogSession::connectFinalSession( FinalSlot sl )
 	slFin = sl;
 }
 // ---------------------------------------------------------------------
+void LogSession::setMaxBufSize( size_t num )
+{
+	std::unique_lock<std::mutex> lk(logbuf_mutex);
+	maxRecordsNum = num;
+}
+// ---------------------------------------------------------------------
 bool LogSession::isAcive()
 {
 	return io.is_active();
+}
+// ---------------------------------------------------------------------
+string LogSession::getShortInfo()
+{
+	size_t sz = 0;
+	{
+		std::unique_lock<std::mutex> lk(logbuf_mutex);
+		sz = logbuf.size();
+	}
+
+	ostringstream inf;
+
+	inf << "client: " << caddr << endl
+		<< " buffer[" << maxRecordsNum << "]: size=" << sz
+		<< " maxCount=" << maxCount
+		<< " minSizeMsg=" << minSizeMsg
+		<< " maxSizeMsg=" << maxSizeMsg
+		<< " numLostMsg=" << numLostMsg
+		<< endl;
+
+	return std::move(inf.str());
 }
 // ---------------------------------------------------------------------

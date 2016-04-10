@@ -236,3 +236,17 @@ std::string LogServer::help_print( const std::string& prefix )
 	return std::move( h.str() );
 }
 // -----------------------------------------------------------------------------
+string LogServer::getShortInfo()
+{
+	ostringstream inf;
+
+	inf << "LogServer: " << myname << endl;
+	{
+		uniset_rwmutex_wrlock l(mutSList);
+		for( const auto& s: slist )
+			inf << " " << s->getShortInfo() << endl;
+	}
+
+	return std::move(inf.str());
+}
+// -----------------------------------------------------------------------------
