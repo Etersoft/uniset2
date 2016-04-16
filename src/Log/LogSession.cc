@@ -62,7 +62,14 @@ LogSession::LogSession( int sfd, std::shared_ptr<DebugStream>& _log, timeout_t _
 	auto ag = dynamic_pointer_cast<LogAgregator>(log);
 
 	if( ag )
+	{
 		alog = ag;
+		auto lst = alog->getLogList();
+		for( auto&& l: lst )
+			defaultLogLevels.emplace(l.log.get(),l.log->level());
+	}
+	else
+		defaultLogLevels.emplace(log.get(),log->level());
 
 	try
 	{
@@ -435,9 +442,6 @@ void LogSession::cmdProcessing( const string& cmdLogName, const LogServerTypes::
 				l.log->onLogFile(true);
 				break;
 
-			case LogServerTypes::cmdList: // обработали выше (в начале)
-				break;
-
 			case LogServerTypes::cmdOffLogFile:
 				l.log->offLogFile();
 				break;
@@ -449,6 +453,12 @@ void LogSession::cmdProcessing( const string& cmdLogName, const LogServerTypes::
 			case LogServerTypes::cmdFilterMode:
 				l.log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
 				break;
+
+			case LogServerTypes::cmdList:
+			case LogServerTypes::cmdSaveLogLevel:
+			case LogServerTypes::cmdRestoreLogLevel:
+			case LogServerTypes::cmdViewDefaultLogLevel:
+			break;
 
 			default:
 				mylog.warn() << peername << "(run): Unknown command '" << msg.cmd << "'" << endl;
@@ -465,6 +475,72 @@ void LogSession::cmdProcessing( const string& cmdLogName, const LogServerTypes::
 		s << "=====================" << endl;
 		LogAgregator::printLogList(s, loglist);
 		s << "=====================" << endl << endl;
+
+		{
+			std::unique_lock<std::mutex> lk(logbuf_mutex);
+			logbuf.emplace(new UTCPCore::Buffer(s.str()));
+		}
+
+		io.set(ev::WRITE);
+	}
+	else if( msg.cmd == LogServerTypes::cmdSaveLogLevel )
+	{
+		// обновляем умолчательные значения для текущих уровней логов
+		if( alog )
+		{
+			for( const auto& l :  loglist )
+				defaultLogLevels[l.log.get()] = l.log->level();
+		}
+		else if( log )
+			defaultLogLevels[log.get()] = log->level();
+	}
+	else if( msg.cmd == LogServerTypes::cmdRestoreLogLevel )
+	{
+		// восстанавливаем уровни логов
+		if( alog )
+		{
+			for( const auto& l :  loglist )
+			{
+				auto i = defaultLogLevels.find(l.log.get());
+				if( i!= defaultLogLevels.end() )
+					l.log->level(i->second);
+			}
+		}
+		else if( log )
+			log->level(defaultLogLevels[log.get()]);
+	}
+	else if( msg.cmd == LogServerTypes::cmdViewDefaultLogLevel )
+	{
+		ostringstream s;
+		s << "List of saved default log levels (filter='" << cmdLogName << "')[" << defaultLogLevels.size() << "]: " << endl;
+		s << "=================================" << endl;
+		if( alog ) // если у нас "агрегатор", то работаем с его списком потоков
+		{
+			std::string::size_type max_width = 1;
+
+			// ищем максимальное название для выравнивания по правому краю
+			for( const auto& l : loglist )
+				max_width = std::max(max_width, l.name.length() );
+
+			for( const auto& l : loglist )
+			{
+				Debug::type deflevel = Debug::NONE;
+				auto i = defaultLogLevels.find(l.log.get());
+				if( i != defaultLogLevels.end() )
+					deflevel = i->second;
+
+				s << std::left << setw(max_width) << l.name << std::left << " [ " << Debug::str(deflevel) << " ]" << endl;
+			}
+		}
+		else if( log )
+		{
+			Debug::type deflevel = Debug::NONE;
+			auto i = defaultLogLevels.find(log.get());
+			if( i != defaultLogLevels.end() )
+				deflevel = i->second;
+			s << log->getLogName() << " [" << Debug::str(deflevel) << " ]" << endl;
+		}
+		s << "=================================" << endl << endl;
 
 		{
 			std::unique_lock<std::mutex> lk(logbuf_mutex);
@@ -508,7 +584,7 @@ void LogSession::onCheckConnectionTimer( ev::timer& watcher, int revents )
 
 	// если клиент уже отвалился.. то при попытке write.. сессия будет закрыта.
 	ostringstream err;
-	err <<  "..logclient ping message.." << endl;
+	err <<  "logserver: ..keep alive message.." << endl;
 	logbuf.emplace(new UTCPCore::Buffer(std::move(err.str())));
 	io.set(ev::WRITE);
 	checkConnectionTimer.start( checkConnectionTime ); // restart timer
@@ -516,6 +592,27 @@ void LogSession::onCheckConnectionTimer( ev::timer& watcher, int revents )
 // -------------------------------------------------------------------------
 void LogSession::final()
 {
+	// восстаналиваем уровни логов, какие были в начале или были сохранены командой cmdSaveLogLevel
+	if( alog )
+	{
+		auto lst = alog->getLogList();
+		for( auto&& l: lst )
+		{
+			if( !l.log )
+				continue;
+
+			auto i = defaultLogLevels.find(l.log.get());
+			if( i!=defaultLogLevels.end() )
+				l.log->level( i->second );
+		}
+	}
+	else if( log )
+	{
+		auto i = defaultLogLevels.find(log.get());
+		if( i!=defaultLogLevels.end() )
+			log->level(i->second);
+	}
+
 	slFin(this);
 }
 // -------------------------------------------------------------------------

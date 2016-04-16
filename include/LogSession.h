@@ -20,6 +20,7 @@
 #include <string>
 #include <memory>
 #include <queue>
+#include <unordered_map>
 #include <cc++/socket.h>
 #include <ev++.h>
 #include "Mutex.h"
@@ -120,6 +121,12 @@ class LogSession
 		std::shared_ptr<DebugStream> log;
 		std::shared_ptr<LogAgregator> alog;
 		sigc::connection conn;
+
+		// map с уровнями логов по умолчанию (инициализируются при создании сессии),
+		// (они необходимы для восстановления настроек после завершения сессии)
+		// т.к. shared_ptr-ов может быть много, то в качестве ключа используем указатель на "реальный объект"(внутри shared_ptr)
+		// но только для этого(!), пользоваться этим указателем ни в коем случае нельзя (и нужно проверять shared_ptr на существование)
+		std::unordered_map< DebugStream*,Debug::type > defaultLogLevels;
 
 		std::shared_ptr<USocket> sock;
 

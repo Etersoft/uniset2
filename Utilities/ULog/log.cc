@@ -23,6 +23,9 @@ static struct option longopts[] =
 	{ "set", required_argument, 0, 's' },
 	{ "off", required_argument, 0, 'o' },
 	{ "on", required_argument, 0, 'e' },
+	{ "save-loglevels", required_argument, 0, 'u' },
+	{ "restore-loglevels", required_argument, 0, 'g' },
+	{ "view-default-loglevels", required_argument, 0, 'b' },
 	{ "list", optional_argument, 0, 'l' },
 	{ "rotate", optional_argument, 0, 'r' },
 	{ "logfilter", required_argument, 0, 'n' },
@@ -49,14 +52,18 @@ static void print_help()
 	printf("\n");
 	printf("Commands:\n");
 
-	printf("[--add | -a] info,warn,crit,... [logfilter] - Add log levels.\n");
-	printf("[--del | -d] info,warn,crit,... [logfilter] - Delete log levels.\n");
-	printf("[--set | -s] info,warn,crit,... [logfilter] - Set log levels.\n");
-	printf("--off, -o [logfilter]                       - Off the write log file (if enabled).\n");
-	printf("--on, -e  [logfilter]                       - On(enable) the write log file (if before disabled).\n");
-	printf("--rotate, -r [logfilter]                    - rotate log file.\n");
-	printf("--list, -l   [logfilter]                    - List of managed logs.\n");
-	printf("--filter, -f logfilter                      - ('filter mode'). View log only from 'logfilter'(regexp)\n");
+	printf("[-a | --add] info,warn,crit,... [logfilter] - Add log levels.\n");
+	printf("[-d | --del] info,warn,crit,... [logfilter] - Delete log levels.\n");
+	printf("[-s | --set] info,warn,crit,... [logfilter] - Set log levels.\n");
+	printf("[-o | --off] [logfilter]                    - Off the write log file (if enabled).\n");
+	printf("[-e | --on] [logfilter]                     - On(enable) the write log file (if before disabled).\n");
+	printf("[-r | --rotate] [logfilter]                 - rotate log file.\n");
+	printf("[-u | --save-loglevels] [logfilter]         - save log levels (disable restore after disconnected).\n");
+//	printf("[-g | --restore-loglevels] [logfilter]      - restore default log levels.\n");
+	printf("[-b | --view-default-loglevels] [logfilter] - list of default log levels.\n");
+
+	printf("[-l | --list] [logfilter]                   - List of managed logs.\n");
+	printf("[-f | --filter] logfilter                   - ('filter mode'). View log only from 'logfilter'(regexp)\n");
 	printf("\n");
 	printf("Note: 'logfilter' -  regexp for name of log. Default: ALL logs.\n");
 }
@@ -87,7 +94,7 @@ int main( int argc, char** argv )
 	{
 		while(1)
 		{
-			opt = getopt_long(argc, argv, "chvlf:a:p:i:d:s:n:eorbx:w:zt:", longopts, &optindex);
+			opt = getopt_long(argc, argv, "chvlf:a:p:i:d:s:n:eorbx:w:zt:gub", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -156,6 +163,46 @@ int main( int argc, char** argv )
 				case 'o':
 				{
 					LogServerTypes::Command cmd = LogServerTypes::cmdOffLogFile;
+					std::string filter("");
+					char* arg2 = checkArg(optind, argc, argv);
+
+					if( arg2 )
+						filter = string(arg2);
+
+					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
+				}
+				break;
+
+				case 'u':  // --save-loglevels
+				{
+					LogServerTypes::Command cmd = LogServerTypes::cmdSaveLogLevel;
+					std::string filter("");
+					char* arg2 = checkArg(optind, argc, argv);
+
+					if( arg2 )
+						filter = string(arg2);
+
+					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
+				}
+				break;
+
+				case 'g':  // --restore-loglevels
+				{
+					LogServerTypes::Command cmd = LogServerTypes::cmdRestoreLogLevel;
+					std::string filter("");
+					char* arg2 = checkArg(optind, argc, argv);
+
+					if( arg2 )
+						filter = string(arg2);
+
+					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
+				}
+				break;
+
+				case 'b':  // --view-default-loglevels
+				{
+					cmdonly = 1;
+					LogServerTypes::Command cmd = LogServerTypes::cmdViewDefaultLogLevel;
 					std::string filter("");
 					char* arg2 = checkArg(optind, argc, argv);
 

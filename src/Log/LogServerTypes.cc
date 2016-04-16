@@ -46,6 +46,15 @@ std::ostream& LogServerTypes::operator<<(std::ostream& os, LogServerTypes::Comma
 		case LogServerTypes::cmdFilterMode:
 			return os << "cmdFilterMode";
 
+		case LogServerTypes::cmdSaveLogLevel:
+			return os << "cmdSaveLogLevel";
+
+		case LogServerTypes::cmdRestoreLogLevel:
+			return os << "cmdRestoreLogLevel";
+
+		case LogServerTypes::cmdViewDefaultLogLevel:
+			return os << "cmdViewRestoreLogLevel";
+
 		case LogServerTypes::cmdNOP:
 			return os << "No command(NOP)";
 
