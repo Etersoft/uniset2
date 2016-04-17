@@ -59,7 +59,7 @@ static void print_help()
 	printf("[-e | --on] [logfilter]                     - On(enable) the write log file (if before disabled).\n");
 	printf("[-r | --rotate] [logfilter]                 - rotate log file.\n");
 	printf("[-u | --save-loglevels] [logfilter]         - save log levels (disable restore after disconnected).\n");
-//	printf("[-g | --restore-loglevels] [logfilter]      - restore default log levels.\n");
+	printf("[-g | --restore-loglevels] [logfilter]      - restore default log levels.\n");
 	printf("[-b | --view-default-loglevels] [logfilter] - list of default log levels.\n");
 
 	printf("[-l | --list] [logfilter]                   - List of managed logs.\n");

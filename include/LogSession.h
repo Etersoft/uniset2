@@ -20,7 +20,6 @@
 #include <string>
 #include <memory>
 #include <queue>
-#include <unordered_map>
 #include <cc++/socket.h>
 #include <ev++.h>
 #include "Mutex.h"
@@ -39,6 +38,11 @@ class LogSession
 
 		typedef sigc::slot<void, LogSession*> FinalSlot;
 		void connectFinalSession( FinalSlot sl );
+
+		// сигнал о приходе команды: std::string func( LogSession*, command, logname );
+		// \return какую-то информацию, которая будет послана client-у. Если return.empty(), то ничего послано не будет.
+		typedef sigc::signal<std::string,LogSession*,LogServerTypes::Command, const std::string& > LogSessionCommand_Signal;
+		LogSessionCommand_Signal signal_logsession_command();
 
 		inline void cancel()
 		{
@@ -97,7 +101,7 @@ class LogSession
 		float checkConnectionTime = { 10. }; // время на проверку живости соединения..(сек)
 
 		// Т.к. сообщений может быть ОЧЕНЬ МНОГО.. сеть медленная
-		// очередь может не успевать рассасываться,
+		// очередь будет не успевать рассасываться,
 		// то потенциально может "скушаться" вся память.
 		// Поэтому приходиться ограничить доступное количество записей.
 		// Рассчитываем, что средний размер одного сообщения 150 символов (байт)
@@ -122,12 +126,6 @@ class LogSession
 		std::shared_ptr<LogAgregator> alog;
 		sigc::connection conn;
 
-		// map с уровнями логов по умолчанию (инициализируются при создании сессии),
-		// (они необходимы для восстановления настроек после завершения сессии)
-		// т.к. shared_ptr-ов может быть много, то в качестве ключа используем указатель на "реальный объект"(внутри shared_ptr)
-		// но только для этого(!), пользоваться этим указателем ни в коем случае нельзя (и нужно проверять shared_ptr на существование)
-		std::unordered_map< DebugStream*,Debug::type > defaultLogLevels;
-
 		std::shared_ptr<USocket> sock;
 
 		ev::io  io;
@@ -137,6 +135,8 @@ class LogSession
 
 		FinalSlot slFin;
 		std::atomic_bool cancelled = { false };
+
+		LogSessionCommand_Signal m_command_sig;
 
 		DebugStream mylog;
 };

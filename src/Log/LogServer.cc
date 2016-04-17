@@ -15,6 +15,7 @@
  */
 // -------------------------------------------------------------------------
 #include <sstream>
+#include <iomanip>
 #include "LogServer.h"
 #include "UniSetTypes.h"
 #include "Exceptions.h"
@@ -176,7 +177,7 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 	{
 		uniset_rwmutex_wrlock l(mutSList);
 
-		if( slist.size() >= sessMaxCount )
+		if( scount >= sessMaxCount )
 		{
 			if( mylog.is_crit() )
 				mylog.crit() << myname << "(LogServer::ioAccept): session limit(" << sessMaxCount << ")" << endl;
@@ -191,8 +192,14 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 		auto s = make_shared<LogSession>( watcher.fd, elog, cmdTimeout );
 		s->setSessionLogLevel(sessLogLevel);
 		s->connectFinalSession( sigc::mem_fun(this, &LogServer::sessionFinished) );
+		s->signal_logsession_command().connect( sigc::mem_fun(this, &LogServer::onCommand) );
 		{
 			uniset_rwmutex_wrlock l(mutSList);
+			scount++;
+			// на первой сессии запоминаем состояние логов
+			if( scount == 1 )
+				saveDefaultLogLevels("ALL");
+
 			slist.push_back(s);
 		}
 
@@ -213,8 +220,16 @@ void LogServer::sessionFinished( LogSession* s )
 		if( i->get() == s )
 		{
 			slist.erase(i);
-			return;
+			scount--;
+			break;
 		}
+	}
+
+	if( slist.empty() )
+	{
+		scount = 0;
+		// восстанавливаем уровни логов по умолчанию
+		restoreDefaultLogLevels("ALL");
 	}
 }
 // -------------------------------------------------------------------------
@@ -248,5 +263,112 @@ string LogServer::getShortInfo()
 	}
 
 	return std::move(inf.str());
+}
+// -----------------------------------------------------------------------------
+void LogServer::saveDefaultLogLevels( const std::string& logname )
+{
+	if( mylog.is_info() )
+		mylog.info() << myname << "(saveDefaultLogLevels): SAVE DEFAULT LOG LEVELS.." << endl;
+
+	auto alog = dynamic_pointer_cast<LogAgregator>(elog);
+	if( alog )
+	{
+		std::list<LogAgregator::iLog> lst;
+		if( logname.empty() || logname == "ALL" )
+			lst = alog->getLogList();
+		else
+			lst = alog->getLogList(logname);
+
+		for( auto&& l: lst )
+			defaultLogLevels[l.log.get()] = l.log->level();
+	}
+	else if( elog )
+		defaultLogLevels[elog.get()] = elog->level();
+}
+// -----------------------------------------------------------------------------
+void LogServer::restoreDefaultLogLevels( const std::string& logname )
+{
+	if( mylog.is_info() )
+		mylog.info() << myname << "(restoreDefaultLogLevels): RESTORE DEFAULT LOG LEVELS.." << endl;
+
+	auto alog = dynamic_pointer_cast<LogAgregator>(elog);
+	if( alog )
+	{
+		std::list<LogAgregator::iLog> lst;
+		if( logname.empty() || logname == "ALL" )
+			lst = alog->getLogList();
+		else
+			lst = alog->getLogList(logname);
+
+		for( auto&& l: lst )
+		{
+			auto d = defaultLogLevels.find(l.log.get());
+			if( d != defaultLogLevels.end() )
+				l.log->level(d->second);
+		}
+	}
+	else if( elog )
+	{
+		auto d = defaultLogLevels.find(elog.get());
+		if( d != defaultLogLevels.end() )
+			elog->level(d->second);
+	}
+}
+// -----------------------------------------------------------------------------
+std::string LogServer::onCommand( LogSession* s, LogServerTypes::Command cmd, const std::string& logname )
+{
+	if( cmd == LogServerTypes::cmdSaveLogLevel )
+	{
+		saveDefaultLogLevels(logname);
+	}
+	else if( cmd == LogServerTypes::cmdRestoreLogLevel )
+	{
+		restoreDefaultLogLevels(logname);
+	}
+	else if( cmd == LogServerTypes::cmdViewDefaultLogLevel )
+	{
+		ostringstream s;
+		s << "List of saved default log levels (filter='" << logname << "')[" << defaultLogLevels.size() << "]: " << endl;
+		s << "=================================" << endl;
+		auto alog = dynamic_pointer_cast<LogAgregator>(elog);
+		if( alog ) // если у нас "агрегатор", то работаем с его списком потоков
+		{
+			std::list<LogAgregator::iLog> lst;
+			if( logname.empty() || logname == "ALL" )
+				lst = alog->getLogList();
+			else
+				lst = alog->getLogList(logname);
+
+			std::string::size_type max_width = 1;
+
+			// ищем максимальное название для выравнивания по правому краю
+			for( const auto& l : lst )
+				max_width = std::max(max_width, l.name.length() );
+
+			for( const auto& l : lst )
+			{
+				Debug::type deflevel = Debug::NONE;
+				auto i = defaultLogLevels.find(l.log.get());
+				if( i != defaultLogLevels.end() )
+					deflevel = i->second;
+
+				s << std::left << setw(max_width) << l.name << std::left << " [ " << Debug::str(deflevel) << " ]" << endl;
+			}
+		}
+		else if( elog )
+		{
+			Debug::type deflevel = Debug::NONE;
+			auto i = defaultLogLevels.find(elog.get());
+			if( i != defaultLogLevels.end() )
+				deflevel = i->second;
+			s << elog->getLogName() << " [" << Debug::str(deflevel) << " ]" << endl;
+		}
+
+		s << "=================================" << endl << endl;
+
+		return std::move(s.str());
+	}
+
+	return "";
 }
 // -----------------------------------------------------------------------------
