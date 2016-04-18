@@ -13,8 +13,8 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.2
-Release: alt31.7
+Version: 2.3
+Release: alt1
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
