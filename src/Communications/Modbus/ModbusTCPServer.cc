@@ -49,7 +49,7 @@ ModbusTCPServer::~ModbusTCPServer()
 {
 }
 // -------------------------------------------------------------------------
-void ModbusTCPServer::setMaxSessions( unsigned int num )
+void ModbusTCPServer::setMaxSessions( size_t num )
 {
 	if( num < sessCount )
 	{

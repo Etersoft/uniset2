@@ -486,6 +486,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Tue Apr 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt1
+- build new version
+
 * Sun Apr 17 2016 Pavel Vainerman <pv@altlinux.ru> 2.2-alt31.7
 - LogSession: auto restore log levels after all sesssions closed
 
