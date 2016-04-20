@@ -27,9 +27,9 @@ Packager: Pavel Vainerman <pv@altlinux.ru>
 Source: %name-%version.tar
 
 # manually removed: glibc-devel-static
-# Automatically added by buildreq on Mon May 11 2015
-# optimized out: fontconfig gcc-c++ libcloog-isl4 libstdc++-devel libwayland-client libwayland-server libxml2-devel pkg-config python-base python-devel python-module-omniidl python-modules
-BuildRequires: libcommoncpp2-devel libomniORB-devel libsigc++2-devel
+# Automatically added by buildreq on Thu Apr 21 2016
+# optimized out: fontconfig gcc-c++ libgpg-error libsasl2-3 libstdc++-devel libwayland-client libwayland-server libxml2-devel pkg-config python-base python-devel python-module-omniidl python-modules
+BuildRequires: doxygen glibc-devel-static libcomedi-devel libcommoncpp2-devel libev-devel libmysqlclient-devel libomniORB-devel libpqxx-devel librrd-devel libsigc++2-devel libsqlite3-devel python-module-distribute python-module-google python-module-sphinxcontrib xsltproc
 
 # for uniset2-codegen
 BuildPreReq: xsltproc
