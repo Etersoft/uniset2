@@ -529,9 +529,9 @@ void LogSession::onCheckConnectionTimer( ev::timer& watcher, int revents )
 	}
 
 	// если клиент уже отвалился.. то при попытке write.. сессия будет закрыта.
-	ostringstream err;
-	err <<  "logserver: ..keep alive message.." << endl;
-	logbuf.emplace(new UTCPCore::Buffer(std::move(err.str())));
+
+	// длинное сообщение ("keep alive message") забивает логи, что потом неудобно смотреть, поэтому пишем "пустоту"
+	logbuf.emplace(new UTCPCore::Buffer(""));
 	io.set(ev::WRITE);
 	checkConnectionTimer.start( checkConnectionTime ); // restart timer
 }
