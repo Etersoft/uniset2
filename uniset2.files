@@ -242,6 +242,7 @@ extensions/Makefile.am
 IDL/Processes/Makefile.am
 IDL/Processes/IOController_i.idl
 IDL/UniSetTypes/Makefile.am
+IDL/UniSetTypes/UniSetBaseConstants.idl
 IDL/UniSetTypes/UniSetTypes_i.idl
 IDL/UniSetTypes/UniSetObject_i.idl
 IDL/UniSetTypes/UniSetManager_i.idl
@@ -523,3 +524,5 @@ Utilities/Makefile.am
 libUniSet2.pc.in
 Makefile.am
 uniset-config.h
+configure.ac
+

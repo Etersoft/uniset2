@@ -310,6 +310,17 @@ CXXFLAGS="$CXXFLAGS -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} $
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)
 
+# check of platform (32bit or 64 bit)
+SIZE_OF_TRANSPORT_MESSAGE=85
+
+AC_MSG_CHECKING([test 64-bit OS])
+AC_TRY_COMPILE([],[int assert[(sizeof(long) == 8) ? 1: -1]], result="yes", result="no")
+AC_MSG_RESULT($result)
+if test "$result" = "yes"; then
+	SIZE_OF_TRANSPORT_MESSAGE=160
+fi
+AC_SUBST(SIZE_OF_TRANSPORT_MESSAGE)
+
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
@@ -337,6 +348,7 @@ AC_CONFIG_FILES([Makefile
 				 lib/Makefile
 				 IDL/Makefile
 				 IDL/UniSetTypes/Makefile
+				 IDL/UniSetTypes/UniSetBaseConstants.idl
 				 IDL/Processes/Makefile
 				 src/Communications/Makefile
 				 src/Communications/Modbus/Makefile
