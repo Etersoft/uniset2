@@ -152,7 +152,7 @@ void ModbusTCPSession::callback( ev::io& watcher, int revents )
 void ModbusTCPSession::onTimeout( ev::timer& watcher, int revents )
 {
 	if( dlog->is_info() )
-		dlog->info() << peername << ": timeout connection activity.." << endl;
+		dlog->info() << peername << ": timeout connection activity..(terminate session)" << endl;
 
 	terminate();
 }
