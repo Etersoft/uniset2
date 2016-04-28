@@ -19,6 +19,8 @@
 using namespace std;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
+#define USE_BUFFER_FOR_READ 1
+// -------------------------------------------------------------------------
 size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 								   std::queue<unsigned char>& qrecv, size_t max, timeout_t t )
 {
@@ -27,10 +29,35 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 
 	size_t i = 0;
 
+#ifdef USE_BUFFER_FOR_READ
+
+	char* buf = new char[max];
+	if( buf == 0 )
+		return 0;
+
+	try
+	{
+		ssize_t l = tcp->readData(buf,max, 0, t);
+
+		if( l > 0 )
+		{
+			for( ssize_t k=0; k<l; k++ )
+				qrecv.push(buf[k]);
+
+			i = l;
+		}
+	}
+	catch( ost::SockException& e )
+	{
+	}
+
+	delete [] buf;
+#else
 	try
 	{
 		for( ; i < max; i++ )
 		{
+			// (не оптимально): читаем один символ за раз..
 			unsigned char c;
 			ssize_t l = tcp->readData(&c, sizeof(c), 0, t);
 
@@ -43,6 +70,8 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 	catch( ost::SockException& e )
 	{
 	}
+#endif
+
 
 	return i;
 }
@@ -78,14 +107,41 @@ size_t ModbusTCPCore::getNextData(UTCPStream* tcp,
 // -------------------------------------------------------------------------
 size_t ModbusTCPCore::readDataFD( int fd, std::queue<unsigned char>& qrecv, size_t max , size_t attempts )
 {
-	size_t i = 0;
-#if 1
 
+#ifdef USE_BUFFER_FOR_READ
+
+	char* buf = new char[max];
+
+	if( buf == 0 )
+		return 0;
+
+	ssize_t l = 0;
+	size_t cnt = 0;
+
+	for( size_t a = 0; a < attempts; a++ )
+	{
+		l = ::read(fd, buf, max);
+
+		if( l > 0 )
+		{
+			for( int k = 0; k < l; k++ )
+				qrecv.push(buf[k]);
+
+			cnt += l;
+			if( cnt >= max )
+				break;
+		}
+	}
+
+	delete [] buf;
+#else
+
+	size_t i = 0;
 	for( size_t a = 0; a < attempts; a++ )
 	{
 		for( ; i < max; i++ )
 		{
-			// читаем один символ за раз..
+			// (не оптимально): читаем один символ за раз..
 			unsigned char c;
 			ssize_t l = ::read(fd, &c, sizeof(c));
 
@@ -95,26 +151,6 @@ size_t ModbusTCPCore::readDataFD( int fd, std::queue<unsigned char>& qrecv, size
 			qrecv.push(c);
 		}
 	}
-
-#else
-	char* buf = new char[max];
-	ssize_t l = 0;
-
-	for( size_t a = 0; a < attempts; a++ )
-	{
-		l = ::read(fd, buf, sizeof(buf));
-
-		if( l > 0 )
-			break;
-	}
-
-	if( l > 0 )
-	{
-		for( int i = 0; i < l; i++ )
-			qrecv.push(buf[i]);
-	}
-
-	delete [] buf;
 #endif
 
 	return ( qrecv.size() >= max ? max : qrecv.size() );
