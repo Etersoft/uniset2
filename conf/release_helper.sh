@@ -14,17 +14,20 @@ TOPDIR=/var/ftp/pvt/Etersoft/Ourside/
 PKGNAME=uniset2
 SPECNAME=libuniset2.spec
 
+PLATFORM=i586
+[[ `uname -m` == "x86_64" ]] && PLATFORM=x86_64
+
 PROJECT=$1
 test -n "$PROJECT" || PROJECT=$PKGNAME
 
 if [ -d "$TOPDIR" ] ; then
-	GEN="genbasedir --create --progress --topdir=$TOPDIR i586 $PROJECT"
+	GEN="genbasedir --create --progress --topdir=$TOPDIR $PLATFORM $PROJECT"
 else
 	# For NoteBook build
-	TOPDIR=/var/ftp/pub/Ourside/
-	GEN=/var/ftp/pub/Ourside/i586/genb.sh
+	TOPDIR=/var/ftp/pub/Ourside
+	GEN=/var/ftp/pub/Ourside/$PLATFORM/genb.sh
 fi
-FTPDIR=$TOPDIR/i586/RPMS.$PROJECT
+FTPDIR=$TOPDIR/$PLATFORM/RPMS.$PROJECT
 BACKUPDIR=$FTPDIR/backup
 
 fatal()
@@ -51,7 +54,7 @@ echo "inform mail sent to $MAILTO"
 function cp2ftp()
 {
 	RPMBINDIR=$RPMDIR/RPMS
-	test -d $RPMBINDIR/i586 && RPMBINDIR=$RPMBINDIR/i586
+	test -d $RPMBINDIR/$PLATFORM && RPMBINDIR=$RPMBINDIR/$PLATFORM
 	mkdir -p $BACKUPDIR
 	mv -f $FTPDIR/*$PKGNAME* $BACKUPDIR/
 	mv -f $RPMBINDIR/*$PKGNAME* $FTPDIR/
