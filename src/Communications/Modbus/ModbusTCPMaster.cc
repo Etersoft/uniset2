@@ -202,12 +202,20 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				{
 					const char* err = tcp->getErrorString();
 
-					dlog->warn() << "(ModbusTCPMaster::query): ret=" << (int)ret
+					try
+					{
+						dlog->warn() << "(ModbusTCPMaster::query): ret=" << (int)ret
 								 << " < rmh=" << (int)sizeof(rmh)
 								 << " errnum: " << tcp->getErrorNumber()
 								 << " perr: " << tcp->getPeer(&port)
 								 << " err: " << (err ? string(err) : "")
 								 << endl;
+					}
+					catch( const ost::SockException& e )
+					{
+						if( dlog->is_warn() )
+							dlog->warn() << "(query): tcp error: " << e.getString() << endl;
+					}
 				}
 
 				tcp->forceDisconnect();
