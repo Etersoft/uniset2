@@ -3,8 +3,8 @@
 ############################################################################
 
 noinst_LTLIBRARIES 			= libProcesses.la
-libProcesses_la_CXXFLAGS 	= $(SIGC_CFLAGS)
-libProcesses_la_LIBADD		= $(SIGC_LIBS)
+libProcesses_la_CXXFLAGS 	= $(SIGC_CFLAGS) $(EV_CFLAGS)
+libProcesses_la_LIBADD		= $(SIGC_LIBS) $(EV_LIBS)
 libProcesses_la_SOURCES		= IOController_iSK.cc IOController.cc IONotifyController.cc \
 	NCRestorer.cc NCRestorer_XML.cc EventLoopServer.cc CommonEventLoop.cc
 

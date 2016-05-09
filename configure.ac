@@ -41,8 +41,21 @@ PKG_CHECK_MODULES(XML, libxml-2.0)
 PKG_CHECK_MODULES(OMNI, omniORB4)
 PKG_CHECK_MODULES(SIGC, sigc++-2.0)
 PKG_CHECK_MODULES(COMCPP, libccgnu2)
-PKG_CHECK_MODULES(EV, libev)
 
+nopkgchecklibev=false
+AC_ARG_ENABLE(pkgchecklibev, AC_HELP_STRING([--disable-pkgchecklibev], [disable pkg check modules for libev]),
+[ if test $enableval = yes; then nopkgchecklibev=false; else nopkgchecklibev=true; fi],[ nopkgchecklibev=false; ])
+
+if test ${nopkgchecklibev} = false; then
+	PKG_CHECK_MODULES(EV, libev)
+else	
+	AC_CHECK_HEADER(ev++.h,,exit)
+	AC_CHECK_LIB([ev],ev_run,,exit)
+	EV_LIBS="-lev"
+	EV_CFLAGS=
+	AC_SUBST(EV_LIBS)
+	AC_SUBST(EV_CFLAGS)
+fi
 
 #check sqlite support
 AC_MSG_CHECKING([sqlite support])
