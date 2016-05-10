@@ -576,7 +576,7 @@ std::string UniSetTypes::replace_all( const std::string& src, const std::string&
 	if( from.empty() )
 		return std::move(res);
 
-	size_t pos = res.find(from, pos);
+	size_t pos = res.find(from, 0);
 
 	while( pos != std::string::npos )
 	{

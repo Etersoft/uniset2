@@ -154,7 +154,7 @@ class ModbusTCPServer:
 		ev::timer ioTimer;
 		std::shared_ptr<UTCPSocket> sock;
 
-		const std::unordered_set<ModbusRTU::ModbusAddr>* vmbaddr;
+		const std::unordered_set<ModbusRTU::ModbusAddr>* vmbaddr = { nullptr };
 		TimerSignal m_timer_signal;
 
 		timeout_t tmTime_msec = { TIMEOUT_INF }; // время по умолчанию для таймера (TimerSignal)

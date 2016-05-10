@@ -142,9 +142,9 @@ class LogServer:
 		size_t scount = { 0 };
 		UniSetTypes::uniset_rwmutex mutSList;
 
-		timeout_t timeout;
-		timeout_t cmdTimeout;
-		Debug::type sessLogLevel;
+		timeout_t timeout = { TIMEOUT_INF };
+		timeout_t cmdTimeout = { 2000 };
+		Debug::type sessLogLevel = { Debug::NONE };
 		size_t sessMaxCount = { 10 };
 
 		DebugStream mylog;
@@ -163,8 +163,8 @@ class LogServer:
 		std::unordered_map< DebugStream*,Debug::type > defaultLogLevels;
 
 		std::string myname = { "LogServer" };
-		std::string addr;
-		ost::tpport_t port;
+		std::string addr = { "" };
+		ost::tpport_t port = { 0 };
 
 		std::atomic_bool isrunning = { false };
 };

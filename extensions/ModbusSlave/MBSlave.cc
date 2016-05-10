@@ -211,23 +211,24 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 		tcpserver->setLog(l);
 		conf->initLogStream(l, prefix + "-exchangelog");
 
-		updateStatTime = conf->getArgInt("--" + prefix + "-update-stat-time", it.getProp("updateStatTime"));
+		int tmpval = conf->getArgInt("--" + prefix + "-update-stat-time", it.getProp("updateStatTime"));
 
-		if( updateStatTime == 0 )
-			updateStatTime = 4000;
+		if( tmpval > 0 )
+			updateStatTime = tmpval;
 
 		vmonit(updateStatTime);
-		sessTimeout = conf->getArgInt("--" + prefix + "-session-timeout", it.getProp("sessTimeout"));
 
-		if( sessTimeout == 0 )
-			sessTimeout = 2000;
+		tmpval = conf->getArgInt("--" + prefix + "-session-timeout", it.getProp("sessTimeout"));
+
+		if( tmpval > 0 )
+			sessTimeout = tmpval;
 
 		vmonit(sessTimeout);
 
-		sessMaxNum = conf->getArgInt("--" + prefix + "-session-maxnum", it.getProp("sessMaxNum"));
+		tmpval = conf->getArgInt("--" + prefix + "-session-maxnum", it.getProp("sessMaxNum"));
 
-		if( sessMaxNum == 0 )
-			sessMaxNum = 5;
+		if( tmpval > 0 )
+			sessMaxNum = tmpval;
 
 		vmonit(sessMaxNum);
 

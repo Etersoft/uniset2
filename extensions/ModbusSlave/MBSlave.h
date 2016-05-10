@@ -578,11 +578,11 @@ class MBSlave:
 		// TCPServer section..
 		void initTCPClients( UniXML::iterator confnode );
 
-		timeout_t sessTimeout;  /*!< таймаут на сессию */
-		timeout_t updateStatTime;
+		timeout_t sessTimeout = { 2000 };  /*!< таймаут на сессию */
+		timeout_t updateStatTime = { 4000 };
 		ModbusTCPServer::Sessions sess; /*!< список открытых сессий */
 		UniSetTypes::uniset_mutex sessMutex;
-		unsigned int sessMaxNum;
+		unsigned int sessMaxNum = { 5 };
 		std::shared_ptr<ModbusTCPServerSlot> tcpserver;
 
 		struct ClientInfo
@@ -593,7 +593,7 @@ class MBSlave:
 				ptTimeout.setTiming(0);
 			}
 
-			std::string iaddr;
+			std::string iaddr = { "" };
 
 			UniSetTypes::ObjectId respond_s = { UniSetTypes::DefaultObjectId };
 			IOController::IOStateList::iterator respond_it;
@@ -601,7 +601,7 @@ class MBSlave:
 			PassiveTimer ptTimeout;
 			timeout_t tout = { 2000 };
 
-			long askCount;
+			long askCount = { 0 };
 			UniSetTypes::ObjectId askcount_s = { UniSetTypes::DefaultObjectId };
 			IOController::IOStateList::iterator askcount_it;
 
@@ -617,7 +617,7 @@ class MBSlave:
 		typedef std::unordered_map<std::string, ClientInfo> ClientsMap;
 		ClientsMap cmap;
 
-		UniSetTypes::ObjectId sesscount_id;
+		UniSetTypes::ObjectId sesscount_id = { UniSetTypes::DefaultObjectId };
 		IOController::IOStateList::iterator sesscount_it;
 
 		std::atomic_bool tcpCancelled = { true };

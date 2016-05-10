@@ -6,8 +6,7 @@ using namespace std;
 using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 TestProc::TestProc( UniSetTypes::ObjectId id, xmlNode* confnode ):
-	TestProc_SK( id, confnode ),
-	state(false)
+	TestProc_SK( id, confnode )
 {
 	loglevels.push_back(Debug::INFO);
 	loglevels.push_back(Debug::WARN);

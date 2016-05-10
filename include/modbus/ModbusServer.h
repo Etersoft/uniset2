@@ -315,13 +315,13 @@ class ModbusServer
 		ModbusRTU::mbErrCode recv_pdu( ModbusRTU::ModbusMessage& rbuf, timeout_t timeout );
 
 		UniSetTypes::uniset_mutex recvMutex;
-		timeout_t recvTimeOut_ms;        /*!< таймаут на приём */
-		timeout_t replyTimeout_ms;    /*!< таймаут на формирование ответа */
-		timeout_t aftersend_msec;        /*!< пауза после посылки ответа */
-		timeout_t sleepPause_msec;     /*!< пауза между попытками чтения символа из канала */
-		bool onBroadcast;        /*!< включен режим работы с broadcst-сообщениями */
-		bool crcNoCheckit;
-		bool cleanBeforeSend;
+		timeout_t recvTimeOut_ms = { 50 };        /*!< таймаут на приём */
+		timeout_t replyTimeout_ms = { 2000 };    /*!< таймаут на формирование ответа */
+		timeout_t aftersend_msec = { 0 };        /*!< пауза после посылки ответа */
+		timeout_t sleepPause_msec = { 10 };     /*!< пауза между попытками чтения символа из канала */
+		bool onBroadcast = { false };        /*!< включен режим работы с broadcst-сообщениями */
+		bool crcNoCheckit = { false };
+		bool cleanBeforeSend = { false };
 
 		void printProcessingTime();
 		PassiveTimer tmProcessing;
@@ -329,7 +329,7 @@ class ModbusServer
 		std::shared_ptr<DebugStream> dlog;
 
 		// статистика сервера
-		size_t askCount;
+		size_t askCount = { 0 };
 		ExchangeErrorMap errmap;     /*!< статистика ошибок обмена */
 
 		PreReceiveSignal m_pre_signal;
