@@ -3204,7 +3204,7 @@ void MBExchange::updateRespondSensors()
 	{
 		auto d(it1.second);
 
-		if( d->resp_id != DefaultObjectId && d->checkRespond(mblog) )
+		if( d->checkRespond(mblog) && d->resp_id != DefaultObjectId )
 		{
 			try
 			{
