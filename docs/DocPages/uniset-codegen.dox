@@ -224,6 +224,7 @@
 - \b --argprefix-activate-timeout msec
 - \b --argprefix-startup-timeout msec
 - \b --argprefix-log-[add|del]-levels xxx,xxx,xxx 
+- \b --argprefix-setValueNumberOfAttempts num
 
 
 \section pg_Codegen_Configuration Конфигурирование
@@ -254,6 +255,8 @@
  - \b activateTimeout	= conf->getArgPInt("--activate-timeout", 20000); - время отведённое на инициализацию процесса
  - \b msec = conf->getArgPInt("--startup-timeout", 10000); - пауза, в течение которой игнорируется сообщение SystemMessage::WatchDog.
 В случае если они приходят подряд.
+ - \b setValueNumberOfAttempts	- количество попыток сохранить 'выходы'(out_xxx) в SharedMemory.
+
 
 
 \section pg_Codegen_TestMode Специальный режим "тест" (TestMode)
