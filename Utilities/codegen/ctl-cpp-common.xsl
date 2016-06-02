@@ -345,7 +345,6 @@
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PRIVATE">
-		unsigned int setValueNumberOfAttempts = { 3 }; // количество попыток, сохранить 'out' (см. updateOutputs)
 		<xsl:if test="normalize-space($VARMAP)='1'">
 		class PtrMapHashFn
 		{
@@ -837,7 +836,7 @@ end_private(false)
 
 	logserv = make_shared&lt;LogServer&gt;(loga);
 	logserv-&gt;init( argprefix + "logserver", confnode );
-	
+
 <xsl:for-each select="//smap/item">
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
@@ -908,8 +907,6 @@ end_private(false)
 		maxHeartBeat = conf->getArgPInt("--" + argprefix + "heartbeat-max",it.getProp("heartbeat_max"), 10);
 	}
 
-	setValueNumberOfAttempts = conf->getArgPInt("--" + argprefix + "setValueNumberOfAttempts",it.getProp("setValueNumberOfAttempts"),setValueNumberOfAttempts);
-	
 	// Инициализация значений
 	<xsl:for-each select="//smap/item">
 		<xsl:if test="normalize-space(@default)=''">
@@ -997,7 +994,6 @@ end_private(false)
 	vmonit(maxHeartBeat);
 	vmonit(activateTimeout);
 	vmonit(smReadyTimeout);
-	vmonit(setValueNumberOfAttempts);
 }
 
 // -----------------------------------------------------------------------------
@@ -1361,7 +1357,6 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 	si.node = conf->getLocalNode();
 
 	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec","<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>", <xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>);
-	setValueNumberOfAttempts = conf->getArgPInt("--" + argprefix + "setValueNumberOfAttempts",it.getProp("setValueNumberOfAttempts"),setValueNumberOfAttempts);
 
 	string s_resetTime("<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>");
 	if( s_resetTime.empty() )

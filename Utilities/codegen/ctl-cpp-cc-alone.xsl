@@ -291,22 +291,7 @@ UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID()
 	{
 		si.id 	= <xsl:value-of select="../../@name"/>;
 		si.node = node_<xsl:value-of select="../../@name"/>;
-		unsigned int i=0;
-		for( ; i&lt;setValueNumberOfAttempts; i++ )
-		{
-			ui->setValue( si,<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>, getId() );
-			// Проверка, что сохранилось
-			if( ui->getValue(si.id,si.node) == <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> )
-				break;
-		}
-			
-		if( i>=setValueNumberOfAttempts )
-		{
-			ostringstream err;
-			err &lt;&lt; myname &lt;&lt; "(setdata): failed setValue for sid=" &lt;&lt; si.id;
-			mycrit &lt;&lt; err.str()  &lt;&lt; endl;
-			throw UniSetTypes::SystemError(err.str());
-		}
+		ui->setValue( si,<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>, getId() );
 	}
 	catch( const Exception&amp; ex )
 	{
@@ -321,22 +306,7 @@ UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID()
 	{
 		si.id 	= <xsl:value-of select="../../@name"/>;
 		si.node = node_<xsl:value-of select="../../@name"/>;
-		unsigned int i=0;
-		for( ; i&lt;setValueNumberOfAttempts; i++ )
-		{
-			ui->setValue( si,<xsl:value-of select="$setval"/>, getId() );
-			// Проверка, что сохранилось
-			if( ui->getValue(si.id,si.node) == <xsl:value-of select="$setval"/> )
-				break;
-		}
-			
-		if( i>=setValueNumberOfAttempts )
-		{
-			ostringstream err;
-			err &lt;&lt; myname &lt;&lt; "(setdata): failed setValue for sid=" &lt;&lt; si.id;
-			mycrit &lt;&lt; err.str() &lt;&lt; endl;
-			throw UniSetTypes::SystemError(err.str());
-		}			
+		ui->setValue( si,<xsl:value-of select="$setval"/>, getId() );
 	}
 	catch( const Exception&amp; ex )
 	{
