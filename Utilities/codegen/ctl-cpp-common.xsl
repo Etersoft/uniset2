@@ -1029,9 +1029,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateValues()
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::updatePreviousValues()
 {
-	<xsl:for-each select="//smap/item">prev_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
+	<xsl:for-each select="//smap/item"><xsl:if test="normalize-space(@vartype)='in'">prev_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
+	</xsl:if>
 	</xsl:for-each>
-	
 	<xsl:for-each select="//msgmap/item">prev_m_<xsl:value-of select="@name"/> = m_<xsl:value-of select="@name"/>;
 	</xsl:for-each>
 }
@@ -1429,20 +1429,21 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::checkSensors()
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::updatePreviousValues()
 {
-<xsl:for-each select="//sensors/item/consumers/consumer">
-<xsl:if test="normalize-space(../../@msg)!='1'">
-<xsl:if test="normalize-space(@name)=$OID">	prev_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>;
-</xsl:if>
-</xsl:if>
-</xsl:for-each>
-
-<xsl:for-each select="//sensors/item/consumers/consumer">
-<xsl:if test="normalize-space(../../@msg)='1'">
-<xsl:if test="normalize-space(@name)=$OID">	prev_m_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = m_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>;
-</xsl:if>
-</xsl:if>
-</xsl:for-each>
-
+	<xsl:for-each select="//sensors/item/consumers/consumer">
+	<xsl:if test="normalize-space(../../@msg)!='1'">
+	<xsl:if test="normalize-space(@name)=$OID"><xsl:if test="normalize-space(@vartype)='in'">prev_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>;
+	</xsl:if>
+	</xsl:if>
+	</xsl:if>
+	</xsl:for-each>
+	<xsl:text>
+	</xsl:text>
+	<xsl:for-each select="//sensors/item/consumers/consumer">
+	<xsl:if test="normalize-space(../../@msg)='1'">
+	<xsl:if test="normalize-space(@name)=$OID">	prev_m_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = m_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>;
+	</xsl:if>
+	</xsl:if>
+	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
