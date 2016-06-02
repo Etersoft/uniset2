@@ -217,8 +217,10 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
 {
 <xsl:for-each select="//sensors/item">
+	<xsl:if test="normalize-space(@vartype)='out'">
 	<xsl:call-template name="setdata"/>
 	prev_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
+	</xsl:if>
 </xsl:for-each>
 
 <!--

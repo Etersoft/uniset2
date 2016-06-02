@@ -136,15 +136,15 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId _si
 void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
 {
 	<xsl:for-each select="//smap/item">
+	<xsl:if test="normalize-space(@vartype)='out'">
 	<xsl:if test="normalize-space(@force)=''">
 	if( _force || prev_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> != <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> )
 	</xsl:if>
 	{
-		<xsl:choose>
-		<xsl:when test="normalize-space(@vartype)='out'"><xsl:call-template name="setdata"/></xsl:when>
-		</xsl:choose>
+		<xsl:call-template name="setdata"/>
 		prev_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 	}
+	</xsl:if>
 	</xsl:for-each>
 
 <!--
