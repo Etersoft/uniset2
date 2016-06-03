@@ -12,7 +12,7 @@ smemory_test_SOURCES = TestProc_SK.cc TestProc.cc smemory-test.cc
 BUILT_SOURCES=TestProc_SK.cc TestProc_SK.h
 
 TestProc_SK.cc TestProc_SK.h: testproc.src.xml
-	$(top_builddir)/Utilities/codegen/@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen --ask -n TestProc --local-include --topdir $(top_builddir)/ --no-main testproc.src.xml
+	$(SHELL) $(top_builddir)/Utilities/codegen/@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen --ask -n TestProc --local-include --topdir $(top_builddir)/ --no-main testproc.src.xml
 
 clean-local:
 	rm -rf *_SK.cc *_SK.h
