@@ -266,10 +266,10 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
 	}
 }
 // ------------------------------------------------------------------------------------------
-bool IONotifyController::myIOFilter( std::shared_ptr<USensorInfo>& ai,
+bool IONotifyController::myIOFilter( std::shared_ptr<USensorInfo>& usi,
 									 CORBA::Long newvalue, UniSetTypes::ObjectId sup_id )
 {
-	if( ai->value == newvalue )
+	if( usi->value == newvalue )
 		return false;
 
 	return true;
@@ -279,23 +279,24 @@ void IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInf
 										UniSetTypes::ObjectId sid,
 										CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
-	long prevValue = 0;
+	CORBA::Long prevValue = 0;
 
 	try
 	{
-		// Если датчик не найден сдесь сработает исключение
+		// Если датчик не найден здесь сработает исключение
 		prevValue = IOController::localGetValue( usi, sid );
 	}
 	catch( IOController_i::Undefined )
 	{
-		// чтобы сработало prevValue!=value
+		// чтобы сработало prevValue != usi->value
 		// искусственно меняем значение
-		prevValue = value + 1;
+		uniset_rwmutex_rlock lock(usi->val_lock);
+		prevValue = usi->value + 1;
 	}
 
 	IOController::localSetValue(usi, sid, value, sup_id);
 
-	// сравниваем именно с li->second->value
+	// сравниваем именно с usi->value
 	// т.к. фактическое сохранённое значение может быть изменено
 	// фильтрами или блокировками..
 	SensorMessage sm(sid, usi->value);
@@ -483,7 +484,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
 	// если такого дискретного датчика нет сдесь сработает исключение...
 	auto li = myioEnd();
 
-	long val = 0;
+	CORBA::Long val = 0;
 
 	try
 	{

@@ -140,16 +140,16 @@ long IOController::localGetValue( IOController::IOStateList::iterator& li, const
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // ------------------------------------------------------------------------------------------
-long IOController::localGetValue( std::shared_ptr<USensorInfo>& li, const UniSetTypes::ObjectId sid )
+long IOController::localGetValue( std::shared_ptr<USensorInfo>& usi, const UniSetTypes::ObjectId sid )
 {
-	if( li )
+	if( usi )
 	{
-		uniset_rwmutex_rlock lock(li->val_lock);
+		uniset_rwmutex_rlock lock(usi->val_lock);
 
-		if( li->undefined )
+		if( usi->undefined )
 			throw IOController_i::Undefined();
 
-		return li->value;
+		return usi->value;
 	}
 
 	// -------------
@@ -299,7 +299,7 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 				  << " real_value=" << usi->real_value
 				  << endl;
 
-			long prev = usi->value;
+			CORBA::Long prev = usi->value;
 
 			if( blocked )
 			{
@@ -315,7 +315,7 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 			changed = ( prev != usi->value );
 
 			// запоминаем время изменения
-			struct timeval tm;
+			struct timeval tm = { 0 };
 			struct timezone tz;
 			tm.tv_sec  = 0;
 			tm.tv_usec = 0;
@@ -638,12 +638,12 @@ void IOController::USensorInfo::init( const IOController_i::SensorIOInfo& s )
 	(*this) = std::move(r);
 }
 // ----------------------------------------------------------------------------------------
-bool IOController::checkIOFilters( std::shared_ptr<USensorInfo>& ai, CORBA::Long& newvalue,
+bool IOController::checkIOFilters( std::shared_ptr<USensorInfo>& usi, CORBA::Long& newvalue,
 								   UniSetTypes::ObjectId sup_id )
 {
 	for( const auto& it : iofilters )
 	{
-		if( it(ai, newvalue, sup_id) == false )
+		if( it(usi, newvalue, sup_id) == false )
 			return false;
 	}
 
