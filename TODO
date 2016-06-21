@@ -77,8 +77,6 @@ libev
 
 SM: подумать насчёт асинхронности публикации событий и посылки уведомления (setValue/push) через очередь..
 
-
-
 SM: Подумать насчёт применения https://github.com/efficient/libcuckoo
 
 version 3

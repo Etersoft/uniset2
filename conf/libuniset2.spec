@@ -460,6 +460,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %endif
 
 %files extension-common-devel
+%dir %_includedir/%oname/extensions
 %_includedir/%oname/extensions/*.*
 %_libdir/libUniSet2Extensions.so
 %_libdir/libUniSet2MB*.so
