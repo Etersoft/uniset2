@@ -240,7 +240,7 @@ IOControl::IOControl(UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	int sm_tout = conf->getArgInt("--" + prefix + "-sm-ready-timeout", it.getProp("ready_timeout"));
 
 	if( sm_tout == 0 )
-		smReadyTimeout = 30000;
+		smReadyTimeout = 60000;
 	else if( sm_tout < 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 	else

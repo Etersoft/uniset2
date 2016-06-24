@@ -448,7 +448,7 @@ void IOController::logging( UniSetTypes::SensorMessage& sm )
 			return;
 
 		sm.consumer = dbID;
-		TransportMessage tm(sm.transport_msg());
+		TransportMessage tm(std::move(sm.transport_msg()));
 		ui->send( sm.consumer, std::move(tm) );
 		isPingDBServer = true;
 	}

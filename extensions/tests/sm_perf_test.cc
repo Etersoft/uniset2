@@ -110,7 +110,7 @@ int main(int argc, char* argv[] )
 
 		std::chrono::time_point<std::chrono::system_clock> start, end;
 		start = std::chrono::system_clock::now();
-		run_test(8, 1000000, shm);
+		run_test( std::thread::hardware_concurrency(), 1000000, shm);
 		end = std::chrono::system_clock::now();
 
 		int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();

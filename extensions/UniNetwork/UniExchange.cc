@@ -76,7 +76,7 @@ UniExchange::UniExchange(UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID,
 	int sm_tout = conf->getArgInt("--io-sm-ready-timeout", it.getProp("ready_timeout"));
 
 	if( sm_tout == 0 )
-		smReadyTimeout = 15000;
+		smReadyTimeout = 60000;
 	else if( sm_tout < 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 	else

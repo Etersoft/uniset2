@@ -103,7 +103,7 @@ void SMDBServer::waitSMReady()
 	int ready_timeout = conf->getArgInt("--" + prefix + "-sm-ready-timeout", "15000");
 
 	if( ready_timeout == 0 )
-		ready_timeout = 15000;
+		ready_timeout = 60000;
 	else if( ready_timeout < 0 )
 		ready_timeout = UniSetTimer::WaitUpTime;
 
