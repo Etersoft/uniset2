@@ -33,7 +33,9 @@ class PostgreSQLInterface:
 		PostgreSQLInterface();
 		~PostgreSQLInterface();
 
-		virtual bool nconnect( const std::string& host, const std::string& user, const std::string& pswd, const std::string& dbname ) override;
+		virtual bool nconnect( const std::string& host, const std::string& user,
+							   const std::string& pswd, const std::string& dbname,
+							   unsigned int port=5432) override;
 		virtual bool close() override;
 		virtual bool isConnection() override;
 		virtual bool ping() override; // проверка доступности БД

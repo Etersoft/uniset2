@@ -41,7 +41,7 @@ class MySQLInterface:
 		//            DBResult listFields( const std::string& table, const std::string& wild );
 
 		virtual bool nconnect( const std::string& host, const std::string& user, const std::string& pswd,
-							   const std::string& dbname) override;
+							   const std::string& dbname, unsigned int port=0 ) override;
 		virtual bool close() override;
 
 		bool query_ok( const std::string& q );

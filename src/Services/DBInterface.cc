@@ -6,6 +6,7 @@ bool DBNetInterface::connect( const std::string& param )
 	std::string user = "";
 	std::string pswd = "";
 	std::string dbname = "";
+	unsigned int port = 0;
 
 	for(;;)
 	{
@@ -32,10 +33,17 @@ bool DBNetInterface::connect( const std::string& param )
 		prev = pos + 1;
 		pos = param.find_first_of(":", prev);
 		dbname = param.substr(prev, pos - prev);
+
+		if( pos == std::string::npos )
+			break;
+
+		prev = pos + 1;
+		pos = param.find_first_of(":", prev);
+		port = atoi( param.substr(prev, pos - prev).c_str() );
 		break;
 	}
 
-	return nconnect( host, user, pswd, dbname );
+	return nconnect( host, user, pswd, dbname, port );
 }
 //--------------------------------------------------------------------------------------------
 DBResult::ROW& DBResult::row()

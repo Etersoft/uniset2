@@ -23,6 +23,11 @@
 #include "PostgreSQLInterface.h"
 #include "DBServer.h"
 //------------------------------------------------------------------------------------------
+/*!
+ * \brief The DBServer_PostgreSQL class
+ * Реализация работы с PostgreSQL.
+ *
+ */
 class DBServer_PostgreSQL:
 	public DBServer
 {

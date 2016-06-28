@@ -50,9 +50,9 @@ MySQLInterface::~MySQLInterface()
 }
 
 // -----------------------------------------------------------------------------------------
-bool MySQLInterface::nconnect( const string& host, const string& user, const string& pswd, const string& dbname)
+bool MySQLInterface::nconnect(const string& host, const string& user, const string& pswd, const string& dbname, unsigned int port )
 {
-	if( !mysql_real_connect(mysql, host.c_str(), user.c_str(), pswd.c_str(), dbname.c_str(), 0, NULL, 0) )
+	if( !mysql_real_connect(mysql, host.c_str(), user.c_str(), pswd.c_str(), dbname.c_str(), port, NULL, 0) )
 	{
 		cout << error() << endl;
 		mysql_close(mysql);

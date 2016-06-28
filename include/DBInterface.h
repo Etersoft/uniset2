@@ -37,9 +37,10 @@ class DBNetInterface : public DBInterface
 		DBNetInterface() {};
 		virtual ~DBNetInterface() {};
 
-		// Для сетевых БД параметры должны быть в формате user@host:pswd:dbname
+		// Для сетевых БД параметры должны быть в формате user@host:pswd:dbname:port
 		virtual bool connect( const std::string& param );
-		virtual bool nconnect( const std::string& host, const std::string& user, const std::string& pswd, const std::string& dbname ) = 0;
+		virtual bool nconnect( const std::string& host, const std::string& user, const std::string& pswd,
+							   const std::string& dbname, unsigned int port ) = 0;
 };
 // ----------------------------------------------------------------------------------
 class DBResult

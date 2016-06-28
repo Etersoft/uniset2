@@ -120,7 +120,7 @@ void DBServer_PostgreSQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 
 		dbinfo << myname << "(update_confirm): " << data.str() << endl;
 
-		if( !writeToBase(data.str()) )
+		if( !writeToBase( std::move(data.str())) )
 		{
 			dbcrit << myname << "(update_confirm):  db error: " << db->error() << endl;
 		}
@@ -165,7 +165,7 @@ bool DBServer_PostgreSQL::writeToBase( const string& query )
 	flushBuffer();
 
 	// А теперь собственно запрос..
-	if( db->insertAndSaveRowid(query) )
+	if( db->insert(query) )
 		return true;
 
 	return false;
@@ -178,7 +178,7 @@ void DBServer_PostgreSQL::flushBuffer()
 	// Сперва пробуем очистить всё что накопилось в очереди до этого...
 	while( !qbuf.empty() )
 	{
-		if(!db->insertAndSaveRowid( qbuf.front() ))
+		if(!db->insert( qbuf.front() ))
 		{
 			dbcrit << myname << "(writeToBase): error: " << db->error() << " lost query: " << qbuf.front() << endl;
 		}
@@ -216,7 +216,7 @@ void DBServer_PostgreSQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 
 		dbinfo <<  myname << "(insert_main_history): " << data.str() << endl;
 
-		if( !writeToBase(data.str()) )
+		if( !writeToBase(std::move(data.str())) )
 		{
 			dbcrit << myname <<  "(insert) sensor msg error: " << db->error() << endl;
 		}
@@ -266,6 +266,7 @@ void DBServer_PostgreSQL::initDBServer()
 	string dbnode(conf->getProp(node, "dbnode"));
 	string user(conf->getProp(node, "dbuser"));
 	string password(conf->getProp(node, "dbpass"));
+	unsigned int dbport = conf->getPIntProp(node, "dbport",5432);
 
 	tblMap[UniSetTypes::Message::SensorInfo] = "main_history";
 	tblMap[UniSetTypes::Message::Confirm] = "main_history";
@@ -289,7 +290,7 @@ void DBServer_PostgreSQL::initDBServer()
 		   << " pingTime=" << PingTime
 		   << " ReconnectTime=" << ReconnectTime << endl;
 
-	if( !db->nconnect(dbnode, user, password, dbname) )
+	if( !db->nconnect(dbnode, user, password, dbname, dbport) )
 	{
 		dbwarn << myname << "(init): DB connection error: " << db->error() << endl;
 		askTimer(DBServer_PostgreSQL::ReconnectTimer, ReconnectTime);

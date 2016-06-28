@@ -50,18 +50,22 @@ bool PostgreSQLInterface::ping()
 	return db && db->is_open();
 }
 // -----------------------------------------------------------------------------------------
-bool PostgreSQLInterface::nconnect( const string& host, const string& user, const string& pswd, const string& dbname)
+bool PostgreSQLInterface::nconnect(const string& host, const string& user, const string& pswd, const string& dbname, unsigned int port )
 {
 	if( db )
 		return true;
 
-	std::string conninfo = "dbname=" + dbname + " host=" + host + " user=" + user + " password=" + pswd;
+	ostringstream conninfo;
+	conninfo << "dbname=" << dbname
+			 << " host=" << host
+			 << " user=" << user
+			 << " password=" << pswd
+			 << " port=" << port;
 
 	try
 	{
-		db = make_shared<pqxx::connection>(conninfo);
+		db = make_shared<pqxx::connection>( std::move(conninfo.str()) );
 		return db->is_open();
-
 	}
 	catch( const std::exception& e )
 	{
@@ -140,7 +144,7 @@ DBResult PostgreSQLInterface::query( const string& q )
 		result res( n.exec(q) );
 		DBResult dbres;
 		makeResult(dbres, res);
-		return dbres;
+		return std::move(dbres);
 	}
 	catch( const std::exception& e )
 	{
@@ -182,10 +186,10 @@ void PostgreSQLInterface::makeResult(DBResult& dbres, const pqxx::result& res )
 	{
 		DBResult::COL col;
 
-		for( pqxx::result::tuple::size_type i = 0; i < c.size(); i++ )
-			col.push_back( c[i].as<string>() );
+		for( pqxx::result::tuple::const_iterator i = c.begin(); i != c.end(); i++ )
+			col.push_back( (i.is_null() ? "" : i.as<string>()) );
 
-		dbres.row().push_back(col);
+		dbres.row().push_back( std::move(col) );
 	}
 }
 // -----------------------------------------------------------------------------------------

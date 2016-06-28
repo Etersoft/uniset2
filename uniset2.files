@@ -268,6 +268,7 @@ include/ComPort485F.h
 include/Configuration.1.h
 include/Configuration.h
 include/DBServer.h
+include/DBInterface.h
 include/Debug.h
 include/DebugStream.h
 include/DelayTimer.h
@@ -402,6 +403,7 @@ src/Processes/NCRestorer_XML.cc
 src/Processes/CommonEventLoop.cc
 src/Processes/EventLoopServer.cc
 src/Services/DBServer.cc
+src/Services/DBInterface.cc
 src/Services/Makefile.am
 src/Timers/Makefile.am
 src/Timers/PassiveCondTimer.cc

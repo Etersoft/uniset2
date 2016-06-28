@@ -16,13 +16,16 @@ int main(int argc, char** argv)
 	try
 	{
 		PostgreSQLInterface db;
+		
+		cout << "connect to '" << dbname << "'..." << endl;
 
 		if( !db.nconnect("localhost", "dbadmin", "dbadmin", dbname) )
 		{
-			cerr << "db connect error: " << db.error() << endl;
+			cerr << "[FAILED] connect error: " << db.error() << endl;
 			return 1;
 		}
 
+		cout << "connect to '" << dbname << "' [OK]" << endl;
 
 		stringstream q;
 		q << "SELECT * from main_history";
@@ -31,7 +34,7 @@ int main(int argc, char** argv)
 
 		if( !r )
 		{
-			cerr << "db connect error: " << db.error() << endl;
+			cerr << "query error: " << db.error() << endl;
 			return 1;
 		}
 
