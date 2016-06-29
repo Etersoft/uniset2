@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 		if( ver == 3 )
 		{
 			std::list<std::string> cols = { "date", "time","time_usec","sensor_id","value","node" };
-			std::list<PostgreSQLInterface::Record> data;
+			PostgreSQLInterface::Data data;
 			for( size_t i=0; i<num; i++ )
 			{
 				PostgreSQLInterface::Record d = { "now()","now()","0","7","1","3000" };

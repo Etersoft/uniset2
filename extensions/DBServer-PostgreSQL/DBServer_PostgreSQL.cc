@@ -203,13 +203,13 @@ void DBServer_PostgreSQL::flushInsertBuffer()
 
 		// Чистим заданное число
 		size_t delnum = lroundf(ibufSize * ibufOverflowCleanFactor);
-		InsertBuffer::iterator end = ibuf.end();
-		InsertBuffer::iterator beg = ibuf.end();
+		auto end = ibuf.end();
+		auto beg = ibuf.end();
 
 		// Удаляем последние (новые)
 		if( lastRemove )
 		{
-			std::advance(end, -delnum);
+			std::advance(beg, -delnum);
 		}
 		else
 		{
@@ -220,12 +220,18 @@ void DBServer_PostgreSQL::flushInsertBuffer()
 		}
 
 		ibuf.erase(beg,end);
+		ibufSize -= delnum;
+		if( ibufSize < 0 )
+			ibufSize = 0;
+
+		dbwarn << myname << "(flushInsertBuffer): overflow: clear data " << delnum << " records." << endl;
+		return;
 	}
 
 	if( ibufSize == 0 )
 		return;
 
-	dbinfo << myname << "(flushInsertBuffer): write insert buffer to DB.." << endl;
+	dbinfo << myname << "(flushInsertBuffer): write insert buffer[" << ibufSize << "] to DB.." << endl;
 
 	if( !db->copy("main_history",tblcols,ibuf) )
 	{
@@ -254,18 +260,20 @@ void DBServer_PostgreSQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 
 #endif
 		// (date, time, time_usec, sensor_id, value, node)
-		PostgreSQLInterface::Record rec;
-		rec.push_back(dateToString(si->sm_tv_sec, "-")); //  date
-		rec.push_back(timeToString(si->sm_tv_sec, ":")); //  time
-		rec.push_back(std::to_string(si->sm_tv_usec));
-		rec.push_back(std::to_string(si->id));
-		rec.push_back(std::to_string(si->value));
-		rec.push_back(std::to_string(si->node));
+		PostgreSQLInterface::Record rec =
+		{
+			dateToString(si->sm_tv_sec, "-"), //  date
+			timeToString(si->sm_tv_sec, ":"), //  time
+			std::to_string(si->sm_tv_usec),
+			std::to_string(si->id),
+			std::to_string(si->value),
+			std::to_string(si->node),
+		};
 
 		ibuf.push_back(std::move(rec));
 		ibufSize++;
 
-		if( ibufSize > ibufMaxSize )
+		if( ibufSize >= ibufMaxSize )
 			flushInsertBuffer();
 	}
 	catch( const Exception& ex )
@@ -316,9 +324,11 @@ void DBServer_PostgreSQL::initDBServer()
 	string dbpass( conf->getArgParam("--" + prefix + "-dbpass", it.getProp("dbpass")));
 	unsigned int dbport = conf->getArgPInt("--" + prefix + "-dbport", it.getProp("dbport"),5432);
 
-	ibufMaxSize = conf->getArgPInt("--" + prefix + "-ibufMaxSize", it.getProp("ibufMaxSize"),5000);
-	ibufSyncTimeout = conf->getArgPInt("--" + prefix + "-ibufSyncTimeout", it.getProp("ibufSyncTimeout"),15000);
-	std::string sfactor = conf->getArg2Param("--" + prefix + "-ibufOverflowCleanFactor", it.getProp("ibufOverflowCleanFactor"),"0.5");
+	ibufMaxSize = conf->getArgPInt("--" + prefix + "-ibuf-maxsize", it.getProp("ibufMaxSize"),2000);
+	ibuf.reserve(ibufMaxSize);
+
+	ibufSyncTimeout = conf->getArgPInt("--" + prefix + "-ibuf-sync-timeout", it.getProp("ibufSyncTimeout"),15000);
+	std::string sfactor = conf->getArg2Param("--" + prefix + "-ibuf-overflow-cleanfactor", it.getProp("ibufOverflowCleanFactor"),"0.5");
 	ibufOverflowCleanFactor = atof(sfactor.c_str());
 
 	tblMap[UniSetTypes::Message::SensorInfo] = "main_history";
@@ -505,9 +515,9 @@ void DBServer_PostgreSQL::help_print( int argc, const char* const* argv )
 	cout << "--prefix-reconnectTime msec   - reconnect time. Default: 30000 msec " << endl;
 
 	cout << "Insert buffer:" << endl;
-	cout << "--prefix-ibufMaxSize sz                   - INSERT-buffer size. Default: 5000" << endl;
-	cout << "--prefix-ibufSyncTimeout msec             - INSERT-buffer sync timeout. Default: 15000 msec" << endl;
-	cout << "--prefix-ibufOverflowCleanFactor [0...1]  - INSERT-buffer overflow clean factor. Default: 0.5" << endl;
+	cout << "--prefix-ibuf-maxsize sz                   - INSERT-buffer size. Default: 2000" << endl;
+	cout << "--prefix-ibuf-sync-timeout msec            - INSERT-buffer sync timeout. Default: 15000 msec" << endl;
+	cout << "--prefix-ibuf-overflow-cleanfactor [0...1] - INSERT-buffer overflow clean factor. Default: 0.5" << endl;
 
 	cout << "Query buffer:" << endl;
 	cout << "--prefix-buffer-size sz      - The buffer in case the database is unavailable. Default: 200" << endl;

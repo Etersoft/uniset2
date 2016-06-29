@@ -86,10 +86,14 @@ bool PostgreSQLInterface::close()
 	return true;
 }
 // -----------------------------------------------------------------------------------------
-bool PostgreSQLInterface::copy( const std::string& tblname, const std::list<std::string>& cols, const std::list<Record>& data )
+bool PostgreSQLInterface::copy( const std::string& tblname, const std::list<std::string>& cols,
+								const PostgreSQLInterface::Data& data )
 {
 	if( !db )
+	{
+		lastE = "no connection";
 		return false;
+	}
 
 	try
 	{
@@ -116,7 +120,10 @@ bool PostgreSQLInterface::copy( const std::string& tblname, const std::list<std:
 bool PostgreSQLInterface::insert( const string& q )
 {
 	if( !db )
+	{
+		lastE = "no connection";
 		return false;
+	}
 
 	try
 	{
@@ -137,7 +144,10 @@ bool PostgreSQLInterface::insert( const string& q )
 bool PostgreSQLInterface::insertAndSaveRowid( const string& q )
 {
 	if( !db )
+	{
+		lastE = "no connection";
 		return false;
+	}
 
 	std::string qplus = q + " RETURNING id";
 

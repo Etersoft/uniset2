@@ -50,9 +50,10 @@ class PostgreSQLInterface:
 		void save_inserted_id( const pqxx::result& res );
 
 		typedef std::list<std::string> Record;
+		typedef std::vector<Record> Data;
 
 		// fast insert: Use COPY..from SDTIN..
-		virtual bool copy( const std::string& tblname, const std::list<std::string>& cols, const std::list<Record>& data );
+		bool copy( const std::string& tblname, const std::list<std::string>& cols, const Data& data );
 
 		virtual const std::string error() override;
 
