@@ -34,8 +34,9 @@
 using namespace UniSetTypes;
 using namespace std;
 // ------------------------------------------------------------------------------------------
-DBServer::DBServer( ObjectId id, const std::string& prefix ):
-	UniSetObject(id)
+DBServer::DBServer( ObjectId id, const std::string& _prefix ):
+	UniSetObject(id),
+	prefix(_prefix)
 {
 	if( getId() == DefaultObjectId )
 	{

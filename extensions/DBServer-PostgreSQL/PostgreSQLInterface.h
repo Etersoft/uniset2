@@ -20,6 +20,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <queue>
 #include <iostream>
 #include <pqxx/pqxx>
 #include <PassiveTimer.h>
@@ -48,8 +49,10 @@ class PostgreSQLInterface:
 		virtual double insert_id() override;
 		void save_inserted_id( const pqxx::result& res );
 
+		typedef std::list<std::string> Record;
+
 		// fast insert: Use COPY..from SDTIN..
-		virtual bool copy( const std::string& tblname, const std::list<std::string>& cols, const std::list<std::list<std::string>>& data );
+		virtual bool copy( const std::string& tblname, const std::list<std::string>& cols, const std::list<Record>& data );
 
 		virtual const std::string error() override;
 

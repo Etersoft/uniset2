@@ -81,6 +81,7 @@ void DBServer_PostgreSQL::sysCommand( const UniSetTypes::SystemMessage* sm )
 	switch( sm->command )
 	{
 		case SystemMessage::StartUp:
+			askTimer(FlushInsertBuffer,ibufSyncTimeout);
 			break;
 
 		case SystemMessage::Finish:
@@ -119,6 +120,9 @@ void DBServer_PostgreSQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 			 << " AND time_usec='" << cem->time_usec << " '";
 
 		dbinfo << myname << "(update_confirm): " << data.str() << endl;
+
+		// перед UPDATE обязательно скинуть insertBuffer
+		flushInsertBuffer();
 
 		if( !writeToBase( std::move(data.str())) )
 		{
@@ -187,6 +191,53 @@ void DBServer_PostgreSQL::flushBuffer()
 	}
 }
 //--------------------------------------------------------------------------------------------
+void DBServer_PostgreSQL::flushInsertBuffer()
+{
+	if( !db || !connect_ok )
+	{
+		if( ibufSize < ibufMaxSize )
+			return;
+
+		dbcrit << myname << "(flushWriteBuffer): DB not connected!"
+				<< " buffer[" << ibufSize << "] overflow! LOST DATA..." << endl;
+
+		// Чистим заданное число
+		size_t delnum = lroundf(ibufSize * ibufOverflowCleanFactor);
+		InsertBuffer::iterator end = ibuf.end();
+		InsertBuffer::iterator beg = ibuf.end();
+
+		// Удаляем последние (новые)
+		if( lastRemove )
+		{
+			std::advance(end, -delnum);
+		}
+		else
+		{
+			// Удаляем первые (старые)
+			beg = ibuf.begin();
+			end = ibuf.begin();
+			std::advance(end, delnum);
+		}
+
+		ibuf.erase(beg,end);
+	}
+
+	if( ibufSize == 0 )
+		return;
+
+	dbinfo << myname << "(flushInsertBuffer): write insert buffer to DB.." << endl;
+
+	if( !db->copy("main_history",tblcols,ibuf) )
+	{
+		dbcrit << myname << "(flushInsertBuffer): error: " << db->error() << endl;
+	}
+	else
+	{
+		ibuf.clear();
+		ibufSize = 0;
+	}
+}
+//--------------------------------------------------------------------------------------------
 void DBServer_PostgreSQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 {
 	try
@@ -202,24 +253,20 @@ void DBServer_PostgreSQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 		}
 
 #endif
-		// см. main_history
-		ostringstream data;
-		data << "INSERT INTO " << tblName(si->type)
-			 << "(date, time, time_usec, sensor_id, value, node) VALUES( '"
-			 // Поля таблицы
-			 << dateToString(si->sm_tv_sec, "-") << "','"   //  date
-			 << timeToString(si->sm_tv_sec, ":") << "','"   //  time
-			 << si->sm_tv_usec << "',"                //  time_usec
-			 << si->id << ","                    //  sensor_id
-			 << si->value << ","                //  value
-			 << si->node << ")";                //  node
+		// (date, time, time_usec, sensor_id, value, node)
+		PostgreSQLInterface::Record rec;
+		rec.push_back(dateToString(si->sm_tv_sec, "-")); //  date
+		rec.push_back(timeToString(si->sm_tv_sec, ":")); //  time
+		rec.push_back(std::to_string(si->sm_tv_usec));
+		rec.push_back(std::to_string(si->id));
+		rec.push_back(std::to_string(si->value));
+		rec.push_back(std::to_string(si->node));
 
-		dbinfo <<  myname << "(insert_main_history): " << data.str() << endl;
+		ibuf.push_back(std::move(rec));
+		ibufSize++;
 
-		if( !writeToBase(std::move(data.str())) )
-		{
-			dbcrit << myname <<  "(insert) sensor msg error: " << db->error() << endl;
-		}
+		if( ibufSize > ibufMaxSize )
+			flushInsertBuffer();
 	}
 	catch( const Exception& ex )
 	{
@@ -262,20 +309,27 @@ void DBServer_PostgreSQL::initDBServer()
 	UniXML::iterator it(node);
 
 	dbinfo <<  myname << "(init): init connection.." << endl;
-	string dbname(conf->getProp(node, "dbname"));
-	string dbnode(conf->getProp(node, "dbnode"));
-	string user(conf->getProp(node, "dbuser"));
-	string password(conf->getProp(node, "dbpass"));
-	unsigned int dbport = conf->getPIntProp(node, "dbport",5432);
+
+	string dbname( conf->getArgParam("--" + prefix + "-dbname", it.getProp("dbname")));
+	string dbnode( conf->getArgParam("--" + prefix + "-dbnode", it.getProp("dbnode")));
+	string dbuser( conf->getArgParam("--" + prefix + "-dbuser", it.getProp("dbuser")));
+	string dbpass( conf->getArgParam("--" + prefix + "-dbpass", it.getProp("dbpass")));
+	unsigned int dbport = conf->getArgPInt("--" + prefix + "-dbport", it.getProp("dbport"),5432);
+
+	ibufMaxSize = conf->getArgPInt("--" + prefix + "-ibufMaxSize", it.getProp("ibufMaxSize"),5000);
+	ibufSyncTimeout = conf->getArgPInt("--" + prefix + "-ibufSyncTimeout", it.getProp("ibufSyncTimeout"),15000);
+	std::string sfactor = conf->getArg2Param("--" + prefix + "-ibufOverflowCleanFactor", it.getProp("ibufOverflowCleanFactor"),"0.5");
+	ibufOverflowCleanFactor = atof(sfactor.c_str());
 
 	tblMap[UniSetTypes::Message::SensorInfo] = "main_history";
 	tblMap[UniSetTypes::Message::Confirm] = "main_history";
 
-	PingTime = conf->getIntProp(node, "pingTime");
-	ReconnectTime = conf->getIntProp(node, "reconnectTime");
-	qbufSize = conf->getArgPInt("--dbserver-buffer-size", it.getProp("bufferSize"), 200);
+	PingTime = conf->getArgPInt("--" + prefix + "-pingTime", it.getProp("pingTime"),15000);
+	ReconnectTime = conf->getArgPInt("--" + prefix + "-reconnectTime", it.getProp("reconnectTime"),30000);
 
-	if( findArgParam("--dbserver-buffer-last-remove", conf->getArgc(), conf->getArgv()) != -1 )
+	qbufSize = conf->getArgPInt("--" + prefix + "-buffer-size", it.getProp("bufferSize"), 200);
+
+	if( findArgParam("--" + prefix + "-buffer-last-remove", conf->getArgc(), conf->getArgv()) != -1 )
 		lastRemove = true;
 	else if( it.getIntProp("bufferLastRemove" ) != 0 )
 		lastRemove = true;
@@ -290,7 +344,7 @@ void DBServer_PostgreSQL::initDBServer()
 		   << " pingTime=" << PingTime
 		   << " ReconnectTime=" << ReconnectTime << endl;
 
-	if( !db->nconnect(dbnode, user, password, dbname, dbport) )
+	if( !db->nconnect(dbnode, dbuser, dbpass, dbname, dbport) )
 	{
 		dbwarn << myname << "(init): DB connection error: " << db->error() << endl;
 		askTimer(DBServer_PostgreSQL::ReconnectTimer, ReconnectTime);
@@ -383,6 +437,13 @@ void DBServer_PostgreSQL::timerInfo( const UniSetTypes::TimerMessage* tm )
 		}
 		break;
 
+		case FlushInsertBuffer:
+		{
+			dbinfo <<  myname << "(timerInfo): insert flush timer.." << endl;
+			flushInsertBuffer();
+		}
+		break;
+
 		default:
 			dbwarn << myname << "(timerInfo): Unknown TimerID=" << tm->id << endl;
 			break;
@@ -431,6 +492,27 @@ void DBServer_PostgreSQL::help_print( int argc, const char* const* argv )
 {
 	cout << "Default: prefix='pgsql'" << endl;
 	cout << "--prefix-name objectID     - ObjectID. Default: 'conf->getDBServer()'" << endl;
+
+	cout << "Connection: " << endl;
+	cout << "--prefix-dbname name   - database name" << endl;
+	cout << "--prefix-dbnode host   - database host" << endl;
+	cout << "--prefix-dbuser user   - database user" << endl;
+	cout << "--prefix-dbpass pass   - database password" << endl;
+	cout << "--prefix-dbport port   - database port. Default: 5432" << endl;
+
+	cout << "Check connection: " << endl;
+	cout << "--prefix-pingTime msec        - check connetcion time. Default: 15000 msec" << endl;
+	cout << "--prefix-reconnectTime msec   - reconnect time. Default: 30000 msec " << endl;
+
+	cout << "Insert buffer:" << endl;
+	cout << "--prefix-ibufMaxSize sz                   - INSERT-buffer size. Default: 5000" << endl;
+	cout << "--prefix-ibufSyncTimeout msec             - INSERT-buffer sync timeout. Default: 15000 msec" << endl;
+	cout << "--prefix-ibufOverflowCleanFactor [0...1]  - INSERT-buffer overflow clean factor. Default: 0.5" << endl;
+
+	cout << "Query buffer:" << endl;
+	cout << "--prefix-buffer-size sz      - The buffer in case the database is unavailable. Default: 200" << endl;
+	cout << "--prefix-buffer-last-remove  - Delete the last recording buffer overflow." << endl;
+
 	cout << DBServer::help_print() << endl;
 }
 // -----------------------------------------------------------------------------

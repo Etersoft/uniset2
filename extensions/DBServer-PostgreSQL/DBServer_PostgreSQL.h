@@ -27,6 +27,15 @@
  * \brief The DBServer_PostgreSQL class
  * Реализация работы с PostgreSQL.
  *
+ * Т.к. основная работа DBServer-а это частая запись данных, то сделана следующая оптимизация:
+ * Создаётся insert-буфер настраиваемого размера (ibufMaxSize).
+ * Как только буфер заполняется, он пишется в БД одним "оптимизированным" запросом.
+ * Помимо этого буфер скидывается, если прошло ibufSyncTimeout мсек или если пришёл запрос
+ * на UPDATE данных.
+ *
+ * В случае если буфер переполняется (например нет связи с БД), то он чистится. При этом сколько
+ * записей удалять определяется коэффициентом wbufOverflowCleanFactor={0...1}.
+ * А также флаг lastRemove определяет удалять с конца или начала очереди.
  */
 class DBServer_PostgreSQL:
 	public DBServer
@@ -76,11 +85,12 @@ class DBServer_PostgreSQL:
 		{
 			PingTimer,        /*!< таймер на переодическую проверку соединения  с сервером БД */
 			ReconnectTimer,   /*!< таймер на повторную попытку соединения с сервером БД (или восстановления связи) */
+			FlushInsertBuffer, /*!< таймер на сброс Insert-буфера */
 			lastNumberOfTimer
 		};
 
 		std::shared_ptr<PostgreSQLInterface> db;
-		int PingTime;
+		int PingTime = { 15000 };
 		int ReconnectTime;
 		bool connect_ok;     /*! признак наличия соеднинения с сервером БД */
 
@@ -90,10 +100,21 @@ class DBServer_PostgreSQL:
 
 		QueryBuffer qbuf;
 		unsigned int qbufSize; // размер буфера сообщений.
-		bool lastRemove;
+		bool lastRemove = { false };
 
 		void flushBuffer();
 		UniSetTypes::uniset_mutex mqbuf;
+
+		// writeBuffer
+		const std::list<std::string> tblcols = { "date", "time","time_usec","sensor_id","value","node" };
+
+		typedef std::list<PostgreSQLInterface::Record> InsertBuffer;
+		InsertBuffer ibuf;
+		size_t ibufSize = { 0 };
+		size_t ibufMaxSize = { 5000 };
+		timeout_t ibufSyncTimeout = { 15000 };
+		void flushInsertBuffer();
+		float ibufOverflowCleanFactor = { 0.5 }; // коэфициент {0...1} чистки буфера при переполнении
 
 	private:
 		DBTableMap tblMap;

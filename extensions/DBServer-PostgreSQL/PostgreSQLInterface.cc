@@ -86,7 +86,7 @@ bool PostgreSQLInterface::close()
 	return true;
 }
 // -----------------------------------------------------------------------------------------
-bool PostgreSQLInterface::copy( const std::string& tblname, const std::list<std::string>& cols, const std::list<std::list<std::string>>& data )
+bool PostgreSQLInterface::copy( const std::string& tblname, const std::list<std::string>& cols, const std::list<Record>& data )
 {
 	if( !db )
 		return false;
@@ -96,7 +96,7 @@ bool PostgreSQLInterface::copy( const std::string& tblname, const std::list<std:
 		work w( *(db.get()) );
 		tablewriter t(w,tblname,cols.begin(),cols.end());
 
-		t.reserve(data.size());
+		t.reserve(data.size()); // size() не дорогая операция для list?
 		for( const auto& d: data )
 			t.push_back(d.begin(),d.end());
 
