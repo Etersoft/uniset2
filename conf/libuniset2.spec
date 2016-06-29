@@ -14,7 +14,7 @@
 
 Name: libuniset2
 Version: 2.3
-Release: alt8
+Release: alt9
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -484,6 +484,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Wed Jun 29 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt9
+- build new version
+
 * Wed Jun 29 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt8
 - DBServer_PGSQL: added support for the insert buffer
 
