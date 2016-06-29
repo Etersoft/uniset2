@@ -86,6 +86,33 @@ bool PostgreSQLInterface::close()
 	return true;
 }
 // -----------------------------------------------------------------------------------------
+bool PostgreSQLInterface::copy( const std::string& tblname, const std::list<std::string>& cols, const std::list<std::list<std::string>>& data )
+{
+	if( !db )
+		return false;
+
+	try
+	{
+		work w( *(db.get()) );
+		tablewriter t(w,tblname,cols.begin(),cols.end());
+
+		t.reserve(data.size());
+		for( const auto& d: data )
+			t.push_back(d.begin(),d.end());
+
+		t.complete();
+		w.commit();
+		return true;
+	}
+	catch( const std::exception& e )
+	{
+		//cerr << e.what() << std::endl;
+		lastE = string(e.what());
+	}
+
+	return false;
+}
+// -----------------------------------------------------------------------------------------
 bool PostgreSQLInterface::insert( const string& q )
 {
 	if( !db )
