@@ -547,9 +547,11 @@ void UObject_SK::callback()
 		// обработка сообщений (таймеров и т.п.)
 		for( unsigned int i=0; i<20; i++ )
 		{
-			if( !receiveMessage(msg) )
-				break;
-			processingMessage(&msg);
+            auto m = receiveMessage();
+            if( !m )
+                break;
+            processingMessage(m.get());
+
 			updateOutputs(forceOut);
 //			updatePreviousValues();
 		}

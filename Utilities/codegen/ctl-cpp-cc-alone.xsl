@@ -68,9 +68,10 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		// обработка сообщений (таймеров и т.п.)
 		for( unsigned int i=0; i&lt;<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'msg-count'"/></xsl:call-template>; i++ )
 		{
-			if( !receiveMessage(msg) )
+			auto m = receiveMessage();
+			if( !m )
 				break;
-			processingMessage(&amp;msg);
+			processingMessage(m.get());
 		}
 
 		// Проверка изменения состояния датчиков

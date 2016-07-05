@@ -53,6 +53,8 @@ class UniSetManager;
 //---------------------------------------------------------------------------
 class UniSetObject;
 typedef std::list< std::shared_ptr<UniSetObject> > ObjectsList;     /*!< Список подчиненных объектов */
+
+typedef std::shared_ptr<UniSetTypes::VoidMessage> VoidMessagePtr;
 //---------------------------------------------------------------------------
 /*! \class UniSetObject
  *    Класс реализует работу uniset-объекта: работа с очередью сообщений, регистрация объекта, инициализация и т.п.
@@ -158,7 +160,7 @@ class UniSetObject:
 		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) {}
 
 		/*! Получить сообщение */
-		bool receiveMessage( UniSetTypes::VoidMessage& vm );
+		VoidMessagePtr receiveMessage();
 
 		/*! текущее количесво сообщений в очереди */
 		unsigned int countMessages();
@@ -213,7 +215,7 @@ class UniSetObject:
 		}
 
 		/*! Ожидать сообщения timeMS */
-		virtual bool waitMessage(UniSetTypes::VoidMessage& msg, timeout_t timeMS = UniSetTimer::WaitUpTime);
+		virtual VoidMessagePtr waitMessage( timeout_t timeMS = UniSetTimer::WaitUpTime );
 
 		void setID(UniSetTypes::ObjectId id);
 
@@ -239,12 +241,13 @@ class UniSetObject:
 
 		// функция определения приоритетного сообщения для обработки
 		struct PriorVMsgCompare:
-			public std::binary_function<UniSetTypes::VoidMessage, UniSetTypes::VoidMessage, bool>
+			public std::binary_function<VoidMessagePtr, VoidMessagePtr, bool>
 		{
-			bool operator()(const UniSetTypes::VoidMessage& lhs,
-							const UniSetTypes::VoidMessage& rhs) const;
+			bool operator()(const VoidMessagePtr& lhs,
+							const VoidMessagePtr& rhs) const;
 		};
-		typedef std::priority_queue<UniSetTypes::VoidMessage, std::vector<UniSetTypes::VoidMessage>, PriorVMsgCompare> MessagesQueue;
+
+		typedef std::priority_queue<VoidMessagePtr, std::vector<VoidMessagePtr>, PriorVMsgCompare> MessagesQueue;
 
 		/*! Чистка очереди сообщений */
 		virtual void cleanMsgQueue( MessagesQueue& q );
@@ -258,7 +261,6 @@ class UniSetObject:
 			active = set;
 		}
 
-		UniSetTypes::VoidMessage msg;
 		std::weak_ptr<UniSetManager> mymngr;
 
 		void setThreadPriority( int p );
