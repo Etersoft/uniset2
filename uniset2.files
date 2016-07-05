@@ -214,6 +214,10 @@ extensions/tests/tests_with_sm.xml
 extensions/tests/u.xml
 extensions/tests/sm_perf_test.cc
 extensions/tests/develop.cc
+extensions/tests/MQPerfTest/Makefile.am
+extensions/tests/MQPerfTest/TestProc.h
+extensions/tests/MQPerfTest/TestProc.cc
+extensions/tests/MQPerfTest/mq-test.cc
 extensions/UNetUDP/tests/Makefile.am
 extensions/UNetUDP/tests/test_unetudp.cc
 extensions/UNetUDP/tests/tests_individual_process.cc
@@ -318,6 +322,7 @@ include/UInterface.h
 include/UniSetActivator.h
 include/UniSetManager.h
 include/UniSetObject.h
+include/UMessageQueue.h
 include/UniSetTypes.h
 include/UniXML.h
 include/UTCPCore.h
@@ -326,6 +331,7 @@ include/UTCPSocket.h
 include/USocket.h
 include/UDPCore.h
 include/WDTInterface.h
+include/UHelpers.h
 lib/Makefile.am
 python/examples/test.xml
 python/lib/pyUniSet/Makefile.am

@@ -203,7 +203,6 @@ class UniSetObject:
 			return MaxCountRemoveOfMessage;
 		}
 
-
 		// функция определения приоритетного сообщения для обработки
 		struct PriorVMsgCompare:
 			public std::binary_function<UniSetTypes::VoidMessage, UniSetTypes::VoidMessage, bool>
@@ -242,6 +241,19 @@ class UniSetObject:
 		std::weak_ptr<UniSetManager> mymngr;
 
 		void setThreadPriority( int p );
+
+		// ------- Статистика -------
+		/*! максимальное количество которое было в очереди сообщений */
+		inline size_t getMaxQueueMessages()
+		{
+			return stMaxQueueMessages;
+		}
+
+		/*! сколько раз очередь переполнялась */
+		inline size_t getCountOfQueueFull()
+		{
+			return stCountOfQueueFull;
+		}
 
 	private:
 
@@ -294,8 +306,8 @@ class UniSetObject:
 		size_t MaxCountRemoveOfMessage;
 
 		// статистическая информация
-		size_t stMaxQueueMessages;    /*<! Максимальное число сообщений хранившихся в очереди */
-		size_t stCountOfQueueFull;    /*!< количество переполнений очереди сообщений */
+		size_t stMaxQueueMessages = { 0 };    /*!< Максимальное число сообщений хранившихся в очереди */
+		size_t stCountOfQueueFull = { 0 };    /*!< количество переполнений очереди сообщений */
 
 		std::atomic_bool a_working;
 		std::mutex    m_working;
