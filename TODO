@@ -83,6 +83,8 @@ SM: Подумать насчёт применения https://github.com/effici
 
 DB: Сделать регулируемый буфер на INSERT-ы БД, чтобы поберечь винт (DBServer_PGSQL, DBServer_MySQL...) // по времени или по количеству
 
+UniSetObject: две очереди, чтобы уменьшить количество блокирований mutex..
+
 version 3
 =========
 - подумать нужен ли нам где-то ZeroMQ (zerorpc) (вместо omniORB?)

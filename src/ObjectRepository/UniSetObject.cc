@@ -61,7 +61,7 @@ UniSetObject::UniSetObject():
 	tmr = CREATE_TIMER;
 	myname = "noname";
 	section = "nonameSection";
-	init_object();
+	initObject();
 }
 // ------------------------------------------------------------------------------------------
 UniSetObject::UniSetObject( ObjectId id ):
@@ -93,7 +93,7 @@ UniSetObject::UniSetObject( ObjectId id ):
 		section = "UnknownSection";
 	}
 
-	init_object();
+	initObject();
 }
 
 
@@ -122,7 +122,7 @@ UniSetObject::UniSetObject( const string& name, const string& section ):
 		throw Exception(name + ": my ID not found!");
 	}
 
-	init_object();
+	initObject();
 	ui->initBackId(myid);
 }
 
@@ -158,7 +158,7 @@ UniSetObject::~UniSetObject()
 #endif
 }
 // ------------------------------------------------------------------------------------------
-void UniSetObject::init_object()
+void UniSetObject::initObject()
 {
 	a_working = ATOMIC_VAR_INIT(0);
 	active = ATOMIC_VAR_INIT(0);
@@ -166,6 +166,10 @@ void UniSetObject::init_object()
 	qmutex.setName(myname + "_qmutex");
 	refmutex.setName(myname + "_refmutex");
 	//    mutex_act.setName(myname + "_mutex_act");
+
+	// устанавливаем указатели очередей
+	wQueue = &queueMsg1;
+	rQueue = &queueMsg2;
 
 	auto conf = uniset_conf();
 
@@ -210,26 +214,39 @@ void UniSetObject::setID( UniSetTypes::ObjectId id )
 */
 bool UniSetObject::receiveMessage( VoidMessage& vm )
 {
+	// здесь работаем со своей очередью без блокировки
+	if( !rQueue->empty() )
+	{
+		vm = rQueue->top(); // получили сообщение
+		rQueue->pop(); // удалили сообщение из очереди
+		return true;
+	}
+
+	// Если своя очередь пуста
+	// то смотрим вторую
 	{
 		// lock
 		uniset_rwmutex_wrlock mlk(qmutex);
 
-		if( !queueMsg.empty() )
+		if( !wQueue->empty() )
 		{
 			// контроль переполнения
-			if( queueMsg.size() > SizeOfMessageQueue )
+			if( wQueue->size() > SizeOfMessageQueue )
 			{
 				ucrit << myname << "(receiveMessages): messages queue overflow!" << endl << flush;
-				cleanMsgQueue(queueMsg);
+				cleanMsgQueue(*wQueue);
 				// обновляем статистику по переполнениям
 				stCountOfQueueFull++;
 				stMaxQueueMessages = 0;
 			}
 
-			if( !queueMsg.empty() )
+			if( !wQueue->empty() )
 			{
-				vm = queueMsg.top(); // получили сообщение
-				queueMsg.pop(); // удалили сообщение из очереди
+				vm = wQueue->top(); // получили сообщение
+				wQueue->pop(); // удалили сообщение из очереди
+
+				// меняем очереди местами
+				std::swap(rQueue,wQueue);
 				return true;
 			}
 		}
@@ -465,10 +482,10 @@ void UniSetObject::push( const TransportMessage& tm )
 		uniset_rwmutex_wrlock mlk(qmutex);
 
 		// контроль переполнения
-		if( !queueMsg.empty() && queueMsg.size() > SizeOfMessageQueue )
+		if( !wQueue->empty() && wQueue->size() > SizeOfMessageQueue )
 		{
 			ucrit << myname << "(push): message queue overflow!" << endl << flush;
-			cleanMsgQueue(queueMsg);
+			cleanMsgQueue(*wQueue);
 
 			// обновляем статистику
 			stCountOfQueueFull++;
@@ -476,11 +493,11 @@ void UniSetObject::push( const TransportMessage& tm )
 		}
 
 		VoidMessage v(tm);
-		queueMsg.push(v);
+		wQueue->push(v);
 
 		// максимальное число ( для статистики )
-		if( queueMsg.size() > stMaxQueueMessages )
-			stMaxQueueMessages = queueMsg.size();
+		if( wQueue->size() > stMaxQueueMessages )
+			stMaxQueueMessages = wQueue->size();
 
 	} // unlock
 
@@ -623,7 +640,7 @@ unsigned int UniSetObject::countMessages()
 	{
 		// lock
 		uniset_rwmutex_rlock mlk(qmutex);
-		return queueMsg.size();
+		return wQueue->size() + rQueue->size();
 	}
 }
 // ------------------------------------------------------------------------------------------
@@ -669,8 +686,11 @@ bool UniSetObject::deactivate()
 		// lock
 		uniset_rwmutex_wrlock mlk(qmutex);
 
-		while( !queueMsg.empty() )
-			queueMsg.pop();
+		while( !wQueue->empty() )
+			wQueue->pop();
+
+		while( !rQueue->empty() )
+			rQueue->pop();
 	}
 
 	try

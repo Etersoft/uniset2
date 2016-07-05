@@ -145,7 +145,7 @@ class ThreadCreator:
 	private:
 		ThreadCreator();
 
-		pid_t pid;
+		pid_t pid = { 0 };
 
 		ThreadMaster* m;
 		Action act;
@@ -160,7 +160,7 @@ class ThreadCreator:
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 ThreadCreator<ThreadMaster>::ThreadCreator( ThreadMaster* m, Action a ):
-	pid(-1),
+	pid(0),
 	m(m),
 	act(a),
 	finm(0),
@@ -187,7 +187,7 @@ void ThreadCreator<ThreadMaster>::stop()
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 ThreadCreator<ThreadMaster>::ThreadCreator():
-	pid(-1),
+	pid(0),
 	m(0),
 	act(0),
 	finm(0),
