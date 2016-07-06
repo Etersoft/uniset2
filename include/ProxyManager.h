@@ -47,11 +47,11 @@ class ProxyManager:
 
 	protected:
 		ProxyManager();
-		virtual void processingMessage( const UniSetTypes::VoidMessage* msg );
+		virtual void processingMessage( const UniSetTypes::VoidMessage* msg ) override;
 		virtual void allMessage( const UniSetTypes::VoidMessage* msg );
 
-		virtual bool activateObject();
-		virtual bool deactivateObject();
+		virtual bool activateObject() override;
+		virtual bool deactivateObject() override;
 
 	private:
 		typedef std::unordered_map<UniSetTypes::ObjectId, PassiveObject*> PObjectMap;
