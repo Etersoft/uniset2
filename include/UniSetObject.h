@@ -195,16 +195,6 @@ class UniSetObject:
 			return mqueue.getMaxSizeOfMessageQueue();
 		}
 
-		void setMaxCountRemoveOfMessage( size_t m )
-		{
-			mqueue.setMaxCountRemoveOfMessage(m);
-		}
-
-		inline size_t getMaxCountRemoveOfMessage()
-		{
-			return mqueue.getMaxCountRemoveOfMessage();
-		}
-
 		inline bool isActive()
 		{
 			return active;

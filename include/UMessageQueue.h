@@ -17,44 +17,36 @@
 #ifndef UMessageQueue_H_
 #define UMessageQueue_H_
 //--------------------------------------------------------------------------
-#include <queue>
+#include <atomic>
 #include <vector>
 #include <memory>
-#include "Mutex.h"
 #include "MessageType.h"
 //--------------------------------------------------------------------------
 typedef std::shared_ptr<UniSetTypes::VoidMessage> VoidMessagePtr;
 //--------------------------------------------------------------------------
 /*! \class UMessageQueue
  * Очередь сообщений.
- * \warning Очередь рассчитана на МНОГО ПИСАТЕЛЕЙ и ОДИН(!) читатель. Т.е. чтение должно быть из одного потока!
- * Сообщения извлекаются из очереди в порядке приоритета сообщения. При одинаковом приоритете - в порядке поступления в очередь.
+ *
+ * Чтобы избежать работы с mutex, очередь построена по принципу циклического буфера,
+ * c использованием atomic-переменных и попыткой реализовать LockFree работу.
+ * Есть указатель на текущую позицию записи (wp) и есть "догоняющий его" указатель на позицию чтения (rp).
+ * Если rp догоняет wp - значит новых сообщений нет.
+ *
+ * При этом место под очередь(буффер) резервируется сразу.
+ * Счётчики сделаны (uint) монотонно растущими.
+ * Основные идеи:
+ * - счётчики постоянно увеличиваются
+ * - каждый пишущий поток пишет в новое место
+ * - читающий счётчик тоже монотонно растёт
+ * - реальная позиция для записи или чтения рассчитывается как (pos%size) этим и обеспечивается цикличность.
  *
  * Максимальное ограничение на размер очереди сообщений задаётся функцией setMaxSizeOfMessageQueue().
  *
- * Контроль переполения очереди осуществляется в двух местах push и receiveMessage.
- * При переполнении очереди, происходит автоматическая очистка в два этапа.
- * Первый: производиться попытка "свёртки" сообщений.
- * Из очереди все повторяющиеся
- * - SensorMessage
- * - TimerMessage
- * - SystemMessage
- * Если это не помогло, то производиться второй этап "чистки":
- * Из очереди удаляется MaxCountRemoveOfMessage сообщений.
- * Этот парамер задаётся при помощи setMaxCountRemoveOfMessage(). По умолчанию 1/4 очереди сообщений.
- *
- * Очистка реализована в функции cleanMsgQueue();
- *
- * \warning Т.к. при фильтровании SensorMessage не смотрится значение,
- * то при удалении сообщений об изменении аналоговых датчиков очистка может привести
- * к некорректной работе фильрующих алгоритмов работающих с "выборкой" последних N значений.
- * (потому-что останется одно последнее)
- *
- *	ОПТИМИЗАЦИЯ N1:
- * Для того, чтобы функции push() и top() реже "сталкавались" на mutex-е очереди сообщений.
- * Сделано две очереди сообщений. Одна очередь сообщений наполняется в push() (с блокировкой mutex-а),
- * а вторая (без блокировки) обрабатывается в top(). Как только сообщения заканчиваются в
- * top() очереди меняются местами (при захваченном mutex).
+ * Контроль переполения очереди осуществляется в push и в top;
+ * Если очередь переполняется, то сообщения ТЕРЯЮТСЯ!
+ * При помощи функции setLostStrategy() можно установить стратегию что терять
+ * lostNewData - в случае переполнения теряются новые данные (т.е. не будут помещаться в очередь)
+ * lostOldData - в случае переполнения очереди, старые данные затираются новыми.
 */
 class UMessageQueue
 {
@@ -71,8 +63,13 @@ class UMessageQueue
 		void setMaxSizeOfMessageQueue( size_t s );
 		size_t getMaxSizeOfMessageQueue();
 
-		void setMaxCountRemoveOfMessage( size_t m );
-		size_t getMaxCountRemoveOfMessage();
+		enum LostStrategy
+		{
+			lostOldData, // default
+			lostNewData
+		};
+
+		void setLostStrategy( LostStrategy s );
 
 		// ---- Статистика ----
 		/*! максимальное количество которое было в очереди сообщений */
@@ -87,36 +84,23 @@ class UMessageQueue
 			return stCountOfQueueFull;
 		}
 
-		// функция определения приоритетного сообщения для обработки
-		struct VoidMessageCompare:
-			public std::binary_function<VoidMessagePtr, VoidMessagePtr, bool>
-		{
-			bool operator()(const VoidMessagePtr& lhs,
-							const VoidMessagePtr& rhs) const;
-		};
-
-		typedef std::priority_queue<VoidMessagePtr, std::vector<VoidMessagePtr>, VoidMessageCompare> MQueue;
+		typedef std::vector<VoidMessagePtr> MQueue;
 
 	protected:
 
-		/*! Чистка очереди сообщений */
-		void cleanMsgQueue( MQueue& q );
+		// заполнить всю очередь указанным сообщением
+		void mqFill( const VoidMessagePtr& v );
 
 	private:
 
-		MQueue* wQ = { nullptr }; // указатель на текущую очередь на запись
-		MQueue* rQ = { nullptr }; // указатель на текущую очередь на чтение
-
-		MQueue mq1,mq2;
+		MQueue mqueue;
+		std::atomic_uint wpos = { 0 }; // позиция на запись
+		std::atomic_uint rpos = { 0 }; // позиция на чтение
+		std::atomic_uint mpos = { 0 }; // текущая позиция последнего элемента (max position) (реально добавленного в очередь)
+		LostStrategy lostStrategy = { lostOldData };
 
 		/*! размер очереди сообщений (при превышении происходит очистка) */
 		size_t SizeOfMessageQueue = { 2000 };
-
-		/*! сколько сообщений удалять при очисте */
-		size_t MaxCountRemoveOfMessage = { 500 };
-
-		/*! замок для блокирования совместного доступа к очереди */
-		UniSetTypes::uniset_rwmutex qmutex;
 
 		// статистическая информация
 		size_t stMaxQueueMessages = { 0 };    /*!< Максимальное число сообщений хранившихся в очереди */

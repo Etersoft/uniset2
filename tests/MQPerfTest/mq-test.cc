@@ -1,5 +1,6 @@
 #include <string>
 #include <iostream>
+#include <assert.h>
 #include <thread>
 #include <atomic>
 #include "UMessageQueue.h"
@@ -57,6 +58,17 @@ int main(int argc, const char** argv)
 
 		// чтобы не происходило переполнение
 		mq.setMaxSizeOfMessageQueue(COUNT+1);
+
+		// сперва просто проверка что очередь работает.
+		{
+			SensorMessage sm(100,2);
+			TransportMessage tm( std::move(sm.transport_msg()) );
+			mq.push(tm);
+			auto msg = mq.top();
+			assert( msg!=nullptr );
+			SensorMessage sm2( msg.get() );
+			assert( sm.id == sm2.id );
+		}
 
 		vector<int> res;
 		res.reserve(tnum);

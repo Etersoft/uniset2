@@ -160,14 +160,7 @@ void UniSetObject::initObject()
 	if( sz > 0 )
 		mqueue.setMaxSizeOfMessageQueue(sz);
 
-	int maxremove = conf->getArgPInt("--uniset-object-maxcount-remove-message", conf->getField("MaxCountRemoveOfMessage"), sz / 4);
-	if( maxremove > 0 )
-		mqueue.setMaxCountRemoveOfMessage(maxremove);
-
-	//    workingTerminateTimeout = conf->getArgPInt("--uniset-object-working-terminate-timeout",conf->getField("WorkingTerminateTimeout"),2000);
-
 	uinfo << myname << "(init): SizeOfMessageQueue=" << mqueue.getMaxSizeOfMessageQueue()
-		  << " MaxCountRemoveOfMessage=" << mqueue.getMaxCountRemoveOfMessage()
 		  << endl;
 }
 // ------------------------------------------------------------------------------------------
