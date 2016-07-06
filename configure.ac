@@ -377,6 +377,7 @@ AC_CONFIG_FILES([Makefile
 				 include/modbus/Makefile
 				 tests/Makefile
 				 tests/UniXmlTest/Makefile
+				 tests/MQPerfTest/Makefile
 				 docs/Makefile
 				 docs/UniSetDox.cfg
 				 docs/UniSetDoxDevel.cfg

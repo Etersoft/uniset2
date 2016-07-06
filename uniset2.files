@@ -469,6 +469,7 @@ tests/tests_with_conf.xml
 tests/threadtst.cc
 tests/umutex.cc
 tests/perf_test.cc
+tests/MQPerfTest/mq-test.cc
 testsuite/Makefile.am
 Utilities/Admin/admin.cc
 Utilities/Admin/Makefile.am

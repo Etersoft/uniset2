@@ -50,11 +50,7 @@ UniSetObject::UniSetObject():
 	active(0),
 	threadcreate(false),
 	myid(UniSetTypes::DefaultObjectId),
-	oref(0),
-	SizeOfMessageQueue(1000),
-	MaxCountRemoveOfMessage(10),
-	stMaxQueueMessages(0),
-	stCountOfQueueFull(0)
+	oref(0)
 {
 	ui = make_shared<UInterface>(UniSetTypes::DefaultObjectId);
 
@@ -70,11 +66,7 @@ UniSetObject::UniSetObject( ObjectId id ):
 	active(0),
 	threadcreate(true),
 	myid(id),
-	oref(0),
-	SizeOfMessageQueue(1000),
-	MaxCountRemoveOfMessage(10),
-	stMaxQueueMessages(0),
-	stCountOfQueueFull(0)
+	oref(0)
 {
 	ui = make_shared<UInterface>(id);
 	tmr = CREATE_TIMER;
@@ -103,11 +95,7 @@ UniSetObject::UniSetObject( const string& name, const string& section ):
 	active(0),
 	threadcreate(true),
 	myid(UniSetTypes::DefaultObjectId),
-	oref(0),
-	SizeOfMessageQueue(1000),
-	MaxCountRemoveOfMessage(10),
-	stMaxQueueMessages(0),
-	stCountOfQueueFull(0)
+	oref(0)
 {
 	ui = make_shared<UInterface>(UniSetTypes::DefaultObjectId);
 
@@ -163,22 +151,23 @@ void UniSetObject::initObject()
 	a_working = ATOMIC_VAR_INIT(0);
 	active = ATOMIC_VAR_INIT(0);
 
-	qmutex.setName(myname + "_qmutex");
 	refmutex.setName(myname + "_refmutex");
 	//    mutex_act.setName(myname + "_mutex_act");
 
-	// устанавливаем указатели очередей
-	wQueue = &queueMsg1;
-	rQueue = &queueMsg2;
-
 	auto conf = uniset_conf();
 
-	SizeOfMessageQueue = conf->getArgPInt("--uniset-object-size-message-queue", conf->getField("SizeOfMessageQueue"), 1000);
-	MaxCountRemoveOfMessage = conf->getArgPInt("--uniset-object-maxcount-remove-message", conf->getField("MaxCountRemoveOfMessage"), SizeOfMessageQueue / 4);
+	int sz = conf->getArgPInt("--uniset-object-size-message-queue", conf->getField("SizeOfMessageQueue"), 1000);
+	if( sz > 0 )
+		mqueue.setMaxSizeOfMessageQueue(sz);
+
+	int maxremove = conf->getArgPInt("--uniset-object-maxcount-remove-message", conf->getField("MaxCountRemoveOfMessage"), sz / 4);
+	if( maxremove > 0 )
+		mqueue.setMaxCountRemoveOfMessage(maxremove);
+
 	//    workingTerminateTimeout = conf->getArgPInt("--uniset-object-working-terminate-timeout",conf->getField("WorkingTerminateTimeout"),2000);
 
-	uinfo << myname << "(init): SizeOfMessageQueue=" << SizeOfMessageQueue
-		  << " MaxCountRemoveOfMessage=" << MaxCountRemoveOfMessage
+	uinfo << myname << "(init): SizeOfMessageQueue=" << mqueue.getMaxSizeOfMessageQueue()
+		  << " MaxCountRemoveOfMessage=" << mqueue.getMaxCountRemoveOfMessage()
 		  << endl;
 }
 // ------------------------------------------------------------------------------------------
@@ -214,131 +203,8 @@ void UniSetObject::setID( UniSetTypes::ObjectId id )
 */
 VoidMessagePtr UniSetObject::receiveMessage()
 {
-	// здесь работаем со своей очередью без блокировки
-	if( !rQueue->empty() )
-	{
-		auto m = rQueue->top(); // получили сообщение
-		rQueue->pop(); // удалили сообщение из очереди
-		return m;
-	}
-
-	// Если своя очередь пуста
-	// то смотрим вторую
-	{
-		// lock
-		uniset_rwmutex_wrlock mlk(qmutex);
-
-		if( !wQueue->empty() )
-		{
-			// контроль переполнения
-			if( wQueue->size() > SizeOfMessageQueue )
-			{
-				ucrit << myname << "(receiveMessages): messages queue overflow!" << endl << flush;
-				cleanMsgQueue(*wQueue);
-				// обновляем статистику по переполнениям
-				stCountOfQueueFull++;
-				stMaxQueueMessages = 0;
-			}
-
-			if( !wQueue->empty() )
-			{
-				auto m = wQueue->top(); // получили сообщение
-				wQueue->pop(); // удалили сообщение из очереди
-
-				// меняем очереди местами
-				std::swap(rQueue,wQueue);
-				return m;
-			}
-		}
-	} // unlock queue
-
-	return false;
+	return mqueue.top();
 }
-
-// ------------------------------------------------------------------------------------------
-// структура определяющая минимальное количество полей
-// по которым можно судить о схожести сообщений
-// используется локально и только в функции очистки очереди сообщений
-struct MsgInfo
-{
-	MsgInfo():
-		type(Message::Unused),
-		id(DefaultObjectId),
-		node(DefaultObjectId)
-	{
-		//        struct timezone tz;
-		tm.tv_sec = 0;
-		tm.tv_usec = 0;
-		//        gettimeofday(&tm,&tz);
-	}
-
-	int type;
-	ObjectId id;        // от кого
-	struct timeval tm;    // время
-	ObjectId node;        // откуда
-
-	inline bool operator < ( const MsgInfo& mi ) const
-	{
-		if( type != mi.type )
-			return type < mi.type;
-
-		if( id != mi.id )
-			return id < mi.id;
-
-		if( node != mi.node )
-			return node < mi.node;
-
-		if( tm.tv_sec != mi.tm.tv_sec )
-			return tm.tv_sec < mi.tm.tv_sec;
-
-		return tm.tv_usec < mi.tm.tv_usec;
-	}
-
-};
-
-// структура определяющая минимальное количество полей
-// по которым можно судить о схожести сообщений
-// используется локально и только в функции очистки очереди сообщений
-struct CInfo
-{
-	CInfo():
-		sensor_id(DefaultObjectId),
-		value(0),
-		time(0),
-		time_usec(0),
-		confirm(0)
-	{
-	}
-
-	explicit CInfo( ConfirmMessage& cm ):
-		sensor_id(cm.sensor_id),
-		value(cm.value),
-		time(cm.time),
-		time_usec(cm.time_usec),
-		confirm(cm.confirm)
-	{}
-
-	long sensor_id;   /* ID датчика */
-	double value;     /* значение датчика */
-	time_t time;      /* время, когда датчик получил сигнал */
-	time_t time_usec; /* время в микросекундах */
-	time_t confirm;   /* время, когда произошло квитирование */
-
-	inline bool operator < ( const CInfo& mi ) const
-	{
-		if( sensor_id != mi.sensor_id )
-			return sensor_id < mi.sensor_id;
-
-		if( value != mi.value )
-			return value < mi.value;
-
-		if( time != mi.time )
-			return time < mi.time;
-
-		return time_usec < mi.time_usec;
-	}
-};
-
 // ------------------------------------------------------------------------------------------
 VoidMessagePtr UniSetObject::waitMessage( timeout_t timeMS )
 {
@@ -478,171 +344,18 @@ void UniSetObject::setThreadPriority( int p )
 // ------------------------------------------------------------------------------------------
 void UniSetObject::push( const TransportMessage& tm )
 {
-	{
-		// lock
-		uniset_rwmutex_wrlock mlk(qmutex);
-
-		// контроль переполнения
-		if( !wQueue->empty() && wQueue->size() > SizeOfMessageQueue )
-		{
-			ucrit << myname << "(push): message queue overflow!" << endl << flush;
-			cleanMsgQueue(*wQueue);
-
-			// обновляем статистику
-			stCountOfQueueFull++;
-			stMaxQueueMessages = 0;
-		}
-
-		auto v = make_shared<VoidMessage>(tm);
-		wQueue->push(v);
-
-		// максимальное число ( для статистики )
-		if( wQueue->size() > stMaxQueueMessages )
-			stMaxQueueMessages = wQueue->size();
-
-	} // unlock
-
+	mqueue.push(tm);
 	termWaiting();
 }
 // ------------------------------------------------------------------------------------------
-struct tmpConsumerInfo
+size_t UniSetObject::countMessages()
 {
-	tmpConsumerInfo() {}
-
-	unordered_map<UniSetTypes::KeyType, VoidMessagePtr> smap;
-	unordered_map<int, VoidMessagePtr> tmap;
-	unordered_map<int, VoidMessagePtr> sysmap;
-	std::map<CInfo, VoidMessagePtr> cmap;
-	list<VoidMessagePtr> lstOther;
-};
-
-void UniSetObject::cleanMsgQueue( MessagesQueue& q )
-{
-	ucrit << myname << "(cleanMsgQueue): msg queue cleaning..." << endl << flush;
-	ucrit << myname << "(cleanMsgQueue): current size of queue: " << q.size() << endl << flush;
-
-	// проходим по всем известным нам типам(базовым)
-	// ищем все совпадающие сообщения и оставляем только последние...
-	VoidMessage m;
-	unordered_map<UniSetTypes::ObjectId, tmpConsumerInfo> consumermap;
-
-	//        while( receiveMessage(vm) );
-	//        while нельзя использовать потому-что, из параллельного потока
-	//        могут запихивать в очередь ещё сообщения.. И это цикл никогда не прервётся...
-
-	while( !q.empty() )
-	{
-		auto m = q.top();
-		q.pop();
-
-		switch( m->type )
-		{
-			case Message::SensorInfo:
-			{
-				SensorMessage sm(m.get());
-				UniSetTypes::KeyType k(key(sm.id, sm.node));
-				// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
-				// то достаточно просто сохранять последнее сообщение для одинаковых Key
-				consumermap[sm.consumer].smap[k] = m;
-			}
-			break;
-
-			case Message::Timer:
-			{
-				TimerMessage tm(m.get());
-				// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
-				// то достаточно просто сохранять последнее сообщение для одинаковых TimerId
-				consumermap[tm.consumer].tmap[tm.id] = m;
-			}
-			break;
-
-			case Message::SysCommand:
-			{
-				SystemMessage sm(m.get());
-				consumermap[sm.consumer].sysmap[sm.command] = m;
-			}
-			break;
-
-			case Message::Confirm:
-			{
-				ConfirmMessage cm(m.get());
-				CInfo ci(cm);
-				// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
-				// то достаточно просто сохранять последнее сообщение для одинаковых MsgInfo
-				consumermap[cm.consumer].cmap[ci] = m;
-			}
-			break;
-
-			case Message::Unused:
-				// просто выкидываем (игнорируем)
-				break;
-
-			default:
-				// сразу помещаем в очередь
-				consumermap[m->consumer].lstOther.push_front(m);
-				break;
-
-		}
-	}
-
-	ucrit << myname << "(cleanMsgQueue): ******** cleanup RESULT ********" << endl;
-
-	for( auto& c : consumermap )
-	{
-		ucrit << myname << "(cleanMsgQueue): CONSUMER=" << c.first << endl;
-		ucrit << myname << "(cleanMsgQueue): after clean SensorMessage: " << c.second.smap.size() << endl;
-		ucrit << myname << "(cleanMsgQueue): after clean TimerMessage: " << c.second.tmap.size() << endl;
-		ucrit << myname << "(cleanMsgQueue): after clean SystemMessage: " << c.second.sysmap.size() << endl;
-		ucrit << myname << "(cleanMsgQueue): after clean ConfirmMessage: " << c.second.cmap.size() << endl;
-		ucrit << myname << "(cleanMsgQueue): after clean other: " << c.second.lstOther.size() << endl;
-
-		// теперь ОСТАВШИЕСЯ запихиваем обратно в очередь...
-		for( auto& v : c.second.smap )
-			q.push(v.second);
-
-		for( auto& v : c.second.tmap )
-			q.push(v.second);
-
-		for( auto& v : c.second.sysmap )
-			q.push(v.second);
-
-		for( auto& v : c.second.cmap )
-			q.push(v.second);
-
-		for( auto& v : c.second.lstOther )
-			q.push(v);
-	}
-
-	ucrit << myname
-		  << "(cleanMsgQueue): ******* result size of queue: "
-		  << q.size()
-		  << " < " << getMaxSizeOfMessageQueue() << endl;
-
-	if( q.size() >= getMaxSizeOfMessageQueue() )
-	{
-		ucrit << myname << "(cleanMsgQueue): clean failed. size > " << q.size() << endl;
-		ucrit << myname << "(cleanMsgQueue): remove " << getMaxCountRemoveOfMessage() << " old messages " << endl;
-
-		for( unsigned int i = 0; i < getMaxCountRemoveOfMessage(); i++ )
-		{
-			q.top();
-			q.pop();
-
-			if( q.empty() )
-				break;
-		}
-
-		ucrit << myname << "(cleanMsgQueue): result size=" << q.size() << endl;
-	}
+	return mqueue.size();
 }
 // ------------------------------------------------------------------------------------------
-unsigned int UniSetObject::countMessages()
+size_t UniSetObject::getCountOfQueueFull()
 {
-	{
-		// lock
-		uniset_rwmutex_rlock mlk(qmutex);
-		return wQueue->size() + rQueue->size();
-	}
+	return mqueue.getCountOfQueueFull();
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::sigterm( int signo )
@@ -680,18 +393,6 @@ bool UniSetObject::deactivate()
 
 		if( a_working )
 			thr->stop();
-	}
-
-	// Очищаем очередь
-	{
-		// lock
-		uniset_rwmutex_wrlock mlk(qmutex);
-
-		while( !wQueue->empty() )
-			wQueue->pop();
-
-		while( !rQueue->empty() )
-			rQueue->pop();
 	}
 
 	try
@@ -968,8 +669,8 @@ UniSetTypes::SimpleInfo* UniSetObject::getInfo( ::CORBA::Long userparam )
 		info << "откл.";
 
 	info << "\tcount=" << countMessages();
-	info << "\tmaxMsg=" << stMaxQueueMessages;
-	info << "\tqFull(" << SizeOfMessageQueue << ")=" << stCountOfQueueFull;
+	info << "\tmaxMsg=" << mqueue.getMaxQueueMessages();
+	info << "\tqFull(" << mqueue.getMaxSizeOfMessageQueue() << ")=" << mqueue.getCountOfQueueFull();
 	//    info << "\n";
 
 	SimpleInfo* res = new SimpleInfo();
@@ -983,21 +684,6 @@ ostream& operator<<(ostream& os, UniSetObject& obj )
 {
 	SimpleInfo_var si = obj.getInfo();
 	return os << si->info;
-}
-// ------------------------------------------------------------------------------------------
-
-bool UniSetObject::PriorVMsgCompare::operator()(const VoidMessagePtr& lhs,
-		const VoidMessagePtr& rhs) const
-{
-	if( lhs->priority == rhs->priority )
-	{
-		if( lhs->tm.tv_sec == rhs->tm.tv_sec )
-			return lhs->tm.tv_usec >= rhs->tm.tv_usec;
-
-		return lhs->tm.tv_sec >= rhs->tm.tv_sec;
-	}
-
-	return lhs->priority < rhs->priority;
 }
 // ------------------------------------------------------------------------------------------
 #undef CREATE_TIMER

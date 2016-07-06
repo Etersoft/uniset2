@@ -1,3 +1,4 @@
+SUBDIRS=MQPerfTest
 if HAVE_TESTS
 ############################################################################
 # This file is part of the UniSet library								  #

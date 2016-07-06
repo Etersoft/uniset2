@@ -29,7 +29,6 @@
 #include <atomic>
 #include <unistd.h>
 #include <sys/time.h>
-#include <queue>
 #include <ostream>
 #include <memory>
 #include <string>
@@ -43,6 +42,7 @@
 #include "UniSetObject_i.hh"
 #include "ThreadCreator.h"
 #include "LT_Object.h"
+#include "UMessageQueue.h"
 
 //---------------------------------------------------------------------------
 //#include <omnithread.h>
@@ -53,8 +53,6 @@ class UniSetManager;
 //---------------------------------------------------------------------------
 class UniSetObject;
 typedef std::list< std::shared_ptr<UniSetObject> > ObjectsList;     /*!< Список подчиненных объектов */
-
-typedef std::shared_ptr<UniSetTypes::VoidMessage> VoidMessagePtr;
 //---------------------------------------------------------------------------
 /*! \class UniSetObject
  *    Класс реализует работу uniset-объекта: работа с очередью сообщений, регистрация объекта, инициализация и т.п.
@@ -65,39 +63,6 @@ typedef std::shared_ptr<UniSetTypes::VoidMessage> VoidMessagePtr;
  *    Также создание потока можно принудительно отключить при помощи функции void thread(false). Ее необходимо вызвать до активации объекта
  *    (например в конструкторе). При этом ответственность за вызов receiveMessage() и processingMessage() возлагается
  *    на разработчика.
- *
- * Сообщения извлекаются из очереди в порядке приоритета сообщения. При одинаковом приоритете - в порядке поступления в очередь.
- *
- * Максимальное ограничение на размер очереди сообщений задаётся параметром
- * --uniset-object-size-message-queue val или параметром SizeOfMessageQueue в конфигурационном файле.
- * А также при помощи фунции setMaxSizeOfMessageQueue().
- *
- * Контроль переполения очереди осуществляется в двух местах push и receiveMessage.
- * При переполнении очереди, происходит автоматическая очистка в два этапа.
- * Первый: производиться попытка "свёртки" сообщений.
- * Из очереди все повторяющиеся
- * - SensorMessage
- * - TimerMessage
- * - SystemMessage
- * Если это не помогло, то производиться второй этап "чистки":
- * Из очереди удаляется MaxCountRemoveOfMessage сообщений.
- * Этот парамер задаётся при помощи --uniset-object-maxcount-remove-message или MaxCountRemoveOfMessage в конфигурационном файле.
- * А также при помощи фунции setMaxCountRemoveOfMessage().
- *
- * Очистка реализована в функции cleanMsgQueue();
- *
- * \note Для специфичной обработки может быть переопределена
- * \warning Т.к. при фильтровании SensorMessage не смотрится значение,
- * то при удалении сообщений об изменении аналоговых датчиков очистка может привести
- * к некорректной работе фильрующих алгоритмов работающих с "выборкой" последних N значений.
- * (потому-что останется одно последнее)
- *
- *
- *	ОПТИМИЗАЦИЯ N1:
- * Для того, чтобы функции push() и receiveMessage() реже "сталкавались" на mutex-е очереди сообщений.
- * Сделано две очереди сообщений. Одна очередь сообщений наполняется в push() (с блокировкой mutex-а),
- * а вторая (без блокировки) обрабатывается в receiveMessage(). Как только сообщения заканчиваются в
- * receiveMessage() очереди меняются местами (при этом захватывается mutex).
  *
 */
 class UniSetObject:
@@ -163,7 +128,8 @@ class UniSetObject:
 		VoidMessagePtr receiveMessage();
 
 		/*! текущее количесво сообщений в очереди */
-		unsigned int countMessages();
+		size_t countMessages();
+		size_t getCountOfQueueFull();
 
 		/*! прервать ожидание сообщений */
 		void termWaiting();
@@ -221,36 +187,23 @@ class UniSetObject:
 
 		void setMaxSizeOfMessageQueue( size_t s )
 		{
-			SizeOfMessageQueue = s;
+			mqueue.setMaxSizeOfMessageQueue(s);
 		}
 
-		inline unsigned int getMaxSizeOfMessageQueue()
+		inline size_t getMaxSizeOfMessageQueue()
 		{
-			return SizeOfMessageQueue;
+			return mqueue.getMaxSizeOfMessageQueue();
 		}
 
 		void setMaxCountRemoveOfMessage( size_t m )
 		{
-			MaxCountRemoveOfMessage = m;
+			mqueue.setMaxCountRemoveOfMessage(m);
 		}
 
-		inline unsigned int getMaxCountRemoveOfMessage()
+		inline size_t getMaxCountRemoveOfMessage()
 		{
-			return MaxCountRemoveOfMessage;
+			return mqueue.getMaxCountRemoveOfMessage();
 		}
-
-		// функция определения приоритетного сообщения для обработки
-		struct PriorVMsgCompare:
-			public std::binary_function<VoidMessagePtr, VoidMessagePtr, bool>
-		{
-			bool operator()(const VoidMessagePtr& lhs,
-							const VoidMessagePtr& rhs) const;
-		};
-
-		typedef std::priority_queue<VoidMessagePtr, std::vector<VoidMessagePtr>, PriorVMsgCompare> MessagesQueue;
-
-		/*! Чистка очереди сообщений */
-		virtual void cleanMsgQueue( MessagesQueue& q );
 
 		inline bool isActive()
 		{
@@ -264,19 +217,6 @@ class UniSetObject:
 		std::weak_ptr<UniSetManager> mymngr;
 
 		void setThreadPriority( int p );
-
-		// ------- Статистика -------
-		/*! максимальное количество которое было в очереди сообщений */
-		inline size_t getMaxQueueMessages()
-		{
-			return stMaxQueueMessages;
-		}
-
-		/*! сколько раз очередь переполнялась */
-		inline size_t getCountOfQueueFull()
-		{
-			return stCountOfQueueFull;
-		}
 
 	private:
 
@@ -315,24 +255,10 @@ class UniSetObject:
 		std::shared_ptr< ThreadCreator<UniSetObject> > thr;
 
 		/*! очередь сообщений для объекта */
-		MessagesQueue queueMsg1,queueMsg2; // две очереди..
-		MessagesQueue* wQueue = { nullptr }; // указатель на текущую очередь на запись
-		MessagesQueue* rQueue = { nullptr }; // указатель на текущую очередь на чтение
-
-		/*! замок для блокирования совместного доступа к очереди */
-		UniSetTypes::uniset_rwmutex qmutex;
+		UMessageQueue mqueue;
 
 		/*! замок для блокирования совместного доступа к oRef */
 		mutable UniSetTypes::uniset_rwmutex refmutex;
-
-		/*! размер очереди сообщений (при превышении происходит очистка) */
-		size_t SizeOfMessageQueue;
-		/*! сколько сообщений удалять при очисте */
-		size_t MaxCountRemoveOfMessage;
-
-		// статистическая информация
-		size_t stMaxQueueMessages = { 0 };    /*!< Максимальное число сообщений хранившихся в очереди */
-		size_t stCountOfQueueFull = { 0 };    /*!< количество переполнений очереди сообщений */
 
 		std::atomic_bool a_working;
 		std::mutex    m_working;
