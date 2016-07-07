@@ -17,12 +17,13 @@ void mq_write_thread()
 {
 	SensorMessage smsg(100,2);
 	TransportMessage tm( std::move(smsg.transport_msg()) );
+	auto vm = make_shared<VoidMessage>(tm);
 
 	msleep(100);
 
 	for( size_t i=0; i<COUNT; i++ )
 	{
-		mq.push(tm);
+		mq.push(vm);
 	}
 }
 // --------------------------------------------------------------------------
@@ -63,7 +64,8 @@ int main(int argc, const char** argv)
 		{
 			SensorMessage sm(100,2);
 			TransportMessage tm( std::move(sm.transport_msg()) );
-			mq.push(tm);
+			auto vm = make_shared<VoidMessage>(tm);
+			mq.push(vm);
 			auto msg = mq.top();
 			assert( msg!=nullptr );
 			SensorMessage sm2( msg.get() );

@@ -55,14 +55,19 @@ class UniSetObject;
 typedef std::list< std::shared_ptr<UniSetObject> > ObjectsList;     /*!< Список подчиненных объектов */
 //---------------------------------------------------------------------------
 /*! \class UniSetObject
- *    Класс реализует работу uniset-объекта: работа с очередью сообщений, регистрация объекта, инициализация и т.п.
- *    Для ожидания сообщений используется функция waitMessage(msec), основанная на таймере.
- *    Ожидание прерывается либо по истечении указанного времени, либо по приходу сообщения, при помощи функциии
- *    termWaiting() вызываемой из push().
- *     \note Если не будет задан ObjectId(-1), то поток обработки запущен не будет.
- *    Также создание потока можно принудительно отключить при помощи функции void thread(false). Ее необходимо вызвать до активации объекта
- *    (например в конструкторе). При этом ответственность за вызов receiveMessage() и processingMessage() возлагается
- *    на разработчика.
+ *  Класс реализует работу uniset-объекта: работа с очередью сообщений, регистрация объекта, инициализация и т.п.
+ *	Обработка сообщений ведётся в специально создаваемом потоке.
+ *  Для ожидания сообщений используется функция waitMessage(msec), основанная на таймере.
+ *  Ожидание прерывается либо по истечении указанного времени, либо по приходу сообщения, при помощи функциии
+ *  termWaiting() вызываемой из push().
+ *  \note Если не будет задан ObjectId(-1), то поток обработки запущен не будет.
+ *  Также создание потока можно принудительно отключить при помощи функции void thread(false). Ее необходимо вызвать до активации объекта
+ *  (например в конструкторе). При этом ответственность за вызов receiveMessage() и processingMessage() возлагается
+ *  на разработчика.
+ *
+ *	Имеется три очереди сообщений, по приоритетам: Hi, Medium, Low.
+ * Соответственно сообщения вынимаются в порядке поступления, но сперва из Hi, потом из Medium, а потом из Low очереди.
+ * \warning Если сообщения будут поступать в Hi или Medium очередь быстрее чем они обрабатываются, то до Low сообщений дело может и не дойти.
  *
 */
 class UniSetObject:
@@ -71,8 +76,8 @@ class UniSetObject:
 	public LT_Object
 {
 	public:
-		UniSetObject(const std::string& name, const std::string& section);
-		UniSetObject(UniSetTypes::ObjectId id);
+		UniSetObject( const std::string& name, const std::string& section );
+		UniSetObject( UniSetTypes::ObjectId id );
 		UniSetObject();
 		virtual ~UniSetObject();
 
@@ -107,6 +112,8 @@ class UniSetObject:
 		//! поместить сообщение в очередь
 		virtual void push( const UniSetTypes::TransportMessage& msg ) override;
 
+
+		// -------------- вспомогательные --------------
 		/*! получить ссылку (на себя) */
 		inline UniSetTypes::ObjectPtr getRef() const
 		{
@@ -114,12 +121,21 @@ class UniSetObject:
 			return (UniSetTypes::ObjectPtr)CORBA::Object::_duplicate(oref);
 		}
 
+		/*! заказ таймера (вынесена в public, хотя должна была бы быть в protected */
 		virtual timeout_t askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks = -1,
 									UniSetTypes::Message::Priority p = UniSetTypes::Message::High ) override;
 
 	protected:
+
+		std::shared_ptr<UInterface> ui; /*!< универсальный интерфейс для работы с другими процессами */
+		std::string myname;
+		std::string section;
+		std::weak_ptr<UniSetManager> mymngr;
+
 		/*! обработка приходящих сообщений */
 		virtual void processingMessage( const UniSetTypes::VoidMessage* msg );
+
+		// конкретные виды сообщений
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) {}
 		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) {}
 		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) {}
@@ -127,30 +143,46 @@ class UniSetObject:
 		/*! Получить сообщение */
 		VoidMessagePtr receiveMessage();
 
-		/*! текущее количесво сообщений в очереди */
-		size_t countMessages();
-		size_t getCountOfQueueFull();
+		/*! Ожидать сообщения заданное время */
+		virtual VoidMessagePtr waitMessage( timeout_t msec = UniSetTimer::WaitUpTime );
 
 		/*! прервать ожидание сообщений */
 		void termWaiting();
 
-		std::shared_ptr<UInterface> ui; /*!< универсальный интерфейс для работы с другими процессами */
-		std::string myname;
-		std::string section;
+		/*! текущее количесво сообщений в очереди */
+		size_t countMessages();
 
-		//! Дизактивизация объекта (переопределяется для необходимых действий перед деактивацией)
-		virtual bool deactivateObject()
-		{
-			return true;
-		}
+		/*! количество раз перполнения очереди сообщений */
+		size_t getCountOfQueueFull();
+
 		//! Активизация объекта (переопределяется для необходимых действий после активизации)
 		virtual bool activateObject()
 		{
 			return true;
 		}
 
+		//! Деактивиция объекта (переопределяется для необходимых действий перед деактивацией)
+		virtual bool deactivateObject()
+		{
+			return true;
+		}
+
+		/*! Функция вызываемая при приходе сигнала завершения или прерывания процесса. Переопределив ее можно
+		 *    выполнять специфичные для процесса действия по обработке сигнала.
+		 *    Например переход в безопасное состояние.
+		 *  \warning В обработчике сигналов \b ЗАПРЕЩЕНО вызывать функции подобные exit(..), abort()!!!!
+		*/
+		virtual void sigterm( int signo );
+
+		inline void terminate()
+		{
+			deactivate();
+		}
+
+		// управление созданием потока обработки сообщений -------
+
 		/*! запрет(разрешение) создания потока для обработки сообщений */
-		inline void thread(bool create)
+		inline void thread( bool create )
 		{
 			threadcreate = create;
 		}
@@ -168,55 +200,38 @@ class UniSetObject:
 		/*! функция вызываемая из потока */
 		virtual void callback();
 
-		/*! Функция вызываемая при приходе сигнала завершения или прерывания процесса. Переопределив ее можно
-		 *    выполнять специфичные для процесса действия по обработке сигнала.
-		 *    Например переход в безопасное состояние.
-		 *  \warning В обработчике сигналов \b ЗАПРЕЩЕНО вызывать функции подобные exit(..), abort()!!!!
-		*/
-		virtual void sigterm( int signo );
-
-		inline void terminate()
-		{
-			deactivate();
-		}
-
-		/*! Ожидать сообщения timeMS */
-		virtual VoidMessagePtr waitMessage( timeout_t timeMS = UniSetTimer::WaitUpTime );
-
+		// ----- конфигурирование объекта -------
+		/*! установка ID объекта */
 		void setID(UniSetTypes::ObjectId id);
 
-		void setMaxSizeOfMessageQueue( size_t s )
-		{
-			mqueue.setMaxSizeOfMessageQueue(s);
-		}
+		/*! установить приоритет для потока обработки сообщений (если позволяют права и система) */
+		void setThreadPriority( int p );
 
+		/*! установка размера очереди сообщений */
+		void setMaxSizeOfMessageQueue( size_t s );
+
+		/*! получить размер очереди сообщений */
 		inline size_t getMaxSizeOfMessageQueue()
 		{
-			return mqueue.getMaxSizeOfMessageQueue();
+			return mqueueMedium.getMaxSizeOfMessageQueue();
 		}
 
+		/*! проверка "активности" объекта */
 		inline bool isActive()
 		{
 			return active;
 		}
+
+		/*! false - завершить работу потока обработки сообщений */
 		inline void setActive( bool set )
 		{
 			active = set;
 		}
 
-		std::weak_ptr<UniSetManager> mymngr;
-
-		void setThreadPriority( int p );
-
 	private:
 
 		friend class UniSetManager;
 		friend class UniSetActivator;
-
-		inline pid_t getMsgPID()
-		{
-			return msgpid;
-		}
 
 		/*! функция потока */
 		void work();
@@ -242,18 +257,19 @@ class UniSetObject:
 		UniSetTypes::ObjectId myid;
 		CORBA::Object_var oref;
 
-		std::shared_ptr< ThreadCreator<UniSetObject> > thr;
-
-		/*! очередь сообщений для объекта */
-		UMessageQueue mqueue;
-
 		/*! замок для блокирования совместного доступа к oRef */
 		mutable UniSetTypes::uniset_rwmutex refmutex;
+
+		std::shared_ptr< ThreadCreator<UniSetObject> > thr;
+
+		/*! очереди сообщений в зависимости от приоритета */
+		UMessageQueue mqueueLow;
+		UMessageQueue mqueueMedium;
+		UMessageQueue mqueueHi;
 
 		std::atomic_bool a_working;
 		std::mutex    m_working;
 		std::condition_variable cv_working;
-		//            timeout_t workingTerminateTimeout; /*!< время ожидания завершения потока */
 };
 //---------------------------------------------------------------------------
 #endif

@@ -284,8 +284,6 @@ bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode*
 		inf->priority = Message::Medium;
 	else if( prior == "High" )
 		inf->priority = Message::High;
-	else if( prior == "Super" )
-		inf->priority = Message::Super;
 	else
 		inf->priority = Message::Medium;
 

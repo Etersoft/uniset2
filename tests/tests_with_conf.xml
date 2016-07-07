@@ -43,6 +43,10 @@
 
 </UniSet>
 
+	<settings>
+		<TestUObject name="TestUObject1" />
+	</settings>
+
 	<dlog name="dlog" levels="" file=""/>
 
 <ObjectsMap idfromfile="1">
@@ -87,6 +91,7 @@
 		<item id="101" name="TestProc2"/>
 		<item id="102" name="TestProc3"/>
 		<item id="103" name="TestProc4"/>
+		<item id="104" name="TestUObject1"/>
 	</objects>
 </ObjectsMap>
 

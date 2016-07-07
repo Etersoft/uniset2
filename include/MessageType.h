@@ -49,8 +49,7 @@ namespace UniSetTypes
 			{
 				Low,
 				Medium,
-				High,
-				Super
+				High
 			};
 
 			Priority priority = { Medium };

@@ -36,7 +36,8 @@ test_ui.cc \
 test_iorfile.cc \
 test_messagetype.cc \
 test_utypes.cc \
-test_mqueue.cc
+test_mqueue.cc \
+test_uobject.cc
 
 # threadtst_SOURCES = threadtst.cc
 # threadtst_LDADD 	= $(top_builddir)/lib/libUniSet2.la ${SIGC_LIBS} $(COMCPP_LIBS)

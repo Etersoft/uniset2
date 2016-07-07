@@ -117,33 +117,6 @@ UniSetObject::UniSetObject( const string& name, const string& section ):
 // ------------------------------------------------------------------------------------------
 UniSetObject::~UniSetObject()
 {
-#if 0
-
-	try
-	{
-		deactivate();
-	}
-	catch(...) {}
-
-	try
-	{
-		tmr->terminate();
-	}
-	catch(...) {}
-
-	if( thr )
-	{
-		try
-		{
-			thr->stop();
-
-			if( thr->isRunning() )
-				thr->join();
-		}
-		catch(...) {}
-	}
-
-#endif
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::initObject()
@@ -158,9 +131,9 @@ void UniSetObject::initObject()
 
 	int sz = conf->getArgPInt("--uniset-object-size-message-queue", conf->getField("SizeOfMessageQueue"), 1000);
 	if( sz > 0 )
-		mqueue.setMaxSizeOfMessageQueue(sz);
+		setMaxSizeOfMessageQueue(sz);
 
-	uinfo << myname << "(init): SizeOfMessageQueue=" << mqueue.getMaxSizeOfMessageQueue()
+	uinfo << myname << "(init): SizeOfMessageQueue=" << getMaxSizeOfMessageQueue()
 		  << endl;
 }
 // ------------------------------------------------------------------------------------------
@@ -188,7 +161,13 @@ void UniSetObject::setID( UniSetTypes::ObjectId id )
 	myid = id;
 	ui->initBackId(myid);
 }
-
+// ------------------------------------------------------------------------------------------
+void UniSetObject::setMaxSizeOfMessageQueue(size_t s)
+{
+	mqueueMedium.setMaxSizeOfMessageQueue(s);
+	mqueueLow.setMaxSizeOfMessageQueue(s);
+	mqueueHi.setMaxSizeOfMessageQueue(s);
+}
 // ------------------------------------------------------------------------------------------
 /*!
  *    \param  vm - указатель на структуру, которая заполняется если есть сообщение
@@ -196,7 +175,13 @@ void UniSetObject::setID( UniSetTypes::ObjectId id )
 */
 VoidMessagePtr UniSetObject::receiveMessage()
 {
-	return mqueue.top();
+	if( !mqueueHi.empty() )
+		return mqueueHi.top();
+
+	if( !mqueueMedium.empty() )
+		return mqueueMedium.top();
+
+	return mqueueLow.top();
 }
 // ------------------------------------------------------------------------------------------
 VoidMessagePtr UniSetObject::waitMessage( timeout_t timeMS )
@@ -337,18 +322,29 @@ void UniSetObject::setThreadPriority( int p )
 // ------------------------------------------------------------------------------------------
 void UniSetObject::push( const TransportMessage& tm )
 {
-	mqueue.push(tm);
+	auto vm = make_shared<VoidMessage>(tm);
+	if( vm->priority == Message::Medium )
+		mqueueMedium.push(vm);
+	else if( vm->priority == Message::High )
+		mqueueHi.push(vm);
+	else if( vm->priority == Message::Low )
+		mqueueLow.push(vm);
+	else // на всякий по умолчанию medium
+		mqueueMedium.push(vm);
+
 	termWaiting();
 }
 // ------------------------------------------------------------------------------------------
 size_t UniSetObject::countMessages()
 {
-	return mqueue.size();
+	return (mqueueMedium.size() + mqueueLow.size() + mqueueHi.size());
 }
 // ------------------------------------------------------------------------------------------
 size_t UniSetObject::getCountOfQueueFull()
 {
-	return mqueue.getCountOfQueueFull();
+	return (mqueueMedium.getCountOfQueueFull() +
+			mqueueLow.getCountOfQueueFull() +
+			mqueueHi.getCountOfQueueFull() );
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::sigterm( int signo )
@@ -531,8 +527,7 @@ void UniSetObject::work()
 {
 	uinfo << myname << ": thread processing messages running..." << endl;
 
-	if( thr )
-		msgpid = thr->getTID();
+	msgpid = thr ? thr->getTID() : getpid();
 
 	{
 		std::unique_lock<std::mutex> locker(m_working);
@@ -661,10 +656,16 @@ UniSetTypes::SimpleInfo* UniSetObject::getInfo( ::CORBA::Long userparam )
 	else
 		info << "откл.";
 
-	info << "\tcount=" << countMessages();
-	info << "\tmaxMsg=" << mqueue.getMaxQueueMessages();
-	info << "\tqFull(" << mqueue.getMaxSizeOfMessageQueue() << ")=" << mqueue.getCountOfQueueFull();
-	//    info << "\n";
+	info << "\tcount=" << countMessages()
+		 << "\t medum: "
+		 << " maxMsg=" << mqueueMedium.getMaxQueueMessages()
+		 << " qFull(" << mqueueMedium.getMaxSizeOfMessageQueue() << ")=" << mqueueMedium.getCountOfQueueFull()
+		 << "\t    hi: "
+		 << " maxMsg=" << mqueueHi.getMaxQueueMessages()
+		 << " qFull(" << mqueueHi.getMaxSizeOfMessageQueue() << ")=" << mqueueHi.getCountOfQueueFull()
+		 << "\t   low: "
+		 << " maxMsg=" << mqueueLow.getMaxQueueMessages()
+		 << " qFull(" << mqueueLow.getMaxSizeOfMessageQueue() << ")=" << mqueueLow.getCountOfQueueFull();
 
 	SimpleInfo* res = new SimpleInfo();
 	res->info =  info.str().c_str(); // CORBA::string_dup(info.str().c_str());

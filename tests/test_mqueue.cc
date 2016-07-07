@@ -7,6 +7,15 @@
 using namespace std;
 using namespace UniSetTypes;
 // --------------------------------------------------------------------------
+static void pushMessage( UMessageQueue& mq, long id )
+{
+	SensorMessage sm(id,id);
+	sm.consumer = id; // чтобы хоть как-то идентифицировать сообщений, используем поле consumer
+	TransportMessage tm( std::move(sm.transport_msg()) );
+	auto vm = make_shared<VoidMessage>(tm);
+	mq.push(vm);
+}
+// --------------------------------------------------------------------------
 TEST_CASE( "UMessageQueue: setup", "[mqueue]" )
 {
 	UMessageQueue mq;
@@ -22,14 +31,11 @@ TEST_CASE( "UMessageQueue: simple push/top", "[mqueue]" )
 
 	UMessageQueue mq;
 
-	SensorMessage sm(100,2);
-	TransportMessage tm( std::move(sm.transport_msg()) );
-	mq.push(tm);
+	pushMessage(mq,100);
 
 	auto msg = mq.top();
 	REQUIRE( msg!=nullptr );
-	SensorMessage sm2( msg.get() );
-	REQUIRE( sm.id == sm2.id );
+	REQUIRE( msg->consumer == 100 );
 }
 // --------------------------------------------------------------------------
 TEST_CASE( "UMessageQueue: overflow (lost old data)", "[mqueue]" )
@@ -37,26 +43,26 @@ TEST_CASE( "UMessageQueue: overflow (lost old data)", "[mqueue]" )
 	REQUIRE( uniset_conf() != nullptr );
 
 	UMessageQueue mq;
-	mq.setMaxSizeOfMessageQueue(1);
+	mq.setMaxSizeOfMessageQueue(2);
 
 	mq.setLostStrategy( UMessageQueue::lostOldData );
 
-	SensorMessage sm1(100,2);
-	TransportMessage tm1( std::move(sm1.transport_msg()) );
-	mq.push(tm1);
-
+	pushMessage(mq,100);
 	REQUIRE( mq.size() == 1 );
 
-	SensorMessage sm2(110,50);
-	TransportMessage tm2( std::move(sm2.transport_msg()) );
-	mq.push(tm2);
+	pushMessage(mq,110);
+	REQUIRE( mq.size() == 2 );
 
-	REQUIRE( mq.size() == 1 );
+	pushMessage(mq,120);
+	REQUIRE( mq.size() == 2 );
 
 	auto msg = mq.top();
 	REQUIRE( msg!=nullptr );
-	SensorMessage sm( msg.get() );
-	REQUIRE( sm.id == sm2.id );
+	REQUIRE( msg->consumer == 110 );
+
+	msg = mq.top();
+	REQUIRE( msg!=nullptr );
+	REQUIRE( msg->consumer == 120 );
 
 	REQUIRE( mq.getCountOfQueueFull() == 1 );
 }
@@ -66,33 +72,35 @@ TEST_CASE( "UMessageQueue: overflow (lost new data)", "[mqueue]" )
 	REQUIRE( uniset_conf() != nullptr );
 
 	UMessageQueue mq;
-	mq.setMaxSizeOfMessageQueue(1);
+	mq.setMaxSizeOfMessageQueue(2);
 
 	mq.setLostStrategy( UMessageQueue::lostNewData );
 
-	SensorMessage sm1(100,2);
-	TransportMessage tm1( std::move(sm1.transport_msg()) );
-	mq.push(tm1);
-
+	pushMessage(mq,100);
 	REQUIRE( mq.size() == 1 );
 
-	SensorMessage sm2(110,50);
-	TransportMessage tm2( std::move(sm2.transport_msg()) );
-	mq.push(tm2);
+	pushMessage(mq,110);
+	REQUIRE( mq.size() == 2 );
 
+	pushMessage(mq,120);
+	REQUIRE( mq.size() == 2 );
 	REQUIRE( mq.getCountOfQueueFull() == 1 );
 
-	SensorMessage sm3(120,150);
-	TransportMessage tm3( std::move(sm3.transport_msg()) );
-	mq.push(tm3);
+	pushMessage(mq,130);
+	REQUIRE( mq.size() == 2 );
 
-	REQUIRE( mq.size() == 1 );
 	REQUIRE( mq.getCountOfQueueFull() == 2 );
 
 	auto msg = mq.top();
 	REQUIRE( msg!=nullptr );
-	SensorMessage sm( msg.get() );
-	REQUIRE( sm.id == sm1.id );
+	REQUIRE( msg->consumer == 100 );
+
+	msg = mq.top();
+	REQUIRE( msg!=nullptr );
+	REQUIRE( msg->consumer == 110 );
+
+	msg = mq.top();
+	REQUIRE( msg==nullptr );
 }
 // --------------------------------------------------------------------------
 TEST_CASE( "UMessageQueue: many read", "[mqueue]" )
@@ -103,21 +111,58 @@ TEST_CASE( "UMessageQueue: many read", "[mqueue]" )
 	mq.setMaxSizeOfMessageQueue(1);
 	mq.setLostStrategy( UMessageQueue::lostNewData );
 
-	SensorMessage sm1(100,2);
-	TransportMessage tm1( std::move(sm1.transport_msg()) );
-	mq.push(tm1);
-
+	pushMessage(mq,100);
 	REQUIRE( mq.size() == 1 );
 
 	auto msg = mq.top();
 	REQUIRE( msg!=nullptr );
-	SensorMessage sm( msg.get() );
-	REQUIRE( sm.id == sm1.id );
+	REQUIRE( msg->consumer == 100 );
 
 	for( int i=0; i<5; i++ )
 	{
 		auto msg = mq.top();
 		REQUIRE( msg==nullptr );
 	}
+}
+// --------------------------------------------------------------------------
+TEST_CASE( "UMessageQueue: correct operation", "[mqueue]" )
+{
+	REQUIRE( uniset_conf() != nullptr );
+
+	// Проверка корректности работы, что сообщения не портяться
+	// и не теряются
+	// Тест: пишем num сообщений и читаем num сообщений
+	// проверяем что ни одно не потерялось
+	const size_t num = 1000;
+
+	UMessageQueue mq;
+	mq.setMaxSizeOfMessageQueue(num+1);
+
+	size_t rnum = 0;
+	for( size_t i=0; i<num; i++ )
+	{
+		pushMessage(mq,i);
+
+		// каждые 50 читатем, имитируя реальную работу (чтение между записью)
+		if( i%50 )
+		{
+			auto m = mq.top();
+			REQUIRE( m->consumer == rnum );
+			rnum++;
+		}
+	}
+
+	REQUIRE( mq.size() == (num - rnum) );
+
+	// дочитываем всё остальное
+	while( !mq.empty() )
+	{
+		auto m = mq.top();
+		REQUIRE( m->consumer == rnum );
+		rnum++;
+	}
+
+	// проверяем что ничего не потерялось
+	REQUIRE( rnum == num );
 }
 // --------------------------------------------------------------------------

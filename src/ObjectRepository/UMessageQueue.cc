@@ -28,7 +28,7 @@ UMessageQueue::UMessageQueue( size_t qsize ):
 	mqFill(nullptr);
 }
 //---------------------------------------------------------------------------
-void UMessageQueue::push( const UniSetTypes::TransportMessage& tm )
+void UMessageQueue::push( const VoidMessagePtr& vm )
 {
 	// проверяем переполнение, только если стратегия "терять новые данные"
 	// иначе нет смысла проверять, а можно просто писать новые данные затирая старые
@@ -42,7 +42,7 @@ void UMessageQueue::push( const UniSetTypes::TransportMessage& tm )
 	size_t w = wpos.fetch_add(1);
 
 	// а потом уже добавлять новое сообщение в "зарезервированное" место
-	mqueue[w%SizeOfMessageQueue] = make_shared<VoidMessage>(tm);
+	mqueue[w%SizeOfMessageQueue] = vm;
 	mpos++; // теперь увеличиваем реальное количество элементов в очереди
 
 	// ведём статистику
@@ -58,7 +58,7 @@ VoidMessagePtr UMessageQueue::top()
 	if( lostStrategy == lostOldData && (wpos - rpos) >= SizeOfMessageQueue )
 	{
 		stCountOfQueueFull++;
-		rpos.store( wpos - SizeOfMessageQueue - 1 );
+		rpos.store( wpos - SizeOfMessageQueue );
 	}
 
 	// смотрим "фактическое" количество (mpos)
@@ -88,6 +88,11 @@ size_t UMessageQueue::size()
 		return SizeOfMessageQueue;
 
 	return (mpos - rpos);
+}
+//---------------------------------------------------------------------------
+bool UMessageQueue::empty()
+{
+	return (mpos == rpos);
 }
 //---------------------------------------------------------------------------
 void UMessageQueue::setMaxSizeOfMessageQueue( size_t s )
