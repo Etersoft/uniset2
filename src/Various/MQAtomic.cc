@@ -39,13 +39,19 @@ void MQAtomic::push( const VoidMessagePtr& vm )
 	}
 
 	// -----------------------------------------------
-	// Если у нас wpos уже перешёл через максимум и стратегия "потеря новых сообщений"
-	// то просто ждм пока "подтянется" rpos
+	// Если у нас wpos уже перешёл через максимум
+	// то смотрим где rpos
 	if( wpos < rpos )
 	{
-		stCountOfLostMessages++;
-		if( lostStrategy == lostNewData )
+		// только надо привести к одному масштабу
+		unsigned long w = wpos%SizeOfMessageQueue;
+		unsigned long r = rpos%SizeOfMessageQueue;
+
+		if( lostStrategy == lostNewData && (r-w) >= SizeOfMessageQueue )
+		{
+			stCountOfLostMessages++;
 			return;
+		}
 	}
 	// -----------------------------------------------
 
@@ -72,45 +78,38 @@ VoidMessagePtr MQAtomic::top()
 		rpos.store( wpos - SizeOfMessageQueue );
 	}
 
-	if( rpos > qpos )
-	{
-		if( lostStrategy == lostNewData )
-		{
-			// дочитываем до конца.. (пока rpos не перейдёт через максимум)
-			unsigned long r = rpos.fetch_add(1);
-			return mqueue[r%SizeOfMessageQueue];
-		}
+	if( rpos == qpos )
+		return nullptr;
 
-		// if( lostStrategy == lostOldData )
-		rpos = 0;
-		if( qpos == 0 )
-			return nullptr;
-	}
-
-	// смотрим qpos - который увеличивается только после помещения элемента в очередь
-	// т.к. помещение в вектор тоже занимает время,
-	// то может случиться что wpos уже увеличился, а элемент ещё не поместили в очередь
-	// при этом вызвался этот top()
+	// смотрим именно qpos, а не wpos.
+	// Т.к. qpos увеличивается только после помещения элемента в очередь
+	// (помещение в вектор тоже занимает время)
+	// иначе может случиться что wpos уже увеличился, но элемент ещё не поместили в очередь
+	// а мы уже пытаемся читать.
 	if( rpos < qpos )
 	{
-		// сперва надо сдвинуть счётчик (чтобы следующий поток уже читал новое)
+		// сперва надо сдвинуть счётчик (чтобы следующий поток уже работал с следующим значением)
 		unsigned long r = rpos.fetch_add(1);
+		return mqueue[r%SizeOfMessageQueue];
+	}
 
-		// если в этот момент был "переполнен" wpos
-		if( r > wpos && lostStrategy == lostOldData )
+	// Если rpos > qpos, значит qpos уже перешёл через максимум
+	// И это особый случай обработки (пока rpos тоже не "перескочит" через максимум)
+	if( rpos > qpos ) // делаем if каждый раз, т.к. qpos может уже поменяться в параллельном потоке
+	{
+		// приводим к одному масштабу
+		unsigned long w = qpos%SizeOfMessageQueue;
+		unsigned long r = rpos%SizeOfMessageQueue;
+
+		if( lostStrategy == lostOldData && (r - w) >= SizeOfMessageQueue )
 		{
-			r = 0;
-			if( rpos > wpos )
-				rpos = 0;
-
-			if( qpos == 0 )
-				return nullptr;
+			stCountOfLostMessages++;
+			rpos.store(qpos - SizeOfMessageQueue); // "подтягиваем" rpos к qpos
 		}
 
-		// т.к. между if и этим местом, может придти другой читающий поток, то
-		// проверяем здесь ещё раз
-		if( r < qpos )
-			return mqueue[r%SizeOfMessageQueue];
+		// продолжаем читать как обычно
+		r = rpos.fetch_add(1);
+		return mqueue[r%SizeOfMessageQueue];
 	}
 
 	return nullptr;

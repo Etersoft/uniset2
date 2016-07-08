@@ -8,9 +8,14 @@
 // --------------------------------------------------------------------------
 // ВНИМАНИЕ! ЗДЕСЬ ОПРЕДЕЛЯЕТСЯ ТИП ТЕСТИРУЕМОЙ ОЧЕРЕДИ
 // (пока не придумал как параметризовать тест)
-typedef MQAtomic UMessageQueue;
-
 #define TEST_MQ_ATOMIC 1
+
+#ifdef TEST_MQ_ATOMIC
+	typedef MQAtomic UMessageQueue;
+#else
+	typedef MQMutex UMessageQueue;
+#endif
+
 // --------------------------------------------------------------------------
 #ifdef TEST_MQ_ATOMIC
 // специальный "декоратор" чтобы можно было тестировать переполнение индексов
@@ -209,26 +214,67 @@ TEST_CASE( "UMessageQueue: overflow index (strategy=lostOldData)", "[mqueue]" )
 	mq.set_wpos(max);
 	mq.set_rpos(max);
 
-	// это сообщение будет потеряно,
-	// т.к. добавляется при ещё не переполненном wpos
+	// При переходе через максимум ничего не должны потерять
 	pushMessage(mq,100);
-
-	// первое чтение после переполнения
-	// обновляет rpos, поэтому элемент последний мы теряем
-	auto m = mq.top();
-	REQUIRE( m == nullptr );
-
-	// это сообщение уже должно к нам вернутся
 	pushMessage(mq,110);
+	pushMessage(mq,120);
+
+	auto m = mq.top();
+	REQUIRE( m != nullptr );
+	REQUIRE( m->consumer == 100 );
 
 	m = mq.top();
 	REQUIRE( m != nullptr );
 	REQUIRE( m->consumer == 110 );
 
-	pushMessage(mq,120);
 	m = mq.top();
 	REQUIRE( m != nullptr );
 	REQUIRE( m->consumer == 120 );
+}
+// --------------------------------------------------------------------------
+TEST_CASE( "UMessageQueue: lost data (strategy=lostOldData)", "[mqueue]" )
+{
+	REQUIRE( uniset_conf() != nullptr );
+
+	unsigned long max = std::numeric_limits<unsigned long>::max();
+	MQAtomicTest mq;
+	mq.setLostStrategy(MQAtomic::lostOldData);
+	mq.setMaxSizeOfMessageQueue(2);
+
+	pushMessage(mq,100);
+	pushMessage(mq,110);
+	pushMessage(mq,120);
+
+	auto m = mq.top();
+	REQUIRE( m != nullptr );
+	REQUIRE( m->consumer == 110 );
+
+	m = mq.top();
+	REQUIRE( m != nullptr );
+	REQUIRE( m->consumer == 120 );
+
+	m = mq.top();
+	REQUIRE( m == nullptr );
+
+	// Теперь проверяем + переполнение счётчика
+	mq.set_wpos(max);
+	mq.set_rpos(max);
+
+	// При переходе через максимум ничего не должны потерять
+	pushMessage(mq,140);
+	pushMessage(mq,150);
+	pushMessage(mq,160);
+
+	m = mq.top();
+	REQUIRE( m != nullptr );
+	REQUIRE( m->consumer == 150 );
+
+	m = mq.top();
+	REQUIRE( m != nullptr );
+	REQUIRE( m->consumer == 160 );
+
+	m = mq.top();
+	REQUIRE( m == nullptr );
 }
 // --------------------------------------------------------------------------
 TEST_CASE( "UMessageQueue: overflow index (strategy=lostNewData)", "[mqueue]" )
@@ -242,31 +288,69 @@ TEST_CASE( "UMessageQueue: overflow index (strategy=lostNewData)", "[mqueue]" )
 	mq.set_wpos(max);
 	mq.set_rpos(max);
 
+	// При переходе через максимум ничего не должны потерять
 	pushMessage(mq,100);
 	pushMessage(mq,110);
 	pushMessage(mq,120);
 
-	// мы должны прочитать последнее сообщение из очереди
 	auto m = mq.top();
 	REQUIRE( m != nullptr );
 	REQUIRE( m->consumer == 100 );
 
-	// дальше сообщений нет пока-что (а те что были были потеряны)
 	m = mq.top();
-	REQUIRE( m == nullptr );
-
-	pushMessage(mq,130);
+	REQUIRE( m != nullptr );
+	REQUIRE( m->consumer == 110 );
 
 	m = mq.top();
 	REQUIRE( m != nullptr );
-	REQUIRE( m->consumer == 130 );
+	REQUIRE( m->consumer == 120 );
+}
+// --------------------------------------------------------------------------
+TEST_CASE( "UMessageQueue: lost data (strategy=lostNewData)", "[mqueue]" )
+{
+	REQUIRE( uniset_conf() != nullptr );
 
+	unsigned long max = std::numeric_limits<unsigned long>::max();
+	MQAtomicTest mq;
+	mq.setLostStrategy(MQAtomic::lostNewData);
+	mq.setMaxSizeOfMessageQueue(2);
+
+	pushMessage(mq,100);
+	pushMessage(mq,110);
+	pushMessage(mq,120);
+
+	auto m = mq.top();
+	REQUIRE( m != nullptr );
+	REQUIRE( m->consumer == 100 );
+
+	m = mq.top();
+	REQUIRE( m != nullptr );
+	REQUIRE( m->consumer == 110 );
+
+	m = mq.top();
+	REQUIRE( m == nullptr );
+
+	// Теперь проверяем + переполнение счётчика
+	mq.set_wpos(max);
+	mq.set_rpos(max);
+
+	// При переходе через максимум ничего не должны потерять
 	pushMessage(mq,140);
+	pushMessage(mq,150);
+	pushMessage(mq,160);
 
 	m = mq.top();
 	REQUIRE( m != nullptr );
 	REQUIRE( m->consumer == 140 );
+
+	m = mq.top();
+	REQUIRE( m != nullptr );
+	REQUIRE( m->consumer == 150 );
+
+	m = mq.top();
+	REQUIRE( m == nullptr );
 }
+// --------------------------------------------------------------------------
 #endif
 // --------------------------------------------------------------------------
 #undef TEST_MQ_ATOMIC
