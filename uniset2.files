@@ -322,7 +322,8 @@ include/UInterface.h
 include/UniSetActivator.h
 include/UniSetManager.h
 include/UniSetObject.h
-include/UMessageQueue.h
+include/MQMutex.h
+include/MQAtomic.h
 include/UniSetTypes.h
 include/UniXML.h
 include/UTCPCore.h
@@ -429,6 +430,8 @@ src/Various/VMonitor.cc
 src/Various/SViewer.cc
 src/Various/UniXML.cc
 src/Various/WDTInterface.cc
+src/Various/MQMutex.cc
+src/Various/MQAtomic.cc
 src/Makefile.am
 tests/UniXmlTest/Makefile.am
 tests/UniXmlTest/XmlTest.cc

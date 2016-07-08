@@ -42,7 +42,7 @@
 #include "UniSetObject_i.hh"
 #include "ThreadCreator.h"
 #include "LT_Object.h"
-#include "UMessageQueue.h"
+#include "MQMutex.h"
 
 //---------------------------------------------------------------------------
 //#include <omnithread.h>
@@ -152,8 +152,8 @@ class UniSetObject:
 		/*! текущее количесво сообщений в очереди */
 		size_t countMessages();
 
-		/*! количество раз перполнения очереди сообщений */
-		size_t getCountOfQueueFull();
+		/*! количество потерянных сообщений */
+		size_t getCountOfLostMessages();
 
 		//! Активизация объекта (переопределяется для необходимых действий после активизации)
 		virtual bool activateObject()
@@ -263,9 +263,9 @@ class UniSetObject:
 		std::shared_ptr< ThreadCreator<UniSetObject> > thr;
 
 		/*! очереди сообщений в зависимости от приоритета */
-		UMessageQueue mqueueLow;
-		UMessageQueue mqueueMedium;
-		UMessageQueue mqueueHi;
+		MQMutex mqueueLow;
+		MQMutex mqueueMedium;
+		MQMutex mqueueHi;
 
 		std::atomic_bool a_working;
 		std::mutex    m_working;

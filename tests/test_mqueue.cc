@@ -1,8 +1,38 @@
 #include <catch.hpp>
 // --------------------------------------------------------------------------
-#include "UMessageQueue.h"
+#include <limits>
+#include "MQAtomic.h"
+#include "MQMutex.h"
 #include "MessageType.h"
 #include "Configuration.h"
+// --------------------------------------------------------------------------
+// ВНИМАНИЕ! ЗДЕСЬ ОПРЕДЕЛЯЕТСЯ ТИП ТЕСТИРУЕМОЙ ОЧЕРЕДИ
+// (пока не придумал как параметризовать тест)
+typedef MQAtomic UMessageQueue;
+
+#define TEST_MQ_ATOMIC 1
+// --------------------------------------------------------------------------
+#ifdef TEST_MQ_ATOMIC
+// специальный "декоратор" чтобы можно было тестировать переполнение индексов
+class MQAtomicTest:
+	public MQAtomic
+{
+	public:
+		inline void set_wpos( unsigned long pos )
+		{
+			MQAtomic::set_wpos(pos);
+		}
+
+		inline void set_rpos( unsigned long pos )
+		{
+			MQAtomic::set_rpos(pos);
+		}
+};
+#endif
+// --------------------------------------------------------------------------
+// ВНИМАНИЕ! ЗДЕСЬ ОПРЕДЕЛЯЕТСЯ ТИП ТЕСТИРУЕМОЙ ОЧЕРЕДИ
+// (пока не придумал как параметризовать тест)
+typedef MQAtomic UMessageQueue;
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -64,7 +94,7 @@ TEST_CASE( "UMessageQueue: overflow (lost old data)", "[mqueue]" )
 	REQUIRE( msg!=nullptr );
 	REQUIRE( msg->consumer == 120 );
 
-	REQUIRE( mq.getCountOfQueueFull() == 1 );
+	REQUIRE( mq.getCountOfLostMessages() == 1 );
 }
 // --------------------------------------------------------------------------
 TEST_CASE( "UMessageQueue: overflow (lost new data)", "[mqueue]" )
@@ -84,12 +114,12 @@ TEST_CASE( "UMessageQueue: overflow (lost new data)", "[mqueue]" )
 
 	pushMessage(mq,120);
 	REQUIRE( mq.size() == 2 );
-	REQUIRE( mq.getCountOfQueueFull() == 1 );
+	REQUIRE( mq.getCountOfLostMessages() == 1 );
 
 	pushMessage(mq,130);
 	REQUIRE( mq.size() == 2 );
 
-	REQUIRE( mq.getCountOfQueueFull() == 2 );
+	REQUIRE( mq.getCountOfLostMessages() == 2 );
 
 	auto msg = mq.top();
 	REQUIRE( msg!=nullptr );
@@ -166,3 +196,79 @@ TEST_CASE( "UMessageQueue: correct operation", "[mqueue]" )
 	REQUIRE( rnum == num );
 }
 // --------------------------------------------------------------------------
+#ifdef TEST_MQ_ATOMIC
+
+TEST_CASE( "UMessageQueue: overflow index (strategy=lostOldData)", "[mqueue]" )
+{
+	REQUIRE( uniset_conf() != nullptr );
+
+	unsigned long max = std::numeric_limits<unsigned long>::max();
+	MQAtomicTest mq;
+	mq.setLostStrategy(MQAtomic::lostOldData);
+
+	mq.set_wpos(max);
+	mq.set_rpos(max);
+
+	// это сообщение будет потеряно,
+	// т.к. добавляется при ещё не переполненном wpos
+	pushMessage(mq,100);
+
+	// первое чтение после переполнения
+	// обновляет rpos, поэтому элемент последний мы теряем
+	auto m = mq.top();
+	REQUIRE( m == nullptr );
+
+	// это сообщение уже должно к нам вернутся
+	pushMessage(mq,110);
+
+	m = mq.top();
+	REQUIRE( m != nullptr );
+	REQUIRE( m->consumer == 110 );
+
+	pushMessage(mq,120);
+	m = mq.top();
+	REQUIRE( m != nullptr );
+	REQUIRE( m->consumer == 120 );
+}
+// --------------------------------------------------------------------------
+TEST_CASE( "UMessageQueue: overflow index (strategy=lostNewData)", "[mqueue]" )
+{
+	REQUIRE( uniset_conf() != nullptr );
+
+	unsigned long max = std::numeric_limits<unsigned long>::max();
+	MQAtomicTest mq;
+	mq.setLostStrategy(MQAtomic::lostNewData);
+
+	mq.set_wpos(max);
+	mq.set_rpos(max);
+
+	pushMessage(mq,100);
+	pushMessage(mq,110);
+	pushMessage(mq,120);
+
+	// мы должны прочитать последнее сообщение из очереди
+	auto m = mq.top();
+	REQUIRE( m != nullptr );
+	REQUIRE( m->consumer == 100 );
+
+	// дальше сообщений нет пока-что (а те что были были потеряны)
+	m = mq.top();
+	REQUIRE( m == nullptr );
+
+	pushMessage(mq,130);
+
+	m = mq.top();
+	REQUIRE( m != nullptr );
+	REQUIRE( m->consumer == 130 );
+
+	pushMessage(mq,140);
+
+	m = mq.top();
+	REQUIRE( m != nullptr );
+	REQUIRE( m->consumer == 140 );
+}
+#endif
+// --------------------------------------------------------------------------
+#undef TEST_MQ_ATOMIC
+// --------------------------------------------------------------------------
+

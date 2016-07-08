@@ -340,11 +340,11 @@ size_t UniSetObject::countMessages()
 	return (mqueueMedium.size() + mqueueLow.size() + mqueueHi.size());
 }
 // ------------------------------------------------------------------------------------------
-size_t UniSetObject::getCountOfQueueFull()
+size_t UniSetObject::getCountOfLostMessages()
 {
-	return (mqueueMedium.getCountOfQueueFull() +
-			mqueueLow.getCountOfQueueFull() +
-			mqueueHi.getCountOfQueueFull() );
+	return (mqueueMedium.getCountOfLostMessages() +
+			mqueueLow.getCountOfLostMessages() +
+			mqueueHi.getCountOfLostMessages() );
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::sigterm( int signo )
@@ -659,13 +659,13 @@ UniSetTypes::SimpleInfo* UniSetObject::getInfo( ::CORBA::Long userparam )
 	info << "\tcount=" << countMessages()
 		 << "\t medum: "
 		 << " maxMsg=" << mqueueMedium.getMaxQueueMessages()
-		 << " qFull(" << mqueueMedium.getMaxSizeOfMessageQueue() << ")=" << mqueueMedium.getCountOfQueueFull()
+		 << " qFull(" << mqueueMedium.getMaxSizeOfMessageQueue() << ")=" << mqueueMedium.getCountOfLostMessages()
 		 << "\t    hi: "
 		 << " maxMsg=" << mqueueHi.getMaxQueueMessages()
-		 << " qFull(" << mqueueHi.getMaxSizeOfMessageQueue() << ")=" << mqueueHi.getCountOfQueueFull()
+		 << " qFull(" << mqueueHi.getMaxSizeOfMessageQueue() << ")=" << mqueueHi.getCountOfLostMessages()
 		 << "\t   low: "
 		 << " maxMsg=" << mqueueLow.getMaxQueueMessages()
-		 << " qFull(" << mqueueLow.getMaxSizeOfMessageQueue() << ")=" << mqueueLow.getCountOfQueueFull();
+		 << " qFull(" << mqueueLow.getMaxSizeOfMessageQueue() << ")=" << mqueueLow.getCountOfLostMessages();
 
 	SimpleInfo* res = new SimpleInfo();
 	res->info =  info.str().c_str(); // CORBA::string_dup(info.str().c_str());

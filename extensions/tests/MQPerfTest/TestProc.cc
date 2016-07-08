@@ -16,7 +16,7 @@ TestProc::~TestProc()
 // -----------------------------------------------------------------------------
 bool TestProc::isFullQueue()
 {
-	return ( getCountOfQueueFull() > 0 );
+	return ( getCountOfLostMessages() > 0 );
 }
 // -----------------------------------------------------------------------------
 TestProc::TestProc()

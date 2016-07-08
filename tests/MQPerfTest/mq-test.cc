@@ -3,14 +3,15 @@
 #include <assert.h>
 #include <thread>
 #include <atomic>
-#include "UMessageQueue.h"
+#include "MQAtomic.h"
+#include "MQMutex.h"
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 // --------------------------------------------------------------------------
-UMessageQueue mq; // тестируемая очередь
+MQAtomic mq; // тестируемая очередь
 
-const size_t COUNT = 1000000; // сколько сообщения послать
+const size_t COUNT = 1000000; // сколько сообщений поместить в очередь
 // --------------------------------------------------------------------------
 // поток записи
 void mq_write_thread()
