@@ -22,8 +22,8 @@ static const std::string test_msg2 = "Test message N2";
 static ostringstream msg;
 static ostringstream msg2;
 static ostringstream la_msg;
-static uniset_mutex r1_mutex;
-static uniset_mutex r2_mutex;
+static std::mutex r1_mutex;
+static std::mutex r2_mutex;
 
 static std::atomic_bool g_read_cancel = ATOMIC_VAR_INIT(0);
 
@@ -32,13 +32,13 @@ static int readTimeout = 4000;
 // --------------------------------------------------------------------------
 void rlog1OnEvent( const std::string& s )
 {
-	uniset_mutex_lock l(r1_mutex);
+	std::lock_guard<std::mutex> l(r1_mutex);
 	msg << s;
 }
 // --------------------------------------------------------------------------
 void rlog2OnEvent( const std::string& s )
 {
-	uniset_mutex_lock l(r2_mutex);
+	std::lock_guard<std::mutex> l(r2_mutex);
 	msg2 << s;
 }
 // --------------------------------------------------------------------------
@@ -148,7 +148,7 @@ TEST_CASE("LogServer", "[LogServer]" )
 
 	msleep(readTimeout); // пауза на переподключение reader-а к серверу..
 	{
-		uniset_mutex_lock l(r1_mutex);
+		std::lock_guard<std::mutex> l(r1_mutex);
 		REQUIRE( msg.str() == m.str() );
 	}
 
@@ -163,7 +163,7 @@ TEST_CASE("LogServer", "[LogServer]" )
 	msleep(readTimeout); // пауза на переподключение reader-а к серверу..
 
 	{
-		uniset_mutex_lock l(r1_mutex);
+		std::lock_guard<std::mutex> l(r1_mutex);
 		REQUIRE( msg.str() == m2.str() );
 	}
 
@@ -224,12 +224,12 @@ TEST_CASE("MaxSessions", "[LogServer]" )
 
 	msleep(readTimeout); // пауза на переподключение reader-а к серверу..
 	{
-		uniset_mutex_lock l(r1_mutex);
+		std::lock_guard<std::mutex> l(r1_mutex);
 		REQUIRE( msg.str() == m.str() );
 	}
 
 	{
-		uniset_mutex_lock l(r2_mutex);
+		std::lock_guard<std::mutex> l(r2_mutex);
 		/*
 				// Ищем часть сообщения об ошибке: '(LOG SERVER): Exceeded the limit on the number of sessions = 1'
 				size_t pos = msg2.str().find("Exceeded the limit");

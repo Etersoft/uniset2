@@ -9,69 +9,6 @@
 using namespace std;
 using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
-TEST_CASE("uniset_mutex", "[mutex][basic]" )
-{
-	uniset_mutex m("mutex1");
-
-	CHECK( m.name() == "mutex1" );
-
-	m.lock();
-	CHECK_FALSE( m.try_lock_for(20) );
-
-	m.unlock();
-	CHECK( m.try_lock_for(20) );
-	CHECK_FALSE( m.try_lock_for(20) );
-
-	m.setName("m");
-	CHECK( m.name() == "m" );
-}
-// -----------------------------------------------------------------------------
-TEST_CASE("uniset_mutex_lock", "[mutex][basic]" )
-{
-	SECTION("simple lock");
-	{
-		uniset_mutex m("mutex1");
-		{
-			uniset_mutex_lock l(m);
-			CHECK_FALSE( m.try_lock_for(20) );
-		} // unlock
-
-		CHECK( m.try_lock_for(20) );
-	}
-
-	SECTION("exception lock");
-	{
-		uniset_mutex m("mutex1");
-
-		try
-		{
-			uniset_mutex_lock l(m);
-			CHECK_FALSE( m.try_lock_for(20) );
-			throw std::logic_error("err");
-		}
-		catch( const std::logic_error& e )
-		{
-		} // unlock
-
-		CHECK( m.try_lock_for(20) );
-	}
-
-	SECTION("timeout lock");
-	{
-		uniset_mutex m("mutex1");
-		{
-			uniset_mutex_lock l(m, 10);
-			CHECK_FALSE( m.try_lock_for(20) );
-
-			uniset_mutex_lock l2(m, 20);
-			CHECK_FALSE(l2.lock_ok());
-		} // unlock..
-
-		uniset_mutex_lock l3(m, 20);
-		CHECK(l3.lock_ok());
-	}
-}
-// -----------------------------------------------------------------------------
 TEST_CASE("uniset_rwmutex", "[mutex][basic]" )
 {
 	SECTION("simple lock");

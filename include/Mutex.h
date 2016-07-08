@@ -29,61 +29,6 @@
 // -----------------------------------------------------------------------------------------
 namespace UniSetTypes
 {
-	class uniset_mutex
-	{
-		public:
-			uniset_mutex();
-			uniset_mutex( const std::string& name );
-			~uniset_mutex();
-
-			void lock();
-			void unlock();
-			bool try_lock_for( const time_t& msec );
-
-			inline std::string name()
-			{
-				return nm;
-			}
-			inline void setName( const std::string& name )
-			{
-				nm = name;
-			}
-
-		protected:
-
-		private:
-			friend class uniset_mutex_lock;
-			uniset_mutex(const uniset_mutex& r) = delete;
-			uniset_mutex& operator=(const uniset_mutex& r) = delete;
-			std::string nm;
-			std::timed_mutex m_lock;
-	};
-
-	std::ostream& operator<<(std::ostream& os, uniset_mutex& m );
-	// -------------------------------------------------------------------------
-	/*! \class uniset_mutex_lock
-	 *  \author Pavel Vainerman
-	 *
-	 *  Предназначен для блокирования совместного доступа. Как пользоваться см. \ref MutexHowToPage
-	 *  \note Если ресурс уже занят, то lock ждет его освобождения...
-	*/
-	class uniset_mutex_lock
-	{
-		public:
-			uniset_mutex_lock( uniset_mutex& m, const time_t timeoutMS = 0 );
-			~uniset_mutex_lock();
-
-			bool lock_ok();
-
-		private:
-			uniset_mutex* mutex;
-			std::atomic_bool locked;
-
-			uniset_mutex_lock(const uniset_mutex_lock&) = delete;
-			uniset_mutex_lock& operator=(const uniset_mutex_lock&) = delete;
-	};
-
-	// -------------------------------------------------------------------------
 	// rwmutex..
 	class uniset_rwmutex
 	{

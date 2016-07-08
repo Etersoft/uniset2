@@ -145,7 +145,7 @@ bool DBServer_PostgreSQL::writeToBase( const string& query )
 
 	if( !db || !connect_ok )
 	{
-		uniset_mutex_lock l(mqbuf, 200);
+		std::lock_guard<std::mutex> l(mqbuf);
 		qbuf.push(query);
 
 		if( qbuf.size() > qbufSize )
@@ -177,7 +177,7 @@ bool DBServer_PostgreSQL::writeToBase( const string& query )
 //--------------------------------------------------------------------------------------------
 void DBServer_PostgreSQL::flushBuffer()
 {
-	uniset_mutex_lock l(mqbuf, 400);
+	std::lock_guard<std::mutex> l(mqbuf);
 
 	// Сперва пробуем очистить всё что накопилось в очереди до этого...
 	while( !qbuf.empty() )

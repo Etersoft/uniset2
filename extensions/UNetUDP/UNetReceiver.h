@@ -217,7 +217,7 @@ class UNetReceiver:
 
 		double updateTime = { 0.01 };
 		double checkConnectionTime = { 10.0 }; // sec
-		UniSetTypes::uniset_mutex checkConnMutex;
+		std::mutex checkConnMutex;
 
 		UniSetTypes::uniset_rwmutex pollMutex;
 		PassiveTimer ptRecvTimeout;

@@ -206,7 +206,7 @@ void IOController::localSetUndefinedState( IOStateList::iterator& li,
 	{
 		if( changed )
 		{
-			uniset_mutex_lock l(siganyundefMutex);
+			std::lock_guard<std::mutex> l(siganyundefMutex);
 			sigAnyUndefChange.emit(li->second, this);
 		}
 	}
@@ -228,7 +228,7 @@ void IOController::localSetUndefinedState( IOStateList::iterator& li,
 	{
 		if( changed )
 		{
-			uniset_mutex_lock l(siganyMutex);
+			std::lock_guard<std::mutex> l(siganyMutex);
 			sigAnyChange.emit(li->second, this);
 		}
 	}
@@ -339,7 +339,7 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 	{
 		if( changed )
 		{
-			uniset_mutex_lock l(siganyMutex);
+			std::lock_guard<std::mutex> l(siganyMutex);
 			sigAnyChange.emit(usi, this);
 		}
 	}

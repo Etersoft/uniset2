@@ -139,7 +139,7 @@ class ModbusTCPServer:
 		std::queue<unsigned char> qrecv;
 		ModbusTCP::MBAPHeader curQueryHeader;
 
-		UniSetTypes::uniset_mutex sMutex;
+		std::mutex sMutex;
 		typedef std::list<ModbusTCPSession*> SessionList;
 		SessionList slist;
 

@@ -31,8 +31,6 @@ ModbusRTUSlave::ModbusRTUSlave( const string& dev, bool use485, bool tr_ctl ):
 	port(NULL),
 	myport(true)
 {
-	recvMutex.setName("(ModbusRTUSlave): dev='" + dev + "' recvMutex:");
-
 	if( use485 )
 	{
 		ComPort485F* cp;
@@ -148,49 +146,48 @@ bool ModbusRTUSlave::isActive()
 // -------------------------------------------------------------------------
 mbErrCode ModbusRTUSlave::realReceive(const std::unordered_set<ModbusAddr>& vmbaddr, timeout_t timeout )
 {
+	if( !recvMutex.try_lock_for( std::chrono::milliseconds(timeout)) )
 	{
-		uniset_mutex_lock lck(recvMutex, timeout);
+		if( dlog->is_crit() )
+			dlog->crit() << "(ModbusRTUSlave::receive): Don`t lock recvMutex.." << endl;
 
-		if( !lck.lock_ok() )
+		return erTimeOut;
+	}
+
+	std::lock_guard<std::timed_mutex> lk(recvMutex,std::adopt_lock);
+
+	ModbusMessage buf;
+	mbErrCode res = erBadReplyNodeAddress;
+
+	do
+	{
+		res = recv(vmbaddr, buf, timeout);
+
+		if( res != erNoError && res != erBadReplyNodeAddress )
 		{
-			if( dlog->is_crit() )
-				dlog->crit() << "(ModbusRTUSlave::receive): Don`t lock " << recvMutex << endl;
-
-			return erTimeOut;
-		}
-
-		ModbusMessage buf;
-		mbErrCode res = erBadReplyNodeAddress;
-
-		do
-		{
-			res = recv(vmbaddr, buf, timeout);
-
-			if( res != erNoError && res != erBadReplyNodeAddress )
+			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
+			// то посылаем
+			if( res < erInternalErrorCode )
 			{
-				// Если ошибка подразумевает посылку ответа с сообщением об ошибке
-				// то посылаем
-				if( res < erInternalErrorCode )
-				{
-					ErrorRetMessage em( buf.addr, buf.func, res );
-					buf = em.transport_msg();
-					send(buf);
-					printProcessingTime();
-				}
-
-				if( aftersend_msec > 0 )
-					msleep(aftersend_msec);
-
-				return res;
+				ErrorRetMessage em( buf.addr, buf.func, res );
+				buf = em.transport_msg();
+				send(buf);
+				printProcessingTime();
 			}
 
-			// если полученный пакет адресован
-			// не данному узлу (и не широковещательный)
-			// то ждать следующий...
-		}
-		while( res == erBadReplyNodeAddress );
+			if( aftersend_msec > 0 )
+				msleep(aftersend_msec);
 
-		return processing(buf);
+			return res;
+		}
+
+		// если полученный пакет адресован
+		// не данному узлу (и не широковещательный)
+		// то ждать следующий...
 	}
+	while( res == erBadReplyNodeAddress );
+
+	return processing(buf);
+
 }
 // -------------------------------------------------------------------------

@@ -262,10 +262,10 @@ class IOController:
 	private:
 		friend class NCRestorer;
 
-		UniSetTypes::uniset_mutex siganyMutex;
+		std::mutex siganyMutex;
 		ChangeSignal sigAnyChange;
 
-		UniSetTypes::uniset_mutex siganyundefMutex;
+		std::mutex siganyundefMutex;
 		ChangeSignal sigAnyUndefChange;
 		InitSignal sigInit;
 

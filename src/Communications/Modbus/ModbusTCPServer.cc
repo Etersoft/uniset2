@@ -53,7 +53,7 @@ void ModbusTCPServer::setMaxSessions( size_t num )
 {
 	if( num < sessCount )
 	{
-		uniset_mutex_lock l(sMutex);
+		std::lock_guard<std::mutex> l(sMutex);
 
 		int k = sessCount - num;
 		int d = 0;
@@ -147,7 +147,7 @@ void ModbusTCPServer::evfinish()
 // -------------------------------------------------------------------------
 void ModbusTCPServer::sessionFinished( ModbusTCPSession* s )
 {
-	uniset_mutex_lock l(sMutex);
+	std::lock_guard<std::mutex> l(sMutex);
 
 	for( auto i = slist.begin(); i != slist.end(); ++i )
 	{
@@ -162,7 +162,7 @@ void ModbusTCPServer::sessionFinished( ModbusTCPSession* s )
 // -------------------------------------------------------------------------
 void ModbusTCPServer::getSessions( Sessions& lst )
 {
-	uniset_mutex_lock l(sMutex);
+	std::lock_guard<std::mutex> l(sMutex);
 
 	for( const auto& i : slist )
 	{
@@ -266,7 +266,7 @@ void ModbusTCPServer::ioAccept(ev::io& watcher, int revents)
 		s->connectFinalSession( sigc::mem_fun(this, &ModbusTCPServer::sessionFinished) );
 
 		{
-			uniset_mutex_lock l(sMutex);
+			std::lock_guard<std::mutex> l(sMutex);
 			slist.push_back(s);
 		}
 

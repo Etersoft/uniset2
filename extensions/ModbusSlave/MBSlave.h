@@ -581,7 +581,7 @@ class MBSlave:
 		timeout_t sessTimeout = { 2000 };  /*!< таймаут на сессию */
 		timeout_t updateStatTime = { 4000 };
 		ModbusTCPServer::Sessions sess; /*!< список открытых сессий */
-		UniSetTypes::uniset_mutex sessMutex;
+		std::mutex sessMutex;
 		unsigned int sessMaxNum = { 5 };
 		std::shared_ptr<ModbusTCPServerSlot> tcpserver;
 

@@ -398,7 +398,7 @@ class IOControl:
 		int defCardNum = { -1 };        /*!< номер карты по умолчанию */
 		int maxCardNum = { 10 };        /*! максимально разрешённый номер для карты */
 
-		UniSetTypes::uniset_mutex iopollMutex;
+		std::mutex iopollMutex;
 		std::atomic_bool activated = { false };
 		bool readconf_ok = { false };
 		int activateTimeout;

@@ -314,7 +314,7 @@ class ModbusServer
 		ModbusRTU::mbErrCode recv(const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, ModbusRTU::ModbusMessage& buf, timeout_t timeout );
 		ModbusRTU::mbErrCode recv_pdu( ModbusRTU::ModbusMessage& rbuf, timeout_t timeout );
 
-		UniSetTypes::uniset_mutex recvMutex;
+		std::timed_mutex recvMutex;
 		timeout_t recvTimeOut_ms = { 50 };        /*!< таймаут на приём */
 		timeout_t replyTimeout_ms = { 2000 };    /*!< таймаут на формирование ответа */
 		timeout_t aftersend_msec = { 0 };        /*!< пауза после посылки ответа */

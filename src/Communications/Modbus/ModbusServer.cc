@@ -31,7 +31,6 @@ using namespace ModbusRTU;
 using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 ModbusServer::ModbusServer():
-	recvMutex("ModbusServer_recvMutex"),
 	recvTimeOut_ms(50),
 	replyTimeout_ms(2000),
 	aftersend_msec(0),

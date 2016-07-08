@@ -43,7 +43,7 @@ class RTUExchange:
 
 	protected:
 		std::shared_ptr<ModbusRTUMaster> mbrtu;
-		UniSetTypes::uniset_mutex mbMutex;
+		std::mutex mbMutex;
 		std::string devname;
 		ComPort::Speed defSpeed;
 		bool use485F;

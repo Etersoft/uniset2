@@ -698,7 +698,7 @@ void MBSlave::updateTCPStatistics()
 
 		// Обновляем информацию по соединениям
 		{
-			uniset_mutex_lock l(sessMutex);
+			std::lock_guard<std::mutex> l(sessMutex);
 			sess.clear();
 			tcpserver->getSessions(sess);
 		}
@@ -2583,7 +2583,7 @@ UniSetTypes::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
 	{
 		size_t snum = 0;
 		{
-			uniset_mutex_lock l(sessMutex);
+			std::lock_guard<std::mutex> l(sessMutex);
 			snum = sess.size();
 		}
 
@@ -2593,7 +2593,7 @@ UniSetTypes::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
 			inf << "   " << m.second.getShortInfo() << endl;
 
 		{
-			uniset_mutex_lock l(sessMutex);
+			std::lock_guard<std::mutex> l(sessMutex);
 			inf << "TCP sessions[" << sess.size() << "]: max=" << sessMaxNum << " updateStatTime=" << updateStatTime << endl;
 
 			for( const auto& m : sess )

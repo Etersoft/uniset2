@@ -26,9 +26,8 @@ using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------------
 /*! замок для блокирования совместного доступа к функции обрабтки сигналов */
-static UniSetTypes::uniset_mutex signalMutex("Main::signalMutex");
-static volatile sig_atomic_t procterm = 0;
-static volatile sig_atomic_t doneterm = 0;
+static std::atomic_bool procterm;
+static std::atomic_bool doneterm;
 static SingleProcess* gMain = NULL;
 static const int TERMINATE_TIMEOUT = 2; //  время отведенное на завершение процесса [сек]
 // --------------------------------------------------------------------------------
@@ -63,8 +62,6 @@ void SingleProcess::terminated( int signo )
 		// lock
 
 		// на случай прихода нескольких сигналов
-		uniset_mutex_lock l(signalMutex, 1000);
-
 		if( !procterm )
 		{
 			procterm = 1;

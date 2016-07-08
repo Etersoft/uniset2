@@ -155,7 +155,7 @@ void PassiveLProcessor::sysCommand( const UniSetTypes::SystemMessage* sm )
 				return;
 			}
 
-			UniSetTypes::uniset_mutex_lock l(mutex_start, 10000);
+			std::lock_guard<std::mutex> l(mutex_start);
 			askSensors(UniversalIO::UIONotify);
 			askTimer(tidStep, LProcessor::sleepTime);
 			break;
@@ -210,11 +210,11 @@ void PassiveLProcessor::sysCommand( const UniSetTypes::SystemMessage* sm )
 // -------------------------------------------------------------------------
 bool PassiveLProcessor::activateObject()
 {
-	// блокирование обработки Starsp
+	// блокирование обработки StarUp
 	// пока не пройдёт инициализация датчиков
 	// см. sysCommand()
 	{
-		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
+		std::lock_guard<std::mutex> l(mutex_start);
 		UniSetObject::activateObject();
 		initIterators();
 	}

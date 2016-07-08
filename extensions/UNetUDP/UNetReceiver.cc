@@ -246,7 +246,7 @@ void UNetReceiver::evfinish( const ev::loop_ref& eloop )
 	activated = false;
 
 	{
-		uniset_mutex_lock l(checkConnMutex);
+		std::lock_guard<std::mutex> l(checkConnMutex);
 
 		if( evCheckConnection.is_active() )
 			evCheckConnection.stop();
@@ -554,7 +554,7 @@ void UNetReceiver::checkConnectionEvent( ev::periodic& tm, int revents )
 
 	unetinfo << myname << "(checkConnectionEvent): check connection event.." << endl;
 
-	uniset_mutex_lock l(checkConnMutex);
+	std::lock_guard<std::mutex> l(checkConnMutex);
 
 	if( !createConnection(false) )
 		tm.again();

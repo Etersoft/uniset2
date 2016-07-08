@@ -74,7 +74,7 @@ class PassiveLProcessor:
 		UniSetTypes::ObjectId sidHeartBeat = { UniSetTypes::DefaultObjectId };
 		int maxHeartBeat = { 10 };
 		IOController::IOStateList::iterator itHeartBeat;
-		UniSetTypes::uniset_mutex mutex_start;
+		std::mutex mutex_start;
 };
 // ---------------------------------------------------------------------------
 #endif

@@ -111,7 +111,7 @@ class DBServer_PostgreSQL:
 		bool lastRemove = { false };
 
 		void flushBuffer();
-		UniSetTypes::uniset_mutex mqbuf;
+		std::mutex mqbuf;
 
 		// writeBuffer
 		const std::list<std::string> tblcols = { "date", "time","time_usec","sensor_id","value","node" };

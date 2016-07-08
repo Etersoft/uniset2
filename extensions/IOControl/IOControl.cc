@@ -372,7 +372,7 @@ void IOControl::execute()
 		// init first time....
 		if( !force && !noCards )
 		{
-			uniset_mutex_lock l(iopollMutex, 5000);
+			std::lock_guard<std::mutex> l(iopollMutex);
 			force = true;
 			iopoll();
 			force = false;
@@ -424,7 +424,7 @@ void IOControl::execute()
 				}
 
 				{
-					uniset_mutex_lock l(iopollMutex, 5000);
+					std::lock_guard<std::mutex> l(iopollMutex);
 					iopoll();
 				}
 			}
@@ -1302,7 +1302,7 @@ void IOControl::sysCommand( const SystemMessage* sm )
 				if( !force )
 				{
 					force = true;
-					uniset_mutex_lock l(iopollMutex, 8000);
+					std::lock_guard<std::mutex> l(iopollMutex);
 					iopoll();
 					force = false;
 				}
