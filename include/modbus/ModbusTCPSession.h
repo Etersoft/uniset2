@@ -41,7 +41,7 @@ class ModbusTCPSession:
 		virtual void cleanupChannel() override;
 		virtual void terminate() override;
 
-		typedef sigc::slot<void, ModbusTCPSession*> FinalSlot;
+		typedef sigc::slot<void, const ModbusTCPSession*> FinalSlot;
 
 		void connectFinalSession( FinalSlot sl );
 

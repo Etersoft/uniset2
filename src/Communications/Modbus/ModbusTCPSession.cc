@@ -140,10 +140,7 @@ void ModbusTCPSession::callback( ev::io& watcher, int revents )
 		if( dlog->is_info() )
 			dlog->info() << peername << ": stop session... disconnect.." << endl;
 
-		io.stop();
-		ioTimeout.stop();
-		final();
-		delete this;
+		terminate();
 	}
 	else
 		ioTimeout.start(sessTimeout); // restart timer..
@@ -408,7 +405,7 @@ void ModbusTCPSession::terminate()
 	ModbusServer::terminate();
 
 	sock.reset(); // close..
-	final();
+	final(); // после этого вызова возможно данный объект будет разрушен!
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPSession::readCoilStatus( ReadCoilMessage& query,

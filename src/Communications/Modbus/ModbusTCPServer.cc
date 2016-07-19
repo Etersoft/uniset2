@@ -59,7 +59,7 @@ void ModbusTCPServer::setMaxSessions( size_t num )
 		int d = 0;
 
 		for( SessionList::reverse_iterator i = slist.rbegin(); d < k && i != slist.rend(); ++i, d++ )
-			delete *i;
+			(*i).reset();
 
 		sessCount = num;
 	}
@@ -145,13 +145,13 @@ void ModbusTCPServer::evfinish()
 	}
 }
 // -------------------------------------------------------------------------
-void ModbusTCPServer::sessionFinished( ModbusTCPSession* s )
+void ModbusTCPServer::sessionFinished( const ModbusTCPSession* s )
 {
 	std::lock_guard<std::mutex> l(sMutex);
 
 	for( auto i = slist.begin(); i != slist.end(); ++i )
 	{
-		if( (*i) == s )
+		if( (*i).get() == s )
 		{
 			slist.erase(i);
 			sessCount--;
@@ -237,7 +237,7 @@ void ModbusTCPServer::ioAccept(ev::io& watcher, int revents)
 
 	try
 	{
-		ModbusTCPSession* s = new ModbusTCPSession(watcher.fd, *vmbaddr, sessTimeout);
+		auto s = make_shared<ModbusTCPSession>(watcher.fd, *vmbaddr, sessTimeout);
 		s->connectReadCoil( sigc::mem_fun(this, &ModbusTCPServer::readCoilStatus) );
 		s->connectReadInputStatus( sigc::mem_fun(this, &ModbusTCPServer::readInputStatus) );
 		s->connectReadOutput( sigc::mem_fun(this, &ModbusTCPServer::readOutputRegisters) );

@@ -118,7 +118,7 @@ class ModbusTCPServer:
 		virtual void ioAccept(ev::io& watcher, int revents);
 		void onTimer( ev::timer& t, int revents );
 
-		void sessionFinished( ModbusTCPSession* s );
+		void sessionFinished( const ModbusTCPSession* s );
 
 		virtual size_t getNextData( unsigned char* buf, int len ) override
 		{
@@ -140,7 +140,7 @@ class ModbusTCPServer:
 		ModbusTCP::MBAPHeader curQueryHeader;
 
 		std::mutex sMutex;
-		typedef std::list<ModbusTCPSession*> SessionList;
+		typedef std::list<std::shared_ptr<ModbusTCPSession>> SessionList;
 		SessionList slist;
 
 		bool ignoreAddr = { false };
