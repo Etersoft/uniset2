@@ -85,6 +85,8 @@ DB: Сделать регулируемый буфер на INSERT-ы БД, чт
 
 UniSetObject: две очереди, чтобы уменьшить количество блокирований mutex..
 
+в ThreadCreator использовать std::function()..
+
 version 3
 =========
 - подумать нужен ли нам где-то ZeroMQ (zerorpc) (вместо omniORB?)

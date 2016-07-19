@@ -85,7 +85,9 @@ class ThreadCreator:
 {
 	public:
 
-		/*! прототип функции вызова */
+		/*! прототип функции вызова
+		 * use std::function ?
+		 */
 		typedef void(ThreadMaster::* Action)(void);
 
 		ThreadCreator( ThreadMaster* m, Action a );
