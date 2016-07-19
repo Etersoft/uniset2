@@ -52,9 +52,11 @@ ModbusTCPSession::ModbusTCPSession( int sfd, const std::unordered_set<ModbusAddr
 	{
 		sock = make_shared<USocket>(sfd);
 		ost::tpport_t p;
+
+		// если стремиться к "оптимизации по скорости"
+		// то resolve ip "медленная" операция и может стоит от неё отказаться.
 		ost::InetAddress iaddr = sock->getIPV4Peer(&p);
 
-		// resolve..
 		if( !iaddr.isInetAddress() )
 		{
 			ostringstream err;
