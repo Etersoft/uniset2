@@ -23,6 +23,11 @@ class MBTCPServer
 			replyVal = val;
 		}
 
+		inline timeout_t setAfterSendPause( timeout_t msec )
+		{
+			return sslot->setAfterSendPause(msec);
+		}
+
 		void execute();    /*!< основной цикл работы */
 		void setLog( std::shared_ptr<DebugStream>& dlog );
 
@@ -89,8 +94,8 @@ class MBTCPServer
 		ModbusTCPServerSlot* sslot;
 		std::unordered_set<ModbusRTU::ModbusAddr> vaddr; /*!< адреса данного узла */
 
-		bool verbose;
-		long replyVal;
+		bool verbose = { false };
+		long replyVal = { -1 };
 #if 0
 		typedef std::unordered_map<ModbusRTU::mbErrCode, unsigned int> ExchangeErrorMap;
 		ExchangeErrorMap errmap;     /*!< статистика обмена */

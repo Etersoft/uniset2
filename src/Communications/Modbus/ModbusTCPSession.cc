@@ -55,8 +55,17 @@ ModbusTCPSession::ModbusTCPSession( int sfd, const std::unordered_set<ModbusAddr
 		ost::InetAddress iaddr = sock->getIPV4Peer(&p);
 
 		// resolve..
-		caddr = string( iaddr.getHostname() );
+		if( !iaddr.isInetAddress() )
+		{
+			ostringstream err;
+			err << "(ModbusTCPSession): unknonwn ip(0.0.0.0) client disconnected?!";
+			if( dlog->is_crit() )
+				dlog->crit() << err.str() << endl;
+			sock.reset();
+			throw SystemError(err.str());
+		}
 
+		caddr = string( iaddr.getHostname() );
 		ostringstream s;
 		s << iaddr << ":" << p;
 		peername = s.str();
@@ -65,7 +74,10 @@ ModbusTCPSession::ModbusTCPSession( int sfd, const std::unordered_set<ModbusAddr
 	{
 		ostringstream err;
 		err << ex.what();
-		dlog->crit() << "(ModbusTCPSession): err: " << err.str() << endl;
+		if( dlog->is_crit() )
+			dlog->crit() << "(ModbusTCPSession): err: " << err.str() << endl;
+
+		sock.reset();
 		throw SystemError(err.str());
 	}
 

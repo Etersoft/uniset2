@@ -16,6 +16,7 @@ static struct option longopts[] =
 	{ "myaddr", required_argument, 0, 'a' },
 	{ "port", required_argument, 0, 'p' },
 	{ "const-reply", required_argument, 0, 'c' },
+	{ "after-send-pause", required_argument, 0, 's' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -29,6 +30,7 @@ static void print_help()
 	printf("                    myaddr=255 - Reply to all RTU-addresses.\n");
 	printf("[-p|--port] port               - Server port. Default: 502.\n");
 	printf("[-c|--const-reply] val         - Reply 'val' for all queries\n");
+	printf("[-s|--after-send-pause] msec   - Pause after send request. Default: 0\n");
 }
 // --------------------------------------------------------------------------
 int main( int argc, char** argv )
@@ -42,6 +44,7 @@ int main( int argc, char** argv )
 	string myaddr("0x01");
 	auto dlog = make_shared<DebugStream>();
 	int replyVal = -1;
+	timeout_t afterpause = 0;
 
 	ost::Thread::setException(ost::Thread::throwException);
 
@@ -49,7 +52,7 @@ int main( int argc, char** argv )
 	{
 		while(1)
 		{
-			opt = getopt_long(argc, argv, "hva:p:i:c:", longopts, &optindex);
+			opt = getopt_long(argc, argv, "hva:p:i:c:s:", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -80,6 +83,10 @@ int main( int argc, char** argv )
 					replyVal = uni_atoi(optarg);
 					break;
 
+				case 's':
+					afterpause = uni_atoi(optarg);
+					break;
+
 				case '?':
 				default:
 					printf("? argumnet\n");
@@ -105,6 +112,7 @@ int main( int argc, char** argv )
 		MBTCPServer mbs(vaddr, iaddr, port, verb);
 		mbs.setLog(dlog);
 		mbs.setVerbose(verb);
+		mbs.setAfterSendPause(afterpause);
 
 		if( replyVal != -1 )
 			mbs.setReply(replyVal);
