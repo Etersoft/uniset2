@@ -1162,11 +1162,11 @@ bool MBSlave::initItem( UniXML::iterator& it )
 	else if( am == "wo" )
 		p.amode = MBSlave::amWO;
 
-	int nbit = IOBase::initIntProp(it, "nbit", prop_prefix, false, -1);
+	ssize_t nbit = IOBase::initIntProp(it, "nbit", prop_prefix, false, -1);
 
 	if( nbit != -1 )
 	{
-		if( nbit < 0 || nbit >= ModbusRTU::BitsPerData )
+		if( nbit >= ModbusRTU::BitsPerData )
 		{
 			mbcrit << myname << "(initItem): BAD " << prop_prefix << "nbit=" << nbit << ". Must be  0 <= nbit < " << ModbusRTU::BitsPerData
 				   << " for '"
@@ -1603,12 +1603,12 @@ ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( ModbusRTU::WriteSingleO
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::much_real_write( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
-		int count, const int fn )
+		size_t count, const int fn )
 {
 	mbinfo << myname << "(much_real_write): write mbID="
 		   << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")" << " count=" << count << " fn=" << fn << endl;
 
-	int i = 0;
+	size_t i = 0;
 	auto it = rmap.end();
 
 	int mbfunc = checkMBFunc ? fn : default_mbfunc;
@@ -1630,8 +1630,8 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( RegMap& rmap, const ModbusRTU::Mo
 	if( it == rmap.end() )
 		return ModbusRTU::erBadDataAddress;
 
-	int prev_i = i;
-	int sub = 0;
+	size_t prev_i = i;
+	size_t sub = 0;
 
 	for( ; (it != rmap.end()) && (i < count); )
 	{
@@ -1667,11 +1667,11 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( RegMap& rmap, const ModbusRTU::Mo
 ModbusRTU::mbErrCode MBSlave::real_write( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val, const int fn )
 {
 	ModbusRTU::ModbusData dat[1] = {val};
-	int i = 0;
+	size_t i = 0;
 	return real_write(rmap, reg, dat, i, 1, fn);
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::real_write( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int& i, int count, const int fn )
+ModbusRTU::mbErrCode MBSlave::real_write(RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, size_t& i, size_t count, const int fn )
 {
 	ModbusRTU::ModbusData mbval = dat[i];
 
@@ -1686,7 +1686,7 @@ ModbusRTU::mbErrCode MBSlave::real_write( RegMap& rmap, const ModbusRTU::ModbusD
 	return real_write_it(rmap, it, dat, i, count);
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::real_write_it( RegMap& rmap, RegMap::iterator& it, ModbusRTU::ModbusData* dat, int& i, int count )
+ModbusRTU::mbErrCode MBSlave::real_write_it(RegMap& rmap, RegMap::iterator& it, ModbusRTU::ModbusData* dat, size_t& i, size_t count )
 {
 	if( it == rmap.end() )
 		return ModbusRTU::erBadDataAddress;
@@ -1706,7 +1706,7 @@ ModbusRTU::mbErrCode MBSlave::real_bitreg_write_it( std::shared_ptr<BitRegProper
 
 	ModbusRTU::DataBits16 d(val);
 
-	for( int i = 0; i < ModbusRTU::BitsPerData; i++ )
+	for( size_t i = 0; i < ModbusRTU::BitsPerData; i++ )
 	{
 		IOProperty* p(&(bp->bvec[i]));
 
@@ -1718,14 +1718,14 @@ ModbusRTU::mbErrCode MBSlave::real_bitreg_write_it( std::shared_ptr<BitRegProper
 		mbinfo << myname << "(real_bitreg_write_it): set " << ModbusRTU::dat2str(bp->mbreg) << "(" << (int)bp->mbreg << ")"
 			   << " bit[" << i << "]=" << (int)dat[0]  << " sid=" << p->si.id << endl;
 
-		int k = 0;
+		size_t k = 0;
 		real_write_prop(p, dat, k, 1);
 	}
 
 	return ModbusRTU::erNoError;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusData* dat, int& i, int count )
+ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusData* dat, size_t& i, size_t count )
 {
 	ModbusRTU::ModbusData mbval = dat[i];
 
@@ -1935,15 +1935,15 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 	return ModbusRTU::erTimeOut;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::much_real_read( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
-		int count, const int fn )
+ModbusRTU::mbErrCode MBSlave::much_real_read(RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
+		size_t count, const int fn )
 {
 	mbinfo << myname << "(much_real_read): read mbID="
 		   << ModbusRTU::dat2str(reg) << "(" << (int)reg << ") " << " count=" << count
 		   << " mbfunc=" << fn << endl;
 
 	auto it = rmap.end();
-	int i = 0;
+	size_t i = 0;
 
 	int mbfunc = checkMBFunc ? fn : default_mbfunc;
 	ModbusRTU::RegID regID = genRegID(reg, mbfunc);
@@ -2032,7 +2032,7 @@ ModbusRTU::mbErrCode MBSlave::real_bitreg_read_it( std::shared_ptr<BitRegPropert
 
 	ModbusRTU::DataBits16 d;
 
-	for( int i = 0; i < ModbusRTU::BitsPerData; i++ )
+	for( size_t i = 0; i < ModbusRTU::BitsPerData; i++ )
 	{
 		IOProperty* p(&(bp->bvec[i]));
 
@@ -2286,14 +2286,14 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 		}
 
 		much_real_read(regmap->second, query.start, buf, query.count, query.func);
-		int bnum = 0;
-		unsigned int i = 0;
+		size_t bnum = 0;
+		size_t i = 0;
 
 		while( i < query.count )
 		{
 			reply.addData(0);
 
-			for( auto nbit = 0; nbit < BitsPerByte && i < query.count; nbit++, i++ )
+			for( size_t nbit = 0; nbit < BitsPerByte && i < query.count; nbit++, i++ )
 				reply.setBit(bnum, nbit, (bool)(buf[i]));
 
 			bnum++;
@@ -2359,14 +2359,14 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 		}
 
 		much_real_read(regmap->second, query.start, buf, query.count, query.func);
-		int bnum = 0;
-		unsigned int i = 0;
+		size_t bnum = 0;
+		size_t i = 0;
 
 		while( i < query.count )
 		{
 			reply.addData(0);
 
-			for( auto nbit = 0; nbit < BitsPerByte && i < query.count; nbit++, i++ )
+			for( size_t nbit = 0; nbit < BitsPerByte && i < query.count; nbit++, i++ )
 				reply.setBit(bnum, nbit, (bool)(buf[i]));
 
 			bnum++;
@@ -2415,15 +2415,15 @@ ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& 
 	}
 
 	ModbusRTU::mbErrCode ret = ModbusRTU::erNoError;
-	int nbit = 0;
+	size_t nbit = 0;
 
 	int fn = getOptimizeWriteFunction(query.func);
 
-	for( unsigned int i = 0; i < query.bcnt; i++ )
+	for( size_t i = 0; i < query.bcnt; i++ )
 	{
 		ModbusRTU::DataBits b(query.data[i]);
 
-		for( auto k = 0; k < ModbusRTU::BitsPerByte && nbit < query.quant; k++, nbit++ )
+		for( size_t k = 0; k < ModbusRTU::BitsPerByte && nbit < query.quant; k++, nbit++ )
 		{
 			// ModbusRTU::mbErrCode ret =
 			real_write(regmap->second, query.start + nbit, (b[k] ? 1 : 0), fn);

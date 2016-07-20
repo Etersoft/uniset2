@@ -92,10 +92,10 @@ class MBExchange:
 			public IOBase
 		{
 			// only for RTU
-			short nbit;             /*!< bit number) */
+			unsigned short nbit;             /*!< bit number) */
 			VTypes::VType vType;    /*!< type of value */
-			short rnum;             /*!< count of registers */
-			short nbyte;            /*!< byte number (1-2) */
+			unsigned short rnum;             /*!< count of registers */
+			unsigned short nbyte;            /*!< byte number (1-2) */
 
 			RSProperty():
 				nbit(-1), vType(VTypes::vtUnknown),

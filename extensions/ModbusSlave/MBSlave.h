@@ -500,18 +500,18 @@ class MBSlave:
 		bool check_item( UniXML::iterator& it );
 
 		ModbusRTU::mbErrCode real_write( RegMap& rmap, const ModbusRTU::ModbusData regOKOK, ModbusRTU::ModbusData val, const int fn = 0 );
-		ModbusRTU::mbErrCode real_write( RegMap& rmap, const ModbusRTU::ModbusData regOKOK, ModbusRTU::ModbusData* dat, int& i, int count, const int fn = 0  );
+		ModbusRTU::mbErrCode real_write( RegMap& rmap, const ModbusRTU::ModbusData regOKOK, ModbusRTU::ModbusData* dat, size_t& i, size_t count, const int fn = 0  );
 		ModbusRTU::mbErrCode real_read( RegMap& rmap, const ModbusRTU::ModbusData regOKOK, ModbusRTU::ModbusData& val, const int fn = 0  );
-		ModbusRTU::mbErrCode much_real_read( RegMap& rmap, const ModbusRTU::ModbusData regOKOK, ModbusRTU::ModbusData* dat, int count, const int fn = 0  );
-		ModbusRTU::mbErrCode much_real_write( RegMap& rmap, const ModbusRTU::ModbusData regOKOK, ModbusRTU::ModbusData* dat, int count, const int fn = 0  );
+		ModbusRTU::mbErrCode much_real_read( RegMap& rmap, const ModbusRTU::ModbusData regOKOK, ModbusRTU::ModbusData* dat, size_t count, const int fn = 0  );
+		ModbusRTU::mbErrCode much_real_write(RegMap& rmap, const ModbusRTU::ModbusData regOKOK, ModbusRTU::ModbusData* dat, size_t count, const int fn = 0  );
 
 		ModbusRTU::mbErrCode real_read_it( RegMap& rmap, RegMap::iterator& it, ModbusRTU::ModbusData& val );
 		ModbusRTU::mbErrCode real_bitreg_read_it( std::shared_ptr<BitRegProperty>& bp, ModbusRTU::ModbusData& val );
 		ModbusRTU::mbErrCode real_read_prop( IOProperty* p, ModbusRTU::ModbusData& val );
 
-		ModbusRTU::mbErrCode real_write_it(RegMap& rmap, RegMap::iterator& it, ModbusRTU::ModbusData* dat, int& i, int count );
+		ModbusRTU::mbErrCode real_write_it(RegMap& rmap, RegMap::iterator& it, ModbusRTU::ModbusData* dat, size_t& i, size_t count );
 		ModbusRTU::mbErrCode real_bitreg_write_it( std::shared_ptr<BitRegProperty>& bp, const ModbusRTU::ModbusData val );
-		ModbusRTU::mbErrCode real_write_prop( IOProperty* p, ModbusRTU::ModbusData* dat, int& i, int count );
+		ModbusRTU::mbErrCode real_write_prop(IOProperty* p, ModbusRTU::ModbusData* dat, size_t& i, size_t count );
 
 		MBSlave();
 		timeout_t initPause = { 3000 };
