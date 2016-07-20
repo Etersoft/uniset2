@@ -229,7 +229,7 @@ ModbusMessage::ModbusMessage():
 	func = 0;
 	memset(data, 0, sizeof(data));
 }
-// -------------------------------------------------------------------------
+
 std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusMessage& m )
 {
 	return mbPrintMessage(os, (ModbusByte*)(&m), szModbusHeader + m.len);
@@ -240,18 +240,18 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusMessage* m )
 	return os << (*m);
 }
 // -------------------------------------------------------------------------
-ErrorRetMessage::ErrorRetMessage( ModbusMessage& m )
+ErrorRetMessage::ErrorRetMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -------------------------------------------------------------------------
-ErrorRetMessage& ErrorRetMessage::operator=( ModbusMessage& m )
+ErrorRetMessage& ErrorRetMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void ErrorRetMessage::init( ModbusMessage& m )
+void ErrorRetMessage::init( const ModbusMessage& m )
 {
 	memset(this, 0, sizeof(*this));
 	memcpy(this, &m, szModbusHeader);
@@ -339,19 +339,19 @@ ModbusMessage ReadCoilMessage::transport_msg()
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
-ReadCoilMessage::ReadCoilMessage( ModbusMessage& m )
+ReadCoilMessage::ReadCoilMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 
 // -------------------------------------------------------------------------
-ReadCoilMessage& ReadCoilMessage::operator=( ModbusMessage& m )
+ReadCoilMessage& ReadCoilMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void ReadCoilMessage::init( ModbusMessage& m )
+void ReadCoilMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnReadCoilStatus );
 	memset(this, 0, sizeof(*this));
@@ -495,18 +495,18 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, DataBits16* d )
 	return os << (*d);
 }
 // -------------------------------------------------------------------------
-ReadCoilRetMessage::ReadCoilRetMessage( ModbusMessage& m )
+ReadCoilRetMessage::ReadCoilRetMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -------------------------------------------------------------------------
-ReadCoilRetMessage& ReadCoilRetMessage::operator=( ModbusMessage& m )
+ReadCoilRetMessage& ReadCoilRetMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void ReadCoilRetMessage::init( ModbusMessage& m )
+void ReadCoilRetMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnReadCoilStatus );
 
@@ -523,7 +523,7 @@ void ReadCoilRetMessage::init( ModbusMessage& m )
 	memcpy(&crc, &(m.data[bcnt + 1]), szCRC);
 }
 // -------------------------------------------------------------------------
-int ReadCoilRetMessage::getDataLen( ModbusMessage& m )
+size_t ReadCoilRetMessage::getDataLen( const ModbusMessage& m )
 {
 	if( m.len == 0 )
 		return 0;
@@ -658,19 +658,19 @@ ModbusMessage ReadInputStatusMessage::transport_msg()
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
-ReadInputStatusMessage::ReadInputStatusMessage( ModbusMessage& m )
+ReadInputStatusMessage::ReadInputStatusMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 
 // -------------------------------------------------------------------------
-ReadInputStatusMessage& ReadInputStatusMessage::operator=( ModbusMessage& m )
+ReadInputStatusMessage& ReadInputStatusMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void ReadInputStatusMessage::init( ModbusMessage& m )
+void ReadInputStatusMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnReadInputStatus );
 	memset(this, 0, sizeof(*this));
@@ -697,18 +697,18 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputStatusMessage* m 
 	return os << (*m);
 }
 // -------------------------------------------------------------------------
-ReadInputStatusRetMessage::ReadInputStatusRetMessage( ModbusMessage& m )
+ReadInputStatusRetMessage::ReadInputStatusRetMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -------------------------------------------------------------------------
-ReadInputStatusRetMessage& ReadInputStatusRetMessage::operator=( ModbusMessage& m )
+ReadInputStatusRetMessage& ReadInputStatusRetMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void ReadInputStatusRetMessage::init( ModbusMessage& m )
+void ReadInputStatusRetMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnReadInputStatus );
 
@@ -725,7 +725,7 @@ void ReadInputStatusRetMessage::init( ModbusMessage& m )
 	memcpy(&crc, &(m.data[bcnt + 1]), szCRC);
 }
 // -------------------------------------------------------------------------
-int ReadInputStatusRetMessage::getDataLen( ModbusMessage& m )
+size_t ReadInputStatusRetMessage::getDataLen( const ModbusMessage& m )
 {
 	if( m.len == 0 )
 		return 0;
@@ -733,7 +733,7 @@ int ReadInputStatusRetMessage::getDataLen( ModbusMessage& m )
 	return m.data[0];
 }
 // -------------------------------------------------------------------------
-ReadInputStatusRetMessage::ReadInputStatusRetMessage( ModbusAddr _addr ):
+ReadInputStatusRetMessage::ReadInputStatusRetMessage( const ModbusAddr _addr ):
 	bcnt(0)
 {
 	addr = _addr;
@@ -863,19 +863,19 @@ ModbusMessage ReadOutputMessage::transport_msg()
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
-ReadOutputMessage::ReadOutputMessage( ModbusMessage& m )
+ReadOutputMessage::ReadOutputMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 
 // -------------------------------------------------------------------------
-ReadOutputMessage& ReadOutputMessage::operator=( ModbusMessage& m )
+ReadOutputMessage& ReadOutputMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void ReadOutputMessage::init( ModbusMessage& m )
+void ReadOutputMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnReadOutputRegisters );
 	memset(this, 0, sizeof(*this));
@@ -903,18 +903,18 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadOutputMessage* m )
 	return os << (*m);
 }
 // -------------------------------------------------------------------------
-ReadOutputRetMessage::ReadOutputRetMessage( ModbusMessage& m )
+ReadOutputRetMessage::ReadOutputRetMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -------------------------------------------------------------------------
-ReadOutputRetMessage& ReadOutputRetMessage::operator=( ModbusMessage& m )
+ReadOutputRetMessage& ReadOutputRetMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void ReadOutputRetMessage::init( ModbusMessage& m )
+void ReadOutputRetMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnReadOutputRegisters );
 
@@ -943,19 +943,15 @@ void ReadOutputRetMessage::init( ModbusMessage& m )
 	memcpy(&crc, &(m.data[bcnt + 1]), szCRC);
 }
 // -------------------------------------------------------------------------
-int ReadOutputRetMessage::getDataLen( ModbusMessage& m )
+size_t ReadOutputRetMessage::getDataLen( const ModbusMessage& m )
 {
 	if( m.len == 0 )
 		return 0;
 
 	return m.data[0];
-	/*
-	    ReadOutputMessage rm(m);
-	    return (int)(rm.bcnt);
-	*/
 }
 // -------------------------------------------------------------------------
-ReadOutputRetMessage::ReadOutputRetMessage( ModbusAddr _addr ):
+ReadOutputRetMessage::ReadOutputRetMessage( const ModbusAddr _addr ):
 	bcnt(0),
 	count(0)
 {
@@ -1080,19 +1076,19 @@ ModbusMessage ReadInputMessage::transport_msg()
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
-ReadInputMessage::ReadInputMessage( ModbusMessage& m )
+ReadInputMessage::ReadInputMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 
 // -------------------------------------------------------------------------
-ReadInputMessage& ReadInputMessage::operator=( ModbusMessage& m )
+ReadInputMessage& ReadInputMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void ReadInputMessage::init( ModbusMessage& m )
+void ReadInputMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnReadInputRegisters );
 	memset(this, 0, sizeof(*this));
@@ -1120,18 +1116,18 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputMessage* m )
 	return os << (*m);
 }
 // -------------------------------------------------------------------------
-ReadInputRetMessage::ReadInputRetMessage( ModbusMessage& m )
+ReadInputRetMessage::ReadInputRetMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -------------------------------------------------------------------------
-ReadInputRetMessage& ReadInputRetMessage::operator=( ModbusMessage& m )
+ReadInputRetMessage& ReadInputRetMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void ReadInputRetMessage::init( ModbusMessage& m )
+void ReadInputRetMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnReadInputRegisters );
 
@@ -1162,7 +1158,7 @@ void ReadInputRetMessage::swapData()
 		data[i] = SWAPSHORT(data[i]);
 }
 // -------------------------------------------------------------------------
-int ReadInputRetMessage::getDataLen( ModbusMessage& m )
+size_t ReadInputRetMessage::getDataLen( const ModbusMessage& m )
 {
 	if( m.len == 0 )
 		return 0;
@@ -1362,18 +1358,18 @@ ModbusMessage ForceCoilsMessage::transport_msg()
 }
 // -------------------------------------------------------------------------
 
-ForceCoilsMessage::ForceCoilsMessage( ModbusMessage& m )
+ForceCoilsMessage::ForceCoilsMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 
-ForceCoilsMessage& ForceCoilsMessage::operator=( ModbusMessage& m )
+ForceCoilsMessage& ForceCoilsMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void ForceCoilsMessage::init( ModbusMessage& m )
+void ForceCoilsMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnForceMultipleCoils );
 
@@ -1417,13 +1413,13 @@ size_t ForceCoilsMessage::szData()
 	return szHead() + bcnt + szCRC;
 }
 // -------------------------------------------------------------------------
-int ForceCoilsMessage::getDataLen( ModbusMessage& m )
+size_t ForceCoilsMessage::getDataLen( const ModbusMessage& m )
 {
 	if( m.len == 0 )
 		return 0;
 
 	ForceCoilsMessage wm(m);
-	return (int)(wm.bcnt);
+	return wm.bcnt;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceCoilsMessage& m )
@@ -1448,18 +1444,18 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceCoilsMessage* m )
 	return os << (*m);
 }
 // -------------------------------------------------------------------------
-ForceCoilsRetMessage::ForceCoilsRetMessage( ModbusMessage& m )
+ForceCoilsRetMessage::ForceCoilsRetMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -------------------------------------------------------------------------
-ForceCoilsRetMessage& ForceCoilsRetMessage::operator=( ModbusMessage& m )
+ForceCoilsRetMessage& ForceCoilsRetMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void ForceCoilsRetMessage::init( ModbusMessage& m )
+void ForceCoilsRetMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnForceMultipleCoils );
 
@@ -1605,18 +1601,18 @@ ModbusMessage WriteOutputMessage::transport_msg()
 }
 // -------------------------------------------------------------------------
 
-WriteOutputMessage::WriteOutputMessage( ModbusMessage& m )
+WriteOutputMessage::WriteOutputMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 
-WriteOutputMessage& WriteOutputMessage::operator=( ModbusMessage& m )
+WriteOutputMessage& WriteOutputMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void WriteOutputMessage::init( ModbusMessage& m )
+void WriteOutputMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnWriteOutputRegisters );
 
@@ -1666,7 +1662,7 @@ size_t WriteOutputMessage::szData()
 	return szHead() + bcnt + szCRC;
 }
 // -------------------------------------------------------------------------
-int WriteOutputMessage::getDataLen( ModbusMessage& m )
+size_t WriteOutputMessage::getDataLen( const ModbusMessage& m )
 {
 	if( m.len == 0 )
 		return 0;
@@ -1707,18 +1703,18 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteOutputMessage* m )
 	return os << (*m);
 }
 // -------------------------------------------------------------------------
-WriteOutputRetMessage::WriteOutputRetMessage( ModbusMessage& m )
+WriteOutputRetMessage::WriteOutputRetMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -------------------------------------------------------------------------
-WriteOutputRetMessage& WriteOutputRetMessage::operator=( ModbusMessage& m )
+WriteOutputRetMessage& WriteOutputRetMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void WriteOutputRetMessage::init( ModbusMessage& m )
+void WriteOutputRetMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnWriteOutputRegisters );
 
@@ -1815,18 +1811,18 @@ ModbusMessage ForceSingleCoilMessage::transport_msg()
 }
 // --------------------------------------------------------------------------------
 
-ForceSingleCoilMessage::ForceSingleCoilMessage( ModbusMessage& m )
+ForceSingleCoilMessage::ForceSingleCoilMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -------------------------------------------------------------------------
-ForceSingleCoilMessage& ForceSingleCoilMessage::operator=( ModbusMessage& m )
+ForceSingleCoilMessage& ForceSingleCoilMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void ForceSingleCoilMessage::init( ModbusMessage& m )
+void ForceSingleCoilMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnForceSingleCoil );
 	memset(this, 0, sizeof(*this));
@@ -1861,7 +1857,7 @@ size_t ForceSingleCoilMessage::szData()
 	return szHead() + sizeof(ModbusData) + szCRC;
 }
 // -------------------------------------------------------------------------
-int ForceSingleCoilMessage::getDataLen( ModbusMessage& m )
+size_t ForceSingleCoilMessage::getDataLen( const ModbusMessage& m )
 {
 	if( m.len == 0 )
 		return 0;
@@ -1882,18 +1878,18 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceSingleCoilMessage* m 
 }
 
 // -------------------------------------------------------------------------
-ForceSingleCoilRetMessage::ForceSingleCoilRetMessage( ModbusMessage& m )
+ForceSingleCoilRetMessage::ForceSingleCoilRetMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -------------------------------------------------------------------------
-ForceSingleCoilRetMessage& ForceSingleCoilRetMessage::operator=( ModbusMessage& m )
+ForceSingleCoilRetMessage& ForceSingleCoilRetMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void ForceSingleCoilRetMessage::init( ModbusMessage& m )
+void ForceSingleCoilRetMessage::init( const ModbusMessage& m )
 {
 	memset(this, 0, sizeof(*this));
 
@@ -1986,18 +1982,18 @@ ModbusMessage WriteSingleOutputMessage::transport_msg()
 }
 // --------------------------------------------------------------------------------
 
-WriteSingleOutputMessage::WriteSingleOutputMessage( ModbusMessage& m )
+WriteSingleOutputMessage::WriteSingleOutputMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -------------------------------------------------------------------------
-WriteSingleOutputMessage& WriteSingleOutputMessage::operator=( ModbusMessage& m )
+WriteSingleOutputMessage& WriteSingleOutputMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void WriteSingleOutputMessage::init( ModbusMessage& m )
+void WriteSingleOutputMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnWriteOutputSingleRegister );
 	memset(this, 0, sizeof(*this));
@@ -2033,7 +2029,7 @@ size_t WriteSingleOutputMessage::szData()
 	return szHead() + sizeof(ModbusData) + szCRC;
 }
 // -------------------------------------------------------------------------
-int WriteSingleOutputMessage::getDataLen( ModbusMessage& m )
+size_t WriteSingleOutputMessage::getDataLen( const ModbusMessage& m )
 {
 	if( m.len == 0 )
 		return 0;
@@ -2059,18 +2055,18 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteSingleOutputMessage* 
 }
 
 // -------------------------------------------------------------------------
-WriteSingleOutputRetMessage::WriteSingleOutputRetMessage( ModbusMessage& m )
+WriteSingleOutputRetMessage::WriteSingleOutputRetMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -------------------------------------------------------------------------
-WriteSingleOutputRetMessage& WriteSingleOutputRetMessage::operator=( ModbusMessage& m )
+WriteSingleOutputRetMessage& WriteSingleOutputRetMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void WriteSingleOutputRetMessage::init( ModbusMessage& m )
+void WriteSingleOutputRetMessage::init( const ModbusMessage& m )
 {
 	memset(this, 0, sizeof(*this));
 
@@ -2190,18 +2186,18 @@ ssize_t ModbusRTU::szRequestDiagnosticData( DiagnosticsSubFunction f )
 	return -1;
 }
 // -------------------------------------------------------------------------
-DiagnosticMessage::DiagnosticMessage( ModbusMessage& m )
+DiagnosticMessage::DiagnosticMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -------------------------------------------------------------------------
-DiagnosticMessage& DiagnosticMessage::operator=( ModbusMessage& m )
+DiagnosticMessage& DiagnosticMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void DiagnosticMessage::init( ModbusMessage& m )
+void DiagnosticMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnDiagnostics );
 
@@ -2225,13 +2221,13 @@ void DiagnosticMessage::init( ModbusMessage& m )
 	last += sizeof(ModbusData) * count;
 
 	// переворачиваем данные
-	for( ssize_t i = 0; i < count; i++ )
+	for( size_t i = 0; i < count; i++ )
 		data[i] = SWAPSHORT(data[i]);
 
 	memcpy(&crc, &(m.data[last]), szCRC);
 }
 // -------------------------------------------------------------------------
-size_t DiagnosticMessage::getDataLen( ModbusMessage& m )
+size_t DiagnosticMessage::getDataLen( const ModbusMessage& m )
 {
 	if( m.len == 0 )
 		return 0;
@@ -2294,7 +2290,7 @@ ModbusMessage DiagnosticMessage::transport_msg()
 		// Создаём временно массив, переворачиваем байты
 		ModbusData* dtmp = new ModbusData[count];
 
-		for( ssize_t i = 0; i < count; i++ )
+		for( size_t i = 0; i < count; i++ )
 			dtmp[i] = SWAPSHORT(data[i]);
 
 		// копируем
@@ -2323,12 +2319,12 @@ size_t DiagnosticMessage::szData()
 	return sizeof(subf) + count * sizeof(ModbusData) + szCRC;
 }
 // -------------------------------------------------------------------------
-DiagnosticRetMessage::DiagnosticRetMessage( ModbusMessage& m ):
+DiagnosticRetMessage::DiagnosticRetMessage( const ModbusMessage& m ):
 	DiagnosticMessage(m)
 {
 }
 // -------------------------------------------------------------------------
-DiagnosticRetMessage::DiagnosticRetMessage( DiagnosticMessage& m ):
+DiagnosticRetMessage::DiagnosticRetMessage( const DiagnosticMessage& m ):
 	DiagnosticMessage(m)
 {
 
@@ -2346,7 +2342,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticMessage& m )
 	   << " subf=" << dat2str(m.subf)
 	   << " data[" << m.count << "]={";
 
-	for( ssize_t i = 0; i < m.count; i++ )
+	for( size_t i = 0; i < m.count; i++ )
 		os << dat2str(m.data[i]) << "  ";
 
 	os << "}";
@@ -2366,7 +2362,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticRetMessage& m )
 	   << " subf=" << dat2str(m.subf)
 	   << " data[" << m.count << "]={";
 
-	for( ssize_t i = 0; i < m.count; i++ )
+	for( size_t i = 0; i < m.count; i++ )
 		os << dat2str(m.data[i]) << "  ";
 
 	os << "}";
@@ -2414,18 +2410,18 @@ ModbusMessage MEIMessageRDI::transport_msg()
 }
 // -------------------------------------------------------------------------
 
-MEIMessageRDI::MEIMessageRDI( ModbusMessage& m )
+MEIMessageRDI::MEIMessageRDI( const ModbusMessage& m )
 {
 	init(m);
 }
 
-MEIMessageRDI& MEIMessageRDI::operator=( ModbusMessage& m )
+MEIMessageRDI& MEIMessageRDI::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void MEIMessageRDI::init( ModbusMessage& m )
+void MEIMessageRDI::init( const ModbusMessage& m )
 {
 	assert( m.func == fnMEI );
 
@@ -2468,7 +2464,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, MEIMessageRDI* m )
 	return os << (*m);
 }
 // -------------------------------------------------------------------------
-MEIMessageRetRDI::MEIMessageRetRDI( ModbusMessage& m ):
+MEIMessageRetRDI::MEIMessageRetRDI( const ModbusMessage& m ):
 	type(0),
 	devID(0),
 	conformity(0),
@@ -2480,13 +2476,13 @@ MEIMessageRetRDI::MEIMessageRetRDI( ModbusMessage& m ):
 	init(m);
 }
 // -------------------------------------------------------------------------
-MEIMessageRetRDI& MEIMessageRetRDI::operator=( ModbusMessage& m )
+MEIMessageRetRDI& MEIMessageRetRDI::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-RDIObjectInfo::RDIObjectInfo( ModbusByte id, ModbusByte* dat, ModbusByte len ):
+RDIObjectInfo::RDIObjectInfo( ModbusByte id, const ModbusByte* dat, ModbusByte len ):
 	id(id),
 	val("")
 {
@@ -2496,7 +2492,7 @@ RDIObjectInfo::RDIObjectInfo( ModbusByte id, ModbusByte* dat, ModbusByte len ):
 		val.push_back( (char)dat[i] );
 }
 // -------------------------------------------------------------------------
-void MEIMessageRetRDI::pre_init( ModbusMessage& m )
+void MEIMessageRetRDI::pre_init( const ModbusMessage& m )
 {
 	assert( m.func == fnMEI );
 
@@ -2518,7 +2514,7 @@ void MEIMessageRetRDI::pre_init( ModbusMessage& m )
 	objNum = m.data[5];
 }
 // -------------------------------------------------------------------------
-void MEIMessageRetRDI::init( ModbusMessage& m )
+void MEIMessageRetRDI::init( const ModbusMessage& m )
 {
 	assert( m.func == fnMEI );
 
@@ -2550,7 +2546,7 @@ void MEIMessageRetRDI::init( ModbusMessage& m )
 		while( i < m.len && dlist.size() < objNum )
 		{
 			ModbusByte id = m.data[i];
-			int dlen = (int)(m.data[i + 1]);
+			size_t dlen = (int)(m.data[i + 1]);
 
 			if( m.len < (i + 1 + dlen) )
 				throw mbException(erInvalidFormat);
@@ -2699,7 +2695,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, RDIObjectList* l )
 }
 // -------------------------------------------------------------------------
 
-JournalCommandMessage::JournalCommandMessage( ModbusMessage& m )
+JournalCommandMessage::JournalCommandMessage( const ModbusMessage& m )
 {
 	assert( m.func == fnJournalCommand );
 	memset(this, 0, sizeof(*this));
@@ -2710,7 +2706,7 @@ JournalCommandMessage::JournalCommandMessage( ModbusMessage& m )
 	num = SWAPSHORT(num);
 }
 // -------------------------------------------------------------------------
-JournalCommandMessage& JournalCommandMessage::operator=( ModbusMessage& m )
+JournalCommandMessage& JournalCommandMessage::operator=( const ModbusMessage& m )
 {
 	assert( m.func == fnJournalCommand );
 	memset(this, 0, sizeof(*this));
@@ -2963,14 +2959,14 @@ std::string ModbusRTU::mbErr2Str( ModbusRTU::mbErrCode e )
 	}
 }
 // -------------------------------------------------------------------------
-SetDateTimeMessage::SetDateTimeMessage( ModbusMessage& m )
+SetDateTimeMessage::SetDateTimeMessage( const ModbusMessage& m )
 {
 	assert( m.func == fnSetDateTime );
 	memset(this, 0, sizeof(*this));
 	memcpy(this, &m, sizeof(*this)); // m.len
 }
 // -------------------------------------------------------------------------
-SetDateTimeMessage& SetDateTimeMessage::operator=( ModbusMessage& m )
+SetDateTimeMessage& SetDateTimeMessage::operator=( const ModbusMessage& m )
 {
 	assert( m.func == fnSetDateTime );
 	memset(this, 0, sizeof(*this));
@@ -3059,18 +3055,18 @@ ModbusMessage SetDateTimeMessage::transport_msg()
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
-SetDateTimeRetMessage::SetDateTimeRetMessage( ModbusMessage& m )
+SetDateTimeRetMessage::SetDateTimeRetMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -------------------------------------------------------------------------
-SetDateTimeRetMessage& SetDateTimeRetMessage::operator=( ModbusMessage& m )
+SetDateTimeRetMessage& SetDateTimeRetMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void SetDateTimeRetMessage::init( ModbusMessage& m )
+void SetDateTimeRetMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnSetDateTime );
 	memset(this, 0, sizeof(*this));
@@ -3099,7 +3095,7 @@ SetDateTimeRetMessage::SetDateTimeRetMessage( const SetDateTimeMessage& query )
 }
 // -------------------------------------------------------------------------
 void SetDateTimeRetMessage::cpy( SetDateTimeRetMessage& reply,
-								 SetDateTimeMessage& query )
+								 const SetDateTimeMessage& query )
 {
 	reply = query;
 }
@@ -3136,18 +3132,18 @@ ModbusMessage SetDateTimeRetMessage::transport_msg()
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
-RemoteServiceMessage::RemoteServiceMessage( ModbusMessage& m )
+RemoteServiceMessage::RemoteServiceMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -------------------------------------------------------------------------
-RemoteServiceMessage& RemoteServiceMessage::operator=( ModbusMessage& m )
+RemoteServiceMessage& RemoteServiceMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -------------------------------------------------------------------------
-void RemoteServiceMessage::init( ModbusMessage& m )
+void RemoteServiceMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnRemoteService );
 	memset(this, 0, sizeof(*this));
@@ -3164,15 +3160,12 @@ size_t RemoteServiceMessage::szData()
 	return szHead() + bcnt + szCRC;
 }
 // -------------------------------------------------------------------------
-int RemoteServiceMessage::getDataLen( ModbusMessage& m )
+size_t RemoteServiceMessage::getDataLen( const ModbusMessage& m )
 {
 	if( m.len == 0 )
 		return 0;
 
-	//    RemoteServiceMessage wm(m);
-	//    return (int)(wm.bcnt);
-
-	return (int)(m.data[0]);
+	return (size_t)(m.data[0]);
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, RemoteServiceMessage& m )
@@ -3258,12 +3251,12 @@ ModbusMessage RemoteServiceRetMessage::transport_msg()
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
-ReadFileRecordMessage::ReadFileRecordMessage( ModbusMessage& m )
+ReadFileRecordMessage::ReadFileRecordMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -------------------------------------------------------------------------
-ReadFileRecordMessage& ReadFileRecordMessage::operator=( ModbusMessage& m )
+ReadFileRecordMessage& ReadFileRecordMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
@@ -3274,7 +3267,7 @@ bool ReadFileRecordMessage::checkFormat()
 	return ( bcnt >= 0x07 && bcnt <= 0xF5 );
 }
 // -------------------------------------------------------------------------
-void ReadFileRecordMessage::init( ModbusMessage& m )
+void ReadFileRecordMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnReadFileRecord );
 
@@ -3313,15 +3306,12 @@ size_t ReadFileRecordMessage::szData()
 	return sizeof(bcnt) + count * sizeof(SubRequest) + szCRC;
 }
 // -------------------------------------------------------------------------
-int ReadFileRecordMessage::getDataLen( ModbusMessage& m )
+size_t ReadFileRecordMessage::getDataLen( const ModbusMessage& m )
 {
 	if( m.len == 0 )
 		return 0;
 
-	return (int)(m.data[0]);
-
-	//    ReadFileRecordMessage rfm(m); // может просто смотреть m.data[0] ?!
-	//    return (int)(rfm.bcnt);
+	return (size_t)(m.data[0]);
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadFileRecordMessage& m )
@@ -3365,18 +3355,18 @@ ModbusMessage FileTransferMessage::transport_msg()
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
-FileTransferMessage::FileTransferMessage( ModbusMessage& m )
+FileTransferMessage::FileTransferMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -----------------------------------------------------------------------
-FileTransferMessage& FileTransferMessage::operator=( ModbusMessage& m )
+FileTransferMessage& FileTransferMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -----------------------------------------------------------------------
-void FileTransferMessage::init( ModbusMessage& m )
+void FileTransferMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnFileTransfer );
 
@@ -3404,18 +3394,18 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, FileTransferMessage* m )
 		   << " numpacket=" << m->numpacket;
 }
 // -----------------------------------------------------------------------
-FileTransferRetMessage::FileTransferRetMessage( ModbusMessage& m )
+FileTransferRetMessage::FileTransferRetMessage( const ModbusMessage& m )
 {
 	init(m);
 }
 // -----------------------------------------------------------------------
-FileTransferRetMessage& FileTransferRetMessage::operator=( ModbusMessage& m )
+FileTransferRetMessage& FileTransferRetMessage::operator=( const ModbusMessage& m )
 {
 	init(m);
 	return *this;
 }
 // -----------------------------------------------------------------------
-void FileTransferRetMessage::init( ModbusMessage& m )
+void FileTransferRetMessage::init( const ModbusMessage& m )
 {
 	assert( m.func == fnFileTransfer );
 	memset(this, 0, sizeof(*this));
@@ -3473,9 +3463,9 @@ void FileTransferRetMessage::clear()
 	packet         = 0;
 }
 // -----------------------------------------------------------------------
-int FileTransferRetMessage::getDataLen( ModbusMessage& m )
+size_t FileTransferRetMessage::getDataLen( const ModbusMessage& m )
 {
-	return m.data[0];
+	return (size_t)m.data[0];
 }
 // -----------------------------------------------------------------------
 size_t FileTransferRetMessage::szData()

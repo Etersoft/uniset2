@@ -172,6 +172,12 @@ namespace ModbusRTU
 		public ModbusHeader
 	{
 		ModbusMessage();
+
+		ModbusMessage( ModbusMessage&& ) = default;
+		ModbusMessage& operator=(ModbusMessage&& ) = default;
+		ModbusMessage( const ModbusMessage& ) = default;
+		ModbusMessage& operator=(const ModbusMessage& ) = default;
+
 		ModbusByte data[MAXLENPACKET + szCRC];   /*!< данные */
 
 		// Это поле вспомогательное и игнорируется при пересылке
@@ -189,9 +195,9 @@ namespace ModbusRTU
 		ModbusCRC crc = { 0 };
 
 		// ------- from slave -------
-		ErrorRetMessage( ModbusMessage& m );
-		ErrorRetMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		ErrorRetMessage( const ModbusMessage& m );
+		ErrorRetMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		// ------- to master -------
 		ErrorRetMessage( ModbusAddr _from, ModbusByte _func, ModbusByte ecode );
@@ -277,9 +283,9 @@ namespace ModbusRTU
 		ModbusMessage transport_msg();
 
 		// ------- from master -------
-		ReadCoilMessage( ModbusMessage& m );
-		ReadCoilMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		ReadCoilMessage( const ModbusMessage& m );
+		ReadCoilMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
 		inline static size_t szData()
@@ -302,9 +308,9 @@ namespace ModbusRTU
 		ModbusByte data[MAXLENPACKET];    /*!< данные */
 
 		// ------- from slave -------
-		ReadCoilRetMessage( ModbusMessage& m );
-		ReadCoilRetMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		ReadCoilRetMessage( const ModbusMessage& m );
+		ReadCoilRetMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
@@ -314,7 +320,7 @@ namespace ModbusRTU
 		}
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
-		static int getDataLen( ModbusMessage& m );
+		static size_t getDataLen( const ModbusMessage& m );
 		ModbusCRC crc = { 0 };
 
 		// ------- to master -------
@@ -376,9 +382,9 @@ namespace ModbusRTU
 		ModbusMessage transport_msg();
 
 		// ------- from master -------
-		ReadInputStatusMessage( ModbusMessage& m );
-		ReadInputStatusMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		ReadInputStatusMessage( const ModbusMessage& m );
+		ReadInputStatusMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
 		inline static size_t szData()
@@ -399,9 +405,9 @@ namespace ModbusRTU
 		ModbusByte data[MAXLENPACKET];    /*!< данные */
 
 		// ------- from slave -------
-		ReadInputStatusRetMessage( ModbusMessage& m );
-		ReadInputStatusRetMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		ReadInputStatusRetMessage( const ModbusMessage& m );
+		ReadInputStatusRetMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
@@ -411,7 +417,7 @@ namespace ModbusRTU
 		}
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
-		static int getDataLen( ModbusMessage& m );
+		static size_t getDataLen( const ModbusMessage& m );
 		ModbusCRC crc = { 0 };
 
 		// ------- to master -------
@@ -474,9 +480,9 @@ namespace ModbusRTU
 		ModbusMessage transport_msg();
 
 		// ------- from master -------
-		ReadOutputMessage( ModbusMessage& m );
-		ReadOutputMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		ReadOutputMessage( const ModbusMessage& m );
+		ReadOutputMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
 		inline static size_t szData()
@@ -497,9 +503,9 @@ namespace ModbusRTU
 		ModbusData data[MAXLENPACKET / sizeof(ModbusData)];  /*!< данные */
 
 		// ------- from slave -------
-		ReadOutputRetMessage( ModbusMessage& m );
-		ReadOutputRetMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		ReadOutputRetMessage( const ModbusMessage& m );
+		ReadOutputRetMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
@@ -510,7 +516,7 @@ namespace ModbusRTU
 		}
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
-		static int getDataLen( ModbusMessage& m );
+		static size_t getDataLen( const ModbusMessage& m );
 		ModbusCRC crc = { 0 };
 
 		// ------- to master -------
@@ -562,9 +568,9 @@ namespace ModbusRTU
 		ModbusMessage transport_msg();
 
 		// ------- from master -------
-		ReadInputMessage( ModbusMessage& m );
-		ReadInputMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		ReadInputMessage( const ModbusMessage& m );
+		ReadInputMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
 		inline static size_t szData()
@@ -586,9 +592,9 @@ namespace ModbusRTU
 		ModbusData data[MAXLENPACKET / sizeof(ModbusData)];  /*!< данные */
 
 		// ------- from slave -------
-		ReadInputRetMessage( ModbusMessage& m );
-		ReadInputRetMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		ReadInputRetMessage( const ModbusMessage& m );
+		ReadInputRetMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
@@ -599,7 +605,7 @@ namespace ModbusRTU
 		}
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
-		static int getDataLen( ModbusMessage& m );
+		static size_t getDataLen( const ModbusMessage& m );
 		ModbusCRC crc = { 0 };
 
 		// ------- to master -------
@@ -689,9 +695,9 @@ namespace ModbusRTU
 		}
 
 		// ------- from master -------
-		ForceCoilsMessage( ModbusMessage& m );
-		ForceCoilsMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		ForceCoilsMessage( const ModbusMessage& m );
+		ForceCoilsMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
 		size_t szData();
@@ -706,7 +712,7 @@ namespace ModbusRTU
 		}
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
-		static int getDataLen( ModbusMessage& m );
+		static size_t getDataLen( const ModbusMessage& m );
 
 		/*! проверка корректности данных
 		    что quant и bcnt - совпадают...
@@ -727,9 +733,9 @@ namespace ModbusRTU
 		ModbusCRC crc = { 0 };
 
 		// ------- from slave -------
-		ForceCoilsRetMessage( ModbusMessage& m );
-		ForceCoilsRetMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		ForceCoilsRetMessage( const ModbusMessage& m );
+		ForceCoilsRetMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		// ------- to master -------
 		/*!
@@ -782,9 +788,9 @@ namespace ModbusRTU
 		}
 
 		// ------- from master -------
-		WriteOutputMessage( ModbusMessage& m );
-		WriteOutputMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		WriteOutputMessage( const ModbusMessage& m );
+		WriteOutputMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
 		size_t szData();
@@ -799,7 +805,7 @@ namespace ModbusRTU
 		}
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
-		static int getDataLen( ModbusMessage& m );
+		static size_t getDataLen( const ModbusMessage& m );
 
 		/*! проверка корректности данных
 		    что quant и bcnt - совпадают...
@@ -820,9 +826,9 @@ namespace ModbusRTU
 		ModbusData quant = { 0 };    /*!< количество записанных слов данных */
 
 		// ------- from slave -------
-		WriteOutputRetMessage( ModbusMessage& m );
-		WriteOutputRetMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		WriteOutputRetMessage( const ModbusMessage& m );
+		WriteOutputRetMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 		ModbusCRC crc = { 0 };
 
 		// ------- to master -------
@@ -865,16 +871,15 @@ namespace ModbusRTU
 			return (data & 0xFF00);
 		}
 
-
 		// ------- to slave -------
 		ForceSingleCoilMessage( ModbusAddr addr, ModbusData reg, bool state );
 		/*! преобразование для посылки в сеть */
 		ModbusMessage transport_msg();
 
 		// ------- from master -------
-		ForceSingleCoilMessage( ModbusMessage& m );
-		ForceSingleCoilMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		ForceSingleCoilMessage( const ModbusMessage& m );
+		ForceSingleCoilMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
 		size_t szData();
@@ -890,7 +895,7 @@ namespace ModbusRTU
 		/*! узнать длину данных следующий за
 		    предварительным заголовком ( в байтах )
 		*/
-		static int getDataLen( ModbusMessage& m );
+		static size_t getDataLen( const ModbusMessage& m );
 
 		/*! проверка корректности данных
 		    что quant и bcnt - совпадают...
@@ -918,9 +923,9 @@ namespace ModbusRTU
 		}
 
 		// ------- from slave -------
-		ForceSingleCoilRetMessage( ModbusMessage& m );
-		ForceSingleCoilRetMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		ForceSingleCoilRetMessage( const ModbusMessage& m );
+		ForceSingleCoilRetMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		// ------- to master -------
 		/*!
@@ -963,9 +968,9 @@ namespace ModbusRTU
 		ModbusMessage transport_msg();
 
 		// ------- from master -------
-		WriteSingleOutputMessage( ModbusMessage& m );
-		WriteSingleOutputMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		WriteSingleOutputMessage( const ModbusMessage& m );
+		WriteSingleOutputMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
 		size_t szData();
@@ -981,7 +986,7 @@ namespace ModbusRTU
 		/*! узнать длину данных следующий за
 		    предварительным заголовком ( в байтах )
 		*/
-		static int getDataLen( ModbusMessage& m );
+		static size_t getDataLen( const ModbusMessage& m );
 
 		/*! проверка корректности данных
 		    что quant и bcnt - совпадают...
@@ -1004,9 +1009,9 @@ namespace ModbusRTU
 
 
 		// ------- from slave -------
-		WriteSingleOutputRetMessage( ModbusMessage& m );
-		WriteSingleOutputRetMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		WriteSingleOutputRetMessage( const ModbusMessage& m );
+		WriteSingleOutputRetMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		// ------- to master -------
 		/*!
@@ -1041,9 +1046,9 @@ namespace ModbusRTU
 		ModbusData data[MAXLENPACKET / sizeof(ModbusData)];  /*!< данные */
 
 		// ------- from slave -------
-		DiagnosticMessage( ModbusMessage& m );
-		DiagnosticMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		DiagnosticMessage( const ModbusMessage& m );
+		DiagnosticMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
@@ -1053,7 +1058,7 @@ namespace ModbusRTU
 		}
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
-		static size_t getDataLen( ModbusMessage& m );
+		static size_t getDataLen( const ModbusMessage& m );
 		ModbusCRC crc = { 0 };
 
 		// ------- to master -------
@@ -1086,7 +1091,7 @@ namespace ModbusRTU
 		// преобразовании в ModbusMessage.
 		// Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно.
 		// Используйте специальную функцию transport_msg()
-		int    count = { 0 };    /*!< фактическое количество данных в сообщении */
+		size_t count = { 0 };    /*!< фактическое количество данных в сообщении */
 	};
 	std::ostream& operator<<(std::ostream& os, DiagnosticMessage& m );
 	std::ostream& operator<<(std::ostream& os, DiagnosticMessage* m );
@@ -1095,8 +1100,8 @@ namespace ModbusRTU
 	struct DiagnosticRetMessage:
 		public DiagnosticMessage
 	{
-		DiagnosticRetMessage( ModbusMessage& m );
-		DiagnosticRetMessage( DiagnosticMessage& m );
+		DiagnosticRetMessage( const ModbusMessage& m );
+		DiagnosticRetMessage( const DiagnosticMessage& m );
 		DiagnosticRetMessage( ModbusAddr a, DiagnosticsSubFunction subf, ModbusData d = 0 );
 	};
 
@@ -1119,9 +1124,9 @@ namespace ModbusRTU
 		ModbusMessage transport_msg();
 
 		// ------- from master -------
-		MEIMessageRDI( ModbusMessage& m );
-		MEIMessageRDI& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		MEIMessageRDI( const ModbusMessage& m );
+		MEIMessageRDI& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
@@ -1150,7 +1155,7 @@ namespace ModbusRTU
 	{
 		RDIObjectInfo(): id(0), val("") {}
 		RDIObjectInfo( ModbusByte id, const std::string& v ): id(id), val(v) {}
-		RDIObjectInfo( ModbusByte id, ModbusByte* dat, ModbusByte len );
+		RDIObjectInfo( ModbusByte id, const ModbusByte* dat, ModbusByte len );
 
 		ModbusByte id;
 		std::string val;
@@ -1174,12 +1179,12 @@ namespace ModbusRTU
 
 		// ------- from slave -------
 		MEIMessageRetRDI();
-		MEIMessageRetRDI( ModbusMessage& m );
-		MEIMessageRetRDI& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		MEIMessageRetRDI( const ModbusMessage& m );
+		MEIMessageRetRDI& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		// предварительная инициализации, только заголовочной части, без данных
-		void pre_init( ModbusMessage& m );
+		void pre_init( const ModbusMessage& m );
 
 		/*! размер предварительного заголовка (после основного до фактических данных) */
 		static inline size_t szHead()
@@ -1234,8 +1239,8 @@ namespace ModbusRTU
 		ModbusCRC crc = { 0 };
 
 		// -------------
-		JournalCommandMessage( ModbusMessage& m );
-		JournalCommandMessage& operator=( ModbusMessage& m );
+		JournalCommandMessage( const ModbusMessage& m );
+		JournalCommandMessage& operator=( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
 		inline static size_t szData()
@@ -1333,8 +1338,8 @@ namespace ModbusRTU
 		ModbusMessage transport_msg();
 
 		// ------- from master -------
-		SetDateTimeMessage( ModbusMessage& m );
-		SetDateTimeMessage& operator=( ModbusMessage& m );
+		SetDateTimeMessage( const ModbusMessage& m );
+		SetDateTimeMessage& operator=( const ModbusMessage& m );
 		SetDateTimeMessage();
 
 		bool checkFormat();
@@ -1357,14 +1362,14 @@ namespace ModbusRTU
 	{
 
 		// ------- from slave -------
-		SetDateTimeRetMessage( ModbusMessage& m );
-		SetDateTimeRetMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		SetDateTimeRetMessage( const ModbusMessage& m );
+		SetDateTimeRetMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		// ------- to master -------
 		SetDateTimeRetMessage( ModbusAddr _from );
 		SetDateTimeRetMessage( const SetDateTimeMessage& query );
-		static void cpy( SetDateTimeRetMessage& reply, SetDateTimeMessage& query );
+		static void cpy( SetDateTimeRetMessage& reply, const SetDateTimeMessage& query );
 
 		/*! преобразование для посылки в сеть */
 		ModbusMessage transport_msg();
@@ -1382,9 +1387,9 @@ namespace ModbusRTU
 		ModbusCRC crc = { 0 };        /*!< контрольная сумма */
 
 		// -----------
-		RemoteServiceMessage( ModbusMessage& m );
-		RemoteServiceMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		RemoteServiceMessage( const ModbusMessage& m );
+		RemoteServiceMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
 		size_t szData();
@@ -1398,7 +1403,7 @@ namespace ModbusRTU
 		}
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
-		static int getDataLen( ModbusMessage& m );
+		static size_t getDataLen( const ModbusMessage& m );
 
 	} __attribute__((packed));
 
@@ -1462,9 +1467,9 @@ namespace ModbusRTU
 		ModbusCRC crc = { 0 };        /*!< контрольная сумма */
 
 		// -----------
-		ReadFileRecordMessage( ModbusMessage& m );
-		ReadFileRecordMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		ReadFileRecordMessage( const ModbusMessage& m );
+		ReadFileRecordMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
 		size_t szData();
@@ -1478,7 +1483,7 @@ namespace ModbusRTU
 		}
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
-		static int getDataLen( ModbusMessage& m );
+		static size_t getDataLen( const ModbusMessage& m );
 
 		/*! проверка корректности данных */
 		bool checkFormat();
@@ -1503,9 +1508,9 @@ namespace ModbusRTU
 		ModbusMessage transport_msg();     /*!< преобразование для посылки в сеть */
 
 		// ------- from master -------
-		FileTransferMessage( ModbusMessage& m );
-		FileTransferMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		FileTransferMessage( const ModbusMessage& m );
+		FileTransferMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
 		static inline size_t szData()
@@ -1535,15 +1540,15 @@ namespace ModbusRTU
 
 
 		// ------- from slave -------
-		FileTransferRetMessage( ModbusMessage& m );
-		FileTransferRetMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
+		FileTransferRetMessage( const ModbusMessage& m );
+		FileTransferRetMessage& operator=( const ModbusMessage& m );
+		void init( const ModbusMessage& m );
 		ModbusCRC crc = { 0 };
 		static size_t szHead()
 		{
 			return sizeof(ModbusByte);
 		}
-		static int getDataLen( ModbusMessage& m );
+		static size_t getDataLen( const ModbusMessage& m );
 
 		// ------- to master -------
 		FileTransferRetMessage( ModbusAddr _from );
