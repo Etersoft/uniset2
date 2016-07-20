@@ -171,14 +171,14 @@ ModbusRTU::mbErrCode MBTCPTestServer::readInputStatus( ReadInputStatusMessage& q
 
 	if( replyVal == -1 )
 	{
-		int bnum = 0;
-		int i = 0;
+		size_t bnum = 0;
+		size_t i = 0;
 
 		while( i < query.count )
 		{
 			reply.addData(0);
 
-			for( auto nbit = 0; nbit < BitsPerByte && i < query.count; nbit++, i++ )
+			for( size_t nbit = 0; nbit < BitsPerByte && i < query.count; nbit++, i++ )
 				reply.setBit(bnum, nbit, d.b[nbit]);
 
 			bnum++;
@@ -186,12 +186,12 @@ ModbusRTU::mbErrCode MBTCPTestServer::readInputStatus( ReadInputStatusMessage& q
 	}
 	else
 	{
-		int bcnt = query.count / ModbusRTU::BitsPerByte;
+		size_t bcnt = query.count / ModbusRTU::BitsPerByte;
 
 		if( (query.count % ModbusRTU::BitsPerByte) > 0 )
 			bcnt++;
 
-		for( auto i = 0; i < bcnt; i++ )
+		for( size_t i = 0; i < bcnt; i++ )
 			reply.addData(replyVal);
 	}
 
@@ -218,7 +218,7 @@ mbErrCode MBTCPTestServer::readInputRegisters( ReadInputMessage& query,
 	}
 
 	// Фомирование ответа:
-	int num = 0; // добавленное количество данных
+	size_t num = 0; // добавленное количество данных
 	ModbusData reg = query.start;
 
 	for( ; num < query.count; num++, reg++ )
@@ -263,7 +263,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::readOutputRegisters(
 	}
 
 	// Фомирование ответа:
-	int num = 0; // добавленное количество данных
+	size_t num = 0; // добавленное количество данных
 	ModbusData reg = query.start;
 
 	for( ; num < query.count; num++, reg++ )

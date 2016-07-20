@@ -73,8 +73,8 @@ class ModbusTCPSession:
 		virtual void setChannelTimeout( timeout_t msec );
 		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override;
 		virtual ModbusRTU::mbErrCode tcp_processing(ModbusTCP::MBAPHeader& mhead );
-		virtual ModbusRTU::mbErrCode pre_send_request( ModbusRTU::ModbusMessage& request ) override;
-		virtual ModbusRTU::mbErrCode post_send_request( ModbusRTU::ModbusMessage& request ) override;
+		virtual ModbusRTU::mbErrCode make_adu_header( ModbusTCP::ADU& request ) override;
+		virtual ModbusRTU::mbErrCode post_send_request( ModbusTCP::ADU& request ) override;
 
 		virtual ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query,
 				ModbusRTU::ReadCoilRetMessage& reply );

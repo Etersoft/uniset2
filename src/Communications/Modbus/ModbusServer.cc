@@ -1262,7 +1262,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		{
 			if( !crcNoCheckit )
 			{
-				int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])), szCRC);
+				size_t rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])), szCRC);
 
 				if( rlen1 < szCRC )
 				{
@@ -1739,50 +1739,66 @@ ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessa
 // -------------------------------------------------------------------------
 mbErrCode ModbusServer::send( ModbusMessage& msg )
 {
-	if( cleanBeforeSend )
-		cleanupChannel();
-
-	mbErrCode ret = pre_send_request(msg);
-
-	if( ret != erNoError )
-		return ret;
-
 	if( msg.len > MAXLENPACKET + szModbusHeader )
 	{
 		if( dlog->is_warn() )
-			dlog->warn() << "(send): длина пакета больше разрешённой..." << endl;
+			dlog->warn() << "(ModbusServer::send): длина пакета больше разрешённой..." << endl;
 
 		return erPacketTooLong;
 	}
 
+	// в стандарте Modbus подразумевается, что данные должны посылаться одним пакетом
+	// поэтому как минимум надо делать sendData одним буфером.
+	// Для этого используем класс ADU
+	ModbusTCP::ADU adu(msg);
+
+	mbErrCode ret = make_adu_header(adu);
+
+	if( ret != erNoError )
+		return ret;
+
+	if( adu.len > (MAXLENPACKET + szModbusHeader + sizeof(ModbusTCP::MBAPHeader)) )
+	{
+		if( dlog->is_warn() )
+			dlog->warn() << "(ModbusServer::send): длина ADU-пакета больше разрешённой..." << endl;
+
+		return erPacketTooLong;
+	}
+
+	if( cleanBeforeSend )
+		cleanupChannel();
+
 	if( tmProcessing.checkTime() )
 	{
 		if( dlog->is_warn() )
-			dlog->warn() << "(send): reply timeout(" << tmProcessing.getInterval() << ")...!!!" << endl;
+			dlog->warn() << "(ModbusServer::send): reply timeout(" << tmProcessing.getInterval() << ")...!!!" << endl;
 
 		return erTimeOut;
 	}
 
-	int len = szModbusHeader + msg.len;
-
-	if( crcNoCheckit )
-	{
-		msg.len -= szCRC;
-		len -= szCRC;
-	}
-
-
 	if( dlog->is_info() )
-		dlog->info() << "(send): data(" << len << " bytes): " << msg << endl;
+	{
+		if( adu.header.len == 0 )
+			dlog->info() << "(ModbusServer::send): PDU data[" << adu.pdu.len << " bytes]: " << adu.pdu << endl;
+		else
+			dlog->info() << "(ModbusServer::send): ADU data[" << adu.len << " bytes]: " << adu << endl;
+	}
 
 	try
 	{
-		sendData((unsigned char*)(&msg), len);
+		if( adu.header.len == 0 )
+			sendData((unsigned char*)(&adu.pdu), adu.pdu.len);
+		else
+		{
+			adu.header.swapdata();
+			sendData((unsigned char*)(&adu), adu.len);
+			adu.header.swapdata(); // обратно, т.к. потом ещё будет post_send_request
+		}
 	}
 	catch( const Exception& ex ) // SystemError
 	{
 		if( dlog->is_crit() )
-			dlog->crit() << "(send): " << ex << endl;
+			dlog->crit() << "(ModbusServer::send): " << ex << endl;
 
 		return erHardwareError;
 	}
@@ -1790,7 +1806,7 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 	if( aftersend_msec > 0 )
 		iowait(aftersend_msec);
 
-	return post_send_request(msg);
+	return post_send_request(adu);
 }
 
 // -------------------------------------------------------------------------

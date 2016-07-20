@@ -22,10 +22,10 @@ namespace ModbusRTU
 {
 	// Базовые типы
 	typedef unsigned char ModbusByte;    /*!< modbus-байт */
-	const unsigned short BitsPerByte = 8;
+	const size_t BitsPerByte = 8;
 	typedef unsigned char ModbusAddr;    /*!< адрес узла в modbus-сети */
 	typedef unsigned short ModbusData;    /*!< размер данных в modbus-сообщениях */
-	const unsigned short BitsPerData = 16;
+	const size_t BitsPerData = 16;
 	typedef unsigned short ModbusCRC;    /*!< размер CRC16 в modbus-сообщениях */
 
 	// ---------------------------------------------------------------------
@@ -87,7 +87,7 @@ namespace ModbusRTU
 
 	// определение размера данных в зависимости от типа сообщения
 	// возвращает -1 - если динамический размер сообщения или размер неизвестен
-	int szRequestDiagnosticData( DiagnosticsSubFunction f );
+	ssize_t szRequestDiagnosticData( DiagnosticsSubFunction f );
 
 	/*! Read Device Identification ObjectID (0x2B/0xE) */
 	enum RDIObjectID
@@ -136,10 +136,10 @@ namespace ModbusRTU
 	// ---------------------------------------------------------------------
 	/*! Расчёт контрольной суммы */
 	ModbusCRC checkCRC( ModbusByte* start, int len );
-	const int szCRC = sizeof(ModbusCRC); /*!< размер данных для контрольной суммы */
+	const size_t szCRC = sizeof(ModbusCRC); /*!< размер данных для контрольной суммы */
 	// ---------------------------------------------------------------------
 	/*! вывод сообщения */
-	std::ostream& mbPrintMessage( std::ostream& os, ModbusByte* b, int len );
+	std::ostream& mbPrintMessage(std::ostream& os, ModbusByte* b, size_t len );
 	// -------------------------------------------------------------------------
 	ModbusAddr str2mbAddr( const std::string& val );
 	ModbusData str2mbData( const std::string& val );
@@ -160,9 +160,9 @@ namespace ModbusRTU
 		ModbusHeader(): addr(0), func(0) {}
 	} __attribute__((packed));
 
-	const int szModbusHeader = sizeof(ModbusHeader);
-	std::ostream& operator<<(std::ostream& os, ModbusHeader& m );
-	std::ostream& operator<<(std::ostream& os, ModbusHeader* m );
+	const size_t szModbusHeader = sizeof(ModbusHeader);
+	std::ostream& operator<<(std::ostream& os, const ModbusHeader& m );
+	std::ostream& operator<<(std::ostream& os, const ModbusHeader* m );
 	// -----------------------------------------------------------------------
 
 	/*! Базовое (сырое) сообщение
@@ -175,11 +175,11 @@ namespace ModbusRTU
 		ModbusByte data[MAXLENPACKET + szCRC];   /*!< данные */
 
 		// Это поле вспомогательное и игнорируется при пересылке
-		size_t len;    /*!< фактическая длина */
+		size_t len = { 0 };    /*!< фактическая длина */
 	} __attribute__((packed));
 
-	std::ostream& operator<<(std::ostream& os, ModbusMessage& m );
-	std::ostream& operator<<(std::ostream& os, ModbusMessage* m );
+	std::ostream& operator<<(std::ostream& os, const ModbusMessage& m );
+	std::ostream& operator<<(std::ostream& os, const ModbusMessage* m );
 	// -----------------------------------------------------------------------
 	/*! Ответ сообщающий об ошибке */
 	struct ErrorRetMessage:
@@ -202,7 +202,7 @@ namespace ModbusRTU
 		/*! размер данных(после заголовка) у данного типа сообщения
 		    Для данного типа он постоянный..
 		*/
-		inline static int szData()
+		inline static size_t szData()
 		{
 			return sizeof(ModbusByte) + szCRC;
 		}
@@ -282,7 +282,7 @@ namespace ModbusRTU
 		void init( ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		inline static int szData()
+		inline static size_t szData()
 		{
 			return sizeof(ModbusData) * 2 + szCRC;
 		}
@@ -381,7 +381,7 @@ namespace ModbusRTU
 		void init( ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		inline static int szData()
+		inline static size_t szData()
 		{
 			return sizeof(ModbusData) * 2 + szCRC;
 		}
@@ -405,7 +405,7 @@ namespace ModbusRTU
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
-		static inline int szHead()
+		static inline size_t szHead()
 		{
 			return sizeof(ModbusByte); // bcnt
 		}
@@ -479,7 +479,7 @@ namespace ModbusRTU
 		void init( ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		inline static int szData()
+		inline static size_t szData()
 		{
 			return sizeof(ModbusData) * 2 + szCRC;
 		}
@@ -503,7 +503,7 @@ namespace ModbusRTU
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
-		static inline int szHead()
+		static inline size_t szHead()
 		{
 			// bcnt
 			return sizeof(ModbusByte);
@@ -567,7 +567,7 @@ namespace ModbusRTU
 		void init( ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		inline static int szData()
+		inline static size_t szData()
 		{
 			return sizeof(ModbusData) * 2 + szCRC;
 		}
@@ -592,7 +592,7 @@ namespace ModbusRTU
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
-		static inline int szHead()
+		static inline size_t szHead()
 		{
 			// bcnt
 			return sizeof(ModbusByte);
@@ -699,7 +699,7 @@ namespace ModbusRTU
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
-		static inline int szHead()
+		static inline size_t szHead()
 		{
 			// start + quant + count
 			return sizeof(ModbusData) * 2 + sizeof(ModbusByte);
@@ -748,7 +748,7 @@ namespace ModbusRTU
 		/*! размер данных(после заголовка) у данного типа сообщения
 		    Для данного типа он постоянный..
 		*/
-		inline static int szData()
+		inline static size_t szData()
 		{
 			return sizeof(ModbusData) * 2 + sizeof(ModbusCRC);
 		}
@@ -792,7 +792,7 @@ namespace ModbusRTU
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
-		static inline int szHead()
+		static inline size_t szHead()
 		{
 			// start + quant + count
 			return sizeof(ModbusData) * 2 + sizeof(ModbusByte);
@@ -842,7 +842,7 @@ namespace ModbusRTU
 		/*! размер данных(после заголовка) у данного типа сообщения
 		    Для данного типа он постоянный..
 		*/
-		inline static int szData()
+		inline static size_t szData()
 		{
 			return sizeof(ModbusData) * 2 + sizeof(ModbusCRC);
 		}
@@ -882,7 +882,7 @@ namespace ModbusRTU
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
-		static inline int szHead()
+		static inline size_t szHead()
 		{
 			return sizeof(ModbusData);
 		}
@@ -938,7 +938,7 @@ namespace ModbusRTU
 		/*! размер данных(после заголовка) у данного типа сообщения
 		    Для данного типа он постоянный..
 		*/
-		inline static int szData()
+		inline static size_t szData()
 		{
 			return 2 * sizeof(ModbusData) + sizeof(ModbusCRC);
 		}
@@ -973,7 +973,7 @@ namespace ModbusRTU
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
-		static inline int szHead()
+		static inline size_t szHead()
 		{
 			return sizeof(ModbusData);
 		}
@@ -1024,7 +1024,7 @@ namespace ModbusRTU
 		/*! размер данных(после заголовка) у данного типа сообщения
 		    Для данного типа он постоянный..
 		*/
-		inline static int szData()
+		inline static size_t szData()
 		{
 			return 2 * sizeof(ModbusData) + sizeof(ModbusCRC);
 		}
@@ -1047,13 +1047,13 @@ namespace ModbusRTU
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
-		static inline int szHead()
+		static inline size_t szHead()
 		{
 			return sizeof(ModbusData); // subf
 		}
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
-		static int getDataLen( ModbusMessage& m );
+		static size_t getDataLen( ModbusMessage& m );
 		ModbusCRC crc = { 0 };
 
 		// ------- to master -------
@@ -1126,13 +1126,13 @@ namespace ModbusRTU
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
-		static inline int szHead()
+		static inline size_t szHead()
 		{
 			return sizeof(ModbusByte) * 3;
 		}
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		static inline int szData()
+		static inline size_t szData()
 		{
 			return sizeof(ModbusByte) * 3 + szCRC;
 		}
@@ -1182,7 +1182,7 @@ namespace ModbusRTU
 		void pre_init( ModbusMessage& m );
 
 		/*! размер предварительного заголовка (после основного до фактических данных) */
-		static inline int szHead()
+		static inline size_t szHead()
 		{
 			return sizeof(ModbusByte) * 6;
 		}
@@ -1238,7 +1238,7 @@ namespace ModbusRTU
 		JournalCommandMessage& operator=( ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		inline static int szData()
+		inline static size_t szData()
 		{
 			return sizeof(ModbusByte) * 4 + szCRC;
 		}
@@ -1340,7 +1340,7 @@ namespace ModbusRTU
 		bool checkFormat();
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		inline static int szData()
+		inline static size_t szData()
 		{
 			return sizeof(ModbusByte) * 7 + szCRC;
 		}
@@ -1392,7 +1392,7 @@ namespace ModbusRTU
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
-		static inline int szHead()
+		static inline size_t szHead()
 		{
 			return sizeof(ModbusByte);    // bcnt
 		}
@@ -1472,7 +1472,7 @@ namespace ModbusRTU
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
-		static inline int szHead()
+		static inline size_t szHead()
 		{
 			return sizeof(ModbusByte);    // bcnt
 		}
@@ -1508,7 +1508,7 @@ namespace ModbusRTU
 		void init( ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		static inline int szData()
+		static inline size_t szData()
 		{
 			return sizeof(ModbusData) * 2 + szCRC;
 		}
@@ -1524,7 +1524,7 @@ namespace ModbusRTU
 	{
 		// 255 - max of bcnt...(1 byte)
 		//        static const int MaxDataLen = 255 - szCRC - szModbusHeader - sizeof(ModbusData)*3 - sizeof(ModbusByte)*2;
-		static const int MaxDataLen = MAXLENPACKET - sizeof(ModbusData) * 3 - sizeof(ModbusByte) * 2;
+		static const size_t MaxDataLen = MAXLENPACKET - sizeof(ModbusData) * 3 - sizeof(ModbusByte) * 2;
 
 		ModbusByte bcnt;        /*!< общее количество байт в ответе */
 		ModbusData numfile;     /*!< file number 0x0000 to 0xFFFF */
@@ -1539,7 +1539,7 @@ namespace ModbusRTU
 		FileTransferRetMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
 		ModbusCRC crc = { 0 };
-		static int szHead()
+		static size_t szHead()
 		{
 			return sizeof(ModbusByte);
 		}
@@ -1583,7 +1583,21 @@ namespace ModbusTCP
 
 	} __attribute__((packed));
 
-	std::ostream& operator<<(std::ostream& os, MBAPHeader& m );
+	std::ostream& operator<<(std::ostream& os, const MBAPHeader& m );
+
+	// просто агрегированное сообщение
+	struct ADU
+	{
+		MBAPHeader header;
+		ModbusRTU::ModbusMessage pdu; // здесь ссылка!! (т.к. ADU это просто обёртка для удобной посылки данных)
+
+		size_t len = { 0 };
+
+		ADU( const ModbusRTU::ModbusMessage& m ):pdu(m),len(sizeof(header) + m.len){}
+
+	} __attribute__((packed));
+
+	std::ostream& operator<<(std::ostream& os, const ADU& m );
 
 	// -----------------------------------------------------------------------
 } // end of namespace ModbusTCP

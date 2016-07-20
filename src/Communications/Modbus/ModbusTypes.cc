@@ -194,7 +194,7 @@ bool ModbusRTU::isWriteFunction( SlaveFunctionCode c )
 	return false;
 }
 // -------------------------------------------------------------------------
-std::ostream& ModbusRTU::mbPrintMessage( std::ostream& os, ModbusByte* m, int len )
+std::ostream& ModbusRTU::mbPrintMessage( std::ostream& os, ModbusByte* m, size_t len )
 {
 	// Чтобы не менять настройки 'os'
 	// сперва создаём свой поток вывода...
@@ -203,7 +203,7 @@ std::ostream& ModbusRTU::mbPrintMessage( std::ostream& os, ModbusByte* m, int le
 	// << setiosflags(ios::showbase) // для вывода в формате 0xNN
 	s << hex << showbase << setfill('0'); // << showbase;
 
-	for( ssize_t i = 0; i < len; i++ )
+	for( size_t i = 0; i < len; i++ )
 		s << setw(2) << (short)(m[i]) << " ";
 
 	//        s << "<" << setw(2) << (int)(m[i]) << ">";
@@ -211,12 +211,12 @@ std::ostream& ModbusRTU::mbPrintMessage( std::ostream& os, ModbusByte* m, int le
 	return os << s.str();
 }
 // -------------------------------------------------------------------------
-std::ostream& ModbusRTU::operator<<(std::ostream& os, ModbusHeader& m )
+std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusHeader& m )
 {
 	return mbPrintMessage(os, (ModbusByte*)&m, sizeof(m));
 }
 
-std::ostream& ModbusRTU::operator<<(std::ostream& os, ModbusHeader* m )
+std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusHeader* m )
 {
 	return os << (*m);
 }
@@ -230,12 +230,12 @@ ModbusMessage::ModbusMessage():
 	memset(data, 0, sizeof(data));
 }
 // -------------------------------------------------------------------------
-std::ostream& ModbusRTU::operator<<(std::ostream& os, ModbusMessage& m )
+std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusMessage& m )
 {
 	return mbPrintMessage(os, (ModbusByte*)(&m), szModbusHeader + m.len);
 }
 
-std::ostream& ModbusRTU::operator<<(std::ostream& os, ModbusMessage* m )
+std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusMessage* m )
 {
 	return os << (*m);
 }
@@ -2138,7 +2138,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteSingleOutputRetMessag
 }
 
 // -------------------------------------------------------------------------
-int ModbusRTU::szRequestDiagnosticData( DiagnosticsSubFunction f )
+ssize_t ModbusRTU::szRequestDiagnosticData( DiagnosticsSubFunction f )
 {
 	if( f == subEcho )
 		return 1;     // тут странно, вроде в стандарте количество динамическое
@@ -2231,7 +2231,7 @@ void DiagnosticMessage::init( ModbusMessage& m )
 	memcpy(&crc, &(m.data[last]), szCRC);
 }
 // -------------------------------------------------------------------------
-int DiagnosticMessage::getDataLen( ModbusMessage& m )
+size_t DiagnosticMessage::getDataLen( ModbusMessage& m )
 {
 	if( m.len == 0 )
 		return 0;
@@ -2241,12 +2241,12 @@ int DiagnosticMessage::getDataLen( ModbusMessage& m )
 	memcpy( &sf, &(m.data[0]), sizeof(sf) );
 	sf = SWAPSHORT(sf);
 
-	int sz = szRequestDiagnosticData( (DiagnosticsSubFunction)sf );
+	ssize_t sz = szRequestDiagnosticData( (DiagnosticsSubFunction)sf );
 
 	if( sz >= 0 )
 		return sz * sizeof(ModbusData);
 
-	return    0;
+	return 0;
 }
 // -------------------------------------------------------------------------
 DiagnosticMessage::DiagnosticMessage( ModbusAddr _addr, DiagnosticsSubFunction sf, ModbusData d ):
@@ -3537,14 +3537,9 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, FileTransferRetMessage* m 
 	return mbPrintMessage(os, (ModbusByte*)m, szModbusHeader + m->szData() );
 }
 // -----------------------------------------------------------------------
-std::ostream& ModbusTCP::operator<<(std::ostream& os, MBAPHeader& m )
+std::ostream& ModbusTCP::operator<<(std::ostream& os, const MBAPHeader& m )
 {
-	//    m.swapdata();
-	for( size_t i = 0; i < sizeof(m); i++ )
-		os << ((unsigned char*)(&m))[i];
-
-	//    m.swapdata();
-	return os;
+	return mbPrintMessage(os, (ModbusByte*)(&m), sizeof(m));
 }
 // -----------------------------------------------------------------------
 void ModbusTCP::MBAPHeader::swapdata()
@@ -3592,5 +3587,13 @@ ModbusRTU::RegID ModbusRTU::genRegID( const ModbusRTU::ModbusData mbreg, const i
 
 	// fn необходимо привести к диапазону 0..max
 	return max + mbreg + max + UniSetTypes::lcalibrate(fn, 0, fn_max, 0, max, false);
+}
+// -----------------------------------------------------------------------
+ostream& ModbusTCP::operator<<( ostream& os, const ModbusTCP::ADU& m )
+{
+	os << m.header << "| ";
+	mbPrintMessage(os, (ModbusByte*)&(m.pdu), szModbusHeader+m.pdu.len);
+	//return os << m.header << "| " << m.pdu;
+	return os;
 }
 // -----------------------------------------------------------------------

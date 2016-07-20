@@ -334,6 +334,7 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
 	if( timeout == UniSetTimer::WaitUpTime )
 		timeout = 15 * 60 * 1000 * 1000; // используем просто большое время (15 минут). Переведя его в наносекунды.
 
+
 	setChannelTimeout(timeout);
 	PassiveTimer tmAbort(timeout);
 
@@ -1074,7 +1075,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			}
 
 			// теперь получаем CRC
-			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])), szCRC);
+			size_t rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])), szCRC);
 
 			if( rlen1 < szCRC )
 			{

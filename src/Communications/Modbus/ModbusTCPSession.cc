@@ -54,7 +54,7 @@ ModbusTCPSession::ModbusTCPSession( int sfd, const std::unordered_set<ModbusAddr
 		ost::tpport_t p;
 
 		// если стремиться к "оптимизации по скорости"
-		// то resolve ip "медленная" операция и может стоит от неё отказаться.
+		// то getpeername "медленная" операция и может стоит от неё отказаться.
 		ost::InetAddress iaddr = sock->getIPV4Peer(&p);
 
 		if( !iaddr.isInetAddress() )
@@ -274,7 +274,7 @@ void ModbusTCPSession::final()
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPSession::sendData( unsigned char* buf, int len )
 {
-	qsend.push( new UTCPCore::Buffer(buf, len) );
+	qsend.emplace( new UTCPCore::Buffer(buf, len) );
 	return erNoError;
 }
 // -------------------------------------------------------------------------
@@ -363,30 +363,22 @@ mbErrCode ModbusTCPSession::tcp_processing( ModbusTCP::MBAPHeader& mhead )
 	return erNoError;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode ModbusTCPSession::post_send_request( ModbusRTU::ModbusMessage& request )
+ModbusRTU::mbErrCode ModbusTCPSession::post_send_request( ModbusTCP::ADU& request )
 {
 	return erNoError;
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPSession::pre_send_request( ModbusMessage& request )
+mbErrCode ModbusTCPSession::make_adu_header( ModbusTCP::ADU& req )
 {
-	curQueryHeader.len = request.len + szModbusHeader;
+	req.header = curQueryHeader;
+	req.header.len = req.pdu.len + szModbusHeader;
 
 	if( crcNoCheckit )
-		curQueryHeader.len -= szCRC;
+		req.header.len -= szCRC;
 
-	curQueryHeader.swapdata();
+	req.len = sizeof(req.header) + req.header.len;
 
-	if( dlog->is_info() )
-	{
-		dlog->info() << peername << "(pre_send_request): send tcp header: ";
-		mbPrintMessage( dlog->info(false), (ModbusByte*)(&curQueryHeader), sizeof(curQueryHeader));
-		dlog->info(false) << endl;
-	}
-
-	sendData((unsigned char*)(&curQueryHeader), sizeof(curQueryHeader));
-	curQueryHeader.swapdata();
-
+	//req.header.swapdata();
 	return erNoError;
 }
 // -------------------------------------------------------------------------

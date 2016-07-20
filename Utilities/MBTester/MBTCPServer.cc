@@ -138,14 +138,14 @@ ModbusRTU::mbErrCode MBTCPServer::readInputStatus( ReadInputStatusMessage& query
 
 	if( replyVal == -1 )
 	{
-		int bnum = 0;
-		int i = 0;
+		size_t bnum = 0;
+		size_t i = 0;
 
 		while( i < query.count )
 		{
 			reply.addData(0);
 
-			for( auto nbit = 0; nbit < BitsPerByte && i < query.count; nbit++, i++ )
+			for( size_t nbit = 0; nbit < BitsPerByte && i < query.count; nbit++, i++ )
 				reply.setBit(bnum, nbit, d.b[nbit]);
 
 			bnum++;
