@@ -169,7 +169,7 @@ mbErrCode ModbusRTUSlave::realReceive(const std::unordered_set<ModbusAddr>& vmba
 			// то посылаем
 			if( res < erInternalErrorCode )
 			{
-				ErrorRetMessage em( buf.addr, buf.func, res );
+				ErrorRetMessage em( buf.addr(), buf.func(), res );
 				buf = em.transport_msg();
 				send(buf);
 				printProcessingTime();

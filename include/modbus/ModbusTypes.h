@@ -21,12 +21,12 @@
 namespace ModbusRTU
 {
 	// Базовые типы
-	typedef unsigned char ModbusByte;    /*!< modbus-байт */
+	typedef uint8_t ModbusByte;    /*!< modbus-байт */
 	const size_t BitsPerByte = 8;
-	typedef unsigned char ModbusAddr;    /*!< адрес узла в modbus-сети */
-	typedef unsigned short ModbusData;    /*!< размер данных в modbus-сообщениях */
+	typedef uint8_t ModbusAddr;    /*!< адрес узла в modbus-сети */
+	typedef uint16_t ModbusData;    /*!< размер данных в modbus-сообщениях */
 	const size_t BitsPerData = 16;
-	typedef unsigned short ModbusCRC;    /*!< размер CRC16 в modbus-сообщениях */
+	typedef uint16_t ModbusCRC;    /*!< размер CRC16 в modbus-сообщениях */
 
 	// ---------------------------------------------------------------------
 	/*! Коды используемых функций (согласно описанию modbus) */
@@ -132,10 +132,10 @@ namespace ModbusRTU
 
 	const unsigned char MBErrMask = 0x80;
 	// ---------------------------------------------------------------------
-	unsigned short SWAPSHORT(unsigned short x);
+	uint16_t SWAPSHORT( uint16_t x );
 	// ---------------------------------------------------------------------
 	/*! Расчёт контрольной суммы */
-	ModbusCRC checkCRC( ModbusByte* start, int len );
+	ModbusCRC checkCRC( ModbusByte* start, size_t len );
 	const size_t szCRC = sizeof(ModbusCRC); /*!< размер данных для контрольной суммы */
 	// ---------------------------------------------------------------------
 	/*! вывод сообщения */
@@ -161,15 +161,29 @@ namespace ModbusRTU
 	} __attribute__((packed));
 
 	const size_t szModbusHeader = sizeof(ModbusHeader);
+
 	std::ostream& operator<<(std::ostream& os, const ModbusHeader& m );
 	std::ostream& operator<<(std::ostream& os, const ModbusHeader* m );
+	// -----------------------------------------------------------------------
+	struct ADUHeader
+	{
+		ModbusRTU::ModbusData tID; /*!< transaction ID */
+		ModbusRTU::ModbusData pID; /*!< protocol ID */
+		ModbusRTU::ModbusData len; /*!< lenght */
+
+		ADUHeader(): tID(0), pID(0), len(0) {}
+
+		void swapdata();
+
+	} __attribute__((packed));
+
+	std::ostream& operator<<(std::ostream& os, const ADUHeader& m );
 	// -----------------------------------------------------------------------
 
 	/*! Базовое (сырое) сообщение
 	    \todo Может переименовать ModbusMessage в TransportMessage?
 	*/
-	struct ModbusMessage:
-		public ModbusHeader
+	struct ModbusMessage
 	{
 		ModbusMessage();
 
@@ -178,10 +192,29 @@ namespace ModbusRTU
 		ModbusMessage( const ModbusMessage& ) = default;
 		ModbusMessage& operator=(const ModbusMessage& ) = default;
 
+		inline ModbusByte func() const { return pduhead.func; }
+		inline ModbusAddr addr() const { return pduhead.addr; }
+		inline ModbusRTU::ModbusData tID() const { return aduhead.tID; }
+		inline ModbusRTU::ModbusData pID() const { return aduhead.pID; }
+		inline ModbusRTU::ModbusData aduLen() const { return aduhead.len; }
+
+		unsigned char* buf();
+		ModbusRTU::ModbusData len() const;
+		void swapHead();
+		void makeHead( ModbusRTU::ModbusData tID, bool noCRC = true, ModbusRTU::ModbusData pID=0 );
+
+		ModbusRTU::ModbusData pduLen() const;
+		ModbusCRC pduCRC( size_t len ) const;
+		static size_t maxSizeOfMessage();
+
+		void clear();
+
+		ADUHeader aduhead;
+		ModbusHeader pduhead;
 		ModbusByte data[MAXLENPACKET + szCRC];   /*!< данные */
 
 		// Это поле вспомогательное и игнорируется при пересылке
-		size_t len = { 0 };    /*!< фактическая длина */
+		size_t dlen = { 0 };  /*!< фактическая длина сообщения */
 	} __attribute__((packed));
 
 	std::ostream& operator<<(std::ostream& os, const ModbusMessage& m );
@@ -1572,40 +1605,6 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, FileTransferRetMessage* m );
 	// -----------------------------------------------------------------------
 } // end of ModbusRTU namespace
-// ---------------------------------------------------------------------------
-namespace ModbusTCP
-{
-	struct MBAPHeader
-	{
-		ModbusRTU::ModbusData    tID; /*!< transaction ID */
-		ModbusRTU::ModbusData    pID; /*!< protocol ID */
-		ModbusRTU::ModbusData    len; /*!< lenght */
-		/*        ModbusRTU::ModbusByte    uID; */ /*!< unit ID */ /* <------- see ModbusHeader */
-
-		MBAPHeader(): tID(0), pID(0), len(0) /*,uID(0) */ {}
-
-		void swapdata();
-
-	} __attribute__((packed));
-
-	std::ostream& operator<<(std::ostream& os, const MBAPHeader& m );
-
-	// просто агрегированное сообщение
-	struct ADU
-	{
-		MBAPHeader header;
-		ModbusRTU::ModbusMessage pdu; // здесь ссылка!! (т.к. ADU это просто обёртка для удобной посылки данных)
-
-		size_t len = { 0 };
-
-		ADU( const ModbusRTU::ModbusMessage& m ):pdu(m),len(sizeof(header) + m.len){}
-
-	} __attribute__((packed));
-
-	std::ostream& operator<<(std::ostream& os, const ADU& m );
-
-	// -----------------------------------------------------------------------
-} // end of namespace ModbusTCP
 // ---------------------------------------------------------------------------
 #endif // ModbusTypes_H_
 // ---------------------------------------------------------------------------

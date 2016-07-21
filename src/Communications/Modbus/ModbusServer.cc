@@ -105,10 +105,10 @@ std::string ModbusServer::vaddr2str( const std::unordered_set<ModbusAddr>& vaddr
 // --------------------------------------------------------------------------------
 mbErrCode ModbusServer::processing( ModbusMessage& buf )
 {
-	if( buf.func == fnReadCoilStatus )
+	if( buf.func() == fnReadCoilStatus )
 	{
 		ReadCoilMessage mRead(buf);
-		ReadCoilRetMessage reply(buf.addr); // addr?
+		ReadCoilRetMessage reply(buf.pduhead.addr); // addr?
 		// вызываем обработчик..
 		mbErrCode res = readCoilStatus( mRead, reply );
 
@@ -138,10 +138,10 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// --------------------------------
 		return res;
 	}
-	else if( buf.func == fnReadInputStatus )
+	else if( buf.func() == fnReadInputStatus )
 	{
 		ReadInputStatusMessage mRead(buf);
-		ReadInputStatusRetMessage reply(buf.addr); // addr?
+		ReadInputStatusRetMessage reply(buf.pduhead.addr); // addr?
 		// вызываем обработчик..
 		mbErrCode res = readInputStatus( mRead, reply );
 
@@ -171,10 +171,10 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// --------------------------------
 		return res;
 	}
-	else if( buf.func == fnReadOutputRegisters )
+	else if( buf.func() == fnReadOutputRegisters )
 	{
 		ReadOutputMessage mRead(buf);
-		ReadOutputRetMessage reply(buf.addr); // addr?
+		ReadOutputRetMessage reply(buf.pduhead.addr); // addr?
 		// вызываем обработчик..
 		mbErrCode res = readOutputRegisters( mRead, reply );
 
@@ -204,10 +204,10 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// --------------------------------
 		return res;
 	}
-	else if( buf.func == fnReadInputRegisters )
+	else if( buf.func() == fnReadInputRegisters )
 	{
 		ReadInputMessage mRead(buf);
-		ReadInputRetMessage reply(buf.addr); // addr?
+		ReadInputRetMessage reply(buf.pduhead.addr); // addr?
 		// вызываем обработчик..
 		mbErrCode res = readInputRegisters( mRead, reply );
 
@@ -237,10 +237,10 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// --------------------------------
 		return res;
 	}
-	else if( buf.func == fnForceMultipleCoils )
+	else if( buf.func() == fnForceMultipleCoils )
 	{
 		ForceCoilsMessage mWrite(buf);
-		ForceCoilsRetMessage reply(buf.addr); // addr?
+		ForceCoilsRetMessage reply(buf.pduhead.addr); // addr?
 
 		// вызываем обработчик..
 		mbErrCode res = forceMultipleCoils( mWrite, reply );
@@ -271,10 +271,10 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// --------------------------------
 		return res;
 	}
-	else if( buf.func == fnWriteOutputRegisters )
+	else if( buf.func() == fnWriteOutputRegisters )
 	{
 		WriteOutputMessage mWrite(buf);
-		WriteOutputRetMessage reply(buf.addr); // addr?
+		WriteOutputRetMessage reply(buf.pduhead.addr); // addr?
 
 		// вызываем обработчик..
 		mbErrCode res = writeOutputRegisters( mWrite, reply );
@@ -305,10 +305,10 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// --------------------------------
 		return res;
 	}
-	else if( buf.func == fnDiagnostics )
+	else if( buf.func() == fnDiagnostics )
 	{
 		DiagnosticMessage mDiag(buf);
-		DiagnosticRetMessage reply(buf.addr, (DiagnosticsSubFunction)mDiag.subf );
+		DiagnosticRetMessage reply(buf.pduhead.addr, (DiagnosticsSubFunction)mDiag.subf );
 		mbErrCode res = diagnostics( mDiag, reply );
 
 		// в случае ошибок ответа не посылаем
@@ -336,10 +336,10 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// --------------------------------
 		return res;
 	}
-	else if( buf.func == fnMEI )
+	else if( buf.func() == fnMEI )
 	{
 		MEIMessageRDI mRDI(buf);
-		MEIMessageRetRDI reply( buf.addr, mRDI.devID, 0, 0, mRDI.objID );
+		MEIMessageRetRDI reply( buf.pduhead.addr, mRDI.devID, 0, 0, mRDI.objID );
 
 		mbErrCode res = read4314( mRDI, reply );
 
@@ -368,10 +368,10 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// --------------------------------
 		return res;
 	}
-	else if( buf.func == fnForceSingleCoil )
+	else if( buf.func() == fnForceSingleCoil )
 	{
 		ForceSingleCoilMessage mWrite(buf);
-		ForceSingleCoilRetMessage reply(buf.addr); // addr?
+		ForceSingleCoilRetMessage reply(buf.pduhead.addr); // addr?
 
 		// вызываем обработчик..
 		mbErrCode res = forceSingleCoil( mWrite, reply );
@@ -402,10 +402,10 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// --------------------------------
 		return res;
 	}
-	else if( buf.func == fnWriteOutputSingleRegister )
+	else if( buf.func() == fnWriteOutputSingleRegister )
 	{
 		WriteSingleOutputMessage mWrite(buf);
-		WriteSingleOutputRetMessage reply(buf.addr); // addr?
+		WriteSingleOutputRetMessage reply(buf.pduhead.addr); // addr?
 
 		// вызываем обработчик..
 		mbErrCode res = writeOutputSingleRegister( mWrite, reply );
@@ -436,10 +436,10 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// --------------------------------
 		return res;
 	}
-	else if( buf.func == fnJournalCommand )
+	else if( buf.func() == fnJournalCommand )
 	{
 		JournalCommandMessage mJournal(buf);
-		JournalCommandRetMessage reply(buf.addr); // addr?
+		JournalCommandRetMessage reply(buf.pduhead.addr); // addr?
 		// вызываем обработчик..
 		mbErrCode res = journalCommand( mJournal, reply );
 
@@ -469,10 +469,10 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// --------------------------------
 		return res;
 	}
-	else if( buf.func == fnSetDateTime )
+	else if( buf.func() == fnSetDateTime )
 	{
 		SetDateTimeMessage mSet(buf);
-		SetDateTimeRetMessage reply(buf.addr); // addr?
+		SetDateTimeRetMessage reply(buf.pduhead.addr); // addr?
 		// вызываем обработчик..
 		mbErrCode res = setDateTime( mSet, reply );
 
@@ -502,10 +502,10 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// --------------------------------
 		return res;
 	}
-	else if( buf.func == fnRemoteService )
+	else if( buf.func() == fnRemoteService )
 	{
 		RemoteServiceMessage query(buf);
-		RemoteServiceRetMessage reply(buf.addr);
+		RemoteServiceRetMessage reply(buf.pduhead.addr);
 		// вызываем обработчик..
 		mbErrCode res = remoteService( query, reply );
 
@@ -535,10 +535,10 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// --------------------------------
 		return res;
 	}
-	else if( buf.func == fnFileTransfer )
+	else if( buf.func() == fnFileTransfer )
 	{
 		FileTransferMessage query(buf);
-		FileTransferRetMessage reply(buf.addr);
+		FileTransferRetMessage reply(buf.pduhead.addr);
 		// вызываем обработчик..
 		mbErrCode res = fileTransfer( query, reply );
 
@@ -569,7 +569,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		return res;
 	}
 
-	ErrorRetMessage em( buf.addr, buf.func, erUnExpectedPacketType );
+	ErrorRetMessage em( buf.addr(), buf.func(), erUnExpectedPacketType );
 	buf = em.transport_msg();
 	send(buf);
 	printProcessingTime();
@@ -586,9 +586,7 @@ mbErrCode ModbusServer::recv( const std::unordered_set<ModbusRTU::ModbusAddr>& v
 	setChannelTimeout(timeout);
 	PassiveTimer tmAbort(timeout);
 
-	// предварительно чистим буфер
-	memset(&rbuf, 0, sizeof(rbuf));
-	int bcnt = 0;  // receive bytes count
+	size_t bcnt = 0;  // receive bytes count
 
 	try
 	{
@@ -597,9 +595,9 @@ mbErrCode ModbusServer::recv( const std::unordered_set<ModbusRTU::ModbusAddr>& v
 
 		while( !tmAbort.checkTime() )
 		{
-			bcnt = getNextData((unsigned char*)(&rbuf), sizeof(ModbusAddr));
+			bcnt = getNextData((unsigned char*)(&rbuf.pduhead.addr), sizeof(rbuf.pduhead.addr));
 
-			if( bcnt > 0 && checkAddr(vaddr, rbuf.addr) )
+			if( bcnt > 0 && checkAddr(vaddr, rbuf.addr()) )
 			{
 				begin = true;
 				break;
@@ -615,13 +613,13 @@ mbErrCode ModbusServer::recv( const std::unordered_set<ModbusRTU::ModbusAddr>& v
 		            // Lav: конечно стоит, нам же надо буфер чистить
 		*/
 		// Проверка кому адресован пакет... (только если не включён режим отвечать на любые адреса)
-		if( !(onBroadcast && rbuf.addr == BroadcastAddr) && !checkAddr(vaddr, rbuf.addr) )
+		if( !(onBroadcast && rbuf.addr() == BroadcastAddr) && !checkAddr(vaddr, rbuf.addr()) )
 		{
 			if( dlog->is_warn() )
 			{
 				ostringstream err;
 				err << "(recv): BadNodeAddress. my= " << vaddr2str(vaddr)
-					<< " msg.addr=" << addr2str(rbuf.addr);
+					<< " msg.addr=" << addr2str(rbuf.addr());
 				dlog->warn() << err.str() << endl;
 			}
 
@@ -648,113 +646,113 @@ mbErrCode ModbusServer::recv( const std::unordered_set<ModbusRTU::ModbusAddr>& v
 // -------------------------------------------------------------------------
 mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 {
-	int bcnt = 1; // 1 - addr
+	size_t bcnt = 1; // 1 - addr
 
 	try
 	{
 		// -----------------------------------
 		tmProcessing.setTiming(replyTimeout_ms);
 		// recv func number
-		size_t k = getNextData((unsigned char*)(&rbuf.func), sizeof(ModbusByte));
+		size_t k = getNextData((unsigned char*)(&rbuf.pduhead.func), sizeof(rbuf.pduhead.func));
 
 		if( k < sizeof(ModbusByte) )
 		{
-			dlog->warn() << "(recv): " << (ModbusHeader*)(&rbuf) << endl;
+			dlog->warn() << "(recv): " << (ModbusHeader*)(&rbuf.pduhead) << endl;
 			dlog->warn() << "(recv): заголовок меньше положенного..." << endl;
 			cleanupChannel();
 			return erInvalidFormat;
 		}
 
 		bcnt += k;
-		rbuf.len = 0;
+		rbuf.dlen = 0;
 
 		if( dlog->is_info() )
-			dlog->info() << "(recv): header: " << rbuf << endl;
+			dlog->info() << "(recv): header: " << rbuf.pduhead << endl;
 
 		// Определяем тип сообщения
-		switch( rbuf.func )
+		switch( rbuf.func() )
 		{
 			case fnReadCoilStatus:
-				rbuf.len = ReadCoilMessage::szData();
+				rbuf.dlen = ReadCoilMessage::szData();
 
 				if( crcNoCheckit )
-					rbuf.len -= szCRC;
+					rbuf.dlen -= szCRC;
 
 				break;
 
 			case fnReadInputStatus:
-				rbuf.len = ReadInputStatusMessage::szData();
+				rbuf.dlen = ReadInputStatusMessage::szData();
 
 				if( crcNoCheckit )
-					rbuf.len -= szCRC;
+					rbuf.dlen -= szCRC;
 
 				break;
 
 			case fnReadOutputRegisters:
-				rbuf.len = ReadOutputMessage::szData();
+				rbuf.dlen = ReadOutputMessage::szData();
 
 				if( crcNoCheckit )
-					rbuf.len -= szCRC;
+					rbuf.dlen -= szCRC;
 
 				break;
 
 			case fnReadInputRegisters:
-				rbuf.len = ReadInputMessage::szData();
+				rbuf.dlen = ReadInputMessage::szData();
 
 				if( crcNoCheckit )
-					rbuf.len -= szCRC;
+					rbuf.dlen -= szCRC;
 
 				break;
 
 			case fnForceMultipleCoils:
-				rbuf.len = ForceCoilsMessage::szHead();
+				rbuf.dlen = ForceCoilsMessage::szHead();
 				break;
 
 			case fnWriteOutputRegisters:
-				rbuf.len = WriteOutputMessage::szHead();
+				rbuf.dlen = WriteOutputMessage::szHead();
 				break;
 
 			case fnForceSingleCoil:
-				rbuf.len = ForceSingleCoilMessage::szHead();
+				rbuf.dlen = ForceSingleCoilMessage::szHead();
 				break;
 
 			case fnWriteOutputSingleRegister:
-				rbuf.len = WriteSingleOutputMessage::szHead();
+				rbuf.dlen = WriteSingleOutputMessage::szHead();
 				break;
 
 			case fnDiagnostics:
-				rbuf.len = DiagnosticMessage::szHead();
+				rbuf.dlen = DiagnosticMessage::szHead();
 				break;
 
 			case fnMEI:
-				rbuf.len = MEIMessageRDI::szHead();
+				rbuf.dlen = MEIMessageRDI::szHead();
 				break;
 
 			case fnJournalCommand:
-				rbuf.len = JournalCommandMessage::szData();
+				rbuf.dlen = JournalCommandMessage::szData();
 
 				if( crcNoCheckit )
-					rbuf.len -= szCRC;
+					rbuf.dlen -= szCRC;
 
 				break;
 
 			case fnSetDateTime:
-				rbuf.len = SetDateTimeMessage::szData();
+				rbuf.dlen = SetDateTimeMessage::szData();
 
 				if( crcNoCheckit )
-					rbuf.len -= szCRC;
+					rbuf.dlen -= szCRC;
 
 				break;
 
 			case fnRemoteService:
-				rbuf.len = RemoteServiceMessage::szHead();
+				rbuf.dlen = RemoteServiceMessage::szHead();
 				break;
 
 			case fnFileTransfer:
-				rbuf.len = FileTransferMessage::szData();
+				rbuf.dlen = FileTransferMessage::szData();
 
 				if( crcNoCheckit )
-					rbuf.len -= szCRC;
+					rbuf.dlen -= szCRC;
 
 				break;
 
@@ -767,17 +765,17 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		setChannelTimeout(10); // 10 msec
 
 		// Получаем остальную часть сообщения
-		size_t rlen = getNextData((unsigned char*)(rbuf.data), rbuf.len);
+		size_t rlen = getNextData((unsigned char*)(rbuf.data), rbuf.dlen);
 
-		if( rlen < rbuf.len )
+		if( rlen < rbuf.dlen )
 		{
 			if( dlog->is_warn() )
 			{
 				//                rbuf.len = bcnt + rlen - szModbusHeader;
 				dlog->warn() << "(recv): buf: " << rbuf << endl;
-				dlog->warn() << "(recv)(" << rbuf.func
+				dlog->warn() << "(recv)(" << rbuf.func()
 							 << "): Получили данных меньше чем ждали...(recv="
-							 << rlen << " < wait=" << (int)rbuf.len << ")" << endl;
+							 << rlen << " < wait=" << (int)rbuf.dlen << ")" << endl;
 			}
 
 			cleanupChannel();
@@ -787,7 +785,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		bcnt += rlen;
 
 		// получаем остальное...
-		if( rbuf.func == fnReadCoilStatus )
+		if( rbuf.func() == fnReadCoilStatus )
 		{
 			ReadCoilMessage mRead(rbuf);
 
@@ -799,7 +797,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			if( crcNoCheckit )
 				return erNoError;
 
-			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf), bcnt - szCRC);
+			ModbusData tcrc = rbuf.pduCRC( bcnt - szCRC);
 
 			if( tcrc != mRead.crc )
 			{
@@ -817,7 +815,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			return erNoError;
 		}
-		else if( rbuf.func == fnReadInputStatus )
+		else if( rbuf.func() == fnReadInputStatus )
 		{
 			ReadInputStatusMessage mRead(rbuf);
 
@@ -829,7 +827,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			if( crcNoCheckit )
 				return erNoError;
 
-			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf), bcnt - szCRC);
+			ModbusData tcrc = rbuf.pduCRC( bcnt - szCRC);
 
 			if( tcrc != mRead.crc )
 			{
@@ -847,7 +845,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			return erNoError;
 		}
-		else if( rbuf.func == fnReadOutputRegisters )
+		else if( rbuf.func() == fnReadOutputRegisters )
 		{
 			ReadOutputMessage mRead(rbuf);
 
@@ -859,7 +857,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			// Проверяем контрольную сумму
 			// от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
-			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf), bcnt - szCRC);
+			ModbusData tcrc = rbuf.pduCRC( bcnt - szCRC);
 
 			if( tcrc != mRead.crc )
 			{
@@ -877,7 +875,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			return erNoError;
 		}
-		else if( rbuf.func == fnReadInputRegisters )
+		else if( rbuf.func() == fnReadInputRegisters )
 		{
 			ReadInputMessage mRead(rbuf);
 
@@ -889,7 +887,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			// Проверяем контрольную сумму
 			// от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
-			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf), bcnt - szCRC);
+			ModbusData tcrc = rbuf.pduCRC(bcnt - szCRC);
 
 			if( tcrc != mRead.crc )
 			{
@@ -907,7 +905,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			return erNoError;
 		}
-		else if( rbuf.func == fnForceMultipleCoils )
+		else if( rbuf.func() == fnForceMultipleCoils )
 		{
 			int szDataLen = ForceCoilsMessage::getDataLen(rbuf) + szCRC;
 
@@ -923,10 +921,10 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			{
 				if( dlog->is_warn() )
 				{
-					rbuf.len = bcnt + rlen1 - szModbusHeader;
+					rbuf.dlen = bcnt + rlen1 - szModbusHeader;
 					dlog->warn() << "(0x0F): buf: " << rbuf << endl;
 					dlog->warn() << "(0x0F)("
-								 << rbuf.func << "):(fnForceMultipleCoils) "
+								 << rbuf.func() << "):(fnForceMultipleCoils) "
 								 << "Получили данных меньше чем ждали...("
 								 << rlen1 << " < " << szDataLen << ")" << endl;
 				}
@@ -936,7 +934,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			}
 
 			bcnt += rlen1;
-			rbuf.len = bcnt - szModbusHeader;
+			rbuf.dlen = bcnt - szModbusHeader;
 
 			ForceCoilsMessage mWrite(rbuf);
 
@@ -949,7 +947,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				// от начала(включая заголовок)
 				// и до конца (исключив последний элемент содержащий CRC)
 				// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
-				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf), bcnt - szCRC);
+				ModbusData tcrc = rbuf.pduCRC( bcnt - szCRC);
 
 				if( tcrc != mWrite.crc )
 				{
@@ -966,7 +964,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			{
 				if( dlog->is_warn() )
 				{
-					dlog->warn() << "(0x0F): (" << rbuf.func
+					dlog->warn() << "(0x0F): (" << rbuf.func()
 								 << ")(fnForceMultipleCoils): "
 								 << ": некорректный формат сообщения..." << endl;
 				}
@@ -977,7 +975,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			return erNoError;
 		}
-		else if( rbuf.func == fnWriteOutputRegisters )
+		else if( rbuf.func() == fnWriteOutputRegisters )
 		{
 			int szDataLen = WriteOutputMessage::getDataLen(rbuf) + szCRC;
 
@@ -993,10 +991,10 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			{
 				if( dlog->is_warn() )
 				{
-					rbuf.len = bcnt + rlen1 - szModbusHeader;
+					rbuf.dlen = bcnt + rlen1 - szModbusHeader;
 					dlog->warn() << "(0x10): buf: " << rbuf << endl;
 					dlog->warn() << "(0x10)("
-								 << rbuf.func << "):(fnWriteOutputRegisters) "
+								 << rbuf.func() << "):(fnWriteOutputRegisters) "
 								 << "Получили данных меньше чем ждали...("
 								 << rlen1 << " < " << szDataLen << ")" << endl;
 				}
@@ -1006,7 +1004,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			}
 
 			bcnt += rlen1;
-			rbuf.len = bcnt - szModbusHeader;
+			rbuf.dlen = bcnt - szModbusHeader;
 
 			WriteOutputMessage mWrite(rbuf);
 
@@ -1019,7 +1017,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				// от начала(включая заголовок)
 				// и до конца (исключив последний элемент содержащий CRC)
 				// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
-				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf), bcnt - szCRC);
+				ModbusData tcrc = rbuf.pduCRC( bcnt - szCRC);
 
 				if( tcrc != mWrite.crc )
 				{
@@ -1038,7 +1036,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			if( !mWrite.checkFormat() )
 			{
-				dlog->warn() << "(0x10): (" << rbuf.func
+				dlog->warn() << "(0x10): (" << rbuf.func()
 							 << ")(fnWriteOutputRegisters): "
 							 << ": некорректный формат сообщения..." << endl;
 				cleanupChannel();
@@ -1047,7 +1045,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			return erNoError;
 		}
-		else if( rbuf.func == fnForceSingleCoil )
+		else if( rbuf.func() == fnForceSingleCoil )
 		{
 			int szDataLen = ForceSingleCoilMessage::getDataLen(rbuf) + szCRC;
 
@@ -1063,10 +1061,10 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			{
 				if( dlog->is_warn() )
 				{
-					rbuf.len = bcnt + rlen1 - szModbusHeader;
+					rbuf.dlen = bcnt + rlen1 - szModbusHeader;
 					dlog->warn() << "(0x05): buf: " << rbuf << endl;
 					dlog->warn() << "(0x05)("
-								 << rbuf.func << "):(fnForceSingleCoil) "
+								 << rbuf.func() << "):(fnForceSingleCoil) "
 								 << "Получили данных меньше чем ждали...("
 								 << rlen1 << " < " << szDataLen << ")" << endl;
 				}
@@ -1076,7 +1074,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			}
 
 			bcnt += rlen1;
-			rbuf.len = bcnt - szModbusHeader;
+			rbuf.dlen = bcnt - szModbusHeader;
 
 			ForceSingleCoilMessage mWrite(rbuf);
 
@@ -1089,7 +1087,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				// от начала(включая заголовок)
 				// и до конца (исключив последний элемент содержащий CRC)
 				// int mlen = szModbusHeader + mWrite.szHead() + mWrite.bcnt;
-				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf), bcnt - szCRC);
+				ModbusData tcrc = rbuf.pduCRC( bcnt - szCRC);
 
 				if( tcrc != mWrite.crc )
 				{
@@ -1108,7 +1106,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			if( !mWrite.checkFormat() )
 			{
-				dlog->warn() << "(0x05): (" << rbuf.func
+				dlog->warn() << "(0x05): (" << rbuf.func()
 							 << ")(fnForceSingleCoil): "
 							 << ": некорректный формат сообщения..." << endl;
 				cleanupChannel();
@@ -1117,7 +1115,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			return erNoError;
 		}
-		else if( rbuf.func == fnWriteOutputSingleRegister )
+		else if( rbuf.func() == fnWriteOutputSingleRegister )
 		{
 			int szDataLen = WriteSingleOutputMessage::getDataLen(rbuf) + szCRC;
 
@@ -1133,10 +1131,10 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			{
 				if( dlog->is_warn() )
 				{
-					rbuf.len = bcnt + rlen1 - szModbusHeader;
+					rbuf.dlen = bcnt + rlen1 - szModbusHeader;
 					dlog->warn() << "(0x06): buf: " << rbuf << endl;
 					dlog->warn() << "(0x06)("
-								 << rbuf.func << "):(fnWriteOutputSingleRegisters) "
+								 << rbuf.func() << "):(fnWriteOutputSingleRegisters) "
 								 << "Получили данных меньше чем ждали...("
 								 << rlen1 << " < " << szDataLen << ")" << endl;
 				}
@@ -1146,7 +1144,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			}
 
 			bcnt += rlen1;
-			rbuf.len = bcnt - szModbusHeader;
+			rbuf.dlen = bcnt - szModbusHeader;
 
 			WriteSingleOutputMessage mWrite(rbuf);
 
@@ -1159,7 +1157,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				// от начала(включая заголовок)
 				// и до конца (исключив последний элемент содержащий CRC)
 				// int mlen = szModbusHeader + mWrite.szHead() + mWrite.bcnt;
-				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf), bcnt - szCRC);
+				ModbusData tcrc = rbuf.pduCRC( bcnt - szCRC);
 
 				if( tcrc != mWrite.crc )
 				{
@@ -1178,7 +1176,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			if( !mWrite.checkFormat() )
 			{
-				dlog->warn() << "(0x06): (" << rbuf.func
+				dlog->warn() << "(0x06): (" << rbuf.func()
 							 << ")(fnWriteOutputSingleRegisters): "
 							 << ": некорректный формат сообщения..." << endl;
 				cleanupChannel();
@@ -1187,7 +1185,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			return erNoError;
 		}
-		else if( rbuf.func == fnDiagnostics )
+		else if( rbuf.func() == fnDiagnostics )
 		{
 			int szDataLen = DiagnosticMessage::getDataLen(rbuf) + szCRC;
 
@@ -1203,10 +1201,10 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			{
 				if( dlog->is_warn() )
 				{
-					rbuf.len = bcnt + rlen1 - szModbusHeader;
+					rbuf.dlen = bcnt + rlen1 - szModbusHeader;
 					dlog->warn() << "(0x08): buf: " << rbuf << endl;
 					dlog->warn() << "(0x08)("
-								 << rbuf.func << "):(fnDiagnostics) "
+								 << rbuf.func() << "):(fnDiagnostics) "
 								 << "Получили данных меньше чем ждали...("
 								 << rlen1 << " < " << szDataLen << ")" << endl;
 				}
@@ -1216,7 +1214,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			}
 
 			bcnt += rlen1;
-			rbuf.len = bcnt - szModbusHeader;
+			rbuf.dlen = bcnt - szModbusHeader;
 
 			DiagnosticMessage mDiag(rbuf);
 
@@ -1229,7 +1227,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				// от начала(включая заголовок)
 				// и до конца (исключив последний элемент содержащий CRC)
 				// int mlen = szModbusHeader + mWrite.szHead() + mWrite.bcnt;
-				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf), bcnt - szCRC);
+				ModbusData tcrc = rbuf.pduCRC( bcnt - szCRC);
 
 				if( tcrc != mDiag.crc )
 				{
@@ -1258,7 +1256,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			*/
 			return erNoError;
 		}
-		else if( rbuf.func == fnMEI )
+		else if( rbuf.func() == fnMEI )
 		{
 			if( !crcNoCheckit )
 			{
@@ -1268,10 +1266,10 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				{
 					if( dlog->is_warn() )
 					{
-						rbuf.len = bcnt + rlen1 - szModbusHeader;
+						rbuf.dlen = bcnt + rlen1 - szModbusHeader;
 						dlog->warn() << "(0x2B/0x0E): buf: " << rbuf << endl;
 						dlog->warn() << "(0x2B/0x0E)("
-									 << rbuf.func << "):(fnMEI) "
+									 << rbuf.func() << "):(fnMEI) "
 									 << "Получили данных меньше чем ждали...("
 									 << rlen1 << " < " << szCRC << ")" << endl;
 					}
@@ -1281,7 +1279,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				}
 
 				bcnt += rlen1;
-				rbuf.len = bcnt - szModbusHeader;
+				rbuf.dlen = bcnt - szModbusHeader;
 			}
 
 			MEIMessageRDI mRDI(rbuf);
@@ -1296,7 +1294,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			// от начала(включая заголовок)
 			// и до конца (исключив последний элемент содержащий CRC)
 			// int mlen = szModbusHeader + mWrite.szHead() + mWrite.bcnt;
-			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf), bcnt - szCRC);
+			ModbusData tcrc = rbuf.pduCRC( bcnt - szCRC);
 
 			if( tcrc != mRDI.crc )
 			{
@@ -1314,7 +1312,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			return erNoError;
 		}
-		else if( rbuf.func == fnJournalCommand )
+		else if( rbuf.func() == fnJournalCommand )
 		{
 			JournalCommandMessage mRead(rbuf);
 
@@ -1326,8 +1324,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			// Проверяем контрольную сумму
 			// от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
-			// ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),sizeof(ReadOutputMessage)-szCRC);
-			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf), bcnt - szCRC);
+			// ModbusData tcrc = rbuf.pduCRC(sizeof(ReadOutputMessage)-szCRC);
+			ModbusData tcrc = rbuf.pduCRC( bcnt - szCRC);
 
 			if( tcrc != mRead.crc )
 			{
@@ -1345,7 +1343,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			return erNoError;
 		}
-		else if( rbuf.func == fnSetDateTime )
+		else if( rbuf.func() == fnSetDateTime )
 		{
 			SetDateTimeMessage mSet(rbuf);
 
@@ -1356,8 +1354,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			{
 				// Проверяем контрольную сумму
 				// от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
-				// ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),sizeof(ReadOutputMessage)-szCRC);
-				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf), bcnt - szCRC);
+				// ModbusData tcrc = rbuf.pduCRC(sizeof(ReadOutputMessage)-szCRC);
+				ModbusData tcrc = rbuf.pduCRC( bcnt - szCRC);
 
 				if( tcrc != mSet.crc )
 				{
@@ -1383,7 +1381,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			return erNoError;
 		}
-		else if( rbuf.func == fnRemoteService )
+		else if( rbuf.func() == fnRemoteService )
 		{
 			int szDataLen = RemoteServiceMessage::getDataLen(rbuf) + szCRC;
 
@@ -1399,10 +1397,10 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			{
 				if( dlog->is_warn() )
 				{
-					rbuf.len = bcnt + rlen1 - szModbusHeader;
+					rbuf.dlen = bcnt + rlen1 - szModbusHeader;
 					dlog->warn() << "(0x53): buf: " << rbuf << endl;
 					dlog->warn() << "(0x53)("
-								 << rbuf.func << "):(fnWriteOutputRegisters) "
+								 << rbuf.func() << "):(fnWriteOutputRegisters) "
 								 << "Получили данных меньше чем ждали...("
 								 << rlen1 << " < " << szDataLen << ")" << endl;
 				}
@@ -1412,7 +1410,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			}
 
 			bcnt += rlen1;
-			rbuf.len = bcnt - szModbusHeader;
+			rbuf.dlen = bcnt - szModbusHeader;
 
 			RemoteServiceMessage mRServ(rbuf);
 
@@ -1426,7 +1424,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			// от начала(включая заголовок)
 			// и до конца (исключив последний элемент содержащий CRC)
 			// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
-			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf), bcnt - szCRC);
+			ModbusData tcrc = rbuf.pduCRC( bcnt - szCRC);
 
 			if( tcrc != mRServ.crc )
 			{
@@ -1444,7 +1442,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			return erNoError;
 		}
-		else if( rbuf.func == fnFileTransfer )
+		else if( rbuf.func() == fnFileTransfer )
 		{
 			FileTransferMessage mFT(rbuf);
 
@@ -1458,7 +1456,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			// от начала(включая заголовок)
 			// и до конца (исключив последний элемент содержащий CRC)
 			// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
-			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf), bcnt - szCRC);
+			ModbusData tcrc = rbuf.pduCRC( bcnt - szCRC);
 
 			if( tcrc != mFT.crc )
 			{
@@ -1739,25 +1737,21 @@ ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessa
 // -------------------------------------------------------------------------
 mbErrCode ModbusServer::send( ModbusMessage& msg )
 {
-	if( msg.len > MAXLENPACKET + szModbusHeader )
+	if( msg.len() > msg.maxSizeOfMessage() )
 	{
 		if( dlog->is_warn() )
-			dlog->warn() << "(ModbusServer::send): длина пакета больше разрешённой..." << endl;
+			dlog->warn() << "(ModbusServer::send): message len=" << msg.len()
+						 << " > MAXLEN=" << msg.maxSizeOfMessage() << endl;
 
 		return erPacketTooLong;
 	}
 
-	// в стандарте Modbus подразумевается, что данные должны посылаться одним пакетом
-	// поэтому как минимум надо делать sendData одним буфером.
-	// Для этого используем класс ADU
-	ModbusTCP::ADU adu(msg);
-
-	mbErrCode ret = make_adu_header(adu);
+	mbErrCode ret = make_adu_header(msg);
 
 	if( ret != erNoError )
 		return ret;
 
-	if( adu.len > (MAXLENPACKET + szModbusHeader + sizeof(ModbusTCP::MBAPHeader)) )
+	if( msg.len() > msg.maxSizeOfMessage() )
 	{
 		if( dlog->is_warn() )
 			dlog->warn() << "(ModbusServer::send): длина ADU-пакета больше разрешённой..." << endl;
@@ -1777,36 +1771,28 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 	}
 
 	if( dlog->is_info() )
-	{
-		if( adu.header.len == 0 )
-			dlog->info() << "(ModbusServer::send): PDU data[" << adu.pdu.len << " bytes]: " << adu.pdu << endl;
-		else
-			dlog->info() << "(ModbusServer::send): ADU data[" << adu.len << " bytes]: " << adu << endl;
-	}
+		dlog->info() << "(ModbusServer::send): ADU len=" << msg.aduLen() << " data[" << msg.len() << " bytes]: " << msg << endl;
 
 	try
 	{
-		if( adu.header.len == 0 )
-			sendData((unsigned char*)(&adu.pdu), adu.pdu.len);
-		else
-		{
-			adu.header.swapdata();
-			sendData((unsigned char*)(&adu), adu.len);
-			adu.header.swapdata(); // обратно, т.к. потом ещё будет post_send_request
-		}
+		size_t len = msg.len(); // т.к. swapHead() поменяет
+		msg.swapHead();
+		sendData(msg.buf(),len);
+		msg.swapHead(); // обратно, т.к. потом ещё будет post_send_request
 	}
 	catch( const Exception& ex ) // SystemError
 	{
 		if( dlog->is_crit() )
 			dlog->crit() << "(ModbusServer::send): " << ex << endl;
 
+		msg.swapHead();
 		return erHardwareError;
 	}
 
 	if( aftersend_msec > 0 )
 		iowait(aftersend_msec);
 
-	return post_send_request(adu);
+	return post_send_request(msg);
 }
 
 // -------------------------------------------------------------------------

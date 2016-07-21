@@ -438,6 +438,7 @@ tests/UniXmlTest/XmlTest.cc
 tests/int_unsigned.cc
 tests/Makefile.am
 tests/test.xml
+tests/develop.cc
 tests/test_callbacktimer.cc
 tests/test_conftest.cc
 tests/test_delaytimer.cc

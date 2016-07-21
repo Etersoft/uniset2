@@ -29,7 +29,7 @@ using namespace std;
 #define USE_CRC_TAB 1 // при расчёте использовать таблицы 
 // -------------------------------------------------------------------------
 
-unsigned short ModbusRTU::SWAPSHORT( unsigned short x )
+uint16_t ModbusRTU::SWAPSHORT( uint16_t x )
 {
 	return ((((x) >> 8) & 0xff) | (((x) << 8) & 0xff00));
 }
@@ -39,7 +39,7 @@ unsigned short ModbusRTU::SWAPSHORT( unsigned short x )
 
 #ifdef USE_CRC_TAB
 #if 0
-static unsigned short crc_ccitt_tab[] =
+static uint16_t crc_ccitt_tab[] =
 {
 	0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
 	0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef,
@@ -76,7 +76,7 @@ static unsigned short crc_ccitt_tab[] =
 };
 #endif
 
-static unsigned short crc_16_tab[] =
+static uint16_t crc_16_tab[] =
 {
 	0x0000, 0xc0c1, 0xc181, 0x0140, 0xc301, 0x03c0, 0x0280, 0xc241,
 	0xc601, 0x06c0, 0x0780, 0xc741, 0x0500, 0xc5c1, 0xc481, 0x0440,
@@ -115,7 +115,7 @@ static unsigned short crc_16_tab[] =
 // Lav: отключил, раз не используем
 #if 0
 // -------------------------------------------------------------------------
-static int get_crc_ccitt( unsigned short crc, unsigned char* buf, int size )
+static int get_crc_ccitt( uint16_t crc, uint8_t* buf, size_t size )
 {
 	while( size-- )
 	{
@@ -142,7 +142,7 @@ static int get_crc_ccitt( unsigned short crc, unsigned char* buf, int size )
 // -------------------------------------------------------------------------
 /* CRC-16 is based on the polynomial x^16 + x^15 + x^2 + 1.  Bits are */
 /* sent LSB to MSB. */
-static int get_crc_16( unsigned short crc, unsigned char* buf, int size )
+static int get_crc_16( uint16_t crc, uint8_t* buf, size_t size )
 {
 
 	while( size-- )
@@ -174,10 +174,10 @@ static int get_crc_16( unsigned short crc, unsigned char* buf, int size )
 /*! \todo Необходимо разобраться с разными версиями и функциями расчёта CRC
     и по возможности вынести их в отдельный модуль или класс
 */
-ModbusCRC ModbusRTU::checkCRC( ModbusByte* buf, int len )
+ModbusCRC ModbusRTU::checkCRC( ModbusByte* buf, size_t len )
 {
 	unsigned short crc = 0xffff;
-	crc = get_crc_16(crc, (unsigned char*)(buf), len);
+	crc = get_crc_16(crc, (uint8_t*)(buf), len);
 
 	//    crc = SWAPSHORT(crc);
 	return crc;
@@ -223,16 +223,72 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusHeader* m )
 // -------------------------------------------------------------------------
 
 ModbusMessage::ModbusMessage():
-	len(0)
+	dlen(0)
 {
-	addr = 0;
-	func = 0;
+	pduhead.addr = 0;
+	pduhead.func = 0;
 	memset(data, 0, sizeof(data));
 }
+// -------------------------------------------------------------------------
+unsigned char* ModbusMessage::buf()
+{
+	if( aduhead.len == 0 )
+		return (unsigned char*)&pduhead;
 
+	return (unsigned char*)&aduhead;
+}
+// -------------------------------------------------------------------------
+ModbusData ModbusMessage::len() const
+{
+	if( aduhead.len == 0 )
+		return pduLen();
+
+	return (sizeof(aduhead) + aduhead.len);
+}
+// -------------------------------------------------------------------------
+void ModbusMessage::swapHead()
+{
+	aduhead.swapdata();
+}
+// -------------------------------------------------------------------------
+void ModbusMessage::makeHead( ModbusData tID, bool noCRC, ModbusData pID )
+{
+	aduhead.tID = tID;
+	aduhead.pID = pID;
+	aduhead.len = pduLen();
+	if( noCRC )
+		aduhead.len -= szCRC;
+}
+// -------------------------------------------------------------------------
+ModbusData ModbusMessage::pduLen() const
+{
+	return (szModbusHeader + dlen);
+}
+// -------------------------------------------------------------------------
+ModbusCRC ModbusMessage::pduCRC( size_t clen ) const
+{
+	return checkCRC( (ModbusByte*)(&pduhead), clen /* sizeof(pduhead)+dlen */ );
+}
+// -------------------------------------------------------------------------
+size_t ModbusMessage::maxSizeOfMessage()
+{
+	return (MAXLENPACKET + szModbusHeader + sizeof(ModbusRTU::ADUHeader));
+}
+// -------------------------------------------------------------------------
+void ModbusMessage::clear()
+{
+	memset(this, 0, sizeof(*this));
+}
+// -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusMessage& m )
 {
-	return mbPrintMessage(os, (ModbusByte*)(&m), szModbusHeader + m.len);
+	os << m.aduhead << "| ";
+	if( m.aduLen() == 0 )
+		mbPrintMessage(os, (ModbusByte*)(&m.pduhead), sizeof(m.pduhead) + m.dlen);
+	else
+		mbPrintMessage(os, (ModbusByte*)(&m.pduhead), m.aduLen());
+	return os;
+//	return mbPrintMessage(os, (ModbusByte*)(&m), sizeof(m.aduhead) + sizeof(m.pduhead) + m.dlen);
 }
 
 std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusMessage* m )
@@ -254,7 +310,7 @@ ErrorRetMessage& ErrorRetMessage::operator=( const ModbusMessage& m )
 void ErrorRetMessage::init( const ModbusMessage& m )
 {
 	memset(this, 0, sizeof(*this));
-	memcpy(this, &m, szModbusHeader);
+	memcpy(this, &m.pduhead, szModbusHeader);
 	ecode     = m.data[0];
 	memcpy( &crc, &(m.data[1]), szCRC);
 }
@@ -272,21 +328,21 @@ ModbusMessage ErrorRetMessage::transport_msg()
 	ModbusMessage mm;
 
 	// копируем заголовок
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	memcpy(&mm.data, &ecode, sizeof(ecode));
 
 	size_t ind = sizeof(ecode);
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + ind );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + ind );
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[ind]), &crc, szCRC);
 
 	ind += szCRC;
 
 	// длина сообщения...
-	mm.len = ind; // szData();
+	mm.dlen = ind; // szData();
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -319,7 +375,7 @@ ModbusMessage ReadCoilMessage::transport_msg()
 	ModbusMessage mm;
 
 	// копируем заголовок
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	// копируем данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
@@ -330,12 +386,12 @@ ModbusMessage ReadCoilMessage::transport_msg()
 	memcpy(mm.data, &d, last);
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(d) );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(d) );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[last]), &crc, szCRC);
 
-	mm.len = szData();
+	mm.dlen = szData();
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -353,9 +409,10 @@ ReadCoilMessage& ReadCoilMessage::operator=( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 void ReadCoilMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnReadCoilStatus );
-	memset(this, 0, sizeof(*this));
-	memcpy(this, &m, sizeof(*this)); // m.len
+	assert( m.pduhead.func == fnReadCoilStatus );
+//	memset(this, 0, sizeof(*this));
+	memcpy(this, &m.pduhead, sizeof(m.pduhead));
+	memcpy(&start, m.data, szData());
 
 	// переворачиваем слова
 	start = SWAPSHORT(start);
@@ -508,11 +565,11 @@ ReadCoilRetMessage& ReadCoilRetMessage::operator=( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 void ReadCoilRetMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnReadCoilStatus );
+	assert( m.pduhead.func == fnReadCoilStatus );
 
 	memset(this, 0, sizeof(*this));
-	addr = m.addr;
-	func = m.func;
+	addr = m.pduhead.addr;
+	func = m.pduhead.func;
 
 	bcnt = m.data[0];
 
@@ -525,7 +582,7 @@ void ReadCoilRetMessage::init( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 size_t ReadCoilRetMessage::getDataLen( const ModbusMessage& m )
 {
-	if( m.len == 0 )
+	if( m.dlen == 0 )
 		return 0;
 
 	return m.data[0];
@@ -585,7 +642,7 @@ ModbusMessage ReadCoilRetMessage::transport_msg()
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
 
 	// копируем заголовок и данные
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	memcpy(&mm.data, &bcnt, sizeof(bcnt));
 	size_t ind = sizeof(bcnt);
@@ -595,14 +652,14 @@ ModbusMessage ReadCoilRetMessage::transport_msg()
 	ind += bcnt;
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(bcnt) + bcnt );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(bcnt) + bcnt );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[ind]), &crc, szCRC);
 	ind += szCRC;
 
 	// длина сообщения...
-	mm.len = ind;
+	mm.dlen = ind;
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -638,7 +695,7 @@ ModbusMessage ReadInputStatusMessage::transport_msg()
 	ModbusMessage mm;
 
 	// копируем заголовок
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	// копируем данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
@@ -649,12 +706,12 @@ ModbusMessage ReadInputStatusMessage::transport_msg()
 	memcpy(mm.data, &d, last);
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(d) );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(d) );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[last]), &crc, szCRC);
 
-	mm.len = szData();
+	mm.dlen = szData();
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -672,9 +729,8 @@ ReadInputStatusMessage& ReadInputStatusMessage::operator=( const ModbusMessage& 
 // -------------------------------------------------------------------------
 void ReadInputStatusMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnReadInputStatus );
-	memset(this, 0, sizeof(*this));
-	memcpy(this, &m, sizeof(*this)); // m.len
+	assert( m.pduhead.func == fnReadInputStatus );
+	memcpy(this, &m.pduhead, sizeof(m.pduhead)+szData());
 
 	// переворачиваем слова
 	start = SWAPSHORT(start);
@@ -710,11 +766,11 @@ ReadInputStatusRetMessage& ReadInputStatusRetMessage::operator=( const ModbusMes
 // -------------------------------------------------------------------------
 void ReadInputStatusRetMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnReadInputStatus );
+	assert( m.pduhead.func == fnReadInputStatus );
 
-	memset(this, 0, sizeof(*this));
-	addr = m.addr;
-	func = m.func;
+	//memset(this, 0, sizeof(*this));
+	addr = m.pduhead.addr;
+	func = m.pduhead.func;
 
 	bcnt = m.data[0];
 
@@ -727,7 +783,7 @@ void ReadInputStatusRetMessage::init( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 size_t ReadInputStatusRetMessage::getDataLen( const ModbusMessage& m )
 {
-	if( m.len == 0 )
+	if( m.dlen == 0 )
 		return 0;
 
 	return m.data[0];
@@ -787,7 +843,7 @@ ModbusMessage ReadInputStatusRetMessage::transport_msg()
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
 
 	// копируем заголовок и данные
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	memcpy(&mm.data, &bcnt, sizeof(bcnt));
 	size_t ind = sizeof(bcnt);
@@ -797,14 +853,14 @@ ModbusMessage ReadInputStatusRetMessage::transport_msg()
 	ind += bcnt;
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(bcnt) + bcnt );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(bcnt) + bcnt );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[ind]), &crc, szCRC);
 	ind += szCRC;
 
 	// длина сообщения...
-	mm.len = ind;
+	mm.dlen = ind;
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -841,7 +897,7 @@ ModbusMessage ReadOutputMessage::transport_msg()
 	ModbusMessage mm;
 
 	// копируем заголовок
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	// копируем данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
@@ -852,13 +908,13 @@ ModbusMessage ReadOutputMessage::transport_msg()
 	memcpy(mm.data, &d, last);
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(d) );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(d) );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[last]), &crc, szCRC);
 
 	// длина сообщения...
-	mm.len = szData();
+	mm.dlen = szData();
 
 	return std::move(mm);
 }
@@ -877,9 +933,9 @@ ReadOutputMessage& ReadOutputMessage::operator=( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 void ReadOutputMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnReadOutputRegisters );
-	memset(this, 0, sizeof(*this));
-	memcpy(this, &m, sizeof(*this)); // m.len
+	assert( m.pduhead.func == fnReadOutputRegisters );
+	//memset(this, 0, sizeof(*this));
+	memcpy(this, &m.pduhead, sizeof(m.pduhead)+szData());
 
 	// переворачиваем слова
 	start = SWAPSHORT(start);
@@ -916,21 +972,16 @@ ReadOutputRetMessage& ReadOutputRetMessage::operator=( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 void ReadOutputRetMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnReadOutputRegisters );
+	assert( m.pduhead.func == fnReadOutputRegisters );
 
 	memset(this, 0, sizeof(*this));
-	addr = m.addr;
-	func = m.func;
+	addr = m.pduhead.addr;
+	func = m.pduhead.func;
 
-	// bcnt = m.data[0];
-	unsigned int cnt = m.data[0] / sizeof(ModbusData);
+	size_t cnt = m.data[0] / sizeof(ModbusData);
 
 	if( cnt > MAXLENPACKET / sizeof(ModbusData) )
-	{
-		//        cerr << "(ReadOutputRetMessage): BAD bcnt="
-		//            << (int)bcnt << " count=" << cnt << endl;
 		throw mbException(erPacketTooLong);
-	}
 
 	count     = cnt;
 	bcnt     = m.data[0];
@@ -945,7 +996,7 @@ void ReadOutputRetMessage::init( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 size_t ReadOutputRetMessage::getDataLen( const ModbusMessage& m )
 {
-	if( m.len == 0 )
+	if( m.dlen == 0 )
 		return 0;
 
 	return m.data[0];
@@ -984,7 +1035,7 @@ ModbusMessage ReadOutputRetMessage::transport_msg()
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
 
 	// копируем заголовок и данные
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	size_t ind = 0;
 	bcnt    = count * sizeof(ModbusData);
@@ -1011,14 +1062,14 @@ ModbusMessage ReadOutputRetMessage::transport_msg()
 	}
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(bcnt) + bcnt );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(bcnt) + bcnt );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[ind]), &crc, szCRC);
 	ind += szCRC;
 
 	// длина сообщения...
-	mm.len = ind;
+	mm.dlen = ind;
 
 	return std::move(mm);
 }
@@ -1055,7 +1106,7 @@ ModbusMessage ReadInputMessage::transport_msg()
 	ModbusMessage mm;
 
 	// копируем заголовок
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	// копируем данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
@@ -1066,13 +1117,13 @@ ModbusMessage ReadInputMessage::transport_msg()
 	memcpy(mm.data, &d, last);
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(d) );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(d) );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[last]), &crc, szCRC);
 
 	// длина сообщения...
-	mm.len = szData();
+	mm.dlen = szData();
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -1090,9 +1141,10 @@ ReadInputMessage& ReadInputMessage::operator=( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 void ReadInputMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnReadInputRegisters );
-	memset(this, 0, sizeof(*this));
-	memcpy(this, &m, sizeof(*this)); // m.len
+	assert( m.pduhead.func == fnReadInputRegisters );
+//	memset(this, 0, sizeof(*this));
+	memcpy(this, &m.pduhead, sizeof(m.pduhead));
+	memcpy(&start,m.data,szData());
 
 	// переворачиваем слова
 	start = SWAPSHORT(start);
@@ -1129,14 +1181,14 @@ ReadInputRetMessage& ReadInputRetMessage::operator=( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 void ReadInputRetMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnReadInputRegisters );
+	assert( m.pduhead.func == fnReadInputRegisters );
 
 	memset(this, 0, sizeof(*this));
-	addr = m.addr;
-	func = m.func;
+	addr = m.pduhead.addr;
+	func = m.pduhead.func;
 
 	// bcnt = m.data[0];
-	unsigned int cnt = m.data[0] / sizeof(ModbusData);
+	size_t cnt = m.data[0] / sizeof(ModbusData);
 
 	if( cnt > MAXLENPACKET / sizeof(ModbusData) )
 		throw mbException(erPacketTooLong);
@@ -1160,7 +1212,7 @@ void ReadInputRetMessage::swapData()
 // -------------------------------------------------------------------------
 size_t ReadInputRetMessage::getDataLen( const ModbusMessage& m )
 {
-	if( m.len == 0 )
+	if( m.dlen == 0 )
 		return 0;
 
 	return m.data[0];
@@ -1198,7 +1250,7 @@ ModbusMessage ReadInputRetMessage::transport_msg()
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
 
 	// копируем заголовок и данные
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	size_t ind = 0;
 	bcnt    = count * sizeof(ModbusData);
@@ -1224,14 +1276,14 @@ ModbusMessage ReadInputRetMessage::transport_msg()
 	}
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(bcnt) + bcnt );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(bcnt) + bcnt );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[ind]), &crc, szCRC);
 	ind += szCRC;
 
 	// длина сообщения...
-	mm.len = ind;
+	mm.dlen = ind;
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -1325,7 +1377,7 @@ ModbusMessage ForceCoilsMessage::transport_msg()
 	ModbusMessage mm;
 
 	// копируем заголовок
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	size_t ind = 0;
 
@@ -1346,14 +1398,14 @@ ModbusMessage ForceCoilsMessage::transport_msg()
 	ind += bcnt;
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + ind );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + ind );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[ind]), &crc, szCRC);
 	ind += szCRC;
 
 	// длина сообщения...
-	mm.len = ind;
+	mm.dlen = ind;
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -1371,12 +1423,12 @@ ForceCoilsMessage& ForceCoilsMessage::operator=( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 void ForceCoilsMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnForceMultipleCoils );
+	assert( m.pduhead.func == fnForceMultipleCoils );
 
 	memset(this, 0, sizeof(*this));
 
 	// copy not include CRC
-	memcpy(this, &m, szModbusHeader + m.len);
+	memcpy(this, &m.pduhead, szModbusHeader + m.dlen);
 
 	// Сперва переворачиваем обратно слова
 	start = SWAPSHORT(start);
@@ -1400,7 +1452,7 @@ void ForceCoilsMessage::init( const ModbusMessage& m )
 	}
 
 	// последний элемент это CRC
-	memcpy(&crc, &(m.data[m.len - szCRC]), szCRC);
+	memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
 }
 // -------------------------------------------------------------------------
 bool ForceCoilsMessage::checkFormat()
@@ -1415,7 +1467,7 @@ size_t ForceCoilsMessage::szData()
 // -------------------------------------------------------------------------
 size_t ForceCoilsMessage::getDataLen( const ModbusMessage& m )
 {
-	if( m.len == 0 )
+	if( m.dlen == 0 )
 		return 0;
 
 	ForceCoilsMessage wm(m);
@@ -1457,12 +1509,12 @@ ForceCoilsRetMessage& ForceCoilsRetMessage::operator=( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 void ForceCoilsRetMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnForceMultipleCoils );
+	assert( m.pduhead.func == fnForceMultipleCoils );
 
-	memset(this, 0, sizeof(*this));
+//	memset(this, 0, sizeof(*this));
 
 	// copy not include CRC
-	memcpy(this, &m, szModbusHeader + m.len);
+	memcpy(this, &m.pduhead, szModbusHeader + m.dlen);
 
 	/*! \todo (WriteOutputRetMessage): необходимо встроить проверку на корректность данных */
 
@@ -1470,7 +1522,7 @@ void ForceCoilsRetMessage::init( const ModbusMessage& m )
 	start = SWAPSHORT(start);
 	quant = SWAPSHORT(quant);
 
-	int ind = sizeof(quant) + sizeof(start);
+	size_t ind = sizeof(quant) + sizeof(start);
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&crc, &(m.data[ind]), szCRC);
@@ -1498,7 +1550,7 @@ ModbusMessage ForceCoilsRetMessage::transport_msg()
 	ModbusMessage mm;
 
 	// копируем заголовок
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	// данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
@@ -1507,12 +1559,12 @@ ModbusMessage ForceCoilsRetMessage::transport_msg()
 	memcpy(mm.data, &d, last);
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + last );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + last );
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[last]), &crc, szCRC);
 
 	// длина сообщения...
-	mm.len = szData();
+	mm.dlen = szData();
 
 	return std::move(mm);
 }
@@ -1560,7 +1612,7 @@ ModbusMessage WriteOutputMessage::transport_msg()
 	ModbusMessage mm;
 
 	// копируем заголовок
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	size_t ind = 0;
 
@@ -1589,14 +1641,14 @@ ModbusMessage WriteOutputMessage::transport_msg()
 	ind += bcnt;
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + ind );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + ind );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[ind]), &crc, szCRC);
 	ind += szCRC;
 
 	// длина сообщения...
-	mm.len = ind;
+	mm.dlen = ind;
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -1614,12 +1666,12 @@ WriteOutputMessage& WriteOutputMessage::operator=( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 void WriteOutputMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnWriteOutputRegisters );
+	assert( m.pduhead.func == fnWriteOutputRegisters );
 
 	memset(this, 0, sizeof(*this));
 
 	// copy not include CRC
-	memcpy(this, &m, szModbusHeader + m.len);
+	memcpy(this, &m.pduhead, szModbusHeader + m.dlen);
 
 	// Сперва переворачиваем обратно слова
 	start = SWAPSHORT(start);
@@ -1643,7 +1695,7 @@ void WriteOutputMessage::init( const ModbusMessage& m )
 	}
 
 	// последний элемент это CRC
-	memcpy(&crc, &(m.data[m.len - szCRC]), szCRC);
+	memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
 
 	int count( bcnt / sizeof(ModbusData) );
 
@@ -1664,7 +1716,7 @@ size_t WriteOutputMessage::szData()
 // -------------------------------------------------------------------------
 size_t WriteOutputMessage::getDataLen( const ModbusMessage& m )
 {
-	if( m.len == 0 )
+	if( m.dlen == 0 )
 		return 0;
 
 	// копируем только часть заголовка возвращаем count
@@ -1716,12 +1768,12 @@ WriteOutputRetMessage& WriteOutputRetMessage::operator=( const ModbusMessage& m 
 // -------------------------------------------------------------------------
 void WriteOutputRetMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnWriteOutputRegisters );
+	assert( m.pduhead.func == fnWriteOutputRegisters );
 
-	memset(this, 0, sizeof(*this));
+	//memset(this, 0, sizeof(*this));
 
 	// copy not include CRC
-	memcpy(this, &m, szModbusHeader + m.len);
+	memcpy(this, &m.pduhead, szModbusHeader + m.dlen);
 
 	/*! \todo (WriteOutputRetMessage): необходимо встроить проверку на корректность данных */
 
@@ -1729,7 +1781,7 @@ void WriteOutputRetMessage::init( const ModbusMessage& m )
 	start = SWAPSHORT(start);
 	quant = SWAPSHORT(quant);
 
-	int ind = sizeof(quant) + sizeof(start);
+	size_t ind = sizeof(quant) + sizeof(start);
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&crc, &(m.data[ind]), szCRC);
@@ -1757,7 +1809,7 @@ ModbusMessage WriteOutputRetMessage::transport_msg()
 	ModbusMessage mm;
 
 	// копируем заголовок
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	// данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
@@ -1766,12 +1818,12 @@ ModbusMessage WriteOutputRetMessage::transport_msg()
 	memcpy(mm.data, &d, last);
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + last );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + last );
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[last]), &crc, szCRC);
 
 	// длина сообщения...
-	mm.len = szData();
+	mm.dlen = szData();
 
 	return std::move(mm);
 }
@@ -1798,15 +1850,15 @@ ModbusMessage ForceSingleCoilMessage::transport_msg()
 	assert(sizeof(ModbusMessage) >= sizeof(ForceSingleCoilMessage));
 
 	ModbusMessage mm;
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
 	size_t last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
 	memcpy(mm.data, &d, last);
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + last );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + last );
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[last]), &crc, szCRC);
-	mm.len = szData();
+	mm.dlen = szData();
 	return std::move(mm);
 }
 // --------------------------------------------------------------------------------
@@ -1824,11 +1876,11 @@ ForceSingleCoilMessage& ForceSingleCoilMessage::operator=( const ModbusMessage& 
 // -------------------------------------------------------------------------
 void ForceSingleCoilMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnForceSingleCoil );
-	memset(this, 0, sizeof(*this));
+	assert( m.pduhead.func == fnForceSingleCoil );
+//	memset(this, 0, sizeof(*this));
 
 	// копируем данные вместе с CRC
-	memcpy(this, &m, szModbusHeader + m.len + szCRC);
+	memcpy(this, &m.pduhead, szModbusHeader + m.dlen + szCRC);
 
 	// Сперва переворачиваем обратно слова
 	start     = SWAPSHORT(start);
@@ -1859,7 +1911,7 @@ size_t ForceSingleCoilMessage::szData()
 // -------------------------------------------------------------------------
 size_t ForceSingleCoilMessage::getDataLen( const ModbusMessage& m )
 {
-	if( m.len == 0 )
+	if( m.dlen == 0 )
 		return 0;
 
 	return sizeof(ModbusData); // data;
@@ -1894,13 +1946,13 @@ void ForceSingleCoilRetMessage::init( const ModbusMessage& m )
 	memset(this, 0, sizeof(*this));
 
 	// copy not include CRC
-	memcpy(this, &m, szModbusHeader + m.len);
+	memcpy(this, &m.pduhead, szModbusHeader + m.dlen);
 
 	/*! \todo (ForceSingleCoilRetMessage): необходимо встроить проверку на корректность данных */
 
 	// переворачиваем обратно слова
-	start     = SWAPSHORT(start);
-	data     = SWAPSHORT(data);
+	start = SWAPSHORT(start);
+	data  = SWAPSHORT(data);
 }
 // -------------------------------------------------------------------------
 ForceSingleCoilRetMessage::ForceSingleCoilRetMessage( ModbusAddr _from )
@@ -1924,7 +1976,7 @@ ModbusMessage ForceSingleCoilRetMessage::transport_msg()
 	ModbusMessage mm;
 
 	// копируем заголовок
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	// копируем данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
@@ -1935,13 +1987,13 @@ ModbusMessage ForceSingleCoilRetMessage::transport_msg()
 	memcpy(mm.data, &d, last);
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(d) );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(d) );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[last]), &crc, szCRC);
 
 	// длина сообщения...
-	mm.len = szData();
+	mm.dlen = szData();
 
 	return std::move(mm);
 }
@@ -1969,15 +2021,15 @@ ModbusMessage WriteSingleOutputMessage::transport_msg()
 	assert(sizeof(ModbusMessage) >= sizeof(WriteSingleOutputMessage));
 
 	ModbusMessage mm;
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
 	size_t last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
 	memcpy(mm.data, &d, last);
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + last );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + last );
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[last]), &crc, szCRC);
-	mm.len = szData();
+	mm.dlen = szData();
 	return std::move(mm);
 }
 // --------------------------------------------------------------------------------
@@ -1995,11 +2047,11 @@ WriteSingleOutputMessage& WriteSingleOutputMessage::operator=( const ModbusMessa
 // -------------------------------------------------------------------------
 void WriteSingleOutputMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnWriteOutputSingleRegister );
-	memset(this, 0, sizeof(*this));
+	assert( m.pduhead.func == fnWriteOutputSingleRegister );
+//	memset(this, 0, sizeof(*this));
 
 	// копируем данные вместе с CRC
-	memcpy(this, &m, szModbusHeader + m.len + szCRC);
+	memcpy(this, &m.pduhead, szModbusHeader + m.dlen + szCRC);
 
 	// Сперва переворачиваем обратно слова
 	start     = SWAPSHORT(start);
@@ -2031,7 +2083,7 @@ size_t WriteSingleOutputMessage::szData()
 // -------------------------------------------------------------------------
 size_t WriteSingleOutputMessage::getDataLen( const ModbusMessage& m )
 {
-	if( m.len == 0 )
+	if( m.dlen == 0 )
 		return 0;
 
 	return sizeof(ModbusData); // data;
@@ -2068,10 +2120,10 @@ WriteSingleOutputRetMessage& WriteSingleOutputRetMessage::operator=( const Modbu
 // -------------------------------------------------------------------------
 void WriteSingleOutputRetMessage::init( const ModbusMessage& m )
 {
-	memset(this, 0, sizeof(*this));
+//	memset(this, 0, sizeof(*this));
 
 	// copy not include CRC
-	memcpy(this, &m, szModbusHeader + m.len);
+	memcpy(this, &m.pduhead, szModbusHeader + m.dlen);
 
 	/*! \todo (WriteSingleOutputRetMessage): необходимо встроить проверку на корректность данных */
 
@@ -2102,7 +2154,7 @@ ModbusMessage WriteSingleOutputRetMessage::transport_msg()
 	ModbusMessage mm;
 
 	// копируем заголовок
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	// копируем данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
@@ -2113,13 +2165,13 @@ ModbusMessage WriteSingleOutputRetMessage::transport_msg()
 	memcpy(mm.data, &d, last);
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(d) );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(d) );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[last]), &crc, szCRC);
 
 	// длина сообщения...
-	mm.len = szData();
+	mm.dlen = szData();
 
 	return std::move(mm);
 }
@@ -2199,11 +2251,11 @@ DiagnosticMessage& DiagnosticMessage::operator=( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 void DiagnosticMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnDiagnostics );
+	assert( m.pduhead.func == fnDiagnostics );
 
 	memset(this, 0, sizeof(*this));
-	addr = m.addr;
-	func = m.func;
+	addr = m.pduhead.addr;
+	func = m.pduhead.func;
 
 	memcpy( &subf, &(m.data[0]), sizeof(subf) );
 	int last = sizeof(subf);
@@ -2229,7 +2281,7 @@ void DiagnosticMessage::init( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 size_t DiagnosticMessage::getDataLen( const ModbusMessage& m )
 {
-	if( m.len == 0 )
+	if( m.dlen == 0 )
 		return 0;
 
 	// data[0] = subfunction
@@ -2277,7 +2329,7 @@ ModbusMessage DiagnosticMessage::transport_msg()
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
 
 	// копируем заголовок и данные
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	size_t ind = 0;
 	// copy bcnt
@@ -2302,14 +2354,14 @@ ModbusMessage DiagnosticMessage::transport_msg()
 	}
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(subf) + sizeof(ModbusData) * count );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(subf) + sizeof(ModbusData) * count );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[ind]), &crc, szCRC);
 	ind += szCRC;
 
 	// длина сообщения...
-	mm.len = szData();
+	mm.dlen = szData();
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -2391,21 +2443,21 @@ ModbusMessage MEIMessageRDI::transport_msg()
 	ModbusMessage mm;
 
 	// копируем заголовок
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 	mm.data[0] = type;
 	mm.data[1] = devID;
 	mm.data[2] = objID;
 	size_t ind = 3;
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + ind );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + ind );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[ind]), &crc, szCRC);
 	ind += szCRC;
 
 	// длина сообщения...
-	mm.len = szData();
+	mm.dlen = szData();
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -2423,12 +2475,12 @@ MEIMessageRDI& MEIMessageRDI::operator=( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 void MEIMessageRDI::init( const ModbusMessage& m )
 {
-	assert( m.func == fnMEI );
+	assert( m.pduhead.func == fnMEI );
 
 	memset(this, 0, sizeof(*this));
 
 	// copy not include CRC
-	memcpy(this, &m, szModbusHeader + m.len);
+	memcpy(this, &m.pduhead, szModbusHeader + m.dlen);
 
 	// потом проверяем
 	if( !checkFormat() )
@@ -2441,7 +2493,7 @@ void MEIMessageRDI::init( const ModbusMessage& m )
 	}
 
 	// последний элемент это CRC
-	memcpy(&crc, &(m.data[m.len - szCRC]), szCRC);
+	memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
 }
 // -------------------------------------------------------------------------
 bool MEIMessageRDI::checkFormat()
@@ -2494,17 +2546,17 @@ RDIObjectInfo::RDIObjectInfo( ModbusByte id, const ModbusByte* dat, ModbusByte l
 // -------------------------------------------------------------------------
 void MEIMessageRetRDI::pre_init( const ModbusMessage& m )
 {
-	assert( m.func == fnMEI );
+	assert( m.pduhead.func == fnMEI );
 
-	addr = m.addr;
-	func = m.func;
+	addr = m.pduhead.addr;
+	func = m.pduhead.func;
 
 	type = m.data[0];
 
 	if( type != 0x0E )
 		throw mbException(erInvalidFormat);
 
-	if( m.len < 6 )
+	if( m.dlen < 6 )
 		throw mbException(erInvalidFormat);
 
 	devID = m.data[1];
@@ -2516,16 +2568,16 @@ void MEIMessageRetRDI::pre_init( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 void MEIMessageRetRDI::init( const ModbusMessage& m )
 {
-	assert( m.func == fnMEI );
+	assert( m.pduhead.func == fnMEI );
 
-	addr = m.addr;
-	func = m.func;
+	addr = m.pduhead.addr;
+	func = m.pduhead.func;
 	type = m.data[0];
 
 	if( type != 0x0E )
 		throw mbException(erInvalidFormat);
 
-	if( m.len < 6 )
+	if( m.dlen < 6 )
 		throw mbException(erInvalidFormat);
 
 	devID = m.data[1];
@@ -2540,15 +2592,15 @@ void MEIMessageRetRDI::init( const ModbusMessage& m )
 
 	if( objNum > 0 )
 	{
-		if( m.len < 7 )
+		if( m.dlen < 7 )
 			throw mbException(erInvalidFormat);
 
-		while( i < m.len && dlist.size() < objNum )
+		while( i < m.dlen && dlist.size() < objNum )
 		{
 			ModbusByte id = m.data[i];
 			size_t dlen = (int)(m.data[i + 1]);
 
-			if( m.len < (i + 1 + dlen) )
+			if( m.dlen < (i + 1 + dlen) )
 				throw mbException(erInvalidFormat);
 
 			RDIObjectInfo rdi(id, &(m.data[i + 2]), dlen );
@@ -2613,7 +2665,7 @@ ModbusMessage MEIMessageRetRDI::transport_msg()
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
 
 	// копируем заголовок и данные
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	mm.data[0] = type;
 	mm.data[1] = devID;
@@ -2633,14 +2685,14 @@ ModbusMessage MEIMessageRetRDI::transport_msg()
 	}
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + ind );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + ind );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[ind]), &crc, szCRC);
 	ind += szCRC;
 
 	// длина сообщения...
-	mm.len = ind;
+	mm.dlen = ind;
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -2697,9 +2749,9 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, RDIObjectList* l )
 
 JournalCommandMessage::JournalCommandMessage( const ModbusMessage& m )
 {
-	assert( m.func == fnJournalCommand );
-	memset(this, 0, sizeof(*this));
-	memcpy(this, &m, sizeof(*this)); // m.len
+	assert( m.pduhead.func == fnJournalCommand );
+	//memset(this, 0, sizeof(*this));
+	memcpy(this, &m.pduhead, sizeof(*this)); // m.len
 
 	// переворачиваем слова
 	cmd = SWAPSHORT(cmd);
@@ -2708,9 +2760,9 @@ JournalCommandMessage::JournalCommandMessage( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 JournalCommandMessage& JournalCommandMessage::operator=( const ModbusMessage& m )
 {
-	assert( m.func == fnJournalCommand );
-	memset(this, 0, sizeof(*this));
-	memcpy(this, &m, sizeof(*this)); // m.len
+	assert( m.pduhead.func == fnJournalCommand );
+//	memset(this, 0, sizeof(*this));
+	memcpy(this, &m.pduhead, sizeof(*this)); // m.len
 
 	// переворачиваем слова
 	cmd = SWAPSHORT(cmd);
@@ -2775,7 +2827,7 @@ ModbusMessage JournalCommandRetMessage::transport_msg()
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
 
 	// копируем заголовок и данные
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	size_t ind = 0;
 	bcnt    = count * sizeof(ModbusData);
@@ -2804,14 +2856,14 @@ ModbusMessage JournalCommandRetMessage::transport_msg()
 	}
 
 	// пересчитываем CRC по данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + ind );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + ind );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[ind]), &crc, szCRC);
 	ind += szCRC;
 
 	// длина сообщения...
-	mm.len = ind;
+	mm.dlen = ind;
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -2961,16 +3013,16 @@ std::string ModbusRTU::mbErr2Str( ModbusRTU::mbErrCode e )
 // -------------------------------------------------------------------------
 SetDateTimeMessage::SetDateTimeMessage( const ModbusMessage& m )
 {
-	assert( m.func == fnSetDateTime );
+	assert( m.pduhead.func == fnSetDateTime );
 	memset(this, 0, sizeof(*this));
-	memcpy(this, &m, sizeof(*this)); // m.len
+	memcpy(this, &m.pduhead, sizeof(*this)); // m.len
 }
 // -------------------------------------------------------------------------
 SetDateTimeMessage& SetDateTimeMessage::operator=( const ModbusMessage& m )
 {
-	assert( m.func == fnSetDateTime );
+	assert( m.pduhead.func == fnSetDateTime );
 	memset(this, 0, sizeof(*this));
-	memcpy(this, &m, sizeof(*this)); // m.len
+	memcpy(this, &m.pduhead, sizeof(*this)); // m.len
 	return *this;
 }
 // -------------------------------------------------------------------------
@@ -3033,7 +3085,7 @@ ModbusMessage SetDateTimeMessage::transport_msg()
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
 
 	// копируем заголовок и данные
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 	/*
 	    mm.data[0] = hour;
 	    mm.data[1] = min;
@@ -3047,11 +3099,11 @@ ModbusMessage SetDateTimeMessage::transport_msg()
 	memcpy( mm.data, &hour, bcnt );
 
 	// пересчитываем CRC
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + bcnt );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + bcnt );
 
 	memcpy(&(mm.data[bcnt]), &crc, szCRC);
 	// длина сообщения...
-	mm.len = szData(); // bcnt + szCRC
+	mm.dlen = szData(); // bcnt + szCRC
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -3068,9 +3120,9 @@ SetDateTimeRetMessage& SetDateTimeRetMessage::operator=( const ModbusMessage& m 
 // -------------------------------------------------------------------------
 void SetDateTimeRetMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnSetDateTime );
+	assert( m.pduhead.func == fnSetDateTime );
 	memset(this, 0, sizeof(*this));
-	memcpy(this, &m, sizeof(*this)); // m.len
+	memcpy(this, &m.pduhead, sizeof(*this)); // m.len
 }
 // -------------------------------------------------------------------------
 SetDateTimeRetMessage::SetDateTimeRetMessage( ModbusAddr _from )
@@ -3106,7 +3158,7 @@ ModbusMessage SetDateTimeRetMessage::transport_msg()
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
 
 	// копируем заголовок и данные
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	/*
 	    mm.data[0] = hour;
@@ -3121,13 +3173,13 @@ ModbusMessage SetDateTimeRetMessage::transport_msg()
 	memcpy( mm.data, &hour, bcnt );
 
 	// пересчитываем CRC
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + bcnt );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + bcnt );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[bcnt]), &crc, szCRC);
 
 	// длина сообщения...
-	mm.len = szData(); // bcnt + szCRC
+	mm.dlen = szData(); // bcnt + szCRC
 
 	return std::move(mm);
 }
@@ -3145,14 +3197,14 @@ RemoteServiceMessage& RemoteServiceMessage::operator=( const ModbusMessage& m )
 // -------------------------------------------------------------------------
 void RemoteServiceMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnRemoteService );
+	assert( m.pduhead.func == fnRemoteService );
 	memset(this, 0, sizeof(*this));
 
 	// copy not include CRC
-	memcpy(this, &m, szModbusHeader + m.len);
+	memcpy(this, &m.pduhead, szModbusHeader + m.dlen);
 
 	// последний элемент это CRC
-	memcpy(&crc, &(m.data[m.len - szCRC]), szCRC);
+	memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
 }
 // -------------------------------------------------------------------------
 size_t RemoteServiceMessage::szData()
@@ -3162,7 +3214,7 @@ size_t RemoteServiceMessage::szData()
 // -------------------------------------------------------------------------
 size_t RemoteServiceMessage::getDataLen( const ModbusMessage& m )
 {
-	if( m.len == 0 )
+	if( m.dlen == 0 )
 		return 0;
 
 	return (size_t)(m.data[0]);
@@ -3224,7 +3276,7 @@ ModbusMessage RemoteServiceRetMessage::transport_msg()
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
 
 	// копируем заголовок и данные
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	size_t ind = 0;
 	bcnt    = count * sizeof(ModbusByte);
@@ -3240,14 +3292,14 @@ ModbusMessage RemoteServiceRetMessage::transport_msg()
 	ind += bcnt;
 
 	// пересчитываем CRC по данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + ind );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + ind );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[ind]), &crc, szCRC);
 	ind += szCRC;
 
 	// длина сообщения...
-	mm.len = ind;
+	mm.dlen = ind;
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -3269,12 +3321,12 @@ bool ReadFileRecordMessage::checkFormat()
 // -------------------------------------------------------------------------
 void ReadFileRecordMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnReadFileRecord );
+	assert( m.pduhead.func == fnReadFileRecord );
 
 	memset(this, 0, sizeof(*this));
 
 	// copy not include CRC
-	memcpy(this, &m, szModbusHeader + m.len);
+	memcpy(this, &m.pduhead, szModbusHeader + m.dlen);
 
 	// потом проверяем
 	if( !checkFormat() )
@@ -3288,7 +3340,7 @@ void ReadFileRecordMessage::init( const ModbusMessage& m )
 	}
 
 	// последний элемент это CRC
-	memcpy(&crc, &(m.data[m.len - szCRC]), szCRC);
+	memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
 
 	count = bcnt / sizeof(SubRequest);
 
@@ -3308,7 +3360,7 @@ size_t ReadFileRecordMessage::szData()
 // -------------------------------------------------------------------------
 size_t ReadFileRecordMessage::getDataLen( const ModbusMessage& m )
 {
-	if( m.len == 0 )
+	if( m.dlen == 0 )
 		return 0;
 
 	return (size_t)(m.data[0]);
@@ -3337,7 +3389,7 @@ ModbusMessage FileTransferMessage::transport_msg()
 	ModbusMessage mm;
 
 	// копируем заголовок
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	// копируем данные (переворачиваем байты)
 	ModbusData d[2] = { SWAPSHORT(numfile), SWAPSHORT(numpacket) };
@@ -3345,13 +3397,13 @@ ModbusMessage FileTransferMessage::transport_msg()
 	memcpy(mm.data, &d, last);
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + sizeof(d) );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(d) );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[last]), &crc, szCRC);
 
 	// длина сообщения...
-	mm.len = szData();
+	mm.dlen = szData();
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -3368,15 +3420,15 @@ FileTransferMessage& FileTransferMessage::operator=( const ModbusMessage& m )
 // -----------------------------------------------------------------------
 void FileTransferMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnFileTransfer );
+	assert( m.pduhead.func == fnFileTransfer );
 
 	memset(this, 0, sizeof(*this));
 
 	// copy not include CRC
-	memcpy(this, &m, szModbusHeader + m.len);
+	memcpy(this, &m.pduhead, szModbusHeader + m.dlen);
 
 	// последний элемент это CRC
-	memcpy(&crc, &(m.data[m.len - szCRC]), szCRC);
+	memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
 
 	numfile    = SWAPSHORT(numfile);
 	numpacket = SWAPSHORT(numpacket);
@@ -3407,11 +3459,11 @@ FileTransferRetMessage& FileTransferRetMessage::operator=( const ModbusMessage& 
 // -----------------------------------------------------------------------
 void FileTransferRetMessage::init( const ModbusMessage& m )
 {
-	assert( m.func == fnFileTransfer );
+	assert( m.pduhead.func == fnFileTransfer );
 	memset(this, 0, sizeof(*this));
 
 	// copy header
-	memcpy(this, &m, szModbusHeader);
+	memcpy(this, &m.pduhead, szModbusHeader);
 
 	bcnt = m.data[0];
 	memcpy(&numfile, &(m.data[1]), sizeof(ModbusData));
@@ -3480,7 +3532,7 @@ ModbusMessage FileTransferRetMessage::transport_msg()
 	assert( sizeof(ModbusMessage) >= (unsigned int)(szModbusHeader + szData()) );
 
 	// копируем заголовок и данные
-	memcpy(&mm, this, szModbusHeader);
+	memcpy(&mm.pduhead, this, szModbusHeader);
 
 	size_t ind = 0;
 	bcnt = szData() - szCRC - 1; // -1 - это сам байт содержащий количество байт (bcnt)...
@@ -3506,14 +3558,14 @@ ModbusMessage FileTransferRetMessage::transport_msg()
 	ind += dlen;
 
 	// пересчитываем CRC по данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + ind );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + ind );
 
 	// копируем CRC (последний элемент). Без переворачивания...
 	memcpy(&(mm.data[ind]), &crc, szCRC);
 	ind += szCRC;
 
 	// длина сообщения...
-	mm.len = ind;
+	mm.dlen = ind;
 	return std::move(mm);
 }
 // -----------------------------------------------------------------------
@@ -3527,12 +3579,12 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, FileTransferRetMessage* m 
 	return mbPrintMessage(os, (ModbusByte*)m, szModbusHeader + m->szData() );
 }
 // -----------------------------------------------------------------------
-std::ostream& ModbusTCP::operator<<(std::ostream& os, const MBAPHeader& m )
+std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusRTU::ADUHeader& m )
 {
 	return mbPrintMessage(os, (ModbusByte*)(&m), sizeof(m));
 }
 // -----------------------------------------------------------------------
-void ModbusTCP::MBAPHeader::swapdata()
+void ModbusRTU::ADUHeader::swapdata()
 {
 	tID = SWAPSHORT(tID);
 	pID = SWAPSHORT(pID);
@@ -3577,13 +3629,5 @@ ModbusRTU::RegID ModbusRTU::genRegID( const ModbusRTU::ModbusData mbreg, const i
 
 	// fn необходимо привести к диапазону 0..max
 	return max + mbreg + max + UniSetTypes::lcalibrate(fn, 0, fn_max, 0, max, false);
-}
-// -----------------------------------------------------------------------
-ostream& ModbusTCP::operator<<( ostream& os, const ModbusTCP::ADU& m )
-{
-	os << m.header << "| ";
-	mbPrintMessage(os, (ModbusByte*)&(m.pdu), szModbusHeader+m.pdu.len);
-	//return os << m.header << "| " << m.pdu;
-	return os;
 }
 // -----------------------------------------------------------------------

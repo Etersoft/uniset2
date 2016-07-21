@@ -46,12 +46,12 @@ class ModbusRTUMaster:
 		    \param len     - size of buf
 		    \return real data lenght ( must be <= len )
 		*/
-		virtual size_t getNextData( unsigned char* buf, int len ) override;
+		virtual size_t getNextData( unsigned char* buf, size_t len ) override;
 
 		/*! set timeout for send/receive data */
 		virtual void setChannelTimeout( timeout_t msec ) override;
 
-		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override;
+		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, size_t len ) override;
 
 		/*! функция запрос-ответ */
 		virtual ModbusRTU::mbErrCode query( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& msg,

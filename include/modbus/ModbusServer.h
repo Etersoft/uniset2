@@ -299,11 +299,11 @@ class ModbusServer
 		virtual ModbusRTU::mbErrCode send( ModbusRTU::ModbusMessage& buf );
 
 		// Если заголовок не должен использоваться оставляйте request.header.len = 0
-		virtual ModbusRTU::mbErrCode make_adu_header( ModbusTCP::ADU& request )
+		virtual ModbusRTU::mbErrCode make_adu_header( ModbusRTU::ModbusMessage& request )
 		{
 			return ModbusRTU::erNoError;
 		}
-		virtual ModbusRTU::mbErrCode post_send_request( ModbusTCP::ADU& request )
+		virtual ModbusRTU::mbErrCode post_send_request( ModbusRTU::ModbusMessage& request )
 		{
 			return ModbusRTU::erNoError;
 		}

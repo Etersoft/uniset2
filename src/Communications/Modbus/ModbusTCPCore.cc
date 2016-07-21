@@ -80,11 +80,11 @@ size_t ModbusTCPCore::getNextData(UTCPStream* tcp,
 								  std::queue<unsigned char>& qrecv,
 								  unsigned char* buf, size_t len, timeout_t t )
 {
-	if( !tcp || !tcp->isConnected() )
-		return 0;
-
-	if( qrecv.empty() )
+	if( qrecv.empty() || qrecv.size() < len )
 	{
+		if( !tcp || !tcp->isConnected() )
+			return 0;
+
 		if( len <= 0 )
 			len = 7;
 
@@ -159,7 +159,7 @@ size_t ModbusTCPCore::readDataFD( int fd, std::queue<unsigned char>& qrecv, size
 size_t ModbusTCPCore::getDataFD( int fd, std::queue<unsigned char>& qrecv,
 								 unsigned char* buf, size_t len, size_t attempts )
 {
-	if( qrecv.empty()  || qrecv.size() < len )
+	if( qrecv.empty() || qrecv.size() < len )
 	{
 		if( len == 0 )
 			len = 7;

@@ -124,7 +124,7 @@ int ModbusRTUMaster::getTimeout()
 	return port->getTimeout();
 }
 // -------------------------------------------------------------------------
-size_t ModbusRTUMaster::getNextData( unsigned char* buf, int len )
+size_t ModbusRTUMaster::getNextData( unsigned char* buf, size_t len )
 {
 	//    if( !port ) return 0;
 	return port->receiveBlock(buf, len);
@@ -136,7 +136,7 @@ void ModbusRTUMaster::setChannelTimeout( timeout_t msec )
 		port->setTimeout(msec);
 }
 // --------------------------------------------------------------------------------
-mbErrCode ModbusRTUMaster::sendData( unsigned char* buf, int len )
+mbErrCode ModbusRTUMaster::sendData(unsigned char* buf, size_t len )
 {
 	try
 	{
@@ -159,6 +159,6 @@ mbErrCode ModbusRTUMaster::query( ModbusAddr addr, ModbusMessage& msg,
 	if( res != erNoError )
 		return res;
 
-	return recv(addr, msg.func, reply, timeout);
+	return recv(addr, msg.pduhead.func, reply, timeout);
 }
 // --------------------------------------------------------------------------------

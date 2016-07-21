@@ -206,8 +206,8 @@ ModbusRTU::mbErrCode ModbusTCPSession::realReceive( const std::unordered_set<Mod
 	ptTimeout.setTiming(msec);
 
 	{
-		memset(&curQueryHeader, 0, sizeof(curQueryHeader));
-		res = tcp_processing(curQueryHeader);
+		buf.clear();
+		res = tcp_processing(buf.aduhead);
 
 		if( res != erNoError )
 			return res;
@@ -223,12 +223,16 @@ ModbusRTU::mbErrCode ModbusTCPSession::realReceive( const std::unordered_set<Mod
 		if( qrecv.empty() )
 			return erTimeOut;
 
-		unsigned char q_addr = qrecv.front();
-
 		if( cancelled )
 			return erSessionClosed;
 
-		memset(&buf, 0, sizeof(buf));
+		// запоминаем принятый заголовок,
+		// для формирования ответа (см. make_adu_header)
+		curQueryHeader = buf.aduhead;
+
+		if( dlog->is_info() )
+			dlog->info() << "(ModbusTCPSession::recv): ADU len=" << curQueryHeader.len << endl;
+
 		res = recv( vmbaddr, buf, msec );
 
 		if( cancelled )
@@ -238,7 +242,7 @@ ModbusRTU::mbErrCode ModbusTCPSession::realReceive( const std::unordered_set<Mod
 		{
 			if( res < erInternalErrorCode )
 			{
-				ErrorRetMessage em( q_addr, buf.func, res );
+				ErrorRetMessage em( buf.addr(), buf.func(), res );
 				buf = em.transport_msg();
 				send(buf);
 				printProcessingTime();
@@ -300,7 +304,7 @@ size_t ModbusTCPSession::getNextData( unsigned char* buf, int len )
 	return 0;
 }
 // --------------------------------------------------------------------------------
-mbErrCode ModbusTCPSession::tcp_processing( ModbusTCP::MBAPHeader& mhead )
+mbErrCode ModbusTCPSession::tcp_processing( ModbusRTU::ADUHeader& mhead )
 {
 	// чистим очередь
 	while( !qrecv.empty() )
@@ -321,7 +325,6 @@ mbErrCode ModbusTCPSession::tcp_processing( ModbusTCP::MBAPHeader& mhead )
 
 	if( dlog->is_info() )
 	{
-		//dlog->info() << peername << "(tcp_processing): recv tcp header(" << len << "): " << mhead << endl;
 		dlog->info() << peername << "(tcp_processing): recv tcp header(" << len << "): ";
 		mbPrintMessage( dlog->info(false), (ModbusByte*)(&mhead), sizeof(mhead));
 		dlog->info(false) << endl;
@@ -330,6 +333,14 @@ mbErrCode ModbusTCPSession::tcp_processing( ModbusTCP::MBAPHeader& mhead )
 	// check header
 	if( mhead.pID != 0 )
 		return erUnExpectedPacketType; // erTimeOut;
+
+	if( mhead.len == 0 )
+	{
+		if( dlog->is_info() )
+			dlog->info() << "(ModbusTCPServer::tcp_processing): BAD FORMAT: len=0!" << endl;
+
+		return erInvalidFormat;
+	}
 
 	if( mhead.len > ModbusRTU::MAXLENPACKET )
 	{
@@ -363,33 +374,25 @@ mbErrCode ModbusTCPSession::tcp_processing( ModbusTCP::MBAPHeader& mhead )
 	return erNoError;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode ModbusTCPSession::post_send_request( ModbusTCP::ADU& request )
+ModbusRTU::mbErrCode ModbusTCPSession::post_send_request( ModbusRTU::ModbusMessage& request )
 {
 	return erNoError;
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPSession::make_adu_header( ModbusTCP::ADU& req )
+mbErrCode ModbusTCPSession::make_adu_header( ModbusMessage& req )
 {
-	req.header = curQueryHeader;
-	req.header.len = req.pdu.len + szModbusHeader;
-
-	if( crcNoCheckit )
-		req.header.len -= szCRC;
-
-	req.len = sizeof(req.header) + req.header.len;
-
-	//req.header.swapdata();
+	req.makeHead(curQueryHeader.tID,isCRCNoCheckit(),curQueryHeader.pID);
 	return erNoError;
 }
 // -------------------------------------------------------------------------
 void ModbusTCPSession::cleanInputStream()
 {
-	unsigned char buf[100];
-	int ret = 0;
+	unsigned char tmpbuf[100];
+	size_t ret = 0;
 
 	do
 	{
-		ret = getNextData(buf, sizeof(buf));
+		ret = getNextData(tmpbuf, sizeof(tmpbuf));
 	}
 	while( ret > 0);
 }

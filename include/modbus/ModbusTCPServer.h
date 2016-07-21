@@ -137,7 +137,7 @@ class ModbusTCPServer:
 		ost::InetAddress iaddr;
 		std::string myname;
 		std::queue<unsigned char> qrecv;
-		ModbusTCP::MBAPHeader curQueryHeader;
+		ModbusRTU::ADUHeader curQueryHeader;
 
 		std::mutex sMutex;
 		typedef std::list<std::shared_ptr<ModbusTCPSession>> SessionList;

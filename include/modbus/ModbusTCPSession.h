@@ -72,9 +72,9 @@ class ModbusTCPSession:
 		virtual size_t getNextData( unsigned char* buf, int len ) override;
 		virtual void setChannelTimeout( timeout_t msec );
 		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override;
-		virtual ModbusRTU::mbErrCode tcp_processing(ModbusTCP::MBAPHeader& mhead );
-		virtual ModbusRTU::mbErrCode make_adu_header( ModbusTCP::ADU& request ) override;
-		virtual ModbusRTU::mbErrCode post_send_request( ModbusTCP::ADU& request ) override;
+		virtual ModbusRTU::mbErrCode tcp_processing( ModbusRTU::ADUHeader& mhead );
+		virtual ModbusRTU::mbErrCode make_adu_header( ModbusRTU::ModbusMessage& request ) override;
+		virtual ModbusRTU::mbErrCode post_send_request(ModbusRTU::ModbusMessage& request ) override;
 
 		virtual ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query,
 				ModbusRTU::ReadCoilRetMessage& reply );
@@ -120,8 +120,8 @@ class ModbusTCPSession:
 
 	private:
 		std::queue<unsigned char> qrecv;
-		ModbusTCP::MBAPHeader curQueryHeader;
 		std::unordered_set<ModbusRTU::ModbusAddr> vaddr;
+		ModbusRTU::ADUHeader curQueryHeader;
 		PassiveTimer ptTimeout;
 		timeout_t timeout = { 0 };
 		ModbusRTU::ModbusMessage buf;

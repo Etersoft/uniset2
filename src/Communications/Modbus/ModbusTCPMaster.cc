@@ -49,7 +49,7 @@ ModbusTCPMaster::~ModbusTCPMaster()
 	tcp.reset();
 }
 // -------------------------------------------------------------------------
-size_t ModbusTCPMaster::getNextData( unsigned char* buf, int len )
+size_t ModbusTCPMaster::getNextData( unsigned char* buf, size_t len )
 {
 	return ModbusTCPCore::getNextData(tcp.get(), qrecv, buf, len);
 }
@@ -63,7 +63,7 @@ void ModbusTCPMaster::setChannelTimeout( timeout_t msec )
 	}
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPMaster::sendData( unsigned char* buf, int len )
+mbErrCode ModbusTCPMaster::sendData( unsigned char* buf, size_t len )
 {
 	return ModbusTCPCore::sendData(tcp.get(), buf, len);
 }
@@ -102,39 +102,12 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 		tcp->setTimeout(timeout);
 
-		//        ost::Thread::setException(ost::Thread::throwException);
-		//        ost::tpport_t port;
-		//        cerr << "****** peer: " << tcp->getPeer(&port) << " err: " << tcp->getErrorNumber() << endl;
-
-		if( nTransaction >= numeric_limits<ModbusRTU::ModbusData>::max() )
-			nTransaction = 0;
-
-		ModbusTCP::MBAPHeader mh;
-		mh.tID = ++nTransaction;
-		mh.pID = 0;
-		mh.len = msg.len + szModbusHeader;
-
-		//        mh.uID = addr;
-		if( crcNoCheckit )
-			mh.len -= szCRC;
-
-		mh.swapdata();
-
-		// send TCP header
-		if( dlog->is_info() )
-		{
-			dlog->info() << iaddr << "(ModbusTCPMaster::query): send tcp header(" << sizeof(mh) << "): ";
-			mbPrintMessage( dlog->info(false), (ModbusByte*)(&mh), sizeof(mh));
-			dlog->info(false) << endl;
-		}
+		msg.makeHead(++nTransaction,crcNoCheckit);
 
 		for( unsigned int i = 0; i < 2; i++ )
 		{
 			if( tcp->isPending(ost::Socket::pendingOutput, timeout) )
 			{
-				tcp->writeData(&mh, sizeof(mh));
-
-				// send PDU
 				mbErrCode res = send(msg);
 
 				if( res != erNoError )
@@ -163,8 +136,6 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				dlog->info() << "(ModbusTCPMaster::query): no write pending.. reconnnect OK" << endl;
 		}
 
-		mh.swapdata();
-
 		if( timeout != UniSetTimer::WaitUpTime )
 		{
 			timeout = ptTimeout.getLeft(timeout);
@@ -182,19 +153,29 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 		tcp->sync();
 
+		//reply.clear();
 		if( tcp->isPending(ost::Socket::pendingInput, timeout) )
 		{
-			ModbusTCP::MBAPHeader rmh;
-			int ret = getNextData((unsigned char*)(&rmh), sizeof(rmh));
+			size_t ret = 0;
+			while( !ptTimeout.checkTime() )
+			{
+				ret = getNextData((unsigned char*)(&reply.aduhead), sizeof(reply.aduhead));
 
-			if( dlog->is_info() )
+				if( ret == sizeof(reply.aduhead) )
+					break;
+
+				if( !tcp->isPending(ost::Socket::pendingInput, timeout) )
+					break;
+			}
+
+			if( ret > 0 && dlog->is_info() )
 			{
 				dlog->info() << "(ModbusTCPMaster::query): recv tcp header(" << ret << "): ";
-				mbPrintMessage( dlog->info(false), (ModbusByte*)(&rmh), sizeof(rmh));
+				mbPrintMessage( dlog->info(false), (ModbusByte*)(&reply.aduhead), sizeof(reply.aduhead));
 				dlog->info(false) << endl;
 			}
 
-			if( ret < (int)sizeof(rmh) )
+			if( ret < sizeof(reply.aduhead) )
 			{
 				ost::tpport_t port;
 
@@ -204,8 +185,8 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 					try
 					{
-						dlog->warn() << "(ModbusTCPMaster::query): ret=" << (int)ret
-								 << " < rmh=" << (int)sizeof(rmh)
+						dlog->warn() << "(ModbusTCPMaster::query): ret=" << ret
+								 << " < rmh=" << sizeof(reply.aduhead)
 								 << " errnum: " << tcp->getErrorNumber()
 								 << " perr: " << tcp->getPeer(&port)
 								 << " err: " << (err ? string(err) : "")
@@ -218,19 +199,30 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 					}
 				}
 
+				cleanInputStream();
 				tcp->forceDisconnect();
 				return erTimeOut; // return erHardwareError;
 			}
 
-			rmh.swapdata();
+			reply.swapHead();
 
-			if( rmh.tID != mh.tID )
+			if( dlog->is_info() )
+				dlog->info() << "(ModbusTCPMaster::query): ADU len=" << reply.aduLen()
+							 << endl;
+
+			if( reply.tID() != msg.tID() )
 			{
+				if( dlog->is_warn() )
+					dlog->warn() << "(ModbusTCPMaster::query): tID=" << reply.tID()
+						<< " != " << msg.tID()
+						<< " (len=" << reply.len() << ")"
+						<< endl;
+
 				cleanInputStream();
 				return  erBadReplyNodeAddress;
 			}
 
-			if( rmh.pID != 0 )
+			if( reply.pID() != 0 )
 			{
 				cleanInputStream();
 				return  erBadReplyNodeAddress;
@@ -249,7 +241,8 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				return erTimeOut; // return erHardwareError;
 			}
 
-			mbErrCode res = recv(addr, msg.func, reply, timeout);
+			//msg.aduhead = reply.aduhead;
+			mbErrCode res = recv(addr, msg.func(), reply, timeout);
 
 			if( force_disconnect )
 			{
