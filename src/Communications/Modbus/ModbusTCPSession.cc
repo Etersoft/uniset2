@@ -230,8 +230,8 @@ ModbusRTU::mbErrCode ModbusTCPSession::realReceive( const std::unordered_set<Mod
 		// для формирования ответа (см. make_adu_header)
 		curQueryHeader = buf.aduhead;
 
-		if( dlog->is_info() )
-			dlog->info() << "(ModbusTCPSession::recv): ADU len=" << curQueryHeader.len << endl;
+		if( dlog->is_level9() )
+			dlog->level9() << "(ModbusTCPSession::recv): ADU len=" << curQueryHeader.len << endl;
 
 		res = recv( vmbaddr, buf, msec );
 
@@ -323,11 +323,11 @@ mbErrCode ModbusTCPSession::tcp_processing( ModbusRTU::ADUHeader& mhead )
 
 	mhead.swapdata();
 
-	if( dlog->is_info() )
+	if( dlog->is_level9() )
 	{
-		dlog->info() << peername << "(tcp_processing): recv tcp header(" << len << "): ";
-		mbPrintMessage( dlog->info(false), (ModbusByte*)(&mhead), sizeof(mhead));
-		dlog->info(false) << endl;
+		dlog->level9() << peername << "(tcp_processing): recv tcp header(" << len << "): ";
+		mbPrintMessage( dlog->level9(false), (ModbusByte*)(&mhead), sizeof(mhead));
+		dlog->level9(false) << endl;
 	}
 
 	// check header
@@ -336,16 +336,16 @@ mbErrCode ModbusTCPSession::tcp_processing( ModbusRTU::ADUHeader& mhead )
 
 	if( mhead.len == 0 )
 	{
-		if( dlog->is_info() )
-			dlog->info() << "(ModbusTCPServer::tcp_processing): BAD FORMAT: len=0!" << endl;
+		if( dlog->is_warn() )
+			dlog->warn() << "(ModbusTCPServer::tcp_processing): BAD FORMAT: len=0!" << endl;
 
 		return erInvalidFormat;
 	}
 
 	if( mhead.len > ModbusRTU::MAXLENPACKET )
 	{
-		if( dlog->is_info() )
-			dlog->info() << "(ModbusTCPServer::tcp_processing): len(" << (int)mhead.len
+		if( dlog->is_warn() )
+			dlog->warn() << "(ModbusTCPServer::tcp_processing): len(" << (int)mhead.len
 						 << ") < MAXLENPACKET(" << ModbusRTU::MAXLENPACKET << ")" << endl;
 
 		return erInvalidFormat;
@@ -364,8 +364,8 @@ mbErrCode ModbusTCPSession::tcp_processing( ModbusRTU::ADUHeader& mhead )
 
 	if( len < mhead.len )
 	{
-		if( dlog->is_info() )
-			dlog->info() << peername << "(tcp_processing): len(" << (int)len
+		if( dlog->is_warn() )
+			dlog->warn() << peername << "(tcp_processing): len(" << (int)len
 						 << ") < mhead.len(" << (int)mhead.len << ")" << endl;
 
 		return erInvalidFormat;

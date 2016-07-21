@@ -666,8 +666,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		bcnt += k;
 		rbuf.dlen = 0;
 
-		if( dlog->is_info() )
-			dlog->info() << "(recv): header: " << rbuf.pduhead << endl;
+		if( dlog->is_level9() )
+			dlog->level9() << "(recv): header: " << rbuf.pduhead << endl;
 
 		// Определяем тип сообщения
 		switch( rbuf.func() )
@@ -789,8 +789,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		{
 			ReadCoilMessage mRead(rbuf);
 
-			if( dlog->is_info() )
-				dlog->info() << "(0x01): recv buf: " << rbuf << endl;
+			if( dlog->is_level9() )
+				dlog->level9() << "(0x01): recv buf: " << rbuf << endl;
 
 			// Проверяем контрольную сумму
 			// от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
@@ -819,8 +819,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		{
 			ReadInputStatusMessage mRead(rbuf);
 
-			if( dlog->is_info() )
-				dlog->info() << "(r0x02): recv buf: " << rbuf << endl;
+			if( dlog->is_level9() )
+				dlog->level9() << "(r0x02): recv buf: " << rbuf << endl;
 
 			// Проверяем контрольную сумму
 			// от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
@@ -849,8 +849,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		{
 			ReadOutputMessage mRead(rbuf);
 
-			if( dlog->is_info() )
-				dlog->info() << "(0x03): recv buf: " << rbuf << endl;
+			if( dlog->is_level9() )
+				dlog->level9() << "(0x03): recv buf: " << rbuf << endl;
 
 			if( crcNoCheckit )
 				return erNoError;
@@ -879,8 +879,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		{
 			ReadInputMessage mRead(rbuf);
 
-			if( dlog->is_info() )
-				dlog->info() << "(0x04): recv buf: " << rbuf << endl;
+			if( dlog->is_level9() )
+				dlog->level9() << "(0x04): recv buf: " << rbuf << endl;
 
 			if( crcNoCheckit )
 				return erNoError;
@@ -938,8 +938,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			ForceCoilsMessage mWrite(rbuf);
 
-			if( dlog->is_info() )
-				dlog->info() << "(0x0F): recv buf: " << rbuf << endl;
+			if( dlog->is_level9() )
+				dlog->level9() << "(0x0F): recv buf: " << rbuf << endl;
 
 			if( !crcNoCheckit )
 			{
@@ -1008,8 +1008,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			WriteOutputMessage mWrite(rbuf);
 
-			if( dlog->is_info() )
-				dlog->info() << "(0x10): recv buf: " << rbuf << endl;
+			if( dlog->is_level9() )
+				dlog->level9() << "(0x10): recv buf: " << rbuf << endl;
 
 			if( !crcNoCheckit )
 			{
@@ -1078,8 +1078,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			ForceSingleCoilMessage mWrite(rbuf);
 
-			if( dlog->is_info() )
-				dlog->info() << "(0x05): recv buf: " << rbuf << endl;
+			if( dlog->is_level9() )
+				dlog->level9() << "(0x05): recv buf: " << rbuf << endl;
 
 			if( !crcNoCheckit )
 			{
@@ -1148,8 +1148,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			WriteSingleOutputMessage mWrite(rbuf);
 
-			if( dlog->is_info() )
-				dlog->info() << "(0x06): recv buf: " << rbuf << endl;
+			if( dlog->is_level9() )
+				dlog->level9() << "(0x06): recv buf: " << rbuf << endl;
 
 			if( !crcNoCheckit )
 			{
@@ -1218,8 +1218,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			DiagnosticMessage mDiag(rbuf);
 
-			if( dlog->is_info() )
-				dlog->info() << "(0x08): recv buf: " << rbuf << endl;
+			if( dlog->is_level9() )
+				dlog->level9() << "(0x08): recv buf: " << rbuf << endl;
 
 			if( !crcNoCheckit )
 			{
@@ -1244,16 +1244,6 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				}
 			}
 
-			/*
-			            if( !mDiag.checkFormat() )
-			            {
-			                dlog->warn() << "(0x08): (" << rbuf.func
-			                    << ")(fnDiagnostics): "
-			                    << ": некорректный формат сообщения..." << endl;
-			                cleanupChannel();
-			                return erInvalidFormat;
-			            }
-			*/
 			return erNoError;
 		}
 		else if( rbuf.func() == fnMEI )
@@ -1284,8 +1274,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			MEIMessageRDI mRDI(rbuf);
 
-			if( dlog->is_info() )
-				dlog->info() << "(0x2B/0x0E): recv buf: " << rbuf << endl;
+			if( dlog->is_level9() )
+				dlog->level9() << "(0x2B/0x0E): recv buf: " << rbuf << endl;
 
 			if( crcNoCheckit )
 				return erNoError;
@@ -1316,8 +1306,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		{
 			JournalCommandMessage mRead(rbuf);
 
-			if( dlog->is_info() )
-				dlog->info() << "(0x65): recv buf: " << rbuf << endl;
+			if( dlog->is_level9() )
+				dlog->level9() << "(0x65): recv buf: " << rbuf << endl;
 
 			if( crcNoCheckit )
 				return erNoError;
@@ -1347,8 +1337,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		{
 			SetDateTimeMessage mSet(rbuf);
 
-			if( dlog->is_info() )
-				dlog->info() << "(0x50): recv buf: " << rbuf << endl;
+			if( dlog->is_level9() )
+				dlog->level9() << "(0x50): recv buf: " << rbuf << endl;
 
 			if( !crcNoCheckit )
 			{
@@ -1414,8 +1404,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			RemoteServiceMessage mRServ(rbuf);
 
-			if( dlog->is_info() )
-				dlog->info() << "(0x53): recv buf: " << rbuf << endl;
+			if( dlog->is_level9() )
+				dlog->level9() << "(0x53): recv buf: " << rbuf << endl;
 
 			if( crcNoCheckit )
 				return erNoError;
@@ -1446,8 +1436,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		{
 			FileTransferMessage mFT(rbuf);
 
-			if( dlog->is_info() )
-				dlog->info() << "(0x66): recv buf: " << rbuf << endl;
+			if( dlog->is_level9() )
+				dlog->level9() << "(0x66): recv buf: " << rbuf << endl;
 
 			if( crcNoCheckit )
 				return erNoError;
@@ -1482,7 +1472,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 	}
 	catch( ModbusRTU::mbException& ex ) // SystemError
 	{
-		if( dlog->debugging(Debug::CRIT) )
+		if( dlog->is_crit() )
 			dlog->crit() << "(recv): mbException: " << ex << endl;
 
 		cleanupChannel();
@@ -1494,7 +1484,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 	}
 	catch( UniSetTypes::Exception& ex ) // SystemError
 	{
-		if( dlog->debugging(Debug::CRIT) )
+		if( dlog->is_crit() )
 			dlog->crit() << "(recv): " << ex << endl;
 
 		cleanupChannel();
@@ -1770,8 +1760,8 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 		return erTimeOut;
 	}
 
-	if( dlog->is_info() )
-		dlog->info() << "(ModbusServer::send): ADU len=" << msg.aduLen() << " data[" << msg.len() << " bytes]: " << msg << endl;
+	if( dlog->is_level9() )
+		dlog->level9() << "(ModbusServer::send): ADU len=" << msg.aduLen() << " data[" << msg.len() << " bytes]: " << msg << endl;
 
 	try
 	{

@@ -412,9 +412,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 		if( k < sizeof(rbuf.pduhead.func) )
 		{
 			if( dlog->is_warn() )
-			{
 				dlog->warn() << "(recv): receive " << k << " bytes < " << sizeof(rbuf.pduhead.func) << endl;
-			}
 
 			cleanupChannel();
 			return erInvalidFormat;
@@ -423,8 +421,8 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 		bcnt += k;
 		rbuf.dlen = 0;
 
-		if( dlog->is_info() )
-			dlog->info() << "(recv): PDU: " << rbuf.pduhead << endl;
+		if( dlog->is_level9() )
+			dlog->level9() << "(recv): PDU: " << rbuf.pduhead << endl;
 
 		// обработка сообщения об ошибке...
 		if( rbuf.func() == (qfunc | MBErrMask) )

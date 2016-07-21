@@ -206,8 +206,8 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 			reply.swapHead();
 
-			if( dlog->is_info() )
-				dlog->info() << "(ModbusTCPMaster::query): ADU len=" << reply.aduLen()
+			if( dlog->is_level9() )
+				dlog->level9() << "(ModbusTCPMaster::query): ADU len=" << reply.aduLen()
 							 << endl;
 
 			if( reply.tID() != msg.tID() )
