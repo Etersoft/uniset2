@@ -260,7 +260,7 @@ class UniXML
 		static const xmlChar* local2xml( const std::string& text );
 		static std::string local2utf8( const std::string& text );
 
-		static int recur;
+		static size_t recur;
 };
 // --------------------------------------------------------------------------
 #endif

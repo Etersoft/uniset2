@@ -267,10 +267,9 @@ class MBTCPMultiMaster:
 		void check_thread();
 		void final_thread();
 
-
 		UniSetTypes::uniset_rwmutex mbMutex;
 		bool force_disconnect;
-		int checktime;
+		timeout_t checktime;
 
 	private:
 		MBTCPMultiMaster();
@@ -310,9 +309,9 @@ class MBTCPMultiMaster:
 				use = st;
 			}
 
-			int recv_timeout;
-			int aftersend_pause;
-			int sleepPause_usec;
+			timeout_t recv_timeout;
+			timeout_t aftersend_pause;
+			timeout_t sleepPause_usec;
 			bool force_disconnect;
 
 			std::string myname;

@@ -41,7 +41,7 @@ using namespace std;
 */
 
 // Временная переменная для подсчёта рекурсии
-int UniXML::recur = 0;
+size_t UniXML::recur = 0;
 
 UniXML::UniXML(const string& filename):
 	doc(0),

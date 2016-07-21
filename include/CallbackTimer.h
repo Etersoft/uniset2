@@ -60,7 +60,7 @@ namespace UniSetTypes
         class MyClass
         {
             public:
-                void Time(int id){ cout << "Timer id: "<< id << endl;}
+				void Time(size_t id){ cout << "Timer id: "<< id << endl;}
         };
 
         MyClass* rec = new MyClass();
@@ -81,10 +81,10 @@ class CallbackTimer
 	public:
 
 		/*! Максимальное количество таймеров */
-		static const unsigned int MAXCallbackTimer = 20;
+		static const size_t MAXCallbackTimer = 20;
 
 		/*! прототип функции вызова */
-		typedef void(Caller::* Action)( int id );
+		typedef void(Caller::* Action)( size_t id );
 
 		CallbackTimer(Caller* r, Action a);
 		~CallbackTimer();
@@ -94,14 +94,14 @@ class CallbackTimer
 		void terminate();  /*!< остановка    */
 
 		// Работа с таймерами (на основе интерфейса PassiveTimer)
-		void reset(int id);                 /*!< перезапустить таймер */
-		void setTiming(int id, int timrMS); /*!< установить таймер и запустить */
-		int getInterval(int id);            /*!< получить интервал, на который установлен таймер, в мс */
-		int getCurrent(int id);             /*!< получить текущее значение таймера */
+		void reset(size_t id);                 /*!< перезапустить таймер */
+		void setTiming(size_t id, timeout_t timrMS); /*!< установить таймер и запустить */
+		timeout_t getInterval(size_t id);            /*!< получить интервал, на который установлен таймер, в мс */
+		timeout_t getCurrent(size_t id);             /*!< получить текущее значение таймера */
 
 
-		void add( int id, int timeMS )throw(UniSetTypes::LimitTimers); /*!< добавление нового таймера */
-		void remove( int id ); /*!< удаление таймера */
+		void add( size_t id, timeout_t timeMS )throw(UniSetTypes::LimitTimers); /*!< добавление нового таймера */
+		void remove( size_t id ); /*!< удаление таймера */
 
 	protected:
 
@@ -123,10 +123,10 @@ class CallbackTimer
 
 		struct TimerInfo
 		{
-			TimerInfo(int id, PassiveTimer& pt):
+			TimerInfo(size_t id, PassiveTimer& pt):
 				id(id), pt(pt) {};
 
-			int id;
+			size_t id;
 			PassiveTimer pt;
 		};
 
@@ -136,14 +136,15 @@ class CallbackTimer
 		// функция-объект для поиска по id
 		struct FindId_eq: public std::unary_function<TimerInfo, bool>
 		{
-			FindId_eq(const int id): id(id) {}
+			FindId_eq(const size_t id): id(id) {}
 			inline bool operator()(const TimerInfo& ti) const
 			{
 				return ti.id == id;
 			}
-			int id;
+			size_t id;
 		};
 };
-
+//----------------------------------------------------------------------------------------
 #include "CallbackTimer.tcc"
+//----------------------------------------------------------------------------------------
 # endif //CallbackTimer_H_

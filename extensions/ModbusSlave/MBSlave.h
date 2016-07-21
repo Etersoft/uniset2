@@ -335,8 +335,8 @@ class MBSlave:
 			ModbusRTU::ModbusData mbreg;    /*!< регистр */
 			AccessMode amode;
 			VTypes::VType vtype;    /*!< type of value */
-			int wnum;               /*!< номер слова (для типов с размеров больше 2х байт */
-			int nbyte;              /*!< номер байта, который надо "сохранить" из "пришедщего в запросе" слова. [1-2] */
+			size_t wnum;               /*!< номер слова (для типов с размеров больше 2х байт */
+			size_t nbyte;              /*!< номер байта, который надо "сохранить" из "пришедщего в запросе" слова. [1-2] */
 			bool rawdata;           /*!< флаг, что в SM просто сохраняются 4-байта (актуально для типа F4)*/
 			std::shared_ptr<BitRegProperty> bitreg; /*!< указатель, как признак является ли данный регистр "сборным" из битовых */
 			ModbusRTU::RegID regID;
@@ -523,7 +523,7 @@ class MBSlave:
 
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat = { UniSetTypes::DefaultObjectId };
-		int maxHeartBeat = { 10 };
+		long maxHeartBeat = { 10 };
 		IOController::IOStateList::iterator itHeartBeat;
 		UniSetTypes::ObjectId test_id = { UniSetTypes::DefaultObjectId };
 
@@ -539,7 +539,7 @@ class MBSlave:
 
 		std::atomic_bool activated = { false };
 		std::atomic_bool cancelled = { false };
-		int activateTimeout = { 20000 }; // msec
+		timeout_t activateTimeout = { 20000 }; // msec
 		bool pingOK = { false };
 		timeout_t wait_msec = { 3000 };
 		bool force = { false };        /*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
@@ -582,7 +582,7 @@ class MBSlave:
 		timeout_t updateStatTime = { 4000 };
 		ModbusTCPServer::Sessions sess; /*!< список открытых сессий */
 		std::mutex sessMutex;
-		unsigned int sessMaxNum = { 5 };
+		size_t sessMaxNum = { 5 };
 		std::shared_ptr<ModbusTCPServerSlot> tcpserver;
 
 		struct ClientInfo

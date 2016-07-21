@@ -126,10 +126,10 @@ class ComPort
 	protected:
 		void openPort();
 
-		static const int BufSize = 8192;
+		static const size_t BufSize = 8192;
 		unsigned char buf[BufSize];
-		int curSym = { 0 };
-		int bufLength = { 0 };
+		size_t curSym = { 0 };
+		size_t bufLength = { 0 };
 		int fd = { -1 };
 		timeout_t uTimeout = { 0 };
 		bool waiting = { false };

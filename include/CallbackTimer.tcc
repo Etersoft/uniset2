@@ -101,7 +101,7 @@ void CallbackTimer<Caller>::terminate()
 // ------------------------------------------------------------------------------------------
 
 template <class Caller>
-void CallbackTimer<Caller>::add( int id, int timeMS )throw(UniSetTypes::LimitTimers)
+void CallbackTimer<Caller>::add(size_t id, timeout_t timeMS )throw(UniSetTypes::LimitTimers)
 {
 	if( lst.size() >= MAXCallbackTimer )
 	{
@@ -118,7 +118,7 @@ void CallbackTimer<Caller>::add( int id, int timeMS )throw(UniSetTypes::LimitTim
 // ------------------------------------------------------------------------------------------
 
 template <class Caller>
-void CallbackTimer<Caller>::remove( int id )
+void CallbackTimer<Caller>::remove( size_t id )
 {
 	// STL - способ поиска
 	typename TimersList::iterator li= find_if(lst.begin(),lst.end(),FindId_eq(id));	
@@ -142,7 +142,7 @@ void CallbackTimer<Caller>::clearTimers()
 }
 // ------------------------------------------------------------------------------------------
 template <class Caller>
-void CallbackTimer<Caller>::reset( int id )
+void CallbackTimer<Caller>::reset( size_t id )
 {
 	typename TimersList::iterator li= find_if(lst.begin(),lst.end(),FindId_eq(id));	
 	if( li!=lst.end() )
@@ -150,7 +150,7 @@ void CallbackTimer<Caller>::reset( int id )
 }
 // ------------------------------------------------------------------------------------------
 template <class Caller>
-void CallbackTimer<Caller>::setTiming( int id, int timeMS )
+void CallbackTimer<Caller>::setTiming( size_t id, timeout_t timeMS )
 {
 	typename TimersList::iterator li= find_if(lst.begin(),lst.end(),FindId_eq(id));		
 	if( li!=lst.end() )
@@ -158,23 +158,23 @@ void CallbackTimer<Caller>::setTiming( int id, int timeMS )
 }
 // ------------------------------------------------------------------------------------------
 template <class Caller>
-int CallbackTimer<Caller>::getInterval( int id )
+timeout_t CallbackTimer<Caller>::getInterval( size_t id )
 {
 	typename TimersList::iterator li= find_if(lst.begin(),lst.end(),FindId_eq(id));		
 	if( li!=lst.end() )
 		return li->pt.getInterval();
-	return -1;
+
+	return TIMEOUT_INF;
 }
 // ------------------------------------------------------------------------------------------
 template <class Caller>
-int CallbackTimer<Caller>::getCurrent( int id )
+timeout_t CallbackTimer<Caller>::getCurrent( size_t id )
 {
 	typename TimersList::iterator li= find_if(lst.begin(),lst.end(),FindId_eq(id));			
 	if( li!=lst.end() )
 		return li->pt.getCurrent();
 	
-	return -1;
+	return TIMEOUT_INF;
 }
 // ------------------------------------------------------------------------------------------
-
 # endif //CallbackTimer_TCC_H_

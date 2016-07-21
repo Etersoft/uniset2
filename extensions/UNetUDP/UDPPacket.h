@@ -32,8 +32,10 @@ namespace UniSetUDP
 
 	    \todo Подумать на тему сделать два отдельных вида пакетов для булевых значений и для аналоговых,
 	          чтобы уйти от преобразования UDPMessage --> UDPPacket --> UDPMessage.
-	*/
 
+		\warning ТЕКУЩАЯ ВЕРСИЯ ПРОТОКОЛА НЕ БУДЕТ РАБОТАТЬ МЕЖДУ 32-битными и 64-битными системами (из-за отличия в типе long).
+		т.к. это не сильно актуально, пока не переделываю.
+	*/
 
 	const unsigned int UNETUDP_MAGICNUM = 0x1337A1D; // идентификатор протокола
 
@@ -41,7 +43,7 @@ namespace UniSetUDP
 	{
 		UDPHeader(): magic(UNETUDP_MAGICNUM), num(0), nodeID(0), procID(0), dcount(0), acount(0) {}
 		unsigned int magic;
-		unsigned long num;
+		size_t num;
 		long nodeID;
 		long procID;
 
@@ -80,10 +82,10 @@ namespace UniSetUDP
 		UDPPacket(): len(0) {}
 
 		size_t len;
-		unsigned char data[ sizeof(UDPHeader) + MaxDCount * sizeof(long) + MaxDDataCount + MaxACount * sizeof(UDPAData) ];
+		uint8_t data[ sizeof(UDPHeader) + MaxDCount * sizeof(long) + MaxDDataCount + MaxACount * sizeof(UDPAData) ];
 	} __attribute__((packed));
 
-	static const int MaxDataLen = sizeof(UDPPacket);
+	static const size_t MaxDataLen = sizeof(UDPPacket);
 
 	struct UDPMessage:
 		public UDPHeader
@@ -126,7 +128,8 @@ namespace UniSetUDP
 		{
 			return acount;
 		}
-		unsigned short getDataCRC();
+
+		uint16_t getDataCRC();
 
 		// количество байт в пакете с булевыми переменными...
 		size_t d_byte() const
@@ -136,12 +139,12 @@ namespace UniSetUDP
 
 		UDPAData a_dat[MaxACount]; /*!< аналоговые величины */
 		long d_id[MaxDCount];      /*!< список дискретных ID */
-		unsigned char d_dat[MaxDDataCount];  /*!< битовые значения */
+		uint8_t d_dat[MaxDDataCount];  /*!< битовые значения */
 
 		friend std::ostream& operator<<( std::ostream& os, UDPMessage& p );
 	};
 
-	unsigned short makeCRC( unsigned char* buf, size_t len );
+	uint16_t makeCRC( unsigned char* buf, size_t len );
 }
 // -----------------------------------------------------------------------------
 #endif // UDPPacket_H_

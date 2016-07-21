@@ -116,7 +116,7 @@ class UNetReceiver:
 		{
 			return !ptRecvTimeout.checkTime();
 		}
-		inline unsigned long getLostPacketsNum() const
+		inline size_t getLostPacketsNum() const
 		{
 			return lostPackets;
 		}

@@ -49,9 +49,9 @@ class ComPort485F:
 	protected:
 
 		virtual unsigned char m_receiveByte( bool wait ) override;
-		void save2queue( unsigned char* msg, int len, int bnum );
-		bool remove_echo( unsigned char tb[], int len );
-		void m_read( int tmsec );
+		void save2queue(unsigned char* msg, size_t len, size_t bnum );
+		bool remove_echo( unsigned char tb[], size_t len );
+		void m_read( timeout_t tmsec );
 
 		/*! просто временный буфер для считывания данных */
 		unsigned char tbuf[ComPort::BufSize];

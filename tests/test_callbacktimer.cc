@@ -12,7 +12,7 @@ class MyTestClass
 		MyTestClass(): num1(0), num2(0), num3(0) {}
 		~MyTestClass() {}
 
-		void Time( int id )
+		void Time( size_t id )
 		{
 			if( id == 1 )
 				num1++;

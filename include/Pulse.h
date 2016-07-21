@@ -40,7 +40,7 @@ class Pulse
 
 		// t1_msec - интервал "вкл"
 		// t0_msec - интерфал "откл"
-		inline void run( int _t1_msec, int _t0_msec )
+		inline void run( timeout_t _t1_msec, timeout_t _t0_msec )
 		{
 			t1_msec = _t1_msec;
 			t0_msec = _t0_msec;
@@ -49,7 +49,7 @@ class Pulse
 			set(true);
 		}
 
-		inline void set_next( int _t1_msec, int _t0_msec )
+		inline void set_next( timeout_t _t1_msec, timeout_t _t0_msec )
 		{
 			t1_msec = _t1_msec;
 			t0_msec = _t0_msec;
@@ -116,11 +116,11 @@ class Pulse
 		}
 
 
-		inline long getT1()
+		inline timeout_t getT1()
 		{
 			return t1_msec;
 		}
-		inline long getT0()
+		inline timeout_t getT0()
 		{
 			return t0_msec;
 		}
@@ -131,8 +131,8 @@ class Pulse
 		PassiveTimer tCorr;    // корректирующий таймер
 		bool ostate;
 		bool isOn;
-		long t1_msec;
-		long t0_msec;
+		timeout_t t1_msec;
+		timeout_t t0_msec;
 
 };
 // --------------------------------------------------------------------------

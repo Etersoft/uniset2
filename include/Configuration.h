@@ -134,15 +134,15 @@ namespace UniSetTypes
 			UniversalIO::IOType getIOType( const std::string& name );
 
 			// net
-			inline unsigned int getCountOfNet() const
+			inline size_t getCountOfNet() const
 			{
 				return countOfNet;
 			}
-			inline unsigned int getRepeatTimeout() const
+			inline size_t getRepeatTimeout() const
 			{
 				return repeatTimeout;
 			}
-			inline unsigned int getRepeatCount() const
+			inline size_t getRepeatCount() const
 			{
 				return repeatCount;
 			}
@@ -162,7 +162,7 @@ namespace UniSetTypes
 				return imagesDir;    // временно
 			}
 
-			inline int getHeartBeatTime()
+			inline timeout_t getHeartBeatTime()
 			{
 				return heartbeat_msec;
 			}
@@ -192,7 +192,6 @@ namespace UniSetTypes
 			{
 				return docDir;
 			}
-
 
 			inline bool isLocalIOR() const
 			{
@@ -273,11 +272,11 @@ namespace UniSetTypes
 			CORBA::PolicyList policyList;
 
 			std::string NSName = { "" };        /*!< имя сервиса именования на ланной машине (обычно "NameService") */
-			unsigned int countOfNet = { 1 };    /*!< количество резервных каналов */
-			unsigned int repeatCount = { 3 };    /*!< количество попыток получить доступ к удаленному объекту
+			size_t countOfNet = { 1 };    /*!< количество резервных каналов */
+			size_t repeatCount = { 3 };    /*!< количество попыток получить доступ к удаленному объекту
                                             прежде чем будет выработано исключение TimeOut.        */
 
-			unsigned int repeatTimeout = { 50 };    /*!< пауза между попытками [мс] */
+			timeout_t repeatTimeout = { 50 };    /*!< пауза между попытками [мс] */
 
 			UniSetTypes::ListOfNode lnodes;
 
@@ -311,7 +310,7 @@ namespace UniSetTypes
 			bool localIOR = { false };
 			bool transientIOR = { false };
 
-			int heartbeat_msec = { 3000 };
+			timeout_t heartbeat_msec = { 3000 };
 	};
 
 	/*! Глобальный указатель на конфигурацию (singleton) */

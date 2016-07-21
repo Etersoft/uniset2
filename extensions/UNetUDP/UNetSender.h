@@ -192,7 +192,7 @@ class UNetSender
 		DMap dlist;
 		size_t maxItem = { 0 };
 		size_t packetnum = { 1 }; /*!< номер очередного посылаемого пакета */
-		unsigned short lastcrc = { 0 };
+		uint16_t lastcrc = { 0 };
 		UniSetUDP::UDPPacket s_msg;
 
 		size_t maxAData = { UniSetUDP::MaxACount };

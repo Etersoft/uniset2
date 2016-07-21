@@ -61,7 +61,7 @@ static unsigned short crc_16_tab[] =
 // -------------------------------------------------------------------------
 /* CRC-16 is based on the polynomial x^16 + x^15 + x^2 + 1.  Bits are */
 /* sent LSB to MSB. */
-static int get_crc_16( unsigned short crc, unsigned char* buf, int size )
+static int get_crc_16( uint16_t crc, unsigned char* buf, int size )
 {
 
 	while( size-- )
@@ -89,9 +89,9 @@ static int get_crc_16( unsigned short crc, unsigned char* buf, int size )
 	return crc;
 }
 // -------------------------------------------------------------------------
-unsigned short UniSetUDP::makeCRC( unsigned char* buf, size_t len )
+uint16_t UniSetUDP::makeCRC( unsigned char* buf, size_t len )
 {
-	unsigned short crc = 0xffff;
+	uint16_t crc = 0xffff;
 	crc = get_crc_16(crc, (unsigned char*)(buf), len);
 	return crc;
 }
@@ -317,9 +317,9 @@ size_t UDPMessage::getMessage( UDPMessage& m, UDPPacket& p )
 	return i + sz;
 }
 // -----------------------------------------------------------------------------
-unsigned short UDPMessage::getDataCRC()
+uint16_t UDPMessage::getDataCRC()
 {
-	unsigned short crc[3];
+	uint16_t crc[3];
 	crc[0] = makeCRC( (unsigned char*)(a_dat), sizeof(a_dat) );
 	crc[1] = makeCRC( (unsigned char*)(d_id), sizeof(d_id) );
 	crc[2] = makeCRC( (unsigned char*)(d_dat), sizeof(d_dat) );

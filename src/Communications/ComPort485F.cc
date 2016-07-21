@@ -253,18 +253,15 @@ void ComPort485F::sendByte( unsigned char x )
 	}
 }
 // --------------------------------------------------------------------------------
-void ComPort485F::save2queue( unsigned char* msg, int len, int bnum )
+void ComPort485F::save2queue( unsigned char* msg, size_t len, size_t bnum )
 {
-	for( auto i = 0; i < len && i < bnum; i++ )
-	{
+	for( size_t i = 0; i < len && i < bnum; i++ )
 		wq.push(msg[i]);
-		//        fprintf(stderr,"save 2 squeue: %x\n",msg[i]);
-	}
 }
 // --------------------------------------------------------------------------------
-bool ComPort485F::remove_echo( unsigned char tb[], int len )
+bool ComPort485F::remove_echo( unsigned char tb[], size_t len )
 {
-	int i = 0;
+	size_t i = 0;
 
 	while( !wq.empty() )
 	{
@@ -291,10 +288,10 @@ bool ComPort485F::remove_echo( unsigned char tb[], int len )
 	return wq.empty();
 }
 // --------------------------------------------------------------------------------
-void ComPort485F::m_read( int tmsec )
+void ComPort485F::m_read( timeout_t tmsec )
 {
 	ptRecv.setTiming(tmsec);
-	int rc = 0;
+	ssize_t rc = 0;
 
 	while( !ptRecv.checkTime() )
 	{

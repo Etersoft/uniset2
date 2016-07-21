@@ -204,8 +204,8 @@ class MBExchange:
 			bool resp_invert;
 			bool resp_force = { false };
 			Trigger trInitOK; // триггер для "инициализации"
-			std::atomic<unsigned int> numreply; // количество успешных запросов..
-			std::atomic<unsigned int> prev_numreply;
+			std::atomic<size_t> numreply; // количество успешных запросов..
+			std::atomic<size_t> prev_numreply;
 
 			//
 			bool ask_every_reg; /*!< опрашивать ли каждый регистр, независимо от результата опроса предыдущего. По умолчанию false - прервать опрос при первом же timeout */
@@ -340,13 +340,13 @@ class MBExchange:
 		bool force =  { false };        /*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
 		bool force_out = { false };    /*!< флаг означающий, принудительного чтения выходов */
 		bool mbregFromID = { false };
-		int polltime = { 100 };    /*!< переодичность обновления данных, [мсек] */
+		timeout_t polltime = { 100 };    /*!< переодичность обновления данных, [мсек] */
 		timeout_t sleepPause_msec;
-		unsigned int maxQueryCount = { ModbusRTU::MAXDATALEN }; /*!< максимальное количество регистров для одного запроса */
+		size_t maxQueryCount = { ModbusRTU::MAXDATALEN }; /*!< максимальное количество регистров для одного запроса */
 
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat = { UniSetTypes::DefaultObjectId };
-		int maxHeartBeat = { 10 };
+		long maxHeartBeat = { 10 };
 		IOController::IOStateList::iterator itHeartBeat;
 		UniSetTypes::ObjectId test_id = { UniSetTypes::DefaultObjectId };
 
@@ -355,14 +355,14 @@ class MBExchange:
 		long exchangeMode = {emNone}; /*!< режим работы см. ExchangeMode */
 
 		std::atomic_bool activated = { false };
-		int activateTimeout = { 20000 }; // msec
+		timeout_t activateTimeout = { 20000 }; // msec
 		bool noQueryOptimization = { false };
 		bool no_extimer = { false };
 
 		std::string prefix;
 
 		timeout_t stat_time = { 0 };      /*!< время сбора статистики обмена, 0 - отключена */
-		unsigned int poll_count = { 0 };
+		size_t poll_count = { 0 };
 		PassiveTimer ptStatistic; /*!< таймер для сбора статистики обмена */
 		std::string statInfo = { "" };
 
@@ -374,7 +374,7 @@ class MBExchange:
 		timeout_t recv_timeout = { 500 }; // msec
 		timeout_t default_timeout = { 5000 }; // msec
 
-		int aftersend_pause = { 0 };
+		timeout_t aftersend_pause = { 0 };
 
 		PassiveTimer ptReopen; /*!< таймер для переоткрытия соединения */
 		Trigger trReopen;
@@ -399,7 +399,7 @@ class MBExchange:
 
 		VMonitor vmon;
 
-		unsigned long ncycle = { 0 }; /*!< текущий номер цикла опроса */
+		size_t ncycle = { 0 }; /*!< текущий номер цикла опроса */
 
 	private:
 		MBExchange();
