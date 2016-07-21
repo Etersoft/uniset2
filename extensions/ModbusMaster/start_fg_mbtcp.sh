@@ -4,7 +4,7 @@
 --confile test.xml \
 --mbtcp-name MBMaster1 \
 --smemory-id SharedMemory \
---mbtcp-log-add-levels level4 \
+--mbtcp-log-add-levels level4,level3 \
 --mbtcp-set-prop-prefix \
 --mbtcp-filter-field rs \
 --mbtcp-filter-value 5 \
@@ -13,8 +13,8 @@
 --mbtcp-recv-timeout 900 \
 --mbtcp-polltime 200 \
 --mbtcp-polltime 200 \
---mbtcp-force-disconnect 1 \
 --mbtcp-force-out 1 \
+--mbtcp-persistent-connection 1 \
 --ulog-add-levels system \
 --mbtcp-run-logserver \
 $*

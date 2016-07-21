@@ -92,10 +92,10 @@ class MBExchange:
 			public IOBase
 		{
 			// only for RTU
-			unsigned short nbit;             /*!< bit number) */
+			short nbit;				/*!< bit number (-1 - not used) */
 			VTypes::VType vType;    /*!< type of value */
-			unsigned short rnum;             /*!< count of registers */
-			unsigned short nbyte;            /*!< byte number (1-2) */
+			unsigned short rnum;    /*!< count of registers */
+			unsigned short nbyte;   /*!< byte number (1-2) */
 
 			RSProperty():
 				nbit(-1), vType(VTypes::vtUnknown),
@@ -152,8 +152,8 @@ class MBExchange:
 			MTR::MTRType mtrType;    /*!< тип регистра (согласно спецификации на MTR) */
 
 			// optimization
-			unsigned int q_num;      /*!< number in query */
-			unsigned int q_count;    /*!< count registers for query */
+			size_t q_num;      /*!< number in query */
+			size_t q_count;    /*!< count registers for query */
 
 			RegMap::iterator rit;
 

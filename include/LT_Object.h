@@ -22,6 +22,7 @@
 #define Object_LT_H_
 //--------------------------------------------------------------------------
 #include <deque>
+#include <time.h>
 #include "UniSetTypes.h"
 #include "MessageType.h"
 #include "PassiveTimer.h"
@@ -138,7 +139,7 @@ class LT_Object
 		struct TimerInfo
 		{
 			TimerInfo(): id(0), curTimeMS(0), priority(UniSetTypes::Message::High) {};
-			TimerInfo(UniSetTypes::TimerId id, timeout_t timeMS, short cnt, UniSetTypes::Message::Priority p):
+			TimerInfo(UniSetTypes::TimerId id, timeout_t timeMS, clock_t cnt, UniSetTypes::Message::Priority p):
 				id(id),
 				curTimeMS(timeMS),
 				priority(p),
