@@ -493,6 +493,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 * Sun Jul 24 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt10
 - up build
 
+* Fri Jul 22 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt9.1
+- test build
+
 * Wed Jun 29 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt9
 - build new version
 
