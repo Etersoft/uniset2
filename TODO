@@ -85,6 +85,9 @@ DB: Сделать регулируемый буфер на INSERT-ы БД, чт
 
 в ThreadCreator использовать std::function()..
 
+Сделать в UActivator в обработчике SEGFAULT вывод trace (man 2 backtrace или google/libcoredumper)
+
+
 version 3
 =========
 - подумать нужен ли нам где-то ZeroMQ (zerorpc) (вместо omniORB?)
