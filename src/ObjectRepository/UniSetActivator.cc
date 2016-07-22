@@ -18,7 +18,6 @@
  *  \author Pavel Vainerman
 */
 // --------------------------------------------------------------------------
-
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <signal.h>
@@ -30,6 +29,15 @@
 #include <atomic>
 #include <chrono>
 
+// for print stacktrace
+// --------------------
+#include <execinfo.h>
+#include <errno.h>
+#include <cxxabi.h>
+#include <cstdio>
+#include <cstdlib>
+// --------------------
+
 #include "Exceptions.h"
 #include "ORepHelpers.h"
 #include "UInterface.h"
@@ -37,6 +45,7 @@
 #include "Debug.h"
 #include "Configuration.h"
 #include "Mutex.h"
+
 // ------------------------------------------------------------------------------------------
 using namespace UniSetTypes;
 using namespace std;
@@ -93,8 +102,94 @@ static const int TERMINATE_TIMEOUT = 3; //  время отведенное на
 static const int THREAD_TERMINATE_PAUSE = 500; // [мсек] пауза при завершении потока (см. work())
 static const int KILL_TIMEOUT = 8;
 // ------------------------------------------------------------------------------------------
+// код функции printStackTrace взят с https://oroboro.com/stack-trace-on-crash/
+// будет работать только под LINUX (т.к. используется backtrace)
+// Как альтернативу, можно применить libunwind
+// ------------------------------------------------------------------------------------------
+static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames = 31 )
+{
+	fprintf(out, "stack trace:\n");
+
+	// storage array for stack trace address data
+	void* addrlist[max_frames+1];
+
+	// retrieve current stack addresses
+	unsigned int addrlen = backtrace( addrlist, sizeof( addrlist ) / sizeof( void* ));
+
+	if ( addrlen == 0 )
+	{
+		fprintf( out, "  \n" );
+		return;
+	}
+
+	// resolve addresses into strings containing "filename(function+address)",
+	// Actually it will be ## program address function + offset
+	// this array must be free()-ed
+	char** symbollist = backtrace_symbols( addrlist, addrlen );
+
+	#define FUNCNAMESIZE 256
+	size_t funcnamesize = FUNCNAMESIZE;
+	char funcname[FUNCNAMESIZE];
+
+	// iterate over the returned symbol lines. skip the first, it is the
+	// address of this function.
+	for ( unsigned int i = 4; i < addrlen; i++ )
+	{
+		char* begin_name   = NULL;
+		char* begin_offset = NULL;
+		char* end_offset   = NULL;
+
+		// find parentheses and +address offset surrounding the mangled name
+		for ( char *p = symbollist[i]; *p; ++p )
+		{
+			if ( *p == '(' )
+				begin_name = p;
+			else if ( *p == '+' )
+				begin_offset = p;
+			else if ( *p == ')' && ( begin_offset || begin_name ))
+				end_offset = p;
+		}
+
+		if ( begin_name && end_offset && ( begin_name < end_offset ))
+		{
+			*begin_name++   = '\0';
+			*end_offset++   = '\0';
+			if ( begin_offset )
+				*begin_offset++ = '\0';
+
+			// mangled name is now in [begin_name, begin_offset) and caller
+			// offset in [begin_offset, end_offset). now apply
+			// __cxa_demangle():
+
+			int status = 0;
+			char* ret = abi::__cxa_demangle( begin_name, funcname,
+											 &funcnamesize, &status );
+			char* fname = begin_name;
+			if ( status == 0 )
+				fname = ret;
+
+			if ( begin_offset )
+			{
+				fprintf( out, "  %-30s ( %-40s  + %-6s) %s\n",
+						 symbollist[i], fname, begin_offset, end_offset );
+			} else {
+				fprintf( out, "  %-30s ( %-40s    %-6s) %s\n",
+						 symbollist[i], fname, "", end_offset );
+			}
+		} else {
+			// couldn't parse the line? print the whole line.
+			fprintf(out, "  %-40s\n", symbollist[i]);
+		}
+	}
+
+	std::free(symbollist);
+}
+// ------------------------------------------------------------------------------------------
 static void activator_terminate( int signo )
 {
+	if( g_term )
+		return;
+
 	ulogsys << "****** TERMINATE SIGNAL=" << signo << endl << flush;
 
 	// прежде чем вызывать notify_one следует освободить mutex...(вроде как)
@@ -111,6 +206,16 @@ static void activator_terminate( int signo )
 	g_term = true;
 	g_signo = signo;
 	g_termevent.notify_one();
+}
+// ------------------------------------------------------------------------------------------
+static void activator_terminate_with_calltrace( int signo )
+{
+	ulogsys << "****** TERMINATE signo=" << signo << " WITH CALL TRACE" << endl << flush;
+	if( g_term )
+		return;
+
+	printStackTrace();
+	activator_terminate(signo);
 }
 // ------------------------------------------------------------------------------------------
 void finished_thread()
@@ -562,8 +667,6 @@ void UniSetActivator::set_signals(bool ask)
 	sigaddset(&act.sa_mask, SIGTERM);
 	sigaddset(&act.sa_mask, SIGABRT );
 	sigaddset(&act.sa_mask, SIGQUIT);
-	//    sigaddset(&act.sa_mask, SIGSEGV);
-
 
 	//    sigaddset(&act.sa_mask, SIGALRM);
 	//    act.sa_flags = 0;
@@ -579,7 +682,19 @@ void UniSetActivator::set_signals(bool ask)
 	sigaction(SIGABRT, &act, &oact);
 	sigaction(SIGQUIT, &act, &oact);
 
-	//    sigaction(SIGSEGV, &act, &oact);
+	// SIGSEGV отдельно
+	sigemptyset(&act.sa_mask);
+	sigaddset(&act.sa_mask, SIGSEGV);
+	act.sa_flags = 0;
+	act.sa_flags |= SA_RESTART;
+	act.sa_flags |= SA_RESETHAND;
+
+	if(ask)
+		act.sa_handler = activator_terminate_with_calltrace;
+	else
+		act.sa_handler = SIG_DFL;
+
+	sigaction(SIGSEGV, &act, &oact);
 }
 
 // ------------------------------------------------------------------------------------------
