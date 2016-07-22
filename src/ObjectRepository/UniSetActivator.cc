@@ -29,13 +29,11 @@
 #include <atomic>
 #include <chrono>
 
-// for print stacktrace
+// for stack trace
 // --------------------
 #include <execinfo.h>
-#include <errno.h>
 #include <cxxabi.h>
-#include <cstdio>
-#include <cstdlib>
+#include <iomanip>
 // --------------------
 
 #include "Exceptions.h"
@@ -102,23 +100,41 @@ static const int TERMINATE_TIMEOUT = 3; //  время отведенное на
 static const int THREAD_TERMINATE_PAUSE = 500; // [мсек] пауза при завершении потока (см. work())
 static const int KILL_TIMEOUT = 8;
 // ------------------------------------------------------------------------------------------
+// Чтобы не выделять память во время "вылета",
+// выделим необходимое для stacktrace зараннее
+// ----------
+#define FUNCNAMESIZE 256
+static size_t funcnamesize = FUNCNAMESIZE;
+static char funcname[FUNCNAMESIZE];
+
+// storage array for stack trace address data
+#define MAXFRAMES 64
+static void* addrlist[MAXFRAMES];
+// ------------------------------------------------------------------------------------------
 // код функции printStackTrace взят с https://oroboro.com/stack-trace-on-crash/
 // будет работать только под LINUX (т.к. используется backtrace)
 // Как альтернативу, можно применить libunwind
 // ------------------------------------------------------------------------------------------
-static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames = 31 )
+// Выводим используя ulog() чтобы можно было удалённо увидеть через LogServer
+// (хотя конечно это как повезёт и зависит от того где собственно произошла ошибка)
+// ------------------------------------------------------------------------------------------
+static inline void printStackTrace()
 {
-	fprintf(out, "stack trace:\n");
+	auto log = ulog();
+	if( !log )
+		return;
 
-	// storage array for stack trace address data
-	void* addrlist[max_frames+1];
+	if( !log->is_system() )
+		return;
+
+	log->system() << "stack trace:\n";
 
 	// retrieve current stack addresses
-	unsigned int addrlen = backtrace( addrlist, sizeof( addrlist ) / sizeof( void* ));
+	unsigned int addrlen = backtrace(addrlist, MAXFRAMES);
 
 	if ( addrlen == 0 )
 	{
-		fprintf( out, "  \n" );
+		log->system() << "...empty stack..\n";
 		return;
 	}
 
@@ -127,9 +143,7 @@ static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames 
 	// this array must be free()-ed
 	char** symbollist = backtrace_symbols( addrlist, addrlen );
 
-	#define FUNCNAMESIZE 256
-	size_t funcnamesize = FUNCNAMESIZE;
-	char funcname[FUNCNAMESIZE];
+	log->system() << std::left;
 
 	// iterate over the returned symbol lines. skip the first, it is the
 	// address of this function.
@@ -140,7 +154,7 @@ static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames 
 		char* end_offset   = NULL;
 
 		// find parentheses and +address offset surrounding the mangled name
-		for ( char *p = symbollist[i]; *p; ++p )
+		for ( char* p = symbollist[i]; *p; ++p )
 		{
 			if ( *p == '(' )
 				begin_name = p;
@@ -154,6 +168,7 @@ static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames 
 		{
 			*begin_name++   = '\0';
 			*end_offset++   = '\0';
+
 			if ( begin_offset )
 				*begin_offset++ = '\0';
 
@@ -165,24 +180,36 @@ static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames 
 			char* ret = abi::__cxa_demangle( begin_name, funcname,
 											 &funcnamesize, &status );
 			char* fname = begin_name;
+
 			if ( status == 0 )
 				fname = ret;
 
 			if ( begin_offset )
 			{
-				fprintf( out, "  %-30s ( %-40s  + %-6s) %s\n",
-						 symbollist[i], fname, begin_offset, end_offset );
-			} else {
-				fprintf( out, "  %-30s ( %-40s    %-6s) %s\n",
-						 symbollist[i], fname, "", end_offset );
+				log->system() << setw(30) << symbollist[i]
+						   << " ( " << setw(40) << fname
+						   << " +" << setw(6) << begin_offset
+						   << ") " << end_offset
+						   << endl;
 			}
-		} else {
+			else
+			{
+				log->system() << setw(30) << symbollist[i]
+						   << " ( " << setw(40) << fname
+						   << " " << setw(6) << ""
+						   << ") " << end_offset
+						   << endl;
+			}
+		}
+		else
+		{
 			// couldn't parse the line? print the whole line.
-			fprintf(out, "  %-40s\n", symbollist[i]);
+			log->system() << setw(40) << symbollist[i] << endl;
 		}
 	}
 
 	std::free(symbollist);
+	log->system() << endl << "..end of trace.." << endl << flush;
 }
 // ------------------------------------------------------------------------------------------
 static void activator_terminate( int signo )
@@ -210,12 +237,18 @@ static void activator_terminate( int signo )
 // ------------------------------------------------------------------------------------------
 static void activator_terminate_with_calltrace( int signo )
 {
-	ulogsys << "****** TERMINATE signo=" << signo << " WITH CALL TRACE" << endl << flush;
+	printStackTrace();
+	// т.к. это SIGSEGV, то просто вылетаем по умолчанию..
+	signal(signo, SIG_DFL);
+	raise(signo);
+
+#if 0
 	if( g_term )
 		return;
 
 	printStackTrace();
 	activator_terminate(signo);
+#endif
 }
 // ------------------------------------------------------------------------------------------
 void finished_thread()
