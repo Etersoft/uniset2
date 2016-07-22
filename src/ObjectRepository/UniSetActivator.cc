@@ -52,7 +52,7 @@ using namespace std;
     Завершение работы организовано следующим образом:
     -------------------------------------------------
     Т.к. UniSetActivator в системе только один (singleton), он заказывает на себя
-    все сигналы связанные с завершением работы, а также устанавливает обработчики на штатный выход из прораммы (atexit)
+	все сигналы связанные с завершением работы, а также устанавливает обработчики на штатный выход из программы (atexit)
     и обработчик на выход по исключению (set_terminate).
     В качестве обработчика сигналов регистрируется функция activator_terminate( int signo ).
     При вызове run() (в функции work) создаётся "глобальный" поток g_term_thread, который
@@ -77,6 +77,15 @@ using namespace std;
     В случае, если для UniSetActivator был создан отдельный поток ( run(true) ) при завершении работы программы
     срабатывает обработчик UniSetActivator::normalexit или UniSetActivator::normalterminate, которые
     делают тоже самое. Будят процесс завершения.. и дожидаются завершения его работы.
+
+	// Обработка SIGSEGV
+	Для обработки SIGSEGV выделен отдельный обработчик (activator_terminate_with_calltrace),
+	который выводит stack trace и завершает работу.
+	Если для ulog включён SYSTEM, то trace выводится в него для возможности (если получиться)
+	увидеть его удалённо через logserver (если он запушен).
+	Если не включён, то выводиться в cerr.
+	Сам обработчик только выводит trace и завершает работу, восстановив обработчик SIGSEGV по умолчанию,
+	без какой-либо специальной обработки завершения.
 */
 // ------------------------------------------------------------------------------------------
 static std::shared_ptr<UniSetActivator> g_act;
@@ -104,12 +113,10 @@ static const int KILL_TIMEOUT = 8;
 // выделим необходимое для stacktrace зараннее
 // ----------
 #define FUNCNAMESIZE 256
-static size_t funcnamesize = FUNCNAMESIZE;
-static char funcname[FUNCNAMESIZE];
-
-// storage array for stack trace address data
 #define MAXFRAMES 64
-static void* addrlist[MAXFRAMES];
+// выделение специального стека заранее
+static char g_stack_body[MAXFRAMES*FUNCNAMESIZE+500];
+static stack_t g_sigseg_stack;
 // ------------------------------------------------------------------------------------------
 // код функции printStackTrace взят с https://oroboro.com/stack-trace-on-crash/
 // будет работать только под LINUX (т.к. используется backtrace)
@@ -118,16 +125,20 @@ static void* addrlist[MAXFRAMES];
 // Выводим используя ulog() чтобы можно было удалённо увидеть через LogServer
 // (хотя конечно это как повезёт и зависит от того где собственно произошла ошибка)
 // ------------------------------------------------------------------------------------------
+#define TRACELOG ( to_cerr ? cerr : log->system(false) )
+
 static inline void printStackTrace()
 {
 	auto log = ulog();
-	if( !log )
-		return;
 
-	if( !log->is_system() )
-		return;
+	// если логи отключены, то и выводить не будем
+	bool to_cerr = ( !log || !log->is_system() );
 
-	log->system() << "stack trace:\n";
+	// первый лог выводим с датой, а дальше уже просто
+	( to_cerr ? cerr : log->system() ) << "stack trace:\n";
+	TRACELOG << "-----------------------------------------" << endl;
+
+	void* addrlist[MAXFRAMES];
 
 	// retrieve current stack addresses
 	unsigned int addrlen = backtrace(addrlist, MAXFRAMES);
@@ -143,7 +154,10 @@ static inline void printStackTrace()
 	// this array must be free()-ed
 	char** symbollist = backtrace_symbols( addrlist, addrlen );
 
-	log->system() << std::left;
+	TRACELOG << std::left;
+
+	size_t funcnamesize = FUNCNAMESIZE;
+	char funcname[FUNCNAMESIZE];
 
 	// iterate over the returned symbol lines. skip the first, it is the
 	// address of this function.
@@ -186,7 +200,7 @@ static inline void printStackTrace()
 
 			if ( begin_offset )
 			{
-				log->system() << setw(30) << symbollist[i]
+				TRACELOG << setw(30) << symbollist[i]
 						   << " ( " << setw(40) << fname
 						   << " +" << setw(6) << begin_offset
 						   << ") " << end_offset
@@ -194,7 +208,7 @@ static inline void printStackTrace()
 			}
 			else
 			{
-				log->system() << setw(30) << symbollist[i]
+				TRACELOG << setw(30) << symbollist[i]
 						   << " ( " << setw(40) << fname
 						   << " " << setw(6) << ""
 						   << ") " << end_offset
@@ -204,12 +218,12 @@ static inline void printStackTrace()
 		else
 		{
 			// couldn't parse the line? print the whole line.
-			log->system() << setw(40) << symbollist[i] << endl;
+			TRACELOG << setw(40) << symbollist[i] << endl;
 		}
 	}
 
 	std::free(symbollist);
-	log->system() << endl << "..end of trace.." << endl << flush;
+	TRACELOG << "-----------------------------------------" << endl << flush;
 }
 // ------------------------------------------------------------------------------------------
 static void activator_terminate( int signo )
@@ -721,6 +735,12 @@ void UniSetActivator::set_signals(bool ask)
 	act.sa_flags = 0;
 	act.sa_flags |= SA_RESTART;
 	act.sa_flags |= SA_RESETHAND;
+
+	g_sigseg_stack.ss_sp = g_stack_body;
+	g_sigseg_stack.ss_flags = SS_ONSTACK;
+	g_sigseg_stack.ss_size = sizeof(g_stack_body);
+	assert(!sigaltstack(&g_sigseg_stack, nullptr));
+	act.sa_flags |= SA_ONSTACK;
 
 	if(ask)
 		act.sa_handler = activator_terminate_with_calltrace;
