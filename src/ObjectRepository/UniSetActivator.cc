@@ -86,6 +86,8 @@ using namespace std;
 	Если не включён, то выводиться в cerr.
 	Сам обработчик только выводит trace и завершает работу, восстановив обработчик SIGSEGV по умолчанию,
 	без какой-либо специальной обработки завершения.
+
+	Помимо этого, вывод stack trace сделан и для сигнала SIGABRT
 */
 // ------------------------------------------------------------------------------------------
 static std::shared_ptr<UniSetActivator> g_act;
@@ -233,18 +235,12 @@ static void activator_terminate( int signo )
 
 	ulogsys << "****** TERMINATE SIGNAL=" << signo << endl << flush;
 
-	// прежде чем вызывать notify_one следует освободить mutex...(вроде как)
-	{
-		std::unique_lock<std::mutex> locker(g_termmutex);
+	g_term = true;
 
-		if( g_term )
-			return;
-
-		g_term = true;
-	}
+	if( signo == SIGABRT )
+		printStackTrace();
 
 	ulogsys << "****** TERMINATE NOTIFY...(signo=" << signo << ")" << endl << flush;
-	g_term = true;
 	g_signo = signo;
 	g_termevent.notify_one();
 }
