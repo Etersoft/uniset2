@@ -87,7 +87,14 @@ DB: Сделать регулируемый буфер на INSERT-ы БД, чт
 в ThreadCreator использовать std::function()..
 
 ВОЗМОЖНО СТОИТ:
-libcommoncpp ==> libpoco (http://pocoproject.org/documentation/index.html)
+Уйти от использования libcommoncpp,libxml2,DebugLog,Thread,RWLock ==> и применяять одну библиотеку libpoco (http://pocoproject.org/documentation/index.html)
+
+==================
+Возможно стоит всё-таки ввести свой тип данных value_t для хранимых значений, чтобы спокойно работать в x86_64 и x86_32
+при этом скрыв детали реализации. А возможно в последствии наложить какие-то ограничения на этот тип
+
+Но тогда стоит вводить и namespace uniset
+=================
 
 
 version 3
