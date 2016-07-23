@@ -44,8 +44,9 @@ typedef std::shared_ptr<UniSetActivator> UniSetActivatorPtr;
      auto act = UniSetActivator::Instance()
      ...
 \endcode
- *    Активатор в свою очередь сам является менеджером(и объектом) и обладает всеми его свойствами
+ * Активатор в свою очередь сам является менеджером(и объектом) и обладает всеми его свойствами
  *
+ * --uniset-no-use-gdb-for-stacktrace - НЕ ИСПОЛЬЗОВАТЬ gdb для stacktrace
 */
 class UniSetActivator:
 	public UniSetManager
@@ -73,6 +74,11 @@ class UniSetActivator:
 
 		typedef sigc::signal<void, int> TerminateEvent_Signal;
 		TerminateEvent_Signal signal_terminate_event();
+
+		inline bool noUseGdbForStackTrace()
+		{
+			return _noUseGdbForStackTrace;
+		}
 
 	protected:
 
@@ -109,6 +115,8 @@ class UniSetActivator:
 
 		std::atomic_bool omDestroy;
 		pid_t thpid; // pid orb потока
+
+		bool _noUseGdbForStackTrace = { false };
 };
 //----------------------------------------------------------------------------------------
 #endif

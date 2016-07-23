@@ -228,6 +228,76 @@ static inline void printStackTrace()
 	TRACELOG << "-----------------------------------------" << endl << flush;
 }
 // ------------------------------------------------------------------------------------------
+// за основу взят код функции отсюда https://habrahabr.ru/company/ispsystem/blog/144198/
+bool gdb_print_trace()
+{
+	auto log = ulog();
+
+	// если логи отключены, то и выводить будем в cerr
+	bool to_cerr = ( !log || !log->is_system() );
+
+	char pid_buf[30];
+	sprintf(pid_buf, "%d", getpid());
+	char name_buf[512];
+	name_buf[readlink("/proc/self/exe", name_buf, 511)]=0;
+
+	// Чтобы перенаправить вывод в свой log, делаем pipe
+	int cp[2]; /* Child to parent pipe */
+	if( pipe(cp) < 0)
+	{
+		perror("Can't make pipe");
+		return false;
+	}
+
+	int child_pid = fork();
+
+	if( child_pid == -1 )
+	{
+		perror("Can't fork...");
+		return false;
+	}
+
+	if (!child_pid) {
+
+		close(cp[0]);
+		close( fileno(stdout) );
+		dup2(cp[1], fileno(stdout));
+		close( fileno(stderr) );
+		dup2(fileno(stdout), fileno(stderr));
+		TRACELOG << "stack trace for " << name_buf << " pid=" << pid_buf << endl;
+
+		// приходится выводить информацию по всем потокам, т.к. мы не знаем в каком сработал сигнал
+		// его надо смотреть по выводу "<signal handler called>"
+		execlp("gdb", "gdb", "--batch", "-n", "-ex", "thread apply all bt", name_buf, pid_buf, NULL);
+
+		//abort(); /* If gdb failed to start */
+		return false;
+	}
+	else
+	{
+		close(cp[1]);
+		char buf[5000];
+		while( true )
+		{
+			ssize_t r = ::read(cp[0], &buf, sizeof(buf) - 1 );
+
+			if( r > 0 )
+			{
+				buf[r] = '\0';
+				TRACELOG << buf;
+				continue;
+			}
+
+			break;
+		}
+
+		waitpid(child_pid,NULL,0);
+	}
+
+	TRACELOG << "-----------------------------------------" << endl << flush;
+	return true;
+}
+// ------------------------------------------------------------------------------------------
 static void activator_terminate( int signo )
 {
 	if( g_term )
@@ -238,7 +308,15 @@ static void activator_terminate( int signo )
 	g_term = true;
 
 	if( signo == SIGABRT )
-		printStackTrace();
+	{
+		if( g_act && !g_act->noUseGdbForStackTrace() )
+		{
+			if( !gdb_print_trace() )
+				printStackTrace(); // пробуем сами..
+		}
+		else
+			printStackTrace();
+	}
 
 	ulogsys << "****** TERMINATE NOTIFY...(signo=" << signo << ")" << endl << flush;
 	g_signo = signo;
@@ -247,18 +325,17 @@ static void activator_terminate( int signo )
 // ------------------------------------------------------------------------------------------
 static void activator_terminate_with_calltrace( int signo )
 {
-	printStackTrace();
+	if( g_act && !g_act->noUseGdbForStackTrace() )
+	{
+		if( !gdb_print_trace() )
+			printStackTrace(); // пробуем сами..
+	}
+	else
+		printStackTrace();
+
 	// т.к. это SIGSEGV, то просто вылетаем по умолчанию..
 	signal(signo, SIG_DFL);
 	raise(signo);
-
-#if 0
-	if( g_term )
-		return;
-
-	printStackTrace();
-	activator_terminate(signo);
-#endif
 }
 // ------------------------------------------------------------------------------------------
 void finished_thread()
@@ -454,6 +531,9 @@ void UniSetActivator::init()
 		myname = "UniSetActivator";
 
 	auto conf = uniset_conf();
+
+	_noUseGdbForStackTrace = ( findArgParam("--uniset-no-use-gdb-for-stacktrace", conf->getArgc(), conf->getArgv()) != -1 );
+
 	orb = conf->getORB();
 	CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
 	PortableServer::POA_var root_poa = PortableServer::POA::_narrow(obj);
