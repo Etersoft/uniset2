@@ -43,7 +43,7 @@
 namespace UniversalIO
 {
 	/*! Время ожидания ответа */
-	const unsigned int defaultTimeOut = 3;  // [сек]
+	const timeout_t defaultTimeOut = 3;  // [сек]
 }
 
 // -----------------------------------------------------------------------------------------
@@ -239,7 +239,7 @@ class UInterface
 		// ---------------------------------------------------------------
 		// Вспомогательный класс для кэширования ссылок на удалённые объекты
 
-		inline void setCacheMaxSize( unsigned int newsize )
+		inline void setCacheMaxSize( size_t newsize )
 		{
 			rcache.setMaxSize(newsize);
 		}
@@ -248,7 +248,7 @@ class UInterface
 		class CacheOfResolve
 		{
 			public:
-				CacheOfResolve( unsigned int maxsize, int cleancount = 20 ):
+				CacheOfResolve( size_t maxsize, size_t cleancount = 20 ):
 					MaxSize(maxsize), minCallCount(cleancount) {};
 				~CacheOfResolve() {};
 
@@ -256,7 +256,7 @@ class UInterface
 				void cache( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node, UniSetTypes::ObjectVar ptr ) const;
 				void erase( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const;
 
-				inline void setMaxSize( unsigned int ms )
+				inline void setMaxSize( size_t ms )
 				{
 					MaxSize = ms;
 				};
@@ -279,7 +279,7 @@ class UInterface
 					Info(): ptr(NULL), ncall(0) {}
 
 					UniSetTypes::ObjectVar ptr;
-					unsigned long ncall; // счётчик обращений
+					size_t ncall; // счётчик обращений
 
 					bool operator<( const CacheOfResolve::Info& rhs ) const
 					{
@@ -290,8 +290,8 @@ class UInterface
 				typedef std::unordered_map<int, Info> CacheMap;
 				mutable CacheMap mcache;
 				mutable UniSetTypes::uniset_rwmutex cmutex;
-				unsigned int MaxSize;      /*!< максимальный размер кэша */
-				unsigned int minCallCount; /*!< минимальное количество вызовов, меньше которого ссылка считается устаревшей */
+				size_t MaxSize;      /*!< максимальный размер кэша */
+				size_t minCallCount; /*!< минимальное количество вызовов, меньше которого ссылка считается устаревшей */
 		};
 
 		void initBackId( UniSetTypes::ObjectId backid );

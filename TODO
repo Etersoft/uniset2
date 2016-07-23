@@ -81,11 +81,13 @@ SM: подумать насчёт асинхронности публикаци�
 
 SM: Подумать насчёт применения https://github.com/efficient/libcuckoo
 
+
 DB: Сделать регулируемый буфер на INSERT-ы БД, чтобы поберечь винт (DBServer_PGSQL, DBServer_MySQL...) // по времени или по количеству
 
 в ThreadCreator использовать std::function()..
 
-Сделать в UActivator в обработчике SEGFAULT вывод trace (man 2 backtrace или google/libcoredumper)
+ВОЗМОЖНО СТОИТ:
+libcommoncpp ==> libpoco (http://pocoproject.org/documentation/index.html)
 
 
 version 3
