@@ -25,7 +25,7 @@ using namespace std;
 // -----------------------------------------------------------------------------------------
 ObjectIndex_idXML::ObjectIndex_idXML( const string& xmlfile )
 {
-	shared_ptr<UniXML> xml = make_shared<UniXML>();
+	auto xml = make_shared<UniXML>();
 	//    try
 	//    {
 	xml->open(xmlfile);

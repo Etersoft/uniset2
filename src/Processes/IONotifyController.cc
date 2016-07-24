@@ -100,7 +100,7 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
 	}
 	catch(...) {}
 
-	lst.clst.push_front( std::move(cinf) );
+	lst.clst.emplace_front( std::move(cinf) );
 	return true;
 }
 // ------------------------------------------------------------------------------------------
@@ -444,8 +444,9 @@ void IONotifyController::dumpOrdersList( const UniSetTypes::ObjectId sid,
 	try
 	{
 		IOController_i::SensorIOInfo ainf( getSensorIOInfo(sid) );
+		// делаем через tmp, т.к. у нас определён operator=
 		NCRestorer::SInfo tmp = ainf;
-		std::shared_ptr<NCRestorer::SInfo> sinf = make_shared<NCRestorer::SInfo>( std::move(tmp) );
+		auto sinf = make_shared<NCRestorer::SInfo>( std::move(tmp) );
 		restorer->dump(this, sinf, lst);
 	}
 	catch( const Exception& ex )
@@ -463,7 +464,7 @@ void IONotifyController::dumpThresholdList( const UniSetTypes::ObjectId sid, con
 	try
 	{
 		IOController_i::SensorIOInfo ainf(getSensorIOInfo(sid));
-		shared_ptr<NCRestorer::SInfo> sinf = make_shared<NCRestorer::SInfo>(ainf);
+		auto sinf = make_shared<NCRestorer::SInfo>( std::move(ainf) );
 		restorer->dumpThreshold(this, sinf, lst);
 	}
 	catch( const Exception& ex )
@@ -646,7 +647,7 @@ bool IONotifyController::addThreshold( ThresholdExtList& lst, ThresholdInfoExt&&
 	ti.tv_sec  = tm.tv_sec;
 	ti.tv_usec = tm.tv_usec;
 
-	lst.push_back( std::move(ti) );
+	lst.emplace_back( std::move(ti) );
 	return true;
 }
 // --------------------------------------------------------------------------------------------------------------

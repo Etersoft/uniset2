@@ -345,18 +345,23 @@ class IOController:
 			inline UniSetTypes::SensorMessage makeSensorMessage()
 			{
 				UniSetTypes::SensorMessage sm;
-
 				UniSetTypes::uniset_rwmutex_rlock lock(val_lock);
 				sm.id           = si.id;
 				sm.node         = si.node; // uniset_conf()->getLocalNode()?
 				sm.sensor_type  = type;
-				sm.value        = value;
-				sm.undefined    = undefined;
 				sm.priority     = (UniSetTypes::Message::Priority)priority;
-				sm.sm_tv_sec    = tv_sec;
-				sm.sm_tv_usec   = tv_usec;
-				sm.ci           = ci;
-				sm.supplier     = supplier;
+
+				// лочим только изменяемые поля
+				{
+					UniSetTypes::uniset_rwmutex_rlock lock(val_lock);
+					sm.value        = value;
+					sm.sm_tv_sec    = tv_sec;
+					sm.sm_tv_usec   = tv_usec;
+					sm.ci           = ci;
+					sm.supplier     = supplier;
+					sm.undefined    = undefined;
+				}
+
 				return std::move(sm);
 			}
 		};

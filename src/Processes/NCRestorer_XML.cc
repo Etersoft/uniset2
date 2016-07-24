@@ -127,7 +127,7 @@ void NCRestorer_XML::read_list( const std::shared_ptr<UniXML>& xml, xmlNode* nod
 		if( !check_list_item(it) )
 			continue;
 
-		std::shared_ptr<NCRestorer_XML::SInfo> inf = make_shared<NCRestorer_XML::SInfo>();
+		auto inf = make_shared<NCRestorer_XML::SInfo>();
 
 		if( !getSensorInfo(xml, it, inf) )
 		{
@@ -140,7 +140,7 @@ void NCRestorer_XML::read_list( const std::shared_ptr<UniXML>& xml, xmlNode* nod
 		// т.к. в функции может обновится inf
 		// вызываем перед регистрацией
 		// (потому-что в xxRegistration inf будет скопирована
-		std::shared_ptr<IOController::USensorInfo> uinf = std::static_pointer_cast<IOController::USensorInfo>(inf);
+		auto uinf = std::static_pointer_cast<IOController::USensorInfo>(inf);
 
 		ncrslot(xml, it, node, uinf);
 

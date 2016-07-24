@@ -137,8 +137,8 @@ namespace UniSetTypes
 			bool threshold;  /*!< TRUE - сработал порог, FALSE - порог отключился */
 			UniSetTypes::ThresholdId tid;
 
-			SensorMessage( SensorMessage&& ) = default;
-			SensorMessage& operator=(SensorMessage&& ) = default;
+			SensorMessage( SensorMessage&& m) = default;
+			SensorMessage& operator=(SensorMessage&& m) = default;
 			SensorMessage( const SensorMessage& ) = default;
 			SensorMessage& operator=( const SensorMessage& ) = default;
 
@@ -164,15 +164,16 @@ namespace UniSetTypes
 				Unknown,
 				StartUp,    /*! начать работу */
 				FoldUp,     /*! нет связи с главной станцией */
-				Finish,        /*! завершить работу */
-				WatchDog,    /*! контроль состояния */
+				Finish,     /*! завершить работу */
+				WatchDog,   /*! контроль состояния */
 				ReConfiguration,        /*! обновились параметры конфигурации */
 				NetworkInfo,            /*! обновилась информация о состоянии узлов в сети
                                             поля
                                             data[0]    - кто
                                             data[1] - новое состояние(true - connect,  false - disconnect)
                                          */
-				LogRotate    /*! переоткрыть файлы логов */
+				LogRotate,    /*! переоткрыть файлы логов */
+				TheLastFieldOfCommand
 			};
 
 			SystemMessage( SystemMessage&& ) = default;
@@ -229,7 +230,7 @@ namespace UniSetTypes
 
 			ConfirmMessage( const VoidMessage* msg );
 
-			ConfirmMessage(long in_sensor_id,
+			ConfirmMessage(ObjectId in_sensor_id,
 						   double in_value,
 						   time_t in_time,
 						   time_t in_time_usec,
@@ -241,7 +242,7 @@ namespace UniSetTypes
 			ConfirmMessage( const ConfirmMessage& ) = default;
 			ConfirmMessage& operator=( const ConfirmMessage& ) = default;
 
-			long sensor_id;   /* ID датчика */
+			ObjectId sensor_id;   /* ID датчика */
 			double value;     /* значение датчика */
 			time_t time;      /* время, когда датчик получил сигнал */
 			time_t time_usec; /* время в микросекундах */

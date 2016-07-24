@@ -52,7 +52,7 @@ namespace UniSetTypes
 	//--------------------------------------------------------------------------------------------
 	Message::Message():
 		type(Unused), priority(Medium),
-		node(UniSetTypes::uniset_conf()->getLocalNode()),
+		node( UniSetTypes::uniset_conf() ? UniSetTypes::uniset_conf()->getLocalNode() : DefaultObjectId ),
 		supplier(DefaultObjectId),
 		consumer(DefaultObjectId)
 	{
@@ -180,7 +180,7 @@ namespace UniSetTypes
 		if( c == SystemMessage::LogRotate )
 			return os << "LogRotate";
 
-		return os << "";
+		return os;
 	}
 	//--------------------------------------------------------------------------------------------
 	TimerMessage::TimerMessage():
@@ -210,7 +210,7 @@ namespace UniSetTypes
 		assert(this->type == Message::Confirm);
 	}
 	//--------------------------------------------------------------------------------------------
-	ConfirmMessage::ConfirmMessage(long in_sensor_id,
+	ConfirmMessage::ConfirmMessage( UniSetTypes::ObjectId in_sensor_id,
 								   double in_value,
 								   time_t in_time,
 								   time_t in_time_usec,
