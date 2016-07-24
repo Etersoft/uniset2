@@ -47,6 +47,7 @@ typedef std::shared_ptr<UniSetActivator> UniSetActivatorPtr;
  * Активатор в свою очередь сам является менеджером(и объектом) и обладает всеми его свойствами
  *
  * --uniset-no-use-gdb-for-stacktrace - НЕ ИСПОЛЬЗОВАТЬ gdb для stacktrace
+ * --uniset-abort-script  - скрипт запускаемый при вылете, в качестве аргумента передаётся имя программы и pid
 */
 class UniSetActivator:
 	public UniSetManager
@@ -78,6 +79,11 @@ class UniSetActivator:
 		inline bool noUseGdbForStackTrace()
 		{
 			return _noUseGdbForStackTrace;
+		}
+
+		inline const std::string getAbortScript()
+		{
+			return abortScript;
 		}
 
 	protected:
@@ -117,6 +123,8 @@ class UniSetActivator:
 		pid_t thpid; // pid orb потока
 
 		bool _noUseGdbForStackTrace = { false };
+
+		std::string abortScript = { "" }; // скрипт вызываемый при прерывании программы (SIGSEGV,SIGABRT)
 };
 //----------------------------------------------------------------------------------------
 #endif

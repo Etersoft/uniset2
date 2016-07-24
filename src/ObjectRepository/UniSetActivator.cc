@@ -266,9 +266,17 @@ bool gdb_print_trace()
 		dup2(fileno(stdout), fileno(stderr));
 		TRACELOG << "stack trace for " << name_buf << " pid=" << pid_buf << endl;
 
-		// приходится выводить информацию по всем потокам, т.к. мы не знаем в каком сработал сигнал
-		// его надо смотреть по выводу "<signal handler called>"
-		execlp("gdb", "gdb", "--batch", "-n", "-ex", "thread apply all bt", name_buf, pid_buf, NULL);
+		if( g_act && !g_act->getAbortScript().empty() )
+		{
+			TRACELOG << "run abort script " << g_act->getAbortScript() << endl;
+			execlp(g_act->getAbortScript().c_str(), g_act->getAbortScript().c_str(), name_buf, pid_buf, NULL);
+		}
+		else
+		{
+			// приходится выводить информацию по всем потокам, т.к. мы не знаем в каком сработал сигнал
+			// его надо смотреть по выводу "<signal handler called>"
+			execlp("gdb", "gdb", "--batch", "-n", "-ex", "thread apply all bt", name_buf, pid_buf, NULL);
+		}
 
 		//abort(); /* If gdb failed to start */
 		return false;
@@ -533,6 +541,8 @@ void UniSetActivator::init()
 	auto conf = uniset_conf();
 
 	_noUseGdbForStackTrace = ( findArgParam("--uniset-no-use-gdb-for-stacktrace", conf->getArgc(), conf->getArgv()) != -1 );
+
+	abortScript = conf->getArgParam("--uniset-abort-script","");
 
 	orb = conf->getORB();
 	CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
