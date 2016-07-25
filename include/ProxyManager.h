@@ -47,8 +47,8 @@ class ProxyManager:
 
 	protected:
 		ProxyManager();
-		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
-		virtual void allMessage( UniSetTypes::VoidMessage* msg );
+		virtual void processingMessage( const UniSetTypes::VoidMessage* msg );
+		virtual void allMessage( const UniSetTypes::VoidMessage* msg );
 
 		virtual bool activateObject();
 		virtual bool deactivateObject();

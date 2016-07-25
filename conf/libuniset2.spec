@@ -14,7 +14,7 @@
 
 Name: libuniset2
 Version: 2.4
-Release: alt1
+Release: alt2
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -484,6 +484,12 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Tue Jul 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt2
+- minor fixes
+
+* Mon Jul 25 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt1
+- build new version
+
 * Sun Jul 24 2016 Pavel Vainerman <pv@altlinux.ru> 2.3-alt10
 - up build
 

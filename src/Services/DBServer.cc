@@ -85,12 +85,12 @@ DBServer::~DBServer()
 {
 }
 //--------------------------------------------------------------------------------------------
-void DBServer::processingMessage( UniSetTypes::VoidMessage* msg )
+void DBServer::processingMessage( const UniSetTypes::VoidMessage* msg )
 {
 	switch(msg->type)
 	{
 		case Message::Confirm:
-			confirmInfo( reinterpret_cast<ConfirmMessage*>(msg) );
+			confirmInfo( reinterpret_cast<const ConfirmMessage*>(msg) );
 			break;
 
 		default:

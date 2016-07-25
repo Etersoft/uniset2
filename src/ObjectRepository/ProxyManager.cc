@@ -130,7 +130,7 @@ bool ProxyManager::deactivateObject()
 	return UniSetObject::deactivateObject();
 }
 // -------------------------------------------------------------------------
-void ProxyManager::processingMessage( UniSetTypes::VoidMessage* msg )
+void ProxyManager::processingMessage( const UniSetTypes::VoidMessage* msg )
 {
 	try
 	{
@@ -159,7 +159,7 @@ void ProxyManager::processingMessage( UniSetTypes::VoidMessage* msg )
 	}
 }
 // -------------------------------------------------------------------------
-void ProxyManager::allMessage( UniSetTypes::VoidMessage* msg )
+void ProxyManager::allMessage( const UniSetTypes::VoidMessage* msg )
 {
 	for( auto& o : omap )
 	{

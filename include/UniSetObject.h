@@ -118,7 +118,7 @@ class UniSetObject:
 
 	protected:
 		/*! обработка приходящих сообщений */
-		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
+		virtual void processingMessage( const UniSetTypes::VoidMessage* msg );
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) {}
 		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) {}
 		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) {}

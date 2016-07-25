@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2016-06-02+03:00
+// generate timestamp: 2016-07-26+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -144,7 +144,7 @@ class UObject_SK:
 
 		
 		virtual void callback() override;
-		virtual void processingMessage( UniSetTypes::VoidMessage* msg ) override;
+		virtual void processingMessage( const UniSetTypes::VoidMessage* msg ) override;
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ){};
 		virtual void askSensors( UniversalIO::UIOCommand cmd ){}
 		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override{}

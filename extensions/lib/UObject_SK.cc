@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2016-06-02+03:00
+// generate timestamp: 2016-07-26+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -328,22 +328,22 @@ void UObject_SK::init_dlog( std::shared_ptr<DebugStream> d )
 	UObject_SK::mylog = d;
 }
 // ------------------------------------------------------------------------------------------
-void UObject_SK::processingMessage( UniSetTypes::VoidMessage* _msg )
+void UObject_SK::processingMessage( const UniSetTypes::VoidMessage* _msg )
 {
 	try
 	{
 		switch( _msg->type )
 		{
 			case Message::SensorInfo:
-				preSensorInfo( reinterpret_cast<SensorMessage*>(_msg) );
+				preSensorInfo( reinterpret_cast<const SensorMessage*>(_msg) );
 			break;
 
 			case Message::Timer:
-				preTimerInfo( reinterpret_cast<TimerMessage*>(_msg) );
+				preTimerInfo( reinterpret_cast<const TimerMessage*>(_msg) );
 			break;
 
 			case Message::SysCommand:
-				preSysCommand( reinterpret_cast<SystemMessage*>(_msg) );
+				preSysCommand( reinterpret_cast<const SystemMessage*>(_msg) );
 			break;
                                                                                         
 			default:

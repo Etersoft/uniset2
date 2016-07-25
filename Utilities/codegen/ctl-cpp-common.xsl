@@ -254,7 +254,7 @@
 
 <xsl:template name="COMMON-HEAD-PROTECTED">
 		virtual void callback() override;
-		virtual void processingMessage( UniSetTypes::VoidMessage* msg ) override;
+		virtual void processingMessage( const UniSetTypes::VoidMessage* msg ) override;
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ){};
 		virtual void askSensors( UniversalIO::UIOCommand cmd ){}
 		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override{}
@@ -376,22 +376,22 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::init_dlog( std::shared_ptr&lt;Debug
 	<xsl:value-of select="$CLASSNAME"/>_SK::mylog = d;
 }
 // ------------------------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( UniSetTypes::VoidMessage* _msg )
+void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( const UniSetTypes::VoidMessage* _msg )
 {
 	try
 	{
 		switch( _msg->type )
 		{
 			case Message::SensorInfo:
-				preSensorInfo( reinterpret_cast&lt;SensorMessage*&gt;(_msg) );
+				preSensorInfo( reinterpret_cast&lt;const SensorMessage*&gt;(_msg) );
 			break;
 
 			case Message::Timer:
-				preTimerInfo( reinterpret_cast&lt;TimerMessage*&gt;(_msg) );
+				preTimerInfo( reinterpret_cast&lt;const TimerMessage*&gt;(_msg) );
 			break;
 
 			case Message::SysCommand:
-				preSysCommand( reinterpret_cast&lt;SystemMessage*&gt;(_msg) );
+				preSysCommand( reinterpret_cast&lt;const SystemMessage*&gt;(_msg) );
 			break;
                                                                                         
 			default:

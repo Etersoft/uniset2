@@ -58,7 +58,7 @@ class DBServer:
 
 	protected:
 
-		virtual void processingMessage( UniSetTypes::VoidMessage* msg ) override;
+		virtual void processingMessage( const UniSetTypes::VoidMessage* msg ) override;
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
 		virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ) {}
 

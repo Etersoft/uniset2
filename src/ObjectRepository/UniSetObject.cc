@@ -856,22 +856,22 @@ void UniSetObject::callback()
 	}
 }
 // ------------------------------------------------------------------------------------------
-void UniSetObject::processingMessage( UniSetTypes::VoidMessage* msg )
+void UniSetObject::processingMessage( const UniSetTypes::VoidMessage* msg )
 {
 	try
 	{
 		switch( msg->type )
 		{
 			case Message::SensorInfo:
-				sensorInfo( reinterpret_cast<SensorMessage*>(msg) );
+				sensorInfo( reinterpret_cast<const SensorMessage*>(msg) );
 				break;
 
 			case Message::Timer:
-				timerInfo( reinterpret_cast<TimerMessage*>(msg) );
+				timerInfo( reinterpret_cast<const TimerMessage*>(msg) );
 				break;
 
 			case Message::SysCommand:
-				sysCommand( reinterpret_cast<SystemMessage*>(msg) );
+				sysCommand( reinterpret_cast<const SystemMessage*>(msg) );
 				break;
 
 			default:

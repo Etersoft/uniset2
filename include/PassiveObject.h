@@ -42,7 +42,7 @@ class PassiveObject
 		PassiveObject( UniSetTypes::ObjectId id, ProxyManager* mngr );
 		virtual ~PassiveObject();
 
-		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
+		virtual void processingMessage( const UniSetTypes::VoidMessage* msg );
 
 		void setID( UniSetTypes::ObjectId id );
 		void init(ProxyManager* mngr);
