@@ -1,3 +1,5 @@
+# This spec is backported to ALTLinux p8 automatically by rpmbph script from etersoft-build-utils.
+#
 %def_enable docs
 %def_enable mysql
 %def_enable sqlite
@@ -14,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.4
-Release: alt3
+Release: alt2.M80P.3
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -484,6 +486,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Tue Jul 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt2.M80P.3
+- backport to ALTLinux p8 (by rpmbph script)
+
 * Tue Jul 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt3
 - merge devel/master
 
