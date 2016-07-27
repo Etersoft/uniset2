@@ -37,17 +37,16 @@ namespace UniSetUDP
 		т.к. это не сильно актуально, пока не переделываю.
 	*/
 
-	const unsigned int UNETUDP_MAGICNUM = 0x1337A1D; // идентификатор протокола
+	const uint32_t UNETUDP_MAGICNUM = 0x1337A1D; // идентификатор протокола
 
 	struct UDPHeader
 	{
 		UDPHeader(): magic(UNETUDP_MAGICNUM), num(0), nodeID(0), procID(0), dcount(0), acount(0) {}
-		unsigned int magic;
+		uint32_t magic;
 		size_t num;
 		long nodeID;
 		long procID;
 
-		//!\todo может лучше использовать системно-независимый unsigned long, чем size_t?
 		size_t dcount; /*!< количество булевых величин */
 		size_t acount; /*!< количество аналоговых величин */
 

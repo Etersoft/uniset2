@@ -21,7 +21,7 @@ namespace std
 		public:
 			size_t operator()(const ModbusRTU::mbErrCode& e) const
 			{
-				return std::hash<int>()(e);
+				return std::hash<size_t>()(e);
 			}
 	};
 }
