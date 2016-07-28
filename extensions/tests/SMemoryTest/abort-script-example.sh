@@ -1,6 +1,6 @@
 #!/bin/sh
 
-gdb --batch -n -ex "thread apply all bt" $1 $2
+exec gdb --batch -n -ex "thread apply all bt" $1 $2
 # | ssh xxxxxx
 
 # gcore $2

@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <sstream>
+#include <fstream>
 
 #include <condition_variable>
 #include <thread>
@@ -110,9 +111,9 @@ static std::condition_variable g_trace_doneevent;
 static std::shared_ptr<std::thread> g_term_thread;
 static std::shared_ptr<std::thread> g_fini_thread;
 static std::shared_ptr<std::thread> g_kill_thread;
-static const int TERMINATE_TIMEOUT = 3; //  время отведенное на завершение процесса [сек]
+static const int TERMINATE_TIMEOUT_SEC = 3; //  время отведенное на завершение процесса [сек]
 static const int THREAD_TERMINATE_PAUSE = 500; // [мсек] пауза при завершении потока (см. work())
-static const int KILL_TIMEOUT = 8;
+static const int KILL_TIMEOUT_SEC = 8;
 static pid_t g_stacktrace_proc_pid = 0; // pid процесса делающего stack trace (для защиты от зависания)
 // ------------------------------------------------------------------------------------------
 // Чтобы не выделять память во время "вылета",
@@ -123,6 +124,7 @@ static pid_t g_stacktrace_proc_pid = 0; // pid процесса делающег
 // выделение специального стека заранее
 // +60 - это на всякие переменные при обработке stack trace и т.п.
 static char g_stack_body[(MAXFRAMES+60)*FUNCNAMESIZE];
+static char trace_buf[10000];
 static stack_t g_sigseg_stack;
 static void on_stacktrace_timeout(); // поток для защиты от зависания "процесса создания stack trace"
 // ------------------------------------------------------------------------------------------
@@ -247,13 +249,7 @@ bool gdb_print_trace()
 	char name_buf[512];
 	name_buf[readlink("/proc/self/exe", name_buf, 511)]=0;
 
-	// Чтобы перенаправить вывод в свой log, делаем pipe
-	int cp[2]; /* Child to parent pipe */
-	if( pipe(cp) < 0)
-	{
-		perror("Can't make pipe");
-		return false;
-	}
+	TRACELOG << "stack trace: for " << name_buf << " pid=" << pid_buf << endl;
 
 	int child_pid = fork();
 
@@ -263,18 +259,12 @@ bool gdb_print_trace()
 		return false;
 	}
 
-	if (!child_pid) {
-
-		close(cp[0]);
-		close( fileno(stdout) );
-		dup2(cp[1], fileno(stdout));
-		close( fileno(stderr) );
-		dup2(fileno(stdout), fileno(stderr));
-		TRACELOG << "stack trace for " << name_buf << " pid=" << pid_buf << endl;
+	if( child_pid == 0 ) // CHILD
+	{
+		msleep(300); // пауза чтобы родитель успел подготовиться..
 
 		if( g_act && !g_act->getAbortScript().empty() )
 		{
-			TRACELOG << "run abort script " << g_act->getAbortScript() << endl;
 			execlp(g_act->getAbortScript().c_str(), g_act->getAbortScript().c_str(), name_buf, pid_buf, NULL);
 		}
 		else
@@ -284,38 +274,24 @@ bool gdb_print_trace()
 			execlp("gdb", "gdb", "--batch", "-n", "-ex", "thread apply all bt", name_buf, pid_buf, NULL);
 		}
 
-		//abort(); /* If gdb failed to start */
+		// abort(); /* If gdb failed to start */
 		return false;
 	}
-	else
+	else // PARENT
 	{
-		close(cp[1]);
+		if( g_act && !g_act->getAbortScript().empty() )
+		{
+			TRACELOG << "stack trace: run script " << g_act->getAbortScript() << endl;
+		}
 
 		g_stacktrace_proc_pid = child_pid;
+		g_trace_done = false;
 		std::thread t(on_stacktrace_timeout); // запускаем поток "защищающий" от зависания процесса создания stack trace
-
-		char buf[FUNCNAMESIZE]; // как минимум у нас есть буфер такого размера выделенный зараннее
-		while( true )
-		{
-			ssize_t r = ::read(cp[0], &buf, sizeof(buf) - 1 );
-
-			if( r > 0 )
-			{
-				buf[r] = '\0';
-				TRACELOG << buf;
-				continue;
-			}
-
-			break;
-		}
 
 		waitpid(child_pid,NULL,0);
 
-		{
-			std::unique_lock<std::mutex> lk(g_trace_donemutex);
-			g_trace_done = true;
-			g_trace_doneevent.notify_all();
-		}
+		g_trace_done = true;
+		g_trace_doneevent.notify_all();
 		t.join();
 	}
 
@@ -325,8 +301,10 @@ bool gdb_print_trace()
 // ------------------------------------------------------------------------------------------
 static void on_stacktrace_timeout()
 {
+	ulogsys << "****** STACK TRACE guard thread start (for pid=" << g_stacktrace_proc_pid << ") ******" << endl << flush;
 	std::unique_lock<std::mutex> lk(g_trace_donemutex);
-	g_trace_doneevent.wait_for(lk, std::chrono::milliseconds(KILL_TIMEOUT * 1000), []()
+
+	g_trace_doneevent.wait_for(lk, std::chrono::milliseconds(KILL_TIMEOUT_SEC * 1000), []()
 	{
 		return (g_trace_done == true);
 	} );
@@ -336,6 +314,8 @@ static void on_stacktrace_timeout()
 		ulogsys << "****** STACK TRACE TIMEOUT.. (kill process) *******" << endl << flush;
 		kill(g_stacktrace_proc_pid,SIGKILL);
 	}
+	else
+		ulogsys << "****** STACK TRACE guard thread finish ******" << endl << flush;
 }
 // ------------------------------------------------------------------------------------------
 static void activator_terminate( int signo )
@@ -389,7 +369,7 @@ void finished_thread()
 	g_finished = true;
 
 	std::unique_lock<std::mutex> lkw(g_workmutex);
-	g_finievent.wait_for(lkw, std::chrono::milliseconds(TERMINATE_TIMEOUT * 1000), []()
+	g_finievent.wait_for(lkw, std::chrono::milliseconds(TERMINATE_TIMEOUT_SEC * 1000), []()
 	{
 		return (g_work_stopped == true);
 	} );
@@ -403,7 +383,7 @@ void on_finish_timeout()
 	if( g_done )
 		return;
 
-	g_doneevent.wait_for(lk, std::chrono::milliseconds(KILL_TIMEOUT * 1000), []()
+	g_doneevent.wait_for(lk, std::chrono::milliseconds(KILL_TIMEOUT_SEC * 1000), []()
 	{
 		return (g_done == true);
 	} );
@@ -851,14 +831,16 @@ void UniSetActivator::set_signals(bool ask)
 	sigemptyset(&act.sa_mask);
 	sigaddset(&act.sa_mask, SIGSEGV);
 	act.sa_flags = 0;
-	act.sa_flags |= SA_RESTART;
+//	act.sa_flags |= SA_RESTART;
 	act.sa_flags |= SA_RESETHAND;
 
+#if 1
 	g_sigseg_stack.ss_sp = g_stack_body;
 	g_sigseg_stack.ss_flags = SS_ONSTACK;
 	g_sigseg_stack.ss_size = sizeof(g_stack_body);
 	assert(!sigaltstack(&g_sigseg_stack, nullptr));
 	act.sa_flags |= SA_ONSTACK;
+#endif
 
 	if(ask)
 		act.sa_handler = activator_terminate_with_calltrace;
