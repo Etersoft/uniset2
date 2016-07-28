@@ -105,7 +105,7 @@ class OmniThreadCreator:
 		{
 			exit(0);
 		}
-		inline pid_t getTID()
+		inline int getTID()
 		{
 			return id();
 		}

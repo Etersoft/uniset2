@@ -51,6 +51,14 @@ void TestProc::sysCommand( const UniSetTypes::SystemMessage* sm )
 	}
 }
 // -----------------------------------------------------------------------------
+string TestProc::getMonitInfo()
+{
+	int* p = 0;
+	(*p) = 10;
+
+	return "";
+}
+// -----------------------------------------------------------------------------
 void TestProc::sensorInfo( const SensorMessage* sm )
 {
 	/*

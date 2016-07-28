@@ -96,6 +96,7 @@ static std::atomic_bool g_term = ATOMIC_VAR_INIT(0);
 static std::atomic_bool g_done = ATOMIC_VAR_INIT(0);
 static std::atomic_bool g_work_stopped = ATOMIC_VAR_INIT(0);
 static std::atomic_int g_signo = ATOMIC_VAR_INIT(0);
+static std::atomic_bool g_trace_done = ATOMIC_VAR_INIT(0);
 
 static std::mutex              g_workmutex;
 static std::mutex              g_termmutex;
@@ -104,12 +105,15 @@ static std::mutex              g_finimutex;
 static std::condition_variable g_finievent;
 static std::mutex              g_donemutex;
 static std::condition_variable g_doneevent;
+static std::mutex              g_trace_donemutex;
+static std::condition_variable g_trace_doneevent;
 static std::shared_ptr<std::thread> g_term_thread;
 static std::shared_ptr<std::thread> g_fini_thread;
 static std::shared_ptr<std::thread> g_kill_thread;
 static const int TERMINATE_TIMEOUT = 3; //  время отведенное на завершение процесса [сек]
 static const int THREAD_TERMINATE_PAUSE = 500; // [мсек] пауза при завершении потока (см. work())
 static const int KILL_TIMEOUT = 8;
+static pid_t g_stacktrace_proc_pid = 0; // pid процесса делающего stack trace (для защиты от зависания)
 // ------------------------------------------------------------------------------------------
 // Чтобы не выделять память во время "вылета",
 // выделим необходимое для stacktrace зараннее
@@ -117,8 +121,10 @@ static const int KILL_TIMEOUT = 8;
 #define FUNCNAMESIZE 256
 #define MAXFRAMES 64
 // выделение специального стека заранее
-static char g_stack_body[MAXFRAMES*FUNCNAMESIZE+500];
+// +60 - это на всякие переменные при обработке stack trace и т.п.
+static char g_stack_body[(MAXFRAMES+60)*FUNCNAMESIZE];
 static stack_t g_sigseg_stack;
+static void on_stacktrace_timeout(); // поток для защиты от зависания "процесса создания stack trace"
 // ------------------------------------------------------------------------------------------
 // код функции printStackTrace взят с https://oroboro.com/stack-trace-on-crash/
 // будет работать только под LINUX (т.к. используется backtrace)
@@ -284,7 +290,11 @@ bool gdb_print_trace()
 	else
 	{
 		close(cp[1]);
-		char buf[5000];
+
+		g_stacktrace_proc_pid = child_pid;
+		std::thread t(on_stacktrace_timeout); // запускаем поток "защищающий" от зависания процесса создания stack trace
+
+		char buf[FUNCNAMESIZE]; // как минимум у нас есть буфер такого размера выделенный зараннее
 		while( true )
 		{
 			ssize_t r = ::read(cp[0], &buf, sizeof(buf) - 1 );
@@ -300,10 +310,32 @@ bool gdb_print_trace()
 		}
 
 		waitpid(child_pid,NULL,0);
+
+		{
+			std::unique_lock<std::mutex> lk(g_trace_donemutex);
+			g_trace_done = true;
+			g_trace_doneevent.notify_all();
+		}
+		t.join();
 	}
 
 	TRACELOG << "-----------------------------------------" << endl << flush;
 	return true;
+}
+// ------------------------------------------------------------------------------------------
+static void on_stacktrace_timeout()
+{
+	std::unique_lock<std::mutex> lk(g_trace_donemutex);
+	g_trace_doneevent.wait_for(lk, std::chrono::milliseconds(KILL_TIMEOUT * 1000), []()
+	{
+		return (g_trace_done == true);
+	} );
+
+	if( !g_trace_done )
+	{
+		ulogsys << "****** STACK TRACE TIMEOUT.. (kill process) *******" << endl << flush;
+		kill(g_stacktrace_proc_pid,SIGKILL);
+	}
 }
 // ------------------------------------------------------------------------------------------
 static void activator_terminate( int signo )
@@ -364,7 +396,7 @@ void finished_thread()
 	ulogsys << "****** FINISHED END ****" << endl << flush;
 }
 // ------------------------------------------------------------------------------------------
-void kill_thread()
+void on_finish_timeout()
 {
 	std::unique_lock<std::mutex> lk(g_donemutex);
 
@@ -411,7 +443,7 @@ void terminate_thread()
 	{
 		std::unique_lock<std::mutex> lk(g_donemutex);
 		g_done = false;
-		g_kill_thread = make_shared<std::thread>(kill_thread);
+		g_kill_thread = make_shared<std::thread>(on_finish_timeout);
 	}
 
 	if( g_act )
@@ -717,11 +749,11 @@ void UniSetActivator::work()
 	try
 	{
 		if( orbthr )
-			thpid = orbthr->getTID();
+			thid = orbthr->getTID();
 		else
-			thpid = getpid();
+			thid = getpid();
 
-		g_term_thread = make_shared<std::thread>(terminate_thread );
+		g_term_thread = make_shared<std::thread>(terminate_thread);
 		omniORB::setMainThread();
 		orb->run();
 	}
