@@ -34,6 +34,7 @@
 // --------------------
 #include <execinfo.h>
 #include <cxxabi.h>
+#include <dlfcn.h>
 #include <iomanip>
 // --------------------
 
@@ -166,70 +167,37 @@ static inline void printStackTrace()
 
 	TRACELOG << std::left;
 
-	size_t funcnamesize = FUNCNAMESIZE;
-	char funcname[FUNCNAMESIZE];
-
 	// iterate over the returned symbol lines. skip the first, it is the
 	// address of this function.
 	for ( unsigned int i = 4; i < addrlen; i++ )
 	{
-		char* begin_name   = NULL;
-		char* begin_offset = NULL;
-		char* end_offset   = NULL;
+		Dl_info dl;
 
-		// find parentheses and +address offset surrounding the mangled name
-		for ( char* p = symbollist[i]; *p; ++p )
+		if(!dladdr(addrlist[i], &dl))
+			break;
+
+		const char* sym = dl.dli_sname;
+
+		int status = 0;
+		char* ret = abi::__cxa_demangle( sym, NULL, 0, &status );
+
+		if( status == 0 && ret )
+			sym = ret;
+
+		if( dl.dli_fname && sym )
 		{
-			if ( *p == '(' )
-				begin_name = p;
-			else if ( *p == '+' )
-				begin_offset = p;
-			else if ( *p == ')' && ( begin_offset || begin_name ))
-				end_offset = p;
-		}
-
-		if ( begin_name && end_offset && ( begin_name < end_offset ))
-		{
-			*begin_name++   = '\0';
-			*end_offset++   = '\0';
-
-			if ( begin_offset )
-				*begin_offset++ = '\0';
-
-			// mangled name is now in [begin_name, begin_offset) and caller
-			// offset in [begin_offset, end_offset). now apply
-			// __cxa_demangle():
-
-			int status = 0;
-			char* ret = abi::__cxa_demangle( begin_name, funcname,
-											 &funcnamesize, &status );
-			char* fname = begin_name;
-
-			if ( status == 0 )
-				fname = ret;
-
-			if ( begin_offset )
-			{
-				TRACELOG << setw(30) << symbollist[i]
-						   << " ( " << setw(40) << fname
-						   << " +" << setw(6) << begin_offset
-						   << ") " << end_offset
-						   << endl;
-			}
-			else
-			{
-				TRACELOG << setw(30) << symbollist[i]
-						   << " ( " << setw(40) << fname
-						   << " " << setw(6) << ""
-						   << ") " << end_offset
-						   << endl;
-			}
+			TRACELOG << setw(30) << symbollist[i]
+						<< " ( " << setw(40) << dl.dli_fname
+						<< " ):  " << sym
+						<< endl << flush;
 		}
 		else
 		{
-			// couldn't parse the line? print the whole line.
-			TRACELOG << setw(40) << symbollist[i] << endl;
+			TRACELOG << setw(30) << symbollist[i] << endl << flush;
 		}
+
+		if( ret )
+			std::free(ret);
 	}
 
 	std::free(symbollist);
@@ -262,6 +230,7 @@ bool gdb_print_trace()
 	if( child_pid == 0 ) // CHILD
 	{
 		msleep(300); // пауза чтобы родитель успел подготовиться..
+		dup2(2,1); // redirect output to stderr
 
 		if( g_act && !g_act->getAbortScript().empty() )
 		{
