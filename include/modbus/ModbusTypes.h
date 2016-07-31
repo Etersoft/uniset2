@@ -192,16 +192,31 @@ namespace ModbusRTU
 		ModbusMessage( const ModbusMessage& ) = default;
 		ModbusMessage& operator=(const ModbusMessage& ) = default;
 
-		inline ModbusByte func() const { return pduhead.func; }
-		inline ModbusAddr addr() const { return pduhead.addr; }
-		inline ModbusRTU::ModbusData tID() const { return aduhead.tID; }
-		inline ModbusRTU::ModbusData pID() const { return aduhead.pID; }
-		inline ModbusRTU::ModbusData aduLen() const { return aduhead.len; }
+		inline ModbusByte func() const
+		{
+			return pduhead.func;
+		}
+		inline ModbusAddr addr() const
+		{
+			return pduhead.addr;
+		}
+		inline ModbusRTU::ModbusData tID() const
+		{
+			return aduhead.tID;
+		}
+		inline ModbusRTU::ModbusData pID() const
+		{
+			return aduhead.pID;
+		}
+		inline ModbusRTU::ModbusData aduLen() const
+		{
+			return aduhead.len;
+		}
 
 		unsigned char* buf();
 		ModbusRTU::ModbusData len() const;
 		void swapHead();
-		void makeHead( ModbusRTU::ModbusData tID, bool noCRC = true, ModbusRTU::ModbusData pID=0 );
+		void makeHead( ModbusRTU::ModbusData tID, bool noCRC = true, ModbusRTU::ModbusData pID = 0 );
 
 		ModbusRTU::ModbusData pduLen() const;
 		ModbusCRC pduCRC( size_t len ) const;

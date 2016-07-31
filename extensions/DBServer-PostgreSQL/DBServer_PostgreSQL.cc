@@ -81,7 +81,7 @@ void DBServer_PostgreSQL::sysCommand( const UniSetTypes::SystemMessage* sm )
 	switch( sm->command )
 	{
 		case SystemMessage::StartUp:
-			askTimer(FlushInsertBuffer,ibufSyncTimeout);
+			askTimer(FlushInsertBuffer, ibufSyncTimeout);
 			break;
 
 		case SystemMessage::Finish:
@@ -199,7 +199,7 @@ void DBServer_PostgreSQL::flushInsertBuffer()
 			return;
 
 		dbcrit << myname << "(flushWriteBuffer): DB not connected!"
-				<< " buffer[" << ibufSize << "] overflow! LOST DATA..." << endl;
+			   << " buffer[" << ibufSize << "] overflow! LOST DATA..." << endl;
 
 		// Чистим заданное число
 		size_t delnum = lroundf(ibufSize * ibufOverflowCleanFactor);
@@ -219,8 +219,9 @@ void DBServer_PostgreSQL::flushInsertBuffer()
 			std::advance(end, delnum);
 		}
 
-		ibuf.erase(beg,end);
+		ibuf.erase(beg, end);
 		ibufSize -= delnum;
+
 		if( ibufSize < 0 )
 			ibufSize = 0;
 
@@ -233,7 +234,7 @@ void DBServer_PostgreSQL::flushInsertBuffer()
 
 	dbinfo << myname << "(flushInsertBuffer): write insert buffer[" << ibufSize << "] to DB.." << endl;
 
-	if( !db->copy("main_history",tblcols,ibuf) )
+	if( !db->copy("main_history", tblcols, ibuf) )
 	{
 		dbcrit << myname << "(flushInsertBuffer): error: " << db->error() << endl;
 	}
@@ -322,20 +323,20 @@ void DBServer_PostgreSQL::initDBServer()
 	string dbnode( conf->getArgParam("--" + prefix + "-dbnode", it.getProp("dbnode")));
 	string dbuser( conf->getArgParam("--" + prefix + "-dbuser", it.getProp("dbuser")));
 	string dbpass( conf->getArgParam("--" + prefix + "-dbpass", it.getProp("dbpass")));
-	unsigned int dbport = conf->getArgPInt("--" + prefix + "-dbport", it.getProp("dbport"),5432);
+	unsigned int dbport = conf->getArgPInt("--" + prefix + "-dbport", it.getProp("dbport"), 5432);
 
-	ibufMaxSize = conf->getArgPInt("--" + prefix + "-ibuf-maxsize", it.getProp("ibufMaxSize"),2000);
+	ibufMaxSize = conf->getArgPInt("--" + prefix + "-ibuf-maxsize", it.getProp("ibufMaxSize"), 2000);
 	ibuf.reserve(ibufMaxSize);
 
-	ibufSyncTimeout = conf->getArgPInt("--" + prefix + "-ibuf-sync-timeout", it.getProp("ibufSyncTimeout"),15000);
-	std::string sfactor = conf->getArg2Param("--" + prefix + "-ibuf-overflow-cleanfactor", it.getProp("ibufOverflowCleanFactor"),"0.5");
+	ibufSyncTimeout = conf->getArgPInt("--" + prefix + "-ibuf-sync-timeout", it.getProp("ibufSyncTimeout"), 15000);
+	std::string sfactor = conf->getArg2Param("--" + prefix + "-ibuf-overflow-cleanfactor", it.getProp("ibufOverflowCleanFactor"), "0.5");
 	ibufOverflowCleanFactor = atof(sfactor.c_str());
 
 	tblMap[UniSetTypes::Message::SensorInfo] = "main_history";
 	tblMap[UniSetTypes::Message::Confirm] = "main_history";
 
-	PingTime = conf->getArgPInt("--" + prefix + "-pingTime", it.getProp("pingTime"),15000);
-	ReconnectTime = conf->getArgPInt("--" + prefix + "-reconnectTime", it.getProp("reconnectTime"),30000);
+	PingTime = conf->getArgPInt("--" + prefix + "-pingTime", it.getProp("pingTime"), 15000);
+	ReconnectTime = conf->getArgPInt("--" + prefix + "-reconnectTime", it.getProp("reconnectTime"), 30000);
 
 	qbufSize = conf->getArgPInt("--" + prefix + "-buffer-size", it.getProp("bufferSize"), 200);
 

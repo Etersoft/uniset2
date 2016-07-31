@@ -139,7 +139,7 @@ class TOR:
 {
 
 	public:
-		TOR( ElementID id,size_t numbers = 0, bool st = false );
+		TOR( ElementID id, size_t numbers = 0, bool st = false );
 		virtual ~TOR();
 
 		virtual void setIn( size_t num, bool state ) override;

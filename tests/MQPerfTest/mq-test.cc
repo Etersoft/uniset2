@@ -16,13 +16,13 @@ const size_t COUNT = 1000000; // сколько сообщений помест�
 // поток записи
 void mq_write_thread()
 {
-	SensorMessage smsg(100,2);
+	SensorMessage smsg(100, 2);
 	TransportMessage tm( std::move(smsg.transport_msg()) );
 	auto vm = make_shared<VoidMessage>(tm);
 
 	msleep(100);
 
-	for( size_t i=0; i<COUNT; i++ )
+	for( size_t i = 0; i < COUNT; i++ )
 	{
 		mq.push(vm);
 	}
@@ -40,6 +40,7 @@ int one_test()
 	while( rnum < COUNT )
 	{
 		auto m = mq.top();
+
 		if( m )
 			rnum++;
 	}
@@ -59,16 +60,16 @@ int main(int argc, const char** argv)
 		int tnum = 10;
 
 		// чтобы не происходило переполнение
-		mq.setMaxSizeOfMessageQueue(COUNT+1);
+		mq.setMaxSizeOfMessageQueue(COUNT + 1);
 
 		// сперва просто проверка что очередь работает.
 		{
-			SensorMessage sm(100,2);
+			SensorMessage sm(100, 2);
 			TransportMessage tm( std::move(sm.transport_msg()) );
 			auto vm = make_shared<VoidMessage>(tm);
 			mq.push(vm);
 			auto msg = mq.top();
-			assert( msg!=nullptr );
+			assert( msg != nullptr );
 			SensorMessage sm2( msg.get() );
 			assert( sm.id == sm2.id );
 		}
@@ -76,14 +77,15 @@ int main(int argc, const char** argv)
 		vector<int> res;
 		res.reserve(tnum);
 
-		for( int i=0; i<tnum; i++ )
+		for( int i = 0; i < tnum; i++ )
 		{
 			res.push_back(one_test());
 		}
 
 		// вычисляем среднее
 		int sum = 0;
-		for( auto&& r: res )
+
+		for( auto && r : res )
 			sum += r;
 
 		float avg = (float)sum / tnum;

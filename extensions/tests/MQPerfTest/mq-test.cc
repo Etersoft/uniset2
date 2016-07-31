@@ -23,20 +23,22 @@ int main(int argc, const char** argv)
 		act->broadcast( sm.transport_msg() );
 		act->run(true);
 
-		SensorMessage smsg(100,2);
+		SensorMessage smsg(100, 2);
 		TransportMessage tm( std::move(smsg.transport_msg()) );
 
 		size_t num = 0;
 		const size_t max = 100000;
 		std::chrono::time_point<std::chrono::system_clock> start, end;
 		start = std::chrono::system_clock::now();
-		for( num=0; num<max; num++ )
+
+		for( num = 0; num < max; num++ )
 		{
 			tp->push(tm);
+
 			if( tp->isFullQueue() )
 				break;
 
-			if( num%100 == 0 )
+			if( num % 100 == 0 )
 				msleep(50);
 		}
 

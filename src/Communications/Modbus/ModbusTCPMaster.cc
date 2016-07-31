@@ -102,7 +102,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 		tcp->setTimeout(timeout);
 
-		msg.makeHead(++nTransaction,crcNoCheckit);
+		msg.makeHead(++nTransaction, crcNoCheckit);
 
 		for( unsigned int i = 0; i < 2; i++ )
 		{
@@ -157,6 +157,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		if( tcp->isPending(ost::Socket::pendingInput, timeout) )
 		{
 			size_t ret = 0;
+
 			while( !ptTimeout.checkTime() )
 			{
 				ret = getNextData((unsigned char*)(&reply.aduhead), sizeof(reply.aduhead));
@@ -186,11 +187,11 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 					try
 					{
 						dlog->warn() << "(ModbusTCPMaster::query): ret=" << ret
-								 << " < rmh=" << sizeof(reply.aduhead)
-								 << " errnum: " << tcp->getErrorNumber()
-								 << " perr: " << tcp->getPeer(&port)
-								 << " err: " << (err ? string(err) : "")
-								 << endl;
+									 << " < rmh=" << sizeof(reply.aduhead)
+									 << " errnum: " << tcp->getErrorNumber()
+									 << " perr: " << tcp->getPeer(&port)
+									 << " err: " << (err ? string(err) : "")
+									 << endl;
 					}
 					catch( const ost::SockException& e )
 					{
@@ -208,15 +209,15 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 			if( dlog->is_level9() )
 				dlog->level9() << "(ModbusTCPMaster::query): ADU len=" << reply.aduLen()
-							 << endl;
+							   << endl;
 
 			if( reply.tID() != msg.tID() )
 			{
 				if( dlog->is_warn() )
 					dlog->warn() << "(ModbusTCPMaster::query): tID=" << reply.tID()
-						<< " != " << msg.tID()
-						<< " (len=" << reply.len() << ")"
-						<< endl;
+								 << " != " << msg.tID()
+								 << " (len=" << reply.len() << ")"
+								 << endl;
 
 				cleanInputStream();
 				return  erBadReplyNodeAddress;

@@ -41,7 +41,7 @@ class LogSession
 
 		// сигнал о приходе команды: std::string func( LogSession*, command, logname );
 		// \return какую-то информацию, которая будет послана client-у. Если return.empty(), то ничего послано не будет.
-		typedef sigc::signal<std::string,LogSession*,LogServerTypes::Command, const std::string& > LogSessionCommand_Signal;
+		typedef sigc::signal<std::string, LogSession*, LogServerTypes::Command, const std::string& > LogSessionCommand_Signal;
 		LogSessionCommand_Signal signal_logsession_command();
 
 		// прервать работу

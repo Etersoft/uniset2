@@ -196,6 +196,7 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 		{
 			uniset_rwmutex_wrlock l(mutSList);
 			scount++;
+
 			// на первой сессии запоминаем состояние логов
 			if( scount == 1 )
 				saveDefaultLogLevels("ALL");
@@ -258,7 +259,8 @@ string LogServer::getShortInfo()
 	inf << "LogServer: " << myname << endl;
 	{
 		uniset_rwmutex_wrlock l(mutSList);
-		for( const auto& s: slist )
+
+		for( const auto& s : slist )
 			inf << " " << s->getShortInfo() << endl;
 	}
 
@@ -271,15 +273,17 @@ void LogServer::saveDefaultLogLevels( const std::string& logname )
 		mylog.info() << myname << "(saveDefaultLogLevels): SAVE DEFAULT LOG LEVELS.." << endl;
 
 	auto alog = dynamic_pointer_cast<LogAgregator>(elog);
+
 	if( alog )
 	{
 		std::list<LogAgregator::iLog> lst;
+
 		if( logname.empty() || logname == "ALL" )
 			lst = alog->getLogList();
 		else
 			lst = alog->getLogList(logname);
 
-		for( auto&& l: lst )
+		for( auto && l : lst )
 			defaultLogLevels[l.log.get()] = l.log->level();
 	}
 	else if( elog )
@@ -292,17 +296,20 @@ void LogServer::restoreDefaultLogLevels( const std::string& logname )
 		mylog.info() << myname << "(restoreDefaultLogLevels): RESTORE DEFAULT LOG LEVELS.." << endl;
 
 	auto alog = dynamic_pointer_cast<LogAgregator>(elog);
+
 	if( alog )
 	{
 		std::list<LogAgregator::iLog> lst;
+
 		if( logname.empty() || logname == "ALL" )
 			lst = alog->getLogList();
 		else
 			lst = alog->getLogList(logname);
 
-		for( auto&& l: lst )
+		for( auto && l : lst )
 		{
 			auto d = defaultLogLevels.find(l.log.get());
+
 			if( d != defaultLogLevels.end() )
 				l.log->level(d->second);
 		}
@@ -310,6 +317,7 @@ void LogServer::restoreDefaultLogLevels( const std::string& logname )
 	else if( elog )
 	{
 		auto d = defaultLogLevels.find(elog.get());
+
 		if( d != defaultLogLevels.end() )
 			elog->level(d->second);
 	}
@@ -331,9 +339,11 @@ std::string LogServer::onCommand( LogSession* s, LogServerTypes::Command cmd, co
 		s << "List of saved default log levels (filter='" << logname << "')[" << defaultLogLevels.size() << "]: " << endl;
 		s << "=================================" << endl;
 		auto alog = dynamic_pointer_cast<LogAgregator>(elog);
+
 		if( alog ) // если у нас "агрегатор", то работаем с его списком потоков
 		{
 			std::list<LogAgregator::iLog> lst;
+
 			if( logname.empty() || logname == "ALL" )
 				lst = alog->getLogList();
 			else
@@ -349,6 +359,7 @@ std::string LogServer::onCommand( LogSession* s, LogServerTypes::Command cmd, co
 			{
 				Debug::type deflevel = Debug::NONE;
 				auto i = defaultLogLevels.find(l.log.get());
+
 				if( i != defaultLogLevels.end() )
 					deflevel = i->second;
 
@@ -359,8 +370,10 @@ std::string LogServer::onCommand( LogSession* s, LogServerTypes::Command cmd, co
 		{
 			Debug::type deflevel = Debug::NONE;
 			auto i = defaultLogLevels.find(elog.get());
+
 			if( i != defaultLogLevels.end() )
 				deflevel = i->second;
+
 			s << elog->getLogName() << " [" << Debug::str(deflevel) << " ]" << endl;
 		}
 

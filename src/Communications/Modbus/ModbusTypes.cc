@@ -256,6 +256,7 @@ void ModbusMessage::makeHead( ModbusData tID, bool noCRC, ModbusData pID )
 	aduhead.tID = tID;
 	aduhead.pID = pID;
 	aduhead.len = pduLen();
+
 	if( noCRC )
 		aduhead.len -= szCRC;
 }
@@ -283,12 +284,14 @@ void ModbusMessage::clear()
 std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusMessage& m )
 {
 	os << m.aduhead << "| ";
+
 	if( m.aduLen() == 0 )
 		mbPrintMessage(os, (ModbusByte*)(&m.pduhead), sizeof(m.pduhead) + m.dlen);
 	else
 		mbPrintMessage(os, (ModbusByte*)(&m.pduhead), m.aduLen());
+
 	return os;
-//	return mbPrintMessage(os, (ModbusByte*)(&m), sizeof(m.aduhead) + sizeof(m.pduhead) + m.dlen);
+	//	return mbPrintMessage(os, (ModbusByte*)(&m), sizeof(m.aduhead) + sizeof(m.pduhead) + m.dlen);
 }
 
 std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusMessage* m )
@@ -410,7 +413,7 @@ ReadCoilMessage& ReadCoilMessage::operator=( const ModbusMessage& m )
 void ReadCoilMessage::init( const ModbusMessage& m )
 {
 	assert( m.pduhead.func == fnReadCoilStatus );
-//	memset(this, 0, sizeof(*this));
+	//	memset(this, 0, sizeof(*this));
 	memcpy(this, &m.pduhead, sizeof(m.pduhead));
 	memcpy(&start, m.data, szData());
 
@@ -730,7 +733,7 @@ ReadInputStatusMessage& ReadInputStatusMessage::operator=( const ModbusMessage& 
 void ReadInputStatusMessage::init( const ModbusMessage& m )
 {
 	assert( m.pduhead.func == fnReadInputStatus );
-	memcpy(this, &m.pduhead, sizeof(m.pduhead)+szData());
+	memcpy(this, &m.pduhead, sizeof(m.pduhead) + szData());
 
 	// переворачиваем слова
 	start = SWAPSHORT(start);
@@ -935,7 +938,7 @@ void ReadOutputMessage::init( const ModbusMessage& m )
 {
 	assert( m.pduhead.func == fnReadOutputRegisters );
 	//memset(this, 0, sizeof(*this));
-	memcpy(this, &m.pduhead, sizeof(m.pduhead)+szData());
+	memcpy(this, &m.pduhead, sizeof(m.pduhead) + szData());
 
 	// переворачиваем слова
 	start = SWAPSHORT(start);
@@ -1142,9 +1145,9 @@ ReadInputMessage& ReadInputMessage::operator=( const ModbusMessage& m )
 void ReadInputMessage::init( const ModbusMessage& m )
 {
 	assert( m.pduhead.func == fnReadInputRegisters );
-//	memset(this, 0, sizeof(*this));
+	//	memset(this, 0, sizeof(*this));
 	memcpy(this, &m.pduhead, sizeof(m.pduhead));
-	memcpy(&start,m.data,szData());
+	memcpy(&start, m.data, szData());
 
 	// переворачиваем слова
 	start = SWAPSHORT(start);
@@ -1511,7 +1514,7 @@ void ForceCoilsRetMessage::init( const ModbusMessage& m )
 {
 	assert( m.pduhead.func == fnForceMultipleCoils );
 
-//	memset(this, 0, sizeof(*this));
+	//	memset(this, 0, sizeof(*this));
 
 	// copy not include CRC
 	memcpy(this, &m.pduhead, szModbusHeader + m.dlen);
@@ -1877,7 +1880,7 @@ ForceSingleCoilMessage& ForceSingleCoilMessage::operator=( const ModbusMessage& 
 void ForceSingleCoilMessage::init( const ModbusMessage& m )
 {
 	assert( m.pduhead.func == fnForceSingleCoil );
-//	memset(this, 0, sizeof(*this));
+	//	memset(this, 0, sizeof(*this));
 
 	// копируем данные вместе с CRC
 	memcpy(this, &m.pduhead, szModbusHeader + m.dlen + szCRC);
@@ -2048,7 +2051,7 @@ WriteSingleOutputMessage& WriteSingleOutputMessage::operator=( const ModbusMessa
 void WriteSingleOutputMessage::init( const ModbusMessage& m )
 {
 	assert( m.pduhead.func == fnWriteOutputSingleRegister );
-//	memset(this, 0, sizeof(*this));
+	//	memset(this, 0, sizeof(*this));
 
 	// копируем данные вместе с CRC
 	memcpy(this, &m.pduhead, szModbusHeader + m.dlen + szCRC);
@@ -2120,7 +2123,7 @@ WriteSingleOutputRetMessage& WriteSingleOutputRetMessage::operator=( const Modbu
 // -------------------------------------------------------------------------
 void WriteSingleOutputRetMessage::init( const ModbusMessage& m )
 {
-//	memset(this, 0, sizeof(*this));
+	//	memset(this, 0, sizeof(*this));
 
 	// copy not include CRC
 	memcpy(this, &m.pduhead, szModbusHeader + m.dlen);
@@ -2761,7 +2764,7 @@ JournalCommandMessage::JournalCommandMessage( const ModbusMessage& m )
 JournalCommandMessage& JournalCommandMessage::operator=( const ModbusMessage& m )
 {
 	assert( m.pduhead.func == fnJournalCommand );
-//	memset(this, 0, sizeof(*this));
+	//	memset(this, 0, sizeof(*this));
 	memcpy(this, &m.pduhead, sizeof(*this)); // m.len
 
 	// переворачиваем слова

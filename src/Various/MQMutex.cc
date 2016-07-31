@@ -36,9 +36,10 @@ void MQMutex::push( const VoidMessagePtr& vm )
 	// проверяем переполнение, только если стратегия "терять новые данные"
 	// иначе нет смысла проверять, а можно просто писать новые данные затирая старые
 	// (sz+1) - т.к мы смотрим есть ли место для новых данных
-	if( (sz+1) > SizeOfMessageQueue )
+	if( (sz + 1) > SizeOfMessageQueue )
 	{
 		stCountOfLostMessages++;
+
 		if( lostStrategy == lostNewData )
 			return;
 
@@ -49,6 +50,7 @@ void MQMutex::push( const VoidMessagePtr& vm )
 
 	mqueue.push_back(vm);
 	sz++;
+
 	if( sz > stMaxQueueMessages )
 		stMaxQueueMessages = sz;
 }

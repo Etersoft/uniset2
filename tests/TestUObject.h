@@ -12,9 +12,9 @@ class TestUObject:
 	public:
 
 		TestUObject( UniSetTypes::ObjectId id, xmlNode* cnode ):
-			UniSetObject(id){}
+			UniSetObject(id) {}
 
-		virtual ~TestUObject(){};
+		virtual ~TestUObject() {};
 
 		// специальные функции для проведения тестирования
 		inline VoidMessagePtr getOneMessage()
@@ -28,7 +28,7 @@ class TestUObject:
 		}
 
 	protected:
-		TestUObject(){};
+		TestUObject() {};
 };
 // -------------------------------------------------------------------------
 #endif // TestUObject_H_

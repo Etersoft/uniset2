@@ -843,7 +843,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			// от начала(включая заголовок)
 			// и до конца (исключив последний элемент содержащий CRC)
 			// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
-			ModbusData tcrc =rbuf.pduCRC(bcnt - szCRC);
+			ModbusData tcrc = rbuf.pduCRC(bcnt - szCRC);
 
 			if( tcrc != mWrite.crc )
 			{
@@ -1335,6 +1335,7 @@ mbErrCode ModbusClient::send( ModbusMessage& msg )
 		if( dlog->is_warn() )
 			dlog->warn() << "(ModbusClient::send): message len=" << msg.len()
 						 << " > MAXLEN=" << msg.maxSizeOfMessage() << endl;
+
 		return erPacketTooLong;
 	}
 
@@ -1345,7 +1346,7 @@ mbErrCode ModbusClient::send( ModbusMessage& msg )
 	{
 		size_t len = msg.len(); // т.к. swapHead() поменяет
 		msg.swapHead();
-		sendData(msg.buf(),len);
+		sendData(msg.buf(), len);
 		msg.swapHead();
 	}
 	catch( mbException& ex )

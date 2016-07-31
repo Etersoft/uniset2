@@ -186,7 +186,7 @@ class CardList:
 {
 	public:
 
-		explicit CardList( size_t size ) : std::vector<ComediInterface*>(size) { }
+		explicit CardList( size_t size ) : std::vector<ComediInterface * >(size) { }
 
 		~CardList()
 		{

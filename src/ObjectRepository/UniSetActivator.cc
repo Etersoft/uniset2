@@ -124,7 +124,7 @@ static pid_t g_stacktrace_proc_pid = 0; // pid процесса делающег
 #define MAXFRAMES 64
 // выделение специального стека заранее
 // +60 - это на всякие переменные при обработке stack trace и т.п.
-static char g_stack_body[(MAXFRAMES+60)*FUNCNAMESIZE];
+static char g_stack_body[(MAXFRAMES + 60)*FUNCNAMESIZE];
 static char trace_buf[10000];
 static stack_t g_sigseg_stack;
 static void on_stacktrace_timeout(); // поток для защиты от зависания "процесса создания stack trace"
@@ -187,9 +187,9 @@ static inline void printStackTrace()
 		if( dl.dli_fname && sym )
 		{
 			TRACELOG << setw(30) << symbollist[i]
-						<< " ( " << setw(40) << dl.dli_fname
-						<< " ):  " << sym
-						<< endl << flush;
+					 << " ( " << setw(40) << dl.dli_fname
+					 << " ):  " << sym
+					 << endl << flush;
 		}
 		else
 		{
@@ -215,7 +215,7 @@ bool gdb_print_trace()
 	char pid_buf[30];
 	sprintf(pid_buf, "%d", getpid());
 	char name_buf[512];
-	name_buf[readlink("/proc/self/exe", name_buf, 511)]=0;
+	name_buf[readlink("/proc/self/exe", name_buf, 511)] = 0;
 
 	TRACELOG << "stack trace: for " << name_buf << " pid=" << pid_buf << endl;
 
@@ -230,7 +230,7 @@ bool gdb_print_trace()
 	if( child_pid == 0 ) // CHILD
 	{
 		msleep(300); // пауза чтобы родитель успел подготовиться..
-		dup2(2,1); // redirect output to stderr
+		dup2(2, 1); // redirect output to stderr
 
 		if( g_act && !g_act->getAbortScript().empty() )
 		{
@@ -257,7 +257,7 @@ bool gdb_print_trace()
 		g_trace_done = false;
 		std::thread t(on_stacktrace_timeout); // запускаем поток "защищающий" от зависания процесса создания stack trace
 
-		waitpid(child_pid,NULL,0);
+		waitpid(child_pid, NULL, 0);
 
 		g_trace_done = true;
 		g_trace_doneevent.notify_all();
@@ -281,7 +281,7 @@ static void on_stacktrace_timeout()
 	if( !g_trace_done )
 	{
 		ulogsys << "****** STACK TRACE TIMEOUT.. (kill process) *******" << endl << flush;
-		kill(g_stacktrace_proc_pid,SIGKILL);
+		kill(g_stacktrace_proc_pid, SIGKILL);
 	}
 	else
 		ulogsys << "****** STACK TRACE guard thread finish ******" << endl << flush;
@@ -523,7 +523,7 @@ void UniSetActivator::init()
 
 	_noUseGdbForStackTrace = ( findArgParam("--uniset-no-use-gdb-for-stacktrace", conf->getArgc(), conf->getArgv()) != -1 );
 
-	abortScript = conf->getArgParam("--uniset-abort-script","");
+	abortScript = conf->getArgParam("--uniset-abort-script", "");
 
 	orb = conf->getORB();
 	CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
@@ -800,7 +800,7 @@ void UniSetActivator::set_signals(bool ask)
 	sigemptyset(&act.sa_mask);
 	sigaddset(&act.sa_mask, SIGSEGV);
 	act.sa_flags = 0;
-//	act.sa_flags |= SA_RESTART;
+	//	act.sa_flags |= SA_RESTART;
 	act.sa_flags |= SA_RESETHAND;
 
 #if 1

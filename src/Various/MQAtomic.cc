@@ -44,26 +44,28 @@ void MQAtomic::push( const VoidMessagePtr& vm )
 	if( wpos < rpos )
 	{
 		// только надо привести к одному масштабу
-		unsigned long w = wpos%SizeOfMessageQueue;
-		unsigned long r = rpos%SizeOfMessageQueue;
+		unsigned long w = wpos % SizeOfMessageQueue;
+		unsigned long r = rpos % SizeOfMessageQueue;
 
-		if( lostStrategy == lostNewData && (r-w) >= SizeOfMessageQueue )
+		if( lostStrategy == lostNewData && (r - w) >= SizeOfMessageQueue )
 		{
 			stCountOfLostMessages++;
 			return;
 		}
 	}
+
 	// -----------------------------------------------
 
 	// сперва надо сдвинуть счётчик (чтобы следующий поток уже писал в новое место)
 	unsigned long w = wpos.fetch_add(1);
 
 	// а потом уже добавлять новое сообщение в "зарезервированное" место
-	mqueue[w%SizeOfMessageQueue] = vm;
+	mqueue[w % SizeOfMessageQueue] = vm;
 	qpos.fetch_add(1); // теперь увеличиваем реальное количество элементов в очереди
 
 	// ведём статистику
 	size_t sz = qpos - rpos;
+
 	if( sz > stMaxQueueMessages )
 		stMaxQueueMessages = sz;
 }
@@ -90,7 +92,7 @@ VoidMessagePtr MQAtomic::top()
 	{
 		// сперва надо сдвинуть счётчик (чтобы следующий поток уже работал с следующим значением)
 		unsigned long r = rpos.fetch_add(1);
-		return mqueue[r%SizeOfMessageQueue];
+		return mqueue[r % SizeOfMessageQueue];
 	}
 
 	// Если rpos > qpos, значит qpos уже перешёл через максимум
@@ -98,8 +100,8 @@ VoidMessagePtr MQAtomic::top()
 	if( rpos > qpos ) // делаем if каждый раз, т.к. qpos может уже поменяться в параллельном потоке
 	{
 		// приводим к одному масштабу
-		unsigned long w = qpos%SizeOfMessageQueue;
-		unsigned long r = rpos%SizeOfMessageQueue;
+		unsigned long w = qpos % SizeOfMessageQueue;
+		unsigned long r = rpos % SizeOfMessageQueue;
 
 		if( lostStrategy == lostOldData && (r - w) >= SizeOfMessageQueue )
 		{
@@ -109,7 +111,7 @@ VoidMessagePtr MQAtomic::top()
 
 		// продолжаем читать как обычно
 		r = rpos.fetch_add(1);
-		return mqueue[r%SizeOfMessageQueue];
+		return mqueue[r % SizeOfMessageQueue];
 	}
 
 	return nullptr;
@@ -155,7 +157,8 @@ void MQAtomic::mqFill( const VoidMessagePtr& v )
 {
 	mqueue.reserve(SizeOfMessageQueue);
 	mqueue.clear();
-	for( size_t i=0; i<SizeOfMessageQueue; i++ )
+
+	for( size_t i = 0; i < SizeOfMessageQueue; i++ )
 		mqueue.push_back(v);
 }
 //---------------------------------------------------------------------------
