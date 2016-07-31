@@ -123,7 +123,7 @@ void ModbusTCPSession::run( ev::loop_ref& loop )
 	ioTimeout.start(sessTimeout);
 }
 // -------------------------------------------------------------------------
-bool ModbusTCPSession::isActive()
+bool ModbusTCPSession::isActive() const
 {
 	return io.is_active();
 }

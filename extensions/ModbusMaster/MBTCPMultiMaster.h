@@ -302,7 +302,7 @@ class MBTCPMultiMaster:
 			}
 
 			bool init( std::shared_ptr<DebugStream>& mblog );
-			bool check();
+			bool check() const;
 			inline void setUse( bool st )
 			{
 				respond_init = !( st && !use );

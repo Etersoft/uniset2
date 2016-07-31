@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2016-07-26+03:00
+// generate timestamp: 2016-08-01+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -107,13 +107,13 @@ class UObject_SK:
            \param id           - идентификатор датчика
            \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
         */
-        std::string str( UniSetTypes::ObjectId id, bool showLinkName=true );
+        std::string str( UniSetTypes::ObjectId id, bool showLinkName=true ) const;
         
         /*! Вывод значения входа/выхода в формате: in_xxx(SensorName)=val 
            \param id           - идентификатор датчика
            \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
         */
-        std::string strval( UniSetTypes::ObjectId id, bool showLinkName=true );        
+        std::string strval( UniSetTypes::ObjectId id, bool showLinkName=true ) const;        
         
         /*! Вывод состояния внутренних переменных */
         inline std::string dumpVars(){ return std::move(vmon.pretty_str()); }

@@ -69,7 +69,7 @@ class Trigger
 			return false;
 		}
 
-		inline bool get()
+		inline bool get() const
 		{
 			return oldstate;
 		}

@@ -551,13 +551,23 @@ LogSession::LogSessionCommand_Signal LogSession::signal_logsession_command()
 	return m_command_sig;
 }
 // ---------------------------------------------------------------------
+void LogSession::cancel()
+{
+	cancelled = true;
+}
+// ---------------------------------------------------------------------
 void LogSession::setMaxBufSize( size_t num )
 {
 	std::unique_lock<std::mutex> lk(logbuf_mutex);
 	maxRecordsNum = num;
 }
 // ---------------------------------------------------------------------
-bool LogSession::isAcive()
+size_t LogSession::getMaxBufSize() const
+{
+	return maxRecordsNum;
+}
+// ---------------------------------------------------------------------
+bool LogSession::isAcive() const
 {
 	return io.is_active();
 }

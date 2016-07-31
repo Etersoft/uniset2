@@ -82,7 +82,7 @@ void MQMutex::setMaxSizeOfMessageQueue( size_t s )
 	SizeOfMessageQueue = s;
 }
 //---------------------------------------------------------------------------
-size_t MQMutex::getMaxSizeOfMessageQueue()
+size_t MQMutex::getMaxSizeOfMessageQueue() const
 {
 	return SizeOfMessageQueue;
 }

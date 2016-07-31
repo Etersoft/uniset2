@@ -459,7 +459,7 @@ void ModbusTCPMaster::forceDisconnect()
 	tcp.reset();
 }
 // -------------------------------------------------------------------------
-bool ModbusTCPMaster::isConnection()
+bool ModbusTCPMaster::isConnection() const
 {
 	return tcp && tcp->isConnected();
 }

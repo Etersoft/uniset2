@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2016-07-26+03:00
+// generate timestamp: 2016-08-01+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -305,14 +305,14 @@ std::string  UObject_SK::dumpIO()
 	return std::move(s.str());
 }
 // ----------------------------------------------------------------------------
-std::string  UObject_SK::str( UniSetTypes::ObjectId id, bool showLinkName )
+std::string  UObject_SK::str( UniSetTypes::ObjectId id, bool showLinkName ) const
 {
 	ostringstream s;
 		
 	return "";
 }
 // ----------------------------------------------------------------------------
-std::string  UObject_SK::strval( UniSetTypes::ObjectId id, bool showLinkName )
+std::string  UObject_SK::strval( UniSetTypes::ObjectId id, bool showLinkName ) const
 {
 	ostringstream s;
 		

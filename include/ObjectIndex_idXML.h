@@ -30,13 +30,13 @@ class ObjectIndex_idXML:
 		ObjectIndex_idXML( const std::shared_ptr<UniXML>& xml );
 		virtual ~ObjectIndex_idXML();
 
-		virtual const UniSetTypes::ObjectInfo* getObjectInfo( const UniSetTypes::ObjectId ) override;
-		virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string& name ) override;
-		virtual UniSetTypes::ObjectId getIdByName( const std::string& name ) override;
-		virtual std::string getMapName( const UniSetTypes::ObjectId id ) override;
-		virtual std::string getTextName( const UniSetTypes::ObjectId id ) override;
+		virtual const UniSetTypes::ObjectInfo* getObjectInfo( const UniSetTypes::ObjectId ) const override;
+		virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string& name ) const override;
+		virtual UniSetTypes::ObjectId getIdByName( const std::string& name ) const override;
+		virtual std::string getMapName( const UniSetTypes::ObjectId id ) const override;
+		virtual std::string getTextName( const UniSetTypes::ObjectId id ) const override;
 
-		virtual std::ostream& printMap( std::ostream& os ) override;
+		virtual std::ostream& printMap( std::ostream& os ) const override;
 		friend std::ostream& operator<<(std::ostream& os, ObjectIndex_idXML& oi );
 
 	protected:

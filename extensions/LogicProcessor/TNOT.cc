@@ -33,7 +33,7 @@ TNOT::~TNOT()
 {
 }
 // -------------------------------------------------------------------------
-void TNOT::setIn( int num, bool state )
+void TNOT::setIn( size_t num, bool state )
 {
 	bool prev = myout;
 	myout = !state;

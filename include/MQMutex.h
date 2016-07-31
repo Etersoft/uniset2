@@ -56,7 +56,7 @@ class MQMutex
 		// неявно подразумевается, что всё настраивается до первого использования
 		// ----------------------
 		void setMaxSizeOfMessageQueue( size_t s );
-		size_t getMaxSizeOfMessageQueue();
+		size_t getMaxSizeOfMessageQueue() const;
 
 		/*! Стратегия при переполнении */
 		enum LostStrategy

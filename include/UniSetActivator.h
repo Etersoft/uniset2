@@ -76,7 +76,7 @@ class UniSetActivator:
 		typedef sigc::signal<void, int> TerminateEvent_Signal;
 		TerminateEvent_Signal signal_terminate_event();
 
-		inline bool noUseGdbForStackTrace()
+		inline bool noUseGdbForStackTrace() const
 		{
 			return _noUseGdbForStackTrace;
 		}

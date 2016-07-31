@@ -187,7 +187,7 @@ class UniXML
 		void open(const std::string& filename);
 
 		void close();
-		inline bool isOpen()
+		inline bool isOpen() const
 		{
 			return doc != 0;
 		}
@@ -198,7 +198,7 @@ class UniXML
 		~UniXML();
 
 		xmlDoc* doc;
-		inline std::string getFileName()
+		inline std::string getFileName() const
 		{
 			return filename;
 		}

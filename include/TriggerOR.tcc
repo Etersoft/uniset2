@@ -60,7 +60,7 @@ void TriggerOR<Caller,InputType>::add(InputType num, bool state)
 template<class Caller, typename InputType>
 void TriggerOR<Caller,InputType>::remove(InputType num)
 {
-	typename InputMap::iterator it=inputs.find(num);
+	auto it=inputs.find(num);
 	if( it!=inputs.end() )
 		inputs.erase(it);
 
@@ -69,9 +69,9 @@ void TriggerOR<Caller,InputType>::remove(InputType num)
 
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
-bool TriggerOR<Caller,InputType>::getState(InputType num)
+bool TriggerOR<Caller,InputType>::getState(InputType num) const
 {
-	typename InputMap::iterator it=inputs.find(num);
+	auto it=inputs.find(num);
 	if( it!=inputs.end() )
 		return it->second;
 

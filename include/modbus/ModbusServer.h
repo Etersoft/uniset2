@@ -98,7 +98,7 @@ class ModbusServer
 		{
 			crcNoCheckit = set;
 		}
-		inline bool isCRCNoCheckit()
+		inline bool isCRCNoCheckit() const
 		{
 			return crcNoCheckit;
 		}
@@ -107,7 +107,7 @@ class ModbusServer
 		{
 			onBroadcast = set;
 		}
-		inline bool getBroadcastMode()
+		inline bool getBroadcastMode() const
 		{
 			return onBroadcast;
 		}
@@ -142,7 +142,7 @@ class ModbusServer
 		virtual void cleanupChannel() {}
 		virtual void terminate() {}
 
-		virtual bool isActive() = 0;
+		virtual bool isActive() const = 0;
 
 		// ------------ Статистика ---------------
 		typedef std::unordered_map<ModbusRTU::mbErrCode, size_t> ExchangeErrorMap;
@@ -151,7 +151,7 @@ class ModbusServer
 		size_t getErrCount( ModbusRTU::mbErrCode e );
 		size_t resetErrCount( ModbusRTU::mbErrCode e, size_t set = 0 );
 
-		inline size_t getAskCount()
+		inline size_t getAskCount() const
 		{
 			return askCount;
 		}

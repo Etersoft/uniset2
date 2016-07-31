@@ -317,7 +317,7 @@ size_t UDPMessage::getMessage( UDPMessage& m, UDPPacket& p )
 	return i + sz;
 }
 // -----------------------------------------------------------------------------
-uint16_t UDPMessage::getDataCRC()
+uint16_t UDPMessage::getDataCRC() const
 {
 	uint16_t crc[3];
 	crc[0] = makeCRC( (unsigned char*)(a_dat), sizeof(a_dat) );

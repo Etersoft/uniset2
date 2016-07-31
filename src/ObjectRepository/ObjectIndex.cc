@@ -29,7 +29,7 @@ using namespace UniSetTypes;
 //const std::string ObjectIndex::sepNode = ":";
 // -----------------------------------------------------------------------------------------
 
-string ObjectIndex::getNameById( const ObjectId id )
+string ObjectIndex::getNameById( const ObjectId id ) const
 {
 	return getMapName(id);
 }

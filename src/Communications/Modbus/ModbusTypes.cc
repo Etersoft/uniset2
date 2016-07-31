@@ -512,7 +512,7 @@ DataBits16::operator ModbusData()
 	return mdata();
 }
 // -------------------------------------------------------------------------
-ModbusData DataBits16::mdata()
+ModbusData DataBits16::mdata() const
 {
 	ModbusData udata = 0;
 
@@ -618,7 +618,7 @@ bool ReadCoilRetMessage::addData( DataBits d )
 	return true;
 }
 // -------------------------------------------------------------------------
-bool ReadCoilRetMessage::getData( unsigned char dnum, DataBits& d )
+bool ReadCoilRetMessage::getData( unsigned char dnum, DataBits& d ) const
 {
 	if( dnum < bcnt )
 	{
@@ -663,7 +663,7 @@ ModbusMessage ReadCoilRetMessage::transport_msg()
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
-size_t ReadCoilRetMessage::szData()
+size_t ReadCoilRetMessage::szData() const
 {
 	// фактическое число данных + контрольная сумма
 	return sizeof(bcnt) + bcnt + szCRC;
@@ -819,7 +819,7 @@ bool ReadInputStatusRetMessage::addData( DataBits d )
 	return true;
 }
 // -------------------------------------------------------------------------
-bool ReadInputStatusRetMessage::getData( unsigned char dnum, DataBits& d )
+bool ReadInputStatusRetMessage::getData( unsigned char dnum, DataBits& d ) const
 {
 	if( dnum < bcnt )
 	{
@@ -864,7 +864,7 @@ ModbusMessage ReadInputStatusRetMessage::transport_msg()
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
-size_t ReadInputStatusRetMessage::szData()
+size_t ReadInputStatusRetMessage::szData() const
 {
 	// фактическое число данных + контрольная сумма
 	return sizeof(bcnt) + bcnt + szCRC;
@@ -1074,7 +1074,7 @@ ModbusMessage ReadOutputRetMessage::transport_msg()
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
-size_t ReadOutputRetMessage::szData()
+size_t ReadOutputRetMessage::szData() const
 {
 	// фактическое число данных + контрольная сумма
 	return sizeof(bcnt) + count * sizeof(ModbusData) + szCRC;
@@ -1455,12 +1455,12 @@ void ForceCoilsMessage::init( const ModbusMessage& m )
 	memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
 }
 // -------------------------------------------------------------------------
-bool ForceCoilsMessage::checkFormat()
+bool ForceCoilsMessage::checkFormat() const
 {
 	return ( func == fnForceMultipleCoils );
 }
 // -------------------------------------------------------------------------
-size_t ForceCoilsMessage::szData()
+size_t ForceCoilsMessage::szData() const
 {
 	return szHead() + bcnt + szCRC;
 }
@@ -1703,13 +1703,13 @@ void WriteOutputMessage::init( const ModbusMessage& m )
 		data[i] = SWAPSHORT(data[i]);
 }
 // -------------------------------------------------------------------------
-bool WriteOutputMessage::checkFormat()
+bool WriteOutputMessage::checkFormat() const
 {
 	// return ( quant*sizeof(ModbusData) == bcnt ) && ( func == fnWriteOutputRegisters );
 	return ( (bcnt == (quant * sizeof(ModbusData))) && (func == fnWriteOutputRegisters) );
 }
 // -------------------------------------------------------------------------
-size_t WriteOutputMessage::szData()
+size_t WriteOutputMessage::szData() const
 {
 	return szHead() + bcnt + szCRC;
 }
@@ -1899,12 +1899,12 @@ void ForceSingleCoilMessage::init( const ModbusMessage& m )
 }
 
 // -------------------------------------------------------------------------
-bool ForceSingleCoilMessage::checkFormat()
+bool ForceSingleCoilMessage::checkFormat() const
 {
 	return (func == fnForceSingleCoil);
 }
 // -------------------------------------------------------------------------
-size_t ForceSingleCoilMessage::szData()
+size_t ForceSingleCoilMessage::szData() const
 {
 	return szHead() + sizeof(ModbusData) + szCRC;
 }
@@ -2076,7 +2076,7 @@ bool WriteSingleOutputMessage::checkFormat()
 	return ( (func == fnWriteOutputSingleRegister) );
 }
 // -------------------------------------------------------------------------
-size_t WriteSingleOutputMessage::szData()
+size_t WriteSingleOutputMessage::szData() const
 {
 	return szHead() + sizeof(ModbusData) + szCRC;
 }
@@ -2365,7 +2365,7 @@ ModbusMessage DiagnosticMessage::transport_msg()
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
-size_t DiagnosticMessage::szData()
+size_t DiagnosticMessage::szData() const
 {
 	// фактическое число данных + контрольная сумма
 	return sizeof(subf) + count * sizeof(ModbusData) + szCRC;
@@ -2496,7 +2496,7 @@ void MEIMessageRDI::init( const ModbusMessage& m )
 	memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
 }
 // -------------------------------------------------------------------------
-bool MEIMessageRDI::checkFormat()
+bool MEIMessageRDI::checkFormat() const
 {
 	return ( type == 0x0E );
 }
@@ -2696,7 +2696,7 @@ ModbusMessage MEIMessageRetRDI::transport_msg()
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
-size_t MEIMessageRetRDI::szData()
+size_t MEIMessageRetRDI::szData() const
 {
 	// заголовочные поля + фактическое число данных + контрольная сумма
 	return 6 + bcnt + szCRC;
@@ -2867,7 +2867,7 @@ ModbusMessage JournalCommandRetMessage::transport_msg()
 	return std::move(mm);
 }
 // -------------------------------------------------------------------------
-size_t JournalCommandRetMessage::szData()
+size_t JournalCommandRetMessage::szData() const
 {
 	// фактическое число данных + контрольная сумма
 	return sizeof(bcnt) + count * sizeof(ModbusData) + szCRC;
@@ -3052,7 +3052,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, SetDateTimeMessage* m )
 	return os << (*m);
 }
 // -------------------------------------------------------------------------
-bool SetDateTimeMessage::checkFormat()
+bool SetDateTimeMessage::checkFormat() const
 {
 	/*
 	    // Lav: проверка >=0 бессмысленна, потому что в типе данных Modbusbyte не могут храниться отрицательные числа
@@ -3207,7 +3207,7 @@ void RemoteServiceMessage::init( const ModbusMessage& m )
 	memcpy(&crc, &(m.data[m.dlen - szCRC]), szCRC);
 }
 // -------------------------------------------------------------------------
-size_t RemoteServiceMessage::szData()
+size_t RemoteServiceMessage::szData() const
 {
 	return szHead() + bcnt + szCRC;
 }
@@ -3264,7 +3264,7 @@ void RemoteServiceRetMessage::clear()
 	bcnt    = 0;
 }
 // -------------------------------------------------------------------------
-size_t RemoteServiceRetMessage::szData()
+size_t RemoteServiceRetMessage::szData() const
 {
 	// фактическое число данных + контрольная сумма
 	return sizeof(bcnt) + count * sizeof(ModbusByte) + szCRC;
@@ -3314,7 +3314,7 @@ ReadFileRecordMessage& ReadFileRecordMessage::operator=( const ModbusMessage& m 
 	return *this;
 }
 // -------------------------------------------------------------------------
-bool ReadFileRecordMessage::checkFormat()
+bool ReadFileRecordMessage::checkFormat() const
 {
 	return ( bcnt >= 0x07 && bcnt <= 0xF5 );
 }
@@ -3352,7 +3352,7 @@ void ReadFileRecordMessage::init( const ModbusMessage& m )
 	}
 }
 // -------------------------------------------------------------------------
-size_t ReadFileRecordMessage::szData()
+size_t ReadFileRecordMessage::szData() const
 {
 	// фактическое число данных + контрольная сумма
 	return sizeof(bcnt) + count * sizeof(SubRequest) + szCRC;
@@ -3520,7 +3520,7 @@ size_t FileTransferRetMessage::getDataLen( const ModbusMessage& m )
 	return (size_t)m.data[0];
 }
 // -----------------------------------------------------------------------
-size_t FileTransferRetMessage::szData()
+size_t FileTransferRetMessage::szData() const
 {
 	// фактическое число данных + контрольная сумма
 	return sizeof(ModbusByte) * 2 + sizeof(ModbusData) * 3 + dlen + szCRC;

@@ -21,7 +21,7 @@
 using namespace std;
 using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
-TDelay::TDelay( Element::ElementID id, timeout_t delayMS, unsigned int inCount):
+TDelay::TDelay(Element::ElementID id, timeout_t delayMS, size_t inCount):
 	Element(id),
 	myout(false),
 	delay(delayMS)
@@ -38,7 +38,7 @@ TDelay::~TDelay()
 {
 }
 // -------------------------------------------------------------------------
-void TDelay::setIn( int num, bool state )
+void TDelay::setIn( size_t num, bool state )
 {
 	bool prev = myout;
 
@@ -89,7 +89,7 @@ void TDelay::tick()
 	}
 }
 // -------------------------------------------------------------------------
-bool TDelay::getOut()
+bool TDelay::getOut() const
 {
 	return myout;
 }

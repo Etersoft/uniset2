@@ -47,7 +47,7 @@ ObjectIndex_Array::ObjectIndex_Array( const ObjectInfo* objectInfo ):
 	}
 }
 // -----------------------------------------------------------------------------------------
-ObjectId ObjectIndex_Array::getIdByName( const string& name )
+ObjectId ObjectIndex_Array::getIdByName( const string& name ) const
 {
 	auto it = mok.find(name);
 
@@ -58,7 +58,7 @@ ObjectId ObjectIndex_Array::getIdByName( const string& name )
 }
 
 // -----------------------------------------------------------------------------------------
-string ObjectIndex_Array::getMapName( const ObjectId id )
+string ObjectIndex_Array::getMapName( const ObjectId id ) const
 {
 	if( id != UniSetTypes::DefaultObjectId && id >= 0 && id < maxId )
 		return objectInfo[id].repName;
@@ -67,7 +67,7 @@ string ObjectIndex_Array::getMapName( const ObjectId id )
 	//    throw OutOfRange("ObjectIndex_Array::getMapName OutOfRange");
 }
 // -----------------------------------------------------------------------------------------
-string ObjectIndex_Array::getTextName( const ObjectId id )
+string ObjectIndex_Array::getTextName( const ObjectId id ) const
 {
 	if( id != UniSetTypes::DefaultObjectId && id >= 0 && id < maxId )
 		return objectInfo[id].textName;
@@ -82,7 +82,7 @@ std::ostream& operator<<(std::ostream& os, ObjectIndex_Array& oi )
 }
 // -----------------------------------------------------------------------------------------
 
-std::ostream& ObjectIndex_Array::printMap( std::ostream& os )
+std::ostream& ObjectIndex_Array::printMap( std::ostream& os ) const
 {
 	auto oind = uniset_conf()->oind;
 
@@ -101,7 +101,7 @@ std::ostream& ObjectIndex_Array::printMap( std::ostream& os )
 	return os;
 }
 // -----------------------------------------------------------------------------------------
-const ObjectInfo* ObjectIndex_Array::getObjectInfo( const ObjectId id )
+const ObjectInfo* ObjectIndex_Array::getObjectInfo( const ObjectId id ) const
 {
 	if( id != UniSetTypes::DefaultObjectId && id >= 0 && id < maxId )
 		return &(objectInfo[id]);
@@ -109,7 +109,7 @@ const ObjectInfo* ObjectIndex_Array::getObjectInfo( const ObjectId id )
 	return NULL;
 }
 // -----------------------------------------------------------------------------------------
-const ObjectInfo* ObjectIndex_Array::getObjectInfo( const std::string& name )
+const ObjectInfo* ObjectIndex_Array::getObjectInfo( const std::string& name ) const
 {
 	auto it = mok.find(name);
 

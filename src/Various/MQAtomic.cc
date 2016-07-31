@@ -115,7 +115,7 @@ VoidMessagePtr MQAtomic::top()
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-size_t MQAtomic::size()
+size_t MQAtomic::size() const
 {
 	// т.к. rpos корректируется только при фактическом вызое top()
 	// то тут приходиться смотреть если у нас переполнение
@@ -127,7 +127,7 @@ size_t MQAtomic::size()
 	return (qpos - rpos);
 }
 //---------------------------------------------------------------------------
-bool MQAtomic::empty()
+bool MQAtomic::empty() const
 {
 	return (qpos == rpos);
 }
@@ -141,7 +141,7 @@ void MQAtomic::setMaxSizeOfMessageQueue( size_t s )
 	}
 }
 //---------------------------------------------------------------------------
-size_t MQAtomic::getMaxSizeOfMessageQueue()
+size_t MQAtomic::getMaxSizeOfMessageQueue() const
 {
 	return SizeOfMessageQueue;
 }

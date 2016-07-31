@@ -285,7 +285,7 @@ namespace ModbusRTU
 		const DataBits16& operator=(const ModbusData& r);
 
 		operator ModbusData();
-		ModbusData mdata();
+		ModbusData mdata() const;
 
 		bool operator[]( const size_t i )
 		{
@@ -344,6 +344,7 @@ namespace ModbusRTU
 		ReadCoilRetMessage( const ModbusMessage& m );
 		ReadCoilRetMessage& operator=( const ModbusMessage& m );
 		void init( const ModbusMessage& m );
+
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
@@ -380,19 +381,19 @@ namespace ModbusRTU
 		 * \return TRUE - если есть
 		 * \return FALSE - если НЕ найдено
 		*/
-		bool getData( unsigned char bnum, DataBits& d );
+		bool getData( unsigned char bnum, DataBits& d ) const;
 
 		/*! очистка данных */
 		void clear();
 
 		/*! проверка на переполнение */
-		inline bool isFull()
+		inline bool isFull() const
 		{
 			return ( (int)bcnt >= MAXPDULEN );
 		}
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		size_t szData();
+		size_t szData() const;
 
 		/*! преобразование для посылки в сеть */
 		ModbusMessage transport_msg();
@@ -411,12 +412,14 @@ namespace ModbusRTU
 
 		// ------- to slave -------
 		ReadInputStatusMessage( ModbusAddr addr, ModbusData start, ModbusData count );
+
 		/*! преобразование для посылки в сеть */
 		ModbusMessage transport_msg();
 
 		// ------- from master -------
 		ReadInputStatusMessage( const ModbusMessage& m );
 		ReadInputStatusMessage& operator=( const ModbusMessage& m );
+
 		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
@@ -441,6 +444,7 @@ namespace ModbusRTU
 		ReadInputStatusRetMessage( const ModbusMessage& m );
 		ReadInputStatusRetMessage& operator=( const ModbusMessage& m );
 		void init( const ModbusMessage& m );
+
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
 		*/
@@ -477,19 +481,19 @@ namespace ModbusRTU
 		 * \return TRUE - если есть
 		 * \return FALSE - если НЕ найдено
 		*/
-		bool getData( unsigned char dnum, DataBits& d );
+		bool getData( unsigned char dnum, DataBits& d ) const;
 
 		/*! очистка данных */
 		void clear();
 
 		/*! проверка на переполнение */
-		inline bool isFull()
+		inline bool isFull() const
 		{
 			return ( (int)bcnt >= MAXPDULEN );
 		}
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		size_t szData();
+		size_t szData() const;
 
 		/*! преобразование для посылки в сеть */
 		ModbusMessage transport_msg();
@@ -565,13 +569,13 @@ namespace ModbusRTU
 		void clear();
 
 		/*! проверка на переполнение */
-		inline bool isFull()
+		inline bool isFull() const
 		{
 			return ( count * sizeof(ModbusData) >= MAXLENPACKET );
 		}
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		size_t szData();
+		size_t szData() const;
 
 		/*! преобразование для посылки в сеть */
 		ModbusMessage transport_msg();
@@ -654,7 +658,7 @@ namespace ModbusRTU
 		void clear();
 
 		/*! проверка на переполнение */
-		inline bool isFull()
+		inline bool isFull() const
 		{
 			return ( count * sizeof(ModbusData) >= MAXLENPACKET );
 		}
@@ -706,7 +710,7 @@ namespace ModbusRTU
 
 		bool setBit( int nbit, bool state );
 
-		inline int last()
+		inline size_t last() const
 		{
 			return quant;
 		}
@@ -722,7 +726,7 @@ namespace ModbusRTU
 		bool getBit( unsigned char bnum );
 
 		void clear();
-		inline bool isFull()
+		inline bool isFull() const
 		{
 			return ( (int)bcnt >= MAXPDULEN );
 		}
@@ -733,7 +737,7 @@ namespace ModbusRTU
 		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		size_t szData();
+		size_t szData() const;
 
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
@@ -750,7 +754,7 @@ namespace ModbusRTU
 		/*! проверка корректности данных
 		    что quant и bcnt - совпадают...
 		*/
-		bool checkFormat();
+		bool checkFormat() const;
 
 	} __attribute__((packed));
 
@@ -815,7 +819,7 @@ namespace ModbusRTU
 
 		bool addData( ModbusData d );
 		void clear();
-		inline bool isFull()
+		inline bool isFull() const
 		{
 			return ( quant >= MAXDATALEN );
 		}
@@ -826,7 +830,7 @@ namespace ModbusRTU
 		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		size_t szData();
+		size_t szData() const;
 
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
@@ -843,7 +847,7 @@ namespace ModbusRTU
 		/*! проверка корректности данных
 		    что quant и bcnt - совпадают...
 		*/
-		bool checkFormat();
+		bool checkFormat() const;
 
 	} __attribute__((packed));
 
@@ -915,7 +919,7 @@ namespace ModbusRTU
 		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		size_t szData();
+		size_t szData() const;
 
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
@@ -933,7 +937,7 @@ namespace ModbusRTU
 		/*! проверка корректности данных
 		    что quant и bcnt - совпадают...
 		*/
-		bool checkFormat();
+		bool checkFormat() const;
 	} __attribute__((packed));
 
 
@@ -950,7 +954,7 @@ namespace ModbusRTU
 		ModbusCRC crc = { 0 };
 
 		/*! получить значение команды */
-		inline bool cmd()
+		inline bool cmd() const
 		{
 			return (data & 0xFF00);
 		}
@@ -1006,7 +1010,7 @@ namespace ModbusRTU
 		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		size_t szData();
+		size_t szData() const;
 
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
@@ -1107,14 +1111,14 @@ namespace ModbusRTU
 		void clear();
 
 		/*! проверка на переполнение */
-		inline bool isFull()
+		inline bool isFull() const
 		{
 			// (1)subf + data count
 			return ( 1 + count >= MAXDATALEN );
 		}
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		size_t szData();
+		size_t szData() const;
 
 		/*! преобразование для посылки в сеть */
 		ModbusMessage transport_msg();
@@ -1176,7 +1180,7 @@ namespace ModbusRTU
 		}
 
 		// вспомогательные функции
-		bool checkFormat();
+		bool checkFormat() const;
 
 	} __attribute__((packed));
 	// -----------------------------------------------------------------------
@@ -1242,18 +1246,18 @@ namespace ModbusRTU
 		void clear();
 
 		/*! проверка на переполнение */
-		inline bool isFull()
+		inline bool isFull() const
 		{
 			return ( bcnt >= MAXPDULEN );
 		}
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		size_t szData();
+		size_t szData() const;
 
 		/*! преобразование для посылки в сеть */
 		ModbusMessage transport_msg();
 
-		int bcnt = { 0 }; /*! размер данных в байтах, внутреннее служебное поле */
+		size_t bcnt = { 0 }; /*! размер данных в байтах, внутреннее служебное поле */
 	};
 
 	std::ostream& operator<<(std::ostream& os, MEIMessageRetRDI& m );
@@ -1313,13 +1317,13 @@ namespace ModbusRTU
 		void clear();
 
 		/*! проверка на переполнение */
-		inline bool isFull()
+		inline bool isFull() const
 		{
 			return ( count >= MAXDATALEN );
 		}
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		size_t szData();
+		size_t szData() const;
 
 		/*! преобразование для посылки в сеть */
 		ModbusMessage transport_msg();
@@ -1375,7 +1379,7 @@ namespace ModbusRTU
 		SetDateTimeMessage& operator=( const ModbusMessage& m );
 		SetDateTimeMessage();
 
-		bool checkFormat();
+		bool checkFormat() const;
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
 		inline static size_t szData()
@@ -1425,7 +1429,7 @@ namespace ModbusRTU
 		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		size_t szData();
+		size_t szData() const;
 
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
@@ -1464,13 +1468,13 @@ namespace ModbusRTU
 		void clear();
 
 		/*! проверка на переполнение */
-		inline bool isFull()
+		inline bool isFull() const
 		{
 			return ( count >= sizeof(data) );
 		}
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		size_t szData();
+		size_t szData() const;
 
 		/*! преобразование для посылки в сеть */
 		ModbusMessage transport_msg();
@@ -1505,7 +1509,7 @@ namespace ModbusRTU
 		void init( const ModbusMessage& m );
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		size_t szData();
+		size_t szData() const;
 
 		/*! размер предварительного заголовка
 		 * (после основного до фактических данных)
@@ -1519,7 +1523,7 @@ namespace ModbusRTU
 		static size_t getDataLen( const ModbusMessage& m );
 
 		/*! проверка корректности данных */
-		bool checkFormat();
+		bool checkFormat() const;
 
 		// это поле служебное и не используется в релальном обмене
 		size_t count = { 0 }; /*!< фактическое количество данных */
@@ -1595,7 +1599,7 @@ namespace ModbusRTU
 		void clear();
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
-		size_t szData();
+		size_t szData() const;
 
 		/*! преобразование для посылки в сеть */
 		ModbusMessage transport_msg();

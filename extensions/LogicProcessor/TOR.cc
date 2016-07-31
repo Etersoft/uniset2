@@ -22,7 +22,7 @@
 using namespace std;
 using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
-TOR::TOR(ElementID id, unsigned int num, bool st):
+TOR::TOR(ElementID id, size_t num, bool st):
 	Element(id),
 	myout(false)
 {
@@ -43,7 +43,7 @@ TOR::~TOR()
 {
 }
 // -------------------------------------------------------------------------
-void TOR::setIn( int num, bool state )
+void TOR::setIn( size_t num, bool state )
 {
 	//    cout << getType() << "(" << myid << "):  input " << num << " set " << state << endl;
 

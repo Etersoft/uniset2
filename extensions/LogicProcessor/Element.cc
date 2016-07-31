@@ -23,7 +23,7 @@ using namespace std;
 const Element::ElementID Element::DefaultElementID = "?id?";
 // -------------------------------------------------------------------------
 
-void Element::addChildOut( std::shared_ptr<Element> el, int num )
+void Element::addChildOut( std::shared_ptr<Element> el, size_t num )
 {
 	if( el.get() == this )
 	{
@@ -90,7 +90,7 @@ std::shared_ptr<Element> Element::find(const ElementID& id )
 	return nullptr;
 }
 // -------------------------------------------------------------------------
-void Element::addInput(int num, bool state)
+void Element::addInput(size_t num, bool state)
 {
 	for( auto& it : ins )
 	{
@@ -105,7 +105,7 @@ void Element::addInput(int num, bool state)
 	ins.push_front(InputInfo(num, state));
 }
 // -------------------------------------------------------------------------
-void Element::delInput( int num )
+void Element::delInput(size_t num )
 {
 	for( auto it = ins.begin(); it != ins.end(); ++it )
 	{

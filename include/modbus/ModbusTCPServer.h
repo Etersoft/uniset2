@@ -37,7 +37,7 @@ class ModbusTCPServer:
 		 */
 		void run( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, bool thread = false );
 
-		virtual bool isActive() override;
+		virtual bool isActive() const override;
 
 		void setMaxSessions( size_t num );
 		inline size_t getMaxSessions()

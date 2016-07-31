@@ -186,15 +186,15 @@ class CardList:
 {
 	public:
 
-		explicit CardList( int size ) : std::vector<ComediInterface * >(size) { }
+		explicit CardList( size_t size ) : std::vector<ComediInterface*>(size) { }
 
 		~CardList()
 		{
-			for( unsigned int i = 0; i < size(); i++ )
+			for( size_t i = 0; i < size(); i++ )
 				delete (*this)[i];
 		}
 
-		inline ComediInterface* getCard(int ncard)
+		inline ComediInterface* getCard(int ncard) const
 		{
 			if( ncard >= 0 && ncard < (int)size() )
 				return (*this)[ncard];
@@ -258,7 +258,7 @@ class IOControl:
 
 			int subdev;     /*!< (UNIO) подустройство (см. comedi_test для конкретной карты в/в) */
 			int channel;    /*!< (UNIO) канал [0...23] */
-			int ncard;      /*!< номер карты [1|2]. 0 - не определена. FIXME from Lav: -1 - не определена? */
+			int ncard;      /*!< номер карты [1|2]. -1 - не определена. */
 
 			/*! Вид поключения
 			    0    - analog ref = analog ground
@@ -286,21 +286,21 @@ class IOControl:
 
 		struct IOPriority
 		{
-			IOPriority(int p, int i):
+			IOPriority(size_t  p, size_t i):
 				priority(p), index(i) {}
 
-			int priority;
-			int index;
+			size_t  priority;
+			size_t index;
 		};
 
 		enum TestModeID
 		{
-			tmNone        = 0,       /*!< тестовый режим отключён */
+			tmNone       = 0,       /*!< тестовый режим отключён */
 			tmOffPoll    = 1,        /*!< отключить опрос */
-			tmConfigEnable    = 2,   /*!< специальный режим, в соответсвии с настройкой 'enable_testmode' */
-			tmConfigDisable    = 3,  /*!< специальный режим, в соответсвии с настройкой 'disable_testmode' */
+			tmConfigEnable  = 2,   /*!< специальный режим, в соответствии с настройкой 'enable_testmode' */
+			tmConfigDisable = 3,  /*!< специальный режим, в соответствии с настройкой 'disable_testmode' */
 			tmOnlyInputs    = 4,     /*!< включены только входы */
-			tmOnlyOutputs    = 5     /*!< включены только выходы */
+			tmOnlyOutputs   = 5     /*!< включены только выходы */
 		};
 
 		void execute();
@@ -334,8 +334,6 @@ class IOControl:
 		void buildCardsList();
 
 		void waitSM();
-
-		bool checkCards( const std::string& func = "" );
 
 		xmlNode* cnode = { 0 }; /*!< xml-узел в настроечном файле */
 
@@ -403,8 +401,7 @@ class IOControl:
 		bool readconf_ok = { false };
 		int activateTimeout;
 		UniSetTypes::ObjectId sidTestSMReady = { UniSetTypes::DefaultObjectId };
-		bool term = { false };
-
+		std::atomic_bool term = { false };
 
 		UniSetTypes::ObjectId testMode_as = { UniSetTypes::DefaultObjectId };
 		IOController::IOStateList::iterator itTestMode;

@@ -18,7 +18,7 @@ class UDPSocketU:
 
 		virtual ~UDPSocketU() {}
 
-		inline SOCKET getSocket()
+		inline SOCKET getSocket() const
 		{
 			return ost::UDPSocket::so;
 		}

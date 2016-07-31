@@ -128,7 +128,7 @@ namespace UniSetUDP
 			return acount;
 		}
 
-		uint16_t getDataCRC();
+		uint16_t getDataCRC() const;
 
 		// количество байт в пакете с булевыми переменными...
 		size_t d_byte() const

@@ -128,7 +128,7 @@ namespace MTR
 		return "Unknown";
 	}
 	// -------------------------------------------------------------------------
-	int wsize(  MTRType t )
+	size_t wsize(  MTRType t )
 	{
 		if( t == mtT1 )
 			return T1::wsize();

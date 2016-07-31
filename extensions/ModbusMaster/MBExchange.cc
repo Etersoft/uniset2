@@ -327,7 +327,7 @@ void MBExchange::step()
 }
 
 // -----------------------------------------------------------------------------
-bool MBExchange::checkProcActive()
+bool MBExchange::checkProcActive() const
 {
 	return activated;
 }
@@ -509,7 +509,7 @@ bool MBExchange::checkUpdateSM( bool wrFunc, long mdev )
 	return true;
 }
 // -----------------------------------------------------------------------------
-bool MBExchange::checkPoll( bool wrFunc )
+bool MBExchange::checkPoll( bool wrFunc ) const
 {
 	if( exchangeMode == emWriteOnly && !wrFunc )
 	{
@@ -1463,14 +1463,14 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					{
 						VTypes::F2 f2(f);
 
-						for( int k = 0; k < VTypes::F2::wsize(); k++, i++ )
+						for( size_t k = 0; k < VTypes::F2::wsize(); k++, i++ )
 							i->second->mbval = f2.raw.v[k];
 					}
 					else if( p->vType == VTypes::vtF2r )
 					{
 						VTypes::F2r f2(f);
 
-						for( int k = 0; k < VTypes::F2r::wsize(); k++, i++ )
+						for( size_t k = 0; k < VTypes::F2r::wsize(); k++, i++ )
 							i->second->mbval = f2.raw.v[k];
 					}
 
@@ -1481,7 +1481,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 			{
 				ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F2::wsize()];
 
-				for( int k = 0; k < VTypes::F2::wsize(); k++, i++ )
+				for( size_t k = 0; k < VTypes::F2::wsize(); k++, i++ )
 					data[k] = i->second->mbval;
 
 				float f = 0;
@@ -1513,7 +1513,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					float f = IOBase::processingFasAO( p, shm, force_out );
 					VTypes::F4 f4(f);
 
-					for( int k = 0; k < VTypes::F4::wsize(); k++, i++ )
+					for( size_t k = 0; k < VTypes::F4::wsize(); k++, i++ )
 						i->second->mbval = f4.raw.v[k];
 
 					r->sm_initOK = true;
@@ -1523,7 +1523,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 			{
 				ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F4::wsize()];
 
-				for( int k = 0; k < VTypes::F4::wsize(); k++, i++ )
+				for( size_t k = 0; k < VTypes::F4::wsize(); k++, i++ )
 					data[k] = i->second->mbval;
 
 				VTypes::F4 f(data, VTypes::F4::wsize());
@@ -1546,14 +1546,14 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					{
 						VTypes::I2 i2(v);
 
-						for( int k = 0; k < VTypes::I2::wsize(); k++, i++ )
+						for( size_t k = 0; k < VTypes::I2::wsize(); k++, i++ )
 							i->second->mbval = i2.raw.v[k];
 					}
 					else if( p->vType == VTypes::vtI2r )
 					{
 						VTypes::I2r i2(v);
 
-						for( int k = 0; k < VTypes::I2::wsize(); k++, i++ )
+						for( size_t k = 0; k < VTypes::I2::wsize(); k++, i++ )
 							i->second->mbval = i2.raw.v[k];
 					}
 
@@ -1564,7 +1564,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 			{
 				ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::I2::wsize()];
 
-				for( int k = 0; k < VTypes::I2::wsize(); k++, i++ )
+				for( size_t k = 0; k < VTypes::I2::wsize(); k++, i++ )
 					data[k] = i->second->mbval;
 
 				int v = 0;
@@ -1598,14 +1598,14 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					{
 						VTypes::U2 u2(v);
 
-						for( int k = 0; k < VTypes::U2::wsize(); k++, i++ )
+						for( size_t k = 0; k < VTypes::U2::wsize(); k++, i++ )
 							i->second->mbval = u2.raw.v[k];
 					}
 					else if( p->vType == VTypes::vtU2r )
 					{
 						VTypes::U2r u2(v);
 
-						for( int k = 0; k < VTypes::U2::wsize(); k++, i++ )
+						for( size_t k = 0; k < VTypes::U2::wsize(); k++, i++ )
 							i->second->mbval = u2.raw.v[k];
 					}
 
@@ -1616,7 +1616,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 			{
 				ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::U2::wsize()];
 
-				for( int k = 0; k < VTypes::U2::wsize(); k++, i++ )
+				for( size_t k = 0; k < VTypes::U2::wsize(); k++, i++ )
 					data[k] = i->second->mbval;
 
 				unsigned int v = 0;

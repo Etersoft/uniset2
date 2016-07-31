@@ -316,7 +316,7 @@ void MBTCPMultiMaster::final_thread()
 }
 // -----------------------------------------------------------------------------
 
-bool MBTCPMultiMaster::MBSlaveInfo::check()
+bool MBTCPMultiMaster::MBSlaveInfo::check() const
 {
 	return mbtcp->checkConnection(ip, port, recv_timeout);
 }

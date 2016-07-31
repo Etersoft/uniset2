@@ -94,7 +94,7 @@ class TriggerOUT
 
 
 		/*! получить текущее значение указанного 'выхода' */
-		bool getState(OutIdType out);
+		bool getState(OutIdType out) const;
 
 		/*! установить значение одного из 'выходов'
 		    \param out - идентификатор 'выхода'

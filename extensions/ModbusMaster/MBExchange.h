@@ -301,9 +301,9 @@ class MBExchange:
 		virtual void updateRespondSensors();
 
 		bool checkUpdateSM( bool wrFunc, long devMode );
-		bool checkPoll( bool wrFunc );
+		bool checkPoll( bool wrFunc ) const;
 
-		bool checkProcActive();
+		bool checkProcActive() const;
 		void setProcActive( bool st );
 		void waitSMReady();
 

@@ -57,30 +57,30 @@ class Element
 		*/
 		virtual void tick() {}
 
-		virtual void setIn( int num, bool state ) = 0;
-		virtual bool getOut() = 0;
+		virtual void setIn( size_t num, bool state ) = 0;
+		virtual bool getOut() const = 0;
 
-		inline ElementID getId()
+		inline ElementID getId() const
 		{
 			return myid;
 		}
-		virtual std::string getType()
+		virtual std::string getType() const
 		{
 			return "?type?";
 		}
 
 		virtual std::shared_ptr<Element> find( const ElementID& id );
 
-		virtual void addChildOut( std::shared_ptr<Element> el, int in_num );
+		virtual void addChildOut( std::shared_ptr<Element> el, size_t in_num );
 		virtual void delChildOut( std::shared_ptr<Element> el );
-		inline int outCount()
+		inline size_t outCount() const
 		{
 			return outs.size();
 		}
 
-		virtual void addInput( int num, bool state = false );
-		virtual void delInput( int num );
-		inline  int inCount()
+		virtual void addInput( size_t num, bool state = false );
+		virtual void delInput( size_t num );
+		inline size_t inCount() const
 		{
 			return ins.size();
 		}
@@ -103,24 +103,23 @@ class Element
 
 		struct ChildInfo
 		{
-			ChildInfo(std::shared_ptr<Element> e, int n):
+			ChildInfo(std::shared_ptr<Element> e, size_t n):
 				el(e), num(n) {}
 			ChildInfo(): el(0), num(0) {}
 
 			std::shared_ptr<Element> el;
-			int num;
+			size_t num;
 		};
 
 		typedef std::list<ChildInfo> OutputList;
 		OutputList outs;
 		virtual void setChildOut();
 
-
 		struct InputInfo
 		{
 			InputInfo(): num(0), state(false), type(unknown) {}
-			InputInfo(int n, bool s): num(n), state(s), type(unknown) {}
-			int num;
+			InputInfo(size_t n, bool s): num(n), state(s), type(unknown) {}
+			size_t num;
 			bool state;
 			InputType type;
 		};
@@ -140,16 +139,16 @@ class TOR:
 {
 
 	public:
-		TOR( ElementID id, unsigned int numbers = 0, bool st = false );
+		TOR( ElementID id,size_t numbers = 0, bool st = false );
 		virtual ~TOR();
 
-		virtual void setIn( int num, bool state ) override;
-		virtual bool getOut() override
+		virtual void setIn( size_t num, bool state ) override;
+		virtual bool getOut() const override
 		{
 			return myout;
 		}
 
-		virtual std::string getType() override
+		virtual std::string getType() const override
 		{
 			return "OR";
 		}
@@ -167,11 +166,11 @@ class TAND:
 {
 
 	public:
-		TAND( ElementID id, int numbers = 0, bool st = false );
+		TAND(ElementID id, size_t numbers = 0, bool st = false );
 		virtual ~TAND();
 
-		virtual void setIn( int num, bool state ) override;
-		virtual std::string getType() override
+		virtual void setIn( size_t num, bool state ) override;
+		virtual std::string getType() const override
 		{
 			return "AND";
 		}
@@ -192,20 +191,20 @@ class TNOT:
 		TNOT( ElementID id, bool out_default );
 		virtual ~TNOT();
 
-		virtual bool getOut() override
+		virtual bool getOut() const override
 		{
 			return myout;
 		}
 
 		/* num игнорируется, т.к. элемент с одним входом
 		 */
-		virtual void setIn( int num, bool state ) override ;
-		virtual std::string getType() override
+		virtual void setIn( size_t num, bool state ) override ;
+		virtual std::string getType() const override
 		{
 			return "NOT";
 		}
-		virtual void addInput( int num, bool state = false ) override {}
-		virtual void delInput( int num ) override {}
+		virtual void addInput( size_t num, bool state = false ) override {}
+		virtual void delInput( size_t num ) override {}
 
 	protected:
 		TNOT(): myout(false) {}

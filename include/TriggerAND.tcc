@@ -69,9 +69,9 @@ void TriggerAND<Caller,InputType>::remove(InputType num)
 
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
-bool TriggerAND<Caller,InputType>::getState(InputType num)
+bool TriggerAND<Caller,InputType>::getState(InputType num) const
 {
-	typename InputMap::iterator it=inputs.find(num);
+	auto it=inputs.find(num);
 	if( it!=inputs.end() )
 		return it->second;
 
