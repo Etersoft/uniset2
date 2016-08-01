@@ -119,6 +119,11 @@ UniSetObject::~UniSetObject()
 {
 }
 // ------------------------------------------------------------------------------------------
+std::shared_ptr<UniSetObject> UniSetObject::get_ptr()
+{
+	return shared_from_this();
+}
+// ------------------------------------------------------------------------------------------
 void UniSetObject::initObject()
 {
 	a_working = ATOMIC_VAR_INIT(0);
@@ -163,11 +168,26 @@ void UniSetObject::setID( UniSetTypes::ObjectId id )
 	ui->initBackId(myid);
 }
 // ------------------------------------------------------------------------------------------
-void UniSetObject::setMaxSizeOfMessageQueue(size_t s)
+void UniSetObject::setMaxSizeOfMessageQueue( size_t s )
 {
 	mqueueMedium.setMaxSizeOfMessageQueue(s);
 	mqueueLow.setMaxSizeOfMessageQueue(s);
 	mqueueHi.setMaxSizeOfMessageQueue(s);
+}
+// ------------------------------------------------------------------------------------------
+size_t UniSetObject::getMaxSizeOfMessageQueue() const
+{
+	return mqueueMedium.getMaxSizeOfMessageQueue();
+}
+// ------------------------------------------------------------------------------------------
+bool UniSetObject::isActive() const
+{
+	return active;
+}
+// ------------------------------------------------------------------------------------------
+void UniSetObject::setActive(bool set)
+{
+	active = set;
 }
 // ------------------------------------------------------------------------------------------
 /*!
@@ -310,6 +330,21 @@ CORBA::Boolean UniSetObject::exist()
 	return true;
 }
 // ------------------------------------------------------------------------------------------
+ObjectId UniSetObject::getId()
+{
+	return myid;
+}
+// ------------------------------------------------------------------------------------------
+const ObjectId UniSetObject::getId() const
+{
+	return myid;
+}
+// ------------------------------------------------------------------------------------------
+string UniSetObject::getName() const
+{
+	return myname;
+}
+// ------------------------------------------------------------------------------------------
 void UniSetObject::termWaiting()
 {
 	if( tmr )
@@ -338,20 +373,56 @@ void UniSetObject::push( const TransportMessage& tm )
 	termWaiting();
 }
 // ------------------------------------------------------------------------------------------
+ObjectPtr UniSetObject::getRef() const
+{
+	UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
+	return (UniSetTypes::ObjectPtr)CORBA::Object::_duplicate(oref);
+}
+// ------------------------------------------------------------------------------------------
 size_t UniSetObject::countMessages()
 {
 	return (mqueueMedium.size() + mqueueLow.size() + mqueueHi.size());
 }
 // ------------------------------------------------------------------------------------------
-size_t UniSetObject::getCountOfLostMessages()
+size_t UniSetObject::getCountOfLostMessages() const
 {
 	return (mqueueMedium.getCountOfLostMessages() +
 			mqueueLow.getCountOfLostMessages() +
 			mqueueHi.getCountOfLostMessages() );
 }
 // ------------------------------------------------------------------------------------------
+bool UniSetObject::activateObject()
+{
+	return true;
+}
+// ------------------------------------------------------------------------------------------
+bool UniSetObject::deactivateObject()
+{
+	return true;
+}
+// ------------------------------------------------------------------------------------------
 void UniSetObject::sigterm( int signo )
 {
+}
+// ------------------------------------------------------------------------------------------
+void UniSetObject::terminate()
+{
+	deactivate();
+}
+// ------------------------------------------------------------------------------------------
+void UniSetObject::thread(bool create)
+{
+	threadcreate = create;
+}
+// ------------------------------------------------------------------------------------------
+void UniSetObject::offThread()
+{
+	threadcreate = false;
+}
+// ------------------------------------------------------------------------------------------
+void UniSetObject::onThread()
+{
+	threadcreate = true;
 }
 // ------------------------------------------------------------------------------------------
 bool UniSetObject::deactivate()

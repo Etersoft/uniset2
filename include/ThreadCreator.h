@@ -93,7 +93,7 @@ class ThreadCreator:
 		ThreadCreator( ThreadMaster* m, Action a );
 		~ThreadCreator();
 
-		inline pid_t getTID()
+		inline pid_t getTID() const
 		{
 			return pid;
 		}
@@ -102,7 +102,7 @@ class ThreadCreator:
 		int setPriority( int prior );
 
 		/*! \return < 0 - fail */
-		int getPriority();
+		int getPriority() const;
 
 		void stop();
 
@@ -211,7 +211,7 @@ int ThreadCreator<ThreadMaster>::setPriority( int prior )
 }
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
-int ThreadCreator<ThreadMaster>::getPriority()
+int ThreadCreator<ThreadMaster>::getPriority() const
 {
 	return getpriority(PRIO_PROCESS, pid);
 }

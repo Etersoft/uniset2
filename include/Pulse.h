@@ -116,11 +116,11 @@ class Pulse
 		}
 
 
-		inline timeout_t getT1()
+		inline timeout_t getT1() const
 		{
 			return t1_msec;
 		}
-		inline timeout_t getT0()
+		inline timeout_t getT0() const
 		{
 			return t0_msec;
 		}

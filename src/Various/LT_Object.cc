@@ -158,6 +158,11 @@ LT_Object::TimersList LT_Object::getTimersList()
 	return std::move(lst);
 }
 // ------------------------------------------------------------------------------------------
+string LT_Object::getTimerName(int id)
+{
+	return "";
+}
+// ------------------------------------------------------------------------------------------
 
 timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks, UniSetTypes::Message::Priority p )
 {

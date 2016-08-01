@@ -510,7 +510,7 @@ bool NCRestorer_XML::getThresholdInfo( const std::shared_ptr<UniXML>& xml, xmlNo
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-bool NCRestorer_XML::check_thresholds_item( UniXML::iterator& it )
+bool NCRestorer_XML::check_thresholds_item( UniXML::iterator& it ) const
 {
 	return UniSetTypes::check_filter(it, t_filterField, t_filterValue);
 }

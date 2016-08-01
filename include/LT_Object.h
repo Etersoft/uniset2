@@ -135,6 +135,9 @@ class LT_Object
 
 	protected:
 
+		/*! пользовательская функция для вывода названия таймера */
+		virtual std::string getTimerName( int id );
+
 		/*! Информация о таймере */
 		struct TimerInfo
 		{
@@ -193,14 +196,9 @@ class LT_Object
 
 		TimersList getTimersList();
 
-		/*! пользовательская функция для вывода названия таймера */
-		virtual std::string getTimerName( int id )
-		{
-			return "";
-		}
-
 	private:
 		TimersList tlst;
+
 		/*! замок для блокирования совместного доступа к cписку таймеров */
 		UniSetTypes::uniset_rwmutex lstMutex;
 		PassiveTimer tmLast;

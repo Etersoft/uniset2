@@ -134,7 +134,7 @@ class IOController:
 		{
 			return ioList.find(k);
 		}
-		inline int ioCount()
+		inline int ioCount() const
 		{
 			return ioList.size();
 		}
@@ -250,11 +250,11 @@ class IOController:
 		// функии проверки текущего значения
 		bool checkIOFilters( std::shared_ptr<USensorInfo>& ai, CORBA::Long& newvalue, UniSetTypes::ObjectId sup_id );
 
-		inline bool iofiltersEmpty()
+		inline bool iofiltersEmpty() const
 		{
 			return iofilters.empty();
 		}
-		inline int iodiltersSize()
+		inline int iodiltersSize() const
 		{
 			return iofilters.size();
 		}

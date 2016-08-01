@@ -267,7 +267,7 @@ std::vector<std::string> UniSetTypes::explode_str( const string& str, char sep )
 // ------------------------------------------------------------------------------------------
 bool UniSetTypes::is_digit( const std::string& s )
 {
-	for( auto c : s )
+	for( const auto& c : s )
 	{
 		if( !isdigit(c) )
 			return false;

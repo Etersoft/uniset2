@@ -45,24 +45,14 @@ class UniSetTimer
 
 		virtual timeout_t getCurrent() const = 0;       /*!< получить текущее значение таймера */
 		virtual timeout_t getInterval() const = 0;      /*!< получить интервал, на который установлен таймер, в мс */
-		timeout_t getLeft(timeout_t timeout)      /*!< получить время, которое остается от timeout после прошествия времени getCurrent() */
-		{
-			timeout_t ct = getCurrent();
 
-			if( timeout <= ct )
-				return 0;
-
-			return timeout - ct;
-		}
+		timeout_t getLeft( timeout_t timeout ) const;     /*!< получить время, которое остается от timeout после прошествия времени getCurrent() */
 
 		// объявлены не чисто виртуальными т.к.
 		// некоторые классы могут не иметь подобных
 		// свойств.
-		virtual bool wait(timeout_t timeMS)
-		{
-			return 0;   /*!< заснуть ожидая наступления времени */
-		}
-		virtual void terminate() {}                   /*!< прервать работу таймера */
+		virtual bool wait(timeout_t timeMS);   /*!< заснуть ожидая наступления времени */
+		virtual void terminate() {}            /*!< прервать работу таймера */
 
 		/*! завершить работу таймера */
 		virtual void stop()

@@ -85,3 +85,19 @@ void PassiveTimer::terminate()
 	t_msec = WaitUpTime;
 }
 //------------------------------------------------------------------------------
+
+timeout_t UniSetTimer::getLeft(timeout_t timeout) const
+{
+	timeout_t ct = getCurrent();
+
+	if( timeout <= ct )
+		return 0;
+
+	return timeout - ct;
+}
+//------------------------------------------------------------------------------
+bool UniSetTimer::wait( timeout_t timeMS )
+{
+	return false;
+}
+//------------------------------------------------------------------------------

@@ -127,7 +127,7 @@ void LogReader::disconnect()
 	tcp = 0;
 }
 // -------------------------------------------------------------------------
-bool LogReader::isConnection()
+bool LogReader::isConnection() const
 {
 	return tcp && tcp->isConnected();
 }

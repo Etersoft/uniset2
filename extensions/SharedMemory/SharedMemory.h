@@ -391,7 +391,7 @@ class SharedMemory:
 		typedef sigc::signal<void, const HistoryInfo&> HistorySlot;
 		HistorySlot signal_history(); /*!< сигнал о срабатывании условий "сброса" дампа истории */
 
-		inline int getHistoryStep()
+		inline int getHistoryStep() const
 		{
 			return histSaveTime;    /*!< период между точками "дампа", мсек */
 		}

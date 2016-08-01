@@ -253,7 +253,7 @@ std::vector<std::string> LogAgregator::splitFirst( const std::string& lname, con
 	return std::move(v);
 }
 // -------------------------------------------------------------------------
-bool LogAgregator::logExist( std::shared_ptr<DebugStream>& log )
+bool LogAgregator::logExist( std::shared_ptr<DebugStream>& log ) const
 {
 	for( const auto& l : lmap )
 	{
@@ -273,7 +273,7 @@ bool LogAgregator::logExist( std::shared_ptr<DebugStream>& log )
 	return false;
 }
 // -------------------------------------------------------------------------
-std::shared_ptr<DebugStream> LogAgregator::findLog( const std::string& lname )
+std::shared_ptr<DebugStream> LogAgregator::findLog( const std::string& lname ) const
 {
 	auto v = splitFirst(lname, sep);
 
@@ -300,7 +300,7 @@ std::shared_ptr<DebugStream> LogAgregator::findLog( const std::string& lname )
 	return ag->findLog(v[1]); // рекурсия
 }
 // -------------------------------------------------------------------------
-std::list<LogAgregator::iLog> LogAgregator::getLogList( const std::string& regex_str )
+std::list<LogAgregator::iLog> LogAgregator::getLogList( const std::string& regex_str ) const
 {
 	std::list<LogAgregator::iLog> l;
 
@@ -326,7 +326,7 @@ std::list<LogAgregator::iLog> LogAgregator::getLogList( const std::string& regex
 	return std::move(l);
 }
 // -------------------------------------------------------------------------
-std::list<LogAgregator::iLog> LogAgregator::getLogList()
+std::list<LogAgregator::iLog> LogAgregator::getLogList() const
 {
 	std::list<LogAgregator::iLog> lst = makeLogNameList("");
 	lst.sort([](const LogAgregator::iLog & a, const LogAgregator::iLog & b)
@@ -336,7 +336,7 @@ std::list<LogAgregator::iLog> LogAgregator::getLogList()
 	return std::move(lst);
 }
 // -------------------------------------------------------------------------
-std::list<LogAgregator::iLog> LogAgregator::makeLogNameList( const std::string& prefix )
+std::list<LogAgregator::iLog> LogAgregator::makeLogNameList( const std::string& prefix ) const
 {
 	std::list<LogAgregator::iLog> lst;
 
@@ -355,7 +355,7 @@ std::list<LogAgregator::iLog> LogAgregator::makeLogNameList( const std::string& 
 			lst.splice(lst.end(), ag->makeLogNameList(p2));
 		else
 		{
-			std::string nm(p2 + l.second->getLogName());
+			const std::string nm(p2 + l.second->getLogName());
 			LogAgregator::iLog il(l.second, std::move(nm) );
 			lst.push_back( std::move(il) );
 		}

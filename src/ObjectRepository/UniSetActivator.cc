@@ -125,7 +125,7 @@ static pid_t g_stacktrace_proc_pid = 0; // pid процесса делающег
 // выделение специального стека заранее
 // +60 - это на всякие переменные при обработке stack trace и т.п.
 static char g_stack_body[(MAXFRAMES + 60)*FUNCNAMESIZE];
-static char trace_buf[10000];
+//static char trace_buf[10000];
 static stack_t g_sigseg_stack;
 static void on_stacktrace_timeout(); // поток для защиты от зависания "процесса создания stack trace"
 // ------------------------------------------------------------------------------------------
@@ -498,6 +498,11 @@ void UniSetActivator::Destroy()
 	inst.reset();
 }
 // ---------------------------------------------------------------------------
+std::shared_ptr<UniSetActivator> UniSetActivator::get_aptr()
+{
+	return std::dynamic_pointer_cast<UniSetActivator>(get_ptr());
+}
+// ---------------------------------------------------------------------------
 UniSetActivator::UniSetActivator( const ObjectId id ):
 	UniSetManager(id),
 	omDestroy(false)
@@ -738,6 +743,11 @@ void UniSetActivator::work()
 		// (помоему как-то связано с завершением потоков)
 		msleep(THREAD_TERMINATE_PAUSE); // pause();
 	}
+}
+// ------------------------------------------------------------------------------------------
+CORBA::ORB_ptr UniSetActivator::getORB()
+{
+	return orb;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::sysCommand( const UniSetTypes::SystemMessage* sm )

@@ -76,7 +76,7 @@ bool CommonEventLoop::evrun(EvWatcher* w, bool thread )
 	return true;
 }
 // ---------------------------------------------------------------------------
-bool CommonEventLoop::evIsActive()
+bool CommonEventLoop::evIsActive() const
 {
 	return isrunning;
 }

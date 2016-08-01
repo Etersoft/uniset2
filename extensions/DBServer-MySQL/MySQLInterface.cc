@@ -144,12 +144,12 @@ double MySQLInterface::insert_id()
 	return mysql_insert_id(mysql);
 }
 // -----------------------------------------------------------------------------------------
-const char* MySQLInterface::gethostinfo()
+const char* MySQLInterface::gethostinfo() const
 {
 	return mysql_get_host_info(mysql);
 }
 // -----------------------------------------------------------------------------------------
-bool MySQLInterface::ping()
+bool MySQLInterface::ping() const
 {
 	if( !mysql || !connected )
 		return false;
@@ -159,7 +159,7 @@ bool MySQLInterface::ping()
 	return !mysql_ping(mysql);
 }
 // -----------------------------------------------------------------------------------------
-bool MySQLInterface::isConnection()
+bool MySQLInterface::isConnection() const
 {
 	return ping(); //!mysql;
 }
@@ -177,7 +177,7 @@ string MySQLInterface::addslashes( const string& str )
 		tmp << str[i];
 	}
 
-	return tmp.str();
+	return std::move(tmp.str());
 }
 // -----------------------------------------------------------------------------------------
 void MySQLInterface::makeResult(DBResult& dbres, MYSQL_RES* myres, bool finalize )

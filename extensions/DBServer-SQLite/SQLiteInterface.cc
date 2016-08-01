@@ -51,7 +51,7 @@ SQLiteInterface::~SQLiteInterface()
 }
 
 // -----------------------------------------------------------------------------------------
-bool SQLiteInterface::ping()
+bool SQLiteInterface::ping() const
 {
 	return db && ( sqlite3_db_status(db, 0, NULL, NULL, 0) == SQLITE_OK );
 }
@@ -219,7 +219,7 @@ double SQLiteInterface::insert_id()
 	return sqlite3_last_insert_rowid(db);
 }
 // -----------------------------------------------------------------------------------------
-bool SQLiteInterface::isConnection()
+bool SQLiteInterface::isConnection() const
 {
 	return connected;
 }

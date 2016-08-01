@@ -131,7 +131,7 @@ class DebugStream : public std::ostream
 		/// Sets the debugstreams' logfile to f.
 		virtual void logFile( const std::string& f, bool truncate = false );
 
-		inline std::string getLogFile()
+		inline std::string getLogFile() const
 		{
 			return fname;
 		}
@@ -143,7 +143,7 @@ class DebugStream : public std::ostream
 		}
 
 		// включена ли запись лог-файла
-		inline bool isOnLogFile()
+		inline bool isOnLogFile() const
 		{
 			return isWriteLogFile;
 		}
@@ -226,7 +226,7 @@ class DebugStream : public std::ostream
 		return  operator()(Debug::LEVEL); \
 	} \
 	\
-	inline bool is_##FNAME() \
+	inline bool is_##FNAME() const \
 	{ return debugging(Debug::LEVEL); }
 
 		DMANIP(level1, LEVEL1)
@@ -259,7 +259,8 @@ class DebugStream : public std::ostream
 		{
 			logname = n;
 		}
-		inline std::string  getLogName()
+
+		inline std::string  getLogName() const
 		{
 			return logname;
 		}

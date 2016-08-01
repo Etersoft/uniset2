@@ -81,49 +81,35 @@ class UniSetObject:
 		UniSetObject();
 		virtual ~UniSetObject();
 
-		std::shared_ptr<UniSetObject> get_ptr()
-		{
-			return shared_from_this();
-		}
+		std::shared_ptr<UniSetObject> get_ptr();
 
 		// Функции объявленные в IDL
 		virtual CORBA::Boolean exist() override;
 
-		virtual UniSetTypes::ObjectId getId() override
-		{
-			return myid;
-		}
-		inline const UniSetTypes::ObjectId getId() const
-		{
-			return myid;
-		}
-		inline std::string getName()
-		{
-			return myname;
-		}
+		virtual UniSetTypes::ObjectId getId() override;
+
+		const UniSetTypes::ObjectId getId() const;
+		std::string getName() const;
 
 		virtual UniSetTypes::ObjectType getType() override
 		{
 			return UniSetTypes::ObjectType("UniSetObject");
 		}
+
 		virtual UniSetTypes::SimpleInfo* getInfo( ::CORBA::Long userparam = 0 ) override;
-		friend std::ostream& operator<<(std::ostream& os, UniSetObject& obj );
 
 		//! поместить сообщение в очередь
 		virtual void push( const UniSetTypes::TransportMessage& msg ) override;
 
-
 		// -------------- вспомогательные --------------
 		/*! получить ссылку (на себя) */
-		inline UniSetTypes::ObjectPtr getRef() const
-		{
-			UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
-			return (UniSetTypes::ObjectPtr)CORBA::Object::_duplicate(oref);
-		}
+		UniSetTypes::ObjectPtr getRef() const;
 
 		/*! заказ таймера (вынесена в public, хотя должна была бы быть в protected */
 		virtual timeout_t askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks = -1,
 									UniSetTypes::Message::Priority p = UniSetTypes::Message::High ) override;
+
+		friend std::ostream& operator<<(std::ostream& os, UniSetObject& obj );
 
 	protected:
 
@@ -153,19 +139,13 @@ class UniSetObject:
 		size_t countMessages();
 
 		/*! количество потерянных сообщений */
-		size_t getCountOfLostMessages();
+		size_t getCountOfLostMessages() const;
 
 		//! Активизация объекта (переопределяется для необходимых действий после активизации)
-		virtual bool activateObject()
-		{
-			return true;
-		}
+		virtual bool activateObject();
 
 		//! Деактивиция объекта (переопределяется для необходимых действий перед деактивацией)
-		virtual bool deactivateObject()
-		{
-			return true;
-		}
+		virtual bool deactivateObject();
 
 		/*! Функция вызываемая при приходе сигнала завершения или прерывания процесса. Переопределив ее можно
 		 *    выполнять специфичные для процесса действия по обработке сигнала.
@@ -174,28 +154,18 @@ class UniSetObject:
 		*/
 		virtual void sigterm( int signo );
 
-		inline void terminate()
-		{
-			deactivate();
-		}
+		void terminate();
 
 		// управление созданием потока обработки сообщений -------
 
 		/*! запрет(разрешение) создания потока для обработки сообщений */
-		inline void thread( bool create )
-		{
-			threadcreate = create;
-		}
+		void thread( bool create );
+
 		/*! отключение потока обработки сообщений */
-		inline void offThread()
-		{
-			threadcreate = false;
-		}
+		void offThread();
+
 		/*! включение потока обработки сообщений */
-		inline void onThread()
-		{
-			threadcreate = true;
-		}
+		void onThread();
 
 		/*! функция вызываемая из потока */
 		virtual void callback();
@@ -211,22 +181,13 @@ class UniSetObject:
 		void setMaxSizeOfMessageQueue( size_t s );
 
 		/*! получить размер очереди сообщений */
-		inline size_t getMaxSizeOfMessageQueue()
-		{
-			return mqueueMedium.getMaxSizeOfMessageQueue();
-		}
+		size_t getMaxSizeOfMessageQueue() const;
 
 		/*! проверка "активности" объекта */
-		inline bool isActive()
-		{
-			return active;
-		}
+		bool isActive() const;
 
 		/*! false - завершить работу потока обработки сообщений */
-		inline void setActive( bool set )
-		{
-			active = set;
-		}
+		void setActive( bool set );
 
 	private:
 

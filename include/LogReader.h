@@ -48,7 +48,7 @@ class LogReader
 
 		void readlogs( const std::string& addr, ost::tpport_t port, LogServerTypes::Command c = LogServerTypes::cmdNOP, const std::string logfilter = "", bool verbose = false );
 
-		bool isConnection();
+		bool isConnection() const;
 
 		inline void setReadCount( unsigned int n )
 		{

@@ -47,7 +47,7 @@ class CommonEventLoop
 		CommonEventLoop();
 		~CommonEventLoop();
 
-		bool evIsActive();
+		bool evIsActive() const;
 
 		/*! \return TRUE - если всё удалось. return актуален только для случая когда thread = true */
 		bool evrun( EvWatcher* w, bool thread = true );

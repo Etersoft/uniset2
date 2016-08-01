@@ -135,7 +135,7 @@ class NCRestorer_XML:
 		void setThresholdsFilter( const std::string& filterField, const std::string& filterValue = "" );
 
 		bool setFileName( const std::string& file, bool create );
-		inline std::string getFileName()
+		inline std::string getFileName() const
 		{
 			return fname;
 		}
@@ -163,7 +163,7 @@ class NCRestorer_XML:
 
 	protected:
 
-		bool check_thresholds_item( UniXML::iterator& it );
+		bool check_thresholds_item( UniXML::iterator& it ) const;
 		void read_consumers( const std::shared_ptr<UniXML>& xml, xmlNode* node, std::shared_ptr<NCRestorer_XML::SInfo>& inf, IONotifyController* ic );
 		void read_list( const std::shared_ptr<UniXML>& xml, xmlNode* node, IONotifyController* ic);
 		void read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNode* node, IONotifyController* ic);
