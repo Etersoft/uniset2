@@ -76,7 +76,7 @@ class UniSetActivator:
 		typedef sigc::signal<void, int> TerminateEvent_Signal;
 		TerminateEvent_Signal signal_terminate_event();
 
-		inline bool noUseGdbForStackTrace()
+		inline bool noUseGdbForStackTrace() const
 		{
 			return _noUseGdbForStackTrace;
 		}
@@ -120,7 +120,7 @@ class UniSetActivator:
 		TerminateEvent_Signal s_term;
 
 		std::atomic_bool omDestroy;
-		pid_t thpid; // pid orb потока
+		pid_t thid; // id orb потока
 
 		bool _noUseGdbForStackTrace = { false };
 

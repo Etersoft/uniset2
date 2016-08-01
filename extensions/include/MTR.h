@@ -54,7 +54,7 @@ namespace MTR
 	// -------------------------------------------------------------------------
 	std::string type2str( MTRType t );          /*!< преоразование строки в тип */
 	MTRType str2type( const std::string& s );   /*!< преобразование названия в строку */
-	int wsize( MTRType t );                     /*!< длина данных в словах */
+	size_t wsize( MTRType t );                     /*!< длина данных в словах */
 	// -------------------------------------------------------------------------
 	// Информация
 	const ModbusRTU::ModbusData regModelNumber  = 0x01;
@@ -129,7 +129,7 @@ namespace MTR
 	void update_communication_params( ModbusRTU::ModbusAddr reg, ModbusRTU::ModbusData data,
 									  ModbusRTUMaster* mb, ModbusRTU::ModbusAddr& addr, int verb );
 	// -------------------------------------------------------------------------
-	static const int u2size = 2;
+	static const size_t u2size = 2;
 	// -------------------------------------------------------------------------
 	class T1
 	{
@@ -140,7 +140,7 @@ namespace MTR
 			~T1() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static unsigned int wsize()
+			static size_t wsize()
 			{
 				return 1;
 			}
@@ -163,7 +163,7 @@ namespace MTR
 			~T2() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static unsigned int wsize()
+			static size_t wsize()
 			{
 				return 1;
 			}
@@ -205,7 +205,7 @@ namespace MTR
 				raw.v[1] = v2;
 			}
 
-			T3( const ModbusRTU::ModbusData* data, int size )
+			T3( const ModbusRTU::ModbusData* data, size_t size )
 			{
 				if( size >= u2size )
 				{
@@ -218,7 +218,7 @@ namespace MTR
 			~T3() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static unsigned int wsize()
+			static size_t wsize()
 			{
 				return u2size;
 			}
@@ -262,7 +262,7 @@ namespace MTR
 			~T4() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static unsigned int wsize()
+			static size_t wsize()
 			{
 				return 1;
 			}
@@ -311,7 +311,7 @@ namespace MTR
 				val = raw.u2.val * pow( (long)10, (long)raw.u2.exp );
 			}
 
-			T5( const ModbusRTU::ModbusData* data, int size ): val(0)
+			T5( const ModbusRTU::ModbusData* data, size_t size ): val(0)
 			{
 				if( size >= u2size )
 				{
@@ -325,7 +325,7 @@ namespace MTR
 			~T5() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static unsigned int wsize()
+			static size_t wsize()
 			{
 				return u2size;
 			}
@@ -374,7 +374,7 @@ namespace MTR
 				val = raw.u2.val * pow( (long)10, (long)raw.u2.exp );
 			}
 
-			T6( const ModbusRTU::ModbusData* data, int size )
+			T6( const ModbusRTU::ModbusData* data, size_t size )
 			{
 				if( size >= u2size )
 				{
@@ -388,7 +388,7 @@ namespace MTR
 			~T6() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static unsigned int wsize()
+			static size_t wsize()
 			{
 				return u2size;
 			}
@@ -437,7 +437,7 @@ namespace MTR
 				val = raw.u2.val * pow( (long)10, (long) - 4 );
 			}
 
-			T7( const ModbusRTU::ModbusData* data, int size )
+			T7( const ModbusRTU::ModbusData* data, size_t size )
 			{
 				if( size >= u2size )
 				{
@@ -451,7 +451,7 @@ namespace MTR
 			~T7() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static unsigned int wsize()
+			static size_t wsize()
 			{
 				return u2size;
 			}
@@ -494,7 +494,7 @@ namespace MTR
 				raw.v[1] = v2;
 			}
 
-			T8( const ModbusRTU::ModbusData* data, int size )
+			T8( const ModbusRTU::ModbusData* data, size_t size )
 			{
 				if( size >= u2size )
 				{
@@ -524,7 +524,7 @@ namespace MTR
 			~T8() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static unsigned int wsize()
+			static size_t wsize()
 			{
 				return u2size;
 			}
@@ -566,7 +566,7 @@ namespace MTR
 				raw.v[1] = v2;
 			}
 
-			T9( const ModbusRTU::ModbusData* data, int size )
+			T9( const ModbusRTU::ModbusData* data, size_t size )
 			{
 				if( size >= u2size )
 				{
@@ -596,7 +596,7 @@ namespace MTR
 			~T9() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static unsigned int wsize()
+			static size_t wsize()
 			{
 				return u2size;
 			}
@@ -637,7 +637,7 @@ namespace MTR
 				raw.v[1] = v2;
 			}
 
-			T10( const ModbusRTU::ModbusData* data, int size )
+			T10( const ModbusRTU::ModbusData* data, size_t size )
 			{
 				if( size >= u2size )
 				{
@@ -663,7 +663,7 @@ namespace MTR
 			~T10() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static unsigned int wsize()
+			static size_t wsize()
 			{
 				return u2size;
 			}
@@ -698,7 +698,7 @@ namespace MTR
 			~T16() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static unsigned int wsize()
+			static size_t wsize()
 			{
 				return 1;
 			}
@@ -746,7 +746,7 @@ namespace MTR
 			~T17() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static unsigned int wsize()
+			static size_t wsize()
 			{
 				return 1;
 			}
@@ -797,7 +797,7 @@ namespace MTR
 				raw.val = f;
 			}
 
-			F1( const ModbusRTU::ModbusData* data, int size )
+			F1( const ModbusRTU::ModbusData* data, size_t size )
 			{
 				if( size >= u2size )
 				{
@@ -810,7 +810,7 @@ namespace MTR
 			~F1() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static unsigned int wsize()
+			static size_t wsize()
 			{
 				return u2size;
 			}
@@ -855,7 +855,7 @@ namespace MTR
 			~T_Str16() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static unsigned int wsize()
+			static size_t wsize()
 			{
 				return 8;
 			}
@@ -892,7 +892,7 @@ namespace MTR
 			~T_Str8() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static unsigned int wsize()
+			static size_t wsize()
 			{
 				return 4;
 			}

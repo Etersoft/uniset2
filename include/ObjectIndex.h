@@ -34,32 +34,32 @@ namespace UniSetTypes
 			virtual ~ObjectIndex() {};
 
 			// info
-			virtual const ObjectInfo* getObjectInfo( const UniSetTypes::ObjectId ) = 0;
-			virtual const ObjectInfo* getObjectInfo( const std::string& name ) = 0;
+			virtual const ObjectInfo* getObjectInfo( const UniSetTypes::ObjectId ) const = 0;
+			virtual const ObjectInfo* getObjectInfo( const std::string& name ) const = 0;
 
 			static std::string getBaseName( const std::string& fname );
 
 			// object id
-			virtual ObjectId getIdByName(const std::string& name) = 0;
-			virtual std::string getNameById( const UniSetTypes::ObjectId id );
+			virtual ObjectId getIdByName(const std::string& name) const = 0;
+			virtual std::string getNameById( const UniSetTypes::ObjectId id ) const;
 
 			// node
-			inline std::string getNodeName( const UniSetTypes::ObjectId id )
+			inline std::string getNodeName( const UniSetTypes::ObjectId id ) const
 			{
 				return getNameById(id);
 			}
 
-			inline ObjectId getNodeId( const std::string& name )
+			inline ObjectId getNodeId( const std::string& name ) const
 			{
 				return getIdByName(name);
 			}
 
 			// src name
-			virtual std::string getMapName( const UniSetTypes::ObjectId id ) = 0;
-			virtual std::string getTextName( const UniSetTypes::ObjectId id ) = 0;
+			virtual std::string getMapName( const UniSetTypes::ObjectId id ) const = 0;
+			virtual std::string getTextName( const UniSetTypes::ObjectId id ) const = 0;
 
 			//
-			virtual std::ostream& printMap(std::ostream& os) = 0;
+			virtual std::ostream& printMap(std::ostream& os) const = 0;
 
 			void initLocalNode( const UniSetTypes::ObjectId nodeid );
 

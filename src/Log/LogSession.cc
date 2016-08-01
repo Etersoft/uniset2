@@ -54,7 +54,7 @@ LogSession::~LogSession()
 // -------------------------------------------------------------------------
 LogSession::LogSession( int sfd, std::shared_ptr<DebugStream>& _log, timeout_t _cmdTimeout, timeout_t _checkConnectionTime ):
 	cmdTimeout(_cmdTimeout),
-	checkConnectionTime(_checkConnectionTime/1000.),
+	checkConnectionTime(_checkConnectionTime / 1000.),
 	peername(""),
 	caddr(""),
 	log(_log)
@@ -103,24 +103,28 @@ void LogSession::logOnEvent( const std::string& s )
 	if( cancelled || s.empty() )
 		return;
 
-	{ // чтобы поменьше удерживать mutex
+	{
+		// чтобы поменьше удерживать mutex
 		std::unique_lock<std::mutex> lk(logbuf_mutex);
 
 		// собираем статистику..
 		// --------------------------
-		if( s.size() < minSizeMsg || minSizeMsg==0 )
+		if( s.size() < minSizeMsg || minSizeMsg == 0 )
 			minSizeMsg = s.size();
+
 		if( s.size() > maxSizeMsg )
 			maxSizeMsg = s.size();
 
 		if( logbuf.size() > maxCount )
 			maxCount = logbuf.size();
+
 		// --------------------------
 
 		// проверяем на переполнение..
 		if( logbuf.size() >= maxRecordsNum )
 		{
 			numLostMsg++;
+
 			if( !lostMsg )
 			{
 				ostringstream err;
@@ -173,6 +177,7 @@ void LogSession::terminate()
 
 	{
 		std::unique_lock<std::mutex> lk(logbuf_mutex);
+
 		while( !logbuf.empty() )
 			logbuf.pop();
 	}
@@ -282,6 +287,7 @@ void LogSession::writeEvent( ev::io& watcher )
 
 	{
 		std::unique_lock<std::mutex> lk(logbuf_mutex);
+
 		if( logbuf.empty() )
 		{
 			io.set(EV_NONE);
@@ -451,7 +457,7 @@ void LogSession::cmdProcessing( const string& cmdLogName, const LogServerTypes::
 			case LogServerTypes::cmdSaveLogLevel:
 			case LogServerTypes::cmdRestoreLogLevel:
 			case LogServerTypes::cmdViewDefaultLogLevel:
-			break;
+				break;
 
 			default:
 				mylog.warn() << peername << "(run): Unknown command '" << msg.cmd << "'" << endl;
@@ -479,7 +485,8 @@ void LogSession::cmdProcessing( const string& cmdLogName, const LogServerTypes::
 
 	try
 	{
-		std::string ret( std::move(m_command_sig.emit(this,msg.cmd,cmdLogName)) );
+		std::string ret( std::move(m_command_sig.emit(this, msg.cmd, cmdLogName)) );
+
 		if( !ret.empty() )
 		{
 			{
@@ -522,6 +529,7 @@ void LogSession::onCheckConnectionTimer( ev::timer& watcher, int revents )
 	}
 
 	std::unique_lock<std::mutex> lk(logbuf_mutex);
+
 	if( !logbuf.empty() )
 	{
 		checkConnectionTimer.start( checkConnectionTime ); // restart timer
@@ -551,13 +559,23 @@ LogSession::LogSessionCommand_Signal LogSession::signal_logsession_command()
 	return m_command_sig;
 }
 // ---------------------------------------------------------------------
+void LogSession::cancel()
+{
+	cancelled = true;
+}
+// ---------------------------------------------------------------------
 void LogSession::setMaxBufSize( size_t num )
 {
 	std::unique_lock<std::mutex> lk(logbuf_mutex);
 	maxRecordsNum = num;
 }
 // ---------------------------------------------------------------------
-bool LogSession::isAcive()
+size_t LogSession::getMaxBufSize() const
+{
+	return maxRecordsNum;
+}
+// ---------------------------------------------------------------------
+bool LogSession::isAcive() const
 {
 	return io.is_active();
 }

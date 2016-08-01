@@ -123,19 +123,19 @@ class HourGlass
 		}
 
 		// получить прошедшее время
-		inline timeout_t current()
+		inline timeout_t current() const
 		{
 			return t.getCurrent();
 		}
 
 		// получить заданное время
-		inline timeout_t interval()
+		inline timeout_t interval() const
 		{
 			return t.getInterval();
 		}
 
 		// проверить наступление
-		inline bool check()
+		inline bool check() const
 		{
 			// пока часы не "стоят"
 			// всегда false
@@ -145,7 +145,7 @@ class HourGlass
 			return t.checkTime();
 		}
 
-		inline bool enabled()
+		inline bool enabled() const
 		{
 			return _state;
 		}

@@ -57,7 +57,7 @@ void TriggerOUT<Caller,OutIdType,ValueType>::remove(OutIdType num)
 
 //---------------------------------------------------------------------------
 template <class Caller, typename OutIdType, typename ValueType>
-bool TriggerOUT<Caller,OutIdType,ValueType>::getState(OutIdType out)
+bool TriggerOUT<Caller,OutIdType,ValueType>::getState(OutIdType out) const
 {
 	auto it=outs.find(out);
 	if( it!=outs.end() )

@@ -27,14 +27,13 @@ class TDelay:
 {
 
 	public:
-		TDelay( Element::ElementID id, timeout_t delayMS = 0, unsigned int inCount = 0 );
+		TDelay( Element::ElementID id, timeout_t delayMS = 0, size_t inCount = 0 );
 		virtual ~TDelay();
 
-
 		virtual void tick() override;
-		virtual void setIn( int num, bool state ) override;
-		virtual bool getOut() override;
-		virtual std::string getType() override
+		virtual void setIn( size_t num, bool state ) override;
+		virtual bool getOut() const override;
+		virtual std::string getType() const override
 		{
 			return "Delay";
 		}

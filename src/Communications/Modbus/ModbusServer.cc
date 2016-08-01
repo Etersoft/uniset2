@@ -1767,7 +1767,7 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 	{
 		size_t len = msg.len(); // т.к. swapHead() поменяет
 		msg.swapHead();
-		sendData(msg.buf(),len);
+		sendData(msg.buf(), len);
 		msg.swapHead(); // обратно, т.к. потом ещё будет post_send_request
 	}
 	catch( const Exception& ex ) // SystemError

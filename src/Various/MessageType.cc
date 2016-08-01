@@ -211,11 +211,11 @@ namespace UniSetTypes
 	}
 	//--------------------------------------------------------------------------------------------
 	ConfirmMessage::ConfirmMessage( UniSetTypes::ObjectId in_sensor_id,
-								   double in_value,
-								   time_t in_time,
-								   time_t in_time_usec,
-								   time_t in_confirm,
-								   Priority in_priority ):
+									double in_value,
+									time_t in_time,
+									time_t in_time_usec,
+									time_t in_confirm,
+									Priority in_priority ):
 		sensor_id(in_sensor_id),
 		value(in_value),
 		time(in_time),

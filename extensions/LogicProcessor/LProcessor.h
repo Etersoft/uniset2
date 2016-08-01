@@ -116,7 +116,7 @@ class LProcessor
 
 		void open( const std::string& lfile );
 
-		inline bool isOpen()
+		inline bool isOpen() const
 		{
 			return !fSchema.empty();
 		}
@@ -133,7 +133,7 @@ class LProcessor
 			return sch;
 		}
 
-		inline int getSleepTime()
+		inline int getSleepTime() const
 		{
 			return sleepTime;
 		}

@@ -1771,7 +1771,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 
 			ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::I2::wsize()];
 
-			for( int k = 0; k < VTypes::I2::wsize(); k++, i++ )
+			for( size_t k = 0; k < VTypes::I2::wsize(); k++, i++ )
 				d[k] = dat[i];
 
 			VTypes::I2 i2(d, VTypes::I2::wsize());
@@ -1788,7 +1788,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 
 			ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::I2r::wsize()];
 
-			for( int k = 0; k < VTypes::I2r::wsize(); k++, i++ )
+			for( size_t k = 0; k < VTypes::I2r::wsize(); k++, i++ )
 				d[k] = dat[i];
 
 			VTypes::I2r i2r(d, VTypes::I2r::wsize());
@@ -1805,7 +1805,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 
 			ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::U2::wsize()];
 
-			for( int k = 0; k < VTypes::U2::wsize(); k++, i++ )
+			for( size_t k = 0; k < VTypes::U2::wsize(); k++, i++ )
 				d[k] = dat[i];
 
 			VTypes::U2 u2(d, VTypes::U2::wsize());
@@ -1822,7 +1822,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 
 			ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::U2r::wsize()];
 
-			for( int k = 0; k < VTypes::U2r::wsize(); k++, i++ )
+			for( size_t k = 0; k < VTypes::U2r::wsize(); k++, i++ )
 				d[k] = dat[i];
 
 			VTypes::U2r u2r(d, VTypes::U2r::wsize());
@@ -1839,7 +1839,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 
 			ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::F2::wsize()];
 
-			for( int k = 0; k < VTypes::F2::wsize(); k++, i++ )
+			for( size_t k = 0; k < VTypes::F2::wsize(); k++, i++ )
 				d[k] = dat[i];
 
 			VTypes::F2 f2(d, VTypes::F2::wsize());
@@ -1857,7 +1857,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 
 			ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::F2r::wsize()];
 
-			for( int k = 0; k < VTypes::F2r::wsize(); k++, i++ )
+			for( size_t k = 0; k < VTypes::F2r::wsize(); k++, i++ )
 				d[k] = dat[i];
 
 			VTypes::F2r f2r(d, VTypes::F2r::wsize());
@@ -1874,7 +1874,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 
 			ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::F4::wsize()];
 
-			for( int k = 0; k < VTypes::F4::wsize(); k++, i++ )
+			for( size_t k = 0; k < VTypes::F4::wsize(); k++, i++ )
 				d[k] = dat[i];
 
 			VTypes::F4 f4(d, VTypes::F4::wsize());

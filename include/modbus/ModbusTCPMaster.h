@@ -22,7 +22,7 @@ class ModbusTCPMaster:
 		void connect( ost::InetAddress addr, int port );
 		void disconnect();
 		void forceDisconnect();
-		bool isConnection();
+		bool isConnection() const;
 
 		static bool checkConnection( const std::string& ip, int port, int timeout_msec = 100 );
 
@@ -39,11 +39,11 @@ class ModbusTCPMaster:
 			cleanInputStream();
 		}
 
-		inline std::string getAddress()
+		inline std::string getAddress() const
 		{
 			return iaddr;
 		}
-		inline int getPort()
+		inline int getPort() const
 		{
 			return port;
 		}

@@ -21,7 +21,7 @@
 using namespace std;
 using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
-TAND::TAND(ElementID id, int num, bool st):
+TAND::TAND(ElementID id, size_t num, bool st):
 	TOR(id, num, st)
 {
 }
@@ -30,7 +30,7 @@ TAND::~TAND()
 {
 }
 // -------------------------------------------------------------------------
-void TAND::setIn( int num, bool state )
+void TAND::setIn(size_t num, bool state )
 {
 	//    cout << this << ": input " << num << " set " << state << endl;
 	for( auto& it : ins )

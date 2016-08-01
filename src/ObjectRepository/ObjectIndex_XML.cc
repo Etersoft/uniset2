@@ -24,7 +24,7 @@
 using namespace UniSetTypes;
 using namespace std;
 // -----------------------------------------------------------------------------------------
-ObjectIndex_XML::ObjectIndex_XML( const string& xmlfile, int minSize ):
+ObjectIndex_XML::ObjectIndex_XML(const string& xmlfile, size_t minSize ):
 	omap(minSize)
 {
 	shared_ptr<UniXML> xml = make_shared<UniXML>();
@@ -36,7 +36,7 @@ ObjectIndex_XML::ObjectIndex_XML( const string& xmlfile, int minSize ):
 	//    catch(...){}
 }
 // -----------------------------------------------------------------------------------------
-ObjectIndex_XML::ObjectIndex_XML( const std::shared_ptr<UniXML>& xml, int minSize ):
+ObjectIndex_XML::ObjectIndex_XML(const std::shared_ptr<UniXML>& xml, size_t minSize ):
 	omap(minSize)
 {
 	build(xml);
@@ -46,7 +46,7 @@ ObjectIndex_XML::~ObjectIndex_XML()
 {
 }
 // -----------------------------------------------------------------------------------------
-ObjectId ObjectIndex_XML::getIdByName( const string& name )
+ObjectId ObjectIndex_XML::getIdByName( const string& name ) const
 {
 	auto it = mok.find(name);
 
@@ -56,7 +56,7 @@ ObjectId ObjectIndex_XML::getIdByName( const string& name )
 	return DefaultObjectId;
 }
 // -----------------------------------------------------------------------------------------
-string ObjectIndex_XML::getMapName( const ObjectId id )
+string ObjectIndex_XML::getMapName( const ObjectId id ) const
 {
 	if( (unsigned)id < omap.size() && (unsigned)id > 0 )
 		return omap[id].repName;
@@ -64,7 +64,7 @@ string ObjectIndex_XML::getMapName( const ObjectId id )
 	return "";
 }
 // -----------------------------------------------------------------------------------------
-string ObjectIndex_XML::getTextName( const ObjectId id )
+string ObjectIndex_XML::getTextName( const ObjectId id ) const
 {
 	if( (unsigned)id < omap.size() && (unsigned)id > 0 )
 		return omap[id].textName;
@@ -77,9 +77,9 @@ std::ostream& operator<<(std::ostream& os, ObjectIndex_XML& oi )
 	return oi.printMap(os);
 }
 // -----------------------------------------------------------------------------------------
-std::ostream& ObjectIndex_XML::printMap( std::ostream& os )
+std::ostream& ObjectIndex_XML::printMap( std::ostream& os ) const
 {
-	cout << "size: " << omap.size() << endl;
+	os << "size: " << omap.size() << endl;
 
 	for( auto it = omap.begin(); it != omap.end(); ++it )
 	{
@@ -272,7 +272,7 @@ unsigned int ObjectIndex_XML::read_nodes( const std::shared_ptr<UniXML>& xml, co
 	return ind;
 }
 // ------------------------------------------------------------------------------------------
-const ObjectInfo* ObjectIndex_XML::getObjectInfo( const ObjectId id )
+const ObjectInfo* ObjectIndex_XML::getObjectInfo( const ObjectId id ) const
 {
 	if( (unsigned)id < omap.size() && (unsigned)id > 0 )
 		return &omap[id];
@@ -280,7 +280,7 @@ const ObjectInfo* ObjectIndex_XML::getObjectInfo( const ObjectId id )
 	return NULL;
 }
 // ------------------------------------------------------------------------------------------
-const ObjectInfo* ObjectIndex_XML::getObjectInfo( const std::string& name )
+const ObjectInfo* ObjectIndex_XML::getObjectInfo( const std::string& name ) const
 {
 	auto it = mok.find(name);
 

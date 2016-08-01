@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.4
-Release: alt2.M80P.3
+Release: alt3.M80P.4
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -486,8 +486,14 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
-* Tue Jul 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt2.M80P.3
+* Mon Aug 01 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt3.M80P.4
 - backport to ALTLinux p8 (by rpmbph script)
+
+* Mon Aug 01 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt4
+- build new version
+
+* Thu Jul 28 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt3.1
+- test build
 
 * Tue Jul 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt3
 - merge devel/master

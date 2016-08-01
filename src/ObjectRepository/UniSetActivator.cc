@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <sstream>
+#include <fstream>
 
 #include <condition_variable>
 #include <thread>
@@ -33,6 +34,7 @@
 // --------------------
 #include <execinfo.h>
 #include <cxxabi.h>
+#include <dlfcn.h>
 #include <iomanip>
 // --------------------
 
@@ -96,6 +98,7 @@ static std::atomic_bool g_term = ATOMIC_VAR_INIT(0);
 static std::atomic_bool g_done = ATOMIC_VAR_INIT(0);
 static std::atomic_bool g_work_stopped = ATOMIC_VAR_INIT(0);
 static std::atomic_int g_signo = ATOMIC_VAR_INIT(0);
+static std::atomic_bool g_trace_done = ATOMIC_VAR_INIT(0);
 
 static std::mutex              g_workmutex;
 static std::mutex              g_termmutex;
@@ -104,12 +107,15 @@ static std::mutex              g_finimutex;
 static std::condition_variable g_finievent;
 static std::mutex              g_donemutex;
 static std::condition_variable g_doneevent;
+static std::mutex              g_trace_donemutex;
+static std::condition_variable g_trace_doneevent;
 static std::shared_ptr<std::thread> g_term_thread;
 static std::shared_ptr<std::thread> g_fini_thread;
 static std::shared_ptr<std::thread> g_kill_thread;
-static const int TERMINATE_TIMEOUT = 3; //  время отведенное на завершение процесса [сек]
+static const int TERMINATE_TIMEOUT_SEC = 3; //  время отведенное на завершение процесса [сек]
 static const int THREAD_TERMINATE_PAUSE = 500; // [мсек] пауза при завершении потока (см. work())
-static const int KILL_TIMEOUT = 8;
+static const int KILL_TIMEOUT_SEC = 8;
+static pid_t g_stacktrace_proc_pid = 0; // pid процесса делающего stack trace (для защиты от зависания)
 // ------------------------------------------------------------------------------------------
 // Чтобы не выделять память во время "вылета",
 // выделим необходимое для stacktrace зараннее
@@ -117,8 +123,11 @@ static const int KILL_TIMEOUT = 8;
 #define FUNCNAMESIZE 256
 #define MAXFRAMES 64
 // выделение специального стека заранее
-static char g_stack_body[MAXFRAMES*FUNCNAMESIZE+500];
+// +60 - это на всякие переменные при обработке stack trace и т.п.
+static char g_stack_body[(MAXFRAMES + 60)*FUNCNAMESIZE];
+static char trace_buf[10000];
 static stack_t g_sigseg_stack;
+static void on_stacktrace_timeout(); // поток для защиты от зависания "процесса создания stack trace"
 // ------------------------------------------------------------------------------------------
 // код функции printStackTrace взят с https://oroboro.com/stack-trace-on-crash/
 // будет работать только под LINUX (т.к. используется backtrace)
@@ -158,70 +167,37 @@ static inline void printStackTrace()
 
 	TRACELOG << std::left;
 
-	size_t funcnamesize = FUNCNAMESIZE;
-	char funcname[FUNCNAMESIZE];
-
 	// iterate over the returned symbol lines. skip the first, it is the
 	// address of this function.
 	for ( unsigned int i = 4; i < addrlen; i++ )
 	{
-		char* begin_name   = NULL;
-		char* begin_offset = NULL;
-		char* end_offset   = NULL;
+		Dl_info dl;
 
-		// find parentheses and +address offset surrounding the mangled name
-		for ( char* p = symbollist[i]; *p; ++p )
+		if(!dladdr(addrlist[i], &dl))
+			break;
+
+		const char* sym = dl.dli_sname;
+
+		int status = 0;
+		char* ret = abi::__cxa_demangle( sym, NULL, 0, &status );
+
+		if( status == 0 && ret )
+			sym = ret;
+
+		if( dl.dli_fname && sym )
 		{
-			if ( *p == '(' )
-				begin_name = p;
-			else if ( *p == '+' )
-				begin_offset = p;
-			else if ( *p == ')' && ( begin_offset || begin_name ))
-				end_offset = p;
-		}
-
-		if ( begin_name && end_offset && ( begin_name < end_offset ))
-		{
-			*begin_name++   = '\0';
-			*end_offset++   = '\0';
-
-			if ( begin_offset )
-				*begin_offset++ = '\0';
-
-			// mangled name is now in [begin_name, begin_offset) and caller
-			// offset in [begin_offset, end_offset). now apply
-			// __cxa_demangle():
-
-			int status = 0;
-			char* ret = abi::__cxa_demangle( begin_name, funcname,
-											 &funcnamesize, &status );
-			char* fname = begin_name;
-
-			if ( status == 0 )
-				fname = ret;
-
-			if ( begin_offset )
-			{
-				TRACELOG << setw(30) << symbollist[i]
-						   << " ( " << setw(40) << fname
-						   << " +" << setw(6) << begin_offset
-						   << ") " << end_offset
-						   << endl;
-			}
-			else
-			{
-				TRACELOG << setw(30) << symbollist[i]
-						   << " ( " << setw(40) << fname
-						   << " " << setw(6) << ""
-						   << ") " << end_offset
-						   << endl;
-			}
+			TRACELOG << setw(30) << symbollist[i]
+					 << " ( " << setw(40) << dl.dli_fname
+					 << " ):  " << sym
+					 << endl << flush;
 		}
 		else
 		{
-			// couldn't parse the line? print the whole line.
-			TRACELOG << setw(40) << symbollist[i] << endl;
+			TRACELOG << setw(30) << symbollist[i] << endl << flush;
 		}
+
+		if( ret )
+			std::free(ret);
 	}
 
 	std::free(symbollist);
@@ -239,15 +215,9 @@ bool gdb_print_trace()
 	char pid_buf[30];
 	sprintf(pid_buf, "%d", getpid());
 	char name_buf[512];
-	name_buf[readlink("/proc/self/exe", name_buf, 511)]=0;
+	name_buf[readlink("/proc/self/exe", name_buf, 511)] = 0;
 
-	// Чтобы перенаправить вывод в свой log, делаем pipe
-	int cp[2]; /* Child to parent pipe */
-	if( pipe(cp) < 0)
-	{
-		perror("Can't make pipe");
-		return false;
-	}
+	TRACELOG << "stack trace: for " << name_buf << " pid=" << pid_buf << endl;
 
 	int child_pid = fork();
 
@@ -257,18 +227,13 @@ bool gdb_print_trace()
 		return false;
 	}
 
-	if (!child_pid) {
-
-		close(cp[0]);
-		close( fileno(stdout) );
-		dup2(cp[1], fileno(stdout));
-		close( fileno(stderr) );
-		dup2(fileno(stdout), fileno(stderr));
-		TRACELOG << "stack trace for " << name_buf << " pid=" << pid_buf << endl;
+	if( child_pid == 0 ) // CHILD
+	{
+		msleep(300); // пауза чтобы родитель успел подготовиться..
+		dup2(2, 1); // redirect output to stderr
 
 		if( g_act && !g_act->getAbortScript().empty() )
 		{
-			TRACELOG << "run abort script " << g_act->getAbortScript() << endl;
 			execlp(g_act->getAbortScript().c_str(), g_act->getAbortScript().c_str(), name_buf, pid_buf, NULL);
 		}
 		else
@@ -278,32 +243,48 @@ bool gdb_print_trace()
 			execlp("gdb", "gdb", "--batch", "-n", "-ex", "thread apply all bt", name_buf, pid_buf, NULL);
 		}
 
-		//abort(); /* If gdb failed to start */
+		// abort(); /* If gdb failed to start */
 		return false;
 	}
-	else
+	else // PARENT
 	{
-		close(cp[1]);
-		char buf[5000];
-		while( true )
+		if( g_act && !g_act->getAbortScript().empty() )
 		{
-			ssize_t r = ::read(cp[0], &buf, sizeof(buf) - 1 );
-
-			if( r > 0 )
-			{
-				buf[r] = '\0';
-				TRACELOG << buf;
-				continue;
-			}
-
-			break;
+			TRACELOG << "stack trace: run script " << g_act->getAbortScript() << endl;
 		}
 
-		waitpid(child_pid,NULL,0);
+		g_stacktrace_proc_pid = child_pid;
+		g_trace_done = false;
+		std::thread t(on_stacktrace_timeout); // запускаем поток "защищающий" от зависания процесса создания stack trace
+
+		waitpid(child_pid, NULL, 0);
+
+		g_trace_done = true;
+		g_trace_doneevent.notify_all();
+		t.join();
 	}
 
 	TRACELOG << "-----------------------------------------" << endl << flush;
 	return true;
+}
+// ------------------------------------------------------------------------------------------
+static void on_stacktrace_timeout()
+{
+	ulogsys << "****** STACK TRACE guard thread start (for pid=" << g_stacktrace_proc_pid << ") ******" << endl << flush;
+	std::unique_lock<std::mutex> lk(g_trace_donemutex);
+
+	g_trace_doneevent.wait_for(lk, std::chrono::milliseconds(KILL_TIMEOUT_SEC * 1000), []()
+	{
+		return (g_trace_done == true);
+	} );
+
+	if( !g_trace_done )
+	{
+		ulogsys << "****** STACK TRACE TIMEOUT.. (kill process) *******" << endl << flush;
+		kill(g_stacktrace_proc_pid, SIGKILL);
+	}
+	else
+		ulogsys << "****** STACK TRACE guard thread finish ******" << endl << flush;
 }
 // ------------------------------------------------------------------------------------------
 static void activator_terminate( int signo )
@@ -357,21 +338,21 @@ void finished_thread()
 	g_finished = true;
 
 	std::unique_lock<std::mutex> lkw(g_workmutex);
-	g_finievent.wait_for(lkw, std::chrono::milliseconds(TERMINATE_TIMEOUT * 1000), []()
+	g_finievent.wait_for(lkw, std::chrono::milliseconds(TERMINATE_TIMEOUT_SEC * 1000), []()
 	{
 		return (g_work_stopped == true);
 	} );
 	ulogsys << "****** FINISHED END ****" << endl << flush;
 }
 // ------------------------------------------------------------------------------------------
-void kill_thread()
+void on_finish_timeout()
 {
 	std::unique_lock<std::mutex> lk(g_donemutex);
 
 	if( g_done )
 		return;
 
-	g_doneevent.wait_for(lk, std::chrono::milliseconds(KILL_TIMEOUT * 1000), []()
+	g_doneevent.wait_for(lk, std::chrono::milliseconds(KILL_TIMEOUT_SEC * 1000), []()
 	{
 		return (g_done == true);
 	} );
@@ -411,7 +392,7 @@ void terminate_thread()
 	{
 		std::unique_lock<std::mutex> lk(g_donemutex);
 		g_done = false;
-		g_kill_thread = make_shared<std::thread>(kill_thread);
+		g_kill_thread = make_shared<std::thread>(on_finish_timeout);
 	}
 
 	if( g_act )
@@ -542,7 +523,7 @@ void UniSetActivator::init()
 
 	_noUseGdbForStackTrace = ( findArgParam("--uniset-no-use-gdb-for-stacktrace", conf->getArgc(), conf->getArgv()) != -1 );
 
-	abortScript = conf->getArgParam("--uniset-abort-script","");
+	abortScript = conf->getArgParam("--uniset-abort-script", "");
 
 	orb = conf->getORB();
 	CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
@@ -717,11 +698,11 @@ void UniSetActivator::work()
 	try
 	{
 		if( orbthr )
-			thpid = orbthr->getTID();
+			thid = orbthr->getTID();
 		else
-			thpid = getpid();
+			thid = getpid();
 
-		g_term_thread = make_shared<std::thread>(terminate_thread );
+		g_term_thread = make_shared<std::thread>(terminate_thread);
 		omniORB::setMainThread();
 		orb->run();
 	}
@@ -819,14 +800,16 @@ void UniSetActivator::set_signals(bool ask)
 	sigemptyset(&act.sa_mask);
 	sigaddset(&act.sa_mask, SIGSEGV);
 	act.sa_flags = 0;
-	act.sa_flags |= SA_RESTART;
+	//	act.sa_flags |= SA_RESTART;
 	act.sa_flags |= SA_RESETHAND;
 
+#if 1
 	g_sigseg_stack.ss_sp = g_stack_body;
 	g_sigseg_stack.ss_flags = SS_ONSTACK;
 	g_sigseg_stack.ss_size = sizeof(g_stack_body);
 	assert(!sigaltstack(&g_sigseg_stack, nullptr));
 	act.sa_flags |= SA_ONSTACK;
+#endif
 
 	if(ask)
 		act.sa_handler = activator_terminate_with_calltrace;

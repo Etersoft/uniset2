@@ -45,7 +45,7 @@ class ModbusTCPSession:
 
 		void connectFinalSession( FinalSlot sl );
 
-		inline std::string getClientAddress()
+		inline std::string getClientAddress() const
 		{
 			return caddr;
 		}
@@ -55,7 +55,7 @@ class ModbusTCPSession:
 		// запуск обработки входящих запросов
 		void run( ev::loop_ref& loop );
 
-		virtual bool isActive() override;
+		virtual bool isActive() const override;
 
 		void iowait( timeout_t msec );
 

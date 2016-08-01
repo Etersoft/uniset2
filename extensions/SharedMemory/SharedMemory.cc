@@ -984,6 +984,7 @@ UniSetTypes::SimpleInfo* SharedMemory::getInfo( CORBA::Long userparam )
 
 	inf << i->info << endl;
 	inf << vmon.pretty_str() << endl;
+
 	if( logserv )
 		inf << logserv->getShortInfo() << endl;
 	else

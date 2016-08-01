@@ -137,7 +137,7 @@ timeout_t LT_Object::getTimeInterval( TimerId timerid )
 	return 0;
 }
 // ------------------------------------------------------------------------------------------
-timeout_t LT_Object::getTimeLeft(TimerId timerid)
+timeout_t LT_Object::getTimeLeft( TimerId timerid )
 {
 	// lock
 	uniset_rwmutex_rlock lock(lstMutex);

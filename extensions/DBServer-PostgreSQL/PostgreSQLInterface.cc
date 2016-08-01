@@ -98,11 +98,12 @@ bool PostgreSQLInterface::copy( const std::string& tblname, const std::list<std:
 	try
 	{
 		work w( *(db.get()) );
-		tablewriter t(w,tblname,cols.begin(),cols.end());
+		tablewriter t(w, tblname, cols.begin(), cols.end());
 
 		t.reserve(data.size()); // size() не дорогая операция для list?
-		for( const auto& d: data )
-			t.push_back(d.begin(),d.end());
+
+		for( const auto& d : data )
+			t.push_back(d.begin(), d.end());
 
 		t.complete();
 		w.commit();

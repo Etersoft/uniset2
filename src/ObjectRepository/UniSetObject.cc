@@ -130,6 +130,7 @@ void UniSetObject::initObject()
 	auto conf = uniset_conf();
 
 	int sz = conf->getArgPInt("--uniset-object-size-message-queue", conf->getField("SizeOfMessageQueue"), 1000);
+
 	if( sz > 0 )
 		setMaxSizeOfMessageQueue(sz);
 
@@ -187,6 +188,7 @@ VoidMessagePtr UniSetObject::receiveMessage()
 VoidMessagePtr UniSetObject::waitMessage( timeout_t timeMS )
 {
 	auto m = receiveMessage();
+
 	if( m )
 		return m;
 
@@ -323,6 +325,7 @@ void UniSetObject::setThreadPriority( int p )
 void UniSetObject::push( const TransportMessage& tm )
 {
 	auto vm = make_shared<VoidMessage>(tm);
+
 	if( vm->priority == Message::Medium )
 		mqueueMedium.push(vm);
 	else if( vm->priority == Message::High )
@@ -556,6 +559,7 @@ void UniSetObject::callback()
 	try
 	{
 		auto m = waitMessage(sleepTime);
+
 		if( m )
 			processingMessage(m.get());
 

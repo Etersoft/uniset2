@@ -54,7 +54,7 @@ namespace VTypes
 		public:
 
 			// ------------------------------------------
-			static const int f2Size = 2;
+			static const size_t f2Size = 2;
 			/*! тип хранения в памяти */
 			typedef union
 			{
@@ -72,16 +72,16 @@ namespace VTypes
 			{
 				raw.val = f;
 			}
-			F2( const ModbusRTU::ModbusData* data, int size )
+			F2( const ModbusRTU::ModbusData* data, size_t size )
 			{
-				for( int i = 0; i < wsize() && i < size; i++ )
+				for( size_t i = 0; i < wsize() && i < size; i++ )
 					raw.v[i] = data[i];
 			}
 
 			~F2() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static int wsize()
+			static size_t wsize()
 			{
 				return f2Size;
 			}
@@ -121,7 +121,7 @@ namespace VTypes
 				raw_backorder = raw;
 				std::swap(raw_backorder.v[0], raw_backorder.v[1]);
 			}
-			F2r( const ModbusRTU::ModbusData* data, int size ): F2(data, size)
+			F2r( const ModbusRTU::ModbusData* data, size_t size ): F2(data, size)
 			{
 				// принимаем в обратном порядке.. поэтому переворачиваем raw
 				raw_backorder = raw;
@@ -137,7 +137,7 @@ namespace VTypes
 	{
 		public:
 			// ------------------------------------------
-			static const int f4Size = 4;
+			static const size_t f4Size = 4;
 			/*! тип хранения в памяти */
 			typedef union
 			{
@@ -155,16 +155,16 @@ namespace VTypes
 			{
 				raw.val = f;
 			}
-			F4( const ModbusRTU::ModbusData* data, int size )
+			F4( const ModbusRTU::ModbusData* data, size_t size )
 			{
-				for( int i = 0; i < wsize() && i < size; i++ )
+				for( size_t i = 0; i < wsize() && i < size; i++ )
 					raw.v[i] = data[i];
 			}
 
 			~F4() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static int wsize()
+			static size_t wsize()
 			{
 				return f4Size;
 			}
@@ -190,7 +190,7 @@ namespace VTypes
 	{
 		public:
 
-			static const int bsize = 2;
+			static const size_t bsize = 2;
 
 			// ------------------------------------------
 			/*! тип хранения в памяти */
@@ -224,7 +224,7 @@ namespace VTypes
 			~Byte() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static int wsize()
+			static size_t wsize()
 			{
 				return 1;
 			}
@@ -272,7 +272,7 @@ namespace VTypes
 			~Unsigned() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static int wsize()
+			static size_t wsize()
 			{
 				return 1;
 			}
@@ -311,7 +311,7 @@ namespace VTypes
 			~Signed() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static int wsize()
+			static size_t wsize()
 			{
 				return 1;
 			}
@@ -334,7 +334,7 @@ namespace VTypes
 		public:
 
 			// ------------------------------------------
-			static const int i2Size = 2;
+			static const size_t i2Size = 2;
 			/*! тип хранения в памяти */
 			typedef union
 			{
@@ -352,16 +352,16 @@ namespace VTypes
 			{
 				raw.val = v;
 			}
-			I2( const ModbusRTU::ModbusData* data, int size )
+			I2( const ModbusRTU::ModbusData* data, size_t size )
 			{
-				for( int i = 0; i < wsize() && i < size; i++ )
+				for( size_t i = 0; i < wsize() && i < size; i++ )
 					raw.v[i] = data[i];
 			}
 
 			~I2() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static int wsize()
+			static size_t wsize()
 			{
 				return i2Size;
 			}
@@ -390,7 +390,7 @@ namespace VTypes
 				raw_backorder = raw;
 				std::swap(raw_backorder.v[0], raw_backorder.v[1]);
 			}
-			I2r( const ModbusRTU::ModbusData* data, int size ): I2(data, size)
+			I2r( const ModbusRTU::ModbusData* data, size_t size ): I2(data, size)
 			{
 				// принимаем в обратном порядке.. поэтому переворачиваем raw
 				raw_backorder = raw;
@@ -407,7 +407,7 @@ namespace VTypes
 		public:
 
 			// ------------------------------------------
-			static const int u2Size = 2;
+			static const size_t u2Size = 2;
 			/*! тип хранения в памяти */
 			typedef union
 			{
@@ -425,16 +425,16 @@ namespace VTypes
 			{
 				raw.val = v;
 			}
-			U2( const ModbusRTU::ModbusData* data, int size )
+			U2( const ModbusRTU::ModbusData* data, size_t size )
 			{
-				for( int i = 0; i < wsize() && i < size; i++ )
+				for( size_t i = 0; i < wsize() && i < size; i++ )
 					raw.v[i] = data[i];
 			}
 
 			~U2() {}
 			// ------------------------------------------
 			/*! размер в словах */
-			static int wsize()
+			static size_t wsize()
 			{
 				return u2Size;
 			}
@@ -463,7 +463,7 @@ namespace VTypes
 				raw_backorder = raw;
 				std::swap(raw_backorder.v[0], raw_backorder.v[1]);
 			}
-			U2r( const ModbusRTU::ModbusData* data, int size ): U2(data, size)
+			U2r( const ModbusRTU::ModbusData* data, size_t size ): U2(data, size)
 			{
 				// принимаем в обратном порядке.. поэтому переворачиваем raw
 				raw_backorder = raw;

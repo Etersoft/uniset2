@@ -70,14 +70,14 @@ class MQAtomic
 		 */
 		VoidMessagePtr top();
 
-		size_t size();
-		bool empty();
+		size_t size() const;
+		bool empty() const;
 
 		// ----- Настройки  -----
 		// неявно подразумевается, что всё настривается до первого использования
 		// ----------------------
 		void setMaxSizeOfMessageQueue( size_t s );
-		size_t getMaxSizeOfMessageQueue();
+		size_t getMaxSizeOfMessageQueue() const;
 
 		/*! Стратегия при переполнении */
 		enum LostStrategy

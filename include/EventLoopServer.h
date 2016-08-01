@@ -18,7 +18,7 @@ class EventLoopServer
 		EventLoopServer();
 		virtual ~EventLoopServer();
 
-		bool evIsActive();
+		bool evIsActive() const;
 
 	protected:
 		// действия при завершении

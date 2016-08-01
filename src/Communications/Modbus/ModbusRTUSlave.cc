@@ -139,7 +139,7 @@ void ModbusRTUSlave::terminate()
 	catch(...) {}
 }
 // -------------------------------------------------------------------------
-bool ModbusRTUSlave::isActive()
+bool ModbusRTUSlave::isActive() const
 {
 	return false;
 }
@@ -154,7 +154,7 @@ mbErrCode ModbusRTUSlave::realReceive(const std::unordered_set<ModbusAddr>& vmba
 		return erTimeOut;
 	}
 
-	std::lock_guard<std::timed_mutex> lk(recvMutex,std::adopt_lock);
+	std::lock_guard<std::timed_mutex> lk(recvMutex, std::adopt_lock);
 
 	ModbusMessage buf;
 	mbErrCode res = erBadReplyNodeAddress;

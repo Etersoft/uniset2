@@ -150,12 +150,11 @@ class ModbusClient
 		void initLog( std::shared_ptr<UniSetTypes::Configuration> conf, const std::string& name, const std::string& logfile = "" );
 		void setLog( std::shared_ptr<DebugStream> dlog );
 
-
 		inline void setCRCNoCheckit( bool set )
 		{
 			crcNoCheckit = set;
 		}
-		inline bool isCRCNoCheckit()
+		inline bool isCRCNoCheckit() const
 		{
 			return crcNoCheckit;
 		}

@@ -41,14 +41,13 @@ class LogSession
 
 		// сигнал о приходе команды: std::string func( LogSession*, command, logname );
 		// \return какую-то информацию, которая будет послана client-у. Если return.empty(), то ничего послано не будет.
-		typedef sigc::signal<std::string,LogSession*,LogServerTypes::Command, const std::string& > LogSessionCommand_Signal;
+		typedef sigc::signal<std::string, LogSession*, LogServerTypes::Command, const std::string& > LogSessionCommand_Signal;
 		LogSessionCommand_Signal signal_logsession_command();
 
-		inline void cancel()
-		{
-			cancelled = true;
-		}
-		inline std::string getClientAddress()
+		// прервать работу
+		void cancel();
+
+		inline std::string getClientAddress() const
 		{
 			return caddr;
 		}
@@ -68,17 +67,13 @@ class LogSession
 
 		//! Установить размер буфера для сообщений (количество записей. Не размер в байтах!!)
 		void setMaxBufSize( size_t num );
-
-		inline size_t getMaxBufSize()
-		{
-			return maxRecordsNum;
-		}
+		size_t getMaxBufSize() const;
 
 		// запуск обработки входящих запросов
 		void run( const ev::loop_ref& loop );
 		void terminate();
 
-		bool isAcive();
+		bool isAcive() const;
 
 		std::string getShortInfo();
 

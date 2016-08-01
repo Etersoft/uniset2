@@ -43,7 +43,7 @@ ObjectIndex_idXML::~ObjectIndex_idXML()
 {
 }
 // -----------------------------------------------------------------------------------------
-ObjectId ObjectIndex_idXML::getIdByName( const string& name )
+ObjectId ObjectIndex_idXML::getIdByName( const string& name ) const
 {
 	auto it = mok.find(name);
 
@@ -53,7 +53,7 @@ ObjectId ObjectIndex_idXML::getIdByName( const string& name )
 	return DefaultObjectId;
 }
 // -----------------------------------------------------------------------------------------
-string ObjectIndex_idXML::getMapName( const ObjectId id )
+string ObjectIndex_idXML::getMapName( const ObjectId id ) const
 {
 	auto it = omap.find(id);
 
@@ -63,7 +63,7 @@ string ObjectIndex_idXML::getMapName( const ObjectId id )
 	return "";
 }
 // -----------------------------------------------------------------------------------------
-string ObjectIndex_idXML::getTextName( const ObjectId id )
+string ObjectIndex_idXML::getTextName( const ObjectId id ) const
 {
 	auto it = omap.find(id);
 
@@ -78,7 +78,7 @@ std::ostream& operator<<(std::ostream& os, ObjectIndex_idXML& oi )
 	return oi.printMap(os);
 }
 // -----------------------------------------------------------------------------------------
-std::ostream& ObjectIndex_idXML::printMap( std::ostream& os )
+std::ostream& ObjectIndex_idXML::printMap( std::ostream& os ) const
 {
 	os << "size: " << omap.size() << endl;
 
@@ -235,7 +235,7 @@ void ObjectIndex_idXML::read_nodes( const std::shared_ptr<UniXML>& xml, const st
 	}
 }
 // ------------------------------------------------------------------------------------------
-const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const ObjectId id )
+const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const ObjectId id ) const
 {
 	auto it = omap.find(id);
 
@@ -245,7 +245,7 @@ const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const ObjectId id )
 	return NULL;
 }
 // ------------------------------------------------------------------------------------------
-const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const std::string& name )
+const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const std::string& name ) const
 {
 	auto it = mok.find(name);
 

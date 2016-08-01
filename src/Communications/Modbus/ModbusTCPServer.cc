@@ -83,7 +83,7 @@ void ModbusTCPServer::run( const std::unordered_set<ModbusAddr>& _vmbaddr, bool 
 	evrun(thread);
 }
 // -------------------------------------------------------------------------
-bool ModbusTCPServer::isActive()
+bool ModbusTCPServer::isActive() const
 {
 	return evIsActive();
 }

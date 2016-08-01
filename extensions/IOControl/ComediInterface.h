@@ -62,8 +62,7 @@ class ComediInterface
 		static std::string type2str( SubdevType t );
 		static SubdevType str2type( const std::string& s );
 
-		void configureSubdev( int subdev, SubdevType type )    throw(UniSetTypes::Exception);
-
+		void configureSubdev( int subdev, SubdevType type ) throw(UniSetTypes::Exception);
 
 		void configureChannel( int subdev, int channel, ChannelType type, int range = 0, int aref = 0 )
 		throw(UniSetTypes::Exception);

@@ -42,23 +42,23 @@ namespace UniSetTypes
 			ObjectIndex_Array(const ObjectInfo* objectInfo);
 			virtual ~ObjectIndex_Array();
 
-			virtual const ObjectInfo* getObjectInfo( const ObjectId ) override;
-			virtual const ObjectInfo* getObjectInfo( const std::string& name ) override;
-			virtual ObjectId getIdByName( const std::string& name ) override;
-			virtual std::string getMapName( const ObjectId id ) override;
-			virtual std::string getTextName( const ObjectId id ) override;
+			virtual const ObjectInfo* getObjectInfo( const ObjectId ) const override;
+			virtual const ObjectInfo* getObjectInfo( const std::string& name ) const override;
+			virtual ObjectId getIdByName( const std::string& name ) const override;
+			virtual std::string getMapName( const ObjectId id ) const override;
+			virtual std::string getTextName( const ObjectId id ) const override;
 
-			virtual std::ostream& printMap(std::ostream& os) override;
+			virtual std::ostream& printMap(std::ostream& os) const override;
 			friend std::ostream& operator<<(std::ostream& os, ObjectIndex_Array& oi );
 
 		private:
 
-			int numOfObject;
+			size_t numOfObject;
 			typedef std::unordered_map<std::string, ObjectId> MapObjectKey;
 			MapObjectKey::iterator MapObjectKeyIterator;
 			MapObjectKey mok;
 			const ObjectInfo* objectInfo;
-			int maxId;
+			size_t maxId;
 	};
 	// -----------------------------------------------------------------------------------------
 }    // end of namespace

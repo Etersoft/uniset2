@@ -160,7 +160,7 @@ class LogServer:
 		// (они необходимы для восстановления настроек после завершения всех (!) сессий)
 		// т.к. shared_ptr-ов может быть много, то в качестве ключа используем указатель на "реальный объект"(внутри shared_ptr)
 		// но только для этого(!), пользоваться этим указателем ни в коем случае нельзя (и нужно проверять shared_ptr на существование)
-		std::unordered_map< DebugStream*,Debug::type > defaultLogLevels;
+		std::unordered_map< DebugStream*, Debug::type > defaultLogLevels;
 
 		std::string myname = { "LogServer" };
 		std::string addr = { "" };

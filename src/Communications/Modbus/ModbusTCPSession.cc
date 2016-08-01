@@ -61,8 +61,10 @@ ModbusTCPSession::ModbusTCPSession( int sfd, const std::unordered_set<ModbusAddr
 		{
 			ostringstream err;
 			err << "(ModbusTCPSession): unknonwn ip(0.0.0.0) client disconnected?!";
+
 			if( dlog->is_crit() )
 				dlog->crit() << err.str() << endl;
+
 			sock.reset();
 			throw SystemError(err.str());
 		}
@@ -76,6 +78,7 @@ ModbusTCPSession::ModbusTCPSession( int sfd, const std::unordered_set<ModbusAddr
 	{
 		ostringstream err;
 		err << ex.what();
+
 		if( dlog->is_crit() )
 			dlog->crit() << "(ModbusTCPSession): err: " << err.str() << endl;
 
@@ -123,7 +126,7 @@ void ModbusTCPSession::run( ev::loop_ref& loop )
 	ioTimeout.start(sessTimeout);
 }
 // -------------------------------------------------------------------------
-bool ModbusTCPSession::isActive()
+bool ModbusTCPSession::isActive() const
 {
 	return io.is_active();
 }
@@ -381,7 +384,7 @@ ModbusRTU::mbErrCode ModbusTCPSession::post_send_request( ModbusRTU::ModbusMessa
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPSession::make_adu_header( ModbusMessage& req )
 {
-	req.makeHead(curQueryHeader.tID,isCRCNoCheckit(),curQueryHeader.pID);
+	req.makeHead(curQueryHeader.tID, isCRCNoCheckit(), curQueryHeader.pID);
 	return erNoError;
 }
 // -------------------------------------------------------------------------

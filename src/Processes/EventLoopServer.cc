@@ -32,7 +32,7 @@ void EventLoopServer::evrun( bool thread )
 		thr = make_shared<std::thread>( [ = ] { defaultLoop(); } );
 }
 // ---------------------------------------------------------------------------
-bool EventLoopServer::evIsActive()
+bool EventLoopServer::evIsActive() const
 {
 	return isrunning;
 }

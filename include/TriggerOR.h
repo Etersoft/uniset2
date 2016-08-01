@@ -81,12 +81,12 @@ class TriggerOR
 		TriggerOR(Caller* r, Action a);
 		~TriggerOR();
 
-		inline bool state()
+		inline bool state() const
 		{
 			return out;
 		}
 
-		bool getState(InputType in);
+		bool getState(InputType in) const;
 		bool commit(InputType in, bool state);
 
 		void add(InputType in, bool state);

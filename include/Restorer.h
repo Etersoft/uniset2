@@ -73,7 +73,6 @@ class Restorer_XML
 		    it     - интератор(указатель) на текущий считываемый xml-узел (<consumer>)
 		    sec    - указатель на текущий узел сообщения (<item>)
 		*/
-
 		void setReadConsumerItem( ReaderSlot sl );
 
 

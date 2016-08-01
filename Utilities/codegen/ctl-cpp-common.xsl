@@ -237,13 +237,13 @@
            \param id           - идентификатор датчика
            \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
         */
-        std::string str( UniSetTypes::ObjectId id, bool showLinkName=true );
+        std::string str( UniSetTypes::ObjectId id, bool showLinkName=true ) const;
         
         /*! Вывод значения входа/выхода в формате: in_xxx(SensorName)=val 
            \param id           - идентификатор датчика
            \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
         */
-        std::string strval( UniSetTypes::ObjectId id, bool showLinkName=true );        
+        std::string strval( UniSetTypes::ObjectId id, bool showLinkName=true ) const;        
         
         /*! Вывод состояния внутренних переменных */
         inline std::string dumpVars(){ return std::move(vmon.pretty_str()); }
@@ -1184,7 +1184,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 	return std::move(s.str());
 }
 // ----------------------------------------------------------------------------
-std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( UniSetTypes::ObjectId id, bool showLinkName )
+std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( UniSetTypes::ObjectId id, bool showLinkName ) const
 {
 	ostringstream s;
 	<xsl:for-each select="//smap/item">
@@ -1198,7 +1198,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( UniSetTypes::ObjectId 
 	return "";
 }
 // ----------------------------------------------------------------------------
-std::string  <xsl:value-of select="$CLASSNAME"/>_SK::strval( UniSetTypes::ObjectId id, bool showLinkName )
+std::string  <xsl:value-of select="$CLASSNAME"/>_SK::strval( UniSetTypes::ObjectId id, bool showLinkName ) const
 {
 	ostringstream s;
 	<xsl:for-each select="//smap/item">
@@ -1511,7 +1511,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 	return std::move(s.str());
 }
 // ----------------------------------------------------------------------------
-std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( UniSetTypes::ObjectId id, bool showLinkName )
+std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( UniSetTypes::ObjectId id, bool showLinkName ) const
 {
 	ostringstream s;
 	<xsl:for-each select="//sensors/item/consumers/consumer">
@@ -1529,7 +1529,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( UniSetTypes::ObjectId 
 	return "";
 }
 // ----------------------------------------------------------------------------
-std::string  <xsl:value-of select="$CLASSNAME"/>_SK::strval( UniSetTypes::ObjectId id, bool showLinkName )
+std::string <xsl:value-of select="$CLASSNAME"/>_SK::strval( UniSetTypes::ObjectId id, bool showLinkName ) const
 {
 	ostringstream s;
 	<xsl:for-each select="//sensors/item/consumers/consumer">

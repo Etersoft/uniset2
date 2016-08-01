@@ -36,17 +36,17 @@ namespace UniSetTypes
 		public ObjectIndex
 	{
 		public:
-			ObjectIndex_XML(const std::string& xmlfile, int minSize = 1000 );
-			ObjectIndex_XML( const std::shared_ptr<UniXML>& xml, int minSize = 1000 );
+			ObjectIndex_XML(const std::string& xmlfile, size_t minSize = 1000 );
+			ObjectIndex_XML( const std::shared_ptr<UniXML>& xml, size_t minSize = 1000 );
 			virtual ~ObjectIndex_XML();
 
-			virtual const UniSetTypes::ObjectInfo* getObjectInfo( const ObjectId ) override;
-			virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string& name ) override;
-			virtual ObjectId getIdByName( const std::string& name ) override;
-			virtual std::string getMapName( const ObjectId id ) override;
-			virtual std::string getTextName( const ObjectId id ) override;
+			virtual const UniSetTypes::ObjectInfo* getObjectInfo( const ObjectId ) const override;
+			virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string& name ) const override;
+			virtual ObjectId getIdByName( const std::string& name ) const override;
+			virtual std::string getMapName( const ObjectId id ) const override;
+			virtual std::string getTextName( const ObjectId id ) const override;
 
-			virtual std::ostream& printMap(std::ostream& os) override;
+			virtual std::ostream& printMap(std::ostream& os) const override;
 			friend std::ostream& operator<<(std::ostream& os, ObjectIndex_XML& oi );
 
 		protected:

@@ -114,7 +114,7 @@ class DBServer_PostgreSQL:
 		std::mutex mqbuf;
 
 		// writeBuffer
-		const std::list<std::string> tblcols = { "date", "time","time_usec","sensor_id","value","node" };
+		const std::list<std::string> tblcols = { "date", "time", "time_usec", "sensor_id", "value", "node" };
 
 		typedef std::vector<PostgreSQLInterface::Record> InsertBuffer;
 		InsertBuffer ibuf;
