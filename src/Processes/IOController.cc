@@ -445,7 +445,10 @@ void IOController::logging( UniSetTypes::SensorMessage& sm )
 
 		// значит на этом узле нет DBServer-а
 		if( dbID == UniSetTypes::DefaultObjectId )
+		{
+			isPingDBServer = false;
 			return;
+		}
 
 		sm.consumer = dbID;
 		TransportMessage tm(std::move(sm.transport_msg()));

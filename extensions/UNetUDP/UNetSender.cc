@@ -286,7 +286,7 @@ void UNetSender::real_send( UniSetUDP::UDPMessage& mypack )
 #ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
 	mypack.num = packetnum++;
 #else
-	unsigned short crc = mypack.getDataCRC();
+	uint16_t crc = mypack.getDataCRC();
 
 	if( crc != lastcrc )
 	{
