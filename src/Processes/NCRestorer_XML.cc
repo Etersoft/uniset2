@@ -249,8 +249,10 @@ bool NCRestorer_XML::getBaseInfo( const std::shared_ptr<UniXML>& xml, xmlNode* i
 
 	if( sid == UniSetTypes::DefaultObjectId )
 	{
-		ucrit << "(getBaseInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР датчика --> " << sname << endl;
-		return false;
+		ostringstream err;
+		err << "(getBaseInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР датчика --> " << sname;
+		ucrit << err.str() << endl;
+		throw SystemError(err.str());
 	}
 
 	ObjectId snode = uniset_conf()->getLocalNode();
@@ -291,9 +293,11 @@ bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode*
 
 	if( inf->type == UniversalIO::UnknownIOType )
 	{
-		ucrit << "(NCRestorer_XML:getSensorInfo): unknown iotype=" << xml->getProp(it, "iotype")
-			  << " for  " << xml->getProp(it, "name") << endl;
-		return false;
+		ostringstream err;
+		err << "(NCRestorer_XML:getSensorInfo): unknown iotype=" << xml->getProp(it, "iotype")
+			  << " for  " << xml->getProp(it, "name");
+		ucrit << err.str() << endl;
+		throw SystemError(err.str());
 	}
 
 	// калибровка
@@ -328,11 +332,13 @@ bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode*
 
 		if( inf->d_si.id == UniSetTypes::DefaultObjectId )
 		{
-			ucrit << "(NCRestorer_XML:getSensorInfo): sensor='"
+			ostringstream err;
+			err << "(NCRestorer_XML:getSensorInfo): sensor='"
 				  << xml->getProp(it, "name") << "' err: "
-				  << " Unknown SensorID for depend='"  << d_txt
-				  << endl;
-			return false;
+				  << " Unknown SensorID for depend='"  << d_txt;
+
+			ucrit << err.str() << endl;
+			throw SystemError(err.str());
 		}
 
 		inf->d_si.node = uniset_conf()->getLocalNode();
@@ -484,21 +490,28 @@ bool NCRestorer_XML::getThresholdInfo( const std::shared_ptr<UniXML>& xml, xmlNo
 
 		if( ti.sid == UniSetTypes::DefaultObjectId )
 		{
-			ucrit << "(NCRestorer_XML:getThresholdInfo): "
-				  << " Not found ID for " << sid_name << endl;
+			ostringstream err;
+			err << "(NCRestorer_XML:getThresholdInfo): "
+				  << " Not found ID for " << sid_name;
+
+			ucrit << err.str() << endl;
+			throw SystemError(err.str());
 		}
 		else
 		{
 			UniversalIO::IOType iotype = uniset_conf()->getIOType(ti.sid);
 
-			// Пока что IONotifyController поддерживает работу только с 'DI'.
-			if( iotype != UniversalIO::DI )
+			// Пока что IONotifyController поддерживает работу только с 'DI/DO'.
+			if( iotype != UniversalIO::DI && iotype != UniversalIO::DO )
 			{
-				ucrit << "(NCRestorer_XML:getThresholdInfo): "
-					  << " Bad iotype(" << iotype << ") for " << sid_name << ". iotype must be 'DI'!" << endl;
-				return false;
-			}
+				ostringstream err;
+				err << "(NCRestorer_XML:getThresholdInfo): "
+					  << " Bad iotype(" << iotype << ") for " << sid_name
+					  << ". iotype must be 'DI' or 'DO'.";
 
+				ucrit << err.str() << endl;
+				throw SystemError(err.str());
+			}
 		}
 	}
 
