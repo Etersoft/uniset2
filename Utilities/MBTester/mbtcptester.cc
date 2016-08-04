@@ -29,7 +29,6 @@ static struct option longopts[] =
 	{ "num-cycles", required_argument, 0, 'l' },
 	{ "sleep-msec", required_argument, 0, 's' },
 	{ "check", no_argument, 0, 'n' },
-
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -141,7 +140,6 @@ int main( int argc, char** argv )
 				case 'b':
 					if( cmd == cmdNOP )
 						cmd = cmdRead02;
-
 
 				case 'r':
 					if( cmd == cmdNOP )
@@ -428,10 +426,13 @@ int main( int argc, char** argv )
 
 						for( size_t i = 0; i < ret.count; i++ )
 						{
+							ModbusRTU::DataBits16 b(ret.data[i]);
+
 							cout << i << ": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i])
 								 << " ("
 								 << ModbusRTU::dat2str(ret.data[i])
 								 << ")"
+								 << b
 								 << endl;
 						}
 					}
@@ -456,10 +457,12 @@ int main( int argc, char** argv )
 
 						for( size_t i = 0; i < ret.count; i++ )
 						{
+							ModbusRTU::DataBits16 b(ret.data[i]);
 							cout << i << ": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i])
 								 << " ("
 								 << ModbusRTU::dat2str(ret.data[i])
 								 << ")"
+								 << b
 								 << endl;
 						}
 					}
