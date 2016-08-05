@@ -732,13 +732,13 @@ UniSetTypes::SimpleInfo* UniSetObject::getInfo( ::CORBA::Long userparam )
 		info << "откл.";
 
 	info << "\tcount=" << countMessages()
-		 << "\t medum: "
+		 << "\t medium: "
 		 << " maxMsg=" << mqueueMedium.getMaxQueueMessages()
 		 << " qFull(" << mqueueMedium.getMaxSizeOfMessageQueue() << ")=" << mqueueMedium.getCountOfLostMessages()
-		 << "\t    hi: "
+		 << "\t     hi: "
 		 << " maxMsg=" << mqueueHi.getMaxQueueMessages()
 		 << " qFull(" << mqueueHi.getMaxSizeOfMessageQueue() << ")=" << mqueueHi.getCountOfLostMessages()
-		 << "\t   low: "
+		 << "\t    low: "
 		 << " maxMsg=" << mqueueLow.getMaxQueueMessages()
 		 << " qFull(" << mqueueLow.getMaxSizeOfMessageQueue() << ")=" << mqueueLow.getCountOfLostMessages();
 
