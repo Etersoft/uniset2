@@ -140,6 +140,7 @@ static void run_test( size_t max, const std::string& host )
 	for( size_t i=0; i<max; i++ )
 	{
 		auto r = make_shared<UNetReceiver>(host,begPort+i,smiInstance());
+		r->setLockUpdate(true);
 		vrecv.emplace_back(r);
 	}
 

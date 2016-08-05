@@ -175,6 +175,7 @@ class UNetReceiver:
 		void updateEvent( ev::periodic& watcher, int revents );
 		void checkConnectionEvent( ev::periodic& watcher, int revents );
 		void forceUpdateEvent( ev::timer& watcher, int revents );
+		void statisticsEvent( ev::periodic& watcher, int revents );
 		virtual void evprepare( const ev::loop_ref& eloop ) override;
 		virtual void evfinish(const ev::loop_ref& eloop ) override;
 		virtual std::string wname() override
@@ -213,6 +214,10 @@ class UNetReceiver:
 		ev::periodic evUpdate;
 		ev::periodic evCheckConnection;
 		ev::timer evForceUpdate;
+		ev::periodic evStatistic;
+
+		size_t recvCount = { 0 };
+		size_t upCount = { 0 };
 
 		// делаем loop общим.. одним на всех!
 		static CommonEventLoop loop;
@@ -256,7 +261,6 @@ class UNetReceiver:
 
 		EventSlot slEvent;
 		Trigger trTimeout;
-		UniSetTypes::uniset_rwmutex tmMutex;
 
 		struct CacheItem
 		{
