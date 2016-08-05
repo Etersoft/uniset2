@@ -174,6 +174,7 @@ class UNetReceiver:
 		void readEvent( ev::io& watcher );
 		void updateEvent( ev::periodic& watcher, int revents );
 		void checkConnectionEvent( ev::periodic& watcher, int revents );
+		void forceUpdateEvent( ev::timer& watcher, int revents );
 		virtual void evprepare( const ev::loop_ref& eloop ) override;
 		virtual void evfinish(const ev::loop_ref& eloop ) override;
 		virtual std::string wname() override
@@ -211,15 +212,14 @@ class UNetReceiver:
 		ev::io evReceive;
 		ev::periodic evUpdate;
 		ev::periodic evCheckConnection;
+		ev::timer evForceUpdate;
 
 		// делаем loop общим.. одним на всех!
 		static CommonEventLoop loop;
 
 		double updateTime = { 0.01 };
 		double checkConnectionTime = { 10.0 }; // sec
-		std::mutex checkConnMutex;
 
-		UniSetTypes::uniset_rwmutex pollMutex;
 		PassiveTimer ptRecvTimeout;
 		PassiveTimer ptPrepare;
 		timeout_t recvTimeout = { 5000 }; // msec
@@ -239,7 +239,6 @@ class UNetReceiver:
 		PacketQueue qpack;    /*!< очередь принятых пакетов (отсортированных по возрастанию номера пакета) */
 		UniSetUDP::UDPMessage pack;        /*!< просто буфер для получения очередного сообщения */
 		UniSetUDP::UDPPacket r_buf;
-		UniSetTypes::uniset_rwmutex packMutex; /*!< mutex для работы с очередью */
 		size_t pnum = { 0 };    /*!< текущий номер обработанного сообщения, для проверки непрерывности последовательности пакетов */
 
 		/*! максимальная разница межд номерами пакетов, при которой считается, что счётчик пакетов
@@ -253,8 +252,7 @@ class UNetReceiver:
 
 		size_t maxProcessingCount = { 100 }; /*!< максимальное число обрабатываемых за один раз сообщений */
 
-		bool lockUpdate = { false }; /*!< флаг блокировки сохранения принятых данных в SM */
-		UniSetTypes::uniset_rwmutex lockMutex;
+		std::atomic_bool lockUpdate = { false }; /*!< флаг блокировки сохранения принятых данных в SM */
 
 		EventSlot slEvent;
 		Trigger trTimeout;

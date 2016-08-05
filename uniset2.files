@@ -223,6 +223,7 @@ extensions/UNetUDP/tests/test_unetudp.cc
 extensions/UNetUDP/tests/tests_individual_process.cc
 extensions/UNetUDP/tests/tests_with_sm.cc
 extensions/UNetUDP/tests/unetudp-test-configure.xml
+extensions/UNetUDP/tests/urecv_perf_test.cc
 extensions/UNetUDP/libUniSet2UNetUDP.pc.in
 extensions/UNetUDP/Makefile.am
 extensions/UNetUDP/test.xml

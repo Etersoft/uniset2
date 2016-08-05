@@ -76,6 +76,8 @@ UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t _port
 
 	if( !createConnection(nocheckConnection /* <-- это флаг throwEx */) )
 		evCheckConnection.set<UNetReceiver, &UNetReceiver::checkConnectionEvent>(this);
+
+	evForceUpdate.set<UNetReceiver, &UNetReceiver::forceUpdateEvent>(this);
 }
 // -----------------------------------------------------------------------------
 UNetReceiver::~UNetReceiver()
@@ -148,7 +150,6 @@ void UNetReceiver::setLostPacketsID( UniSetTypes::ObjectId id )
 // -----------------------------------------------------------------------------
 void UNetReceiver::setLockUpdate( bool st )
 {
-	uniset_rwmutex_wrlock l(lockMutex);
 	lockUpdate = st;
 
 	if( !st )
@@ -226,6 +227,8 @@ void UNetReceiver::start()
 // -----------------------------------------------------------------------------
 void UNetReceiver::evprepare( const ev::loop_ref& eloop )
 {
+	evForceUpdate.set(eloop);
+
 	if( !udp )
 	{
 		evCheckConnection.set(eloop);
@@ -245,12 +248,8 @@ void UNetReceiver::evfinish( const ev::loop_ref& eloop )
 {
 	activated = false;
 
-	{
-		std::lock_guard<std::mutex> l(checkConnMutex);
-
-		if( evCheckConnection.is_active() )
-			evCheckConnection.stop();
-	}
+	if( evCheckConnection.is_active() )
+		evCheckConnection.stop();
 
 	if( evReceive.is_active() )
 		evReceive.stop();
@@ -258,13 +257,26 @@ void UNetReceiver::evfinish( const ev::loop_ref& eloop )
 	if( evUpdate.is_active() )
 		evUpdate.stop();
 
+	if( evForceUpdate.is_active() )
+		evForceUpdate.stop();
+
 	//udp->disconnect();
 	udp = nullptr;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::forceUpdate()
 {
-	uniset_rwmutex_wrlock l(packMutex);
+	evForceUpdate.start(0, 0.001);
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::forceUpdateEvent( ev::timer& watcher, int revents )
+{
+	if( EV_ERROR & revents )
+	{
+		unetcrit << myname << "(forceUpdateEvent): EVENT ERROR.." << endl;
+		return;
+	}
+
 	pnum = 0; // сбрасываем запомненый номер последнего обработанного пакета
 	// и тем самым заставляем обновить данные в SM (см. update)
 }
@@ -281,9 +293,6 @@ void UNetReceiver::update()
 	while( k > 0 )
 	{
 		{
-			// lock qpack
-			uniset_rwmutex_wrlock l(packMutex);
-
 			if( qpack.empty() )
 				return;
 
@@ -374,12 +383,8 @@ void UNetReceiver::update()
 				}
 
 				// обновление данных в SM (блокировано)
-				{
-					uniset_rwmutex_rlock l(lockMutex);
-
-					if( lockUpdate )
-						continue;
-				}
+				if( lockUpdate )
+					continue;
 
 				shm->localSetValue(ii.ioit, id, val, shm->ID());
 			}
@@ -412,12 +417,8 @@ void UNetReceiver::update()
 				}
 
 				// обновление данных в SM (блокировано)
-				{
-					uniset_rwmutex_rlock l(lockMutex);
-
-					if( lockUpdate )
-						continue;
-				}
+				if( lockUpdate )
+					continue;
 
 				shm->localSetValue(ii.ioit, d.id, d.val, shm->ID());
 			}
@@ -554,8 +555,6 @@ void UNetReceiver::checkConnectionEvent( ev::periodic& tm, int revents )
 
 	unetinfo << myname << "(checkConnectionEvent): check connection event.." << endl;
 
-	std::lock_guard<std::mutex> l(checkConnMutex);
-
 	if( !createConnection(false) )
 		tm.again();
 }
@@ -640,9 +639,6 @@ bool UNetReceiver::receive()
 #endif
 
 	{
-		// lock qpack
-		uniset_rwmutex_wrlock l(packMutex);
-
 		if( !waitClean )
 		{
 			qpack.push(pack);

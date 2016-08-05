@@ -1,6 +1,6 @@
 if HAVE_TESTS
 
-noinst_PROGRAMS = tests-with-sm
+noinst_PROGRAMS = tests-with-sm urecv-perf-test
 
 tests_with_sm_SOURCES   = tests_with_sm.cc test_unetudp.cc
 tests_with_sm_LDADD     = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
@@ -10,6 +10,16 @@ tests_with_sm_LDADD     = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/exte
 tests_with_sm_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/UNetUDP \
 	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)  $(COMCPP_CFLAGS)
+
+urecv_perf_test_SOURCES   = urecv_perf_test.cc
+urecv_perf_test_LDADD     = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
+	$(top_builddir)/extensions/UNetUDP/libUniSet2UNetUDP.la \
+	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
+	$(SIGC_LIBS) $(COMCPP_LIBS)
+urecv_perf_test_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include \
+	-I$(top_builddir)/extensions/UNetUDP \
+	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)  $(COMCPP_CFLAGS)
+
 
 include $(top_builddir)/testsuite/testsuite-common.mk
 
