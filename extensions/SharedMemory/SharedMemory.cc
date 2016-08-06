@@ -588,10 +588,10 @@ void SharedMemory::addReadItem( Restorer_XML::ReaderSlot sl )
 	lstRSlot.push_back(sl);
 }
 // -----------------------------------------------------------------------------
-void SharedMemory::loggingInfo( SensorMessage& sm )
+void SharedMemory::logging( SensorMessage& sm )
 {
 	if( dblogging )
-		IONotifyController::loggingInfo(sm);
+		IONotifyController::logging(sm);
 }
 // -----------------------------------------------------------------------------
 void SharedMemory::buildHistoryList( xmlNode* cnode )

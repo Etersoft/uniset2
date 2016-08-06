@@ -111,6 +111,8 @@ class NCRestorer;
 
 \note Следует иметь ввиду, что для \b ЗАВИСИМОГО датчика функция setValue(..) действует как обычно и
 даже если он "заблокирован", значение в него можно сохранять. Оно "появиться" как только сниметься блокировка.
+
+\warning Для оптимизации поиска списка заказчиков для конкретного датчика используется поле any (void*) у USensorInfo!
 */
 //---------------------------------------------------------------------------
 /*! \class IONotifyController
@@ -152,12 +154,6 @@ class IONotifyController:
 		virtual UniSetTypes::IDSeq* askSensorsSeq(const UniSetTypes::IDSeq& lst,
 				const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd) override;
 
-		// --------------------------------------------
-
-		// функция для работы напрямую с указателем (оптимизация)
-		virtual void localSetValue( std::shared_ptr<USensorInfo>& usi,
-									UniSetTypes::ObjectId sid,
-									CORBA::Long value, UniSetTypes::ObjectId sup_id ) override;
 		// --------------------------------------------
 
 		/*! Информация о заказчике */
@@ -262,7 +258,7 @@ class IONotifyController:
 			UniSetTypes::uniset_rwmutex mut;
 
 			IOController_i::SensorInfo si = { UniSetTypes::DefaultObjectId, UniSetTypes::DefaultObjectId };
-			std::shared_ptr<USensorInfo> ait;
+			std::shared_ptr<USensorInfo> usi;
 			UniversalIO::IOType type = { UniversalIO::AI };
 			ThresholdExtList list;   /*!< список порогов по данному аналоговому датчику */
 		};
@@ -273,20 +269,17 @@ class IONotifyController:
 	protected:
 		IONotifyController();
 		virtual bool activateObject() override;
-		virtual void initItem( IOStateList::iterator& it, IOController* ic );
+		virtual void initItem(std::shared_ptr<USensorInfo>& usi, IOController* ic );
 
 		//! посылка информации об изменении состояния датчика
 		virtual void send( ConsumerListInfo& lst, UniSetTypes::SensorMessage& sm );
 
 		//! проверка срабатывания пороговых датчиков
-		virtual void checkThreshold( std::shared_ptr<USensorInfo>& usi, const UniSetTypes::ObjectId sid, bool send = true );
+		virtual void checkThreshold( std::shared_ptr<USensorInfo>& usi, bool send = true );
 		virtual void checkThreshold(IOController::IOStateList::iterator& li, const UniSetTypes::ObjectId sid, bool send_msg = true );
 
 		//! поиск информации о пороговом датчике
 		ThresholdExtList::iterator findThreshold( const UniSetTypes::ObjectId sid, const UniSetTypes::ThresholdId tid );
-
-		//! сохранение информации об изменении состояния датчика в базу
-		virtual void loggingInfo( UniSetTypes::SensorMessage& sm );
 
 		/*! сохранение списка заказчиков
 		    По умолчанию делает dump, если объявлен dumper.
@@ -303,7 +296,18 @@ class IONotifyController:
 
 		std::shared_ptr<NCRestorer> restorer;
 
-		void onChangeUndefinedState( std::shared_ptr<USensorInfo>& it, IOController* ic );
+		void onChangeUndefinedState( std::shared_ptr<USensorInfo>& usi, IOController* ic );
+
+		// функция для работы напрямую с указателем (оптимизация)
+		virtual void localSetValue( std::shared_ptr<USensorInfo>& usi,
+									CORBA::Long value, UniSetTypes::ObjectId sup_id ) override;
+
+		// идентификаторы данные в userdata (см. USensorInfo::userdata)
+		enum UserDataID
+		{
+			udataConsumerList = 0,
+			udataThresholdList = 1
+		};
 
 	private:
 		friend class NCRestorer;
@@ -321,8 +325,8 @@ class IONotifyController:
 		/*! удалить порог для датчика */
 		bool removeThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci);
 
-		AskMap askIOList; /*!< список потребителей по аналоговым датчикам */
-		AskThresholdMap askTMap; /*!< список порогов по аналоговым датчикам */
+		AskMap askIOList; /*!< список потребителей по  датчикам */
+		AskThresholdMap askTMap; /*!< список порогов по датчикам */
 
 		/*! замок для блокирования совместного доступа к cписку потребителей датчиков */
 		UniSetTypes::uniset_rwmutex askIOMutex;

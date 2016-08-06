@@ -119,8 +119,10 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, std::shared_ptr<IOCon
 
 	try
 	{
-		auto i =  ic->find(inf->si.id);
-		ic->askTMap[inf->si.id].ait = i->second;
+		auto i =  ic->myiofind(inf->si.id);
+		ic->askTMap[inf->si.id].usi = i->second;
+		if( i->second )
+			i->second->userdata[IONotifyController::udataThresholdList] = &(ic->askTMap[inf->si.id]);
 	}
 	catch(...) {}
 
@@ -145,7 +147,10 @@ NCRestorer::SInfo& NCRestorer::SInfo::operator=( const IOController_i::SensorIOI
 	this->undefined = inf.undefined;
 	this->blocked = inf.blocked;
 	this->dbignore = inf.dbignore;
-	this->any = 0;
+
+	for( size_t i=0; i<IOController::USensorInfo::MaxUserData; i++ )
+		this->userdata[i] = nullptr;
+
 	return *this;
 }
 // ------------------------------------------------------------------------------------------

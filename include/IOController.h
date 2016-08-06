@@ -122,6 +122,9 @@ class IOController:
 		ChangeUndefinedStateSignal signal_change_undefined_state( UniSetTypes::ObjectId sid );
 		ChangeUndefinedStateSignal signal_change_undefined_state();
 		// -----------------------------------------------------------------------------------------
+		// полнейшее нарушение икапсуляции
+		// но пока, это попытка оптимизировать работу с IOController через указатель.
+		// Т.е. работая с датчиками через итераторы..
 		inline IOStateList::iterator ioBegin()
 		{
 			return ioList.begin();
@@ -139,25 +142,24 @@ class IOController:
 			return ioList.size();
 		}
 
+	protected:
+
 		// доступ к элементам через итератор
 		virtual void localSetValueIt( IOStateList::iterator& it, const UniSetTypes::ObjectId sid,
 									  CORBA::Long value, UniSetTypes::ObjectId sup_id );
 
 		virtual long localGetValue( IOStateList::iterator& it, const UniSetTypes::ObjectId sid );
 
-		// вариант с указателем
-		virtual void localSetValue( std::shared_ptr<USensorInfo>& usi, UniSetTypes::ObjectId sid,
-									CORBA::Long value, UniSetTypes::ObjectId sup_id );
-
-		long localGetValue( std::shared_ptr<USensorInfo>& it, const UniSetTypes::ObjectId sid );
-
-
 		/*! функция выставления признака неопределённого состояния для аналоговых датчиков
-		    // для дискретных датчиков необходимости для подобной функции нет.
-		    // см. логику выставления в функции localSaveState
+			// для дискретных датчиков необходимости для подобной функции нет.
+			// см. логику выставления в функции localSaveState
 		*/
 		virtual void localSetUndefinedState( IOStateList::iterator& it, bool undefined,
 											 const UniSetTypes::ObjectId sid );
+
+		// -- работа через указатель ---
+		virtual void localSetValue( std::shared_ptr<USensorInfo>& usi, CORBA::Long value, UniSetTypes::ObjectId sup_id );
+		long localGetValue( std::shared_ptr<USensorInfo>& usi) ;
 
 	protected:
 		// переопределяем для добавления вызова регистрации датчиков
@@ -172,17 +174,15 @@ class IOController:
 		/*! удаление из репозитория датчиков за информацию о которых отвечает данный IOController */
 		virtual void sensorsUnregistration();
 
-		typedef sigc::signal<void, IOStateList::iterator&, IOController*> InitSignal;
+		typedef sigc::signal<void, std::shared_ptr<USensorInfo>&, IOController*> InitSignal;
+
 		// signal по изменению определённого датчика
-		inline InitSignal signal_init()
-		{
-			return sigInit;
-		}
+		InitSignal signal_init();
 
 		/*! регистрация датчика
 		    force=true - не проверять на дублирование (оптимизация)
 		*/
-		void ioRegistration( std::shared_ptr<USensorInfo>&, bool force = false );
+		void ioRegistration(std::shared_ptr<USensorInfo>& usi, bool force = false );
 
 		/*! разрегистрация датчика */
 		void ioUnRegistration( const UniSetTypes::ObjectId sid );
@@ -215,7 +215,7 @@ class IOController:
 				ai.ci.precision = 0;
 			}
 
-			return ai;
+			return std::move(ai);
 		};
 
 		//! сохранение информации об изменении состояния датчика
@@ -234,6 +234,7 @@ class IOController:
 
 	private:
 		friend class NCRestorer;
+		friend class SMInterface;
 
 		std::mutex siganyMutex;
 		ChangeSignal sigAnyChange;
@@ -247,7 +248,7 @@ class IOController:
 
 		bool isPingDBServer;    // флаг связи с DBServer-ом
 
-		UniSetTypes::uniset_rwmutex loggingMutex; /*!< logging info mutex */
+		std::mutex loggingMutex; /*!< logging info mutex */
 
 	public:
 		struct USensorInfo:
@@ -258,7 +259,7 @@ class IOController:
 			USensorInfo( USensorInfo&& ) = default;
 			USensorInfo& operator=(USensorInfo&& ) = default;
 
-			USensorInfo(): any(0), d_value(0), d_off_value(0)
+			USensorInfo(): d_value(0), d_off_value(0)
 			{
 				d_si.id = UniSetTypes::DefaultObjectId;
 				d_si.node = UniSetTypes::DefaultObjectId;
@@ -284,10 +285,10 @@ class IOController:
 			// Дополнительные (вспомогательные поля)
 			UniSetTypes::uniset_rwmutex val_lock; /*!< флаг блокирующий работу со значением */
 
-			// IOStateList::iterator it;
 			std::shared_ptr<USensorInfo> it;
 
-			void* any; /*!< расширение для возможности хранения своей информации */
+			static const size_t MaxUserData = 3;
+			void* userdata[MaxUserData] = { nullptr, nullptr, nullptr }; /*!< расширение для возможности хранения своей информации */
 
 			// сигнал для реализации механизма зависимостией..
 			// (все зависимые датчики подключаются к нему (см. NCRestorer::init_depends_signals)

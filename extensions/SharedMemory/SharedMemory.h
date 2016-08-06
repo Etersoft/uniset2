@@ -479,7 +479,7 @@ class SharedMemory:
 		int evntPause;
 		int activateTimeout;
 
-		virtual void loggingInfo( UniSetTypes::SensorMessage& sm ) override;
+		virtual void logging( UniSetTypes::SensorMessage& sm ) override;
 		virtual void dumpOrdersList( const UniSetTypes::ObjectId sid, const IONotifyController::ConsumerListInfo& lst ) override {};
 		virtual void dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst ) override {}
 
