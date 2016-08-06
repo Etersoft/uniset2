@@ -50,6 +50,8 @@ IONotifyController::IONotifyController(const string& name, const string& section
 	trshMutex(name + "trshMutex"),
 	maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 5))
 {
+	conUndef = signal_change_undefined_state().connect(sigc::mem_fun(*this, &IONotifyController::onChangeUndefinedState));
+	conInit = signal_init().connect(sigc::mem_fun(*this, &IONotifyController::initItem));
 }
 
 IONotifyController::IONotifyController( ObjectId id, std::shared_ptr<NCRestorer> d ):

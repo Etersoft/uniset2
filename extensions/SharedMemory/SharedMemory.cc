@@ -108,7 +108,7 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 
 	// ----------------------
 	buildHistoryList(confnode);
-	signal_change_value().connect(sigc::mem_fun(*this, &SharedMemory::updateHistory));
+	signal_change_value().connect(sigc::mem_fun(*this, &SharedMemory::checkFuse));
 
 	for( auto i = hist.begin(); i != hist.end(); ++i )
 		histmap[i->fuse_id].push_back(i);
@@ -207,7 +207,7 @@ void SharedMemory::timerInfo( const TimerMessage* tm )
 		askTimer(tm->id, 0);
 	}
 	else if( tm->id == tmHistory )
-		saveHistory();
+		saveToHistory();
 	else if( tm->id == tmPulsar )
 	{
 		if( sidPulsar != DefaultObjectId )
@@ -725,7 +725,7 @@ SharedMemory::HistorySlot SharedMemory::signal_history()
 	return m_historySignal;
 }
 // -----------------------------------------------------------------------------
-void SharedMemory::saveHistory()
+void SharedMemory::saveToHistory()
 {
 	if( hist.empty() )
 		return;
@@ -747,7 +747,7 @@ void SharedMemory::saveHistory()
 	}
 }
 // -----------------------------------------------------------------------------
-void SharedMemory::updateHistory( std::shared_ptr<USensorInfo>& usi, IOController* )
+void SharedMemory::checkFuse( std::shared_ptr<USensorInfo>& usi, IOController* )
 {
 	if( hist.empty() )
 		return;
@@ -758,7 +758,6 @@ void SharedMemory::updateHistory( std::shared_ptr<USensorInfo>& usi, IOControlle
 	HistoryItList& lst = *(static_cast<HistoryItList*>(usi->userdata[udataHistory]));
 
 //	auto i = histmap.find(s_it->si.id);
-//
 //	if( i == histmap.end() )
 //		return;
 

@@ -387,14 +387,6 @@ class SharedMemory:
 		typedef std::list<History::iterator> HistoryItList;
 		typedef std::unordered_map<UniSetTypes::ObjectId, HistoryItList> HistoryFuseMap;
 
-		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет
-		//! использовать userdata[2]. (0,1 - использует IONotifyController)
-		// оптимизация с использованием userdata (IOController::USensorInfo::userdata) нужна
-		// чтобы не использовать поиск в HistoryFuseMap (см. updateHistory)
-		// т.к. 0,1 - использует IONotifyController (см. IONotifyController::UserDataID)
-		// то используем 2 - в качестве элемента userdata
-		static const size_t udataHistory = 2;
-
 		typedef sigc::signal<void, const HistoryInfo&> HistorySlot;
 		HistorySlot signal_history(); /*!< сигнал о срабатывании условий "сброса" дампа истории */
 
@@ -490,13 +482,21 @@ class SharedMemory:
 		virtual void dumpOrdersList( const UniSetTypes::ObjectId sid, const IONotifyController::ConsumerListInfo& lst ) override {};
 		virtual void dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst ) override {}
 
-		bool dblogging;
+		bool dblogging = { false };
+
+		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет
+		//! использовать userdata[2]. (0,1 - использует IONotifyController)
+		// оптимизация с использованием userdata (IOController::USensorInfo::userdata) нужна
+		// чтобы не использовать поиск в HistoryFuseMap (см. checkFuse)
+		// т.к. 0,1 - использует IONotifyController (см. IONotifyController::UserDataID)
+		// то используем не занятый "2" - в качестве элемента userdata
+		static const size_t udataHistory = 2;
 
 		History hist;
 		HistoryFuseMap histmap;  /*!< map для оптимизации поиска */
 
-		virtual void updateHistory(std::shared_ptr<IOController::USensorInfo>& usi, IOController* );
-		virtual void saveHistory();
+		virtual void checkFuse(std::shared_ptr<IOController::USensorInfo>& usi, IOController* );
+		virtual void saveToHistory();
 
 		void buildHistoryList( xmlNode* cnode );
 		void checkHistoryFilter( UniXML::iterator& it );

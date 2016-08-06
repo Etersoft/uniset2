@@ -302,7 +302,6 @@ class IONotifyController:
 		virtual void localSetValue( std::shared_ptr<USensorInfo>& usi,
 									CORBA::Long value, UniSetTypes::ObjectId sup_id ) override;
 
-
 		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
 		// идентификаторы данные в userdata (см. USensorInfo::userdata)
 		enum UserDataID
