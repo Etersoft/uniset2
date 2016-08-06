@@ -121,6 +121,7 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, std::shared_ptr<IOCon
 	{
 		auto i =  ic->myiofind(inf->si.id);
 		ic->askTMap[inf->si.id].usi = i->second;
+		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
 		if( i->second )
 			i->second->userdata[IONotifyController::udataThresholdList] = &(ic->askTMap[inf->si.id]);
 	}
@@ -176,7 +177,7 @@ void NCRestorer::init_depends_signals( IONotifyController* ic )
 	for( auto it = ic->ioList.begin(); it != ic->ioList.end(); ++it )
 	{
 		// обновляем итераторы...
-		it->second->it = it->second;
+		it->second->d_usi = it->second;
 
 		if( it->second->d_si.id == DefaultObjectId )
 			continue;
@@ -186,6 +187,7 @@ void NCRestorer::init_depends_signals( IONotifyController* ic )
 			  << " dep_name=(" << it->second->d_si.id << ")'" << uniset_conf()->oind->getMapName(it->second->d_si.id) << "'"
 			  << endl;
 
+		uniset_rwmutex_rlock lock(it->second->val_lock);
 		ic->signal_change_value(it->second->d_si.id).connect( sigc::mem_fun( it->second.get(), &IOController::USensorInfo::checkDepend) );
 	}
 }

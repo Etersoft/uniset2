@@ -317,7 +317,6 @@ class SharedMemory:
 
 		void addReadItem( Restorer_XML::ReaderSlot sl );
 
-
 		// ------------  HISTORY  --------------------
 		typedef std::deque<long> HBuffer;
 
@@ -326,7 +325,7 @@ class SharedMemory:
 			explicit HistoryItem( size_t bufsize = 0 ): id(UniSetTypes::DefaultObjectId), buf(bufsize) {}
 			HistoryItem( const UniSetTypes::ObjectId _id, const size_t bufsize, const long val ): id(_id), buf(bufsize, val) {}
 
-			inline void init( unsigned int size, long val )
+			inline void init( size_t size, long val )
 			{
 				if( size > 0 )
 					buf.assign(size, val);
@@ -339,7 +338,7 @@ class SharedMemory:
 
 			void add( long val, size_t size )
 			{
-				// т.е. буфер у нас уже заданного размера
+				// т.к. буфер у нас уже заданного размера
 				// то просто удаляем очередную точку в начале
 				// и добавляем в конце
 				buf.pop_front();
@@ -387,6 +386,14 @@ class SharedMemory:
 		// точнее итераторов-историй.
 		typedef std::list<History::iterator> HistoryItList;
 		typedef std::unordered_map<UniSetTypes::ObjectId, HistoryItList> HistoryFuseMap;
+
+		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет
+		//! использовать userdata[2]. (0,1 - использует IONotifyController)
+		// оптимизация с использованием userdata (IOController::USensorInfo::userdata) нужна
+		// чтобы не использовать поиск в HistoryFuseMap (см. updateHistory)
+		// т.к. 0,1 - использует IONotifyController (см. IONotifyController::UserDataID)
+		// то используем 2 - в качестве элемента userdata
+		static const size_t udataHistory = 2;
 
 		typedef sigc::signal<void, const HistoryInfo&> HistorySlot;
 		HistorySlot signal_history(); /*!< сигнал о срабатывании условий "сброса" дампа истории */
@@ -468,7 +475,7 @@ class SharedMemory:
 		void checkHeartBeat();
 
 		typedef std::list<HeartBeatInfo> HeartBeatList;
-		HeartBeatList hlist; // список датчиков "сердцебиения"
+		HeartBeatList hblist; // список датчиков "сердцебиения"
 		std::shared_ptr<WDTInterface> wdt;
 		std::atomic_bool activated;
 		std::atomic_bool workready;
@@ -488,7 +495,7 @@ class SharedMemory:
 		History hist;
 		HistoryFuseMap histmap;  /*!< map для оптимизации поиска */
 
-		virtual void updateHistory( std::shared_ptr<IOController::USensorInfo>& it, IOController* );
+		virtual void updateHistory(std::shared_ptr<IOController::USensorInfo>& usi, IOController* );
 		virtual void saveHistory();
 
 		void buildHistoryList( xmlNode* cnode );

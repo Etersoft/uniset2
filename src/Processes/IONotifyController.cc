@@ -265,6 +265,7 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
 
 	if( askIterator != askLst.end() )
 	{
+		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
 		auto s = myiofind(sid);
 		if( s != myioEnd() )
 			s->second->userdata[udataConsumerList] =(void*)(&(askIterator->second));
@@ -326,6 +327,7 @@ void IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInf
 
 	{
 		uniset_rwmutex_rlock lock(askIOMutex);
+		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
 		if( usi->userdata[udataConsumerList] != nullptr )
 		{
 			ConsumerListInfo& lst = *(static_cast<ConsumerListInfo*>(usi->userdata[udataConsumerList]));
@@ -615,6 +617,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
 		it = askTMap.find(sid);
 		if( li != myioEnd() )
 		{
+			//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
 			if( it == askTMap.end() )
 				li->second->userdata[udataThresholdList] = nullptr;
 			else
@@ -694,9 +697,11 @@ void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorIn
 
 	{
 		uniset_rwmutex_rlock lock(trshMutex);
+		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
 		if( usi->userdata[udataThresholdList] == nullptr )
 			return;
 
+		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
 		ti = static_cast<ThresholdsListInfo*>(usi->userdata[udataThresholdList]);
 		if( ti->list.empty() )
 			return;
@@ -958,6 +963,7 @@ void IONotifyController::onChangeUndefinedState( std::shared_ptr<USensorInfo>& u
 	{
 		// lock
 		uniset_rwmutex_rlock lock(askIOMutex);
+		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
 		if( usi->userdata[udataConsumerList] != nullptr )
 		{
 			ConsumerListInfo& lst = *(static_cast<ConsumerListInfo*>(usi->userdata[udataConsumerList]));

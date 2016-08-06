@@ -755,7 +755,6 @@ IOController::ChangeSignal IOController::signal_change_value( UniSetTypes::Objec
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
-	uniset_rwmutex_rlock lock(it->second->val_lock);
 	return it->second->sigChange;
 }
 // -----------------------------------------------------------------------------
@@ -779,7 +778,7 @@ IOController::ChangeUndefinedStateSignal IOController::signal_change_undefined_s
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
-	uniset_rwmutex_rlock lock(it->second->val_lock);
+//	uniset_rwmutex_rlock lock(it->second->val_lock);
 	return it->second->sigUndefChange;
 }
 // -----------------------------------------------------------------------------
@@ -811,7 +810,7 @@ void IOController::USensorInfo::checkDepend( std::shared_ptr<USensorInfo>& d_it,
 		  << endl;
 
 	if( changed )
-		ic->localSetValue( it, real_value, sup_id );
+		ic->localSetValue( d_usi, real_value, sup_id );
 }
 // -----------------------------------------------------------------------------
 UniSetTypes::SimpleInfo* IOController::getInfo( ::CORBA::Long userparam )

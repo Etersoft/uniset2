@@ -285,10 +285,8 @@ class IOController:
 			// Дополнительные (вспомогательные поля)
 			UniSetTypes::uniset_rwmutex val_lock; /*!< флаг блокирующий работу со значением */
 
-			std::shared_ptr<USensorInfo> it;
-
-			static const size_t MaxUserData = 3;
-			void* userdata[MaxUserData] = { nullptr, nullptr, nullptr }; /*!< расширение для возможности хранения своей информации */
+			static const size_t MaxUserData = 4;
+			void* userdata[MaxUserData] = { nullptr, nullptr, nullptr, nullptr }; /*!< расширение для возможности хранения своей информации */
 
 			// сигнал для реализации механизма зависимостией..
 			// (все зависимые датчики подключаются к нему (см. NCRestorer::init_depends_signals)
@@ -301,9 +299,10 @@ class IOController:
 			IOController_i::SensorInfo d_si;  /*!< идентификатор датчика, от которого зависит данный */
 			long d_value; /*!< разрешающее работу значение датчика от которого зависит данный */
 			long d_off_value; /*!< блокирующее значение */
+			std::shared_ptr<USensorInfo> d_usi; // shared_ptr на датчик от которого зависит этот.
 
 			// функция обработки информации об изменении состояния датчика, от которого зависит данный
-			void checkDepend( std::shared_ptr<USensorInfo>& it, IOController* );
+			void checkDepend( std::shared_ptr<USensorInfo>& d_usi, IOController* );
 
 			void init( const IOController_i::SensorIOInfo& s );
 

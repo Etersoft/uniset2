@@ -298,7 +298,7 @@ bool SharedMemory::activateObject()
 		res = IONotifyController::activateObject();
 
 		// инициализируем указатели
-		for( auto && it : hlist )
+		for( auto && it : hblist )
 		{
 			it.a_it = myioEnd();
 			it.d_it = myioEnd();
@@ -311,6 +311,14 @@ bool SharedMemory::activateObject()
 			for( auto && hit : it.hlst )
 				hit.ioit = myioEnd();
 		}
+
+		for( auto&& it: histmap )
+		{
+			auto i = myiofind(it.first);
+			if( i!= myioEnd() )
+				i->second->userdata[udataHistory] = (void*)(&(it.second));
+		}
+
 
 		// здесь или в startUp?
 		initFromReserv();
@@ -342,7 +350,7 @@ void SharedMemory::sigterm( int signo )
 // ------------------------------------------------------------------------------------------
 void SharedMemory::checkHeartBeat()
 {
-	if( hlist.empty() )
+	if( hblist.empty() )
 	{
 		if( wdt && workready )
 			wdt->ping();
@@ -352,7 +360,7 @@ void SharedMemory::checkHeartBeat()
 
 	bool wdtpingOK = true;
 
-	for( auto && it : hlist )
+	for( auto && it : hblist )
 	{
 		try
 		{
@@ -480,7 +488,7 @@ bool SharedMemory::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterato
 
 	// без проверки на дублирование т.к.
 	// id - гарантирует уникальность в нашем configure.xml
-	hlist.push_back(hi);
+	hblist.push_back(hi);
 
 	return true;
 }
@@ -560,7 +568,7 @@ void SharedMemory::readEventList( const std::string& oname )
 // -----------------------------------------------------------------------------
 void SharedMemory::sendEvent( UniSetTypes::SystemMessage& sm )
 {
-	TransportMessage tm(sm.transport_msg());
+	TransportMessage tm( std::move(sm.transport_msg()) );
 
 	for( const auto& it : elst )
 	{
@@ -739,37 +747,42 @@ void SharedMemory::saveHistory()
 	}
 }
 // -----------------------------------------------------------------------------
-void SharedMemory::updateHistory( std::shared_ptr<USensorInfo>& s_it, IOController* )
+void SharedMemory::updateHistory( std::shared_ptr<USensorInfo>& usi, IOController* )
 {
 	if( hist.empty() )
 		return;
 
-	auto i = histmap.find(s_it->si.id);
-
-	if( i == histmap.end() )
+	if( usi->userdata[udataHistory] == nullptr )
 		return;
+
+	HistoryItList& lst = *(static_cast<HistoryItList*>(usi->userdata[udataHistory]));
+
+//	auto i = histmap.find(s_it->si.id);
+//
+//	if( i == histmap.end() )
+//		return;
 
 	long value = 0;
 	long sm_tv_sec = 0;
 	long sm_tv_usec = 0;
 	{
-		uniset_rwmutex_rlock lock(s_it->val_lock);
-		value = s_it->value;
-		sm_tv_sec = s_it->tv_sec;
-		sm_tv_usec = s_it->tv_usec;
+		uniset_rwmutex_rlock lock(usi->val_lock);
+		value = usi->value;
+		sm_tv_sec = usi->tv_sec;
+		sm_tv_usec = usi->tv_usec;
 	}
 
 	sminfo << myname << "(updateHistory): "
-		   << " sid=" << s_it->si.id
+		   << " sid=" << usi->si.id
 		   << " value=" << value
 		   << endl;
 
-	for( auto && it1 : i->second )
+	for( auto && it1 : lst)
 	{
 		History::iterator it = it1;
 
-		if( s_it->type == UniversalIO::DI ||
-				s_it->type == UniversalIO::DO )
+		if( usi->type == UniversalIO::DI ||
+				usi->type == UniversalIO::DO )
 		{
 			bool st = (bool)value;
 
@@ -785,8 +798,8 @@ void SharedMemory::updateHistory( std::shared_ptr<USensorInfo>& s_it, IOControll
 				m_historySignal.emit( (*it) );
 			}
 		}
-		else if( s_it->type == UniversalIO::AI ||
-				 s_it->type == UniversalIO::AO )
+		else if( usi->type == UniversalIO::AI ||
+				 usi->type == UniversalIO::AO )
 		{
 			if( !it->fuse_use_val )
 			{
