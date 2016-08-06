@@ -231,33 +231,6 @@ class IOController:
 		IOStateList::iterator myioEnd();
 		IOStateList::iterator myiofind( UniSetTypes::ObjectId id );
 		// --------------------------
-		// ФИЛЬТРОВАНИЕ
-		//
-		typedef sigc::slot<bool, std::shared_ptr<USensorInfo>&, CORBA::Long, UniSetTypes::ObjectId> IOFilterSlot;
-		typedef std::list<IOFilterSlot> IOFilterSlotList;
-
-		/*
-		    Фильтрующая функция должна возвращать:
-		    TRUE - если значение 'нормальное'
-		    FALSE - если значение не подходит (отбрасывается)
-
-		    Пример использования:
-		        addIOFilter( sigc::mem_fun(my,&MyClass::my_filter) );
-		*/
-		IOFilterSlotList::iterator addIOFilter( IOFilterSlot sl, bool push_front = false );
-		void eraseIOFilter(IOFilterSlotList::iterator& it);
-
-		// функии проверки текущего значения
-		bool checkIOFilters( std::shared_ptr<USensorInfo>& ai, CORBA::Long& newvalue, UniSetTypes::ObjectId sup_id );
-
-		inline bool iofiltersEmpty() const
-		{
-			return iofilters.empty();
-		}
-		inline int iodiltersSize() const
-		{
-			return iofilters.size();
-		}
 
 	private:
 		friend class NCRestorer;
@@ -273,8 +246,6 @@ class IOController:
 		UniSetTypes::uniset_rwmutex ioMutex; /*!< замок для блокирования совместного доступа к ioList */
 
 		bool isPingDBServer;    // флаг связи с DBServer-ом
-
-		IOFilterSlotList iofilters; /*!< список фильтров для аналоговых значений */
 
 		UniSetTypes::uniset_rwmutex loggingMutex; /*!< logging info mutex */
 

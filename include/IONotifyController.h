@@ -275,9 +275,6 @@ class IONotifyController:
 		virtual bool activateObject() override;
 		virtual void initItem( IOStateList::iterator& it, IOController* ic );
 
-		// ФИЛЬТРЫ
-		bool myIOFilter(std::shared_ptr<USensorInfo>& ai, CORBA::Long newvalue, UniSetTypes::ObjectId sup_id);
-
 		//! посылка информации об изменении состояния датчика
 		virtual void send( ConsumerListInfo& lst, UniSetTypes::SensorMessage& sm );
 

@@ -50,8 +50,6 @@ IONotifyController::IONotifyController(const string& name, const string& section
 	trshMutex(name + "trshMutex"),
 	maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 5))
 {
-	// добавляем фильтры
-	addIOFilter( sigc::mem_fun(this, &IONotifyController::myIOFilter) );
 }
 
 IONotifyController::IONotifyController( ObjectId id, std::shared_ptr<NCRestorer> d ):
@@ -63,9 +61,6 @@ IONotifyController::IONotifyController( ObjectId id, std::shared_ptr<NCRestorer>
 {
 	conUndef = signal_change_undefined_state().connect(sigc::mem_fun(*this, &IONotifyController::onChangeUndefinedState));
 	conInit = signal_init().connect(sigc::mem_fun(*this, &IONotifyController::initItem));
-
-	// добавляем фильтры
-	addIOFilter( sigc::mem_fun(this, &IONotifyController::myIOFilter) );
 }
 
 IONotifyController::~IONotifyController()
@@ -264,15 +259,6 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
 		default:
 			break;
 	}
-}
-// ------------------------------------------------------------------------------------------
-bool IONotifyController::myIOFilter( std::shared_ptr<USensorInfo>& usi,
-									 CORBA::Long newvalue, UniSetTypes::ObjectId sup_id )
-{
-	if( usi->value == newvalue )
-		return false;
-
-	return true;
 }
 // ------------------------------------------------------------------------------------------
 void IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInfo>& usi,

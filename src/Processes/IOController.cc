@@ -285,11 +285,10 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 
 		usi->supplier = sup_id; // запоминаем того кто изменил
 
-		// фильтрам может потребоваться измениять исходное значение (например для усреднения)
-		// поэтому передаём (и затем сохраняем) напрямую(ссылку) value (а не const value)
 		bool blocked = ( usi->blocked || usi->undefined );
+		changed = ( usi->value != value );
 
-		if( checkIOFilters(usi, value, sup_id) || blocked )
+		if( changed || blocked )
 		{
 			ulog4 << myname << ": save sensor value (" << sid << ")"
 				  << " name: " << uniset_conf()->oind->getNameById(sid)
@@ -299,20 +298,8 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 				  << " real_value=" << usi->real_value
 				  << endl;
 
-			CORBA::Long prev = usi->value;
-
-			if( blocked )
-			{
-				usi->real_value = value;
-				usi->value = usi->d_off_value;
-			}
-			else
-			{
-				usi->value = value;
-				usi->real_value = value;
-			}
-
-			changed = ( prev != usi->value );
+			usi->real_value = value;
+			usi->value = (blocked ? usi->d_off_value : value);
 
 			// запоминаем время изменения
 			struct timeval tm = { 0 };
@@ -639,36 +626,6 @@ void IOController::USensorInfo::init( const IOController_i::SensorIOInfo& s )
 {
 	IOController::USensorInfo r(s);
 	(*this) = std::move(r);
-}
-// ----------------------------------------------------------------------------------------
-bool IOController::checkIOFilters( std::shared_ptr<USensorInfo>& usi, CORBA::Long& newvalue,
-								   UniSetTypes::ObjectId sup_id )
-{
-	for( const auto& it : iofilters )
-	{
-		if( it(usi, newvalue, sup_id) == false )
-			return false;
-	}
-
-	return true;
-}
-
-// ----------------------------------------------------------------------------------------
-IOController::IOFilterSlotList::iterator IOController::addIOFilter( IOFilterSlot sl, bool push_front )
-{
-	if( push_front == false )
-	{
-		iofilters.push_back(sl);
-		return --iofilters.end();
-	}
-
-	iofilters.push_front(sl);
-	return iofilters.begin();
-}
-// ----------------------------------------------------------------------------------------
-void IOController::eraseIOFilter(IOController::IOFilterSlotList::iterator& it)
-{
-	iofilters.erase(it);
 }
 // ----------------------------------------------------------------------------------------
 IOController::IOStateList::iterator IOController::myioBegin()
