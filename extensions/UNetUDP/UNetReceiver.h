@@ -170,11 +170,11 @@ class UNetReceiver:
 		bool receive();
 		void step();
 		void update();
+		void updateThread();
 		void callback( ev::io& watcher, int revents );
 		void readEvent( ev::io& watcher );
 		void updateEvent( ev::periodic& watcher, int revents );
 		void checkConnectionEvent( ev::periodic& watcher, int revents );
-		void forceUpdateEvent( ev::timer& watcher, int revents );
 		void statisticsEvent( ev::periodic& watcher, int revents );
 		virtual void evprepare( const ev::loop_ref& eloop ) override;
 		virtual void evfinish(const ev::loop_ref& eloop ) override;
@@ -211,19 +211,19 @@ class UNetReceiver:
 		ost::tpport_t port = { 0 };
 		std::string myname;
 		ev::io evReceive;
-		ev::periodic evUpdate;
 		ev::periodic evCheckConnection;
-		ev::timer evForceUpdate;
 		ev::periodic evStatistic;
 
 		size_t recvCount = { 0 };
 		size_t upCount = { 0 };
 
+		std::shared_ptr< ThreadCreator<UNetReceiver> > upThread;    // update thread
+
 		// делаем loop общим.. одним на всех!
 		static CommonEventLoop loop;
 
-		double updateTime = { 0.01 };
 		double checkConnectionTime = { 10.0 }; // sec
+		std::mutex checkConnMutex;
 
 		PassiveTimer ptRecvTimeout;
 		PassiveTimer ptPrepare;
@@ -244,6 +244,7 @@ class UNetReceiver:
 		PacketQueue qpack;    /*!< очередь принятых пакетов (отсортированных по возрастанию номера пакета) */
 		UniSetUDP::UDPMessage pack;        /*!< просто буфер для получения очередного сообщения */
 		UniSetUDP::UDPPacket r_buf;
+		std::mutex packMutex; /*!< mutex для работы с очередью */
 		size_t pnum = { 0 };    /*!< текущий номер обработанного сообщения, для проверки непрерывности последовательности пакетов */
 
 		/*! максимальная разница межд номерами пакетов, при которой считается, что счётчик пакетов
@@ -261,6 +262,7 @@ class UNetReceiver:
 
 		EventSlot slEvent;
 		Trigger trTimeout;
+		std::mutex tmMutex;
 
 		struct CacheItem
 		{
