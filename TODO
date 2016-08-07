@@ -63,6 +63,9 @@ Version 2.5
 
 - timeout_t getSharedMemoryReadyTimeout()!
 
+ModbusSlave: подумать насчёт оптимизации по скорости (вместо поиска по RegMap, сделать массив на 65535 регистров или map-ов по номеру функции,
+всего 65kB памяти).
+
 libev
 =======
 - переписать UNetUDP (на подумать)
