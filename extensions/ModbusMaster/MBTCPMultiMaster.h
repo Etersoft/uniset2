@@ -332,8 +332,6 @@ class MBTCPMultiMaster:
 		// т.к. TCP может "зависнуть" на подключении к недоступному узлу
 		// делаем опрос в отдельном потоке
 		std::shared_ptr< ThreadCreator<MBTCPMultiMaster> > pollThread; /*!< поток опроса */
-		UniSetTypes::uniset_rwmutex tcpMutex;
-
 		std::shared_ptr< ThreadCreator<MBTCPMultiMaster> > checkThread; /*!< поток проверки связи по другим каналам */
 };
 // -----------------------------------------------------------------------------

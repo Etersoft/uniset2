@@ -32,8 +32,6 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 	MBExchange(objId, shmId, ic, prefix),
 	force_disconnect(true)
 {
-	tcpMutex.setName(myname + "_tcpMutex");
-
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(MBTCPMultiMaster): objId=-1?!! Use --" + prefix + "-name" );
 
@@ -226,8 +224,6 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 	}
 
 	{
-		uniset_rwmutex_wrlock l(tcpMutex);
-
 		// сперва надо обновить все ignore
 		// т.к. фактически флаги выставляются и сбрасываются только здесь
 		for( auto it = mblist.rbegin(); it != mblist.rend(); ++it )
@@ -268,8 +264,6 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 	// проходим по списку (в обратном порядке, т.к. самый приоритетный в конце)
 	for( auto it = mblist.rbegin(); it != mblist.rend(); ++it )
 	{
-		uniset_rwmutex_wrlock l(tcpMutex);
-
 		if( it->respond && !it->ignore && it->init(mblog) )
 		{
 			mbi = it;
@@ -286,8 +280,6 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 	// значит сейчас просто находим первый у кого есть связь и делаем его главным
 	for( auto it = mblist.rbegin(); it != mblist.rend(); ++it )
 	{
-		uniset_rwmutex_wrlock l(tcpMutex);
-
 		if( it->respond && it->check() && it->init(mblog) )
 		{
 			mbi = it;
@@ -302,7 +294,6 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 
 	// значит всё-таки связи реально нет...
 	{
-		uniset_rwmutex_wrlock l(tcpMutex);
 		mbi = mblist.rend();
 		mb = nullptr;
 	}
@@ -458,10 +449,7 @@ void MBTCPMultiMaster::check_thread()
 					mbcrit << myname << "(check): (respond) " << it->myname << " : " << ex.what() << std::endl;
 				}
 
-				{
-					uniset_rwmutex_wrlock l(tcpMutex);
-					it->respond = r;
-				}
+				it->respond = r;
 			}
 			catch( const std::exception& ex )
 			{

@@ -238,7 +238,6 @@ class MBTCPMaster:
 		virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;
 		virtual void sigterm( int signo ) override;
 
-		UniSetTypes::uniset_rwmutex mbMutex;
 		std::string iaddr;
 		int port;
 
