@@ -180,6 +180,11 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 		ostringstream n;
 		n << prefix << "-exchangelog";
 		auto l = loga->create(n.str());
+		if( mblog->is_crit() )
+			l->addLevel(Debug::CRIT);
+		if( mblog->is_warn() )
+			l->addLevel(Debug::WARN);
+
 		rs->setLog(l);
 		conf->initLogStream(l, prefix + "-exchangelog");
 	}
@@ -196,7 +201,6 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 
 		ost::InetAddress ia(iaddr.c_str());
 		tcpserver = make_shared<ModbusTCPServerSlot>(ia, port);
-
 		tcpserver->setAfterSendPause(aftersend_pause);
 		tcpserver->setReplyTimeout(reply_tout);
 
@@ -208,6 +212,12 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 		ostringstream n;
 		n << prefix << "-exchangelog";
 		auto l = loga->create(n.str());
+
+		if( mblog->is_crit() )
+			l->addLevel(Debug::CRIT);
+		if( mblog->is_warn() )
+			l->addLevel(Debug::WARN);
+
 		tcpserver->setLog(l);
 		conf->initLogStream(l, prefix + "-exchangelog");
 
@@ -619,7 +629,42 @@ void MBSlave::execute_tcp()
 
 	tcpCancelled = false;
 
-	tcpserver->run( vaddr, true );
+	ost::Thread::setException(ost::Thread::throwException);
+	try
+	{
+		tcpserver->run( vaddr, true );
+	}
+	catch( ModbusRTU::mbException& ex )
+	{
+		mbcrit << myname << "(execute_tcp): catch excaption: "
+			   << tcpserver->getInetAddress()
+			   << ":" << tcpserver->getInetPort() << " err: " << ex << endl;
+		throw ex;
+	}
+	catch( const ost::Exception& e )
+	{
+		mbcrit << myname << "(execute_tcp): Can`t create socket "
+			   << tcpserver->getInetAddress()
+			   << ":" << tcpserver->getInetPort()
+			   << " err: " << e.getString() << endl;
+		throw e;
+	}
+	catch( const std::exception& e )
+	{
+		mbcrit << myname << "(execute_tcp): Can`t create socket "
+			   << tcpserver->getInetAddress()
+			   << ":" << tcpserver->getInetPort()
+			   << " err: " << e.what() << endl;
+		throw e;
+	}
+	catch(...)
+	{
+		mbcrit << myname << "(execute_tcp): catch exception ... ("
+			   << tcpserver->getInetAddress()
+			   << ":" << tcpserver->getInetPort()
+			   << endl;
+		throw;
+	}
 
 	//	tcpCancelled = true;
 	//	mbinfo << myname << "(execute_tcp): tcpserver stopped.." << endl;
@@ -1948,7 +1993,7 @@ ModbusRTU::mbErrCode MBSlave::much_real_read(RegMap& rmap, const ModbusRTU::Modb
 	int mbfunc = checkMBFunc ? fn : default_mbfunc;
 	ModbusRTU::RegID regID = genRegID(reg, mbfunc);
 
-	// ищем регистр.. "пропуская дырки"..
+	// ищем первый регистр из запроса... пропуская несуществующие..
 	// ведь запросить могут начиная с "несуществующего регистра"
 	for( ; i < count; i++ )
 	{

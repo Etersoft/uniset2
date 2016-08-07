@@ -90,6 +90,7 @@ bool ModbusTCPServer::isActive() const
 // -------------------------------------------------------------------------
 void ModbusTCPServer::evprepare()
 {
+	ost::Thread::setException(ost::Thread::throwException);
 	try
 	{
 		sock = make_shared<UTCPSocket>(iaddr, port);
@@ -97,7 +98,14 @@ void ModbusTCPServer::evprepare()
 	catch( const ost::SockException& ex )
 	{
 		ostringstream err;
-		err << "(ModbusTCPServer::mainLoop): connect " << iaddr << ":" << port << " err: " << ex.what();
+		err << "(ModbusTCPServer::evprepare): connect " << iaddr << ":" << port << " err: " << ex.what();
+		dlog->crit() << err.str() << endl;
+		throw SystemError(err.str());
+	}
+	catch( const std::exception& ex )
+	{
+		ostringstream err;
+		err << "(ModbusTCPServer::evprepare): connect " << iaddr << ":" << port << " err: " << ex.what();
 		dlog->crit() << err.str() << endl;
 		throw SystemError(err.str());
 	}
