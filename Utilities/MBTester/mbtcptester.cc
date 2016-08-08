@@ -254,7 +254,7 @@ int main( int argc, char** argv )
 							dval.d.v = ModbusRTU::str2mbData(arg);
 						}
 
-						data.push_back(dval);
+						data.emplace_back(dval);
 						val = dval.d.v;
 					}
 

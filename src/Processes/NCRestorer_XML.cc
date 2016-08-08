@@ -419,7 +419,7 @@ void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNod
 			}
 
 			// порог добавляем в любом случае, даже если список заказчиков пуст...
-			tlst.push_back( std::move(ti) );
+			tlst.emplace_back( std::move(ti) );
 			rtslot(xml, tit, it);
 		}
 
@@ -468,8 +468,7 @@ bool NCRestorer_XML::getConsumerList( const std::shared_ptr<UniXML>& xml, xmlNod
 		if( !getConsumerInfo(it, ci.id, ci.node) )
 			continue;
 
-		//        IONotifyController::ConsumerInfoExt cinf(ci);
-		lst.clst.emplace_back(ci);
+		lst.clst.emplace_back( std::move(ci) );
 		cslot(xml, it, node);
 	}
 

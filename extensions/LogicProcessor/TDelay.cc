@@ -30,7 +30,7 @@ TDelay::TDelay(Element::ElementID id, timeout_t delayMS, size_t inCount):
 	{
 		// создаём заданное количество входов
 		for( unsigned int i = 1; i <= inCount; i++ )
-			ins.push_front(InputInfo(i, false)); // addInput(i,st);
+			ins.emplace_front(i, false); // addInput(i,st);
 	}
 }
 

@@ -1146,7 +1146,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 		s1 &lt;&lt; "    " &lt;&lt; setw(30) &lt;&lt; std::right &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"
 				&lt;&lt; " ( " &lt;&lt; setw(30) &lt;&lt; std::left &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; " )"
 				&lt;&lt; std::right &lt;&lt; " = " &lt;&lt; setw(6) &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
-		v_in.push_back(s1.str());
+		v_in.emplace_back(s1.str());
 	</xsl:if>
 	</xsl:for-each>
 	
@@ -1158,7 +1158,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 		s1 &lt;&lt; "    " &lt;&lt; setw(30) &lt;&lt; std::right &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"
 				&lt;&lt; " ( " &lt;&lt; setw(30) &lt;&lt; std::left &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; " )"
 				&lt;&lt; std::right &lt;&lt; " = " &lt;&lt; setw(6) &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
-		v_out.push_back(s1.str());
+		v_out.emplace_back(s1.str());
 	</xsl:if>
 	</xsl:for-each>
 
@@ -1494,7 +1494,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 	<xsl:if test="normalize-space(@name)=$OID">
 	s1.str("");
 	s1 &lt;&lt; "   " &lt;&lt; strval(<xsl:value-of select="../../@name"/>);
-	v.push_back(s1.str());
+	v.emplace_back(s1.str());
 	</xsl:if>
 	</xsl:if>
 	</xsl:for-each>

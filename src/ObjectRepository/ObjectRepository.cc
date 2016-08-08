@@ -388,10 +388,7 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned 
 			case ObjectRef:
 			{
 				if(bl[i].binding_type == CosNaming::nobject)
-				{
-					string objn = omniURI::nameToString(bl[i].binding_name);
-					ls->push_front(objn);
-				}
+					ls->emplace_front(omniURI::nameToString(bl[i].binding_name));
 
 				break;
 			}
@@ -399,10 +396,7 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned 
 			case Section:
 			{
 				if( bl[i].binding_type == CosNaming::ncontext)
-				{
-					string objn = omniURI::nameToString(bl[i].binding_name);
-					ls->push_front(objn);
-				}
+					ls->emplace_front(omniURI::nameToString(bl[i].binding_name));
 
 				break;
 			}

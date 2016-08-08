@@ -356,8 +356,7 @@ std::list<LogAgregator::iLog> LogAgregator::makeLogNameList( const std::string& 
 		else
 		{
 			const std::string nm(p2 + l.second->getLogName());
-			LogAgregator::iLog il(l.second, std::move(nm) );
-			lst.push_back( std::move(il) );
+			lst.emplace_back(l.second, std::move(nm) );
 		}
 	}
 

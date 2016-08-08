@@ -137,12 +137,12 @@ TEST_CASE("uniset_rwmutex_{wr|r} thread lock", "[mutex][threadlock][basic]" )
 	std::vector< std::future<bool> > vw(3);
 
 	for( int w = 0; w < 3; w++ )
-		vw.push_back( std::async(std::launch::async, writer_thread, w) );
+		vw.emplace_back( std::async(std::launch::async, writer_thread, w) );
 
 	std::vector< std::future<bool> > vr(3);
 
 	for( int r = 0; r < 5; r++ )
-		vr.push_back( std::async(std::launch::async, reader_thread, r) );
+		vr.emplace_back( std::async(std::launch::async, reader_thread, r) );
 
 	msleep(10);
 

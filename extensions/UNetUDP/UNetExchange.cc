@@ -372,7 +372,7 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 		ri.setRespondID(resp_comm_id, resp_invert);
 		ri.setLostPacketsID(lp_comm_id);
 		ri.setChannelNumID(numchannel_id);
-		recvlist.push_back(ri);
+		recvlist.emplace_back( std::move(ri) );
 	}
 
 	// -------------------------------

@@ -137,8 +137,8 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		auto l = loga->create(sinf.myname);
 		sinf.mbtcp->setLog(l);
 
-		mblist.push_back(sinf);
 		mbinfo << myname << "(init): add slave channel " << sinf.myname << endl;
+		mblist.emplace_back(std::move(sinf));
 	}
 
 	if( ic )

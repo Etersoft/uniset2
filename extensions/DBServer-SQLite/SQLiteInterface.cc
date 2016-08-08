@@ -253,12 +253,12 @@ void SQLiteInterface::makeResult(DBResult& dbres, sqlite3_stmt* s, bool finalize
 			char* p = (char*)sqlite3_column_text(s, i);
 
 			if( p )
-				c.push_back(p);
+				c.emplace_back(p);
 			else
-				c.push_back("");
+				c.emplace_back("");
 		}
 
-		dbres.row().push_back(c);
+		dbres.row().emplace_back(c);
 	}
 	while( sqlite3_step(s) == SQLITE_ROW );
 

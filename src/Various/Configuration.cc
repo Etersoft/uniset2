@@ -313,7 +313,7 @@ namespace UniSetTypes
 					{
 						const string a(omniIt.getProp("arg"));
 						uinfo << "(Configuration): add omniORB option '" << p << "' " << a << endl;
-						omniParams.push_back( std::make_pair(p, a) );
+						omniParams.emplace_back( std::move(std::make_pair(p, a)) );
 					}
 				}
 			}
@@ -835,7 +835,7 @@ namespace UniSetTypes
 
 			initNode(ninf, it);
 			uinfo << "Configuration(createNodesList): add to list of nodes: node=" << nodename << " id=" << ninf.id << endl;
-			lnodes.push_back(ninf);
+			lnodes.emplace_back( std::move(ninf) );
 		}
 
 		uinfo << "Configuration(createNodesList): size of node list " << lnodes.size() << endl;

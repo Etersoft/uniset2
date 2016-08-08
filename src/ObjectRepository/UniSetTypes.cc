@@ -241,7 +241,7 @@ std::vector<std::string> UniSetTypes::explode_str( const string& str, char sep )
 			string s(str.substr(prev, sz - prev));
 
 			if( !s.empty() )
-				v.emplace_back(s);
+				v.emplace_back( std::move(s) );
 
 			break;
 		}
@@ -256,7 +256,7 @@ std::vector<std::string> UniSetTypes::explode_str( const string& str, char sep )
 
 		if( !s.empty() )
 		{
-			v.emplace_back(s);
+			v.emplace_back(std::move(s));
 			prev = pos + 1;
 		}
 	}
@@ -344,7 +344,7 @@ std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str,
 			continue;
 		}
 
-		res.push_back(item);
+		res.emplace_back( std::move(item) );
 	}
 
 	return std::move(res);
@@ -407,7 +407,7 @@ std::list<UniSetTypes::ConsumerInfo> UniSetTypes::getObjectsList( const string& 
 			continue;
 		}
 
-		res.push_back(item);
+		res.emplace_back( std::move(item) );
 	}
 
 	return std::move(res);

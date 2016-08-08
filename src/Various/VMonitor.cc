@@ -85,33 +85,33 @@
 #define VMON_MAKE_PAIR(vlist, T) \
 	{\
 		for( const auto& e: m_##T ) \
-			vlist.push_back( std::make_pair(e.second, std::to_string(*(e.first))) );\
+			vlist.emplace_back( e.second, std::to_string(*(e.first)) );\
 	}
 // --------------------------------------------------------------------------
 #define VMON_MAKE_PAIR_S(vlist, T) \
 	{\
 		for( const auto& e: m_##T ) \
-			vlist.push_back( std::make_pair(e.second,*e.first) );\
+			vlist.emplace_back( e.second,*e.first );\
 	}
 // --------------------------------------------------------------------------
 #define VMON_MAKE_PAIR2(vlist, T) \
 	{\
 		std::ostringstream s;\
 		for( const auto& e: m_##T ) \
-			vlist.push_back( std::make_pair(e.second, std::to_string(*(e.first))) );\
+			vlist.emplace_back( e.second, std::to_string(*(e.first)) );\
 		\
 		for( const auto& e: m_unsigned_##T ) \
-			vlist.push_back( std::make_pair(e.second, std::to_string(*(e.first))) );\
+			vlist.emplace_back( e.second, std::to_string(*(e.first)) );\
 	}
 // --------------------------------------------------------------------------
 #define VMON_MAKE_PAIR_CHAR(vlist) \
 	{\
 		std::ostringstream s;\
 		for( const auto& e: m_char ) \
-			vlist.push_back(std::make_pair(e.second,std::to_string((int)(*(e.first)))) );\
+			vlist.emplace_back( e.second,std::to_string((int)(*(e.first))) );\
 		\
 		for( const auto& e: m_unsigned_char ) \
-			vlist.push_back(std::make_pair(e.second,std::to_string((int)(*(e.first)))) );\
+			vlist.emplace_back( e.second,std::to_string((int)(*(e.first))) );\
 	}
 // --------------------------------------------------------------------------
 VMON_IMPL_ADD2(int)

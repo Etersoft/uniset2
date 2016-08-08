@@ -271,7 +271,7 @@ void DBServer_PostgreSQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 			std::to_string(si->node),
 		};
 
-		ibuf.push_back(std::move(rec));
+		ibuf.emplace_back(std::move(rec));
 		ibufSize++;
 
 		if( ibufSize >= ibufMaxSize )

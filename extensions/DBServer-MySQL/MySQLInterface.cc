@@ -198,9 +198,9 @@ void MySQLInterface::makeResult(DBResult& dbres, MYSQL_RES* myres, bool finalize
 		DBResult::COL c;
 
 		for( unsigned int i = 0; i < nfields; i++ )
-			c.push_back( (mysql_row[i] != 0 ? string(mysql_row[i]) : "") );
+			c.emplace_back( (mysql_row[i] != 0 ? string(mysql_row[i]) : "") );
 
-		dbres.row().push_back(c);
+		dbres.row().emplace_back(c);
 	}
 
 	if( finalize )

@@ -125,7 +125,7 @@ void LProcessor::build( const string& lfile )
 			continue;
 		}
 
-		extInputs.push_front(ei);
+		extInputs.emplace_front( std::move(ei) );
 	}
 
 	for( auto it = sch->outBegin(); it != sch->outEnd(); ++it )
@@ -149,7 +149,7 @@ void LProcessor::build( const string& lfile )
 			continue;
 		}
 
-		extOuts.push_front(ei);
+		extOuts.emplace_front(std::move(ei));
 	}
 }
 // -------------------------------------------------------------------------

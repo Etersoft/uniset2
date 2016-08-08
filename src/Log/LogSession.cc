@@ -405,10 +405,7 @@ void LogSession::cmdProcessing( const string& cmdLogName, const LogServerTypes::
 	else
 	{
 		if( cmdLogName.empty() || cmdLogName == "ALL" || log->getLogFile() == cmdLogName )
-		{
-			LogAgregator::iLog llog(log, log->getLogName());
-			loglist.emplace_back(llog);
-		}
+			loglist.emplace_back(log, log->getLogName());
 	}
 
 	if( msg.cmd == LogServerTypes::cmdFilterMode )

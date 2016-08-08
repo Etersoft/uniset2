@@ -488,7 +488,7 @@ bool SharedMemory::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterato
 
 	// без проверки на дублирование т.к.
 	// id - гарантирует уникальность в нашем configure.xml
-	hblist.push_back(hi);
+	hblist.emplace_back( std::move(hi) );
 
 	return true;
 }
@@ -687,7 +687,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 			   << endl;
 
 		// WARNING: no check duplicates...
-		hist.push_back(hi);
+		hist.emplace_back( std::move(hi) );
 	}
 
 	sminfo << myname << "(buildHistoryList): history logs count=" << hist.size() << endl;
@@ -702,8 +702,7 @@ void SharedMemory::checkHistoryFilter( UniXML::iterator& xit )
 
 		if( !xit.getProp("id").empty() )
 		{
-			HistoryItem ai(xit.getIntProp("id"), it.size, xit.getIntProp("default") );
-			it.hlst.push_back( std::move(ai) );
+			it.hlst.emplace_back(xit.getIntProp("id"), it.size, xit.getIntProp("default"));
 			continue;
 		}
 
@@ -715,8 +714,7 @@ void SharedMemory::checkHistoryFilter( UniXML::iterator& xit )
 			continue;
 		}
 
-		HistoryItem ai(id, it.size, xit.getIntProp("default") );
-		it.hlst.push_back( std::move(ai) );
+		it.hlst.emplace_back(id, it.size, xit.getIntProp("default"));
 	}
 }
 // -----------------------------------------------------------------------------

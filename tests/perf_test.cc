@@ -22,7 +22,7 @@ int main( int argc, char* argv[] )
 	int t1, t2;
 
 	for ( int i = 0; i < N; i++ )
-		values.push_back( rand() * rand() );
+		values.emplace_back( rand() * rand() );
 
 #if 0
 	std::cout << "insert:" << std::endl;

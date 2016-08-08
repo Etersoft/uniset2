@@ -175,7 +175,7 @@ void ModbusTCPServer::getSessions( Sessions& lst )
 	for( const auto& i : slist )
 	{
 		SessionInfo inf( i->getClientAddress(), i->getAskCount() );
-		lst.push_back(inf);
+		lst.emplace_back( std::move(inf) );
 	}
 }
 // -------------------------------------------------------------------------

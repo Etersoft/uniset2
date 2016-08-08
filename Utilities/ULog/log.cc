@@ -115,7 +115,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, (int)Debug::value(d), filter) );
+					vcmd.emplace_back(cmd, (int)Debug::value(d), filter);
 				}
 				break;
 
@@ -129,7 +129,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, (int)Debug::value(d), filter) );
+					vcmd.emplace_back(cmd, (int)Debug::value(d), filter );
 				}
 				break;
 
@@ -143,7 +143,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, (int)Debug::value(d), filter) );
+					vcmd.emplace_back(cmd, (int)Debug::value(d), filter );
 				}
 				break;
 
@@ -156,7 +156,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(LogServerTypes::cmdList, 0, filter) );
+					vcmd.emplace_back(LogServerTypes::cmdList, 0, filter);
 				}
 				break;
 
@@ -169,7 +169,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
+					vcmd.emplace_back(cmd, 0, filter);
 				}
 				break;
 
@@ -182,7 +182,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
+					vcmd.emplace_back(cmd, 0, filter);
 				}
 				break;
 
@@ -195,7 +195,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
+					vcmd.emplace_back(cmd, 0, filter);
 				}
 				break;
 
@@ -209,7 +209,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
+					vcmd.emplace_back(cmd, 0, filter);
 				}
 				break;
 
@@ -222,7 +222,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
+					vcmd.emplace_back(cmd, 0, filter);
 				}
 				break;
 
@@ -248,7 +248,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
+					vcmd.emplace_back(cmd, 0, filter);
 				}
 				break;
 

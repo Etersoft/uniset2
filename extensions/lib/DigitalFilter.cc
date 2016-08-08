@@ -90,7 +90,7 @@ void DigitalFilter::init( int val )
 {
 	buf.clear();
 
-	for( unsigned int i = 0; i < maxsize; i++ )
+	for( size_t i = 0; i < maxsize; i++ )
 		buf.push_back(val);
 
 	w.assign(maxsize, 1.0 / maxsize);
