@@ -646,10 +646,9 @@ bool IONotifyController::addThreshold( ThresholdExtList& lst, ThresholdInfoExt&&
 
 	// запоминаем начальное время
 	struct timeval tm;
-	struct timezone tz;
 	tm.tv_sec = 0;
 	tm.tv_usec = 0;
-	gettimeofday(&tm, &tz);
+	gettimeofday(&tm, NULL);
 	ti.tv_sec  = tm.tv_sec;
 	ti.tv_usec = tm.tv_usec;
 
@@ -713,10 +712,9 @@ void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorIn
 
 	// текущее время
 	struct timeval tm;
-	struct timezone tz;
 	tm.tv_sec = 0;
 	tm.tv_usec = 0;
-	gettimeofday(&tm, &tz);
+	gettimeofday(&tm, NULL);
 
 	{
 		uniset_rwmutex_rlock l(ti->mut);

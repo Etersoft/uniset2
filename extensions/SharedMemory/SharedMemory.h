@@ -358,8 +358,7 @@ class SharedMemory:
 				fuse_sec(0), fuse_usec(0)
 			{
 				struct timeval tv;
-				struct timezone tz;
-				gettimeofday(&tv, &tz);
+				gettimeofday(&tv, NULL);
 				fuse_sec = tv.tv_sec;
 				fuse_usec = tv.tv_usec;
 			}

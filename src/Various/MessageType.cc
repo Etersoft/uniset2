@@ -56,10 +56,9 @@ namespace UniSetTypes
 		supplier(DefaultObjectId),
 		consumer(DefaultObjectId)
 	{
-		struct timezone tz;
 		tm.tv_sec = 0;
 		tm.tv_usec = 0;
-		gettimeofday(&tm, &tz);
+		gettimeofday(&tm,NULL);
 	}
 
 	/*

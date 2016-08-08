@@ -201,8 +201,7 @@ void DBServer_MySQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 		// если время не было выставлено (указываем время сохранения в БД)
 		if( !si->tm.tv_sec )
 		{
-			struct timezone tz;
-			gettimeofday( const_cast<struct timeval*>(&si->tm), &tz);
+			gettimeofday( const_cast<struct timeval*>(&si->tm), NULL);
 		}
 
 		float val = (float)si->value / (float)pow10(si->ci.precision);

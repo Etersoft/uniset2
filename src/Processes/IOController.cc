@@ -305,10 +305,9 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 
 			// запоминаем время изменения
 			struct timeval tm = { 0 };
-			struct timezone tz;
 			tm.tv_sec  = 0;
 			tm.tv_usec = 0;
-			gettimeofday(&tm, &tz);
+			gettimeofday(&tm, NULL);
 			usi->tv_sec  = tm.tv_sec;
 			usi->tv_usec = tm.tv_usec;
 		}
@@ -378,10 +377,9 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi, bool force
 		IOStateList::mapped_type ai = usi;
 		// запоминаем начальное время
 		struct timeval tm;
-		struct timezone tz;
 		tm.tv_sec   = 0;
 		tm.tv_usec  = 0;
-		gettimeofday(&tm, &tz);
+		gettimeofday(&tm,NULL);
 		ai->tv_sec   = tm.tv_sec;
 		ai->tv_usec  = tm.tv_usec;
 		ai->value    = ai->default_val;
