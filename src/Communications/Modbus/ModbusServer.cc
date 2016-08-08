@@ -1692,10 +1692,10 @@ ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessa
 	if( dlog && dlog->is_info() )
 		dlog->info() << "(replySetDateTime): " << query << endl;
 
-	struct timeval set;
 	struct timezone tz;
+	struct timeval set;
 
-	if( gettimeofday(&set, &tz) == 0 )
+	if( gettimeofday(&set,&tz) == 0 )
 	{
 		struct tm  t;
 		localtime_r(&set.tv_sec, &t);

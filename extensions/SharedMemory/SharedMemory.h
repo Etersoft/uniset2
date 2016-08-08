@@ -394,6 +394,8 @@ class SharedMemory:
 			return histSaveTime;    /*!< период между точками "дампа", мсек */
 		}
 
+		// -------------------------------------------------------------------------------
+
 		inline std::shared_ptr<LogAgregator> logAgregator()
 		{
 			return loga;

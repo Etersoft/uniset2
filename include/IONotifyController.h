@@ -51,15 +51,12 @@ class NCRestorer;
 объектов (заказчиков) об изменении состояния датчика (входа или выхода).
 
 Механизм функционирует по следующей логике:
-"заказчики" уведомляют \b IONC о том, об изменении какого именно датчика
-они хотят получать уведомление.
-После чего, если данный датчик меняет своё состояние, заказчику посылается
+"заказчики" уведомляют \b IONC об изменении какого именно датчика они хотят получать уведомление,
+после чего, если данный датчик меняет своё состояние, заказчику посылается
 сообщение UniSetTypes::SensorMessage содержащее информацию о текущем(новом) состоянии датчика,
 времени изменения и т.п. В случае необходимости можно отказатся от уведомления.
 Для заказа датчиков предусмотрен ряд функций. На данный момент рекомендуется
-пользоватся функцией IONotifyController::askSensor. Функции askState и askValue считаются устаревшими
-и оставлены для совместимости со старыми интерфейсами.
-... продолжение следует...
+пользоватся функцией IONotifyController::askSensor.
 
     \section sec_NC_Consumers  Заказчики
 В качестве "заказчиков" могут выступать любые UniSet-объекты (UniSetObject),
@@ -112,11 +109,15 @@ class NCRestorer;
 \note Следует иметь ввиду, что для \b ЗАВИСИМОГО датчика функция setValue(..) действует как обычно и
 даже если он "заблокирован", значение в него можно сохранять. Оно "появиться" как только сниметься блокировка.
 
-\warning Для оптимизации поиска списка заказчиков для конкретного датчика используется поле any (void*) у USensorInfo!
+	\section sec_NC_Optimization Оптимизация работы со списком "заказчиков"
+	Для оптимизации поиска списка заказчиков для конкретного датчика используется поле userdata (void*) у USensorInfo!
+	Это опасный и "некрасивый" хак, но который позволяет избавиться от одного лишнего поиска по unordered_map<SensorID,ConsumerList>.
+	Суть в том что к датчику через usedata мы привязываем указатель на список заказчиков. Сделано через userdata,
+	т.к. сам map "хранится" в IOController и IONotifyController не может поменять тип (в текущей реализации по крайней мере).
+	В userdata задействованы два места (см. UserDataID) для списка заказчиков и для списка порогов.
 */
 //---------------------------------------------------------------------------
 /*! \class IONotifyController
- * \todo Сделать логирование выходов
 
  \section AskSensors Заказ датчиков
 
@@ -140,6 +141,8 @@ class IONotifyController:
 		{
 			return UniSetTypes::ObjectType("IONotifyController");
 		}
+
+
 		virtual void askSensor(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd) override;
 
 		virtual void askThreshold(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci,
@@ -161,12 +164,12 @@ class IONotifyController:
 			public    UniSetTypes::ConsumerInfo
 		{
 			ConsumerInfoExt( const UniSetTypes::ConsumerInfo& ci,
-							 UniSetObject_i_ptr ref = 0, int maxAttemtps = 10 ):
+							 UniSetObject_i_ptr ref = 0, size_t maxAttemtps = 10 ):
 				UniSetTypes::ConsumerInfo(ci),
 				ref(ref), attempt(maxAttemtps) {}
 
 			UniSetObject_i_var ref;
-			int attempt;
+			size_t attempt;
 
 			ConsumerInfoExt( const ConsumerInfoExt& ) = default;
 			ConsumerInfoExt& operator=( const ConsumerInfoExt& ) = default;
