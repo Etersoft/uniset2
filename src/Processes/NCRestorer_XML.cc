@@ -295,7 +295,7 @@ bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode*
 	{
 		ostringstream err;
 		err << "(NCRestorer_XML:getSensorInfo): unknown iotype=" << xml->getProp(it, "iotype")
-			  << " for  " << xml->getProp(it, "name");
+			<< " for  " << xml->getProp(it, "name");
 		ucrit << err.str() << endl;
 		throw SystemError(err.str());
 	}
@@ -334,8 +334,8 @@ bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode*
 		{
 			ostringstream err;
 			err << "(NCRestorer_XML:getSensorInfo): sensor='"
-				  << xml->getProp(it, "name") << "' err: "
-				  << " Unknown SensorID for depend='"  << d_txt;
+				<< xml->getProp(it, "name") << "' err: "
+				<< " Unknown SensorID for depend='"  << d_txt;
 
 			ucrit << err.str() << endl;
 			throw SystemError(err.str());
@@ -491,7 +491,7 @@ bool NCRestorer_XML::getThresholdInfo( const std::shared_ptr<UniXML>& xml, xmlNo
 		{
 			ostringstream err;
 			err << "(NCRestorer_XML:getThresholdInfo): "
-				  << " Not found ID for " << sid_name;
+				<< " Not found ID for " << sid_name;
 
 			ucrit << err.str() << endl;
 			throw SystemError(err.str());
@@ -505,8 +505,8 @@ bool NCRestorer_XML::getThresholdInfo( const std::shared_ptr<UniXML>& xml, xmlNo
 			{
 				ostringstream err;
 				err << "(NCRestorer_XML:getThresholdInfo): "
-					  << " Bad iotype(" << iotype << ") for " << sid_name
-					  << ". iotype must be 'DI' or 'DO'.";
+					<< " Bad iotype(" << iotype << ") for " << sid_name
+					<< ". iotype must be 'DI' or 'DO'.";
 
 				ucrit << err.str() << endl;
 				throw SystemError(err.str());

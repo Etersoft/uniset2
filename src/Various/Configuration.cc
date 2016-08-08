@@ -702,7 +702,7 @@ namespace UniSetTypes
 		return _argc;
 	}
 	// -------------------------------------------------------------------------
-	const char* const*Configuration::getArgv() const
+	const char* const* Configuration::getArgv() const
 	{
 		return _argv;
 	}

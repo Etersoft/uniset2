@@ -312,10 +312,11 @@ bool SharedMemory::activateObject()
 				hit.ioit = myioEnd();
 		}
 
-		for( auto&& it: histmap )
+		for( auto && it : histmap )
 		{
 			auto i = myiofind(it.first);
-			if( i!= myioEnd() )
+
+			if( i != myioEnd() )
 				i->second->userdata[udataHistory] = (void*)(&(it.second));
 		}
 
@@ -755,9 +756,9 @@ void SharedMemory::checkFuse( std::shared_ptr<USensorInfo>& usi, IOController* )
 
 	HistoryItList& lst = *(static_cast<HistoryItList*>(usi->userdata[udataHistory]));
 
-//	auto i = histmap.find(s_it->si.id);
-//	if( i == histmap.end() )
-//		return;
+	//	auto i = histmap.find(s_it->si.id);
+	//	if( i == histmap.end() )
+	//		return;
 
 	long value = 0;
 	long sm_tv_sec = 0;

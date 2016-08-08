@@ -1695,7 +1695,7 @@ ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessa
 	struct timezone tz;
 	struct timeval set;
 
-	if( gettimeofday(&set,&tz) == 0 )
+	if( gettimeofday(&set, &tz) == 0 )
 	{
 		struct tm  t;
 		localtime_r(&set.tv_sec, &t);

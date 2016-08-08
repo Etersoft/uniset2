@@ -121,6 +121,7 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, std::shared_ptr<IOCon
 	{
 		auto i =  ic->myiofind(inf->si.id);
 		ic->askTMap[inf->si.id].usi = i->second;
+
 		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
 		if( i->second )
 			i->second->userdata[IONotifyController::udataThresholdList] = &(ic->askTMap[inf->si.id]);
@@ -149,7 +150,7 @@ NCRestorer::SInfo& NCRestorer::SInfo::operator=( const IOController_i::SensorIOI
 	this->blocked = inf.blocked;
 	this->dbignore = inf.dbignore;
 
-	for( size_t i=0; i<IOController::USensorInfo::MaxUserData; i++ )
+	for( size_t i = 0; i < IOController::USensorInfo::MaxUserData; i++ )
 		this->userdata[i] = nullptr;
 
 	return *this;

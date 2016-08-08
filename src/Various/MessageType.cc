@@ -58,7 +58,7 @@ namespace UniSetTypes
 	{
 		tm.tv_sec = 0;
 		tm.tv_usec = 0;
-		gettimeofday(&tm,NULL);
+		gettimeofday(&tm, NULL);
 	}
 
 	/*

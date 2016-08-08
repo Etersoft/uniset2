@@ -286,7 +286,7 @@ class MBExchange:
 
 		RTUDeviceMap devices;
 		InitList initRegList;    /*!< список регистров для инициализации */
-//		UniSetTypes::uniset_rwmutex pollMutex;
+		//		UniSetTypes::uniset_rwmutex pollMutex;
 
 		virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) = 0;
 

@@ -269,8 +269,9 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
 	{
 		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
 		auto s = myiofind(sid);
+
 		if( s != myioEnd() )
-			s->second->userdata[udataConsumerList] =(void*)(&(askIterator->second));
+			s->second->userdata[udataConsumerList] = (void*)(&(askIterator->second));
 		else
 			s->second->userdata[udataConsumerList] = nullptr;
 	}
@@ -329,6 +330,7 @@ void IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInf
 
 	{
 		uniset_rwmutex_rlock lock(askIOMutex);
+
 		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
 		if( usi->userdata[udataConsumerList] != nullptr )
 		{
@@ -617,6 +619,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
 		}
 
 		it = askTMap.find(sid);
+
 		if( li != myioEnd() )
 		{
 			//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
@@ -698,12 +701,14 @@ void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorIn
 
 	{
 		uniset_rwmutex_rlock lock(trshMutex);
+
 		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
 		if( usi->userdata[udataThresholdList] == nullptr )
 			return;
 
 		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
 		ti = static_cast<ThresholdsListInfo*>(usi->userdata[udataThresholdList]);
+
 		if( ti->list.empty() )
 			return;
 	}
@@ -817,7 +822,7 @@ IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( UniSet
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
-	for( const auto& it2: it->second.list )
+	for( const auto& it2 : it->second.list )
 	{
 		/*! \warning На самом деле список разрешает иметь много порогов с одинаковым ID, для разных "заказчиков".
 		    Но здесь мы возвращаем первый встретившийся..
@@ -877,7 +882,7 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( UniSetTy
 
 	size_t k = 0;
 
-	for( const auto& it2: it->second.list )
+	for( const auto& it2 : it->second.list )
 	{
 		res->tlist[k].id       = it2.id;
 		res->tlist[k].hilimit  = it2.hilimit;
@@ -903,7 +908,7 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 	{
 		size_t i = 0;
 
-		for( auto&& it: askTMap )
+		for( auto && it : askTMap )
 		{
 			try
 			{
@@ -931,7 +936,7 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 
 			size_t k = 0;
 
-			for( const auto& it2: it.second.list )
+			for( const auto& it2 : it.second.list )
 			{
 				(*res)[i].tlist[k].id       = it2.id;
 				(*res)[i].tlist[k].hilimit  = it2.hilimit;
@@ -963,6 +968,7 @@ void IONotifyController::onChangeUndefinedState( std::shared_ptr<USensorInfo>& u
 	{
 		// lock
 		uniset_rwmutex_rlock lock(askIOMutex);
+
 		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
 		if( usi->userdata[udataConsumerList] != nullptr )
 		{

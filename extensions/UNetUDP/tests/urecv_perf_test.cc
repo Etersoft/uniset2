@@ -29,7 +29,7 @@ shared_ptr<SMInterface> smiInstance()
 	return smi;
 }
 // --------------------------------------------------------------------------
-static void run_senders( size_t max, const std::string& s_host, size_t count=50, timeout_t usecpause=50 )
+static void run_senders( size_t max, const std::string& s_host, size_t count = 50, timeout_t usecpause = 50 )
 {
 	ost::IPV4Host host(s_host.c_str());
 
@@ -39,11 +39,11 @@ static void run_senders( size_t max, const std::string& s_host, size_t count=50,
 	cout << "Run " << max << " senders (" << s_host << ")" << endl;
 
 	// make sendesrs..
-	for( size_t i=0; i<max; i++ )
+	for( size_t i = 0; i < max; i++ )
 	{
 		try
 		{
-			auto s = make_shared<ost::UDPSocket>(host,begPort+i);
+			auto s = make_shared<ost::UDPSocket>(host, begPort + i);
 			vsend.emplace_back(s);
 		}
 		catch( ost::SockException& e )
@@ -71,12 +71,12 @@ static void run_senders( size_t max, const std::string& s_host, size_t count=50,
 	for( size_t i = 0; i < count; i++ )
 		mypack.addDData(i, i);
 
-	for( size_t i=0; i<max; i++ )
+	for( size_t i = 0; i < max; i++ )
 	{
 		try
 		{
 			if( vsend[i] )
-				vsend[i]->setPeer(host, begPort+i);
+				vsend[i]->setPeer(host, begPort + i);
 		}
 		catch( ost::SockException& e )
 		{
@@ -104,7 +104,7 @@ static void run_senders( size_t max, const std::string& s_host, size_t count=50,
 		if( packetnum == 0 )
 			packetnum = 1;
 
-		for( auto&& udp: vsend )
+		for( auto && udp : vsend )
 		{
 			try
 			{
@@ -127,6 +127,7 @@ static void run_senders( size_t max, const std::string& s_host, size_t count=50,
 			}
 
 		}
+
 		usleep(usecpause);
 	}
 }
@@ -137,16 +138,17 @@ static void run_test( size_t max, const std::string& host )
 	vrecv.reserve(max);
 
 	// make receivers..
-	for( size_t i=0; i<max; i++ )
+	for( size_t i = 0; i < max; i++ )
 	{
-		auto r = make_shared<UNetReceiver>(host,begPort+i,smiInstance());
+		auto r = make_shared<UNetReceiver>(host, begPort + i, smiInstance());
 		r->setLockUpdate(true);
 		vrecv.emplace_back(r);
 	}
 
 	size_t count = 0;
+
 	// Run receivers..
-	for( auto&& r: vrecv )
+	for( auto && r : vrecv )
 	{
 		if( r )
 		{
@@ -160,7 +162,7 @@ static void run_test( size_t max, const std::string& host )
 	// wait..
 	pause();
 
-	for( auto&& r: vrecv )
+	for( auto && r : vrecv )
 	{
 		if(r)
 			r->stop();
@@ -170,14 +172,15 @@ static void run_test( size_t max, const std::string& host )
 int main(int argc, char* argv[] )
 {
 	std::string host = "127.255.255.255";
+
 	try
 	{
 		auto conf = uniset_init(argc, argv);
 
-		if( argc > 1 && !strcmp(argv[1],"s") )
-			run_senders(10,host);
+		if( argc > 1 && !strcmp(argv[1], "s") )
+			run_senders(10, host);
 		else
-			run_test(10,host);
+			run_test(10, host);
 
 		return 0;
 	}

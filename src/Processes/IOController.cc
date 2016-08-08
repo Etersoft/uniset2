@@ -379,7 +379,7 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi, bool force
 		struct timeval tm;
 		tm.tv_sec   = 0;
 		tm.tv_usec  = 0;
-		gettimeofday(&tm,NULL);
+		gettimeofday(&tm, NULL);
 		ai->tv_sec   = tm.tv_sec;
 		ai->tv_usec  = tm.tv_usec;
 		ai->value    = ai->default_val;
@@ -776,7 +776,7 @@ IOController::ChangeUndefinedStateSignal IOController::signal_change_undefined_s
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
-//	uniset_rwmutex_rlock lock(it->second->val_lock);
+	//	uniset_rwmutex_rlock lock(it->second->val_lock);
 	return it->second->sigUndefChange;
 }
 // -----------------------------------------------------------------------------

@@ -91,6 +91,7 @@ bool ModbusTCPServer::isActive() const
 void ModbusTCPServer::evprepare()
 {
 	ost::Thread::setException(ost::Thread::throwException);
+
 	try
 	{
 		sock = make_shared<UTCPSocket>(iaddr, port);

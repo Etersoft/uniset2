@@ -218,6 +218,7 @@ void UNetReceiver::start()
 	{
 		activated = true;
 		loop.evrun(this, true);
+
 		if( !upThread->isRunning() )
 			upThread->start();
 	}
@@ -280,9 +281,9 @@ void UNetReceiver::statisticsEvent(ev::periodic& tm, int revents)
 	}
 
 	unetlog9 << myname << "(statisctics):"
-		 << " recvCount=" << recvCount << "[per sec]"
-		 << " upCount=" << upCount << "[per sec]"
-		 << endl;
+			 << " recvCount=" << recvCount << "[per sec]"
+			 << " upCount=" << upCount << "[per sec]"
+			 << endl;
 
 	recvCount = 0;
 	upCount = 0;

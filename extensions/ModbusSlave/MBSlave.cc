@@ -180,8 +180,10 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 		ostringstream n;
 		n << prefix << "-exchangelog";
 		auto l = loga->create(n.str());
+
 		if( mblog->is_crit() )
 			l->addLevel(Debug::CRIT);
+
 		if( mblog->is_warn() )
 			l->addLevel(Debug::WARN);
 
@@ -215,6 +217,7 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 
 		if( mblog->is_crit() )
 			l->addLevel(Debug::CRIT);
+
 		if( mblog->is_warn() )
 			l->addLevel(Debug::WARN);
 
@@ -630,6 +633,7 @@ void MBSlave::execute_tcp()
 	tcpCancelled = false;
 
 	ost::Thread::setException(ost::Thread::throwException);
+
 	try
 	{
 		tcpserver->run( vaddr, true );
