@@ -38,7 +38,7 @@ class UTCPStream:
 		// return true if OK
 		bool setKeepAliveParams( timeout_t timeout_sec = 5, int conn_keepcnt = 1, int keepintvl = 2 );
 
-		bool isSetLinger();
+		bool isSetLinger() const;
 		void forceDisconnect(); // disconnect() без ожидания (с отключением SO_LINGER)
 
 		/*!
@@ -58,7 +58,8 @@ class UTCPStream:
 		ssize_t writeData( const void* buf, size_t len, timeout_t t = 0 );
 		ssize_t readData( void* buf, size_t len, char separator = 0, timeout_t t = 0 );
 
-		int getSocket();
+		int getSocket() const;
+		timeout_t getTimeout() const;
 
 	protected:
 

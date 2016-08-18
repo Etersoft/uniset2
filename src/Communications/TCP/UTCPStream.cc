@@ -42,7 +42,7 @@ bool UTCPStream::setKeepAliveParams(timeout_t timeout_sec, int keepcnt, int keep
 	return UTCPCore::setKeepAliveParams(so, timeout_sec, keepcnt, keepintvl);
 }
 // -------------------------------------------------------------------------
-bool UTCPStream::isSetLinger()
+bool UTCPStream::isSetLinger() const
 {
 	return Socket::flags.linger;
 }
@@ -70,9 +70,14 @@ ssize_t UTCPStream::readData(void* buf, size_t len, char separator, timeout_t t)
 	return TCPStream::readData(buf, len, separator, t);
 }
 // -------------------------------------------------------------------------
-int UTCPStream::getSocket()
+int UTCPStream::getSocket() const
 {
 	return TCPStream::so;
+}
+// -------------------------------------------------------------------------
+timeout_t UTCPStream::getTimeout() const
+{
+	return TCPStream::timeout;
 }
 // -------------------------------------------------------------------------
 void UTCPStream::create( const std::string& hname, int port, bool throwflag, timeout_t t )

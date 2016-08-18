@@ -565,7 +565,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 
 
 		// ДЛЯ ТОГО ЧТОБЫ НЕ ЖДАТЬ ПРОДОЛЖЕНИЯ БЕЗКОНЕЧНО СБРАСЫВАЕМ TIMEOUT
-		setChannelTimeout(10); // 10 msec
+		// setChannelTimeout(10); // 10 msec
 
 		// Получаем остальную часть сообщения
 		size_t rlen = getNextData((unsigned char*)(rbuf.data), rbuf.dlen);
