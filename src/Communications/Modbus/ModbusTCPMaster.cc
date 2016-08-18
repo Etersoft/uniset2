@@ -325,8 +325,8 @@ bool ModbusTCPMaster::waitInput( int msec )
 	if( !tcp )
 		return false;
 
-	FD_ZERO (&s_set);
-	FD_SET (tcp->getSocket(), &s_set);
+//	FD_ZERO (&s_set);
+//	FD_SET (tcp->getSocket(), &s_set);
 
 	s_timeout.tv_sec = 0;
 	s_timeout.tv_usec = 1000*msec;
@@ -339,8 +339,8 @@ bool ModbusTCPMaster::waitOutput( int timeout_msec )
 	if( !tcp )
 		return false;
 
-	FD_ZERO (&s_set);
-	FD_SET (tcp->getSocket(), &s_set);
+//	FD_ZERO (&s_set);
+//	FD_SET (tcp->getSocket(), &s_set);
 
 	s_timeout.tv_sec = 0;
 	s_timeout.tv_usec = 1000*timeout_msec;
@@ -401,6 +401,9 @@ void ModbusTCPMaster::reconnect()
 		tcp->setTimeout(replyTimeOut_ms);
 		tcp->setKeepAliveParams((replyTimeOut_ms > 1000 ? replyTimeOut_ms / 1000 : 1));
 		tcp->setNoDelay(true);
+
+		FD_ZERO (&s_set);
+		FD_SET (tcp->getSocket(), &s_set);
 	}
 	catch( const std::exception& e )
 	{
@@ -456,6 +459,9 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
 		tcp->setTimeout(replyTimeOut_ms);
 		tcp->setKeepAliveParams((replyTimeOut_ms > 1000 ? replyTimeOut_ms / 1000 : 1));
 		tcp->setNoDelay(true);
+
+		FD_ZERO (&s_set);
+		FD_SET (tcp->getSocket(), &s_set);
 	}
 	catch( const std::exception& e )
 	{
