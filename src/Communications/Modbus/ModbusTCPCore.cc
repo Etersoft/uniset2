@@ -20,6 +20,7 @@ using namespace std;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
 #define USE_BUFFER_FOR_READ 1
+#define DEFAULT_BUFFER_SIZE_FOR_READ 255
 // -------------------------------------------------------------------------
 size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 								   std::queue<unsigned char>& qrecv, size_t max, timeout_t t )
@@ -30,6 +31,8 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 	size_t i = 0;
 
 #ifdef USE_BUFFER_FOR_READ
+
+	max = std::max(max,(size_t)DEFAULT_BUFFER_SIZE_FOR_READ);
 
 	char* buf = new char[max];
 
