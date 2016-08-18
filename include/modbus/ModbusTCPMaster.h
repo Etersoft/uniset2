@@ -56,6 +56,9 @@ class ModbusTCPMaster:
 		virtual ModbusRTU::mbErrCode query( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& msg,
 											ModbusRTU::ModbusMessage& reply, timeout_t timeout ) override;
 
+		bool waitInput( int timeout_msec );
+		bool waitOutput( int timeout_msec );
+
 	private:
 		//ost::TCPStream* tcp;
 		std::shared_ptr<UTCPStream> tcp;
@@ -66,6 +69,10 @@ class ModbusTCPMaster:
 		int port = { 0 };
 		bool force_disconnect = { false };
 		int keepAliveTimeout = { 1000 };
+
+		// структура для реализации использования select
+		fd_set s_set;
+		timeval s_timeout;
 };
 // -------------------------------------------------------------------------
 #endif // ModbusTCPMaster_H_

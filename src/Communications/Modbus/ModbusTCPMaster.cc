@@ -116,9 +116,10 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 		msg.makeHead(++nTransaction, crcNoCheckit);
 
-		for( unsigned int i = 0; i < 2; i++ )
+		for( size_t i = 0; i < 2; i++ )
 		{
-			if( tcp->isPending(ost::Socket::pendingOutput, timeout) )
+			//if( tcp->isPending(ost::Socket::pendingOutput, timeout) )
+			if( waitOutput(timeout) )
 			{
 				mbErrCode res = send(msg);
 
@@ -165,7 +166,8 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		tcp->sync();
 
 		//reply.clear();
-		if( tcp->isPending(ost::Socket::pendingInput, timeout) )
+		//if( tcp->isPending(ost::Socket::pendingInput, timeout) )
+		if( waitInput(timeout) )
 		{
 			size_t ret = 0;
 
@@ -176,7 +178,8 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				if( ret == sizeof(reply.aduhead) )
 					break;
 
-				if( !tcp->isPending(ost::Socket::pendingInput, timeout) )
+				//if( !tcp->isPending(ost::Socket::pendingInput, timeout) )
+				if( !waitInput(timeout) )
 					break;
 			}
 
@@ -315,6 +318,35 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 	}
 
 	return erTimeOut; // erHardwareError
+}
+// -------------------------------------------------------------------------
+bool ModbusTCPMaster::waitInput( int msec )
+{
+	if( !tcp )
+		return false;
+
+	FD_ZERO (&s_set);
+	FD_SET (tcp->getSocket(), &s_set);
+
+	s_timeout.tv_sec = 0;
+	s_timeout.tv_usec = 1000*msec;
+
+	return ( select( 1+(int)tcp->getSocket(), &s_set, NULL, NULL, &s_timeout) > 0 );
+}
+// -------------------------------------------------------------------------
+bool ModbusTCPMaster::waitOutput( int timeout_msec )
+{
+	if( !tcp )
+		return false;
+
+	FD_ZERO (&s_set);
+	FD_SET (tcp->getSocket(), &s_set);
+
+	s_timeout.tv_sec = 0;
+	s_timeout.tv_usec = 1000*timeout_msec;
+
+	//return ( select(FD_SETSIZE, NULL, &s_set, NULL, &s_timeout) > 0 );
+	return ( select(1+(int)tcp->getSocket(), NULL, &s_set, NULL, &s_timeout) > 0 );
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::cleanInputStream()
