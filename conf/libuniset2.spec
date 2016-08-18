@@ -490,6 +490,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 * Fri Aug 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt7
 - minor fixes
 
+* Fri Aug 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt6.1
+- test build
+
 * Tue Aug 09 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt6
 - build new version (optimization, refactoring)
 
