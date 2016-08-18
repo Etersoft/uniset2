@@ -377,14 +377,14 @@ int main( int argc, char** argv )
 
 						cout << "(reply): count=" << (int)ret.bcnt
 							 << "(" << ModbusRTU::dat2str(ret.bcnt) << ")"
-							 << " time: " << elapsed_usec << " usec"
+							 << " usec: " << elapsed_usec
 							 << endl;
 
 						for( int i = 0; i < ret.bcnt; i++ )
 						{
 							ModbusRTU::DataBits b(ret.data[i]);
 
-							cout << i << ": "
+							cout << setw(3) << i << ": "
 								 << setw(6) << (reg + 8 * i)
 								 << "(" << setw(6) << ModbusRTU::dat2str( reg + 8 * i ) << ") = "
 								 << setw(5) << (int)(ret.data[i])
@@ -413,14 +413,14 @@ int main( int argc, char** argv )
 
 						cout << "(reply): count=" << (int)ret.bcnt
 							 << "(" << ModbusRTU::dat2str(ret.bcnt) << ")"
-							 << " time: " << elapsed_usec << " usec"
+							 << " usec: " << elapsed_usec
 							 << endl;
 
 						for( int i = 0; i < ret.bcnt; i++ )
 						{
 							ModbusRTU::DataBits b(ret.data[i]);
 
-							cout << i << ": "
+							cout << setw(3) << i << ": "
 								 << setw(6) << (reg + 8 * i)
 								 << "(" << setw(6) <<  ModbusRTU::dat2str( reg + 8 * i ) << ") = "
 								 << setw(5) << (int)(ret.data[i])
@@ -449,14 +449,14 @@ int main( int argc, char** argv )
 
 						cout << "(reply): count=" << (int)ret.count
 							 << "(" << ModbusRTU::dat2str(ret.count) << ")"
-							 << " time: " << elapsed_usec << " usec"
+							 << " usec: " << elapsed_usec
 							 << endl;
 
 						for( size_t i = 0; i < ret.count; i++ )
 						{
 							ModbusRTU::DataBits16 b(ret.data[i]);
 
-							cout << i << ": "
+							cout << setw(3) << i << ": "
 								 << setw(6) << ( reg + i )
 								 << "(" << setw(6) << ModbusRTU::dat2str( reg + i ) << ") = "
 								 << setw(5) << (int)(ret.data[i])
@@ -490,14 +490,14 @@ int main( int argc, char** argv )
 
 						cout << "(reply): count=" << (int)ret.count
 							 << "(" << ModbusRTU::dat2str(ret.count) << ")"
-							 << " time: " << elapsed_usec << " usec"
+							 << " usec: " << elapsed_usec
 							 << endl;
 
 						for( size_t i = 0; i < ret.count; i++ )
 						{
 							ModbusRTU::DataBits16 b(ret.data[i]);
 
-							cout << i << ": "
+							cout << setw(3) << i << ": "
 								 << setw(6) << ( reg + i )
 								 << "(" << setw(6) << ModbusRTU::dat2str( reg + i ) << ") = "
 								 << setw(5) << (int)(ret.data[i])
@@ -547,7 +547,7 @@ int main( int argc, char** argv )
 
 						if( verb )
 							cout << "(reply): " << ret
-								 << " time: " << elapsed_usec << " usec"
+								 << " usec: " << elapsed_usec
 								 << endl;
 					}
 					break;
@@ -569,7 +569,7 @@ int main( int argc, char** argv )
 
 						if( verb )
 							cout << "(reply): " << ret
-								 << " time: " << elapsed_usec << " usec"
+								 << " usec: " << elapsed_usec
 								 << endl;
 
 					}
@@ -640,7 +640,7 @@ int main( int argc, char** argv )
 
 						if( verb )
 							cout << "(reply): " << ret
-								 << " time: " << elapsed_usec << " usec"
+								 << " usec: " << elapsed_usec
 								 << endl;
 
 					}
