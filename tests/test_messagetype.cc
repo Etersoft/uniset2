@@ -190,12 +190,12 @@ TEST_CASE("ConfirmMessage", "[basic][message types][ConfirmMessage]" )
 	ObjectId sid = 1;
 	double val = 100;
 	time_t t_sec = 10;
-	time_t t_usec = 300;
+	time_t t_nsec = 300;
 	time_t t_confirm = 10;
 
 	SECTION("Default consturctor")
 	{
-		ConfirmMessage cm(sid, val, t_sec, t_usec, t_confirm);
+		ConfirmMessage cm(sid, val, t_sec, t_nsec, t_confirm);
 		CHECK( cm.type == Message::Confirm );
 		CHECK( cm.priority == Message::Medium );
 		CHECK( cm.node == conf->getLocalNode() );
@@ -204,7 +204,7 @@ TEST_CASE("ConfirmMessage", "[basic][message types][ConfirmMessage]" )
 		REQUIRE( cm.sensor_id == sid );
 		REQUIRE( cm.value == val );
 		REQUIRE( cm.time == t_sec );
-		REQUIRE( cm.time_usec == t_usec );
+		REQUIRE( cm.time_nsec == t_nsec );
 		REQUIRE( cm.confirm == t_confirm );
 		CHECK( cm.broadcast == false );
 		CHECK( cm.route == false );
@@ -212,11 +212,11 @@ TEST_CASE("ConfirmMessage", "[basic][message types][ConfirmMessage]" )
 
 	SECTION("Transport ConfirmMessage")
 	{
-		ConfirmMessage cm(sid, val, t_sec, t_usec, t_confirm);
+		ConfirmMessage cm(sid, val, t_sec, t_nsec, t_confirm);
 		REQUIRE( cm.sensor_id == sid );
 		REQUIRE( cm.value == val );
 		REQUIRE( cm.time == t_sec );
-		REQUIRE( cm.time_usec == t_usec );
+		REQUIRE( cm.time_nsec == t_nsec );
 		REQUIRE( cm.confirm == t_confirm );
 
 		auto tm = cm.transport_msg();
@@ -228,7 +228,7 @@ TEST_CASE("ConfirmMessage", "[basic][message types][ConfirmMessage]" )
 		REQUIRE( cm2.sensor_id == sid );
 		REQUIRE( cm2.value == val );
 		REQUIRE( cm2.time == t_sec );
-		REQUIRE( cm2.time_usec == t_usec );
+		REQUIRE( cm2.time_nsec == t_nsec );
 		REQUIRE( cm2.confirm == t_confirm );
 	}
 }

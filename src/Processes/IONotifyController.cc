@@ -316,8 +316,8 @@ void IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInf
 		sm.priority     = (Message::Priority)usi->priority;
 		sm.supplier     = sup_id; // owner_id
 		sm.sensor_type  = usi->type;
-		sm.sm_tv_sec    = usi->tv_sec;
-		sm.sm_tv_usec   = usi->tv_usec;
+		sm.sm_tv.tv_sec    = usi->tv_sec;
+		sm.sm_tv.tv_nsec   = usi->tv_nsec;
 		sm.ci           = usi->ci;
 	} // unlock
 
@@ -648,12 +648,10 @@ bool IONotifyController::addThreshold( ThresholdExtList& lst, ThresholdInfoExt&&
 	addConsumer(ti.clst, ci);
 
 	// запоминаем начальное время
-	struct timeval tm;
-	tm.tv_sec = 0;
-	tm.tv_usec = 0;
-	gettimeofday(&tm, NULL);
+	struct timespec tm;
+	::clock_gettime(CLOCK_REALTIME, &tm);
 	ti.tv_sec  = tm.tv_sec;
-	ti.tv_usec = tm.tv_usec;
+	ti.tv_nsec = tm.tv_nsec;
 
 	lst.emplace_back( std::move(ti) );
 	return true;
@@ -716,10 +714,8 @@ void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorIn
 	SensorMessage sm(std::move(usi->makeSensorMessage()));
 
 	// текущее время
-	struct timeval tm;
-	tm.tv_sec = 0;
-	tm.tv_usec = 0;
-	gettimeofday(&tm, NULL);
+	struct timespec tm;
+	::clock_gettime(CLOCK_REALTIME, &tm);
 
 	{
 		uniset_rwmutex_rlock l(ti->mut);
@@ -761,9 +757,8 @@ void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorIn
 
 			// запоминаем время изменения состояния
 			it->tv_sec     = tm.tv_sec;
-			it->tv_usec    = tm.tv_usec;
-			sm.sm_tv_sec   = tm.tv_sec;
-			sm.sm_tv_usec  = tm.tv_usec;
+			it->tv_nsec    = tm.tv_nsec;
+			sm.sm_tv   = tm;
 
 			// если порог связан с датчиком, то надо его выставить
 			if( it->sid != UniSetTypes::DefaultObjectId )
@@ -889,7 +884,7 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( UniSetTy
 		res->tlist[k].lowlimit = it2.lowlimit;
 		res->tlist[k].state    = it2.state;
 		res->tlist[k].tv_sec   = it2.tv_sec;
-		res->tlist[k].tv_usec  = it2.tv_usec;
+		res->tlist[k].tv_nsec  = it2.tv_nsec;
 		k++;
 	}
 
@@ -943,7 +938,7 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 				(*res)[i].tlist[k].lowlimit = it2.lowlimit;
 				(*res)[i].tlist[k].state    = it2.state;
 				(*res)[i].tlist[k].tv_sec   = it2.tv_sec;
-				(*res)[i].tlist[k].tv_usec  = it2.tv_usec;
+				(*res)[i].tlist[k].tv_nsec  = it2.tv_nsec;
 				k++;
 			}
 

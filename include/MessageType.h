@@ -56,8 +56,7 @@ namespace UniSetTypes
 			ObjectId node = { UniSetTypes::DefaultObjectId };      // откуда
 			ObjectId supplier = { UniSetTypes::DefaultObjectId };  // от кого
 			ObjectId consumer = { UniSetTypes::DefaultObjectId };  // кому
-			struct timeval tm = { 0, 0 };
-
+			struct timespec tm = { 0, 0 };
 
 			Message( Message&& ) = default;
 			Message& operator=(Message&& ) = default;
@@ -106,7 +105,7 @@ namespace UniSetTypes
 				if( tm.tv_sec != msg.tm.tv_sec )
 					return tm.tv_sec >= msg.tm.tv_sec;
 
-				return tm.tv_usec >= msg.tm.tv_usec;
+				return tm.tv_nsec >= msg.tm.tv_nsec;
 			}
 
 			inline TransportMessage transport_msg() const
@@ -127,8 +126,7 @@ namespace UniSetTypes
 			bool undefined;
 
 			// время изменения состояния датчика
-			long sm_tv_sec;
-			long sm_tv_usec;
+			struct timespec sm_tv;
 
 			UniversalIO::IOType sensor_type;
 			IOController_i::CalibrateInfo ci;
@@ -233,7 +231,7 @@ namespace UniSetTypes
 			ConfirmMessage(ObjectId in_sensor_id,
 						   double in_value,
 						   time_t in_time,
-						   time_t in_time_usec,
+						   time_t in_time_nsec,
 						   time_t in_confirm,
 						   Priority in_priority = Message::Medium);
 
@@ -245,7 +243,7 @@ namespace UniSetTypes
 			ObjectId sensor_id;   /* ID датчика */
 			double value;     /* значение датчика */
 			time_t time;      /* время, когда датчик получил сигнал */
-			time_t time_usec; /* время в микросекундах */
+			time_t time_nsec; /* время в наносекундах */
 			time_t confirm;   /* время, когда произошло квитирование */
 
 			bool broadcast;

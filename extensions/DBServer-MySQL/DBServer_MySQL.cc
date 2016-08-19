@@ -106,7 +106,7 @@ void DBServer_MySQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 			 << " WHERE sensor_id='" << cem->sensor_id << "'"
 			 << " AND date='" << dateToString(cem->time, "-") << " '"
 			 << " AND time='" << timeToString(cem->time, ":") << " '"
-			 << " AND time_usec='" << cem->time_usec << " '";
+			 << " AND time_nsec='" << cem->time_nsec << " '";
 
 		dbinfo << myname << "(update_confirm): " << data.str() << endl;
 
@@ -201,7 +201,12 @@ void DBServer_MySQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 		// если время не было выставлено (указываем время сохранения в БД)
 		if( !si->tm.tv_sec )
 		{
-			gettimeofday( const_cast<struct timeval*>(&si->tm), NULL);
+			// Выдаём CRIT, но тем не менее сохраняем в БД
+
+			dbcrit << myname << "(insert_main_history): UNKNOWN TIMESTAMP! (tm.tv_sec=0)"
+				   << " for sid=" << si->id
+				   << " supplier=" << uniset_conf()->oind->getMapName(si->supplier)
+				   << endl;
 		}
 
 		float val = (float)si->value / (float)pow10(si->ci.precision);
@@ -209,11 +214,11 @@ void DBServer_MySQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 		// см. DBTABLE AnalogSensors, DigitalSensors
 		ostringstream data;
 		data << "INSERT INTO " << tblName(si->type)
-			 << "(date, time, time_usec, sensor_id, value, node) VALUES( '"
+			 << "(date, time, time_nsec, sensor_id, value, node) VALUES( '"
 			 // Поля таблицы
-			 << dateToString(si->sm_tv_sec, "-") << "','"   //  date
-			 << timeToString(si->sm_tv_sec, ":") << "','"   //  time
-			 << si->sm_tv_usec << "','"                //  time_usec
+			 << dateToString(si->sm_tv.tv_sec, "-") << "','"   //  date
+			 << timeToString(si->sm_tv.tv_sec, ":") << "','"   //  time
+			 << si->sm_tv.tv_nsec << "','"                //  time_nsec
 			 << si->id << "','"                    //  sensor_id
 			 << val << "','"                //  value
 			 << si->node << "')";                //  node

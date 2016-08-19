@@ -539,7 +539,7 @@ std::ostream& UniSetTypes::operator<<( std::ostream& os, const IONotifyControlle
 	   << " lowlim=" << ti.lowlimit
 	   << " state=" << ti.state
 	   << " tv_sec=" << ti.tv_sec
-	   << " tv_usec=" << ti.tv_usec
+	   << " tv_nsec=" << ti.tv_nsec
 	   << " invert=" << ti.invert
 	   << " ]";
 
@@ -549,7 +549,7 @@ std::ostream& UniSetTypes::operator<<( std::ostream& os, const IONotifyControlle
 std::ostream& UniSetTypes::operator<<( std::ostream& os, const IOController_i::ShortIOInfo& s )
 {
 	os << setw(10) << dateToString(s.tv_sec)
-	   << " " << setw(8) << timeToString(s.tv_sec) << "." << s.tv_usec
+	   << " " << setw(8) << timeToString(s.tv_sec) << "." << s.tv_nsec
 	   << " [ value=" << s.value << " supplier=" << s.supplier << " ]";
 
 	return os;

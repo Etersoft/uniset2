@@ -761,13 +761,13 @@ void SharedMemory::checkFuse( std::shared_ptr<USensorInfo>& usi, IOController* )
 	//		return;
 
 	long value = 0;
-	long sm_tv_sec = 0;
-	long sm_tv_usec = 0;
+	unsigned long sm_tv_sec = 0;
+	unsigned long sm_tv_nsec = 0;
 	{
 		uniset_rwmutex_rlock lock(usi->val_lock);
 		value = usi->value;
 		sm_tv_sec = usi->tv_sec;
-		sm_tv_usec = usi->tv_usec;
+		sm_tv_nsec = usi->tv_nsec;
 	}
 
 	sminfo << myname << "(updateHistory): "
@@ -792,7 +792,7 @@ void SharedMemory::checkFuse( std::shared_ptr<USensorInfo>& usi, IOController* )
 				sminfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
 				it->fuse_sec = sm_tv_sec;
-				it->fuse_usec = sm_tv_usec;
+				it->fuse_usec = sm_tv_nsec;
 				m_historySignal.emit( (*it) );
 			}
 		}
@@ -811,7 +811,7 @@ void SharedMemory::checkFuse( std::shared_ptr<USensorInfo>& usi, IOController* )
 					sminfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
 					it->fuse_sec = sm_tv_sec;
-					it->fuse_usec = sm_tv_usec;
+					it->fuse_usec = sm_tv_nsec;
 					m_historySignal.emit( (*it) );
 				}
 			}
@@ -822,7 +822,7 @@ void SharedMemory::checkFuse( std::shared_ptr<USensorInfo>& usi, IOController* )
 					sminfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
 					it->fuse_sec = sm_tv_sec;
-					it->fuse_usec = sm_tv_usec;
+					it->fuse_usec = sm_tv_nsec;
 					m_historySignal.emit( (*it) );
 				}
 			}

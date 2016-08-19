@@ -237,7 +237,7 @@ class IONotifyController:
 				r.lowlimit = lowlimit;
 				r.invert = invert;
 				r.tv_sec = tv_sec;
-				r.tv_usec = tv_usec;
+				r.tv_nsec = tv_nsec;
 				r.state = state;
 				return r;
 			}

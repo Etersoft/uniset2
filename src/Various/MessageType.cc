@@ -19,6 +19,7 @@
 */
 // --------------------------------------------------------------------------
 
+#include <chrono>
 #include <unistd.h>
 #include <time.h>
 #include <sys/time.h>
@@ -56,21 +57,9 @@ namespace UniSetTypes
 		supplier(DefaultObjectId),
 		consumer(DefaultObjectId)
 	{
-		tm.tv_sec = 0;
-		tm.tv_usec = 0;
-		gettimeofday(&tm, NULL);
+		::clock_gettime(CLOCK_REALTIME, &tm);
 	}
 
-	/*
-	template<class In>
-	TransportMessage Message::transport(const In &msg)
-	{
-	    TransportMessage tmsg;
-	    assert(sizeof(UniSetTypes::RawDataOfTransportMessage)>=sizeof(msg));
-	    memcpy(&tmsg.data,&msg,sizeof(msg));
-	    return tmsg;
-	}
-	*/
 	//--------------------------------------------------------------------------------------------
 
 	VoidMessage::VoidMessage( const TransportMessage& tm ):
@@ -95,10 +84,8 @@ namespace UniSetTypes
 		threshold(false),
 		tid(UniSetTypes::DefaultThresholdId)
 	{
-		type        = Message::SensorInfo;
-		sm_tv_sec   = tm.tv_sec;
-		sm_tv_usec  = tm.tv_usec;
-
+		type    = Message::SensorInfo;
+		sm_tv   = tm; // или инициализировать нулём ?
 		ci.minRaw = 0;
 		ci.maxRaw = 0;
 		ci.minCal = 0;
@@ -120,8 +107,7 @@ namespace UniSetTypes
 		type            = Message::SensorInfo;
 		this->priority     = priority;
 		this->consumer     = consumer;
-		sm_tv_sec         = tm.tv_sec;
-		sm_tv_usec         = tm.tv_usec;
+		sm_tv = tm;
 	}
 
 	SensorMessage::SensorMessage(const VoidMessage* msg):
@@ -212,13 +198,13 @@ namespace UniSetTypes
 	ConfirmMessage::ConfirmMessage( UniSetTypes::ObjectId in_sensor_id,
 									double in_value,
 									time_t in_time,
-									time_t in_time_usec,
+									time_t in_time_nsec,
 									time_t in_confirm,
 									Priority in_priority ):
 		sensor_id(in_sensor_id),
 		value(in_value),
 		time(in_time),
-		time_usec(in_time_usec),
+		time_nsec(in_time_nsec),
 		confirm(in_confirm),
 		broadcast(false),
 		route(false)

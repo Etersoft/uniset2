@@ -326,8 +326,8 @@ class IOController:
 				{
 					UniSetTypes::uniset_rwmutex_rlock lock(val_lock);
 					sm.value        = value;
-					sm.sm_tv_sec    = tv_sec;
-					sm.sm_tv_usec   = tv_usec;
+					sm.sm_tv.tv_sec    = tv_sec;
+					sm.sm_tv.tv_nsec   = tv_nsec;
 					sm.ci           = ci;
 					sm.supplier     = supplier;
 					sm.undefined    = undefined;

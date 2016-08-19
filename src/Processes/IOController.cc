@@ -304,12 +304,10 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 			usi->value = (blocked ? usi->d_off_value : value);
 
 			// запоминаем время изменения
-			struct timeval tm = { 0 };
-			tm.tv_sec  = 0;
-			tm.tv_usec = 0;
-			gettimeofday(&tm, NULL);
+			struct timespec tm;
+			::clock_gettime(CLOCK_REALTIME, &tm);
 			usi->tv_sec  = tm.tv_sec;
-			usi->tv_usec = tm.tv_usec;
+			usi->tv_nsec = tm.tv_nsec;
 		}
 	}    // unlock
 
@@ -376,12 +374,10 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi, bool force
 
 		IOStateList::mapped_type ai = usi;
 		// запоминаем начальное время
-		struct timeval tm;
-		tm.tv_sec   = 0;
-		tm.tv_usec  = 0;
-		gettimeofday(&tm, NULL);
+		struct timespec tm;
+		::clock_gettime(CLOCK_REALTIME, &tm);
 		ai->tv_sec   = tm.tv_sec;
-		ai->tv_usec  = tm.tv_usec;
+		ai->tv_nsec  = tm.tv_nsec;
 		ai->value    = ai->default_val;
 		ai->supplier = getId();
 
@@ -426,8 +422,6 @@ void IOController::logging( UniSetTypes::SensorMessage& sm )
 
 	try
 	{
-		//        struct timezone tz;
-		//        gettimeofday(&sm.tm,&tz);
 		ObjectId dbID = uniset_conf()->getDBServer();
 
 		// значит на этом узле нет DBServer-а
@@ -701,7 +695,7 @@ IOController_i::ShortIOInfo IOController::getChangedTime( UniSetTypes::ObjectId 
 		uniset_rwmutex_rlock lock(s->val_lock);
 		i.value = s->value;
 		i.tv_sec = s->tv_sec;
-		i.tv_usec = s->tv_usec;
+		i.tv_nsec = s->tv_nsec;
 		i.supplier = s->supplier;
 		return i;
 	}
