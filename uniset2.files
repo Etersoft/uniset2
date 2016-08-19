@@ -508,6 +508,7 @@ Utilities/codegen/skel.src.xml
 Utilities/MBTester/Makefile.am
 Utilities/MBTester/mbrtuslave.cc
 Utilities/MBTester/mbrtutester.cc
+Utilities/MBTester/mbtcptester.cc
 Utilities/MBTester/MBSlave.cc
 Utilities/MBTester/mbslave.cc
 Utilities/MBTester/MBSlave.h

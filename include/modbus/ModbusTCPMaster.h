@@ -65,6 +65,7 @@ class ModbusTCPMaster:
 		std::string iaddr = { "" };
 		int port = { 0 };
 		bool force_disconnect = { false };
+		int keepAliveTimeout = { 1000 };
 };
 // -------------------------------------------------------------------------
 #endif // ModbusTCPMaster_H_

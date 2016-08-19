@@ -65,7 +65,14 @@ void ModbusTCPMaster::setChannelTimeout( timeout_t msec )
 		return;
 
 	tcp->setTimeout(msec);
-	tcp->setKeepAliveParams((msec > 1000 ? msec / 1000 : 1));
+
+	int oldKeepAlive = keepAliveTimeout;
+	keepAliveTimeout = (msec > 1000 ? msec / 1000 : 1);
+
+	// т.к. каждый раз не вызывать дорогой системный вызов
+	// смотрим меняется ли значение
+	if( oldKeepAlive != keepAliveTimeout )
+		tcp->setKeepAliveParams(keepAliveTimeout);
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPMaster::sendData( unsigned char* buf, size_t len )
@@ -118,8 +125,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				if( res != erNoError )
 					return res;
 
-				if( tcp->isPending(ost::Socket::pendingOutput, timeout) )
-					break;
+				break;
 			}
 
 			if( dlog->is_info() )
