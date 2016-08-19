@@ -304,8 +304,7 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 			usi->value = (blocked ? usi->d_off_value : value);
 
 			// запоминаем время изменения
-			struct timespec tm;
-			::clock_gettime(CLOCK_REALTIME, &tm);
+			struct timespec tm = UniSetTypes::now_to_timespec();
 			usi->tv_sec  = tm.tv_sec;
 			usi->tv_nsec = tm.tv_nsec;
 		}
@@ -374,8 +373,7 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi, bool force
 
 		IOStateList::mapped_type ai = usi;
 		// запоминаем начальное время
-		struct timespec tm;
-		::clock_gettime(CLOCK_REALTIME, &tm);
+		struct timespec tm = UniSetTypes::now_to_timespec();
 		ai->tv_sec   = tm.tv_sec;
 		ai->tv_nsec  = tm.tv_nsec;
 		ai->value    = ai->default_val;

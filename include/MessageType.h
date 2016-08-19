@@ -229,10 +229,9 @@ namespace UniSetTypes
 			ConfirmMessage( const VoidMessage* msg );
 
 			ConfirmMessage(ObjectId in_sensor_id,
-						   double in_value,
-						   time_t in_time,
-						   time_t in_time_nsec,
-						   time_t in_confirm,
+						   double in_sensor_value,
+						   const timespec& in_sensor_time,
+						   const timespec& in_confirm_time,
 						   Priority in_priority = Message::Medium);
 
 			ConfirmMessage( ConfirmMessage&& ) = default;
@@ -240,11 +239,10 @@ namespace UniSetTypes
 			ConfirmMessage( const ConfirmMessage& ) = default;
 			ConfirmMessage& operator=( const ConfirmMessage& ) = default;
 
-			ObjectId sensor_id;   /* ID датчика */
-			double value;     /* значение датчика */
-			time_t time;      /* время, когда датчик получил сигнал */
-			time_t time_nsec; /* время в наносекундах */
-			time_t confirm;   /* время, когда произошло квитирование */
+			ObjectId sensor_id;   /* ID датчика (события) */
+			double sensor_value;  /* значение датчика (события) */
+			struct timespec sensor_time;	/* время срабатвание датчика(события), который квитируем */
+			struct timespec confirm_time;   /* время, когда произошло квитирование */
 
 			bool broadcast;
 
@@ -253,7 +251,7 @@ namespace UniSetTypes
 			    (т.е. в БД второй раз сохранять не надо, пересылать
 			     второй раз тоже не надо).
 			*/
-			bool route;
+			bool forward;
 
 		protected:
 			ConfirmMessage();

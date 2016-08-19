@@ -648,8 +648,7 @@ bool IONotifyController::addThreshold( ThresholdExtList& lst, ThresholdInfoExt&&
 	addConsumer(ti.clst, ci);
 
 	// запоминаем начальное время
-	struct timespec tm;
-	::clock_gettime(CLOCK_REALTIME, &tm);
+	struct timespec tm = UniSetTypes::now_to_timespec();
 	ti.tv_sec  = tm.tv_sec;
 	ti.tv_nsec = tm.tv_nsec;
 
@@ -714,8 +713,7 @@ void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorIn
 	SensorMessage sm(std::move(usi->makeSensorMessage()));
 
 	// текущее время
-	struct timespec tm;
-	::clock_gettime(CLOCK_REALTIME, &tm);
+	struct timespec tm = UniSetTypes::now_to_timespec();
 
 	{
 		uniset_rwmutex_rlock l(ti->mut);

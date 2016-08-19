@@ -174,3 +174,17 @@ TEST_CASE("UniSetTypes: replace_all", "[utypes][replace_all]" )
 	REQUIRE( res == str2 );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: timespec comapre", "[utypes][timespec]" )
+{
+	timespec t1 = { 10, 300 };
+	timespec t2 = { 10, 90 };
+
+	REQUIRE( t1 != t2 );
+	REQUIRE_FALSE( t1 == t2 );
+
+	timespec t3 = { 20, 20 };
+	timespec t4 = { 20, 20 };
+
+	REQUIRE_FALSE( t3 != t4 );
+	REQUIRE( t3 == t4 );
+}

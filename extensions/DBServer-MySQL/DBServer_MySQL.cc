@@ -102,11 +102,11 @@ void DBServer_MySQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 		ostringstream data;
 
 		data << "UPDATE " << tblName(cem->type)
-			 << " SET confirm='" << cem->confirm << "'"
+			 << " SET confirm='" << cem->confirm_time.tv_sec << "'"
 			 << " WHERE sensor_id='" << cem->sensor_id << "'"
-			 << " AND date='" << dateToString(cem->time, "-") << " '"
-			 << " AND time='" << timeToString(cem->time, ":") << " '"
-			 << " AND time_nsec='" << cem->time_nsec << " '";
+			 << " AND date='" << dateToString(cem->sensor_time.tv_sec, "-") << " '"
+			 << " AND time='" << timeToString(cem->sensor_time.tv_sec, ":") << " '"
+			 << " AND time_nsec='" << cem->sensor_time.tv_nsec << " '";
 
 		dbinfo << myname << "(update_confirm): " << data.str() << endl;
 

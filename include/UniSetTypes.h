@@ -174,6 +174,20 @@ namespace UniSetTypes
 	std::string timeToString(time_t tm = time(0), const std::string& brk = ":"); /*!< Преобразование времени в строку HH:MM:SS */
 	std::string dateToString(time_t tm = time(0), const std::string& brk = "/"); /*!< Преобразование даты в строку DD/MM/YYYY */
 
+	struct timeval to_timeval( const std::chrono::system_clock::duration& d ); /*!< конвертирование std::chrono в posix timeval */
+	struct timespec to_timespec( const std::chrono::system_clock::duration& d ); /*!< конвертирование std::chrono в posix timespec */
+	struct timespec now_to_timespec(); /*!< получение текущего времени */
+
+	inline bool operator==( const struct timespec& r1,  const struct timespec& r2 )
+	{
+		return ( r1.tv_sec == r2.tv_sec && r1.tv_nsec == r2.tv_nsec );
+	}
+
+	inline bool operator!=( const struct timespec& r1,  const struct timespec& r2 )
+	{
+		return !(operator==(r1,r2));
+	}
+
 	/*! Разбивка строки по указанному символу */
 	IDList explode( const std::string& str, char sep = ',' );
 	std::vector<std::string> explode_str( const std::string& str, char sep = ',' );
@@ -297,9 +311,5 @@ namespace UniSetTypes
 		return destBegin;
 	}
 }
-
-// Варварский запрет на использование atoi вместо uni_atoi..
-// #define atoi atoi##_Do_not_use_atoi_function_directly_Use_getIntProp90,_getArgInt_or_uni_atoi
-
 // -----------------------------------------------------------------------------------------
 #endif

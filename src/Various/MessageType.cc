@@ -57,7 +57,7 @@ namespace UniSetTypes
 		supplier(DefaultObjectId),
 		consumer(DefaultObjectId)
 	{
-		::clock_gettime(CLOCK_REALTIME, &tm);
+		tm = UniSetTypes::now_to_timespec();
 	}
 
 	//--------------------------------------------------------------------------------------------
@@ -195,19 +195,17 @@ namespace UniSetTypes
 		assert(this->type == Message::Confirm);
 	}
 	//--------------------------------------------------------------------------------------------
-	ConfirmMessage::ConfirmMessage( UniSetTypes::ObjectId in_sensor_id,
-									double in_value,
-									time_t in_time,
-									time_t in_time_nsec,
-									time_t in_confirm,
+	ConfirmMessage::ConfirmMessage(UniSetTypes::ObjectId in_sensor_id,
+									double in_sensor_value,
+									const timespec& in_sensor_time,
+									const timespec& in_confirm_time,
 									Priority in_priority ):
 		sensor_id(in_sensor_id),
-		value(in_value),
-		time(in_time),
-		time_nsec(in_time_nsec),
-		confirm(in_confirm),
+		sensor_value(in_sensor_value),
+		sensor_time(in_sensor_time),
+		confirm_time(in_confirm_time),
 		broadcast(false),
-		route(false)
+		forward(false)
 	{
 		type = Message::Confirm;
 		priority = in_priority;
