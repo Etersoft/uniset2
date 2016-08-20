@@ -14,7 +14,7 @@
 
 Name: libuniset2
 Version: 2.4
-Release: alt8
+Release: alt8.1
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -484,6 +484,11 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Sat Aug 20 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt8.1
+- miscoseconds --> nanoseconds
+- optimization
+- fixed bug in ModbusTCPMaster
+
 * Fri Aug 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt8
 - ModbusTCPCore: minor optimization
 
