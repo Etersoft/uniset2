@@ -384,6 +384,14 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
 	{
 		//        cout << "(recv): catch TimeOut " << endl;
 	}
+	catch( const UniSetTypes::CommFailed& ex )
+	{
+		if( dlog->is_crit() )
+			dlog->crit() << "(recv): " << ex << endl;
+
+		cleanupChannel();
+		return erTimeOut;
+	}
 	catch( const Exception& ex ) // SystemError
 	{
 		if( dlog->is_crit() )
@@ -1311,6 +1319,13 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 	catch( UniSetTypes::TimeOut )
 	{
 		//        cout << "(recv): catch TimeOut " << endl;
+	}
+	catch( const UniSetTypes::CommFailed& ex )
+	{
+		if( dlog->is_crit() )
+			dlog->crit() << "(recv): " << ex << endl;
+
+		return erTimeOut;
 	}
 	catch( const Exception& ex ) // SystemError
 	{

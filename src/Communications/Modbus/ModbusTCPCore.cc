@@ -15,6 +15,7 @@
  */
 // -------------------------------------------------------------------------
 #include "modbus/ModbusTCPCore.h"
+#include "Exceptions.h"
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace ModbusRTU;
@@ -29,6 +30,7 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 		return 0;
 
 	size_t i = 0;
+	bool commfail = false;
 
 #ifdef USE_BUFFER_FOR_READ
 
@@ -50,9 +52,18 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 
 			i = l;
 		}
+
+		// канал закрыт!
+		if( l == 0 )
+			commfail = true;
 	}
 	catch( ost::SockException& e )
 	{
+		if( e.getSocketError() == ost::Socket::errConnectFailed ||
+			e.getSocketError() == ost::Socket::errConnectInvalid )
+		{
+			commfail = true;
+		}
 	}
 
 	delete [] buf;
@@ -66,7 +77,13 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 			unsigned char c;
 			ssize_t l = tcp->readData(&c, sizeof(c), 0, t);
 
-			if( l <= 0 )
+			if( l == 0 )
+			{
+				commfail = true;
+				break;
+			}
+
+			if( l < 0 )
 				break;
 
 			qrecv.push(c);
@@ -78,6 +95,8 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 
 #endif
 
+	if( commfail )
+		throw UniSetTypes::CommFailed();
 
 	return i;
 }
@@ -113,8 +132,11 @@ size_t ModbusTCPCore::getNextData(UTCPStream* tcp,
 // -------------------------------------------------------------------------
 size_t ModbusTCPCore::readDataFD( int fd, std::queue<unsigned char>& qrecv, size_t max , size_t attempts )
 {
+	bool commfail = false;
 
 #ifdef USE_BUFFER_FOR_READ
+
+	max = std::max(max,(size_t)DEFAULT_BUFFER_SIZE_FOR_READ);
 
 	char* buf = new char[max];
 
@@ -138,6 +160,10 @@ size_t ModbusTCPCore::readDataFD( int fd, std::queue<unsigned char>& qrecv, size
 			if( cnt >= max )
 				break;
 		}
+
+		// канал закрыт!
+		if( l == 0 )
+			commfail = true;
 	}
 
 	delete [] buf;
@@ -153,7 +179,13 @@ size_t ModbusTCPCore::readDataFD( int fd, std::queue<unsigned char>& qrecv, size
 			unsigned char c;
 			ssize_t l = ::read(fd, &c, sizeof(c));
 
-			if( l <= 0 )
+			if( l == 0 )
+			{
+				commfail = true;
+				break;
+			}
+
+			if( l < 0 )
 				break;
 
 			qrecv.push(c);
@@ -162,7 +194,10 @@ size_t ModbusTCPCore::readDataFD( int fd, std::queue<unsigned char>& qrecv, size
 
 #endif
 
-	return ( qrecv.size() >= max ? max : qrecv.size() );
+	if( commfail )
+		throw UniSetTypes::CommFailed();
+
+	return std::min(qrecv.size(),max);
 }
 // ------------------------------------------------------------------------
 size_t ModbusTCPCore::getDataFD( int fd, std::queue<unsigned char>& qrecv,

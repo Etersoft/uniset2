@@ -51,7 +51,7 @@ ModbusTCPMaster::~ModbusTCPMaster()
 // -------------------------------------------------------------------------
 size_t ModbusTCPMaster::getNextData( unsigned char* buf, size_t len )
 {
-	return ModbusTCPCore::getNextData(tcp.get(), qrecv, buf, len);
+	return ModbusTCPCore::getNextData(tcp.get(), qrecv, buf, len, readTimeout );
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::setChannelTimeout( timeout_t msec )
@@ -118,8 +118,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 		for( size_t i = 0; i < 2; i++ )
 		{
-			//if( tcp->isPending(ost::Socket::pendingOutput, timeout) )
-			if( waitOutput(timeout) )
+			if( tcp->isPending(ost::Socket::pendingOutput, timeout) )
 			{
 				mbErrCode res = send(msg);
 
@@ -165,9 +164,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 		tcp->sync();
 
-		//reply.clear();
-		//if( tcp->isPending(ost::Socket::pendingInput, timeout) )
-		if( waitInput(timeout) )
+		if( tcp->isPending(ost::Socket::pendingInput, timeout) )
 		{
 			size_t ret = 0;
 
@@ -176,10 +173,6 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				ret = getNextData((unsigned char*)(&reply.aduhead), sizeof(reply.aduhead));
 
 				if( ret == sizeof(reply.aduhead) )
-					break;
-
-				//if( !tcp->isPending(ost::Socket::pendingInput, timeout) )
-				if( !waitInput(timeout) )
 					break;
 			}
 
@@ -297,6 +290,13 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		if( dlog->is_warn() )
 			dlog->warn() << "(query): " << err << endl;
 	}
+	catch( const UniSetTypes::CommFailed& ex )
+	{
+		if( dlog->is_crit() )
+			dlog->crit() << "(query): " << ex << endl;
+
+		tcp->forceDisconnect();
+	}
 	catch( const Exception& ex )
 	{
 		if( dlog->is_warn() )
@@ -306,47 +306,14 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 	{
 		if( dlog->is_warn() )
 			dlog->warn() << "(query): tcp error: " << e.getString() << endl;
-
-		return erTimeOut;
 	}
 	catch( const std::exception& e )
 	{
 		if( dlog->is_warn() )
 			dlog->crit() << "(query): " << e.what() << std::endl;
-
-		return erTimeOut;
 	}
 
 	return erTimeOut; // erHardwareError
-}
-// -------------------------------------------------------------------------
-bool ModbusTCPMaster::waitInput( int msec )
-{
-	if( !tcp )
-		return false;
-
-//	FD_ZERO (&s_set);
-//	FD_SET (tcp->getSocket(), &s_set);
-
-	s_timeout.tv_sec = 0;
-	s_timeout.tv_usec = 1000*msec;
-
-	return ( select( 1+(int)tcp->getSocket(), &s_set, NULL, NULL, &s_timeout) > 0 );
-}
-// -------------------------------------------------------------------------
-bool ModbusTCPMaster::waitOutput( int timeout_msec )
-{
-	if( !tcp )
-		return false;
-
-//	FD_ZERO (&s_set);
-//	FD_SET (tcp->getSocket(), &s_set);
-
-	s_timeout.tv_sec = 0;
-	s_timeout.tv_usec = 1000*timeout_msec;
-
-	//return ( select(FD_SETSIZE, NULL, &s_set, NULL, &s_timeout) > 0 );
-	return ( select(1+(int)tcp->getSocket(), NULL, &s_set, NULL, &s_timeout) > 0 );
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::cleanInputStream()
@@ -354,11 +321,25 @@ void ModbusTCPMaster::cleanInputStream()
 	unsigned char buf[100];
 	int ret = 0;
 
-	do
+	try
 	{
-		ret = getNextData(buf, sizeof(buf));
+		do
+		{
+			ret = getNextData(buf, sizeof(buf));
+		}
+		while( ret > 0);
 	}
-	while( ret > 0);
+	catch( ... ){}
+}
+// -------------------------------------------------------------------------
+void ModbusTCPMaster::setReadTimeout( timeout_t msec )
+{
+	readTimeout = msec;
+}
+// -------------------------------------------------------------------------
+timeout_t ModbusTCPMaster::getReadTimeout() const
+{
+	return readTimeout;
 }
 // -------------------------------------------------------------------------
 bool ModbusTCPMaster::checkConnection( const std::string& ip, int port, int timeout_msec )
@@ -401,9 +382,6 @@ void ModbusTCPMaster::reconnect()
 		tcp->setTimeout(replyTimeOut_ms);
 		tcp->setKeepAliveParams((replyTimeOut_ms > 1000 ? replyTimeOut_ms / 1000 : 1));
 		tcp->setNoDelay(true);
-
-		FD_ZERO (&s_set);
-		FD_SET (tcp->getSocket(), &s_set);
 	}
 	catch( const std::exception& e )
 	{
@@ -459,9 +437,6 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
 		tcp->setTimeout(replyTimeOut_ms);
 		tcp->setKeepAliveParams((replyTimeOut_ms > 1000 ? replyTimeOut_ms / 1000 : 1));
 		tcp->setNoDelay(true);
-
-		FD_ZERO (&s_set);
-		FD_SET (tcp->getSocket(), &s_set);
 	}
 	catch( const std::exception& e )
 	{

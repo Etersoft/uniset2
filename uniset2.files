@@ -126,6 +126,7 @@ extensions/ModbusMaster/mtr-conv.cc
 extensions/ModbusMaster/mtr-read.cc
 extensions/ModbusMaster/mtr-setup.cc
 extensions/ModbusMaster/multi-main.cc
+extensions/ModbusMaster/mb-perf-test.cc
 extensions/ModbusMaster/RTUExchange.cc
 extensions/ModbusMaster/rtuexchange.cc
 extensions/ModbusMaster/RTUExchange.h

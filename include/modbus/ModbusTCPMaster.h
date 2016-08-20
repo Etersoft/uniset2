@@ -48,6 +48,9 @@ class ModbusTCPMaster:
 			return port;
 		}
 
+		void setReadTimeout( timeout_t msec );
+		timeout_t getReadTimeout() const;
+
 	protected:
 
 		virtual size_t getNextData(unsigned char* buf, size_t len ) override;
@@ -55,9 +58,6 @@ class ModbusTCPMaster:
 		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, size_t len ) override;
 		virtual ModbusRTU::mbErrCode query( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& msg,
 											ModbusRTU::ModbusMessage& reply, timeout_t timeout ) override;
-
-		bool waitInput( int timeout_msec );
-		bool waitOutput( int timeout_msec );
 
 	private:
 		//ost::TCPStream* tcp;
@@ -70,9 +70,7 @@ class ModbusTCPMaster:
 		bool force_disconnect = { false };
 		int keepAliveTimeout = { 1000 };
 
-		// структура для реализации использования select
-		fd_set s_set;
-		timeval s_timeout;
+		timeout_t readTimeout = { 50 }; // timeout на чтение очередной порции данных
 };
 // -------------------------------------------------------------------------
 #endif // ModbusTCPMaster_H_
