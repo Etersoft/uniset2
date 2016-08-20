@@ -633,6 +633,11 @@ mbErrCode ModbusServer::recv( const std::unordered_set<ModbusRTU::ModbusAddr>& v
 	{
 		//        cout << "(recv): catch TimeOut " << endl;
 	}
+	catch( UniSetTypes::CommFailed )
+	{
+		cleanupChannel();
+		return erSessionClosed;
+	}
 	catch( const Exception& ex ) // SystemError
 	{
 		dlog->crit() << "(recv): " << ex << endl;

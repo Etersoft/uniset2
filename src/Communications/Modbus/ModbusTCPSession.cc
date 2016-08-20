@@ -208,6 +208,7 @@ ModbusRTU::mbErrCode ModbusTCPSession::realReceive( const std::unordered_set<Mod
 	ModbusRTU::mbErrCode res = erTimeOut;
 	ptTimeout.setTiming(msec);
 
+	try
 	{
 		buf.clear();
 		res = tcp_processing(buf.aduhead);
@@ -269,6 +270,11 @@ ModbusRTU::mbErrCode ModbusTCPSession::realReceive( const std::unordered_set<Mod
 
 		// processing message...
 		res = processing(buf);
+	}
+	catch( UniSetTypes::CommFailed& ex )
+	{
+		cancelled = true;
+		return erSessionClosed;
 	}
 
 	return res;
