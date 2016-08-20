@@ -241,7 +241,7 @@ namespace UniSetTypes
 
 			ObjectId sensor_id;   /* ID датчика (события) */
 			double sensor_value;  /* значение датчика (события) */
-			struct timespec sensor_time;	/* время срабатвание датчика(события), который квитируем */
+			struct timespec sensor_time;	/* время срабатывания датчика(события), который квитируем */
 			struct timespec confirm_time;   /* время, когда произошло квитирование */
 
 			bool broadcast;

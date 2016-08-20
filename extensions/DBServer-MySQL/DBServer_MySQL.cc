@@ -106,7 +106,7 @@ void DBServer_MySQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 			 << " WHERE sensor_id='" << cem->sensor_id << "'"
 			 << " AND date='" << dateToString(cem->sensor_time.tv_sec, "-") << " '"
 			 << " AND time='" << timeToString(cem->sensor_time.tv_sec, ":") << " '"
-			 << " AND time_nsec='" << cem->sensor_time.tv_nsec << " '";
+			 << " AND time_usec='" << cem->sensor_time.tv_nsec / 1000 << " '";
 
 		dbinfo << myname << "(update_confirm): " << data.str() << endl;
 
@@ -214,11 +214,11 @@ void DBServer_MySQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 		// см. DBTABLE AnalogSensors, DigitalSensors
 		ostringstream data;
 		data << "INSERT INTO " << tblName(si->type)
-			 << "(date, time, time_nsec, sensor_id, value, node) VALUES( '"
+			 << "(date, time, time_usec, sensor_id, value, node) VALUES( '"
 			 // Поля таблицы
 			 << dateToString(si->sm_tv.tv_sec, "-") << "','"   //  date
 			 << timeToString(si->sm_tv.tv_sec, ":") << "','"   //  time
-			 << si->sm_tv.tv_nsec << "','"                //  time_nsec
+			 << si->sm_tv.tv_nsec << "','"                //  time_usec
 			 << si->id << "','"                    //  sensor_id
 			 << val << "','"                //  value
 			 << si->node << "')";                //  node

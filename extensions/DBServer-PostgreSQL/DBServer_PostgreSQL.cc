@@ -117,7 +117,7 @@ void DBServer_PostgreSQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 			 << " WHERE sensor_id='" << cem->sensor_id << "'"
 			 << " AND date='" << dateToString(cem->sensor_time.tv_sec, "-") << " '"
 			 << " AND time='" << timeToString(cem->sensor_time.tv_sec, ":") << " '"
-			 << " AND time_nsec='" << cem->sensor_time.tv_nsec << " '";
+			 << " AND time_usec='" << cem->sensor_time.tv_nsec << " '";
 
 		dbinfo << myname << "(update_confirm): " << data.str() << endl;
 
@@ -259,7 +259,7 @@ void DBServer_PostgreSQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 				   << endl;
 		}
 
-		// (date, time, time_nsec, sensor_id, value, node)
+		// (date, time, time_usec, sensor_id, value, node)
 		PostgreSQLInterface::Record rec =
 		{
 			dateToString(si->sm_tv.tv_sec, "-"), //  date

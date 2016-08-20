@@ -127,6 +127,9 @@ CREATE TABLE `main_emergencyrecords` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 \endcode
+
+\warning Временно, для обратной совместимости поле 'time_usec' в таблицах оставлено с таким названием,
+хотя фактически туда сейчас сохраняется значение в наносекундах!
 */
 class DBServer_SQLite:
 	public DBServer

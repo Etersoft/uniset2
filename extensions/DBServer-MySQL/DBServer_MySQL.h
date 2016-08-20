@@ -87,7 +87,7 @@ CREATE TABLE `main_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `date` date NOT NULL,
   `time` time NOT NULL,
-  `time_nsec` int(10) unsigned NOT NULL,
+  `time_usec` int(10) unsigned NOT NULL,
   `sensor_id` int(10) unsigned NOT NULL,
   `value` double NOT NULL,
   `node` int(10) unsigned NOT NULL,
@@ -102,7 +102,7 @@ CREATE TABLE `main_emergencylog` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `date` date NOT NULL,
   `time` time NOT NULL,
-  `time_nsec` int(10) unsigned NOT NULL,
+  `time_usec` int(10) unsigned NOT NULL,
   `type_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   KEY `main_emergencylog_type_id` (`type_id`),
@@ -115,7 +115,7 @@ CREATE TABLE `main_emergencyrecords` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `date` date NOT NULL,
   `time` time NOT NULL,
-  `time_nsec` int(10) unsigned NOT NULL,
+  `time_usec` int(10) unsigned NOT NULL,
   `log_id` int(11) NOT NULL,
   `sensor_id` int(10) unsigned NOT NULL,
   `value` double NOT NULL,
@@ -127,6 +127,9 @@ CREATE TABLE `main_emergencyrecords` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 \endcode
+
+\warning Временно, для обратной совместимости поле 'time_usec' в таблицах оставлено с таким названием,
+хотя фактически туда сейчас сохраняется значение в наносекундах!
 */
 class DBServer_MySQL:
 	public DBServer
