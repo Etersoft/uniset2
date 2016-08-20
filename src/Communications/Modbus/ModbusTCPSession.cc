@@ -289,15 +289,22 @@ size_t ModbusTCPSession::getNextData( unsigned char* buf, int len )
 {
 	ssize_t res = ModbusTCPCore::getDataFD( sock->getSocket(), qrecv, buf, len );
 
-	if( res > 0 )
-		return res;
-
-	if( res < 0 )
+	try
 	{
-		if( errno != EAGAIN && dlog->is_warn() )
-			dlog->warn() << peername << "(getNextData): read from socket error(" << errno << "): " << strerror(errno) << endl;
+		if( res > 0 )
+			return res;
 
-		return 0;
+		if( res < 0 )
+		{
+			if( errno != EAGAIN && dlog->is_warn() )
+				dlog->warn() << peername << "(getNextData): read from socket error(" << errno << "): " << strerror(errno) << endl;
+
+			return 0;
+		}
+	}
+	catch( UniSetTypes::CommFailed )
+	{
+
 	}
 
 	if( !cancelled && dlog->is_info() )
@@ -356,14 +363,21 @@ mbErrCode ModbusTCPSession::tcp_processing( ModbusRTU::ADUHeader& mhead )
 
 	pt.setTiming(10);
 
-	do
+	try
 	{
-		len = ModbusTCPCore::readDataFD( sock->getSocket(), qrecv, mhead.len );
+		do
+		{
+			len = ModbusTCPCore::readDataFD( sock->getSocket(), qrecv, mhead.len );
 
-		if( len == 0 )
-			io.loop.iteration();
+			if( len == 0 )
+				io.loop.iteration();
+		}
+		while( len == 0 && !pt.checkTime() );
 	}
-	while( len == 0 && !pt.checkTime() );
+	catch( UniSetTypes::CommFailed )
+	{
+
+	}
 
 	if( len < mhead.len )
 	{
