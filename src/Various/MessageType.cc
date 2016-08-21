@@ -196,10 +196,10 @@ namespace UniSetTypes
 	}
 	//--------------------------------------------------------------------------------------------
 	ConfirmMessage::ConfirmMessage(UniSetTypes::ObjectId in_sensor_id,
-									double in_sensor_value,
-									const timespec& in_sensor_time,
-									const timespec& in_confirm_time,
-									Priority in_priority ):
+								   const double& in_sensor_value,
+								   const timespec& in_sensor_time,
+								   const timespec& in_confirm_time,
+								   Priority in_priority ):
 		sensor_id(in_sensor_id),
 		sensor_value(in_sensor_value),
 		sensor_time(in_sensor_time),

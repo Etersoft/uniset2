@@ -590,34 +590,34 @@ std::string UniSetTypes::replace_all( const std::string& src, const std::string&
 // -------------------------------------------------------------------------
 timeval UniSetTypes::to_timeval( const chrono::system_clock::duration& d )
 {
-  struct timeval tv;
+	struct timeval tv;
 
-  if( d.count() == 0 )
-	  tv.tv_sec = tv.tv_usec = 0;
-  else
-  {
-	  std::chrono::seconds const sec = std::chrono::duration_cast<std::chrono::seconds>(d);
-	  tv.tv_sec  = sec.count();
-	  tv.tv_usec = std::chrono::duration_cast<std::chrono::microseconds>(d - sec).count();
-  }
+	if( d.count() == 0 )
+		tv.tv_sec = tv.tv_usec = 0;
+	else
+	{
+		std::chrono::seconds const sec = std::chrono::duration_cast<std::chrono::seconds>(d);
+		tv.tv_sec  = sec.count();
+		tv.tv_usec = std::chrono::duration_cast<std::chrono::microseconds>(d - sec).count();
+	}
 
-  return std::move(tv);
+	return std::move(tv);
 }
 // -------------------------------------------------------------------------
 timespec UniSetTypes::to_timespec( const chrono::system_clock::duration& d )
 {
-  struct timespec ts;
+	struct timespec ts;
 
-  if( d.count() == 0 )
-	  ts.tv_sec = ts.tv_nsec = 0;
-  else
-  {
-	  std::chrono::seconds const sec = std::chrono::duration_cast<std::chrono::seconds>(d);
-	  ts.tv_sec  = sec.count();
-	  ts.tv_nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(d - sec).count();
-  }
+	if( d.count() == 0 )
+		ts.tv_sec = ts.tv_nsec = 0;
+	else
+	{
+		std::chrono::seconds const sec = std::chrono::duration_cast<std::chrono::seconds>(d);
+		ts.tv_sec  = sec.count();
+		ts.tv_nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(d - sec).count();
+	}
 
-  return std::move(ts);
+	return std::move(ts);
 }
 // -------------------------------------------------------------------------
 timespec UniSetTypes::now_to_timespec()

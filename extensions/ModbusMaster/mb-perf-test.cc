@@ -56,13 +56,15 @@ int main( int argc, const char** argv )
 
 		auto act = UniSetActivator::Instance();
 
-		int count = conf->getArgPInt("--count",50);
-		for( int i=1; i<=count; i++ )
+		int count = conf->getArgPInt("--count", 50);
+
+		for( int i = 1; i <= count; i++ )
 		{
 			ostringstream prefix;
 			prefix << "mbtcp" << i;
 
-			auto mb = MBTCPMultiMaster::init_mbmaster(argc, argv,shmID,nullptr, prefix.str());
+			auto mb = MBTCPMultiMaster::init_mbmaster(argc, argv, shmID, nullptr, prefix.str());
+
 			if( !mb )
 			{
 				cerr << "(main): " << prefix.str() <<  " init failed..." << endl;

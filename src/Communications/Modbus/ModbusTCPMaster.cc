@@ -329,7 +329,7 @@ void ModbusTCPMaster::cleanInputStream()
 		}
 		while( ret > 0);
 	}
-	catch( ... ){}
+	catch( ... ) {}
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::setReadTimeout( timeout_t msec )

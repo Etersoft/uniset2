@@ -185,7 +185,7 @@ namespace UniSetTypes
 
 	inline bool operator!=( const struct timespec& r1,  const struct timespec& r2 )
 	{
-		return !(operator==(r1,r2));
+		return !(operator==(r1, r2));
 	}
 
 	/*! Разбивка строки по указанному символу */

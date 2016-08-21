@@ -229,7 +229,7 @@ namespace UniSetTypes
 			ConfirmMessage( const VoidMessage* msg );
 
 			ConfirmMessage(ObjectId in_sensor_id,
-						   double in_sensor_value,
+						   const double& in_sensor_value,
 						   const timespec& in_sensor_time,
 						   const timespec& in_confirm_time,
 						   Priority in_priority = Message::Medium);

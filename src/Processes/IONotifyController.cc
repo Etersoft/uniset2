@@ -88,7 +88,8 @@ SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
 			auto oind = uniset_conf()->oind;
 
 			uniset_rwmutex_rlock lock(askIOMutex);
-			for( auto&& a: askIOList )
+
+			for( auto && a : askIOList )
 			{
 				auto& i = a.second;
 
@@ -100,7 +101,7 @@ SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
 
 				inf << "(" << setw(6) << a.first << ")[" << oind->getMapName(a.first) << "]" << endl;
 
-				for( const auto& c: i.clst )
+				for( const auto& c : i.clst )
 				{
 					inf << "        " << "(" << setw(6) << c.id << ")"
 						<< setw(35) << ORepHelpers::getShortName(oind->getMapName(c.id))

@@ -34,7 +34,7 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 
 #ifdef USE_BUFFER_FOR_READ
 
-	max = std::max(max,(size_t)DEFAULT_BUFFER_SIZE_FOR_READ);
+	max = std::max(max, (size_t)DEFAULT_BUFFER_SIZE_FOR_READ);
 
 	char* buf = new char[max];
 
@@ -60,7 +60,7 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 	catch( ost::SockException& e )
 	{
 		if( e.getSocketError() == ost::Socket::errConnectFailed ||
-			e.getSocketError() == ost::Socket::errConnectInvalid )
+				e.getSocketError() == ost::Socket::errConnectInvalid )
 		{
 			commfail = true;
 		}
@@ -136,7 +136,7 @@ size_t ModbusTCPCore::readDataFD( int fd, std::queue<unsigned char>& qrecv, size
 
 #ifdef USE_BUFFER_FOR_READ
 
-	max = std::max(max,(size_t)DEFAULT_BUFFER_SIZE_FOR_READ);
+	max = std::max(max, (size_t)DEFAULT_BUFFER_SIZE_FOR_READ);
 
 	char* buf = new char[max];
 
@@ -197,7 +197,7 @@ size_t ModbusTCPCore::readDataFD( int fd, std::queue<unsigned char>& qrecv, size
 	if( commfail )
 		throw UniSetTypes::CommFailed();
 
-	return std::min(qrecv.size(),max);
+	return std::min(qrecv.size(), max);
 }
 // ------------------------------------------------------------------------
 size_t ModbusTCPCore::getDataFD( int fd, std::queue<unsigned char>& qrecv,
