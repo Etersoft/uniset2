@@ -24,9 +24,11 @@
 #include <sys/times.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <iomanip>
 
 #include "UInterface.h"
 #include "IONotifyController.h"
+#include "ORepHelpers.h"
 #include "Debug.h"
 #include "NCRestorer.h"
 
@@ -69,6 +71,54 @@ IONotifyController::~IONotifyController()
 {
 	conUndef.disconnect();
 	conInit.disconnect();
+}
+// ------------------------------------------------------------------------------------------
+SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
+{
+	UniSetTypes::SimpleInfo_var i = IOController::getInfo();
+
+	ostringstream inf;
+
+	inf << i->info << endl;
+
+	if( userparam == 1 )
+	{
+		inf << "------------------------------- consumers list ------------------------------" << endl;
+		{
+			auto oind = uniset_conf()->oind;
+
+			uniset_rwmutex_rlock lock(askIOMutex);
+			for( auto&& a: askIOList )
+			{
+				auto& i = a.second;
+
+				uniset_rwmutex_rlock lock(i.mut);
+
+				// отображаем только датчики с "не пустым" списком заказчиков
+				if( i.clst.empty() )
+					continue;
+
+				inf << "(" << setw(6) << a.first << ")[" << oind->getMapName(a.first) << "]" << endl;
+
+				for( const auto& c: i.clst )
+				{
+					inf << "        " << "(" << setw(6) << c.id << ")"
+						<< setw(35) << ORepHelpers::getShortName(oind->getMapName(c.id))
+						<< " [lostEvents=" << c.lostEvents << " attempt=" << c.attempt << "]"
+						<< endl;
+				}
+			}
+		}
+		inf << "-----------------------------------------------------------------------------" << endl << endl;
+	}
+
+	inf << "IONotifyController::UserParam help: " << endl
+		<< "  0. Common info" << endl
+		<< "  1. Consumers list " << endl;
+
+	i->info = inf.str().c_str();
+
+	return i._retn();
 }
 
 // ------------------------------------------------------------------------------------------
@@ -271,7 +321,7 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
 		auto s = myiofind(sid);
 
 		if( s != myioEnd() )
-			s->second->userdata[udataConsumerList] = (void*)(&(askIterator->second));
+			s->second->userdata[udataConsumerList] = &(askIterator->second);
 		else
 			s->second->userdata[udataConsumerList] = nullptr;
 	}
@@ -358,9 +408,9 @@ void IONotifyController::send( ConsumerListInfo& lst, UniSetTypes::SensorMessage
 
 	uniset_rwmutex_wrlock l(lst.mut);
 
-	for( auto li = lst.clst.begin(); li != lst.clst.end(); ++li )
+	for( ConsumerList::iterator li = lst.clst.begin(); li != lst.clst.end(); ++li )
 	{
-		for( int i = 0; i < 2; i++ ) // на каждый объект по две поптыки
+		for( int i = 0; i < 2; i++ ) // на каждый объект по две попытки послать
 		{
 			try
 			{
@@ -392,6 +442,10 @@ void IONotifyController::send( ConsumerListInfo& lst, UniSetTypes::SensorMessage
 					  << uniset_conf()->oind->getNameById(li->id) << "@" << li->node
 					  << " catch..." << endl;
 			}
+
+			// фиксируем только после первой попытки послать
+			if( i > 0 )
+				li->lostEvents++;
 
 			if( maxAttemtps > 0 && --(li->attempt) <= 0 )
 			{

@@ -142,6 +142,7 @@ class IONotifyController:
 			return UniSetTypes::ObjectType("IONotifyController");
 		}
 
+		virtual UniSetTypes::SimpleInfo* getInfo( ::CORBA::Long userparam = 0 ) override;
 
 		virtual void askSensor(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd) override;
 
@@ -161,7 +162,7 @@ class IONotifyController:
 
 		/*! Информация о заказчике */
 		struct ConsumerInfoExt:
-			public    UniSetTypes::ConsumerInfo
+			public UniSetTypes::ConsumerInfo
 		{
 			ConsumerInfoExt( const UniSetTypes::ConsumerInfo& ci,
 							 UniSetObject_i_ptr ref = 0, size_t maxAttemtps = 10 ):
@@ -170,6 +171,7 @@ class IONotifyController:
 
 			UniSetObject_i_var ref;
 			size_t attempt;
+			size_t lostEvents = { 0 }; // количество потерянных сообщений (не смогли послать)
 
 			ConsumerInfoExt( const ConsumerInfoExt& ) = default;
 			ConsumerInfoExt& operator=( const ConsumerInfoExt& ) = default;
@@ -192,8 +194,7 @@ class IONotifyController:
 		};
 
 		/*! словарь: датчик -> список потребителей */
-		typedef std::unordered_map<UniSetTypes::KeyType, ConsumerListInfo> AskMap;
-
+		typedef std::unordered_map<UniSetTypes::ObjectId, ConsumerListInfo> AskMap;
 
 		/*! Информация о пороговом значении */
 		struct ThresholdInfoExt:

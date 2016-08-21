@@ -75,8 +75,11 @@ void NCRestorer::addlist( IONotifyController* ic, std::shared_ptr<IOController::
 		case UniversalIO::AI:
 		case UniversalIO::DO:
 		case UniversalIO::AO:
+		{
 			ic->askIOList[inf->si.id] = std::move(lst);
+			inf->userdata[IONotifyController::udataConsumerList] = &(ic->askIOList[inf->si.id]);
 			break;
+		}
 
 		default:
 			ucrit << ic->getName() << "(NCRestorer::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА!-> "

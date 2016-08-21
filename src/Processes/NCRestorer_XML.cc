@@ -442,7 +442,6 @@ void NCRestorer_XML::read_consumers( const std::shared_ptr<UniXML>& xml, xmlNode
 		if( cit.goChildren() )
 		{
 			IONotifyController::ConsumerListInfo lst;
-
 			if( getConsumerList(xml, cit, lst) )
 			{
 				std::shared_ptr<IOController::USensorInfo> uinf = std::static_pointer_cast<IOController::USensorInfo>(inf);
