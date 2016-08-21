@@ -14,7 +14,7 @@
 
 Name: libuniset2
 Version: 2.4
-Release: alt8.1
+Release: alt8.2
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -484,6 +484,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Sun Aug 21 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt8.2
+- IONotifyController: add debug information (getInfo)
+
 * Sat Aug 20 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt8.1
 - miscoseconds --> nanoseconds
 - optimization
