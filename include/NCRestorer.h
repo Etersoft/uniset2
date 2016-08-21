@@ -88,7 +88,7 @@ class NCRestorer
 			ic->ioRegistration(inf, force);
 		}
 
-		static inline IOController::IOStateList::iterator ioFind( IONotifyController* ic, UniSetTypes::KeyType k )
+		static inline IOController::IOStateList::iterator ioFind( IONotifyController* ic, UniSetTypes::ObjectId k )
 		{
 			return ic->myiofind(k);
 		}

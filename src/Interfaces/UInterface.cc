@@ -1128,7 +1128,7 @@ throw(NameNotFound)
 	throw UniSetTypes::NameNotFound();
 }
 // ------------------------------------------------------------------------------------------------------------
-void UInterface::CacheOfResolve::cache( const ObjectId id, const ObjectId node, ObjectVar ptr ) const
+void UInterface::CacheOfResolve::cache( const ObjectId id, const ObjectId node, ObjectVar& ptr ) const
 {
 	UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
 
@@ -1137,7 +1137,7 @@ void UInterface::CacheOfResolve::cache( const ObjectId id, const ObjectId node, 
 	auto it = mcache.find(k);
 
 	if( it == mcache.end() )
-		mcache.emplace(k, Info(ptr));
+		mcache.emplace(k, Item(ptr));
 	else
 	{
 		it->second.ptr = ptr; // CORBA::Object::_duplicate(ptr);

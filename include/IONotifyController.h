@@ -268,7 +268,7 @@ class IONotifyController:
 		};
 
 		/*! словарь: аналоговый датчик --> список порогов по нему */
-		typedef std::unordered_map<UniSetTypes::KeyType, ThresholdsListInfo> AskThresholdMap;
+		typedef std::unordered_map<UniSetTypes::ObjectId, ThresholdsListInfo> AskThresholdMap;
 
 	protected:
 		IONotifyController();

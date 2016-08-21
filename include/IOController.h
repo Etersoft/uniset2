@@ -133,7 +133,7 @@ class IOController:
 		{
 			return ioList.end();
 		}
-		inline IOStateList::iterator find(UniSetTypes::KeyType k)
+		inline IOStateList::iterator find( UniSetTypes::ObjectId k )
 		{
 			return ioList.find(k);
 		}
