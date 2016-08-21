@@ -354,13 +354,9 @@ class SharedMemory:
 				id(0),
 				size(0), filter(""),
 				fuse_id(UniSetTypes::DefaultObjectId),
-				fuse_invert(false), fuse_use_val(false), fuse_val(0),
-				fuse_sec(0), fuse_usec(0)
+				fuse_invert(false), fuse_use_val(false), fuse_val(0)
 			{
-				struct timeval tv;
-				gettimeofday(&tv, NULL);
-				fuse_sec = tv.tv_sec;
-				fuse_usec = tv.tv_usec;
+				::clock_gettime(CLOCK_REALTIME, &fuse_tm);
 			}
 
 			long id;                        // ID
@@ -372,8 +368,7 @@ class SharedMemory:
 			bool fuse_use_val;
 			long fuse_val;
 			// timestamp
-			long fuse_sec;
-			long fuse_usec;
+			timespec fuse_tm;
 		};
 
 		friend std::ostream& operator<<( std::ostream& os, const HistoryInfo& h );

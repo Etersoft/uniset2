@@ -791,8 +791,8 @@ void SharedMemory::checkFuse( std::shared_ptr<USensorInfo>& usi, IOController* )
 			{
 				sminfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
-				it->fuse_sec = sm_tv_sec;
-				it->fuse_usec = sm_tv_nsec;
+				it->fuse_tm.tv_sec = sm_tv_sec;
+				it->fuse_tm.tv_nsec = sm_tv_nsec;
 				m_historySignal.emit( (*it) );
 			}
 		}
@@ -810,8 +810,8 @@ void SharedMemory::checkFuse( std::shared_ptr<USensorInfo>& usi, IOController* )
 				{
 					sminfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
-					it->fuse_sec = sm_tv_sec;
-					it->fuse_usec = sm_tv_nsec;
+					it->fuse_tm.tv_sec = sm_tv_sec;
+					it->fuse_tm.tv_nsec = sm_tv_nsec;
 					m_historySignal.emit( (*it) );
 				}
 			}
@@ -821,8 +821,8 @@ void SharedMemory::checkFuse( std::shared_ptr<USensorInfo>& usi, IOController* )
 				{
 					sminfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
-					it->fuse_sec = sm_tv_sec;
-					it->fuse_usec = sm_tv_nsec;
+					it->fuse_tm.tv_sec = sm_tv_sec;
+					it->fuse_tm.tv_nsec = sm_tv_nsec;
 					m_historySignal.emit( (*it) );
 				}
 			}
