@@ -81,7 +81,7 @@ SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
 
 	inf << i->info << endl;
 
-	if( userparam == 1 )
+	if( userparam == 1 || userparam == 2 )
 	{
 		inf << "------------------------------- consumers list ------------------------------" << endl;
 		{
@@ -99,14 +99,48 @@ SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
 				if( i.clst.empty() )
 					continue;
 
-				inf << "(" << setw(6) << a.first << ")[" << oind->getMapName(a.first) << "]" << endl;
-
-				for( const auto& c : i.clst )
+				// если надо выводить только тех, у кого есть "потери"(lostEvent>0)
+				// то надо сперва смотреть список, а потом выводить
+				if( userparam == 2 )
 				{
-					inf << "        " << "(" << setw(6) << c.id << ")"
-						<< setw(35) << ORepHelpers::getShortName(oind->getMapName(c.id))
-						<< " [lostEvents=" << c.lostEvents << " attempt=" << c.attempt << "]"
-						<< endl;
+					bool ok = false;
+					for( const auto& c : i.clst )
+					{
+						if( c.lostEvents > 0 )
+						{
+							ok = true;
+							break;
+						}
+					}
+
+					if( !ok )
+						continue;
+
+					// выводим тех у кого lostEvent>0
+					inf << "(" << setw(6) << a.first << ")[" << oind->getMapName(a.first) << "]" << endl;
+
+					for( const auto& c : i.clst )
+					{
+						if( c.lostEvents > 0 )
+						{
+							inf << "        " << "(" << setw(6) << c.id << ")"
+								<< setw(35) << ORepHelpers::getShortName(oind->getMapName(c.id))
+								<< " [lostEvents=" << c.lostEvents << " attempt=" << c.attempt << "]"
+								<< endl;
+						}
+					}
+				}
+				else // просто выводим всех
+				{
+					inf << "(" << setw(6) << a.first << ")[" << oind->getMapName(a.first) << "]" << endl;
+
+					for( const auto& c : i.clst )
+					{
+						inf << "        " << "(" << setw(6) << c.id << ")"
+							<< setw(35) << ORepHelpers::getShortName(oind->getMapName(c.id))
+							<< " [lostEvents=" << c.lostEvents << " attempt=" << c.attempt << "]"
+							<< endl;
+					}
 				}
 			}
 		}
@@ -115,7 +149,8 @@ SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
 
 	inf << "IONotifyController::UserParam help: " << endl
 		<< "  0. Common info" << endl
-		<< "  1. Consumers list " << endl;
+		<< "  1. Consumers list " << endl
+		<< "  2. Consumers list with lostEvent > 0" << endl;
 
 	i->info = inf.str().c_str();
 
