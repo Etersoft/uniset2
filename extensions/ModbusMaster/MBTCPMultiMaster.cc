@@ -335,6 +335,9 @@ bool MBTCPMultiMaster::MBSlaveInfo::init( std::shared_ptr<DebugStream>& mblog )
 
 			initOK = true;
 		}
+
+		mbinfo << myname << "(init): connect " << mbtcp->isConnection() << endl;
+
 		return mbtcp->isConnection();
 	}
 	catch( ModbusRTU::mbException& ex )
@@ -506,6 +509,28 @@ void MBTCPMultiMaster::sigterm( int signo )
 	//		std::exception_ptr p = std::current_exception();
 	//		std::clog << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
 	//	}
+}
+// -----------------------------------------------------------------------------
+bool MBTCPMultiMaster::deactivateObject()
+{
+	setProcActive(false);
+	if( pollThread )
+	{
+		pollThread->stop();
+
+		if( pollThread->isRunning() )
+			pollThread->join();
+	}
+
+	if( checkThread )
+	{
+		checkThread->stop();
+
+		if( checkThread->isRunning() )
+			checkThread->join();
+	}
+
+	return MBExchange::deactivateObject();
 }
 
 // -----------------------------------------------------------------------------

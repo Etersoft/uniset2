@@ -68,6 +68,11 @@ void MBTCPServer::setLog(std::shared_ptr<DebugStream>& dlog )
 		sslot->setLog(dlog);
 }
 // -------------------------------------------------------------------------
+void MBTCPServer::setMaxSessions( size_t max )
+{
+	sslot->setMaxSessions(max);
+}
+// -------------------------------------------------------------------------
 void MBTCPServer::execute()
 {
 	sslot->run( vaddr, false );

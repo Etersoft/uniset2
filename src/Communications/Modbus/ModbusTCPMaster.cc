@@ -35,11 +35,8 @@ ModbusTCPMaster::ModbusTCPMaster():
 	force_disconnect(true)
 {
 	setCRCNoCheckit(true);
-	/*
-	    dlog->addLevel(Debug::INFO);
-	    dlog->addLevel(Debug::WARN);
-	    dlog->addLevel(Debug::CRIT);
-	*/
+
+//	 dlog->level(Debug::ANY);
 }
 
 // -------------------------------------------------------------------------
@@ -64,10 +61,12 @@ void ModbusTCPMaster::setChannelTimeout( timeout_t msec )
 	Poco::Timespan old = tcp->getReceiveTimeout();;
 	//timeout_t old = tcp->getReceiveTimeout();
 
+	Poco::Timespan tmsec(msec*1000);
+
 	if( old == msec )
 		return;
 
-	tcp->setReceiveTimeout(msec*1000);
+	tcp->setReceiveTimeout(tmsec);
 
 	int oldKeepAlive = keepAliveTimeout;
 	keepAliveTimeout = (msec > 1000 ? msec / 1000 : 1);
@@ -122,7 +121,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		for( size_t i = 0; i < 2; i++ )
 		{
 			//if( tcp->isPending(ost::Socket::pendingOutput, timeout) )
-			if( tcp->poll(timeout*1000,Poco::Net::Socket::SELECT_READ ) )
+			if( tcp->poll(timeout*1000,Poco::Net::Socket::SELECT_WRITE) )
 			{
 				mbErrCode res = send(msg);
 
@@ -266,7 +265,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				// при штатном обмене..лучше дождаться конца "посылки"..
 				// поэтому применяем disconnect(), а не forceDisconnect()
 				// (с учётом выставленной опции setLinger(true))
-				tcp->shutdown();
+				tcp->close();
 			}
 
 			return res;
@@ -360,7 +359,8 @@ bool ModbusTCPMaster::checkConnection( const std::string& ip, int port, int time
 		t.create(ip, port, timeout_msec);
 		t.setKeepAliveParams( (timeout_msec > 1000 ? timeout_msec / 1000 : 1), 1, 1);
 		t.setNoDelay(true);
-		t.shutdown();
+		//t.shutdown();
+		t.close();
 		return true;
 	}
 	catch(...)
@@ -419,7 +419,8 @@ void ModbusTCPMaster::connect( const Poco::Net::SocketAddress& addr, int _port )
 {
 	if( tcp )
 	{
-		disconnect();
+		//disconnect();
+		forceDisconnect();
 		tcp.reset();
 	}
 
@@ -432,31 +433,43 @@ void ModbusTCPMaster::connect( const Poco::Net::SocketAddress& addr, int _port )
 	try
 	{
 		tcp = make_shared<UTCPStream>();
-		tcp->connect(addr,500);
+		tcp->create(iaddr,port,500);
+		//tcp->connect(addr,500);
 		tcp->setReceiveTimeout(replyTimeOut_ms*1000);
 		tcp->setKeepAlive(true); // tcp->setKeepAliveParams((replyTimeOut_ms > 1000 ? replyTimeOut_ms / 1000 : 1));
 		tcp->setNoDelay(true);
+	}
+	catch( Poco::Net::NetException& ex)
+	{
+		if( dlog->debugging(Debug::CRIT) )
+		{
+			ostringstream s;
+			s << "(ModbusTCPMaster): create connection " << iaddr << ":" << port << " error: " << ex.displayText();
+			dlog->crit() << iaddr << std::endl;
+		}
+
+		tcp = nullptr;
 	}
 	catch( const std::exception& e )
 	{
 		if( dlog->debugging(Debug::CRIT) )
 		{
 			ostringstream s;
-			s << "(ModbusTCPMaster): connection " << s.str() << " error: " << e.what();
+			s << "(ModbusTCPMaster): connection " << iaddr << ":" << port << " error: " << e.what();
 			dlog->crit() << iaddr << std::endl;
 		}
+		tcp = nullptr;
 	}
 	catch( ... )
 	{
 		if( dlog->debugging(Debug::CRIT) )
 		{
 			ostringstream s;
-			s << "(ModbusTCPMaster): connection " << s.str() << " error: catch ...";
+			s << "(ModbusTCPMaster): connection " << iaddr << ":" << port << " error: catch ...";
 			dlog->crit() << s.str() << std::endl;
 		}
+		tcp = nullptr;
 	}
-
-	//    }
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::disconnect()
@@ -467,7 +480,7 @@ void ModbusTCPMaster::disconnect()
 	if( !tcp )
 		return;
 
-	tcp->shutdown();
+	tcp->close();
 	tcp.reset();
 }
 // -------------------------------------------------------------------------
@@ -480,11 +493,20 @@ void ModbusTCPMaster::forceDisconnect()
 		return;
 
 	tcp->forceDisconnect();
-	tcp.reset();
+	tcp = nullptr;
 }
 // -------------------------------------------------------------------------
 bool ModbusTCPMaster::isConnection() const
 {
 	return tcp && tcp->isConnected();
+#if 0
+	if( !tcp )
+		return false;
+
+	if( tcp->poll({0,5},Poco::Net::Socket::SELECT_READ) )
+		return (tcp->available() > 0);
+
+	return false;
+#endif
 }
 // -------------------------------------------------------------------------

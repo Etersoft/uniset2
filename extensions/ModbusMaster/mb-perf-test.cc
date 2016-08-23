@@ -58,6 +58,8 @@ int main( int argc, const char** argv )
 
 		int count = conf->getArgPInt("--count", 50);
 
+		cerr << "RUN " << count << " MBTCPMultiMaster.." << endl;
+
 		for( int i = 1; i <= count; i++ )
 		{
 			ostringstream prefix;

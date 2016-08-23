@@ -42,7 +42,7 @@ UTCPSocket::UTCPSocket( int sock ):
 }
 // -------------------------------------------------------------------------
 UTCPSocket::UTCPSocket( const string& host, int port ):
-	Poco::Net::ServerSocket(Poco::Net::SocketAddress(host,port))
+	Poco::Net::ServerSocket(Poco::Net::SocketAddress(host,port),true)
 {
 	init();
 }

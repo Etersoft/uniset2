@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <cstring>
+#include <Poco/Net/NetException.h>
 #include "UTCPStream.h"
 #include "PassiveTimer.h"
 #include "UniSetTypes.h"
@@ -56,12 +57,20 @@ bool UTCPStream::isSetLinger() const
 // -------------------------------------------------------------------------
 void UTCPStream::forceDisconnect()
 {
-	bool on;
-	int sec;
-	Poco::Net::StreamSocket::getLinger(on,sec);
-	setLinger(false,0);
-	shutdown();
-	Poco::Net::StreamSocket::setLinger(on,sec);
+	try
+	{
+		bool on;
+		int sec;
+		Poco::Net::StreamSocket::getLinger(on,sec);
+		setLinger(false,0);
+		close();
+		//shutdown();
+		Poco::Net::StreamSocket::setLinger(on,sec);
+	}
+	catch( Poco::Net::NetException& )
+	{
+
+	}
 }
 // -------------------------------------------------------------------------
 bool UTCPStream::setNoDelay(bool enable)
@@ -103,6 +112,13 @@ void UTCPStream::create(const std::string& hname, int port, timeout_t tout_msec 
 bool UTCPStream::isConnected()
 {
 	//return ( Poco::Net::StreamSocket::sockfd() > 0 );
-	return ( Poco::Net::StreamSocket::peerAddress().addr() != 0 );
+	try
+	{
+		return ( Poco::Net::StreamSocket::peerAddress().addr() != 0 );
+	}
+	catch( Poco::Net::NetException& ex )
+	{
+	}
+	return false;
 }
 // -------------------------------------------------------------------------

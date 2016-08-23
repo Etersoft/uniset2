@@ -220,7 +220,20 @@ void MBTCPMaster::sigterm( int signo )
 		std::clog << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
 	}
 }
+// -----------------------------------------------------------------------------
+bool MBTCPMaster::deactivateObject()
+{
+	setProcActive(false);
+	if( pollThread )
+	{
+		pollThread->stop();
 
+		if( pollThread->isRunning() )
+			pollThread->join();
+	}
+
+	return MBExchange::deactivateObject();
+}
 // -----------------------------------------------------------------------------
 void MBTCPMaster::help_print( int argc, const char* const* argv )
 {

@@ -16,6 +16,7 @@ static struct option longopts[] =
 	{ "port", required_argument, 0, 'p' },
 	{ "const-reply", required_argument, 0, 'c' },
 	{ "after-send-pause", required_argument, 0, 's' },
+	{ "max-sessions", required_argument, 0, 'm' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -30,6 +31,7 @@ static void print_help()
 	printf("[-p|--port] port               - Server port. Default: 502.\n");
 	printf("[-c|--const-reply] val         - Reply 'val' for all queries\n");
 	printf("[-s|--after-send-pause] msec   - Pause after send request. Default: 0\n");
+	printf("[-m|--max-sessions] num        - Set the maximum number of sessions. Default: 10\n");
 }
 // --------------------------------------------------------------------------
 int main( int argc, char** argv )
@@ -44,12 +46,13 @@ int main( int argc, char** argv )
 	auto dlog = make_shared<DebugStream>();
 	int replyVal = -1;
 	timeout_t afterpause = 0;
+	size_t maxSessions = 10;
 
 	try
 	{
 		while(1)
 		{
-			opt = getopt_long(argc, argv, "hva:p:i:c:s:", longopts, &optindex);
+			opt = getopt_long(argc, argv, "hva:p:i:c:s:m:", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -84,6 +87,10 @@ int main( int argc, char** argv )
 					afterpause = uni_atoi(optarg);
 					break;
 
+				case 'm':
+					maxSessions = uni_atoi(optarg);
+					break;
+
 				case '?':
 				default:
 					printf("? argumnet\n");
@@ -110,6 +117,7 @@ int main( int argc, char** argv )
 		mbs.setLog(dlog);
 		mbs.setVerbose(verb);
 		mbs.setAfterSendPause(afterpause);
+		mbs.setMaxSessions(maxSessions);
 
 		if( replyVal != -1 )
 			mbs.setReply(replyVal);

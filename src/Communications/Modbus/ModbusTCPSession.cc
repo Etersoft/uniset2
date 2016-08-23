@@ -42,7 +42,7 @@ ModbusTCPSession::~ModbusTCPSession()
 		ioTimeout.stop();
 }
 // -------------------------------------------------------------------------
-ModbusTCPSession::ModbusTCPSession( int sfd, const std::unordered_set<ModbusAddr>& a, timeout_t timeout ):
+ModbusTCPSession::ModbusTCPSession(const Poco::Net::StreamSocket& s, const std::unordered_set<ModbusAddr>& a, timeout_t timeout ):
 	vaddr(a),
 	timeout(timeout),
 	peername(""),
@@ -51,7 +51,7 @@ ModbusTCPSession::ModbusTCPSession( int sfd, const std::unordered_set<ModbusAddr
 {
 	try
 	{
-		sock = make_shared<USocket>(sfd);
+		sock = make_shared<UTCPStream>(s);
 
 		// если стремиться к "оптимизации по скорости"
 		// то getpeername "медленная" операция и может стоит от неё отказаться.

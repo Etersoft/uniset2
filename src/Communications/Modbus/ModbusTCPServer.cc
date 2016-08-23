@@ -245,7 +245,9 @@ void ModbusTCPServer::ioAccept(ev::io& watcher, int revents)
 
 	try
 	{
-		auto s = make_shared<ModbusTCPSession>(watcher.fd, *vmbaddr, sessTimeout);
+		Poco::Net::StreamSocket ss = sock->acceptConnection();
+
+		auto s = make_shared<ModbusTCPSession>(ss, *vmbaddr, sessTimeout);
 		s->connectReadCoil( sigc::mem_fun(this, &ModbusTCPServer::readCoilStatus) );
 		s->connectReadInputStatus( sigc::mem_fun(this, &ModbusTCPServer::readInputStatus) );
 		s->connectReadOutput( sigc::mem_fun(this, &ModbusTCPServer::readOutputRegisters) );
