@@ -8,21 +8,21 @@ libUniSet2UNetUDP_la_LDFLAGS  = -version-info $(UNETUDP_VER)
 libUniSet2UNetUDP_la_LIBADD		= $(top_builddir)/lib/libUniSet2.la \
 								$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 								$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
-								$(SIGC_LIBS) $(COMCPP_LIBS)
-libUniSet2UNetUDP_la_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
+								$(SIGC_LIBS) $(POCO_LIBS)
+libUniSet2UNetUDP_la_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
 libUniSet2UNetUDP_la_SOURCES 	= UDPPacket.cc UNetReceiver.cc UNetSender.cc UNetExchange.cc
 
 @PACKAGE@_unetexchange_SOURCES 		= unetexchange.cc
 @PACKAGE@_unetexchange_LDADD 		= libUniSet2UNetUDP.la $(top_builddir)/lib/libUniSet2.la \
 									$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 									$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
-									$(SIGC_LIBS) $(COMCPP_LIBS)
-@PACKAGE@_unetexchange_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
+									$(SIGC_LIBS) $(POCO_LIBS)
+@PACKAGE@_unetexchange_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
 
 
 @PACKAGE@_unet_udp_tester_SOURCES	= UDPPacket.cc unet-udp-tester.cc
-@PACKAGE@_unet_udp_tester_LDADD 	= $(COMCPP_LIBS)
-@PACKAGE@_unet_udp_tester_CXXFLAGS	= $(COMCPP_CFLAGS)
+@PACKAGE@_unet_udp_tester_LDADD 	= $(POCO_LIBS)
+@PACKAGE@_unet_udp_tester_CXXFLAGS	= $(POCO_CFLAGS)
 
 # install
 devel_include_HEADERS = *.h

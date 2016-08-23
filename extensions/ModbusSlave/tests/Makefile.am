@@ -6,10 +6,10 @@ tests_with_sm_SOURCES   = tests_with_sm.cc test_mbslave.cc
 tests_with_sm_LDADD	 = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/extensions/ModbusSlave/libUniSet2MBSlave.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
-	$(SIGC_LIBS) $(COMCPP_LIBS)
+	$(SIGC_LIBS) $(POCO_LIBS)
 tests_with_sm_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/ModbusSlave \
-	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
+	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
 
 #$(top_builddir)/extensions/lib/libUniSet2Extensions.la:
 #	cd $(top_builddir)/extensions/lib/ && make

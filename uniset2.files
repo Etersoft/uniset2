@@ -465,6 +465,7 @@ tests/test_logserver.cc
 tests/test_tcpcheck.cc
 tests/test_mqueue.cc
 tests/test_uobject.cc
+tests/test_utcpsocket.cc
 tests/TestUObject.h
 tests/tests-junit.xml
 tests/tests.cc

@@ -16,7 +16,7 @@ bin_PROGRAMS 		= @PACKAGE@-smemory-plus
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(IO_LIBS) \
-	$(SIGC_LIBS) $(COMCPP_LIBS)
+	$(SIGC_LIBS) $(POCO_LIBS)
 
 @PACKAGE@_smemory_plus_CXXFLAGS	= \
 	-I$(top_builddir)/extensions/UNetUDP \
@@ -25,7 +25,7 @@ bin_PROGRAMS 		= @PACKAGE@-smemory-plus
 	-I$(top_builddir)/extensions/SharedMemory \
 	-I$(top_builddir)/extensions/include \
 	$(IO_CFLAGS) \
-	$(SIGC_CFLAGS) $(COMCPP_CFLAGS)
+	$(SIGC_CFLAGS) $(POCO_CFLAGS)
 
 @PACKAGE@_smemory_plus_SOURCES = smemory-plus.cc
 
