@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <Poco/Net/NetException.h>
 #include "Exceptions.h"
 #include "TestProc.h"
 // -----------------------------------------------------------------------------
@@ -22,11 +23,10 @@ TestProc::TestProc( UniSetTypes::ObjectId id, xmlNode* confnode ):
 	vmonit(undef);
 
 	mbPort = 2048; // getId();
-	ost::InetAddress mbIAddr("localhost");
+	const std::string mbIAddr("localhost");
 
 	try
 	{
-		ost::Thread::setException(ost::Thread::throwException);
 		mbslave = make_shared<ModbusTCPServerSlot>(mbIAddr, mbPort);
 		mbslave->connectWriteSingleOutput( sigc::mem_fun(this, &TestProc::writeOutputSingleRegister) );
 		loga->add( mbslave->log() );
@@ -35,10 +35,10 @@ TestProc::TestProc( UniSetTypes::ObjectId id, xmlNode* confnode ):
 		mbthr = make_shared< ThreadCreator<TestProc> >(this, &TestProc::mbThread);
 		myinfo << myname << "(init) ModbusSlave " << mbIP << ":" << mbPort << endl;
 	}
-	catch( const ost::SockException& e )
+	catch( const Poco::Net::NetException& e )
 	{
 		ostringstream err;
-		err << myname << "(init) Can`t create socket " << mbIP << ":" << mbPort << " err: " << e.getString() << endl;
+		err << myname << "(init) Can`t create socket " << mbIP << ":" << mbPort << " err: " << e.message() << endl;
 		mycrit << err.str() << endl;
 		throw SystemError(err.str());
 	}

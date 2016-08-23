@@ -22,7 +22,6 @@
 #include <string>
 #include <queue>
 #include <unordered_map>
-#include <cc++/socket.h>
 #include <sigc++/sigc++.h>
 #include <ev++.h>
 #include "UniSetObject.h"
@@ -92,7 +91,7 @@ class UNetReceiver:
 	public std::enable_shared_from_this<UNetReceiver>
 {
 	public:
-		UNetReceiver( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection = false );
+		UNetReceiver( const std::string& host, int port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection = false );
 		virtual ~UNetReceiver();
 
 		void start();
@@ -136,11 +135,11 @@ class UNetReceiver:
 
 		void forceUpdate(); // пересохранить очередной пакет в SM даже если данные не менялись
 
-		inline ost::IPV4Address getAddress() const
+		inline std::string getAddress() const
 		{
 			return addr;
 		}
-		inline ost::tpport_t getPort() const
+		inline int getPort() const
 		{
 			return port;
 		}
@@ -207,8 +206,8 @@ class UNetReceiver:
 		timeout_t updatepause = { 100 };    /*!< переодичность обновления данных в SM, [мсек] */
 
 		std::shared_ptr<UDPReceiveU> udp;
-		ost::IPV4Address addr;
-		ost::tpport_t port = { 0 };
+		std::string addr;
+		int port = { 0 };
 		std::string myname;
 		ev::io evReceive;
 		ev::periodic evCheckConnection;

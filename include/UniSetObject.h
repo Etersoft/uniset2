@@ -175,7 +175,7 @@ class UniSetObject:
 		void setID(UniSetTypes::ObjectId id);
 
 		/*! установить приоритет для потока обработки сообщений (если позволяют права и система) */
-		void setThreadPriority( int p );
+		void setThreadPriority( Poco::Thread::Priority p );
 
 		/*! установка размера очереди сообщений */
 		void setMaxSizeOfMessageQueue( size_t s );

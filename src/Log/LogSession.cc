@@ -23,7 +23,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <cstring>
-#include <cc++/socket.h>
+#include <Poco/Net/NetException.h>
 #include "Exceptions.h"
 #include "LogSession.h"
 #include "UniSetTypes.h"
@@ -67,17 +67,28 @@ LogSession::LogSession( int sfd, std::shared_ptr<DebugStream>& _log, timeout_t _
 	try
 	{
 		sock = make_shared<USocket>(sfd);
-		ost::tpport_t p;
-		ost::InetAddress iaddr = sock->getIPV4Peer(&p);
 
-		// resolve..
-		caddr = string( iaddr.getHostname() );
+		Poco::Net::SocketAddress  iaddr = sock->peerAddress();
+
+		if( iaddr.host().toString().empty() )
+		{
+			ostringstream err;
+			err << "(ModbusTCPSession): unknonwn ip(0.0.0.0) client disconnected?!";
+
+			if( mylog.is_crit() )
+				mylog.crit() << err.str() << endl;
+
+			sock.reset();
+			throw SystemError(err.str());
+		}
+
+		caddr = iaddr.host().toString();
 
 		ostringstream s;
-		s << iaddr << ":" << p;
+		s << caddr << ":" << iaddr.port();
 		peername = s.str();
 	}
-	catch( const ost::SockException& ex )
+	catch( const Poco::Net::NetException& ex )
 	{
 		ostringstream err;
 		err << ex.what();
@@ -85,7 +96,7 @@ LogSession::LogSession( int sfd, std::shared_ptr<DebugStream>& _log, timeout_t _
 		throw SystemError(err.str());
 	}
 
-	sock->setCompletion(false);
+	sock->setBlocking(false);
 
 	io.set<LogSession, &LogSession::callback>(this);
 	cmdTimer.set<LogSession, &LogSession::onCmdTimeout>(this);

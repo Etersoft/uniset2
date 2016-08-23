@@ -25,7 +25,8 @@
 #include <atomic>
 #include <chrono>
 #include <mutex>
-#include <cc++/thread.h>
+#include <Poco/RWLock.h>
+#include "PassiveTimer.h"
 // -----------------------------------------------------------------------------------------
 namespace UniSetTypes
 {
@@ -65,7 +66,7 @@ namespace UniSetTypes
 		private:
 			std::string nm;
 			friend class uniset_rwmutex_lock;
-			ost::ThreadLock m; // это рекурсивный mutex (!)
+			std::unique_ptr<Poco::RWLock> m;
 	};
 
 	std::ostream& operator<<(std::ostream& os, uniset_rwmutex& m );

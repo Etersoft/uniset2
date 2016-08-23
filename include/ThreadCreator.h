@@ -22,8 +22,10 @@
 #ifndef ThreadCreator_h_
 #define ThreadCreator_h_
 //----------------------------------------------------------------------------------------
-#include <cc++/thread.h>
+#include <Poco/Thread.h>
 #include <sys/resource.h>
+#include <sys/types.h>
+#include <unistd.h>
 //----------------------------------------------------------------------------------------
 /*! \class ThreadCreator
  *    Шаблон для создания потоков с указанием функции вызова.
@@ -81,7 +83,7 @@
 //----------------------------------------------------------------------------------------
 template<class ThreadMaster>
 class ThreadCreator:
-	public ost::PosixThread
+	public Poco::Runnable
 {
 	public:
 
@@ -95,27 +97,34 @@ class ThreadCreator:
 
 		inline pid_t getTID() const
 		{
-			return pid;
+			return thr.tid();
 		}
 
 		/*! \return 0 - sucess */
-		int setPriority( int prior );
+		void setPriority( Poco::Thread::Priority prior );
 
 		/*! \return < 0 - fail */
-		int getPriority() const;
+		Poco::Thread::Priority getPriority() const;
 
 		void stop();
+		void start();
 
-		inline void setName( const std::string& name )
+		inline bool isRunning()
 		{
-			ost::PosixThread::setName( name.c_str() );
+			return thr.isRunning();
 		}
 
+		inline void join()
+		{
+			thr.join();
+		}
+
+/*
 		inline void setCancel( ost::Thread::Cancel mode )
 		{
 			ost::PosixThread::setCancel(mode);
 		}
-
+*/
 		inline void setFinalAction( ThreadMaster* m, Action a )
 		{
 			finm = m;
@@ -144,6 +153,8 @@ class ThreadCreator:
 				(initm->*initact)();
 		}
 
+		virtual void terminate(){}
+
 	private:
 		ThreadCreator();
 
@@ -157,6 +168,8 @@ class ThreadCreator:
 
 		ThreadMaster* initm;
 		Action initact;
+
+		Poco::Thread thr;
 };
 
 //----------------------------------------------------------------------------------------
@@ -188,6 +201,12 @@ void ThreadCreator<ThreadMaster>::stop()
 }
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
+void ThreadCreator<ThreadMaster>::start()
+{
+	thr.start( *this );
+}
+//----------------------------------------------------------------------------------------
+template <class ThreadMaster>
 ThreadCreator<ThreadMaster>::ThreadCreator():
 	pid(0),
 	m(0),
@@ -205,15 +224,15 @@ ThreadCreator<ThreadMaster>::~ThreadCreator()
 }
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
-int ThreadCreator<ThreadMaster>::setPriority( int prior )
+void ThreadCreator<ThreadMaster>::setPriority( Poco::Thread::Priority prior )
 {
-	return setpriority(PRIO_PROCESS, pid, prior );
+	return thr.setPriority(prior);
 }
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
-int ThreadCreator<ThreadMaster>::getPriority() const
+Poco::Thread::Priority ThreadCreator<ThreadMaster>::getPriority() const
 {
-	return getpriority(PRIO_PROCESS, pid);
+	return thr.getPriority();
 }
 //----------------------------------------------------------------------------------------
 #endif // ThreadCreator_h_

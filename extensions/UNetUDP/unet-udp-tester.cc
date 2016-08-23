@@ -5,7 +5,7 @@
 #include <iostream>
 #include <chrono>
 #include <iomanip>
-#include <cc++/socket.h>
+#include <Poco/Net/NetException.h>
 #include "UDPPacket.h"
 #include "PassiveTimer.h"
 #include "UDPCore.h"
@@ -40,7 +40,7 @@ enum Command
 	cmdReceive
 };
 // --------------------------------------------------------------------------
-static bool split_addr( const string& addr, string& host, ost::tpport_t& port )
+static bool split_addr( const string& addr, string& host, int& port )
 {
 	string::size_type pos = addr.rfind(':');
 
@@ -62,9 +62,9 @@ int main(int argc, char* argv[])
 	Command cmd = cmdNOP;
 	int verb = 0;
 	std::string addr = "";
-	ost::tpport_t port = 0;
+	int port = 0;
 	int usecpause = 2000000;
-	timeout_t tout = TIMEOUT_INF;
+	timeout_t tout = UniSetTimer::WaitUpTime;
 	bool broadcast = true;
 	int procID = 1;
 	int nodeID = 1;
@@ -168,8 +168,6 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	ost::Thread::setException(ost::Thread::throwException);
-
 	try
 	{
 		string s_host;
@@ -186,7 +184,7 @@ int main(int argc, char* argv[])
 				 << " port=" << port
 				 << " timeout=";
 
-			if( tout == TIMEOUT_INF )
+			if( tout == UniSetTimer::WaitUpTime )
 				cout << "Waitup";
 			else
 				cout << tout;
@@ -195,14 +193,12 @@ int main(int argc, char* argv[])
 				 << endl;
 		}
 
-		ost::IPV4Host host(s_host.c_str());
-		//        udp.UDPTransmit::setBroadcast(broadcast);
 
 		switch( cmd )
 		{
 			case cmdReceive:
 			{
-				UDPReceiveU udp(host, port);
+				UDPReceiveU udp(s_host, port);
 
 				//                char buf[UniSetUDP::MaxDataLen];
 				UniSetUDP::UDPMessage pack;
@@ -232,13 +228,13 @@ int main(int argc, char* argv[])
 							npack = 0;
 						}
 
-						if( !udp.isInputReady(tout) )
+						if( !udp.poll(tout,Poco::Net::Socket::SELECT_READ) )
 						{
 							cout << "(recv): Timeout.." << endl;
 							continue;
 						}
 
-						size_t ret = udp.UDPReceive::receive( &(buf.data), sizeof(buf.data) );
+						size_t ret = udp.receiveBytes(&(buf.data), sizeof(buf.data) );
 						size_t sz = UniSetUDP::UDPMessage::getMessage(pack, buf);
 
 						if( sz == 0 )
@@ -270,9 +266,9 @@ int main(int argc, char* argv[])
 						if( show )
 							cout << "receive data: " << pack << endl;
 					}
-					catch( ost::SockException& e )
+					catch( Poco::Net::NetException& e )
 					{
-						cerr << "(recv): " << e.getString() << " (" << addr << ")" << endl;
+						cerr << "(recv): " << e.displayText() << " (" << addr << ")" << endl;
 					}
 					catch( ... )
 					{
@@ -292,12 +288,8 @@ int main(int argc, char* argv[])
 
 			case cmdSend:
 			{
-				ost::UDPSocket* udp;
-
-				if( !broadcast )
-					udp = new ost::UDPSocket();
-				else
-					udp = new ost::UDPBroadcast(host, port);
+				std::shared_ptr<UDPSocketU> udp = make_shared<UDPSocketU>(s_host, port);
+				udp->setBroadcast(broadcast);
 
 				UniSetUDP::UDPMessage mypack;
 				mypack.nodeID = nodeID;
@@ -312,7 +304,8 @@ int main(int argc, char* argv[])
 				for( unsigned int i = 0; i < count; i++ )
 					mypack.addDData(i, i);
 
-				udp->setPeer(host, port);
+				Poco::Net::SocketAddress sa(s_host,port);
+				udp->connect(sa);
 				size_t packetnum = 0;
 
 				UniSetUDP::UDPPacket s_buf;
@@ -333,7 +326,7 @@ int main(int argc, char* argv[])
 
 					try
 					{
-						if( udp->isPending(ost::Socket::pendingOutput, tout) )
+						if( udp->poll(tout,Poco::Net::Socket::SELECT_WRITE) )
 						{
 							mypack.transport_msg(s_buf);
 
@@ -341,15 +334,15 @@ int main(int argc, char* argv[])
 								cout << "(send): to addr=" << addr << " d_count=" << mypack.dcount
 									 << " a_count=" << mypack.acount << " bytes=" << s_buf.len << endl;
 
-							size_t ret = udp->send((char*)&s_buf.data, s_buf.len);
+							size_t ret = udp->sendBytes((char*)&s_buf.data, s_buf.len);
 
 							if( ret < s_buf.len )
 								cerr << "(send): FAILED ret=" << ret << " < sizeof=" << s_buf.len << endl;
 						}
 					}
-					catch( ost::SockException& e )
+					catch( Poco::Net::NetException& e )
 					{
-						cerr << "(send): " << e.getString() << " (" << addr << ")" << endl;
+						cerr << "(send): " << e.message() << " (" << addr << ")" << endl;
 					}
 					catch( ... )
 					{

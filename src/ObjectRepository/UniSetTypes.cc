@@ -20,6 +20,7 @@
 // -----------------------------------------------------------------------------
 #include <cmath>
 #include <iomanip>
+#include <sstream>
 #include <fstream>
 #include "UniSetTypes.h"
 #include "Configuration.h"

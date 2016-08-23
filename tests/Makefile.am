@@ -1,4 +1,4 @@
-SUBDIRS=MQPerfTest
+SUBDIRS=MQPerfTest PocoTest
 if HAVE_TESTS
 ############################################################################
 # This file is part of the UniSet library								  #
@@ -8,8 +8,8 @@ if HAVE_TESTS
 noinst_PROGRAMS = tests tests_with_conf develop
 
 #umutex threadtst dlog
-tests_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(SIGC_LIBS) $(COMCPP_LIBS)
-tests_CPPFLAGS	= -I$(top_builddir)/include $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
+tests_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(SIGC_LIBS) $(POCO_LIBS) -lpthread
+tests_CPPFLAGS	= -I$(top_builddir)/include $(SIGC_CFLAGS) $(POCO_CFLAGS)
 tests_SOURCES = tests.cc \
 test_passivetimer.cc \
 test_passivecondtimer.cc \

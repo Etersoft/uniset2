@@ -1,6 +1,7 @@
 #include <memory>
 #include <chrono>
 #include <string>
+#include <Poco/Net/NetException.h>
 #include "Debug.h"
 #include "UNetReceiver.h"
 #include "SMInterface.h"
@@ -31,9 +32,7 @@ shared_ptr<SMInterface> smiInstance()
 // --------------------------------------------------------------------------
 static void run_senders( size_t max, const std::string& s_host, size_t count = 50, timeout_t usecpause = 50 )
 {
-	ost::IPV4Host host(s_host.c_str());
-
-	std::vector< std::shared_ptr<ost::UDPSocket> > vsend;
+	std::vector< std::shared_ptr<UDPSocketU> > vsend;
 	vsend.reserve(max);
 
 	cout << "Run " << max << " senders (" << s_host << ")" << endl;
@@ -43,12 +42,12 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 	{
 		try
 		{
-			auto s = make_shared<ost::UDPSocket>(host, begPort + i);
+			auto s = make_shared<UDPSocketU>(s_host, begPort + i);
 			vsend.emplace_back(s);
 		}
-		catch( ost::SockException& e )
+		catch( Poco::Net::NetException& e )
 		{
-			cerr << "(run_senders): " << e.getString() << " (" << host << ")" << endl;
+			cerr << "(run_senders): " << e.displayText() << " (" << s_host << ")" << endl;
 			throw;
 		}
 		catch( std::exception& ex)
@@ -76,11 +75,11 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 		try
 		{
 			if( vsend[i] )
-				vsend[i]->setPeer(host, begPort + i);
+				vsend[i]->connect( Poco::Net::SocketAddress(s_host, begPort + i) );
 		}
-		catch( ost::SockException& e )
+		catch( Poco::Net::NetException& e )
 		{
-			cerr << "(run_senders): " << e.getString() << " (" << host << ")" << endl;
+			cerr << "(run_senders): " << e.message() << " (" << s_host << ")" << endl;
 			throw;
 		}
 		catch( std::exception& ex)
@@ -108,18 +107,18 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 		{
 			try
 			{
-				if( udp->isPending(ost::Socket::pendingOutput, 100) )
+				if( udp->poll(100,Poco::Net::Socket::SELECT_WRITE) )
 				{
 					mypack.transport_msg(s_buf);
-					size_t ret = udp->send((char*)&s_buf.data, s_buf.len);
+					size_t ret = udp->sendBytes((char*)&s_buf.data, s_buf.len);
 
 					if( ret < s_buf.len )
 						cerr << "(send): FAILED ret=" << ret << " < sizeof=" << s_buf.len << endl;
 				}
 			}
-			catch( ost::SockException& e )
+			catch( Poco::Net::NetException& e )
 			{
-				cerr << "(send): " << e.getString() << " (" << host << ")" << endl;
+				cerr << "(send): " << e.message() << " (" << s_host << ")" << endl;
 			}
 			catch( ... )
 			{

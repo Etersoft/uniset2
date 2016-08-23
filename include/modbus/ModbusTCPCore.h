@@ -3,7 +3,6 @@
 #define ModbusTCPCore_H_
 // -------------------------------------------------------------------------
 #include <queue>
-#include <cc++/socket.h>
 #include "ModbusRTUErrors.h"
 #include "UTCPStream.h"
 // -------------------------------------------------------------------------

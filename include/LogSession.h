@@ -20,7 +20,6 @@
 #include <string>
 #include <memory>
 #include <queue>
-#include <cc++/socket.h>
 #include <ev++.h>
 #include "Mutex.h"
 #include "DebugStream.h"
@@ -78,7 +77,7 @@ class LogSession
 		std::string getShortInfo();
 
 	protected:
-		LogSession( ost::TCPSocket& server );
+//		LogSession( ost::TCPSocket& server );
 
 		void event( ev::async& watcher, int revents );
 		void callback( ev::io& watcher, int revents );

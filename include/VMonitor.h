@@ -25,6 +25,7 @@
 #include <list>
 #include <ostream>
 #include <unordered_map>
+#include <Poco/Types.h>
 #include "UniSetTypes.h"
 // --------------------------------------------------------------------------
 #ifndef VMON_DEF_FUNC
@@ -136,6 +137,7 @@ class VMonitor
 		VMON_DEF_FUNC(bool);
 		VMON_DEF_FUNC(float);
 		VMON_DEF_FUNC(double);
+		VMON_DEF_FUNC(Poco::Int64); // <--- for timeout_t
 		//		VMON_DEF_FUNC(UniSetTypes::ObjectId); // <--- long
 
 		void add( const std::string& name, const std::string& v );
@@ -156,6 +158,7 @@ class VMonitor
 		VMON_DEF_MAP(bool);
 		VMON_DEF_MAP(float);
 		VMON_DEF_MAP(double);
+		std::unordered_map<const Poco::Int64*,const std::string> m_Int64;
 		VMON_DEF_MAP3(std::string, string);
 };
 // --------------------------------------------------------------------------

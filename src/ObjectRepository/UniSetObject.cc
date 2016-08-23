@@ -351,7 +351,7 @@ void UniSetObject::termWaiting()
 		tmr->terminate();
 }
 // ------------------------------------------------------------------------------------------
-void UniSetObject::setThreadPriority( int p )
+void UniSetObject::setThreadPriority( Poco::Thread::Priority p )
 {
 	if( thr )
 		thr->setPriority(p);
@@ -578,7 +578,7 @@ bool UniSetObject::activate()
 	if( myid != UniSetTypes::DefaultObjectId && threadcreate )
 	{
 		thr = make_shared< ThreadCreator<UniSetObject> >(this, &UniSetObject::work);
-		thr->setCancel(ost::Thread::cancelDeferred);
+		//thr->setCancel(ost::Thread::cancelDeferred);
 
 		std::unique_lock<std::mutex> locker(m_working);
 		a_working = true;
@@ -722,7 +722,7 @@ UniSetTypes::SimpleInfo* UniSetObject::getInfo( ::CORBA::Long userparam )
 	{
 		if(thr)
 		{
-			msgpid = thr->getId();    // заодно(на всякий) обновим и внутреннюю информацию
+			msgpid = thr->getTID();    // заодно(на всякий) обновим и внутреннюю информацию
 			info << msgpid;
 		}
 		else

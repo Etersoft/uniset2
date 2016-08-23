@@ -23,6 +23,7 @@
 #define MessageType_H_
 // --------------------------------------------------------------------------
 #include <sys/time.h>
+#include <cstring>
 #include <ostream>
 #include "Configuration.h"
 #include "UniSetTypes.h"

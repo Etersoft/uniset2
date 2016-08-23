@@ -14,6 +14,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -------------------------------------------------------------------------
+#include <Poco/Net/NetException.h>
 #include "modbus/ModbusTCPCore.h"
 #include "Exceptions.h"
 // -------------------------------------------------------------------------
@@ -26,7 +27,7 @@ using namespace ModbusRTU;
 size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 								   std::queue<unsigned char>& qrecv, size_t max, timeout_t t )
 {
-	if( !tcp || !tcp->isConnected() )
+	if( !tcp ) // || !tcp->available() )
 		return 0;
 
 	size_t i = 0;
@@ -57,13 +58,10 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 		if( l == 0 )
 			commfail = true;
 	}
-	catch( ost::SockException& e )
+	catch( Poco::Net::NetException& e )
 	{
-		if( e.getSocketError() == ost::Socket::errConnectFailed ||
-				e.getSocketError() == ost::Socket::errConnectInvalid )
-		{
-			commfail = true;
-		}
+#warning Разобраться с Poco::Net::NetException
+		commfail = true;
 	}
 
 	delete [] buf;
@@ -107,7 +105,7 @@ size_t ModbusTCPCore::getNextData(UTCPStream* tcp,
 {
 	if( qrecv.empty() || qrecv.size() < len )
 	{
-		if( !tcp || !tcp->isConnected() )
+		if( !tcp ) // || !tcp->available() )
 			return 0;
 
 		if( len <= 0 )
@@ -227,7 +225,7 @@ size_t ModbusTCPCore::getDataFD( int fd, std::queue<unsigned char>& qrecv,
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPCore::sendData( UTCPStream* tcp, unsigned char* buf, size_t len, timeout_t t )
 {
-	if( !tcp || !tcp->isConnected() )
+	if( !tcp ) // || !tcp->available() )
 		return erTimeOut;
 
 	try
@@ -237,7 +235,7 @@ mbErrCode ModbusTCPCore::sendData( UTCPStream* tcp, unsigned char* buf, size_t l
 		if( l == len )
 			return erNoError;
 	}
-	catch( ost::SockException& e )
+	catch( Poco::Net::NetException& e )
 	{
 		//        cerr << "(send): " << e.getString() << ": " << e.getSystemErrorString() << endl;
 	}

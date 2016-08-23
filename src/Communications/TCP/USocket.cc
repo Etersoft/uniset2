@@ -5,30 +5,31 @@ using namespace std;
 // -------------------------------------------------------------------------
 USocket::~USocket()
 {
-	endSocket();
+	close();
 }
 // -------------------------------------------------------------------------
-USocket::USocket( int sock ):
-	Socket(accept(sock, NULL, NULL))
+USocket::USocket( int sock )
+//	Socket(sock)
 {
 	init();
 }
 // -------------------------------------------------------------------------
 bool USocket::setKeepAliveParams( timeout_t timeout_sec, int keepcnt, int keepintvl )
 {
-	return UTCPCore::setKeepAliveParams(so, timeout_sec, keepcnt, keepintvl);
+	return UTCPCore::setKeepAliveParams(getSocket(), timeout_sec, keepcnt, keepintvl);
 }
 // -------------------------------------------------------------------------
 int USocket::getSocket()
 {
-	return so;
+	return Socket::sockfd();
 }
 // -------------------------------------------------------------------------
 void USocket::init( bool throwflag )
 {
-	setError(throwflag);
+	//setError(throwflag);
 	setKeepAlive(true);
-	setLinger(true);
+	Socket::setLinger(true,1);
+	//setLinger(true);
 	setKeepAliveParams();
 }
 // -------------------------------------------------------------------------

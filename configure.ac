@@ -39,7 +39,6 @@ AC_SUBST(ASTYLE_OPT)
 PKG_CHECK_MODULES(XML, libxml-2.0)
 PKG_CHECK_MODULES(OMNI, omniORB4)
 PKG_CHECK_MODULES(SIGC, sigc++-2.0)
-PKG_CHECK_MODULES(COMCPP, libccgnu2)
 
 nopkgchecklibev=false
 AC_ARG_ENABLE(pkgchecklibev, AC_HELP_STRING([--disable-pkgchecklibev], [disable pkg check modules for libev]),
@@ -55,6 +54,15 @@ else
 	AC_SUBST(EV_LIBS)
 	AC_SUBST(EV_CFLAGS)
 fi
+
+#check libpoco support
+AC_MSG_CHECKING([libpoco support])
+#AC_CHECK_LIB([PocoNet],ServerSocket,,exit)
+AC_CHECK_HEADER(Poco/Net/Socket.h,,exit)
+POCO_LIBS="-lPocoFoundation -lPocoNet"
+POCO_CFLAGS="-IPoco"
+AC_SUBST(POCO_LIBS)
+AC_SUBST(POCO_CFLAGS)
 
 #check sqlite support
 AC_MSG_CHECKING([sqlite support])
@@ -315,9 +323,9 @@ AM_CONDITIONAL(HAVE_TESTS, test ${buildtests} = true)
 CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Woverloaded-virtual -Woverflow -D_GLIBCXX_USE_NANOSLEEP"
 
 # export
-LDFLAGS="$LDFLAGS ${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS} ${COMCPP_LIBS}"
+LDFLAGS="$LDFLAGS ${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS} ${POCO_LIBS}"
 # all developer liked options add to autogen.sh, please
-CXXFLAGS="-I\$(top_builddir)/include $CXXFLAGS -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${COMCPP_CFLAGS} $CXX_EXTRA_FLAGS"
+CXXFLAGS="-I\$(top_builddir)/include $CXXFLAGS -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${POCO_CFLAGS} $CXX_EXTRA_FLAGS"
 
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)
@@ -378,6 +386,7 @@ AC_CONFIG_FILES([Makefile
 				 tests/Makefile
 				 tests/UniXmlTest/Makefile
 				 tests/MQPerfTest/Makefile
+				 tests/PocoTest/Makefile
 				 docs/Makefile
 				 docs/UniSetDox.cfg
 				 docs/UniSetDoxDevel.cfg

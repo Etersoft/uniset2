@@ -142,10 +142,8 @@ int main( int argc, char** argv )
 		ModbusTCPMaster mb;
 		mb.setLog(dlog);
 
-		//        ost::Thread::setException(ost::Thread::throwException);
-		ost::InetAddress ia(iaddr.c_str());
 		mb.setTimeout(tout);
-		mb.connect(ia, port);
+		mb.connect(iaddr, port);
 
 		mb.setForceDisconnect(!persist);
 

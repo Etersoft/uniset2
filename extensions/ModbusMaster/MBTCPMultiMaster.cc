@@ -18,6 +18,7 @@
 #include <limits>
 #include <iomanip>
 #include <sstream>
+#include <Poco/Net/NetException.h>
 #include <Exceptions.h>
 #include <extensions/Extensions.h>
 #include "MBTCPMultiMaster.h"
@@ -316,8 +317,6 @@ bool MBTCPMultiMaster::MBSlaveInfo::init( std::shared_ptr<DebugStream>& mblog )
 {
 	try
 	{
-		ost::Thread::setException(ost::Thread::throwException);
-
 		mbinfo << myname << "(init): connect..." << endl;
 
 		mbtcp->connect(ip, port);
@@ -342,9 +341,9 @@ bool MBTCPMultiMaster::MBSlaveInfo::init( std::shared_ptr<DebugStream>& mblog )
 	{
 		mbwarn << "(init): " << ex << endl;
 	}
-	catch( const ost::Exception& e )
+	catch( const Poco::Net::NetException& e )
 	{
-		mbwarn << myname << "(init): Can`t create socket " << ip << ":" << port << " err: " << e.getString() << endl;
+		mbwarn << myname << "(init): Can`t create socket " << ip << ":" << port << " err: " << e.displayText() << endl;
 	}
 	catch(...)
 	{

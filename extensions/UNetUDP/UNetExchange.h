@@ -21,7 +21,6 @@
 #include <string>
 #include <queue>
 #include <deque>
-#include <cc++/socket.h>
 #include "UniSetObject.h"
 #include "Trigger.h"
 #include "Mutex.h"
@@ -129,7 +128,7 @@ class UNetExchange:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* argv[] );
 
-		bool checkExistUNetHost( const std::string& host, ost::tpport_t port );
+		bool checkExistUNetHost( const std::string& host, int port );
 
 		inline std::shared_ptr<LogAgregator> getLogAggregator()
 		{

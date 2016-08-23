@@ -18,21 +18,22 @@
 #define UTCPStream_H_
 // -------------------------------------------------------------------------
 #include <string>
-#include <cc++/socket.h>
+#include <Poco/Net/SocketStream.h>
+#include "PassiveTimer.h" // for timeout_t
 // -------------------------------------------------------------------------
 /*! Специальная "обёртка" над ost::TCPStream, устанавливающая ещё и параметры KeepAlive,
  * для открытого сокета.
  * \note Правда это linux-only
 */
 class UTCPStream:
-	public ost::TCPStream
+	public Poco::Net::StreamSocket
 {
 	public:
 
 		UTCPStream();
 		virtual ~UTCPStream();
 
-		void create( const std::string& hname, int port, bool throwflag = false, timeout_t timer = 0 );
+		void create( const std::string& hname, int port, timeout_t tout = 1000 );
 
 		// set keepalive params
 		// return true if OK

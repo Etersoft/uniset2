@@ -3,19 +3,18 @@
 #define UTCPSocket_H_
 // -------------------------------------------------------------------------
 #include <string>
-#include <cc++/socket.h>
+#include <Poco/Net/RawSocket.h>
+#include "PassiveTimer.h" // for timeout_t
 // -------------------------------------------------------------------------
 class UTCPSocket:
-	public ost::TCPSocket
+	public Poco::Net::RawSocket
 {
 	public:
 
 		// dup and accept...raw socket
 		UTCPSocket( int sock );
 
-		// hname = "host:port"
-		UTCPSocket(const std::string& hname, unsigned backlog = 5, unsigned mss = 536 );
-		UTCPSocket(const ost::IPV4Address& bind, ost::tpport_t port, unsigned backlog = 5, unsigned mss = 536 );
+		UTCPSocket(const std::string& host, int port);
 
 		virtual ~UTCPSocket();
 
@@ -30,11 +29,6 @@ class UTCPSocket:
 		 * @param enable disable Nagle algorithm when set to true.
 		 */
 		bool setNoDelay( bool enable );
-
-		void setCompletion( bool set )
-		{
-			ost::TCPSocket::setCompletion(set);
-		}
 
 		int getSocket();
 

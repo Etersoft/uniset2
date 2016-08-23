@@ -5,6 +5,7 @@
 #include <future>
 #include <ostream>
 
+#include "UTCPSocket.h"
 #include "TCPCheck.h"
 #include "UniSetTypes.h"
 using namespace std;
@@ -15,12 +16,14 @@ static atomic_bool cancel = {false};
 // --------------------------------------------------------
 bool run_test_server()
 {
-	ost::InetAddress addr = host.c_str();
-	ost::TCPSocket sock(addr, port);
+	UTCPSocket sock(host, port);
 
 	while( !cancel )
 	{
-		if( sock.isPendingConnection(500) ) {}
+		if( sock.poll(500,Poco::Net::Socket::SELECT_READ) )
+		{
+
+		}
 	}
 
 	return true;

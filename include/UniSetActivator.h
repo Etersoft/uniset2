@@ -25,7 +25,6 @@
 #include <deque>
 #include <memory>
 #include <omniORB4/CORBA.h>
-#include <cc++/socket.h>
 #include "UniSetTypes.h"
 #include "UniSetObject.h"
 #include "UniSetManager.h"

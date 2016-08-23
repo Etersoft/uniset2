@@ -431,13 +431,11 @@ UNetExchange::~UNetExchange()
 {
 }
 // -----------------------------------------------------------------------------
-bool UNetExchange::checkExistUNetHost( const std::string& addr, ost::tpport_t port )
+bool UNetExchange::checkExistUNetHost(const std::string& addr, int port )
 {
-	ost::IPV4Address a1(addr.c_str());
-
 	for( const auto& it : recvlist )
 	{
-		if( it.r1->getAddress() == a1.getAddress() && it.r1->getPort() == port )
+		if( it.r1->getAddress() == addr && it.r1->getPort() == port )
 			return true;
 	}
 

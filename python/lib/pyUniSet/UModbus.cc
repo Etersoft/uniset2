@@ -102,12 +102,10 @@ void UModbus::connect( const string& _ip, int _port )throw(UException)
 
 	ip = _ip;
 	port = _port;
-	ost::InetAddress ia(_ip.c_str());
 
 	try
 	{
-		//        cerr << "************** Connect: " << ia << ":" << port << " ip:" << ip << endl;
-		mb->connect(ia, port);
+		mb->connect(ip, port);
 	}
 	catch( ModbusRTU::mbException& ex )
 	{

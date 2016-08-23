@@ -5,7 +5,7 @@ noinst_PROGRAMS = tests
 
 tests_SOURCES   = tests.cc NullSM.cc lproc.cc
 tests_LDADD	 = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
-	$(top_builddir)/extensions/LogicProcessor/libUniSet2LProcessor.la
+	$(top_builddir)/extensions/LogicProcessor/libUniSet2LProcessor.la -lpthread
 tests_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/LogicProcessor
 
 $(top_builddir)/extensions/lib/libUniSet2Extensions.la:

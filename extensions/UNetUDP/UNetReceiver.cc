@@ -38,7 +38,7 @@ bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
 }
 */
 // ------------------------------------------------------------------------------------------
-UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t _port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection ):
+UNetReceiver::UNetReceiver(const std::string& s_host, int _port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection ):
 	shm(smi),
 	recvpause(10),
 	updatepause(100),
@@ -166,8 +166,6 @@ bool UNetReceiver::createConnection( bool throwEx )
 {
 	if( !activated )
 		return false;
-
-	ost::Thread::setException(ost::Thread::throwException);
 
 	try
 	{
@@ -626,7 +624,7 @@ void UNetReceiver::stop()
 // -----------------------------------------------------------------------------
 bool UNetReceiver::receive()
 {
-	ssize_t ret = udp->receive(r_buf.data, sizeof(r_buf.data));
+	ssize_t ret = udp->receiveBytes(r_buf.data, sizeof(r_buf.data));
 
 	if( ret < 0 )
 	{

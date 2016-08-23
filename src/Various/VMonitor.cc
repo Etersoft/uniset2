@@ -21,6 +21,22 @@
 #include <algorithm>
 #include "VMonitor.h"
 // --------------------------------------------------------------------------
+#define VMON_IMPL_ADD_N(T,m) void VMonitor::add( const std::string& name, const T& v ) \
+	{\
+		m.emplace(&v,name); \
+	} \
+	\
+	const std::string VMonitor::pretty_str( const std::string& name, const T* v, int nwidth ) \
+	{ \
+		std::ostringstream s; \
+		s << std::right << std::setw(nwidth) << name << std::left << " = " << std::right << std::setw(10)  << *(v); \
+		return std::move(s.str()); \
+	} \
+	const std::string VMonitor::pretty_str( const std::string& name, const T& v, int nwidth ) \
+	{ \
+		return pretty_str(name,&v,nwidth); \
+	}
+// --------------------------------------------------------------------------
 #define VMON_IMPL_ADD(T) void VMonitor::add( const std::string& name, const T& v ) \
 	{\
 		m_##T.emplace(&v,name); \
@@ -121,6 +137,7 @@ VMON_IMPL_ADD2(char)
 VMON_IMPL_ADD(bool)
 VMON_IMPL_ADD(float)
 VMON_IMPL_ADD(double)
+VMON_IMPL_ADD_N(Poco::Int64,m_Int64)
 VMON_IMPL_ADD3(std::string, string)
 //VMON_IMPL_ADD3(UniSetTypes::ObjectId,ObjectId)
 // --------------------------------------------------------------------------

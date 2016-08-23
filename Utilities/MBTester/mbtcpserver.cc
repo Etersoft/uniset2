@@ -1,6 +1,5 @@
 // --------------------------------------------------------------------------
 #include <string>
-#include <cc++/socket.h>
 #include <getopt.h>
 #include "Debug.h"
 #include "MBTCPServer.h"
@@ -45,8 +44,6 @@ int main( int argc, char** argv )
 	auto dlog = make_shared<DebugStream>();
 	int replyVal = -1;
 	timeout_t afterpause = 0;
-
-	ost::Thread::setException(ost::Thread::throwException);
 
 	try
 	{

@@ -4,7 +4,6 @@
 // -------------------------------------------------------------------------
 #include <string>
 #include <queue>
-#include <cc++/socket.h>
 #include <ev++.h>
 #include <sigc++/sigc++.h>
 #include "Mutex.h"
@@ -29,7 +28,7 @@ class ModbusTCPServer:
 	public ModbusServer
 {
 	public:
-		ModbusTCPServer( ost::InetAddress& ia, int port = 502 );
+		ModbusTCPServer( const std::string& addr, int port = 502 );
 		virtual ~ModbusTCPServer();
 
 		/*! Запуск сервера
@@ -79,11 +78,11 @@ class ModbusTCPServer:
 
 		void getSessions( Sessions& lst );
 
-		inline ost::InetAddress getInetAddress()
+		inline std::string getInetAddress()
 		{
 			return iaddr;
 		}
-		inline ost::tpport_t getInetPort()
+		inline int getInetPort()
 		{
 			return port;
 		}
@@ -133,8 +132,8 @@ class ModbusTCPServer:
 		/*! set timeout for receive data */
 		virtual void setChannelTimeout( timeout_t msec ) override {};
 
-		ost::tpport_t port = { 0 };
-		ost::InetAddress iaddr;
+		int port = { 0 };
+		std::string iaddr;
 		std::string myname;
 		std::queue<unsigned char> qrecv;
 		ModbusRTU::ADUHeader curQueryHeader;
@@ -157,7 +156,7 @@ class ModbusTCPServer:
 		const std::unordered_set<ModbusRTU::ModbusAddr>* vmbaddr = { nullptr };
 		TimerSignal m_timer_signal;
 
-		timeout_t tmTime_msec = { TIMEOUT_INF }; // время по умолчанию для таймера (TimerSignal)
+		timeout_t tmTime_msec = { UniSetTimer::WaitUpTime }; // время по умолчанию для таймера (TimerSignal)
 		double tmTime = { 0.0 };
 
 		PassiveTimer ptWait;

@@ -16,6 +16,7 @@
 // -------------------------------------------------------------------------
 #include <sstream>
 #include <iomanip>
+#include <Poco/Net/NetException.h>
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UNetSender.h"
@@ -25,7 +26,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-UNetSender::UNetSender(const std::string& _host, const ost::tpport_t _port, const std::shared_ptr<SMInterface>& smi,
+UNetSender::UNetSender(const std::string& _host, const int _port, const std::shared_ptr<SMInterface>& smi,
 					   bool nocheckConnection, const std::string& s_f, const std::string& s_val,
 					   const std::string& s_prefix, size_t maxDCount, size_t maxACount ):
 	s_field(s_f),
@@ -106,13 +107,12 @@ UNetSender::~UNetSender()
 // -----------------------------------------------------------------------------
 bool UNetSender::createConnection( bool throwEx )
 {
-	ost::Thread::setException(ost::Thread::throwException);
-
 	unetinfo << myname << "(createConnection): .." << endl;
 
 	try
 	{
-		udp = make_shared<ost::UDPBroadcast>(addr, port);
+		udp = make_shared<UDPSocketU>(addr, port);
+		udp->setBroadcast(true);
 	}
 	catch( const std::exception& e )
 	{
@@ -252,9 +252,9 @@ void UNetSender::send()
 
 			ncycle++;
 		}
-		catch( ost::SockException& e )
+		catch( Poco::Net::NetException& e )
 		{
-			unetwarn << myname << "(send): " << e.getString() << endl;
+			unetwarn << myname << "(send): " << e.displayText() << endl;
 		}
 		catch( UniSetTypes::Exception& ex)
 		{
@@ -301,11 +301,11 @@ void UNetSender::real_send( UniSetUDP::UDPMessage& mypack )
 	if( packetnum == 0 )
 		packetnum = 1;
 
-	if( !udp || !udp->isPending(ost::Socket::pendingOutput) )
+	if( !udp || !udp->poll(writeTimeout, Poco::Net::Socket::SELECT_WRITE) )
 		return;
 
 	mypack.transport_msg(s_msg);
-	size_t ret = udp->send( (char*)s_msg.data, s_msg.len );
+	size_t ret = udp->sendBytes( (char*)s_msg.data, s_msg.len );
 
 	if( ret < s_msg.len )
 		unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;

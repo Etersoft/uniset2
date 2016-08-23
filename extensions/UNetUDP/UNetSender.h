@@ -21,13 +21,13 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <cc++/socket.h>
 #include "UniSetObject.h"
 #include "Trigger.h"
 #include "Mutex.h"
 #include "SMInterface.h"
 #include "SharedMemory.h"
 #include "ThreadCreator.h"
+#include "UDPCore.h"
 #include "UDPPacket.h"
 // -----------------------------------------------------------------------------
 /*
@@ -64,7 +64,7 @@
 class UNetSender
 {
 	public:
-		UNetSender( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection = false,
+		UNetSender( const std::string& host, const int port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection = false,
 					const std::string& s_field = "", const std::string& s_fvalue = "", const std::string& prefix = "unet",
 					size_t maxDCount = UniSetUDP::MaxDCount, size_t maxACount = UniSetUDP::MaxACount );
 
@@ -134,11 +134,11 @@ class UNetSender
 
 		virtual const std::string getShortInfo() const;
 
-		inline ost::IPV4Address getAddress() const
+		inline std::string getAddress() const
 		{
 			return addr;
 		}
-		inline ost::tpport_t getPort() const
+		inline int getPort() const
 		{
 			return port;
 		}
@@ -171,14 +171,15 @@ class UNetSender
 	private:
 		UNetSender();
 
-		std::shared_ptr<ost::UDPBroadcast> udp = { nullptr };
-		ost::IPV4Address addr;
-		ost::tpport_t port = { 0 };
+		std::shared_ptr<UDPSocketU> udp = { nullptr };
+		std::string addr;
+		int port = { 0 };
 		std::string s_host = { "" };
 
 		std::string myname = { "" };
 		timeout_t sendpause = { 150 };
 		timeout_t packsendpause = { 5 };
+		timeout_t writeTimeout = { 1000 }; // msec
 		std::atomic_bool activated = { false };
 		PassiveTimer ptCheckConnection;
 

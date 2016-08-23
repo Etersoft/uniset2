@@ -4,10 +4,10 @@
 #include <memory>
 #include <string>
 #include <queue>
-#include <cc++/socket.h>
+#include <Poco/Net/SocketStream.h>
+#include "UTCPStream.h"
 #include "ModbusTypes.h"
 #include "ModbusClient.h"
-#include "UTCPStream.h"
 // -------------------------------------------------------------------------
 /*!    Modbus TCP master interface */
 class ModbusTCPMaster:
@@ -19,7 +19,7 @@ class ModbusTCPMaster:
 		virtual ~ModbusTCPMaster();
 
 		void connect( const std::string& addr, int port );
-		void connect( ost::InetAddress addr, int port );
+		void connect( const Poco::Net::SocketAddress& addr, int _port );
 		void disconnect();
 		void forceDisconnect();
 		bool isConnection() const;

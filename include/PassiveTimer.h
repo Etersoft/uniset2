@@ -22,13 +22,16 @@
 # define PASSIVETIMER_H_
 //----------------------------------------------------------------------------
 #include <signal.h>
-#include <cc++/socket.h>
 #include <condition_variable>
 #include <thread>
 #include <mutex>
 #include <atomic>
 #include <chrono>
+#include <limits>
+#include <Poco/Timespan.h>
 #include "Mutex.h"
+//----------------------------------------------------------------------------------------
+typedef Poco::Timespan::TimeDiff timeout_t;
 //----------------------------------------------------------------------------------------
 /*! \class UniSetTimer
  * \brief Базовый интерфейс пасивных таймеров
@@ -63,7 +66,7 @@ class UniSetTimer
 		/*! Время засыпания, до момента пока не будет вызвана функция прерывания
 		 *  terminate() или stop()
 		 */
-		static const timeout_t WaitUpTime = TIMEOUT_INF;
+		static const timeout_t WaitUpTime = std::numeric_limits<timeout_t>::max();
 
 		/*! Минимальное время срабатывания. Задается в мсек. */
 		static const timeout_t MinQuantityTime = 10;
@@ -140,40 +143,5 @@ class PassiveCondTimer:
 		std::mutex    m_working;
 		std::condition_variable cv_working;
 };
-//----------------------------------------------------------------------------------------
-
-/*! \class PassiveSigTimer
- * \brief Пассивный таймер с режимом засыпания (ожидания)
- * \author Pavel Vainerman
- * \par
- * Создан на основе сигнала (SIGALRM).
-*/
-class PassiveSigTimer:
-	public PassiveTimer
-{
-	public:
-
-		PassiveSigTimer();
-		virtual ~PassiveSigTimer();
-
-		virtual bool wait(timeout_t t_msec); //throw(UniSetTypes::NotSetSignal);
-		virtual void terminate();
-
-	protected:
-
-	private:
-		struct itimerval mtimer = { {0, 0}, {0, 0} };
-		pid_t pid = { 0 };
-
-		//        bool terminated;
-		volatile sig_atomic_t terminated = { 0 };
-
-		void init();
-
-		static void callalrm(int signo );
-		static void call(int signo, siginfo_t* evp, void* ucontext);
-
-};
-
 //----------------------------------------------------------------------------------------
 # endif //PASSIVETIMER_H_

@@ -16,6 +16,7 @@
 // -------------------------------------------------------------------------
 #include <cmath>
 #include <sstream>
+#include <Poco/Net/NetException.h>
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "MBSlave.h"
@@ -201,8 +202,7 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 
 		mbinfo << myname << "(init): type=TCP inet=" << iaddr << " port=" << port << endl;
 
-		ost::InetAddress ia(iaddr.c_str());
-		tcpserver = make_shared<ModbusTCPServerSlot>(ia, port);
+		tcpserver = make_shared<ModbusTCPServerSlot>(iaddr, port);
 		tcpserver->setAfterSendPause(aftersend_pause);
 		tcpserver->setReplyTimeout(reply_tout);
 
@@ -632,8 +632,6 @@ void MBSlave::execute_tcp()
 
 	tcpCancelled = false;
 
-	ost::Thread::setException(ost::Thread::throwException);
-
 	try
 	{
 		tcpserver->run( vaddr, true );
@@ -645,12 +643,12 @@ void MBSlave::execute_tcp()
 			   << ":" << tcpserver->getInetPort() << " err: " << ex << endl;
 		throw ex;
 	}
-	catch( const ost::Exception& e )
+	catch( const Poco::Net::NetException& e )
 	{
 		mbcrit << myname << "(execute_tcp): Can`t create socket "
 			   << tcpserver->getInetAddress()
 			   << ":" << tcpserver->getInetPort()
-			   << " err: " << e.getString() << endl;
+			   << " err: " << e.displayText() << endl;
 		throw e;
 	}
 	catch( const std::exception& e )
@@ -2606,8 +2604,7 @@ UniSetTypes::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
 
 	if( sslot ) // т.е. если у нас tcp
 	{
-		ost::InetAddress iaddr = sslot->getInetAddress();
-		inf << "TCPModbusSlave: " << iaddr << endl;
+		inf << "TCPModbusSlave: " << sslot->getInetAddress() << ":" << sslot->getInetPort() << endl;
 	}
 
 	inf << vmon.pretty_str() << endl;
@@ -2623,8 +2620,7 @@ UniSetTypes::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
 
 	if( sslot ) // т.е. если у нас tcp
 	{
-		ost::InetAddress iaddr = sslot->getInetAddress();
-		inf << "TCP: " << iaddr << ":" << sslot->getInetPort() << endl;
+		inf << "TCP: " << sslot->getInetAddress() << ":" << sslot->getInetPort() << endl;
 	}
 
 
@@ -2676,8 +2672,8 @@ void MBSlave::initTCPClients( UniXML::iterator confnode )
 			}
 
 			// resolve (если получиться)
-			ost::InetAddress ia(c.iaddr.c_str());
-			c.iaddr = string( ia.getHostname() );
+			Poco::Net::SocketAddress sa(c.iaddr);
+			c.iaddr = sa.host().toString();
 
 			if( !cit.getProp("respond").empty() )
 			{

@@ -2,8 +2,9 @@
 #ifndef UTCPCore_H_
 #define UTCPCore_H_
 // -------------------------------------------------------------------------
-#include <cc++/thread.h> // ..for timeout_t
 #include <string>
+#include <cstring> // for std::memcpy
+#include "PassiveTimer.h" // ..for timeout_t
 // -------------------------------------------------------------------------
 namespace UTCPCore
 {
@@ -29,7 +30,7 @@ namespace UTCPCore
 				return;
 
 			data = new unsigned char[nbytes];
-			memcpy(data, bytes, nbytes);
+			std::memcpy(data, bytes, nbytes);
 		}
 
 		Buffer( const std::string& s )
@@ -41,7 +42,7 @@ namespace UTCPCore
 				return;
 
 			data = new unsigned char[len];
-			memcpy(data, s.data(), len);
+			std::memcpy(data, s.data(), len);
 		}
 
 		virtual ~Buffer()

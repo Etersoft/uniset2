@@ -17,6 +17,7 @@
 #include <cmath>
 #include <vector>
 #include <iomanip>
+#include <fstream>
 #include <algorithm>
 #include "modbus/ModbusRTUMaster.h"
 #include "modbus/ModbusHelpers.h"

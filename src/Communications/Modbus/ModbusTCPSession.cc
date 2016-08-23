@@ -15,11 +15,12 @@
  */
 // -------------------------------------------------------------------------
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <fcntl.h>
 #include <errno.h>
 #include <cstring>
-#include <cc++/socket.h>
+#include <Poco/Net/NetException.h>
 #include "modbus/ModbusTCPSession.h"
 #include "modbus/ModbusTCPCore.h"
 #include "UniSetTypes.h"
@@ -51,13 +52,12 @@ ModbusTCPSession::ModbusTCPSession( int sfd, const std::unordered_set<ModbusAddr
 	try
 	{
 		sock = make_shared<USocket>(sfd);
-		ost::tpport_t p;
 
 		// если стремиться к "оптимизации по скорости"
 		// то getpeername "медленная" операция и может стоит от неё отказаться.
-		ost::InetAddress iaddr = sock->getIPV4Peer(&p);
+		Poco::Net::SocketAddress  iaddr = sock->peerAddress();
 
-		if( !iaddr.isInetAddress() )
+		if( iaddr.host().toString().empty() )
 		{
 			ostringstream err;
 			err << "(ModbusTCPSession): unknonwn ip(0.0.0.0) client disconnected?!";
@@ -69,24 +69,21 @@ ModbusTCPSession::ModbusTCPSession( int sfd, const std::unordered_set<ModbusAddr
 			throw SystemError(err.str());
 		}
 
-		caddr = string( iaddr.getHostname() );
+		caddr = iaddr.host().toString();
 		ostringstream s;
-		s << iaddr << ":" << p;
+		s << caddr << ":" << iaddr.port();
 		peername = s.str();
 	}
-	catch( const ost::SockException& ex )
+	catch( const Poco::Net::NetException& ex )
 	{
-		ostringstream err;
-		err << ex.what();
-
 		if( dlog->is_crit() )
-			dlog->crit() << "(ModbusTCPSession): err: " << err.str() << endl;
+			dlog->crit() << "(ModbusTCPSession): err: " << ex.displayText() << endl;
 
 		sock.reset();
-		throw SystemError(err.str());
+		throw SystemError(ex.message());
 	}
 
-	sock->setCompletion(false); // fcntl(sfd, F_SETFL, fcntl(sfd, F_GETFL, 0) | O_NONBLOCK);
+	sock->setBlocking(false); // fcntl(sfd, F_SETFL, fcntl(sfd, F_GETFL, 0) | O_NONBLOCK);
 	setCRCNoCheckit(true);
 
 	timeout_t tout = timeout / 1000;

@@ -18,7 +18,7 @@
  *  \author Pavel Vainerman
 */
 // --------------------------------------------------------------------------
-
+#include <memory>
 #include <chrono>
 #include <thread>
 #include <unistd.h>
@@ -35,11 +35,13 @@ using namespace UniSetTypes;
 uniset_rwmutex::uniset_rwmutex( const std::string& name ):
 	nm(name)
 {
+	m = std::unique_ptr<Poco::RWLock>(new Poco::RWLock());
 }
 
 uniset_rwmutex::uniset_rwmutex():
 	nm("")
 {
+	m = std::unique_ptr<Poco::RWLock>(new Poco::RWLock());
 }
 
 uniset_rwmutex::~uniset_rwmutex()
@@ -54,42 +56,42 @@ std::ostream& UniSetTypes::operator<<(std::ostream& os, uniset_rwmutex& m )
 void uniset_rwmutex::lock()
 {
 	MUTEX_DEBUG(cerr << nm << " prepare Locked.." << endl;)
-	m.writeLock();
+	m->writeLock();
 	MUTEX_DEBUG(cerr << nm << " Locked.." << endl;)
 }
 void uniset_rwmutex::wrlock()
 {
 	MUTEX_DEBUG(cerr << nm << " prepare WRLocked.." << endl;)
-	m.writeLock();
+	m->writeLock();
 	MUTEX_DEBUG(cerr << nm << " WRLocked.." << endl;)
 }
 
 void uniset_rwmutex::rlock()
 {
 	MUTEX_DEBUG(cerr << nm << " prepare RLocked.." << endl;)
-	m.readLock();
+	m->readLock();
 	MUTEX_DEBUG(cerr << nm << " RLocked.." << endl;)
 }
 
 void uniset_rwmutex::unlock()
 {
-	m.unlock();
+	m->unlock();
 	MUTEX_DEBUG(cerr << nm << " Unlocked.." << endl;)
 }
 
 bool uniset_rwmutex::try_rlock()
 {
-	return m.tryReadLock();
+	return m->tryReadLock();
 }
 
 bool uniset_rwmutex::try_wrlock()
 {
-	return m.tryWriteLock();
+	return m->tryWriteLock();
 }
 
 bool uniset_rwmutex::try_lock()
 {
-	return m.tryWriteLock();
+	return m->tryWriteLock();
 }
 // -------------------------------------------------------------------------------------------
 uniset_rwmutex_wrlock::uniset_rwmutex_wrlock( uniset_rwmutex& _m ):
