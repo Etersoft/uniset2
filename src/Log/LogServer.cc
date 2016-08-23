@@ -85,6 +85,7 @@ void LogServer::evfinish( const ev::loop_ref& loop )
 	io.stop();
 	isrunning = false;
 
+	sock->close();
 	sock.reset();
 
 	if( mylog.is_info() )
@@ -181,7 +182,9 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 
 	try
 	{
-		auto s = make_shared<LogSession>( watcher.fd, elog, cmdTimeout );
+		Poco::Net::StreamSocket ss = sock->acceptConnection();
+
+		auto s = make_shared<LogSession>( ss, elog, cmdTimeout );
 		s->setSessionLogLevel(sessLogLevel);
 		s->connectFinalSession( sigc::mem_fun(this, &LogServer::sessionFinished) );
 		s->signal_logsession_command().connect( sigc::mem_fun(this, &LogServer::onCommand) );

@@ -85,7 +85,7 @@ int main( int argc, char** argv )
 	string logfilter("");
 	LogServerTypes::Command cmd = LogServerTypes::cmdNOP;
 	int cmdonly = 0;
-	timeout_t tout = 0;
+	timeout_t tout = 5000;
 	timeout_t rdelay = 5000;
 	string logfile("");
 	bool logtruncate = false;

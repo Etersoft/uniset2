@@ -130,7 +130,7 @@ void CommonEventLoop::onPrepare()
 		}
 		catch( std::exception& ex )
 		{
-			cerr << "(CommonEventLoop::onPrepare): evfinish err: " << ex.what() << endl;
+			cerr << "(CommonEventLoop::onPrepare): evprepare err: " << ex.what() << endl;
 		}
 
 		wprep = nullptr;

@@ -21,18 +21,19 @@
 #include <memory>
 #include <queue>
 #include <ev++.h>
+#include "Poco/Net/StreamSocket.h"
 #include "Mutex.h"
 #include "DebugStream.h"
-#include "LogAgregator.h"
-#include "USocket.h"
 #include "UTCPCore.h"
+#include "UTCPStream.h"
+#include "LogAgregator.h"
 // -------------------------------------------------------------------------
 /*! Реализация "сессии" для клиентов LogServer. */
 class LogSession
 {
 	public:
 
-		LogSession(int sock, std::shared_ptr<DebugStream>& log, timeout_t cmdTimeout = 2000, timeout_t checkConnectionTime = 10000 );
+		LogSession( const Poco::Net::StreamSocket& s, std::shared_ptr<DebugStream>& log, timeout_t cmdTimeout = 2000, timeout_t checkConnectionTime = 10000 );
 		~LogSession();
 
 		typedef sigc::slot<void, LogSession*> FinalSlot;
@@ -120,7 +121,7 @@ class LogSession
 		std::shared_ptr<LogAgregator> alog;
 		sigc::connection conn;
 
-		std::shared_ptr<USocket> sock;
+		std::shared_ptr<UTCPStream> sock;
 
 		ev::io  io;
 		ev::timer  cmdTimer;

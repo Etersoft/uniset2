@@ -30,10 +30,13 @@ class UTCPStream:
 {
 	public:
 
+		UTCPStream( const Poco::Net::StreamSocket& so );
 		UTCPStream();
 		virtual ~UTCPStream();
 
-		void create( const std::string& hname, int port, timeout_t tout = 1000 );
+		void create( const std::string& hname, int port, timeout_t tout_msec = 1000 );
+
+		bool isConnected();
 
 		// set keepalive params
 		// return true if OK

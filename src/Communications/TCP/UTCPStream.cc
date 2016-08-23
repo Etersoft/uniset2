@@ -31,6 +31,12 @@ UTCPStream::~UTCPStream()
 
 }
 // -------------------------------------------------------------------------
+UTCPStream::UTCPStream(const Poco::Net::StreamSocket& so):
+	Poco::Net::StreamSocket(so)
+{
+
+}
+
 UTCPStream::UTCPStream()
 {
 }
@@ -85,12 +91,18 @@ timeout_t UTCPStream::getTimeout() const
 	return tm.microseconds();
 }
 // -------------------------------------------------------------------------
-void UTCPStream::create(const std::string& hname, int port, timeout_t tout )
+void UTCPStream::create(const std::string& hname, int port, timeout_t tout_msec )
 {
 	Poco::Net::SocketAddress sa(hname,port);
-	connect(sa, tout);
+	connect(sa,tout_msec*1000);
 	setKeepAlive(true);
 	Poco::Net::StreamSocket::setLinger(true,1);
 	setKeepAliveParams();
+}
+// -------------------------------------------------------------------------
+bool UTCPStream::isConnected()
+{
+	//return ( Poco::Net::StreamSocket::sockfd() > 0 );
+	return ( Poco::Net::StreamSocket::peerAddress().addr() != 0 );
 }
 // -------------------------------------------------------------------------

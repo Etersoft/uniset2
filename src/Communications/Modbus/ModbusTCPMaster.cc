@@ -67,7 +67,7 @@ void ModbusTCPMaster::setChannelTimeout( timeout_t msec )
 	if( old == msec )
 		return;
 
-	tcp->setReceiveTimeout(msec);
+	tcp->setReceiveTimeout(msec*1000);
 
 	int oldKeepAlive = keepAliveTimeout;
 	keepAliveTimeout = (msec > 1000 ? msec / 1000 : 1);
@@ -115,14 +115,14 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		assert(timeout);
 		ptTimeout.setTiming(timeout);
 
-		tcp->setReceiveTimeout(timeout);
+		tcp->setReceiveTimeout(timeout*1000);
 
 		msg.makeHead(++nTransaction, crcNoCheckit);
 
 		for( size_t i = 0; i < 2; i++ )
 		{
 			//if( tcp->isPending(ost::Socket::pendingOutput, timeout) )
-			if( tcp->poll(timeout,Poco::Net::Socket::SELECT_READ ) )
+			if( tcp->poll(timeout*1000,Poco::Net::Socket::SELECT_READ ) )
 			{
 				mbErrCode res = send(msg);
 
@@ -168,7 +168,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 		//tcp->sync();
 
-		if( tcp->poll(timeout,Poco::Net::Socket::SELECT_READ ) )
+		if( tcp->poll(timeout*1000,Poco::Net::Socket::SELECT_READ ) )
 		{
 			size_t ret = 0;
 
@@ -385,7 +385,7 @@ void ModbusTCPMaster::reconnect()
 	{
 		tcp = make_shared<UTCPStream>();
 		tcp->create(iaddr, port, 500);
-		tcp->setReceiveTimeout(replyTimeOut_ms);
+		tcp->setReceiveTimeout(replyTimeOut_ms*1000);
 		tcp->setKeepAliveParams((replyTimeOut_ms > 1000 ? replyTimeOut_ms / 1000 : 1));
 		tcp->setNoDelay(true);
 	}
@@ -432,8 +432,8 @@ void ModbusTCPMaster::connect( const Poco::Net::SocketAddress& addr, int _port )
 	try
 	{
 		tcp = make_shared<UTCPStream>();
-		tcp->connect(addr,500); //		tcp->create(iaddr, port, true, 500);
-		tcp->setReceiveTimeout(replyTimeOut_ms);  // tcp->setTimeout(replyTimeOut_ms);
+		tcp->connect(addr,500);
+		tcp->setReceiveTimeout(replyTimeOut_ms*1000);
 		tcp->setKeepAlive(true); // tcp->setKeepAliveParams((replyTimeOut_ms > 1000 ? replyTimeOut_ms / 1000 : 1));
 		tcp->setNoDelay(true);
 	}
@@ -485,7 +485,6 @@ void ModbusTCPMaster::forceDisconnect()
 // -------------------------------------------------------------------------
 bool ModbusTCPMaster::isConnection() const
 {
-#warning Разобраться с isConnected
-	return (tcp != nullptr); /* && tcp->isConnected(); */
+	return tcp && tcp->isConnected();
 }
 // -------------------------------------------------------------------------

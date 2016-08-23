@@ -12,14 +12,16 @@ using namespace std;
 // -------------------------------------------------------------------------
 UTCPSocket::~UTCPSocket()
 {
-	close();
-	//endSocket();
-	// shutdown(so, SHUT_RDWR);
+	Poco::Net::ServerSocket::close();
+}
+// -------------------------------------------------------------------------
+UTCPSocket::UTCPSocket()
+{
 
 }
 // -------------------------------------------------------------------------
 UTCPSocket::UTCPSocket( int sock ):
-	Poco::Net::RawSocket(sock)
+	Poco::Net::ServerSocket(sock)
 {
 /*
 	struct sockaddr_in client_addr;
@@ -29,53 +31,43 @@ UTCPSocket::UTCPSocket( int sock ):
 
 	if( so < 0 )
 	{
-		endSocket();
+		endServerServerSocket();
 		error(errConnectRejected);
 		return;
 	}
 
-	Socket::state = CONNECTED;
+	ServerServerSocket::state = CONNECTED;
 */
 	init();
 }
 // -------------------------------------------------------------------------
 UTCPSocket::UTCPSocket( const string& host, int port ):
-	Poco::Net::RawSocket(Poco::Net::SocketAddress(host,port),true)
+	Poco::Net::ServerSocket(Poco::Net::SocketAddress(host,port))
 {
 	init();
 }
 // -------------------------------------------------------------------------
 bool UTCPSocket::setKeepAliveParams(timeout_t timeout_sec, int keepcnt, int keepintvl )
 {
-	return UTCPCore::setKeepAliveParams(Poco::Net::RawSocket::sockfd() , timeout_sec, keepcnt, keepintvl);
+	return UTCPCore::setKeepAliveParams(Poco::Net::ServerSocket::sockfd() , timeout_sec, keepcnt, keepintvl);
 }
 // -------------------------------------------------------------------------
 bool UTCPSocket::setNoDelay(bool enable)
 {
-	Poco::Net::RawSocket::setNoDelay(enable);
-	return ( Poco::Net::RawSocket::getNoDelay() == enable );
+	Poco::Net::ServerSocket::setNoDelay(enable);
+	return ( Poco::Net::ServerSocket::getNoDelay() == enable );
 }
 // -------------------------------------------------------------------------
 int UTCPSocket::getSocket()
 {
-	return Poco::Net::RawSocket::sockfd();
+	return Poco::Net::ServerSocket::sockfd();
 }
 // -------------------------------------------------------------------------
 void UTCPSocket::init( bool throwflag )
 {
 //	setError(throwflag);
-	Poco::Net::RawSocket::setKeepAlive(true);
-	Poco::Net::RawSocket::setLinger(true,1);
+	Poco::Net::ServerSocket::setKeepAlive(true);
+	Poco::Net::ServerSocket::setLinger(true,1);
 	setKeepAliveParams();
-}
-// -------------------------------------------------------------------------
-ssize_t UTCPSocket::writeData(const void* buf, size_t len, timeout_t t)
-{
-	return Poco::Net::RawSocket::sendBytes(buf, len);
-}
-// -------------------------------------------------------------------------
-ssize_t UTCPSocket::readData(void* buf, size_t len, char separator, timeout_t t)
-{
-	return Poco::Net::RawSocket::receiveBytes(buf,len);
 }
 // -------------------------------------------------------------------------

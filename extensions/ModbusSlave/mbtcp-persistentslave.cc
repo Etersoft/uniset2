@@ -16,7 +16,6 @@
 // -------------------------------------------------------------------------
 #include <sstream>
 #include <string>
-#include <cc++/socket.h>
 #include "MBTCPPersistentSlave.h"
 #include "Configuration.h"
 #include "Debug.h"
