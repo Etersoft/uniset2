@@ -14,7 +14,7 @@
 
 Name: libuniset2
 Version: 2.4
-Release: alt9
+Release: alt9.1
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -26,7 +26,7 @@ Packager: Pavel Vainerman <pv@altlinux.ru>
 # Git: http://git.etersoft.ru/projects/asu/uniset.git
 Source: %name-%version.tar
 
-BuildRequires: libcommoncpp2-devel libev-devel libomniORB-devel libsigc++2-devel xsltproc
+BuildRequires: libpoco-devel libev-devel libomniORB-devel libsigc++2-devel xsltproc
 
 # for uniset2-codegen
 BuildPreReq: xsltproc
@@ -484,6 +484,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Wed Aug 24 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt9.1
+- test build with libpoco
+
 * Sun Aug 21 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt9
 - build new version
 
