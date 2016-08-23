@@ -175,6 +175,7 @@ class UNetSender
 		std::string addr;
 		int port = { 0 };
 		std::string s_host = { "" };
+		Poco::Net::SocketAddress saddr;
 
 		std::string myname = { "" };
 		timeout_t sendpause = { 150 };

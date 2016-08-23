@@ -4,13 +4,17 @@
 // -------------------------------------------------------------------------
 #include <Poco/Net/DatagramSocket.h>
 // -------------------------------------------------------------------------
-// различные классы-обёртки, чтобы достучаться до "сырого сокета" и других функций
+// Классы-обёртки, чтобы достучаться до "сырого сокета" и других функций
 // необходимых при использовании с libev..
 // -------------------------------------------------------------------------
 class UDPSocketU:
 	public Poco::Net::DatagramSocket
 {
 	public:
+
+		UDPSocketU():
+			Poco::Net::DatagramSocket(Poco::Net::IPAddress::IPv4)
+		{}
 
 		UDPSocketU( const std::string& bind, int port ):
 			Poco::Net::DatagramSocket(Poco::Net::SocketAddress(bind, port),true)
@@ -29,6 +33,10 @@ class UDPReceiveU:
 {
 	public:
 
+		UDPReceiveU():
+			Poco::Net::DatagramSocket(Poco::Net::IPAddress::IPv4)
+		{}
+
 		UDPReceiveU( const std::string& bind, int port):
 			Poco::Net::DatagramSocket(Poco::Net::SocketAddress(bind, port),true)
 		{}
@@ -38,31 +46,6 @@ class UDPReceiveU:
 		inline int getSocket()
 		{
 			return Poco::Net::DatagramSocket::sockfd();
-		}
-		inline void setCompletion( bool set )
-		{
-			Poco::Net::DatagramSocket::setBlocking(set);
-		}
-};
-// -------------------------------------------------------------------------
-class UDPDuplexU:
-	public Poco::Net::DatagramSocket
-{
-	public:
-
-		UDPDuplexU(const std::string& bind, int port):
-			Poco::Net::DatagramSocket(Poco::Net::SocketAddress(bind, port),true)
-		{}
-
-		virtual ~UDPDuplexU() {}
-
-		int getReceiveSocket()
-		{
-			return Poco::Net::DatagramSocket::sockfd();;
-		}
-		void setReceiveCompletion( bool set )
-		{
-			Poco::Net::DatagramSocket::setBlocking(set);
 		}
 };
 // -------------------------------------------------------------------------

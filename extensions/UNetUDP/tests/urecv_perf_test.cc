@@ -107,7 +107,7 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 		{
 			try
 			{
-				if( udp->poll(100,Poco::Net::Socket::SELECT_WRITE) )
+				if( udp->poll(100000,Poco::Net::Socket::SELECT_WRITE) )
 				{
 					mypack.transport_msg(s_buf);
 					size_t ret = udp->sendBytes((char*)&s_buf.data, s_buf.len);

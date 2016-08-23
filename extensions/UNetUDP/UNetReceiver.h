@@ -208,6 +208,7 @@ class UNetReceiver:
 		std::shared_ptr<UDPReceiveU> udp;
 		std::string addr;
 		int port = { 0 };
+		Poco::Net::SocketAddress saddr;
 		std::string myname;
 		ev::io evReceive;
 		ev::periodic evCheckConnection;

@@ -16,6 +16,7 @@
 // -------------------------------------------------------------------------
 #include <sstream>
 #include <iomanip>
+#include <Poco/Net/NetException.h>
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UNetReceiver.h"
@@ -43,6 +44,7 @@ UNetReceiver::UNetReceiver(const std::string& s_host, int _port, const std::shar
 	recvpause(10),
 	updatepause(100),
 	port(_port),
+	saddr(s_host,_port),
 	recvTimeout(5000),
 	prepareTime(2000),
 	lostTimeout(200), /* 2*updatepause */
@@ -170,7 +172,8 @@ bool UNetReceiver::createConnection( bool throwEx )
 	try
 	{
 		udp = make_shared<UDPReceiveU>(addr, port);
-		udp->setCompletion(false); // делаем неблокирующее чтение (нужно для libev)
+		//udp = make_shared<UDPReceiveU>();
+		udp->setBlocking(false); // делаем неблокирующее чтение (нужно для libev)
 		evReceive.set<UNetReceiver, &UNetReceiver::callback>(this);
 
 		if( evCheckConnection.is_active() )
@@ -624,25 +627,34 @@ void UNetReceiver::stop()
 // -----------------------------------------------------------------------------
 bool UNetReceiver::receive()
 {
-	ssize_t ret = udp->receiveBytes(r_buf.data, sizeof(r_buf.data));
-
-	if( ret < 0 )
+	try
 	{
-		unetcrit << myname << "(receive): recv err(" << errno << "): " << strerror(errno) << endl;
-		return false;
+		ssize_t ret = udp->receiveBytes(r_buf.data, sizeof(r_buf.data));
+		//ssize_t ret = udp->receiveFrom(r_buf.data, sizeof(r_buf.data),saddr);
+
+		if( ret < 0 )
+		{
+			unetcrit << myname << "(receive): recv err(" << errno << "): " << strerror(errno) << endl;
+			return false;
+		}
+
+		if( ret == 0 )
+		{
+			unetwarn << myname << "(receive): disconnected?!... recv 0 byte.." << endl;
+			return false;
+		}
+
+		size_t sz = UniSetUDP::UDPMessage::getMessage(pack, r_buf);
+
+		if( sz == 0 )
+		{
+			unetcrit << myname << "(receive): FAILED RECEIVE DATA ret=" << ret << endl;
+			return false;
+		}
 	}
-
-	if( ret == 0 )
+	catch( Poco::Net::NetException& ex )
 	{
-		unetwarn << myname << "(receive): disconnected?!... recv 0 byte.." << endl;
-		return false;
-	}
-
-	size_t sz = UniSetUDP::UDPMessage::getMessage(pack, r_buf);
-
-	if( sz == 0 )
-	{
-		unetcrit << myname << "(receive): FAILED RECEIVE DATA ret=" << ret << endl;
+		unetcrit << myname << "(receive): recv err: " << ex.displayText() << endl;
 		return false;
 	}
 
