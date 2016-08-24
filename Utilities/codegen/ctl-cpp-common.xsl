@@ -972,7 +972,7 @@ end_private(false)
 		<xsl:if test="normalize-space(@vartype)='in'">
 			priv_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = conf->getArgPInt("--" + argprefix + "<xsl:value-of select="@name"/>-default",it.getProp("<xsl:value-of select="@name"/>_default"),0);
 		</xsl:if>
-		<xsl:if test="normalize-space(@vartype)!='in'">
+		<xsl:if test="normalize-space(@vartype)='out'">
 			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = conf->getArgPInt("--" + argprefix + "<xsl:value-of select="@name"/>-default",it.getProp("<xsl:value-of select="@name"/>_default"),0);
 		</xsl:if>
 		</xsl:if>
@@ -980,7 +980,7 @@ end_private(false)
 		<xsl:if test="normalize-space(@vartype)='in'">
 			priv_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = conf->getArgPInt("--" + argprefix + "<xsl:value-of select="@name"/>-default",it.getProp("<xsl:value-of select="@name"/>_default"),<xsl:value-of select="@default"/>);
 		</xsl:if>
-		<xsl:if test="normalize-space(@vartype)='in'">
+		<xsl:if test="normalize-space(@vartype)='out'">
 			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = conf->getArgPInt("--" + argprefix + "<xsl:value-of select="@name"/>-default",it.getProp("<xsl:value-of select="@name"/>_default"),<xsl:value-of select="@default"/>);
 		</xsl:if>
 		</xsl:if>
