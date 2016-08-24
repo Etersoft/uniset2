@@ -73,22 +73,6 @@ void UTCPStream::forceDisconnect()
 	}
 }
 // -------------------------------------------------------------------------
-bool UTCPStream::setNoDelay(bool enable)
-{
-	Poco::Net::StreamSocket::setNoDelay(enable);
-	return (Poco::Net::StreamSocket::getNoDelay() == enable);
-}
-// -------------------------------------------------------------------------
-ssize_t UTCPStream::writeData(const void* buf, size_t len, timeout_t t)
-{
-	return Poco::Net::StreamSocket::sendBytes(buf, len);
-}
-// -------------------------------------------------------------------------
-ssize_t UTCPStream::readData(void* buf, size_t len, char separator, timeout_t t)
-{
-	return Poco::Net::StreamSocket::receiveBytes(buf, len);
-}
-// -------------------------------------------------------------------------
 int UTCPStream::getSocket() const
 {
 	return Poco::Net::StreamSocket::sockfd();

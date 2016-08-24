@@ -24,18 +24,10 @@ class UTCPSocket:
 		// return true if OK
 		bool setKeepAliveParams( timeout_t timeout_sec = 5, int conn_keepcnt = 1, int keepintvl = 2 );
 
-		/*!
-		 * Enable/disable delaying packets (Nagle algorithm)
-		 *
-		 * @return true on success.
-		 * @param enable disable Nagle algorithm when set to true.
-		 */
-		bool setNoDelay( bool enable );
-
 		int getSocket();
 
 	protected:
-		void init( bool throwflag = false );
+		void init();
 
 	private:
 

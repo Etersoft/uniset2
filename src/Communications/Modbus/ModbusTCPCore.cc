@@ -25,7 +25,7 @@ using namespace ModbusRTU;
 #define DEFAULT_BUFFER_SIZE_FOR_READ 255
 // -------------------------------------------------------------------------
 size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
-								   std::queue<unsigned char>& qrecv, size_t max, timeout_t t )
+								   std::queue<unsigned char>& qrecv, size_t max )
 {
 	if( !tcp ) // || !tcp->available() )
 		return 0;
@@ -44,7 +44,7 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 
 	try
 	{
-		ssize_t l = tcp->readData(buf, max, 0, t);
+		ssize_t l = tcp->receiveBytes(buf, max);
 
 		if( l > 0 )
 		{
@@ -101,7 +101,7 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 // ------------------------------------------------------------------------
 size_t ModbusTCPCore::getNextData(UTCPStream* tcp,
 								  std::queue<unsigned char>& qrecv,
-								  unsigned char* buf, size_t len, timeout_t t )
+								  unsigned char* buf, size_t len)
 {
 	if( qrecv.empty() || qrecv.size() < len )
 	{
@@ -111,7 +111,7 @@ size_t ModbusTCPCore::getNextData(UTCPStream* tcp,
 		if( len <= 0 )
 			len = 7;
 
-		size_t ret = ModbusTCPCore::readNextData(tcp, qrecv, len, t);
+		size_t ret = ModbusTCPCore::readNextData(tcp, qrecv, len);
 
 		if( ret == 0 )
 			return 0;
@@ -223,14 +223,14 @@ size_t ModbusTCPCore::getDataFD( int fd, std::queue<unsigned char>& qrecv,
 	return i;
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPCore::sendData( UTCPStream* tcp, unsigned char* buf, size_t len, timeout_t t )
+mbErrCode ModbusTCPCore::sendData(UTCPStream* tcp, unsigned char* buf, size_t len )
 {
 	if( !tcp ) // || !tcp->available() )
 		return erTimeOut;
 
 	try
 	{
-		ssize_t l = tcp->writeData(buf, len, t);
+		ssize_t l = tcp->sendBytes(buf, len);
 
 		if( l == len )
 			return erNoError;

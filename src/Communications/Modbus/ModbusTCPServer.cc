@@ -49,7 +49,7 @@ ModbusTCPServer::ModbusTCPServer( const std::string& ia, int _port ):
 ModbusTCPServer::~ModbusTCPServer()
 {
 }
-// --------------------w-----------------------------------------------------
+// -------------------------------------------------------------------------
 void ModbusTCPServer::setMaxSessions( size_t num )
 {
 	if( num < sessCount )

@@ -50,7 +50,7 @@ ModbusTCPMaster::~ModbusTCPMaster()
 // -------------------------------------------------------------------------
 size_t ModbusTCPMaster::getNextData( unsigned char* buf, size_t len )
 {
-	return ModbusTCPCore::getNextData(tcp.get(), qrecv, buf, len, readTimeout );
+	return ModbusTCPCore::getNextData(tcp.get(), qrecv, buf, len );
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::setChannelTimeout( timeout_t msec )
