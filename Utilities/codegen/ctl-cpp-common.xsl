@@ -657,7 +657,27 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 std::string <xsl:value-of select="$CLASSNAME"/>_SK::help()
 {
 	ostringstream s;
-	// HELP NOT YET!
+	s &lt;&lt; " ************* " &lt;&lt; myname &lt;&lt; " HELP:" &lt;&lt; " ************* " &lt;&lt; endl;
+	s &lt;&lt;  "Init default values: "  &lt;&lt; endl;
+<xsl:for-each select="//smap/item">
+	s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "<xsl:value-of select="normalize-space(@name)"/>-default val - set default value. Now: "  &lt;&lt; strval(<xsl:value-of select="normalize-space(@name)"/>) &lt;&lt; endl;
+</xsl:for-each>
+	s &lt;&lt; endl;
+	
+	s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "sm-ready-timeout msec   - wait SM ready for ask sensors. Now: "  &lt;&lt; smReadyTimeout &lt;&lt; endl;
+	s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "sm-test-id msec sensor  - sensor for test SM ready. Now: "  &lt;&lt; smTestID &lt;&lt; endl;
+	s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "sleep-msec msec         - step period. Now: "  &lt;&lt; sleep_msec &lt;&lt; endl;
+	
+	s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "activate-timeout msec   - activate process timeout. Now: "  &lt;&lt; activateTimeout &lt;&lt; endl;
+	s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "startup-timeout msec    - wait startup timeout. Now: "  &lt;&lt; ptStartUpTimeout.getInterval() &lt;&lt; endl;
+    s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "force-out [0|1]         - 1 - save out-values in SM at each step. Now: " &lt;&lt; forceOut  &lt;&lt; endl;
+    s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "heartbeat-max num       - max value for heartbeat counter. Now: " &lt;&lt;  maxHeartBeat &lt;&lt; endl;
+    s &lt;&lt;  "--"  &lt;&lt;  argprefix  &lt;&lt;  "heartbeat-time msec     - heartbeat periond. Now: " &lt;&lt; ptHeartBeat.getInterval() &lt;&lt; endl;
+	s &lt;&lt; endl;
+	s &lt;&lt; "--print-id-list - print ID list" &lt;&lt; endl;
+	s &lt;&lt; endl;
+	s &lt;&lt; " ****************************************************************************************** " &lt;&lt; endl;
+	
 	
 	return std::move(s.str());
 }
@@ -888,7 +908,7 @@ forceOut(false),
 end_private(false)
 {
 	auto conf = uniset_conf();
-
+	
 	<xsl:call-template name="COMMON-ID-LIST"/>
 
 	if( getId() == DefaultObjectId )
@@ -1077,6 +1097,11 @@ end_private(false)
 	vmonit(maxHeartBeat);
 	vmonit(activateTimeout);
 	vmonit(smReadyTimeout);
+	
+
+	// help надо выводить в конце, когда уже все переменные инициализированы по умолчанию
+	if( UniSetTypes::findArgParam("--" + argprefix + "help",uniset_conf()->getArgc(),uniset_conf()->getArgv()) != -1 )
+		cout &lt;&lt; help() &lt;&lt; endl;
 }
 
 // -----------------------------------------------------------------------------
