@@ -17,27 +17,29 @@ int main(int argc, const char** argv)
 		Net::StreamSocket socket(sa);
 		Net::SocketStream str(socket);
 		str << "GET / HTTP/1.1\r\n"
-			   "Host: habrahabr.ru\r\n"
-			   "\r\n";
+			"Host: habrahabr.ru\r\n"
+			"\r\n";
 
 		str.flush();
 		StreamCopier::copyStream(str, cout);
 
 		//Слушающий сокет
 		Net::ServerSocket srv(8080); // Биндим и начинаем слушать
+
 		while(true)
 		{
 			Net::StreamSocket ss = srv.acceptConnection();
 			{
 				Net::SocketStream str(ss);
 				str << "HTTP/1.0 200 OK\r\n"
-					   "Content-Type: text/html\r\n"
-					   "\r\n"
-					   "<html><head><title>Доброго времени суток</title></head>"
-					   "<body><h1><a href=\"http://habrahabr.ru\">Добро пожаловать на Хабр.</a></h1></body></html>"
+					"Content-Type: text/html\r\n"
+					"\r\n"
+					"<html><head><title>Доброго времени суток</title></head>"
+					"<body><h1><a href=\"http://habrahabr.ru\">Добро пожаловать на Хабр.</a></h1></body></html>"
 					<< flush;
 			}
 		}
+
 		return 0;
 	}
 	catch( const std::exception& e )

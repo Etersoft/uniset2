@@ -147,7 +147,7 @@ class ThreadCreator:
 				(initm->*initact)();
 		}
 
-		virtual void terminate(){}
+		virtual void terminate() {}
 
 	private:
 		ThreadCreator();

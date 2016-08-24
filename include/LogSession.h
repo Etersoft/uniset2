@@ -78,7 +78,7 @@ class LogSession
 		std::string getShortInfo();
 
 	protected:
-//		LogSession( ost::TCPSocket& server );
+		//		LogSession( ost::TCPSocket& server );
 
 		void event( ev::async& watcher, int revents );
 		void callback( ev::io& watcher, int revents );

@@ -137,7 +137,7 @@ VMON_IMPL_ADD2(char)
 VMON_IMPL_ADD(bool)
 VMON_IMPL_ADD(float)
 VMON_IMPL_ADD(double)
-VMON_IMPL_ADD_N(Poco::Int64,m_Int64)
+VMON_IMPL_ADD_N(Poco::Int64, m_Int64)
 VMON_IMPL_ADD3(std::string, string)
 //VMON_IMPL_ADD3(UniSetTypes::ObjectId,ObjectId)
 // --------------------------------------------------------------------------

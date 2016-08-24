@@ -36,7 +36,7 @@ ModbusTCPMaster::ModbusTCPMaster():
 {
 	setCRCNoCheckit(true);
 
-//	 dlog->level(Debug::ANY);
+	//	 dlog->level(Debug::ANY);
 }
 
 // -------------------------------------------------------------------------
@@ -61,7 +61,7 @@ void ModbusTCPMaster::setChannelTimeout( timeout_t msec )
 	Poco::Timespan old = tcp->getReceiveTimeout();;
 	//timeout_t old = tcp->getReceiveTimeout();
 
-	Poco::Timespan tmsec(msec*1000);
+	Poco::Timespan tmsec(msec * 1000);
 
 	if( old == msec )
 		return;
@@ -114,14 +114,14 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		assert(timeout);
 		ptTimeout.setTiming(timeout);
 
-		tcp->setReceiveTimeout(timeout*1000);
+		tcp->setReceiveTimeout(timeout * 1000);
 
 		msg.makeHead(++nTransaction, crcNoCheckit);
 
 		for( size_t i = 0; i < 2; i++ )
 		{
 			//if( tcp->isPending(ost::Socket::pendingOutput, timeout) )
-			if( tcp->poll(timeout*1000,Poco::Net::Socket::SELECT_WRITE) )
+			if( tcp->poll(timeout * 1000, Poco::Net::Socket::SELECT_WRITE) )
 			{
 				mbErrCode res = send(msg);
 
@@ -167,7 +167,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 		//tcp->sync();
 
-		if( tcp->poll(timeout*1000,Poco::Net::Socket::SELECT_READ ) )
+		if( tcp->poll(timeout * 1000, Poco::Net::Socket::SELECT_READ ) )
 		{
 			size_t ret = 0;
 
@@ -211,6 +211,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 							dlog->warn() << "(query): tcp error: " << e.getString() << endl;
 					}
 				}
+
 #endif
 				cleanInputStream();
 				tcp->forceDisconnect();
@@ -385,7 +386,7 @@ void ModbusTCPMaster::reconnect()
 	{
 		tcp = make_shared<UTCPStream>();
 		tcp->create(iaddr, port, 500);
-		tcp->setReceiveTimeout(replyTimeOut_ms*1000);
+		tcp->setReceiveTimeout(replyTimeOut_ms * 1000);
 		tcp->setKeepAliveParams((replyTimeOut_ms > 1000 ? replyTimeOut_ms / 1000 : 1));
 		tcp->setNoDelay(true);
 	}
@@ -411,7 +412,7 @@ void ModbusTCPMaster::reconnect()
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::connect( const std::string& addr, int _port )
 {
-	Net::SocketAddress sa(addr,_port);
+	Net::SocketAddress sa(addr, _port);
 	connect(sa, _port);
 }
 // -------------------------------------------------------------------------
@@ -433,9 +434,9 @@ void ModbusTCPMaster::connect( const Poco::Net::SocketAddress& addr, int _port )
 	try
 	{
 		tcp = make_shared<UTCPStream>();
-		tcp->create(iaddr,port,500);
+		tcp->create(iaddr, port, 500);
 		//tcp->connect(addr,500);
-		tcp->setReceiveTimeout(replyTimeOut_ms*1000);
+		tcp->setReceiveTimeout(replyTimeOut_ms * 1000);
 		tcp->setKeepAlive(true); // tcp->setKeepAliveParams((replyTimeOut_ms > 1000 ? replyTimeOut_ms / 1000 : 1));
 		tcp->setNoDelay(true);
 	}
@@ -458,6 +459,7 @@ void ModbusTCPMaster::connect( const Poco::Net::SocketAddress& addr, int _port )
 			s << "(ModbusTCPMaster): connection " << iaddr << ":" << port << " error: " << e.what();
 			dlog->crit() << iaddr << std::endl;
 		}
+
 		tcp = nullptr;
 	}
 	catch( ... )
@@ -468,6 +470,7 @@ void ModbusTCPMaster::connect( const Poco::Net::SocketAddress& addr, int _port )
 			s << "(ModbusTCPMaster): connection " << iaddr << ":" << port << " error: catch ...";
 			dlog->crit() << s.str() << std::endl;
 		}
+
 		tcp = nullptr;
 	}
 }
@@ -500,10 +503,11 @@ bool ModbusTCPMaster::isConnection() const
 {
 	return tcp && tcp->isConnected();
 #if 0
+
 	if( !tcp )
 		return false;
 
-	if( tcp->poll({0,5},Poco::Net::Socket::SELECT_READ) )
+	if( tcp->poll({0, 5}, Poco::Net::Socket::SELECT_READ) )
 		return (tcp->available() > 0);
 
 	return false;

@@ -158,7 +158,7 @@ class VMonitor
 		VMON_DEF_MAP(bool);
 		VMON_DEF_MAP(float);
 		VMON_DEF_MAP(double);
-		std::unordered_map<const Poco::Int64*,const std::string> m_Int64;
+		std::unordered_map<const Poco::Int64*, const std::string> m_Int64;
 		VMON_DEF_MAP3(std::string, string);
 };
 // --------------------------------------------------------------------------

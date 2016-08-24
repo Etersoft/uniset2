@@ -228,7 +228,7 @@ int main(int argc, char* argv[])
 							npack = 0;
 						}
 
-						if( !udp.poll(tout*1000,Poco::Net::Socket::SELECT_READ) )
+						if( !udp.poll(tout * 1000, Poco::Net::Socket::SELECT_READ) )
 						{
 							cout << "(recv): Timeout.." << endl;
 							continue;
@@ -304,7 +304,7 @@ int main(int argc, char* argv[])
 				for( unsigned int i = 0; i < count; i++ )
 					mypack.addDData(i, i);
 
-				Poco::Net::SocketAddress sa(s_host,port);
+				Poco::Net::SocketAddress sa(s_host, port);
 				udp->connect(sa);
 				size_t packetnum = 0;
 
@@ -326,7 +326,7 @@ int main(int argc, char* argv[])
 
 					try
 					{
-						if( udp->poll(tout*1000,Poco::Net::Socket::SELECT_WRITE) )
+						if( udp->poll(tout * 1000, Poco::Net::Socket::SELECT_WRITE) )
 						{
 							mypack.transport_msg(s_buf);
 

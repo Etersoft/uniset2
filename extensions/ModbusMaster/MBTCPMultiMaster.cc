@@ -514,6 +514,7 @@ void MBTCPMultiMaster::sigterm( int signo )
 bool MBTCPMultiMaster::deactivateObject()
 {
 	setProcActive(false);
+
 	if( pollThread )
 	{
 		pollThread->stop();

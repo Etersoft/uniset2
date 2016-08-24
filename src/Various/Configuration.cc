@@ -1293,7 +1293,7 @@ namespace UniSetTypes
 		}
 
 		// инициализация исключений для libcommoncpp
-//		ost::Thread::setException(ost::Thread::throwException);
+		//		ost::Thread::setException(ost::Thread::throwException);
 
 		atexit( UniSetActivator::normalexit );
 		set_terminate( UniSetActivator::normalterminate ); // ловушка для неизвестных исключений

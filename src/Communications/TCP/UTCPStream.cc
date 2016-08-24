@@ -51,7 +51,7 @@ bool UTCPStream::isSetLinger() const
 {
 	bool on;
 	int sec;
-	Poco::Net::StreamSocket::getLinger(on,sec);
+	Poco::Net::StreamSocket::getLinger(on, sec);
 	return on;
 }
 // -------------------------------------------------------------------------
@@ -61,11 +61,11 @@ void UTCPStream::forceDisconnect()
 	{
 		bool on;
 		int sec;
-		Poco::Net::StreamSocket::getLinger(on,sec);
-		setLinger(false,0);
+		Poco::Net::StreamSocket::getLinger(on, sec);
+		setLinger(false, 0);
 		close();
 		//shutdown();
-		Poco::Net::StreamSocket::setLinger(on,sec);
+		Poco::Net::StreamSocket::setLinger(on, sec);
 	}
 	catch( Poco::Net::NetException& )
 	{
@@ -86,10 +86,10 @@ timeout_t UTCPStream::getTimeout() const
 // -------------------------------------------------------------------------
 void UTCPStream::create(const std::string& hname, int port, timeout_t tout_msec )
 {
-	Poco::Net::SocketAddress sa(hname,port);
-	connect(sa,tout_msec*1000);
+	Poco::Net::SocketAddress sa(hname, port);
+	connect(sa, tout_msec * 1000);
 	setKeepAlive(true);
-	Poco::Net::StreamSocket::setLinger(true,1);
+	Poco::Net::StreamSocket::setLinger(true, 1);
 	setKeepAliveParams();
 }
 // -------------------------------------------------------------------------
@@ -103,6 +103,7 @@ bool UTCPStream::isConnected()
 	catch( Poco::Net::NetException& ex )
 	{
 	}
+
 	return false;
 }
 // -------------------------------------------------------------------------

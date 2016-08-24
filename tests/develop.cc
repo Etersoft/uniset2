@@ -32,13 +32,13 @@ class PtrMapHashFn
 
 int main( int argc, const char** argv )
 {
-	unordered_map<const long*, const long*,PtrMapHashFn> vmap;
+	unordered_map<const long*, const long*, PtrMapHashFn> vmap;
 
 	const long id = 10;
 	long prive_val = 100;
 	const long& val(prive_val);
 
-	vmap.emplace(&id,&val);
+	vmap.emplace(&id, &val);
 
 
 	auto i = vmap.find(&id);

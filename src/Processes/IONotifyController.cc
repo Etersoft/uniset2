@@ -104,6 +104,7 @@ SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
 				if( userparam == 2 )
 				{
 					bool ok = false;
+
 					for( const auto& c : i.clst )
 					{
 						if( c.lostEvents > 0 )

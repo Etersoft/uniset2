@@ -224,6 +224,7 @@ void MBTCPMaster::sigterm( int signo )
 bool MBTCPMaster::deactivateObject()
 {
 	setProcActive(false);
+
 	if( pollThread )
 	{
 		pollThread->stop();

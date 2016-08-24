@@ -52,7 +52,7 @@ bool TCPCheck::check( const std::string& _ip, int _port, timeout_t tout, timeout
 	setResult(false);
 
 	ThreadCreator<TCPCheck> t(this, &TCPCheck::check_thread);
-//	t.setCancel(ost::Thread::cancelDeferred);
+	//	t.setCancel(ost::Thread::cancelDeferred);
 	t.start();
 
 	PassiveTimer pt(tout);

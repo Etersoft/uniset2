@@ -27,7 +27,7 @@ UTCPSocket::UTCPSocket( int sock ):
 }
 // -------------------------------------------------------------------------
 UTCPSocket::UTCPSocket( const string& host, int port ):
-	Poco::Net::ServerSocket(Poco::Net::SocketAddress(host,port),true)
+	Poco::Net::ServerSocket(Poco::Net::SocketAddress(host, port), true)
 {
 	init();
 }
@@ -45,7 +45,7 @@ int UTCPSocket::getSocket()
 void UTCPSocket::init()
 {
 	Poco::Net::ServerSocket::setKeepAlive(true);
-	Poco::Net::ServerSocket::setLinger(true,1);
+	Poco::Net::ServerSocket::setLinger(true, 1);
 	setKeepAliveParams();
 }
 // -------------------------------------------------------------------------

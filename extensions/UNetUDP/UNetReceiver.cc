@@ -44,7 +44,7 @@ UNetReceiver::UNetReceiver(const std::string& s_host, int _port, const std::shar
 	recvpause(10),
 	updatepause(100),
 	port(_port),
-	saddr(s_host,_port),
+	saddr(s_host, _port),
 	recvTimeout(5000),
 	prepareTime(2000),
 	lostTimeout(200), /* 2*updatepause */

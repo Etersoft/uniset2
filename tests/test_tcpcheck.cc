@@ -20,7 +20,7 @@ bool run_test_server()
 
 	while( !cancel )
 	{
-		if( sock.poll(500000,Poco::Net::Socket::SELECT_READ) )
+		if( sock.poll(500000, Poco::Net::Socket::SELECT_READ) )
 		{
 
 		}

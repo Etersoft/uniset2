@@ -336,7 +336,7 @@ size_t LogSession::readData( unsigned char* buf, int len )
 	{
 		return 0;
 	}
-	catch( Poco::Net::ConnectionResetException &ex )
+	catch( Poco::Net::ConnectionResetException& ex )
 	{
 
 	}

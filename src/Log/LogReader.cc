@@ -78,8 +78,8 @@ void LogReader::connect( const std::string& _addr, int _port, timeout_t msec )
 	{
 		tcp = make_shared<UTCPStream>();
 		tcp->create(iaddr, port, msec );
-		tcp->setReceiveTimeout(inTimeout*1000);
-		tcp->setSendTimeout(outTimeout*1000);
+		tcp->setReceiveTimeout(inTimeout * 1000);
+		tcp->setSendTimeout(outTimeout * 1000);
 		tcp->setKeepAlive(true);
 		tcp->setBlocking(true);
 	}
@@ -91,6 +91,7 @@ void LogReader::connect( const std::string& _addr, int _port, timeout_t msec )
 			s << "(LogReader): connection " << s.str() << " timeout..";
 			rlog.crit() << s.str() << std::endl;
 		}
+
 		tcp = 0;
 	}
 	catch( const Poco::Net::NetException& e )
@@ -253,7 +254,7 @@ void LogReader::sendCommand(const std::string& _addr, int _port, std::vector<Com
 	{
 		int a = 2;
 
-		while( a > 0 && tcp->poll(reply_timeout*1000,Poco::Net::Socket::SELECT_READ) )
+		while( a > 0 && tcp->poll(reply_timeout * 1000, Poco::Net::Socket::SELECT_READ) )
 		{
 			int n = tcp->available();
 
@@ -335,7 +336,7 @@ void LogReader::readlogs( const std::string& _addr, int _port, LogServerTypes::C
 				send_ok = true;
 			}
 
-			while( tcp->poll(inTimeout*1000, Poco::Net::Socket::SELECT_READ) )
+			while( tcp->poll(inTimeout * 1000, Poco::Net::Socket::SELECT_READ) )
 			{
 				ssize_t n = tcp->available();
 
@@ -396,10 +397,10 @@ void LogReader::sendCommand(LogServerTypes::lsMessage& msg, bool verbose )
 
 	try
 	{
-		if( tcp->poll(outTimeout*1000,Poco::Net::Socket::SELECT_WRITE) )
+		if( tcp->poll(outTimeout * 1000, Poco::Net::Socket::SELECT_WRITE) )
 		{
 			rlog.info() << "(LogReader): ** send command: cmd='" << msg.cmd << "' logname='" << msg.logname << "' data='" << msg.data << "'" << endl;
-			tcp->sendBytes((unsigned char*)(&msg),sizeof(msg));
+			tcp->sendBytes((unsigned char*)(&msg), sizeof(msg));
 		}
 		else
 			rlog.warn() << "(LogReader): **** SEND COMMAND ('" << msg.cmd << "' FAILED!" << endl;

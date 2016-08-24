@@ -28,7 +28,7 @@ void USocket::init( bool throwflag )
 {
 	//setError(throwflag);
 	setKeepAlive(true);
-	Socket::setLinger(true,1);
+	Socket::setLinger(true, 1);
 	//setLinger(true);
 	setKeepAliveParams();
 }

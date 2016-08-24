@@ -17,7 +17,7 @@ class UDPSocketU:
 		{}
 
 		UDPSocketU( const std::string& bind, int port ):
-			Poco::Net::DatagramSocket(Poco::Net::SocketAddress(bind, port),true)
+			Poco::Net::DatagramSocket(Poco::Net::SocketAddress(bind, port), true)
 		{}
 
 		virtual ~UDPSocketU() {}
@@ -38,7 +38,7 @@ class UDPReceiveU:
 		{}
 
 		UDPReceiveU( const std::string& bind, int port):
-			Poco::Net::DatagramSocket(Poco::Net::SocketAddress(bind, port),true)
+			Poco::Net::DatagramSocket(Poco::Net::SocketAddress(bind, port), true)
 		{}
 
 		virtual ~UDPReceiveU() {}
