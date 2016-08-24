@@ -95,7 +95,7 @@ class ThreadCreator:
 		ThreadCreator( ThreadMaster* m, Action a );
 		~ThreadCreator();
 
-		inline pid_t getTID() const
+		inline Poco::Thread::TID getTID() const
 		{
 			return thr.tid();
 		}
@@ -119,12 +119,6 @@ class ThreadCreator:
 			thr.join();
 		}
 
-/*
-		inline void setCancel( ost::Thread::Cancel mode )
-		{
-			ost::PosixThread::setCancel(mode);
-		}
-*/
 		inline void setFinalAction( ThreadMaster* m, Action a )
 		{
 			finm = m;
@@ -158,8 +152,6 @@ class ThreadCreator:
 	private:
 		ThreadCreator();
 
-		pid_t pid = { 0 };
-
 		ThreadMaster* m;
 		Action act;
 
@@ -175,7 +167,6 @@ class ThreadCreator:
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 ThreadCreator<ThreadMaster>::ThreadCreator( ThreadMaster* m, Action a ):
-	pid(0),
 	m(m),
 	act(a),
 	finm(0),
@@ -188,10 +179,12 @@ ThreadCreator<ThreadMaster>::ThreadCreator( ThreadMaster* m, Action a ):
 template <class ThreadMaster>
 void ThreadCreator<ThreadMaster>::run()
 {
-	pid = getpid();
+	initial();
 
 	if( m )
 		(m->*act)();
+
+	final();
 }
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
@@ -208,7 +201,6 @@ void ThreadCreator<ThreadMaster>::start()
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 ThreadCreator<ThreadMaster>::ThreadCreator():
-	pid(0),
 	m(0),
 	act(0),
 	finm(0),

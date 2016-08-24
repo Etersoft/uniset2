@@ -58,9 +58,12 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 		if( l == 0 )
 			commfail = true;
 	}
+	catch( Poco::TimeoutException& ex )
+	{
+
+	}
 	catch( Poco::Net::NetException& e )
 	{
-#warning Разобраться с Poco::Net::NetException
 		commfail = true;
 	}
 
