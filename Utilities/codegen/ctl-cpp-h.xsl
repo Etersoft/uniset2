@@ -68,10 +68,9 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 
 		// Используемые идентификаторы
 		<xsl:for-each select="//smap/item">
-		<xsl:if test="normalize-space(@vartype)!='io'">const UniSetTypes::ObjectId <xsl:value-of select="@name"/>; 		/*!&lt; <xsl:value-of select="@comment"/> */
+		const UniSetTypes::ObjectId <xsl:value-of select="@name"/>; 		/*!&lt; <xsl:value-of select="@comment"/> */
 		UniSetTypes::ObjectId node_<xsl:value-of select="@name"/>;
-		</xsl:if>
-		<xsl:if test="normalize-space(@vartype)='io'">#warning (uniset-codegen): vartype='io' NO LONGER SUPPORTED! (ignore variable: '<xsl:value-of select="@name"/>')
+		<xsl:if test="normalize-space(@vartype)='io'">#error (uniset-codegen): vartype='io' NO LONGER SUPPORTED! (ignore variable: '<xsl:value-of select="@name"/>')
 		</xsl:if>
 		</xsl:for-each>
 
@@ -83,7 +82,10 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		</xsl:for-each>
 
 		// Текущее значение
-		<xsl:for-each select="//smap/item">long <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
+		<xsl:for-each select="//smap/item">
+		<xsl:if test="normalize-space(@vartype)='in'">const long&amp; </xsl:if>
+		<xsl:if test="normalize-space(@vartype)!='in'">long </xsl:if>
+		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 		</xsl:for-each>
 
 		// --- public variables ---
@@ -168,6 +170,11 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 
 		// предыдущее значение (для работы UpdateValue())
 		<xsl:for-each select="//smap/item">long prev_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
+		</xsl:for-each>
+		
+		// Текущее значение (rw-переменные)
+		<xsl:for-each select="//smap/item"><xsl:if test="normalize-space(@vartype)='in'">long priv_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
+		</xsl:if>
 		</xsl:for-each>
 
 		// Используемые идентификаторы сообщений

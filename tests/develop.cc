@@ -19,8 +19,33 @@ class VMon
 // ------------------------------------------------------------------------------
 using namespace std;
 
+
+class PtrMapHashFn
+{
+	public:
+		size_t operator() (const long* const& key) const
+		{
+			return std::hash<long>()((long)key);
+		}
+};
+
+
 int main( int argc, const char** argv )
 {
+	unordered_map<const long*, const long*,PtrMapHashFn> vmap;
+
+	const long id = 10;
+	long prive_val = 100;
+	const long& val(prive_val);
+
+	vmap.emplace(&id,&val);
+
+
+	auto i = vmap.find(&id);
+	return 0;
+
+
+
 	auto now = std::chrono::system_clock::now();
 	auto sec = std::chrono::time_point_cast<std::chrono::nanoseconds>(now);
 	auto nsec = std::chrono::time_point_cast<std::chrono::seconds>(now);

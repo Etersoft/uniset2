@@ -201,7 +201,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 	{
 		try
 		{
-			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui->getValue(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
+			<xsl:if test="normalize-space(@vartype)='in'">priv_</xsl:if><xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui->getValue(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
 		}
 		catch( std::exception&amp; ex )
 		{
@@ -219,7 +219,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 	try
 	{
 		if( <xsl:value-of select="@name"/> != DefaultObjectId )
-            <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui->getValue(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
+            priv_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui->getValue(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
 	}
 	catch( const Exception&amp; ex )
 	{

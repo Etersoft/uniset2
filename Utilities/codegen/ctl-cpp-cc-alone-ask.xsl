@@ -123,12 +123,12 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( const UniSetTypes::S
 	<xsl:if test="normalize-space(@vartype)='in'">
     <xsl:if test="normalize-space(@loglevel)=''">
 	if( _sm->id == <xsl:value-of select="../../@name"/> )
-		<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = _sm->value;
+		priv_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = _sm->value;
     </xsl:if>
     <xsl:if test="normalize-space(@loglevel)!=''">
 	if( _sm->id == <xsl:value-of select="../../@name"/> )
 	{
-		<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = _sm->value;
+		priv_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = _sm->value;
         mylog->level( Debug::type(_sm->value) );
     }
     </xsl:if>
@@ -150,7 +150,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 	{
 		try
 		{
-			<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = ui->getValue(<xsl:value-of select="../../@name"/>,node_<xsl:value-of select="../../@name"/>);
+			<xsl:if test="normalize-space(@vartype)='in'">priv_</xsl:if><xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = ui->getValue(<xsl:value-of select="../../@name"/>,node_<xsl:value-of select="../../@name"/>);
 		}
 		catch( std::exception&amp; ex )
 		{
@@ -258,7 +258,7 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 	<xsl:if test="normalize-space(../../@msg)!='1'">
 		if( _sid == <xsl:value-of select="../../@name"/> )
 		{
-		<xsl:text>		</xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = ui->getValue(<xsl:value-of select="../../@name"/>);
+		<xsl:if test="normalize-space(@vartype)='in'">/*		<xsl:text>		</xsl:text>priv_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = ui->getValue(<xsl:value-of select="../../@name"/>); */</xsl:if>
 			return <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>;
 		}
 	</xsl:if>
@@ -317,7 +317,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
 	{
 <xsl:if test="normalize-space(../../@msg)!='1'">
 <xsl:if test="normalize-space(@name)=$OID">
-		<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = ui->getValue(<xsl:value-of select="../../@name"/>);
+		priv_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = ui->getValue(<xsl:value-of select="../../@name"/>);
 </xsl:if>
 </xsl:if>
 	}
