@@ -69,7 +69,7 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		// Используемые идентификаторы
 		<xsl:for-each select="//smap/item">
 		const UniSetTypes::ObjectId <xsl:value-of select="@name"/>; 		/*!&lt; <xsl:value-of select="@comment"/> */
-		UniSetTypes::ObjectId node_<xsl:value-of select="@name"/>;
+		const UniSetTypes::ObjectId node_<xsl:value-of select="@name"/>;
 		<xsl:if test="normalize-space(@vartype)='io'">#error (uniset-codegen): vartype='io' NO LONGER SUPPORTED! (ignore variable: '<xsl:value-of select="@name"/>')
 		</xsl:if>
 		</xsl:for-each>
@@ -77,7 +77,7 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		// Используемые идентификаторы сообщений
 		<xsl:for-each select="//msgmap/item">
 		const UniSetTypes::ObjectId <xsl:value-of select="@name"/>; 	/*!&lt; <xsl:value-of select="@comment"/> */
-		UniSetTypes::ObjectId node_<xsl:value-of select="@name"/>;
+		const UniSetTypes::ObjectId node_<xsl:value-of select="@name"/>;
 		bool m_<xsl:value-of select="@name"/>; 							/*!&lt; текущее состояние /> */
 		</xsl:for-each>
 

@@ -38,7 +38,7 @@
 		<xsl:choose>
 		<xsl:when test="$GENTYPE='H'">
 		<xsl:if test="normalize-space(@vartype)!='io'">const UniSetTypes::ObjectId <xsl:value-of select="../../@name"/>; 		/*!&lt; <xsl:value-of select="../../@textname"/> */
-		UniSetTypes::ObjectId node_<xsl:value-of select="../../@name"/>;
+		const UniSetTypes::ObjectId node_<xsl:value-of select="../../@name"/>;
 		<xsl:if test="normalize-space(@vartype)='in'">const long&amp; </xsl:if>
 		<xsl:if test="normalize-space(@vartype)!='in'">long </xsl:if>
 		<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>; /*!&lt; текущее значение '<xsl:value-of select="../../@name"/>' */
@@ -657,7 +657,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 std::string <xsl:value-of select="$CLASSNAME"/>_SK::help()
 {
 	ostringstream s;
-	
+	// HELP NOT YET!
 	
 	return std::move(s.str());
 }
@@ -681,14 +681,22 @@ std::string <xsl:value-of select="$CLASSNAME"/>_SK::help()
 
 <xsl:template name="default-init-variables">
 <xsl:if test="normalize-space(@const)!=''">
-<xsl:if test="normalize-space(@type)='int'"><xsl:value-of select="normalize-space(@name)"/>(0),</xsl:if>
-<xsl:if test="normalize-space(@type)='long'"><xsl:value-of select="normalize-space(@name)"/>(0),</xsl:if>
-<xsl:if test="normalize-space(@type)='float'"><xsl:value-of select="normalize-space(@name)"/>(0),</xsl:if>
-<xsl:if test="normalize-space(@type)='double'"><xsl:value-of select="normalize-space(@name)"/>(0),</xsl:if>
-<xsl:if test="normalize-space(@type)='bool'"><xsl:value-of select="normalize-space(@name)"/>(false),</xsl:if>
-<xsl:if test="normalize-space(@type)='str'"><xsl:value-of select="normalize-space(@name)"/>(""),</xsl:if>
-<xsl:if test="normalize-space(@type)='sensor'"><xsl:value-of select="normalize-space(@name)"/>(DefaultObjectId),</xsl:if>
-<xsl:if test="normalize-space(@type)='object'"><xsl:value-of select="normalize-space(@name)"/>(DefaultObjectId),</xsl:if>
+<xsl:if test="normalize-space(@type)='int'"><xsl:value-of select="normalize-space(@name)"/>(0),
+</xsl:if>
+<xsl:if test="normalize-space(@type)='long'"><xsl:value-of select="normalize-space(@name)"/>(0),
+</xsl:if>
+<xsl:if test="normalize-space(@type)='float'"><xsl:value-of select="normalize-space(@name)"/>(0),
+</xsl:if>
+<xsl:if test="normalize-space(@type)='double'"><xsl:value-of select="normalize-space(@name)"/>(0),
+</xsl:if>
+<xsl:if test="normalize-space(@type)='bool'"><xsl:value-of select="normalize-space(@name)"/>(false),
+</xsl:if>
+<xsl:if test="normalize-space(@type)='str'"><xsl:value-of select="normalize-space(@name)"/>(""),
+</xsl:if>
+<xsl:if test="normalize-space(@type)='sensor'"><xsl:value-of select="normalize-space(@name)"/>(DefaultObjectId),
+</xsl:if>
+<xsl:if test="normalize-space(@type)='object'"><xsl:value-of select="normalize-space(@name)"/>(DefaultObjectId),
+</xsl:if>
 </xsl:if>
 </xsl:template>
 <xsl:template name="init-variables">
@@ -765,7 +773,7 @@ node_<xsl:value-of select="@name"/>(DefaultObjectId),
 m_<xsl:value-of select="@name"/>(false),
 prev_m_<xsl:value-of select="@name"/>(false),
 </xsl:for-each>
-// variables
+// variables (public and proteced)
 <xsl:for-each select="//variables/item">
 <xsl:if test="normalize-space(@public)!=''">
 <xsl:call-template name="default-init-variables"/>
@@ -776,6 +784,7 @@ prev_m_<xsl:value-of select="@name"/>(false),
 </xsl:if>
 </xsl:if>
 </xsl:for-each>
+// ------------------
 active(false),
 <xsl:if test="normalize-space($TESTMODE)!=''">
 isTestMode(false),
@@ -789,6 +798,7 @@ smReadyTimeout(0),
 activated(false),
 askPause(2000),
 forceOut(false),
+// private variables
 <xsl:for-each select="//variables/item">
 <xsl:if test="normalize-space(@private)!=''">
 <xsl:call-template name="default-init-variables"/>
@@ -811,6 +821,19 @@ static const std::string init3_str( const std::string&amp; s1, const std::string
 	return s3;
 }
 // -----------------------------------------------------------------------------
+static UniSetTypes::ObjectId init_node( xmlNode* cnode, const std::string&amp; prop )
+{
+	if( prop.empty() )
+		return uniset_conf()->getLocalNode();
+	
+	auto conf = uniset_conf();
+	
+	if( conf->getProp(cnode,prop).empty() )
+		return conf->getLocalNode();
+
+	return conf->getNodeID(conf->getProp(cnode,prop));
+}
+// -----------------------------------------------------------------------------
 <xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK( ObjectId id, xmlNode* cnode, const std::string&amp; _argprefix ):
 <xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>(id),</xsl:if>
 <xsl:if test="normalize-space($BASECLASS)=''">UniSetObject(id),</xsl:if>
@@ -818,14 +841,14 @@ static const std::string init3_str( const std::string&amp; s1, const std::string
 <xsl:for-each select="//smap/item">
 <xsl:if test="normalize-space(@vartype)!='io'">
 <xsl:value-of select="normalize-space(@name)"/>(uniset_conf()->getSensorID(uniset_conf()->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
-node_<xsl:value-of select="normalize-space(@name)"/>( uniset_conf()->getNodeID(uniset_conf()->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>")) ),
+node_<xsl:value-of select="normalize-space(@name)"/>(init_node(cnode, "node_<xsl:value-of select="normalize-space(@name)"/>")),
 </xsl:if>
 <xsl:if test="normalize-space(@vartype)='in'">in_<xsl:value-of select="@name"/>(priv_in_<xsl:value-of select="@name"/>),
 </xsl:if>
 </xsl:for-each>
 // Используемые идентификаторы сообщений (имена берутся из конф. файла)
 <xsl:for-each select="//msgmap/item"><xsl:value-of select="normalize-space(@name)"/>(uniset_conf()->getSensorID(uniset_conf()->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
-node_<xsl:value-of select="normalize-space(@name)"/>(uniset_conf()->getNodeID( uniset_conf()->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>"))),
+node_<xsl:value-of select="normalize-space(@name)"/>(init_node(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>")),
 m_<xsl:value-of select="normalize-space(@name)"/>(false),
 prev_m_<xsl:value-of select="normalize-space(@name)"/>(false),
 </xsl:for-each>
@@ -896,15 +919,11 @@ end_private(false)
 		throw Exception( myname + ": Not found ID for (<xsl:value-of select="@name"/>) " + conf->getProp(cnode,"<xsl:value-of select="@name"/>") );
 	
 	</xsl:if>
-	
+
+	<xsl:if test="normalize-space(@no_check_id)!='1'">
 	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
-	{
-		<xsl:if test="normalize-space(@no_check_id)!='1'">
-		if( !conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>").empty() )
-			throw Exception( myname + ": Not found NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
-		</xsl:if>
-		node_<xsl:value-of select="normalize-space(@name)"/> = conf->getLocalNode();
-	}
+		throw Exception( myname + ": Not found NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
+	</xsl:if>
 
 	<xsl:if test="normalize-space($VARMAP)='1'">
 	<xsl:if test="normalize-space(@vartype)='in'">
@@ -927,12 +946,7 @@ end_private(false)
 	}
 	
 	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
-	{
-		if( !conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>").empty() )
-			throw Exception( myname + ": Not found Message::NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
-
-			node_<xsl:value-of select="normalize-space(@name)"/> = conf->getLocalNode();
-	}
+		throw Exception( myname + ": Not found Message::NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
 </xsl:for-each>
 
 	UniXML::iterator it(cnode);
