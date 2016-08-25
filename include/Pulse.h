@@ -33,9 +33,7 @@
 class Pulse
 {
 	public:
-		Pulse(): ostate(false), isOn(false),
-			t1_msec(0), t0_msec(0)
-		{}
+		Pulse()	{}
 		~Pulse() {}
 
 		// t1_msec - интервал "вкл"
@@ -115,7 +113,6 @@ class Pulse
 			return os << (*p);
 		}
 
-
 		inline timeout_t getT1() const
 		{
 			return t1_msec;
@@ -129,10 +126,10 @@ class Pulse
 		PassiveTimer t1;    // таймер "1"
 		PassiveTimer t0;    // таймер "0"
 		PassiveTimer tCorr;    // корректирующий таймер
-		bool ostate;
-		bool isOn;
-		timeout_t t1_msec;
-		timeout_t t0_msec;
+		bool ostate = { false };
+		bool isOn = { false };
+		timeout_t t1_msec = { 0 };
+		timeout_t t0_msec = { 0 };
 
 };
 // --------------------------------------------------------------------------

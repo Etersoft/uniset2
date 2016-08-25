@@ -42,14 +42,14 @@ class UniSetTimer
 	public:
 		virtual ~UniSetTimer() {};
 
-		virtual bool checkTime() const = 0;						/*!< проверка наступления заданного времени */
+		virtual bool checkTime() const = 0;					/*!< проверка наступления заданного времени */
 		virtual timeout_t setTiming( timeout_t msec ) = 0;	/*!< установить таймер и запустить */
 		virtual void reset() = 0;							/*!< перезапустить таймер */
 
 		virtual timeout_t getCurrent() const = 0;       /*!< получить текущее значение таймера */
 		virtual timeout_t getInterval() const = 0;      /*!< получить интервал, на который установлен таймер, в мс */
 
-		timeout_t getLeft( timeout_t timeout ) const;     /*!< получить время, которое остается от timeout после прошествия времени getCurrent() */
+		timeout_t getLeft( timeout_t timeout ) const;   /*!< получить время, которое остается от timeout после прошествия времени getCurrent() */
 
 		// объявлены не чисто виртуальными т.к.
 		// некоторые классы могут не иметь подобных

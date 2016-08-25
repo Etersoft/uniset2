@@ -59,7 +59,7 @@
 class HourGlass
 {
 	public:
-		HourGlass(): _state(false), _sand(0), _size(0) {}
+		HourGlass() {}
 		~HourGlass() {}
 
 		// запустить часы (заново)
@@ -186,9 +186,9 @@ class HourGlass
 
 	protected:
 		PassiveTimer t;   /*!< таймер для отсчёта времени.. */
-		bool _state;      /*!< текущее "положение часов", true - прямое, false - обратное (перевёрнутое) */
-		timeout_t _sand;  /*!< сколько песка ещё осталось.. */
-		timeout_t _size;  /*!< размер часов */
+		bool _state = { false };      /*!< текущее "положение часов", true - прямое, false - обратное (перевёрнутое) */
+		timeout_t _sand = { 0 };  /*!< сколько песка ещё осталось.. */
+		timeout_t _size = { 0 };  /*!< размер часов */
 };
 // --------------------------------------------------------------------------
 #endif

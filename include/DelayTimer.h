@@ -27,13 +27,10 @@
 class DelayTimer
 {
 	public:
-		DelayTimer(): prevState(false), state(false),
-			onDelay(0), offDelay(0), waiting_on(false), waiting_off(false) {}
+		DelayTimer(){}
 
-		DelayTimer( timeout_t on_msec, timeout_t off_msec ): prevState(false), state(false),
-			onDelay(on_msec), offDelay(off_msec), waiting_on(false), waiting_off(false)
-		{
-		}
+		DelayTimer( timeout_t on_msec, timeout_t off_msec ):
+			onDelay(on_msec), offDelay(off_msec){}
 
 		~DelayTimer() {}
 
@@ -148,12 +145,12 @@ class DelayTimer
 
 	protected:
 		PassiveTimer pt;
-		bool prevState;
-		bool state;
-		timeout_t onDelay;
-		timeout_t offDelay;
-		bool waiting_on;
-		bool waiting_off;
+		bool prevState = { false };
+		bool state = { false };
+		timeout_t onDelay = { 0 };
+		timeout_t offDelay = { 0 };
+		bool waiting_on = { false };
+		bool waiting_off = { false };
 };
 // --------------------------------------------------------------------------
 #endif
