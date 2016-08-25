@@ -183,9 +183,9 @@ namespace UniSetTypes
 			CORBA::ORB_var orb;
 			CORBA::PolicyList policyList;
 
-			std::string NSName = { "" };        /*!< имя сервиса именования на ланной машине (обычно "NameService") */
+			std::string NSName = { "" };  /*!< имя сервиса именования на данной машине (обычно "NameService") */
 			size_t countOfNet = { 1 };    /*!< количество резервных каналов */
-			size_t repeatCount = { 3 };    /*!< количество попыток получить доступ к удаленному объекту
+			size_t repeatCount = { 3 };   /*!< количество попыток получить доступ к удаленному объекту
                                             прежде чем будет выработано исключение TimeOut.        */
 
 			timeout_t repeatTimeout = { 50 };    /*!< пауза между попытками [мс] */

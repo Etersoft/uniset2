@@ -15,12 +15,12 @@ class EvWatcher
 		EvWatcher() {}
 		virtual ~EvWatcher() {}
 
-		// подготовка перед запуском loop
+		// подготовка перед запуском loop:
 		// запуск своих ev::xxx.start()
 		virtual void evprepare( const ev::loop_ref& ) {}
 
-		// действия при завершении
-		// завершение своих ev::xxx.stop()
+		// действия при завершении:
+		// вызов своих ev::xxx.stop()
 		virtual void evfinish( const ev::loop_ref& ) {}
 
 		virtual std::string wname()
@@ -32,7 +32,7 @@ class EvWatcher
 /*!
  * \brief The CommonEventLoop class
  * Реализация общего eventloop для всех использующих libev.
- * Каждый класс который хочет подключиться к "потоку", должен наследоваться от класса Watcher
+ * Каждый класс который хочет подключиться к основному loop, должен наследоваться от класса Watcher
  * и при необходимости переопределить функции evprepare и evfinish
  *
  * Т.к. evprepare необходимо вызывать из потока в котором крутится event loop (иначе libev не работает),
