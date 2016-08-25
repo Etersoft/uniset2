@@ -37,23 +37,13 @@
 #include "Configuration.h"
 
 // -----------------------------------------------------------------------------------------
-/*! \namespace UniversalIO
- * Пространство имен содержащее классы, функции и т.п. для работы с вводом/выводом
-*/
-namespace UniversalIO
-{
-	/*! Время ожидания ответа */
-	const timeout_t defaultTimeOut = 3;  // [сек]
-}
-
-// -----------------------------------------------------------------------------------------
 #define UI_THROW_EXCEPTIONS UniSetTypes::TimeOut,UniSetTypes::IOBadParam,UniSetTypes::ORepFailed
 // -----------------------------------------------------------------------------------------
 /*!
  * \class UInterface
  * Универсальный интерфейс для взаимодействия между объектами (процессами).
  * По сути является "фасадом" к реализации механизма взамиодействия
-  * в libuniset (основанном на CORBA) Хотя до конца скрыть CORBA-у пока не удалось.
+ * в libuniset (основанном на CORBA) Хотя до конца скрыть CORBA-у пока не удалось.
  * Для увеличения производительности в функции встроен cache обращений...
  *
  * См. также \ref UniversalIOControllerPage
@@ -70,18 +60,18 @@ class UInterface
 		// Работа с датчиками
 
 		//! Получение состояния датчика
-		long getValue ( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const throw(UI_THROW_EXCEPTIONS);
+		long getValue (const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node) const throw(UI_THROW_EXCEPTIONS);
 		long getValue ( const UniSetTypes::ObjectId id ) const;
 		long getRawValue( const IOController_i::SensorInfo& si );
 
 		//! Выставление состояния датчика
-		void setValue ( const UniSetTypes::ObjectId id, long value, const UniSetTypes::ObjectId node ) const throw(UI_THROW_EXCEPTIONS);
+		void setValue ( const UniSetTypes::ObjectId id, long value, const UniSetTypes::ObjectId node, UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId ) const throw(UI_THROW_EXCEPTIONS);
 		void setValue ( const UniSetTypes::ObjectId id, long value ) const;
-		void setValue ( const IOController_i::SensorInfo& si, long value, const UniSetTypes::ObjectId supplier );
+		void setValue ( const IOController_i::SensorInfo& si, long value, const UniSetTypes::ObjectId supplier ) const;
 
 		// fast - это удалённый вызов "без подтверждения", он быстрее, но менее надёжен
 		// т.к. вызывающий никогда не узнает об ошибке, если она была (датчик такой не найдён и т.п.)
-		void fastSetValue( const IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
+		void fastSetValue( const IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier ) const;
 
 		//! Получение состояния для списка указанных датчиков
 		IOController_i::SensorInfoSeq_var getSensorSeq( const UniSetTypes::IDList& lst );
@@ -178,7 +168,7 @@ class UInterface
 			return rep.resolve( oind->getNameById(id) );
 		}
 
-		UniSetTypes::ObjectPtr resolve( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId nodeName, int timeoutMS = UniversalIO::defaultTimeOut) const
+		UniSetTypes::ObjectPtr resolve(const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId nodeName) const
 		throw(UniSetTypes::ResolveNameError, UniSetTypes::TimeOut);
 
 

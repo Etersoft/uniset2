@@ -127,7 +127,7 @@ using namespace UniSetTypes;
 		si.node = ui->getConf()->getLocalNode();
 
 		BEG_FUNC1(SMInterface::setValue)
-		ui->fastSetValue(si, value, myid);
+		ui->setValue(si, value, myid);
 		return;
 		END_FUNC(SMInterface::setValue)
 	}
