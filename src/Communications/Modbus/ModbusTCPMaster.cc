@@ -188,31 +188,24 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 			if( ret < sizeof(reply.aduhead) )
 			{
-#warning Разобраться с обработкой ошибки связи
-#if 0
-				int port;
-
 				if( dlog->is_warn() )
 				{
-					const char* err = tcp->getErrorString();
-
 					try
 					{
+						Poco::Net::SocketAddress  iaddr = tcp->peerAddress();
+
 						dlog->warn() << "(ModbusTCPMaster::query): ret=" << ret
 									 << " < rmh=" << sizeof(reply.aduhead)
-									 << " errnum: " << tcp->getErrorNumber()
-									 << " perr: " << tcp->getPeer(&port)
-									 << " err: " << (err ? string(err) : "")
+									 << " perr: " << iaddr.host().toString() << ":" << iaddr.port()
 									 << endl;
 					}
-					catch( const ost::SockException& e )
+					catch( const Poco::Net::NetException& ex )
 					{
 						if( dlog->is_warn() )
-							dlog->warn() << "(query): tcp error: " << e.getString() << endl;
+							dlog->warn() << "(query): tcp error: " << ex.displayText() << endl;
 					}
 				}
 
-#endif
 				cleanInputStream();
 				tcp->forceDisconnect();
 				return erTimeOut; // return erHardwareError;
