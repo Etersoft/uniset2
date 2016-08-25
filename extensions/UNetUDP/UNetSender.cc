@@ -542,7 +542,16 @@ const std::string UNetSender::getShortInfo() const
 	  << endl;
 
 	for( auto i = mypacks.begin(); i != mypacks.end(); ++i )
-		s << "        \t\t[" << i->first << "]=" << i->second.size() << endl;
+	{
+		s << "        \t[" << i->first << "]=" << i->second.size() << endl;
+		size_t n=0;
+		for( const auto& p: i->second )
+		{
+			s << "        \t\t[" << (n++) << "]=" << p.sizeOf() << " bytes"
+			  << " ( numA=" << setw(5) << p.asize() << " numD=" << setw(5) << p.dsize() << ")"
+			  << endl;
+		}
+	}
 
 	return std::move(s.str());
 }

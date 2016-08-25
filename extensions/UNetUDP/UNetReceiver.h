@@ -214,8 +214,13 @@ class UNetReceiver:
 		ev::periodic evCheckConnection;
 		ev::periodic evStatistic;
 
+		// счётчики для подсчёта статистики
 		size_t recvCount = { 0 };
 		size_t upCount = { 0 };
+
+		// текущая статистик
+		size_t statRecvPerSec = { 0 }; /*!< количество принимаемых пакетов в секунду */
+		size_t statUpPerSec = { 0 };	/*!< количество обработанных пакетов в секунду */
 
 		std::shared_ptr< ThreadCreator<UNetReceiver> > upThread;    // update thread
 

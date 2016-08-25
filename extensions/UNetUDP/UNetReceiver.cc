@@ -281,10 +281,13 @@ void UNetReceiver::statisticsEvent(ev::periodic& tm, int revents)
 		return;
 	}
 
-	unetlog9 << myname << "(statisctics):"
-			 << " recvCount=" << recvCount << "[per sec]"
-			 << " upCount=" << upCount << "[per sec]"
-			 << endl;
+	statRecvPerSec = recvCount;
+	statUpPerSec = upCount;
+
+//	unetlog9 << myname << "(statisctics):"
+//			 << " recvCount=" << recvCount << "[per sec]"
+//			 << " upCount=" << upCount << "[per sec]"
+//			 << endl;
 
 	recvCount = 0;
 	upCount = 0;
@@ -872,7 +875,7 @@ const std::string UNetReceiver::getShortInfo() const
 	  << " waitClean=" << waitClean
 	  << " ]"
 	  << endl
-	  << "\t[ recvCount=" << recvCount << " upCount=" << upCount << " per sec ]";
+	  << "\t[ recv=" << statRecvPerSec << " update=" << statUpPerSec << " per sec ]";
 
 	return std::move(s.str());
 }

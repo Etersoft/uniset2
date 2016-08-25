@@ -265,6 +265,15 @@ long UDPMessage::getDataID() const
 	// если нет данных(?) просто возвращаем номер пакета
 	return num;
 }
+
+size_t UniSetUDP::UDPMessage::sizeOf() const
+{
+	// биты которые не уместились в очередной байт, добавляют ещё один байт
+	size_t nbit =  dcount % 8 * sizeof(unsigned char);
+	size_t add = nbit > 0 ? 1 : 0;
+
+	return sizeof(UDPHeader) + acount * sizeof(UDPAData) + dcount * sizeof(long) + (dcount / 8 * sizeof(unsigned char) + add);
+}
 // -----------------------------------------------------------------------------
 UDPMessage::UDPMessage( UDPPacket& p )
 {

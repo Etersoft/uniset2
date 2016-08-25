@@ -67,11 +67,12 @@ namespace UniSetUDP
 		friend std::ostream& operator<<( std::ostream& os, UDPAData& p );
 	} __attribute__((packed));
 
-	// Хотелось бы не вылезать за общий размер посылаемых пакетов 8192. (550,900 --> 8133)
-	// ------
-	// временное резрешение на A=800,D=5000! DI/DO
-	// 1500*8 + 5000*4 + 5000/8 = 32625 байт максимальный размер данных + служебные заголовки
 
+	// Теоретический размер данных в UDP пакете (исключая заголовки) 65507
+	// Фактически желательно не вылезать за размер MTU (обычно 1500) - заголовки = 1432 байта
+	// т.е. надо чтобы sizeof(UDPPacket) < 1432
+
+	// При текущих настройках sizeof(UDPPacket) = 32654 (!)
 	static const size_t MaxACount = 1500;
 	static const size_t MaxDCount = 5000;
 	static const size_t MaxDDataCount = 1 + MaxDCount / 8 * sizeof(unsigned char);
@@ -127,6 +128,9 @@ namespace UniSetUDP
 		{
 			return acount;
 		}
+
+		// размер итогового пакета в байтах
+		size_t sizeOf() const;
 
 		uint16_t getDataCRC() const;
 

@@ -179,6 +179,21 @@ TEST_CASE("[UNetUDP]: UDPMessage", "[unetudp][udpmessage]")
 	}
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: sizeOf", "[unetudp][sizeof]")
+{
+	UniSetUDP::UDPMessage m;
+
+	REQUIRE( m.sizeOf() == sizeof(UniSetUDP::UDPHeader) );
+
+	m.addAData(8, 70);
+
+	REQUIRE( m.sizeOf() == sizeof(UniSetUDP::UDPHeader)+sizeof(UniSetUDP::UDPAData) );
+
+	UniSetUDP::UDPPacket p;
+	size_t len = m.transport_msg(p);
+	REQUIRE( len == m.sizeOf() );
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("[UNetUDP]: respond sensor", "[unetudp]")
 {
 	InitTest();
