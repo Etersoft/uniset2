@@ -86,13 +86,32 @@ class ObjectRepository
 		};
 
 		//! Получение списка how_many объектов из секции section.
-		bool list(const std::string& section, UniSetTypes::ListObjectName* ls, unsigned int how_many = 300)throw(UniSetTypes::ORepFailed);
+		bool list(const std::string& section, UniSetTypes::ListObjectName* ls, size_t how_many = 300)throw(UniSetTypes::ORepFailed);
 
 		//! Получние списка how_many подсекций из секции in_section.
-		bool listSections(const std::string& in_section, UniSetTypes::ListObjectName* ls, unsigned int how_many = 300)throw(UniSetTypes::ORepFailed);
+		bool listSections(const std::string& in_section, UniSetTypes::ListObjectName* ls, size_t how_many = 300)throw(UniSetTypes::ORepFailed);
+
+		// -------------------------------------------------------------------
+		//! Создание секции
+		bool createSection( const std::string& name, const std::string& in_section )throw(UniSetTypes::ORepFailed, UniSetTypes::InvalidObjectName);
+
+		/*! Создание секции по полному имени */
+		bool createSectionF(const std::string& fullName)throw(UniSetTypes::ORepFailed, UniSetTypes::InvalidObjectName);
+
+		//! Функция создания секции в корневом 'каталоге'
+		bool createRootSection(const std::string& name);
+
+		//! Функция удаления секции
+		bool removeSection(const std::string& fullName, bool recursive = false);
+
+		//! Функция переименования секции
+		bool renameSection(const std::string& newName, const std::string& fullName);
+
+		/*! Функция выводящая на экран список всех объектов расположенных в данной секции */
+		void printSection(const std::string& fullName);
 
 		// @}
-		// end of ORepServiceGroup
+		// end of add to ORepServiceGroup
 
 	protected:
 
@@ -101,6 +120,9 @@ class ObjectRepository
 		std::shared_ptr<UniSetTypes::Configuration> uconf;
 
 		bool list(const std::string& section, UniSetTypes::ListObjectName* ls, unsigned int how_many, ObjectType type);
+
+		/*! Создание нового контекста(секции) */
+		bool createContext( const std::string& cname, CosNaming::NamingContext_ptr ctx);
 
 	private:
 		bool init() const;

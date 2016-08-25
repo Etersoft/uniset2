@@ -9,7 +9,6 @@
 // --------------------------------------------------------------------------
 #include "ORepHelpers.h"
 #include "ObjectRepository.h"
-#include "ObjectRepositoryFactory.h"
 #include "Exceptions.h"
 #include "UniSetObject.h"
 #include "UniSetTypes.h"
@@ -523,7 +522,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 // ==============================================================================================
 static void createSections( const std::shared_ptr<UniSetTypes::Configuration>& rconf )
 {
-	ObjectRepositoryFactory repf(rconf);
+	ObjectRepository repf(rconf);
 
 	repf.createRootSection(rconf->getRootSection());
 	repf.createRootSection(rconf->getSensorsSection());

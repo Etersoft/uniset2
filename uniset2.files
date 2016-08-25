@@ -302,7 +302,6 @@ include/ObjectIndex_Array.h
 include/ObjectIndex_idXML.h
 include/ObjectIndex_XML.h
 include/ObjectRepository.h
-include/ObjectRepositoryFactory.h
 include/OmniThreadCreator.h
 include/ORepHelpers.h
 include/PassiveObject.h
@@ -396,7 +395,6 @@ src/ObjectRepository/ObjectIndex_Array.cc
 src/ObjectRepository/ObjectIndex_idXML.cc
 src/ObjectRepository/ObjectIndex_XML.cc
 src/ObjectRepository/ObjectRepository.cc
-src/ObjectRepository/ObjectRepositoryFactory.cc
 src/ObjectRepository/ORepHelpers.cc
 src/ObjectRepository/PassiveObject.cc
 src/ObjectRepository/ProxyManager.cc
