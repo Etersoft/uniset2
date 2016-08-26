@@ -78,8 +78,8 @@ void LogReader::connect( const std::string& _addr, int _port, timeout_t msec )
 	{
 		tcp = make_shared<UTCPStream>();
 		tcp->create(iaddr, port, msec );
-		tcp->setReceiveTimeout(inTimeout * 1000);
-		tcp->setSendTimeout(outTimeout * 1000);
+		tcp->setReceiveTimeout( UniSetTimer::timeoutToPoco(inTimeout * 1000) );
+		tcp->setSendTimeout( UniSetTimer::timeoutToPoco(outTimeout * 1000) );
 		tcp->setKeepAlive(true);
 		tcp->setBlocking(true);
 	}

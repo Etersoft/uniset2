@@ -68,6 +68,10 @@ class UniSetTimer
 		 */
 		static const timeout_t WaitUpTime = std::numeric_limits<timeout_t>::max();
 
+		// преобразование WaitUpTime в Poco waitpuTime у которого он = 0 :(
+		static const Poco::Timespan timeoutToPoco( const timeout_t );
+
+
 		/*! Минимальное время срабатывания. Задается в мсек. */
 		static const timeout_t MinQuantityTime = 10;
 };

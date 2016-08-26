@@ -58,15 +58,13 @@ void ModbusTCPMaster::setChannelTimeout( timeout_t msec )
 	if( !tcp )
 		return;
 
+	Poco::Timespan tm = UniSetTimer::timeoutToPoco(msec*1000);
 	Poco::Timespan old = tcp->getReceiveTimeout();;
-	//timeout_t old = tcp->getReceiveTimeout();
 
-	Poco::Timespan tmsec(msec * 1000);
-
-	if( old == msec )
+	if( old.microseconds() == tm.microseconds() )
 		return;
 
-	tcp->setReceiveTimeout(tmsec);
+	tcp->setReceiveTimeout(tm);
 
 	int oldKeepAlive = keepAliveTimeout;
 	keepAliveTimeout = (msec > 1000 ? msec / 1000 : 1);
@@ -114,7 +112,10 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		assert(timeout);
 		ptTimeout.setTiming(timeout);
 
-		tcp->setReceiveTimeout(timeout * 1000);
+		if( timeout == UniSetTimer::WaitUpTime )
+			tcp->setReceiveTimeout(0);
+		else
+			tcp->setReceiveTimeout(timeout * 1000);
 
 		msg.makeHead(++nTransaction, crcNoCheckit);
 
@@ -379,7 +380,7 @@ void ModbusTCPMaster::reconnect()
 	{
 		tcp = make_shared<UTCPStream>();
 		tcp->create(iaddr, port, 500);
-		tcp->setReceiveTimeout(replyTimeOut_ms * 1000);
+		tcp->setReceiveTimeout(UniSetTimer::timeoutToPoco(replyTimeOut_ms * 1000));
 		tcp->setKeepAliveParams((replyTimeOut_ms > 1000 ? replyTimeOut_ms / 1000 : 1));
 		tcp->setNoDelay(true);
 	}

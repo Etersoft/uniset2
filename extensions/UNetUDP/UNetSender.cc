@@ -115,7 +115,7 @@ bool UNetSender::createConnection( bool throwEx )
 		//udp = make_shared<UDPSocketU>(addr, port);
 		udp = make_shared<UDPSocketU>();
 		udp->setBroadcast(true);
-		udp->setSendTimeout(writeTimeout * 1000);
+		udp->setSendTimeout(UniSetTimer::timeoutToPoco(writeTimeout * 1000));
 		//		udp->setNoDelay(true);
 	}
 	catch( const std::exception& e )

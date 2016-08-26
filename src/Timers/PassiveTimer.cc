@@ -101,3 +101,11 @@ bool UniSetTimer::wait( timeout_t timeMS )
 	return false;
 }
 //------------------------------------------------------------------------------
+const Poco::Timespan UniSetTimer::timeoutToPoco( const timeout_t msec )
+{
+	if( msec == WaitUpTime )
+		return Poco::Timespan(0,0);
+
+	return Poco::Timespan(msec/100, msec%1000);
+}
+//------------------------------------------------------------------------------

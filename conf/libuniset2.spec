@@ -14,7 +14,7 @@
 
 Name: libuniset2
 Version: 2.5
-Release: alt1.2
+Release: alt2
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -484,6 +484,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Fri Aug 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt2
+- Fixed converting timeout_t to Poco::TimeSpan
+
 * Thu Aug 25 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt1.2
 - (UNetUDP): add debug information (getInfo)
 - minor fixes
