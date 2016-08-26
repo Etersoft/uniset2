@@ -82,7 +82,7 @@ DB: Сделать регулируемый буфер на INSERT-ы БД, чт
 в ThreadCreator использовать std::function()..
 
 ВОЗМОЖНО СТОИТ:
-Уйти от использования libcommoncpp,libxml2,DebugLog,Thread,RWLock ==> и применяять одну библиотеку libpoco (http://pocoproject.org/documentation/index.html)
+Уйти от использования libxml2,DebugLog ==> и применяять одну библиотеку libpoco (http://pocoproject.org/documentation/index.html)
 
 ==================
 

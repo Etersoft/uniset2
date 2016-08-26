@@ -80,6 +80,11 @@ timeout_t PassiveTimer::getCurrent() const
 	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - t_start).count();
 }
 //------------------------------------------------------------------------------
+timeout_t PassiveTimer::getInterval() const
+{
+	return (t_msec != UniSetTimer::WaitUpTime ? t_msec : 0);
+}
+//------------------------------------------------------------------------------
 void PassiveTimer::terminate()
 {
 	t_msec = WaitUpTime;
@@ -99,6 +104,11 @@ timeout_t UniSetTimer::getLeft(timeout_t timeout) const
 bool UniSetTimer::wait( timeout_t timeMS )
 {
 	return false;
+}
+//------------------------------------------------------------------------------
+void UniSetTimer::stop()
+{
+	terminate();
 }
 //------------------------------------------------------------------------------
 const Poco::Timespan UniSetTimer::timeoutToPoco( const timeout_t msec )

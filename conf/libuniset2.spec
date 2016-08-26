@@ -26,7 +26,9 @@ Packager: Pavel Vainerman <pv@altlinux.ru>
 # Git: http://git.etersoft.ru/projects/asu/uniset.git
 Source: %name-%version.tar
 
-BuildRequires: libpoco-devel libev-devel libomniORB-devel libsigc++2-devel xsltproc libxml2-devel
+# Automatically added by buildreq on Fri Aug 26 2016
+# optimized out: fontconfig libgpg-error libsasl2-3 libsqlite3-devel libstdc++-devel libwayland-client libwayland-server perl pkg-config python-base python-devel python-module-omniidl python-modules python3
+BuildRequires: gcc-c++ libev-devel libomniORB-devel libpoco-devel libsigc++2-devel libxml2-devel xsltproc
 
 # for uniset2-codegen
 BuildPreReq: xsltproc

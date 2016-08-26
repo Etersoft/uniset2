@@ -46,8 +46,8 @@ class UniSetTimer
 		virtual timeout_t setTiming( timeout_t msec ) = 0;	/*!< установить таймер и запустить */
 		virtual void reset() = 0;							/*!< перезапустить таймер */
 
-		virtual timeout_t getCurrent() const = 0;       /*!< получить текущее значение таймера */
-		virtual timeout_t getInterval() const = 0;      /*!< получить интервал, на который установлен таймер, в мс */
+		virtual timeout_t getCurrent() const = 0;  /*!< получить текущее значение таймера */
+		virtual timeout_t getInterval() const = 0; /*!< получить интервал, на который установлен таймер, в мс */
 
 		timeout_t getLeft( timeout_t timeout ) const;   /*!< получить время, которое остается от timeout после прошествия времени getCurrent() */
 
@@ -58,10 +58,7 @@ class UniSetTimer
 		virtual void terminate() {}            /*!< прервать работу таймера */
 
 		/*! завершить работу таймера */
-		virtual void stop()
-		{
-			terminate();
-		};
+		virtual void stop();
 
 		/*! Время засыпания, до момента пока не будет вызвана функция прерывания
 		 *  terminate() или stop()
@@ -71,8 +68,9 @@ class UniSetTimer
 		// преобразование WaitUpTime в Poco waitpuTime у которого он = 0 :(
 		static const Poco::Timespan timeoutToPoco( const timeout_t );
 
-
-		/*! Минимальное время срабатывания. Задается в мсек. */
+		/*! Минимальное время срабатывания. Задается в мсек.
+		 * Используется в LT_Object и CallbackTimer
+		 */
 		static const timeout_t MinQuantityTime = 10;
 };
 //----------------------------------------------------------------------------------------
@@ -98,10 +96,11 @@ class PassiveTimer:
 		virtual void reset(); /*!< перезапустить таймер */
 
 		virtual timeout_t getCurrent() const override;  /*!< получить текущее значение таймера, в мс */
-		virtual timeout_t getInterval() const override  /*!< получить интервал, на который установлен таймер, в мс */
-		{
-			return (t_msec != UniSetTimer::WaitUpTime ? t_msec : 0);
-		}
+
+		/*! получить интервал, на который установлен таймер, в мс
+		 * \return msec или 0 если интервал равен WaitUpTime
+		 */
+		virtual timeout_t getInterval() const override;
 
 		virtual void terminate(); /*!< прервать работу таймера */
 
@@ -137,8 +136,8 @@ class PassiveCondTimer:
 		PassiveCondTimer();
 		virtual ~PassiveCondTimer();
 
-		virtual bool wait(timeout_t t_msec);    /*!< блокировать вызывающий поток на заданное время */
-		virtual void terminate();        /*!< прервать работу таймера */
+		virtual bool wait(timeout_t t_msec); /*!< блокировать вызывающий поток на заданное время */
+		virtual void terminate();  /*!< прервать работу таймера */
 
 	protected:
 
