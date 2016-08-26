@@ -7,7 +7,7 @@ compiler:
 cache:
   apt: true
 
-# Disallowing packages: libcomedi-dev, libcommoncpp2-dev, libomniorb4-dev, libpqxx-dev, libev-dev
+# Disallowing packages: libcomedi-dev, libpoco-dev, libomniorb4-dev, libpqxx-dev, libev-dev
 # If you require these packages, please review the package approval process at: https://github.com/travis-ci/apt-package-whitelist#package-approval-process
 #sudo: false
 
@@ -25,7 +25,7 @@ before_install:
 
 install:
   # have no catch package
-  - sudo apt-get install libcomedi-dev libcommoncpp2-dev libmysqlclient-dev libomniorb4-dev libev-dev omniidl xsltproc libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev libmosquittopp0-dev
+  - sudo apt-get install libcomedi-dev libpoco-dev libmysqlclient-dev libomniorb4-dev libev-dev omniidl xsltproc libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev libmosquittopp0-dev
   - wget https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp -O include/catch.hpp
 
 before_script:
@@ -44,7 +44,7 @@ addons:
 #  apt:
 #    packages:
 #      - libcomedi-dev
-#      - libcommoncpp2-dev
+#      - libpoco-dev
 #      - libmysqlclient-dev
 #      - libomniorb4-dev
 #      - libpqxx-dev

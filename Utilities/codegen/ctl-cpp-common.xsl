@@ -269,6 +269,9 @@
 		
 		// Выполнение очередного шага программы
 		virtual void step(){}
+
+		void preAskSensors( UniversalIO::UIOCommand cmd );
+		void preSysCommand( const UniSetTypes::SystemMessage* sm );
 		
 		virtual void testMode( bool state );
 		void updateOutputs( bool force );
@@ -348,10 +351,8 @@
 <xsl:template name="COMMON-HEAD-PRIVATE">
 		// ------------ private функции ---------------
 		void updatePreviousValues();
-		void preAskSensors( UniversalIO::UIOCommand cmd );
 		void preSensorInfo( const UniSetTypes::SensorMessage* sm );
 		void preTimerInfo( const UniSetTypes::TimerMessage* tm );
-		void preSysCommand( const UniSetTypes::SystemMessage* sm );
 		void initFromSM();
 		void checkSensors();
 		// --------------------------------------------

@@ -137,8 +137,12 @@ VMON_IMPL_ADD2(char)
 VMON_IMPL_ADD(bool)
 VMON_IMPL_ADD(float)
 VMON_IMPL_ADD(double)
-VMON_IMPL_ADD_N(Poco::Int64, m_Int64)
 VMON_IMPL_ADD3(std::string, string)
+
+#ifndef	POCO_LONG_IS_64_BIT
+VMON_IMPL_ADD_N(Poco::Int64, m_Int64)
+#endif
+
 //VMON_IMPL_ADD3(UniSetTypes::ObjectId,ObjectId)
 // --------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, VMonitor& m )

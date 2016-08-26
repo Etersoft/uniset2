@@ -23,6 +23,7 @@ class TestGen:
 	private:
 		bool bool_var = { false };
 		int int_var = {0};
+		timeout_t t_val = { 0 };
 };
 // -----------------------------------------------------------------------------
 #endif // TestGen_H_

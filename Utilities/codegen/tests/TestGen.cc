@@ -26,6 +26,8 @@ TestGen::TestGen( UniSetTypes::ObjectId id, xmlNode* confnode ):
 		cerr << "input2_s NOT FOUND!!!" << endl;
 	else
 		cerr << "input2_s=" << (*i)  << " d=" << d << " d2=" << d2 << " d3=" << d3 << " input2_s=" << input2_s << endl;
+		
+	vmonit(t_val);
 }
 // -----------------------------------------------------------------------------
 TestGen::~TestGen()
