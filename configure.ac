@@ -48,7 +48,7 @@ if test ${nopkgchecklibev} = false; then
 	PKG_CHECK_MODULES(EV, libev)
 else	
 	AC_CHECK_HEADER(ev++.h,,exit)
-	AC_CHECK_LIB([ev],ev_run,,exit)
+	AC_SEARCH_LIBS(ev_run,ev,[],[],exit)
 	EV_LIBS="-lev"
 	EV_CFLAGS=
 	AC_SUBST(EV_LIBS)
@@ -57,7 +57,7 @@ fi
 
 #check libpoco support
 AC_MSG_CHECKING([libpoco support])
-#AC_CHECK_LIB([PocoNet],ServerSocket,,exit)
+#AC_SEARCH_LIBS(ServerSocket,PocoNet,,exit)
 AC_CHECK_HEADER(Poco/Net/Socket.h,,exit)
 POCO_LIBS="-lPocoFoundation -lPocoNet"
 POCO_CFLAGS="-IPoco"
@@ -98,7 +98,7 @@ AC_ARG_ENABLE(mysql, AC_HELP_STRING([--disable-mysql], [disable MySQL support]),
 if test ${buildmysql} = true; then
 	AC_MSG_RESULT([enabled])
 	AC_CHECK_HEADERS([mysql/mysql.h])
-	AC_CHECK_LIB([mysqlclient],mysql_init,,exit)
+	AC_SEARCH_LIBS([mysql_init],mysqlclient,[],[],exit)
 else
 	AC_MSG_RESULT([disabled])
 fi
