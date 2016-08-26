@@ -14,7 +14,7 @@
 
 Name: libuniset2
 Version: 2.5
-Release: alt2
+Release: alt3
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -26,7 +26,7 @@ Packager: Pavel Vainerman <pv@altlinux.ru>
 # Git: http://git.etersoft.ru/projects/asu/uniset.git
 Source: %name-%version.tar
 
-BuildRequires: libpoco-devel libev-devel libomniORB-devel libsigc++2-devel xsltproc
+BuildRequires: libpoco-devel libev-devel libomniORB-devel libsigc++2-devel xsltproc libxml2-devel
 
 # for uniset2-codegen
 BuildPreReq: xsltproc
@@ -484,6 +484,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Fri Aug 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt3
+- update requires
+
 * Fri Aug 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt2
 - Fixed converting timeout_t to Poco::TimeSpan
 
