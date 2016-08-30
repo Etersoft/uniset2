@@ -28,7 +28,7 @@ namespace pyUInterface
 
 	//---------------------------------------------------------------------------
 	long getValue( long id )throw(UException);
-	void setValue( long id, long val )throw(UException);
+	void setValue( long id, long val, long supplier = UTypes::DefaultSupplerID )throw(UException);
 
 	long getSensorID(  const std::string& name );
 
@@ -37,7 +37,6 @@ namespace pyUInterface
 	std::string getTextName( long id );
 
 	std::string getConfFileName();
-
 }
 //---------------------------------------------------------------------------
 #endif

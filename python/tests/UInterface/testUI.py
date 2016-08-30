@@ -20,7 +20,7 @@ if __name__ == "__main__":
 		lst.add( sys.argv[i] )
 
 	try:	
-		uniset_init_params( lst, str("test.xml") )
+		uniset_init_params( lst, "test.xml");
 
 
 		print "getShortName: id=%d name=%s" % (1, getShortName(1))

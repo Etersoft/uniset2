@@ -92,7 +92,7 @@ long pyUInterface::getValue( long id )throw(UException)
 	}
 }
 //---------------------------------------------------------------------------
-void pyUInterface::setValue( long id, long val )throw(UException)
+void pyUInterface::setValue( long id, long val, long supplier )throw(UException)
 {
 	auto conf = UniSetTypes::uniset_conf();
 
@@ -109,7 +109,7 @@ void pyUInterface::setValue( long id, long val )throw(UException)
 			case UniversalIO::DO:
 			case UniversalIO::AI:
 			case UniversalIO::AO:
-				ui->setValue(id, val);
+				ui->setValue(id, val, supplier);
 				break;
 
 			default:
