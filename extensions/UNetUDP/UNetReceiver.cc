@@ -633,6 +633,7 @@ bool UNetReceiver::receive()
 	try
 	{
 		ssize_t ret = udp->receiveBytes(r_buf.data, sizeof(r_buf.data));
+		recvCount++;
 		//ssize_t ret = udp->receiveFrom(r_buf.data, sizeof(r_buf.data),saddr);
 
 		if( ret < 0 )
@@ -688,7 +689,6 @@ bool UNetReceiver::receive()
 	}
 
 	rnum = pack.num;
-	recvCount++;
 
 #if 0
 	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
@@ -875,7 +875,7 @@ const std::string UNetReceiver::getShortInfo() const
 	  << " waitClean=" << waitClean
 	  << " ]"
 	  << endl
-	  << "\t[ recv=" << statRecvPerSec << " update=" << statUpPerSec << " per sec ]";
+	  << "\t[ qsize=" << qpack.size() << " recv=" << statRecvPerSec << " update=" << statUpPerSec << " per sec ]";
 
 	return std::move(s.str());
 }
