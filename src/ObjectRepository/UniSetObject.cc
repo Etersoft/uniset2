@@ -145,8 +145,8 @@ void UniSetObject::initObject()
 // ------------------------------------------------------------------------------------------
 
 /*!
- *    \param om - указазтель на менджер управляющий объектом
- *    \return Возращает \a true если инициализация прошда успешно, и \a false если нет
+ *    \param om - указатель на менеджер управляющий объектом
+ *    \return Возращает \a true если инициализация прошла успешно, и \a false если нет
 */
 bool UniSetObject::init( const std::weak_ptr<UniSetManager>& om )
 {
@@ -192,7 +192,7 @@ void UniSetObject::setActive(bool set)
 // ------------------------------------------------------------------------------------------
 /*!
  *    \param  vm - указатель на структуру, которая заполняется если есть сообщение
- *    \return Возвращает \a true если сообщение есть, и \a false если нет
+ *    \return Возвращает указатель VoidMessagePtr если сообщение есть, и shared_ptr(nullptr) если нет
 */
 VoidMessagePtr UniSetObject::receiveMessage()
 {

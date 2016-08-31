@@ -35,21 +35,14 @@ using namespace std;
 SViewer::SViewer(const string& csec, bool sn):
 	csec(csec),
 	rep(UniSetTypes::uniset_conf()),
-	cache(500, 15),
-	isShort(sn)
+	isShortName(sn)
 {
 	ui = make_shared<UInterface>(UniSetTypes::uniset_conf());
+	ui->setCacheMaxSize(500);
 }
 
 SViewer::~SViewer()
 {
-}
-
-void SViewer::on_SViewer_destroy()
-{
-	//    activator->oakill(SIGINT);
-	//    msleep(500);
-	//    activator->oakill(SIGKILL);
 }
 // --------------------------------------------------------------------------
 void SViewer::monitor( timeout_t timeMS )
@@ -164,17 +157,8 @@ void SViewer::getInfo( ObjectId id )
 
 	try
 	{
-		try
-		{
-			oref = cache.resolve(id, uniset_conf()->getLocalNode());
-		}
-		catch( NameNotFound ) {}
-
 		if( CORBA::is_nil(oref) )
-		{
 			oref = ui->resolve(id);
-			cache.cache(id, uniset_conf()->getLocalNode(), oref);
-		}
 
 		IONotifyController_i_var ioc = IONotifyController_i::_narrow(oref);
 
@@ -211,8 +195,6 @@ void SViewer::getInfo( ObjectId id )
 	{
 		cout << "(getInfo): catch ..." << endl;
 	}
-
-	cache.erase(id, uniset_conf()->getLocalNode());
 }
 
 // ---------------------------------------------------------------------------
@@ -230,7 +212,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
 		{
 			string name(uniset_conf()->oind->getNameById(amap[i].si.id));
 
-			if( isShort )
+			if( isShortName )
 				name = ORepHelpers::getShortName(name);
 
 			string txtname( uniset_conf()->oind->getTextName(amap[i].si.id) );
@@ -250,7 +232,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
 		{
 			string name(uniset_conf()->oind->getNameById(amap[i].si.id));
 
-			if( isShort )
+			if( isShortName )
 				name = ORepHelpers::getShortName(name);
 
 			string txtname( uniset_conf()->oind->getTextName(amap[i].si.id) );
@@ -291,7 +273,7 @@ void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tls
 
 		string sname(uniset_conf()->oind->getNameById(tlst[i].si.id));
 
-		if( isShort )
+		if( isShortName )
 			sname = ORepHelpers::getShortName(sname);
 
 		cout << " | " << setw(60) << sname << " | " << setw(5) << tlst[i].value << endl;

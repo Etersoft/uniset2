@@ -15,7 +15,7 @@
  */
 // --------------------------------------------------------------------------
 // idea: lav@etersoft.ru
-// realisation: pv@etersoft.ru, lav@etersoft.ru
+// implementation: pv@etersoft.ru, lav@etersoft.ru
 // --------------------------------------------------------------------------
 #ifndef HourGlass_H_
 #define HourGlass_H_
@@ -77,7 +77,7 @@ class HourGlass
 		}
 
 		// "ёмкость" песочных часов..
-		inline int duration()
+		inline timeout_t duration() const
 		{
 			return _size;
 		}
@@ -151,13 +151,13 @@ class HourGlass
 		}
 
 		// текущее "насыпавшееся" количество "песка" (прошедшее время)
-		inline timeout_t amount()
+		inline timeout_t amount() const
 		{
 			return ( _size - remain() );
 		}
 
 		// остаток песка (времени) (оставшееся время)
-		inline timeout_t remain()
+		inline timeout_t remain() const
 		{
 			timeout_t c = t.getCurrent();
 

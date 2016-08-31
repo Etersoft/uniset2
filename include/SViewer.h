@@ -33,16 +33,13 @@ class SViewer
 {
 	public:
 
-		explicit SViewer(const std::string& ControllersSection, bool isShort = true);
+		explicit SViewer(const std::string& ControllersSection, bool isShortName = true);
 		virtual ~SViewer();
 
 		void view();
 		void monitor( timeout_t timeoutMS = 500 );
 
 	protected:
-		friend class SViewer_glade;
-		void on_SViewer_destroy();
-
 		void readSection(const std::string& sec, const std::string& secRoot);
 		void getInfo(UniSetTypes::ObjectId id);
 
@@ -57,8 +54,7 @@ class SViewer
 
 	private:
 		ObjectRepository rep;
-		UInterface::CacheOfResolve cache;
-		bool isShort;
+		bool isShortName = { true };
 
 };
 // --------------------------------------------------------------------------

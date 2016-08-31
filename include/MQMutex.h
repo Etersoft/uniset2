@@ -45,7 +45,7 @@ class MQMutex
 		void push( const VoidMessagePtr& msg );
 
 		/*! Извлечь сообщение из очереди
-		 * \return не валидный shatred_ptr если сообщений нет
+		 * \return не валидный shatred_ptr(nullptr) если сообщений нет
 		 */
 		VoidMessagePtr top();
 
