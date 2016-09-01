@@ -158,3 +158,11 @@ string UConnector::getTextName( long id )
 	return "";
 }
 //---------------------------------------------------------------------------
+long UConnector::getObjectID(const string& name )
+{
+	if( conf )
+		return conf->getObjectID(name);
+
+	return UTypes::DefaultID;
+}
+//---------------------------------------------------------------------------

@@ -144,6 +144,16 @@ long pyUInterface::getSensorID(const string& name )
 	return UniSetTypes::DefaultObjectId;
 }
 //---------------------------------------------------------------------------
+long pyUInterface::getObjectID(const string& name )
+{
+	auto conf = UniSetTypes::uniset_conf();
+
+	if( conf )
+		return conf->getObjectID(name);
+
+	return UniSetTypes::DefaultObjectId;
+}
+//---------------------------------------------------------------------------
 std::string pyUInterface::getName( long id )
 {
 	auto conf = UniSetTypes::uniset_conf();

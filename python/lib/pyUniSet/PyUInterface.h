@@ -31,6 +31,7 @@ namespace pyUInterface
 	void setValue( long id, long val, long supplier = UTypes::DefaultSupplerID )throw(UException);
 
 	long getSensorID(  const std::string& name );
+	long getObjectID(  const std::string& name );
 
 	std::string getShortName( long id );
 	std::string getName( long id );

@@ -141,6 +141,9 @@ class UConnector:
     def getNodeID(self, name):
         return _pyUConnector.UConnector_getNodeID(self, name)
 
+    def getObjectID(self, name):
+        return _pyUConnector.UConnector_getObjectID(self, name)
+
     def getShortName(self, id):
         return _pyUConnector.UConnector_getShortName(self, id)
 

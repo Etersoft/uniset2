@@ -94,6 +94,10 @@ def getSensorID(name):
     return _pyUniSet.getSensorID(name)
 getSensorID = _pyUniSet.getSensorID
 
+def getObjectID(name):
+    return _pyUniSet.getObjectID(name)
+getObjectID = _pyUniSet.getObjectID
+
 def getShortName(id):
     return _pyUniSet.getShortName(id)
 getShortName = _pyUniSet.getShortName

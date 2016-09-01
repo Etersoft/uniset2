@@ -30,6 +30,7 @@ if __name__ == "__main__":
 		print "getShortName: id=%d name=%s" % (2, getShortName(2))
 		print "     getName: id=%d name=%s" % (2, getName(2))
 		print " getTextName: id=%d name=%s" % (2, getTextName(2))
+		print " getObjectID: id=%d name=%s" % (getObjectID("TestProc"),"TestProc")
 
 		try:
 			print "getValue: %d=%d" % ( 1, getValue(1) )

@@ -4236,6 +4236,44 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_UConnector_getObjectID(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UConnector *arg1 = (UConnector *) 0 ;
+  std::string *arg2 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int res2 = SWIG_OLDOBJ ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  long result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:UConnector_getObjectID",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UConnector, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UConnector_getObjectID" "', argument " "1"" of type '" "UConnector *""'"); 
+  }
+  arg1 = reinterpret_cast< UConnector * >(argp1);
+  {
+    std::string *ptr = (std::string *)0;
+    res2 = SWIG_AsPtr_std_string(obj1, &ptr);
+    if (!SWIG_IsOK(res2)) {
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "UConnector_getObjectID" "', argument " "2"" of type '" "std::string const &""'"); 
+    }
+    if (!ptr) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "UConnector_getObjectID" "', argument " "2"" of type '" "std::string const &""'"); 
+    }
+    arg2 = ptr;
+  }
+  result = (long)(arg1)->getObjectID((std::string const &)*arg2);
+  resultobj = SWIG_From_long(static_cast< long >(result));
+  if (SWIG_IsNewObj(res2)) delete arg2;
+  return resultobj;
+fail:
+  if (SWIG_IsNewObj(res2)) delete arg2;
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_UConnector_getShortName(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   UConnector *arg1 = (UConnector *) 0 ;
@@ -4355,6 +4393,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"UConnector_setValue", _wrap_UConnector_setValue, METH_VARARGS, NULL},
 	 { (char *)"UConnector_getSensorID", _wrap_UConnector_getSensorID, METH_VARARGS, NULL},
 	 { (char *)"UConnector_getNodeID", _wrap_UConnector_getNodeID, METH_VARARGS, NULL},
+	 { (char *)"UConnector_getObjectID", _wrap_UConnector_getObjectID, METH_VARARGS, NULL},
 	 { (char *)"UConnector_getShortName", _wrap_UConnector_getShortName, METH_VARARGS, NULL},
 	 { (char *)"UConnector_getName", _wrap_UConnector_getName, METH_VARARGS, NULL},
 	 { (char *)"UConnector_getTextName", _wrap_UConnector_getTextName, METH_VARARGS, NULL},

@@ -3766,6 +3766,35 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_getObjectID(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  std::string *arg1 = 0 ;
+  int res1 = SWIG_OLDOBJ ;
+  PyObject * obj0 = 0 ;
+  long result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:getObjectID",&obj0)) SWIG_fail;
+  {
+    std::string *ptr = (std::string *)0;
+    res1 = SWIG_AsPtr_std_string(obj0, &ptr);
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "getObjectID" "', argument " "1"" of type '" "std::string const &""'"); 
+    }
+    if (!ptr) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "getObjectID" "', argument " "1"" of type '" "std::string const &""'"); 
+    }
+    arg1 = ptr;
+  }
+  result = (long)pyUInterface::getObjectID((std::string const &)*arg1);
+  resultobj = SWIG_From_long(static_cast< long >(result));
+  if (SWIG_IsNewObj(res1)) delete arg1;
+  return resultobj;
+fail:
+  if (SWIG_IsNewObj(res1)) delete arg1;
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_getShortName(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   long arg1 ;
@@ -4503,6 +4532,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"getValue", _wrap_getValue, METH_VARARGS, NULL},
 	 { (char *)"setValue", _wrap_setValue, METH_VARARGS, NULL},
 	 { (char *)"getSensorID", _wrap_getSensorID, METH_VARARGS, NULL},
+	 { (char *)"getObjectID", _wrap_getObjectID, METH_VARARGS, NULL},
 	 { (char *)"getShortName", _wrap_getShortName, METH_VARARGS, NULL},
 	 { (char *)"getName", _wrap_getName, METH_VARARGS, NULL},
 	 { (char *)"getTextName", _wrap_getTextName, METH_VARARGS, NULL},
