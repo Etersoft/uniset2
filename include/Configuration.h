@@ -28,6 +28,7 @@
 #include "UniXML.h"
 #include "UniSetTypes.h"
 #include "ObjectIndex.h"
+#include "PassiveTimer.h" // for timeout_t
 #include "IORFile.h"
 #include "Debug.h"
 // --------------------------------------------------------------------------

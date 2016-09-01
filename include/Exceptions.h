@@ -24,12 +24,12 @@
 // ---------------------------------------------------------------------------
 #include <ostream>
 #include <iostream>
+#include <string>
 #include <exception>
 // ---------------------------------------------------------------------
 
 namespace UniSetTypes
 {
-
 	/**
 	  @defgroup UniSetExceptions Исключения
 	  @{
@@ -65,20 +65,6 @@ namespace UniSetTypes
 			const std::string text;
 	};
 
-
-	class PermissionDenied: public Exception
-	{
-		public:
-			PermissionDenied(): Exception("PermissionDenied") {}
-	};
-
-	class NotEnoughMemory: public Exception
-	{
-		public:
-			NotEnoughMemory(): Exception("NotEnoughMemory") {}
-	};
-
-
 	class OutOfRange: public Exception
 	{
 		public:
@@ -86,29 +72,7 @@ namespace UniSetTypes
 			OutOfRange(const std::string& err): Exception(err) {}
 	};
 
-
-	class ErrorHandleResource: public Exception
-	{
-		public:
-			ErrorHandleResource(): Exception("ErrorHandleResource") {}
-	};
-
-	/*!
-	    Исключение, вырабатываемое при превышении максимально допустимого числа пассивных
-	    таймеров для системы
-	*/
-	class LimitWaitingPTimers: public Exception
-	{
-		public:
-			LimitWaitingPTimers(): Exception("LimitWaitingPassiveTimers") {}
-
-			/*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-			LimitWaitingPTimers(const std::string& err): Exception(err) {}
-	};
-
-
-	/*!
-	    Исключение, вырабатываемое функциями репозитория объектов.
+	/*! Исключение, вырабатываемое функциями репозитория объектов.
 	    Например неверное имя секции при регистрации в репозитории объектов.
 	*/
 	class ORepFailed: public Exception
@@ -121,9 +85,7 @@ namespace UniSetTypes
 	};
 
 
-	/*!
-	    Системные ошибки
-	*/
+	/*! Системные ошибки */
 	class SystemError: public Exception
 	{
 		public:
@@ -133,16 +95,7 @@ namespace UniSetTypes
 			SystemError(const std::string& err): Exception(err) {}
 	};
 
-	class CRCError: public Exception
-	{
-		public:
-			CRCError(): Exception("CRCError") {}
-	};
-
-
-	/*!
-	    Ошибка соединения
-	*/
+	/*! Ошибка соединения */
 	class CommFailed: public Exception
 	{
 		public:
@@ -167,9 +120,7 @@ namespace UniSetTypes
 
 	};
 
-	/*!
-	    Исключение вырабатываемое при ошибке разыменования объекта репозитория
-	*/
+	/*! Исключение вырабатываемое при ошибке разыменования объекта репозитория */
 	class ResolveNameError: public ORepFailed
 	{
 		public:
@@ -221,14 +172,6 @@ namespace UniSetTypes
 		public:
 			InvalidObjectName(): ResolveNameError("InvalidObjectName") {}
 			InvalidObjectName(const std::string& err): ResolveNameError(err) {}
-	};
-
-	/*! Исключение, вырабатываемое в случае если не удалось установить обработчик сигнала */
-	class NotSetSignal: public Exception
-	{
-		public:
-			NotSetSignal(): Exception("NotSetSignal") {}
-			NotSetSignal(const std::string& err): Exception(err) {}
 	};
 
 	class NameNotFound: public ResolveNameError

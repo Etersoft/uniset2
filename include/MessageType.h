@@ -25,7 +25,6 @@
 #include <sys/time.h>
 #include <cstring>
 #include <ostream>
-#include "Configuration.h"
 #include "UniSetTypes.h"
 #include "IOController_i.hh"
 // --------------------------------------------------------------------------
@@ -83,6 +82,7 @@ namespace UniSetTypes
 
 	std::ostream& operator<<( std::ostream& os, const Message::TypeOfMessage& t );
 
+	// ------------------------------------------------------------------------
 	class VoidMessage : public Message
 	{
 		public:
@@ -117,6 +117,7 @@ namespace UniSetTypes
 			UniSetTypes::ByteOfMessage data[sizeof(UniSetTypes::RawDataOfTransportMessage) - sizeof(Message)];
 	};
 
+	// ------------------------------------------------------------------------
 	/*! Сообщение об изменении состояния датчика */
 	class SensorMessage : public Message
 	{
@@ -154,6 +155,7 @@ namespace UniSetTypes
 			}
 	};
 
+	// ------------------------------------------------------------------------
 	/*! Системное сообщение */
 	class SystemMessage : public Message
 	{
@@ -168,7 +170,7 @@ namespace UniSetTypes
 				ReConfiguration,        /*! обновились параметры конфигурации */
 				NetworkInfo,            /*! обновилась информация о состоянии узлов в сети
                                             поля
-                                            data[0]    - кто
+											data[0] - кто
                                             data[1] - новое состояние(true - connect,  false - disconnect)
                                          */
 				LogRotate,    /*! переоткрыть файлы логов */
@@ -195,6 +197,7 @@ namespace UniSetTypes
 	};
 	std::ostream& operator<<( std::ostream& os, const SystemMessage::Command& c );
 
+	// ------------------------------------------------------------------------
 
 	/*! Собщение о срабатывании таймера */
 	class TimerMessage : public Message
@@ -216,6 +219,8 @@ namespace UniSetTypes
 
 			UniSetTypes::TimerId id; /*!< id сработавшего таймера */
 	};
+
+	// ------------------------------------------------------------------------
 
 	/*! Подтверждение(квитирование) сообщения */
 	class ConfirmMessage: public Message

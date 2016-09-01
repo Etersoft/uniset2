@@ -22,11 +22,9 @@
 #define UniSet_MUTEX_H_
 // -----------------------------------------------------------------------------------------
 #include <string>
-#include <atomic>
-#include <chrono>
+#include <memory>
 #include <mutex>
 #include <Poco/RWLock.h>
-#include "PassiveTimer.h"
 // -----------------------------------------------------------------------------------------
 namespace UniSetTypes
 {

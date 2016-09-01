@@ -1,5 +1,6 @@
 #include <catch.hpp>
 // ---------------------------------------------------------------
+#include "Configuration.h"
 #include "MessageType.h"
 #include "UniSetTypes.h"
 // ---------------------------------------------------------------

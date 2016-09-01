@@ -65,7 +65,7 @@ class LogSession
 			mylog.delLevel(t);
 		}
 
-		//! Установить размер буфера для сообщений (количество записей. Не размер в байтах!!)
+		//! Установить размер буфера для сообщений (количество записей. Не в байтах!!)
 		void setMaxBufSize( size_t num );
 		size_t getMaxBufSize() const;
 
