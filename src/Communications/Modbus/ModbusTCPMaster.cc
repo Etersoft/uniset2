@@ -496,15 +496,5 @@ void ModbusTCPMaster::forceDisconnect()
 bool ModbusTCPMaster::isConnection() const
 {
 	return tcp && tcp->isConnected();
-#if 0
-
-	if( !tcp )
-		return false;
-
-	if( tcp->poll({0, 5}, Poco::Net::Socket::SELECT_READ) )
-		return (tcp->available() > 0);
-
-	return false;
-#endif
 }
 // -------------------------------------------------------------------------

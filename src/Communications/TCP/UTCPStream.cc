@@ -95,15 +95,25 @@ void UTCPStream::create(const std::string& hname, int port, timeout_t tout_msec 
 // -------------------------------------------------------------------------
 bool UTCPStream::isConnected()
 {
-	//return ( Poco::Net::StreamSocket::sockfd() > 0 );
+	return ( Poco::Net::StreamSocket::sockfd() > 0 );
+/*
 	try
 	{
-		return ( Poco::Net::StreamSocket::peerAddress().addr() != 0 );
+		// Вариант 1
+		//return ( Poco::Net::StreamSocket::peerAddress().addr() != 0 );
+
+		// Варинт 2
+		return ( Poco::Net::StreamSocket::peerAddress().port() != 0 );
+
+		// Вариант 3
+//		if( poll({0, 5}, Poco::Net::Socket::SELECT_READ) )
+//			return (tcp->available() > 0);
 	}
 	catch( Poco::Net::NetException& ex )
 	{
 	}
 
 	return false;
+*/
 }
 // -------------------------------------------------------------------------

@@ -542,8 +542,8 @@ void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
 	cout << endl;
 	cout << " Настройки протокола TCP(MultiMaster): " << endl;
 	cout << "--prefix-persistent-connection 0,1 - Не закрывать соединение на каждом цикле опроса" << endl;
-	cout << "--prefix-checktime                 - период проверки связи по каналам (<GateList>)" << endl;
-	cout << "--prefix-ignore-timeout            - Timeout на повторную попытку использования канала после 'reopen-timeout'. По умолчанию: reopen-timeout * 3" << endl;
+	cout << "--prefix-checktime msec            - период проверки связи по каналам (<GateList>)" << endl;
+	cout << "--prefix-ignore-timeout msec       - Timeout на повторную попытку использования канала после 'reopen-timeout'. По умолчанию: reopen-timeout * 3" << endl;
 	cout << endl;
 	cout << " ВНИМАНИЕ! '--prefix-reopen-timeout' для MBTCPMultiMaster НЕ ДЕЙСТВУЕТ! " << endl;
 	cout << " Смена канала происходит по --prefix-timeout. " << endl;
