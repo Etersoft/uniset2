@@ -4,6 +4,7 @@
 #include <cstring>
 #include <iostream>
 #include <chrono>
+#include <thread>
 #include <iomanip>
 #include <Poco/Net/NetException.h>
 #include "UDPPacket.h"
@@ -357,7 +358,7 @@ int main(int argc, char* argv[])
 							break;
 					}
 
-					usleep(usecpause);
+					std::this_thread::sleep_for(std::chrono::microseconds(usecpause));
 				}
 			}
 			break;

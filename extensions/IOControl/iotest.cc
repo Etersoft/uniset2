@@ -14,6 +14,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -------------------------------------------------------------------------
+#include <chrono>
+#include <thread>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -298,7 +300,7 @@ int main(int argc, char* argv[])
 					break;
 
 				val = val ? 0 : 1;
-				usleep(1000 * blink_msec);
+				std::this_thread::sleep_for(std::chrono::milliseconds(blink_msec));
 			}
 		}
 		break;

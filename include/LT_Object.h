@@ -22,12 +22,10 @@
 #define Object_LT_H_
 //--------------------------------------------------------------------------
 #include <deque>
-#include <time.h>
 #include "UniSetTypes.h"
 #include "MessageType.h"
 #include "PassiveTimer.h"
 #include "Exceptions.h"
-
 //---------------------------------------------------------------------------
 class UniSetObject;
 //---------------------------------------------------------------------------

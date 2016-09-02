@@ -20,7 +20,8 @@
 // --------------------------------------------------------------------------
 
 #include <unistd.h>
-#include <stream.h>
+#include <chrono>
+#include <thread>
 #include <stdio.h>
 // #include "WaitingPassiveTimer.h"
 #include "PassiveTimer.h"
@@ -84,7 +85,7 @@ void WaitingPassiveTimer::work()
 
 	while( !terminated )
 	{
-		usleep(sleepMKS);
+		std::this_thread::sleep_for(std::chrono::microseconds(sleepMKS));
 
 		if ( checkTime() )
 			break;
@@ -115,7 +116,7 @@ void WaitingPassiveTimer::terminate()
 {
 	timeAct = 0;
 	terminated = true;
-	usleep(1000);
+	std::this_thread::sleep_for(std::chrono::microseconds(1));
 }
 // ------------------------------------------------------------------------------------------
 void WaitingPassiveTimer::wait(timeout_t timeMS)

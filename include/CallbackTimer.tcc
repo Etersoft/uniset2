@@ -96,7 +96,8 @@ void CallbackTimer<Caller>::terminate()
 {
 //	timeAct = 0;
 	terminated = true;
-	usleep(1000);
+	//usleep(1000);
+	std::this_thread::sleep_for(std::chrono::microseconds(1));
 }
 // ------------------------------------------------------------------------------------------
 

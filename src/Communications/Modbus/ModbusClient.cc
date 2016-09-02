@@ -355,7 +355,7 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
 				break;
 			}
 
-			usleep(sleepPause_usec);
+			std::this_thread::sleep_for(std::chrono::microseconds(sleepPause_usec));
 		}
 
 		if( !begin )

@@ -22,7 +22,7 @@
 #ifndef MessageType_H_
 #define MessageType_H_
 // --------------------------------------------------------------------------
-#include <sys/time.h>
+#include <time.h> // for timespec
 #include <cstring>
 #include <ostream>
 #include "UniSetTypes.h"

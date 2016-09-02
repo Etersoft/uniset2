@@ -127,7 +127,7 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 
 		}
 
-		usleep(usecpause);
+		std::this_thread::sleep_for(std::chrono::microseconds(usecpause));
 	}
 }
 // --------------------------------------------------------------------------

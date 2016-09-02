@@ -14,7 +14,7 @@
 
 Name: libuniset2
 Version: 2.5
-Release: alt6
+Release: alt7
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -486,6 +486,10 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Fri Sep 02 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt7
+- usleep --> std::this_thread::sleep_for(..);
+- clean up #include ...
+
 * Thu Sep 01 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt6
 - (python): add getObjectID() for python UInterface
 

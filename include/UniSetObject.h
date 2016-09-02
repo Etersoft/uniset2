@@ -27,8 +27,6 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
-#include <unistd.h>
-#include <sys/time.h>
 #include <ostream>
 #include <memory>
 #include <string>

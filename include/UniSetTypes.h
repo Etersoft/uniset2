@@ -30,7 +30,8 @@
 #include <vector>
 #include <limits>
 #include <ostream>
-#include <unistd.h>
+#include <chrono>
+#include <thread>
 
 #include <omniORB4/CORBA.h>
 #include "UniSetTypes_i.hh"
@@ -41,7 +42,7 @@
 /*! Задержка в миллисекундах */
 inline void msleep( unsigned int m )
 {
-	usleep(m * 1000);
+	std::this_thread::sleep_for(std::chrono::milliseconds(m));
 }
 
 /*! Определения базовых типов библиотеки UniSet (вспомогательные типы данных, константы, полезные функции) */
