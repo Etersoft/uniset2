@@ -91,7 +91,7 @@ class UNetSender
 			friend std::ostream& operator<<( std::ostream& os, UItem& p );
 		};
 
-		typedef std::vector<UItem> DMap;
+		typedef std::unordered_map<UniSetTypes::ObjectId,UItem> UItemMap;
 
 		size_t getDataPackCount() const;
 
@@ -108,7 +108,7 @@ class UNetSender
 		void updateSensor( UniSetTypes::ObjectId id, long value );
 
 		/*! Обновить значение по итератору */
-		void updateItem( DMap::iterator& it, long value );
+		void updateItem( UItem& it, long value );
 
 		inline void setSendPause( int msec )
 		{
@@ -191,7 +191,7 @@ class UNetSender
 		Packs mypacks;
 		std::unordered_map<sendfactor_t, size_t> packs_anum;
 		std::unordered_map<sendfactor_t, size_t> packs_dnum;
-		DMap dlist;
+		UItemMap items;
 		size_t maxItem = { 0 };
 		size_t packetnum = { 1 }; /*!< номер очередного посылаемого пакета */
 		uint16_t lastcrc = { 0 };

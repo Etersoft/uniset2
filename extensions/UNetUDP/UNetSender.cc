@@ -39,7 +39,7 @@ UNetSender::UNetSender(const std::string& _host, const int _port, const std::sha
 	sendpause(150),
 	packsendpause(5),
 	activated(false),
-	dlist(100),
+	items(100),
 	maxItem(0),
 	packetnum(1),
 	lastcrc(0),
@@ -83,8 +83,7 @@ UNetSender::UNetSender(const std::string& _host, const int _port, const std::sha
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
-		dlist.resize(maxItem);
-		unetinfo << myname << "(init): dlist size = " << dlist.size() << endl;
+		unetinfo << myname << "(init): dlist size = " << items.size() << endl;
 	}
 	else
 	{
@@ -96,8 +95,7 @@ UNetSender::UNetSender(const std::string& _host, const int _port, const std::sha
 		{
 			unetwarn << myname << "(init): Failed to convert the pointer 'IONotifyController' -> 'SharedMemory'" << endl;
 			readConfiguration();
-			dlist.resize(maxItem);
-			unetinfo << myname << "(init): dlist size = " << dlist.size() << endl;
+			unetinfo << myname << "(init): dlist size = " << items.size() << endl;
 		}
 	}
 }
@@ -146,12 +144,11 @@ bool UNetSender::createConnection( bool throwEx )
 // -----------------------------------------------------------------------------
 void UNetSender::updateFromSM()
 {
-	auto it = dlist.begin();
-
-	for( ; it != dlist.end(); ++it )
+	for( auto&& it: items )
 	{
-		long value = shm->localGetValue(it->ioit, it->id);
-		updateItem(it, value);
+		UItem& i = it.second;
+		long value = shm->localGetValue(i.ioit, i.id);
+		updateItem(i, value);
 	}
 }
 // -----------------------------------------------------------------------------
@@ -160,38 +157,20 @@ void UNetSender::updateSensor( UniSetTypes::ObjectId id, long value )
 	if( !shm->isLocalwork() )
 		return;
 
-	//    cerr << myname << ": UPDATE SENSOR id=" << id << " value=" << value << endl;
-	auto it = dlist.begin();
-
-	for( ; it != dlist.end(); ++it )
-	{
-		if( it->id == id )
-		{
-			updateItem( it, value );
-			break;
-		}
-	}
+	auto it = items.find(id);
+	if( it != items.end() )
+		updateItem( it->second, value );
 }
 // -----------------------------------------------------------------------------
-void UNetSender::updateItem( DMap::iterator& it, long value )
+void UNetSender::updateItem( UItem& it, long value )
 {
-	if( it == dlist.end() )
-		return;
-
-	if( it->iotype == UniversalIO::DI || it->iotype == UniversalIO::DO )
-	{
-		UniSetTypes::uniset_rwmutex_wrlock l(pack_mutex);
-		auto& pk = mypacks[it->pack_sendfactor];
-		UniSetUDP::UDPMessage& mypack(pk[it->pack_num]);
-		mypack.setDData(it->pack_ind, value);
-	}
-	else if( it->iotype == UniversalIO::AI || it->iotype == UniversalIO::AO )
-	{
-		UniSetTypes::uniset_rwmutex_wrlock l(pack_mutex);
-		auto& pk = mypacks[it->pack_sendfactor];
-		UniSetUDP::UDPMessage& mypack(pk[it->pack_num]);
-		mypack.setAData(it->pack_ind, value);
-	}
+	UniSetTypes::uniset_rwmutex_wrlock l(pack_mutex);
+	auto& pk = mypacks[it.pack_sendfactor];
+	UniSetUDP::UDPMessage& mypack(pk[it.pack_num]);
+	if( it.iotype == UniversalIO::DI || it.iotype == UniversalIO::DO )
+		mypack.setDData(it.pack_ind, value);
+	else if( it.iotype == UniversalIO::AI || it.iotype == UniversalIO::AO )
+		mypack.setAData(it.pack_ind, value);
 }
 // -----------------------------------------------------------------------------
 void UNetSender::setCheckConnectionPause( int msec )
@@ -202,8 +181,7 @@ void UNetSender::setCheckConnectionPause( int msec )
 // -----------------------------------------------------------------------------
 void UNetSender::send()
 {
-	dlist.resize(maxItem);
-	unetinfo << myname << "(send): dlist size = " << dlist.size() << endl;
+	unetinfo << myname << "(send): dlist size = " << items.size() << endl;
 	ncycle = 0;
 
 	ptCheckConnection.reset();
@@ -493,10 +471,7 @@ bool UNetSender::initItem( UniXML::iterator& it )
 
 	mypacks[priority] = pk;
 
-	if( maxItem >= dlist.size() )
-		dlist.resize(maxItem + 10);
-
-	dlist[maxItem] = p;
+	items[p.id] = p;
 	maxItem++;
 
 	unetinfo << myname << "(initItem): add " << p << endl;
@@ -511,14 +486,14 @@ std::ostream& operator<<( std::ostream& os, UNetSender::UItem& p )
 // -----------------------------------------------------------------------------
 void UNetSender::initIterators()
 {
-	for( auto && it : dlist )
-		shm->initIterator(it.ioit);
+	for( auto && it : items )
+		shm->initIterator(it.second.ioit);
 }
 // -----------------------------------------------------------------------------
 void UNetSender::askSensors( UniversalIO::UIOCommand cmd )
 {
-	for( auto && it : dlist  )
-		shm->askSensor(it.id, cmd);
+	for( auto && it : items  )
+		shm->askSensor(it.second.id, cmd);
 }
 // -----------------------------------------------------------------------------
 size_t UNetSender::getDataPackCount() const

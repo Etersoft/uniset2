@@ -45,6 +45,9 @@ ${START} -f ./uniset2-smemory-plus --smemory-id SharedMemory  --confile test.xml
      $MBMS \
 	 $MBS \
      --ulog-add-levels system \
+     --add-unet \
+	--unet-name UNetExchange --unet-run-logserver \
+    --unet-filter-field rs --unet-filter-value 2 --unet-maxdifferense 40 --unet-sendpause 1000     
      $*
 #	 --add-rtu \
 #	 --rs-dev /dev/cbsideA1 \
