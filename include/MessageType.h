@@ -67,7 +67,7 @@ namespace UniSetTypes
 
 			// для оптимизации, делаем конструктор который не будет инициализировать свойства класса
 			// это необходимо для VoidMessage, который конструируется при помощи memcpy
-			Message( int dummy_init ) {}
+			explicit Message( int dummy_init ) {}
 
 			template<class In>
 			static const TransportMessage transport(const In& msg)
@@ -123,19 +123,19 @@ namespace UniSetTypes
 	{
 		public:
 
-			ObjectId id;
-			long value;
-			bool undefined;
+			ObjectId id = { UniSetTypes::DefaultObjectId };
+			long value = { 0 };
+			bool undefined = { false };
 
 			// время изменения состояния датчика
-			struct timespec sm_tv;
+			struct timespec sm_tv = { 0, 0 };
 
-			UniversalIO::IOType sensor_type;
+			UniversalIO::IOType sensor_type = { UniversalIO::DI };
 			IOController_i::CalibrateInfo ci;
 
 			// для пороговых датчиков
-			bool threshold;  /*!< TRUE - сработал порог, FALSE - порог отключился */
-			UniSetTypes::ThresholdId tid;
+			bool threshold = { false };  /*!< TRUE - сработал порог, FALSE - порог отключился */
+			UniSetTypes::ThresholdId tid = { UniSetTypes::DefaultThresholdId };
 
 			SensorMessage( SensorMessage&& m) = default;
 			SensorMessage& operator=(SensorMessage&& m) = default;
@@ -147,6 +147,12 @@ namespace UniSetTypes
 						  Priority priority = Message::Medium,
 						  UniversalIO::IOType st = UniversalIO::AI,
 						  ObjectId consumer = UniSetTypes::DefaultObjectId);
+
+			// специальный конструктор, для оптимизации
+			// он не инициализирует поля по умолчанию
+			// и за инициализацию значений отвечает "пользователь"
+			// например см. IONotifyController::localSetValue()
+			explicit SensorMessage( int dummy );
 
 			SensorMessage(const VoidMessage* msg);
 			inline TransportMessage transport_msg() const

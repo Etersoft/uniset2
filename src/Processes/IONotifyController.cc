@@ -384,28 +384,48 @@ void IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInf
 
 	IOController::localSetValue(usi, value, sup_id);
 
-	// сравниваем именно с usi->value
+	// Копируем "под замком" только значимые части зависящие от value
+	// т.к. всё остальное не меняется в процессе работы программы и по сути readonly
+	CORBA::Long realValue = prevValue;
+	CORBA::ULong tv_sec = 0;
+	CORBA::ULong tv_nsec = 0;
+	CORBA::Boolean undefined = false;
+	IOController_i::CalibrateInfo ci;
+
+	// lock
+	{
+		uniset_rwmutex_rlock lock(usi->val_lock);
+		realValue = usi->value;
+		tv_sec = usi->tv_sec;
+		tv_nsec = usi->tv_nsec;
+		undefined = usi->undefined;
+		ci = usi->ci;
+	} // unlock value
+
+
+	// Рассылаем уведомления только в слуае изменения значения
+	// --------
+	// сравниваем именно с realValue
 	// т.к. фактическое сохранённое значение может быть изменено
 	// фильтрами или блокировками..
-	SensorMessage sm(usi->si.id, usi->value);
+	if( prevValue == realValue )
+		return;
+
+	SensorMessage sm(1); // <-- вызываем dummy конструктор т.к. потом все поля всё-равно сами инициализируем
 	{
 		// lock
-		uniset_rwmutex_rlock lock(usi->val_lock);
-
-		if( prevValue == usi->value )
-			return;
-
-		// Рассылаем уведомления только в слуае изменения значения
+		// uniset_rwmutex_rlock lock(usi->val_lock);
 		sm.id           = usi->si.id;
 		sm.node         = uniset_conf()->getLocalNode();
-		sm.value        = usi->value;
-		sm.undefined    = usi->undefined;
+		sm.value        = realValue;
+		sm.undefined    = undefined;
 		sm.priority     = (Message::Priority)usi->priority;
 		sm.supplier     = sup_id; // owner_id
 		sm.sensor_type  = usi->type;
-		sm.sm_tv.tv_sec    = usi->tv_sec;
-		sm.sm_tv.tv_nsec   = usi->tv_nsec;
-		sm.ci           = usi->ci;
+		sm.sm_tv.tv_sec    = tv_sec;
+		sm.sm_tv.tv_nsec   = tv_nsec;
+		sm.tm = { (long)tv_sec, (long)tv_nsec };
+		sm.ci           = ci;
 	} // unlock
 
 	try

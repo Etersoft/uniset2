@@ -110,6 +110,12 @@ namespace UniSetTypes
 		sm_tv = tm;
 	}
 
+	SensorMessage::SensorMessage( int dummy ):
+		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
+	{
+		type    = Message::SensorInfo;
+	}
+
 	SensorMessage::SensorMessage(const VoidMessage* msg):
 		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
 	{

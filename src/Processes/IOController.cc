@@ -288,9 +288,12 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 		usi->supplier = sup_id; // запоминаем того кто изменил
 
 		bool blocked = ( usi->blocked || usi->undefined );
-		changed = ( usi->value != value );
+		changed = ( usi->real_value != value );
 
-		if( changed || blocked )
+		// если поменялось состояние блокировки
+		bool blockChanged = ( blocked != (usi->value == usi->d_off_value ) );
+
+		if( changed || blockChanged )
 		{
 			ulog4 << myname << ": save sensor value (" << usi->si.id << ")"
 				  << " name: " << uniset_conf()->oind->getNameById(usi->si.id)
