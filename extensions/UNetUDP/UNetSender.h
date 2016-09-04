@@ -41,12 +41,13 @@
  *    Причем так как дискретные и аналоговые датчики обрабатываются отдельно (но пересылаются в одном пакете),
  *    то датчики, которые первые переполнятся приводят к тому, что создаётся новый пакет и они добавляются в него,
  *    в свою очередь остальные продолжают "добивать" предыдущий пакет.
- *    В свою очередь в initItem() каждому UItem в dlist кроме pack_ind присваивается еще и номер пакета pack_num, который гарантировано соответствует
+ *    В initItem() каждому UItem в dlist кроме pack_ind присваивается еще и номер пакета pack_num, который гарантировано соответствует
  *    существующему пакету, поэтому в дальнейшем при использовании pack_num в качестве ключа в mypacks мы не проверяем пакет на существование.
  *
- *    ОПТИМИЗАЦИЯ N1: Для оптимизации обработки посылаемых пакетов (на стороне UNetReceiver) сделана следующая логика:
+ *    ОПТИМИЗАЦИЯ N1: Для оптимизации обработки посылаемых пакетов (на стороне UNetSender) сделана следующая логика:
  *                  Номер очередного посылаемого пакета меняется (увеличивается) только, если изменились данные с момента
-                    последней посылки. Для этого по данным каждый раз производится расчёт UNetUDP::makeCRC() и сравнивается с последним..
+					последней посылки. Для этого по данным каждый раз производится расчёт UNetUDP::makeCRC() и сравнивается с последним.
+					На стороне UNetReceiver пакаеты с повторными номерами (т.е. уже обработанные) - откидываются.
  *
  *
  * Создание соединения
@@ -87,7 +88,6 @@ class UNetSender
 			size_t pack_num;
 			size_t pack_ind;
 			sendfactor_t pack_sendfactor = { 0 };
-
 			friend std::ostream& operator<<( std::ostream& os, UItem& p );
 		};
 
@@ -99,7 +99,19 @@ class UNetSender
 		void stop();
 
 		void send();
-		void real_send(UniSetUDP::UDPMessage& mypack);
+
+		struct PackMessage
+		{
+			PackMessage( UniSetUDP::UDPMessage&& m ):msg(std::move(m)){}
+			PackMessage( const UniSetUDP::UDPMessage& m ) = delete;
+
+			PackMessage(){}
+
+			UniSetUDP::UDPMessage msg;
+			UniSetTypes::uniset_rwmutex mut;
+		};
+
+		void real_send( PackMessage& mypack );
 
 		/*! (принудительно) обновить все данные (из SM) */
 		void updateFromSM();
@@ -184,15 +196,14 @@ class UNetSender
 		std::atomic_bool activated = { false };
 		PassiveTimer ptCheckConnection;
 
-		UniSetTypes::uniset_rwmutex pack_mutex;
+		typedef std::unordered_map<sendfactor_t, std::vector<PackMessage>> Packs;
 
-		typedef std::unordered_map<sendfactor_t, std::vector<UniSetUDP::UDPMessage>> Packs;
-
+		// mypacks заполняется в начале и дальше с ним происходит только чтение
+		// поэтому mutex-ом его не защищаем
 		Packs mypacks;
 		std::unordered_map<sendfactor_t, size_t> packs_anum;
 		std::unordered_map<sendfactor_t, size_t> packs_dnum;
 		UItemMap items;
-		size_t maxItem = { 0 };
 		size_t packetnum = { 1 }; /*!< номер очередного посылаемого пакета */
 		uint16_t lastcrc = { 0 };
 		UniSetUDP::UDPPacket s_msg;

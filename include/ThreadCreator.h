@@ -109,6 +109,8 @@ class ThreadCreator:
 		void stop();
 		void start();
 
+		void sleep( long milliseconds );
+
 		inline bool isRunning()
 		{
 			return thr.isRunning();
@@ -197,6 +199,12 @@ template <class ThreadMaster>
 void ThreadCreator<ThreadMaster>::start()
 {
 	thr.start( *this );
+}
+//----------------------------------------------------------------------------------------
+template <class ThreadMaster>
+void ThreadCreator<ThreadMaster>::sleep( long milliseconds )
+{
+	thr.sleep(milliseconds);
 }
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>

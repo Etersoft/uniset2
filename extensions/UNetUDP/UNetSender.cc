@@ -40,7 +40,6 @@ UNetSender::UNetSender(const std::string& _host, const int _port, const std::sha
 	packsendpause(5),
 	activated(false),
 	items(100),
-	maxItem(0),
 	packetnum(1),
 	lastcrc(0),
 	maxAData(maxACount),
@@ -74,10 +73,13 @@ UNetSender::UNetSender(const std::string& _host, const int _port, const std::sha
 	mypacks[0].resize(1);
 	packs_anum[0] = 0;
 	packs_dnum[0] = 0;
-	UniSetUDP::UDPMessage& mypack(mypacks[0][0]);
+	auto& mypack(mypacks[0][0]);
 	// выставляем поля, которые не меняются
-	mypack.nodeID = uniset_conf()->getLocalNode();
-	mypack.procID = shm->ID();
+	{
+		uniset_rwmutex_wrlock l(mypack.mut);
+		mypack.msg.nodeID = uniset_conf()->getLocalNode();
+		mypack.msg.procID = shm->ID();
+	}
 
 	// -------------------------------
 	if( shm->isLocalwork() )
@@ -164,13 +166,14 @@ void UNetSender::updateSensor( UniSetTypes::ObjectId id, long value )
 // -----------------------------------------------------------------------------
 void UNetSender::updateItem( UItem& it, long value )
 {
-	UniSetTypes::uniset_rwmutex_wrlock l(pack_mutex);
 	auto& pk = mypacks[it.pack_sendfactor];
-	UniSetUDP::UDPMessage& mypack(pk[it.pack_num]);
+
+	auto& mypack(pk[it.pack_num]);
+	UniSetTypes::uniset_rwmutex_wrlock l(mypack.mut);
 	if( it.iotype == UniversalIO::DI || it.iotype == UniversalIO::DO )
-		mypack.setDData(it.pack_ind, value);
+		mypack.msg.setDData(it.pack_ind, value);
 	else if( it.iotype == UniversalIO::AI || it.iotype == UniversalIO::AO )
-		mypack.setAData(it.pack_ind, value);
+		mypack.msg.setAData(it.pack_ind, value);
 }
 // -----------------------------------------------------------------------------
 void UNetSender::setCheckConnectionPause( int msec )
@@ -262,17 +265,17 @@ void UNetSender::send()
 // -----------------------------------------------------------------------------
 // #define UNETUDP_DISABLE_OPTIMIZATION_N1
 
-void UNetSender::real_send( UniSetUDP::UDPMessage& mypack )
+void UNetSender::real_send( PackMessage& mypack )
 {
-	UniSetTypes::uniset_rwmutex_rlock l(pack_mutex);
+	UniSetTypes::uniset_rwmutex_rlock l(mypack.mut);
 #ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
-	mypack.num = packetnum++;
+	mypack.msg.num = packetnum++;
 #else
-	uint16_t crc = mypack.getDataCRC();
+	uint16_t crc = mypack.msg.getDataCRC();
 
 	if( crc != lastcrc )
 	{
-		mypack.num = packetnum++;
+		mypack.msg.num = packetnum++;
 		lastcrc = crc;
 	}
 
@@ -286,7 +289,7 @@ void UNetSender::real_send( UniSetUDP::UDPMessage& mypack )
 	if( !udp || !udp->poll(writeTimeout * 1000, Poco::Net::Socket::SELECT_WRITE) )
 		return;
 
-	mypack.transport_msg(s_msg);
+	mypack.msg.transport_msg(s_msg);
 
 	try
 	{
@@ -380,7 +383,7 @@ bool UNetSender::initItem( UniXML::iterator& it )
 
 	int priority = it.getPIntProp(prefix + "_sendfactor", 0);
 
-	auto pk = mypacks[priority];
+	auto& pk = mypacks[priority];
 
 	UItem p;
 	p.iotype = UniSetTypes::getIOType(it.getProp("iotype"));
@@ -401,9 +404,11 @@ bool UNetSender::initItem( UniXML::iterator& it )
 		if( pk.size() <= dnum )
 			pk.resize(dnum + 1);
 
-		UniSetUDP::UDPMessage& mypack(pk[dnum]);
+		auto& mypack(pk[dnum]);
 
-		p.pack_ind = mypack.addDData(sid, 0);
+		uniset_rwmutex_wrlock l(mypack.mut);
+
+		p.pack_ind = mypack.msg.addDData(sid, 0);
 
 		if( p.pack_ind >= maxDData )
 		{
@@ -412,10 +417,11 @@ bool UNetSender::initItem( UniXML::iterator& it )
 			if( dnum >= pk.size() )
 				pk.resize(dnum + 1);
 
-			UniSetUDP::UDPMessage& mypack( pk[dnum] );
-			p.pack_ind = mypack.addDData(sid, 0);
-			mypack.nodeID = uniset_conf()->getLocalNode();
-			mypack.procID = shm->ID();
+			auto& mypack2( pk[dnum] );
+			uniset_rwmutex_wrlock l2(mypack2.mut);
+			p.pack_ind = mypack2.msg.addDData(sid, 0);
+			mypack2.msg.nodeID = uniset_conf()->getLocalNode();
+			mypack2.msg.procID = shm->ID();
 		}
 
 		p.pack_num = dnum;
@@ -438,9 +444,9 @@ bool UNetSender::initItem( UniXML::iterator& it )
 		if( pk.size() <= anum )
 			pk.resize(anum + 1);
 
-		UniSetUDP::UDPMessage& mypack(pk[anum]);
-
-		p.pack_ind = mypack.addAData(sid, 0);
+		auto& mypack(pk[anum]);
+		uniset_rwmutex_wrlock l(mypack.mut);
+		p.pack_ind = mypack.msg.addAData(sid, 0);
 
 		if( p.pack_ind >= maxAData )
 		{
@@ -449,10 +455,11 @@ bool UNetSender::initItem( UniXML::iterator& it )
 			if( anum >= pk.size() )
 				pk.resize(anum + 1);
 
-			UniSetUDP::UDPMessage& mypack(pk[anum]);
-			p.pack_ind = mypack.addAData(sid, 0);
-			mypack.nodeID = uniset_conf()->getLocalNode();
-			mypack.procID = shm->ID();
+			auto& mypack2(pk[anum]);
+			uniset_rwmutex_wrlock l2(mypack2.mut);
+			p.pack_ind = mypack2.msg.addAData(sid, 0);
+			mypack2.msg.nodeID = uniset_conf()->getLocalNode();
+			mypack2.msg.procID = shm->ID();
 		}
 
 		p.pack_num = anum;
@@ -469,12 +476,17 @@ bool UNetSender::initItem( UniXML::iterator& it )
 		}
 	}
 
-	mypacks[priority] = pk;
-
-	items[p.id] = p;
-	maxItem++;
-
 	unetinfo << myname << "(initItem): add " << p << endl;
+	auto i = items.find(p.id);
+	if( i != items.end() )
+	{
+		unetcrit << myname
+				 << "(readItem): Sensor (" << p.id << ")" << sname << " ALREADY ADDED!!  ABORT!" << endl;
+		raise(SIGTERM);
+		return false;
+	}
+
+	items.emplace(p.id, std::move(p));
 	return true;
 }
 
@@ -511,7 +523,7 @@ const std::string UNetSender::getShortInfo() const
 	s << setw(15) << std::right << getAddress() << ":" << std::left << setw(6) << getPort()
 	  << " lastpacknum=" << packetnum
 	  << " lastcrc=" << setw(6) << lastcrc
-	  << " items=" << maxItem << " maxAData=" << getADataSize() << " maxDData=" << getDDataSize()
+	  << " items=" << items.size() << " maxAData=" << getADataSize() << " maxDData=" << getDDataSize()
 	  << endl
 	  << "\t   packs([sendfactor]=num): "
 	  << endl;
@@ -522,8 +534,9 @@ const std::string UNetSender::getShortInfo() const
 		size_t n=0;
 		for( const auto& p: i->second )
 		{
-			s << "        \t\t[" << (n++) << "]=" << p.sizeOf() << " bytes"
-			  << " ( numA=" << setw(5) << p.asize() << " numD=" << setw(5) << p.dsize() << ")"
+			//uniset_rwmutex_rlock l(p->mut);
+			s << "        \t\t[" << (n++) << "]=" << p.msg.sizeOf() << " bytes"
+			  << " ( numA=" << setw(5) << p.msg.asize() << " numD=" << setw(5) << p.msg.dsize() << ")"
 			  << endl;
 		}
 	}

@@ -92,6 +92,12 @@ namespace UniSetUDP
 	{
 		UDPMessage();
 
+		UDPMessage(UDPMessage&& m) = default;
+		UDPMessage& operator=(UDPMessage&&) = default;
+
+		UDPMessage( const UDPMessage& m ) = default;
+		UDPMessage& operator=(const UDPMessage&) = default;
+
 		explicit UDPMessage( UDPPacket& p );
 		size_t transport_msg( UDPPacket& p );
 		static size_t getMessage( UDPMessage& m, UDPPacket& p );
