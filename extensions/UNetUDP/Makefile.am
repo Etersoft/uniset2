@@ -21,7 +21,7 @@ libUniSet2UNetUDP_la_SOURCES 	= UDPPacket.cc UNetReceiver.cc UNetSender.cc UNetE
 
 
 @PACKAGE@_unet_udp_tester_SOURCES	= UDPPacket.cc unet-udp-tester.cc
-@PACKAGE@_unet_udp_tester_LDADD 	= $(POCO_LIBS)
+@PACKAGE@_unet_udp_tester_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(POCO_LIBS)
 @PACKAGE@_unet_udp_tester_CXXFLAGS	= $(POCO_CFLAGS)
 
 # install

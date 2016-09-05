@@ -27,6 +27,8 @@ static struct option longopts[] =
 	{ "verbode", required_argument, 0, 'v' },
 	{ "num-cycles", required_argument, 0, 'z' },
 	{ "prof", required_argument, 0, 'y' },
+	{ "a-data", required_argument, 0, 'a' },
+	{ "d-data", required_argument, 0, 'i' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -74,10 +76,12 @@ int main(int argc, char* argv[])
 	bool show = false;
 	size_t ncycles = 0;
 	unsigned int nprof = 0;
+	std::string d_data = "";
+	std::string a_data = "";
 
 	while(1)
 	{
-		opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blvdz:y:", longopts, &optindex);
+		opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blvdz:y:a:i:", longopts, &optindex);
 
 		if( opt == -1 )
 			break;
@@ -99,6 +103,8 @@ int main(int argc, char* argv[])
 				cout << "[-d|--show-data]         - show receive data." << endl;
 				cout << "[-z|--num-cycles] num    - Number of cycles of exchange. Default: -1 - infinitely." << endl;
 				cout << "[-y|--prof] num          - Print receive statistics every NUM packets (for -r only)" << endl;
+				cout << "[-a|--a-data] id1=val1,id2=val2,... - Analog data. Send: id1=id1,id2=id2,.. for analog sensors" << endl;
+				cout << "[-i|--d-data] id1=val1,id2=val2,... - Digital data. Send: id1=id1,id2=id2,.. for digital sensors" << endl;
 				cout << endl;
 				return 0;
 
@@ -110,6 +116,14 @@ int main(int argc, char* argv[])
 			case 's':
 				addr = string(optarg);
 				cmd = cmdSend;
+				break;
+
+			case 'a':
+				a_data = string(optarg);
+				break;
+
+			case 'i':
+				d_data = string(optarg);
 				break;
 
 			case 't':
@@ -296,14 +310,35 @@ int main(int argc, char* argv[])
 				mypack.nodeID = nodeID;
 				mypack.procID = procID;
 
-				for( size_t i = 0; i < count; i++ )
+				if( !a_data.empty() )
 				{
-					UDPAData d(i, i);
-					mypack.addAData(d);
+					auto vlist = UniSetTypes::getSInfoList(a_data,nullptr);
+					for( const auto& v: vlist )
+					{
+						UDPAData d(v.si.id, v.val);
+						mypack.addAData(d);
+					}
+				}
+				else
+				{
+					for( size_t i = 0; i < count; i++ )
+					{
+						UDPAData d(i, i);
+						mypack.addAData(d);
+					}
 				}
 
-				for( size_t i = 0; i < count; i++ )
-					mypack.addDData(i, i);
+				if( !d_data.empty() )
+				{
+					auto vlist = UniSetTypes::getSInfoList(d_data,nullptr);
+					for( const auto& v: vlist )
+						mypack.addDData(v.si.id,v.val);
+				}
+				else
+				{
+					for( size_t i = 0; i < count; i++ )
+						mypack.addDData(i, i);
+				}
 
 				Poco::Net::SocketAddress sa(s_host, port);
 				udp->connect(sa);

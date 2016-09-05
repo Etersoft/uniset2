@@ -280,9 +280,6 @@ bool UniSetTypes::is_digit( const std::string& s )
 // --------------------------------------------------------------------------------------
 std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str, std::shared_ptr<Configuration> conf )
 {
-	if( conf == nullptr )
-		conf = uniset_conf();
-
 	std::list<UniSetTypes::ParamSInfo> res;
 
 	auto lst = UniSetTypes::explode_str(str, ',');
@@ -317,7 +314,7 @@ std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str,
 		{
 			std::string s_id = *(t.begin());
 
-			if( is_digit(s_id) )
+			if( is_digit(s_id) || !conf )
 				item.si.id = uni_atoi(s_id);
 			else
 				item.si.id = conf->getSensorID(s_id);
@@ -329,12 +326,12 @@ std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str,
 			std::string s_id = *(t.begin());
 			std::string s_node = *(++t.begin());
 
-			if( is_digit(s_id) )
+			if( is_digit(s_id) || !conf )
 				item.si.id = uni_atoi(s_id);
 			else
 				item.si.id = conf->getSensorID(s_id);
 
-			if( is_digit(s_node) )
+			if( is_digit(s_node) || !conf )
 				item.si.node = uni_atoi(s_node);
 			else
 				item.si.node = conf->getNodeID(s_node);
