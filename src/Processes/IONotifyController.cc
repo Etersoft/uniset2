@@ -364,69 +364,43 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
 	}
 }
 // ------------------------------------------------------------------------------------------
-void IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInfo>& usi,
+long IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInfo>& usi,
 										CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
-	CORBA::Long prevValue = 0;
+	// if( !usi ) - не проверяем, т.к. считаем что это внутренние функции и несуществующий указатель передать не могут
 
-	try
+	CORBA::Long prevValue = value;
 	{
-		// Если датчик не найден здесь сработает исключение
-		prevValue = IOController::localGetValue( usi );
-	}
-	catch( IOController_i::Undefined )
-	{
-		// чтобы сработало prevValue != usi->value
-		// искусственно меняем значение
 		uniset_rwmutex_rlock lock(usi->val_lock);
-		prevValue = usi->value + 1;
+		prevValue = usi->value;
 	}
 
-	IOController::localSetValue(usi, value, sup_id);
+	CORBA::Long realValue = IOController::localSetValue(usi, value, sup_id);
 
-	// Копируем "под замком" только значимые части зависящие от value
-	// т.к. всё остальное не меняется в процессе работы программы и по сути readonly
-	CORBA::Long realValue = prevValue;
-	CORBA::ULong tv_sec = 0;
-	CORBA::ULong tv_nsec = 0;
-	CORBA::Boolean undefined = false;
-	IOController_i::CalibrateInfo ci;
+	// Рассылаем уведомления только в случае изменения значения
+	// --------
+	if( prevValue == realValue )
+		return realValue;
 
+	SensorMessage sm(1); // <-- вызываем dummy конструктор т.к. потом все поля всё-равно сами инициализируем
+	sm.id           = usi->si.id;
+	sm.node         = usi->si.node; // uniset_conf()->getLocalNode();
+	sm.value        = realValue;
+	sm.priority     = (Message::Priority)usi->priority;
+	sm.supplier     = sup_id; // owner_id
+	sm.sensor_type  = usi->type;
+
+	// копируем под lock только изменяемую часть
 	// lock
 	{
 		uniset_rwmutex_rlock lock(usi->val_lock);
-		realValue = usi->value;
-		tv_sec = usi->tv_sec;
-		tv_nsec = usi->tv_nsec;
-		undefined = usi->undefined;
-		ci = usi->ci;
+		sm.undefined    = usi->undefined;
+		sm.sm_tv.tv_sec    = usi->tv_sec;
+		sm.sm_tv.tv_nsec   = usi->tv_nsec;
+		sm.ci = usi->ci;
 	} // unlock value
 
-
-	// Рассылаем уведомления только в слуае изменения значения
-	// --------
-	// сравниваем именно с realValue
-	// т.к. фактическое сохранённое значение может быть изменено
-	// фильтрами или блокировками..
-	if( prevValue == realValue )
-		return;
-
-	SensorMessage sm(1); // <-- вызываем dummy конструктор т.к. потом все поля всё-равно сами инициализируем
-	{
-		// lock
-		// uniset_rwmutex_rlock lock(usi->val_lock);
-		sm.id           = usi->si.id;
-		sm.node         = uniset_conf()->getLocalNode();
-		sm.value        = realValue;
-		sm.undefined    = undefined;
-		sm.priority     = (Message::Priority)usi->priority;
-		sm.supplier     = sup_id; // owner_id
-		sm.sensor_type  = usi->type;
-		sm.sm_tv.tv_sec    = tv_sec;
-		sm.sm_tv.tv_nsec   = tv_nsec;
-		sm.tm = { (long)tv_sec, (long)tv_nsec };
-		sm.ci           = ci;
-	} // unlock
+	sm.tm = sm.sm_tv;
 
 	try
 	{
@@ -452,6 +426,8 @@ void IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInf
 		checkThreshold(usi, true);
 	}
 	catch(...) {}
+
+	return realValue;
 }
 // -----------------------------------------------------------------------------------------
 /*!
@@ -459,7 +435,7 @@ void IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInf
     Возможно нужно ввести своего агента на удалённой стороне, который будет заниматься
     только приёмом сообщений и локальной рассылкой. Lav
 */
-void IONotifyController::send( ConsumerListInfo& lst, UniSetTypes::SensorMessage& sm )
+void IONotifyController::send( ConsumerListInfo& lst, const UniSetTypes::SensorMessage& sm )
 {
 	TransportMessage tmsg(sm.transport_msg());
 

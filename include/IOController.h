@@ -145,7 +145,8 @@ class IOController:
 	protected:
 
 		// доступ к элементам через итератор
-		virtual void localSetValueIt( IOStateList::iterator& it, const UniSetTypes::ObjectId sid,
+		// return итоговое значение
+		virtual long localSetValueIt( IOStateList::iterator& it, const UniSetTypes::ObjectId sid,
 									  CORBA::Long value, UniSetTypes::ObjectId sup_id );
 
 		virtual long localGetValue( IOStateList::iterator& it, const UniSetTypes::ObjectId sid );
@@ -158,7 +159,7 @@ class IOController:
 											 const UniSetTypes::ObjectId sid );
 
 		// -- работа через указатель ---
-		virtual void localSetValue( std::shared_ptr<USensorInfo>& usi, CORBA::Long value, UniSetTypes::ObjectId sup_id );
+		virtual long localSetValue( std::shared_ptr<USensorInfo>& usi, CORBA::Long value, UniSetTypes::ObjectId sup_id );
 		long localGetValue( std::shared_ptr<USensorInfo>& usi) ;
 
 	protected:
@@ -316,7 +317,6 @@ class IOController:
 			inline UniSetTypes::SensorMessage makeSensorMessage()
 			{
 				UniSetTypes::SensorMessage sm;
-				UniSetTypes::uniset_rwmutex_rlock lock(val_lock);
 				sm.id           = si.id;
 				sm.node         = si.node; // uniset_conf()->getLocalNode()?
 				sm.sensor_type  = type;

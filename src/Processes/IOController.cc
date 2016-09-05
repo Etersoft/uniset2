@@ -254,7 +254,7 @@ void IOController::setValue( UniSetTypes::ObjectId sid, CORBA::Long value, UniSe
 	localSetValueIt( li, sid, value, sup_id );
 }
 // ------------------------------------------------------------------------------------------
-void IOController::localSetValueIt( IOController::IOStateList::iterator& li,
+long IOController::localSetValueIt( IOController::IOStateList::iterator& li,
 									UniSetTypes::ObjectId sid,
 									CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
@@ -273,13 +273,17 @@ void IOController::localSetValueIt( IOController::IOStateList::iterator& li,
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
-	localSetValue(li->second, value, sup_id);
+	return localSetValue(li->second, value, sup_id);
 }
 // ------------------------------------------------------------------------------------------
-void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
+long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 								  CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
+	// if( !usi ) - не проверяем, т.к. считаем что это внутренние функции и несуществующий указатель передать не могут
+
 	bool changed = false;
+	bool blockChanged = false;
+	long retValue = value;
 
 	{
 		// lock
@@ -291,7 +295,7 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 		changed = ( usi->real_value != value );
 
 		// если поменялось состояние блокировки
-		bool blockChanged = ( blocked != (usi->value == usi->d_off_value ) );
+		blockChanged = ( blocked != (usi->value == usi->d_off_value ) );
 
 		if( changed || blockChanged )
 		{
@@ -305,6 +309,7 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 
 			usi->real_value = value;
 			usi->value = (blocked ? usi->d_off_value : value);
+			retValue = usi->value;
 
 			// запоминаем время изменения
 			struct timespec tm = UniSetTypes::now_to_timespec();
@@ -315,7 +320,7 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 
 	try
 	{
-		if( changed )
+		if( changed || blockChanged )
 		{
 			uniset_rwmutex_wrlock l(usi->changeMutex);
 			usi->sigChange.emit(usi, this);
@@ -325,13 +330,15 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 
 	try
 	{
-		if( changed )
+		if( changed || blockChanged )
 		{
 			std::lock_guard<std::mutex> l(siganyMutex);
 			sigAnyChange.emit(usi, this);
 		}
 	}
 	catch(...) {}
+
+	return retValue;
 }
 // ------------------------------------------------------------------------------------------
 IOType IOController::getIOType( UniSetTypes::ObjectId sid )

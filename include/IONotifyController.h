@@ -276,7 +276,7 @@ class IONotifyController:
 		virtual void initItem(std::shared_ptr<USensorInfo>& usi, IOController* ic );
 
 		//! посылка информации об изменении состояния датчика
-		virtual void send( ConsumerListInfo& lst, UniSetTypes::SensorMessage& sm );
+		virtual void send( ConsumerListInfo& lst, const UniSetTypes::SensorMessage& sm );
 
 		//! проверка срабатывания пороговых датчиков
 		virtual void checkThreshold( std::shared_ptr<USensorInfo>& usi, bool send = true );
@@ -303,7 +303,7 @@ class IONotifyController:
 		void onChangeUndefinedState( std::shared_ptr<USensorInfo>& usi, IOController* ic );
 
 		// функция для работы напрямую с указателем (оптимизация)
-		virtual void localSetValue( std::shared_ptr<USensorInfo>& usi,
+		virtual long localSetValue( std::shared_ptr<USensorInfo>& usi,
 									CORBA::Long value, UniSetTypes::ObjectId sup_id ) override;
 
 		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!

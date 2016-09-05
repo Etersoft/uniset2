@@ -302,7 +302,7 @@ int main(int argc, char* argv[])
 					mypack.addAData(d);
 				}
 
-				for( unsigned int i = 0; i < count; i++ )
+				for( size_t i = 0; i < count; i++ )
 					mypack.addDData(i, i);
 
 				Poco::Net::SocketAddress sa(s_host, port);
