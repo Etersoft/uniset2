@@ -271,24 +271,23 @@ class UNetReceiver:
 
 		struct CacheItem
 		{
-			long id;
+			long id = { UniSetTypes::DefaultObjectId };
 			IOController::IOStateList::iterator ioit;
-			UniversalIO::IOType iotype;
 
 			CacheItem():
-				id(UniSetTypes::DefaultObjectId), iotype(UniversalIO::UnknownIOType) {}
+				id(UniSetTypes::DefaultObjectId) {}
 		};
 
 		typedef std::vector<CacheItem> CacheVec;
 		struct CacheInfo
 		{
 			CacheInfo():
-				cache_init_ok(false)
-			{
-			}
-			bool cache_init_ok;
+				cache_init_ok(false){}
+
+			bool cache_init_ok = { false };
 			CacheVec cache;
 		};
+
 		// ключом является UDPMessage::getDataID()
 		typedef std::unordered_map<long, CacheInfo> CacheMap;
 		CacheMap d_icache_map;     /*!< кэш итераторов для булевых */

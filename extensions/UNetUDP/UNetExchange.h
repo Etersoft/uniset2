@@ -175,12 +175,12 @@ class UNetExchange:
 
 	private:
 		UNetExchange();
-		timeout_t initPause;
+		timeout_t initPause = { 0 };
 		UniSetTypes::uniset_rwmutex mutex_start;
 
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat = { UniSetTypes::DefaultObjectId };
-		timeout_t maxHeartBeat = 10;
+		timeout_t maxHeartBeat = { 10 };
 		IOController::IOStateList::iterator itHeartBeat;
 		UniSetTypes::ObjectId test_id = { UniSetTypes::DefaultObjectId };
 
@@ -238,7 +238,7 @@ class UNetExchange:
 			// ( реализацию см. ReceiverInfo::step() )
 			UniSetTypes::ObjectId sidRespond;
 			IOController::IOStateList::iterator itRespond;
-			bool respondInvert;
+			bool respondInvert = { false };
 			UniSetTypes::ObjectId sidLostPackets;
 			IOController::IOStateList::iterator itLostPackets;
 			UniSetTypes::ObjectId sidChannelNum;
@@ -248,7 +248,7 @@ class UNetExchange:
 		typedef std::deque<ReceiverInfo> ReceiverList;
 		ReceiverList recvlist;
 
-		bool no_sender;  /*!< флаг отключения посылки сообщений (создания потока для посылки)*/
+		bool no_sender = { false };  /*!< флаг отключения посылки сообщений (создания потока для посылки)*/
 		std::shared_ptr<UNetSender> sender;
 		std::shared_ptr<UNetSender> sender2;
 

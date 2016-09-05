@@ -172,7 +172,6 @@ bool UNetReceiver::createConnection( bool throwEx )
 	try
 	{
 		udp = make_shared<UDPReceiveU>(addr, port);
-		//udp = make_shared<UDPReceiveU>();
 		udp->setBlocking(false); // делаем неблокирующее чтение (нужно для libev)
 		evReceive.set<UNetReceiver, &UNetReceiver::callback>(this);
 
@@ -537,7 +536,7 @@ void UNetReceiver::readEvent( ev::io& watcher )
 	}
 
 	// только если "режим подготовки закончился, то можем генерировать "события"
-	if( ptPrepare.checkTime() && trTimeout.change(ptRecvTimeout.checkTime()) )
+	if( ptPrepare.checkTime() && trTimeout.change(tout) )
 	{
 		auto w = shared_from_this();
 
@@ -795,7 +794,6 @@ void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 		if( d.id != pack.d_id[i] )
 		{
 			d.id = pack.d_id[i];
-			d.iotype = conf->getIOType(d.id);
 			shm->initIterator(d.ioit);
 		}
 	}
@@ -840,7 +838,6 @@ void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
 		if( d.id != pack.a_dat[i].id )
 		{
 			d.id = pack.a_dat[i].id;
-			d.iotype = conf->getIOType(d.id);
 			shm->initIterator(d.ioit);
 		}
 	}
