@@ -306,6 +306,7 @@ class SharedMemory:
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<SharedMemory> init_smemory( int argc, const char* const* argv );
+
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
@@ -351,25 +352,20 @@ class SharedMemory:
 
 		struct HistoryInfo
 		{
-			HistoryInfo():
-				id(0),
-				size(0), filter(""),
-				fuse_id(UniSetTypes::DefaultObjectId),
-				fuse_invert(false), fuse_use_val(false), fuse_val(0)
+			HistoryInfo()
 			{
 				::clock_gettime(CLOCK_REALTIME, &fuse_tm);
 			}
 
-			long id;                        // ID
+			long id = { 0 };                // ID
 			HistoryList hlst;               // history list
-			int size;
-			std::string filter;             // filter field
-			UniSetTypes::ObjectId fuse_id;  // fuse sesnsor
-			bool fuse_invert;
-			bool fuse_use_val;
-			long fuse_val;
-			// timestamp
-			timespec fuse_tm;
+			size_t size = { 0 };
+			std::string filter = { "" };    // filter field
+			UniSetTypes::ObjectId fuse_id = { UniSetTypes::DefaultObjectId };  // fuse sesnsor
+			bool fuse_invert = { false };
+			bool fuse_use_val = { false };
+			long fuse_val = { 0 };
+			timespec fuse_tm = { 0, 0 }; // timestamp
 		};
 
 		friend std::ostream& operator<<( std::ostream& os, const HistoryInfo& h );
@@ -492,7 +488,7 @@ class SharedMemory:
 		History hist;
 		HistoryFuseMap histmap;  /*!< map для оптимизации поиска */
 
-		virtual void checkFuse(std::shared_ptr<IOController::USensorInfo>& usi, IOController* );
+		virtual void checkFuse( std::shared_ptr<IOController::USensorInfo>& usi, IOController* );
 		virtual void saveToHistory();
 
 		void buildHistoryList( xmlNode* cnode );

@@ -2,6 +2,7 @@
 // -----------------------------------------------------------------------------
 #include <sstream>
 #include <limits>
+#include "Configuration.h"
 #include "UniSetTypes.h"
 // -----------------------------------------------------------------------------
 using namespace std;
@@ -108,7 +109,7 @@ TEST_CASE("UniSetTypes: getSInfoList", "[utypes][getsinfo]" )
 {
 	const std::string str1("Input4_S@node2,Input1_S,5,5@node3,6@1001");
 
-	auto t1 = UniSetTypes::getSInfoList(str1);
+	auto t1 = UniSetTypes::getSInfoList(str1, UniSetTypes::uniset_conf());
 
 	CHECK( t1.size() == 5 );
 
