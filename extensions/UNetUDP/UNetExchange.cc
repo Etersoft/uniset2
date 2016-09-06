@@ -85,6 +85,8 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 	int maxProcessingCount = conf->getArgPInt("--" + prefix + "-maxprocessingcount", it.getProp("maxProcessingCount"), 100);
 	int checkConnectionPause = conf->getArgPInt("--" + prefix + "-checkconnection-pause", it.getProp("checkConnectionPause"), 10000);
 
+	std::string updateStrategy = conf->getArg2Param("--" + prefix + "-update-strategy", it.getProp("updateStartegy"),"evloop");
+
 	no_sender = conf->getArgInt("--" + prefix + "-nosender", it.getProp("nosender"));
 
 	std::string nconfname = conf->getArg2Param("--" + prefix + "-nodes-confnode", it.getProp("nodesConfNode"), "nodes");
@@ -310,6 +312,15 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 			}
 		}
 
+		UNetReceiver::UpdateStrategy r_upStrategy = UNetReceiver::strToUpdateStrategy( n_it.getProp2("unet_update_strategy",updateStrategy) );
+		if( r_upStrategy == UNetReceiver::useUpdateUnknown )
+		{
+			ostringstream err;
+			err << myname << ": Unknown update strategy!!! '" << n_it.getProp2("unet_update_startegy",updateStrategy) << "'" << endl;
+			unetcrit << myname << "(init): " << err.str() << endl;
+			throw SystemError(err.str());
+		}
+
 		unetinfo << myname << "(init): (node='" << n << "') add  basic receiver "
 				 << h << ":" << p << endl;
 		auto r = make_shared<UNetReceiver>(h, p, shm);
@@ -331,6 +342,7 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 		r->setRespondID(resp_id, resp_invert);
 		r->setLostPacketsID(lp_id);
 		r->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
+		r->setUpdateStrategy(r_upStrategy);
 
 		shared_ptr<UNetReceiver> r2(nullptr);
 
@@ -358,6 +370,7 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 				r2->setRespondID(resp2_id, resp_invert);
 				r2->setLostPacketsID(lp2_id);
 				r2->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
+				r2->setUpdateStrategy(r_upStrategy);
 			}
 		}
 		catch(...)
@@ -791,6 +804,11 @@ void UNetExchange::help_print( int argc, const char* argv[] )
 	cout << "--prefix-maxdifferense num       - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;
 	cout << "--prefix-maxprocessingcount num  - время на ожидание старта SM" << endl;
 	cout << "--prefix-nosender [0,1]          - Отключить посылку." << endl;
+	cout << "--prefix-update-strategy [thread,evloop] - Стратегия обновления данных в SM. " << endl;
+	cout << "                                         'thread' - у каждого UNetReceiver отдельный поток" << endl;
+	cout << "                                         'evloop' - используется общий (с приёмом сообщений) event loop" << endl;
+	cout << "                                 По умолчанию: evloop" << endl;
+
 	cout << "--prefix-sm-ready-timeout msec   - Время ожидание я готовности SM к работе. По умолчанию 15000" << endl;
 	cout << "--prefix-filter-field name       - Название фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
 	cout << "--prefix-filter-value name       - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;

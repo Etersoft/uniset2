@@ -82,6 +82,7 @@ UNetReceiver::UNetReceiver(const std::string& s_host, int _port, const std::shar
 		evCheckConnection.set<UNetReceiver, &UNetReceiver::checkConnectionEvent>(this);
 
 	evStatistic.set<UNetReceiver, &UNetReceiver::statisticsEvent>(this);
+	evUpdate.set<UNetReceiver, &UNetReceiver::updateEvent>(this);
 }
 // -----------------------------------------------------------------------------
 UNetReceiver::~UNetReceiver()
@@ -123,6 +124,9 @@ void UNetReceiver::setReceivePause( timeout_t msec )
 void UNetReceiver::setUpdatePause( timeout_t msec )
 {
 	updatepause = msec;
+
+	if( upStrategy == useUpdateEventLoop && evUpdate.is_active() )
+		evUpdate.start(0, (float)updatepause/1000.);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setMaxProcessingCount( int set )
@@ -174,6 +178,8 @@ bool UNetReceiver::createConnection( bool throwEx )
 		udp = make_shared<UDPReceiveU>(addr, port);
 		udp->setBlocking(false); // делаем неблокирующее чтение (нужно для libev)
 		evReceive.set<UNetReceiver, &UNetReceiver::callback>(this);
+		if( upStrategy == useUpdateEventLoop )
+			evUpdate.set<UNetReceiver, &UNetReceiver::updateEvent>(this);
 
 		if( evCheckConnection.is_active() )
 			evCheckConnection.stop();
@@ -219,7 +225,7 @@ void UNetReceiver::start()
 		activated = true;
 		loop.evrun(this, true);
 
-		if( !upThread->isRunning() )
+		if( upStrategy == useUpdateThread && !upThread->isRunning() )
 			upThread->start();
 	}
 	else
@@ -229,8 +235,14 @@ void UNetReceiver::start()
 void UNetReceiver::evprepare( const ev::loop_ref& eloop )
 {
 	evStatistic.set(eloop);
-
 	evStatistic.start(0, 1.0); // раз в сек
+
+	if( upStrategy == useUpdateEventLoop )
+	{
+		evUpdate.set(eloop);
+		evUpdate.start();
+		evUpdate.start( 0, ((float)updatepause/1000.) );
+	}
 
 	if( !udp )
 	{
@@ -261,13 +273,16 @@ void UNetReceiver::evfinish( const ev::loop_ref& eloop )
 	if( evStatistic.is_active() )
 		evStatistic.stop();
 
+	if( evUpdate.is_active() )
+		evUpdate.stop();
+
 	//udp->disconnect();
 	udp = nullptr;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::forceUpdate()
 {
-	std::lock_guard<std::mutex> l(packMutex);
+	pack_guard l(packMutex,upStrategy);
 	pnum = 0; // сбрасываем запомненый номер последнего обработанного пакета
 	// и тем самым заставляем обновить данные в SM (см. update)
 }
@@ -306,7 +321,7 @@ void UNetReceiver::update()
 	{
 		{
 			// lock qpack
-			std::lock_guard<std::mutex> l(packMutex);
+			pack_guard l(packMutex,upStrategy);
 
 			if( qpack.empty() )
 				return;
@@ -705,7 +720,7 @@ bool UNetReceiver::receive()
 
 	{
 		// lock qpack
-		std::lock_guard<std::mutex> l(packMutex);
+		pack_guard l(packMutex,upStrategy);
 
 		if( !waitClean )
 		{
@@ -847,6 +862,48 @@ void UNetReceiver::connectEvent( UNetReceiver::EventSlot sl )
 {
 	slEvent = sl;
 }
+
+UNetReceiver::UpdateStrategy UNetReceiver::strToUpdateStrategy(const string& s)
+{
+	if( s == "thread" || s == "THREAD" )
+		return useUpdateThread;
+
+	if( s == "evloop" || s == "EVLOOP" )
+		return useUpdateEventLoop;
+
+	return useUpdateUnknown;
+}
+// -----------------------------------------------------------------------------
+string UNetReceiver::to_string(UNetReceiver::UpdateStrategy s)
+{
+	if( s == useUpdateThread )
+		return "thread";
+	if( s == useUpdateEventLoop )
+		return "evloop";
+
+	return "";
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::setUpdateStrategy( UNetReceiver::UpdateStrategy set )
+{
+	if( set == useUpdateEventLoop && upThread->isRunning() )
+	{
+		ostringstream err;
+		err << myname << "(setUpdateStrategy): set 'useUpdateEventLoop' strategy but updateThread is running!";
+		unetcrit << err.str() << endl;
+		throw SystemError(err.str());
+	}
+
+	if( set == useUpdateThread && evUpdate.is_active() )
+	{
+		ostringstream err;
+		err << myname << "(setUpdateStrategy): set 'useUpdateThread' strategy but update event loop is running!";
+		unetcrit << err.str() << endl;
+		throw SystemError(err.str());
+	}
+
+	upStrategy = set;
+}
 // -----------------------------------------------------------------------------
 const std::string UNetReceiver::getShortInfo() const
 {
@@ -860,6 +917,7 @@ const std::string UNetReceiver::getShortInfo() const
 	  << "    recvOK=" << isRecvOK()
 	  << " receivepack=" << rnum
 	  << " lostPackets=" << setw(6) << getLostPacketsNum()
+	  << " updateStartegy=" << to_string(upStrategy)
 	  << endl
 	  << "\t["
 	  << " recvTimeout=" << setw(6) << recvTimeout
@@ -875,5 +933,19 @@ const std::string UNetReceiver::getShortInfo() const
 	  << "\t[ qsize=" << qpack.size() << " recv=" << statRecvPerSec << " update=" << statUpPerSec << " per sec ]";
 
 	return std::move(s.str());
+}
+// -----------------------------------------------------------------------------
+UNetReceiver::pack_guard::pack_guard( mutex& _m, UNetReceiver::UpdateStrategy _s ):
+	m(_m),
+	s(_s)
+{
+	if( s == useUpdateThread )
+		m.lock();
+}
+// -----------------------------------------------------------------------------
+UNetReceiver::pack_guard::~pack_guard()
+{
+	if( s == useUpdateThread )
+		m.unlock();
 }
 // -----------------------------------------------------------------------------

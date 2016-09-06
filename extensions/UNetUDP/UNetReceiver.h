@@ -84,6 +84,13 @@
  * Если такая логика не требуется, то можно задать в конструкторе
  * последним аргументом флаг nocheckconnection=true, тогда при создании объекта UNetReceiver, в конструкторе будет
  * выкинуто исключение при неудачной попытке создания соединения.
+ *
+ * Стратегия обновления данных в SM
+ * ==================================
+ * При помощи функции setUpdateStrategy() можно выбрать стратегию обновления данных в SM.
+ * Поддерживается два варианта:
+ * 'thread' - отдельный поток обновления
+ * 'evloop' - использование общего с приёмом event loop (libev)
 */
 // -----------------------------------------------------------------------------
 class UNetReceiver:
@@ -154,6 +161,36 @@ class UNetReceiver:
 		typedef sigc::slot<void, const std::shared_ptr<UNetReceiver>&, Event> EventSlot;
 		void connectEvent( EventSlot sl );
 
+		// --------------------------------------------------------------------
+		/*! Стратегия обработки сообщений */
+		enum UpdateStrategy
+		{
+			useUpdateUnknown,
+			useUpdateThread,	/*!< использовать отдельный поток */
+			useUpdateEventLoop	/*!< использовать event loop (т.е. совместно с receive) */
+		};
+
+		static UpdateStrategy strToUpdateStrategy( const std::string& s );
+		static std::string to_string( UpdateStrategy s);
+
+		//! функция должна вызываться до первого вызова start()
+		void setUpdateStrategy( UpdateStrategy set );
+
+		// специальная обёртка, захватывающая или нет mutex в зависимости от стратегии
+		// (т.к. при evloop mutex захватытвать не нужно)
+		class pack_guard
+		{
+			public:
+				pack_guard( std::mutex& m, UpdateStrategy s );
+				~pack_guard();
+
+			protected:
+				std::mutex& m;
+				UpdateStrategy s;
+		};
+
+		// --------------------------------------------------------------------
+
 		inline std::shared_ptr<DebugStream> getLog()
 		{
 			return unetlog;
@@ -197,6 +234,7 @@ class UNetReceiver:
 				return lhs.num > rhs.num;
 			}
 		};
+
 		typedef std::priority_queue<UniSetUDP::UDPMessage, std::vector<UniSetUDP::UDPMessage>, PacketCompare> PacketQueue;
 
 	private:
@@ -213,6 +251,9 @@ class UNetReceiver:
 		ev::io evReceive;
 		ev::periodic evCheckConnection;
 		ev::periodic evStatistic;
+		ev::periodic evUpdate;
+
+		UpdateStrategy upStrategy = { useUpdateEventLoop };
 
 		// счётчики для подсчёта статистики
 		size_t recvCount = { 0 };
