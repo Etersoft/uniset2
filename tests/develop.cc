@@ -32,6 +32,9 @@ class PtrMapHashFn
 
 int main( int argc, const char** argv )
 {
+	cerr << "2000%1000000=" << int(2000%1000000) << endl;
+	return 0;
+
 	unordered_map<const long*, const long*, PtrMapHashFn> vmap;
 
 	const long id = 10;

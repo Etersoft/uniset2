@@ -63,7 +63,7 @@ static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 20
 
 	while( ncycle > 0 )
 	{
-		if( !udp_r->poll(tout * 1000, Poco::Net::Socket::SELECT_READ) )
+		if( !udp_r->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_READ) )
 			break;
 
 		size_t ret = udp_r->receiveBytes(&(buf.data), sizeof(buf.data) );
@@ -81,7 +81,7 @@ static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 20
 // -----------------------------------------------------------------------------
 void send( UniSetUDP::UDPMessage& pack, int tout = 2000 )
 {
-	CHECK( udp_s->poll(tout * 1000, Poco::Net::Socket::SELECT_WRITE) );
+	CHECK( udp_s->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_WRITE) );
 
 	pack.nodeID = s_nodeID;
 	pack.procID = s_procID;
@@ -89,7 +89,7 @@ void send( UniSetUDP::UDPMessage& pack, int tout = 2000 )
 
 	UniSetUDP::UDPPacket s_buf;
 	pack.transport_msg(s_buf);
-	size_t ret = udp_s->sendTo((char*)&s_buf.data, s_buf.len, s_addr);
+	size_t ret = udp_s->sendTo(&s_buf.data, s_buf.len, s_addr);
 	REQUIRE( ret == s_buf.len );
 }
 // -----------------------------------------------------------------------------

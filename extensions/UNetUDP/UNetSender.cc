@@ -115,7 +115,7 @@ bool UNetSender::createConnection( bool throwEx )
 		//udp = make_shared<UDPSocketU>(addr, port);
 		udp = make_shared<UDPSocketU>();
 		udp->setBroadcast(true);
-		udp->setSendTimeout(UniSetTimer::timeoutToPoco(writeTimeout * 1000));
+		udp->setSendTimeout( UniSetTimer::millisecToPoco(writeTimeout) );
 		//		udp->setNoDelay(true);
 	}
 	catch( const std::exception& e )
@@ -286,14 +286,14 @@ void UNetSender::real_send( PackMessage& mypack )
 	if( packetnum == 0 )
 		packetnum = 1;
 
-	if( !udp || !udp->poll(writeTimeout * 1000, Poco::Net::Socket::SELECT_WRITE) )
+	if( !udp || !udp->poll( UniSetTimer::millisecToPoco(writeTimeout), Poco::Net::Socket::SELECT_WRITE) )
 		return;
 
 	mypack.msg.transport_msg(s_msg);
 
 	try
 	{
-		size_t ret = udp->sendTo((char*)s_msg.data, s_msg.len, saddr);
+		size_t ret = udp->sendTo(&s_msg.data, s_msg.len, saddr);
 
 		if( ret < s_msg.len )
 			unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;

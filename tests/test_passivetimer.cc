@@ -96,3 +96,52 @@ TEST_CASE("PassiveTimer: 1 msec", "[PassiveTimer][msec]" )
 	CHECK( pt.checkTime() );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("UniSetTimer: conv to Poco", "[PassiveTimer][poco]" )
+{
+	// msec --> Poco::Timespan
+	{
+		Poco::Timespan tm = UniSetTimer::millisecToPoco(2000);
+		REQUIRE( tm.seconds() == 2 );
+		REQUIRE( tm.totalMilliseconds() == 2000 );
+	}
+
+	{
+		Poco::Timespan tm = UniSetTimer::millisecToPoco(UniSetTimer::WaitUpTime);
+		REQUIRE( tm.seconds() == 0 );
+		REQUIRE( tm.microseconds() == 0 );
+	}
+
+	{
+		Poco::Timespan tm = UniSetTimer::millisecToPoco(20);
+		REQUIRE( tm.seconds() == 0 );
+		REQUIRE( tm.milliseconds() == 20 );
+		REQUIRE( tm.microseconds() == 0 );
+		REQUIRE( tm.totalMicroseconds() == 20000 );
+	}
+
+
+	// usec --> Poco::Timespan
+	{
+		Poco::Timespan tm = UniSetTimer::microsecToPoco(UniSetTimer::WaitUpTime);
+		REQUIRE( tm.seconds() == 0 );
+		REQUIRE( tm.microseconds() == 0 );
+	}
+	{
+		Poco::Timespan tm = UniSetTimer::microsecToPoco(2000000);
+		REQUIRE( tm.seconds() == 2 );
+		REQUIRE( tm.microseconds() == 0 );
+	}
+	{
+		Poco::Timespan tm = UniSetTimer::microsecToPoco(2000);
+		REQUIRE( tm.seconds() == 0 );
+		REQUIRE( tm.totalMicroseconds() == 2000 );
+		REQUIRE( tm.useconds() == 2000 );
+	}
+	{
+		Poco::Timespan tm = UniSetTimer::microsecToPoco(2);
+		REQUIRE( tm.seconds() == 0 );
+		REQUIRE( tm.microseconds() == 2 );
+	}
+}
+// -----------------------------------------------------------------------------
+
