@@ -51,15 +51,12 @@ class NCRestorer;
 объектов (заказчиков) об изменении состояния датчика (входа или выхода).
 
 Механизм функционирует по следующей логике:
-"заказчики" уведомляют \b IONC о том, об изменении какого именно датчика
-они хотят получать уведомление.
-После чего, если данный датчик меняет своё состояние, заказчику посылается
+"заказчики" уведомляют \b IONC об изменении какого именно датчика они хотят получать уведомление,
+после чего, если данный датчик меняет своё состояние, заказчику посылается
 сообщение UniSetTypes::SensorMessage содержащее информацию о текущем(новом) состоянии датчика,
 времени изменения и т.п. В случае необходимости можно отказатся от уведомления.
 Для заказа датчиков предусмотрен ряд функций. На данный момент рекомендуется
-пользоватся функцией IONotifyController::askSensor. Функции askState и askValue считаются устаревшими
-и оставлены для совместимости со старыми интерфейсами.
-... продолжение следует...
+пользоватся функцией IONotifyController::askSensor.
 
     \section sec_NC_Consumers  Заказчики
 В качестве "заказчиков" могут выступать любые UniSet-объекты (UniSetObject),
@@ -111,10 +108,16 @@ class NCRestorer;
 
 \note Следует иметь ввиду, что для \b ЗАВИСИМОГО датчика функция setValue(..) действует как обычно и
 даже если он "заблокирован", значение в него можно сохранять. Оно "появиться" как только сниметься блокировка.
+
+	\section sec_NC_Optimization Оптимизация работы со списком "заказчиков"
+	Для оптимизации поиска списка заказчиков для конкретного датчика используется поле userdata (void*) у USensorInfo!
+	Это опасный и "некрасивый" хак, но который позволяет избавиться от одного лишнего поиска по unordered_map<SensorID,ConsumerList>.
+	Суть в том что к датчику через usedata мы привязываем указатель на список заказчиков. Сделано через userdata,
+	т.к. сам map "хранится" в IOController и IONotifyController не может поменять тип (в текущей реализации по крайней мере).
+	В userdata задействованы два места (см. UserDataID) для списка заказчиков и для списка порогов.
 */
 //---------------------------------------------------------------------------
 /*! \class IONotifyController
- * \todo Сделать логирование выходов
 
  \section AskSensors Заказ датчиков
 
@@ -138,6 +141,9 @@ class IONotifyController:
 		{
 			return UniSetTypes::ObjectType("IONotifyController");
 		}
+
+		virtual UniSetTypes::SimpleInfo* getInfo( ::CORBA::Long userparam = 0 ) override;
+
 		virtual void askSensor(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd) override;
 
 		virtual void askThreshold(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci,
@@ -154,23 +160,18 @@ class IONotifyController:
 
 		// --------------------------------------------
 
-		// функция для работы напрямую с указателем (оптимизация)
-		virtual void localSetValue( std::shared_ptr<USensorInfo>& usi,
-									UniSetTypes::ObjectId sid,
-									CORBA::Long value, UniSetTypes::ObjectId sup_id ) override;
-		// --------------------------------------------
-
 		/*! Информация о заказчике */
 		struct ConsumerInfoExt:
-			public    UniSetTypes::ConsumerInfo
+			public UniSetTypes::ConsumerInfo
 		{
 			ConsumerInfoExt( const UniSetTypes::ConsumerInfo& ci,
-							 UniSetObject_i_ptr ref = 0, int maxAttemtps = 10 ):
+							 UniSetObject_i_ptr ref = 0, size_t maxAttemtps = 10 ):
 				UniSetTypes::ConsumerInfo(ci),
 				ref(ref), attempt(maxAttemtps) {}
 
 			UniSetObject_i_var ref;
-			int attempt;
+			size_t attempt;
+			size_t lostEvents = { 0 }; // количество потерянных сообщений (не смогли послать)
 
 			ConsumerInfoExt( const ConsumerInfoExt& ) = default;
 			ConsumerInfoExt& operator=( const ConsumerInfoExt& ) = default;
@@ -193,8 +194,7 @@ class IONotifyController:
 		};
 
 		/*! словарь: датчик -> список потребителей */
-		typedef std::unordered_map<UniSetTypes::KeyType, ConsumerListInfo> AskMap;
-
+		typedef std::unordered_map<UniSetTypes::ObjectId, ConsumerListInfo> AskMap;
 
 		/*! Информация о пороговом значении */
 		struct ThresholdInfoExt:
@@ -238,7 +238,7 @@ class IONotifyController:
 				r.lowlimit = lowlimit;
 				r.invert = invert;
 				r.tv_sec = tv_sec;
-				r.tv_usec = tv_usec;
+				r.tv_nsec = tv_nsec;
 				r.state = state;
 				return r;
 			}
@@ -262,34 +262,28 @@ class IONotifyController:
 			UniSetTypes::uniset_rwmutex mut;
 
 			IOController_i::SensorInfo si = { UniSetTypes::DefaultObjectId, UniSetTypes::DefaultObjectId };
-			std::shared_ptr<USensorInfo> ait;
+			std::shared_ptr<USensorInfo> usi;
 			UniversalIO::IOType type = { UniversalIO::AI };
 			ThresholdExtList list;   /*!< список порогов по данному аналоговому датчику */
 		};
 
 		/*! словарь: аналоговый датчик --> список порогов по нему */
-		typedef std::unordered_map<UniSetTypes::KeyType, ThresholdsListInfo> AskThresholdMap;
+		typedef std::unordered_map<UniSetTypes::ObjectId, ThresholdsListInfo> AskThresholdMap;
 
 	protected:
 		IONotifyController();
 		virtual bool activateObject() override;
-		virtual void initItem( IOStateList::iterator& it, IOController* ic );
-
-		// ФИЛЬТРЫ
-		bool myIOFilter(std::shared_ptr<USensorInfo>& ai, CORBA::Long newvalue, UniSetTypes::ObjectId sup_id);
+		virtual void initItem(std::shared_ptr<USensorInfo>& usi, IOController* ic );
 
 		//! посылка информации об изменении состояния датчика
-		virtual void send( ConsumerListInfo& lst, UniSetTypes::SensorMessage& sm );
+		virtual void send( ConsumerListInfo& lst, const UniSetTypes::SensorMessage& sm );
 
 		//! проверка срабатывания пороговых датчиков
-		virtual void checkThreshold( std::shared_ptr<USensorInfo>& usi, const UniSetTypes::ObjectId sid, bool send = true );
+		virtual void checkThreshold( std::shared_ptr<USensorInfo>& usi, bool send = true );
 		virtual void checkThreshold(IOController::IOStateList::iterator& li, const UniSetTypes::ObjectId sid, bool send_msg = true );
 
 		//! поиск информации о пороговом датчике
 		ThresholdExtList::iterator findThreshold( const UniSetTypes::ObjectId sid, const UniSetTypes::ThresholdId tid );
-
-		//! сохранение информации об изменении состояния датчика в базу
-		virtual void loggingInfo( UniSetTypes::SensorMessage& sm );
 
 		/*! сохранение списка заказчиков
 		    По умолчанию делает dump, если объявлен dumper.
@@ -306,7 +300,19 @@ class IONotifyController:
 
 		std::shared_ptr<NCRestorer> restorer;
 
-		void onChangeUndefinedState( std::shared_ptr<USensorInfo>& it, IOController* ic );
+		void onChangeUndefinedState( std::shared_ptr<USensorInfo>& usi, IOController* ic );
+
+		// функция для работы напрямую с указателем (оптимизация)
+		virtual long localSetValue( std::shared_ptr<USensorInfo>& usi,
+									CORBA::Long value, UniSetTypes::ObjectId sup_id ) override;
+
+		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
+		// идентификаторы данные в userdata (см. USensorInfo::userdata)
+		enum UserDataID
+		{
+			udataConsumerList = 0,
+			udataThresholdList = 1
+		};
 
 	private:
 		friend class NCRestorer;
@@ -324,8 +330,8 @@ class IONotifyController:
 		/*! удалить порог для датчика */
 		bool removeThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci);
 
-		AskMap askIOList; /*!< список потребителей по аналоговым датчикам */
-		AskThresholdMap askTMap; /*!< список порогов по аналоговым датчикам */
+		AskMap askIOList; /*!< список потребителей по  датчикам */
+		AskThresholdMap askTMap; /*!< список порогов по датчикам */
 
 		/*! замок для блокирования совместного доступа к cписку потребителей датчиков */
 		UniSetTypes::uniset_rwmutex askIOMutex;

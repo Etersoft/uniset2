@@ -21,7 +21,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <string>
-#include <cc++/thread.h> // for use timeout_t
+#include "PassiveTimer.h" // for use timeout_t
 // --------------------------------------------------------------------------
 class ComPort
 {

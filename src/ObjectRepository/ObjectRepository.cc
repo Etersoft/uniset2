@@ -308,7 +308,7 @@ throw(ORepFailed,  NameNotFound)
  * количество объектов в этой секции превышает заданное how_many.
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned int how_many)throw(ORepFailed)
+bool ObjectRepository::list(const string& section, ListObjectName* ls, size_t how_many)throw(ORepFailed)
 {
 	return list(section, ls, how_many, ObjectRef);
 }
@@ -322,7 +322,7 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned 
  * количество объектов в этой секции превышает заданное how_many.
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepository::listSections(const string& in_section, ListObjectName* ls, unsigned int how_many)throw(ORepFailed)
+bool ObjectRepository::listSections(const string& in_section, ListObjectName* ls, size_t how_many)throw(ORepFailed)
 {
 	return list(in_section, ls, how_many, Section);
 }
@@ -388,10 +388,7 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned 
 			case ObjectRef:
 			{
 				if(bl[i].binding_type == CosNaming::nobject)
-				{
-					string objn = omniURI::nameToString(bl[i].binding_name);
-					ls->push_front(objn);
-				}
+					ls->emplace_front(omniURI::nameToString(bl[i].binding_name));
 
 				break;
 			}
@@ -399,10 +396,7 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned 
 			case Section:
 			{
 				if( bl[i].binding_type == CosNaming::ncontext)
-				{
-					string objn = omniURI::nameToString(bl[i].binding_name);
-					ls->push_front(objn);
-				}
+					ls->emplace_front(omniURI::nameToString(bl[i].binding_name));
 
 				break;
 			}
@@ -450,3 +444,289 @@ bool ObjectRepository::isExist( const ObjectPtr& oref ) const
 }
 
 // --------------------------------------------------------------------------
+/*!
+ * \param name - имя создаваемой секции
+ * \param in_section - полное имя секции внутри которой создается новая
+ * \param section - полное имя секции начиная с Root.
+ * \exception ORepFailed - генерируется если произошла при получении доступа к секции
+*/
+bool ObjectRepository::createSection(const string& name, const string& in_section)throw(ORepFailed, InvalidObjectName)
+{
+	char bad = ORepHelpers::checkBadSymbols(name);
+
+	if (bad != 0)
+	{
+		ostringstream err;
+		err << "ObjectRepository(registration): (InvalidObjectName) " << name;
+		err << " содержит недопустимый символ " << bad;
+		throw ( InvalidObjectName(err.str().c_str()) );
+	}
+
+	ulogrep << "CreateSection: name = " << name << "  in section = " << in_section << endl;
+
+	if( in_section.empty() )
+	{
+		ulogrep << "CreateSection: in_section..empty" << endl;
+		return createRootSection(name);
+	}
+
+	int argc(uconf->getArgc());
+	const char* const* argv(uconf->getArgv());
+	CosNaming::NamingContext_var ctx = ORepHelpers::getContext(in_section, argc, argv, uconf->getNSName() );
+	return createContext( name, ctx.in() );
+}
+// -------------------------------------------------------------------------------------------------------
+/*!
+ * \param fullName - полное имя создаваемой секции
+ * \exception ORepFailed - генерируется если произошла при получении доступа к секции
+*/
+bool ObjectRepository::createSectionF( const string& fullName )throw(ORepFailed, InvalidObjectName)
+{
+	string name(ObjectIndex::getBaseName(fullName));
+	string sec(ORepHelpers::getSectionName(fullName));
+
+	ulogrep << name << endl;
+	ulogrep << sec << endl;
+
+	if ( sec.empty() )
+	{
+		ulogrep << "SectionName is empty!!!" << endl;
+		ulogrep << "Добавляем в " << uconf->getRootSection() << endl;
+		return createSection(name, uconf->getRootSection());
+	}
+	else
+		return createSection(name, sec);
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+bool ObjectRepository::createRootSection( const string& name )
+{
+	CORBA::ORB_var orb = uconf->getORB();
+	CosNaming::NamingContext_var ctx = ORepHelpers::getRootNamingContext(orb, uconf->getNSName());
+	return createContext(name, ctx);
+}
+// -----------------------------------------------------------------------------------------------------------
+bool ObjectRepository::createContext( const string& cname, CosNaming::NamingContext_ptr ctx )
+{
+	CosNaming::Name_var nc = omniURI::stringToName(cname.c_str());
+
+	try
+	{
+		ulogrep << "ORepFactory(createContext): создаю новый контекст " << cname << endl;
+		ctx->bind_new_context(nc);
+		ulogrep << "ORepFactory(createContext): создал. " << endl;
+		return true;
+	}
+	catch(const CosNaming::NamingContext::AlreadyBound& ab)
+	{
+		//        ctx->resolve(nc);
+		ulogrep << "ORepFactory(createContext): context " << cname << " уже есть" << endl;
+		return true;
+	}
+	catch( const CosNaming::NamingContext::NotFound )
+	{
+		ulogrep << "ORepFactory(createContext): NotFound " << cname << endl;
+		throw NameNotFound();
+	}
+	catch( const CosNaming::NamingContext::InvalidName& nf )
+	{
+		uwarn << "ORepFactory(createContext): (InvalidName)  " << cname;
+	}
+	catch( const CosNaming::NamingContext::CannotProceed& cp )
+	{
+		uwarn << "ORepFactory(createContext): catch CannotProced "
+			  << cname << " bad part="
+			  << omniURI::nameToString(cp.rest_of_name);
+		throw NameNotFound();
+	}
+	catch( const CORBA::SystemException& ex )
+	{
+		ucrit << "ORepFactory(createContext): CORBA::SystemException: "
+			  << ex.NP_minorString() << endl;
+	}
+	catch( const CORBA::Exception& )
+	{
+		ucrit << "поймали CORBA::Exception." << endl;
+	}
+	catch( const omniORB::fatalException& fe )
+	{
+		ucrit << "поймали omniORB::fatalException:" << endl;
+		ucrit << "  file: " << fe.file() << endl;
+		ucrit << "  line: " << fe.line() << endl;
+		ucrit << "  mesg: " << fe.errmsg() << endl;
+	}
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------------------------------------
+/*!
+	\note Функция не вывести список, если не сможет получить доступ к секции
+*/
+void ObjectRepository::printSection( const string& fullName )
+{
+	ListObjectName ls;
+
+	try
+	{
+		list(fullName.c_str(), &ls);
+
+		if( ls.empty() )
+			cout << fullName << " пуст!!!" << endl;
+	}
+	catch( ORepFailed )
+	{
+		cout << "printSection: cath exceptions ORepFailed..." << endl;
+		return ;
+	}
+
+	cout << fullName << "(" << ls.size() << "):" << endl;
+
+	for( auto v : ls )
+		cout << v << endl;
+}
+
+// -----------------------------------------------------------------------------------------------------------
+/*!
+ * \param fullName - имя удаляемой секции
+ * \param recursive - удлаять рекурсивно все секции или возвращать не удалять и ошибку ( временно )
+ * \warning Функция вынимает только первые 1000 объектов, остальные игнорируются...
+*/
+bool ObjectRepository::removeSection(const string& fullName, bool recursive)
+{
+	//    string name = getName(fullName.c_str(),'/');
+	//  string sec = getSectionName(fullName.c_str(),'/');
+	//    CosNaming::NamingContext_var ctx = getContext(sec, argc, argv);
+	unsigned int how_many = 1000;
+	CosNaming::NamingContext_var ctx;
+
+	try
+	{
+		int argc(uconf->getArgc());
+		const char* const* argv(uconf->getArgv());
+		ctx = ORepHelpers::getContext(fullName, argc, argv, nsName);
+	}
+	catch( ORepFailed )
+	{
+		return false;
+	}
+
+	CosNaming::BindingList_var bl;
+	CosNaming::BindingIterator_var bi;
+
+	ctx->list(how_many, bl, bi);
+
+	// хитрая проверка на null приобращении к bl
+	// coverity говорит потенциально это возможно
+	// т.к. там возвращается указатель, который по умолчанию null
+	if( !bl.operator->() )
+		return false;
+
+	if( how_many > bl->length() )
+		how_many = bl->length();
+
+	bool rem = true; // удалять или нет
+
+	for(unsigned int i = 0; i < how_many; i++)
+	{
+
+		if( bl[i].binding_type == CosNaming::nobject)
+		{
+			//            cout <<"удаляем "<< omniURI::nameToString(bl[i].binding_name) << endl;
+			ctx->unbind(bl[i].binding_name);
+		}
+		else if( bl[i].binding_type == CosNaming::ncontext)
+		{
+
+			if( recursive )
+			{
+				ulogrep << "ORepFactory: удаляем рекурсивно..." << endl;
+				string rctx = fullName + "/" + omniURI::nameToString(bl[i].binding_name);
+				ulogrep << rctx << endl;
+
+				if ( !removeSection(rctx))
+				{
+					ulogrep << "рекурсивно удалить не удалось" << endl;
+					rem = false;
+				}
+			}
+			else
+			{
+				ulogrep << "ORepFactory: " << omniURI::nameToString(bl[i].binding_name) << " - контекст!!! ";
+				ulogrep << "ORepFactory: пока не удаляем" << endl;
+				rem = false;
+			}
+		}
+	}
+
+
+	// Удаляем контекст, если он уже пустой
+	if( rem )
+	{
+		// Получаем имя контекста содержащего удаляемый
+		string in_sec(ORepHelpers::getSectionName(fullName));
+		//Получаем имя удаляемого контекста
+		string name(ObjectIndex::getBaseName(fullName));
+
+		try
+		{
+			int argc(uconf->getArgc());
+			const char* const* argv(uconf->getArgv());
+			CosNaming::Name_var ctxName = omniURI::stringToName(name.c_str());
+			CosNaming::NamingContext_var in_ctx = ORepHelpers::getContext(in_sec, argc, argv, nsName);
+			ctx->destroy();
+			in_ctx->unbind(ctxName);
+		}
+		catch(const CosNaming::NamingContext::NotEmpty& ne)
+		{
+			ulogrep << "ORepFactory: контекст" << fullName << " не пустой " << endl;
+			rem = false;
+		}
+		catch( ORepFailed )
+		{
+			ulogrep << "ORepFactory: не удаось получить ссылку на контекст " << in_sec << endl;
+			rem = false;
+		}
+	}
+
+
+	if( !CORBA::is_nil(bi) )
+		bi->destroy(); // ??
+
+	return rem;
+}
+
+// -----------------------------------------------------------------------------------------------------------
+/*!
+ * \param newFName - полное имя новой секции
+ * \param oldFName - полное имя удаляемрй секции
+*/
+bool ObjectRepository::renameSection( const string& newFName, const string& oldFName )
+{
+	string newName(ObjectIndex::getBaseName(newFName));
+	string oldName(ObjectIndex::getBaseName(oldFName));
+	CosNaming::Name_var ctxNewName = omniURI::stringToName(newName.c_str());
+	CosNaming::Name_var ctxOldName = omniURI::stringToName(oldName.c_str());
+
+	string in_sec(ORepHelpers::getSectionName(newFName));
+
+	try
+	{
+		int argc(uconf->getArgc());
+		const char* const* argv(uconf->getArgv());
+		CosNaming::NamingContext_var in_ctx = ORepHelpers::getContext(in_sec, argc, argv, nsName);
+		CosNaming::NamingContext_var ctx = ORepHelpers::getContext(oldFName, argc, argv, nsName);
+
+		// заменит контекст newFName если он существовал
+		in_ctx->rebind_context(ctxNewName, ctx);
+		in_ctx->unbind(ctxOldName);
+	}
+	catch( ORepFailed )
+	{
+		return false;
+	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------------------------------------

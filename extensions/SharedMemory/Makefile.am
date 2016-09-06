@@ -6,7 +6,7 @@ USM_VER=@LIBVER@
 lib_LTLIBRARIES 	= libUniSet2SharedMemory.la
 libUniSet2SharedMemory_la_LDFLAGS	= -version-info $(USM_VER)
 libUniSet2SharedMemory_la_LIBADD		= $(SIGC_LIBS) $(top_builddir)/lib/libUniSet2.la \
-	$(top_builddir)/extensions/lib/libUniSet2Extensions.la
+	$(top_builddir)/extensions/lib/libUniSet2Extensions.la -lrt
 libUniSet2SharedMemory_la_CPPFLAGS	= $(SIGC_CFLAGS) -I$(top_builddir)/extensions/include
 libUniSet2SharedMemory_la_SOURCES 	= SharedMemory.cc
 

@@ -21,7 +21,6 @@
 #include <string>
 #include <queue>
 #include <deque>
-#include <cc++/socket.h>
 #include "UniSetObject.h"
 #include "Trigger.h"
 #include "Mutex.h"
@@ -51,7 +50,7 @@
     \section pgUNetUDP_Common Общее описание
         Обмен построен  на основе протокола UDP.
         Основная идея заключается в том, что каждый узел на порту равном своему ID
-    посылает в сеть UDP-пакеты содержащие данные считанные из локальной SM. Формат данных - это набор
+	посылает в сеть UDP-пакеты содержащие данные считанные из локальной SM. Формат данных - это набор
     пар [id,value]. Другие узлы принимают их. Помимо этого данный процесс запускает
 	"получателей" по одному на каждый (другой) узел и ловит пакеты от них, сохраняя данные в SM.
 	При этом "получатели" работают на одном(!) потоке с использованием событий libev (см. UNetReceiver).
@@ -74,10 +73,15 @@
             ...
         </iocards>
         </item>
-        <item ip="192.168.56.10" name="Node1" textname="Node1" unet_port="3001"/>
+		<item ip="192.168.56.10" name="Node1" textname="Node1" unet_port="3001" unet_update_strategy="evloop"/>
         <item ip="192.168.56.11" name="Node2" textname="Node2" unet_port="3002"/>
     </nodes>
     \endcode
+
+	* \b unet_update_strategy - задаёт стратегию обновления данных в SM.
+	   Поддерживается два варианта:
+	- 'thread' - отдельный поток обновления
+	- 'evloop' - использование общего с приёмом event loop (libev)
 
 	\note Имеется возможность задавать отдельную настроечную секцию для "списка узлов" при помощи параметра
 	 --prefix-nodes-confnode name. По умолчанию настройка ведётся по секции <nodes>
@@ -129,7 +133,7 @@ class UNetExchange:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* argv[] );
 
-		bool checkExistUNetHost( const std::string& host, ost::tpport_t port );
+		bool checkExistUNetHost( const std::string& host, int port );
 
 		inline std::shared_ptr<LogAgregator> getLogAggregator()
 		{
@@ -176,12 +180,12 @@ class UNetExchange:
 
 	private:
 		UNetExchange();
-		timeout_t initPause;
+		timeout_t initPause = { 0 };
 		UniSetTypes::uniset_rwmutex mutex_start;
 
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat = { UniSetTypes::DefaultObjectId };
-		timeout_t maxHeartBeat = 10;
+		timeout_t maxHeartBeat = { 10 };
 		IOController::IOStateList::iterator itHeartBeat;
 		UniSetTypes::ObjectId test_id = { UniSetTypes::DefaultObjectId };
 
@@ -239,7 +243,7 @@ class UNetExchange:
 			// ( реализацию см. ReceiverInfo::step() )
 			UniSetTypes::ObjectId sidRespond;
 			IOController::IOStateList::iterator itRespond;
-			bool respondInvert;
+			bool respondInvert = { false };
 			UniSetTypes::ObjectId sidLostPackets;
 			IOController::IOStateList::iterator itLostPackets;
 			UniSetTypes::ObjectId sidChannelNum;
@@ -249,7 +253,7 @@ class UNetExchange:
 		typedef std::deque<ReceiverInfo> ReceiverList;
 		ReceiverList recvlist;
 
-		bool no_sender;  /*!< флаг отключения посылки сообщений (создания потока для посылки)*/
+		bool no_sender = { false };  /*!< флаг отключения посылки сообщений (создания потока для посылки)*/
 		std::shared_ptr<UNetSender> sender;
 		std::shared_ptr<UNetSender> sender2;
 

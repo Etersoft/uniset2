@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */
 // --------------------------------------------------------------------------
-// generate timestamp: 2016-08-01+03:00
+// generate timestamp: 2016-08-25+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -36,8 +36,9 @@ UObject_SK::UObject_SK():
 
 	// Используемые идентификаторы сообщений (имена берутся из конф. файла)
 
-	// variables
+	// variables (public and proteced)
 
+	// ------------------
 	active(false),
 
 	idHeartBeat(DefaultObjectId),
@@ -47,6 +48,7 @@ UObject_SK::UObject_SK():
 	activated(false),
 	askPause(2000),
 	forceOut(false),
+	// private variables
 
 	end_private(false)
 {
@@ -64,6 +66,19 @@ static const std::string init3_str( const std::string& s1, const std::string& s2
 		return s2;
 
 	return s3;
+}
+// -----------------------------------------------------------------------------
+static UniSetTypes::ObjectId init_node( xmlNode* cnode, const std::string& prop )
+{
+	if( prop.empty() )
+		return uniset_conf()->getLocalNode();
+
+	auto conf = uniset_conf();
+
+	if( conf->getProp(cnode, prop).empty() )
+		return conf->getLocalNode();
+
+	return conf->getNodeID(conf->getProp(cnode, prop));
 }
 // -----------------------------------------------------------------------------
 UObject_SK::UObject_SK( ObjectId id, xmlNode* cnode, const std::string& _argprefix ):

@@ -795,8 +795,7 @@ bool IOControl::initIOItem( UniXML::iterator& it )
 
 	if( prior > 0 )
 	{
-		IOPriority p(prior, maxItem);
-		pmap.push_back(p);
+		pmap.emplace_back(prior, maxItem);
 		iolog3 << myname << "(readItem): add to priority list: " <<
 			   it.getProp("name")
 			   << " priority=" << prior << endl;

@@ -8,27 +8,24 @@ load_mod spec
 REL=eter
 MAILDOMAIN=server
 
-# builder50 path
-TOPDIR=/var/ftp/pvt/Etersoft/Ourside/
+[ -z "$TOPDIR" ] && TOPDIR=/var/ftp/pub/Ourside
+[ -z "$GEN" ] && GEN=/var/ftp/pub/Ourside/$PLATFORM/genb.sh
 
 PKGNAME=uniset2
 SPECNAME=libuniset2.spec
 
-PLATFORM=i586
-[[ `uname -m` == "x86_64" ]] && PLATFORM=x86_64
+if [ -z "$PLATFORM" ]; then
+	PLATFORM=i586
+	[[ `uname -m` == "x86_64" ]] && PLATFORM=x86_64
+fi
 
 PROJECT=$1
 test -n "$PROJECT" || PROJECT=$PKGNAME
 
-if [ -d "$TOPDIR" ] ; then
-	GEN="genbasedir --create --progress --topdir=$TOPDIR $PLATFORM $PROJECT"
-else
-	# For NoteBook build
-	TOPDIR=/var/ftp/pub/Ourside
-	GEN=/var/ftp/pub/Ourside/$PLATFORM/genb.sh
-fi
-FTPDIR=$TOPDIR/$PLATFORM/RPMS.$PROJECT
-BACKUPDIR=$FTPDIR/backup
+[ -a "$GEN" ] || GEN="genbasedir --create --progress --topdir=$TOPDIR $PLATFORM $PROJECT"
+
+[ -z "$FTPDIR" ] && FTPDIR=$TOPDIR/$PLATFORM/RPMS.$PROJECT
+[ -z "$BACKUPDIR" ] && BACKUPDIR=$FTPDIR/backup
 
 fatal()
 {

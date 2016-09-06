@@ -90,6 +90,11 @@ void IOController::sensorsUnregistration()
 	}
 }
 // ------------------------------------------------------------------------------------------
+IOController::InitSignal IOController::signal_init()
+{
+	return sigInit;
+}
+// ------------------------------------------------------------------------------------------
 void IOController::activateInit()
 {
 	// Разрегистрируем аналоговые датчики
@@ -104,11 +109,11 @@ void IOController::activateInit()
 			{
 				auto d_it = myiofind(s->d_si.id);
 
-				if( d_it != ioEnd() )
+				if( d_it != myioEnd() )
 					s->checkDepend( d_it->second, this);
 			}
 
-			sigInit.emit(li, this);
+			sigInit.emit(s, this);
 		}
 		catch( const Exception& ex )
 		{
@@ -129,7 +134,7 @@ long IOController::localGetValue( IOController::IOStateList::iterator& li, const
 		li = ioList.find(sid);
 
 	if( li != ioList.end() )
-		return localGetValue(li->second, sid);
+		return localGetValue(li->second);
 
 	// -------------
 	ostringstream err;
@@ -140,7 +145,7 @@ long IOController::localGetValue( IOController::IOStateList::iterator& li, const
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // ------------------------------------------------------------------------------------------
-long IOController::localGetValue( std::shared_ptr<USensorInfo>& usi, const UniSetTypes::ObjectId sid )
+long IOController::localGetValue( std::shared_ptr<USensorInfo>& usi )
 {
 	if( usi )
 	{
@@ -154,9 +159,7 @@ long IOController::localGetValue( std::shared_ptr<USensorInfo>& usi, const UniSe
 
 	// -------------
 	ostringstream err;
-	err << myname << "(localGetValue): Not found sensor (" << sid << ") "
-		<< uniset_conf()->oind->getNameById(sid);
-
+	err << myname << "(localGetValue): Unknown sensor";
 	uinfo << err.str() << endl;
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
@@ -251,7 +254,7 @@ void IOController::setValue( UniSetTypes::ObjectId sid, CORBA::Long value, UniSe
 	localSetValueIt( li, sid, value, sup_id );
 }
 // ------------------------------------------------------------------------------------------
-void IOController::localSetValueIt( IOController::IOStateList::iterator& li,
+long IOController::localSetValueIt( IOController::IOStateList::iterator& li,
 									UniSetTypes::ObjectId sid,
 									CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
@@ -270,14 +273,17 @@ void IOController::localSetValueIt( IOController::IOStateList::iterator& li,
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
-	localSetValue(li->second, sid, value, sup_id);
+	return localSetValue(li->second, value, sup_id);
 }
 // ------------------------------------------------------------------------------------------
-void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
-								  UniSetTypes::ObjectId sid,
+long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 								  CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
+	// if( !usi ) - не проверяем, т.к. считаем что это внутренние функции и несуществующий указатель передать не могут
+
 	bool changed = false;
+	bool blockChanged = false;
+	long retValue = value;
 
 	{
 		// lock
@@ -285,49 +291,37 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 
 		usi->supplier = sup_id; // запоминаем того кто изменил
 
-		// фильтрам может потребоваться измениять исходное значение (например для усреднения)
-		// поэтому передаём (и затем сохраняем) напрямую(ссылку) value (а не const value)
 		bool blocked = ( usi->blocked || usi->undefined );
+		changed = ( usi->real_value != value );
 
-		if( checkIOFilters(usi, value, sup_id) || blocked )
+		// если поменялось состояние блокировки
+		blockChanged = ( blocked != (usi->value == usi->d_off_value ) );
+
+		if( changed || blockChanged )
 		{
-			ulog4 << myname << ": save sensor value (" << sid << ")"
-				  << " name: " << uniset_conf()->oind->getNameById(sid)
+			ulog4 << myname << ": save sensor value (" << usi->si.id << ")"
+				  << " name: " << uniset_conf()->oind->getNameById(usi->si.id)
 				  << " newvalue=" << value
 				  << " value=" << usi->value
 				  << " blocked=" << usi->blocked
 				  << " real_value=" << usi->real_value
+				  << " supplier=" << sup_id
 				  << endl;
 
-			CORBA::Long prev = usi->value;
-
-			if( blocked )
-			{
-				usi->real_value = value;
-				usi->value = usi->d_off_value;
-			}
-			else
-			{
-				usi->value = value;
-				usi->real_value = value;
-			}
-
-			changed = ( prev != usi->value );
+			usi->real_value = value;
+			usi->value = (blocked ? usi->d_off_value : value);
+			retValue = usi->value;
 
 			// запоминаем время изменения
-			struct timeval tm = { 0 };
-			struct timezone tz;
-			tm.tv_sec  = 0;
-			tm.tv_usec = 0;
-			gettimeofday(&tm, &tz);
+			struct timespec tm = UniSetTypes::now_to_timespec();
 			usi->tv_sec  = tm.tv_sec;
-			usi->tv_usec = tm.tv_usec;
+			usi->tv_nsec = tm.tv_nsec;
 		}
 	}    // unlock
 
 	try
 	{
-		if( changed )
+		if( changed || blockChanged )
 		{
 			uniset_rwmutex_wrlock l(usi->changeMutex);
 			usi->sigChange.emit(usi, this);
@@ -337,13 +331,15 @@ void IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 
 	try
 	{
-		if( changed )
+		if( changed || blockChanged )
 		{
 			std::lock_guard<std::mutex> l(siganyMutex);
 			sigAnyChange.emit(usi, this);
 		}
 	}
 	catch(...) {}
+
+	return retValue;
 }
 // ------------------------------------------------------------------------------------------
 IOType IOController::getIOType( UniSetTypes::ObjectId sid )
@@ -358,7 +354,7 @@ IOType IOController::getIOType( UniSetTypes::ObjectId sid )
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // ---------------------------------------------------------------------------
-void IOController::ioRegistration( std::shared_ptr<USensorInfo>& ainf, bool force )
+void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi, bool force )
 {
 	// проверка задан ли контроллеру идентификатор
 	if( getId() == DefaultObjectId )
@@ -375,50 +371,46 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& ainf, bool forc
 
 		if( !force )
 		{
-			auto li = ioList.find(ainf->si.id);
+			auto li = ioList.find(usi->si.id);
 
 			if( li != ioList.end() )
 			{
 				ostringstream err;
-				err << "Попытка повторной регистрации датчика(" << ainf->si.id << "). имя: "
-					<< uniset_conf()->oind->getNameById(ainf->si.id);
+				err << "Попытка повторной регистрации датчика(" << usi->si.id << "). имя: "
+					<< uniset_conf()->oind->getNameById(usi->si.id);
 				throw ObjectNameAlready(err.str());
 			}
 		}
 
-		IOStateList::mapped_type ai = ainf;
+		IOStateList::mapped_type ai = usi;
 		// запоминаем начальное время
-		struct timeval tm;
-		struct timezone tz;
-		tm.tv_sec   = 0;
-		tm.tv_usec  = 0;
-		gettimeofday(&tm, &tz);
+		struct timespec tm = UniSetTypes::now_to_timespec();
 		ai->tv_sec   = tm.tv_sec;
-		ai->tv_usec  = tm.tv_usec;
+		ai->tv_nsec  = tm.tv_nsec;
 		ai->value    = ai->default_val;
 		ai->supplier = getId();
 
 		// более оптимальный способ(при условии вставки первый раз)
-		ioList.emplace( IOStateList::value_type(ainf->si.id, std::move(ai) ));
+		ioList.emplace( IOStateList::value_type(usi->si.id, std::move(ai) ));
 	}
 
 	try
 	{
-		for( unsigned int i = 0; i < 2; i++ )
+		for( size_t i = 0; i < 2; i++ )
 		{
 			try
 			{
 				uinfo << myname
 					  << "(ioRegistration): регистрирую "
-					  << uniset_conf()->oind->getNameById(ainf->si.id) << endl;
+					  << uniset_conf()->oind->getNameById(usi->si.id) << endl;
 
-				ui->registered( ainf->si.id, getRef(), true );
+				ui->registered( usi->si.id, getRef(), true );
 				return;
 			}
 			catch( const ObjectNameAlready& ex )
 			{
 				uwarn << myname << "(asRegistration): ЗАМЕНЯЮ СУЩЕСТВУЮЩИЙ ОБЪЕКТ (ObjectNameAlready)" << endl;
-				ui->unregister(ainf->si.id);
+				ui->unregister(usi->si.id);
 			}
 		}
 	}
@@ -435,17 +427,18 @@ void IOController::ioUnRegistration( const UniSetTypes::ObjectId sid )
 // ---------------------------------------------------------------------------
 void IOController::logging( UniSetTypes::SensorMessage& sm )
 {
-	uniset_rwmutex_wrlock l(loggingMutex);
+	std::lock_guard<std::mutex> l(loggingMutex);
 
 	try
 	{
-		//        struct timezone tz;
-		//        gettimeofday(&sm.tm,&tz);
 		ObjectId dbID = uniset_conf()->getDBServer();
 
 		// значит на этом узле нет DBServer-а
 		if( dbID == UniSetTypes::DefaultObjectId )
+		{
+			isPingDBServer = false;
 			return;
+		}
 
 		sm.consumer = dbID;
 		TransportMessage tm(std::move(sm.transport_msg()));
@@ -475,7 +468,7 @@ void IOController::dumpToDB()
 		{
 			if ( !li->second->dbignore )
 			{
-				SensorMessage sm(li->second->makeSensorMessage());
+				SensorMessage sm( std::move(li->second->makeSensorMessage()) );
 				logging(sm);
 			}
 		}
@@ -593,25 +586,21 @@ IOController_i::CalibrateInfo IOController::getCalibrateInfo( UniSetTypes::Objec
 }
 // --------------------------------------------------------------------------------------------------------------
 IOController::USensorInfo::USensorInfo( IOController_i::SensorIOInfo& ai ):
-	IOController_i::SensorIOInfo(ai),
-	any(0)
+	IOController_i::SensorIOInfo(ai)
 {}
 
 IOController::USensorInfo::USensorInfo( const IOController_i::SensorIOInfo& ai ):
-	IOController_i::SensorIOInfo(ai),
-	any(0)
+	IOController_i::SensorIOInfo(ai)
 {}
 
 IOController::USensorInfo::USensorInfo(IOController_i::SensorIOInfo* ai):
-	IOController_i::SensorIOInfo(*ai),
-	any(0)
+	IOController_i::SensorIOInfo(*ai)
 {}
 
 IOController::USensorInfo&
 IOController::USensorInfo::operator=(IOController_i::SensorIOInfo& r)
 {
 	(*this) = r;
-	//    any=0;
 	return *this;
 }
 
@@ -619,8 +608,6 @@ IOController::USensorInfo&
 IOController::USensorInfo::operator=(IOController_i::SensorIOInfo* r)
 {
 	(*this) = (*r);
-	//    any=0;
-
 	return *this;
 }
 
@@ -636,36 +623,6 @@ void IOController::USensorInfo::init( const IOController_i::SensorIOInfo& s )
 {
 	IOController::USensorInfo r(s);
 	(*this) = std::move(r);
-}
-// ----------------------------------------------------------------------------------------
-bool IOController::checkIOFilters( std::shared_ptr<USensorInfo>& usi, CORBA::Long& newvalue,
-								   UniSetTypes::ObjectId sup_id )
-{
-	for( const auto& it : iofilters )
-	{
-		if( it(usi, newvalue, sup_id) == false )
-			return false;
-	}
-
-	return true;
-}
-
-// ----------------------------------------------------------------------------------------
-IOController::IOFilterSlotList::iterator IOController::addIOFilter( IOFilterSlot sl, bool push_front )
-{
-	if( push_front == false )
-	{
-		iofilters.push_back(sl);
-		return --iofilters.end();
-	}
-
-	iofilters.push_front(sl);
-	return iofilters.begin();
-}
-// ----------------------------------------------------------------------------------------
-void IOController::eraseIOFilter(IOController::IOFilterSlotList::iterator& it)
-{
-	iofilters.erase(it);
 }
 // ----------------------------------------------------------------------------------------
 IOController::IOStateList::iterator IOController::myioBegin()
@@ -747,7 +704,7 @@ IOController_i::ShortIOInfo IOController::getChangedTime( UniSetTypes::ObjectId 
 		uniset_rwmutex_rlock lock(s->val_lock);
 		i.value = s->value;
 		i.tv_sec = s->tv_sec;
-		i.tv_usec = s->tv_usec;
+		i.tv_nsec = s->tv_nsec;
 		i.supplier = s->supplier;
 		return i;
 	}
@@ -799,7 +756,6 @@ IOController::ChangeSignal IOController::signal_change_value( UniSetTypes::Objec
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
-	uniset_rwmutex_rlock lock(it->second->val_lock);
 	return it->second->sigChange;
 }
 // -----------------------------------------------------------------------------
@@ -823,7 +779,7 @@ IOController::ChangeUndefinedStateSignal IOController::signal_change_undefined_s
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
-	uniset_rwmutex_rlock lock(it->second->val_lock);
+	//	uniset_rwmutex_rlock lock(it->second->val_lock);
 	return it->second->sigUndefChange;
 }
 // -----------------------------------------------------------------------------
@@ -855,7 +811,7 @@ void IOController::USensorInfo::checkDepend( std::shared_ptr<USensorInfo>& d_it,
 		  << endl;
 
 	if( changed )
-		ic->localSetValue( it, si.id, real_value, sup_id );
+		ic->localSetValue( d_usi, real_value, sup_id );
 }
 // -----------------------------------------------------------------------------
 UniSetTypes::SimpleInfo* IOController::getInfo( ::CORBA::Long userparam )

@@ -118,6 +118,11 @@ UniSetManager::~UniSetManager()
 	mlist.clear();
 }
 // ------------------------------------------------------------------------------------------
+std::shared_ptr<UniSetManager> UniSetManager::get_mptr()
+{
+	return std::dynamic_pointer_cast<UniSetManager>(get_ptr());
+}
+// ------------------------------------------------------------------------------------------
 void UniSetManager::initPOA( const std::weak_ptr<UniSetManager>& rmngr )
 {
 	auto m = rmngr.lock();
@@ -499,17 +504,6 @@ const std::shared_ptr<UniSetObject> UniSetManager::itemO( const ObjectId id )
 
 // ------------------------------------------------------------------------------------------
 
-int UniSetManager::objectsCount()
-{
-	int res( olist.size() + mlist.size() );
-
-	for( auto i : mlist )
-		res += i->objectsCount();
-
-	return res;
-}
-
-// ------------------------------------------------------------------------------------------
 int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, SimpleInfoSeq* seq,
 								   int begin, const long uplimit, CORBA::Long userparam )
 {
@@ -598,5 +592,45 @@ std::ostream& operator<<(std::ostream& os, UniSetManager::OManagerCommand& cmd )
 		return os << "terminate";
 
 	return os << "unkwnown";
+}
+// ------------------------------------------------------------------------------------------
+UniSetManagerList::const_iterator UniSetManager::beginMList()
+{
+	return mlist.begin();
+}
+// ------------------------------------------------------------------------------------------
+UniSetManagerList::const_iterator UniSetManager::endMList()
+{
+	return mlist.end();
+}
+// ------------------------------------------------------------------------------------------
+ObjectsList::const_iterator UniSetManager::beginOList()
+{
+	return olist.begin();
+}
+// ------------------------------------------------------------------------------------------
+ObjectsList::const_iterator UniSetManager::endOList()
+{
+	return olist.end();
+}
+// ------------------------------------------------------------------------------------------
+size_t UniSetManager::objectsCount() const
+{
+	size_t res = olist.size() + mlist.size();
+
+	for( const auto& i : mlist )
+		res += i->objectsCount();
+
+	return res;
+}
+// ------------------------------------------------------------------------------------------
+PortableServer::POA_ptr UniSetManager::getPOA()
+{
+	return PortableServer::POA::_duplicate(poa);
+}
+// ------------------------------------------------------------------------------------------
+PortableServer::POAManager_ptr UniSetManager::getPOAManager()
+{
+	return  PortableServer::POAManager::_duplicate(pman);
 }
 // ------------------------------------------------------------------------------------------

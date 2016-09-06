@@ -21,7 +21,6 @@
 #include <memory>
 #include <queue>
 #include <vector>
-#include <cc++/socket.h>
 #include "UTCPStream.h"
 #include "DebugStream.h"
 #include "LogServerTypes.h"
@@ -42,13 +41,13 @@ class LogReader
 			std::string logfilter = { "" };
 		};
 
-		void sendCommand( const std::string& addr, ost::tpport_t port,
+		void sendCommand( const std::string& addr, int port,
 						  std::vector<Command>& vcmd, bool cmd_only = true,
 						  bool verbose = false );
 
-		void readlogs( const std::string& addr, ost::tpport_t port, LogServerTypes::Command c = LogServerTypes::cmdNOP, const std::string logfilter = "", bool verbose = false );
+		void readlogs( const std::string& addr, int port, LogServerTypes::Command c = LogServerTypes::cmdNOP, const std::string logfilter = "", bool verbose = false );
 
-		bool isConnection();
+		bool isConnection() const;
 
 		inline void setReadCount( unsigned int n )
 		{
@@ -84,8 +83,7 @@ class LogReader
 
 	protected:
 
-		void connect( const std::string& addr, ost::tpport_t port, timeout_t tout = TIMEOUT_INF );
-		void connect( ost::InetAddress addr, ost::tpport_t port, timeout_t tout = TIMEOUT_INF );
+		void connect( const std::string& addr, int port, timeout_t tout = UniSetTimer::WaitUpTime );
 		void disconnect();
 		void logOnEvent( const std::string& s );
 		void sendCommand(LogServerTypes::lsMessage& msg, bool verbose = false );
@@ -97,7 +95,7 @@ class LogReader
 	private:
 		std::shared_ptr<UTCPStream> tcp;
 		std::string iaddr = { "" };
-		ost::tpport_t port = { 0 };
+		int port = { 0 };
 		bool cmdonly { false };
 		unsigned int readcount = { 0 }; // количество циклов чтения
 

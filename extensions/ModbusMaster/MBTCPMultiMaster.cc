@@ -18,6 +18,7 @@
 #include <limits>
 #include <iomanip>
 #include <sstream>
+#include <Poco/Net/NetException.h>
 #include <Exceptions.h>
 #include <extensions/Extensions.h>
 #include "MBTCPMultiMaster.h"
@@ -32,8 +33,6 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 	MBExchange(objId, shmId, ic, prefix),
 	force_disconnect(true)
 {
-	tcpMutex.setName(myname + "_tcpMutex");
-
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(MBTCPMultiMaster): objId=-1?!! Use --" + prefix + "-name" );
 
@@ -139,8 +138,8 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		auto l = loga->create(sinf.myname);
 		sinf.mbtcp->setLog(l);
 
-		mblist.push_back(sinf);
 		mbinfo << myname << "(init): add slave channel " << sinf.myname << endl;
+		mblist.emplace_back(std::move(sinf));
 	}
 
 	if( ic )
@@ -226,8 +225,6 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 	}
 
 	{
-		uniset_rwmutex_wrlock l(tcpMutex);
-
 		// сперва надо обновить все ignore
 		// т.к. фактически флаги выставляются и сбрасываются только здесь
 		for( auto it = mblist.rbegin(); it != mblist.rend(); ++it )
@@ -268,8 +265,6 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 	// проходим по списку (в обратном порядке, т.к. самый приоритетный в конце)
 	for( auto it = mblist.rbegin(); it != mblist.rend(); ++it )
 	{
-		uniset_rwmutex_wrlock l(tcpMutex);
-
 		if( it->respond && !it->ignore && it->init(mblog) )
 		{
 			mbi = it;
@@ -286,8 +281,6 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 	// значит сейчас просто находим первый у кого есть связь и делаем его главным
 	for( auto it = mblist.rbegin(); it != mblist.rend(); ++it )
 	{
-		uniset_rwmutex_wrlock l(tcpMutex);
-
 		if( it->respond && it->check() && it->init(mblog) )
 		{
 			mbi = it;
@@ -302,7 +295,6 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 
 	// значит всё-таки связи реально нет...
 	{
-		uniset_rwmutex_wrlock l(tcpMutex);
 		mbi = mblist.rend();
 		mb = nullptr;
 	}
@@ -325,8 +317,6 @@ bool MBTCPMultiMaster::MBSlaveInfo::init( std::shared_ptr<DebugStream>& mblog )
 {
 	try
 	{
-		ost::Thread::setException(ost::Thread::throwException);
-
 		mbinfo << myname << "(init): connect..." << endl;
 
 		mbtcp->connect(ip, port);
@@ -345,15 +335,18 @@ bool MBTCPMultiMaster::MBSlaveInfo::init( std::shared_ptr<DebugStream>& mblog )
 
 			initOK = true;
 		}
+
+		mbinfo << myname << "(init): connect " << mbtcp->isConnection() << endl;
+
 		return mbtcp->isConnection();
 	}
 	catch( ModbusRTU::mbException& ex )
 	{
 		mbwarn << "(init): " << ex << endl;
 	}
-	catch( const ost::Exception& e )
+	catch( const Poco::Net::NetException& e )
 	{
-		mbwarn << myname << "(init): Can`t create socket " << ip << ":" << port << " err: " << e.getString() << endl;
+		mbwarn << myname << "(init): Can`t create socket " << ip << ":" << port << " err: " << e.displayText() << endl;
 	}
 	catch(...)
 	{
@@ -458,10 +451,7 @@ void MBTCPMultiMaster::check_thread()
 					mbcrit << myname << "(check): (respond) " << it->myname << " : " << ex.what() << std::endl;
 				}
 
-				{
-					uniset_rwmutex_wrlock l(tcpMutex);
-					it->respond = r;
-				}
+				it->respond = r;
 			}
 			catch( const std::exception& ex )
 			{
@@ -520,6 +510,29 @@ void MBTCPMultiMaster::sigterm( int signo )
 	//		std::clog << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
 	//	}
 }
+// -----------------------------------------------------------------------------
+bool MBTCPMultiMaster::deactivateObject()
+{
+	setProcActive(false);
+
+	if( pollThread )
+	{
+		pollThread->stop();
+
+		if( pollThread->isRunning() )
+			pollThread->join();
+	}
+
+	if( checkThread )
+	{
+		checkThread->stop();
+
+		if( checkThread->isRunning() )
+			checkThread->join();
+	}
+
+	return MBExchange::deactivateObject();
+}
 
 // -----------------------------------------------------------------------------
 void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
@@ -529,8 +542,8 @@ void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
 	cout << endl;
 	cout << " Настройки протокола TCP(MultiMaster): " << endl;
 	cout << "--prefix-persistent-connection 0,1 - Не закрывать соединение на каждом цикле опроса" << endl;
-	cout << "--prefix-checktime                 - период проверки связи по каналам (<GateList>)" << endl;
-	cout << "--prefix-ignore-timeout            - Timeout на повторную попытку использования канала после 'reopen-timeout'. По умолчанию: reopen-timeout * 3" << endl;
+	cout << "--prefix-checktime msec            - период проверки связи по каналам (<GateList>)" << endl;
+	cout << "--prefix-ignore-timeout msec       - Timeout на повторную попытку использования канала после 'reopen-timeout'. По умолчанию: reopen-timeout * 3" << endl;
 	cout << endl;
 	cout << " ВНИМАНИЕ! '--prefix-reopen-timeout' для MBTCPMultiMaster НЕ ДЕЙСТВУЕТ! " << endl;
 	cout << " Смена канала происходит по --prefix-timeout. " << endl;

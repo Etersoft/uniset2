@@ -2,10 +2,11 @@
 #ifndef USocket_H_
 #define USocket_H_
 // -------------------------------------------------------------------------
-#include <cc++/socket.h>
+#include <Poco/Net/Socket.h>
+#include "PassiveTimer.h" // fot timeout_t
 // -------------------------------------------------------------------------
 class USocket:
-	public ost::Socket
+	public Poco::Net::Socket
 {
 	public:
 

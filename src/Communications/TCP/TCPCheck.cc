@@ -52,7 +52,7 @@ bool TCPCheck::check( const std::string& _ip, int _port, timeout_t tout, timeout
 	setResult(false);
 
 	ThreadCreator<TCPCheck> t(this, &TCPCheck::check_thread);
-	t.setCancel(ost::Thread::cancelDeferred);
+	//	t.setCancel(ost::Thread::cancelDeferred);
 	t.start();
 
 	PassiveTimer pt(tout);
@@ -72,14 +72,13 @@ void TCPCheck::check_thread()
 
 	try
 	{
-		ost::Thread::setException(ost::Thread::throwException);
 		UTCPStream t;
-		t.create(ip, port, true, tout_msec);
+		t.create(ip, port, tout_msec);
 		t.setKeepAliveParams( (tout_msec > 1000 ? tout_msec / 1000 : 1) );
 		setResult(true);
-		t.disconnect();
+		t.close();
 	}
-	catch( ost::Exception& e ) {}
+	catch( ... ) {}
 }
 // -----------------------------------------------------------------------------
 bool TCPCheck::ping( const std::string& _ip, timeout_t tout, timeout_t sleep_msec, const std::string& _ping_args )
@@ -91,7 +90,6 @@ bool TCPCheck::ping( const std::string& _ip, timeout_t tout, timeout_t sleep_mse
 	setResult(false);
 
 	ThreadCreator<TCPCheck> t(this, &TCPCheck::ping_thread);
-	t.setCancel(ost::Thread::cancelDeferred);
 	t.start();
 
 	PassiveTimer pt(tout);

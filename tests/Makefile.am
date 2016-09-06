@@ -1,4 +1,4 @@
-SUBDIRS=MQPerfTest
+SUBDIRS=MQPerfTest PocoTest
 if HAVE_TESTS
 ############################################################################
 # This file is part of the UniSet library								  #
@@ -8,8 +8,8 @@ if HAVE_TESTS
 noinst_PROGRAMS = tests tests_with_conf develop
 
 #umutex threadtst dlog
-tests_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(SIGC_LIBS) $(COMCPP_LIBS)
-tests_CPPFLAGS	= -I$(top_builddir)/include $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
+tests_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(SIGC_LIBS) $(POCO_LIBS) -lpthread
+tests_CPPFLAGS	= -I$(top_builddir)/include $(SIGC_CFLAGS) $(POCO_CFLAGS)
 tests_SOURCES = tests.cc \
 test_passivetimer.cc \
 test_passivecondtimer.cc \
@@ -26,7 +26,9 @@ test_pulse.cc \
 test_modbustypes.cc \
 test_mutex.cc \
 test_logserver.cc \
-test_tcpcheck.cc
+test_tcpcheck.cc \
+test_utcpsocket.cc \
+test_iocontroller_types.cc
 
 tests_with_conf_LDADD   = $(top_builddir)/lib/libUniSet2.la
 tests_with_conf_CPPFLAGS = -I$(top_builddir)/include
@@ -40,8 +42,8 @@ test_mqueue.cc \
 test_uobject.cc
 
 # threadtst_SOURCES = threadtst.cc
-# threadtst_LDADD 	= $(top_builddir)/lib/libUniSet2.la ${SIGC_LIBS} $(COMCPP_LIBS)
-# threadtst_CPPFLAGS	= -I$(top_builddir)/include ${SIGC_CFLAGS} $(COMCPP_CFLAGS)
+# threadtst_LDADD 	= $(top_builddir)/lib/libUniSet2.la ${SIGC_LIBS}
+# threadtst_CPPFLAGS	= -I$(top_builddir)/include ${SIGC_CFLAGS}
 # 
 
 

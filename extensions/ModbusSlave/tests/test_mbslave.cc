@@ -35,9 +35,8 @@ static void InitTest()
 	if( !mb )
 	{
 		mb = std::make_shared<ModbusTCPMaster>();
-		ost::InetAddress ia(addr.c_str());
 		mb->setTimeout(2000);
-		REQUIRE_NOTHROW( mb->connect(ia, port) );
+		REQUIRE_NOTHROW( mb->connect(addr, port) );
 		msleep(5000);
 	}
 }

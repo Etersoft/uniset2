@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */
 // --------------------------------------------------------------------------
-// generate timestamp: 2016-08-01+03:00
+// generate timestamp: 2016-08-25+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -165,26 +165,19 @@ class UObject_SK:
 			return "";    /*!< пользовательская информация выводимая в getInfo() */
 		}
 
+		// Выполнение очередного шага программы
+		virtual void step() {}
+
 		virtual void testMode( bool state );
-		void updatePreviousValues();
-		void checkSensors();
 		void updateOutputs( bool force );
 
-		void preAskSensors( UniversalIO::UIOCommand cmd );
-		void preSensorInfo( const UniSetTypes::SensorMessage* sm );
-		void preTimerInfo( const UniSetTypes::TimerMessage* tm );
-		void preSysCommand( const UniSetTypes::SystemMessage* sm );
 		void waitSM( int wait_msec, UniSetTypes::ObjectId testID = UniSetTypes::DefaultObjectId );
-		void initFromSM();
 		UniSetTypes::ObjectId getSMTestID();
 
 		void resetMsg();
 		Trigger trResetMsg;
 		PassiveTimer ptResetMsg;
 		int resetMsgTime;
-
-		// Выполнение очередного шага программы
-		virtual void step() {}
 
 		int sleep_msec; /*!< пауза между итерациями */
 		bool active;
@@ -195,7 +188,7 @@ class UObject_SK:
 		// управление датчиком "сердцебиения"
 		PassiveTimer ptHeartBeat;				/*! < период "сердцебиения" */
 		UniSetTypes::ObjectId idHeartBeat;		/*! < идентификатор датчика (AI) "сердцебиения" */
-		int maxHeartBeat;						/*! < сохраняемое значение */
+		long maxHeartBeat;						/*! < сохраняемое значение */
 
 		xmlNode* confnode;
 		/*! получить числовое свойство из конф. файла по привязанной confnode */
@@ -224,9 +217,6 @@ class UObject_SK:
 		std::string logserv_host = {""};
 		int logserv_port = {0};
 
-		// snap
-		bool no_snap = {false};
-
 		VMonitor vmon;
 
 
@@ -239,7 +229,20 @@ class UObject_SK:
 		// предыдущее значение (для работы UpdateValue())
 
 
+		// Текущее значение (rw-переменные)
+
+
 		// Используемые идентификаторы сообщений
+
+		// ------------ private функции ---------------
+		void updatePreviousValues();
+		void preAskSensors( UniversalIO::UIOCommand cmd );
+		void preSensorInfo( const UniSetTypes::SensorMessage* sm );
+		void preTimerInfo( const UniSetTypes::TimerMessage* tm );
+		void preSysCommand( const UniSetTypes::SystemMessage* sm );
+		void initFromSM();
+		void checkSensors();
+		// --------------------------------------------
 
 
 		bool end_private; // вспомогательное поле (для внутреннего использования при генерировании кода)

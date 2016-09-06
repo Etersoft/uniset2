@@ -95,7 +95,7 @@ long UConnector::getValue( long id, long node )throw(UException)
 	}
 }
 //---------------------------------------------------------------------------
-void UConnector::setValue( long id, long val, long node )throw(UException)
+void UConnector::setValue( long id, long val, long node, long supplier )throw(UException)
 {
 	if( !conf || !ui )
 		throw USysError();
@@ -106,7 +106,7 @@ void UConnector::setValue( long id, long val, long node )throw(UException)
 
 	try
 	{
-		ui->setValue(id, val, node);
+		ui->setValue(id, val, node, supplier);
 	}
 	catch( UniSetTypes::Exception& ex )
 	{
@@ -156,5 +156,13 @@ string UConnector::getTextName( long id )
 		return conf->oind->getTextName(id);
 
 	return "";
+}
+//---------------------------------------------------------------------------
+long UConnector::getObjectID(const string& name )
+{
+	if( conf )
+		return conf->getObjectID(name);
+
+	return UTypes::DefaultID;
 }
 //---------------------------------------------------------------------------

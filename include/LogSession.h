@@ -20,20 +20,20 @@
 #include <string>
 #include <memory>
 #include <queue>
-#include <cc++/socket.h>
 #include <ev++.h>
+#include "Poco/Net/StreamSocket.h"
 #include "Mutex.h"
 #include "DebugStream.h"
-#include "LogAgregator.h"
-#include "USocket.h"
 #include "UTCPCore.h"
+#include "UTCPStream.h"
+#include "LogAgregator.h"
 // -------------------------------------------------------------------------
 /*! Реализация "сессии" для клиентов LogServer. */
 class LogSession
 {
 	public:
 
-		LogSession(int sock, std::shared_ptr<DebugStream>& log, timeout_t cmdTimeout = 2000, timeout_t checkConnectionTime = 10000 );
+		LogSession( const Poco::Net::StreamSocket& s, std::shared_ptr<DebugStream>& log, timeout_t cmdTimeout = 2000, timeout_t checkConnectionTime = 10000 );
 		~LogSession();
 
 		typedef sigc::slot<void, LogSession*> FinalSlot;
@@ -65,7 +65,7 @@ class LogSession
 			mylog.delLevel(t);
 		}
 
-		//! Установить размер буфера для сообщений (количество записей. Не размер в байтах!!)
+		//! Установить размер буфера для сообщений (количество записей. Не в байтах!!)
 		void setMaxBufSize( size_t num );
 		size_t getMaxBufSize() const;
 
@@ -78,7 +78,7 @@ class LogSession
 		std::string getShortInfo();
 
 	protected:
-		LogSession( ost::TCPSocket& server );
+		//		LogSession( ost::TCPSocket& server );
 
 		void event( ev::async& watcher, int revents );
 		void callback( ev::io& watcher, int revents );
@@ -121,7 +121,7 @@ class LogSession
 		std::shared_ptr<LogAgregator> alog;
 		sigc::connection conn;
 
-		std::shared_ptr<USocket> sock;
+		std::shared_ptr<UTCPStream> sock;
 
 		ev::io  io;
 		ev::timer  cmdTimer;

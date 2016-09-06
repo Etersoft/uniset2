@@ -282,7 +282,7 @@ void UInterface::setUndefinedState( const IOController_i::SensorInfo& si, bool u
  * \return текущее значение датчика
  * \exception IOBadParam - генерируется если указано неправильное имя вывода или секции
 */
-void UInterface::setValue( const ObjectId id, long value, const ObjectId node ) const
+void UInterface::setValue( const ObjectId id, long value, const ObjectId node, const UniSetTypes::ObjectId sup_id ) const
 throw(UI_THROW_EXCEPTIONS)
 {
 	if ( id == DefaultObjectId )
@@ -291,10 +291,17 @@ throw(UI_THROW_EXCEPTIONS)
 	if ( node == DefaultObjectId )
 	{
 		ostringstream err;
-		err << "UI(askRemoteSensor): id='" << id << "' error: node=UniSetTypes::DefaultObjectId";
+		err << "UI(setValue): id='" << id << "' error: node=UniSetTypes::DefaultObjectId";
 		throw ORepFailed(err.str());
 	}
-
+/*
+	if ( sup_id == DefaultObjectId )
+	{
+		ostringstream err;
+		err << "UI(setValue): id='" << id << "' error: supplier=UniSetTypes::DefaultObjectId";
+		throw ORepFailed(err.str());
+	}
+*/
 	try
 	{
 		CORBA::Object_var oref;
@@ -313,7 +320,7 @@ throw(UI_THROW_EXCEPTIONS)
 					oref = resolve( id, node );
 
 				IOController_i_var iom = IOController_i::_narrow(oref);
-				iom->setValue(id, value, myid);
+				iom->setValue(id, value, sup_id);
 				return;
 			}
 			catch( const CORBA::TRANSIENT& ) {}
@@ -365,31 +372,18 @@ throw(UI_THROW_EXCEPTIONS)
 
 void UInterface::setValue( const ObjectId name, long value ) const
 {
-	setValue(name, value, uconf->getLocalNode());
+	setValue(name, value, uconf->getLocalNode(), myid);
 }
 
 
-void UInterface::setValue( const IOController_i::SensorInfo& si, long value, const UniSetTypes::ObjectId supplier )
+void UInterface::setValue( const IOController_i::SensorInfo& si, long value, const UniSetTypes::ObjectId sup_id ) const
 {
-	ObjectId old = myid;
-
-	try
-	{
-		myid = supplier;
-		setValue(si.id, value, si.node);
-	}
-	catch(...)
-	{
-		myid = old;
-		throw;
-	}
-
-	myid = old;
+	setValue(si.id, value, si.node,sup_id);
 }
 
 // ------------------------------------------------------------------------------------------------------------
 // функция не вырабатывает исключий!
-void UInterface::fastSetValue( const IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId sup_id )
+void UInterface::fastSetValue( const IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId sup_id ) const
 {
 	if ( si.id == DefaultObjectId )
 	{
@@ -805,7 +799,7 @@ void UInterface::unregister( const ObjectId id )throw(ORepFailed)
 }
 
 // ------------------------------------------------------------------------------------------------------------
-ObjectPtr UInterface::resolve( const ObjectId rid , const ObjectId node, int timeoutSec ) const
+ObjectPtr UInterface::resolve( const ObjectId rid , const ObjectId node ) const
 throw(ResolveNameError, UniSetTypes::TimeOut )
 {
 	if ( rid == DefaultObjectId )
@@ -1128,7 +1122,7 @@ throw(NameNotFound)
 	throw UniSetTypes::NameNotFound();
 }
 // ------------------------------------------------------------------------------------------------------------
-void UInterface::CacheOfResolve::cache( const ObjectId id, const ObjectId node, ObjectVar ptr ) const
+void UInterface::CacheOfResolve::cache( const ObjectId id, const ObjectId node, ObjectVar& ptr ) const
 {
 	UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
 
@@ -1137,7 +1131,7 @@ void UInterface::CacheOfResolve::cache( const ObjectId id, const ObjectId node, 
 	auto it = mcache.find(k);
 
 	if( it == mcache.end() )
-		mcache.emplace(k, Info(ptr));
+		mcache.emplace(k, Item(ptr));
 	else
 	{
 		it->second.ptr = ptr; // CORBA::Object::_duplicate(ptr);

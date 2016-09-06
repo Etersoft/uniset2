@@ -58,17 +58,17 @@ class MySQLInterface:
 		    проверка связи с БД.
 		    в случае отсутсвия попытка восстановить...
 		*/
-		virtual bool ping() override;
+		virtual bool ping() const override;
 
 		/*! связь с БД установлена (была) */
-		virtual bool isConnection() override;
+		virtual bool isConnection() const override;
 
 		virtual double insert_id() override;
 
 		virtual const std::string error() override;
 
 		// *******************
-		const char* gethostinfo();
+		const char* gethostinfo() const;
 	protected:
 
 	private:

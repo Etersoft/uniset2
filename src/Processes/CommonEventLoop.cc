@@ -76,7 +76,7 @@ bool CommonEventLoop::evrun(EvWatcher* w, bool thread )
 	return true;
 }
 // ---------------------------------------------------------------------------
-bool CommonEventLoop::evIsActive()
+bool CommonEventLoop::evIsActive() const
 {
 	return isrunning;
 }
@@ -130,7 +130,7 @@ void CommonEventLoop::onPrepare()
 		}
 		catch( std::exception& ex )
 		{
-			cerr << "(CommonEventLoop::onPrepare): evfinish err: " << ex.what() << endl;
+			cerr << "(CommonEventLoop::onPrepare): evprepare err: " << ex.what() << endl;
 		}
 
 		wprep = nullptr;

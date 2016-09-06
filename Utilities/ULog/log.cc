@@ -4,6 +4,7 @@
 #include <getopt.h>
 #include "Debug.h"
 #include "UniSetTypes.h"
+#include "PassiveTimer.h"
 #include "Exceptions.h"
 #include "LogReader.h"
 #include "LogServerTypes.h"
@@ -44,7 +45,7 @@ static void print_help()
 	printf("[-i|--iaddr] addr           - LogServer ip or hostname.\n");
 	printf("[-p|--port] port            - LogServer port.\n");
 	printf("[-c|--command-only]         - Send command and break. (No read logs).\n");
-	printf("[-t|--timeout] msec         - Timeout for wait data. Default: 0 - endless waiting\n");
+	printf("[-t|--timeout] msec         - Timeout for wait data. Default: WaitUpTime - endless waiting\n");
 	printf("[-x|--reconnect-delay] msec - Pause for repeat connect to LogServer. Default: 5000 msec.\n");
 	printf("[-w|--logfile] logfile      - Save log to 'logfile'.\n");
 	printf("[-z|--logfile-truncate]     - Truncate log file before write. Use with -w|--logfile \n");
@@ -85,7 +86,7 @@ int main( int argc, char** argv )
 	string logfilter("");
 	LogServerTypes::Command cmd = LogServerTypes::cmdNOP;
 	int cmdonly = 0;
-	timeout_t tout = 0;
+	timeout_t tout = UniSetTimer::WaitUpTime;
 	timeout_t rdelay = 5000;
 	string logfile("");
 	bool logtruncate = false;
@@ -115,7 +116,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, (int)Debug::value(d), filter) );
+					vcmd.emplace_back(cmd, (int)Debug::value(d), filter);
 				}
 				break;
 
@@ -129,7 +130,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, (int)Debug::value(d), filter) );
+					vcmd.emplace_back(cmd, (int)Debug::value(d), filter );
 				}
 				break;
 
@@ -143,7 +144,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, (int)Debug::value(d), filter) );
+					vcmd.emplace_back(cmd, (int)Debug::value(d), filter );
 				}
 				break;
 
@@ -156,7 +157,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(LogServerTypes::cmdList, 0, filter) );
+					vcmd.emplace_back(LogServerTypes::cmdList, 0, filter);
 				}
 				break;
 
@@ -169,7 +170,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
+					vcmd.emplace_back(cmd, 0, filter);
 				}
 				break;
 
@@ -182,7 +183,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
+					vcmd.emplace_back(cmd, 0, filter);
 				}
 				break;
 
@@ -195,7 +196,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
+					vcmd.emplace_back(cmd, 0, filter);
 				}
 				break;
 
@@ -209,7 +210,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
+					vcmd.emplace_back(cmd, 0, filter);
 				}
 				break;
 
@@ -222,7 +223,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
+					vcmd.emplace_back(cmd, 0, filter);
 				}
 				break;
 
@@ -248,7 +249,7 @@ int main( int argc, char** argv )
 					if( arg2 )
 						filter = string(arg2);
 
-					vcmd.push_back( LogReader::Command(cmd, 0, filter) );
+					vcmd.emplace_back(cmd, 0, filter);
 				}
 				break;
 

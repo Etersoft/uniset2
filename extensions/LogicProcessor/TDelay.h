@@ -39,7 +39,7 @@ class TDelay:
 		}
 
 		void setDelay( timeout_t timeMS );
-		inline timeout_t getDelay()
+		inline timeout_t getDelay() const
 		{
 			return delay;
 		}

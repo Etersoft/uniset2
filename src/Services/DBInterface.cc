@@ -61,17 +61,17 @@ DBResult::iterator DBResult::end()
 	return row_.end();
 }
 // ----------------------------------------------------------------------------
-DBResult::operator bool()
+DBResult::operator bool() const
 {
 	return !row_.empty();
 }
 // ----------------------------------------------------------------------------
-size_t DBResult::size()
+size_t DBResult::size() const
 {
 	return row_.size();
 }
 // ----------------------------------------------------------------------------
-bool DBResult::empty()
+bool DBResult::empty() const
 {
 	return row_.empty();
 }

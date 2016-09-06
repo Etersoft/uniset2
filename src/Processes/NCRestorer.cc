@@ -75,8 +75,11 @@ void NCRestorer::addlist( IONotifyController* ic, std::shared_ptr<IOController::
 		case UniversalIO::AI:
 		case UniversalIO::DO:
 		case UniversalIO::AO:
+		{
 			ic->askIOList[inf->si.id] = std::move(lst);
+			inf->userdata[IONotifyController::udataConsumerList] = &(ic->askIOList[inf->si.id]);
 			break;
+		}
 
 		default:
 			ucrit << ic->getName() << "(NCRestorer::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА!-> "
@@ -119,8 +122,12 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, std::shared_ptr<IOCon
 
 	try
 	{
-		auto i =  ic->find(inf->si.id);
-		ic->askTMap[inf->si.id].ait = i->second;
+		auto i =  ic->myiofind(inf->si.id);
+		ic->askTMap[inf->si.id].usi = i->second;
+
+		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
+		if( i->second )
+			i->second->userdata[IONotifyController::udataThresholdList] = &(ic->askTMap[inf->si.id]);
 	}
 	catch(...) {}
 
@@ -145,7 +152,10 @@ NCRestorer::SInfo& NCRestorer::SInfo::operator=( const IOController_i::SensorIOI
 	this->undefined = inf.undefined;
 	this->blocked = inf.blocked;
 	this->dbignore = inf.dbignore;
-	this->any = 0;
+
+	for( size_t i = 0; i < IOController::USensorInfo::MaxUserData; i++ )
+		this->userdata[i] = nullptr;
+
 	return *this;
 }
 // ------------------------------------------------------------------------------------------
@@ -171,7 +181,7 @@ void NCRestorer::init_depends_signals( IONotifyController* ic )
 	for( auto it = ic->ioList.begin(); it != ic->ioList.end(); ++it )
 	{
 		// обновляем итераторы...
-		it->second->it = it->second;
+		it->second->d_usi = it->second;
 
 		if( it->second->d_si.id == DefaultObjectId )
 			continue;
@@ -181,6 +191,7 @@ void NCRestorer::init_depends_signals( IONotifyController* ic )
 			  << " dep_name=(" << it->second->d_si.id << ")'" << uniset_conf()->oind->getMapName(it->second->d_si.id) << "'"
 			  << endl;
 
+		uniset_rwmutex_rlock lock(it->second->val_lock);
 		ic->signal_change_value(it->second->d_si.id).connect( sigc::mem_fun( it->second.get(), &IOController::USensorInfo::checkDepend) );
 	}
 }

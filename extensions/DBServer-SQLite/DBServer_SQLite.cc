@@ -99,11 +99,11 @@ void DBServer_SQLite::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 		ostringstream data;
 
 		data << "UPDATE " << tblName(cem->type)
-			 << " SET confirm='" << cem->confirm << "'"
+			 << " SET confirm='" << cem->confirm_time.tv_sec << "'"
 			 << " WHERE sensor_id='" << cem->sensor_id << "'"
-			 << " AND date='" << dateToString(cem->time, "-") << " '"
-			 << " AND time='" << timeToString(cem->time, ":") << " '"
-			 << " AND time_usec='" << cem->time_usec << " '";
+			 << " AND date='" << dateToString(cem->sensor_time.tv_sec, "-") << " '"
+			 << " AND time='" << timeToString(cem->sensor_time.tv_sec, ":") << " '"
+			 << " AND time_usec='" << cem->sensor_time.tv_nsec << " '";
 
 		dbinfo <<  myname << "(update_confirm): " << data.str() << endl;
 
@@ -184,8 +184,12 @@ void DBServer_SQLite::sensorInfo( const UniSetTypes::SensorMessage* si )
 		// если время не было выставлено (указываем время сохранения в БД)
 		if( !si->tm.tv_sec )
 		{
-			struct timezone tz;
-			gettimeofday(const_cast<struct timeval*>(&si->tm), &tz);
+			// Выдаём CRIT, но тем не менее сохраняем в БД
+
+			dbcrit << myname << "(insert_main_history): UNKNOWN TIMESTAMP! (tm.tv_sec=0)"
+				   << " for sid=" << si->id
+				   << " supplier=" << uniset_conf()->oind->getMapName(si->supplier)
+				   << endl;
 		}
 
 		float val = (float)si->value / (float)pow10(si->ci.precision);
@@ -195,9 +199,9 @@ void DBServer_SQLite::sensorInfo( const UniSetTypes::SensorMessage* si )
 		data << "INSERT INTO " << tblName(si->type)
 			 << "(date, time, time_usec, sensor_id, value, node) VALUES( '"
 			 // Поля таблицы
-			 << dateToString(si->sm_tv_sec, "-") << "','"   //  date
-			 << timeToString(si->sm_tv_sec, ":") << "','"   //  time
-			 << si->sm_tv_usec << "',"                //  time_usec
+			 << dateToString(si->sm_tv.tv_sec, "-") << "','"   //  date
+			 << timeToString(si->sm_tv.tv_sec, ":") << "','"   //  time
+			 << si->sm_tv.tv_nsec << "',"                //  time_usec
 			 << si->id << "','"                    //  sensor_id
 			 << val << "','"                //  value
 			 << si->node << "')";                //  node

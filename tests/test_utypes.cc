@@ -2,6 +2,7 @@
 // -----------------------------------------------------------------------------
 #include <sstream>
 #include <limits>
+#include "Configuration.h"
 #include "UniSetTypes.h"
 // -----------------------------------------------------------------------------
 using namespace std;
@@ -108,7 +109,7 @@ TEST_CASE("UniSetTypes: getSInfoList", "[utypes][getsinfo]" )
 {
 	const std::string str1("Input4_S@node2,Input1_S,5,5@node3,6@1001");
 
-	auto t1 = UniSetTypes::getSInfoList(str1);
+	auto t1 = UniSetTypes::getSInfoList(str1, UniSetTypes::uniset_conf());
 
 	CHECK( t1.size() == 5 );
 
@@ -172,5 +173,20 @@ TEST_CASE("UniSetTypes: replace_all", "[utypes][replace_all]" )
 
 	res = UniSetTypes::replace_all(str2, "not found", "my");
 	REQUIRE( res == str2 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: timespec comapre", "[utypes][timespec]" )
+{
+	timespec t1 = { 10, 300 };
+	timespec t2 = { 10, 90 };
+
+	REQUIRE( t1 != t2 );
+	REQUIRE_FALSE( t1 == t2 );
+
+	timespec t3 = { 20, 20 };
+	timespec t4 = { 20, 20 };
+
+	REQUIRE_FALSE( t3 != t4 );
+	REQUIRE( t3 == t4 );
 }
 // -----------------------------------------------------------------------------

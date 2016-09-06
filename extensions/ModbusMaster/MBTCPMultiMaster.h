@@ -262,6 +262,7 @@ class MBTCPMultiMaster:
 		virtual void initIterators() override;
 		virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;
 		virtual void sigterm( int signo ) override;
+		virtual bool deactivateObject() override;
 
 		void poll_thread();
 		void check_thread();
@@ -332,8 +333,6 @@ class MBTCPMultiMaster:
 		// т.к. TCP может "зависнуть" на подключении к недоступному узлу
 		// делаем опрос в отдельном потоке
 		std::shared_ptr< ThreadCreator<MBTCPMultiMaster> > pollThread; /*!< поток опроса */
-		UniSetTypes::uniset_rwmutex tcpMutex;
-
 		std::shared_ptr< ThreadCreator<MBTCPMultiMaster> > checkThread; /*!< поток проверки связи по другим каналам */
 };
 // -----------------------------------------------------------------------------

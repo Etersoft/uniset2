@@ -21,6 +21,7 @@
 #include <string>
 #include <memory>
 #include <deque>
+#include <time.h>
 #include "IONotifyController.h"
 #include "Mutex.h"
 #include "PassiveTimer.h"
@@ -305,6 +306,7 @@ class SharedMemory:
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<SharedMemory> init_smemory( int argc, const char* const* argv );
+
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
@@ -317,7 +319,6 @@ class SharedMemory:
 
 		void addReadItem( Restorer_XML::ReaderSlot sl );
 
-
 		// ------------  HISTORY  --------------------
 		typedef std::deque<long> HBuffer;
 
@@ -326,7 +327,7 @@ class SharedMemory:
 			explicit HistoryItem( size_t bufsize = 0 ): id(UniSetTypes::DefaultObjectId), buf(bufsize) {}
 			HistoryItem( const UniSetTypes::ObjectId _id, const size_t bufsize, const long val ): id(_id), buf(bufsize, val) {}
 
-			inline void init( unsigned int size, long val )
+			inline void init( size_t size, long val )
 			{
 				if( size > 0 )
 					buf.assign(size, val);
@@ -339,7 +340,7 @@ class SharedMemory:
 
 			void add( long val, size_t size )
 			{
-				// т.е. буфер у нас уже заданного размера
+				// т.к. буфер у нас уже заданного размера
 				// то просто удаляем очередную точку в начале
 				// и добавляем в конце
 				buf.pop_front();
@@ -351,31 +352,20 @@ class SharedMemory:
 
 		struct HistoryInfo
 		{
-			HistoryInfo():
-				id(0),
-				size(0), filter(""),
-				fuse_id(UniSetTypes::DefaultObjectId),
-				fuse_invert(false), fuse_use_val(false), fuse_val(0),
-				fuse_sec(0), fuse_usec(0)
+			HistoryInfo()
 			{
-				struct timeval tv;
-				struct timezone tz;
-				gettimeofday(&tv, &tz);
-				fuse_sec = tv.tv_sec;
-				fuse_usec = tv.tv_usec;
+				::clock_gettime(CLOCK_REALTIME, &fuse_tm);
 			}
 
-			long id;                        // ID
+			long id = { 0 };                // ID
 			HistoryList hlst;               // history list
-			int size;
-			std::string filter;             // filter field
-			UniSetTypes::ObjectId fuse_id;  // fuse sesnsor
-			bool fuse_invert;
-			bool fuse_use_val;
-			long fuse_val;
-			// timestamp
-			long fuse_sec;
-			long fuse_usec;
+			size_t size = { 0 };
+			std::string filter = { "" };    // filter field
+			UniSetTypes::ObjectId fuse_id = { UniSetTypes::DefaultObjectId };  // fuse sesnsor
+			bool fuse_invert = { false };
+			bool fuse_use_val = { false };
+			long fuse_val = { 0 };
+			timespec fuse_tm = { 0, 0 }; // timestamp
 		};
 
 		friend std::ostream& operator<<( std::ostream& os, const HistoryInfo& h );
@@ -391,10 +381,12 @@ class SharedMemory:
 		typedef sigc::signal<void, const HistoryInfo&> HistorySlot;
 		HistorySlot signal_history(); /*!< сигнал о срабатывании условий "сброса" дампа истории */
 
-		inline int getHistoryStep()
+		inline int getHistoryStep() const
 		{
 			return histSaveTime;    /*!< период между точками "дампа", мсек */
 		}
+
+		// -------------------------------------------------------------------------------
 
 		inline std::shared_ptr<LogAgregator> logAgregator()
 		{
@@ -468,7 +460,7 @@ class SharedMemory:
 		void checkHeartBeat();
 
 		typedef std::list<HeartBeatInfo> HeartBeatList;
-		HeartBeatList hlist; // список датчиков "сердцебиения"
+		HeartBeatList hblist; // список датчиков "сердцебиения"
 		std::shared_ptr<WDTInterface> wdt;
 		std::atomic_bool activated;
 		std::atomic_bool workready;
@@ -479,17 +471,25 @@ class SharedMemory:
 		int evntPause;
 		int activateTimeout;
 
-		virtual void loggingInfo( UniSetTypes::SensorMessage& sm ) override;
+		virtual void logging( UniSetTypes::SensorMessage& sm ) override;
 		virtual void dumpOrdersList( const UniSetTypes::ObjectId sid, const IONotifyController::ConsumerListInfo& lst ) override {};
 		virtual void dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst ) override {}
 
-		bool dblogging;
+		bool dblogging = { false };
+
+		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет
+		//! использовать userdata[2]. (0,1 - использует IONotifyController)
+		// оптимизация с использованием userdata (IOController::USensorInfo::userdata) нужна
+		// чтобы не использовать поиск в HistoryFuseMap (см. checkFuse)
+		// т.к. 0,1 - использует IONotifyController (см. IONotifyController::UserDataID)
+		// то используем не занятый "2" - в качестве элемента userdata
+		static const size_t udataHistory = 2;
 
 		History hist;
 		HistoryFuseMap histmap;  /*!< map для оптимизации поиска */
 
-		virtual void updateHistory( std::shared_ptr<IOController::USensorInfo>& it, IOController* );
-		virtual void saveHistory();
+		virtual void checkFuse( std::shared_ptr<IOController::USensorInfo>& usi, IOController* );
+		virtual void saveToHistory();
 
 		void buildHistoryList( xmlNode* cnode );
 		void checkHistoryFilter( UniXML::iterator& it );

@@ -1,7 +1,6 @@
 #include <catch.hpp>
 // -----------------------------------------------------------------------------
 #include <memory>
-#include <cc++/socket.h>
 #include "UniSetTypes.h"
 #include "UInterface.h"
 #include "UDPPacket.h"
@@ -15,15 +14,16 @@ using namespace std;
 using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 static int port = 3000;
-static ost::IPV4Host host("127.255.255.255");
+static const std::string host("127.255.255.255");
 static shared_ptr<UInterface> ui = nullptr;
 static ObjectId aid = 2;
 static std::shared_ptr<UDPReceiveU> udp_r = nullptr;
-static shared_ptr<ost::UDPBroadcast> udp_s = nullptr;
+static shared_ptr<UDPSocketU> udp_s = nullptr;
 static int s_port = 3003; // Node2
 static int s_nodeID = 3003;
 static int s_procID = 123;
 static int s_numpack = 1;
+static Poco::Net::SocketAddress s_addr(host, s_port);
 static ObjectId node2_respond_s = 12;
 static ObjectId node2_lostpackets_as = 13;
 static int maxDifferense = 5; // см. unetudp-test-configure.xml --unet-maxdifferense
@@ -48,7 +48,10 @@ void InitTest()
 		udp_r = make_shared<UDPReceiveU>(host, port);
 
 	if( udp_s == nullptr )
-		udp_s = make_shared<ost::UDPBroadcast>(host, s_port);
+	{
+		udp_s = make_shared<UDPSocketU>(); //(host, s_port);
+		udp_s->setBroadcast(true);
+	}
 }
 // -----------------------------------------------------------------------------
 // pnum - минималный номер ожидаемого пакета ( 0 - любой пришедщий )
@@ -60,10 +63,10 @@ static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 20
 
 	while( ncycle > 0 )
 	{
-		if( !udp_r->isInputReady(tout) )
+		if( !udp_r->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_READ) )
 			break;
 
-		size_t ret = udp_r->UDPReceive::receive( &(buf.data), sizeof(buf.data) );
+		size_t ret = udp_r->receiveBytes(&(buf.data), sizeof(buf.data) );
 		size_t sz = UniSetUDP::UDPMessage::getMessage(pack, buf);
 
 		if( sz == 0 || pnum == 0 || ( pnum > 0 && pack.num >= pnum ) )
@@ -78,7 +81,7 @@ static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 20
 // -----------------------------------------------------------------------------
 void send( UniSetUDP::UDPMessage& pack, int tout = 2000 )
 {
-	CHECK( udp_s->isPending(ost::Socket::pendingOutput, tout) );
+	CHECK( udp_s->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_WRITE) );
 
 	pack.nodeID = s_nodeID;
 	pack.procID = s_procID;
@@ -86,7 +89,7 @@ void send( UniSetUDP::UDPMessage& pack, int tout = 2000 )
 
 	UniSetUDP::UDPPacket s_buf;
 	pack.transport_msg(s_buf);
-	size_t ret = udp_s->send((char*)&s_buf.data, s_buf.len);
+	size_t ret = udp_s->sendTo(&s_buf.data, s_buf.len, s_addr);
 	REQUIRE( ret == s_buf.len );
 }
 // -----------------------------------------------------------------------------
@@ -174,6 +177,21 @@ TEST_CASE("[UNetUDP]: UDPMessage", "[unetudp][udpmessage]")
 		REQUIRE( u2.dID(d) == 110 );
 		REQUIRE( u2.dValue(d) == true );
 	}
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: sizeOf", "[unetudp][sizeof]")
+{
+	UniSetUDP::UDPMessage m;
+
+	REQUIRE( m.sizeOf() == sizeof(UniSetUDP::UDPHeader) );
+
+	m.addAData(8, 70);
+
+	REQUIRE( m.sizeOf() == sizeof(UniSetUDP::UDPHeader)+sizeof(UniSetUDP::UDPAData) );
+
+	UniSetUDP::UDPPacket p;
+	size_t len = m.transport_msg(p);
+	REQUIRE( len == m.sizeOf() );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[UNetUDP]: respond sensor", "[unetudp]")

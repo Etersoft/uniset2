@@ -2113,7 +2113,7 @@ MBExchange::RSProperty* MBExchange::addProp( PList& plist, RSProperty&& p )
 			return &it;
 	}
 
-	plist.push_back( std::move(p) );
+	plist.emplace_back( std::move(p) );
 	auto it = plist.end();
 	--it;
 	return &(*it);
@@ -2581,7 +2581,7 @@ bool MBExchange::initItem( UniXML::iterator& it )
 			}
 		}
 
-		initRegList.push_back( std::move(ii) );
+		initRegList.emplace_back( std::move(ii) );
 		ri->mb_initOK = false;
 		ri->sm_initOK = false;
 	}

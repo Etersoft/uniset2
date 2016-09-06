@@ -23,7 +23,8 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <cstring>
-#include <cc++/socket.h>
+#include <Poco/Net/NetException.h>
+#include <Poco/Exception.h>
 #include "Exceptions.h"
 #include "LogSession.h"
 #include "UniSetTypes.h"
@@ -52,7 +53,7 @@ LogSession::~LogSession()
 		asyncEvent.stop();
 }
 // -------------------------------------------------------------------------
-LogSession::LogSession( int sfd, std::shared_ptr<DebugStream>& _log, timeout_t _cmdTimeout, timeout_t _checkConnectionTime ):
+LogSession::LogSession( const Poco::Net::StreamSocket& s, std::shared_ptr<DebugStream>& _log, timeout_t _cmdTimeout, timeout_t _checkConnectionTime ):
 	cmdTimeout(_cmdTimeout),
 	checkConnectionTime(_checkConnectionTime / 1000.),
 	peername(""),
@@ -66,18 +67,29 @@ LogSession::LogSession( int sfd, std::shared_ptr<DebugStream>& _log, timeout_t _
 
 	try
 	{
-		sock = make_shared<USocket>(sfd);
-		ost::tpport_t p;
-		ost::InetAddress iaddr = sock->getIPV4Peer(&p);
+		sock = make_shared<UTCPStream>(s);
+		sock->setBlocking(false);
+		Poco::Net::SocketAddress  iaddr = sock->peerAddress();
 
-		// resolve..
-		caddr = string( iaddr.getHostname() );
+		if( iaddr.host().toString().empty() )
+		{
+			ostringstream err;
+			err << "(ModbusTCPSession): unknonwn ip(0.0.0.0) client disconnected?!";
+
+			if( mylog.is_crit() )
+				mylog.crit() << err.str() << endl;
+
+			sock->close();
+			throw SystemError(err.str());
+		}
+
+		caddr = iaddr.host().toString();
 
 		ostringstream s;
-		s << iaddr << ":" << p;
+		s << caddr << ":" << iaddr.port();
 		peername = s.str();
 	}
-	catch( const ost::SockException& ex )
+	catch( const Poco::Net::NetException& ex )
 	{
 		ostringstream err;
 		err << ex.what();
@@ -85,7 +97,7 @@ LogSession::LogSession( int sfd, std::shared_ptr<DebugStream>& _log, timeout_t _
 		throw SystemError(err.str());
 	}
 
-	sock->setCompletion(false);
+	sock->setBlocking(false);
 
 	io.set<LogSession, &LogSession::callback>(this);
 	cmdTimer.set<LogSession, &LogSession::onCmdTimeout>(this);
@@ -182,7 +194,7 @@ void LogSession::terminate()
 			logbuf.pop();
 	}
 
-	sock.reset(); // close..
+	sock->close();
 	final();
 }
 // -------------------------------------------------------------------------
@@ -305,17 +317,28 @@ void LogSession::writeEvent( ev::io& watcher )
 // -------------------------------------------------------------------------
 size_t LogSession::readData( unsigned char* buf, int len )
 {
-	ssize_t res = read( sock->getSocket(), buf, len );
-
-	if( res > 0 )
-		return res;
-
-	if( res < 0 )
+	try
 	{
-		if( errno != EAGAIN && mylog.is_warn() )
-			mylog.warn() << peername << "(readData): read from socket error(" << errno << "): " << strerror(errno) << endl;
+		ssize_t res = sock->receiveBytes(buf, len);
 
+		if( res > 0 )
+			return res;
+
+		if( res < 0 )
+		{
+			if( errno != EAGAIN && mylog.is_warn() )
+				mylog.warn() << peername << "(readData): read from socket error(" << errno << "): " << strerror(errno) << endl;
+
+			return 0;
+		}
+	}
+	catch( Poco::TimeoutException& ex )
+	{
 		return 0;
+	}
+	catch( Poco::Net::ConnectionResetException& ex )
+	{
+
 	}
 
 	mylog.info() << peername << "(readData): client disconnected.." << endl;
@@ -332,7 +355,7 @@ void LogSession::readEvent( ev::io& watcher )
 
 	size_t ret = readData( (unsigned char*)(&msg), sizeof(msg) );
 
-	if( cancelled )
+	if( ret == 0  || cancelled )
 		return;
 
 	if( ret != sizeof(msg) || msg.magic != LogServerTypes::MAGICNUM )
@@ -405,10 +428,7 @@ void LogSession::cmdProcessing( const string& cmdLogName, const LogServerTypes::
 	else
 	{
 		if( cmdLogName.empty() || cmdLogName == "ALL" || log->getLogFile() == cmdLogName )
-		{
-			LogAgregator::iLog llog(log, log->getLogName());
-			loglist.emplace_back(llog);
-		}
+			loglist.emplace_back(log, log->getLogName());
 	}
 
 	if( msg.cmd == LogServerTypes::cmdFilterMode )

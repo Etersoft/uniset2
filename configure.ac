@@ -3,10 +3,10 @@
 # See doc: http://www.gnu.org/software/hello/manual/autoconf/Generic-Programs.html
 
 # AC_PREREQ(2.59)
-AC_INIT([uniset2], [2.4.0], pv@etersoft.ru)
+AC_INIT([uniset2], [2.5.0], pv@etersoft.ru)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME,AC_PACKAGE_VERSION)
 
-LIBVER=2:4:0
+LIBVER=2:5:0
 AC_SUBST(LIBVER)
 
 # AC_CONFIG_MACRO_DIR([m4])
@@ -39,7 +39,6 @@ AC_SUBST(ASTYLE_OPT)
 PKG_CHECK_MODULES(XML, libxml-2.0)
 PKG_CHECK_MODULES(OMNI, omniORB4)
 PKG_CHECK_MODULES(SIGC, sigc++-2.0)
-PKG_CHECK_MODULES(COMCPP, libccgnu2)
 
 nopkgchecklibev=false
 AC_ARG_ENABLE(pkgchecklibev, AC_HELP_STRING([--disable-pkgchecklibev], [disable pkg check modules for libev]),
@@ -49,12 +48,21 @@ if test ${nopkgchecklibev} = false; then
 	PKG_CHECK_MODULES(EV, libev)
 else	
 	AC_CHECK_HEADER(ev++.h,,exit)
-	AC_CHECK_LIB([ev],ev_run,,exit)
+	AC_SEARCH_LIBS(ev_run,ev,[],[],exit)
 	EV_LIBS="-lev"
 	EV_CFLAGS=
 	AC_SUBST(EV_LIBS)
 	AC_SUBST(EV_CFLAGS)
 fi
+
+#check libpoco support
+AC_MSG_CHECKING([libpoco support])
+#AC_SEARCH_LIBS(ServerSocket,PocoNet,,exit)
+AC_CHECK_HEADER(Poco/Net/Socket.h,,exit)
+POCO_LIBS="-lPocoFoundation -lPocoNet"
+POCO_CFLAGS="-IPoco"
+AC_SUBST(POCO_LIBS)
+AC_SUBST(POCO_CFLAGS)
 
 #check sqlite support
 AC_MSG_CHECKING([sqlite support])
@@ -90,7 +98,7 @@ AC_ARG_ENABLE(mysql, AC_HELP_STRING([--disable-mysql], [disable MySQL support]),
 if test ${buildmysql} = true; then
 	AC_MSG_RESULT([enabled])
 	AC_CHECK_HEADERS([mysql/mysql.h])
-	AC_CHECK_LIB([mysqlclient],mysql_init,,exit)
+	AC_SEARCH_LIBS([mysql_init],mysqlclient,[],[],exit)
 else
 	AC_MSG_RESULT([disabled])
 fi
@@ -315,9 +323,9 @@ AM_CONDITIONAL(HAVE_TESTS, test ${buildtests} = true)
 CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Woverloaded-virtual -Woverflow -D_GLIBCXX_USE_NANOSLEEP"
 
 # export
-LDFLAGS="$LDFLAGS ${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS} ${COMCPP_LIBS}"
+LDFLAGS="$LDFLAGS ${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS} ${POCO_LIBS} ${EV_LIBS}"
 # all developer liked options add to autogen.sh, please
-CXXFLAGS="$CXXFLAGS -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${COMCPP_CFLAGS} -I\$(top_builddir)/include $CXX_EXTRA_FLAGS"
+CXXFLAGS="-I\$(top_builddir)/include $CXXFLAGS -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${POCO_CFLAGS} ${EV_CFLAGS} $CXX_EXTRA_FLAGS"
 
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)
@@ -378,6 +386,7 @@ AC_CONFIG_FILES([Makefile
 				 tests/Makefile
 				 tests/UniXmlTest/Makefile
 				 tests/MQPerfTest/Makefile
+				 tests/PocoTest/Makefile
 				 docs/Makefile
 				 docs/UniSetDox.cfg
 				 docs/UniSetDoxDevel.cfg

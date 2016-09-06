@@ -6,10 +6,9 @@
 #include <vector>
 #include "UniSetTypes.h"
 // --------------------------------------------------------------------------
-/*! Асбстрактный класс для доступа к БД
-*/
 class DBResult;
 
+/*! Абстрактный класс для доступа к БД */
 class DBInterface
 {
 	public:
@@ -20,8 +19,8 @@ class DBInterface
 		// Функция подключения к БД, параметры подключения зависят от типа БД
 		virtual bool connect( const std::string& param ) = 0;
 		virtual bool close() = 0;
-		virtual bool isConnection() = 0;
-		virtual bool ping() = 0; // проверка доступности БД
+		virtual bool isConnection() const = 0;
+		virtual bool ping() const = 0; // проверка доступности БД
 
 		virtual DBResult query( const std::string& q ) = 0;
 		virtual const std::string lastQuery() = 0;
@@ -57,9 +56,9 @@ class DBResult
 		ROW& row();
 		iterator begin();
 		iterator end();
-		operator bool();
-		size_t size();
-		bool empty();
+		operator bool() const;
+		size_t size() const;
+		bool empty() const;
 
 		// ----------------------------------------------------------------------------
 		// ROW

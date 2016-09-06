@@ -1,6 +1,7 @@
 // -------------------------------------------------------------------------
 #include <sstream>
-#include <UniSetTypes.h>
+#include <Poco/Net/NetException.h>
+#include "UniSetTypes.h"
 #include "MBTCPTestServer.h"
 #include "VTypes.h"
 #include "uniset-config.h"
@@ -29,27 +30,24 @@ MBTCPTestServer::MBTCPTestServer( const std::unordered_set<ModbusAddr>& _vaddr, 
 	lastWriteOutputQ(0, 0),
 	disabled(false)
 {
-	ost::InetAddress ia(inetaddr.c_str());
-
 	if( verbose )
 		cout << "(MBTCPTestServer::init): "
-			 << " addr: " << ia << ":" << port << endl;
+			 << " addr: " << inetaddr << ":" << port << endl;
 
 	{
 		ostringstream s;
-		s << ia << ":" << port;
+		s << inetaddr << ":" << port;
 		myname = s.str();
 	}
 
 	try
 	{
-		ost::Thread::setException(ost::Thread::throwException);
-		sslot = new ModbusTCPServerSlot(ia, port);
+		sslot = new ModbusTCPServerSlot(inetaddr, port);
 	}
-	catch( const ost::SockException& e )
+	catch( const Poco::Net::NetException& e )
 	{
 		ostringstream err;
-		err << "(MBTCPTestServer::init): Can`t create socket " << inetaddr << ":" << port << " err: " << e.getString() << endl;
+		err << "(MBTCPTestServer::init): Can`t create socket " << inetaddr << ":" << port << " err: " << e.message() << endl;
 		cerr << err.str() << endl;
 		throw SystemError(err.str());
 	}

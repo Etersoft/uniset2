@@ -35,21 +35,14 @@ using namespace std;
 SViewer::SViewer(const string& csec, bool sn):
 	csec(csec),
 	rep(UniSetTypes::uniset_conf()),
-	cache(500, 15),
-	isShort(sn)
+	isShortName(sn)
 {
 	ui = make_shared<UInterface>(UniSetTypes::uniset_conf());
+	ui->setCacheMaxSize(500);
 }
 
 SViewer::~SViewer()
 {
-}
-
-void SViewer::on_SViewer_destroy()
-{
-	//    activator->oakill(SIGINT);
-	//    msleep(500);
-	//    activator->oakill(SIGKILL);
 }
 // --------------------------------------------------------------------------
 void SViewer::monitor( timeout_t timeMS )
@@ -164,17 +157,8 @@ void SViewer::getInfo( ObjectId id )
 
 	try
 	{
-		try
-		{
-			oref = cache.resolve(id, uniset_conf()->getLocalNode());
-		}
-		catch( NameNotFound ) {}
-
 		if( CORBA::is_nil(oref) )
-		{
 			oref = ui->resolve(id);
-			cache.cache(id, uniset_conf()->getLocalNode(), oref);
-		}
 
 		IONotifyController_i_var ioc = IONotifyController_i::_narrow(oref);
 
@@ -211,17 +195,17 @@ void SViewer::getInfo( ObjectId id )
 	{
 		cout << "(getInfo): catch ..." << endl;
 	}
-
-	cache.erase(id, uniset_conf()->getLocalNode());
 }
 
 // ---------------------------------------------------------------------------
 void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetTypes::ObjectId oid )
 {
 	string owner = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(oid));
-	cout << "\n======================================================\n" << owner;
-	cout << "\t Датчики";
-	cout << "\n------------------------------------------------------" << endl;
+	cout << "\n======================================================\n"
+		 << ORepHelpers::getShortName(uniset_conf()->oind->getMapName(oid))
+		 << "\t Датчики"
+		 << "\n------------------------------------------------------"
+		 << endl;
 	int size = amap->length();
 
 	for(int i = 0; i < size; i++)
@@ -230,11 +214,15 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
 		{
 			string name(uniset_conf()->oind->getNameById(amap[i].si.id));
 
-			if( isShort )
+			if( isShortName )
 				name = ORepHelpers::getShortName(name);
 
+			string supplier = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(amap[i].supplier));
+			if( amap[i].supplier == UniSetTypes::AdminID )
+				supplier = "uniset-admin";
+
 			string txtname( uniset_conf()->oind->getTextName(amap[i].si.id) );
-			printInfo( amap[i].si.id, name, amap[i].value, owner, txtname, (amap[i].type == UniversalIO::AI ? "AI" : "DI") );
+			printInfo( amap[i].si.id, name, amap[i].value, supplier, txtname, (amap[i].type == UniversalIO::AI ? "AI" : "DI") );
 		}
 	}
 
@@ -250,11 +238,15 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
 		{
 			string name(uniset_conf()->oind->getNameById(amap[i].si.id));
 
-			if( isShort )
+			if( isShortName )
 				name = ORepHelpers::getShortName(name);
 
+			string supplier = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(amap[i].supplier));
+			if( amap[i].supplier == UniSetTypes::AdminID )
+				supplier = "uniset-admin";
+
 			string txtname( uniset_conf()->oind->getTextName(amap[i].si.id) );
-			printInfo( amap[i].si.id, name, amap[i].value, owner, txtname, (amap[i].type == UniversalIO::AO ? "AO" : "DO"));
+			printInfo( amap[i].si.id, name, amap[i].value, supplier, txtname, (amap[i].type == UniversalIO::AO ? "AO" : "DO"));
 		}
 	}
 
@@ -291,7 +283,7 @@ void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tls
 
 		string sname(uniset_conf()->oind->getNameById(tlst[i].si.id));
 
-		if( isShort )
+		if( isShortName )
 			sname = ORepHelpers::getShortName(sname);
 
 		cout << " | " << setw(60) << sname << " | " << setw(5) << tlst[i].value << endl;
@@ -309,9 +301,11 @@ void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tls
 }
 // ---------------------------------------------------------------------------
 
-void SViewer::printInfo(UniSetTypes::ObjectId id, const string& sname, long value, const string& owner,
+void SViewer::printInfo(UniSetTypes::ObjectId id, const string& sname, long value, const string& supplier,
 						const string& txtname, const string& iotype)
 {
-	cout << "(" << setw(5) << id << ")" << " | " << setw(2) << iotype << " | " << setw(60) << sname << "   | " << setw(5) << value << endl; // << "\t | " << setw(40) << owner << "\t | " << txtname << endl;
+	cout << "(" << setw(5) << id << ")" << " | " << setw(2) << iotype << " | " << setw(60) << sname
+		 << "   | " << setw(5) << value << "\t | "
+		 << setw(40) << left << supplier << endl; // "\t | " << txtname << endl;
 }
 // ---------------------------------------------------------------------------

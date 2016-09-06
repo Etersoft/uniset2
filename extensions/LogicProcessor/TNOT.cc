@@ -26,7 +26,7 @@ TNOT::TNOT( ElementID id, bool out_default ):
 	Element(id),
 	myout(out_default)
 {
-	ins.push_front(InputInfo(1, !out_default));
+	ins.emplace_front(1, !out_default);
 }
 // -------------------------------------------------------------------------
 TNOT::~TNOT()

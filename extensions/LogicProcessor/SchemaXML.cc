@@ -141,7 +141,7 @@ void SchemaXML::read( const string& xmlfile )
 			}
 
 			dinfo << "SchemaXML: set Out: from=" << fID << " to=" << tID << endl;
-			outList.push_front( EXTOut(tID, el) );
+			outList.emplace_front(tID, el);
 		}
 	}
 }

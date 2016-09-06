@@ -85,7 +85,7 @@ struct IOBase
 		ti.id = UniSetTypes::DefaultObjectId;
 		ti.state = IONotifyController_i::NormalThreshold;
 		ti.tv_sec = 0;
-		ti.tv_usec = 0;
+		ti.tv_nsec = 0;
 	}
 
 	bool check_channel_break( long val );     /*!< проверка обрыва провода */

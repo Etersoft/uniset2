@@ -31,7 +31,7 @@ TOR::TOR(ElementID id, size_t num, bool st):
 		// создаём заданное количество входов
 		for( unsigned int i = 1; i <= num; i++ )
 		{
-			ins.push_front(InputInfo(i, st)); // addInput(i,st);
+			ins.emplace_front(i, st); // addInput(i,st);
 
 			if( st == true )
 				myout = true;

@@ -5,7 +5,7 @@ includedir=@includedir@
 
 Name: libUniSet2
 Description: Support library for UniSet
-Requires: libxml-2.0 sigc++-2.0 omniORB4 libccgnu2 libev
+Requires: libxml-2.0 sigc++-2.0 omniORB4 libev
 Version: @VERSION@
-Libs: -L${libdir} -lUniSet2
-Cflags: -I${includedir}/@PACKAGE@ -D__OMNIORB4 -std=c++11
+Libs: -L${libdir} -lUniSet2 -lPocoFoundation -lPocoNet
+Cflags: -I${includedir}/@PACKAGE@ -D__OMNIORB4 -std=c++11 -D_GLIBCXX_USE_NANOSLEEP

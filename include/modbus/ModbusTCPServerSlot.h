@@ -3,7 +3,6 @@
 #define ModbusTCPServerSlot_H_
 // -------------------------------------------------------------------------
 #include <string>
-#include <cc++/socket.h>
 #include "ModbusTCPServer.h"
 #include "ModbusServerSlot.h"
 // -------------------------------------------------------------------------
@@ -13,7 +12,7 @@ class ModbusTCPServerSlot:
 	public ModbusTCPServer
 {
 	public:
-		ModbusTCPServerSlot( ost::InetAddress& ia, int port = 502 );
+		ModbusTCPServerSlot( const std::string& ia, int port = 502 );
 		virtual ~ModbusTCPServerSlot();
 
 		virtual void sigterm( int signo );

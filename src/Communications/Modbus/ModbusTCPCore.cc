@@ -14,22 +14,28 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -------------------------------------------------------------------------
+#include <Poco/Net/NetException.h>
 #include "modbus/ModbusTCPCore.h"
+#include "Exceptions.h"
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
 #define USE_BUFFER_FOR_READ 1
+#define DEFAULT_BUFFER_SIZE_FOR_READ 255
 // -------------------------------------------------------------------------
 size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
-								   std::queue<unsigned char>& qrecv, size_t max, timeout_t t )
+								   std::queue<unsigned char>& qrecv, size_t max )
 {
-	if( !tcp || !tcp->isConnected() )
+	if( !tcp ) // || !tcp->available() )
 		return 0;
 
 	size_t i = 0;
+	bool commfail = false;
 
 #ifdef USE_BUFFER_FOR_READ
+
+	max = std::max(max, (size_t)DEFAULT_BUFFER_SIZE_FOR_READ);
 
 	char* buf = new char[max];
 
@@ -38,7 +44,7 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 
 	try
 	{
-		ssize_t l = tcp->readData(buf, max, 0, t);
+		ssize_t l = tcp->receiveBytes(buf, max);
 
 		if( l > 0 )
 		{
@@ -47,9 +53,18 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 
 			i = l;
 		}
+
+		// канал закрыт!
+		if( l == 0 )
+			commfail = true;
 	}
-	catch( ost::SockException& e )
+	catch( Poco::TimeoutException& ex )
 	{
+
+	}
+	catch( Poco::Net::NetException& e )
+	{
+		commfail = true;
 	}
 
 	delete [] buf;
@@ -63,7 +78,13 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 			unsigned char c;
 			ssize_t l = tcp->readData(&c, sizeof(c), 0, t);
 
-			if( l <= 0 )
+			if( l == 0 )
+			{
+				commfail = true;
+				break;
+			}
+
+			if( l < 0 )
 				break;
 
 			qrecv.push(c);
@@ -75,23 +96,25 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 
 #endif
 
+	if( commfail )
+		throw UniSetTypes::CommFailed();
 
 	return i;
 }
 // ------------------------------------------------------------------------
 size_t ModbusTCPCore::getNextData(UTCPStream* tcp,
 								  std::queue<unsigned char>& qrecv,
-								  unsigned char* buf, size_t len, timeout_t t )
+								  unsigned char* buf, size_t len)
 {
 	if( qrecv.empty() || qrecv.size() < len )
 	{
-		if( !tcp || !tcp->isConnected() )
+		if( !tcp ) // || !tcp->available() )
 			return 0;
 
 		if( len <= 0 )
 			len = 7;
 
-		size_t ret = ModbusTCPCore::readNextData(tcp, qrecv, len, t);
+		size_t ret = ModbusTCPCore::readNextData(tcp, qrecv, len);
 
 		if( ret == 0 )
 			return 0;
@@ -110,8 +133,11 @@ size_t ModbusTCPCore::getNextData(UTCPStream* tcp,
 // -------------------------------------------------------------------------
 size_t ModbusTCPCore::readDataFD( int fd, std::queue<unsigned char>& qrecv, size_t max , size_t attempts )
 {
+	bool commfail = false;
 
 #ifdef USE_BUFFER_FOR_READ
+
+	max = std::max(max, (size_t)DEFAULT_BUFFER_SIZE_FOR_READ);
 
 	char* buf = new char[max];
 
@@ -135,6 +161,10 @@ size_t ModbusTCPCore::readDataFD( int fd, std::queue<unsigned char>& qrecv, size
 			if( cnt >= max )
 				break;
 		}
+
+		// канал закрыт!
+		if( l == 0 )
+			commfail = true;
 	}
 
 	delete [] buf;
@@ -150,7 +180,13 @@ size_t ModbusTCPCore::readDataFD( int fd, std::queue<unsigned char>& qrecv, size
 			unsigned char c;
 			ssize_t l = ::read(fd, &c, sizeof(c));
 
-			if( l <= 0 )
+			if( l == 0 )
+			{
+				commfail = true;
+				break;
+			}
+
+			if( l < 0 )
 				break;
 
 			qrecv.push(c);
@@ -159,7 +195,10 @@ size_t ModbusTCPCore::readDataFD( int fd, std::queue<unsigned char>& qrecv, size
 
 #endif
 
-	return ( qrecv.size() >= max ? max : qrecv.size() );
+	if( commfail )
+		throw UniSetTypes::CommFailed();
+
+	return std::min(qrecv.size(), max);
 }
 // ------------------------------------------------------------------------
 size_t ModbusTCPCore::getDataFD( int fd, std::queue<unsigned char>& qrecv,
@@ -187,19 +226,19 @@ size_t ModbusTCPCore::getDataFD( int fd, std::queue<unsigned char>& qrecv,
 	return i;
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPCore::sendData( UTCPStream* tcp, unsigned char* buf, size_t len, timeout_t t )
+mbErrCode ModbusTCPCore::sendData(UTCPStream* tcp, unsigned char* buf, size_t len )
 {
-	if( !tcp || !tcp->isConnected() )
+	if( !tcp ) // || !tcp->available() )
 		return erTimeOut;
 
 	try
 	{
-		ssize_t l = tcp->writeData(buf, len, t);
+		ssize_t l = tcp->sendBytes(buf, len);
 
 		if( l == len )
 			return erNoError;
 	}
-	catch( ost::SockException& e )
+	catch( Poco::Net::NetException& e )
 	{
 		//        cerr << "(send): " << e.getString() << ": " << e.getSystemErrorString() << endl;
 	}

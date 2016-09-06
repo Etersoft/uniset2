@@ -22,6 +22,7 @@
 namespace UTypes
 {
 	const long DefaultID = UniSetTypes::DefaultObjectId;
+	const long DefaultSupplerID = UniSetTypes::AdminID;
 
 	struct Params
 	{

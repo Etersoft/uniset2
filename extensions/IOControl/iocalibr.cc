@@ -18,6 +18,7 @@
 #include <cstring>
 #include <getopt.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <string>
 #include <iostream>
@@ -320,7 +321,7 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		usleep(1000000);
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
 
 	return 0;

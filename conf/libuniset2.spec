@@ -15,8 +15,8 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.4
-Release: alt3.M80P.4
+Version: 2.5
+Release: alt8.M80P.9
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -28,7 +28,9 @@ Packager: Pavel Vainerman <pv@altlinux.ru>
 # Git: http://git.etersoft.ru/projects/asu/uniset.git
 Source: %name-%version.tar
 
-BuildRequires: libcommoncpp2-devel libev-devel libomniORB-devel libsigc++2-devel xsltproc
+# Automatically added by buildreq on Fri Aug 26 2016
+# optimized out: fontconfig libgpg-error libsasl2-3 libsqlite3-devel libstdc++-devel libwayland-client libwayland-server perl pkg-config python-base python-devel python-module-omniidl python-modules python3
+BuildRequires: gcc-c++ libev-devel libomniORB-devel libpoco-devel libsigc++2-devel libxml2-devel xsltproc
 
 # for uniset2-codegen
 BuildPreReq: xsltproc
@@ -486,8 +488,77 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
-* Mon Aug 01 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt3.M80P.4
+* Wed Sep 07 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt8.M80P.9
 - backport to ALTLinux p8 (by rpmbph script)
+
+* Tue Sep 06 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt9
+- (UNetUDP): optimization use mutex
+- (unet-udp-tester): add new command line agruments
+- (IONotifyController): optimization use setLocalValue(), minor fixes
+- (MBTCPMaster): fixed bugs in error logs and minor fixes
+- (SMViewer): added display supplier
+- other minor fixes and optimizations
+
+* Fri Sep 02 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt8
+- add -D_GLIBCXX_USE_NANOSLEEP for old gcc version (<5.0)
+
+* Fri Sep 02 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt7
+- usleep --> std::this_thread::sleep_for(..);
+- clean up #include ...
+
+* Thu Sep 01 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt6
+- (python): add getObjectID() for python UInterface
+
+* Thu Sep 01 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt5
+- up build
+
+* Mon Aug 29 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt4
+- (python): add supplier ID for setValue function
+
+* Fri Aug 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt3
+- update requires
+
+* Fri Aug 26 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt2
+- Fixed converting timeout_t to Poco::TimeSpan
+
+* Thu Aug 25 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt1.2
+- (UNetUDP): add debug information (getInfo)
+- minor fixes
+
+* Wed Aug 24 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt1.1
+- codegen: make readonly in-variables
+
+* Wed Aug 24 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt1
+- test build with libpoco
+
+* Sun Aug 21 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt9
+- build new version
+
+* Sun Aug 21 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt8.2
+- IONotifyController: add debug information (getInfo)
+
+* Sat Aug 20 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt8.1
+- miscoseconds --> nanoseconds
+- optimization
+- fixed bug in ModbusTCPMaster
+
+* Fri Aug 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt8
+- ModbusTCPCore: minor optimization
+
+* Fri Aug 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt7
+- minor fixes
+
+* Fri Aug 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt6.1
+- test build
+
+* Tue Aug 09 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt6
+- build new version (optimization, refactoring)
+
+* Mon Aug 08 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt5.1
+- test build
+
+* Wed Aug 03 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt5
+- build new version
 
 * Mon Aug 01 2016 Pavel Vainerman <pv@altlinux.ru> 2.4-alt4
 - build new version

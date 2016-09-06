@@ -20,7 +20,7 @@ if __name__ == "__main__":
 		lst.add( sys.argv[i] )
 
 	try:	
-		uniset_init_params( lst, str("test.xml") )
+		uniset_init_params( lst, "test.xml");
 
 
 		print "getShortName: id=%d name=%s" % (1, getShortName(1))
@@ -30,6 +30,7 @@ if __name__ == "__main__":
 		print "getShortName: id=%d name=%s" % (2, getShortName(2))
 		print "     getName: id=%d name=%s" % (2, getName(2))
 		print " getTextName: id=%d name=%s" % (2, getTextName(2))
+		print " getObjectID: id=%d name=%s" % (getObjectID("TestProc"),"TestProc")
 
 		try:
 			print "getValue: %d=%d" % ( 1, getValue(1) )

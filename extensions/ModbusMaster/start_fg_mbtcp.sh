@@ -4,7 +4,6 @@
 --confile test.xml \
 --mbtcp-name MBMaster1 \
 --smemory-id SharedMemory \
---mbtcp-log-add-levels level4,level3 \
 --mbtcp-set-prop-prefix \
 --mbtcp-filter-field rs \
 --mbtcp-filter-value 5 \
@@ -18,6 +17,9 @@
 --ulog-add-levels system \
 --mbtcp-run-logserver \
 $*
+
+#--mbtcp-log-add-levels level4,level3 \
+
 
 #--mbtcp-exchange-mode-id MB1_Mode_AS \
 #--mbtcp-filter-field mbtcp --mbtcp-filter-value 1

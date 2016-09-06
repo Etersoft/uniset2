@@ -61,7 +61,7 @@ void Schema::link( Element::ElementID rootID, Element::ElementID childID, int nu
 	e1->addChildOut(e2, numIn);
 
 	// сохраняем в список соединений
-	inLinks.push_front(INLink(e1, e2, numIn));
+	inLinks.emplace_front(e1, e2, numIn);
 }
 // -------------------------------------------------------------------------
 void Schema::unlink( Element::ElementID rootID, Element::ElementID childID )
@@ -122,7 +122,7 @@ void Schema::extlink( const string& name, Element::ElementID childID, int numIn 
 	//    уже должен быть
 
 	// заносим в список
-	extLinks.push_front( EXTLink(name, el, numIn) );
+	extLinks.emplace_front(name, el, numIn);
 }
 // -------------------------------------------------------------------------
 std::shared_ptr<Element> Schema::manage( std::shared_ptr<Element> el )

@@ -113,11 +113,11 @@ void DBServer_PostgreSQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 		ostringstream data;
 
 		data << "UPDATE " << tblName(cem->type)
-			 << " SET confirm='" << cem->confirm << "'"
+			 << " SET confirm='" << cem->confirm_time.tv_sec << "'"
 			 << " WHERE sensor_id='" << cem->sensor_id << "'"
-			 << " AND date='" << dateToString(cem->time, "-") << " '"
-			 << " AND time='" << timeToString(cem->time, ":") << " '"
-			 << " AND time_usec='" << cem->time_usec << " '";
+			 << " AND date='" << dateToString(cem->sensor_time.tv_sec, "-") << " '"
+			 << " AND time='" << timeToString(cem->sensor_time.tv_sec, ":") << " '"
+			 << " AND time_usec='" << cem->sensor_time.tv_nsec << " '";
 
 		dbinfo << myname << "(update_confirm): " << data.str() << endl;
 
@@ -249,29 +249,28 @@ void DBServer_PostgreSQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 {
 	try
 	{
-#if 0
-		// если время не было выставлено (указываем время сохранения в БД)
-		struct timeval tm = si->tm;
-
-		if( !tm.tv_sec )
+		if( !si->tm.tv_sec )
 		{
-			struct timezone tz;
-			gettimeofday(&tm, &tz);
+			// Выдаём CRIT, но тем не менее сохраняем в БД
+
+			dbcrit << myname << "(insert_main_history): UNKNOWN TIMESTAMP! (tm.tv_sec=0)"
+				   << " for sid=" << si->id
+				   << " supplier=" << uniset_conf()->oind->getMapName(si->supplier)
+				   << endl;
 		}
 
-#endif
 		// (date, time, time_usec, sensor_id, value, node)
 		PostgreSQLInterface::Record rec =
 		{
-			dateToString(si->sm_tv_sec, "-"), //  date
-			timeToString(si->sm_tv_sec, ":"), //  time
-			std::to_string(si->sm_tv_usec),
+			dateToString(si->sm_tv.tv_sec, "-"), //  date
+			timeToString(si->sm_tv.tv_sec, ":"), //  time
+			std::to_string(si->sm_tv.tv_nsec),
 			std::to_string(si->id),
 			std::to_string(si->value),
 			std::to_string(si->node),
 		};
 
-		ibuf.push_back(std::move(rec));
+		ibuf.emplace_back(std::move(rec));
 		ibufSize++;
 
 		if( ibufSize >= ibufMaxSize )

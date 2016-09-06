@@ -90,8 +90,8 @@ class SQLiteInterface:
 		virtual bool connect( const std::string& param ) override;
 		bool connect( const std::string& dbfile, bool create );
 		virtual bool close() override;
-		virtual bool isConnection() override;
-		virtual bool ping() override; // проверка доступности БД
+		virtual bool isConnection() const override;
+		virtual bool ping() const override;
 
 		void setOperationTimeout( timeout_t msec );
 		inline timeout_t getOperationTimeout()

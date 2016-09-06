@@ -86,4 +86,14 @@ pkgconfig_DATA 	= libUniSet2MBTCPMaster.pc libUniSet2RTU.pc
 #all-local:
 #	ln -sf ../ModbusMaster/$(devel_include_HEADERS) ../include
 
+noinst_PROGRAMS = mb-perf-test
+
+mb_perf_test_SOURCES = mb-perf-test.cc
+mb_perf_test_LDADD 	= libUniSet2MBTCPMaster.la libMBMaster.la $(top_builddir)/lib/libUniSet2.la \
+									$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
+									$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
+									$(SIGC_LIBS)
+mb_perf_test_CXXFLAGS = -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)
+
+
 include $(top_builddir)/include.mk

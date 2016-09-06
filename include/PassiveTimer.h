@@ -22,13 +22,16 @@
 # define PASSIVETIMER_H_
 //----------------------------------------------------------------------------
 #include <signal.h>
-#include <cc++/socket.h>
 #include <condition_variable>
 #include <thread>
 #include <mutex>
 #include <atomic>
 #include <chrono>
+#include <limits>
+#include <Poco/Timespan.h>
 #include "Mutex.h"
+//----------------------------------------------------------------------------------------
+typedef Poco::Timespan::TimeDiff timeout_t;
 //----------------------------------------------------------------------------------------
 /*! \class UniSetTimer
  * \brief Базовый интерфейс пасивных таймеров
@@ -39,43 +42,36 @@ class UniSetTimer
 	public:
 		virtual ~UniSetTimer() {};
 
-		virtual bool checkTime() const = 0;						/*!< проверка наступления заданного времени */
+		virtual bool checkTime() const = 0;					/*!< проверка наступления заданного времени */
 		virtual timeout_t setTiming( timeout_t msec ) = 0;	/*!< установить таймер и запустить */
 		virtual void reset() = 0;							/*!< перезапустить таймер */
 
-		virtual timeout_t getCurrent() const = 0;       /*!< получить текущее значение таймера */
-		virtual timeout_t getInterval() const = 0;      /*!< получить интервал, на который установлен таймер, в мс */
-		timeout_t getLeft(timeout_t timeout)      /*!< получить время, которое остается от timeout после прошествия времени getCurrent() */
-		{
-			timeout_t ct = getCurrent();
+		virtual timeout_t getCurrent() const = 0;  /*!< получить текущее значение таймера */
+		virtual timeout_t getInterval() const = 0; /*!< получить интервал, на который установлен таймер, в мс */
 
-			if( timeout <= ct )
-				return 0;
-
-			return timeout - ct;
-		}
+		timeout_t getLeft( timeout_t timeout ) const;   /*!< получить время, которое остается от timeout после прошествия времени getCurrent() */
 
 		// объявлены не чисто виртуальными т.к.
 		// некоторые классы могут не иметь подобных
 		// свойств.
-		virtual bool wait(timeout_t timeMS)
-		{
-			return 0;   /*!< заснуть ожидая наступления времени */
-		}
-		virtual void terminate() {}                   /*!< прервать работу таймера */
+		virtual bool wait(timeout_t timeMS);   /*!< заснуть ожидая наступления времени */
+		virtual void terminate() {}            /*!< прервать работу таймера */
 
 		/*! завершить работу таймера */
-		virtual void stop()
-		{
-			terminate();
-		};
+		virtual void stop();
 
 		/*! Время засыпания, до момента пока не будет вызвана функция прерывания
 		 *  terminate() или stop()
 		 */
-		static const timeout_t WaitUpTime = TIMEOUT_INF;
+		static const timeout_t WaitUpTime = std::numeric_limits<timeout_t>::max();
 
-		/*! Минимальное время срабатывания. Задается в мсек. */
+		// преобразование с учётом WaitUpTime, т.к. в Poco::Timespan вечное ожидание это "0" :(
+		static const Poco::Timespan millisecToPoco( const timeout_t msec );
+		static const Poco::Timespan microsecToPoco( const timeout_t usec );
+
+		/*! Минимальное время срабатывания. Задается в мсек.
+		 * Используется в LT_Object и CallbackTimer
+		 */
 		static const timeout_t MinQuantityTime = 10;
 };
 //----------------------------------------------------------------------------------------
@@ -101,10 +97,11 @@ class PassiveTimer:
 		virtual void reset(); /*!< перезапустить таймер */
 
 		virtual timeout_t getCurrent() const override;  /*!< получить текущее значение таймера, в мс */
-		virtual timeout_t getInterval() const override  /*!< получить интервал, на который установлен таймер, в мс */
-		{
-			return (t_msec != UniSetTimer::WaitUpTime ? t_msec : 0);
-		}
+
+		/*! получить интервал, на который установлен таймер, в мс
+		 * \return msec или 0 если интервал равен WaitUpTime
+		 */
+		virtual timeout_t getInterval() const override;
 
 		virtual void terminate(); /*!< прервать работу таймера */
 
@@ -140,8 +137,8 @@ class PassiveCondTimer:
 		PassiveCondTimer();
 		virtual ~PassiveCondTimer();
 
-		virtual bool wait(timeout_t t_msec);    /*!< блокировать вызывающий поток на заданное время */
-		virtual void terminate();        /*!< прервать работу таймера */
+		virtual bool wait(timeout_t t_msec); /*!< блокировать вызывающий поток на заданное время */
+		virtual void terminate();  /*!< прервать работу таймера */
 
 	protected:
 
@@ -150,40 +147,5 @@ class PassiveCondTimer:
 		std::mutex    m_working;
 		std::condition_variable cv_working;
 };
-//----------------------------------------------------------------------------------------
-
-/*! \class PassiveSigTimer
- * \brief Пассивный таймер с режимом засыпания (ожидания)
- * \author Pavel Vainerman
- * \par
- * Создан на основе сигнала (SIGALRM).
-*/
-class PassiveSigTimer:
-	public PassiveTimer
-{
-	public:
-
-		PassiveSigTimer();
-		virtual ~PassiveSigTimer();
-
-		virtual bool wait(timeout_t t_msec); //throw(UniSetTypes::NotSetSignal);
-		virtual void terminate();
-
-	protected:
-
-	private:
-		struct itimerval mtimer = { {0, 0}, {0, 0} };
-		pid_t pid = { 0 };
-
-		//        bool terminated;
-		volatile sig_atomic_t terminated = { 0 };
-
-		void init();
-
-		static void callalrm(int signo );
-		static void call(int signo, siginfo_t* evp, void* ucontext);
-
-};
-
 //----------------------------------------------------------------------------------------
 # endif //PASSIVETIMER_H_

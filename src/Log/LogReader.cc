@@ -16,8 +16,10 @@
 // -------------------------------------------------------------------------
 #include <string.h>
 #include <errno.h>
+#include <Poco/Net/NetException.h>
 #include <iostream>
 #include <sstream>
+#include "PassiveTimer.h"
 #include "Exceptions.h"
 #include "LogReader.h"
 #include "UniSetTypes.h"
@@ -56,17 +58,10 @@ DebugStream::StreamEvent_Signal LogReader::signal_stream_event()
 	return m_logsig;
 }
 // -------------------------------------------------------------------------
-void LogReader::connect( const std::string& addr, ost::tpport_t _port, timeout_t msec )
-{
-	ost::InetAddress ia(addr.c_str());
-	connect(ia, _port, msec);
-}
-// -------------------------------------------------------------------------
-void LogReader::connect( ost::InetAddress addr, ost::tpport_t _port, timeout_t msec )
+void LogReader::connect( const std::string& _addr, int _port, timeout_t msec )
 {
 	if( tcp )
 	{
-		(*tcp.get()) << endl;
 		disconnect();
 		tcp = 0;
 	}
@@ -74,22 +69,42 @@ void LogReader::connect( ost::InetAddress addr, ost::tpport_t _port, timeout_t m
 	//    if( !tcp )
 	//    {
 
-	ostringstream s;
-	s << addr;
-	iaddr = s.str();
+	iaddr = _addr;
 	port = _port;
 
 	if( rlog.is_info() )
 		rlog.info() << "(LogReader): connect to " << iaddr << ":" << port << endl;
 
-	ost::Thread::setException(ost::Thread::throwException);
-
 	try
 	{
 		tcp = make_shared<UTCPStream>();
-		tcp->create(iaddr, port, true, 500);
-		tcp->setTimeout(msec);
+		tcp->create(iaddr, port, msec );
+		tcp->setReceiveTimeout( UniSetTimer::millisecToPoco(inTimeout) );
+		tcp->setSendTimeout( UniSetTimer::millisecToPoco(outTimeout) );
 		tcp->setKeepAlive(true);
+		tcp->setBlocking(true);
+	}
+	catch( const Poco::TimeoutException& e )
+	{
+		if( rlog.debugging(Debug::CRIT) )
+		{
+			ostringstream s;
+			s << "(LogReader): connection " << s.str() << " timeout..";
+			rlog.crit() << s.str() << std::endl;
+		}
+
+		tcp = 0;
+	}
+	catch( const Poco::Net::NetException& e )
+	{
+		if( rlog.debugging(Debug::CRIT) )
+		{
+			ostringstream s;
+			s << "(LogReader): connection " << s.str() << " error: " << e.what();
+			rlog.crit() << s.str() << std::endl;
+		}
+
+		tcp = 0;
 	}
 	catch( const std::exception& e )
 	{
@@ -123,16 +138,25 @@ void LogReader::disconnect()
 	if( rlog.is_info() )
 		rlog.info() << iaddr << "(LogReader): disconnect." << endl;
 
-	tcp->disconnect();
+	try
+	{
+		//tcp->shutdown();
+		tcp->close();
+	}
+	catch( const Poco::Net::NetException& e )
+	{
+		cerr << "(LogReader): disconnect error:  " << e.displayText() << endl;
+	}
+
 	tcp = 0;
 }
 // -------------------------------------------------------------------------
-bool LogReader::isConnection()
+bool LogReader::isConnection() const
 {
-	return tcp && tcp->isConnected();
+	return (tcp && tcp->isConnected() );
 }
 // -------------------------------------------------------------------------
-void LogReader::sendCommand( const std::string& _addr, ost::tpport_t _port, std::vector<Command>& vcmd, bool cmd_only, bool verbose )
+void LogReader::sendCommand(const std::string& _addr, int _port, std::vector<Command>& vcmd, bool cmd_only, bool verbose )
 {
 	if( vcmd.empty() )
 		return;
@@ -143,7 +167,7 @@ void LogReader::sendCommand( const std::string& _addr, ost::tpport_t _port, std:
 		rlog.addLevel(Debug::ANY);
 
 	if( outTimeout == 0 )
-		outTimeout = TIMEOUT_INF;
+		outTimeout = UniSetTimer::WaitUpTime;
 
 	std::string listfilter("");
 
@@ -200,13 +224,13 @@ void LogReader::sendCommand( const std::string& _addr, ost::tpport_t _port, std:
 				sendCommand(msg, verbose);
 				break;
 			}
-			catch( const ost::SockException& e )
+			catch( const Poco::Net::NetException& e )
 			{
-				cerr << "(LogReader): " << e.getString() << " (" << _addr << ")" << endl;
+				cerr << "(LogReader): send error: " << e.displayText() << " (" << _addr << ")" << endl;
 			}
 			catch( const std::exception& ex )
 			{
-				cerr << "(LogReader): " << ex.what() << endl;
+				cerr << "(LogReader): send error: " << ex.what() << endl;
 			}
 
 			n--;
@@ -231,13 +255,13 @@ void LogReader::sendCommand( const std::string& _addr, ost::tpport_t _port, std:
 	{
 		int a = 2;
 
-		while( a > 0 && tcp->isPending(ost::Socket::pendingInput, reply_timeout) )
+		while( a > 0 && tcp->poll(UniSetTimer::millisecToPoco(reply_timeout), Poco::Net::Socket::SELECT_READ) )
 		{
-			int n = tcp->peek( buf, sizeof(buf) - 1 );
+			int n = tcp->available();
 
 			if( n > 0 )
 			{
-				tcp->read(buf, n);
+				tcp->receiveBytes(buf, n);
 				buf[n] = '\0';
 
 				outlog->any(false) << buf;
@@ -248,20 +272,20 @@ void LogReader::sendCommand( const std::string& _addr, ost::tpport_t _port, std:
 
 		// rlog.warn() << "(LogReader): ...wait reply timeout..." << endl;
 	}
-	catch( const ost::SockException& e )
+	catch( const Poco::Net::NetException& e )
 	{
-		cerr << "(LogReader): " << e.getString() << " (" << _addr << ")" << endl;
+		cerr << "(LogReader): read error: " << e.displayText() << " (" << _addr << ")" << endl;
 	}
 	catch( const std::exception& ex )
 	{
-		cerr << "(LogReader): " << ex.what() << endl;
+		cerr << "(LogReader): read error: " << ex.what() << endl;
 	}
 
 	if( cmdonly && isConnection() )
 		disconnect();
 }
 // -------------------------------------------------------------------------
-void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServerTypes::Command cmd, const std::string logfilter, bool verbose )
+void LogReader::readlogs( const std::string& _addr, int _port, LogServerTypes::Command cmd, const std::string logfilter, bool verbose )
 {
 	char buf[100001];
 
@@ -269,10 +293,10 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 		rlog.addLevel(Debug::ANY);
 
 	if( inTimeout == 0 )
-		inTimeout = TIMEOUT_INF;
+		inTimeout = UniSetTimer::WaitUpTime;
 
 	if( outTimeout == 0 )
-		outTimeout = TIMEOUT_INF;
+		outTimeout = UniSetTimer::WaitUpTime;
 
 	unsigned int rcount = 1;
 
@@ -313,13 +337,13 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 				send_ok = true;
 			}
 
-			while( tcp->isPending(ost::Socket::pendingInput, inTimeout) )
+			while( tcp->poll(UniSetTimer::millisecToPoco(inTimeout), Poco::Net::Socket::SELECT_READ) )
 			{
-				ssize_t n = tcp->peek( buf, sizeof(buf) - 1 );
+				ssize_t n = tcp->available();
 
 				if( n > 0 )
 				{
-					tcp->read(buf, n);
+					tcp->receiveBytes(buf, n);
 					buf[n] = '\0';
 
 					outlog->any(false) << buf;
@@ -338,13 +362,13 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 				rcount--;
 
 			if( rcount != 0 )
-				rlog.warn() << "(LogReader): ...connection timeout..." << endl;
+				rlog.warn() << "(LogReader): ...read timeout..." << endl;
 
 			disconnect();
 		}
-		catch( const ost::SockException& e )
+		catch( const Poco::Net::NetException& e )
 		{
-			cerr << "(LogReader): " << e.getString() << " (" << _addr << ")" << endl;
+			cerr << "(LogReader): " << e.displayText() << " (" << _addr << ")" << endl;
 		}
 		catch( const std::exception& ex )
 		{
@@ -366,7 +390,7 @@ void LogReader::logOnEvent( const std::string& s )
 // -------------------------------------------------------------------------
 void LogReader::sendCommand(LogServerTypes::lsMessage& msg, bool verbose )
 {
-	if( !tcp )
+	if( !tcp || !tcp->isConnected() )
 	{
 		cerr << "(LogReader::sendCommand): tcp=NULL! no connection?!" << endl;
 		return;
@@ -374,25 +398,21 @@ void LogReader::sendCommand(LogServerTypes::lsMessage& msg, bool verbose )
 
 	try
 	{
-		if( tcp->isPending(ost::Socket::pendingOutput, outTimeout) )
+		if( tcp->poll(UniSetTimer::millisecToPoco(outTimeout), Poco::Net::Socket::SELECT_WRITE) )
 		{
 			rlog.info() << "(LogReader): ** send command: cmd='" << msg.cmd << "' logname='" << msg.logname << "' data='" << msg.data << "'" << endl;
-
-			for( size_t i = 0; i < sizeof(msg); i++ )
-				(*tcp) << ((unsigned char*)(&msg))[i];
-
-			tcp->sync();
+			tcp->sendBytes((unsigned char*)(&msg), sizeof(msg));
 		}
 		else
 			rlog.warn() << "(LogReader): **** SEND COMMAND ('" << msg.cmd << "' FAILED!" << endl;
 	}
-	catch( const ost::SockException& e )
+	catch( const Poco::Net::NetException& e )
 	{
-		cerr << "(LogReader): " << e.getString() << endl; // " (" << _addr << ")" << endl;
+		cerr << "(LogReader): send error:  " << e.displayText() << endl; // " (" << _addr << ")" << endl;
 	}
 	catch( const std::exception& ex )
 	{
-		cerr << "(LogReader): " << ex.what() << endl;
+		cerr << "(LogReader): send error: " << ex.what() << endl;
 	}
 }
 // -------------------------------------------------------------------------

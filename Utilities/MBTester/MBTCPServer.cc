@@ -27,14 +27,11 @@ MBTCPServer::MBTCPServer(const std::unordered_set<ModbusAddr>& myaddr, const str
 	//    if( replyTimeout <= 0 )
 	//        replyTimeout = 2000;
 
-	ost::InetAddress ia(inetaddr.c_str());
-
-
 	if( verbose )
 		cout << "(init): "
-			 << " addr: " << ia << ":" << port << endl;
+			 << " addr: " << inetaddr << ":" << port << endl;
 
-	sslot = new ModbusTCPServerSlot(ia, port);
+	sslot = new ModbusTCPServerSlot(inetaddr, port);
 
 	//    sslot->initLog(conf,name,logfile);
 
@@ -69,6 +66,11 @@ void MBTCPServer::setLog(std::shared_ptr<DebugStream>& dlog )
 {
 	if( sslot )
 		sslot->setLog(dlog);
+}
+// -------------------------------------------------------------------------
+void MBTCPServer::setMaxSessions( size_t max )
+{
+	sslot->setMaxSessions(max);
 }
 // -------------------------------------------------------------------------
 void MBTCPServer::execute()

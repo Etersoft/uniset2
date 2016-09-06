@@ -482,10 +482,12 @@ int main( int argc, char** argv )
 
 						for( size_t i = 0; i < ret.count; i++ )
 						{
+							ModbusRTU::DataBits16 b(ret.data[i]);
 							cout << i << ": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i])
 								 << " ("
 								 << ModbusRTU::dat2str(ret.data[i])
 								 << ")"
+								 << b
 								 << endl;
 						}
 					}
@@ -510,10 +512,12 @@ int main( int argc, char** argv )
 
 						for( size_t i = 0; i < ret.count; i++ )
 						{
+							ModbusRTU::DataBits16 b(ret.data[i]);
 							cout << i << ": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i])
 								 << " ("
 								 << ModbusRTU::dat2str(ret.data[i])
 								 << ")"
+								 << b
 								 << endl;
 						}
 					}

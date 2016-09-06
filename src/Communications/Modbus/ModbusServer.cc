@@ -633,6 +633,11 @@ mbErrCode ModbusServer::recv( const std::unordered_set<ModbusRTU::ModbusAddr>& v
 	{
 		//        cout << "(recv): catch TimeOut " << endl;
 	}
+	catch( UniSetTypes::CommFailed )
+	{
+		cleanupChannel();
+		return erSessionClosed;
+	}
 	catch( const Exception& ex ) // SystemError
 	{
 		dlog->crit() << "(recv): " << ex << endl;
@@ -1692,8 +1697,8 @@ ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessa
 	if( dlog && dlog->is_info() )
 		dlog->info() << "(replySetDateTime): " << query << endl;
 
-	struct timeval set;
 	struct timezone tz;
+	struct timeval set;
 
 	if( gettimeofday(&set, &tz) == 0 )
 	{

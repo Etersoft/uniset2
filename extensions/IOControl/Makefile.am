@@ -6,13 +6,13 @@ UIO_VER=@LIBVER@
 
 lib_LTLIBRARIES 	= libUniSet2IOControl.la
 libUniSet2IOControl_la_LDFLAGS = -version-info $(UIO_VER)
-libUniSet2IOControl_la_LIBADD  = $(COMEDI_LIBS) $(SIGC_LIBS) $(COMCPP_LIBS) \
+libUniSet2IOControl_la_LIBADD  = $(COMEDI_LIBS) $(SIGC_LIBS) $(POCO_LIBS) \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 	-lm
 
-libUniSet2IOControl_la_CXXFLAGS = $(COMEDI_CFLAGS) $(SIGC_CFLAGS) $(COMCPP_CFLAGS) \
+libUniSet2IOControl_la_CXXFLAGS = $(COMEDI_CFLAGS) $(SIGC_CFLAGS) $(POCO_CFLAGS) \
 	-I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/SharedMemory
 
@@ -22,8 +22,8 @@ libUniSet2IOControl_la_SOURCES = ComediInterface.cc IOControl.cc
 	$(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
-	$(COMEDI_LIBS) $(SIGC_LIBS) $(COMCPP_LIBS) -lm
-@PACKAGE@_iocontrol_CXXFLAGS = $(COMEDI_CFLAGS) $(SIGC_CFLAGS) $(COMCPP_CFLAGS) \
+	$(COMEDI_LIBS) $(SIGC_LIBS) $(POCO_LIBS) -lm
+@PACKAGE@_iocontrol_CXXFLAGS = $(COMEDI_CFLAGS) $(SIGC_CFLAGS) $(POCO_CFLAGS) \
 	-I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/SharedMemory
 @PACKAGE@_iocontrol_SOURCES = iocontrol.cc

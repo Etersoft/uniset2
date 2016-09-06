@@ -96,7 +96,8 @@ void CallbackTimer<Caller>::terminate()
 {
 //	timeAct = 0;
 	terminated = true;
-	usleep(1000);
+	//usleep(1000);
+	std::this_thread::sleep_for(std::chrono::microseconds(1));
 }
 // ------------------------------------------------------------------------------------------
 
@@ -164,7 +165,7 @@ timeout_t CallbackTimer<Caller>::getInterval( size_t id )
 	if( li!=lst.end() )
 		return li->pt.getInterval();
 
-	return TIMEOUT_INF;
+	return UniSetTimer::WaitUpTime;
 }
 // ------------------------------------------------------------------------------------------
 template <class Caller>
@@ -174,7 +175,7 @@ timeout_t CallbackTimer<Caller>::getCurrent( size_t id )
 	if( li!=lst.end() )
 		return li->pt.getCurrent();
 	
-	return TIMEOUT_INF;
+	return UniSetTimer::WaitUpTime;
 }
 // ------------------------------------------------------------------------------------------
 # endif //CallbackTimer_TCC_H_

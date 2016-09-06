@@ -28,6 +28,7 @@ if __name__ == "__main__":
 #		print "(0)UIType: %s" % uc1.getUIType()
 
 		print "(1)getShortName: id=%d name=%s" % (1, uc1.getShortName(1))
+		print "(2)getObjectID('TestProc'): %d" % uc1.getObjectID("TestProc")
 
 #		print "     getName: id=%d name=%s" % (1, uc1.getName(101))
 #		print " getTextName: id=%d name=%s" % (1, uc1.getTextName(101))

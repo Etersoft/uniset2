@@ -21,7 +21,6 @@
 #include <string>
 #include <memory>
 #include <unordered_map>
-#include <cc++/socket.h>
 #include <ev++.h>
 #include "Mutex.h"
 #include "UniXML.h"
@@ -106,7 +105,7 @@ class LogServer:
 			sessMaxCount = num;
 		}
 
-		void run( const std::string& addr, ost::tpport_t port, bool thread = true );
+		void run( const std::string& addr, Poco::UInt16 port, bool thread = true );
 		void terminate();
 
 		inline bool isRunning()
@@ -142,7 +141,7 @@ class LogServer:
 		size_t scount = { 0 };
 		UniSetTypes::uniset_rwmutex mutSList;
 
-		timeout_t timeout = { TIMEOUT_INF };
+		timeout_t timeout = { UniSetTimer::WaitUpTime };
 		timeout_t cmdTimeout = { 2000 };
 		Debug::type sessLogLevel = { Debug::NONE };
 		size_t sessMaxCount = { 10 };
@@ -164,7 +163,7 @@ class LogServer:
 
 		std::string myname = { "LogServer" };
 		std::string addr = { "" };
-		ost::tpport_t port = { 0 };
+		Poco::UInt16 port = { 0 };
 
 		std::atomic_bool isrunning = { false };
 };

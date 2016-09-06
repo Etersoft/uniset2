@@ -15,11 +15,12 @@
  */
 // -------------------------------------------------------------------------
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <fcntl.h>
 #include <errno.h>
 #include <cstring>
-#include <cc++/socket.h>
+#include <Poco/Net/NetException.h>
 #include "modbus/ModbusTCPSession.h"
 #include "modbus/ModbusTCPCore.h"
 #include "UniSetTypes.h"
@@ -41,7 +42,7 @@ ModbusTCPSession::~ModbusTCPSession()
 		ioTimeout.stop();
 }
 // -------------------------------------------------------------------------
-ModbusTCPSession::ModbusTCPSession( int sfd, const std::unordered_set<ModbusAddr>& a, timeout_t timeout ):
+ModbusTCPSession::ModbusTCPSession(const Poco::Net::StreamSocket& s, const std::unordered_set<ModbusAddr>& a, timeout_t timeout ):
 	vaddr(a),
 	timeout(timeout),
 	peername(""),
@@ -50,14 +51,13 @@ ModbusTCPSession::ModbusTCPSession( int sfd, const std::unordered_set<ModbusAddr
 {
 	try
 	{
-		sock = make_shared<USocket>(sfd);
-		ost::tpport_t p;
+		sock = make_shared<UTCPStream>(s);
 
 		// если стремиться к "оптимизации по скорости"
 		// то getpeername "медленная" операция и может стоит от неё отказаться.
-		ost::InetAddress iaddr = sock->getIPV4Peer(&p);
+		Poco::Net::SocketAddress  iaddr = sock->peerAddress();
 
-		if( !iaddr.isInetAddress() )
+		if( iaddr.host().toString().empty() )
 		{
 			ostringstream err;
 			err << "(ModbusTCPSession): unknonwn ip(0.0.0.0) client disconnected?!";
@@ -69,24 +69,21 @@ ModbusTCPSession::ModbusTCPSession( int sfd, const std::unordered_set<ModbusAddr
 			throw SystemError(err.str());
 		}
 
-		caddr = string( iaddr.getHostname() );
+		caddr = iaddr.host().toString();
 		ostringstream s;
-		s << iaddr << ":" << p;
+		s << caddr << ":" << iaddr.port();
 		peername = s.str();
 	}
-	catch( const ost::SockException& ex )
+	catch( const Poco::Net::NetException& ex )
 	{
-		ostringstream err;
-		err << ex.what();
-
 		if( dlog->is_crit() )
-			dlog->crit() << "(ModbusTCPSession): err: " << err.str() << endl;
+			dlog->crit() << "(ModbusTCPSession): err: " << ex.displayText() << endl;
 
 		sock.reset();
-		throw SystemError(err.str());
+		throw SystemError(ex.message());
 	}
 
-	sock->setCompletion(false); // fcntl(sfd, F_SETFL, fcntl(sfd, F_GETFL, 0) | O_NONBLOCK);
+	sock->setBlocking(false); // fcntl(sfd, F_SETFL, fcntl(sfd, F_GETFL, 0) | O_NONBLOCK);
 	setCRCNoCheckit(true);
 
 	timeout_t tout = timeout / 1000;
@@ -208,6 +205,7 @@ ModbusRTU::mbErrCode ModbusTCPSession::realReceive( const std::unordered_set<Mod
 	ModbusRTU::mbErrCode res = erTimeOut;
 	ptTimeout.setTiming(msec);
 
+	try
 	{
 		buf.clear();
 		res = tcp_processing(buf.aduhead);
@@ -270,6 +268,11 @@ ModbusRTU::mbErrCode ModbusTCPSession::realReceive( const std::unordered_set<Mod
 		// processing message...
 		res = processing(buf);
 	}
+	catch( UniSetTypes::CommFailed& ex )
+	{
+		cancelled = true;
+		return erSessionClosed;
+	}
 
 	return res;
 }
@@ -289,15 +292,22 @@ size_t ModbusTCPSession::getNextData( unsigned char* buf, int len )
 {
 	ssize_t res = ModbusTCPCore::getDataFD( sock->getSocket(), qrecv, buf, len );
 
-	if( res > 0 )
-		return res;
-
-	if( res < 0 )
+	try
 	{
-		if( errno != EAGAIN && dlog->is_warn() )
-			dlog->warn() << peername << "(getNextData): read from socket error(" << errno << "): " << strerror(errno) << endl;
+		if( res > 0 )
+			return res;
 
-		return 0;
+		if( res < 0 )
+		{
+			if( errno != EAGAIN && dlog->is_warn() )
+				dlog->warn() << peername << "(getNextData): read from socket error(" << errno << "): " << strerror(errno) << endl;
+
+			return 0;
+		}
+	}
+	catch( UniSetTypes::CommFailed )
+	{
+
 	}
 
 	if( !cancelled && dlog->is_info() )
@@ -356,14 +366,21 @@ mbErrCode ModbusTCPSession::tcp_processing( ModbusRTU::ADUHeader& mhead )
 
 	pt.setTiming(10);
 
-	do
+	try
 	{
-		len = ModbusTCPCore::readDataFD( sock->getSocket(), qrecv, mhead.len );
+		do
+		{
+			len = ModbusTCPCore::readDataFD( sock->getSocket(), qrecv, mhead.len );
 
-		if( len == 0 )
-			io.loop.iteration();
+			if( len == 0 )
+				io.loop.iteration();
+		}
+		while( len == 0 && !pt.checkTime() );
 	}
-	while( len == 0 && !pt.checkTime() );
+	catch( UniSetTypes::CommFailed )
+	{
+
+	}
 
 	if( len < mhead.len )
 	{

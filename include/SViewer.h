@@ -33,16 +33,13 @@ class SViewer
 {
 	public:
 
-		explicit SViewer(const std::string& ControllersSection, bool isShort = true);
+		explicit SViewer(const std::string& ControllersSection, bool isShortName = true);
 		virtual ~SViewer();
 
 		void view();
 		void monitor( timeout_t timeoutMS = 500 );
 
 	protected:
-		friend class SViewer_glade;
-		void on_SViewer_destroy();
-
 		void readSection(const std::string& sec, const std::string& secRoot);
 		void getInfo(UniSetTypes::ObjectId id);
 
@@ -50,15 +47,14 @@ class SViewer
 		virtual void updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tlst, UniSetTypes::ObjectId oid );
 
 		const std::string csec;
-		void printInfo(UniSetTypes::ObjectId id, const std::string& sname, long value, const std::string& owner,
+		void printInfo(UniSetTypes::ObjectId id, const std::string& sname, long value, const std::string& supplier,
 					   const std::string& txtname, const std::string& iotype);
 
 		std::shared_ptr<UInterface> ui;
 
 	private:
 		ObjectRepository rep;
-		UInterface::CacheOfResolve cache;
-		bool isShort;
+		bool isShortName = { true };
 
 };
 // --------------------------------------------------------------------------

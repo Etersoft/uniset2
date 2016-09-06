@@ -119,6 +119,11 @@ UniSetObject::~UniSetObject()
 {
 }
 // ------------------------------------------------------------------------------------------
+std::shared_ptr<UniSetObject> UniSetObject::get_ptr()
+{
+	return shared_from_this();
+}
+// ------------------------------------------------------------------------------------------
 void UniSetObject::initObject()
 {
 	a_working = ATOMIC_VAR_INIT(0);
@@ -140,8 +145,8 @@ void UniSetObject::initObject()
 // ------------------------------------------------------------------------------------------
 
 /*!
- *    \param om - указазтель на менджер управляющий объектом
- *    \return Возращает \a true если инициализация прошда успешно, и \a false если нет
+ *    \param om - указатель на менеджер управляющий объектом
+ *    \return Возращает \a true если инициализация прошла успешно, и \a false если нет
 */
 bool UniSetObject::init( const std::weak_ptr<UniSetManager>& om )
 {
@@ -163,16 +168,31 @@ void UniSetObject::setID( UniSetTypes::ObjectId id )
 	ui->initBackId(myid);
 }
 // ------------------------------------------------------------------------------------------
-void UniSetObject::setMaxSizeOfMessageQueue(size_t s)
+void UniSetObject::setMaxSizeOfMessageQueue( size_t s )
 {
 	mqueueMedium.setMaxSizeOfMessageQueue(s);
 	mqueueLow.setMaxSizeOfMessageQueue(s);
 	mqueueHi.setMaxSizeOfMessageQueue(s);
 }
 // ------------------------------------------------------------------------------------------
+size_t UniSetObject::getMaxSizeOfMessageQueue() const
+{
+	return mqueueMedium.getMaxSizeOfMessageQueue();
+}
+// ------------------------------------------------------------------------------------------
+bool UniSetObject::isActive() const
+{
+	return active;
+}
+// ------------------------------------------------------------------------------------------
+void UniSetObject::setActive(bool set)
+{
+	active = set;
+}
+// ------------------------------------------------------------------------------------------
 /*!
  *    \param  vm - указатель на структуру, которая заполняется если есть сообщение
- *    \return Возвращает \a true если сообщение есть, и \a false если нет
+ *    \return Возвращает указатель VoidMessagePtr если сообщение есть, и shared_ptr(nullptr) если нет
 */
 VoidMessagePtr UniSetObject::receiveMessage()
 {
@@ -310,13 +330,28 @@ CORBA::Boolean UniSetObject::exist()
 	return true;
 }
 // ------------------------------------------------------------------------------------------
+ObjectId UniSetObject::getId()
+{
+	return myid;
+}
+// ------------------------------------------------------------------------------------------
+const ObjectId UniSetObject::getId() const
+{
+	return myid;
+}
+// ------------------------------------------------------------------------------------------
+string UniSetObject::getName() const
+{
+	return myname;
+}
+// ------------------------------------------------------------------------------------------
 void UniSetObject::termWaiting()
 {
 	if( tmr )
 		tmr->terminate();
 }
 // ------------------------------------------------------------------------------------------
-void UniSetObject::setThreadPriority( int p )
+void UniSetObject::setThreadPriority( Poco::Thread::Priority p )
 {
 	if( thr )
 		thr->setPriority(p);
@@ -338,20 +373,56 @@ void UniSetObject::push( const TransportMessage& tm )
 	termWaiting();
 }
 // ------------------------------------------------------------------------------------------
+ObjectPtr UniSetObject::getRef() const
+{
+	UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
+	return (UniSetTypes::ObjectPtr)CORBA::Object::_duplicate(oref);
+}
+// ------------------------------------------------------------------------------------------
 size_t UniSetObject::countMessages()
 {
 	return (mqueueMedium.size() + mqueueLow.size() + mqueueHi.size());
 }
 // ------------------------------------------------------------------------------------------
-size_t UniSetObject::getCountOfLostMessages()
+size_t UniSetObject::getCountOfLostMessages() const
 {
 	return (mqueueMedium.getCountOfLostMessages() +
 			mqueueLow.getCountOfLostMessages() +
 			mqueueHi.getCountOfLostMessages() );
 }
 // ------------------------------------------------------------------------------------------
+bool UniSetObject::activateObject()
+{
+	return true;
+}
+// ------------------------------------------------------------------------------------------
+bool UniSetObject::deactivateObject()
+{
+	return true;
+}
+// ------------------------------------------------------------------------------------------
 void UniSetObject::sigterm( int signo )
 {
+}
+// ------------------------------------------------------------------------------------------
+void UniSetObject::terminate()
+{
+	deactivate();
+}
+// ------------------------------------------------------------------------------------------
+void UniSetObject::thread(bool create)
+{
+	threadcreate = create;
+}
+// ------------------------------------------------------------------------------------------
+void UniSetObject::offThread()
+{
+	threadcreate = false;
+}
+// ------------------------------------------------------------------------------------------
+void UniSetObject::onThread()
+{
+	threadcreate = true;
 }
 // ------------------------------------------------------------------------------------------
 bool UniSetObject::deactivate()
@@ -507,7 +578,7 @@ bool UniSetObject::activate()
 	if( myid != UniSetTypes::DefaultObjectId && threadcreate )
 	{
 		thr = make_shared< ThreadCreator<UniSetObject> >(this, &UniSetObject::work);
-		thr->setCancel(ost::Thread::cancelDeferred);
+		//thr->setCancel(ost::Thread::cancelDeferred);
 
 		std::unique_lock<std::mutex> locker(m_working);
 		a_working = true;
@@ -651,7 +722,7 @@ UniSetTypes::SimpleInfo* UniSetObject::getInfo( ::CORBA::Long userparam )
 	{
 		if(thr)
 		{
-			msgpid = thr->getId();    // заодно(на всякий) обновим и внутреннюю информацию
+			msgpid = thr->getTID();    // заодно(на всякий) обновим и внутреннюю информацию
 			info << msgpid;
 		}
 		else
@@ -661,13 +732,13 @@ UniSetTypes::SimpleInfo* UniSetObject::getInfo( ::CORBA::Long userparam )
 		info << "откл.";
 
 	info << "\tcount=" << countMessages()
-		 << "\t medum: "
+		 << "\t medium: "
 		 << " maxMsg=" << mqueueMedium.getMaxQueueMessages()
 		 << " qFull(" << mqueueMedium.getMaxSizeOfMessageQueue() << ")=" << mqueueMedium.getCountOfLostMessages()
-		 << "\t    hi: "
+		 << "\t     hi: "
 		 << " maxMsg=" << mqueueHi.getMaxQueueMessages()
 		 << " qFull(" << mqueueHi.getMaxSizeOfMessageQueue() << ")=" << mqueueHi.getCountOfLostMessages()
-		 << "\t   low: "
+		 << "\t    low: "
 		 << " maxMsg=" << mqueueLow.getMaxQueueMessages()
 		 << " qFull(" << mqueueLow.getMaxSizeOfMessageQueue() << ")=" << mqueueLow.getCountOfLostMessages();
 

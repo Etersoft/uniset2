@@ -16,6 +16,7 @@
 // -------------------------------------------------------------------------
 #include <sstream>
 #include <iomanip>
+#include <Poco/Net/NetException.h>
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UNetReceiver.h"
@@ -38,11 +39,12 @@ bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
 }
 */
 // ------------------------------------------------------------------------------------------
-UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t _port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection ):
+UNetReceiver::UNetReceiver(const std::string& s_host, int _port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection ):
 	shm(smi),
 	recvpause(10),
 	updatepause(100),
 	port(_port),
+	saddr(s_host, _port),
 	recvTimeout(5000),
 	prepareTime(2000),
 	lostTimeout(200), /* 2*updatepause */
@@ -74,8 +76,13 @@ UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t _port
 	auto conf = uniset_conf();
 	conf->initLogStream(unetlog, myname);
 
+	upThread = make_shared< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::updateThread);
+
 	if( !createConnection(nocheckConnection /* <-- это флаг throwEx */) )
 		evCheckConnection.set<UNetReceiver, &UNetReceiver::checkConnectionEvent>(this);
+
+	evStatistic.set<UNetReceiver, &UNetReceiver::statisticsEvent>(this);
+	evUpdate.set<UNetReceiver, &UNetReceiver::updateEvent>(this);
 }
 // -----------------------------------------------------------------------------
 UNetReceiver::~UNetReceiver()
@@ -84,7 +91,7 @@ UNetReceiver::~UNetReceiver()
 // -----------------------------------------------------------------------------
 void UNetReceiver::setReceiveTimeout( timeout_t msec )
 {
-	uniset_rwmutex_wrlock l(tmMutex);
+	std::lock_guard<std::mutex> l(tmMutex);
 	recvTimeout = msec;
 	ptRecvTimeout.setTiming(msec);
 }
@@ -117,10 +124,9 @@ void UNetReceiver::setReceivePause( timeout_t msec )
 void UNetReceiver::setUpdatePause( timeout_t msec )
 {
 	updatepause = msec;
-	updateTime = (double)updatepause / 1000.0;
 
-	if( evUpdate.is_active() )
-		evUpdate.start(0, updateTime);
+	if( upStrategy == useUpdateEventLoop && evUpdate.is_active() )
+		evUpdate.start(0, (float)updatepause/1000.);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setMaxProcessingCount( int set )
@@ -148,7 +154,7 @@ void UNetReceiver::setLostPacketsID( UniSetTypes::ObjectId id )
 // -----------------------------------------------------------------------------
 void UNetReceiver::setLockUpdate( bool st )
 {
-	uniset_rwmutex_wrlock l(lockMutex);
+
 	lockUpdate = st;
 
 	if( !st )
@@ -157,7 +163,7 @@ void UNetReceiver::setLockUpdate( bool st )
 // -----------------------------------------------------------------------------
 void UNetReceiver::resetTimeout()
 {
-	uniset_rwmutex_wrlock l(tmMutex);
+	std::lock_guard<std::mutex> l(tmMutex);
 	ptRecvTimeout.reset();
 	trTimeout.change(false);
 }
@@ -167,14 +173,13 @@ bool UNetReceiver::createConnection( bool throwEx )
 	if( !activated )
 		return false;
 
-	ost::Thread::setException(ost::Thread::throwException);
-
 	try
 	{
 		udp = make_shared<UDPReceiveU>(addr, port);
-		udp->setCompletion(false); // делаем неблокирующее чтение (нужно для libev)
+		udp->setBlocking(false); // делаем неблокирующее чтение (нужно для libev)
 		evReceive.set<UNetReceiver, &UNetReceiver::callback>(this);
-		evUpdate.set<UNetReceiver, &UNetReceiver::updateEvent>(this);
+		if( upStrategy == useUpdateEventLoop )
+			evUpdate.set<UNetReceiver, &UNetReceiver::updateEvent>(this);
 
 		if( evCheckConnection.is_active() )
 			evCheckConnection.stop();
@@ -219,6 +224,9 @@ void UNetReceiver::start()
 	{
 		activated = true;
 		loop.evrun(this, true);
+
+		if( upStrategy == useUpdateThread && !upThread->isRunning() )
+			upThread->start();
 	}
 	else
 		forceUpdate();
@@ -226,6 +234,16 @@ void UNetReceiver::start()
 // -----------------------------------------------------------------------------
 void UNetReceiver::evprepare( const ev::loop_ref& eloop )
 {
+	evStatistic.set(eloop);
+	evStatistic.start(0, 1.0); // раз в сек
+
+	if( upStrategy == useUpdateEventLoop )
+	{
+		evUpdate.set(eloop);
+		evUpdate.start();
+		evUpdate.start( 0, ((float)updatepause/1000.) );
+	}
+
 	if( !udp )
 	{
 		evCheckConnection.set(eloop);
@@ -235,9 +253,6 @@ void UNetReceiver::evprepare( const ev::loop_ref& eloop )
 	{
 		evReceive.set(eloop);
 		evReceive.start(udp->getSocket(), ev::READ);
-
-		evUpdate.set(eloop);
-		evUpdate.start( 0, updateTime );
 	}
 }
 // -----------------------------------------------------------------------------
@@ -255,6 +270,9 @@ void UNetReceiver::evfinish( const ev::loop_ref& eloop )
 	if( evReceive.is_active() )
 		evReceive.stop();
 
+	if( evStatistic.is_active() )
+		evStatistic.stop();
+
 	if( evUpdate.is_active() )
 		evUpdate.stop();
 
@@ -264,9 +282,30 @@ void UNetReceiver::evfinish( const ev::loop_ref& eloop )
 // -----------------------------------------------------------------------------
 void UNetReceiver::forceUpdate()
 {
-	uniset_rwmutex_wrlock l(packMutex);
+	pack_guard l(packMutex,upStrategy);
 	pnum = 0; // сбрасываем запомненый номер последнего обработанного пакета
 	// и тем самым заставляем обновить данные в SM (см. update)
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::statisticsEvent(ev::periodic& tm, int revents)
+{
+	if( EV_ERROR & revents )
+	{
+		unetcrit << myname << "(statisticsEvent): EVENT ERROR.." << endl;
+		return;
+	}
+
+	statRecvPerSec = recvCount;
+	statUpPerSec = upCount;
+
+//	unetlog9 << myname << "(statisctics):"
+//			 << " recvCount=" << recvCount << "[per sec]"
+//			 << " upCount=" << upCount << "[per sec]"
+//			 << endl;
+
+	recvCount = 0;
+	upCount = 0;
+	tm.again();
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::update()
@@ -282,13 +321,13 @@ void UNetReceiver::update()
 	{
 		{
 			// lock qpack
-			uniset_rwmutex_wrlock l(packMutex);
+			pack_guard l(packMutex,upStrategy);
 
 			if( qpack.empty() )
 				return;
 
 			p = qpack.top();
-			unsigned long sub = labs(p.num - pnum);
+			size_t sub = labs(p.num - pnum);
 
 			if( pnum > 0 )
 			{
@@ -349,6 +388,7 @@ void UNetReceiver::update()
 
 		k--;
 
+		upCount++;
 		//        cerr << myname << "(update): " << p.msg.header << endl;
 
 		initDCache(p, !d_cache_init_ok);
@@ -374,12 +414,8 @@ void UNetReceiver::update()
 				}
 
 				// обновление данных в SM (блокировано)
-				{
-					uniset_rwmutex_rlock l(lockMutex);
-
-					if( lockUpdate )
-						continue;
-				}
+				if( lockUpdate )
+					continue;
 
 				shm->localSetValue(ii.ioit, id, val, shm->ID());
 			}
@@ -412,12 +448,8 @@ void UNetReceiver::update()
 				}
 
 				// обновление данных в SM (блокировано)
-				{
-					uniset_rwmutex_rlock l(lockMutex);
-
-					if( lockUpdate )
-						continue;
-				}
+				if( lockUpdate )
+					continue;
 
 				shm->localSetValue(ii.ioit, d.id, d.val, shm->ID());
 			}
@@ -430,6 +462,48 @@ void UNetReceiver::update()
 				unetcrit << myname << "(update): catch ..." << std::endl;
 			}
 		}
+	}
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::updateThread()
+{
+	while( activated )
+	{
+		try
+		{
+			update();
+		}
+		catch( std::exception& ex )
+		{
+			unetcrit << myname << "(update_thread): " << ex.what() << endl;
+		}
+
+		if( sidRespond != DefaultObjectId )
+		{
+			try
+			{
+				bool r = respondInvert ? !isRecvOK() : isRecvOK();
+				shm->localSetValue(itRespond, sidRespond, ( r ? 1 : 0 ), shm->ID());
+			}
+			catch( const std::exception& ex )
+			{
+				unetcrit << myname << "(update_thread): (respond) " << ex.what() << std::endl;
+			}
+		}
+
+		if( sidLostPackets != DefaultObjectId )
+		{
+			try
+			{
+				shm->localSetValue(itLostPackets, sidLostPackets, getLostPacketsNum(), shm->ID());
+			}
+			catch( const std::exception& ex )
+			{
+				unetcrit << myname << "(update_thread): (lostPackets) " << ex.what() << std::endl;
+			}
+		}
+
+		msleep(updatepause);
 	}
 }
 // -----------------------------------------------------------------------------
@@ -456,7 +530,7 @@ void UNetReceiver::readEvent( ev::io& watcher )
 	{
 		if( receive() )
 		{
-			uniset_rwmutex_wrlock l(tmMutex);
+			std::lock_guard<std::mutex> l(tmMutex);
 			ptRecvTimeout.reset();
 		}
 	}
@@ -472,7 +546,7 @@ void UNetReceiver::readEvent( ev::io& watcher )
 	// делаем через промежуточную переменную
 	// чтобы поскорее освободить mutex
 	{
-		uniset_rwmutex_rlock l(tmMutex);
+		std::lock_guard<std::mutex> l(tmMutex);
 		tout = ptRecvTimeout.checkTime();
 	}
 
@@ -495,7 +569,7 @@ void UNetReceiver::updateEvent( ev::periodic& tm, int revents )
 {
 	if( EV_ERROR & revents )
 	{
-		unetcrit << myname << "(callback): EVENT ERROR.." << endl;
+		unetcrit << myname << "(updateEvent): EVENT ERROR.." << endl;
 		return;
 	}
 
@@ -512,7 +586,7 @@ void UNetReceiver::updateEvent( ev::periodic& tm, int revents )
 	}
 	catch( std::exception& ex )
 	{
-		unetcrit << myname << "(update): " << ex.what() << std::endl;
+		unetcrit << myname << "(updateEvent): " << ex.what() << std::endl;
 	}
 
 	if( sidRespond != DefaultObjectId )
@@ -524,7 +598,7 @@ void UNetReceiver::updateEvent( ev::periodic& tm, int revents )
 		}
 		catch( const std::exception& ex )
 		{
-			unetcrit << myname << "(step): (respond) " << ex.what() << std::endl;
+			unetcrit << myname << "(updateEvent): (respond) " << ex.what() << std::endl;
 		}
 	}
 
@@ -536,7 +610,7 @@ void UNetReceiver::updateEvent( ev::periodic& tm, int revents )
 		}
 		catch( const std::exception& ex )
 		{
-			unetcrit << myname << "(step): (lostPackets) " << ex.what() << std::endl;
+			unetcrit << myname << "(updateEvent): (lostPackets) " << ex.what() << std::endl;
 		}
 	}
 }
@@ -564,36 +638,41 @@ void UNetReceiver::stop()
 {
 	unetinfo << myname << ": stop.." << endl;
 	activated = false;
+	upThread->join();
 	loop.evstop(this);
 }
 // -----------------------------------------------------------------------------
 bool UNetReceiver::receive()
 {
-	//	if( !udp->isInputReady(recvTimeout) )
-	//		return false;
-
-	//udp->UDPReceive::receive((char*)(r_buf.data), sizeof(r_buf.data));
-
-	//ssize_t ret = ::recv(udp->getSocket(),r_buf.data,sizeof(r_buf.data),0);
-	ssize_t ret = udp->receive(r_buf.data, sizeof(r_buf.data));
-
-	if( ret < 0 )
+	try
 	{
-		unetcrit << myname << "(receive): recv err(" << errno << "): " << strerror(errno) << endl;
-		return false;
+		ssize_t ret = udp->receiveBytes(r_buf.data, sizeof(r_buf.data));
+		recvCount++;
+		//ssize_t ret = udp->receiveFrom(r_buf.data, sizeof(r_buf.data),saddr);
+
+		if( ret < 0 )
+		{
+			unetcrit << myname << "(receive): recv err(" << errno << "): " << strerror(errno) << endl;
+			return false;
+		}
+
+		if( ret == 0 )
+		{
+			unetwarn << myname << "(receive): disconnected?!... recv 0 byte.." << endl;
+			return false;
+		}
+
+		size_t sz = UniSetUDP::UDPMessage::getMessage(pack, r_buf);
+
+		if( sz == 0 )
+		{
+			unetcrit << myname << "(receive): FAILED RECEIVE DATA ret=" << ret << endl;
+			return false;
+		}
 	}
-
-	if( ret == 0 )
+	catch( Poco::Net::NetException& ex )
 	{
-		unetwarn << myname << "(receive): disconnected?!... recv 0 byte.." << endl;
-		return false;
-	}
-
-	size_t sz = UniSetUDP::UDPMessage::getMessage(pack, r_buf);
-
-	if( sz == 0 )
-	{
-		unetcrit << myname << "(receive): FAILED RECEIVE DATA ret=" << ret << endl;
+		unetcrit << myname << "(receive): recv err: " << ex.displayText() << endl;
 		return false;
 	}
 
@@ -641,7 +720,7 @@ bool UNetReceiver::receive()
 
 	{
 		// lock qpack
-		uniset_rwmutex_wrlock l(packMutex);
+		pack_guard l(packMutex,upStrategy);
 
 		if( !waitClean )
 		{
@@ -651,16 +730,12 @@ bool UNetReceiver::receive()
 
 		if( !qpack.empty() )
 		{
-			//            cerr << myname << "(receive): copy to qtmp..."
-			//                              << " header: " << pack.msg.header
-			//                              << endl;
 			qtmp.push(pack);
 		}
 		else
 		{
-			//              cerr << myname << "(receive): copy from qtmp..." << endl;
-			// очередь освободилась..
-			// то копируем в неё всё что набралось...
+			// основная очередь освободилась..
+			// копируем в неё всё что набралось в qtmp...
 			while( !qtmp.empty() )
 			{
 				qpack.push(qtmp.top());
@@ -734,7 +809,6 @@ void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 		if( d.id != pack.d_id[i] )
 		{
 			d.id = pack.d_id[i];
-			d.iotype = conf->getIOType(d.id);
 			shm->initIterator(d.ioit);
 		}
 	}
@@ -779,7 +853,6 @@ void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
 		if( d.id != pack.a_dat[i].id )
 		{
 			d.id = pack.a_dat[i].id;
-			d.iotype = conf->getIOType(d.id);
 			shm->initIterator(d.ioit);
 		}
 	}
@@ -788,6 +861,48 @@ void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
 void UNetReceiver::connectEvent( UNetReceiver::EventSlot sl )
 {
 	slEvent = sl;
+}
+
+UNetReceiver::UpdateStrategy UNetReceiver::strToUpdateStrategy(const string& s)
+{
+	if( s == "thread" || s == "THREAD" )
+		return useUpdateThread;
+
+	if( s == "evloop" || s == "EVLOOP" )
+		return useUpdateEventLoop;
+
+	return useUpdateUnknown;
+}
+// -----------------------------------------------------------------------------
+string UNetReceiver::to_string(UNetReceiver::UpdateStrategy s)
+{
+	if( s == useUpdateThread )
+		return "thread";
+	if( s == useUpdateEventLoop )
+		return "evloop";
+
+	return "";
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::setUpdateStrategy( UNetReceiver::UpdateStrategy set )
+{
+	if( set == useUpdateEventLoop && upThread->isRunning() )
+	{
+		ostringstream err;
+		err << myname << "(setUpdateStrategy): set 'useUpdateEventLoop' strategy but updateThread is running!";
+		unetcrit << err.str() << endl;
+		throw SystemError(err.str());
+	}
+
+	if( set == useUpdateThread && evUpdate.is_active() )
+	{
+		ostringstream err;
+		err << myname << "(setUpdateStrategy): set 'useUpdateThread' strategy but update event loop is running!";
+		unetcrit << err.str() << endl;
+		throw SystemError(err.str());
+	}
+
+	upStrategy = set;
 }
 // -----------------------------------------------------------------------------
 const std::string UNetReceiver::getShortInfo() const
@@ -802,6 +917,7 @@ const std::string UNetReceiver::getShortInfo() const
 	  << "    recvOK=" << isRecvOK()
 	  << " receivepack=" << rnum
 	  << " lostPackets=" << setw(6) << getLostPacketsNum()
+	  << " updateStartegy=" << to_string(upStrategy)
 	  << endl
 	  << "\t["
 	  << " recvTimeout=" << setw(6) << recvTimeout
@@ -812,8 +928,24 @@ const std::string UNetReceiver::getShortInfo() const
 	  << " maxDifferens=" << setw(6) << maxDifferens
 	  << " maxProcessingCount=" << setw(6) << maxProcessingCount
 	  << " waitClean=" << waitClean
-	  << " ]";
+	  << " ]"
+	  << endl
+	  << "\t[ qsize=" << qpack.size() << " recv=" << statRecvPerSec << " update=" << statUpPerSec << " per sec ]";
 
 	return std::move(s.str());
+}
+// -----------------------------------------------------------------------------
+UNetReceiver::pack_guard::pack_guard( mutex& _m, UNetReceiver::UpdateStrategy _s ):
+	m(_m),
+	s(_s)
+{
+	if( s == useUpdateThread )
+		m.lock();
+}
+// -----------------------------------------------------------------------------
+UNetReceiver::pack_guard::~pack_guard()
+{
+	if( s == useUpdateThread )
+		m.unlock();
 }
 // -----------------------------------------------------------------------------

@@ -17,6 +17,7 @@
 #include <cmath>
 #include <limits>
 #include <sstream>
+#include <Poco/Net/NetException.h>
 #include <Exceptions.h>
 #include <extensions/Extensions.h>
 #include "MBTCPMaster.h"
@@ -101,11 +102,9 @@ std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
 
 	try
 	{
-		ost::Thread::setException(ost::Thread::throwException);
 		mbtcp = std::make_shared<ModbusTCPMaster>();
 
-		ost::InetAddress ia(iaddr.c_str());
-		mbtcp->connect(ia, port);
+		mbtcp->connect(iaddr, port);
 		mbtcp->setForceDisconnect(force_disconnect);
 
 		if( recv_timeout > 0 )
@@ -128,9 +127,9 @@ std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
 		mb = nullptr;
 		mbtcp = nullptr;
 	}
-	catch( const ost::Exception& e )
+	catch( const Poco::Net::NetException& e )
 	{
-		mbwarn << myname << "(init): Can`t create socket " << iaddr << ":" << port << " err: " << e.getString() << endl;
+		mbwarn << myname << "(init): Can`t create socket " << iaddr << ":" << port << " err: " << e.displayText() << endl;
 		mb = nullptr;
 		mbtcp = nullptr;
 	}
@@ -221,7 +220,21 @@ void MBTCPMaster::sigterm( int signo )
 		std::clog << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
 	}
 }
+// -----------------------------------------------------------------------------
+bool MBTCPMaster::deactivateObject()
+{
+	setProcActive(false);
 
+	if( pollThread )
+	{
+		pollThread->stop();
+
+		if( pollThread->isRunning() )
+			pollThread->join();
+	}
+
+	return MBExchange::deactivateObject();
+}
 // -----------------------------------------------------------------------------
 void MBTCPMaster::help_print( int argc, const char* const* argv )
 {

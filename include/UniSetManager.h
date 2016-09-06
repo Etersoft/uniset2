@@ -60,10 +60,7 @@ class UniSetManager:
 		UniSetManager( const std::string& name, const std::string& section );
 		virtual ~UniSetManager();
 
-		std::shared_ptr<UniSetManager> get_mptr()
-		{
-			return std::dynamic_pointer_cast<UniSetManager>(get_ptr());
-		}
+		std::shared_ptr<UniSetManager> get_mptr();
 
 		virtual UniSetTypes::ObjectType getType() override
 		{
@@ -88,37 +85,18 @@ class UniSetManager:
 		*/
 		const std::shared_ptr<UniSetObject> itemO( const UniSetTypes::ObjectId id );
 
-		// Функции для аботы со списками подчиненных объектов
-		inline UniSetManagerList::const_iterator beginMList()
-		{
-			return mlist.begin();
-		}
+		// Функции для работы со списками подчиненных объектов
+		// ---------------
+		UniSetManagerList::const_iterator beginMList();
+		UniSetManagerList::const_iterator endMList();
+		ObjectsList::const_iterator beginOList();
+		ObjectsList::const_iterator endOList();
 
-		inline UniSetManagerList::const_iterator endMList()
-		{
-			return mlist.end();
-		}
+		size_t objectsCount() const;    // количество подчиненных объектов
+		// ---------------
 
-		inline ObjectsList::const_iterator beginOList()
-		{
-			return olist.begin();
-		}
-
-		inline ObjectsList::const_iterator endOList()
-		{
-			return olist.end();
-		}
-
-		int objectsCount();    // количество подчиненных объектов
-
-		PortableServer::POA_ptr getPOA()
-		{
-			return PortableServer::POA::_duplicate(poa);
-		}
-		PortableServer::POAManager_ptr getPOAManager()
-		{
-			return  PortableServer::POAManager::_duplicate(pman);
-		}
+		PortableServer::POA_ptr getPOA();
+		PortableServer::POAManager_ptr getPOAManager();
 
 	protected:
 

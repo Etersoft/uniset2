@@ -355,7 +355,7 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
 				break;
 			}
 
-			usleep(sleepPause_usec);
+			std::this_thread::sleep_for(std::chrono::microseconds(sleepPause_usec));
 		}
 
 		if( !begin )
@@ -383,6 +383,14 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
 	catch( UniSetTypes::TimeOut )
 	{
 		//        cout << "(recv): catch TimeOut " << endl;
+	}
+	catch( const UniSetTypes::CommFailed& ex )
+	{
+		if( dlog->is_crit() )
+			dlog->crit() << "(recv): " << ex << endl;
+
+		cleanupChannel();
+		return erTimeOut;
 	}
 	catch( const Exception& ex ) // SystemError
 	{
@@ -562,10 +570,6 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 				cleanupChannel();
 				return erUnExpectedPacketType;
 		}
-
-
-		// ДЛЯ ТОГО ЧТОБЫ НЕ ЖДАТЬ ПРОДОЛЖЕНИЯ БЕЗКОНЕЧНО СБРАСЫВАЕМ TIMEOUT
-		setChannelTimeout(10); // 10 msec
 
 		// Получаем остальную часть сообщения
 		size_t rlen = getNextData((unsigned char*)(rbuf.data), rbuf.dlen);
@@ -1315,6 +1319,13 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 	catch( UniSetTypes::TimeOut )
 	{
 		//        cout << "(recv): catch TimeOut " << endl;
+	}
+	catch( const UniSetTypes::CommFailed& ex )
+	{
+		if( dlog->is_crit() )
+			dlog->crit() << "(recv): " << ex << endl;
+
+		return erTimeOut;
 	}
 	catch( const Exception& ex ) // SystemError
 	{

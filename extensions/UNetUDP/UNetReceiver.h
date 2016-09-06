@@ -22,7 +22,6 @@
 #include <string>
 #include <queue>
 #include <unordered_map>
-#include <cc++/socket.h>
 #include <sigc++/sigc++.h>
 #include <ev++.h>
 #include "UniSetObject.h"
@@ -85,6 +84,13 @@
  * Если такая логика не требуется, то можно задать в конструкторе
  * последним аргументом флаг nocheckconnection=true, тогда при создании объекта UNetReceiver, в конструкторе будет
  * выкинуто исключение при неудачной попытке создания соединения.
+ *
+ * Стратегия обновления данных в SM
+ * ==================================
+ * При помощи функции setUpdateStrategy() можно выбрать стратегию обновления данных в SM.
+ * Поддерживается два варианта:
+ * 'thread' - отдельный поток обновления
+ * 'evloop' - использование общего с приёмом event loop (libev)
 */
 // -----------------------------------------------------------------------------
 class UNetReceiver:
@@ -92,7 +98,7 @@ class UNetReceiver:
 	public std::enable_shared_from_this<UNetReceiver>
 {
 	public:
-		UNetReceiver( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection = false );
+		UNetReceiver( const std::string& host, int port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection = false );
 		virtual ~UNetReceiver();
 
 		void start();
@@ -136,11 +142,11 @@ class UNetReceiver:
 
 		void forceUpdate(); // пересохранить очередной пакет в SM даже если данные не менялись
 
-		inline ost::IPV4Address getAddress() const
+		inline std::string getAddress() const
 		{
 			return addr;
 		}
-		inline ost::tpport_t getPort() const
+		inline int getPort() const
 		{
 			return port;
 		}
@@ -154,6 +160,36 @@ class UNetReceiver:
 
 		typedef sigc::slot<void, const std::shared_ptr<UNetReceiver>&, Event> EventSlot;
 		void connectEvent( EventSlot sl );
+
+		// --------------------------------------------------------------------
+		/*! Стратегия обработки сообщений */
+		enum UpdateStrategy
+		{
+			useUpdateUnknown,
+			useUpdateThread,	/*!< использовать отдельный поток */
+			useUpdateEventLoop	/*!< использовать event loop (т.е. совместно с receive) */
+		};
+
+		static UpdateStrategy strToUpdateStrategy( const std::string& s );
+		static std::string to_string( UpdateStrategy s);
+
+		//! функция должна вызываться до первого вызова start()
+		void setUpdateStrategy( UpdateStrategy set );
+
+		// специальная обёртка, захватывающая или нет mutex в зависимости от стратегии
+		// (т.к. при evloop mutex захватытвать не нужно)
+		class pack_guard
+		{
+			public:
+				pack_guard( std::mutex& m, UpdateStrategy s );
+				~pack_guard();
+
+			protected:
+				std::mutex& m;
+				UpdateStrategy s;
+		};
+
+		// --------------------------------------------------------------------
 
 		inline std::shared_ptr<DebugStream> getLog()
 		{
@@ -170,10 +206,12 @@ class UNetReceiver:
 		bool receive();
 		void step();
 		void update();
+		void updateThread();
 		void callback( ev::io& watcher, int revents );
 		void readEvent( ev::io& watcher );
 		void updateEvent( ev::periodic& watcher, int revents );
 		void checkConnectionEvent( ev::periodic& watcher, int revents );
+		void statisticsEvent( ev::periodic& watcher, int revents );
 		virtual void evprepare( const ev::loop_ref& eloop ) override;
 		virtual void evfinish(const ev::loop_ref& eloop ) override;
 		virtual std::string wname() override
@@ -196,6 +234,7 @@ class UNetReceiver:
 				return lhs.num > rhs.num;
 			}
 		};
+
 		typedef std::priority_queue<UniSetUDP::UDPMessage, std::vector<UniSetUDP::UDPMessage>, PacketCompare> PacketQueue;
 
 	private:
@@ -205,21 +244,33 @@ class UNetReceiver:
 		timeout_t updatepause = { 100 };    /*!< переодичность обновления данных в SM, [мсек] */
 
 		std::shared_ptr<UDPReceiveU> udp;
-		ost::IPV4Address addr;
-		ost::tpport_t port = { 0 };
+		std::string addr;
+		int port = { 0 };
+		Poco::Net::SocketAddress saddr;
 		std::string myname;
 		ev::io evReceive;
-		ev::periodic evUpdate;
 		ev::periodic evCheckConnection;
+		ev::periodic evStatistic;
+		ev::periodic evUpdate;
+
+		UpdateStrategy upStrategy = { useUpdateEventLoop };
+
+		// счётчики для подсчёта статистики
+		size_t recvCount = { 0 };
+		size_t upCount = { 0 };
+
+		// текущая статистик
+		size_t statRecvPerSec = { 0 }; /*!< количество принимаемых пакетов в секунду */
+		size_t statUpPerSec = { 0 };	/*!< количество обработанных пакетов в секунду */
+
+		std::shared_ptr< ThreadCreator<UNetReceiver> > upThread;    // update thread
 
 		// делаем loop общим.. одним на всех!
 		static CommonEventLoop loop;
 
-		double updateTime = { 0.01 };
 		double checkConnectionTime = { 10.0 }; // sec
 		std::mutex checkConnMutex;
 
-		UniSetTypes::uniset_rwmutex pollMutex;
 		PassiveTimer ptRecvTimeout;
 		PassiveTimer ptPrepare;
 		timeout_t recvTimeout = { 5000 }; // msec
@@ -239,7 +290,7 @@ class UNetReceiver:
 		PacketQueue qpack;    /*!< очередь принятых пакетов (отсортированных по возрастанию номера пакета) */
 		UniSetUDP::UDPMessage pack;        /*!< просто буфер для получения очередного сообщения */
 		UniSetUDP::UDPPacket r_buf;
-		UniSetTypes::uniset_rwmutex packMutex; /*!< mutex для работы с очередью */
+		std::mutex packMutex; /*!< mutex для работы с очередью */
 		size_t pnum = { 0 };    /*!< текущий номер обработанного сообщения, для проверки непрерывности последовательности пакетов */
 
 		/*! максимальная разница межд номерами пакетов, при которой считается, что счётчик пакетов
@@ -253,33 +304,31 @@ class UNetReceiver:
 
 		size_t maxProcessingCount = { 100 }; /*!< максимальное число обрабатываемых за один раз сообщений */
 
-		bool lockUpdate = { false }; /*!< флаг блокировки сохранения принятых данных в SM */
-		UniSetTypes::uniset_rwmutex lockMutex;
+		std::atomic_bool lockUpdate = { false }; /*!< флаг блокировки сохранения принятых данных в SM */
 
 		EventSlot slEvent;
 		Trigger trTimeout;
-		UniSetTypes::uniset_rwmutex tmMutex;
+		std::mutex tmMutex;
 
 		struct CacheItem
 		{
-			long id;
+			long id = { UniSetTypes::DefaultObjectId };
 			IOController::IOStateList::iterator ioit;
-			UniversalIO::IOType iotype;
 
 			CacheItem():
-				id(UniSetTypes::DefaultObjectId), iotype(UniversalIO::UnknownIOType) {}
+				id(UniSetTypes::DefaultObjectId) {}
 		};
 
 		typedef std::vector<CacheItem> CacheVec;
 		struct CacheInfo
 		{
 			CacheInfo():
-				cache_init_ok(false)
-			{
-			}
-			bool cache_init_ok;
+				cache_init_ok(false){}
+
+			bool cache_init_ok = { false };
 			CacheVec cache;
 		};
+
 		// ключом является UDPMessage::getDataID()
 		typedef std::unordered_map<long, CacheInfo> CacheMap;
 		CacheMap d_icache_map;     /*!< кэш итераторов для булевых */

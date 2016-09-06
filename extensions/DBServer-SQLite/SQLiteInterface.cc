@@ -51,7 +51,7 @@ SQLiteInterface::~SQLiteInterface()
 }
 
 // -----------------------------------------------------------------------------------------
-bool SQLiteInterface::ping()
+bool SQLiteInterface::ping() const
 {
 	return db && ( sqlite3_db_status(db, 0, NULL, NULL, 0) == SQLITE_OK );
 }
@@ -219,7 +219,7 @@ double SQLiteInterface::insert_id()
 	return sqlite3_last_insert_rowid(db);
 }
 // -----------------------------------------------------------------------------------------
-bool SQLiteInterface::isConnection()
+bool SQLiteInterface::isConnection() const
 {
 	return connected;
 }
@@ -253,12 +253,12 @@ void SQLiteInterface::makeResult(DBResult& dbres, sqlite3_stmt* s, bool finalize
 			char* p = (char*)sqlite3_column_text(s, i);
 
 			if( p )
-				c.push_back(p);
+				c.emplace_back(p);
 			else
-				c.push_back("");
+				c.emplace_back("");
 		}
 
-		dbres.row().push_back(c);
+		dbres.row().emplace_back(c);
 	}
 	while( sqlite3_step(s) == SQLITE_ROW );
 

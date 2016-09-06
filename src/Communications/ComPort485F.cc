@@ -131,7 +131,7 @@ unsigned char ComPort485F::m_receiveByte( bool wait )
 					}
 				}
 
-				usleep(3000);
+				std::this_thread::sleep_for(std::chrono::microseconds(3));
 			}
 
 			if ( ptRecv.checkTime() )
@@ -149,7 +149,7 @@ unsigned char ComPort485F::m_receiveByte( bool wait )
 						break;
 				}
 
-				usleep(3000);
+				std::this_thread::sleep_for(std::chrono::microseconds(3));
 			}
 		}
 
@@ -308,7 +308,7 @@ void ComPort485F::m_read( timeout_t tmsec )
 			}
 		}
 
-		usleep(3000);
+		std::this_thread::sleep_for(std::chrono::microseconds(3));
 	}
 }
 // --------------------------------------------------------------------------------

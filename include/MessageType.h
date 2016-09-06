@@ -22,9 +22,9 @@
 #ifndef MessageType_H_
 #define MessageType_H_
 // --------------------------------------------------------------------------
-#include <sys/time.h>
+#include <time.h> // for timespec
+#include <cstring>
 #include <ostream>
-#include "Configuration.h"
 #include "UniSetTypes.h"
 #include "IOController_i.hh"
 // --------------------------------------------------------------------------
@@ -56,8 +56,7 @@ namespace UniSetTypes
 			ObjectId node = { UniSetTypes::DefaultObjectId };      // откуда
 			ObjectId supplier = { UniSetTypes::DefaultObjectId };  // от кого
 			ObjectId consumer = { UniSetTypes::DefaultObjectId };  // кому
-			struct timeval tm = { 0, 0 };
-
+			struct timespec tm = { 0, 0 };
 
 			Message( Message&& ) = default;
 			Message& operator=(Message&& ) = default;
@@ -68,7 +67,7 @@ namespace UniSetTypes
 
 			// для оптимизации, делаем конструктор который не будет инициализировать свойства класса
 			// это необходимо для VoidMessage, который конструируется при помощи memcpy
-			Message( int dummy_init ) {}
+			explicit Message( int dummy_init ) {}
 
 			template<class In>
 			static const TransportMessage transport(const In& msg)
@@ -83,6 +82,7 @@ namespace UniSetTypes
 
 	std::ostream& operator<<( std::ostream& os, const Message::TypeOfMessage& t );
 
+	// ------------------------------------------------------------------------
 	class VoidMessage : public Message
 	{
 		public:
@@ -106,7 +106,7 @@ namespace UniSetTypes
 				if( tm.tv_sec != msg.tm.tv_sec )
 					return tm.tv_sec >= msg.tm.tv_sec;
 
-				return tm.tv_usec >= msg.tm.tv_usec;
+				return tm.tv_nsec >= msg.tm.tv_nsec;
 			}
 
 			inline TransportMessage transport_msg() const
@@ -117,25 +117,25 @@ namespace UniSetTypes
 			UniSetTypes::ByteOfMessage data[sizeof(UniSetTypes::RawDataOfTransportMessage) - sizeof(Message)];
 	};
 
+	// ------------------------------------------------------------------------
 	/*! Сообщение об изменении состояния датчика */
 	class SensorMessage : public Message
 	{
 		public:
 
-			ObjectId id;
-			long value;
-			bool undefined;
+			ObjectId id = { UniSetTypes::DefaultObjectId };
+			long value = { 0 };
+			bool undefined = { false };
 
 			// время изменения состояния датчика
-			long sm_tv_sec;
-			long sm_tv_usec;
+			struct timespec sm_tv = { 0, 0 };
 
-			UniversalIO::IOType sensor_type;
+			UniversalIO::IOType sensor_type = { UniversalIO::DI };
 			IOController_i::CalibrateInfo ci;
 
 			// для пороговых датчиков
-			bool threshold;  /*!< TRUE - сработал порог, FALSE - порог отключился */
-			UniSetTypes::ThresholdId tid;
+			bool threshold = { false };  /*!< TRUE - сработал порог, FALSE - порог отключился */
+			UniSetTypes::ThresholdId tid = { UniSetTypes::DefaultThresholdId };
 
 			SensorMessage( SensorMessage&& m) = default;
 			SensorMessage& operator=(SensorMessage&& m) = default;
@@ -148,6 +148,12 @@ namespace UniSetTypes
 						  UniversalIO::IOType st = UniversalIO::AI,
 						  ObjectId consumer = UniSetTypes::DefaultObjectId);
 
+			// специальный конструктор, для оптимизации
+			// он не инициализирует поля по умолчанию
+			// и за инициализацию значений отвечает "пользователь"
+			// например см. IONotifyController::localSetValue()
+			explicit SensorMessage( int dummy );
+
 			SensorMessage(const VoidMessage* msg);
 			inline TransportMessage transport_msg() const
 			{
@@ -155,6 +161,7 @@ namespace UniSetTypes
 			}
 	};
 
+	// ------------------------------------------------------------------------
 	/*! Системное сообщение */
 	class SystemMessage : public Message
 	{
@@ -169,7 +176,7 @@ namespace UniSetTypes
 				ReConfiguration,        /*! обновились параметры конфигурации */
 				NetworkInfo,            /*! обновилась информация о состоянии узлов в сети
                                             поля
-                                            data[0]    - кто
+											data[0] - кто
                                             data[1] - новое состояние(true - connect,  false - disconnect)
                                          */
 				LogRotate,    /*! переоткрыть файлы логов */
@@ -196,6 +203,7 @@ namespace UniSetTypes
 	};
 	std::ostream& operator<<( std::ostream& os, const SystemMessage::Command& c );
 
+	// ------------------------------------------------------------------------
 
 	/*! Собщение о срабатывании таймера */
 	class TimerMessage : public Message
@@ -218,6 +226,8 @@ namespace UniSetTypes
 			UniSetTypes::TimerId id; /*!< id сработавшего таймера */
 	};
 
+	// ------------------------------------------------------------------------
+
 	/*! Подтверждение(квитирование) сообщения */
 	class ConfirmMessage: public Message
 	{
@@ -231,10 +241,9 @@ namespace UniSetTypes
 			ConfirmMessage( const VoidMessage* msg );
 
 			ConfirmMessage(ObjectId in_sensor_id,
-						   double in_value,
-						   time_t in_time,
-						   time_t in_time_usec,
-						   time_t in_confirm,
+						   const double& in_sensor_value,
+						   const timespec& in_sensor_time,
+						   const timespec& in_confirm_time,
 						   Priority in_priority = Message::Medium);
 
 			ConfirmMessage( ConfirmMessage&& ) = default;
@@ -242,11 +251,10 @@ namespace UniSetTypes
 			ConfirmMessage( const ConfirmMessage& ) = default;
 			ConfirmMessage& operator=( const ConfirmMessage& ) = default;
 
-			ObjectId sensor_id;   /* ID датчика */
-			double value;     /* значение датчика */
-			time_t time;      /* время, когда датчик получил сигнал */
-			time_t time_usec; /* время в микросекундах */
-			time_t confirm;   /* время, когда произошло квитирование */
+			ObjectId sensor_id;   /* ID датчика (события) */
+			double sensor_value;  /* значение датчика (события) */
+			struct timespec sensor_time;	/* время срабатывания датчика(события), который квитируем */
+			struct timespec confirm_time;   /* * время прошедшее до момента квитирования */
 
 			bool broadcast;
 
@@ -255,7 +263,7 @@ namespace UniSetTypes
 			    (т.е. в БД второй раз сохранять не надо, пересылать
 			     второй раз тоже не надо).
 			*/
-			bool route;
+			bool forward;
 
 		protected:
 			ConfirmMessage();

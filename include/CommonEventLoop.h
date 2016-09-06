@@ -15,12 +15,12 @@ class EvWatcher
 		EvWatcher() {}
 		virtual ~EvWatcher() {}
 
-		// подготовка перед запуском loop
+		// подготовка перед запуском loop:
 		// запуск своих ev::xxx.start()
 		virtual void evprepare( const ev::loop_ref& ) {}
 
-		// действия при завершении
-		// завершение своих ev::xxx.stop()
+		// действия при завершении:
+		// вызов своих ev::xxx.stop()
 		virtual void evfinish( const ev::loop_ref& ) {}
 
 		virtual std::string wname()
@@ -31,10 +31,15 @@ class EvWatcher
 // -------------------------------------------------------------------------
 /*!
  * \brief The CommonEventLoop class
- * Реализация общего eventloop для всех использующих libev.
- * Каждый класс который хочет подключиться к "потоку", должен наследоваться от класса Watcher
- * и при необходимости переопределить функции evprepare и evfinish
+ * Реализация механизма "один eventloop, много подписчиков" (libev).
+ * Создаётся один CommonEventLoop который обслуживает множество EvWatcher-ов.
+ * Каждый класс который хочет подключиться к основному loop, должен наследоваться от класса Watcher
+ * и при необходимости переопределить функции evprepare и evfinish.
+ * EvWatcher добавляется(запускается) evrun(..) и останавливается функцией evstop(..).
+ * При этом фактически eventloop запускается при первом вызове evrun(), а останавливается при
+ * отключении последнего EvWatcher.
  *
+ * Некоторые детали:
  * Т.к. evprepare необходимо вызывать из потока в котором крутится event loop (иначе libev не работает),
  * а функция run() в общем случае вызывается "откуда угодно" и может быть вызвана в том числе уже после
  * запуска event loop, то задействован механизм асинхронного уведомления (см. evprep, onPrepapre) и ожидания
@@ -47,7 +52,7 @@ class CommonEventLoop
 		CommonEventLoop();
 		~CommonEventLoop();
 
-		bool evIsActive();
+		bool evIsActive() const;
 
 		/*! \return TRUE - если всё удалось. return актуален только для случая когда thread = true */
 		bool evrun( EvWatcher* w, bool thread = true );

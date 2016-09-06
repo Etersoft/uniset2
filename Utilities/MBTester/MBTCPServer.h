@@ -31,6 +31,8 @@ class MBTCPServer
 		void execute();    /*!< основной цикл работы */
 		void setLog( std::shared_ptr<DebugStream>& dlog );
 
+		void setMaxSessions( size_t max );
+
 	protected:
 		// действия при завершении работы
 		void sigterm( int signo );

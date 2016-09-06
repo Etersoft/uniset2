@@ -13,16 +13,16 @@ tests_with_conf_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensio
 
 tests_with_sm_SOURCES   = tests_with_sm.cc test_ui.cc test_iobase_with_sm.cc
 tests_with_sm_LDADD	 = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
-	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la $(SIGC_LIBS) $(COMCPP_LIBS)
+	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la $(SIGC_LIBS) $(POCO_LIBS)
 tests_with_sm_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include \
-	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
+	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
 
 
 sm_perf_test_SOURCES   = sm_perf_test.cc
 sm_perf_test_LDADD	 = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
-	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la $(SIGC_LIBS) $(COMCPP_LIBS)
+	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la $(SIGC_LIBS) -lpthread
 sm_perf_test_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include \
-	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
+	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
 
 
 include $(top_builddir)/testsuite/testsuite-common.mk

@@ -102,7 +102,7 @@ void Element::addInput(size_t num, bool state)
 		}
 	}
 
-	ins.push_front(InputInfo(num, state));
+	ins.emplace_front(num, state);
 }
 // -------------------------------------------------------------------------
 void Element::delInput(size_t num )

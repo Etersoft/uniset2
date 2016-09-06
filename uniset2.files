@@ -126,6 +126,7 @@ extensions/ModbusMaster/mtr-conv.cc
 extensions/ModbusMaster/mtr-read.cc
 extensions/ModbusMaster/mtr-setup.cc
 extensions/ModbusMaster/multi-main.cc
+extensions/ModbusMaster/mb-perf-test.cc
 extensions/ModbusMaster/RTUExchange.cc
 extensions/ModbusMaster/rtuexchange.cc
 extensions/ModbusMaster/RTUExchange.h
@@ -223,6 +224,7 @@ extensions/UNetUDP/tests/test_unetudp.cc
 extensions/UNetUDP/tests/tests_individual_process.cc
 extensions/UNetUDP/tests/tests_with_sm.cc
 extensions/UNetUDP/tests/unetudp-test-configure.xml
+extensions/UNetUDP/tests/urecv_perf_test.cc
 extensions/UNetUDP/libUniSet2UNetUDP.pc.in
 extensions/UNetUDP/Makefile.am
 extensions/UNetUDP/test.xml
@@ -300,7 +302,6 @@ include/ObjectIndex_Array.h
 include/ObjectIndex_idXML.h
 include/ObjectIndex_XML.h
 include/ObjectRepository.h
-include/ObjectRepositoryFactory.h
 include/OmniThreadCreator.h
 include/ORepHelpers.h
 include/PassiveObject.h
@@ -394,7 +395,6 @@ src/ObjectRepository/ObjectIndex_Array.cc
 src/ObjectRepository/ObjectIndex_idXML.cc
 src/ObjectRepository/ObjectIndex_XML.cc
 src/ObjectRepository/ObjectRepository.cc
-src/ObjectRepository/ObjectRepositoryFactory.cc
 src/ObjectRepository/ORepHelpers.cc
 src/ObjectRepository/PassiveObject.cc
 src/ObjectRepository/ProxyManager.cc
@@ -463,6 +463,8 @@ tests/test_logserver.cc
 tests/test_tcpcheck.cc
 tests/test_mqueue.cc
 tests/test_uobject.cc
+tests/test_utcpsocket.cc
+tests/test_iocontroller_types.cc
 tests/TestUObject.h
 tests/tests-junit.xml
 tests/tests.cc
@@ -477,6 +479,7 @@ tests/threadtst.cc
 tests/umutex.cc
 tests/perf_test.cc
 tests/MQPerfTest/mq-test.cc
+tests/PocoTest/poco-test.cc
 testsuite/Makefile.am
 Utilities/Admin/admin.cc
 Utilities/Admin/Makefile.am
@@ -507,6 +510,7 @@ Utilities/codegen/skel.src.xml
 Utilities/MBTester/Makefile.am
 Utilities/MBTester/mbrtuslave.cc
 Utilities/MBTester/mbrtutester.cc
+Utilities/MBTester/mbtcptester.cc
 Utilities/MBTester/MBSlave.cc
 Utilities/MBTester/mbslave.cc
 Utilities/MBTester/MBSlave.h

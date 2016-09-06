@@ -111,8 +111,8 @@ void SMonitor::sensorInfo( const SensorMessage* si )
 	cout << "(" << setw(6) << si->id << "):"
 		 << "[(" << std::right << setw(5) << si->supplier << ")"
 		 << std::left << setw(20) << s_sup <<  "] "
-		 << std::right << setw(8) << timeToString(si->sm_tv_sec, ":")
-		 << "(" << setw(6) << si->sm_tv_usec << "): "
+		 << std::right << setw(8) << timeToString(si->sm_tv.tv_sec, ":")
+		 << "(" << setw(6) << si->sm_tv.tv_nsec << "): "
 		 << std::right << setw(45) << conf->oind->getMapName(si->id)
 		 << "    value:" << std::right << setw(9) << si->value
 		 << "    fvalue:" << std::right << setw(12) << ( (float)si->value / pow(10.0, si->ci.precision) ) << endl;
@@ -128,7 +128,7 @@ void SMonitor::sensorInfo( const SensorMessage* si )
 		else
 			cmd << conf->getBinDir() << script;
 
-		cmd << " " << si->id << " " << si->value << " " << si->sm_tv_sec << " " << si->sm_tv_usec;
+		cmd << " " << si->id << " " << si->value << " " << si->sm_tv.tv_sec << " " << si->sm_tv.tv_nsec;
 
 		int ret = system(cmd.str().c_str());
 		int res = WEXITSTATUS(ret);

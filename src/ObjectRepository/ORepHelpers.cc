@@ -231,7 +231,7 @@ namespace ORepHelpers
 	{
 		using namespace UniSetTypes;
 
-		for ( unsigned int i = 0; i < str.length(); i++)
+		for ( size_t i = 0; i < str.length(); i++)
 		{
 			for(unsigned int k = 0; k < sizeof(BadSymbols); k++)
 			{
@@ -248,7 +248,7 @@ namespace ORepHelpers
 	{
 		string bad = "";
 
-		for (unsigned int i = 0; i < sizeof(UniSetTypes::BadSymbols); i++)
+		for( size_t i = 0; i < sizeof(UniSetTypes::BadSymbols); i++ )
 		{
 			bad += "'";
 			bad += UniSetTypes::BadSymbols[i];
@@ -256,8 +256,7 @@ namespace ORepHelpers
 
 		}
 
-		string err("Имя не должно содержать символы: " + bad);
-		return std::move(err);
+		return std::move(bad);
 	}
 	// ---------------------------------------------------------------------------------------------------------------
 }

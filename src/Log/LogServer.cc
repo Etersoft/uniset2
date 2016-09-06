@@ -16,6 +16,7 @@
 // -------------------------------------------------------------------------
 #include <sstream>
 #include <iomanip>
+#include <Poco/Net/NetException.h>
 #include "LogServer.h"
 #include "UniSetTypes.h"
 #include "Exceptions.h"
@@ -41,7 +42,7 @@ LogServer::LogServer( std::shared_ptr<LogAgregator> log ):
 }
 // -------------------------------------------------------------------------
 LogServer::LogServer( std::shared_ptr<DebugStream> log ):
-	timeout(TIMEOUT_INF),
+	timeout(UniSetTimer::WaitUpTime),
 	cmdTimeout(2000),
 	sessLogLevel(Debug::NONE),
 	sock(0),
@@ -50,7 +51,7 @@ LogServer::LogServer( std::shared_ptr<DebugStream> log ):
 }
 // -------------------------------------------------------------------------
 LogServer::LogServer():
-	timeout(TIMEOUT_INF),
+	timeout(UniSetTimer::WaitUpTime),
 	cmdTimeout(2000),
 	sessLogLevel(Debug::NONE),
 	sock(0),
@@ -84,13 +85,14 @@ void LogServer::evfinish( const ev::loop_ref& loop )
 	io.stop();
 	isrunning = false;
 
+	sock->close();
 	sock.reset();
 
 	if( mylog.is_info() )
 		mylog.info() << myname << "(LogServer): finished." << endl;
 }
 // -------------------------------------------------------------------------
-void LogServer::run( const std::string& _addr, ost::tpport_t _port, bool thread )
+void LogServer::run(const std::string& _addr, Poco::UInt16 _port, bool thread )
 {
 	addr = _addr;
 	port = _port;
@@ -124,22 +126,13 @@ void LogServer::evprepare( const ev::loop_ref& eloop )
 
 	try
 	{
-		ost::InetAddress iaddr(addr.c_str());
-		sock = make_shared<UTCPSocket>(iaddr, port);
+		sock = make_shared<UTCPSocket>(addr, port);
 	}
-	catch( ost::Socket* socket )
+	catch( Poco::Net::NetException& ex )
 	{
-		ost::tpport_t port;
-		int errnum = socket->getErrorNumber();
-		ost::InetAddress saddr = (ost::InetAddress)socket->getPeer(&port);
 		ostringstream err;
 
-		err << myname << "(evprepare): socket error(" << errnum << "): ";
-
-		if( errnum == ost::Socket::errBindingFailed )
-			err << "bind failed; port busy" << endl;
-		else
-			err << "client socket failed" << endl;
+		err << myname << "(evprepare): socket error:" << ex.message();
 
 		if( mylog.is_crit() )
 			mylog.crit() << err.str() << endl;
@@ -147,7 +140,7 @@ void LogServer::evprepare( const ev::loop_ref& eloop )
 		throw SystemError( err.str() );
 	}
 
-	sock->setCompletion(false);
+	sock->setBlocking(false);
 
 	io.set<LogServer, &LogServer::ioAccept>(this);
 	io.set( eloop );
@@ -170,7 +163,7 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 		if( mylog.is_crit() )
 			mylog.crit() << myname << "(LogServer::ioAccept): terminate work.." << endl;
 
-		sock->reject();
+		sock->close();
 		return;
 	}
 
@@ -182,14 +175,16 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 			if( mylog.is_crit() )
 				mylog.crit() << myname << "(LogServer::ioAccept): session limit(" << sessMaxCount << ")" << endl;
 
-			sock->reject();
+			sock->close();
 			return;
 		}
 	}
 
 	try
 	{
-		auto s = make_shared<LogSession>( watcher.fd, elog, cmdTimeout );
+		Poco::Net::StreamSocket ss = sock->acceptConnection();
+
+		auto s = make_shared<LogSession>( ss, elog, cmdTimeout );
 		s->setSessionLogLevel(sessLogLevel);
 		s->connectFinalSession( sigc::mem_fun(this, &LogServer::sessionFinished) );
 		s->signal_logsession_command().connect( sigc::mem_fun(this, &LogServer::onCommand) );

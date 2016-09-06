@@ -67,14 +67,14 @@ class UInterface():
 
         raise UException("(getValue): Unknown interface %s"%self.utype)
 
-    def setValue(self, s_id, s_val):
+    def setValue(self, s_id, s_val, supplier = DefaultSupplerID ):
         try:
            if self.itype == "uniset":
               s = to_sid(s_id,self.i)
               if self.ignore_nodes == True:
                  s[1] = DefaultID
 
-              self.i.setValue(s[0],s_val,s[1])
+              self.i.setValue(s[0],s_val,s[1], supplier)
               return
 
            if self.itype == "modbus":
@@ -130,3 +130,13 @@ class UInterface():
            return None
 
         raise UException("(getSensorID): Unknown interface %s"%self.utype)
+
+    def getObjectID(self,o_name):
+        if self.itype == "uniset":
+           return self.i.getObjectID(o_name)
+
+        if self.itype == "modbus":
+           return None
+
+        raise UException("(getObjectID): Unknown interface %s"%self.utype)
+

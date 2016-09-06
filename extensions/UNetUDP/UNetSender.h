@@ -21,13 +21,13 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <cc++/socket.h>
 #include "UniSetObject.h"
 #include "Trigger.h"
 #include "Mutex.h"
 #include "SMInterface.h"
 #include "SharedMemory.h"
 #include "ThreadCreator.h"
+#include "UDPCore.h"
 #include "UDPPacket.h"
 // -----------------------------------------------------------------------------
 /*
@@ -41,12 +41,13 @@
  *    Причем так как дискретные и аналоговые датчики обрабатываются отдельно (но пересылаются в одном пакете),
  *    то датчики, которые первые переполнятся приводят к тому, что создаётся новый пакет и они добавляются в него,
  *    в свою очередь остальные продолжают "добивать" предыдущий пакет.
- *    В свою очередь в initItem() каждому UItem в dlist кроме pack_ind присваивается еще и номер пакета pack_num, который гарантировано соответствует
+ *    В initItem() каждому UItem в dlist кроме pack_ind присваивается еще и номер пакета pack_num, который гарантировано соответствует
  *    существующему пакету, поэтому в дальнейшем при использовании pack_num в качестве ключа в mypacks мы не проверяем пакет на существование.
  *
- *    ОПТИМИЗАЦИЯ N1: Для оптимизации обработки посылаемых пакетов (на стороне UNetReceiver) сделана следующая логика:
+ *    ОПТИМИЗАЦИЯ N1: Для оптимизации обработки посылаемых пакетов (на стороне UNetSender) сделана следующая логика:
  *                  Номер очередного посылаемого пакета меняется (увеличивается) только, если изменились данные с момента
-                    последней посылки. Для этого по данным каждый раз производится расчёт UNetUDP::makeCRC() и сравнивается с последним..
+					последней посылки. Для этого по данным каждый раз производится расчёт UNetUDP::makeCRC() и сравнивается с последним.
+					На стороне UNetReceiver пакаеты с повторными номерами (т.е. уже обработанные) - откидываются.
  *
  *
  * Создание соединения
@@ -64,7 +65,7 @@
 class UNetSender
 {
 	public:
-		UNetSender( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection = false,
+		UNetSender( const std::string& host, const int port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection = false,
 					const std::string& s_field = "", const std::string& s_fvalue = "", const std::string& prefix = "unet",
 					size_t maxDCount = UniSetUDP::MaxDCount, size_t maxACount = UniSetUDP::MaxACount );
 
@@ -87,11 +88,10 @@ class UNetSender
 			size_t pack_num;
 			size_t pack_ind;
 			sendfactor_t pack_sendfactor = { 0 };
-
 			friend std::ostream& operator<<( std::ostream& os, UItem& p );
 		};
 
-		typedef std::vector<UItem> DMap;
+		typedef std::unordered_map<UniSetTypes::ObjectId,UItem> UItemMap;
 
 		size_t getDataPackCount() const;
 
@@ -99,7 +99,19 @@ class UNetSender
 		void stop();
 
 		void send();
-		void real_send(UniSetUDP::UDPMessage& mypack);
+
+		struct PackMessage
+		{
+			PackMessage( UniSetUDP::UDPMessage&& m ):msg(std::move(m)){}
+			PackMessage( const UniSetUDP::UDPMessage& m ) = delete;
+
+			PackMessage(){}
+
+			UniSetUDP::UDPMessage msg;
+			UniSetTypes::uniset_rwmutex mut;
+		};
+
+		void real_send( PackMessage& mypack );
 
 		/*! (принудительно) обновить все данные (из SM) */
 		void updateFromSM();
@@ -108,7 +120,7 @@ class UNetSender
 		void updateSensor( UniSetTypes::ObjectId id, long value );
 
 		/*! Обновить значение по итератору */
-		void updateItem( DMap::iterator& it, long value );
+		void updateItem( UItem& it, long value );
 
 		inline void setSendPause( int msec )
 		{
@@ -134,11 +146,11 @@ class UNetSender
 
 		virtual const std::string getShortInfo() const;
 
-		inline ost::IPV4Address getAddress() const
+		inline std::string getAddress() const
 		{
 			return addr;
 		}
-		inline ost::tpport_t getPort() const
+		inline int getPort() const
 		{
 			return port;
 		}
@@ -171,26 +183,27 @@ class UNetSender
 	private:
 		UNetSender();
 
-		std::shared_ptr<ost::UDPBroadcast> udp = { nullptr };
-		ost::IPV4Address addr;
-		ost::tpport_t port = { 0 };
+		std::shared_ptr<UDPSocketU> udp = { nullptr };
+		std::string addr;
+		int port = { 0 };
 		std::string s_host = { "" };
+		Poco::Net::SocketAddress saddr;
 
 		std::string myname = { "" };
 		timeout_t sendpause = { 150 };
 		timeout_t packsendpause = { 5 };
+		timeout_t writeTimeout = { 1000 }; // msec
 		std::atomic_bool activated = { false };
 		PassiveTimer ptCheckConnection;
 
-		UniSetTypes::uniset_rwmutex pack_mutex;
+		typedef std::unordered_map<sendfactor_t, std::vector<PackMessage>> Packs;
 
-		typedef std::unordered_map<sendfactor_t, std::vector<UniSetUDP::UDPMessage>> Packs;
-
+		// mypacks заполняется в начале и дальше с ним происходит только чтение
+		// поэтому mutex-ом его не защищаем
 		Packs mypacks;
 		std::unordered_map<sendfactor_t, size_t> packs_anum;
 		std::unordered_map<sendfactor_t, size_t> packs_dnum;
-		DMap dlist;
-		size_t maxItem = { 0 };
+		UItemMap items;
 		size_t packetnum = { 1 }; /*!< номер очередного посылаемого пакета */
 		uint16_t lastcrc = { 0 };
 		UniSetUDP::UDPPacket s_msg;

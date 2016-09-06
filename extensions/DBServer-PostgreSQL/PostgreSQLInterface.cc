@@ -45,7 +45,7 @@ PostgreSQLInterface::~PostgreSQLInterface()
 }
 
 // -----------------------------------------------------------------------------------------
-bool PostgreSQLInterface::ping()
+bool PostgreSQLInterface::ping() const
 {
 	return db && db->is_open();
 }
@@ -213,7 +213,7 @@ void PostgreSQLInterface::save_inserted_id( const pqxx::result& res )
 		last_inserted_id = res[0][0].as<int>();
 }
 // -----------------------------------------------------------------------------------------
-bool PostgreSQLInterface::isConnection()
+bool PostgreSQLInterface::isConnection() const
 {
 	return (db && db->is_open());
 }

@@ -155,11 +155,11 @@ class LogAgregator:
 
 		// найти лог..
 		std::shared_ptr<DebugStream> getLog( const std::string& logname );
-		bool logExist( std::shared_ptr<DebugStream>& l );
+		bool logExist( std::shared_ptr<DebugStream>& l ) const;
 
 		struct iLog
 		{
-			iLog( std::shared_ptr<DebugStream>& l, const std::string& nm ): log(l), name(nm) {}
+			iLog( const std::shared_ptr<DebugStream>& l, const std::string& nm ): log(l), name(nm) {}
 			std::shared_ptr<DebugStream> log;
 			std::string name;
 
@@ -170,8 +170,8 @@ class LogAgregator:
 			}
 		};
 
-		std::list<iLog> getLogList();
-		std::list<iLog> getLogList( const std::string& regexp_str );
+		std::list<iLog> getLogList() const;
+		std::list<iLog> getLogList( const std::string& regexp_str ) const;
 
 		friend std::ostream& operator<<(std::ostream& os, LogAgregator& la );
 		friend std::ostream& operator<<(std::ostream& os, std::shared_ptr<LogAgregator> la );
@@ -187,13 +187,13 @@ class LogAgregator:
 		void addLogAgregator( std::shared_ptr<LogAgregator> la, const std::string& lname );
 
 		// поиск лога по составному логу.."agregator/agregator2/.../logname"
-		std::shared_ptr<DebugStream> findLog( const std::string& lname );
+		std::shared_ptr<DebugStream> findLog( const std::string& lname ) const;
 
 		// вывод в виде "дерева"
 		std::ostream& printTree(std::ostream& os, const std::string& g_tab = "");
 
 		// получить список с именами (длинными) и с указателями на логи
-		std::list<iLog> makeLogNameList( const std::string& prefix );
+		std::list<iLog> makeLogNameList( const std::string& prefix ) const;
 
 	private:
 		typedef std::unordered_map<std::string, std::shared_ptr<DebugStream>> LogMap;

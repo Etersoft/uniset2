@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <thread>
 #include <atomic>
+#include "Configuration.h"
 #include "MQAtomic.h"
 #include "MQMutex.h"
 // --------------------------------------------------------------------------

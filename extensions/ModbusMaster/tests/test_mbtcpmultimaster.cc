@@ -3,6 +3,7 @@
 #include <time.h>
 #include <limits>
 #include <unordered_set>
+#include <Poco/Net/NetException.h>
 #include "UniSetTypes.h"
 #include "MBTCPMultiMaster.h"
 // -----------------------------------------------------------------------------
@@ -23,9 +24,9 @@ using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 static ModbusRTU::ModbusAddr slaveaddr = 0x01; // conf->getArgInt("--mbs-my-addr");
 static int port = 20053; // conf->getArgInt("--mbs-inet-port");
-static string iaddr("127.0.0.1"); // conf->getArgParam("--mbs-inet-addr");
+static const string iaddr("127.0.0.1"); // conf->getArgParam("--mbs-inet-addr");
 static int port2 = 20055;
-static string iaddr2("127.0.0.1");
+static const string iaddr2("127.0.0.1");
 static unordered_set<ModbusRTU::ModbusAddr> slaveADDR = { 0x01 };
 static shared_ptr<MBTCPTestServer> mbs1;
 static shared_ptr<MBTCPTestServer> mbs2;
@@ -55,13 +56,12 @@ static void InitTest()
 	{
 		try
 		{
-			ost::Thread::setException(ost::Thread::throwException);
 			mbs1 = make_shared<MBTCPTestServer>(slaveADDR, iaddr, port, false);
 		}
-		catch( const ost::SockException& e )
+		catch( const Poco::Net::NetException& e )
 		{
 			ostringstream err;
-			err << "(mb1): Can`t create socket " << iaddr << ":" << port << " err: " << e.getString() << endl;
+			err << "(mb1): Can`t create socket " << iaddr << ":" << port << " err: " << e.message() << endl;
 			cerr << err.str() << endl;
 			throw SystemError(err.str());
 		}
@@ -87,13 +87,12 @@ static void InitTest()
 	{
 		try
 		{
-			ost::Thread::setException(ost::Thread::throwException);
 			mbs2 = make_shared<MBTCPTestServer>(slaveADDR, iaddr2, port2, false);
 		}
-		catch( const ost::SockException& e )
+		catch( const Poco::Net::NetException& e )
 		{
 			ostringstream err;
-			err << "(mb2): Can`t create socket " << iaddr << ":" << port << " err: " << e.getString() << endl;
+			err << "(mb2): Can`t create socket " << iaddr << ":" << port << " err: " << e.message() << endl;
 			cerr << err.str() << endl;
 			throw SystemError(err.str());
 		}

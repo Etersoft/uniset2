@@ -16,6 +16,7 @@
 // -------------------------------------------------------------------------
 #include <sstream>
 #include <iomanip>
+#include <Poco/Net/NetException.h>
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UNetSender.h"
@@ -25,7 +26,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-UNetSender::UNetSender(const std::string& _host, const ost::tpport_t _port, const std::shared_ptr<SMInterface>& smi,
+UNetSender::UNetSender(const std::string& _host, const int _port, const std::shared_ptr<SMInterface>& smi,
 					   bool nocheckConnection, const std::string& s_f, const std::string& s_val,
 					   const std::string& s_prefix, size_t maxDCount, size_t maxACount ):
 	s_field(s_f),
@@ -34,11 +35,11 @@ UNetSender::UNetSender(const std::string& _host, const ost::tpport_t _port, cons
 	shm(smi),
 	port(_port),
 	s_host(_host),
+	saddr(_host, _port),
 	sendpause(150),
 	packsendpause(5),
 	activated(false),
-	dlist(100),
-	maxItem(0),
+	items(100),
 	packetnum(1),
 	lastcrc(0),
 	maxAData(maxACount),
@@ -72,17 +73,19 @@ UNetSender::UNetSender(const std::string& _host, const ost::tpport_t _port, cons
 	mypacks[0].resize(1);
 	packs_anum[0] = 0;
 	packs_dnum[0] = 0;
-	UniSetUDP::UDPMessage& mypack(mypacks[0][0]);
+	auto& mypack(mypacks[0][0]);
 	// выставляем поля, которые не меняются
-	mypack.nodeID = uniset_conf()->getLocalNode();
-	mypack.procID = shm->ID();
+	{
+		uniset_rwmutex_wrlock l(mypack.mut);
+		mypack.msg.nodeID = uniset_conf()->getLocalNode();
+		mypack.msg.procID = shm->ID();
+	}
 
 	// -------------------------------
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
-		dlist.resize(maxItem);
-		unetinfo << myname << "(init): dlist size = " << dlist.size() << endl;
+		unetinfo << myname << "(init): dlist size = " << items.size() << endl;
 	}
 	else
 	{
@@ -94,8 +97,7 @@ UNetSender::UNetSender(const std::string& _host, const ost::tpport_t _port, cons
 		{
 			unetwarn << myname << "(init): Failed to convert the pointer 'IONotifyController' -> 'SharedMemory'" << endl;
 			readConfiguration();
-			dlist.resize(maxItem);
-			unetinfo << myname << "(init): dlist size = " << dlist.size() << endl;
+			unetinfo << myname << "(init): dlist size = " << items.size() << endl;
 		}
 	}
 }
@@ -106,13 +108,15 @@ UNetSender::~UNetSender()
 // -----------------------------------------------------------------------------
 bool UNetSender::createConnection( bool throwEx )
 {
-	ost::Thread::setException(ost::Thread::throwException);
-
 	unetinfo << myname << "(createConnection): .." << endl;
 
 	try
 	{
-		udp = make_shared<ost::UDPBroadcast>(addr, port);
+		//udp = make_shared<UDPSocketU>(addr, port);
+		udp = make_shared<UDPSocketU>();
+		udp->setBroadcast(true);
+		udp->setSendTimeout( UniSetTimer::millisecToPoco(writeTimeout) );
+		//		udp->setNoDelay(true);
 	}
 	catch( const std::exception& e )
 	{
@@ -142,12 +146,11 @@ bool UNetSender::createConnection( bool throwEx )
 // -----------------------------------------------------------------------------
 void UNetSender::updateFromSM()
 {
-	auto it = dlist.begin();
-
-	for( ; it != dlist.end(); ++it )
+	for( auto&& it: items )
 	{
-		long value = shm->localGetValue(it->ioit, it->id);
-		updateItem(it, value);
+		UItem& i = it.second;
+		long value = shm->localGetValue(i.ioit, i.id);
+		updateItem(i, value);
 	}
 }
 // -----------------------------------------------------------------------------
@@ -156,38 +159,21 @@ void UNetSender::updateSensor( UniSetTypes::ObjectId id, long value )
 	if( !shm->isLocalwork() )
 		return;
 
-	//    cerr << myname << ": UPDATE SENSOR id=" << id << " value=" << value << endl;
-	auto it = dlist.begin();
-
-	for( ; it != dlist.end(); ++it )
-	{
-		if( it->id == id )
-		{
-			updateItem( it, value );
-			break;
-		}
-	}
+	auto it = items.find(id);
+	if( it != items.end() )
+		updateItem( it->second, value );
 }
 // -----------------------------------------------------------------------------
-void UNetSender::updateItem( DMap::iterator& it, long value )
+void UNetSender::updateItem( UItem& it, long value )
 {
-	if( it == dlist.end() )
-		return;
+	auto& pk = mypacks[it.pack_sendfactor];
 
-	if( it->iotype == UniversalIO::DI || it->iotype == UniversalIO::DO )
-	{
-		UniSetTypes::uniset_rwmutex_wrlock l(pack_mutex);
-		auto& pk = mypacks[it->pack_sendfactor];
-		UniSetUDP::UDPMessage& mypack(pk[it->pack_num]);
-		mypack.setDData(it->pack_ind, value);
-	}
-	else if( it->iotype == UniversalIO::AI || it->iotype == UniversalIO::AO )
-	{
-		UniSetTypes::uniset_rwmutex_wrlock l(pack_mutex);
-		auto& pk = mypacks[it->pack_sendfactor];
-		UniSetUDP::UDPMessage& mypack(pk[it->pack_num]);
-		mypack.setAData(it->pack_ind, value);
-	}
+	auto& mypack(pk[it.pack_num]);
+	UniSetTypes::uniset_rwmutex_wrlock l(mypack.mut);
+	if( it.iotype == UniversalIO::DI || it.iotype == UniversalIO::DO )
+		mypack.msg.setDData(it.pack_ind, value);
+	else if( it.iotype == UniversalIO::AI || it.iotype == UniversalIO::AO )
+		mypack.msg.setAData(it.pack_ind, value);
 }
 // -----------------------------------------------------------------------------
 void UNetSender::setCheckConnectionPause( int msec )
@@ -198,8 +184,7 @@ void UNetSender::setCheckConnectionPause( int msec )
 // -----------------------------------------------------------------------------
 void UNetSender::send()
 {
-	dlist.resize(maxItem);
-	unetinfo << myname << "(send): dlist size = " << dlist.size() << endl;
+	unetinfo << myname << "(send): dlist size = " << items.size() << endl;
 	ncycle = 0;
 
 	ptCheckConnection.reset();
@@ -252,9 +237,9 @@ void UNetSender::send()
 
 			ncycle++;
 		}
-		catch( ost::SockException& e )
+		catch( Poco::Net::NetException& e )
 		{
-			unetwarn << myname << "(send): " << e.getString() << endl;
+			unetwarn << myname << "(send): " << e.displayText() << endl;
 		}
 		catch( UniSetTypes::Exception& ex)
 		{
@@ -280,17 +265,17 @@ void UNetSender::send()
 // -----------------------------------------------------------------------------
 // #define UNETUDP_DISABLE_OPTIMIZATION_N1
 
-void UNetSender::real_send( UniSetUDP::UDPMessage& mypack )
+void UNetSender::real_send( PackMessage& mypack )
 {
-	UniSetTypes::uniset_rwmutex_rlock l(pack_mutex);
+	UniSetTypes::uniset_rwmutex_rlock l(mypack.mut);
 #ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
-	mypack.num = packetnum++;
+	mypack.msg.num = packetnum++;
 #else
-	unsigned short crc = mypack.getDataCRC();
+	uint16_t crc = mypack.msg.getDataCRC();
 
 	if( crc != lastcrc )
 	{
-		mypack.num = packetnum++;
+		mypack.msg.num = packetnum++;
 		lastcrc = crc;
 	}
 
@@ -301,14 +286,22 @@ void UNetSender::real_send( UniSetUDP::UDPMessage& mypack )
 	if( packetnum == 0 )
 		packetnum = 1;
 
-	if( !udp || !udp->isPending(ost::Socket::pendingOutput) )
+	if( !udp || !udp->poll( UniSetTimer::millisecToPoco(writeTimeout), Poco::Net::Socket::SELECT_WRITE) )
 		return;
 
-	mypack.transport_msg(s_msg);
-	size_t ret = udp->send( (char*)s_msg.data, s_msg.len );
+	mypack.msg.transport_msg(s_msg);
 
-	if( ret < s_msg.len )
-		unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;
+	try
+	{
+		size_t ret = udp->sendTo(&s_msg.data, s_msg.len, saddr);
+
+		if( ret < s_msg.len )
+			unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;
+	}
+	catch( Poco::Net::NetException& ex )
+	{
+		unetcrit << myname << "(real_send): error: " << ex.displayText() << endl;
+	}
 }
 // -----------------------------------------------------------------------------
 void UNetSender::stop()
@@ -390,7 +383,7 @@ bool UNetSender::initItem( UniXML::iterator& it )
 
 	int priority = it.getPIntProp(prefix + "_sendfactor", 0);
 
-	auto pk = mypacks[priority];
+	auto& pk = mypacks[priority];
 
 	UItem p;
 	p.iotype = UniSetTypes::getIOType(it.getProp("iotype"));
@@ -411,9 +404,11 @@ bool UNetSender::initItem( UniXML::iterator& it )
 		if( pk.size() <= dnum )
 			pk.resize(dnum + 1);
 
-		UniSetUDP::UDPMessage& mypack(pk[dnum]);
+		auto& mypack(pk[dnum]);
 
-		p.pack_ind = mypack.addDData(sid, 0);
+		uniset_rwmutex_wrlock l(mypack.mut);
+
+		p.pack_ind = mypack.msg.addDData(sid, 0);
 
 		if( p.pack_ind >= maxDData )
 		{
@@ -422,10 +417,11 @@ bool UNetSender::initItem( UniXML::iterator& it )
 			if( dnum >= pk.size() )
 				pk.resize(dnum + 1);
 
-			UniSetUDP::UDPMessage& mypack( pk[dnum] );
-			p.pack_ind = mypack.addDData(sid, 0);
-			mypack.nodeID = uniset_conf()->getLocalNode();
-			mypack.procID = shm->ID();
+			auto& mypack2( pk[dnum] );
+			uniset_rwmutex_wrlock l2(mypack2.mut);
+			p.pack_ind = mypack2.msg.addDData(sid, 0);
+			mypack2.msg.nodeID = uniset_conf()->getLocalNode();
+			mypack2.msg.procID = shm->ID();
 		}
 
 		p.pack_num = dnum;
@@ -448,9 +444,9 @@ bool UNetSender::initItem( UniXML::iterator& it )
 		if( pk.size() <= anum )
 			pk.resize(anum + 1);
 
-		UniSetUDP::UDPMessage& mypack(pk[anum]);
-
-		p.pack_ind = mypack.addAData(sid, 0);
+		auto& mypack(pk[anum]);
+		uniset_rwmutex_wrlock l(mypack.mut);
+		p.pack_ind = mypack.msg.addAData(sid, 0);
 
 		if( p.pack_ind >= maxAData )
 		{
@@ -459,10 +455,11 @@ bool UNetSender::initItem( UniXML::iterator& it )
 			if( anum >= pk.size() )
 				pk.resize(anum + 1);
 
-			UniSetUDP::UDPMessage& mypack(pk[anum]);
-			p.pack_ind = mypack.addAData(sid, 0);
-			mypack.nodeID = uniset_conf()->getLocalNode();
-			mypack.procID = shm->ID();
+			auto& mypack2(pk[anum]);
+			uniset_rwmutex_wrlock l2(mypack2.mut);
+			p.pack_ind = mypack2.msg.addAData(sid, 0);
+			mypack2.msg.nodeID = uniset_conf()->getLocalNode();
+			mypack2.msg.procID = shm->ID();
 		}
 
 		p.pack_num = anum;
@@ -479,15 +476,17 @@ bool UNetSender::initItem( UniXML::iterator& it )
 		}
 	}
 
-	mypacks[priority] = pk;
-
-	if( maxItem >= dlist.size() )
-		dlist.resize(maxItem + 10);
-
-	dlist[maxItem] = p;
-	maxItem++;
-
 	unetinfo << myname << "(initItem): add " << p << endl;
+	auto i = items.find(p.id);
+	if( i != items.end() )
+	{
+		unetcrit << myname
+				 << "(readItem): Sensor (" << p.id << ")" << sname << " ALREADY ADDED!!  ABORT!" << endl;
+		raise(SIGTERM);
+		return false;
+	}
+
+	items.emplace(p.id, std::move(p));
 	return true;
 }
 
@@ -499,14 +498,14 @@ std::ostream& operator<<( std::ostream& os, UNetSender::UItem& p )
 // -----------------------------------------------------------------------------
 void UNetSender::initIterators()
 {
-	for( auto && it : dlist )
-		shm->initIterator(it.ioit);
+	for( auto && it : items )
+		shm->initIterator(it.second.ioit);
 }
 // -----------------------------------------------------------------------------
 void UNetSender::askSensors( UniversalIO::UIOCommand cmd )
 {
-	for( auto && it : dlist  )
-		shm->askSensor(it.id, cmd);
+	for( auto && it : items  )
+		shm->askSensor(it.second.id, cmd);
 }
 // -----------------------------------------------------------------------------
 size_t UNetSender::getDataPackCount() const
@@ -524,13 +523,23 @@ const std::string UNetSender::getShortInfo() const
 	s << setw(15) << std::right << getAddress() << ":" << std::left << setw(6) << getPort()
 	  << " lastpacknum=" << packetnum
 	  << " lastcrc=" << setw(6) << lastcrc
-	  << " items=" << maxItem << " maxAData=" << getADataSize() << " maxDData=" << getDDataSize()
+	  << " items=" << items.size() << " maxAData=" << getADataSize() << " maxDData=" << getDDataSize()
 	  << endl
 	  << "\t   packs([sendfactor]=num): "
 	  << endl;
 
 	for( auto i = mypacks.begin(); i != mypacks.end(); ++i )
-		s << "        \t\t[" << i->first << "]=" << i->second.size() << endl;
+	{
+		s << "        \t[" << i->first << "]=" << i->second.size() << endl;
+		size_t n=0;
+		for( const auto& p: i->second )
+		{
+			//uniset_rwmutex_rlock l(p->mut);
+			s << "        \t\t[" << (n++) << "]=" << p.msg.sizeOf() << " bytes"
+			  << " ( numA=" << setw(5) << p.msg.asize() << " numD=" << setw(5) << p.msg.dsize() << ")"
+			  << endl;
+		}
+	}
 
 	return std::move(s.str());
 }

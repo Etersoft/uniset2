@@ -47,11 +47,11 @@ class PassiveObject
 		void setID( UniSetTypes::ObjectId id );
 		void init(ProxyManager* mngr);
 
-		inline UniSetTypes::ObjectId getId()
+		inline UniSetTypes::ObjectId getId() const
 		{
 			return id;
 		}
-		inline std::string getName()
+		inline std::string getName() const
 		{
 			return myname;
 		}

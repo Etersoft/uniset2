@@ -16,6 +16,7 @@
 // -------------------------------------------------------------------------
 #include <iostream>
 #include <sstream>
+#include <Poco/Net/NetException.h>
 #include "Exceptions.h"
 #include "modbus/ModbusTCPServer.h"
 #include "modbus/ModbusTCPCore.h"
@@ -24,7 +25,7 @@ using namespace std;
 using namespace ModbusRTU;
 using namespace UniSetTypes;
 // -------------------------------------------------------------------------
-ModbusTCPServer::ModbusTCPServer( ost::InetAddress& ia, int _port ):
+ModbusTCPServer::ModbusTCPServer( const std::string& ia, int _port ):
 	port(_port),
 	iaddr(ia),
 	myname(""),
@@ -94,22 +95,29 @@ void ModbusTCPServer::evprepare()
 	{
 		sock = make_shared<UTCPSocket>(iaddr, port);
 	}
-	catch( const ost::SockException& ex )
+	catch( const Poco::Net::NetException& ex )
 	{
 		ostringstream err;
-		err << "(ModbusTCPServer::mainLoop): connect " << iaddr << ":" << port << " err: " << ex.what();
+		err << "(ModbusTCPServer::evprepare): connect " << iaddr << ":" << port << " err: " << ex.what();
+		dlog->crit() << err.str() << endl;
+		throw SystemError(err.str());
+	}
+	catch( const std::exception& ex )
+	{
+		ostringstream err;
+		err << "(ModbusTCPServer::evprepare): connect " << iaddr << ":" << port << " err: " << ex.what();
 		dlog->crit() << err.str() << endl;
 		throw SystemError(err.str());
 	}
 
-	sock->setCompletion(false);
+	sock->setBlocking(false);
 
 	io.set(loop);
 	io.start(sock->getSocket(), ev::READ);
 
 	ioTimer.set(loop);
 
-	if( tmTime_msec != TIMEOUT_INF )
+	if( tmTime_msec != UniSetTimer::WaitUpTime )
 		ioTimer.start(tmTime);
 }
 // -------------------------------------------------------------------------
@@ -167,7 +175,7 @@ void ModbusTCPServer::getSessions( Sessions& lst )
 	for( const auto& i : slist )
 	{
 		SessionInfo inf( i->getClientAddress(), i->getAskCount() );
-		lst.push_back(inf);
+		lst.emplace_back( std::move(inf) );
 	}
 }
 // -------------------------------------------------------------------------
@@ -180,7 +188,7 @@ void ModbusTCPServer::setTimer( timeout_t msec )
 {
 	tmTime_msec = msec;
 
-	if( msec == TIMEOUT_INF )
+	if( msec == UniSetTimer::WaitUpTime )
 	{
 		tmTime = 0;
 
@@ -219,7 +227,7 @@ void ModbusTCPServer::ioAccept(ev::io& watcher, int revents)
 		if( dlog->is_crit() )
 			dlog->crit() << myname << "(ModbusTCPServer::ioAccept): terminate work.." << endl;
 
-		sock->reject();
+		sock->close();
 		return;
 	}
 
@@ -228,7 +236,7 @@ void ModbusTCPServer::ioAccept(ev::io& watcher, int revents)
 		if( dlog->is_crit() )
 			dlog->crit() << myname << "(ModbusTCPServer::ioAccept): session limit(" << maxSessions << ")" << endl;
 
-		sock->reject();
+		sock->close();
 		return;
 	}
 
@@ -237,7 +245,9 @@ void ModbusTCPServer::ioAccept(ev::io& watcher, int revents)
 
 	try
 	{
-		auto s = make_shared<ModbusTCPSession>(watcher.fd, *vmbaddr, sessTimeout);
+		Poco::Net::StreamSocket ss = sock->acceptConnection();
+
+		auto s = make_shared<ModbusTCPSession>(ss, *vmbaddr, sessTimeout);
 		s->connectReadCoil( sigc::mem_fun(this, &ModbusTCPServer::readCoilStatus) );
 		s->connectReadInputStatus( sigc::mem_fun(this, &ModbusTCPServer::readInputStatus) );
 		s->connectReadOutput( sigc::mem_fun(this, &ModbusTCPServer::readOutputRegisters) );

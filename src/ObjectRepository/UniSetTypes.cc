@@ -20,6 +20,7 @@
 // -----------------------------------------------------------------------------
 #include <cmath>
 #include <iomanip>
+#include <sstream>
 #include <fstream>
 #include "UniSetTypes.h"
 #include "Configuration.h"
@@ -241,7 +242,7 @@ std::vector<std::string> UniSetTypes::explode_str( const string& str, char sep )
 			string s(str.substr(prev, sz - prev));
 
 			if( !s.empty() )
-				v.emplace_back(s);
+				v.emplace_back( std::move(s) );
 
 			break;
 		}
@@ -256,7 +257,7 @@ std::vector<std::string> UniSetTypes::explode_str( const string& str, char sep )
 
 		if( !s.empty() )
 		{
-			v.emplace_back(s);
+			v.emplace_back(std::move(s));
 			prev = pos + 1;
 		}
 	}
@@ -267,7 +268,7 @@ std::vector<std::string> UniSetTypes::explode_str( const string& str, char sep )
 // ------------------------------------------------------------------------------------------
 bool UniSetTypes::is_digit( const std::string& s )
 {
-	for( auto c : s )
+	for( const auto& c : s )
 	{
 		if( !isdigit(c) )
 			return false;
@@ -279,9 +280,6 @@ bool UniSetTypes::is_digit( const std::string& s )
 // --------------------------------------------------------------------------------------
 std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str, std::shared_ptr<Configuration> conf )
 {
-	if( conf == nullptr )
-		conf = uniset_conf();
-
 	std::list<UniSetTypes::ParamSInfo> res;
 
 	auto lst = UniSetTypes::explode_str(str, ',');
@@ -316,7 +314,7 @@ std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str,
 		{
 			std::string s_id = *(t.begin());
 
-			if( is_digit(s_id) )
+			if( is_digit(s_id) || !conf )
 				item.si.id = uni_atoi(s_id);
 			else
 				item.si.id = conf->getSensorID(s_id);
@@ -328,12 +326,12 @@ std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str,
 			std::string s_id = *(t.begin());
 			std::string s_node = *(++t.begin());
 
-			if( is_digit(s_id) )
+			if( is_digit(s_id) || !conf )
 				item.si.id = uni_atoi(s_id);
 			else
 				item.si.id = conf->getSensorID(s_id);
 
-			if( is_digit(s_node) )
+			if( is_digit(s_node) || !conf )
 				item.si.node = uni_atoi(s_node);
 			else
 				item.si.node = conf->getNodeID(s_node);
@@ -344,7 +342,7 @@ std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str,
 			continue;
 		}
 
-		res.push_back(item);
+		res.emplace_back( std::move(item) );
 	}
 
 	return std::move(res);
@@ -407,7 +405,7 @@ std::list<UniSetTypes::ConsumerInfo> UniSetTypes::getObjectsList( const string& 
 			continue;
 		}
 
-		res.push_back(item);
+		res.emplace_back( std::move(item) );
 	}
 
 	return std::move(res);
@@ -539,7 +537,7 @@ std::ostream& UniSetTypes::operator<<( std::ostream& os, const IONotifyControlle
 	   << " lowlim=" << ti.lowlimit
 	   << " state=" << ti.state
 	   << " tv_sec=" << ti.tv_sec
-	   << " tv_usec=" << ti.tv_usec
+	   << " tv_nsec=" << ti.tv_nsec
 	   << " invert=" << ti.invert
 	   << " ]";
 
@@ -549,7 +547,7 @@ std::ostream& UniSetTypes::operator<<( std::ostream& os, const IONotifyControlle
 std::ostream& UniSetTypes::operator<<( std::ostream& os, const IOController_i::ShortIOInfo& s )
 {
 	os << setw(10) << dateToString(s.tv_sec)
-	   << " " << setw(8) << timeToString(s.tv_sec) << "." << s.tv_usec
+	   << " " << setw(8) << timeToString(s.tv_sec) << "." << s.tv_nsec
 	   << " [ value=" << s.value << " supplier=" << s.supplier << " ]";
 
 	return os;
@@ -586,5 +584,43 @@ std::string UniSetTypes::replace_all( const std::string& src, const std::string&
 	}
 
 	return std::move(res);
+}
+// -------------------------------------------------------------------------
+timeval UniSetTypes::to_timeval( const chrono::system_clock::duration& d )
+{
+	struct timeval tv;
+
+	if( d.count() == 0 )
+		tv.tv_sec = tv.tv_usec = 0;
+	else
+	{
+		std::chrono::seconds const sec = std::chrono::duration_cast<std::chrono::seconds>(d);
+		tv.tv_sec  = sec.count();
+		tv.tv_usec = std::chrono::duration_cast<std::chrono::microseconds>(d - sec).count();
+	}
+
+	return std::move(tv);
+}
+// -------------------------------------------------------------------------
+timespec UniSetTypes::to_timespec( const chrono::system_clock::duration& d )
+{
+	struct timespec ts;
+
+	if( d.count() == 0 )
+		ts.tv_sec = ts.tv_nsec = 0;
+	else
+	{
+		std::chrono::seconds const sec = std::chrono::duration_cast<std::chrono::seconds>(d);
+		ts.tv_sec  = sec.count();
+		ts.tv_nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(d - sec).count();
+	}
+
+	return std::move(ts);
+}
+// -------------------------------------------------------------------------
+timespec UniSetTypes::now_to_timespec()
+{
+	auto d = std::chrono::system_clock::now().time_since_epoch();
+	return to_timespec(d);
 }
 // -------------------------------------------------------------------------

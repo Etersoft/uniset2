@@ -24,7 +24,7 @@ namespace UniSetTypes
 {
 	// Шаблон для "универсальной инициализации объекта(процесса)".
 	// Использование:
-	// auto m = make_object<MyClass>("ObjectId","secname");
+	// auto m = make_object<MyClass>("ObjectId","secname",...);
 	// --
 	// Где MyClass должен содержать конструктор MyClass( const ObjetctId id, xmlNode* cnode, ...any args.. );
 	// ---------------
@@ -81,6 +81,8 @@ namespace UniSetTypes
 	// "по задумке" позволяет не загромаждать код..
 	// T - тип создаваемого объекта
 	// M - (master) - класс который создаёт объект (подразумевается, что он UniSetManager)
+	// Использование
+	// auto m = make_child_object<MyClass,MyMasterClass>(master, "ObjectId","secname",...);
 	template<typename T, typename M, typename... _Args>
 	std::shared_ptr<T> make_child_object( M* m, const std::string& idname, const std::string& secname, _Args&& ... __args )
 	{

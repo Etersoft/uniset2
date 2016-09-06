@@ -9,8 +9,8 @@
 #include "ModbusServerSlot.h"
 #include "ModbusServer.h"
 #include "PassiveTimer.h"
-#include "USocket.h"
 #include "UTCPCore.h"
+#include "UTCPStream.h"
 // -------------------------------------------------------------------------
 /*!
  * \brief The ModbusTCPSession class
@@ -33,7 +33,7 @@ class ModbusTCPSession:
 {
 	public:
 
-		ModbusTCPSession( int sock, const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t timeout );
+		ModbusTCPSession( const Poco::Net::StreamSocket& s, const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t timeout );
 		virtual ~ModbusTCPSession();
 
 		void cleanInputStream();
@@ -129,7 +129,7 @@ class ModbusTCPSession:
 		ev::io  io;
 		ev::timer ioTimeout;
 
-		std::shared_ptr<USocket> sock;
+		std::shared_ptr<UTCPStream> sock;
 		std::queue<UTCPCore::Buffer*> qsend;
 		double sessTimeout = { 10.0 };
 

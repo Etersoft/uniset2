@@ -21,6 +21,22 @@
 #include <algorithm>
 #include "VMonitor.h"
 // --------------------------------------------------------------------------
+#define VMON_IMPL_ADD_N(T,m) void VMonitor::add( const std::string& name, const T& v ) \
+	{\
+		m.emplace(&v,name); \
+	} \
+	\
+	const std::string VMonitor::pretty_str( const std::string& name, const T* v, int nwidth ) \
+	{ \
+		std::ostringstream s; \
+		s << std::right << std::setw(nwidth) << name << std::left << " = " << std::right << std::setw(10)  << *(v); \
+		return std::move(s.str()); \
+	} \
+	const std::string VMonitor::pretty_str( const std::string& name, const T& v, int nwidth ) \
+	{ \
+		return pretty_str(name,&v,nwidth); \
+	}
+// --------------------------------------------------------------------------
 #define VMON_IMPL_ADD(T) void VMonitor::add( const std::string& name, const T& v ) \
 	{\
 		m_##T.emplace(&v,name); \
@@ -85,33 +101,33 @@
 #define VMON_MAKE_PAIR(vlist, T) \
 	{\
 		for( const auto& e: m_##T ) \
-			vlist.push_back( std::make_pair(e.second, std::to_string(*(e.first))) );\
+			vlist.emplace_back( e.second, std::to_string(*(e.first)) );\
 	}
 // --------------------------------------------------------------------------
 #define VMON_MAKE_PAIR_S(vlist, T) \
 	{\
 		for( const auto& e: m_##T ) \
-			vlist.push_back( std::make_pair(e.second,*e.first) );\
+			vlist.emplace_back( e.second,*e.first );\
 	}
 // --------------------------------------------------------------------------
 #define VMON_MAKE_PAIR2(vlist, T) \
 	{\
 		std::ostringstream s;\
 		for( const auto& e: m_##T ) \
-			vlist.push_back( std::make_pair(e.second, std::to_string(*(e.first))) );\
+			vlist.emplace_back( e.second, std::to_string(*(e.first)) );\
 		\
 		for( const auto& e: m_unsigned_##T ) \
-			vlist.push_back( std::make_pair(e.second, std::to_string(*(e.first))) );\
+			vlist.emplace_back( e.second, std::to_string(*(e.first)) );\
 	}
 // --------------------------------------------------------------------------
 #define VMON_MAKE_PAIR_CHAR(vlist) \
 	{\
 		std::ostringstream s;\
 		for( const auto& e: m_char ) \
-			vlist.push_back(std::make_pair(e.second,std::to_string((int)(*(e.first)))) );\
+			vlist.emplace_back( e.second,std::to_string((int)(*(e.first))) );\
 		\
 		for( const auto& e: m_unsigned_char ) \
-			vlist.push_back(std::make_pair(e.second,std::to_string((int)(*(e.first)))) );\
+			vlist.emplace_back( e.second,std::to_string((int)(*(e.first))) );\
 	}
 // --------------------------------------------------------------------------
 VMON_IMPL_ADD2(int)
@@ -122,6 +138,11 @@ VMON_IMPL_ADD(bool)
 VMON_IMPL_ADD(float)
 VMON_IMPL_ADD(double)
 VMON_IMPL_ADD3(std::string, string)
+
+#ifndef	POCO_LONG_IS_64_BIT
+VMON_IMPL_ADD_N(Poco::Int64, m_Int64)
+#endif
+
 //VMON_IMPL_ADD3(UniSetTypes::ObjectId,ObjectId)
 // --------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, VMonitor& m )

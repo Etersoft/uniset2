@@ -25,7 +25,6 @@
 #include <deque>
 #include <memory>
 #include <omniORB4/CORBA.h>
-#include <cc++/socket.h>
 #include "UniSetTypes.h"
 #include "UniSetObject.h"
 #include "UniSetManager.h"
@@ -57,10 +56,7 @@ class UniSetActivator:
 		static UniSetActivatorPtr Instance( const UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId );
 		void Destroy();
 
-		std::shared_ptr<UniSetActivator> get_aptr()
-		{
-			return std::dynamic_pointer_cast<UniSetActivator>(get_ptr());
-		}
+		std::shared_ptr<UniSetActivator> get_aptr();
 		// ------------------------------------
 		virtual ~UniSetActivator();
 
@@ -90,16 +86,14 @@ class UniSetActivator:
 
 		virtual void work();
 
-		inline CORBA::ORB_ptr getORB()
-		{
-			return orb;
-		}
+		CORBA::ORB_ptr getORB();
 
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
 
 		// уносим в protected, т.к. Activator должен быть только один..
 		UniSetActivator();
 		UniSetActivator( const UniSetTypes::ObjectId id );
+
 		static std::shared_ptr<UniSetActivator> inst;
 
 	private:

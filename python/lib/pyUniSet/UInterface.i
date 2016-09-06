@@ -5,6 +5,9 @@
 ***********************************************************/
 
 %module pyUniSet
+
+%include "std_string.i"
+
 %{
 #include "PyUInterface.h"
 %}

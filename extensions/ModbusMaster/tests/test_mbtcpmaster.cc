@@ -4,6 +4,7 @@
 #include <memory>
 #include <unordered_set>
 #include <limits>
+#include <Poco/Net/NetException.h>
 #include "UniSetTypes.h"
 #include "MBTCPTestServer.h"
 #include "MBTCPMultiMaster.h"
@@ -57,10 +58,10 @@ static void InitTest()
 		{
 			mbs = make_shared<MBTCPTestServer>(vaddr, iaddr, port, false);
 		}
-		catch( const ost::SockException& e )
+		catch( const Poco::Net::NetException& e )
 		{
 			ostringstream err;
-			err << "(mbs): Can`t create socket " << iaddr << ":" << port << " err: " << e.getString() << endl;
+			err << "(mbs): Can`t create socket " << iaddr << ":" << port << " err: " << e.message() << endl;
 			cerr << err.str() << endl;
 			throw SystemError(err.str());
 		}

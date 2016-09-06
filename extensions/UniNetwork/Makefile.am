@@ -8,8 +8,8 @@ libUniSet2Network_la_LDFLAGS  = -version-info $(UNET_VER)
 libUniSet2Network_la_LIBADD = $(SIGC_LIBS) $(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
-	$(COMCPP_LIBS)
-libUniSet2Network_la_CPPFLAGS	= $(SIGC_CFLAGS) $(COMCPP_CFLAGS)\
+	$(POCO_LIBS)
+libUniSet2Network_la_CPPFLAGS	= $(SIGC_CFLAGS) $(POCO_CFLAGS)\
 	-I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/SharedMemory
 libUniSet2Network_la_SOURCES = UniExchange.cc
@@ -18,8 +18,8 @@ libUniSet2Network_la_SOURCES = UniExchange.cc
 	$(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
-	$(COMCPP_LIBS)
-@PACKAGE@_network_CPPFLAGS	= $(SIGC_CFLAGS) $(COMCPP_CFLAGS) -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory
+	$(POCO_LIBS)
+@PACKAGE@_network_CPPFLAGS	= $(SIGC_CFLAGS) $(POCO_CFLAGS) -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory
 @PACKAGE@_network_SOURCES 	= uninet.cc
 
 # install

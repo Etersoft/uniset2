@@ -80,8 +80,51 @@ timeout_t PassiveTimer::getCurrent() const
 	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - t_start).count();
 }
 //------------------------------------------------------------------------------
+timeout_t PassiveTimer::getInterval() const
+{
+	return (t_msec != UniSetTimer::WaitUpTime ? t_msec : 0);
+}
+//------------------------------------------------------------------------------
 void PassiveTimer::terminate()
 {
 	t_msec = WaitUpTime;
+}
+//------------------------------------------------------------------------------
+
+timeout_t UniSetTimer::getLeft(timeout_t timeout) const
+{
+	timeout_t ct = getCurrent();
+
+	if( timeout <= ct )
+		return 0;
+
+	return timeout - ct;
+}
+//------------------------------------------------------------------------------
+bool UniSetTimer::wait( timeout_t timeMS )
+{
+	return false;
+}
+//------------------------------------------------------------------------------
+void UniSetTimer::stop()
+{
+	terminate();
+}
+//------------------------------------------------------------------------------
+const Poco::Timespan UniSetTimer::millisecToPoco( const timeout_t msec )
+{
+	if( msec == WaitUpTime )
+		return Poco::Timespan(0,0);
+
+	// msec --> usec
+	return Poco::Timespan( long(msec/1000), long((msec%1000)*1000) );
+}
+//------------------------------------------------------------------------------
+const Poco::Timespan UniSetTimer::microsecToPoco( const timeout_t usec )
+{
+	if( usec == WaitUpTime )
+		return Poco::Timespan(0,0);
+
+	return Poco::Timespan( long(usec/1000000), long(usec%1000000) );
 }
 //------------------------------------------------------------------------------

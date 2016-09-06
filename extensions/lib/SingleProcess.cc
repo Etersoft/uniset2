@@ -14,15 +14,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -------------------------------------------------------------------------
+#include <atomic>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <signal.h>
 #include <unistd.h>
 #include <iostream>
-#include "Mutex.h"
 #include "SingleProcess.h"
 // --------------------------------------------------------------------------------
-using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------------
 /*! замок для блокирования совместного доступа к функции обрабтки сигналов */

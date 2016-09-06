@@ -19,7 +19,7 @@
 using namespace ModbusRTU;
 using namespace std;
 // -------------------------------------------------------------------------
-ModbusTCPServerSlot::ModbusTCPServerSlot( ost::InetAddress& ia, int port ):
+ModbusTCPServerSlot::ModbusTCPServerSlot(const string& ia, int port ):
 	ModbusTCPServer(ia, port)
 {
 }
