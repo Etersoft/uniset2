@@ -305,6 +305,7 @@ long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 				  << " value=" << usi->value
 				  << " blocked=" << usi->blocked
 				  << " real_value=" << usi->real_value
+				  << " supplier=" << sup_id
 				  << endl;
 
 			usi->real_value = value;

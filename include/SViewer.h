@@ -47,7 +47,7 @@ class SViewer
 		virtual void updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tlst, UniSetTypes::ObjectId oid );
 
 		const std::string csec;
-		void printInfo(UniSetTypes::ObjectId id, const std::string& sname, long value, const std::string& owner,
+		void printInfo(UniSetTypes::ObjectId id, const std::string& sname, long value, const std::string& supplier,
 					   const std::string& txtname, const std::string& iotype);
 
 		std::shared_ptr<UInterface> ui;

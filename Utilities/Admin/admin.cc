@@ -600,7 +600,7 @@ int setValue( const string& args, UInterface& ui )
 				case UniversalIO::DO:
 				case UniversalIO::AI:
 				case UniversalIO::AO:
-					ui.setValue(it.si.id, it.val, it.si.node);
+					ui.setValue(it.si.id, it.val, it.si.node, AdminID);
 					break;
 
 				default:

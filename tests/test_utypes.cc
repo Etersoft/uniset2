@@ -189,3 +189,4 @@ TEST_CASE("UniSetTypes: timespec comapre", "[utypes][timespec]" )
 	REQUIRE_FALSE( t3 != t4 );
 	REQUIRE( t3 == t4 );
 }
+// -----------------------------------------------------------------------------
