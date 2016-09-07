@@ -75,18 +75,25 @@ Debug::type Debug::value(string const& val)
 		//string tmp(lowercase(v.substr(0, st)));
 		string tmp(v.substr(0, st));
 
-		if (tmp.empty())
+
+		if(tmp.empty())
 			break;
 
-		// Is it a number?
-		//if (isStrInt(tmp))
-		//    l |= static_cast<type>(strToInt(tmp));
-		//else
-		// Search for an explicit name
+		bool del = false;
+		if( tmp[0] == '-' )
+		{
+			del = true;
+			tmp = tmp.substr(1,tmp.size());
+		}
+
 		for (int i = 0 ; i < numErrorTags ; ++i)
 			if (tmp == errorTags[i].name)
 			{
-				l |= errorTags[i].level;
+				if( del )
+					l = Debug::type(l & ~(errorTags[i].level));
+				else
+					l |= errorTags[i].level;
+
 				break;
 			}
 

@@ -84,6 +84,8 @@ struct Debug
 
 	/** A function to convert symbolic string names on debug levels
 	    to their numerical value.
+		example: level1,level2,-level3
+		supported '-' for disable debug level
 	*/
 	static Debug::type value(std::string const& val);
 

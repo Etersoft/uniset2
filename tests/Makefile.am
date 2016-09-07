@@ -28,7 +28,8 @@ test_mutex.cc \
 test_logserver.cc \
 test_tcpcheck.cc \
 test_utcpsocket.cc \
-test_iocontroller_types.cc
+test_iocontroller_types.cc \
+test_debugstream.cc
 
 tests_with_conf_LDADD   = $(top_builddir)/lib/libUniSet2.la
 tests_with_conf_CPPFLAGS = -I$(top_builddir)/include
