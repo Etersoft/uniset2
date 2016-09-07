@@ -131,7 +131,10 @@ CORBA::Long IOController::getValue( UniSetTypes::ObjectId sid )
 long IOController::localGetValue( IOController::IOStateList::iterator& li, const UniSetTypes::ObjectId sid )
 {
 	if( li == ioList.end() )
-		li = ioList.find(sid);
+	{
+		if( sid != DefaultObjectId )
+			li = ioList.find(sid);
+	}
 
 	if( li != ioList.end() )
 		return localGetValue(li->second);
@@ -263,7 +266,10 @@ long IOController::localSetValueIt( IOController::IOStateList::iterator& li,
 
 	// сохранение текущего состояния
 	if( li == ioList.end() )
-		li = ioList.find(sid);
+	{
+		if( sid != DefaultObjectId )
+			li = ioList.find(sid);
+	}
 
 	if( li == ioList.end() )
 	{
