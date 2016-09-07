@@ -113,8 +113,13 @@ void UniSetTimer::stop()
 //------------------------------------------------------------------------------
 const Poco::Timespan UniSetTimer::millisecToPoco( const timeout_t msec )
 {
+#ifdef POCO_OLD_VERSION
+	if( msec == WaitUpTime )
+		return Poco::Timespan(std::numeric_limits<long>::max(),0);
+#else
 	if( msec == WaitUpTime )
 		return Poco::Timespan(Poco::Timestamp::TIMEVAL_MAX,0);
+#endif
 
 	// msec --> usec
 	return Poco::Timespan( long(msec/1000), long((msec*1000)%1000000) );
@@ -122,8 +127,13 @@ const Poco::Timespan UniSetTimer::millisecToPoco( const timeout_t msec )
 //------------------------------------------------------------------------------
 const Poco::Timespan UniSetTimer::microsecToPoco( const timeout_t usec )
 {
+#ifdef POCO_OLD_VERSION
+	if( usec == WaitUpTime )
+		return Poco::Timespan(std::numeric_limits<long>::max(),0);
+#else
 	if( usec == WaitUpTime )
 		return Poco::Timespan(Poco::Timestamp::TIMEVAL_MAX,0);
+#endif
 
 	return Poco::Timespan( long(usec/1000000), long(usec%1000000) );
 }

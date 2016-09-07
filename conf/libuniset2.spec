@@ -489,6 +489,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 * Thu Sep 08 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt11
 - DebugStream: added support format: level1,level2,-level3
   for set or delete debug levels.
+- add support old version of libpoco (version < 1.7.4)
 
 * Wed Sep 07 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt10
 - fixed bug in millisecToPoco() function
