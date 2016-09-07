@@ -114,16 +114,16 @@ void UniSetTimer::stop()
 const Poco::Timespan UniSetTimer::millisecToPoco( const timeout_t msec )
 {
 	if( msec == WaitUpTime )
-		return Poco::Timespan(0,0);
+		return Poco::Timespan(Poco::Timestamp::TIMEVAL_MAX,0);
 
 	// msec --> usec
-	return Poco::Timespan( long(msec/1000), long((msec%1000)*1000) );
+	return Poco::Timespan( long(msec/1000), long((msec*1000)%1000000) );
 }
 //------------------------------------------------------------------------------
 const Poco::Timespan UniSetTimer::microsecToPoco( const timeout_t usec )
 {
 	if( usec == WaitUpTime )
-		return Poco::Timespan(0,0);
+		return Poco::Timespan(Poco::Timestamp::TIMEVAL_MAX,0);
 
 	return Poco::Timespan( long(usec/1000000), long(usec%1000000) );
 }

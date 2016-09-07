@@ -14,7 +14,7 @@
 
 Name: libuniset2
 Version: 2.5
-Release: alt9
+Release: alt10
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -486,6 +486,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Wed Sep 07 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt10
+- fixed bug in millisecToPoco() function
+
 * Tue Sep 06 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt9
 - (UNetUDP): optimization use mutex
 - (unet-udp-tester): add new command line agruments
