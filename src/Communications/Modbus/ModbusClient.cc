@@ -44,8 +44,7 @@ ModbusClient::~ModbusClient()
 // -------------------------------------------------------------------------
 void ModbusClient::setTimeout( timeout_t msec )
 {
-	if( msec != UniSetTimer::WaitUpTime )
-		replyTimeOut_ms = msec;
+	replyTimeOut_ms = msec;
 }
 // -------------------------------------------------------------------------
 int ModbusClient::setAfterSendPause( timeout_t msec )

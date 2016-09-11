@@ -332,12 +332,10 @@ int main( int argc, char** argv )
 
 		mb.setTimeout(tout);
 		mb.connect(iaddr, port);
-
 		mb.setForceDisconnect(!persist);
 
 		if( verb )
 			cout << "connection: " << (mb.isConnection() ? "YES" : "NO") << endl;
-
 
 		if( count > ModbusRTU::MAXDATALEN && verb )
 			cout << "Too long packet! Max count=" << ModbusRTU::MAXDATALEN << " (ignore...)" << endl;

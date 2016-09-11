@@ -63,7 +63,7 @@ void ModbusServer::setRecvTimeout( timeout_t msec )
 timeout_t ModbusServer::setReplyTimeout( timeout_t msec )
 {
 	// #warning "Why msec can be 0?"
-	assert(msec);
+	assert(msec>0);
 
 	if( msec == UniSetTimer::WaitUpTime )
 		return replyTimeout_ms;

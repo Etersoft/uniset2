@@ -63,11 +63,8 @@ void LogReader::connect( const std::string& _addr, int _port, timeout_t msec )
 	if( tcp )
 	{
 		disconnect();
-		tcp = 0;
+		tcp = nullptr;
 	}
-
-	//    if( !tcp )
-	//    {
 
 	iaddr = _addr;
 	port = _port;
@@ -83,6 +80,7 @@ void LogReader::connect( const std::string& _addr, int _port, timeout_t msec )
 		tcp->setSendTimeout( UniSetTimer::millisecToPoco(outTimeout) );
 		tcp->setKeepAlive(true);
 		tcp->setBlocking(true);
+		return;
 	}
 	catch( const Poco::TimeoutException& e )
 	{
@@ -92,8 +90,6 @@ void LogReader::connect( const std::string& _addr, int _port, timeout_t msec )
 			s << "(LogReader): connection " << s.str() << " timeout..";
 			rlog.crit() << s.str() << std::endl;
 		}
-
-		tcp = 0;
 	}
 	catch( const Poco::Net::NetException& e )
 	{
@@ -103,8 +99,6 @@ void LogReader::connect( const std::string& _addr, int _port, timeout_t msec )
 			s << "(LogReader): connection " << s.str() << " error: " << e.what();
 			rlog.crit() << s.str() << std::endl;
 		}
-
-		tcp = 0;
 	}
 	catch( const std::exception& e )
 	{
@@ -114,8 +108,6 @@ void LogReader::connect( const std::string& _addr, int _port, timeout_t msec )
 			s << "(LogReader): connection " << s.str() << " error: " << e.what();
 			rlog.crit() << s.str() << std::endl;
 		}
-
-		tcp = 0;
 	}
 	catch( ... )
 	{
@@ -127,7 +119,7 @@ void LogReader::connect( const std::string& _addr, int _port, timeout_t msec )
 		}
 	}
 
-	//    }
+	tcp = nullptr;
 }
 // -------------------------------------------------------------------------
 void LogReader::disconnect()
@@ -148,7 +140,7 @@ void LogReader::disconnect()
 		cerr << "(LogReader): disconnect error:  " << e.displayText() << endl;
 	}
 
-	tcp = 0;
+	tcp = nullptr;
 }
 // -------------------------------------------------------------------------
 bool LogReader::isConnection() const

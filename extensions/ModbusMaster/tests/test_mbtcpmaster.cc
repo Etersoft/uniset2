@@ -84,6 +84,46 @@ static void InitTest()
 	}
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: reconnect", "[modbus][mbmaster][mbtcpmaster]")
+{
+	InitTest();
+
+	ModbusTCPMaster mb;
+	mb.setTimeout(500);
+
+	// подключение к несуществующему адресу
+	REQUIRE_FALSE(mb.connect("dummyhost", 2048));
+	REQUIRE_FALSE(mb.isConnection());
+
+	// нормальное подключение
+	REQUIRE(mb.connect(iaddr,port));
+	REQUIRE(mb.isConnection());
+
+	// переподключение (при активном текущем)
+	REQUIRE(mb.reconnect());
+	REQUIRE(mb.isConnection());
+
+	// отключение
+	mb.disconnect();
+	REQUIRE_FALSE(mb.isConnection());
+
+	// переподключение после отключения
+	REQUIRE(mb.reconnect());
+	REQUIRE(mb.isConnection());
+
+	// переподключение к несуществующему (при наличии активного подключения)
+	REQUIRE_FALSE(mb.connect("dummyhost", 2048));
+	REQUIRE_FALSE(mb.isConnection());
+
+	// нормальное подключение
+	REQUIRE(mb.connect(iaddr,port));
+	REQUIRE(mb.isConnection());
+
+	// принудительное отключение
+	mb.forceDisconnect();
+	REQUIRE_FALSE(mb.isConnection());
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMaster: 0x01 (read coil status)", "[modbus][0x01][mbmaster][mbtcpmaster]")
 {
 	InitTest();
