@@ -85,7 +85,7 @@ UNetReceiver::UNetReceiver(const std::string& s_host, int _port, const std::shar
 	evUpdate.set<UNetReceiver, &UNetReceiver::updateEvent>(this);
 }
 // -----------------------------------------------------------------------------
-UNetReceiver::~UNetReceiver() noexcept
+UNetReceiver::~UNetReceiver()
 {
 }
 // -----------------------------------------------------------------------------
