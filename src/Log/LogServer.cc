@@ -29,19 +29,23 @@ using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 CommonEventLoop LogServer::loop;
 // -------------------------------------------------------------------------
-LogServer::~LogServer()
+LogServer::~LogServer() noexcept
 {
-	if( isrunning )
-		loop.evstop(this);
+	try
+	{
+		if( isrunning )
+			loop.evstop(this);
+	}
+	catch(...){}
 }
 // -------------------------------------------------------------------------
-LogServer::LogServer( std::shared_ptr<LogAgregator> log ):
+LogServer::LogServer( std::shared_ptr<LogAgregator> log ) noexcept:
 	LogServer(static_pointer_cast<DebugStream>(log))
 {
 
 }
 // -------------------------------------------------------------------------
-LogServer::LogServer( std::shared_ptr<DebugStream> log ):
+LogServer::LogServer( std::shared_ptr<DebugStream> log ) noexcept:
 	timeout(UniSetTimer::WaitUpTime),
 	cmdTimeout(2000),
 	sessLogLevel(Debug::NONE),
@@ -50,7 +54,7 @@ LogServer::LogServer( std::shared_ptr<DebugStream> log ):
 {
 }
 // -------------------------------------------------------------------------
-LogServer::LogServer():
+LogServer::LogServer() noexcept:
 	timeout(UniSetTimer::WaitUpTime),
 	cmdTimeout(2000),
 	sessLogLevel(Debug::NONE),

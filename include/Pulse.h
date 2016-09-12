@@ -33,12 +33,12 @@
 class Pulse
 {
 	public:
-		Pulse()	{}
-		~Pulse() {}
+		Pulse() noexcept {}
+		~Pulse() noexcept {}
 
 		// t1_msec - интервал "вкл"
 		// t0_msec - интерфал "откл"
-		inline void run( timeout_t _t1_msec, timeout_t _t0_msec )
+		inline void run( timeout_t _t1_msec, timeout_t _t0_msec ) noexcept
 		{
 			t1_msec = _t1_msec;
 			t0_msec = _t0_msec;
@@ -47,18 +47,18 @@ class Pulse
 			set(true);
 		}
 
-		inline void set_next( timeout_t _t1_msec, timeout_t _t0_msec )
+		inline void set_next( timeout_t _t1_msec, timeout_t _t0_msec ) noexcept
 		{
 			t1_msec = _t1_msec;
 			t0_msec = _t0_msec;
 		}
 
-		inline void reset()
+		inline void reset() noexcept
 		{
 			set(true);
 		}
 
-		inline bool step()
+		inline bool step() noexcept
 		{
 			if( !isOn )
 			{
@@ -81,12 +81,12 @@ class Pulse
 			return ostate;
 		}
 
-		inline bool out()
+		inline bool out() noexcept
 		{
 			return step(); // ostate;
 		}
 
-		inline void set( bool state )
+		inline void set( bool state ) noexcept
 		{
 			isOn = state;
 
@@ -102,7 +102,7 @@ class Pulse
 
 		friend std::ostream& operator<<(std::ostream& os, Pulse& p )
 		{
-			return os     << " idOn=" << p.isOn
+			return os << " idOn=" << p.isOn
 				   << " t1=" << p.t1.getInterval()
 				   << " t0=" << p.t0.getInterval()
 				   << " out=" << p.out();
@@ -113,11 +113,11 @@ class Pulse
 			return os << (*p);
 		}
 
-		inline timeout_t getT1() const
+		inline timeout_t getT1() const noexcept
 		{
 			return t1_msec;
 		}
-		inline timeout_t getT0() const
+		inline timeout_t getT0() const noexcept
 		{
 			return t0_msec;
 		}

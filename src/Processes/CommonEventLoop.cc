@@ -4,7 +4,7 @@
 // -------------------------------------------------------------------------
 using namespace std;
 // -------------------------------------------------------------------------
-CommonEventLoop::CommonEventLoop()
+CommonEventLoop::CommonEventLoop() noexcept
 {
 	evterm.set(loop);
 	evterm.set<CommonEventLoop, &CommonEventLoop::onStop>(this);
@@ -76,7 +76,7 @@ bool CommonEventLoop::evrun(EvWatcher* w, bool thread )
 	return true;
 }
 // ---------------------------------------------------------------------------
-bool CommonEventLoop::evIsActive() const
+bool CommonEventLoop::evIsActive() const noexcept
 {
 	return isrunning;
 }
@@ -120,7 +120,7 @@ bool CommonEventLoop::evstop( EvWatcher* w )
 	return true;
 }
 // -------------------------------------------------------------------------
-void CommonEventLoop::onPrepare()
+void CommonEventLoop::onPrepare() noexcept
 {
 	if( wprep )
 	{
@@ -141,7 +141,7 @@ void CommonEventLoop::onPrepare()
 	prep_event.notify_all();
 }
 // -------------------------------------------------------------------------
-void CommonEventLoop::onStop()
+void CommonEventLoop::onStop() noexcept
 {
 	// здесь список не защищаем wlist_mutex
 	// потому-что onStop будет вызываться
@@ -165,7 +165,7 @@ void CommonEventLoop::onStop()
 }
 // -------------------------------------------------------------------------
 
-void CommonEventLoop::defaultLoop()
+void CommonEventLoop::defaultLoop() noexcept
 {
 	isrunning = true;
 

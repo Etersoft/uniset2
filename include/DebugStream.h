@@ -105,25 +105,25 @@ class DebugStream : public std::ostream
 		StreamEvent_Signal signal_stream_event();
 
 		/// Sets the debug level to t.
-		void level(Debug::type t)
+		void level(Debug::type t) noexcept
 		{
 			dt = Debug::type(t & Debug::ANY);
 		}
 
 		/// Returns the current debug level.
-		Debug::type level() const
+		Debug::type level() const noexcept
 		{
 			return dt;
 		}
 
 		/// Adds t to the current debug level.
-		void addLevel(Debug::type t)
+		void addLevel(Debug::type t) noexcept
 		{
 			dt = Debug::type(dt | t);
 		}
 
 		/// Deletes t from the current debug level.
-		void delLevel(Debug::type t)
+		void delLevel(Debug::type t) noexcept
 		{
 			dt = Debug::type(dt & ~t);
 		}
@@ -131,19 +131,19 @@ class DebugStream : public std::ostream
 		/// Sets the debugstreams' logfile to f.
 		virtual void logFile( const std::string& f, bool truncate = false );
 
-		inline std::string getLogFile() const
+		inline std::string getLogFile() const noexcept
 		{
 			return fname;
 		}
 
 		// имя лог файла можно установить отдельно, но не вклчать запись..
-		inline void setLogFile( const std::string& n )
+		inline void setLogFile( const std::string& n ) noexcept
 		{
 			fname = n;
 		}
 
 		// включена ли запись лог-файла
-		inline bool isOnLogFile() const
+		inline bool isOnLogFile() const noexcept
 		{
 			return isWriteLogFile;
 		}
@@ -155,13 +155,13 @@ class DebugStream : public std::ostream
 		}
 
 		// отключить запись логфайла
-		inline void offLogFile()
+		inline void offLogFile() noexcept
 		{
 			logFile("");
 		}
 
 		/// Returns true if t is part of the current debug level.
-		inline bool debugging(Debug::type t = Debug::ANY) const
+		inline bool debugging(Debug::type t = Debug::ANY) const noexcept
 		{
 			return (dt & t);
 		}
@@ -170,7 +170,7 @@ class DebugStream : public std::ostream
 		    current debug level otherwise the real debug stream
 		    is used.
 		*/
-		std::ostream& debug(Debug::type t = Debug::ANY);
+		std::ostream& debug(Debug::type t = Debug::ANY) noexcept;
 		//        if (dt & t) return *this;
 		//        return nullstream;
 		//    }
@@ -180,7 +180,7 @@ class DebugStream : public std::ostream
 		    dbgstream[Debug::INFO] << "Info!\n";
 		    Вывод осуществляется с датой и временем (если они не отключены)
 		*/
-		std::ostream& operator[](Debug::type t)
+		std::ostream& operator[](Debug::type t) noexcept
 		{
 			return debug(t);
 		}
@@ -188,7 +188,7 @@ class DebugStream : public std::ostream
 		/**
 		    Вывод продолжения логов (без даты и времени)
 		*/
-		inline std::ostream& to_end(Debug::type t)
+		inline std::ostream& to_end(Debug::type t) noexcept
 		{
 			return this->operator()(t);
 		}
@@ -196,19 +196,19 @@ class DebugStream : public std::ostream
 		/**
 		    Вывод продолжения логов (без даты и времени) "log()"
 		*/
-		std::ostream& operator()(Debug::type t);
+		std::ostream& operator()(Debug::type t) noexcept;
 
 		inline void showDateTime(bool s)
 		{
 			show_datetime = s;
 		}
 
-		inline void showLogType(bool s)
+		inline void showLogType(bool s) noexcept
 		{
 			show_logtype = s;
 		}
 
-		inline std::ostream& log(Debug::type l)
+		inline std::ostream& log(Debug::type l) noexcept
 		{
 			return this->operator[](l);
 		}
@@ -219,14 +219,14 @@ class DebugStream : public std::ostream
 		// if( log.is_level1() ) - проверка включён ли лог.."
 
 #define DMANIP(FNAME,LEVEL) \
-	inline std::ostream& FNAME( bool showdatetime=true ) \
+	inline std::ostream& FNAME( bool showdatetime=true ) noexcept \
 	{\
 		if( showdatetime )\
 			return operator[](Debug::LEVEL); \
 		return  operator()(Debug::LEVEL); \
 	} \
 	\
-	inline bool is_##FNAME() const \
+	inline bool is_##FNAME() const  noexcept\
 	{ return debugging(Debug::LEVEL); }
 
 		DMANIP(level1, LEVEL1)
@@ -247,26 +247,26 @@ class DebugStream : public std::ostream
 		DMANIP(any, ANY)
 #undef DMANIP
 
-		std::ostream& printDate(Debug::type t, char brk = '/');
-		std::ostream& printTime(Debug::type t, char brk = ':');
-		std::ostream& printDateTime(Debug::type t);
+		std::ostream& printDate(Debug::type t, char brk = '/') noexcept;
+		std::ostream& printTime(Debug::type t, char brk = ':') noexcept;
+		std::ostream& printDateTime(Debug::type t) noexcept;
 
-		std::ostream& pos(int x, int y);
+		std::ostream& pos(int x, int y) noexcept;
 
 		const DebugStream& operator=(const DebugStream& r);
 
-		inline void setLogName( const std::string& n )
+		inline void setLogName( const std::string& n ) noexcept
 		{
 			logname = n;
 		}
 
-		inline std::string  getLogName() const
+		inline std::string  getLogName() const noexcept
 		{
 			return logname;
 		}
 
 	protected:
-		void sbuf_overflow( const std::string& s );
+		void sbuf_overflow( const std::string& s ) noexcept;
 
 		// private:
 		/// The current debug level

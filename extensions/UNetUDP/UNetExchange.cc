@@ -444,7 +444,7 @@ UNetExchange::~UNetExchange()
 {
 }
 // -----------------------------------------------------------------------------
-bool UNetExchange::checkExistUNetHost(const std::string& addr, int port )
+bool UNetExchange::checkExistUNetHost(const std::string& addr, int port ) noexcept
 {
 	for( const auto& it : recvlist )
 	{
@@ -497,7 +497,7 @@ void UNetExchange::timerInfo( const TimerMessage* tm )
 		step();
 }
 // -----------------------------------------------------------------------------
-void UNetExchange::step()
+void UNetExchange::step() noexcept
 {
 	if( !activated )
 		return;
@@ -509,9 +509,9 @@ void UNetExchange::step()
 			shm->localSetValue(itHeartBeat, sidHeartBeat, maxHeartBeat, getId());
 			ptHeartBeat.reset();
 		}
-		catch( const Exception& ex )
+		catch( const std::exception& ex )
 		{
-			unetcrit << myname << "(step): (hb) " << ex << std::endl;
+			unetcrit << myname << "(step): (hb) " << ex.what() << std::endl;
 		}
 	}
 
@@ -520,7 +520,7 @@ void UNetExchange::step()
 }
 
 // -----------------------------------------------------------------------------
-void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface>& shm, const std::string& myname, std::shared_ptr<DebugStream>& unetlog )
+void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface>& shm, const std::string& myname, std::shared_ptr<DebugStream>& unetlog ) noexcept
 {
 	try
 	{
@@ -534,9 +534,9 @@ void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface>& shm, 
 			shm->localSetValue(itRespond, sidRespond, resp, shm->ID());
 		}
 	}
-	catch( const Exception& ex )
+	catch( const std::exception& ex )
 	{
-		unetcrit << myname << "(ReceiverInfo::step): (respond): " << ex << std::endl;
+		unetcrit << myname << "(ReceiverInfo::step): (respond): " << ex.what() << std::endl;
 	}
 
 	try
@@ -554,9 +554,9 @@ void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface>& shm, 
 			shm->localSetValue(itLostPackets, sidLostPackets, l, shm->ID());
 		}
 	}
-	catch( const Exception& ex )
+	catch( const std::exception& ex )
 	{
-		unetcrit << myname << "(ReceiverInfo::step): (lostpackets): " << ex << std::endl;
+		unetcrit << myname << "(ReceiverInfo::step): (lostpackets): " << ex.what() << std::endl;
 	}
 
 	try
@@ -574,9 +574,9 @@ void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface>& shm, 
 			shm->localSetValue(itChannelNum, sidChannelNum, c, shm->ID());
 		}
 	}
-	catch( const Exception& ex )
+	catch( const std::exception& ex )
 	{
-		unetcrit << myname << "(ReceiverInfo::step): (channelnum): " << ex << std::endl;
+		unetcrit << myname << "(ReceiverInfo::step): (channelnum): " << ex.what() << std::endl;
 	}
 }
 // -----------------------------------------------------------------------------
@@ -775,7 +775,7 @@ void UNetExchange::sigterm( int signo )
 	UniSetObject::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------
-void UNetExchange::initIterators()
+void UNetExchange::initIterators() noexcept
 {
 	shm->initIterator(itHeartBeat);
 
@@ -789,7 +789,7 @@ void UNetExchange::initIterators()
 		it.initIterators(shm);
 }
 // -----------------------------------------------------------------------------
-void UNetExchange::help_print( int argc, const char* argv[] )
+void UNetExchange::help_print( int argc, const char* argv[] ) noexcept
 {
 	cout << "Default prefix='unet'" << endl;
 	cout << "--prefix-name NameID             - Идентификтора процесса." << endl;
@@ -858,7 +858,7 @@ std::shared_ptr<UNetExchange> UNetExchange::init_unetexchange(int argc, const ch
 	return make_shared<UNetExchange>(ID, icID, ic, prefix);
 }
 // -----------------------------------------------------------------------------
-void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceiver::Event ev )
+void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceiver::Event ev ) noexcept
 {
 	for( auto && it : recvlist )
 	{

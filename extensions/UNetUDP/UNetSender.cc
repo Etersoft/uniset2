@@ -182,7 +182,7 @@ void UNetSender::setCheckConnectionPause( int msec )
 		ptCheckConnection.setTiming(msec);
 }
 // -----------------------------------------------------------------------------
-void UNetSender::send()
+void UNetSender::send() noexcept
 {
 	unetinfo << myname << "(send): dlist size = " << items.size() << endl;
 	ncycle = 0;
@@ -223,9 +223,9 @@ void UNetSender::send()
 					break;
 
 				auto& pk = it.second;
-				int size = pk.size();
+				size_t size = pk.size();
 
-				for(int i = 0; i < size; ++i)
+				for(size_t i = 0; i < size; ++i)
 				{
 					if( !activated )
 						break;
@@ -265,34 +265,34 @@ void UNetSender::send()
 // -----------------------------------------------------------------------------
 // #define UNETUDP_DISABLE_OPTIMIZATION_N1
 
-void UNetSender::real_send( PackMessage& mypack )
+void UNetSender::real_send( PackMessage& mypack ) noexcept
 {
-	UniSetTypes::uniset_rwmutex_rlock l(mypack.mut);
-#ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
-	mypack.msg.num = packetnum++;
-#else
-	uint16_t crc = mypack.msg.getDataCRC();
-
-	if( crc != lastcrc )
-	{
-		mypack.msg.num = packetnum++;
-		lastcrc = crc;
-	}
-
-#endif
-
-	// при переходе через ноль (когда счётчик перевалит через UniSetUDP::MaxPacketNum..
-	// делаем номер пакета "1"
-	if( packetnum == 0 )
-		packetnum = 1;
-
-	if( !udp || !udp->poll( UniSetTimer::millisecToPoco(writeTimeout), Poco::Net::Socket::SELECT_WRITE) )
-		return;
-
-	mypack.msg.transport_msg(s_msg);
-
 	try
 	{
+		UniSetTypes::uniset_rwmutex_rlock l(mypack.mut);
+#ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
+		mypack.msg.num = packetnum++;
+#else
+		uint16_t crc = mypack.msg.getDataCRC();
+
+		if( crc != lastcrc )
+		{
+			mypack.msg.num = packetnum++;
+			lastcrc = crc;
+		}
+#endif
+
+		// при переходе через ноль (когда счётчик перевалит через UniSetUDP::MaxPacketNum..
+		// делаем номер пакета "1"
+		if( packetnum == 0 )
+			packetnum = 1;
+
+
+		if( !udp || !udp->poll( UniSetTimer::millisecToPoco(writeTimeout), Poco::Net::Socket::SELECT_WRITE) )
+			return;
+
+		mypack.msg.transport_msg(s_msg);
+
 		size_t ret = udp->sendTo(&s_msg.data, s_msg.len, saddr);
 
 		if( ret < s_msg.len )
@@ -301,6 +301,10 @@ void UNetSender::real_send( PackMessage& mypack )
 	catch( Poco::Net::NetException& ex )
 	{
 		unetcrit << myname << "(real_send): error: " << ex.displayText() << endl;
+	}
+	catch( std::exception& ex )
+	{
+		unetcrit << myname << "(real_send): error: " << ex.what() << endl;
 	}
 }
 // -----------------------------------------------------------------------------

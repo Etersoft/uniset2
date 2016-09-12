@@ -29,22 +29,26 @@ using namespace UniSetTypes;
 //const std::string ObjectIndex::sepNode = ":";
 // -----------------------------------------------------------------------------------------
 
-string ObjectIndex::getNameById( const ObjectId id ) const
+string ObjectIndex::getNameById( const ObjectId id ) const noexcept
 {
 	return getMapName(id);
 }
 // -----------------------------------------------------------------------------------------
-std::string ObjectIndex::getBaseName( const std::string& fname )
+std::string ObjectIndex::getBaseName( const std::string& fname ) noexcept
 {
 	string::size_type pos = fname.rfind('/');
 
-	if( pos != string::npos )
-		return fname.substr(pos + 1);
+	try
+	{
+		if( pos != string::npos )
+			return fname.substr(pos + 1);
+	}
+	catch(...){}
 
 	return fname;
 }
 // -----------------------------------------------------------------------------------------
-void ObjectIndex::initLocalNode( const ObjectId nodeid )
+void ObjectIndex::initLocalNode( const ObjectId nodeid ) noexcept
 {
 	nmLocalNode = getMapName(nodeid);
 }

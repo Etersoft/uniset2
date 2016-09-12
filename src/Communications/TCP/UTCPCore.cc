@@ -4,7 +4,7 @@
 // -------------------------------------------------------------------------
 using namespace std;
 // -------------------------------------------------------------------------
-bool UTCPCore::setKeepAliveParams( int fd, timeout_t timeout_sec, int keepcnt, int keepintvl )
+bool UTCPCore::setKeepAliveParams( int fd, timeout_t timeout_sec, int keepcnt, int keepintvl ) noexcept
 {
 	int enable = 1;
 	bool ok = true;
@@ -22,5 +22,44 @@ bool UTCPCore::setKeepAliveParams( int fd, timeout_t timeout_sec, int keepcnt, i
 		ok = false;
 
 	return ok;
+}
+// -------------------------------------------------------------------------
+UTCPCore::Buffer::Buffer(const unsigned char* bytes, ssize_t nbytes)
+{
+	pos = 0;
+	len = nbytes;
+
+	if( len <= 0 ) // ??!!
+		return;
+
+	data = new unsigned char[nbytes];
+	std::memcpy(data, bytes, nbytes);
+}
+// -------------------------------------------------------------------------
+UTCPCore::Buffer::Buffer(const string& s)
+{
+	pos = 0;
+	len = s.length();
+
+	if( len <= 0 ) // ??!!
+		return;
+
+	data = new unsigned char[len];
+	std::memcpy(data, s.data(), len);
+}
+// -------------------------------------------------------------------------
+UTCPCore::Buffer::~Buffer()
+{
+	delete [] data;
+}
+// -------------------------------------------------------------------------
+unsigned char*UTCPCore::Buffer::dpos() noexcept
+{
+	return data + pos;
+}
+// -------------------------------------------------------------------------
+ssize_t UTCPCore::Buffer::nbytes() noexcept
+{
+	return len - pos;
 }
 // -------------------------------------------------------------------------

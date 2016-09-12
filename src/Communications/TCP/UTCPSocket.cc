@@ -37,7 +37,7 @@ bool UTCPSocket::setKeepAliveParams(timeout_t timeout_sec, int keepcnt, int keep
 	return UTCPCore::setKeepAliveParams(Poco::Net::ServerSocket::sockfd() , timeout_sec, keepcnt, keepintvl);
 }
 // -------------------------------------------------------------------------
-int UTCPSocket::getSocket()
+int UTCPSocket::getSocket() noexcept
 {
 	return Poco::Net::ServerSocket::sockfd();
 }

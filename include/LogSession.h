@@ -37,7 +37,7 @@ class LogSession
 		~LogSession();
 
 		typedef sigc::slot<void, LogSession*> FinalSlot;
-		void connectFinalSession( FinalSlot sl );
+		void connectFinalSession( FinalSlot sl ) noexcept;
 
 		// сигнал о приходе команды: std::string func( LogSession*, command, logname );
 		// \return какую-то информацию, которая будет послана client-у. Если return.empty(), то ничего послано не будет.
@@ -45,52 +45,52 @@ class LogSession
 		LogSessionCommand_Signal signal_logsession_command();
 
 		// прервать работу
-		void cancel();
+		void cancel() noexcept;
 
-		inline std::string getClientAddress() const
+		inline std::string getClientAddress() const noexcept
 		{
 			return caddr;
 		}
 
-		inline void setSessionLogLevel( Debug::type t )
+		inline void setSessionLogLevel( Debug::type t ) noexcept
 		{
 			mylog.level(t);
 		}
-		inline void addSessionLogLevel( Debug::type t )
+		inline void addSessionLogLevel( Debug::type t ) noexcept
 		{
 			mylog.addLevel(t);
 		}
-		inline void delSessionLogLevel( Debug::type t )
+		inline void delSessionLogLevel( Debug::type t ) noexcept
 		{
 			mylog.delLevel(t);
 		}
 
 		//! Установить размер буфера для сообщений (количество записей. Не в байтах!!)
 		void setMaxBufSize( size_t num );
-		size_t getMaxBufSize() const;
+		size_t getMaxBufSize() const noexcept;
 
 		// запуск обработки входящих запросов
-		void run( const ev::loop_ref& loop );
+		void run( const ev::loop_ref& loop ) noexcept;
 		void terminate();
 
-		bool isAcive() const;
+		bool isAcive() const noexcept;
 
-		std::string getShortInfo();
+		std::string getShortInfo() noexcept;
 
 	protected:
 		//		LogSession( ost::TCPSocket& server );
 
-		void event( ev::async& watcher, int revents );
-		void callback( ev::io& watcher, int revents );
-		void readEvent( ev::io& watcher );
+		void event( ev::async& watcher, int revents ) noexcept;
+		void callback( ev::io& watcher, int revents ) noexcept;
+		void readEvent( ev::io& watcher ) noexcept;
 		void writeEvent( ev::io& watcher );
 		size_t readData( unsigned char* buf, int len );
 		void cmdProcessing( const std::string& cmdLogName, const LogServerTypes::lsMessage& msg );
-		void onCmdTimeout( ev::timer& watcher, int revents );
-		void onCheckConnectionTimer( ev::timer& watcher, int revents );
-		void final();
+		void onCmdTimeout( ev::timer& watcher, int revents ) noexcept;
+		void onCheckConnectionTimer( ev::timer& watcher, int revents ) noexcept;
+		void final() noexcept;
 
-		void logOnEvent( const std::string& s );
+		void logOnEvent( const std::string& s ) noexcept;
 
 		timeout_t cmdTimeout = { 2000 };
 		float checkConnectionTime = { 10. }; // время на проверку живости соединения..(сек)

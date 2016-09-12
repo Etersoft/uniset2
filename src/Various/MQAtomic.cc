@@ -28,14 +28,14 @@ MQAtomic::MQAtomic( size_t qsize ):
 	mqFill(nullptr);
 }
 //---------------------------------------------------------------------------
-void MQAtomic::push( const VoidMessagePtr& vm )
+bool MQAtomic::push( const VoidMessagePtr& vm ) noexcept
 {
 	// проверяем переполнение, только если стратегия "терять новые данные"
 	// иначе нет смысла проверять, а можно просто писать новые данные затирая старые
 	if( lostStrategy == lostNewData && (wpos - rpos) >= SizeOfMessageQueue )
 	{
 		stCountOfLostMessages++;
-		return;
+		return false;
 	}
 
 	// -----------------------------------------------
@@ -50,7 +50,7 @@ void MQAtomic::push( const VoidMessagePtr& vm )
 		if( lostStrategy == lostNewData && (r - w) >= SizeOfMessageQueue )
 		{
 			stCountOfLostMessages++;
-			return;
+			return false;
 		}
 	}
 
@@ -68,9 +68,11 @@ void MQAtomic::push( const VoidMessagePtr& vm )
 
 	if( sz > stMaxQueueMessages )
 		stMaxQueueMessages = sz;
+
+	return true;
 }
 //---------------------------------------------------------------------------
-VoidMessagePtr MQAtomic::top()
+VoidMessagePtr MQAtomic::top() noexcept
 {
 	// если стратегия "потеря старых данных"
 	// то надо постоянно "подтягивать" rpos к wpos
@@ -117,7 +119,7 @@ VoidMessagePtr MQAtomic::top()
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-size_t MQAtomic::size() const
+size_t MQAtomic::size() const noexcept
 {
 	// т.к. rpos корректируется только при фактическом вызое top()
 	// то тут приходиться смотреть если у нас переполнение
@@ -129,7 +131,7 @@ size_t MQAtomic::size() const
 	return (qpos - rpos);
 }
 //---------------------------------------------------------------------------
-bool MQAtomic::empty() const
+bool MQAtomic::empty() const noexcept
 {
 	return (qpos == rpos);
 }
@@ -139,16 +141,20 @@ void MQAtomic::setMaxSizeOfMessageQueue( size_t s )
 	if( s != SizeOfMessageQueue )
 	{
 		SizeOfMessageQueue = s;
-		mqFill(nullptr);
+		try
+		{
+			mqFill(nullptr);
+		}
+		catch(...){}
 	}
 }
 //---------------------------------------------------------------------------
-size_t MQAtomic::getMaxSizeOfMessageQueue() const
+size_t MQAtomic::getMaxSizeOfMessageQueue() const noexcept
 {
 	return SizeOfMessageQueue;
 }
 //---------------------------------------------------------------------------
-void MQAtomic::setLostStrategy( MQAtomic::LostStrategy s )
+void MQAtomic::setLostStrategy( MQAtomic::LostStrategy s ) noexcept
 {
 	lostStrategy = s;
 }
@@ -162,13 +168,13 @@ void MQAtomic::mqFill( const VoidMessagePtr& v )
 		mqueue.push_back(v);
 }
 //---------------------------------------------------------------------------
-void MQAtomic::set_wpos( unsigned long pos )
+void MQAtomic::set_wpos( unsigned long pos ) noexcept
 {
 	wpos = pos;
 	qpos = pos;
 }
 //---------------------------------------------------------------------------
-void MQAtomic::set_rpos( unsigned long pos )
+void MQAtomic::set_rpos( unsigned long pos ) noexcept
 {
 	rpos = pos;
 }

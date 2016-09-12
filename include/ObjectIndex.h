@@ -34,34 +34,43 @@ namespace UniSetTypes
 			virtual ~ObjectIndex() {};
 
 			// info
-			virtual const ObjectInfo* getObjectInfo( const UniSetTypes::ObjectId ) const = 0;
-			virtual const ObjectInfo* getObjectInfo( const std::string& name ) const = 0;
+			// \return nullptr if not found
+			virtual const ObjectInfo* getObjectInfo( const UniSetTypes::ObjectId ) const noexcept = 0;
+			virtual const ObjectInfo* getObjectInfo( const std::string& name ) const noexcept = 0;
 
-			static std::string getBaseName( const std::string& fname );
+			static std::string getBaseName( const std::string& fname ) noexcept;
 
 			// object id
-			virtual ObjectId getIdByName(const std::string& name) const = 0;
-			virtual std::string getNameById( const UniSetTypes::ObjectId id ) const;
+
+			//! \return UniSetTypes::DefaultObjectId if not found
+			virtual ObjectId getIdByName(const std::string& name) const noexcept = 0;
+
+			//! \return "" if not found
+			virtual std::string getNameById( const UniSetTypes::ObjectId id ) const noexcept;
 
 			// node
-			inline std::string getNodeName( const UniSetTypes::ObjectId id ) const
+			//! \return "" if not found
+			inline std::string getNodeName( const UniSetTypes::ObjectId id ) const noexcept
 			{
 				return getNameById(id);
 			}
 
-			inline ObjectId getNodeId( const std::string& name ) const
+			//! \return UniSetTypes::DefaultObjectId if not found
+			inline ObjectId getNodeId( const std::string& name ) const noexcept
 			{
 				return getIdByName(name);
 			}
 
 			// src name
-			virtual std::string getMapName( const UniSetTypes::ObjectId id ) const = 0;
-			virtual std::string getTextName( const UniSetTypes::ObjectId id ) const = 0;
+			//! \return "" if not found
+			virtual std::string getMapName( const UniSetTypes::ObjectId id ) const noexcept = 0;
+			//! \return "" if not found
+			virtual std::string getTextName( const UniSetTypes::ObjectId id ) const noexcept = 0;
 
 			//
-			virtual std::ostream& printMap(std::ostream& os) const = 0;
+			virtual std::ostream& printMap(std::ostream& os) const noexcept = 0;
 
-			void initLocalNode( const UniSetTypes::ObjectId nodeid );
+			void initLocalNode( const UniSetTypes::ObjectId nodeid ) noexcept;
 
 		protected:
 			std::string nmLocalNode = {""};  // поле для оптимизации получения LocalNode

@@ -84,7 +84,7 @@ namespace UniSetTypes
 	typedef CORBA::Object_ptr ObjectPtr;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
 	typedef CORBA::Object_var ObjectVar;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
 
-	UniversalIO::IOType getIOType( const std::string& s );
+	UniversalIO::IOType getIOType( const std::string& s ) noexcept;
 	std::ostream& operator<<( std::ostream& os, const UniversalIO::IOType t );
 	std::ostream& operator<<( std::ostream& os, const IONotifyController_i::ThresholdInfo& ti );
 	std::ostream& operator<<( std::ostream& os, const IOController_i::ShortIOInfo& s );
@@ -114,23 +114,23 @@ namespace UniSetTypes
 			void add( ObjectId id );
 			void del( ObjectId id );
 
-			inline int size() const
+			inline int size() const noexcept
 			{
 				return lst.size();
 			}
-			inline bool empty() const
+			inline bool empty() const noexcept
 			{
 				return lst.empty();
 			}
 
-			std::list<ObjectId> getList();
+			std::list<ObjectId> getList() noexcept;
 
 			// за освобождение выделеной памяти
 			// отвечает вызывающий!
 			IDSeq* getIDSeq() const;
 
 			//
-			ObjectId getFirst() const;
+			ObjectId getFirst() const noexcept;
 			ObjectId node;    // узел, на котором находятся датчики
 
 		private:
@@ -140,7 +140,7 @@ namespace UniSetTypes
 	/*! Информация об имени объекта */
 	struct ObjectInfo
 	{
-		ObjectInfo():
+		ObjectInfo() noexcept:
 			id(DefaultObjectId),
 			repName(""), textName(""), data(0) {}
 
@@ -164,16 +164,16 @@ namespace UniSetTypes
 	// Различные преобразования
 
 	//! Преобразование строки в число (воспринимает префикс 0, как 8-ное, префикс 0x, как 16-ное, минус для отриц. чисел)
-	int uni_atoi( const char* str );
-	inline int uni_atoi( const std::string& str )
+	int uni_atoi( const char* str ) noexcept;
+	inline int uni_atoi( const std::string& str ) noexcept
 	{
 		return uni_atoi(str.c_str());
 	}
 
 	char* uni_strdup( const std::string& src );
 
-	std::string timeToString(time_t tm = time(0), const std::string& brk = ":"); /*!< Преобразование времени в строку HH:MM:SS */
-	std::string dateToString(time_t tm = time(0), const std::string& brk = "/"); /*!< Преобразование даты в строку DD/MM/YYYY */
+	std::string timeToString(time_t tm = time(0), const std::string& brk = ":") noexcept; /*!< Преобразование времени в строку HH:MM:SS */
+	std::string dateToString(time_t tm = time(0), const std::string& brk = "/") noexcept; /*!< Преобразование даты в строку DD/MM/YYYY */
 
 	struct timeval to_timeval( const std::chrono::system_clock::duration& d ); /*!< конвертирование std::chrono в posix timeval */
 	struct timespec to_timespec( const std::chrono::system_clock::duration& d ); /*!< конвертирование std::chrono в posix timespec */
@@ -211,7 +211,7 @@ namespace UniSetTypes
 	std::list<UniSetTypes::ConsumerInfo> getObjectsList( const std::string& s, std::shared_ptr<UniSetTypes::Configuration> conf = nullptr );
 
 	/*! проверка является текст в строке - числом..*/
-	bool is_digit( const std::string& s );
+	bool is_digit( const std::string& s ) noexcept;
 
 	/*! замена всех вхождений подстроки
 	 * \param src - исходная строка
@@ -228,7 +228,7 @@ namespace UniSetTypes
 	*/
 	inline std::string getArgParam( const std::string& name,
 									int _argc, const char* const* _argv,
-									const std::string& defval = "" )
+									const std::string& defval = "" ) noexcept
 	{
 		for( int i = 1; i < (_argc - 1) ; i++ )
 		{
@@ -241,7 +241,7 @@ namespace UniSetTypes
 
 	inline int getArgInt( const std::string& name,
 						  int _argc, const char* const* _argv,
-						  const std::string defval = "" )
+						  const std::string defval = "" ) noexcept
 	{
 		return uni_atoi(getArgParam(name, _argc, _argv, defval));
 	}
@@ -291,7 +291,7 @@ namespace UniSetTypes
 
 	// Проверка xml-узла на соответствие <...f_prop="f_val">,
 	// если не задано f_val, то проверяется, что просто f_prop!=""
-	bool check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val = "" );
+	bool check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val = "" ) noexcept;
 
 	/*! алгоритм копирования элементов последовательности удовлетворяющих условию */
 	template<typename InputIterator,

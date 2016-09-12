@@ -131,15 +131,15 @@ class UNetExchange:
 				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = 0, const std::string& prefix = "unet" );
 
 		/*! глобальная функция для вывода help-а */
-		static void help_print( int argc, const char* argv[] );
+		static void help_print( int argc, const char* argv[] ) noexcept;
 
-		bool checkExistUNetHost( const std::string& host, int port );
+		bool checkExistUNetHost( const std::string& host, int port ) noexcept;
 
-		inline std::shared_ptr<LogAgregator> getLogAggregator()
+		inline std::shared_ptr<LogAgregator> getLogAggregator() noexcept
 		{
 			return loga;
 		}
-		inline std::shared_ptr<DebugStream> log()
+		inline std::shared_ptr<DebugStream> log() noexcept
 		{
 			return unetlog;
 		}
@@ -153,14 +153,14 @@ class UNetExchange:
 		std::string s_fvalue;
 
 		std::shared_ptr<SMInterface> shm;
-		void step();
+		void step() noexcept;
 
 		void sysCommand( const UniSetTypes::SystemMessage* msg ) override;
 		void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
 		void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
 		void askSensors( UniversalIO::UIOCommand cmd );
 		void waitSMReady();
-		void receiverEvent( const std::shared_ptr<UNetReceiver>& r, UNetReceiver::Event ev );
+		void receiverEvent( const std::shared_ptr<UNetReceiver>& r, UNetReceiver::Event ev ) noexcept;
 
 		virtual bool activateObject() override;
 		virtual bool deactivateObject() override;
@@ -170,7 +170,7 @@ class UNetExchange:
 		void termSenders();
 		void termReceivers();
 
-		void initIterators();
+		void initIterators() noexcept;
 		void startReceivers();
 
 		enum Timer
@@ -196,14 +196,14 @@ class UNetExchange:
 
 		struct ReceiverInfo
 		{
-			ReceiverInfo(): r1(nullptr), r2(nullptr),
+			ReceiverInfo() noexcept: r1(nullptr), r2(nullptr),
 				sidRespond(UniSetTypes::DefaultObjectId),
 				respondInvert(false),
 				sidLostPackets(UniSetTypes::DefaultObjectId),
 				sidChannelNum(UniSetTypes::DefaultObjectId)
 			{}
 
-			ReceiverInfo( const std::shared_ptr<UNetReceiver>& _r1, const std::shared_ptr<UNetReceiver>& _r2 ):
+			ReceiverInfo( const std::shared_ptr<UNetReceiver>& _r1, const std::shared_ptr<UNetReceiver>& _r2 ) noexcept:
 				r1(_r1), r2(_r2),
 				sidRespond(UniSetTypes::DefaultObjectId),
 				respondInvert(false),
@@ -214,23 +214,23 @@ class UNetExchange:
 			std::shared_ptr<UNetReceiver> r1;    /*!< приём по первому каналу */
 			std::shared_ptr<UNetReceiver> r2;    /*!< приём по второму каналу */
 
-			void step(const std::shared_ptr<SMInterface>& shm, const std::string& myname, std::shared_ptr<DebugStream>& log );
+			void step(const std::shared_ptr<SMInterface>& shm, const std::string& myname, std::shared_ptr<DebugStream>& log ) noexcept;
 
-			inline void setRespondID( UniSetTypes::ObjectId id, bool invert = false )
+			inline void setRespondID( UniSetTypes::ObjectId id, bool invert = false ) noexcept
 			{
 				sidRespond = id;
 				respondInvert = invert;
 			}
-			inline void setLostPacketsID( UniSetTypes::ObjectId id )
+			inline void setLostPacketsID( UniSetTypes::ObjectId id ) noexcept
 			{
 				sidLostPackets = id;
 			}
-			inline void setChannelNumID( UniSetTypes::ObjectId id )
+			inline void setChannelNumID( UniSetTypes::ObjectId id ) noexcept
 			{
 				sidChannelNum = id;
 			}
 
-			inline void initIterators( const std::shared_ptr<SMInterface>& shm )
+			inline void initIterators( const std::shared_ptr<SMInterface>& shm ) noexcept
 			{
 				shm->initIterator(itLostPackets);
 				shm->initIterator(itRespond);

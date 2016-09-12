@@ -20,7 +20,7 @@ bool run_test_server()
 
 	while( !cancel )
 	{
-		if( sock.poll(500000, Poco::Net::Socket::SELECT_READ) )
+		if( sock.poll(PassiveTimer::millisecToPoco(500), Poco::Net::Socket::SELECT_READ) )
 		{
 
 		}
@@ -71,7 +71,7 @@ TEST_CASE("TCPCheck::ping", "[tcpcheck][tcpcheck_ping]" )
 	TSRunner tserv;
 
 	msleep(200);
-	CHECK( t.ping(host) );
-	CHECK_FALSE( t.ping("dummy_host_name") );
+	REQUIRE( t.ping(host) );
+	REQUIRE_FALSE( t.ping("dummy_host_name") );
 }
 // --------------------------------------------------------

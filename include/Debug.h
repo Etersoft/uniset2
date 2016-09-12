@@ -92,20 +92,20 @@ struct Debug
 	/** Display the tags and descriptions of the current debug level
 	    of ds
 	*/
-	static void showLevel(std::ostream& o, type level);
+	static void showLevel(std::ostream& o, type level) noexcept;
 
 	/** show all the possible tags that can be used for debugging */
-	static void showTags(std::ostream& o);
+	static void showTags(std::ostream& o) noexcept;
 
-	friend std::ostream& operator<<(std::ostream& os, Debug::type level );
+	friend std::ostream& operator<<(std::ostream& os, Debug::type level ) noexcept;
 
-	static std::string str( Debug::type level );
+	static std::string str( Debug::type level ) noexcept;
 };
 
 
 
 inline
-void operator|=(Debug::type& d1, Debug::type d2)
+void operator|=(Debug::type& d1, Debug::type d2) noexcept
 {
 	d1 = static_cast<Debug::type>(d1 | d2);
 }
@@ -113,7 +113,7 @@ void operator|=(Debug::type& d1, Debug::type d2)
 
 #include "DebugStream.h"
 
-std::ostream& operator<<(std::ostream& o, Debug::type t);
+std::ostream& operator<<(std::ostream& o, Debug::type t) noexcept;
 //extern DebugStream ulog;
 
 #endif

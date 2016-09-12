@@ -29,12 +29,12 @@ class DelayTimer
 	public:
 		DelayTimer(){}
 
-		DelayTimer( timeout_t on_msec, timeout_t off_msec ):
+		DelayTimer( timeout_t on_msec, timeout_t off_msec ) noexcept:
 			onDelay(on_msec), offDelay(off_msec){}
 
-		~DelayTimer() {}
+		~DelayTimer() noexcept {}
 
-		inline void set( timeout_t on_msec, timeout_t off_msec )
+		inline void set( timeout_t on_msec, timeout_t off_msec ) noexcept
 		{
 			onDelay = on_msec;
 			offDelay = off_msec;
@@ -44,7 +44,7 @@ class DelayTimer
 		}
 
 		// запустить часы (заново)
-		inline void reset()
+		inline void reset() noexcept
 		{
 			pt.reset();
 			waiting_on = false;
@@ -52,7 +52,7 @@ class DelayTimer
 			state = false;
 		}
 
-		inline bool check( bool st )
+		inline bool check( bool st ) noexcept
 		{
 			prevState = st;
 
@@ -124,21 +124,21 @@ class DelayTimer
 			return state;
 		}
 
-		inline bool get()
+		inline bool get() noexcept
 		{
 			return check(prevState);
 		}
 
-		inline timeout_t getOnDelay() const
+		inline timeout_t getOnDelay() const noexcept
 		{
 			return onDelay;
 		}
-		inline timeout_t getOffDelay() const
+		inline timeout_t getOffDelay() const noexcept
 		{
 			return offDelay;
 		}
 
-		inline timeout_t getCurrent() const
+		inline timeout_t getCurrent() const noexcept
 		{
 			return pt.getCurrent();
 		}

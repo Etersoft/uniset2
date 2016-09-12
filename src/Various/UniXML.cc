@@ -59,14 +59,14 @@ UniXML::~UniXML()
 	close();
 }
 // -----------------------------------------------------------------------------
-string UniXML::getFileName() const
+string UniXML::getFileName() const noexcept
 {
 	return filename;
 }
 // -----------------------------------------------------------------------------
 struct UniXMLDocDeleter
 {
-	void operator()(xmlDoc* doc) const
+	void operator()(xmlDoc* doc) const noexcept
 	{
 		try
 		{
@@ -93,22 +93,28 @@ void UniXML::newDoc(const string& root_node, const string& xml_ver)
 	xmlDocSetRootElement(d, rootnode);
 }
 // -----------------------------------------------------------------------------
-xmlNode* UniXML::getFirstNode()
+xmlNode* UniXML::getFirstNode() noexcept
 {
+	if( !doc )
+		return nullptr;
+
 	return xmlDocGetRootElement(doc.get());
 }
 // -----------------------------------------------------------------------------
-xmlNode* UniXML::getFirstNode() const
+xmlNode* UniXML::getFirstNode() const noexcept
 {
+	if( !doc )
+		return nullptr;
+
 	return xmlDocGetRootElement(doc.get());
 }
 // -----------------------------------------------------------------------------
-UniXML::iterator UniXML::begin()
+UniXML::iterator UniXML::begin() noexcept
 {
 	return iterator(getFirstNode());
 }
 // -----------------------------------------------------------------------------
-UniXML::iterator UniXML::end()
+UniXML::iterator UniXML::end() noexcept
 {
 	return  iterator(NULL);
 }
@@ -136,26 +142,30 @@ void UniXML::open( const string& _filename )
 // -----------------------------------------------------------------------------
 void UniXML::close()
 {
-	doc = nullptr;
+	doc= nullptr;
 	filename = "";
 }
 // -----------------------------------------------------------------------------
-bool UniXML::isOpen() const
+bool UniXML::isOpen() const noexcept
 {
 	return (doc != nullptr);
 }
 // -----------------------------------------------------------------------------
-string UniXML::getProp2(const xmlNode* node, const string& name, const string& defval)
+string UniXML::getProp2(const xmlNode* node, const string& name, const string& defval) noexcept
 {
-	string s(getProp(node, name));
-
-	if( !s.empty() )
-		return std::move(s);
+	// формально при конструировании строки может быть exception
+	try
+	{
+		string s(getProp(node, name));
+		if( !s.empty() )
+			return std::move(s);
+	}
+	catch(...){}
 
 	return defval;
 }
 // -----------------------------------------------------------------------------
-string UniXML::getProp(const xmlNode* node, const string& name)
+string UniXML::getProp(const xmlNode* node, const string& name) noexcept
 {
 	xmlChar* text = ::xmlGetProp((xmlNode*)node, (const xmlChar*)name.c_str());
 
@@ -165,17 +175,25 @@ string UniXML::getProp(const xmlNode* node, const string& name)
 		return "";
 	}
 
-	const string t( (const char*)text );
+	try
+	{
+		// формально при конструировании строки может быть exception
+		const string t( (const char*)text );
+		xmlFree( (xmlChar*) text );
+		return std::move(t);
+	}
+	catch(...){}
+
 	xmlFree( (xmlChar*) text );
-	return std::move(t);
+	return "";
 }
 // -----------------------------------------------------------------------------
-int UniXML::getIntProp(const xmlNode* node, const string& name )
+int UniXML::getIntProp(const xmlNode* node, const string& name ) noexcept
 {
 	return UniSetTypes::uni_atoi(getProp(node, name));
 }
 // -----------------------------------------------------------------------------
-int UniXML::getPIntProp(const xmlNode* node, const string& name, int def )
+int UniXML::getPIntProp(const xmlNode* node, const string& name, int def ) noexcept
 {
 	string param( getProp(node, name) );
 
@@ -350,7 +368,7 @@ xmlNode* UniXML::extFindNode( xmlNode* node, int depth, int width, const string&
 	return NULL;
 }
 // -----------------------------------------------------------------------------
-bool UniXML_iterator::goNext()
+bool UniXML_iterator::goNext() noexcept
 {
 	if( !curNode ) // || !curNode->next )
 		return false;
@@ -366,7 +384,7 @@ bool UniXML_iterator::goNext()
 	return true;
 }
 // -------------------------------------------------------------------------
-bool UniXML_iterator::goThrowNext()
+bool UniXML_iterator::goThrowNext() noexcept
 {
 	xmlNode* node = UniXML::nextNode(curNode);
 
@@ -384,7 +402,7 @@ bool UniXML_iterator::goThrowNext()
 	return true;
 }
 // -------------------------------------------------------------------------
-bool UniXML_iterator::goPrev()
+bool UniXML_iterator::goPrev() noexcept
 {
 	if( !curNode ) // || !curNode->prev )
 		return false;
@@ -400,7 +418,7 @@ bool UniXML_iterator::goPrev()
 	return true;
 }
 // -------------------------------------------------------------------------
-bool UniXML_iterator::canPrev()
+bool UniXML_iterator::canPrev() const noexcept
 {
 	if( !curNode || !curNode->prev )
 		return false;
@@ -408,7 +426,7 @@ bool UniXML_iterator::canPrev()
 	return true;
 }
 // -------------------------------------------------------------------------
-bool UniXML_iterator::canNext()
+bool UniXML_iterator::canNext() const noexcept
 {
 	if (!curNode || !curNode->next )
 		return false;
@@ -416,7 +434,7 @@ bool UniXML_iterator::canNext()
 	return true;
 }
 // -------------------------------------------------------------------------
-bool UniXML_iterator::goParent()
+bool UniXML_iterator::goParent() noexcept
 {
 	if( !curNode )
 		return false;
@@ -428,7 +446,7 @@ bool UniXML_iterator::goParent()
 	return true;
 }
 // -------------------------------------------------------------------------
-bool UniXML_iterator::goChildren()
+bool UniXML_iterator::goChildren() noexcept
 {
 	if (!curNode || !curNode->children )
 		return false;
@@ -452,12 +470,12 @@ bool UniXML_iterator::goChildren()
 	return true;
 }
 // -------------------------------------------------------------------------
-xmlNode*UniXML_iterator::getCurrent()
+xmlNode*UniXML_iterator::getCurrent() noexcept
 {
 	return curNode;
 }
 // -------------------------------------------------------------------------
-const string UniXML_iterator::getName() const
+const string UniXML_iterator::getName() const noexcept
 {
 	if( curNode )
 	{
@@ -471,18 +489,18 @@ const string UniXML_iterator::getName() const
 }
 
 // -------------------------------------------------------------------------
-string UniXML_iterator::getProp2( const string& name, const string& defval )
+string UniXML_iterator::getProp2( const string& name, const string& defval ) const noexcept
 {
 	return UniXML::getProp2(curNode, name, defval);
 }
 
-string UniXML_iterator::getProp( const string& name )
+string UniXML_iterator::getProp( const string& name ) const noexcept
 {
 	return UniXML::getProp(curNode, name);
 }
 
 // -------------------------------------------------------------------------
-const string UniXML_iterator::getContent() const
+const string UniXML_iterator::getContent() const noexcept
 {
 	if (curNode == NULL)
 		return "";
@@ -490,7 +508,7 @@ const string UniXML_iterator::getContent() const
 	return (const char*)::xmlNodeGetContent(curNode);
 }
 // -------------------------------------------------------------------------
-void UniXML_iterator::goBegin()
+void UniXML_iterator::goBegin() noexcept
 {
 	while(canPrev())
 	{
@@ -498,7 +516,7 @@ void UniXML_iterator::goBegin()
 	}
 }
 // -------------------------------------------------------------------------
-void UniXML_iterator::goEnd()
+void UniXML_iterator::goEnd() noexcept
 {
 	while(canNext())
 	{
@@ -506,18 +524,18 @@ void UniXML_iterator::goEnd()
 	}
 }
 // -------------------------------------------------------------------------
-UniXML_iterator::operator xmlNode*() const
+UniXML_iterator::operator xmlNode*() const noexcept
 {
 	//ulog.< "current\n";
 	return curNode;
 }
 // -------------------------------------------------------------------------
-int UniXML_iterator::getIntProp( const string& name )
+int UniXML_iterator::getIntProp( const string& name ) const noexcept
 {
 	return UniSetTypes::uni_atoi(UniXML::getProp(curNode, name));
 }
 
-int UniXML_iterator::getPIntProp( const string& name, int def )
+int UniXML_iterator::getPIntProp( const string& name, int def ) const noexcept
 {
 	string param( getProp(name) );
 
@@ -528,13 +546,13 @@ int UniXML_iterator::getPIntProp( const string& name, int def )
 }
 
 // -------------------------------------------------------------------------
-void UniXML_iterator::setProp( const string& name, const string& text )
+void UniXML_iterator::setProp( const string& name, const string& text ) noexcept
 {
 	UniXML::setProp(curNode, name, text);
 }
 
 // -------------------------------------------------------------------------
-bool UniXML_iterator::findName( const std::string& nodename, const std::string& searchname, bool deepfind )
+bool UniXML_iterator::findName( const std::string& nodename, const std::string& searchname, bool deepfind ) noexcept
 {
 	xmlNode* fnode = curNode;
 
@@ -556,7 +574,7 @@ bool UniXML_iterator::findName( const std::string& nodename, const std::string& 
 }
 
 // -------------------------------------------------------------------------
-bool UniXML_iterator::find( const std::string& searchnode, bool deepfind )
+bool UniXML_iterator::find( const std::string& searchnode, bool deepfind ) noexcept
 {
 	xmlNode* fnode = findX(curNode, searchnode, deepfind);
 
@@ -569,7 +587,7 @@ bool UniXML_iterator::find( const std::string& searchnode, bool deepfind )
 	return false;
 }
 // -------------------------------------------------------------------------
-xmlNode* UniXML_iterator::findX( xmlNode* root, const std::string& searchnode, bool deepfind )
+xmlNode* UniXML_iterator::findX( xmlNode* root, const std::string& searchnode, bool deepfind ) noexcept
 {
 	if( root == NULL )
 		return NULL;
@@ -598,22 +616,22 @@ xmlNode* UniXML_iterator::findX( xmlNode* root, const std::string& searchnode, b
 	return NULL;
 }
 // -------------------------------------------------------------------------
-UniXML_iterator& UniXML_iterator::operator++()
+UniXML_iterator& UniXML_iterator::operator++() noexcept
 {
 	return (*this) + 1;
 }
 // -------------------------------------------------------------------------
-UniXML_iterator& UniXML_iterator::operator++(int)
+UniXML_iterator& UniXML_iterator::operator++(int) noexcept
 {
 	return (*this) + 1;
 }
 // -------------------------------------------------------------------------
-UniXML_iterator& UniXML_iterator::operator+=(int s)
+UniXML_iterator& UniXML_iterator::operator+=(int s) noexcept
 {
 	return (*this) + s;
 }
 // -------------------------------------------------------------------------
-UniXML_iterator& UniXML_iterator::operator+(int step)
+UniXML_iterator& UniXML_iterator::operator+(int step) noexcept
 {
 	int i = 0;
 
@@ -633,23 +651,23 @@ UniXML_iterator& UniXML_iterator::operator+(int step)
 	return *this;
 }
 // -------------------------------------------------------------------------
-UniXML_iterator& UniXML_iterator::operator--(int)
+UniXML_iterator& UniXML_iterator::operator--(int) noexcept
 {
 	return (*this) - 1;
 }
 
-UniXML_iterator& UniXML_iterator::operator--()
+UniXML_iterator& UniXML_iterator::operator--() noexcept
 {
 	return (*this) - 1;
 }
 
-UniXML_iterator& UniXML_iterator::operator-=(int s)
+UniXML_iterator& UniXML_iterator::operator-=(int s) noexcept
 {
 	return (*this) - s;
 }
 // -------------------------------------------------------------------------
 
-UniXML_iterator& UniXML_iterator::operator-(int step)
+UniXML_iterator& UniXML_iterator::operator-(int step) noexcept
 {
 	int i = 0;
 

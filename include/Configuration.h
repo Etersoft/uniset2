@@ -60,93 +60,96 @@ namespace UniSetTypes
 						   const std::string& fileConf, UniSetTypes::ObjectInfo* objectsMap );
 
 			/// Получить значение полей с путём path
-			std::string getField(const std::string& path) const;
+			std::string getField(const std::string& path) const noexcept;
 			/// Получить число из поле с путём path
-			int getIntField(const std::string& path) const;
+			int getIntField(const std::string& path) const noexcept;
 			/// Получить число из поле с путём path (или def, если значение <= 0)
-			int getPIntField(const std::string& path, int def) const;
+			int getPIntField(const std::string& path, int def) const noexcept;
 
-			xmlNode* findNode(xmlNode* node, const std::string& searchnode, const std::string& name = "" ) const;
+			xmlNode* findNode(xmlNode* node, const std::string& searchnode, const std::string& name = "" ) const noexcept;
 
 			// Получить узел
-			xmlNode* getNode(const std::string& path) const;
+			xmlNode* getNode(const std::string& path) const noexcept;
 
 			// Получить указанное свойство пути
-			std::string getProp(xmlNode*, const std::string& name) const;
-			int getIntProp(xmlNode*, const std::string& name) const;
-			int getPIntProp(xmlNode*, const std::string& name, int def) const;
+			std::string getProp(xmlNode*, const std::string& name) const noexcept;
+			int getIntProp(xmlNode*, const std::string& name) const noexcept;
+			int getPIntProp(xmlNode*, const std::string& name, int def) const noexcept;
 
 			// Получить указанное свойство по имени узла
-			std::string getPropByNodeName(const std::string& nodename, const std::string& prop) const;
+			std::string getPropByNodeName(const std::string& nodename, const std::string& prop) const noexcept;
 
-			std::string getRootDir() const; /*!< Получение каталога, в котором находится выполняющаяся программа */
-			int getArgc() const;
-			const char* const* getArgv() const;
-			ObjectId getDBServer() const;
-			ObjectId getLocalNode() const;
-			std::string getLocalNodeName() const;
-			const std::string getNSName() const;
+			std::string getRootDir() const noexcept; /*!< Получение каталога, в котором находится выполняющаяся программа */
+			int getArgc() const noexcept;
+			const char* const* getArgv() const noexcept;
+			ObjectId getDBServer() const noexcept;
+			ObjectId getLocalNode() const noexcept;
+			std::string getLocalNodeName() const noexcept;
+			const std::string getNSName() const noexcept;
 
 			// repository
-			std::string getRootSection() const;
-			std::string getSensorsSection() const;
-			std::string getObjectsSection() const;
-			std::string getControllersSection() const;
-			std::string getServicesSection() const;
+			std::string getRootSection() const noexcept;
+			std::string getSensorsSection() const noexcept;
+			std::string getObjectsSection() const noexcept;
+			std::string getControllersSection() const noexcept;
+			std::string getServicesSection() const noexcept;
 			// xml
-			xmlNode* getXMLSensorsSection();
-			xmlNode* getXMLObjectsSection();
-			xmlNode* getXMLControllersSection();
-			xmlNode* getXMLServicesSection();
-			xmlNode* getXMLNodesSection();
-			xmlNode* getXMLObjectNode( UniSetTypes::ObjectId );
+			xmlNode* getXMLSensorsSection() noexcept;
+			xmlNode* getXMLObjectsSection() noexcept;
+			xmlNode* getXMLControllersSection() noexcept;
+			xmlNode* getXMLServicesSection()  noexcept;
+			xmlNode* getXMLNodesSection() noexcept;
+			xmlNode* getXMLObjectNode( UniSetTypes::ObjectId ) const noexcept;
 
-			UniversalIO::IOType getIOType( UniSetTypes::ObjectId ) const;
-			UniversalIO::IOType getIOType( const std::string& name ) const;
+			UniversalIO::IOType getIOType( UniSetTypes::ObjectId ) const noexcept;
+			UniversalIO::IOType getIOType( const std::string& name ) const noexcept;
 
 			// net
-			size_t getCountOfNet() const;
-			size_t getRepeatTimeout() const;
-			size_t getRepeatCount() const;
+			size_t getCountOfNet() const noexcept;
+			size_t getRepeatTimeout() const noexcept;
+			size_t getRepeatCount() const noexcept;
 
-			UniSetTypes::ObjectId getSensorID( const std::string& name ) const;
-			UniSetTypes::ObjectId getControllerID( const std::string& name ) const;
-			UniSetTypes::ObjectId getObjectID( const std::string& name ) const;
-			UniSetTypes::ObjectId getServiceID( const std::string& name ) const;
-			UniSetTypes::ObjectId getNodeID( const std::string& name ) const;
+			UniSetTypes::ObjectId getSensorID( const std::string& name ) const noexcept;
+			UniSetTypes::ObjectId getControllerID( const std::string& name ) const noexcept;
+			UniSetTypes::ObjectId getObjectID( const std::string& name ) const noexcept;
+			UniSetTypes::ObjectId getServiceID( const std::string& name ) const noexcept;
+			UniSetTypes::ObjectId getNodeID( const std::string& name ) const noexcept;
 
-			const std::string getConfFileName() const;
-			std::string getImagesDir() const;
+			const std::string getConfFileName() const noexcept;
+			std::string getImagesDir() const noexcept;
 
-			timeout_t getHeartBeatTime() const;
+			timeout_t getHeartBeatTime() const noexcept;
 
 			// dirs
-			const std::string getConfDir() const;
-			const std::string getDataDir() const;
-			const std::string getBinDir() const;
-			const std::string getLogDir() const;
-			const std::string getLockDir() const;
-			const std::string getDocDir() const;
+			const std::string getConfDir() const noexcept;
+			const std::string getDataDir() const noexcept;
+			const std::string getBinDir() const noexcept;
+			const std::string getLogDir() const noexcept;
+			const std::string getLockDir() const noexcept;
+			const std::string getDocDir() const noexcept;
 
-			bool isLocalIOR() const;
-			bool isTransientIOR() const;
+			bool isLocalIOR() const noexcept;
+			bool isTransientIOR() const noexcept;
 
 			/*! получить значение указанного параметра, или значение по умолчанию */
-			std::string getArgParam(const std::string& name, const std::string& defval = "") const;
+			std::string getArgParam(const std::string& name, const std::string& defval = "") const noexcept;
+
 			/*! получить значение, если пустое, то defval, если defval="" return defval2 */
-			std::string getArg2Param(const std::string& name, const std::string& defval, const std::string& defval2 = "") const;
+			std::string getArg2Param(const std::string& name, const std::string& defval, const std::string& defval2 = "") const noexcept;
+
 			/*! получить числовое значение параметра, если не число, то 0. Если параметра нет, используется значение defval */
-			int getArgInt(const std::string& name, const std::string& defval = "") const;
+			int getArgInt(const std::string& name, const std::string& defval = "") const noexcept;
+
 			/*! получить числовое значение параметра, но если оно не положительное, вернуть defval */
-			int getArgPInt(const std::string& name, int defval) const;
-			int getArgPInt(const std::string& name, const std::string& strdefval, int defval) const;
+			int getArgPInt(const std::string& name, int defval) const noexcept;
+			int getArgPInt(const std::string& name, const std::string& strdefval, int defval) const noexcept;
 
-			xmlNode* initLogStream( DebugStream& deb, const std::string& nodename );
-			xmlNode* initLogStream( std::shared_ptr<DebugStream> deb, const std::string& nodename );
-			xmlNode* initLogStream( DebugStream* deb, const std::string& nodename );
+			xmlNode* initLogStream( DebugStream& deb, const std::string& nodename ) noexcept;
+			xmlNode* initLogStream( std::shared_ptr<DebugStream> deb, const std::string& nodename ) noexcept;
+			xmlNode* initLogStream( DebugStream* deb, const std::string& nodename ) noexcept;
 
-			UniSetTypes::ListOfNode::const_iterator listNodesBegin();
-			UniSetTypes::ListOfNode::const_iterator listNodesEnd();
+			UniSetTypes::ListOfNode::const_iterator listNodesBegin() const noexcept;
+			UniSetTypes::ListOfNode::const_iterator listNodesEnd() const noexcept;
 
 			/*! интерфейс к карте объектов */
 			std::shared_ptr<ObjectIndex> oind;
@@ -155,10 +158,10 @@ namespace UniSetTypes
 			std::shared_ptr<IORFile> iorfile;
 
 			/*! указатель на конфигурационный xml */
-			const std::shared_ptr<UniXML> getConfXML() const;
+			const std::shared_ptr<UniXML> getConfXML() const noexcept;
 
 			CORBA::ORB_ptr getORB() const;
-			const CORBA::PolicyList getPolicy() const;
+			const CORBA::PolicyList getPolicy() const noexcept;
 
 		protected:
 			Configuration();
@@ -166,7 +169,7 @@ namespace UniSetTypes
 			virtual void initConfiguration(int argc, const char* const* argv);
 
 			void createNodesList();
-			virtual void initNode( UniSetTypes::NodeInfo& ninfo, UniXML::iterator& it);
+			virtual void initNode( UniSetTypes::NodeInfo& ninfo, UniXML::iterator& it) noexcept;
 
 			void initRepSections();
 			std::string getRepSectionName(const std::string& sec, xmlNode* secnode = 0 );
@@ -174,7 +177,7 @@ namespace UniSetTypes
 			void initParameters();
 			void setLocalNode( const std::string& nodename );
 
-			std::string getPort( const std::string& port = "" ) const;
+			std::string getPort( const std::string& port = "" ) const noexcept;
 
 			std::string rootDir = { "" };
 			std::shared_ptr<UniXML> unixml;
@@ -227,10 +230,10 @@ namespace UniSetTypes
 	};
 
 	/*! Глобальный указатель на конфигурацию (singleton) */
-	std::shared_ptr<Configuration> uniset_conf();
+	std::shared_ptr<Configuration> uniset_conf() noexcept;
 
 	/*! Глобальный объект для вывода логов */
-	std::shared_ptr<DebugStream> ulog();
+	std::shared_ptr<DebugStream> ulog() noexcept;
 
 	/*! инициализация "глобальной" конфигурации */
 	std::shared_ptr<Configuration> uniset_init( int argc, const char* const* argv, const std::string& xmlfile = "configure.xml" );

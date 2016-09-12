@@ -129,12 +129,11 @@ class UInterface
 		UniversalIO::IOType getIOType(const UniSetTypes::ObjectId id) const;
 
 		// read from xml (only for xml!) т.е. без удалённого запроса
-		UniversalIO::IOType getConfIOType( const UniSetTypes::ObjectId id ) const;
+		UniversalIO::IOType getConfIOType( const UniSetTypes::ObjectId id ) const noexcept;
 
 		// Получение типа объекта..
 		UniSetTypes::ObjectType getType(const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node) const throw(UI_THROW_EXCEPTIONS);
 		UniSetTypes::ObjectType getType(const UniSetTypes::ObjectId id) const;
-
 
 		//! Время последнего изменения датчика
 		IOController_i::ShortIOInfo getChangedTime( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const;
@@ -173,49 +172,49 @@ class UInterface
 
 
 		// Проверка доступности объекта или датчика
-		bool isExist( const UniSetTypes::ObjectId id ) const;
-		bool isExist( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const;
+		bool isExist( const UniSetTypes::ObjectId id ) const noexcept;
+		bool isExist( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const noexcept;
 
 		// used for check 'isExist'
 		bool waitReady( const UniSetTypes::ObjectId id, int msec, int pause = 5000,
-						const UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );
+						const UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() ) noexcept;
 
 		// used for check 'getValue'
 		bool waitWorking( const UniSetTypes::ObjectId id, int msec, int pause = 3000,
-						  const UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );
+						  const UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() ) noexcept;
 
 		// ---------------------------------------------------------------
 		// Работа с ID, Name
 
 		/*! получение идентификатора объекта по имени */
-		inline UniSetTypes::ObjectId getIdByName( const std::string& name ) const
+		inline UniSetTypes::ObjectId getIdByName( const std::string& name ) const noexcept
 		{
 			return oind->getIdByName(name);
 		}
 
 		/*! получение имени по идентификатору объекта */
-		inline std::string getNameById( const UniSetTypes::ObjectId id ) const
+		inline std::string getNameById( const UniSetTypes::ObjectId id ) const noexcept
 		{
 			return oind->getNameById(id);
 		}
 
-		inline UniSetTypes::ObjectId getNodeId( const std::string& fullname ) const
+		inline UniSetTypes::ObjectId getNodeId( const std::string& fullname ) const noexcept
 		{
 			return oind->getNodeId(fullname);
 		}
 
-		inline std::string getTextName( const UniSetTypes::ObjectId id ) const
+		inline std::string getTextName( const UniSetTypes::ObjectId id ) const noexcept
 		{
 			return oind->getTextName(id);
 		}
 
 		// ---------------------------------------------------------------
 		// Получение указателей на вспомогательные классы.
-		inline const std::shared_ptr<UniSetTypes::ObjectIndex> getObjectIndex()
+		inline const std::shared_ptr<UniSetTypes::ObjectIndex> getObjectIndex() noexcept
 		{
 			return oind;
 		}
-		inline const std::shared_ptr<UniSetTypes::Configuration> getConf()
+		inline const std::shared_ptr<UniSetTypes::Configuration> getConf() noexcept
 		{
 			return uconf;
 		}
@@ -229,7 +228,7 @@ class UInterface
 		// ---------------------------------------------------------------
 		// Вспомогательный класс для кэширования ссылок на удалённые объекты
 
-		inline void setCacheMaxSize( size_t newsize )
+		inline void setCacheMaxSize( size_t newsize ) noexcept
 		{
 			rcache.setMaxSize(newsize);
 		}
@@ -244,9 +243,9 @@ class UInterface
 
 				UniSetTypes::ObjectPtr resolve( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const throw(UniSetTypes::NameNotFound);
 				void cache(const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node, UniSetTypes::ObjectVar& ptr ) const;
-				void erase( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const;
+				void erase( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const noexcept;
 
-				inline void setMaxSize( size_t ms )
+				inline void setMaxSize( size_t ms ) noexcept
 				{
 					MaxSize = ms;
 				};
@@ -256,8 +255,8 @@ class UInterface
 
 			private:
 
-				bool clean();       /*!< функция очистки кэш-а от старых ссылок */
-				inline void clear() /*!< удаление всей информации */
+				bool clean() noexcept;       /*!< функция очистки кэш-а от старых ссылок */
+				inline void clear() noexcept /*!< удаление всей информации */
 				{
 					UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
 					mcache.clear();

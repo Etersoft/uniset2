@@ -29,8 +29,8 @@
 class TCPCheck
 {
 	public:
-		TCPCheck();
-		~TCPCheck();
+		TCPCheck() noexcept;
+		~TCPCheck() noexcept;
 
 		/*! Проверка связи с сервисом на определённом порту
 		 * \param _ip - ip проверяемого узла

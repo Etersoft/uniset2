@@ -128,9 +128,9 @@ TEST_CASE("LogServer", "[LogServer]" )
 	ls.run( ip, port, true );
 
 	for( int i = 0; i < 3 && !ls.isRunning(); i++ )
-		msleep(500);
+		msleep(600);
 
-	CHECK( ls.isRunning() );
+	REQUIRE( ls.isRunning() );
 
 	msg.str("");
 	auto r_thr = make_shared<std::thread>(readlog_thread1);
@@ -198,9 +198,9 @@ TEST_CASE("MaxSessions", "[LogServer]" )
 	ls.run( ip, port, true );
 
 	for( int i = 0; i < 4 && !ls.isRunning(); i++ )
-		msleep(500);
+		msleep(600);
 
-	CHECK( ls.isRunning() );
+	REQUIRE( ls.isRunning() );
 
 	msg.str("");
 	msg2.str("");

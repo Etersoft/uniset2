@@ -42,23 +42,23 @@ class UniSetTimer
 	public:
 		virtual ~UniSetTimer() {};
 
-		virtual bool checkTime() const = 0;					/*!< проверка наступления заданного времени */
-		virtual timeout_t setTiming( timeout_t msec ) = 0;	/*!< установить таймер и запустить */
-		virtual void reset() = 0;							/*!< перезапустить таймер */
+		virtual bool checkTime() const noexcept = 0;					/*!< проверка наступления заданного времени */
+		virtual timeout_t setTiming( timeout_t msec ) noexcept = 0;	/*!< установить таймер и запустить */
+		virtual void reset() noexcept = 0;							/*!< перезапустить таймер */
 
-		virtual timeout_t getCurrent() const = 0;  /*!< получить текущее значение таймера */
-		virtual timeout_t getInterval() const = 0; /*!< получить интервал, на который установлен таймер, в мс */
+		virtual timeout_t getCurrent() const noexcept = 0;  /*!< получить текущее значение таймера */
+		virtual timeout_t getInterval() const noexcept = 0; /*!< получить интервал, на который установлен таймер, в мс */
 
-		timeout_t getLeft( timeout_t timeout ) const;   /*!< получить время, которое остается от timeout после прошествия времени getCurrent() */
+		timeout_t getLeft( timeout_t timeout ) const noexcept;   /*!< получить время, которое остается от timeout после прошествия времени getCurrent() */
 
 		// объявлены не чисто виртуальными т.к.
 		// некоторые классы могут не иметь подобных
 		// свойств.
 		virtual bool wait(timeout_t timeMS);   /*!< заснуть ожидая наступления времени */
-		virtual void terminate() {}            /*!< прервать работу таймера */
+		virtual void terminate(){}            /*!< прервать работу таймера */
 
 		/*! завершить работу таймера */
-		virtual void stop();
+		virtual void stop() noexcept;
 
 		/*! Время засыпания, до момента пока не будет вызвана функция прерывания
 		 *  terminate() или stop()
@@ -66,8 +66,8 @@ class UniSetTimer
 		static const timeout_t WaitUpTime = std::numeric_limits<timeout_t>::max();
 
 		// преобразование в Poco::Timespan с учётом WaitUpTime
-		static const Poco::Timespan millisecToPoco( const timeout_t msec );
-		static const Poco::Timespan microsecToPoco( const timeout_t usec );
+		static const Poco::Timespan millisecToPoco( const timeout_t msec ) noexcept;
+		static const Poco::Timespan microsecToPoco( const timeout_t usec ) noexcept;
 
 		/*! Минимальное время срабатывания. Задается в мсек.
 		 * Используется в LT_Object и CallbackTimer
@@ -88,22 +88,22 @@ class PassiveTimer:
 	public UniSetTimer
 {
 	public:
-		PassiveTimer();
-		PassiveTimer( timeout_t msec ); /*!< установить таймер */
-		virtual ~PassiveTimer();
+		PassiveTimer() noexcept;
+		PassiveTimer( timeout_t msec ) noexcept; /*!< установить таймер */
+		virtual ~PassiveTimer() noexcept;
 
-		virtual bool checkTime() const; /*!< проверка наступления заданного времени */
-		virtual timeout_t setTiming( timeout_t msec );     /*!< установить таймер и запустить. timeMS = 0 вызовет немедленное срабатывание */
-		virtual void reset(); /*!< перезапустить таймер */
+		virtual bool checkTime() const noexcept override; /*!< проверка наступления заданного времени */
+		virtual timeout_t setTiming( timeout_t msec ) noexcept override;     /*!< установить таймер и запустить. timeMS = 0 вызовет немедленное срабатывание */
+		virtual void reset() noexcept; /*!< перезапустить таймер */
 
-		virtual timeout_t getCurrent() const override;  /*!< получить текущее значение таймера, в мс */
+		virtual timeout_t getCurrent() const noexcept override;  /*!< получить текущее значение таймера, в мс */
 
 		/*! получить интервал, на который установлен таймер, в мс
 		 * \return msec или 0 если интервал равен WaitUpTime
 		 */
-		virtual timeout_t getInterval() const override;
+		virtual timeout_t getInterval() const noexcept override;
 
-		virtual void terminate(); /*!< прервать работу таймера */
+		virtual void terminate() noexcept; /*!< прервать работу таймера */
 
 	protected:
 		timeout_t t_msec = { 0 };  /*!< интервал таймера, в милисекундах (для "пользователей") */
@@ -134,11 +134,11 @@ class PassiveCondTimer:
 {
 	public:
 
-		PassiveCondTimer();
-		virtual ~PassiveCondTimer();
+		PassiveCondTimer() noexcept;
+		virtual ~PassiveCondTimer() noexcept;
 
-		virtual bool wait(timeout_t t_msec); /*!< блокировать вызывающий поток на заданное время */
-		virtual void terminate();  /*!< прервать работу таймера */
+		virtual bool wait(timeout_t t_msec) noexcept override; /*!< блокировать вызывающий поток на заданное время */
+		virtual void terminate() noexcept override;  /*!< прервать работу таймера */
 
 	protected:
 

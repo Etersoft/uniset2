@@ -172,12 +172,12 @@ void UniSetTypes::IDList::del( ObjectId id )
 	}
 }
 
-std::list<UniSetTypes::ObjectId> UniSetTypes::IDList::getList()
+std::list<UniSetTypes::ObjectId> UniSetTypes::IDList::getList() noexcept
 {
 	return lst;
 }
 
-UniSetTypes::ObjectId UniSetTypes::IDList::getFirst() const
+UniSetTypes::ObjectId UniSetTypes::IDList::getFirst() const noexcept
 {
 	if( lst.empty() )
 		return UniSetTypes::DefaultObjectId;
@@ -266,7 +266,7 @@ std::vector<std::string> UniSetTypes::explode_str( const string& str, char sep )
 	return std::move(v);
 }
 // ------------------------------------------------------------------------------------------
-bool UniSetTypes::is_digit( const std::string& s )
+bool UniSetTypes::is_digit( const std::string& s ) noexcept
 {
 	for( const auto& c : s )
 	{
@@ -411,7 +411,7 @@ std::list<UniSetTypes::ConsumerInfo> UniSetTypes::getObjectsList( const string& 
 	return std::move(res);
 }
 // --------------------------------------------------------------------------------------
-UniversalIO::IOType UniSetTypes::getIOType( const std::string& stype )
+UniversalIO::IOType UniSetTypes::getIOType( const std::string& stype ) noexcept
 {
 	if ( stype == "DI" || stype == "di" )
 		return UniversalIO::DI;
@@ -425,7 +425,7 @@ UniversalIO::IOType UniSetTypes::getIOType( const std::string& stype )
 	if ( stype == "AO" || stype == "ao" )
 		return UniversalIO::AO;
 
-	return     UniversalIO::UnknownIOType;
+	return UniversalIO::UnknownIOType;
 }
 // ------------------------------------------------------------------------------------------
 std::ostream& UniSetTypes::operator<<( std::ostream& os, const UniversalIO::IOType t )
@@ -445,7 +445,7 @@ std::ostream& UniSetTypes::operator<<( std::ostream& os, const UniversalIO::IOTy
 	return os << "UnknownIOType";
 }
 // ------------------------------------------------------------------------------------------
-bool UniSetTypes::check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val )
+bool UniSetTypes::check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val ) noexcept
 {
 	if( f_prop.empty() )
 		return true;
@@ -461,7 +461,7 @@ bool UniSetTypes::check_filter( UniXML::iterator& it, const std::string& f_prop,
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-string UniSetTypes::timeToString(time_t tm, const std::string& brk )
+string UniSetTypes::timeToString(time_t tm, const std::string& brk ) noexcept
 {
 	struct tm* tms = localtime(&tm);
 	ostringstream time;
@@ -471,7 +471,7 @@ string UniSetTypes::timeToString(time_t tm, const std::string& brk )
 	return time.str();
 }
 
-string UniSetTypes::dateToString(time_t tm, const std::string& brk )
+string UniSetTypes::dateToString(time_t tm, const std::string& brk ) noexcept
 {
 	struct tm* tms = localtime(&tm);
 	ostringstream date;
@@ -482,7 +482,7 @@ string UniSetTypes::dateToString(time_t tm, const std::string& brk )
 }
 
 //--------------------------------------------------------------------------------------------
-int UniSetTypes::uni_atoi( const char* str )
+int UniSetTypes::uni_atoi( const char* str ) noexcept
 {
 	// if str is NULL or sscanf failed, we return 0
 	if( str == nullptr )

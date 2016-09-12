@@ -8,7 +8,7 @@
 // -------------------------------------------------------------------------
 namespace UTCPCore
 {
-	bool setKeepAliveParams( int sock, timeout_t timeout_sec = 5, int conn_keepcnt = 1, int keepintvl = 2 );
+	bool setKeepAliveParams( int sock, timeout_t timeout_sec = 5, int conn_keepcnt = 1, int keepintvl = 2 ) noexcept;
 
 	// -------------------------------------------
 	// author: https://gist.github.com/koblas/3364414
@@ -17,48 +17,17 @@ namespace UTCPCore
 	// Buffer class - allow for output buffering such that it can be written out into async pieces
 	struct Buffer
 	{
+		Buffer( const unsigned char* bytes, ssize_t nbytes );
+		Buffer( const std::string& s );
+		virtual ~Buffer();
+
+		unsigned char* dpos() noexcept;
+
+		ssize_t nbytes() noexcept;
+
 		unsigned char* data = { 0 };
 		ssize_t len;
 		ssize_t pos;
-
-		Buffer( const unsigned char* bytes, ssize_t nbytes )
-		{
-			pos = 0;
-			len = nbytes;
-
-			if( len <= 0 ) // ??!!
-				return;
-
-			data = new unsigned char[nbytes];
-			std::memcpy(data, bytes, nbytes);
-		}
-
-		Buffer( const std::string& s )
-		{
-			pos = 0;
-			len = s.length();
-
-			if( len <= 0 ) // ??!!
-				return;
-
-			data = new unsigned char[len];
-			std::memcpy(data, s.data(), len);
-		}
-
-		virtual ~Buffer()
-		{
-			delete [] data;
-		}
-
-		unsigned char* dpos()
-		{
-			return data + pos;
-		}
-
-		ssize_t nbytes()
-		{
-			return len - pos;
-		}
 	};
 }
 // -------------------------------------------------------------------------

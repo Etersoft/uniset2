@@ -3,7 +3,7 @@
 # See doc: http://www.gnu.org/software/hello/manual/autoconf/Generic-Programs.html
 
 # AC_PREREQ(2.59)
-AC_INIT([uniset2], [2.5.0], pv@etersoft.ru)
+AC_INIT([uniset2], [2.5.1], pv@etersoft.ru)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME,AC_PACKAGE_VERSION)
 
 LIBVER=2:5:0

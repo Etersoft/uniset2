@@ -27,7 +27,7 @@ namespace VTypes
 		return os << type2str(vt);
 	}
 
-	VType str2type( const std::string& s )
+	VType str2type( const std::string& s ) noexcept
 	{
 		if( s == "Byte" || s == "byte" )
 			return vtByte;
@@ -62,7 +62,7 @@ namespace VTypes
 		return vtUnknown;
 	}
 	// -------------------------------------------------------------------------
-	string type2str( VType t )
+	string type2str( VType t ) noexcept
 	{
 		if( t == vtByte )
 			return "Byte";
@@ -97,7 +97,7 @@ namespace VTypes
 		return "vtUnknown";
 	}
 	// -------------------------------------------------------------------------
-	int wsize( const VType t )
+	int wsize( const VType t ) noexcept
 	{
 		if( t == vtByte )
 			return Byte::wsize();

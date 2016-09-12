@@ -73,9 +73,13 @@ DebugStream::DebugStream(char const* f, Debug::type t, bool truncate )
 	internal->sbuf.signal_overflow().connect(sigc::mem_fun(*this, &DebugStream::sbuf_overflow));
 }
 //--------------------------------------------------------------------------
-void DebugStream::sbuf_overflow( const std::string& s )
+void DebugStream::sbuf_overflow( const std::string& s ) noexcept
 {
-	s_stream.emit(s);
+	try
+	{
+		s_stream.emit(s);
+	}
+	catch(...){}
 }
 //--------------------------------------------------------------------------
 DebugStream::~DebugStream()
@@ -132,7 +136,7 @@ void DebugStream::logFile( const std::string& f, bool truncate )
 		delete rdbuf(new teebuf(cerr.rdbuf(), &internal->sbuf));
 }
 //--------------------------------------------------------------------------
-std::ostream& DebugStream::debug(Debug::type t)
+std::ostream& DebugStream::debug(Debug::type t) noexcept
 {
 	if(dt & t)
 	{
@@ -148,7 +152,7 @@ std::ostream& DebugStream::debug(Debug::type t)
 	return nullstream;
 }
 //--------------------------------------------------------------------------
-std::ostream& DebugStream::operator()(Debug::type t)
+std::ostream& DebugStream::operator()(Debug::type t) noexcept
 {
 	if(dt & t)
 		return *this;
@@ -156,7 +160,7 @@ std::ostream& DebugStream::operator()(Debug::type t)
 	return nullstream;
 }
 //--------------------------------------------------------------------------
-std::ostream& DebugStream::printDate(Debug::type t, char brk)
+std::ostream& DebugStream::printDate(Debug::type t, char brk) noexcept
 {
 	if(dt && t)
 	{
@@ -170,7 +174,7 @@ std::ostream& DebugStream::printDate(Debug::type t, char brk)
 	return nullstream;
 }
 //--------------------------------------------------------------------------
-std::ostream& DebugStream::printTime(Debug::type t, char brk)
+std::ostream& DebugStream::printTime(Debug::type t, char brk) noexcept
 {
 	if(dt && t)
 	{
@@ -184,7 +188,7 @@ std::ostream& DebugStream::printTime(Debug::type t, char brk)
 	return nullstream;
 }
 //--------------------------------------------------------------------------
-std::ostream& DebugStream::printDateTime(Debug::type t)
+std::ostream& DebugStream::printDateTime(Debug::type t) noexcept
 {
 	if(dt & t)
 	{
@@ -201,7 +205,7 @@ std::ostream& DebugStream::printDateTime(Debug::type t)
 	return nullstream;
 }
 //--------------------------------------------------------------------------
-std::ostream& DebugStream::pos(int x, int y)
+std::ostream& DebugStream::pos(int x, int y) noexcept
 {
 	if( !dt )
 		return nullstream;

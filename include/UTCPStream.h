@@ -36,7 +36,7 @@ class UTCPStream:
 
 		void create( const std::string& hname, int port, timeout_t tout_msec = 1000 );
 
-		bool isConnected();
+		bool isConnected() noexcept;
 
 		// set keepalive params
 		// return true if OK

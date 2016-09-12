@@ -106,7 +106,7 @@ Debug::type Debug::value(string const& val)
 }
 
 
-void Debug::showLevel(ostream& o, Debug::type level)
+void Debug::showLevel(ostream& o, Debug::type level) noexcept
 {
 	// Show what features are traced
 	for (int i = 0 ; i < numErrorTags ; ++i)
@@ -117,7 +117,7 @@ void Debug::showLevel(ostream& o, Debug::type level)
 			  << "' (" << errorTags[i].desc << ')' << endl;
 }
 
-void Debug::showTags(ostream& os)
+void Debug::showTags(ostream& os) noexcept
 {
 	for (int i = 0 ; i < numErrorTags ; ++i)
 		os << setw(7) << errorTags[i].level
@@ -127,7 +127,7 @@ void Debug::showTags(ostream& os)
 	os.flush();
 }
 
-std::ostream& operator<<(std::ostream& os, Debug::type level )
+std::ostream& operator<<(std::ostream& os, Debug::type level ) noexcept
 {
 
 	for (int i = 0 ; i < numErrorTags ; ++i)
@@ -139,7 +139,7 @@ std::ostream& operator<<(std::ostream& os, Debug::type level )
 	return os << "???Debuglevel"; // << "(" << int(level) << ")";
 }
 
-std::string Debug::str( Debug::type level )
+std::string Debug::str( Debug::type level ) noexcept
 {
 	if( level == Debug::NONE )
 		return "NONE";

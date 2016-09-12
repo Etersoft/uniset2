@@ -52,7 +52,7 @@ class NCRestorer
 			SInfo& operator=(SInfo&& ) = default;
 
 			SInfo( IOController_i::SensorInfo& si, UniversalIO::IOType& t,
-				   UniSetTypes::Message::Message::Priority& p, long& def )
+				   UniSetTypes::Message::Message::Priority& p, long& def ) noexcept
 			{
 				this->si = si;
 				this->type = t;
@@ -60,7 +60,7 @@ class NCRestorer
 				this->default_val = def;
 			}
 
-			SInfo()
+			SInfo() noexcept
 			{
 				this->type = UniversalIO::DI;
 				this->priority = UniSetTypes::Message::Medium;
@@ -88,16 +88,16 @@ class NCRestorer
 			ic->ioRegistration(inf, force);
 		}
 
-		static inline IOController::IOStateList::iterator ioFind( IONotifyController* ic, UniSetTypes::ObjectId k )
+		static inline IOController::IOStateList::iterator ioFind( IONotifyController* ic, UniSetTypes::ObjectId k ) noexcept
 		{
 			return ic->myiofind(k);
 		}
 
-		static inline IOController::IOStateList::iterator ioEnd( IONotifyController* ic )
+		static inline IOController::IOStateList::iterator ioEnd( IONotifyController* ic ) noexcept
 		{
 			return ic->myioEnd();
 		}
-		static inline IOController::IOStateList::iterator ioBegin( IONotifyController* ic )
+		static inline IOController::IOStateList::iterator ioBegin( IONotifyController* ic ) noexcept
 		{
 			return ic->myioBegin();
 		}
@@ -135,7 +135,7 @@ class NCRestorer_XML:
 		void setThresholdsFilter( const std::string& filterField, const std::string& filterValue = "" );
 
 		bool setFileName( const std::string& file, bool create );
-		inline std::string getFileName() const
+		inline std::string getFileName() const noexcept
 		{
 			return fname;
 		}

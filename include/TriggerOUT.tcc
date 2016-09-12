@@ -24,14 +24,14 @@
 //---------------------------------------------------------------------------
 
 template<class Caller, typename OutIdType, typename ValueType>
-TriggerOUT<Caller,OutIdType,ValueType>::TriggerOUT( Caller* r, Action a):
+TriggerOUT<Caller,OutIdType,ValueType>::TriggerOUT( Caller* r, Action a) noexcept:
 	cal(r),
 	act(a)
 {
 }
 
 template <class Caller, typename OutIdType, typename ValueType>
-TriggerOUT<Caller,OutIdType,ValueType>::~TriggerOUT()
+TriggerOUT<Caller,OutIdType,ValueType>::~TriggerOUT() noexcept
 {
 }
 
@@ -48,21 +48,28 @@ void TriggerOUT<Caller,OutIdType,ValueType>::add(OutIdType num, ValueType val)
 
 //---------------------------------------------------------------------------
 template <class Caller, typename OutIdType, typename ValueType>
-void TriggerOUT<Caller,OutIdType,ValueType>::remove(OutIdType num)
+void TriggerOUT<Caller,OutIdType,ValueType>::remove(OutIdType num) noexcept
 {
-	auto it=outs.find(num);
-	if( it!=outs.end() )
-		outs.erase(it);
+	try
+	{
+		auto it=outs.find(num);
+		if( it!=outs.end() )
+			outs.erase(it);
+	}
+	catch(...){}
 }
 
 //---------------------------------------------------------------------------
 template <class Caller, typename OutIdType, typename ValueType>
-bool TriggerOUT<Caller,OutIdType,ValueType>::getState(OutIdType out) const
+bool TriggerOUT<Caller,OutIdType,ValueType>::getState(OutIdType out) const noexcept
 {
-	auto it=outs.find(out);
-	if( it!=outs.end() )
-		return it->second;
-
+	try
+	{
+		auto it=outs.find(out);
+		if( it!=outs.end() )
+			return it->second;
+	}
+	catch(...){}
 	return false;
 }
 //---------------------------------------------------------------------------

@@ -21,7 +21,7 @@
 #include "TriggerAND.h"
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
-TriggerAND<Caller,InputType>::TriggerAND(Caller* c, Action a):
+TriggerAND<Caller,InputType>::TriggerAND(Caller* c, Action a) noexcept:
 out(false),
 cal(c),
 act(a)
@@ -29,7 +29,7 @@ act(a)
 }
 
 template<class Caller, typename InputType>
-TriggerAND<Caller,InputType>::~TriggerAND()
+TriggerAND<Caller,InputType>::~TriggerAND() noexcept
 {
 }
 
@@ -69,11 +69,15 @@ void TriggerAND<Caller,InputType>::remove(InputType num)
 
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
-bool TriggerAND<Caller,InputType>::getState(InputType num) const
+bool TriggerAND<Caller,InputType>::getState(InputType num) const noexcept
 {
-	auto it=inputs.find(num);
-	if( it!=inputs.end() )
-		return it->second;
+	try
+	{
+		auto it=inputs.find(num);
+		if( it!=inputs.end() )
+			return it->second;
+	}
+	catch(...){}
 
 	return false; // throw NotFound
 }

@@ -87,20 +87,20 @@ class LogServer:
 {
 	public:
 
-		LogServer( std::shared_ptr<DebugStream> log );
-		LogServer( std::shared_ptr<LogAgregator> log );
-		virtual ~LogServer();
+		LogServer( std::shared_ptr<DebugStream> log ) noexcept;
+		LogServer( std::shared_ptr<LogAgregator> log ) noexcept;
+		virtual ~LogServer() noexcept;
 
-		inline void setCmdTimeout( timeout_t msec )
+		inline void setCmdTimeout( timeout_t msec ) noexcept
 		{
 			cmdTimeout = msec;
 		}
 
-		inline void setSessionLog( Debug::type t )
+		inline void setSessionLog( Debug::type t ) noexcept
 		{
 			sessLogLevel = t;
 		}
-		inline void setMaxSessionCount( int num )
+		inline void setMaxSessionCount( int num ) noexcept
 		{
 			sessMaxCount = num;
 		}
@@ -108,7 +108,7 @@ class LogServer:
 		void run( const std::string& addr, Poco::UInt16 port, bool thread = true );
 		void terminate();
 
-		inline bool isRunning()
+		inline bool isRunning() const noexcept
 		{
 			return isrunning;
 		}
@@ -120,11 +120,11 @@ class LogServer:
 		std::string getShortInfo();
 
 	protected:
-		LogServer();
+		LogServer() noexcept;
 
 		virtual void evprepare( const ev::loop_ref& loop ) override;
 		virtual void evfinish( const ev::loop_ref& loop ) override;
-		virtual std::string wname()
+		virtual std::string wname() const noexcept override
 		{
 			return myname;
 		}

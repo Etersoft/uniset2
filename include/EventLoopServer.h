@@ -18,7 +18,7 @@ class EventLoopServer
 		EventLoopServer();
 		virtual ~EventLoopServer();
 
-		bool evIsActive() const;
+		bool evIsActive() const noexcept;
 
 	protected:
 		// действия при завершении
@@ -37,8 +37,8 @@ class EventLoopServer
 
 	private:
 
-		void onStop();
-		void defaultLoop();
+		void onStop() noexcept;
+		void defaultLoop() noexcept;
 
 		std::atomic_bool cancelled = { false };
 		std::atomic_bool isrunning = { false };
