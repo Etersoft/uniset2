@@ -98,20 +98,20 @@ class UNetSender
 		void start();
 		void stop();
 
-		void send();
+		void send() noexcept;
 
 		struct PackMessage
 		{
-			PackMessage( UniSetUDP::UDPMessage&& m ):msg(std::move(m)){}
+			PackMessage( UniSetUDP::UDPMessage&& m ) noexcept:msg(std::move(m)){}
 			PackMessage( const UniSetUDP::UDPMessage& m ) = delete;
 
-			PackMessage(){}
+			PackMessage() noexcept {}
 
 			UniSetUDP::UDPMessage msg;
 			UniSetTypes::uniset_rwmutex mut;
 		};
 
-		void real_send( PackMessage& mypack );
+		void real_send( PackMessage& mypack ) noexcept;
 
 		/*! (принудительно) обновить все данные (из SM) */
 		void updateFromSM();

@@ -47,7 +47,7 @@ class MQMutex
 		/*! Извлечь сообщение из очереди
 		 * \return не валидный shatred_ptr(nullptr) если сообщений нет
 		 */
-		VoidMessagePtr top();
+		VoidMessagePtr top() noexcept;
 
 		size_t size();
 		bool empty();
@@ -55,8 +55,8 @@ class MQMutex
 		// ----- Настройки  -----
 		// неявно подразумевается, что всё настраивается до первого использования
 		// ----------------------
-		void setMaxSizeOfMessageQueue( size_t s );
-		size_t getMaxSizeOfMessageQueue() const;
+		void setMaxSizeOfMessageQueue( size_t s ) noexcept;
+		size_t getMaxSizeOfMessageQueue() const noexcept;
 
 		/*! Стратегия при переполнении */
 		enum LostStrategy
@@ -65,17 +65,17 @@ class MQMutex
 			lostNewData
 		};
 
-		void setLostStrategy( LostStrategy s );
+		void setLostStrategy( LostStrategy s ) noexcept;
 
 		// ---- Статистика ----
 		/*! максимальное количество которое было в очереди сообщений */
-		inline size_t getMaxQueueMessages() const
+		inline size_t getMaxQueueMessages() const noexcept
 		{
 			return stMaxQueueMessages;
 		}
 
 		/*! количество потерянных сообщений */
-		inline size_t getCountOfLostMessages() const
+		inline size_t getCountOfLostMessages() const noexcept
 		{
 			return stCountOfLostMessages;
 		}

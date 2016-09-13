@@ -63,21 +63,21 @@ class MQAtomic
 		MQAtomic( size_t qsize = 2000 );
 
 		/*! поместить сообщение в очередь */
-		void push( const VoidMessagePtr& msg );
+		bool push( const VoidMessagePtr& msg ) noexcept;
 
 		/*! Извлечь сообщение из очереди
 		 * \return не валидный shatred_ptr если сообщений нет
 		 */
-		VoidMessagePtr top();
+		VoidMessagePtr top() noexcept;
 
-		size_t size() const;
-		bool empty() const;
+		size_t size() const noexcept;
+		bool empty() const noexcept;
 
 		// ----- Настройки  -----
 		// неявно подразумевается, что всё настривается до первого использования
 		// ----------------------
 		void setMaxSizeOfMessageQueue( size_t s );
-		size_t getMaxSizeOfMessageQueue() const;
+		size_t getMaxSizeOfMessageQueue() const noexcept;
 
 		/*! Стратегия при переполнении */
 		enum LostStrategy
@@ -86,17 +86,17 @@ class MQAtomic
 			lostNewData
 		};
 
-		void setLostStrategy( LostStrategy s );
+		void setLostStrategy( LostStrategy s ) noexcept;
 
 		// ---- Статистика ----
 		/*! максимальное количество которое было в очереди сообщений */
-		inline size_t getMaxQueueMessages() const
+		inline size_t getMaxQueueMessages() const noexcept
 		{
 			return stMaxQueueMessages;
 		}
 
 		/*! сколько раз очередь переполнялась */
-		inline size_t getCountOfLostMessages() const
+		inline size_t getCountOfLostMessages() const noexcept
 		{
 			return stCountOfLostMessages;
 		}
@@ -108,8 +108,8 @@ class MQAtomic
 
 		// для возможности тестирования переполнения
 		// специально делается такая функция
-		void set_wpos( unsigned long pos );
-		void set_rpos( unsigned long pos );
+		void set_wpos( unsigned long pos ) noexcept;
+		void set_rpos( unsigned long pos ) noexcept;
 
 	private:
 

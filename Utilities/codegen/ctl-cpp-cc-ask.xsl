@@ -33,7 +33,7 @@
 // --------------------------------------------------------------------------
 <xsl:call-template name="COMMON-CC-FILE"/>
 // --------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
+void <xsl:value-of select="$CLASSNAME"/>_SK::callback() noexcept
 {
 	if( !active )
 		return;

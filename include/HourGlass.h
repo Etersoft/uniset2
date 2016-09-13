@@ -59,11 +59,11 @@
 class HourGlass
 {
 	public:
-		HourGlass() {}
-		~HourGlass() {}
+		HourGlass() noexcept {}
+		~HourGlass() noexcept {}
 
 		// запустить часы (заново)
-		inline void run( timeout_t msec )
+		inline void run( timeout_t msec ) noexcept
 		{
 			t.setTiming(msec);
 			_state   = true;
@@ -71,13 +71,13 @@ class HourGlass
 			_size    = msec;
 		}
 
-		inline void reset()
+		inline void reset() noexcept
 		{
 			run(_size);
 		}
 
 		// "ёмкость" песочных часов..
-		inline timeout_t duration() const
+		inline timeout_t duration() const noexcept
 		{
 			return _size;
 		}
@@ -85,7 +85,7 @@ class HourGlass
 		// true - засечь время
 		// false - перевернуть часы (обратный ход)
 		// возвращает аргумент (т.е. идёт ли отсчёт времени)
-		inline bool rotate( bool st )
+		inline bool rotate( bool st ) noexcept
 		{
 			if( st == _state )
 				return st;
@@ -123,19 +123,19 @@ class HourGlass
 		}
 
 		// получить прошедшее время
-		inline timeout_t current() const
+		inline timeout_t current() const noexcept
 		{
 			return t.getCurrent();
 		}
 
 		// получить заданное время
-		inline timeout_t interval() const
+		inline timeout_t interval() const noexcept
 		{
 			return t.getInterval();
 		}
 
 		// проверить наступление
-		inline bool check() const
+		inline bool check() const noexcept
 		{
 			// пока часы не "стоят"
 			// всегда false
@@ -145,19 +145,19 @@ class HourGlass
 			return t.checkTime();
 		}
 
-		inline bool enabled() const
+		inline bool enabled() const noexcept
 		{
 			return _state;
 		}
 
 		// текущее "насыпавшееся" количество "песка" (прошедшее время)
-		inline timeout_t amount() const
+		inline timeout_t amount() const noexcept
 		{
 			return ( _size - remain() );
 		}
 
 		// остаток песка (времени) (оставшееся время)
-		inline timeout_t remain() const
+		inline timeout_t remain() const noexcept
 		{
 			timeout_t c = t.getCurrent();
 

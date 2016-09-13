@@ -144,7 +144,6 @@ int main( int argc, char** argv )
 
 		mb.setTimeout(tout);
 		mb.connect(iaddr, port);
-
 		mb.setForceDisconnect(!persist);
 
 		if( verb )

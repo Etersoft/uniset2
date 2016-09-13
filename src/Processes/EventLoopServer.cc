@@ -32,7 +32,7 @@ void EventLoopServer::evrun( bool thread )
 		thr = make_shared<std::thread>( [ = ] { defaultLoop(); } );
 }
 // ---------------------------------------------------------------------------
-bool EventLoopServer::evIsActive() const
+bool EventLoopServer::evIsActive() const noexcept
 {
 	return isrunning;
 }
@@ -49,7 +49,7 @@ void EventLoopServer::evstop()
 	}
 }
 // -------------------------------------------------------------------------
-void EventLoopServer::onStop()
+void EventLoopServer::onStop() noexcept
 {
 	try
 	{
@@ -64,7 +64,7 @@ void EventLoopServer::onStop()
 	loop.break_loop(ev::ALL);
 }
 // -------------------------------------------------------------------------
-void EventLoopServer::defaultLoop()
+void EventLoopServer::defaultLoop() noexcept
 {
 	evterm.start();
 	evprepare();

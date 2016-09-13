@@ -31,7 +31,7 @@
 // --------------------------------------------------------------------------
 <xsl:call-template name="COMMON-CC-FUNCS"/>
 // --------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
+void <xsl:value-of select="$CLASSNAME"/>_SK::callback() noexept
 {
 	if( !active )
 		return;

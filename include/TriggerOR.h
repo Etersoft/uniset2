@@ -78,15 +78,15 @@ class TriggerOR
 		*/
 		typedef void(Caller::* Action)(bool newstate);
 
-		TriggerOR(Caller* r, Action a);
-		~TriggerOR();
+		TriggerOR(Caller* r, Action a) noexcept;
+		~TriggerOR() noexcept;
 
-		inline bool state() const
+		inline bool state() const noexcept
 		{
 			return out;
 		}
 
-		bool getState(InputType in) const;
+		bool getState(InputType in) const noexcept;
 		bool commit(InputType in, bool state);
 
 		void add(InputType in, bool state);
@@ -94,12 +94,12 @@ class TriggerOR
 
 		typedef std::unordered_map<InputType, bool> InputMap;
 
-		inline typename InputMap::const_iterator begin()
+		inline typename InputMap::const_iterator begin() noexcept
 		{
 			return inputs.begin();
 		}
 
-		inline typename InputMap::const_iterator end()
+		inline typename InputMap::const_iterator end() noexcept
 		{
 			return inputs.end();
 		}

@@ -46,17 +46,20 @@ ObjectIndex_XML::~ObjectIndex_XML()
 {
 }
 // -----------------------------------------------------------------------------------------
-ObjectId ObjectIndex_XML::getIdByName( const string& name ) const
+ObjectId ObjectIndex_XML::getIdByName( const string& name ) const noexcept
 {
-	auto it = mok.find(name);
+	try
+	{
+		auto it = mok.find(name);
 
-	if( it != mok.end() )
-		return it->second;
-
+		if( it != mok.end() )
+			return it->second;
+	}
+	catch(...){}
 	return DefaultObjectId;
 }
 // -----------------------------------------------------------------------------------------
-string ObjectIndex_XML::getMapName( const ObjectId id ) const
+string ObjectIndex_XML::getMapName( const ObjectId id ) const noexcept
 {
 	if( (unsigned)id < omap.size() && (unsigned)id > 0 )
 		return omap[id].repName;
@@ -64,7 +67,7 @@ string ObjectIndex_XML::getMapName( const ObjectId id ) const
 	return "";
 }
 // -----------------------------------------------------------------------------------------
-string ObjectIndex_XML::getTextName( const ObjectId id ) const
+string ObjectIndex_XML::getTextName( const ObjectId id ) const noexcept
 {
 	if( (unsigned)id < omap.size() && (unsigned)id > 0 )
 		return omap[id].textName;
@@ -77,7 +80,7 @@ std::ostream& operator<<(std::ostream& os, ObjectIndex_XML& oi )
 	return oi.printMap(os);
 }
 // -----------------------------------------------------------------------------------------
-std::ostream& ObjectIndex_XML::printMap( std::ostream& os ) const
+std::ostream& ObjectIndex_XML::printMap( std::ostream& os ) const noexcept
 {
 	os << "size: " << omap.size() << endl;
 
@@ -99,7 +102,7 @@ void ObjectIndex_XML::build( const std::shared_ptr<UniXML>& xml )
 {
 	// выделяем память
 	//    ObjectInfo* omap = new ObjectInfo[maxSize];
-	ObjectId ind = 1;
+	size_t ind = 1;
 	ind = read_section(xml, "sensors", ind);
 	ind = read_section(xml, "objects", ind);
 	ind = read_section(xml, "controllers", ind);
@@ -113,9 +116,9 @@ void ObjectIndex_XML::build( const std::shared_ptr<UniXML>& xml )
 	//    omap[ind].id = ind;
 }
 // ------------------------------------------------------------------------------------------
-unsigned int ObjectIndex_XML::read_section( const std::shared_ptr<UniXML>& xml, const std::string& sec, unsigned int ind )
+size_t ObjectIndex_XML::read_section( const std::shared_ptr<UniXML>& xml, const std::string& sec, size_t ind )
 {
-	if( (unsigned)ind >= omap.size() )
+	if( ind >= omap.size() )
 	{
 		uwarn << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size()
 			  << "... Делаем resize + 100" << endl;
@@ -208,13 +211,12 @@ unsigned int ObjectIndex_XML::read_section( const std::shared_ptr<UniXML>& xml, 
 	return ind;
 }
 // ------------------------------------------------------------------------------------------
-unsigned int ObjectIndex_XML::read_nodes( const std::shared_ptr<UniXML>& xml, const std::string& sec, unsigned int ind )
+size_t ObjectIndex_XML::read_nodes(const std::shared_ptr<UniXML>& xml, const std::string& sec, size_t ind )
 {
 	if( ind >= omap.size() )
 	{
-		ostringstream msg;
-		msg << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size();
-		uinfo << msg.str() << "... Делаем resize + 100\n";
+		uinfo << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size()
+			  << "... Делаем resize + 100" << endl;
 		omap.resize(omap.size() + 100);
 	}
 
@@ -272,21 +274,25 @@ unsigned int ObjectIndex_XML::read_nodes( const std::shared_ptr<UniXML>& xml, co
 	return ind;
 }
 // ------------------------------------------------------------------------------------------
-const ObjectInfo* ObjectIndex_XML::getObjectInfo( const ObjectId id ) const
+const ObjectInfo* ObjectIndex_XML::getObjectInfo( const ObjectId id ) const noexcept
 {
 	if( (unsigned)id < omap.size() && (unsigned)id > 0 )
 		return &omap[id];
 
-	return NULL;
+	return nullptr;
 }
 // ------------------------------------------------------------------------------------------
-const ObjectInfo* ObjectIndex_XML::getObjectInfo( const std::string& name ) const
+const ObjectInfo* ObjectIndex_XML::getObjectInfo( const std::string& name ) const noexcept
 {
-	auto it = mok.find(name);
+	try
+	{
+		auto it = mok.find(name);
 
-	if( it != mok.end() )
-		return &(omap[it->second]);
+		if( it != mok.end() )
+			return &(omap[it->second]);
+	}
+	catch(...){}
 
-	return NULL;
+	return nullptr;
 }
 // ------------------------------------------------------------------------------------------

@@ -234,10 +234,12 @@ bool gdb_print_trace()
 
 		if( g_act && !g_act->getAbortScript().empty() )
 		{
+			TRACELOG << "run script: " << g_act->getAbortScript() << " for stack trace: proc " << name_buf << " pid=" << pid_buf << endl;
 			execlp(g_act->getAbortScript().c_str(), g_act->getAbortScript().c_str(), name_buf, pid_buf, NULL);
 		}
 		else
 		{
+			TRACELOG << "direct run gdb for stack trace for pid=" << pid_buf  << " name=" << name_buf << " ..." << endl;
 			// приходится выводить информацию по всем потокам, т.к. мы не знаем в каком сработал сигнал
 			// его надо смотреть по выводу "<signal handler called>"
 			execlp("gdb", "gdb", "--batch", "-n", "-ex", "thread apply all bt", name_buf, pid_buf, NULL);

@@ -89,12 +89,12 @@ class TriggerOUT
 		*/
 		typedef void(Caller::* Action)(OutIdType out, ValueType val);
 
-		TriggerOUT(Caller* r, Action a);
-		~TriggerOUT();
+		TriggerOUT(Caller* r, Action a) noexcept;
+		~TriggerOUT() noexcept;
 
 
 		/*! получить текущее значение указанного 'выхода' */
-		bool getState(OutIdType out) const;
+		bool getState(OutIdType out) const noexcept;
 
 		/*! установить значение одного из 'выходов'
 		    \param out - идентификатор 'выхода'
@@ -109,7 +109,7 @@ class TriggerOUT
 		void add(OutIdType out, ValueType val);
 
 		/*! удалить указанный 'выход' */
-		void remove(OutIdType out);
+		void remove(OutIdType out) noexcept;
 
 		void update();
 		void reset();

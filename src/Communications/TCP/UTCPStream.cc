@@ -93,7 +93,7 @@ void UTCPStream::create(const std::string& hname, int port, timeout_t tout_msec 
 	setKeepAliveParams();
 }
 // -------------------------------------------------------------------------
-bool UTCPStream::isConnected()
+bool UTCPStream::isConnected() noexcept
 {
 	return ( Poco::Net::StreamSocket::sockfd() > 0 );
 /*

@@ -51,7 +51,7 @@ namespace UniSetTypes
 		return os << "Unkown";
 	}
 	//--------------------------------------------------------------------------------------------
-	Message::Message():
+	Message::Message() noexcept:
 		type(Unused), priority(Medium),
 		node( UniSetTypes::uniset_conf() ? UniSetTypes::uniset_conf()->getLocalNode() : DefaultObjectId ),
 		supplier(DefaultObjectId),
@@ -62,7 +62,7 @@ namespace UniSetTypes
 
 	//--------------------------------------------------------------------------------------------
 
-	VoidMessage::VoidMessage( const TransportMessage& tm ):
+	VoidMessage::VoidMessage( const TransportMessage& tm ) noexcept:
 		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
 	{
 		assert(sizeof(VoidMessage) >= sizeof(UniSetTypes::RawDataOfTransportMessage));
@@ -70,13 +70,13 @@ namespace UniSetTypes
 		consumer = tm.consumer;
 	}
 
-	VoidMessage::VoidMessage()
+	VoidMessage::VoidMessage() noexcept
 	{
 		assert(sizeof(VoidMessage) >= sizeof(UniSetTypes::RawDataOfTransportMessage));
 	}
 
 	//--------------------------------------------------------------------------------------------
-	SensorMessage::SensorMessage():
+	SensorMessage::SensorMessage() noexcept:
 		id(DefaultObjectId),
 		value(0),
 		undefined(false),
@@ -95,7 +95,7 @@ namespace UniSetTypes
 
 	SensorMessage::SensorMessage(ObjectId id, long value, const IOController_i::CalibrateInfo& ci,
 								 Priority priority,
-								 UniversalIO::IOType st, ObjectId consumer):
+								 UniversalIO::IOType st, ObjectId consumer) noexcept:
 		id(id),
 		value(value),
 		undefined(false),
@@ -110,27 +110,27 @@ namespace UniSetTypes
 		sm_tv = tm;
 	}
 
-	SensorMessage::SensorMessage( int dummy ):
+	SensorMessage::SensorMessage( int dummy ) noexcept:
 		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
 	{
 		type    = Message::SensorInfo;
 	}
 
-	SensorMessage::SensorMessage(const VoidMessage* msg):
+	SensorMessage::SensorMessage(const VoidMessage* msg) noexcept:
 		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
 	{
 		memcpy(this, msg, sizeof(*this));
 		assert(this->type == Message::SensorInfo);
 	}
 	//--------------------------------------------------------------------------------------------
-	SystemMessage::SystemMessage():
+	SystemMessage::SystemMessage() noexcept:
 		command(SystemMessage::Unknown)
 	{
 		memset(data, 0, sizeof(data));
 		type = Message::SysCommand;
 	}
 
-	SystemMessage::SystemMessage(Command command, Priority priority, ObjectId consumer):
+	SystemMessage::SystemMessage(Command command, Priority priority, ObjectId consumer) noexcept:
 		command(command)
 	{
 		type = Message::SysCommand;
@@ -138,7 +138,7 @@ namespace UniSetTypes
 		this->consumer = consumer;
 	}
 
-	SystemMessage::SystemMessage(const VoidMessage* msg):
+	SystemMessage::SystemMessage(const VoidMessage* msg) noexcept:
 		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
 	{
 		memcpy(this, msg, sizeof(*this));
@@ -187,14 +187,14 @@ namespace UniSetTypes
 		this->consumer = cons;
 	}
 
-	TimerMessage::TimerMessage(const VoidMessage* msg):
+	TimerMessage::TimerMessage(const VoidMessage* msg) noexcept:
 		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
 	{
 		memcpy(this, msg, sizeof(*this));
 		assert(this->type == Message::Timer);
 	}
 	//--------------------------------------------------------------------------------------------
-	ConfirmMessage::ConfirmMessage( const VoidMessage* msg ):
+	ConfirmMessage::ConfirmMessage( const VoidMessage* msg ) noexcept:
 		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
 	{
 		memcpy(this, msg, sizeof(*this));
@@ -205,7 +205,7 @@ namespace UniSetTypes
 								   const double& in_sensor_value,
 								   const timespec& in_sensor_time,
 								   const timespec& in_confirm_time,
-								   Priority in_priority ):
+								   Priority in_priority ) noexcept:
 		sensor_id(in_sensor_id),
 		sensor_value(in_sensor_value),
 		sensor_time(in_sensor_time),

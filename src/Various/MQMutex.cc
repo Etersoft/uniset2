@@ -55,16 +55,22 @@ void MQMutex::push( const VoidMessagePtr& vm )
 		stMaxQueueMessages = sz;
 }
 //---------------------------------------------------------------------------
-VoidMessagePtr MQMutex::top()
+VoidMessagePtr MQMutex::top() noexcept
 {
-	std::lock_guard<std::mutex> lk(qmutex);
+	try
+	{
+		std::lock_guard<std::mutex> lk(qmutex);
 
-	if( mqueue.empty() )
-		return nullptr;
+		if( mqueue.empty() )
+			return nullptr;
 
-	auto m = mqueue.front();
-	mqueue.pop_front();
-	return m;
+		auto m = mqueue.front();
+		mqueue.pop_front();
+		return m;
+	}
+	catch(...){}
+
+	return nullptr;
 }
 //---------------------------------------------------------------------------
 size_t MQMutex::size()
@@ -79,17 +85,17 @@ bool MQMutex::empty()
 	return mqueue.empty();
 }
 //---------------------------------------------------------------------------
-void MQMutex::setMaxSizeOfMessageQueue( size_t s )
+void MQMutex::setMaxSizeOfMessageQueue( size_t s ) noexcept
 {
 	SizeOfMessageQueue = s;
 }
 //---------------------------------------------------------------------------
-size_t MQMutex::getMaxSizeOfMessageQueue() const
+size_t MQMutex::getMaxSizeOfMessageQueue() const noexcept
 {
 	return SizeOfMessageQueue;
 }
 //---------------------------------------------------------------------------
-void MQMutex::setLostStrategy( MQMutex::LostStrategy s )
+void MQMutex::setLostStrategy( MQMutex::LostStrategy s ) noexcept
 {
 	lostStrategy = s;
 }

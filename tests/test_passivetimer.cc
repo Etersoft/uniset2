@@ -107,15 +107,15 @@ TEST_CASE("UniSetTimer: conv to Poco", "[PassiveTimer][poco]" )
 
 	{
 		Poco::Timespan tm = UniSetTimer::millisecToPoco(UniSetTimer::WaitUpTime);
-		REQUIRE( tm.seconds() == 0 );
+		REQUIRE( tm.seconds() == -1 );
 		REQUIRE( tm.microseconds() == 0 );
+		REQUIRE( tm.totalMilliseconds() < 0 );
 	}
 
 	{
 		Poco::Timespan tm = UniSetTimer::millisecToPoco(20);
 		REQUIRE( tm.seconds() == 0 );
-		REQUIRE( tm.milliseconds() == 20 );
-		REQUIRE( tm.microseconds() == 0 );
+		REQUIRE( tm.totalMilliseconds() == 20 );
 		REQUIRE( tm.totalMicroseconds() == 20000 );
 	}
 
@@ -123,8 +123,9 @@ TEST_CASE("UniSetTimer: conv to Poco", "[PassiveTimer][poco]" )
 	// usec --> Poco::Timespan
 	{
 		Poco::Timespan tm = UniSetTimer::microsecToPoco(UniSetTimer::WaitUpTime);
-		REQUIRE( tm.seconds() == 0 );
+		REQUIRE( tm.seconds() == -1 );
 		REQUIRE( tm.microseconds() == 0 );
+		REQUIRE( tm.totalMilliseconds() < 0 );
 	}
 	{
 		Poco::Timespan tm = UniSetTimer::microsecToPoco(2000000);

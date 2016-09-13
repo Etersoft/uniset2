@@ -75,18 +75,25 @@ Debug::type Debug::value(string const& val)
 		//string tmp(lowercase(v.substr(0, st)));
 		string tmp(v.substr(0, st));
 
-		if (tmp.empty())
+
+		if(tmp.empty())
 			break;
 
-		// Is it a number?
-		//if (isStrInt(tmp))
-		//    l |= static_cast<type>(strToInt(tmp));
-		//else
-		// Search for an explicit name
+		bool del = false;
+		if( tmp[0] == '-' )
+		{
+			del = true;
+			tmp = tmp.substr(1,tmp.size());
+		}
+
 		for (int i = 0 ; i < numErrorTags ; ++i)
 			if (tmp == errorTags[i].name)
 			{
-				l |= errorTags[i].level;
+				if( del )
+					l = Debug::type(l & ~(errorTags[i].level));
+				else
+					l |= errorTags[i].level;
+
 				break;
 			}
 
@@ -99,7 +106,7 @@ Debug::type Debug::value(string const& val)
 }
 
 
-void Debug::showLevel(ostream& o, Debug::type level)
+void Debug::showLevel(ostream& o, Debug::type level) noexcept
 {
 	// Show what features are traced
 	for (int i = 0 ; i < numErrorTags ; ++i)
@@ -110,7 +117,7 @@ void Debug::showLevel(ostream& o, Debug::type level)
 			  << "' (" << errorTags[i].desc << ')' << endl;
 }
 
-void Debug::showTags(ostream& os)
+void Debug::showTags(ostream& os) noexcept
 {
 	for (int i = 0 ; i < numErrorTags ; ++i)
 		os << setw(7) << errorTags[i].level
@@ -120,7 +127,7 @@ void Debug::showTags(ostream& os)
 	os.flush();
 }
 
-std::ostream& operator<<(std::ostream& os, Debug::type level )
+std::ostream& operator<<(std::ostream& os, Debug::type level ) noexcept
 {
 
 	for (int i = 0 ; i < numErrorTags ; ++i)
@@ -132,7 +139,7 @@ std::ostream& operator<<(std::ostream& os, Debug::type level )
 	return os << "???Debuglevel"; // << "(" << int(level) << ")";
 }
 
-std::string Debug::str( Debug::type level )
+std::string Debug::str( Debug::type level ) noexcept
 {
 	if( level == Debug::NONE )
 		return "NONE";

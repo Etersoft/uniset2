@@ -74,7 +74,7 @@ namespace UniSetTypes
 	static shared_ptr<Configuration> uconf;
 	static std::shared_ptr<DebugStream> _ulog = nullptr;
 
-	std::shared_ptr<DebugStream> ulog()
+	std::shared_ptr<DebugStream> ulog() noexcept
 	{
 		if( _ulog )
 			return _ulog;
@@ -84,7 +84,7 @@ namespace UniSetTypes
 		return _ulog;
 	}
 
-	std::shared_ptr<Configuration> uniset_conf()
+	std::shared_ptr<Configuration> uniset_conf() noexcept
 	{
 		//        if( uconf == nullptr )
 		//            throw SystemError("Don`t init uniset configuration! First use uniset_init().");
@@ -462,7 +462,7 @@ namespace UniSetTypes
 	}
 
 	// -------------------------------------------------------------------------
-	std::string Configuration::getArg2Param( const std::string& name, const std::string& defval, const std::string& defval2 ) const
+	std::string Configuration::getArg2Param( const std::string& name, const std::string& defval, const std::string& defval2 ) const noexcept
 	{
 		string s(UniSetTypes::getArgParam(name, _argc, _argv, ""));
 
@@ -475,17 +475,17 @@ namespace UniSetTypes
 		return defval2;
 	}
 
-	string Configuration::getArgParam( const string& name, const string& defval ) const
+	string Configuration::getArgParam( const string& name, const string& defval ) const noexcept
 	{
 		return UniSetTypes::getArgParam(name, _argc, _argv, defval);
 	}
 
-	int Configuration::getArgInt( const string& name, const string& defval ) const
+	int Configuration::getArgInt( const string& name, const string& defval ) const noexcept
 	{
 		return UniSetTypes::uni_atoi(getArgParam( name, defval ));
 	}
 
-	int Configuration::getArgPInt( const string& name, int defval ) const
+	int Configuration::getArgPInt( const string& name, int defval ) const noexcept
 	{
 		string param = getArgParam(name, "");
 
@@ -495,7 +495,7 @@ namespace UniSetTypes
 		return UniSetTypes::uni_atoi(param);
 	}
 
-	int Configuration::getArgPInt( const string& name, const string& strdefval, int defval ) const
+	int Configuration::getArgPInt( const string& name, const string& strdefval, int defval ) const noexcept
 	{
 		string param = getArgParam(name, strdefval);
 
@@ -642,38 +642,38 @@ namespace UniSetTypes
 		oind->initLocalNode(localNode);
 	}
 	// -------------------------------------------------------------------------
-	xmlNode* Configuration::getNode(const string& path) const
+	xmlNode* Configuration::getNode(const string& path) const noexcept
 	{
 		return unixml->findNode(unixml->getFirstNode(), path);
 	}
 	// -------------------------------------------------------------------------
-	string Configuration::getProp(xmlNode* node, const string& name) const
+	string Configuration::getProp(xmlNode* node, const string& name) const noexcept
 	{
 		return UniXML::getProp(node, name);
 	}
-	int Configuration::getIntProp(xmlNode* node, const string& name) const
+	int Configuration::getIntProp(xmlNode* node, const string& name) const noexcept
 	{
 		return UniXML::getIntProp(node, name);
 	}
-	int Configuration::getPIntProp(xmlNode* node, const string& name, int def) const
+	int Configuration::getPIntProp(xmlNode* node, const string& name, int def) const noexcept
 	{
 		return UniXML::getPIntProp(node, name, def);
 	}
 
 	// -------------------------------------------------------------------------
-	string Configuration::getField(const string& path) const
+	string Configuration::getField(const string& path) const noexcept
 	{
 		return getProp(getNode(path), "name");
 	}
 
 	// -------------------------------------------------------------------------
-	int Configuration::getIntField(const std::string& path) const
+	int Configuration::getIntField(const std::string& path) const noexcept
 	{
 		return unixml->getIntProp(getNode(path), "name");
 	}
 
 	// -------------------------------------------------------------------------
-	int Configuration::getPIntField(const std::string& path, int def) const
+	int Configuration::getPIntField(const std::string& path, int def) const noexcept
 	{
 		int i = getIntField(path);;
 
@@ -684,7 +684,7 @@ namespace UniSetTypes
 	}
 
 	// -------------------------------------------------------------------------
-	xmlNode* Configuration::findNode(xmlNode* node, const std::string& snode, const std::string& sname) const
+	xmlNode* Configuration::findNode(xmlNode* node, const std::string& snode, const std::string& sname) const noexcept
 	{
 		if( !unixml->isOpen() )
 			return 0;
@@ -692,62 +692,62 @@ namespace UniSetTypes
 		return unixml->findNode(node, snode, sname);
 	}
 	// -------------------------------------------------------------------------
-	string Configuration::getRootDir() const
+	string Configuration::getRootDir() const noexcept
 	{
 		return rootDir;
 	}
 	// -------------------------------------------------------------------------
-	int Configuration::getArgc() const
+	int Configuration::getArgc() const noexcept
 	{
 		return _argc;
 	}
 	// -------------------------------------------------------------------------
-	const char* const* Configuration::getArgv() const
+	const char* const* Configuration::getArgv() const noexcept
 	{
 		return _argv;
 	}
 	// -------------------------------------------------------------------------
-	ObjectId Configuration::getDBServer() const
+	ObjectId Configuration::getDBServer() const noexcept
 	{
 		return localDBServer;    /*!< получение идентификатора DBServer-а */
 	}
 	// -------------------------------------------------------------------------
-	ObjectId Configuration::getLocalNode() const
+	ObjectId Configuration::getLocalNode() const noexcept
 	{
 		return localNode;    /*!< получение идентификатора локального узла */
 	}
 	// -------------------------------------------------------------------------
-	string Configuration::getLocalNodeName() const
+	string Configuration::getLocalNodeName() const noexcept
 	{
 		return localNodeName;    /*!< получение название локального узла */
 	}
 	// -------------------------------------------------------------------------
-	const string Configuration::getNSName() const
+	const string Configuration::getNSName() const noexcept
 	{
 		return NSName;
 	}
 	// -------------------------------------------------------------------------
-	string Configuration::getRootSection() const
+	string Configuration::getRootSection() const noexcept
 	{
 		return secRoot;
 	}
 	// -------------------------------------------------------------------------
-	string Configuration::getSensorsSection() const
+	string Configuration::getSensorsSection() const noexcept
 	{
 		return secSensors;
 	}
 	// -------------------------------------------------------------------------
-	string Configuration::getObjectsSection() const
+	string Configuration::getObjectsSection() const noexcept
 	{
 		return secObjects;
 	}
 	// -------------------------------------------------------------------------
-	string Configuration::getControllersSection() const
+	string Configuration::getControllersSection() const noexcept
 	{
 		return secControlles;
 	}
 	// -------------------------------------------------------------------------
-	string Configuration::getServicesSection() const
+	string Configuration::getServicesSection() const noexcept
 	{
 		return secServices;
 	}
@@ -841,7 +841,7 @@ namespace UniSetTypes
 		uinfo << "Configuration(createNodesList): size of node list " << lnodes.size() << endl;
 	}
 	// -------------------------------------------------------------------------
-	void Configuration::initNode( UniSetTypes::NodeInfo& ninfo, UniXML::iterator& it )
+	void Configuration::initNode( UniSetTypes::NodeInfo& ninfo, UniXML::iterator& it ) noexcept
 	{
 		if( ninfo.id == getLocalNode() )
 			ninfo.connected = true;
@@ -849,7 +849,7 @@ namespace UniSetTypes
 			ninfo.connected = false;
 	}
 	// -------------------------------------------------------------------------
-	string Configuration::getPropByNodeName(const string& nodename, const string& prop) const
+	string Configuration::getPropByNodeName(const string& nodename, const string& prop) const noexcept
 	{
 		xmlNode* node = getNode(nodename);
 
@@ -859,7 +859,7 @@ namespace UniSetTypes
 		return getProp(node, prop);
 	}
 	// -------------------------------------------------------------------------
-	xmlNode* Configuration::initLogStream( std::shared_ptr<DebugStream> deb, const string& _debname )
+	xmlNode* Configuration::initLogStream( std::shared_ptr<DebugStream> deb, const string& _debname ) noexcept
 	{
 		if( !deb )
 			return NULL;
@@ -867,20 +867,20 @@ namespace UniSetTypes
 		return initLogStream( deb.get(), _debname );
 	}
 	// -------------------------------------------------------------------------
-	xmlNode* Configuration::initLogStream( DebugStream& deb, const string& _debname )
+	xmlNode* Configuration::initLogStream( DebugStream& deb, const string& _debname ) noexcept
 	{
 		return initLogStream(&deb, _debname);
 	}
 	// -------------------------------------------------------------------------
-	xmlNode* Configuration::initLogStream( DebugStream* deb, const string& _debname )
+	xmlNode* Configuration::initLogStream( DebugStream* deb, const string& _debname ) noexcept
 	{
 		if( !deb )
-			return NULL;
+			return nullptr;
 
 		if( _debname.empty() )
 		{
 			deb->any() << "(Configuration)(initLogStream): INIT DEBUG FAILED!!!" << endl;
-			return 0;
+			return nullptr;
 		}
 
 
@@ -953,17 +953,17 @@ namespace UniSetTypes
 		return dnode;
 	}
 	// -------------------------------------------------------------------------
-	UniSetTypes::ListOfNode::const_iterator Configuration::listNodesBegin()
+	UniSetTypes::ListOfNode::const_iterator Configuration::listNodesBegin() const noexcept
 	{
 		return lnodes.begin();
 	}
 	// -------------------------------------------------------------------------
-	UniSetTypes::ListOfNode::const_iterator Configuration::listNodesEnd()
+	UniSetTypes::ListOfNode::const_iterator Configuration::listNodesEnd() const noexcept
 	{
 		return lnodes.end();
 	}
 	// -------------------------------------------------------------------------
-	const std::shared_ptr<UniXML> Configuration::getConfXML() const
+	const std::shared_ptr<UniXML> Configuration::getConfXML() const noexcept
 	{
 		return unixml;
 	}
@@ -973,12 +973,12 @@ namespace UniSetTypes
 		return CORBA::ORB::_duplicate(orb);
 	}
 	// -------------------------------------------------------------------------
-	const CORBA::PolicyList Configuration::getPolicy() const
+	const CORBA::PolicyList Configuration::getPolicy() const noexcept
 	{
 		return policyList;
 	}
 	// -------------------------------------------------------------------------
-	static std::string makeSecName( const std::string& sec, const std::string& name )
+	static std::string makeSecName( const std::string& sec, const std::string& name ) noexcept
 	{
 		ostringstream n;
 		n << sec << "/" << name;
@@ -1058,7 +1058,7 @@ namespace UniSetTypes
 		}
 	}
 	// -------------------------------------------------------------------------
-	string Configuration::getPort( const string& port ) const
+	string Configuration::getPort( const string& port ) const noexcept
 	{
 		// Порт задан в параметрах программы
 		string defport(getArgParam("--uniset-port"));
@@ -1081,7 +1081,7 @@ namespace UniSetTypes
 		return UniSetDefaultPort;
 	}
 	// -------------------------------------------------------------------------
-	ObjectId Configuration::getSensorID( const std::string& name ) const
+	ObjectId Configuration::getSensorID( const std::string& name ) const noexcept
 	{
 		if( name.empty() )
 			return DefaultObjectId;
@@ -1089,7 +1089,7 @@ namespace UniSetTypes
 		return oind->getIdByName(getSensorsSection() + "/" + name);
 	}
 	// -------------------------------------------------------------------------
-	ObjectId Configuration::getControllerID( const std::string& name ) const
+	ObjectId Configuration::getControllerID( const std::string& name ) const noexcept
 	{
 		if( name.empty() )
 			return DefaultObjectId;
@@ -1097,7 +1097,7 @@ namespace UniSetTypes
 		return oind->getIdByName(getControllersSection() + "/" + name);
 	}
 	// -------------------------------------------------------------------------
-	ObjectId Configuration::getObjectID( const std::string& name ) const
+	ObjectId Configuration::getObjectID( const std::string& name ) const noexcept
 	{
 		if( name.empty() )
 			return DefaultObjectId;
@@ -1105,7 +1105,7 @@ namespace UniSetTypes
 		return oind->getIdByName(getObjectsSection() + "/" + name);
 	}
 	// -------------------------------------------------------------------------
-	ObjectId Configuration::getServiceID( const std::string& name ) const
+	ObjectId Configuration::getServiceID( const std::string& name ) const noexcept
 	{
 		if( name.empty() )
 			return DefaultObjectId;
@@ -1113,7 +1113,7 @@ namespace UniSetTypes
 		return oind->getIdByName(getServicesSection() + "/" + name);
 	}
 	// -------------------------------------------------------------------------
-	UniSetTypes::ObjectId Configuration::getNodeID( const std::string& name ) const
+	UniSetTypes::ObjectId Configuration::getNodeID( const std::string& name ) const noexcept
 	{
 		if( name.empty() )
 			return DefaultObjectId;
@@ -1121,63 +1121,63 @@ namespace UniSetTypes
 		return oind->getNodeId( name );
 	}
 	// -------------------------------------------------------------------------
-	const string Configuration::getConfFileName() const
+	const string Configuration::getConfFileName() const noexcept
 	{
 		return fileConfName;
 	}
 	// -------------------------------------------------------------------------
-	string Configuration::getImagesDir() const
+	string Configuration::getImagesDir() const noexcept
 	{
 		return imagesDir;    // временно
 	}
 	// -------------------------------------------------------------------------
-	timeout_t Configuration::getHeartBeatTime() const
+	timeout_t Configuration::getHeartBeatTime() const noexcept
 	{
 		return heartbeat_msec;
 	}
 	// -------------------------------------------------------------------------
-	const string Configuration::getConfDir() const
+	const string Configuration::getConfDir() const noexcept
 	{
 		return confDir;
 	}
 
-	const string Configuration::getDataDir() const
+	const string Configuration::getDataDir() const noexcept
 	{
 		return dataDir;
 	}
 
-	const string Configuration::getBinDir() const
+	const string Configuration::getBinDir() const noexcept
 	{
 		return binDir;
 	}
 
-	const string Configuration::getLogDir() const
+	const string Configuration::getLogDir() const noexcept
 	{
 		return logDir;
 	}
 
-	const string Configuration::getLockDir() const
+	const string Configuration::getLockDir() const noexcept
 	{
 		return lockDir;
 	}
 
-	const string Configuration::getDocDir() const
+	const string Configuration::getDocDir() const noexcept
 	{
 		return docDir;
 	}
 
-	bool Configuration::isLocalIOR() const
+	bool Configuration::isLocalIOR() const noexcept
 	{
 		return localIOR;
 	}
 
-	bool Configuration::isTransientIOR() const
+	bool Configuration::isTransientIOR() const noexcept
 	{
 		return transientIOR;
 	}
 
 	// -------------------------------------------------------------------------
-	xmlNode* Configuration::getXMLSensorsSection()
+	xmlNode* Configuration::getXMLSensorsSection() noexcept
 	{
 		if( xmlSensorsSec )
 			return xmlSensorsSec;
@@ -1186,7 +1186,7 @@ namespace UniSetTypes
 		return xmlSensorsSec;
 	}
 	// -------------------------------------------------------------------------
-	xmlNode* Configuration::getXMLObjectsSection()
+	xmlNode* Configuration::getXMLObjectsSection() noexcept
 	{
 		if( xmlObjectsSec )
 			return xmlObjectsSec;
@@ -1195,7 +1195,7 @@ namespace UniSetTypes
 		return xmlObjectsSec;
 	}
 	// -------------------------------------------------------------------------
-	xmlNode* Configuration::getXMLControllersSection()
+	xmlNode* Configuration::getXMLControllersSection() noexcept
 	{
 		if( xmlControllersSec )
 			return xmlControllersSec;
@@ -1205,7 +1205,7 @@ namespace UniSetTypes
 
 	}
 	// -------------------------------------------------------------------------
-	xmlNode* Configuration::getXMLServicesSection()
+	xmlNode* Configuration::getXMLServicesSection() noexcept
 	{
 		if( xmlServicesSec )
 			return xmlServicesSec;
@@ -1214,7 +1214,7 @@ namespace UniSetTypes
 		return xmlServicesSec;
 	}
 	// -------------------------------------------------------------------------
-	xmlNode* Configuration::getXMLNodesSection()
+	xmlNode* Configuration::getXMLNodesSection() noexcept
 	{
 		if( xmlNodesSec )
 			return xmlNodesSec;
@@ -1223,7 +1223,7 @@ namespace UniSetTypes
 		return xmlNodesSec;
 	}
 	// -------------------------------------------------------------------------
-	xmlNode* Configuration::getXMLObjectNode( UniSetTypes::ObjectId id )
+	xmlNode* Configuration::getXMLObjectNode( UniSetTypes::ObjectId id ) const noexcept
 	{
 		const ObjectInfo* i = oind->getObjectInfo(id);
 
@@ -1233,7 +1233,7 @@ namespace UniSetTypes
 		return 0;
 	}
 	// -------------------------------------------------------------------------
-	UniversalIO::IOType Configuration::getIOType( UniSetTypes::ObjectId id ) const
+	UniversalIO::IOType Configuration::getIOType( UniSetTypes::ObjectId id ) const noexcept
 	{
 		const ObjectInfo* i = oind->getObjectInfo(id);
 
@@ -1246,7 +1246,7 @@ namespace UniSetTypes
 		return UniversalIO::UnknownIOType;
 	}
 	// -------------------------------------------------------------------------
-	UniversalIO::IOType Configuration::getIOType( const std::string& name ) const
+	UniversalIO::IOType Configuration::getIOType( const std::string& name ) const noexcept
 	{
 		// Если указано "короткое" имя
 		// то просто сперва ищём ID, а потом по нему
@@ -1269,17 +1269,17 @@ namespace UniSetTypes
 		return UniversalIO::UnknownIOType;
 	}
 	// -------------------------------------------------------------------------
-	size_t Configuration::getCountOfNet() const
+	size_t Configuration::getCountOfNet() const noexcept
 	{
 		return countOfNet;
 	}
 	// -------------------------------------------------------------------------
-	size_t Configuration::getRepeatTimeout() const
+	size_t Configuration::getRepeatTimeout() const noexcept
 	{
 		return repeatTimeout;
 	}
 	// -------------------------------------------------------------------------
-	size_t Configuration::getRepeatCount() const
+	size_t Configuration::getRepeatCount() const noexcept
 	{
 		return repeatCount;
 	}

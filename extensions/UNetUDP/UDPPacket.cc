@@ -61,7 +61,7 @@ static unsigned short crc_16_tab[] =
 // -------------------------------------------------------------------------
 /* CRC-16 is based on the polynomial x^16 + x^15 + x^2 + 1.  Bits are */
 /* sent LSB to MSB. */
-static int get_crc_16( uint16_t crc, unsigned char* buf, int size )
+static int get_crc_16( uint16_t crc, unsigned char* buf, int size ) noexcept
 {
 
 	while( size-- )
@@ -89,7 +89,7 @@ static int get_crc_16( uint16_t crc, unsigned char* buf, int size )
 	return crc;
 }
 // -------------------------------------------------------------------------
-uint16_t UniSetUDP::makeCRC( unsigned char* buf, size_t len )
+uint16_t UniSetUDP::makeCRC( unsigned char* buf, size_t len ) noexcept
 {
 	uint16_t crc = 0xffff;
 	crc = get_crc_16(crc, (unsigned char*)(buf), len);
@@ -133,11 +133,11 @@ std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPMessage& p 
 	return os;
 }
 // -----------------------------------------------------------------------------
-UDPMessage::UDPMessage()
+UDPMessage::UDPMessage() noexcept
 {
 }
 // -----------------------------------------------------------------------------
-size_t UDPMessage::addAData( const UniSetUDP::UDPAData& dat )
+size_t UDPMessage::addAData( const UniSetUDP::UDPAData& dat ) noexcept
 {
 	if( acount >= MaxACount )
 		return MaxACount;
@@ -147,13 +147,13 @@ size_t UDPMessage::addAData( const UniSetUDP::UDPAData& dat )
 	return acount - 1;
 }
 // -----------------------------------------------------------------------------
-size_t UDPMessage::addAData( long id, long val)
+size_t UDPMessage::addAData( long id, long val) noexcept
 {
 	UDPAData d(id, val);
 	return addAData(d);
 }
 // -----------------------------------------------------------------------------
-bool UDPMessage::setAData( size_t index, long val )
+bool UDPMessage::setAData( size_t index, long val ) noexcept
 {
 	if( index < MaxACount )
 	{
@@ -164,7 +164,7 @@ bool UDPMessage::setAData( size_t index, long val )
 	return false;
 }
 // -----------------------------------------------------------------------------
-size_t UDPMessage::addDData( long id, bool val )
+size_t UDPMessage::addDData( long id, bool val ) noexcept
 {
 	if( dcount >= MaxDCount )
 		return MaxDCount;
@@ -183,7 +183,7 @@ size_t UDPMessage::addDData( long id, bool val )
 	return MaxDCount;
 }
 // -----------------------------------------------------------------------------
-bool UDPMessage::setDData( size_t index, bool val )
+bool UDPMessage::setDData( size_t index, bool val ) noexcept
 {
 	if( index >= MaxDCount )
 		return false;
@@ -203,7 +203,7 @@ bool UDPMessage::setDData( size_t index, bool val )
 	return true;
 }
 // -----------------------------------------------------------------------------
-long UDPMessage::dID( size_t index ) const
+long UDPMessage::dID( size_t index ) const noexcept
 {
 	if( index >= MaxDCount )
 		return UniSetTypes::DefaultObjectId;
@@ -211,7 +211,7 @@ long UDPMessage::dID( size_t index ) const
 	return d_id[index];
 }
 // -----------------------------------------------------------------------------
-bool UDPMessage::dValue( size_t index ) const
+bool UDPMessage::dValue( size_t index ) const noexcept
 {
 	if( index >= MaxDCount )
 		return UniSetTypes::DefaultObjectId;
@@ -222,7 +222,7 @@ bool UDPMessage::dValue( size_t index ) const
 	return ( d_dat[nbyte] & (1 << nbit) );
 }
 // -----------------------------------------------------------------------------
-size_t UDPMessage::transport_msg( UDPPacket& p )
+size_t UDPMessage::transport_msg( UDPPacket& p ) const noexcept
 {
 	memset(&p, 0, sizeof(UDPPacket));
 
@@ -251,7 +251,7 @@ size_t UDPMessage::transport_msg( UDPPacket& p )
 	return i;
 }
 // -----------------------------------------------------------------------------
-long UDPMessage::getDataID() const
+long UDPMessage::getDataID() const noexcept
 {
 	// в качестве идентификатора берётся ID первого датчика в данных
 	// приоритет имеет аналоговые датчики
@@ -266,7 +266,7 @@ long UDPMessage::getDataID() const
 	return num;
 }
 
-size_t UniSetUDP::UDPMessage::sizeOf() const
+size_t UniSetUDP::UDPMessage::sizeOf() const noexcept
 {
 	// биты которые не уместились в очередной байт, добавляют ещё один байт
 	size_t nbit =  dcount % 8 * sizeof(unsigned char);
@@ -275,12 +275,12 @@ size_t UniSetUDP::UDPMessage::sizeOf() const
 	return sizeof(UDPHeader) + acount * sizeof(UDPAData) + dcount * sizeof(long) + (dcount / 8 * sizeof(unsigned char) + add);
 }
 // -----------------------------------------------------------------------------
-UDPMessage::UDPMessage( UDPPacket& p )
+UDPMessage::UDPMessage( UDPPacket& p ) noexcept
 {
 	getMessage(*this, p);
 }
 // -----------------------------------------------------------------------------
-size_t UDPMessage::getMessage( UDPMessage& m, UDPPacket& p )
+size_t UDPMessage::getMessage( UDPMessage& m, UDPPacket& p ) noexcept
 {
 	memset(&m, 0, sizeof(m));
 
@@ -326,7 +326,7 @@ size_t UDPMessage::getMessage( UDPMessage& m, UDPPacket& p )
 	return i + sz;
 }
 // -----------------------------------------------------------------------------
-uint16_t UDPMessage::getDataCRC() const
+uint16_t UDPMessage::getDataCRC() const noexcept
 {
 	uint16_t crc[3];
 	crc[0] = makeCRC( (unsigned char*)(a_dat), sizeof(a_dat) );

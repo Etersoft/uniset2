@@ -21,7 +21,7 @@
 #include "TriggerOR.h"
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
-TriggerOR<Caller,InputType>::TriggerOR(Caller* c, Action a):
+TriggerOR<Caller,InputType>::TriggerOR(Caller* c, Action a) noexcept:
 out(false),
 cal(c),
 act(a)
@@ -29,7 +29,7 @@ act(a)
 }
 
 template<class Caller, typename InputType>
-TriggerOR<Caller,InputType>::~TriggerOR()
+TriggerOR<Caller,InputType>::~TriggerOR() noexcept
 {
 }
 
@@ -69,11 +69,15 @@ void TriggerOR<Caller,InputType>::remove(InputType num)
 
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
-bool TriggerOR<Caller,InputType>::getState(InputType num) const
+bool TriggerOR<Caller,InputType>::getState(InputType num) const noexcept
 {
-	auto it=inputs.find(num);
-	if( it!=inputs.end() )
-		return it->second;
+	try
+	{
+		auto it=inputs.find(num);
+		if( it!=inputs.end() )
+			return it->second;
+	}
+	catch(...){}
 
 	return false; // throw NotFound
 }

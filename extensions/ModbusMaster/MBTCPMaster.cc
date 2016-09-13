@@ -17,7 +17,6 @@
 #include <cmath>
 #include <limits>
 #include <sstream>
-#include <Poco/Net/NetException.h>
 #include <Exceptions.h>
 #include <extensions/Extensions.h>
 #include "MBTCPMaster.h"
@@ -95,49 +94,34 @@ std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
 		if( !reopen )
 			return mbtcp;
 
-		mbtcp.reset();
-		mb.reset();
 		ptInitChannel.reset();
-	}
 
-	try
-	{
-		mbtcp = std::make_shared<ModbusTCPMaster>();
-
+		mbtcp->forceDisconnect();
 		mbtcp->connect(iaddr, port);
-		mbtcp->setForceDisconnect(force_disconnect);
-
-		if( recv_timeout > 0 )
-			mbtcp->setTimeout(recv_timeout);
-
-		mbtcp->setSleepPause(sleepPause_msec);
-		mbtcp->setAfterSendPause(aftersend_pause);
-
-		mbinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
-
-		auto l = loga->create(myname + "-exchangelog");
-		mbtcp->setLog(l);
-
-		if( ic )
-			ic->logAgregator()->add(loga);
+		mbinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port
+			   << " connection=" << (mbtcp->isConnection() ? "OK" : "FAIL" ) << endl;
+		mb = mbtcp;
+		return mbtcp;
 	}
-	catch( ModbusRTU::mbException& ex )
-	{
-		mbwarn << "(init): " << ex << endl;
-		mb = nullptr;
-		mbtcp = nullptr;
-	}
-	catch( const Poco::Net::NetException& e )
-	{
-		mbwarn << myname << "(init): Can`t create socket " << iaddr << ":" << port << " err: " << e.displayText() << endl;
-		mb = nullptr;
-		mbtcp = nullptr;
-	}
-	catch(...)
-	{
-		mb = nullptr;
-		mbtcp = nullptr;
-	}
+
+	mbtcp = std::make_shared<ModbusTCPMaster>();
+	mbtcp->connect(iaddr, port);
+	mbtcp->setForceDisconnect(force_disconnect);
+
+	if( recv_timeout > 0 )
+		mbtcp->setTimeout(recv_timeout);
+
+	mbtcp->setSleepPause(sleepPause_msec);
+	mbtcp->setAfterSendPause(aftersend_pause);
+
+	mbinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port
+		   << " connection=" << (mbtcp->isConnection() ? "OK" : "FAIL" ) << endl;
+
+	auto l = loga->create(myname + "-exchangelog");
+	mbtcp->setLog(l);
+
+	if( ic )
+		ic->logAgregator()->add(loga);
 
 	mb = mbtcp;
 	return mbtcp;

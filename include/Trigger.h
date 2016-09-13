@@ -26,13 +26,13 @@
 class Trigger
 {
 	public:
-		Trigger(bool initial = false)
+		Trigger(bool initial = false) noexcept
 		{
 			oldstate = initial;
 		}
 
 		/*! Срабатываем по верхнему фронту (при наступлении true) */
-		bool hi(bool state)
+		bool hi(bool state) noexcept
 		{
 			if (oldstate != state)
 			{
@@ -45,7 +45,7 @@ class Trigger
 			return false;
 		}
 		/*! Срабатываем по нижнему фронту (при наступлении false) */
-		bool low(bool state)
+		bool low(bool state) noexcept
 		{
 			if (oldstate != state)
 			{
@@ -58,7 +58,7 @@ class Trigger
 			return false;
 		}
 		/*! Срабатывает при любом изменении */
-		bool change(bool state)
+		bool change(bool state) noexcept
 		{
 			if (oldstate != state)
 			{
@@ -69,7 +69,7 @@ class Trigger
 			return false;
 		}
 
-		inline bool get() const
+		inline bool get() const noexcept
 		{
 			return oldstate;
 		}

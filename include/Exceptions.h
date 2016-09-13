@@ -46,8 +46,8 @@ namespace UniSetTypes
 	{
 		public:
 
-			Exception(const std::string& txt): text(txt.c_str()) {}
-			Exception(): text("Exception") {}
+			Exception(const std::string& txt) noexcept: text(txt.c_str()) {}
+			Exception() noexcept: text("Exception") {}
 			virtual ~Exception() noexcept(true) {}
 
 			friend std::ostream& operator<<(std::ostream& os, const Exception& ex )
@@ -68,8 +68,8 @@ namespace UniSetTypes
 	class OutOfRange: public Exception
 	{
 		public:
-			OutOfRange(): Exception("OutOfRange") {}
-			OutOfRange(const std::string& err): Exception(err) {}
+			OutOfRange() noexcept: Exception("OutOfRange") {}
+			OutOfRange(const std::string& err) noexcept: Exception(err) {}
 	};
 
 	/*! Исключение, вырабатываемое функциями репозитория объектов.
@@ -78,10 +78,10 @@ namespace UniSetTypes
 	class ORepFailed: public Exception
 	{
 		public:
-			ORepFailed(): Exception("ORepFailed") {}
+			ORepFailed() noexcept: Exception("ORepFailed") {}
 
 			/*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-			ORepFailed(const std::string& err): Exception(err) {}
+			ORepFailed(const std::string& err) noexcept: Exception(err) {}
 	};
 
 
@@ -89,20 +89,20 @@ namespace UniSetTypes
 	class SystemError: public Exception
 	{
 		public:
-			SystemError(): Exception("SystemError") {}
+			SystemError() noexcept: Exception("SystemError") {}
 
 			/*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-			SystemError(const std::string& err): Exception(err) {}
+			SystemError(const std::string& err) noexcept: Exception(err) {}
 	};
 
 	/*! Ошибка соединения */
 	class CommFailed: public Exception
 	{
 		public:
-			CommFailed(): Exception("CommFailed") {}
+			CommFailed() noexcept: Exception("CommFailed") {}
 
 			/*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-			CommFailed(const std::string& err): Exception(err) {}
+			CommFailed(const std::string& err) noexcept: Exception(err) {}
 	};
 
 
@@ -113,10 +113,10 @@ namespace UniSetTypes
 	class TimeOut: public CommFailed
 	{
 		public:
-			TimeOut(): CommFailed("TimeOut") {}
+			TimeOut() noexcept: CommFailed("TimeOut") {}
 
 			/*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-			TimeOut(const std::string& err): CommFailed(err) {}
+			TimeOut(const std::string& err) noexcept: CommFailed(err) {}
 
 	};
 
@@ -124,16 +124,16 @@ namespace UniSetTypes
 	class ResolveNameError: public ORepFailed
 	{
 		public:
-			ResolveNameError(): ORepFailed("ResolveNameError") {}
-			ResolveNameError(const std::string& err): ORepFailed(err) {}
+			ResolveNameError() noexcept: ORepFailed("ResolveNameError") {}
+			ResolveNameError(const std::string& err) noexcept: ORepFailed(err) {}
 	};
 
 
 	class NSResolveError: public ORepFailed
 	{
 		public:
-			NSResolveError(): ORepFailed("NSResolveError") {}
-			NSResolveError(const std::string& err): ORepFailed(err) {}
+			NSResolveError() noexcept: ORepFailed("NSResolveError") {}
+			NSResolveError(const std::string& err) noexcept: ORepFailed(err) {}
 	};
 
 
@@ -144,10 +144,10 @@ namespace UniSetTypes
 	class ObjectNameAlready: public ResolveNameError
 	{
 		public:
-			ObjectNameAlready(): ResolveNameError("ObjectNameAlready") {}
+			ObjectNameAlready() noexcept: ResolveNameError("ObjectNameAlready") {}
 
 			/*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-			ObjectNameAlready(const std::string& err): ResolveNameError(err) {}
+			ObjectNameAlready(const std::string& err) noexcept: ResolveNameError(err) {}
 	};
 
 	/*!
@@ -157,10 +157,10 @@ namespace UniSetTypes
 	class IOBadParam: public Exception
 	{
 		public:
-			IOBadParam(): Exception("IOBadParam") {}
+			IOBadParam() noexcept: Exception("IOBadParam") {}
 
 			/*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-			IOBadParam(const std::string& err): Exception(err) {}
+			IOBadParam(const std::string& err) noexcept: Exception(err) {}
 	};
 
 	/*!
@@ -170,15 +170,15 @@ namespace UniSetTypes
 	class InvalidObjectName: public ResolveNameError
 	{
 		public:
-			InvalidObjectName(): ResolveNameError("InvalidObjectName") {}
-			InvalidObjectName(const std::string& err): ResolveNameError(err) {}
+			InvalidObjectName() noexcept: ResolveNameError("InvalidObjectName") {}
+			InvalidObjectName(const std::string& err) noexcept: ResolveNameError(err) {}
 	};
 
 	class NameNotFound: public ResolveNameError
 	{
 		public:
-			NameNotFound(): ResolveNameError("NameNotFound") {}
-			NameNotFound(const std::string& err): ResolveNameError(err) {}
+			NameNotFound() noexcept: ResolveNameError("NameNotFound") {}
+			NameNotFound(const std::string& err) noexcept: ResolveNameError(err) {}
 	};
 
 	//@}

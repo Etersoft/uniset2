@@ -42,13 +42,13 @@ typedef MQAtomic UMessageQueue;
 using namespace std;
 using namespace UniSetTypes;
 // --------------------------------------------------------------------------
-static void pushMessage( UMessageQueue& mq, long id )
+static bool pushMessage( UMessageQueue& mq, long id )
 {
 	SensorMessage sm(id, id);
 	sm.consumer = id; // чтобы хоть как-то идентифицировать сообщений, используем поле consumer
 	TransportMessage tm( std::move(sm.transport_msg()) );
 	auto vm = make_shared<VoidMessage>(tm);
-	mq.push(vm);
+	return mq.push(vm);
 }
 // --------------------------------------------------------------------------
 TEST_CASE( "UMessageQueue: setup", "[mqueue]" )
@@ -66,7 +66,7 @@ TEST_CASE( "UMessageQueue: simple push/top", "[mqueue]" )
 
 	UMessageQueue mq;
 
-	pushMessage(mq, 100);
+	REQUIRE( pushMessage(mq, 100) );
 
 	auto msg = mq.top();
 	REQUIRE( msg != nullptr );
@@ -82,13 +82,13 @@ TEST_CASE( "UMessageQueue: overflow (lost old data)", "[mqueue]" )
 
 	mq.setLostStrategy( UMessageQueue::lostOldData );
 
-	pushMessage(mq, 100);
+	REQUIRE( pushMessage(mq, 100) );
 	REQUIRE( mq.size() == 1 );
 
-	pushMessage(mq, 110);
+	REQUIRE( pushMessage(mq, 110) );
 	REQUIRE( mq.size() == 2 );
 
-	pushMessage(mq, 120);
+	REQUIRE( pushMessage(mq, 120) );
 	REQUIRE( mq.size() == 2 );
 
 	auto msg = mq.top();
@@ -111,17 +111,17 @@ TEST_CASE( "UMessageQueue: overflow (lost new data)", "[mqueue]" )
 
 	mq.setLostStrategy( UMessageQueue::lostNewData );
 
-	pushMessage(mq, 100);
+	REQUIRE( pushMessage(mq, 100) );
 	REQUIRE( mq.size() == 1 );
 
-	pushMessage(mq, 110);
+	REQUIRE( pushMessage(mq, 110) );
 	REQUIRE( mq.size() == 2 );
 
-	pushMessage(mq, 120);
+	REQUIRE_FALSE( pushMessage(mq, 120) );
 	REQUIRE( mq.size() == 2 );
 	REQUIRE( mq.getCountOfLostMessages() == 1 );
 
-	pushMessage(mq, 130);
+	REQUIRE_FALSE( pushMessage(mq, 130) );
 	REQUIRE( mq.size() == 2 );
 
 	REQUIRE( mq.getCountOfLostMessages() == 2 );
@@ -146,7 +146,7 @@ TEST_CASE( "UMessageQueue: many read", "[mqueue]" )
 	mq.setMaxSizeOfMessageQueue(1);
 	mq.setLostStrategy( UMessageQueue::lostNewData );
 
-	pushMessage(mq, 100);
+	REQUIRE( pushMessage(mq, 100) );
 	REQUIRE( mq.size() == 1 );
 
 	auto msg = mq.top();
@@ -216,9 +216,9 @@ TEST_CASE( "UMessageQueue: overflow index (strategy=lostOldData)", "[mqueue]" )
 	mq.set_rpos(max);
 
 	// При переходе через максимум ничего не должны потерять
-	pushMessage(mq, 100);
-	pushMessage(mq, 110);
-	pushMessage(mq, 120);
+	REQUIRE( pushMessage(mq, 100) );
+	REQUIRE( pushMessage(mq, 110) );
+	REQUIRE( pushMessage(mq, 120) );
 
 	auto m = mq.top();
 	REQUIRE( m != nullptr );
@@ -242,9 +242,9 @@ TEST_CASE( "UMessageQueue: lost data (strategy=lostOldData)", "[mqueue]" )
 	mq.setLostStrategy(MQAtomic::lostOldData);
 	mq.setMaxSizeOfMessageQueue(2);
 
-	pushMessage(mq, 100);
-	pushMessage(mq, 110);
-	pushMessage(mq, 120);
+	REQUIRE( pushMessage(mq, 100) );
+	REQUIRE( pushMessage(mq, 110) );
+	REQUIRE( pushMessage(mq, 120) );
 
 	auto m = mq.top();
 	REQUIRE( m != nullptr );
@@ -262,9 +262,9 @@ TEST_CASE( "UMessageQueue: lost data (strategy=lostOldData)", "[mqueue]" )
 	mq.set_rpos(max);
 
 	// При переходе через максимум ничего не должны потерять
-	pushMessage(mq, 140);
-	pushMessage(mq, 150);
-	pushMessage(mq, 160);
+	REQUIRE( pushMessage(mq, 140) );
+	REQUIRE( pushMessage(mq, 150) );
+	REQUIRE( pushMessage(mq, 160) );
 
 	m = mq.top();
 	REQUIRE( m != nullptr );
@@ -290,9 +290,9 @@ TEST_CASE( "UMessageQueue: overflow index (strategy=lostNewData)", "[mqueue]" )
 	mq.set_rpos(max);
 
 	// При переходе через максимум ничего не должны потерять
-	pushMessage(mq, 100);
-	pushMessage(mq, 110);
-	pushMessage(mq, 120);
+	REQUIRE( pushMessage(mq, 100) );
+	REQUIRE( pushMessage(mq, 110) );
+	REQUIRE( pushMessage(mq, 120) );
 
 	auto m = mq.top();
 	REQUIRE( m != nullptr );
@@ -316,9 +316,9 @@ TEST_CASE( "UMessageQueue: lost data (strategy=lostNewData)", "[mqueue]" )
 	mq.setLostStrategy(MQAtomic::lostNewData);
 	mq.setMaxSizeOfMessageQueue(2);
 
-	pushMessage(mq, 100);
-	pushMessage(mq, 110);
-	pushMessage(mq, 120);
+	REQUIRE( pushMessage(mq, 100) );
+	REQUIRE( pushMessage(mq, 110) );
+	REQUIRE_FALSE( pushMessage(mq, 120) );
 
 	auto m = mq.top();
 	REQUIRE( m != nullptr );
@@ -336,9 +336,9 @@ TEST_CASE( "UMessageQueue: lost data (strategy=lostNewData)", "[mqueue]" )
 	mq.set_rpos(max);
 
 	// При переходе через максимум ничего не должны потерять
-	pushMessage(mq, 140);
-	pushMessage(mq, 150);
-	pushMessage(mq, 160);
+	REQUIRE( pushMessage(mq, 140) );
+	REQUIRE( pushMessage(mq, 150) );
+	REQUIRE_FALSE( pushMessage(mq, 160) );
 
 	m = mq.top();
 	REQUIRE( m != nullptr );

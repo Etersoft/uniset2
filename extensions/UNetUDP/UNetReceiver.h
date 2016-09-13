@@ -110,43 +110,43 @@ class UNetReceiver:
 		}
 
 		// блокировать сохранение данных в SM
-		void setLockUpdate( bool st );
-		inline bool isLockUpdate() const
+		void setLockUpdate( bool st ) noexcept;
+		inline bool isLockUpdate() const noexcept
 		{
 			return lockUpdate;
 		}
 
-		void resetTimeout();
+		void resetTimeout() noexcept;
 
-		inline bool isRecvOK() const
+		inline bool isRecvOK() const noexcept
 		{
 			return !ptRecvTimeout.checkTime();
 		}
-		inline size_t getLostPacketsNum() const
+		inline size_t getLostPacketsNum() const noexcept
 		{
 			return lostPackets;
 		}
 
-		void setReceiveTimeout( timeout_t msec );
-		void setReceivePause( timeout_t msec );
-		void setUpdatePause( timeout_t msec );
-		void setLostTimeout( timeout_t msec );
-		void setPrepareTime( timeout_t msec );
-		void setCheckConnectionPause( timeout_t msec );
-		void setMaxDifferens( unsigned long set );
+		void setReceiveTimeout( timeout_t msec ) noexcept;
+		void setReceivePause( timeout_t msec ) noexcept;
+		void setUpdatePause( timeout_t msec ) noexcept;
+		void setLostTimeout( timeout_t msec ) noexcept;
+		void setPrepareTime( timeout_t msec ) noexcept;
+		void setCheckConnectionPause( timeout_t msec ) noexcept;
+		void setMaxDifferens( unsigned long set ) noexcept;
 
-		void setRespondID( UniSetTypes::ObjectId id, bool invert = false );
-		void setLostPacketsID( UniSetTypes::ObjectId id );
+		void setRespondID( UniSetTypes::ObjectId id, bool invert = false ) noexcept;
+		void setLostPacketsID( UniSetTypes::ObjectId id ) noexcept;
 
-		void setMaxProcessingCount( int set );
+		void setMaxProcessingCount( int set ) noexcept;
 
-		void forceUpdate(); // пересохранить очередной пакет в SM даже если данные не менялись
+		void forceUpdate() noexcept; // пересохранить очередной пакет в SM даже если данные не менялись
 
-		inline std::string getAddress() const
+		inline std::string getAddress() const noexcept
 		{
 			return addr;
 		}
-		inline int getPort() const
+		inline int getPort() const noexcept
 		{
 			return port;
 		}
@@ -159,7 +159,7 @@ class UNetReceiver:
 		};
 
 		typedef sigc::slot<void, const std::shared_ptr<UNetReceiver>&, Event> EventSlot;
-		void connectEvent( EventSlot sl );
+		void connectEvent( EventSlot sl ) noexcept;
 
 		// --------------------------------------------------------------------
 		/*! Стратегия обработки сообщений */
@@ -170,8 +170,8 @@ class UNetReceiver:
 			useUpdateEventLoop	/*!< использовать event loop (т.е. совместно с receive) */
 		};
 
-		static UpdateStrategy strToUpdateStrategy( const std::string& s );
-		static std::string to_string( UpdateStrategy s);
+		static UpdateStrategy strToUpdateStrategy( const std::string& s ) noexcept;
+		static std::string to_string( UpdateStrategy s) noexcept;
 
 		//! функция должна вызываться до первого вызова start()
 		void setUpdateStrategy( UpdateStrategy set );
@@ -196,30 +196,30 @@ class UNetReceiver:
 			return unetlog;
 		}
 
-		virtual const std::string getShortInfo() const;
+		virtual const std::string getShortInfo() const noexcept;
 
 	protected:
 
 		const std::shared_ptr<SMInterface> shm;
 		std::shared_ptr<DebugStream> unetlog;
 
-		bool receive();
-		void step();
-		void update();
-		void updateThread();
-		void callback( ev::io& watcher, int revents );
-		void readEvent( ev::io& watcher );
-		void updateEvent( ev::periodic& watcher, int revents );
-		void checkConnectionEvent( ev::periodic& watcher, int revents );
-		void statisticsEvent( ev::periodic& watcher, int revents );
-		virtual void evprepare( const ev::loop_ref& eloop ) override;
-		virtual void evfinish(const ev::loop_ref& eloop ) override;
-		virtual std::string wname() override
+		bool receive() noexcept;
+		void step() noexcept;
+		void update() noexcept;
+		void updateThread() noexcept;
+		void callback( ev::io& watcher, int revents ) noexcept;
+		void readEvent( ev::io& watcher ) noexcept;
+		void updateEvent( ev::periodic& watcher, int revents ) noexcept;
+		void checkConnectionEvent( ev::periodic& watcher, int revents ) noexcept;
+		void statisticsEvent( ev::periodic& watcher, int revents ) noexcept;
+		virtual void evprepare( const ev::loop_ref& eloop ) noexcept override;
+		virtual void evfinish(const ev::loop_ref& eloop ) noexcept override;
+		virtual std::string wname() const noexcept override
 		{
 			return myname;
 		}
 
-		void initIterators();
+		void initIterators() noexcept;
 		bool createConnection( bool throwEx = false );
 
 	public:
@@ -337,8 +337,8 @@ class UNetReceiver:
 		bool d_cache_init_ok = { false };
 		bool a_cache_init_ok = { false };
 
-		void initDCache( UniSetUDP::UDPMessage& pack, bool force = false );
-		void initACache( UniSetUDP::UDPMessage& pack, bool force = false );
+		void initDCache( UniSetUDP::UDPMessage& pack, bool force = false ) noexcept;
+		void initACache( UniSetUDP::UDPMessage& pack, bool force = false ) noexcept;
 };
 // -----------------------------------------------------------------------------
 #endif // UNetReceiver_H_

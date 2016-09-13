@@ -18,8 +18,9 @@ class ModbusTCPMaster:
 		ModbusTCPMaster();
 		virtual ~ModbusTCPMaster();
 
-		void connect( const std::string& addr, int port );
-		void connect( const Poco::Net::SocketAddress& addr, int _port );
+		bool connect( const std::string& addr, int port, bool closeOldConnection=true ) noexcept;
+		bool connect( const Poco::Net::SocketAddress& addr, int _port, bool closeOldConnection=true ) noexcept;
+
 		void disconnect();
 		void forceDisconnect();
 		bool isConnection() const;
@@ -31,7 +32,7 @@ class ModbusTCPMaster:
 			force_disconnect = s;
 		}
 
-		void reconnect();
+		bool reconnect();
 		void cleanInputStream();
 
 		virtual void cleanupChannel() override

@@ -58,19 +58,19 @@ namespace UniSetTypes
 			ObjectId consumer = { UniSetTypes::DefaultObjectId };  // кому
 			struct timespec tm = { 0, 0 };
 
-			Message( Message&& ) = default;
-			Message& operator=(Message&& ) = default;
-			Message( const Message& ) = default;
-			Message& operator=(const Message& ) = default;
+			Message( Message&& ) noexcept = default;
+			Message& operator=(Message&& ) noexcept = default;
+			Message( const Message& ) noexcept = default;
+			Message& operator=(const Message& ) noexcept = default;
 
-			Message();
+			Message() noexcept;
 
 			// для оптимизации, делаем конструктор который не будет инициализировать свойства класса
 			// это необходимо для VoidMessage, который конструируется при помощи memcpy
-			explicit Message( int dummy_init ) {}
+			explicit Message( int dummy_init ) noexcept {}
 
 			template<class In>
-			static const TransportMessage transport(const In& msg)
+			static const TransportMessage transport(const In& msg) noexcept
 			{
 				TransportMessage tmsg;
 				assert(sizeof(UniSetTypes::RawDataOfTransportMessage) >= sizeof(msg));
@@ -87,17 +87,17 @@ namespace UniSetTypes
 	{
 		public:
 
-			VoidMessage( VoidMessage&& ) = default;
-			VoidMessage& operator=(VoidMessage&& ) = default;
-			VoidMessage( const VoidMessage& ) = default;
-			VoidMessage& operator=( const VoidMessage& ) = default;
+			VoidMessage( VoidMessage&& ) noexcept = default;
+			VoidMessage& operator=(VoidMessage&& ) noexcept = default;
+			VoidMessage( const VoidMessage& ) noexcept = default;
+			VoidMessage& operator=( const VoidMessage& ) noexcept = default;
 
 			// для оптимизации, делаем конструктор который не будет инициализировать свойства класса
 			// это необходимо для VoidMessage, который конструируется при помощи memcpy
-			VoidMessage( int dummy ): Message(dummy) {}
+			VoidMessage( int dummy ) noexcept : Message(dummy) {}
 
-			VoidMessage( const TransportMessage& tm );
-			VoidMessage();
+			VoidMessage( const TransportMessage& tm ) noexcept;
+			VoidMessage() noexcept;
 			inline bool operator < ( const VoidMessage& msg ) const
 			{
 				if( priority != msg.priority )
@@ -109,7 +109,7 @@ namespace UniSetTypes
 				return tm.tv_nsec >= msg.tm.tv_nsec;
 			}
 
-			inline TransportMessage transport_msg() const
+			inline TransportMessage transport_msg() const noexcept
 			{
 				return transport(*this);
 			}
@@ -137,25 +137,25 @@ namespace UniSetTypes
 			bool threshold = { false };  /*!< TRUE - сработал порог, FALSE - порог отключился */
 			UniSetTypes::ThresholdId tid = { UniSetTypes::DefaultThresholdId };
 
-			SensorMessage( SensorMessage&& m) = default;
-			SensorMessage& operator=(SensorMessage&& m) = default;
-			SensorMessage( const SensorMessage& ) = default;
-			SensorMessage& operator=( const SensorMessage& ) = default;
+			SensorMessage( SensorMessage&& m) noexcept = default;
+			SensorMessage& operator=(SensorMessage&& m) noexcept = default;
+			SensorMessage( const SensorMessage& ) noexcept = default;
+			SensorMessage& operator=( const SensorMessage& ) noexcept = default;
 
-			SensorMessage();
+			SensorMessage() noexcept;
 			SensorMessage(ObjectId id, long value, const IOController_i::CalibrateInfo& ci = IOController_i::CalibrateInfo(),
 						  Priority priority = Message::Medium,
 						  UniversalIO::IOType st = UniversalIO::AI,
-						  ObjectId consumer = UniSetTypes::DefaultObjectId);
+						  ObjectId consumer = UniSetTypes::DefaultObjectId) noexcept;
 
 			// специальный конструктор, для оптимизации
 			// он не инициализирует поля по умолчанию
 			// и за инициализацию значений отвечает "пользователь"
 			// например см. IONotifyController::localSetValue()
-			explicit SensorMessage( int dummy );
+			explicit SensorMessage( int dummy ) noexcept;
 
-			SensorMessage(const VoidMessage* msg);
-			inline TransportMessage transport_msg() const
+			SensorMessage(const VoidMessage* msg) noexcept;
+			inline TransportMessage transport_msg() const noexcept
 			{
 				return transport(*this);
 			}
@@ -183,17 +183,17 @@ namespace UniSetTypes
 				TheLastFieldOfCommand
 			};
 
-			SystemMessage( SystemMessage&& ) = default;
-			SystemMessage& operator=(SystemMessage&& ) = default;
-			SystemMessage( const SystemMessage& ) = default;
-			SystemMessage& operator=( const SystemMessage& ) = default;
+			SystemMessage( SystemMessage&& ) noexcept = default;
+			SystemMessage& operator=(SystemMessage&& ) noexcept = default;
+			SystemMessage( const SystemMessage& ) noexcept = default;
+			SystemMessage& operator=( const SystemMessage& ) noexcept = default;
 
-			SystemMessage();
+			SystemMessage() noexcept;
 			SystemMessage(Command command, Priority priority = Message::High,
-						  ObjectId consumer = UniSetTypes::DefaultObjectId);
-			SystemMessage(const VoidMessage* msg);
+						  ObjectId consumer = UniSetTypes::DefaultObjectId) noexcept;
+			SystemMessage(const VoidMessage* msg) noexcept;
 
-			inline TransportMessage transport_msg() const
+			inline TransportMessage transport_msg() const noexcept
 			{
 				return transport(*this);
 			}
@@ -209,16 +209,16 @@ namespace UniSetTypes
 	class TimerMessage : public Message
 	{
 		public:
-			TimerMessage( TimerMessage&& ) = default;
-			TimerMessage& operator=(TimerMessage&& ) = default;
-			TimerMessage( const TimerMessage& ) = default;
-			TimerMessage& operator=( const TimerMessage& ) = default;
+			TimerMessage( TimerMessage&& ) noexcept = default;
+			TimerMessage& operator=(TimerMessage&& ) noexcept = default;
+			TimerMessage( const TimerMessage& ) noexcept = default;
+			TimerMessage& operator=( const TimerMessage& ) noexcept = default;
 
 			TimerMessage();
 			TimerMessage(UniSetTypes::TimerId id, Priority prior = Message::High,
 						 ObjectId cons = UniSetTypes::DefaultObjectId);
-			TimerMessage(const VoidMessage* msg);
-			inline TransportMessage transport_msg() const
+			TimerMessage(const VoidMessage* msg) noexcept ;
+			inline TransportMessage transport_msg() const noexcept
 			{
 				return transport(*this);
 			}
@@ -233,23 +233,23 @@ namespace UniSetTypes
 	{
 		public:
 
-			inline TransportMessage transport_msg() const
+			inline TransportMessage transport_msg() const noexcept
 			{
 				return transport(*this);
 			}
 
-			ConfirmMessage( const VoidMessage* msg );
+			ConfirmMessage( const VoidMessage* msg ) noexcept;
 
 			ConfirmMessage(ObjectId in_sensor_id,
 						   const double& in_sensor_value,
 						   const timespec& in_sensor_time,
 						   const timespec& in_confirm_time,
-						   Priority in_priority = Message::Medium);
+						   Priority in_priority = Message::Medium) noexcept;
 
-			ConfirmMessage( ConfirmMessage&& ) = default;
-			ConfirmMessage& operator=(ConfirmMessage&& ) = default;
-			ConfirmMessage( const ConfirmMessage& ) = default;
-			ConfirmMessage& operator=( const ConfirmMessage& ) = default;
+			ConfirmMessage( ConfirmMessage&& ) noexcept = default;
+			ConfirmMessage& operator=(ConfirmMessage&& ) noexcept = default;
+			ConfirmMessage( const ConfirmMessage& ) noexcept = default;
+			ConfirmMessage& operator=( const ConfirmMessage& ) noexcept = default;
 
 			ObjectId sensor_id;   /* ID датчика (события) */
 			double sensor_value;  /* значение датчика (события) */
@@ -266,7 +266,7 @@ namespace UniSetTypes
 			bool forward;
 
 		protected:
-			ConfirmMessage();
+			ConfirmMessage() noexcept;
 	};
 
 }

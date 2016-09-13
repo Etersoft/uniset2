@@ -3,7 +3,7 @@
 # See doc: http://www.gnu.org/software/hello/manual/autoconf/Generic-Programs.html
 
 # AC_PREREQ(2.59)
-AC_INIT([uniset2], [2.5.0], pv@etersoft.ru)
+AC_INIT([uniset2], [2.5.1], pv@etersoft.ru)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME,AC_PACKAGE_VERSION)
 
 LIBVER=2:5:0
@@ -63,6 +63,11 @@ POCO_LIBS="-lPocoFoundation -lPocoNet"
 POCO_CFLAGS="-IPoco"
 AC_SUBST(POCO_LIBS)
 AC_SUBST(POCO_CFLAGS)
+poco_old=
+AC_CHECK_HEADERS([Poco/Version.h],,poco_old=1)
+if test -n "$poco_old"; then
+	POCO_CFLAGS="${POCO_CFLAGS} -DPOCO_OLD_VERSION"
+fi
 
 #check sqlite support
 AC_MSG_CHECKING([sqlite support])

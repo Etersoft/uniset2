@@ -23,7 +23,7 @@ class EvWatcher
 		// вызов своих ev::xxx.stop()
 		virtual void evfinish( const ev::loop_ref& ) {}
 
-		virtual std::string wname()
+		virtual std::string wname() const noexcept
 		{
 			return "";
 		}
@@ -49,10 +49,10 @@ class CommonEventLoop
 {
 	public:
 
-		CommonEventLoop();
+		CommonEventLoop() noexcept;
 		~CommonEventLoop();
 
-		bool evIsActive() const;
+		bool evIsActive() const noexcept;
 
 		/*! \return TRUE - если всё удалось. return актуален только для случая когда thread = true */
 		bool evrun( EvWatcher* w, bool thread = true );
@@ -60,7 +60,7 @@ class CommonEventLoop
 		/*! \return TRUE - если это был последний EvWatcher и loop остановлен */
 		bool evstop( EvWatcher* w );
 
-		inline const ev::loop_ref evloop()
+		inline const ev::loop_ref evloop() noexcept
 		{
 			return loop;
 		}
@@ -69,9 +69,9 @@ class CommonEventLoop
 
 	private:
 
-		void onStop();
-		void onPrepare();
-		void defaultLoop();
+		void onStop() noexcept;
+		void onPrepare() noexcept;
+		void defaultLoop() noexcept;
 
 		std::atomic_bool cancelled = { false };
 		std::atomic_bool isrunning = { false };

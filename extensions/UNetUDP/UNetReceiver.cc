@@ -89,20 +89,20 @@ UNetReceiver::~UNetReceiver()
 {
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setReceiveTimeout( timeout_t msec )
+void UNetReceiver::setReceiveTimeout( timeout_t msec ) noexcept
 {
 	std::lock_guard<std::mutex> l(tmMutex);
 	recvTimeout = msec;
 	ptRecvTimeout.setTiming(msec);
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setPrepareTime( timeout_t msec )
+void UNetReceiver::setPrepareTime( timeout_t msec ) noexcept
 {
 	prepareTime = msec;
 	ptPrepare.setTiming(msec);
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setCheckConnectionPause( timeout_t msec )
+void UNetReceiver::setCheckConnectionPause( timeout_t msec ) noexcept
 {
 	checkConnectionTime = (double)msec / 1000.0;
 
@@ -110,18 +110,18 @@ void UNetReceiver::setCheckConnectionPause( timeout_t msec )
 		evCheckConnection.start(0, checkConnectionTime);
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setLostTimeout( timeout_t msec )
+void UNetReceiver::setLostTimeout( timeout_t msec ) noexcept
 {
 	lostTimeout = msec;
 	ptLostTimeout.setTiming(msec);
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setReceivePause( timeout_t msec )
+void UNetReceiver::setReceivePause( timeout_t msec ) noexcept
 {
 	recvpause = msec;
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setUpdatePause( timeout_t msec )
+void UNetReceiver::setUpdatePause( timeout_t msec ) noexcept
 {
 	updatepause = msec;
 
@@ -129,30 +129,30 @@ void UNetReceiver::setUpdatePause( timeout_t msec )
 		evUpdate.start(0, (float)updatepause/1000.);
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setMaxProcessingCount( int set )
+void UNetReceiver::setMaxProcessingCount( int set ) noexcept
 {
 	maxProcessingCount = set;
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setMaxDifferens( unsigned long set )
+void UNetReceiver::setMaxDifferens( unsigned long set ) noexcept
 {
 	maxDifferens = set;
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setRespondID( UniSetTypes::ObjectId id, bool invert )
+void UNetReceiver::setRespondID( UniSetTypes::ObjectId id, bool invert ) noexcept
 {
 	sidRespond = id;
 	respondInvert = invert;
 	shm->initIterator(itRespond);
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setLostPacketsID( UniSetTypes::ObjectId id )
+void UNetReceiver::setLostPacketsID( UniSetTypes::ObjectId id ) noexcept
 {
 	sidLostPackets = id;
 	shm->initIterator(itLostPackets);
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setLockUpdate( bool st )
+void UNetReceiver::setLockUpdate( bool st ) noexcept
 {
 
 	lockUpdate = st;
@@ -161,7 +161,7 @@ void UNetReceiver::setLockUpdate( bool st )
 		ptPrepare.reset();
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::resetTimeout()
+void UNetReceiver::resetTimeout() noexcept
 {
 	std::lock_guard<std::mutex> l(tmMutex);
 	ptRecvTimeout.reset();
@@ -232,7 +232,7 @@ void UNetReceiver::start()
 		forceUpdate();
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::evprepare( const ev::loop_ref& eloop )
+void UNetReceiver::evprepare( const ev::loop_ref& eloop ) noexcept
 {
 	evStatistic.set(eloop);
 	evStatistic.start(0, 1.0); // раз в сек
@@ -256,7 +256,7 @@ void UNetReceiver::evprepare( const ev::loop_ref& eloop )
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::evfinish( const ev::loop_ref& eloop )
+void UNetReceiver::evfinish( const ev::loop_ref& eloop ) noexcept
 {
 	activated = false;
 
@@ -280,14 +280,14 @@ void UNetReceiver::evfinish( const ev::loop_ref& eloop )
 	udp = nullptr;
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::forceUpdate()
+void UNetReceiver::forceUpdate() noexcept
 {
 	pack_guard l(packMutex,upStrategy);
 	pnum = 0; // сбрасываем запомненый номер последнего обработанного пакета
 	// и тем самым заставляем обновить данные в SM (см. update)
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::statisticsEvent(ev::periodic& tm, int revents)
+void UNetReceiver::statisticsEvent(ev::periodic& tm, int revents) noexcept
 {
 	if( EV_ERROR & revents )
 	{
@@ -308,7 +308,7 @@ void UNetReceiver::statisticsEvent(ev::periodic& tm, int revents)
 	tm.again();
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::update()
+void UNetReceiver::update() noexcept
 {
 	UniSetUDP::UDPMessage p;
 	// обрабатываем, пока очередь либо не опустеет,
@@ -465,7 +465,7 @@ void UNetReceiver::update()
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::updateThread()
+void UNetReceiver::updateThread() noexcept
 {
 	while( activated )
 	{
@@ -507,7 +507,7 @@ void UNetReceiver::updateThread()
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::callback( ev::io& watcher, int revents )
+void UNetReceiver::callback( ev::io& watcher, int revents ) noexcept
 {
 	if( EV_ERROR & revents )
 	{
@@ -519,7 +519,7 @@ void UNetReceiver::callback( ev::io& watcher, int revents )
 		readEvent(watcher);
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::readEvent( ev::io& watcher )
+void UNetReceiver::readEvent( ev::io& watcher ) noexcept
 {
 	if( !activated )
 		return;
@@ -565,7 +565,7 @@ void UNetReceiver::readEvent( ev::io& watcher )
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::updateEvent( ev::periodic& tm, int revents )
+void UNetReceiver::updateEvent( ev::periodic& tm, int revents ) noexcept
 {
 	if( EV_ERROR & revents )
 	{
@@ -615,7 +615,7 @@ void UNetReceiver::updateEvent( ev::periodic& tm, int revents )
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::checkConnectionEvent( ev::periodic& tm, int revents )
+void UNetReceiver::checkConnectionEvent( ev::periodic& tm, int revents ) noexcept
 {
 	if( EV_ERROR & revents )
 	{
@@ -642,7 +642,7 @@ void UNetReceiver::stop()
 	loop.evstop(this);
 }
 // -----------------------------------------------------------------------------
-bool UNetReceiver::receive()
+bool UNetReceiver::receive() noexcept
 {
 	try
 	{
@@ -751,7 +751,7 @@ bool UNetReceiver::receive()
 	return true;
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::initIterators()
+void UNetReceiver::initIterators() noexcept
 {
 	for( auto mit = d_icache_map.begin(); mit != d_icache_map.end(); ++mit )
 	{
@@ -770,7 +770,7 @@ void UNetReceiver::initIterators()
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
+void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force ) noexcept
 {
 	CacheInfo& d_info(d_icache_map[pack.getDataID()]);
 
@@ -814,7 +814,7 @@ void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
+void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force ) noexcept
 {
 	CacheInfo& a_info(a_icache_map[pack.getDataID()]);
 
@@ -858,12 +858,12 @@ void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::connectEvent( UNetReceiver::EventSlot sl )
+void UNetReceiver::connectEvent( UNetReceiver::EventSlot sl ) noexcept
 {
 	slEvent = sl;
 }
-
-UNetReceiver::UpdateStrategy UNetReceiver::strToUpdateStrategy(const string& s)
+// -----------------------------------------------------------------------------
+UNetReceiver::UpdateStrategy UNetReceiver::strToUpdateStrategy( const string& s ) noexcept
 {
 	if( s == "thread" || s == "THREAD" )
 		return useUpdateThread;
@@ -874,7 +874,7 @@ UNetReceiver::UpdateStrategy UNetReceiver::strToUpdateStrategy(const string& s)
 	return useUpdateUnknown;
 }
 // -----------------------------------------------------------------------------
-string UNetReceiver::to_string(UNetReceiver::UpdateStrategy s)
+string UNetReceiver::to_string( UNetReceiver::UpdateStrategy s ) noexcept
 {
 	if( s == useUpdateThread )
 		return "thread";
@@ -905,7 +905,7 @@ void UNetReceiver::setUpdateStrategy( UNetReceiver::UpdateStrategy set )
 	upStrategy = set;
 }
 // -----------------------------------------------------------------------------
-const std::string UNetReceiver::getShortInfo() const
+const std::string UNetReceiver::getShortInfo() const noexcept
 {
 	// warning: будет вызываться из другого потока
 	// (считаем что чтение безопасно)

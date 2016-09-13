@@ -175,12 +175,12 @@
 
 		virtual UniSetTypes::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
 
-		virtual bool setMsg( UniSetTypes::ObjectId code, bool state = true );
+		virtual bool setMsg( UniSetTypes::ObjectId code, bool state = true ) noexcept;
 
-		inline std::shared_ptr&lt;DebugStream&gt; log(){ return mylog; }
-		inline std::shared_ptr&lt;LogAgregator&gt; logAgregator(){ return loga; }
+		inline std::shared_ptr&lt;DebugStream&gt; log() noexcept { return mylog; }
+		inline std::shared_ptr&lt;LogAgregator&gt; logAgregator() noexcept { return loga; }
 
-		void init_dlog( std::shared_ptr&lt;DebugStream&gt; d );
+		void init_dlog( std::shared_ptr&lt;DebugStream&gt; d ) noexcept;
 
         // "синтаксический сахар"..для логов
         #ifndef myinfo 
@@ -252,12 +252,12 @@
         /*! Вывод состояния внутренних переменных */
         inline std::string dumpVars(){ return std::move(vmon.pretty_str()); }
         // ------------------------------------------------------------
-        std::string help();
+        std::string help() noexcept;
         
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PROTECTED">
-		virtual void callback() override;
+		virtual void callback() noexcept override;
 		virtual void processingMessage( const UniSetTypes::VoidMessage* msg ) override;
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ){};
 		virtual void askSensors( UniversalIO::UIOCommand cmd ){}
@@ -276,7 +276,7 @@
 		virtual void testMode( bool state );
 		void updateOutputs( bool force );
 <xsl:if test="normalize-space($TESTMODE)!=''">
-		bool checkTestMode();
+		bool checkTestMode() const noexcept;
 </xsl:if>
 		void waitSM( int wait_msec, UniSetTypes::ObjectId testID = UniSetTypes::DefaultObjectId );
 		UniSetTypes::ObjectId getSMTestID();
@@ -331,26 +331,26 @@
 		/*! Получить указатель на in_переменную храняющую значение, по идентификатору 
 		 * \return nullptr если элемент не найден
 		*/
-		const long* valptr( const UniSetTypes::ObjectId&amp; id );
+		const long* valptr( const UniSetTypes::ObjectId&amp; id ) noexcept;
 		
 		/*! Получить указатель на out_переменную храняющую значение, по идентификатору 
 		 * \return nullptr если элемент не найден
 		*/
-		long* outptr( const UniSetTypes::ObjectId&amp; id );
+		long* outptr( const UniSetTypes::ObjectId&amp; id ) noexcept;
 
 		/*! Получить id по переменной храняющей значение
 		 * \return DefaultObjectId элемент не найден или если нет привязки
 		*/
-		UniSetTypes::ObjectId idval( const long* vptr ) const; // работа по const указателю
-		UniSetTypes::ObjectId idval( const long&amp; vptr ) const; // работа const по ссылке..
-		UniSetTypes::ObjectId idval( long* vptr ) const; // работа по указателю
-		UniSetTypes::ObjectId idval( long&amp; vptr ) const; // работа по ссылке..
+		UniSetTypes::ObjectId idval( const long* vptr ) const noexcept; // работа по const указателю
+		UniSetTypes::ObjectId idval( const long&amp; vptr ) const noexcept; // работа const по ссылке..
+		UniSetTypes::ObjectId idval( long* vptr ) const noexcept; // работа по указателю
+		UniSetTypes::ObjectId idval( long&amp; vptr ) const noexcept; // работа по ссылке..
 		</xsl:if>
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PRIVATE">
 		// ------------ private функции ---------------
-		void updatePreviousValues();
+		void updatePreviousValues() noexcept;
 		void preSensorInfo( const UniSetTypes::SensorMessage* sm );
 		void preTimerInfo( const UniSetTypes::TimerMessage* tm );
 		void initFromSM();
@@ -393,7 +393,7 @@
 
 <xsl:template name="COMMON-CC-FILE">
 // ------------------------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::init_dlog( std::shared_ptr&lt;DebugStream&gt; d )
+void <xsl:value-of select="$CLASSNAME"/>_SK::init_dlog( std::shared_ptr&lt;DebugStream&gt; d ) noexcept
 {
 	<xsl:value-of select="$CLASSNAME"/>_SK::mylog = d;
 }
@@ -420,9 +420,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( const UniSetType
 				break;
 		}	
 	}
-	catch( const Exception&amp; ex )
+	catch( const std::exception&amp; ex )
 	{
-		mycrit  &lt;&lt; myname &lt;&lt; "(processingMessage): " &lt;&lt; ex &lt;&lt; endl;
+		mycrit  &lt;&lt; myname &lt;&lt; "(processingMessage): " &lt;&lt; ex.what() &lt;&lt; endl;
 	}
 }
 // -----------------------------------------------------------------------------
@@ -517,63 +517,86 @@ UniSetTypes::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( CORBA:
 }
 // -----------------------------------------------------------------------------
 <xsl:if test="normalize-space($TESTMODE)!=''">
-bool <xsl:value-of select="$CLASSNAME"/>_SK::checkTestMode()
+bool <xsl:value-of select="$CLASSNAME"/>_SK::checkTestMode() const noexcept
 {
 	return (in_TestMode_S &amp;&amp; in_LocalTestMode_S);
 }
 // -----------------------------------------------------------------------------
 </xsl:if>
 <xsl:if test="normalize-space($VARMAP)='1'">
-const long* <xsl:value-of select="$CLASSNAME"/>_SK::valptr( const UniSetTypes::ObjectId&amp; id )
+const long* <xsl:value-of select="$CLASSNAME"/>_SK::valptr( const UniSetTypes::ObjectId&amp; id ) noexcept
 {
-	auto i = vmap.find(id);
-	if( i!= vmap.end() )
-		return i->second;
+	try
+	{
+		auto i = vmap.find(id);
+		if( i!= vmap.end() )
+			return i->second;
+	}
+	catch(...){}
 
 	return nullptr;
 }
 
-long* <xsl:value-of select="$CLASSNAME"/>_SK::outptr( const UniSetTypes::ObjectId&amp; id )
+long* <xsl:value-of select="$CLASSNAME"/>_SK::outptr( const UniSetTypes::ObjectId&amp; id ) noexcept
 {
-	auto i = outvmap.find(id);
-	if( i!= outvmap.end() )
-		return i->second;
+	try
+	{
+		auto i = outvmap.find(id);
+		if( i!= outvmap.end() )
+			return i->second;
+	}
+	catch(...){}
 
 	return nullptr;
 }
 
-UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::idval( const long* p ) const
+UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::idval( const long* p ) const noexcept
 {
-	auto i = ptrmap.find(p);
-	if( i!= ptrmap.end() )
-		return *(i->second);
+	try
+	{
+		auto i = ptrmap.find(p);
+		if( i!= ptrmap.end() )
+			return *(i->second);
+	}
+	catch(...){}
 
 	return UniSetTypes::DefaultObjectId;
 }
 
-UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::idval( const long&amp; p ) const
+UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::idval( const long&amp; p ) const noexcept
 {
-	auto i = ptrmap.find(&amp;p);
-	if( i!= ptrmap.end() )
-		return *(i->second);
+	try
+	{
+		auto i = ptrmap.find(&amp;p);
+		if( i!= ptrmap.end() )
+			return *(i->second);
+	}
+	catch(...){}
 
 	return UniSetTypes::DefaultObjectId;
 }
 
-UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::idval( long&amp; p ) const
+UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::idval( long&amp; p ) const noexcept
 {
-	auto i = outptrmap.find(&amp;p);
-	if( i!= outptrmap.end() )
-		return *(i->second);
-
+	try
+	{
+		auto i = outptrmap.find(&amp;p);
+		if( i!= outptrmap.end() )
+			return *(i->second);
+	}
+	catch(...){}
 	return UniSetTypes::DefaultObjectId;
 }
 
-UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::idval( long* p ) const
+UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::idval( long* p ) const noexcept
 {
-	auto i = outptrmap.find(p);
-	if( i!= outptrmap.end() )
-		return *(i->second);
+	try
+	{
+		auto i = outptrmap.find(p);
+		if( i!= outptrmap.end() )
+			return *(i->second);
+	}
+	catch(...){}
 
 	return UniSetTypes::DefaultObjectId;
 }
@@ -655,7 +678,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 	}
 }
 // ----------------------------------------------------------------------------
-std::string <xsl:value-of select="$CLASSNAME"/>_SK::help()
+std::string <xsl:value-of select="$CLASSNAME"/>_SK::help() noexcept
 {
 	ostringstream s;
 	s &lt;&lt; " ************* " &lt;&lt; myname &lt;&lt; " HELP:" &lt;&lt; " ************* " &lt;&lt; endl;
@@ -1132,7 +1155,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateValues()
 -->	
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::updatePreviousValues()
+void <xsl:value-of select="$CLASSNAME"/>_SK::updatePreviousValues() noexcept
 {
 	<xsl:for-each select="//smap/item"><xsl:if test="normalize-space(@vartype)='in'">prev_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 	</xsl:if>
@@ -1150,7 +1173,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::checkSensors()
 	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
-bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code, bool _state )
+bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code, bool _state ) noexcept
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
@@ -1531,7 +1554,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::checkSensors()
 	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::updatePreviousValues()
+void <xsl:value-of select="$CLASSNAME"/>_SK::updatePreviousValues() noexcept
 {
 	<xsl:for-each select="//sensors/item/consumers/consumer">
 	<xsl:if test="normalize-space(../../@msg)!='1'">
@@ -1562,7 +1585,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
 
 }
 // -----------------------------------------------------------------------------
-bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code, bool _state )
+bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code, bool _state ) noexcept
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{

@@ -110,11 +110,12 @@ LogSession::LogSession( const Poco::Net::StreamSocket& s, std::shared_ptr<DebugS
 		mylog.crit() << "LOG NULL!!" << endl;
 }
 // -------------------------------------------------------------------------
-void LogSession::logOnEvent( const std::string& s )
+void LogSession::logOnEvent( const std::string& s ) noexcept
 {
 	if( cancelled || s.empty() )
 		return;
 
+	try
 	{
 		// чтобы поменьше удерживать mutex
 		std::unique_lock<std::mutex> lk(logbuf_mutex);
@@ -151,12 +152,13 @@ void LogSession::logOnEvent( const std::string& s )
 		lostMsg = false;
 		logbuf.emplace(new UTCPCore::Buffer(s));
 	}
+	catch(...){}
 
 	if( asyncEvent.is_active() )
 		asyncEvent.send();
 }
 // -------------------------------------------------------------------------
-void LogSession::run( const ev::loop_ref& loop )
+void LogSession::run( const ev::loop_ref& loop ) noexcept
 {
 	setSessionLogLevel(Debug::ANY);
 
@@ -198,7 +200,7 @@ void LogSession::terminate()
 	final();
 }
 // -------------------------------------------------------------------------
-void LogSession::event( ev::async& watcher, int revents )
+void LogSession::event( ev::async& watcher, int revents ) noexcept
 {
 	if( EV_ERROR & revents )
 	{
@@ -211,7 +213,7 @@ void LogSession::event( ev::async& watcher, int revents )
 	io.set(ev::WRITE);
 }
 // ---------------------------------------------------------------------
-void LogSession::callback( ev::io& watcher, int revents )
+void LogSession::callback( ev::io& watcher, int revents ) noexcept
 {
 	if( EV_ERROR & revents )
 	{
@@ -222,10 +224,22 @@ void LogSession::callback( ev::io& watcher, int revents )
 	}
 
 	if (revents & EV_READ)
-		readEvent(watcher);
+	{
+		try
+		{
+			readEvent(watcher);
+		}
+		catch(...){}
+	}
 
 	if (revents & EV_WRITE)
-		writeEvent(watcher);
+	{
+		try
+		{
+			writeEvent(watcher);
+		}
+		catch(...){}
+	}
 
 	if( cancelled )
 	{
@@ -234,11 +248,14 @@ void LogSession::callback( ev::io& watcher, int revents )
 
 		io.stop();
 		cmdTimer.stop();
+		try
 		{
 			std::unique_lock<std::mutex> lk(logbuf_mutex);
 			asyncEvent.stop();
 			conn.disconnect();
 		}
+		catch(...){}
+
 		final();
 	}
 }
@@ -340,13 +357,17 @@ size_t LogSession::readData( unsigned char* buf, int len )
 	{
 
 	}
+	catch( std::exception& ex )
+	{
+
+	}
 
 	mylog.info() << peername << "(readData): client disconnected.." << endl;
 	cancelled = true;
 	return 0;
 }
 // --------------------------------------------------------------------------------
-void LogSession::readEvent( ev::io& watcher )
+void LogSession::readEvent( ev::io& watcher ) noexcept
 {
 	if( cancelled )
 		return;
@@ -367,11 +388,20 @@ void LogSession::readEvent( ev::io& watcher )
 	}
 
 	if( mylog.is_info() )
-		mylog.info() << peername << "(run): receive command: '" << msg.cmd << "'" << endl;
+		mylog.info() << peername << "(readEvent): receive command: '" << msg.cmd << "'" << endl;
 
 	string cmdLogName(msg.logname);
 
-	cmdProcessing(cmdLogName, msg);
+	try
+	{
+		cmdProcessing(cmdLogName, msg);
+	}
+	catch( std::exception& ex )
+	{
+		if( mylog.is_warn() )
+			mylog.warn() << peername << "(readEvent): " << ex.what() << endl;
+	}
+	catch(...){}
 
 #if 0
 	// Выводим итоговый получившийся список (с учётом выполненных команд)
@@ -524,7 +554,7 @@ void LogSession::cmdProcessing( const string& cmdLogName, const LogServerTypes::
 	}
 }
 // -------------------------------------------------------------------------
-void LogSession::onCmdTimeout( ev::timer& watcher, int revents )
+void LogSession::onCmdTimeout( ev::timer& watcher, int revents ) noexcept
 {
 	if( EV_ERROR & revents )
 	{
@@ -538,7 +568,7 @@ void LogSession::onCmdTimeout( ev::timer& watcher, int revents )
 	asyncEvent.start();
 }
 // -------------------------------------------------------------------------
-void LogSession::onCheckConnectionTimer( ev::timer& watcher, int revents )
+void LogSession::onCheckConnectionTimer( ev::timer& watcher, int revents ) noexcept
 {
 	if( EV_ERROR & revents )
 	{
@@ -559,17 +589,26 @@ void LogSession::onCheckConnectionTimer( ev::timer& watcher, int revents )
 	// если клиент уже отвалился.. то при попытке write.. сессия будет закрыта.
 
 	// длинное сообщение ("keep alive message") забивает логи, что потом неудобно смотреть, поэтому пишем "пустоту"
-	logbuf.emplace(new UTCPCore::Buffer(""));
+	try
+	{
+		logbuf.emplace(new UTCPCore::Buffer(""));
+	}
+	catch(...){}
+
 	io.set(ev::WRITE);
 	checkConnectionTimer.start( checkConnectionTime ); // restart timer
 }
 // -------------------------------------------------------------------------
-void LogSession::final()
+void LogSession::final() noexcept
 {
-	slFin(this);
+	try
+	{
+		slFin(this);
+	}
+	catch(...){}
 }
 // -------------------------------------------------------------------------
-void LogSession::connectFinalSession( FinalSlot sl )
+void LogSession::connectFinalSession( FinalSlot sl ) noexcept
 {
 	slFin = sl;
 }
@@ -579,7 +618,7 @@ LogSession::LogSessionCommand_Signal LogSession::signal_logsession_command()
 	return m_command_sig;
 }
 // ---------------------------------------------------------------------
-void LogSession::cancel()
+void LogSession::cancel() noexcept
 {
 	cancelled = true;
 }
@@ -590,17 +629,17 @@ void LogSession::setMaxBufSize( size_t num )
 	maxRecordsNum = num;
 }
 // ---------------------------------------------------------------------
-size_t LogSession::getMaxBufSize() const
+size_t LogSession::getMaxBufSize() const noexcept
 {
 	return maxRecordsNum;
 }
 // ---------------------------------------------------------------------
-bool LogSession::isAcive() const
+bool LogSession::isAcive() const noexcept
 {
 	return io.is_active();
 }
 // ---------------------------------------------------------------------
-string LogSession::getShortInfo()
+string LogSession::getShortInfo() noexcept
 {
 	size_t sz = 0;
 	{

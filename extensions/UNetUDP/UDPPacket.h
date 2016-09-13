@@ -41,7 +41,7 @@ namespace UniSetUDP
 
 	struct UDPHeader
 	{
-		UDPHeader(): magic(UNETUDP_MAGICNUM), num(0), nodeID(0), procID(0), dcount(0), acount(0) {}
+		UDPHeader() noexcept: magic(UNETUDP_MAGICNUM), num(0), nodeID(0), procID(0), dcount(0), acount(0) {}
 		uint32_t magic;
 		size_t num;
 		long nodeID;
@@ -58,8 +58,8 @@ namespace UniSetUDP
 
 	struct UDPAData
 	{
-		UDPAData(): id(UniSetTypes::DefaultObjectId), val(0) {}
-		UDPAData(long id, long val): id(id), val(val) {}
+		UDPAData() noexcept: id(UniSetTypes::DefaultObjectId), val(0) {}
+		UDPAData(long id, long val) noexcept: id(id), val(val) {}
 
 		long id;
 		long val;
@@ -79,7 +79,7 @@ namespace UniSetUDP
 
 	struct UDPPacket
 	{
-		UDPPacket(): len(0) {}
+		UDPPacket() noexcept: len(0) {}
 
 		size_t len;
 		uint8_t data[ sizeof(UDPHeader) + MaxDCount * sizeof(long) + MaxDDataCount + MaxACount * sizeof(UDPAData) ];
@@ -90,58 +90,72 @@ namespace UniSetUDP
 	struct UDPMessage:
 		public UDPHeader
 	{
-		UDPMessage();
+		UDPMessage() noexcept;
 
-		UDPMessage(UDPMessage&& m) = default;
-		UDPMessage& operator=(UDPMessage&&) = default;
+		UDPMessage(UDPMessage&& m) noexcept = default;
+		UDPMessage& operator=(UDPMessage&&) noexcept = default;
 
-		UDPMessage( const UDPMessage& m ) = default;
-		UDPMessage& operator=(const UDPMessage&) = default;
+		UDPMessage( const UDPMessage& m ) noexcept = default;
+		UDPMessage& operator=(const UDPMessage&) noexcept = default;
 
-		explicit UDPMessage( UDPPacket& p );
-		size_t transport_msg( UDPPacket& p );
-		static size_t getMessage( UDPMessage& m, UDPPacket& p );
+		explicit UDPMessage( UDPPacket& p ) noexcept;
+		size_t transport_msg( UDPPacket& p ) const noexcept;
 
-		size_t addDData( long id, bool val );
-		bool setDData( size_t index, bool val );
-		long dID( size_t index ) const;
-		bool dValue( size_t index ) const;
+		static size_t getMessage( UDPMessage& m, UDPPacket& p ) noexcept;
+
+		// \warning в случае переполнения возвращается MaxDCount
+		size_t addDData( long id, bool val ) noexcept;
+
+		//!\return true - successful
+		bool setDData( size_t index, bool val ) noexcept;
+
+		//! \return UniSetTypes::DefaultObjectId if not found
+		long dID( size_t index ) const noexcept;
+
+		//! \return UniSetTypes::DefaultObjectId if not found
+		bool dValue( size_t index ) const noexcept;
 
 		// функции addAData возвращают индекс, по которому потом можно напрямую писать при помощи setAData(index)
-		size_t addAData( const UDPAData& dat );
-		size_t addAData( long id, long val );
-		bool setAData( size_t index, long val );
+		// \warning в случае переполнения возвращается MaxACount
+		size_t addAData( const UDPAData& dat ) noexcept;
+		size_t addAData( long id, long val ) noexcept;
 
-		long getDataID( ) const; /*!< получение "уникального" идентификатора данных этого пакета */
-		inline bool isAFull() const
+		//!\return true - successful
+		bool setAData( size_t index, long val ) noexcept;
+
+		long getDataID( ) const noexcept; /*!< получение "уникального" идентификатора данных этого пакета */
+
+		inline bool isAFull() const noexcept
 		{
 			return (acount >= MaxACount);
 		}
-		inline bool isDFull() const
+		inline bool isDFull() const noexcept
 		{
 			return (dcount >= MaxDCount);
 		}
 
-		inline bool isFull() const
+		inline bool isFull() const noexcept
 		{
 			return !((dcount < MaxDCount) && (acount < MaxACount));
 		}
-		inline size_t dsize() const
+
+		inline size_t dsize() const noexcept
 		{
 			return dcount;
 		}
-		inline size_t asize() const
+
+		inline size_t asize() const noexcept
 		{
 			return acount;
 		}
 
 		// размер итогового пакета в байтах
-		size_t sizeOf() const;
+		size_t sizeOf() const noexcept;
 
-		uint16_t getDataCRC() const;
+		uint16_t getDataCRC() const noexcept;
 
 		// количество байт в пакете с булевыми переменными...
-		size_t d_byte() const
+		size_t d_byte() const noexcept
 		{
 			return dcount * sizeof(long) + dcount;
 		}
@@ -153,7 +167,7 @@ namespace UniSetUDP
 		friend std::ostream& operator<<( std::ostream& os, UDPMessage& p );
 	};
 
-	uint16_t makeCRC( unsigned char* buf, size_t len );
+	uint16_t makeCRC( unsigned char* buf, size_t len ) noexcept;
 }
 // -----------------------------------------------------------------------------
 #endif // UDPPacket_H_

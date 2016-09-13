@@ -36,7 +36,7 @@ static void InitTest()
 	{
 		mb = std::make_shared<ModbusTCPMaster>();
 		mb->setTimeout(2000);
-		REQUIRE_NOTHROW( mb->connect(addr, port) );
+		mb->connect(addr, port);
 		msleep(5000);
 	}
 }

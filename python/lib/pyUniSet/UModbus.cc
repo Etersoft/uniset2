@@ -103,20 +103,10 @@ void UModbus::connect( const string& _ip, int _port )throw(UException)
 	ip = _ip;
 	port = _port;
 
-	try
-	{
-		mb->connect(ip, port);
-	}
-	catch( ModbusRTU::mbException& ex )
+	if( !mb->connect(ip, port) )
 	{
 		std::ostringstream err;
-		err << ex;
-		throw UException(err.str());
-	}
-	catch(...)
-	{
-		std::ostringstream err;
-		err << "Connection failed: ip=" << ip << " port=" << port;
+		err << "failed to connection ip=" << ip << " port=" << port;
 		throw UException(err.str());
 	}
 }

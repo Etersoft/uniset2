@@ -1139,7 +1139,7 @@ void UInterface::CacheOfResolve::cache( const ObjectId id, const ObjectId node, 
 	}
 }
 // ------------------------------------------------------------------------------------------------------------
-bool UInterface::CacheOfResolve::clean()
+bool UInterface::CacheOfResolve::clean() noexcept
 {
 	UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
 
@@ -1148,7 +1148,13 @@ bool UInterface::CacheOfResolve::clean()
 	for( auto it = mcache.begin(); it != mcache.end();)
 	{
 		if( it->second.ncall <= minCallCount )
-			mcache.erase(it++);
+		{
+			try
+			{
+				mcache.erase(it++);
+			}
+			catch(...){}
+		}
 		else
 			++it;
 	}
@@ -1160,17 +1166,21 @@ bool UInterface::CacheOfResolve::clean()
 }
 // ------------------------------------------------------------------------------------------------------------
 
-void UInterface::CacheOfResolve::erase( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const
+void UInterface::CacheOfResolve::erase( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const noexcept
 {
 	UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
-	auto it = mcache.find( key(id, node) );
+	try
+	{
+		auto it = mcache.find( key(id, node) );
 
-	if( it != mcache.end() )
-		mcache.erase(it);
+		if( it != mcache.end() )
+			mcache.erase(it);
+	}
+	catch(...){}
 }
 
 // ------------------------------------------------------------------------------------------------------------
-bool UInterface::isExist( const UniSetTypes::ObjectId id ) const
+bool UInterface::isExist( const UniSetTypes::ObjectId id ) const noexcept
 {
 	try
 	{
@@ -1201,7 +1211,7 @@ bool UInterface::isExist( const UniSetTypes::ObjectId id ) const
 	return false;
 }
 // ------------------------------------------------------------------------------------------------------------
-bool UInterface::isExist( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const
+bool UInterface::isExist( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const noexcept
 {
 	if( node == uconf->getLocalNode() )
 		return isExist(id);
@@ -2181,7 +2191,7 @@ IONotifyController_i::ThresholdsListSeq* UInterface::getThresholdsList( const Un
 	throw UniSetTypes::TimeOut(set_err("UI(getThresholdsList): Timeout", id, node));
 }
 // -----------------------------------------------------------------------------
-bool UInterface::waitReady( const ObjectId id, int msec, int pmsec, const ObjectId node )
+bool UInterface::waitReady( const ObjectId id, int msec, int pmsec, const ObjectId node ) noexcept
 {
 	if( msec < 0 )
 		msec = 0;
@@ -2218,7 +2228,7 @@ bool UInterface::waitReady( const ObjectId id, int msec, int pmsec, const Object
 	return ready;
 }
 // -----------------------------------------------------------------------------
-bool UInterface::waitWorking( const ObjectId id, int msec, int pmsec, const ObjectId node )
+bool UInterface::waitWorking( const ObjectId id, int msec, int pmsec, const ObjectId node ) noexcept
 {
 	if( msec < 0 )
 		msec = 0;
@@ -2245,7 +2255,7 @@ bool UInterface::waitWorking( const ObjectId id, int msec, int pmsec, const Obje
 	return ready;
 }
 // -----------------------------------------------------------------------------
-UniversalIO::IOType UInterface::getConfIOType( const UniSetTypes::ObjectId id ) const
+UniversalIO::IOType UInterface::getConfIOType( const UniSetTypes::ObjectId id ) const noexcept
 {
 	if( !uconf )
 		return UniversalIO::UnknownIOType;

@@ -43,32 +43,43 @@ ObjectIndex_idXML::~ObjectIndex_idXML()
 {
 }
 // -----------------------------------------------------------------------------------------
-ObjectId ObjectIndex_idXML::getIdByName( const string& name ) const
+ObjectId ObjectIndex_idXML::getIdByName( const string& name ) const noexcept
 {
-	auto it = mok.find(name);
+	try
+	{
+		auto it = mok.find(name);
 
-	if( it != mok.end() )
-		return it->second;
+		if( it != mok.end() )
+			return it->second;
+	}
+	catch(...){}
 
 	return DefaultObjectId;
 }
 // -----------------------------------------------------------------------------------------
-string ObjectIndex_idXML::getMapName( const ObjectId id ) const
+string ObjectIndex_idXML::getMapName( const ObjectId id ) const noexcept
 {
-	auto it = omap.find(id);
+	try
+	{
+		auto it = omap.find(id);
 
-	if( it != omap.end() )
-		return it->second.repName;
-
+		if( it != omap.end() )
+			return it->second.repName;
+	}
+	catch(...){}
 	return "";
 }
 // -----------------------------------------------------------------------------------------
-string ObjectIndex_idXML::getTextName( const ObjectId id ) const
+string ObjectIndex_idXML::getTextName( const ObjectId id ) const noexcept
 {
-	auto it = omap.find(id);
+	try
+	{
+		auto it = omap.find(id);
 
-	if( it != omap.end() )
-		return it->second.textName;
+		if( it != omap.end() )
+			return it->second.textName;
+	}
+	catch(...){}
 
 	return "";
 }
@@ -78,7 +89,7 @@ std::ostream& operator<<(std::ostream& os, ObjectIndex_idXML& oi )
 	return oi.printMap(os);
 }
 // -----------------------------------------------------------------------------------------
-std::ostream& ObjectIndex_idXML::printMap( std::ostream& os ) const
+std::ostream& ObjectIndex_idXML::printMap( std::ostream& os ) const noexcept
 {
 	os << "size: " << omap.size() << endl;
 
@@ -235,23 +246,31 @@ void ObjectIndex_idXML::read_nodes( const std::shared_ptr<UniXML>& xml, const st
 	}
 }
 // ------------------------------------------------------------------------------------------
-const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const ObjectId id ) const
+const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const ObjectId id ) const noexcept
 {
-	auto it = omap.find(id);
+	try
+	{
+		auto it = omap.find(id);
 
-	if( it != omap.end() )
-		return &(it->second);
+		if( it != omap.end() )
+			return &(it->second);
+	}
+	catch(...){}
 
-	return NULL;
+	return nullptr;
 }
 // ------------------------------------------------------------------------------------------
-const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const std::string& name ) const
+const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const std::string& name ) const noexcept
 {
-	auto it = mok.find(name);
+	try
+	{
+		auto it = mok.find(name);
 
-	if( it != mok.end() )
-		return getObjectInfo(it->second);
+		if( it != mok.end() )
+			return getObjectInfo(it->second);
+	}
+	catch(...){}
 
-	return NULL;
+	return nullptr;
 }
 // ------------------------------------------------------------------------------------------

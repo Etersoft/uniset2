@@ -42,13 +42,13 @@ namespace UniSetTypes
 			ObjectIndex_Array(const ObjectInfo* objectInfo);
 			virtual ~ObjectIndex_Array();
 
-			virtual const ObjectInfo* getObjectInfo( const ObjectId ) const override;
-			virtual const ObjectInfo* getObjectInfo( const std::string& name ) const override;
-			virtual ObjectId getIdByName( const std::string& name ) const override;
-			virtual std::string getMapName( const ObjectId id ) const override;
-			virtual std::string getTextName( const ObjectId id ) const override;
+			virtual const ObjectInfo* getObjectInfo( const ObjectId ) const noexcept override;
+			virtual const ObjectInfo* getObjectInfo( const std::string& name ) const noexcept override;
+			virtual ObjectId getIdByName( const std::string& name ) const noexcept override;
+			virtual std::string getMapName( const ObjectId id ) const noexcept override;
+			virtual std::string getTextName( const ObjectId id ) const noexcept override;
 
-			virtual std::ostream& printMap(std::ostream& os) const override;
+			virtual std::ostream& printMap(std::ostream& os) const noexcept override;
 			friend std::ostream& operator<<(std::ostream& os, ObjectIndex_Array& oi );
 
 		private:

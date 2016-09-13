@@ -370,7 +370,10 @@ TEST_CASE("[UNetUDP]: check packets 'hole'", "[unetudp][udphole]")
 
 	// возвращаем к нормальному..чтобы следующие тесты не поломались..
 	for( int i = 0; i < 10; i++ )
+	{
 		send(pack2);
+		msleep(100);
+	}
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[UNetUDP]: check packets 'MaxDifferens'", "[unetudp][maxdifferens]")
@@ -409,7 +412,7 @@ TEST_CASE("[UNetUDP]: bad packet number", "[unetudp][badnumber]")
 	UniSetUDP::UDPMessage pack;
 	pack.addAData(8, 60);
 	send(pack);
-	msleep(120);
+	msleep(150);
 	REQUIRE( ui->getValue(8) == 60 );
 
 	int lastpack = s_numpack - 1;

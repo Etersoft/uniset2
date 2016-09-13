@@ -18,7 +18,6 @@
 #include <limits>
 #include <iomanip>
 #include <sstream>
-#include <Poco/Net/NetException.h>
 #include <Exceptions.h>
 #include <extensions/Extensions.h>
 #include "MBTCPMultiMaster.h"
@@ -315,46 +314,23 @@ bool MBTCPMultiMaster::MBSlaveInfo::check() const
 // -----------------------------------------------------------------------------
 bool MBTCPMultiMaster::MBSlaveInfo::init( std::shared_ptr<DebugStream>& mblog )
 {
-	try
-	{
-		mbinfo << myname << "(init): connect..." << endl;
+	mbinfo << myname << "(init): connect..." << endl;
 
-		mbtcp->connect(ip, port);
-		mbtcp->setForceDisconnect(force_disconnect);
+	if( initOK )
+		return mbtcp->connect(ip, port);
 
-		if( recv_timeout > 0 )
-			mbtcp->setTimeout(recv_timeout);
+	mbtcp->connect(ip, port);
+	mbtcp->setForceDisconnect(force_disconnect);
 
-		// if( !initOK )
-		{
-			mbtcp->setSleepPause(sleepPause_usec);
-			mbtcp->setAfterSendPause(aftersend_pause);
+	if( recv_timeout > 0 )
+		mbtcp->setTimeout(recv_timeout);
 
-			if( mbtcp->isConnection() )
-				mbinfo << "(init): " << myname << " connect OK" << endl;
+	mbtcp->setSleepPause(sleepPause_usec);
+	mbtcp->setAfterSendPause(aftersend_pause);
+	mbinfo << myname << "(init): connect " << (mbtcp->isConnection() ? "OK" : "FAIL" ) << endl;
 
-			initOK = true;
-		}
-
-		mbinfo << myname << "(init): connect " << mbtcp->isConnection() << endl;
-
-		return mbtcp->isConnection();
-	}
-	catch( ModbusRTU::mbException& ex )
-	{
-		mbwarn << "(init): " << ex << endl;
-	}
-	catch( const Poco::Net::NetException& e )
-	{
-		mbwarn << myname << "(init): Can`t create socket " << ip << ":" << port << " err: " << e.displayText() << endl;
-	}
-	catch(...)
-	{
-		mbwarn << "(init): " << myname << " catch ..." << endl;
-	}
-
-	initOK = false;
-	return false;
+	initOK = true;
+	return initOK;
 }
 // -----------------------------------------------------------------------------
 void MBTCPMultiMaster::sysCommand( const UniSetTypes::SystemMessage* sm )

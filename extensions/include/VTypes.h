@@ -45,9 +45,9 @@ namespace VTypes
 	std::ostream& operator<<( std::ostream& os, const VType& vt );
 
 	// -------------------------------------------------------------------------
-	std::string type2str( VType t );           /*!< преобразование строки в тип */
-	VType str2type( const std::string& s );    /*!< преобразование названия в строку */
-	int wsize( VType t );                      /*!< длина данных в словах */
+	std::string type2str( VType t ) noexcept;           /*!< преобразование строки в тип */
+	VType str2type( const std::string& s ) noexcept;    /*!< преобразование названия в строку */
+	int wsize( VType t ) noexcept;                      /*!< длина данных в словах */
 	// -------------------------------------------------------------------------
 	class F2
 	{
@@ -63,22 +63,22 @@ namespace VTypes
 			} F2mem;
 			// ------------------------------------------
 			// конструкторы на разные случаи...
-			F2()
+			F2() noexcept
 			{
 				memset(raw.v, 0, sizeof(raw.v));
 			}
 
-			F2( const float& f )
+			F2( const float& f ) noexcept
 			{
 				raw.val = f;
 			}
-			F2( const ModbusRTU::ModbusData* data, size_t size )
+			F2( const ModbusRTU::ModbusData* data, size_t size ) noexcept
 			{
 				for( size_t i = 0; i < wsize() && i < size; i++ )
 					raw.v[i] = data[i];
 			}
 
-			~F2() {}
+			~F2() noexcept {}
 			// ------------------------------------------
 			/*! размер в словах */
 			static size_t wsize()
@@ -114,21 +114,21 @@ namespace VTypes
 
 			// ------------------------------------------
 			// конструкторы на разные случаи...
-			F2r() {}
+			F2r() noexcept {}
 
-			F2r( const float& f ): F2(f)
+			F2r( const float& f ) noexcept: F2(f)
 			{
 				raw_backorder = raw;
 				std::swap(raw_backorder.v[0], raw_backorder.v[1]);
 			}
-			F2r( const ModbusRTU::ModbusData* data, size_t size ): F2(data, size)
+			F2r( const ModbusRTU::ModbusData* data, size_t size ) noexcept: F2(data, size)
 			{
 				// принимаем в обратном порядке.. поэтому переворачиваем raw
 				raw_backorder = raw;
 				std::swap(raw.v[0], raw.v[1]);
 			}
 
-			~F2r() {}
+			~F2r() noexcept {}
 
 			F2mem raw_backorder;
 	};
@@ -146,22 +146,22 @@ namespace VTypes
 			} F4mem;
 			// ------------------------------------------
 			// конструкторы на разные случаи...
-			F4()
+			F4() noexcept
 			{
 				memset(raw.v, 0, sizeof(raw.v));
 			}
 
-			F4( const float& f )
+			F4( const float& f ) noexcept
 			{
 				raw.val = f;
 			}
-			F4( const ModbusRTU::ModbusData* data, size_t size )
+			F4( const ModbusRTU::ModbusData* data, size_t size ) noexcept
 			{
 				for( size_t i = 0; i < wsize() && i < size; i++ )
 					raw.v[i] = data[i];
 			}
 
-			~F4() {}
+			~F4() noexcept {}
 			// ------------------------------------------
 			/*! размер в словах */
 			static size_t wsize()
@@ -201,27 +201,27 @@ namespace VTypes
 			} Bytemem;
 			// ------------------------------------------
 			// конструкторы на разные случаи...
-			Byte()
+			Byte() noexcept
 			{
 				raw.w = 0;
 			}
 
-			Byte( unsigned char b1, unsigned char b2 )
+			Byte( unsigned char b1, unsigned char b2 ) noexcept
 			{
 				raw.b[0] = b1;
 				raw.b[1] = b2;
 			}
-			Byte( const long& val )
+			Byte( const long& val ) noexcept
 			{
 				raw.w = val;
 			}
 
-			Byte( const ModbusRTU::ModbusData dat )
+			Byte( const ModbusRTU::ModbusData dat ) noexcept
 			{
 				raw.w = dat;
 			}
 
-			~Byte() {}
+			~Byte() noexcept {}
 			// ------------------------------------------
 			/*! размер в словах */
 			static size_t wsize()
@@ -257,19 +257,19 @@ namespace VTypes
 
 			// ------------------------------------------
 			// конструкторы на разные случаи...
-			Unsigned(): raw(0) {}
+			Unsigned() noexcept: raw(0) {}
 
-			Unsigned( const long& val )
+			Unsigned( const long& val ) noexcept
 			{
 				raw = val;
 			}
 
-			Unsigned( const ModbusRTU::ModbusData dat )
+			Unsigned( const ModbusRTU::ModbusData dat ) noexcept
 			{
 				raw = dat;
 			}
 
-			~Unsigned() {}
+			~Unsigned() noexcept {}
 			// ------------------------------------------
 			/*! размер в словах */
 			static size_t wsize()
@@ -296,19 +296,19 @@ namespace VTypes
 
 			// ------------------------------------------
 			// конструкторы на разные случаи...
-			Signed(): raw(0) {}
+			Signed() noexcept: raw(0) {}
 
-			Signed( const long& val )
+			Signed( const long& val ) noexcept
 			{
 				raw = val;
 			}
 
-			Signed( const ModbusRTU::ModbusData dat )
+			Signed( const ModbusRTU::ModbusData dat ) noexcept
 			{
 				raw = dat;
 			}
 
-			~Signed() {}
+			~Signed() noexcept {}
 			// ------------------------------------------
 			/*! размер в словах */
 			static size_t wsize()
@@ -343,22 +343,22 @@ namespace VTypes
 			} I2mem;
 			// ------------------------------------------
 			// конструкторы на разные случаи...
-			I2()
+			I2() noexcept
 			{
 				memset(raw.v, 0, sizeof(raw.v));
 			}
 
-			I2( int v )
+			I2( int v ) noexcept
 			{
 				raw.val = v;
 			}
-			I2( const ModbusRTU::ModbusData* data, size_t size )
+			I2( const ModbusRTU::ModbusData* data, size_t size ) noexcept
 			{
 				for( size_t i = 0; i < wsize() && i < size; i++ )
 					raw.v[i] = data[i];
 			}
 
-			~I2() {}
+			~I2() noexcept {}
 			// ------------------------------------------
 			/*! размер в словах */
 			static size_t wsize()
@@ -383,21 +383,22 @@ namespace VTypes
 		public I2
 	{
 		public:
-			I2r() {}
+			I2r() noexcept {}
 
-			I2r( const int v ): I2(v)
+			I2r( const int v ) noexcept: I2(v)
 			{
 				raw_backorder = raw;
 				std::swap(raw_backorder.v[0], raw_backorder.v[1]);
 			}
-			I2r( const ModbusRTU::ModbusData* data, size_t size ): I2(data, size)
+
+			I2r( const ModbusRTU::ModbusData* data, size_t size ) noexcept: I2(data, size)
 			{
 				// принимаем в обратном порядке.. поэтому переворачиваем raw
 				raw_backorder = raw;
 				std::swap(raw.v[0], raw.v[1]);
 			}
 
-			~I2r() {}
+			~I2r() noexcept {}
 
 			I2mem raw_backorder;
 	};
@@ -416,22 +417,22 @@ namespace VTypes
 			} U2mem;
 			// ------------------------------------------
 			// конструкторы на разные случаи...
-			U2()
+			U2() noexcept
 			{
 				memset(raw.v, 0, sizeof(raw.v));
 			}
 
-			U2( unsigned int v )
+			U2( unsigned int v ) noexcept
 			{
 				raw.val = v;
 			}
-			U2( const ModbusRTU::ModbusData* data, size_t size )
+			U2( const ModbusRTU::ModbusData* data, size_t size ) noexcept
 			{
 				for( size_t i = 0; i < wsize() && i < size; i++ )
 					raw.v[i] = data[i];
 			}
 
-			~U2() {}
+			~U2() noexcept {}
 			// ------------------------------------------
 			/*! размер в словах */
 			static size_t wsize()
@@ -456,14 +457,15 @@ namespace VTypes
 		public U2
 	{
 		public:
-			U2r() {}
+			U2r() noexcept {}
 
-			U2r( int v ): U2(v)
+			U2r( int v ) noexcept: U2(v)
 			{
 				raw_backorder = raw;
 				std::swap(raw_backorder.v[0], raw_backorder.v[1]);
 			}
-			U2r( const ModbusRTU::ModbusData* data, size_t size ): U2(data, size)
+
+			U2r( const ModbusRTU::ModbusData* data, size_t size ) noexcept: U2(data, size)
 			{
 				// принимаем в обратном порядке.. поэтому переворачиваем raw
 				raw_backorder = raw;

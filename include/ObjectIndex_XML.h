@@ -40,19 +40,19 @@ namespace UniSetTypes
 			ObjectIndex_XML( const std::shared_ptr<UniXML>& xml, size_t minSize = 1000 );
 			virtual ~ObjectIndex_XML();
 
-			virtual const UniSetTypes::ObjectInfo* getObjectInfo( const ObjectId ) const override;
-			virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string& name ) const override;
-			virtual ObjectId getIdByName( const std::string& name ) const override;
-			virtual std::string getMapName( const ObjectId id ) const override;
-			virtual std::string getTextName( const ObjectId id ) const override;
+			virtual const UniSetTypes::ObjectInfo* getObjectInfo( const ObjectId ) const noexcept override;
+			virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string& name ) const noexcept override;
+			virtual ObjectId getIdByName( const std::string& name ) const noexcept override;
+			virtual std::string getMapName( const ObjectId id ) const noexcept override;
+			virtual std::string getTextName( const ObjectId id ) const noexcept override;
 
-			virtual std::ostream& printMap(std::ostream& os) const override;
+			virtual std::ostream& printMap(std::ostream& os) const noexcept override;
 			friend std::ostream& operator<<(std::ostream& os, ObjectIndex_XML& oi );
 
 		protected:
 			void build( const std::shared_ptr<UniXML>& xml );
-			unsigned int read_section( const std::shared_ptr<UniXML>& xml, const std::string& sec, unsigned int ind );
-			unsigned int read_nodes( const std::shared_ptr<UniXML>& xml, const std::string& sec, unsigned int ind );
+			size_t read_section(const std::shared_ptr<UniXML>& xml, const std::string& sec, size_t ind );
+			size_t read_nodes( const std::shared_ptr<UniXML>& xml, const std::string& sec, size_t ind );
 
 		private:
 			typedef std::unordered_map<std::string, ObjectId> MapObjectKey;
