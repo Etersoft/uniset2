@@ -76,7 +76,7 @@ void TCPCheck::check_thread()
 		t.create(ip, port, tout_msec);
 		t.setKeepAliveParams( (tout_msec > 1000 ? tout_msec / 1000 : 1) );
 		setResult(true);
-		t.close();
+		t.disconnect();
 	}
 	catch( ... ) {}
 }

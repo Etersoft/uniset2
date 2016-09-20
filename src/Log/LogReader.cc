@@ -132,8 +132,7 @@ void LogReader::disconnect()
 
 	try
 	{
-		//tcp->shutdown();
-		tcp->close();
+		tcp->disconnect();
 	}
 	catch( const Poco::Net::NetException& e )
 	{

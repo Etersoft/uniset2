@@ -57,20 +57,40 @@ bool UTCPStream::isSetLinger() const
 // -------------------------------------------------------------------------
 void UTCPStream::forceDisconnect()
 {
+	if( !isConnected() )
+		return;
+
 	try
 	{
-		bool on;
-		int sec;
-		Poco::Net::StreamSocket::getLinger(on, sec);
 		setLinger(false, 0);
+	}
+	//	catch( Poco::Net::NetException& ex ){}
+	catch( std::exception& ex ){}
+
+	try
+	{
 		close();
 		//shutdown();
-		Poco::Net::StreamSocket::setLinger(on, sec);
 	}
-	catch( Poco::Net::NetException& )
+	//	catch( Poco::Net::NetException& ex ){}
+	catch( std::exception& ex ){}
+}
+// -------------------------------------------------------------------------
+void UTCPStream::disconnect()
+{
+	try
 	{
-
+		shutdown();
 	}
+//	catch( Poco::Net::NetException& ex ){}
+	catch( std::exception& ex ){}
+
+	try
+	{
+		close();
+	}
+//	catch( Poco::Net::NetException& ex ){}
+	catch( std::exception& ex ){}
 }
 // -------------------------------------------------------------------------
 int UTCPStream::getSocket() const
@@ -81,13 +101,13 @@ int UTCPStream::getSocket() const
 timeout_t UTCPStream::getTimeout() const
 {
 	auto tm = Poco::Net::StreamSocket::getReceiveTimeout();
-	return tm.microseconds();
+	return tm.totalMicroseconds();
 }
 // -------------------------------------------------------------------------
-void UTCPStream::create(const std::string& hname, int port, timeout_t tout_msec )
+void UTCPStream::create( const std::string& hname, int port, timeout_t tout_msec )
 {
-	Poco::Net::SocketAddress sa(hname, port);
-	connect(sa, tout_msec * 1000);
+	Poco::Net::SocketAddress saddr(hname, port);
+	connect(saddr, UniSetTimer::millisecToPoco(tout_msec));
 	setKeepAlive(true);
 	Poco::Net::StreamSocket::setLinger(true, 1);
 	setKeepAliveParams();
@@ -95,7 +115,7 @@ void UTCPStream::create(const std::string& hname, int port, timeout_t tout_msec 
 // -------------------------------------------------------------------------
 bool UTCPStream::isConnected() noexcept
 {
-	return ( Poco::Net::StreamSocket::sockfd() > 0 );
+	return ( Poco::Net::StreamSocket::sockfd() != POCO_INVALID_SOCKET );
 /*
 	try
 	{

@@ -69,8 +69,6 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 	msecPulsar(0),
 	confnode(0)
 {
-	mutex_start.setName(myname + "_mutex_start");
-
 	auto conf = uniset_conf();
 
 	string cname(confname);
@@ -155,7 +153,7 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 
 	evntPause = conf->getArgPInt("--e-startup-pause", 5000);
 
-	activateTimeout = conf->getArgPInt("--activate-timeout", 30000);
+	activateTimeout = conf->getArgPInt("--activate-timeout", 60000);
 
 	sidPulsar = DefaultObjectId;
 	string p = conf->getArgParam("--pulsar-id", it.getProp("pulsar_id"));
@@ -197,17 +195,21 @@ SharedMemory::~SharedMemory()
 void SharedMemory::timerInfo( const TimerMessage* tm )
 {
 	if( tm->id == tmHeartBeatCheck )
+	{
 		checkHeartBeat();
+	}
 	else if( tm->id == tmEvent )
 	{
-		workready = 1;
+		workready = true;
 		// рассылаем уведомление, о том, чтобы стартанули
 		SystemMessage sm1(SystemMessage::WatchDog);
 		sendEvent(sm1);
 		askTimer(tm->id, 0);
 	}
 	else if( tm->id == tmHistory )
+	{
 		saveToHistory();
+	}
 	else if( tm->id == tmPulsar )
 	{
 		if( sidPulsar != DefaultObjectId )
@@ -241,11 +243,14 @@ void SharedMemory::sysCommand( const SystemMessage* sm )
 			}
 
 			if( !activated  )
-				smcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
+			{
+				smcrit << myname << "(sysCommand): Don`t activate! TERMINATE.." << endl;
+				std::terminate();
+			}
 
 			// подождать пока пройдёт инициализация
 			// см. activateObject()
-			UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
+			std::unique_lock<std::mutex> lock(mutexStart);
 			askTimer(tmHeartBeatCheck, heartbeatCheckTime);
 			askTimer(tmEvent, evntPause, 1);
 
@@ -294,7 +299,7 @@ bool SharedMemory::activateObject()
 	{
 		activated = false;
 
-		UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
+		std::unique_lock<std::mutex> lock(mutexStart);
 		res = IONotifyController::activateObject();
 
 		// инициализируем указатели
@@ -328,6 +333,7 @@ bool SharedMemory::activateObject()
 	}
 
 	cout << myname << ": ********** activate: " << pt.getCurrent() << " msec " << endl;
+	sminfo << myname << ": ********** activate: " << pt.getCurrent() << " msec " << endl;
 	return res;
 }
 // ------------------------------------------------------------------------------------------

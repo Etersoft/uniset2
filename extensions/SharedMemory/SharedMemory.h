@@ -417,7 +417,7 @@ class SharedMemory:
 		void buildEventList( xmlNode* cnode );
 		void readEventList( const std::string& oname );
 
-		UniSetTypes::uniset_rwmutex mutex_start;
+		std::mutex mutexStart;
 
 		class HeartBeatInfo
 		{
