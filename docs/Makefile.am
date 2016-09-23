@@ -34,4 +34,10 @@ d_DATA = html/*
 # exampledir = $(docdir)/examples
 # example_DATA = examples/*
 
+pdf:
+	doxygen UniSetDox.cfg
+	subst 's|OT1|T2A|g' latex/doxygen.sty
+	subst 's|Times-Roman|Liberation Sans|g' latex/*
+	cd latex; make; cd -;
+
 endif
