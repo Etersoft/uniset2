@@ -41,8 +41,8 @@ static struct option longopts[] =
 	{ "start", no_argument, 0, 's' },
 	{ "finish", no_argument, 0, 'f' },
 	{ "foldUp", no_argument, 0, 'u' },
-	{ "configure", required_argument, 0, 'r' },
-	{ "logrotate", required_argument, 0, 'l' },
+	{ "configure", optional_argument, 0, 'r' },
+	{ "logrotate", optional_argument, 0, 'l' },
 	{ "info", required_argument, 0, 'i' },
 	{ "setValue", required_argument, 0, 'x' },
 	{ "getValue", required_argument, 0, 'g' },
@@ -184,7 +184,8 @@ int main(int argc, char** argv)
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
 					ui.initBackId(UniSetTypes::AdminID);
-					return setValue(optarg, ui);
+					string name = ( optarg ) ? optarg : "";
+					return setValue(name, ui);
 				}
 				break;
 
@@ -194,7 +195,8 @@ int main(int argc, char** argv)
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
 					ui.initBackId(UniSetTypes::AdminID);
-					return getValue(optarg, ui);
+					string name = ( optarg ) ? optarg : "";
+					return getValue(name, ui);
 				}
 				break;
 
@@ -204,7 +206,8 @@ int main(int argc, char** argv)
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
 					ui.initBackId(UniSetTypes::AdminID);
-					return getRawValue(optarg, ui);
+					string name = ( optarg ) ? optarg : "";
+					return getRawValue(name, ui);
 				}
 				break;
 
@@ -213,7 +216,8 @@ int main(int argc, char** argv)
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
 					ui.initBackId(UniSetTypes::AdminID);
-					return getChangedTime(optarg, ui);
+					string name = ( optarg ) ? optarg : "";
+					return getChangedTime(name, ui);
 				}
 				break;
 
@@ -271,7 +275,8 @@ int main(int argc, char** argv)
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
 					ui.initBackId(UniSetTypes::AdminID);
-					return configure(optarg, ui);
+					string name = ( optarg ) ? optarg : "";
+					return configure(name, ui);
 				}
 				break;
 
@@ -299,7 +304,8 @@ int main(int argc, char** argv)
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
 					ui.initBackId(UniSetTypes::AdminID);
-					return logRotate(optarg, ui);
+					string name = ( optarg ) ? optarg : "";
+					return logRotate(name, ui);
 				}
 				break;
 
@@ -309,7 +315,8 @@ int main(int argc, char** argv)
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
 					ui.initBackId(UniSetTypes::AdminID);
-					return getCalibrate(optarg, ui);
+					string name = ( optarg ) ? optarg : "";
+					return getCalibrate(name, ui);
 				}
 				break;
 
@@ -365,6 +372,11 @@ int main(int argc, char** argv)
 			cerr << "  line: " << fe.line() << endl;
 			cerr << "  mesg: " << fe.errmsg() << endl;
 		}
+	}
+	catch( std::exception& ex )
+	{
+		if( !quiet )
+			cerr << "exception: " << ex.what() << endl;
 	}
 	catch(...)
 	{
@@ -891,7 +903,7 @@ int logRotate( const string& arg, UInterface& ui )
 	auto conf = ui.getConf();
 
 	// посылка всем
-	if( arg.empty() || (arg.c_str())[0] != '-' )
+	if( arg.empty() || arg[0] == '-' )
 	{
 		auto rep = make_shared<ObjectRepository>(conf);
 		commandToAll(conf->getServicesSection(), rep, (Command)LogRotate);
@@ -900,12 +912,16 @@ int logRotate( const string& arg, UInterface& ui )
 	}
 	else // посылка определённому объекту
 	{
-		UniSetTypes::ObjectId id = conf->oind->getIdByName(arg);
+		UniSetTypes::ObjectId id = conf->getObjectID(arg);
+		if( id == DefaultObjectId )
+			id = conf->getControllerID(arg);
+		else if( id == DefaultObjectId )
+			id = conf->getServiceID(arg);
 
 		if( id == DefaultObjectId )
 		{
 			if( !quiet )
-				cout << "(logrotate): name='" << arg << "' не найдено!!!\n";
+				cout << "(logrotate): not found ID for name='" << arg << "'" << endl;
 
 			return 1;
 		}
@@ -927,7 +943,7 @@ int configure( const string& arg, UInterface& ui )
 	auto conf = ui.getConf();
 
 	// посылка всем
-	if( arg.empty() || (arg.c_str())[0] != '-' )
+	if( arg.empty() || arg[0] == '-' )
 	{
 		auto rep = make_shared<ObjectRepository>(conf);
 		commandToAll(conf->getServicesSection(), rep, (Command)Configure);
@@ -936,7 +952,11 @@ int configure( const string& arg, UInterface& ui )
 	}
 	else // посылка определённому объекту
 	{
-		UniSetTypes::ObjectId id = conf->oind->getIdByName(arg);
+		UniSetTypes::ObjectId id = conf->getObjectID(arg);
+		if( id == DefaultObjectId )
+			id = conf->getControllerID(arg);
+		else if( id == DefaultObjectId )
+			id = conf->getServiceID(arg);
 
 		if( id == DefaultObjectId )
 		{
@@ -1031,3 +1051,4 @@ void errDoNotReolve( const std::string& oname )
 	if( verb )
 		cerr << oname << ": resolve failed.." << endl;
 }
+// --------------------------------------------------------------------------------------
