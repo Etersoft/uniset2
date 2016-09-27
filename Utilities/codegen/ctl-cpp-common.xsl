@@ -474,6 +474,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 				mylog->logFile(fname.c_str(),true);
 				mylogany &lt;&lt; myname &lt;&lt; "(preSysCommand): ***************** mylog LOG ROTATE *****************" &lt;&lt; endl;
 			}
+			
+			if( logserv &amp;&amp; !logserv_host.empty() &amp;&amp; logserv_port != 0 )
+				logserv-&gt;check(true);
 		}
 		break;
 

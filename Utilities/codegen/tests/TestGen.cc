@@ -42,6 +42,7 @@ TestGen::TestGen()
 // -----------------------------------------------------------------------------
 void TestGen::step()
 {
+#if 0
 	cout << "strval: " << strval(input2_s) << endl;
 	cout << "str: " << str(input2_s) << endl;
 	cout << "===========" << endl;
@@ -53,7 +54,7 @@ void TestGen::step()
 	int_var++;
 	bool_var ^= true;
 	cout << vmon << endl;
-
+#endif
 	//	cout << vmon.pretty_str() << endl;
 }
 // -----------------------------------------------------------------------------

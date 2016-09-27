@@ -115,6 +115,45 @@ void LogServer::terminate()
 	loop.evstop(this);
 }
 // -------------------------------------------------------------------------
+bool LogServer::check( bool restart_if_fail )
+{
+	try
+	{
+		// для проверки пробуем открыть соединение..
+		UTCPSocket s(addr, port);
+		s.close();
+		return true;
+	}
+	catch(...){}
+
+	if( !restart_if_fail )
+		return false;
+
+	if( !sock )
+		return false;
+
+	io.stop();
+	io.set<LogServer, &LogServer::ioAccept>(this);
+	io.start(sock->getSocket(), ev::READ);
+
+	try
+	{
+		UTCPSocket s(addr, port);
+		s.close();
+		return true;
+	}
+	catch( Poco::Net::NetException& ex )
+	{
+		ostringstream err;
+		err << myname << "(check): socket error:" << ex.message();
+
+		if( mylog.is_crit() )
+			mylog.crit() << err.str() << endl;
+	}
+
+	return false;
+}
+// -------------------------------------------------------------------------
 void LogServer::evprepare( const ev::loop_ref& eloop )
 {
 	if( sock )
@@ -146,8 +185,8 @@ void LogServer::evprepare( const ev::loop_ref& eloop )
 
 	sock->setBlocking(false);
 
-	io.set<LogServer, &LogServer::ioAccept>(this);
 	io.set( eloop );
+	io.set<LogServer, &LogServer::ioAccept>(this);
 	io.start(sock->getSocket(), ev::READ);
 	isrunning = true;
 }

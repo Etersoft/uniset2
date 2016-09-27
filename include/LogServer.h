@@ -113,6 +113,8 @@ class LogServer:
 			return isrunning;
 		}
 
+		bool check( bool restart_if_fail = true );
+
 		void init( const std::string& prefix, xmlNode* cnode = 0 );
 
 		static std::string help_print( const std::string& prefix );
