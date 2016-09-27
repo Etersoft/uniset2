@@ -60,6 +60,7 @@ string conffile("configure.xml");
 // --------------------------------------------------------------------------
 static bool commandToAll( const string& section, std::shared_ptr<ObjectRepository>& rep, Command cmd );
 static void createSections(const std::shared_ptr<Configuration>& c );
+static void errDoNotReolve( const std::string& oname );
 // --------------------------------------------------------------------------
 int omap();
 int configure( const string& args, UInterface& ui );
@@ -418,7 +419,11 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 				{
 					case StartUp:
 					{
-						if(CORBA::is_nil(obj))    break;
+						if( CORBA::is_nil(obj) )
+						{
+							errDoNotReolve(ob);
+							break;
+						}
 
 						SystemMessage msg(SystemMessage::StartUp);
 						obj->push( Message::transport(msg) );
@@ -430,7 +435,11 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 
 					case FoldUp:
 					{
-						if(CORBA::is_nil(obj))    break;
+						if(CORBA::is_nil(obj))
+						{
+							errDoNotReolve(ob);
+							break;
+						}
 
 						SystemMessage msg(SystemMessage::FoldUp);
 						obj->push( Message::transport(msg) );
@@ -442,7 +451,11 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 
 					case Finish:
 					{
-						if(CORBA::is_nil(obj))    break;
+						if(CORBA::is_nil(obj))
+						{
+							errDoNotReolve(ob);
+							break;
+						}
 
 						SystemMessage msg(SystemMessage::Finish);
 						obj->push( Message::transport(msg) );
@@ -511,6 +524,9 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 	}
 	catch( ORepFailed )
 	{
+		if( !quiet )
+			cerr << "..ORepFailed.." << endl;
+
 		cout.setf(old_flags);
 		return false;
 	}
@@ -1010,3 +1026,8 @@ int oinfo( const string& args, UInterface& ui, int userparam )
 }
 
 // --------------------------------------------------------------------------------------
+void errDoNotReolve( const std::string& oname )
+{
+	if( verb )
+		cerr << oname << ": resolve failed.." << endl;
+}

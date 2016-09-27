@@ -493,9 +493,16 @@ UniSetTypes::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( CORBA:
 	ostringstream inf;
 	
 	inf &lt;&lt; i->info &lt;&lt; endl;
-	inf &lt;&lt; "LogServer: " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port &lt;&lt; endl;
 	if( logserv /* &amp;&amp; userparam &lt; 0 */ )
+	{
+		inf &lt;&lt; "LogServer: " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port 
+			&lt;&lt; ( logserv->isRunning() ? "   [RUNNIG]" : "   [FAILED]" ) &lt;&lt; endl;
+
 		inf &lt;&lt; "         " &lt;&lt; logserv->getShortInfo() &lt;&lt; endl;
+	}
+	else
+		inf &lt;&lt; "LogServer: NONE" &lt;&lt; endl;
+	
 	inf &lt;&lt; dumpIO() &lt;&lt; endl;
 	inf &lt;&lt; endl;
 	auto timers = getTimersList();
