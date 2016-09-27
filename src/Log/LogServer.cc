@@ -255,7 +255,12 @@ string LogServer::getShortInfo()
 {
 	ostringstream inf;
 
-	inf << "LogServer: " << myname << endl;
+	inf << "LogServer: " << myname
+		<< " ["
+		<< " sessMaxCount=" << sessMaxCount
+		<< " ]"
+		<< endl;
+
 	{
 		uniset_rwmutex_wrlock l(mutSList);
 
