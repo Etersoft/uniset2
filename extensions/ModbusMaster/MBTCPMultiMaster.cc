@@ -78,10 +78,11 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 			continue;
 		}
 
-		MBSlaveInfo sinf;
-		sinf.ip = it1.getProp("ip");
+		auto sinf = make_shared<MBSlaveInfo>();
 
-		if( sinf.ip.empty() )
+		sinf->ip = it1.getProp("ip");
+
+		if( sinf->ip.empty() )
 		{
 			ostringstream err;
 			err << myname << "(init): ip='' in <GateList>";
@@ -89,21 +90,21 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 			throw UniSetTypes::SystemError(err.str());
 		}
 
-		sinf.port = it1.getIntProp("port");
+		sinf->port = it1.getIntProp("port");
 
-		if( sinf.port <= 0 )
+		if( sinf->port <= 0 )
 		{
 			ostringstream err;
-			err << myname << "(init): ERROR: port=''" << sinf.port << " for ip='" << sinf.ip << "' in <GateList>";
+			err << myname << "(init): ERROR: port=''" << sinf->port << " for ip='" << sinf->ip << "' in <GateList>";
 			mbcrit << err.str() << endl;
 			throw UniSetTypes::SystemError(err.str());
 		}
 
 		if( !it1.getProp("respondSensor").empty() )
 		{
-			sinf.respond_id = conf->getSensorID( it1.getProp("respondSensor") );
+			sinf->respond_id = conf->getSensorID( it1.getProp("respondSensor") );
 
-			if( sinf.respond_id == DefaultObjectId )
+			if( sinf->respond_id == DefaultObjectId )
 			{
 				ostringstream err;
 				err << myname << "(init): ERROR: Unknown SensorID for '" << it1.getProp("respondSensor") << "' in <GateList>";
@@ -112,33 +113,51 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 			}
 		}
 
-		sinf.priority = it1.getIntProp("priority");
-		sinf.mbtcp = std::make_shared<ModbusTCPMaster>();
+		sinf->priority = it1.getIntProp("priority");
+		sinf->mbtcp = std::make_shared<ModbusTCPMaster>();
 
-		sinf.ptIgnoreTimeout.setTiming( it1.getPIntProp("ignore_timeout", ignore_timeout) );
-		sinf.recv_timeout = it1.getPIntProp("recv_timeout", recv_timeout);
-		sinf.aftersend_pause = it1.getPIntProp("aftersend_pause", aftersend_pause);
-		sinf.sleepPause_usec = it1.getPIntProp("sleepPause_msec", sleepPause_msec);
-		sinf.respond_invert = it1.getPIntProp("invert", 0);
-		sinf.respond_force = it1.getPIntProp("force", 0);
+		sinf->ptIgnoreTimeout.setTiming( it1.getPIntProp("ignore_timeout", ignore_timeout) );
+		sinf->recv_timeout = it1.getPIntProp("recv_timeout", recv_timeout);
+		sinf->aftersend_pause = it1.getPIntProp("aftersend_pause", aftersend_pause);
+		sinf->sleepPause_usec = it1.getPIntProp("sleepPause_msec", sleepPause_msec);
+		sinf->respond_invert = it1.getPIntProp("invert", 0);
+		sinf->respond_force = it1.getPIntProp("force", 0);
+
+		int fn = conf->getArgPInt("--" + prefix + "-check-func", it.getProp("checkFunc"), ModbusRTU::fnUnknown);
+		if( fn != ModbusRTU::fnUnknown &&
+			fn != ModbusRTU::fnReadCoilStatus &&
+			fn != ModbusRTU::fnReadInputStatus &&
+			fn != ModbusRTU::fnReadOutputRegisters &&
+			fn != ModbusRTU::fnReadInputRegisters )
+		{
+			ostringstream err;
+			err << myname << "(init):  BAD check function ='" << fn << "'. Must be [1,2,3,4]";
+			mbcrit << err.str() << endl;
+			throw SystemError(err.str());
+		}
+
+		sinf->checkFunc = (ModbusRTU::SlaveFunctionCode)fn;
+
+		sinf->checkAddr = conf->getArgPInt("--" + prefix + "-check-addr", it.getProp("checkAddr"), 0);
+		sinf->checkReg = conf->getArgPInt("--" + prefix + "-check-reg", it.getProp("checkReg"), 0);
 
 		int tout = it1.getPIntProp("timeout", channelTimeout);
-		sinf.channel_timeout = (tout >= 0 ? tout : channelTimeout);
+		sinf->channel_timeout = (tout >= 0 ? tout : channelTimeout);
 
 		// делаем только задержку на отпускание..
-		sinf.respondDelay.set(0, sinf.channel_timeout);
+		sinf->respondDelay.set(0, sinf->channel_timeout);
 
-		sinf.force_disconnect = it.getPIntProp("persistent_connection", !force_disconnect) ? false : true;
+		sinf->force_disconnect = it.getPIntProp("persistent_connection", !force_disconnect) ? false : true;
 
 		ostringstream n;
-		n << sinf.ip << ":" << sinf.port;
-		sinf.myname = n.str();
+		n << sinf->ip << ":" << sinf->port;
+		sinf->myname = n.str();
 
-		auto l = loga->create(sinf.myname);
-		sinf.mbtcp->setLog(l);
+		auto l = loga->create(sinf->myname);
+		sinf->mbtcp->setLog(l);
 
-		mbinfo << myname << "(init): add slave channel " << sinf.myname << endl;
-		mblist.emplace_back(std::move(sinf));
+		mbinfo << myname << "(init): add slave channel " << sinf->myname << endl;
+		mblist.emplace_back(sinf);
 	}
 
 	if( ic )
@@ -154,7 +173,8 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 	}
 
 	mblist.sort();
-	mbi = mblist.rbegin();
+	mbi = mblist.rbegin(); // т.к. mbi это reverse_iterator
+	(*mbi)->setUse(true);
 
 	if( shm->isLocalwork() )
 	{
@@ -214,64 +234,69 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 		if( mbi == mblist.rend() )
 			mbi = mblist.rbegin();
 
-		mbi->init(mblog);
+		auto m = (*mbi);
+		m->init(mblog);
 
 		// переопределяем timeout на данный канал
-		ptReopen.setTiming( mbi->channel_timeout );
+		ptReopen.setTiming( m->channel_timeout );
 
-		mb = mbi->mbtcp;
-		return mbi->mbtcp;
+		m->setUse(true);
+		mb = m->mbtcp;
+		return m->mbtcp;
 	}
 
 	{
 		// сперва надо обновить все ignore
 		// т.к. фактически флаги выставляются и сбрасываются только здесь
-		for( auto it = mblist.rbegin(); it != mblist.rend(); ++it )
+		for( auto&& it: mblist )
 			it->ignore = !it->ptIgnoreTimeout.checkTime();
 
 		// если reopen=true - значит почему-то по текущему каналу связи нет (хотя соединение есть)
 		// тогда выставляем ему признак игнорирования
 		if( mbi != mblist.rend() && reopen )
 		{
-			mbi->setUse(false);
-			mbi->ignore = true;
-			mbi->ptIgnoreTimeout.reset();
-			mbwarn << myname << "(initMB): set ignore=true for " << mbi->ip << ":" << mbi->port << endl;
+			auto m = (*mbi);
+			m->setUse(false);
+			m->ignore = true;
+			m->ptIgnoreTimeout.reset();
+			mbwarn << myname << "(initMB): set ignore=true for " << m->ip << ":" << m->port << endl;
 		}
 
 		// Если по текущему каналу связь есть (и мы его не игнорируем), то возвращаем его
-		if( mbi != mblist.rend() && !mbi->ignore && mbi->respond )
+		if( mbi != mblist.rend() && !(*mbi)->ignore && (*mbi)->respond )
 		{
+			auto m = (*mbi);
 			// ещё раз проверим соединение (в неблокирующем режиме)
-			mbi->respond = mbi->check();
+			m->respond = m->check();
 
-			if( mbi->respond && (mbi->mbtcp->isConnection() || mbi->init(mblog)) )
+			if( m->respond && (m->mbtcp->isConnection() || m->init(mblog)) )
 			{
-				mblog4 << myname << "(initMB): SELECT CHANNEL " << mbi->ip << ":" << mbi->port << endl;
-				mb = mbi->mbtcp;
-				mbi->setUse(true);
-				ptReopen.setTiming( mbi->channel_timeout );
-				return mbi->mbtcp;
+				mblog4 << myname << "(initMB): SELECT CHANNEL " << m->ip << ":" << m->port << endl;
+				mb = m->mbtcp;
+				m->setUse(true);
+				ptReopen.setTiming( m->channel_timeout );
+				return m->mbtcp;
 			}
 
-			mbi->setUse(false);
+			m->setUse(false);
 		}
 
 		if( mbi != mblist.rend() )
-			mbi->mbtcp->forceDisconnect();
+			(*mbi)->mbtcp->forceDisconnect();
 	}
 
 	// проходим по списку (в обратном порядке, т.к. самый приоритетный в конце)
 	for( auto it = mblist.rbegin(); it != mblist.rend(); ++it )
 	{
-		if( it->respond && !it->ignore && it->init(mblog) )
+		auto m = (*it);
+		if( m->respond && !m->ignore && m->init(mblog) )
 		{
 			mbi = it;
-			mb = mbi->mbtcp;
-			mbi->setUse(true);
-			ptReopen.setTiming( mbi->channel_timeout );
-			mblog4 << myname << "(initMB): SELECT CHANNEL " << mbi->ip << ":" << mbi->port << endl;
-			return it->mbtcp;
+			mb = m->mbtcp;
+			m->setUse(true);
+			ptReopen.setTiming( m->channel_timeout );
+			mblog4 << myname << "(initMB): SELECT CHANNEL " << m->ip << ":" << m->port << endl;
+			return m->mbtcp;
 		}
 	}
 
@@ -280,15 +305,16 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 	// значит сейчас просто находим первый у кого есть связь и делаем его главным
 	for( auto it = mblist.rbegin(); it != mblist.rend(); ++it )
 	{
-		if( it->respond && it->check() && it->init(mblog) )
+		auto& m = (*it);
+		if( m->respond && m->check() && m->init(mblog) )
 		{
 			mbi = it;
-			mb = mbi->mbtcp;
-			mbi->ignore = false;
-			mbi->setUse(true);
-			ptReopen.setTiming( mbi->channel_timeout );
-			mblog4 << myname << "(initMB): SELECT CHANNEL " << mbi->ip << ":" << mbi->port << endl;
-			return it->mbtcp;
+			mb = m->mbtcp;
+			m->ignore = false;
+			m->setUse(true);
+			ptReopen.setTiming( m->channel_timeout );
+			mblog4 << myname << "(initMB): SELECT CHANNEL " << m->ip << ":" << m->port << endl;
+			return m->mbtcp;
 		}
 	}
 
@@ -307,13 +333,80 @@ void MBTCPMultiMaster::final_thread()
 }
 // -----------------------------------------------------------------------------
 
-bool MBTCPMultiMaster::MBSlaveInfo::check() const
+bool MBTCPMultiMaster::MBSlaveInfo::check()
 {
-	return mbtcp->checkConnection(ip, port, recv_timeout);
+	std::unique_lock<std::mutex> lock(mutInit, std::try_to_lock);
+
+	// т.к. check вызывается периодически, то нем не страшно сделать return
+	// и в следующий раз проверить ещё раз..
+	if( !lock.owns_lock() )
+		return use; // возвращаем 'use' т.к. если use=1 то считается что связь есть..
+
+	if( !mbtcp )
+		return false;
+
+	if( use )
+		return true;
+
+//	cerr << myname << "(check): check connection..." << ip << ":" << port
+//		 << " mbfunc=" << checkFunc
+//		 << " mbaddr=" << ModbusRTU::addr2str(checkAddr)
+//		 << " mbreg=" << (int)checkReg << "(" << ModbusRTU::dat2str(checkReg) << ")"
+//		 << endl;
+
+	try
+	{
+		mbtcp->connect(ip,port,false);
+		switch(checkFunc)
+		{
+			case ModbusRTU::fnReadCoilStatus:
+			{
+				auto ret = mbtcp->read01(checkAddr,checkReg,1);
+				return true;
+			}
+			break;
+
+			case ModbusRTU::fnReadInputStatus:
+			{
+				auto ret = mbtcp->read02(checkAddr,checkReg,1);
+				return true;
+			}
+			break;
+
+			case ModbusRTU::fnReadOutputRegisters:
+			{
+				auto ret = mbtcp->read03(checkAddr,checkReg,1);
+				return true;
+			}
+			break;
+
+			case ModbusRTU::fnReadInputRegisters:
+			{
+				auto ret = mbtcp->read04(checkAddr,checkReg,1);
+				return true;
+			}
+			break;
+
+			default: // просто проверка..
+				return mbtcp->checkConnection(ip, port, recv_timeout);
+		}
+	}
+	catch(...){}
+
+	return false;
+}
+// -----------------------------------------------------------------------------
+void MBTCPMultiMaster::MBSlaveInfo::setUse( bool st )
+{
+	std::lock_guard<std::mutex> l(mutInit);
+	respond_init = !( st && !use );
+	use = st;
 }
 // -----------------------------------------------------------------------------
 bool MBTCPMultiMaster::MBSlaveInfo::init( std::shared_ptr<DebugStream>& mblog )
 {
+	std::lock_guard<std::mutex> l(mutInit);
+
 	mbinfo << myname << "(init): connect..." << endl;
 
 	if( initOK )
@@ -339,6 +432,8 @@ void MBTCPMultiMaster::sysCommand( const UniSetTypes::SystemMessage* sm )
 
 	if( sm->command == SystemMessage::StartUp )
 	{
+		initCheckConnectionParameters();
+
 		pollThread->start();
 
 		if( checktime > 0 )
@@ -387,7 +482,7 @@ void MBTCPMultiMaster::check_thread()
 {
 	while( checkProcActive() )
 	{
-		for( auto it = mblist.begin(); it != mblist.end(); ++it )
+		for( auto&& it: mblist )
 		{
 			try
 			{
@@ -408,6 +503,9 @@ void MBTCPMultiMaster::check_thread()
 				// задержка на выставление "пропажи связи"
 				if( it->respond_init )
 					r = it->respondDelay.check( r );
+
+				if( !checkProcActive() )
+					break;
 
 				try
 				{
@@ -450,7 +548,7 @@ void MBTCPMultiMaster::initIterators()
 	MBExchange::initIterators();
 
 	for( auto && it : mblist )
-		shm->initIterator(it.respond_it);
+		shm->initIterator(it->respond_it);
 }
 // -----------------------------------------------------------------------------
 void MBTCPMultiMaster::sigterm( int signo )
@@ -509,6 +607,87 @@ bool MBTCPMultiMaster::deactivateObject()
 
 	return MBExchange::deactivateObject();
 }
+// -----------------------------------------------------------------------------
+void MBTCPMultiMaster::initCheckConnectionParameters()
+{
+	auto conf = uniset_conf();
+
+	bool initFromRegMap = ( findArgParam("--" + prefix + "-check-init-from-regmap", conf->getArgc(), conf->getArgv()) != -1 );
+	if( !initFromRegMap )
+		return;
+
+	mbinfo << myname << "(init): init check connection parameters from regmap.." << endl;
+
+
+
+	// берём первый попавшийся read-регистр из списка
+	// от первого попавшегося устройства..
+
+	ModbusRTU::SlaveFunctionCode checkFunc = ModbusRTU::fnUnknown;
+	ModbusRTU::ModbusAddr checkAddr = { 0x00 };
+	ModbusRTU::ModbusData checkReg = { 0 };
+
+	if( devices.empty() )
+	{
+
+		mbwarn << myname << "(init): devices list empty?!" << endl;
+		return;
+	}
+
+	// идём по устройствам
+	for( const auto& d: devices )
+	{
+		checkAddr = d.second->mbaddr;
+		if( d.second->pollmap.empty() )
+			continue;
+
+		// идём по списку опрашиваемых регистров
+		for( auto p = d.second->pollmap.begin(); p != d.second->pollmap.end(); ++p )
+		{
+			for( auto r = p->second->begin(); r!=p->second->end(); ++r )
+			{
+				if( ModbusRTU::isReadFunction(r->second->mbfunc) )
+				{
+					checkFunc = r->second->mbfunc;
+					checkReg = r->second->mbreg;
+					break;
+				}
+			}
+
+			if( checkFunc != ModbusRTU::fnUnknown )
+				break;
+		}
+
+		if( checkFunc != ModbusRTU::fnUnknown )
+			break;
+	}
+
+	if( checkFunc == ModbusRTU::fnUnknown )
+	{
+		ostringstream err;
+
+		err << myname << "(init): init check connection parameters: ERROR: "
+			   << " NOT FOUND read-registers for check connection!"
+			   << endl;
+
+		mbcrit << err.str() << endl;
+		throw SystemError(err.str());
+	}
+
+	mbinfo << myname << "(init): init check connection parameters: "
+		   << " mbfunc=" << checkFunc
+		   << " mbaddr=" << ModbusRTU::addr2str(checkAddr)
+		   << " mbreg=" << (int)checkReg << "(" << ModbusRTU::dat2str(checkReg) << ")"
+		   << endl;
+
+	// инициализируем..
+	for( auto&& m: mblist )
+	{
+		m->checkFunc = checkFunc;
+		m->checkAddr = checkAddr;
+		m->checkReg = checkReg;
+	}
+}
 
 // -----------------------------------------------------------------------------
 void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
@@ -520,6 +699,11 @@ void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
 	cout << "--prefix-persistent-connection 0,1 - Не закрывать соединение на каждом цикле опроса" << endl;
 	cout << "--prefix-checktime msec            - период проверки связи по каналам (<GateList>)" << endl;
 	cout << "--prefix-ignore-timeout msec       - Timeout на повторную попытку использования канала после 'reopen-timeout'. По умолчанию: reopen-timeout * 3" << endl;
+
+	cout << "--prefix-check-func [1,2,3,4]      - Номер функции для проверки соединения" << endl;
+	cout << "--prefix-check-addr [1..255 ]      - Адрес устройства для проверки соединения" << endl;
+	cout << "--prefix-check-reg [1..65535]      - Регистр для проверки соединения" << endl;
+
 	cout << endl;
 	cout << " ВНИМАНИЕ! '--prefix-reopen-timeout' для MBTCPMultiMaster НЕ ДЕЙСТВУЕТ! " << endl;
 	cout << " Смена канала происходит по --prefix-timeout. " << endl;
@@ -581,7 +765,7 @@ UniSetTypes::SimpleInfo* MBTCPMultiMaster::getInfo( CORBA::Long userparam )
 	inf << "Gates: " << (checktime <= 0 ? "/ check connections DISABLED /" : "") << endl;
 
 	for( const auto& m : mblist )
-		inf << "   " << m.getShortInfo() << endl;
+		inf << "   " << m->getShortInfo() << endl;
 
 	inf << endl;
 

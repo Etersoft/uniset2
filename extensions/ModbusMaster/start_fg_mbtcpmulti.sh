@@ -14,6 +14,10 @@
 --mbtcp-log-add-levels level4,warn,crit \
 --mbtcp-persistent-connection 1 \
 --mbtcp-run-logserver \
+--mbtcpX-check-init-from-regmap \
+--mbtcpX-check-addr 1 \
+--mbtcpX-check-reg 66 \
+--mbtcpX-check-func 1 \
 $*
 
 #--dlog-add-levels info,crit,warn,level4,level3,level9 \

@@ -31,6 +31,7 @@
       - \ref sec_MBTCPM_Conf
       - \ref sec_MBTCPM_ConfList
       - \ref sec_MBTCPM_ExchangeMode
+	  - \ref sec_MBTCPM_CheckConnection
 
       \section sec_MBTCPM_Comm Общее описание ModbusTCPMultiMaster
       Класс реализует процесс обмена (опрос/запись) с RTU-устройствами,
@@ -85,6 +86,9 @@
       - \b respond_invert - инвертировать датчик связи (DI)
 	  - \b force [1,0] - "1" - обновлять значение датчика связи в SM принудительно на каждом цикле проверки ("0" - только по изменению).
 	  - \b timeout - таймаут на определение отсутсвия связи для данного канала. По умолчанию берётся глобальный.
+	  - \b checkFunc - Номер функции для проверки соединения
+	  - \b checkAddr - Адрес устройства для проверки соединения
+	  - \b checkReg - Регистр для проверки соединения
 
       \par Параметры запуска
 
@@ -142,6 +146,11 @@
       \b --xxx-heartbeat-max или \b heartbeat_max val - сохраняемое значение счётчика "сердцебиения".
 
       \b --xxx-activate-timeout msec . По умолчанию 2000. - время ожидания готовности SharedMemory к работе.
+
+	  \b --xxx-check-func [1,2,3,4]   - Номер функции для проверки соединения
+	  \b --xxx-check-addr [1..255 ]   - Адрес устройства для проверки соединения
+	  \b --xxx-check-reg [1..65535]   - Регистр для проверки соединения
+	  \b --xxx-check-init-from-regmap - Взять адрес, функцию и регистр для проверки связи из списка опроса
 
       \section  sec_MBTCPM_ConfList Конфигурирование списка регистров для ModbusTCP master
       Конфигурационные параметры задаются в секции <sensors> конфигурационного файла.
@@ -207,8 +216,6 @@
    регистры в устройство писатся не будут. Чтобы отключить это поведение, можно указать параметр
    - \b tcp_sm_initOK    - [0|1] Игнорировать начальную инициализацию из SM (сразу писать в устройство)
 
-
-
    При этом будет записывыться значение "default".
 
    \warning Регистр должен быть уникальным. И может повторятся только если указан параметр \a nbit или \a nbyte.
@@ -228,10 +235,43 @@
     Режимы переключаются при помощи датчика, который можно задать либо аргументом командной строки
     \b --prefix-exchange-mode-id либо в конф. файле параметром \b exchangeModeID="". Константы определяющие режимы объявлены в MBTCPMultiMaster::ExchangeMode.
 
+
+	\section sec_MBTCPM_CheckConnection Проверка соединения
+	Для контроля состояния связи по "резервным" каналам создаётся специальный поток (check_thread), в котором
+	происходит периодическая проверка связи по всем "пассивным"(резервным) в данный момент каналам. Это используется
+	как для общей диагностики в системе, так и при выборе на какой канал переключаться в случае пропажи связи в основном канале.
+	Т.е. будет выбран ближайший приоритетный канал у которого выставлен признак что есть связь.
+	Период проверки связи по "резервным" каналам задаётся при помощи --prefix-checktime или параметром checktime="" в конфигурационном файле.
+	В MBTCPMultiMaster реализовано два механизма проверки связи.
+
+	- По умолчанию используется простая установка соединения и тут же его разрыв. Т.е. данные никакие не посылаются,
+	но проверяется что host и port доступны для подключения.
+	- Второй способ: это проверка соединения с посылкой modbus-запроса. Для этого имеется два способа
+	указать адрес устройства, регистр и функция опроса для проверки.
+	Либо в секции <GateList> для каждого канала можно указать:
+	 - адрес устройства \b checkAddr=""
+	 - функцию проверки \b checkFunc=""  - функция может быть только [01,02,03,04] (т.е. функции чтения).
+	 - регистр \b checkReg
+	Либо в командной строке \b задать параметры --prefix-check-addr,  --prefix-check-func,  --prefix-check-reg,
+	которые будут одинаковыми для \b ВСЕХ \b КАНАЛОВ.
+	Помимо этого если указать в командной строке аргумент --prefix-check-init-from-regmap, то для тестирования
+	соединения будет взят первый попавшийся регистр из списка обмена.
+
+	\warning Способ проверки при помощи "modbus-запроса" имеет ряд проблем: Если фактически производится
+	обмен с несколькими устройствами (несколько mbaddr) через TCP-шлюз, то может быть "ложное" срабатвание,
+	т.к. фактически состояние канала будет определяться только под связи с каким-то одним конкретным устройством.
+	И получается, что если обмен ведётся например с тремя устройствами, но
+	проверка канала происходит только по связи с первым, то если оно перестанет отвечать, это будет считаться
+	сбоем всего канала и этот канал будет исключён из обмена (!). Если ведётся обмен только с одним устройством,
+	такой проблеммы не возникает.
+	Но к плюсам данного способа проверки связи ("modbus-запросом") является то, что соедиенение поддерживается
+	постоянным, в отличие от "первого способа" при котором оно создаётся и сразу рвётся и если проверка
+	настроена достаточно часто ( < TIME_WAIT для сокетов), то при длительной работе могут закончится дескрипторы
+	на создание сокетов.
 */
 // -----------------------------------------------------------------------------
 /*!
-    \par Реализация Modbus TCP Multi Master для обмена с многими ModbusRTU устройствами
+	\par Реализация Modbus TCP MultiMaster для обмена с многими ModbusRTU устройствами
     через один modbus tcp шлюз, доступный по нескольким ip-адресам.
 
     \par Чтобы не зависеть от таймаутов TCP соединений, которые могут неопределённо зависать
@@ -263,6 +303,7 @@ class MBTCPMultiMaster:
 		virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;
 		virtual void sigterm( int signo ) override;
 		virtual bool deactivateObject() override;
+		void initCheckConnectionParameters();
 
 		void poll_thread();
 		void check_thread();
@@ -288,6 +329,11 @@ class MBTCPMultiMaster:
 			std::shared_ptr<ModbusTCPMaster> mbtcp;
 			int priority;
 
+			// параметры для проверки соединения..
+			ModbusRTU::SlaveFunctionCode checkFunc = { ModbusRTU::fnUnknown };
+			ModbusRTU::ModbusAddr checkAddr = { 0x00 };
+			ModbusRTU::ModbusData checkReg = { 0 };
+
 			bool respond;
 			UniSetTypes::ObjectId respond_id;
 			IOController::IOStateList::iterator respond_it;
@@ -297,18 +343,14 @@ class MBTCPMultiMaster:
 			DelayTimer respondDelay;
 			timeout_t channel_timeout = { 0 };
 
-			inline bool operator < ( const MBSlaveInfo& mbs ) const
+			inline bool operator < ( const MBSlaveInfo& mbs ) const noexcept
 			{
 				return priority < mbs.priority;
 			}
 
 			bool init( std::shared_ptr<DebugStream>& mblog );
-			bool check() const;
-			inline void setUse( bool st )
-			{
-				respond_init = !( st && !use );
-				use = st;
-			}
+			bool check();
+			void setUse( bool st );
 
 			timeout_t recv_timeout;
 			timeout_t aftersend_pause;
@@ -323,9 +365,11 @@ class MBTCPMultiMaster:
 			PassiveTimer ptIgnoreTimeout;
 
 			const std::string getShortInfo() const;
+
+			std::mutex mutInit;
 		};
 
-		typedef std::list<MBSlaveInfo> MBGateList;
+		typedef std::list<std::shared_ptr<MBSlaveInfo>> MBGateList;
 
 		MBGateList mblist;
 		MBGateList::reverse_iterator mbi;

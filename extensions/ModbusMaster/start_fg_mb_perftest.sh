@@ -4,7 +4,7 @@ MBPARAM=
 
 for N in `seq 1 100`; do
     MBPARAM="$MBPARAM --mbtcp${N}-name MBTCP${N} --mbtcp${N}-confnode MBPerfTestMaster --mbtcp${N}-filter-field mbperf 
-    --mbtcp${N}-filter-value $N --mbtcp${N}-persistent-connection 1 --mbtcp${N}-log-add-levels crit,warn"
+    --mbtcp${N}-filter-value $N --mbtcp${N}-persistent-connection 1 --mbtcp${N}-check-init-from-regmap --mbtcp${N}-log-add-levels warn,crit"
 done
 
 #echo "$MBPARAM"

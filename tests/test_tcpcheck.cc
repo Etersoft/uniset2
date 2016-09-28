@@ -16,17 +16,23 @@ static atomic_bool cancel = {false};
 // --------------------------------------------------------
 bool run_test_server()
 {
-	UTCPSocket sock(host, port);
-
-	while( !cancel )
+	try
 	{
-		if( sock.poll(PassiveTimer::millisecToPoco(500), Poco::Net::Socket::SELECT_READ) )
+		UTCPSocket sock(host, port);
+
+		while( !cancel )
 		{
+			if( sock.poll(PassiveTimer::millisecToPoco(500), Poco::Net::Socket::SELECT_READ) )
+			{
 
+			}
 		}
-	}
 
-	return true;
+		return true;
+	}
+	catch(...){}
+
+	return false;
 }
 // --------------------------------------------------------
 // вспомогательный класс для гарантированного завершения потока..

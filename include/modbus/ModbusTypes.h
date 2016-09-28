@@ -150,6 +150,7 @@ namespace ModbusRTU
 	float dat2f( const ModbusData dat1, const ModbusData dat2 );
 	// -------------------------------------------------------------------------
 	bool isWriteFunction( SlaveFunctionCode c );
+	bool isReadFunction( SlaveFunctionCode c );
 	// -------------------------------------------------------------------------
 	/*! Заголовок сообщений */
 	struct ModbusHeader
