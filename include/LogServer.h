@@ -17,7 +17,7 @@
 #ifndef LogServer_H_
 #define LogServer_H_
 // -------------------------------------------------------------------------
-#include <list>
+#include <vector>
 #include <string>
 #include <memory>
 #include <unordered_map>
@@ -138,9 +138,8 @@ class LogServer:
 		std::string onCommand( LogSession* s, LogServerTypes::Command cmd, const std::string& logname );
 
 	private:
-		typedef std::list< std::shared_ptr<LogSession> > SessionList;
+		typedef std::vector< std::shared_ptr<LogSession> > SessionList;
 		SessionList slist;
-		size_t scount = { 0 };
 		UniSetTypes::uniset_rwmutex mutSList;
 
 		timeout_t timeout = { UniSetTimer::WaitUpTime };

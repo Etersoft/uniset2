@@ -46,6 +46,7 @@ LogServer::LogServer( std::shared_ptr<LogAgregator> log ) noexcept:
 }
 // -------------------------------------------------------------------------
 LogServer::LogServer( std::shared_ptr<DebugStream> log ) noexcept:
+	slist(sessMaxCount),
 	timeout(UniSetTimer::WaitUpTime),
 	cmdTimeout(2000),
 	sessLogLevel(Debug::NONE),
@@ -55,6 +56,7 @@ LogServer::LogServer( std::shared_ptr<DebugStream> log ) noexcept:
 }
 // -------------------------------------------------------------------------
 LogServer::LogServer() noexcept:
+	slist(sessMaxCount),
 	timeout(UniSetTimer::WaitUpTime),
 	cmdTimeout(2000),
 	sessLogLevel(Debug::NONE),
@@ -213,7 +215,7 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 	{
 		uniset_rwmutex_wrlock l(mutSList);
 
-		if( scount >= sessMaxCount )
+		if( slist.size() >= sessMaxCount )
 		{
 			if( mylog.is_crit() )
 				mylog.crit() << myname << "(LogServer::ioAccept): session limit(" << sessMaxCount << ")" << endl;
@@ -233,13 +235,10 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 		s->signal_logsession_command().connect( sigc::mem_fun(this, &LogServer::onCommand) );
 		{
 			uniset_rwmutex_wrlock l(mutSList);
-			scount++;
-
-			// на первой сессии запоминаем состояние логов
-			if( scount == 1 )
-				saveDefaultLogLevels("ALL");
-
 			slist.push_back(s);
+			// на первой сессии запоминаем состояние логов
+			if( slist.size() == 1 )
+				saveDefaultLogLevels("ALL");
 		}
 
 		s->run(watcher.loop);
@@ -259,14 +258,12 @@ void LogServer::sessionFinished( LogSession* s )
 		if( i->get() == s )
 		{
 			slist.erase(i);
-			scount--;
 			break;
 		}
 	}
 
 	if( slist.empty() )
 	{
-		scount = 0;
 		// восстанавливаем уровни логов по умолчанию
 		restoreDefaultLogLevels("ALL");
 	}
