@@ -54,6 +54,17 @@ RRDServer::RRDServer(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::O
 
 	for( ; it1.getCurrent(); it1++, ++tmID )
 		initRRD(it1, tmID);
+
+	if( smTestID == DefaultObjectId && !rrdlist.empty() )
+	{
+		// берём первый датчик из списка
+		const auto& lst = rrdlist.begin()->dslist;
+		if( !lst.empty() )
+		{
+			const auto& dsi = *(lst.begin());
+			smTestID = dsi->sid;
+		}
+	}
 }
 // -----------------------------------------------------------------------------
 RRDServer::~RRDServer()
@@ -268,6 +279,8 @@ void RRDServer::help_print( int argc, const char* const* argv )
 	cout << "             set-levels ...  " << endl;
 	cout << "             logfile filanme " << endl;
 	cout << "             no-debug " << endl;
+	cout << " Base oprtions: " << endl;
+//	cout << UObject_SK::help() << endl;
 	cout << " LogServer: " << endl;
 	cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;
 	cout << "--prefix-logserver-host ip  - listen ip. Default: localhost" << endl;
@@ -314,6 +327,9 @@ std::shared_ptr<RRDServer> RRDServer::init_rrdstorage(int argc, const char* cons
 void RRDServer::askSensors( UniversalIO::UIOCommand cmd )
 {
 	UObject_SK::askSensors(cmd);
+
+	// прежде чем заказывать датчики, надо убедиться что SM доступна
+	waitSM(smReadyTimeout);
 
 	for( auto& it : rrdlist )
 	{
