@@ -1133,6 +1133,7 @@ end_private(false)
 	vmonit(maxHeartBeat);
 	vmonit(activateTimeout);
 	vmonit(smReadyTimeout);
+	vmonit(smTestID);
 	
 
 	// help надо выводить в конце, когда уже все переменные инициализированы по умолчанию
@@ -1521,6 +1522,9 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 
 	if( smTestID == DefaultObjectId )
 		smTestID = getSMTestID();
+
+	vmonit(smTestID);
+	vmonit(smReadyTimeout);
 
 	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 20000);
 
