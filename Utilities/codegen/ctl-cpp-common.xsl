@@ -670,8 +670,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
         mycrit &lt;&lt; err.str() &lt;&lt; endl;
 //		terminate();
 //		abort();
-		raise(SIGTERM);
-		terminate();
+//		raise(SIGTERM);
+		std::terminate();
 //		throw SystemError(err.str());
 	}
 
@@ -685,7 +685,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 		mycrit &lt;&lt; err.str() &lt;&lt; endl;
 //		terminate();
 //		abort();
-		raise(SIGTERM);
+		//raise(SIGTERM);
+		std::terminate();
 //		throw SystemError(err.str());
 	}
 }

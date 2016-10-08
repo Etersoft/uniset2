@@ -87,7 +87,7 @@ int main( int argc, char** argv )
 	LogServerTypes::Command cmd = LogServerTypes::cmdNOP;
 	int cmdonly = 0;
 	timeout_t tout = UniSetTimer::WaitUpTime;
-	timeout_t rdelay = 5000;
+	timeout_t rdelay = 8000;
 	string logfile("");
 	bool logtruncate = false;
 

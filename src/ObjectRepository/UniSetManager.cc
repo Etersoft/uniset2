@@ -343,6 +343,8 @@ void UniSetManager::objects(OManagerCommand cmd)
 			{
 				ucrit << myname << "(objects): " << ex << endl;
 				ucrit << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->" << li->getName() << endl;
+				if( cmd == activ )
+					std::terminate();
 			}
 			catch( const CORBA::SystemException& ex )
 			{
@@ -360,6 +362,9 @@ void UniSetManager::objects(OManagerCommand cmd)
 				ucrit << myname << "(objects): file: " << fe.file()
 					  << " line: " << fe.line()
 					  << " mesg: " << fe.errmsg() << endl;
+
+				if( cmd == activ )
+					std::terminate();
 			}
 		}
 	} // unlock

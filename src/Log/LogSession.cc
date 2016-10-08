@@ -137,6 +137,14 @@ void LogSession::logOnEvent( const std::string& s ) noexcept
 		if( logbuf.size() >= maxRecordsNum )
 		{
 			numLostMsg++;
+			if( numLostMsg > maxRecordsNum )
+			{
+				// видимо клиент отвалился или совсем не успевает читать
+				// разрываем сессию..
+				if( mylog.is_info() )
+					mylog.info() << peername << "(LogSession::onEvent): too many lost messages. Close session.." << endl;
+				cancelled = true;
+			}
 
 			if( !lostMsg )
 			{
