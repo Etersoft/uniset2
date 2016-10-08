@@ -53,6 +53,7 @@ LogServer::LogServer( std::shared_ptr<DebugStream> log ) noexcept:
 	sock(0),
 	elog(log)
 {
+
 }
 // -------------------------------------------------------------------------
 LogServer::LogServer() noexcept:
@@ -213,7 +214,7 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 	}
 
 	{
-		uniset_rwmutex_wrlock l(mutSList);
+		uniset_rwmutex_rlock l(mutSList);
 
 		if( slist.size() >= sessMaxCount )
 		{
@@ -298,7 +299,7 @@ string LogServer::getShortInfo()
 		<< endl;
 
 	{
-		uniset_rwmutex_wrlock l(mutSList);
+		uniset_rwmutex_rlock l(mutSList);
 
 		for( const auto& s : slist )
 			inf << " " << s->getShortInfo() << endl;

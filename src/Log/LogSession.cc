@@ -597,10 +597,12 @@ void LogSession::onCheckConnectionTimer( ev::timer& watcher, int revents ) noexc
 
 	// если клиент уже отвалился.. то при попытке write.. сессия будет закрыта.
 
-	// длинное сообщение ("keep alive message") забивает логи, что потом неудобно смотреть, поэтому пишем "пустоту"
+	// длинное сообщение ("keep alive message") забивает логи, что потом неудобно смотреть
+	// поэтому используем "пробел и возврат на один символ"
 	try
 	{
-		logbuf.emplace(new UTCPCore::Buffer(""));
+		//
+		logbuf.emplace(new UTCPCore::Buffer(" \b"));
 	}
 	catch(...){}
 
@@ -658,7 +660,7 @@ string LogSession::getShortInfo() noexcept
 
 	ostringstream inf;
 
-	inf << "client: " << caddr << endl
+	inf << "client: " << caddr << " :"
 		<< " buffer[" << maxRecordsNum << "]: size=" << sz
 		<< " maxCount=" << maxCount
 		<< " minSizeMsg=" << minSizeMsg
@@ -667,5 +669,10 @@ string LogSession::getShortInfo() noexcept
 		<< endl;
 
 	return std::move(inf.str());
+}
+// ---------------------------------------------------------------------
+string LogSession::name() const noexcept
+{
+	return caddr;
 }
 // ---------------------------------------------------------------------

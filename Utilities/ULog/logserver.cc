@@ -167,7 +167,6 @@ int main( int argc, char** argv )
 		la->printLogList(cout);
 		return 0;
 #endif
-
 		LogServer ls(la);
 		ls.setMaxSessionCount(msess);
 
@@ -214,9 +213,9 @@ int main( int argc, char** argv )
 	{
 		cerr << "(logserver): " << ex << endl;
 	}
-	catch(...)
+	catch( std::exception& ex)
 	{
-		cerr << "(logserver): catch(...)" << endl;
+		cerr << "(logserver): " << ex.what() << endl;
 	}
 
 	return 0;
