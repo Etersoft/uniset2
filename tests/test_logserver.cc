@@ -3,6 +3,7 @@
 #include <memory>
 #include <sstream>
 #include <thread>
+#include <future>
 
 #include "Mutex.h"
 #include "UniSetTypes.h"
@@ -47,28 +48,47 @@ void la_logOnEvent( const std::string& s )
 	la_msg << s;
 }
 // --------------------------------------------------------------------------
-void readlog_thread1()
+bool readlog_thread1()
 {
-	LogReader lr;
-	lr.setinTimeout(readTimeout);
-	lr.signal_stream_event().connect( sigc::ptr_fun(rlog1OnEvent) );
-	lr.setReadCount(1);
-	lr.setLogLevel(Debug::ANY);
+	try
+	{
+		LogReader lr;
+		lr.setinTimeout(readTimeout);
+		lr.signal_stream_event().connect( sigc::ptr_fun(rlog1OnEvent) );
+		lr.setReadCount(1);
+		lr.setLogLevel(Debug::ANY);
 
-	while( !g_read_cancel )
-		lr.readlogs(ip, port); // ,LogServerTypes::cmdNOP,0,"",true);
+		while( !g_read_cancel )
+			lr.readlogs(ip, port); // ,LogServerTypes::cmdNOP,0,"",true);
+
+		return true;
+	}
+	catch( std::exception& ex )
+	{
+	}
+
+	return false;
 }
 // --------------------------------------------------------------------------
-void readlog_thread2()
+bool readlog_thread2()
 {
-	LogReader lr;
-	lr.setinTimeout(readTimeout);
-	lr.signal_stream_event().connect( sigc::ptr_fun(rlog2OnEvent) );
-	lr.setReadCount(1);
-	lr.setLogLevel(Debug::ANY);
+	try
+	{
+		LogReader lr;
+		lr.setinTimeout(readTimeout);
+		lr.signal_stream_event().connect( sigc::ptr_fun(rlog2OnEvent) );
+		lr.setReadCount(1);
+		lr.setLogLevel(Debug::ANY);
 
-	while( !g_read_cancel )
-		lr.readlogs(ip, port); // ,LogServerTypes::cmdNOP,0,"",true);
+		while( !g_read_cancel )
+			lr.readlogs(ip, port); // ,LogServerTypes::cmdNOP,0,"",true);
+		return true;
+	}
+	catch( std::exception& ex )
+	{
+	}
+
+	return false;
 }
 // --------------------------------------------------------------------------
 TEST_CASE("LogAgregator", "[LogServer][LogAgregator]" )
@@ -133,7 +153,7 @@ TEST_CASE("LogServer", "[LogServer]" )
 	REQUIRE( ls.isRunning() );
 
 	msg.str("");
-	auto r_thr = make_shared<std::thread>(readlog_thread1);
+	auto ret = std::async(std::launch::async, readlog_thread1); // make_shared<std::thread>(readlog_thread1);
 
 	msleep(100); // небольшая пауза на создание потока и т.п.
 
@@ -168,10 +188,7 @@ TEST_CASE("LogServer", "[LogServer]" )
 	}
 
 	g_read_cancel = true;
-	msleep(readTimeout);
-
-	if( r_thr->joinable() )
-		r_thr->join();
+	ret.get();
 }
 // --------------------------------------------------------------------------
 TEST_CASE("MaxSessions", "[LogServer]" )
@@ -205,11 +222,11 @@ TEST_CASE("MaxSessions", "[LogServer]" )
 	msg.str("");
 	msg2.str("");
 
-	auto r1_thr = make_shared<std::thread>(readlog_thread1);
+	auto ret1 = std::async(std::launch::async, readlog_thread1); // make_shared<std::thread>(readlog_thread1);
 
 	msleep(500); // пауза чтобы первый заведомо успел подключиться раньше второго..
 
-	auto r2_thr = make_shared<std::thread>(readlog_thread2);
+	auto ret2 = std::async(std::launch::async, readlog_thread1); // make_shared<std::thread>(readlog_thread2);
 
 	msleep(100); // небольшая пауза на создание потока и т.п.
 
@@ -240,13 +257,8 @@ TEST_CASE("MaxSessions", "[LogServer]" )
 	}
 
 	g_read_cancel = true;
-	msleep(readTimeout);
-
-	if( r1_thr->joinable() )
-		r1_thr->join();
-
-	if( r2_thr->joinable() )
-		r2_thr->join();
+	ret1.get();
+	ret2.get();
 }
 // --------------------------------------------------------------------------
 TEST_CASE("LogAgregator regexp", "[LogAgregator]" )

@@ -42,28 +42,38 @@ LogServer::~LogServer() noexcept
 LogServer::LogServer( std::shared_ptr<LogAgregator> log ):
 	LogServer()
 {
-	elog = static_pointer_cast<DebugStream>(log);
+	elog = dynamic_pointer_cast<DebugStream>(log);
+	if( !elog )
+	{
+		ostringstream err;
+		err << myname << "(LogServer): dynamic_pointer_cast FAILED! ";
+
+		if( mylog.is_info() )
+			mylog.info() << myname << "(evfinish): terminate..." << endl;
+
+		if( mylog.is_crit() )
+			mylog.crit() << err.str() << endl;
+
+		cerr << err.str()  << endl;
+
+		throw SystemError(err.str());
+	}
 }
 // -------------------------------------------------------------------------
 LogServer::LogServer( std::shared_ptr<DebugStream> log ):
-	timeout(UniSetTimer::WaitUpTime),
-	cmdTimeout(2000),
-	sessLogLevel(Debug::NONE),
-	slist(sessMaxCount),
-	sock(0),
-	elog(log)
+	LogServer()
 {
-
+	elog = log;
 }
 // -------------------------------------------------------------------------
 LogServer::LogServer():
 	timeout(UniSetTimer::WaitUpTime),
 	cmdTimeout(2000),
 	sessLogLevel(Debug::NONE),
-	slist(sessMaxCount),
 	sock(0),
 	elog(nullptr)
 {
+	slist.reserve(sessMaxCount);
 }
 // -------------------------------------------------------------------------
 void LogServer::evfinish( const ev::loop_ref& loop )

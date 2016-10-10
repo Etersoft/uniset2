@@ -110,7 +110,7 @@ class DBServer_PostgreSQL:
 		typedef std::queue<std::string> QueryBuffer;
 
 		QueryBuffer qbuf;
-		unsigned int qbufSize; // размер буфера сообщений.
+		size_t qbufSize; // размер буфера сообщений.
 		bool lastRemove = { false };
 
 		void flushBuffer();
