@@ -24,7 +24,7 @@
 //---------------------------------------------------------------------------
 using namespace std;
 //---------------------------------------------------------------------------
-static UInterface* ui = 0;
+static UInterface* uInterface = 0;
 //---------------------------------------------------------------------------
 void pyUInterface::uniset_init_params( UTypes::Params* p, const std::string& xmlfile )throw(UException)
 {
@@ -37,7 +37,7 @@ void pyUInterface::uniset_init( int argc, char* argv[], const std::string& xmlfi
 	try
 	{
 		UniSetTypes::uniset_init(argc, argv, xmlfile);
-		ui = new UInterface();
+		uInterface = new UInterface();
 		return;
 	}
 	catch( UniSetTypes::Exception& ex )
@@ -54,7 +54,7 @@ long pyUInterface::getValue( long id )throw(UException)
 {
 	auto conf = UniSetTypes::uniset_conf();
 
-	if( !conf || !ui )
+	if( !conf || !uInterface )
 		throw USysError();
 
 	UniversalIO::IOType t = conf->getIOType(id);
@@ -67,7 +67,7 @@ long pyUInterface::getValue( long id )throw(UException)
 			case UniversalIO::DO:
 			case UniversalIO::AI:
 			case UniversalIO::AO:
-				return ui->getValue(id);
+				return uInterface->getValue(id);
 				break;
 
 			default:
@@ -96,7 +96,7 @@ void pyUInterface::setValue( long id, long val, long supplier )throw(UException)
 {
 	auto conf = UniSetTypes::uniset_conf();
 
-	if( !conf || !ui )
+	if( !conf || !uInterface )
 		throw USysError();
 
 	UniversalIO::IOType t = conf->getIOType(id);
@@ -109,7 +109,7 @@ void pyUInterface::setValue( long id, long val, long supplier )throw(UException)
 			case UniversalIO::DO:
 			case UniversalIO::AI:
 			case UniversalIO::AO:
-				ui->setValue(id, val, supplier);
+				uInterface->setValue(id, val, supplier);
 				break;
 
 			default:

@@ -295,12 +295,12 @@ class IOControl:
 
 		enum TestModeID
 		{
-			tmNone       = 0,       /*!< тестовый режим отключён */
-			tmOffPoll    = 1,        /*!< отключить опрос */
-			tmConfigEnable  = 2,   /*!< специальный режим, в соответствии с настройкой 'enable_testmode' */
+			tmNone       = 0,     /*!< тестовый режим отключён */
+			tmOffPoll    = 1,     /*!< отключить опрос */
+			tmConfigEnable  = 2,  /*!< специальный режим, в соответствии с настройкой 'enable_testmode' */
 			tmConfigDisable = 3,  /*!< специальный режим, в соответствии с настройкой 'disable_testmode' */
-			tmOnlyInputs    = 4,     /*!< включены только входы */
-			tmOnlyOutputs   = 5     /*!< включены только выходы */
+			tmOnlyInputs    = 4,  /*!< включены только входы */
+			tmOnlyOutputs   = 5   /*!< включены только выходы */
 		};
 
 		void execute();
@@ -335,7 +335,7 @@ class IOControl:
 
 		void waitSM();
 
-		xmlNode* cnode = { 0 }; /*!< xml-узел в настроечном файле */
+		xmlNode* confnode = { 0 }; /*!< xml-узел в настроечном файле */
 
 		int polltime = { 150 };   /*!< переодичность обновления данных (опроса карт в/в), [мсек] */
 		CardList cards; /*!< список карт - массив созданных ComediInterface */

@@ -180,8 +180,6 @@ class NCRestorer_XML:
 
 		std::string s_filterField;
 		std::string s_filterValue;
-		std::string c_filterField;
-		std::string c_filterValue;
 		std::string t_filterField;
 		std::string t_filterValue;
 

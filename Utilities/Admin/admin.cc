@@ -955,7 +955,8 @@ int configure( const string& arg, UInterface& ui )
 		UniSetTypes::ObjectId id = conf->getObjectID(arg);
 		if( id == DefaultObjectId )
 			id = conf->getControllerID(arg);
-		else if( id == DefaultObjectId )
+
+		if( id == DefaultObjectId )
 			id = conf->getServiceID(arg);
 
 		if( id == DefaultObjectId )

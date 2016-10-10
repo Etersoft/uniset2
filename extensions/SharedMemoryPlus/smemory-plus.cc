@@ -99,9 +99,6 @@ int main( int argc, const char** argv )
 
 				ThreadCreator<IOControl>* io_thr = new ThreadCreator<IOControl>(ic.get(), &IOControl::execute);
 
-				if( io_thr == NULL )
-					return 1;
-
 				act->add(ic);
 				lst_iothr.push_back( io_thr );
 			}

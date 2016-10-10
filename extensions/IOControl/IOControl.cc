@@ -69,9 +69,9 @@ IOControl::IOControl(UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	auto conf = uniset_conf();
 
 	string cname = conf->getArgParam("--" + prefix + "-confnode", myname);
-	cnode = conf->getNode(cname);
+	confnode = conf->getNode(cname);
 
-	if( cnode == NULL )
+	if( confnode == NULL )
 		throw SystemError("Not found conf-node " + cname + " for " + myname);
 
 	iolog = make_shared<DebugStream>();
@@ -89,10 +89,10 @@ IOControl::IOControl(UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 
 	ioinfo << myname << "(init): numcards=" << numcards << endl;
 
-	UniXML::iterator it(cnode);
+	UniXML::iterator it(confnode);
 
 	logserv = make_shared<LogServer>(loga);
-	logserv->init( prefix + "-logserver", cnode );
+	logserv->init( prefix + "-logserver", confnode );
 
 	if( findArgParam("--" + prefix + "-run-logserver", conf->getArgc(), conf->getArgv()) != -1 )
 	{
@@ -306,7 +306,7 @@ IOControl::~IOControl()
 void IOControl::execute()
 {
 	//    set_signals(true);
-	UniXML::iterator it(cnode);
+	UniXML::iterator it(confnode);
 
 	waitSM(); // необходимо дождаться, чтобы нормально инициализировать итераторы
 
@@ -1055,7 +1055,9 @@ void IOControl::check_testmode()
 
 		// если режим "выключено всё"
 		// то гасим все выходы
-		if( testmode == tmOffPoll )
+		if( testmode == tmOffPoll ||
+			testmode == tmConfigEnable ||
+			testmode == tmConfigDisable )
 		{
 			// выставляем безопасные состояния
 			for( auto& it : iomap )
@@ -1602,17 +1604,15 @@ void IOControl::buildCardsList()
 		return;
 	}
 
-	//xmlNode* cnode = xml->findNode(mynode,"iocards","");
-	//xmlNode* extFindNode(xmlNode* node, int depth, int width, const std::string searchnode, const std::string name = "", bool top=true );
-	xmlNode* cnode = xml->extFindNode(mynode, 1, 1, "iocards", "");
+	xmlNode* cardsnode = xml->extFindNode(mynode, 1, 1, "iocards", "");
 
-	if( !cnode )
+	if( !cardsnode )
 	{
 		iowarn << myname << "(buildCardsList): Not found <iocards> for node=" << conf->getLocalNodeName() << "(" << conf->getLocalNode() << ")" << endl;
 		return;
 	}
 
-	UniXML::iterator it(cnode);
+	UniXML::iterator it(cardsnode);
 
 	if( !it.goChildren() )
 	{

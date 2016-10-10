@@ -72,7 +72,6 @@ int subdev = 0;
 int chan = 0;
 int range = 0;
 int aref = AREF_GROUND;
-bool go = true;
 
 static struct option longopts[] =
 {

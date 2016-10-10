@@ -39,28 +39,28 @@ LogServer::~LogServer() noexcept
 	catch(...){}
 }
 // -------------------------------------------------------------------------
-LogServer::LogServer( std::shared_ptr<LogAgregator> log ) noexcept:
-	LogServer(static_pointer_cast<DebugStream>(log))
+LogServer::LogServer( std::shared_ptr<LogAgregator> log ):
+	LogServer()
 {
-
+	elog = static_pointer_cast<DebugStream>(log);
 }
 // -------------------------------------------------------------------------
-LogServer::LogServer( std::shared_ptr<DebugStream> log ) noexcept:
-	slist(sessMaxCount),
+LogServer::LogServer( std::shared_ptr<DebugStream> log ):
 	timeout(UniSetTimer::WaitUpTime),
 	cmdTimeout(2000),
 	sessLogLevel(Debug::NONE),
+	slist(sessMaxCount),
 	sock(0),
 	elog(log)
 {
 
 }
 // -------------------------------------------------------------------------
-LogServer::LogServer() noexcept:
-	slist(sessMaxCount),
+LogServer::LogServer():
 	timeout(UniSetTimer::WaitUpTime),
 	cmdTimeout(2000),
 	sessLogLevel(Debug::NONE),
+	slist(sessMaxCount),
 	sock(0),
 	elog(nullptr)
 {

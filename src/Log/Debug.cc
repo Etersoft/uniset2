@@ -59,8 +59,8 @@ static const int numErrorTags = sizeof(errorTags) / sizeof(error_item);
 Debug::type const Debug::ANY = Debug::type(
 								   Debug::INFO | Debug::INIT | Debug::WARN | Debug::CRIT |
 								   Debug::LEVEL1 | Debug::LEVEL2 | Debug::LEVEL3 | Debug::LEVEL4 |
-								   Debug::LEVEL5 | Debug::LEVEL5 | Debug::LEVEL6 | Debug::LEVEL7 |
-								   Debug::LEVEL8 | Debug::LEVEL9 | Debug::REPOSITORY | Debug::SYSTEM |
+								   Debug::LEVEL5 | Debug::LEVEL6 | Debug::LEVEL7 | Debug::LEVEL8 |
+								   Debug::LEVEL9 | Debug::REPOSITORY | Debug::SYSTEM |
 								   Debug::EXCEPTION );
 
 
@@ -124,7 +124,11 @@ void Debug::showTags(ostream& os) noexcept
 		   << setw(10) << errorTags[i].name
 		   << "  " << errorTags[i].desc << '\n';
 
-	os.flush();
+	try
+	{
+		os.flush();
+	}
+	catch(...){}
 }
 
 std::ostream& operator<<(std::ostream& os, Debug::type level ) noexcept
@@ -166,7 +170,13 @@ std::string Debug::str( Debug::type level ) noexcept
 		}
 	}
 
-	return s.str();
+	try
+	{
+		return s.str();
+	}
+	catch(...){}
+
+	return "";
 }
 
 

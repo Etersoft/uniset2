@@ -920,8 +920,8 @@ throw(ResolveNameError, UniSetTypes::TimeOut )
 	catch(const CosNaming::NamingContext::NotFound& nf) {}
 	catch(const CosNaming::NamingContext::InvalidName& nf) {}
 	catch(const CosNaming::NamingContext::CannotProceed& cp) {}
-	catch( const Exception ) {}
-	catch( const CORBA::OBJECT_NOT_EXIST )
+	catch( const UniSetTypes::Exception& ex ) {}
+	catch( const CORBA::OBJECT_NOT_EXIST& ex )
 	{
 		throw UniSetTypes::ResolveNameError("ObjectNOTExist");
 	}

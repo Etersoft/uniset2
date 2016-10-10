@@ -192,7 +192,9 @@ bool IOBase::check_front( bool val )
 void IOBase::processingAsAI( IOBase* it, long val, const std::shared_ptr<SMInterface>& shm, bool force )
 {
 	if( it->stype == UniversalIO::DI || it->stype == UniversalIO::DO )
-		val = (val ? 1.0 : 0.0);
+	{
+		val = (val ? 1 : 0);
+	}
 	else
 	{
 		// проверка на обрыв
@@ -270,7 +272,7 @@ void IOBase::processingFasAI( IOBase* it, float fval, const std::shared_ptr<SMIn
 	long val = lroundf(fval);
 
 	if( it->stype == UniversalIO::DI || it->stype == UniversalIO::DO )
-		val = (fval != 0 ? 1.0 : 0.0);
+		val = (fval != 0 ? 1 : 0);
 	else
 	{
 		if( it->rawdata )
