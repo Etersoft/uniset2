@@ -29,23 +29,19 @@ using namespace UniSetTypes;
 const Calibration::TypeOfValue Calibration::ValueOutOfRange = std::numeric_limits<Calibration::TypeOfValue>::max();
 const long Calibration::outOfRange = std::numeric_limits<long>::max();
 // ----------------------------------------------------------------------------
-Calibration::Part::Part():
+Calibration::Part::Part() noexcept:
 	k(0)
 {
 
 }
 
-Calibration::Part::Part( const Point& pleft, const Point& pright ):
+Calibration::Part::Part( const Point& pleft, const Point& pright ) noexcept:
 	p_left(pleft),
 	p_right(pright),
 	k(0)
 {
 	if( p_right.x < p_left.x )
-	{
-		Point t(p_right);
-		p_right    = p_left;
-		p_left    = t;
-	}
+		std::swap(p_right,p_left);
 
 	// вычисление коэффициента наклона (один раз в конструкторе)
 	// k = (y2-y1)/(x2-x1)
@@ -55,29 +51,28 @@ Calibration::Part::Part( const Point& pleft, const Point& pright ):
 		k = ( p_right.y - p_left.y ) / ( p_right.x - p_left.x );
 }
 // ----------------------------------------------------------------------------
-bool Calibration::Part::check( const Point& p ) const
+bool Calibration::Part::check( const Point& p ) const noexcept
 {
 	return ( checkX(p.x) && checkY(p.y) );
 }
-
-bool Calibration::Part::checkX( const TypeOfValue& x ) const
+// ----------------------------------------------------------------------------
+bool Calibration::Part::checkX( const TypeOfValue& x ) const noexcept
 {
 	if( x < p_left.x || x > p_right.x )
 		return false;
 
 	return true;
 }
-
-bool Calibration::Part::checkY( const TypeOfValue& y ) const
+// ----------------------------------------------------------------------------
+bool Calibration::Part::checkY( const TypeOfValue& y ) const noexcept
 {
 	if( y < p_left.y || y > p_right.y )
 		return false;
 
 	return true;
 }
-
 // ----------------------------------------------------------------------------
-Calibration::TypeOfValue Calibration::Part::getY( const TypeOfValue& x ) const
+Calibration::TypeOfValue Calibration::Part::getY( const TypeOfValue& x ) const noexcept
 {
 	if( !checkX(x) )
 		return Calibration::ValueOutOfRange;
@@ -91,7 +86,7 @@ Calibration::TypeOfValue Calibration::Part::getY( const TypeOfValue& x ) const
 	return calcY(x);
 }
 // ----------------------------------------------------------------------------
-Calibration::TypeOfValue Calibration::Part::getX( const TypeOfValue& y ) const
+Calibration::TypeOfValue Calibration::Part::getX( const TypeOfValue& y ) const noexcept
 {
 	if( !checkY(y) )
 		return Calibration::ValueOutOfRange;
@@ -105,13 +100,13 @@ Calibration::TypeOfValue Calibration::Part::getX( const TypeOfValue& y ) const
 	return calcX(y);
 }
 // ----------------------------------------------------------------------------
-Calibration::TypeOfValue Calibration::Part::calcY( const TypeOfValue& x ) const
+Calibration::TypeOfValue Calibration::Part::calcY( const TypeOfValue& x ) const noexcept
 {
 	// y = y0 + kx
 	return k * (x - p_left.x) + p_left.y;
 }
 // ----------------------------------------------------------------------------
-Calibration::TypeOfValue Calibration::Part::calcX( const TypeOfValue& y ) const
+Calibration::TypeOfValue Calibration::Part::calcX( const TypeOfValue& y ) const noexcept
 {
 	// x = (y - y0) / k
 	if( k == 0 )
@@ -123,7 +118,6 @@ Calibration::TypeOfValue Calibration::Part::calcX( const TypeOfValue& y ) const
 
 Calibration::Calibration():
 	minRaw(0), maxRaw(0), minVal(0), maxVal(0), rightVal(0), leftVal(0), rightRaw(0), leftRaw(0),
-	pvec(50),
 	myname(""),
 	szCache(5),
 	numCacheResort(20),
@@ -134,25 +128,26 @@ Calibration::Calibration():
 
 // ----------------------------------------------------------------------------
 
-Calibration::Calibration( const string& name, const string& confile ):
+Calibration::Calibration( const string& name, const string& confile, size_t reserv ):
 	minRaw(0), maxRaw(0), minVal(0), maxVal(0), rightVal(0), leftVal(0), rightRaw(0), leftRaw(0),
-	pvec(50),
 	myname(name),
 	szCache(5),
 	numCacheResort(20),
 	numCallToCache(5)
 {
+	pvec.reserve(reserv);
 	cache.assign(szCache, CacheInfo());
 	build(name, confile, 0);
 }
 
 // ----------------------------------------------------------------------------
-Calibration::Calibration( xmlNode* node ):
-	minRaw(0), maxRaw(0), minVal(0), maxVal(0), rightVal(0), leftVal(0), rightRaw(0), leftRaw(0), pvec(100),
+Calibration::Calibration(xmlNode* node , size_t reserv ):
+	minRaw(0), maxRaw(0), minVal(0), maxVal(0), rightVal(0), leftVal(0), rightRaw(0), leftRaw(0),
 	szCache(5),
 	numCacheResort(20),
 	numCallToCache(5)
 {
+	pvec.reserve(reserv);
 	cache.assign(szCache, CacheInfo());
 	UniXML::iterator it(node);
 	myname = it.getProp("name");
@@ -199,14 +194,13 @@ void Calibration::build( const string& name, const string& confile, xmlNode* roo
 		}
 
 		bool prev = false;
-		Point prev_point(0, 0);
-		unsigned int i = 0;
+		Point prev_point;
 
-		for(; it; it.goNext())
+		for(; it; it++ )
 		{
 			Point p(prev_point);
-			p.x = atof(it.getProp("x").c_str());
-			p.y = atof(it.getProp("y").c_str());
+			p.x = std::atof(it.getProp("x").c_str());
+			p.y = std::atof(it.getProp("y").c_str());
 
 			if( p.x == 0 || p.y == 0 )
 			{
@@ -225,36 +219,28 @@ void Calibration::build( const string& name, const string& confile, xmlNode* roo
 				minVal = p.y;
 
 			if( prev )
-			{
-				Part pt(prev_point, p);
-				pvec[i++] = pt;
-
-				if( i >= pvec.size() )
-					pvec.resize(pvec.size() + 20);
-			}
+				pvec.emplace_back(prev_point, p);
 			else
 				prev = true;
 
 			prev_point = p;
 		}
 
-		pvec.resize(i); // приводим размер к фактическому..
-
+		pvec.shrink_to_fit();
 		std::sort(pvec.begin(), pvec.end());
 
-		auto beg = pvec.begin();
-		auto end = pvec.end();
-
-		if( pvec.size() > 0 )
+		if( !pvec.empty() )
 		{
+			auto beg = pvec.begin();
+			auto end = --pvec.end();
+
 			leftRaw = beg->left_x();
 			leftVal = beg->left_y();
-			--end;
 			rightRaw = end->right_x();
 			rightVal = end->right_y();
 		}
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		dcrit << myname << "(Calibration::build): Failed open " << confile << endl;
 		throw;
@@ -262,7 +248,7 @@ void Calibration::build( const string& name, const string& confile, xmlNode* roo
 }
 // ----------------------------------------------------------------------------
 // рекурсивная функция поиска методом "половинного деления"
-static Calibration::PartsVec::iterator find_range( long raw, Calibration::PartsVec::iterator beg,
+static Calibration::PartsVec::iterator find_range( const long raw, Calibration::PartsVec::iterator beg,
 		Calibration::PartsVec::iterator end )
 {
 	if( beg->checkX(raw) )
@@ -282,7 +268,7 @@ static Calibration::PartsVec::iterator find_range( long raw, Calibration::PartsV
 	return it;
 }
 // ----------------------------------------------------------------------------
-long Calibration::getValue( long raw, bool crop_raw )
+long Calibration::getValue( const long raw, bool crop_raw )
 {
 	// если x левее первого отрезка то берём первую точку...
 	if( raw < leftRaw )
@@ -312,7 +298,7 @@ long Calibration::getValue( long raw, bool crop_raw )
 		}
 	}
 
-	auto fit = find_range(raw, pvec.begin(), pvec.end());
+	auto fit = find_range(raw, pvec.begin(), --pvec.end() );
 
 	if( fit == pvec.end() )
 	{
@@ -338,13 +324,13 @@ long Calibration::getValue( long raw, bool crop_raw )
 	return outOfRange;
 }
 // ----------------------------------------------------------------------------
-void Calibration::setCacheResortCycle( unsigned int n )
+void Calibration::setCacheResortCycle( size_t n )
 {
 	numCacheResort = n;
 	numCallToCache = n;
 }
 // ----------------------------------------------------------------------------
-void Calibration::setCacheSize( unsigned int sz )
+void Calibration::setCacheSize( size_t sz )
 {
 	sort(cache.begin(), cache.end()); // в порядке уменьшения обращений (см. CacheInfo::operator< )
 	cache.resize(sz);
@@ -358,7 +344,7 @@ void Calibration::insertToCache( const long raw, const long val )
 	sort(cache.begin(), cache.end()); // пересортируем в порядке уменьшения обращений (см. CacheInfo::operator< )
 }
 // ----------------------------------------------------------------------------
-long Calibration::getRawValue( long cal, bool range )
+long Calibration::getRawValue( const long cal, bool range )
 {
 	for( auto& it : pvec )
 	{

@@ -77,8 +77,8 @@ class Calibration
 {
 	public:
 		Calibration();
-		Calibration( const std::string& name, const std::string& confile = "calibration.xml" );
-		Calibration( xmlNode* node );
+		Calibration( const std::string& name, const std::string& confile = "calibration.xml", size_t reserv=50 );
+		Calibration( xmlNode* node, size_t reserv=50 );
 		~Calibration();
 
 		/*! Тип для хранения значения */
@@ -96,26 +96,26 @@ class Calibration
 		    \param crop_raw - обрезать переданное значение по крайним точкам
 			\return Возвращает калиброванное или outOfRange
 		*/
-		long getValue( long raw, bool crop_raw = false );
+		long getValue( const long raw, bool crop_raw = false );
 
 		/*! Возвращает минимальное значение 'x' встретившееся в диаграмме */
-		inline long getMinValue()
+		inline long getMinValue() const noexcept
 		{
 			return minVal;
 		}
 		/*! Возвращает максимальное значение 'x' втретившееся в диаграмме */
-		inline long getMaxValue()
+		inline long getMaxValue() const noexcept
 		{
 			return maxVal;
 		}
 
 		/*! Возвращает крайнее левое значение 'x' встретившееся в диаграмме (ПОСЛЕ СОРТИРОВКИ ПО ВОЗРАСТАНИЮ 'x'!) */
-		inline long getLeftValue()
+		inline long getLeftValue() const noexcept
 		{
 			return leftVal;
 		}
 		/*! Возвращает крайнее правое значение 'x' встретившееся в диаграмме (ПОСЛЕ СОРТИРОВКИ ПО ВОЗРАСТАНИЮ 'x'!) */
-		inline long getRightValue()
+		inline long getRightValue() const noexcept
 		{
 			return rightVal;
 		}
@@ -127,26 +127,26 @@ class Calibration
 
 		    Если range=false, то может быть возвращено значение outOfRange.
 		*/
-		long getRawValue( long cal, bool range = false );
+		long getRawValue( const long cal, bool range = false );
 
 		/*! Возвращает минимальное значение 'y' встретившееся в диаграмме */
-		inline long getMinRaw()
+		inline long getMinRaw() const noexcept
 		{
 			return minRaw;
 		}
 		/*! Возвращает максимальное значение 'y' встретившееся в диаграмме */
-		inline long getMaxRaw()
+		inline long getMaxRaw() const noexcept
 		{
 			return maxRaw;
 		}
 
 		/*! Возвращает крайнее левое значение 'y' встретившееся в диаграмме (ПОСЛЕ СОРТИРОВКИ ПО ВОЗРАСТАНИЮ 'x'!) */
-		inline long getLeftRaw()
+		inline long getLeftRaw() const noexcept
 		{
 			return leftRaw;
 		}
 		/*! Возвращает крайнее правое значение 'y' встретившееся в диаграмме (ПОСЛЕ СОРТИРОВКИ ПО ВОЗРАСТАНИЮ 'x'!) */
-		inline long getRightRaw()
+		inline long getRightRaw() const noexcept
 		{
 			return rightRaw;
 		}
@@ -166,14 +166,15 @@ class Calibration
 			return lround(val);
 		}
 
-		void setCacheSize( unsigned int sz );
-		inline unsigned int getCacheSize()
+		void setCacheSize( size_t sz );
+
+		inline size_t getCacheSize() const
 		{
 			return cache.size();
 		}
 
-		void setCacheResortCycle( unsigned int n );
-		inline unsigned int getCacheResotrCycle()
+		void setCacheResortCycle( size_t n );
+		inline size_t getCacheResotrCycle() const noexcept
 		{
 			return numCacheResort;
 		}
@@ -204,64 +205,64 @@ class Calibration
 		class Part
 		{
 			public:
-				Part();
-				Part( const Point& pleft, const Point& pright );
+				Part() noexcept;
+				Part( const Point& pleft, const Point& pright ) noexcept;
 				~Part() {};
 
-				/*!    находится ли точка на данном участке */
-				bool check( const Point& p ) const;
+				/*! находится ли точка на данном участке */
+				bool check( const Point& p ) const noexcept;
 
-				/*!    находится ли точка на данном участке по X */
-				bool checkX( const TypeOfValue& x ) const;
+				/*! находится ли точка на данном участке по X */
+				bool checkX( const TypeOfValue& x ) const noexcept;
 
 				/*!    находится ли точка на данном участке по Y */
-				bool checkY( const TypeOfValue& y ) const;
+				bool checkY( const TypeOfValue& y ) const noexcept;
 
 				// функции могут вернуть OutOfRange
-				TypeOfValue getY( const TypeOfValue& x ) const;	  /*!< получить значение Y */
-				TypeOfValue getX( const TypeOfValue& y ) const;   /*!< получить значение X */
+				TypeOfValue getY( const TypeOfValue& x ) const noexcept;	  /*!< получить значение Y */
+				TypeOfValue getX( const TypeOfValue& y ) const noexcept;   /*!< получить значение X */
 
-				TypeOfValue calcY( const TypeOfValue& x ) const;  /*!< расчитать значение для x */
-				TypeOfValue calcX( const TypeOfValue& y ) const;  /*!< расчитать значение для y */
+				TypeOfValue calcY( const TypeOfValue& x ) const noexcept;  /*!< расчитать значение для x */
+				TypeOfValue calcX( const TypeOfValue& y ) const noexcept;  /*!< расчитать значение для y */
 
-				inline bool operator < ( const Part& p ) const
+				inline bool operator < ( const Part& p ) const noexcept
 				{
 					return (p_right < p.p_right);
 				}
 
-				inline Point leftPoint() const
+				inline Point leftPoint() const noexcept
 				{
 					return p_left;
 				}
-				inline Point rightPoint() const
+				inline Point rightPoint() const noexcept
 				{
 					return p_right;
 				}
-				inline TypeOfValue getK() const
+				inline TypeOfValue getK() const noexcept
 				{
 					return k;    /*!< получить коэффициент наклона */
 				}
-				inline TypeOfValue left_x() const
+				inline TypeOfValue left_x() const noexcept
 				{
 					return p_left.x;
 				}
-				inline TypeOfValue left_y() const
+				inline TypeOfValue left_y() const noexcept
 				{
 					return p_left.y;
 				}
-				inline TypeOfValue right_x() const
+				inline TypeOfValue right_x() const noexcept
 				{
 					return p_right.x;
 				}
-				inline TypeOfValue right_y() const
+				inline TypeOfValue right_y() const noexcept
 				{
 					return p_right.y;
 				}
 
 			protected:
-				Point p_left;     /*!< левый предел участка */
-				Point p_right;     /*!< правый предел участка */
-				TypeOfValue k;     /*!< коэффициент наклона */
+				Point p_left;  /*!< левый предел участка */
+				Point p_right; /*!< правый предел участка */
+				TypeOfValue k; /*!< коэффициент наклона */
 		};
 
 		// список надо отсортировать по x!
@@ -283,19 +284,19 @@ class Calibration
 		std::string myname;
 
 		// Cache
-		unsigned int szCache;
+		size_t szCache;
 		struct CacheInfo
 		{
-			CacheInfo(): val(0), raw(outOfRange), cnt(0) {}
-			CacheInfo( const long r, const long v ): val(v), raw(r), cnt(0) {}
+			CacheInfo() noexcept: val(0), raw(outOfRange), cnt(0) {}
+			CacheInfo( const long r, const long v ) noexcept: val(v), raw(r), cnt(0) {}
 
 			long val;
 			long raw;
-			unsigned long cnt; // счётчик обращений
+			size_t cnt; // счётчик обращений
 
 			// сортируем в порядке убывания(!) обращений
 			// т.е. наиболее часто используемые (впереди)
-			inline bool operator<( const CacheInfo& r ) const
+			inline bool operator<( const CacheInfo& r ) const noexcept
 			{
 				if( r.raw == outOfRange )
 					return true;
@@ -310,8 +311,8 @@ class Calibration
 
 		typedef std::deque<CacheInfo> ValueCache;
 		ValueCache cache;
-		unsigned long numCacheResort; // количество обращений, при которых происходит перестроение (сортировка) кэша..
-		unsigned long numCallToCache; // текущий счётчик обращений к кэшу
+		size_t numCacheResort; // количество обращений, при которых происходит перестроение (сортировка) кэша..
+		size_t numCallToCache; // текущий счётчик обращений к кэшу
 };
 // -----------------------------------------------------------------------------
 #endif // Calibration_H_
