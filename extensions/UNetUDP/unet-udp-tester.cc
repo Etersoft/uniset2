@@ -312,8 +312,9 @@ int main(int argc, char* argv[])
 
 				if( !a_data.empty() )
 				{
-					auto vlist = UniSetTypes::getSInfoList(a_data,nullptr);
-					for( const auto& v: vlist )
+					auto vlist = UniSetTypes::getSInfoList(a_data, nullptr);
+
+					for( const auto& v : vlist )
 					{
 						UDPAData d(v.si.id, v.val);
 						mypack.addAData(d);
@@ -330,9 +331,10 @@ int main(int argc, char* argv[])
 
 				if( !d_data.empty() )
 				{
-					auto vlist = UniSetTypes::getSInfoList(d_data,nullptr);
-					for( const auto& v: vlist )
-						mypack.addDData(v.si.id,v.val);
+					auto vlist = UniSetTypes::getSInfoList(d_data, nullptr);
+
+					for( const auto& v : vlist )
+						mypack.addDData(v.si.id, v.val);
 				}
 				else
 				{

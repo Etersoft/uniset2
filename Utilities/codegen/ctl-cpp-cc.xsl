@@ -88,7 +88,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback() noexept
 				ui->setValue(idHeartBeat,maxHeartBeat);
 				ptHeartBeat.reset();
 			}
-			catch( const Exception&amp; ex )
+			catch( const UniSetTypes::Exception&amp; ex )
 			{
 				mycrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
 			}
@@ -98,7 +98,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback() noexept
 		updateOutputs(forceOut);
 		updatePreviousValues();
 	}
-	catch( const Exception&amp; ex )
+	catch( const UniSetTypes::Exception&amp; ex )
 	{
         mycrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
 	}
@@ -221,7 +221,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 		if( <xsl:value-of select="@name"/> != DefaultObjectId )
             priv_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui->getValue(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
 	}
-	catch( const Exception&amp; ex )
+	catch( const UniSetTypes::Exception&amp; ex )
 	{
         mycrit &lt;&lt; myname &lt;&lt; "(getdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
@@ -238,7 +238,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 			ui->setValue( si, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, getId() );
 		}
 	}
-	catch( const Exception&amp; ex )
+	catch( const UniSetTypes::Exception&amp; ex )
 	{
         mycrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
@@ -256,7 +256,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 			ui->setValue( si,<xsl:value-of select="$setval"/>, getId() );
 		}
 	}
-	catch( const Exception&amp; ex )
+	catch( const UniSetTypes::Exception&amp; ex )
 	{
         mycrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
@@ -273,7 +273,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 			ui->setValue( si,(long)m_<xsl:value-of select="@name"/>, getId() );
 		}
 	}
-	catch( const Exception&amp; ex )
+	catch( const UniSetTypes::Exception&amp; ex )
 	{
         mycrit &lt;&lt; myname &lt;&lt; "(setmsg): " &lt;&lt; ex &lt;&lt; endl;
 		throw;

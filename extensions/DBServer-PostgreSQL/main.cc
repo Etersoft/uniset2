@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 		act->add(dbs);
 		act->run(false);
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cerr << "(DBServer_PosgreSQL::main): " << ex << endl;
 	}

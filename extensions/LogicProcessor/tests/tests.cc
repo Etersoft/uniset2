@@ -66,7 +66,7 @@ int main(int argc, const char* argv[] )
 	{
 		cerr << "(tests): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cerr << "(tests): " << ex << endl;
 	}

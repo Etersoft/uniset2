@@ -323,7 +323,7 @@ class UNetReceiver:
 		struct CacheInfo
 		{
 			CacheInfo():
-				cache_init_ok(false){}
+				cache_init_ok(false) {}
 
 			bool cache_init_ok = { false };
 			CacheVec cache;

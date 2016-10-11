@@ -75,7 +75,7 @@ int main( int argc,char* argv[] )
 		act-&gt;run(false);
 		return 0;
 	}
-	catch( const Exception&amp; ex )
+	catch( const UniSetTypes::Exception&amp; ex )
 	{
 		cerr &lt;&lt; "(main): " &lt;&lt; ex &lt;&lt; endl;
 	}

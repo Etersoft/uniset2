@@ -43,7 +43,7 @@ std::string ObjectIndex::getBaseName( const std::string& fname ) noexcept
 		if( pos != string::npos )
 			return fname.substr(pos + 1);
 	}
-	catch(...){}
+	catch(...) {}
 
 	return fname;
 }

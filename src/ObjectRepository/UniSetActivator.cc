@@ -962,7 +962,7 @@ void UniSetActivator::term( int signo )
 		s_term.emit(signo);
 		ulogsys << myname << "(term): sigterm() ok." << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		ucrit << myname << "(term): " << ex << endl;
 	}

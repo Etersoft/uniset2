@@ -186,11 +186,11 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				{
 					try
 					{
-						Poco::Net::SocketAddress  iaddr = tcp->peerAddress();
+						Poco::Net::SocketAddress  ia = tcp->peerAddress();
 
 						dlog->warn() << "(ModbusTCPMaster::query): ret=" << ret
 									 << " < rmh=" << sizeof(reply.aduhead)
-									 << " perr: " << iaddr.host().toString() << ":" << iaddr.port()
+									 << " perr: " << ia.host().toString() << ":" << ia.port()
 									 << endl;
 					}
 					catch( const Poco::Net::NetException& ex )
@@ -201,8 +201,10 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				}
 
 				cleanInputStream();
+
 				if( tcp )
 					tcp->forceDisconnect();
+
 				return erTimeOut; // return erHardwareError;
 			}
 

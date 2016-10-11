@@ -398,7 +398,7 @@ void SharedMemory::checkHeartBeat()
 				}
 			}
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			smcrit << myname << "(checkHeartBeat): " << ex << endl;
 		}
@@ -973,7 +973,7 @@ bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectI
 
 #endif
 			}
-			catch( const Exception& ex )
+			catch( const UniSetTypes::Exception& ex )
 			{
 				smcrit << myname << "(initFromSM): " << ex << endl;
 			}

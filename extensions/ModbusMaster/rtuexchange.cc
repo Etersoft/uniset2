@@ -76,7 +76,7 @@ int main( int argc, char** argv )
 		act->run(false);
 		return 0;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		dcrit << "(rtuexchange): " << ex << std::endl;
 	}

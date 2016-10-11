@@ -95,11 +95,11 @@ int main(int argc, const char** argv)
 
 		return 0;
 	}
-	catch( const SystemError& err )
+	catch( const UniSetTypes::SystemError& err )
 	{
 		cerr << "(mq-test): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cerr << "(mq-test): " << ex << endl;
 	}

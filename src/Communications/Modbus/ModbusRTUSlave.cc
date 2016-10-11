@@ -120,7 +120,7 @@ mbErrCode ModbusRTUSlave::sendData( unsigned char* buf, int len )
 	{
 		port->sendBlock(buf, len);
 	}
-	catch( const Exception& ex ) // SystemError
+	catch( const UniSetTypes::Exception& ex ) // SystemError
 	{
 		if( dlog->is_crit() )
 			dlog->crit() << "(send): " << ex << endl;

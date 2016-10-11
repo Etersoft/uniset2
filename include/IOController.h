@@ -260,7 +260,7 @@ class IOController:
 			USensorInfo( USensorInfo&& ) = default;
 			USensorInfo& operator=(USensorInfo&& ) = default;
 
-			USensorInfo(): d_value(0), d_off_value(0)
+			USensorInfo(): d_value(1), d_off_value(0)
 			{
 				d_si.id = UniSetTypes::DefaultObjectId;
 				d_si.node = UniSetTypes::DefaultObjectId;
@@ -298,8 +298,8 @@ class IOController:
 			ChangeUndefinedStateSignal sigUndefChange;
 
 			IOController_i::SensorInfo d_si;  /*!< идентификатор датчика, от которого зависит данный */
-			long d_value; /*!< разрешающее работу значение датчика от которого зависит данный */
-			long d_off_value; /*!< блокирующее значение */
+			long d_value = { 1 }; /*!< разрешающее работу значение датчика от которого зависит данный */
+			long d_off_value = { 0 }; /*!< блокирующее значение */
 			std::shared_ptr<USensorInfo> d_usi; // shared_ptr на датчик от которого зависит этот.
 
 			// функция обработки информации об изменении состояния датчика, от которого зависит данный

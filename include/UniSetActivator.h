@@ -114,7 +114,7 @@ class UniSetActivator:
 		TerminateEvent_Signal s_term;
 
 		std::atomic_bool omDestroy;
-		pid_t thid; // id orb потока
+		pid_t thid = { 0 }; // id orb потока
 
 		bool _noUseGdbForStackTrace = { false };
 

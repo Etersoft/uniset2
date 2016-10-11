@@ -88,7 +88,7 @@ void PassiveLProcessor::step()
 	{
 		LProcessor::step();
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		dcrit << myname << "(step): (hb) " << ex << std::endl;
 	}
@@ -100,7 +100,7 @@ void PassiveLProcessor::step()
 			shm->localSetValue(itHeartBeat, sidHeartBeat, maxHeartBeat, getId());
 			ptHeartBeat.reset();
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			dcrit << myname << "(step): (hb) " << ex << std::endl;
 		}
@@ -120,7 +120,7 @@ void PassiveLProcessor::askSensors( UniversalIO::UIOCommand cmd )
 		for( auto& it : extInputs )
 			shm->askSensor(it.sid, cmd);
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		dcrit << myname << "(askSensors): " << ex << endl;
 		throw SystemError(myname + "(askSensors): do not ask sensors" );
@@ -236,7 +236,7 @@ void PassiveLProcessor::setOuts()
 		{
 			shm->setValue( it.sid, it.el->getOut() );
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			dcrit << myname << "(setOuts): " << ex << endl;
 		}
@@ -255,7 +255,7 @@ void PassiveLProcessor::sigterm( int signo )
 		{
 			shm->setValue(it.sid, 0);
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			dcrit << myname << "(sigterm): " << ex << endl;
 		}

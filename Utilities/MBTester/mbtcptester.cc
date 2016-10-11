@@ -713,7 +713,7 @@ int main( int argc, char** argv )
 	{
 		cerr << "(mbtester): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cerr << "(mbtester): " << ex << endl;
 	}

@@ -85,7 +85,7 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 	int maxProcessingCount = conf->getArgPInt("--" + prefix + "-maxprocessingcount", it.getProp("maxProcessingCount"), 100);
 	int checkConnectionPause = conf->getArgPInt("--" + prefix + "-checkconnection-pause", it.getProp("checkConnectionPause"), 10000);
 
-	std::string updateStrategy = conf->getArg2Param("--" + prefix + "-update-strategy", it.getProp("updateStartegy"),"evloop");
+	std::string updateStrategy = conf->getArg2Param("--" + prefix + "-update-strategy", it.getProp("updateStartegy"), "evloop");
 
 	no_sender = conf->getArgInt("--" + prefix + "-nosender", it.getProp("nosender"));
 
@@ -312,11 +312,12 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 			}
 		}
 
-		UNetReceiver::UpdateStrategy r_upStrategy = UNetReceiver::strToUpdateStrategy( n_it.getProp2("unet_update_strategy",updateStrategy) );
+		UNetReceiver::UpdateStrategy r_upStrategy = UNetReceiver::strToUpdateStrategy( n_it.getProp2("unet_update_strategy", updateStrategy) );
+
 		if( r_upStrategy == UNetReceiver::useUpdateUnknown )
 		{
 			ostringstream err;
-			err << myname << ": Unknown update strategy!!! '" << n_it.getProp2("unet_update_startegy",updateStrategy) << "'" << endl;
+			err << myname << ": Unknown update strategy!!! '" << n_it.getProp2("unet_update_startegy", updateStrategy) << "'" << endl;
 			unetcrit << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}

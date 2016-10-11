@@ -30,7 +30,7 @@ bool run_test_server()
 
 		return true;
 	}
-	catch(...){}
+	catch(...) {}
 
 	return false;
 }

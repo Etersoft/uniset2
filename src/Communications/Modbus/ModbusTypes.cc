@@ -197,9 +197,9 @@ bool ModbusRTU::isWriteFunction( SlaveFunctionCode c )
 bool ModbusRTU::isReadFunction( SlaveFunctionCode c )
 {
 	if( c == fnReadCoilStatus ||
-		c == fnReadInputStatus ||
-		c == fnReadOutputRegisters ||
-		c == fnReadInputRegisters )
+			c == fnReadInputStatus ||
+			c == fnReadOutputRegisters ||
+			c == fnReadInputRegisters )
 		return true;
 
 	return false;
@@ -427,7 +427,7 @@ void ReadCoilMessage::init( const ModbusMessage& m )
 	assert( m.pduhead.func == fnReadCoilStatus );
 	//	memset(this, 0, sizeof(*this));
 	memcpy(this, &m.pduhead, sizeof(m.pduhead));
-	memcpy(&start, m.data, szData());
+	memcpy(&start, &(m.data[0]), szData());
 
 	// переворачиваем слова
 	start = SWAPSHORT(start);
@@ -2273,23 +2273,23 @@ void DiagnosticMessage::init( const ModbusMessage& m )
 	func = m.pduhead.func;
 
 	memcpy( &subf, &(m.data[0]), sizeof(subf) );
-	int last = sizeof(subf);
+	size_t last = sizeof(subf);
 
-	subf =     SWAPSHORT(subf);
+	subf = SWAPSHORT(subf);
 	count = szRequestDiagnosticData((DiagnosticsSubFunction)subf );
 
 	if( count > MAXDATALEN )
 		throw mbException(erPacketTooLong);
 
-	if( count < 0 )
-		throw mbException(erBadDataValue);
+	if( count > 0 )
+	{
+		memcpy(&data, &(m.data[last]), sizeof(ModbusData)*count);
+		last += sizeof(ModbusData) * count;
 
-	memcpy(&data, &(m.data[last]), sizeof(ModbusData)*count);
-	last += sizeof(ModbusData) * count;
-
-	// переворачиваем данные
-	for( size_t i = 0; i < count; i++ )
-		data[i] = SWAPSHORT(data[i]);
+		// переворачиваем данные
+		for( size_t i = 0; i < count; i++ )
+			data[i] = SWAPSHORT(data[i]);
+	}
 
 	memcpy(&crc, &(m.data[last]), szCRC);
 }
@@ -3111,7 +3111,7 @@ ModbusMessage SetDateTimeMessage::transport_msg()
 	    mm.data[6] = century;
 	*/
 	size_t bcnt = 7;
-	memcpy( mm.data, &hour, bcnt );
+	memcpy( mm.data, &hour, bcnt ); // копируем начиная с адреса 'hour' 7 байт.
 
 	// пересчитываем CRC
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + bcnt );
@@ -3175,17 +3175,14 @@ ModbusMessage SetDateTimeRetMessage::transport_msg()
 	// копируем заголовок и данные
 	memcpy(&mm.pduhead, this, szModbusHeader);
 
-	/*
-	    mm.data[0] = hour;
-	    mm.data[1] = min;
-	    mm.data[2] = sec;
-	    mm.data[3] = day;
-	    mm.data[4] = mon;
-	    mm.data[5] = year;
-	    mm.data[6] = century;
-	*/
 	size_t bcnt = 7;
-	memcpy( mm.data, &hour, bcnt );
+	mm.data[0] = hour;
+	mm.data[1] = min;
+	mm.data[2] = sec;
+	mm.data[3] = day;
+	mm.data[4] = mon;
+	mm.data[5] = year;
+	mm.data[6] = century;
 
 	// пересчитываем CRC
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + bcnt );
@@ -3508,8 +3505,7 @@ FileTransferRetMessage::FileTransferRetMessage( ModbusAddr _from ):
 bool FileTransferRetMessage::set( ModbusData nfile, ModbusData fpacks,
 								  ModbusData pack, ModbusByte* buf, ModbusByte len )
 {
-	if( len > sizeof(data) )
-		return false;
+	assert( std::numeric_limits<ModbusByte>::max() <= sizeof(data) );
 
 	clear();
 	memcpy(data, buf, len);

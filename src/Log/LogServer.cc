@@ -36,13 +36,14 @@ LogServer::~LogServer() noexcept
 		if( isrunning )
 			loop.evstop(this);
 	}
-	catch(...){}
+	catch(...) {}
 }
 // -------------------------------------------------------------------------
 LogServer::LogServer( std::shared_ptr<LogAgregator> log ):
 	LogServer()
 {
 	elog = dynamic_pointer_cast<DebugStream>(log);
+
 	if( !elog )
 	{
 		ostringstream err;
@@ -137,7 +138,7 @@ bool LogServer::check( bool restart_if_fail )
 		s.close();
 		return true;
 	}
-	catch(...){}
+	catch(...) {}
 
 	if( !restart_if_fail )
 		return false;
@@ -247,6 +248,7 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 		{
 			uniset_rwmutex_wrlock l(mutSList);
 			slist.push_back(s);
+
 			// на первой сессии запоминаем состояние логов
 			if( slist.size() == 1 )
 				saveDefaultLogLevels("ALL");

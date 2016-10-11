@@ -16,7 +16,7 @@ UTCPSocket::~UTCPSocket()
 	{
 		Poco::Net::ServerSocket::close();
 	}
-	catch(...){}
+	catch(...) {}
 }
 // -------------------------------------------------------------------------
 UTCPSocket::UTCPSocket()

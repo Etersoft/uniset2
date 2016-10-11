@@ -391,7 +391,7 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
 		cleanupChannel();
 		return erTimeOut;
 	}
-	catch( const Exception& ex ) // SystemError
+	catch( const UniSetTypes::Exception& ex ) // SystemError
 	{
 		if( dlog->is_crit() )
 			dlog->crit() << "(recv): " << ex << endl;
@@ -1326,7 +1326,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 
 		return erTimeOut;
 	}
-	catch( const Exception& ex ) // SystemError
+	catch( const UniSetTypes::Exception& ex ) // SystemError
 	{
 		if( dlog->is_crit() )
 			dlog->crit() << "(recv): " << ex << endl;
@@ -1367,7 +1367,7 @@ mbErrCode ModbusClient::send( ModbusMessage& msg )
 		msg.swapHead();
 		return ex.err;
 	}
-	catch( const Exception& ex ) // SystemError
+	catch( const UniSetTypes::Exception& ex ) // SystemError
 	{
 		if( dlog->is_crit() )
 			dlog->crit() << "(send): " << ex << endl;

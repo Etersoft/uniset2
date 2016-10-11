@@ -38,7 +38,7 @@ int main( int argc, const char** argv )
 		smv.run();
 		return 0;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cout << "(main):" << ex << endl;
 	}

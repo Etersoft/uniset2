@@ -36,8 +36,8 @@ class TestProc:
 		void test_loglevel();
 
 	private:
-		bool state;
-		bool undef;
+		bool state = { false };
+		bool undef = { false };
 
 		std::vector<Debug::type> loglevels;
 		std::vector<Debug::type>::iterator lit;

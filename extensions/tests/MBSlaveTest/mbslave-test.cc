@@ -50,11 +50,11 @@ int main(int argc, const char** argv)
 
 		return 0;
 	}
-	catch( const SystemError& err )
+	catch( const UniSetTypes::SystemError& err )
 	{
 		ucrit << "(smemory): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		ucrit << "(smemory): " << ex << endl;
 	}

@@ -61,7 +61,7 @@ void SViewer::view()
 	{
 		readSection(csec, "");
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cerr << ex << endl;
 	}
@@ -139,7 +139,7 @@ void SViewer::readSection( const string& section, const string& secRoot )
 					else
 						getInfo(id);
 				}
-				catch( const Exception& ex )
+				catch( const UniSetTypes::Exception& ex )
 				{
 					cout << "(readSection): " << ex << endl;
 				}
@@ -187,7 +187,7 @@ void SViewer::getInfo( ObjectId id )
 
 		return;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cout << "(getInfo):" << ex << endl;
 	}
@@ -218,6 +218,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
 				name = ORepHelpers::getShortName(name);
 
 			string supplier = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(amap[i].supplier));
+
 			if( amap[i].supplier == UniSetTypes::AdminID )
 				supplier = "uniset-admin";
 
@@ -242,6 +243,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
 				name = ORepHelpers::getShortName(name);
 
 			string supplier = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(amap[i].supplier));
+
 			if( amap[i].supplier == UniSetTypes::AdminID )
 				supplier = "uniset-admin";
 

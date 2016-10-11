@@ -139,8 +139,8 @@ class LT_Object
 		/*! Информация о таймере */
 		struct TimerInfo
 		{
-			TimerInfo(): id(0), curTimeMS(0), priority(UniSetTypes::Message::High) {};
-			TimerInfo(UniSetTypes::TimerId id, timeout_t timeMS, clock_t cnt, UniSetTypes::Message::Priority p):
+			TimerInfo() {};
+			TimerInfo( UniSetTypes::TimerId id, timeout_t timeMS, clock_t cnt, UniSetTypes::Message::Priority p ):
 				id(id),
 				curTimeMS(timeMS),
 				priority(p),
@@ -155,15 +155,15 @@ class LT_Object
 				tmr.reset();
 			}
 
-			UniSetTypes::TimerId id;    /*!<  идентификатор таймера */
-			timeout_t curTimeMS;        /*!<  остаток времени */
-			UniSetTypes::Message::Priority priority; /*!<  приоритет посылаемого сообщения */
+			UniSetTypes::TimerId id = { 0 };    /*!<  идентификатор таймера */
+			timeout_t curTimeMS = { 0 };        /*!<  остаток времени */
+			UniSetTypes::Message::Priority priority = { UniSetTypes::Message::High }; /*!<  приоритет посылаемого сообщения */
 
 			/*!
 			 * текущий такт
-			 * \note Если задано количество -1 то сообщения будут поылатся постоянно
+			 * \note Если задано количество -1 то сообщения будут посылатся постоянно
 			*/
-			clock_t curTick;
+			clock_t curTick = { -1 };
 
 			// таймер с меньшим временем ожидания имеет больший приоритет
 			bool operator < ( const TimerInfo& ti ) const

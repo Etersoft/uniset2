@@ -105,7 +105,7 @@ int main( int argc, char* argv[], char* envp[] )
 		cerr << "(logserver-wrap): " << err << endl;
 		return 1;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cerr << "(logserver-wrap): " << ex << endl;
 		return 1;

@@ -319,7 +319,7 @@ void MBExchange::step()
 			shm->localSetValue(itHeartBeat, sidHeartBeat, maxHeartBeat, getId());
 			ptHeartBeat.reset();
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			mbcrit << myname << "(step): (hb) " << ex << std::endl;
 		}
@@ -928,7 +928,7 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 	{
 		mblog3 << myname << "(initSMValue): (BadRange)..." << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		mblog3 << myname << "(initSMValue): " << ex << endl;
 	}
@@ -1188,7 +1188,7 @@ void MBExchange::updateSM()
 			{
 				mblog3 << myname << "(updateSM): (BadRange)..." << endl;
 			}
-			catch( const Exception& ex )
+			catch( const UniSetTypes::Exception& ex )
 			{
 				mblog3 << myname << "(updateSM): " << ex << endl;
 			}
@@ -1236,7 +1236,7 @@ void MBExchange::updateSM()
 				{
 					mblog3 << myname << "(updateSM): (BadRange)..." << endl;
 				}
-				catch( const Exception& ex )
+				catch( const UniSetTypes::Exception& ex )
 				{
 					mblog3 << myname << "(updateSM): " << ex << endl;
 				}
@@ -1651,7 +1651,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 	{
 		mblog3 << myname << "(updateRSProperty): (BadRange)..." << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		mblog3 << myname << "(updateRSProperty): " << ex << endl;
 	}
@@ -1911,7 +1911,7 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
 			{
 				mblog3 << myname << "(updateMTR): (BadRange)..." << endl;
 			}
-			catch( const Exception& ex )
+			catch( const UniSetTypes::Exception& ex )
 			{
 				mblog3 << myname << "(updateMTR): " << ex << endl;
 			}
@@ -2002,7 +2002,7 @@ void MBExchange::updateRTU188( RegMap::iterator& rit )
 		{
 			mblog3 << myname << "(updateRTU188): (BadRange)..." << endl;
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			mblog3 << myname << "(updateRTU188): " << ex << endl;
 		}
@@ -3223,7 +3223,7 @@ void MBExchange::updateRespondSensors()
 
 				shm->localSetValue(d->resp_it, d->resp_id, ( set ? 1 : 0 ), getId());
 			}
-			catch( const Exception& ex )
+			catch( const UniSetTypes::Exception& ex )
 			{
 				mbcrit << myname << "(step): (respond) " << ex << std::endl;
 			}
@@ -3251,7 +3251,7 @@ void MBExchange::execute()
 		{
 			step();
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			mbcrit << myname << "(execute): " << ex << std::endl;
 		}

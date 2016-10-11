@@ -178,12 +178,12 @@ class NCRestorer_XML:
 		static xmlNode* bind_node( const std::shared_ptr<UniXML>& xml, xmlNode* root, const std::string& nodename, const std::string& nm = "");
 		static xmlNode* rebind_node( const std::shared_ptr<UniXML>& xml, xmlNode* root, const std::string& nodename, const std::string& nm = "");
 
-		std::string s_filterField;
-		std::string s_filterValue;
-		std::string t_filterField;
-		std::string t_filterValue;
+		std::string s_filterField = { "" };
+		std::string s_filterValue = { "" };
+		std::string t_filterField = { "" };
+		std::string t_filterValue = { "" };
 
-		std::string fname;
+		std::string fname = { "" };
 		std::shared_ptr<UniXML> uxml;
 		ReaderSlot rtslot;
 		NCReaderSlot ncrslot;

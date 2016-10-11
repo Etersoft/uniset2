@@ -206,7 +206,7 @@ bool UniSetManager::removeObject( const std::shared_ptr<UniSetObject>& obj )
 				if(obj)
 					obj->deactivate();
 			}
-			catch( const Exception& ex )
+			catch( const UniSetTypes::Exception& ex )
 			{
 				uwarn << myname << "(removeObject): " << ex << endl;
 			}
@@ -275,7 +275,7 @@ void UniSetManager::managers( OManagerCommand cmd )
 						break;
 				}
 			}
-			catch( const Exception& ex )
+			catch( const UniSetTypes::Exception& ex )
 			{
 				ucrit << myname << "(managers): " << ex << endl
 					  << " Не смог зарегистрировать (разрегистрировать) объект -->" << li->getName() << endl;
@@ -339,10 +339,11 @@ void UniSetManager::objects(OManagerCommand cmd)
 						break;
 				}
 			}
-			catch( const Exception& ex )
+			catch( const UniSetTypes::Exception& ex )
 			{
 				ucrit << myname << "(objects): " << ex << endl;
 				ucrit << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->" << li->getName() << endl;
+
 				if( cmd == activ )
 					std::terminate();
 			}

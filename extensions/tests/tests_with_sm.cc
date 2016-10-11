@@ -92,11 +92,11 @@ int main(int argc, const char* argv[] )
 
 		return session.run();
 	}
-	catch( const SystemError& err )
+	catch( const UniSetTypes::SystemError& err )
 	{
 		cerr << "(tests_with_sm): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cerr << "(tests_with_sm): " << ex << endl;
 	}

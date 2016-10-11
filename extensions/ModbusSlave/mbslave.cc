@@ -84,7 +84,7 @@ int main(int argc, const char** argv)
 	{
 		dcrit << "(mbslave): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		dcrit << "(mbslave): " << ex << endl;
 	}

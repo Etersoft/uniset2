@@ -348,7 +348,7 @@ int main(int argc, char** argv)
 
 		return 0;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		if( !quiet )
 			cout << "admin(main): " << ex << endl;
@@ -517,7 +517,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 					}
 				}
 			}
-			catch( const Exception& ex )
+			catch( const UniSetTypes::Exception& ex )
 			{
 				if( !quiet )
 					cerr << setw(55) << ob << "   <--- " << ex << endl;
@@ -574,7 +574,7 @@ int omap()
 		uniset_conf()->oind->printMap(cout);
 		cout << "==========================================================================\n";
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		if( !quiet )
 			cerr << " configuration init failed: " << ex << endl;
@@ -639,7 +639,7 @@ int setValue( const string& args, UInterface& ui )
 					break;
 			}
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			if( !quiet )
 				cerr << "(setValue): " << ex << endl;;
@@ -706,7 +706,7 @@ int getValue( const string& args, UInterface& ui )
 					break;
 			}
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			if( !quiet )
 				cerr << "(getValue): " << ex << endl;
@@ -755,7 +755,7 @@ int getCalibrate( const std::string& args, UInterface& ui )
 			else
 				cout << ci;
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			if( !quiet )
 				cerr << "(getCalibrate): " << ex << endl;;
@@ -800,7 +800,7 @@ int getRawValue( const std::string& args, UInterface& ui )
 			else
 				cout << ui.getRawValue(it.si);
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			if( !quiet )
 				cerr << "(getRawValue): " << ex << endl;;
@@ -845,7 +845,7 @@ int getChangedTime( const std::string& args, UInterface& ui )
 			else
 				cout << ui.getChangedTime(it.si.id, it.si.node);
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			if( !quiet )
 				cerr << "(getChangedTime): " << ex << endl;;
@@ -913,9 +913,11 @@ int logRotate( const string& arg, UInterface& ui )
 	else // посылка определённому объекту
 	{
 		UniSetTypes::ObjectId id = conf->getObjectID(arg);
+
 		if( id == DefaultObjectId )
 			id = conf->getControllerID(arg);
-		else if( id == DefaultObjectId )
+
+		if( id == DefaultObjectId )
 			id = conf->getServiceID(arg);
 
 		if( id == DefaultObjectId )
@@ -953,6 +955,7 @@ int configure( const string& arg, UInterface& ui )
 	else // посылка определённому объекту
 	{
 		UniSetTypes::ObjectId id = conf->getObjectID(arg);
+
 		if( id == DefaultObjectId )
 			id = conf->getControllerID(arg);
 
@@ -1004,7 +1007,7 @@ int oinfo( const string& args, UInterface& ui, int userparam )
 				cout << inf->info << endl;
 			}
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			if( !quiet )
 				cout << "ID='" << it.id << "' ERROR: " << ex << endl;

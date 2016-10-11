@@ -317,7 +317,7 @@ int main( int argc, char** argv )
 	{
 		cerr << "(log): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cerr << "(log): " << ex << endl;
 	}

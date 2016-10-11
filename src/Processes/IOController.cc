@@ -83,7 +83,7 @@ void IOController::sensorsUnregistration()
 		{
 			ioUnRegistration( li.second->si.id );
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			ucrit << myname << "(sensorsUnregistration): " << ex << endl;
 		}
@@ -115,7 +115,7 @@ void IOController::activateInit()
 
 			sigInit.emit(s, this);
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			ucrit << myname << "(activateInit): " << ex << endl;
 		}
@@ -420,7 +420,7 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi, bool force
 			}
 		}
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		ucrit << myname << "(ioRegistration): " << ex << endl;
 	}

@@ -435,7 +435,7 @@ void IOControl::execute()
 				ptHeartBeat.reset();
 			}
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			iolog3 << myname << "(execute): " << ex << endl;
 		}
@@ -690,7 +690,7 @@ void IOControl::ioread( IOInfo* it )
 	{
 		iolog3 << myname << "(iopoll): (BadRange)..." << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		iolog3 << myname << "(iopoll): " << ex << endl;
 	}
@@ -938,7 +938,7 @@ void IOControl::initOutputs()
 			else if( it.stype == UniversalIO::AO )
 				card->setAnalogChannel(it.subdev, it.channel, it.defval, it.range, it.aref);
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			iolog3 << myname << "(initOutput): " << ex << endl;
 		}
@@ -979,7 +979,7 @@ void IOControl::initIOCard()
 				card->configureChannel(it.subdev, it.channel, ComediInterface::AO);
 
 		}
-		catch( const Exception& ex)
+		catch( const UniSetTypes::Exception& ex)
 		{
 			iocrit << myname << "(initIOCard): sid=" << it.si.id << " " << ex << endl;
 		}
@@ -1005,7 +1005,7 @@ void IOControl::blink( BlinkList& lst, bool& bstate )
 		{
 			card->setDigitalChannel(io->subdev, io->channel, bstate);
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			iocrit << myname << "(blink): " << ex << endl;
 		}
@@ -1056,8 +1056,8 @@ void IOControl::check_testmode()
 		// если режим "выключено всё"
 		// то гасим все выходы
 		if( testmode == tmOffPoll ||
-			testmode == tmConfigEnable ||
-			testmode == tmConfigDisable )
+				testmode == tmConfigEnable ||
+				testmode == tmConfigDisable )
 		{
 			// выставляем безопасные состояния
 			for( auto& it : iomap )
@@ -1091,7 +1091,7 @@ void IOControl::check_testmode()
 						card->setAnalogChannel(it.subdev, it.channel, it.safety, it.range, it.aref);
 					}
 				}
-				catch( const Exception& ex )
+				catch( const UniSetTypes::Exception& ex )
 				{
 					iolog3 << myname << "(sigterm): " << ex << endl;
 				}
@@ -1100,7 +1100,7 @@ void IOControl::check_testmode()
 		}
 
 	}
-	catch( const Exception& ex)
+	catch( const UniSetTypes::Exception& ex)
 	{
 		iocrit << myname << "(check_testmode): " << ex << endl;
 	}
@@ -1165,7 +1165,7 @@ void IOControl::check_testlamp()
 			}
 		}
 	}
-	catch( const Exception& ex)
+	catch( const UniSetTypes::Exception& ex)
 	{
 		iocrit << myname << "(check_testlamp): " << ex << endl;
 	}
@@ -1369,7 +1369,7 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 		if( testLamp_s != DefaultObjectId )
 			shm->askSensor(testLamp_s, cmd);
 	}
-	catch( const Exception& ex)
+	catch( const UniSetTypes::Exception& ex)
 	{
 		iocrit << myname << "(askSensors): " << ex << endl;
 	}
@@ -1379,7 +1379,7 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 		if( testMode_as != DefaultObjectId )
 			shm->askSensor(testMode_as, cmd);
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		iocrit << myname << "(askSensors): " << ex << endl;
 	}
@@ -1400,7 +1400,7 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 			{
 				shm->askSensor(it.si.id, cmd, myid);
 			}
-			catch( const Exception& ex )
+			catch( const UniSetTypes::Exception& ex )
 			{
 				iocrit << myname << "(askSensors): " << ex << endl;
 			}
@@ -1682,7 +1682,7 @@ void IOControl::buildCardsList()
 			cards[cardnum] = new ComediInterface(iodev);
 			noCards = false;
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			iocrit << myname << "(buildCardsList): " << ex << endl;
 			throw;

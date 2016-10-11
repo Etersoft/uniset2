@@ -277,7 +277,7 @@ void UniSetObject::registered()
 		string err(myname + ": don`t registration in object reposotory");
 		throw ORepFailed(err);
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		uwarn << myname << "(registered):  " << ex << endl;
 		string err(myname + ": don`t registration in object reposotory");
@@ -501,7 +501,7 @@ bool UniSetObject::deactivate()
 	{
 		uwarn << myname << "(deactivate): " << "поймали CORBA::Exception." << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		uwarn << myname << "(deactivate): " << ex << endl;
 	}
@@ -636,7 +636,7 @@ void UniSetObject::callback()
 
 		sleepTime = checkTimers(this);
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		ucrit << myname << "(callback): " << ex << endl;
 	}
@@ -664,7 +664,7 @@ void UniSetObject::processingMessage( const UniSetTypes::VoidMessage* msg )
 				break;
 		}
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		ucrit  << myname << "(processingMessage): " << ex << endl;
 	}

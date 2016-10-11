@@ -27,10 +27,10 @@
 class DelayTimer
 {
 	public:
-		DelayTimer(){}
+		DelayTimer() {}
 
 		DelayTimer( timeout_t on_msec, timeout_t off_msec ) noexcept:
-			onDelay(on_msec), offDelay(off_msec){}
+			onDelay(on_msec), offDelay(off_msec) {}
 
 		~DelayTimer() noexcept {}
 

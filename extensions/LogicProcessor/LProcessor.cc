@@ -74,7 +74,7 @@ void LProcessor::execute( const std::string& lfile )
 		{
 			dcrit << logname << "(execute): " << ex << endl;
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			dcrit << logname << "(execute): " << ex << endl;
 		}
@@ -192,7 +192,7 @@ void LProcessor::setOuts()
 		{
 			ui.setValue(it.sid, it.el->getOut(), DefaultObjectId);
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			dcrit << "(LProcessor::setOuts): " << ex << endl;
 		}

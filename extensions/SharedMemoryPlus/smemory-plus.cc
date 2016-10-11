@@ -224,7 +224,7 @@ int main( int argc, const char** argv )
 		on_sigchild(SIGTERM);
 		return 0;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		dcrit << "(smemory-plus): " << ex << endl;
 	}

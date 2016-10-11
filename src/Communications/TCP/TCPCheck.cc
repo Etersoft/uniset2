@@ -89,7 +89,7 @@ class TGuard
 	public:
 
 		TGuard( T* m, typename ThreadCreator<T>::Action a ):
-			t(m,a)
+			t(m, a)
 		{
 			t.start();
 		}

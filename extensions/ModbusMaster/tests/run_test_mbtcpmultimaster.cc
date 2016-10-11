@@ -74,7 +74,7 @@ int main(int argc, const char* argv[] )
 	{
 		cerr << "(tests_mbtcpmultimaster): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cerr << "(tests_mbtcpmultimaster): " << ex << endl;
 	}

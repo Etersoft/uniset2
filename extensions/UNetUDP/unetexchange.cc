@@ -60,7 +60,7 @@ int main( int argc, const char** argv )
 		act->run(false);
 		on_sigchild(SIGTERM);
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		dcrit << "(unetexchange): " << ex << std::endl;
 	}

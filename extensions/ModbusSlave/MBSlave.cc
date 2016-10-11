@@ -683,7 +683,7 @@ void MBSlave::updateStatistics()
 				shm->localSetValue(itHeartBeat, sidHeartBeat, maxHeartBeat, getId());
 				ptHeartBeat.reset();
 			}
-			catch( const Exception& ex )
+			catch( const UniSetTypes::Exception& ex )
 			{
 				mbcrit << myname << "(updateStatistics): (hb) " << ex << std::endl;
 			}
@@ -700,7 +700,7 @@ void MBSlave::updateStatistics()
 			{
 				shm->localSetValue(itRespond, respond_id, (state ? 1 : 0), getId());
 			}
-			catch( const Exception& ex )
+			catch( const UniSetTypes::Exception& ex )
 			{
 				mbcrit << myname << "(updateStatistics): (respond) " << ex << std::endl;
 			}
@@ -712,7 +712,7 @@ void MBSlave::updateStatistics()
 			{
 				shm->localSetValue(itAskCount, askcount_id, askCount, getId());
 			}
-			catch( const Exception& ex )
+			catch( const UniSetTypes::Exception& ex )
 			{
 				mbcrit << myname << "(updateStatistics): (askCount) " << ex << std::endl;
 			}
@@ -724,7 +724,7 @@ void MBSlave::updateStatistics()
 			{
 				shm->localSetValue(sesscount_it, sesscount_id, tcpserver->getCountSessions(), getId());
 			}
-			catch( const Exception& ex )
+			catch( const UniSetTypes::Exception& ex )
 			{
 				mbcrit << myname << "(updateStatistics): (sessCount) " << ex << std::endl;
 			}
@@ -797,7 +797,7 @@ void MBSlave::updateTCPStatistics()
 					bool st = c.invert ? c.ptTimeout.checkTime() : !c.ptTimeout.checkTime();
 					shm->localSetValue(c.respond_it, c.respond_s, st, getId());
 				}
-				catch( const Exception& ex )
+				catch( const UniSetTypes::Exception& ex )
 				{
 					mbcrit << myname << "(updateStatistics): " << ex << std::endl;
 				}
@@ -809,7 +809,7 @@ void MBSlave::updateTCPStatistics()
 				{
 					shm->localSetValue(c.askcount_it, c.askcount_s, c.askCount, getId());
 				}
-				catch( const Exception& ex )
+				catch( const UniSetTypes::Exception& ex )
 				{
 					mbcrit << myname << "(updateStatistics): " << ex << std::endl;
 				}
@@ -1961,7 +1961,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 		mbwarn << myname << "(real_write_prop): " << ex << endl;
 		return ModbusRTU::erBadDataValue;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		if( pingOK )
 			mbcrit << myname << "(real_write_prop): " << ex << endl;
@@ -2214,7 +2214,7 @@ ModbusRTU::mbErrCode MBSlave::real_read_prop( IOProperty* p, ModbusRTU::ModbusDa
 		mbwarn << myname << "(real_read_prop): " << ex << endl;
 		return ModbusRTU::erBadDataValue;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		if( pingOK )
 			mbcrit << myname << "(real_read_prop): " << ex << endl;
@@ -2354,7 +2354,7 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 		mbwarn << myname << "(readCoilStatus): " << ex << endl;
 		return ModbusRTU::erBadDataAddress;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		if( pingOK )
 			mbcrit << myname << "(readCoilStatus): " << ex << endl;
@@ -2427,7 +2427,7 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 		mbwarn << myname << "(readInputStatus): " << ex << endl;
 		return ModbusRTU::erBadDataAddress;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		if( pingOK )
 			mbcrit << myname << "(readInputStatus): " << ex << endl;

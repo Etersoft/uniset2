@@ -117,11 +117,11 @@ int main(int argc, char* argv[] )
 		std::cerr << "elapsed time: " << elapsed_seconds << " ms\n";
 		return 0;
 	}
-	catch( const SystemError& err )
+	catch( const UniSetTypes::SystemError& err )
 	{
 		cerr << "(tests_with_sm): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cerr << "(tests_with_sm): " << ex << endl;
 	}

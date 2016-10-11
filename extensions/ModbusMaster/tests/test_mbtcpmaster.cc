@@ -96,7 +96,7 @@ TEST_CASE("MBTCPMaster: reconnect", "[modbus][mbmaster][mbtcpmaster]")
 	REQUIRE_FALSE(mb.isConnection());
 
 	// нормальное подключение
-	REQUIRE(mb.connect(iaddr,port));
+	REQUIRE(mb.connect(iaddr, port));
 	REQUIRE(mb.isConnection());
 
 	// переподключение (при активном текущем)
@@ -116,7 +116,7 @@ TEST_CASE("MBTCPMaster: reconnect", "[modbus][mbmaster][mbtcpmaster]")
 	REQUIRE_FALSE(mb.isConnection());
 
 	// нормальное подключение
-	REQUIRE(mb.connect(iaddr,port));
+	REQUIRE(mb.connect(iaddr, port));
 	REQUIRE(mb.isConnection());
 
 	// принудительное отключение
@@ -130,15 +130,17 @@ TEST_CASE("MBTCPMaster: forceDisconnect", "[modbus][mbmaster][mbtcpmaster][force
 	ModbusTCPMaster mb;
 	mb.setTimeout(500);
 
-	for( size_t i=0; i<1000; i++ )
+	for( size_t i = 0; i < 1000; i++ )
 	{
 		// подключение к несуществующему адресу
 		REQUIRE_FALSE(mb.connect(iaddr, 2048));
+
 		try
 		{
-			mb.read03(slaveADDR,10,1);
+			mb.read03(slaveADDR, 10, 1);
 		}
-		catch(...){}
+		catch(...) {}
+
 		REQUIRE_FALSE(mb.isConnection());
 		mb.forceDisconnect();
 	}
@@ -151,15 +153,17 @@ TEST_CASE("MBTCPMaster: disconnect", "[modbus][mbmaster][mbtcpmaster][disconnect
 	mb.setTimeout(500);
 	mb.setForceDisconnect(true);
 
-	for( size_t i=0; i<1000; i++ )
+	for( size_t i = 0; i < 1000; i++ )
 	{
 		// подключение к несуществующему адресу
 		REQUIRE_FALSE(mb.connect(iaddr, 2048));
+
 		try
 		{
-			mb.read03(slaveADDR,10,1);
+			mb.read03(slaveADDR, 10, 1);
 		}
-		catch(...){}
+		catch(...) {}
+
 		REQUIRE_FALSE(mb.isConnection());
 		mb.disconnect();
 	}

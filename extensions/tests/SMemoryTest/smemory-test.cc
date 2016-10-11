@@ -54,7 +54,7 @@ int main(int argc, const char** argv)
 	{
 		ucrit << "(smemory): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		ucrit << "(smemory): " << ex << endl;
 	}

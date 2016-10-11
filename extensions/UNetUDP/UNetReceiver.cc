@@ -126,7 +126,7 @@ void UNetReceiver::setUpdatePause( timeout_t msec ) noexcept
 	updatepause = msec;
 
 	if( upStrategy == useUpdateEventLoop && evUpdate.is_active() )
-		evUpdate.start(0, (float)updatepause/1000.);
+		evUpdate.start(0, (float)updatepause / 1000.);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setMaxProcessingCount( int set ) noexcept
@@ -178,6 +178,7 @@ bool UNetReceiver::createConnection( bool throwEx )
 		udp = make_shared<UDPReceiveU>(addr, port);
 		udp->setBlocking(false); // делаем неблокирующее чтение (нужно для libev)
 		evReceive.set<UNetReceiver, &UNetReceiver::callback>(this);
+
 		if( upStrategy == useUpdateEventLoop )
 			evUpdate.set<UNetReceiver, &UNetReceiver::updateEvent>(this);
 
@@ -241,7 +242,7 @@ void UNetReceiver::evprepare( const ev::loop_ref& eloop ) noexcept
 	{
 		evUpdate.set(eloop);
 		evUpdate.start();
-		evUpdate.start( 0, ((float)updatepause/1000.) );
+		evUpdate.start( 0, ((float)updatepause / 1000.) );
 	}
 
 	if( !udp )
@@ -282,7 +283,7 @@ void UNetReceiver::evfinish( const ev::loop_ref& eloop ) noexcept
 // -----------------------------------------------------------------------------
 void UNetReceiver::forceUpdate() noexcept
 {
-	pack_guard l(packMutex,upStrategy);
+	pack_guard l(packMutex, upStrategy);
 	pnum = 0; // сбрасываем запомненый номер последнего обработанного пакета
 	// и тем самым заставляем обновить данные в SM (см. update)
 }
@@ -298,10 +299,10 @@ void UNetReceiver::statisticsEvent(ev::periodic& tm, int revents) noexcept
 	statRecvPerSec = recvCount;
 	statUpPerSec = upCount;
 
-//	unetlog9 << myname << "(statisctics):"
-//			 << " recvCount=" << recvCount << "[per sec]"
-//			 << " upCount=" << upCount << "[per sec]"
-//			 << endl;
+	//	unetlog9 << myname << "(statisctics):"
+	//			 << " recvCount=" << recvCount << "[per sec]"
+	//			 << " upCount=" << upCount << "[per sec]"
+	//			 << endl;
 
 	recvCount = 0;
 	upCount = 0;
@@ -321,7 +322,7 @@ void UNetReceiver::update() noexcept
 	{
 		{
 			// lock qpack
-			pack_guard l(packMutex,upStrategy);
+			pack_guard l(packMutex, upStrategy);
 
 			if( qpack.empty() )
 				return;
@@ -720,7 +721,7 @@ bool UNetReceiver::receive() noexcept
 
 	{
 		// lock qpack
-		pack_guard l(packMutex,upStrategy);
+		pack_guard l(packMutex, upStrategy);
 
 		if( !waitClean )
 		{
@@ -878,6 +879,7 @@ string UNetReceiver::to_string( UNetReceiver::UpdateStrategy s ) noexcept
 {
 	if( s == useUpdateThread )
 		return "thread";
+
 	if( s == useUpdateEventLoop )
 		return "evloop";
 

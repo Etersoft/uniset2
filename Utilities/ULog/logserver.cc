@@ -209,7 +209,7 @@ int main( int argc, char** argv )
 	{
 		cerr << "(logserver): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cerr << "(logserver): " << ex << endl;
 	}

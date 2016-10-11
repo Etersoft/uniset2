@@ -63,7 +63,7 @@ void ModbusServer::setRecvTimeout( timeout_t msec )
 timeout_t ModbusServer::setReplyTimeout( timeout_t msec )
 {
 	// #warning "Why msec can be 0?"
-	assert(msec>0);
+	assert(msec > 0);
 
 	if( msec == UniSetTimer::WaitUpTime )
 		return replyTimeout_ms;
@@ -638,7 +638,7 @@ mbErrCode ModbusServer::recv( const std::unordered_set<ModbusRTU::ModbusAddr>& v
 		cleanupChannel();
 		return erSessionClosed;
 	}
-	catch( const Exception& ex ) // SystemError
+	catch( const UniSetTypes::Exception& ex ) // SystemError
 	{
 		dlog->crit() << "(recv): " << ex << endl;
 		cleanupChannel();
@@ -1775,7 +1775,7 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 		sendData(msg.buf(), len);
 		msg.swapHead(); // обратно, т.к. потом ещё будет post_send_request
 	}
-	catch( const Exception& ex ) // SystemError
+	catch( const UniSetTypes::Exception& ex ) // SystemError
 	{
 		if( dlog->is_crit() )
 			dlog->crit() << "(ModbusServer::send): " << ex << endl;

@@ -77,8 +77,8 @@ class Calibration
 {
 	public:
 		Calibration();
-		Calibration( const std::string& name, const std::string& confile = "calibration.xml", size_t reserv=50 );
-		Calibration( xmlNode* node, size_t reserv=50 );
+		Calibration( const std::string& name, const std::string& confile = "calibration.xml", size_t reserv = 50 );
+		Calibration( xmlNode* node, size_t reserv = 50 );
 		~Calibration();
 
 		/*! Тип для хранения значения */

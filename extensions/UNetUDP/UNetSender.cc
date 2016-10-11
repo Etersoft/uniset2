@@ -146,7 +146,7 @@ bool UNetSender::createConnection( bool throwEx )
 // -----------------------------------------------------------------------------
 void UNetSender::updateFromSM()
 {
-	for( auto&& it: items )
+	for( auto && it : items )
 	{
 		UItem& i = it.second;
 		long value = shm->localGetValue(i.ioit, i.id);
@@ -160,6 +160,7 @@ void UNetSender::updateSensor( UniSetTypes::ObjectId id, long value )
 		return;
 
 	auto it = items.find(id);
+
 	if( it != items.end() )
 		updateItem( it->second, value );
 }
@@ -170,6 +171,7 @@ void UNetSender::updateItem( UItem& it, long value )
 
 	auto& mypack(pk[it.pack_num]);
 	UniSetTypes::uniset_rwmutex_wrlock l(mypack.mut);
+
 	if( it.iotype == UniversalIO::DI || it.iotype == UniversalIO::DO )
 		mypack.msg.setDData(it.pack_ind, value);
 	else if( it.iotype == UniversalIO::AI || it.iotype == UniversalIO::AO )
@@ -280,6 +282,7 @@ void UNetSender::real_send( PackMessage& mypack ) noexcept
 			mypack.msg.num = packetnum++;
 			lastcrc = crc;
 		}
+
 #endif
 
 		// при переходе через ноль (когда счётчик перевалит через UniSetUDP::MaxPacketNum..
@@ -482,6 +485,7 @@ bool UNetSender::initItem( UniXML::iterator& it )
 
 	unetinfo << myname << "(initItem): add " << p << endl;
 	auto i = items.find(p.id);
+
 	if( i != items.end() )
 	{
 		unetcrit << myname
@@ -535,8 +539,9 @@ const std::string UNetSender::getShortInfo() const
 	for( auto i = mypacks.begin(); i != mypacks.end(); ++i )
 	{
 		s << "        \t[" << i->first << "]=" << i->second.size() << endl;
-		size_t n=0;
-		for( const auto& p: i->second )
+		size_t n = 0;
+
+		for( const auto& p : i->second )
 		{
 			//uniset_rwmutex_rlock l(p->mut);
 			s << "        \t\t[" << (n++) << "]=" << p.msg.sizeOf() << " bytes"

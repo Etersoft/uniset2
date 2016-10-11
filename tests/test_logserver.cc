@@ -82,6 +82,7 @@ bool readlog_thread2()
 
 		while( !g_read_cancel )
 			lr.readlogs(ip, port); // ,LogServerTypes::cmdNOP,0,"",true);
+
 		return true;
 	}
 	catch( std::exception& ex )

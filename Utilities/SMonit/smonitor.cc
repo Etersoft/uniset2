@@ -47,7 +47,7 @@ int main( int argc, const char** argv )
 		act->run(false);
 		return 0;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cout << "(main):" << ex << endl;
 	}

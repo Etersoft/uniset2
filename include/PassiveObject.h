@@ -62,11 +62,11 @@ class PassiveObject
 		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) {}
 		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) {}
 
-		std::string myname;
+		std::string myname = { "" };
+		ProxyManager* mngr = { nullptr };
 
-		ProxyManager* mngr;
 	private:
-		UniSetTypes::ObjectId id;
+		UniSetTypes::ObjectId id = { UniSetTypes::DefaultObjectId };
 };
 
 // -------------------------------------------------------------------------

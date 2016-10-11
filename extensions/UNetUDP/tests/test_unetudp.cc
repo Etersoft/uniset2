@@ -187,7 +187,7 @@ TEST_CASE("[UNetUDP]: sizeOf", "[unetudp][sizeof]")
 
 	m.addAData(8, 70);
 
-	REQUIRE( m.sizeOf() == sizeof(UniSetUDP::UDPHeader)+sizeof(UniSetUDP::UDPAData) );
+	REQUIRE( m.sizeOf() == sizeof(UniSetUDP::UDPHeader) + sizeof(UniSetUDP::UDPAData) );
 
 	UniSetUDP::UDPPacket p;
 	size_t len = m.transport_msg(p);

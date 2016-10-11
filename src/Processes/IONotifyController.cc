@@ -246,7 +246,7 @@ void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
 		{
 			ui->send(ci.id, std::move(smsg.transport_msg()), ci.node);
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			uwarn << myname << "(askSensor): " <<  uniset_conf()->oind->getNameById(sid) << " error: " << ex << endl;
 		}
@@ -283,7 +283,7 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
 				{
 					dumpOrdersList(sid, lst);
 				}
-				catch( const Exception& ex )
+				catch( const UniSetTypes::Exception& ex )
 				{
 					uwarn << myname << " не смогли сделать dump: " << ex << endl;
 				}
@@ -533,7 +533,7 @@ void IONotifyController::dumpOrdersList( const UniSetTypes::ObjectId sid,
 		auto sinf = make_shared<NCRestorer::SInfo>( std::move(tmp) );
 		restorer->dump(this, sinf, lst);
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		uwarn << myname << "(IONotifyController::dumpOrderList): " << ex << endl;
 	}
@@ -551,7 +551,7 @@ void IONotifyController::dumpThresholdList( const UniSetTypes::ObjectId sid, con
 		auto sinf = make_shared<NCRestorer::SInfo>( std::move(ainf) );
 		restorer->dumpThreshold(this, sinf, lst);
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		uwarn << myname << "(IONotifyController::dumpThresholdList): " << ex << endl;
 	}
@@ -609,7 +609,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
 					{
 						dumpThresholdList(sid, tli.list);
 					}
-					catch( const Exception& ex )
+					catch( const UniSetTypes::Exception& ex )
 					{
 						uwarn << myname << " не смогли сделать dump: " << ex << endl;
 					}
@@ -625,7 +625,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
 						{
 							dumpThresholdList(sid, it->second.list);
 						}
-						catch( const Exception& ex )
+						catch( const UniSetTypes::Exception& ex )
 						{
 							uwarn << myname << "(askThreshold): dump: " << ex << endl;
 						}
@@ -670,7 +670,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
 							ref->push( std::move(sm.transport_msg()) );
 					}
 				}
-				catch( const Exception& ex )
+				catch( const UniSetTypes::Exception& ex )
 				{
 					uwarn << myname << "(askThreshod): " << ex << endl;
 				}
@@ -692,7 +692,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
 						{
 							dumpThresholdList(sid, it->second.list);
 						}
-						catch( const Exception& ex )
+						catch( const UniSetTypes::Exception& ex )
 						{
 							uwarn << myname << "(askThreshold): dump: " << ex << endl;
 						}
@@ -943,7 +943,7 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( UniSetTy
 		res->value  = IOController::localGetValue(it->second.usi);
 		res->type   = it->second.type;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		uwarn << myname << "(getThresholds): для датчика "
 			  << uniset_conf()->oind->getNameById(it->second.si.id)

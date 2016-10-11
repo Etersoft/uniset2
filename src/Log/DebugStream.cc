@@ -79,7 +79,7 @@ void DebugStream::sbuf_overflow( const std::string& s ) noexcept
 	{
 		s_stream.emit(s);
 	}
-	catch(...){}
+	catch(...) {}
 }
 //--------------------------------------------------------------------------
 DebugStream::~DebugStream()

@@ -187,7 +187,7 @@ int main(int argc, char* argv[] )
 	{
 		cerr << "(urecv-perf-test): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cerr << "(urecv-perf-test): " << ex << endl;
 	}

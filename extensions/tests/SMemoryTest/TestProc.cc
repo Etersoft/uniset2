@@ -53,8 +53,8 @@ void TestProc::sysCommand( const UniSetTypes::SystemMessage* sm )
 // -----------------------------------------------------------------------------
 string TestProc::getMonitInfo()
 {
-//	int* p = 0;
-//	(*p) = 10;
+	//	int* p = 0;
+	//	(*p) = 10;
 
 	return "";
 }
@@ -176,7 +176,7 @@ void TestProc::test_thresholds()
 		ti = ui->getThresholdInfo(t_set_c, tid);
 		cerr << myname << ": ask ON threshold: " << ( ti.state == IONotifyController_i::HiThreshold  ? "ok" : "FAIL" ) << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		mylog2 << myname << ": CHECK 'ask and get threshold' FAILED: " << ex << endl;
 	}

@@ -95,7 +95,7 @@ int main(int argc, const char** argv)
 	{
 		cerr << ex << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cerr << ex << endl;
 	}

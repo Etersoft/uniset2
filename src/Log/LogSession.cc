@@ -137,12 +137,14 @@ void LogSession::logOnEvent( const std::string& s ) noexcept
 		if( logbuf.size() >= maxRecordsNum )
 		{
 			numLostMsg++;
+
 			if( numLostMsg > maxRecordsNum )
 			{
 				// видимо клиент отвалился или совсем не успевает читать
 				// разрываем сессию..
 				if( mylog.is_info() )
 					mylog.info() << peername << "(LogSession::onEvent): too many lost messages. Close session.." << endl;
+
 				cancelled = true;
 			}
 
@@ -160,7 +162,7 @@ void LogSession::logOnEvent( const std::string& s ) noexcept
 		lostMsg = false;
 		logbuf.emplace(new UTCPCore::Buffer(s));
 	}
-	catch(...){}
+	catch(...) {}
 
 	if( asyncEvent.is_active() )
 		asyncEvent.send();
@@ -238,7 +240,7 @@ void LogSession::callback( ev::io& watcher, int revents ) noexcept
 		{
 			readEvent(watcher);
 		}
-		catch(...){}
+		catch(...) {}
 	}
 
 	if (revents & EV_WRITE)
@@ -247,7 +249,7 @@ void LogSession::callback( ev::io& watcher, int revents ) noexcept
 		{
 			writeEvent(watcher);
 		}
-		catch(...){}
+		catch(...) {}
 	}
 
 	if( cancelled.load() )
@@ -257,13 +259,14 @@ void LogSession::callback( ev::io& watcher, int revents ) noexcept
 
 		io.stop();
 		cmdTimer.stop();
+
 		try
 		{
 			std::unique_lock<std::mutex> lk(logbuf_mutex);
 			asyncEvent.stop();
 			conn.disconnect();
 		}
-		catch(...){}
+		catch(...) {}
 
 		final();
 	}
@@ -410,7 +413,7 @@ void LogSession::readEvent( ev::io& watcher ) noexcept
 		if( mylog.is_warn() )
 			mylog.warn() << peername << "(LogSession::readEvent): " << ex.what() << endl;
 	}
-	catch(...){}
+	catch(...) {}
 
 #if 0
 	// Выводим итоговый получившийся список (с учётом выполненных команд)
@@ -604,7 +607,7 @@ void LogSession::onCheckConnectionTimer( ev::timer& watcher, int revents ) noexc
 		//
 		logbuf.emplace(new UTCPCore::Buffer(" \b"));
 	}
-	catch(...){}
+	catch(...) {}
 
 	io.set(ev::WRITE);
 	checkConnectionTimer.start( checkConnectionTime ); // restart timer
@@ -616,7 +619,7 @@ void LogSession::final() noexcept
 	{
 		slFin(this);
 	}
-	catch(...){}
+	catch(...) {}
 }
 // -------------------------------------------------------------------------
 void LogSession::connectFinalSession( FinalSlot sl ) noexcept

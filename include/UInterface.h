@@ -279,8 +279,8 @@ class UInterface
 				typedef std::unordered_map<UniSetTypes::KeyType, Item> CacheMap;
 				mutable CacheMap mcache;
 				mutable UniSetTypes::uniset_rwmutex cmutex;
-				size_t MaxSize;      /*!< максимальный размер кэша */
-				size_t minCallCount; /*!< минимальное количество вызовов, меньше которого ссылка считается устаревшей */
+				size_t MaxSize = { 20 };      /*!< максимальный размер кэша */
+				size_t minCallCount = { 20 }; /*!< минимальное количество вызовов, меньше которого ссылка считается устаревшей */
 		};
 
 		void initBackId( UniSetTypes::ObjectId backid );

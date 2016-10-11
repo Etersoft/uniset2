@@ -105,10 +105,10 @@ class Restorer_XML
 		ReaderSlot rslot;
 		ReaderSlot cslot;
 
-		std::string i_filterField;
-		std::string i_filterValue;
-		std::string c_filterField;
-		std::string c_filterValue;
+		std::string i_filterField = { "" };
+		std::string i_filterValue = { "" };
+		std::string c_filterField = { "" };
+		std::string c_filterValue = { "" };
 };
 // --------------------------------------------------------------------------
 #endif

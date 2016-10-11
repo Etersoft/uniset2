@@ -68,7 +68,7 @@ VoidMessagePtr MQMutex::top() noexcept
 		mqueue.pop_front();
 		return m;
 	}
-	catch(...){}
+	catch(...) {}
 
 	return nullptr;
 }

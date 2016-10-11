@@ -74,7 +74,7 @@ int main( int argc, const char* argv[] )
 
 		return session.run();
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cerr << "(tests_mbtcpmaster): " << ex << endl;
 	}

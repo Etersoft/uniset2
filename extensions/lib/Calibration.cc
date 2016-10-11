@@ -41,7 +41,7 @@ Calibration::Part::Part( const Point& pleft, const Point& pright ) noexcept:
 	k(0)
 {
 	if( p_right.x < p_left.x )
-		std::swap(p_right,p_left);
+		std::swap(p_right, p_left);
 
 	// вычисление коэффициента наклона (один раз в конструкторе)
 	// k = (y2-y1)/(x2-x1)

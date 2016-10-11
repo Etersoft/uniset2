@@ -52,7 +52,7 @@ ObjectId ObjectIndex_idXML::getIdByName( const string& name ) const noexcept
 		if( it != mok.end() )
 			return it->second;
 	}
-	catch(...){}
+	catch(...) {}
 
 	return DefaultObjectId;
 }
@@ -66,7 +66,8 @@ string ObjectIndex_idXML::getMapName( const ObjectId id ) const noexcept
 		if( it != omap.end() )
 			return it->second.repName;
 	}
-	catch(...){}
+	catch(...) {}
+
 	return "";
 }
 // -----------------------------------------------------------------------------------------
@@ -79,7 +80,7 @@ string ObjectIndex_idXML::getTextName( const ObjectId id ) const noexcept
 		if( it != omap.end() )
 			return it->second.textName;
 	}
-	catch(...){}
+	catch(...) {}
 
 	return "";
 }
@@ -255,7 +256,7 @@ const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const ObjectId id ) const no
 		if( it != omap.end() )
 			return &(it->second);
 	}
-	catch(...){}
+	catch(...) {}
 
 	return nullptr;
 }
@@ -269,7 +270,7 @@ const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const std::string& name ) co
 		if( it != mok.end() )
 			return getObjectInfo(it->second);
 	}
-	catch(...){}
+	catch(...) {}
 
 	return nullptr;
 }

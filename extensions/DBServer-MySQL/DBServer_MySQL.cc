@@ -115,7 +115,7 @@ void DBServer_MySQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 			dbcrit << myname << "(update_confirm):  db error: " << db->error() << endl;
 		}
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		dbcrit << myname << "(update_confirm): " << ex << endl;
 	}
@@ -230,7 +230,7 @@ void DBServer_MySQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 			dbcrit << myname << "(insert) sensor msg error: " << db->error() << endl;
 		}
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		dbcrit << myname << "(insert_main_history): " << ex << endl;
 	}

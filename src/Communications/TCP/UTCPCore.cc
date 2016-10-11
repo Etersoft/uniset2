@@ -53,7 +53,7 @@ UTCPCore::Buffer::~Buffer()
 	delete [] data;
 }
 // -------------------------------------------------------------------------
-unsigned char*UTCPCore::Buffer::dpos() noexcept
+unsigned char* UTCPCore::Buffer::dpos() noexcept
 {
 	return data + pos;
 }

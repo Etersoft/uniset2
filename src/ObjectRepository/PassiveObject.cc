@@ -101,7 +101,7 @@ void PassiveObject::processingMessage( const UniSetTypes::VoidMessage* msg )
 				break;
 		}
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		ucrit  << myname << "(processingMessage): " << ex << endl;
 	}

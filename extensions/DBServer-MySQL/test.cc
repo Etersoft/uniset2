@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 
 		db.close();
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cerr << "(test): " << ex << endl;
 	}

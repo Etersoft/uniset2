@@ -91,7 +91,7 @@ class UNetSender
 			friend std::ostream& operator<<( std::ostream& os, UItem& p );
 		};
 
-		typedef std::unordered_map<UniSetTypes::ObjectId,UItem> UItemMap;
+		typedef std::unordered_map<UniSetTypes::ObjectId, UItem> UItemMap;
 
 		size_t getDataPackCount() const;
 
@@ -102,7 +102,7 @@ class UNetSender
 
 		struct PackMessage
 		{
-			PackMessage( UniSetUDP::UDPMessage&& m ) noexcept:msg(std::move(m)){}
+			PackMessage( UniSetUDP::UDPMessage&& m ) noexcept: msg(std::move(m)) {}
 			PackMessage( const UniSetUDP::UDPMessage& m ) = delete;
 
 			PackMessage() noexcept {}

@@ -28,11 +28,20 @@ class PtrMapHashFn
 			return std::hash<long>()((long)key);
 		}
 };
-
+struct struct_t
+{
+	unsigned char hour = { 0 };    /*!< часы [0..23] */
+	unsigned char min = { 0 };        /*!< минуты [0..59] */
+	unsigned char sec = { 0 };        /*!< секунды [0..59] */
+	unsigned char day = { 1 };        /*!< день [1..31] */
+	unsigned char mon = { 1 };        /*!< месяц [1..12] */
+	unsigned char year = { 0 };    /*!< год [0..99] */
+	unsigned char century = { 20 };    /*!<*/
+} __attribute__((packed));
 
 int main( int argc, const char** argv )
 {
-	cerr << "2000%1000000=" << int(2000%1000000) << endl;
+	cerr << "2000%1000000=" << int(2000 % 1000000) << endl;
 	return 0;
 
 	unordered_map<const long*, const long*, PtrMapHashFn> vmap;

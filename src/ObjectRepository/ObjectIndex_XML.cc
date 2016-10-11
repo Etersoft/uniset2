@@ -56,7 +56,8 @@ ObjectId ObjectIndex_XML::getIdByName( const string& name ) const noexcept
 		if( it != mok.end() )
 			return it->second;
 	}
-	catch(...){}
+	catch(...) {}
+
 	return DefaultObjectId;
 }
 // -----------------------------------------------------------------------------------------
@@ -293,7 +294,7 @@ const ObjectInfo* ObjectIndex_XML::getObjectInfo( const std::string& name ) cons
 		if( it != mok.end() )
 			return &(omap[it->second]);
 	}
-	catch(...){}
+	catch(...) {}
 
 	return nullptr;
 }

@@ -69,7 +69,7 @@ int main(int argc, char* argv[] )
 	{
 		cerr << "(tests_with_sm): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		cerr << "(tests_with_sm): " << ex << endl;
 	}

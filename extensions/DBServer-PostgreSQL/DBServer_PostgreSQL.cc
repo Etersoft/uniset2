@@ -129,7 +129,7 @@ void DBServer_PostgreSQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 			dbcrit << myname << "(update_confirm):  db error: " << db->error() << endl;
 		}
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		dbcrit << myname << "(update_confirm): " << ex << endl;
 	}
@@ -222,7 +222,7 @@ void DBServer_PostgreSQL::flushInsertBuffer()
 		ibuf.erase(beg, end);
 
 		// ibufSize - беззнаковое, так что надо аккуратно
-		ibufSize = (delnum < ibufSize) ? (ibufSize-delnum) : 0;
+		ibufSize = (delnum < ibufSize) ? (ibufSize - delnum) : 0;
 
 		dbwarn << myname << "(flushInsertBuffer): overflow: clear data " << delnum << " records." << endl;
 		return;
@@ -275,7 +275,7 @@ void DBServer_PostgreSQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 		if( ibufSize >= ibufMaxSize )
 			flushInsertBuffer();
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		dbcrit << myname << "(insert_main_history): " << ex << endl;
 	}

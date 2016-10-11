@@ -127,7 +127,7 @@ void SMDBServer::step()
 			shm->localSaveValue(aitHeartBeat, sidHeartBeat, maxHeartBeat, getId());
 			ptHeartBeat.reset();
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			dcrit << myname << "(step): (hb) " << ex << std::endl;
 		}
@@ -183,7 +183,7 @@ void SMDBServer::initDB( DBInterface* db )
 			}
 		}
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		dcrit << myname << "(filling ObjectsMap): " << ex << std::endl;
 	}

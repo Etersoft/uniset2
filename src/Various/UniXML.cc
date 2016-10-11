@@ -83,6 +83,7 @@ void UniXML::newDoc(const string& root_node, const string& xml_ver)
 
 	xmlKeepBlanksDefault(0);
 	xmlDoc* d = xmlNewDoc((const xmlChar*)xml_ver.c_str());
+
 	if( d == NULL )
 		throw NameNotFound("UniXML(open): не смогли создать doc=" + root_node);
 
@@ -130,7 +131,7 @@ void UniXML::open( const string& _filename )
 	if( d == NULL )
 		throw NameNotFound("UniXML(open): NotFound file=" + _filename);
 
-	doc = std::shared_ptr<xmlDoc>(d,UniXMLDocDeleter());
+	doc = std::shared_ptr<xmlDoc>(d, UniXMLDocDeleter());
 
 	// Support for XInclude (see eterbug #6304)
 	// main tag must to have follow property: xmlns:xi="http://www.w3.org/2001/XInclude"
@@ -142,7 +143,7 @@ void UniXML::open( const string& _filename )
 // -----------------------------------------------------------------------------
 void UniXML::close()
 {
-	doc= nullptr;
+	doc = nullptr;
 	filename = "";
 }
 // -----------------------------------------------------------------------------
@@ -157,10 +158,11 @@ string UniXML::getProp2(const xmlNode* node, const string& name, const string& d
 	try
 	{
 		string s(getProp(node, name));
+
 		if( !s.empty() )
 			return std::move(s);
 	}
-	catch(...){}
+	catch(...) {}
 
 	return defval;
 }
@@ -182,7 +184,7 @@ string UniXML::getProp(const xmlNode* node, const string& name) noexcept
 		xmlFree( (xmlChar*) text );
 		return std::move(t);
 	}
-	catch(...){}
+	catch(...) {}
 
 	xmlFree( (xmlChar*) text );
 	return "";
@@ -470,7 +472,7 @@ bool UniXML_iterator::goChildren() noexcept
 	return true;
 }
 // -------------------------------------------------------------------------
-xmlNode*UniXML_iterator::getCurrent() noexcept
+xmlNode* UniXML_iterator::getCurrent() noexcept
 {
 	return curNode;
 }
@@ -524,7 +526,7 @@ void UniXML_iterator::goEnd() noexcept
 	}
 }
 // -------------------------------------------------------------------------
-UniXML_iterator::operator xmlNode*() const noexcept
+UniXML_iterator::operator xmlNode* () const noexcept
 {
 	//ulog.< "current\n";
 	return curNode;

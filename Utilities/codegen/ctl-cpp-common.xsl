@@ -73,7 +73,7 @@
 		</xsl:when>
 		<xsl:when test="$GENTYPE='CHECK'">
 		<xsl:if test="normalize-space(@vartype)!='io'">
-			<xsl:if test="normalize-space(../../@id)=''">throw SystemException("Not Found ID for <xsl:value-of select="../../@name"/>");</xsl:if>
+			<xsl:if test="normalize-space(../../@id)=''">throw UniSetTypes::SystemError("Not Found ID for <xsl:value-of select="../../@name"/>");</xsl:if>
 		</xsl:if>
 		</xsl:when>
 		</xsl:choose>
@@ -672,7 +672,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 //		abort();
 //		raise(SIGTERM);
 		std::terminate();
-//		throw SystemError(err.str());
+//		throw UniSetTypes::SystemError(err.str());
 	}
 
 	if( !ui->waitWorking(_testID,wait_msec) )
@@ -687,7 +687,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 //		abort();
 		//raise(SIGTERM);
 		std::terminate();
-//		throw SystemError(err.str());
+//		throw UniSetTypes::SystemError(err.str());
 	}
 }
 // ----------------------------------------------------------------------------
@@ -864,7 +864,7 @@ forceOut(false),
 end_private(false)
 {
 	mycrit &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
-	throw Exception( string(myname+": init failed!!!") );
+	throw UniSetTypes::Exception( string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
 // ( val, confval, default val )
@@ -952,7 +952,7 @@ end_private(false)
 	{
 		ostringstream err;
 		err &lt;&lt; "(<xsl:value-of select="$CLASSNAME"/>::init): Unknown ObjectID!";
-		throw SystemError( err.str() );
+		throw UniSetTypes::SystemError( err.str() );
 	}
 
     mylog = make_shared&lt;DebugStream&gt;();
@@ -973,13 +973,13 @@ end_private(false)
 <xsl:for-each select="//smap/item">
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
-		throw Exception( myname + ": Not found ID for (<xsl:value-of select="@name"/>) " + conf->getProp(cnode,"<xsl:value-of select="@name"/>") );
+		throw UniSetTypes::SystemError( myname + ": Not found ID for (<xsl:value-of select="@name"/>) " + conf->getProp(cnode,"<xsl:value-of select="@name"/>") );
 	
 	</xsl:if>
 
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
 	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
-		throw Exception( myname + ": Not found NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
+		throw UniSetTypes::SystemError( myname + ": Not found NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
 	</xsl:if>
 
 	<xsl:if test="normalize-space($VARMAP)='1'">
@@ -999,11 +999,11 @@ end_private(false)
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 	{
 		if( !conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>").empty() )
-			throw Exception( myname + ": Not found Message::NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
+			throw UniSetTypes::SystemError( myname + ": Not found Message::NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
 	}
 	
 	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
-		throw Exception( myname + ": Not found Message::NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
+		throw UniSetTypes::SystemError( myname + ": Not found Message::NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
 </xsl:for-each>
 
 	UniXML::iterator it(cnode);
@@ -1025,7 +1025,7 @@ end_private(false)
 		{
 			ostringstream err;
 			err &lt;&lt; myname &lt;&lt; ": не найден идентификатор для датчика 'HeartBeat' " &lt;&lt; heart;
-			throw SystemError(err.str());
+			throw UniSetTypes::SystemError(err.str());
 		}
 
 		int heartbeatTime = conf->getArgPInt("--" + argprefix + "heartbeat-time",it.getProp("heartbeatTime"),conf-&gt;getHeartBeatTime());
@@ -1401,7 +1401,7 @@ askPause(2000),
 forceOut(false)
 {
 	mycrit &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
-	throw Exception( string(myname+": init failed!!!") );
+	throw UniSetTypes::SystemError( string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
 <xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK( ObjectId id, xmlNode* cnode, const string&amp; _argprefix ):
@@ -1441,7 +1441,7 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 	{
 		ostringstream err;
 		err &lt;&lt; "(<xsl:value-of select="$CLASSNAME"/>::init): Unknown ObjectID!";
-		throw SystemError( err.str() );
+		throw UniSetTypes::SystemError( err.str() );
 	}
 
 	mylog = make_shared&lt;DebugStream&gt;();
@@ -1486,7 +1486,7 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 		{
 			ostringstream err;
 			err &lt;&lt; myname &lt;&lt; ": не найден идентификатор для датчика 'HeartBeat' " &lt;&lt; heart;
-			throw SystemError(err.str());
+			throw UniSetTypes::SystemError(err.str());
 		}
 
 		int heartbeatTime = conf->getArgPInt("--" + argprefix + "heartbeat-time",it.getProp("heartbeatTime"),conf-&gt;getHeartBeatTime());

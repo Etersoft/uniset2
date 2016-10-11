@@ -191,7 +191,7 @@ size_t ComPort485F::sendBlock(unsigned char* msg, size_t len )
 			m_read(2000);
 		}
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		if( tmit_ctrl_on )
 		{
@@ -234,7 +234,7 @@ void ComPort485F::sendByte( unsigned char x )
 		wq.push(x);
 		m_read(2000);
 	}
-	catch( const Exception& ex )
+	catch( const UniSetTypes::Exception& ex )
 	{
 		if( tmit_ctrl_on )
 		{

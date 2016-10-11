@@ -141,11 +141,12 @@ void MQAtomic::setMaxSizeOfMessageQueue( size_t s )
 	if( s != SizeOfMessageQueue )
 	{
 		SizeOfMessageQueue = s;
+
 		try
 		{
 			mqFill(nullptr);
 		}
-		catch(...){}
+		catch(...) {}
 	}
 }
 //---------------------------------------------------------------------------

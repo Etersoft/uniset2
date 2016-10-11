@@ -244,10 +244,11 @@ namespace MTR
 			// ------------------------------------------
 			// конструкторы на разные случаи...
 			T4(): sval(""), raw(0) {}
-			T4( unsigned short v1 ): raw(v1)
+			T4( uint16_t v1 ): raw(v1)
 			{
-				char c[3];
-				memcpy(c, &v1, sizeof(c));
+				char c[sizeof(v1) + 1];
+				memcpy(c, &v1, sizeof(v1));
+				c[sizeof(v1)] = '\0';
 				sval = std::string(c);
 			}
 
@@ -255,7 +256,8 @@ namespace MTR
 				raw(data[0])
 			{
 				char c[3];
-				memcpy(c, &(data[0]), sizeof(c));
+				memcpy(c, &(data[0]), 2);
+				c[2] = '\0';
 				sval     = std::string(c);
 			}
 

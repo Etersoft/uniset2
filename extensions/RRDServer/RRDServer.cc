@@ -59,6 +59,7 @@ RRDServer::RRDServer(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::O
 	{
 		// берём первый датчик из списка
 		const auto& lst = rrdlist.begin()->dslist;
+
 		if( !lst.empty() )
 		{
 			const auto& dsi = *(lst.begin());
@@ -280,7 +281,7 @@ void RRDServer::help_print( int argc, const char* const* argv )
 	cout << "             logfile filanme " << endl;
 	cout << "             no-debug " << endl;
 	cout << " Base oprtions: " << endl;
-//	cout << UObject_SK::help() << endl;
+	//	cout << UObject_SK::help() << endl;
 	cout << " LogServer: " << endl;
 	cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;
 	cout << "--prefix-logserver-host ip  - listen ip. Default: localhost" << endl;

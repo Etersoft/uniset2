@@ -254,7 +254,7 @@ namespace UniSetTypes
 							oind = static_pointer_cast<ObjectIndex>(oi);
 						}
 					}
-					catch( const Exception& ex )
+					catch( const UniSetTypes::Exception& ex )
 					{
 						ucrit << "(Configuration:init): INIT FAILED! from "  << fileConfName << endl;
 						throw;
@@ -447,7 +447,7 @@ namespace UniSetTypes
 			// ---------------------------------------
 
 		}
-		catch( const Exception& ex )
+		catch( const UniSetTypes::Exception& ex )
 		{
 			ucrit << "Configuration:" << ex << endl;
 			throw;
@@ -1005,6 +1005,8 @@ namespace UniSetTypes
 		secServices   = makeSecName(secRoot, getRepSectionName("services", xmlServicesSec));
 	}
 	// -------------------------------------------------------------------------
+	// второй параметр намеренно передаётся и переопредеяется
+	// это просто такой способ вернуть и строку и указатель на узел (одним махом)
 	string Configuration::getRepSectionName( const string& sec, xmlNode* secnode )
 	{
 		secnode = unixml->findNode(unixml->getFirstNode(), sec);
