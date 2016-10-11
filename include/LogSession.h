@@ -77,6 +77,8 @@ class LogSession
 
 		std::string getShortInfo() noexcept;
 
+		std::string name() const noexcept;
+
 	protected:
 		//		LogSession( ost::TCPSocket& server );
 

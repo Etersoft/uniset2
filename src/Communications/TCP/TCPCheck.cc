@@ -14,10 +14,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -----------------------------------------------------------------------------
+#include <functional>
 #include <sstream>
 #include <cstdlib>
 #include "UniSetTypes.h"
 #include "PassiveTimer.h"
+#include "ThreadCreator.h"
 #include "TCPCheck.h"
 #include "UTCPStream.h"
 // -----------------------------------------------------------------------------
@@ -76,10 +78,37 @@ void TCPCheck::check_thread()
 		t.create(ip, port, tout_msec);
 		t.setKeepAliveParams( (tout_msec > 1000 ? tout_msec / 1000 : 1) );
 		setResult(true);
-		t.close();
+		t.disconnect();
 	}
 	catch( ... ) {}
 }
+// -----------------------------------------------------------------------------
+template<typename T>
+class TGuard
+{
+	public:
+
+		TGuard( T* m, typename ThreadCreator<T>::Action a ):
+			t(m,a)
+		{
+			t.start();
+		}
+
+		~TGuard()
+		{
+			if( t.isRunning() )
+				t.stop();
+		}
+
+		inline bool isRunning()
+		{
+			return t.isRunning();
+		}
+
+	protected:
+		ThreadCreator<T> t;
+};
+
 // -----------------------------------------------------------------------------
 bool TCPCheck::ping( const std::string& _ip, timeout_t tout, timeout_t sleep_msec, const std::string& _ping_args )
 {
@@ -89,16 +118,12 @@ bool TCPCheck::ping( const std::string& _ip, timeout_t tout, timeout_t sleep_mse
 
 	setResult(false);
 
-	ThreadCreator<TCPCheck> t(this, &TCPCheck::ping_thread);
-	t.start();
+	TGuard<TCPCheck> t(this, &TCPCheck::ping_thread);
 
 	PassiveTimer pt(tout);
 
 	while( !pt.checkTime() && t.isRunning() )
 		msleep(sleep_msec);
-
-	if( t.isRunning() ) // !getResult() )
-		t.stop();
 
 	return result;
 }

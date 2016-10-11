@@ -59,7 +59,7 @@ void ModbusTCPMaster::setChannelTimeout( timeout_t msec )
 	Poco::Timespan tm = UniSetTimer::millisecToPoco(msec);
 	Poco::Timespan old = tcp->getReceiveTimeout();;
 
-	if( old.microseconds() == tm.microseconds() )
+	if( old.totalMicroseconds() == tm.totalMicroseconds() )
 		return;
 
 	tcp->setReceiveTimeout(tm);
@@ -201,7 +201,8 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				}
 
 				cleanInputStream();
-				tcp->forceDisconnect();
+				if( tcp )
+					tcp->forceDisconnect();
 				return erTimeOut; // return erHardwareError;
 			}
 
@@ -247,12 +248,13 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 			if( force_disconnect )
 			{
 				if( dlog->is_info() )
-					dlog->info() << "(query): force disconnect.." << endl;
+					dlog->info() << "(query): disconnect.." << endl;
 
 				// при штатном обмене..лучше дождаться конца "посылки"..
 				// поэтому применяем disconnect(), а не forceDisconnect()
 				// (с учётом выставленной опции setLinger(true))
-				tcp->close();
+				if( tcp )
+					tcp->disconnect();
 			}
 
 			return res;
@@ -267,7 +269,8 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				dlog->info() << "(query): force disconnect.." << endl;
 
 			//            cleanInputStream();
-			tcp->forceDisconnect();
+			if( tcp )
+				tcp->forceDisconnect();
 		}
 
 		return erTimeOut;
@@ -303,7 +306,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 	catch( const std::exception& e )
 	{
 		if( dlog->is_warn() )
-			dlog->crit() << "(query): " << e.what() << std::endl;
+			dlog->warn() << "(query): " << e.what() << std::endl;
 	}
 
 	return erTimeOut; // erHardwareError
@@ -385,7 +388,7 @@ bool ModbusTCPMaster::connect( const std::string& addr, int _port, bool closeOld
 		{
 			ostringstream s;
 			s << "(ModbusTCPMaster): connect " << iaddr << ":" << port << " error: " << e.what();
-			dlog->crit() << iaddr << std::endl;
+			dlog->crit() << s.str() << std::endl;
 		}
 	}
 
@@ -426,13 +429,22 @@ bool ModbusTCPMaster::connect( const Poco::Net::SocketAddress& addr, int _port, 
 		tcp->setNoDelay(true);
 		return true;
 	}
+	catch( Poco::TimeoutException& ex)
+	{
+		if( dlog->debugging(Debug::CRIT) )
+		{
+			ostringstream s;
+			s << "(ModbusTCPMaster): create connection " << iaddr << ":" << port << " timeout exception";
+			dlog->crit() << s.str() << std::endl;
+		}
+	}
 	catch( Poco::Net::NetException& ex)
 	{
 		if( dlog->debugging(Debug::CRIT) )
 		{
 			ostringstream s;
 			s << "(ModbusTCPMaster): create connection " << iaddr << ":" << port << " error: " << ex.displayText();
-			dlog->crit() << iaddr << std::endl;
+			dlog->crit() << s.str() << std::endl;
 		}
 	}
 	catch( const std::exception& e )
@@ -441,7 +453,7 @@ bool ModbusTCPMaster::connect( const Poco::Net::SocketAddress& addr, int _port, 
 		{
 			ostringstream s;
 			s << "(ModbusTCPMaster): connection " << iaddr << ":" << port << " error: " << e.what();
-			dlog->crit() << iaddr << std::endl;
+			dlog->crit() << s.str() << std::endl;
 		}
 	}
 	catch( ... )
@@ -466,7 +478,7 @@ void ModbusTCPMaster::disconnect()
 	if( !tcp )
 		return;
 
-	tcp->close();
+	tcp->disconnect(); // close();
 	tcp = nullptr;
 }
 // -------------------------------------------------------------------------

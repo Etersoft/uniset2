@@ -178,7 +178,7 @@ class ModbusClient
 
 		/*! функция запрос-ответ */
 		virtual ModbusRTU::mbErrCode query( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& msg,
-											ModbusRTU::ModbusMessage& reply, timeout_t timeout ) = 0;
+											ModbusRTU::ModbusMessage& qreply, timeout_t timeout ) = 0;
 
 		// -------------------------------------
 		/*! посылка запроса */
@@ -190,11 +190,6 @@ class ModbusClient
 
 		virtual ModbusRTU::mbErrCode recv_pdu( ModbusRTU::ModbusByte qfunc,
 											   ModbusRTU::ModbusMessage& rbuf, timeout_t timeout );
-
-
-
-		ModbusRTU::ModbusMessage reply;    /*!< буфер для приёма сообщений */
-		ModbusRTU::ModbusMessage qbuf;     /*!< буфер для посылки сообщений */
 
 		timeout_t replyTimeOut_ms;    /*!< таймаут на ожидание ответа */
 		timeout_t aftersend_msec;    /*!< пауза после посылки запроса */
@@ -209,6 +204,9 @@ class ModbusClient
 		PassiveTimer tmProcessing;
 
 	private:
+
+		ModbusRTU::ModbusMessage qreply;   /*!< буфер для приёма сообщений */
+		ModbusRTU::ModbusMessage qbuf;     /*!< буфер для посылки сообщений */
 };
 // -------------------------------------------------------------------------
 #endif // ModbusClient_H_

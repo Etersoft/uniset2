@@ -39,12 +39,12 @@ UNetSender::UNetSender(const std::string& _host, const int _port, const std::sha
 	sendpause(150),
 	packsendpause(5),
 	activated(false),
-	items(100),
 	packetnum(1),
 	lastcrc(0),
 	maxAData(maxACount),
 	maxDData(maxDCount)
 {
+	items.reserve(100);
 
 	{
 		ostringstream s;

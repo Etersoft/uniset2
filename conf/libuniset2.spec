@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.5
-Release: alt13.M80P.14
+Release: alt18.M80P.19
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -488,8 +488,39 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
-* Tue Sep 13 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt13.M80P.14
+* Tue Oct 11 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt18.M80P.19
 - backport to ALTLinux p8 (by rpmbph script)
+
+* Tue Oct 11 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt19
+- Calibration: fixed bug in getValue(), refactoring
+- correction after verification static analyzer
+- LogServer: fixed bug "connection refuse"
+
+* Sat Oct 08 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt18
+- LogServer: fixed bug "do not close connection"
+
+* Fri Sep 30 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt17
+- ModbusMultiMaster: add new check connection strategy
+- LogServer: minor fixes
+
+* Tue Sep 27 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt16
+- LogSession: add more logs
+- codegen: add logserver information in getInfo()
+
+* Tue Sep 20 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt15
+- up build
+
+* Tue Sep 20 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt14.4
+- UTCPStream: check POCO_INVALID_SOCKET
+
+* Mon Sep 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt14.3
+- UTCPStream: shudown and close (for disconnect)
+
+* Mon Sep 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt14.2
+- (ModbusTCPMaster): added disconnect() function
+
+* Mon Sep 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt14.1
+- (ModbusTCPMaster): added catch exceptions
 
 * Mon Sep 12 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt14
 - up build

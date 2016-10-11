@@ -359,9 +359,11 @@ void DBServer_SQLite::timerInfo( const UniSetTypes::TimerMessage* tm )
 					askTimer(DBServer_SQLite::ReconnectTimer, 0);
 					askTimer(DBServer_SQLite::PingTimer, PingTime);
 				}
-
-				connect_ok = false;
-				dbwarn << myname << "(timerInfo): DB no connection.." << endl;
+				else
+				{
+					connect_ok = false;
+					dbwarn << myname << "(timerInfo): DB no connection.." << endl;
+				}
 			}
 			else
 				initDBServer();

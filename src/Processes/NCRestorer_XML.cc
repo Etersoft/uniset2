@@ -32,8 +32,6 @@ using namespace UniSetTypes;
 NCRestorer_XML::NCRestorer_XML( const string& fname ):
 	s_filterField(""),
 	s_filterValue(""),
-	c_filterField(""),
-	c_filterValue(""),
 	t_filterField(""),
 	t_filterValue(""),
 	fname(fname),
@@ -47,8 +45,6 @@ NCRestorer_XML::NCRestorer_XML(const string& fname,
 							   const std::string& f_value):
 	s_filterField(f_field),
 	s_filterValue(f_value),
-	c_filterField(""),
-	c_filterValue(""),
 	t_filterField(""),
 	t_filterValue(""),
 	fname(fname),

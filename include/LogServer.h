@@ -17,7 +17,7 @@
 #ifndef LogServer_H_
 #define LogServer_H_
 // -------------------------------------------------------------------------
-#include <list>
+#include <vector>
 #include <string>
 #include <memory>
 #include <unordered_map>
@@ -87,8 +87,8 @@ class LogServer:
 {
 	public:
 
-		LogServer( std::shared_ptr<DebugStream> log ) noexcept;
-		LogServer( std::shared_ptr<LogAgregator> log ) noexcept;
+		LogServer( std::shared_ptr<DebugStream> log );
+		LogServer( std::shared_ptr<LogAgregator> log );
 		virtual ~LogServer() noexcept;
 
 		inline void setCmdTimeout( timeout_t msec ) noexcept
@@ -113,6 +113,8 @@ class LogServer:
 			return isrunning;
 		}
 
+		bool check( bool restart_if_fail = true );
+
 		void init( const std::string& prefix, xmlNode* cnode = 0 );
 
 		static std::string help_print( const std::string& prefix );
@@ -120,7 +122,7 @@ class LogServer:
 		std::string getShortInfo();
 
 	protected:
-		LogServer() noexcept;
+		LogServer();
 
 		virtual void evprepare( const ev::loop_ref& loop ) override;
 		virtual void evfinish( const ev::loop_ref& loop ) override;
@@ -136,15 +138,15 @@ class LogServer:
 		std::string onCommand( LogSession* s, LogServerTypes::Command cmd, const std::string& logname );
 
 	private:
-		typedef std::list< std::shared_ptr<LogSession> > SessionList;
-		SessionList slist;
-		size_t scount = { 0 };
-		UniSetTypes::uniset_rwmutex mutSList;
 
 		timeout_t timeout = { UniSetTimer::WaitUpTime };
 		timeout_t cmdTimeout = { 2000 };
 		Debug::type sessLogLevel = { Debug::NONE };
 		size_t sessMaxCount = { 10 };
+
+		typedef std::vector< std::shared_ptr<LogSession> > SessionList;
+		SessionList slist;
+		UniSetTypes::uniset_rwmutex mutSList;
 
 		DebugStream mylog;
 		ev::io io;

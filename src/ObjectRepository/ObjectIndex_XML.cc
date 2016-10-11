@@ -24,9 +24,10 @@
 using namespace UniSetTypes;
 using namespace std;
 // -----------------------------------------------------------------------------------------
-ObjectIndex_XML::ObjectIndex_XML(const string& xmlfile, size_t minSize ):
-	omap(minSize)
+ObjectIndex_XML::ObjectIndex_XML(const string& xmlfile, size_t minSize )
 {
+	omap.reserve(minSize);
+
 	shared_ptr<UniXML> xml = make_shared<UniXML>();
 	//    try
 	//    {
@@ -36,9 +37,9 @@ ObjectIndex_XML::ObjectIndex_XML(const string& xmlfile, size_t minSize ):
 	//    catch(...){}
 }
 // -----------------------------------------------------------------------------------------
-ObjectIndex_XML::ObjectIndex_XML(const std::shared_ptr<UniXML>& xml, size_t minSize ):
-	omap(minSize)
+ObjectIndex_XML::ObjectIndex_XML(const std::shared_ptr<UniXML>& xml, size_t minSize )
 {
+	omap.reserve(minSize);
 	build(xml);
 }
 // -----------------------------------------------------------------------------------------
@@ -111,6 +112,7 @@ void ObjectIndex_XML::build( const std::shared_ptr<UniXML>& xml )
 
 	//
 	omap.resize(ind);
+	omap.shrink_to_fit();
 	//    omap[ind].repName=NULL;
 	//    omap[ind].textName=NULL;
 	//    omap[ind].id = ind;
@@ -199,7 +201,7 @@ size_t ObjectIndex_XML::read_section( const std::shared_ptr<UniXML>& xml, const 
 		//        cout << "read: " << "(" << ind << ") " << omap[ind].repName << "\t" << omap[ind].textName << endl;
 		ind++;
 
-		if( (unsigned)ind >= omap.size() )
+		if( ind >= omap.size() )
 		{
 			uinfo << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size()
 				  << "... Делаем resize + 100" << endl;

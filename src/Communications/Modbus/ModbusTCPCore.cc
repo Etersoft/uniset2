@@ -39,9 +39,6 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 
 	char* buf = new char[max];
 
-	if( buf == 0 )
-		return 0;
-
 	try
 	{
 		ssize_t l = tcp->receiveBytes(buf, max);
@@ -114,10 +111,18 @@ size_t ModbusTCPCore::getNextData(UTCPStream* tcp,
 		if( len <= 0 )
 			len = 7;
 
-		size_t ret = ModbusTCPCore::readNextData(tcp, qrecv, len);
+		try
+		{
+			size_t ret = ModbusTCPCore::readNextData(tcp, qrecv, len);
 
-		if( ret == 0 )
-			return 0;
+			if( ret == 0 )
+				return 0;
+		}
+		catch( UniSetTypes::CommFailed& ex )
+		{
+			if( qrecv.empty() )
+				return 0;
+		}
 	}
 
 	size_t i = 0;
@@ -140,9 +145,6 @@ size_t ModbusTCPCore::readDataFD( int fd, std::queue<unsigned char>& qrecv, size
 	max = std::max(max, (size_t)DEFAULT_BUFFER_SIZE_FOR_READ);
 
 	char* buf = new char[max];
-
-	if( buf == 0 )
-		return 0;
 
 	ssize_t l = 0;
 	size_t cnt = 0;
@@ -209,10 +211,18 @@ size_t ModbusTCPCore::getDataFD( int fd, std::queue<unsigned char>& qrecv,
 		if( len == 0 )
 			len = 7;
 
-		size_t ret = ModbusTCPCore::readDataFD(fd, qrecv, len, attempts);
+		try
+		{
+			size_t ret = ModbusTCPCore::readDataFD(fd, qrecv, len, attempts);
 
-		if( ret == 0 && qrecv.empty() )
-			return 0;
+			if( ret == 0 && qrecv.empty() )
+				return 0;
+		}
+		catch( UniSetTypes::CommFailed& ex )
+		{
+			if( qrecv.empty() )
+				return 0;
+		}
 	}
 
 	size_t i = 0;

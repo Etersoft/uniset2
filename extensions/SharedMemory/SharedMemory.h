@@ -201,7 +201,7 @@
 
     <item default="1" id="104104" iotype="DI" name="_41_04_S">
             <MessagesList>
-                <msg mtype="1" text="КСЭС: отключился ввод\вывод" value="0"/>
+                <msg mtype="1" text="КСЭС: отключился ввод/вывод" value="0"/>
             </MessagesList>
     </item>
 \endcode
@@ -417,7 +417,7 @@ class SharedMemory:
 		void buildEventList( xmlNode* cnode );
 		void readEventList( const std::string& oname );
 
-		UniSetTypes::uniset_rwmutex mutex_start;
+		std::mutex mutexStart;
 
 		class HeartBeatInfo
 		{

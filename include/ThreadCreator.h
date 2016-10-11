@@ -93,7 +93,7 @@ class ThreadCreator:
 		typedef void(ThreadMaster::* Action)(void);
 
 		ThreadCreator( ThreadMaster* m, Action a );
-		~ThreadCreator();
+		virtual ~ThreadCreator();
 
 		inline Poco::Thread::TID getTID() const
 		{

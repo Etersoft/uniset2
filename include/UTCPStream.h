@@ -44,6 +44,7 @@ class UTCPStream:
 
 		bool isSetLinger() const;
 		void forceDisconnect(); // disconnect() без ожидания (с отключением SO_LINGER)
+		void disconnect();
 
 		// --------------------------------------------------------------------
 		int getSocket() const;

@@ -74,7 +74,7 @@ using namespace UniSetTypes;
 	{ \
 		uwarn << "(" << __STRING(fname) << "): " << ex.err << endl; \
 	} \
-	catch( const Exception& ex ) \
+	catch( const UniSetTypes::Exception& ex ) \
 	{ \
 		uwarn << "(" << __STRING(fname) << "): " << ex << endl; \
 	} \

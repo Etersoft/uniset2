@@ -60,10 +60,10 @@ throw(ModbusRTU::mbException)
 {
 	ReadCoilMessage msg(addr, start, count);
 	qbuf = msg.transport_msg();
-	mbErrCode res = query(addr, qbuf, reply, replyTimeOut_ms);
+	mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
 	if( res == erNoError )
-		return ReadCoilRetMessage(reply);
+		return ReadCoilRetMessage(qreply);
 
 	throw mbException(res);
 }
@@ -74,10 +74,10 @@ throw(ModbusRTU::mbException)
 {
 	ReadInputStatusMessage msg(addr, start, count);
 	qbuf = msg.transport_msg();
-	mbErrCode res = query(addr, qbuf, reply, replyTimeOut_ms);
+	mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
 	if( res == erNoError )
-		return ReadInputStatusRetMessage(reply);
+		return ReadInputStatusRetMessage(qreply);
 
 	throw mbException(res);
 }
@@ -90,10 +90,10 @@ throw(ModbusRTU::mbException)
 	ReadOutputMessage msg(addr, start, count);
 	qbuf = msg.transport_msg();
 
-	mbErrCode res = query(addr, qbuf, reply, replyTimeOut_ms);
+	mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
 	if( res == erNoError )
-		return ReadOutputRetMessage(reply);
+		return ReadOutputRetMessage(qreply);
 
 	throw mbException(res);
 }
@@ -104,10 +104,10 @@ throw(ModbusRTU::mbException)
 {
 	ReadInputMessage msg(addr, start, count);
 	qbuf = msg.transport_msg();
-	mbErrCode res = query(addr, qbuf, reply, replyTimeOut_ms);
+	mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
 	if( res == erNoError )
-		return ReadInputRetMessage(reply);
+		return ReadInputRetMessage(qreply);
 
 	throw mbException(res);
 }
@@ -119,10 +119,10 @@ throw(ModbusRTU::mbException)
 	ForceSingleCoilMessage msg(addr, start, cmd);
 	qbuf = msg.transport_msg();
 
-	mbErrCode res = query(addr, qbuf, reply, replyTimeOut_ms);
+	mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
 	if( res == erNoError )
-		return ForceSingleCoilRetMessage(reply);
+		return ForceSingleCoilRetMessage(qreply);
 
 	throw mbException(res);
 }
@@ -135,10 +135,10 @@ throw(ModbusRTU::mbException)
 	WriteSingleOutputMessage msg(addr, start, data);
 	qbuf = msg.transport_msg();
 
-	mbErrCode res = query(addr, qbuf, reply, replyTimeOut_ms);
+	mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
 	if( res == erNoError )
-		return WriteSingleOutputRetMessage(reply);
+		return WriteSingleOutputRetMessage(qreply);
 
 	throw mbException(res);
 }
@@ -147,10 +147,10 @@ ForceCoilsRetMessage ModbusClient::write0F( ForceCoilsMessage& msg )
 throw(ModbusRTU::mbException)
 {
 	qbuf = msg.transport_msg();
-	mbErrCode res = query(msg.addr, qbuf, reply, replyTimeOut_ms);
+	mbErrCode res = query(msg.addr, qbuf, qreply, replyTimeOut_ms);
 
 	if( res == erNoError )
-		return ForceCoilsRetMessage(reply);
+		return ForceCoilsRetMessage(qreply);
 
 	throw mbException(res);
 }
@@ -160,10 +160,10 @@ WriteOutputRetMessage ModbusClient::write10( WriteOutputMessage& msg )
 throw(ModbusRTU::mbException)
 {
 	qbuf = msg.transport_msg();
-	mbErrCode res = query(msg.addr, qbuf, reply, replyTimeOut_ms);
+	mbErrCode res = query(msg.addr, qbuf, qreply, replyTimeOut_ms);
 
 	if( res == erNoError )
-		return WriteOutputRetMessage(reply);
+		return WriteOutputRetMessage(qreply);
 
 	throw mbException(res);
 }
@@ -175,10 +175,10 @@ throw(ModbusRTU::mbException)
 {
 	DiagnosticMessage msg(addr, subfunc, dat);
 	qbuf = msg.transport_msg();
-	mbErrCode res = query(msg.addr, qbuf, reply, replyTimeOut_ms);
+	mbErrCode res = query(msg.addr, qbuf, qreply, replyTimeOut_ms);
 
 	if( res == erNoError )
-		return DiagnosticRetMessage(reply);
+		return DiagnosticRetMessage(qreply);
 
 	throw mbException(res);
 }
@@ -190,10 +190,10 @@ throw(ModbusRTU::mbException)
 {
 	MEIMessageRDI msg(addr, devID, objID);
 	qbuf = msg.transport_msg();
-	mbErrCode res = query(msg.addr, qbuf, reply, replyTimeOut_ms);
+	mbErrCode res = query(msg.addr, qbuf, qreply, replyTimeOut_ms);
 
 	if( res == erNoError )
-		return MEIMessageRetRDI(reply);
+		return MEIMessageRetRDI(qreply);
 
 	throw mbException(res);
 }
@@ -213,10 +213,10 @@ throw(ModbusRTU::mbException)
 	msg.century = century;
 	qbuf = msg.transport_msg();
 
-	mbErrCode res = query(addr, qbuf, reply, replyTimeOut_ms);
+	mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
 	if( res == erNoError )
-		return SetDateTimeRetMessage(reply);
+		return SetDateTimeRetMessage(qreply);
 
 	throw mbException(res);
 }
@@ -320,10 +320,10 @@ throw(ModbusRTU::mbException)
 	FileTransferMessage msg(addr, idFile, numpack);
 	qbuf = msg.transport_msg();
 
-	mbErrCode res = query(addr, qbuf, reply, part_timeout_msec);
+	mbErrCode res = query(addr, qbuf, qreply, part_timeout_msec);
 
 	if( res == erNoError )
-		return FileTransferRetMessage(reply);
+		return FileTransferRetMessage(qreply);
 
 	throw mbException(res);
 }

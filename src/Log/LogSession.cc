@@ -74,7 +74,7 @@ LogSession::LogSession( const Poco::Net::StreamSocket& s, std::shared_ptr<DebugS
 		if( iaddr.host().toString().empty() )
 		{
 			ostringstream err;
-			err << "(ModbusTCPSession): unknonwn ip(0.0.0.0) client disconnected?!";
+			err << "(LogSession): unknonwn ip(0.0.0.0) client disconnected?!";
 
 			if( mylog.is_crit() )
 				mylog.crit() << err.str() << endl;
@@ -107,7 +107,7 @@ LogSession::LogSession( const Poco::Net::StreamSocket& s, std::shared_ptr<DebugS
 	if( log )
 		conn = log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
 	else
-		mylog.crit() << "LOG NULL!!" << endl;
+		mylog.crit() << "(LogSession): LOG NULL!!" << endl;
 }
 // -------------------------------------------------------------------------
 void LogSession::logOnEvent( const std::string& s ) noexcept
@@ -137,11 +137,19 @@ void LogSession::logOnEvent( const std::string& s ) noexcept
 		if( logbuf.size() >= maxRecordsNum )
 		{
 			numLostMsg++;
+			if( numLostMsg > maxRecordsNum )
+			{
+				// видимо клиент отвалился или совсем не успевает читать
+				// разрываем сессию..
+				if( mylog.is_info() )
+					mylog.info() << peername << "(LogSession::onEvent): too many lost messages. Close session.." << endl;
+				cancelled = true;
+			}
 
 			if( !lostMsg )
 			{
 				ostringstream err;
-				err <<  "The buffer is full. Message is lost...(size of buffer " << maxRecordsNum << ")" << endl;
+				err <<  "(LogSession): The buffer is full. Message is lost...(size of buffer " << maxRecordsNum << ")" << endl;
 				logbuf.emplace(new UTCPCore::Buffer(std::move(err.str())));
 				lostMsg = true;
 			}
@@ -163,7 +171,7 @@ void LogSession::run( const ev::loop_ref& loop ) noexcept
 	setSessionLogLevel(Debug::ANY);
 
 	if( mylog.is_info() )
-		mylog.info() << peername << "(run): run session.." << endl;
+		mylog.info() << peername << "(LogSession::run): run session.." << endl;
 
 	asyncEvent.set(loop);
 	cmdTimer.set(loop);
@@ -178,7 +186,7 @@ void LogSession::run( const ev::loop_ref& loop ) noexcept
 void LogSession::terminate()
 {
 	if( mylog.is_info() )
-		mylog.info() << peername << "(terminate)..." << endl;
+		mylog.info() << peername << "(LogSession::terminate)..." << endl;
 
 	cancelled = true;
 
@@ -196,6 +204,7 @@ void LogSession::terminate()
 			logbuf.pop();
 	}
 
+	sock->disconnect();
 	sock->close();
 	final();
 }
@@ -205,7 +214,7 @@ void LogSession::event( ev::async& watcher, int revents ) noexcept
 	if( EV_ERROR & revents )
 	{
 		if( mylog.is_crit() )
-			mylog.crit() << peername << "(event): EVENT ERROR.." << endl;
+			mylog.crit() << peername << "(LogSession::event): EVENT ERROR.." << endl;
 
 		return;
 	}
@@ -218,7 +227,7 @@ void LogSession::callback( ev::io& watcher, int revents ) noexcept
 	if( EV_ERROR & revents )
 	{
 		if( mylog.is_crit() )
-			mylog.crit() << peername << "(callback): EVENT ERROR.." << endl;
+			mylog.crit() << peername << "(LogSession::callback): EVENT ERROR.." << endl;
 
 		return;
 	}
@@ -241,10 +250,10 @@ void LogSession::callback( ev::io& watcher, int revents ) noexcept
 		catch(...){}
 	}
 
-	if( cancelled )
+	if( cancelled.load() )
 	{
 		if( mylog.is_info() )
-			mylog.info() << peername << ": stop session... disconnect.." << endl;
+			mylog.info() << peername << "LogSession: stop session... disconnect.." << endl;
 
 		io.stop();
 		cmdTimer.stop();
@@ -262,7 +271,7 @@ void LogSession::callback( ev::io& watcher, int revents ) noexcept
 // -------------------------------------------------------------------------
 void LogSession::writeEvent( ev::io& watcher )
 {
-	if( cancelled )
+	if( cancelled.load() )
 		return;
 
 	UTCPCore::Buffer* buffer = 0;
@@ -283,17 +292,17 @@ void LogSession::writeEvent( ev::io& watcher )
 	if( !buffer )
 		return;
 
-	ssize_t ret = write(watcher.fd, buffer->dpos(), buffer->nbytes());
+	ssize_t ret = ::write(watcher.fd, buffer->dpos(), buffer->nbytes());
 
 	if( ret < 0 )
 	{
 		if( mylog.is_warn() )
-			mylog.warn() << peername << "(writeEvent): write to socket error(" << errno << "): " << strerror(errno) << endl;
+			mylog.warn() << peername << "(LogSession::writeEvent): write to socket error(" << errno << "): " << strerror(errno) << endl;
 
-		if( errno == EPIPE )
+		if( errno == EPIPE || errno == EBADF )
 		{
 			if( mylog.is_warn() )
-				mylog.warn() << peername << "(writeEvent): write error.. terminate session.." << endl;
+				mylog.warn() << peername << "(LogSession::writeEvent): write error.. terminate session.." << endl;
 
 			cancelled = true;
 		}
@@ -344,7 +353,7 @@ size_t LogSession::readData( unsigned char* buf, int len )
 		if( res < 0 )
 		{
 			if( errno != EAGAIN && mylog.is_warn() )
-				mylog.warn() << peername << "(readData): read from socket error(" << errno << "): " << strerror(errno) << endl;
+				mylog.warn() << peername << "(LogSession::readData): read from socket error(" << errno << "): " << strerror(errno) << endl;
 
 			return 0;
 		}
@@ -362,7 +371,7 @@ size_t LogSession::readData( unsigned char* buf, int len )
 
 	}
 
-	mylog.info() << peername << "(readData): client disconnected.." << endl;
+	mylog.info() << peername << "(LogSession::readData): client disconnected.." << endl;
 	cancelled = true;
 	return 0;
 }
@@ -382,13 +391,13 @@ void LogSession::readEvent( ev::io& watcher ) noexcept
 	if( ret != sizeof(msg) || msg.magic != LogServerTypes::MAGICNUM )
 	{
 		if( mylog.is_warn() )
-			mylog.warn() << peername << "(readEvent): BAD MESSAGE..." << endl;
+			mylog.warn() << peername << "(LogSession::readEvent): BAD MESSAGE..." << endl;
 
 		return;
 	}
 
 	if( mylog.is_info() )
-		mylog.info() << peername << "(readEvent): receive command: '" << msg.cmd << "'" << endl;
+		mylog.info() << peername << "(LogSession::readEvent): receive command: '" << msg.cmd << "'" << endl;
 
 	string cmdLogName(msg.logname);
 
@@ -399,7 +408,7 @@ void LogSession::readEvent( ev::io& watcher ) noexcept
 	catch( std::exception& ex )
 	{
 		if( mylog.is_warn() )
-			mylog.warn() << peername << "(readEvent): " << ex.what() << endl;
+			mylog.warn() << peername << "(LogSession::readEvent): " << ex.what() << endl;
 	}
 	catch(...){}
 
@@ -550,7 +559,7 @@ void LogSession::cmdProcessing( const string& cmdLogName, const LogServerTypes::
 	catch( std::exception& ex )
 	{
 		if( mylog.is_warn() )
-			mylog.warn() << peername << "(cmdProcessing): " << ex.what() << endl;
+			mylog.warn() << peername << "(LogSession::cmdProcessing): " << ex.what() << endl;
 	}
 }
 // -------------------------------------------------------------------------
@@ -559,7 +568,7 @@ void LogSession::onCmdTimeout( ev::timer& watcher, int revents ) noexcept
 	if( EV_ERROR & revents )
 	{
 		if( mylog.is_crit() )
-			mylog.crit() << peername << "(onCmdTimeout): EVENT ERROR.." << endl;
+			mylog.crit() << peername << "(LogSession::onCmdTimeout): EVENT ERROR.." << endl;
 
 		return;
 	}
@@ -573,7 +582,7 @@ void LogSession::onCheckConnectionTimer( ev::timer& watcher, int revents ) noexc
 	if( EV_ERROR & revents )
 	{
 		if( mylog.is_crit() )
-			mylog.crit() << peername << "(onCheckConnectionTimer): EVENT ERROR.." << endl;
+			mylog.crit() << peername << "(LogSession::onCheckConnectionTimer): EVENT ERROR.." << endl;
 
 		return;
 	}
@@ -588,10 +597,12 @@ void LogSession::onCheckConnectionTimer( ev::timer& watcher, int revents ) noexc
 
 	// если клиент уже отвалился.. то при попытке write.. сессия будет закрыта.
 
-	// длинное сообщение ("keep alive message") забивает логи, что потом неудобно смотреть, поэтому пишем "пустоту"
+	// длинное сообщение ("keep alive message") забивает логи, что потом неудобно смотреть
+	// поэтому используем "пробел и возврат на один символ"
 	try
 	{
-		logbuf.emplace(new UTCPCore::Buffer(""));
+		//
+		logbuf.emplace(new UTCPCore::Buffer(" \b"));
 	}
 	catch(...){}
 
@@ -649,7 +660,7 @@ string LogSession::getShortInfo() noexcept
 
 	ostringstream inf;
 
-	inf << "client: " << caddr << endl
+	inf << "client: " << caddr << " :"
 		<< " buffer[" << maxRecordsNum << "]: size=" << sz
 		<< " maxCount=" << maxCount
 		<< " minSizeMsg=" << minSizeMsg
@@ -658,5 +669,10 @@ string LogSession::getShortInfo() noexcept
 		<< endl;
 
 	return std::move(inf.str());
+}
+// ---------------------------------------------------------------------
+string LogSession::name() const noexcept
+{
+	return caddr;
 }
 // ---------------------------------------------------------------------

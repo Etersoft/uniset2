@@ -12,7 +12,11 @@ using namespace std;
 // -------------------------------------------------------------------------
 UTCPSocket::~UTCPSocket()
 {
-	Poco::Net::ServerSocket::close();
+	try
+	{
+		Poco::Net::ServerSocket::close();
+	}
+	catch(...){}
 }
 // -------------------------------------------------------------------------
 UTCPSocket::UTCPSocket()

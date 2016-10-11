@@ -132,8 +132,7 @@ void LogReader::disconnect()
 
 	try
 	{
-		//tcp->shutdown();
-		tcp->close();
+		tcp->disconnect();
 	}
 	catch( const Poco::Net::NetException& e )
 	{
@@ -181,7 +180,7 @@ void LogReader::sendCommand(const std::string& _addr, int _port, std::vector<Com
 		msg.data = c.data;
 		msg.setLogName(c.logfilter);
 
-		unsigned int n = 2; // две попытки на посылку
+		size_t n = 2; // две попытки на посылку
 
 		while( n > 0 )
 		{
@@ -245,7 +244,7 @@ void LogReader::sendCommand(const std::string& _addr, int _port, std::vector<Com
 	// теперь ждём ответ..
 	try
 	{
-		int a = 2;
+		size_t a = 2;
 
 		while( a > 0 && tcp->poll(UniSetTimer::millisecToPoco(reply_timeout), Poco::Net::Socket::SELECT_READ) )
 		{

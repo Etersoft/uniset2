@@ -114,7 +114,7 @@ namespace VTypes
 
 			// ------------------------------------------
 			// конструкторы на разные случаи...
-			F2r() noexcept {}
+			F2r() noexcept { raw_backorder.val = 0; }
 
 			F2r( const float& f ) noexcept: F2(f)
 			{
@@ -383,7 +383,7 @@ namespace VTypes
 		public I2
 	{
 		public:
-			I2r() noexcept {}
+			I2r() noexcept { raw_backorder.val = 0; }
 
 			I2r( const int v ) noexcept: I2(v)
 			{
@@ -457,7 +457,7 @@ namespace VTypes
 		public U2
 	{
 		public:
-			U2r() noexcept {}
+			U2r() noexcept { raw_backorder.val = 0; }
 
 			U2r( int v ) noexcept: U2(v)
 			{

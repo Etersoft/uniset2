@@ -220,10 +220,9 @@ void DBServer_PostgreSQL::flushInsertBuffer()
 		}
 
 		ibuf.erase(beg, end);
-		ibufSize -= delnum;
 
-		if( ibufSize < 0 )
-			ibufSize = 0;
+		// ibufSize - беззнаковое, так что надо аккуратно
+		ibufSize = (delnum < ibufSize) ? (ibufSize-delnum) : 0;
 
 		dbwarn << myname << "(flushInsertBuffer): overflow: clear data " << delnum << " records." << endl;
 		return;
@@ -438,9 +437,11 @@ void DBServer_PostgreSQL::timerInfo( const UniSetTypes::TimerMessage* tm )
 					askTimer(DBServer_PostgreSQL::ReconnectTimer, 0);
 					askTimer(DBServer_PostgreSQL::PingTimer, PingTime);
 				}
-
-				connect_ok = false;
-				dbwarn << myname << "(timerInfo): DB no connection.." << endl;
+				else
+				{
+					connect_ok = false;
+					dbwarn << myname << "(timerInfo): DB no connection.." << endl;
+				}
 			}
 			else
 				initDBServer();

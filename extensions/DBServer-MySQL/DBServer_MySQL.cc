@@ -384,9 +384,11 @@ void DBServer_MySQL::timerInfo( const UniSetTypes::TimerMessage* tm )
 					askTimer(DBServer_MySQL::ReconnectTimer, 0);
 					askTimer(DBServer_MySQL::PingTimer, PingTime);
 				}
-
-				connect_ok = false;
-				dbwarn << myname << "(timerInfo): DB no connection.." << endl;
+				else
+				{
+					connect_ok = false;
+					dbwarn << myname << "(timerInfo): DB no connection.." << endl;
+				}
 			}
 			else
 				initDBServer();

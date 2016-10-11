@@ -337,7 +337,6 @@ class MBSlave:
 			VTypes::VType vtype;    /*!< type of value */
 			size_t wnum;               /*!< номер слова (для типов с размеров больше 2х байт */
 			size_t nbyte;              /*!< номер байта, который надо "сохранить" из "пришедщего в запросе" слова. [1-2] */
-			bool rawdata;           /*!< флаг, что в SM просто сохраняются 4-байта (актуально для типа F4)*/
 			std::shared_ptr<BitRegProperty> bitreg; /*!< указатель, как признак является ли данный регистр "сборным" из битовых */
 			ModbusRTU::RegID regID;
 
@@ -347,7 +346,6 @@ class MBSlave:
 				vtype(VTypes::vtUnknown),
 				wnum(0),
 				nbyte(0),
-				rawdata(false),
 				regID(0)
 			{}
 

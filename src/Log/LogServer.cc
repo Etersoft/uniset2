@@ -39,28 +39,41 @@ LogServer::~LogServer() noexcept
 	catch(...){}
 }
 // -------------------------------------------------------------------------
-LogServer::LogServer( std::shared_ptr<LogAgregator> log ) noexcept:
-	LogServer(static_pointer_cast<DebugStream>(log))
+LogServer::LogServer( std::shared_ptr<LogAgregator> log ):
+	LogServer()
 {
+	elog = dynamic_pointer_cast<DebugStream>(log);
+	if( !elog )
+	{
+		ostringstream err;
+		err << myname << "(LogServer): dynamic_pointer_cast FAILED! ";
 
+		if( mylog.is_info() )
+			mylog.info() << myname << "(evfinish): terminate..." << endl;
+
+		if( mylog.is_crit() )
+			mylog.crit() << err.str() << endl;
+
+		cerr << err.str()  << endl;
+
+		throw SystemError(err.str());
+	}
 }
 // -------------------------------------------------------------------------
-LogServer::LogServer( std::shared_ptr<DebugStream> log ) noexcept:
-	timeout(UniSetTimer::WaitUpTime),
-	cmdTimeout(2000),
-	sessLogLevel(Debug::NONE),
-	sock(0),
-	elog(log)
+LogServer::LogServer( std::shared_ptr<DebugStream> log ):
+	LogServer()
 {
+	elog = log;
 }
 // -------------------------------------------------------------------------
-LogServer::LogServer() noexcept:
+LogServer::LogServer():
 	timeout(UniSetTimer::WaitUpTime),
 	cmdTimeout(2000),
 	sessLogLevel(Debug::NONE),
 	sock(0),
 	elog(nullptr)
 {
+	slist.reserve(sessMaxCount);
 }
 // -------------------------------------------------------------------------
 void LogServer::evfinish( const ev::loop_ref& loop )
@@ -115,6 +128,45 @@ void LogServer::terminate()
 	loop.evstop(this);
 }
 // -------------------------------------------------------------------------
+bool LogServer::check( bool restart_if_fail )
+{
+	try
+	{
+		// для проверки пробуем открыть соединение..
+		UTCPSocket s(addr, port);
+		s.close();
+		return true;
+	}
+	catch(...){}
+
+	if( !restart_if_fail )
+		return false;
+
+	if( !sock )
+		return false;
+
+	io.stop();
+	io.set<LogServer, &LogServer::ioAccept>(this);
+	io.start(sock->getSocket(), ev::READ);
+
+	try
+	{
+		UTCPSocket s(addr, port);
+		s.close();
+		return true;
+	}
+	catch( Poco::Net::NetException& ex )
+	{
+		ostringstream err;
+		err << myname << "(check): socket error:" << ex.message();
+
+		if( mylog.is_crit() )
+			mylog.crit() << err.str() << endl;
+	}
+
+	return false;
+}
+// -------------------------------------------------------------------------
 void LogServer::evprepare( const ev::loop_ref& eloop )
 {
 	if( sock )
@@ -146,8 +198,8 @@ void LogServer::evprepare( const ev::loop_ref& eloop )
 
 	sock->setBlocking(false);
 
-	io.set<LogServer, &LogServer::ioAccept>(this);
 	io.set( eloop );
+	io.set<LogServer, &LogServer::ioAccept>(this);
 	io.start(sock->getSocket(), ev::READ);
 	isrunning = true;
 }
@@ -172,9 +224,9 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 	}
 
 	{
-		uniset_rwmutex_wrlock l(mutSList);
+		uniset_rwmutex_rlock l(mutSList);
 
-		if( scount >= sessMaxCount )
+		if( slist.size() >= sessMaxCount )
 		{
 			if( mylog.is_crit() )
 				mylog.crit() << myname << "(LogServer::ioAccept): session limit(" << sessMaxCount << ")" << endl;
@@ -194,13 +246,10 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 		s->signal_logsession_command().connect( sigc::mem_fun(this, &LogServer::onCommand) );
 		{
 			uniset_rwmutex_wrlock l(mutSList);
-			scount++;
-
-			// на первой сессии запоминаем состояние логов
-			if( scount == 1 )
-				saveDefaultLogLevels("ALL");
-
 			slist.push_back(s);
+			// на первой сессии запоминаем состояние логов
+			if( slist.size() == 1 )
+				saveDefaultLogLevels("ALL");
 		}
 
 		s->run(watcher.loop);
@@ -220,14 +269,12 @@ void LogServer::sessionFinished( LogSession* s )
 		if( i->get() == s )
 		{
 			slist.erase(i);
-			scount--;
 			break;
 		}
 	}
 
 	if( slist.empty() )
 	{
-		scount = 0;
 		// восстанавливаем уровни логов по умолчанию
 		restoreDefaultLogLevels("ALL");
 	}
@@ -255,9 +302,14 @@ string LogServer::getShortInfo()
 {
 	ostringstream inf;
 
-	inf << "LogServer: " << myname << endl;
+	inf << "LogServer: " << myname
+		<< " ["
+		<< " sessMaxCount=" << sessMaxCount
+		<< " ]"
+		<< endl;
+
 	{
-		uniset_rwmutex_wrlock l(mutSList);
+		uniset_rwmutex_rlock l(mutSList);
 
 		for( const auto& s : slist )
 			inf << " " << s->getShortInfo() << endl;

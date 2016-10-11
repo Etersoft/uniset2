@@ -474,6 +474,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 				mylog->logFile(fname.c_str(),true);
 				mylogany &lt;&lt; myname &lt;&lt; "(preSysCommand): ***************** mylog LOG ROTATE *****************" &lt;&lt; endl;
 			}
+			
+			if( logserv &amp;&amp; !logserv_host.empty() &amp;&amp; logserv_port != 0 )
+				logserv-&gt;check(true);
 		}
 		break;
 
@@ -493,7 +496,16 @@ UniSetTypes::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( CORBA:
 	ostringstream inf;
 	
 	inf &lt;&lt; i->info &lt;&lt; endl;
-	inf &lt;&lt; "LogServer: " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port &lt;&lt; endl;
+	if( logserv /* &amp;&amp; userparam &lt; 0 */ )
+	{
+		inf &lt;&lt; "LogServer: " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port 
+			&lt;&lt; ( logserv->isRunning() ? "   [RUNNIG]" : "   [FAILED]" ) &lt;&lt; endl;
+
+		inf &lt;&lt; "         " &lt;&lt; logserv->getShortInfo() &lt;&lt; endl;
+	}
+	else
+		inf &lt;&lt; "LogServer: NONE" &lt;&lt; endl;
+	
 	inf &lt;&lt; dumpIO() &lt;&lt; endl;
 	inf &lt;&lt; endl;
 	auto timers = getTimersList();
@@ -658,8 +670,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
         mycrit &lt;&lt; err.str() &lt;&lt; endl;
 //		terminate();
 //		abort();
-		raise(SIGTERM);
-		terminate();
+//		raise(SIGTERM);
+		std::terminate();
 //		throw SystemError(err.str());
 	}
 
@@ -673,7 +685,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 		mycrit &lt;&lt; err.str() &lt;&lt; endl;
 //		terminate();
 //		abort();
-		raise(SIGTERM);
+		//raise(SIGTERM);
+		std::terminate();
 //		throw SystemError(err.str());
 	}
 }
@@ -1121,6 +1134,7 @@ end_private(false)
 	vmonit(maxHeartBeat);
 	vmonit(activateTimeout);
 	vmonit(smReadyTimeout);
+	vmonit(smTestID);
 	
 
 	// help надо выводить в конце, когда уже все переменные инициализированы по умолчанию
@@ -1509,6 +1523,9 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 
 	if( smTestID == DefaultObjectId )
 		smTestID = getSMTestID();
+
+	vmonit(smTestID);
+	vmonit(smReadyTimeout);
 
 	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 20000);
 

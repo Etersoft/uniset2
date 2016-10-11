@@ -194,6 +194,18 @@ bool ModbusRTU::isWriteFunction( SlaveFunctionCode c )
 	return false;
 }
 // -------------------------------------------------------------------------
+bool ModbusRTU::isReadFunction( SlaveFunctionCode c )
+{
+	if( c == fnReadCoilStatus ||
+		c == fnReadInputStatus ||
+		c == fnReadOutputRegisters ||
+		c == fnReadInputRegisters )
+		return true;
+
+	return false;
+}
+// -------------------------------------------------------------------------
+
 std::ostream& ModbusRTU::mbPrintMessage( std::ostream& os, ModbusByte* m, size_t len )
 {
 	// Чтобы не менять настройки 'os'

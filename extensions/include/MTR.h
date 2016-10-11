@@ -717,8 +717,8 @@ namespace MTR
 				return val;
 			}
 
-			unsigned short val;
-			float fval;
+			unsigned short val = { 0 };
+			float fval = { 0.0 };
 	};
 	std::ostream& operator<<(std::ostream& os, T16& t );
 	// --------------------------------------------------------------------------
@@ -765,8 +765,8 @@ namespace MTR
 				return val;
 			}
 
-			signed short val;
-			float fval;
+			signed short val = { 0 };
+			float fval = { 0 };
 	};
 	std::ostream& operator<<(std::ostream& os, T17& t );
 	// --------------------------------------------------------------------------
