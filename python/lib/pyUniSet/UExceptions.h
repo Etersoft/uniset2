@@ -19,7 +19,7 @@
 // --------------------------------------------------------------------------
 struct UException
 {
-	UException() {}
+	UException():err("UException") {}
 	explicit UException( const std::string& e ): err(e) {}
 	explicit UException( const char* e ): err( std::string(e)) {}
 	~UException() {}

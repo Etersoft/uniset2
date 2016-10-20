@@ -297,7 +297,7 @@ class IOController:
 			UniSetTypes::uniset_rwmutex undefMutex;
 			ChangeUndefinedStateSignal sigUndefChange;
 
-			IOController_i::SensorInfo d_si;  /*!< идентификатор датчика, от которого зависит данный */
+			IOController_i::SensorInfo d_si = { UniSetTypes::DefaultObjectId, UniSetTypes::DefaultObjectId };  /*!< идентификатор датчика, от которого зависит данный */
 			long d_value = { 1 }; /*!< разрешающее работу значение датчика от которого зависит данный */
 			long d_off_value = { 0 }; /*!< блокирующее значение */
 			std::shared_ptr<USensorInfo> d_usi; // shared_ptr на датчик от которого зависит этот.

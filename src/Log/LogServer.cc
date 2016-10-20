@@ -71,7 +71,7 @@ LogServer::LogServer():
 	timeout(UniSetTimer::WaitUpTime),
 	cmdTimeout(2000),
 	sessLogLevel(Debug::NONE),
-	sock(0),
+	sock(nullptr),
 	elog(nullptr)
 {
 	slist.reserve(sessMaxCount);

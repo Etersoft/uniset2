@@ -341,11 +341,17 @@ void UniSetManager::objects(OManagerCommand cmd)
 			}
 			catch( const UniSetTypes::Exception& ex )
 			{
-				ucrit << myname << "(objects): " << ex << endl;
-				ucrit << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->" << li->getName() << endl;
+				ostringstream err;
+				err << myname << "(objects): " << ex << endl;
+				err << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->" << li->getName() << endl;
+
+				ucrit << err.str();
 
 				if( cmd == activ )
+				{
+					cerr << err.str();
 					std::terminate();
+				}
 			}
 			catch( const CORBA::SystemException& ex )
 			{
@@ -359,13 +365,19 @@ void UniSetManager::objects(OManagerCommand cmd)
 			}
 			catch( const omniORB::fatalException& fe )
 			{
-				ucrit << myname << "(objects): Caught omniORB::fatalException:" << endl;
-				ucrit << myname << "(objects): file: " << fe.file()
+				ostringstream err;
+				err << myname << "(objects): Caught omniORB::fatalException:" << endl;
+				err << myname << "(objects): file: " << fe.file()
 					  << " line: " << fe.line()
 					  << " mesg: " << fe.errmsg() << endl;
 
+				ucrit << err.str();
+
 				if( cmd == activ )
+				{
+					cerr << err.str();
 					std::terminate();
+				}
 			}
 		}
 	} // unlock

@@ -246,9 +246,9 @@ namespace MTR
 			T4(): sval(""), raw(0) {}
 			T4( uint16_t v1 ): raw(v1)
 			{
-				char c[sizeof(v1) + 1];
-				memcpy(c, &v1, sizeof(v1));
-				c[sizeof(v1)] = '\0';
+				char c[3];
+				memcpy(c, &v1,2);
+				c[2] = '\0';
 				sval = std::string(c);
 			}
 
