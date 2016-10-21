@@ -131,11 +131,15 @@ void LogServer::terminate()
 // -------------------------------------------------------------------------
 bool LogServer::check( bool restart_if_fail )
 {
+	// смущает пока только, что эта функция будет вызыватся (обычно) из другого потока
+	// и как к этому отнесётся evloop
+
 	try
 	{
 		// для проверки пробуем открыть соединение..
-		UTCPSocket s(addr, port);
-		s.close();
+		UTCPStream s;
+		s.create(addr, port, 500);
+		s.disconnect();
 		return true;
 	}
 	catch(...) {}
@@ -143,17 +147,36 @@ bool LogServer::check( bool restart_if_fail )
 	if( !restart_if_fail )
 		return false;
 
-	if( !sock )
-		return false;
-
 	io.stop();
-	io.set<LogServer, &LogServer::ioAccept>(this);
-	io.start(sock->getSocket(), ev::READ);
 
+	if( !sock )
+	{
+		try
+		{
+			evprepare(io.loop);
+		}
+		catch( UniSetTypes::SystemError& ex )
+		{
+			if( mylog.is_crit() )
+				mylog.crit() <<  myname << "(evprepare): " << ex << endl;
+
+			return false;
+		}
+	}
+
+	if( !io.is_active() )
+	{
+		io.set<LogServer, &LogServer::ioAccept>(this);
+		io.start(sock->getSocket(), ev::READ);
+		isrunning = true;
+	}
+
+	// Проверяем..
 	try
 	{
-		UTCPSocket s(addr, port);
-		s.close();
+		UTCPStream s;
+		s.create(addr, port, 500);
+		s.disconnect();
 		return true;
 	}
 	catch( Poco::Net::NetException& ex )

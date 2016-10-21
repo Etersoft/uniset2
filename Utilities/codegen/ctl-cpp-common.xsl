@@ -476,7 +476,10 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 			}
 			
 			if( logserv &amp;&amp; !logserv_host.empty() &amp;&amp; logserv_port != 0 )
+			{
+				mylogany &lt;&lt; myname &lt;&lt; "(preSysCommand): try restart logserver.." &lt;&lt; endl;
 				logserv-&gt;check(true);
+			}
 		}
 		break;
 
