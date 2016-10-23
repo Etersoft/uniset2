@@ -198,9 +198,19 @@ class DebugStream : public std::ostream
 		*/
 		std::ostream& operator()(Debug::type t) noexcept;
 
-		inline void showDateTime(bool s)
+		inline void showDateTime(bool s) noexcept
 		{
 			show_datetime = s;
+		}
+
+		inline void showMilliseconds( bool s ) noexcept
+		{
+			show_msec = s;
+		}
+
+		inline void showMicroseconds( bool s ) noexcept
+		{
+			show_usec = s;
 		}
 
 		inline void showLogType(bool s) noexcept
@@ -265,6 +275,29 @@ class DebugStream : public std::ostream
 			return logname;
 		}
 
+		// ------------------------------------------------------------------------------------------------
+		// RAII
+		// https://stackoverflow.com/questions/2273330/restore-the-state-of-stdcout-after-manipulating-it
+		class IosFlagSaver
+		{
+			public:
+				explicit IosFlagSaver(std::ostream& _ios):
+					ios(_ios),
+					f(_ios.flags()) {
+				}
+				~IosFlagSaver() {
+					ios.flags(f);
+				}
+
+				IosFlagSaver(const IosFlagSaver &rhs) = delete;
+				IosFlagSaver& operator= (const IosFlagSaver& rhs) = delete;
+
+			private:
+				std::ostream& ios;
+				std::ios::fmtflags f;
+		};
+		// ------------------------------------------------------------------------------------------------
+
 	protected:
 		void sbuf_overflow( const std::string& s ) noexcept;
 
@@ -279,6 +312,8 @@ class DebugStream : public std::ostream
 		debugstream_internal* internal = { 0 };
 		bool show_datetime = { true };
 		bool show_logtype = { true };
+		bool show_msec = { false };
+		bool show_usec = { false };
 		std::string fname = { "" };
 
 		StreamEvent_Signal s_stream;
@@ -286,5 +321,5 @@ class DebugStream : public std::ostream
 
 		bool isWriteLogFile = { false };
 };
-
+// ------------------------------------------------------------------------------------------------
 #endif

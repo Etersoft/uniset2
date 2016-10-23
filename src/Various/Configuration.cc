@@ -61,6 +61,8 @@ ostream& UniSetTypes::Configuration::help(ostream& os)
 	print_help(os, 25, "--[debname]-logfile", "перенаправление лога в файл\n");
 	print_help(os, 25, "--[debname]-add-levels", "добавить уровень вывода логов\n");
 	print_help(os, 25, "--[debname]-del-levels", "удалить уровень вывода логов\n");
+	print_help(os, 25, "--[debname]-show-microseconds", "Выводить время с микросекундами\n");
+	print_help(os, 25, "--[debname]-show-milliseconds", "Выводить время с миллисекундами\n");
 	print_help(os, 25, "--uniport num", "использовать заданный порт (переопеределяет 'defaultport' заданный в конф. файле в разделе <nodes>)\n");
 	print_help(os, 25, "--localIOR {1,0}", "использовать локальные файлы для получения IOR (т.е. не использовать omniNames). Переопределяет параметр в конфигурационном файле.\n");
 	print_help(os, 25, "--transientIOR {1,0}", "использовать генерируемые IOR(не постоянные). Переопределяет параметр в конфигурационном файле. Default=1\n");
@@ -929,6 +931,8 @@ namespace UniSetTypes
 		string logfile("--" + debname + "-logfile");
 		string add_level("--" + debname + "-add-levels");
 		string del_level("--" + debname + "-del-levels");
+		string show_msec("--" + debname + "-show-milliseconds");
+		string show_usec("--" + debname + "-show-microseconds");
 
 		// смотрим командную строку
 		for (int i = 1; i < (_argc - 1); i++)
@@ -944,6 +948,14 @@ namespace UniSetTypes
 			else if( del_level == _argv[i] )    // "--debug-del-levels"
 			{
 				deb->delLevel(Debug::value(_argv[i + 1]));
+			}
+			else if( show_usec == _argv[i] )
+			{
+				deb->showMicroseconds(true);
+			}
+			else if( show_msec == _argv[i] )
+			{
+				deb->showMilliseconds(true);
 			}
 		}
 

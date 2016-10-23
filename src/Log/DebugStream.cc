@@ -30,7 +30,10 @@
 #include <iomanip>
 #include <time.h>
 #include <iomanip>
+#include <ctime>
 #include "DebugExtBuf.h"
+#include "UniSetTypes.h"
+
 
 using std::ostream;
 using std::streambuf;
@@ -40,7 +43,6 @@ using std::stringbuf;
 using std::cerr;
 using std::ios;
 //--------------------------------------------------------------------------
-
 /// Constructor, sets the debug level to t.
 DebugStream::DebugStream(Debug::type t)
 	: /* ostream(new debugbuf(cerr.rdbuf())),*/
@@ -97,6 +99,9 @@ const DebugStream& DebugStream::operator=( const DebugStream& r )
 
 	dt = r.dt;
 	show_datetime = r.show_datetime;
+	show_logtype = r.show_logtype;
+	show_msec = r.show_msec;
+	show_usec = r.show_usec;
 	fname = r.fname;
 
 	if( !r.fname.empty() )
@@ -140,6 +145,8 @@ std::ostream& DebugStream::debug(Debug::type t) noexcept
 {
 	if(dt & t)
 	{
+		IosFlagSaver ifs(*this);
+
 		if( show_datetime )
 			printDateTime(t);
 
@@ -164,11 +171,12 @@ std::ostream& DebugStream::printDate(Debug::type t, char brk) noexcept
 {
 	if(dt && t)
 	{
-		time_t GMTime = time(NULL);
-		struct tm* tms = localtime(&GMTime);
-		return *this << std::setw(2) << std::setfill('0') << tms->tm_mday << brk
-			   << std::setw(2) << std::setfill('0') << tms->tm_mon + 1 << brk
-			   << std::setw(4) << std::setfill('0') << tms->tm_year + 1900;
+		std::time_t tv = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		std::tm tms = *std::localtime(&tv);
+
+		std::ostringstream fmt;
+		fmt << "%Od" << brk << "%Om" << brk << "%Y";
+		return *this << std::put_time(&tms,fmt.str().c_str());
 	}
 
 	return nullstream;
@@ -178,11 +186,21 @@ std::ostream& DebugStream::printTime(Debug::type t, char brk) noexcept
 {
 	if(dt && t)
 	{
-		time_t GMTime = time(NULL);
-		struct tm* tms = localtime(&GMTime);
-		return *this << std::setw(2) << std::setfill('0') << tms->tm_hour << brk
-			   << std::setw(2) << std::setfill('0') << tms->tm_min << brk
-			   << std::setw(2) << std::setfill('0') << tms->tm_sec;
+		IosFlagSaver ifs(*this);
+
+		timespec tv = UniSetTypes::now_to_timespec(); // gettimeofday(tv,0);
+		std::tm tms = *std::localtime(&tv.tv_sec);
+
+		std::ostringstream fmt;
+		fmt << "%OH" << brk << "%OM" << brk << "%OS";
+
+		*this << std::put_time(&tms,fmt.str().c_str());
+		if( show_usec )
+			(*this) << "." << std::setw(6) << (tv.tv_nsec/1000);
+		else if( show_msec )
+			(*this) << "." << std::setw(3) << (tv.tv_nsec/1000000);
+
+		return *this;
 	}
 
 	return nullstream;
@@ -192,14 +210,18 @@ std::ostream& DebugStream::printDateTime(Debug::type t) noexcept
 {
 	if(dt & t)
 	{
-		time_t GMTime = time(NULL);
-		struct tm* tms = localtime(&GMTime);
-		return *this << std::setw(2) << std::setfill('0') << tms->tm_mday << "/"
-			   << std::setw(2) << std::setfill('0') << tms->tm_mon + 1 << "/"
-			   << std::setw(4) << std::setfill('0') << tms->tm_year + 1900 << " "
-			   << std::setw(2) << std::setfill('0') << tms->tm_hour << ":"
-			   << std::setw(2) << std::setfill('0') << tms->tm_min << ":"
-			   << std::setw(2) << std::setfill('0') << tms->tm_sec;
+		IosFlagSaver ifs(*this);
+
+		timespec tv = UniSetTypes::now_to_timespec(); // gettimeofday(tv,0);
+		std::tm tms = *std::localtime(&tv.tv_sec);
+		*this << std::put_time(&tms,"%Od/%Om/%Y %OH:%OM:%OS");
+
+		if( show_usec )
+			(*this) << "." << std::setw(6) << std::setfill('0') << (tv.tv_nsec/1000);
+		else if( show_msec )
+			(*this) << "." << std::setw(3) << std::setfill('0') << (tv.tv_nsec/1000000);
+
+		return *this;
 	}
 
 	return nullstream;

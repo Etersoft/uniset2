@@ -22,6 +22,7 @@
 #include <iomanip>
 #include "modbus/ModbusTypes.h"
 #include "UniSetTypes.h"
+#include "DebugStream.h"
 // -------------------------------------------------------------------------
 using namespace ModbusRTU;
 using namespace std;
@@ -208,19 +209,17 @@ bool ModbusRTU::isReadFunction( SlaveFunctionCode c )
 
 std::ostream& ModbusRTU::mbPrintMessage( std::ostream& os, ModbusByte* m, size_t len )
 {
-	// Чтобы не менять настройки 'os'
-	// сперва создаём свой поток вывода...
-	ostringstream s;
+	DebugStream::IosFlagSaver ifs(os);
 
 	// << setiosflags(ios::showbase) // для вывода в формате 0xNN
-	s << hex << showbase << setfill('0'); // << showbase;
+	os << hex << showbase << setfill('0'); // << showbase;
 
 	for( size_t i = 0; i < len; i++ )
-		s << setw(2) << (short)(m[i]) << " ";
+		os << setw(2) << (short)(m[i]) << " ";
 
 	//        s << "<" << setw(2) << (int)(m[i]) << ">";
 
-	return os << s.str();
+	return os;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusHeader& m )
@@ -2961,10 +2960,6 @@ std::string ModbusRTU::addr2str( const ModbusAddr addr )
 	ostringstream s;
 	s << "0x" << hex << setfill('0') << setw(2) << (unsigned short)addr;
 	return s.str();
-
-	//    ostringstream s;
-	//    s << hex << setfill('0') << showbase << (int)addr;
-	//    return s.str();
 }
 // -------------------------------------------------------------------------
 std::string ModbusRTU::b2str( const ModbusByte b )
@@ -3049,8 +3044,9 @@ SetDateTimeMessage::SetDateTimeMessage()
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, SetDateTimeMessage& m )
 {
-	ostringstream s;
-	s << setfill('0')
+	DebugStream::IosFlagSaver ifs(os);
+
+	os << setfill('0')
 	  << setw(2) << (int)m.day << "-"
 	  << setw(2) << (int)m.mon << "-"
 	  << setw(2) << (int)m.century
@@ -3059,7 +3055,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, SetDateTimeMessage& m )
 	  << setw(2) << (int)m.min << ":"
 	  << setw(2) << (int)m.sec;
 
-	return os << s.str();
+	return os;
 }
 
 std::ostream& ModbusRTU::operator<<(std::ostream& os, SetDateTimeMessage* m )
