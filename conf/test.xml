@@ -298,6 +298,11 @@
 
 			<item id="2055" mbtcp="3" mbaddr="2" mbreg="263" iotype="AI" name="AIMBADD2" textname="Тестовый регистр для проверки чтения по второму устройству"/>
 			
+			<!-- test netdata -->
+			<item id="200" iotype="DI" name="UNET_DATA1_S" textname="UNET: data1" ndata="unet"/>
+			<item id="201" iotype="DI" name="UNET_DATA2_S" textname="UNET: data2" ndata="unet"/>
+			<item id="202" iotype="DI" name="UNET_DATA3_S" textname="UNET: data3" ndata="unet"/>
+			
 			<!-- MBTCP PERF TEST -->
 			<item id="10001" mbperf="1" iotype="AI" mbaddr="0x01" mbfunc="0x03" mbreg="3" mbtype="rtu" name="Sensor10001_S" textname="test sensor 10001"/>
 			<item id="10002" mbperf="1" iotype="AI" mbaddr="0x01" mbfunc="0x03" mbreg="5" mbtype="rtu" name="Sensor10002_S" textname="test sensor 10002"/>
@@ -5644,4 +5649,20 @@
 			<point x="1000" y="600"/>
 		</diagram>
 	</Calibrations>
+	<netdata>
+		<!-- https://github.com/firehol/netdata/wiki/External-Plugins -->
+		
+		<!-- CHART type.id name title units [family [context [charttype [priority [update_every]]]]] -->
+		<chart id='unet' name='NAME' title="unet" units='count' family='UNET' context='' charttype='stacked' priority='' update_every=''>
+			
+			<!-- Чтобы иметь возможность выводить на одном чарте, разные группы можно указывать много 'line' -->
+			
+			<!-- Параметры берутся из <sensors> в виду netdata_xxx (необязательные помечены [] 
+				В качестве id - берётся name. 
+				В качестве name - берётся name, если не указан netdata_name=''
+			-->
+			<!-- DIMENSION id [name [algorithm [multiplier [divisor [hidden]]]]] -->
+			<lines filter_field='ndata' filter_value='unet'/>
+		</chart>
+	</netdata>
 </UNISETPLC>
