@@ -3,10 +3,11 @@
 
 import sys
 
-from uniset import *
+from uniset2 import *
 
 if __name__ == "__main__":
 	
+	prop = "test"
 	lst = Params_inst()
 
 	for i in range(0, len(sys.argv)):
@@ -14,6 +15,8 @@ if __name__ == "__main__":
 			break;
 	
 		lst.add( sys.argv[i] )
+	
+	lst.add_str(prop)
 
 	p = []
 	print "lst: class: " + str(p.__class__.__name__)

@@ -5,12 +5,12 @@
 
 import os
 import sys
-
-sys.path.append("./python_modules")
-
 import random
 import uniset2
 from uniset2 import UniXML
+from uniset2 import UProxyObject
+
+sys.path.append("./python_modules")
 from base import SimpleService
 
 NAME = os.path.basename(__file__).replace(".chart.py", "")
@@ -23,26 +23,65 @@ retries = 60
 class Service(SimpleService):
 
     sensors = []
+    uproxy = None
+    smOK = False
 
     def __init__(self, configuration=None, name=None):
         super(self.__class__, self).__init__(configuration=configuration, name=name)
 
-        # if 'confile' not in self.configuration:
-        #     self.error("uniset plugin: Unknown confile..")
-        #     raise RuntimeError
+        conf = self.configuration.pop
+        confile = None
+        try:
+            confile = conf('confile')
+        except KeyError:
+            self.error("uniset plugin: Unknown uniset config file. Set 'confile: /xxx/zzz/xxxx.xml' in config")
+            raise RuntimeError
 
-        self.info("uniset plugin: read from /home/pv/Projects.com/uniset-2.0/conf/test.xml")
-        self.create_charts("/home/pv/Projects.com/uniset-2.0/conf/test.xml")
+        if not os.path.isfile(confile):
+            self.error("uniset plugin: Not found confile '%s'"%confile)
+            raise RuntimeError
 
-# class Service():
-#
-#     sensors = []
-#
-#     def error(self,txt):
-#         print txt
-#
-#     def __init__(self, configuration=None, name=None):
-#         self.create_charts("./test.xml")
+        self.name = self.get_conf_param('name', name)
+        self.info("%s: uniset plugin: read from %s"%(name,confile))
+        self.create_charts(confile)
+        self.init_uniset(confile)
+        # добавляем датчики в опрос..
+        for s in self.sensors:
+            self.uproxy.addToAsk(s[1])
+
+    def init_uniset(self, confile):
+
+        lst = uniset2.Params_inst()
+        for i in range(0, len(sys.argv)):
+            if i >= uniset2.Params.max:
+                break;
+            lst.add(sys.argv[i])
+
+        port = self.get_conf_param('port', '')
+        if port != '':
+            self.info("%s: uniset plugin: --uniset-port %s" % (self.name,port))
+            p = '--uniset-port'
+            lst.add_str(p)
+            lst.add_str( str(port) )
+
+        uname = self.get_conf_param('uname', 'TestProc')
+        self.info("%s: uniset plugin: init ObjectID '%s'" % (self.name,uname))
+
+        try:
+            uniset2.uniset_init_params(lst, confile);
+            self.uproxy = UProxyObject(uname)
+        except uniset2.UException, e:
+            self.error("uniset plugin: error: %s"% e.getError())
+            raise RuntimeError
+
+    def get_conf_param(self, propname, defval):
+        try:
+            pop = self.configuration.pop
+            return pop(propname)
+        except KeyError:
+            pass
+
+        return defval
 
     def find_section(self, xml, secname):
         node = xml.findNode(xml.getDoc(), secname)[0]
@@ -145,7 +184,7 @@ class Service(SimpleService):
             # params.append(self.get_param(node, 'netdata_divisor', None))
             # params.append(self.get_param(node, 'netdata_hidden', None))
 
-            self.sensors.append([id,node.prop('id')])
+            self.sensors.append([id, uniset2.to_int(node.prop('id'))])
 
             chart['lines'].append(params)
 
@@ -175,17 +214,51 @@ class Service(SimpleService):
 
         return True
 
+    def check(self):
+
+        # ret = super(self.__class__, self).check()
+        try:
+            uniset2.uniset_activate_objects()
+        except uniset2.UException, e:
+            self.error("%s"% e.getError())
+            raise False
+
+        return True
+
     def _get_data(self):
+
         data = {}
 
         for netid,id in self.sensors:
-            data[netid] = random.randint(0, 100)
+            data[netid] = self.uproxy.getValue(id)
 
         if len(data) == 0:
             return None
 
         return data
 
-# if __name__ == "__main__":
-#
-#     serv = Service(None,"test")
+    def update(self, interval):
+
+        if not self.uproxy.askIsOK() and not self.uproxy.reaskSensors():
+            return False
+
+        prev_smOK = self.smOK
+        self.smOK  = self.uproxy.smIsOK()
+
+        if prev_smOK != self.smOK and self.smOK:
+            self.info("SM exist OK. Reask sensors..")
+            self.uproxy.reaskSensors()
+
+        return super(self.__class__, self).update(interval)
+
+if __name__ == "__main__":
+
+    config = {}
+    config['confile'] = './test.xml'
+    config['port'] = 2809
+    config['uname'] = 'TestProc'
+    config['update_every'] = update_every
+    config['priority'] = priority
+    config['retries'] = retries
+
+    serv = Service(config,"test")

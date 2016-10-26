@@ -134,6 +134,9 @@ class Params:
 
     def add(self, s):
         return _pyUniSet.Params_add(self, s)
+
+    def add_str(self, s):
+        return _pyUniSet.Params_add_str(self, s)
     __swig_setmethods__["argc"] = _pyUniSet.Params_argc_set
     __swig_getmethods__["argc"] = _pyUniSet.Params_argc_get
     __swig_setmethods__["argv"] = _pyUniSet.Params_argv_set
@@ -245,6 +248,18 @@ class UProxyObject:
 
     def setValue(self, id, val):
         return _pyUniSet.UProxyObject_setValue(self, id, val)
+
+    def askIsOK(self):
+        return _pyUniSet.UProxyObject_askIsOK(self)
+
+    def reaskSensors(self):
+        return _pyUniSet.UProxyObject_reaskSensors(self)
+
+    def updateValues(self):
+        return _pyUniSet.UProxyObject_updateValues(self)
+
+    def smIsOK(self):
+        return _pyUniSet.UProxyObject_smIsOK(self)
 UProxyObject_swigregister = _pyUniSet.UProxyObject_swigregister
 UProxyObject_swigregister(UProxyObject)
 

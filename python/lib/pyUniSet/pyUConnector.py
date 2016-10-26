@@ -90,6 +90,9 @@ class Params:
 
     def add(self, s):
         return _pyUConnector.Params_add(self, s)
+
+    def add_str(self, s):
+        return _pyUConnector.Params_add_str(self, s)
     __swig_setmethods__["argc"] = _pyUConnector.Params_argc_set
     __swig_getmethods__["argc"] = _pyUConnector.Params_argc_get
     __swig_setmethods__["argv"] = _pyUConnector.Params_argv_set

@@ -3011,11 +3011,9 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIGTYPE_p_UModbus swig_types[1]
 #define SWIGTYPE_p_USysError swig_types[2]
 #define SWIGTYPE_p_UTimeOut swig_types[3]
-#define SWIGTYPE_p_UTypes__Params swig_types[4]
-#define SWIGTYPE_p_char swig_types[5]
-#define SWIGTYPE_p_p_char swig_types[6]
-static swig_type_info *swig_types[8];
-static swig_module_info swig_module = {swig_types, 7, 0, 0, 0, 0};
+#define SWIGTYPE_p_char swig_types[4]
+static swig_type_info *swig_types[6];
+static swig_module_info swig_module = {swig_types, 5, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -5179,233 +5177,6 @@ SWIGINTERN PyObject *UModbus_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObje
   return SWIG_Py_Void();
 }
 
-SWIGINTERN int Swig_var_DefaultID_set(PyObject *) {
-  SWIG_Error(SWIG_AttributeError,"Variable DefaultID is read-only.");
-  return 1;
-}
-
-
-SWIGINTERN PyObject *Swig_var_DefaultID_get(void) {
-  PyObject *pyobj = 0;
-  
-  pyobj = SWIG_From_long(static_cast< long >(UTypes::DefaultID));
-  return pyobj;
-}
-
-
-SWIGINTERN int Swig_var_DefaultSupplerID_set(PyObject *) {
-  SWIG_Error(SWIG_AttributeError,"Variable DefaultSupplerID is read-only.");
-  return 1;
-}
-
-
-SWIGINTERN PyObject *Swig_var_DefaultSupplerID_get(void) {
-  PyObject *pyobj = 0;
-  
-  pyobj = SWIG_From_long(static_cast< long >(UTypes::DefaultSupplerID));
-  return pyobj;
-}
-
-
-SWIGINTERN PyObject *_wrap_new_Params(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  UTypes::Params *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)":new_Params")) SWIG_fail;
-  result = (UTypes::Params *)new UTypes::Params();
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UTypes__Params, SWIG_POINTER_NEW |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Params_add(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  UTypes::Params *arg1 = (UTypes::Params *) 0 ;
-  char *arg2 = (char *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int res2 ;
-  char *buf2 = 0 ;
-  int alloc2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  bool result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:Params_add",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__Params, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Params_add" "', argument " "1"" of type '" "UTypes::Params *""'"); 
-  }
-  arg1 = reinterpret_cast< UTypes::Params * >(argp1);
-  res2 = SWIG_AsCharPtrAndSize(obj1, &buf2, NULL, &alloc2);
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Params_add" "', argument " "2"" of type '" "char *""'");
-  }
-  arg2 = reinterpret_cast< char * >(buf2);
-  result = (bool)(arg1)->add(arg2);
-  resultobj = SWIG_From_bool(static_cast< bool >(result));
-  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
-  return resultobj;
-fail:
-  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Params_argc_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  UTypes::Params *arg1 = (UTypes::Params *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:Params_argc_set",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__Params, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Params_argc_set" "', argument " "1"" of type '" "UTypes::Params *""'"); 
-  }
-  arg1 = reinterpret_cast< UTypes::Params * >(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Params_argc_set" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = static_cast< int >(val2);
-  if (arg1) (arg1)->argc = arg2;
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Params_argc_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  UTypes::Params *arg1 = (UTypes::Params *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  int result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Params_argc_get",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__Params, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Params_argc_get" "', argument " "1"" of type '" "UTypes::Params *""'"); 
-  }
-  arg1 = reinterpret_cast< UTypes::Params * >(argp1);
-  result = (int) ((arg1)->argc);
-  resultobj = SWIG_From_int(static_cast< int >(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Params_argv_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  UTypes::Params *arg1 = (UTypes::Params *) 0 ;
-  char **arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:Params_argv_set",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__Params, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Params_argv_set" "', argument " "1"" of type '" "UTypes::Params *""'"); 
-  }
-  arg1 = reinterpret_cast< UTypes::Params * >(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_p_char, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Params_argv_set" "', argument " "2"" of type '" "char *[UTypes::Params::max]""'"); 
-  } 
-  arg2 = reinterpret_cast< char ** >(argp2);
-  {
-    if (arg2) {
-      size_t ii = 0;
-      for (; ii < (size_t)UTypes::Params::max; ++ii) *(char * *)&arg1->argv[ii] = *((char * *)arg2 + ii);
-    } else {
-      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in variable '""argv""' of type '""char *[UTypes::Params::max]""'");
-    }
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Params_argv_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  UTypes::Params *arg1 = (UTypes::Params *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  char **result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Params_argv_get",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__Params, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Params_argv_get" "', argument " "1"" of type '" "UTypes::Params *""'"); 
-  }
-  arg1 = reinterpret_cast< UTypes::Params * >(argp1);
-  result = (char **)(char **) ((arg1)->argv);
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_p_char, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Params_inst(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  UTypes::Params result;
-  
-  if (!PyArg_ParseTuple(args,(char *)":Params_inst")) SWIG_fail;
-  result = UTypes::Params::inst();
-  resultobj = SWIG_NewPointerObj((new UTypes::Params(static_cast< const UTypes::Params& >(result))), SWIGTYPE_p_UTypes__Params, SWIG_POINTER_OWN |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_delete_Params(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  UTypes::Params *arg1 = (UTypes::Params *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:delete_Params",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__Params, SWIG_POINTER_DISOWN |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_Params" "', argument " "1"" of type '" "UTypes::Params *""'"); 
-  }
-  arg1 = reinterpret_cast< UTypes::Params * >(argp1);
-  delete arg1;
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *Params_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *obj;
-  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
-  SWIG_TypeNewClientData(SWIGTYPE_p_UTypes__Params, SWIG_NewClientData(obj));
-  return SWIG_Py_Void();
-}
-
 SWIGINTERN PyObject *_wrap_new_UException__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   UException *result = 0 ;
@@ -5848,15 +5619,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"UModbus_getBit", _wrap_UModbus_getBit, METH_VARARGS, NULL},
 	 { (char *)"UModbus_mbwrite", _wrap_UModbus_mbwrite, METH_VARARGS, NULL},
 	 { (char *)"UModbus_swigregister", UModbus_swigregister, METH_VARARGS, NULL},
-	 { (char *)"new_Params", _wrap_new_Params, METH_VARARGS, NULL},
-	 { (char *)"Params_add", _wrap_Params_add, METH_VARARGS, NULL},
-	 { (char *)"Params_argc_set", _wrap_Params_argc_set, METH_VARARGS, NULL},
-	 { (char *)"Params_argc_get", _wrap_Params_argc_get, METH_VARARGS, NULL},
-	 { (char *)"Params_argv_set", _wrap_Params_argv_set, METH_VARARGS, NULL},
-	 { (char *)"Params_argv_get", _wrap_Params_argv_get, METH_VARARGS, NULL},
-	 { (char *)"Params_inst", _wrap_Params_inst, METH_VARARGS, NULL},
-	 { (char *)"delete_Params", _wrap_delete_Params, METH_VARARGS, NULL},
-	 { (char *)"Params_swigregister", Params_swigregister, METH_VARARGS, NULL},
 	 { (char *)"new_UException", _wrap_new_UException, METH_VARARGS, NULL},
 	 { (char *)"delete_UException", _wrap_delete_UException, METH_VARARGS, NULL},
 	 { (char *)"UException_getError", _wrap_UException_getError, METH_VARARGS, NULL},
@@ -5885,36 +5647,28 @@ static swig_type_info _swigt__p_UException = {"_p_UException", "UException *", 0
 static swig_type_info _swigt__p_UModbus = {"_p_UModbus", "UModbus *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_USysError = {"_p_USysError", "USysError *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UTimeOut = {"_p_UTimeOut", "UTimeOut *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_UTypes__Params = {"_p_UTypes__Params", "UTypes::Params *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_p_char = {"_p_p_char", "char **", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
   &_swigt__p_UException,
   &_swigt__p_UModbus,
   &_swigt__p_USysError,
   &_swigt__p_UTimeOut,
-  &_swigt__p_UTypes__Params,
   &_swigt__p_char,
-  &_swigt__p_p_char,
 };
 
 static swig_cast_info _swigc__p_UException[] = {  {&_swigt__p_UException, 0, 0, 0},  {&_swigt__p_UTimeOut, _p_UTimeOutTo_p_UException, 0, 0},  {&_swigt__p_USysError, _p_USysErrorTo_p_UException, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UModbus[] = {  {&_swigt__p_UModbus, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_USysError[] = {  {&_swigt__p_USysError, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UTimeOut[] = {  {&_swigt__p_UTimeOut, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_UTypes__Params[] = {  {&_swigt__p_UTypes__Params, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_p_char[] = {  {&_swigt__p_p_char, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_UException,
   _swigc__p_UModbus,
   _swigc__p_USysError,
   _swigc__p_UTimeOut,
-  _swigc__p_UTypes__Params,
   _swigc__p_char,
-  _swigc__p_p_char,
 };
 
 
@@ -6609,10 +6363,6 @@ SWIG_init(void) {
   
   SWIG_InstallConstants(d,swig_const_table);
   
-  PyDict_SetItemString(md,(char*)"cvar", SWIG_globals());
-  SWIG_addvarlink(SWIG_globals(),(char*)"DefaultID",Swig_var_DefaultID_get, Swig_var_DefaultID_set);
-  SWIG_addvarlink(SWIG_globals(),(char*)"DefaultSupplerID",Swig_var_DefaultSupplerID_get, Swig_var_DefaultSupplerID_set);
-  SWIG_Python_SetConstant(d, "Params_max",SWIG_From_int(static_cast< int >(UTypes::Params::max)));
 #if PY_VERSION_HEX >= 0x03000000
   return m;
 #else

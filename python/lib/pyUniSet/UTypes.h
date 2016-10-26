@@ -17,7 +17,8 @@
 #ifndef UTypes_H_
 #define UTypes_H_
 // --------------------------------------------------------------------------
-#include <UniSetTypes.h>
+#include <string>
+#include "UniSetTypes.h"
 // --------------------------------------------------------------------------
 namespace UTypes
 {
@@ -38,6 +39,17 @@ namespace UTypes
 			if( argc < Params::max )
 			{
 				argv[argc++] = s;
+				return true;
+			}
+
+			return false;
+		}
+
+		bool add_str( const std::string s )
+		{
+			if( argc < Params::max )
+			{
+				argv[argc++] = UniSetTypes::uni_strdup(s);
 				return true;
 			}
 

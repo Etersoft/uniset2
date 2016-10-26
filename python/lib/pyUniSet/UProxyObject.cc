@@ -40,6 +40,11 @@ class UProxyObject_impl:
 		void impl_setValue( long id, long val ) throw(UException);
 		float impl_getFloatValue( long id ) throw(UException);
 
+		bool impl_askIsOK();
+		bool impl_reaskSensors();
+		bool impl_updateValues();
+		bool impl_smIsOK();
+
 	protected:
 		virtual void askSensors( UniversalIO::UIOCommand cmd ) override;
 		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
@@ -51,10 +56,12 @@ class UProxyObject_impl:
 			IOController_i::SensorInfo si;
 			long value = { 0 };
 			float fvalue = { 0.0 };
+			long precision = { 0 };
 		};
 
 		std::mutex mutexSMap;
 		std::unordered_map<UniSetTypes::ObjectId,SInfo> smap;
+		bool askOK = { false };
 };
 // --------------------------------------------------------------------------
 UProxyObject::UProxyObject() throw(UException)
@@ -97,6 +104,26 @@ void UProxyObject::setValue( long id, long val ) throw(UException)
 	uobj->impl_setValue(id,val);
 }
 // --------------------------------------------------------------------------
+bool UProxyObject::askIsOK()
+{
+	return uobj->impl_askIsOK();
+}
+// --------------------------------------------------------------------------
+bool UProxyObject::reaskSensors()
+{
+	return uobj->impl_reaskSensors();
+}
+// --------------------------------------------------------------------------
+bool UProxyObject::updateValues()
+{
+	return uobj->impl_updateValues();
+}
+// --------------------------------------------------------------------------
+bool UProxyObject::smIsOK()
+{
+	return uobj->impl_smIsOK();
+}
+// --------------------------------------------------------------------------
 float UProxyObject::getFloatValue( long id ) throw(UException)
 {
 	return uobj->impl_getFloatValue(id);
@@ -129,9 +156,18 @@ UProxyObject_impl::~UProxyObject_impl()
 // --------------------------------------------------------------------------
 void UProxyObject_impl::impl_addToAsk( ObjectId id ) throw( UException )
 {
+	auto conf = uniset_conf();
+
 	UProxyObject_impl::SInfo i;
 	i.si.id = id;
-	i.si.node = uniset_conf()->getLocalNode();
+	i.si.node = conf->getLocalNode();
+
+	auto inf = conf->oind->getObjectInfo(id);
+	if( inf && inf->data )
+	{
+		UniXML::iterator it( (xmlNode*)(inf->data) );
+		i.precision = it.getIntProp("precision");
+	}
 
 	std::unique_lock<std::mutex> lk(mutexSMap);
 	smap[id] = i;
@@ -165,6 +201,12 @@ float UProxyObject_impl::impl_getFloatValue( long id ) throw(UException)
 	return i->second.fvalue;
 }
 // --------------------------------------------------------------------------
+bool UProxyObject_impl::impl_askIsOK()
+{
+	std::unique_lock<std::mutex> lk(mutexSMap);
+	return askOK;
+}
+// --------------------------------------------------------------------------
 void UProxyObject_impl::impl_setValue( long id, long val ) throw(UException)
 {
 	try
@@ -179,9 +221,46 @@ void UProxyObject_impl::impl_setValue( long id, long val ) throw(UException)
 	}
 }
 // --------------------------------------------------------------------------
+bool UProxyObject_impl::impl_reaskSensors()
+{
+	askSensors(UniversalIO::UIONotify);
+	return impl_askIsOK();
+}
+// --------------------------------------------------------------------------
+bool UProxyObject_impl::impl_updateValues()
+{
+	std::unique_lock<std::mutex> lk(mutexSMap);
+	bool ret = true;
+	for( auto&& i: smap )
+	{
+		try
+		{
+			i.second.value = ui->getValue(i.second.si.id,i.second.si.node);
+			i.second.fvalue = (float)i.second.value / pow(10.0, i.second.precision);
+		}
+		catch( std::exception& ex )
+		{
+			mycrit << myname << "(updateValues): " << i.second.si.id << " error: " << ex.what() << std::endl;
+			ret = false;
+		}
+	}
+
+	return ret;
+}
+// --------------------------------------------------------------------------
+bool UProxyObject_impl::impl_smIsOK()
+{
+	std::unique_lock<std::mutex> lk(mutexSMap);
+
+	// проверяем по первому датчику
+	auto s = smap.begin();
+	return ui->isExist(s->second.si.id,s->second.si.node);
+}
+// --------------------------------------------------------------------------
 void UProxyObject_impl::askSensors( UniversalIO::UIOCommand cmd )
 {
 	std::unique_lock<std::mutex> lk(mutexSMap);
+	askOK = true;
 	for( const auto& i: smap )
 	{
 		try
@@ -190,9 +269,8 @@ void UProxyObject_impl::askSensors( UniversalIO::UIOCommand cmd )
 		}
 		catch( std::exception& ex )
 		{
-			std::ostringstream err;
-			err << myname << "(askSensors): " << i.second.si.id << " error: " << std::string(ex.what());
-			throw UException(err.str());
+			mywarn << myname << "(askSensors): " << i.second.si.id << " error: " << ex.what() << std::endl;
+			askOK = false;
 		}
 	}
 }

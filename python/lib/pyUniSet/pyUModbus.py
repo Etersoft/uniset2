@@ -130,40 +130,6 @@ class UModbus:
 UModbus_swigregister = _pyUModbus.UModbus_swigregister
 UModbus_swigregister(UModbus)
 
-class Params:
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, Params, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, Params, name)
-    __repr__ = _swig_repr
-    max = _pyUModbus.Params_max
-
-    def __init__(self):
-        this = _pyUModbus.new_Params()
-        try:
-            self.this.append(this)
-        except Exception:
-            self.this = this
-
-    def add(self, s):
-        return _pyUModbus.Params_add(self, s)
-    __swig_setmethods__["argc"] = _pyUModbus.Params_argc_set
-    __swig_getmethods__["argc"] = _pyUModbus.Params_argc_get
-    __swig_setmethods__["argv"] = _pyUModbus.Params_argv_set
-    __swig_getmethods__["argv"] = _pyUModbus.Params_argv_get
-    __swig_getmethods__["inst"] = lambda x: _pyUModbus.Params_inst
-    __swig_destroy__ = _pyUModbus.delete_Params
-    __del__ = lambda self: None
-Params_swigregister = _pyUModbus.Params_swigregister
-Params_swigregister(Params)
-cvar = _pyUModbus.cvar
-DefaultID = cvar.DefaultID
-DefaultSupplerID = cvar.DefaultSupplerID
-
-def Params_inst():
-    return _pyUModbus.Params_inst()
-Params_inst = _pyUModbus.Params_inst
-
 class UException(Exception):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, UException, name, value)

@@ -18,12 +18,17 @@ if __name__ == "__main__":
 			break;
 	
 		lst.add( sys.argv[i] )
+		
+	prop = 'Test'
+	lst.add_str(prop)
+	
+	
 
 	try:	
 		uniset_init_params( lst, "test.xml");
 
 		obj1 = UProxyObject("TestProc")
-		uniset_activate_objects();
+		uniset_activate_objects()
 
 		print "getShortName: id=%d name=%s" % (1, getShortName(1))
 		print "     getName: id=%d name=%s" % (1, getName(1))

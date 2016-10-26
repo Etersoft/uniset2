@@ -52,6 +52,20 @@ class UProxyObject
 		/*! Сохраняемые датчики не требуют добавления при помощи addToAsk ! */
 		void setValue( long id, long val ) throw(UException);
 
+		/*! \return true если заказ датчиков прошёл успешно */
+		bool askIsOK();
+
+		/*! перезаказ датчиков */
+		bool reaskSensors();
+
+		/*! принудительное обновление значений.
+		 * В случае если не используется заказ датчиков
+		 */
+		bool updateValues();
+
+		/*! Проверка работы SM */
+		bool smIsOK();
+
 	protected:
 
 	private:

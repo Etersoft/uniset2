@@ -3979,6 +3979,39 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_Params_add_str(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::Params *arg1 = (UTypes::Params *) 0 ;
+  std::string arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  bool result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:Params_add_str",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__Params, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Params_add_str" "', argument " "1"" of type '" "UTypes::Params *""'"); 
+  }
+  arg1 = reinterpret_cast< UTypes::Params * >(argp1);
+  {
+    std::string *ptr = (std::string *)0;
+    int res = SWIG_AsPtr_std_string(obj1, &ptr);
+    if (!SWIG_IsOK(res) || !ptr) {
+      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "Params_add_str" "', argument " "2"" of type '" "std::string const""'"); 
+    }
+    arg2 = *ptr;
+    if (SWIG_IsNewObj(res)) delete ptr;
+  }
+  result = (bool)(arg1)->add_str(arg2);
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_Params_argc_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   UTypes::Params *arg1 = (UTypes::Params *) 0 ;
@@ -4834,6 +4867,94 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_UProxyObject_askIsOK(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UProxyObject *arg1 = (UProxyObject *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  bool result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:UProxyObject_askIsOK",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UProxyObject, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UProxyObject_askIsOK" "', argument " "1"" of type '" "UProxyObject *""'"); 
+  }
+  arg1 = reinterpret_cast< UProxyObject * >(argp1);
+  result = (bool)(arg1)->askIsOK();
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_UProxyObject_reaskSensors(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UProxyObject *arg1 = (UProxyObject *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  bool result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:UProxyObject_reaskSensors",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UProxyObject, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UProxyObject_reaskSensors" "', argument " "1"" of type '" "UProxyObject *""'"); 
+  }
+  arg1 = reinterpret_cast< UProxyObject * >(argp1);
+  result = (bool)(arg1)->reaskSensors();
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_UProxyObject_updateValues(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UProxyObject *arg1 = (UProxyObject *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  bool result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:UProxyObject_updateValues",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UProxyObject, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UProxyObject_updateValues" "', argument " "1"" of type '" "UProxyObject *""'"); 
+  }
+  arg1 = reinterpret_cast< UProxyObject * >(argp1);
+  result = (bool)(arg1)->updateValues();
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_UProxyObject_smIsOK(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UProxyObject *arg1 = (UProxyObject *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  bool result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:UProxyObject_smIsOK",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UProxyObject, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UProxyObject_smIsOK" "', argument " "1"" of type '" "UProxyObject *""'"); 
+  }
+  arg1 = reinterpret_cast< UProxyObject * >(argp1);
+  result = (bool)(arg1)->smIsOK();
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *UProxyObject_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *obj;
   if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
@@ -4856,6 +4977,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"getConfFileName", _wrap_getConfFileName, METH_VARARGS, NULL},
 	 { (char *)"new_Params", _wrap_new_Params, METH_VARARGS, NULL},
 	 { (char *)"Params_add", _wrap_Params_add, METH_VARARGS, NULL},
+	 { (char *)"Params_add_str", _wrap_Params_add_str, METH_VARARGS, NULL},
 	 { (char *)"Params_argc_set", _wrap_Params_argc_set, METH_VARARGS, NULL},
 	 { (char *)"Params_argc_get", _wrap_Params_argc_get, METH_VARARGS, NULL},
 	 { (char *)"Params_argv_set", _wrap_Params_argv_set, METH_VARARGS, NULL},
@@ -4881,6 +5003,10 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"UProxyObject_getValue", _wrap_UProxyObject_getValue, METH_VARARGS, NULL},
 	 { (char *)"UProxyObject_getFloatValue", _wrap_UProxyObject_getFloatValue, METH_VARARGS, NULL},
 	 { (char *)"UProxyObject_setValue", _wrap_UProxyObject_setValue, METH_VARARGS, NULL},
+	 { (char *)"UProxyObject_askIsOK", _wrap_UProxyObject_askIsOK, METH_VARARGS, NULL},
+	 { (char *)"UProxyObject_reaskSensors", _wrap_UProxyObject_reaskSensors, METH_VARARGS, NULL},
+	 { (char *)"UProxyObject_updateValues", _wrap_UProxyObject_updateValues, METH_VARARGS, NULL},
+	 { (char *)"UProxyObject_smIsOK", _wrap_UProxyObject_smIsOK, METH_VARARGS, NULL},
 	 { (char *)"UProxyObject_swigregister", UProxyObject_swigregister, METH_VARARGS, NULL},
 	 { NULL, NULL, 0, NULL }
 };
