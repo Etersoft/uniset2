@@ -82,6 +82,10 @@ def uniset_init(argc, argv, xmlfile):
     return _pyUniSet.uniset_init(argc, argv, xmlfile)
 uniset_init = _pyUniSet.uniset_init
 
+def uniset_activate_objects():
+    return _pyUniSet.uniset_activate_objects()
+uniset_activate_objects = _pyUniSet.uniset_activate_objects
+
 def getValue(id):
     return _pyUniSet.getValue(id)
 getValue = _pyUniSet.getValue
@@ -213,6 +217,36 @@ class USysError(UException):
     __del__ = lambda self: None
 USysError_swigregister = _pyUniSet.USysError_swigregister
 USysError_swigregister(USysError)
+
+class UProxyObject:
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, UProxyObject, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, UProxyObject, name)
+    __repr__ = _swig_repr
+
+    def __init__(self, *args):
+        this = _pyUniSet.new_UProxyObject(*args)
+        try:
+            self.this.append(this)
+        except Exception:
+            self.this = this
+    __swig_destroy__ = _pyUniSet.delete_UProxyObject
+    __del__ = lambda self: None
+
+    def addToAsk(self, id):
+        return _pyUniSet.UProxyObject_addToAsk(self, id)
+
+    def getValue(self, id):
+        return _pyUniSet.UProxyObject_getValue(self, id)
+
+    def getFloatValue(self, id):
+        return _pyUniSet.UProxyObject_getFloatValue(self, id)
+
+    def setValue(self, id, val):
+        return _pyUniSet.UProxyObject_setValue(self, id, val)
+UProxyObject_swigregister = _pyUniSet.UProxyObject_swigregister
+UProxyObject_swigregister(UProxyObject)
 
 # This file is compatible with both classic and new-style classes.
 

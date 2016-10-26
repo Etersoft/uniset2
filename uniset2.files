@@ -339,6 +339,8 @@ python/examples/test.xml
 python/lib/pyUniSet/Makefile.am
 python/lib/pyUniSet/PyUInterface.cc
 python/lib/pyUniSet/PyUInterface.h
+python/lib/pyUniSet/UProxyObject.cc
+python/lib/pyUniSet/UProxyObject.h
 python/lib/pyUniSet/UConnector.cc
 python/lib/pyUniSet/UConnector.h
 python/lib/pyUniSet/UConnector_wrap.cxx

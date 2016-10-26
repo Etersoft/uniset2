@@ -19,6 +19,7 @@
 #include "ORepHelpers.h"
 #include "UInterface.h"
 #include "Configuration.h"
+#include "UniSetActivator.h"
 #include "UniSetTypes.h"
 #include "PyUInterface.h"
 //---------------------------------------------------------------------------
@@ -195,3 +196,17 @@ string pyUInterface::getConfFileName()
 
 }
 //---------------------------------------------------------------------------
+void pyUInterface::uniset_activate_objects()throw(UException)
+{
+	try
+	{
+		auto act = UniSetActivator::Instance();
+		act->run(true);
+	}
+	catch( const std::exception& ex )
+	{
+		throw UException("(uniset_activate_objects): catch " + std::string(ex.what()) );
+	}
+}
+//---------------------------------------------------------------------------
+

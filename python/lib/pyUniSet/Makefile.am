@@ -17,13 +17,16 @@ pyUExceptions.py: _pyUExceptions.la
 
 pyexec_LTLIBRARIES = _pyUConnector.la _pyUModbus.la _pyUExceptions.la _pyUniSet.la
 
-_pyUniSet_la_SOURCES 	= PyUInterface.cc UInterface_wrap.cxx
-_pyUniSet_la_CXXFLAGS	= $(UNISET_CFLAGS) $(PYTHON_CFLAGS)
+_pyUniSet_la_SOURCES 	= PyUInterface.cc UInterface_wrap.cxx UProxyObject.cc
+_pyUniSet_la_CXXFLAGS	= $(UNISET_CFLAGS) $(UNISET_EXT_CFLAGS) $(PYTHON_CFLAGS)
 _pyUniSet_la_LDFLAGS 	= -module -avoid-version
-_pyUniSet_la_LIBADD 	= $(UNISET_LIBS) $(PYTHON_LIBS)
+_pyUniSet_la_LIBADD 	= $(UNISET_LIBS) $(UNISET_EXT_LIBS) $(PYTHON_LIBS)
 
-UInterface_wrap.cxx: UInterface.i PyUInterface.h
+UInterface_wrap.cxx: UInterface.i UProxyObject.i PyUInterface.h UProxyObject.h
 	swig -python -c++ -classic UInterface.i
+
+#PyUObject_wrap.cxx: UObject.i PyUObject.h
+#	swig -python -c++ -classic UObject.i
 
 _pyUConnector_la_SOURCES 	= UConnector.cc UConnector_wrap.cxx
 _pyUConnector_la_CXXFLAGS	= $(UNISET_CFLAGS) $(PYTHON_CFLAGS) 
@@ -32,6 +35,7 @@ _pyUConnector_la_LIBADD 	= $(UNISET_LIBS) $(PYTHON_LIBS)
 
 UConnector_wrap.cxx: UConnector.i UConnector.h
 	swig -python -c++ -classic UConnector.i
+
 
 _pyUModbus_la_SOURCES 	= UModbus.cc UModbus_wrap.cxx
 _pyUModbus_la_CXXFLAGS	= $(UNISET_CFLAGS) $(UNISET_EXT_CFLAGS) $(POCO_CFLAGS) $(PYTHON_CFLAGS) 

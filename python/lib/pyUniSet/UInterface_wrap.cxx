@@ -3008,13 +3008,14 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 /* -------- TYPES TABLE (BEGIN) -------- */
 
 #define SWIGTYPE_p_UException swig_types[0]
-#define SWIGTYPE_p_USysError swig_types[1]
-#define SWIGTYPE_p_UTimeOut swig_types[2]
-#define SWIGTYPE_p_UTypes__Params swig_types[3]
-#define SWIGTYPE_p_char swig_types[4]
-#define SWIGTYPE_p_p_char swig_types[5]
-static swig_type_info *swig_types[7];
-static swig_module_info swig_module = {swig_types, 6, 0, 0, 0, 0};
+#define SWIGTYPE_p_UProxyObject swig_types[1]
+#define SWIGTYPE_p_USysError swig_types[2]
+#define SWIGTYPE_p_UTimeOut swig_types[3]
+#define SWIGTYPE_p_UTypes__Params swig_types[4]
+#define SWIGTYPE_p_char swig_types[5]
+#define SWIGTYPE_p_p_char swig_types[6]
+static swig_type_info *swig_types[8];
+static swig_module_info swig_module = {swig_types, 7, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3123,6 +3124,7 @@ namespace swig {
 
 
 #include "PyUInterface.h"
+#include "UProxyObject.h"
 
 
 SWIGINTERN swig_type_info*
@@ -3470,6 +3472,16 @@ SWIGINTERNINLINE PyObject*
   return PyBool_FromLong(value ? 1 : 0);
 }
 
+
+  #define SWIG_From_double   PyFloat_FromDouble 
+
+
+SWIGINTERNINLINE PyObject *
+SWIG_From_float  (float value)
+{    
+  return SWIG_From_double  (value);
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -3564,6 +3576,24 @@ SWIGINTERN PyObject *_wrap_uniset_init(PyObject *SWIGUNUSEDPARM(self), PyObject 
   return resultobj;
 fail:
   if (SWIG_IsNewObj(res3)) delete arg3;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_uniset_activate_objects(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  
+  if (!PyArg_ParseTuple(args,(char *)":uniset_activate_objects")) SWIG_fail;
+  try {
+    pyUInterface::uniset_activate_objects();
+  }
+  catch(UException &_e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
+  }
+  
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
   return NULL;
 }
 
@@ -4525,10 +4555,297 @@ SWIGINTERN PyObject *USysError_swigregister(PyObject *SWIGUNUSEDPARM(self), PyOb
   return SWIG_Py_Void();
 }
 
+SWIGINTERN PyObject *_wrap_new_UProxyObject__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  std::string *arg1 = 0 ;
+  int res1 = SWIG_OLDOBJ ;
+  PyObject * obj0 = 0 ;
+  UProxyObject *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:new_UProxyObject",&obj0)) SWIG_fail;
+  {
+    std::string *ptr = (std::string *)0;
+    res1 = SWIG_AsPtr_std_string(obj0, &ptr);
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_UProxyObject" "', argument " "1"" of type '" "std::string const &""'"); 
+    }
+    if (!ptr) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_UProxyObject" "', argument " "1"" of type '" "std::string const &""'"); 
+    }
+    arg1 = ptr;
+  }
+  try {
+    result = (UProxyObject *)new UProxyObject((std::string const &)*arg1);
+  }
+  catch(UException &_e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
+  }
+  
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UProxyObject, SWIG_POINTER_NEW |  0 );
+  if (SWIG_IsNewObj(res1)) delete arg1;
+  return resultobj;
+fail:
+  if (SWIG_IsNewObj(res1)) delete arg1;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_UProxyObject__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  long arg1 ;
+  long val1 ;
+  int ecode1 = 0 ;
+  PyObject * obj0 = 0 ;
+  UProxyObject *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:new_UProxyObject",&obj0)) SWIG_fail;
+  ecode1 = SWIG_AsVal_long(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_UProxyObject" "', argument " "1"" of type '" "long""'");
+  } 
+  arg1 = static_cast< long >(val1);
+  try {
+    result = (UProxyObject *)new UProxyObject(arg1);
+  }
+  catch(UException &_e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
+  }
+  
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UProxyObject, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_UProxyObject(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[2] = {
+    0
+  };
+  Py_ssize_t ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 1) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 1) {
+    int _v;
+    {
+      int res = SWIG_AsVal_long(argv[0], NULL);
+      _v = SWIG_CheckState(res);
+    }
+    if (_v) {
+      return _wrap_new_UProxyObject__SWIG_1(self, args);
+    }
+  }
+  if (argc == 1) {
+    int _v;
+    int res = SWIG_AsPtr_std_string(argv[0], (std::string**)(0));
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      return _wrap_new_UProxyObject__SWIG_0(self, args);
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'new_UProxyObject'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    UProxyObject::UProxyObject(std::string const &)\n"
+    "    UProxyObject::UProxyObject(long)\n");
+  return 0;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_UProxyObject(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UProxyObject *arg1 = (UProxyObject *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_UProxyObject",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UProxyObject, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_UProxyObject" "', argument " "1"" of type '" "UProxyObject *""'"); 
+  }
+  arg1 = reinterpret_cast< UProxyObject * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_UProxyObject_addToAsk(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UProxyObject *arg1 = (UProxyObject *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:UProxyObject_addToAsk",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UProxyObject, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UProxyObject_addToAsk" "', argument " "1"" of type '" "UProxyObject *""'"); 
+  }
+  arg1 = reinterpret_cast< UProxyObject * >(argp1);
+  ecode2 = SWIG_AsVal_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "UProxyObject_addToAsk" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  try {
+    (arg1)->addToAsk(arg2);
+  }
+  catch(UException &_e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
+  }
+  
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_UProxyObject_getValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UProxyObject *arg1 = (UProxyObject *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  long result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:UProxyObject_getValue",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UProxyObject, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UProxyObject_getValue" "', argument " "1"" of type '" "UProxyObject *""'"); 
+  }
+  arg1 = reinterpret_cast< UProxyObject * >(argp1);
+  ecode2 = SWIG_AsVal_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "UProxyObject_getValue" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  try {
+    result = (long)(arg1)->getValue(arg2);
+  }
+  catch(UException &_e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
+  }
+  
+  resultobj = SWIG_From_long(static_cast< long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_UProxyObject_getFloatValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UProxyObject *arg1 = (UProxyObject *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  float result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:UProxyObject_getFloatValue",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UProxyObject, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UProxyObject_getFloatValue" "', argument " "1"" of type '" "UProxyObject *""'"); 
+  }
+  arg1 = reinterpret_cast< UProxyObject * >(argp1);
+  ecode2 = SWIG_AsVal_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "UProxyObject_getFloatValue" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  try {
+    result = (float)(arg1)->getFloatValue(arg2);
+  }
+  catch(UException &_e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
+  }
+  
+  resultobj = SWIG_From_float(static_cast< float >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_UProxyObject_setValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UProxyObject *arg1 = (UProxyObject *) 0 ;
+  long arg2 ;
+  long arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  long val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:UProxyObject_setValue",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UProxyObject, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UProxyObject_setValue" "', argument " "1"" of type '" "UProxyObject *""'"); 
+  }
+  arg1 = reinterpret_cast< UProxyObject * >(argp1);
+  ecode2 = SWIG_AsVal_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "UProxyObject_setValue" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  ecode3 = SWIG_AsVal_long(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "UProxyObject_setValue" "', argument " "3"" of type '" "long""'");
+  } 
+  arg3 = static_cast< long >(val3);
+  try {
+    (arg1)->setValue(arg2,arg3);
+  }
+  catch(UException &_e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
+  }
+  
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *UProxyObject_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_UProxyObject, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
 static PyMethodDef SwigMethods[] = {
 	 { (char *)"SWIG_PyInstanceMethod_New", (PyCFunction)SWIG_PyInstanceMethod_New, METH_O, NULL},
 	 { (char *)"uniset_init_params", _wrap_uniset_init_params, METH_VARARGS, NULL},
 	 { (char *)"uniset_init", _wrap_uniset_init, METH_VARARGS, NULL},
+	 { (char *)"uniset_activate_objects", _wrap_uniset_activate_objects, METH_VARARGS, NULL},
 	 { (char *)"getValue", _wrap_getValue, METH_VARARGS, NULL},
 	 { (char *)"setValue", _wrap_setValue, METH_VARARGS, NULL},
 	 { (char *)"getSensorID", _wrap_getSensorID, METH_VARARGS, NULL},
@@ -4558,6 +4875,13 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"new_USysError", _wrap_new_USysError, METH_VARARGS, NULL},
 	 { (char *)"delete_USysError", _wrap_delete_USysError, METH_VARARGS, NULL},
 	 { (char *)"USysError_swigregister", USysError_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_UProxyObject", _wrap_new_UProxyObject, METH_VARARGS, NULL},
+	 { (char *)"delete_UProxyObject", _wrap_delete_UProxyObject, METH_VARARGS, NULL},
+	 { (char *)"UProxyObject_addToAsk", _wrap_UProxyObject_addToAsk, METH_VARARGS, NULL},
+	 { (char *)"UProxyObject_getValue", _wrap_UProxyObject_getValue, METH_VARARGS, NULL},
+	 { (char *)"UProxyObject_getFloatValue", _wrap_UProxyObject_getFloatValue, METH_VARARGS, NULL},
+	 { (char *)"UProxyObject_setValue", _wrap_UProxyObject_setValue, METH_VARARGS, NULL},
+	 { (char *)"UProxyObject_swigregister", UProxyObject_swigregister, METH_VARARGS, NULL},
 	 { NULL, NULL, 0, NULL }
 };
 
@@ -4571,6 +4895,7 @@ static void *_p_USysErrorTo_p_UException(void *x, int *SWIGUNUSEDPARM(newmemory)
     return (void *)((UException *)  ((USysError *) x));
 }
 static swig_type_info _swigt__p_UException = {"_p_UException", "UException *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_UProxyObject = {"_p_UProxyObject", "UProxyObject *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_USysError = {"_p_USysError", "USysError *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UTimeOut = {"_p_UTimeOut", "UTimeOut *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UTypes__Params = {"_p_UTypes__Params", "UTypes::Params *", 0, 0, (void*)0, 0};
@@ -4579,6 +4904,7 @@ static swig_type_info _swigt__p_p_char = {"_p_p_char", "char **", 0, 0, (void*)0
 
 static swig_type_info *swig_type_initial[] = {
   &_swigt__p_UException,
+  &_swigt__p_UProxyObject,
   &_swigt__p_USysError,
   &_swigt__p_UTimeOut,
   &_swigt__p_UTypes__Params,
@@ -4587,6 +4913,7 @@ static swig_type_info *swig_type_initial[] = {
 };
 
 static swig_cast_info _swigc__p_UException[] = {  {&_swigt__p_UException, 0, 0, 0},  {&_swigt__p_UTimeOut, _p_UTimeOutTo_p_UException, 0, 0},  {&_swigt__p_USysError, _p_USysErrorTo_p_UException, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_UProxyObject[] = {  {&_swigt__p_UProxyObject, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_USysError[] = {  {&_swigt__p_USysError, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UTimeOut[] = {  {&_swigt__p_UTimeOut, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UTypes__Params[] = {  {&_swigt__p_UTypes__Params, 0, 0, 0},{0, 0, 0, 0}};
@@ -4595,6 +4922,7 @@ static swig_cast_info _swigc__p_p_char[] = {  {&_swigt__p_p_char, 0, 0, 0},{0, 0
 
 static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_UException,
+  _swigc__p_UProxyObject,
   _swigc__p_USysError,
   _swigc__p_UTimeOut,
   _swigc__p_UTypes__Params,
