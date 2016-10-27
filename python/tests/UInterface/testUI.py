@@ -28,7 +28,14 @@ if __name__ == "__main__":
 		uniset_init_params( lst, "test.xml");
 
 		obj1 = UProxyObject("TestProc")
+		obj2 = UProxyObject("TestProc1")
 		uniset_activate_objects()
+		
+		
+		while True:
+			print "sleep..."
+			print "getValue: %d=%d" % ( 1, getValue(1) )
+			time.sleep(2)
 
 		print "getShortName: id=%d name=%s" % (1, getShortName(1))
 		print "     getName: id=%d name=%s" % (1, getName(1))

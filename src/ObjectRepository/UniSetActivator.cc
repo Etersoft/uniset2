@@ -483,11 +483,11 @@ void terminate_thread()
 // ---------------------------------------------------------------------------
 UniSetActivatorPtr UniSetActivator::inst;
 // ---------------------------------------------------------------------------
-UniSetActivatorPtr UniSetActivator::Instance( const UniSetTypes::ObjectId id )
+UniSetActivatorPtr UniSetActivator::Instance()
 {
 	if( inst == nullptr )
 	{
-		inst = shared_ptr<UniSetActivator>( new UniSetActivator(id) );
+		inst = shared_ptr<UniSetActivator>( new UniSetActivator() );
 		g_act = inst;
 	}
 
@@ -505,13 +505,6 @@ std::shared_ptr<UniSetActivator> UniSetActivator::get_aptr()
 	return std::dynamic_pointer_cast<UniSetActivator>(get_ptr());
 }
 // ---------------------------------------------------------------------------
-UniSetActivator::UniSetActivator( const ObjectId id ):
-	UniSetManager(id),
-	omDestroy(false)
-{
-	UniSetActivator::init();
-}
-// ------------------------------------------------------------------------------------------
 UniSetActivator::UniSetActivator():
 	UniSetManager(UniSetTypes::DefaultObjectId),
 	omDestroy(false)

@@ -511,10 +511,10 @@ int UniSetTypes::uni_atoi( const char* str ) noexcept
 //--------------------------------------------------------------------------------------------
 char* UniSetTypes::uni_strdup( const string& src )
 {
-	const char* s = src.c_str();
-	size_t len = strlen(s);
+	size_t len = src.size();
 	char* d = new char[len + 1];
-	memcpy(d, s, len + 1);
+	memcpy(d, src.data(), len);
+	d[len] = '\0';
 	return d;
 }
 // -------------------------------------------------------------------------

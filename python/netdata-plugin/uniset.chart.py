@@ -9,6 +9,7 @@ import random
 import uniset2
 from uniset2 import UniXML
 from uniset2 import UProxyObject
+from uniset2 import UConnector
 
 sys.path.append("./python_modules")
 from base import SimpleService
@@ -24,6 +25,7 @@ class Service(SimpleService):
 
     sensors = []
     uproxy = None
+    uconnector = None
     smOK = False
 
     def __init__(self, configuration=None, name=None):
@@ -41,8 +43,8 @@ class Service(SimpleService):
             self.error("uniset plugin: Not found confile '%s'"%confile)
             raise RuntimeError
 
-        self.name = self.get_conf_param('name', name)
-        self.info("%s: uniset plugin: read from %s"%(name,confile))
+        #self.name = self.get_conf_param('name', name)
+        self.info("%s: read from %s"%(name,confile))
         self.create_charts(confile)
         self.init_uniset(confile)
         # добавляем датчики в опрос..
@@ -51,24 +53,22 @@ class Service(SimpleService):
 
     def init_uniset(self, confile):
 
-        lst = uniset2.Params_inst()
+        arglist= uniset2.Params_inst()
         for i in range(0, len(sys.argv)):
             if i >= uniset2.Params.max:
                 break;
-            lst.add(sys.argv[i])
+            arglist.add(sys.argv[i])
 
         port = self.get_conf_param('port', '')
         if port != '':
-            self.info("%s: uniset plugin: --uniset-port %s" % (self.name,port))
             p = '--uniset-port'
-            lst.add_str(p)
-            lst.add_str( str(port) )
+            arglist.add_str(p)
+            arglist.add_str( str(port) )
 
         uname = self.get_conf_param('uname', 'TestProc')
-        self.info("%s: uniset plugin: init ObjectID '%s'" % (self.name,uname))
 
         try:
-            uniset2.uniset_init_params(lst, confile);
+            self.uconnector = UConnector(arglist,confile)
             self.uproxy = UProxyObject(uname)
         except uniset2.UException, e:
             self.error("uniset plugin: error: %s"% e.getError())
@@ -86,7 +86,7 @@ class Service(SimpleService):
     def find_section(self, xml, secname):
         node = xml.findNode(xml.getDoc(), secname)[0]
         if node == None:
-            self.error("uniset plugin: not found %s section" % secname)
+            self.error("not found '%s' section in %s" % (secname,xml.getFileName()))
             raise RuntimeError
 
         return node.children
@@ -107,7 +107,7 @@ class Service(SimpleService):
                 # CHART type.id name title units [family [context [charttype [priority [update_every]]]]]
                 id = node.prop('id')
                 if id == '' or id == None:
-                    self.error("uniset plugin: IGNORE CHART.. Unknown id=''.")
+                    self.error("IGNORE CHART.. Unknown id=''.")
                     node = xml.nextNode(node)
                     continue
 
@@ -138,7 +138,7 @@ class Service(SimpleService):
             self.order = myOrder
 
         except uniset2.UniXMLException, e:
-            self.error("uniset plugin: FAILED load xmlfile=%s err='%s'" % (confile, e.getError()))
+            self.error("FAILED load xmlfile=%s err='%s'" % (confile, e.getError()))
             raise RuntimeError
 
     def build_lines(self, chart, lnode, xml, snode):
@@ -151,7 +151,7 @@ class Service(SimpleService):
             fv = node.prop('filter_value')
 
             if ff == '' or ff == None:
-                self.error("uniset plugin: Unknown filter_fileld for chart id='%s'" % node.parent.prop('id'))
+                self.error("Unknown filter_fileld for chart id='%s'" % node.parent.prop('id'))
                 raise RuntimeError
 
             self.read_sensors(snode,ff,fv,xml, chart)
@@ -174,7 +174,7 @@ class Service(SimpleService):
             params = []
             id = self.get_param(node, 'netdata_id', node.prop('name'))
             if id == '' or id == None:
-                self.error("uniset plugin: Unknown 'id' for sensor %s" % node.prop('name'))
+                self.error("Unknown 'id' for sensor %s" % node.prop('name'))
                 raise RuntimeError
 
             params.append(id)
@@ -216,9 +216,10 @@ class Service(SimpleService):
 
     def check(self):
 
+        self.info("**** uniset_activate_objects")
         # ret = super(self.__class__, self).check()
         try:
-            uniset2.uniset_activate_objects()
+            self.uconnector.activate_objects()
         except uniset2.UException, e:
             self.error("%s"% e.getError())
             raise False
@@ -262,3 +263,13 @@ if __name__ == "__main__":
     config['retries'] = retries
 
     serv = Service(config,"test")
+
+    config2 = {}
+    config2['confile'] = './test.xml'
+    config2['port'] = 2809
+    config2['uname'] = 'TestProc1'
+    config2['update_every'] = update_every
+    config2['priority'] = priority
+    config2['retries'] = retries
+
+    serv2 = Service(config2,"test")

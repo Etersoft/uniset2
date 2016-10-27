@@ -20,8 +20,6 @@
 using namespace std;
 // --------------------------------------------------------------------------
 UConnector::UConnector( UTypes::Params* p, const std::string& xfile )throw(UException):
-	conf(0),
-	ui(0),
 	xmlfile(xfile)
 {
 	try
@@ -29,19 +27,17 @@ UConnector::UConnector( UTypes::Params* p, const std::string& xfile )throw(UExce
 		conf = UniSetTypes::uniset_init(p->argc, p->argv, xmlfile);
 		ui = make_shared<UInterface>(conf);
 	}
-	catch( UniSetTypes::Exception& ex )
+	catch( std::exception& ex )
 	{
 		throw UException(ex.what());
 	}
 	catch( ... )
 	{
-		throw UException();
+		throw UException("(UConnector): Unknown exception");
 	}
 }
 //---------------------------------------------------------------------------
 UConnector::UConnector(int argc, char** argv, const string& xfile )throw(UException):
-	conf(0),
-	ui(0),
 	xmlfile(xfile)
 {
 	try
@@ -49,13 +45,13 @@ UConnector::UConnector(int argc, char** argv, const string& xfile )throw(UExcept
 		conf = UniSetTypes::uniset_init(argc, argv, xmlfile);
 		ui = make_shared<UInterface>(conf);
 	}
-	catch( UniSetTypes::Exception& ex )
+	catch( std::exception& ex )
 	{
 		throw UException(ex.what());
 	}
 	catch( ... )
 	{
-		throw UException();
+		throw UException("(UConnector): Unknown exception");
 	}
 }
 // --------------------------------------------------------------------------
@@ -156,6 +152,19 @@ string UConnector::getTextName( long id )
 		return conf->oind->getTextName(id);
 
 	return "";
+}
+//---------------------------------------------------------------------------
+void UConnector::activate_objects() throw(UException)
+{
+	try
+	{
+		auto act = UniSetActivator::Instance();
+		act->run(true);
+	}
+	catch( const std::exception& ex )
+	{
+		throw UException("(activate_objects): catch " + std::string(ex.what()) );
+	}
 }
 //---------------------------------------------------------------------------
 long UConnector::getObjectID(const string& name )

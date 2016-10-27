@@ -69,12 +69,27 @@ UProxyObject::UProxyObject() throw(UException)
 	throw UException("(UProxyObject): Unknown 'name'' or 'ID'");
 }
 // --------------------------------------------------------------------------
-UProxyObject::UProxyObject( const std::string& name ) throw( UException ):
-	UProxyObject::UProxyObject(uniset_conf()->getObjectID(name))
+UProxyObject::UProxyObject( const std::string& name ) throw( UException )
 {
+	auto conf = uniset_conf();
+	if ( !conf )
+	{
+		std::ostringstream err;
+		err << "(UProxyObject:init): Create '" << name << "' failed. Unknown configuration";
+		std::cerr << err.str() << std::endl;
+		throw UException(err.str());
+	}
+
+	long id = conf->getObjectID(name);
+	init(id);
 }
 // --------------------------------------------------------------------------
 UProxyObject::UProxyObject( long id ) throw( UException )
+{
+	init(id);
+}
+// --------------------------------------------------------------------------
+void UProxyObject::init( long id ) throw( UException )
 {
 	try
 	{
@@ -86,6 +101,7 @@ UProxyObject::UProxyObject( long id ) throw( UException )
 	{
 		std::ostringstream err;
 		err << "(UProxyObject): id='" << id << "' error: " << std::string(ex.what());
+		std::cerr << err.str() << std::endl;
 		throw UException(err.str());
 	}
 }
@@ -144,7 +160,7 @@ void UProxyObject::addToAsk( long id ) throw(UException)
 }
 // --------------------------------------------------------------------------
 UProxyObject_impl::UProxyObject_impl( ObjectId id ):
-	UObject_SK(id)
+	UObject_SK(id,nullptr)
 {
 
 }

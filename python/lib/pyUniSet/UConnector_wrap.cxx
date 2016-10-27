@@ -3567,7 +3567,7 @@ SWIGINTERN PyObject *_wrap_Params_add_str(PyObject *SWIGUNUSEDPARM(self), PyObje
     std::string *ptr = (std::string *)0;
     int res = SWIG_AsPtr_std_string(obj1, &ptr);
     if (!SWIG_IsOK(res) || !ptr) {
-      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "Params_add_str" "', argument " "2"" of type '" "std::string""'"); 
+      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "Params_add_str" "', argument " "2"" of type '" "std::string const""'"); 
     }
     arg2 = *ptr;
     if (SWIG_IsNewObj(res)) delete ptr;
@@ -4400,6 +4400,33 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_UConnector_activate_objects(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UConnector *arg1 = (UConnector *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:UConnector_activate_objects",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UConnector, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UConnector_activate_objects" "', argument " "1"" of type '" "UConnector *""'"); 
+  }
+  arg1 = reinterpret_cast< UConnector * >(argp1);
+  try {
+    (arg1)->activate_objects();
+  }
+  catch(UException &_e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
+  }
+  
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *UConnector_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *obj;
   if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
@@ -4431,6 +4458,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"UConnector_getShortName", _wrap_UConnector_getShortName, METH_VARARGS, NULL},
 	 { (char *)"UConnector_getName", _wrap_UConnector_getName, METH_VARARGS, NULL},
 	 { (char *)"UConnector_getTextName", _wrap_UConnector_getTextName, METH_VARARGS, NULL},
+	 { (char *)"UConnector_activate_objects", _wrap_UConnector_activate_objects, METH_VARARGS, NULL},
 	 { (char *)"UConnector_swigregister", UConnector_swigregister, METH_VARARGS, NULL},
 	 { NULL, NULL, 0, NULL }
 };

@@ -53,7 +53,7 @@ class UniSetActivator:
 {
 	public:
 
-		static UniSetActivatorPtr Instance( const UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId );
+		static UniSetActivatorPtr Instance();
 		void Destroy();
 
 		std::shared_ptr<UniSetActivator> get_aptr();
@@ -92,7 +92,6 @@ class UniSetActivator:
 
 		// уносим в protected, т.к. Activator должен быть только один..
 		UniSetActivator();
-		UniSetActivator( const UniSetTypes::ObjectId id );
 
 		static std::shared_ptr<UniSetActivator> inst;
 

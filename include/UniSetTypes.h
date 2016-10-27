@@ -241,7 +241,7 @@ namespace UniSetTypes
 
 	inline int getArgInt( const std::string& name,
 						  int _argc, const char* const* _argv,
-						  const std::string defval = "" ) noexcept
+						  const std::string& defval = "" ) noexcept
 	{
 		return uni_atoi(getArgParam(name, _argc, _argv, defval));
 	}

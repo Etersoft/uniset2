@@ -35,6 +35,9 @@ void pyUInterface::uniset_init_params( UTypes::Params* p, const std::string& xml
 
 void pyUInterface::uniset_init( int argc, char* argv[], const std::string& xmlfile )throw(UException)
 {
+	if( uInterface )
+		return;
+
 	try
 	{
 		UniSetTypes::uniset_init(argc, argv, xmlfile);

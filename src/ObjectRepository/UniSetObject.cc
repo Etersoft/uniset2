@@ -134,13 +134,19 @@ void UniSetObject::initObject()
 
 	auto conf = uniset_conf();
 
+	if( !conf )
+	{
+		ostringstream err;
+		err << myname << "(initObject): Unknown configuration!!";
+		throw SystemError(err.str());
+	}
+
 	int sz = conf->getArgPInt("--uniset-object-size-message-queue", conf->getField("SizeOfMessageQueue"), 1000);
 
 	if( sz > 0 )
 		setMaxSizeOfMessageQueue(sz);
 
-	uinfo << myname << "(init): SizeOfMessageQueue=" << getMaxSizeOfMessageQueue()
-		  << endl;
+	uinfo << myname << "(init): SizeOfMessageQueue=" << getMaxSizeOfMessageQueue() << endl;
 }
 // ------------------------------------------------------------------------------------------
 

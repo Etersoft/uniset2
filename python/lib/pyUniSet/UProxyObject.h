@@ -18,7 +18,9 @@
 #define UProxyObject_H_
 // --------------------------------------------------------------------------
 #include <memory>
+#include "Configuration.h"
 #include "UExceptions.h"
+#include "UTypes.h"
 // --------------------------------------------------------------------------
 class UProxyObject_impl; // PIMPL
 // --------------------------------------------------------------------------
@@ -67,6 +69,7 @@ class UProxyObject
 		bool smIsOK();
 
 	protected:
+		void init( long id ) throw( UException );
 
 	private:
 		UProxyObject()throw(UException);

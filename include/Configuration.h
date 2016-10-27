@@ -183,7 +183,7 @@ namespace UniSetTypes
 			std::shared_ptr<UniXML> unixml;
 
 			int _argc = { 0 };
-			const char* const* _argv;
+			const char** _argv = { nullptr };
 			CORBA::ORB_var orb;
 			CORBA::PolicyList policyList;
 

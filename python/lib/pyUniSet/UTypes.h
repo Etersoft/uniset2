@@ -18,6 +18,7 @@
 #define UTypes_H_
 // --------------------------------------------------------------------------
 #include <string>
+#include "Configuration.h"
 #include "UniSetTypes.h"
 // --------------------------------------------------------------------------
 namespace UTypes
@@ -38,7 +39,7 @@ namespace UTypes
 		{
 			if( argc < Params::max )
 			{
-				argv[argc++] = s;
+				argv[argc++] = UniSetTypes::uni_strdup(s);
 				return true;
 			}
 

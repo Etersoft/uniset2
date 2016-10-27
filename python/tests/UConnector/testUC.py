@@ -12,18 +12,34 @@ from lib import *
 if __name__ == "__main__":
 	
 	lst = Params_inst()
+	lst2 = Params_inst()
 
 	for i in range(0, len(sys.argv)):
 		if i >= Params.max:
 			break;
 	
 		lst.add( sys.argv[i] )
+		lst2.add( sys.argv[i] )
+
+
+	pstr = "--uniset-port"
+	pstr2= "12"
+	lst.add_str(pstr)
+	lst.add_str(pstr2)
+	lst2.add_str(pstr)
+	lst2.add_str(pstr2)
 
 	p = []
 	print "lst: class: " + str(p.__class__.__name__)
 
+
+
 	try:	
 		uc1 = UConnector( lst, "test.xml" )
+		uc2 = UConnector( lst2, "test.xml" )
+		
+		obj1 = UProxyObject("TestProc",uc1.getConfID())
+		obj2 = UProxyObject("TestProc1",uc2.getConfID())
 		
 #		print "(0)UIType: %s" % uc1.getUIType()
 

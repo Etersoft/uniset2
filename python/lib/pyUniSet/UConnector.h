@@ -23,6 +23,7 @@
 #include "UInterface.h"
 #include "UTypes.h"
 #include "UExceptions.h"
+#include "UniSetActivator.h"
 // --------------------------------------------------------------------------
 class UConnector
 {
@@ -47,6 +48,8 @@ class UConnector
 		std::string getShortName( long id );
 		std::string getName( long id );
 		std::string getTextName( long id );
+
+		void activate_objects() throw(UException);
 
 	private:
 		std::shared_ptr<UniSetTypes::Configuration> conf;
