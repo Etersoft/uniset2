@@ -1,18 +1,40 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# ----------------------------------------------------------------------------------------------------------
 # Description: uniset netdata python.d module
 # Author: Pavel Vainerman (pv)
-
+# ----------------------------------------------------------------------------------------------------------
+# Вариант на основе запуска uniset2-admin --сsv id1,id2,id3...
+# ----------------------------------------------------------------------------------------------------------
+# В configure.xml проекта ождается секция <netdata> описывающая
+# charts и параметры.
+# 		<netdata>
+# 		<!-- https://github.com/firehol/netdata/wiki/External-Plugins -->
+# 		<!-- CHART type.id name title units [family [context [charttype [priority [update_every]]]]] -->
+# 		<chart id='unet' name='Temperature' title="Temperature" units='°С' context='' charttype='area' priority='' update_every=''>
+#
+# 			<!-- Чтобы иметь возможность выводить на одном чарте, разные группы можно указывать много 'line' -->
+#
+# 			<!-- Параметры берутся из <sensors> в виду netdata_xxx (необязательные помечены []
+# 				В качестве id - берётся name.
+# 				В качестве name - берётся name, если не указан netdata_name=''
+# 			-->
+# 			<!-- DIMENSION id [name [algorithm [multiplier [divisor [hidden]]]]] -->
+# 			<lines filter_field='ndata' filter_value='temp'/>
+# 		</chart>
+# 	</netdata>
+#
+# TODO: можно сделать вариант со специальным UniSetNetDataServer
+# ----------------------------------------------------------------------------------------------------------
 import os
 import sys
-import random
+
 import uniset2
 from uniset2 import UniXML
-from uniset2 import UProxyObject
-from uniset2 import UConnector
+from subprocess import Popen, PIPE
 
 sys.path.append("./python_modules")
-from base import SimpleService
+from base import ExecutableService
 
 NAME = os.path.basename(__file__).replace(".chart.py", "")
 
@@ -21,18 +43,14 @@ update_every = 5
 priority = 90000
 retries = 60
 
-class Service(SimpleService):
-
-    sensors = []
-    uproxy = None
-    uconnector = None
-    smOK = False
+class Service(ExecutableService):
 
     def __init__(self, configuration=None, name=None):
         super(self.__class__, self).__init__(configuration=configuration, name=name)
 
         conf = self.configuration.pop
         confile = None
+
         try:
             confile = conf('confile')
         except KeyError:
@@ -43,36 +61,31 @@ class Service(SimpleService):
             self.error("uniset plugin: Not found confile '%s'"%confile)
             raise RuntimeError
 
-        #self.name = self.get_conf_param('name', name)
+        self.sensors = []
+        self.confile = confile;
         self.info("%s: read from %s"%(name,confile))
         self.create_charts(confile)
-        self.init_uniset(confile)
-        # добавляем датчики в опрос..
-        for s in self.sensors:
-            self.uproxy.addToAsk(s[1])
 
-    def init_uniset(self, confile):
+        uniset_port = self.get_conf_param('port', '')
 
-        arglist= uniset2.Params_inst()
-        for i in range(0, len(sys.argv)):
-            if i >= uniset2.Params.max:
-                break;
-            arglist.add(sys.argv[i])
+        idlist = ''
+        num = 0
+        for nid,sid in self.sensors:
+            if num == 0:
+                idlist="%s"%str(sid)
+                num += 1
+            else:
+                idlist += ",%s"%str(sid)
 
-        port = self.get_conf_param('port', '')
-        if port != '':
-            p = '--uniset-port'
-            arglist.add_str(p)
-            arglist.add_str( str(port) )
+        uniset_command = self.get_conf_param('uniset_command',"/usr/bin/uniset2-admin --confile %s"%(self.confile))
 
-        uname = self.get_conf_param('uname', 'TestProc')
+        command = "%s --csv %s"%(uniset_command,idlist)
+        if uniset_port!=None and uniset_port!='':
+            command += " --uniset-port %s"%uniset_port
 
-        try:
-            self.uconnector = UConnector(arglist,confile)
-            self.uproxy = UProxyObject(uname)
-        except uniset2.UException, e:
-            self.error("uniset plugin: error: %s"% e.getError())
-            raise RuntimeError
+        self.configuration['command'] = command
+        self.command = command
+        self.info("Update command: %s"%command)
 
     def get_conf_param(self, propname, defval):
         try:
@@ -86,7 +99,7 @@ class Service(SimpleService):
     def find_section(self, xml, secname):
         node = xml.findNode(xml.getDoc(), secname)[0]
         if node == None:
-            self.error("not found '%s' section in %s" % (secname,xml.getFileName()))
+            self.error("not found section <%s> in confile '%s'" % (secname,xml.getFileName()))
             raise RuntimeError
 
         return node.children
@@ -107,7 +120,7 @@ class Service(SimpleService):
                 # CHART type.id name title units [family [context [charttype [priority [update_every]]]]]
                 id = node.prop('id')
                 if id == '' or id == None:
-                    self.error("IGNORE CHART.. Unknown id=''.")
+                    self.error("IGNORE CHART.. Unknown id=''")
                     node = xml.nextNode(node)
                     continue
 
@@ -214,62 +227,76 @@ class Service(SimpleService):
 
         return True
 
-    def check(self):
-
-        self.info("**** uniset_activate_objects")
-        # ret = super(self.__class__, self).check()
-        try:
-            self.uconnector.activate_objects()
-        except uniset2.UException, e:
-            self.error("%s"% e.getError())
-            raise False
-
-        return True
-
     def _get_data(self):
 
         data = {}
 
-        for netid,id in self.sensors:
-            data[netid] = self.uproxy.getValue(id)
+        try:
+            raw = self._get_raw_data()
+
+            if raw == None or len(raw) == 0:
+                return {}
+
+            raw = raw[-1].split(',')
+
+            if len(raw) < len(self.sensors):
+                if len(raw) > 0:
+                    self.debug("_get_data ERROR: len data=%d < len sensors=%d"%(len(raw),len(self.sensors)))
+                return {}
+
+            i = 0
+            for id,sid in self.sensors:
+                data[id] = raw[i]
+                i += 1
+
+        except (ValueError, AttributeError):
+            return {}
+
+        return data
+
+    def _get_raw_data(self):
+        """
+        Get raw data from executed command
+        :return: str
+        """
+        try:
+            p = Popen(self.command, shell=True, stdout=PIPE, stderr=PIPE)
+        except Exception as e:
+            self.error("Executing command", self.command, "resulted in error:", str(e))
+            return None
+
+        data = []
+        for line in p.stdout.readlines():
+            data.append(str(line.decode()))
 
         if len(data) == 0:
+            # self.error("No data collected.")
             return None
 
         return data
 
-    def update(self, interval):
-
-        if not self.uproxy.askIsOK() and not self.uproxy.reaskSensors():
-            return False
-
-        prev_smOK = self.smOK
-        self.smOK  = self.uproxy.smIsOK()
-
-        if prev_smOK != self.smOK and self.smOK:
-            self.info("SM exist OK. Reask sensors..")
-            self.uproxy.reaskSensors()
-
-        return super(self.__class__, self).update(interval)
+    def check(self):
+        # Считаем что у нас всегда, всё хорошо, даже если SM недоступна
+        return True
 
 if __name__ == "__main__":
 
-    config = {}
-    config['confile'] = './test.xml'
-    config['port'] = 2809
-    config['uname'] = 'TestProc'
-    config['update_every'] = update_every
-    config['priority'] = priority
-    config['retries'] = retries
+ config = {}
+ config['confile'] = './test.xml'
+ config['port'] = 53817
+ config['uname'] = 'TestProc'
+ config['update_every'] = update_every
+ config['priority'] = priority
+ config['retries'] = retries
 
-    serv = Service(config,"test")
+ serv = Service(config,"test")
 
-    config2 = {}
-    config2['confile'] = './test.xml'
-    config2['port'] = 2809
-    config2['uname'] = 'TestProc1'
-    config2['update_every'] = update_every
-    config2['priority'] = priority
-    config2['retries'] = retries
-
-    serv2 = Service(config2,"test")
+ # config2 = {}
+ # config2['confile'] = './test.xml'
+ # config2['port'] = 52809
+ # config2['uname'] = 'TestProc1'
+ # config2['update_every'] = update_every
+ # config2['priority'] = priority
+ # config2['retries'] = retries
+ #
+ # serv2 = Service(config2,"test")

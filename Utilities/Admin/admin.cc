@@ -52,6 +52,7 @@ static struct option longopts[] =
 	{ "oinfo", required_argument, 0, 'p' },
 	{ "verbose", no_argument, 0, 'v' },
 	{ "quiet", no_argument, 0, 'q' },
+	{ "csv", required_argument, 0, 'z' },
 	{ NULL, 0, 0, 0 }
 };
 
@@ -117,6 +118,7 @@ static void usage()
 	print_help(36, "-t|--getChangedTime id1@node1,id2@node2,id3,.. ", "Получить время последнего изменения.\n");
 	print_help(36, "-v|--verbose", "Подробный вывод логов.\n");
 	print_help(36, "-q|--quiet", "Выводит только результат.\n");
+	print_help(36, "-z|--csv", "Вывести результат (getValue) в виде val1,val2,val3...\n");
 	cout << endl;
 }
 
@@ -129,6 +131,7 @@ static void usage()
 // --------------------------------------------------------------------------------------
 static bool verb = false;
 static bool quiet = false;
+static bool csv = false;
 
 int main(int argc, char** argv)
 {
@@ -141,7 +144,7 @@ int main(int argc, char** argv)
 
 		while(1)
 		{
-			opt = getopt_long(argc, argv, "hc:beosfur:l:i::x:g:w:y:p:vq", longopts, &optindex);
+			opt = getopt_long(argc, argv, "hc:beosfur:l:i::x:g:w:y:p:vqz:", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -190,7 +193,10 @@ int main(int argc, char** argv)
 				break;
 
 				case 'g':    //--getValue
+				case 'z':    //--csv
 				{
+					if( opt == 'z' )
+						csv = true;
 					//                    cout<<"(main):received option --getValue='"<<optarg<<"'"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
@@ -666,8 +672,13 @@ int getValue( const string& args, UInterface& ui )
 	auto conf = ui.getConf();
 	auto sl = UniSetTypes::getSInfoList( args, conf );
 
+	if( csv )
+		quiet = true;
+
 	if( !quiet )
 		cout << "====== getValue ======" << endl;
+
+	size_t num = 0;
 
 	for( auto && it : sl )
 	{
@@ -694,8 +705,19 @@ int getValue( const string& args, UInterface& ui )
 					if( !quiet )
 						cout << "  value: " << ui.getValue(it.si.id, it.si.node) << endl;
 					else
-						cout << ui.getValue(it.si.id, it.si.node);
-
+					{
+						if( csv )
+						{
+							// т.к. может сработать исключение, а нам надо вывести ','
+							// до числа, то сперва получаем val
+							long val = ui.getValue(it.si.id, it.si.node);
+							if( csv && num++ > 0 )
+								cout << ",";
+							cout << val;
+						}
+						else
+							cout << ui.getValue(it.si.id, it.si.node);
+					}
 					break;
 
 				default:
