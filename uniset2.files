@@ -334,6 +334,8 @@ include/USocket.h
 include/UDPCore.h
 include/WDTInterface.h
 include/UHelpers.h
+include/UHttpRequestHandler.h
+include/UHttpServer.h
 lib/Makefile.am
 python/examples/test.xml
 python/lib/pyUniSet/Makefile.am
@@ -376,6 +378,7 @@ src/Communications/TCP/UTCPCore.cc
 src/Communications/TCP/UTCPStream.cc
 src/Communications/TCP/UTCPSocket.cc
 src/Communications/TCP/USocket.cc
+src/Communications/Http/UHttpRequestHandler.cc
 src/Communications/ComPort.cc
 src/Communications/ComPort485F.cc
 src/Communications/Makefile.am
@@ -468,6 +471,7 @@ tests/test_uobject.cc
 tests/test_utcpsocket.cc
 tests/test_iocontroller_types.cc
 tests/test_debugstream.cc
+tests/test_uhttp.cc
 tests/TestUObject.h
 tests/tests-junit.xml
 tests/tests.cc

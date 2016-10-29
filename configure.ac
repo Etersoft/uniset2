@@ -69,6 +69,13 @@ if test -n "$poco_old"; then
 	POCO_CFLAGS="${POCO_CFLAGS} -DPOCO_OLD_VERSION"
 fi
 
+AC_MSG_CHECKING([check json])
+if test -a "/usr/include/json.hpp"; then
+	AC_MSG_RESULT([ok])
+else
+	AC_MSG_ERROR([json.hpp not found])
+fi
+
 #check sqlite support
 AC_MSG_CHECKING([sqlite support])
 buildsqlite=true
@@ -95,18 +102,6 @@ test "x$IDL" = "x" && AC_MSG_ERROR([*** omniidl not found.])
 #AC_SUBST(UNISET_IDLFLAGS)
 
 #check mysql support
-AC_MSG_CHECKING([mysql support])
-buildmysql=true
-AC_ARG_ENABLE(mysql, AC_HELP_STRING([--disable-mysql], [disable MySQL support]),
-[ if test $enableval = yes; then buildmysql=true; else buildmysql=false; fi],[ buildmysql=true; ])
-
-if test ${buildmysql} = true; then
-	AC_MSG_RESULT([enabled])
-	AC_CHECK_HEADERS([mysql/mysql.h])
-	AC_SEARCH_LIBS([mysql_init],mysqlclient,[],[],exit)
-else
-	AC_MSG_RESULT([disabled])
-fi
 
 AM_CONDITIONAL(DISABLE_MYSQL, test ${buildmysql} = false)
 
@@ -378,6 +373,7 @@ AC_CONFIG_FILES([Makefile
 				 src/Communications/Makefile
 				 src/Communications/Modbus/Makefile
 				 src/Communications/TCP/Makefile
+				 src/Communications/Http/Makefile
 				 src/Interfaces/Makefile
 				 src/ObjectRepository/Makefile
 				 src/Processes/Makefile
