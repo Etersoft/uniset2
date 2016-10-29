@@ -5653,7 +5653,7 @@
 		<!-- https://github.com/firehol/netdata/wiki/External-Plugins -->
 		
 		<!-- CHART type.id name title units [family [context [charttype [priority [update_every]]]]] -->
-		<chart id='unet' name='NAME' title="unet" units='count' family='UNET' context='' charttype='stacked' priority='' update_every=''>
+		<chart id='unet' name='NAME' title="unet" units='count' family='UNET' context='' charttype='line' priority='' update_every=''>
 			
 			<!-- Чтобы иметь возможность выводить на одном чарте, разные группы можно указывать много 'line' -->
 			

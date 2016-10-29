@@ -11,6 +11,7 @@ ln -s -f admin.sh omap
 ln -s -f admin.sh msgmap
 ln -s -f admin.sh setValue
 ln -s -f admin.sh getValue
+ln -s -f admin.sh csv
 ln -s -f admin.sh getRawValue
 ln -s -f admin.sh getChangedTime
 ln -s -f admin.sh getCalibrate

@@ -9,6 +9,7 @@
 #%def_enable modbus
 %def_disable tests
 %def_disable mqtt
+%def_enable netdata
 
 %define oname uniset2
 
@@ -60,6 +61,10 @@ BuildRequires: librrd-devel
 
 %if_enabled mqtt
 BuildRequires: libmosquitto-devel
+%endif
+
+%if_enabled netdata
+BuildRequires: netdata
 %endif
 
 %if_enabled python
@@ -116,6 +121,16 @@ Requires: %name = %version-%release
 
 %description -n python-module-%oname
 Python interface for %name
+%endif
+
+%if_enabled netdata
+%package netdata-plugin
+Group: Development/Tools
+Summary: python plugin for netdata
+Requires: python-module-%oname
+
+%description netdata-plugin
+python plugin for netdata
 %endif
 
 %package utils
@@ -383,6 +398,12 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %if_enabled python
 %files -n python-module-%oname
 %python_sitelibdir/%oname/
+%endif
+
+%if_enabled netdata
+%files netdata-plugin
+%_libdir/netdata/python.d/*.*
+%config(noreplace) %_sysconfdir/netdata/python.d/*.conf
 %endif
 
 %if_enabled docs

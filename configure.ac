@@ -451,6 +451,7 @@ AC_CONFIG_FILES([Makefile
 				 testsuite/Makefile
 				 python/lib/Makefile
 				 python/lib/pyUniSet/Makefile
+				 python/netdata-plugin/Makefile
 				 python/Makefile])
 				 
 
