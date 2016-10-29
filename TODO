@@ -85,6 +85,13 @@ DB: Сделать регулируемый буфер на INSERT-ы БД, чт
 Уйти от использования libxml2,DebugLog ==> и применять одну библиотеку libpoco (http://pocoproject.org/documentation/index.html)
 или всё-таки на boost?
 
+
+ИДЕИ
+-----
+1) HTTPServer в каждом объекте отдающий JSON с внутренними параметрами.
+
+
+
 ==================
 
 Но тогда стоит вводить и namespace uniset
