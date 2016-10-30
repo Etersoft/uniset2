@@ -433,6 +433,53 @@ const std::shared_ptr<UniSetManager> UniSetManager::findManager( const string& n
 	return nullptr;
 }
 // ------------------------------------------------------------------------------------------
+const std::shared_ptr<UniSetObject> UniSetManager::deepFindObject( const string& name )
+{
+	{
+		auto obj = findObject(name);
+		if( obj )
+			return obj;
+	}
+
+	auto man = findManager(name);
+	if( man )
+	{
+		auto obj = dynamic_pointer_cast<UniSetObject>(man);
+		return obj;
+	}
+
+	// ищем в глубину у каждого менеджера
+	for( const auto& m: mlist )
+	{
+		auto obj = m->deepFindObject(name);
+		if( obj )
+			return obj;
+	}
+
+	return nullptr;
+}
+// ------------------------------------------------------------------------------------------
+void UniSetManager::getAllObjectsList( std::vector<std::shared_ptr<UniSetObject> >& vec, size_t lim )
+{
+	// добавить себя
+	vec.push_back(get_ptr());
+
+	// добавить подчинённые объекты
+	for( const auto& o: olist )
+	{
+		vec.push_back(o);
+		if( lim > 0 && vec.size() >= lim )
+			return;
+	}
+
+	// добавить рекурсивно по менеджерам
+	for( const auto& m: mlist )
+	{
+		// вызываем рекурсивно
+		m->getAllObjectsList(vec,lim);
+	}
+}
+// ------------------------------------------------------------------------------------------
 void UniSetManager::sigterm( int signo )
 {
 	sig = signo;

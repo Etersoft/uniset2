@@ -127,6 +127,12 @@ class UniSetManager:
 		const std::shared_ptr<UniSetObject> findObject( const std::string& name );
 		const std::shared_ptr<UniSetManager> findManager( const std::string& name );
 
+		// рекурсивный поиск по всем объекам
+		const std::shared_ptr<UniSetObject> deepFindObject( const std::string& name );
+
+		// рекурсивное наполнение списка объектов
+		void getAllObjectsList( std::vector<std::shared_ptr<UniSetObject>>& vec, size_t lim=1000 );
+
 		typedef UniSetManagerList::iterator MListIterator;
 
 		int getObjectsInfo(const std::shared_ptr<UniSetManager>& mngr, UniSetTypes::SimpleInfoSeq* seq,

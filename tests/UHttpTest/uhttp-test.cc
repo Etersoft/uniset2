@@ -39,6 +39,15 @@ class UTestRequestRegistry:
 			return j;
 		}
 
+		virtual nlohmann::json getObjectsList( const Poco::URI::QueryParameters& p ) override
+		{
+			nlohmann::json j;
+			j.push_back("TestObject");
+			j.push_back("TestObject2");
+			j.push_back("TestObject3");
+			return j;
+		}
+
 	private:
 		UTestSupplier sup;
 };

@@ -85,7 +85,9 @@ class UniSetActivator:
 			return abortScript;
 		}
 
+		// Поддрежка REST API (IHttpRequestRegistry)
 		virtual nlohmann::json getDataByName( const std::string& name , const Poco::URI::QueryParameters& p ) override;
+		virtual nlohmann::json getObjectsList( const Poco::URI::QueryParameters& p ) override;
 
 	protected:
 

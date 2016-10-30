@@ -863,17 +863,37 @@ UniSetActivator::TerminateEvent_Signal UniSetActivator::signal_terminate_event()
 // ------------------------------------------------------------------------------------------
 nlohmann::json UniSetActivator::getDataByName( const string& name, const Poco::URI::QueryParameters& p )
 {
-	auto obj = findObject(name);
+	if( name == myname )
+		return getData(p);
+
+	auto obj = deepFindObject(name);
 	if( obj )
 		return obj->getData(p);
 
-	auto man = findManager(name);
-	if( man )
-		return man->getData(p);
-
 	//! \todo Продумать что возвращать если объект не найден
-	nlohmann::json j = "";
-	return j; // return empty json
+	nlohmann::json jdata;
+	ostringstream err;
+	err << "Object '" << name << "' not found";
+	jdata["error"] = err.str();
+	jdata["ecode"] = Poco::Net::HTTPResponse::HTTP_OK;
+	return jdata;
+}
+// ------------------------------------------------------------------------------------------
+nlohmann::json UniSetActivator::getObjectsList( const Poco::URI::QueryParameters& p )
+{
+	nlohmann::json jdata;
+
+	std::vector<std::shared_ptr<UniSetObject>> vec;
+	vec.reserve(objectsCount());
+
+	//! \todo Доделать обработку параметров beg,lim на случай большого количества объектов (и частичных запросов)
+	size_t lim = 1000;
+	getAllObjectsList(vec,lim);
+
+	for( const auto& o: vec )
+		jdata.push_back(o->getName());
+
+	return jdata;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::terminated( int signo )

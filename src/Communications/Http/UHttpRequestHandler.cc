@@ -47,28 +47,41 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 	std::vector<std::string> seg;
 	uri.getPathSegments(seg);
 
-	// example: http://host:port/api-version/get/ObjectName
-	if( seg.size() < 3
-		|| seg[0] != UHTTP_API_VERSION
-		|| seg[1] != "get"
-		|| seg[2].empty() )
+	// example: http://host:port/api/version/get/ObjectName
+	if( seg.size() < 4
+		|| seg[1] != UHTTP_API_VERSION
+		|| seg[2] != "get"
+		|| seg[3].empty() )
 	{
 		resp.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
 		resp.setContentType("text/json");
 		std::ostream& out = resp.send();
+		nlohmann::json jdata;
+		jdata["error"] = "HTTP_BAD_REQUEST";
+		jdata["ecode"] = HTTPResponse::HTTP_BAD_REQUEST;
+		out << jdata.dump();
 		out.flush();
 		return;
 	}
 
-	const std::string objectName(seg[2]);
+	const std::string objectName(seg[3]);
 	auto qp = uri.getQueryParameters();
 
 	resp.setStatus(HTTPResponse::HTTP_OK);
 	resp.setContentType("text/json");
 	std::ostream& out = resp.send();
 
-	auto json = registry->getDataByName(objectName, qp);
-	out << json.dump();
+	if( objectName == "list" )
+	{
+		auto json = registry->getObjectsList(qp);
+		out << json.dump();
+	}
+	else
+	{
+		auto json = registry->getDataByName(objectName, qp);
+		out << json.dump();
+	}
+
 	out.flush();
 }
 // -------------------------------------------------------------------------
