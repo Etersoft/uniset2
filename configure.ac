@@ -69,12 +69,12 @@ if test -n "$poco_old"; then
 	POCO_CFLAGS="${POCO_CFLAGS} -DPOCO_OLD_VERSION"
 fi
 
-AC_MSG_CHECKING([check json])
-if test -a "/usr/include/json.hpp"; then
-	AC_MSG_RESULT([ok])
-else
-	AC_MSG_ERROR([json.hpp not found])
-fi
+#AC_MSG_CHECKING([check json])
+#if test -a "/usr/include/json.hpp"; then
+#	AC_MSG_RESULT([ok])
+#else
+#	AC_MSG_ERROR([json.hpp not found])
+#fi
 
 #check sqlite support
 AC_MSG_CHECKING([sqlite support])

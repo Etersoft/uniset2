@@ -29,6 +29,8 @@
 #include "UniSetObject.h"
 #include "UniSetManager.h"
 #include "OmniThreadCreator.h"
+#include "UHttpRequestHandler.h"
+#include "UHttpServer.h"
 //----------------------------------------------------------------------------------------
 class UniSetActivator;
 typedef std::shared_ptr<UniSetActivator> UniSetActivatorPtr;
@@ -49,7 +51,8 @@ typedef std::shared_ptr<UniSetActivator> UniSetActivatorPtr;
  * --uniset-abort-script  - скрипт запускаемый при вылете, в качестве аргумента передаётся имя программы и pid
 */
 class UniSetActivator:
-	public UniSetManager
+	public UniSetManager,
+	public UniSetTypes::UHttp::IHttpRequestRegistry
 {
 	public:
 
@@ -81,6 +84,8 @@ class UniSetActivator:
 		{
 			return abortScript;
 		}
+
+		virtual nlohmann::json getDataByName( const std::string& name ) override;
 
 	protected:
 
@@ -118,6 +123,10 @@ class UniSetActivator:
 		bool _noUseGdbForStackTrace = { false };
 
 		std::string abortScript = { "" }; // скрипт вызываемый при прерывании программы (SIGSEGV,SIGABRT)
+
+		std::shared_ptr<UniSetTypes::UHttp::UHttpServer> httpserv;
+		std::string httpHost = { "" };
+		int httpPort = { 0 };
 };
 //----------------------------------------------------------------------------------------
 #endif

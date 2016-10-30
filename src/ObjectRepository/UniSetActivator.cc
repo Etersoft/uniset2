@@ -525,6 +525,15 @@ void UniSetActivator::init()
 
 	abortScript = conf->getArgParam("--uniset-abort-script", "");
 
+	if( findArgParam("--activator-run-httpserver", conf->getArgc(), conf->getArgv()) != -1 )
+	{
+		httpHost = conf->getArgParam("--activator-httpserver-host", "localhost");
+		ostringstream s;
+		s << (getId()==DefaultObjectId ? 8080 : getId() );
+		httpPort = conf->getArgInt("--activator-httpserver-port", s.str());
+		ulog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
+	}
+
 	orb = conf->getORB();
 	CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
 	PortableServer::POA_var root_poa = PortableServer::POA::_narrow(obj);
@@ -653,6 +662,21 @@ void UniSetActivator::run( bool thread )
 
 	set_signals(true);
 
+	if( !httpHost.empty() )
+	{
+		try
+		{
+			auto reg = dynamic_pointer_cast<UHttp::IHttpRequestRegistry>(shared_from_this());
+			httpserv = make_shared<UHttp::UHttpServer>(reg,httpHost,httpPort);
+			httpserv->start();
+		}
+		catch( std::exception& ex )
+		{
+			uwarn << myname << "(run): init http server error: " << ex.what() << endl;
+		}
+	}
+
+
 	if( thread )
 	{
 		uinfo << myname << "(run): запускаемся с созданием отдельного потока...  " << endl;
@@ -687,6 +711,9 @@ void UniSetActivator::stop()
 	pman->discard_requests(true);
 
 	ulogsys << myname << "(stop): discard request ok." << endl;
+
+	if( httpserv )
+		httpserv->stop();
 }
 
 // ------------------------------------------------------------------------------------------
@@ -720,6 +747,10 @@ void UniSetActivator::work()
 		ucrit << myname << "(work):   file: " << fe.file() << endl;
 		ucrit << myname << "(work):   line: " << fe.line() << endl;
 		ucrit << myname << "(work):   mesg: " << fe.errmsg() << endl;
+	}
+	catch( std::exception& ex )
+	{
+		ucrit << myname << "(work): catch: " << ex.what() << endl;
 	}
 
 	ulogsys << myname << "(work): orb thread stopped!" << endl << flush;
@@ -828,6 +859,21 @@ void UniSetActivator::set_signals(bool ask)
 UniSetActivator::TerminateEvent_Signal UniSetActivator::signal_terminate_event()
 {
 	return s_term;
+}
+// ------------------------------------------------------------------------------------------
+nlohmann::json UniSetActivator::getDataByName( const string& name )
+{
+	auto obj = findObject(name);
+	if( obj )
+		return obj->getData();
+
+	auto man = findManager(name);
+	if( man )
+		return man->getData();
+
+	//! \todo Продумать что возвращать если объект не найден
+	nlohmann::json j = "";
+	return j; // return empty json
 }
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::terminated( int signo )

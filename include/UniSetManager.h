@@ -124,6 +124,9 @@ class UniSetManager:
 		//! \note Переопределяя не забывайте вызвать базовую
 		virtual bool deactivateObject() override;
 
+		const std::shared_ptr<UniSetObject> findObject( const std::string& name );
+		const std::shared_ptr<UniSetManager> findManager( const std::string& name );
+
 		typedef UniSetManagerList::iterator MListIterator;
 
 		int getObjectsInfo(const std::shared_ptr<UniSetManager>& mngr, UniSetTypes::SimpleInfoSeq* seq,

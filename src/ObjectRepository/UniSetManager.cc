@@ -409,6 +409,30 @@ bool UniSetManager::deactivateObject()
 	return true;
 }
 // ------------------------------------------------------------------------------------------
+const std::shared_ptr<UniSetObject> UniSetManager::findObject( const string& name )
+{
+	uniset_rwmutex_rlock lock(olistMutex);
+	for( auto&& o: olist )
+	{
+		if( o->getName() == name )
+			return o;
+	}
+
+	return nullptr;
+}
+// ------------------------------------------------------------------------------------------
+const std::shared_ptr<UniSetManager> UniSetManager::findManager( const string& name )
+{
+	uniset_rwmutex_rlock lock(mlistMutex);
+	for( auto&& m: mlist )
+	{
+		if( m->getName() == name )
+			return m;
+	}
+
+	return nullptr;
+}
+// ------------------------------------------------------------------------------------------
 void UniSetManager::sigterm( int signo )
 {
 	sig = signo;

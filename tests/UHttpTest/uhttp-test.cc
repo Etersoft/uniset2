@@ -16,11 +16,11 @@ class UTestSupplier:
 		{
 			nlohmann::json j;
 
-			j["test"] = 23;
+			j["test"] = 42;
 			return j;
 		}
 };
-
+// --------------------------------------------------------------------------
 class UTestRequestRegistry:
 		public UHttp::IHttpRequestRegistry
 {
@@ -29,9 +29,11 @@ class UTestRequestRegistry:
 		virtual ~UTestRequestRegistry(){}
 
 
-		virtual nlohmann::json getData( const std::string& name ) override
+		virtual nlohmann::json getDataByName( const std::string& name ) override
 		{
-			return sup.getData();
+			nlohmann::json j = sup.getData();
+			j["name"] = name;
+			return j;
 		}
 
 	private:
@@ -47,7 +49,11 @@ int main(int argc, const char** argv)
 		auto ireg = dynamic_pointer_cast<UHttp::IHttpRequestRegistry>(reg);
 
 		auto http = make_shared<UHttp::UHttpServer>(ireg,"localhost", 5555);
-		http->run(false);
+		http->log()->level(Debug::ANY);
+
+		http->start();
+		pause();
+		http->stop();
 		return 0;
 	}
 	catch( const std::exception& e )

@@ -379,6 +379,20 @@ void UniSetObject::push( const TransportMessage& tm )
 	termWaiting();
 }
 // ------------------------------------------------------------------------------------------
+nlohmann::json UniSetObject::getData()
+{
+	nlohmann::json jdata;
+	jdata["name"] = myname;
+	jdata["id"] = getId();
+	jdata["msgCount"] = countMessages();
+	jdata["lostMessages"] = getCountOfLostMessages();
+	jdata["maxSizeOfMessageQueue"] = getMaxSizeOfMessageQueue();
+	jdata["isActive"] = isActive();
+	jdata["objectType"] = getType();
+
+	return jdata;
+}
+// ------------------------------------------------------------------------------------------
 ObjectPtr UniSetObject::getRef() const
 {
 	UniSetTypes::uniset_rwmutex_rlock lock(refmutex);

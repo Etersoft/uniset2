@@ -41,6 +41,7 @@
 #include "ThreadCreator.h"
 #include "LT_Object.h"
 #include "MQMutex.h"
+#include "UHttpRequestHandler.h"
 
 //---------------------------------------------------------------------------
 //#include <omnithread.h>
@@ -71,7 +72,8 @@ typedef std::list< std::shared_ptr<UniSetObject> > ObjectsList;     /*!< Спи�
 class UniSetObject:
 	public std::enable_shared_from_this<UniSetObject>,
 	public POA_UniSetObject_i,
-	public LT_Object
+	public LT_Object,
+	public UniSetTypes::UHttp::IHttpRequest
 {
 	public:
 		UniSetObject( const std::string& name, const std::string& section );
@@ -98,6 +100,8 @@ class UniSetObject:
 
 		//! поместить сообщение в очередь
 		virtual void push( const UniSetTypes::TransportMessage& msg ) override;
+
+		virtual nlohmann::json getData() override;
 
 		// -------------- вспомогательные --------------
 		/*! получить ссылку (на себя) */

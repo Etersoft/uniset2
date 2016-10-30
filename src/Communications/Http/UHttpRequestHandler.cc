@@ -26,7 +26,7 @@ using namespace UHttp;
 UHttpRequestHandler::UHttpRequestHandler(std::shared_ptr<IHttpRequestRegistry> _registry ):
 	registry(_registry)
 {
-
+	log = make_shared<DebugStream>();
 }
 // -------------------------------------------------------------------------
 void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp )
@@ -72,7 +72,7 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 	resp.setContentType("text/json");
 	std::ostream& out = resp.send();
 
-	auto json = registry->getData(objectName);
+	auto json = registry->getDataByName(objectName);
 	out << json.dump();
 	out.flush();
 }
