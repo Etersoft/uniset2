@@ -487,6 +487,7 @@ tests/umutex.cc
 tests/perf_test.cc
 tests/MQPerfTest/mq-test.cc
 tests/PocoTest/poco-test.cc
+tests/UHttpTest/uhttp-test.cc
 testsuite/Makefile.am
 Utilities/Admin/admin.cc
 Utilities/Admin/Makefile.am

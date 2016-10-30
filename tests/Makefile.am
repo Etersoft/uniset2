@@ -1,4 +1,4 @@
-SUBDIRS=MQPerfTest PocoTest
+SUBDIRS=MQPerfTest PocoTest UHttpTest
 if HAVE_TESTS
 ############################################################################
 # This file is part of the UniSet library								  #

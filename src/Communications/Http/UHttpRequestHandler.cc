@@ -18,18 +18,20 @@
 #include <Poco/URI.h>
 #include "UHttpRequestHandler.h"
 // -------------------------------------------------------------------------
+using namespace std;
 using namespace Poco::Net;
 using namespace UniSetTypes;
+using namespace UHttp;
 // -------------------------------------------------------------------------
-UHttpRequestHandler::UHttpRequestHandler( std::shared_ptr<IHttpRequestRegistry> _supplier ):
-	supplier(_supplier)
+UHttpRequestHandler::UHttpRequestHandler(std::shared_ptr<IHttpRequestRegistry> _registry ):
+	registry(_registry)
 {
 
 }
 // -------------------------------------------------------------------------
 void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp )
 {
-	if( !supplier )
+	if( !registry )
 	{
 		resp.setStatus(HTTPResponse::HTTP_NOT_FOUND);
 		resp.setContentType("text/json");
@@ -40,28 +42,50 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 
 	Poco::URI uri(req.getURI());
 
-	// в текущей версии подразумевается, что запрос идёт в формате
-	// http://xxx.host:port/ObjectName
-	// поэтому сразу передаём uri.getQuery() в качестве имени объекта
+	if( log->is_info() )
+		log->info() << req.getHost() << ": query: " << uri.getQuery() << endl;
+
+	std::vector<std::string> seg;
+	uri.getPathSegments(seg);
+
+	// example: http://host:port/api-version/get/ObjectName
+	if( seg.size() < 3
+		|| seg[0] != UHTTP_API_VERSION
+		|| seg[1] != "get"
+		|| seg[2].empty() )
+	{
+		resp.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
+		resp.setContentType("text/json");
+		std::ostream& out = resp.send();
+		out.flush();
+		return;
+	}
+
+	const std::string objectName(seg[2]);
+
+//	auto qp = uri.getQueryParameters();
+//	cerr << "params: " << endl;
+//	for( const auto& p: qp )
+//		cerr << p.first << "=" << p.second << endl;
 
 	resp.setStatus(HTTPResponse::HTTP_OK);
 	resp.setContentType("text/json");
 	std::ostream& out = resp.send();
 
-	auto json = supplier->getData(uri.getQuery());
+	auto json = registry->getData(objectName);
 	out << json.dump();
 	out.flush();
 }
 // -------------------------------------------------------------------------
 
-UHttpRequestHandlerFactory::UHttpRequestHandlerFactory( std::shared_ptr<IHttpRequestRegistry>& _supplier ):
-	supplier(_supplier)
+UHttpRequestHandlerFactory::UHttpRequestHandlerFactory(std::shared_ptr<IHttpRequestRegistry>& _registry ):
+	registry(_registry)
 {
 
 }
 // -------------------------------------------------------------------------
 HTTPRequestHandler* UHttpRequestHandlerFactory::createRequestHandler( const HTTPServerRequest& req )
 {
-	return new UHttpRequestHandler(supplier);
+	return new UHttpRequestHandler(registry);
 }
 // -------------------------------------------------------------------------

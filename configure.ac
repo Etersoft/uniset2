@@ -388,6 +388,7 @@ AC_CONFIG_FILES([Makefile
 				 tests/UniXmlTest/Makefile
 				 tests/MQPerfTest/Makefile
 				 tests/PocoTest/Makefile
+				 tests/UHttpTest/Makefile
 				 docs/Makefile
 				 docs/UniSetDox.cfg
 				 docs/UniSetDoxDevel.cfg

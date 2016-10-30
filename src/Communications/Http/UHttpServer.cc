@@ -19,9 +19,10 @@
 // -------------------------------------------------------------------------
 using namespace Poco::Net;
 using namespace UniSetTypes;
+using namespace UHttp;
 // -------------------------------------------------------------------------
 
-UHttpServer::UHttpServer(std::shared_ptr<IHttpRequestRegistry>& supplier, const std::string _host, int _port ):
+UHttpServer::UHttpServer(std::shared_ptr<IHttpRequestRegistry>& supplier, const std::string& _host, int _port ):
     sa(_host,_port)
 {
     /*! \FIXME: доделать конфигурирование параметров */
@@ -47,5 +48,25 @@ UHttpServer::UHttpServer()
 std::shared_ptr<DebugStream> UHttpServer::log()
 {
     return mylog;
+}
+// -------------------------------------------------------------------------
+void UHttpServer::run( bool thread )
+{
+    if( !thread )
+    {
+        try
+        {
+            http->start();
+            pause();
+            http->stop();
+        }
+        catch( std::exception& ex )
+        {
+            mylog->crit() << "(UHttpServer): " << ex.what() << std::endl;
+            throw ex;
+        }
+
+        return;
+    }
 }
 // -------------------------------------------------------------------------
