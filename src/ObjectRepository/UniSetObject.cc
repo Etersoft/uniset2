@@ -379,7 +379,7 @@ void UniSetObject::push( const TransportMessage& tm )
 	termWaiting();
 }
 // ------------------------------------------------------------------------------------------
-nlohmann::json UniSetObject::getData()
+nlohmann::json UniSetObject::getData( const Poco::URI::QueryParameters& p )
 {
 	nlohmann::json jdata;
 	jdata["name"] = myname;

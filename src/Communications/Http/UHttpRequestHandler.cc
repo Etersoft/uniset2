@@ -15,7 +15,6 @@
  */
 // -------------------------------------------------------------------------
 #include <ostream>
-#include <Poco/URI.h>
 #include "UHttpRequestHandler.h"
 // -------------------------------------------------------------------------
 using namespace std;
@@ -62,17 +61,13 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 	}
 
 	const std::string objectName(seg[2]);
-
-//	auto qp = uri.getQueryParameters();
-//	cerr << "params: " << endl;
-//	for( const auto& p: qp )
-//		cerr << p.first << "=" << p.second << endl;
+	auto qp = uri.getQueryParameters();
 
 	resp.setStatus(HTTPResponse::HTTP_OK);
 	resp.setContentType("text/json");
 	std::ostream& out = resp.send();
 
-	auto json = registry->getDataByName(objectName);
+	auto json = registry->getDataByName(objectName, qp);
 	out << json.dump();
 	out.flush();
 }

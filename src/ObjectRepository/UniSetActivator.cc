@@ -861,15 +861,15 @@ UniSetActivator::TerminateEvent_Signal UniSetActivator::signal_terminate_event()
 	return s_term;
 }
 // ------------------------------------------------------------------------------------------
-nlohmann::json UniSetActivator::getDataByName( const string& name )
+nlohmann::json UniSetActivator::getDataByName( const string& name, const Poco::URI::QueryParameters& p )
 {
 	auto obj = findObject(name);
 	if( obj )
-		return obj->getData();
+		return obj->getData(p);
 
 	auto man = findManager(name);
 	if( man )
-		return man->getData();
+		return man->getData(p);
 
 	//! \todo Продумать что возвращать если объект не найден
 	nlohmann::json j = "";

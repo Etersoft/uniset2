@@ -12,9 +12,12 @@ class UTestSupplier:
 		UTestSupplier(){}
 		virtual ~UTestSupplier(){}
 
-		virtual nlohmann::json getData() override
+		virtual nlohmann::json getData( const Poco::URI::QueryParameters& params ) override
 		{
 			nlohmann::json j;
+
+			for( const auto& p: params )
+				j[p.first] = p.second;
 
 			j["test"] = 42;
 			return j;
@@ -29,9 +32,9 @@ class UTestRequestRegistry:
 		virtual ~UTestRequestRegistry(){}
 
 
-		virtual nlohmann::json getDataByName( const std::string& name ) override
+		virtual nlohmann::json getDataByName( const std::string& name, const Poco::URI::QueryParameters& p ) override
 		{
-			nlohmann::json j = sup.getData();
+			nlohmann::json j = sup.getData(p);
 			j["name"] = name;
 			return j;
 		}
@@ -50,6 +53,8 @@ int main(int argc, const char** argv)
 
 		auto http = make_shared<UHttp::UHttpServer>(ireg,"localhost", 5555);
 		http->log()->level(Debug::ANY);
+
+		cout << "start http test server localhost:5555" << endl; 
 
 		http->start();
 		pause();

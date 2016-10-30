@@ -85,7 +85,7 @@ class UniSetActivator:
 			return abortScript;
 		}
 
-		virtual nlohmann::json getDataByName( const std::string& name ) override;
+		virtual nlohmann::json getDataByName( const std::string& name , const Poco::URI::QueryParameters& p ) override;
 
 	protected:
 

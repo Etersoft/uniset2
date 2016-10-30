@@ -101,7 +101,7 @@ class UniSetObject:
 		//! поместить сообщение в очередь
 		virtual void push( const UniSetTypes::TransportMessage& msg ) override;
 
-		virtual nlohmann::json getData() override;
+		virtual nlohmann::json getData( const Poco::URI::QueryParameters& p ) override;
 
 		// -------------- вспомогательные --------------
 		/*! получить ссылку (на себя) */
