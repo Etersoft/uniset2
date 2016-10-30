@@ -393,6 +393,13 @@ nlohmann::json UniSetObject::getData( const Poco::URI::QueryParameters& p )
 	return jdata;
 }
 // ------------------------------------------------------------------------------------------
+nlohmann::json UniSetObject::help( const Poco::URI::QueryParameters& p )
+{
+	nlohmann::json jdata;
+	jdata[myname]["help"] = {};
+	return jdata;
+}
+// ------------------------------------------------------------------------------------------
 ObjectPtr UniSetObject::getRef() const
 {
 	UniSetTypes::uniset_rwmutex_rlock lock(refmutex);

@@ -103,6 +103,7 @@ class UniSetObject:
 
 		// HTTP API
 		virtual nlohmann::json getData( const Poco::URI::QueryParameters& p ) override;
+		virtual nlohmann::json help( const Poco::URI::QueryParameters& p ) override;
 
 		// -------------- вспомогательные --------------
 		/*! получить ссылку (на себя) */

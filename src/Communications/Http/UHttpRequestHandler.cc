@@ -32,9 +32,27 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 {
 	if( !registry )
 	{
-		resp.setStatus(HTTPResponse::HTTP_NOT_FOUND);
+		resp.setStatus(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
 		resp.setContentType("text/json");
 		std::ostream& out = resp.send();
+		nlohmann::json jdata;
+		jdata["error"] = resp.getReasonForStatus(resp.getStatus());
+		jdata["ecode"] = resp.getStatus();
+		out << jdata.dump();
+		out.flush();
+		return;
+	}
+
+	// В этой версии API поддерживается только GET
+	if( req.getMethod() != "GET" )
+	{
+		resp.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
+		resp.setContentType("text/json");
+		std::ostream& out = resp.send();
+		nlohmann::json jdata;
+		jdata["error"] = resp.getReasonForStatus(resp.getStatus());
+		jdata["ecode"] = resp.getStatus();
+		out << jdata.dump();
 		out.flush();
 		return;
 	}
@@ -47,39 +65,71 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 	std::vector<std::string> seg;
 	uri.getPathSegments(seg);
 
-	// example: http://host:port/api/version/get/ObjectName
-	if( seg.size() < 4
+	// example: http://host:port/api/version/ObjectName
+	if( seg.size() < 3
+		|| seg[0] != "api"
 		|| seg[1] != UHTTP_API_VERSION
-		|| seg[2] != "get"
-		|| seg[3].empty() )
+		|| seg[2].empty() )
 	{
 		resp.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
 		resp.setContentType("text/json");
 		std::ostream& out = resp.send();
 		nlohmann::json jdata;
-		jdata["error"] = "HTTP_BAD_REQUEST";
-		jdata["ecode"] = HTTPResponse::HTTP_BAD_REQUEST;
+		jdata["error"] = resp.getReasonForStatus(resp.getStatus());
+		jdata["ecode"] = resp.getStatus();
 		out << jdata.dump();
 		out.flush();
 		return;
 	}
 
-	const std::string objectName(seg[3]);
+	const std::string objectName(seg[2]);
 	auto qp = uri.getQueryParameters();
 
 	resp.setStatus(HTTPResponse::HTTP_OK);
 	resp.setContentType("text/json");
 	std::ostream& out = resp.send();
 
-	if( objectName == "list" )
+	try
 	{
-		auto json = registry->getObjectsList(qp);
-		out << json.dump();
+		if( objectName == "help" )
+		{
+			nlohmann::json jdata;
+			jdata["help"] = {
+			  {"help","this help"},
+			  {"list","list of objects"},
+			  {"ObjectName","'ObjectName' information"},
+			  {"ObjectName/help","help for ObjectName"},
+			  {"apidocs","https://github.com/Etersoft/uniset2"}
+			};
+
+			out << jdata.dump();
+		}
+		else if( objectName == "list" )
+		{
+			auto json = registry->getObjectsList(qp);
+			out << json.dump();
+		}
+		else if( seg.size() >=4 && seg[3] == "help" ) // /api/version/ObjectName/help
+		{
+			auto json = registry->helpByName(objectName, qp);
+			out << json.dump();
+		}
+		else
+		{
+			auto json = registry->getDataByName(objectName, qp);
+			out << json.dump();
+		}
 	}
-	else
+	catch( std::exception& ex )
 	{
-		auto json = registry->getDataByName(objectName, qp);
-		out << json.dump();
+		ostringstream err;
+		err << ex.what();
+		resp.setStatus(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+		resp.setContentType("text/json");
+		nlohmann::json jdata;
+		jdata["error"] = err.str();
+		jdata["ecode"] = resp.getStatus();
+		out << jdata.dump();
 	}
 
 	out.flush();

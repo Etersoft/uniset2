@@ -870,13 +870,10 @@ nlohmann::json UniSetActivator::getDataByName( const string& name, const Poco::U
 	if( obj )
 		return obj->getData(p);
 
-	//! \todo Продумать что возвращать если объект не найден
-	nlohmann::json jdata;
 	ostringstream err;
 	err << "Object '" << name << "' not found";
-	jdata["error"] = err.str();
-	jdata["ecode"] = Poco::Net::HTTPResponse::HTTP_OK;
-	return jdata;
+
+	throw UniSetTypes::NameNotFound(err.str());
 }
 // ------------------------------------------------------------------------------------------
 nlohmann::json UniSetActivator::getObjectsList( const Poco::URI::QueryParameters& p )
@@ -894,6 +891,20 @@ nlohmann::json UniSetActivator::getObjectsList( const Poco::URI::QueryParameters
 		jdata.push_back(o->getName());
 
 	return jdata;
+}
+// ------------------------------------------------------------------------------------------
+nlohmann::json UniSetActivator::helpByName( const string& name, const Poco::URI::QueryParameters& p )
+{
+	if( name == myname )
+		return help(p);
+
+	auto obj = deepFindObject(name);
+	if( obj )
+		return obj->help(p);
+
+	ostringstream err;
+	err << "Object '" << name << "' not found";
+	throw UniSetTypes::NameNotFound(err.str());
 }
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::terminated( int signo )

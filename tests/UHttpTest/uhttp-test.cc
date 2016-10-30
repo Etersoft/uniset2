@@ -22,6 +22,17 @@ class UTestSupplier:
 			j["test"] = 42;
 			return j;
 		}
+
+		virtual nlohmann::json help( const Poco::URI::QueryParameters& p ) override
+		{
+			nlohmann::json j;
+			j["test"]["help"] = {
+				{"cmd1","help for cmd1"},
+				{"cmd2","help for cmd2"}
+			};
+
+			return j;
+		}
 };
 // --------------------------------------------------------------------------
 class UTestRequestRegistry:
@@ -45,6 +56,17 @@ class UTestRequestRegistry:
 			j.push_back("TestObject");
 			j.push_back("TestObject2");
 			j.push_back("TestObject3");
+			return j;
+		}
+
+		virtual nlohmann::json helpByName( const std::string& name, const Poco::URI::QueryParameters& p ) override
+		{
+			nlohmann::json j;
+			j["TestObject"]["help"] = {
+				{"cmd1","help for cmd1"},
+				{"cmd2","help for cmd2"}
+			};
+
 			return j;
 		}
 
