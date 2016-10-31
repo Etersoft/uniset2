@@ -32,12 +32,14 @@
  *
  * Пока поддерживается только метод GET
  * Ответ в формате JSON
+ * В текущем API не подразумеваются запросы глубже '/api/version/ObjectName/xxxx'
  *
  * Версия API: v01
  * /api/version/list              - Получение списка доступных объектов
  * /api/version/help              - Получение списка доступных команд
  * /api/version/ObjectName        - получение информации об объекте ObjectName
  * /api/version/ObjectName/help   - получение списка доступных команд для объекта ObjectName
+ * /api/version/ObjectName/xxxx   - 'xxx' запрос к объекту ObjectName
  *
  * \todo подумать над /api/version/tree - получение "дерева" объектов (древовидный список с учётом подчинения Manager/Objects)
 */
@@ -58,7 +60,8 @@ namespace UniSetTypes
 
 				// throw SystemError
 				virtual nlohmann::json getData( const Poco::URI::QueryParameters& p ) = 0;
-				virtual nlohmann::json help( const Poco::URI::QueryParameters& p ) = 0;
+				virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) = 0;
+				virtual nlohmann::json request( const std::string& req, const Poco::URI::QueryParameters& p ) = 0;
 		};
 		// -------------------------------------------------------------------------
 		/*! интерфейс для обработки запросов к объектам */
@@ -73,8 +76,8 @@ namespace UniSetTypes
 
 				// throw SystemError
 				virtual nlohmann::json getObjectsList( const Poco::URI::QueryParameters& p ) = 0;
-
 				virtual nlohmann::json helpByName( const std::string& name, const Poco::URI::QueryParameters& p ) = 0;
+				virtual nlohmann::json requestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) = 0;
 		};
 
 		// -------------------------------------------------------------------------

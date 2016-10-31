@@ -390,13 +390,23 @@ nlohmann::json UniSetObject::getData( const Poco::URI::QueryParameters& p )
 	jdata["isActive"] = isActive();
 	jdata["objectType"] = getType();
 
-	return jdata;
+	nlohmann::json ret;
+	ret[myname] = jdata;
+	return ret;
 }
 // ------------------------------------------------------------------------------------------
-nlohmann::json UniSetObject::help( const Poco::URI::QueryParameters& p )
+nlohmann::json UniSetObject::httpHelp( const Poco::URI::QueryParameters& p )
 {
 	nlohmann::json jdata;
 	jdata[myname]["help"] = {};
+	return jdata;
+}
+// ------------------------------------------------------------------------------------------
+nlohmann::json UniSetObject::request( const string& req, const Poco::URI::QueryParameters& p )
+{
+	//!\todo Подумать может возвращать getData() типа стандартный ответ..
+	nlohmann::json jdata;
+	jdata[myname][req]= "";
 	return jdata;
 }
 // ------------------------------------------------------------------------------------------

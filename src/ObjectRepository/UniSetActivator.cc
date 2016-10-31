@@ -896,11 +896,25 @@ nlohmann::json UniSetActivator::getObjectsList( const Poco::URI::QueryParameters
 nlohmann::json UniSetActivator::helpByName( const string& name, const Poco::URI::QueryParameters& p )
 {
 	if( name == myname )
-		return help(p);
+		return httpHelp(p);
 
 	auto obj = deepFindObject(name);
 	if( obj )
-		return obj->help(p);
+		return obj->httpHelp(p);
+
+	ostringstream err;
+	err << "Object '" << name << "' not found";
+	throw UniSetTypes::NameNotFound(err.str());
+}
+// ------------------------------------------------------------------------------------------
+nlohmann::json UniSetActivator::requestByName( const string& name, const std::string& req, const Poco::URI::QueryParameters& p)
+{
+	if( name == myname )
+		return request(req,p);
+
+	auto obj = deepFindObject(name);
+	if( obj )
+		return obj->request(req,p);
 
 	ostringstream err;
 	err << "Object '" << name << "' not found";

@@ -23,7 +23,7 @@ class UTestSupplier:
 			return j;
 		}
 
-		virtual nlohmann::json help( const Poco::URI::QueryParameters& p ) override
+		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override
 		{
 			nlohmann::json j;
 			j["test"]["help"] = {
@@ -31,6 +31,13 @@ class UTestSupplier:
 				{"cmd2","help for cmd2"}
 			};
 
+			return j;
+		}
+
+		virtual nlohmann::json request( const std::string& req, const Poco::URI::QueryParameters& p ) override
+		{
+			nlohmann::json j;
+			j[req] = "OK";
 			return j;
 		}
 };
@@ -69,6 +76,14 @@ class UTestRequestRegistry:
 
 			return j;
 		}
+
+		virtual nlohmann::json requestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) override
+		{
+			nlohmann::json j;
+			j[name][req] = "OK";
+			return j;
+		}
+
 
 	private:
 		UTestSupplier sup;

@@ -109,9 +109,14 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 			auto json = registry->getObjectsList(qp);
 			out << json.dump();
 		}
-		else if( seg.size() >=4 && seg[3] == "help" ) // /api/version/ObjectName/help
+		else if( seg.size() == 4 && seg[3] == "help" ) // /api/version/ObjectName/help
 		{
 			auto json = registry->helpByName(objectName, qp);
+			out << json.dump();
+		}
+		else if( seg.size() >= 4 ) // /api/version/ObjectName/xxx..
+		{
+			auto json = registry->requestByName(objectName, seg[3], qp);
 			out << json.dump();
 		}
 		else
