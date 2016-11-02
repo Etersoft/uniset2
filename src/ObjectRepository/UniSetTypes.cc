@@ -428,21 +428,27 @@ UniversalIO::IOType UniSetTypes::getIOType( const std::string& stype ) noexcept
 	return UniversalIO::UnknownIOType;
 }
 // ------------------------------------------------------------------------------------------
-std::ostream& UniSetTypes::operator<<( std::ostream& os, const UniversalIO::IOType t )
+
+std::string UniSetTypes::iotype2str( const UniversalIO::IOType& t ) noexcept
 {
 	if( t == UniversalIO::AI )
-		return os << "AI";
+		return "AI";
 
 	if( t == UniversalIO::DI )
-		return os << "DI";
+		return "DI";
 
 	if( t == UniversalIO::AO )
-		return os << "AO";
+		return "AO";
 
 	if( t == UniversalIO::DO )
-		return os << "DO";
+		return "DO";
 
-	return os << "UnknownIOType";
+	return "UnknownIOType";
+}
+// ------------------------------------------------------------------------------------------
+std::ostream& UniSetTypes::operator<<( std::ostream& os, const UniversalIO::IOType t )
+{
+	return os << iotype2str(t);
 }
 // ------------------------------------------------------------------------------------------
 bool UniSetTypes::check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val ) noexcept

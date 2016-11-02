@@ -61,7 +61,9 @@ namespace UniSetTypes
 				// throw SystemError
 				virtual nlohmann::json getData( const Poco::URI::QueryParameters& p ) = 0;
 				virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) = 0;
-				virtual nlohmann::json request( const std::string& req, const Poco::URI::QueryParameters& p ) = 0;
+
+				// не обязательная функция.
+				virtual nlohmann::json request( const std::string& req, const Poco::URI::QueryParameters& p );
 		};
 		// -------------------------------------------------------------------------
 		/*! интерфейс для обработки запросов к объектам */

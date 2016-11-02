@@ -85,6 +85,7 @@ namespace UniSetTypes
 	typedef CORBA::Object_var ObjectVar;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
 
 	UniversalIO::IOType getIOType( const std::string& s ) noexcept;
+	std::string iotype2str( const UniversalIO::IOType& t ) noexcept;
 	std::ostream& operator<<( std::ostream& os, const UniversalIO::IOType t );
 	std::ostream& operator<<( std::ostream& os, const IONotifyController_i::ThresholdInfo& ti );
 	std::ostream& operator<<( std::ostream& os, const IOController_i::ShortIOInfo& s );

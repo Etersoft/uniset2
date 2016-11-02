@@ -54,6 +54,7 @@
     - \ref sec_SM_Pulsar
     - \ref sec_SM_DBLog
     - \ref sec_SM_ReservSM
+	- \ref sec_SM_REST_API
 
     \section sec_SM_Conf Определение списка регистрируемых датчиков
       SM позволяет определять список датчиков, которые он будет предоставлять
@@ -296,6 +297,16 @@
          </ReservList>
        </SharedMemory>
        \endcode
+
+	 \section sec_SM_REST_API SharedMemory HTTP API
+
+	/help                       - Получение списка доступных команд
+	/                           - получение стандартной информации
+	/get?id1,name2,id3,..       - получение значений указанных датчиков
+	/sensors?offset=N&limit=M   - получение полной информации по списку датчиков.
+								  Не обязательные параметры:
+								  offset - начиная с,
+								  limit - количество в ответе.
 */
 class SharedMemory:
 	public IONotifyController
@@ -397,6 +408,11 @@ class SharedMemory:
 			return smlog;
 		}
 
+		// http API
+		virtual nlohmann::json getData( const Poco::URI::QueryParameters& p ) override;
+		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
+		virtual nlohmann::json request( const std::string& req, const Poco::URI::QueryParameters& p ) override;
+
 	protected:
 		typedef std::list<Restorer_XML::ReaderSlot> ReadSlotList;
 		ReadSlotList lstRSlot;
@@ -474,6 +490,10 @@ class SharedMemory:
 		virtual void logging( UniSetTypes::SensorMessage& sm ) override;
 		virtual void dumpOrdersList( const UniSetTypes::ObjectId sid, const IONotifyController::ConsumerListInfo& lst ) override {};
 		virtual void dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst ) override {}
+
+		virtual nlohmann::json request_get( const std::string& req, const Poco::URI::QueryParameters& p );
+		virtual nlohmann::json request_sensors( const std::string& req, const Poco::URI::QueryParameters& p );
+		virtual nlohmann::json request_consumers( const std::string& req, const Poco::URI::QueryParameters& p );
 
 		bool dblogging = { false };
 

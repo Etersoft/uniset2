@@ -15,6 +15,7 @@
  */
 // -------------------------------------------------------------------------
 #include <ostream>
+#include "Exceptions.h"
 #include "UHttpRequestHandler.h"
 // -------------------------------------------------------------------------
 using namespace std;
@@ -150,5 +151,12 @@ UHttpRequestHandlerFactory::UHttpRequestHandlerFactory(std::shared_ptr<IHttpRequ
 HTTPRequestHandler* UHttpRequestHandlerFactory::createRequestHandler( const HTTPServerRequest& req )
 {
 	return new UHttpRequestHandler(registry);
+}
+// -------------------------------------------------------------------------
+nlohmann::json IHttpRequest::request( const string& req, const Poco::URI::QueryParameters& p )
+{
+	std::ostringstream err;
+	err << "(IHttpRequest::Request): " << req << " not supported";
+	throw UniSetTypes::SystemError(err.str());
 }
 // -------------------------------------------------------------------------

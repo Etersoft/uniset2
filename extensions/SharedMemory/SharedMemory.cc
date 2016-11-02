@@ -609,6 +609,121 @@ void SharedMemory::logging( SensorMessage& sm )
 		IONotifyController::logging(sm);
 }
 // -----------------------------------------------------------------------------
+nlohmann::json SharedMemory::request_get(const string& req, const Poco::URI::QueryParameters& p)
+{
+	if( p.empty() )
+	{
+		ostringstream err;
+		err << myname << "(request): 'get'. Unknown ID or Name.";
+		throw UniSetTypes::SystemError(err.str());
+	}
+
+	auto conf = uniset_conf();
+	auto slist = UniSetTypes::getSInfoList( p[0].first, conf );
+	if( slist.empty() )
+	{
+		ostringstream err;
+		err << myname << "(request): 'get'. Unknown ID or Name";
+		throw UniSetTypes::SystemError(err.str());
+	}
+
+	smlog1 << myname << "(GET): " << p[0].first << " size=" << slist.size() << endl;
+
+	nlohmann::json jdata;
+
+	for( const auto& s: slist )
+	{
+		string sid( std::to_string(s.si.id) );
+		try
+		{
+			jdata[sid]["value"] = getValue(s.si.id);
+		}
+		catch( IOController_i::NameNotFound& ex )
+		{
+			jdata[sid]["value"]  = {};
+			jdata[sid]["error"] = string(ex.err);
+		}
+		catch( std::exception& ex )
+		{
+			jdata[sid]["value"] = {};
+			jdata[sid]["error"] = ex.what();
+		}
+	}
+
+	return jdata;
+}
+// -----------------------------------------------------------------------------
+nlohmann::json SharedMemory::request_sensors( const string& req, const Poco::URI::QueryParameters& params )
+{
+	nlohmann::json jdata;
+
+	size_t num = 0;
+	size_t offset = 0;
+	size_t limit = 0;
+
+	for( const auto& p: params )
+	{
+		if( p.first == "offset" )
+			offset = uni_atoi(p.second);
+		else if( p.first == "limit" )
+			limit = uni_atoi(p.second);
+	}
+
+	size_t endnum = offset + limit;
+
+	for( auto it=myioBegin(); it!=myioEnd(); ++it,num++ )
+	{
+		if( limit > 0 && num >= endnum )
+			break;
+
+		if( offset > 0 && num < offset )
+			continue;
+
+		// std::shared_ptr<USensorInfo>
+		auto s = it->second;
+
+		string sid( to_string(s->si.id));
+
+		{
+			uniset_rwmutex_rlock lock(s->val_lock);
+			jdata[sid]["value"] = s->value;
+			jdata[sid]["real_value"] = s->real_value;
+		}
+
+		jdata[sid]["id"] = sid;
+		jdata[sid]["type"] = UniSetTypes::iotype2str(s->type);
+		jdata[sid]["default_val"] = s->default_val;
+		jdata[sid]["tv_sec"] = s->tv_sec;
+		jdata[sid]["tv_nsec"] = s->tv_nsec;
+		jdata[sid]["dbignore"] = s->dbignore;
+		jdata[sid]["calibration"] = {
+			{ "cmin",s->ci.minCal},
+			{ "cmax",s->ci.maxCal},
+			{ "rmin",s->ci.minRaw},
+			{ "rmax",s->ci.maxRaw},
+			{ "precision",s->ci.precision}
+		};
+
+//			    ::CORBA::Boolean undefined;
+//			    ::CORBA::Boolean blocked;
+//			    ::CORBA::Long priority;
+//				IOController_i::SensorInfo d_si = { UniSetTypes::DefaultObjectId, UniSetTypes::DefaultObjectId };  /*!< идентификатор датчика, от которого зависит данный */
+//				long d_value = { 1 }; /*!< разрешающее работу значение датчика от которого зависит данный */
+//				long d_off_value = { 0 }; /*!< блокирующее значение */
+	}
+
+	jdata["count"] = num;
+
+	return jdata;
+}
+// -----------------------------------------------------------------------------
+nlohmann::json SharedMemory::request_consumers(const string& req, const Poco::URI::QueryParameters& p)
+{
+	//! \todo Не реализовано
+	nlohmann::json j = {};
+	return j;
+}
+// -----------------------------------------------------------------------------
 void SharedMemory::buildHistoryList( xmlNode* cnode )
 {
 	sminfo << myname << "(buildHistoryList): ..."  << endl;
@@ -728,6 +843,49 @@ void SharedMemory::checkHistoryFilter( UniXML::iterator& xit )
 SharedMemory::HistorySlot SharedMemory::signal_history()
 {
 	return m_historySignal;
+}
+// -----------------------------------------------------------------------------
+nlohmann::json SharedMemory::getData( const Poco::URI::QueryParameters& p )
+{
+	nlohmann::json jdata = IONotifyController::getData(p);
+//	jdata
+
+	return jdata;
+}
+// -----------------------------------------------------------------------------
+nlohmann::json SharedMemory::httpHelp( const Poco::URI::QueryParameters& p )
+{
+	nlohmann::json jdata = IONotifyController::httpHelp(p);
+	jdata[myname]["help"] = {
+		{"get","get value for sensor [have parameters]"},
+		{"sensors","get all sensors. [have parameters]"},
+		{"consumers","get consumers list"}
+	};
+
+	jdata[myname]["help"]["sensors"]["parameters"] = {
+		{"nameonly","get only name sensors"},
+		{"offset=N","get from N record"},
+		{"limit=M","limit of records"}
+	};
+	jdata[myname]["help"]["get"]["parameters"] = {
+		{"id1,name2,id3","get value for id1,name2,id3 sensors"},
+	};
+
+	return jdata;
+}
+// -----------------------------------------------------------------------------
+nlohmann::json SharedMemory::request(const string& req, const Poco::URI::QueryParameters& p)
+{
+	if( req == "get" )
+		return request_get(req,p);
+
+	if( req == "sensors" )
+		return request_sensors(req,p);
+
+	if( req == "consumers" )
+		return request_consumers(req,p);
+
+	return IONotifyController::request(req,p);
 }
 // -----------------------------------------------------------------------------
 void SharedMemory::saveToHistory()

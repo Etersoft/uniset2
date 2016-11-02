@@ -231,6 +231,7 @@ class IOController:
 		IOStateList::iterator myioBegin();
 		IOStateList::iterator myioEnd();
 		IOStateList::iterator myiofind( UniSetTypes::ObjectId id );
+		size_t ioCount();
 		// --------------------------
 
 	private:

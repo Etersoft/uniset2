@@ -402,14 +402,6 @@ nlohmann::json UniSetObject::httpHelp( const Poco::URI::QueryParameters& p )
 	return jdata;
 }
 // ------------------------------------------------------------------------------------------
-nlohmann::json UniSetObject::request( const string& req, const Poco::URI::QueryParameters& p )
-{
-	//!\todo Подумать может возвращать getData() типа стандартный ответ..
-	nlohmann::json jdata;
-	jdata[myname][req]= "";
-	return jdata;
-}
-// ------------------------------------------------------------------------------------------
 ObjectPtr UniSetObject::getRef() const
 {
 	UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
