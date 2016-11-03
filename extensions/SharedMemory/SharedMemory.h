@@ -300,13 +300,19 @@
 
 	 \section sec_SM_REST_API SharedMemory HTTP API
 
-	/help                       - Получение списка доступных команд
-	/                           - получение стандартной информации
-	/get?id1,name2,id3,..       - получение значений указанных датчиков
-	/sensors?offset=N&limit=M   - получение полной информации по списку датчиков.
-								  Не обязательные параметры:
-								  offset - начиная с,
-								  limit - количество в ответе.
+	/help                            - Получение списка доступных команд
+	/                                - получение стандартной информации
+	/get?id1,name2,id3,..&shortInfo  - получение значений указанных датчиков
+									 Не обязательные параметры:
+									   shortInfo - выдать короткую информацию о датчике (id,value,real_value и когда менялся)
+
+	/sensors?offset=N&limit=M        - получение полной информации по списку датчиков.
+									 Не обязательные параметры:
+									   offset - начиная с,
+									   limit - количество в ответе.
+
+	/consumers                       - получить список заказчиков по каждому датчику
+
 */
 class SharedMemory:
 	public IONotifyController
@@ -408,11 +414,6 @@ class SharedMemory:
 			return smlog;
 		}
 
-		// http API
-		virtual nlohmann::json getData( const Poco::URI::QueryParameters& p ) override;
-		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
-		virtual nlohmann::json request( const std::string& req, const Poco::URI::QueryParameters& p ) override;
-
 	protected:
 		typedef std::list<Restorer_XML::ReaderSlot> ReadSlotList;
 		ReadSlotList lstRSlot;
@@ -490,10 +491,6 @@ class SharedMemory:
 		virtual void logging( UniSetTypes::SensorMessage& sm ) override;
 		virtual void dumpOrdersList( const UniSetTypes::ObjectId sid, const IONotifyController::ConsumerListInfo& lst ) override {};
 		virtual void dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst ) override {}
-
-		virtual nlohmann::json request_get( const std::string& req, const Poco::URI::QueryParameters& p );
-		virtual nlohmann::json request_sensors( const std::string& req, const Poco::URI::QueryParameters& p );
-		virtual nlohmann::json request_consumers( const std::string& req, const Poco::URI::QueryParameters& p );
 
 		bool dblogging = { false };
 

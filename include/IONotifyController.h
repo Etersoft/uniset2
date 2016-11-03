@@ -270,6 +270,11 @@ class IONotifyController:
 		/*! словарь: аналоговый датчик --> список порогов по нему */
 		typedef std::unordered_map<UniSetTypes::ObjectId, ThresholdsListInfo> AskThresholdMap;
 
+
+		// http API
+		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
+		nlohmann::json request( const string& req, const Poco::URI::QueryParameters& p );
+
 	protected:
 		IONotifyController();
 		virtual bool activateObject() override;
@@ -313,6 +318,9 @@ class IONotifyController:
 			udataConsumerList = 0,
 			udataThresholdList = 1
 		};
+
+		// http api
+		virtual nlohmann::json request_consumers( const std::string& req, const Poco::URI::QueryParameters& p );
 
 	private:
 		friend class NCRestorer;

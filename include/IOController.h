@@ -97,6 +97,11 @@ class IOController:
 
 		virtual IOController_i::ShortMapSeq* getSensors() override;
 
+		// http API
+//		virtual nlohmann::json getData( const Poco::URI::QueryParameters& p ) override;
+		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
+		virtual nlohmann::json request( const std::string& req, const Poco::URI::QueryParameters& p ) override;
+
 	public:
 
 		// предварительное объявление..
@@ -162,7 +167,11 @@ class IOController:
 		virtual long localSetValue( std::shared_ptr<USensorInfo>& usi, CORBA::Long value, UniSetTypes::ObjectId sup_id );
 		long localGetValue( std::shared_ptr<USensorInfo>& usi) ;
 
-	protected:
+		// http API
+		virtual nlohmann::json request_get( const std::string& req, const Poco::URI::QueryParameters& p );
+		virtual nlohmann::json request_sensors( const std::string& req, const Poco::URI::QueryParameters& p );
+		void getSensorInfo( nlohmann::json& jdata, std::shared_ptr<USensorInfo>& s , bool shortInfo = false );
+
 		// переопределяем для добавления вызова регистрации датчиков
 		virtual bool deactivateObject() override;
 		virtual bool activateObject() override;
@@ -233,8 +242,8 @@ class IOController:
 		IOStateList::iterator myiofind( UniSetTypes::ObjectId id );
 		size_t ioCount();
 		// --------------------------
-
-	private:
+                
+    private:
 		friend class NCRestorer;
 		friend class SMInterface;
 

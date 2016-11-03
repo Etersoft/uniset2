@@ -23,6 +23,7 @@
 #include <cmath>
 #include "UInterface.h"
 #include "IOController.h"
+#include "ORepHelpers.h"
 #include "Debug.h"
 // ------------------------------------------------------------------------------------------
 using namespace UniSetTypes;
@@ -837,5 +838,169 @@ UniSetTypes::SimpleInfo* IOController::getInfo( ::CORBA::Long userparam )
 
 	i->info = inf.str().c_str();
 	return i._retn();
+}
+// -----------------------------------------------------------------------------
+nlohmann::json IOController::httpHelp( const Poco::URI::QueryParameters& p )
+{
+	nlohmann::json jdata = UniSetManager::httpHelp(p);
+
+	auto& jhelp = jdata[myname]["help"];
+	jhelp["get"]["desc"] = "get value for sensor";
+	jhelp["get"]["params"] = {
+		{"id1,name2,id3","get value for id1,name2,id3 sensors"},
+		{"shortInfo","get short information for sensors"}
+	};
+	jhelp["sensors"]["desc"] = "get all sensors.";
+	jhelp["sensors"]["params"] = {
+		{"nameonly","get only name sensors"},
+		{"offset=N","get from N record"},
+		{"limit=M","limit of records"}
+	};
+
+	return jdata;
+}
+// -----------------------------------------------------------------------------
+nlohmann::json IOController::request( const string& req, const Poco::URI::QueryParameters& p )
+{
+	if( req == "get" )
+		return request_get(req,p);
+
+	if( req == "sensors" )
+		return request_sensors(req,p);
+
+	return UniSetManager::request(req,p);
+}
+// -----------------------------------------------------------------------------
+nlohmann::json IOController::request_get( const string& req, const Poco::URI::QueryParameters& p )
+{
+	if( p.empty() )
+	{
+		ostringstream err;
+		err << myname << "(request): 'get'. Unknown ID or Name. Use parameters: get?ID1,name2,ID3,...";
+		throw UniSetTypes::SystemError(err.str());
+	}
+
+	auto conf = uniset_conf();
+	auto slist = UniSetTypes::getSInfoList( p[0].first, conf );
+	if( slist.empty() )
+	{
+		ostringstream err;
+		err << myname << "(request): 'get'. Unknown ID or Name. Use parameters: get?ID1,name2,ID3,...";
+		throw UniSetTypes::SystemError(err.str());
+	}
+
+	bool shortInfo = false;
+	if( p.size() > 1 && p[1].first=="shortInfo" )
+		shortInfo = true;
+
+//	ulog1 << myname << "(GET): " << p[0].first << " size=" << slist.size() << endl;
+
+	nlohmann::json jdata;
+
+	auto& jsens = jdata[myname]["sensors"];
+
+	for( const auto& s: slist )
+	{
+		try
+		{
+			auto sinf = ioList.find(s.si.id);
+			if( sinf == ioList.end() )
+			{
+				string sid( std::to_string(s.si.id) );
+				jsens[sid]["value"] = {};
+				jsens[sid]["error"] = "Sensor not found";
+				continue;
+			}
+
+			getSensorInfo(jsens, sinf->second, shortInfo);
+		}
+		catch( IOController_i::NameNotFound& ex )
+		{
+			string sid( std::to_string(s.si.id) );
+			jsens[sid]["value"]  = {};
+			jsens[sid]["error"] = string(ex.err);
+		}
+		catch( std::exception& ex )
+		{
+			string sid( std::to_string(s.si.id) );
+			jsens[sid]["value"] = {};
+			jsens[sid]["error"] = ex.what();
+		}
+	}
+
+	return std::move(jdata);
+}
+// -----------------------------------------------------------------------------
+void IOController::getSensorInfo( nlohmann::json& jdata, std::shared_ptr<USensorInfo>& s, bool shortInfo )
+{
+	string sid( to_string(s->si.id));
+	auto& jsens = jdata[sid];
+
+	{
+		uniset_rwmutex_rlock lock(s->val_lock);
+		jsens["value"] = s->value;
+		jsens["real_value"] = s->real_value;
+	}
+
+	jsens["id"] = sid;
+	jsens["name"] = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->si.id));
+	jsens["tv_sec"] = s->tv_sec;
+	jsens["tv_nsec"] = s->tv_nsec;
+
+	if( shortInfo )
+		return;
+
+	jsens["type"] = UniSetTypes::iotype2str(s->type);
+	jsens["default_val"] = s->default_val;
+	jsens["dbignore"] = s->dbignore;
+	jsens["calibration"] = {
+		{ "cmin",s->ci.minCal},
+		{ "cmax",s->ci.maxCal},
+		{ "rmin",s->ci.minRaw},
+		{ "rmax",s->ci.maxRaw},
+		{ "precision",s->ci.precision}
+	};
+
+
+	//	::CORBA::Boolean undefined;
+	//	::CORBA::Boolean blocked;
+	//	::CORBA::Long priority;
+	//	IOController_i::SensorInfo d_si = { UniSetTypes::DefaultObjectId, UniSetTypes::DefaultObjectId };  /*!< идентификатор датчика, от которого зависит данный */
+	//	long d_value = { 1 }; /*!< разрешающее работу значение датчика от которого зависит данный */
+	//	long d_off_value = { 0 }; /*!< блокирующее значение */
+}
+// -----------------------------------------------------------------------------
+nlohmann::json IOController::request_sensors( const string& req, const Poco::URI::QueryParameters& params )
+{
+	nlohmann::json jdata;
+
+	size_t num = 0;
+	size_t offset = 0;
+	size_t limit = 0;
+
+	for( const auto& p: params )
+	{
+		if( p.first == "offset" )
+			offset = uni_atoi(p.second);
+		else if( p.first == "limit" )
+			limit = uni_atoi(p.second);
+	}
+
+	size_t endnum = offset + limit;
+
+	for( auto it=myioBegin(); it!=myioEnd(); ++it,num++ )
+	{
+		if( limit > 0 && num >= endnum )
+			break;
+
+		if( offset > 0 && num < offset )
+			continue;
+
+		getSensorInfo(jdata, it->second,false);
+	}
+
+	jdata["count"] = num;
+
+	return std::move(jdata);
 }
 // -----------------------------------------------------------------------------

@@ -96,11 +96,11 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 		{
 			nlohmann::json jdata;
 			jdata["help"] = {
-			  {"help","this help"},
-			  {"list","list of objects"},
-			  {"ObjectName","'ObjectName' information"},
-			  {"ObjectName/help","help for ObjectName"},
-			  {"apidocs","https://github.com/Etersoft/uniset2"}
+			  {"help", {"desc", "this help"}},
+			  {"list", {"desc", "list of objects"}},
+			  {"ObjectName", {"desc", "'ObjectName' information"}},
+			  {"ObjectName/help", {"desc", "help for ObjectName"}},
+			  {"apidocs", {"desc", "https://github.com/Etersoft/uniset2"}}
 			};
 
 			out << jdata.dump();

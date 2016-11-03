@@ -1085,3 +1085,60 @@ IDSeq* IONotifyController::askSensorsSeq( const UniSetTypes::IDSeq& lst,
 	return badlist.getIDSeq();
 }
 // -----------------------------------------------------------------------------
+nlohmann::json IONotifyController::httpHelp(const Poco::URI::QueryParameters& p)
+{
+	nlohmann::json jdata = IOController::httpHelp(p);
+	jdata[myname]["help"]["consumers"]["desc"] = "get consumers list";
+	return std::move(jdata);
+}
+// -----------------------------------------------------------------------------
+nlohmann::json IONotifyController::request( const string& req, const Poco::URI::QueryParameters& p )
+{
+	if( req == "consumers" )
+		return request_consumers(req,p);
+
+	return IOController::request(req,p);
+}
+// -----------------------------------------------------------------------------
+nlohmann::json IONotifyController::request_consumers(const string& req, const Poco::URI::QueryParameters& p)
+{
+	//! \todo Не реализовано
+	nlohmann::json json;
+
+	auto& jdata = json[myname]["consumers"];
+
+	auto oind = uniset_conf()->oind;
+
+	uniset_rwmutex_rlock lock(askIOMutex);
+
+	for( auto&& a : askIOList )
+	{
+		auto& i = a.second;
+
+		uniset_rwmutex_rlock lock(i.mut);
+
+		// отображаем только датчики с "не пустым" списком заказчиков
+		if( i.clst.empty() )
+			continue;
+
+		string sid( std::to_string(a.first) );
+		auto& jsens = jdata[sid];
+
+		jsens["id"] = a.first;
+		jsens["sensor_name"] = ORepHelpers::getShortName(oind->getMapName(a.first));
+		auto& jcons = jsens["consumers"];
+
+		for( const auto& c : i.clst )
+		{
+			string cid( std::to_string(c.id) );
+			auto& jconsinfo = jcons[cid];
+			jconsinfo["id"] = c.id;
+			jconsinfo["name"] = ORepHelpers::getShortName(oind->getMapName(c.id));
+			jconsinfo["lostEvents"] = c.lostEvents;
+			jconsinfo["attempt"] = c.attempt;
+		}
+	}
+
+	return std::move(json);
+}
+// -----------------------------------------------------------------------------
