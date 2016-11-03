@@ -860,7 +860,7 @@ nlohmann::json IOController::httpHelp( const Poco::URI::QueryParameters& p )
 	return jdata;
 }
 // -----------------------------------------------------------------------------
-nlohmann::json IOController::request( const string& req, const Poco::URI::QueryParameters& p )
+nlohmann::json IOController::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
 {
 	if( req == "get" )
 		return request_get(req,p);
@@ -868,7 +868,7 @@ nlohmann::json IOController::request( const string& req, const Poco::URI::QueryP
 	if( req == "sensors" )
 		return request_sensors(req,p);
 
-	return UniSetManager::request(req,p);
+	return UniSetManager::httpRequest(req,p);
 }
 // -----------------------------------------------------------------------------
 nlohmann::json IOController::request_get( const string& req, const Poco::URI::QueryParameters& p )

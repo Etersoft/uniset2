@@ -83,6 +83,14 @@ void TestGen::sigterm( int signo )
 	TestGen_SK::sigterm(signo);
 }
 // -----------------------------------------------------------------------------
+void TestGen::httpGetUserData( nlohmann::json& jdata )
+{
+	jdata["myMode"] = "RUNNING";
+	jdata["myVar"] = 42;
+	jdata["myFloatVar"] = 42.42;
+	jdata["myMessage"] = "This is text fot test httpGetUserData";
+}
+// -----------------------------------------------------------------------------
 void TestGen::sysCommand( const UniSetTypes::SystemMessage* sm )
 {
 	if( sm->command == SystemMessage::StartUp )

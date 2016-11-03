@@ -273,7 +273,7 @@ class IONotifyController:
 
 		// http API
 		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
-		nlohmann::json request( const string& req, const Poco::URI::QueryParameters& p );
+		nlohmann::json httpRequest( const string& req, const Poco::URI::QueryParameters& p );
 
 	protected:
 		IONotifyController();

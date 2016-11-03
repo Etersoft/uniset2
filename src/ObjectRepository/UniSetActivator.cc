@@ -861,14 +861,14 @@ UniSetActivator::TerminateEvent_Signal UniSetActivator::signal_terminate_event()
 	return s_term;
 }
 // ------------------------------------------------------------------------------------------
-nlohmann::json UniSetActivator::getDataByName( const string& name, const Poco::URI::QueryParameters& p )
+nlohmann::json UniSetActivator::httpGetByName( const string& name, const Poco::URI::QueryParameters& p )
 {
 	if( name == myname )
-		return getData(p);
+		return httpGet(p);
 
 	auto obj = deepFindObject(name);
 	if( obj )
-		return obj->getData(p);
+		return obj->httpGet(p);
 
 	ostringstream err;
 	err << "Object '" << name << "' not found";
@@ -876,7 +876,7 @@ nlohmann::json UniSetActivator::getDataByName( const string& name, const Poco::U
 	throw UniSetTypes::NameNotFound(err.str());
 }
 // ------------------------------------------------------------------------------------------
-nlohmann::json UniSetActivator::getObjectsList( const Poco::URI::QueryParameters& p )
+nlohmann::json UniSetActivator::httpGetObjectsList( const Poco::URI::QueryParameters& p )
 {
 	nlohmann::json jdata;
 
@@ -893,7 +893,7 @@ nlohmann::json UniSetActivator::getObjectsList( const Poco::URI::QueryParameters
 	return jdata;
 }
 // ------------------------------------------------------------------------------------------
-nlohmann::json UniSetActivator::helpByName( const string& name, const Poco::URI::QueryParameters& p )
+nlohmann::json UniSetActivator::httpHelpByName( const string& name, const Poco::URI::QueryParameters& p )
 {
 	if( name == myname )
 		return httpHelp(p);
@@ -907,14 +907,14 @@ nlohmann::json UniSetActivator::helpByName( const string& name, const Poco::URI:
 	throw UniSetTypes::NameNotFound(err.str());
 }
 // ------------------------------------------------------------------------------------------
-nlohmann::json UniSetActivator::requestByName( const string& name, const std::string& req, const Poco::URI::QueryParameters& p)
+nlohmann::json UniSetActivator::httpRequestByName( const string& name, const std::string& req, const Poco::URI::QueryParameters& p)
 {
 	if( name == myname )
-		return request(req,p);
+		return httpRequest(req,p);
 
 	auto obj = deepFindObject(name);
 	if( obj )
-		return obj->request(req,p);
+		return obj->httpRequest(req,p);
 
 	ostringstream err;
 	err << "Object '" << name << "' not found";

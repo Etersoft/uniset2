@@ -59,11 +59,11 @@ namespace UniSetTypes
 				virtual ~IHttpRequest(){}
 
 				// throw SystemError
-				virtual nlohmann::json getData( const Poco::URI::QueryParameters& p ) = 0;
+				virtual nlohmann::json httpGet( const Poco::URI::QueryParameters& p ) = 0;
 				virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) = 0;
 
 				// не обязательная функция.
-				virtual nlohmann::json request( const std::string& req, const Poco::URI::QueryParameters& p );
+				virtual nlohmann::json httpRequest( const std::string& req, const Poco::URI::QueryParameters& p );
 		};
 		// -------------------------------------------------------------------------
 		/*! интерфейс для обработки запросов к объектам */
@@ -74,12 +74,12 @@ namespace UniSetTypes
 				virtual ~IHttpRequestRegistry(){}
 
 				// throw SystemError, NameNotFound
-				virtual nlohmann::json getDataByName( const std::string& name, const Poco::URI::QueryParameters& p ) = 0;
+				virtual nlohmann::json httpGetByName( const std::string& name, const Poco::URI::QueryParameters& p ) = 0;
 
 				// throw SystemError
-				virtual nlohmann::json getObjectsList( const Poco::URI::QueryParameters& p ) = 0;
-				virtual nlohmann::json helpByName( const std::string& name, const Poco::URI::QueryParameters& p ) = 0;
-				virtual nlohmann::json requestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) = 0;
+				virtual nlohmann::json httpGetObjectsList( const Poco::URI::QueryParameters& p ) = 0;
+				virtual nlohmann::json httpHelpByName( const std::string& name, const Poco::URI::QueryParameters& p ) = 0;
+				virtual nlohmann::json httpRequestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) = 0;
 		};
 
 		// -------------------------------------------------------------------------

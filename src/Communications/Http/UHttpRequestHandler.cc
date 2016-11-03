@@ -107,22 +107,22 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 		}
 		else if( objectName == "list" )
 		{
-			auto json = registry->getObjectsList(qp);
+			auto json = registry->httpGetObjectsList(qp);
 			out << json.dump();
 		}
 		else if( seg.size() == 4 && seg[3] == "help" ) // /api/version/ObjectName/help
 		{
-			auto json = registry->helpByName(objectName, qp);
+			auto json = registry->httpHelpByName(objectName, qp);
 			out << json.dump();
 		}
 		else if( seg.size() >= 4 ) // /api/version/ObjectName/xxx..
 		{
-			auto json = registry->requestByName(objectName, seg[3], qp);
+			auto json = registry->httpRequestByName(objectName, seg[3], qp);
 			out << json.dump();
 		}
 		else
 		{
-			auto json = registry->getDataByName(objectName, qp);
+			auto json = registry->httpGetByName(objectName, qp);
 			out << json.dump();
 		}
 	}
@@ -153,7 +153,7 @@ HTTPRequestHandler* UHttpRequestHandlerFactory::createRequestHandler( const HTTP
 	return new UHttpRequestHandler(registry);
 }
 // -------------------------------------------------------------------------
-nlohmann::json IHttpRequest::request( const string& req, const Poco::URI::QueryParameters& p )
+nlohmann::json IHttpRequest::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
 {
 	std::ostringstream err;
 	err << "(IHttpRequest::Request): " << req << " not supported";

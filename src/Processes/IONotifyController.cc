@@ -1092,12 +1092,12 @@ nlohmann::json IONotifyController::httpHelp(const Poco::URI::QueryParameters& p)
 	return std::move(jdata);
 }
 // -----------------------------------------------------------------------------
-nlohmann::json IONotifyController::request( const string& req, const Poco::URI::QueryParameters& p )
+nlohmann::json IONotifyController::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
 {
 	if( req == "consumers" )
 		return request_consumers(req,p);
 
-	return IOController::request(req,p);
+	return IOController::httpRequest(req,p);
 }
 // -----------------------------------------------------------------------------
 nlohmann::json IONotifyController::request_consumers(const string& req, const Poco::URI::QueryParameters& p)

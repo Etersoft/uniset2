@@ -12,7 +12,7 @@ class UTestSupplier:
 		UTestSupplier(){}
 		virtual ~UTestSupplier(){}
 
-		virtual nlohmann::json getData( const Poco::URI::QueryParameters& params ) override
+		virtual nlohmann::json httpGet( const Poco::URI::QueryParameters& params ) override
 		{
 			nlohmann::json j;
 
@@ -34,7 +34,7 @@ class UTestSupplier:
 			return j;
 		}
 
-		virtual nlohmann::json request( const std::string& req, const Poco::URI::QueryParameters& p ) override
+		virtual nlohmann::json httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override
 		{
 			nlohmann::json j;
 			j[req] = "OK";
@@ -50,14 +50,14 @@ class UTestRequestRegistry:
 		virtual ~UTestRequestRegistry(){}
 
 
-		virtual nlohmann::json getDataByName( const std::string& name, const Poco::URI::QueryParameters& p ) override
+		virtual nlohmann::json httpGetByName( const std::string& name, const Poco::URI::QueryParameters& p ) override
 		{
-			nlohmann::json j = sup.getData(p);
+			nlohmann::json j = sup.httpGet(p);
 			j["name"] = name;
 			return j;
 		}
 
-		virtual nlohmann::json getObjectsList( const Poco::URI::QueryParameters& p ) override
+		virtual nlohmann::json httpGetObjectsList( const Poco::URI::QueryParameters& p ) override
 		{
 			nlohmann::json j;
 			j.push_back("TestObject");
@@ -66,7 +66,7 @@ class UTestRequestRegistry:
 			return j;
 		}
 
-		virtual nlohmann::json helpByName( const std::string& name, const Poco::URI::QueryParameters& p ) override
+		virtual nlohmann::json httpHelpByName( const std::string& name, const Poco::URI::QueryParameters& p ) override
 		{
 			nlohmann::json j;
 			j["TestObject"]["help"] = {
@@ -77,7 +77,7 @@ class UTestRequestRegistry:
 			return j;
 		}
 
-		virtual nlohmann::json requestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) override
+		virtual nlohmann::json httpRequestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) override
 		{
 			nlohmann::json j;
 			j[name][req] = "OK";

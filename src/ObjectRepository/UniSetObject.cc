@@ -379,9 +379,13 @@ void UniSetObject::push( const TransportMessage& tm )
 	termWaiting();
 }
 // ------------------------------------------------------------------------------------------
-nlohmann::json UniSetObject::getData( const Poco::URI::QueryParameters& p )
+nlohmann::json UniSetObject::httpGet( const Poco::URI::QueryParameters& p )
 {
-	nlohmann::json jdata;
+	nlohmann::json jret;
+
+	std::string myid(to_string(getId()));
+	auto& jdata = jret[myid];
+
 	jdata["name"] = myname;
 	jdata["id"] = getId();
 	jdata["msgCount"] = countMessages();
@@ -390,9 +394,7 @@ nlohmann::json UniSetObject::getData( const Poco::URI::QueryParameters& p )
 	jdata["isActive"] = isActive();
 	jdata["objectType"] = getType();
 
-	nlohmann::json ret;
-	ret[myname] = jdata;
-	return ret;
+	return jret;
 }
 // ------------------------------------------------------------------------------------------
 nlohmann::json UniSetObject::httpHelp( const Poco::URI::QueryParameters& p )

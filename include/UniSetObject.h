@@ -102,7 +102,7 @@ class UniSetObject:
 		virtual void push( const UniSetTypes::TransportMessage& msg ) override;
 
 		// HTTP API
-		virtual nlohmann::json getData( const Poco::URI::QueryParameters& p ) override;
+		virtual nlohmann::json httpGet( const Poco::URI::QueryParameters& p ) override;
 		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
 
 		// -------------- вспомогательные --------------

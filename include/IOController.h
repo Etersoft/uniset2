@@ -100,7 +100,7 @@ class IOController:
 		// http API
 //		virtual nlohmann::json getData( const Poco::URI::QueryParameters& p ) override;
 		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
-		virtual nlohmann::json request( const std::string& req, const Poco::URI::QueryParameters& p ) override;
+		virtual nlohmann::json httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
 
 	public:
 

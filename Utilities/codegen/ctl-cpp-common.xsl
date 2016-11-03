@@ -254,6 +254,10 @@
         // ------------------------------------------------------------
         std::string help() noexcept;
         
+        // HTTP API
+        virtual nlohmann::json httpGet( const Poco::URI::QueryParameters&amp; p ) override;
+        virtual nlohmann::json httpDumpIO();
+        
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PROTECTED">
@@ -266,6 +270,7 @@
 		virtual void sigterm( int signo ) override;
 		virtual bool activateObject() override;
 		virtual std::string getMonitInfo(){ return ""; } /*!&lt; пользовательская информация выводимая в getInfo() */
+		virtual void httpGetUserData( nlohmann::json&amp; jdata ){} /*!&lt;  для пользовательских данных в httpGet() */
 		
 		// Выполнение очередного шага программы
 		virtual void step(){}
@@ -529,6 +534,53 @@ UniSetTypes::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( CORBA:
 	i->info =  inf.str().c_str();
 	
 	return i._retn();
+}
+// -----------------------------------------------------------------------------
+nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpGet( const Poco::URI::QueryParameters&amp; params )
+{
+	<xsl:if test="not(normalize-space($BASECLASS)='')">nlohmann::json json = <xsl:value-of select="$BASECLASS"/>::httpGet(params);</xsl:if>
+	<xsl:if test="normalize-space($BASECLASS)=''">nlohmann::json json = UniSetObject::httpGet(params);</xsl:if>
+	
+	std::string myid(to_string(getId()));
+	auto&amp; jdata = json[myid];
+
+	if( logserv )
+	{
+		jdata["LogServer"] = {
+			{"host",logserv_host},
+			{"port",logserv_port},
+			{"state",( logserv->isRunning() ? "RUNNIG" : "FAILED" )}
+		};
+		// logserv->getShortInfo()
+	}
+	else
+		jdata["LogServer"] = {};
+		
+	jdata["io"] = httpDumpIO();
+	
+	auto timers = getTimersList();
+	auto&amp; jtm = jdata["Timers"];
+
+	jtm["count"] = timers.size();
+	for( const auto&amp; t: timers )
+	{
+		std::string tid(to_string(t.id));
+		auto&amp; jt = jtm[tid];
+		jt["id"] = t.id;
+		jt["name"] = getTimerName(t.id);
+		jt["msec"] = t.tmr.getInterval();
+		jt["timeleft"] = t.curTimeMS;
+		jt["tick"] = ( t.curTick>=0 ? t.curTick : -1 );
+	}
+
+	auto vlist = vmon.getList();
+	auto&amp; jvmon = jdata["Variables"];
+	
+	for( const auto&amp; v: vlist )
+		jvmon[v.first] = v.second;
+
+	httpGetUserData(jdata);
+	return std::move(json);
 }
 // -----------------------------------------------------------------------------
 <xsl:if test="normalize-space($TESTMODE)!=''">
@@ -1281,6 +1333,38 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
 	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
+nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
+{
+	nlohmann::json jdata;
+	
+	auto&amp; j_in = jdata["in"];
+
+	<xsl:for-each select="//smap/item">
+	<xsl:sort select="@name" order="ascending" data-type="text"/>
+	<xsl:if test="normalize-space(@vartype)='in'">
+		j_in["<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"] = {
+			{"id",<xsl:value-of select="@name"/>},
+			{"name",ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>))},
+			{"value",<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>}
+		};
+	</xsl:if>
+	</xsl:for-each>
+	
+	auto&amp; j_out = jdata["out"];
+	<xsl:for-each select="//smap/item">
+	<xsl:sort select="@name" order="ascending" data-type="text"/>
+	<xsl:if test="normalize-space(@vartype)='out'">
+		j_out["<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"] = {
+			{"id",<xsl:value-of select="@name"/>},
+			{"name",ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>))},
+			{"value",<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>}
+		};
+	</xsl:if>
+	</xsl:for-each>
+
+	return std::move(jdata);
+}
+// ----------------------------------------------------------------------------
 std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 {
 	ostringstream s;
@@ -1630,6 +1714,37 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 	
     mylog8 &lt;&lt; myname &lt;&lt; "(setMsg): not found MessgeOID?!!" &lt;&lt; endl;
 	return false;
+}
+// -----------------------------------------------------------------------------
+nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
+{
+	nlohmann::json jdata;
+	
+	auto&amp; j_in = jdata["in"];
+	auto&amp; j_out = jdata["out"];
+	<xsl:for-each select="//sensors/item/consumers/consumer">
+	<xsl:sort select="../../@name" order="ascending" data-type="text"/>
+	<xsl:if test="normalize-space(../../@msg)!='1'">
+	<xsl:if test="normalize-space(@name)=$OID">
+	<xsl:if test="normalize-space(@vartype)='in'">
+		j_in["<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>"] = {
+			{"id",<xsl:value-of select="../../@id"/>},
+			{"name", "<xsl:value-of select="../../@name"/>"},
+			{"value",<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>}
+		};
+	</xsl:if>
+	<xsl:if test="normalize-space(@vartype)='out'">
+		j_out["<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>"] = {
+			{"id",<xsl:value-of select="../../@id"/>},
+			{"name", "<xsl:value-of select="../../@name"/>"},
+			{"value",<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>}
+		};
+	</xsl:if>
+	</xsl:if>
+	</xsl:if>
+	</xsl:for-each>
+	
+	return std::move(jdata);
 }
 // -----------------------------------------------------------------------------
 std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()

@@ -86,10 +86,10 @@ class UniSetActivator:
 		}
 
 		// Поддрежка REST API (IHttpRequestRegistry)
-		virtual nlohmann::json getDataByName( const std::string& name , const Poco::URI::QueryParameters& p ) override;
-		virtual nlohmann::json getObjectsList( const Poco::URI::QueryParameters& p ) override;
-		virtual nlohmann::json helpByName( const std::string& name, const Poco::URI::QueryParameters& p ) override;
-		virtual nlohmann::json requestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) override;
+		virtual nlohmann::json httpGetByName( const std::string& name , const Poco::URI::QueryParameters& p ) override;
+		virtual nlohmann::json httpGetObjectsList( const Poco::URI::QueryParameters& p ) override;
+		virtual nlohmann::json httpHelpByName( const std::string& name, const Poco::URI::QueryParameters& p ) override;
+		virtual nlohmann::json httpRequestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) override;
 
 	protected:
 

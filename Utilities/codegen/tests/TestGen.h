@@ -19,6 +19,7 @@ class TestGen:
 		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
 		virtual void sigterm( int signo ) override;
+		virtual void httpGetUserData( nlohmann::json& jdata ) override;
 
 	private:
 		bool bool_var = { false };
