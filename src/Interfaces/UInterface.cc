@@ -937,6 +937,11 @@ throw(UniSetTypes::ResolveNameError, UniSetTypes::TimeOut )
 		// uwarn << "UI(resolve): CORBA::SystemException" << endl;
 		throw UniSetTypes::TimeOut();
 	}
+	catch( std::exception& ex )
+	{
+		ucrit << "UI(resolve): myID=" << myid <<  ": resolve id=" << rid << "@" << node
+			  << " catch " << ex.what() << endl;
+	}
 
 	throw UniSetTypes::ResolveNameError();
 }

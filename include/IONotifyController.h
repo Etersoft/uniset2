@@ -160,6 +160,12 @@ class IONotifyController:
 
 		// --------------------------------------------
 
+		// http API
+		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
+		nlohmann::json httpRequest( const string& req, const Poco::URI::QueryParameters& p );
+
+
+		// --------------------------------------------
 		/*! Информация о заказчике */
 		struct ConsumerInfoExt:
 			public UniSetTypes::ConsumerInfo
@@ -172,6 +178,7 @@ class IONotifyController:
 			UniSetObject_i_var ref;
 			size_t attempt;
 			size_t lostEvents = { 0 }; // количество потерянных сообщений (не смогли послать)
+			size_t smCount = { 0 }; // количество посланных SensorMessage
 
 			ConsumerInfoExt( const ConsumerInfoExt& ) = default;
 			ConsumerInfoExt& operator=( const ConsumerInfoExt& ) = default;
@@ -270,11 +277,6 @@ class IONotifyController:
 		/*! словарь: аналоговый датчик --> список порогов по нему */
 		typedef std::unordered_map<UniSetTypes::ObjectId, ThresholdsListInfo> AskThresholdMap;
 
-
-		// http API
-		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
-		nlohmann::json httpRequest( const string& req, const Poco::URI::QueryParameters& p );
-
 	protected:
 		IONotifyController();
 		virtual bool activateObject() override;
@@ -320,7 +322,8 @@ class IONotifyController:
 		};
 
 		// http api
-		virtual nlohmann::json request_consumers( const std::string& req, const Poco::URI::QueryParameters& p );
+		nlohmann::json request_consumers( const std::string& req, const Poco::URI::QueryParameters& p );
+		nlohmann::json request_lost( const string& req, const Poco::URI::QueryParameters& p );
 
 	private:
 		friend class NCRestorer;
@@ -346,10 +349,27 @@ class IONotifyController:
 		/*! замок для блокирования совместного доступа к cписку потребителей пороговых датчиков */
 		UniSetTypes::uniset_rwmutex trshMutex;
 
-		int maxAttemtps; /*! timeout for consumer */
-
 		sigc::connection conInit;
 		sigc::connection conUndef;
+
+		int maxAttemtps; /*! timeout for consumer */
+
+		std::mutex lostConsumersMutex;
+
+		struct LostConsumerInfo
+		{
+			size_t count = { 0 }; // количество "пропаданий"
+			bool lost = { false }; // флаг означающий что "заказчик пропал"
+			// lost нужен чтобы в count не увеличивать, на send() по каждому датчику, если заказчик заказывал больше одного датчика)
+			// флаг сбрасывается при перезаказе датчика..
+		};
+
+		/*! map для хранения информации о заказчиках с которыми была потеряна связь
+		 * и которые были удалены из списка заказчиков
+		 * size_t - количество раз
+		 * ObjectId - id заказчика
+		 */
+		std::unordered_map<UniSetTypes::ObjectId, LostConsumerInfo> lostConsumers;
 };
 // --------------------------------------------------------------------------
 #endif

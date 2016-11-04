@@ -504,7 +504,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
         
 # history of current unpublished changes
-# ..
+# - remove 'fastSaveValue'
+# - add suppor HTTP REST API
+# - (SM): add new statistics for consumers
 
 %changelog
 * Mon Oct 24 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt20

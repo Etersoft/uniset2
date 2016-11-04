@@ -291,7 +291,10 @@ long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 		bool blocked = ( usi->blocked || usi->undefined );
 		changed = ( usi->real_value != value );
 
-		// если поменялось состояние блокировки
+		// Смотрим поменялось ли состояние блокировки.
+		// т.е. смотрим записано ли у нас уже value = d_off_value и флаг блокировки
+		// т.к. если blocked=true то должно быть usi->value = usi->d_off_value
+		// если флаг снимется, то значит должны "восстанавливать" значение из real_value
 		blockChanged = ( blocked != (usi->value == usi->d_off_value ) );
 
 		if( changed || blockChanged )
@@ -308,6 +311,8 @@ long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 			usi->real_value = value;
 			usi->value = (blocked ? usi->d_off_value : value);
 			retValue = usi->value;
+
+			usi->nchanges++; // статистика
 
 			// запоминаем время изменения
 			try
@@ -950,6 +955,7 @@ void IOController::getSensorInfo( nlohmann::json& jdata, std::shared_ptr<USensor
 	jsens["type"] = UniSetTypes::iotype2str(s->type);
 	jsens["default_val"] = s->default_val;
 	jsens["dbignore"] = s->dbignore;
+	jsens["nchanges"] = s->nchanges;
 	jsens["calibration"] = {
 		{ "cmin",s->ci.minCal},
 		{ "cmax",s->ci.maxCal},
@@ -957,7 +963,6 @@ void IOController::getSensorInfo( nlohmann::json& jdata, std::shared_ptr<USensor
 		{ "rmax",s->ci.maxRaw},
 		{ "precision",s->ci.precision}
 	};
-
 
 	//	::CORBA::Boolean undefined;
 	//	::CORBA::Boolean blocked;

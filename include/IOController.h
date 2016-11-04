@@ -309,6 +309,8 @@ class IOController:
 			long d_off_value = { 0 }; /*!< блокирующее значение */
 			std::shared_ptr<USensorInfo> d_usi; // shared_ptr на датчик от которого зависит этот.
 
+			size_t nchanges = { 0 }; // количество изменений датчика
+
 			// функция обработки информации об изменении состояния датчика, от которого зависит данный
 			void checkDepend( std::shared_ptr<USensorInfo>& d_usi, IOController* );
 

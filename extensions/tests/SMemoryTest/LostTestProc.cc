@@ -137,7 +137,8 @@ void LostTestProc::timerInfo( const TimerMessage* tm )
 
 				if(ui->getValue(s.first) != (s.second+1) )
 				{
-					cerr << myname << "(check): SAVE TO SM ERROR!! smValue=" << smValue  << endl;
+					cerr << myname << "(check): SAVE TO SM ERROR!! sid=" << s.first
+						 << " value=" << smValue << " != " << (s.second+1) << endl;
 					UniSetTypes::SimpleInfo_var i = getInfo();
 					cerr << i->info << endl;
 					std::abort();

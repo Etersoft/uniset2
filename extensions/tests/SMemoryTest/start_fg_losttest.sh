@@ -2,7 +2,7 @@
 
 START=uniset2-start.sh
 
-LOGS="crit,warn,info"
+LOGLEVEL="crit,warn,info"
 
 ${START} -f ./sm-lostmessage-test --confile ./test-lost.xml \
 --numproc 3 \

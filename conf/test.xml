@@ -18,6 +18,7 @@
 		<AutoStartUpTime name="1"/>
 		<DumpStateTime name="10"/>
 		<SleepTickMS name="500"/>
+		<ConsumerMaxAttempts name="3"/>
 		<UniSetDebug levels="" name="ulog"/>
 		<ConfDir name="./"/>
 		<DataDir name="./"/>

@@ -40,7 +40,7 @@ using namespace std;
 IONotifyController::IONotifyController():
 	askIOMutex("askIOMutex"),
 	trshMutex("trshMutex"),
-	maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 5))
+	maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 15))
 {
 
 }
@@ -50,7 +50,7 @@ IONotifyController::IONotifyController(const string& name, const string& section
 	restorer(d),
 	askIOMutex(name + "askIOMutex"),
 	trshMutex(name + "trshMutex"),
-	maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 5))
+	maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 15))
 {
 	conUndef = signal_change_undefined_state().connect(sigc::mem_fun(*this, &IONotifyController::onChangeUndefinedState));
 	conInit = signal_init().connect(sigc::mem_fun(*this, &IONotifyController::initItem));
@@ -61,7 +61,7 @@ IONotifyController::IONotifyController( ObjectId id, std::shared_ptr<NCRestorer>
 	restorer(d),
 	askIOMutex(string(uniset_conf()->oind->getMapName(id)) + "_askIOMutex"),
 	trshMutex(string(uniset_conf()->oind->getMapName(id)) + "_trshMutex"),
-	maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 5))
+	maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 15))
 {
 	conUndef = signal_change_undefined_state().connect(sigc::mem_fun(*this, &IONotifyController::onChangeUndefinedState));
 	conInit = signal_init().connect(sigc::mem_fun(*this, &IONotifyController::initItem));
@@ -81,12 +81,30 @@ SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
 
 	inf << i->info << endl;
 
+	auto oind = uniset_conf()->oind;
+
+	{
+		std::lock_guard<std::mutex> lock(lostConsumersMutex);
+		if( lostConsumers.size() > 0 )
+		{
+			inf << "-------------------------- lost consumers list [maxAttemtps=" << maxAttemtps << "] ------------------" << endl;
+			for( const auto& l: lostConsumers )
+			{
+				inf << "        " << "(" << setw(6) << l.first << ")"
+					<< setw(35) << std::left << ORepHelpers::getShortName(oind->getMapName(l.first))
+					<< " lostCount=" << l.second.count
+					<< endl;
+			}
+		}
+		inf << "----------------------------------------------------------------------------------" << endl;
+	}
+
 	if( userparam == 1 || userparam == 2 )
 	{
 		inf << "------------------------------- consumers list ------------------------------" << endl;
-		{
-			auto oind = uniset_conf()->oind;
+		inf << "[userparam=" << userparam << "]" << endl;
 
+		{
 			uniset_rwmutex_rlock lock(askIOMutex);
 
 			for( auto && a : askIOList )
@@ -99,22 +117,23 @@ SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
 				if( i.clst.empty() )
 					continue;
 
-				// если надо выводить только тех, у кого есть "потери"(lostEvent>0)
-				// то надо сперва смотреть список, а потом выводить
+				// Т.к. сперва выводится имя датчика, а только потом его заказчики
+				// то если надо выводить только тех, у кого есть "потери"(lostEvent>0)
+				// предварительно смотрим список есть ли там хоть один с "потерями", а потом уже выводим
 				if( userparam == 2 )
 				{
-					bool ok = false;
+					bool lost = false;
 
 					for( const auto& c : i.clst )
 					{
 						if( c.lostEvents > 0 )
 						{
-							ok = true;
+							lost = true;
 							break;
 						}
 					}
 
-					if( !ok )
+					if( !lost )
 						continue;
 
 					// выводим тех у кого lostEvent>0
@@ -126,7 +145,11 @@ SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
 						{
 							inf << "        " << "(" << setw(6) << c.id << ")"
 								<< setw(35) << ORepHelpers::getShortName(oind->getMapName(c.id))
-								<< " [lostEvents=" << c.lostEvents << " attempt=" << c.attempt << "]"
+								<< " ["
+								<< " lostEvents=" << c.lostEvents
+								<< " attempt=" << c.attempt
+								<< " smCount=" << c.smCount
+								<< "]"
 								<< endl;
 						}
 					}
@@ -139,7 +162,11 @@ SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
 					{
 						inf << "        " << "(" << setw(6) << c.id << ")"
 							<< setw(35) << ORepHelpers::getShortName(oind->getMapName(c.id))
-							<< " [lostEvents=" << c.lostEvents << " attempt=" << c.attempt << "]"
+							<< " ["
+							<< " lostEvents=" << c.lostEvents
+							<< " attempt=" << c.attempt
+							<< " smCount=" << c.smCount
+							<< "]"
 							<< endl;
 					}
 				}
@@ -168,10 +195,22 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
 {
 	uniset_rwmutex_wrlock l(lst.mut);
 
-	for( const auto& it :  lst.clst )
+	for( auto&& it :  lst.clst )
 	{
 		if( it.id == ci.id && it.node == ci.node )
+		{
+			// при перезаказе датчиков количество неудачных попыток послать сообщение
+			// считаем что "заказчик" опять на связи
+			it.attempt = maxAttemtps;
+
+			// выставляем флаг, что заказчик опять "на связи"
+			std::lock_guard<std::mutex> lock(lostConsumersMutex);
+			auto c = lostConsumers.find(ci.id);
+			if( c!= lostConsumers.end() )
+				c->second.lost = false;
+
 			return false;
+		}
 	}
 
 	ConsumerInfoExt cinf(ci, 0, maxAttemtps);
@@ -185,6 +224,13 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
 	catch(...) {}
 
 	lst.clst.emplace_front( std::move(cinf) );
+
+	// выставляем флаг, что клиент опять "на связи"
+	std::lock_guard<std::mutex> lock(lostConsumersMutex);
+	auto c = lostConsumers.find(ci.id);
+	if( c!= lostConsumers.end() )
+		c->second.lost = false;
+
 	return true;
 }
 // ------------------------------------------------------------------------------------------
@@ -367,6 +413,7 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
 long IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInfo>& usi,
 										CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
+	// оптимизация:
 	// if( !usi ) - не проверяем, т.к. считаем что это внутренние функции и несуществующий указатель передать не могут
 
 	CORBA::Long prevValue = value;
@@ -375,17 +422,17 @@ long IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInf
 		prevValue = usi->value;
 	}
 
-	CORBA::Long realValue = IOController::localSetValue(usi, value, sup_id);
+	CORBA::Long curValue = IOController::localSetValue(usi, value, sup_id);
 
 	// Рассылаем уведомления только в случае изменения значения
 	// --------
-	if( prevValue == realValue )
-		return realValue;
+	if( prevValue == curValue )
+		return curValue;
 
 	SensorMessage sm(1); // <-- вызываем dummy конструктор т.к. потом все поля всё-равно сами инициализируем
 	sm.id           = usi->si.id;
 	sm.node         = usi->si.node; // uniset_conf()->getLocalNode();
-	sm.value        = realValue;
+	sm.value        = curValue;
 	sm.priority     = (Message::Priority)usi->priority;
 	sm.supplier     = sup_id; // owner_id
 	sm.sensor_type  = usi->type;
@@ -427,7 +474,7 @@ long IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInf
 	}
 	catch(...) {}
 
-	return realValue;
+	return curValue;
 }
 // -----------------------------------------------------------------------------------------
 /*!
@@ -455,23 +502,25 @@ void IONotifyController::send( ConsumerListInfo& lst, const UniSetTypes::SensorM
 
 				tmsg.consumer = li->id;
 				li->ref->push( tmsg );
+				li->smCount++;
 				li->attempt = maxAttemtps; // reinit attempts
 				break;
 			}
 			catch( const CORBA::SystemException& ex )
 			{
-				uwarn << myname << "(IONotifyController::send): "
+				uwarn << myname << "(IONotifyController::send): attempt=" << li->attempt << " "
 					  << uniset_conf()->oind->getNameById(li->id) << "@" << li->node << " (CORBA::SystemException): "
 					  << ex.NP_minorString() << endl;
 			}
 			catch( const std::exception& ex )
 			{
-				uwarn << myname << "(IONotifyController::send): " << ex.what()
+				uwarn << myname << "(IONotifyController::send): attempt=" << li->attempt << " "
+					  << ex.what()
 					  << " for " << uniset_conf()->oind->getNameById(li->id) << "@" << li->node << endl;
 			}
 			catch(...)
 			{
-				ucrit << myname << "(IONotifyController::send): "
+				ucrit << myname << "(IONotifyController::send): attempt=" << li->attempt << " "
 					  << uniset_conf()->oind->getNameById(li->id) << "@" << li->node
 					  << " catch..." << endl;
 			}
@@ -480,14 +529,39 @@ void IONotifyController::send( ConsumerListInfo& lst, const UniSetTypes::SensorM
 			if( i > 0 )
 				li->lostEvents++;
 
-			if( maxAttemtps > 0 && --(li->attempt) <= 0 )
+			try
 			{
-				li = lst.clst.erase(li);
-				--li;
-				break;
-			}
+				if( maxAttemtps > 0 && --(li->attempt) <= 0 )
+				{
+					uwarn << myname << "(IONotifyController::send): ERASE FROM CONSUMERS:  "
+						  << uniset_conf()->oind->getNameById(li->id) << "@" << li->node << endl;
 
-			li->ref = UniSetObject_i::_nil();
+					{
+						std::lock_guard<std::mutex> lock(lostConsumersMutex);
+						auto& c = lostConsumers[li->id];
+						// если уже выставлен флаг что "заказчик" пропал, то не надо увеличивать "счётчик"
+						// видимо мы уже зафиксировали его пропажу на другом датчике...
+						if( !c.lost )
+						{
+							c.count += 1;
+							c.lost = true;
+						}
+					}
+
+					li = lst.clst.erase(li);
+					--li;
+					break;
+				}
+
+
+				li->ref = UniSetObject_i::_nil();
+			}
+			catch( const std::exception& ex )
+			{
+				uwarn << myname << "(IONotifyController::send): UniSetObject_i::_nil() "
+					  << ex.what()
+					  << " for " << uniset_conf()->oind->getNameById(li->id) << "@" << li->node << endl;
+			}
 		}
 	}
 }
@@ -1089,6 +1163,7 @@ nlohmann::json IONotifyController::httpHelp(const Poco::URI::QueryParameters& p)
 {
 	nlohmann::json jdata = IOController::httpHelp(p);
 	jdata[myname]["help"]["consumers"]["desc"] = "get consumers list";
+	jdata[myname]["help"]["lost"]["desc"] = "get lost consumers list";
 	return std::move(jdata);
 }
 // -----------------------------------------------------------------------------
@@ -1096,6 +1171,9 @@ nlohmann::json IONotifyController::httpRequest( const string& req, const Poco::U
 {
 	if( req == "consumers" )
 		return request_consumers(req,p);
+
+	if( req == "lost" )
+		return request_lost(req,p);
 
 	return IOController::httpRequest(req,p);
 }
@@ -1136,7 +1214,33 @@ nlohmann::json IONotifyController::request_consumers(const string& req, const Po
 			jconsinfo["name"] = ORepHelpers::getShortName(oind->getMapName(c.id));
 			jconsinfo["lostEvents"] = c.lostEvents;
 			jconsinfo["attempt"] = c.attempt;
+			jconsinfo["smCount"] = c.smCount;
 		}
+	}
+
+	return std::move(json);
+}
+// -----------------------------------------------------------------------------
+nlohmann::json IONotifyController::request_lost( const string& req, const Poco::URI::QueryParameters& p )
+{
+	//! \todo Не реализовано
+	nlohmann::json json;
+
+	auto& jdata = json[myname]["lost consumers"];
+
+	auto oind = uniset_conf()->oind;
+
+	std::lock_guard<std::mutex> lock(lostConsumersMutex);
+
+	for( const auto& c: lostConsumers )
+	{
+		string cid( std::to_string(c.first) );
+		auto& jcons = jdata[cid];
+
+		jcons["id"] = c.first;
+		jcons["name"] = ORepHelpers::getShortName(oind->getMapName(c.first));
+		jcons["lostCount"] = c.second.count;
+		jcons["lost"] = c.second.lost;
 	}
 
 	return std::move(json);
