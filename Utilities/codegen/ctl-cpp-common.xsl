@@ -389,10 +389,24 @@
 			}
 		};
 
-		std::unordered_map&lt;const UniSetTypes::ObjectId,const long*,VMapHashFn&gt; vmap;
-		std::unordered_map&lt;const UniSetTypes::ObjectId,long*,VMapHashFn&gt; outvmap;
-		std::unordered_map&lt;const long*,const UniSetTypes::ObjectId*,PtrMapHashFn,PtrMapEqualFn&gt; ptrmap;
-		std::unordered_map&lt;long*,const UniSetTypes::ObjectId*,PtrMapHashFn,PtrMapEqualFn&gt; outptrmap;
+		std::unordered_map&lt;const UniSetTypes::ObjectId, const long*,VMapHashFn&gt; vmap;
+		std::unordered_map&lt;const UniSetTypes::ObjectId, long*, VMapHashFn&gt; outvmap;
+		std::unordered_map&lt;const long*, const UniSetTypes::ObjectId*, PtrMapHashFn, PtrMapEqualFn&gt; ptrmap;
+		std::unordered_map&lt;long*,const UniSetTypes::ObjectId*, PtrMapHashFn,PtrMapEqualFn&gt; outptrmap;
+		</xsl:if>
+		
+		<xsl:if test="normalize-space($STAT)='1'">
+		class StatHashFn
+		{
+			public:
+			size_t operator() (const UniSetTypes::ObjectId&amp; key) const
+			{
+				return std::hash&lt;long&gt;()(key);
+			}
+		};
+		
+		std::unordered_map&lt;const UniSetTypes::ObjectId,size_t, StatHashFn&gt; smStat; /*!&lt; количество сообщений по датчикам */
+		size_t processingMessageCatchCount = { 0 }; /*!&lt; количество исключений пойманных в processingMessage */
 		</xsl:if>
 </xsl:template>
 
@@ -410,7 +424,13 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( const UniSetType
 		switch( _msg->type )
 		{
 			case Message::SensorInfo:
-				preSensorInfo( reinterpret_cast&lt;const SensorMessage*&gt;(_msg) );
+			{
+				const SensorMessage* sm = reinterpret_cast&lt;const SensorMessage*&gt;(_msg);
+				<xsl:if test="normalize-space($STAT)='1'">
+				smStat[sm->id] += 1;
+				</xsl:if>
+				preSensorInfo(sm);
+			}
 			break;
 
 			case Message::Timer:
@@ -427,6 +447,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( const UniSetType
 	}
 	catch( const std::exception&amp; ex )
 	{
+		<xsl:if test="normalize-space($STAT)='1'">
+		processingMessageCatchCount++;
+		</xsl:if>
 		mycrit  &lt;&lt; myname &lt;&lt; "(processingMessage): " &lt;&lt; ex.what() &lt;&lt; endl;
 	}
 }
@@ -579,6 +602,19 @@ nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpGet( const Poco::URI:
 	for( const auto&amp; v: vlist )
 		jvmon[v.first] = v.second;
 
+	<xsl:if test="normalize-space($STAT)='1'">
+	auto&amp; jstat = jdata["Statistics"];
+	jstat["processingMessageCatchCount"] = processingMessageCatchCount;
+	auto&amp; jsens = jstat["sensors"];
+	for( const auto&amp; s: smStat )
+	{
+		auto&amp; js = jsens[str(s.first,false)];
+		js["id"] = s.first;
+		js["name"] = ORepHelpers::getShortName( uniset_conf()->oind->getMapName(s.first) );
+		js["count"] = s.second;
+	}
+	</xsl:if>
+		
 	httpGetUserData(jdata);
 	return std::move(json);
 }
