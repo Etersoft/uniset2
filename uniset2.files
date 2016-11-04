@@ -192,6 +192,10 @@ extensions/tests/SMemoryTest/test.xml
 extensions/tests/SMemoryTest/TestProc.cc
 extensions/tests/SMemoryTest/TestProc.h
 extensions/tests/SMemoryTest/testproc.src.xml
+extensions/tests/SMemoryTest/LostTestProc.cc
+extensions/tests/SMemoryTest/LostTestProc.h
+extensions/tests/SMemoryTest/losttestproc.src.xml
+extensions/tests/SMemoryTest/sm-lostmessage-test.cc
 extensions/tests/SMemoryTest/Makefile.am
 extensions/tests/MBSlaveTest/mbslave-test.cc
 extensions/tests/MBSlaveTest/test.xml

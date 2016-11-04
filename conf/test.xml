@@ -39,6 +39,9 @@
 	<LogServer name="smplus" port="3333" host="localhost" />
 	
 	<settings>
+
+		<LostTestProc name="TestProc1" sensor_s="Input4_S"/>
+
 		<TestProc name="TestProc1"
 			on_s="Input1_S"
 			lamp_c="Lamp58_C"
