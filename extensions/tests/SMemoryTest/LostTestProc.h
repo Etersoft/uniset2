@@ -2,7 +2,7 @@
 #ifndef LostTestProc_H_
 #define LostTestProc_H_
 // -----------------------------------------------------------------------------
-#include <vector>
+#include <unordered_map>
 #include "Debug.h"
 #include "LostTestProc_SK.h"
 // -----------------------------------------------------------------------------
@@ -26,6 +26,13 @@ class LostTestProc:
 
 		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
 		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void askSensors( UniversalIO::UIOCommand cmd ) override;
+		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
+		virtual std::string getMonitInfo() override;
+
+		std::unordered_map<UniSetTypes::ObjectId,long> slist;
+		size_t ncycle = { 0 };
+		bool waitEmpty = { false };
 
 	private:
 };

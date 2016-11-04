@@ -244,7 +244,7 @@ void SharedMemory::sysCommand( const SystemMessage* sm )
 
 			if( !activated  )
 			{
-				smcrit << myname << "(sysCommand): Don`t activate! TERMINATE.." << endl;
+				smcrit << myname << "(sysCommand): Don`t activate [timeout=" << activateTimeout << " msec]! TERMINATE.." << endl;
 				std::terminate();
 			}
 
