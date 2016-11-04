@@ -242,16 +242,6 @@ void IOController::localSetUndefinedState( IOStateList::iterator& li,
 	catch(...) {}
 }
 // ------------------------------------------------------------------------------------------
-void IOController::fastSetValue( UniSetTypes::ObjectId sid, CORBA::Long value, UniSetTypes::ObjectId sup_id )
-{
-	try
-	{
-		auto li = ioList.end();
-		localSetValueIt( li, sid, value, sup_id );
-	}
-	catch(...) {}
-}
-// ------------------------------------------------------------------------------------------
 void IOController::setValue( UniSetTypes::ObjectId sid, CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
 	auto li = ioList.end();
@@ -320,9 +310,16 @@ long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 			retValue = usi->value;
 
 			// запоминаем время изменения
-			struct timespec tm = UniSetTypes::now_to_timespec();
-			usi->tv_sec  = tm.tv_sec;
-			usi->tv_nsec = tm.tv_nsec;
+			try
+			{
+				struct timespec tm = UniSetTypes::now_to_timespec();
+				usi->tv_sec  = tm.tv_sec;
+				usi->tv_nsec = tm.tv_nsec;
+			}
+			catch( std::exception& ex )
+			{
+				ucrit << myname << "(localSetValue): setValue (" << usi->si.id << ") ERROR: " << ex.what() << endl;
+			}
 		}
 	}    // unlock
 

@@ -68,9 +68,6 @@ interface IOController_i : UniSetManager_i
     void setUndefinedState(in UniSetTypes::ObjectId sid, in boolean undefined, in UniSetTypes::ObjectId sup_id )
                             raises(NameNotFound);
 
-    // fast version (не вырабатывает исключения)
-    oneway void fastSetValue(in UniSetTypes::ObjectId sid, in long value, in UniSetTypes::ObjectId sup_id);
-
     UniversalIO::IOType getIOType(in UniSetTypes::ObjectId sid) raises(NameNotFound);
 
     // --- Интерфейс для конфигурирования ---

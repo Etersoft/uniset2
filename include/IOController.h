@@ -57,9 +57,6 @@ class IOController:
 		virtual void setValue( UniSetTypes::ObjectId sid, CORBA::Long value,
 							   UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId ) override;
 
-		virtual void fastSetValue( UniSetTypes::ObjectId sid, CORBA::Long value,
-								   UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId ) override;
-
 		//     ----------------------------------------------------------------
 		virtual void setUndefinedState( UniSetTypes::ObjectId sid,
 										CORBA::Boolean undefined,

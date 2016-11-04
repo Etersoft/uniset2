@@ -117,7 +117,7 @@ using namespace UniSetTypes;
 		if( ic )
 		{
 			BEG_FUNC1(SMInterface::setValue)
-			ic->fastSetValue(id, value, myid);
+			ic->setValue(id, value, myid);
 			return;
 			END_FUNC(SMInterface::setValue)
 		}

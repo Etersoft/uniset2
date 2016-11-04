@@ -507,7 +507,7 @@ UniSetTypes::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( CORBA:
 	if( logserv /* &amp;&amp; userparam &lt; 0 */ )
 	{
 		inf &lt;&lt; "LogServer: " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port 
-			&lt;&lt; ( logserv->isRunning() ? "   [RUNNIG]" : "   [FAILED]" ) &lt;&lt; endl;
+			&lt;&lt; ( logserv->isRunning() ? "   [RUNNIG]" : "   [STOPPED]" ) &lt;&lt; endl;
 
 		inf &lt;&lt; "         " &lt;&lt; logserv->getShortInfo() &lt;&lt; endl;
 	}
@@ -549,7 +549,7 @@ nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpGet( const Poco::URI:
 		jdata["LogServer"] = {
 			{"host",logserv_host},
 			{"port",logserv_port},
-			{"state",( logserv->isRunning() ? "RUNNIG" : "FAILED" )}
+			{"state",( logserv->isRunning() ? "RUNNIG" : "STOPPED" )}
 		};
 		// logserv->getShortInfo()
 	}

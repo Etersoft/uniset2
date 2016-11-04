@@ -413,7 +413,7 @@ void UInterface::fastSetValue( const IOController_i::SensorInfo& si, long value,
 					oref = resolve( si.id, si.node );
 
 				IOController_i_var iom = IOController_i::_narrow(oref);
-				iom->fastSetValue(si.id, value, sup_id);
+				iom->setValue(si.id, value, sup_id);
 				return;
 			}
 			catch( const CORBA::TRANSIENT& ) {}
