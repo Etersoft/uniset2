@@ -194,6 +194,8 @@ extensions/tests/SMemoryTest/TestProc.h
 extensions/tests/SMemoryTest/testproc.src.xml
 extensions/tests/SMemoryTest/LostTestProc.cc
 extensions/tests/SMemoryTest/LostTestProc.h
+extensions/tests/SMemoryTest/LostPassiveTestProc.cc
+extensions/tests/SMemoryTest/LostPassiveTestProc.h
 extensions/tests/SMemoryTest/losttestproc.src.xml
 extensions/tests/SMemoryTest/sm-lostmessage-test.cc
 extensions/tests/SMemoryTest/Makefile.am

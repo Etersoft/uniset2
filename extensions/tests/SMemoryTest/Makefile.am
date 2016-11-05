@@ -25,7 +25,7 @@ sm_lostmessage_test_CPPFLAGS = -I$(top_builddir)/include \
 	-I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/SharedMemory \
 	$(SIGC_CFLAGS) $(POCO_CFLAGS)
-sm_lostmessage_test_SOURCES = LostTestProc_SK.cc LostTestProc.cc sm-lostmessage-test.cc
+sm_lostmessage_test_SOURCES = LostTestProc_SK.cc LostTestProc.cc LostPassiveTestProc.cc sm-lostmessage-test.cc
 
 
 clean-local:

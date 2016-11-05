@@ -18,6 +18,18 @@ ${START} -f ./sm-lostmessage-test --confile ./test-lost.xml \
 --TestProc3-filter-value 3 \
 --TestProc3-sleep-msec 50 \
 --TestProc3-log-add-levels $LOGLEVEL \
+--TestProc11-filter-field losttest \
+--TestProc11-filter-value 1 \
+--TestProc11-sleep-msec 50 \
+--TestProc11-log-add-levels $LOGLEVEL \
+--TestProc12-filter-field losttest \
+--TestProc12-filter-value 2 \
+--TestProc12-sleep-msec 50 \
+--TestProc12-log-add-levels $LOGLEVEL \
+--TestProc13-filter-field losttest \
+--TestProc13-filter-value 3 \
+--TestProc13-sleep-msec 50 \
+--TestProc13-log-add-levels $LOGLEVEL \
 --ulog-add-levels crit $*
 # --uniset-abort-script ./abort-script-example.sh
 #--ulog-add-levels crit,warn,info

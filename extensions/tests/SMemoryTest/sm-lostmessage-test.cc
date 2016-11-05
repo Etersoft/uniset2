@@ -25,6 +25,14 @@ int main(int argc, const char** argv)
 
 		int num = conf->getArgPInt("--numproc", 1);
 
+		int max = 10;
+
+		if( num > max )
+		{
+			cerr << "'num' must be < " << max << endl;
+			return 1;
+		}
+
 		for( int i = 1; i <= num; i++ )
 		{
 			ostringstream s;
@@ -32,8 +40,15 @@ int main(int argc, const char** argv)
 
 			cout << "..create " << s.str() << endl;
 			auto tp = make_shared<LostTestProc>( conf->getObjectID(s.str()));
-			//			tp->init_dlog(dlog());
 			act->add(tp);
+
+			ostringstream sp;
+			sp << "TestProc" << (i+max);
+
+			cout << "..create passive " << sp.str() << endl;
+			auto child = make_shared<LostPassiveTestProc>( conf->getObjectID(sp.str()));
+			tp->setChildPassiveProc(child);
+			act->add(child);
 		}
 
 		SystemMessage sm(SystemMessage::StartUp);
