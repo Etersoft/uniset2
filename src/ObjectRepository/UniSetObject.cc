@@ -382,9 +382,7 @@ void UniSetObject::push( const TransportMessage& tm )
 nlohmann::json UniSetObject::httpGet( const Poco::URI::QueryParameters& p )
 {
 	nlohmann::json jret;
-
-	std::string myid(to_string(getId()));
-	auto& jdata = jret[myid];
+	auto& jdata = jret[myname];
 
 	jdata["name"] = myname;
 	jdata["id"] = getId();

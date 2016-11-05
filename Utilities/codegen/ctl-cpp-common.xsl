@@ -256,8 +256,9 @@
         
         // HTTP API
         virtual nlohmann::json httpGet( const Poco::URI::QueryParameters&amp; p ) override;
-        virtual nlohmann::json httpDumpIO();
-        
+        virtual nlohmann::json httpRequest( const std::string&amp; req, const Poco::URI::QueryParameters&amp; p ) override;
+        virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters&amp; p ) override;
+       
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PROTECTED">
@@ -271,8 +272,10 @@
 		virtual bool activateObject() override;
 		virtual std::string getMonitInfo(){ return ""; } /*!&lt; пользовательская информация выводимая в getInfo() */
 		virtual void httpGetUserData( nlohmann::json&amp; jdata ){} /*!&lt;  для пользовательских данных в httpGet() */
-		
-		// Выполнение очередного шага программы
+        virtual nlohmann::json httpDumpIO();
+        virtual nlohmann::json httpRequestLog( const Poco::URI::QueryParameters&amp; p );
+
+        // Выполнение очередного шага программы
 		virtual void step(){}
 
 		void preAskSensors( UniversalIO::UIOCommand cmd );
@@ -564,8 +567,7 @@ nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpGet( const Poco::URI:
 	<xsl:if test="not(normalize-space($BASECLASS)='')">nlohmann::json json = <xsl:value-of select="$BASECLASS"/>::httpGet(params);</xsl:if>
 	<xsl:if test="normalize-space($BASECLASS)=''">nlohmann::json json = UniSetObject::httpGet(params);</xsl:if>
 	
-	std::string myid(to_string(getId()));
-	auto&amp; jdata = json[myid];
+	auto&amp; jdata = json[myname];
 
 	if( logserv )
 	{
@@ -618,6 +620,36 @@ nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpGet( const Poco::URI:
 		
 	httpGetUserData(jdata);
 	return std::move(json);
+}
+// -----------------------------------------------------------------------------
+nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpHelp( const Poco::URI::QueryParameters&amp; params )
+{
+	<xsl:if test="not(normalize-space($BASECLASS)='')">nlohmann::json jdata = <xsl:value-of select="$BASECLASS"/>::httpHelp(params);</xsl:if>
+	<xsl:if test="normalize-space($BASECLASS)=''">nlohmann::json jdata = UniSetObject::httpGet(params);</xsl:if>
+
+	auto&amp; jhelp = jdata[myname]["help"];
+	jhelp["log"]["desc"] = "show log level";
+
+	return jdata;
+}
+// -----------------------------------------------------------------------------
+nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpRequest( const std::string&amp; req, const Poco::URI::QueryParameters&amp; p )
+{
+	if( req == "log" )
+		return httpRequestLog(p);
+	
+	<xsl:if test="not(normalize-space($BASECLASS)='')">return <xsl:value-of select="$BASECLASS"/>::httpRequest(req,p);</xsl:if>
+	<xsl:if test="normalize-space($BASECLASS)=''">return UniSetObject::httpRequest(req,p);</xsl:if>
+}
+// -----------------------------------------------------------------------------
+nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpRequestLog( const Poco::URI::QueryParameters&amp; p )
+{
+	nlohmann::json jret;
+	auto&amp; jdata = jret[myname];
+	
+	jdata["log"] = Debug::str(mylog->level());
+	
+	return std::move(jret);
 }
 // -----------------------------------------------------------------------------
 <xsl:if test="normalize-space($TESTMODE)!=''">
