@@ -608,9 +608,10 @@ nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpGet( const Poco::URI:
 	auto&amp; jsens = jstat["sensors"];
 	for( const auto&amp; s: smStat )
 	{
-		auto&amp; js = jsens[str(s.first,false)];
+		std::string sname(ORepHelpers::getShortName( uniset_conf()->oind->getMapName(s.first)));
+		auto&amp; js = jsens[sname];
 		js["id"] = s.first;
-		js["name"] = ORepHelpers::getShortName( uniset_conf()->oind->getMapName(s.first) );
+		js["name"] = sname;
 		js["count"] = s.second;
 	}
 	</xsl:if>

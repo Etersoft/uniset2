@@ -508,19 +508,22 @@ void IONotifyController::send( ConsumerListInfo& lst, const UniSetTypes::SensorM
 			}
 			catch( const CORBA::SystemException& ex )
 			{
-				uwarn << myname << "(IONotifyController::send): attempt=" << li->attempt << " "
+				uwarn << myname << "(IONotifyController::send): attempt=" << (maxAttemtps - li->attempt + 1)
+					  << " from " << maxAttemtps << " "
 					  << uniset_conf()->oind->getNameById(li->id) << "@" << li->node << " (CORBA::SystemException): "
 					  << ex.NP_minorString() << endl;
 			}
 			catch( const std::exception& ex )
 			{
-				uwarn << myname << "(IONotifyController::send): attempt=" << li->attempt << " "
+				uwarn << myname << "(IONotifyController::send): attempt=" <<  (maxAttemtps - li->attempt + 1) << " "
+					  << " from " << maxAttemtps << " "
 					  << ex.what()
 					  << " for " << uniset_conf()->oind->getNameById(li->id) << "@" << li->node << endl;
 			}
 			catch(...)
 			{
-				ucrit << myname << "(IONotifyController::send): attempt=" << li->attempt << " "
+				ucrit << myname << "(IONotifyController::send): attempt=" <<  (maxAttemtps - li->attempt + 1) << " "
+					  << " from " << maxAttemtps << " "
 					  << uniset_conf()->oind->getNameById(li->id) << "@" << li->node
 					  << " catch..." << endl;
 			}
