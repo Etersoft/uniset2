@@ -353,6 +353,7 @@ class IONotifyController:
 		sigc::connection conUndef;
 
 		int maxAttemtps; /*! максимальное количество попыток послать сообщение заказчику, после чего он будет удалён из списка */
+		int sendAttemtps; /*! максимальное количество попыток послать сообщение заказчику во время изменения датчика */
 
 		std::mutex lostConsumersMutex;
 

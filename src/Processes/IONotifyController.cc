@@ -40,7 +40,8 @@ using namespace std;
 IONotifyController::IONotifyController():
 	askIOMutex("askIOMutex"),
 	trshMutex("trshMutex"),
-	maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 10))
+	maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 10)),
+	sendAttemtps(uniset_conf()->getPIntField("ConsumerSendAttempts", 3))
 {
 
 }
@@ -50,7 +51,8 @@ IONotifyController::IONotifyController(const string& name, const string& section
 	restorer(d),
 	askIOMutex(name + "askIOMutex"),
 	trshMutex(name + "trshMutex"),
-	maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 10))
+	maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 10)),
+	sendAttemtps(uniset_conf()->getPIntField("ConsumerSendAttempts", 3))
 {
 	conUndef = signal_change_undefined_state().connect(sigc::mem_fun(*this, &IONotifyController::onChangeUndefinedState));
 	conInit = signal_init().connect(sigc::mem_fun(*this, &IONotifyController::initItem));
@@ -61,7 +63,8 @@ IONotifyController::IONotifyController( ObjectId id, std::shared_ptr<NCRestorer>
 	restorer(d),
 	askIOMutex(string(uniset_conf()->oind->getMapName(id)) + "_askIOMutex"),
 	trshMutex(string(uniset_conf()->oind->getMapName(id)) + "_trshMutex"),
-	maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 10))
+	maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 10)),
+	sendAttemtps(uniset_conf()->getPIntField("ConsumerSendAttempts", 3))
 {
 	conUndef = signal_change_undefined_state().connect(sigc::mem_fun(*this, &IONotifyController::onChangeUndefinedState));
 	conInit = signal_init().connect(sigc::mem_fun(*this, &IONotifyController::initItem));
@@ -490,7 +493,7 @@ void IONotifyController::send( ConsumerListInfo& lst, const UniSetTypes::SensorM
 
 	for( ConsumerList::iterator li = lst.clst.begin(); li != lst.clst.end(); ++li )
 	{
-		for( int i = 0; i < 2; i++ ) // на каждый объект по две попытки послать
+		for( int i = 0; i < sendAttemtps; i++ ) // на каждый объект по две попытки послать
 		{
 			try
 			{
