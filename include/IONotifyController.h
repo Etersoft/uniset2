@@ -352,7 +352,7 @@ class IONotifyController:
 		sigc::connection conInit;
 		sigc::connection conUndef;
 
-		int maxAttemtps; /*! timeout for consumer */
+		int maxAttemtps; /*! максимальное количество попыток послать сообщение заказчику, после чего он будет удалён из списка */
 
 		std::mutex lostConsumersMutex;
 
