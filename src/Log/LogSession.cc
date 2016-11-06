@@ -674,6 +674,29 @@ string LogSession::getShortInfo() noexcept
 	return std::move(inf.str());
 }
 // ---------------------------------------------------------------------
+nlohmann::json LogSession::httpGetShortInfo()
+{
+	nlohmann::json jret;
+
+	size_t sz = 0;
+	{
+		std::unique_lock<std::mutex> lk(logbuf_mutex);
+		sz = logbuf.size();
+	}
+
+	auto& jdata = jret[caddr];
+
+	jdata["client"] = caddr;
+	jdata["maxbufsize"] = maxRecordsNum;
+	jdata["bufsize"] = sz;
+	jdata["maxCount"] = maxCount;
+	jdata["minSizeMsg"] = minSizeMsg;
+	jdata["maxSizeMsg"] = maxSizeMsg;
+	jdata["numLostMsg"] = numLostMsg;
+
+	return std::move(jret);
+}
+// ---------------------------------------------------------------------
 string LogSession::name() const noexcept
 {
 	return caddr;

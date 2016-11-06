@@ -343,6 +343,25 @@ string LogServer::getShortInfo()
 	return std::move(inf.str());
 }
 // -----------------------------------------------------------------------------
+nlohmann::json LogServer::httpGetShortInfo()
+{
+	nlohmann::json jdata;
+	jdata["name"] = myname;
+	jdata["host"] = addr;
+	jdata["port"] = port;
+	jdata["sessMaxCount"] = sessMaxCount;
+
+	{
+		uniset_rwmutex_rlock l(mutSList);
+
+		auto& jsess = jdata["sessions"];
+		for( const auto& s : slist )
+			jsess.push_back(s->httpGetShortInfo());
+	}
+
+	return std::move(jdata);
+}
+// -----------------------------------------------------------------------------
 void LogServer::saveDefaultLogLevels( const std::string& logname )
 {
 	if( mylog.is_info() )

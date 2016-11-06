@@ -27,6 +27,7 @@
 #include "UTCPCore.h"
 #include "UTCPStream.h"
 #include "LogAgregator.h"
+#include "json.hpp"
 // -------------------------------------------------------------------------
 /*! Реализация "сессии" для клиентов LogServer. */
 class LogSession
@@ -76,6 +77,7 @@ class LogSession
 		bool isAcive() const noexcept;
 
 		std::string getShortInfo() noexcept;
+		nlohmann::json httpGetShortInfo();
 
 		std::string name() const noexcept;
 

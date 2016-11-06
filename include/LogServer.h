@@ -29,6 +29,7 @@
 #include "UTCPSocket.h"
 #include "CommonEventLoop.h"
 #include "LogServerTypes.h"
+#include "json.hpp"
 // -------------------------------------------------------------------------
 class LogSession;
 class LogAgregator;
@@ -120,6 +121,7 @@ class LogServer:
 		static std::string help_print( const std::string& prefix );
 
 		std::string getShortInfo();
+		nlohmann::json httpGetShortInfo();
 
 	protected:
 		LogServer();

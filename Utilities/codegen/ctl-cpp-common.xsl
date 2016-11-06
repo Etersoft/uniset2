@@ -574,9 +574,9 @@ nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpGet( const Poco::URI:
 		jdata["LogServer"] = {
 			{"host",logserv_host},
 			{"port",logserv_port},
-			{"state",( logserv->isRunning() ? "RUNNIG" : "STOPPED" )}
+			{"state",( logserv->isRunning() ? "RUNNIG" : "STOPPED" )},
+			{"info", logserv->httpGetShortInfo() }
 		};
-		// logserv->getShortInfo()
 	}
 	else
 		jdata["LogServer"] = {};
