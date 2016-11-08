@@ -2,9 +2,9 @@
 #include "TestGen.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
-TestGen::TestGen( UniSetTypes::ObjectId id, xmlNode* confnode ):
+TestGen::TestGen( uniset::ObjectId id, xmlNode* confnode ):
 	TestGen_SK( id, confnode )
 {
 	vmonit(int_var);
@@ -91,7 +91,7 @@ void TestGen::httpGetUserData( nlohmann::json& jdata )
 	jdata["myMessage"] = "This is text fot test httpGetUserData";
 }
 // -----------------------------------------------------------------------------
-void TestGen::sysCommand( const UniSetTypes::SystemMessage* sm )
+void TestGen::sysCommand( const uniset::SystemMessage* sm )
 {
 	if( sm->command == SystemMessage::StartUp )
 		askTimer(1, 2000);

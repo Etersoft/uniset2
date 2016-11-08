@@ -24,8 +24,10 @@
 #include "LogAgregator.h"
 #include "Configuration.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 CommonEventLoop LogServer::loop;
 // -------------------------------------------------------------------------
@@ -155,7 +157,7 @@ bool LogServer::check( bool restart_if_fail )
 		{
 			evprepare(io.loop);
 		}
-		catch( UniSetTypes::SystemError& ex )
+		catch( uniset::SystemError& ex )
 		{
 			if( mylog.is_crit() )
 				mylog.crit() <<  myname << "(evprepare): " << ex << endl;
@@ -480,3 +482,4 @@ std::string LogServer::onCommand( LogSession* s, LogServerTypes::Command cmd, co
 	return "";
 }
 // -----------------------------------------------------------------------------
+} // end of namespace uniset

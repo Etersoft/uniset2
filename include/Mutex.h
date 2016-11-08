@@ -26,7 +26,7 @@
 #include <mutex>
 #include <Poco/RWLock.h>
 // -----------------------------------------------------------------------------------------
-namespace UniSetTypes
+namespace uniset
 {
 	// rwmutex..
 	class uniset_rwmutex

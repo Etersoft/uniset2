@@ -13,16 +13,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-// --------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 /*! \file
  *  \author Pavel Vainerman
 */
-// --------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 #include <cstdio>
 #include <unistd.h>
 #include "PassiveTimer.h"
-
-//----------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+namespace uniset
+{
+// -----------------------------------------------------------------------------
 PassiveTimer::PassiveTimer( ) noexcept:
 	PassiveTimer(WaitUpTime)
 {
@@ -128,3 +130,4 @@ const Poco::Timespan UniSetTimer::microsecToPoco( const timeout_t usec ) noexcep
 	return Poco::Timespan( long(usec / 1000000), long(usec % 1000000) );
 }
 //------------------------------------------------------------------------------
+} // end of namespace uniset

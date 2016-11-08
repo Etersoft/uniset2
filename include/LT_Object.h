@@ -27,7 +27,10 @@
 #include "PassiveTimer.h"
 #include "Exceptions.h"
 //---------------------------------------------------------------------------
-class UniSetObject;
+namespace uniset
+{
+	class UniSetObject;
+
 //---------------------------------------------------------------------------
 /*! \class LT_Object
 
@@ -39,7 +42,7 @@ class UniSetObject;
     время на проверку таймеров (правда при условии, что в списке есть хотябы один заказ)
 
     \par Основной принцип
-        Проверяет список таймеров и при срабатывании формирует стандартное уведомление UniSetTypes::TimerMessage,
+        Проверяет список таймеров и при срабатывании формирует стандартное уведомление uniset::TimerMessage,
 	которое помещается в очередь указанному объекту. При проверке таймеров, определяется минимальное время оставшееся
     до очередного срабатывания. Если в списке не остаётся ни одного таймера - возвращает UniSetTimers::WaitUpTime.
 
@@ -104,8 +107,8 @@ class LT_Object
 		    \param p - приоритет присылаемого сообщения
 		    \return Возвращает время [мсек] оставшееся до срабатывания очередного таймера
 		*/
-		virtual timeout_t askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks = -1,
-									UniSetTypes::Message::Priority p = UniSetTypes::Message::High );
+		virtual timeout_t askTimer( uniset::TimerId timerid, timeout_t timeMS, clock_t ticks = -1,
+									uniset::Message::Priority p = uniset::Message::High );
 
 
 		/*!
@@ -123,13 +126,13 @@ class LT_Object
 		 * \param timerid - идентификатор таймера
 		 * \return 0 - если таймер не найден, время (мсек) если таймер есть.
 		 */
-		timeout_t getTimeInterval( UniSetTypes::TimerId timerid );
+		timeout_t getTimeInterval( uniset::TimerId timerid );
 
 		/*! получить оставшееся время для таймера timerid
 		 * \param timerid - идентификатор таймера
 		 * \return 0 - если таймер не найден, время (мсек) если таймер есть.
 		 */
-		timeout_t getTimeLeft( UniSetTypes::TimerId timerid );
+		timeout_t getTimeLeft( uniset::TimerId timerid );
 
 	protected:
 
@@ -140,7 +143,7 @@ class LT_Object
 		struct TimerInfo
 		{
 			TimerInfo() {};
-			TimerInfo( UniSetTypes::TimerId id, timeout_t timeMS, clock_t cnt, UniSetTypes::Message::Priority p ):
+			TimerInfo( uniset::TimerId id, timeout_t timeMS, clock_t cnt, uniset::Message::Priority p ):
 				id(id),
 				curTimeMS(timeMS),
 				priority(p),
@@ -155,9 +158,9 @@ class LT_Object
 				tmr.reset();
 			}
 
-			UniSetTypes::TimerId id = { 0 };    /*!<  идентификатор таймера */
+			uniset::TimerId id = { 0 };    /*!<  идентификатор таймера */
 			timeout_t curTimeMS = { 0 };        /*!<  остаток времени */
-			UniSetTypes::Message::Priority priority = { UniSetTypes::Message::High }; /*!<  приоритет посылаемого сообщения */
+			uniset::Message::Priority priority = { uniset::Message::High }; /*!<  приоритет посылаемого сообщения */
 
 			/*!
 			 * текущий такт
@@ -177,7 +180,7 @@ class LT_Object
 		class Timer_eq: public std::unary_function<TimerInfo, bool>
 		{
 			public:
-				Timer_eq(UniSetTypes::TimerId t): tid(t) {}
+				Timer_eq(uniset::TimerId t): tid(t) {}
 
 				inline bool operator()(const TimerInfo& ti) const
 				{
@@ -185,7 +188,7 @@ class LT_Object
 				}
 
 			protected:
-				UniSetTypes::TimerId tid;
+				uniset::TimerId tid;
 		};
 
 		typedef std::deque<TimerInfo> TimersList;
@@ -198,8 +201,10 @@ class LT_Object
 		TimersList tlst;
 
 		/*! замок для блокирования совместного доступа к cписку таймеров */
-		UniSetTypes::uniset_rwmutex lstMutex;
+		uniset::uniset_rwmutex lstMutex;
 		PassiveTimer tmLast;
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 //--------------------------------------------------------------------------
 #endif

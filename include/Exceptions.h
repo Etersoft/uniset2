@@ -28,7 +28,7 @@
 #include <exception>
 // ---------------------------------------------------------------------
 
-namespace UniSetTypes
+namespace uniset
 {
 	/**
 	  @defgroup UniSetExceptions Исключения
@@ -165,7 +165,7 @@ namespace UniSetTypes
 
 	/*!
 	    Исключение, вырабатываемое в случае присутствия в имени недопустимых символов.
-	    См. UniSetTypes::BadSymbols[]
+	    См. uniset::BadSymbols[]
 	*/
 	class InvalidObjectName: public ResolveNameError
 	{
@@ -184,7 +184,7 @@ namespace UniSetTypes
 	//@}
 	// end of UniSetException group
 	// ---------------------------------------------------------------------
-}    // end of UniSetTypes namespace
+}   // end of uniset namespace
 // ---------------------------------------------------------------------
 #endif // Exception_h_
 // ---------------------------------------------------------------------

@@ -20,6 +20,9 @@
 #include <string>
 #include <comedilib.h>
 #include "Exceptions.h"
+//--------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 /*! Интерфейс для работы с в/в */
 class ComediInterface
@@ -29,16 +32,16 @@ class ComediInterface
 		~ComediInterface();
 
 		int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND )
-		throw(UniSetTypes::Exception);
+		throw(uniset::Exception);
 
 		void setAnalogChannel( int subdev, int channel, int data, int range = 0, int aref = AREF_GROUND )
-		throw(UniSetTypes::Exception);
+		throw(uniset::Exception);
 
 		bool getDigitalChannel( int subdev, int channel )
-		throw(UniSetTypes::Exception);
+		throw(uniset::Exception);
 
 		void setDigitalChannel( int subdev, int channel, bool bit )
-		throw(UniSetTypes::Exception);
+		throw(uniset::Exception);
 
 
 		// Конфигурирование входов / выходов
@@ -62,10 +65,10 @@ class ComediInterface
 		static std::string type2str( SubdevType t );
 		static SubdevType str2type( const std::string& s );
 
-		void configureSubdev( int subdev, SubdevType type ) throw(UniSetTypes::Exception);
+		void configureSubdev( int subdev, SubdevType type ) throw(uniset::Exception);
 
 		void configureChannel( int subdev, int channel, ChannelType type, int range = 0, int aref = 0 )
-		throw(UniSetTypes::Exception);
+		throw(uniset::Exception);
 
 		inline const std::string devname()
 		{
@@ -79,6 +82,8 @@ class ComediInterface
 
 	private:
 };
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // ComediInterface_H_
 // -----------------------------------------------------------------------------

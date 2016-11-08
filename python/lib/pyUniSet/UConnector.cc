@@ -24,8 +24,8 @@ UConnector::UConnector( UTypes::Params* p, const std::string& xfile )throw(UExce
 {
 	try
 	{
-		conf = UniSetTypes::uniset_init(p->argc, p->argv, xmlfile);
-		ui = make_shared<UInterface>(conf);
+		conf = uniset::uniset_init(p->argc, p->argv, xmlfile);
+		ui = make_shared<uniset::UInterface>(conf);
 	}
 	catch( std::exception& ex )
 	{
@@ -42,8 +42,8 @@ UConnector::UConnector(int argc, char** argv, const string& xfile )throw(UExcept
 {
 	try
 	{
-		conf = UniSetTypes::uniset_init(argc, argv, xmlfile);
-		ui = make_shared<UInterface>(conf);
+		conf = uniset::uniset_init(argc, argv, xmlfile);
+		ui = make_shared<uniset::UInterface>(conf);
 	}
 	catch( std::exception& ex )
 	{
@@ -81,7 +81,7 @@ long UConnector::getValue( long id, long node )throw(UException)
 	{
 		return ui->getValue(id, node);
 	}
-	catch( UniSetTypes::Exception& ex )
+	catch( uniset::Exception& ex )
 	{
 		throw UException(ex.what());
 	}
@@ -104,7 +104,7 @@ void UConnector::setValue( long id, long val, long node, long supplier )throw(UE
 	{
 		ui->setValue(id, val, node, supplier);
 	}
-	catch( UniSetTypes::Exception& ex )
+	catch( uniset::Exception& ex )
 	{
 		throw UException(ex.what());
 	}
@@ -141,7 +141,7 @@ string UConnector::getName( long id )
 string UConnector::getShortName( long id )
 {
 	if( conf )
-		return ORepHelpers::getShortName(conf->oind->getMapName(id));
+		return uniset::ORepHelpers::getShortName(conf->oind->getMapName(id));
 
 	return "";
 }
@@ -158,7 +158,7 @@ void UConnector::activate_objects() throw(UException)
 {
 	try
 	{
-		auto act = UniSetActivator::Instance();
+		auto act = uniset::UniSetActivator::Instance();
 		act->run(true);
 	}
 	catch( const std::exception& ex )

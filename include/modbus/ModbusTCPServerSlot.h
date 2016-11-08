@@ -6,6 +6,9 @@
 #include "ModbusTCPServer.h"
 #include "ModbusServerSlot.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 /*!    ModbusTCP server (slot version) */
 class ModbusTCPServerSlot:
 	public ModbusServerSlot,
@@ -64,6 +67,8 @@ class ModbusTCPServerSlot:
 	private:
 
 };
+// -------------------------------------------------------------------------
+} // end of namespace uniset
 // -------------------------------------------------------------------------
 #endif // ModbusTCPServerSlot_H_
 // -------------------------------------------------------------------------

@@ -24,18 +24,21 @@
 #include "MBExchange.h"
 #include "modbus/ModbusRTUMaster.h"
 #include "RTUStorage.h"
+// --------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 class RTUExchange:
 	public MBExchange
 {
 	public:
-		RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID,
+		RTUExchange( uniset::ObjectId objId, uniset::ObjectId shmID,
 					 const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "rs" );
 		virtual ~RTUExchange();
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<RTUExchange> init_rtuexchange( int argc, const char* const* argv,
-				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+				uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 				const std::string& prefix = "rs" );
 
 		/*! глобальная функция для вывода help-а */
@@ -60,6 +63,8 @@ class RTUExchange:
 
 		bool rs_pre_clean;
 };
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // _RS_EXCHANGE_H_
 // -----------------------------------------------------------------------------

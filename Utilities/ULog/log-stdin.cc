@@ -6,7 +6,7 @@
 #include "LogServer.h"
 #include "Exceptions.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // -------------------------------------------------------------------------
 static struct option longopts[] =
@@ -94,7 +94,7 @@ int main( int argc, char* argv[], char* envp[] )
 		cerr << "(log-stdin): " << err << endl;
 		return 1;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		cerr << "(log-stdin): " << ex << endl;
 		return 1;

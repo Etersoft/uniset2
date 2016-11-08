@@ -102,13 +102,13 @@ void CallbackTimer<Caller>::terminate()
 // ------------------------------------------------------------------------------------------
 
 template <class Caller>
-void CallbackTimer<Caller>::add(size_t id, timeout_t timeMS )throw(UniSetTypes::LimitTimers)
+void CallbackTimer<Caller>::add(size_t id, timeout_t timeMS )throw(uniset::LimitTimers)
 {
 	if( lst.size() >= MAXCallbackTimer )
 	{
 		std::ostringstream err;
 		err << "CallbackTimers: exceeded the maximum number of timers (" << MAXCallbackTimer << ")";
-		throw UniSetTypes::LimitTimers(err.str()); 
+		throw uniset::LimitTimers(err.str()); 
 	}
 	
 	PassiveTimer pt(timeMS);

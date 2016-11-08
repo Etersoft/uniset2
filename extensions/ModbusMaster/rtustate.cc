@@ -19,7 +19,7 @@
 #include "modbus/ModbusRTUMaster.h"
 #include "RTUStorage.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 static struct option longopts[] =

@@ -7,7 +7,7 @@
 #include "UniSetTypes.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 TEST_CASE("uniset_rwmutex", "[mutex][basic]" )
 {

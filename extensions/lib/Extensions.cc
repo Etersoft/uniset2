@@ -20,10 +20,12 @@
 #include "Configuration.h"
 #include "Extensions.h"
 // -------------------------------------------------------------------------
-using namespace UniSetTypes;
 using namespace std;
+// --------------------------------------------------------------------------
+namespace uniset
+{
 // -------------------------------------------------------------------------
-namespace UniSetExtensions
+namespace extensions
 {
 	static std::shared_ptr<DebugStream> _dlog;
 
@@ -44,9 +46,9 @@ namespace UniSetExtensions
 		return _dlog;
 	}
 	// -------------------------------------------------------------------------
-	static UniSetTypes::ObjectId shmID = DefaultObjectId;
+	static uniset::ObjectId shmID = DefaultObjectId;
 
-	UniSetTypes::ObjectId getSharedMemoryID()
+	uniset::ObjectId getSharedMemoryID()
 	{
 		if( shmID != DefaultObjectId )
 			return shmID;
@@ -56,7 +58,7 @@ namespace UniSetExtensions
 		string sname = conf->getArgParam("--smemory-id", "SharedMemory1");
 		shmID = conf->getControllerID(sname);
 
-		if( shmID == UniSetTypes::DefaultObjectId )
+		if( shmID == uniset::DefaultObjectId )
 		{
 			ostringstream err;
 			err << ": Unknown ID for '" << sname << "'" << endl;
@@ -152,5 +154,6 @@ namespace UniSetExtensions
 		}
 	}
 	// --------------------------------------------------------------------------
-} // end of namespace
+} // end of namespace extensions
+} // end of namespace uniset
 // -------------------------------------------------------------------------

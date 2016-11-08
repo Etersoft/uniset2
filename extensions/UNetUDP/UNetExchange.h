@@ -38,6 +38,9 @@
 #ifndef vmonit
 #define vmonit( var ) vmon.add( #var, var )
 #endif
+// --------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 /*!
     \page pageUNetExchangeUDP Сетевой обмен на основе UDP (UNetUDP)
@@ -123,12 +126,12 @@ class UNetExchange:
 	public UniSetObject
 {
 	public:
-		UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "unet" );
+		UNetExchange( uniset::ObjectId objId, uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "unet" );
 		virtual ~UNetExchange();
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<UNetExchange> init_unetexchange( int argc, const char* const argv[],
-				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = 0, const std::string& prefix = "unet" );
+				uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = 0, const std::string& prefix = "unet" );
 
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* argv[] ) noexcept;
@@ -144,7 +147,7 @@ class UNetExchange:
 			return unetlog;
 		}
 
-		virtual UniSetTypes::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
+		virtual uniset::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
 
 	protected:
 
@@ -155,9 +158,9 @@ class UNetExchange:
 		std::shared_ptr<SMInterface> shm;
 		void step() noexcept;
 
-		void sysCommand( const UniSetTypes::SystemMessage* msg ) override;
-		void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
-		void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+		void sysCommand( const uniset::SystemMessage* msg ) override;
+		void sensorInfo( const uniset::SensorMessage* sm ) override;
+		void timerInfo( const uniset::TimerMessage* tm ) override;
 		void askSensors( UniversalIO::UIOCommand cmd );
 		void waitSMReady();
 		void receiverEvent( const std::shared_ptr<UNetReceiver>& r, UNetReceiver::Event ev ) noexcept;
@@ -181,13 +184,13 @@ class UNetExchange:
 	private:
 		UNetExchange();
 		timeout_t initPause = { 0 };
-		UniSetTypes::uniset_rwmutex mutex_start;
+		uniset::uniset_rwmutex mutex_start;
 
 		PassiveTimer ptHeartBeat;
-		UniSetTypes::ObjectId sidHeartBeat = { UniSetTypes::DefaultObjectId };
+		uniset::ObjectId sidHeartBeat = { uniset::DefaultObjectId };
 		timeout_t maxHeartBeat = { 10 };
 		IOController::IOStateList::iterator itHeartBeat;
-		UniSetTypes::ObjectId test_id = { UniSetTypes::DefaultObjectId };
+		uniset::ObjectId test_id = { uniset::DefaultObjectId };
 
 		timeout_t steptime = { 1000 };    /*!< периодичность вызова step, [мсек] */
 
@@ -197,18 +200,18 @@ class UNetExchange:
 		struct ReceiverInfo
 		{
 			ReceiverInfo() noexcept: r1(nullptr), r2(nullptr),
-				sidRespond(UniSetTypes::DefaultObjectId),
+				sidRespond(uniset::DefaultObjectId),
 				respondInvert(false),
-				sidLostPackets(UniSetTypes::DefaultObjectId),
-				sidChannelNum(UniSetTypes::DefaultObjectId)
+				sidLostPackets(uniset::DefaultObjectId),
+				sidChannelNum(uniset::DefaultObjectId)
 			{}
 
 			ReceiverInfo( const std::shared_ptr<UNetReceiver>& _r1, const std::shared_ptr<UNetReceiver>& _r2 ) noexcept:
 				r1(_r1), r2(_r2),
-				sidRespond(UniSetTypes::DefaultObjectId),
+				sidRespond(uniset::DefaultObjectId),
 				respondInvert(false),
-				sidLostPackets(UniSetTypes::DefaultObjectId),
-				sidChannelNum(UniSetTypes::DefaultObjectId)
+				sidLostPackets(uniset::DefaultObjectId),
+				sidChannelNum(uniset::DefaultObjectId)
 			{}
 
 			std::shared_ptr<UNetReceiver> r1;    /*!< приём по первому каналу */
@@ -216,16 +219,16 @@ class UNetExchange:
 
 			void step(const std::shared_ptr<SMInterface>& shm, const std::string& myname, std::shared_ptr<DebugStream>& log ) noexcept;
 
-			inline void setRespondID( UniSetTypes::ObjectId id, bool invert = false ) noexcept
+			inline void setRespondID( uniset::ObjectId id, bool invert = false ) noexcept
 			{
 				sidRespond = id;
 				respondInvert = invert;
 			}
-			inline void setLostPacketsID( UniSetTypes::ObjectId id ) noexcept
+			inline void setLostPacketsID( uniset::ObjectId id ) noexcept
 			{
 				sidLostPackets = id;
 			}
-			inline void setChannelNumID( UniSetTypes::ObjectId id ) noexcept
+			inline void setChannelNumID( uniset::ObjectId id ) noexcept
 			{
 				sidChannelNum = id;
 			}
@@ -241,12 +244,12 @@ class UNetExchange:
 			// сумма потерянных пакетов и наличие связи
 			// хотя бы по одному каналу, номер рабочего канала
 			// ( реализацию см. ReceiverInfo::step() )
-			UniSetTypes::ObjectId sidRespond;
+			uniset::ObjectId sidRespond;
 			IOController::IOStateList::iterator itRespond;
 			bool respondInvert = { false };
-			UniSetTypes::ObjectId sidLostPackets;
+			uniset::ObjectId sidLostPackets;
 			IOController::IOStateList::iterator itLostPackets;
-			UniSetTypes::ObjectId sidChannelNum;
+			uniset::ObjectId sidChannelNum;
 			IOController::IOStateList::iterator itChannelNum;
 		};
 
@@ -265,6 +268,8 @@ class UNetExchange:
 
 		VMonitor vmon;
 };
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // UNetExchange_H_
 // -----------------------------------------------------------------------------

@@ -27,6 +27,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 //----------------------------------------------------------------------------------------
+namespace uniset
+{
 /*! \class ThreadCreator
  *    Шаблон для создания потоков с указанием функции вызова.
  * Пример использования:
@@ -234,5 +236,7 @@ Poco::Thread::Priority ThreadCreator<ThreadMaster>::getPriority() const
 {
 	return thr.getPriority();
 }
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 //----------------------------------------------------------------------------------------
 #endif // ThreadCreator_h_

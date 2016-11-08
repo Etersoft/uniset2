@@ -15,7 +15,7 @@ class LostTestProc:
 	public LostPassiveTestProc
 {
 	public:
-		LostTestProc( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::uniset_conf()->getNode("LostTestProc") );
+		LostTestProc( uniset::ObjectId id, xmlNode* confnode = uniset::uniset_conf()->getNode("LostTestProc") );
 		virtual ~LostTestProc();
 
 		void setChildPassiveProc( const std::shared_ptr<LostPassiveTestProc>& lp );
@@ -28,8 +28,8 @@ class LostTestProc:
 			tmCheck
 		};
 
-		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 		virtual std::string getMonitInfo() override;
 
 		size_t ncycle = { 0 };

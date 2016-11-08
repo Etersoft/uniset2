@@ -6,7 +6,7 @@
 #include "UniSetTypes.h"
 
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 
 uniset_mutex m;
 uniset_rwmutex m_rw;
@@ -301,7 +301,7 @@ int main( int argc, const char** argv )
 		int max = 10;
 
 		if( argc > 1 )
-			max = UniSetTypes::uni_atoi(argv[1]);
+			max = uniset::uni_atoi(argv[1]);
 
 #if 1
 		typedef std::vector<MyClass*> TVec;

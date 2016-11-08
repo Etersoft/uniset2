@@ -23,8 +23,10 @@
 #include <mutex>
 #include "MessageType.h"
 //--------------------------------------------------------------------------
-typedef std::shared_ptr<UniSetTypes::VoidMessage> VoidMessagePtr;
+typedef std::shared_ptr<uniset::VoidMessage> VoidMessagePtr;
 //--------------------------------------------------------------------------
+namespace uniset
+{
 /*! \class MQAtomic
  * Очередь сообщений на основе atomic переменных.
  *
@@ -129,6 +131,8 @@ class MQAtomic
 		size_t stMaxQueueMessages = { 0 };    /*!< Максимальное число сообщений хранившихся в очереди */
 		size_t stCountOfLostMessages = { 0 };    /*!< количество переполнений очереди сообщений */
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 //---------------------------------------------------------------------------
 #endif
 //---------------------------------------------------------------------------

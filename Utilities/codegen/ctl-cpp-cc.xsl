@@ -88,7 +88,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback() noexept
 				ui->setValue(idHeartBeat,maxHeartBeat);
 				ptHeartBeat.reset();
 			}
-			catch( const UniSetTypes::Exception&amp; ex )
+			catch( const uniset::Exception&amp; ex )
 			{
 				mycrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
 			}
@@ -98,7 +98,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback() noexept
 		updateOutputs(forceOut);
 		updatePreviousValues();
 	}
-	catch( const UniSetTypes::Exception&amp; ex )
+	catch( const uniset::Exception&amp; ex )
 	{
         mycrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
 	}
@@ -118,9 +118,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback() noexept
 	msleep( sleep_msec );
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId sid, long val )
+void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( uniset::ObjectId sid, long val )
 {
-    if( _sid == UniSetTypes::DefaultObjectId )
+    if( _sid == uniset::DefaultObjectId )
         return;
         
 	<xsl:for-each select="//smap/item">
@@ -163,7 +163,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::askSensor( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node )
+void <xsl:value-of select="$CLASSNAME"/>_SK::askSensor( uniset::ObjectId sid, UniversalIO::UIOCommand cmd, uniset::ObjectId node )
 {
 	if( cmd == UniversalIO::UIONotify )
 	{
@@ -178,7 +178,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askSensor( UniSetTypes::ObjectId si
 	}
 }
 // -----------------------------------------------------------------------------
-long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _sid )
+long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( uniset::ObjectId _sid )
 {
 	<xsl:for-each select="//smap/item">
 	if( _sid == <xsl:value-of select="@name"/> )
@@ -188,7 +188,7 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 	return ui->getValue(_sid);
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( const UniSetTypes::SensorMessage* sm )
+void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( const uniset::SensorMessage* sm )
 {
 	sensorInfo(sm);
 }
@@ -197,7 +197,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 {
 	<xsl:for-each select="//smap/item">
 	<xsl:if test="normalize-space(@initFromSM)!=''">
-	if( <xsl:value-of select="@name"/> != UniSetTypes::DefaultObjectId )
+	if( <xsl:value-of select="@name"/> != uniset::DefaultObjectId )
 	{
 		try
 		{
@@ -221,7 +221,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 		if( <xsl:value-of select="@name"/> != DefaultObjectId )
             priv_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui->getValue(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
 	}
-	catch( const UniSetTypes::Exception&amp; ex )
+	catch( const uniset::Exception&amp; ex )
 	{
         mycrit &lt;&lt; myname &lt;&lt; "(getdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
@@ -238,7 +238,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 			ui->setValue( si, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, getId() );
 		}
 	}
-	catch( const UniSetTypes::Exception&amp; ex )
+	catch( const uniset::Exception&amp; ex )
 	{
         mycrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
@@ -256,7 +256,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 			ui->setValue( si,<xsl:value-of select="$setval"/>, getId() );
 		}
 	}
-	catch( const UniSetTypes::Exception&amp; ex )
+	catch( const uniset::Exception&amp; ex )
 	{
         mycrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
@@ -273,7 +273,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 			ui->setValue( si,(long)m_<xsl:value-of select="@name"/>, getId() );
 		}
 	}
-	catch( const UniSetTypes::Exception&amp; ex )
+	catch( const uniset::Exception&amp; ex )
 	{
         mycrit &lt;&lt; myname &lt;&lt; "(setmsg): " &lt;&lt; ex &lt;&lt; endl;
 		throw;

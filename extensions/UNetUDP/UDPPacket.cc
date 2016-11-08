@@ -15,6 +15,9 @@
  */
 // -------------------------------------------------------------------------
 #include "UDPPacket.h"
+// -------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetUDP;
@@ -206,7 +209,7 @@ bool UDPMessage::setDData( size_t index, bool val ) noexcept
 long UDPMessage::dID( size_t index ) const noexcept
 {
 	if( index >= MaxDCount )
-		return UniSetTypes::DefaultObjectId;
+		return uniset::DefaultObjectId;
 
 	return d_id[index];
 }
@@ -214,7 +217,7 @@ long UDPMessage::dID( size_t index ) const noexcept
 bool UDPMessage::dValue( size_t index ) const noexcept
 {
 	if( index >= MaxDCount )
-		return UniSetTypes::DefaultObjectId;
+		return uniset::DefaultObjectId;
 
 	size_t nbyte = index / 8 * sizeof(unsigned char);
 	size_t nbit =  index % 8 * sizeof(unsigned char);
@@ -335,3 +338,4 @@ uint16_t UDPMessage::getDataCRC() const noexcept
 	return makeCRC( (unsigned char*)(&crc), sizeof(crc) );
 }
 // -----------------------------------------------------------------------------
+} // end of namespace uniset

@@ -28,7 +28,7 @@
 #include "UniSetTypes.h"
 #include "MessageType.h"
 
-namespace UniSetTypes
+namespace uniset
 {
 	//--------------------------------------------------------------------------------------------
 	std::ostream& operator<<( std::ostream& os, const Message::TypeOfMessage& t )
@@ -53,11 +53,11 @@ namespace UniSetTypes
 	//--------------------------------------------------------------------------------------------
 	Message::Message() noexcept:
 		type(Unused), priority(Medium),
-		node( UniSetTypes::uniset_conf() ? UniSetTypes::uniset_conf()->getLocalNode() : DefaultObjectId ),
+		node( uniset::uniset_conf() ? uniset::uniset_conf()->getLocalNode() : DefaultObjectId ),
 		supplier(DefaultObjectId),
 		consumer(DefaultObjectId)
 	{
-		tm = UniSetTypes::now_to_timespec();
+		tm = uniset::now_to_timespec();
 	}
 
 	//--------------------------------------------------------------------------------------------
@@ -65,14 +65,14 @@ namespace UniSetTypes
 	VoidMessage::VoidMessage( const TransportMessage& tm ) noexcept:
 		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
 	{
-		assert(sizeof(VoidMessage) >= sizeof(UniSetTypes::RawDataOfTransportMessage));
+		assert(sizeof(VoidMessage) >= sizeof(uniset::RawDataOfTransportMessage));
 		memcpy(this, &tm.data, sizeof(tm.data));
 		consumer = tm.consumer;
 	}
 
 	VoidMessage::VoidMessage() noexcept
 	{
-		assert(sizeof(VoidMessage) >= sizeof(UniSetTypes::RawDataOfTransportMessage));
+		assert(sizeof(VoidMessage) >= sizeof(uniset::RawDataOfTransportMessage));
 	}
 
 	//--------------------------------------------------------------------------------------------
@@ -82,7 +82,7 @@ namespace UniSetTypes
 		undefined(false),
 		sensor_type(UniversalIO::DI),
 		threshold(false),
-		tid(UniSetTypes::DefaultThresholdId)
+		tid(uniset::DefaultThresholdId)
 	{
 		type    = Message::SensorInfo;
 		sm_tv   = tm; // или инициализировать нулём ?
@@ -102,7 +102,7 @@ namespace UniSetTypes
 		sensor_type(st),
 		ci(ci),
 		threshold(false),
-		tid(UniSetTypes::DefaultThresholdId)
+		tid(uniset::DefaultThresholdId)
 	{
 		type            = Message::SensorInfo;
 		this->priority     = priority;
@@ -175,12 +175,12 @@ namespace UniSetTypes
 	}
 	//--------------------------------------------------------------------------------------------
 	TimerMessage::TimerMessage():
-		id(UniSetTypes::DefaultTimerId)
+		id(uniset::DefaultTimerId)
 	{
 		type = Message::Timer;
 	}
 
-	TimerMessage::TimerMessage(UniSetTypes::TimerId id, Priority prior, ObjectId cons):
+	TimerMessage::TimerMessage(uniset::TimerId id, Priority prior, ObjectId cons):
 		id(id)
 	{
 		type = Message::Timer;
@@ -201,7 +201,7 @@ namespace UniSetTypes
 		assert(this->type == Message::Confirm);
 	}
 	//--------------------------------------------------------------------------------------------
-	ConfirmMessage::ConfirmMessage(UniSetTypes::ObjectId in_sensor_id,
+	ConfirmMessage::ConfirmMessage(uniset::ObjectId in_sensor_id,
 								   const double& in_sensor_value,
 								   const timespec& in_sensor_time,
 								   const timespec& in_confirm_time,
@@ -218,6 +218,6 @@ namespace UniSetTypes
 	}
 
 	//--------------------------------------------------------------------------------------------
-} // end of namespace UniSetTypes
+} // end of namespace uniset
 //--------------------------------------------------------------------------------------------
 

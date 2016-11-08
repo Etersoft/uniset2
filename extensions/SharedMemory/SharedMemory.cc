@@ -23,9 +23,11 @@
 #include "ORepHelpers.h"
 #include "SMLogSugar.h"
 // -----------------------------------------------------------------------------
+namespace uniset
+{
+// -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 void SharedMemory::help_print( int argc, const char* const* argv )
 {
@@ -398,7 +400,7 @@ void SharedMemory::checkHeartBeat()
 				}
 			}
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			smcrit << myname << "(checkHeartBeat): " << ex << endl;
 		}
@@ -516,9 +518,9 @@ shared_ptr<SharedMemory> SharedMemory::init_smemory( int argc, const char* const
 
 
 	dinfo << "(smemory): datfile = " << dfile << endl;
-	UniSetTypes::ObjectId ID = conf->getControllerID(conf->getArgParam("--smemory-id", "SharedMemory"));
+	uniset::ObjectId ID = conf->getControllerID(conf->getArgParam("--smemory-id", "SharedMemory"));
 
-	if( ID == UniSetTypes::DefaultObjectId )
+	if( ID == uniset::DefaultObjectId )
 	{
 		cerr << "(smemory): НЕ ЗАДАН идентификатор '"
 			 << " или не найден в " << conf->getControllersSection()
@@ -573,7 +575,7 @@ void SharedMemory::readEventList( const std::string& oname )
 	}
 }
 // -----------------------------------------------------------------------------
-void SharedMemory::sendEvent( UniSetTypes::SystemMessage& sm )
+void SharedMemory::sendEvent( uniset::SystemMessage& sm )
 {
 	TransportMessage tm( std::move(sm.transport_msg()) );
 
@@ -932,7 +934,7 @@ void SharedMemory::initFromReserv()
 	smwarn << myname << "(initFromReserv): FAILED INIT FROM <ReservList>" << endl;
 }
 // ----------------------------------------------------------------------------
-bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectId sm_node )
+bool SharedMemory::initFromSM( uniset::ObjectId sm_id, uniset::ObjectId sm_node )
 {
 	sminfo << myname << "(initFromSM): init from sm_id='" << sm_id << "' sm_node='" << sm_node << "'" << endl;
 
@@ -973,7 +975,7 @@ bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectI
 
 #endif
 			}
-			catch( const UniSetTypes::Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				smcrit << myname << "(initFromSM): " << ex << endl;
 			}
@@ -985,7 +987,7 @@ bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectI
 
 		return true;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		smwarn << myname << "(initFromSM): " << ex << endl;
 	}
@@ -993,9 +995,9 @@ bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectI
 	return false;
 }
 // ----------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* SharedMemory::getInfo( CORBA::Long userparam )
+uniset::SimpleInfo* SharedMemory::getInfo( CORBA::Long userparam )
 {
-	UniSetTypes::SimpleInfo_var i = IONotifyController::getInfo(userparam);
+	uniset::SimpleInfo_var i = IONotifyController::getInfo(userparam);
 
 	ostringstream inf;
 
@@ -1011,3 +1013,4 @@ UniSetTypes::SimpleInfo* SharedMemory::getInfo( CORBA::Long userparam )
 	return i._retn();
 }
 // ----------------------------------------------------------------------------
+} // end of namespace uniset

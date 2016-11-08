@@ -26,7 +26,7 @@
 #include "modbus/ModbusHelpers.h"
 #include "extensions/MTR.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 static struct option longopts[] =
@@ -222,7 +222,7 @@ int main( int argc, char** argv )
 					if( !checkArg(optind + 1, argc, argv) )
 						break;
 
-					fn = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(argv[optind + 3]);
+					fn = (ModbusRTU::SlaveFunctionCode)uniset::uni_atoi(argv[optind + 3]);
 				}
 				break;
 
@@ -241,7 +241,7 @@ int main( int argc, char** argv )
 					if( !checkArg(optind + 1, argc, argv) )
 						break;
 
-					fn = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(argv[optind + 1]);
+					fn = (ModbusRTU::SlaveFunctionCode)uniset::uni_atoi(argv[optind + 1]);
 				}
 				break;
 
@@ -330,7 +330,7 @@ int main( int argc, char** argv )
 					ModbusRTU::ModbusAddr a = ModbusHelpers::autodetectSlave(&mb, beg, end, reg, fn);
 					cout << "(mtr-setup): autodetect modbus slave: " << ModbusRTU::addr2str(a) << endl;
 				}
-				catch( UniSetTypes::TimeOut )
+				catch( uniset::TimeOut )
 				{
 					cout << "(mtr-setup): slave not autodetect..." << endl;
 				}
@@ -354,7 +354,7 @@ int main( int argc, char** argv )
 					cout << "(mtr-setup): autodetect: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
 						 << " speed=" << ComPort::getSpeed(s) << endl;
 				}
-				catch( UniSetTypes::TimeOut )
+				catch( uniset::TimeOut )
 				{
 					cout << "(mtr-setup): speed not autodetect for slaveaddr="
 						 << ModbusRTU::addr2str(slaveaddr) << endl;

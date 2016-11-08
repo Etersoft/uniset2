@@ -24,6 +24,9 @@
 #include "SMInterface.h"
 #include "SharedMemory.h"
 #include "PassiveTimer.h"
+// --------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 /*!
         \page pageUniExchange Обмен между узлами на основе TCP.
@@ -52,14 +55,14 @@ class UniExchange:
 	public IOController
 {
 	public:
-		UniExchange( UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID,
+		UniExchange( uniset::ObjectId id, uniset::ObjectId shmID,
 					 const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "unet" );
 		virtual ~UniExchange();
 
 		void execute();
 
 		static std::shared_ptr<UniExchange> init_exchange( int argc, const char* const* argv,
-				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+				uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 				const std::string& prefix = "unet" );
 
 		/*! глобальная функция для вывода help-а */
@@ -69,7 +72,7 @@ class UniExchange:
 
 	protected:
 
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 		virtual void askSensors( UniversalIO::UIOCommand cmd );
 		virtual void sigterm( int signo ) override;
 
@@ -89,7 +92,7 @@ class UniExchange:
 
 			SInfo():
 				val(0),
-				id(UniSetTypes::DefaultObjectId),
+				id(uniset::DefaultObjectId),
 				type(UniversalIO::UnknownIOType)
 			{}
 
@@ -97,7 +100,7 @@ class UniExchange:
 			long val;
 			long id;
 			UniversalIO::IOType type;
-			UniSetTypes::uniset_rwmutex val_lock;
+			uniset::uniset_rwmutex val_lock;
 		};
 
 		typedef std::vector<SInfo> SList;
@@ -115,9 +118,9 @@ class UniExchange:
 
 			CORBA::Object_var oref;
 			IOController_i_var shm;
-			UniSetTypes::ObjectId id;
-			UniSetTypes::ObjectId node;
-			UniSetTypes::ObjectId sidConnection; /*!< датчик связи */
+			uniset::ObjectId id;
+			uniset::ObjectId node;
+			uniset::ObjectId sidConnection; /*!< датчик связи */
 			IOController::IOStateList::iterator conn_it;
 			SList smap;
 
@@ -143,5 +146,7 @@ class UniExchange:
 
 	private:
 };
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // UniExchange_H_

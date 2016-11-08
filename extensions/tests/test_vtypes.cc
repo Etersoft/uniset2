@@ -4,7 +4,7 @@
 #include "VTypes.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace VTypes;
 // -----------------------------------------------------------------------------
 TEST_CASE("VTypes: wsize test", "[vtypes][wsize]")

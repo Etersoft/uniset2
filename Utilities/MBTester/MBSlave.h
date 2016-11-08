@@ -12,7 +12,7 @@
 class MBSlave
 {
 	public:
-		MBSlave( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, const std::string& dev, const std::string& speed, bool use485 = false );
+		MBSlave( const std::unordered_set<uniset::ModbusRTU::ModbusAddr>& vaddr, const std::string& dev, const std::string& speed, bool use485 = false );
 		~MBSlave();
 
 		inline void setVerbose( bool state )
@@ -42,67 +42,67 @@ class MBSlave
 		void sigterm( int signo );
 
 		/*! обработка 0x01 */
-		ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query,
-											 ModbusRTU::ReadCoilRetMessage& reply );
+		uniset::ModbusRTU::mbErrCode readCoilStatus( uniset::ModbusRTU::ReadCoilMessage& query,
+											 uniset::ModbusRTU::ReadCoilRetMessage& reply );
 		/*! обработка 0x02 */
-		ModbusRTU::mbErrCode readInputStatus( ModbusRTU::ReadInputStatusMessage& query,
-											  ModbusRTU::ReadInputStatusRetMessage& reply );
+		uniset::ModbusRTU::mbErrCode readInputStatus( uniset::ModbusRTU::ReadInputStatusMessage& query,
+											  uniset::ModbusRTU::ReadInputStatusRetMessage& reply );
 
 		/*! обработка 0x03 */
-		ModbusRTU::mbErrCode readOutputRegisters( ModbusRTU::ReadOutputMessage& query,
-				ModbusRTU::ReadOutputRetMessage& reply );
+		uniset::ModbusRTU::mbErrCode readOutputRegisters( uniset::ModbusRTU::ReadOutputMessage& query,
+				uniset::ModbusRTU::ReadOutputRetMessage& reply );
 
 		/*! обработка 0x04 */
-		ModbusRTU::mbErrCode readInputRegisters( ModbusRTU::ReadInputMessage& query,
-				ModbusRTU::ReadInputRetMessage& reply );
+		uniset::ModbusRTU::mbErrCode readInputRegisters( uniset::ModbusRTU::ReadInputMessage& query,
+				uniset::ModbusRTU::ReadInputRetMessage& reply );
 
 		/*! обработка 0x05 */
-		ModbusRTU::mbErrCode forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
-											  ModbusRTU::ForceSingleCoilRetMessage& reply );
+		uniset::ModbusRTU::mbErrCode forceSingleCoil( uniset::ModbusRTU::ForceSingleCoilMessage& query,
+											  uniset::ModbusRTU::ForceSingleCoilRetMessage& reply );
 
 		/*! обработка 0x0F */
-		ModbusRTU::mbErrCode forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
-				ModbusRTU::ForceCoilsRetMessage& reply );
+		uniset::ModbusRTU::mbErrCode forceMultipleCoils( uniset::ModbusRTU::ForceCoilsMessage& query,
+				uniset::ModbusRTU::ForceCoilsRetMessage& reply );
 
 
 		/*! обработка 0x10 */
-		ModbusRTU::mbErrCode writeOutputRegisters( ModbusRTU::WriteOutputMessage& query,
-				ModbusRTU::WriteOutputRetMessage& reply );
+		uniset::ModbusRTU::mbErrCode writeOutputRegisters( uniset::ModbusRTU::WriteOutputMessage& query,
+				uniset::ModbusRTU::WriteOutputRetMessage& reply );
 
 		/*! обработка 0x06 */
-		ModbusRTU::mbErrCode writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
-				ModbusRTU::WriteSingleOutputRetMessage& reply );
+		uniset::ModbusRTU::mbErrCode writeOutputSingleRegister( uniset::ModbusRTU::WriteSingleOutputMessage& query,
+				uniset::ModbusRTU::WriteSingleOutputRetMessage& reply );
 
 		/*! обработка запросов на чтение ошибок */
-		ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query,
-											 ModbusRTU::JournalCommandRetMessage& reply );
+		uniset::ModbusRTU::mbErrCode journalCommand( uniset::ModbusRTU::JournalCommandMessage& query,
+											 uniset::ModbusRTU::JournalCommandRetMessage& reply );
 
 		/*! обработка запроса на установку времени */
-		ModbusRTU::mbErrCode setDateTime( ModbusRTU::SetDateTimeMessage& query,
-										  ModbusRTU::SetDateTimeRetMessage& reply );
+		uniset::ModbusRTU::mbErrCode setDateTime( uniset::ModbusRTU::SetDateTimeMessage& query,
+										  uniset::ModbusRTU::SetDateTimeRetMessage& reply );
 
 		/*! обработка запроса удалённого сервиса */
-		ModbusRTU::mbErrCode remoteService( ModbusRTU::RemoteServiceMessage& query,
-											ModbusRTU::RemoteServiceRetMessage& reply );
+		uniset::ModbusRTU::mbErrCode remoteService( uniset::ModbusRTU::RemoteServiceMessage& query,
+											uniset::ModbusRTU::RemoteServiceRetMessage& reply );
 
-		ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query,
-										   ModbusRTU::FileTransferRetMessage& reply );
+		uniset::ModbusRTU::mbErrCode fileTransfer( uniset::ModbusRTU::FileTransferMessage& query,
+										   uniset::ModbusRTU::FileTransferRetMessage& reply );
 
-		ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query,
-										  ModbusRTU::DiagnosticRetMessage& reply );
+		uniset::ModbusRTU::mbErrCode diagnostics( uniset::ModbusRTU::DiagnosticMessage& query,
+										  uniset::ModbusRTU::DiagnosticRetMessage& reply );
 
-		ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query,
-									   ModbusRTU::MEIMessageRetRDI& reply );
+		uniset::ModbusRTU::mbErrCode read4314( uniset::ModbusRTU::MEIMessageRDI& query,
+									   uniset::ModbusRTU::MEIMessageRetRDI& reply );
 
 		/*! интерфейс ModbusRTUSlave для обмена по RS */
-		ModbusRTUSlaveSlot* rscomm;
-		std::unordered_set<ModbusRTU::ModbusAddr> vaddr;  /*!< адреса на которые отвечаем */
+		uniset::ModbusRTUSlaveSlot* rscomm;
+		std::unordered_set<uniset::ModbusRTU::ModbusAddr> vaddr;  /*!< адреса на которые отвечаем */
 
 		bool verbose;
 #if 0
-		typedef std::unordered_map<ModbusRTU::mbErrCode, unsigned int> ExchangeErrorMap;
+		typedef std::unordered_map<uniset::ModbusRTU::mbErrCode, unsigned int> ExchangeErrorMap;
 		ExchangeErrorMap errmap;     /*!< статистика обмена */
-		ModbusRTU::mbErrCode prev;
+		uniset::ModbusRTU::mbErrCode prev;
 
 
 		// можно было бы сделать unsigned, но аналоговые датчики у нас имеют

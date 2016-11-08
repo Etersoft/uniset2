@@ -27,6 +27,9 @@
 #include "SMInterface.h"
 #include "LProcessor.h"
 // --------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 /*! Реализация LogicProccessor основанная на заказе датчиков */
 class PassiveLProcessor:
 	public UniSetObject,
@@ -34,8 +37,8 @@ class PassiveLProcessor:
 {
 	public:
 
-		PassiveLProcessor(UniSetTypes::ObjectId objId,
-						  UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "lproc" );
+		PassiveLProcessor(uniset::ObjectId objId,
+						  uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "lproc" );
 		virtual ~PassiveLProcessor();
 
 		enum Timers
@@ -46,7 +49,7 @@ class PassiveLProcessor:
 		static void help_print( int argc, const char* const* argv );
 
 		static std::shared_ptr<PassiveLProcessor> init_plproc( int argc, const char* const* argv,
-				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+				uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 				const std::string& prefix = "plproc" );
 
 	protected:
@@ -56,9 +59,9 @@ class PassiveLProcessor:
 		virtual void getInputs();
 		virtual void setOuts();
 
-		void sysCommand( const UniSetTypes::SystemMessage* msg ) override;
-		void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
-		void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+		void sysCommand( const uniset::SystemMessage* msg ) override;
+		void sensorInfo( const uniset::SensorMessage* sm ) override;
+		void timerInfo( const uniset::TimerMessage* tm ) override;
 		void askSensors( const UniversalIO::UIOCommand cmd );
 		//        void initOutput();
 
@@ -71,10 +74,12 @@ class PassiveLProcessor:
 
 	private:
 		PassiveTimer ptHeartBeat;
-		UniSetTypes::ObjectId sidHeartBeat = { UniSetTypes::DefaultObjectId };
+		uniset::ObjectId sidHeartBeat = { uniset::DefaultObjectId };
 		int maxHeartBeat = { 10 };
 		IOController::IOStateList::iterator itHeartBeat;
 		std::mutex mutex_start;
 };
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // ---------------------------------------------------------------------------
 #endif

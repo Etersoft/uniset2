@@ -6,6 +6,9 @@
 #include <cstring> // for std::memcpy
 #include "PassiveTimer.h" // ..for timeout_t
 // -------------------------------------------------------------------------
+namespace uniset
+{
+
 namespace UTCPCore
 {
 	bool setKeepAliveParams( int sock, timeout_t timeout_sec = 5, int conn_keepcnt = 1, int keepintvl = 2 ) noexcept;
@@ -30,6 +33,8 @@ namespace UTCPCore
 		ssize_t pos;
 	};
 }
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // -------------------------------------------------------------------------
 #endif // UTCPCore_H_
 // -------------------------------------------------------------------------

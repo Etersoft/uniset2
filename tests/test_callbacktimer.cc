@@ -5,6 +5,7 @@
 #include "CallbackTimer.h"
 #include "UniSetTypes.h"
 using namespace std;
+using namespace uniset;
 
 class MyTestClass
 {
@@ -86,6 +87,6 @@ TEST_CASE("CallbackTimer", "[CallbackTimer]" )
 		for( ; i < tmr.MAXCallbackTimer; i++ )
 			tmr.add(i, 100 );
 
-		REQUIRE_THROWS_AS( tmr.add(++i, 100), UniSetTypes::LimitTimers );
+		REQUIRE_THROWS_AS( tmr.add(++i, 100), uniset::LimitTimers );
 	}
 }

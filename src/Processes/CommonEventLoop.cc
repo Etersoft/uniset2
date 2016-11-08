@@ -4,6 +4,9 @@
 // -------------------------------------------------------------------------
 using namespace std;
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 CommonEventLoop::CommonEventLoop() noexcept
 {
 	evterm.set(loop);
@@ -194,3 +197,4 @@ void CommonEventLoop::defaultLoop() noexcept
 	term_event.notify_all();
 }
 // -------------------------------------------------------------------------
+} // end of uniset namespace

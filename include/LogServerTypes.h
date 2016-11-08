@@ -20,6 +20,9 @@
 #include <ostream>
 #include <cstring>
 // -------------------------------------------------------------------------
+namespace uniset
+{
+
 namespace LogServerTypes
 {
 	const unsigned int MAGICNUM = 0x20160417;
@@ -68,6 +71,8 @@ namespace LogServerTypes
 
 	std::ostream& operator<<(std::ostream& os, lsMessage& m );
 }
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // -------------------------------------------------------------------------
 #endif // LogServerTypes_H_
 // -------------------------------------------------------------------------

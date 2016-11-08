@@ -7,10 +7,10 @@
 #include "NCRestorer.h"
 // --------------------------------------------------------------------------
 class NullController:
-	public IONotifyController
+	public uniset::IONotifyController
 {
 	public:
-		NullController( UniSetTypes::ObjectId id, const std::string& restorfile,
+		NullController( uniset::ObjectId id, const std::string& restorfile,
 						const std::string& s_filterField = "",
 						const std::string& s_filterValue = "",
 						const std::string& c_filterField = "",

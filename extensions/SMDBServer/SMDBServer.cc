@@ -21,21 +21,21 @@
 #include "SMDBServer.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
-SMDBServer::SMDBServer( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic,
+SMDBServer::SMDBServer( uniset::ObjectId objId, uniset::ObjectId shmId, SharedMemory* ic,
 						const string& prefix ):
 	DBServer_MySQL(objId),
 	aiignore(false),
 	prefix(prefix)
 {
 	if( objId == DefaultObjectId )
-		throw UniSetTypes::SystemError("(SMDBServer): objId=-1?!! Use --" + prefix + "-name" );
+		throw uniset::SystemError("(SMDBServer): objId=-1?!! Use --" + prefix + "-name" );
 
 	//    xmlNode* cnode = conf->getNode(myname);
 	//    if( cnode == NULL )
-	//        throw UniSetTypes::SystemError("(SMDBServer): Not found conf-node for " + myname );
+	//        throw uniset::SystemError("(SMDBServer): Not found conf-node for " + myname );
 	xmlNode* cnode = conf->getNode("LocalDBServer");
 
 	if( !cnode )
@@ -127,7 +127,7 @@ void SMDBServer::step()
 			shm->localSaveValue(aitHeartBeat, sidHeartBeat, maxHeartBeat, getId());
 			ptHeartBeat.reset();
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			dcrit << myname << "(step): (hb) " << ex << std::endl;
 		}
@@ -183,7 +183,7 @@ void SMDBServer::initDB( DBInterface* db )
 			}
 		}
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		dcrit << myname << "(filling ObjectsMap): " << ex << std::endl;
 	}
@@ -202,7 +202,7 @@ void SMDBServer::help_print( int argc, const char* const* argv )
 }
 // -----------------------------------------------------------------------------
 SMDBServer* SMDBServer::init_smdbserver( int argc, const char* const* argv,
-		UniSetTypes::ObjectId icID, SharedMemory* ic,
+		uniset::ObjectId icID, SharedMemory* ic,
 		const std::string& prefix )
 {
 	string name = conf->getArgParam("--" + prefix + "-name", "DBServer");
@@ -215,7 +215,7 @@ SMDBServer* SMDBServer::init_smdbserver( int argc, const char* const* argv,
 
 	ObjectId ID = conf->getServiceID(name);
 
-	if( ID == UniSetTypes::DefaultObjectId )
+	if( ID == uniset::DefaultObjectId )
 	{
 		cerr << "(SMDBServer): Not found ID for '" << name
 			 << " in '" << conf->getServicesSection() << "' section" << endl;

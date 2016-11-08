@@ -11,7 +11,7 @@
 #include "UNetExchange.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 static int port = 3000;
 static const std::string host("127.255.255.255");

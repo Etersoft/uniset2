@@ -2,9 +2,9 @@
 #include "Skel.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
-Skel::Skel( UniSetTypes::ObjectId id, xmlNode* confnode ):
+Skel::Skel( uniset::ObjectId id, xmlNode* confnode ):
 	Skel_SK( id, confnode )
 {
 }

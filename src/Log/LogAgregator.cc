@@ -20,6 +20,9 @@
 #include "DebugExtBuf.h"
 #include "LogAgregator.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 using namespace std;
 // -------------------------------------------------------------------------
 LogAgregator::LogAgregator( const std::string& name ):
@@ -379,4 +382,4 @@ void LogAgregator::onLogFile( const std::string& logname )
 		l->onLogFile();
 }
 // -------------------------------------------------------------------------
-
+} // end of namespace uniset

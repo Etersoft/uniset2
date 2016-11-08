@@ -39,6 +39,9 @@
 #include "LogServer.h"
 #include "DebugStream.h"
 #include "LogAgregator.h"
+// -------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 /*!
       \page page_IOControl (IOControl) Реализация процесса ввода/вывода
@@ -144,11 +147,11 @@
            <br>&nbsp;&nbsp;   J2
     <br>\b lamp            - признак, что данный аналоговый датчик является "лампочкой".
               <br>        Т.е. на самом деле дискретный выход, который может иметь состояния:
-              <br>UniSetTypes::lmpOFF      - выключен
-              <br>UniSetTypes::lmpON       - включен
-              <br>UniSetTypes::lmpBLINK    - мигание с частотой 1
-              <br>UniSetTypes::lmpBLINK2   - мигание с частотой 2
-              <br>UniSetTypes::lmpBLINK3   - мигание с частотой 3
+              <br>uniset::lmpOFF      - выключен
+              <br>uniset::lmpON       - включен
+              <br>uniset::lmpBLINK    - мигание с частотой 1
+              <br>uniset::lmpBLINK2   - мигание с частотой 2
+              <br>uniset::lmpBLINK3   - мигание с частотой 3
 
     <br>\b no_iotestlamp  - игнорировать данную лампочку при тесте ламп.
     <br>\b range          - диапазон измерения аналогового входа (см. libcomedi)
@@ -223,12 +226,12 @@ class IOControl:
 	public UniSetObject
 {
 	public:
-		IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr, int numcards = 2, const std::string& prefix = "io" );
+		IOControl( uniset::ObjectId id, uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr, int numcards = 2, const std::string& prefix = "io" );
 		virtual ~IOControl();
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<IOControl> init_iocontrol( int argc, const char* const* argv,
-				UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+				uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 				const std::string& prefix = "io" );
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
@@ -314,10 +317,10 @@ class IOControl:
 		void blink();
 
 		// действия при завершении работы
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 		virtual void askSensors( UniversalIO::UIOCommand cmd );
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
-		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
+		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 		virtual void sigterm( int signo ) override;
 		virtual bool activateObject() override;
 
@@ -356,7 +359,7 @@ class IOControl:
 		std::string s_fvalue;
 
 		std::shared_ptr<SMInterface> shm;
-		UniSetTypes::ObjectId myid = { UniSetTypes::DefaultObjectId };
+		uniset::ObjectId myid = { uniset::DefaultObjectId };
 		std::string prefix;
 
 		typedef std::list<IOInfo*> BlinkList;
@@ -380,13 +383,13 @@ class IOControl:
 		PassiveTimer ptBlink3;
 		bool blink3_state = { false };
 
-		UniSetTypes::ObjectId testLamp_s = { UniSetTypes::DefaultObjectId };
+		uniset::ObjectId testLamp_s = { uniset::DefaultObjectId };
 		Trigger trTestLamp;
 		bool isTestLamp = { false };
 		IOController::IOStateList::iterator itTestLamp;
 
 		PassiveTimer ptHeartBeat;
-		UniSetTypes::ObjectId sidHeartBeat;
+		uniset::ObjectId sidHeartBeat;
 		int maxHeartBeat = { 10 };
 		IOController::IOStateList::iterator itHeartBeat;
 
@@ -400,10 +403,10 @@ class IOControl:
 		std::atomic_bool activated = { false };
 		bool readconf_ok = { false };
 		int activateTimeout;
-		UniSetTypes::ObjectId sidTestSMReady = { UniSetTypes::DefaultObjectId };
+		uniset::ObjectId sidTestSMReady = { uniset::DefaultObjectId };
 		std::atomic_bool term = { false };
 
-		UniSetTypes::ObjectId testMode_as = { UniSetTypes::DefaultObjectId };
+		uniset::ObjectId testMode_as = { uniset::DefaultObjectId };
 		IOController::IOStateList::iterator itTestMode;
 		long testmode = { false };
 		long prev_testmode = { false };
@@ -416,6 +419,8 @@ class IOControl:
 
 	private:
 };
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // IOControl_H_
 // -----------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 #include "UHttpServer.h"
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // --------------------------------------------------------------------------
 class UTestSupplier:
 		public UHttp::IHttpRequest

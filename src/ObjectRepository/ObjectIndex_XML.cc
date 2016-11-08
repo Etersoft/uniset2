@@ -21,7 +21,7 @@
 #include "Configuration.h"
 
 // -----------------------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // -----------------------------------------------------------------------------------------
 ObjectIndex_XML::ObjectIndex_XML(const string& xmlfile, size_t minSize )

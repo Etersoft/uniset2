@@ -9,6 +9,10 @@
 #include <condition_variable>
 #include <list>
 // -------------------------------------------------------------------------
+namespace uniset
+{
+
+
 class EvWatcher
 {
 	public:
@@ -95,6 +99,8 @@ class CommonEventLoop
 		std::mutex              prep_mutex;
 		std::atomic_bool prep_notify = { false };
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // -------------------------------------------------------------------------
 #endif // CommonEventLoop_H_
 // -------------------------------------------------------------------------

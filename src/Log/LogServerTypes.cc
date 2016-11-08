@@ -16,6 +16,9 @@
 // -------------------------------------------------------------------------
 #include "LogServerTypes.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 using namespace std;
 // -------------------------------------------------------------------------
 std::ostream& LogServerTypes::operator<<(std::ostream& os, LogServerTypes::Command cmd )
@@ -77,3 +80,4 @@ void LogServerTypes::lsMessage::setLogName( const std::string& name )
 	logname[s] = '\0';
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

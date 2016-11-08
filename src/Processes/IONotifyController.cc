@@ -34,7 +34,7 @@
 
 // ------------------------------------------------------------------------------------------
 using namespace UniversalIO;
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // ------------------------------------------------------------------------------------------
 IONotifyController::IONotifyController():
@@ -78,7 +78,7 @@ IONotifyController::~IONotifyController()
 // ------------------------------------------------------------------------------------------
 SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
 {
-	UniSetTypes::SimpleInfo_var i = IOController::getInfo();
+	uniset::SimpleInfo_var i = IOController::getInfo();
 
 	ostringstream inf;
 
@@ -221,7 +221,7 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
 	// получаем ссылку
 	try
 	{
-		UniSetTypes::ObjectVar op = ui->resolve(ci.id, ci.node);
+		uniset::ObjectVar op = ui->resolve(ci.id, ci.node);
 		cinf.ref = UniSetObject_i::_narrow(op);
 	}
 	catch(...) {}
@@ -262,8 +262,8 @@ bool IONotifyController::removeConsumer( ConsumerListInfo& lst, const ConsumerIn
  *    \param ci         - информация о заказчике
  *    \param cmd        - команда см. UniversalIO::UIOCommand
 */
-void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
-								   const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd )
+void IONotifyController::askSensor(const uniset::ObjectId sid,
+								   const uniset::ConsumerInfo& ci, UniversalIO::UIOCommand cmd )
 {
 	uinfo << "(askSensor): поступил " << ( cmd == UIODontNotify ? "отказ" : "заказ" ) << " от "
 		  << uniset_conf()->oind->getNameById(ci.id) << "@" << ci.node
@@ -295,7 +295,7 @@ void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
 		{
 			ui->send(ci.id, std::move(smsg.transport_msg()), ci.node);
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			uwarn << myname << "(askSensor): " <<  uniset_conf()->oind->getNameById(sid) << " error: " << ex << endl;
 		}
@@ -309,8 +309,8 @@ void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
 }
 
 // ------------------------------------------------------------------------------------------
-void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
-							  const UniSetTypes::ConsumerInfo& cons, UniversalIO::UIOCommand cmd)
+void IONotifyController::ask( AskMap& askLst, const uniset::ObjectId sid,
+							  const uniset::ConsumerInfo& cons, UniversalIO::UIOCommand cmd)
 {
 	// поиск датчика в списке
 	auto askIterator = askLst.find(sid);
@@ -332,7 +332,7 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
 				{
 					dumpOrdersList(sid, lst);
 				}
-				catch( const UniSetTypes::Exception& ex )
+				catch( const uniset::Exception& ex )
 				{
 					uwarn << myname << " не смогли сделать dump: " << ex << endl;
 				}
@@ -414,7 +414,7 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
 }
 // ------------------------------------------------------------------------------------------
 long IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInfo>& usi,
-										CORBA::Long value, UniSetTypes::ObjectId sup_id )
+										CORBA::Long value, uniset::ObjectId sup_id )
 {
 	// оптимизация:
 	// if( !usi ) - не проверяем, т.к. считаем что это внутренние функции и несуществующий указатель передать не могут
@@ -485,7 +485,7 @@ long IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInf
     Возможно нужно ввести своего агента на удалённой стороне, который будет заниматься
     только приёмом сообщений и локальной рассылкой. Lav
 */
-void IONotifyController::send( ConsumerListInfo& lst, const UniSetTypes::SensorMessage& sm )
+void IONotifyController::send( ConsumerListInfo& lst, const uniset::SensorMessage& sm )
 {
 	TransportMessage tmsg(sm.transport_msg());
 
@@ -599,7 +599,7 @@ void IONotifyController::initItem( std::shared_ptr<USensorInfo>& usi, IOControll
 		checkThreshold( usi, false );
 }
 // ------------------------------------------------------------------------------------------
-void IONotifyController::dumpOrdersList( const UniSetTypes::ObjectId sid,
+void IONotifyController::dumpOrdersList( const uniset::ObjectId sid,
 		const IONotifyController::ConsumerListInfo& lst )
 {
 	if( restorer == NULL )
@@ -613,14 +613,14 @@ void IONotifyController::dumpOrdersList( const UniSetTypes::ObjectId sid,
 		auto sinf = make_shared<NCRestorer::SInfo>( std::move(tmp) );
 		restorer->dump(this, sinf, lst);
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		uwarn << myname << "(IONotifyController::dumpOrderList): " << ex << endl;
 	}
 }
 // --------------------------------------------------------------------------------------------------------------
 
-void IONotifyController::dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst )
+void IONotifyController::dumpThresholdList( const uniset::ObjectId sid, const IONotifyController::ThresholdExtList& lst )
 {
 	if( restorer == NULL )
 		return;
@@ -631,15 +631,15 @@ void IONotifyController::dumpThresholdList( const UniSetTypes::ObjectId sid, con
 		auto sinf = make_shared<NCRestorer::SInfo>( std::move(ainf) );
 		restorer->dumpThreshold(this, sinf, lst);
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		uwarn << myname << "(IONotifyController::dumpThresholdList): " << ex << endl;
 	}
 }
 // --------------------------------------------------------------------------------------------------------------
 
-void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci,
-									  UniSetTypes::ThresholdId tid,
+void IONotifyController::askThreshold(uniset::ObjectId sid, const uniset::ConsumerInfo& ci,
+									  uniset::ThresholdId tid,
 									  CORBA::Long lowLimit, CORBA::Long hiLimit,  CORBA::Boolean invert,
 									  UniversalIO::UIOCommand cmd )
 {
@@ -689,7 +689,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
 					{
 						dumpThresholdList(sid, tli.list);
 					}
-					catch( const UniSetTypes::Exception& ex )
+					catch( const uniset::Exception& ex )
 					{
 						uwarn << myname << " не смогли сделать dump: " << ex << endl;
 					}
@@ -705,7 +705,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
 						{
 							dumpThresholdList(sid, it->second.list);
 						}
-						catch( const UniSetTypes::Exception& ex )
+						catch( const uniset::Exception& ex )
 						{
 							uwarn << myname << "(askThreshold): dump: " << ex << endl;
 						}
@@ -750,7 +750,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
 							ref->push( std::move(sm.transport_msg()) );
 					}
 				}
-				catch( const UniSetTypes::Exception& ex )
+				catch( const uniset::Exception& ex )
 				{
 					uwarn << myname << "(askThreshod): " << ex << endl;
 				}
@@ -772,7 +772,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
 						{
 							dumpThresholdList(sid, it->second.list);
 						}
-						catch( const UniSetTypes::Exception& ex )
+						catch( const uniset::Exception& ex )
 						{
 							uwarn << myname << "(askThreshold): dump: " << ex << endl;
 						}
@@ -799,7 +799,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
 	}    // unlock
 }
 // --------------------------------------------------------------------------------------------------------------
-bool IONotifyController::addThreshold( ThresholdExtList& lst, ThresholdInfoExt&& ti, const UniSetTypes::ConsumerInfo& ci )
+bool IONotifyController::addThreshold( ThresholdExtList& lst, ThresholdInfoExt&& ti, const uniset::ConsumerInfo& ci )
 {
 	for( auto it = lst.begin(); it != lst.end(); ++it)
 	{
@@ -815,7 +815,7 @@ bool IONotifyController::addThreshold( ThresholdExtList& lst, ThresholdInfoExt&&
 	addConsumer(ti.clst, ci);
 
 	// запоминаем начальное время
-	struct timespec tm = UniSetTypes::now_to_timespec();
+	struct timespec tm = uniset::now_to_timespec();
 	ti.tv_sec  = tm.tv_sec;
 	ti.tv_nsec = tm.tv_nsec;
 
@@ -823,7 +823,7 @@ bool IONotifyController::addThreshold( ThresholdExtList& lst, ThresholdInfoExt&&
 	return true;
 }
 // --------------------------------------------------------------------------------------------------------------
-bool IONotifyController::removeThreshold( ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci )
+bool IONotifyController::removeThreshold( ThresholdExtList& lst, ThresholdInfoExt& ti, const uniset::ConsumerInfo& ci )
 {
 	for( auto it = lst.begin(); it != lst.end(); ++it)
 	{
@@ -846,7 +846,7 @@ bool IONotifyController::removeThreshold( ThresholdExtList& lst, ThresholdInfoEx
 }
 // --------------------------------------------------------------------------------------------------------------
 void IONotifyController::checkThreshold( IOController::IOStateList::iterator& li,
-		const UniSetTypes::ObjectId sid,
+		const uniset::ObjectId sid,
 		bool send_msg )
 {
 	if( li == myioEnd() )
@@ -880,7 +880,7 @@ void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorIn
 	SensorMessage sm(std::move(usi->makeSensorMessage()));
 
 	// текущее время
-	struct timespec tm = UniSetTypes::now_to_timespec();
+	struct timespec tm = uniset::now_to_timespec();
 
 	{
 		uniset_rwmutex_rlock l(ti->mut);
@@ -926,13 +926,13 @@ void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorIn
 			sm.sm_tv   = tm;
 
 			// если порог связан с датчиком, то надо его выставить
-			if( it->sid != UniSetTypes::DefaultObjectId )
+			if( it->sid != uniset::DefaultObjectId )
 			{
 				try
 				{
 					localSetValueIt(it->sit, it->sid, (sm.threshold ? 1 : 0), usi->supplier);
 				}
-				catch( UniSetTypes::Exception& ex )
+				catch( uniset::Exception& ex )
 				{
 					ucrit << myname << "(checkThreshold): " << ex << endl;
 				}
@@ -945,7 +945,7 @@ void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorIn
 	}
 }
 // --------------------------------------------------------------------------------------------------------------
-IONotifyController::ThresholdExtList::iterator IONotifyController::findThreshold( const UniSetTypes::ObjectId sid, const UniSetTypes::ThresholdId tid )
+IONotifyController::ThresholdExtList::iterator IONotifyController::findThreshold( const uniset::ObjectId sid, const uniset::ThresholdId tid )
 {
 	{
 		// lock
@@ -966,7 +966,7 @@ IONotifyController::ThresholdExtList::iterator IONotifyController::findThreshold
 	return ThresholdExtList::iterator();
 }
 // --------------------------------------------------------------------------------------------------------------
-IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid )
+IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( uniset::ObjectId sid, uniset::ThresholdId tid )
 {
 	uniset_rwmutex_rlock lock(trshMutex);
 
@@ -999,7 +999,7 @@ IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( UniSet
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // --------------------------------------------------------------------------------------------------------------
-IONotifyController_i::ThresholdList* IONotifyController::getThresholds( UniSetTypes::ObjectId sid )
+IONotifyController_i::ThresholdList* IONotifyController::getThresholds( uniset::ObjectId sid )
 {
 	uniset_rwmutex_rlock lock(trshMutex);
 
@@ -1023,7 +1023,7 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( UniSetTy
 		res->value  = IOController::localGetValue(it->second.usi);
 		res->type   = it->second.type;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		uwarn << myname << "(getThresholds): для датчика "
 			  << uniset_conf()->oind->getNameById(it->second.si.id)
@@ -1139,11 +1139,11 @@ void IONotifyController::onChangeUndefinedState( std::shared_ptr<USensorInfo>& u
 }
 
 // -----------------------------------------------------------------------------
-IDSeq* IONotifyController::askSensorsSeq( const UniSetTypes::IDSeq& lst,
-		const UniSetTypes::ConsumerInfo& ci,
+IDSeq* IONotifyController::askSensorsSeq( const uniset::IDSeq& lst,
+		const uniset::ConsumerInfo& ci,
 		UniversalIO::UIOCommand cmd)
 {
-	UniSetTypes::IDList badlist; // cписок не найденных идентификаторов
+	uniset::IDList badlist; // cписок не найденных идентификаторов
 
 	size_t size = lst.length();
 	ObjectId sid;

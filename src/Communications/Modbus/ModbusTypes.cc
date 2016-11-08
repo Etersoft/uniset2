@@ -24,6 +24,9 @@
 #include "UniSetTypes.h"
 #include "DebugStream.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 using namespace ModbusRTU;
 using namespace std;
 // -------------------------------------------------------------------------
@@ -2937,7 +2940,7 @@ ModbusAddr ModbusRTU::str2mbAddr( const std::string& val )
 	if( val.empty() )
 		return 0;
 
-	return (ModbusAddr)UniSetTypes::uni_atoi(val);
+	return (ModbusAddr)uniset::uni_atoi(val);
 }
 // -------------------------------------------------------------------------
 ModbusData ModbusRTU::str2mbData( const std::string& val )
@@ -2945,7 +2948,7 @@ ModbusData ModbusRTU::str2mbData( const std::string& val )
 	if( val.empty() )
 		return 0;
 
-	return (ModbusData)UniSetTypes::uni_atoi(val);
+	return (ModbusData)uniset::uni_atoi(val);
 }
 // -------------------------------------------------------------------------
 std::string ModbusRTU::dat2str( const ModbusData dat )
@@ -3635,6 +3638,7 @@ ModbusRTU::RegID ModbusRTU::genRegID( const ModbusRTU::ModbusData mbreg, const i
 	int fn_max = numeric_limits<ModbusRTU::ModbusByte>::max(); // по идее 255
 
 	// fn необходимо привести к диапазону 0..max
-	return max + mbreg + max + UniSetTypes::lcalibrate(fn, 0, fn_max, 0, max, false);
+	return max + mbreg + max + uniset::lcalibrate(fn, 0, fn_max, 0, max, false);
 }
 // -----------------------------------------------------------------------
+} // end of namespace uniset

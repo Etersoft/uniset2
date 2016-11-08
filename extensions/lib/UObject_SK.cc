@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2016-11-03+03:00
+// generate timestamp: 2016-11-08+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -25,7 +25,7 @@
 
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 
 // --------------------------------------------------------------------------
@@ -53,7 +53,7 @@ forceOut(false),
 end_private(false)
 {
 	mycrit << "UObject: init failed!!!!!!!!!!!!!!!" << endl;
-	throw UniSetTypes::Exception( string(myname+": init failed!!!") );
+	throw uniset::Exception( string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
 // ( val, confval, default val )
@@ -67,7 +67,7 @@ static const std::string init3_str( const std::string& s1, const std::string& s2
 	return s3;
 }
 // -----------------------------------------------------------------------------
-static UniSetTypes::ObjectId init_node( xmlNode* cnode, const std::string& prop )
+static uniset::ObjectId init_node( xmlNode* cnode, const std::string& prop )
 {
 	if( prop.empty() )
 		return uniset_conf()->getLocalNode();
@@ -105,7 +105,7 @@ end_private(false)
 	auto conf = uniset_conf();
 	
 	
-	if( UniSetTypes::findArgParam("--print-id-list",uniset_conf()->getArgc(),uniset_conf()->getArgv()) != -1 )
+	if( uniset::findArgParam("--print-id-list",uniset_conf()->getArgc(),uniset_conf()->getArgv()) != -1 )
 	{
 
 //		abort();
@@ -116,7 +116,7 @@ end_private(false)
 	{
 		ostringstream err;
 		err << "(UObject::init): Unknown ObjectID!";
-		throw UniSetTypes::SystemError( err.str() );
+		throw uniset::SystemError( err.str() );
 	}
 
     mylog = make_shared<DebugStream>();
@@ -155,7 +155,7 @@ end_private(false)
 		{
 			ostringstream err;
 			err << myname << ": не найден идентификатор для датчика 'HeartBeat' " << heart;
-			throw UniSetTypes::SystemError(err.str());
+			throw uniset::SystemError(err.str());
 		}
 
 		int heartbeatTime = conf->getArgPInt("--" + argprefix + "heartbeat-time",it.getProp("heartbeatTime"),conf->getHeartBeatTime());
@@ -170,7 +170,7 @@ end_private(false)
 	// Инициализация значений
 	
 	
-	si.id = UniSetTypes::DefaultObjectId;
+	si.id = uniset::DefaultObjectId;
 	si.node = conf->getLocalNode();
 	
 	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec","150", 150);
@@ -217,7 +217,7 @@ end_private(false)
 	
 
 	// help надо выводить в конце, когда уже все переменные инициализированы по умолчанию
-	if( UniSetTypes::findArgParam("--" + argprefix + "help",uniset_conf()->getArgc(),uniset_conf()->getArgv()) != -1 )
+	if( uniset::findArgParam("--" + argprefix + "help",uniset_conf()->getArgc(),uniset_conf()->getArgv()) != -1 )
 		cout << help() << endl;
 }
 
@@ -243,9 +243,9 @@ void UObject_SK::checkSensors()
 	
 }
 // -----------------------------------------------------------------------------
-bool UObject_SK::setMsg( UniSetTypes::ObjectId _code, bool _state ) noexcept
+bool UObject_SK::setMsg( uniset::ObjectId _code, bool _state ) noexcept
 {
-	if( _code == UniSetTypes::DefaultObjectId )
+	if( _code == uniset::DefaultObjectId )
 	{
 		mylog8 << myname << "(setMsg): попытка послать сообщение с DefaultObjectId" << endl;
 		return false;	
@@ -273,7 +273,7 @@ void UObject_SK::resetMsg()
 
 }
 // -----------------------------------------------------------------------------
-UniSetTypes::ObjectId UObject_SK::getSMTestID()
+uniset::ObjectId UObject_SK::getSMTestID()
 {
 	if( smTestID != DefaultObjectId )
 		return smTestID;
@@ -340,14 +340,14 @@ std::string  UObject_SK::dumpIO()
 	return std::move(s.str());
 }
 // ----------------------------------------------------------------------------
-std::string  UObject_SK::str( UniSetTypes::ObjectId id, bool showLinkName ) const
+std::string  UObject_SK::str( uniset::ObjectId id, bool showLinkName ) const
 {
 	ostringstream s;
 		
 	return "";
 }
 // ----------------------------------------------------------------------------
-std::string  UObject_SK::strval( UniSetTypes::ObjectId id, bool showLinkName ) const
+std::string  UObject_SK::strval( uniset::ObjectId id, bool showLinkName ) const
 {
 	ostringstream s;
 		
@@ -363,14 +363,20 @@ void UObject_SK::init_dlog( std::shared_ptr<DebugStream> d ) noexcept
 	UObject_SK::mylog = d;
 }
 // ------------------------------------------------------------------------------------------
-void UObject_SK::processingMessage( const UniSetTypes::VoidMessage* _msg )
+void UObject_SK::processingMessage( const uniset::VoidMessage* _msg )
 {
 	try
 	{
 		switch( _msg->type )
 		{
 			case Message::SensorInfo:
-				preSensorInfo( reinterpret_cast<const SensorMessage*>(_msg) );
+			{
+				const SensorMessage* sm = reinterpret_cast<const SensorMessage*>(_msg);
+				
+				smStat[sm->id] += 1;
+				
+				preSensorInfo(sm);
+			}
 			break;
 
 			case Message::Timer:
@@ -387,6 +393,9 @@ void UObject_SK::processingMessage( const UniSetTypes::VoidMessage* _msg )
 	}
 	catch( const std::exception& ex )
 	{
+		
+		processingMessageCatchCount++;
+		
 		mycrit  << myname << "(processingMessage): " << ex.what() << endl;
 	}
 }
@@ -456,9 +465,9 @@ void UObject_SK::preSysCommand( const SystemMessage* _sm )
 }
 // -----------------------------------------------------------------------------
 
-UniSetTypes::SimpleInfo* UObject_SK::getInfo( CORBA::Long userparam )
+uniset::SimpleInfo* UObject_SK::getInfo( CORBA::Long userparam )
 {
-	UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo(userparam);
+	uniset::SimpleInfo_var i = UniSetObject::getInfo(userparam);
 	
 	ostringstream inf;
 	
@@ -466,7 +475,7 @@ UniSetTypes::SimpleInfo* UObject_SK::getInfo( CORBA::Long userparam )
 	if( logserv /* && userparam < 0 */ )
 	{
 		inf << "LogServer: " << logserv_host << ":" << logserv_port 
-			<< ( logserv->isRunning() ? "   [RUNNIG]" : "   [FAILED]" ) << endl;
+			<< ( logserv->isRunning() ? "   [RUNNIG]" : "   [STOPPED]" ) << endl;
 
 		inf << "         " << logserv->getShortInfo() << endl;
 	}
@@ -499,17 +508,16 @@ nlohmann::json UObject_SK::httpGet( const Poco::URI::QueryParameters& params )
 {
 	nlohmann::json json = UniSetObject::httpGet(params);
 	
-	std::string myid(to_string(getId()));
-	auto& jdata = json[myid];
+	auto& jdata = json[myname];
 
 	if( logserv )
 	{
 		jdata["LogServer"] = {
 			{"host",logserv_host},
 			{"port",logserv_port},
-			{"state",( logserv->isRunning() ? "RUNNIG" : "FAILED" )}
+			{"state",( logserv->isRunning() ? "RUNNIG" : "STOPPED" )},
+			{"info", logserv->httpGetShortInfo() }
 		};
-		// logserv->getShortInfo()
 	}
 	else
 		jdata["LogServer"] = {};
@@ -537,8 +545,50 @@ nlohmann::json UObject_SK::httpGet( const Poco::URI::QueryParameters& params )
 	for( const auto& v: vlist )
 		jvmon[v.first] = v.second;
 
+	
+	auto& jstat = jdata["Statistics"];
+	jstat["processingMessageCatchCount"] = processingMessageCatchCount;
+	auto& jsens = jstat["sensors"];
+	for( const auto& s: smStat )
+	{
+		std::string sname(ORepHelpers::getShortName( uniset_conf()->oind->getMapName(s.first)));
+		auto& js = jsens[sname];
+		js["id"] = s.first;
+		js["name"] = sname;
+		js["count"] = s.second;
+	}
+	
+		
 	httpGetUserData(jdata);
 	return std::move(json);
+}
+// -----------------------------------------------------------------------------
+nlohmann::json UObject_SK::httpHelp( const Poco::URI::QueryParameters& params )
+{
+	nlohmann::json jdata = UniSetObject::httpGet(params);
+
+	auto& jhelp = jdata[myname]["help"];
+	jhelp["log"]["desc"] = "show log level";
+
+	return jdata;
+}
+// -----------------------------------------------------------------------------
+nlohmann::json UObject_SK::httpRequest( const std::string& req, const Poco::URI::QueryParameters& p )
+{
+	if( req == "log" )
+		return httpRequestLog(p);
+	
+	return UniSetObject::httpRequest(req,p);
+}
+// -----------------------------------------------------------------------------
+nlohmann::json UObject_SK::httpRequestLog( const Poco::URI::QueryParameters& p )
+{
+	nlohmann::json jret;
+	auto& jdata = jret[myname];
+	
+	jdata["log"] = Debug::str(mylog->level());
+	
+	return std::move(jret);
 }
 // -----------------------------------------------------------------------------
 
@@ -564,7 +614,7 @@ bool UObject_SK::activateObject()
 	return true;
 }
 // -----------------------------------------------------------------------------
-void UObject_SK::preTimerInfo( const UniSetTypes::TimerMessage* _tm )
+void UObject_SK::preTimerInfo( const uniset::TimerMessage* _tm )
 {
 	timerInfo(_tm);
 }
@@ -596,7 +646,7 @@ void UObject_SK::waitSM( int wait_msec, ObjectId _testID )
 //		abort();
 //		raise(SIGTERM);
 		std::terminate();
-//		throw UniSetTypes::SystemError(err.str());
+//		throw uniset::SystemError(err.str());
 	}
 
 	if( !ui->waitWorking(_testID,wait_msec) )
@@ -611,7 +661,7 @@ void UObject_SK::waitSM( int wait_msec, ObjectId _testID )
 //		abort();
 		//raise(SIGTERM);
 		std::terminate();
-//		throw UniSetTypes::SystemError(err.str());
+//		throw uniset::SystemError(err.str());
 	}
 }
 // ----------------------------------------------------------------------------
@@ -682,7 +732,7 @@ void UObject_SK::callback() noexcept
 				ui->setValue(idHeartBeat,maxHeartBeat);
 				ptHeartBeat.reset();
 			}
-			catch( const UniSetTypes::Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				mycrit << myname << "(execute): " << ex << endl;
 			}
@@ -692,7 +742,7 @@ void UObject_SK::callback() noexcept
 		updateOutputs(forceOut);
 		updatePreviousValues();
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
         mycrit << myname << "(execute): " << ex << endl;
 	}
@@ -712,9 +762,9 @@ void UObject_SK::callback() noexcept
 	msleep( sleep_msec );
 }
 // -----------------------------------------------------------------------------
-void UObject_SK::setValue( UniSetTypes::ObjectId _sid, long _val )
+void UObject_SK::setValue( uniset::ObjectId _sid, long _val )
 {
-	if( _sid == UniSetTypes::DefaultObjectId )
+	if( _sid == uniset::DefaultObjectId )
 		return;
 		
 	
@@ -727,7 +777,7 @@ void UObject_SK::updateOutputs( bool _force )
 	
 }
 // -----------------------------------------------------------------------------
-void UObject_SK::preSensorInfo( const UniSetTypes::SensorMessage* _sm )
+void UObject_SK::preSensorInfo( const uniset::SensorMessage* _sm )
 {
 	
 	
@@ -739,12 +789,12 @@ void UObject_SK::initFromSM()
 	
 }
 // -----------------------------------------------------------------------------
-void UObject_SK::askSensor( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )
+void UObject_SK::askSensor( uniset::ObjectId _sid, UniversalIO::UIOCommand _cmd, uniset::ObjectId _node )
 {
 	ui->askRemoteSensor(_sid,_cmd,_node,getId());
 }
 // -----------------------------------------------------------------------------
-long UObject_SK::getValue( UniSetTypes::ObjectId _sid )
+long UObject_SK::getValue( uniset::ObjectId _sid )
 {
 	try
 	{
@@ -752,7 +802,7 @@ long UObject_SK::getValue( UniSetTypes::ObjectId _sid )
 
 		return ui->getValue(_sid);
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
         mycrit << myname << "(getValue): " << ex << endl;
 		throw;
@@ -782,7 +832,7 @@ void UObject_SK::preAskSensors( UniversalIO::UIOCommand _cmd )
 		
 			return;
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
             mycrit << myname << "(preAskSensors): " << ex << endl;
 		}

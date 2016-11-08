@@ -38,7 +38,8 @@
 
 // ------------------------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+namespace uniset
+{
 
 #define CREATE_TIMER    make_shared<PassiveCondTimer>();
 // new PassiveSysTimer();
@@ -49,10 +50,10 @@ UniSetObject::UniSetObject():
 	regOK(false),
 	active(0),
 	threadcreate(false),
-	myid(UniSetTypes::DefaultObjectId),
+	myid(uniset::DefaultObjectId),
 	oref(0)
 {
-	ui = make_shared<UInterface>(UniSetTypes::DefaultObjectId);
+	ui = make_shared<UInterface>(uniset::DefaultObjectId);
 
 	tmr = CREATE_TIMER;
 	myname = "noname";
@@ -80,7 +81,7 @@ UniSetObject::UniSetObject( ObjectId id ):
 	else
 	{
 		threadcreate = false;
-		myid = UniSetTypes::DefaultObjectId;
+		myid = uniset::DefaultObjectId;
 		myname = "UnknownUniSetObject";
 		section = "UnknownSection";
 	}
@@ -94,10 +95,10 @@ UniSetObject::UniSetObject( const string& name, const string& section ):
 	regOK(false),
 	active(0),
 	threadcreate(true),
-	myid(UniSetTypes::DefaultObjectId),
+	myid(uniset::DefaultObjectId),
 	oref(0)
 {
-	ui = make_shared<UInterface>(UniSetTypes::DefaultObjectId);
+	ui = make_shared<UInterface>(uniset::DefaultObjectId);
 
 	/*! \warning UniverslalInterface не инициализируется идентификатором объекта */
 	tmr = CREATE_TIMER;
@@ -162,9 +163,9 @@ bool UniSetObject::init( const std::weak_ptr<UniSetManager>& om )
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-void UniSetObject::setID( UniSetTypes::ObjectId id )
+void UniSetObject::setID( uniset::ObjectId id )
 {
-	if( myid != UniSetTypes::DefaultObjectId )
+	if( myid != uniset::DefaultObjectId )
 		throw ObjectNameAlready("ObjectId already set(setID)");
 
 	string myfullname = ui->getNameById(id);
@@ -226,7 +227,7 @@ void UniSetObject::registered()
 {
 	uinfo << myname << ": registration..." << endl;
 
-	if( myid == UniSetTypes::DefaultObjectId )
+	if( myid == uniset::DefaultObjectId )
 	{
 		uinfo << myname << "(registered): myid=DefaultObjectId \n";
 		return;
@@ -242,7 +243,7 @@ void UniSetObject::registered()
 	}
 
 	{
-		UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
+		uniset::uniset_rwmutex_rlock lock(refmutex);
 
 		if( !oref )
 		{
@@ -283,7 +284,7 @@ void UniSetObject::registered()
 		string err(myname + ": don`t registration in object reposotory");
 		throw ORepFailed(err);
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		uwarn << myname << "(registered):  " << ex << endl;
 		string err(myname + ": don`t registration in object reposotory");
@@ -298,7 +299,7 @@ void UniSetObject::unregister()
 	if( myid < 0 ) // || !reg )
 		return;
 
-	if( myid == UniSetTypes::DefaultObjectId )
+	if( myid == uniset::DefaultObjectId )
 	{
 		uinfo << myname << "(unregister): myid=DefaultObjectId \n";
 		regOK = false;
@@ -306,7 +307,7 @@ void UniSetObject::unregister()
 	}
 
 	{
-		UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
+		uniset::uniset_rwmutex_rlock lock(refmutex);
 
 		if( !oref )
 		{
@@ -404,8 +405,8 @@ nlohmann::json UniSetObject::httpHelp( const Poco::URI::QueryParameters& p )
 // ------------------------------------------------------------------------------------------
 ObjectPtr UniSetObject::getRef() const
 {
-	UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
-	return (UniSetTypes::ObjectPtr)CORBA::Object::_duplicate(oref);
+	uniset::uniset_rwmutex_rlock lock(refmutex);
+	return (uniset::ObjectPtr)CORBA::Object::_duplicate(oref);
 }
 // ------------------------------------------------------------------------------------------
 size_t UniSetObject::countMessages()
@@ -530,7 +531,7 @@ bool UniSetObject::deactivate()
 	{
 		uwarn << myname << "(deactivate): " << "поймали CORBA::Exception." << endl;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		uwarn << myname << "(deactivate): " << ex << endl;
 	}
@@ -573,9 +574,9 @@ bool UniSetObject::activate()
 	}
 	else
 	{
-		// А если myid==UniSetTypes::DefaultObjectId
+		// А если myid==uniset::DefaultObjectId
 		// то myname = noname. ВСЕГДА!
-		if( myid == UniSetTypes::DefaultObjectId )
+		if( myid == uniset::DefaultObjectId )
 		{
 			ucrit << myname << "(activate): Не задан ID!!! activate failure..." << endl;
 			// вызываем на случай если она переопределена в дочерних классах
@@ -596,7 +597,7 @@ bool UniSetObject::activate()
 	}
 
 	{
-		UniSetTypes::uniset_rwmutex_wrlock lock(refmutex);
+		uniset::uniset_rwmutex_wrlock lock(refmutex);
 		oref = poa->servant_to_reference(static_cast<PortableServer::ServantBase*>(this) );
 	}
 
@@ -604,7 +605,7 @@ bool UniSetObject::activate()
 	// Запускаем поток обработки сообщений
 	setActive(true);
 
-	if( myid != UniSetTypes::DefaultObjectId && threadcreate )
+	if( myid != uniset::DefaultObjectId && threadcreate )
 	{
 		thr = make_shared< ThreadCreator<UniSetObject> >(this, &UniSetObject::work);
 		//thr->setCancel(ost::Thread::cancelDeferred);
@@ -665,13 +666,13 @@ void UniSetObject::callback()
 
 		sleepTime = checkTimers(this);
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		ucrit << myname << "(callback): " << ex << endl;
 	}
 }
 // ------------------------------------------------------------------------------------------
-void UniSetObject::processingMessage( const UniSetTypes::VoidMessage* msg )
+void UniSetObject::processingMessage( const uniset::VoidMessage* msg )
 {
 	try
 	{
@@ -693,7 +694,7 @@ void UniSetObject::processingMessage( const UniSetTypes::VoidMessage* msg )
 				break;
 		}
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		ucrit  << myname << "(processingMessage): " << ex << endl;
 	}
@@ -740,7 +741,7 @@ timeout_t UniSetObject::askTimer( TimerId timerid, timeout_t timeMS, clock_t tic
 }
 // ------------------------------------------------------------------------------------------
 
-UniSetTypes::SimpleInfo* UniSetObject::getInfo( ::CORBA::Long userparam )
+uniset::SimpleInfo* UniSetObject::getInfo( ::CORBA::Long userparam )
 {
 	ostringstream info;
 	info.setf(ios::left, ios::adjustfield);
@@ -785,3 +786,4 @@ ostream& operator<<(ostream& os, UniSetObject& obj )
 }
 // ------------------------------------------------------------------------------------------
 #undef CREATE_TIMER
+} // end of namespace uniset

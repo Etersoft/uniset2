@@ -52,8 +52,8 @@ class UConnector
 		void activate_objects() throw(UException);
 
 	private:
-		std::shared_ptr<UniSetTypes::Configuration> conf;
-		std::shared_ptr<UInterface> ui;
+		std::shared_ptr<uniset::Configuration> conf;
+		std::shared_ptr<uniset::UInterface> ui;
 		std::string xmlfile;
 };
 //---------------------------------------------------------------------------

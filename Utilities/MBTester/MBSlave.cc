@@ -12,7 +12,7 @@
 #endif
 // -------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
 MBSlave::MBSlave(const std::unordered_set<ModbusAddr>& _vaddr, const std::string& dev, const std::string& speed, bool use485 ):

@@ -4,7 +4,7 @@
 #include "NullSM.h"
 #include "PassiveTimer.h"
 // --------------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------------
 

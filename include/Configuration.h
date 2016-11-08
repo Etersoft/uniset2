@@ -33,9 +33,9 @@
 #include "Debug.h"
 // --------------------------------------------------------------------------
 /*
-    В функции main нужно обязательно вызывать UniSetTypes::uniset_init(argc,argv);
+    В функции main нужно обязательно вызывать uniset::uniset_init(argc,argv);
 */
-namespace UniSetTypes
+namespace uniset
 {
 	/*!
 	     Конфигуратор системы
@@ -57,7 +57,7 @@ namespace UniSetTypes
 
 			/*! устаревший вариант, для поддержки старых проектов */
 			Configuration( int argc, const char* const* argv,
-						   const std::string& fileConf, UniSetTypes::ObjectInfo* objectsMap );
+						   const std::string& fileConf, uniset::ObjectInfo* objectsMap );
 
 			/// Получить значение полей с путём path
 			std::string getField(const std::string& path) const noexcept;
@@ -99,9 +99,9 @@ namespace UniSetTypes
 			xmlNode* getXMLControllersSection() noexcept;
 			xmlNode* getXMLServicesSection()  noexcept;
 			xmlNode* getXMLNodesSection() noexcept;
-			xmlNode* getXMLObjectNode( UniSetTypes::ObjectId ) const noexcept;
+			xmlNode* getXMLObjectNode( uniset::ObjectId ) const noexcept;
 
-			UniversalIO::IOType getIOType( UniSetTypes::ObjectId ) const noexcept;
+			UniversalIO::IOType getIOType( uniset::ObjectId ) const noexcept;
 			UniversalIO::IOType getIOType( const std::string& name ) const noexcept;
 
 			// net
@@ -109,11 +109,11 @@ namespace UniSetTypes
 			size_t getRepeatTimeout() const noexcept;
 			size_t getRepeatCount() const noexcept;
 
-			UniSetTypes::ObjectId getSensorID( const std::string& name ) const noexcept;
-			UniSetTypes::ObjectId getControllerID( const std::string& name ) const noexcept;
-			UniSetTypes::ObjectId getObjectID( const std::string& name ) const noexcept;
-			UniSetTypes::ObjectId getServiceID( const std::string& name ) const noexcept;
-			UniSetTypes::ObjectId getNodeID( const std::string& name ) const noexcept;
+			uniset::ObjectId getSensorID( const std::string& name ) const noexcept;
+			uniset::ObjectId getControllerID( const std::string& name ) const noexcept;
+			uniset::ObjectId getObjectID( const std::string& name ) const noexcept;
+			uniset::ObjectId getServiceID( const std::string& name ) const noexcept;
+			uniset::ObjectId getNodeID( const std::string& name ) const noexcept;
 
 			const std::string getConfFileName() const noexcept;
 			std::string getImagesDir() const noexcept;
@@ -148,8 +148,8 @@ namespace UniSetTypes
 			xmlNode* initLogStream( std::shared_ptr<DebugStream> deb, const std::string& nodename ) noexcept;
 			xmlNode* initLogStream( DebugStream* deb, const std::string& nodename ) noexcept;
 
-			UniSetTypes::ListOfNode::const_iterator listNodesBegin() const noexcept;
-			UniSetTypes::ListOfNode::const_iterator listNodesEnd() const noexcept;
+			uniset::ListOfNode::const_iterator listNodesBegin() const noexcept;
+			uniset::ListOfNode::const_iterator listNodesEnd() const noexcept;
 
 			/*! интерфейс к карте объектов */
 			std::shared_ptr<ObjectIndex> oind;
@@ -169,7 +169,7 @@ namespace UniSetTypes
 			virtual void initConfiguration(int argc, const char* const* argv);
 
 			void createNodesList();
-			virtual void initNode( UniSetTypes::NodeInfo& ninfo, UniXML::iterator& it) noexcept;
+			virtual void initNode( uniset::NodeInfo& ninfo, UniXML::iterator& it) noexcept;
 
 			void initRepSections();
 			std::string getRepSectionName(const std::string& sec, xmlNode* secnode = 0 );
@@ -194,7 +194,7 @@ namespace UniSetTypes
 
 			timeout_t repeatTimeout = { 50 };    /*!< пауза между попытками [мс] */
 
-			UniSetTypes::ListOfNode lnodes;
+			uniset::ListOfNode lnodes;
 
 			// repository
 			std::string secRoot = { "" };
@@ -210,8 +210,8 @@ namespace UniSetTypes
 			xmlNode* xmlServicesSec = { 0 };
 			xmlNode* xmlNodesSec = { 0 };
 
-			ObjectId localDBServer = { UniSetTypes::DefaultObjectId };
-			ObjectId localNode = { UniSetTypes::DefaultObjectId };
+			ObjectId localDBServer = { uniset::DefaultObjectId };
+			ObjectId localNode = { uniset::DefaultObjectId };
 
 			std::string localNodeName = { "" };
 			std::string fileConfName = { "" };
@@ -237,24 +237,24 @@ namespace UniSetTypes
 
 	/*! инициализация "глобальной" конфигурации */
 	std::shared_ptr<Configuration> uniset_init( int argc, const char* const* argv, const std::string& xmlfile = "configure.xml" );
-
-}    // end of UniSetTypes namespace
+// --------------------------------------------------------------------------
+}    // end of uniset namespace
 // --------------------------------------------------------------------------
 // "синтаксический сахар"..для логов
-#define uinfo if( UniSetTypes::ulog()->debugging(Debug::INFO) ) UniSetTypes::ulog()->info()
-#define uwarn if( UniSetTypes::ulog()->debugging(Debug::WARN) ) UniSetTypes::ulog()->warn()
-#define ucrit if( UniSetTypes::ulog()->debugging(Debug::CRIT) ) UniSetTypes::ulog()->crit()
-#define ulog1 if( UniSetTypes::ulog()->debugging(Debug::LEVEL1) ) UniSetTypes::ulog()->level1()
-#define ulog2 if( UniSetTypes::ulog()->debugging(Debug::LEVEL2) ) UniSetTypes::ulog()->level2()
-#define ulog3 if( UniSetTypes::ulog()->debugging(Debug::LEVEL3) ) UniSetTypes::ulog()->level3()
-#define ulog4 if( UniSetTypes::ulog()->debugging(Debug::LEVEL4) ) UniSetTypes::ulog()->level4()
-#define ulog5 if( UniSetTypes::ulog()->debugging(Debug::LEVEL5) ) UniSetTypes::ulog()->level5()
-#define ulog6 if( UniSetTypes::ulog()->debugging(Debug::LEVEL6) ) UniSetTypes::ulog()->level6()
-#define ulog7 if( UniSetTypes::ulog()->debugging(Debug::LEVEL7) ) UniSetTypes::ulog()->level7()
-#define ulog8 if( UniSetTypes::ulog()->debugging(Debug::LEVEL8) ) UniSetTypes::ulog()->level8()
-#define ulog9 if( UniSetTypes::ulog()->debugging(Debug::LEVEL9) ) UniSetTypes::ulog()->level9()
-#define ulogsys if( UniSetTypes::ulog()->debugging(Debug::SYSTEM) ) UniSetTypes::ulog()->system()
-#define ulogrep if( UniSetTypes::ulog()->debugging(Debug::REPOSITORY) ) UniSetTypes::ulog()->repository()
-#define ulogany UniSetTypes::ulog()->any()
+#define uinfo if( uniset::ulog()->debugging(Debug::INFO) ) uniset::ulog()->info()
+#define uwarn if( uniset::ulog()->debugging(Debug::WARN) ) uniset::ulog()->warn()
+#define ucrit if( uniset::ulog()->debugging(Debug::CRIT) ) uniset::ulog()->crit()
+#define ulog1 if( uniset::ulog()->debugging(Debug::LEVEL1) ) uniset::ulog()->level1()
+#define ulog2 if( uniset::ulog()->debugging(Debug::LEVEL2) ) uniset::ulog()->level2()
+#define ulog3 if( uniset::ulog()->debugging(Debug::LEVEL3) ) uniset::ulog()->level3()
+#define ulog4 if( uniset::ulog()->debugging(Debug::LEVEL4) ) uniset::ulog()->level4()
+#define ulog5 if( uniset::ulog()->debugging(Debug::LEVEL5) ) uniset::ulog()->level5()
+#define ulog6 if( uniset::ulog()->debugging(Debug::LEVEL6) ) uniset::ulog()->level6()
+#define ulog7 if( uniset::ulog()->debugging(Debug::LEVEL7) ) uniset::ulog()->level7()
+#define ulog8 if( uniset::ulog()->debugging(Debug::LEVEL8) ) uniset::ulog()->level8()
+#define ulog9 if( uniset::ulog()->debugging(Debug::LEVEL9) ) uniset::ulog()->level9()
+#define ulogsys if( uniset::ulog()->debugging(Debug::SYSTEM) ) uniset::ulog()->system()
+#define ulogrep if( uniset::ulog()->debugging(Debug::REPOSITORY) ) uniset::ulog()->repository()
+#define ulogany uniset::ulog()->any()
 // --------------------------------------------------------------------------
 #endif // Configuration_H_

@@ -28,7 +28,7 @@
 	Http сервер предназначен для получения информации о UniSetObject-ах через http (json).
 */
 // -------------------------------------------------------------------------
-namespace UniSetTypes
+namespace uniset
 {
 	namespace UHttp
 	{

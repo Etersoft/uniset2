@@ -25,7 +25,7 @@
 //---------------------------------------------------------------------------
 using namespace std;
 //---------------------------------------------------------------------------
-static UInterface* uInterface = 0;
+static uniset::UInterface* uInterface = 0;
 //---------------------------------------------------------------------------
 void pyUInterface::uniset_init_params( UTypes::Params* p, const std::string& xmlfile )throw(UException)
 {
@@ -40,11 +40,11 @@ void pyUInterface::uniset_init( int argc, char* argv[], const std::string& xmlfi
 
 	try
 	{
-		UniSetTypes::uniset_init(argc, argv, xmlfile);
-		uInterface = new UInterface();
+		uniset::uniset_init(argc, argv, xmlfile);
+		uInterface = new uniset::UInterface();
 		return;
 	}
-	catch( UniSetTypes::Exception& ex )
+	catch( uniset::Exception& ex )
 	{
 		throw UException(ex.what());
 	}
@@ -56,10 +56,12 @@ void pyUInterface::uniset_init( int argc, char* argv[], const std::string& xmlfi
 //---------------------------------------------------------------------------
 long pyUInterface::getValue( long id )throw(UException)
 {
-	auto conf = UniSetTypes::uniset_conf();
+	auto conf = uniset::uniset_conf();
 
 	if( !conf || !uInterface )
 		throw USysError();
+
+	using namespace uniset;
 
 	UniversalIO::IOType t = conf->getIOType(id);
 
@@ -86,7 +88,7 @@ long pyUInterface::getValue( long id )throw(UException)
 	{
 		throw;
 	}
-	catch( UniSetTypes::Exception& ex )
+	catch( uniset::Exception& ex )
 	{
 		throw UException(ex.what());
 	}
@@ -98,7 +100,7 @@ long pyUInterface::getValue( long id )throw(UException)
 //---------------------------------------------------------------------------
 void pyUInterface::setValue( long id, long val, long supplier )throw(UException)
 {
-	auto conf = UniSetTypes::uniset_conf();
+	auto conf = uniset::uniset_conf();
 
 	if( !conf || !uInterface )
 		throw USysError();
@@ -128,7 +130,7 @@ void pyUInterface::setValue( long id, long val, long supplier )throw(UException)
 	{
 		throw;
 	}
-	catch( UniSetTypes::Exception& ex )
+	catch( uniset::Exception& ex )
 	{
 		throw UException(ex.what());
 	}
@@ -140,27 +142,27 @@ void pyUInterface::setValue( long id, long val, long supplier )throw(UException)
 //---------------------------------------------------------------------------
 long pyUInterface::getSensorID(const string& name )
 {
-	auto conf = UniSetTypes::uniset_conf();
+	auto conf = uniset::uniset_conf();
 
 	if( conf )
 		return conf->getSensorID(name);
 
-	return UniSetTypes::DefaultObjectId;
+	return uniset::DefaultObjectId;
 }
 //---------------------------------------------------------------------------
 long pyUInterface::getObjectID(const string& name )
 {
-	auto conf = UniSetTypes::uniset_conf();
+	auto conf = uniset::uniset_conf();
 
 	if( conf )
 		return conf->getObjectID(name);
 
-	return UniSetTypes::DefaultObjectId;
+	return uniset::DefaultObjectId;
 }
 //---------------------------------------------------------------------------
 std::string pyUInterface::getName( long id )
 {
-	auto conf = UniSetTypes::uniset_conf();
+	auto conf = uniset::uniset_conf();
 
 	if( conf )
 		return conf->oind->getMapName(id);
@@ -170,17 +172,17 @@ std::string pyUInterface::getName( long id )
 //---------------------------------------------------------------------------
 string pyUInterface::getShortName( long id )
 {
-	auto conf = UniSetTypes::uniset_conf();
+	auto conf = uniset::uniset_conf();
 
 	if( conf )
-		return ORepHelpers::getShortName(conf->oind->getMapName(id));
+		return uniset::ORepHelpers::getShortName(conf->oind->getMapName(id));
 
 	return "";
 }
 //---------------------------------------------------------------------------
 std::string pyUInterface::getTextName( long id )
 {
-	auto conf = UniSetTypes::uniset_conf();
+	auto conf = uniset::uniset_conf();
 
 	if( conf )
 		return conf->oind->getTextName(id);
@@ -190,7 +192,7 @@ std::string pyUInterface::getTextName( long id )
 //---------------------------------------------------------------------------
 string pyUInterface::getConfFileName()
 {
-	auto conf = UniSetTypes::uniset_conf();
+	auto conf = uniset::uniset_conf();
 
 	if( conf )
 		return conf->getConfFileName();
@@ -203,7 +205,7 @@ void pyUInterface::uniset_activate_objects()throw(UException)
 {
 	try
 	{
-		auto act = UniSetActivator::Instance();
+		auto act = uniset::UniSetActivator::Instance();
 		act->run(true);
 	}
 	catch( const std::exception& ex )

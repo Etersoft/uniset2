@@ -31,7 +31,7 @@
 #include "UniXML.h"
 #include "DBLogSugar.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 DBServer_MySQL::DBServer_MySQL(ObjectId id, const std::string& prefix ):
@@ -66,7 +66,7 @@ DBServer_MySQL::~DBServer_MySQL()
 		db->close();
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::sysCommand( const UniSetTypes::SystemMessage* sm )
+void DBServer_MySQL::sysCommand( const uniset::SystemMessage* sm )
 {
 	DBServer::sysCommand(sm);
 
@@ -95,7 +95,7 @@ void DBServer_MySQL::sysCommand( const UniSetTypes::SystemMessage* sm )
 }
 
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
+void DBServer_MySQL::confirmInfo( const uniset::ConfirmMessage* cem )
 {
 	try
 	{
@@ -115,7 +115,7 @@ void DBServer_MySQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 			dbcrit << myname << "(update_confirm):  db error: " << db->error() << endl;
 		}
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		dbcrit << myname << "(update_confirm): " << ex << endl;
 	}
@@ -194,7 +194,7 @@ void DBServer_MySQL::flushBuffer()
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::sensorInfo( const UniSetTypes::SensorMessage* si )
+void DBServer_MySQL::sensorInfo( const uniset::SensorMessage* si )
 {
 	try
 	{
@@ -230,7 +230,7 @@ void DBServer_MySQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 			dbcrit << myname << "(insert) sensor msg error: " << db->error() << endl;
 		}
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		dbcrit << myname << "(insert_main_history): " << ex << endl;
 	}
@@ -254,7 +254,7 @@ void DBServer_MySQL::initDBServer()
 
 	auto conf = uniset_conf();
 
-	if( conf->getDBServer() == UniSetTypes::DefaultObjectId )
+	if( conf->getDBServer() == uniset::DefaultObjectId )
 	{
 		ostringstream msg;
 		msg << myname << "(init): DBServer OFF for this node.."
@@ -276,8 +276,8 @@ void DBServer_MySQL::initDBServer()
 	string user(conf->getProp(node, "dbuser"));
 	string password(conf->getProp(node, "dbpass"));
 
-	tblMap[UniSetTypes::Message::SensorInfo] = "main_history";
-	tblMap[UniSetTypes::Message::Confirm] = "main_history";
+	tblMap[uniset::Message::SensorInfo] = "main_history";
+	tblMap[uniset::Message::Confirm] = "main_history";
 
 	PingTime = conf->getIntProp(node, "pingTime");
 	ReconnectTime = conf->getIntProp(node, "reconnectTime");
@@ -349,7 +349,7 @@ void DBServer_MySQL::createTables( MySQLInterface* db )
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::timerInfo( const UniSetTypes::TimerMessage* tm )
+void DBServer_MySQL::timerInfo( const uniset::TimerMessage* tm )
 {
 	DBServer::timerInfo(tm);
 
@@ -413,7 +413,7 @@ std::shared_ptr<DBServer_MySQL> DBServer_MySQL::init_dbserver( int argc, const c
 	{
 		ObjectId ID = conf->getObjectID(name);
 
-		if( ID == UniSetTypes::DefaultObjectId )
+		if( ID == uniset::DefaultObjectId )
 		{
 			cerr << "(DBServer_MySQL): Unknown ObjectID for '" << name << endl;
 			return 0;

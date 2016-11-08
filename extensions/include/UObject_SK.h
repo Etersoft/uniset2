@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2016-11-03+03:00
+// generate timestamp: 2016-11-08+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -26,25 +26,25 @@
 #include "VMonitor.h"
 // -----------------------------------------------------------------------------
 class UObject_SK:
-	public UniSetObject
+	public uniset::UniSetObject
 {
 	public:
-		UObject_SK( UniSetTypes::ObjectId id, xmlNode* node=UniSetTypes::uniset_conf()->getNode("UObject"), const std::string& argprefix="" );
+		UObject_SK( uniset::ObjectId id, xmlNode* node=uniset::uniset_conf()->getNode("UObject"), const std::string& argprefix="" );
 		UObject_SK();
 		virtual ~UObject_SK();
 
 		
-		long getValue( UniSetTypes::ObjectId sid );
-		void setValue( UniSetTypes::ObjectId sid, long value );
-		void askSensor( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );
+		long getValue( uniset::ObjectId sid );
+		void setValue( uniset::ObjectId sid, long value );
+		void askSensor( uniset::ObjectId sid, UniversalIO::UIOCommand, uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() );
 		void updateValues();
 
-		virtual UniSetTypes::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
+		virtual uniset::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
 
-		virtual bool setMsg( UniSetTypes::ObjectId code, bool state = true ) noexcept;
+		virtual bool setMsg( uniset::ObjectId code, bool state = true ) noexcept;
 
 		inline std::shared_ptr<DebugStream> log() noexcept { return mylog; }
-		inline std::shared_ptr<LogAgregator> logAgregator() noexcept { return loga; }
+		inline std::shared_ptr<uniset::LogAgregator> logAgregator() noexcept { return loga; }
 
 		void init_dlog( std::shared_ptr<DebugStream> d ) noexcept;
 
@@ -107,13 +107,13 @@ class UObject_SK:
            \param id           - идентификатор датчика
            \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
         */
-        std::string str( UniSetTypes::ObjectId id, bool showLinkName=true ) const;
+        std::string str( uniset::ObjectId id, bool showLinkName=true ) const;
         
         /*! Вывод значения входа/выхода в формате: in_xxx(SensorName)=val 
            \param id           - идентификатор датчика
            \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
         */
-        std::string strval( UniSetTypes::ObjectId id, bool showLinkName=true ) const;        
+        std::string strval( uniset::ObjectId id, bool showLinkName=true ) const;        
         
         /*! Вывод состояния внутренних переменных */
         inline std::string dumpVars(){ return std::move(vmon.pretty_str()); }
@@ -122,8 +122,9 @@ class UObject_SK:
         
         // HTTP API
         virtual nlohmann::json httpGet( const Poco::URI::QueryParameters& p ) override;
-        virtual nlohmann::json httpDumpIO();
-        
+        virtual nlohmann::json httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
+        virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
+       
 
 
 		// Используемые идентификаторы
@@ -148,66 +149,68 @@ class UObject_SK:
 
 		
 		virtual void callback() noexcept override;
-		virtual void processingMessage( const UniSetTypes::VoidMessage* msg ) override;
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ){};
+		virtual void processingMessage( const uniset::VoidMessage* msg ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ){};
 		virtual void askSensors( UniversalIO::UIOCommand cmd ){}
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override{}
-		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override{}
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) override{}
+		virtual void timerInfo( const uniset::TimerMessage* tm ) override{}
 		virtual void sigterm( int signo ) override;
 		virtual bool activateObject() override;
 		virtual std::string getMonitInfo(){ return ""; } /*!< пользовательская информация выводимая в getInfo() */
 		virtual void httpGetUserData( nlohmann::json& jdata ){} /*!<  для пользовательских данных в httpGet() */
-		
-		// Выполнение очередного шага программы
+        virtual nlohmann::json httpDumpIO();
+        virtual nlohmann::json httpRequestLog( const Poco::URI::QueryParameters& p );
+
+        // Выполнение очередного шага программы
 		virtual void step(){}
 
 		void preAskSensors( UniversalIO::UIOCommand cmd );
-		void preSysCommand( const UniSetTypes::SystemMessage* sm );
+		void preSysCommand( const uniset::SystemMessage* sm );
 		
 		virtual void testMode( bool state );
 		void updateOutputs( bool force );
 
-		void waitSM( int wait_msec, UniSetTypes::ObjectId testID = UniSetTypes::DefaultObjectId );
-		UniSetTypes::ObjectId getSMTestID();
+		void waitSM( int wait_msec, uniset::ObjectId testID = uniset::DefaultObjectId );
+		uniset::ObjectId getSMTestID();
 
 		void resetMsg();
-		Trigger trResetMsg;
-		PassiveTimer ptResetMsg;
+		uniset::Trigger trResetMsg;
+		uniset::PassiveTimer ptResetMsg;
 		int resetMsgTime;
 
 		int sleep_msec; /*!< пауза между итерациями */
 		bool active;
 
 		const std::string argprefix;
-		UniSetTypes::ObjectId smTestID; /*!< идентификатор датчика для тестирования готовности SM */
+		uniset::ObjectId smTestID; /*!< идентификатор датчика для тестирования готовности SM */
 
 		// управление датчиком "сердцебиения"
-		PassiveTimer ptHeartBeat;				/*! < период "сердцебиения" */
-		UniSetTypes::ObjectId idHeartBeat;		/*! < идентификатор датчика (AI) "сердцебиения" */
+		uniset::PassiveTimer ptHeartBeat;				/*! < период "сердцебиения" */
+		uniset::ObjectId idHeartBeat;		/*! < идентификатор датчика (AI) "сердцебиения" */
 		long maxHeartBeat;						/*! < сохраняемое значение */
 		
 		xmlNode* confnode;
 		/*! получить числовое свойство из конф. файла по привязанной confnode */
-		int getIntProp(const std::string& name) { return UniSetTypes::uniset_conf()->getIntProp(confnode, name); }
+		int getIntProp(const std::string& name) { return uniset::uniset_conf()->getIntProp(confnode, name); }
 		/*! получить текстовое свойство из конф. файла по привязанной confnode */
-		inline const std::string getProp(const std::string& name) { return UniSetTypes::uniset_conf()->getProp(confnode, name); }
+		inline const std::string getProp(const std::string& name) { return uniset::uniset_conf()->getProp(confnode, name); }
 
-		timeout_t smReadyTimeout; 	/*!< время ожидания готовности SM */
+		uniset::timeout_t smReadyTimeout; 	/*!< время ожидания готовности SM */
 		std::atomic_bool activated;
-		timeout_t activateTimeout;	/*!< время ожидания готовности UniSetObject к работе */
-		PassiveTimer ptStartUpTimeout;	/*!< время на блокировку обработки WatchDog, если недавно был StartUp */
+		uniset::timeout_t activateTimeout;	/*!< время ожидания готовности UniSetObject к работе */
+		uniset::PassiveTimer ptStartUpTimeout;	/*!< время на блокировку обработки WatchDog, если недавно был StartUp */
 		int askPause; /*!< пауза между неудачными попытками заказать датчики */
 		
 		IOController_i::SensorInfo si;
 		bool forceOut; /*!< флаг принудительного обноления "выходов" */
 		
-		std::shared_ptr<LogAgregator> loga;
+		std::shared_ptr<uniset::LogAgregator> loga;
 		std::shared_ptr<DebugStream> mylog;
-		std::shared_ptr<LogServer> logserv;
+		std::shared_ptr<uniset::LogServer> logserv;
 		std::string logserv_host = {""};
 		int logserv_port = {0};
 
-		VMonitor vmon;
+		uniset::VMonitor vmon;
 
 		
 
@@ -226,11 +229,23 @@ class UObject_SK:
 		
 		// ------------ private функции ---------------
 		void updatePreviousValues() noexcept;
-		void preSensorInfo( const UniSetTypes::SensorMessage* sm );
-		void preTimerInfo( const UniSetTypes::TimerMessage* tm );
+		void preSensorInfo( const uniset::SensorMessage* sm );
+		void preTimerInfo( const uniset::TimerMessage* tm );
 		void initFromSM();
 		void checkSensors();
 		// --------------------------------------------
+		
+		class StatHashFn
+		{
+			public:
+			size_t operator() (const uniset::ObjectId& key) const
+			{
+				return std::hash<long>()(key);
+			}
+		};
+		
+		std::unordered_map<const uniset::ObjectId,size_t, StatHashFn> smStat; /*!< количество сообщений по датчикам */
+		size_t processingMessageCatchCount = { 0 }; /*!< количество исключений пойманных в processingMessage */
 		
 
 		bool end_private; // вспомогательное поле (для внутреннего использования при генерировании кода)

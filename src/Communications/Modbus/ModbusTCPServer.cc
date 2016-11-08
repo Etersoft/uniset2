@@ -21,9 +21,12 @@
 #include "modbus/ModbusTCPServer.h"
 #include "modbus/ModbusTCPCore.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 using namespace std;
 using namespace ModbusRTU;
-using namespace UniSetTypes;
+using namespace uniset;
 // -------------------------------------------------------------------------
 ModbusTCPServer::ModbusTCPServer( const std::string& ia, int _port ):
 	port(_port),
@@ -332,3 +335,4 @@ mbErrCode ModbusTCPServer::preReceiveEvent(const std::unordered_set<ModbusAddr> 
 	return m_pre_signal.emit(vaddr, tout);
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

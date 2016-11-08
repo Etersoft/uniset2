@@ -18,9 +18,12 @@
 #include <iostream>
 #include "Extensions.h"
 #include "Schema.h"
+// -----------------------------------------------------------------------------
+namespace uniset
+{
 // -------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetExtensions;
+using namespace uniset::extensions;
 // -------------------------------------------------------------------------
 
 Schema::Schema()
@@ -219,3 +222,4 @@ std::shared_ptr<Element> Schema::findOut( const string& name )
 	return nullptr;
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

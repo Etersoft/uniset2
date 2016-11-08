@@ -23,7 +23,7 @@
 #include "UniSetActivator.h"
 #include "UProxyObject.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 // --------------------------------------------------------------------------
 /*! PIMPL  реализация UProxyObject */
 class UProxyObject_impl:
@@ -31,10 +31,10 @@ class UProxyObject_impl:
 {
 	public:
 
-		UProxyObject_impl( UniSetTypes::ObjectId id );
+		UProxyObject_impl( uniset::ObjectId id );
 		virtual ~UProxyObject_impl();
 
-		void impl_addToAsk( UniSetTypes::ObjectId id ) throw(UException);
+		void impl_addToAsk( uniset::ObjectId id ) throw(UException);
 
 		long impl_getValue( long id ) throw(UException);
 		void impl_setValue( long id, long val ) throw(UException);
@@ -47,7 +47,7 @@ class UProxyObject_impl:
 
 	protected:
 		virtual void askSensors( UniversalIO::UIOCommand cmd ) override;
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 
 	private:
 
@@ -60,7 +60,7 @@ class UProxyObject_impl:
 		};
 
 		std::mutex mutexSMap;
-		std::unordered_map<UniSetTypes::ObjectId,SInfo> smap;
+		std::unordered_map<uniset::ObjectId,SInfo> smap;
 		bool askOK = { false };
 };
 // --------------------------------------------------------------------------

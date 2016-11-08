@@ -27,7 +27,8 @@
 #include "MessageType.h"
 #include "ProxyManager.h"
 // -------------------------------------------------------------------------
-
+namespace uniset
+{
 
 /*!
  * Пасивный объект не имеющий самостоятельного потока обработки сообщений, но имеющий
@@ -38,16 +39,16 @@ class PassiveObject
 {
 	public:
 		PassiveObject();
-		PassiveObject( UniSetTypes::ObjectId id );
-		PassiveObject( UniSetTypes::ObjectId id, ProxyManager* mngr );
+		PassiveObject( uniset::ObjectId id );
+		PassiveObject( uniset::ObjectId id, ProxyManager* mngr );
 		virtual ~PassiveObject();
 
-		virtual void processingMessage( const UniSetTypes::VoidMessage* msg );
+		virtual void processingMessage( const uniset::VoidMessage* msg );
 
-		void setID( UniSetTypes::ObjectId id );
+		void setID( uniset::ObjectId id );
 		void init(ProxyManager* mngr);
 
-		inline UniSetTypes::ObjectId getId() const
+		inline uniset::ObjectId getId() const
 		{
 			return id;
 		}
@@ -57,18 +58,19 @@ class PassiveObject
 		}
 
 	protected:
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
+		virtual void sysCommand( const uniset::SystemMessage* sm );
 		virtual void askSensors( UniversalIO::UIOCommand cmd ) {}
-		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) {}
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) {}
+		virtual void timerInfo( const uniset::TimerMessage* tm ) {}
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) {}
 
 		std::string myname = { "" };
 		ProxyManager* mngr = { nullptr };
 
 	private:
-		UniSetTypes::ObjectId id = { UniSetTypes::DefaultObjectId };
+		uniset::ObjectId id = { uniset::DefaultObjectId };
 };
-
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // -------------------------------------------------------------------------
 #endif // PassiveObject_H_
 // -------------------------------------------------------------------------

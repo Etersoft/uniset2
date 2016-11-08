@@ -3,6 +3,7 @@
 #include "TriggerAND.h"
 #include "UniSetTypes.h"
 using namespace std;
+using namespace uniset;
 
 class MyTestClass
 {

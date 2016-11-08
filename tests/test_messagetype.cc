@@ -5,7 +5,7 @@
 #include "UniSetTypes.h"
 // ---------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // ---------------------------------------------------------------
 TEST_CASE("Message", "[basic][message types][Message]" )
 {
@@ -62,7 +62,7 @@ TEST_CASE("SensorMessage", "[basic][message types][SensorMessage]" )
 		CHECK( sm.ci.minCal == 0 );
 		CHECK( sm.ci.maxCal == 0 );
 		CHECK( sm.threshold == 0 );
-		CHECK( sm.tid == UniSetTypes::DefaultThresholdId );
+		CHECK( sm.tid == uniset::DefaultThresholdId );
 	}
 
 	SECTION("Default SensorMessage")
@@ -156,7 +156,7 @@ TEST_CASE("TimerMessage", "[basic][message types][TimerMessage]" )
 		CHECK( tm.node == conf->getLocalNode() );
 		CHECK( tm.supplier == DefaultObjectId );
 		CHECK( tm.consumer == DefaultObjectId );
-		CHECK( tm.id == UniSetTypes::DefaultTimerId );
+		CHECK( tm.id == uniset::DefaultTimerId );
 	}
 
 	SECTION("Default TimerMessage")

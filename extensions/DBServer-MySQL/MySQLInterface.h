@@ -29,6 +29,9 @@
 //#define USE_OLD_FUNCTIONS
 #include <mysql/mysql.h>
 #include <DBInterface.h>
+// -------------------------------------------------------------------------
+namespace uniset
+{
 // ----------------------------------------------------------------------------
 class MySQLInterface:
 	public DBNetInterface
@@ -78,5 +81,7 @@ class MySQLInterface:
 		std::string lastQ;
 		bool connected;
 };
+// ----------------------------------------------------------------------------------
+} // end of namespace uniset
 // ----------------------------------------------------------------------------------
 #endif

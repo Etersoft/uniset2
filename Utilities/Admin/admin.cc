@@ -19,7 +19,7 @@
 #include "Debug.h"
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // --------------------------------------------------------------------------
 enum Command
 {
@@ -186,7 +186,7 @@ int main(int argc, char** argv)
 				{
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 					string name = ( optarg ) ? optarg : "";
 					return setValue(name, ui);
 				}
@@ -200,7 +200,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --getValue='"<<optarg<<"'"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 					string name = ( optarg ) ? optarg : "";
 					return getValue(name, ui);
 				}
@@ -211,7 +211,7 @@ int main(int argc, char** argv)
 					//                cout<<"(main):received option --getRawValue='"<<optarg<<"'"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 					string name = ( optarg ) ? optarg : "";
 					return getRawValue(name, ui);
 				}
@@ -221,7 +221,7 @@ int main(int argc, char** argv)
 				{
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 					string name = ( optarg ) ? optarg : "";
 					return getChangedTime(name, ui);
 				}
@@ -232,7 +232,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --oinfo='"<<optarg<<"'"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 
 					int userparam = 0;
 
@@ -248,7 +248,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --exist"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 
 					verb = true;
 					Command cmd = Exist;
@@ -265,7 +265,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --start"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 
 					Command cmd = StartUp;
 					auto rep = make_shared<ObjectRepository>(conf);
@@ -280,7 +280,7 @@ int main(int argc, char** argv)
 				{
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 					string name = ( optarg ) ? optarg : "";
 					return configure(name, ui);
 				}
@@ -291,7 +291,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --finish"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 
 					Command cmd = Finish;
 					auto rep = make_shared<ObjectRepository>(conf);
@@ -309,7 +309,7 @@ int main(int argc, char** argv)
 				{
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 					string name = ( optarg ) ? optarg : "";
 					return logRotate(name, ui);
 				}
@@ -320,7 +320,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --getCalibrate='"<<optarg<<"'"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 					string name = ( optarg ) ? optarg : "";
 					return getCalibrate(name, ui);
 				}
@@ -331,7 +331,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --foldUp"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 
 					Command cmd = FoldUp;
 					auto rep = make_shared<ObjectRepository>(conf);
@@ -354,7 +354,7 @@ int main(int argc, char** argv)
 
 		return 0;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		if( !quiet )
 			cout << "admin(main): " << ex << endl;
@@ -430,7 +430,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 
 			try
 			{
-				UniSetTypes::ObjectVar o = rep->resolve(fullName);
+				uniset::ObjectVar o = rep->resolve(fullName);
 				obj = UniSetObject_i::_narrow(o);
 
 				switch( cmd )
@@ -523,7 +523,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 					}
 				}
 			}
-			catch( const UniSetTypes::Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				if( !quiet )
 					cerr << setw(55) << ob << "   <--- " << ex << endl;
@@ -554,7 +554,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 }
 
 // ==============================================================================================
-static void createSections( const std::shared_ptr<UniSetTypes::Configuration>& rconf )
+static void createSections( const std::shared_ptr<uniset::Configuration>& rconf )
 {
 	ObjectRepository repf(rconf);
 
@@ -580,7 +580,7 @@ int omap()
 		uniset_conf()->oind->printMap(cout);
 		cout << "==========================================================================\n";
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		if( !quiet )
 			cerr << " configuration init failed: " << ex << endl;
@@ -606,7 +606,7 @@ int setValue( const string& args, UInterface& ui )
 {
 	int err = 0;
 	auto conf = ui.getConf();
-	auto sl = UniSetTypes::getSInfoList(args, conf);
+	auto sl = uniset::getSInfoList(args, conf);
 
 	if( verb )
 		cout << "====== setValue ======" << endl;
@@ -645,7 +645,7 @@ int setValue( const string& args, UInterface& ui )
 					break;
 			}
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			if( !quiet )
 				cerr << "(setValue): " << ex << endl;;
@@ -670,7 +670,7 @@ int getValue( const string& args, UInterface& ui )
 	int err = 0;
 
 	auto conf = ui.getConf();
-	auto sl = UniSetTypes::getSInfoList( args, conf );
+	auto sl = uniset::getSInfoList( args, conf );
 
 	if( csv )
 		quiet = true;
@@ -728,7 +728,7 @@ int getValue( const string& args, UInterface& ui )
 					break;
 			}
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			if( !quiet )
 				cerr << "(getValue): " << ex << endl;
@@ -751,7 +751,7 @@ int getCalibrate( const std::string& args, UInterface& ui )
 {
 	int err = 0;
 	auto conf = ui.getConf();
-	auto sl = UniSetTypes::getSInfoList( args, conf );
+	auto sl = uniset::getSInfoList( args, conf );
 
 	if( !quiet )
 		cout << "====== getCalibrate ======" << endl;
@@ -777,7 +777,7 @@ int getCalibrate( const std::string& args, UInterface& ui )
 			else
 				cout << ci;
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			if( !quiet )
 				cerr << "(getCalibrate): " << ex << endl;;
@@ -801,7 +801,7 @@ int getRawValue( const std::string& args, UInterface& ui )
 {
 	int err = 0;
 	auto conf = ui.getConf();
-	auto sl = UniSetTypes::getSInfoList( args, conf );
+	auto sl = uniset::getSInfoList( args, conf );
 
 	if( !quiet )
 		cout << "====== getRawValue ======" << endl;
@@ -822,7 +822,7 @@ int getRawValue( const std::string& args, UInterface& ui )
 			else
 				cout << ui.getRawValue(it.si);
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			if( !quiet )
 				cerr << "(getRawValue): " << ex << endl;;
@@ -846,7 +846,7 @@ int getChangedTime( const std::string& args, UInterface& ui )
 {
 	int err = 0;
 	auto conf = ui.getConf();
-	auto sl = UniSetTypes::getSInfoList( args, conf );
+	auto sl = uniset::getSInfoList( args, conf );
 
 	if( !quiet )
 		cout << "====== getChangedTime ======" << endl;
@@ -867,7 +867,7 @@ int getChangedTime( const std::string& args, UInterface& ui )
 			else
 				cout << ui.getChangedTime(it.si.id, it.si.node);
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			if( !quiet )
 				cerr << "(getChangedTime): " << ex << endl;;
@@ -934,7 +934,7 @@ int logRotate( const string& arg, UInterface& ui )
 	}
 	else // посылка определённому объекту
 	{
-		UniSetTypes::ObjectId id = conf->getObjectID(arg);
+		uniset::ObjectId id = conf->getObjectID(arg);
 
 		if( id == DefaultObjectId )
 			id = conf->getControllerID(arg);
@@ -976,7 +976,7 @@ int configure( const string& arg, UInterface& ui )
 	}
 	else // посылка определённому объекту
 	{
-		UniSetTypes::ObjectId id = conf->getObjectID(arg);
+		uniset::ObjectId id = conf->getObjectID(arg);
 
 		if( id == DefaultObjectId )
 			id = conf->getControllerID(arg);
@@ -1006,7 +1006,7 @@ int configure( const string& arg, UInterface& ui )
 int oinfo( const string& args, UInterface& ui, int userparam )
 {
 	auto conf = uniset_conf();
-	auto sl = UniSetTypes::getObjectsList( args, conf );
+	auto sl = uniset::getObjectsList( args, conf );
 
 	for( auto && it : sl )
 	{
@@ -1015,7 +1015,7 @@ int oinfo( const string& args, UInterface& ui, int userparam )
 
 		try
 		{
-			UniSetTypes::ObjectVar o = ui.resolve(it.id, it.node);
+			uniset::ObjectVar o = ui.resolve(it.id, it.node);
 			UniSetObject_i_var obj = UniSetObject_i::_narrow(o);
 
 			if(CORBA::is_nil(obj))
@@ -1029,7 +1029,7 @@ int oinfo( const string& args, UInterface& ui, int userparam )
 				cout << inf->info << endl;
 			}
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			if( !quiet )
 				cout << "ID='" << it.id << "' ERROR: " << ex << endl;

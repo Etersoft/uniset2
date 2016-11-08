@@ -10,7 +10,7 @@ class TestProc:
 	public TestProc_SK
 {
 	public:
-		TestProc( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::uniset_conf()->getNode("TestProc") );
+		TestProc( uniset::ObjectId id, xmlNode* confnode = uniset::uniset_conf()->getNode("TestProc") );
 		virtual ~TestProc();
 
 	protected:
@@ -25,9 +25,9 @@ class TestProc:
 		};
 
 		virtual void step();
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
-		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
+		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 		virtual std::string getMonitInfo() override;
 
 		void test_depend();

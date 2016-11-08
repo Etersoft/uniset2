@@ -88,7 +88,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback() noexept
 				ui->setValue(idHeartBeat,maxHeartBeat);
 				ptHeartBeat.reset();
 			}
-			catch( const UniSetTypes::Exception&amp; ex )
+			catch( const uniset::Exception&amp; ex )
 			{
 				mycrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
 			}
@@ -100,7 +100,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback() noexept
 		// обновление списка предыдущих состояний
 		updatePreviousValues();
 	}
-	catch( const UniSetTypes::Exception&amp; ex )
+	catch( const uniset::Exception&amp; ex )
 	{
 		mycrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
 	}
@@ -133,7 +133,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 	}
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( const UniSetTypes::SensorMessage* _sm )
+void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( const uniset::SensorMessage* _sm )
 {
 	sensorInfo(_sm);
 }
@@ -144,7 +144,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 	<xsl:if test="normalize-space(../../@msg)!='1'">
 	<xsl:if test="normalize-space(@name)=$OID">	
 	<xsl:if test="normalize-space(@initFromSM)!=''">
-	if( <xsl:value-of select="../../@name"/> != UniSetTypes::DefaultObjectId )
+	if( <xsl:value-of select="../../@name"/> != uniset::DefaultObjectId )
 	{
 		try
 		{
@@ -161,7 +161,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 </xsl:for-each>
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::askSensor( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )
+void <xsl:value-of select="$CLASSNAME"/>_SK::askSensor( uniset::ObjectId _sid, UniversalIO::UIOCommand _cmd, uniset::ObjectId _node )
 {
 	if( _cmd == UniversalIO::UIONotify )
 	{
@@ -176,9 +176,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askSensor( UniSetTypes::ObjectId _s
 	}
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId _sid, long _val )
+void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( uniset::ObjectId _sid, long _val )
 {
-    if( _sid == UniSetTypes::DefaultObjectId )
+    if( _sid == uniset::DefaultObjectId )
         return;
         
 //	ui->setState(sid,state);
@@ -201,7 +201,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId _si
 }
 
 // -----------------------------------------------------------------------------
-long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _sid )
+long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( uniset::ObjectId _sid )
 {
 	<xsl:for-each select="//sensors/item/consumers/consumer">
 	<xsl:if test="normalize-space(../../@msg)!='1'">
@@ -233,7 +233,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
 -->
 }
 // -----------------------------------------------------------------------------
-UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID()
+uniset::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID()
 {
 	if( smTestID != DefaultObjectId )
 		return smTestID;
@@ -261,7 +261,7 @@ UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID()
 </xsl:if>
 </xsl:if>
 	}
-	catch( const UniSetTypes::Exception&amp; ex )
+	catch( const uniset::Exception&amp; ex )
 	{
         mycrit &lt;&lt; myname &lt;&lt; "(getdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
@@ -296,7 +296,7 @@ UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID()
 		si.node = node_<xsl:value-of select="../../@name"/>;
 		ui->setValue( si,<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>, getId() );
 	}
-	catch( const UniSetTypes::Exception&amp; ex )
+	catch( const uniset::Exception&amp; ex )
 	{
         mycrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
@@ -311,7 +311,7 @@ UniSetTypes::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID()
 		si.node = node_<xsl:value-of select="../../@name"/>;
 		ui->setValue( si,<xsl:value-of select="$setval"/>, getId() );
 	}
-	catch( const UniSetTypes::Exception&amp; ex )
+	catch( const uniset::Exception&amp; ex )
 	{
         mycrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;

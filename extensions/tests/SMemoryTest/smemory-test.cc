@@ -6,8 +6,8 @@
 #include "TestProc.h"
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // --------------------------------------------------------------------------
 int main(int argc, const char** argv)
 {
@@ -54,7 +54,7 @@ int main(int argc, const char** argv)
 	{
 		ucrit << "(smemory): " << err << endl;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		ucrit << "(smemory): " << ex << endl;
 	}

@@ -32,6 +32,9 @@
 #include "UHttpRequestHandler.h"
 #include "UHttpServer.h"
 //----------------------------------------------------------------------------------------
+namespace uniset
+{
+//----------------------------------------------------------------------------------------
 class UniSetActivator;
 typedef std::shared_ptr<UniSetActivator> UniSetActivatorPtr;
 //----------------------------------------------------------------------------------------
@@ -52,7 +55,7 @@ typedef std::shared_ptr<UniSetActivator> UniSetActivatorPtr;
 */
 class UniSetActivator:
 	public UniSetManager,
-	public UniSetTypes::UHttp::IHttpRequestRegistry
+	public uniset::UHttp::IHttpRequestRegistry
 {
 	public:
 
@@ -67,9 +70,9 @@ class UniSetActivator:
 		virtual void stop();
 		virtual void uaDestroy(int signo = 0);
 
-		virtual UniSetTypes::ObjectType getType() override
+		virtual uniset::ObjectType getType() override
 		{
-			return UniSetTypes::ObjectType("UniSetActivator");
+			return uniset::ObjectType("UniSetActivator");
 		}
 
 		typedef sigc::signal<void, int> TerminateEvent_Signal;
@@ -97,7 +100,7 @@ class UniSetActivator:
 
 		CORBA::ORB_ptr getORB();
 
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 
 		// уносим в protected, т.к. Activator должен быть только один..
 		UniSetActivator();
@@ -105,9 +108,9 @@ class UniSetActivator:
 		static std::shared_ptr<UniSetActivator> inst;
 
 	private:
-		friend void terminate_thread();
-		friend void finished_thread();
-		friend std::shared_ptr<UniSetTypes::Configuration> UniSetTypes::uniset_init( int argc, const char* const* argv, const std::string& xmlfile );
+		friend void uniset::terminate_thread();
+		friend void uniset::finished_thread();
+		friend std::shared_ptr<uniset::Configuration> uniset::uniset_init( int argc, const char* const* argv, const std::string& xmlfile );
 
 		static void terminated(int signo);
 		static void normalexit();
@@ -128,10 +131,12 @@ class UniSetActivator:
 
 		std::string abortScript = { "" }; // скрипт вызываемый при прерывании программы (SIGSEGV,SIGABRT)
 
-		std::shared_ptr<UniSetTypes::UHttp::UHttpServer> httpserv;
+		std::shared_ptr<uniset::UHttp::UHttpServer> httpserv;
 		std::string httpHost = { "" };
 		int httpPort = { 0 };
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 //----------------------------------------------------------------------------------------
 #endif
 //----------------------------------------------------------------------------------------

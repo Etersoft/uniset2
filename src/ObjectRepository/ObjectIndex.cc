@@ -23,7 +23,7 @@
 #include "Configuration.h"
 
 // -----------------------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------------------
 //const std::string ObjectIndex::sepName = "@";
 //const std::string ObjectIndex::sepNode = ":";

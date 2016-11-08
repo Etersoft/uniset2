@@ -17,9 +17,12 @@
 #include <iostream>
 #include "Extensions.h"
 #include "Element.h"
+// -----------------------------------------------------------------------------
+namespace uniset
+{
 // -------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetExtensions;
+using namespace uniset::extensions;
 // -------------------------------------------------------------------------
 TAND::TAND(ElementID id, size_t num, bool st):
 	TOR(id, num, st)
@@ -69,3 +72,4 @@ void TAND::setIn(size_t num, bool state )
 		Element::setChildOut();
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

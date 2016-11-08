@@ -20,7 +20,7 @@
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace Poco::Net;
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace UHttp;
 // -------------------------------------------------------------------------
 UHttpRequestHandler::UHttpRequestHandler(std::shared_ptr<IHttpRequestRegistry> _registry ):
@@ -157,6 +157,6 @@ nlohmann::json IHttpRequest::httpRequest( const string& req, const Poco::URI::Qu
 {
 	std::ostringstream err;
 	err << "(IHttpRequest::Request): " << req << " not supported";
-	throw UniSetTypes::SystemError(err.str());
+	throw uniset::SystemError(err.str());
 }
 // -------------------------------------------------------------------------

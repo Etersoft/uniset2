@@ -25,7 +25,7 @@
 #include "UniSetTypes.h"
 #include "Exceptions.h"
 // --------------------------------------------------------------------------
-namespace UniSetTypes
+namespace uniset
 {
 	/*! Класс работы с файлами содержащими IOR объекта
 	    \todo Для оптимизации можно сделать кэширование id:node > filename

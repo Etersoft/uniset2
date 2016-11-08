@@ -25,6 +25,9 @@
 // -----------------------------------------------------------------------------
 using namespace std;
 // -----------------------------------------------------------------------------
+namespace uniset
+{
+// -----------------------------------------------------------------------------
 TCPCheck::TCPCheck() noexcept:
 	tout_msec(0)
 {
@@ -37,12 +40,12 @@ TCPCheck::~TCPCheck() noexcept
 // -----------------------------------------------------------------------------
 bool TCPCheck::check( const std::string& _iaddr, timeout_t tout, timeout_t sleep_msec )
 {
-	auto v = UniSetTypes::explode_str(_iaddr, ':');
+	auto v = uniset::explode_str(_iaddr, ':');
 
 	if( v.size() < 2 )
 		return false;
 
-	return check( v[0], UniSetTypes::uni_atoi(v[1]), tout, sleep_msec );
+	return check( v[0], uniset::uni_atoi(v[1]), tout, sleep_msec );
 }
 // -----------------------------------------------------------------------------
 bool TCPCheck::check( const std::string& _ip, int _port, timeout_t tout, timeout_t sleep_msec )
@@ -141,3 +144,4 @@ void TCPCheck::ping_thread()
 	setResult((res == 0));
 }
 // -----------------------------------------------------------------------------
+} // end of namespace uniset

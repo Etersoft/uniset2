@@ -24,7 +24,9 @@
 #include "Extensions.h"
 // ----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+// ----------------------------------------------------------------------------
+namespace uniset
+{
 // ----------------------------------------------------------------------------
 const Calibration::TypeOfValue Calibration::ValueOutOfRange = std::numeric_limits<Calibration::TypeOfValue>::max();
 const long Calibration::outOfRange = std::numeric_limits<long>::max();
@@ -240,7 +242,7 @@ void Calibration::build( const string& name, const string& confile, xmlNode* roo
 			rightVal = end->right_y();
 		}
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		dcrit << myname << "(Calibration::build): Failed open " << confile << endl;
 		throw;
@@ -397,3 +399,4 @@ std::ostream& operator<<( std::ostream& os, Calibration* c )
 	return os;
 }
 // ----------------------------------------------------------------------------
+} // end of namespace uniset

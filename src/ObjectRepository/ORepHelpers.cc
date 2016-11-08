@@ -27,9 +27,10 @@
 #include "Debug.h"
 
 using namespace omni;
-using namespace UniSetTypes;
 using namespace std;
 
+namespace uniset
+{
 namespace ORepHelpers
 {
 
@@ -224,12 +225,12 @@ namespace ORepHelpers
 
 	// ---------------------------------------------------------------------------------------------------------------
 	/*
-	 *    Запрещенные символы см. UniSetTypes::BadSymbols[]
+	 *    Запрещенные символы см. uniset::BadSymbols[]
 	 *    \return Если не найдено запрещенных символов то будет возвращен 0, иначе найденный символ
 	*/
 	char checkBadSymbols( const string& str )
 	{
-		using namespace UniSetTypes;
+		using namespace uniset;
 
 		for ( size_t i = 0; i < str.length(); i++)
 		{
@@ -248,10 +249,10 @@ namespace ORepHelpers
 	{
 		string bad = "";
 
-		for( size_t i = 0; i < sizeof(UniSetTypes::BadSymbols); i++ )
+		for( size_t i = 0; i < sizeof(uniset::BadSymbols); i++ )
 		{
 			bad += "'";
-			bad += UniSetTypes::BadSymbols[i];
+			bad += uniset::BadSymbols[i];
 			bad += "', ";
 
 		}
@@ -259,4 +260,5 @@ namespace ORepHelpers
 		return std::move(bad);
 	}
 	// ---------------------------------------------------------------------------------------------------------------
+}
 }

@@ -9,6 +9,9 @@
 #include "ModbusTypes.h"
 #include "ModbusClient.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 /*!    Modbus TCP master interface */
 class ModbusTCPMaster:
 	public ModbusClient
@@ -73,6 +76,8 @@ class ModbusTCPMaster:
 
 		timeout_t readTimeout = { 50 }; // timeout на чтение очередной порции данных
 };
+// -------------------------------------------------------------------------
+} // end of namespace uniset
 // -------------------------------------------------------------------------
 #endif // ModbusTCPMaster_H_
 // -------------------------------------------------------------------------

@@ -10,7 +10,7 @@
 #include "MBTCPMultiMaster.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 static ModbusRTU::ModbusAddr slaveaddr = 0x01; // conf->getArgInt("--mbs-my-addr");
 static int port = 20048; // conf->getArgInt("--mbs-inet-port");

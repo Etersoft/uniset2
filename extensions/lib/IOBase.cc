@@ -20,7 +20,9 @@
 #include "IOBase.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+// -----------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, IOBase& inf )
 {
@@ -241,7 +243,7 @@ void IOBase::processingAsAI( IOBase* it, long val, const std::shared_ptr<SMInter
 					IOController_i::CalibrateInfo* cal( &(it->cal) );
 
 					if( cal->maxRaw != cal->minRaw ) // задана обычная калибровка
-						val = UniSetTypes::lcalibrate(val, cal->minRaw, cal->maxRaw, cal->minCal, cal->maxCal, it->calcrop);
+						val = uniset::lcalibrate(val, cal->minRaw, cal->maxRaw, cal->minCal, cal->maxCal, it->calcrop);
 				}
 
 				if( !it->noprecision && it->cal.precision > 0 )
@@ -311,7 +313,7 @@ void IOBase::processingFasAI( IOBase* it, float fval, const std::shared_ptr<SMIn
 				IOController_i::CalibrateInfo* cal( &(it->cal) );
 
 				if( cal->maxRaw != cal->minRaw ) // задана обычная калибровка
-					val = UniSetTypes::lcalibrate(val, cal->minRaw, cal->maxRaw, cal->minCal, cal->maxCal, it->calcrop);
+					val = uniset::lcalibrate(val, cal->minRaw, cal->maxRaw, cal->minCal, cal->maxCal, it->calcrop);
 			}
 		}
 	}
@@ -400,7 +402,7 @@ long IOBase::processingAsAO( IOBase* it, const std::shared_ptr<SMInterface>& shm
 			if( cal && cal->maxRaw != cal->minRaw ) // задана калибровка
 			{
 				// Калибруем в обратную сторону!!!
-				val = UniSetTypes::lcalibrate(val, cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
+				val = uniset::lcalibrate(val, cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
 			}
 		}
 	}
@@ -455,7 +457,7 @@ float IOBase::processingFasAO( IOBase* it, const std::shared_ptr<SMInterface>& s
 		if( cal->maxRaw != cal->minRaw ) // задана калибровка
 		{
 			// Калибруем в обратную сторону!!!
-			fval = UniSetTypes::fcalibrate(fval, cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
+			fval = uniset::fcalibrate(fval, cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
 		}
 
 		if( !it->noprecision && it->cal.precision > 0 )
@@ -632,7 +634,7 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SM
 
 	b->safety = initIntProp(it, "safety", prefix, init_prefix_only, NoSafety);
 
-	b->stype = UniSetTypes::getIOType(initProp(it, "iotype", prefix, init_prefix_only));
+	b->stype = uniset::getIOType(initProp(it, "iotype", prefix, init_prefix_only));
 
 	if( b->stype == UniversalIO::UnknownIOType )
 	{
@@ -743,7 +745,7 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SM
 
 		if( !caldiagram.empty() )
 		{
-			b->cdiagram = UniSetExtensions::buildCalibrationDiagram(caldiagram);
+			b->cdiagram = uniset::extensions::buildCalibrationDiagram(caldiagram);
 
 			if( !initProp(it, "cal_cachesize", prefix, init_prefix_only).empty() )
 				b->cdiagram->setCacheSize(initIntProp(it, "cal_cachesize", prefix, init_prefix_only));
@@ -878,3 +880,4 @@ void IOBase::create_from_iobase( const IOBase& b )
 	offdelay_state = b.offdelay_state;
 }
 // ------------------------------------------------------------------------------------------
+} //  end of namespace uniset

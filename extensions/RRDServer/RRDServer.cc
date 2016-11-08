@@ -23,10 +23,10 @@ extern "C" {
 #include "RRDServer.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
-RRDServer::RRDServer(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
+RRDServer::RRDServer(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
 					 const string& prefix ):
 	UObject_SK(objId, cnode, string(prefix + "-")),
 	prefix(prefix)
@@ -169,7 +169,7 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 
 		for(; it1.getCurrent(); it1.goNext() )
 		{
-			if( !UniSetTypes::check_filter(it1, ff, fv) )
+			if( !uniset::check_filter(it1, ff, fv) )
 				continue;
 
 			std::string a(it1.getProp(cf));
@@ -290,7 +290,7 @@ void RRDServer::help_print( int argc, const char* const* argv )
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<RRDServer> RRDServer::init_rrdstorage(int argc, const char* const* argv,
-		UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
+		uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
 		const std::string& prefix )
 {
 	auto conf = uniset_conf();
@@ -305,7 +305,7 @@ std::shared_ptr<RRDServer> RRDServer::init_rrdstorage(int argc, const char* cons
 
 	ObjectId ID = conf->getObjectID(name);
 
-	if( ID == UniSetTypes::DefaultObjectId )
+	if( ID == uniset::DefaultObjectId )
 	{
 		dcrit << "(RRDServer): Not found ID for '" << name
 			  << " in '" << conf->getObjectsSection() << "' section" << endl;
@@ -348,7 +348,7 @@ void RRDServer::askSensors( UniversalIO::UIOCommand cmd )
 	}
 }
 // -----------------------------------------------------------------------------
-void RRDServer::sysCommand( const UniSetTypes::SystemMessage* sm )
+void RRDServer::sysCommand( const uniset::SystemMessage* sm )
 {
 	UObject_SK::sysCommand(sm);
 
@@ -368,7 +368,7 @@ void RRDServer::sysCommand( const UniSetTypes::SystemMessage* sm )
 	}
 }
 // -----------------------------------------------------------------------------
-void RRDServer::sensorInfo( const UniSetTypes::SensorMessage* sm )
+void RRDServer::sensorInfo( const uniset::SensorMessage* sm )
 {
 	for( auto& it : rrdlist )
 	{
@@ -381,7 +381,7 @@ void RRDServer::sensorInfo( const UniSetTypes::SensorMessage* sm )
 	}
 }
 // -----------------------------------------------------------------------------
-void RRDServer::timerInfo( const UniSetTypes::TimerMessage* tm )
+void RRDServer::timerInfo( const uniset::TimerMessage* tm )
 {
 	for( auto& it : rrdlist )
 	{

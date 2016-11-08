@@ -32,15 +32,15 @@
 #include "Debug.h"
 
 // ------------------------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // ------------------------------------------------------------------------------------------
 // объект-функция для посылки сообщения менеджеру
-class MPush: public unary_function< const std::shared_ptr<UniSetManager>& , bool>
+class MPush: public unary_function< const std::shared_ptr<uniset::UniSetManager>& , bool>
 {
 	public:
-		explicit MPush(const UniSetTypes::TransportMessage& msg): msg(msg) {}
-		bool operator()( const std::shared_ptr<UniSetManager>& m ) const
+		explicit MPush(const uniset::TransportMessage& msg): msg(msg) {}
+		bool operator()( const std::shared_ptr<uniset::UniSetManager>& m ) const
 		{
 			try
 			{
@@ -58,15 +58,15 @@ class MPush: public unary_function< const std::shared_ptr<UniSetManager>& , bool
 		}
 
 	private:
-		const UniSetTypes::TransportMessage& msg;
+		const uniset::TransportMessage& msg;
 };
 
 // объект-функция для посылки сообщения объекту
-class OPush: public unary_function< const std::shared_ptr<UniSetObject>& , bool>
+class OPush: public unary_function< const std::shared_ptr<uniset::UniSetObject>& , bool>
 {
 	public:
-		explicit OPush(const UniSetTypes::TransportMessage& msg): msg(msg) {}
-		bool operator()( const std::shared_ptr<UniSetObject>& o ) const
+		explicit OPush(const uniset::TransportMessage& msg): msg(msg) {}
+		bool operator()( const std::shared_ptr<uniset::UniSetObject>& o ) const
 		{
 			try
 			{
@@ -81,12 +81,12 @@ class OPush: public unary_function< const std::shared_ptr<UniSetObject>& , bool>
 			return false;
 		}
 	private:
-		const UniSetTypes::TransportMessage& msg;
+		const uniset::TransportMessage& msg;
 };
 
 // ------------------------------------------------------------------------------------------
 UniSetManager::UniSetManager():
-	UniSetObject(UniSetTypes::DefaultObjectId),
+	UniSetObject(uniset::DefaultObjectId),
 	sig(0),
 	olistMutex("UniSetManager_olistMutex"),
 	mlistMutex("UniSetManager_mlistMutex")
@@ -206,7 +206,7 @@ bool UniSetManager::removeObject( const std::shared_ptr<UniSetObject>& obj )
 				if(obj)
 					obj->deactivate();
 			}
-			catch( const UniSetTypes::Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				uwarn << myname << "(removeObject): " << ex << endl;
 			}
@@ -275,7 +275,7 @@ void UniSetManager::managers( OManagerCommand cmd )
 						break;
 				}
 			}
-			catch( const UniSetTypes::Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				ucrit << myname << "(managers): " << ex << endl
 					  << " Не смог зарегистрировать (разрегистрировать) объект -->" << li->getName() << endl;
@@ -339,7 +339,7 @@ void UniSetManager::objects(OManagerCommand cmd)
 						break;
 				}
 			}
-			catch( const UniSetTypes::Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				ostringstream err;
 				err << myname << "(objects): " << ex << endl;
@@ -665,24 +665,6 @@ SimpleInfoSeq* UniSetManager::getObjectsInfo(CORBA::Long maxlength , CORBA::Long
 }
 
 // ------------------------------------------------------------------------------------------
-std::ostream& operator<<(std::ostream& os, UniSetManager::OManagerCommand& cmd )
-{
-	// { deactiv, activ, initial, term };
-	if( cmd == UniSetManager::deactiv )
-		return os << "deactivate";
-
-	if( cmd == UniSetManager::activ )
-		return os << "activate";
-
-	if( cmd == UniSetManager::initial )
-		return os << "init";
-
-	if( cmd == UniSetManager::term )
-		return os << "terminate";
-
-	return os << "unkwnown";
-}
-// ------------------------------------------------------------------------------------------
 UniSetManagerList::const_iterator UniSetManager::beginMList()
 {
 	return mlist.begin();
@@ -723,3 +705,20 @@ PortableServer::POAManager_ptr UniSetManager::getPOAManager()
 	return  PortableServer::POAManager::_duplicate(pman);
 }
 // ------------------------------------------------------------------------------------------
+std::ostream& uniset::operator<<(std::ostream& os, uniset::UniSetManager::OManagerCommand& cmd )
+{
+	// { deactiv, activ, initial, term };
+	if( cmd == uniset::UniSetManager::deactiv )
+		return os << "deactivate";
+
+	if( cmd == uniset::UniSetManager::activ )
+		return os << "activate";
+
+	if( cmd == uniset::UniSetManager::initial )
+		return os << "init";
+
+	if( cmd == uniset::UniSetManager::term )
+		return os << "terminate";
+
+	return os << "unkwnown";
+}

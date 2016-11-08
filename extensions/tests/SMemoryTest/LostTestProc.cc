@@ -3,9 +3,9 @@
 #include "LostTestProc.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
-LostTestProc::LostTestProc( UniSetTypes::ObjectId id, xmlNode* confnode ):
+LostTestProc::LostTestProc( uniset::ObjectId id, xmlNode* confnode ):
 	LostPassiveTestProc( id, confnode )
 {
 	vmonit(ncycle);
@@ -24,10 +24,10 @@ void LostTestProc::setChildPassiveProc( const std::shared_ptr<LostPassiveTestPro
 LostTestProc::LostTestProc()
 {
 	cerr << ": init failed!!!!!!!!!!!!!!!" << endl;
-	throw UniSetTypes::Exception(myname+"(init): FAILED..");
+	throw uniset::Exception(myname+"(init): FAILED..");
 }
 // -----------------------------------------------------------------------------
-void LostTestProc::sysCommand( const UniSetTypes::SystemMessage* sm )
+void LostTestProc::sysCommand( const uniset::SystemMessage* sm )
 {
 	LostTestProc_SK::sysCommand(sm);
 
@@ -86,7 +86,7 @@ void LostTestProc::timerInfo( const TimerMessage* tm )
 				if( smValue != s.second )
 				{
 					cerr << myname << "(check): ERROR!! sid=" << s.first << " smValue=" << smValue << " != " << s.second << endl;
-					UniSetTypes::SimpleInfo_var i = getInfo();
+					uniset::SimpleInfo_var i = getInfo();
 					cerr << i->info << endl;
 					std::abort();
 				}
@@ -100,11 +100,11 @@ void LostTestProc::timerInfo( const TimerMessage* tm )
 							 << " FOR CHILD: " << child->getName()
 							 << endl;
 
-						UniSetTypes::SimpleInfo_var i = getInfo();
+						uniset::SimpleInfo_var i = getInfo();
 						cerr << i->info << endl;
 
 						cerr << "=============== CHILD INFO: ==============" << endl;
-						UniSetTypes::SimpleInfo_var i2 = child->getInfo();
+						uniset::SimpleInfo_var i2 = child->getInfo();
 						cerr << i2->info << endl;
 
 
@@ -141,7 +141,7 @@ void LostTestProc::timerInfo( const TimerMessage* tm )
 				{
 					cerr << myname << "(check): SAVE TO SM ERROR!! sid=" << s.first
 						 << " value=" << smValue << " != " << (s.second+1) << endl;
-					UniSetTypes::SimpleInfo_var i = getInfo();
+					uniset::SimpleInfo_var i = getInfo();
 					cerr << i->info << endl;
 					std::abort();
 				}

@@ -6,8 +6,8 @@
 #include "LostTestProc.h"
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // --------------------------------------------------------------------------
 int main(int argc, const char** argv)
 {
@@ -61,7 +61,7 @@ int main(int argc, const char** argv)
 	{
 		cerr << "(lostmessage-test): " << err << endl;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		cerr << "(lostmessage-test): " << ex << endl;
 	}

@@ -19,7 +19,7 @@
 #include <cstring>
 #include "ComediInterface.h"
 // -----------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // -----------------------------------------------------------------------------
 ComediInterface::ComediInterface( const std::string& dev ):
@@ -42,7 +42,7 @@ ComediInterface::~ComediInterface()
 }
 // -----------------------------------------------------------------------------
 int ComediInterface::getAnalogChannel( int subdev, int channel, int range, int aref )
-throw(UniSetTypes::Exception)
+throw(uniset::Exception)
 {
 	lsampl_t data = 0;
 	int ret = comedi_data_read(card, subdev, channel, range, aref, &data);
@@ -61,7 +61,7 @@ throw(UniSetTypes::Exception)
 }
 // -----------------------------------------------------------------------------
 void ComediInterface::setAnalogChannel( int subdev, int channel, int data, int range, int aref )
-throw(UniSetTypes::Exception)
+throw(uniset::Exception)
 {
 	if( comedi_data_write(card, subdev, channel, range, aref, data) < 0 )
 	{
@@ -74,7 +74,7 @@ throw(UniSetTypes::Exception)
 	}
 }
 // -----------------------------------------------------------------------------
-bool ComediInterface::getDigitalChannel( int subdev, int channel ) throw(UniSetTypes::Exception)
+bool ComediInterface::getDigitalChannel( int subdev, int channel ) throw(uniset::Exception)
 {
 	lsampl_t data = 0;
 
@@ -90,7 +90,7 @@ bool ComediInterface::getDigitalChannel( int subdev, int channel ) throw(UniSetT
 }
 // -----------------------------------------------------------------------------
 void ComediInterface::setDigitalChannel( int subdev, int channel, bool bit )
-throw(UniSetTypes::Exception)
+throw(uniset::Exception)
 {
 	if( comedi_dio_write(card, subdev, channel, bit) < 0 )
 	{
@@ -103,7 +103,7 @@ throw(UniSetTypes::Exception)
 // -----------------------------------------------------------------------------
 void ComediInterface::configureChannel( int subdev, int channel, ChannelType t,
 										int range, int aref )
-throw(UniSetTypes::Exception)
+throw(uniset::Exception)
 {
 	switch( t )
 	{
@@ -162,7 +162,7 @@ throw(UniSetTypes::Exception)
 }
 // -----------------------------------------------------------------------------
 void ComediInterface::configureSubdev( int subdev, SubdevType type )
-throw(UniSetTypes::Exception)
+throw(uniset::Exception)
 {
 	lsampl_t data[2];
 	comedi_insn insn;

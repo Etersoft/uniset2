@@ -188,7 +188,7 @@ std::ostream& DebugStream::printTime(Debug::type t, char brk) noexcept
 	{
 		IosFlagSaver ifs(*this);
 
-		timespec tv = UniSetTypes::now_to_timespec(); // gettimeofday(tv,0);
+		timespec tv = uniset::now_to_timespec(); // gettimeofday(tv,0);
 		std::tm tms = *std::localtime(&tv.tv_sec);
 
 		std::ostringstream fmt;
@@ -212,7 +212,7 @@ std::ostream& DebugStream::printDateTime(Debug::type t) noexcept
 	{
 		IosFlagSaver ifs(*this);
 
-		timespec tv = UniSetTypes::now_to_timespec(); // gettimeofday(tv,0);
+		timespec tv = uniset::now_to_timespec(); // gettimeofday(tv,0);
 		std::tm tms = *std::localtime(&tv.tv_sec);
 		*this << std::put_time(&tms,"%Od/%Om/%Y %OH:%OM:%OS");
 

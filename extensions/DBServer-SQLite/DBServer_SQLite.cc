@@ -31,7 +31,7 @@
 #include "UniXML.h"
 #include "DBLogSugar.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 DBServer_SQLite::DBServer_SQLite( ObjectId id, const std::string& prefix ):
@@ -64,7 +64,7 @@ DBServer_SQLite::~DBServer_SQLite()
 		db->close();
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_SQLite::sysCommand( const UniSetTypes::SystemMessage* sm )
+void DBServer_SQLite::sysCommand( const uniset::SystemMessage* sm )
 {
 	DBServer::sysCommand(sm);
 
@@ -92,7 +92,7 @@ void DBServer_SQLite::sysCommand( const UniSetTypes::SystemMessage* sm )
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_SQLite::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
+void DBServer_SQLite::confirmInfo( const uniset::ConfirmMessage* cem )
 {
 	try
 	{
@@ -112,7 +112,7 @@ void DBServer_SQLite::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 			dbcrit << myname << "(update_confirm):  db error: " << db->error() << endl;
 		}
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		dbcrit << myname << "(update_confirm): " << ex << endl;
 	}
@@ -177,7 +177,7 @@ void DBServer_SQLite::flushBuffer()
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_SQLite::sensorInfo( const UniSetTypes::SensorMessage* si )
+void DBServer_SQLite::sensorInfo( const uniset::SensorMessage* si )
 {
 	try
 	{
@@ -213,7 +213,7 @@ void DBServer_SQLite::sensorInfo( const UniSetTypes::SensorMessage* si )
 			dbcrit << myname <<  "(insert) sensor msg error: " << db->error() << endl;
 		}
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		dbcrit << myname << "(insert_main_history): " << ex << endl;
 	}
@@ -237,7 +237,7 @@ void DBServer_SQLite::initDBServer()
 
 	auto conf = uniset_conf();
 
-	if( conf->getDBServer() == UniSetTypes::DefaultObjectId )
+	if( conf->getDBServer() == uniset::DefaultObjectId )
 	{
 		ostringstream msg;
 		msg << myname << "(init): DBServer OFF for this node.."
@@ -256,8 +256,8 @@ void DBServer_SQLite::initDBServer()
 	dbinfo <<  myname << "(init): init connection.." << endl;
 	string dbfile(conf->getProp(node, "dbfile"));
 
-	tblMap[UniSetTypes::Message::SensorInfo] = "main_history";
-	tblMap[UniSetTypes::Message::Confirm] = "main_history";
+	tblMap[uniset::Message::SensorInfo] = "main_history";
+	tblMap[uniset::Message::Confirm] = "main_history";
 
 	PingTime = conf->getIntProp(node, "pingTime");
 	ReconnectTime = conf->getIntProp(node, "reconnectTime");
@@ -324,7 +324,7 @@ void DBServer_SQLite::createTables( SQLiteInterface* db )
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_SQLite::timerInfo( const UniSetTypes::TimerMessage* tm )
+void DBServer_SQLite::timerInfo( const uniset::TimerMessage* tm )
 {
 	DBServer::timerInfo(tm);
 
@@ -388,7 +388,7 @@ std::shared_ptr<DBServer_SQLite> DBServer_SQLite::init_dbserver( int argc, const
 	{
 		ObjectId ID = conf->getObjectID(name);
 
-		if( ID == UniSetTypes::DefaultObjectId )
+		if( ID == uniset::DefaultObjectId )
 		{
 			cerr << "(DBServer_SQLite): Unknown ObjectID for '" << name << endl;
 			return 0;

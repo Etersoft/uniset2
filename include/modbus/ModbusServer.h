@@ -16,15 +16,18 @@
 namespace std
 {
 	template<>
-	class hash<ModbusRTU::mbErrCode>
+	class hash<uniset::ModbusRTU::mbErrCode>
 	{
 		public:
-			size_t operator()(const ModbusRTU::mbErrCode& e) const
+			size_t operator()(const uniset::ModbusRTU::mbErrCode& e) const
 			{
 				return std::hash<size_t>()(e);
 			}
 	};
 }
+// -------------------------------------------------------------------------
+namespace uniset
+{
 // -------------------------------------------------------------------------
 /*!    Modbus server interface */
 class ModbusServer
@@ -33,7 +36,7 @@ class ModbusServer
 		ModbusServer();
 		virtual ~ModbusServer();
 
-		void initLog( UniSetTypes::Configuration* conf, const std::string& name, const std::string& logfile = "" );
+		void initLog( uniset::Configuration* conf, const std::string& name, const std::string& logfile = "" );
 		void setLog( std::shared_ptr<DebugStream> dlog );
 		inline std::shared_ptr<DebugStream> log()
 		{
@@ -339,6 +342,8 @@ class ModbusServer
 	private:
 
 };
+// -------------------------------------------------------------------------
+} // end of namespace uniset
 // -------------------------------------------------------------------------
 #endif // ModbusServer_H_
 // -------------------------------------------------------------------------

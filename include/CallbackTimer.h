@@ -26,15 +26,10 @@
 #include "ThreadCreator.h"
 #include "PassiveTimer.h"
 //-----------------------------------------------------------------------------
-/**
-  @defgroup UniSetExceptions Исключения
-  @{
-*/
-
-namespace UniSetTypes
+namespace uniset
 {
 	class LimitTimers:
-		public UniSetTypes::Exception
+		public uniset::Exception
 	{
 		public:
 			LimitTimers(): Exception("LimitTimers") {}
@@ -42,9 +37,6 @@ namespace UniSetTypes
 			/*! Конструктор позволяющий вывести в сообщении об ошибке дополнительную информацию err */
 			LimitTimers(const std::string& err): Exception(err) {}
 	};
-}
-//@}
-// end of UniSetException group
 //----------------------------------------------------------------------------------------
 
 /*!
@@ -100,7 +92,7 @@ class CallbackTimer
 		timeout_t getCurrent(size_t id);             /*!< получить текущее значение таймера */
 
 
-		void add( size_t id, timeout_t timeMS )throw(UniSetTypes::LimitTimers); /*!< добавление нового таймера */
+		void add( size_t id, timeout_t timeMS )throw(uniset::LimitTimers); /*!< добавление нового таймера */
 		void remove( size_t id ); /*!< удаление таймера */
 
 	protected:
@@ -146,5 +138,7 @@ class CallbackTimer
 };
 //----------------------------------------------------------------------------------------
 #include "CallbackTimer.tcc"
+//----------------------------------------------------------------------------------------
+} // end of uniset namespace
 //----------------------------------------------------------------------------------------
 # endif //CallbackTimer_H_

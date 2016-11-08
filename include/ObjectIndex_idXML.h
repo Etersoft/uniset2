@@ -22,19 +22,22 @@
 #include "ObjectIndex.h"
 #include "UniXML.h"
 // --------------------------------------------------------------------------
+namespace uniset
+{
+
 class ObjectIndex_idXML:
-	public UniSetTypes::ObjectIndex
+	public uniset::ObjectIndex
 {
 	public:
 		ObjectIndex_idXML( const std::string& xmlfile );
 		ObjectIndex_idXML( const std::shared_ptr<UniXML>& xml );
 		virtual ~ObjectIndex_idXML();
 
-		virtual const UniSetTypes::ObjectInfo* getObjectInfo( const UniSetTypes::ObjectId ) const noexcept override;
-		virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string& name ) const noexcept override;
-		virtual UniSetTypes::ObjectId getIdByName( const std::string& name ) const noexcept override;
-		virtual std::string getMapName( const UniSetTypes::ObjectId id ) const noexcept override;
-		virtual std::string getTextName( const UniSetTypes::ObjectId id ) const noexcept override;
+		virtual const uniset::ObjectInfo* getObjectInfo( const uniset::ObjectId ) const noexcept override;
+		virtual const uniset::ObjectInfo* getObjectInfo( const std::string& name ) const noexcept override;
+		virtual uniset::ObjectId getIdByName( const std::string& name ) const noexcept override;
+		virtual std::string getMapName( const uniset::ObjectId id ) const noexcept override;
+		virtual std::string getTextName( const uniset::ObjectId id ) const noexcept override;
 
 		virtual std::ostream& printMap( std::ostream& os ) const noexcept override;
 		friend std::ostream& operator<<(std::ostream& os, ObjectIndex_idXML& oi );
@@ -45,11 +48,13 @@ class ObjectIndex_idXML:
 		void read_nodes( const std::shared_ptr<UniXML>& xml, const std::string& sec );
 
 	private:
-		typedef std::unordered_map<UniSetTypes::ObjectId, UniSetTypes::ObjectInfo> MapObjects;
+		typedef std::unordered_map<uniset::ObjectId, uniset::ObjectInfo> MapObjects;
 		MapObjects omap;
 
-		typedef std::unordered_map<std::string, UniSetTypes::ObjectId> MapObjectKey;
+		typedef std::unordered_map<std::string, uniset::ObjectId> MapObjectKey;
 		MapObjectKey mok; // для обратного писка
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // -----------------------------------------------------------------------------------------
 #endif

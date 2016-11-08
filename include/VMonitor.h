@@ -28,6 +28,9 @@
 #include <Poco/Types.h>
 #include "UniSetTypes.h"
 // --------------------------------------------------------------------------
+namespace uniset
+{
+
 #ifndef VMON_DEF_FUNC
 #define VMON_DEF_FUNC(T) \
 	void add( const std::string& name, const T& v );\
@@ -165,5 +168,7 @@ class VMonitor
 #endif
 		VMON_DEF_MAP3(std::string, string);
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // --------------------------------------------------------------------------
 #endif

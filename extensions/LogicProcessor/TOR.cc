@@ -18,9 +18,12 @@
 #include <iostream>
 #include "Extensions.h"
 #include "Element.h"
+// -----------------------------------------------------------------------------
+namespace uniset
+{
 // -------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetExtensions;
+using namespace uniset::extensions;
 // -------------------------------------------------------------------------
 TOR::TOR(ElementID id, size_t num, bool st):
 	Element(id),
@@ -83,3 +86,4 @@ void TOR::setIn( size_t num, bool state )
 		Element::setChildOut();
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

@@ -26,7 +26,7 @@
 // ------------------------------------------------------------------------------------------
 using namespace std;
 using namespace UniversalIO;
-using namespace UniSetTypes;
+using namespace uniset;
 // ------------------------------------------------------------------------------------------
 NCRestorer::NCRestorer()
 {

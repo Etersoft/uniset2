@@ -26,7 +26,7 @@
 #include "ORepHelpers.h"
 
 // -----------------------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // -----------------------------------------------------------------------------------------
 IORFile::IORFile()

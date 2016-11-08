@@ -26,6 +26,9 @@
 #include "UniSetTypes.h"
 #include "MySQLInterface.h"
 #include "DBServer.h"
+// -------------------------------------------------------------------------
+namespace uniset
+{
 //------------------------------------------------------------------------------------------
 /*!
       \page page_DBServer_MySQL (DBServer_MySQL) Реализация сервиса ведения БД на основе MySQL
@@ -135,7 +138,7 @@ class DBServer_MySQL:
 	public DBServer
 {
 	public:
-		DBServer_MySQL( UniSetTypes::ObjectId id, const std::string& prefix );
+		DBServer_MySQL( uniset::ObjectId id, const std::string& prefix );
 		explicit DBServer_MySQL( const std::string& prefix );
 		virtual ~DBServer_MySQL();
 
@@ -161,10 +164,10 @@ class DBServer_MySQL:
 		virtual void initDB( std::shared_ptr<MySQLInterface>& db ) {};
 		virtual void initDBTableMap(DBTableMap& tblMap) {};
 
-		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
-		virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ) override;
+		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
+		virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) override;
 
 		bool writeToBase( const string& query );
 		void createTables( MySQLInterface* db );
@@ -196,11 +199,13 @@ class DBServer_MySQL:
 		bool lastRemove;
 
 		void flushBuffer();
-		UniSetTypes::uniset_rwmutex mqbuf;
+		uniset::uniset_rwmutex mqbuf;
 
 	private:
 		DBTableMap tblMap;
 
 };
+// ----------------------------------------------------------------------------------
+} // end of namespace uniset
 //------------------------------------------------------------------------------------------
 #endif

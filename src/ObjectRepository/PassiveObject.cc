@@ -25,16 +25,16 @@
 #include "Configuration.h"
 // ------------------------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // ------------------------------------------------------------------------------------------
 PassiveObject::PassiveObject():
 	mngr(0),
-	id(UniSetTypes::DefaultObjectId)
+	id(uniset::DefaultObjectId)
 {
 
 }
 
-PassiveObject::PassiveObject( UniSetTypes::ObjectId id ):
+PassiveObject::PassiveObject( uniset::ObjectId id ):
 	mngr(0),
 	id(id)
 {
@@ -60,7 +60,7 @@ PassiveObject::~PassiveObject()
 }
 
 // ------------------------------------------------------------------------------------------
-void PassiveObject::setID( UniSetTypes::ObjectId id_ )
+void PassiveObject::setID( uniset::ObjectId id_ )
 {
 	id = id_;
 }
@@ -79,7 +79,7 @@ void PassiveObject::init( ProxyManager* _mngr )
 }
 
 // ------------------------------------------------------------------------------------------
-void PassiveObject::processingMessage( const UniSetTypes::VoidMessage* msg )
+void PassiveObject::processingMessage( const uniset::VoidMessage* msg )
 {
 	try
 	{
@@ -101,7 +101,7 @@ void PassiveObject::processingMessage( const UniSetTypes::VoidMessage* msg )
 				break;
 		}
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		ucrit  << myname << "(processingMessage): " << ex << endl;
 	}

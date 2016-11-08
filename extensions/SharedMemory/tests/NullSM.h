@@ -7,19 +7,19 @@
 #include "NCRestorer.h"
 // --------------------------------------------------------------------------
 class NullSM:
-	public IONotifyController
+	public uniset::IONotifyController
 {
 	public:
-		NullSM( UniSetTypes::ObjectId id, const std::string& datfile );
+		NullSM( uniset::ObjectId id, const std::string& datfile );
 
 		virtual ~NullSM();
 
 	protected:
 
-		virtual void logging( UniSetTypes::SensorMessage& sm ) override {};
+		virtual void logging( uniset::SensorMessage& sm ) override {};
 
-		virtual void dumpOrdersList( const UniSetTypes::ObjectId sid, const IONotifyController::ConsumerListInfo& lst ) override {};
-		virtual void dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst ) override {};
+		virtual void dumpOrdersList( const uniset::ObjectId sid, const IONotifyController::ConsumerListInfo& lst ) override {};
+		virtual void dumpThresholdList( const uniset::ObjectId sid, const IONotifyController::ThresholdExtList& lst ) override {};
 
 	private:
 

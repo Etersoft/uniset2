@@ -23,13 +23,15 @@
 #include "modbus/ModbusRTUSlaveSlot.h"
 #include "modbus/ModbusTCPServerSlot.h"
 #include "modbus/MBLogSugar.h"
+// -------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset::extensions;
 using namespace ModbusRTU;
 // -----------------------------------------------------------------------------
-MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic, const string& prefix ):
+MBSlave::MBSlave(uniset::ObjectId objId, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic, const string& prefix ):
 	UniSetObject(objId),
 	initPause(3000),
 	test_id(DefaultObjectId),
@@ -47,7 +49,7 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 	prop_prefix("")
 {
 	if( objId == DefaultObjectId )
-		throw UniSetTypes::SystemError("(MBSlave): objId=-1?!! Use --" + prefix + "-name" );
+		throw uniset::SystemError("(MBSlave): objId=-1?!! Use --" + prefix + "-name" );
 
 	auto conf = uniset_conf();
 	mutex_start.setName(myname + "_mutex_start");
@@ -65,7 +67,7 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 	cnode = conf->getNode(conf_name);
 
 	if( cnode == NULL )
-		throw UniSetTypes::SystemError("(MBSlave): Not found conf-node for " + myname );
+		throw uniset::SystemError("(MBSlave): Not found conf-node for " + myname );
 
 	shm = make_shared<SMInterface>(shmId, ui, objId, ic);
 
@@ -156,7 +158,7 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 		string dev    = conf->getArgParam("--" + prefix + "-dev", it.getProp("device"));
 
 		if( dev.empty() )
-			throw UniSetTypes::SystemError(myname + "(MBSlave): Unknown device...");
+			throw uniset::SystemError(myname + "(MBSlave): Unknown device...");
 
 		string speed     = conf->getArgParam("--" + prefix + "-speed", it.getProp("speed"));
 
@@ -196,7 +198,7 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 		string iaddr = conf->getArgParam("--" + prefix + "-inet-addr", it.getProp("iaddr"));
 
 		if( iaddr.empty() )
-			throw UniSetTypes::SystemError(myname + "(MBSlave): Unknown TCP server address. Use: --prefix-inet-addr [ XXX.XXX.XXX.XXX| hostname ]");
+			throw uniset::SystemError(myname + "(MBSlave): Unknown TCP server address. Use: --prefix-inet-addr [ XXX.XXX.XXX.XXX| hostname ]");
 
 		int port = conf->getArgPInt("--" + prefix + "-inet-port", it.getProp("iport"), 502);
 
@@ -248,7 +250,7 @@ MBSlave::MBSlave(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const
 		sesscount_id = conf->getSensorID( conf->getArgParam("--" + prefix + "-session-count-id", it.getProp("sesscount")) );
 	}
 	else
-		throw UniSetTypes::SystemError(myname + "(MBSlave): Unknown slave type. Use: --" + prefix + "-type [RTU|TCP]");
+		throw uniset::SystemError(myname + "(MBSlave): Unknown slave type. Use: --" + prefix + "-type [RTU|TCP]");
 
 	mbslot->connectReadCoil( sigc::mem_fun(this, &MBSlave::readCoilStatus) );
 	mbslot->connectReadInputStatus( sigc::mem_fun(this, &MBSlave::readInputStatus) );
@@ -683,7 +685,7 @@ void MBSlave::updateStatistics()
 				shm->localSetValue(itHeartBeat, sidHeartBeat, maxHeartBeat, getId());
 				ptHeartBeat.reset();
 			}
-			catch( const UniSetTypes::Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				mbcrit << myname << "(updateStatistics): (hb) " << ex << std::endl;
 			}
@@ -700,7 +702,7 @@ void MBSlave::updateStatistics()
 			{
 				shm->localSetValue(itRespond, respond_id, (state ? 1 : 0), getId());
 			}
-			catch( const UniSetTypes::Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				mbcrit << myname << "(updateStatistics): (respond) " << ex << std::endl;
 			}
@@ -712,7 +714,7 @@ void MBSlave::updateStatistics()
 			{
 				shm->localSetValue(itAskCount, askcount_id, askCount, getId());
 			}
-			catch( const UniSetTypes::Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				mbcrit << myname << "(updateStatistics): (askCount) " << ex << std::endl;
 			}
@@ -724,7 +726,7 @@ void MBSlave::updateStatistics()
 			{
 				shm->localSetValue(sesscount_it, sesscount_id, tcpserver->getCountSessions(), getId());
 			}
-			catch( const UniSetTypes::Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				mbcrit << myname << "(updateStatistics): (sessCount) " << ex << std::endl;
 			}
@@ -797,7 +799,7 @@ void MBSlave::updateTCPStatistics()
 					bool st = c.invert ? c.ptTimeout.checkTime() : !c.ptTimeout.checkTime();
 					shm->localSetValue(c.respond_it, c.respond_s, st, getId());
 				}
-				catch( const UniSetTypes::Exception& ex )
+				catch( const uniset::Exception& ex )
 				{
 					mbcrit << myname << "(updateStatistics): " << ex << std::endl;
 				}
@@ -809,7 +811,7 @@ void MBSlave::updateTCPStatistics()
 				{
 					shm->localSetValue(c.askcount_it, c.askcount_s, c.askCount, getId());
 				}
-				catch( const UniSetTypes::Exception& ex )
+				catch( const uniset::Exception& ex )
 				{
 					mbcrit << myname << "(updateStatistics): " << ex << std::endl;
 				}
@@ -847,7 +849,7 @@ void MBSlave::postReceiveEvent( ModbusRTU::mbErrCode res )
 	updateThresholds();
 }
 // -------------------------------------------------------------------------
-void MBSlave::sysCommand( const UniSetTypes::SystemMessage* sm )
+void MBSlave::sysCommand( const uniset::SystemMessage* sm )
 {
 	switch( sm->command )
 	{
@@ -888,7 +890,7 @@ void MBSlave::sysCommand( const UniSetTypes::SystemMessage* sm )
 			}
 			else
 			{
-				UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
+				uniset::uniset_rwmutex_rlock l(mutex_start);
 				askSensors(UniversalIO::UIONotify);
 
 				if( mbtype == "RTU" && thr )
@@ -963,7 +965,7 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
 			{
 				shm->askSensor(p->si.id, cmd);
 			}
-			catch( const UniSetTypes::Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				mbwarn << myname << "(askSensors): " << ex << std::endl;
 			}
@@ -972,7 +974,7 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
 	}
 }
 // ------------------------------------------------------------------------------------------
-void MBSlave::sensorInfo( const UniSetTypes::SensorMessage* sm )
+void MBSlave::sensorInfo( const uniset::SensorMessage* sm )
 {
 	for( auto && regs : iomap )
 	{
@@ -1034,7 +1036,7 @@ bool MBSlave::activateObject()
 	// см. sysCommand()
 	{
 		activated = false;
-		UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
+		uniset::uniset_rwmutex_wrlock l(mutex_start);
 		UniSetObject::activateObject();
 		initIterators();
 		activated = true;
@@ -1130,7 +1132,7 @@ void MBSlave::readConfiguration()
 
 	for( ; it.getCurrent(); it.goNext() )
 	{
-		if( UniSetTypes::check_filter(it, s_field, s_fvalue) )
+		if( uniset::check_filter(it, s_field, s_fvalue) )
 			initItem(it);
 	}
 
@@ -1139,7 +1141,7 @@ void MBSlave::readConfiguration()
 // ------------------------------------------------------------------------------------------
 bool MBSlave::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec )
 {
-	if( UniSetTypes::check_filter(it, s_field, s_fvalue) )
+	if( uniset::check_filter(it, s_field, s_fvalue) )
 		initItem(it);
 
 	return true;
@@ -1502,7 +1504,7 @@ void MBSlave::help_print( int argc, const char* const* argv )
 	cout << LogServer::help_print("prefix-logserver") << endl;
 }
 // -----------------------------------------------------------------------------
-std::shared_ptr<MBSlave> MBSlave::init_mbslave(int argc, const char* const* argv, UniSetTypes::ObjectId icID,
+std::shared_ptr<MBSlave> MBSlave::init_mbslave(int argc, const char* const* argv, uniset::ObjectId icID,
 		const std::shared_ptr<SharedMemory>& ic, const string& prefix )
 {
 	auto conf = uniset_conf();
@@ -1516,7 +1518,7 @@ std::shared_ptr<MBSlave> MBSlave::init_mbslave(int argc, const char* const* argv
 
 	ObjectId ID = conf->getObjectID(name);
 
-	if( ID == UniSetTypes::DefaultObjectId )
+	if( ID == uniset::DefaultObjectId )
 	{
 		cerr << "(mbslave): идентификатор '" << name
 			 << "' не найден в конф. файле!"
@@ -1951,17 +1953,17 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 		pingOK = true;
 		return ModbusRTU::erNoError;
 	}
-	catch( UniSetTypes::NameNotFound& ex )
+	catch( uniset::NameNotFound& ex )
 	{
 		mbwarn << myname << "(real_write_prop): " << ex << endl;
 		return ModbusRTU::erBadDataAddress;
 	}
-	catch( UniSetTypes::OutOfRange& ex )
+	catch( uniset::OutOfRange& ex )
 	{
 		mbwarn << myname << "(real_write_prop): " << ex << endl;
 		return ModbusRTU::erBadDataValue;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		if( pingOK )
 			mbcrit << myname << "(real_write_prop): " << ex << endl;
@@ -2204,17 +2206,17 @@ ModbusRTU::mbErrCode MBSlave::real_read_prop( IOProperty* p, ModbusRTU::ModbusDa
 		pingOK = true;
 		return ModbusRTU::erNoError;
 	}
-	catch( UniSetTypes::NameNotFound& ex )
+	catch( uniset::NameNotFound& ex )
 	{
 		mbwarn << myname << "(real_read_prop): " << ex << endl;
 		return ModbusRTU::erBadDataAddress;
 	}
-	catch( UniSetTypes::OutOfRange& ex )
+	catch( uniset::OutOfRange& ex )
 	{
 		mbwarn << myname << "(real_read_prop): " << ex << endl;
 		return ModbusRTU::erBadDataValue;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		if( pingOK )
 			mbcrit << myname << "(real_read_prop): " << ex << endl;
@@ -2349,12 +2351,12 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 		pingOK = true;
 		return ModbusRTU::erNoError;
 	}
-	catch( UniSetTypes::NameNotFound& ex )
+	catch( uniset::NameNotFound& ex )
 	{
 		mbwarn << myname << "(readCoilStatus): " << ex << endl;
 		return ModbusRTU::erBadDataAddress;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		if( pingOK )
 			mbcrit << myname << "(readCoilStatus): " << ex << endl;
@@ -2422,12 +2424,12 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 		pingOK = true;
 		return ModbusRTU::erNoError;
 	}
-	catch( UniSetTypes::NameNotFound& ex )
+	catch( uniset::NameNotFound& ex )
 	{
 		mbwarn << myname << "(readInputStatus): " << ex << endl;
 		return ModbusRTU::erBadDataAddress;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		if( pingOK )
 			mbcrit << myname << "(readInputStatus): " << ex << endl;
@@ -2591,9 +2593,9 @@ const std::string MBSlave::ClientInfo::getShortInfo() const
 	return std::move(s.str());
 }
 // -------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
+uniset::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
 {
-	UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo(userparam);
+	uniset::SimpleInfo_var i = UniSetObject::getInfo(userparam);
 
 	auto sslot = dynamic_pointer_cast<ModbusTCPServerSlot>(mbslot);
 
@@ -2715,3 +2717,4 @@ void MBSlave::initTCPClients( UniXML::iterator confnode )
 	}
 }
 // ----------------------------------------------------------------------------
+} // end of namespace uniset

@@ -3,7 +3,7 @@
 #include "SViewer.h"
 #include "Configuration.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 static void short_usage()

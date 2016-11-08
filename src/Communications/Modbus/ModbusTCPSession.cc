@@ -27,9 +27,12 @@
 // glibc..
 #include <netinet/tcp.h>
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 using namespace std;
 using namespace ModbusRTU;
-using namespace UniSetTypes;
+using namespace uniset;
 // -------------------------------------------------------------------------
 ModbusTCPSession::~ModbusTCPSession()
 {
@@ -268,7 +271,7 @@ ModbusRTU::mbErrCode ModbusTCPSession::realReceive( const std::unordered_set<Mod
 		// processing message...
 		res = processing(buf);
 	}
-	catch( UniSetTypes::CommFailed& ex )
+	catch( uniset::CommFailed& ex )
 	{
 		cancelled = true;
 		return erSessionClosed;
@@ -305,7 +308,7 @@ size_t ModbusTCPSession::getNextData( unsigned char* buf, int len )
 			return 0;
 		}
 	}
-	catch( UniSetTypes::CommFailed )
+	catch( uniset::CommFailed )
 	{
 
 	}
@@ -377,7 +380,7 @@ mbErrCode ModbusTCPSession::tcp_processing( ModbusRTU::ADUHeader& mhead )
 		}
 		while( len == 0 && !pt.checkTime() );
 	}
-	catch( UniSetTypes::CommFailed )
+	catch( uniset::CommFailed )
 	{
 
 	}
@@ -583,3 +586,4 @@ void ModbusTCPSession::connectFinalSession( FinalSlot sl )
 	slFin = sl;
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

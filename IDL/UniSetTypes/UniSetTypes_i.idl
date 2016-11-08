@@ -25,7 +25,7 @@
 // --------------------------------------------------------------------------
 //module UniSet
 //{
-    module UniSetTypes
+    module uniset
     {
         typedef long ObjectId;          /*!< идентификатор объекта */
         typedef long ThresholdId;       /*!< идентификатор порога */
@@ -82,7 +82,7 @@
         typedef sequence<ObjectId> IDSeq;
 
 
-    };// end of module UniSetTypes
+    };// end of module uniset
 
 
     module UniversalIO

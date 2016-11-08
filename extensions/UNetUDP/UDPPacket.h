@@ -21,6 +21,9 @@
 #include <limits>
 #include <ostream>
 #include "UniSetTypes.h"
+// --------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 namespace UniSetUDP
 {
@@ -58,7 +61,7 @@ namespace UniSetUDP
 
 	struct UDPAData
 	{
-		UDPAData() noexcept: id(UniSetTypes::DefaultObjectId), val(0) {}
+		UDPAData() noexcept: id(uniset::DefaultObjectId), val(0) {}
 		UDPAData(long id, long val) noexcept: id(id), val(val) {}
 
 		long id;
@@ -109,10 +112,10 @@ namespace UniSetUDP
 		//!\return true - successful
 		bool setDData( size_t index, bool val ) noexcept;
 
-		//! \return UniSetTypes::DefaultObjectId if not found
+		//! \return uniset::DefaultObjectId if not found
 		long dID( size_t index ) const noexcept;
 
-		//! \return UniSetTypes::DefaultObjectId if not found
+		//! \return uniset::DefaultObjectId if not found
 		bool dValue( size_t index ) const noexcept;
 
 		// функции addAData возвращают индекс, по которому потом можно напрямую писать при помощи setAData(index)
@@ -169,6 +172,8 @@ namespace UniSetUDP
 
 	uint16_t makeCRC( unsigned char* buf, size_t len ) noexcept;
 }
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // UDPPacket_H_
 // -----------------------------------------------------------------------------

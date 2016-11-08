@@ -23,38 +23,42 @@
 #include "Mutex.h"
 #include "IONotifyController.h"
 #include "UInterface.h"
+// --------------------------------------------------------------------------
+namespace uniset
+{
+// --------------------------------------------------------------------------
 class SMInterface
 {
 	public:
 
-		SMInterface( UniSetTypes::ObjectId _shmID, const std::shared_ptr<UInterface>& ui,
-					 UniSetTypes::ObjectId myid, const std::shared_ptr<IONotifyController> ic = nullptr );
+		SMInterface( uniset::ObjectId _shmID, const std::shared_ptr<UInterface>& ui,
+					 uniset::ObjectId myid, const std::shared_ptr<IONotifyController> ic = nullptr );
 		~SMInterface();
 
-		void setValue ( UniSetTypes::ObjectId, long value );
-		void setUndefinedState( const IOController_i::SensorInfo& si, bool undefined, UniSetTypes::ObjectId supplier );
+		void setValue ( uniset::ObjectId, long value );
+		void setUndefinedState( const IOController_i::SensorInfo& si, bool undefined, uniset::ObjectId supplier );
 
-		long getValue ( UniSetTypes::ObjectId id );
+		long getValue ( uniset::ObjectId id );
 
-		void askSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd,
-						UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
+		void askSensor( uniset::ObjectId id, UniversalIO::UIOCommand cmd,
+						uniset::ObjectId backid = uniset::DefaultObjectId );
 
 		IOController_i::SensorInfoSeq* getSensorsMap();
 		IONotifyController_i::ThresholdsListSeq* getThresholdsList();
 
 		void localSetValue( IOController::IOStateList::iterator& it,
-							UniSetTypes::ObjectId sid,
-							CORBA::Long newvalue, UniSetTypes::ObjectId sup_id );
+							uniset::ObjectId sid,
+							CORBA::Long newvalue, uniset::ObjectId sup_id );
 
 		long localGetValue( IOController::IOStateList::iterator& it,
-							UniSetTypes::ObjectId sid );
+							uniset::ObjectId sid );
 
 		/*! функция выставления признака неопределённого состояния для аналоговых датчиков
 		    // для дискретных датчиков необходимости для подобной функции нет.
 		    // см. логику выставления в функции localSaveState
 		*/
 		void localSetUndefinedState( IOController::IOStateList::iterator& it,
-									 bool undefined, UniSetTypes::ObjectId sid );
+									 bool undefined, uniset::ObjectId sid );
 
 		// специальные функции
 		IOController::IOStateList::iterator ioEnd();
@@ -62,13 +66,13 @@ class SMInterface
 
 		bool exist();
 		bool waitSMready( int msec, int pause = 5000 );
-		bool waitSMworking( UniSetTypes::ObjectId, int msec, int pause = 3000 );
+		bool waitSMworking( uniset::ObjectId, int msec, int pause = 3000 );
 
 		inline bool isLocalwork()
 		{
 			return (ic == NULL);
 		}
-		inline UniSetTypes::ObjectId ID()
+		inline uniset::ObjectId ID()
 		{
 			return myid;
 		}
@@ -76,7 +80,7 @@ class SMInterface
 		{
 			return ic;
 		}
-		inline UniSetTypes::ObjectId getSMID()
+		inline uniset::ObjectId getSMID()
 		{
 			return shmID;
 		}
@@ -85,10 +89,11 @@ class SMInterface
 		const std::shared_ptr<IONotifyController> ic;
 		const std::shared_ptr<UInterface> ui;
 		CORBA::Object_var oref;
-		UniSetTypes::ObjectId shmID;
-		UniSetTypes::ObjectId myid;
-		UniSetTypes::uniset_rwmutex shmMutex;
+		uniset::ObjectId shmID;
+		uniset::ObjectId myid;
+		uniset::uniset_rwmutex shmMutex;
 };
-
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 //--------------------------------------------------------------------------
 #endif

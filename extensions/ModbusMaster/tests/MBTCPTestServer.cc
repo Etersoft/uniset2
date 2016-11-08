@@ -11,7 +11,7 @@
 #endif
 // -------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
 std::ostream& operator<<(std::ostream& os, const MBTCPTestServer* m )

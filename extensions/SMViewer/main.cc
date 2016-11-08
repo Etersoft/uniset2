@@ -3,8 +3,8 @@
 #include "SMViewer.h"
 #include "Extensions.h"
 // -----------------------------------------------------------------------------
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 using namespace std;
 // -----------------------------------------------------------------------------
 int main( int argc, const char** argv )
@@ -38,7 +38,7 @@ int main( int argc, const char** argv )
 		smv.run();
 		return 0;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		cout << "(main):" << ex << endl;
 	}

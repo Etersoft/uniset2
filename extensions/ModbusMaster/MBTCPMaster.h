@@ -24,6 +24,9 @@
 #include <memory>
 #include "MBExchange.h"
 #include "modbus/ModbusTCPMaster.h"
+// -------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 /*!
       \page page_ModbusTCP Реализация ModbusTCP master
@@ -219,22 +222,22 @@ class MBTCPMaster:
 	public MBExchange
 {
 	public:
-		MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+		MBTCPMaster( uniset::ObjectId objId, uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 					 const std::string& prefix = "mbtcp" );
 		virtual ~MBTCPMaster();
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<MBTCPMaster> init_mbmaster( int argc, const char* const* argv,
-				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+				uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 				const std::string& prefix = "mbtcp" );
 
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
-		virtual UniSetTypes::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
+		virtual uniset::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
 
 	protected:
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 		virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;
 		virtual void sigterm( int signo ) override;
 		virtual bool deactivateObject() override;
@@ -255,6 +258,8 @@ class MBTCPMaster:
 		// делаем опрос в отдельном потоке
 		std::shared_ptr<ThreadCreator<MBTCPMaster>> pollThread; /*!< поток опроса */
 };
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // _MBTCPMaster_H_
 // -----------------------------------------------------------------------------

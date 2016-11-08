@@ -30,6 +30,8 @@
 #include "IOController.h"
 #include "IONotifyController.h"
 // ------------------------------------------------------------------------------------------
+namespace uniset
+{
 /*!
     Интерфейс для записи в файл и восстановления из файла списка заказчиков по датчикам для
     IONotifyController-а (NC).
@@ -52,7 +54,7 @@ class NCRestorer
 			SInfo& operator=(SInfo&& ) = default;
 
 			SInfo( IOController_i::SensorInfo& si, UniversalIO::IOType& t,
-				   UniSetTypes::Message::Message::Priority& p, long& def ) noexcept
+				   uniset::Message::Message::Priority& p, long& def ) noexcept
 			{
 				this->si = si;
 				this->type = t;
@@ -63,7 +65,7 @@ class NCRestorer
 			SInfo() noexcept
 			{
 				this->type = UniversalIO::DI;
-				this->priority = UniSetTypes::Message::Medium;
+				this->priority = uniset::Message::Medium;
 				this->default_val = 0;
 			}
 
@@ -88,7 +90,7 @@ class NCRestorer
 			ic->ioRegistration(inf, force);
 		}
 
-		static inline IOController::IOStateList::iterator ioFind( IONotifyController* ic, UniSetTypes::ObjectId k ) noexcept
+		static inline IOController::IOStateList::iterator ioFind( IONotifyController* ic, uniset::ObjectId k ) noexcept
 		{
 			return ic->myiofind(k);
 		}
@@ -190,5 +192,7 @@ class NCRestorer_XML:
 
 	private:
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // ------------------------------------------------------------------------------------------
 #endif

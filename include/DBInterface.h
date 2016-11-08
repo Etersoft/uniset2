@@ -6,6 +6,8 @@
 #include <vector>
 #include "UniSetTypes.h"
 // --------------------------------------------------------------------------
+namespace uniset
+{
 class DBResult;
 
 /*! Абстрактный класс для доступа к БД */
@@ -93,5 +95,7 @@ struct DBInterfaceDeleter
 // the types of the class factories
 typedef std::shared_ptr<DBInterface> create_dbinterface_t();
 // --------------------------------------------------------------------------
+} // end of uniset namespace
+// -------------------------------------------------------------------------
 #endif // DBInterface_H_
 // --------------------------------------------------------------------------

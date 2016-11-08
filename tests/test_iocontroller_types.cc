@@ -7,7 +7,7 @@
 #include "IOController.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 //! \todo test_iocontroller_types: Дописать больше тестов
 // -----------------------------------------------------------------------------
@@ -28,7 +28,7 @@ TEST_CASE("IOController: USensorInfo", "[ioc][usi]" )
 
 	SECTION( "makeSensorMessage" )
 	{
-		UniSetTypes::SensorMessage sm( usi.makeSensorMessage() );
+		uniset::SensorMessage sm( usi.makeSensorMessage() );
 		REQUIRE( sm.supplier == 100 );
 		REQUIRE( sm.value == 9 );
 	}

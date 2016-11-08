@@ -47,7 +47,7 @@
 #include "Mutex.h"
 
 // ------------------------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // ------------------------------------------------------------------------------------------
 /*
@@ -368,6 +368,8 @@ void on_finish_timeout()
 	ulogsys << "KILL THREAD: ..bye.." << endl;
 }
 // ------------------------------------------------------------------------------------------
+namespace uniset
+{
 void terminate_thread()
 {
 	ulogsys << "****** TERMINATE THREAD: STARTED *******" << endl << flush;
@@ -480,6 +482,7 @@ void terminate_thread()
 	g_kill_thread->join();
 	ulogsys << "(TERMINATE THREAD): ..bye.." << endl;
 }
+}
 // ---------------------------------------------------------------------------
 UniSetActivatorPtr UniSetActivator::inst;
 // ---------------------------------------------------------------------------
@@ -506,7 +509,7 @@ std::shared_ptr<UniSetActivator> UniSetActivator::get_aptr()
 }
 // ---------------------------------------------------------------------------
 UniSetActivator::UniSetActivator():
-	UniSetManager(UniSetTypes::DefaultObjectId),
+	UniSetManager(uniset::DefaultObjectId),
 	omDestroy(false)
 {
 	//    thread(false);    //    отключаем поток (раз не задан id)
@@ -650,7 +653,7 @@ void UniSetActivator::run( bool thread )
 
 	UniSetManager::initPOA( get_aptr() );
 
-	if( getId() == UniSetTypes::DefaultObjectId )
+	if( getId() == uniset::DefaultObjectId )
 		offThread(); // отключение потока обработки сообщений, раз не задан ObjectId
 
 	UniSetManager::activate(); // а там вызывается активация всех подчиненных объектов и менеджеров
@@ -776,7 +779,7 @@ CORBA::ORB_ptr UniSetActivator::getORB()
 	return orb;
 }
 // ------------------------------------------------------------------------------------------
-void UniSetActivator::sysCommand( const UniSetTypes::SystemMessage* sm )
+void UniSetActivator::sysCommand( const uniset::SystemMessage* sm )
 {
 	switch(sm->command)
 	{
@@ -873,7 +876,7 @@ nlohmann::json UniSetActivator::httpGetByName( const string& name, const Poco::U
 	ostringstream err;
 	err << "Object '" << name << "' not found";
 
-	throw UniSetTypes::NameNotFound(err.str());
+	throw uniset::NameNotFound(err.str());
 }
 // ------------------------------------------------------------------------------------------
 nlohmann::json UniSetActivator::httpGetObjectsList( const Poco::URI::QueryParameters& p )
@@ -904,7 +907,7 @@ nlohmann::json UniSetActivator::httpHelpByName( const string& name, const Poco::
 
 	ostringstream err;
 	err << "Object '" << name << "' not found";
-	throw UniSetTypes::NameNotFound(err.str());
+	throw uniset::NameNotFound(err.str());
 }
 // ------------------------------------------------------------------------------------------
 nlohmann::json UniSetActivator::httpRequestByName( const string& name, const std::string& req, const Poco::URI::QueryParameters& p)
@@ -918,7 +921,7 @@ nlohmann::json UniSetActivator::httpRequestByName( const string& name, const std
 
 	ostringstream err;
 	err << "Object '" << name << "' not found";
-	throw UniSetTypes::NameNotFound(err.str());
+	throw uniset::NameNotFound(err.str());
 }
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::terminated( int signo )
@@ -1046,7 +1049,7 @@ void UniSetActivator::term( int signo )
 		s_term.emit(signo);
 		ulogsys << myname << "(term): sigterm() ok." << endl;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		ucrit << myname << "(term): " << ex << endl;
 	}

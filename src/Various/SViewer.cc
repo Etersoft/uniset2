@@ -28,16 +28,16 @@
 #include "ObjectIndex_Array.h"
 
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace UniversalIO;
 using namespace std;
 // --------------------------------------------------------------------------
 SViewer::SViewer(const string& csec, bool sn):
 	csec(csec),
-	rep(UniSetTypes::uniset_conf()),
+	rep(uniset::uniset_conf()),
 	isShortName(sn)
 {
-	ui = make_shared<UInterface>(UniSetTypes::uniset_conf());
+	ui = make_shared<UInterface>(uniset::uniset_conf());
 	ui->setCacheMaxSize(500);
 }
 
@@ -61,7 +61,7 @@ void SViewer::view()
 	{
 		readSection(csec, "");
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		cerr << ex << endl;
 	}
@@ -139,7 +139,7 @@ void SViewer::readSection( const string& section, const string& secRoot )
 					else
 						getInfo(id);
 				}
-				catch( const UniSetTypes::Exception& ex )
+				catch( const uniset::Exception& ex )
 				{
 					cout << "(readSection): " << ex << endl;
 				}
@@ -187,7 +187,7 @@ void SViewer::getInfo( ObjectId id )
 
 		return;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		cout << "(getInfo):" << ex << endl;
 	}
@@ -198,7 +198,7 @@ void SViewer::getInfo( ObjectId id )
 }
 
 // ---------------------------------------------------------------------------
-void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetTypes::ObjectId oid )
+void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, uniset::ObjectId oid )
 {
 	string owner = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(oid));
 	cout << "\n======================================================\n"
@@ -219,7 +219,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
 
 			string supplier = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(amap[i].supplier));
 
-			if( amap[i].supplier == UniSetTypes::AdminID )
+			if( amap[i].supplier == uniset::AdminID )
 				supplier = "uniset-admin";
 
 			string txtname( uniset_conf()->oind->getTextName(amap[i].si.id) );
@@ -244,7 +244,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
 
 			string supplier = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(amap[i].supplier));
 
-			if( amap[i].supplier == UniSetTypes::AdminID )
+			if( amap[i].supplier == uniset::AdminID )
 				supplier = "uniset-admin";
 
 			string txtname( uniset_conf()->oind->getTextName(amap[i].si.id) );
@@ -256,7 +256,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
 
 }
 // ---------------------------------------------------------------------------
-void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tlst, UniSetTypes::ObjectId oid )
+void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tlst, uniset::ObjectId oid )
 {
 	int size = tlst->length();
 	string owner = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(oid));
@@ -303,7 +303,7 @@ void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tls
 }
 // ---------------------------------------------------------------------------
 
-void SViewer::printInfo(UniSetTypes::ObjectId id, const string& sname, long value, const string& supplier,
+void SViewer::printInfo(uniset::ObjectId id, const string& sname, long value, const string& supplier,
 						const string& txtname, const string& iotype)
 {
 	cout << "(" << setw(5) << id << ")" << " | " << setw(2) << iotype << " | " << setw(60) << sname

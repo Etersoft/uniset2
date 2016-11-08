@@ -21,10 +21,13 @@
 #include "Exceptions.h"
 #include "modbus/ModbusClient.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+
+// -------------------------------------------------------------------------
 using namespace std;
 using namespace ModbusRTU;
-using namespace UniSetTypes;
-
+using namespace uniset;
 // -------------------------------------------------------------------------
 ModbusClient::ModbusClient():
 	replyTimeOut_ms(2000),
@@ -379,11 +382,11 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
 
 		return recv_pdu(qfunc, rbuf, timeout);
 	}
-	catch( UniSetTypes::TimeOut )
+	catch( uniset::TimeOut )
 	{
 		//        cout << "(recv): catch TimeOut " << endl;
 	}
-	catch( const UniSetTypes::CommFailed& ex )
+	catch( const uniset::CommFailed& ex )
 	{
 		if( dlog->is_crit() )
 			dlog->crit() << "(recv): " << ex << endl;
@@ -391,7 +394,7 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
 		cleanupChannel();
 		return erTimeOut;
 	}
-	catch( const UniSetTypes::Exception& ex ) // SystemError
+	catch( const uniset::Exception& ex ) // SystemError
 	{
 		if( dlog->is_crit() )
 			dlog->crit() << "(recv): " << ex << endl;
@@ -1315,18 +1318,18 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 
 		return ex.err;
 	}
-	catch( UniSetTypes::TimeOut )
+	catch( uniset::TimeOut )
 	{
 		//        cout << "(recv): catch TimeOut " << endl;
 	}
-	catch( const UniSetTypes::CommFailed& ex )
+	catch( const uniset::CommFailed& ex )
 	{
 		if( dlog->is_crit() )
 			dlog->crit() << "(recv): " << ex << endl;
 
 		return erTimeOut;
 	}
-	catch( const UniSetTypes::Exception& ex ) // SystemError
+	catch( const uniset::Exception& ex ) // SystemError
 	{
 		if( dlog->is_crit() )
 			dlog->crit() << "(recv): " << ex << endl;
@@ -1367,7 +1370,7 @@ mbErrCode ModbusClient::send( ModbusMessage& msg )
 		msg.swapHead();
 		return ex.err;
 	}
-	catch( const UniSetTypes::Exception& ex ) // SystemError
+	catch( const uniset::Exception& ex ) // SystemError
 	{
 		if( dlog->is_crit() )
 			dlog->crit() << "(send): " << ex << endl;
@@ -1384,7 +1387,7 @@ mbErrCode ModbusClient::send( ModbusMessage& msg )
 }
 
 // -------------------------------------------------------------------------
-void ModbusClient::initLog( std::shared_ptr<UniSetTypes::Configuration> conf,
+void ModbusClient::initLog( std::shared_ptr<uniset::Configuration> conf,
 							const std::string& lname, const string& logfile )
 {
 	conf->initLogStream(dlog, lname);
@@ -1407,3 +1410,4 @@ void ModbusClient::printProcessingTime()
 	}
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

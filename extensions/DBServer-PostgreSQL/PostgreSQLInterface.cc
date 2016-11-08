@@ -20,7 +20,7 @@
 #include "PostgreSQLInterface.h"
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace pqxx;
 // --------------------------------------------------------------------------
 

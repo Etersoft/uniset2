@@ -19,10 +19,10 @@
 #include "MQTTPublisher.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
-MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
+MQTTPublisher::MQTTPublisher(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
 							 const string& prefix ):
 	mosquittopp(NULL),
 	UObject_SK(objId, cnode, string(prefix + "-")),
@@ -79,7 +79,7 @@ MQTTPublisher::MQTTPublisher(UniSetTypes::ObjectId objId, xmlNode* cnode, UniSet
 
 	for( ; sit.getCurrent(); sit++ )
 	{
-		if( !UniSetTypes::check_filter(sit, ff, fv) )
+		if( !uniset::check_filter(sit, ff, fv) )
 			continue;
 
 		std::string sname = sit.getProp("name");
@@ -224,7 +224,7 @@ void MQTTPublisher::on_subscribe( int mid, int qos_count, const int* granted_qos
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<MQTTPublisher> MQTTPublisher::init_mqttpublisher(int argc, const char* const* argv,
-		UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
+		uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
 		const std::string& prefix )
 {
 	auto conf = uniset_conf();
@@ -239,7 +239,7 @@ std::shared_ptr<MQTTPublisher> MQTTPublisher::init_mqttpublisher(int argc, const
 
 	ObjectId ID = conf->getObjectID(name);
 
-	if( ID == UniSetTypes::DefaultObjectId )
+	if( ID == uniset::DefaultObjectId )
 	{
 		dcrit << "(MQTTPublisher): Not found ID for '" << name
 			  << " in '" << conf->getObjectsSection() << "' section" << endl;
@@ -276,7 +276,7 @@ void MQTTPublisher::askSensors( UniversalIO::UIOCommand cmd )
 	}
 }
 // -----------------------------------------------------------------------------
-void MQTTPublisher::sensorInfo( const UniSetTypes::SensorMessage* sm )
+void MQTTPublisher::sensorInfo( const uniset::SensorMessage* sm )
 {
 	auto i = publist.find(sm->id);
 

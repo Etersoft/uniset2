@@ -18,9 +18,12 @@
 #include <iostream>
 #include "Extensions.h"
 #include "Element.h"
+// -----------------------------------------------------------------------------
+namespace uniset
+{
 // -------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetExtensions;
+using namespace uniset::extensions;
 // -------------------------------------------------------------------------
 TNOT::TNOT( ElementID id, bool out_default ):
 	Element(id),
@@ -42,3 +45,4 @@ void TNOT::setIn( size_t num, bool state )
 		Element::setChildOut();
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

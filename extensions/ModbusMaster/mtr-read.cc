@@ -23,7 +23,7 @@
 #include "modbus/ModbusHelpers.h"
 #include "MTR.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 static struct option longopts[] =

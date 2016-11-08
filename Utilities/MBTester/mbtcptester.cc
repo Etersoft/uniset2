@@ -6,7 +6,7 @@
 #include "Debug.h"
 #include "modbus/ModbusTCPMaster.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 static struct option longopts[] =
@@ -713,7 +713,7 @@ int main( int argc, char** argv )
 	{
 		cerr << "(mbtester): " << err << endl;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		cerr << "(mbtester): " << ex << endl;
 	}

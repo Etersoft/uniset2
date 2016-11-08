@@ -19,11 +19,11 @@
 #include "PassiveLProcessor.h"
 // -------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // -------------------------------------------------------------------------
-PassiveLProcessor::PassiveLProcessor( UniSetTypes::ObjectId objId,
-									  UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
+PassiveLProcessor::PassiveLProcessor( uniset::ObjectId objId,
+									  uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
 	UniSetObject(objId),
 	shm(nullptr)
 {
@@ -88,7 +88,7 @@ void PassiveLProcessor::step()
 	{
 		LProcessor::step();
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		dcrit << myname << "(step): (hb) " << ex << std::endl;
 	}
@@ -100,7 +100,7 @@ void PassiveLProcessor::step()
 			shm->localSetValue(itHeartBeat, sidHeartBeat, maxHeartBeat, getId());
 			ptHeartBeat.reset();
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			dcrit << myname << "(step): (hb) " << ex << std::endl;
 		}
@@ -120,14 +120,14 @@ void PassiveLProcessor::askSensors( UniversalIO::UIOCommand cmd )
 		for( auto& it : extInputs )
 			shm->askSensor(it.sid, cmd);
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		dcrit << myname << "(askSensors): " << ex << endl;
 		throw SystemError(myname + "(askSensors): do not ask sensors" );
 	}
 }
 // -------------------------------------------------------------------------
-void PassiveLProcessor::sensorInfo( const UniSetTypes::SensorMessage* sm )
+void PassiveLProcessor::sensorInfo( const uniset::SensorMessage* sm )
 {
 	for( auto& it : extInputs )
 	{
@@ -136,13 +136,13 @@ void PassiveLProcessor::sensorInfo( const UniSetTypes::SensorMessage* sm )
 	}
 }
 // -------------------------------------------------------------------------
-void PassiveLProcessor::timerInfo( const UniSetTypes::TimerMessage* tm )
+void PassiveLProcessor::timerInfo( const uniset::TimerMessage* tm )
 {
 	if( tm->id == tidStep )
 		step();
 }
 // -------------------------------------------------------------------------
-void PassiveLProcessor::sysCommand( const UniSetTypes::SystemMessage* sm )
+void PassiveLProcessor::sysCommand( const uniset::SystemMessage* sm )
 {
 	switch( sm->command )
 	{
@@ -236,7 +236,7 @@ void PassiveLProcessor::setOuts()
 		{
 			shm->setValue( it.sid, it.el->getOut() );
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			dcrit << myname << "(setOuts): " << ex << endl;
 		}
@@ -255,7 +255,7 @@ void PassiveLProcessor::sigterm( int signo )
 		{
 			shm->setValue(it.sid, 0);
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			dcrit << myname << "(sigterm): " << ex << endl;
 		}
@@ -279,7 +279,7 @@ void PassiveLProcessor::help_print( int argc, const char* const* argv )
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<PassiveLProcessor> PassiveLProcessor::init_plproc(int argc, const char* const* argv,
-		UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic,
+		uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic,
 		const std::string& prefix )
 {
 	auto conf = uniset_conf();
@@ -293,7 +293,7 @@ std::shared_ptr<PassiveLProcessor> PassiveLProcessor::init_plproc(int argc, cons
 
 	ObjectId ID = conf->getObjectID(name);
 
-	if( ID == UniSetTypes::DefaultObjectId )
+	if( ID == uniset::DefaultObjectId )
 	{
 		cerr << "(plproc): идентификатор '" << name
 			 << "' не найден в конф. файле!"

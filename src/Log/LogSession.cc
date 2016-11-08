@@ -31,8 +31,10 @@
 #include "LogServerTypes.h"
 #include "LogAgregator.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 LogSession::~LogSession()
 {
@@ -702,3 +704,4 @@ string LogSession::name() const noexcept
 	return caddr;
 }
 // ---------------------------------------------------------------------
+} // end of namespace uniset

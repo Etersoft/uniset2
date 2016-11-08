@@ -23,8 +23,8 @@
 #include "UNetLogSugar.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 CommonEventLoop UNetReceiver::loop;
 // -----------------------------------------------------------------------------
@@ -49,9 +49,9 @@ UNetReceiver::UNetReceiver(const std::string& s_host, int _port, const std::shar
 	prepareTime(2000),
 	lostTimeout(200), /* 2*updatepause */
 	lostPackets(0),
-	sidRespond(UniSetTypes::DefaultObjectId),
+	sidRespond(uniset::DefaultObjectId),
 	respondInvert(false),
-	sidLostPackets(UniSetTypes::DefaultObjectId),
+	sidLostPackets(uniset::DefaultObjectId),
 	activated(false),
 	pnum(0),
 	maxDifferens(20),
@@ -139,14 +139,14 @@ void UNetReceiver::setMaxDifferens( unsigned long set ) noexcept
 	maxDifferens = set;
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setRespondID( UniSetTypes::ObjectId id, bool invert ) noexcept
+void UNetReceiver::setRespondID( uniset::ObjectId id, bool invert ) noexcept
 {
 	sidRespond = id;
 	respondInvert = invert;
 	shm->initIterator(itRespond);
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setLostPacketsID( UniSetTypes::ObjectId id ) noexcept
+void UNetReceiver::setLostPacketsID( uniset::ObjectId id ) noexcept
 {
 	sidLostPackets = id;
 	shm->initIterator(itLostPackets);
@@ -420,7 +420,7 @@ void UNetReceiver::update() noexcept
 
 				shm->localSetValue(ii.ioit, id, val, shm->ID());
 			}
-			catch( const UniSetTypes::Exception& ex)
+			catch( const uniset::Exception& ex)
 			{
 				unetcrit << myname << "(update): " << ex << std::endl;
 			}
@@ -454,7 +454,7 @@ void UNetReceiver::update() noexcept
 
 				shm->localSetValue(ii.ioit, d.id, d.val, shm->ID());
 			}
-			catch( const UniSetTypes::Exception& ex)
+			catch( const uniset::Exception& ex)
 			{
 				unetcrit << myname << "(update): " << ex << std::endl;
 			}
@@ -535,7 +535,7 @@ void UNetReceiver::readEvent( ev::io& watcher ) noexcept
 			ptRecvTimeout.reset();
 		}
 	}
-	catch( UniSetTypes::Exception& ex)
+	catch( uniset::Exception& ex)
 	{
 		unetwarn << myname << "(receive): " << ex << std::endl;
 	}

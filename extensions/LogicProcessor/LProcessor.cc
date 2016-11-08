@@ -22,8 +22,8 @@
 #include "LProcessor.h"
 // -------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // -------------------------------------------------------------------------
 LProcessor::LProcessor( const std::string& name ):
 	logname(name)
@@ -74,7 +74,7 @@ void LProcessor::execute( const std::string& lfile )
 		{
 			dcrit << logname << "(execute): " << ex << endl;
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			dcrit << logname << "(execute): " << ex << endl;
 		}
@@ -104,7 +104,7 @@ void LProcessor::build( const string& lfile )
 	// считая, что в поле name записано название датчика
 	for( auto it = sch->extBegin(); it != sch->extEnd(); ++it )
 	{
-		UniSetTypes::ObjectId sid = conf->getSensorID(it->name);
+		uniset::ObjectId sid = conf->getSensorID(it->name);
 
 		if( sid == DefaultObjectId )
 		{
@@ -130,7 +130,7 @@ void LProcessor::build( const string& lfile )
 
 	for( auto it = sch->outBegin(); it != sch->outEnd(); ++it )
 	{
-		UniSetTypes::ObjectId sid = conf->getSensorID(it->name);
+		uniset::ObjectId sid = conf->getSensorID(it->name);
 
 		if( sid == DefaultObjectId )
 		{
@@ -192,7 +192,7 @@ void LProcessor::setOuts()
 		{
 			ui.setValue(it.sid, it.el->getOut(), DefaultObjectId);
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			dcrit << "(LProcessor::setOuts): " << ex << endl;
 		}

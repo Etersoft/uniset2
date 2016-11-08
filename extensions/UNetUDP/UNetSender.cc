@@ -21,10 +21,12 @@
 #include "Extensions.h"
 #include "UNetSender.h"
 #include "UNetLogSugar.h"
+// -------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 UNetSender::UNetSender(const std::string& _host, const int _port, const std::shared_ptr<SMInterface>& smi,
 					   bool nocheckConnection, const std::string& s_f, const std::string& s_val,
@@ -154,7 +156,7 @@ void UNetSender::updateFromSM()
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetSender::updateSensor( UniSetTypes::ObjectId id, long value )
+void UNetSender::updateSensor( uniset::ObjectId id, long value )
 {
 	if( !shm->isLocalwork() )
 		return;
@@ -170,7 +172,7 @@ void UNetSender::updateItem( UItem& it, long value )
 	auto& pk = mypacks[it.pack_sendfactor];
 
 	auto& mypack(pk[it.pack_num]);
-	UniSetTypes::uniset_rwmutex_wrlock l(mypack.mut);
+	uniset::uniset_rwmutex_wrlock l(mypack.mut);
 
 	if( it.iotype == UniversalIO::DI || it.iotype == UniversalIO::DO )
 		mypack.msg.setDData(it.pack_ind, value);
@@ -243,7 +245,7 @@ void UNetSender::send() noexcept
 		{
 			unetwarn << myname << "(send): " << e.displayText() << endl;
 		}
-		catch( UniSetTypes::Exception& ex)
+		catch( uniset::Exception& ex)
 		{
 			unetwarn << myname << "(send): " << ex << std::endl;
 		}
@@ -271,7 +273,7 @@ void UNetSender::real_send( PackMessage& mypack ) noexcept
 {
 	try
 	{
-		UniSetTypes::uniset_rwmutex_rlock l(mypack.mut);
+		uniset::uniset_rwmutex_rlock l(mypack.mut);
 #ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
 		mypack.msg.num = packetnum++;
 #else
@@ -357,7 +359,7 @@ void UNetSender::readConfiguration()
 // ------------------------------------------------------------------------------------------
 bool UNetSender::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec )
 {
-	if( UniSetTypes::check_filter(it, s_field, s_fvalue) )
+	if( uniset::check_filter(it, s_field, s_fvalue) )
 		initItem(it);
 
 	return true;
@@ -373,7 +375,7 @@ bool UNetSender::initItem( UniXML::iterator& it )
 
 	if( !tid.empty() )
 	{
-		sid = UniSetTypes::uni_atoi(tid);
+		sid = uniset::uni_atoi(tid);
 
 		if( sid <= 0 )
 			sid = DefaultObjectId;
@@ -393,7 +395,7 @@ bool UNetSender::initItem( UniXML::iterator& it )
 	auto& pk = mypacks[priority];
 
 	UItem p;
-	p.iotype = UniSetTypes::getIOType(it.getProp("iotype"));
+	p.iotype = uniset::getIOType(it.getProp("iotype"));
 	p.pack_sendfactor = priority;
 
 	if( p.iotype == UniversalIO::UnknownIOType )
@@ -553,3 +555,4 @@ const std::string UNetSender::getShortInfo() const
 	return std::move(s.str());
 }
 // -----------------------------------------------------------------------------
+} // end of namespace uniset

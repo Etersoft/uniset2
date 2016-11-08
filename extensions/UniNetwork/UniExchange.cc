@@ -20,8 +20,8 @@
 #include "UniExchange.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // --------------------------------------------------------------------------
 UniExchange::NetNodeInfo::NetNodeInfo():
 	oref(CORBA::Object::_nil()),
@@ -33,7 +33,7 @@ UniExchange::NetNodeInfo::NetNodeInfo():
 
 }
 // --------------------------------------------------------------------------
-UniExchange::UniExchange(UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID,
+UniExchange::UniExchange(uniset::ObjectId id, uniset::ObjectId shmID,
 						 const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
 	IOController(id),
 	polltime(200),
@@ -46,7 +46,7 @@ UniExchange::UniExchange(UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID,
 	cnode = conf->getNode(myname);
 
 	if( cnode == NULL )
-		throw UniSetTypes::SystemError("(UniExchange): Not found conf-node for " + myname );
+		throw uniset::SystemError("(UniExchange): Not found conf-node for " + myname );
 
 	shm = make_shared<SMInterface>(shmID, ui, id, ic);
 
@@ -88,7 +88,7 @@ UniExchange::UniExchange(UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID,
 	{
 		for( ; it.getCurrent(); it.goNext() )
 		{
-			UniSetTypes::ObjectId id;
+			uniset::ObjectId id;
 
 			string n(it.getProp("id"));
 
@@ -103,7 +103,7 @@ UniExchange::UniExchange(UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID,
 			if( id == DefaultObjectId )
 				throw SystemError("(UniExchange): Uknown ID for " + n );
 
-			UniSetTypes::ObjectId node;
+			uniset::ObjectId node;
 
 			string n1(it.getProp("node_id"));
 
@@ -184,7 +184,7 @@ void UniExchange::execute()
 				dinfo << myname << " update sensors from id=" << it.id << " node=" << it.node << endl;
 				it.update(sseq, shm);
 			}
-			catch( const UniSetTypes::Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				dwarn << myname << "(execute): " << ex << endl;
 			}
@@ -258,7 +258,7 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, con
 			*/
 			shm->localSetValue( s->ioit, m->id, m->value, shm->ID() );
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			dwarn  << "(update): " << ex << endl;
 		}
@@ -303,7 +303,7 @@ void UniExchange::updateLocalData()
 			uniset_rwmutex_wrlock lock(it.val_lock);
 			it.val = shm->localGetValue( it.ioit, it.id );
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			dwarn  << "(update): " << ex << endl;
 		}
@@ -356,17 +356,17 @@ void UniExchange::sigterm( int signo )
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<UniExchange> UniExchange::init_exchange(int argc, const char* const* argv,
-		UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
+		uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
 		const std::string& prefix )
 {
 	auto conf = uniset_conf();
 
 	string p("--" + prefix + "-name");
-	string nm(UniSetTypes::getArgParam(p, argc, argv, "UniExchange"));
+	string nm(uniset::getArgParam(p, argc, argv, "UniExchange"));
 
-	UniSetTypes::ObjectId ID = conf->getControllerID(nm);
+	uniset::ObjectId ID = conf->getControllerID(nm);
 
-	if( ID == UniSetTypes::DefaultObjectId )
+	if( ID == uniset::DefaultObjectId )
 	{
 		cerr << "(uniexchange): Not found ID  for " << nm
 			 << " in section " << conf->getControllersSection() << endl;
@@ -398,7 +398,7 @@ void UniExchange::readConfiguration()
 
 	for( ; it.getCurrent(); it.goNext() )
 	{
-		if( UniSetTypes::check_filter(it, s_field, s_fvalue) )
+		if( uniset::check_filter(it, s_field, s_fvalue) )
 			initItem(it);
 	}
 
@@ -407,7 +407,7 @@ void UniExchange::readConfiguration()
 // ------------------------------------------------------------------------------------------
 bool UniExchange::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec )
 {
-	if( UniSetTypes::check_filter(it, s_field, s_fvalue) )
+	if( uniset::check_filter(it, s_field, s_fvalue) )
 		initItem(it);
 
 	return true;
@@ -437,7 +437,7 @@ bool UniExchange::initItem( UniXML::iterator& it )
 		return false;
 	}
 
-	i.type = UniSetTypes::getIOType(it.getProp("iotype"));
+	i.type = uniset::getIOType(it.getProp("iotype"));
 
 	if( i.type == UniversalIO::UnknownIOType )
 	{

@@ -6,8 +6,8 @@
 #include "Extensions.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 int main( int argc, const char** argv )
 {
@@ -71,7 +71,7 @@ int main( int argc, const char** argv )
 		act->run(false);
 		return 0;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		dcrit << "(smdbserver): " << ex << std::endl;
 	}

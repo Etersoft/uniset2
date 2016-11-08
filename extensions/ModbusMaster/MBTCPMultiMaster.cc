@@ -24,16 +24,16 @@
 #include "modbus/MBLogSugar.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
-MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
+MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shmId,
 									const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
 	MBExchange(objId, shmId, ic, prefix),
 	force_disconnect(true)
 {
 	if( objId == DefaultObjectId )
-		throw UniSetTypes::SystemError("(MBTCPMultiMaster): objId=-1?!! Use --" + prefix + "-name" );
+		throw uniset::SystemError("(MBTCPMultiMaster): objId=-1?!! Use --" + prefix + "-name" );
 
 	auto conf = uniset_conf();
 
@@ -59,7 +59,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		ostringstream err;
 		err << myname << "(init): not found <GateList>";
 		mbcrit << err.str() << endl;
-		throw UniSetTypes::SystemError(err.str());
+		throw uniset::SystemError(err.str());
 	}
 
 	if( !it1.goChildren() )
@@ -67,7 +67,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		ostringstream err;
 		err << myname << "(init): empty <GateList> ?!";
 		mbcrit << err.str() << endl;
-		throw UniSetTypes::SystemError(err.str());
+		throw uniset::SystemError(err.str());
 	}
 
 	for( ; it1.getCurrent(); it1++ )
@@ -87,7 +87,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 			ostringstream err;
 			err << myname << "(init): ip='' in <GateList>";
 			mbcrit << err.str() << endl;
-			throw UniSetTypes::SystemError(err.str());
+			throw uniset::SystemError(err.str());
 		}
 
 		sinf->port = it1.getIntProp("port");
@@ -97,7 +97,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 			ostringstream err;
 			err << myname << "(init): ERROR: port=''" << sinf->port << " for ip='" << sinf->ip << "' in <GateList>";
 			mbcrit << err.str() << endl;
-			throw UniSetTypes::SystemError(err.str());
+			throw uniset::SystemError(err.str());
 		}
 
 		if( !it1.getProp("respondSensor").empty() )
@@ -109,7 +109,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 				ostringstream err;
 				err << myname << "(init): ERROR: Unknown SensorID for '" << it1.getProp("respondSensor") << "' in <GateList>";
 				mbcrit << err.str() << endl;
-				throw UniSetTypes::SystemError(err.str());
+				throw uniset::SystemError(err.str());
 			}
 		}
 
@@ -170,7 +170,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		ostringstream err;
 		err << myname << "(init): empty <GateList>!";
 		mbcrit << err.str() << endl;
-		throw UniSetTypes::SystemError(err.str());
+		throw uniset::SystemError(err.str());
 	}
 
 	mblist.sort();
@@ -430,7 +430,7 @@ bool MBTCPMultiMaster::MBSlaveInfo::init( std::shared_ptr<DebugStream>& mblog )
 	return initOK;
 }
 // -----------------------------------------------------------------------------
-void MBTCPMultiMaster::sysCommand( const UniSetTypes::SystemMessage* sm )
+void MBTCPMultiMaster::sysCommand( const uniset::SystemMessage* sm )
 {
 	MBExchange::sysCommand(sm);
 
@@ -450,7 +450,7 @@ void MBTCPMultiMaster::poll_thread()
 	// ждём начала работы..(см. MBExchange::activateObject)
 	while( !checkProcActive() )
 	{
-		UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
+		uniset::uniset_rwmutex_rlock l(mutex_start);
 	}
 
 	// работаем..
@@ -520,7 +520,7 @@ void MBTCPMultiMaster::check_thread()
 						it->respond_init = true;
 					}
 				}
-				catch( const UniSetTypes::Exception& ex )
+				catch( const uniset::Exception& ex )
 				{
 					mbcrit << myname << "(check): (respond) " << it->myname << " : " << ex << std::endl;
 				}
@@ -717,7 +717,7 @@ void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<MBTCPMultiMaster> MBTCPMultiMaster::init_mbmaster( int argc, const char* const* argv,
-		UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
+		uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
 		const std::string& prefix )
 {
 	auto conf = uniset_conf();
@@ -732,7 +732,7 @@ std::shared_ptr<MBTCPMultiMaster> MBTCPMultiMaster::init_mbmaster( int argc, con
 
 	ObjectId ID = conf->getObjectID(name);
 
-	if( ID == UniSetTypes::DefaultObjectId )
+	if( ID == uniset::DefaultObjectId )
 	{
 		dcrit << "(MBTCPMultiMaster): идентификатор '" << name
 			  << "' не найден в конф. файле!"
@@ -761,9 +761,9 @@ const std::string MBTCPMultiMaster::MBSlaveInfo::getShortInfo() const
 	return std::move(s.str());
 }
 // -----------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* MBTCPMultiMaster::getInfo( CORBA::Long userparam )
+uniset::SimpleInfo* MBTCPMultiMaster::getInfo( CORBA::Long userparam )
 {
-	UniSetTypes::SimpleInfo_var i = MBExchange::getInfo(userparam);
+	uniset::SimpleInfo_var i = MBExchange::getInfo(userparam);
 
 	ostringstream inf;
 

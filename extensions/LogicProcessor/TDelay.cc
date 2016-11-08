@@ -17,9 +17,12 @@
 #include <iostream>
 #include "Extensions.h"
 #include "TDelay.h"
+// -----------------------------------------------------------------------------
+namespace uniset
+{
 // -------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetExtensions;
+using namespace uniset::extensions;
 // -------------------------------------------------------------------------
 TDelay::TDelay(Element::ElementID id, timeout_t delayMS, size_t inCount):
 	Element(id),
@@ -99,3 +102,4 @@ void TDelay::setDelay( timeout_t timeMS )
 	delay = timeMS;
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

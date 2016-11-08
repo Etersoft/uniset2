@@ -26,6 +26,8 @@
 #include <string>
 #include "Exceptions.h"
 // -----------------------------------------------------------------------------------------
+namespace uniset
+{
 /*!
  * \namespace ORepHelpers
  * В этом пространстве имен заключены вспомогательные функции используемые функциями ObjectRepository
@@ -39,11 +41,11 @@ namespace ORepHelpers
 	//! Получение контекста по заданному имени
 	CosNaming::NamingContext_ptr getContext(const std::string& cname, int argc,
 											const char* const* argv, const std::string& nsName)
-	throw(UniSetTypes::ORepFailed);
+	throw(uniset::ORepFailed);
 
 	CosNaming::NamingContext_ptr getContext(const CORBA::ORB_ptr orb, const std::string& cname,
 											const std::string& nsName)
-	throw(UniSetTypes::ORepFailed);
+	throw(uniset::ORepFailed);
 
 	//! Функция отделяющая имя секции от полного имени
 	const std::string getSectionName(const std::string& fullName, const std::string& brk = "/");
@@ -59,6 +61,8 @@ namespace ORepHelpers
 	std::string BadSymbolsToStr();
 
 }
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // -----------------------------------------------------------------------------------------
 #endif
 // -----------------------------------------------------------------------------------------

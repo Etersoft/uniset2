@@ -29,6 +29,9 @@
 #include "ThreadCreator.h"
 #include "UDPCore.h"
 #include "UDPPacket.h"
+// --------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 /*
  *    Распределение датчиков по пакетам
@@ -77,13 +80,13 @@ class UNetSender
 		{
 			UItem():
 				iotype(UniversalIO::UnknownIOType),
-				id(UniSetTypes::DefaultObjectId),
+				id(uniset::DefaultObjectId),
 				pack_num(0),
 				pack_ind(0),
 				pack_sendfactor(0) {}
 
 			UniversalIO::IOType iotype;
-			UniSetTypes::ObjectId id;
+			uniset::ObjectId id;
 			IOController::IOStateList::iterator ioit;
 			size_t pack_num;
 			size_t pack_ind;
@@ -91,7 +94,7 @@ class UNetSender
 			friend std::ostream& operator<<( std::ostream& os, UItem& p );
 		};
 
-		typedef std::unordered_map<UniSetTypes::ObjectId, UItem> UItemMap;
+		typedef std::unordered_map<uniset::ObjectId, UItem> UItemMap;
 
 		size_t getDataPackCount() const;
 
@@ -108,7 +111,7 @@ class UNetSender
 			PackMessage() noexcept {}
 
 			UniSetUDP::UDPMessage msg;
-			UniSetTypes::uniset_rwmutex mut;
+			uniset::uniset_rwmutex mut;
 		};
 
 		void real_send( PackMessage& mypack ) noexcept;
@@ -117,7 +120,7 @@ class UNetSender
 		void updateFromSM();
 
 		/*! Обновить значение по ID датчика */
-		void updateSensor( UniSetTypes::ObjectId id, long value );
+		void updateSensor( uniset::ObjectId id, long value );
 
 		/*! Обновить значение по итератору */
 		void updateItem( UItem& it, long value );
@@ -216,6 +219,8 @@ class UNetSender
 		size_t ncycle = { 0 }; /*!< номер цикла посылки */
 
 };
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // UNetSender_H_
 // -----------------------------------------------------------------------------

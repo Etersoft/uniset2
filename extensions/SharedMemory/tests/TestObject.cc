@@ -2,9 +2,9 @@
 #include "TestObject.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
-TestObject::TestObject( UniSetTypes::ObjectId objId, xmlNode* cnode ):
+TestObject::TestObject( uniset::ObjectId objId, xmlNode* cnode ):
 	TestObject_SK(objId, cnode)
 {
 	vmonit(evntIsOK);
@@ -29,7 +29,7 @@ void TestObject::askNotifyFirstNotNull()
 	preAskSensors(UniversalIO::UIONotifyFirstNotNull);
 }
 // -----------------------------------------------------------------------------
-void TestObject::sysCommand( const UniSetTypes::SystemMessage* sm )
+void TestObject::sysCommand( const uniset::SystemMessage* sm )
 {
 	// фиксируем что SM прислала WDT при своём запуске
 	if( sm->command == SystemMessage::WatchDog )

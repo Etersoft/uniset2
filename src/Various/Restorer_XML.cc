@@ -27,7 +27,7 @@
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniversalIO;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 Restorer_XML::Restorer_XML():
 	i_filterField(""),
@@ -85,7 +85,7 @@ bool Restorer_XML::getConsumerInfo( UniXML::iterator& it,
 
 	cid = uniset_conf()->oind->getIdByName(cname);
 
-	if( cid == UniSetTypes::DefaultObjectId )
+	if( cid == uniset::DefaultObjectId )
 	{
 		ucrit << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР заказчика -->"
 			  << cname << endl;
@@ -99,7 +99,7 @@ bool Restorer_XML::getConsumerInfo( UniXML::iterator& it,
 	else
 		cnode = uniset_conf()->getLocalNode();
 
-	if( cnode == UniSetTypes::DefaultObjectId )
+	if( cnode == uniset::DefaultObjectId )
 	{
 		ucrit << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла -->"
 			  << cnodename << endl;
@@ -112,12 +112,12 @@ bool Restorer_XML::getConsumerInfo( UniXML::iterator& it,
 // -----------------------------------------------------------------------------
 bool Restorer_XML::check_list_item( UniXML::iterator& it )
 {
-	return UniSetTypes::check_filter(it, i_filterField, i_filterValue);
+	return uniset::check_filter(it, i_filterField, i_filterValue);
 }
 // -----------------------------------------------------------------------------
 bool Restorer_XML::check_consumer_item( UniXML::iterator& it )
 {
-	return UniSetTypes::check_filter(it, c_filterField, c_filterValue);
+	return uniset::check_filter(it, c_filterField, c_filterValue);
 }
 // -----------------------------------------------------------------------------
 xmlNode* Restorer_XML::find_node( const std::shared_ptr<UniXML>& xml, xmlNode* root,

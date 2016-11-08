@@ -5,6 +5,9 @@
 #include <iostream>
 #include "Exceptions.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 namespace ModbusRTU
 {
 	/*! Ошибки обмена
@@ -35,13 +38,13 @@ namespace ModbusRTU
 	std::string mbErr2Str( mbErrCode e );
 	// ---------------------------------------------------------------------
 	class mbException:
-		public UniSetTypes::Exception
+		public uniset::Exception
 	{
 		public:
 			mbException():
-				UniSetTypes::Exception("mbException"), err(ModbusRTU::erNoError) {}
+				uniset::Exception("mbException"), err(ModbusRTU::erNoError) {}
 			mbException( ModbusRTU::mbErrCode err ):
-				UniSetTypes::Exception(mbErr2Str(err)), err(err) {}
+				uniset::Exception(mbErr2Str(err)), err(err) {}
 
 
 			ModbusRTU::mbErrCode err;
@@ -52,7 +55,9 @@ namespace ModbusRTU
 			}
 	};
 	// ---------------------------------------------------------------------
-}
+} // end of namespace ModbusRTU
+// -------------------------------------------------------------------------
+} // end of namespace uniset
 // -------------------------------------------------------------------------
 #endif // ModbusRTUErrors_H_
 // -------------------------------------------------------------------------

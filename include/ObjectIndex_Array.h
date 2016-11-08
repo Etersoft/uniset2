@@ -28,7 +28,7 @@
 #include "Exceptions.h"
 #include "ObjectIndex.h"
 // --------------------------------------------------------------------------
-namespace UniSetTypes
+namespace uniset
 {
 	/*!
 	    \todo Проверить функции этого класса на повторную входимость

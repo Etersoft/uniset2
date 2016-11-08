@@ -46,7 +46,7 @@ inline void msleep( unsigned int m )
 }
 
 /*! Определения базовых типов библиотеки UniSet (вспомогательные типы данных, константы, полезные функции) */
-namespace UniSetTypes
+namespace uniset
 {
 	class Configuration;
 	// ---------------------------------------------------------------
@@ -68,7 +68,7 @@ namespace UniSetTypes
 	     но нареканий по использованию тоже не было :)
 	*  \todo Желательно продумать что-нибудь с использованием хэш.
 	*/
-	inline static KeyType key( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node )
+	inline static KeyType key( const uniset::ObjectId id, const uniset::ObjectId node )
 	{
 		return KeyType((id * node) + (id + 2 * node));
 	}
@@ -204,12 +204,12 @@ namespace UniSetTypes
 	/*! Функция разбора строки вида: id1@node1=val1,id2@node2=val2,...
 	   Если '=' не указано, возвращается val=0
 	   Если @node не указано, возвращается node=DefaultObjectId */
-	std::list<ParamSInfo> getSInfoList( const std::string& s, std::shared_ptr<UniSetTypes::Configuration> conf = nullptr );
+	std::list<ParamSInfo> getSInfoList( const std::string& s, std::shared_ptr<uniset::Configuration> conf = nullptr );
 
 
 	/*! Функция разбора строки вида: id1@node1,id2@node2,...
 	  Если @node не указано, возвращается node=DefaultObjectId */
-	std::list<UniSetTypes::ConsumerInfo> getObjectsList( const std::string& s, std::shared_ptr<UniSetTypes::Configuration> conf = nullptr );
+	std::list<uniset::ConsumerInfo> getObjectsList( const std::string& s, std::shared_ptr<uniset::Configuration> conf = nullptr );
 
 	/*! проверка является текст в строке - числом..*/
 	bool is_digit( const std::string& s ) noexcept;

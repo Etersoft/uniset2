@@ -6,6 +6,9 @@
 #include "ModbusTypes.h"
 #include "ModbusServer.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 /*! */
 class ModbusServerSlot
 {
@@ -129,6 +132,8 @@ class ModbusServerSlot
 		RemoteServiceSlot slRemoteService;
 		FileTransferSlot slFileTransfer;
 };
+// -------------------------------------------------------------------------
+} // end of namespace uniset
 // -------------------------------------------------------------------------
 #endif // ModbusServerSlot_H_
 // -------------------------------------------------------------------------

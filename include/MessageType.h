@@ -28,7 +28,7 @@
 #include "UniSetTypes.h"
 #include "IOController_i.hh"
 // --------------------------------------------------------------------------
-namespace UniSetTypes
+namespace uniset
 {
 	class Message
 	{
@@ -53,9 +53,9 @@ namespace UniSetTypes
 			};
 
 			Priority priority = { Medium };
-			ObjectId node = { UniSetTypes::DefaultObjectId };      // откуда
-			ObjectId supplier = { UniSetTypes::DefaultObjectId };  // от кого
-			ObjectId consumer = { UniSetTypes::DefaultObjectId };  // кому
+			ObjectId node = { uniset::DefaultObjectId };      // откуда
+			ObjectId supplier = { uniset::DefaultObjectId };  // от кого
+			ObjectId consumer = { uniset::DefaultObjectId };  // кому
 			struct timespec tm = { 0, 0 };
 
 			Message( Message&& ) noexcept = default;
@@ -73,7 +73,7 @@ namespace UniSetTypes
 			static const TransportMessage transport(const In& msg) noexcept
 			{
 				TransportMessage tmsg;
-				assert(sizeof(UniSetTypes::RawDataOfTransportMessage) >= sizeof(msg));
+				assert(sizeof(uniset::RawDataOfTransportMessage) >= sizeof(msg));
 				std::memcpy(&tmsg.data, &msg, sizeof(msg));
 				tmsg.consumer = msg.consumer;
 				return std::move(tmsg);
@@ -114,7 +114,7 @@ namespace UniSetTypes
 				return transport(*this);
 			}
 
-			UniSetTypes::ByteOfMessage data[sizeof(UniSetTypes::RawDataOfTransportMessage) - sizeof(Message)];
+			uniset::ByteOfMessage data[sizeof(uniset::RawDataOfTransportMessage) - sizeof(Message)];
 	};
 
 	// ------------------------------------------------------------------------
@@ -123,7 +123,7 @@ namespace UniSetTypes
 	{
 		public:
 
-			ObjectId id = { UniSetTypes::DefaultObjectId };
+			ObjectId id = { uniset::DefaultObjectId };
 			long value = { 0 };
 			bool undefined = { false };
 
@@ -135,7 +135,7 @@ namespace UniSetTypes
 
 			// для пороговых датчиков
 			bool threshold = { false };  /*!< TRUE - сработал порог, FALSE - порог отключился */
-			UniSetTypes::ThresholdId tid = { UniSetTypes::DefaultThresholdId };
+			uniset::ThresholdId tid = { uniset::DefaultThresholdId };
 
 			SensorMessage( SensorMessage&& m) noexcept = default;
 			SensorMessage& operator=(SensorMessage&& m) noexcept = default;
@@ -146,7 +146,7 @@ namespace UniSetTypes
 			SensorMessage(ObjectId id, long value, const IOController_i::CalibrateInfo& ci = IOController_i::CalibrateInfo(),
 						  Priority priority = Message::Medium,
 						  UniversalIO::IOType st = UniversalIO::AI,
-						  ObjectId consumer = UniSetTypes::DefaultObjectId) noexcept;
+						  ObjectId consumer = uniset::DefaultObjectId) noexcept;
 
 			// специальный конструктор, для оптимизации
 			// он не инициализирует поля по умолчанию
@@ -190,7 +190,7 @@ namespace UniSetTypes
 
 			SystemMessage() noexcept;
 			SystemMessage(Command command, Priority priority = Message::High,
-						  ObjectId consumer = UniSetTypes::DefaultObjectId) noexcept;
+						  ObjectId consumer = uniset::DefaultObjectId) noexcept;
 			SystemMessage(const VoidMessage* msg) noexcept;
 
 			inline TransportMessage transport_msg() const noexcept
@@ -215,15 +215,15 @@ namespace UniSetTypes
 			TimerMessage& operator=( const TimerMessage& ) noexcept = default;
 
 			TimerMessage();
-			TimerMessage(UniSetTypes::TimerId id, Priority prior = Message::High,
-						 ObjectId cons = UniSetTypes::DefaultObjectId);
+			TimerMessage(uniset::TimerId id, Priority prior = Message::High,
+						 ObjectId cons = uniset::DefaultObjectId);
 			TimerMessage(const VoidMessage* msg) noexcept ;
 			inline TransportMessage transport_msg() const noexcept
 			{
 				return transport(*this);
 			}
 
-			UniSetTypes::TimerId id; /*!< id сработавшего таймера */
+			uniset::TimerId id; /*!< id сработавшего таймера */
 	};
 
 	// ------------------------------------------------------------------------

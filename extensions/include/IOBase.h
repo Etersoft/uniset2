@@ -26,6 +26,9 @@
 #include "Calibration.h"
 #include "IOController.h"
 #include "SMInterface.h"
+// -------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 static const int DefaultSubdev  = -1;
 static const int DefaultChannel = -1;
@@ -65,24 +68,24 @@ struct IOBase
 		debounce_state(false),
 		ondelay_state(false),
 		offdelay_state(false),
-		d_id(UniSetTypes::DefaultObjectId),
+		d_id(uniset::DefaultObjectId),
 		d_value(1),
 		d_off_value(0),
 		d_iotype(UniversalIO::UnknownIOType),
-		t_ai(UniSetTypes::DefaultObjectId),
+		t_ai(uniset::DefaultObjectId),
 		front(false),
 		front_type(ftUnknown),
 		front_prev_state(false),
 		front_state(false),
 		rawdata(false)
 	{
-		si.id = UniSetTypes::DefaultObjectId;
-		si.node = UniSetTypes::DefaultObjectId;
+		si.id = uniset::DefaultObjectId;
+		si.node = uniset::DefaultObjectId;
 		cal.minRaw = cal.maxRaw = cal.minCal = cal.maxCal = cal.precision = 0;
 		ti.invert = false;
 		ti.hilimit = 0;
 		ti.lowlimit = 0;
-		ti.id = UniSetTypes::DefaultObjectId;
+		ti.id = uniset::DefaultObjectId;
 		ti.state = IONotifyController_i::NormalThreshold;
 		ti.tv_sec = 0;
 		ti.tv_nsec = 0;
@@ -133,14 +136,14 @@ struct IOBase
 	bool offdelay_state;    /*!< значение для задержки отключения */
 
 	// Зависимость (d - depend)
-	UniSetTypes::ObjectId d_id;  /*!< идентификатор датчика, от которого зависит данный */
+	uniset::ObjectId d_id;  /*!< идентификатор датчика, от которого зависит данный */
 	IOController::IOStateList::iterator d_it; /*! итератор на датчик от которого зависит данный */
 	long d_value; /*!< разрешающее работу значение датчика от которого зависит данный */
 	long d_off_value; /*!< блокирующее значение */
 	UniversalIO::IOType d_iotype;
 
 	// Порог
-	UniSetTypes::ObjectId t_ai; /*!< если данный датчик дискретный,
+	uniset::ObjectId t_ai; /*!< если данный датчик дискретный,
                                         и является пороговым, то в данном поле
                                         хранится идентификатор аналогового датчика
                                         с которым он связан */
@@ -165,7 +168,7 @@ struct IOBase
 	bool rawdata; // флаг для сохранения данный в таком виде в каком они пришли (4байта просто копируются в long). Актуально для Vtypes::F4.
 
 	IOController::IOStateList::iterator ioit;
-	UniSetTypes::uniset_rwmutex val_lock;     /*!< блокировка на время "работы" со значением */
+	uniset::uniset_rwmutex val_lock;     /*!< блокировка на время "работы" со значением */
 
 	IOBase make_iobase_copy();
 	void create_from_iobase( const IOBase& b );
@@ -196,7 +199,8 @@ struct IOBase
 	static int initIntProp( UniXML::iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const int defval = 0 );
 	static timeout_t initTimeoutProp( UniXML::iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const timeout_t defval);
 };
-
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // IOBase_H_
 // -----------------------------------------------------------------------------

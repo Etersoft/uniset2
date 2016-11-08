@@ -3,6 +3,7 @@
 #include <limits>
 #include "modbus/ModbusTypes.h"
 using namespace std;
+using namespace uniset;
 // ---------------------------------------------------------------
 TEST_CASE("WriteOutputMessage", "[modbus][WriteOutputMessage]" )
 {

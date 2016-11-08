@@ -27,7 +27,7 @@
 // ------------------------------------------------------------------------------------------
 using namespace std;
 using namespace UniversalIO;
-using namespace UniSetTypes;
+using namespace uniset;
 // ------------------------------------------------------------------------------------------
 NCRestorer_XML::NCRestorer_XML( const string& fname ):
 	s_filterField(""),
@@ -93,7 +93,7 @@ void NCRestorer_XML::init( const std::string& xmlfile )
 
 		fname = xmlfile;
 	}
-	catch( UniSetTypes::NameNotFound& ex )
+	catch( uniset::NameNotFound& ex )
 	{
 		uwarn << "(NCRestorer_XML): файл " << xmlfile << " не найден, создаём новый...\n";
 	}
@@ -151,7 +151,7 @@ void NCRestorer_XML::read_list( const std::shared_ptr<UniXML>& xml, xmlNode* nod
 				{
 					ioRegistration(ic, uinf, true);
 				}
-				catch( const UniSetTypes::Exception& ex )
+				catch( const uniset::Exception& ex )
 				{
 					uwarn << "(read_list): " << ex << endl;
 				}
@@ -234,7 +234,7 @@ bool NCRestorer_XML::getBaseInfo( const std::shared_ptr<UniXML>& xml, xmlNode* i
 	}
 
 	// преобразуем в полное имя
-	ObjectId sid = UniSetTypes::DefaultObjectId;
+	ObjectId sid = uniset::DefaultObjectId;
 
 	string id(xml->getProp(it, "id"));
 
@@ -243,7 +243,7 @@ bool NCRestorer_XML::getBaseInfo( const std::shared_ptr<UniXML>& xml, xmlNode* i
 	else
 		sid = uniset_conf()->getSensorID(sname);
 
-	if( sid == UniSetTypes::DefaultObjectId )
+	if( sid == uniset::DefaultObjectId )
 	{
 		ostringstream err;
 		err << "(getBaseInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР датчика --> " << sname;
@@ -257,7 +257,7 @@ bool NCRestorer_XML::getBaseInfo( const std::shared_ptr<UniXML>& xml, xmlNode* i
 	if( !snodename.empty() )
 		snode = uniset_conf()->getNodeID(snodename);
 
-	if( snode == UniSetTypes::DefaultObjectId )
+	if( snode == uniset::DefaultObjectId )
 	{
 		ucrit << "(getBaseInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла --> " << snodename << endl;
 		return false;
@@ -285,7 +285,7 @@ bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode*
 	else
 		inf->priority = Message::Medium;
 
-	inf->type = UniSetTypes::getIOType(xml->getProp(it, "iotype"));
+	inf->type = uniset::getIOType(xml->getProp(it, "iotype"));
 
 	if( inf->type == UniversalIO::UnknownIOType )
 	{
@@ -326,7 +326,7 @@ bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode*
 	{
 		inf->d_si.id = uniset_conf()->getSensorID(d_txt);
 
-		if( inf->d_si.id == UniSetTypes::DefaultObjectId )
+		if( inf->d_si.id == uniset::DefaultObjectId )
 		{
 			ostringstream err;
 			err << "(NCRestorer_XML:getSensorInfo): sensor='"
@@ -483,7 +483,7 @@ bool NCRestorer_XML::getThresholdInfo( const std::shared_ptr<UniXML>& xml, xmlNo
 	{
 		ti.sid = uniset_conf()->getSensorID(sid_name);
 
-		if( ti.sid == UniSetTypes::DefaultObjectId )
+		if( ti.sid == uniset::DefaultObjectId )
 		{
 			ostringstream err;
 			err << "(NCRestorer_XML:getThresholdInfo): "
@@ -520,7 +520,7 @@ bool NCRestorer_XML::getThresholdInfo( const std::shared_ptr<UniXML>& xml, xmlNo
 // ------------------------------------------------------------------------------------------
 bool NCRestorer_XML::check_thresholds_item( UniXML::iterator& it ) const
 {
-	return UniSetTypes::check_filter(it, t_filterField, t_filterValue);
+	return uniset::check_filter(it, t_filterField, t_filterValue);
 }
 // ------------------------------------------------------------------------------------------
 void NCRestorer_XML::setReadThresholdItem( ReaderSlot sl )

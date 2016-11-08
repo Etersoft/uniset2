@@ -3,7 +3,7 @@
 #include "UniSetActivator.h"
 #include "Debug.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 int main(int argc, char** argv)
@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 		act->add(dbs);
 		act->run(false);
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		cerr << "(DBServer_PosgreSQL::main): " << ex << endl;
 	}

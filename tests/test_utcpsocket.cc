@@ -8,7 +8,7 @@
 #include "UTCPSocket.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 static const std::string host = "127.0.0.1";
 static int port = 40000;

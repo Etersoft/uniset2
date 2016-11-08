@@ -3,6 +3,7 @@
 #include "Pulse.h"
 #include "UniSetTypes.h"
 using namespace std;
+using namespace uniset;
 
 TEST_CASE("Pulse", "[Test for class 'Pulse' - impulse generator]" )
 {

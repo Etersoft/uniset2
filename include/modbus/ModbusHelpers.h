@@ -6,6 +6,9 @@
 #include "ModbusTypes.h"
 #include "ComPort.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 class ModbusRTUMaster;
 // -------------------------------------------------------------------------
 namespace ModbusHelpers
@@ -15,7 +18,7 @@ namespace ModbusHelpers
 										   ModbusRTU::ModbusAddr end = 255,
 										   ModbusRTU::ModbusData reg = 0,
 										   ModbusRTU::SlaveFunctionCode fn = ModbusRTU::fnReadInputRegisters
-										 ); // throw UniSetTypes::TimeOut();
+										 ); // throw uniset::TimeOut();
 
 	ModbusRTU::ModbusAddr autodetectSlave( std::string dev,
 										   ComPort::Speed s, int tout = 1000,
@@ -23,21 +26,23 @@ namespace ModbusHelpers
 										   ModbusRTU::ModbusAddr end = 255,
 										   ModbusRTU::ModbusData reg = 0,
 										   ModbusRTU::SlaveFunctionCode fn = ModbusRTU::fnReadInputRegisters
-										 ); // throw UniSetTypes::TimeOut();
+										 ); // throw uniset::TimeOut();
 
 	ComPort::Speed autodetectSpeed( ModbusRTUMaster* m, ModbusRTU::ModbusAddr slave,
 									ModbusRTU::ModbusData reg = 0,
 									ModbusRTU::SlaveFunctionCode fn = ModbusRTU::fnReadInputRegisters
-								  ); // throw UniSetTypes::TimeOut();
+								  ); // throw uniset::TimeOut();
 
 	ComPort::Speed autodetectSpeed( std::string dev,
 									ModbusRTU::ModbusAddr slave,
 									int timeout_msec = 1000,
 									ModbusRTU::ModbusData reg = 0,
 									ModbusRTU::SlaveFunctionCode fn = ModbusRTU::fnReadInputRegisters
-								  ); // throw UniSetTypes::TimeOut();
+								  ); // throw uniset::TimeOut();
 
 } // end of namespace ModbusHelpers
+// ---------------------------------------------------------------------------
+} // end of namespace uniset
 // ---------------------------------------------------------------------------
 #endif // ModbusHelpers_H_
 // ---------------------------------------------------------------------------

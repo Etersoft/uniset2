@@ -36,8 +36,8 @@
 #include "LogServer.h"
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // --------------------------------------------------------------------------
 const unsigned int MaxAddNum = 10;
 // --------------------------------------------------------------------------
@@ -224,7 +224,7 @@ int main( int argc, const char** argv )
 		on_sigchild(SIGTERM);
 		return 0;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		dcrit << "(smemory-plus): " << ex << endl;
 	}

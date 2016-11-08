@@ -3,7 +3,7 @@
 #include "UniSetActivator.h"
 #include "Debug.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 int main(int argc, char** argv)

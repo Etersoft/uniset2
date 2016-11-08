@@ -21,27 +21,32 @@
 #include <UniSetObject.h>
 #include "UniSetTypes.h"
 // -----------------------------------------------------------------------------
+namespace uniset
+{
+
 class SMonitor:
 	public UniSetObject
 {
 	public:
 
-		SMonitor( UniSetTypes::ObjectId id );
+		SMonitor( uniset::ObjectId id );
 		~SMonitor();
 
 		// -----
 	protected:
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* si ) override;
-		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
+		virtual void sensorInfo( const uniset::SensorMessage* si ) override;
+		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 		virtual void sigterm( int signo ) override;
 		SMonitor();
 
 	private:
-		typedef std::list<UniSetTypes::ParamSInfo> MyIDList;
+		typedef std::list<uniset::ParamSInfo> MyIDList;
 		MyIDList lst;
 		std::string script;
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // -----------------------------------------------------------------------------
 #endif
 // -----------------------------------------------------------------------------

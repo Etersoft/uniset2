@@ -18,6 +18,7 @@ class VMon
 
 // ------------------------------------------------------------------------------
 using namespace std;
+using namespace uniset;
 
 
 class PtrMapHashFn

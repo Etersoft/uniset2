@@ -31,6 +31,9 @@
 #include "LogServerTypes.h"
 #include "json.hpp"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 class LogSession;
 class LogAgregator;
 class NullLogSession;
@@ -148,7 +151,7 @@ class LogServer:
 
 		typedef std::vector< std::shared_ptr<LogSession> > SessionList;
 		SessionList slist;
-		UniSetTypes::uniset_rwmutex mutSList;
+		uniset::uniset_rwmutex mutSList;
 
 		DebugStream mylog;
 		ev::io io;
@@ -171,6 +174,8 @@ class LogServer:
 
 		std::atomic_bool isrunning = { false };
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // -------------------------------------------------------------------------
 #endif // LogServer_H_
 // -------------------------------------------------------------------------

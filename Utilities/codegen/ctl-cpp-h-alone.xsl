@@ -53,14 +53,14 @@
 // -----------------------------------------------------------------------------
 class <xsl:value-of select="$CLASSNAME"/>_SK:
 	<xsl:if test="normalize-space($BASECLASS)!=''">public <xsl:value-of select="normalize-space($BASECLASS)"/></xsl:if>
-	<xsl:if test="normalize-space($BASECLASS)=''">public UniSetObject</xsl:if>
+	<xsl:if test="normalize-space($BASECLASS)=''">public uniset::UniSetObject</xsl:if>
 {
 	public:
 		<xsl:if test="not(normalize-space($OID))=''">
-				<xsl:value-of select="$CLASSNAME"/>_SK( UniSetTypes::ObjectId id = UniSetTypes::uniset_conf()->getObjectID("<xsl:value-of select="$OID"/>"), xmlNode* node=UniSetTypes::uniset_conf()->getNode("<xsl:value-of select="normalize-space($OID)"/>"), const string&amp; argprefix="" );
+				<xsl:value-of select="$CLASSNAME"/>_SK( uniset::ObjectId id = uniset::uniset_conf()->getObjectID("<xsl:value-of select="$OID"/>"), xmlNode* node=uniset::uniset_conf()->getNode("<xsl:value-of select="normalize-space($OID)"/>"), const string&amp; argprefix="" );
 		</xsl:if>
 		<xsl:if test="normalize-space($OID)=''">
-				<xsl:value-of select="$CLASSNAME"/>_SK( UniSetTypes::ObjectId id, xmlNode* node=UniSetTypes::uniset_conf()->getNode("<xsl:value-of select="normalize-space($OID)"/>") );
+				<xsl:value-of select="$CLASSNAME"/>_SK( uniset::ObjectId id, xmlNode* node=uniset::uniset_conf()->getNode("<xsl:value-of select="normalize-space($OID)"/>") );
 		</xsl:if>
 		<xsl:value-of select="$CLASSNAME"/>_SK();
 

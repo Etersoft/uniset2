@@ -51,7 +51,7 @@ static ostream& print_help( ostream& os, int width, const string& cmd,
 	return os << info.str();
 }
 
-ostream& UniSetTypes::Configuration::help(ostream& os)
+ostream& uniset::Configuration::help(ostream& os)
 {
 	os << "\n UniSet Configure command: " << endl;
 	print_help(os, 20, "--confile", "полный путь до файла конфигурации\n");
@@ -71,7 +71,7 @@ ostream& UniSetTypes::Configuration::help(ostream& os)
 		   << "--ulog-add-levels level1,info,system,warn --ulog-logfile myprogrpam.log\n\n";
 }
 // -------------------------------------------------------------------------
-namespace UniSetTypes
+namespace uniset
 {
 	static shared_ptr<Configuration> uconf;
 	static std::shared_ptr<DebugStream> _ulog = nullptr;
@@ -102,8 +102,8 @@ namespace UniSetTypes
 //		_argv(nullptr),
 		NSName("NameService"),
 		repeatCount(2), repeatTimeout(100),
-		localDBServer(UniSetTypes::DefaultObjectId),
-		localNode(UniSetTypes::DefaultObjectId),
+		localDBServer(uniset::DefaultObjectId),
+		localNode(uniset::DefaultObjectId),
 		localNodeName(""),
 		fileConfName(""),
 		heartbeat_msec(3000)
@@ -134,8 +134,8 @@ namespace UniSetTypes
 //		_argv(argv),
 		NSName("NameService"),
 		repeatCount(2), repeatTimeout(100),
-		localDBServer(UniSetTypes::DefaultObjectId),
-		localNode(UniSetTypes::DefaultObjectId),
+		localDBServer(uniset::DefaultObjectId),
+		localNode(uniset::DefaultObjectId),
 		localNodeName(""),
 		fileConfName(xmlfile)
 	{
@@ -153,8 +153,8 @@ namespace UniSetTypes
 //		_argv(argv),
 		NSName("NameService"),
 		repeatCount(2), repeatTimeout(100),
-		localDBServer(UniSetTypes::DefaultObjectId),
-		localNode(UniSetTypes::DefaultObjectId),
+		localDBServer(uniset::DefaultObjectId),
+		localNode(uniset::DefaultObjectId),
 		localNodeName(""),
 		fileConfName(fileConf)
 	{
@@ -166,14 +166,14 @@ namespace UniSetTypes
 	}
 	// ---------------------------------------------------------------------------------
 	Configuration::Configuration( int argc, const char* const* argv, const string& fileConf,
-								  UniSetTypes::ObjectInfo* omap ):
+								  uniset::ObjectInfo* omap ):
 		oind(NULL),
 //		_argc(argc),
 //		_argv(argv),
 		NSName("NameService"),
 		repeatCount(2), repeatTimeout(100),
-		localDBServer(UniSetTypes::DefaultObjectId),
-		localNode(UniSetTypes::DefaultObjectId),
+		localDBServer(uniset::DefaultObjectId),
+		localNode(uniset::DefaultObjectId),
 		localNodeName(""),
 		fileConfName(fileConf)
 	{
@@ -196,7 +196,7 @@ namespace UniSetTypes
 		_argc = argc;
 		_argv = new const char*[argc];
 		for( int i=0; i<argc; i++ )
-			_argv[i] = UniSetTypes::uni_strdup(argv[i]);
+			_argv[i] = uniset::uni_strdup(argv[i]);
 
 		iorfile = make_shared<IORFile>();
 
@@ -239,7 +239,7 @@ namespace UniSetTypes
 				ostringstream err;
 				err << "(Configuration): FAILED open configuration from " <<  fileConfName;
 				ulogany << err.str() << endl;
-				throw UniSetTypes::SystemError(err.str());
+				throw uniset::SystemError(err.str());
 			}
 
 
@@ -255,7 +255,7 @@ namespace UniSetTypes
 					if( !it )
 					{
 						ucrit << "(Configuration:init): not found <ObjectsMap> node in "  << fileConfName << endl;
-						throw UniSetTypes::SystemError("(Configuration:init): not found <ObjectsMap> node in " + fileConfName );
+						throw uniset::SystemError("(Configuration:init): not found <ObjectsMap> node in " + fileConfName );
 					}
 
 					try
@@ -271,7 +271,7 @@ namespace UniSetTypes
 							oind = static_pointer_cast<ObjectIndex>(oi);
 						}
 					}
-					catch( const UniSetTypes::Exception& ex )
+					catch( const uniset::Exception& ex )
 					{
 						ucrit << ex << endl;
 						throw;
@@ -464,7 +464,7 @@ namespace UniSetTypes
 			// ---------------------------------------
 
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			ucrit << "Configuration:" << ex << endl;
 			throw;
@@ -481,7 +481,7 @@ namespace UniSetTypes
 	// -------------------------------------------------------------------------
 	std::string Configuration::getArg2Param( const std::string& name, const std::string& defval, const std::string& defval2 ) const noexcept
 	{
-		string s(UniSetTypes::getArgParam(name, _argc, _argv, ""));
+		string s(uniset::getArgParam(name, _argc, _argv, ""));
 
 		if( !s.empty() )
 			return std::move(s);
@@ -494,12 +494,12 @@ namespace UniSetTypes
 
 	string Configuration::getArgParam( const string& name, const string& defval ) const noexcept
 	{
-		return UniSetTypes::getArgParam(name, _argc, _argv, defval);
+		return uniset::getArgParam(name, _argc, _argv, defval);
 	}
 
 	int Configuration::getArgInt( const string& name, const string& defval ) const noexcept
 	{
-		return UniSetTypes::uni_atoi(getArgParam( name, defval ));
+		return uniset::uni_atoi(getArgParam( name, defval ));
 	}
 
 	int Configuration::getArgPInt( const string& name, int defval ) const noexcept
@@ -509,7 +509,7 @@ namespace UniSetTypes
 		if( param.empty() )
 			return defval;
 
-		return UniSetTypes::uni_atoi(param);
+		return uniset::uni_atoi(param);
 	}
 
 	int Configuration::getArgPInt( const string& name, const string& strdefval, int defval ) const noexcept
@@ -519,7 +519,7 @@ namespace UniSetTypes
 		if( param.empty() && strdefval.empty() )
 			return defval;
 
-		return UniSetTypes::uni_atoi(param);
+		return uniset::uni_atoi(param);
 	}
 
 
@@ -531,7 +531,7 @@ namespace UniSetTypes
 		if( !root )
 		{
 			ucrit << "Configuration: INIT PARAM`s FAILED! <UniSet>...</UniSet> not found" << endl;
-			throw UniSetTypes::SystemError("Configuration: INIT PARAM`s FAILED! <UniSet>...</UniSet> not found!");
+			throw uniset::SystemError("Configuration: INIT PARAM`s FAILED! <UniSet>...</UniSet> not found!");
 		}
 
 		UniXML::iterator it(root);
@@ -539,7 +539,7 @@ namespace UniSetTypes
 		if( !it.goChildren() )
 		{
 			ucrit << "Configuration: INIT PARAM`s FAILED!!!!" << endl;
-			throw UniSetTypes::SystemError("Configuration: INIT PARAM`s FAILED!!!!");
+			throw uniset::SystemError("Configuration: INIT PARAM`s FAILED!!!!");
 		}
 
 		for( ; it.getCurrent(); it.goNext() )
@@ -548,7 +548,7 @@ namespace UniSetTypes
 
 			if( name == "LocalNode" )
 			{
-				if( localNode == UniSetTypes::DefaultObjectId )
+				if( localNode == uniset::DefaultObjectId )
 				{
 					string nodename( it.getProp("name") );
 					setLocalNode(nodename);
@@ -566,7 +566,7 @@ namespace UniSetTypes
 					ostringstream msg;
 					msg << "Configuration: DBServer '" << secDB << "' not found ServiceID in <services>!";
 					ucrit << msg.str() << endl;
-					throw UniSetTypes::SystemError(msg.str());
+					throw uniset::SystemError(msg.str());
 				}
 			}
 			else if( name == "CountOfNet" )
@@ -652,7 +652,7 @@ namespace UniSetTypes
 			stringstream err;
 			err << "(Configuration::setLocalNode): Not found node '" << nodename << "'";
 			ucrit << err.str() << endl;
-			throw UniSetTypes::SystemError(err.str());
+			throw uniset::SystemError(err.str());
 		}
 
 		localNodeName = nodename;
@@ -777,7 +777,7 @@ namespace UniSetTypes
 		if( !omapnode )
 		{
 			ucrit << "(Configuration): <ObjectsMap> not found!!!" << endl;
-			throw UniSetTypes::SystemError("(Configuration): <ObjectsMap> not found!");
+			throw uniset::SystemError("(Configuration): <ObjectsMap> not found!");
 		}
 
 
@@ -786,7 +786,7 @@ namespace UniSetTypes
 		if(!node)
 		{
 			ucrit << "(Configuration): <nodes> section not found!" << endl;
-			throw UniSetTypes::SystemError("(Configiuration): <nodes> section not found");
+			throw uniset::SystemError("(Configiuration): <nodes> section not found");
 		}
 
 		UniXML::iterator it(node);
@@ -804,7 +804,7 @@ namespace UniSetTypes
 			if(sname.empty())
 			{
 				ucrit << "Configuration(createNodesList): unknown name='' in <nodes> " << endl;
-				throw UniSetTypes::SystemError("Configuration(createNodesList: unknown name='' in <nodes>");
+				throw uniset::SystemError("Configuration(createNodesList: unknown name='' in <nodes>");
 			}
 
 			string nodename(sname);
@@ -818,7 +818,7 @@ namespace UniSetTypes
 			if( ninf.id == DefaultObjectId )
 			{
 				ucrit << "Configuration(createNodesList): Not found ID for node '" << nodename << "'" << endl;
-				throw UniSetTypes::SystemError("Configuration(createNodesList): Not found ID for node '" + nodename + "'");
+				throw uniset::SystemError("Configuration(createNodesList): Not found ID for node '" + nodename + "'");
 			}
 
 			ninf.host = getProp(it, "ip").c_str();
@@ -832,7 +832,7 @@ namespace UniSetTypes
 			string tmp(it.getProp("dbserver"));
 
 			if( tmp.empty() )
-				ninf.dbserver = UniSetTypes::DefaultObjectId;
+				ninf.dbserver = uniset::DefaultObjectId;
 			else
 			{
 				string dname(getServicesSection() + "/" + tmp);
@@ -841,7 +841,7 @@ namespace UniSetTypes
 				if( ninf.dbserver == DefaultObjectId )
 				{
 					ucrit << "Configuration(createNodesList): Not found ID for DBServer name='" << dname << "'" << endl;
-					throw UniSetTypes::SystemError("Configuration(createNodesList: Not found ID for DBServer name='" + dname + "'");
+					throw uniset::SystemError("Configuration(createNodesList: Not found ID for DBServer name='" + dname + "'");
 				}
 			}
 
@@ -858,7 +858,7 @@ namespace UniSetTypes
 		uinfo << "Configuration(createNodesList): size of node list " << lnodes.size() << endl;
 	}
 	// -------------------------------------------------------------------------
-	void Configuration::initNode( UniSetTypes::NodeInfo& ninfo, UniXML::iterator& it ) noexcept
+	void Configuration::initNode( uniset::NodeInfo& ninfo, UniXML::iterator& it ) noexcept
 	{
 		if( ninfo.id == getLocalNode() )
 			ninfo.connected = true;
@@ -980,12 +980,12 @@ namespace UniSetTypes
 		return dnode;
 	}
 	// -------------------------------------------------------------------------
-	UniSetTypes::ListOfNode::const_iterator Configuration::listNodesBegin() const noexcept
+	uniset::ListOfNode::const_iterator Configuration::listNodesBegin() const noexcept
 	{
 		return lnodes.begin();
 	}
 	// -------------------------------------------------------------------------
-	UniSetTypes::ListOfNode::const_iterator Configuration::listNodesEnd() const noexcept
+	uniset::ListOfNode::const_iterator Configuration::listNodesEnd() const noexcept
 	{
 		return lnodes.end();
 	}
@@ -1022,7 +1022,7 @@ namespace UniSetTypes
 			ostringstream msg;
 			msg << "Configuration(initRepSections): Not found section <RootSection> in " << fileConfName;
 			ucrit << msg.str() << endl;
-			throw UniSetTypes::SystemError(msg.str());
+			throw uniset::SystemError(msg.str());
 		}
 
 		secRoot       = unixml->getProp(node, "name");
@@ -1043,7 +1043,7 @@ namespace UniSetTypes
 			ostringstream msg;
 			msg << "Configuration(initRepSections): Not found section '" << sec << "' in " << fileConfName;
 			ucrit << msg.str() << endl;
-			throw UniSetTypes::SystemError(msg.str());
+			throw uniset::SystemError(msg.str());
 		}
 
 		string ret(unixml->getProp(secnode, "section"));
@@ -1083,7 +1083,7 @@ namespace UniSetTypes
 				<< " Use --confile filename " << endl
 				<< " OR define enviropment variable UNISET_CONFILE" << endl;
 			ucrit << msg.str();
-			throw UniSetTypes::SystemError(msg.str());
+			throw uniset::SystemError(msg.str());
 		}
 	}
 	// -------------------------------------------------------------------------
@@ -1142,7 +1142,7 @@ namespace UniSetTypes
 		return oind->getIdByName(getServicesSection() + "/" + name);
 	}
 	// -------------------------------------------------------------------------
-	UniSetTypes::ObjectId Configuration::getNodeID( const std::string& name ) const noexcept
+	uniset::ObjectId Configuration::getNodeID( const std::string& name ) const noexcept
 	{
 		if( name.empty() )
 			return DefaultObjectId;
@@ -1252,7 +1252,7 @@ namespace UniSetTypes
 		return xmlNodesSec;
 	}
 	// -------------------------------------------------------------------------
-	xmlNode* Configuration::getXMLObjectNode( UniSetTypes::ObjectId id ) const noexcept
+	xmlNode* Configuration::getXMLObjectNode( uniset::ObjectId id ) const noexcept
 	{
 		const ObjectInfo* i = oind->getObjectInfo(id);
 
@@ -1262,14 +1262,14 @@ namespace UniSetTypes
 		return 0;
 	}
 	// -------------------------------------------------------------------------
-	UniversalIO::IOType Configuration::getIOType( UniSetTypes::ObjectId id ) const noexcept
+	UniversalIO::IOType Configuration::getIOType( uniset::ObjectId id ) const noexcept
 	{
 		const ObjectInfo* i = oind->getObjectInfo(id);
 
 		if( i && (xmlNode*)(i->data) )
 		{
 			UniXML::iterator it((xmlNode*)(i->data));
-			return UniSetTypes::getIOType( it.getProp("iotype") );
+			return uniset::getIOType( it.getProp("iotype") );
 		}
 
 		return UniversalIO::UnknownIOType;
@@ -1292,7 +1292,7 @@ namespace UniSetTypes
 		if( i && (xmlNode*)(i->data) )
 		{
 			UniXML::iterator it((xmlNode*)(i->data));
-			return UniSetTypes::getIOType( it.getProp("iotype") );
+			return uniset::getIOType( it.getProp("iotype") );
 		}
 
 		return UniversalIO::UnknownIOType;
@@ -1315,19 +1315,19 @@ namespace UniSetTypes
 	// -------------------------------------------------------------------------
 	std::shared_ptr<Configuration> uniset_init( int argc, const char* const* argv, const std::string& xmlfile )
 	{
-		if( UniSetTypes::uconf )
+		if( uniset::uconf )
 		{
 			cerr << "Reusable call uniset_init... ignore.." << endl;
-			return UniSetTypes::uconf;
+			return uniset::uconf;
 		}
 
 		atexit( UniSetActivator::normalexit );
 		set_terminate( UniSetActivator::normalterminate ); // ловушка для неизвестных исключений
 
-		string confile = UniSetTypes::getArgParam( "--confile", argc, argv, xmlfile );
-		UniSetTypes::uconf = make_shared<Configuration>(argc, argv, confile);
+		string confile = uniset::getArgParam( "--confile", argc, argv, xmlfile );
+		uniset::uconf = make_shared<Configuration>(argc, argv, confile);
 
-		return UniSetTypes::uconf;
+		return uniset::uconf;
 	}
 
 	// -------------------------------------------------------------------------

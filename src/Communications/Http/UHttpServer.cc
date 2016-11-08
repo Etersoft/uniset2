@@ -20,7 +20,7 @@
 #include "Exceptions.h"
 // -------------------------------------------------------------------------
 using namespace Poco::Net;
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace UHttp;
 // -------------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ UHttpServer::UHttpServer(std::shared_ptr<IHttpRequestRegistry>& supplier, const 
     {
         std::stringstream err;
         err << "(UHttpServer::init): " << _host << ":" << _port << " ERROR: " << ex.what();
-        throw UniSetTypes::SystemError(err.str());
+        throw uniset::SystemError(err.str());
     }
 
     mylog->info() << "(UHttpServer::init): init " << _host << ":" << _port << std::endl;

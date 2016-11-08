@@ -25,7 +25,7 @@
 #include "UniSetTypes.h"
 // -------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -------------------------------------------------------------------------
 LogReader::LogReader():
 	inTimeout(10000),

@@ -11,13 +11,13 @@ class SMDBServer:
 	public DBServer_MySQL
 {
 	public:
-		SMDBServer( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic = 0,
+		SMDBServer( uniset::ObjectId objId, uniset::ObjectId shmID, SharedMemory* ic = 0,
 					const std::string& prefix = "dbserver" );
 		virtual ~SMDBServer();
 
 		/*! глобальная функция для инициализации объекта */
 		static SMDBServer* init_smdbserver( int argc, const char* const* argv,
-											UniSetTypes::ObjectId shmID, SharedMemory* ic = 0,
+											uniset::ObjectId shmID, SharedMemory* ic = 0,
 											const std::string& prefix = "dbserver" );
 
 		/*! глобальная функция для вывода help-а */
@@ -36,10 +36,10 @@ class SMDBServer:
 		bool aiignore;
 
 		PassiveTimer ptHeartBeat;
-		UniSetTypes::ObjectId sidHeartBeat;
+		uniset::ObjectId sidHeartBeat;
 		int maxHeartBeat;
 		IOController::IOStateList::iterator aitHeartBeat;
-		UniSetTypes::ObjectId test_id;
+		uniset::ObjectId test_id;
 
 		std::string db_locale;
 		std::string prefix;

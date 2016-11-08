@@ -20,7 +20,7 @@
 #include "SMInterface.h"
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // --------------------------------------------------------------------------
 #define BEG_FUNC(name) \
 	try \
@@ -74,7 +74,7 @@ using namespace UniSetTypes;
 	{ \
 		uwarn << "(" << __STRING(fname) << "): " << ex.err << endl; \
 	} \
-	catch( const UniSetTypes::Exception& ex ) \
+	catch( const uniset::Exception& ex ) \
 	{ \
 		uwarn << "(" << __STRING(fname) << "): " << ex << endl; \
 	} \
@@ -85,18 +85,18 @@ using namespace UniSetTypes;
 	} \
 	\
 	oref = CORBA::Object::_nil(); \
-	throw UniSetTypes::TimeOut(); \
+	throw uniset::TimeOut(); \
 
 #define CHECK_IC_PTR(fname) \
 	if( !ic )  \
 	{ \
 		uwarn << "(" << __STRING(fname) << "): function NOT DEFINED..." << endl; \
-		throw UniSetTypes::TimeOut(); \
+		throw uniset::TimeOut(); \
 	} \
 
 	// --------------------------------------------------------------------------
-	SMInterface::SMInterface( UniSetTypes::ObjectId _shmID, const std::shared_ptr<UInterface>& _ui,
-							  UniSetTypes::ObjectId _myid, const std::shared_ptr<IONotifyController> ic ):
+	SMInterface::SMInterface( uniset::ObjectId _shmID, const std::shared_ptr<UInterface>& _ui,
+							  uniset::ObjectId _myid, const std::shared_ptr<IONotifyController> ic ):
 		ic(ic),
 		ui(_ui),
 		oref( CORBA::Object::_nil() ),
@@ -104,7 +104,7 @@ using namespace UniSetTypes;
 		myid(_myid)
 	{
 		if( shmID == DefaultObjectId )
-			throw UniSetTypes::SystemError("(SMInterface): Unknown shmID!" );
+			throw uniset::SystemError("(SMInterface): Unknown shmID!" );
 	}
 	// --------------------------------------------------------------------------
 	SMInterface::~SMInterface()
@@ -112,7 +112,7 @@ using namespace UniSetTypes;
 
 	}
 	// --------------------------------------------------------------------------
-	void SMInterface::setValue( UniSetTypes::ObjectId id, long value )
+	void SMInterface::setValue( uniset::ObjectId id, long value )
 	{
 		if( ic )
 		{
@@ -132,7 +132,7 @@ using namespace UniSetTypes;
 		END_FUNC(SMInterface::setValue)
 	}
 	// --------------------------------------------------------------------------
-	long SMInterface::getValue( UniSetTypes::ObjectId id )
+	long SMInterface::getValue( uniset::ObjectId id )
 	{
 		if( ic )
 		{
@@ -146,7 +146,7 @@ using namespace UniSetTypes;
 		END_FUNC(SMInterface::getValue)
 	}
 	// --------------------------------------------------------------------------
-	void SMInterface::askSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId backid )
+	void SMInterface::askSensor( uniset::ObjectId id, UniversalIO::UIOCommand cmd, uniset::ObjectId backid )
 	{
 		ConsumerInfo_var ci;
 		ci->id   = (backid == DefaultObjectId) ? myid : backid;
@@ -195,7 +195,7 @@ using namespace UniSetTypes;
 	}
 	// --------------------------------------------------------------------------
 	void SMInterface::setUndefinedState( const IOController_i::SensorInfo& si, bool undefined,
-										 UniSetTypes::ObjectId sup_id )
+										 uniset::ObjectId sup_id )
 	{
 		if( ic )
 		{
@@ -230,8 +230,8 @@ using namespace UniSetTypes;
 	}
 	// --------------------------------------------------------------------------
 	void SMInterface::localSetValue( IOController::IOStateList::iterator& it,
-									 UniSetTypes::ObjectId sid,
-									 CORBA::Long value, UniSetTypes::ObjectId sup_id )
+									 uniset::ObjectId sid,
+									 CORBA::Long value, uniset::ObjectId sup_id )
 	{
 		if( !ic )
 			return setValue(sid, value);
@@ -239,7 +239,7 @@ using namespace UniSetTypes;
 		ic->localSetValueIt(it, sid, value, sup_id);
 	}
 	// --------------------------------------------------------------------------
-	long SMInterface::localGetValue( IOController::IOStateList::iterator& it, UniSetTypes::ObjectId sid )
+	long SMInterface::localGetValue( IOController::IOStateList::iterator& it, uniset::ObjectId sid )
 	{
 		if( !ic )
 			return getValue( sid );
@@ -250,7 +250,7 @@ using namespace UniSetTypes;
 	// --------------------------------------------------------------------------
 	void SMInterface::localSetUndefinedState( IOController::IOStateList::iterator& it,
 			bool undefined,
-			UniSetTypes::ObjectId sid )
+			uniset::ObjectId sid )
 	{
 		//    CHECK_IC_PTR(localSetUndefinedState)
 		if( !ic )
@@ -293,7 +293,7 @@ using namespace UniSetTypes;
 		return sm_ready;
 	}
 	// --------------------------------------------------------------------------
-	bool SMInterface::waitSMworking( UniSetTypes::ObjectId sid, int msec, int pmsec )
+	bool SMInterface::waitSMworking( uniset::ObjectId sid, int msec, int pmsec )
 	{
 		PassiveTimer ptSMready(msec);
 		bool sm_ready = false;

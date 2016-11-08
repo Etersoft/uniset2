@@ -1,11 +1,11 @@
 #include <catch.hpp>
 
 #include <cmath>
-
-using namespace std;
-
 #include "HourGlass.h"
 #include "UniSetTypes.h"
+
+using namespace std;
+using namespace uniset;
 
 TEST_CASE("HourGlass", "[HourGlass]" )
 {

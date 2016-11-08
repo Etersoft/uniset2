@@ -24,7 +24,7 @@
 #include "Configuration.h"
 
 // -----------------------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // -----------------------------------------------------------------------------------------
 ObjectIndex_Array::~ObjectIndex_Array()
@@ -60,7 +60,7 @@ ObjectId ObjectIndex_Array::getIdByName( const string& name ) const noexcept
 // -----------------------------------------------------------------------------------------
 string ObjectIndex_Array::getMapName( const ObjectId id ) const noexcept
 {
-	if( id != UniSetTypes::DefaultObjectId && id >= 0 && id < maxId )
+	if( id != uniset::DefaultObjectId && id >= 0 && id < maxId )
 		return objectInfo[id].repName;
 
 	return "";
@@ -69,7 +69,7 @@ string ObjectIndex_Array::getMapName( const ObjectId id ) const noexcept
 // -----------------------------------------------------------------------------------------
 string ObjectIndex_Array::getTextName( const ObjectId id ) const noexcept
 {
-	if( id != UniSetTypes::DefaultObjectId && id >= 0 && id < maxId )
+	if( id != uniset::DefaultObjectId && id >= 0 && id < maxId )
 		return objectInfo[id].textName;
 
 	return "";
@@ -103,7 +103,7 @@ std::ostream& ObjectIndex_Array::printMap( std::ostream& os ) const noexcept
 // -----------------------------------------------------------------------------------------
 const ObjectInfo* ObjectIndex_Array::getObjectInfo( const ObjectId id ) const noexcept
 {
-	if( id != UniSetTypes::DefaultObjectId && id >= 0 && id < maxId )
+	if( id != uniset::DefaultObjectId && id >= 0 && id < maxId )
 		return &(objectInfo[id]);
 
 	return NULL;

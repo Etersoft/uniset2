@@ -20,7 +20,7 @@
 #include "UniSetTypes.h"
 #include "Configuration.h"
 // --------------------------------------------------------------------------
-namespace UniSetTypes
+namespace uniset
 {
 	// Шаблон для "универсальной инициализации объекта(процесса)".
 	// Использование:
@@ -34,23 +34,23 @@ namespace UniSetTypes
 	template<typename T, typename... _Args>
 	std::shared_ptr<T> make_object( const std::string& idname, const std::string& secname, _Args&& ... __args )
 	{
-		auto conf = UniSetTypes::uniset_conf();
-		UniSetTypes::ObjectId id = conf->getObjectID(idname);
+		auto conf = uniset::uniset_conf();
+		uniset::ObjectId id = conf->getObjectID(idname);
 
-		if( id == UniSetTypes::DefaultObjectId )
-			throw UniSetTypes::SystemError("(make_object<" + string(typeid(T).name()) + ">): Not found ID for '" + idname + "'");
+		if( id == uniset::DefaultObjectId )
+			throw uniset::SystemError("(make_object<" + string(typeid(T).name()) + ">): Not found ID for '" + idname + "'");
 
 		auto xml = conf->getConfXML();
 		std::string s( (secname.empty() ? idname : secname) );
 		xmlNode* cnode = conf->findNode(xml->getFirstNode(), s, idname);
 
 		if( cnode == 0 )
-			throw UniSetTypes::SystemError("(make_object<" + string(typeid(T).name()) + ">): Not found xmlnode <" + s + " name='" + idname + "' ... >");
+			throw uniset::SystemError("(make_object<" + string(typeid(T).name()) + ">): Not found xmlnode <" + s + " name='" + idname + "' ... >");
 
 		std::shared_ptr<T> obj = std::make_shared<T>(id, cnode, std::forward<_Args>(__args)...);
 
 		if (obj == nullptr)
-			throw UniSetTypes::SystemError("(make_object<T>  == nullptr" + string(typeid(T).name()));
+			throw uniset::SystemError("(make_object<T>  == nullptr" + string(typeid(T).name()));
 
 		return obj;
 	}
@@ -60,18 +60,18 @@ namespace UniSetTypes
 	template<typename T, typename... _Args>
 	std::shared_ptr<T> make_object_x( xmlNode* root, const std::string& secname, _Args&& ... __args )
 	{
-		auto conf = UniSetTypes::uniset_conf();
+		auto conf = uniset::uniset_conf();
 		auto xml = conf->getConfXML();
 		xmlNode* cnode = conf->findNode(root, secname, "");
 
 		if( cnode == 0 )
-			throw UniSetTypes::SystemError("(make_object_x<" + string(typeid(T).name()) + ">): Not found xmlnode <" + secname + " ... >");
+			throw uniset::SystemError("(make_object_x<" + string(typeid(T).name()) + ">): Not found xmlnode <" + secname + " ... >");
 
 		string idname = conf->getProp(cnode, "name");
-		UniSetTypes::ObjectId id = conf->getObjectID(idname);
+		uniset::ObjectId id = conf->getObjectID(idname);
 
-		if( id == UniSetTypes::DefaultObjectId )
-			throw UniSetTypes::SystemError("(make_object_x<" + string(typeid(T).name()) + ">): Not found ID for '" + idname + "'");
+		if( id == uniset::DefaultObjectId )
+			throw uniset::SystemError("(make_object_x<" + string(typeid(T).name()) + ">): Not found ID for '" + idname + "'");
 
 		return std::make_shared<T>(id, cnode, std::forward<_Args>(__args)...);
 
@@ -89,12 +89,12 @@ namespace UniSetTypes
 		try
 		{
 			m->log()->info() << m->getName() << "(" << __FUNCTION__ << "): " << "create " << idname << "..." << std::endl;
-			auto o = UniSetTypes::make_object<T>(idname, secname, std::forward<_Args>(__args)...);
+			auto o = uniset::make_object<T>(idname, secname, std::forward<_Args>(__args)...);
 			m->add(o);
 			m->logAgregator()->add(o->logAgregator());
 			return std::move(o);
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			m->log()->crit() << m->getName() << "(" << __FUNCTION__ << "): " << "(create " << idname << "): " << ex << std::endl;
 			throw;
@@ -107,18 +107,18 @@ namespace UniSetTypes
 	{
 		try
 		{
-			auto o = UniSetTypes::make_object_x<T>(root, secname, std::forward<_Args>(__args)...);
+			auto o = uniset::make_object_x<T>(root, secname, std::forward<_Args>(__args)...);
 			m->add(o);
 			m->logAgregator()->add(o->logAgregator());
 			return std::move(o);
 		}
-		catch( const UniSetTypes::Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			m->log()->crit() << m->getName() << "(" << __FUNCTION__ << "): " << "(create " << string(typeid(T).name()) << "): " << ex << std::endl;
 			throw;
 		}
 	}
 	// -----------------------------------------------------------------------------------------
-} // endof namespace UniSetTypes
+} // endof namespace uniset
 // -----------------------------------------------------------------------------------------
 #endif // UHelpers_H_

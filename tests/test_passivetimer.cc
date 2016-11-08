@@ -2,7 +2,9 @@
 
 #include "PassiveTimer.h"
 #include "UniSetTypes.h"
+// -----------------------------------------------------------------------------
 using namespace std;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 TEST_CASE("PassiveTimer", "[PassiveTimer]" )
 {
