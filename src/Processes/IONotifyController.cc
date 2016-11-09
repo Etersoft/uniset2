@@ -1169,6 +1169,7 @@ nlohmann::json IONotifyController::httpHelp(const Poco::URI::QueryParameters& p)
 {
 	nlohmann::json jdata = IOController::httpHelp(p);
 	jdata[myname]["help"]["consumers"]["desc"] = "get consumers list";
+	jdata[myname]["help"]["consumers"]["params"] = {"sensor1,sensor2,sensor3","get consumers for sensors"};
 	jdata[myname]["help"]["lost"]["desc"] = "get lost consumers list";
 	return std::move(jdata);
 }
@@ -1184,7 +1185,7 @@ nlohmann::json IONotifyController::httpRequest( const string& req, const Poco::U
 	return IOController::httpRequest(req,p);
 }
 // -----------------------------------------------------------------------------
-nlohmann::json IONotifyController::request_consumers(const string& req, const Poco::URI::QueryParameters& p)
+nlohmann::json IONotifyController::request_consumers( const string& req, const Poco::URI::QueryParameters& p )
 {
 	//! \todo Не реализовано
 	nlohmann::json json;
@@ -1193,38 +1194,83 @@ nlohmann::json IONotifyController::request_consumers(const string& req, const Po
 
 	auto oind = uniset_conf()->oind;
 
+	std::list<ParamSInfo> slist;
+	if( p.size() > 0 )
+	{
+		if( !p[0].first.empty() )
+			slist = uniset::getSInfoList( p[0].first, uniset_conf() );
+
+		if( slist.empty() )
+		{
+			ostringstream err;
+			err << "(request_consumers): Bad request parameter: '" << p[0].first << "'";
+			throw uniset::SystemError(err.str());
+		}
+	}
+
 	uniset_rwmutex_rlock lock(askIOMutex);
 
-	for( auto&& a : askIOList )
+	// Проход по списку заданных..
+	if( !slist.empty() )
 	{
-		auto& i = a.second;
+		auto& jnotfound = json[myname]["notfound"];
 
-		uniset_rwmutex_rlock lock(i.mut);
-
-		// отображаем только датчики с "не пустым" списком заказчиков
-		if( i.clst.empty() )
-			continue;
-
-		string sid( std::to_string(a.first) );
-		auto& jsens = jdata[sid];
-
-		jsens["id"] = a.first;
-		jsens["sensor_name"] = ORepHelpers::getShortName(oind->getMapName(a.first));
-		auto& jcons = jsens["consumers"];
-
-		for( const auto& c : i.clst )
+		for( const auto& s: slist )
 		{
-			string cid( std::to_string(c.id) );
-			auto& jconsinfo = jcons[cid];
-			jconsinfo["id"] = c.id;
-			jconsinfo["name"] = ORepHelpers::getShortName(oind->getMapName(c.id));
-			jconsinfo["lostEvents"] = c.lostEvents;
-			jconsinfo["attempt"] = c.attempt;
-			jconsinfo["smCount"] = c.smCount;
+			auto a = askIOList.find(s.si.id);
+			if( a == askIOList.end() )
+			{
+				jnotfound.push_back(std::to_string(s.si.id));
+				continue;
+			}
+
+			// Включаем в ответ все, даже если список заказчиков пустой
+			jdata.push_back( getConsumers(a->first,a->second,false) );
+		}
+	}
+	else // Проход по всему списку
+	{
+		for( auto&& a : askIOList )
+		{
+			// добавляем только датчики с непустым списком заказчиков
+			auto jret = getConsumers(a.first,a.second,true);
+			if( !jret.empty() )
+				jdata.push_back( std::move(jret) );
 		}
 	}
 
 	return std::move(json);
+}
+// -----------------------------------------------------------------------------
+nlohmann::json IONotifyController::getConsumers( ObjectId sid, ConsumerListInfo& ci, bool noEmpty )
+{
+	nlohmann::json jret;
+	auto oind = uniset_conf()->oind;
+
+	uniset_rwmutex_rlock lock(ci.mut);
+
+	if( ci.clst.empty() && noEmpty )
+		return std::move(jret);
+
+	string strID( std::to_string(sid) );
+	auto& jsens = jret[strID];
+
+	jsens["id"] = strID;
+	jsens["sensor_name"] = ORepHelpers::getShortName(oind->getMapName(sid));
+	auto& jcons = jsens["consumers"];
+
+	for( const auto& c : ci.clst )
+	{
+		string cid( std::to_string(c.id) );
+		auto& jconsinfo = jcons[cid];
+		jconsinfo["id"] = c.id;
+		jconsinfo["name"] = ORepHelpers::getShortName(oind->getMapName(c.id));
+		jconsinfo["lostEvents"] = c.lostEvents;
+		jconsinfo["attempt"] = c.attempt;
+		jconsinfo["smCount"] = c.smCount;
+	}
+
+	return std::move(jret);
 }
 // -----------------------------------------------------------------------------
 nlohmann::json IONotifyController::request_lost( const string& req, const Poco::URI::QueryParameters& p )

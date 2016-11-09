@@ -326,6 +326,7 @@ class IONotifyController:
 		// http api
 		nlohmann::json request_consumers( const std::string& req, const Poco::URI::QueryParameters& p );
 		nlohmann::json request_lost( const string& req, const Poco::URI::QueryParameters& p );
+		nlohmann::json getConsumers( uniset::ObjectId sid, ConsumerListInfo& clist, bool noEmpty = true );
 
 	private:
 		friend class NCRestorer;
