@@ -38,8 +38,8 @@ if __name__ == "__main__":
 		uc1 = UConnector( lst, "test.xml" )
 		uc2 = UConnector( lst2, "test.xml" )
 		
-		obj1 = UProxyObject("TestProc",uc1.getConfID())
-		obj2 = UProxyObject("TestProc1",uc2.getConfID())
+		obj1 = UProxyObject("TestProc")
+		obj2 = UProxyObject("TestProc1")
 		
 #		print "(0)UIType: %s" % uc1.getUIType()
 

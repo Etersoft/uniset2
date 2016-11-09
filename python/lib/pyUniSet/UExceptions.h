@@ -48,5 +48,13 @@ struct USysError:
 	~USysError() {}
 };
 //---------------------------------------------------------------------------
+struct UValidateError:
+	public UException
+{
+	UValidateError(): UException("UValidateError") {}
+	explicit UValidateError( const std::string& e ): UException(e) {}
+	~UValidateError() {}
+};
+//---------------------------------------------------------------------------
 #endif
 //---------------------------------------------------------------------------
