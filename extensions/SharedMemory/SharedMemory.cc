@@ -36,7 +36,9 @@ void SharedMemory::help_print( int argc, const char* const* argv )
 	cout << "--s-filter-field       - Фильтр для загрузки списка датчиков." << endl;
 	cout << "--s-filter-value       - Значение фильтра для загрузки списка датчиков." << endl;
 	cout << "--c-filter-field       - Фильтр для загрузки списка заказчиков." << endl;
-	cout << "--c-filter-value       - Значение фильтр для загрузки списка заказчиков." << endl;
+	cout << "--c-filter-value       - Значение фильтра для загрузки списка заказчиков." << endl;
+	cout << "--t-filter-field       - Фильтр для загрузки списка порогов из секции <thresholds>." << endl;
+	cout << "--t-filter-value       - Значение фильтра для загрузки списка порогов из секции <thresholds>." << endl;
 	cout << "--wdt-device           - Использовать в качестве WDT указанный файл." << endl;
 	cout << "--heartbeat-node       - Загружать heartbeat датчики для указанного узла." << endl;
 	cout << "--heartbeat-check-time - период проверки 'счётчиков'. По умолчанию 1000 мсек" << endl;

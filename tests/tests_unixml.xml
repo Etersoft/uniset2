@@ -251,8 +251,8 @@
 			<item id="65" iotype="DI" name="D65_S" textname="D65" threshold_aid="AI64_AS" lowlimit="3" hilimit="5" threshold_invert="1" rs="5" />
 		</sensors>
 		<thresholds name="thresholds">
-			<sensor iotype="AI" name="AI_AS">
-				<threshold hilimit="376" id="1" lowlimit="374" name="t1" sensibility="0" sid="Threshold1_S">
+			<sensor name="AI_AS">
+				<threshold hilimit="376" id="1" lowlimit="374" name="t1" sid="Threshold1_S">
 					<consumers>
 						<consumer name="TestProc" type="objects"/>
 					</consumers>

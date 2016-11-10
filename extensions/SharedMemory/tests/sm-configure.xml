@@ -54,10 +54,12 @@
 			<item id="512" iotype="AI" name="DependAI_S" depend="Depend_BlockSensor_S" depend_value="1" depend_off_value="1000" priority="Medium" textname="Depend AI sesnor"/>
 			<item id="513" iotype="DI" name="DependDI_S" depend="Depend_BlockSensor_S" depend_value="0" depend_off_value="0" priority="Medium" textname="Depend DI sesnor"/>
 			<item id="514" iotype="DI" name="Depend_BlockSensor_S" priority="Medium" textname="Block Sensor for depend"/>
+			<item id="515" iotype="DI" name="Threshold2_S" priority="Medium" textname="Threshold 2"/>
 		</sensors>
 		<thresholds name="thresholds">
-			<sensor iotype="AI" name="AI1_AS">
-				<threshold hilimit="376" id="1" lowlimit="374" name="t1" sensibility="0" sid="Threshold1_S"/>
+			<sensor name="AI1_AS">
+				<threshold hilimit="376" id="1" lowlimit="374" name="t1" sid="Threshold1_S"/>
+				<threshold hilimit="30" id="1" lowlimit="25" name="t1" invert="1" sid="Threshold2_S"/>
 			</sensor>
 		</thresholds>
 		<controllers name="Controllers">

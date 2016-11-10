@@ -216,11 +216,10 @@ void NCRestorer_XML::read( IONotifyController* ic, const std::shared_ptr<UniXML>
 		init_depends_signals(ic);
 	}
 
-	xmlNode* tnode( xml->findNode(xml->getFirstNode(), "thresholds") );
+	xmlNode* tnode = xml->findNode(xml->getFirstNode(), "thresholds");
 
 	if( tnode )
 		read_thresholds(xml, tnode, ic);
-
 }
 // ------------------------------------------------------------------------------------------
 bool NCRestorer_XML::getBaseInfo( const std::shared_ptr<UniXML>& xml, xmlNode* it, IOController_i::SensorInfo& si )
@@ -359,16 +358,30 @@ void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNod
 		if( !check_thresholds_item(it) )
 			continue;
 
-		std::shared_ptr<NCRestorer_XML::SInfo> inf = make_shared<NCRestorer_XML::SInfo>();
-
-		if( !getSensorInfo(xml, it.getCurrent(), inf) )
+		IOController_i::SensorInfo si;
+		if( !getBaseInfo(xml,it.getCurrent(),si) )
 		{
-			uwarn << ic->getName()
-				  << "(read_thresholds): не смог получить информацию по датчику" << endl;
-			continue;
+			ostringstream err;
+			err << ic->getName()
+				  << "(read_thresholds): не смог получить информацию о пороге"
+				  << " для датчика " << it.getProp("name");
+			ucrit << err.str() << endl;
+			throw uniset::SystemError(err.str());
 		}
 
-		uinfo << ic->getName() << "(read_thresholds): " << it.getProp("name") << endl;
+		auto inf = ic->find(si.id);
+
+		if( inf == ic->ioEnd() )
+		{
+			ostringstream err;
+			err << ic->getName()
+				  << "(read_thresholds): датчик " << it.getProp("name")
+				  << " НЕ НАЙДЕН В СПИСКЕ датчиков";
+			ucrit << err.str() << endl;
+			throw uniset::SystemError(err.str());
+		}
+
+		ulog3 << ic->getName() << "(read_thresholds): " << it.getProp("name") << endl;
 
 		UniXML::iterator tit(it);
 
@@ -383,14 +396,17 @@ void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNod
 
 			if( !getThresholdInfo(xml, tit, ti) )
 			{
-				uwarn << ic->getName()
+				ostringstream err;
+				err << ic->getName()
 					  << "(read_thresholds): не смог получить информацию о пороге"
 					  << " для датчика "
-					  << uniset_conf()->oind->getNameById(inf->si.id) << endl;
-				continue;
+					  << uniset_conf()->oind->getNameById(si.id);
+
+				ucrit << err.str() << endl;
+				throw uniset::SystemError(err.str());
 			}
 
-			uinfo  << "(read_thresholds): \tthreshold low="
+			ulog3  << "(read_thresholds): \tthreshold low="
 				   << ti.lowlimit << " \thi=" << ti.hilimit
 				   << " \t sid=" << ti.sid
 				   << " \t invert=" << ti.invert
@@ -409,7 +425,7 @@ void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNod
 						uwarn << ic->getName()
 							  << "(read_thresholds): не смог получить список заказчиков"
 							  << " для порога " << ti.id
-							  << " датчика " << uniset_conf()->oind->getNameById(inf->si.id) << endl;
+							  << " датчика " << uniset_conf()->oind->getNameById(si.id) << endl;
 					}
 				}
 			}
@@ -419,7 +435,7 @@ void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNod
 			rtslot(xml, tit, it);
 		}
 
-		std::shared_ptr<IOController::USensorInfo> uinf = std::static_pointer_cast<IOController::USensorInfo>(inf);
+		std::shared_ptr<IOController::USensorInfo> uinf = std::static_pointer_cast<IOController::USensorInfo>(inf->second);
 		addthresholdlist(ic, uinf, std::move(tlst) );
 	}
 }

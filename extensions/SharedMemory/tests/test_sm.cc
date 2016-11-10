@@ -65,6 +65,20 @@ TEST_CASE("[SM]: threshold", "[sm][threshold]")
 	CHECK( ui->getValue(504) == 0 );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("[SM]: threshold (invert)", "[sm][threshold]")
+{
+	InitTest();
+
+	ui->setValue(503, 20);
+	CHECK( ui->getValue(515) == 1 );
+
+	ui->setValue(503, 25);
+	CHECK( ui->getValue(515) == 1 );
+
+	ui->setValue(503, 35);
+	CHECK( ui->getValue(515) == 0 );
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("[SM]: pulsar", "[sm][pulsar]")
 {
 	InitTest();
