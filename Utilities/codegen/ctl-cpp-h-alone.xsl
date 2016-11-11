@@ -52,8 +52,12 @@
 #include <xsl:call-template name="preinclude"/>VMonitor.h<xsl:call-template name="postinclude"/>
 // -----------------------------------------------------------------------------
 class <xsl:value-of select="$CLASSNAME"/>_SK:
-	<xsl:if test="normalize-space($BASECLASS)!=''">public <xsl:value-of select="normalize-space($BASECLASS)"/></xsl:if>
-	<xsl:if test="normalize-space($BASECLASS)=''">public uniset::UniSetObject</xsl:if>
+<xsl:choose>
+	<xsl:when test="normalize-space($BASECLASS)='UniSetObject'">	public uniset::UniSetObject</xsl:when>
+	<xsl:when test="normalize-space($BASECLASS)='UniSetManager'">	public uniset::UniSetManager</xsl:when>
+	<xsl:when test="normalize-space($BASECLASS)!=''">	public <xsl:value-of select="normalize-space($BASECLASS)"/></xsl:when>
+	<xsl:when test="normalize-space($BASECLASS)=''">	public uniset::UniSetObject</xsl:when>
+</xsl:choose>
 {
 	public:
 		<xsl:if test="not(normalize-space($OID))=''">

@@ -14,8 +14,8 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.5
-Release: alt20
+Version: 2.6
+Release: alt1
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -504,11 +504,14 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
         
 # history of current unpublished changes
-# - remove 'fastSaveValue'
-# - add suppor HTTP REST API
-# - (SM): add new statistics for consumers
 
 %changelog
+* Fri Nov 11 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt1
+- build new version
+- remove 'fastSaveValue'
+- add suppor HTTP REST API
+- (SM): add new statistics for consumers
+
 * Mon Oct 24 2016 Pavel Vainerman <pv@altlinux.ru> 2.5-alt20
 - correction after verification static analyzer (part 2)
 - LogServer: fixed bug "connection refuse" (again)

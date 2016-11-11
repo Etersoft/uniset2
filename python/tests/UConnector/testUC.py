@@ -9,7 +9,22 @@ sys.path.append('../../lib/pyUniSet/.libs')
 
 from lib import *
 
+def myfunc( act ):
+	act['test'] = 'test'
+	act['result'] = True
+	return True
+
+
 if __name__ == "__main__":
+	
+	
+	act = dict()
+	act['type'] = 'type'
+	myfunc(act)
+	
+	print act
+	exit(0)
+	
 	
 	lst = Params_inst()
 	lst2 = Params_inst()
