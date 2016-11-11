@@ -9,7 +9,7 @@
 #%def_enable modbus
 %def_disable tests
 %def_disable mqtt
-%def_enable netdata
+%def_disable netdata
 
 %define oname uniset2
 
