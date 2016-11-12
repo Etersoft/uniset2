@@ -359,6 +359,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %dir %_includedir/%oname/
 %_includedir/%oname/*.h
 %_includedir/%oname/*.hh
+%_includedir/%oname/*.hpp
 %_includedir/%oname/*.tcc
 %_includedir/%oname/modbus/
 
