@@ -54,8 +54,10 @@ typedef std::shared_ptr<UniSetActivator> UniSetActivatorPtr;
  * --uniset-abort-script  - скрипт запускаемый при вылете, в качестве аргумента передаётся имя программы и pid
 */
 class UniSetActivator:
-	public UniSetManager,
-	public uniset::UHttp::IHttpRequestRegistry
+	public UniSetManager
+#ifndef DISABLE_REST_API
+	,public uniset::UHttp::IHttpRequestRegistry
+#endif
 {
 	public:
 
@@ -88,11 +90,13 @@ class UniSetActivator:
 			return abortScript;
 		}
 
+#ifndef DISABLE_REST_API
 		// Поддрежка REST API (IHttpRequestRegistry)
 		virtual nlohmann::json httpGetByName( const std::string& name , const Poco::URI::QueryParameters& p ) override;
 		virtual nlohmann::json httpGetObjectsList( const Poco::URI::QueryParameters& p ) override;
 		virtual nlohmann::json httpHelpByName( const std::string& name, const Poco::URI::QueryParameters& p ) override;
 		virtual nlohmann::json httpRequestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) override;
+#endif
 
 	protected:
 
@@ -131,9 +135,11 @@ class UniSetActivator:
 
 		std::string abortScript = { "" }; // скрипт вызываемый при прерывании программы (SIGSEGV,SIGABRT)
 
+#ifndef DISABLE_REST_API
 		std::shared_ptr<uniset::UHttp::UHttpServer> httpserv;
 		std::string httpHost = { "" };
 		int httpPort = { 0 };
+#endif
 };
 // -------------------------------------------------------------------------
 } // end of uniset namespace

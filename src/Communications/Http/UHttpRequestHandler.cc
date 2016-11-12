@@ -1,3 +1,4 @@
+#ifndef DISABLE_REST_API
 /*
  * Copyright (c) 2015 Pavel Vainerman.
  *
@@ -160,3 +161,4 @@ nlohmann::json IHttpRequest::httpRequest( const string& req, const Poco::URI::Qu
 	throw uniset::SystemError(err.str());
 }
 // -------------------------------------------------------------------------
+#endif

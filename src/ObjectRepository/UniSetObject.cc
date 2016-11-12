@@ -380,6 +380,7 @@ void UniSetObject::push( const TransportMessage& tm )
 	termWaiting();
 }
 // ------------------------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
 nlohmann::json UniSetObject::httpGet( const Poco::URI::QueryParameters& p )
 {
 	nlohmann::json jret;
@@ -402,6 +403,7 @@ nlohmann::json UniSetObject::httpHelp( const Poco::URI::QueryParameters& p )
 	jdata[myname]["help"] = {};
 	return jdata;
 }
+#endif
 // ------------------------------------------------------------------------------------------
 ObjectPtr UniSetObject::getRef() const
 {

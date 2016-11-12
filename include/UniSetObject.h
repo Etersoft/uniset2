@@ -73,8 +73,10 @@ typedef std::list< std::shared_ptr<UniSetObject> > ObjectsList;     /*!< Спи�
 class UniSetObject:
 	public std::enable_shared_from_this<UniSetObject>,
 	public POA_UniSetObject_i,
-	public LT_Object,
-	public uniset::UHttp::IHttpRequest
+	public LT_Object
+#ifndef DISABLE_REST_API
+	,public uniset::UHttp::IHttpRequest
+#endif
 {
 	public:
 		UniSetObject( const std::string& name, const std::string& section );
@@ -102,10 +104,11 @@ class UniSetObject:
 		//! поместить сообщение в очередь
 		virtual void push( const uniset::TransportMessage& msg ) override;
 
+#ifndef DISABLE_REST_API
 		// HTTP API
 		virtual nlohmann::json httpGet( const Poco::URI::QueryParameters& p ) override;
 		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
-
+#endif
 		// -------------- вспомогательные --------------
 		/*! получить ссылку (на себя) */
 		uniset::ObjectPtr getRef() const;

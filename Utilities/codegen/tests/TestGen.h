@@ -19,8 +19,9 @@ class TestGen:
 		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 		virtual void sigterm( int signo ) override;
+#ifndef DISABLE_REST_API		
 		virtual void httpGetUserData( nlohmann::json& jdata ) override;
-
+#endif
 	private:
 		bool bool_var = { false };
 		int int_var = {0};

@@ -225,6 +225,25 @@ fi
 
 AM_CONDITIONAL(DISABLE_MQTT, test ${buildmqtt} = false)
 
+#check rest api support
+AC_MSG_CHECKING([REST API support])
+buildapi=true
+AC_ARG_ENABLE(api, AC_HELP_STRING([--disable-api], [disable REST API support]),
+[ if test $enableval = yes; then buildapi=true; else buildapi=false; fi],[ buildapi=true; ])
+
+REST_API_CFLAGS=
+DISABLE_REST_API=
+
+if test ${buildapi} = true; then
+    AC_MSG_RESULT([enabled])
+else
+    AC_MSG_RESULT([disabled])
+	REST_API_CFLAGS="-DDISABLE_REST_API"
+    DISABLE_REST_API=1
+fi
+
+AM_CONDITIONAL(DISABLE_REST_API, test ${buildapi} = false)
+AC_SUBST(DISABLE_REST_API)
 
 # check Doxygen
 DOXYGEN=""
@@ -325,7 +344,7 @@ CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Woverloaded-virtual -Woverflow -D_GLIBCXX_U
 # export
 LDFLAGS="$LDFLAGS ${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS} ${POCO_LIBS} ${EV_LIBS}"
 # all developer liked options add to autogen.sh, please
-CXXFLAGS="-I\$(top_builddir)/include $CXXFLAGS -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${POCO_CFLAGS} ${EV_CFLAGS} $CXX_EXTRA_FLAGS"
+CXXFLAGS="-I\$(top_builddir)/include $CXXFLAGS -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${REST_API_CFLAGS} ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${POCO_CFLAGS} ${EV_CFLAGS} $CXX_EXTRA_FLAGS"
 
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)
@@ -361,7 +380,7 @@ AC_C_VOLATILE
 #AC_FUNC_MALLOC
 AC_FUNC_SELECT_ARGTYPES
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS([atexit getcwd gettimeofday atomic_set])
+AC_CHECK_FUNCS([atexit getcwd])
 
 AC_CONFIG_FILES([Makefile
 				 libUniSet2.pc

@@ -162,10 +162,11 @@ class IONotifyController:
 
 		// --------------------------------------------
 
+#ifndef DISABLE_REST_API
 		// http API
 		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
 		nlohmann::json httpRequest( const string& req, const Poco::URI::QueryParameters& p );
-
+#endif
 
 		// --------------------------------------------
 		/*! Информация о заказчике */
@@ -323,10 +324,12 @@ class IONotifyController:
 			udataThresholdList = 1
 		};
 
+#ifndef DISABLE_REST_API
 		// http api
 		nlohmann::json request_consumers( const std::string& req, const Poco::URI::QueryParameters& p );
 		nlohmann::json request_lost( const string& req, const Poco::URI::QueryParameters& p );
 		nlohmann::json getConsumers( uniset::ObjectId sid, ConsumerListInfo& clist, bool noEmpty = true );
+#endif
 
 	private:
 		friend class NCRestorer;

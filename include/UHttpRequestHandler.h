@@ -1,3 +1,4 @@
+#ifndef DISABLE_REST_API
 /*
  * Copyright (c) 2015 Pavel Vainerman.
  *
@@ -115,3 +116,4 @@ namespace uniset
 // -------------------------------------------------------------------------
 #endif // UHttpRequesrHandler_H_
 // -------------------------------------------------------------------------
+#endif

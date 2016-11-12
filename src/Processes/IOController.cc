@@ -842,6 +842,7 @@ uniset::SimpleInfo* IOController::getInfo( ::CORBA::Long userparam )
 	return i._retn();
 }
 // -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
 nlohmann::json IOController::httpHelp( const Poco::URI::QueryParameters& p )
 {
 	nlohmann::json jdata = UniSetManager::httpHelp(p);
@@ -1006,3 +1007,4 @@ nlohmann::json IOController::request_sensors( const string& req, const Poco::URI
 	return std::move(jdata);
 }
 // -----------------------------------------------------------------------------
+#endif // #ifndef DISABLE_REST_API

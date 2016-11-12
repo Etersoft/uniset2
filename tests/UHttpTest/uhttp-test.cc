@@ -1,3 +1,4 @@
+#ifndef DISABLE_REST_API
 #include <iostream>
 #include <memory>
 #include "UHttpServer.h"
@@ -88,7 +89,6 @@ class UTestRequestRegistry:
 	private:
 		UTestSupplier sup;
 };
-
 // --------------------------------------------------------------------------
 int main(int argc, const char** argv)
 {
@@ -118,3 +118,11 @@ int main(int argc, const char** argv)
 
 	return 1;
 }
+#else
+#include <iostream>
+int main(int argc, const char** argv)
+{
+	std::cerr << "REST API DISABLED!!" << std::endl;
+	return 1;
+}
+#endif // #ifndef DISABLE_REST_API

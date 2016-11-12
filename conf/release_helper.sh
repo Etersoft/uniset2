@@ -64,7 +64,7 @@ function cp2ftp()
 
 add_changelog_helper "- new build" $SPECNAME
 
-rpmbb $SPECNAME || fatal "Can't build"
+rpmbb ${UNISET_BUILD_ADDON_OPTIONS} $SPECNAME || fatal "Can't build"
 
 cp2ftp
 

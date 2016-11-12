@@ -96,10 +96,12 @@ class IOController:
 
 		virtual IOController_i::ShortMapSeq* getSensors() override;
 
+#ifndef DISABLE_REST_API
 		// http API
 //		virtual nlohmann::json getData( const Poco::URI::QueryParameters& p ) override;
 		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
 		virtual nlohmann::json httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
+#endif
 
 	public:
 
@@ -166,10 +168,12 @@ class IOController:
 		virtual long localSetValue( std::shared_ptr<USensorInfo>& usi, CORBA::Long value, uniset::ObjectId sup_id );
 		long localGetValue( std::shared_ptr<USensorInfo>& usi) ;
 
+#ifndef DISABLE_REST_API
 		// http API
 		virtual nlohmann::json request_get( const std::string& req, const Poco::URI::QueryParameters& p );
 		virtual nlohmann::json request_sensors( const std::string& req, const Poco::URI::QueryParameters& p );
 		void getSensorInfo( nlohmann::json& jdata, std::shared_ptr<USensorInfo>& s , bool shortInfo = false );
+#endif
 
 		// переопределяем для добавления вызова регистрации датчиков
 		virtual bool deactivateObject() override;

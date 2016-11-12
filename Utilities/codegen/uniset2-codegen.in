@@ -11,6 +11,8 @@ top_builddir=@top_builddir@
 
 xsltdir=@datadir@/@PACKAGE@/xslt
 
+[ -z "@DISABLE_REST_API@" ] && DISABLE_REST_API=0 || DISABLE_REST_API=1
+
 PROG="${0##*/}"
 
 print_usage()
@@ -206,6 +208,7 @@ PARAMS=$( echo \
 		--stringparam LOCALINC "${localinc}" \
 		--stringparam VARMAP "${varmap}" \
 		--stringparam STAT "${genstat}" \
+		--stringparam DISABLE_REST_API "${DISABLE_REST_API}" \
 		$xsltpath \
 		)
 #		--stringparam ADD_CC_INC "${add_cc_inc}" \

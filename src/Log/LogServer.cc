@@ -345,6 +345,7 @@ string LogServer::getShortInfo()
 	return std::move(inf.str());
 }
 // -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
 nlohmann::json LogServer::httpGetShortInfo()
 {
 	nlohmann::json jdata;
@@ -363,6 +364,7 @@ nlohmann::json LogServer::httpGetShortInfo()
 
 	return std::move(jdata);
 }
+#endif // #ifndef DISABLE_REST_API
 // -----------------------------------------------------------------------------
 void LogServer::saveDefaultLogLevels( const std::string& logname )
 {

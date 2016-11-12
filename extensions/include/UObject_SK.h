@@ -120,11 +120,12 @@ class UObject_SK:
         // ------------------------------------------------------------
         std::string help() noexcept;
         
+#ifndef DISABLE_REST_API
         // HTTP API
         virtual nlohmann::json httpGet( const Poco::URI::QueryParameters& p ) override;
         virtual nlohmann::json httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
         virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
-       
+#endif
 
 
 		// Используемые идентификаторы
@@ -157,9 +158,11 @@ class UObject_SK:
 		virtual void sigterm( int signo ) override;
 		virtual bool activateObject() override;
 		virtual std::string getMonitInfo(){ return ""; } /*!< пользовательская информация выводимая в getInfo() */
+#ifndef DISABLE_REST_API
 		virtual void httpGetUserData( nlohmann::json& jdata ){} /*!<  для пользовательских данных в httpGet() */
         virtual nlohmann::json httpDumpIO();
         virtual nlohmann::json httpRequestLog( const Poco::URI::QueryParameters& p );
+#endif
 
         // Выполнение очередного шага программы
 		virtual void step(){}

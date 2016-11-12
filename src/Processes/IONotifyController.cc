@@ -1165,6 +1165,7 @@ IDSeq* IONotifyController::askSensorsSeq( const uniset::IDSeq& lst,
 	return badlist.getIDSeq();
 }
 // -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
 nlohmann::json IONotifyController::httpHelp(const Poco::URI::QueryParameters& p)
 {
 	nlohmann::json jdata = IOController::httpHelp(p);
@@ -1298,3 +1299,4 @@ nlohmann::json IONotifyController::request_lost( const string& req, const Poco::
 	return std::move(json);
 }
 // -----------------------------------------------------------------------------
+#endif // #ifndef DISABLE_REST_API

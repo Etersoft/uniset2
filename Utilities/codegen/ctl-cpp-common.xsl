@@ -253,12 +253,13 @@
         inline std::string dumpVars(){ return std::move(vmon.pretty_str()); }
         // ------------------------------------------------------------
         std::string help() noexcept;
-        
+
+<xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
         // HTTP API
         virtual nlohmann::json httpGet( const Poco::URI::QueryParameters&amp; p ) override;
         virtual nlohmann::json httpRequest( const std::string&amp; req, const Poco::URI::QueryParameters&amp; p ) override;
         virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters&amp; p ) override;
-       
+</xsl:if>       
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PROTECTED">
@@ -271,10 +272,11 @@
 		virtual void sigterm( int signo ) override;
 		virtual bool activateObject() override;
 		virtual std::string getMonitInfo(){ return ""; } /*!&lt; пользовательская информация выводимая в getInfo() */
+<xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 		virtual void httpGetUserData( nlohmann::json&amp; jdata ){} /*!&lt;  для пользовательских данных в httpGet() */
         virtual nlohmann::json httpDumpIO();
         virtual nlohmann::json httpRequestLog( const Poco::URI::QueryParameters&amp; p );
-
+</xsl:if>
         // Выполнение очередного шага программы
 		virtual void step(){}
 
@@ -562,6 +564,7 @@ uniset::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( CORBA::Long
 	return i._retn();
 }
 // -----------------------------------------------------------------------------
+<xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpGet( const Poco::URI::QueryParameters&amp; params )
 {
 	<xsl:if test="not(normalize-space($BASECLASS)='')">nlohmann::json json = <xsl:value-of select="$BASECLASS"/>::httpGet(params);</xsl:if>
@@ -651,6 +654,8 @@ nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpRequestLog( const Poc
 	
 	return std::move(jret);
 }
+// -----------------------------------------------------------------------------
+</xsl:if>
 // -----------------------------------------------------------------------------
 <xsl:if test="normalize-space($TESTMODE)!=''">
 bool <xsl:value-of select="$CLASSNAME"/>_SK::checkTestMode() const noexcept
@@ -1402,6 +1407,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
 	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
+<xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 {
 	nlohmann::json jdata;
@@ -1434,6 +1440,8 @@ nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 	return std::move(jdata);
 }
 // ----------------------------------------------------------------------------
+</xsl:if>
+
 std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 {
 	ostringstream s;
@@ -1785,6 +1793,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( uniset::ObjectId _code, boo
 	return false;
 }
 // -----------------------------------------------------------------------------
+<xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 {
 	nlohmann::json jdata;
@@ -1816,6 +1825,8 @@ nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 	return std::move(jdata);
 }
 // -----------------------------------------------------------------------------
+</xsl:if>
+
 std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 {
 	ostringstream s;

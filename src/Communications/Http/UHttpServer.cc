@@ -1,3 +1,4 @@
+#ifndef DISABLE_REST_API
 /*
  * Copyright (c) 2015 Pavel Vainerman.
  *
@@ -75,3 +76,4 @@ std::shared_ptr<DebugStream> UHttpServer::log()
     return mylog;
 }
 // -------------------------------------------------------------------------
+#endif // #ifndef DISABLE_REST_API

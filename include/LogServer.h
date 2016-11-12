@@ -29,7 +29,10 @@
 #include "UTCPSocket.h"
 #include "CommonEventLoop.h"
 #include "LogServerTypes.h"
+
+#ifndef DISABLE_REST_API
 #include "json.hpp"
+#endif
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -124,7 +127,10 @@ class LogServer:
 		static std::string help_print( const std::string& prefix );
 
 		std::string getShortInfo();
+
+#ifndef DISABLE_REST_API
 		nlohmann::json httpGetShortInfo();
+#endif
 
 	protected:
 		LogServer();

@@ -27,7 +27,9 @@
 #include "UTCPCore.h"
 #include "UTCPStream.h"
 #include "LogAgregator.h"
+#ifndef DISABLE_REST_API
 #include "json.hpp"
+#endif
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -79,10 +81,13 @@ class LogSession
 
 		bool isAcive() const noexcept;
 
-		std::string getShortInfo() noexcept;
-		nlohmann::json httpGetShortInfo();
-
 		std::string name() const noexcept;
+
+		std::string getShortInfo() noexcept;
+
+#ifndef DISABLE_REST_API
+		nlohmann::json httpGetShortInfo();
+#endif
 
 	protected:
 		//		LogSession( ost::TCPSocket& server );

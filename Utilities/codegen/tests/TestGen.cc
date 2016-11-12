@@ -83,6 +83,7 @@ void TestGen::sigterm( int signo )
 	TestGen_SK::sigterm(signo);
 }
 // -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
 void TestGen::httpGetUserData( nlohmann::json& jdata )
 {
 	jdata["myMode"] = "RUNNING";
@@ -90,6 +91,7 @@ void TestGen::httpGetUserData( nlohmann::json& jdata )
 	jdata["myFloatVar"] = 42.42;
 	jdata["myMessage"] = "This is text fot test httpGetUserData";
 }
+#endif
 // -----------------------------------------------------------------------------
 void TestGen::sysCommand( const uniset::SystemMessage* sm )
 {

@@ -528,6 +528,7 @@ void UniSetActivator::init()
 
 	abortScript = conf->getArgParam("--uniset-abort-script", "");
 
+#ifndef DISABLE_REST_API
 	if( findArgParam("--activator-run-httpserver", conf->getArgc(), conf->getArgv()) != -1 )
 	{
 		httpHost = conf->getArgParam("--activator-httpserver-host", "localhost");
@@ -536,6 +537,7 @@ void UniSetActivator::init()
 		httpPort = conf->getArgInt("--activator-httpserver-port", s.str());
 		ulog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
 	}
+#endif
 
 	orb = conf->getORB();
 	CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
@@ -665,6 +667,7 @@ void UniSetActivator::run( bool thread )
 
 	set_signals(true);
 
+#ifndef DISABLE_REST_API
 	if( !httpHost.empty() )
 	{
 		try
@@ -678,7 +681,7 @@ void UniSetActivator::run( bool thread )
 			uwarn << myname << "(run): init http server error: " << ex.what() << endl;
 		}
 	}
-
+#endif
 
 	if( thread )
 	{
@@ -715,8 +718,10 @@ void UniSetActivator::stop()
 
 	ulogsys << myname << "(stop): discard request ok." << endl;
 
+#ifndef DISABLE_REST_API
 	if( httpserv )
 		httpserv->stop();
+#endif
 }
 
 // ------------------------------------------------------------------------------------------
@@ -864,6 +869,7 @@ UniSetActivator::TerminateEvent_Signal UniSetActivator::signal_terminate_event()
 	return s_term;
 }
 // ------------------------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
 nlohmann::json UniSetActivator::httpGetByName( const string& name, const Poco::URI::QueryParameters& p )
 {
 	if( name == myname )
@@ -923,6 +929,7 @@ nlohmann::json UniSetActivator::httpRequestByName( const string& name, const std
 	err << "Object '" << name << "' not found";
 	throw uniset::NameNotFound(err.str());
 }
+#endif // #ifndef DISABLE_REST_API
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::terminated( int signo )
 {

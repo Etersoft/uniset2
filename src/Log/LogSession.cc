@@ -676,6 +676,7 @@ string LogSession::getShortInfo() noexcept
 	return std::move(inf.str());
 }
 // ---------------------------------------------------------------------
+#ifndef DISABLE_REST_API
 nlohmann::json LogSession::httpGetShortInfo()
 {
 	nlohmann::json jret;
@@ -698,6 +699,7 @@ nlohmann::json LogSession::httpGetShortInfo()
 
 	return std::move(jret);
 }
+#endif // #ifndef DISABLE_REST_API
 // ---------------------------------------------------------------------
 string LogSession::name() const noexcept
 {

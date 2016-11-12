@@ -292,6 +292,7 @@ void UObject_SK::testMode( bool _state )
 	
 }
 // -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
 nlohmann::json UObject_SK::httpDumpIO()
 {
 	nlohmann::json jdata;
@@ -306,6 +307,7 @@ nlohmann::json UObject_SK::httpDumpIO()
 	return std::move(jdata);
 }
 // ----------------------------------------------------------------------------
+#endif // #ifndef DISABLE_REST_API
 std::string  UObject_SK::dumpIO()
 {
 	ostringstream s;
@@ -504,6 +506,7 @@ uniset::SimpleInfo* UObject_SK::getInfo( CORBA::Long userparam )
 	return i._retn();
 }
 // -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
 nlohmann::json UObject_SK::httpGet( const Poco::URI::QueryParameters& params )
 {
 	nlohmann::json json = UniSetObject::httpGet(params);
@@ -591,7 +594,7 @@ nlohmann::json UObject_SK::httpRequestLog( const Poco::URI::QueryParameters& p )
 	return std::move(jret);
 }
 // -----------------------------------------------------------------------------
-
+#endif // #ifndef DISABLE_REST_API
 // -----------------------------------------------------------------------------
 void UObject_SK::sigterm( int signo )
 {
