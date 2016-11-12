@@ -244,6 +244,7 @@ fi
 
 AM_CONDITIONAL(DISABLE_REST_API, test ${buildapi} = false)
 AC_SUBST(DISABLE_REST_API)
+AC_SUBST(REST_API_CFLAGS)
 
 # check Doxygen
 DOXYGEN=""
