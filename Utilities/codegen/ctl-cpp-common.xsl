@@ -277,8 +277,8 @@
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 #ifndef DISABLE_REST_API
 		virtual void httpGetUserData( nlohmann::json&amp; jdata ){} /*!&lt;  для пользовательских данных в httpGet() */
-        	virtual nlohmann::json httpDumpIO();
-        	virtual nlohmann::json httpRequestLog( const Poco::URI::QueryParameters&amp; p );
+		virtual nlohmann::json httpDumpIO();
+		virtual nlohmann::json httpRequestLog( const Poco::URI::QueryParameters&amp; p );
 #endif
 </xsl:if>
         // Выполнение очередного шага программы
