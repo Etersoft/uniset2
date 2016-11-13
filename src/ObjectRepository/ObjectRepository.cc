@@ -88,7 +88,7 @@ throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
 {
 	ostringstream err;
 
-	uinfo << "ObjectRepository(registration): регистрируем " << name << endl;
+	ulogrep << "ObjectRepository(registration): регистрируем " << name << endl;
 
 	if( CORBA::is_nil(oRef) )
 	{

@@ -392,7 +392,7 @@ void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNod
 
 		for( ; tit; tit.goNext() )
 		{
-			IONotifyController::ThresholdInfoExt ti(0, 0, 0, 0);
+			IONotifyController::ThresholdInfoExt ti(0, 0, 0, false);
 
 			if( !getThresholdInfo(xml, tit, ti) )
 			{

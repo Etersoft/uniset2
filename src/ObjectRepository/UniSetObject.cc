@@ -225,11 +225,11 @@ VoidMessagePtr UniSetObject::waitMessage( timeout_t timeMS )
 // ------------------------------------------------------------------------------------------
 void UniSetObject::registered()
 {
-	uinfo << myname << ": registration..." << endl;
+	ulogrep << myname << ": registration..." << endl;
 
 	if( myid == uniset::DefaultObjectId )
 	{
-		uinfo << myname << "(registered): myid=DefaultObjectId \n";
+		uinfo << myname << "(registered): Don`t registration. myid=DefaultObjectId \n";
 		return;
 	}
 

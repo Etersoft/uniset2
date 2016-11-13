@@ -409,7 +409,7 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi, bool force
 		{
 			try
 			{
-				uinfo << myname
+				ulogrep << myname
 					  << "(ioRegistration): регистрирую "
 					  << uniset_conf()->oind->getNameById(usi->si.id) << endl;
 

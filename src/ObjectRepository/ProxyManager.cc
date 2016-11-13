@@ -81,7 +81,7 @@ bool ProxyManager::activateObject()
 			{
 				try
 				{
-					uinfo << myname << "(registered): попытка "
+					ulogrep << myname << "(registered): попытка "
 						  << i + 1 << " регистриую (id=" << it.first << ") "
 						  << " (pname=" << it.second->getName() << ") "
 						  << uniset_conf()->oind->getNameById(it.first) << endl;
