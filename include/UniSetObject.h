@@ -106,8 +106,8 @@ class UniSetObject:
 
 #ifndef DISABLE_REST_API
 		// HTTP API
-		virtual nlohmann::json httpGet( const Poco::URI::QueryParameters& p ) override;
-		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
+		virtual Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p ) override;
+		virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
 #endif
 		// -------------- вспомогательные --------------
 		/*! получить ссылку (на себя) */

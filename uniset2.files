@@ -342,6 +342,7 @@ include/WDTInterface.h
 include/UHelpers.h
 include/UHttpRequestHandler.h
 include/UHttpServer.h
+include/ujson.h
 lib/Makefile.am
 python/examples/test.xml
 python/lib/pyUniSet/Makefile.am
@@ -443,6 +444,7 @@ src/Various/UniXML.cc
 src/Various/WDTInterface.cc
 src/Various/MQMutex.cc
 src/Various/MQAtomic.cc
+src/Various/ujson.cc
 src/Makefile.am
 tests/UniXmlTest/Makefile.am
 tests/UniXmlTest/XmlTest.cc

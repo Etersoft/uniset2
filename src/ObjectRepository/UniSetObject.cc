@@ -383,27 +383,25 @@ void UniSetObject::push( const TransportMessage& tm )
 }
 // ------------------------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
-nlohmann::json UniSetObject::httpGet( const Poco::URI::QueryParameters& p )
+Poco::JSON::Object::Ptr UniSetObject::httpGet( const Poco::URI::QueryParameters& p )
 {
-	nlohmann::json jret;
-	auto& jdata = jret[myname];
+	Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
+	Poco::JSON::Object::Ptr jdata = uniset::json::make_child(jret,myname);
 
-	jdata["name"] = myname;
-	jdata["id"] = getId();
-	jdata["msgCount"] = countMessages();
-	jdata["lostMessages"] = getCountOfLostMessages();
-	jdata["maxSizeOfMessageQueue"] = getMaxSizeOfMessageQueue();
-	jdata["isActive"] = isActive();
-	jdata["objectType"] = getType();
-
+	jdata->set("name",myname);
+	jdata->set("id", getId());
+	jdata->set("msgCount", countMessages());
+	jdata->set("lostMessages", getCountOfLostMessages());
+	jdata->set("maxSizeOfMessageQueue", getMaxSizeOfMessageQueue());
+	jdata->set("isActive", isActive());
+	jdata->set("objectType", getType());
 	return jret;
 }
 // ------------------------------------------------------------------------------------------
-nlohmann::json UniSetObject::httpHelp( const Poco::URI::QueryParameters& p )
+Poco::JSON::Object::Ptr UniSetObject::httpHelp( const Poco::URI::QueryParameters& p )
 {
-	nlohmann::json jdata;
-	jdata[myname]["help"] = {};
-	return jdata;
+	uniset::json::help::object myhelp(myname);
+	return myhelp;
 }
 #endif
 // ------------------------------------------------------------------------------------------

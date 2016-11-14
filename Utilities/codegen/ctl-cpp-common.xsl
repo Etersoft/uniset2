@@ -173,7 +173,7 @@
 		void askSensor( uniset::ObjectId sid, UniversalIO::UIOCommand, uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() );
 		void updateValues();
 
-		virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
+		virtual uniset::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
 
 		virtual bool setMsg( uniset::ObjectId code, bool state = true ) noexcept;
 
@@ -257,9 +257,9 @@
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 #ifndef DISABLE_REST_API
         // HTTP API
-        virtual nlohmann::json httpGet( const Poco::URI::QueryParameters&amp; p ) override;
-        virtual nlohmann::json httpRequest( const std::string&amp; req, const Poco::URI::QueryParameters&amp; p ) override;
-        virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters&amp; p ) override;
+        virtual Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters&amp; p ) override;
+        virtual Poco::JSON::Object::Ptr httpRequest( const std::string&amp; req, const Poco::URI::QueryParameters&amp; p ) override;
+        virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters&amp; p ) override;
 #endif
 </xsl:if>       
 </xsl:template>
@@ -276,9 +276,9 @@
 		virtual std::string getMonitInfo(){ return ""; } /*!&lt; пользовательская информация выводимая в getInfo() */
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 #ifndef DISABLE_REST_API
-		virtual void httpGetUserData( nlohmann::json&amp; jdata ){} /*!&lt;  для пользовательских данных в httpGet() */
-		virtual nlohmann::json httpDumpIO();
-		virtual nlohmann::json httpRequestLog( const Poco::URI::QueryParameters&amp; p );
+		virtual void httpGetUserData( Poco::JSON::Object::Ptr&amp; jdata ){} /*!&lt;  для пользовательских данных в httpGet() */
+        virtual Poco::JSON::Object::Ptr httpDumpIO();
+        virtual Poco::JSON::Object::Ptr httpRequestLog( const Poco::URI::QueryParameters&amp; p );
 #endif
 </xsl:if>
         // Выполнение очередного шага программы
@@ -416,8 +416,6 @@
 		
 		std::unordered_map&lt;const uniset::ObjectId,size_t, StatHashFn&gt; smStat; /*!&lt; количество сообщений по датчикам */
 		size_t processingMessageCatchCount = { 0 }; /*!&lt; количество исключений пойманных в processingMessage */
-
-		std::string ostate = { "" }; /*!&lt; состояние процесса (выводится в getInfo()) */
 		</xsl:if>
 </xsl:template>
 
@@ -478,42 +476,22 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 			}
 		case SystemMessage::StartUp:
 		{
-			ostate = "StartUp...";
-			try
+			if( !logserv_host.empty() &amp;&amp; logserv_port != 0 &amp;&amp; !logserv-&gt;isRunning() )
 			{
-				if( !logserv_host.empty() &amp;&amp; logserv_port != 0 &amp;&amp; !logserv-&gt;isRunning() )
-				{
-					ostate = "StartUp: run log server...";
-					myinfo &lt;&lt; myname &lt;&lt; "(preSysCommand): run log server " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port &lt;&lt; endl;
-					logserv-&gt;run(logserv_host, logserv_port, true);
-				}
-			}
-			catch( std::exception&amp; ex )
-			{
-				mywarn &lt;&lt; myname &lt;&lt; "(preSysCommand): CAN`t run log server err: " &lt;&lt; ex.what() &lt;&lt; endl;
-			}
-			catch( ... )
-			{
-				mywarn &lt;&lt; myname &lt;&lt; "(preSysCommand): CAN`t run log server err: catch ..." &lt;&lt; endl;
+				myinfo &lt;&lt; myname &lt;&lt; "(preSysCommand): run log server " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port &lt;&lt; endl;
+				logserv-&gt;run(logserv_host, logserv_port, true);
 			}
 
-			ostate = "StartUp: wait sm ready..";
 			waitSM(smReadyTimeout);
 			ptStartUpTimeout.reset();
 			// т.к. для io-переменных важно соблюдать последовательность!
 			// сперва обновить входы..
-			ostate = "StartUp: update values..";
 			updateValues();
-			ostate = "StartUp: init from SM..";
 			initFromSM(); // потом обновить значения переменных, помеченных как инициализируемые из SM
-			ostate = "StartUp: update outputs..";
 			updateOutputs(true); // а потом уже выходы (принудительное обновление)
-			ostate = "StartUp: pre ask sensors..";
 			preAskSensors(UniversalIO::UIONotify);
-			ostate = "StartUp: ask sensors..";
 			askSensors(UniversalIO::UIONotify);
 			active = true;
-			ostate = "StartUp: [OK]";
 			break;
 		}
 		
@@ -536,19 +514,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 			
 			if( logserv &amp;&amp; !logserv_host.empty() &amp;&amp; logserv_port != 0 )
 			{
-				try
-				{
-					mylogany &lt;&lt; myname &lt;&lt; "(preSysCommand): try restart logserver.." &lt;&lt; endl;
-					logserv-&gt;check(true);
-				}
-				catch( std::exception&amp; ex )
-				{
-					mywarn &lt;&lt; myname &lt;&lt; "(preSysCommand): CAN`t restart log server err: " &lt;&lt; ex.what() &lt;&lt; endl;
-				}
-				catch( ... )
-				{
-					mywarn &lt;&lt; myname &lt;&lt; "(preSysCommand): CAN`t restart log server err: catch ..." &lt;&lt; endl;
-				}
+				mylogany &lt;&lt; myname &lt;&lt; "(preSysCommand): try restart logserver.." &lt;&lt; endl;
+				logserv-&gt;check(true);
 			}
 		}
 		break;
@@ -561,7 +528,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 }
 // -----------------------------------------------------------------------------
 
-uniset::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( const char* userparam )
+uniset::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( CORBA::Long userparam )
 {
 	<xsl:if test="not(normalize-space($BASECLASS)='')">uniset::SimpleInfo_var i = <xsl:value-of select="$BASECLASS"/>::getInfo(userparam);</xsl:if>
 	<xsl:if test="normalize-space($BASECLASS)=''">uniset::SimpleInfo_var i = UniSetObject::getInfo(userparam);</xsl:if>
@@ -569,8 +536,6 @@ uniset::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( const char*
 	ostringstream inf;
 	
 	inf &lt;&lt; i->info &lt;&lt; endl;
-	inf &lt;&lt; "initialization: " &lt;&lt; ostate &lt;&lt; endl;
-
 	if( logserv /* &amp;&amp; userparam &lt; 0 */ )
 	{
 		inf &lt;&lt; "LogServer: " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port 
@@ -605,78 +570,79 @@ uniset::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( const char*
 // -----------------------------------------------------------------------------
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 #ifndef DISABLE_REST_API
-nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpGet( const Poco::URI::QueryParameters&amp; params )
+Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpGet( const Poco::URI::QueryParameters&amp; params )
 {
-	<xsl:if test="not(normalize-space($BASECLASS)='')">nlohmann::json json = <xsl:value-of select="$BASECLASS"/>::httpGet(params);</xsl:if>
-	<xsl:if test="normalize-space($BASECLASS)=''">nlohmann::json json = UniSetObject::httpGet(params);</xsl:if>
+	<xsl:if test="not(normalize-space($BASECLASS)='')">Poco::JSON::Object::Ptr json = <xsl:value-of select="$BASECLASS"/>::httpGet(params);</xsl:if>
+	<xsl:if test="normalize-space($BASECLASS)=''">Poco::JSON::Object::Ptr json = UniSetObject::httpGet(params);</xsl:if>
 	
-	auto&amp; jdata = json[myname];
+	Poco::JSON::Object::Ptr jdata = json->getObject(myname);
+	if( !jdata )
+		jdata = uniset::json::make_child(json,myname);
 
+	Poco::JSON::Object::Ptr jserv = uniset::json::make_child(jdata,"LogServer");
 	if( logserv )
 	{
-		jdata["LogServer"] = {
-			{"host",logserv_host},
-			{"port",logserv_port},
-			{"state",( logserv->isRunning() ? "RUNNIG" : "STOPPED" )},
-			{"info", logserv->httpGetShortInfo() }
-		};
+		jserv->set("host",logserv_host);
+		jserv->set("port",logserv_port);
+		jserv->set("state",( logserv->isRunning() ? "RUNNIG" : "STOPPED" ));
+		jserv->set("info", logserv->httpGetShortInfo());
 	}
-	else
-		jdata["LogServer"] = {};
 		
-	jdata["io"] = httpDumpIO();
+	jdata->set("io", httpDumpIO());
 	
 	auto timers = getTimersList();
-	auto&amp; jtm = jdata["Timers"];
+	auto jtm = uniset::json::make_child(jdata,"Timers");
 
-	jtm["count"] = timers.size();
+	jtm->set("count",timers.size());
 	for( const auto&amp; t: timers )
 	{
-		std::string tid(to_string(t.id));
-		auto&amp; jt = jtm[tid];
-		jt["id"] = t.id;
-		jt["name"] = getTimerName(t.id);
-		jt["msec"] = t.tmr.getInterval();
-		jt["timeleft"] = t.curTimeMS;
-		jt["tick"] = ( t.curTick>=0 ? t.curTick : -1 );
+		auto jt = uniset::json::make_child(jtm,to_string(t.id));
+		jt->set("id", t.id);
+		jt->set("name", getTimerName(t.id));
+		jt->set("msec", t.tmr.getInterval());
+		jt->set("timeleft", t.curTimeMS);
+		jt->set("tick", ( t.curTick>=0 ? t.curTick : -1 ));
 	}
 
 	auto vlist = vmon.getList();
-	auto&amp; jvmon = jdata["Variables"];
+	auto jvmon = uniset::json::make_child(jdata,"Variables");
 	
 	for( const auto&amp; v: vlist )
-		jvmon[v.first] = v.second;
+		jvmon->set(v.first,v.second);
 
 	<xsl:if test="normalize-space($STAT)='1'">
-	auto&amp; jstat = jdata["Statistics"];
-	jstat["processingMessageCatchCount"] = processingMessageCatchCount;
-	auto&amp; jsens = jstat["sensors"];
+	auto jstat = uniset::json::make_child(jdata,"Statistics");
+	jstat->set("processingMessageCatchCount", processingMessageCatchCount);
+
+	auto jsens = uniset::json::make_child(jstat,"sensors");
 	for( const auto&amp; s: smStat )
 	{
 		std::string sname(ORepHelpers::getShortName( uniset_conf()->oind->getMapName(s.first)));
-		auto&amp; js = jsens[sname];
-		js["id"] = s.first;
-		js["name"] = sname;
-		js["count"] = s.second;
+		auto js = uniset::json::make_child(jsens,sname);
+		js->set("id", s.first);
+		js->set("name", sname);
+		js->set("count", s.second);
 	}
 	</xsl:if>
 		
 	httpGetUserData(jdata);
-	return std::move(json);
+
+	return json;
 }
 // -----------------------------------------------------------------------------
-nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpHelp( const Poco::URI::QueryParameters&amp; params )
+Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpHelp( const Poco::URI::QueryParameters&amp; params )
 {
-	<xsl:if test="not(normalize-space($BASECLASS)='')">nlohmann::json jdata = <xsl:value-of select="$BASECLASS"/>::httpHelp(params);</xsl:if>
-	<xsl:if test="normalize-space($BASECLASS)=''">nlohmann::json jdata = UniSetObject::httpGet(params);</xsl:if>
+	<xsl:if test="not(normalize-space($BASECLASS)='')">uniset::json::help::object myhelp(myname, <xsl:value-of select="$BASECLASS"/>::httpHelp(params));</xsl:if>
+	<xsl:if test="normalize-space($BASECLASS)=''">uniset::json::help::object myhelp(myname, UniSetObject::httpGet(params));</xsl:if>
 
-	auto&amp; jhelp = jdata[myname]["help"];
-	jhelp["log"]["desc"] = "show log level";
+	// 'log'
+	uniset::json::help::item cmd("show log level");
+	myhelp.add(cmd);
 
-	return jdata;
+	return myhelp;
 }
 // -----------------------------------------------------------------------------
-nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpRequest( const std::string&amp; req, const Poco::URI::QueryParameters&amp; p )
+Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpRequest( const std::string&amp; req, const Poco::URI::QueryParameters&amp; p )
 {
 	if( req == "log" )
 		return httpRequestLog(p);
@@ -685,11 +651,11 @@ nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpRequest( const std::s
 	<xsl:if test="normalize-space($BASECLASS)=''">return UniSetObject::httpRequest(req,p);</xsl:if>
 }
 // -----------------------------------------------------------------------------
-nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpRequestLog( const Poco::URI::QueryParameters&amp; p )
+Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpRequestLog( const Poco::URI::QueryParameters&amp; p )
 {
-	nlohmann::json jret;
-	jret[myname]["log"] = Debug::str(mylog->level());
-	return std::move(jret);
+	Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
+	jret->set(myname,uniset::json::make_object("log", Debug::str(mylog->level())));
+	return jret;
 }
 // -----------------------------------------------------------------------------
 #endif
@@ -835,7 +801,10 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 			&lt;&lt; wait_msec &lt;&lt; " мсек";
 
         mycrit &lt;&lt; err.str() &lt;&lt; endl;
-		std::abort();
+//		terminate();
+//		abort();
+//		raise(SIGTERM);
+		std::terminate();
 //		throw uniset::SystemError(err.str());
 	}
 
@@ -847,7 +816,10 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 			&lt;&lt; wait_msec &lt;&lt; " мсек";
 	
 		mycrit &lt;&lt; err.str() &lt;&lt; endl;
-		std::abort();
+//		terminate();
+//		abort();
+		//raise(SIGTERM);
+		std::terminate();
 //		throw uniset::SystemError(err.str());
 	}
 }
@@ -1258,9 +1230,9 @@ end_private(false)
 	if( smTestID == DefaultObjectId )
 		smTestID = getSMTestID();
 
-	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 60000);
+	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 20000);
 
-	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 60000);
+	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 10000);
 	ptStartUpTimeout.setTiming(msec);
 
 	// ===================== &lt;variables&gt; =====================
@@ -1441,36 +1413,39 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
 // -----------------------------------------------------------------------------
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 #ifndef DISABLE_REST_API
-nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
+Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 {
-	nlohmann::json jdata;
-	
-	auto&amp; j_in = jdata["in"];
+	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+
+	Poco::JSON::Object::Ptr j_in = uniset::json::make_child(jdata,"in");
 
 	<xsl:for-each select="//smap/item">
 	<xsl:sort select="@name" order="ascending" data-type="text"/>
 	<xsl:if test="normalize-space(@vartype)='in'">
-		j_in["<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"] = {
-			{"id",<xsl:value-of select="@name"/>},
-			{"name",ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>))},
-			{"value",<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>}
-		};
+	{
+		Poco::JSON::Object::Ptr inf = uniset::json::make_child(j_in,"<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>");
+		inf->set("id",<xsl:value-of select="@name"/>);
+		inf->set("name",ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)));
+		inf->set("value",<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>);
+	}
 	</xsl:if>
 	</xsl:for-each>
 	
-	auto&amp; j_out = jdata["out"];
+	Poco::JSON::Object::Ptr j_out = uniset::json::make_child(jdata,"out");
+
 	<xsl:for-each select="//smap/item">
 	<xsl:sort select="@name" order="ascending" data-type="text"/>
 	<xsl:if test="normalize-space(@vartype)='out'">
-		j_out["<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"] = {
-			{"id",<xsl:value-of select="@name"/>},
-			{"name",ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>))},
-			{"value",<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>}
-		};
+	{
+		Poco::JSON::Object::Ptr inf = uniset::json::make_child(j_out,"<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>");
+		inf->set("id",<xsl:value-of select="@name"/>);
+		inf->set("name",ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)));
+		inf->set("value",<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>);
+	}
 	</xsl:if>
 	</xsl:for-each>
 
-	return std::move(jdata);
+	return jdata;
 }
 // ----------------------------------------------------------------------------
 #endif
@@ -1724,11 +1699,10 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 
 	vmonit(smTestID);
 	vmonit(smReadyTimeout);
-	vmonit(activateTimeout);
 
-	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 60000);
+	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 20000);
 
-	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 60000);
+	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 10000);
 	ptStartUpTimeout.setTiming(msec);
 }
 
@@ -1830,35 +1804,37 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( uniset::ObjectId _code, boo
 // -----------------------------------------------------------------------------
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 #ifndef DISABLE_REST_API
-nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
+Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 {
-	nlohmann::json jdata;
+	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+	Poco::JSON::Object::Ptr j_in = uniset::json::make_child(jdata,"in");
+	Poco::JSON::Object::Ptr j_out = uniset::json::make_child(jdata,"out");
 	
-	auto&amp; j_in = jdata["in"];
-	auto&amp; j_out = jdata["out"];
 	<xsl:for-each select="//sensors/item/consumers/consumer">
 	<xsl:sort select="../../@name" order="ascending" data-type="text"/>
 	<xsl:if test="normalize-space(../../@msg)!='1'">
 	<xsl:if test="normalize-space(@name)=$OID">
 	<xsl:if test="normalize-space(@vartype)='in'">
-		j_in["<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>"] = {
-			{"id",<xsl:value-of select="../../@id"/>},
-			{"name", "<xsl:value-of select="../../@name"/>"},
-			{"value",<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>}
-		};
+	{
+		Poco::JSON::Object::Ptr inf = uniset::json::make_child(j_in,"<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>");
+		inf->set("id",<xsl:value-of select="../../@id"/>);
+		inf->set("name", "<xsl:value-of select="../../@name"/>");
+		inf->set("value",<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>);
+	}
 	</xsl:if>
 	<xsl:if test="normalize-space(@vartype)='out'">
-		j_out["<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>"] = {
-			{"id",<xsl:value-of select="../../@id"/>},
-			{"name", "<xsl:value-of select="../../@name"/>"},
-			{"value",<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>}
-		};
+	{
+		Poco::JSON::Object::Ptr inf = uniset::json::make_child(j_out,"<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>");
+		inf->set("id",<xsl:value-of select="../../@id"/>);
+		inf->set("name", "<xsl:value-of select="../../@name"/>");
+		inf->set("value",<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>);
+	}
 	</xsl:if>
 	</xsl:if>
 	</xsl:if>
 	</xsl:for-each>
 	
-	return std::move(jdata);
+	return jdata;
 }
 // -----------------------------------------------------------------------------
 #endif

@@ -164,8 +164,8 @@ class IONotifyController:
 
 #ifndef DISABLE_REST_API
 		// http API
-		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
-		nlohmann::json httpRequest( const string& req, const Poco::URI::QueryParameters& p );
+		virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
+		Poco::JSON::Object::Ptr httpRequest( const string& req, const Poco::URI::QueryParameters& p );
 #endif
 
 		// --------------------------------------------
@@ -326,9 +326,9 @@ class IONotifyController:
 
 #ifndef DISABLE_REST_API
 		// http api
-		nlohmann::json request_consumers( const std::string& req, const Poco::URI::QueryParameters& p );
-		nlohmann::json request_lost( const string& req, const Poco::URI::QueryParameters& p );
-		nlohmann::json getConsumers( uniset::ObjectId sid, ConsumerListInfo& clist, bool noEmpty = true );
+		Poco::JSON::Object::Ptr request_consumers( const std::string& req, const Poco::URI::QueryParameters& p );
+		Poco::JSON::Object::Ptr request_lost( const string& req, const Poco::URI::QueryParameters& p );
+		Poco::JSON::Object::Ptr getConsumers( uniset::ObjectId sid, ConsumerListInfo& clist, bool noEmpty = true );
 #endif
 
 	private:

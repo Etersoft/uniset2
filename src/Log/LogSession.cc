@@ -677,9 +677,9 @@ string LogSession::getShortInfo() noexcept
 }
 // ---------------------------------------------------------------------
 #ifndef DISABLE_REST_API
-nlohmann::json LogSession::httpGetShortInfo()
+Poco::JSON::Object::Ptr LogSession::httpGetShortInfo()
 {
-	nlohmann::json jret;
+	Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
 
 	size_t sz = 0;
 	{
@@ -687,17 +687,18 @@ nlohmann::json LogSession::httpGetShortInfo()
 		sz = logbuf.size();
 	}
 
-	auto& jdata = jret[caddr];
+	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+	jret->set(caddr,jdata);
 
-	jdata["client"] = caddr;
-	jdata["maxbufsize"] = maxRecordsNum;
-	jdata["bufsize"] = sz;
-	jdata["maxCount"] = maxCount;
-	jdata["minSizeMsg"] = minSizeMsg;
-	jdata["maxSizeMsg"] = maxSizeMsg;
-	jdata["numLostMsg"] = numLostMsg;
+	jdata->set("client", caddr);
+	jdata->set("maxbufsize", maxRecordsNum);
+	jdata->set("bufsize", sz);
+	jdata->set("maxCount", maxCount);
+	jdata->set("minSizeMsg", minSizeMsg);
+	jdata->set("maxSizeMsg", maxSizeMsg);
+	jdata->set("numLostMsg", numLostMsg);
 
-	return std::move(jret);
+	return jret;
 }
 #endif // #ifndef DISABLE_REST_API
 // ---------------------------------------------------------------------

@@ -16,6 +16,7 @@
  */
 // -------------------------------------------------------------------------
 #include <ostream>
+#include <Poco/JSON/Parser.h>
 #include "Exceptions.h"
 #include "UHttpRequestHandler.h"
 // -------------------------------------------------------------------------
@@ -37,11 +38,11 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 		resp.setStatus(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
 		resp.setContentType("text/json");
 		std::ostream& out = resp.send();
-		nlohmann::json jdata;
-		jdata["error"] = resp.getReasonForStatus(resp.getStatus());
-		jdata["ecode"] = resp.getStatus();
-		jdata["message"] = "Unknown 'registry of objects'";
-		out << jdata.dump();
+		Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+		jdata->set("error",resp.getReasonForStatus(resp.getStatus()));
+		jdata->set("ecode",resp.getStatus());
+		jdata->set("message", "Unknown 'registry of objects'");
+		jdata->stringify(out);
 		out.flush();
 		return;
 	}
@@ -52,11 +53,11 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 		resp.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
 		resp.setContentType("text/json");
 		std::ostream& out = resp.send();
-		nlohmann::json jdata;
-		jdata["error"] = resp.getReasonForStatus(resp.getStatus());
-		jdata["ecode"] = resp.getStatus();
-		jdata["message"] = "method must be 'GET'";
-		out << jdata.dump();
+		Poco::JSON::Object jdata;
+		jdata.set("error", resp.getReasonForStatus(resp.getStatus()));
+		jdata.set("ecode", (int)resp.getStatus());
+		jdata.set("message", "method must be 'GET'");
+		jdata.stringify(out);
 		out.flush();
 		return;
 	}
@@ -71,18 +72,18 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 
 	// example: http://host:port/api/version/ObjectName
 	if( seg.size() < 3
-			|| seg[0] != "api"
-			|| seg[1] != UHTTP_API_VERSION
-			|| seg[2].empty() )
+		|| seg[0] != "api"
+		|| seg[1] != UHTTP_API_VERSION
+		|| seg[2].empty() )
 	{
 		resp.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
 		resp.setContentType("text/json");
 		std::ostream& out = resp.send();
-		nlohmann::json jdata;
-		jdata["error"] = resp.getReasonForStatus(resp.getStatus());
-		jdata["ecode"] = resp.getStatus();
-		jdata["message"] = "BAD REQUEST STRUCTURE";
-		out << jdata.dump();
+		Poco::JSON::Object jdata;
+		jdata.set("error", resp.getReasonForStatus(resp.getStatus()));
+		jdata.set("ecode", (int)resp.getStatus());
+		jdata.set("message", "BAD REQUEST STRUCTURE");
+		jdata.stringify(out);
 		out.flush();
 		return;
 	}
@@ -98,49 +99,49 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 	{
 		if( objectName == "help" )
 		{
-			nlohmann::json jdata;
-			jdata["help"] =
-			{
-				{"help", {"desc", "this help"}},
-				{"list", {"desc", "list of objects"}},
-				{"ObjectName", {"desc", "'ObjectName' information"}},
-				{"ObjectName/help", {"desc", "help for ObjectName"}},
-				{"apidocs", {"desc", "https://github.com/Etersoft/uniset2"}}
-			};
-
-			out << jdata.dump();
+			out << "{ \"help\": ["
+			  "{\"help\": {\"desc\": \"this help\"}},"
+			  "{\"list\": {\"desc\": \"list of objects\"}},"
+			  "{\"ObjectName\": {\"desc\": \"ObjectName information\"}},"
+			  "{\"ObjectName/help\": {\"desc\": \"help for ObjectName\"}},"
+			  "{\"apidocs\": {\"desc\": \"https://github.com/Etersoft/uniset2\"}}"
+			"]}";
 		}
 		else if( objectName == "list" )
 		{
 			auto json = registry->httpGetObjectsList(qp);
-			out << json.dump();
+			json->stringify(out);
 		}
 		else if( seg.size() == 4 && seg[3] == "help" ) // /api/version/ObjectName/help
 		{
 			auto json = registry->httpHelpByName(objectName, qp);
-			out << json.dump();
+			json->stringify(out);
 		}
 		else if( seg.size() >= 4 ) // /api/version/ObjectName/xxx..
 		{
 			auto json = registry->httpRequestByName(objectName, seg[3], qp);
-			out << json.dump();
+			json->stringify(out);
 		}
 		else
 		{
 			auto json = registry->httpGetByName(objectName, qp);
-			out << json.dump();
+			json->stringify(out);
 		}
 	}
+//	catch( Poco::JSON::JSONException jsone )
+//	{
+//		std::cout << "JSON ERROR: " << jsone.message() << std::endl;
+//	}
 	catch( std::exception& ex )
 	{
 		ostringstream err;
 		err << ex.what();
 		resp.setStatus(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
 		resp.setContentType("text/json");
-		nlohmann::json jdata;
-		jdata["error"] = err.str();
-		jdata["ecode"] = resp.getStatus();
-		out << jdata.dump();
+		Poco::JSON::Object jdata;
+		jdata.set("error", err.str());
+		jdata.set("ecode", (int)resp.getStatus());
+		jdata.stringify(out);
 	}
 
 	out.flush();
@@ -158,7 +159,7 @@ HTTPRequestHandler* UHttpRequestHandlerFactory::createRequestHandler( const HTTP
 	return new UHttpRequestHandler(registry);
 }
 // -------------------------------------------------------------------------
-nlohmann::json IHttpRequest::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
+Poco::JSON::Object::Ptr IHttpRequest::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
 {
 	std::ostringstream err;
 	err << "(IHttpRequest::Request): " << req << " not supported";

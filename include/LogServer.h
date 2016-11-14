@@ -31,7 +31,7 @@
 #include "LogServerTypes.h"
 
 #ifndef DISABLE_REST_API
-#include "json.hpp"
+#include <Poco/JSON/Object.h>
 #endif
 // -------------------------------------------------------------------------
 namespace uniset
@@ -129,7 +129,7 @@ class LogServer:
 		std::string getShortInfo();
 
 #ifndef DISABLE_REST_API
-		nlohmann::json httpGetShortInfo();
+		Poco::JSON::Object::Ptr httpGetShortInfo();
 #endif
 
 	protected:

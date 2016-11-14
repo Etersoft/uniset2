@@ -59,7 +59,7 @@ fi
 AC_MSG_CHECKING([libpoco support])
 #AC_SEARCH_LIBS(ServerSocket,PocoNet,,exit)
 AC_CHECK_HEADER(Poco/Net/Socket.h,,exit)
-POCO_LIBS="-lPocoFoundation -lPocoNet"
+POCO_LIBS="-lPocoFoundation -lPocoNet -lPocoJSON"
 POCO_CFLAGS="-IPoco"
 AC_SUBST(POCO_LIBS)
 AC_SUBST(POCO_CFLAGS)

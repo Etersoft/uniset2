@@ -49,7 +49,7 @@ class IOController:
 			return uniset::ObjectType("IOController");
 		}
 
-		virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
+		virtual uniset::SimpleInfo* getInfo( ::CORBA::Long userparam = 0 ) override;
 
 		virtual CORBA::Long getValue( uniset::ObjectId sid ) override;
 
@@ -82,7 +82,7 @@ class IOController:
 		IOController_i::CalibrateInfo getCalibrateInfo( uniset::ObjectId sid ) override;
 
 		inline IOController_i::SensorInfo SensorInfo( const uniset::ObjectId sid,
-													  const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode())
+				const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode())
 		{
 			IOController_i::SensorInfo si;
 			si.id = sid;
@@ -92,15 +92,14 @@ class IOController:
 
 		uniset::Message::Priority getPriority( const uniset::ObjectId id );
 
-		virtual IOController_i::ShortIOInfo getTimeChange( const uniset::ObjectId id ) override;
+		virtual IOController_i::ShortIOInfo getChangedTime( const uniset::ObjectId id ) override;
 
 		virtual IOController_i::ShortMapSeq* getSensors() override;
 
 #ifndef DISABLE_REST_API
 		// http API
-		//		virtual nlohmann::json getData( const Poco::URI::QueryParameters& p ) override;
-		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
-		virtual nlohmann::json httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
+		virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
+		virtual Poco::JSON::Object::Ptr httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
 #endif
 
 	public:
@@ -170,9 +169,9 @@ class IOController:
 
 #ifndef DISABLE_REST_API
 		// http API
-		virtual nlohmann::json request_get( const std::string& req, const Poco::URI::QueryParameters& p );
-		virtual nlohmann::json request_sensors( const std::string& req, const Poco::URI::QueryParameters& p );
-		void getSensorInfo( nlohmann::json& jdata, std::shared_ptr<USensorInfo>& s , bool shortInfo = false );
+		virtual Poco::JSON::Object::Ptr request_get( const std::string& req, const Poco::URI::QueryParameters& p );
+		virtual Poco::JSON::Object::Ptr request_sensors( const std::string& req, const Poco::URI::QueryParameters& p );
+		void getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr<USensorInfo>& s , bool shortInfo = false );
 #endif
 
 		// переопределяем для добавления вызова регистрации датчиков
@@ -245,8 +244,8 @@ class IOController:
 		IOStateList::iterator myiofind( uniset::ObjectId id );
 		size_t ioCount();
 		// --------------------------
-
-	private:
+                
+    private:
 		friend class NCRestorer;
 		friend class SMInterface;
 

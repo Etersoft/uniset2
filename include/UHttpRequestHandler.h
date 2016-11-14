@@ -24,7 +24,8 @@
 #include <Poco/Net/HTTPServerRequest.h>
 #include <Poco/Net/HTTPServerResponse.h>
 #include <Poco/URI.h>
-#include "json.hpp"
+#include <Poco/JSON/Object.h>
+#include "ujson.h"
 #include "DebugStream.h"
 // -------------------------------------------------------------------------
 /*! \page UHttpServer API
@@ -42,75 +43,99 @@
  * /api/version/ObjectName/help   - получение списка доступных команд для объекта ObjectName
  * /api/version/ObjectName/xxxx   - 'xxx' запрос к объекту ObjectName
  *
+ *  HELP FORMAT:
+ * 	myname {
+ * 		help [
+ * 			{"command":
+ * 			   {"desc": "text"},
+ * 			   {"params": [
+ * 					{"p1","desc of p1"},
+ * 					{"p2","desc of p2"},
+ * 					{"p3","desc of p3"}
+ * 			   ]}
+ * 			},
+ * 			{"command2":
+ * 			   {"desc": "text"},
+ * 			   {"params": [
+ * 					{"p1","desc of p1"},
+ * 					{"p2","desc of p2"},
+ * 					{"p3","desc of p3"}
+ * 			   ]}
+ * 			},
+ * 			...
+ * 		]
+ * 	}
+ *
+ *
  * \todo подумать над /api/version/tree - получение "дерева" объектов (древовидный список с учётом подчинения Manager/Objects)
 */
 // -------------------------------------------------------------------------
 namespace uniset
 {
-namespace UHttp
-{
-// текущая версия API
-const std::string UHTTP_API_VERSION = "v01";
+	namespace UHttp
+	{
+		// текущая версия API
+		const std::string UHTTP_API_VERSION="v0";
 
-/*! интерфейс для объекта выдающего json-данные */
-class IHttpRequest
-{
-	public:
-		IHttpRequest() {}
-		virtual ~IHttpRequest() {}
+		/*! интерфейс для объекта выдающего json-данные */
+		class IHttpRequest
+		{
+			public:
+				IHttpRequest(){}
+				virtual ~IHttpRequest(){}
 
-		// throw SystemError
-		virtual nlohmann::json httpGet( const Poco::URI::QueryParameters& p ) = 0;
-		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) = 0;
+				// throw SystemError
+				virtual Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p ) = 0;
+				virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) = 0;
 
-		// не обязательная функция.
-		virtual nlohmann::json httpRequest( const std::string& req, const Poco::URI::QueryParameters& p );
-};
-// -------------------------------------------------------------------------
-/*! интерфейс для обработки запросов к объектам */
-class IHttpRequestRegistry
-{
-	public:
-		IHttpRequestRegistry() {}
-		virtual ~IHttpRequestRegistry() {}
+				// не обязательная функция.
+				virtual Poco::JSON::Object::Ptr httpRequest( const std::string& req, const Poco::URI::QueryParameters& p );
+		};
+		// -------------------------------------------------------------------------
+		/*! интерфейс для обработки запросов к объектам */
+		class IHttpRequestRegistry
+		{
+			public:
+				IHttpRequestRegistry(){}
+				virtual ~IHttpRequestRegistry(){}
 
-		// throw SystemError, NameNotFound
-		virtual nlohmann::json httpGetByName( const std::string& name, const Poco::URI::QueryParameters& p ) = 0;
+				// throw SystemError, NameNotFound
+				virtual Poco::JSON::Object::Ptr httpGetByName( const std::string& name, const Poco::URI::QueryParameters& p ) = 0;
 
-		// throw SystemError
-		virtual nlohmann::json httpGetObjectsList( const Poco::URI::QueryParameters& p ) = 0;
-		virtual nlohmann::json httpHelpByName( const std::string& name, const Poco::URI::QueryParameters& p ) = 0;
-		virtual nlohmann::json httpRequestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) = 0;
-};
+				// throw SystemError
+				virtual Poco::JSON::Array::Ptr httpGetObjectsList( const Poco::URI::QueryParameters& p ) = 0;
+				virtual Poco::JSON::Object::Ptr httpHelpByName( const std::string& name, const Poco::URI::QueryParameters& p ) = 0;
+				virtual Poco::JSON::Object::Ptr httpRequestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) = 0;
+		};
 
-// -------------------------------------------------------------------------
-class UHttpRequestHandler:
-	public Poco::Net::HTTPRequestHandler
-{
-	public:
-		UHttpRequestHandler( std::shared_ptr<IHttpRequestRegistry> _registry );
+		// -------------------------------------------------------------------------
+		class UHttpRequestHandler:
+			public Poco::Net::HTTPRequestHandler
+		{
+			public:
+				UHttpRequestHandler( std::shared_ptr<IHttpRequestRegistry> _registry );
 
-		virtual void handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp ) override;
+				virtual void handleRequest( Poco::Net::HTTPServerRequest &req, Poco::Net::HTTPServerResponse &resp ) override;
 
-	private:
+			private:
 
-		std::shared_ptr<IHttpRequestRegistry> registry;
-		std::shared_ptr<DebugStream> log;
-};
-// -------------------------------------------------------------------------
-class UHttpRequestHandlerFactory:
-	public Poco::Net::HTTPRequestHandlerFactory
-{
-	public:
+				std::shared_ptr<IHttpRequestRegistry> registry;
+				std::shared_ptr<DebugStream> log;
+		};
+		// -------------------------------------------------------------------------
+		class UHttpRequestHandlerFactory:
+			public Poco::Net::HTTPRequestHandlerFactory
+		{
+			public:
 
-		UHttpRequestHandlerFactory( std::shared_ptr<IHttpRequestRegistry>& _registry );
+				UHttpRequestHandlerFactory( std::shared_ptr<IHttpRequestRegistry>& _registry );
 
-		virtual Poco::Net::HTTPRequestHandler* createRequestHandler( const Poco::Net::HTTPServerRequest& ) override;
+				virtual Poco::Net::HTTPRequestHandler* createRequestHandler( const Poco::Net::HTTPServerRequest & ) override;
 
-	private:
-		std::shared_ptr<IHttpRequestRegistry> registry;
-};
-}
+			private:
+				std::shared_ptr<IHttpRequestRegistry> registry;
+		};
+	}
 // -------------------------------------------------------------------------
 } // end of uniset namespace
 // -------------------------------------------------------------------------

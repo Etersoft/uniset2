@@ -92,10 +92,10 @@ class UniSetActivator:
 
 #ifndef DISABLE_REST_API
 		// Поддрежка REST API (IHttpRequestRegistry)
-		virtual nlohmann::json httpGetByName( const std::string& name , const Poco::URI::QueryParameters& p ) override;
-		virtual nlohmann::json httpGetObjectsList( const Poco::URI::QueryParameters& p ) override;
-		virtual nlohmann::json httpHelpByName( const std::string& name, const Poco::URI::QueryParameters& p ) override;
-		virtual nlohmann::json httpRequestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) override;
+		virtual Poco::JSON::Object::Ptr httpGetByName( const std::string& name , const Poco::URI::QueryParameters& p ) override;
+		virtual Poco::JSON::Array::Ptr httpGetObjectsList( const Poco::URI::QueryParameters& p ) override;
+		virtual Poco::JSON::Object::Ptr httpHelpByName( const std::string& name, const Poco::URI::QueryParameters& p ) override;
+		virtual Poco::JSON::Object::Ptr httpRequestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) override;
 #endif
 
 	protected:

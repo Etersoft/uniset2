@@ -84,12 +84,12 @@ void TestGen::sigterm( int signo )
 }
 // -----------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
-void TestGen::httpGetUserData( nlohmann::json& jdata )
+void TestGen::httpGetUserData( Poco::JSON::Object::Ptr& jdata )
 {
-	jdata["myMode"] = "RUNNING";
-	jdata["myVar"] = 42;
-	jdata["myFloatVar"] = 42.42;
-	jdata["myMessage"] = "This is text fot test httpGetUserData";
+	jdata->set("myMode", "RUNNING");
+	jdata->set("myVar", 42);
+	jdata->set("myFloatVar", 42.42);
+	jdata->set("myMessage", "This is text fot test httpGetUserData");
 }
 #endif
 // -----------------------------------------------------------------------------

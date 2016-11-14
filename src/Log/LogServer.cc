@@ -203,7 +203,7 @@ void LogServer::evprepare( const ev::loop_ref& eloop )
 		if( mylog.is_crit() )
 			mylog.crit() << err.str() << endl;
 
-		throw uniset::SystemError( err.str() );
+		throw SystemError( err.str() );
 	}
 
 	try
@@ -219,18 +219,7 @@ void LogServer::evprepare( const ev::loop_ref& eloop )
 		if( mylog.is_crit() )
 			mylog.crit() << err.str() << endl;
 
-		throw uniset::SystemError( err.str() );
-	}
-	catch( std::exception& ex )
-	{
-		ostringstream err;
-
-		err << myname << "(evprepare): " << ex.what();
-
-		if( mylog.is_crit() )
-			mylog.crit() << err.str() << endl;
-
-		throw uniset::SystemError( err.str() );
+		throw SystemError( err.str() );
 	}
 
 	sock->setBlocking(false);
@@ -357,24 +346,24 @@ string LogServer::getShortInfo()
 }
 // -----------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
-nlohmann::json LogServer::httpGetShortInfo()
+Poco::JSON::Object::Ptr LogServer::httpGetShortInfo()
 {
-	nlohmann::json jdata;
-	jdata["name"] = myname;
-	jdata["host"] = addr;
-	jdata["port"] = port;
-	jdata["sessMaxCount"] = sessMaxCount;
+	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+	jdata->set("name", myname);
+	jdata->set("host", addr);
+	jdata->set("port", port);
+	jdata->set("sessMaxCount", sessMaxCount);
 
 	{
 		uniset_rwmutex_rlock l(mutSList);
 
-		auto& jsess = jdata["sessions"];
-
+		Poco::JSON::Array::Ptr jsess = new Poco::JSON::Array();
+		jdata->set("sessions",jsess);
 		for( const auto& s : slist )
-			jsess.push_back(s->httpGetShortInfo());
+			jsess->add(s->httpGetShortInfo());
 	}
 
-	return std::move(jdata);
+	return jdata;
 }
 #endif // #ifndef DISABLE_REST_API
 // -----------------------------------------------------------------------------
