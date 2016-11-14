@@ -255,10 +255,12 @@
         std::string help() noexcept;
 
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
+#ifndef DISABLE_REST_API
         // HTTP API
         virtual nlohmann::json httpGet( const Poco::URI::QueryParameters&amp; p ) override;
         virtual nlohmann::json httpRequest( const std::string&amp; req, const Poco::URI::QueryParameters&amp; p ) override;
         virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters&amp; p ) override;
+#endif
 </xsl:if>       
 </xsl:template>
 
@@ -273,9 +275,11 @@
 		virtual bool activateObject() override;
 		virtual std::string getMonitInfo(){ return ""; } /*!&lt; пользовательская информация выводимая в getInfo() */
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
+#ifndef DISABLE_REST_API
 		virtual void httpGetUserData( nlohmann::json&amp; jdata ){} /*!&lt;  для пользовательских данных в httpGet() */
-        virtual nlohmann::json httpDumpIO();
-        virtual nlohmann::json httpRequestLog( const Poco::URI::QueryParameters&amp; p );
+        	virtual nlohmann::json httpDumpIO();
+        	virtual nlohmann::json httpRequestLog( const Poco::URI::QueryParameters&amp; p );
+#endif
 </xsl:if>
         // Выполнение очередного шага программы
 		virtual void step(){}
@@ -565,6 +569,7 @@ uniset::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( CORBA::Long
 }
 // -----------------------------------------------------------------------------
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
+#ifndef DISABLE_REST_API
 nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpGet( const Poco::URI::QueryParameters&amp; params )
 {
 	<xsl:if test="not(normalize-space($BASECLASS)='')">nlohmann::json json = <xsl:value-of select="$BASECLASS"/>::httpGet(params);</xsl:if>
@@ -648,13 +653,11 @@ nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpRequest( const std::s
 nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpRequestLog( const Poco::URI::QueryParameters&amp; p )
 {
 	nlohmann::json jret;
-	auto&amp; jdata = jret[myname];
-	
-	jdata["log"] = Debug::str(mylog->level());
-	
+	jret[myname]["log"] = Debug::str(mylog->level());
 	return std::move(jret);
 }
 // -----------------------------------------------------------------------------
+#endif
 </xsl:if>
 // -----------------------------------------------------------------------------
 <xsl:if test="normalize-space($TESTMODE)!=''">
@@ -1408,6 +1411,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
 }
 // -----------------------------------------------------------------------------
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
+#ifndef DISABLE_REST_API
 nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 {
 	nlohmann::json jdata;
@@ -1440,6 +1444,7 @@ nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 	return std::move(jdata);
 }
 // ----------------------------------------------------------------------------
+#endif
 </xsl:if>
 
 std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
@@ -1794,6 +1799,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( uniset::ObjectId _code, boo
 }
 // -----------------------------------------------------------------------------
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
+#ifndef DISABLE_REST_API
 nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 {
 	nlohmann::json jdata;
@@ -1825,6 +1831,7 @@ nlohmann::json <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 	return std::move(jdata);
 }
 // -----------------------------------------------------------------------------
+#endif
 </xsl:if>
 
 std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()

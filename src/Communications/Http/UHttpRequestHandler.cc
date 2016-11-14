@@ -40,6 +40,7 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 		nlohmann::json jdata;
 		jdata["error"] = resp.getReasonForStatus(resp.getStatus());
 		jdata["ecode"] = resp.getStatus();
+		jdata["message"] = "Unknown 'registry of objects'";
 		out << jdata.dump();
 		out.flush();
 		return;
@@ -54,6 +55,7 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 		nlohmann::json jdata;
 		jdata["error"] = resp.getReasonForStatus(resp.getStatus());
 		jdata["ecode"] = resp.getStatus();
+		jdata["message"] = "method must be 'GET'";
 		out << jdata.dump();
 		out.flush();
 		return;
@@ -79,6 +81,7 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 		nlohmann::json jdata;
 		jdata["error"] = resp.getReasonForStatus(resp.getStatus());
 		jdata["ecode"] = resp.getStatus();
+		jdata["message"] = "BAD REQUEST STRUCTURE";
 		out << jdata.dump();
 		out.flush();
 		return;

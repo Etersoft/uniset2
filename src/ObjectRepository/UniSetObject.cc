@@ -229,7 +229,7 @@ void UniSetObject::registered()
 
 	if( myid == uniset::DefaultObjectId )
 	{
-		uinfo << myname << "(registered): Don`t registration. myid=DefaultObjectId \n";
+		ulogrep << myname << "(registered): Don`t registration. myid=DefaultObjectId \n";
 		return;
 	}
 
