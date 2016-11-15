@@ -936,8 +936,9 @@ nlohmann::json IOController::request_get( const string& req, const Poco::URI::Qu
 // -----------------------------------------------------------------------------
 void IOController::getSensorInfo( nlohmann::json& jdata, std::shared_ptr<USensorInfo>& s, bool shortInfo )
 {
-	string sid( to_string(s->si.id));
-	auto& jsens = jdata[sid];
+
+	string sname = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->si.id));
+	auto& jsens = jdata[sname];
 
 	{
 		uniset_rwmutex_rlock lock(s->val_lock);
@@ -945,10 +946,12 @@ void IOController::getSensorInfo( nlohmann::json& jdata, std::shared_ptr<USensor
 		jsens["real_value"] = s->real_value;
 	}
 
-	jsens["id"] = sid;
-	jsens["name"] = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->si.id));
+	jsens["id"] = s->si.id;
+	jsens["name"] = sname;
 	jsens["tv_sec"] = s->tv_sec;
 	jsens["tv_nsec"] = s->tv_nsec;
+	jsens["supplier"] = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->supplier));
+	jsens["supplierID"] = s->supplier;
 
 	if( shortInfo )
 		return;
