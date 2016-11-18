@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2016-11-11+03:00
+// generate timestamp: 2016-11-19+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -119,7 +119,8 @@ class UObject_SK:
         inline std::string dumpVars(){ return std::move(vmon.pretty_str()); }
         // ------------------------------------------------------------
         std::string help() noexcept;
-        
+
+
 #ifndef DISABLE_REST_API
         // HTTP API
         virtual nlohmann::json httpGet( const Poco::URI::QueryParameters& p ) override;
@@ -158,10 +159,11 @@ class UObject_SK:
 		virtual void sigterm( int signo ) override;
 		virtual bool activateObject() override;
 		virtual std::string getMonitInfo(){ return ""; } /*!< пользовательская информация выводимая в getInfo() */
+
 #ifndef DISABLE_REST_API
 		virtual void httpGetUserData( nlohmann::json& jdata ){} /*!<  для пользовательских данных в httpGet() */
-        virtual nlohmann::json httpDumpIO();
-        virtual nlohmann::json httpRequestLog( const Poco::URI::QueryParameters& p );
+		virtual nlohmann::json httpDumpIO();
+		virtual nlohmann::json httpRequestLog( const Poco::URI::QueryParameters& p );
 #endif
 
         // Выполнение очередного шага программы
@@ -250,6 +252,8 @@ class UObject_SK:
 		std::unordered_map<const uniset::ObjectId,size_t, StatHashFn> smStat; /*!< количество сообщений по датчикам */
 		size_t processingMessageCatchCount = { 0 }; /*!< количество исключений пойманных в processingMessage */
 		
+		std::string ostate = { "" }; /*!< состояние процесса (выводится в getInfo()) */
+
 
 		bool end_private; // вспомогательное поле (для внутреннего использования при генерировании кода)
 };

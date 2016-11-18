@@ -257,7 +257,7 @@ void LogSession::callback( ev::io& watcher, int revents ) noexcept
 	if( cancelled.load() )
 	{
 		if( mylog.is_info() )
-			mylog.info() << peername << "LogSession: stop session... disconnect.." << endl;
+			mylog.info() << peername << "(LogSession): stop session... disconnect.." << endl;
 
 		io.stop();
 		cmdTimer.stop();

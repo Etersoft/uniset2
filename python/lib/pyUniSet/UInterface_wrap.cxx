@@ -3012,10 +3012,11 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIGTYPE_p_USysError swig_types[2]
 #define SWIGTYPE_p_UTimeOut swig_types[3]
 #define SWIGTYPE_p_UTypes__Params swig_types[4]
-#define SWIGTYPE_p_char swig_types[5]
-#define SWIGTYPE_p_p_char swig_types[6]
-static swig_type_info *swig_types[8];
-static swig_module_info swig_module = {swig_types, 7, 0, 0, 0, 0};
+#define SWIGTYPE_p_UValidateError swig_types[5]
+#define SWIGTYPE_p_char swig_types[6]
+#define SWIGTYPE_p_p_char swig_types[7]
+static swig_type_info *swig_types[9];
+static swig_module_info swig_module = {swig_types, 8, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -4588,6 +4589,109 @@ SWIGINTERN PyObject *USysError_swigregister(PyObject *SWIGUNUSEDPARM(self), PyOb
   return SWIG_Py_Void();
 }
 
+SWIGINTERN PyObject *_wrap_new_UValidateError__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UValidateError *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)":new_UValidateError")) SWIG_fail;
+  result = (UValidateError *)new UValidateError();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UValidateError, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_UValidateError__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  std::string *arg1 = 0 ;
+  int res1 = SWIG_OLDOBJ ;
+  PyObject * obj0 = 0 ;
+  UValidateError *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:new_UValidateError",&obj0)) SWIG_fail;
+  {
+    std::string *ptr = (std::string *)0;
+    res1 = SWIG_AsPtr_std_string(obj0, &ptr);
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_UValidateError" "', argument " "1"" of type '" "std::string const &""'");
+    }
+    if (!ptr) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_UValidateError" "', argument " "1"" of type '" "std::string const &""'");
+    }
+    arg1 = ptr;
+  }
+  result = (UValidateError *)new UValidateError((std::string const &)*arg1);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UValidateError, SWIG_POINTER_NEW |  0 );
+  if (SWIG_IsNewObj(res1)) delete arg1;
+  return resultobj;
+fail:
+  if (SWIG_IsNewObj(res1)) delete arg1;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_UValidateError(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[2] = {
+    0
+  };
+  Py_ssize_t ii;
+
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 1) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 0) {
+    return _wrap_new_UValidateError__SWIG_0(self, args);
+  }
+  if (argc == 1) {
+    int _v;
+    int res = SWIG_AsPtr_std_string(argv[0], (std::string**)(0));
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      return _wrap_new_UValidateError__SWIG_1(self, args);
+    }
+  }
+
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'new_UValidateError'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    UValidateError::UValidateError()\n"
+    "    UValidateError::UValidateError(std::string const &)\n");
+  return 0;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_UValidateError(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UValidateError *arg1 = (UValidateError *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_UValidateError",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UValidateError, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_UValidateError" "', argument " "1"" of type '" "UValidateError *""'");
+  }
+  arg1 = reinterpret_cast< UValidateError * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *UValidateError_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_UValidateError, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
 SWIGINTERN PyObject *_wrap_new_UProxyObject__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   std::string *arg1 = 0 ;
@@ -4997,6 +5101,9 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"new_USysError", _wrap_new_USysError, METH_VARARGS, NULL},
 	 { (char *)"delete_USysError", _wrap_delete_USysError, METH_VARARGS, NULL},
 	 { (char *)"USysError_swigregister", USysError_swigregister, METH_VARARGS, NULL},
+	 { (char *)"new_UValidateError", _wrap_new_UValidateError, METH_VARARGS, NULL},
+	 { (char *)"delete_UValidateError", _wrap_delete_UValidateError, METH_VARARGS, NULL},
+	 { (char *)"UValidateError_swigregister", UValidateError_swigregister, METH_VARARGS, NULL},
 	 { (char *)"new_UProxyObject", _wrap_new_UProxyObject, METH_VARARGS, NULL},
 	 { (char *)"delete_UProxyObject", _wrap_delete_UProxyObject, METH_VARARGS, NULL},
 	 { (char *)"UProxyObject_addToAsk", _wrap_UProxyObject_addToAsk, METH_VARARGS, NULL},
@@ -5020,11 +5127,15 @@ static void *_p_UTimeOutTo_p_UException(void *x, int *SWIGUNUSEDPARM(newmemory))
 static void *_p_USysErrorTo_p_UException(void *x, int *SWIGUNUSEDPARM(newmemory)) {
     return (void *)((UException *)  ((USysError *) x));
 }
+static void *_p_UValidateErrorTo_p_UException(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((UException *)  ((UValidateError *) x));
+}
 static swig_type_info _swigt__p_UException = {"_p_UException", "UException *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UProxyObject = {"_p_UProxyObject", "UProxyObject *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_USysError = {"_p_USysError", "USysError *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UTimeOut = {"_p_UTimeOut", "UTimeOut *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UTypes__Params = {"_p_UTypes__Params", "UTypes::Params *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_UValidateError = {"_p_UValidateError", "UValidateError *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_char = {"_p_p_char", "char **", 0, 0, (void*)0, 0};
 
@@ -5034,15 +5145,17 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_USysError,
   &_swigt__p_UTimeOut,
   &_swigt__p_UTypes__Params,
+  &_swigt__p_UValidateError,
   &_swigt__p_char,
   &_swigt__p_p_char,
 };
 
-static swig_cast_info _swigc__p_UException[] = {  {&_swigt__p_UException, 0, 0, 0},  {&_swigt__p_UTimeOut, _p_UTimeOutTo_p_UException, 0, 0},  {&_swigt__p_USysError, _p_USysErrorTo_p_UException, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_UException[] = {  {&_swigt__p_UException, 0, 0, 0},  {&_swigt__p_UTimeOut, _p_UTimeOutTo_p_UException, 0, 0},  {&_swigt__p_USysError, _p_USysErrorTo_p_UException, 0, 0},  {&_swigt__p_UValidateError, _p_UValidateErrorTo_p_UException, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UProxyObject[] = {  {&_swigt__p_UProxyObject, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_USysError[] = {  {&_swigt__p_USysError, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UTimeOut[] = {  {&_swigt__p_UTimeOut, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UTypes__Params[] = {  {&_swigt__p_UTypes__Params, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_UValidateError[] = {  {&_swigt__p_UValidateError, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p_char[] = {  {&_swigt__p_p_char, 0, 0, 0},{0, 0, 0, 0}};
 
@@ -5052,6 +5165,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_USysError,
   _swigc__p_UTimeOut,
   _swigc__p_UTypes__Params,
+  _swigc__p_UValidateError,
   _swigc__p_char,
   _swigc__p_p_char,
 };

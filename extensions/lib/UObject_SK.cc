@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2016-11-11+03:00
+// generate timestamp: 2016-11-19+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -196,9 +196,9 @@ end_private(false)
 	if( smTestID == DefaultObjectId )
 		smTestID = getSMTestID();
 
-	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 20000);
+	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 40000);
 
-	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 10000);
+	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 30000);
 	ptStartUpTimeout.setTiming(msec);
 
 	// ===================== <variables> =====================
@@ -292,6 +292,7 @@ void UObject_SK::testMode( bool _state )
 	
 }
 // -----------------------------------------------------------------------------
+
 #ifndef DISABLE_REST_API
 nlohmann::json UObject_SK::httpDumpIO()
 {
@@ -307,7 +308,9 @@ nlohmann::json UObject_SK::httpDumpIO()
 	return std::move(jdata);
 }
 // ----------------------------------------------------------------------------
-#endif // #ifndef DISABLE_REST_API
+#endif
+
+
 std::string  UObject_SK::dumpIO()
 {
 	ostringstream s;
@@ -415,22 +418,42 @@ void UObject_SK::preSysCommand( const SystemMessage* _sm )
 			}
 		case SystemMessage::StartUp:
 		{
-			if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
+			ostate = "StartUp...";
+			try
 			{
-				myinfo << myname << "(preSysCommand): run log server " << logserv_host << ":" << logserv_port << endl;
-				logserv->run(logserv_host, logserv_port, true);
+				if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
+				{
+					ostate = "StartUp: run log server...";
+					myinfo << myname << "(preSysCommand): run log server " << logserv_host << ":" << logserv_port << endl;
+					logserv->run(logserv_host, logserv_port, true);
+				}
+			}
+			catch( std::exception& ex )
+			{
+				mywarn << myname << "(preSysCommand): CAN`t run log server err: " << ex.what() << endl;
+			}
+			catch( ... )
+			{
+				mywarn << myname << "(preSysCommand): CAN`t run log server err: catch ..." << endl;
 			}
 
+			ostate = "StartUp: wait sm ready..";
 			waitSM(smReadyTimeout);
 			ptStartUpTimeout.reset();
 			// т.к. для io-переменных важно соблюдать последовательность!
 			// сперва обновить входы..
+			ostate = "StartUp: update values..";
 			updateValues();
+			ostate = "StartUp: init from SM..";
 			initFromSM(); // потом обновить значения переменных, помеченных как инициализируемые из SM
+			ostate = "StartUp: update outputs..";
 			updateOutputs(true); // а потом уже выходы (принудительное обновление)
+			ostate = "StartUp: pre ask sensors..";
 			preAskSensors(UniversalIO::UIONotify);
+			ostate = "StartUp: ask sensors..";
 			askSensors(UniversalIO::UIONotify);
 			active = true;
+			ostate = "StartUp: [OK]";
 			break;
 		}
 		
@@ -453,8 +476,19 @@ void UObject_SK::preSysCommand( const SystemMessage* _sm )
 			
 			if( logserv && !logserv_host.empty() && logserv_port != 0 )
 			{
-				mylogany << myname << "(preSysCommand): try restart logserver.." << endl;
-				logserv->check(true);
+				try
+				{
+					mylogany << myname << "(preSysCommand): try restart logserver.." << endl;
+					logserv->check(true);
+				}
+				catch( std::exception& ex )
+				{
+					mywarn << myname << "(preSysCommand): CAN`t restart log server err: " << ex.what() << endl;
+				}
+				catch( ... )
+				{
+					mywarn << myname << "(preSysCommand): CAN`t restart log server err: catch ..." << endl;
+				}
 			}
 		}
 		break;
@@ -474,6 +508,8 @@ uniset::SimpleInfo* UObject_SK::getInfo( CORBA::Long userparam )
 	ostringstream inf;
 	
 	inf << i->info << endl;
+	inf << "initialization: " << ostate << endl;
+
 	if( logserv /* && userparam < 0 */ )
 	{
 		inf << "LogServer: " << logserv_host << ":" << logserv_port 
@@ -506,6 +542,7 @@ uniset::SimpleInfo* UObject_SK::getInfo( CORBA::Long userparam )
 	return i._retn();
 }
 // -----------------------------------------------------------------------------
+
 #ifndef DISABLE_REST_API
 nlohmann::json UObject_SK::httpGet( const Poco::URI::QueryParameters& params )
 {
@@ -587,14 +624,14 @@ nlohmann::json UObject_SK::httpRequest( const std::string& req, const Poco::URI:
 nlohmann::json UObject_SK::httpRequestLog( const Poco::URI::QueryParameters& p )
 {
 	nlohmann::json jret;
-	auto& jdata = jret[myname];
-	
-	jdata["log"] = Debug::str(mylog->level());
-	
+	jret[myname]["log"] = Debug::str(mylog->level());
 	return std::move(jret);
 }
 // -----------------------------------------------------------------------------
-#endif // #ifndef DISABLE_REST_API
+#endif
+
+// -----------------------------------------------------------------------------
+
 // -----------------------------------------------------------------------------
 void UObject_SK::sigterm( int signo )
 {
@@ -645,10 +682,7 @@ void UObject_SK::waitSM( int wait_msec, ObjectId _testID )
 			<< wait_msec << " мсек";
 
         mycrit << err.str() << endl;
-//		terminate();
-//		abort();
-//		raise(SIGTERM);
-		std::terminate();
+		std::abort();
 //		throw uniset::SystemError(err.str());
 	}
 
@@ -660,10 +694,7 @@ void UObject_SK::waitSM( int wait_msec, ObjectId _testID )
 			<< wait_msec << " мсек";
 	
 		mycrit << err.str() << endl;
-//		terminate();
-//		abort();
-		//raise(SIGTERM);
-		std::terminate();
+		std::abort();
 //		throw uniset::SystemError(err.str());
 	}
 }

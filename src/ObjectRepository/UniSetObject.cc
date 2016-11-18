@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <sstream>
 #include <chrono>
+#include <Poco/Process.h>
 
 #include "Exceptions.h"
 #include "ORepHelpers.h"
@@ -633,7 +634,7 @@ void UniSetObject::work()
 {
 	uinfo << myname << ": thread processing messages running..." << endl;
 
-	msgpid = thr ? thr->getTID() : getpid();
+	msgpid = thr ? thr->getTID() : Poco::Process::id();
 
 	{
 		std::unique_lock<std::mutex> locker(m_working);
@@ -748,7 +749,8 @@ uniset::SimpleInfo* UniSetObject::getInfo( ::CORBA::Long userparam )
 	ostringstream info;
 	info.setf(ios::left, ios::adjustfield);
 	info << "(" << myid << ")" << setw(40) << myname << "\n==================================================\n";
-	info << "tid=" << setw(10);
+	info << "pid=" << setw(10) << Poco::Process::id();
+	info << " tid=" << setw(10);
 
 	if( threadcreate )
 	{

@@ -44,10 +44,11 @@ void SharedMemory::help_print( int argc, const char* const* argv )
 	cout << "--heartbeat-check-time - период проверки 'счётчиков'. По умолчанию 1000 мсек" << endl;
 	cout << "--e-filter             - фильтр для считывания <eventlist>" << endl;
 	cout << "--e-startup-pause      - пауза перед посылкой уведомления о старте SM. (По умолчанию: 1500 мсек)." << endl;
-	cout << "--activate-timeout     - время ожидания активизации (По умолчанию: 15000 мсек)." << endl;
+	cout << "--activate-timeout     - время ожидания активизации (По умолчанию: 60000 мсек)." << endl;
 	cout << "--sm-no-history        - отключить ведение истории (аварийного следа)" << endl;
 	cout << "--pulsar-id            - датчик 'мигания'" << endl;
 	cout << "--pulsar-msec          - период 'мигания'. По умолчанию: 5000." << endl;
+	cout << "--db-logging [1,0]     - включение или отключение логирования датчиков в БД (должен быть запущен DBServer)" << endl;
 	cout << endl;
 	cout << " Logs: " << endl;
 	cout << "--sm-log-...            - log control" << endl;
@@ -157,7 +158,7 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 
 	evntPause = conf->getArgPInt("--e-startup-pause", 5000);
 
-	activateTimeout = conf->getArgPInt("--activate-timeout", 60000);
+	activateTimeout = conf->getArgPInt("--activate-timeout", 90000);
 
 	sidPulsar = DefaultObjectId;
 	string p = conf->getArgParam("--pulsar-id", it.getProp("pulsar_id"));

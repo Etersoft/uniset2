@@ -511,6 +511,24 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 * Mon Nov 21 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt2
 - UNet: fixed bug in change receive channel
 
+* Sat Nov 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt1.5
+- LogServer: attempt to fixed bug in run fuction (infinity lock)
+
+* Sat Nov 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt1.4
+- LogServer: attempt to fixed bug in run fuction (infinity lock)
+
+* Sat Nov 19 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt1.3
+- (codegen): add process state info for getInfo()
+
+* Fri Nov 18 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt1.2
+- set default activate-timeout 30 sec
+- show pid() in getInfo()
+- minor fixes
+
+* Fri Nov 18 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt1.1
+- add try/catch for run log server
+>>>>>>> (codegen): Сделал activate-timeout по умолчанию 30 сек (было 10),
+
 * Fri Nov 11 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt1
 - build new version
 - remove 'fastSaveValue'

@@ -38,8 +38,18 @@ bool CommonEventLoop::evrun(EvWatcher* w, bool thread )
 
 	bool ret = false;
 	{
-		std::unique_lock<std::mutex> l(wlist_mutex);
-		wlist.push_back(w);
+		{
+			std::unique_lock<std::mutex> l(wlist_mutex);
+			for( auto& e: wlist )
+			{
+				if( e == w )
+				{
+					cerr << "(CommonEventLoop::evrun): " << w->wname() << " ALREADY ADDED.." << endl;
+					return false;
+				}
+			}
+			wlist.push_back(w);
+		}
 
 		if( !thr )
 		{
@@ -47,18 +57,24 @@ bool CommonEventLoop::evrun(EvWatcher* w, bool thread )
 			std::this_thread::sleep_for(std::chrono::milliseconds(30));
 		}
 
-		// ожидаем обработки evprepare (которая будет в defaultLoop)
+		std::unique_lock<std::mutex> locker(prep_mutex);
 		wprep = w;
+		prep_notify = false;
 		evprep.send(); // будим default loop
 
-		// ждём..
-		std::unique_lock<std::mutex> locker(prep_mutex);
-
+		// ожидаем обработки evprepare (которая будет в defaultLoop)
 		while( !prep_notify )
-			prep_event.wait(locker);
+		{
+			prep_event.wait_for(locker,std::chrono::milliseconds(5000), [=]()
+			{
+				return (prep_notify == true);
+			} );
+		}
 
+		// сбрасываем флаг
 		prep_notify = false;
-		// если стал nullptr - значит evprepare отработал нормально
+
+		// если wprep стал nullptr - значит evprepare отработал нормально
 		ret = ( wprep == nullptr );
 	}
 
@@ -125,18 +141,22 @@ bool CommonEventLoop::evstop( EvWatcher* w )
 // -------------------------------------------------------------------------
 void CommonEventLoop::onPrepare() noexcept
 {
-	if( wprep )
+	prep_notify = false;
 	{
-		try
+		std::unique_lock<std::mutex> lock(prep_mutex);
+		if( wprep )
 		{
-			wprep->evprepare(loop);
-		}
-		catch( std::exception& ex )
-		{
-			cerr << "(CommonEventLoop::onPrepare): evprepare err: " << ex.what() << endl;
-		}
+			try
+			{
+				wprep->evprepare(loop);
+			}
+			catch( std::exception& ex )
+			{
+				cerr << "(CommonEventLoop::onPrepare): evprepare err: " << ex.what() << endl;
+			}
 
-		wprep = nullptr;
+			wprep = nullptr;
+		}
 	}
 
 	// будим всех ожидающих..

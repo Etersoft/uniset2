@@ -7,6 +7,7 @@ from pyUniSet import *
 from pyUConnector import *
 from pyUModbus import *
 from UGlobal import *
+from pyUExceptions import *
 
 class UInterface():
 
@@ -74,7 +75,7 @@ class UInterface():
         except UException, e:
             return [False,"%s"%e.getError()]
 
-        raise [False, "Unknown interface %s" % self.itype]
+        return [False, "Unknown interface %s" % self.itype]
 
     def getValue(self, s_id):
 
