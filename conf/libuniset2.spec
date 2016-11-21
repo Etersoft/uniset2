@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt1
+Release: alt2
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -508,6 +508,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # history of current unpublished changes
 
 %changelog
+* Mon Nov 21 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt2
+- UNet: fixed bug in change receive channel
+
 * Fri Nov 11 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt1
 - build new version
 - remove 'fastSaveValue'

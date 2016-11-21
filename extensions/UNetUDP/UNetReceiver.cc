@@ -479,6 +479,9 @@ void UNetReceiver::updateThread() noexcept
 			unetcrit << myname << "(update_thread): " << ex.what() << endl;
 		}
 
+		// смотрим есть ли связь..
+		checkConnection();
+
 		if( sidRespond != DefaultObjectId )
 		{
 			try
@@ -525,8 +528,6 @@ void UNetReceiver::readEvent( ev::io& watcher ) noexcept
 	if( !activated )
 		return;
 
-	bool tout = false;
-
 	try
 	{
 		if( receive() )
@@ -543,6 +544,11 @@ void UNetReceiver::readEvent( ev::io& watcher ) noexcept
 	{
 		unetwarn << myname << "(receive): " << e.what() << std::endl;
 	}
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::checkConnection()
+{
+	bool tout = false;
 
 	// делаем через промежуточную переменную
 	// чтобы поскорее освободить mutex
@@ -589,6 +595,9 @@ void UNetReceiver::updateEvent( ev::periodic& tm, int revents ) noexcept
 	{
 		unetcrit << myname << "(updateEvent): " << ex.what() << std::endl;
 	}
+
+	// смотрим есть ли связь..
+	checkConnection();
 
 	if( sidRespond != DefaultObjectId )
 	{
@@ -674,6 +683,11 @@ bool UNetReceiver::receive() noexcept
 	catch( Poco::Net::NetException& ex )
 	{
 		unetcrit << myname << "(receive): recv err: " << ex.displayText() << endl;
+		return false;
+	}
+	catch( exception& ex )
+	{
+		unetcrit << myname << "(receive): recv err: " << ex.what() << endl;
 		return false;
 	}
 

@@ -589,8 +589,15 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
 		{
 			if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
 			{
-				unetinfo << myname << "(init): run log server " << logserv_host << ":" << logserv_port << endl;
-				logserv->run(logserv_host, logserv_port, true);
+				try
+				{
+					unetinfo << myname << "(init): run log server " << logserv_host << ":" << logserv_port << endl;
+					logserv->run(logserv_host, logserv_port, true);
+				}
+				catch( std::exception& ex )
+				{
+					unetwarn << myname << "(init): run logserver FAILED. ERR: " << ex.what() << endl;
+				}
 			}
 
 			waitSMReady();

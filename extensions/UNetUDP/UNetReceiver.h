@@ -224,6 +224,7 @@ class UNetReceiver:
 
 		void initIterators() noexcept;
 		bool createConnection( bool throwEx = false );
+		void checkConnection();
 
 	public:
 
