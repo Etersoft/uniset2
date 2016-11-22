@@ -198,9 +198,12 @@ TEST_CASE("[UNetUDP]: respond sensor", "[unetudp]")
 {
 	InitTest();
 
-	// в запускающем файле стоит --unet-recv-timeout 2000
-	msleep(2500);
 	ObjectId node1_not_respond_s = 1;
+	CHECK( ui->getValue(node1_not_respond_s) == 0 );
+
+	// в запускающем файле стоит --unet-recv-timeout 1000
+	// ждём больше, чтобы сработал timeout
+	msleep(5000);
 	REQUIRE( ui->getValue(node1_not_respond_s) == 1 );
 }
 // -----------------------------------------------------------------------------
@@ -295,7 +298,7 @@ TEST_CASE("[UNetUDP]: check receiver", "[unetudp][receiver]")
 		REQUIRE( ui->getValue(11) == 0 );
 
 		send(pack);
-		msleep(120);
+		msleep(200);
 		REQUIRE( ui->getValue(8) == 100 );
 		REQUIRE( ui->getValue(9) == -100 );
 		REQUIRE( ui->getValue(10) == 1 );
@@ -313,7 +316,7 @@ TEST_CASE("[UNetUDP]: check receiver", "[unetudp][receiver]")
 		pack.addDData(10, false);
 		pack.addDData(11, true);
 		send(pack);
-		msleep(120);
+		msleep(200);
 		REQUIRE( ui->getValue(8) == 10 );
 		REQUIRE( ui->getValue(9) == -10 );
 		REQUIRE( ui->getValue(10) == 0 );

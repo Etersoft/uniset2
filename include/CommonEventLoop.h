@@ -7,7 +7,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-#include <list>
+#include <vector>
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -65,7 +65,7 @@ class CommonEventLoop
 		 * Даже если thread = false, но wather не сможет быть "активирован" функция вернёт управление
 		 * с return false.
 		 */
-		bool evrun( EvWatcher* w, bool thread = true, size_t waitPrepareTimeout_msec = 5000);
+		bool evrun( EvWatcher* w, bool thread = true, size_t waitPrepareTimeout_msec = 8000);
 
 		/*! \return TRUE - если это был последний EvWatcher и loop остановлен */
 		bool evstop( EvWatcher* w );
@@ -74,6 +74,9 @@ class CommonEventLoop
 		{
 			return loop;
 		}
+
+		// количество зарегистрированных wather-ов
+		size_t size() const;
 
 	protected:
 
@@ -96,7 +99,7 @@ class CommonEventLoop
 		std::atomic_bool term_notify = { false };
 
 		std::mutex wlist_mutex;
-		std::list<EvWatcher*> wlist;
+		std::vector<EvWatcher*> wlist;
 
 		// готовящийся Watcher..он может быть только один в единицу времени
 		// это гарантирует prep_mutex

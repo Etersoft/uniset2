@@ -955,7 +955,18 @@ uniset::SimpleInfo* UNetExchange::getInfo( CORBA::Long userparam )
 	inf << i->info << endl;
 	inf << vmon.pretty_str() << endl;
 	inf << endl;
-	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
+
+	if( logserv )
+	{
+		inf << "LogServer: " << logserv_host << ":" << logserv_port
+			<< ( logserv->isRunning() ? "   [RUNNIG]" : "   [STOPPED]" )
+			<< endl
+			<< "         " << logserv->getShortInfo()
+			<< endl;
+	}
+	else
+		inf << "LogServer: NONE" << endl;
+
 	inf << endl;
 	inf << "Receivers: " << endl;
 

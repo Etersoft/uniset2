@@ -1,5 +1,6 @@
 #include <iostream>
 #include <chrono>
+#include <algorithm>
 #include "CommonEventLoop.h"
 // -------------------------------------------------------------------------
 using namespace std;
@@ -33,20 +34,17 @@ CommonEventLoop::~CommonEventLoop()
 // ---------------------------------------------------------------------------
 bool CommonEventLoop::evrun( EvWatcher* w, bool thread, size_t waitTimeout_msec )
 {
-	if( !w )
+	if( w == nullptr )
 		return false;
 
 	bool ret = false;
 	{
 		{
 			std::lock_guard<std::mutex> lck(wlist_mutex);
-			for( auto& e: wlist )
+			if( std::find(wlist.begin(), wlist.end(), w) != wlist.end() )
 			{
-				if( e == w )
-				{
-					cerr << "(CommonEventLoop::evrun): " << w->wname() << " ALREADY ADDED.." << endl;
-					return false;
-				}
+				cerr << "(CommonEventLoop::evrun): " << w->wname() << " ALREADY ADDED.." << endl;
+				return false;
 			}
 			wlist.push_back(w);
 		}
@@ -62,7 +60,7 @@ bool CommonEventLoop::evrun( EvWatcher* w, bool thread, size_t waitTimeout_msec 
 				// иначе evprep.send() улетит в никуда
 				prep_event.wait_for(locker,std::chrono::milliseconds(waitTimeout_msec), [=]()
 				{
-					return (isrunning == false);
+					return ( isrunning == true );
 				} );
 
 				if( !isrunning )
@@ -70,6 +68,10 @@ bool CommonEventLoop::evrun( EvWatcher* w, bool thread, size_t waitTimeout_msec 
 					cerr << "(CommonEventLoop::evrun): " << w->wname() << " evloop NOT RUN!.." << endl;
 					return false;
 				}
+
+				// небольшая пауза после запуск event loop
+				// чтобы "надёжнее" сработал evprep.send() (см. ниже)
+				std::this_thread::sleep_for(std::chrono::milliseconds(50));
 			}
 		}
 
@@ -86,7 +88,7 @@ bool CommonEventLoop::evrun( EvWatcher* w, bool thread, size_t waitTimeout_msec 
 		// ожидаем обработки evprepare (которая будет в defaultLoop)
 		prep_event.wait_for(locker,std::chrono::milliseconds(waitTimeout_msec), [=]()
 		{
-			return (prep_notify == true);
+			return ( prep_notify == true );
 		} );
 
 		// сбрасываем флаг
@@ -134,7 +136,8 @@ bool CommonEventLoop::evstop( EvWatcher* w )
 		cerr << "(CommonEventLoop::evfinish): evfinish err: " << ex.what() << endl;
 	}
 
-	wlist.remove(w);
+	wlist.erase( std::remove( wlist.begin(), wlist.end(), w ), wlist.end() );
+//	wlist.remove(w);
 
 	if( !wlist.empty() )
 		return false;
@@ -155,6 +158,11 @@ bool CommonEventLoop::evstop( EvWatcher* w )
 	}
 
 	return true;
+}
+// -------------------------------------------------------------------------
+size_t CommonEventLoop::size() const
+{
+	return wlist.size();
 }
 // -------------------------------------------------------------------------
 void CommonEventLoop::onPrepare() noexcept
@@ -208,10 +216,10 @@ void CommonEventLoop::onStop() noexcept
 
 void CommonEventLoop::defaultLoop() noexcept
 {
-	isrunning = true;
-
 	evterm.start();
 	evprep.start();
+
+	isrunning = true;
 
 	while( !cancelled )
 	{

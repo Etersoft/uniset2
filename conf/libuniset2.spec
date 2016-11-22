@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt3
+Release: alt3.1
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -508,6 +508,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # history of current unpublished changes
 
 %changelog
+* Tue Nov 22 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt3.1
+- CommonEventLoop: refactoring prepare process (part. 2)
+
 * Tue Nov 22 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt3
 - CommonEventLoop: refactoring prepare process
 
