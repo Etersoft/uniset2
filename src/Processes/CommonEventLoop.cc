@@ -31,7 +31,7 @@ CommonEventLoop::~CommonEventLoop()
 	}
 }
 // ---------------------------------------------------------------------------
-bool CommonEventLoop::evrun(EvWatcher* w, bool thread )
+bool CommonEventLoop::evrun( EvWatcher* w, bool thread, size_t waitTimeout_msec )
 {
 	if( !w )
 		return false;
@@ -39,7 +39,7 @@ bool CommonEventLoop::evrun(EvWatcher* w, bool thread )
 	bool ret = false;
 	{
 		{
-			std::unique_lock<std::mutex> l(wlist_mutex);
+			std::lock_guard<std::mutex> lck(wlist_mutex);
 			for( auto& e: wlist )
 			{
 				if( e == w )
@@ -51,25 +51,43 @@ bool CommonEventLoop::evrun(EvWatcher* w, bool thread )
 			wlist.push_back(w);
 		}
 
-		if( !thr )
 		{
-			thr = make_shared<std::thread>( [ = ] { CommonEventLoop::defaultLoop(); } );
-			std::this_thread::sleep_for(std::chrono::milliseconds(30));
+			std::lock_guard<std::mutex> lck(thr_mutex);
+			if( !thr )
+			{
+				thr = make_shared<std::thread>( [ = ] { CommonEventLoop::defaultLoop(); } );
+
+				std::unique_lock<std::mutex> locker(prep_mutex);
+				// ожидаем запуска loop
+				// иначе evprep.send() улетит в никуда
+				prep_event.wait_for(locker,std::chrono::milliseconds(waitTimeout_msec), [=]()
+				{
+					return (isrunning == false);
+				} );
+
+				if( !isrunning )
+				{
+					cerr << "(CommonEventLoop::evrun): " << w->wname() << " evloop NOT RUN!.." << endl;
+					return false;
+				}
+			}
 		}
 
+		// готовим "указатель" на объект требующий активации
 		std::unique_lock<std::mutex> locker(prep_mutex);
 		wprep = w;
+
+		// взводим флаг
 		prep_notify = false;
+
+		// посылаем сигнал для обработки
 		evprep.send(); // будим default loop
 
 		// ожидаем обработки evprepare (которая будет в defaultLoop)
-		while( !prep_notify )
+		prep_event.wait_for(locker,std::chrono::milliseconds(waitTimeout_msec), [=]()
 		{
-			prep_event.wait_for(locker,std::chrono::milliseconds(5000), [=]()
-			{
-				return (prep_notify == true);
-			} );
-		}
+			return (prep_notify == true);
+		} );
 
 		// сбрасываем флаг
 		prep_notify = false;
@@ -105,7 +123,7 @@ bool CommonEventLoop::evstop( EvWatcher* w )
 	if( !w )
 		return false;
 
-	std::unique_lock<std::mutex> l(wlist_mutex);
+	std::lock_guard<std::mutex> l(wlist_mutex);
 
 	try
 	{
@@ -143,7 +161,7 @@ void CommonEventLoop::onPrepare() noexcept
 {
 	prep_notify = false;
 	{
-		std::unique_lock<std::mutex> lock(prep_mutex);
+		std::lock_guard<std::mutex> lock(prep_mutex);
 		if( wprep )
 		{
 			try

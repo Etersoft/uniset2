@@ -58,8 +58,14 @@ class CommonEventLoop
 
 		bool evIsActive() const noexcept;
 
-		/*! \return TRUE - если всё удалось. return актуален только для случая когда thread = true */
-		bool evrun( EvWatcher* w, bool thread = true );
+		/*! \return TRUE - если всё удалось. return актуален только для случая когда thread = true
+		 * \param thread - создать отдельный (асинхронный) поток для event loop.
+		 * Если thread=false  - функция не вернёт управление и будет ждать завершения работы ( см. evstop())
+		 * \param waitPrepareTimeout_msec - сколько ждать активации, либо функция вернёт false.
+		 * Даже если thread = false, но wather не сможет быть "активирован" функция вернёт управление
+		 * с return false.
+		 */
+		bool evrun( EvWatcher* w, bool thread = true, size_t waitPrepareTimeout_msec = 5000);
 
 		/*! \return TRUE - если это был последний EvWatcher и loop остановлен */
 		bool evstop( EvWatcher* w );
@@ -83,6 +89,7 @@ class CommonEventLoop
 		ev::dynamic_loop loop;
 		ev::async evterm;
 		std::shared_ptr<std::thread> thr;
+		std::mutex              thr_mutex;
 
 		std::mutex              term_mutex;
 		std::condition_variable term_event;
