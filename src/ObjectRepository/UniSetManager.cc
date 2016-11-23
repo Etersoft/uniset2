@@ -594,7 +594,7 @@ const std::shared_ptr<UniSetObject> UniSetManager::itemO( const ObjectId id )
 // ------------------------------------------------------------------------------------------
 
 int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, SimpleInfoSeq* seq,
-								   int begin, const long uplimit, CORBA::Long userparam )
+								   int begin, const long uplimit, const char* userparam )
 {
 	auto ind = begin;
 
@@ -645,7 +645,7 @@ int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, S
 }
 // ------------------------------------------------------------------------------------------
 
-SimpleInfoSeq* UniSetManager::getObjectsInfo(CORBA::Long maxlength , CORBA::Long userparam )
+SimpleInfoSeq* UniSetManager::getObjectsInfo(CORBA::Long maxlength, const char* userparam )
 {
 	SimpleInfoSeq* res = new SimpleInfoSeq();    // ЗА ОСВОБОЖДЕНИЕ ПАМЯТИ ОТВЕЧАЕТ КЛИЕНТ!!!!!!
 	// поэтому ему лучше пользоваться при получении _var-классом

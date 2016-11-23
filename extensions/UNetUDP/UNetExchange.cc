@@ -946,7 +946,7 @@ void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceive
 	}
 }
 // -----------------------------------------------------------------------------
-uniset::SimpleInfo* UNetExchange::getInfo( CORBA::Long userparam )
+uniset::SimpleInfo* UNetExchange::getInfo( const char* userparam )
 {
 	uniset::SimpleInfo_var i = UniSetObject::getInfo(userparam);
 

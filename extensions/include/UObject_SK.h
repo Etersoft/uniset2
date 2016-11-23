@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2016-11-19+03:00
+// generate timestamp: 2016-11-23+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -39,7 +39,7 @@ class UObject_SK:
 		void askSensor( uniset::ObjectId sid, UniversalIO::UIOCommand, uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() );
 		void updateValues();
 
-		virtual uniset::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
+		virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
 
 		virtual bool setMsg( uniset::ObjectId code, bool state = true ) noexcept;
 
@@ -251,9 +251,9 @@ class UObject_SK:
 		
 		std::unordered_map<const uniset::ObjectId,size_t, StatHashFn> smStat; /*!< количество сообщений по датчикам */
 		size_t processingMessageCatchCount = { 0 }; /*!< количество исключений пойманных в processingMessage */
-		
-		std::string ostate = { "" }; /*!< состояние процесса (выводится в getInfo()) */
 
+		std::string ostate = { "" }; /*!< состояние процесса (выводится в getInfo()) */
+		
 
 		bool end_private; // вспомогательное поле (для внутреннего использования при генерировании кода)
 };

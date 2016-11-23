@@ -258,7 +258,7 @@ std::shared_ptr<MBTCPMaster> MBTCPMaster::init_mbmaster(int argc, const char* co
 	return make_shared<MBTCPMaster>(ID, icID, ic, prefix);
 }
 // -----------------------------------------------------------------------------
-uniset::SimpleInfo* MBTCPMaster::getInfo( CORBA::Long userparam )
+uniset::SimpleInfo* MBTCPMaster::getInfo( const char* userparam )
 {
 	uniset::SimpleInfo_var i = MBExchange::getInfo(userparam);
 

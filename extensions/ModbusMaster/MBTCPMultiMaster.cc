@@ -761,7 +761,7 @@ const std::string MBTCPMultiMaster::MBSlaveInfo::getShortInfo() const
 	return std::move(s.str());
 }
 // -----------------------------------------------------------------------------
-uniset::SimpleInfo* MBTCPMultiMaster::getInfo( CORBA::Long userparam )
+uniset::SimpleInfo* MBTCPMultiMaster::getInfo( const char* userparam )
 {
 	uniset::SimpleInfo_var i = MBExchange::getInfo(userparam);
 

@@ -76,7 +76,7 @@ IONotifyController::~IONotifyController()
 	conInit.disconnect();
 }
 // ------------------------------------------------------------------------------------------
-SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
+SimpleInfo* IONotifyController::getInfo( const char* userparam )
 {
 	uniset::SimpleInfo_var i = IOController::getInfo();
 
@@ -102,7 +102,9 @@ SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
 		inf << "----------------------------------------------------------------------------------" << endl;
 	}
 
-	if( userparam == 1 || userparam == 2 )
+	const std::string param(userparam);
+
+	if( param == "1" || param == "2" )
 	{
 		inf << "------------------------------- consumers list ------------------------------" << endl;
 		inf << "[userparam=" << userparam << "]" << endl;
@@ -123,7 +125,7 @@ SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
 				// Т.к. сперва выводится имя датчика, а только потом его заказчики
 				// то если надо выводить только тех, у кого есть "потери"(lostEvent>0)
 				// предварительно смотрим список есть ли там хоть один с "потерями", а потом уже выводим
-				if( userparam == 2 )
+				if( param == "2" )
 				{
 					bool lost = false;
 

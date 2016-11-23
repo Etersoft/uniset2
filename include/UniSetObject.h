@@ -99,7 +99,7 @@ class UniSetObject:
 			return uniset::ObjectType("UniSetObject");
 		}
 
-		virtual uniset::SimpleInfo* getInfo( ::CORBA::Long userparam = 0 ) override;
+		virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
 
 		//! поместить сообщение в очередь
 		virtual void push( const uniset::TransportMessage& msg ) override;

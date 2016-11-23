@@ -39,15 +39,15 @@
         uniset::ObjectId getId();       /*!< получение идентификатора объекта */
         uniset::ObjectType getType();   /*!< получение типа объекта */
 
-        /*! получение информации о внутреннем состоянии объекта
+        /*! получение информации от объекта
             \param userparam - Необязательный пользовательский параметр
         */
-        uniset::SimpleInfo getInfo( in long userparam );
+        uniset::SimpleInfo getInfo( in string userparam );
 
         boolean exist();   /*!< проверка существования объекта */
 
         /*!  Функция посылки сообщения объекту */
-        void push(in uniset::TransportMessage msg);
+        void push( in uniset::TransportMessage msg );
     };
 
 //};    // end of module UniSet

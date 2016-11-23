@@ -998,7 +998,7 @@ bool SharedMemory::initFromSM( uniset::ObjectId sm_id, uniset::ObjectId sm_node 
 	return false;
 }
 // ----------------------------------------------------------------------------
-uniset::SimpleInfo* SharedMemory::getInfo( CORBA::Long userparam )
+uniset::SimpleInfo* SharedMemory::getInfo( const char* userparam )
 {
 	uniset::SimpleInfo_var i = IONotifyController::getInfo(userparam);
 

@@ -49,7 +49,7 @@ class IOController:
 			return uniset::ObjectType("IOController");
 		}
 
-		virtual uniset::SimpleInfo* getInfo( ::CORBA::Long userparam = 0 ) override;
+		virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
 
 		virtual CORBA::Long getValue( uniset::ObjectId sid ) override;
 

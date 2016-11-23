@@ -72,7 +72,7 @@ class UniSetManager:
 
 		// ------  функции объявленные в интерфейсе(IDL) ------
 		virtual void broadcast( const uniset::TransportMessage& msg) override;
-		virtual uniset::SimpleInfoSeq* getObjectsInfo( CORBA::Long MaxLength = 300, CORBA::Long userparam = 0  ) override ;
+		virtual uniset::SimpleInfoSeq* getObjectsInfo( CORBA::Long MaxLength = 300, const char* userparam = 0  ) override ;
 
 		// --------------------------
 		virtual bool add( const std::shared_ptr<UniSetObject>& obj );
@@ -139,7 +139,7 @@ class UniSetManager:
 		typedef UniSetManagerList::iterator MListIterator;
 
 		int getObjectsInfo(const std::shared_ptr<UniSetManager>& mngr, uniset::SimpleInfoSeq* seq,
-						   int begin, const long uplimit, CORBA::Long userparam );
+						   int begin, const long uplimit, const char* userparam );
 
 		PortableServer::POA_var poa;
 		PortableServer::POAManager_var pman;

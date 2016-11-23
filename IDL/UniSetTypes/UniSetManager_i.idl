@@ -58,7 +58,7 @@
          * \todo Подумать насчет применения итератора, при слишком
          * большом( >1000 ) количестве подчиненных объектов...
          */
-        uniset::SimpleInfoSeq getObjectsInfo( in long MaxLength, in long userparam );
+        uniset::SimpleInfoSeq getObjectsInfo( in long MaxLength, in string userparam );
     };
 
 //};    // end of module UniSet

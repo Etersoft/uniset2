@@ -234,7 +234,7 @@ class MBTCPMaster:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
-		virtual uniset::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
+		virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
 
 	protected:
 		virtual void sysCommand( const uniset::SystemMessage* sm ) override;

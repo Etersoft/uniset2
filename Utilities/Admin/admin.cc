@@ -72,7 +72,7 @@ int getRawValue( const string& args, UInterface& ui );
 int getChangedTime( const string& args, UInterface& ui );
 int getState( const string& args, UInterface& ui );
 int getCalibrate( const string& args, UInterface& ui );
-int oinfo(const string& args, UInterface& ui , int userparam );
+int oinfo(const string& args, UInterface& ui , const string&  userparam );
 // --------------------------------------------------------------------------
 static void print_help(int width, const string& cmd, const string& help, const string& tab = " " )
 {
@@ -234,10 +234,10 @@ int main(int argc, char** argv)
 					UInterface ui(conf);
 					ui.initBackId(uniset::AdminID);
 
-					int userparam = 0;
+					std::string userparam = {""};
 
 					if( optind < argc )
-						userparam = uni_atoi(argv[optind]);
+						userparam = argv[optind];
 
 					return oinfo(optarg, ui, userparam);
 				}
@@ -1003,7 +1003,7 @@ int configure( const string& arg, UInterface& ui )
 }
 
 // --------------------------------------------------------------------------------------
-int oinfo( const string& args, UInterface& ui, int userparam )
+int oinfo(const string& args, UInterface& ui, const string& userparam )
 {
 	auto conf = uniset_conf();
 	auto sl = uniset::getObjectsList( args, conf );
@@ -1025,7 +1025,7 @@ int oinfo( const string& args, UInterface& ui, int userparam )
 			}
 			else
 			{
-				SimpleInfo_var inf = obj->getInfo(userparam);
+				SimpleInfo_var inf = obj->getInfo(userparam.c_str());
 				cout << inf->info << endl;
 			}
 		}

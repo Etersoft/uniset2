@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2016-11-19+03:00
+// generate timestamp: 2016-11-23+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -501,7 +501,7 @@ void UObject_SK::preSysCommand( const SystemMessage* _sm )
 }
 // -----------------------------------------------------------------------------
 
-uniset::SimpleInfo* UObject_SK::getInfo( CORBA::Long userparam )
+uniset::SimpleInfo* UObject_SK::getInfo( const char* userparam )
 {
 	uniset::SimpleInfo_var i = UniSetObject::getInfo(userparam);
 	

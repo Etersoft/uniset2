@@ -2593,7 +2593,7 @@ const std::string MBSlave::ClientInfo::getShortInfo() const
 	return std::move(s.str());
 }
 // -------------------------------------------------------------------------
-uniset::SimpleInfo* MBSlave::getInfo( CORBA::Long userparam )
+uniset::SimpleInfo* MBSlave::getInfo( const char* userparam )
 {
 	uniset::SimpleInfo_var i = UniSetObject::getInfo(userparam);
 

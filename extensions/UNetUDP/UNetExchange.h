@@ -147,7 +147,7 @@ class UNetExchange:
 			return unetlog;
 		}
 
-		virtual uniset::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
+		virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
 
 	protected:
 

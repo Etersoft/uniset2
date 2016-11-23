@@ -828,7 +828,7 @@ void IOController::USensorInfo::checkDepend( std::shared_ptr<USensorInfo>& d_it,
 		ic->localSetValue( d_usi, real_value, sup_id );
 }
 // -----------------------------------------------------------------------------
-uniset::SimpleInfo* IOController::getInfo( ::CORBA::Long userparam )
+uniset::SimpleInfo* IOController::getInfo( const char* userparam )
 {
 	uniset::SimpleInfo_var i = UniSetManager::getInfo();
 
