@@ -933,7 +933,7 @@ const std::string UNetReceiver::getShortInfo() const noexcept
 	  << "    recvOK=" << isRecvOK()
 	  << " receivepack=" << rnum
 	  << " lostPackets=" << setw(6) << getLostPacketsNum()
-	  << " updateStartegy=" << to_string(upStrategy)
+	  << " updateStrategy=" << to_string(upStrategy)
 	  << endl
 	  << "\t["
 	  << " recvTimeout=" << setw(6) << recvTimeout
