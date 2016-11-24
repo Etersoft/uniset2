@@ -48,6 +48,9 @@ if __name__ == "__main__":
 		#obj2 = UProxyObject("TestProc1")
 		
 		print "Info: %s"%uc1.getObjectInfo( uc1.getObjectID("TestProc1"),"")
+
+#		tc = uc1.getTimeChange(2)
+#		print "TimeChange: %s  sup=%d"%(tc.value,tc.supplier)
 #		print "(0)UIType: %s" % uc1.getUIType()
 
 		print "(1)getShortName: id=%d name=%s" % (1, uc1.getShortName(1))

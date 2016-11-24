@@ -65,7 +65,16 @@ namespace UTypes
 			return Params();
 		}
 	};
+
+	struct ShortIOInfo
+	{
+		long value;
+		unsigned long tv_sec;
+		unsigned long tv_nsec;
+		long supplier;
+	};
 }
+
 //---------------------------------------------------------------------------
 #endif
 //---------------------------------------------------------------------------

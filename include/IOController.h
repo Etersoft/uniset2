@@ -92,7 +92,7 @@ class IOController:
 
 		uniset::Message::Priority getPriority( const uniset::ObjectId id );
 
-		virtual IOController_i::ShortIOInfo getChangedTime( const uniset::ObjectId id ) override;
+		virtual IOController_i::ShortIOInfo getTimeChange( const uniset::ObjectId id ) override;
 
 		virtual IOController_i::ShortMapSeq* getSensors() override;
 

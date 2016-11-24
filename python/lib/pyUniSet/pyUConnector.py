@@ -110,6 +110,32 @@ def Params_inst():
     return _pyUConnector.Params_inst()
 Params_inst = _pyUConnector.Params_inst
 
+class ShortIOInfo:
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ShortIOInfo, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, ShortIOInfo, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["value"] = _pyUConnector.ShortIOInfo_value_set
+    __swig_getmethods__["value"] = _pyUConnector.ShortIOInfo_value_get
+    __swig_setmethods__["tv_sec"] = _pyUConnector.ShortIOInfo_tv_sec_set
+    __swig_getmethods__["tv_sec"] = _pyUConnector.ShortIOInfo_tv_sec_get
+    __swig_setmethods__["tv_nsec"] = _pyUConnector.ShortIOInfo_tv_nsec_set
+    __swig_getmethods__["tv_nsec"] = _pyUConnector.ShortIOInfo_tv_nsec_get
+    __swig_setmethods__["supplier"] = _pyUConnector.ShortIOInfo_supplier_set
+    __swig_getmethods__["supplier"] = _pyUConnector.ShortIOInfo_supplier_get
+
+    def __init__(self):
+        this = _pyUConnector.new_ShortIOInfo()
+        try:
+            self.this.append(this)
+        except Exception:
+            self.this = this
+    __swig_destroy__ = _pyUConnector.delete_ShortIOInfo
+    __del__ = lambda self: None
+ShortIOInfo_swigregister = _pyUConnector.ShortIOInfo_swigregister
+ShortIOInfo_swigregister(ShortIOInfo)
+
 class UConnector:
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, UConnector, name, value)
@@ -137,6 +163,9 @@ class UConnector:
 
     def setValue(self, *args):
         return _pyUConnector.UConnector_setValue(self, *args)
+
+    def getTimeChange(self, *args):
+        return _pyUConnector.UConnector_getTimeChange(self, *args)
 
     def getSensorID(self, name):
         return _pyUConnector.UConnector_getSensorID(self, name)

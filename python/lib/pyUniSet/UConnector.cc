@@ -114,7 +114,37 @@ void UConnector::setValue( long id, long val, long node, long supplier )throw(UE
 	}
 }
 //---------------------------------------------------------------------------
-long UConnector::getSensorID(const string& name )
+static UTypes::ShortIOInfo toUTypes( IOController_i::ShortIOInfo i )
+{
+	UTypes::ShortIOInfo ret;
+	ret.value = i.value;
+	ret.tv_sec = i.tv_sec;
+	ret.tv_nsec = i.tv_nsec;
+	ret.supplier = i.supplier;
+
+	return std::move(ret);
+}
+//---------------------------------------------------------------------------
+UTypes::ShortIOInfo UConnector::getTimeChange( long id, long node )
+{
+	if( !conf || !ui )
+		throw USysError();
+
+	if( node == UTypes::DefaultID )
+		node = conf->getLocalNode();
+
+	try
+	{
+		IOController_i::ShortIOInfo i = ui->getTimeChange(id,node);
+		return toUTypes(i);
+	}
+	catch( const std::exception& ex )
+	{
+		throw UException("(getChangedTime): catch " + std::string(ex.what()) );
+	}
+}
+//---------------------------------------------------------------------------
+long UConnector::getSensorID( const string& name )
 {
 	if( conf )
 		return conf->getSensorID(name);
@@ -168,7 +198,7 @@ throw(UException)
 
 	try
 	{
-		return ui->getInfo(id,params,node);
+		return ui->getObjectInfo(id,params,node);
 	}
 	catch( std::exception& ex )
 	{

@@ -506,6 +506,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
         
 # history of current unpublished changes
+- getChangedTime --> getTimeChange
+- getInfo( long param ) --> getInfo( string param )
 
 %changelog
 * Tue Nov 22 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt3.1

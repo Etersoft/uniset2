@@ -707,7 +707,7 @@ IDSeq* IOController::setOutputSeq(const IOController_i::OutSeq& lst, ObjectId su
 	return badlist.getIDSeq();
 }
 // -----------------------------------------------------------------------------
-IOController_i::ShortIOInfo IOController::getChangedTime( uniset::ObjectId sid )
+IOController_i::ShortIOInfo IOController::getTimeChange( uniset::ObjectId sid )
 {
 	auto ait = ioList.find(sid);
 

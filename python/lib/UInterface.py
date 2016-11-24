@@ -175,9 +175,20 @@ class UInterface():
 
         raise UValidateError("(getObjectID): Unknown interface %s"%self.itype)
 
-    def getObjectInfo( self, id, params = "", node = DefaultID ):
+    '''\param o_name - name, id, name@node, id@node'''
+    def getObjectInfo( self, o_name, params = "" ):
 
         if self.itype != "uniset":
-            raise UException("(getObjectInfo): the interface does not support this feature..'getObjectInfo'")
+            raise UException("(getObjectInfo): the interface does not support this feature..")
 
-        return self.i.getObjectInfo( id, params, node )
+        s = to_sid(o_name,self.i)
+        return self.i.getObjectInfo( s[0], params, s[1] )
+
+    '''\param o_name - name, id, name@node, id@node '''
+    def getTimeChange( self, o_name ):
+
+        if self.itype != "uniset":
+            raise UException("(getTimeChange): the interface does not support this feature..")
+
+        s = to_sid(o_name,self.i)
+        return self.i.getTimeChange( s[0], s[1] )

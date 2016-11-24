@@ -40,6 +40,7 @@ class UConnector
 		std::string getConfFileName();
 		long getValue( long id, long node )throw(UException);
 		void setValue( long id, long val, long node, long supplier = UTypes::DefaultSupplerID )throw(UException);
+		UTypes::ShortIOInfo getTimeChange( long id, long node = UTypes::DefaultID );
 
 		long getSensorID( const std::string& name );
 		long getNodeID( const std::string& name );

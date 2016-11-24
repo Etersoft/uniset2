@@ -139,10 +139,10 @@ class UInterface
 		uniset::ObjectType getType(const uniset::ObjectId id) const;
 
 		//! Время последнего изменения датчика
-		IOController_i::ShortIOInfo getChangedTime( const uniset::ObjectId id, const uniset::ObjectId node ) const;
+		IOController_i::ShortIOInfo getTimeChange( const uniset::ObjectId id, const uniset::ObjectId node ) const;
 
 		//! Информация об объекте
-		std::string getInfo( const uniset::ObjectId id, const std::string& params, const uniset::ObjectId node ) const;
+		std::string getObjectInfo( const uniset::ObjectId id, const std::string& params, const uniset::ObjectId node ) const;
 
 		//! Получить список датчиков
 		IOController_i::ShortMapSeq* getSensors( const uniset::ObjectId id,

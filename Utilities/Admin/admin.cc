@@ -49,7 +49,7 @@ static struct option longopts[] =
 	{ "getValue", required_argument, 0, 'g' },
 	{ "getRawValue", required_argument, 0, 'w' },
 	{ "getCalibrate", required_argument, 0, 'y' },
-	{ "getChangedTime", required_argument, 0, 't' },
+	{ "getTimeChange", required_argument, 0, 't' },
 	{ "oinfo", required_argument, 0, 'p' },
 	{ "verbose", no_argument, 0, 'v' },
 	{ "quiet", no_argument, 0, 'q' },
@@ -70,7 +70,7 @@ int logRotate( const string& args, UInterface& ui );
 int setValue( const string& args, UInterface& ui );
 int getValue( const string& args, UInterface& ui );
 int getRawValue( const string& args, UInterface& ui );
-int getChangedTime( const string& args, UInterface& ui );
+int getTimeChange( const string& args, UInterface& ui );
 int getState( const string& args, UInterface& ui );
 int getCalibrate( const string& args, UInterface& ui );
 int oinfo(const string& args, UInterface& ui , const string&  userparam );
@@ -116,7 +116,7 @@ static void usage()
 	cout << endl;
 	print_help(36, "-w|--getRawValue id1@node1,id2@node2,id3,.. ", "Получить 'сырое' значение.\n");
 	print_help(36, "-y|--getCalibrate id1@node1,id2@node2,id3,.. ", "Получить параметры калибровки.\n");
-	print_help(36, "-t|--getChangedTime id1@node1,id2@node2,id3,.. ", "Получить время последнего изменения.\n");
+	print_help(36, "-t|--getTimeChange id1@node1,id2@node2,id3,.. ", "Получить время последнего изменения.\n");
 	print_help(36, "-v|--verbose", "Подробный вывод логов.\n");
 	print_help(36, "-q|--quiet", "Выводит только результат.\n");
 	print_help(36, "-z|--csv", "Вывести результат (getValue) в виде val1,val2,val3...\n");
@@ -218,13 +218,13 @@ int main(int argc, char** argv)
 				}
 				break;
 
-				case 't':    //--getChangedTime
+				case 't':    //--getTimeChange
 				{
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
 					ui.initBackId(uniset::AdminID);
 					string name = ( optarg ) ? optarg : "";
-					return getChangedTime(name, ui);
+					return getTimeChange(name, ui);
 				}
 				break;
 
@@ -843,7 +843,7 @@ int getRawValue( const std::string& args, UInterface& ui )
 }
 
 // --------------------------------------------------------------------------------------
-int getChangedTime( const std::string& args, UInterface& ui )
+int getTimeChange( const std::string& args, UInterface& ui )
 {
 	int err = 0;
 	auto conf = ui.getConf();
@@ -863,10 +863,10 @@ int getChangedTime( const std::string& args, UInterface& ui )
 			{
 				cout << "   name: (" << it.si.id << ") " << it.fname << endl;
 				cout << "   text: " << conf->oind->getTextName(it.si.id) << "\n\n";
-				cout << ui.getChangedTime(it.si.id, it.si.node) << endl;
+				cout << ui.getTimeChange(it.si.id, it.si.node) << endl;
 			}
 			else
-				cout << ui.getChangedTime(it.si.id, it.si.node);
+				cout << ui.getTimeChange(it.si.id, it.si.node);
 		}
 		catch( const uniset::Exception& ex )
 		{
@@ -1016,7 +1016,7 @@ int oinfo(const string& args, UInterface& ui, const string& userparam )
 
 		try
 		{
-			cout << ui.getInfo(it.id, userparam,it.node) << endl;
+			cout << ui.getObjectInfo(it.id, userparam,it.node) << endl;
 		}
 		catch( const std::exception& ex )
 		{

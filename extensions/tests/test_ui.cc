@@ -66,8 +66,8 @@ TEST_CASE("UInterface", "[UInterface]")
 		si.node = -2;
 		REQUIRE_THROWS_AS( ui.setValue(si, 20, DefaultObjectId), uniset::Exception );
 
-		REQUIRE_THROWS_AS( ui.getChangedTime(sid, DefaultObjectId), uniset::ORepFailed );
-		REQUIRE_NOTHROW( ui.getChangedTime(sid, conf->getLocalNode()) );
+		REQUIRE_THROWS_AS( ui.getTimeChange(sid, DefaultObjectId), uniset::ORepFailed );
+		REQUIRE_NOTHROW( ui.getTimeChange(sid, conf->getLocalNode()) );
 
 		si.id = aid;
 		si.node = conf->getLocalNode();

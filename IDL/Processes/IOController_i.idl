@@ -144,7 +144,7 @@ interface IOController_i : UniSetManager_i
         uniset::ObjectId supplier; /*!< идентификатор того, кто менял датчик (последний раз) */
     };
 
-    ShortIOInfo getChangedTime( in uniset::ObjectId sid ) raises(NameNotFound);
+    ShortIOInfo getTimeChange( in uniset::ObjectId sid ) raises(NameNotFound);
 
 
     /*! Информация о дискретном датчике */

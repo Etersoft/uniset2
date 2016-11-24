@@ -1027,15 +1027,15 @@ void UInterface::send( const uniset::ObjectId name, const uniset::TransportMessa
 }
 
 // ------------------------------------------------------------------------------------------------------------
-IOController_i::ShortIOInfo UInterface::getChangedTime( const uniset::ObjectId id, const uniset::ObjectId node ) const
+IOController_i::ShortIOInfo UInterface::getTimeChange( const uniset::ObjectId id, const uniset::ObjectId node ) const
 {
 	if( id == uniset::DefaultObjectId )
-		throw uniset::ORepFailed("UI(getChangedTime): Unknown id=uniset::DefaultObjectId");
+		throw uniset::ORepFailed("UI(getTimeChange): Unknown id=uniset::DefaultObjectId");
 
 	if( node == uniset::DefaultObjectId )
 	{
 		ostringstream err;
-		err << "UI(getChangedTime): id='" << id << "' error: node=uniset::DefaultObjectId";
+		err << "UI(getTimeChange): id='" << id << "' error: node=uniset::DefaultObjectId";
 		throw uniset::ORepFailed(err.str());
 	}
 
@@ -1057,7 +1057,7 @@ IOController_i::ShortIOInfo UInterface::getChangedTime( const uniset::ObjectId i
 					oref = resolve( id, node );
 
 				IOController_i_var iom = IOController_i::_narrow(oref);
-				return iom->getChangedTime(id);
+				return iom->getTimeChange(id);
 			}
 			catch( const CORBA::TRANSIENT& ) {}
 			catch( const CORBA::OBJECT_NOT_EXIST& ) {}
@@ -1071,27 +1071,27 @@ IOController_i::ShortIOInfo UInterface::getChangedTime( const uniset::ObjectId i
 	catch( const IOController_i::NameNotFound&  ex)
 	{
 		rcache.erase(id, node);
-		uwarn << "UI(getChangedTime): " << ex.err << endl;
+		uwarn << "UI(getTimeChange): " << ex.err << endl;
 	}
 	catch( const IOController_i::IOBadParam& ex )
 	{
 		rcache.erase(id, node);
-		throw uniset::IOBadParam("UI(getChangedTime): " + string(ex.err));
+		throw uniset::IOBadParam("UI(getTimeChange): " + string(ex.err));
 	}
 	catch( const uniset::ORepFailed& )
 	{
 		rcache.erase(id, node);
-		uwarn << set_err("UI(getChangedTime): resolve failed ", id, node) << endl;
+		uwarn << set_err("UI(getTimeChange): resolve failed ", id, node) << endl;
 	}
 	catch( const CORBA::NO_IMPLEMENT& )
 	{
 		rcache.erase(id, node);
-		uwarn << set_err("UI(getChangedTime): method no implement", id, node) << endl;
+		uwarn << set_err("UI(getTimeChange): method no implement", id, node) << endl;
 	}
 	catch( const CORBA::OBJECT_NOT_EXIST& e )
 	{
 		rcache.erase(id, node);
-		uwarn << set_err("UI(getChangedTime): object not exist", id, node) << endl;
+		uwarn << set_err("UI(getTimeChange): object not exist", id, node) << endl;
 	}
 	catch( const CORBA::COMM_FAILURE& e )
 	{
@@ -1105,10 +1105,10 @@ IOController_i::ShortIOInfo UInterface::getChangedTime( const uniset::ObjectId i
 	}
 
 	rcache.erase(id, node);
-	throw uniset::TimeOut(set_err("UI(getChangedTime): Timeout", id, node));
+	throw uniset::TimeOut(set_err("UI(getTimeChange): Timeout", id, node));
 }
 // ------------------------------------------------------------------------------------------------------------
-std::string UInterface::getInfo( const ObjectId id, const std::string& params, const ObjectId node ) const
+std::string UInterface::getObjectInfo( const ObjectId id, const std::string& params, const ObjectId node ) const
 {
 	if( id == uniset::DefaultObjectId )
 		throw uniset::ORepFailed("UI(getInfo): Unknown id=uniset::DefaultObjectId");
