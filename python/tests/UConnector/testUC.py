@@ -17,15 +17,6 @@ def myfunc( act ):
 
 if __name__ == "__main__":
 	
-	
-	act = dict()
-	act['type'] = 'type'
-	myfunc(act)
-	
-	print act
-	exit(0)
-	
-	
 	lst = Params_inst()
 	lst2 = Params_inst()
 
@@ -53,9 +44,10 @@ if __name__ == "__main__":
 		uc1 = UConnector( lst, "test.xml" )
 		uc2 = UConnector( lst2, "test.xml" )
 		
-		obj1 = UProxyObject("TestProc")
-		obj2 = UProxyObject("TestProc1")
+		#obj1 = UProxyObject("TestProc")
+		#obj2 = UProxyObject("TestProc1")
 		
+		print "Info: %s"%uc1.getObjectInfo( uc1.getObjectID("TestProc1"),"")
 #		print "(0)UIType: %s" % uc1.getUIType()
 
 		print "(1)getShortName: id=%d name=%s" % (1, uc1.getShortName(1))

@@ -4400,6 +4400,187 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_UConnector_getObjectInfo__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UConnector *arg1 = (UConnector *) 0 ;
+  long arg2 ;
+  std::string *arg3 = 0 ;
+  long arg4 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  int res3 = SWIG_OLDOBJ ;
+  long val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  std::string result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:UConnector_getObjectInfo",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UConnector, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UConnector_getObjectInfo" "', argument " "1"" of type '" "UConnector *""'"); 
+  }
+  arg1 = reinterpret_cast< UConnector * >(argp1);
+  ecode2 = SWIG_AsVal_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "UConnector_getObjectInfo" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  {
+    std::string *ptr = (std::string *)0;
+    res3 = SWIG_AsPtr_std_string(obj2, &ptr);
+    if (!SWIG_IsOK(res3)) {
+      SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "UConnector_getObjectInfo" "', argument " "3"" of type '" "std::string const &""'"); 
+    }
+    if (!ptr) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "UConnector_getObjectInfo" "', argument " "3"" of type '" "std::string const &""'"); 
+    }
+    arg3 = ptr;
+  }
+  ecode4 = SWIG_AsVal_long(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "UConnector_getObjectInfo" "', argument " "4"" of type '" "long""'");
+  } 
+  arg4 = static_cast< long >(val4);
+  try {
+    result = (arg1)->getObjectInfo(arg2,(std::string const &)*arg3,arg4);
+  }
+  catch(UException &_e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
+  }
+  
+  resultobj = SWIG_From_std_string(static_cast< std::string >(result));
+  if (SWIG_IsNewObj(res3)) delete arg3;
+  return resultobj;
+fail:
+  if (SWIG_IsNewObj(res3)) delete arg3;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_UConnector_getObjectInfo__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UConnector *arg1 = (UConnector *) 0 ;
+  long arg2 ;
+  std::string *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  int res3 = SWIG_OLDOBJ ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  std::string result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:UConnector_getObjectInfo",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UConnector, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UConnector_getObjectInfo" "', argument " "1"" of type '" "UConnector *""'"); 
+  }
+  arg1 = reinterpret_cast< UConnector * >(argp1);
+  ecode2 = SWIG_AsVal_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "UConnector_getObjectInfo" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  {
+    std::string *ptr = (std::string *)0;
+    res3 = SWIG_AsPtr_std_string(obj2, &ptr);
+    if (!SWIG_IsOK(res3)) {
+      SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "UConnector_getObjectInfo" "', argument " "3"" of type '" "std::string const &""'"); 
+    }
+    if (!ptr) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "UConnector_getObjectInfo" "', argument " "3"" of type '" "std::string const &""'"); 
+    }
+    arg3 = ptr;
+  }
+  try {
+    result = (arg1)->getObjectInfo(arg2,(std::string const &)*arg3);
+  }
+  catch(UException &_e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
+  }
+  
+  resultobj = SWIG_From_std_string(static_cast< std::string >(result));
+  if (SWIG_IsNewObj(res3)) delete arg3;
+  return resultobj;
+fail:
+  if (SWIG_IsNewObj(res3)) delete arg3;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_UConnector_getObjectInfo(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[5] = {
+    0
+  };
+  Py_ssize_t ii;
+  
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 4) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 3) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_UConnector, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_long(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        int res = SWIG_AsPtr_std_string(argv[2], (std::string**)(0));
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          return _wrap_UConnector_getObjectInfo__SWIG_1(self, args);
+        }
+      }
+    }
+  }
+  if (argc == 4) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_UConnector, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_long(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        int res = SWIG_AsPtr_std_string(argv[2], (std::string**)(0));
+        _v = SWIG_CheckState(res);
+        if (_v) {
+          {
+            int res = SWIG_AsVal_long(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            return _wrap_UConnector_getObjectInfo__SWIG_0(self, args);
+          }
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'UConnector_getObjectInfo'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    UConnector::getObjectInfo(long,std::string const &,long)\n"
+    "    UConnector::getObjectInfo(long,std::string const &)\n");
+  return 0;
+}
+
+
 SWIGINTERN PyObject *_wrap_UConnector_activate_objects(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   UConnector *arg1 = (UConnector *) 0 ;
@@ -4458,6 +4639,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"UConnector_getShortName", _wrap_UConnector_getShortName, METH_VARARGS, NULL},
 	 { (char *)"UConnector_getName", _wrap_UConnector_getName, METH_VARARGS, NULL},
 	 { (char *)"UConnector_getTextName", _wrap_UConnector_getTextName, METH_VARARGS, NULL},
+	 { (char *)"UConnector_getObjectInfo", _wrap_UConnector_getObjectInfo, METH_VARARGS, NULL},
 	 { (char *)"UConnector_activate_objects", _wrap_UConnector_activate_objects, METH_VARARGS, NULL},
 	 { (char *)"UConnector_swigregister", UConnector_swigregister, METH_VARARGS, NULL},
 	 { NULL, NULL, 0, NULL }

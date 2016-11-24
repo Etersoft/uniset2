@@ -38,7 +38,7 @@ class UInterface():
     def getIDinfo(self, s_id):
 
         if self.itype == "uniset":
-           return to_sid(s_id,self.i)
+           return to_sid(s_id, self.i)
 
         if self.itype == "modbus":
            mbaddr,mbreg,mbfunc,nbit,vtype = get_mbquery_param(s_id,"0x04")
@@ -53,7 +53,7 @@ class UInterface():
             if self.itype == "uniset":
                 s = to_sid(s_id, self.i)
                 if s[0] == DefaultID:
-                    return [False,"Unknown ID for '%s'"%str(s_id)]
+                    return [False, "Unknown ID for '%s'"%str(s_id)]
 
                 return [True,""]
 
@@ -73,7 +73,7 @@ class UInterface():
                 return [True,""]
 
         except UException, e:
-            return [False,"%s"%e.getError()]
+            return [False, "%s"%e.getError()]
 
         return [False, "Unknown interface %s" % self.itype]
 
@@ -81,21 +81,21 @@ class UInterface():
 
         try:
            if self.itype == "uniset":
-              s = to_sid(s_id,self.i)
+              s = to_sid(s_id, self.i)
               if self.ignore_nodes == True:
                  s[1] = DefaultID
               
-              return self.i.getValue(s[0],s[1])
+              return self.i.getValue( s[0], s[1] )
 
            if self.itype == "modbus":
-              mbaddr,mbreg,mbfunc,nbit,vtype = get_mbquery_param(s_id,"0x04")
+              mbaddr, mbreg, mbfunc, nbit, vtype = get_mbquery_param(s_id, "0x04")
               if mbaddr == None or mbreg == None or mbfunc == None:
                  raise UValidateError( "(modbus:getValue): parse id='%s' failed. Must be 'mbreg@mbaddr:mbfunc:nbit:vtype'"%s_id )
 
               if self.i.isWriteFunction(mbfunc) == True:
-                 raise UValidateError( "(modbus:getValue): for id='%s' mbfunc=%d is WriteFunction. Must be 'read'."%(s_id,mbfunc) )
+                 raise UValidateError( "(modbus:getValue): for id='%s' mbfunc=%d is WriteFunction. Must be 'read'."%(s_id, mbfunc) )
 
-              return self.i.mbread(mbaddr,mbreg,mbfunc,vtype,nbit)
+              return self.i.mbread(mbaddr, mbreg, mbfunc, vtype, nbit)
 
         except UException, e:
               raise e
@@ -109,20 +109,20 @@ class UInterface():
               if self.ignore_nodes == True:
                  s[1] = DefaultID
 
-              self.i.setValue(s[0],s_val,s[1], supplier)
+              self.i.setValue( s[0], s_val, s[1], supplier )
               return
 
            if self.itype == "modbus":
 #             ip,port,mbaddr,mbreg,mbfunc,vtype,nbit = ui.get_modbus_param(s_id)
-              mbaddr,mbreg,mbfunc,nbit,vtype = get_mbquery_param(s_id,"0x06")
+              mbaddr, mbreg, mbfunc, nbit, vtype = get_mbquery_param(s_id,"0x06")
               if mbaddr == None or mbreg == None or mbfunc == None:
                  raise UValidateError( "(modbus:setValue): parse id='%s' failed. Must be 'mbreg@mbaddr:mbfunc'"%s_id )
               
               #print "MODBUS SET VALUE: s_id=%s"%s_id
               if self.i.isWriteFunction(mbfunc) == False:
-                 raise UValidateError( "(modbus:setValue): for id='%s' mbfunc=%d is NOT WriteFunction."%(s_id,mbfunc) )
+                 raise UValidateError( "(modbus:setValue): for id='%s' mbfunc=%d is NOT WriteFunction."%(s_id, mbfunc) )
 
-              self.i.mbwrite(mbaddr,mbreg,to_int(s_val),mbfunc)
+              self.i.mbwrite(mbaddr, mbreg, to_int(s_val), mbfunc)
               return
 
         except UException, e:
@@ -139,7 +139,7 @@ class UInterface():
 
         raise UValidateError("(setValue): Unknown interface %s"%self.itype)
 
-    def getShortName(self,s_node):
+    def getShortName(self, s_node):
         if self.itype == "uniset":
            return self.i.getShortName(s_node)
 
@@ -148,7 +148,7 @@ class UInterface():
 
         raise UValidateError("(getShortName): Unknown interface %s"%self.itype)
 
-    def getNodeID(self,s_node):
+    def getNodeID(self, s_node):
         if self.itype == "uniset":
            return self.i.getNodeID(s_node)
 
@@ -157,7 +157,7 @@ class UInterface():
 
         raise UValidateError("(getNodeID): Unknown interface %s"%self.itype)
 
-    def getSensorID(self,s_name):
+    def getSensorID(self, s_name):
         if self.itype == "uniset":
            return self.i.getSensorID(s_name)
 
@@ -166,7 +166,7 @@ class UInterface():
 
         raise UValidateError("(getSensorID): Unknown interface %s"%self.itype)
 
-    def getObjectID(self,o_name):
+    def getObjectID(self, o_name):
         if self.itype == "uniset":
            return self.i.getObjectID(o_name)
 
@@ -175,3 +175,9 @@ class UInterface():
 
         raise UValidateError("(getObjectID): Unknown interface %s"%self.itype)
 
+    def getObjectInfo( self, id, params = "", node = DefaultID ):
+
+        if self.itype != "uniset":
+            raise UException("(getObjectInfo): the interface does not support this feature..'getObjectInfo'")
+
+        return self.i.getObjectInfo( id, params, node )

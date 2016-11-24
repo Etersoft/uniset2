@@ -49,6 +49,8 @@ class UConnector
 		std::string getName( long id );
 		std::string getTextName( long id );
 
+		std::string getObjectInfo( long id , const std::string& params, long node = UTypes::DefaultID )throw(UException);
+
 		void activate_objects() throw(UException);
 
 	private:

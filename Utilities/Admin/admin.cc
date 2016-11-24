@@ -14,6 +14,7 @@
 #include "UniSetTypes.h"
 #include "UniSetManager.h"
 #include "MessageType.h"
+#include "UInterface.h"
 #include "Configuration.h"
 #include "ObjectIndex_XML.h"
 #include "Debug.h"
@@ -1008,51 +1009,14 @@ int oinfo(const string& args, UInterface& ui, const string& userparam )
 	auto conf = uniset_conf();
 	auto sl = uniset::getObjectsList( args, conf );
 
-	for( auto && it : sl )
+	for( auto&& it : sl )
 	{
 		if( it.node == DefaultObjectId )
 			it.node = conf->getLocalNode();
 
 		try
 		{
-			uniset::ObjectVar o = ui.resolve(it.id, it.node);
-			UniSetObject_i_var obj = UniSetObject_i::_narrow(o);
-
-			if(CORBA::is_nil(obj))
-			{
-				if( !quiet )
-					cout << "(oinfo): объект '" << it.id << "' недоступен" << endl;
-			}
-			else
-			{
-				SimpleInfo_var inf = obj->getInfo(userparam.c_str());
-				cout << inf->info << endl;
-			}
-		}
-		catch( const uniset::Exception& ex )
-		{
-			if( !quiet )
-				cout << "ID='" << it.id << "' ERROR: " << ex << endl;
-		}
-		catch( const CORBA::SystemException& ex )
-		{
-			if( !quiet )
-				cerr << "CORBA::SystemException: " << ex.NP_minorString() << endl;
-		}
-		catch( const CORBA::Exception& )
-		{
-			if( !quiet )
-				cerr << "CORBA::Exception." << endl;
-		}
-		catch( const omniORB::fatalException& fe )
-		{
-			if( !quiet )
-			{
-				cerr << "omniORB::fatalException:" << endl;
-				cerr << "  file: " << fe.file() << endl;
-				cerr << "  line: " << fe.line() << endl;
-				cerr << "  mesg: " << fe.errmsg() << endl;
-			}
+			cout << ui.getInfo(it.id, userparam,it.node) << endl;
 		}
 		catch( const std::exception& ex )
 		{

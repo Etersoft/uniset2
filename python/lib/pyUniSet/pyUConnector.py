@@ -156,6 +156,9 @@ class UConnector:
     def getTextName(self, id):
         return _pyUConnector.UConnector_getTextName(self, id)
 
+    def getObjectInfo(self, *args):
+        return _pyUConnector.UConnector_getObjectInfo(self, *args)
+
     def activate_objects(self):
         return _pyUConnector.UConnector_activate_objects(self)
 UConnector_swigregister = _pyUConnector.UConnector_swigregister

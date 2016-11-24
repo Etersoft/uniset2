@@ -137,7 +137,7 @@ throw(UI_THROW_EXCEPTIONS)
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for( unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for( size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -224,7 +224,7 @@ void UInterface::setUndefinedState( const IOController_i::SensorInfo& si, bool u
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for (unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for (size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -315,7 +315,7 @@ throw(UI_THROW_EXCEPTIONS)
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for (unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for (size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -407,7 +407,7 @@ void UInterface::fastSetValue( const IOController_i::SensorInfo& si, long value,
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for (unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for (size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -506,7 +506,7 @@ void UInterface::askRemoteSensor( const uniset::ObjectId id, UniversalIO::UIOCom
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for (unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for (size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -603,7 +603,7 @@ throw(UI_THROW_EXCEPTIONS)
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for (unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for (size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -694,7 +694,7 @@ throw(UI_THROW_EXCEPTIONS)
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for (unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for (size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -901,7 +901,7 @@ throw(uniset::ResolveNameError, uniset::TimeOut )
 
 		CosNaming::Name_var oname = omniURI::stringToName( oind->getNameById(rid).c_str() );
 
-		for (unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for (size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -972,7 +972,7 @@ throw(UI_THROW_EXCEPTIONS)
 		}
 		catch( const uniset::NameNotFound& ) {}
 
-		for (unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for (size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -1049,7 +1049,7 @@ IOController_i::ShortIOInfo UInterface::getChangedTime( const uniset::ObjectId i
 		}
 		catch( const uniset::NameNotFound& ) {}
 
-		for (unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for (size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -1108,7 +1108,84 @@ IOController_i::ShortIOInfo UInterface::getChangedTime( const uniset::ObjectId i
 	throw uniset::TimeOut(set_err("UI(getChangedTime): Timeout", id, node));
 }
 // ------------------------------------------------------------------------------------------------------------
+std::string UInterface::getInfo( const ObjectId id, const std::string& params, const ObjectId node ) const
+{
+	if( id == uniset::DefaultObjectId )
+		throw uniset::ORepFailed("UI(getInfo): Unknown id=uniset::DefaultObjectId");
 
+	if( node == uniset::DefaultObjectId )
+	{
+		ostringstream err;
+		err << "UI(getInfo): id='" << id << "' error: node=uniset::DefaultObjectId";
+		throw uniset::ORepFailed(err.str());
+	}
+
+	try
+	{
+		CORBA::Object_var oref;
+
+		try
+		{
+			oref = rcache.resolve(id, node);
+		}
+		catch( const uniset::NameNotFound& ) {}
+
+		for (size_t i = 0; i < uconf->getRepeatCount(); i++)
+		{
+			try
+			{
+				if( CORBA::is_nil(oref) )
+					oref = resolve( id, node );
+
+				UniSetObject_i_var u = UniSetObject_i::_narrow(oref);
+				SimpleInfo_var i = u->getInfo( params.c_str() );
+				return std::string(i->info);
+			}
+			catch( const CORBA::TRANSIENT& ) {}
+			catch( const CORBA::OBJECT_NOT_EXIST& ) {}
+			catch( const CORBA::SystemException& ex ) {}
+
+			msleep(uconf->getRepeatTimeout());
+			oref = CORBA::Object::_nil();
+		}
+	}
+	catch( const uniset::TimeOut& ) {}
+	catch( const IOController_i::NameNotFound&  ex)
+	{
+		rcache.erase(id, node);
+		uwarn << "UI(getInfo): " << ex.err << endl;
+	}
+	catch( const IOController_i::IOBadParam& ex )
+	{
+		rcache.erase(id, node);
+		throw uniset::IOBadParam("UI(getInfo): " + string(ex.err));
+	}
+	catch( const uniset::ORepFailed& )
+	{
+		rcache.erase(id, node);
+		uwarn << set_err("UI(getInfo): resolve failed ", id, node) << endl;
+	}
+	catch( const CORBA::NO_IMPLEMENT& )
+	{
+		rcache.erase(id, node);
+		uwarn << set_err("UI(getInfo): method no implement", id, node) << endl;
+	}
+	catch( const CORBA::OBJECT_NOT_EXIST& e )
+	{
+		rcache.erase(id, node);
+		uwarn << set_err("UI(getInfo): object not exist", id, node) << endl;
+	}
+	catch( const CORBA::COMM_FAILURE& e )
+	{
+	}
+	catch( const CORBA::SystemException& ex)
+	{
+	}
+
+	rcache.erase(id, node);
+	throw uniset::TimeOut(set_err("UI(getInfo): Timeout", id, node));
+}
+// ------------------------------------------------------------------------------------------------------------
 uniset::ObjectPtr UInterface::CacheOfResolve::resolve( const uniset::ObjectId id, const uniset::ObjectId node ) const
 throw(uniset::NameNotFound)
 {
@@ -1300,7 +1377,7 @@ void UInterface::askRemoteThreshold( const uniset::ObjectId sid, const uniset::O
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for (unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for (size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -1397,7 +1474,7 @@ UInterface::getThresholdInfo( const IOController_i::SensorInfo& si, const uniset
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for( unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for( size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -1478,7 +1555,7 @@ long UInterface::getRawValue( const IOController_i::SensorInfo& si )
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for( unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for( size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -1567,7 +1644,7 @@ void UInterface::calibrate(const IOController_i::SensorInfo& si,
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for( unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for( size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -1649,7 +1726,7 @@ IOController_i::CalibrateInfo UInterface::getCalibrateInfo( const IOController_i
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for( unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for( size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -1728,7 +1805,7 @@ IOController_i::SensorInfoSeq_var UInterface::getSensorSeq( const uniset::IDList
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for( unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for( size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -1809,7 +1886,7 @@ uniset::IDSeq_var UInterface::setOutputSeq( const IOController_i::OutSeq& lst, u
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for( unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for( size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -1895,7 +1972,7 @@ uniset::IDSeq_var UInterface::askSensorsSeq( const uniset::IDList& lst,
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for( unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for( size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -1982,7 +2059,7 @@ IOController_i::ShortMapSeq* UInterface::getSensors( const uniset::ObjectId id, 
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for( unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for( size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -2063,7 +2140,7 @@ IOController_i::SensorInfoSeq* UInterface::getSensorsMap( const uniset::ObjectId
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for( unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for( size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{
@@ -2143,7 +2220,7 @@ IONotifyController_i::ThresholdsListSeq* UInterface::getThresholdsList( const un
 		}
 		catch( const uniset::NameNotFound&  ) {}
 
-		for( unsigned int i = 0; i < uconf->getRepeatCount(); i++)
+		for( size_t i = 0; i < uconf->getRepeatCount(); i++)
 		{
 			try
 			{

@@ -154,6 +154,28 @@ string UConnector::getTextName( long id )
 	return "";
 }
 //---------------------------------------------------------------------------
+string UConnector::getObjectInfo( long id, const std::string& params, long node )
+throw(UException)
+{
+	if( !conf || !ui )
+		throw USysError();
+
+	if( id == UTypes::DefaultID )
+		throw UException("(getObjectInfo): Unknown ID..");
+
+	if( node == UTypes::DefaultID )
+		node = conf->getLocalNode();
+
+	try
+	{
+		return ui->getInfo(id,params,node);
+	}
+	catch( std::exception& ex )
+	{
+		throw UException("(getObjectInfo): error: " + std::string(ex.what()) );
+	}
+}
+//---------------------------------------------------------------------------
 void UConnector::activate_objects() throw(UException)
 {
 	try
