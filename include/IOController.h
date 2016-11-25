@@ -82,7 +82,7 @@ class IOController:
 		IOController_i::CalibrateInfo getCalibrateInfo( uniset::ObjectId sid ) override;
 
 		inline IOController_i::SensorInfo SensorInfo( const uniset::ObjectId sid,
-				const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode())
+													  const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode())
 		{
 			IOController_i::SensorInfo si;
 			si.id = sid;
@@ -98,7 +98,7 @@ class IOController:
 
 #ifndef DISABLE_REST_API
 		// http API
-//		virtual nlohmann::json getData( const Poco::URI::QueryParameters& p ) override;
+		//		virtual nlohmann::json getData( const Poco::URI::QueryParameters& p ) override;
 		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override;
 		virtual nlohmann::json httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
 #endif
@@ -245,8 +245,8 @@ class IOController:
 		IOStateList::iterator myiofind( uniset::ObjectId id );
 		size_t ioCount();
 		// --------------------------
-                
-    private:
+
+	private:
 		friend class NCRestorer;
 		friend class SMInterface;
 

@@ -135,7 +135,7 @@ UTypes::ShortIOInfo UConnector::getTimeChange( long id, long node )
 
 	try
 	{
-		IOController_i::ShortIOInfo i = ui->getTimeChange(id,node);
+		IOController_i::ShortIOInfo i = ui->getTimeChange(id, node);
 		return toUTypes(i);
 	}
 	catch( const std::exception& ex )
@@ -198,7 +198,7 @@ throw(UException)
 
 	try
 	{
-		return ui->getObjectInfo(id,params,node);
+		return ui->getObjectInfo(id, params, node);
 	}
 	catch( std::exception& ex )
 	{

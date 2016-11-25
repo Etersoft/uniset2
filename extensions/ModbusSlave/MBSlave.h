@@ -315,8 +315,8 @@ class MBSlave:
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<MBSlave> init_mbslave(int argc, const char* const* argv,
-				uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
-				const std::string& prefix = "mbs" );
+													 uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+													 const std::string& prefix = "mbs" );
 
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
@@ -399,11 +399,11 @@ class MBSlave:
 
 		/*! обработка 0x03 */
 		ModbusRTU::mbErrCode readOutputRegisters( ModbusRTU::ReadOutputMessage& query,
-				ModbusRTU::ReadOutputRetMessage& reply );
+												  ModbusRTU::ReadOutputRetMessage& reply );
 
 		/*! обработка 0x04 */
 		ModbusRTU::mbErrCode readInputRegisters( ModbusRTU::ReadInputMessage& query,
-				ModbusRTU::ReadInputRetMessage& reply );
+												 ModbusRTU::ReadInputRetMessage& reply );
 
 		/*! обработка 0x05 */
 		ModbusRTU::mbErrCode forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
@@ -411,16 +411,16 @@ class MBSlave:
 
 		/*! обработка 0x0F */
 		ModbusRTU::mbErrCode forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
-				ModbusRTU::ForceCoilsRetMessage& reply );
+												 ModbusRTU::ForceCoilsRetMessage& reply );
 
 
 		/*! обработка 0x10 */
 		ModbusRTU::mbErrCode writeOutputRegisters( ModbusRTU::WriteOutputMessage& query,
-				ModbusRTU::WriteOutputRetMessage& reply );
+												   ModbusRTU::WriteOutputRetMessage& reply );
 
 		/*! обработка 0x06 */
 		ModbusRTU::mbErrCode writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
-				ModbusRTU::WriteSingleOutputRetMessage& reply );
+														ModbusRTU::WriteSingleOutputRetMessage& reply );
 
 		/*! обработка запросов на чтение ошибок */
 		//        ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query,

@@ -75,7 +75,7 @@ class UniSetObject:
 	public POA_UniSetObject_i,
 	public LT_Object
 #ifndef DISABLE_REST_API
-	,public uniset::UHttp::IHttpRequest
+	, public uniset::UHttp::IHttpRequest
 #endif
 {
 	public:

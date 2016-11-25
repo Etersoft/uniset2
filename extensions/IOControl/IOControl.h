@@ -231,8 +231,8 @@ class IOControl:
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<IOControl> init_iocontrol( int argc, const char* const* argv,
-				uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& ic = nullptr,
-				const std::string& prefix = "io" );
+														  uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+														  const std::string& prefix = "io" );
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 

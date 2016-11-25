@@ -175,7 +175,7 @@ void IOController::setUndefinedState( uniset::ObjectId sid, CORBA::Boolean undef
 }
 // -----------------------------------------------------------------------------
 void IOController::localSetUndefinedState( IOStateList::iterator& li,
-		bool undefined, const uniset::ObjectId sid )
+										   bool undefined, const uniset::ObjectId sid )
 {
 	// сохранение текущего состояния
 	if( li == ioList.end() )
@@ -410,8 +410,8 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi, bool force
 			try
 			{
 				ulogrep << myname
-					  << "(ioRegistration): регистрирую "
-					  << uniset_conf()->oind->getNameById(usi->si.id) << endl;
+						<< "(ioRegistration): регистрирую "
+						<< uniset_conf()->oind->getNameById(usi->si.id) << endl;
 
 				ui->registered( usi->si.id, getRef(), true );
 				return;
@@ -849,15 +849,17 @@ nlohmann::json IOController::httpHelp( const Poco::URI::QueryParameters& p )
 
 	auto& jhelp = jdata[myname]["help"];
 	jhelp["get"]["desc"] = "get value for sensor";
-	jhelp["get"]["params"] = {
-		{"id1,name2,id3","get value for id1,name2,id3 sensors"},
-		{"shortInfo","get short information for sensors"}
+	jhelp["get"]["params"] =
+	{
+		{"id1,name2,id3", "get value for id1,name2,id3 sensors"},
+		{"shortInfo", "get short information for sensors"}
 	};
 	jhelp["sensors"]["desc"] = "get all sensors.";
-	jhelp["sensors"]["params"] = {
-		{"nameonly","get only name sensors"},
-		{"offset=N","get from N record"},
-		{"limit=M","limit of records"}
+	jhelp["sensors"]["params"] =
+	{
+		{"nameonly", "get only name sensors"},
+		{"offset=N", "get from N record"},
+		{"limit=M", "limit of records"}
 	};
 
 	return jdata;
@@ -866,12 +868,12 @@ nlohmann::json IOController::httpHelp( const Poco::URI::QueryParameters& p )
 nlohmann::json IOController::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
 {
 	if( req == "get" )
-		return request_get(req,p);
+		return request_get(req, p);
 
 	if( req == "sensors" )
-		return request_sensors(req,p);
+		return request_sensors(req, p);
 
-	return UniSetManager::httpRequest(req,p);
+	return UniSetManager::httpRequest(req, p);
 }
 // -----------------------------------------------------------------------------
 nlohmann::json IOController::request_get( const string& req, const Poco::URI::QueryParameters& p )
@@ -885,6 +887,7 @@ nlohmann::json IOController::request_get( const string& req, const Poco::URI::Qu
 
 	auto conf = uniset_conf();
 	auto slist = uniset::getSInfoList( p[0].first, conf );
+
 	if( slist.empty() )
 	{
 		ostringstream err;
@@ -893,20 +896,22 @@ nlohmann::json IOController::request_get( const string& req, const Poco::URI::Qu
 	}
 
 	bool shortInfo = false;
-	if( p.size() > 1 && p[1].first=="shortInfo" )
+
+	if( p.size() > 1 && p[1].first == "shortInfo" )
 		shortInfo = true;
 
-//	ulog1 << myname << "(GET): " << p[0].first << " size=" << slist.size() << endl;
+	//	ulog1 << myname << "(GET): " << p[0].first << " size=" << slist.size() << endl;
 
 	nlohmann::json jdata;
 
 	auto& jsens = jdata[myname]["sensors"];
 
-	for( const auto& s: slist )
+	for( const auto& s : slist )
 	{
 		try
 		{
 			auto sinf = ioList.find(s.si.id);
+
 			if( sinf == ioList.end() )
 			{
 				string sid( std::to_string(s.si.id) );
@@ -960,12 +965,13 @@ void IOController::getSensorInfo( nlohmann::json& jdata, std::shared_ptr<USensor
 	jsens["default_val"] = s->default_val;
 	jsens["dbignore"] = s->dbignore;
 	jsens["nchanges"] = s->nchanges;
-	jsens["calibration"] = {
-		{ "cmin",s->ci.minCal},
-		{ "cmax",s->ci.maxCal},
-		{ "rmin",s->ci.minRaw},
-		{ "rmax",s->ci.maxRaw},
-		{ "precision",s->ci.precision}
+	jsens["calibration"] =
+	{
+		{ "cmin", s->ci.minCal},
+		{ "cmax", s->ci.maxCal},
+		{ "rmin", s->ci.minRaw},
+		{ "rmax", s->ci.maxRaw},
+		{ "precision", s->ci.precision}
 	};
 
 	//	::CORBA::Boolean undefined;
@@ -984,7 +990,7 @@ nlohmann::json IOController::request_sensors( const string& req, const Poco::URI
 	size_t offset = 0;
 	size_t limit = 0;
 
-	for( const auto& p: params )
+	for( const auto& p : params )
 	{
 		if( p.first == "offset" )
 			offset = uni_atoi(p.second);
@@ -994,7 +1000,7 @@ nlohmann::json IOController::request_sensors( const string& req, const Poco::URI
 
 	size_t endnum = offset + limit;
 
-	for( auto it=myioBegin(); it!=myioEnd(); ++it,num++ )
+	for( auto it = myioBegin(); it != myioEnd(); ++it, num++ )
 	{
 		if( limit > 0 && num >= endnum )
 			break;
@@ -1002,7 +1008,7 @@ nlohmann::json IOController::request_sensors( const string& req, const Poco::URI
 		if( offset > 0 && num < offset )
 			continue;
 
-		getSensorInfo(jdata, it->second,false);
+		getSensorInfo(jdata, it->second, false);
 	}
 
 	jdata["count"] = num;

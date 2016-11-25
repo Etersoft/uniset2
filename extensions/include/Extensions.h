@@ -28,24 +28,24 @@ namespace uniset
 //--------------------------------------------------------------------------
 namespace extensions
 {
-	/*! Получение идентификатора объекта(процесса) разделяемой памяти */
-	uniset::ObjectId getSharedMemoryID();
+/*! Получение идентификатора объекта(процесса) разделяемой памяти */
+uniset::ObjectId getSharedMemoryID();
 
-	xmlNode* findNode( xmlNode* node, const std::string& snode, const std::string& field );
+xmlNode* findNode( xmlNode* node, const std::string& snode, const std::string& field );
 
-	xmlNode* getCalibrationsSection();
+xmlNode* getCalibrationsSection();
 
-	/*! замена служебных символов в строке
-	 * '\\' -> '\n'
-	*/
-	void escape_string( std::string& s );
+/*! замена служебных символов в строке
+ * '\\' -> '\n'
+*/
+void escape_string( std::string& s );
 
-	/*! Загрузка калибровочной диаграммы */
-	Calibration* buildCalibrationDiagram( const std::string& dname );
+/*! Загрузка калибровочной диаграммы */
+Calibration* buildCalibrationDiagram( const std::string& dname );
 
-	void on_sigchild( int sig );
+void on_sigchild( int sig );
 
-	std::shared_ptr<DebugStream> dlog();
+std::shared_ptr<DebugStream> dlog();
 }
 // -------------------------------------------------------------------------
 // "синтаксический сахар"..для логов

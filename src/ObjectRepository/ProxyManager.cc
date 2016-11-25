@@ -82,9 +82,9 @@ bool ProxyManager::activateObject()
 				try
 				{
 					ulogrep << myname << "(registered): попытка "
-						  << i + 1 << " регистриую (id=" << it.first << ") "
-						  << " (pname=" << it.second->getName() << ") "
-						  << uniset_conf()->oind->getNameById(it.first) << endl;
+							<< i + 1 << " регистриую (id=" << it.first << ") "
+							<< " (pname=" << it.second->getName() << ") "
+							<< uniset_conf()->oind->getNameById(it.first) << endl;
 
 					ui->registered(it.first, getRef(), true);
 					break;

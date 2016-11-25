@@ -1546,7 +1546,7 @@ void ForceCoilsRetMessage::init( const ModbusMessage& m )
 }
 // -------------------------------------------------------------------------
 ForceCoilsRetMessage::ForceCoilsRetMessage( ModbusAddr _from,
-		ModbusData s, ModbusData q )
+											ModbusData s, ModbusData q )
 {
 	addr     = _from;
 	func     = fnForceMultipleCoils;
@@ -1805,7 +1805,7 @@ void WriteOutputRetMessage::init( const ModbusMessage& m )
 }
 // -------------------------------------------------------------------------
 WriteOutputRetMessage::WriteOutputRetMessage( ModbusAddr _from,
-		ModbusData s, ModbusData q )
+											  ModbusData s, ModbusData q )
 {
 	addr     = _from;
 	func     = fnWriteOutputRegisters;
@@ -3050,13 +3050,13 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, SetDateTimeMessage& m )
 	DebugStream::IosFlagSaver ifs(os);
 
 	os << setfill('0')
-	  << setw(2) << (int)m.day << "-"
-	  << setw(2) << (int)m.mon << "-"
-	  << setw(2) << (int)m.century
-	  << setw(2) << (int)m.year << " "
-	  << setw(2) << (int)m.hour << ":"
-	  << setw(2) << (int)m.min << ":"
-	  << setw(2) << (int)m.sec;
+	   << setw(2) << (int)m.day << "-"
+	   << setw(2) << (int)m.mon << "-"
+	   << setw(2) << (int)m.century
+	   << setw(2) << (int)m.year << " "
+	   << setw(2) << (int)m.hour << ":"
+	   << setw(2) << (int)m.min << ":"
+	   << setw(2) << (int)m.sec;
 
 	return os;
 }

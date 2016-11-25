@@ -30,7 +30,7 @@ using namespace uniset;
 
 // -----------------------------------------------------------------------------
 float uniset::fcalibrate( float raw, float rawMin, float rawMax,
-							   float calMin, float calMax, bool limit )
+						  float calMin, float calMax, bool limit )
 {
 	if( rawMax == rawMin ) return 0; // деление на 0!!!
 

@@ -368,8 +368,8 @@ void UniSetManager::objects(OManagerCommand cmd)
 				ostringstream err;
 				err << myname << "(objects): Caught omniORB::fatalException:" << endl;
 				err << myname << "(objects): file: " << fe.file()
-					  << " line: " << fe.line()
-					  << " mesg: " << fe.errmsg() << endl;
+					<< " line: " << fe.line()
+					<< " mesg: " << fe.errmsg() << endl;
 
 				ucrit << err.str();
 
@@ -412,7 +412,8 @@ bool UniSetManager::deactivateObject()
 const std::shared_ptr<UniSetObject> UniSetManager::findObject( const string& name )
 {
 	uniset_rwmutex_rlock lock(olistMutex);
-	for( auto&& o: olist )
+
+	for( auto && o : olist )
 	{
 		if( o->getName() == name )
 			return o;
@@ -424,7 +425,8 @@ const std::shared_ptr<UniSetObject> UniSetManager::findObject( const string& nam
 const std::shared_ptr<UniSetManager> UniSetManager::findManager( const string& name )
 {
 	uniset_rwmutex_rlock lock(mlistMutex);
-	for( auto&& m: mlist )
+
+	for( auto && m : mlist )
 	{
 		if( m->getName() == name )
 			return m;
@@ -437,11 +439,13 @@ const std::shared_ptr<UniSetObject> UniSetManager::deepFindObject( const string&
 {
 	{
 		auto obj = findObject(name);
+
 		if( obj )
 			return obj;
 	}
 
 	auto man = findManager(name);
+
 	if( man )
 	{
 		auto obj = dynamic_pointer_cast<UniSetObject>(man);
@@ -449,9 +453,10 @@ const std::shared_ptr<UniSetObject> UniSetManager::deepFindObject( const string&
 	}
 
 	// ищем в глубину у каждого менеджера
-	for( const auto& m: mlist )
+	for( const auto& m : mlist )
 	{
 		auto obj = m->deepFindObject(name);
+
 		if( obj )
 			return obj;
 	}
@@ -465,18 +470,19 @@ void UniSetManager::getAllObjectsList( std::vector<std::shared_ptr<UniSetObject>
 	vec.push_back(get_ptr());
 
 	// добавить подчинённые объекты
-	for( const auto& o: olist )
+	for( const auto& o : olist )
 	{
 		vec.push_back(o);
+
 		if( lim > 0 && vec.size() >= lim )
 			return;
 	}
 
 	// добавить рекурсивно по менеджерам
-	for( const auto& m: mlist )
+	for( const auto& m : mlist )
 	{
 		// вызываем рекурсивно
-		m->getAllObjectsList(vec,lim);
+		m->getAllObjectsList(vec, lim);
 	}
 }
 // ------------------------------------------------------------------------------------------

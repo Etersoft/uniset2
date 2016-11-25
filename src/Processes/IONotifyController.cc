@@ -88,10 +88,12 @@ SimpleInfo* IONotifyController::getInfo( const char* userparam )
 
 	{
 		std::lock_guard<std::mutex> lock(lostConsumersMutex);
+
 		if( lostConsumers.size() > 0 )
 		{
 			inf << "-------------------------- lost consumers list [maxAttemtps=" << maxAttemtps << "] ------------------" << endl;
-			for( const auto& l: lostConsumers )
+
+			for( const auto& l : lostConsumers )
 			{
 				inf << "        " << "(" << setw(6) << l.first << ")"
 					<< setw(35) << std::left << ORepHelpers::getShortName(oind->getMapName(l.first))
@@ -99,6 +101,7 @@ SimpleInfo* IONotifyController::getInfo( const char* userparam )
 					<< endl;
 			}
 		}
+
 		inf << "----------------------------------------------------------------------------------" << endl;
 	}
 
@@ -200,7 +203,7 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
 {
 	uniset_rwmutex_wrlock l(lst.mut);
 
-	for( auto&& it :  lst.clst )
+	for( auto && it :  lst.clst )
 	{
 		if( it.id == ci.id && it.node == ci.node )
 		{
@@ -211,7 +214,8 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
 			// выставляем флаг, что заказчик опять "на связи"
 			std::lock_guard<std::mutex> lock(lostConsumersMutex);
 			auto c = lostConsumers.find(ci.id);
-			if( c!= lostConsumers.end() )
+
+			if( c != lostConsumers.end() )
 				c->second.lost = false;
 
 			return false;
@@ -233,7 +237,8 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
 	// выставляем флаг, что клиент опять "на связи"
 	std::lock_guard<std::mutex> lock(lostConsumersMutex);
 	auto c = lostConsumers.find(ci.id);
-	if( c!= lostConsumers.end() )
+
+	if( c != lostConsumers.end() )
 		c->second.lost = false;
 
 	return true;
@@ -547,6 +552,7 @@ void IONotifyController::send( ConsumerListInfo& lst, const uniset::SensorMessag
 					{
 						std::lock_guard<std::mutex> lock(lostConsumersMutex);
 						auto& c = lostConsumers[li->id];
+
 						// если уже выставлен флаг что "заказчик" пропал, то не надо увеличивать "счётчик"
 						// видимо мы уже зафиксировали его пропажу на другом датчике...
 						if( !c.lost )
@@ -602,7 +608,7 @@ void IONotifyController::initItem( std::shared_ptr<USensorInfo>& usi, IOControll
 }
 // ------------------------------------------------------------------------------------------
 void IONotifyController::dumpOrdersList( const uniset::ObjectId sid,
-		const IONotifyController::ConsumerListInfo& lst )
+										 const IONotifyController::ConsumerListInfo& lst )
 {
 	if( restorer == NULL )
 		return;
@@ -848,8 +854,8 @@ bool IONotifyController::removeThreshold( ThresholdExtList& lst, ThresholdInfoEx
 }
 // --------------------------------------------------------------------------------------------------------------
 void IONotifyController::checkThreshold( IOController::IOStateList::iterator& li,
-		const uniset::ObjectId sid,
-		bool send_msg )
+										 const uniset::ObjectId sid,
+										 bool send_msg )
 {
 	if( li == myioEnd() )
 		li = myiofind(sid);
@@ -1142,8 +1148,8 @@ void IONotifyController::onChangeUndefinedState( std::shared_ptr<USensorInfo>& u
 
 // -----------------------------------------------------------------------------
 IDSeq* IONotifyController::askSensorsSeq( const uniset::IDSeq& lst,
-		const uniset::ConsumerInfo& ci,
-		UniversalIO::UIOCommand cmd)
+										  const uniset::ConsumerInfo& ci,
+										  UniversalIO::UIOCommand cmd)
 {
 	uniset::IDList badlist; // cписок не найденных идентификаторов
 
@@ -1172,7 +1178,7 @@ nlohmann::json IONotifyController::httpHelp(const Poco::URI::QueryParameters& p)
 {
 	nlohmann::json jdata = IOController::httpHelp(p);
 	jdata[myname]["help"]["consumers"]["desc"] = "get consumers list";
-	jdata[myname]["help"]["consumers"]["params"] = {"sensor1,sensor2,sensor3","get consumers for sensors"};
+	jdata[myname]["help"]["consumers"]["params"] = {"sensor1,sensor2,sensor3", "get consumers for sensors"};
 	jdata[myname]["help"]["lost"]["desc"] = "get lost consumers list";
 	return std::move(jdata);
 }
@@ -1180,12 +1186,12 @@ nlohmann::json IONotifyController::httpHelp(const Poco::URI::QueryParameters& p)
 nlohmann::json IONotifyController::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
 {
 	if( req == "consumers" )
-		return request_consumers(req,p);
+		return request_consumers(req, p);
 
 	if( req == "lost" )
-		return request_lost(req,p);
+		return request_lost(req, p);
 
-	return IOController::httpRequest(req,p);
+	return IOController::httpRequest(req, p);
 }
 // -----------------------------------------------------------------------------
 nlohmann::json IONotifyController::request_consumers( const string& req, const Poco::URI::QueryParameters& p )
@@ -1198,6 +1204,7 @@ nlohmann::json IONotifyController::request_consumers( const string& req, const P
 	auto oind = uniset_conf()->oind;
 
 	std::list<ParamSInfo> slist;
+
 	if( p.size() > 0 )
 	{
 		if( !p[0].first.empty() )
@@ -1218,9 +1225,10 @@ nlohmann::json IONotifyController::request_consumers( const string& req, const P
 	{
 		auto& jnotfound = json[myname]["notfound"];
 
-		for( const auto& s: slist )
+		for( const auto& s : slist )
 		{
 			auto a = askIOList.find(s.si.id);
+
 			if( a == askIOList.end() )
 			{
 				jnotfound.push_back(std::to_string(s.si.id));
@@ -1228,15 +1236,16 @@ nlohmann::json IONotifyController::request_consumers( const string& req, const P
 			}
 
 			// Включаем в ответ все, даже если список заказчиков пустой
-			jdata.push_back( getConsumers(a->first,a->second,false) );
+			jdata.push_back( getConsumers(a->first, a->second, false) );
 		}
 	}
 	else // Проход по всему списку
 	{
-		for( auto&& a : askIOList )
+		for( auto && a : askIOList )
 		{
 			// добавляем только датчики с непустым списком заказчиков
-			auto jret = getConsumers(a.first,a.second,true);
+			auto jret = getConsumers(a.first, a.second, true);
+
 			if( !jret.empty() )
 				jdata.push_back( std::move(jret) );
 		}
@@ -1287,7 +1296,7 @@ nlohmann::json IONotifyController::request_lost( const string& req, const Poco::
 
 	std::lock_guard<std::mutex> lock(lostConsumersMutex);
 
-	for( const auto& c: lostConsumers )
+	for( const auto& c : lostConsumers )
 	{
 		string cid( std::to_string(c.first) );
 		auto& jcons = jdata[cid];

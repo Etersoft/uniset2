@@ -27,133 +27,133 @@ namespace uniset
 // -------------------------------------------------------------------------
 namespace extensions
 {
-	static std::shared_ptr<DebugStream> _dlog;
+static std::shared_ptr<DebugStream> _dlog;
 
-	std::shared_ptr<DebugStream> dlog()
-	{
-		if( _dlog )
-			return _dlog;
-
-		_dlog = make_shared<DebugStream>();
-
-		_dlog->setLogName("dlog");
-
-		auto conf = uniset_conf();
-
-		if( conf )
-			conf->initLogStream(_dlog, "dlog");
-
+std::shared_ptr<DebugStream> dlog()
+{
+	if( _dlog )
 		return _dlog;
-	}
-	// -------------------------------------------------------------------------
-	static uniset::ObjectId shmID = DefaultObjectId;
 
-	uniset::ObjectId getSharedMemoryID()
-	{
-		if( shmID != DefaultObjectId )
-			return shmID;
+	_dlog = make_shared<DebugStream>();
 
-		auto conf = uniset_conf();
+	_dlog->setLogName("dlog");
 
-		string sname = conf->getArgParam("--smemory-id", "SharedMemory1");
-		shmID = conf->getControllerID(sname);
+	auto conf = uniset_conf();
 
-		if( shmID == uniset::DefaultObjectId )
-		{
-			ostringstream err;
-			err << ": Unknown ID for '" << sname << "'" << endl;
-			dcrit << err.str() << endl;
-			throw SystemError(err.str());
-		}
+	if( conf )
+		conf->initLogStream(_dlog, "dlog");
 
-		// cout << "(uniset): shm=" << name << " id=" << shmID << endl;
+	return _dlog;
+}
+// -------------------------------------------------------------------------
+static uniset::ObjectId shmID = DefaultObjectId;
+
+uniset::ObjectId getSharedMemoryID()
+{
+	if( shmID != DefaultObjectId )
 		return shmID;
-	}
-	// -------------------------------------------------------------------------
-	void escape_string( string& s )
+
+	auto conf = uniset_conf();
+
+	string sname = conf->getArgParam("--smemory-id", "SharedMemory1");
+	shmID = conf->getControllerID(sname);
+
+	if( shmID == uniset::DefaultObjectId )
 	{
-		if( s.empty() )
-			return;
-
-		string::size_type pos = s.find("\\n");
-
-		while( pos != string::npos )
-		{
-			s.replace(pos, 2, "\n");
-			pos = s.find("\\n");
-		}
+		ostringstream err;
+		err << ": Unknown ID for '" << sname << "'" << endl;
+		dcrit << err.str() << endl;
+		throw SystemError(err.str());
 	}
-	// -------------------------------------------------------------------------
-	static xmlNode* xmlCalibrationsNode = 0;
 
-	xmlNode* getCalibrationsSection()
+	// cout << "(uniset): shm=" << name << " id=" << shmID << endl;
+	return shmID;
+}
+// -------------------------------------------------------------------------
+void escape_string( string& s )
+{
+	if( s.empty() )
+		return;
+
+	string::size_type pos = s.find("\\n");
+
+	while( pos != string::npos )
 	{
-		if( xmlCalibrationsNode )
-			return xmlCalibrationsNode;
+		s.replace(pos, 2, "\n");
+		pos = s.find("\\n");
+	}
+}
+// -------------------------------------------------------------------------
+static xmlNode* xmlCalibrationsNode = 0;
 
-		xmlCalibrationsNode = uniset_conf()->getNode("Calibrations");
+xmlNode* getCalibrationsSection()
+{
+	if( xmlCalibrationsNode )
 		return xmlCalibrationsNode;
 
-	}
-	// -------------------------------------------------------------------------
+	xmlCalibrationsNode = uniset_conf()->getNode("Calibrations");
+	return xmlCalibrationsNode;
 
-	xmlNode* findNode( xmlNode* node, const string& snode, const string& field )
-	{
-		if( !node )
-			return 0;
+}
+// -------------------------------------------------------------------------
 
-		UniXML::iterator it(node);
-
-		if( !it.goChildren() )
-			return 0;
-
-		for( ; it; it.goNext() )
-		{
-			if( snode == it.getProp(field) )
-				return it;
-		}
-
+xmlNode* findNode( xmlNode* node, const string& snode, const string& field )
+{
+	if( !node )
 		return 0;
-	}
-	// -------------------------------------------------------------------------
-	Calibration* buildCalibrationDiagram( const std::string& dname )
+
+	UniXML::iterator it(node);
+
+	if( !it.goChildren() )
+		return 0;
+
+	for( ; it; it.goNext() )
 	{
-		xmlNode* root = getCalibrationsSection();
-
-		if( !root )
-		{
-			ostringstream err;
-			err << "(buildCalibrationDiagram): НЕ НАЙДЕН корневой узел для калибровочных диаграмм";
-			dcrit << err.str() << endl;
-			throw SystemError( err.str());
-		}
-
-		xmlNode* dnode = findNode( root, dname, "name" );
-
-		if( !dnode )
-		{
-			ostringstream err;
-			err << "(buildCalibrationDiagram): НЕ НАЙДЕНА калибровочная диаграмма '" << dname << "'";
-			dcrit << err.str() << endl;
-			throw SystemError( err.str());
-		}
-
-		return new Calibration(dnode);
+		if( snode == it.getProp(field) )
+			return it;
 	}
-	// -------------------------------------------------------------------------
-	void on_sigchild( int sig )
+
+	return 0;
+}
+// -------------------------------------------------------------------------
+Calibration* buildCalibrationDiagram( const std::string& dname )
+{
+	xmlNode* root = getCalibrationsSection();
+
+	if( !root )
 	{
-		while(1)
-		{
-			int istatus;
-			pid_t pid = waitpid( -1, &istatus, WNOHANG );
-
-			if( pid == -1 && errno == EINTR )  continue;
-
-			if( pid <= 0 )  break;
-		}
+		ostringstream err;
+		err << "(buildCalibrationDiagram): НЕ НАЙДЕН корневой узел для калибровочных диаграмм";
+		dcrit << err.str() << endl;
+		throw SystemError( err.str());
 	}
-	// --------------------------------------------------------------------------
+
+	xmlNode* dnode = findNode( root, dname, "name" );
+
+	if( !dnode )
+	{
+		ostringstream err;
+		err << "(buildCalibrationDiagram): НЕ НАЙДЕНА калибровочная диаграмма '" << dname << "'";
+		dcrit << err.str() << endl;
+		throw SystemError( err.str());
+	}
+
+	return new Calibration(dnode);
+}
+// -------------------------------------------------------------------------
+void on_sigchild( int sig )
+{
+	while(1)
+	{
+		int istatus;
+		pid_t pid = waitpid( -1, &istatus, WNOHANG );
+
+		if( pid == -1 && errno == EINTR )  continue;
+
+		if( pid <= 0 )  break;
+	}
+}
+// --------------------------------------------------------------------------
 } // end of namespace extensions
 } // end of namespace uniset
 // -------------------------------------------------------------------------

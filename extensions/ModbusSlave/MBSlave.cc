@@ -1505,7 +1505,7 @@ void MBSlave::help_print( int argc, const char* const* argv )
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<MBSlave> MBSlave::init_mbslave(int argc, const char* const* argv, uniset::ObjectId icID,
-		const std::shared_ptr<SharedMemory>& ic, const string& prefix )
+											   const std::shared_ptr<SharedMemory>& ic, const string& prefix )
 {
 	auto conf = uniset_conf();
 	string name = conf->getArgParam("--" + prefix + "-name", "MBSlave1");
@@ -1652,7 +1652,7 @@ ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( ModbusRTU::WriteSingleO
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::much_real_write( RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
-		size_t count, const int fn )
+											   size_t count, const int fn )
 {
 	mbinfo << myname << "(much_real_write): write mbID="
 		   << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")" << " count=" << count << " fn=" << fn << endl;
@@ -1985,7 +1985,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_prop( IOProperty* p, ModbusRTU::ModbusD
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::much_real_read(RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
-		size_t count, const int fn )
+											 size_t count, const int fn )
 {
 	mbinfo << myname << "(much_real_read): read mbID="
 		   << ModbusRTU::dat2str(reg) << "(" << (int)reg << ") " << " count=" << count
@@ -2278,20 +2278,20 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query, ReadInputRetMess
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::setDateTime( ModbusRTU::SetDateTimeMessage& query,
-		ModbusRTU::SetDateTimeRetMessage& reply )
+										   ModbusRTU::SetDateTimeRetMessage& reply )
 {
 	return ModbusServer::replySetDateTime(query, reply, mblog);
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::remoteService( ModbusRTU::RemoteServiceMessage& query,
-		ModbusRTU::RemoteServiceRetMessage& reply )
+											 ModbusRTU::RemoteServiceRetMessage& reply )
 {
 	//    cerr << "(remoteService): " << query << endl;
 	return ModbusRTU::erOperationFailed;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& query,
-		ModbusRTU::FileTransferRetMessage& reply )
+											ModbusRTU::FileTransferRetMessage& reply )
 {
 	mbinfo << myname << "(fileTransfer): " << query << endl;
 
@@ -2305,7 +2305,7 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
-		ReadCoilRetMessage& reply )
+											  ReadCoilRetMessage& reply )
 {
 	mbinfo << myname << "(readCoilStatus): " << query << endl;
 
@@ -2378,7 +2378,7 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
-		ReadInputStatusRetMessage& reply )
+											   ReadInputStatusRetMessage& reply )
 {
 	mbinfo << myname << "(readInputStatus): " << query << endl;
 
@@ -2451,7 +2451,7 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
-		ModbusRTU::ForceCoilsRetMessage& reply )
+												  ModbusRTU::ForceCoilsRetMessage& reply )
 {
 	mbinfo << myname << "(forceMultipleCoils): " << query << endl;
 
@@ -2488,7 +2488,7 @@ ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& 
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
-		ModbusRTU::ForceSingleCoilRetMessage& reply )
+											   ModbusRTU::ForceSingleCoilRetMessage& reply )
 {
 	mbinfo << myname << "(forceSingleCoil): " << query << endl;
 
@@ -2510,7 +2510,7 @@ ModbusRTU::mbErrCode MBSlave::forceSingleCoil( ModbusRTU::ForceSingleCoilMessage
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
-		ModbusRTU::DiagnosticRetMessage& reply )
+										   ModbusRTU::DiagnosticRetMessage& reply )
 {
 	auto mbserver = dynamic_pointer_cast<ModbusServer>(mbslot);
 

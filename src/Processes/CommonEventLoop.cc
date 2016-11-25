@@ -41,16 +41,19 @@ bool CommonEventLoop::evrun( EvWatcher* w, bool thread, size_t waitTimeout_msec 
 	{
 		{
 			std::lock_guard<std::mutex> lck(wlist_mutex);
+
 			if( std::find(wlist.begin(), wlist.end(), w) != wlist.end() )
 			{
 				cerr << "(CommonEventLoop::evrun): " << w->wname() << " ALREADY ADDED.." << endl;
 				return false;
 			}
+
 			wlist.push_back(w);
 		}
 
 		{
 			std::lock_guard<std::mutex> lck(thr_mutex);
+
 			if( !thr )
 			{
 				thr = make_shared<std::thread>( [ = ] { CommonEventLoop::defaultLoop(); } );
@@ -58,7 +61,7 @@ bool CommonEventLoop::evrun( EvWatcher* w, bool thread, size_t waitTimeout_msec 
 				std::unique_lock<std::mutex> locker(prep_mutex);
 				// ожидаем запуска loop
 				// иначе evprep.send() улетит в никуда
-				prep_event.wait_for(locker,std::chrono::milliseconds(waitTimeout_msec), [=]()
+				prep_event.wait_for(locker, std::chrono::milliseconds(waitTimeout_msec), [ = ]()
 				{
 					return ( isrunning == true );
 				} );
@@ -86,7 +89,7 @@ bool CommonEventLoop::evrun( EvWatcher* w, bool thread, size_t waitTimeout_msec 
 		evprep.send(); // будим default loop
 
 		// ожидаем обработки evprepare (которая будет в defaultLoop)
-		prep_event.wait_for(locker,std::chrono::milliseconds(waitTimeout_msec), [=]()
+		prep_event.wait_for(locker, std::chrono::milliseconds(waitTimeout_msec), [ = ]()
 		{
 			return ( prep_notify == true );
 		} );
@@ -137,7 +140,7 @@ bool CommonEventLoop::evstop( EvWatcher* w )
 	}
 
 	wlist.erase( std::remove( wlist.begin(), wlist.end(), w ), wlist.end() );
-//	wlist.remove(w);
+	//	wlist.remove(w);
 
 	if( !wlist.empty() )
 		return false;
@@ -170,6 +173,7 @@ void CommonEventLoop::onPrepare() noexcept
 	prep_notify = false;
 	{
 		std::lock_guard<std::mutex> lock(prep_mutex);
+
 		if( wprep )
 		{
 			try

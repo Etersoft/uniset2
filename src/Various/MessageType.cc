@@ -30,194 +30,194 @@
 
 namespace uniset
 {
-	//--------------------------------------------------------------------------------------------
-	std::ostream& operator<<( std::ostream& os, const Message::TypeOfMessage& t )
-	{
-		if( t == Message::Unused )
-			return os << "Unused";
+//--------------------------------------------------------------------------------------------
+std::ostream& operator<<( std::ostream& os, const Message::TypeOfMessage& t )
+{
+	if( t == Message::Unused )
+		return os << "Unused";
 
-		if( t == Message::SensorInfo )
-			return os << "SensorInfo";
+	if( t == Message::SensorInfo )
+		return os << "SensorInfo";
 
-		if( t == Message::SysCommand )
-			return os << "SysCommand";
+	if( t == Message::SysCommand )
+		return os << "SysCommand";
 
-		if( t == Message::Confirm )
-			return os << "Confirm";
+	if( t == Message::Confirm )
+		return os << "Confirm";
 
-		if( t == Message::Timer )
-			return os << "Timer";
+	if( t == Message::Timer )
+		return os << "Timer";
 
-		return os << "Unkown";
-	}
-	//--------------------------------------------------------------------------------------------
-	Message::Message() noexcept:
-		type(Unused), priority(Medium),
-		node( uniset::uniset_conf() ? uniset::uniset_conf()->getLocalNode() : DefaultObjectId ),
-		supplier(DefaultObjectId),
-		consumer(DefaultObjectId)
-	{
-		tm = uniset::now_to_timespec();
-	}
+	return os << "Unkown";
+}
+//--------------------------------------------------------------------------------------------
+Message::Message() noexcept:
+	type(Unused), priority(Medium),
+	node( uniset::uniset_conf() ? uniset::uniset_conf()->getLocalNode() : DefaultObjectId ),
+	supplier(DefaultObjectId),
+	consumer(DefaultObjectId)
+{
+	tm = uniset::now_to_timespec();
+}
 
-	//--------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------
 
-	VoidMessage::VoidMessage( const TransportMessage& tm ) noexcept:
-		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
-	{
-		assert(sizeof(VoidMessage) >= sizeof(uniset::RawDataOfTransportMessage));
-		memcpy(this, &tm.data, sizeof(tm.data));
-		consumer = tm.consumer;
-	}
+VoidMessage::VoidMessage( const TransportMessage& tm ) noexcept:
+	Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
+{
+	assert(sizeof(VoidMessage) >= sizeof(uniset::RawDataOfTransportMessage));
+	memcpy(this, &tm.data, sizeof(tm.data));
+	consumer = tm.consumer;
+}
 
-	VoidMessage::VoidMessage() noexcept
-	{
-		assert(sizeof(VoidMessage) >= sizeof(uniset::RawDataOfTransportMessage));
-	}
+VoidMessage::VoidMessage() noexcept
+{
+	assert(sizeof(VoidMessage) >= sizeof(uniset::RawDataOfTransportMessage));
+}
 
-	//--------------------------------------------------------------------------------------------
-	SensorMessage::SensorMessage() noexcept:
-		id(DefaultObjectId),
-		value(0),
-		undefined(false),
-		sensor_type(UniversalIO::DI),
-		threshold(false),
-		tid(uniset::DefaultThresholdId)
-	{
-		type    = Message::SensorInfo;
-		sm_tv   = tm; // или инициализировать нулём ?
-		ci.minRaw = 0;
-		ci.maxRaw = 0;
-		ci.minCal = 0;
-		ci.maxCal = 0;
-		ci.precision = 0;
-	}
+//--------------------------------------------------------------------------------------------
+SensorMessage::SensorMessage() noexcept:
+	id(DefaultObjectId),
+	value(0),
+	undefined(false),
+	sensor_type(UniversalIO::DI),
+	threshold(false),
+	tid(uniset::DefaultThresholdId)
+{
+	type    = Message::SensorInfo;
+	sm_tv   = tm; // или инициализировать нулём ?
+	ci.minRaw = 0;
+	ci.maxRaw = 0;
+	ci.minCal = 0;
+	ci.maxCal = 0;
+	ci.precision = 0;
+}
 
-	SensorMessage::SensorMessage(ObjectId id, long value, const IOController_i::CalibrateInfo& ci,
-								 Priority priority,
-								 UniversalIO::IOType st, ObjectId consumer) noexcept:
-		id(id),
-		value(value),
-		undefined(false),
-		sensor_type(st),
-		ci(ci),
-		threshold(false),
-		tid(uniset::DefaultThresholdId)
-	{
-		type            = Message::SensorInfo;
-		this->priority     = priority;
-		this->consumer     = consumer;
-		sm_tv = tm;
-	}
+SensorMessage::SensorMessage(ObjectId id, long value, const IOController_i::CalibrateInfo& ci,
+							 Priority priority,
+							 UniversalIO::IOType st, ObjectId consumer) noexcept:
+	id(id),
+	value(value),
+	undefined(false),
+	sensor_type(st),
+	ci(ci),
+	threshold(false),
+	tid(uniset::DefaultThresholdId)
+{
+	type            = Message::SensorInfo;
+	this->priority     = priority;
+	this->consumer     = consumer;
+	sm_tv = tm;
+}
 
-	SensorMessage::SensorMessage( int dummy ) noexcept:
-		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
-	{
-		type    = Message::SensorInfo;
-	}
+SensorMessage::SensorMessage( int dummy ) noexcept:
+	Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
+{
+	type    = Message::SensorInfo;
+}
 
-	SensorMessage::SensorMessage(const VoidMessage* msg) noexcept:
-		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
-	{
-		memcpy(this, msg, sizeof(*this));
-		assert(this->type == Message::SensorInfo);
-	}
-	//--------------------------------------------------------------------------------------------
-	SystemMessage::SystemMessage() noexcept:
-		command(SystemMessage::Unknown)
-	{
-		memset(data, 0, sizeof(data));
-		type = Message::SysCommand;
-	}
+SensorMessage::SensorMessage(const VoidMessage* msg) noexcept:
+	Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
+{
+	memcpy(this, msg, sizeof(*this));
+	assert(this->type == Message::SensorInfo);
+}
+//--------------------------------------------------------------------------------------------
+SystemMessage::SystemMessage() noexcept:
+	command(SystemMessage::Unknown)
+{
+	memset(data, 0, sizeof(data));
+	type = Message::SysCommand;
+}
 
-	SystemMessage::SystemMessage(Command command, Priority priority, ObjectId consumer) noexcept:
-		command(command)
-	{
-		type = Message::SysCommand;
-		this->priority = priority;
-		this->consumer = consumer;
-	}
+SystemMessage::SystemMessage(Command command, Priority priority, ObjectId consumer) noexcept:
+	command(command)
+{
+	type = Message::SysCommand;
+	this->priority = priority;
+	this->consumer = consumer;
+}
 
-	SystemMessage::SystemMessage(const VoidMessage* msg) noexcept:
-		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
-	{
-		memcpy(this, msg, sizeof(*this));
-		assert(this->type == Message::SysCommand);
-	}
-	//--------------------------------------------------------------------------------------------
-	std::ostream& operator<<( std::ostream& os, const SystemMessage::Command& c )
-	{
-		if( c == SystemMessage::Unknown )
-			return os << "Unknown";
+SystemMessage::SystemMessage(const VoidMessage* msg) noexcept:
+	Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
+{
+	memcpy(this, msg, sizeof(*this));
+	assert(this->type == Message::SysCommand);
+}
+//--------------------------------------------------------------------------------------------
+std::ostream& operator<<( std::ostream& os, const SystemMessage::Command& c )
+{
+	if( c == SystemMessage::Unknown )
+		return os << "Unknown";
 
-		if( c == SystemMessage::StartUp )
-			return os << "StartUp";
+	if( c == SystemMessage::StartUp )
+		return os << "StartUp";
 
-		if( c == SystemMessage::FoldUp )
-			return os << "FoldUp";
+	if( c == SystemMessage::FoldUp )
+		return os << "FoldUp";
 
-		if( c == SystemMessage::Finish )
-			return os << "Finish";
+	if( c == SystemMessage::Finish )
+		return os << "Finish";
 
-		if( c == SystemMessage::WatchDog )
-			return os << "WatchDog";
+	if( c == SystemMessage::WatchDog )
+		return os << "WatchDog";
 
-		if( c == SystemMessage::ReConfiguration )
-			return os << "ReConfiguration";
+	if( c == SystemMessage::ReConfiguration )
+		return os << "ReConfiguration";
 
-		if( c == SystemMessage::NetworkInfo )
-			return os << "NetworkInfo";
+	if( c == SystemMessage::NetworkInfo )
+		return os << "NetworkInfo";
 
-		if( c == SystemMessage::LogRotate )
-			return os << "LogRotate";
+	if( c == SystemMessage::LogRotate )
+		return os << "LogRotate";
 
-		return os;
-	}
-	//--------------------------------------------------------------------------------------------
-	TimerMessage::TimerMessage():
-		id(uniset::DefaultTimerId)
-	{
-		type = Message::Timer;
-	}
+	return os;
+}
+//--------------------------------------------------------------------------------------------
+TimerMessage::TimerMessage():
+	id(uniset::DefaultTimerId)
+{
+	type = Message::Timer;
+}
 
-	TimerMessage::TimerMessage(uniset::TimerId id, Priority prior, ObjectId cons):
-		id(id)
-	{
-		type = Message::Timer;
-		this->consumer = cons;
-	}
+TimerMessage::TimerMessage(uniset::TimerId id, Priority prior, ObjectId cons):
+	id(id)
+{
+	type = Message::Timer;
+	this->consumer = cons;
+}
 
-	TimerMessage::TimerMessage(const VoidMessage* msg) noexcept:
-		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
-	{
-		memcpy(this, msg, sizeof(*this));
-		assert(this->type == Message::Timer);
-	}
-	//--------------------------------------------------------------------------------------------
-	ConfirmMessage::ConfirmMessage( const VoidMessage* msg ) noexcept:
-		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
-	{
-		memcpy(this, msg, sizeof(*this));
-		assert(this->type == Message::Confirm);
-	}
-	//--------------------------------------------------------------------------------------------
-	ConfirmMessage::ConfirmMessage(uniset::ObjectId in_sensor_id,
-								   const double& in_sensor_value,
-								   const timespec& in_sensor_time,
-								   const timespec& in_confirm_time,
-								   Priority in_priority ) noexcept:
-		sensor_id(in_sensor_id),
-		sensor_value(in_sensor_value),
-		sensor_time(in_sensor_time),
-		confirm_time(in_confirm_time),
-		broadcast(false),
-		forward(false)
-	{
-		type = Message::Confirm;
-		priority = in_priority;
-	}
+TimerMessage::TimerMessage(const VoidMessage* msg) noexcept:
+	Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
+{
+	memcpy(this, msg, sizeof(*this));
+	assert(this->type == Message::Timer);
+}
+//--------------------------------------------------------------------------------------------
+ConfirmMessage::ConfirmMessage( const VoidMessage* msg ) noexcept:
+	Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
+{
+	memcpy(this, msg, sizeof(*this));
+	assert(this->type == Message::Confirm);
+}
+//--------------------------------------------------------------------------------------------
+ConfirmMessage::ConfirmMessage(uniset::ObjectId in_sensor_id,
+							   const double& in_sensor_value,
+							   const timespec& in_sensor_time,
+							   const timespec& in_confirm_time,
+							   Priority in_priority ) noexcept:
+	sensor_id(in_sensor_id),
+	sensor_value(in_sensor_value),
+	sensor_time(in_sensor_time),
+	confirm_time(in_confirm_time),
+	broadcast(false),
+	forward(false)
+{
+	type = Message::Confirm;
+	priority = in_priority;
+}
 
-	//--------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------
 } // end of namespace uniset
 //--------------------------------------------------------------------------------------------
 

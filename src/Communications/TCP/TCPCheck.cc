@@ -80,7 +80,7 @@ bool TCPCheck::check( const std::string& _ip, int _port, timeout_t tout )
 	TGuard<TCPCheck> t(this, &TCPCheck::check_thread);
 
 	std::unique_lock<std::mutex> lock(thr_mutex);
-	thr_event.wait_for(lock,std::chrono::milliseconds(tout), [=]()
+	thr_event.wait_for(lock, std::chrono::milliseconds(tout), [ = ]()
 	{
 		return ( thr_finished == true );
 	} );
@@ -118,7 +118,7 @@ bool TCPCheck::ping( const std::string& _ip, timeout_t tout, const std::string& 
 	TGuard<TCPCheck> t(this, &TCPCheck::ping_thread);
 
 	std::unique_lock<std::mutex> lock(thr_mutex);
-	thr_event.wait_for(lock,std::chrono::milliseconds(tout), [=]()
+	thr_event.wait_for(lock, std::chrono::milliseconds(tout), [ = ]()
 	{
 		return ( thr_finished == true );
 	} );

@@ -23,22 +23,22 @@
 // --------------------------------------------------------------------------
 namespace pyUInterface
 {
-	void uniset_init_params( UTypes::Params* p, const std::string& xmlfile )throw(UException);
-	void uniset_init( int argc, char** argv, const std::string& xmlfile )throw(UException);
-	void uniset_activate_objects() throw(UException);
+void uniset_init_params( UTypes::Params* p, const std::string& xmlfile )throw(UException);
+void uniset_init( int argc, char** argv, const std::string& xmlfile )throw(UException);
+void uniset_activate_objects() throw(UException);
 
-	//---------------------------------------------------------------------------
-	long getValue( long id )throw(UException);
-	void setValue( long id, long val, long supplier = UTypes::DefaultSupplerID )throw(UException);
+//---------------------------------------------------------------------------
+long getValue( long id )throw(UException);
+void setValue( long id, long val, long supplier = UTypes::DefaultSupplerID )throw(UException);
 
-	long getSensorID(  const std::string& name );
-	long getObjectID(  const std::string& name );
+long getSensorID(  const std::string& name );
+long getObjectID(  const std::string& name );
 
-	std::string getShortName( long id );
-	std::string getName( long id );
-	std::string getTextName( long id );
+std::string getShortName( long id );
+std::string getName( long id );
+std::string getTextName( long id );
 
-	std::string getConfFileName();
+std::string getConfFileName();
 }
 //---------------------------------------------------------------------------
 #endif

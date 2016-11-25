@@ -95,7 +95,7 @@ class UInterface
 
 		//! Заказ по списку
 		uniset::IDSeq_var askSensorsSeq( const uniset::IDList& lst, UniversalIO::UIOCommand cmd,
-											  uniset::ObjectId backid = uniset::DefaultObjectId );
+										 uniset::ObjectId backid = uniset::DefaultObjectId );
 		// ------------------------------------------------------
 
 		// установка неопределённого состояния
@@ -146,10 +146,10 @@ class UInterface
 
 		//! Получить список датчиков
 		IOController_i::ShortMapSeq* getSensors( const uniset::ObjectId id,
-				const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() );
+												 const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() );
 
 		IOController_i::SensorInfoSeq* getSensorsMap( const uniset::ObjectId id,
-				const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() );
+													  const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() );
 
 		IONotifyController_i::ThresholdsListSeq* getThresholdsList( const uniset::ObjectId id,
 				const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() );

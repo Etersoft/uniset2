@@ -38,9 +38,9 @@ static ComPort::Speed checkSpeed[] =
 };
 // -------------------------------------------------------------------------
 ModbusAddr ModbusHelpers::autodetectSlave( ModbusRTUMaster* m,
-		ModbusAddr beg, ModbusAddr end,
-		ModbusData reg,
-		SlaveFunctionCode fn )
+										   ModbusAddr beg, ModbusAddr end,
+										   ModbusData reg,
+										   SlaveFunctionCode fn )
 {
 	if( beg > end )
 	{
@@ -90,9 +90,9 @@ ModbusAddr ModbusHelpers::autodetectSlave( ModbusRTUMaster* m,
 // -------------------------------------------------------------------------
 
 ModbusAddr ModbusHelpers::autodetectSlave(  std::string dev, ComPort::Speed s, int tout,
-		ModbusAddr beg, ModbusAddr end,
-		ModbusData reg,
-		SlaveFunctionCode fn )
+											ModbusAddr beg, ModbusAddr end,
+											ModbusData reg,
+											SlaveFunctionCode fn )
 {
 	ModbusRTUMaster mb(dev);
 	mb.setSpeed(s);
@@ -102,7 +102,7 @@ ModbusAddr ModbusHelpers::autodetectSlave(  std::string dev, ComPort::Speed s, i
 // -------------------------------------------------------------------------
 
 ComPort::Speed ModbusHelpers::autodetectSpeed( ModbusRTUMaster* m, ModbusAddr slave,
-		ModbusData reg, SlaveFunctionCode fn )
+											   ModbusData reg, SlaveFunctionCode fn )
 {
 	ComPort::Speed cur = m->getSpeed();
 	ComPort::Speed s = ComPort::ComSpeed0;
@@ -156,7 +156,7 @@ ComPort::Speed ModbusHelpers::autodetectSpeed( ModbusRTUMaster* m, ModbusAddr sl
 }
 // -------------------------------------------------------------------------
 ComPort::Speed ModbusHelpers::autodetectSpeed( std::string dev, ModbusRTU::ModbusAddr slave, int tout,
-		ModbusData reg, SlaveFunctionCode fn )
+											   ModbusData reg, SlaveFunctionCode fn )
 {
 	ModbusRTUMaster mb(dev);
 	mb.setTimeout(tout);

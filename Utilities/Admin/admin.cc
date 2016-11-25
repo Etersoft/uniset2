@@ -198,6 +198,7 @@ int main(int argc, char** argv)
 				{
 					if( opt == 'z' )
 						csv = true;
+
 					//                    cout<<"(main):received option --getValue='"<<optarg<<"'"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
@@ -712,13 +713,16 @@ int getValue( const string& args, UInterface& ui )
 							// т.к. может сработать исключение, а нам надо вывести ','
 							// до числа, то сперва получаем val
 							long val = ui.getValue(it.si.id, it.si.node);
+
 							if( csv && num++ > 0 )
 								cout << ",";
+
 							cout << val;
 						}
 						else
 							cout << ui.getValue(it.si.id, it.si.node);
 					}
+
 					break;
 
 				default:
@@ -1009,14 +1013,14 @@ int oinfo(const string& args, UInterface& ui, const string& userparam )
 	auto conf = uniset_conf();
 	auto sl = uniset::getObjectsList( args, conf );
 
-	for( auto&& it : sl )
+	for( auto && it : sl )
 	{
 		if( it.node == DefaultObjectId )
 			it.node = conf->getLocalNode();
 
 		try
 		{
-			cout << ui.getObjectInfo(it.id, userparam,it.node) << endl;
+			cout << ui.getObjectInfo(it.id, userparam, it.node) << endl;
 		}
 		catch( const std::exception& ex )
 		{

@@ -71,9 +71,9 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 
 	// example: http://host:port/api/version/ObjectName
 	if( seg.size() < 3
-		|| seg[0] != "api"
-		|| seg[1] != UHTTP_API_VERSION
-		|| seg[2].empty() )
+			|| seg[0] != "api"
+			|| seg[1] != UHTTP_API_VERSION
+			|| seg[2].empty() )
 	{
 		resp.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
 		resp.setContentType("text/json");
@@ -99,12 +99,13 @@ void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco
 		if( objectName == "help" )
 		{
 			nlohmann::json jdata;
-			jdata["help"] = {
-			  {"help", {"desc", "this help"}},
-			  {"list", {"desc", "list of objects"}},
-			  {"ObjectName", {"desc", "'ObjectName' information"}},
-			  {"ObjectName/help", {"desc", "help for ObjectName"}},
-			  {"apidocs", {"desc", "https://github.com/Etersoft/uniset2"}}
+			jdata["help"] =
+			{
+				{"help", {"desc", "this help"}},
+				{"list", {"desc", "list of objects"}},
+				{"ObjectName", {"desc", "'ObjectName' information"}},
+				{"ObjectName/help", {"desc", "help for ObjectName"}},
+				{"apidocs", {"desc", "https://github.com/Etersoft/uniset2"}}
 			};
 
 			out << jdata.dump();

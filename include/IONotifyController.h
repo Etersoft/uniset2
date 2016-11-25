@@ -34,7 +34,7 @@
 //---------------------------------------------------------------------------
 namespace uniset
 {
-	class NCRestorer;
+class NCRestorer;
 //---------------------------------------------------------------------------
 /*!
     \page page_IONotifyController Хранение информации о состоянии с уведомлениями об изменении (IONotifyController)
@@ -158,7 +158,7 @@ class IONotifyController:
 		virtual IONotifyController_i::ThresholdsListSeq* getThresholdsList() override;
 
 		virtual uniset::IDSeq* askSensorsSeq(const uniset::IDSeq& lst,
-				const uniset::ConsumerInfo& ci, UniversalIO::UIOCommand cmd) override;
+											 const uniset::ConsumerInfo& ci, UniversalIO::UIOCommand cmd) override;
 
 		// --------------------------------------------
 

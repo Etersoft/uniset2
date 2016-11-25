@@ -1349,7 +1349,7 @@ void UInterface::askThreshold( const uniset::ObjectId sid, const uniset::Thresho
 void UInterface::askRemoteThreshold( const uniset::ObjectId sid, const uniset::ObjectId node,
 									 uniset::ThresholdId tid, UniversalIO::UIOCommand cmd,
 									 long lowLimit, long hiLimit, bool invert,
-									uniset::ObjectId backid ) const
+									 uniset::ObjectId backid ) const
 {
 	if( backid == uniset::DefaultObjectId )
 		backid = myid;
@@ -1946,7 +1946,7 @@ uniset::IDSeq_var UInterface::setOutputSeq( const IOController_i::OutSeq& lst, u
 }
 // --------------------------------------------------------------------------------------------
 uniset::IDSeq_var UInterface::askSensorsSeq( const uniset::IDList& lst,
-		UniversalIO::UIOCommand cmd, uniset::ObjectId backid )
+											 UniversalIO::UIOCommand cmd, uniset::ObjectId backid )
 {
 	if( lst.empty() )
 		return uniset::IDSeq_var();

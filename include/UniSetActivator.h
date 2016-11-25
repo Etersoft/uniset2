@@ -56,7 +56,7 @@ typedef std::shared_ptr<UniSetActivator> UniSetActivatorPtr;
 class UniSetActivator:
 	public UniSetManager
 #ifndef DISABLE_REST_API
-	,public uniset::UHttp::IHttpRequestRegistry
+	, public uniset::UHttp::IHttpRequestRegistry
 #endif
 {
 	public:

@@ -529,14 +529,16 @@ void UniSetActivator::init()
 	abortScript = conf->getArgParam("--uniset-abort-script", "");
 
 #ifndef DISABLE_REST_API
+
 	if( findArgParam("--activator-run-httpserver", conf->getArgc(), conf->getArgv()) != -1 )
 	{
 		httpHost = conf->getArgParam("--activator-httpserver-host", "localhost");
 		ostringstream s;
-		s << (getId()==DefaultObjectId ? 8080 : getId() );
+		s << (getId() == DefaultObjectId ? 8080 : getId() );
 		httpPort = conf->getArgInt("--activator-httpserver-port", s.str());
 		ulog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
 	}
+
 #endif
 
 	orb = conf->getORB();
@@ -668,12 +670,13 @@ void UniSetActivator::run( bool thread )
 	set_signals(true);
 
 #ifndef DISABLE_REST_API
+
 	if( !httpHost.empty() )
 	{
 		try
 		{
 			auto reg = dynamic_pointer_cast<UHttp::IHttpRequestRegistry>(shared_from_this());
-			httpserv = make_shared<UHttp::UHttpServer>(reg,httpHost,httpPort);
+			httpserv = make_shared<UHttp::UHttpServer>(reg, httpHost, httpPort);
 			httpserv->start();
 		}
 		catch( std::exception& ex )
@@ -681,6 +684,7 @@ void UniSetActivator::run( bool thread )
 			uwarn << myname << "(run): init http server error: " << ex.what() << endl;
 		}
 	}
+
 #endif
 
 	if( thread )
@@ -719,8 +723,10 @@ void UniSetActivator::stop()
 	ulogsys << myname << "(stop): discard request ok." << endl;
 
 #ifndef DISABLE_REST_API
+
 	if( httpserv )
 		httpserv->stop();
+
 #endif
 }
 
@@ -876,6 +882,7 @@ nlohmann::json UniSetActivator::httpGetByName( const string& name, const Poco::U
 		return httpGet(p);
 
 	auto obj = deepFindObject(name);
+
 	if( obj )
 		return obj->httpGet(p);
 
@@ -894,9 +901,9 @@ nlohmann::json UniSetActivator::httpGetObjectsList( const Poco::URI::QueryParame
 
 	//! \todo Доделать обработку параметров beg,lim на случай большого количества объектов (и частичных запросов)
 	size_t lim = 1000;
-	getAllObjectsList(vec,lim);
+	getAllObjectsList(vec, lim);
 
-	for( const auto& o: vec )
+	for( const auto& o : vec )
 		jdata.push_back(o->getName());
 
 	return jdata;
@@ -908,6 +915,7 @@ nlohmann::json UniSetActivator::httpHelpByName( const string& name, const Poco::
 		return httpHelp(p);
 
 	auto obj = deepFindObject(name);
+
 	if( obj )
 		return obj->httpHelp(p);
 
@@ -919,11 +927,12 @@ nlohmann::json UniSetActivator::httpHelpByName( const string& name, const Poco::
 nlohmann::json UniSetActivator::httpRequestByName( const string& name, const std::string& req, const Poco::URI::QueryParameters& p)
 {
 	if( name == myname )
-		return httpRequest(req,p);
+		return httpRequest(req, p);
 
 	auto obj = deepFindObject(name);
+
 	if( obj )
-		return obj->httpRequest(req,p);
+		return obj->httpRequest(req, p);
 
 	ostringstream err;
 	err << "Object '" << name << "' not found";

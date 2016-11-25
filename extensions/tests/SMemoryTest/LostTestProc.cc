@@ -24,7 +24,7 @@ void LostTestProc::setChildPassiveProc( const std::shared_ptr<LostPassiveTestPro
 LostTestProc::LostTestProc()
 {
 	cerr << ": init failed!!!!!!!!!!!!!!!" << endl;
-	throw uniset::Exception(myname+"(init): FAILED..");
+	throw uniset::Exception(myname + "(init): FAILED..");
 }
 // -----------------------------------------------------------------------------
 void LostTestProc::sysCommand( const uniset::SystemMessage* sm )
@@ -36,11 +36,11 @@ void LostTestProc::sysCommand( const uniset::SystemMessage* sm )
 		askTimer(tmCheck, checkTime);
 
 		// начальная инициализация значений в SM
-		for( auto&& s: slist )
+		for( auto && s : slist )
 		{
 			try
 			{
-				ui->setValue(s.first,s.second);
+				ui->setValue(s.first, s.second);
 			}
 			catch( std::exception& ex )
 			{
@@ -78,11 +78,13 @@ void LostTestProc::timerInfo( const TimerMessage* tm )
 		waitEmpty = false;
 
 		myinfo << myname << ": [OK]: empty queue. CHECK VALUE... " << endl;
-		for( auto&& s: slist )
+
+		for( auto && s : slist )
 		{
 			try
 			{
 				long smValue = ui->getValue(s.first);
+
 				if( smValue != s.second )
 				{
 					cerr << myname << "(check): ERROR!! sid=" << s.first << " smValue=" << smValue << " != " << s.second << endl;
@@ -94,6 +96,7 @@ void LostTestProc::timerInfo( const TimerMessage* tm )
 				if( child )
 				{
 					long childValue = child->checkValue(s.first);
+
 					if( smValue != childValue )
 					{
 						cerr << myname << "(check): ERROR!! sid=" << s.first << " smValue=" << smValue << " != " << childValue
@@ -108,13 +111,13 @@ void LostTestProc::timerInfo( const TimerMessage* tm )
 						cerr << i2->info << endl;
 
 
-//						cerr << "JSON: " << endl;
-//						Poco::URI::QueryParameters p;
-//						auto j = httpGet(p);
-//						cerr << j.dump() << endl;
-//						cerr << "-------------------------" << endl;
-//						auto j2 = child->httpGet(p);
-//						cerr << j2.dump() << endl;
+						//						cerr << "JSON: " << endl;
+						//						Poco::URI::QueryParameters p;
+						//						auto j = httpGet(p);
+						//						cerr << j.dump() << endl;
+						//						cerr << "-------------------------" << endl;
+						//						auto j2 = child->httpGet(p);
+						//						cerr << j2.dump() << endl;
 
 						std::abort();
 					}
@@ -127,20 +130,21 @@ void LostTestProc::timerInfo( const TimerMessage* tm )
 		}
 
 		myinfo << myname << ": [OK]: UPDATE VALUE... " << endl;
-		for( auto&& s: slist )
+
+		for( auto && s : slist )
 		{
 			try
 			{
 				// Выставляем новое значение
-				ui->setValue(s.first, s.second+1);
+				ui->setValue(s.first, s.second + 1);
 
 				// проверяем что сохранилось
 				long smValue = ui->getValue(s.first);
 
-				if(ui->getValue(s.first) != (s.second+1) )
+				if(ui->getValue(s.first) != (s.second + 1) )
 				{
 					cerr << myname << "(check): SAVE TO SM ERROR!! sid=" << s.first
-						 << " value=" << smValue << " != " << (s.second+1) << endl;
+						 << " value=" << smValue << " != " << (s.second + 1) << endl;
 					uniset::SimpleInfo_var i = getInfo();
 					cerr << i->info << endl;
 					std::abort();

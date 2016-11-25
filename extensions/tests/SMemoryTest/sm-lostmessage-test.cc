@@ -43,7 +43,7 @@ int main(int argc, const char** argv)
 			act->add(tp);
 
 			ostringstream sp;
-			sp << "TestProc" << (i+max);
+			sp << "TestProc" << (i + max);
 
 			cout << "..create passive " << sp.str() << endl;
 			auto child = make_shared<LostPassiveTestProc>( conf->getObjectID(sp.str()));

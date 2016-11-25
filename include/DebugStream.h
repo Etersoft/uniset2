@@ -283,13 +283,15 @@ class DebugStream : public std::ostream
 			public:
 				explicit IosFlagSaver(std::ostream& _ios):
 					ios(_ios),
-					f(_ios.flags()) {
+					f(_ios.flags())
+				{
 				}
-				~IosFlagSaver() {
+				~IosFlagSaver()
+				{
 					ios.flags(f);
 				}
 
-				IosFlagSaver(const IosFlagSaver &rhs) = delete;
+				IosFlagSaver(const IosFlagSaver& rhs) = delete;
 				IosFlagSaver& operator= (const IosFlagSaver& rhs) = delete;
 
 			private:

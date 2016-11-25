@@ -58,7 +58,7 @@ int ModbusClient::setAfterSendPause( timeout_t msec )
 }
 // --------------------------------------------------------------------------------
 ReadCoilRetMessage ModbusClient::read01( ModbusAddr addr,
-		ModbusData start, ModbusData count )
+										 ModbusData start, ModbusData count )
 throw(ModbusRTU::mbException)
 {
 	ReadCoilMessage msg(addr, start, count);
@@ -72,7 +72,7 @@ throw(ModbusRTU::mbException)
 }
 // --------------------------------------------------------------------------------
 ReadInputStatusRetMessage ModbusClient::read02( ModbusAddr addr,
-		ModbusData start, ModbusData count )
+												ModbusData start, ModbusData count )
 throw(ModbusRTU::mbException)
 {
 	ReadInputStatusMessage msg(addr, start, count);
@@ -87,7 +87,7 @@ throw(ModbusRTU::mbException)
 
 // --------------------------------------------------------------------------------
 ReadOutputRetMessage ModbusClient::read03( ModbusAddr addr,
-		ModbusData start, ModbusData count )
+										   ModbusData start, ModbusData count )
 throw(ModbusRTU::mbException)
 {
 	ReadOutputMessage msg(addr, start, count);
@@ -102,7 +102,7 @@ throw(ModbusRTU::mbException)
 }
 // --------------------------------------------------------------------------------
 ReadInputRetMessage ModbusClient::read04( ModbusAddr addr,
-		ModbusData start, ModbusData count )
+										  ModbusData start, ModbusData count )
 throw(ModbusRTU::mbException)
 {
 	ReadInputMessage msg(addr, start, count);
@@ -116,7 +116,7 @@ throw(ModbusRTU::mbException)
 }
 // --------------------------------------------------------------------------------
 ForceSingleCoilRetMessage ModbusClient::write05( ModbusAddr addr,
-		ModbusData start, bool cmd )
+												 ModbusData start, bool cmd )
 throw(ModbusRTU::mbException)
 {
 	ForceSingleCoilMessage msg(addr, start, cmd);
@@ -172,8 +172,8 @@ throw(ModbusRTU::mbException)
 }
 // --------------------------------------------------------------------------------
 DiagnosticRetMessage ModbusClient::diag08( ModbusAddr addr,
-		DiagnosticsSubFunction subfunc,
-		ModbusRTU::ModbusData dat )
+										   DiagnosticsSubFunction subfunc,
+										   ModbusRTU::ModbusData dat )
 throw(ModbusRTU::mbException)
 {
 	DiagnosticMessage msg(addr, subfunc, dat);
@@ -202,8 +202,8 @@ throw(ModbusRTU::mbException)
 }
 // --------------------------------------------------------------------------------
 SetDateTimeRetMessage ModbusClient::setDateTime( ModbusAddr addr, ModbusByte hour, ModbusByte min, ModbusByte sec,
-		ModbusByte day, ModbusByte mon, ModbusByte year,
-		ModbusByte century )
+												 ModbusByte day, ModbusByte mon, ModbusByte year,
+												 ModbusByte century )
 throw(ModbusRTU::mbException)
 {
 	SetDateTimeMessage msg(addr);

@@ -64,13 +64,14 @@ long pyUInterface::getValue( long id )throw(UException)
 	using namespace uniset;
 
 	UniversalIO::IOType t = conf->getIOType(id);
+
 	if( t == UniversalIO::UnknownIOType )
 	{
 		ostringstream e;
 		e << "(getValue): Unknown iotype for id=" << id;
 		throw UException(e.str());
 	}
-	
+
 	try
 	{
 		return uInterface->getValue(id);
@@ -99,6 +100,7 @@ void pyUInterface::setValue( long id, long val, long supplier )throw(UException)
 	using namespace uniset;
 
 	UniversalIO::IOType t = conf->getIOType(id);
+
 	if( t == UniversalIO::UnknownIOType )
 	{
 		ostringstream e;

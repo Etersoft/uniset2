@@ -177,7 +177,7 @@ std::ostream& DebugStream::printDate(Debug::type t, char brk) noexcept
 #if __GLIBCXX__ >= 20151207
 		std::ostringstream fmt;
 		fmt << "%Od" << brk << "%Om" << brk << "%Y";
-		return (*this) << std::put_time(&tms,fmt.str().c_str());
+		return (*this) << std::put_time(&tms, fmt.str().c_str());
 #else
 		return (*this) << std::setw(2) << std::setfill('0') << tms.tm_mday << brk
 			   << std::setw(2) << std::setfill('0') << tms.tm_mon + 1 << brk
@@ -200,16 +200,17 @@ std::ostream& DebugStream::printTime(Debug::type t, char brk) noexcept
 #if __GLIBCXX__ >= 20151207
 		std::ostringstream fmt;
 		fmt << "%OH" << brk << "%OM" << brk << "%OS";
-		(*this) << std::put_time(&tms,fmt.str().c_str());
+		(*this) << std::put_time(&tms, fmt.str().c_str());
 #else
 		*this << std::setw(2) << std::setfill('0') << tms.tm_hour << brk
-			   << std::setw(2) << std::setfill('0') << tms.tm_min << brk
-			   << std::setw(2) << std::setfill('0') << tms.tm_sec;
+			  << std::setw(2) << std::setfill('0') << tms.tm_min << brk
+			  << std::setw(2) << std::setfill('0') << tms.tm_sec;
 #endif
+
 		if( show_usec )
-			(*this) << "." << std::setw(6) << (tv.tv_nsec/1000);
+			(*this) << "." << std::setw(6) << (tv.tv_nsec / 1000);
 		else if( show_msec )
-			(*this) << "." << std::setw(3) << (tv.tv_nsec/1000000);
+			(*this) << "." << std::setw(3) << (tv.tv_nsec / 1000000);
 
 		return *this;
 	}
@@ -227,20 +228,20 @@ std::ostream& DebugStream::printDateTime(Debug::type t) noexcept
 		std::tm tms = *std::localtime(&tv.tv_sec);
 
 #if __GLIBCXX__ >= 20151207
-		*this << std::put_time(&tms,"%Od/%Om/%Y %OH:%OM:%OS");
+		*this << std::put_time(&tms, "%Od/%Om/%Y %OH:%OM:%OS");
 #else
 		*this << std::setw(2) << std::setfill('0') << tms.tm_mday << "/"
-			   << std::setw(2) << std::setfill('0') << tms.tm_mon + 1 << "/"
-			   << std::setw(4) << std::setfill('0') << tms.tm_year + 1900 << " "
-			   << std::setw(2) << std::setfill('0') << tms.tm_hour << ":"
-			   << std::setw(2) << std::setfill('0') << tms.tm_min << ":"
-			   << std::setw(2) << std::setfill('0') << tms.tm_sec;
+			  << std::setw(2) << std::setfill('0') << tms.tm_mon + 1 << "/"
+			  << std::setw(4) << std::setfill('0') << tms.tm_year + 1900 << " "
+			  << std::setw(2) << std::setfill('0') << tms.tm_hour << ":"
+			  << std::setw(2) << std::setfill('0') << tms.tm_min << ":"
+			  << std::setw(2) << std::setfill('0') << tms.tm_sec;
 #endif
 
 		if( show_usec )
-			(*this) << "." << std::setw(6) << std::setfill('0') << (tv.tv_nsec/1000);
+			(*this) << "." << std::setw(6) << std::setfill('0') << (tv.tv_nsec / 1000);
 		else if( show_msec )
-			(*this) << "." << std::setw(3) << std::setfill('0') << (tv.tv_nsec/1000000);
+			(*this) << "." << std::setw(3) << std::setfill('0') << (tv.tv_nsec / 1000000);
 
 		return *this;
 	}

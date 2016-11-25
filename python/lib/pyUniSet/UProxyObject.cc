@@ -60,7 +60,7 @@ class UProxyObject_impl:
 		};
 
 		std::mutex mutexSMap;
-		std::unordered_map<uniset::ObjectId,SInfo> smap;
+		std::unordered_map<uniset::ObjectId, SInfo> smap;
 		bool askOK = { false };
 };
 // --------------------------------------------------------------------------
@@ -72,6 +72,7 @@ UProxyObject::UProxyObject() throw(UException)
 UProxyObject::UProxyObject( const std::string& name ) throw( UException )
 {
 	auto conf = uniset_conf();
+
 	if ( !conf )
 	{
 		std::ostringstream err;
@@ -117,7 +118,7 @@ long UProxyObject::getValue( long id ) throw(UException)
 // --------------------------------------------------------------------------
 void UProxyObject::setValue( long id, long val ) throw(UException)
 {
-	uobj->impl_setValue(id,val);
+	uobj->impl_setValue(id, val);
 }
 // --------------------------------------------------------------------------
 bool UProxyObject::askIsOK()
@@ -160,7 +161,7 @@ void UProxyObject::addToAsk( long id ) throw(UException)
 }
 // --------------------------------------------------------------------------
 UProxyObject_impl::UProxyObject_impl( ObjectId id ):
-	UObject_SK(id,nullptr)
+	UObject_SK(id, nullptr)
 {
 
 }
@@ -179,6 +180,7 @@ void UProxyObject_impl::impl_addToAsk( ObjectId id ) throw( UException )
 	i.si.node = conf->getLocalNode();
 
 	auto inf = conf->oind->getObjectInfo(id);
+
 	if( inf && inf->data )
 	{
 		UniXML::iterator it( (xmlNode*)(inf->data) );
@@ -193,6 +195,7 @@ long UProxyObject_impl::impl_getValue( long id ) throw(UException)
 {
 	std::unique_lock<std::mutex> lk(mutexSMap);
 	auto i = smap.find(id);
+
 	if( i == smap.end() )
 	{
 		std::ostringstream err;
@@ -207,6 +210,7 @@ float UProxyObject_impl::impl_getFloatValue( long id ) throw(UException)
 {
 	std::unique_lock<std::mutex> lk(mutexSMap);
 	auto i = smap.find(id);
+
 	if( i == smap.end() )
 	{
 		std::ostringstream err;
@@ -227,7 +231,7 @@ void UProxyObject_impl::impl_setValue( long id, long val ) throw(UException)
 {
 	try
 	{
-		UObject_SK::setValue(id,val);
+		UObject_SK::setValue(id, val);
 	}
 	catch( std::exception& ex )
 	{
@@ -247,11 +251,12 @@ bool UProxyObject_impl::impl_updateValues()
 {
 	std::unique_lock<std::mutex> lk(mutexSMap);
 	bool ret = true;
-	for( auto&& i: smap )
+
+	for( auto && i : smap )
 	{
 		try
 		{
-			i.second.value = ui->getValue(i.second.si.id,i.second.si.node);
+			i.second.value = ui->getValue(i.second.si.id, i.second.si.node);
 			i.second.fvalue = (float)i.second.value / pow(10.0, i.second.precision);
 		}
 		catch( std::exception& ex )
@@ -270,18 +275,19 @@ bool UProxyObject_impl::impl_smIsOK()
 
 	// проверяем по первому датчику
 	auto s = smap.begin();
-	return ui->isExist(s->second.si.id,s->second.si.node);
+	return ui->isExist(s->second.si.id, s->second.si.node);
 }
 // --------------------------------------------------------------------------
 void UProxyObject_impl::askSensors( UniversalIO::UIOCommand cmd )
 {
 	std::unique_lock<std::mutex> lk(mutexSMap);
 	askOK = true;
-	for( const auto& i: smap )
+
+	for( const auto& i : smap )
 	{
 		try
 		{
-			ui->askRemoteSensor(i.second.si.id,cmd,i.second.si.node, getId());
+			ui->askRemoteSensor(i.second.si.id, cmd, i.second.si.node, getId());
 		}
 		catch( std::exception& ex )
 		{
@@ -295,6 +301,7 @@ void UProxyObject_impl::sensorInfo( const SensorMessage* sm )
 {
 	std::unique_lock<std::mutex> lk(mutexSMap);
 	auto i = smap.find(sm->id);
+
 	if( i != smap.end() )
 	{
 		i->second.value = sm->value;

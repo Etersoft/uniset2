@@ -226,6 +226,7 @@ void LogServer::evprepare( const ev::loop_ref& eloop )
 		ostringstream err;
 
 		err << myname << "(evprepare): " << ex.what();
+
 		if( mylog.is_crit() )
 			mylog.crit() << err.str() << endl;
 
@@ -368,6 +369,7 @@ nlohmann::json LogServer::httpGetShortInfo()
 		uniset_rwmutex_rlock l(mutSList);
 
 		auto& jsess = jdata["sessions"];
+
 		for( const auto& s : slist )
 			jsess.push_back(s->httpGetShortInfo());
 	}

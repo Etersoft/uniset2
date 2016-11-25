@@ -7,17 +7,17 @@ using namespace std;
 using namespace uniset;
 // --------------------------------------------------------------------------
 class UTestSupplier:
-		public UHttp::IHttpRequest
+	public UHttp::IHttpRequest
 {
 	public:
-		UTestSupplier(){}
-		virtual ~UTestSupplier(){}
+		UTestSupplier() {}
+		virtual ~UTestSupplier() {}
 
 		virtual nlohmann::json httpGet( const Poco::URI::QueryParameters& params ) override
 		{
 			nlohmann::json j;
 
-			for( const auto& p: params )
+			for( const auto& p : params )
 				j[p.first] = p.second;
 
 			j["test"] = 42;
@@ -27,9 +27,10 @@ class UTestSupplier:
 		virtual nlohmann::json httpHelp( const Poco::URI::QueryParameters& p ) override
 		{
 			nlohmann::json j;
-			j["test"]["help"] = {
-				{"cmd1","help for cmd1"},
-				{"cmd2","help for cmd2"}
+			j["test"]["help"] =
+			{
+				{"cmd1", "help for cmd1"},
+				{"cmd2", "help for cmd2"}
 			};
 
 			return j;
@@ -44,11 +45,11 @@ class UTestSupplier:
 };
 // --------------------------------------------------------------------------
 class UTestRequestRegistry:
-		public UHttp::IHttpRequestRegistry
+	public UHttp::IHttpRequestRegistry
 {
 	public:
-		UTestRequestRegistry(){}
-		virtual ~UTestRequestRegistry(){}
+		UTestRequestRegistry() {}
+		virtual ~UTestRequestRegistry() {}
 
 
 		virtual nlohmann::json httpGetByName( const std::string& name, const Poco::URI::QueryParameters& p ) override
@@ -70,9 +71,10 @@ class UTestRequestRegistry:
 		virtual nlohmann::json httpHelpByName( const std::string& name, const Poco::URI::QueryParameters& p ) override
 		{
 			nlohmann::json j;
-			j["TestObject"]["help"] = {
-				{"cmd1","help for cmd1"},
-				{"cmd2","help for cmd2"}
+			j["TestObject"]["help"] =
+			{
+				{"cmd1", "help for cmd1"},
+				{"cmd2", "help for cmd2"}
 			};
 
 			return j;
@@ -97,10 +99,10 @@ int main(int argc, const char** argv)
 		auto reg = std::make_shared<UTestRequestRegistry>();
 		auto ireg = dynamic_pointer_cast<UHttp::IHttpRequestRegistry>(reg);
 
-		auto http = make_shared<UHttp::UHttpServer>(ireg,"localhost", 5555);
+		auto http = make_shared<UHttp::UHttpServer>(ireg, "localhost", 5555);
 		http->log()->level(Debug::ANY);
 
-		cout << "start http test server localhost:5555" << endl; 
+		cout << "start http test server localhost:5555" << endl;
 
 		http->start();
 		pause();

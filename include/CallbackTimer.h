@@ -28,15 +28,15 @@
 //-----------------------------------------------------------------------------
 namespace uniset
 {
-	class LimitTimers:
-		public uniset::Exception
-	{
-		public:
-			LimitTimers(): Exception("LimitTimers") {}
+class LimitTimers:
+	public uniset::Exception
+{
+	public:
+		LimitTimers(): Exception("LimitTimers") {}
 
-			/*! Конструктор позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-			LimitTimers(const std::string& err): Exception(err) {}
-	};
+		/*! Конструктор позволяющий вывести в сообщении об ошибке дополнительную информацию err */
+		LimitTimers(const std::string& err): Exception(err) {}
+};
 //----------------------------------------------------------------------------------------
 
 /*!

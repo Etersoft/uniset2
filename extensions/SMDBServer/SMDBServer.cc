@@ -202,8 +202,8 @@ void SMDBServer::help_print( int argc, const char* const* argv )
 }
 // -----------------------------------------------------------------------------
 SMDBServer* SMDBServer::init_smdbserver( int argc, const char* const* argv,
-		uniset::ObjectId icID, SharedMemory* ic,
-		const std::string& prefix )
+										 uniset::ObjectId icID, SharedMemory* ic,
+										 const std::string& prefix )
 {
 	string name = conf->getArgParam("--" + prefix + "-name", "DBServer");
 

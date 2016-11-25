@@ -197,7 +197,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::readInputStatus( ReadInputStatusMessage& q
 }
 // -------------------------------------------------------------------------
 mbErrCode MBTCPTestServer::readInputRegisters( ReadInputMessage& query,
-		ReadInputRetMessage& reply )
+											   ReadInputRetMessage& reply )
 {
 	if( disabled )
 		return ModbusRTU::erTimeOut;
@@ -539,7 +539,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::diagnostics( ModbusRTU::DiagnosticMessage&
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBTCPTestServer::read4314( ModbusRTU::MEIMessageRDI& query,
-		ModbusRTU::MEIMessageRetRDI& reply )
+												ModbusRTU::MEIMessageRetRDI& reply )
 {
 	if( disabled )
 		return ModbusRTU::erTimeOut;

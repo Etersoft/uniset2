@@ -32,10 +32,10 @@ LostPassiveTestProc::LostPassiveTestProc( uniset::ObjectId id, xmlNode* confnode
 		if( it.getProp("iotype") != "AI" )
 			continue;
 
-		slist.emplace(it.getIntProp("id"),0);
+		slist.emplace(it.getIntProp("id"), 0);
 	}
 
-	setMaxSizeOfMessageQueue(slist.size()*2+500);
+	setMaxSizeOfMessageQueue(slist.size() * 2 + 500);
 
 	smTestID = slist.begin()->first;
 }
@@ -53,6 +53,7 @@ long LostPassiveTestProc::checkValue( ObjectId sid )
 {
 	std::lock_guard<std::mutex> lock(mut);
 	auto s = slist.find(sid);
+
 	if( s == slist.end() )
 	{
 		ostringstream err;
@@ -66,13 +67,13 @@ long LostPassiveTestProc::checkValue( ObjectId sid )
 LostPassiveTestProc::LostPassiveTestProc()
 {
 	cerr << ": init failed!!!!!!!!!!!!!!!" << endl;
-	throw uniset::Exception(myname+"(init): FAILED..");
+	throw uniset::Exception(myname + "(init): FAILED..");
 }
 // -----------------------------------------------------------------------------
 void LostPassiveTestProc::askSensors(UniversalIO::UIOCommand cmd)
 {
-	for( const auto& s: slist )
-		askSensor(s.first,cmd);
+	for( const auto& s : slist )
+		askSensor(s.first, cmd);
 }
 // -----------------------------------------------------------------------------
 void LostPassiveTestProc::sensorInfo(const SensorMessage* sm)
@@ -80,6 +81,7 @@ void LostPassiveTestProc::sensorInfo(const SensorMessage* sm)
 	std::lock_guard<std::mutex> lock(mut);
 
 	auto s = slist.find(sm->id);
+
 	if( s == slist.end() )
 	{
 		mycrit << myname << "(sensorInfo): ERROR: message from UNKNOWN SENSOR sm->id=" << sm->id << endl;
