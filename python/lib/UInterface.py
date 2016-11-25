@@ -175,8 +175,13 @@ class UInterface():
 
         raise UValidateError("(getObjectID): Unknown interface %s"%self.itype)
 
-    '''\param o_name - name, id, name@node, id@node'''
     def getObjectInfo( self, o_name, params = "" ):
+        '''
+        get info from object
+        :param o_name: [id | name@node | id@node]
+        :param params: user parameters for getObjectInfo function
+        :return: string
+        '''
 
         if self.itype != "uniset":
             raise UException("(getObjectInfo): the interface does not support this feature..")
@@ -184,8 +189,11 @@ class UInterface():
         s = to_sid(o_name,self.i)
         return self.i.getObjectInfo( s[0], params, s[1] )
 
-    '''\param o_name - name, id, name@node, id@node '''
     def getTimeChange( self, o_name ):
+        '''
+        :param o_name: [id | name@node | id@node]
+        :return: UTypes::ShortIOInfo
+        '''
 
         if self.itype != "uniset":
             raise UException("(getTimeChange): the interface does not support this feature..")
