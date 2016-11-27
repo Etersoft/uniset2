@@ -283,6 +283,7 @@ void UniSetObject::registered()
 	catch( ORepFailed )
 	{
 		string err(myname + ": don`t registration in object reposotory");
+		uwarn << myname << "(registered):  " << err << endl;
 		throw ORepFailed(err);
 	}
 	catch( const uniset::Exception& ex )
@@ -570,33 +571,48 @@ bool UniSetObject::activate()
 		throw ORepFailed(err);
 	}
 
-	if( uniset_conf()->isTransientIOR() )
+	try
 	{
-		// activate witch generate id
-		poa->activate_object(static_cast<PortableServer::ServantBase*>(this));
-	}
-	else
-	{
-		// А если myid==uniset::DefaultObjectId
-		// то myname = noname. ВСЕГДА!
-		if( myid == uniset::DefaultObjectId )
+		if( uniset_conf()->isTransientIOR() )
 		{
-			ucrit << myname << "(activate): Не задан ID!!! activate failure..." << endl;
-			// вызываем на случай если она переопределена в дочерних классах
-			// Например в UniSetManager, если здесь не вызвать, то не будут инициализированы подчинённые объекты.
-			// (см. UniSetManager::activateObject)
-			activateObject();
-			return false;
+			// activate witch generate id
+			poa->activate_object(static_cast<PortableServer::ServantBase*>(this));
+		}
+		else
+		{
+			// А если myid==uniset::DefaultObjectId
+			// то myname = noname. ВСЕГДА!
+			if( myid == uniset::DefaultObjectId )
+			{
+				ucrit << myname << "(activate): Не задан ID!!! activate failure..." << endl;
+				// вызываем на случай если она переопределена в дочерних классах
+				// Например в UniSetManager, если здесь не вызвать, то не будут инициализированы подчинённые объекты.
+				// (см. UniSetManager::activateObject)
+				activateObject();
+				return false;
+			}
+
+			// Always use the same object id.
+			PortableServer::ObjectId_var oid =
+					PortableServer::string_to_ObjectId(myname.c_str());
+
+			//        cerr << myname << "(activate): " << _refcount_value() << endl;
+
+			// Activate object...
+			poa->activate_object_with_id(oid, this);
+		}
+	}
+	catch( const CORBA::Exception& ex )
+	{
+		if( string(ex._name()) != "ObjectAlreadyActive" )
+		{
+			ostringstream err;
+			err << myname << "(activate): ACTIVATE ERROR: " << ex._name();
+			ucrit << myname << "(activate): " << err.str() << endl;
+			throw uniset::SystemError(err.str());
 		}
 
-		// Always use the same object id.
-		PortableServer::ObjectId_var oid =
-			PortableServer::string_to_ObjectId(myname.c_str());
-
-		//        cerr << myname << "(activate): " << _refcount_value() << endl;
-
-		// Activate object...
-		poa->activate_object_with_id(oid, this);
+		uwarn << myname << "(activate): IGNORE.. catch " << ex._name() << endl;
 	}
 
 	{

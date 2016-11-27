@@ -277,23 +277,60 @@ void UniSetManager::managers( OManagerCommand cmd )
 			}
 			catch( const uniset::Exception& ex )
 			{
-				ucrit << myname << "(managers): " << ex << endl
-					  << " Не смог зарегистрировать (разрегистрировать) объект -->" << li->getName() << endl;
+				ostringstream err;
+				err << myname << "(managers): " << ex << endl
+					  << " Не смог зарегистрировать (разрегистрировать) объект -->"
+					  << li->getName();
+
+				ucrit << err.str() << endl;
+
+				if( cmd == activ )
+				{
+					cerr << err.str();
+					std::terminate();
+				}
 			}
 			catch( const CORBA::SystemException& ex )
 			{
-				ucrit << myname << "(managers): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
+				ostringstream err;
+				err << myname << "(managers): поймали CORBA::SystemException:" << ex.NP_minorString();
+
+				ucrit << err.str() << endl;
+
+				if( cmd == activ )
+				{
+					cerr << err.str();
+					std::terminate();
+				}
 			}
 			catch( const CORBA::Exception& ex )
 			{
-				ucrit << myname << "(managers): Caught CORBA::Exception. " << ex._name() << endl;
+				ostringstream err;
+				err << myname << "(managers): Caught CORBA::Exception. "
+					  << ex._name()
+					  << " (" << li->getName() << ")";
+
+				ucrit << err.str() << endl;
+				if( cmd == activ )
+				{
+					cerr << err.str();
+					std::terminate();
+				}
 			}
 			catch( const omniORB::fatalException& fe )
 			{
-				ucrit << myname << "(managers): Caught omniORB::fatalException:" << endl;
-				ucrit << myname << "(managers): file: " << fe.file()
-					  << " line: " << fe.line()
-					  << " mesg: " << fe.errmsg() << endl;
+				ostringstream err;
+				err << myname << "(managers): Caught omniORB::fatalException:" << endl
+					<< myname << "(managers): file: " << fe.file()
+					<< " line: " << fe.line()
+					<< " mesg: " << fe.errmsg();
+
+				ucrit << err.str() << endl;
+				if( cmd == activ )
+				{
+					cerr << err.str();
+					std::terminate();
+				}
 			}
 		}
 	} // unlock
@@ -355,13 +392,30 @@ void UniSetManager::objects(OManagerCommand cmd)
 			}
 			catch( const CORBA::SystemException& ex )
 			{
-				ucrit << myname << "(objects): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
+				ostringstream err;
+				err << myname << "(objects): поймали CORBA::SystemException:" << ex.NP_minorString();
+
+				ucrit << err.str() << endl;
+
+				if( cmd == activ )
+				{
+					cerr << err.str();
+					std::terminate();
+				}
 			}
 			catch( const CORBA::Exception& ex )
 			{
-				ucrit << myname << "(objects): Caught CORBA::Exception. "
+				ostringstream err;
+				err << myname << "(objects): Caught CORBA::Exception. "
 					  << ex._name()
-					  << " (" << li->getName() << ")" << endl;
+					  << " (" << li->getName() << ")";
+
+				ucrit << err.str() << endl;
+				if( cmd == activ )
+				{
+					cerr << err.str();
+					std::terminate();
+				}
 			}
 			catch( const omniORB::fatalException& fe )
 			{
