@@ -3012,11 +3012,12 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIGTYPE_p_USysError swig_types[2]
 #define SWIGTYPE_p_UTimeOut swig_types[3]
 #define SWIGTYPE_p_UTypes__Params swig_types[4]
-#define SWIGTYPE_p_UValidateError swig_types[5]
-#define SWIGTYPE_p_char swig_types[6]
-#define SWIGTYPE_p_p_char swig_types[7]
-static swig_type_info *swig_types[9];
-static swig_module_info swig_module = {swig_types, 8, 0, 0, 0, 0};
+#define SWIGTYPE_p_UTypes__ShortIOInfo swig_types[5]
+#define SWIGTYPE_p_UValidateError swig_types[6]
+#define SWIGTYPE_p_char swig_types[7]
+#define SWIGTYPE_p_p_char swig_types[8]
+static swig_type_info *swig_types[10];
+static swig_module_info swig_module = {swig_types, 9, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3471,6 +3472,62 @@ SWIGINTERNINLINE PyObject*
   SWIG_From_bool  (bool value)
 {
   return PyBool_FromLong(value ? 1 : 0);
+}
+
+
+SWIGINTERN int
+SWIG_AsVal_unsigned_SS_long (PyObject *obj, unsigned long *val) 
+{
+#if PY_VERSION_HEX < 0x03000000
+  if (PyInt_Check(obj)) {
+    long v = PyInt_AsLong(obj);
+    if (v >= 0) {
+      if (val) *val = v;
+      return SWIG_OK;
+    } else {
+      return SWIG_OverflowError;
+    }
+  } else
+#endif
+  if (PyLong_Check(obj)) {
+    unsigned long v = PyLong_AsUnsignedLong(obj);
+    if (!PyErr_Occurred()) {
+      if (val) *val = v;
+      return SWIG_OK;
+    } else {
+      PyErr_Clear();
+      return SWIG_OverflowError;
+    }
+  }
+#ifdef SWIG_PYTHON_CAST_MODE
+  {
+    int dispatch = 0;
+    unsigned long v = PyLong_AsUnsignedLong(obj);
+    if (!PyErr_Occurred()) {
+      if (val) *val = v;
+      return SWIG_AddCast(SWIG_OK);
+    } else {
+      PyErr_Clear();
+    }
+    if (!dispatch) {
+      double d;
+      int res = SWIG_AddCast(SWIG_AsVal_double (obj,&d));
+      if (SWIG_IsOK(res) && SWIG_CanCastAsInteger(&d, 0, ULONG_MAX)) {
+	if (val) *val = (unsigned long)(d);
+	return res;
+      }
+    }
+  }
+#endif
+  return SWIG_TypeError;
+}
+
+
+SWIGINTERNINLINE PyObject* 
+SWIG_From_unsigned_SS_long  (unsigned long value)
+{
+  return (value > LONG_MAX) ?
+    PyLong_FromUnsignedLong(value) : PyLong_FromLong(static_cast< long >(value)); 
 }
 
 
@@ -4165,6 +4222,255 @@ SWIGINTERN PyObject *Params_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObjec
   return SWIG_Py_Void();
 }
 
+SWIGINTERN PyObject *_wrap_ShortIOInfo_value_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:ShortIOInfo_value_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_value_set" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'"); 
+  }
+  arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
+  ecode2 = SWIG_AsVal_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ShortIOInfo_value_set" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  if (arg1) (arg1)->value = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ShortIOInfo_value_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  long result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:ShortIOInfo_value_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_value_get" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'"); 
+  }
+  arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
+  result = (long) ((arg1)->value);
+  resultobj = SWIG_From_long(static_cast< long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ShortIOInfo_tv_sec_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
+  unsigned long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:ShortIOInfo_tv_sec_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_tv_sec_set" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'"); 
+  }
+  arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ShortIOInfo_tv_sec_set" "', argument " "2"" of type '" "unsigned long""'");
+  } 
+  arg2 = static_cast< unsigned long >(val2);
+  if (arg1) (arg1)->tv_sec = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ShortIOInfo_tv_sec_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  unsigned long result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:ShortIOInfo_tv_sec_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_tv_sec_get" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'"); 
+  }
+  arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
+  result = (unsigned long) ((arg1)->tv_sec);
+  resultobj = SWIG_From_unsigned_SS_long(static_cast< unsigned long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ShortIOInfo_tv_nsec_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
+  unsigned long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:ShortIOInfo_tv_nsec_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_tv_nsec_set" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'"); 
+  }
+  arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ShortIOInfo_tv_nsec_set" "', argument " "2"" of type '" "unsigned long""'");
+  } 
+  arg2 = static_cast< unsigned long >(val2);
+  if (arg1) (arg1)->tv_nsec = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ShortIOInfo_tv_nsec_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  unsigned long result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:ShortIOInfo_tv_nsec_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_tv_nsec_get" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'"); 
+  }
+  arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
+  result = (unsigned long) ((arg1)->tv_nsec);
+  resultobj = SWIG_From_unsigned_SS_long(static_cast< unsigned long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ShortIOInfo_supplier_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:ShortIOInfo_supplier_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_supplier_set" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'"); 
+  }
+  arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
+  ecode2 = SWIG_AsVal_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ShortIOInfo_supplier_set" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  if (arg1) (arg1)->supplier = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ShortIOInfo_supplier_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  long result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:ShortIOInfo_supplier_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_supplier_get" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'"); 
+  }
+  arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
+  result = (long) ((arg1)->supplier);
+  resultobj = SWIG_From_long(static_cast< long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_ShortIOInfo(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_ShortIOInfo")) SWIG_fail;
+  result = (UTypes::ShortIOInfo *)new UTypes::ShortIOInfo();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UTypes__ShortIOInfo, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_ShortIOInfo(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_ShortIOInfo",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_ShortIOInfo" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'"); 
+  }
+  arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *ShortIOInfo_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_UTypes__ShortIOInfo, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
 SWIGINTERN PyObject *_wrap_new_UException__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   UException *result = 0 ;
@@ -4592,7 +4898,7 @@ SWIGINTERN PyObject *USysError_swigregister(PyObject *SWIGUNUSEDPARM(self), PyOb
 SWIGINTERN PyObject *_wrap_new_UValidateError__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   UValidateError *result = 0 ;
-
+  
   if (!PyArg_ParseTuple(args,(char *)":new_UValidateError")) SWIG_fail;
   result = (UValidateError *)new UValidateError();
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UValidateError, SWIG_POINTER_NEW |  0 );
@@ -4608,16 +4914,16 @@ SWIGINTERN PyObject *_wrap_new_UValidateError__SWIG_1(PyObject *SWIGUNUSEDPARM(s
   int res1 = SWIG_OLDOBJ ;
   PyObject * obj0 = 0 ;
   UValidateError *result = 0 ;
-
+  
   if (!PyArg_ParseTuple(args,(char *)"O:new_UValidateError",&obj0)) SWIG_fail;
   {
     std::string *ptr = (std::string *)0;
     res1 = SWIG_AsPtr_std_string(obj0, &ptr);
     if (!SWIG_IsOK(res1)) {
-      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_UValidateError" "', argument " "1"" of type '" "std::string const &""'");
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_UValidateError" "', argument " "1"" of type '" "std::string const &""'"); 
     }
     if (!ptr) {
-      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_UValidateError" "', argument " "1"" of type '" "std::string const &""'");
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_UValidateError" "', argument " "1"" of type '" "std::string const &""'"); 
     }
     arg1 = ptr;
   }
@@ -4637,7 +4943,7 @@ SWIGINTERN PyObject *_wrap_new_UValidateError(PyObject *self, PyObject *args) {
     0
   };
   Py_ssize_t ii;
-
+  
   if (!PyTuple_Check(args)) SWIG_fail;
   argc = args ? PyObject_Length(args) : 0;
   for (ii = 0; (ii < 1) && (ii < argc); ii++) {
@@ -4654,7 +4960,7 @@ SWIGINTERN PyObject *_wrap_new_UValidateError(PyObject *self, PyObject *args) {
       return _wrap_new_UValidateError__SWIG_1(self, args);
     }
   }
-
+  
 fail:
   SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'new_UValidateError'.\n"
     "  Possible C/C++ prototypes are:\n"
@@ -4670,11 +4976,11 @@ SWIGINTERN PyObject *_wrap_delete_UValidateError(PyObject *SWIGUNUSEDPARM(self),
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-
+  
   if (!PyArg_ParseTuple(args,(char *)"O:delete_UValidateError",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UValidateError, SWIG_POINTER_DISOWN |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_UValidateError" "', argument " "1"" of type '" "UValidateError *""'");
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_UValidateError" "', argument " "1"" of type '" "UValidateError *""'"); 
   }
   arg1 = reinterpret_cast< UValidateError * >(argp1);
   delete arg1;
@@ -5089,6 +5395,17 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Params_inst", _wrap_Params_inst, METH_VARARGS, NULL},
 	 { (char *)"delete_Params", _wrap_delete_Params, METH_VARARGS, NULL},
 	 { (char *)"Params_swigregister", Params_swigregister, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_value_set", _wrap_ShortIOInfo_value_set, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_value_get", _wrap_ShortIOInfo_value_get, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_tv_sec_set", _wrap_ShortIOInfo_tv_sec_set, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_tv_sec_get", _wrap_ShortIOInfo_tv_sec_get, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_tv_nsec_set", _wrap_ShortIOInfo_tv_nsec_set, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_tv_nsec_get", _wrap_ShortIOInfo_tv_nsec_get, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_supplier_set", _wrap_ShortIOInfo_supplier_set, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_supplier_get", _wrap_ShortIOInfo_supplier_get, METH_VARARGS, NULL},
+	 { (char *)"new_ShortIOInfo", _wrap_new_ShortIOInfo, METH_VARARGS, NULL},
+	 { (char *)"delete_ShortIOInfo", _wrap_delete_ShortIOInfo, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_swigregister", ShortIOInfo_swigregister, METH_VARARGS, NULL},
 	 { (char *)"new_UException", _wrap_new_UException, METH_VARARGS, NULL},
 	 { (char *)"delete_UException", _wrap_delete_UException, METH_VARARGS, NULL},
 	 { (char *)"UException_getError", _wrap_UException_getError, METH_VARARGS, NULL},
@@ -5135,6 +5452,7 @@ static swig_type_info _swigt__p_UProxyObject = {"_p_UProxyObject", "UProxyObject
 static swig_type_info _swigt__p_USysError = {"_p_USysError", "USysError *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UTimeOut = {"_p_UTimeOut", "UTimeOut *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UTypes__Params = {"_p_UTypes__Params", "UTypes::Params *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_UTypes__ShortIOInfo = {"_p_UTypes__ShortIOInfo", "UTypes::ShortIOInfo *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UValidateError = {"_p_UValidateError", "UValidateError *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_char = {"_p_p_char", "char **", 0, 0, (void*)0, 0};
@@ -5145,6 +5463,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_USysError,
   &_swigt__p_UTimeOut,
   &_swigt__p_UTypes__Params,
+  &_swigt__p_UTypes__ShortIOInfo,
   &_swigt__p_UValidateError,
   &_swigt__p_char,
   &_swigt__p_p_char,
@@ -5155,6 +5474,7 @@ static swig_cast_info _swigc__p_UProxyObject[] = {  {&_swigt__p_UProxyObject, 0,
 static swig_cast_info _swigc__p_USysError[] = {  {&_swigt__p_USysError, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UTimeOut[] = {  {&_swigt__p_UTimeOut, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UTypes__Params[] = {  {&_swigt__p_UTypes__Params, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_UTypes__ShortIOInfo[] = {  {&_swigt__p_UTypes__ShortIOInfo, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UValidateError[] = {  {&_swigt__p_UValidateError, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p_char[] = {  {&_swigt__p_p_char, 0, 0, 0},{0, 0, 0, 0}};
@@ -5165,6 +5485,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_USysError,
   _swigc__p_UTimeOut,
   _swigc__p_UTypes__Params,
+  _swigc__p_UTypes__ShortIOInfo,
   _swigc__p_UValidateError,
   _swigc__p_char,
   _swigc__p_p_char,

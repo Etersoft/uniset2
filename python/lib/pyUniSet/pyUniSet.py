@@ -154,6 +154,32 @@ def Params_inst():
     return _pyUniSet.Params_inst()
 Params_inst = _pyUniSet.Params_inst
 
+class ShortIOInfo:
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ShortIOInfo, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, ShortIOInfo, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["value"] = _pyUniSet.ShortIOInfo_value_set
+    __swig_getmethods__["value"] = _pyUniSet.ShortIOInfo_value_get
+    __swig_setmethods__["tv_sec"] = _pyUniSet.ShortIOInfo_tv_sec_set
+    __swig_getmethods__["tv_sec"] = _pyUniSet.ShortIOInfo_tv_sec_get
+    __swig_setmethods__["tv_nsec"] = _pyUniSet.ShortIOInfo_tv_nsec_set
+    __swig_getmethods__["tv_nsec"] = _pyUniSet.ShortIOInfo_tv_nsec_get
+    __swig_setmethods__["supplier"] = _pyUniSet.ShortIOInfo_supplier_set
+    __swig_getmethods__["supplier"] = _pyUniSet.ShortIOInfo_supplier_get
+
+    def __init__(self):
+        this = _pyUniSet.new_ShortIOInfo()
+        try:
+            self.this.append(this)
+        except Exception:
+            self.this = this
+    __swig_destroy__ = _pyUniSet.delete_ShortIOInfo
+    __del__ = lambda self: None
+ShortIOInfo_swigregister = _pyUniSet.ShortIOInfo_swigregister
+ShortIOInfo_swigregister(ShortIOInfo)
+
 class UException(Exception):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, UException, name, value)
