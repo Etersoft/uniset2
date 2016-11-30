@@ -279,8 +279,8 @@ void UniSetManager::managers( OManagerCommand cmd )
 			{
 				ostringstream err;
 				err << myname << "(managers): " << ex << endl
-					  << " Не смог зарегистрировать (разрегистрировать) объект -->"
-					  << li->getName();
+					<< " Не смог зарегистрировать (разрегистрировать) объект -->"
+					<< li->getName();
 
 				ucrit << err.str() << endl;
 
@@ -307,10 +307,11 @@ void UniSetManager::managers( OManagerCommand cmd )
 			{
 				ostringstream err;
 				err << myname << "(managers): Caught CORBA::Exception. "
-					  << ex._name()
-					  << " (" << li->getName() << ")";
+					<< ex._name()
+					<< " (" << li->getName() << ")";
 
 				ucrit << err.str() << endl;
+
 				if( cmd == activ )
 				{
 					cerr << err.str();
@@ -326,6 +327,7 @@ void UniSetManager::managers( OManagerCommand cmd )
 					<< " mesg: " << fe.errmsg();
 
 				ucrit << err.str() << endl;
+
 				if( cmd == activ )
 				{
 					cerr << err.str();
@@ -407,10 +409,11 @@ void UniSetManager::objects(OManagerCommand cmd)
 			{
 				ostringstream err;
 				err << myname << "(objects): Caught CORBA::Exception. "
-					  << ex._name()
-					  << " (" << li->getName() << ")";
+					<< ex._name()
+					<< " (" << li->getName() << ")";
 
 				ucrit << err.str() << endl;
+
 				if( cmd == activ )
 				{
 					cerr << err.str();

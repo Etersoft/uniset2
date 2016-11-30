@@ -175,7 +175,7 @@ void IOController::setUndefinedState( uniset::ObjectId sid, CORBA::Boolean undef
 }
 // -----------------------------------------------------------------------------
 void IOController::localSetUndefinedState( IOStateList::iterator& li,
-		bool undefined, const uniset::ObjectId sid )
+										   bool undefined, const uniset::ObjectId sid )
 {
 	// сохранение текущего состояния
 	if( li == ioList.end() )
@@ -707,7 +707,7 @@ IDSeq* IOController::setOutputSeq(const IOController_i::OutSeq& lst, ObjectId su
 	return badlist.getIDSeq();
 }
 // -----------------------------------------------------------------------------
-IOController_i::ShortIOInfo IOController::getChangedTime( uniset::ObjectId sid )
+IOController_i::ShortIOInfo IOController::getTimeChange( uniset::ObjectId sid )
 {
 	auto ait = ioList.find(sid);
 
@@ -828,9 +828,9 @@ void IOController::USensorInfo::checkDepend( std::shared_ptr<USensorInfo>& d_it,
 		ic->localSetValue( d_usi, real_value, sup_id );
 }
 // -----------------------------------------------------------------------------
-uniset::SimpleInfo* IOController::getInfo( ::CORBA::Long userparam )
+uniset::SimpleInfo* IOController::getInfo( const char* userparam )
 {
-	uniset::SimpleInfo_var i = UniSetManager::getInfo();
+	uniset::SimpleInfo_var i = UniSetManager::getInfo(userparam);
 
 	ostringstream inf;
 

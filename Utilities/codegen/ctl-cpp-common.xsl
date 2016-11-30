@@ -173,7 +173,7 @@
 		void askSensor( uniset::ObjectId sid, UniversalIO::UIOCommand, uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() );
 		void updateValues();
 
-		virtual uniset::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
+		virtual uniset::SimpleInfo* getInfo( const char* userparam ) override;
 
 		virtual bool setMsg( uniset::ObjectId code, bool state = true ) noexcept;
 
@@ -528,7 +528,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 }
 // -----------------------------------------------------------------------------
 
-uniset::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( CORBA::Long userparam )
+uniset::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( const char* userparam )
 {
 	<xsl:if test="not(normalize-space($BASECLASS)='')">uniset::SimpleInfo_var i = <xsl:value-of select="$BASECLASS"/>::getInfo(userparam);</xsl:if>
 	<xsl:if test="normalize-space($BASECLASS)=''">uniset::SimpleInfo_var i = UniSetObject::getInfo(userparam);</xsl:if>

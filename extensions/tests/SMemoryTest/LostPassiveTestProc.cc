@@ -85,7 +85,7 @@ void LostPassiveTestProc::sensorInfo(const SensorMessage* sm)
 	if( s == slist.end() )
 	{
 		mycrit << myname << "(sensorInfo): ERROR: message from UNKNOWN SENSOR sm->id=" << sm->id << endl;
-		uniset::SimpleInfo_var i = getInfo();
+		uniset::SimpleInfo_var i = getInfo("");
 		mycrit << i->info << endl;
 		std::abort();
 	}

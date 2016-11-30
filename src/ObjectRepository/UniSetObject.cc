@@ -592,7 +592,7 @@ bool UniSetObject::activate()
 
 			// Always use the same object id.
 			PortableServer::ObjectId_var oid =
-					PortableServer::string_to_ObjectId(myname.c_str());
+				PortableServer::string_to_ObjectId(myname.c_str());
 
 			//        cerr << myname << "(activate): " << _refcount_value() << endl;
 

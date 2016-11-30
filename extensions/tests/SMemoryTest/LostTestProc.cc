@@ -88,7 +88,7 @@ void LostTestProc::timerInfo( const TimerMessage* tm )
 				if( smValue != s.second )
 				{
 					cerr << myname << "(check): ERROR!! sid=" << s.first << " smValue=" << smValue << " != " << s.second << endl;
-					uniset::SimpleInfo_var i = getInfo();
+					uniset::SimpleInfo_var i = getInfo("");
 					cerr << i->info << endl;
 					std::abort();
 				}
@@ -103,11 +103,11 @@ void LostTestProc::timerInfo( const TimerMessage* tm )
 							 << " FOR CHILD: " << child->getName()
 							 << endl;
 
-						uniset::SimpleInfo_var i = getInfo();
+						uniset::SimpleInfo_var i = getInfo("");
 						cerr << i->info << endl;
 
 						cerr << "=============== CHILD INFO: ==============" << endl;
-						uniset::SimpleInfo_var i2 = child->getInfo();
+						uniset::SimpleInfo_var i2 = child->getInfo("");
 						cerr << i2->info << endl;
 
 
@@ -145,7 +145,7 @@ void LostTestProc::timerInfo( const TimerMessage* tm )
 				{
 					cerr << myname << "(check): SAVE TO SM ERROR!! sid=" << s.first
 						 << " value=" << smValue << " != " << (s.second + 1) << endl;
-					uniset::SimpleInfo_var i = getInfo();
+					uniset::SimpleInfo_var i = getInfo("");
 					cerr << i->info << endl;
 					std::abort();
 				}
