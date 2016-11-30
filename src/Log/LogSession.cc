@@ -688,7 +688,7 @@ Poco::JSON::Object::Ptr LogSession::httpGetShortInfo()
 	}
 
 	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
-	jret->set(caddr,jdata);
+	jret->set(caddr, jdata);
 
 	jdata->set("client", caddr);
 	jdata->set("maxbufsize", maxRecordsNum);

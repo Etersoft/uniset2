@@ -244,8 +244,8 @@ class IOController:
 		IOStateList::iterator myiofind( uniset::ObjectId id );
 		size_t ioCount();
 		// --------------------------
-                
-    private:
+
+	private:
 		friend class NCRestorer;
 		friend class SMInterface;
 

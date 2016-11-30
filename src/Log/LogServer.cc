@@ -358,7 +358,8 @@ Poco::JSON::Object::Ptr LogServer::httpGetShortInfo()
 		uniset_rwmutex_rlock l(mutSList);
 
 		Poco::JSON::Array::Ptr jsess = new Poco::JSON::Array();
-		jdata->set("sessions",jsess);
+		jdata->set("sessions", jsess);
+
 		for( const auto& s : slist )
 			jsess->add(s->httpGetShortInfo());
 	}

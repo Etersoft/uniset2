@@ -88,10 +88,12 @@ SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
 
 	{
 		std::lock_guard<std::mutex> lock(lostConsumersMutex);
+
 		if( lostConsumers.size() > 0 )
 		{
 			inf << "-------------------------- lost consumers list [maxAttemtps=" << maxAttemtps << "] ------------------" << endl;
-			for( const auto& l: lostConsumers )
+
+			for( const auto& l : lostConsumers )
 			{
 				inf << "        " << "(" << setw(6) << l.first << ")"
 					<< setw(35) << std::left << ORepHelpers::getShortName(oind->getMapName(l.first))
@@ -99,6 +101,7 @@ SimpleInfo* IONotifyController::getInfo( ::CORBA::Long userparam )
 					<< endl;
 			}
 		}
+
 		inf << "----------------------------------------------------------------------------------" << endl;
 	}
 
@@ -198,7 +201,7 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
 {
 	uniset_rwmutex_wrlock l(lst.mut);
 
-	for( auto&& it :  lst.clst )
+	for( auto && it :  lst.clst )
 	{
 		if( it.id == ci.id && it.node == ci.node )
 		{
@@ -209,7 +212,8 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
 			// выставляем флаг, что заказчик опять "на связи"
 			std::lock_guard<std::mutex> lock(lostConsumersMutex);
 			auto c = lostConsumers.find(ci.id);
-			if( c!= lostConsumers.end() )
+
+			if( c != lostConsumers.end() )
 				c->second.lost = false;
 
 			return false;
@@ -231,7 +235,8 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
 	// выставляем флаг, что клиент опять "на связи"
 	std::lock_guard<std::mutex> lock(lostConsumersMutex);
 	auto c = lostConsumers.find(ci.id);
-	if( c!= lostConsumers.end() )
+
+	if( c != lostConsumers.end() )
 		c->second.lost = false;
 
 	return true;
@@ -545,6 +550,7 @@ void IONotifyController::send( ConsumerListInfo& lst, const uniset::SensorMessag
 					{
 						std::lock_guard<std::mutex> lock(lostConsumersMutex);
 						auto& c = lostConsumers[li->id];
+
 						// если уже выставлен флаг что "заказчик" пропал, то не надо увеличивать "счётчик"
 						// видимо мы уже зафиксировали его пропажу на другом датчике...
 						if( !c.lost )
@@ -1173,7 +1179,7 @@ Poco::JSON::Object::Ptr IONotifyController::httpHelp(const Poco::URI::QueryParam
 	{
 		// 'consumers'
 		uniset::json::help::item cmd("get consumers list");
-		cmd.param("sensor1,sensor2,sensor3","get consumers for sensors");
+		cmd.param("sensor1,sensor2,sensor3", "get consumers for sensors");
 		myhelp.add(cmd);
 	}
 
@@ -1189,23 +1195,24 @@ Poco::JSON::Object::Ptr IONotifyController::httpHelp(const Poco::URI::QueryParam
 Poco::JSON::Object::Ptr IONotifyController::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
 {
 	if( req == "consumers" )
-		return request_consumers(req,p);
+		return request_consumers(req, p);
 
 	if( req == "lost" )
-		return request_lost(req,p);
+		return request_lost(req, p);
 
-	return IOController::httpRequest(req,p);
+	return IOController::httpRequest(req, p);
 }
 // -----------------------------------------------------------------------------
 Poco::JSON::Object::Ptr IONotifyController::request_consumers( const string& req, const Poco::URI::QueryParameters& p )
 {
 	Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
-	Poco::JSON::Object::Ptr mydata = uniset::json::make_child(json,myname);
-	Poco::JSON::Array::Ptr jdata = uniset::json::make_child_array(mydata,"consumers");
+	Poco::JSON::Object::Ptr mydata = uniset::json::make_child(json, myname);
+	Poco::JSON::Array::Ptr jdata = uniset::json::make_child_array(mydata, "consumers");
 
 	auto oind = uniset_conf()->oind;
 
 	std::list<ParamSInfo> slist;
+
 	if( p.size() > 0 )
 	{
 		if( !p[0].first.empty() )
@@ -1224,11 +1231,12 @@ Poco::JSON::Object::Ptr IONotifyController::request_consumers( const string& req
 	// Проход по списку заданных..
 	if( !slist.empty() )
 	{
-		auto jnotfound = uniset::json::make_child_array(mydata,"notfound");
+		auto jnotfound = uniset::json::make_child_array(mydata, "notfound");
 
-		for( const auto& s: slist )
+		for( const auto& s : slist )
 		{
 			auto a = askIOList.find(s.si.id);
+
 			if( a == askIOList.end() )
 			{
 				jnotfound->add(std::to_string(s.si.id));
@@ -1236,15 +1244,16 @@ Poco::JSON::Object::Ptr IONotifyController::request_consumers( const string& req
 			}
 
 			// Включаем в ответ все, даже если список заказчиков пустой
-			jdata->add( getConsumers(a->first,a->second,false) );
+			jdata->add( getConsumers(a->first, a->second, false) );
 		}
 	}
 	else // Проход по всему списку
 	{
-		for( auto&& a : askIOList )
+		for( auto && a : askIOList )
 		{
 			// добавляем только датчики с непустым списком заказчиков
-			auto jret = getConsumers(a.first,a.second,true);
+			auto jret = getConsumers(a.first, a.second, true);
+
 			if( jret )
 				jdata->add(jret);
 		}
@@ -1264,9 +1273,9 @@ Poco::JSON::Object::Ptr IONotifyController::getConsumers( ObjectId sid, Consumer
 		return jret;
 
 	string strID( std::to_string(sid) );
-	auto jsens = uniset::json::make_child(jret,strID);
+	auto jsens = uniset::json::make_child(jret, strID);
 
-	jsens->set("id",strID);
+	jsens->set("id", strID);
 	jsens->set("sensor_name", ORepHelpers::getShortName(oind->getMapName(sid)));
 
 	auto jcons = uniset::json::make_child(jsens, "consumers");
@@ -1274,7 +1283,7 @@ Poco::JSON::Object::Ptr IONotifyController::getConsumers( ObjectId sid, Consumer
 	for( const auto& c : ci.clst )
 	{
 		string cid( std::to_string(c.id) );
-		auto jconsinfo = uniset::json::make_child(jcons,cid);
+		auto jconsinfo = uniset::json::make_child(jcons, cid);
 		jconsinfo->set("id", c.id);
 		jconsinfo->set("name", ORepHelpers::getShortName(oind->getMapName(c.id)));
 		jconsinfo->set("lostEvents", c.lostEvents);
@@ -1289,14 +1298,14 @@ Poco::JSON::Object::Ptr IONotifyController::request_lost( const string& req, con
 {
 	Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
 
-	Poco::JSON::Object::Ptr mydata = uniset::json::make_child(json,myname);
-	Poco::JSON::Array::Ptr jdata = uniset::json::make_child_array(mydata,"lost consumers");
+	Poco::JSON::Object::Ptr mydata = uniset::json::make_child(json, myname);
+	Poco::JSON::Array::Ptr jdata = uniset::json::make_child_array(mydata, "lost consumers");
 
 	auto oind = uniset_conf()->oind;
 
 	std::lock_guard<std::mutex> lock(lostConsumersMutex);
 
-	for( const auto& c: lostConsumers )
+	for( const auto& c : lostConsumers )
 	{
 		Poco::JSON::Object::Ptr jcons = new Poco::JSON::Object();
 		jcons->set("id", c.first);

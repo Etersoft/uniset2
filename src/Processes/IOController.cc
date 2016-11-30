@@ -410,8 +410,8 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi, bool force
 			try
 			{
 				ulogrep << myname
-					  << "(ioRegistration): регистрирую "
-					  << uniset_conf()->oind->getNameById(usi->si.id) << endl;
+						<< "(ioRegistration): регистрирую "
+						<< uniset_conf()->oind->getNameById(usi->si.id) << endl;
 
 				ui->registered( usi->si.id, getRef(), true );
 				return;
@@ -850,17 +850,17 @@ Poco::JSON::Object::Ptr IOController::httpHelp( const Poco::URI::QueryParameters
 	{
 		// 'get'
 		uniset::json::help::item cmd("get value for sensor");
-		cmd.param("id1,name2,id3","get value for id1,name2,id3 sensors");
-		cmd.param("shortInfo","get short information for sensors");
+		cmd.param("id1,name2,id3", "get value for id1,name2,id3 sensors");
+		cmd.param("shortInfo", "get short information for sensors");
 		myhelp.add(cmd);
 	}
 
 	{
 		// 'sensors'
 		uniset::json::help::item cmd("et all sensors");
-		cmd.param("nameonly","get only name sensors");
-		cmd.param("offset=N","get from N record");
-		cmd.param("limit=M","limit of records");
+		cmd.param("nameonly", "get only name sensors");
+		cmd.param("offset=N", "get from N record");
+		cmd.param("limit=M", "limit of records");
 		myhelp.add(cmd);
 	}
 
@@ -870,12 +870,12 @@ Poco::JSON::Object::Ptr IOController::httpHelp( const Poco::URI::QueryParameters
 Poco::JSON::Object::Ptr IOController::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
 {
 	if( req == "get" )
-		return request_get(req,p);
+		return request_get(req, p);
 
 	if( req == "sensors" )
-		return request_sensors(req,p);
+		return request_sensors(req, p);
 
-	return UniSetManager::httpRequest(req,p);
+	return UniSetManager::httpRequest(req, p);
 }
 // -----------------------------------------------------------------------------
 Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco::URI::QueryParameters& p )
@@ -889,6 +889,7 @@ Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco
 
 	auto conf = uniset_conf();
 	auto slist = uniset::getSInfoList( p[0].first, conf );
+
 	if( slist.empty() )
 	{
 		ostringstream err;
@@ -897,34 +898,36 @@ Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco
 	}
 
 	bool shortInfo = false;
-	if( p.size() > 1 && p[1].first=="shortInfo" )
+
+	if( p.size() > 1 && p[1].first == "shortInfo" )
 		shortInfo = true;
 
-//	ulog1 << myname << "(GET): " << p[0].first << " size=" << slist.size() << endl;
+	//	ulog1 << myname << "(GET): " << p[0].first << " size=" << slist.size() << endl;
 
-//	myname {
-//			sensors: [
-//               sid:
-//	               value: long
-//			       error: string
-//			]
-//	}
+	//	myname {
+	//			sensors: [
+	//               sid:
+	//	               value: long
+	//			       error: string
+	//			]
+	//	}
 
 	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
 	Poco::JSON::Array::Ptr jsens = new Poco::JSON::Array();
-	jdata->set("sensors",jsens);
+	jdata->set("sensors", jsens);
 	Poco::JSON::Object::Ptr nullObject = new Poco::JSON::Object();
 
-	for( const auto& s: slist )
+	for( const auto& s : slist )
 	{
 		try
 		{
 			auto sinf = ioList.find(s.si.id);
+
 			if( sinf == ioList.end() )
 			{
 				string sid( std::to_string(s.si.id) );
-				jsens->add(json::make_object(sid, json::make_object("value",nullObject)));
-				jsens->add(json::make_object(sid, json::make_object("error","Sensor not found")));
+				jsens->add(json::make_object(sid, json::make_object("value", nullObject)));
+				jsens->add(json::make_object(sid, json::make_object("error", "Sensor not found")));
 				continue;
 			}
 
@@ -933,18 +936,18 @@ Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco
 		catch( IOController_i::NameNotFound& ex )
 		{
 			string sid( std::to_string(s.si.id) );
-			jsens->add(json::make_object(sid, uniset::json::make_object("value",nullObject)));
-			jsens->add(json::make_object(sid, uniset::json::make_object("error",string(ex.err))));
+			jsens->add(json::make_object(sid, uniset::json::make_object("value", nullObject)));
+			jsens->add(json::make_object(sid, uniset::json::make_object("error", string(ex.err))));
 		}
 		catch( std::exception& ex )
 		{
 			string sid( std::to_string(s.si.id) );
-			jsens->add(json::make_object(sid, uniset::json::make_object("value",nullObject)));
-			jsens->add(json::make_object(sid, uniset::json::make_object("error",ex.what())));
+			jsens->add(json::make_object(sid, uniset::json::make_object("value", nullObject)));
+			jsens->add(json::make_object(sid, uniset::json::make_object("error", ex.what())));
 		}
 	}
 
-	return uniset::json::make_object(myname,jdata);
+	return uniset::json::make_object(myname, jdata);
 }
 // -----------------------------------------------------------------------------
 void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr<USensorInfo>& s, bool shortInfo )
@@ -955,15 +958,15 @@ void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr
 	jdata->add(mydata);
 
 	std::string sid(to_string(s->si.id));
-	mydata->set(sid,jsens);
+	mydata->set(sid, jsens);
 
 	{
 		uniset_rwmutex_rlock lock(s->val_lock);
 		jsens->set("value", s->value);
-		jsens->set("real_value",s->real_value);
+		jsens->set("real_value", s->real_value);
 	}
 
-	jsens->set("id",sid);
+	jsens->set("id", sid);
 	jsens->set("name", ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->si.id)));
 	jsens->set("tv_sec", s->tv_sec);
 	jsens->set("tv_nsec", s->tv_nsec);
@@ -976,12 +979,12 @@ void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr
 	jsens->set("dbignore", s->dbignore);
 	jsens->set("nchanges", s->nchanges);
 
-	Poco::JSON::Object::Ptr calibr = uniset::json::make_child(jsens,"calibration");
-	calibr->set("cmin",s->ci.minCal);
-	calibr->set("cmax",s->ci.maxCal);
-	calibr->set("rmin",s->ci.minRaw);
-	calibr->set("rmax",s->ci.maxRaw);
-	calibr->set("precision",s->ci.precision);
+	Poco::JSON::Object::Ptr calibr = uniset::json::make_child(jsens, "calibration");
+	calibr->set("cmin", s->ci.minCal);
+	calibr->set("cmax", s->ci.maxCal);
+	calibr->set("rmin", s->ci.minRaw);
+	calibr->set("rmax", s->ci.maxRaw);
+	calibr->set("precision", s->ci.precision);
 
 	//	::CORBA::Boolean undefined;
 	//	::CORBA::Boolean blocked;
@@ -994,13 +997,13 @@ void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr
 Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const Poco::URI::QueryParameters& params )
 {
 	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
-	Poco::JSON::Array::Ptr jsens = uniset::json::make_child_array(jdata,"sensors");
+	Poco::JSON::Array::Ptr jsens = uniset::json::make_child_array(jdata, "sensors");
 
 	size_t num = 0;
 	size_t offset = 0;
 	size_t limit = 0;
 
-	for( const auto& p: params )
+	for( const auto& p : params )
 	{
 		if( p.first == "offset" )
 			offset = uni_atoi(p.second);
@@ -1010,7 +1013,7 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
 
 	size_t endnum = offset + limit;
 
-	for( auto it=myioBegin(); it!=myioEnd(); ++it,num++ )
+	for( auto it = myioBegin(); it != myioEnd(); ++it, num++ )
 	{
 		if( limit > 0 && num >= endnum )
 			break;
@@ -1018,7 +1021,7 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
 		if( offset > 0 && num < offset )
 			continue;
 
-		getSensorInfo(jsens, it->second,false);
+		getSensorInfo(jsens, it->second, false);
 	}
 
 	jdata->set("count", num);
