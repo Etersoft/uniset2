@@ -623,7 +623,7 @@ const std::shared_ptr<UniSetManager> UniSetManager::itemM( const ObjectId id )
 		//lock
 		uniset_rwmutex_rlock lock(mlistMutex);
 
-		for( auto& li : mlist )
+		for( const auto& li : mlist )
 		{
 			if ( li->getId() == id )
 				return li;
@@ -641,7 +641,7 @@ const std::shared_ptr<UniSetObject> UniSetManager::itemO( const ObjectId id )
 		//lock
 		uniset_rwmutex_rlock lock(olistMutex);
 
-		for( auto& li : olist )
+		for( const auto& li : olist )
 		{
 			if ( li->getId() == id )
 				return li;
