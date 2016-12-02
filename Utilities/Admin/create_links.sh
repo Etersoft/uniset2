@@ -17,6 +17,7 @@ ln -s -f admin.sh getChangedTime
 ln -s -f admin.sh getCalibrate
 ln -s -f admin.sh help
 ln -s -f admin.sh oinfo
+ln -s -f admin.sh apiRequest
 
 ln -s -f ../../Utilities/scripts/uniset2-start.sh
 ln -s -f ../../Utilities/scripts/uniset2-stop.sh stop.sh

@@ -206,6 +206,27 @@ throw(UException)
 	}
 }
 //---------------------------------------------------------------------------
+string UConnector::apiRequest( long id, const string& query, long node ) throw(UException)
+{
+	if( !conf || !ui )
+		throw USysError();
+
+	if( id == UTypes::DefaultID )
+		throw UException("(apiRequest): Unknown ID..");
+
+	if( node == UTypes::DefaultID )
+		node = conf->getLocalNode();
+
+	try
+	{
+		return ui->apiRequest(id, query, node);
+	}
+	catch( std::exception& ex )
+	{
+		throw UException("(apiRequest): error: " + std::string(ex.what()) );
+	}
+}
+//---------------------------------------------------------------------------
 void UConnector::activate_objects() throw(UException)
 {
 	try
@@ -219,10 +240,20 @@ void UConnector::activate_objects() throw(UException)
 	}
 }
 //---------------------------------------------------------------------------
-long UConnector::getObjectID(const string& name )
+long UConnector::getObjectID( const string& name )
 {
 	if( conf )
-		return conf->getObjectID(name);
+	{
+		long id = conf->getObjectID(name);
+
+		if( id == UTypes::DefaultID )
+			id = conf->getControllerID(name);
+
+		if( id == UTypes::DefaultID )
+			id = conf->getServiceID(name);
+
+		return id;
+	}
 
 	return UTypes::DefaultID;
 }

@@ -1186,6 +1186,84 @@ std::string UInterface::getObjectInfo( const ObjectId id, const std::string& par
 	throw uniset::TimeOut(set_err("UI(getInfo): Timeout", id, node));
 }
 // ------------------------------------------------------------------------------------------------------------
+string UInterface::apiRequest(const ObjectId id, const string& query, const ObjectId node) const
+{
+	if( id == uniset::DefaultObjectId )
+		throw uniset::ORepFailed("UI(apiRequest): Unknown id=uniset::DefaultObjectId");
+
+	if( node == uniset::DefaultObjectId )
+	{
+		ostringstream err;
+		err << "UI(apiRequest): id='" << id << "' error: node=uniset::DefaultObjectId";
+		throw uniset::ORepFailed(err.str());
+	}
+
+	try
+	{
+		CORBA::Object_var oref;
+
+		try
+		{
+			oref = rcache.resolve(id, node);
+		}
+		catch( const uniset::NameNotFound& ) {}
+
+		for (size_t i = 0; i < uconf->getRepeatCount(); i++)
+		{
+			try
+			{
+				if( CORBA::is_nil(oref) )
+					oref = resolve( id, node );
+
+				UniSetObject_i_var u = UniSetObject_i::_narrow(oref);
+				SimpleInfo_var i = u->apiRequest(query.c_str());
+				return std::string(i->info);
+			}
+			catch( const CORBA::TRANSIENT& ) {}
+			catch( const CORBA::OBJECT_NOT_EXIST& ) {}
+			catch( const CORBA::SystemException& ex ) {}
+
+			msleep(uconf->getRepeatTimeout());
+			oref = CORBA::Object::_nil();
+		}
+	}
+	catch( const uniset::TimeOut& ) {}
+	catch( const IOController_i::NameNotFound&  ex)
+	{
+		rcache.erase(id, node);
+		uwarn << "UI(apiRequest): " << ex.err << endl;
+	}
+	catch( const IOController_i::IOBadParam& ex )
+	{
+		rcache.erase(id, node);
+		throw uniset::IOBadParam("UI(apiRequest): " + string(ex.err));
+	}
+	catch( const uniset::ORepFailed& )
+	{
+		rcache.erase(id, node);
+		uwarn << set_err("UI(apiRequest): resolve failed ", id, node) << endl;
+	}
+	catch( const CORBA::NO_IMPLEMENT& )
+	{
+		rcache.erase(id, node);
+		uwarn << set_err("UI(apiRequest): method no implement", id, node) << endl;
+	}
+	catch( const CORBA::OBJECT_NOT_EXIST& e )
+	{
+		rcache.erase(id, node);
+		uwarn << set_err("UI(apiRequest): object not exist", id, node) << endl;
+	}
+	catch( const CORBA::COMM_FAILURE& e )
+	{
+	}
+	catch( const CORBA::SystemException& ex)
+	{
+	}
+
+	rcache.erase(id, node);
+	throw uniset::TimeOut(set_err("UI(apiRequest): Timeout", id, node));
+}
+// ------------------------------------------------------------------------------------------------------------
 uniset::ObjectPtr UInterface::CacheOfResolve::resolve( const uniset::ObjectId id, const uniset::ObjectId node ) const
 throw(uniset::NameNotFound)
 {

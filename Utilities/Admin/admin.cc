@@ -51,6 +51,7 @@ static struct option longopts[] =
 	{ "getCalibrate", required_argument, 0, 'y' },
 	{ "getTimeChange", required_argument, 0, 't' },
 	{ "oinfo", required_argument, 0, 'p' },
+	{ "apiRequest", required_argument, 0, 'a' },
 	{ "verbose", no_argument, 0, 'v' },
 	{ "quiet", no_argument, 0, 'q' },
 	{ "csv", required_argument, 0, 'z' },
@@ -62,7 +63,8 @@ string conffile("configure.xml");
 // --------------------------------------------------------------------------
 static bool commandToAll( const string& section, std::shared_ptr<ObjectRepository>& rep, Command cmd );
 static void createSections(const std::shared_ptr<Configuration>& c );
-static void errDoNotReolve( const std::string& oname );
+static void errDoNotResolve( const std::string& oname );
+static char* checkArg( int ind, int argc, char* argv[] );
 // --------------------------------------------------------------------------
 int omap();
 int configure( const string& args, UInterface& ui );
@@ -74,6 +76,7 @@ int getTimeChange( const string& args, UInterface& ui );
 int getState( const string& args, UInterface& ui );
 int getCalibrate( const string& args, UInterface& ui );
 int oinfo(const string& args, UInterface& ui , const string&  userparam );
+int apiRequest( const string& args, UInterface& ui, const string& query );
 // --------------------------------------------------------------------------
 static void print_help(int width, const string& cmd, const string& help, const string& tab = " " )
 {
@@ -111,6 +114,9 @@ static void usage()
 	print_help(36, "-p|--oinfo id1@node1,id2@node2,id3,... [userparam]", "Получить информацию об объектах (SimpleInfo). \n userparam - необязательный параметр передаваемый в getInfo() каждому объекту\n");
 	print_help(36, "", "userparam - необязательный параметр передаваемый в getInfo() каждому объекту\n");
 	cout << endl;
+	print_help(36, "-a|--apiRequest id1@node1,id2@node2,id3,... query", "Вызов REST API для каждого объекта\n");
+	print_help(36, "", "query - Запрос вида: /api/VERSION/query[?param1&param2...]\n");
+	cout << endl;
 	print_help(48, "-x|--setValue id1@node1=val,id2@node2=val2,id3=val3,.. ", "Выставить значения датчиков\n");
 	print_help(36, "-g|--getValue id1@node1,id2@node2,id3,id4 ", "Получить значения датчиков.\n");
 	cout << endl;
@@ -145,7 +151,7 @@ int main(int argc, char** argv)
 
 		while(1)
 		{
-			opt = getopt_long(argc, argv, "hc:beosfur:l:i::x:g:w:y:p:vqz:", longopts, &optindex);
+			opt = getopt_long(argc, argv, "hc:beosfur:l:i::x:g:w:y:p:vqz:a:", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -236,12 +242,32 @@ int main(int argc, char** argv)
 					UInterface ui(conf);
 					ui.initBackId(uniset::AdminID);
 
-					std::string userparam = {""};
+					std::string userparam = { "" };
 
-					if( optind < argc )
-						userparam = argv[optind];
+					if( checkArg(optind + 1, argc, argv) )
+						userparam = string(argv[optind + 1]);
 
 					return oinfo(optarg, ui, userparam);
+				}
+				break;
+
+				case 'a':    //--apiRequest
+				{
+					if( checkArg(optind, argc, argv) == 0 )
+					{
+						if( !quiet )
+							cerr << "admin(apiRequest): Unknown 'query'. Use: id,name,name2@nodeX /api/vesion/query.." << endl;
+
+						return 1;
+					}
+
+					auto conf = uniset_init(argc, argv, conffile);
+					UInterface ui(conf);
+					ui.initBackId(uniset::AdminID);
+
+					std::string query = string(argv[optind]);
+
+					return apiRequest(optarg, ui, query);
 				}
 				break;
 
@@ -441,7 +467,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 					{
 						if( CORBA::is_nil(obj) )
 						{
-							errDoNotReolve(ob);
+							errDoNotResolve(ob);
 							break;
 						}
 
@@ -457,7 +483,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 					{
 						if(CORBA::is_nil(obj))
 						{
-							errDoNotReolve(ob);
+							errDoNotResolve(ob);
 							break;
 						}
 
@@ -473,7 +499,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 					{
 						if(CORBA::is_nil(obj))
 						{
-							errDoNotReolve(ob);
+							errDoNotResolve(ob);
 							break;
 						}
 
@@ -1038,11 +1064,53 @@ int oinfo(const string& args, UInterface& ui, const string& userparam )
 
 	return 0;
 }
+// --------------------------------------------------------------------------------------
+int apiRequest( const string& args, UInterface& ui, const string& query )
+{
+	auto conf = uniset_conf();
+	auto sl = uniset::getObjectsList( args, conf );
+
+	//	if( verb )
+	//		cout << "apiRequest: query: " << query << endl;
+
+	for( auto && it : sl )
+	{
+		if( it.node == DefaultObjectId )
+			it.node = conf->getLocalNode();
+
+		try
+		{
+			cout << ui.apiRequest(it.id, query, it.node) << endl;
+		}
+		catch( const std::exception& ex )
+		{
+			if( !quiet )
+				cerr << "std::exception: " << ex.what() << endl;
+		}
+		catch(...)
+		{
+			if( !quiet )
+				cerr << "Unknown exception.." << endl;
+		}
+
+		cout << endl << endl;
+	}
+
+	return 0;
+}
 
 // --------------------------------------------------------------------------------------
-void errDoNotReolve( const std::string& oname )
+void errDoNotResolve( const std::string& oname )
 {
 	if( verb )
 		cerr << oname << ": resolve failed.." << endl;
+}
+// --------------------------------------------------------------------------------------
+char* checkArg( int i, int argc, char* argv[] )
+{
+	if( i < argc && (argv[i])[0] != '-' )
+		return argv[i];
+
+	return 0;
 }
 // --------------------------------------------------------------------------------------

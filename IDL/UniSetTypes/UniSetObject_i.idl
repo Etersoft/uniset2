@@ -41,8 +41,12 @@
 
         /*! получение информации от объекта
             \param userparam - Необязательный пользовательский параметр
+            \deprecated { Эта функция может быть удалена, желательно использовать более универсальную apiRequest }
         */
         uniset::SimpleInfo getInfo( in string userparam );
+
+        /*! REST API. Формат запроса: /api/version/query_for_object[?param1&param2...] */
+        uniset::SimpleInfo apiRequest( in string query );
 
         boolean exist();   /*!< проверка существования объекта */
 

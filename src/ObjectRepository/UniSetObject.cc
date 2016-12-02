@@ -354,6 +354,11 @@ string UniSetObject::getName() const
 	return myname;
 }
 // ------------------------------------------------------------------------------------------
+const string UniSetObject::getStrType()
+{
+	return CORBA::string_dup(getType());
+}
+// ------------------------------------------------------------------------------------------
 void UniSetObject::termWaiting()
 {
 	if( tmr )
@@ -394,7 +399,7 @@ Poco::JSON::Object::Ptr UniSetObject::httpGet( const Poco::URI::QueryParameters&
 	jdata->set("lostMessages", getCountOfLostMessages());
 	jdata->set("maxSizeOfMessageQueue", getMaxSizeOfMessageQueue());
 	jdata->set("isActive", isActive());
-	jdata->set("objectType", getType());
+	jdata->set("objectType", getStrType());
 	return jret;
 }
 // ------------------------------------------------------------------------------------------
@@ -795,6 +800,93 @@ uniset::SimpleInfo* UniSetObject::getInfo( const char* userparam )
 	res->id   =  myid;
 
 	return res; // ._retn();
+}
+// ------------------------------------------------------------------------------------------
+SimpleInfo* UniSetObject::apiRequest( const char* request )
+{
+#ifdef DISABLE_REST_API
+	return getInfo(query);
+#else
+	SimpleInfo* ret = new SimpleInfo();
+	ostringstream err;
+
+	try
+	{
+		Poco::URI uri(request);
+
+		if( ulog()->is_level9() )
+			ulog()->level9() << myname << "(apiRequest): request: " << request << endl;
+
+		ostringstream out;
+		std::string query = "";
+
+		// Пока не будем требовать обязательно использовать формат /api/vesion/query..
+		// но если указан, то проверяем..
+		std::vector<std::string> seg;
+		uri.getPathSegments(seg);
+
+		if( seg.size() > 0 && seg[0] == "api" )
+		{
+			// проверка: /api/version/query[?params]..
+			if( seg.size() < 2 || seg[1] != UHttp::UHTTP_API_VERSION )
+			{
+				Poco::JSON::Object jdata;
+				jdata.set("error", Poco::Net::HTTPServerResponse::getReasonForStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST));
+				jdata.set("ecode", (int)Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+				jdata.set("message", "BAD REQUEST STRUCTURE");
+				jdata.stringify(out);
+				ret->info = out.str().c_str(); // CORBA::string_dup(..)
+				return ret;
+			}
+
+			if( seg.size() > 2 )
+				query = seg[2];
+		}
+		else if( seg.size() == 1 )
+			query = seg[0];
+
+		// обработка запроса..
+		if( query == "help" )
+		{
+			// запрос вида: /help?params
+			auto reply = httpHelp(uri.getQueryParameters());
+			reply->stringify(out);
+		}
+		else if( !query.empty() )
+		{
+			// запрос вида: /cmd?params
+			auto reply = httpRequest(query, uri.getQueryParameters());
+			reply->stringify(out);
+		}
+		else
+		{
+			// запрос без команды /?params
+			auto reply = httpGet(uri.getQueryParameters());
+			reply->stringify(out);
+		}
+
+		ret->info = out.str().c_str(); // CORBA::string_dup(..)
+		return ret;
+	}
+	catch( Poco::SyntaxException& ex )
+	{
+		err << ex.displayText();
+	}
+	catch( std::exception& ex )
+	{
+		err << ex.what();
+	}
+
+	Poco::JSON::Object jdata;
+	jdata.set("error", err.str());
+	jdata.set("ecode", Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+
+	ostringstream out;
+	jdata.stringify(out);
+	ret->info = out.str().c_str(); // CORBA::string_dup(..)
+	return ret;
+
+#endif
 }
 // ------------------------------------------------------------------------------------------
 ostream& operator<<(ostream& os, UniSetObject& obj )

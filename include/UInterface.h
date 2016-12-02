@@ -143,6 +143,7 @@ class UInterface
 
 		//! Информация об объекте
 		std::string getObjectInfo( const uniset::ObjectId id, const std::string& params, const uniset::ObjectId node ) const;
+		std::string apiRequest( const uniset::ObjectId id, const std::string& query, const uniset::ObjectId node ) const;
 
 		//! Получить список датчиков
 		IOController_i::ShortMapSeq* getSensors( const uniset::ObjectId id,

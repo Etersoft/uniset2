@@ -99,7 +99,12 @@ class UniSetObject:
 			return uniset::ObjectType("UniSetObject");
 		}
 
+		const std::string getStrType();
+
 		virtual uniset::SimpleInfo* getInfo( const char* userparam = "" ) override;
+
+		// обёртка для вызова HTTP API через RPC
+		virtual uniset::SimpleInfo* apiRequest( const char* query ) override;
 
 		//! поместить сообщение в очередь
 		virtual void push( const uniset::TransportMessage& msg ) override;

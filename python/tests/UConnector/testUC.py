@@ -47,7 +47,9 @@ if __name__ == "__main__":
 		#obj1 = UProxyObject("TestProc")
 		#obj2 = UProxyObject("TestProc1")
 		
-		print "Info: %s"%uc1.getObjectInfo( uc1.getObjectID("TestProc1"),"")
+#		print "Info: %s"%uc1.getObjectInfo("TestProc1","")
+
+		print "apiRequest: %s"%uc1.apiRequest(uc1.getObjectID("SharedMemory"),"get?10")
 
 #		tc = uc1.getTimeChange(2)
 #		print "TimeChange: %s  sup=%d"%(tc.value,tc.supplier)

@@ -17,8 +17,9 @@
 
 import json
 import urllib2
+import urllib
 
-UHTTP_API_VERSION = 'v01'
+UHTTP_API_VERSION = 'v0'
 
 
 class UHTTPError:
@@ -38,7 +39,13 @@ class UniSetHTTPService:
             self.aviver = self.settings['api']
 
     def request(self, query, method='GET', data=None):
-        """Послать запрос и получить ответ."""
+        '''
+        Послать запрос и получить ответ.
+        :param query: запрос /xxx?params..
+        :param method: метод запроса.
+        :param data: данные для POST запросов
+        :return: распарсенный json
+        '''
 
         url = self.settings.get('url') + "/api/" + self.apiver + query
         headers = {}
@@ -52,17 +59,16 @@ class UniSetHTTPService:
             return json.loads(resp.read())
         except urllib2.URLError, e:
             if hasattr(e, 'reason'):
-                err = 'We failed to reach a server. Reason: ', e.reason
+                err = 'We failed to reach a server. Reason: %s' % e.reason
                 raise UHTTPError(err)
 
             elif hasattr(e, 'code'):
-                err = 'The server couldn\'t fulfill the request. Error code: ', e.code
+                err = 'The server couldn\'t fulfill the request. Error code: %s' % e.code
                 raise UHTTPError(err)
             raise UHTTPError('Unknown error')
 
 
 class SharedMemoryAPI(UniSetHTTPService):
-    """Работа с SharedMemory."""
 
     def __init__(self, _settings):
         UniSetHTTPService.__init__(self, _settings)
@@ -73,7 +79,11 @@ class SharedMemoryAPI(UniSetHTTPService):
         return UniSetHTTPService.request(self, '/' + self.settings['smID'] + '/' + query)
 
     def consumers(self, sens=''):
-        """Получить список заказчиков"""
+        '''
+        Получить список заказчиков
+        :param sens: для указанных датчиков
+        :return: список..
+        '''
         query = '/consumers'
         if sens != '':
             query += '?%s' % sens
@@ -81,14 +91,19 @@ class SharedMemoryAPI(UniSetHTTPService):
         return self.request(query)[self.settings['smID']]['consumers']
 
     def get(self, sensors='', shortInfo=True):
-        """Получить список заказчиков"""
+        '''
+        Получить список заказчиков
+        :param sensors:   для указанных датчиков (по умолчанию для всех)
+        :param shortInfo: выдать только основную информацию по каждому датчику
+        :return: список..
+        '''
         query = '/get'
         params = None
         if sensors != '':
             params = '?%s' % sensors
 
         if shortInfo:
-            if params != None:
+            if params is not None:
                 params += '&shortInfo'
             else:
                 params = '?shortInfo'
@@ -99,17 +114,22 @@ class SharedMemoryAPI(UniSetHTTPService):
         return self.request(query)[self.settings['smID']]['sensors']
 
     def sensors(self, offset=None, limit=None):
-        """Получить список датчиков"""
+        '''
+        Получить список датчиков
+        :param offset: начальное смещение в списке датчиков
+        :param limit:  сколько датиков выдать в ответе
+        :return: список..
+        '''
         query = '/sensors'
         params = None
         if offset:
             params = '?offset=%d' % offset
 
         if limit:
-            if params != None:
-                params += '&limit=%d'%limit
+            if params is not None:
+                params += '&limit=%d' % limit
             else:
-                params = '?limit=%d'%limit
+                params = '?limit=%d' % limit
 
         if params:
             query += params
@@ -117,9 +137,10 @@ class SharedMemoryAPI(UniSetHTTPService):
         return self.request(query)
 
     def lost(self):
-
-        """Получить список 'пропавших' заказчиков"""
-
+        '''
+        Получить список 'пропавших' заказчиков
+        :return: список
+        '''
         return self.request('/lost')[self.settings['smID']]
 
     def help(self):
