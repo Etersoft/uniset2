@@ -805,7 +805,7 @@ uniset::SimpleInfo* UniSetObject::getInfo( const char* userparam )
 SimpleInfo* UniSetObject::apiRequest( const char* request )
 {
 #ifdef DISABLE_REST_API
-	return getInfo(query);
+	return getInfo(request);
 #else
 	SimpleInfo* ret = new SimpleInfo();
 	ostringstream err;

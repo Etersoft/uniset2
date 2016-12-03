@@ -10,13 +10,13 @@
 %def_disable tests
 %def_disable mqtt
 %def_disable netdata
-%def_disable api
+%def_enable api
 
 %define oname uniset2
 
 Name: libuniset2
 Version: 2.6
-Release: alt3.1
+Release: alt3.2
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -505,10 +505,18 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
         
 # history of current unpublished changes
-- getChangedTime --> getTimeChange
-- getInfo( long param ) --> getInfo( string param )
+# - getChangedTime --> getTimeChange
+# - getInfo( long param ) --> getInfo( string param )
+# - IDL Interface: added new function: string apiRequest( string query )
+# - getInfo() deprecated..
 
 %changelog
+* Sat Dec 03 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt3.2
+- getChangedTime --> getTimeChange
+- getInfo( long param ) --> getInfo( string param )
+- IDL Interface: added new function: string apiRequest( string query )
+  / ..getInfo() deprecated now.. /
+
 * Tue Nov 22 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt3.1
 - CommonEventLoop: refactoring prepare process (part. 2)
 
@@ -534,7 +542,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 * Fri Nov 18 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt1.1
 - add try/catch for run log server
->>>>>>> (codegen): Сделал activate-timeout по умолчанию 30 сек (было 10),
 
 * Fri Nov 11 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt1
 - build new version
