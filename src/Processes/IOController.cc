@@ -915,6 +915,7 @@ Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco
 	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
 	Poco::JSON::Array::Ptr jsens = new Poco::JSON::Array();
 	jdata->set("sensors", jsens);
+	auto my = httpGetMyInfo(jdata);
 	Poco::JSON::Object::Ptr nullObject = new Poco::JSON::Object();
 
 	for( const auto& s : slist )
@@ -947,7 +948,7 @@ Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco
 		}
 	}
 
-	return uniset::json::make_object(myname, jdata);
+	return jdata;
 }
 // -----------------------------------------------------------------------------
 void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr<USensorInfo>& s, bool shortInfo )
@@ -998,6 +999,7 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
 {
 	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
 	Poco::JSON::Array::Ptr jsens = uniset::json::make_child_array(jdata, "sensors");
+	auto my = httpGetMyInfo(jdata);
 
 	size_t num = 0;
 	size_t offset = 0;

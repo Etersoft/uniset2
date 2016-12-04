@@ -110,14 +110,14 @@ uniset::json::help::object::operator Poco::JSON::Object::Ptr()
 	return root;
 }
 // --------------------------------------------------------------------------
-Poco::JSON::Object::Ptr json::make_child( Poco::JSON::Object::Ptr& root, const std::__cxx11::string& key )
+Poco::JSON::Object::Ptr json::make_child( Poco::JSON::Object::Ptr& root, const std::string& key )
 {
 	Poco::JSON::Object::Ptr child = new Poco::JSON::Object();
 	root->set(key, child);
 	return child;
 }
 // --------------------------------------------------------------------------
-Poco::JSON::Array::Ptr json::make_child_array(Poco::JSON::Object::Ptr& root, const std::__cxx11::string& key)
+Poco::JSON::Array::Ptr json::make_child_array(Poco::JSON::Object::Ptr& root, const std::string& key)
 {
 	Poco::JSON::Array::Ptr child = new Poco::JSON::Array();
 	root->set(key, child);

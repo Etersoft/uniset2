@@ -391,7 +391,7 @@ void UniSetObject::push( const TransportMessage& tm )
 Poco::JSON::Object::Ptr UniSetObject::httpGet( const Poco::URI::QueryParameters& p )
 {
 	Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
-	Poco::JSON::Object::Ptr jdata = uniset::json::make_child(jret, myname);
+	Poco::JSON::Object::Ptr jdata = uniset::json::make_child(jret, "object");
 
 	jdata->set("name", myname);
 	jdata->set("id", getId());
@@ -407,6 +407,19 @@ Poco::JSON::Object::Ptr UniSetObject::httpHelp( const Poco::URI::QueryParameters
 {
 	uniset::json::help::object myhelp(myname);
 	return myhelp;
+}
+// ------------------------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UniSetObject::httpGetMyInfo( Poco::JSON::Object::Ptr root )
+{
+	Poco::JSON::Object::Ptr my = uniset::json::make_child(root, "object");
+	my->set("name", myname);
+	my->set("id", getId());
+	my->set("msgCount", countMessages());
+	my->set("lostMessages", getCountOfLostMessages());
+	my->set("maxSizeOfMessageQueue", getMaxSizeOfMessageQueue());
+	my->set("isActive", isActive());
+	my->set("objectType", getStrType());
+	return my;
 }
 #endif
 // ------------------------------------------------------------------------------------------

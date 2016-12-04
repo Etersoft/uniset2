@@ -202,6 +202,11 @@ class UniSetObject:
 		/*! false - завершить работу потока обработки сообщений */
 		void setActive( bool set );
 
+#ifndef DISABLE_REST_API
+		// вспомогательные функции
+		virtual Poco::JSON::Object::Ptr httpGetMyInfo( Poco::JSON::Object::Ptr root );
+#endif
+
 	private:
 
 		friend class UniSetManager;

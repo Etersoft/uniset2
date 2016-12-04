@@ -72,6 +72,7 @@ struct ShortIOInfo
 	unsigned long tv_sec;
 	unsigned long tv_nsec;
 	long supplier;
+	long supplier_node;
 };
 }
 

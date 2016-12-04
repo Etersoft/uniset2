@@ -1209,12 +1209,14 @@ Poco::JSON::Object::Ptr IONotifyController::httpRequest( const string& req, cons
 Poco::JSON::Object::Ptr IONotifyController::request_consumers( const string& req, const Poco::URI::QueryParameters& p )
 {
 	Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
-	Poco::JSON::Object::Ptr mydata = uniset::json::make_child(json, myname);
-	Poco::JSON::Array::Ptr jdata = uniset::json::make_child_array(mydata, "consumers");
+	Poco::JSON::Array::Ptr jdata = uniset::json::make_child_array(json, "sensors");
+	auto my = httpGetMyInfo(json);
 
 	auto oind = uniset_conf()->oind;
 
 	std::list<ParamSInfo> slist;
+
+	ConsumerListInfo emptyList;
 
 	if( p.size() > 0 )
 	{
@@ -1234,29 +1236,22 @@ Poco::JSON::Object::Ptr IONotifyController::request_consumers( const string& req
 	// Проход по списку заданных..
 	if( !slist.empty() )
 	{
-		auto jnotfound = uniset::json::make_child_array(mydata, "notfound");
-
 		for( const auto& s : slist )
 		{
 			auto a = askIOList.find(s.si.id);
 
 			if( a == askIOList.end() )
-			{
-				jnotfound->add(std::to_string(s.si.id));
-				continue;
-			}
-
-			// Включаем в ответ все, даже если список заказчиков пустой
-			jdata->add( getConsumers(a->first, a->second, false) );
+				jdata->add( getConsumers(s.si.id, emptyList, false) );
+			else
+				jdata->add( getConsumers(a->first, a->second, false) );
 		}
 	}
 	else // Проход по всему списку
 	{
 		for( auto && a : askIOList )
 		{
-			// добавляем только датчики с непустым списком заказчиков
+			// добавляем только датчики только с непустым списком заказчиков
 			auto jret = getConsumers(a.first, a.second, true);
-
 			if( jret )
 				jdata->add(jret);
 		}
@@ -1265,33 +1260,46 @@ Poco::JSON::Object::Ptr IONotifyController::request_consumers( const string& req
 	return json;
 }
 // -----------------------------------------------------------------------------
-Poco::JSON::Object::Ptr IONotifyController::getConsumers( ObjectId sid, ConsumerListInfo& ci, bool noEmpty )
+Poco::JSON::Object::Ptr IONotifyController::getConsumers(ObjectId sid, ConsumerListInfo& ci, bool ifNotEmpty )
 {
+	/* Создаём json
+	 * { {"sensor":
+	 *            {"id": "xxxx"},
+	 *            {"name": "xxxx"}
+	 *	 },
+	 *   "consumers": [
+	 *            {..consumer1 info },
+	 *            {..consumer2 info },
+	 *            {..consumer3 info },
+	 *            {..consumer4 info }
+	 *	 ]
+	 * }
+	 */
+
 	Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
-	auto oind = uniset_conf()->oind;
 
 	uniset_rwmutex_rlock lock(ci.mut);
 
-	if( ci.clst.empty() && noEmpty )
+	if( ci.clst.empty() && ifNotEmpty )
 		return jret;
 
-	string strID( std::to_string(sid) );
-	auto jsens = uniset::json::make_child(jret, strID);
+	auto oind = uniset_conf()->oind;
+	auto jsens = uniset::json::make_child(jret, "sensor");
+	jsens->set("id", sid);
+	jsens->set("name", ORepHelpers::getShortName(oind->getMapName(sid)));
 
-	jsens->set("id", strID);
-	jsens->set("sensor_name", ORepHelpers::getShortName(oind->getMapName(sid)));
-
-	auto jcons = uniset::json::make_child(jsens, "consumers");
-
+	auto jcons = uniset::json::make_child_array(jret, "consumers");
 	for( const auto& c : ci.clst )
 	{
-		string cid( std::to_string(c.id) );
-		auto jconsinfo = uniset::json::make_child(jcons, cid);
-		jconsinfo->set("id", c.id);
-		jconsinfo->set("name", ORepHelpers::getShortName(oind->getMapName(c.id)));
-		jconsinfo->set("lostEvents", c.lostEvents);
-		jconsinfo->set("attempt", c.attempt);
-		jconsinfo->set("smCount", c.smCount);
+		Poco::JSON::Object::Ptr consumer = new Poco::JSON::Object();
+		consumer->set("id", c.id);
+		consumer->set("name", ORepHelpers::getShortName(oind->getMapName(c.id)));
+		consumer->set("node", c.node);
+		consumer->set("node_name", oind->getNodeName(c.node));
+		consumer->set("lostEvents", c.lostEvents);
+		consumer->set("attempt", c.attempt);
+		consumer->set("smCount", c.smCount);
+		jcons->add(consumer);
 	}
 
 	return jret;
@@ -1300,9 +1308,8 @@ Poco::JSON::Object::Ptr IONotifyController::getConsumers( ObjectId sid, Consumer
 Poco::JSON::Object::Ptr IONotifyController::request_lost( const string& req, const Poco::URI::QueryParameters& p )
 {
 	Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
-
-	Poco::JSON::Object::Ptr mydata = uniset::json::make_child(json, myname);
-	Poco::JSON::Array::Ptr jdata = uniset::json::make_child_array(mydata, "lost consumers");
+	Poco::JSON::Array::Ptr jdata = uniset::json::make_child_array(json, "lost consumers");
+	auto my = httpGetMyInfo(json);
 
 	auto oind = uniset_conf()->oind;
 

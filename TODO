@@ -58,7 +58,11 @@ HTTP API:
 = Сделать возможность настраивать параметры httpserver-а из командной строки (количество потоков и т.п.)
 - ТЕСТЫ (как вариант поизучать про тестовые фреймворки на питоне (pytest?)
 - /sensors/XXX?config=name,textname,...  - запрос полей (из configure.xml)
-
+- /conf/objects?prop1,prop2,prop3,.. - props from condigure.xml
+- /conf/nodes?prop1,prop2,prop3,.. - props from condigure.xml
+- /conf/controlers?..
+- /conf/services?...
+- /conf/...
 
 Version 2.5
 ============

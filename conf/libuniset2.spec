@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt3.2
+Release: alt3.3
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -511,6 +511,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # - getInfo() deprecated..
 
 %changelog
+* Sun Dec 04 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt3.3
+- IOC rest api: reformat json reply
+
 * Sat Dec 03 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt3.2
 - getChangedTime --> getTimeChange
 - getInfo( long param ) --> getInfo( string param )
