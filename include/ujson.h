@@ -17,6 +17,7 @@
 #ifndef jsonHelpers_H_
 #define jsonHelpers_H_
 // --------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
 #include <Poco/JSON/Object.h>
 // --------------------------------------------------------------------------
 namespace uniset
@@ -71,5 +72,7 @@ class object
 } // end of namespace json
 // --------------------------------------------------------------------------
 } // end of namespace uniset
+// --------------------------------------------------------------------------
+#endif // end of #ifndef DISABLE_REST_API
 // --------------------------------------------------------------------------
 #endif // end of _jsonHelpers_H_

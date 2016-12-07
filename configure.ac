@@ -55,11 +55,40 @@ else
 	AC_SUBST(EV_CFLAGS)
 fi
 
+#check rest api support
+AC_MSG_CHECKING([REST API support])
+buildapi=true
+AC_ARG_ENABLE(api, AC_HELP_STRING([--disable-api], [disable REST API support]),
+[ if test $enableval = yes; then buildapi=true; else buildapi=false; fi],[ buildapi=true; ])
+
+REST_API_CFLAGS=
+REST_API_CLIBS=
+DISABLE_REST_API=
+
+if test ${buildapi} = true; then
+    AC_MSG_RESULT([enabled])
+	REST_API_CLIBS="-lPocoJSON"
+else
+    AC_MSG_RESULT([disabled])
+	REST_API_CFLAGS="-DDISABLE_REST_API"
+    DISABLE_REST_API=1
+fi
+
+AM_CONDITIONAL(DISABLE_REST_API, test ${buildapi} = false)
+AC_SUBST(DISABLE_REST_API)
+AC_SUBST(REST_API_CFLAGS)
+AC_SUBST(REST_API_CLIBS)
+
 #check libpoco support
 AC_MSG_CHECKING([libpoco support])
 #AC_SEARCH_LIBS(ServerSocket,PocoNet,,exit)
 AC_CHECK_HEADER(Poco/Net/Socket.h,,exit)
-POCO_LIBS="-lPocoFoundation -lPocoNet -lPocoJSON"
+POCO_LIBS="-lPocoFoundation -lPocoNet"
+
+if test ${buildapi} = true; then
+	POCO_LIBS="$POCO_LIBS -lPocoJSON"
+fi
+
 POCO_CFLAGS="-IPoco"
 AC_SUBST(POCO_LIBS)
 AC_SUBST(POCO_CFLAGS)
@@ -102,6 +131,18 @@ test "x$IDL" = "x" && AC_MSG_ERROR([*** omniidl not found.])
 #AC_SUBST(UNISET_IDLFLAGS)
 
 #check mysql support
+AC_MSG_CHECKING([mysql support])
+buildmysql=true
+AC_ARG_ENABLE(mysql, AC_HELP_STRING([--disable-mysql], [disable MySQL support]),
+[ if test $enableval = yes; then buildmysql=true; else buildmysql=false; fi],[ buildmysql=true; ])
+
+if test ${buildmysql} = true; then
+    AC_MSG_RESULT([enabled])
+    AC_CHECK_HEADERS([mysql/mysql.h])
+    AC_CHECK_LIB([mysqlclient],mysql_init,,exit)
+else
+    AC_MSG_RESULT([disabled])
+fi
 
 AM_CONDITIONAL(DISABLE_MYSQL, test ${buildmysql} = false)
 
@@ -225,26 +266,6 @@ fi
 
 AM_CONDITIONAL(DISABLE_MQTT, test ${buildmqtt} = false)
 
-#check rest api support
-AC_MSG_CHECKING([REST API support])
-buildapi=true
-AC_ARG_ENABLE(api, AC_HELP_STRING([--disable-api], [disable REST API support]),
-[ if test $enableval = yes; then buildapi=true; else buildapi=false; fi],[ buildapi=true; ])
-
-REST_API_CFLAGS=
-DISABLE_REST_API=
-
-if test ${buildapi} = true; then
-    AC_MSG_RESULT([enabled])
-else
-    AC_MSG_RESULT([disabled])
-	REST_API_CFLAGS="-DDISABLE_REST_API"
-    DISABLE_REST_API=1
-fi
-
-AM_CONDITIONAL(DISABLE_REST_API, test ${buildapi} = false)
-AC_SUBST(DISABLE_REST_API)
-AC_SUBST(REST_API_CFLAGS)
 
 # check Doxygen
 DOXYGEN=""

@@ -14,6 +14,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // --------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+// --------------------------------------------------------------------------
 #include "ujson.h"
 // --------------------------------------------------------------------------
 namespace uniset
@@ -39,13 +41,13 @@ json::help::item::item( Poco::JSON::Object::Ptr& ptr )
 	params = ptr->getArray("parameters");
 }
 // --------------------------------------------------------------------------
-json::help::item::item(const std::__cxx11::string& description)
+json::help::item::item(const std::string& description)
 {
 	root = new Poco::JSON::Object();
 	root->set("description", description);
 }
 // --------------------------------------------------------------------------
-void json::help::item::param(const std::__cxx11::string& name, const std::__cxx11::string& description)
+void json::help::item::param(const std::string& name, const std::string& description)
 {
 	if( !params )
 	{
@@ -128,4 +130,4 @@ Poco::JSON::Array::Ptr json::make_child_array(Poco::JSON::Object::Ptr& root, con
 // --------------------------------------------------------------------------
 } // end of namespace uniset
 // --------------------------------------------------------------------------
-
+#endif // #ifndef DISABLE_REST_API
