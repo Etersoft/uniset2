@@ -26,73 +26,73 @@
 #include <mutex>
 #include <Poco/RWLock.h>
 // -----------------------------------------------------------------------------------------
-namespace UniSetTypes
+namespace uniset
 {
-	// rwmutex..
-	class uniset_rwmutex
-	{
-		public:
-			uniset_rwmutex( const std::string& name );
-			uniset_rwmutex();
-			~uniset_rwmutex();
+// rwmutex..
+class uniset_rwmutex
+{
+	public:
+		uniset_rwmutex( const std::string& name );
+		uniset_rwmutex();
+		~uniset_rwmutex();
 
-			void lock();
-			void unlock();
+		void lock();
+		void unlock();
 
-			void wrlock();
-			void rlock();
+		void wrlock();
+		void rlock();
 
-			bool try_lock();
-			bool try_rlock();
-			bool try_wrlock();
+		bool try_lock();
+		bool try_rlock();
+		bool try_wrlock();
 
-			uniset_rwmutex( const uniset_rwmutex& r ) = delete;
-			uniset_rwmutex& operator=(const uniset_rwmutex& r) = delete;
+		uniset_rwmutex( const uniset_rwmutex& r ) = delete;
+		uniset_rwmutex& operator=(const uniset_rwmutex& r) = delete;
 
-			uniset_rwmutex( uniset_rwmutex&& r ) = default;
-			uniset_rwmutex& operator=(uniset_rwmutex&& r) = default;
+		uniset_rwmutex( uniset_rwmutex&& r ) = default;
+		uniset_rwmutex& operator=(uniset_rwmutex&& r) = default;
 
-			inline std::string name()
-			{
-				return nm;
-			}
-			inline void setName( const std::string& name )
-			{
-				nm = name;
-			}
+		inline std::string name()
+		{
+			return nm;
+		}
+		inline void setName( const std::string& name )
+		{
+			nm = name;
+		}
 
-		private:
-			std::string nm;
-			friend class uniset_rwmutex_lock;
-			std::unique_ptr<Poco::RWLock> m;
-	};
+	private:
+		std::string nm;
+		friend class uniset_rwmutex_lock;
+		std::unique_ptr<Poco::RWLock> m;
+};
 
-	std::ostream& operator<<(std::ostream& os, uniset_rwmutex& m );
-	// -------------------------------------------------------------------------
-	class uniset_rwmutex_wrlock
-	{
-		public:
-			uniset_rwmutex_wrlock( uniset_rwmutex& m );
-			~uniset_rwmutex_wrlock();
+std::ostream& operator<<(std::ostream& os, uniset_rwmutex& m );
+// -------------------------------------------------------------------------
+class uniset_rwmutex_wrlock
+{
+	public:
+		uniset_rwmutex_wrlock( uniset_rwmutex& m );
+		~uniset_rwmutex_wrlock();
 
-		private:
-			uniset_rwmutex_wrlock(const uniset_rwmutex_wrlock&) = delete;
-			uniset_rwmutex_wrlock& operator=(const uniset_rwmutex_wrlock&) = delete;
-			uniset_rwmutex& m;
-	};
+	private:
+		uniset_rwmutex_wrlock(const uniset_rwmutex_wrlock&) = delete;
+		uniset_rwmutex_wrlock& operator=(const uniset_rwmutex_wrlock&) = delete;
+		uniset_rwmutex& m;
+};
 
-	class uniset_rwmutex_rlock
-	{
-		public:
-			uniset_rwmutex_rlock( uniset_rwmutex& m );
-			~uniset_rwmutex_rlock();
+class uniset_rwmutex_rlock
+{
+	public:
+		uniset_rwmutex_rlock( uniset_rwmutex& m );
+		~uniset_rwmutex_rlock();
 
-		private:
-			uniset_rwmutex_rlock(const uniset_rwmutex_rlock&) = delete;
-			uniset_rwmutex_rlock& operator=(const uniset_rwmutex_rlock&) = delete;
-			uniset_rwmutex& m;
-	};
-	// -------------------------------------------------------------------------
+	private:
+		uniset_rwmutex_rlock(const uniset_rwmutex_rlock&) = delete;
+		uniset_rwmutex_rlock& operator=(const uniset_rwmutex_rlock&) = delete;
+		uniset_rwmutex& m;
+};
+// -------------------------------------------------------------------------
 } // end of UniSetTypes namespace
 
 #endif

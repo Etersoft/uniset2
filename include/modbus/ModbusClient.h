@@ -10,6 +10,9 @@
 #include "PassiveTimer.h"
 #include "ModbusTypes.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 /*!    Modbus client (master) interface
 */
 class ModbusClient
@@ -35,7 +38,7 @@ class ModbusClient
 		    \param count - сколько регистров читать
 		*/
 		ModbusRTU::ReadInputStatusRetMessage read02( ModbusRTU::ModbusAddr addr,
-				ModbusRTU::ModbusData start, ModbusRTU::ModbusData count )
+													 ModbusRTU::ModbusData start, ModbusRTU::ModbusData count )
 		throw(ModbusRTU::mbException);
 
 
@@ -63,7 +66,7 @@ class ModbusClient
 		    \param cmd - команда ON | OFF
 		*/
 		ModbusRTU::ForceSingleCoilRetMessage write05( ModbusRTU::ModbusAddr addr,
-				ModbusRTU::ModbusData reg, bool cmd )
+													  ModbusRTU::ModbusData reg, bool cmd )
 		throw(ModbusRTU::mbException);
 
 		/*! Запись одного регистра (0x06)
@@ -72,7 +75,7 @@ class ModbusClient
 		    \param data    - данные
 		*/
 		ModbusRTU::WriteSingleOutputRetMessage write06( ModbusRTU::ModbusAddr addr,
-				ModbusRTU::ModbusData reg, ModbusRTU::ModbusData data )
+														ModbusRTU::ModbusData reg, ModbusRTU::ModbusData data )
 		throw(ModbusRTU::mbException);
 
 		/*! Запись группы выходов (0x0F) */
@@ -107,9 +110,9 @@ class ModbusClient
 		    century - столетие [19-20]
 		*/
 		ModbusRTU::SetDateTimeRetMessage setDateTime( ModbusRTU::ModbusAddr addr,
-				ModbusRTU::ModbusByte hour, ModbusRTU::ModbusByte min, ModbusRTU::ModbusByte sec,
-				ModbusRTU::ModbusByte day, ModbusRTU::ModbusByte mon, ModbusRTU::ModbusByte year,
-				ModbusRTU::ModbusByte century )
+													  ModbusRTU::ModbusByte hour, ModbusRTU::ModbusByte min, ModbusRTU::ModbusByte sec,
+													  ModbusRTU::ModbusByte day, ModbusRTU::ModbusByte mon, ModbusRTU::ModbusByte year,
+													  ModbusRTU::ModbusByte century )
 		throw(ModbusRTU::mbException);
 
 
@@ -147,7 +150,7 @@ class ModbusClient
 			sleepPause_usec = usec;
 		}
 
-		void initLog( std::shared_ptr<UniSetTypes::Configuration> conf, const std::string& name, const std::string& logfile = "" );
+		void initLog( std::shared_ptr<uniset::Configuration> conf, const std::string& name, const std::string& logfile = "" );
 		void setLog( std::shared_ptr<DebugStream> dlog );
 
 		inline void setCRCNoCheckit( bool set )
@@ -197,7 +200,7 @@ class ModbusClient
 
 		bool crcNoCheckit;
 
-		UniSetTypes::uniset_rwmutex sendMutex;
+		uniset::uniset_rwmutex sendMutex;
 		std::shared_ptr<DebugStream> dlog;
 
 		void printProcessingTime();
@@ -208,6 +211,8 @@ class ModbusClient
 		ModbusRTU::ModbusMessage qreply;   /*!< буфер для приёма сообщений */
 		ModbusRTU::ModbusMessage qbuf;     /*!< буфер для посылки сообщений */
 };
+// -------------------------------------------------------------------------
+} // end of namespace uniset
 // -------------------------------------------------------------------------
 #endif // ModbusClient_H_
 // -------------------------------------------------------------------------

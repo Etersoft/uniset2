@@ -4,7 +4,7 @@
 #include "Configuration.h"
 #include "SMonitor.h"
 // -----------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // -----------------------------------------------------------------------------
 int main( int argc, const char** argv )
@@ -30,7 +30,7 @@ int main( int argc, const char** argv )
 
 		ID = conf->getObjectID(name);
 
-		if( ID == UniSetTypes::DefaultObjectId )
+		if( ID == uniset::DefaultObjectId )
 		{
 			cerr << "(main): идентификатор '" << name
 				 << "' не найден в конф. файле!"
@@ -47,7 +47,7 @@ int main( int argc, const char** argv )
 		act->run(false);
 		return 0;
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		cout << "(main):" << ex << endl;
 	}

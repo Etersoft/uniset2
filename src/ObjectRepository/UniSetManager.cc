@@ -32,15 +32,15 @@
 #include "Debug.h"
 
 // ------------------------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // ------------------------------------------------------------------------------------------
 // объект-функция для посылки сообщения менеджеру
-class MPush: public unary_function< const std::shared_ptr<UniSetManager>& , bool>
+class MPush: public unary_function< const std::shared_ptr<uniset::UniSetManager>& , bool>
 {
 	public:
-		explicit MPush(const UniSetTypes::TransportMessage& msg): msg(msg) {}
-		bool operator()( const std::shared_ptr<UniSetManager>& m ) const
+		explicit MPush(const uniset::TransportMessage& msg): msg(msg) {}
+		bool operator()( const std::shared_ptr<uniset::UniSetManager>& m ) const
 		{
 			try
 			{
@@ -58,15 +58,15 @@ class MPush: public unary_function< const std::shared_ptr<UniSetManager>& , bool
 		}
 
 	private:
-		const UniSetTypes::TransportMessage& msg;
+		const uniset::TransportMessage& msg;
 };
 
 // объект-функция для посылки сообщения объекту
-class OPush: public unary_function< const std::shared_ptr<UniSetObject>& , bool>
+class OPush: public unary_function< const std::shared_ptr<uniset::UniSetObject>& , bool>
 {
 	public:
-		explicit OPush(const UniSetTypes::TransportMessage& msg): msg(msg) {}
-		bool operator()( const std::shared_ptr<UniSetObject>& o ) const
+		explicit OPush(const uniset::TransportMessage& msg): msg(msg) {}
+		bool operator()( const std::shared_ptr<uniset::UniSetObject>& o ) const
 		{
 			try
 			{
@@ -81,12 +81,12 @@ class OPush: public unary_function< const std::shared_ptr<UniSetObject>& , bool>
 			return false;
 		}
 	private:
-		const UniSetTypes::TransportMessage& msg;
+		const uniset::TransportMessage& msg;
 };
 
 // ------------------------------------------------------------------------------------------
 UniSetManager::UniSetManager():
-	UniSetObject(UniSetTypes::DefaultObjectId),
+	UniSetObject(uniset::DefaultObjectId),
 	sig(0),
 	olistMutex("UniSetManager_olistMutex"),
 	mlistMutex("UniSetManager_mlistMutex")
@@ -206,7 +206,7 @@ bool UniSetManager::removeObject( const std::shared_ptr<UniSetObject>& obj )
 				if(obj)
 					obj->deactivate();
 			}
-			catch( const Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				uwarn << myname << "(removeObject): " << ex << endl;
 			}
@@ -275,25 +275,64 @@ void UniSetManager::managers( OManagerCommand cmd )
 						break;
 				}
 			}
-			catch( const Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
-				ucrit << myname << "(managers): " << ex << endl
-					  << " Не смог зарегистрировать (разрегистрировать) объект -->" << li->getName() << endl;
+				ostringstream err;
+				err << myname << "(managers): " << ex << endl
+					<< " Не смог зарегистрировать (разрегистрировать) объект -->"
+					<< li->getName();
+
+				ucrit << err.str() << endl;
+
+				if( cmd == activ )
+				{
+					cerr << err.str();
+					std::terminate();
+				}
 			}
 			catch( const CORBA::SystemException& ex )
 			{
-				ucrit << myname << "(managers): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
+				ostringstream err;
+				err << myname << "(managers): поймали CORBA::SystemException:" << ex.NP_minorString();
+
+				ucrit << err.str() << endl;
+
+				if( cmd == activ )
+				{
+					cerr << err.str();
+					std::terminate();
+				}
 			}
 			catch( const CORBA::Exception& ex )
 			{
-				ucrit << myname << "(managers): Caught CORBA::Exception. " << ex._name() << endl;
+				ostringstream err;
+				err << myname << "(managers): Caught CORBA::Exception. "
+					<< ex._name()
+					<< " (" << li->getName() << ")";
+
+				ucrit << err.str() << endl;
+
+				if( cmd == activ )
+				{
+					cerr << err.str();
+					std::terminate();
+				}
 			}
 			catch( const omniORB::fatalException& fe )
 			{
-				ucrit << myname << "(managers): Caught omniORB::fatalException:" << endl;
-				ucrit << myname << "(managers): file: " << fe.file()
-					  << " line: " << fe.line()
-					  << " mesg: " << fe.errmsg() << endl;
+				ostringstream err;
+				err << myname << "(managers): Caught omniORB::fatalException:" << endl
+					<< myname << "(managers): file: " << fe.file()
+					<< " line: " << fe.line()
+					<< " mesg: " << fe.errmsg();
+
+				ucrit << err.str() << endl;
+
+				if( cmd == activ )
+				{
+					cerr << err.str();
+					std::terminate();
+				}
 			}
 		}
 	} // unlock
@@ -339,32 +378,63 @@ void UniSetManager::objects(OManagerCommand cmd)
 						break;
 				}
 			}
-			catch( const Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
-				ucrit << myname << "(objects): " << ex << endl;
-				ucrit << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->" << li->getName() << endl;
+				ostringstream err;
+				err << myname << "(objects): " << ex << endl;
+				err << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->" << li->getName() << endl;
+
+				ucrit << err.str();
+
 				if( cmd == activ )
+				{
+					cerr << err.str();
 					std::terminate();
+				}
 			}
 			catch( const CORBA::SystemException& ex )
 			{
-				ucrit << myname << "(objects): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
+				ostringstream err;
+				err << myname << "(objects): поймали CORBA::SystemException:" << ex.NP_minorString();
+
+				ucrit << err.str() << endl;
+
+				if( cmd == activ )
+				{
+					cerr << err.str();
+					std::terminate();
+				}
 			}
 			catch( const CORBA::Exception& ex )
 			{
-				ucrit << myname << "(objects): Caught CORBA::Exception. "
-					  << ex._name()
-					  << " (" << li->getName() << ")" << endl;
+				ostringstream err;
+				err << myname << "(objects): Caught CORBA::Exception. "
+					<< ex._name()
+					<< " (" << li->getName() << ")";
+
+				ucrit << err.str() << endl;
+
+				if( cmd == activ )
+				{
+					cerr << err.str();
+					std::terminate();
+				}
 			}
 			catch( const omniORB::fatalException& fe )
 			{
-				ucrit << myname << "(objects): Caught omniORB::fatalException:" << endl;
-				ucrit << myname << "(objects): file: " << fe.file()
-					  << " line: " << fe.line()
-					  << " mesg: " << fe.errmsg() << endl;
+				ostringstream err;
+				err << myname << "(objects): Caught omniORB::fatalException:" << endl;
+				err << myname << "(objects): file: " << fe.file()
+					<< " line: " << fe.line()
+					<< " mesg: " << fe.errmsg() << endl;
+
+				ucrit << err.str();
 
 				if( cmd == activ )
+				{
+					cerr << err.str();
 					std::terminate();
+				}
 			}
 		}
 	} // unlock
@@ -394,6 +464,83 @@ bool UniSetManager::deactivateObject()
 	objects(deactiv);
 	managers(deactiv);
 	return true;
+}
+// ------------------------------------------------------------------------------------------
+const std::shared_ptr<UniSetObject> UniSetManager::findObject( const string& name )
+{
+	uniset_rwmutex_rlock lock(olistMutex);
+
+	for( auto && o : olist )
+	{
+		if( o->getName() == name )
+			return o;
+	}
+
+	return nullptr;
+}
+// ------------------------------------------------------------------------------------------
+const std::shared_ptr<UniSetManager> UniSetManager::findManager( const string& name )
+{
+	uniset_rwmutex_rlock lock(mlistMutex);
+
+	for( auto && m : mlist )
+	{
+		if( m->getName() == name )
+			return m;
+	}
+
+	return nullptr;
+}
+// ------------------------------------------------------------------------------------------
+const std::shared_ptr<UniSetObject> UniSetManager::deepFindObject( const string& name )
+{
+	{
+		auto obj = findObject(name);
+
+		if( obj )
+			return obj;
+	}
+
+	auto man = findManager(name);
+
+	if( man )
+	{
+		auto obj = dynamic_pointer_cast<UniSetObject>(man);
+		return obj;
+	}
+
+	// ищем в глубину у каждого менеджера
+	for( const auto& m : mlist )
+	{
+		auto obj = m->deepFindObject(name);
+
+		if( obj )
+			return obj;
+	}
+
+	return nullptr;
+}
+// ------------------------------------------------------------------------------------------
+void UniSetManager::getAllObjectsList( std::vector<std::shared_ptr<UniSetObject> >& vec, size_t lim )
+{
+	// добавить себя
+	vec.push_back(get_ptr());
+
+	// добавить подчинённые объекты
+	for( const auto& o : olist )
+	{
+		vec.push_back(o);
+
+		if( lim > 0 && vec.size() >= lim )
+			return;
+	}
+
+	// добавить рекурсивно по менеджерам
+	for( const auto& m : mlist )
+	{
+		// вызываем рекурсивно
+		m->getAllObjectsList(vec, lim);
+	}
 }
 // ------------------------------------------------------------------------------------------
 void UniSetManager::sigterm( int signo )
@@ -479,7 +626,7 @@ const std::shared_ptr<UniSetManager> UniSetManager::itemM( const ObjectId id )
 		//lock
 		uniset_rwmutex_rlock lock(mlistMutex);
 
-		for( auto& li : mlist )
+		for( const auto& li : mlist )
 		{
 			if ( li->getId() == id )
 				return li;
@@ -497,7 +644,7 @@ const std::shared_ptr<UniSetObject> UniSetManager::itemO( const ObjectId id )
 		//lock
 		uniset_rwmutex_rlock lock(olistMutex);
 
-		for( auto& li : olist )
+		for( const auto& li : olist )
 		{
 			if ( li->getId() == id )
 				return li;
@@ -510,7 +657,7 @@ const std::shared_ptr<UniSetObject> UniSetManager::itemO( const ObjectId id )
 // ------------------------------------------------------------------------------------------
 
 int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, SimpleInfoSeq* seq,
-								   int begin, const long uplimit, CORBA::Long userparam )
+								   int begin, const long uplimit, const char* userparam )
 {
 	auto ind = begin;
 
@@ -561,7 +708,7 @@ int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, S
 }
 // ------------------------------------------------------------------------------------------
 
-SimpleInfoSeq* UniSetManager::getObjectsInfo(CORBA::Long maxlength , CORBA::Long userparam )
+SimpleInfoSeq* UniSetManager::getObjectsInfo(CORBA::Long maxlength, const char* userparam )
 {
 	SimpleInfoSeq* res = new SimpleInfoSeq();    // ЗА ОСВОБОЖДЕНИЕ ПАМЯТИ ОТВЕЧАЕТ КЛИЕНТ!!!!!!
 	// поэтому ему лучше пользоваться при получении _var-классом
@@ -580,24 +727,6 @@ SimpleInfoSeq* UniSetManager::getObjectsInfo(CORBA::Long maxlength , CORBA::Long
 	return res;
 }
 
-// ------------------------------------------------------------------------------------------
-std::ostream& operator<<(std::ostream& os, UniSetManager::OManagerCommand& cmd )
-{
-	// { deactiv, activ, initial, term };
-	if( cmd == UniSetManager::deactiv )
-		return os << "deactivate";
-
-	if( cmd == UniSetManager::activ )
-		return os << "activate";
-
-	if( cmd == UniSetManager::initial )
-		return os << "init";
-
-	if( cmd == UniSetManager::term )
-		return os << "terminate";
-
-	return os << "unkwnown";
-}
 // ------------------------------------------------------------------------------------------
 UniSetManagerList::const_iterator UniSetManager::beginMList()
 {
@@ -639,3 +768,20 @@ PortableServer::POAManager_ptr UniSetManager::getPOAManager()
 	return  PortableServer::POAManager::_duplicate(pman);
 }
 // ------------------------------------------------------------------------------------------
+std::ostream& uniset::operator<<(std::ostream& os, uniset::UniSetManager::OManagerCommand& cmd )
+{
+	// { deactiv, activ, initial, term };
+	if( cmd == uniset::UniSetManager::deactiv )
+		return os << "deactivate";
+
+	if( cmd == uniset::UniSetManager::activ )
+		return os << "activate";
+
+	if( cmd == uniset::UniSetManager::initial )
+		return os << "init";
+
+	if( cmd == uniset::UniSetManager::term )
+		return os << "terminate";
+
+	return os << "unkwnown";
+}

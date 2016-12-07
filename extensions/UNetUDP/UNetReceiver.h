@@ -32,6 +32,9 @@
 #include "UDPPacket.h"
 #include "CommonEventLoop.h"
 #include "UDPCore.h"
+// --------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 /*  Основная идея: сделать проверку очерёдности пакетов, но при этом использовать UDP.
  * ===============
@@ -135,8 +138,8 @@ class UNetReceiver:
 		void setCheckConnectionPause( timeout_t msec ) noexcept;
 		void setMaxDifferens( unsigned long set ) noexcept;
 
-		void setRespondID( UniSetTypes::ObjectId id, bool invert = false ) noexcept;
-		void setLostPacketsID( UniSetTypes::ObjectId id ) noexcept;
+		void setRespondID( uniset::ObjectId id, bool invert = false ) noexcept;
+		void setLostPacketsID( uniset::ObjectId id ) noexcept;
 
 		void setMaxProcessingCount( int set ) noexcept;
 
@@ -221,6 +224,7 @@ class UNetReceiver:
 
 		void initIterators() noexcept;
 		bool createConnection( bool throwEx = false );
+		void checkConnection();
 
 	public:
 
@@ -279,10 +283,10 @@ class UNetReceiver:
 		PassiveTimer ptLostTimeout;
 		size_t lostPackets = { 0 }; /*!< счётчик потерянных пакетов */
 
-		UniSetTypes::ObjectId sidRespond = { UniSetTypes::DefaultObjectId };
+		uniset::ObjectId sidRespond = { uniset::DefaultObjectId };
 		IOController::IOStateList::iterator itRespond;
 		bool respondInvert = { false };
-		UniSetTypes::ObjectId sidLostPackets;
+		uniset::ObjectId sidLostPackets;
 		IOController::IOStateList::iterator itLostPackets;
 
 		std::atomic_bool activated = { false };
@@ -312,18 +316,18 @@ class UNetReceiver:
 
 		struct CacheItem
 		{
-			long id = { UniSetTypes::DefaultObjectId };
+			long id = { uniset::DefaultObjectId };
 			IOController::IOStateList::iterator ioit;
 
 			CacheItem():
-				id(UniSetTypes::DefaultObjectId) {}
+				id(uniset::DefaultObjectId) {}
 		};
 
 		typedef std::vector<CacheItem> CacheVec;
 		struct CacheInfo
 		{
 			CacheInfo():
-				cache_init_ok(false){}
+				cache_init_ok(false) {}
 
 			bool cache_init_ok = { false };
 			CacheVec cache;
@@ -340,6 +344,8 @@ class UNetReceiver:
 		void initDCache( UniSetUDP::UDPMessage& pack, bool force = false ) noexcept;
 		void initACache( UniSetUDP::UDPMessage& pack, bool force = false ) noexcept;
 };
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // UNetReceiver_H_
 // -----------------------------------------------------------------------------

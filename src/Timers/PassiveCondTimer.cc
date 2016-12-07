@@ -26,7 +26,9 @@
 // ------------------------------------------------------------------------------------------
 using namespace std;
 // ------------------------------------------------------------------------------------------
-
+namespace uniset
+{
+// ------------------------------------------------------------------------------------------
 PassiveCondTimer::PassiveCondTimer() noexcept:
 	terminated(ATOMIC_VAR_INIT(1))
 {
@@ -44,7 +46,7 @@ void PassiveCondTimer::terminate() noexcept
 		std::unique_lock<std::mutex> lk(m_working);
 		terminated = true;
 	}
-	catch(...){}
+	catch(...) {}
 
 	cv_working.notify_all();
 }
@@ -65,15 +67,16 @@ bool PassiveCondTimer::wait( timeout_t time_msec ) noexcept
 		}
 		else
 			cv_working.wait_for(lk, std::chrono::milliseconds(t_msec), [&]()
-			{
-				return (terminated == true);
-			} );
+		{
+			return (terminated == true);
+		} );
 
 		terminated = true;
 		return true;
 	}
-	catch(...){}
+	catch(...) {}
 
 	return false;
 }
 // ------------------------------------------------------------------------------------------
+} // end of namespace uniset

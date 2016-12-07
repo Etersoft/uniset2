@@ -24,6 +24,9 @@
 #include "SMInterface.h"
 #include "SharedMemory.h"
 #include "extensions/Extensions.h"
+// --------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 /*!
     \page page_RRDServer Реализация RRD хранилища
@@ -82,13 +85,13 @@ class RRDServer:
 	public UObject_SK
 {
 	public:
-		RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+		RRDServer( uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 				   const std::string& prefix = "rrd" );
 		virtual ~RRDServer();
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<RRDServer> init_rrdstorage( int argc, const char* const* argv,
-				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+				uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 				const std::string& prefix = "rrd" );
 
 		/*! глобальная функция для вывода help-а */
@@ -109,9 +112,9 @@ class RRDServer:
 		RRDServer();
 
 		virtual void askSensors( UniversalIO::UIOCommand cmd ) override;
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
-		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
+		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 
 		void initRRD( xmlNode* cnode, int tmID );
 		virtual void step() override;
@@ -120,11 +123,11 @@ class RRDServer:
 
 		struct DSInfo
 		{
-			UniSetTypes::ObjectId sid;
+			uniset::ObjectId sid;
 			std::string dsname;
 			long value;
 
-			DSInfo( UniSetTypes::ObjectId id, const std::string& dsname, long defval ):
+			DSInfo( uniset::ObjectId id, const std::string& dsname, long defval ):
 				sid(id), dsname(dsname), value(defval) {}
 		};
 
@@ -133,7 +136,7 @@ class RRDServer:
 		// То создаём list<> для последовательного прохода по элементам в нужном порядке
 		// и unordered_map<> для быстрого доступа к элементам в sensorInfo
 		// При этом используем shared_ptr чтобы элементы указывали на один и тот же DSInfo
-		typedef std::unordered_map<UniSetTypes::ObjectId, std::shared_ptr<DSInfo>> DSMap;
+		typedef std::unordered_map<uniset::ObjectId, std::shared_ptr<DSInfo>> DSMap;
 		typedef std::list<std::shared_ptr<DSInfo>> DSList;
 
 		struct RRDInfo
@@ -155,6 +158,8 @@ class RRDServer:
 
 		std::string prefix;
 };
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // _RRDServer_H_
 // -----------------------------------------------------------------------------

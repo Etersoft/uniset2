@@ -23,8 +23,8 @@
 #include "Extensions.h"
 
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 using namespace std;
 // --------------------------------------------------------------------------
 int main(int argc, const char** argv)
@@ -84,7 +84,7 @@ int main(int argc, const char** argv)
 	{
 		dcrit << "(mbslave): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		dcrit << "(mbslave): " << ex << endl;
 	}

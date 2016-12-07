@@ -23,44 +23,50 @@
 #include "UniSetTypes.h"
 #include "Calibration.h"
 // -------------------------------------------------------------------------
-namespace UniSetExtensions
+namespace uniset
 {
-	/*! Получение идентификатора объекта(процесса) разделяемой памяти */
-	UniSetTypes::ObjectId getSharedMemoryID();
+//--------------------------------------------------------------------------
+namespace extensions
+{
+/*! Получение идентификатора объекта(процесса) разделяемой памяти */
+uniset::ObjectId getSharedMemoryID();
 
-	xmlNode* findNode( xmlNode* node, const std::string& snode, const std::string& field );
+xmlNode* findNode( xmlNode* node, const std::string& snode, const std::string& field );
 
-	xmlNode* getCalibrationsSection();
+xmlNode* getCalibrationsSection();
 
-	/*! замена служебных символов в строке
-	 * '\\' -> '\n'
-	*/
-	void escape_string( std::string& s );
+/*! замена служебных символов в строке
+ * '\\' -> '\n'
+*/
+void escape_string( std::string& s );
 
-	/*! Загрузка калибровочной диаграммы */
-	Calibration* buildCalibrationDiagram( const std::string& dname );
+/*! Загрузка калибровочной диаграммы */
+Calibration* buildCalibrationDiagram( const std::string& dname );
 
-	void on_sigchild( int sig );
+void on_sigchild( int sig );
 
-	std::shared_ptr<DebugStream> dlog();
+std::shared_ptr<DebugStream> dlog();
 }
 // -------------------------------------------------------------------------
 // "синтаксический сахар"..для логов
-#define dinfo if( UniSetExtensions::dlog()->debugging(Debug::INFO) ) UniSetExtensions::dlog()->info()
-#define dwarn if( UniSetExtensions::dlog()->debugging(Debug::WARN) ) UniSetExtensions::dlog()->warn()
-#define dcrit if( UniSetExtensions::dlog()->debugging(Debug::CRIT) ) UniSetExtensions::dlog()->crit()
-#define dlog1 if( UniSetExtensions::dlog()->debugging(Debug::LEVEL1) ) UniSetExtensions::dlog()->level1()
-#define dlog2 if( UniSetExtensions::dlog()->debugging(Debug::LEVEL2) ) UniSetExtensions::dlog()->level1()
-#define dlog3 if( UniSetExtensions::dlog()->debugging(Debug::LEVEL3) ) UniSetExtensions::dlog()->level3()
-#define dlog4 if( UniSetExtensions::dlog()->debugging(Debug::LEVEL4) ) UniSetExtensions::dlog()->level4()
-#define dlog5 if( UniSetExtensions::dlog()->debugging(Debug::LEVEL5) ) UniSetExtensions::dlog()->level5()
-#define dlog6 if( UniSetExtensions::dlog()->debugging(Debug::LEVEL6) ) UniSetExtensions::dlog()->level6()
-#define dlog7 if( UniSetExtensions::dlog()->debugging(Debug::LEVEL7) ) UniSetExtensions::dlog()->level7()
-#define dlog8 if( UniSetExtensions::dlog()->debugging(Debug::LEVEL8) ) UniSetExtensions::dlog()->level8()
-#define dlog9 if( UniSetExtensions::dlog()->debugging(Debug::LEVEL9) ) UniSetExtensions::dlog()->level9()
-#define dlogsys if( UniSetExtensions::dlog()->debugging(Debug::SYSTEM) ) UniSetExtensions::dlog()->system()
-#define dlogrep if( UniSetExtensions::dlog()->debugging(Debug::REPOSITORY) ) UniSetExtensions::dlog()->repository()
-#define dlogany UniSetExtensions::dlog()->any()
+#define dinfo if( uniset::extensions::dlog()->debugging(Debug::INFO) ) uniset::extensions::dlog()->info()
+#define dwarn if( uniset::extensions::dlog()->debugging(Debug::WARN) ) uniset::extensions::dlog()->warn()
+#define dcrit if( uniset::extensions::dlog()->debugging(Debug::CRIT) ) uniset::extensions::dlog()->crit()
+#define dlog1 if( uniset::extensions::dlog()->debugging(Debug::LEVEL1) ) uniset::extensions::dlog()->level1()
+#define dlog2 if( uniset::extensions::dlog()->debugging(Debug::LEVEL2) ) uniset::extensions::dlog()->level1()
+#define dlog3 if( uniset::extensions::dlog()->debugging(Debug::LEVEL3) ) uniset::extensions::dlog()->level3()
+#define dlog4 if( uniset::extensions::dlog()->debugging(Debug::LEVEL4) ) uniset::extensions::dlog()->level4()
+#define dlog5 if( uniset::extensions::dlog()->debugging(Debug::LEVEL5) ) uniset::extensions::dlog()->level5()
+#define dlog6 if( uniset::extensions::dlog()->debugging(Debug::LEVEL6) ) uniset::extensions::dlog()->level6()
+#define dlog7 if( uniset::extensions::dlog()->debugging(Debug::LEVEL7) ) uniset::extensions::dlog()->level7()
+#define dlog8 if( uniset::extensions::dlog()->debugging(Debug::LEVEL8) ) uniset::extensions::dlog()->level8()
+#define dlog9 if( uniset::extensions::dlog()->debugging(Debug::LEVEL9) ) uniset::extensions::dlog()->level9()
+#define dlogsys if( uniset::extensions::dlog()->debugging(Debug::SYSTEM) ) uniset::extensions::dlog()->system()
+#define dlogrep if( uniset::extensions::dlog()->debugging(Debug::REPOSITORY) ) uniset::extensions::dlog()->repository()
+#define dlogany uniset::extensions::dlog()->any()
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -------------------------------------------------------------------------
+
 #endif // Extensions_H_
 // -------------------------------------------------------------------------

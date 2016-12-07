@@ -11,11 +11,13 @@ ln -s -f admin.sh omap
 ln -s -f admin.sh msgmap
 ln -s -f admin.sh setValue
 ln -s -f admin.sh getValue
+ln -s -f admin.sh csv
 ln -s -f admin.sh getRawValue
 ln -s -f admin.sh getChangedTime
 ln -s -f admin.sh getCalibrate
 ln -s -f admin.sh help
 ln -s -f admin.sh oinfo
+ln -s -f admin.sh apiRequest
 
 ln -s -f ../../Utilities/scripts/uniset2-start.sh
 ln -s -f ../../Utilities/scripts/uniset2-stop.sh stop.sh

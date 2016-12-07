@@ -8,7 +8,7 @@
 #include "modbus/ModbusTCPMaster.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 static ModbusRTU::ModbusAddr slaveaddr = 0x01;
 static ModbusRTU::ModbusAddr slaveaddr2 = 0x02;
@@ -1090,7 +1090,7 @@ TEST_CASE("write10: 10 registers", "[modbus][mbslave][mbtcpslave][writemore]")
 	using namespace VTypes;
 	InitTest();
 
-	UniSetTypes::ObjectId id = 2036;
+	uniset::ObjectId id = 2036;
 	int offset = 2;
 	ModbusRTU::ModbusData tREG = 150 - offset; // реальные регистры начинаются с 150
 	int num = 10;

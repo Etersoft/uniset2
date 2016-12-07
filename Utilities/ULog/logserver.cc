@@ -8,7 +8,7 @@
 #include "LogServer.h"
 #include "LogAgregator.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 static struct option longopts[] =
@@ -209,7 +209,7 @@ int main( int argc, char** argv )
 	{
 		cerr << "(logserver): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		cerr << "(logserver): " << ex << endl;
 	}

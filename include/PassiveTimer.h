@@ -31,6 +31,9 @@
 #include <Poco/Timespan.h>
 #include "Mutex.h"
 //----------------------------------------------------------------------------------------
+namespace uniset
+{
+//----------------------------------------------------------------------------------------
 typedef Poco::Timespan::TimeDiff timeout_t;
 //----------------------------------------------------------------------------------------
 /*! \class UniSetTimer
@@ -55,7 +58,7 @@ class UniSetTimer
 		// некоторые классы могут не иметь подобных
 		// свойств.
 		virtual bool wait(timeout_t timeMS);   /*!< заснуть ожидая наступления времени */
-		virtual void terminate(){}            /*!< прервать работу таймера */
+		virtual void terminate() {}           /*!< прервать работу таймера */
 
 		/*! завершить работу таймера */
 		virtual void stop() noexcept;
@@ -147,5 +150,7 @@ class PassiveCondTimer:
 		std::mutex    m_working;
 		std::condition_variable cv_working;
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 //----------------------------------------------------------------------------------------
 # endif //PASSIVETIMER_H_

@@ -21,6 +21,9 @@
 #include <algorithm>
 #include "VMonitor.h"
 // --------------------------------------------------------------------------
+namespace uniset
+{
+// --------------------------------------------------------------------------
 #define VMON_IMPL_ADD_N(T,m) void VMonitor::add( const std::string& name, const T& v ) \
 	{\
 		m.emplace(&v,name); \
@@ -143,7 +146,7 @@ VMON_IMPL_ADD3(std::string, string)
 VMON_IMPL_ADD_N(Poco::Int64, m_Int64)
 #endif
 
-//VMON_IMPL_ADD3(UniSetTypes::ObjectId,ObjectId)
+//VMON_IMPL_ADD3(uniset::ObjectId,ObjectId)
 // --------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, VMonitor& m )
 {
@@ -205,3 +208,4 @@ std::string VMonitor::pretty_str( int namewidth, int colnum )
 	return std::move(os.str());
 }
 // --------------------------------------------------------------------------
+} // end of namespace uniset

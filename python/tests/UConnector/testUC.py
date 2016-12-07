@@ -9,22 +9,50 @@ sys.path.append('../../lib/pyUniSet/.libs')
 
 from lib import *
 
+def myfunc( act ):
+	act['test'] = 'test'
+	act['result'] = True
+	return True
+
+
 if __name__ == "__main__":
 	
 	lst = Params_inst()
+	lst2 = Params_inst()
 
 	for i in range(0, len(sys.argv)):
 		if i >= Params.max:
 			break;
 	
 		lst.add( sys.argv[i] )
+		lst2.add( sys.argv[i] )
+
+
+	pstr = "--uniset-port"
+	pstr2= "12"
+	lst.add_str(pstr)
+	lst.add_str(pstr2)
+	lst2.add_str(pstr)
+	lst2.add_str(pstr2)
 
 	p = []
 	print "lst: class: " + str(p.__class__.__name__)
 
+
+
 	try:	
 		uc1 = UConnector( lst, "test.xml" )
+		uc2 = UConnector( lst2, "test.xml" )
 		
+		#obj1 = UProxyObject("TestProc")
+		#obj2 = UProxyObject("TestProc1")
+		
+#		print "Info: %s"%uc1.getObjectInfo("TestProc1","")
+
+		print "apiRequest: %s"%uc1.apiRequest(uc1.getObjectID("SharedMemory"),"get?10")
+
+#		tc = uc1.getTimeChange(2)
+#		print "TimeChange: %s  sup=%d"%(tc.value,tc.supplier)
 #		print "(0)UIType: %s" % uc1.getUIType()
 
 		print "(1)getShortName: id=%d name=%s" % (1, uc1.getShortName(1))

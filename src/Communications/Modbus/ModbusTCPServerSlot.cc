@@ -16,6 +16,9 @@
 // -------------------------------------------------------------------------
 #include "modbus/ModbusTCPServerSlot.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 using namespace ModbusRTU;
 using namespace std;
 // -------------------------------------------------------------------------
@@ -30,7 +33,7 @@ ModbusTCPServerSlot::~ModbusTCPServerSlot()
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPServerSlot::readCoilStatus( ReadCoilMessage& query,
-		ReadCoilRetMessage& reply )
+											   ReadCoilRetMessage& reply )
 {
 	if( !slReadCoil )
 		return erOperationFailed;
@@ -40,7 +43,7 @@ mbErrCode ModbusTCPServerSlot::readCoilStatus( ReadCoilMessage& query,
 
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPServerSlot::readInputStatus( ReadInputStatusMessage& query,
-		ReadInputStatusRetMessage& reply )
+												ReadInputStatusRetMessage& reply )
 {
 	if( !slReadInputStatus )
 		return erOperationFailed;
@@ -92,7 +95,7 @@ mbErrCode ModbusTCPServerSlot::writeOutputRegisters( WriteOutputMessage& query,
 
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPServerSlot::diagnostics( DiagnosticMessage& query,
-		DiagnosticRetMessage& reply )
+											DiagnosticRetMessage& reply )
 {
 	if( !slDiagnostics )
 		return erOperationFailed;
@@ -110,7 +113,7 @@ ModbusRTU::mbErrCode ModbusTCPServerSlot::read4314( ModbusRTU::MEIMessageRDI& qu
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPServerSlot::forceSingleCoil( ForceSingleCoilMessage& query,
-		ForceSingleCoilRetMessage& reply )
+												ForceSingleCoilRetMessage& reply )
 {
 	if( !slForceSingleCoil )
 		return erOperationFailed;
@@ -130,7 +133,7 @@ mbErrCode ModbusTCPServerSlot::writeOutputSingleRegister( WriteSingleOutputMessa
 
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPServerSlot::journalCommand( JournalCommandMessage& query,
-		JournalCommandRetMessage& reply )
+											   JournalCommandRetMessage& reply )
 {
 	if( !slJournalCommand )
 		return erOperationFailed;
@@ -174,3 +177,4 @@ void ModbusTCPServerSlot::sigterm( int signo )
 	catch( std::exception& ex ) {}
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

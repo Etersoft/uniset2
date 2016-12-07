@@ -29,6 +29,13 @@
 #include "UTCPSocket.h"
 #include "CommonEventLoop.h"
 #include "LogServerTypes.h"
+
+#ifndef DISABLE_REST_API
+#include <Poco/JSON/Object.h>
+#endif
+// -------------------------------------------------------------------------
+namespace uniset
+{
 // -------------------------------------------------------------------------
 class LogSession;
 class LogAgregator;
@@ -121,6 +128,10 @@ class LogServer:
 
 		std::string getShortInfo();
 
+#ifndef DISABLE_REST_API
+		Poco::JSON::Object::Ptr httpGetShortInfo();
+#endif
+
 	protected:
 		LogServer();
 
@@ -146,7 +157,7 @@ class LogServer:
 
 		typedef std::vector< std::shared_ptr<LogSession> > SessionList;
 		SessionList slist;
-		UniSetTypes::uniset_rwmutex mutSList;
+		uniset::uniset_rwmutex mutSList;
 
 		DebugStream mylog;
 		ev::io io;
@@ -169,6 +180,8 @@ class LogServer:
 
 		std::atomic_bool isrunning = { false };
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // -------------------------------------------------------------------------
 #endif // LogServer_H_
 // -------------------------------------------------------------------------

@@ -3,6 +3,7 @@
 #include "DelayTimer.h"
 #include "UniSetTypes.h"
 using namespace std;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 TEST_CASE("[DelayTimer]: default", "[DelayTimer]" )
 {

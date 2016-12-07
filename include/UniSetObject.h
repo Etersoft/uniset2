@@ -41,9 +41,11 @@
 #include "ThreadCreator.h"
 #include "LT_Object.h"
 #include "MQMutex.h"
+#include "UHttpRequestHandler.h"
 
 //---------------------------------------------------------------------------
-//#include <omnithread.h>
+namespace uniset
+{
 //---------------------------------------------------------------------------
 class UniSetActivator;
 class UniSetManager;
@@ -72,10 +74,13 @@ class UniSetObject:
 	public std::enable_shared_from_this<UniSetObject>,
 	public POA_UniSetObject_i,
 	public LT_Object
+#ifndef DISABLE_REST_API
+	, public uniset::UHttp::IHttpRequest
+#endif
 {
 	public:
 		UniSetObject( const std::string& name, const std::string& section );
-		UniSetObject( UniSetTypes::ObjectId id );
+		UniSetObject( uniset::ObjectId id );
 		UniSetObject();
 		virtual ~UniSetObject();
 
@@ -84,28 +89,38 @@ class UniSetObject:
 		// Функции объявленные в IDL
 		virtual CORBA::Boolean exist() override;
 
-		virtual UniSetTypes::ObjectId getId() override;
+		virtual uniset::ObjectId getId() override;
 
-		const UniSetTypes::ObjectId getId() const;
+		const uniset::ObjectId getId() const;
 		std::string getName() const;
 
-		virtual UniSetTypes::ObjectType getType() override
+		virtual uniset::ObjectType getType() override
 		{
-			return UniSetTypes::ObjectType("UniSetObject");
+			return uniset::ObjectType("UniSetObject");
 		}
 
-		virtual UniSetTypes::SimpleInfo* getInfo( ::CORBA::Long userparam = 0 ) override;
+		const std::string getStrType();
+
+		virtual uniset::SimpleInfo* getInfo( const char* userparam = "" ) override;
+
+		// обёртка для вызова HTTP API через RPC
+		virtual uniset::SimpleInfo* apiRequest( const char* query ) override;
 
 		//! поместить сообщение в очередь
-		virtual void push( const UniSetTypes::TransportMessage& msg ) override;
+		virtual void push( const uniset::TransportMessage& msg ) override;
 
+#ifndef DISABLE_REST_API
+		// HTTP API
+		virtual Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p ) override;
+		virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
+#endif
 		// -------------- вспомогательные --------------
 		/*! получить ссылку (на себя) */
-		UniSetTypes::ObjectPtr getRef() const;
+		uniset::ObjectPtr getRef() const;
 
 		/*! заказ таймера (вынесена в public, хотя должна была бы быть в protected */
-		virtual timeout_t askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks = -1,
-									UniSetTypes::Message::Priority p = UniSetTypes::Message::High ) override;
+		virtual timeout_t askTimer( uniset::TimerId timerid, timeout_t timeMS, clock_t ticks = -1,
+									uniset::Message::Priority p = uniset::Message::High ) override;
 
 		friend std::ostream& operator<<(std::ostream& os, UniSetObject& obj );
 
@@ -117,12 +132,12 @@ class UniSetObject:
 		std::weak_ptr<UniSetManager> mymngr;
 
 		/*! обработка приходящих сообщений */
-		virtual void processingMessage( const UniSetTypes::VoidMessage* msg );
+		virtual void processingMessage( const uniset::VoidMessage* msg );
 
 		// конкретные виды сообщений
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) {}
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) {}
-		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) {}
+		virtual void sysCommand( const uniset::SystemMessage* sm ) {}
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) {}
+		virtual void timerInfo( const uniset::TimerMessage* tm ) {}
 
 		/*! Получить сообщение */
 		VoidMessagePtr receiveMessage();
@@ -170,7 +185,7 @@ class UniSetObject:
 
 		// ----- конфигурирование объекта -------
 		/*! установка ID объекта */
-		void setID(UniSetTypes::ObjectId id);
+		void setID(uniset::ObjectId id);
 
 		/*! установить приоритет для потока обработки сообщений (если позволяют права и система) */
 		void setThreadPriority( Poco::Thread::Priority p );
@@ -186,6 +201,11 @@ class UniSetObject:
 
 		/*! false - завершить работу потока обработки сообщений */
 		void setActive( bool set );
+
+#ifndef DISABLE_REST_API
+		// вспомогательные функции
+		virtual Poco::JSON::Object::Ptr httpGetMyInfo( Poco::JSON::Object::Ptr root );
+#endif
 
 	private:
 
@@ -213,11 +233,11 @@ class UniSetObject:
 
 		bool threadcreate;
 		std::shared_ptr<UniSetTimer> tmr;
-		UniSetTypes::ObjectId myid;
+		uniset::ObjectId myid;
 		CORBA::Object_var oref;
 
 		/*! замок для блокирования совместного доступа к oRef */
-		mutable UniSetTypes::uniset_rwmutex refmutex;
+		mutable uniset::uniset_rwmutex refmutex;
 
 		std::shared_ptr< ThreadCreator<UniSetObject> > thr;
 
@@ -230,6 +250,8 @@ class UniSetObject:
 		std::mutex    m_working;
 		std::condition_variable cv_working;
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 //---------------------------------------------------------------------------
 #endif
 //---------------------------------------------------------------------------

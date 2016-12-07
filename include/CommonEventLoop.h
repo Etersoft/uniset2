@@ -7,8 +7,12 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-#include <list>
+#include <vector>
 // -------------------------------------------------------------------------
+namespace uniset
+{
+
+
 class EvWatcher
 {
 	public:
@@ -54,8 +58,14 @@ class CommonEventLoop
 
 		bool evIsActive() const noexcept;
 
-		/*! \return TRUE - если всё удалось. return актуален только для случая когда thread = true */
-		bool evrun( EvWatcher* w, bool thread = true );
+		/*! \return TRUE - если всё удалось. return актуален только для случая когда thread = true
+		 * \param thread - создать отдельный (асинхронный) поток для event loop.
+		 * Если thread=false  - функция не вернёт управление и будет ждать завершения работы ( см. evstop())
+		 * \param waitPrepareTimeout_msec - сколько ждать активации, либо функция вернёт false.
+		 * Даже если thread = false, но wather не сможет быть "активирован" функция вернёт управление
+		 * с return false.
+		 */
+		bool evrun( EvWatcher* w, bool thread = true, size_t waitPrepareTimeout_msec = 8000);
 
 		/*! \return TRUE - если это был последний EvWatcher и loop остановлен */
 		bool evstop( EvWatcher* w );
@@ -64,6 +74,9 @@ class CommonEventLoop
 		{
 			return loop;
 		}
+
+		// количество зарегистрированных wather-ов
+		size_t size() const;
 
 	protected:
 
@@ -79,13 +92,14 @@ class CommonEventLoop
 		ev::dynamic_loop loop;
 		ev::async evterm;
 		std::shared_ptr<std::thread> thr;
+		std::mutex              thr_mutex;
 
 		std::mutex              term_mutex;
 		std::condition_variable term_event;
 		std::atomic_bool term_notify = { false };
 
 		std::mutex wlist_mutex;
-		std::list<EvWatcher*> wlist;
+		std::vector<EvWatcher*> wlist;
 
 		// готовящийся Watcher..он может быть только один в единицу времени
 		// это гарантирует prep_mutex
@@ -95,6 +109,8 @@ class CommonEventLoop
 		std::mutex              prep_mutex;
 		std::atomic_bool prep_notify = { false };
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // -------------------------------------------------------------------------
 #endif // CommonEventLoop_H_
 // -------------------------------------------------------------------------

@@ -3,9 +3,9 @@
 #include "TestProc.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
-TestProc::TestProc( UniSetTypes::ObjectId id, xmlNode* confnode ):
+TestProc::TestProc( uniset::ObjectId id, xmlNode* confnode ):
 	TestProc_SK( id, confnode )
 {
 }

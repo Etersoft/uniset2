@@ -23,6 +23,9 @@
 #include <vector>
 #include "MBExchange.h"
 #include "modbus/ModbusTCPMaster.h"
+// -------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 /*!
       \page page_ModbusTCPMulti Реализация ModbusTCP 'multi' master
@@ -283,22 +286,22 @@ class MBTCPMultiMaster:
 	public MBExchange
 {
 	public:
-		MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+		MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 						  const std::string& prefix = "mbtcp" );
 		virtual ~MBTCPMultiMaster();
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<MBTCPMultiMaster> init_mbmaster(int argc, const char* const* argv,
-				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+				uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 				const std::string& prefix = "mbtcp" );
 
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
-		virtual UniSetTypes::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
+		virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
 
 	protected:
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 		virtual void initIterators() override;
 		virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;
 		virtual void sigterm( int signo ) override;
@@ -309,7 +312,7 @@ class MBTCPMultiMaster:
 		void check_thread();
 		void final_thread();
 
-		UniSetTypes::uniset_rwmutex mbMutex;
+		uniset::uniset_rwmutex mbMutex;
 		bool force_disconnect;
 		timeout_t checktime;
 
@@ -319,7 +322,7 @@ class MBTCPMultiMaster:
 		struct MBSlaveInfo
 		{
 			MBSlaveInfo(): ip(""), port(0), mbtcp(0), priority(0),
-				respond(false), respond_id(UniSetTypes::DefaultObjectId), respond_invert(false),
+				respond(false), respond_id(uniset::DefaultObjectId), respond_invert(false),
 				recv_timeout(200), aftersend_pause(0), sleepPause_usec(100),
 				force_disconnect(true),
 				myname(""), use(false), initOK(false), ignore(false) {}
@@ -335,7 +338,7 @@ class MBTCPMultiMaster:
 			ModbusRTU::ModbusData checkReg = { 0 };
 
 			bool respond;
-			UniSetTypes::ObjectId respond_id;
+			uniset::ObjectId respond_id;
 			IOController::IOStateList::iterator respond_it;
 			bool respond_invert;
 			bool respond_init = { false };
@@ -379,6 +382,8 @@ class MBTCPMultiMaster:
 		std::shared_ptr< ThreadCreator<MBTCPMultiMaster> > pollThread; /*!< поток опроса */
 		std::shared_ptr< ThreadCreator<MBTCPMultiMaster> > checkThread; /*!< поток проверки связи по другим каналам */
 };
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // _MBTCPMultiMaster_H_
 // -----------------------------------------------------------------------------

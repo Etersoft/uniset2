@@ -23,12 +23,14 @@
 #include <ORepHelpers.h>
 #include "MBExchange.h"
 #include "modbus/MBLogSugar.h"
+// -------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
-MBExchange::MBExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
+MBExchange::MBExchange(uniset::ObjectId objId, uniset::ObjectId shmId,
 					   const std::shared_ptr<SharedMemory>& _ic, const std::string& prefix ):
 	UniSetObject(objId),
 	allInitOK(false),
@@ -48,7 +50,7 @@ MBExchange::MBExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
 	ic(_ic)
 {
 	if( objId == DefaultObjectId )
-		throw UniSetTypes::SystemError("(MBExchange): objId=-1?!! Use --" + prefix + "-name" );
+		throw uniset::SystemError("(MBExchange): objId=-1?!! Use --" + prefix + "-name" );
 
 	auto conf = uniset_conf();
 	mutex_start.setName(myname + "_mutex_start");
@@ -58,7 +60,7 @@ MBExchange::MBExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
 	cnode = conf->getNode(conf_name);
 
 	if( cnode == NULL )
-		throw UniSetTypes::SystemError("(MBExchange): Not found node <" + conf_name + " ...> for " + myname );
+		throw uniset::SystemError("(MBExchange): Not found node <" + conf_name + " ...> for " + myname );
 
 	shm = make_shared<SMInterface>(shmId, ui, objId, ic);
 
@@ -319,7 +321,7 @@ void MBExchange::step()
 			shm->localSetValue(itHeartBeat, sidHeartBeat, maxHeartBeat, getId());
 			ptHeartBeat.reset();
 		}
-		catch( const Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			mbcrit << myname << "(step): (hb) " << ex << std::endl;
 		}
@@ -379,7 +381,7 @@ void MBExchange::readConfiguration()
 
 	for( ; it.getCurrent(); it.goNext() )
 	{
-		if( UniSetTypes::check_filter(it, s_field, s_fvalue) )
+		if( uniset::check_filter(it, s_field, s_fvalue) )
 			initItem(it);
 	}
 
@@ -388,7 +390,7 @@ void MBExchange::readConfiguration()
 // ------------------------------------------------------------------------------------------
 bool MBExchange::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec )
 {
-	if( UniSetTypes::check_filter(it, s_field, s_fvalue) )
+	if( uniset::check_filter(it, s_field, s_fvalue) )
 		initItem(it);
 
 	return true;
@@ -928,7 +930,7 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 	{
 		mblog3 << myname << "(initSMValue): (BadRange)..." << endl;
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		mblog3 << myname << "(initSMValue): " << ex << endl;
 	}
@@ -1188,7 +1190,7 @@ void MBExchange::updateSM()
 			{
 				mblog3 << myname << "(updateSM): (BadRange)..." << endl;
 			}
-			catch( const Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				mblog3 << myname << "(updateSM): " << ex << endl;
 			}
@@ -1236,7 +1238,7 @@ void MBExchange::updateSM()
 				{
 					mblog3 << myname << "(updateSM): (BadRange)..." << endl;
 				}
-				catch( const Exception& ex )
+				catch( const uniset::Exception& ex )
 				{
 					mblog3 << myname << "(updateSM): " << ex << endl;
 				}
@@ -1651,7 +1653,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 	{
 		mblog3 << myname << "(updateRSProperty): (BadRange)..." << endl;
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		mblog3 << myname << "(updateRSProperty): " << ex << endl;
 	}
@@ -1911,7 +1913,7 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
 			{
 				mblog3 << myname << "(updateMTR): (BadRange)..." << endl;
 			}
-			catch( const Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				mblog3 << myname << "(updateMTR): " << ex << endl;
 			}
@@ -2002,7 +2004,7 @@ void MBExchange::updateRTU188( RegMap::iterator& rit )
 		{
 			mblog3 << myname << "(updateRTU188): (BadRange)..." << endl;
 		}
-		catch( const Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			mblog3 << myname << "(updateRTU188): " << ex << endl;
 		}
@@ -2136,7 +2138,7 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML::iterator& it )
 
 	if( !sbit.empty() )
 	{
-		p.nbit = UniSetTypes::uni_atoi(sbit.c_str());
+		p.nbit = uniset::uni_atoi(sbit.c_str());
 
 		if( p.nbit < 0 || p.nbit >= ModbusRTU::BitsPerData )
 		{
@@ -2158,7 +2160,7 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML::iterator& it )
 
 	if( !sbyte.empty() )
 	{
-		p.nbyte = UniSetTypes::uni_atoi(sbyte.c_str());
+		p.nbyte = uniset::uni_atoi(sbyte.c_str());
 
 		if( p.nbyte < 0 || p.nbyte > VTypes::Byte::bsize )
 		{
@@ -2216,7 +2218,7 @@ bool MBExchange::initRegInfo( std::shared_ptr<RegInfo>& r, UniXML::iterator& it,
 		if( !initRTU188item(it, r) )
 			return false;
 
-		UniversalIO::IOType t = UniSetTypes::getIOType(IOBase::initProp(it, "iotype", prop_prefix, false));
+		UniversalIO::IOType t = uniset::getIOType(IOBase::initProp(it, "iotype", prop_prefix, false));
 		r->mbreg = RTUStorage::getRegister(r->rtuJack, r->rtuChan, t);
 		r->mbfunc = RTUStorage::getFunction(r->rtuJack, r->rtuChan, t);
 
@@ -2257,7 +2259,7 @@ bool MBExchange::initRegInfo( std::shared_ptr<RegInfo>& r, UniXML::iterator& it,
 
 	if( !f.empty() )
 	{
-		r->mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(f.c_str());
+		r->mbfunc = (ModbusRTU::SlaveFunctionCode)uniset::uni_atoi(f.c_str());
 
 		if( r->mbfunc == ModbusRTU::fnUnknown )
 		{
@@ -2546,7 +2548,7 @@ bool MBExchange::initItem( UniXML::iterator& it )
 
 		if( !s_mbfunc.empty() )
 		{
-			ii.mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(s_mbfunc);
+			ii.mbfunc = (ModbusRTU::SlaveFunctionCode)uniset::uni_atoi(s_mbfunc);
 
 			if( ii.mbfunc == ModbusRTU::fnUnknown )
 			{
@@ -2633,7 +2635,7 @@ bool MBExchange::initRTU188item( UniXML::iterator& it, std::shared_ptr<RegInfo>&
 		return false;
 	}
 
-	p->rtuChan = UniSetTypes::uni_atoi(chan);
+	p->rtuChan = uniset::uni_atoi(chan);
 
 	mblog2 << myname << "(readRTU188Item): add jack='" << jack << "'"
 		   << " channel='" << p->rtuChan << "'" << endl;
@@ -2784,7 +2786,7 @@ bool MBExchange::activateObject()
 	// см. sysCommand()
 	{
 		setProcActive(false);
-		UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
+		uniset::uniset_rwmutex_rlock l(mutex_start);
 		UniSetObject::activateObject();
 
 		if( !shm->isLocalwork() )
@@ -2797,7 +2799,7 @@ bool MBExchange::activateObject()
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-void MBExchange::sysCommand( const UniSetTypes::SystemMessage* sm )
+void MBExchange::sysCommand( const uniset::SystemMessage* sm )
 {
 	switch( sm->command )
 	{
@@ -2841,7 +2843,7 @@ void MBExchange::sysCommand( const UniSetTypes::SystemMessage* sm )
 				mbcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 
 			{
-				UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
+				uniset::uniset_rwmutex_rlock l(mutex_start);
 				askSensors(UniversalIO::UIONotify);
 				initOutput();
 			}
@@ -2922,7 +2924,7 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 		if( sidExchangeMode != DefaultObjectId )
 			shm->askSensor(sidExchangeMode, cmd);
 	}
-	catch( UniSetTypes::Exception& ex )
+	catch( uniset::Exception& ex )
 	{
 		mbwarn << myname << "(askSensors): " << ex << std::endl;
 	}
@@ -2940,7 +2942,7 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 			if( d->mode_id != DefaultObjectId )
 				shm->askSensor(d->mode_id, cmd);
 		}
-		catch( UniSetTypes::Exception& ex )
+		catch( uniset::Exception& ex )
 		{
 			mbwarn << myname << "(askSensors): " << ex << std::endl;
 		}
@@ -2967,7 +2969,7 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 					{
 						shm->askSensor(i->si.id, cmd);
 					}
-					catch( UniSetTypes::Exception& ex )
+					catch( uniset::Exception& ex )
 					{
 						mbwarn << myname << "(askSensors): " << ex << std::endl;
 					}
@@ -2981,7 +2983,7 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 	}
 }
 // ------------------------------------------------------------------------------------------
-void MBExchange::sensorInfo( const UniSetTypes::SensorMessage* sm )
+void MBExchange::sensorInfo( const uniset::SensorMessage* sm )
 {
 	if( sm->id == sidExchangeMode )
 	{
@@ -3223,7 +3225,7 @@ void MBExchange::updateRespondSensors()
 
 				shm->localSetValue(d->resp_it, d->resp_id, ( set ? 1 : 0 ), getId());
 			}
-			catch( const Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				mbcrit << myname << "(step): (respond) " << ex << std::endl;
 			}
@@ -3251,7 +3253,7 @@ void MBExchange::execute()
 		{
 			step();
 		}
-		catch( const Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			mbcrit << myname << "(execute): " << ex << std::endl;
 		}
@@ -3284,9 +3286,9 @@ std::ostream& operator<<( std::ostream& os, const MBExchange::ExchangeMode& em )
 	return os;
 }
 // -----------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* MBExchange::getInfo( CORBA::Long userparam )
+uniset::SimpleInfo* MBExchange::getInfo( const char* userparam )
 {
-	UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo(userparam);
+	uniset::SimpleInfo_var i = UniSetObject::getInfo(userparam);
 
 	ostringstream inf;
 
@@ -3324,3 +3326,4 @@ std::string MBExchange::RTUDevice::getShortInfo() const
 	return std::move( s.str() );
 }
 // ----------------------------------------------------------------------------
+} // end of namespace uniset

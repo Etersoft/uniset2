@@ -33,7 +33,7 @@
 
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 
 struct equals
 {

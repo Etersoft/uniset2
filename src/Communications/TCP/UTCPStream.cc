@@ -27,6 +27,9 @@
 // -------------------------------------------------------------------------
 using namespace std;
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 UTCPStream::~UTCPStream()
 {
 
@@ -65,7 +68,7 @@ void UTCPStream::forceDisconnect()
 		setLinger(false, 0);
 	}
 	//	catch( Poco::Net::NetException& ex ){}
-	catch( std::exception& ex ){}
+	catch( std::exception& ex ) {}
 
 	try
 	{
@@ -73,7 +76,7 @@ void UTCPStream::forceDisconnect()
 		//shutdown();
 	}
 	//	catch( Poco::Net::NetException& ex ){}
-	catch( std::exception& ex ){}
+	catch( std::exception& ex ) {}
 }
 // -------------------------------------------------------------------------
 void UTCPStream::disconnect()
@@ -82,15 +85,15 @@ void UTCPStream::disconnect()
 	{
 		shutdown();
 	}
-//	catch( Poco::Net::NetException& ex ){}
-	catch( std::exception& ex ){}
+	//	catch( Poco::Net::NetException& ex ){}
+	catch( std::exception& ex ) {}
 
 	try
 	{
 		close();
 	}
-//	catch( Poco::Net::NetException& ex ){}
-	catch( std::exception& ex ){}
+	//	catch( Poco::Net::NetException& ex ){}
+	catch( std::exception& ex ) {}
 }
 // -------------------------------------------------------------------------
 int UTCPStream::getSocket() const
@@ -116,24 +119,25 @@ void UTCPStream::create( const std::string& hname, int port, timeout_t tout_msec
 bool UTCPStream::isConnected() noexcept
 {
 	return ( Poco::Net::StreamSocket::sockfd() != POCO_INVALID_SOCKET );
-/*
-	try
-	{
-		// Вариант 1
-		//return ( Poco::Net::StreamSocket::peerAddress().addr() != 0 );
+	/*
+		try
+		{
+			// Вариант 1
+			//return ( Poco::Net::StreamSocket::peerAddress().addr() != 0 );
 
-		// Варинт 2
-		return ( Poco::Net::StreamSocket::peerAddress().port() != 0 );
+			// Варинт 2
+			return ( Poco::Net::StreamSocket::peerAddress().port() != 0 );
 
-		// Вариант 3
-//		if( poll({0, 5}, Poco::Net::Socket::SELECT_READ) )
-//			return (tcp->available() > 0);
-	}
-	catch( Poco::Net::NetException& ex )
-	{
-	}
+			// Вариант 3
+	//		if( poll({0, 5}, Poco::Net::Socket::SELECT_READ) )
+	//			return (tcp->available() > 0);
+		}
+		catch( Poco::Net::NetException& ex )
+		{
+		}
 
-	return false;
-*/
+		return false;
+	*/
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

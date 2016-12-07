@@ -2,9 +2,9 @@
 #include "TestGen.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
-TestGen::TestGen( UniSetTypes::ObjectId id, xmlNode* confnode ):
+TestGen::TestGen( uniset::ObjectId id, xmlNode* confnode ):
 	TestGen_SK( id, confnode )
 {
 	vmonit(int_var);
@@ -26,7 +26,7 @@ TestGen::TestGen( UniSetTypes::ObjectId id, xmlNode* confnode ):
 		cerr << "input2_s NOT FOUND!!!" << endl;
 	else
 		cerr << "input2_s=" << (*i)  << " d=" << d << " d2=" << d2 << " d3=" << d3 << " input2_s=" << input2_s << endl;
-		
+
 	vmonit(t_val);
 }
 // -----------------------------------------------------------------------------
@@ -83,7 +83,17 @@ void TestGen::sigterm( int signo )
 	TestGen_SK::sigterm(signo);
 }
 // -----------------------------------------------------------------------------
-void TestGen::sysCommand( const UniSetTypes::SystemMessage* sm )
+#ifndef DISABLE_REST_API
+void TestGen::httpGetUserData( Poco::JSON::Object::Ptr& jdata )
+{
+	jdata->set("myMode", "RUNNING");
+	jdata->set("myVar", 42);
+	jdata->set("myFloatVar", 42.42);
+	jdata->set("myMessage", "This is text fot test httpGetUserData");
+}
+#endif
+// -----------------------------------------------------------------------------
+void TestGen::sysCommand( const uniset::SystemMessage* sm )
 {
 	if( sm->command == SystemMessage::StartUp )
 		askTimer(1, 2000);

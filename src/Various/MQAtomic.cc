@@ -19,7 +19,7 @@
 #include "MessageType.h"
 #include "MQAtomic.h"
 //--------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 //--------------------------------------------------------------------------
 MQAtomic::MQAtomic( size_t qsize ):
@@ -141,11 +141,12 @@ void MQAtomic::setMaxSizeOfMessageQueue( size_t s )
 	if( s != SizeOfMessageQueue )
 	{
 		SizeOfMessageQueue = s;
+
 		try
 		{
 			mqFill(nullptr);
 		}
-		catch(...){}
+		catch(...) {}
 	}
 }
 //---------------------------------------------------------------------------

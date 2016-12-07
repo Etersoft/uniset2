@@ -3,7 +3,7 @@
 #include "NCRestorer.h"
 #include "NullSM.h"
 // --------------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------------
 

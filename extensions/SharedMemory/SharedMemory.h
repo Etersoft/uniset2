@@ -35,6 +35,9 @@
 #ifndef vmonit
 #define vmonit( var ) vmon.add( #var, var )
 #endif
+// --------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 
 /*! \page page_SharedMemory Реализация разделямой между процессами памяти (SharedMemory)
@@ -54,6 +57,7 @@
     - \ref sec_SM_Pulsar
     - \ref sec_SM_DBLog
     - \ref sec_SM_ReservSM
+	- \ref sec_SM_REST_API
 
     \section sec_SM_Conf Определение списка регистрируемых датчиков
       SM позволяет определять список датчиков, которые он будет предоставлять
@@ -296,12 +300,30 @@
          </ReservList>
        </SharedMemory>
        \endcode
+
+	 \section sec_SM_REST_API SharedMemory HTTP API
+
+	/help                            - Получение списка доступных команд
+	/                                - получение стандартной информации
+	/get?id1,name2,id3,..&shortInfo  - получение значений указанных датчиков
+									 Не обязательные параметры:
+									   shortInfo - выдать короткую информацию о датчике (id,value,real_value и когда менялся)
+
+	/sensors?offset=N&limit=M        - получение полной информации по списку датчиков.
+									 Не обязательные параметры:
+									   offset - начиная с,
+									   limit - количество в ответе.
+
+	/consumers?sens1,sens2,sens3     - получить список заказчиков по каждому датчику
+									 Не обязательные параметры:
+									   sens1,... - список по каким датчикам выдать ответ
+	/lost                            - получить список заказчиков с которыми терялась связь (и они удалялись из списка)
 */
 class SharedMemory:
 	public IONotifyController
 {
 	public:
-		SharedMemory( UniSetTypes::ObjectId id, const std::string& datafile, const std::string& confname = "" );
+		SharedMemory( uniset::ObjectId id, const std::string& datafile, const std::string& confname = "" );
 		virtual ~SharedMemory();
 
 		/*! глобальная функция для инициализации объекта */
@@ -315,7 +337,7 @@ class SharedMemory:
 		// чтобы понять, когда можно получать от SM данные.
 		virtual CORBA::Boolean exist() override;
 
-		virtual UniSetTypes::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
+		virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
 
 		void addReadItem( Restorer_XML::ReaderSlot sl );
 
@@ -324,8 +346,8 @@ class SharedMemory:
 
 		struct HistoryItem
 		{
-			explicit HistoryItem( size_t bufsize = 0 ): id(UniSetTypes::DefaultObjectId), buf(bufsize) {}
-			HistoryItem( const UniSetTypes::ObjectId _id, const size_t bufsize, const long val ): id(_id), buf(bufsize, val) {}
+			explicit HistoryItem( size_t bufsize = 0 ): id(uniset::DefaultObjectId), buf(bufsize) {}
+			HistoryItem( const uniset::ObjectId _id, const size_t bufsize, const long val ): id(_id), buf(bufsize, val) {}
 
 			inline void init( size_t size, long val )
 			{
@@ -333,7 +355,7 @@ class SharedMemory:
 					buf.assign(size, val);
 			}
 
-			UniSetTypes::ObjectId id;
+			uniset::ObjectId id;
 			HBuffer buf;
 
 			IOStateList::iterator ioit;
@@ -361,7 +383,7 @@ class SharedMemory:
 			HistoryList hlst;               // history list
 			size_t size = { 0 };
 			std::string filter = { "" };    // filter field
-			UniSetTypes::ObjectId fuse_id = { UniSetTypes::DefaultObjectId };  // fuse sesnsor
+			uniset::ObjectId fuse_id = { uniset::DefaultObjectId };  // fuse sesnsor
 			bool fuse_invert = { false };
 			bool fuse_use_val = { false };
 			long fuse_val = { 0 };
@@ -376,7 +398,7 @@ class SharedMemory:
 		// вводим не просто map, а "map списка историй".
 		// точнее итераторов-историй.
 		typedef std::list<History::iterator> HistoryItList;
-		typedef std::unordered_map<UniSetTypes::ObjectId, HistoryItList> HistoryFuseMap;
+		typedef std::unordered_map<uniset::ObjectId, HistoryItList> HistoryFuseMap;
 
 		typedef sigc::signal<void, const HistoryInfo&> HistorySlot;
 		HistorySlot signal_history(); /*!< сигнал о срабатывании условий "сброса" дампа истории */
@@ -401,12 +423,12 @@ class SharedMemory:
 		typedef std::list<Restorer_XML::ReaderSlot> ReadSlotList;
 		ReadSlotList lstRSlot;
 
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
-		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
+		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 		virtual void askSensors( UniversalIO::UIOCommand cmd ) {};
-		void sendEvent( UniSetTypes::SystemMessage& sm );
+		void sendEvent( uniset::SystemMessage& sm );
 		void initFromReserv();
-		bool initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectId sm_node );
+		bool initFromSM( uniset::ObjectId sm_id, uniset::ObjectId sm_node );
 
 		// действия при завершении работы
 		virtual void sigterm( int signo ) override;
@@ -423,15 +445,15 @@ class SharedMemory:
 		{
 			public:
 				HeartBeatInfo():
-					a_sid(UniSetTypes::DefaultObjectId),
-					d_sid(UniSetTypes::DefaultObjectId),
+					a_sid(uniset::DefaultObjectId),
+					d_sid(uniset::DefaultObjectId),
 					reboot_msec(UniSetTimer::WaitUpTime),
 					timer_running(false),
 					ptReboot(UniSetTimer::WaitUpTime)
 				{}
 
-				UniSetTypes::ObjectId a_sid; // аналоговый счётчик
-				UniSetTypes::ObjectId d_sid; // дискретный датчик состояния процесса
+				uniset::ObjectId a_sid; // аналоговый счётчик
+				uniset::ObjectId d_sid; // дискретный датчик состояния процесса
 				IOStateList::iterator a_it;
 				IOStateList::iterator d_it;
 
@@ -465,15 +487,15 @@ class SharedMemory:
 		std::atomic_bool activated;
 		std::atomic_bool workready;
 
-		typedef std::list<UniSetTypes::ObjectId> EventList;
+		typedef std::list<uniset::ObjectId> EventList;
 		EventList elst;
 		std::string e_filter;
 		int evntPause;
 		int activateTimeout;
 
-		virtual void logging( UniSetTypes::SensorMessage& sm ) override;
-		virtual void dumpOrdersList( const UniSetTypes::ObjectId sid, const IONotifyController::ConsumerListInfo& lst ) override {};
-		virtual void dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst ) override {}
+		virtual void logging( uniset::SensorMessage& sm ) override;
+		virtual void dumpOrdersList( const uniset::ObjectId sid, const IONotifyController::ConsumerListInfo& lst ) override {};
+		virtual void dumpThresholdList( const uniset::ObjectId sid, const IONotifyController::ThresholdExtList& lst ) override {}
 
 		bool dblogging = { false };
 
@@ -495,7 +517,7 @@ class SharedMemory:
 		void checkHistoryFilter( UniXML::iterator& it );
 
 		IOStateList::iterator itPulsar;
-		UniSetTypes::ObjectId sidPulsar;
+		uniset::ObjectId sidPulsar;
 		int msecPulsar;
 
 		xmlNode* confnode;
@@ -511,6 +533,8 @@ class SharedMemory:
 	private:
 		HistorySlot m_historySignal;
 };
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // SharedMemory_H_
 // -----------------------------------------------------------------------------

@@ -31,8 +31,10 @@
 #include "LogServerTypes.h"
 #include "LogAgregator.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 LogSession::~LogSession()
 {
@@ -137,12 +139,14 @@ void LogSession::logOnEvent( const std::string& s ) noexcept
 		if( logbuf.size() >= maxRecordsNum )
 		{
 			numLostMsg++;
+
 			if( numLostMsg > maxRecordsNum )
 			{
 				// видимо клиент отвалился или совсем не успевает читать
 				// разрываем сессию..
 				if( mylog.is_info() )
 					mylog.info() << peername << "(LogSession::onEvent): too many lost messages. Close session.." << endl;
+
 				cancelled = true;
 			}
 
@@ -160,7 +164,7 @@ void LogSession::logOnEvent( const std::string& s ) noexcept
 		lostMsg = false;
 		logbuf.emplace(new UTCPCore::Buffer(s));
 	}
-	catch(...){}
+	catch(...) {}
 
 	if( asyncEvent.is_active() )
 		asyncEvent.send();
@@ -238,7 +242,7 @@ void LogSession::callback( ev::io& watcher, int revents ) noexcept
 		{
 			readEvent(watcher);
 		}
-		catch(...){}
+		catch(...) {}
 	}
 
 	if (revents & EV_WRITE)
@@ -247,23 +251,24 @@ void LogSession::callback( ev::io& watcher, int revents ) noexcept
 		{
 			writeEvent(watcher);
 		}
-		catch(...){}
+		catch(...) {}
 	}
 
 	if( cancelled.load() )
 	{
 		if( mylog.is_info() )
-			mylog.info() << peername << "LogSession: stop session... disconnect.." << endl;
+			mylog.info() << peername << "(LogSession): stop session... disconnect.." << endl;
 
 		io.stop();
 		cmdTimer.stop();
+
 		try
 		{
 			std::unique_lock<std::mutex> lk(logbuf_mutex);
 			asyncEvent.stop();
 			conn.disconnect();
 		}
-		catch(...){}
+		catch(...) {}
 
 		final();
 	}
@@ -410,7 +415,7 @@ void LogSession::readEvent( ev::io& watcher ) noexcept
 		if( mylog.is_warn() )
 			mylog.warn() << peername << "(LogSession::readEvent): " << ex.what() << endl;
 	}
-	catch(...){}
+	catch(...) {}
 
 #if 0
 	// Выводим итоговый получившийся список (с учётом выполненных команд)
@@ -604,7 +609,7 @@ void LogSession::onCheckConnectionTimer( ev::timer& watcher, int revents ) noexc
 		//
 		logbuf.emplace(new UTCPCore::Buffer(" \b"));
 	}
-	catch(...){}
+	catch(...) {}
 
 	io.set(ev::WRITE);
 	checkConnectionTimer.start( checkConnectionTime ); // restart timer
@@ -616,7 +621,7 @@ void LogSession::final() noexcept
 	{
 		slFin(this);
 	}
-	catch(...){}
+	catch(...) {}
 }
 // -------------------------------------------------------------------------
 void LogSession::connectFinalSession( FinalSlot sl ) noexcept
@@ -671,8 +676,35 @@ string LogSession::getShortInfo() noexcept
 	return std::move(inf.str());
 }
 // ---------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+Poco::JSON::Object::Ptr LogSession::httpGetShortInfo()
+{
+	Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
+
+	size_t sz = 0;
+	{
+		std::unique_lock<std::mutex> lk(logbuf_mutex);
+		sz = logbuf.size();
+	}
+
+	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+	jret->set(caddr, jdata);
+
+	jdata->set("client", caddr);
+	jdata->set("maxbufsize", maxRecordsNum);
+	jdata->set("bufsize", sz);
+	jdata->set("maxCount", maxCount);
+	jdata->set("minSizeMsg", minSizeMsg);
+	jdata->set("maxSizeMsg", maxSizeMsg);
+	jdata->set("numLostMsg", numLostMsg);
+
+	return jret;
+}
+#endif // #ifndef DISABLE_REST_API
+// ---------------------------------------------------------------------
 string LogSession::name() const noexcept
 {
 	return caddr;
 }
 // ---------------------------------------------------------------------
+} // end of namespace uniset

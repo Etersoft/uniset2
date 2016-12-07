@@ -8,7 +8,7 @@
 #include "MQMutex.h"
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // --------------------------------------------------------------------------
 MQAtomic mq; // тестируемая очередь
 
@@ -95,11 +95,11 @@ int main(int argc, const char** argv)
 
 		return 0;
 	}
-	catch( const SystemError& err )
+	catch( const uniset::SystemError& err )
 	{
 		cerr << "(mq-test): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		cerr << "(mq-test): " << ex << endl;
 	}

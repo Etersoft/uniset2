@@ -29,6 +29,11 @@
 #include "UniSetObject.h"
 #include "UniSetManager.h"
 #include "OmniThreadCreator.h"
+#include "UHttpRequestHandler.h"
+#include "UHttpServer.h"
+//----------------------------------------------------------------------------------------
+namespace uniset
+{
 //----------------------------------------------------------------------------------------
 class UniSetActivator;
 typedef std::shared_ptr<UniSetActivator> UniSetActivatorPtr;
@@ -50,10 +55,13 @@ typedef std::shared_ptr<UniSetActivator> UniSetActivatorPtr;
 */
 class UniSetActivator:
 	public UniSetManager
+#ifndef DISABLE_REST_API
+	, public uniset::UHttp::IHttpRequestRegistry
+#endif
 {
 	public:
 
-		static UniSetActivatorPtr Instance( const UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId );
+		static UniSetActivatorPtr Instance();
 		void Destroy();
 
 		std::shared_ptr<UniSetActivator> get_aptr();
@@ -64,9 +72,9 @@ class UniSetActivator:
 		virtual void stop();
 		virtual void uaDestroy(int signo = 0);
 
-		virtual UniSetTypes::ObjectType getType() override
+		virtual uniset::ObjectType getType() override
 		{
-			return UniSetTypes::ObjectType("UniSetActivator");
+			return uniset::ObjectType("UniSetActivator");
 		}
 
 		typedef sigc::signal<void, int> TerminateEvent_Signal;
@@ -82,24 +90,31 @@ class UniSetActivator:
 			return abortScript;
 		}
 
+#ifndef DISABLE_REST_API
+		// Поддрежка REST API (IHttpRequestRegistry)
+		virtual Poco::JSON::Object::Ptr httpGetByName( const std::string& name , const Poco::URI::QueryParameters& p ) override;
+		virtual Poco::JSON::Array::Ptr httpGetObjectsList( const Poco::URI::QueryParameters& p ) override;
+		virtual Poco::JSON::Object::Ptr httpHelpByName( const std::string& name, const Poco::URI::QueryParameters& p ) override;
+		virtual Poco::JSON::Object::Ptr httpRequestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) override;
+#endif
+
 	protected:
 
 		virtual void work();
 
 		CORBA::ORB_ptr getORB();
 
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 
 		// уносим в protected, т.к. Activator должен быть только один..
 		UniSetActivator();
-		UniSetActivator( const UniSetTypes::ObjectId id );
 
 		static std::shared_ptr<UniSetActivator> inst;
 
 	private:
-		friend void terminate_thread();
-		friend void finished_thread();
-		friend std::shared_ptr<UniSetTypes::Configuration> UniSetTypes::uniset_init( int argc, const char* const* argv, const std::string& xmlfile );
+		friend void uniset::terminate_thread();
+		friend void uniset::finished_thread();
+		friend std::shared_ptr<uniset::Configuration> uniset::uniset_init( int argc, const char* const* argv, const std::string& xmlfile );
 
 		static void terminated(int signo);
 		static void normalexit();
@@ -114,12 +129,20 @@ class UniSetActivator:
 		TerminateEvent_Signal s_term;
 
 		std::atomic_bool omDestroy;
-		pid_t thid; // id orb потока
+		pid_t thid = { 0 }; // id orb потока
 
 		bool _noUseGdbForStackTrace = { false };
 
 		std::string abortScript = { "" }; // скрипт вызываемый при прерывании программы (SIGSEGV,SIGABRT)
+
+#ifndef DISABLE_REST_API
+		std::shared_ptr<uniset::UHttp::UHttpServer> httpserv;
+		std::string httpHost = { "" };
+		int httpPort = { 0 };
+#endif
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 //----------------------------------------------------------------------------------------
 #endif
 //----------------------------------------------------------------------------------------

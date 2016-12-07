@@ -25,6 +25,9 @@
 #include "DebugStream.h"
 #include "LogServerTypes.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+
 class LogReader
 {
 	public:
@@ -104,6 +107,8 @@ class LogReader
 
 		DebugStream::StreamEvent_Signal m_logsig;
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // -------------------------------------------------------------------------
 #endif // LogReader_H_
 // -------------------------------------------------------------------------

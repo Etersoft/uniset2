@@ -45,6 +45,9 @@
 #ifndef vmonit
 #define vmonit( var ) vmon.add( #var, var )
 #endif
+// -------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 /*!
     \par Базовый класс для реализация обмена по протоколу Modbus [RTU|TCP].
@@ -53,7 +56,7 @@ class MBExchange:
 	public UniSetObject
 {
 	public:
-		MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+		MBExchange( uniset::ObjectId objId, uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 					const std::string& prefix = "mb" );
 		virtual ~MBExchange();
 
@@ -177,13 +180,13 @@ class MBExchange:
 			RTUDevice():
 				mbaddr(0),
 				dtype(dtUnknown),
-				resp_id(UniSetTypes::DefaultObjectId),
+				resp_id(uniset::DefaultObjectId),
 				resp_state(false),
 				resp_invert(false),
 				numreply(0),
 				prev_numreply(0),
 				ask_every_reg(false),
-				mode_id(UniSetTypes::DefaultObjectId),
+				mode_id(uniset::DefaultObjectId),
 				mode(emNone),
 				speed(ComPort::ComSpeed38400),
 				rtu188(0)
@@ -196,7 +199,7 @@ class MBExchange:
 			DeviceType dtype;    /*!< тип устройства */
 
 			// resp - respond..(контроль наличия связи)
-			UniSetTypes::ObjectId resp_id;
+			uniset::ObjectId resp_id;
 			IOController::IOStateList::iterator resp_it;
 			DelayTimer resp_Delay; // таймер для формирования задержки на отпускание (пропадание связи)
 			PassiveTimer resp_ptInit; // таймер для формирования задержки на инициализацию связи (задержка на выставление датчика связи после запуска)
@@ -211,7 +214,7 @@ class MBExchange:
 			bool ask_every_reg; /*!< опрашивать ли каждый регистр, независимо от результата опроса предыдущего. По умолчанию false - прервать опрос при первом же timeout */
 
 			// режим работы
-			UniSetTypes::ObjectId mode_id;
+			uniset::ObjectId mode_id;
 			IOController::IOStateList::iterator mode_it;
 			long mode; // режим работы с устройством (см. ExchangeMode)
 
@@ -249,13 +252,13 @@ class MBExchange:
 			return mblog;
 		}
 
-		virtual UniSetTypes::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
+		virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
 
 	protected:
 		virtual void step();
-		virtual void sysCommand( const UniSetTypes::SystemMessage* msg ) override;
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
-		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* msg ) override;
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
+		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 		virtual void askSensors( UniversalIO::UIOCommand cmd );
 		virtual void initOutput();
 		virtual void sigterm( int signo ) override;
@@ -286,7 +289,7 @@ class MBExchange:
 
 		RTUDeviceMap devices;
 		InitList initRegList;    /*!< список регистров для инициализации */
-		//		UniSetTypes::uniset_rwmutex pollMutex;
+		//		uniset::uniset_rwmutex pollMutex;
 
 		virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) = 0;
 
@@ -335,7 +338,7 @@ class MBExchange:
 		std::shared_ptr<SMInterface> shm;
 
 		timeout_t initPause = { 3000 };
-		UniSetTypes::uniset_rwmutex mutex_start;
+		uniset::uniset_rwmutex mutex_start;
 
 		bool force =  { false };        /*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
 		bool force_out = { false };    /*!< флаг означающий, принудительного чтения выходов */
@@ -345,12 +348,12 @@ class MBExchange:
 		size_t maxQueryCount = { ModbusRTU::MAXDATALEN }; /*!< максимальное количество регистров для одного запроса */
 
 		PassiveTimer ptHeartBeat;
-		UniSetTypes::ObjectId sidHeartBeat = { UniSetTypes::DefaultObjectId };
+		uniset::ObjectId sidHeartBeat = { uniset::DefaultObjectId };
 		long maxHeartBeat = { 10 };
 		IOController::IOStateList::iterator itHeartBeat;
-		UniSetTypes::ObjectId test_id = { UniSetTypes::DefaultObjectId };
+		uniset::ObjectId test_id = { uniset::DefaultObjectId };
 
-		UniSetTypes::ObjectId sidExchangeMode = { UniSetTypes::DefaultObjectId }; /*!< иденидентификатор для датчика режима работы */
+		uniset::ObjectId sidExchangeMode = { uniset::DefaultObjectId }; /*!< иденидентификатор для датчика режима работы */
 		IOController::IOStateList::iterator itExchangeMode;
 		long exchangeMode = {emNone}; /*!< режим работы см. ExchangeMode */
 
@@ -405,6 +408,8 @@ class MBExchange:
 		MBExchange();
 
 };
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // _MBExchange_H_
 // -----------------------------------------------------------------------------

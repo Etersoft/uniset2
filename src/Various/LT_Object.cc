@@ -27,7 +27,7 @@
 
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 
 // -----------------------------------------------------------------------------
 LT_Object::LT_Object():
@@ -115,7 +115,7 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
 
 		tmLast.reset();
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		ucrit << "(checkTimers): " << ex << endl;
 	}
@@ -164,7 +164,7 @@ string LT_Object::getTimerName(int id)
 }
 // ------------------------------------------------------------------------------------------
 
-timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks, UniSetTypes::Message::Priority p )
+timeout_t LT_Object::askTimer( uniset::TimerId timerid, timeout_t timeMS, clock_t ticks, uniset::Message::Priority p )
 {
 	if( timeMS > 0 ) // заказ
 	{

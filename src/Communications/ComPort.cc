@@ -34,7 +34,7 @@
 #define CMSPAR    010000000000          /* mark or space (stick) parity */
 #endif
 // --------------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------------
 ComPort::~ComPort()
@@ -64,7 +64,7 @@ void ComPort::openPort()
 	if( fd == -1 )
 	{
 		string strErr = "Unable to open " + dev + " [Error: " + strerror(errno) + "]";
-		throw UniSetTypes::SystemError(strErr.c_str());
+		throw uniset::SystemError(strErr.c_str());
 	}
 
 	/* Get the current options for the port */
@@ -248,7 +248,7 @@ unsigned char ComPort::m_receiveByte( bool wait )
 
 		if(bufLength <= 0)
 		{
-			throw UniSetTypes::TimeOut();
+			throw uniset::TimeOut();
 		}
 	}
 
@@ -264,7 +264,7 @@ void ComPort::setBlocking(bool blocking)
 		{
 			string str = "setBlocking: err: ";
 			str += strerror(errno);
-			throw UniSetTypes::SystemError(str.c_str());
+			throw uniset::SystemError(str.c_str());
 		}
 	}
 	else
@@ -273,7 +273,7 @@ void ComPort::setBlocking(bool blocking)
 		{
 			string str = "setBlocking: err: ";
 			str += strerror(errno);
-			throw UniSetTypes::SystemError(str.c_str());
+			throw uniset::SystemError(str.c_str());
 		}
 	}
 }
@@ -286,7 +286,7 @@ void ComPort::sendByte(unsigned char x)
 	{
 		string str = "Write Error: ";
 		str += strerror(errno);
-		throw UniSetTypes::SystemError(str.c_str());
+		throw uniset::SystemError(str.c_str());
 	}
 
 	//    fcntl(fd,F_SETFL,O_NONBLOCK);
@@ -312,7 +312,7 @@ size_t ComPort::sendBlock(unsigned char* msg, size_t len)
 	{
 		string str = "Write Error: ";
 		str += strerror(errno);
-		throw UniSetTypes::SystemError(str.c_str());
+		throw uniset::SystemError(str.c_str());
 	}
 
 	return sndLen;
@@ -341,7 +341,7 @@ size_t ComPort::receiveBlock(unsigned char* msg, size_t len)
 
 	if(!k)
 	{
-		throw UniSetTypes::TimeOut();
+		throw uniset::TimeOut();
 	}
 
 	return k;

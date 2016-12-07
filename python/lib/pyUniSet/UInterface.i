@@ -10,9 +10,11 @@
 
 %{
 #include "PyUInterface.h"
+#include "UProxyObject.h"
 %}
 
 /* Для генерации классов и констант в Питоне */
 %include "PyUInterface.h"
 %include "UTypes.h"
 %include "UExceptions.h"
+%include "UProxyObject.h"

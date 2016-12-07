@@ -29,11 +29,11 @@
 //#include "Configuration.h"
 // --------------------------------------------------------------------------
 using namespace omni;
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 
-ObjectRepository::ObjectRepository( const std::shared_ptr<UniSetTypes::Configuration>& _conf ):
+ObjectRepository::ObjectRepository( const std::shared_ptr<uniset::Configuration>& _conf ):
 	nsName(_conf->getNSName()),
 	uconf(_conf)
 {
@@ -88,7 +88,7 @@ throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
 {
 	ostringstream err;
 
-	uinfo << "ObjectRepository(registration): регистрируем " << name << endl;
+	ulogrep << "ObjectRepository(registration): регистрируем " << name << endl;
 
 	if( CORBA::is_nil(oRef) )
 	{
@@ -182,7 +182,7 @@ throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
  *  \exception ORepFailed - генерируется если произошла ошибка при регистрации
  *  \sa registration(const string name, const ObjectPtr oRef, const string section)
 */
-void ObjectRepository::registration( const std::string& fullName, const UniSetTypes::ObjectPtr oRef, bool force ) const
+void ObjectRepository::registration( const std::string& fullName, const uniset::ObjectPtr oRef, bool force ) const
 throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
 {
 	//    string n(ORepHelpers::getShortName(fullName));

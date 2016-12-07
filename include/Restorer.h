@@ -28,6 +28,8 @@
 #include "UniXML.h"
 #include "UniSetTypes.h"
 // --------------------------------------------------------------------------
+namespace uniset
+{
 /*!
     Это абстрактный интерфейс.
     Содержит общие для всех xxx_XML интерфейсов функции.
@@ -92,7 +94,7 @@ class Restorer_XML
 		    \return true - если идентификаторы определены
 		*/
 		bool getConsumerInfo( UniXML::iterator& it,
-							  UniSetTypes::ObjectId& cid, UniSetTypes::ObjectId& cnode );
+							  uniset::ObjectId& cid, uniset::ObjectId& cnode );
 
 		/*! Функция поиска по текущему уровню (без рекурсии для дочерних узлов) */
 		static xmlNode* find_node( const std::shared_ptr<UniXML>& xml, xmlNode* root, const std::string& nodename, const std::string& nm = "" );
@@ -105,11 +107,13 @@ class Restorer_XML
 		ReaderSlot rslot;
 		ReaderSlot cslot;
 
-		std::string i_filterField;
-		std::string i_filterValue;
-		std::string c_filterField;
-		std::string c_filterValue;
+		std::string i_filterField = { "" };
+		std::string i_filterValue = { "" };
+		std::string c_filterField = { "" };
+		std::string c_filterValue = { "" };
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // --------------------------------------------------------------------------
 #endif
 // --------------------------------------------------------------------------

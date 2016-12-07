@@ -22,7 +22,7 @@
 #include "UniSetTypes.h"
 #include "MySQLInterface.h"
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------------------
 
 MySQLInterface::MySQLInterface():

@@ -21,13 +21,10 @@
 #ifndef UniSetBaseConstants_IDL_
 #define UniSetBaseConstants_IDL_
 // --------------------------------------------------------------------------
-//module UniSet
-//{
-    module UniSetTypes
+    module uniset
     {
         const unsigned short SizeOfTransportMessage=@SIZE_OF_TRANSPORT_MESSAGE@;
         const unsigned short SizeOfObjectType=30;
     };
-//};    // end of module UniSet
 // --------------------------------------------------------------------------------------------------------------
 #endif // of UniSetBaseConstants_IDL

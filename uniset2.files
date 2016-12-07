@@ -192,6 +192,12 @@ extensions/tests/SMemoryTest/test.xml
 extensions/tests/SMemoryTest/TestProc.cc
 extensions/tests/SMemoryTest/TestProc.h
 extensions/tests/SMemoryTest/testproc.src.xml
+extensions/tests/SMemoryTest/LostTestProc.cc
+extensions/tests/SMemoryTest/LostTestProc.h
+extensions/tests/SMemoryTest/LostPassiveTestProc.cc
+extensions/tests/SMemoryTest/LostPassiveTestProc.h
+extensions/tests/SMemoryTest/losttestproc.src.xml
+extensions/tests/SMemoryTest/sm-lostmessage-test.cc
 extensions/tests/SMemoryTest/Makefile.am
 extensions/tests/MBSlaveTest/mbslave-test.cc
 extensions/tests/MBSlaveTest/test.xml
@@ -334,11 +340,16 @@ include/USocket.h
 include/UDPCore.h
 include/WDTInterface.h
 include/UHelpers.h
+include/UHttpRequestHandler.h
+include/UHttpServer.h
+include/ujson.h
 lib/Makefile.am
 python/examples/test.xml
 python/lib/pyUniSet/Makefile.am
 python/lib/pyUniSet/PyUInterface.cc
 python/lib/pyUniSet/PyUInterface.h
+python/lib/pyUniSet/UProxyObject.cc
+python/lib/pyUniSet/UProxyObject.h
 python/lib/pyUniSet/UConnector.cc
 python/lib/pyUniSet/UConnector.h
 python/lib/pyUniSet/UConnector_wrap.cxx
@@ -374,6 +385,7 @@ src/Communications/TCP/UTCPCore.cc
 src/Communications/TCP/UTCPStream.cc
 src/Communications/TCP/UTCPSocket.cc
 src/Communications/TCP/USocket.cc
+src/Communications/Http/UHttpRequestHandler.cc
 src/Communications/ComPort.cc
 src/Communications/ComPort485F.cc
 src/Communications/Makefile.am
@@ -432,6 +444,7 @@ src/Various/UniXML.cc
 src/Various/WDTInterface.cc
 src/Various/MQMutex.cc
 src/Various/MQAtomic.cc
+src/Various/ujson.cc
 src/Makefile.am
 tests/UniXmlTest/Makefile.am
 tests/UniXmlTest/XmlTest.cc
@@ -466,6 +479,7 @@ tests/test_uobject.cc
 tests/test_utcpsocket.cc
 tests/test_iocontroller_types.cc
 tests/test_debugstream.cc
+tests/test_uhttp.cc
 tests/TestUObject.h
 tests/tests-junit.xml
 tests/tests.cc
@@ -481,6 +495,7 @@ tests/umutex.cc
 tests/perf_test.cc
 tests/MQPerfTest/mq-test.cc
 tests/PocoTest/poco-test.cc
+tests/UHttpTest/uhttp-test.cc
 testsuite/Makefile.am
 Utilities/Admin/admin.cc
 Utilities/Admin/Makefile.am

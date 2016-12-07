@@ -24,8 +24,10 @@
 #include "LogAgregator.h"
 #include "Configuration.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 CommonEventLoop LogServer::loop;
 // -------------------------------------------------------------------------
@@ -36,13 +38,14 @@ LogServer::~LogServer() noexcept
 		if( isrunning )
 			loop.evstop(this);
 	}
-	catch(...){}
+	catch(...) {}
 }
 // -------------------------------------------------------------------------
 LogServer::LogServer( std::shared_ptr<LogAgregator> log ):
 	LogServer()
 {
 	elog = dynamic_pointer_cast<DebugStream>(log);
+
 	if( !elog )
 	{
 		ostringstream err;
@@ -70,7 +73,7 @@ LogServer::LogServer():
 	timeout(UniSetTimer::WaitUpTime),
 	cmdTimeout(2000),
 	sessLogLevel(Debug::NONE),
-	sock(0),
+	sock(nullptr),
 	elog(nullptr)
 {
 	slist.reserve(sessMaxCount);
@@ -130,29 +133,52 @@ void LogServer::terminate()
 // -------------------------------------------------------------------------
 bool LogServer::check( bool restart_if_fail )
 {
+	// смущает пока только, что эта функция будет вызыватся (обычно) из другого потока
+	// и как к этому отнесётся evloop
+
 	try
 	{
 		// для проверки пробуем открыть соединение..
-		UTCPSocket s(addr, port);
-		s.close();
+		UTCPStream s;
+		s.create(addr, port, 500);
+		s.disconnect();
 		return true;
 	}
-	catch(...){}
+	catch(...) {}
 
 	if( !restart_if_fail )
 		return false;
 
-	if( !sock )
-		return false;
-
 	io.stop();
-	io.set<LogServer, &LogServer::ioAccept>(this);
-	io.start(sock->getSocket(), ev::READ);
 
+	if( !sock )
+	{
+		try
+		{
+			evprepare(io.loop);
+		}
+		catch( uniset::SystemError& ex )
+		{
+			if( mylog.is_crit() )
+				mylog.crit() <<  myname << "(evprepare): " << ex << endl;
+
+			return false;
+		}
+	}
+
+	if( !io.is_active() )
+	{
+		io.set<LogServer, &LogServer::ioAccept>(this);
+		io.start(sock->getSocket(), ev::READ);
+		isrunning = true;
+	}
+
+	// Проверяем..
 	try
 	{
-		UTCPSocket s(addr, port);
-		s.close();
+		UTCPStream s;
+		s.create(addr, port, 500);
+		s.disconnect();
 		return true;
 	}
 	catch( Poco::Net::NetException& ex )
@@ -247,6 +273,7 @@ void LogServer::ioAccept( ev::io& watcher, int revents )
 		{
 			uniset_rwmutex_wrlock l(mutSList);
 			slist.push_back(s);
+
 			// на первой сессии запоминаем состояние логов
 			if( slist.size() == 1 )
 				saveDefaultLogLevels("ALL");
@@ -317,6 +344,29 @@ string LogServer::getShortInfo()
 
 	return std::move(inf.str());
 }
+// -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+Poco::JSON::Object::Ptr LogServer::httpGetShortInfo()
+{
+	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+	jdata->set("name", myname);
+	jdata->set("host", addr);
+	jdata->set("port", port);
+	jdata->set("sessMaxCount", sessMaxCount);
+
+	{
+		uniset_rwmutex_rlock l(mutSList);
+
+		Poco::JSON::Array::Ptr jsess = new Poco::JSON::Array();
+		jdata->set("sessions", jsess);
+
+		for( const auto& s : slist )
+			jsess->add(s->httpGetShortInfo());
+	}
+
+	return jdata;
+}
+#endif // #ifndef DISABLE_REST_API
 // -----------------------------------------------------------------------------
 void LogServer::saveDefaultLogLevels( const std::string& logname )
 {
@@ -436,3 +486,4 @@ std::string LogServer::onCommand( LogSession* s, LogServerTypes::Command cmd, co
 	return "";
 }
 // -----------------------------------------------------------------------------
+} // end of namespace uniset

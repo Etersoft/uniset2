@@ -3,10 +3,10 @@
 # See doc: http://www.gnu.org/software/hello/manual/autoconf/Generic-Programs.html
 
 # AC_PREREQ(2.59)
-AC_INIT([uniset2], [2.5.1], pv@etersoft.ru)
+AC_INIT([uniset2], [2.6.0], pv@etersoft.ru)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME,AC_PACKAGE_VERSION)
 
-LIBVER=2:5:0
+LIBVER=2:6:0
 AC_SUBST(LIBVER)
 
 # AC_CONFIG_MACRO_DIR([m4])
@@ -32,7 +32,7 @@ AC_ENABLE_SHARED(yes)
 AC_ENABLE_STATIC(no)
 AM_PROG_LIBTOOL
 
-ASTYLE_OPT="-A1 -T -C -S -N -L -w -Y -M -f -p --mode=c --lineend=linux --align-reference=type --align-pointer=type --suffix=none --style=ansi"
+ASTYLE_OPT="-A1 -T -C -S -L -w -Y -M -f -p --mode=c --lineend=linux --align-reference=type --align-pointer=type --suffix=none --style=ansi --max-instatement-indent=50"
 AC_SUBST(ASTYLE_OPT)
 
 # Checks for libraries.
@@ -55,11 +55,40 @@ else
 	AC_SUBST(EV_CFLAGS)
 fi
 
+#check rest api support
+AC_MSG_CHECKING([REST API support])
+buildapi=true
+AC_ARG_ENABLE(api, AC_HELP_STRING([--disable-api], [disable REST API support]),
+[ if test $enableval = yes; then buildapi=true; else buildapi=false; fi],[ buildapi=true; ])
+
+REST_API_CFLAGS=
+REST_API_CLIBS=
+DISABLE_REST_API=
+
+if test ${buildapi} = true; then
+    AC_MSG_RESULT([enabled])
+	REST_API_CLIBS="-lPocoJSON"
+else
+    AC_MSG_RESULT([disabled])
+	REST_API_CFLAGS="-DDISABLE_REST_API"
+    DISABLE_REST_API=1
+fi
+
+AM_CONDITIONAL(DISABLE_REST_API, test ${buildapi} = false)
+AC_SUBST(DISABLE_REST_API)
+AC_SUBST(REST_API_CFLAGS)
+AC_SUBST(REST_API_CLIBS)
+
 #check libpoco support
 AC_MSG_CHECKING([libpoco support])
 #AC_SEARCH_LIBS(ServerSocket,PocoNet,,exit)
 AC_CHECK_HEADER(Poco/Net/Socket.h,,exit)
 POCO_LIBS="-lPocoFoundation -lPocoNet"
+
+if test ${buildapi} = true; then
+	POCO_LIBS="$POCO_LIBS -lPocoJSON"
+fi
+
 POCO_CFLAGS="-IPoco"
 AC_SUBST(POCO_LIBS)
 AC_SUBST(POCO_CFLAGS)
@@ -68,6 +97,13 @@ AC_CHECK_HEADERS([Poco/Version.h],,poco_old=1)
 if test -n "$poco_old"; then
 	POCO_CFLAGS="${POCO_CFLAGS} -DPOCO_OLD_VERSION"
 fi
+
+#AC_MSG_CHECKING([check json])
+#if test -a "/usr/include/json.hpp"; then
+#	AC_MSG_RESULT([ok])
+#else
+#	AC_MSG_ERROR([json.hpp not found])
+#fi
 
 #check sqlite support
 AC_MSG_CHECKING([sqlite support])
@@ -101,11 +137,11 @@ AC_ARG_ENABLE(mysql, AC_HELP_STRING([--disable-mysql], [disable MySQL support]),
 [ if test $enableval = yes; then buildmysql=true; else buildmysql=false; fi],[ buildmysql=true; ])
 
 if test ${buildmysql} = true; then
-	AC_MSG_RESULT([enabled])
-	AC_CHECK_HEADERS([mysql/mysql.h])
-	AC_SEARCH_LIBS([mysql_init],mysqlclient,[],[],exit)
+    AC_MSG_RESULT([enabled])
+    AC_CHECK_HEADERS([mysql/mysql.h])
+    AC_CHECK_LIB([mysqlclient],mysql_init,,exit)
 else
-	AC_MSG_RESULT([disabled])
+    AC_MSG_RESULT([disabled])
 fi
 
 AM_CONDITIONAL(DISABLE_MYSQL, test ${buildmysql} = false)
@@ -330,7 +366,7 @@ CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Woverloaded-virtual -Woverflow -D_GLIBCXX_U
 # export
 LDFLAGS="$LDFLAGS ${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS} ${POCO_LIBS} ${EV_LIBS}"
 # all developer liked options add to autogen.sh, please
-CXXFLAGS="-I\$(top_builddir)/include $CXXFLAGS -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${POCO_CFLAGS} ${EV_CFLAGS} $CXX_EXTRA_FLAGS"
+CXXFLAGS="-I\$(top_builddir)/include $CXXFLAGS -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${REST_API_CFLAGS} ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${POCO_CFLAGS} ${EV_CFLAGS} $CXX_EXTRA_FLAGS"
 
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)
@@ -366,7 +402,7 @@ AC_C_VOLATILE
 #AC_FUNC_MALLOC
 AC_FUNC_SELECT_ARGTYPES
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS([atexit getcwd gettimeofday atomic_set])
+AC_CHECK_FUNCS([atexit getcwd])
 
 AC_CONFIG_FILES([Makefile
 				 libUniSet2.pc
@@ -378,6 +414,7 @@ AC_CONFIG_FILES([Makefile
 				 src/Communications/Makefile
 				 src/Communications/Modbus/Makefile
 				 src/Communications/TCP/Makefile
+				 src/Communications/Http/Makefile
 				 src/Interfaces/Makefile
 				 src/ObjectRepository/Makefile
 				 src/Processes/Makefile
@@ -392,6 +429,7 @@ AC_CONFIG_FILES([Makefile
 				 tests/UniXmlTest/Makefile
 				 tests/MQPerfTest/Makefile
 				 tests/PocoTest/Makefile
+				 tests/UHttpTest/Makefile
 				 docs/Makefile
 				 docs/UniSetDox.cfg
 				 docs/UniSetDoxDevel.cfg
@@ -451,6 +489,7 @@ AC_CONFIG_FILES([Makefile
 				 testsuite/Makefile
 				 python/lib/Makefile
 				 python/lib/pyUniSet/Makefile
+				 python/netdata-plugin/Makefile
 				 python/Makefile])
 				 
 

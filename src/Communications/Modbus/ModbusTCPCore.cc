@@ -18,6 +18,9 @@
 #include "modbus/ModbusTCPCore.h"
 #include "Exceptions.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 using namespace std;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
@@ -94,7 +97,7 @@ size_t ModbusTCPCore::readNextData(UTCPStream* tcp,
 #endif
 
 	if( commfail )
-		throw UniSetTypes::CommFailed();
+		throw uniset::CommFailed();
 
 	return i;
 }
@@ -118,7 +121,7 @@ size_t ModbusTCPCore::getNextData(UTCPStream* tcp,
 			if( ret == 0 )
 				return 0;
 		}
-		catch( UniSetTypes::CommFailed& ex )
+		catch( uniset::CommFailed& ex )
 		{
 			if( qrecv.empty() )
 				return 0;
@@ -198,7 +201,7 @@ size_t ModbusTCPCore::readDataFD( int fd, std::queue<unsigned char>& qrecv, size
 #endif
 
 	if( commfail )
-		throw UniSetTypes::CommFailed();
+		throw uniset::CommFailed();
 
 	return std::min(qrecv.size(), max);
 }
@@ -218,7 +221,7 @@ size_t ModbusTCPCore::getDataFD( int fd, std::queue<unsigned char>& qrecv,
 			if( ret == 0 && qrecv.empty() )
 				return 0;
 		}
-		catch( UniSetTypes::CommFailed& ex )
+		catch( uniset::CommFailed& ex )
 		{
 			if( qrecv.empty() )
 				return 0;
@@ -270,3 +273,4 @@ mbErrCode ModbusTCPCore::sendDataFD( int fd, unsigned char* buf, size_t len )
 	return erHardwareError;
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

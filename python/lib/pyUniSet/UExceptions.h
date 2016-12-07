@@ -19,7 +19,7 @@
 // --------------------------------------------------------------------------
 struct UException
 {
-	UException() {}
+	UException(): err("UException") {}
 	explicit UException( const std::string& e ): err(e) {}
 	explicit UException( const char* e ): err( std::string(e)) {}
 	~UException() {}
@@ -46,6 +46,14 @@ struct USysError:
 	USysError(): UException("USysError") {}
 	explicit USysError( const std::string& e ): UException(e) {}
 	~USysError() {}
+};
+//---------------------------------------------------------------------------
+struct UValidateError:
+	public UException
+{
+	UValidateError(): UException("UValidateError") {}
+	explicit UValidateError( const std::string& e ): UException(e) {}
+	~UValidateError() {}
 };
 //---------------------------------------------------------------------------
 #endif

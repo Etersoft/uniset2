@@ -24,7 +24,7 @@
 #include "RunLock.h"
 #include "Configuration.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 

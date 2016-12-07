@@ -108,6 +108,9 @@
 #include "Element.h"
 #include "Schema.h"
 // --------------------------------------------------------------------------
+namespace uniset
+{
+// --------------------------------------------------------------------------
 class LProcessor
 {
 	public:
@@ -150,7 +153,7 @@ class LProcessor
 
 		struct EXTInfo
 		{
-			UniSetTypes::ObjectId sid;
+			uniset::ObjectId sid;
 			UniversalIO::IOType iotype;
 			bool state;
 			std::shared_ptr<Element> el;
@@ -159,7 +162,7 @@ class LProcessor
 
 		struct EXTOutInfo
 		{
-			UniSetTypes::ObjectId sid;
+			uniset::ObjectId sid;
 			UniversalIO::IOType iotype;
 			std::shared_ptr<Element> el;
 		};
@@ -184,5 +187,7 @@ class LProcessor
 
 	private:
 };
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // ---------------------------------------------------------------------------
 #endif

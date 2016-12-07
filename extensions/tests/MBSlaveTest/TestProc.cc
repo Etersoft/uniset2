@@ -4,9 +4,9 @@
 #include "TestProc.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
-TestProc::TestProc( UniSetTypes::ObjectId id, xmlNode* confnode ):
+TestProc::TestProc( uniset::ObjectId id, xmlNode* confnode ):
 	TestProc_SK( id, confnode ),
 	state(false)
 {
@@ -65,7 +65,7 @@ void TestProc::step()
 {
 }
 // -----------------------------------------------------------------------------
-void TestProc::sysCommand( const UniSetTypes::SystemMessage* sm )
+void TestProc::sysCommand( const uniset::SystemMessage* sm )
 {
 	TestProc_SK::sysCommand(sm);
 
@@ -191,7 +191,7 @@ void TestProc::test_thresholds()
 	try
 	{
 		setValue(t_set_c, 0);
-		UniSetTypes::ThresholdId tid = 100;
+		uniset::ThresholdId tid = 100;
 		ui->askThreshold( t_set_c, tid, UniversalIO::UIONotify, 10, 20 );
 
 		IONotifyController_i::ThresholdInfo ti = ui->getThresholdInfo(t_set_c, tid);
@@ -200,7 +200,7 @@ void TestProc::test_thresholds()
 		ti = ui->getThresholdInfo(t_set_c, tid);
 		cerr << myname << ": ask ON threshold: " << ( ti.state == IONotifyController_i::HiThreshold  ? "ok" : "FAIL" ) << endl;
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		mylog2 << myname << ": CHECK 'ask and get threshold' FAILED: " << ex << endl;
 	}

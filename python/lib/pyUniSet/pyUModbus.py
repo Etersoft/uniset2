@@ -130,40 +130,6 @@ class UModbus:
 UModbus_swigregister = _pyUModbus.UModbus_swigregister
 UModbus_swigregister(UModbus)
 
-class Params:
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, Params, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, Params, name)
-    __repr__ = _swig_repr
-    max = _pyUModbus.Params_max
-
-    def __init__(self):
-        this = _pyUModbus.new_Params()
-        try:
-            self.this.append(this)
-        except Exception:
-            self.this = this
-
-    def add(self, s):
-        return _pyUModbus.Params_add(self, s)
-    __swig_setmethods__["argc"] = _pyUModbus.Params_argc_set
-    __swig_getmethods__["argc"] = _pyUModbus.Params_argc_get
-    __swig_setmethods__["argv"] = _pyUModbus.Params_argv_set
-    __swig_getmethods__["argv"] = _pyUModbus.Params_argv_get
-    __swig_getmethods__["inst"] = lambda x: _pyUModbus.Params_inst
-    __swig_destroy__ = _pyUModbus.delete_Params
-    __del__ = lambda self: None
-Params_swigregister = _pyUModbus.Params_swigregister
-Params_swigregister(Params)
-cvar = _pyUModbus.cvar
-DefaultID = cvar.DefaultID
-DefaultSupplerID = cvar.DefaultSupplerID
-
-def Params_inst():
-    return _pyUModbus.Params_inst()
-Params_inst = _pyUModbus.Params_inst
-
 class UException(Exception):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, UException, name, value)
@@ -230,6 +196,28 @@ class USysError(UException):
     __del__ = lambda self: None
 USysError_swigregister = _pyUModbus.USysError_swigregister
 USysError_swigregister(USysError)
+
+class UValidateError(UException):
+    __swig_setmethods__ = {}
+    for _s in [UException]:
+        __swig_setmethods__.update(getattr(_s, '__swig_setmethods__', {}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, UValidateError, name, value)
+    __swig_getmethods__ = {}
+    for _s in [UException]:
+        __swig_getmethods__.update(getattr(_s, '__swig_getmethods__', {}))
+    __getattr__ = lambda self, name: _swig_getattr(self, UValidateError, name)
+    __repr__ = _swig_repr
+
+    def __init__(self, *args):
+        this = _pyUModbus.new_UValidateError(*args)
+        try:
+            self.this.append(this)
+        except Exception:
+            self.this = this
+    __swig_destroy__ = _pyUModbus.delete_UValidateError
+    __del__ = lambda self: None
+UValidateError_swigregister = _pyUModbus.UValidateError_swigregister
+UValidateError_swigregister(UValidateError)
 
 # This file is compatible with both classic and new-style classes.
 

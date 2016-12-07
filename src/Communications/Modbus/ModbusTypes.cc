@@ -22,6 +22,10 @@
 #include <iomanip>
 #include "modbus/ModbusTypes.h"
 #include "UniSetTypes.h"
+#include "DebugStream.h"
+// -------------------------------------------------------------------------
+namespace uniset
+{
 // -------------------------------------------------------------------------
 using namespace ModbusRTU;
 using namespace std;
@@ -197,9 +201,9 @@ bool ModbusRTU::isWriteFunction( SlaveFunctionCode c )
 bool ModbusRTU::isReadFunction( SlaveFunctionCode c )
 {
 	if( c == fnReadCoilStatus ||
-		c == fnReadInputStatus ||
-		c == fnReadOutputRegisters ||
-		c == fnReadInputRegisters )
+			c == fnReadInputStatus ||
+			c == fnReadOutputRegisters ||
+			c == fnReadInputRegisters )
 		return true;
 
 	return false;
@@ -208,19 +212,17 @@ bool ModbusRTU::isReadFunction( SlaveFunctionCode c )
 
 std::ostream& ModbusRTU::mbPrintMessage( std::ostream& os, ModbusByte* m, size_t len )
 {
-	// Чтобы не менять настройки 'os'
-	// сперва создаём свой поток вывода...
-	ostringstream s;
+	DebugStream::IosFlagSaver ifs(os);
 
 	// << setiosflags(ios::showbase) // для вывода в формате 0xNN
-	s << hex << showbase << setfill('0'); // << showbase;
+	os << hex << showbase << setfill('0'); // << showbase;
 
 	for( size_t i = 0; i < len; i++ )
-		s << setw(2) << (short)(m[i]) << " ";
+		os << setw(2) << (short)(m[i]) << " ";
 
 	//        s << "<" << setw(2) << (int)(m[i]) << ">";
 
-	return os << s.str();
+	return os;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusHeader& m )
@@ -427,7 +429,7 @@ void ReadCoilMessage::init( const ModbusMessage& m )
 	assert( m.pduhead.func == fnReadCoilStatus );
 	//	memset(this, 0, sizeof(*this));
 	memcpy(this, &m.pduhead, sizeof(m.pduhead));
-	memcpy(&start, m.data, szData());
+	memcpy(&start, &(m.data[0]), szData());
 
 	// переворачиваем слова
 	start = SWAPSHORT(start);
@@ -1544,7 +1546,7 @@ void ForceCoilsRetMessage::init( const ModbusMessage& m )
 }
 // -------------------------------------------------------------------------
 ForceCoilsRetMessage::ForceCoilsRetMessage( ModbusAddr _from,
-		ModbusData s, ModbusData q )
+											ModbusData s, ModbusData q )
 {
 	addr     = _from;
 	func     = fnForceMultipleCoils;
@@ -1803,7 +1805,7 @@ void WriteOutputRetMessage::init( const ModbusMessage& m )
 }
 // -------------------------------------------------------------------------
 WriteOutputRetMessage::WriteOutputRetMessage( ModbusAddr _from,
-		ModbusData s, ModbusData q )
+											  ModbusData s, ModbusData q )
 {
 	addr     = _from;
 	func     = fnWriteOutputRegisters;
@@ -2273,23 +2275,23 @@ void DiagnosticMessage::init( const ModbusMessage& m )
 	func = m.pduhead.func;
 
 	memcpy( &subf, &(m.data[0]), sizeof(subf) );
-	int last = sizeof(subf);
+	size_t last = sizeof(subf);
 
-	subf =     SWAPSHORT(subf);
+	subf = SWAPSHORT(subf);
 	count = szRequestDiagnosticData((DiagnosticsSubFunction)subf );
 
 	if( count > MAXDATALEN )
 		throw mbException(erPacketTooLong);
 
-	if( count < 0 )
-		throw mbException(erBadDataValue);
+	if( count > 0 )
+	{
+		memcpy(&data, &(m.data[last]), sizeof(ModbusData)*count);
+		last += sizeof(ModbusData) * count;
 
-	memcpy(&data, &(m.data[last]), sizeof(ModbusData)*count);
-	last += sizeof(ModbusData) * count;
-
-	// переворачиваем данные
-	for( size_t i = 0; i < count; i++ )
-		data[i] = SWAPSHORT(data[i]);
+		// переворачиваем данные
+		for( size_t i = 0; i < count; i++ )
+			data[i] = SWAPSHORT(data[i]);
+	}
 
 	memcpy(&crc, &(m.data[last]), szCRC);
 }
@@ -2938,7 +2940,7 @@ ModbusAddr ModbusRTU::str2mbAddr( const std::string& val )
 	if( val.empty() )
 		return 0;
 
-	return (ModbusAddr)UniSetTypes::uni_atoi(val);
+	return (ModbusAddr)uniset::uni_atoi(val);
 }
 // -------------------------------------------------------------------------
 ModbusData ModbusRTU::str2mbData( const std::string& val )
@@ -2946,7 +2948,7 @@ ModbusData ModbusRTU::str2mbData( const std::string& val )
 	if( val.empty() )
 		return 0;
 
-	return (ModbusData)UniSetTypes::uni_atoi(val);
+	return (ModbusData)uniset::uni_atoi(val);
 }
 // -------------------------------------------------------------------------
 std::string ModbusRTU::dat2str( const ModbusData dat )
@@ -2961,10 +2963,6 @@ std::string ModbusRTU::addr2str( const ModbusAddr addr )
 	ostringstream s;
 	s << "0x" << hex << setfill('0') << setw(2) << (unsigned short)addr;
 	return s.str();
-
-	//    ostringstream s;
-	//    s << hex << setfill('0') << showbase << (int)addr;
-	//    return s.str();
 }
 // -------------------------------------------------------------------------
 std::string ModbusRTU::b2str( const ModbusByte b )
@@ -3049,17 +3047,18 @@ SetDateTimeMessage::SetDateTimeMessage()
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, SetDateTimeMessage& m )
 {
-	ostringstream s;
-	s << setfill('0')
-	  << setw(2) << (int)m.day << "-"
-	  << setw(2) << (int)m.mon << "-"
-	  << setw(2) << (int)m.century
-	  << setw(2) << (int)m.year << " "
-	  << setw(2) << (int)m.hour << ":"
-	  << setw(2) << (int)m.min << ":"
-	  << setw(2) << (int)m.sec;
+	DebugStream::IosFlagSaver ifs(os);
 
-	return os << s.str();
+	os << setfill('0')
+	   << setw(2) << (int)m.day << "-"
+	   << setw(2) << (int)m.mon << "-"
+	   << setw(2) << (int)m.century
+	   << setw(2) << (int)m.year << " "
+	   << setw(2) << (int)m.hour << ":"
+	   << setw(2) << (int)m.min << ":"
+	   << setw(2) << (int)m.sec;
+
+	return os;
 }
 
 std::ostream& ModbusRTU::operator<<(std::ostream& os, SetDateTimeMessage* m )
@@ -3111,7 +3110,7 @@ ModbusMessage SetDateTimeMessage::transport_msg()
 	    mm.data[6] = century;
 	*/
 	size_t bcnt = 7;
-	memcpy( mm.data, &hour, bcnt );
+	memcpy( mm.data, &hour, bcnt ); // копируем начиная с адреса 'hour' 7 байт.
 
 	// пересчитываем CRC
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + bcnt );
@@ -3175,17 +3174,14 @@ ModbusMessage SetDateTimeRetMessage::transport_msg()
 	// копируем заголовок и данные
 	memcpy(&mm.pduhead, this, szModbusHeader);
 
-	/*
-	    mm.data[0] = hour;
-	    mm.data[1] = min;
-	    mm.data[2] = sec;
-	    mm.data[3] = day;
-	    mm.data[4] = mon;
-	    mm.data[5] = year;
-	    mm.data[6] = century;
-	*/
 	size_t bcnt = 7;
-	memcpy( mm.data, &hour, bcnt );
+	mm.data[0] = hour;
+	mm.data[1] = min;
+	mm.data[2] = sec;
+	mm.data[3] = day;
+	mm.data[4] = mon;
+	mm.data[5] = year;
+	mm.data[6] = century;
 
 	// пересчитываем CRC
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + bcnt );
@@ -3508,8 +3504,7 @@ FileTransferRetMessage::FileTransferRetMessage( ModbusAddr _from ):
 bool FileTransferRetMessage::set( ModbusData nfile, ModbusData fpacks,
 								  ModbusData pack, ModbusByte* buf, ModbusByte len )
 {
-	if( len > sizeof(data) )
-		return false;
+	assert( std::numeric_limits<ModbusByte>::max() <= sizeof(data) );
 
 	clear();
 	memcpy(data, buf, len);
@@ -3643,6 +3638,7 @@ ModbusRTU::RegID ModbusRTU::genRegID( const ModbusRTU::ModbusData mbreg, const i
 	int fn_max = numeric_limits<ModbusRTU::ModbusByte>::max(); // по идее 255
 
 	// fn необходимо привести к диапазону 0..max
-	return max + mbreg + max + UniSetTypes::lcalibrate(fn, 0, fn_max, 0, max, false);
+	return max + mbreg + max + uniset::lcalibrate(fn, 0, fn_max, 0, max, false);
 }
 // -----------------------------------------------------------------------
+} // end of namespace uniset

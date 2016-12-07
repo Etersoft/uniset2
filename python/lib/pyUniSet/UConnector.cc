@@ -20,42 +20,38 @@
 using namespace std;
 // --------------------------------------------------------------------------
 UConnector::UConnector( UTypes::Params* p, const std::string& xfile )throw(UException):
-	conf(0),
-	ui(0),
 	xmlfile(xfile)
 {
 	try
 	{
-		conf = UniSetTypes::uniset_init(p->argc, p->argv, xmlfile);
-		ui = make_shared<UInterface>(conf);
+		conf = uniset::uniset_init(p->argc, p->argv, xmlfile);
+		ui = make_shared<uniset::UInterface>(conf);
 	}
-	catch( UniSetTypes::Exception& ex )
+	catch( std::exception& ex )
 	{
 		throw UException(ex.what());
 	}
 	catch( ... )
 	{
-		throw UException();
+		throw UException("(UConnector): Unknown exception");
 	}
 }
 //---------------------------------------------------------------------------
 UConnector::UConnector(int argc, char** argv, const string& xfile )throw(UException):
-	conf(0),
-	ui(0),
 	xmlfile(xfile)
 {
 	try
 	{
-		conf = UniSetTypes::uniset_init(argc, argv, xmlfile);
-		ui = make_shared<UInterface>(conf);
+		conf = uniset::uniset_init(argc, argv, xmlfile);
+		ui = make_shared<uniset::UInterface>(conf);
 	}
-	catch( UniSetTypes::Exception& ex )
+	catch( std::exception& ex )
 	{
 		throw UException(ex.what());
 	}
 	catch( ... )
 	{
-		throw UException();
+		throw UException("(UConnector): Unknown exception");
 	}
 }
 // --------------------------------------------------------------------------
@@ -85,7 +81,7 @@ long UConnector::getValue( long id, long node )throw(UException)
 	{
 		return ui->getValue(id, node);
 	}
-	catch( UniSetTypes::Exception& ex )
+	catch( uniset::Exception& ex )
 	{
 		throw UException(ex.what());
 	}
@@ -108,7 +104,7 @@ void UConnector::setValue( long id, long val, long node, long supplier )throw(UE
 	{
 		ui->setValue(id, val, node, supplier);
 	}
-	catch( UniSetTypes::Exception& ex )
+	catch( uniset::Exception& ex )
 	{
 		throw UException(ex.what());
 	}
@@ -118,7 +114,37 @@ void UConnector::setValue( long id, long val, long node, long supplier )throw(UE
 	}
 }
 //---------------------------------------------------------------------------
-long UConnector::getSensorID(const string& name )
+static UTypes::ShortIOInfo toUTypes( IOController_i::ShortIOInfo i )
+{
+	UTypes::ShortIOInfo ret;
+	ret.value = i.value;
+	ret.tv_sec = i.tv_sec;
+	ret.tv_nsec = i.tv_nsec;
+	ret.supplier = i.supplier;
+
+	return std::move(ret);
+}
+//---------------------------------------------------------------------------
+UTypes::ShortIOInfo UConnector::getTimeChange( long id, long node )
+{
+	if( !conf || !ui )
+		throw USysError();
+
+	if( node == UTypes::DefaultID )
+		node = conf->getLocalNode();
+
+	try
+	{
+		IOController_i::ShortIOInfo i = ui->getTimeChange(id, node);
+		return toUTypes(i);
+	}
+	catch( const std::exception& ex )
+	{
+		throw UException("(getChangedTime): catch " + std::string(ex.what()) );
+	}
+}
+//---------------------------------------------------------------------------
+long UConnector::getSensorID( const string& name )
 {
 	if( conf )
 		return conf->getSensorID(name);
@@ -145,7 +171,7 @@ string UConnector::getName( long id )
 string UConnector::getShortName( long id )
 {
 	if( conf )
-		return ORepHelpers::getShortName(conf->oind->getMapName(id));
+		return uniset::ORepHelpers::getShortName(conf->oind->getMapName(id));
 
 	return "";
 }
@@ -158,10 +184,76 @@ string UConnector::getTextName( long id )
 	return "";
 }
 //---------------------------------------------------------------------------
-long UConnector::getObjectID(const string& name )
+string UConnector::getObjectInfo( long id, const std::string& params, long node )
+throw(UException)
+{
+	if( !conf || !ui )
+		throw USysError();
+
+	if( id == UTypes::DefaultID )
+		throw UException("(getObjectInfo): Unknown ID..");
+
+	if( node == UTypes::DefaultID )
+		node = conf->getLocalNode();
+
+	try
+	{
+		return ui->getObjectInfo(id, params, node);
+	}
+	catch( std::exception& ex )
+	{
+		throw UException("(getObjectInfo): error: " + std::string(ex.what()) );
+	}
+}
+//---------------------------------------------------------------------------
+string UConnector::apiRequest( long id, const string& query, long node ) throw(UException)
+{
+	if( !conf || !ui )
+		throw USysError();
+
+	if( id == UTypes::DefaultID )
+		throw UException("(apiRequest): Unknown ID..");
+
+	if( node == UTypes::DefaultID )
+		node = conf->getLocalNode();
+
+	try
+	{
+		return ui->apiRequest(id, query, node);
+	}
+	catch( std::exception& ex )
+	{
+		throw UException("(apiRequest): error: " + std::string(ex.what()) );
+	}
+}
+//---------------------------------------------------------------------------
+void UConnector::activate_objects() throw(UException)
+{
+	try
+	{
+		auto act = uniset::UniSetActivator::Instance();
+		act->run(true);
+	}
+	catch( const std::exception& ex )
+	{
+		throw UException("(activate_objects): catch " + std::string(ex.what()) );
+	}
+}
+//---------------------------------------------------------------------------
+long UConnector::getObjectID( const string& name )
 {
 	if( conf )
-		return conf->getObjectID(name);
+	{
+		long id = conf->getObjectID(name);
+
+		if( id == UTypes::DefaultID )
+			id = conf->getControllerID(name);
+
+		if( id == UTypes::DefaultID )
+			id = conf->getServiceID(name);
+
+		return id;
+	}
 
 	return UTypes::DefaultID;
 }

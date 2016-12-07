@@ -28,7 +28,7 @@
 
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 #define MUTEX_DEBUG(m) {}
 // -----------------------------------------------------------------------------
@@ -48,7 +48,7 @@ uniset_rwmutex::~uniset_rwmutex()
 {
 }
 
-std::ostream& UniSetTypes::operator<<(std::ostream& os, uniset_rwmutex& m )
+std::ostream& uniset::operator<<(std::ostream& os, uniset_rwmutex& m )
 {
 	return os << m.name();
 }

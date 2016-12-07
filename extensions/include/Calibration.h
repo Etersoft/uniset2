@@ -22,6 +22,9 @@
 #include <vector>
 #include <deque>
 #include <ostream>
+//--------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 /*!
     Класс позволяющий загружать калибровочную
@@ -77,8 +80,8 @@ class Calibration
 {
 	public:
 		Calibration();
-		Calibration( const std::string& name, const std::string& confile = "calibration.xml", size_t reserv=50 );
-		Calibration( xmlNode* node, size_t reserv=50 );
+		Calibration( const std::string& name, const std::string& confile = "calibration.xml", size_t reserv = 50 );
+		Calibration( xmlNode* node, size_t reserv = 50 );
 		~Calibration();
 
 		/*! Тип для хранения значения */
@@ -314,6 +317,8 @@ class Calibration
 		size_t numCacheResort; // количество обращений, при которых происходит перестроение (сортировка) кэша..
 		size_t numCallToCache; // текущий счётчик обращений к кэшу
 };
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // Calibration_H_
 // -----------------------------------------------------------------------------

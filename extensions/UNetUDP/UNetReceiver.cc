@@ -23,8 +23,8 @@
 #include "UNetLogSugar.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 CommonEventLoop UNetReceiver::loop;
 // -----------------------------------------------------------------------------
@@ -49,9 +49,9 @@ UNetReceiver::UNetReceiver(const std::string& s_host, int _port, const std::shar
 	prepareTime(2000),
 	lostTimeout(200), /* 2*updatepause */
 	lostPackets(0),
-	sidRespond(UniSetTypes::DefaultObjectId),
+	sidRespond(uniset::DefaultObjectId),
 	respondInvert(false),
-	sidLostPackets(UniSetTypes::DefaultObjectId),
+	sidLostPackets(uniset::DefaultObjectId),
 	activated(false),
 	pnum(0),
 	maxDifferens(20),
@@ -126,7 +126,7 @@ void UNetReceiver::setUpdatePause( timeout_t msec ) noexcept
 	updatepause = msec;
 
 	if( upStrategy == useUpdateEventLoop && evUpdate.is_active() )
-		evUpdate.start(0, (float)updatepause/1000.);
+		evUpdate.start(0, (float)updatepause / 1000.);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setMaxProcessingCount( int set ) noexcept
@@ -139,14 +139,14 @@ void UNetReceiver::setMaxDifferens( unsigned long set ) noexcept
 	maxDifferens = set;
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setRespondID( UniSetTypes::ObjectId id, bool invert ) noexcept
+void UNetReceiver::setRespondID( uniset::ObjectId id, bool invert ) noexcept
 {
 	sidRespond = id;
 	respondInvert = invert;
 	shm->initIterator(itRespond);
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setLostPacketsID( UniSetTypes::ObjectId id ) noexcept
+void UNetReceiver::setLostPacketsID( uniset::ObjectId id ) noexcept
 {
 	sidLostPackets = id;
 	shm->initIterator(itLostPackets);
@@ -178,6 +178,7 @@ bool UNetReceiver::createConnection( bool throwEx )
 		udp = make_shared<UDPReceiveU>(addr, port);
 		udp->setBlocking(false); // делаем неблокирующее чтение (нужно для libev)
 		evReceive.set<UNetReceiver, &UNetReceiver::callback>(this);
+
 		if( upStrategy == useUpdateEventLoop )
 			evUpdate.set<UNetReceiver, &UNetReceiver::updateEvent>(this);
 
@@ -241,7 +242,7 @@ void UNetReceiver::evprepare( const ev::loop_ref& eloop ) noexcept
 	{
 		evUpdate.set(eloop);
 		evUpdate.start();
-		evUpdate.start( 0, ((float)updatepause/1000.) );
+		evUpdate.start( 0, ((float)updatepause / 1000.) );
 	}
 
 	if( !udp )
@@ -282,7 +283,7 @@ void UNetReceiver::evfinish( const ev::loop_ref& eloop ) noexcept
 // -----------------------------------------------------------------------------
 void UNetReceiver::forceUpdate() noexcept
 {
-	pack_guard l(packMutex,upStrategy);
+	pack_guard l(packMutex, upStrategy);
 	pnum = 0; // сбрасываем запомненый номер последнего обработанного пакета
 	// и тем самым заставляем обновить данные в SM (см. update)
 }
@@ -298,10 +299,10 @@ void UNetReceiver::statisticsEvent(ev::periodic& tm, int revents) noexcept
 	statRecvPerSec = recvCount;
 	statUpPerSec = upCount;
 
-//	unetlog9 << myname << "(statisctics):"
-//			 << " recvCount=" << recvCount << "[per sec]"
-//			 << " upCount=" << upCount << "[per sec]"
-//			 << endl;
+	//	unetlog9 << myname << "(statisctics):"
+	//			 << " recvCount=" << recvCount << "[per sec]"
+	//			 << " upCount=" << upCount << "[per sec]"
+	//			 << endl;
 
 	recvCount = 0;
 	upCount = 0;
@@ -321,7 +322,7 @@ void UNetReceiver::update() noexcept
 	{
 		{
 			// lock qpack
-			pack_guard l(packMutex,upStrategy);
+			pack_guard l(packMutex, upStrategy);
 
 			if( qpack.empty() )
 				return;
@@ -419,7 +420,7 @@ void UNetReceiver::update() noexcept
 
 				shm->localSetValue(ii.ioit, id, val, shm->ID());
 			}
-			catch( const UniSetTypes::Exception& ex)
+			catch( const uniset::Exception& ex)
 			{
 				unetcrit << myname << "(update): " << ex << std::endl;
 			}
@@ -453,7 +454,7 @@ void UNetReceiver::update() noexcept
 
 				shm->localSetValue(ii.ioit, d.id, d.val, shm->ID());
 			}
-			catch( const UniSetTypes::Exception& ex)
+			catch( const uniset::Exception& ex)
 			{
 				unetcrit << myname << "(update): " << ex << std::endl;
 			}
@@ -477,6 +478,9 @@ void UNetReceiver::updateThread() noexcept
 		{
 			unetcrit << myname << "(update_thread): " << ex.what() << endl;
 		}
+
+		// смотрим есть ли связь..
+		checkConnection();
 
 		if( sidRespond != DefaultObjectId )
 		{
@@ -524,8 +528,6 @@ void UNetReceiver::readEvent( ev::io& watcher ) noexcept
 	if( !activated )
 		return;
 
-	bool tout = false;
-
 	try
 	{
 		if( receive() )
@@ -534,7 +536,7 @@ void UNetReceiver::readEvent( ev::io& watcher ) noexcept
 			ptRecvTimeout.reset();
 		}
 	}
-	catch( UniSetTypes::Exception& ex)
+	catch( uniset::Exception& ex)
 	{
 		unetwarn << myname << "(receive): " << ex << std::endl;
 	}
@@ -542,6 +544,11 @@ void UNetReceiver::readEvent( ev::io& watcher ) noexcept
 	{
 		unetwarn << myname << "(receive): " << e.what() << std::endl;
 	}
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::checkConnection()
+{
+	bool tout = false;
 
 	// делаем через промежуточную переменную
 	// чтобы поскорее освободить mutex
@@ -588,6 +595,9 @@ void UNetReceiver::updateEvent( ev::periodic& tm, int revents ) noexcept
 	{
 		unetcrit << myname << "(updateEvent): " << ex.what() << std::endl;
 	}
+
+	// смотрим есть ли связь..
+	checkConnection();
 
 	if( sidRespond != DefaultObjectId )
 	{
@@ -675,6 +685,11 @@ bool UNetReceiver::receive() noexcept
 		unetcrit << myname << "(receive): recv err: " << ex.displayText() << endl;
 		return false;
 	}
+	catch( exception& ex )
+	{
+		unetcrit << myname << "(receive): recv err: " << ex.what() << endl;
+		return false;
+	}
 
 	if( pack.magic != UniSetUDP::UNETUDP_MAGICNUM )
 	{
@@ -720,7 +735,7 @@ bool UNetReceiver::receive() noexcept
 
 	{
 		// lock qpack
-		pack_guard l(packMutex,upStrategy);
+		pack_guard l(packMutex, upStrategy);
 
 		if( !waitClean )
 		{
@@ -878,6 +893,7 @@ string UNetReceiver::to_string( UNetReceiver::UpdateStrategy s ) noexcept
 {
 	if( s == useUpdateThread )
 		return "thread";
+
 	if( s == useUpdateEventLoop )
 		return "evloop";
 
@@ -917,7 +933,7 @@ const std::string UNetReceiver::getShortInfo() const noexcept
 	  << "    recvOK=" << isRecvOK()
 	  << " receivepack=" << rnum
 	  << " lostPackets=" << setw(6) << getLostPacketsNum()
-	  << " updateStartegy=" << to_string(upStrategy)
+	  << " updateStrategy=" << to_string(upStrategy)
 	  << endl
 	  << "\t["
 	  << " recvTimeout=" << setw(6) << recvTimeout

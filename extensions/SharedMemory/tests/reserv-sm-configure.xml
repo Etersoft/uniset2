@@ -41,8 +41,8 @@
 
 		</sensors>
 		<thresholds name="thresholds">
-			<sensor iotype="AI" name="AI1_AS">
-				<threshold hilimit="376" id="1" lowlimit="374" name="t1" sensibility="0" sid="Threshold1_S"/>
+			<sensor name="AI1_AS">
+				<threshold hilimit="376" id="1" lowlimit="374" name="t1" sid="Threshold1_S"/>
 			</sensor>
 		</thresholds>
 		<controllers name="Controllers">

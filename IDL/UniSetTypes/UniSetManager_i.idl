@@ -40,7 +40,7 @@
     interface UniSetManager_i : UniSetObject_i
     {
         /*!< распространить сообщение всем подчиненным объектам */
-        void broadcast(in UniSetTypes::TransportMessage msg);
+        void broadcast(in uniset::TransportMessage msg);
 
         /*! получение информации о состоянии подчиненных объектов(менеджеров)
          * \param userparam - Необязательный пользовательский параметр (см. UniSetObject_i::getInfo()).
@@ -58,7 +58,7 @@
          * \todo Подумать насчет применения итератора, при слишком
          * большом( >1000 ) количестве подчиненных объектов...
          */
-        UniSetTypes::SimpleInfoSeq getObjectsInfo( in long MaxLength, in long userparam );
+        uniset::SimpleInfoSeq getObjectsInfo( in long MaxLength, in string userparam );
     };
 
 //};    // end of module UniSet

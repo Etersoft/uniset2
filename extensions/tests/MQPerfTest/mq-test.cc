@@ -5,8 +5,8 @@
 #include "TestProc.h"
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // --------------------------------------------------------------------------
 int main(int argc, const char** argv)
 {
@@ -16,7 +16,7 @@ int main(int argc, const char** argv)
 
 		auto act = UniSetActivator::Instance();
 
-		auto tp = UniSetTypes::make_object<TestProc>("TestProc1", "TestProc");
+		auto tp = uniset::make_object<TestProc>("TestProc1", "TestProc");
 		act->add(tp);
 
 		SystemMessage sm(SystemMessage::StartUp);
@@ -49,11 +49,11 @@ int main(int argc, const char** argv)
 
 		return 0;
 	}
-	catch( const SystemError& err )
+	catch( const uniset::SystemError& err )
 	{
 		cerr << "(mq-test): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		cerr << "(mq-test): " << ex << endl;
 	}

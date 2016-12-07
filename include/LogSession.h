@@ -27,7 +27,13 @@
 #include "UTCPCore.h"
 #include "UTCPStream.h"
 #include "LogAgregator.h"
+#ifndef DISABLE_REST_API
+#include <Poco/JSON/Object.h>
+#endif
 // -------------------------------------------------------------------------
+namespace uniset
+{
+
 /*! Реализация "сессии" для клиентов LogServer. */
 class LogSession
 {
@@ -75,9 +81,13 @@ class LogSession
 
 		bool isAcive() const noexcept;
 
+		std::string name() const noexcept;
+
 		std::string getShortInfo() noexcept;
 
-		std::string name() const noexcept;
+#ifndef DISABLE_REST_API
+		Poco::JSON::Object::Ptr httpGetShortInfo();
+#endif
 
 	protected:
 		//		LogSession( ost::TCPSocket& server );
@@ -137,6 +147,8 @@ class LogSession
 
 		DebugStream mylog;
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // -------------------------------------------------------------------------
 #endif // LogSession_H_
 // -------------------------------------------------------------------------

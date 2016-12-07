@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <sstream>
 #include <chrono>
+#include <Poco/Process.h>
 
 #include "Exceptions.h"
 #include "ORepHelpers.h"
@@ -38,7 +39,8 @@
 
 // ------------------------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+namespace uniset
+{
 
 #define CREATE_TIMER    make_shared<PassiveCondTimer>();
 // new PassiveSysTimer();
@@ -49,10 +51,10 @@ UniSetObject::UniSetObject():
 	regOK(false),
 	active(0),
 	threadcreate(false),
-	myid(UniSetTypes::DefaultObjectId),
+	myid(uniset::DefaultObjectId),
 	oref(0)
 {
-	ui = make_shared<UInterface>(UniSetTypes::DefaultObjectId);
+	ui = make_shared<UInterface>(uniset::DefaultObjectId);
 
 	tmr = CREATE_TIMER;
 	myname = "noname";
@@ -80,7 +82,7 @@ UniSetObject::UniSetObject( ObjectId id ):
 	else
 	{
 		threadcreate = false;
-		myid = UniSetTypes::DefaultObjectId;
+		myid = uniset::DefaultObjectId;
 		myname = "UnknownUniSetObject";
 		section = "UnknownSection";
 	}
@@ -94,10 +96,10 @@ UniSetObject::UniSetObject( const string& name, const string& section ):
 	regOK(false),
 	active(0),
 	threadcreate(true),
-	myid(UniSetTypes::DefaultObjectId),
+	myid(uniset::DefaultObjectId),
 	oref(0)
 {
-	ui = make_shared<UInterface>(UniSetTypes::DefaultObjectId);
+	ui = make_shared<UInterface>(uniset::DefaultObjectId);
 
 	/*! \warning UniverslalInterface не инициализируется идентификатором объекта */
 	tmr = CREATE_TIMER;
@@ -134,13 +136,19 @@ void UniSetObject::initObject()
 
 	auto conf = uniset_conf();
 
+	if( !conf )
+	{
+		ostringstream err;
+		err << myname << "(initObject): Unknown configuration!!";
+		throw SystemError(err.str());
+	}
+
 	int sz = conf->getArgPInt("--uniset-object-size-message-queue", conf->getField("SizeOfMessageQueue"), 1000);
 
 	if( sz > 0 )
 		setMaxSizeOfMessageQueue(sz);
 
-	uinfo << myname << "(init): SizeOfMessageQueue=" << getMaxSizeOfMessageQueue()
-		  << endl;
+	uinfo << myname << "(init): SizeOfMessageQueue=" << getMaxSizeOfMessageQueue() << endl;
 }
 // ------------------------------------------------------------------------------------------
 
@@ -156,9 +164,9 @@ bool UniSetObject::init( const std::weak_ptr<UniSetManager>& om )
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-void UniSetObject::setID( UniSetTypes::ObjectId id )
+void UniSetObject::setID( uniset::ObjectId id )
 {
-	if( myid != UniSetTypes::DefaultObjectId )
+	if( myid != uniset::DefaultObjectId )
 		throw ObjectNameAlready("ObjectId already set(setID)");
 
 	string myfullname = ui->getNameById(id);
@@ -218,11 +226,11 @@ VoidMessagePtr UniSetObject::waitMessage( timeout_t timeMS )
 // ------------------------------------------------------------------------------------------
 void UniSetObject::registered()
 {
-	uinfo << myname << ": registration..." << endl;
+	ulogrep << myname << ": registration..." << endl;
 
-	if( myid == UniSetTypes::DefaultObjectId )
+	if( myid == uniset::DefaultObjectId )
 	{
-		uinfo << myname << "(registered): myid=DefaultObjectId \n";
+		ulogrep << myname << "(registered): Don`t registration. myid=DefaultObjectId \n";
 		return;
 	}
 
@@ -236,7 +244,7 @@ void UniSetObject::registered()
 	}
 
 	{
-		UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
+		uniset::uniset_rwmutex_rlock lock(refmutex);
 
 		if( !oref )
 		{
@@ -275,9 +283,10 @@ void UniSetObject::registered()
 	catch( ORepFailed )
 	{
 		string err(myname + ": don`t registration in object reposotory");
+		uwarn << myname << "(registered):  " << err << endl;
 		throw ORepFailed(err);
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		uwarn << myname << "(registered):  " << ex << endl;
 		string err(myname + ": don`t registration in object reposotory");
@@ -292,7 +301,7 @@ void UniSetObject::unregister()
 	if( myid < 0 ) // || !reg )
 		return;
 
-	if( myid == UniSetTypes::DefaultObjectId )
+	if( myid == uniset::DefaultObjectId )
 	{
 		uinfo << myname << "(unregister): myid=DefaultObjectId \n";
 		regOK = false;
@@ -300,7 +309,7 @@ void UniSetObject::unregister()
 	}
 
 	{
-		UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
+		uniset::uniset_rwmutex_rlock lock(refmutex);
 
 		if( !oref )
 		{
@@ -345,6 +354,11 @@ string UniSetObject::getName() const
 	return myname;
 }
 // ------------------------------------------------------------------------------------------
+const string UniSetObject::getStrType()
+{
+	return CORBA::string_dup(getType());
+}
+// ------------------------------------------------------------------------------------------
 void UniSetObject::termWaiting()
 {
 	if( tmr )
@@ -373,10 +387,46 @@ void UniSetObject::push( const TransportMessage& tm )
 	termWaiting();
 }
 // ------------------------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+Poco::JSON::Object::Ptr UniSetObject::httpGet( const Poco::URI::QueryParameters& p )
+{
+	Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
+	Poco::JSON::Object::Ptr jdata = uniset::json::make_child(jret, "object");
+
+	jdata->set("name", myname);
+	jdata->set("id", getId());
+	jdata->set("msgCount", countMessages());
+	jdata->set("lostMessages", getCountOfLostMessages());
+	jdata->set("maxSizeOfMessageQueue", getMaxSizeOfMessageQueue());
+	jdata->set("isActive", isActive());
+	jdata->set("objectType", getStrType());
+	return jret;
+}
+// ------------------------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UniSetObject::httpHelp( const Poco::URI::QueryParameters& p )
+{
+	uniset::json::help::object myhelp(myname);
+	return myhelp;
+}
+// ------------------------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UniSetObject::httpGetMyInfo( Poco::JSON::Object::Ptr root )
+{
+	Poco::JSON::Object::Ptr my = uniset::json::make_child(root, "object");
+	my->set("name", myname);
+	my->set("id", getId());
+	my->set("msgCount", countMessages());
+	my->set("lostMessages", getCountOfLostMessages());
+	my->set("maxSizeOfMessageQueue", getMaxSizeOfMessageQueue());
+	my->set("isActive", isActive());
+	my->set("objectType", getStrType());
+	return my;
+}
+#endif
+// ------------------------------------------------------------------------------------------
 ObjectPtr UniSetObject::getRef() const
 {
-	UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
-	return (UniSetTypes::ObjectPtr)CORBA::Object::_duplicate(oref);
+	uniset::uniset_rwmutex_rlock lock(refmutex);
+	return (uniset::ObjectPtr)CORBA::Object::_duplicate(oref);
 }
 // ------------------------------------------------------------------------------------------
 size_t UniSetObject::countMessages()
@@ -501,7 +551,7 @@ bool UniSetObject::deactivate()
 	{
 		uwarn << myname << "(deactivate): " << "поймали CORBA::Exception." << endl;
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		uwarn << myname << "(deactivate): " << ex << endl;
 	}
@@ -537,37 +587,52 @@ bool UniSetObject::activate()
 		throw ORepFailed(err);
 	}
 
-	if( uniset_conf()->isTransientIOR() )
+	try
 	{
-		// activate witch generate id
-		poa->activate_object(static_cast<PortableServer::ServantBase*>(this));
-	}
-	else
-	{
-		// А если myid==UniSetTypes::DefaultObjectId
-		// то myname = noname. ВСЕГДА!
-		if( myid == UniSetTypes::DefaultObjectId )
+		if( uniset_conf()->isTransientIOR() )
 		{
-			ucrit << myname << "(activate): Не задан ID!!! activate failure..." << endl;
-			// вызываем на случай если она переопределена в дочерних классах
-			// Например в UniSetManager, если здесь не вызвать, то не будут инициализированы подчинённые объекты.
-			// (см. UniSetManager::activateObject)
-			activateObject();
-			return false;
+			// activate witch generate id
+			poa->activate_object(static_cast<PortableServer::ServantBase*>(this));
+		}
+		else
+		{
+			// А если myid==uniset::DefaultObjectId
+			// то myname = noname. ВСЕГДА!
+			if( myid == uniset::DefaultObjectId )
+			{
+				ucrit << myname << "(activate): Не задан ID!!! activate failure..." << endl;
+				// вызываем на случай если она переопределена в дочерних классах
+				// Например в UniSetManager, если здесь не вызвать, то не будут инициализированы подчинённые объекты.
+				// (см. UniSetManager::activateObject)
+				activateObject();
+				return false;
+			}
+
+			// Always use the same object id.
+			PortableServer::ObjectId_var oid =
+				PortableServer::string_to_ObjectId(myname.c_str());
+
+			//        cerr << myname << "(activate): " << _refcount_value() << endl;
+
+			// Activate object...
+			poa->activate_object_with_id(oid, this);
+		}
+	}
+	catch( const CORBA::Exception& ex )
+	{
+		if( string(ex._name()) != "ObjectAlreadyActive" )
+		{
+			ostringstream err;
+			err << myname << "(activate): ACTIVATE ERROR: " << ex._name();
+			ucrit << myname << "(activate): " << err.str() << endl;
+			throw uniset::SystemError(err.str());
 		}
 
-		// Always use the same object id.
-		PortableServer::ObjectId_var oid =
-			PortableServer::string_to_ObjectId(myname.c_str());
-
-		//        cerr << myname << "(activate): " << _refcount_value() << endl;
-
-		// Activate object...
-		poa->activate_object_with_id(oid, this);
+		uwarn << myname << "(activate): IGNORE.. catch " << ex._name() << endl;
 	}
 
 	{
-		UniSetTypes::uniset_rwmutex_wrlock lock(refmutex);
+		uniset::uniset_rwmutex_wrlock lock(refmutex);
 		oref = poa->servant_to_reference(static_cast<PortableServer::ServantBase*>(this) );
 	}
 
@@ -575,7 +640,7 @@ bool UniSetObject::activate()
 	// Запускаем поток обработки сообщений
 	setActive(true);
 
-	if( myid != UniSetTypes::DefaultObjectId && threadcreate )
+	if( myid != uniset::DefaultObjectId && threadcreate )
 	{
 		thr = make_shared< ThreadCreator<UniSetObject> >(this, &UniSetObject::work);
 		//thr->setCancel(ost::Thread::cancelDeferred);
@@ -601,7 +666,7 @@ void UniSetObject::work()
 {
 	uinfo << myname << ": thread processing messages running..." << endl;
 
-	msgpid = thr ? thr->getTID() : getpid();
+	msgpid = thr ? thr->getTID() : Poco::Process::id();
 
 	{
 		std::unique_lock<std::mutex> locker(m_working);
@@ -636,13 +701,13 @@ void UniSetObject::callback()
 
 		sleepTime = checkTimers(this);
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		ucrit << myname << "(callback): " << ex << endl;
 	}
 }
 // ------------------------------------------------------------------------------------------
-void UniSetObject::processingMessage( const UniSetTypes::VoidMessage* msg )
+void UniSetObject::processingMessage( const uniset::VoidMessage* msg )
 {
 	try
 	{
@@ -664,7 +729,7 @@ void UniSetObject::processingMessage( const UniSetTypes::VoidMessage* msg )
 				break;
 		}
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		ucrit  << myname << "(processingMessage): " << ex << endl;
 	}
@@ -711,12 +776,13 @@ timeout_t UniSetObject::askTimer( TimerId timerid, timeout_t timeMS, clock_t tic
 }
 // ------------------------------------------------------------------------------------------
 
-UniSetTypes::SimpleInfo* UniSetObject::getInfo( ::CORBA::Long userparam )
+uniset::SimpleInfo* UniSetObject::getInfo( const char* userparam )
 {
 	ostringstream info;
 	info.setf(ios::left, ios::adjustfield);
 	info << "(" << myid << ")" << setw(40) << myname << "\n==================================================\n";
-	info << "tid=" << setw(10);
+	info << "pid=" << setw(10) << Poco::Process::id();
+	info << " tid=" << setw(10);
 
 	if( threadcreate )
 	{
@@ -749,6 +815,93 @@ UniSetTypes::SimpleInfo* UniSetObject::getInfo( ::CORBA::Long userparam )
 	return res; // ._retn();
 }
 // ------------------------------------------------------------------------------------------
+SimpleInfo* UniSetObject::apiRequest( const char* request )
+{
+#ifdef DISABLE_REST_API
+	return getInfo(request);
+#else
+	SimpleInfo* ret = new SimpleInfo();
+	ostringstream err;
+
+	try
+	{
+		Poco::URI uri(request);
+
+		if( ulog()->is_level9() )
+			ulog()->level9() << myname << "(apiRequest): request: " << request << endl;
+
+		ostringstream out;
+		std::string query = "";
+
+		// Пока не будем требовать обязательно использовать формат /api/vesion/query..
+		// но если указан, то проверяем..
+		std::vector<std::string> seg;
+		uri.getPathSegments(seg);
+
+		if( seg.size() > 0 && seg[0] == "api" )
+		{
+			// проверка: /api/version/query[?params]..
+			if( seg.size() < 2 || seg[1] != UHttp::UHTTP_API_VERSION )
+			{
+				Poco::JSON::Object jdata;
+				jdata.set("error", Poco::Net::HTTPServerResponse::getReasonForStatus(Poco::Net::HTTPResponse::HTTP_BAD_REQUEST));
+				jdata.set("ecode", (int)Poco::Net::HTTPResponse::HTTP_BAD_REQUEST);
+				jdata.set("message", "BAD REQUEST STRUCTURE");
+				jdata.stringify(out);
+				ret->info = out.str().c_str(); // CORBA::string_dup(..)
+				return ret;
+			}
+
+			if( seg.size() > 2 )
+				query = seg[2];
+		}
+		else if( seg.size() == 1 )
+			query = seg[0];
+
+		// обработка запроса..
+		if( query == "help" )
+		{
+			// запрос вида: /help?params
+			auto reply = httpHelp(uri.getQueryParameters());
+			reply->stringify(out);
+		}
+		else if( !query.empty() )
+		{
+			// запрос вида: /cmd?params
+			auto reply = httpRequest(query, uri.getQueryParameters());
+			reply->stringify(out);
+		}
+		else
+		{
+			// запрос без команды /?params
+			auto reply = httpGet(uri.getQueryParameters());
+			reply->stringify(out);
+		}
+
+		ret->info = out.str().c_str(); // CORBA::string_dup(..)
+		return ret;
+	}
+	catch( Poco::SyntaxException& ex )
+	{
+		err << ex.displayText();
+	}
+	catch( std::exception& ex )
+	{
+		err << ex.what();
+	}
+
+	Poco::JSON::Object jdata;
+	jdata.set("error", err.str());
+	jdata.set("ecode", Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+
+	ostringstream out;
+	jdata.stringify(out);
+	ret->info = out.str().c_str(); // CORBA::string_dup(..)
+	return ret;
+
+#endif
+}
+// ------------------------------------------------------------------------------------------
 ostream& operator<<(ostream& os, UniSetObject& obj )
 {
 	SimpleInfo_var si = obj.getInfo();
@@ -756,3 +909,4 @@ ostream& operator<<(ostream& os, UniSetObject& obj )
 }
 // ------------------------------------------------------------------------------------------
 #undef CREATE_TIMER
+} // end of namespace uniset

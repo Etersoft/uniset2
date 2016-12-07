@@ -26,6 +26,9 @@
 #include "UniSetTypes.h"
 #include "SQLiteInterface.h"
 #include "DBServer.h"
+// -------------------------------------------------------------------------
+namespace uniset
+{
 //------------------------------------------------------------------------------------------
 /*!
       \page page_DBServer_SQLite (DBServer_SQLite) Реализация сервиса ведения БД на основе SQLite
@@ -135,7 +138,7 @@ class DBServer_SQLite:
 	public DBServer
 {
 	public:
-		DBServer_SQLite( UniSetTypes::ObjectId id, const std::string& prefix );
+		DBServer_SQLite( uniset::ObjectId id, const std::string& prefix );
 		explicit DBServer_SQLite( const std::string& prefix );
 		virtual ~DBServer_SQLite();
 
@@ -161,10 +164,10 @@ class DBServer_SQLite:
 		virtual void initDB( std::shared_ptr<SQLiteInterface>& db ) {};
 		virtual void initDBTableMap(DBTableMap& tblMap) {};
 
-		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
-		virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ) override;
+		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
+		virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) override;
 
 		bool writeToBase( const string& query );
 		void createTables( SQLiteInterface* db );
@@ -196,11 +199,13 @@ class DBServer_SQLite:
 		bool lastRemove;
 
 		void flushBuffer();
-		UniSetTypes::uniset_rwmutex mqbuf;
+		uniset::uniset_rwmutex mqbuf;
 
 	private:
 		DBTableMap tblMap;
 
 };
+// ----------------------------------------------------------------------------------
+} // end of namespace uniset
 //------------------------------------------------------------------------------------------
 #endif

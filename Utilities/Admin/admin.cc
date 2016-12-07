@@ -14,12 +14,13 @@
 #include "UniSetTypes.h"
 #include "UniSetManager.h"
 #include "MessageType.h"
+#include "UInterface.h"
 #include "Configuration.h"
 #include "ObjectIndex_XML.h"
 #include "Debug.h"
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // --------------------------------------------------------------------------
 enum Command
 {
@@ -48,10 +49,12 @@ static struct option longopts[] =
 	{ "getValue", required_argument, 0, 'g' },
 	{ "getRawValue", required_argument, 0, 'w' },
 	{ "getCalibrate", required_argument, 0, 'y' },
-	{ "getChangedTime", required_argument, 0, 't' },
+	{ "getTimeChange", required_argument, 0, 't' },
 	{ "oinfo", required_argument, 0, 'p' },
+	{ "apiRequest", required_argument, 0, 'a' },
 	{ "verbose", no_argument, 0, 'v' },
 	{ "quiet", no_argument, 0, 'q' },
+	{ "csv", required_argument, 0, 'z' },
 	{ NULL, 0, 0, 0 }
 };
 
@@ -60,7 +63,8 @@ string conffile("configure.xml");
 // --------------------------------------------------------------------------
 static bool commandToAll( const string& section, std::shared_ptr<ObjectRepository>& rep, Command cmd );
 static void createSections(const std::shared_ptr<Configuration>& c );
-static void errDoNotReolve( const std::string& oname );
+static void errDoNotResolve( const std::string& oname );
+static char* checkArg( int ind, int argc, char* argv[] );
 // --------------------------------------------------------------------------
 int omap();
 int configure( const string& args, UInterface& ui );
@@ -68,10 +72,11 @@ int logRotate( const string& args, UInterface& ui );
 int setValue( const string& args, UInterface& ui );
 int getValue( const string& args, UInterface& ui );
 int getRawValue( const string& args, UInterface& ui );
-int getChangedTime( const string& args, UInterface& ui );
+int getTimeChange( const string& args, UInterface& ui );
 int getState( const string& args, UInterface& ui );
 int getCalibrate( const string& args, UInterface& ui );
-int oinfo(const string& args, UInterface& ui , int userparam );
+int oinfo(const string& args, UInterface& ui , const string&  userparam );
+int apiRequest( const string& args, UInterface& ui, const string& query );
 // --------------------------------------------------------------------------
 static void print_help(int width, const string& cmd, const string& help, const string& tab = " " )
 {
@@ -109,14 +114,18 @@ static void usage()
 	print_help(36, "-p|--oinfo id1@node1,id2@node2,id3,... [userparam]", "Получить информацию об объектах (SimpleInfo). \n userparam - необязательный параметр передаваемый в getInfo() каждому объекту\n");
 	print_help(36, "", "userparam - необязательный параметр передаваемый в getInfo() каждому объекту\n");
 	cout << endl;
+	print_help(36, "-a|--apiRequest id1@node1,id2@node2,id3,... query", "Вызов REST API для каждого объекта\n");
+	print_help(36, "", "query - Запрос вида: /api/VERSION/query[?param1&param2...]\n");
+	cout << endl;
 	print_help(48, "-x|--setValue id1@node1=val,id2@node2=val2,id3=val3,.. ", "Выставить значения датчиков\n");
 	print_help(36, "-g|--getValue id1@node1,id2@node2,id3,id4 ", "Получить значения датчиков.\n");
 	cout << endl;
 	print_help(36, "-w|--getRawValue id1@node1,id2@node2,id3,.. ", "Получить 'сырое' значение.\n");
 	print_help(36, "-y|--getCalibrate id1@node1,id2@node2,id3,.. ", "Получить параметры калибровки.\n");
-	print_help(36, "-t|--getChangedTime id1@node1,id2@node2,id3,.. ", "Получить время последнего изменения.\n");
+	print_help(36, "-t|--getTimeChange id1@node1,id2@node2,id3,.. ", "Получить время последнего изменения.\n");
 	print_help(36, "-v|--verbose", "Подробный вывод логов.\n");
 	print_help(36, "-q|--quiet", "Выводит только результат.\n");
+	print_help(36, "-z|--csv", "Вывести результат (getValue) в виде val1,val2,val3...\n");
 	cout << endl;
 }
 
@@ -129,6 +138,7 @@ static void usage()
 // --------------------------------------------------------------------------------------
 static bool verb = false;
 static bool quiet = false;
+static bool csv = false;
 
 int main(int argc, char** argv)
 {
@@ -141,7 +151,7 @@ int main(int argc, char** argv)
 
 		while(1)
 		{
-			opt = getopt_long(argc, argv, "hc:beosfur:l:i::x:g:w:y:p:vq", longopts, &optindex);
+			opt = getopt_long(argc, argv, "hc:beosfur:l:i::x:g:w:y:p:vqz:a:", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -183,18 +193,22 @@ int main(int argc, char** argv)
 				{
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 					string name = ( optarg ) ? optarg : "";
 					return setValue(name, ui);
 				}
 				break;
 
 				case 'g':    //--getValue
+				case 'z':    //--csv
 				{
+					if( opt == 'z' )
+						csv = true;
+
 					//                    cout<<"(main):received option --getValue='"<<optarg<<"'"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 					string name = ( optarg ) ? optarg : "";
 					return getValue(name, ui);
 				}
@@ -205,19 +219,19 @@ int main(int argc, char** argv)
 					//                cout<<"(main):received option --getRawValue='"<<optarg<<"'"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 					string name = ( optarg ) ? optarg : "";
 					return getRawValue(name, ui);
 				}
 				break;
 
-				case 't':    //--getChangedTime
+				case 't':    //--getTimeChange
 				{
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 					string name = ( optarg ) ? optarg : "";
-					return getChangedTime(name, ui);
+					return getTimeChange(name, ui);
 				}
 				break;
 
@@ -226,14 +240,34 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --oinfo='"<<optarg<<"'"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 
-					int userparam = 0;
+					std::string userparam = { "" };
 
-					if( optind < argc )
-						userparam = uni_atoi(argv[optind]);
+					if( checkArg(optind + 1, argc, argv) )
+						userparam = string(argv[optind + 1]);
 
 					return oinfo(optarg, ui, userparam);
+				}
+				break;
+
+				case 'a':    //--apiRequest
+				{
+					if( checkArg(optind, argc, argv) == 0 )
+					{
+						if( !quiet )
+							cerr << "admin(apiRequest): Unknown 'query'. Use: id,name,name2@nodeX /api/vesion/query.." << endl;
+
+						return 1;
+					}
+
+					auto conf = uniset_init(argc, argv, conffile);
+					UInterface ui(conf);
+					ui.initBackId(uniset::AdminID);
+
+					std::string query = string(argv[optind]);
+
+					return apiRequest(optarg, ui, query);
 				}
 				break;
 
@@ -242,7 +276,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --exist"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 
 					verb = true;
 					Command cmd = Exist;
@@ -259,7 +293,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --start"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 
 					Command cmd = StartUp;
 					auto rep = make_shared<ObjectRepository>(conf);
@@ -274,7 +308,7 @@ int main(int argc, char** argv)
 				{
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 					string name = ( optarg ) ? optarg : "";
 					return configure(name, ui);
 				}
@@ -285,7 +319,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --finish"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 
 					Command cmd = Finish;
 					auto rep = make_shared<ObjectRepository>(conf);
@@ -303,7 +337,7 @@ int main(int argc, char** argv)
 				{
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 					string name = ( optarg ) ? optarg : "";
 					return logRotate(name, ui);
 				}
@@ -314,7 +348,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --getCalibrate='"<<optarg<<"'"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 					string name = ( optarg ) ? optarg : "";
 					return getCalibrate(name, ui);
 				}
@@ -325,7 +359,7 @@ int main(int argc, char** argv)
 					//                    cout<<"(main):received option --foldUp"<<endl;
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
-					ui.initBackId(UniSetTypes::AdminID);
+					ui.initBackId(uniset::AdminID);
 
 					Command cmd = FoldUp;
 					auto rep = make_shared<ObjectRepository>(conf);
@@ -348,7 +382,7 @@ int main(int argc, char** argv)
 
 		return 0;
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		if( !quiet )
 			cout << "admin(main): " << ex << endl;
@@ -424,7 +458,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 
 			try
 			{
-				UniSetTypes::ObjectVar o = rep->resolve(fullName);
+				uniset::ObjectVar o = rep->resolve(fullName);
 				obj = UniSetObject_i::_narrow(o);
 
 				switch( cmd )
@@ -433,7 +467,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 					{
 						if( CORBA::is_nil(obj) )
 						{
-							errDoNotReolve(ob);
+							errDoNotResolve(ob);
 							break;
 						}
 
@@ -449,7 +483,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 					{
 						if(CORBA::is_nil(obj))
 						{
-							errDoNotReolve(ob);
+							errDoNotResolve(ob);
 							break;
 						}
 
@@ -465,7 +499,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 					{
 						if(CORBA::is_nil(obj))
 						{
-							errDoNotReolve(ob);
+							errDoNotResolve(ob);
 							break;
 						}
 
@@ -517,7 +551,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 					}
 				}
 			}
-			catch( const Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				if( !quiet )
 					cerr << setw(55) << ob << "   <--- " << ex << endl;
@@ -548,7 +582,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 }
 
 // ==============================================================================================
-static void createSections( const std::shared_ptr<UniSetTypes::Configuration>& rconf )
+static void createSections( const std::shared_ptr<uniset::Configuration>& rconf )
 {
 	ObjectRepository repf(rconf);
 
@@ -574,7 +608,7 @@ int omap()
 		uniset_conf()->oind->printMap(cout);
 		cout << "==========================================================================\n";
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		if( !quiet )
 			cerr << " configuration init failed: " << ex << endl;
@@ -600,7 +634,7 @@ int setValue( const string& args, UInterface& ui )
 {
 	int err = 0;
 	auto conf = ui.getConf();
-	auto sl = UniSetTypes::getSInfoList(args, conf);
+	auto sl = uniset::getSInfoList(args, conf);
 
 	if( verb )
 		cout << "====== setValue ======" << endl;
@@ -639,7 +673,7 @@ int setValue( const string& args, UInterface& ui )
 					break;
 			}
 		}
-		catch( const Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			if( !quiet )
 				cerr << "(setValue): " << ex << endl;;
@@ -664,10 +698,15 @@ int getValue( const string& args, UInterface& ui )
 	int err = 0;
 
 	auto conf = ui.getConf();
-	auto sl = UniSetTypes::getSInfoList( args, conf );
+	auto sl = uniset::getSInfoList( args, conf );
+
+	if( csv )
+		quiet = true;
 
 	if( !quiet )
 		cout << "====== getValue ======" << endl;
+
+	size_t num = 0;
 
 	for( auto && it : sl )
 	{
@@ -694,7 +733,21 @@ int getValue( const string& args, UInterface& ui )
 					if( !quiet )
 						cout << "  value: " << ui.getValue(it.si.id, it.si.node) << endl;
 					else
-						cout << ui.getValue(it.si.id, it.si.node);
+					{
+						if( csv )
+						{
+							// т.к. может сработать исключение, а нам надо вывести ','
+							// до числа, то сперва получаем val
+							long val = ui.getValue(it.si.id, it.si.node);
+
+							if( csv && num++ > 0 )
+								cout << ",";
+
+							cout << val;
+						}
+						else
+							cout << ui.getValue(it.si.id, it.si.node);
+					}
 
 					break;
 
@@ -706,7 +759,7 @@ int getValue( const string& args, UInterface& ui )
 					break;
 			}
 		}
-		catch( const Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			if( !quiet )
 				cerr << "(getValue): " << ex << endl;
@@ -729,7 +782,7 @@ int getCalibrate( const std::string& args, UInterface& ui )
 {
 	int err = 0;
 	auto conf = ui.getConf();
-	auto sl = UniSetTypes::getSInfoList( args, conf );
+	auto sl = uniset::getSInfoList( args, conf );
 
 	if( !quiet )
 		cout << "====== getCalibrate ======" << endl;
@@ -755,7 +808,7 @@ int getCalibrate( const std::string& args, UInterface& ui )
 			else
 				cout << ci;
 		}
-		catch( const Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			if( !quiet )
 				cerr << "(getCalibrate): " << ex << endl;;
@@ -779,7 +832,7 @@ int getRawValue( const std::string& args, UInterface& ui )
 {
 	int err = 0;
 	auto conf = ui.getConf();
-	auto sl = UniSetTypes::getSInfoList( args, conf );
+	auto sl = uniset::getSInfoList( args, conf );
 
 	if( !quiet )
 		cout << "====== getRawValue ======" << endl;
@@ -800,7 +853,7 @@ int getRawValue( const std::string& args, UInterface& ui )
 			else
 				cout << ui.getRawValue(it.si);
 		}
-		catch( const Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			if( !quiet )
 				cerr << "(getRawValue): " << ex << endl;;
@@ -820,11 +873,11 @@ int getRawValue( const std::string& args, UInterface& ui )
 }
 
 // --------------------------------------------------------------------------------------
-int getChangedTime( const std::string& args, UInterface& ui )
+int getTimeChange( const std::string& args, UInterface& ui )
 {
 	int err = 0;
 	auto conf = ui.getConf();
-	auto sl = UniSetTypes::getSInfoList( args, conf );
+	auto sl = uniset::getSInfoList( args, conf );
 
 	if( !quiet )
 		cout << "====== getChangedTime ======" << endl;
@@ -840,12 +893,12 @@ int getChangedTime( const std::string& args, UInterface& ui )
 			{
 				cout << "   name: (" << it.si.id << ") " << it.fname << endl;
 				cout << "   text: " << conf->oind->getTextName(it.si.id) << "\n\n";
-				cout << ui.getChangedTime(it.si.id, it.si.node) << endl;
+				cout << ui.getTimeChange(it.si.id, it.si.node) << endl;
 			}
 			else
-				cout << ui.getChangedTime(it.si.id, it.si.node);
+				cout << ui.getTimeChange(it.si.id, it.si.node);
 		}
-		catch( const Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			if( !quiet )
 				cerr << "(getChangedTime): " << ex << endl;;
@@ -912,10 +965,12 @@ int logRotate( const string& arg, UInterface& ui )
 	}
 	else // посылка определённому объекту
 	{
-		UniSetTypes::ObjectId id = conf->getObjectID(arg);
+		uniset::ObjectId id = conf->getObjectID(arg);
+
 		if( id == DefaultObjectId )
 			id = conf->getControllerID(arg);
-		else if( id == DefaultObjectId )
+
+		if( id == DefaultObjectId )
 			id = conf->getServiceID(arg);
 
 		if( id == DefaultObjectId )
@@ -952,7 +1007,8 @@ int configure( const string& arg, UInterface& ui )
 	}
 	else // посылка определённому объекту
 	{
-		UniSetTypes::ObjectId id = conf->getObjectID(arg);
+		uniset::ObjectId id = conf->getObjectID(arg);
+
 		if( id == DefaultObjectId )
 			id = conf->getControllerID(arg);
 
@@ -978,10 +1034,10 @@ int configure( const string& arg, UInterface& ui )
 }
 
 // --------------------------------------------------------------------------------------
-int oinfo( const string& args, UInterface& ui, int userparam )
+int oinfo(const string& args, UInterface& ui, const string& userparam )
 {
 	auto conf = uniset_conf();
-	auto sl = UniSetTypes::getObjectsList( args, conf );
+	auto sl = uniset::getObjectsList( args, conf );
 
 	for( auto && it : sl )
 	{
@@ -990,44 +1046,41 @@ int oinfo( const string& args, UInterface& ui, int userparam )
 
 		try
 		{
-			UniSetTypes::ObjectVar o = ui.resolve(it.id, it.node);
-			UniSetObject_i_var obj = UniSetObject_i::_narrow(o);
+			cout << ui.getObjectInfo(it.id, userparam, it.node) << endl;
+		}
+		catch( const std::exception& ex )
+		{
+			if( !quiet )
+				cerr << "std::exception: " << ex.what() << endl;
+		}
+		catch(...)
+		{
+			if( !quiet )
+				cerr << "Unknown exception.." << endl;
+		}
 
-			if(CORBA::is_nil(obj))
-			{
-				if( !quiet )
-					cout << "(oinfo): объект '" << it.id << "' недоступен" << endl;
-			}
-			else
-			{
-				SimpleInfo_var inf = obj->getInfo(userparam);
-				cout << inf->info << endl;
-			}
-		}
-		catch( const Exception& ex )
+		cout << endl << endl;
+	}
+
+	return 0;
+}
+// --------------------------------------------------------------------------------------
+int apiRequest( const string& args, UInterface& ui, const string& query )
+{
+	auto conf = uniset_conf();
+	auto sl = uniset::getObjectsList( args, conf );
+
+	//	if( verb )
+	//		cout << "apiRequest: query: " << query << endl;
+
+	for( auto && it : sl )
+	{
+		if( it.node == DefaultObjectId )
+			it.node = conf->getLocalNode();
+
+		try
 		{
-			if( !quiet )
-				cout << "ID='" << it.id << "' ERROR: " << ex << endl;
-		}
-		catch( const CORBA::SystemException& ex )
-		{
-			if( !quiet )
-				cerr << "CORBA::SystemException: " << ex.NP_minorString() << endl;
-		}
-		catch( const CORBA::Exception& )
-		{
-			if( !quiet )
-				cerr << "CORBA::Exception." << endl;
-		}
-		catch( const omniORB::fatalException& fe )
-		{
-			if( !quiet )
-			{
-				cerr << "omniORB::fatalException:" << endl;
-				cerr << "  file: " << fe.file() << endl;
-				cerr << "  line: " << fe.line() << endl;
-				cerr << "  mesg: " << fe.errmsg() << endl;
-			}
+			cout << ui.apiRequest(it.id, query, it.node) << endl;
 		}
 		catch( const std::exception& ex )
 		{
@@ -1047,9 +1100,17 @@ int oinfo( const string& args, UInterface& ui, int userparam )
 }
 
 // --------------------------------------------------------------------------------------
-void errDoNotReolve( const std::string& oname )
+void errDoNotResolve( const std::string& oname )
 {
 	if( verb )
 		cerr << oname << ": resolve failed.." << endl;
+}
+// --------------------------------------------------------------------------------------
+char* checkArg( int i, int argc, char* argv[] )
+{
+	if( i < argc && (argv[i])[0] != '-' )
+		return argv[i];
+
+	return 0;
 }
 // --------------------------------------------------------------------------------------

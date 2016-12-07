@@ -3,10 +3,11 @@
 
 import sys
 
-from uniset import *
+from uniset2 import *
 
 if __name__ == "__main__":
 	
+	prop = "test"
 	lst = Params_inst()
 
 	for i in range(0, len(sys.argv)):
@@ -14,6 +15,8 @@ if __name__ == "__main__":
 			break;
 	
 		lst.add( sys.argv[i] )
+	
+	lst.add_str(prop)
 
 	p = []
 	print "lst: class: " + str(p.__class__.__name__)
@@ -24,6 +27,8 @@ if __name__ == "__main__":
 #		print "(0)UIType: %s" % uc1.getUIType()
 
 		print "(1)getShortName: id=%d name=%s" % (1, uc1.getShortName(1))
+		
+		
 
 #		print "     getName: id=%d name=%s" % (1, uc1.getName(101))
 #		print " getTextName: id=%d name=%s" % (1, uc1.getTextName(101))

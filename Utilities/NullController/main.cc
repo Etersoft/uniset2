@@ -4,7 +4,7 @@
 #include "Debug.h"
 #include "PassiveTimer.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 static void short_usage()
@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 
 		ObjectId ID = conf->oind->getIdByName(conf->getControllersSection() + "/" + name);
 
-		if( ID == UniSetTypes::DefaultObjectId )
+		if( ID == uniset::DefaultObjectId )
 		{
 			cerr << "(nullController): идентификатор '" << name
 				 << "' не найден в конф. файле!"

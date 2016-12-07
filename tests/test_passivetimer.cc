@@ -2,7 +2,9 @@
 
 #include "PassiveTimer.h"
 #include "UniSetTypes.h"
+// -----------------------------------------------------------------------------
 using namespace std;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 TEST_CASE("PassiveTimer", "[PassiveTimer]" )
 {
@@ -107,9 +109,7 @@ TEST_CASE("UniSetTimer: conv to Poco", "[PassiveTimer][poco]" )
 
 	{
 		Poco::Timespan tm = UniSetTimer::millisecToPoco(UniSetTimer::WaitUpTime);
-		REQUIRE( tm.seconds() == -1 );
-		REQUIRE( tm.microseconds() == 0 );
-		REQUIRE( tm.totalMilliseconds() < 0 );
+		REQUIRE( tm.days() == 12443823 /* std::numeric_limits<int>::max() */ );
 	}
 
 	{
@@ -123,9 +123,7 @@ TEST_CASE("UniSetTimer: conv to Poco", "[PassiveTimer][poco]" )
 	// usec --> Poco::Timespan
 	{
 		Poco::Timespan tm = UniSetTimer::microsecToPoco(UniSetTimer::WaitUpTime);
-		REQUIRE( tm.seconds() == -1 );
-		REQUIRE( tm.microseconds() == 0 );
-		REQUIRE( tm.totalMilliseconds() < 0 );
+		REQUIRE( tm.days() == 12443823 /* std::numeric_limits<int>::max() */ );
 	}
 	{
 		Poco::Timespan tm = UniSetTimer::microsecToPoco(2000000);

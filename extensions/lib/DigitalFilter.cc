@@ -21,8 +21,10 @@
 #include "UniSetTypes.h"
 #include "DigitalFilter.h"
 //--------------------------------------------------------------------------
-using namespace UniSetTypes;
 using namespace std;
+//--------------------------------------------------------------------------
+namespace uniset
+{
 //--------------------------------------------------------------------------
 DigitalFilter::DigitalFilter( unsigned int bufsize, double T, double lsq,
 							  int iir_thr, double iir_coeff_prev,
@@ -305,3 +307,4 @@ int DigitalFilter::currentIIR()
 	return prev;
 }
 //--------------------------------------------------------------------------
+} // end of namespace uniset

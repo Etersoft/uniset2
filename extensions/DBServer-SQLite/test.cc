@@ -3,7 +3,7 @@
 #include "Exceptions.h"
 #include "SQLiteInterface.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 int main(int argc, char** argv)

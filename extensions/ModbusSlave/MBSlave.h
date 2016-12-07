@@ -46,6 +46,9 @@
 #ifndef vmonit
 #define vmonit( var ) vmon.add( #var, var )
 #endif
+// -------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 /*!
       \page page_ModbusSlave Реализация Modbus slave
@@ -307,13 +310,13 @@ class MBSlave:
 	public UniSetObject
 {
 	public:
-		MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "mbs" );
+		MBSlave( uniset::ObjectId objId, uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "mbs" );
 		virtual ~MBSlave();
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<MBSlave> init_mbslave(int argc, const char* const* argv,
-				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
-				const std::string& prefix = "mbs" );
+													 uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+													 const std::string& prefix = "mbs" );
 
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
@@ -383,7 +386,7 @@ class MBSlave:
 			return mblog;
 		}
 
-		virtual UniSetTypes::SimpleInfo* getInfo( CORBA::Long userparam = 0 ) override;
+		virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
 
 	protected:
 
@@ -396,11 +399,11 @@ class MBSlave:
 
 		/*! обработка 0x03 */
 		ModbusRTU::mbErrCode readOutputRegisters( ModbusRTU::ReadOutputMessage& query,
-				ModbusRTU::ReadOutputRetMessage& reply );
+												  ModbusRTU::ReadOutputRetMessage& reply );
 
 		/*! обработка 0x04 */
 		ModbusRTU::mbErrCode readInputRegisters( ModbusRTU::ReadInputMessage& query,
-				ModbusRTU::ReadInputRetMessage& reply );
+												 ModbusRTU::ReadInputRetMessage& reply );
 
 		/*! обработка 0x05 */
 		ModbusRTU::mbErrCode forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
@@ -408,16 +411,16 @@ class MBSlave:
 
 		/*! обработка 0x0F */
 		ModbusRTU::mbErrCode forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
-				ModbusRTU::ForceCoilsRetMessage& reply );
+												 ModbusRTU::ForceCoilsRetMessage& reply );
 
 
 		/*! обработка 0x10 */
 		ModbusRTU::mbErrCode writeOutputRegisters( ModbusRTU::WriteOutputMessage& query,
-				ModbusRTU::WriteOutputRetMessage& reply );
+												   ModbusRTU::WriteOutputRetMessage& reply );
 
 		/*! обработка 0x06 */
 		ModbusRTU::mbErrCode writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
-				ModbusRTU::WriteSingleOutputRetMessage& reply );
+														ModbusRTU::WriteSingleOutputRetMessage& reply );
 
 		/*! обработка запросов на чтение ошибок */
 		//        ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query,
@@ -472,8 +475,8 @@ class MBSlave:
 
 		std::shared_ptr<SMInterface> shm;
 
-		virtual void sysCommand( const UniSetTypes::SystemMessage* msg ) override;
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* msg ) override;
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 		void askSensors( UniversalIO::UIOCommand cmd );
 		void waitSMReady();
 		virtual void execute_rtu();
@@ -513,23 +516,23 @@ class MBSlave:
 
 		MBSlave();
 		timeout_t initPause = { 3000 };
-		UniSetTypes::uniset_rwmutex mutex_start;
+		uniset::uniset_rwmutex mutex_start;
 		std::shared_ptr< ThreadCreator<MBSlave> > thr;
 
 		std::mutex mutexStartNotify;
 		std::condition_variable startNotifyEvent;
 
 		PassiveTimer ptHeartBeat;
-		UniSetTypes::ObjectId sidHeartBeat = { UniSetTypes::DefaultObjectId };
+		uniset::ObjectId sidHeartBeat = { uniset::DefaultObjectId };
 		long maxHeartBeat = { 10 };
 		IOController::IOStateList::iterator itHeartBeat;
-		UniSetTypes::ObjectId test_id = { UniSetTypes::DefaultObjectId };
+		uniset::ObjectId test_id = { uniset::DefaultObjectId };
 
 		IOController::IOStateList::iterator itAskCount;
-		UniSetTypes::ObjectId askcount_id = { UniSetTypes::DefaultObjectId };
+		uniset::ObjectId askcount_id = { uniset::DefaultObjectId };
 
 		IOController::IOStateList::iterator itRespond;
-		UniSetTypes::ObjectId respond_id = { UniSetTypes::DefaultObjectId };
+		uniset::ObjectId respond_id = { uniset::DefaultObjectId };
 		bool respond_invert = { false };
 
 		PassiveTimer ptTimeout;
@@ -585,22 +588,22 @@ class MBSlave:
 
 		struct ClientInfo
 		{
-			ClientInfo(): iaddr(""), respond_s(UniSetTypes::DefaultObjectId), invert(false),
-				askCount(0), askcount_s(UniSetTypes::DefaultObjectId)
+			ClientInfo(): iaddr(""), respond_s(uniset::DefaultObjectId), invert(false),
+				askCount(0), askcount_s(uniset::DefaultObjectId)
 			{
 				ptTimeout.setTiming(0);
 			}
 
 			std::string iaddr = { "" };
 
-			UniSetTypes::ObjectId respond_s = { UniSetTypes::DefaultObjectId };
+			uniset::ObjectId respond_s = { uniset::DefaultObjectId };
 			IOController::IOStateList::iterator respond_it;
 			bool invert = { false };
 			PassiveTimer ptTimeout;
 			timeout_t tout = { 2000 };
 
 			long askCount = { 0 };
-			UniSetTypes::ObjectId askcount_s = { UniSetTypes::DefaultObjectId };
+			uniset::ObjectId askcount_s = { uniset::DefaultObjectId };
 			IOController::IOStateList::iterator askcount_it;
 
 			inline void initIterators( const std::shared_ptr<SMInterface>& shm )
@@ -615,11 +618,13 @@ class MBSlave:
 		typedef std::unordered_map<std::string, ClientInfo> ClientsMap;
 		ClientsMap cmap;
 
-		UniSetTypes::ObjectId sesscount_id = { UniSetTypes::DefaultObjectId };
+		uniset::ObjectId sesscount_id = { uniset::DefaultObjectId };
 		IOController::IOStateList::iterator sesscount_it;
 
 		std::atomic_bool tcpCancelled = { true };
 };
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // _MBSlave_H_
 // -----------------------------------------------------------------------------

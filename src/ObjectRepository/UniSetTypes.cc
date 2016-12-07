@@ -26,11 +26,11 @@
 #include "Configuration.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 
 // -----------------------------------------------------------------------------
-float UniSetTypes::fcalibrate( float raw, float rawMin, float rawMax,
-							   float calMin, float calMax, bool limit )
+float uniset::fcalibrate( float raw, float rawMin, float rawMax,
+						  float calMin, float calMax, bool limit )
 {
 	if( rawMax == rawMin ) return 0; // деление на 0!!!
 
@@ -61,7 +61,7 @@ float UniSetTypes::fcalibrate( float raw, float rawMin, float rawMax,
 }
 // -------------------------------------------------------------------------
 // Пересчитываем из исходных пределов в заданные
-long UniSetTypes::lcalibrate(long raw, long rawMin, long rawMax, long calMin, long calMax, bool limit )
+long uniset::lcalibrate(long raw, long rawMin, long rawMax, long calMin, long calMax, bool limit )
 {
 	if( rawMax == rawMin ) return 0; // деление на 0!!!
 
@@ -76,7 +76,7 @@ long UniSetTypes::lcalibrate(long raw, long rawMin, long rawMax, long calMin, lo
 
 // -------------------------------------------------------------------------
 // Приводим указанное значение в заданные пределы
-long UniSetTypes::setinregion(long ret, long calMin, long calMax)
+long uniset::setinregion(long ret, long calMin, long calMax)
 {
 	// Переворачиваем calMin и calMax для проверки, если calMin > calMax
 	if (calMin < calMax)
@@ -100,7 +100,7 @@ long UniSetTypes::setinregion(long ret, long calMin, long calMax)
 }
 
 // Выводим указанное значение из заданных пределов (на границы)
-long UniSetTypes::setoutregion(long ret, long calMin, long calMax)
+long uniset::setoutregion(long ret, long calMin, long calMax)
 {
 	if ((ret > calMin) && (ret < calMax))
 	{
@@ -114,15 +114,15 @@ long UniSetTypes::setoutregion(long ret, long calMin, long calMax)
 }
 
 // -------------------------------------------------------------------------
-UniSetTypes::IDList::IDList( std::vector<std::string>&& svec ):
-	UniSetTypes::IDList::IDList()
+uniset::IDList::IDList( std::vector<std::string>&& svec ):
+	uniset::IDList::IDList()
 {
 	for( const auto& s : svec )
 		add( uni_atoi(s) );
 }
 // ------------------------------------------------------------------
-UniSetTypes::IDList::IDList( std::vector<std::string>& svec ):
-	UniSetTypes::IDList::IDList()
+uniset::IDList::IDList( std::vector<std::string>& svec ):
+	uniset::IDList::IDList()
 {
 	auto conf = uniset_conf();
 
@@ -139,17 +139,17 @@ UniSetTypes::IDList::IDList( std::vector<std::string>& svec ):
 	}
 }
 // -------------------------------------------------------------------------
-UniSetTypes::IDList::IDList():
-	node( (UniSetTypes::uniset_conf() ? UniSetTypes::uniset_conf()->getLocalNode() : DefaultObjectId) )
+uniset::IDList::IDList():
+	node( (uniset::uniset_conf() ? uniset::uniset_conf()->getLocalNode() : DefaultObjectId) )
 {
 
 }
 
-UniSetTypes::IDList::~IDList()
+uniset::IDList::~IDList()
 {
 }
 
-void UniSetTypes::IDList::add( ObjectId id )
+void uniset::IDList::add( ObjectId id )
 {
 	for( auto it = lst.begin(); it != lst.end(); ++it )
 	{
@@ -160,7 +160,7 @@ void UniSetTypes::IDList::add( ObjectId id )
 	lst.push_back(id);
 }
 
-void UniSetTypes::IDList::del( ObjectId id )
+void uniset::IDList::del( ObjectId id )
 {
 	for( auto it = lst.begin(); it != lst.end(); ++it )
 	{
@@ -172,22 +172,22 @@ void UniSetTypes::IDList::del( ObjectId id )
 	}
 }
 
-std::list<UniSetTypes::ObjectId> UniSetTypes::IDList::getList() noexcept
+std::list<uniset::ObjectId> uniset::IDList::getList() noexcept
 {
 	return lst;
 }
 
-UniSetTypes::ObjectId UniSetTypes::IDList::getFirst() const noexcept
+uniset::ObjectId uniset::IDList::getFirst() const noexcept
 {
 	if( lst.empty() )
-		return UniSetTypes::DefaultObjectId;
+		return uniset::DefaultObjectId;
 
 	return (*lst.begin());
 }
 
 // за освобождение выделеной памяти
 // отвечает вызывающий!
-IDSeq* UniSetTypes::IDList::getIDSeq() const
+IDSeq* uniset::IDList::getIDSeq() const
 {
 	IDSeq* seq = new IDSeq();
 	seq->length(lst.size());
@@ -199,7 +199,7 @@ IDSeq* UniSetTypes::IDList::getIDSeq() const
 	return seq;
 }
 // -------------------------------------------------------------------------
-bool UniSetTypes::file_exist( const std::string& filename )
+bool uniset::file_exist( const std::string& filename )
 {
 	std::ifstream file;
 #ifdef HAVE_IOS_NOCREATE
@@ -216,13 +216,13 @@ bool UniSetTypes::file_exist( const std::string& filename )
 	return result;
 }
 // -------------------------------------------------------------------------
-UniSetTypes::IDList UniSetTypes::explode( const string& str, char sep )
+uniset::IDList uniset::explode( const string& str, char sep )
 {
-	UniSetTypes::IDList l( explode_str(str, sep) );
+	uniset::IDList l( explode_str(str, sep) );
 	return std::move(l);
 }
 // -------------------------------------------------------------------------
-std::vector<std::string> UniSetTypes::explode_str( const string& str, char sep )
+std::vector<std::string> uniset::explode_str( const string& str, char sep )
 {
 	std::vector<std::string> v;
 
@@ -266,7 +266,7 @@ std::vector<std::string> UniSetTypes::explode_str( const string& str, char sep )
 	return std::move(v);
 }
 // ------------------------------------------------------------------------------------------
-bool UniSetTypes::is_digit( const std::string& s ) noexcept
+bool uniset::is_digit( const std::string& s ) noexcept
 {
 	for( const auto& c : s )
 	{
@@ -278,17 +278,17 @@ bool UniSetTypes::is_digit( const std::string& s ) noexcept
 	//return (std::count_if(s.begin(),s.end(),std::isdigit) == s.size()) ? true : false;
 }
 // --------------------------------------------------------------------------------------
-std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str, std::shared_ptr<Configuration> conf )
+std::list<uniset::ParamSInfo> uniset::getSInfoList( const string& str, std::shared_ptr<Configuration> conf )
 {
-	std::list<UniSetTypes::ParamSInfo> res;
+	std::list<uniset::ParamSInfo> res;
 
-	auto lst = UniSetTypes::explode_str(str, ',');
+	auto lst = uniset::explode_str(str, ',');
 
 	for( const auto& it : lst )
 	{
-		UniSetTypes::ParamSInfo item;
+		uniset::ParamSInfo item;
 
-		auto p = UniSetTypes::explode_str(it, '=');
+		auto p = uniset::explode_str(it, '=');
 		std::string s = "";
 
 		if( p.size() == 1 )
@@ -308,7 +308,7 @@ std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str,
 		}
 
 		item.fname = s;
-		auto t = UniSetTypes::explode_str(s, '@');
+		auto t = uniset::explode_str(s, '@');
 
 		if( t.size() == 1 )
 		{
@@ -348,20 +348,20 @@ std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str,
 	return std::move(res);
 }
 // --------------------------------------------------------------------------------------
-std::list<UniSetTypes::ConsumerInfo> UniSetTypes::getObjectsList( const string& str, std::shared_ptr<Configuration> conf )
+std::list<uniset::ConsumerInfo> uniset::getObjectsList( const string& str, std::shared_ptr<Configuration> conf )
 {
 	if( conf == nullptr )
 		conf = uniset_conf();
 
-	std::list<UniSetTypes::ConsumerInfo> res;
+	std::list<uniset::ConsumerInfo> res;
 
-	auto lst = UniSetTypes::explode_str(str, ',');
+	auto lst = uniset::explode_str(str, ',');
 
 	for( const auto& it : lst )
 	{
-		UniSetTypes::ConsumerInfo item;
+		uniset::ConsumerInfo item;
 
-		auto t = UniSetTypes::explode_str(it, '@');
+		auto t = uniset::explode_str(it, '@');
 
 		if( t.size() == 1 )
 		{
@@ -411,7 +411,7 @@ std::list<UniSetTypes::ConsumerInfo> UniSetTypes::getObjectsList( const string& 
 	return std::move(res);
 }
 // --------------------------------------------------------------------------------------
-UniversalIO::IOType UniSetTypes::getIOType( const std::string& stype ) noexcept
+UniversalIO::IOType uniset::getIOType( const std::string& stype ) noexcept
 {
 	if ( stype == "DI" || stype == "di" )
 		return UniversalIO::DI;
@@ -428,24 +428,30 @@ UniversalIO::IOType UniSetTypes::getIOType( const std::string& stype ) noexcept
 	return UniversalIO::UnknownIOType;
 }
 // ------------------------------------------------------------------------------------------
-std::ostream& UniSetTypes::operator<<( std::ostream& os, const UniversalIO::IOType t )
+
+std::string uniset::iotype2str( const UniversalIO::IOType& t ) noexcept
 {
 	if( t == UniversalIO::AI )
-		return os << "AI";
+		return "AI";
 
 	if( t == UniversalIO::DI )
-		return os << "DI";
+		return "DI";
 
 	if( t == UniversalIO::AO )
-		return os << "AO";
+		return "AO";
 
 	if( t == UniversalIO::DO )
-		return os << "DO";
+		return "DO";
 
-	return os << "UnknownIOType";
+	return "UnknownIOType";
 }
 // ------------------------------------------------------------------------------------------
-bool UniSetTypes::check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val ) noexcept
+std::ostream& uniset::operator<<( std::ostream& os, const UniversalIO::IOType t )
+{
+	return os << iotype2str(t);
+}
+// ------------------------------------------------------------------------------------------
+bool uniset::check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val ) noexcept
 {
 	if( f_prop.empty() )
 		return true;
@@ -461,7 +467,7 @@ bool UniSetTypes::check_filter( UniXML::iterator& it, const std::string& f_prop,
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-string UniSetTypes::timeToString(time_t tm, const std::string& brk ) noexcept
+string uniset::timeToString(time_t tm, const std::string& brk ) noexcept
 {
 	struct tm* tms = localtime(&tm);
 	ostringstream time;
@@ -471,7 +477,7 @@ string UniSetTypes::timeToString(time_t tm, const std::string& brk ) noexcept
 	return time.str();
 }
 
-string UniSetTypes::dateToString(time_t tm, const std::string& brk ) noexcept
+string uniset::dateToString(time_t tm, const std::string& brk ) noexcept
 {
 	struct tm* tms = localtime(&tm);
 	ostringstream date;
@@ -482,7 +488,7 @@ string UniSetTypes::dateToString(time_t tm, const std::string& brk ) noexcept
 }
 
 //--------------------------------------------------------------------------------------------
-int UniSetTypes::uni_atoi( const char* str ) noexcept
+int uniset::uni_atoi( const char* str ) noexcept
 {
 	// if str is NULL or sscanf failed, we return 0
 	if( str == nullptr )
@@ -509,16 +515,16 @@ int UniSetTypes::uni_atoi( const char* str ) noexcept
 	return n; // а возвращаем int..
 }
 //--------------------------------------------------------------------------------------------
-char* UniSetTypes::uni_strdup( const string& src )
+char* uniset::uni_strdup( const string& src )
 {
-	const char* s = src.c_str();
-	size_t len = strlen(s);
+	size_t len = src.size();
 	char* d = new char[len + 1];
-	memcpy(d, s, len + 1);
+	memcpy(d, src.data(), len);
+	d[len] = '\0';
 	return d;
 }
 // -------------------------------------------------------------------------
-std::ostream& UniSetTypes::operator<<( std::ostream& os, const IOController_i::CalibrateInfo& c )
+std::ostream& uniset::operator<<( std::ostream& os, const IOController_i::CalibrateInfo& c )
 {
 	os << "[ rmin=" << c.minRaw
 	   << " rmax=" << c.maxRaw
@@ -530,7 +536,7 @@ std::ostream& UniSetTypes::operator<<( std::ostream& os, const IOController_i::C
 	return os;
 }
 // -------------------------------------------------------------------------
-std::ostream& UniSetTypes::operator<<( std::ostream& os, const IONotifyController_i::ThresholdInfo& ti )
+std::ostream& uniset::operator<<( std::ostream& os, const IONotifyController_i::ThresholdInfo& ti )
 {
 	os << "[ id=" << ti.id
 	   << " hilim=" << ti.hilimit
@@ -544,7 +550,7 @@ std::ostream& UniSetTypes::operator<<( std::ostream& os, const IONotifyControlle
 	return os;
 }
 // -------------------------------------------------------------------------
-std::ostream& UniSetTypes::operator<<( std::ostream& os, const IOController_i::ShortIOInfo& s )
+std::ostream& uniset::operator<<( std::ostream& os, const IOController_i::ShortIOInfo& s )
 {
 	os << setw(10) << dateToString(s.tv_sec)
 	   << " " << setw(8) << timeToString(s.tv_sec) << "." << s.tv_nsec
@@ -553,7 +559,7 @@ std::ostream& UniSetTypes::operator<<( std::ostream& os, const IOController_i::S
 	return os;
 }
 // -------------------------------------------------------------------------
-std::ostream& UniSetTypes::operator<<( std::ostream& os, const IONotifyController_i::ThresholdState& s )
+std::ostream& uniset::operator<<( std::ostream& os, const IONotifyController_i::ThresholdState& s )
 {
 	if( s == IONotifyController_i::LowThreshold )
 		return os << "low";
@@ -567,7 +573,7 @@ std::ostream& UniSetTypes::operator<<( std::ostream& os, const IONotifyControlle
 	return os << "Unknown";
 }
 // -------------------------------------------------------------------------
-std::string UniSetTypes::replace_all( const std::string& src, const std::string& from, const std::string& to )
+std::string uniset::replace_all( const std::string& src, const std::string& from, const std::string& to )
 {
 	string res(src);
 
@@ -586,7 +592,7 @@ std::string UniSetTypes::replace_all( const std::string& src, const std::string&
 	return std::move(res);
 }
 // -------------------------------------------------------------------------
-timeval UniSetTypes::to_timeval( const chrono::system_clock::duration& d )
+timeval uniset::to_timeval( const chrono::system_clock::duration& d )
 {
 	struct timeval tv;
 
@@ -602,7 +608,7 @@ timeval UniSetTypes::to_timeval( const chrono::system_clock::duration& d )
 	return std::move(tv);
 }
 // -------------------------------------------------------------------------
-timespec UniSetTypes::to_timespec( const chrono::system_clock::duration& d )
+timespec uniset::to_timespec( const chrono::system_clock::duration& d )
 {
 	struct timespec ts;
 
@@ -618,7 +624,7 @@ timespec UniSetTypes::to_timespec( const chrono::system_clock::duration& d )
 	return std::move(ts);
 }
 // -------------------------------------------------------------------------
-timespec UniSetTypes::now_to_timespec()
+timespec uniset::now_to_timespec()
 {
 	auto d = std::chrono::system_clock::now().time_since_epoch();
 	return to_timespec(d);

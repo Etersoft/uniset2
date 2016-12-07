@@ -17,12 +17,12 @@
 #include "SMViewer.h"
 #include "Extensions.h"
 //--------------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 //--------------------------------------------------------------------------------
-SMViewer::SMViewer( UniSetTypes::ObjectId shmID ):
+SMViewer::SMViewer( uniset::ObjectId shmID ):
 	SViewer(uniset_conf()->getControllersSection(), true),
 	shm(make_shared<SMInterface>(shmID, ui, DefaultObjectId))
 {

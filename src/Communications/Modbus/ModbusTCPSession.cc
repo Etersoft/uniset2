@@ -27,9 +27,12 @@
 // glibc..
 #include <netinet/tcp.h>
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 using namespace std;
 using namespace ModbusRTU;
-using namespace UniSetTypes;
+using namespace uniset;
 // -------------------------------------------------------------------------
 ModbusTCPSession::~ModbusTCPSession()
 {
@@ -268,7 +271,7 @@ ModbusRTU::mbErrCode ModbusTCPSession::realReceive( const std::unordered_set<Mod
 		// processing message...
 		res = processing(buf);
 	}
-	catch( UniSetTypes::CommFailed& ex )
+	catch( uniset::CommFailed& ex )
 	{
 		cancelled = true;
 		return erSessionClosed;
@@ -305,7 +308,7 @@ size_t ModbusTCPSession::getNextData( unsigned char* buf, int len )
 			return 0;
 		}
 	}
-	catch( UniSetTypes::CommFailed )
+	catch( uniset::CommFailed )
 	{
 
 	}
@@ -377,7 +380,7 @@ mbErrCode ModbusTCPSession::tcp_processing( ModbusRTU::ADUHeader& mhead )
 		}
 		while( len == 0 && !pt.checkTime() );
 	}
-	catch( UniSetTypes::CommFailed )
+	catch( uniset::CommFailed )
 	{
 
 	}
@@ -438,7 +441,7 @@ void ModbusTCPSession::terminate()
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPSession::readCoilStatus( ReadCoilMessage& query,
-		ReadCoilRetMessage& reply )
+											ReadCoilRetMessage& reply )
 {
 	if( !slReadCoil )
 		return erOperationFailed;
@@ -448,7 +451,7 @@ mbErrCode ModbusTCPSession::readCoilStatus( ReadCoilMessage& query,
 
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPSession::readInputStatus( ReadInputStatusMessage& query,
-		ReadInputStatusRetMessage& reply )
+											 ReadInputStatusRetMessage& reply )
 {
 	if( !slReadInputStatus )
 		return erOperationFailed;
@@ -459,7 +462,7 @@ mbErrCode ModbusTCPSession::readInputStatus( ReadInputStatusMessage& query,
 // -------------------------------------------------------------------------
 
 mbErrCode ModbusTCPSession::readOutputRegisters( ReadOutputMessage& query,
-		ReadOutputRetMessage& reply )
+												 ReadOutputRetMessage& reply )
 {
 	if( !slReadOutputs )
 		return erOperationFailed;
@@ -469,7 +472,7 @@ mbErrCode ModbusTCPSession::readOutputRegisters( ReadOutputMessage& query,
 
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPSession::readInputRegisters( ReadInputMessage& query,
-		ReadInputRetMessage& reply )
+												ReadInputRetMessage& reply )
 {
 	if( !slReadInputs )
 		return erOperationFailed;
@@ -479,7 +482,7 @@ mbErrCode ModbusTCPSession::readInputRegisters( ReadInputMessage& query,
 
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPSession::forceMultipleCoils( ForceCoilsMessage& query,
-		ForceCoilsRetMessage& reply )
+												ForceCoilsRetMessage& reply )
 {
 	if( !slForceCoils )
 		return erOperationFailed;
@@ -490,7 +493,7 @@ mbErrCode ModbusTCPSession::forceMultipleCoils( ForceCoilsMessage& query,
 // -------------------------------------------------------------------------
 
 mbErrCode ModbusTCPSession::writeOutputRegisters( WriteOutputMessage& query,
-		WriteOutputRetMessage& reply )
+												  WriteOutputRetMessage& reply )
 {
 	if( !slWriteOutputs )
 		return erOperationFailed;
@@ -500,7 +503,7 @@ mbErrCode ModbusTCPSession::writeOutputRegisters( WriteOutputMessage& query,
 
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPSession::diagnostics( DiagnosticMessage& query,
-		DiagnosticRetMessage& reply )
+										 DiagnosticRetMessage& reply )
 {
 	if( !slDiagnostics )
 		return erOperationFailed;
@@ -509,7 +512,7 @@ mbErrCode ModbusTCPSession::diagnostics( DiagnosticMessage& query,
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode ModbusTCPSession::read4314( ModbusRTU::MEIMessageRDI& query,
-		ModbusRTU::MEIMessageRetRDI& reply )
+												 ModbusRTU::MEIMessageRetRDI& reply )
 {
 	if( !slMEIRDI )
 		return erOperationFailed;
@@ -518,7 +521,7 @@ ModbusRTU::mbErrCode ModbusTCPSession::read4314( ModbusRTU::MEIMessageRDI& query
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPSession::forceSingleCoil( ForceSingleCoilMessage& query,
-		ForceSingleCoilRetMessage& reply )
+											 ForceSingleCoilRetMessage& reply )
 {
 	if( !slForceSingleCoil )
 		return erOperationFailed;
@@ -538,7 +541,7 @@ mbErrCode ModbusTCPSession::writeOutputSingleRegister( WriteSingleOutputMessage&
 
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPSession::journalCommand( JournalCommandMessage& query,
-		JournalCommandRetMessage& reply )
+											JournalCommandRetMessage& reply )
 {
 	if( !slJournalCommand )
 		return erOperationFailed;
@@ -583,3 +586,4 @@ void ModbusTCPSession::connectFinalSession( FinalSlot sl )
 	slFin = sl;
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

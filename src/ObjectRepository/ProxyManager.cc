@@ -25,7 +25,7 @@
 #include "ProxyManager.h"
 #include "PassiveObject.h"
 // -------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // -------------------------------------------------------------------------
 
@@ -33,7 +33,7 @@ ProxyManager::~ProxyManager()
 {
 }
 
-ProxyManager::ProxyManager( UniSetTypes::ObjectId id ):
+ProxyManager::ProxyManager( uniset::ObjectId id ):
 	UniSetObject(id)
 {
 	uin = ui;
@@ -41,7 +41,7 @@ ProxyManager::ProxyManager( UniSetTypes::ObjectId id ):
 
 
 // -------------------------------------------------------------------------
-void ProxyManager::attachObject( PassiveObject* po, UniSetTypes::ObjectId id )
+void ProxyManager::attachObject( PassiveObject* po, uniset::ObjectId id )
 {
 	if( id == DefaultObjectId )
 	{
@@ -57,7 +57,7 @@ void ProxyManager::attachObject( PassiveObject* po, UniSetTypes::ObjectId id )
 		omap.emplace(id, po);
 }
 // -------------------------------------------------------------------------
-void ProxyManager::detachObject( UniSetTypes::ObjectId id )
+void ProxyManager::detachObject( uniset::ObjectId id )
 {
 	auto it = omap.find(id);
 
@@ -81,15 +81,15 @@ bool ProxyManager::activateObject()
 			{
 				try
 				{
-					uinfo << myname << "(registered): попытка "
-						  << i + 1 << " регистриую (id=" << it.first << ") "
-						  << " (pname=" << it.second->getName() << ") "
-						  << uniset_conf()->oind->getNameById(it.first) << endl;
+					ulogrep << myname << "(registered): попытка "
+							<< i + 1 << " регистриую (id=" << it.first << ") "
+							<< " (pname=" << it.second->getName() << ") "
+							<< uniset_conf()->oind->getNameById(it.first) << endl;
 
 					ui->registered(it.first, getRef(), true);
 					break;
 				}
-				catch( UniSetTypes::ObjectNameAlready& ex )
+				catch( uniset::ObjectNameAlready& ex )
 				{
 					ucrit << myname << "(registered): СПЕРВА РАЗРЕГИСТРИРУЮ (ObjectNameAlready)" << endl;
 
@@ -97,16 +97,17 @@ bool ProxyManager::activateObject()
 					{
 						ui->unregister(it.first);
 					}
-					catch( const Exception& ex )
+					catch( const uniset::Exception& ex )
 					{
 						ucrit << myname << "(unregistered): " << ex << endl;
 					}
 				}
 			}
 		}
-		catch( const Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			ucrit << myname << "(activate): " << ex << endl;
+			std::terminate();
 		}
 	}
 
@@ -121,7 +122,7 @@ bool ProxyManager::deactivateObject()
 		{
 			ui->unregister(it->first);
 		}
-		catch( const Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			ucrit << myname << "(activate): " << ex << endl;
 		}
@@ -130,7 +131,7 @@ bool ProxyManager::deactivateObject()
 	return UniSetObject::deactivateObject();
 }
 // -------------------------------------------------------------------------
-void ProxyManager::processingMessage( const UniSetTypes::VoidMessage* msg )
+void ProxyManager::processingMessage( const uniset::VoidMessage* msg )
 {
 	try
 	{
@@ -153,13 +154,13 @@ void ProxyManager::processingMessage( const UniSetTypes::VoidMessage* msg )
 			break;
 		}
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		ucrit << myname << "(processingMessage): " << ex << endl;
 	}
 }
 // -------------------------------------------------------------------------
-void ProxyManager::allMessage( const UniSetTypes::VoidMessage* msg )
+void ProxyManager::allMessage( const uniset::VoidMessage* msg )
 {
 	for( auto& o : omap )
 	{
@@ -167,7 +168,7 @@ void ProxyManager::allMessage( const UniSetTypes::VoidMessage* msg )
 		{
 			o.second->processingMessage(msg);
 		}
-		catch( const Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			ucrit << myname << "(allMessage): " << ex << endl;
 		}

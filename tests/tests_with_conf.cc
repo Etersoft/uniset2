@@ -10,7 +10,7 @@ int main( int argc, const char* argv[] )
 	{
 		Catch::Session session;
 
-		UniSetTypes::uniset_init(argc, argv);
+		uniset::uniset_init(argc, argv);
 
 		int returnCode = session.applyCommandLine( argc, argv, Catch::Session::OnUnusedOptions::Ignore );
 
@@ -19,7 +19,7 @@ int main( int argc, const char* argv[] )
 
 		return session.run();
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		std::cerr << ex << std::endl;
 	}

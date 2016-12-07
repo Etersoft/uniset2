@@ -8,14 +8,14 @@
 
 using namespace std;
 
-std::map< UniSetTypes::ObjectId, int > std_m;
-std::unordered_map< UniSetTypes::ObjectId, int > std_un;
-std::vector< UniSetTypes::ObjectId > values;
+std::map< uniset::ObjectId, int > std_m;
+std::unordered_map< uniset::ObjectId, int > std_un;
+std::vector< uniset::ObjectId > values;
 
 const int N = 10000000;
 int main( int argc, char* argv[] )
 {
-	auto conf = UniSetTypes::uniset_init(argc, argv);
+	auto conf = uniset::uniset_init(argc, argv);
 
 	auto ind = conf->oind;
 

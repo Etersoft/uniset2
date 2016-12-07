@@ -5,7 +5,7 @@
 #include "UniSetTypes.h"
 #include "IORFile.h"
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 
 TEST_CASE("IORFile", "[iorfile][basic]" )
 {

@@ -11,6 +11,8 @@ top_builddir=@top_builddir@
 
 xsltdir=@datadir@/@PACKAGE@/xslt
 
+[ -z "@DISABLE_REST_API@" ] && DISABLE_REST_API=0 || DISABLE_REST_API=1
+
 PROG="${0##*/}"
 
 print_usage()
@@ -28,6 +30,7 @@ Valid options are:
   -n, --name        - filename for *_SK files (base class implementation). Default: xmlfilename_SK
   --ask             - Use 'ask' templates. See the documentation.
   --gen-varmap	    - generate variable map. For function: long* valptr(ObjectId)
+  --no-gen-statistics  - disable generate code for the account of statistics
   --alone           - Use 'alone' templates. See the documentation.
   --no-main         - Don't generate main.cc
 
@@ -40,7 +43,7 @@ EOF
 }
 
 #parse command line options
-TEMP=`getopt -n $PROG -o h,n:,m:,a,l:,z -l help,name:,main:,no-main,topdir:,path:,alone,ask,no-ask,local:,local-include,add-cc-include,add-hh-include,make-skel:,no-makefile,gen-varmap -- "$@"` || exit 1
+TEMP=`getopt -n $PROG -o h,n:,m:,a,l:,z -l help,name:,main:,no-main,topdir:,path:,alone,ask,no-ask,local:,local-include,add-cc-include,add-hh-include,make-skel:,no-makefile,gen-varmap,no-gen-statistics -- "$@"` || exit 1
 eval set -- "$TEMP"
 
 name=
@@ -70,6 +73,7 @@ skel_xml="skel.src.xml"
 skel_make="skel-Makefile.am"
 
 varmap=0
+genstat=1
 
 while :; do
     case "$1" in
@@ -118,6 +122,10 @@ while :; do
 
 	--gen-varmap)
 		varmap=1
+	    ;;
+
+	--no-gen-statistics)
+		genstat=1
 	    ;;
 
 	-l|--local)
@@ -199,6 +207,8 @@ PARAMS=$( echo \
 		--stringparam CNAME "${name}" \
 		--stringparam LOCALINC "${localinc}" \
 		--stringparam VARMAP "${varmap}" \
+		--stringparam STAT "${genstat}" \
+		--stringparam DISABLE_REST_API "${DISABLE_REST_API}" \
 		$xsltpath \
 		)
 #		--stringparam ADD_CC_INC "${add_cc_inc}" \

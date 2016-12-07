@@ -12,7 +12,7 @@
 #endif
 // -------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
 MBTCPServer::MBTCPServer(const std::unordered_set<ModbusAddr>& myaddr, const string& inetaddr, int port, bool verb ):
@@ -83,7 +83,7 @@ void MBTCPServer::sigterm( int signo )
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBTCPServer::readCoilStatus( ReadCoilMessage& query,
-		ReadCoilRetMessage& reply )
+												  ReadCoilRetMessage& reply )
 {
 	if( verbose )
 		cout << "(readCoilStatus): " << query << endl;
@@ -168,7 +168,7 @@ ModbusRTU::mbErrCode MBTCPServer::readInputStatus( ReadInputStatusMessage& query
 }
 // -------------------------------------------------------------------------
 mbErrCode MBTCPServer::readInputRegisters( ReadInputMessage& query,
-		ReadInputRetMessage& reply )
+										   ReadInputRetMessage& reply )
 {
 	if( verbose )
 		cout << "(readInputRegisters): " << query << endl;
@@ -296,7 +296,7 @@ ModbusRTU::mbErrCode MBTCPServer::forceSingleCoil( ModbusRTU::ForceSingleCoilMes
 
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBTCPServer::journalCommand( ModbusRTU::JournalCommandMessage& query,
-		ModbusRTU::JournalCommandRetMessage& reply )
+												  ModbusRTU::JournalCommandRetMessage& reply )
 {
 	if( verbose )
 		cout << "(journalCommand): " << query << endl;
@@ -333,7 +333,7 @@ ModbusRTU::mbErrCode MBTCPServer::journalCommand( ModbusRTU::JournalCommandMessa
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBTCPServer::setDateTime( ModbusRTU::SetDateTimeMessage& query,
-		ModbusRTU::SetDateTimeRetMessage& reply )
+											   ModbusRTU::SetDateTimeRetMessage& reply )
 {
 	if( verbose )
 		cout << "(setDateTime): " << query << endl;
@@ -345,14 +345,14 @@ ModbusRTU::mbErrCode MBTCPServer::setDateTime( ModbusRTU::SetDateTimeMessage& qu
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBTCPServer::remoteService( ModbusRTU::RemoteServiceMessage& query,
-		ModbusRTU::RemoteServiceRetMessage& reply )
+												 ModbusRTU::RemoteServiceRetMessage& reply )
 {
 	cerr << "(remoteService): " << query << endl;
 	return ModbusRTU::erOperationFailed;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBTCPServer::fileTransfer( ModbusRTU::FileTransferMessage& query,
-		ModbusRTU::FileTransferRetMessage& reply )
+												ModbusRTU::FileTransferRetMessage& reply )
 {
 	if( verbose )
 		cout << "(fileTransfer): " << query << endl;
@@ -433,7 +433,7 @@ ModbusRTU::mbErrCode MBTCPServer::fileTransfer( ModbusRTU::FileTransferMessage& 
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBTCPServer::diagnostics( ModbusRTU::DiagnosticMessage& query,
-		ModbusRTU::DiagnosticRetMessage& reply )
+											   ModbusRTU::DiagnosticRetMessage& reply )
 {
 	if( query.subf == ModbusRTU::subEcho )
 	{
@@ -472,7 +472,7 @@ ModbusRTU::mbErrCode MBTCPServer::diagnostics( ModbusRTU::DiagnosticMessage& que
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBTCPServer::read4314( ModbusRTU::MEIMessageRDI& query,
-		ModbusRTU::MEIMessageRetRDI& reply )
+											ModbusRTU::MEIMessageRetRDI& reply )
 {
 	if( verbose )
 		cout << "(read4314): " << query << endl;

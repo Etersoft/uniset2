@@ -23,16 +23,16 @@
 #include "modbus/MBLogSugar.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
-MBTCPMaster::MBTCPMaster(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
+MBTCPMaster::MBTCPMaster(uniset::ObjectId objId, uniset::ObjectId shmId,
 						 const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
 	MBExchange(objId, shmId, ic, prefix),
 	force_disconnect(true)
 {
 	if( objId == DefaultObjectId )
-		throw UniSetTypes::SystemError("(MBTCPMaster): objId=-1?!! Use --" + prefix + "-name" );
+		throw uniset::SystemError("(MBTCPMaster): objId=-1?!! Use --" + prefix + "-name" );
 
 	auto conf = uniset_conf();
 
@@ -47,13 +47,13 @@ MBTCPMaster::MBTCPMaster(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmI
 	iaddr    = conf->getArgParam(pname, it.getProp("gateway_iaddr"));
 
 	if( iaddr.empty() )
-		throw UniSetTypes::SystemError(myname + "(MBMaster): Unknown inet addr...(Use: " + pname + ")" );
+		throw uniset::SystemError(myname + "(MBMaster): Unknown inet addr...(Use: " + pname + ")" );
 
 	string tmp("--" + prefix + "-gateway-port");
 	port = conf->getArgInt(tmp, it.getProp("gateway_port"));
 
 	if( port <= 0 )
-		throw UniSetTypes::SystemError(myname + "(MBMaster): Unknown inet port...(Use: " + tmp + ")" );
+		throw uniset::SystemError(myname + "(MBMaster): Unknown inet port...(Use: " + tmp + ")" );
 
 	mbinfo << myname << "(init): gateway " << iaddr << ":" << port << endl;
 
@@ -127,7 +127,7 @@ std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
 	return mbtcp;
 }
 // -----------------------------------------------------------------------------
-void MBTCPMaster::sysCommand( const UniSetTypes::SystemMessage* sm )
+void MBTCPMaster::sysCommand( const uniset::SystemMessage* sm )
 {
 	MBExchange::sysCommand(sm);
 
@@ -145,7 +145,7 @@ void MBTCPMaster::poll_thread()
 	// ждём начала работы..(см. MBExchange::activateObject)
 	while( !checkProcActive() )
 	{
-		UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
+		uniset::uniset_rwmutex_rlock l(mutex_start);
 	}
 
 	// работаем
@@ -232,7 +232,7 @@ void MBTCPMaster::help_print( int argc, const char* const* argv )
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<MBTCPMaster> MBTCPMaster::init_mbmaster(int argc, const char* const* argv,
-		UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
+		uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
 		const std::string& prefix )
 {
 	auto conf = uniset_conf();
@@ -246,7 +246,7 @@ std::shared_ptr<MBTCPMaster> MBTCPMaster::init_mbmaster(int argc, const char* co
 
 	ObjectId ID = conf->getObjectID(name);
 
-	if( ID == UniSetTypes::DefaultObjectId )
+	if( ID == uniset::DefaultObjectId )
 	{
 		dcrit << "(MBTCPMaster): идентификатор '" << name
 			  << "' не найден в конф. файле!"
@@ -258,9 +258,9 @@ std::shared_ptr<MBTCPMaster> MBTCPMaster::init_mbmaster(int argc, const char* co
 	return make_shared<MBTCPMaster>(ID, icID, ic, prefix);
 }
 // -----------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* MBTCPMaster::getInfo( CORBA::Long userparam )
+uniset::SimpleInfo* MBTCPMaster::getInfo( const char* userparam )
 {
-	UniSetTypes::SimpleInfo_var i = MBExchange::getInfo(userparam);
+	uniset::SimpleInfo_var i = MBExchange::getInfo(userparam);
 
 	ostringstream inf;
 

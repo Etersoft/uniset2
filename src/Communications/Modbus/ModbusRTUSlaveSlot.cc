@@ -16,6 +16,9 @@
 // -------------------------------------------------------------------------
 #include "modbus/ModbusRTUSlaveSlot.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 using namespace ModbusRTU;
 using namespace std;
 // -------------------------------------------------------------------------
@@ -36,7 +39,7 @@ ModbusRTUSlaveSlot::~ModbusRTUSlaveSlot()
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusRTUSlaveSlot::readCoilStatus( ReadCoilMessage& query,
-		ReadCoilRetMessage& reply )
+											  ReadCoilRetMessage& reply )
 {
 	if( !slReadCoil )
 		return erOperationFailed;
@@ -46,7 +49,7 @@ mbErrCode ModbusRTUSlaveSlot::readCoilStatus( ReadCoilMessage& query,
 
 // -------------------------------------------------------------------------
 mbErrCode ModbusRTUSlaveSlot::readInputStatus( ReadInputStatusMessage& query,
-		ReadInputStatusRetMessage& reply )
+											   ReadInputStatusRetMessage& reply )
 {
 	if( !slReadInputStatus )
 		return erOperationFailed;
@@ -67,7 +70,7 @@ mbErrCode ModbusRTUSlaveSlot::readOutputRegisters( ReadOutputMessage& query,
 
 // -------------------------------------------------------------------------
 mbErrCode ModbusRTUSlaveSlot::readInputRegisters( ReadInputMessage& query,
-		ReadInputRetMessage& reply )
+												  ReadInputRetMessage& reply )
 {
 	if( !slReadInputs )
 		return erOperationFailed;
@@ -77,7 +80,7 @@ mbErrCode ModbusRTUSlaveSlot::readInputRegisters( ReadInputMessage& query,
 
 // -------------------------------------------------------------------------
 mbErrCode ModbusRTUSlaveSlot::forceMultipleCoils( ForceCoilsMessage& query,
-		ForceCoilsRetMessage& reply )
+												  ForceCoilsRetMessage& reply )
 {
 	if( !slForceCoils )
 		return erOperationFailed;
@@ -98,7 +101,7 @@ mbErrCode ModbusRTUSlaveSlot::writeOutputRegisters( WriteOutputMessage& query,
 
 // -------------------------------------------------------------------------
 mbErrCode ModbusRTUSlaveSlot::diagnostics( DiagnosticMessage& query,
-		DiagnosticRetMessage& reply )
+										   DiagnosticRetMessage& reply )
 {
 	if( !slDiagnostics )
 		return erOperationFailed;
@@ -116,7 +119,7 @@ ModbusRTU::mbErrCode ModbusRTUSlaveSlot::read4314( ModbusRTU::MEIMessageRDI& que
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusRTUSlaveSlot::forceSingleCoil( ForceSingleCoilMessage& query,
-		ForceSingleCoilRetMessage& reply )
+											   ForceSingleCoilRetMessage& reply )
 {
 	if( !slForceSingleCoil )
 		return erOperationFailed;
@@ -136,7 +139,7 @@ mbErrCode ModbusRTUSlaveSlot::writeOutputSingleRegister( WriteSingleOutputMessag
 
 // -------------------------------------------------------------------------
 mbErrCode ModbusRTUSlaveSlot::journalCommand( JournalCommandMessage& query,
-		JournalCommandRetMessage& reply )
+											  JournalCommandRetMessage& reply )
 {
 	if( !slJournalCommand )
 		return erOperationFailed;
@@ -180,3 +183,4 @@ void ModbusRTUSlaveSlot::sigterm( int signo )
 	catch(...) {}
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

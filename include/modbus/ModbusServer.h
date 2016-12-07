@@ -15,16 +15,19 @@
 // -------------------------------------------------------------------------
 namespace std
 {
-	template<>
-	class hash<ModbusRTU::mbErrCode>
-	{
-		public:
-			size_t operator()(const ModbusRTU::mbErrCode& e) const
-			{
-				return std::hash<size_t>()(e);
-			}
-	};
+template<>
+class hash<uniset::ModbusRTU::mbErrCode>
+{
+	public:
+		size_t operator()(const uniset::ModbusRTU::mbErrCode& e) const
+		{
+			return std::hash<size_t>()(e);
+		}
+};
 }
+// -------------------------------------------------------------------------
+namespace uniset
+{
 // -------------------------------------------------------------------------
 /*!    Modbus server interface */
 class ModbusServer
@@ -33,7 +36,7 @@ class ModbusServer
 		ModbusServer();
 		virtual ~ModbusServer();
 
-		void initLog( UniSetTypes::Configuration* conf, const std::string& name, const std::string& logfile = "" );
+		void initLog( uniset::Configuration* conf, const std::string& name, const std::string& logfile = "" );
 		void setLog( std::shared_ptr<DebugStream> dlog );
 		inline std::shared_ptr<DebugStream> log()
 		{
@@ -125,8 +128,8 @@ class ModbusServer
 		    Основана на использовании gettimeofday и settimeofday.
 		*/
 		static ModbusRTU::mbErrCode replySetDateTime( ModbusRTU::SetDateTimeMessage& query,
-				ModbusRTU::SetDateTimeRetMessage& reply,
-				std::shared_ptr<DebugStream> dlog = nullptr );
+													  ModbusRTU::SetDateTimeRetMessage& reply,
+													  std::shared_ptr<DebugStream> dlog = nullptr );
 
 
 		/*! Вспомогательная функция реализующая обработку передачи файла
@@ -135,9 +138,9 @@ class ModbusServer
 		    \param reply - ответ
 		*/
 		static ModbusRTU::mbErrCode replyFileTransfer( const std::string& fname,
-				ModbusRTU::FileTransferMessage& query,
-				ModbusRTU::FileTransferRetMessage& reply,
-				std::shared_ptr<DebugStream> dlog = nullptr );
+													   ModbusRTU::FileTransferMessage& query,
+													   ModbusRTU::FileTransferRetMessage& reply,
+													   std::shared_ptr<DebugStream> dlog = nullptr );
 
 		virtual void cleanupChannel() {}
 		virtual void terminate() {}
@@ -171,14 +174,14 @@ class ModbusServer
 		    \return Результат обработки
 		*/
 		virtual ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query,
-				ModbusRTU::ReadCoilRetMessage& reply ) = 0;
+													 ModbusRTU::ReadCoilRetMessage& reply ) = 0;
 		/*! Обработка запроса на чтение данных (0x02).
 		    \param query - запрос
 		    \param reply - ответ. Заполняется в обработчике.
 		    \return Результат обработки
 		*/
 		virtual ModbusRTU::mbErrCode readInputStatus( ModbusRTU::ReadInputStatusMessage& query,
-				ModbusRTU::ReadInputStatusRetMessage& reply ) = 0;
+													  ModbusRTU::ReadInputStatusRetMessage& reply ) = 0;
 
 		/*! Обработка запроса на чтение данных (0x03).
 		    \param query - запрос
@@ -186,7 +189,7 @@ class ModbusServer
 		    \return Результат обработки
 		*/
 		virtual ModbusRTU::mbErrCode readOutputRegisters( ModbusRTU::ReadOutputMessage& query,
-				ModbusRTU::ReadOutputRetMessage& reply ) = 0;
+														  ModbusRTU::ReadOutputRetMessage& reply ) = 0;
 
 		/*! Обработка запроса на чтение данных (0x04).
 		    \param query - запрос
@@ -194,7 +197,7 @@ class ModbusServer
 		    \return Результат обработки
 		*/
 		virtual ModbusRTU::mbErrCode readInputRegisters( ModbusRTU::ReadInputMessage& query,
-				ModbusRTU::ReadInputRetMessage& reply ) = 0;
+														 ModbusRTU::ReadInputRetMessage& reply ) = 0;
 
 		/*! Обработка запроса на запись данных (0x05).
 		    \param query - запрос
@@ -202,7 +205,7 @@ class ModbusServer
 		    \return Результат обработки
 		*/
 		virtual ModbusRTU::mbErrCode forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
-				ModbusRTU::ForceSingleCoilRetMessage& reply ) = 0;
+													  ModbusRTU::ForceSingleCoilRetMessage& reply ) = 0;
 
 
 		/*! Обработка запроса на запись данных (0x06).
@@ -219,7 +222,7 @@ class ModbusServer
 		    \return Результат обработки
 		*/
 		virtual ModbusRTU::mbErrCode forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
-				ModbusRTU::ForceCoilsRetMessage& reply ) = 0;
+														 ModbusRTU::ForceCoilsRetMessage& reply ) = 0;
 
 		/*! Обработка запроса на запись данных (0x10).
 		    \param query - запрос
@@ -236,7 +239,7 @@ class ModbusServer
 		    \return Результат обработки
 		*/
 		virtual ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query,
-				ModbusRTU::DiagnosticRetMessage& reply ) = 0;
+												  ModbusRTU::DiagnosticRetMessage& reply ) = 0;
 
 		/*! Обработка запроса 43(0x2B).
 		    \param query - запрос
@@ -253,7 +256,7 @@ class ModbusServer
 		    \return Результат обработки
 		*/
 		virtual ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query,
-				ModbusRTU::JournalCommandRetMessage& reply ) = 0;
+													 ModbusRTU::JournalCommandRetMessage& reply ) = 0;
 
 
 		/*! Обработка запроса по установке даты и времени (0x50)
@@ -262,7 +265,7 @@ class ModbusServer
 		    \return Результат обработки
 		*/
 		virtual ModbusRTU::mbErrCode setDateTime( ModbusRTU::SetDateTimeMessage& query,
-				ModbusRTU::SetDateTimeRetMessage& reply ) = 0;
+												  ModbusRTU::SetDateTimeRetMessage& reply ) = 0;
 
 
 		/*! Вызов удалённого сервиса (0x53)
@@ -271,7 +274,7 @@ class ModbusServer
 		    \return Результат обработки
 		*/
 		virtual ModbusRTU::mbErrCode remoteService( ModbusRTU::RemoteServiceMessage& query,
-				ModbusRTU::RemoteServiceRetMessage& reply ) = 0;
+													ModbusRTU::RemoteServiceRetMessage& reply ) = 0;
 
 
 		/*! Передача файла (0x66)
@@ -280,7 +283,7 @@ class ModbusServer
 		    \return Результат обработки
 		*/
 		virtual ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query,
-				ModbusRTU::FileTransferRetMessage& reply ) = 0;
+												   ModbusRTU::FileTransferRetMessage& reply ) = 0;
 
 		/*! get next data block from channel or recv buffer
 		    \param begin - get from position
@@ -339,6 +342,8 @@ class ModbusServer
 	private:
 
 };
+// -------------------------------------------------------------------------
+} // end of namespace uniset
 // -------------------------------------------------------------------------
 #endif // ModbusServer_H_
 // -------------------------------------------------------------------------

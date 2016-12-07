@@ -24,16 +24,16 @@
 #include "modbus/MBLogSugar.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
-MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
+MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shmId,
 									const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
 	MBExchange(objId, shmId, ic, prefix),
 	force_disconnect(true)
 {
 	if( objId == DefaultObjectId )
-		throw UniSetTypes::SystemError("(MBTCPMultiMaster): objId=-1?!! Use --" + prefix + "-name" );
+		throw uniset::SystemError("(MBTCPMultiMaster): objId=-1?!! Use --" + prefix + "-name" );
 
 	auto conf = uniset_conf();
 
@@ -59,7 +59,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		ostringstream err;
 		err << myname << "(init): not found <GateList>";
 		mbcrit << err.str() << endl;
-		throw UniSetTypes::SystemError(err.str());
+		throw uniset::SystemError(err.str());
 	}
 
 	if( !it1.goChildren() )
@@ -67,7 +67,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		ostringstream err;
 		err << myname << "(init): empty <GateList> ?!";
 		mbcrit << err.str() << endl;
-		throw UniSetTypes::SystemError(err.str());
+		throw uniset::SystemError(err.str());
 	}
 
 	for( ; it1.getCurrent(); it1++ )
@@ -87,7 +87,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 			ostringstream err;
 			err << myname << "(init): ip='' in <GateList>";
 			mbcrit << err.str() << endl;
-			throw UniSetTypes::SystemError(err.str());
+			throw uniset::SystemError(err.str());
 		}
 
 		sinf->port = it1.getIntProp("port");
@@ -97,7 +97,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 			ostringstream err;
 			err << myname << "(init): ERROR: port=''" << sinf->port << " for ip='" << sinf->ip << "' in <GateList>";
 			mbcrit << err.str() << endl;
-			throw UniSetTypes::SystemError(err.str());
+			throw uniset::SystemError(err.str());
 		}
 
 		if( !it1.getProp("respondSensor").empty() )
@@ -109,7 +109,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 				ostringstream err;
 				err << myname << "(init): ERROR: Unknown SensorID for '" << it1.getProp("respondSensor") << "' in <GateList>";
 				mbcrit << err.str() << endl;
-				throw UniSetTypes::SystemError(err.str());
+				throw uniset::SystemError(err.str());
 			}
 		}
 
@@ -124,11 +124,12 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		sinf->respond_force = it1.getPIntProp("force", 0);
 
 		int fn = conf->getArgPInt("--" + prefix + "-check-func", it.getProp("checkFunc"), ModbusRTU::fnUnknown);
+
 		if( fn != ModbusRTU::fnUnknown &&
-			fn != ModbusRTU::fnReadCoilStatus &&
-			fn != ModbusRTU::fnReadInputStatus &&
-			fn != ModbusRTU::fnReadOutputRegisters &&
-			fn != ModbusRTU::fnReadInputRegisters )
+				fn != ModbusRTU::fnReadCoilStatus &&
+				fn != ModbusRTU::fnReadInputStatus &&
+				fn != ModbusRTU::fnReadOutputRegisters &&
+				fn != ModbusRTU::fnReadInputRegisters )
 		{
 			ostringstream err;
 			err << myname << "(init):  BAD check function ='" << fn << "'. Must be [1,2,3,4]";
@@ -169,7 +170,7 @@ MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::Ob
 		ostringstream err;
 		err << myname << "(init): empty <GateList>!";
 		mbcrit << err.str() << endl;
-		throw UniSetTypes::SystemError(err.str());
+		throw uniset::SystemError(err.str());
 	}
 
 	mblist.sort();
@@ -248,7 +249,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 	{
 		// сперва надо обновить все ignore
 		// т.к. фактически флаги выставляются и сбрасываются только здесь
-		for( auto&& it: mblist )
+		for( auto && it : mblist )
 			it->ignore = !it->ptIgnoreTimeout.checkTime();
 
 		// если reopen=true - значит почему-то по текущему каналу связи нет (хотя соединение есть)
@@ -289,6 +290,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 	for( auto it = mblist.rbegin(); it != mblist.rend(); ++it )
 	{
 		auto m = (*it);
+
 		if( m->respond && !m->ignore && m->init(mblog) )
 		{
 			mbi = it;
@@ -306,6 +308,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 	for( auto it = mblist.rbegin(); it != mblist.rend(); ++it )
 	{
 		auto& m = (*it);
+
 		if( m->respond && m->check() && m->init(mblog) )
 		{
 			mbi = it;
@@ -348,41 +351,42 @@ bool MBTCPMultiMaster::MBSlaveInfo::check()
 	if( use )
 		return true;
 
-//	cerr << myname << "(check): check connection..." << ip << ":" << port
-//		 << " mbfunc=" << checkFunc
-//		 << " mbaddr=" << ModbusRTU::addr2str(checkAddr)
-//		 << " mbreg=" << (int)checkReg << "(" << ModbusRTU::dat2str(checkReg) << ")"
-//		 << endl;
+	//	cerr << myname << "(check): check connection..." << ip << ":" << port
+	//		 << " mbfunc=" << checkFunc
+	//		 << " mbaddr=" << ModbusRTU::addr2str(checkAddr)
+	//		 << " mbreg=" << (int)checkReg << "(" << ModbusRTU::dat2str(checkReg) << ")"
+	//		 << endl;
 
 	try
 	{
-		mbtcp->connect(ip,port,false);
+		mbtcp->connect(ip, port, false);
+
 		switch(checkFunc)
 		{
 			case ModbusRTU::fnReadCoilStatus:
 			{
-				auto ret = mbtcp->read01(checkAddr,checkReg,1);
+				auto ret = mbtcp->read01(checkAddr, checkReg, 1);
 				return true;
 			}
 			break;
 
 			case ModbusRTU::fnReadInputStatus:
 			{
-				auto ret = mbtcp->read02(checkAddr,checkReg,1);
+				auto ret = mbtcp->read02(checkAddr, checkReg, 1);
 				return true;
 			}
 			break;
 
 			case ModbusRTU::fnReadOutputRegisters:
 			{
-				auto ret = mbtcp->read03(checkAddr,checkReg,1);
+				auto ret = mbtcp->read03(checkAddr, checkReg, 1);
 				return true;
 			}
 			break;
 
 			case ModbusRTU::fnReadInputRegisters:
 			{
-				auto ret = mbtcp->read04(checkAddr,checkReg,1);
+				auto ret = mbtcp->read04(checkAddr, checkReg, 1);
 				return true;
 			}
 			break;
@@ -391,7 +395,7 @@ bool MBTCPMultiMaster::MBSlaveInfo::check()
 				return mbtcp->checkConnection(ip, port, recv_timeout);
 		}
 	}
-	catch(...){}
+	catch(...) {}
 
 	return false;
 }
@@ -426,7 +430,7 @@ bool MBTCPMultiMaster::MBSlaveInfo::init( std::shared_ptr<DebugStream>& mblog )
 	return initOK;
 }
 // -----------------------------------------------------------------------------
-void MBTCPMultiMaster::sysCommand( const UniSetTypes::SystemMessage* sm )
+void MBTCPMultiMaster::sysCommand( const uniset::SystemMessage* sm )
 {
 	MBExchange::sysCommand(sm);
 
@@ -446,7 +450,7 @@ void MBTCPMultiMaster::poll_thread()
 	// ждём начала работы..(см. MBExchange::activateObject)
 	while( !checkProcActive() )
 	{
-		UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
+		uniset::uniset_rwmutex_rlock l(mutex_start);
 	}
 
 	// работаем..
@@ -482,7 +486,7 @@ void MBTCPMultiMaster::check_thread()
 {
 	while( checkProcActive() )
 	{
-		for( auto&& it: mblist )
+		for( auto && it : mblist )
 		{
 			try
 			{
@@ -516,7 +520,7 @@ void MBTCPMultiMaster::check_thread()
 						it->respond_init = true;
 					}
 				}
-				catch( const Exception& ex )
+				catch( const uniset::Exception& ex )
 				{
 					mbcrit << myname << "(check): (respond) " << it->myname << " : " << ex << std::endl;
 				}
@@ -613,6 +617,7 @@ void MBTCPMultiMaster::initCheckConnectionParameters()
 	auto conf = uniset_conf();
 
 	bool initFromRegMap = ( findArgParam("--" + prefix + "-check-init-from-regmap", conf->getArgc(), conf->getArgv()) != -1 );
+
 	if( !initFromRegMap )
 		return;
 
@@ -635,16 +640,17 @@ void MBTCPMultiMaster::initCheckConnectionParameters()
 	}
 
 	// идём по устройствам
-	for( const auto& d: devices )
+	for( const auto& d : devices )
 	{
 		checkAddr = d.second->mbaddr;
+
 		if( d.second->pollmap.empty() )
 			continue;
 
 		// идём по списку опрашиваемых регистров
 		for( auto p = d.second->pollmap.begin(); p != d.second->pollmap.end(); ++p )
 		{
-			for( auto r = p->second->begin(); r!=p->second->end(); ++r )
+			for( auto r = p->second->begin(); r != p->second->end(); ++r )
 			{
 				if( ModbusRTU::isReadFunction(r->second->mbfunc) )
 				{
@@ -667,8 +673,8 @@ void MBTCPMultiMaster::initCheckConnectionParameters()
 		ostringstream err;
 
 		err << myname << "(init): init check connection parameters: ERROR: "
-			   << " NOT FOUND read-registers for check connection!"
-			   << endl;
+			<< " NOT FOUND read-registers for check connection!"
+			<< endl;
 
 		mbcrit << err.str() << endl;
 		throw SystemError(err.str());
@@ -681,7 +687,7 @@ void MBTCPMultiMaster::initCheckConnectionParameters()
 		   << endl;
 
 	// инициализируем..
-	for( auto&& m: mblist )
+	for( auto && m : mblist )
 	{
 		m->checkFunc = checkFunc;
 		m->checkAddr = checkAddr;
@@ -711,7 +717,7 @@ void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<MBTCPMultiMaster> MBTCPMultiMaster::init_mbmaster( int argc, const char* const* argv,
-		UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
+		uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
 		const std::string& prefix )
 {
 	auto conf = uniset_conf();
@@ -726,7 +732,7 @@ std::shared_ptr<MBTCPMultiMaster> MBTCPMultiMaster::init_mbmaster( int argc, con
 
 	ObjectId ID = conf->getObjectID(name);
 
-	if( ID == UniSetTypes::DefaultObjectId )
+	if( ID == uniset::DefaultObjectId )
 	{
 		dcrit << "(MBTCPMultiMaster): идентификатор '" << name
 			  << "' не найден в конф. файле!"
@@ -755,9 +761,9 @@ const std::string MBTCPMultiMaster::MBSlaveInfo::getShortInfo() const
 	return std::move(s.str());
 }
 // -----------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* MBTCPMultiMaster::getInfo( CORBA::Long userparam )
+uniset::SimpleInfo* MBTCPMultiMaster::getInfo( const char* userparam )
 {
-	UniSetTypes::SimpleInfo_var i = MBExchange::getInfo(userparam);
+	uniset::SimpleInfo_var i = MBExchange::getInfo(userparam);
 
 	ostringstream inf;
 

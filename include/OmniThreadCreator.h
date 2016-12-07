@@ -25,6 +25,8 @@
 #include <omnithread.h>
 #include <memory>
 //----------------------------------------------------------------------------
+namespace uniset
+{
 /*! \class OmniThreadCreator
  * \par
  *    Шаблон для создания потоков с указанием функции вызова.
@@ -155,5 +157,6 @@ OmniThreadCreator<ThreadMaster>::OmniThreadCreator():
 {
 }
 //----------------------------------------------------------------------------------------
-
+} // end of uniset namespace
+// -------------------------------------------------------------------------
 #endif // OmniThreadCreator_h_

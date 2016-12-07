@@ -21,9 +21,9 @@
 #include "IOControl.h"
 #include "Extensions.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
-using namespace UniSetExtensions;
+using namespace uniset::extensions;
 // --------------------------------------------------------------------------
 int main(int argc, const char** argv)
 {

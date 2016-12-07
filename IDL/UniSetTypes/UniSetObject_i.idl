@@ -36,18 +36,22 @@
     */
     interface UniSetObject_i
     {
-        UniSetTypes::ObjectId getId();       /*!< получение идентификатора объекта */
-        UniSetTypes::ObjectType getType();   /*!< получение типа объекта */
+        uniset::ObjectId getId();       /*!< получение идентификатора объекта */
+        uniset::ObjectType getType();   /*!< получение типа объекта */
 
-        /*! получение информации о внутреннем состоянии объекта
+        /*! получение информации от объекта
             \param userparam - Необязательный пользовательский параметр
+            \deprecated { Эта функция может быть удалена, желательно использовать более универсальную apiRequest }
         */
-        UniSetTypes::SimpleInfo getInfo( in long userparam );
+        uniset::SimpleInfo getInfo( in string userparam );
+
+        /*! REST API. Формат запроса: /api/version/query_for_object[?param1&param2...] */
+        uniset::SimpleInfo apiRequest( in string query );
 
         boolean exist();   /*!< проверка существования объекта */
 
         /*!  Функция посылки сообщения объекту */
-        void push(in UniSetTypes::TransportMessage msg);
+        void push( in uniset::TransportMessage msg );
     };
 
 //};    // end of module UniSet

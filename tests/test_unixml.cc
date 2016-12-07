@@ -7,6 +7,7 @@
 #include "UniSetTypes.h"
 // -----------------------------------------------------------------------------
 using namespace std;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 TEST_CASE("UniXML", "[unixml][basic]" )
 {
@@ -18,8 +19,8 @@ TEST_CASE("UniXML", "[unixml][basic]" )
 
 	SECTION( "Bad file" )
 	{
-		REQUIRE_THROWS_AS( UniXML("unknown.xml"), UniSetTypes::NameNotFound );
-		REQUIRE_THROWS_AS( UniXML("tests_unixml_badfile.xml"), UniSetTypes::Exception );
+		REQUIRE_THROWS_AS( UniXML("unknown.xml"), uniset::NameNotFound );
+		REQUIRE_THROWS_AS( UniXML("tests_unixml_badfile.xml"), uniset::Exception );
 	}
 
 	UniXML uxml("tests_unixml.xml");

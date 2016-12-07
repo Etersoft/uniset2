@@ -29,7 +29,7 @@
 
 // ------------------------------------------------------------------------------------------
 using namespace std;
-//using namespace UniSetTypes;
+//using namespace uniset;
 // ------------------------------------------------------------------------------------------
 void PassiveSigTimer::call(int signo, siginfo_t* evp, void* ucontext)
 {

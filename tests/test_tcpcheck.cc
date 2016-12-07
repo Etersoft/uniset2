@@ -9,6 +9,7 @@
 #include "TCPCheck.h"
 #include "UniSetTypes.h"
 using namespace std;
+using namespace uniset;
 
 static int port = 2048;
 static std::string host = "localhost";
@@ -30,7 +31,7 @@ bool run_test_server()
 
 		return true;
 	}
-	catch(...){}
+	catch(...) {}
 
 	return false;
 }

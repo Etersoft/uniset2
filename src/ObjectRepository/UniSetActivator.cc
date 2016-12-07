@@ -47,7 +47,7 @@
 #include "Mutex.h"
 
 // ------------------------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // ------------------------------------------------------------------------------------------
 /*
@@ -368,6 +368,8 @@ void on_finish_timeout()
 	ulogsys << "KILL THREAD: ..bye.." << endl;
 }
 // ------------------------------------------------------------------------------------------
+namespace uniset
+{
 void terminate_thread()
 {
 	ulogsys << "****** TERMINATE THREAD: STARTED *******" << endl << flush;
@@ -480,14 +482,15 @@ void terminate_thread()
 	g_kill_thread->join();
 	ulogsys << "(TERMINATE THREAD): ..bye.." << endl;
 }
+}
 // ---------------------------------------------------------------------------
 UniSetActivatorPtr UniSetActivator::inst;
 // ---------------------------------------------------------------------------
-UniSetActivatorPtr UniSetActivator::Instance( const UniSetTypes::ObjectId id )
+UniSetActivatorPtr UniSetActivator::Instance()
 {
 	if( inst == nullptr )
 	{
-		inst = shared_ptr<UniSetActivator>( new UniSetActivator(id) );
+		inst = shared_ptr<UniSetActivator>( new UniSetActivator() );
 		g_act = inst;
 	}
 
@@ -505,15 +508,8 @@ std::shared_ptr<UniSetActivator> UniSetActivator::get_aptr()
 	return std::dynamic_pointer_cast<UniSetActivator>(get_ptr());
 }
 // ---------------------------------------------------------------------------
-UniSetActivator::UniSetActivator( const ObjectId id ):
-	UniSetManager(id),
-	omDestroy(false)
-{
-	UniSetActivator::init();
-}
-// ------------------------------------------------------------------------------------------
 UniSetActivator::UniSetActivator():
-	UniSetManager(UniSetTypes::DefaultObjectId),
+	UniSetManager(uniset::DefaultObjectId),
 	omDestroy(false)
 {
 	//    thread(false);    //    отключаем поток (раз не задан id)
@@ -531,6 +527,19 @@ void UniSetActivator::init()
 	_noUseGdbForStackTrace = ( findArgParam("--uniset-no-use-gdb-for-stacktrace", conf->getArgc(), conf->getArgv()) != -1 );
 
 	abortScript = conf->getArgParam("--uniset-abort-script", "");
+
+#ifndef DISABLE_REST_API
+
+	if( findArgParam("--activator-run-httpserver", conf->getArgc(), conf->getArgv()) != -1 )
+	{
+		httpHost = conf->getArgParam("--activator-httpserver-host", "localhost");
+		ostringstream s;
+		s << (getId() == DefaultObjectId ? 8080 : getId() );
+		httpPort = conf->getArgInt("--activator-httpserver-port", s.str());
+		ulog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
+	}
+
+#endif
 
 	orb = conf->getORB();
 	CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
@@ -648,7 +657,7 @@ void UniSetActivator::run( bool thread )
 
 	UniSetManager::initPOA( get_aptr() );
 
-	if( getId() == UniSetTypes::DefaultObjectId )
+	if( getId() == uniset::DefaultObjectId )
 		offThread(); // отключение потока обработки сообщений, раз не задан ObjectId
 
 	UniSetManager::activate(); // а там вызывается активация всех подчиненных объектов и менеджеров
@@ -659,6 +668,24 @@ void UniSetActivator::run( bool thread )
 	msleep(50);
 
 	set_signals(true);
+
+#ifndef DISABLE_REST_API
+
+	if( !httpHost.empty() )
+	{
+		try
+		{
+			auto reg = dynamic_pointer_cast<UHttp::IHttpRequestRegistry>(shared_from_this());
+			httpserv = make_shared<UHttp::UHttpServer>(reg, httpHost, httpPort);
+			httpserv->start();
+		}
+		catch( std::exception& ex )
+		{
+			uwarn << myname << "(run): init http server error: " << ex.what() << endl;
+		}
+	}
+
+#endif
 
 	if( thread )
 	{
@@ -694,6 +721,13 @@ void UniSetActivator::stop()
 	pman->discard_requests(true);
 
 	ulogsys << myname << "(stop): discard request ok." << endl;
+
+#ifndef DISABLE_REST_API
+
+	if( httpserv )
+		httpserv->stop();
+
+#endif
 }
 
 // ------------------------------------------------------------------------------------------
@@ -728,6 +762,10 @@ void UniSetActivator::work()
 		ucrit << myname << "(work):   line: " << fe.line() << endl;
 		ucrit << myname << "(work):   mesg: " << fe.errmsg() << endl;
 	}
+	catch( std::exception& ex )
+	{
+		ucrit << myname << "(work): catch: " << ex.what() << endl;
+	}
 
 	ulogsys << myname << "(work): orb thread stopped!" << endl << flush;
 
@@ -752,7 +790,7 @@ CORBA::ORB_ptr UniSetActivator::getORB()
 	return orb;
 }
 // ------------------------------------------------------------------------------------------
-void UniSetActivator::sysCommand( const UniSetTypes::SystemMessage* sm )
+void UniSetActivator::sysCommand( const uniset::SystemMessage* sm )
 {
 	switch(sm->command)
 	{
@@ -836,6 +874,71 @@ UniSetActivator::TerminateEvent_Signal UniSetActivator::signal_terminate_event()
 {
 	return s_term;
 }
+// ------------------------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+Poco::JSON::Object::Ptr UniSetActivator::httpGetByName( const string& name, const Poco::URI::QueryParameters& p )
+{
+	if( name == myname )
+		return httpGet(p);
+
+	auto obj = deepFindObject(name);
+
+	if( obj )
+		return obj->httpGet(p);
+
+	ostringstream err;
+	err << "Object '" << name << "' not found";
+
+	throw uniset::NameNotFound(err.str());
+}
+// ------------------------------------------------------------------------------------------
+Poco::JSON::Array::Ptr UniSetActivator::httpGetObjectsList( const Poco::URI::QueryParameters& p )
+{
+	Poco::JSON::Array::Ptr jdata = new Poco::JSON::Array();
+
+	std::vector<std::shared_ptr<UniSetObject>> vec;
+	vec.reserve(objectsCount());
+
+	//! \todo Доделать обработку параметров beg,lim на случай большого количества объектов (и частичных запросов)
+	size_t lim = 1000;
+	getAllObjectsList(vec, lim);
+
+	for( const auto& o : vec )
+		jdata->add(o->getName());
+
+	return jdata;
+}
+// ------------------------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UniSetActivator::httpHelpByName( const string& name, const Poco::URI::QueryParameters& p )
+{
+	if( name == myname )
+		return httpHelp(p);
+
+	auto obj = deepFindObject(name);
+
+	if( obj )
+		return obj->httpHelp(p);
+
+	ostringstream err;
+	err << "Object '" << name << "' not found";
+	throw uniset::NameNotFound(err.str());
+}
+// ------------------------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UniSetActivator::httpRequestByName( const string& name, const std::string& req, const Poco::URI::QueryParameters& p)
+{
+	if( name == myname )
+		return httpRequest(req, p);
+
+	auto obj = deepFindObject(name);
+
+	if( obj )
+		return obj->httpRequest(req, p);
+
+	ostringstream err;
+	err << "Object '" << name << "' not found";
+	throw uniset::NameNotFound(err.str());
+}
+#endif // #ifndef DISABLE_REST_API
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::terminated( int signo )
 {
@@ -962,7 +1065,7 @@ void UniSetActivator::term( int signo )
 		s_term.emit(signo);
 		ulogsys << myname << "(term): sigterm() ok." << endl;
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		ucrit << myname << "(term): " << ex << endl;
 	}

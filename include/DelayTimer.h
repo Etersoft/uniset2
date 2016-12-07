@@ -19,6 +19,8 @@
 // --------------------------------------------------------------------------
 #include "PassiveTimer.h"
 // --------------------------------------------------------------------------
+namespace uniset
+{
 /*! Таймер реализующий задержку на срабатывание и отпускание сигнала.
     Для проверки вызывается функция check( state ), где state - это текущее состояние
     сигнала, а функция check() возвращает сигнал с задержкой.
@@ -27,10 +29,10 @@
 class DelayTimer
 {
 	public:
-		DelayTimer(){}
+		DelayTimer() {}
 
 		DelayTimer( timeout_t on_msec, timeout_t off_msec ) noexcept:
-			onDelay(on_msec), offDelay(off_msec){}
+			onDelay(on_msec), offDelay(off_msec) {}
 
 		~DelayTimer() noexcept {}
 
@@ -152,6 +154,8 @@ class DelayTimer
 		bool waiting_on = { false };
 		bool waiting_off = { false };
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // --------------------------------------------------------------------------
 #endif
 // --------------------------------------------------------------------------

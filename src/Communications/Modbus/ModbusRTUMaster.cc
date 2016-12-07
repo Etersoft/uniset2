@@ -22,9 +22,12 @@
 #include "ComPort485F.h"
 #include "modbus/ModbusRTUMaster.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 using namespace std;
 using namespace ModbusRTU;
-using namespace UniSetTypes;
+using namespace uniset;
 
 // -------------------------------------------------------------------------
 ModbusRTUMaster::ModbusRTUMaster( const string& dev, bool use485, bool tr_ctl ):
@@ -142,7 +145,7 @@ mbErrCode ModbusRTUMaster::sendData(unsigned char* buf, size_t len )
 	{
 		port->sendBlock(buf, len);
 	}
-	catch( const Exception& ex ) // SystemError
+	catch( const uniset::Exception& ex ) // SystemError
 	{
 		dlog->crit() << "(send): " << ex << endl;
 		return erHardwareError;
@@ -162,3 +165,4 @@ mbErrCode ModbusRTUMaster::query( ModbusAddr addr, ModbusMessage& msg,
 	return recv(addr, msg.pduhead.func, reply, timeout);
 }
 // --------------------------------------------------------------------------------
+} // end of namespace uniset

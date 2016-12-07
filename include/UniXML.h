@@ -35,6 +35,9 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 // --------------------------------------------------------------------------
+namespace uniset
+{
+
 class UniXML_iterator:
 	public std::iterator<std::bidirectional_iterator_tag, xmlNode, ptrdiff_t, xmlNode*, xmlNode&>
 {
@@ -178,5 +181,7 @@ class UniXML
 		std::string filename;
 		std::shared_ptr<xmlDoc> doc = { nullptr };
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // --------------------------------------------------------------------------
 #endif

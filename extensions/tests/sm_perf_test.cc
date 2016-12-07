@@ -9,8 +9,8 @@
 #include "Extensions.h"
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // --------------------------------------------------------------------------
 static shared_ptr<SMInterface> smi;
 static shared_ptr<SharedMemory> shm;
@@ -117,11 +117,11 @@ int main(int argc, char* argv[] )
 		std::cerr << "elapsed time: " << elapsed_seconds << " ms\n";
 		return 0;
 	}
-	catch( const SystemError& err )
+	catch( const uniset::SystemError& err )
 	{
 		cerr << "(tests_with_sm): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		cerr << "(tests_with_sm): " << ex << endl;
 	}

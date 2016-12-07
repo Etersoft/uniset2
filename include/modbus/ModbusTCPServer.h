@@ -16,6 +16,9 @@
 #include "UTCPSocket.h"
 #include "EventLoopServer.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 /*! ModbusTCPServer
  * Реализация сервера на основе libev. Подерживается "много" соединений (постоянных).
  * Хоть класс и наследуется от ModbusServer на самом деле он не реализует его функции,
@@ -166,6 +169,8 @@ class ModbusTCPServer:
 		void postReceiveEvent( ModbusRTU::mbErrCode res );
 		ModbusRTU::mbErrCode preReceiveEvent( const std::unordered_set<ModbusRTU::ModbusAddr> vaddr, timeout_t tout );
 };
+// -------------------------------------------------------------------------
+} // end of namespace uniset
 // -------------------------------------------------------------------------
 #endif // ModbusTCPServer_H_
 // -------------------------------------------------------------------------

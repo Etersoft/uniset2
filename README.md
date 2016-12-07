@@ -9,6 +9,8 @@ There are set of base components to construct this kind of systems:
 * logging system based on MySQL, SQLite, PostgreeSQL databases.
 * Web interface to display logging and statistic information.
 * utilities for system's configuration based on XML.
+* python interface
+* REST API
 
 UniSet have been written in C++ and IDL languages but you can use another languages in your
 add-on components. The main principle of the UniSet library's design is a maximum integration

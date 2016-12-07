@@ -6,7 +6,7 @@
 #include "TestObject.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 static shared_ptr<UInterface> ui;
 extern shared_ptr<TestObject> obj;
@@ -63,6 +63,20 @@ TEST_CASE("[SM]: threshold", "[sm][threshold]")
 
 	ui->setValue(503, 25);
 	CHECK( ui->getValue(504) == 0 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[SM]: threshold (invert)", "[sm][threshold]")
+{
+	InitTest();
+
+	ui->setValue(503, 20);
+	CHECK( ui->getValue(515) == 1 );
+
+	ui->setValue(503, 25);
+	CHECK( ui->getValue(515) == 1 );
+
+	ui->setValue(503, 35);
+	CHECK( ui->getValue(515) == 0 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[SM]: pulsar", "[sm][pulsar]")

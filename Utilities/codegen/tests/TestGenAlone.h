@@ -8,14 +8,14 @@ class TestGenAlone:
 	public TestGenAlone_SK
 {
 	public:
-		TestGenAlone( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::uniset_conf()->getNode("TestGenAlone") );
+		TestGenAlone( uniset::ObjectId id, xmlNode* confnode = uniset::uniset_conf()->getNode("TestGenAlone") );
 		virtual ~TestGenAlone();
 
 
 	protected:
 		virtual void step() override;
-		void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
-		void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+		void sensorInfo( const uniset::SensorMessage* sm ) override;
+		void timerInfo( const uniset::TimerMessage* tm ) override;
 		virtual void sigterm( int signo ) override;
 
 	private:

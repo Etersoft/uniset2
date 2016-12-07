@@ -8,8 +8,8 @@
 #include "Extensions.h"
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // --------------------------------------------------------------------------
 static shared_ptr<SMInterface> smi;
 static shared_ptr<UInterface> ui;
@@ -187,7 +187,7 @@ int main(int argc, char* argv[] )
 	{
 		cerr << "(urecv-perf-test): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		cerr << "(urecv-perf-test): " << ex << endl;
 	}

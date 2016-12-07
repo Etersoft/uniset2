@@ -8,7 +8,7 @@
 #include "TDelay.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 static shared_ptr<UInterface> ui;
 

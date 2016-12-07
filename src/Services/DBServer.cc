@@ -31,7 +31,7 @@
 #include "UniXML.h"
 #include "DBLogSugar.h"
 // ------------------------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // ------------------------------------------------------------------------------------------
 DBServer::DBServer( ObjectId id, const std::string& _prefix ):
@@ -85,7 +85,7 @@ DBServer::~DBServer()
 {
 }
 //--------------------------------------------------------------------------------------------
-void DBServer::processingMessage( const UniSetTypes::VoidMessage* msg )
+void DBServer::processingMessage( const uniset::VoidMessage* msg )
 {
 	switch(msg->type)
 	{
@@ -107,7 +107,7 @@ bool DBServer::activateObject()
 	return true;
 }
 //--------------------------------------------------------------------------------------------
-void DBServer::sysCommand( const UniSetTypes::SystemMessage* sm )
+void DBServer::sysCommand( const uniset::SystemMessage* sm )
 {
 	UniSetObject::sysCommand(sm);
 

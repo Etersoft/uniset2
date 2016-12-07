@@ -23,9 +23,12 @@
 #include "ComPort485F.h"
 #include "modbus/ModbusRTUSlave.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 using namespace std;
 using namespace ModbusRTU;
-using namespace UniSetTypes;
+using namespace uniset;
 // -------------------------------------------------------------------------
 ModbusRTUSlave::ModbusRTUSlave( const string& dev, bool use485, bool tr_ctl ):
 	port(NULL),
@@ -120,7 +123,7 @@ mbErrCode ModbusRTUSlave::sendData( unsigned char* buf, int len )
 	{
 		port->sendBlock(buf, len);
 	}
-	catch( const Exception& ex ) // SystemError
+	catch( const uniset::Exception& ex ) // SystemError
 	{
 		if( dlog->is_crit() )
 			dlog->crit() << "(send): " << ex << endl;
@@ -191,3 +194,4 @@ mbErrCode ModbusRTUSlave::realReceive(const std::unordered_set<ModbusAddr>& vmba
 
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

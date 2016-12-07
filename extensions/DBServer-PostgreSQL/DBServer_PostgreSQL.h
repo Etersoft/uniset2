@@ -22,6 +22,9 @@
 #include "UniSetTypes.h"
 #include "PostgreSQLInterface.h"
 #include "DBServer.h"
+// -------------------------------------------------------------------------
+namespace uniset
+{
 //------------------------------------------------------------------------------------------
 /*!
  * \brief The DBServer_PostgreSQL class
@@ -52,7 +55,7 @@ class DBServer_PostgreSQL:
 	public DBServer
 {
 	public:
-		DBServer_PostgreSQL( UniSetTypes::ObjectId id, const std::string& prefix );
+		DBServer_PostgreSQL( uniset::ObjectId id, const std::string& prefix );
 		DBServer_PostgreSQL();
 		virtual ~DBServer_PostgreSQL();
 
@@ -78,10 +81,10 @@ class DBServer_PostgreSQL:
 		virtual void initDB( std::shared_ptr<PostgreSQLInterface>& db ) {};
 		virtual void initDBTableMap(DBTableMap& tblMap) {};
 
-		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
-		virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ) override;
+		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
+		virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) override;
 		virtual void sigterm( int signo ) override;
 
 		bool writeToBase( const string& query );
@@ -131,5 +134,7 @@ class DBServer_PostgreSQL:
 		DBTableMap tblMap;
 
 };
+// ----------------------------------------------------------------------------------
+} // end of namespace uniset
 //------------------------------------------------------------------------------------------
 #endif

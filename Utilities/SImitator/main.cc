@@ -3,7 +3,7 @@
 #include "UInterface.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 void help_print()
 {
@@ -18,7 +18,7 @@ void help_print()
 }
 // -----------------------------------------------------------------------------
 struct ExtInfo:
-	public UniSetTypes::ParamSInfo
+	public uniset::ParamSInfo
 {
 	UniversalIO::IOType iotype;
 };
@@ -50,7 +50,7 @@ int main( int argc, char** argv )
 			return 1;
 		}
 
-		auto lst = UniSetTypes::getSInfoList(sid, conf);
+		auto lst = uniset::getSInfoList(sid, conf);
 
 		if( lst.empty() )
 		{
@@ -135,7 +135,7 @@ int main( int argc, char** argv )
 					{
 						ui.setValue(it.si, j, DefaultObjectId);
 					}
-					catch( const Exception& ex )
+					catch( const uniset::Exception& ex )
 					{
 						cerr << endl << "save id=" << it.fname << " " << ex << endl;
 					}
@@ -162,7 +162,7 @@ int main( int argc, char** argv )
 					{
 						ui.setValue(it->si, i, DefaultObjectId);
 					}
-					catch( const Exception& ex )
+					catch( const uniset::Exception& ex )
 					{
 						cerr << endl << "save id=" << it->fname << " " << ex << endl;
 					}
@@ -172,7 +172,7 @@ int main( int argc, char** argv )
 			msleep(amsec);
 		}
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		cerr << endl << "(simitator): " << ex << endl;
 		return 1;

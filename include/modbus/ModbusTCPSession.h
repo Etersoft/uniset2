@@ -12,6 +12,9 @@
 #include "UTCPCore.h"
 #include "UTCPStream.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 /*!
  * \brief The ModbusTCPSession class
  * Класс рассчитан на совместную работу с ModbusTCPServer, т.к. построен на основе libev,
@@ -77,46 +80,46 @@ class ModbusTCPSession:
 		virtual ModbusRTU::mbErrCode post_send_request(ModbusRTU::ModbusMessage& request ) override;
 
 		virtual ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query,
-				ModbusRTU::ReadCoilRetMessage& reply );
+													 ModbusRTU::ReadCoilRetMessage& reply );
 
 		virtual ModbusRTU::mbErrCode readInputStatus( ModbusRTU::ReadInputStatusMessage& query,
-				ModbusRTU::ReadInputStatusRetMessage& reply );
+													  ModbusRTU::ReadInputStatusRetMessage& reply );
 
 		virtual ModbusRTU::mbErrCode readOutputRegisters( ModbusRTU::ReadOutputMessage& query,
-				ModbusRTU::ReadOutputRetMessage& reply );
+														  ModbusRTU::ReadOutputRetMessage& reply );
 
 		virtual ModbusRTU::mbErrCode readInputRegisters( ModbusRTU::ReadInputMessage& query,
-				ModbusRTU::ReadInputRetMessage& reply );
+														 ModbusRTU::ReadInputRetMessage& reply );
 
 		virtual ModbusRTU::mbErrCode forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
-				ModbusRTU::ForceSingleCoilRetMessage& reply );
+													  ModbusRTU::ForceSingleCoilRetMessage& reply );
 
 		virtual ModbusRTU::mbErrCode writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
 				ModbusRTU::WriteSingleOutputRetMessage& reply );
 
 		virtual ModbusRTU::mbErrCode forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
-				ModbusRTU::ForceCoilsRetMessage& reply );
+														 ModbusRTU::ForceCoilsRetMessage& reply );
 
 		virtual ModbusRTU::mbErrCode writeOutputRegisters( ModbusRTU::WriteOutputMessage& query,
 				ModbusRTU::WriteOutputRetMessage& reply );
 
 		virtual ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query,
-				ModbusRTU::DiagnosticRetMessage& reply );
+												  ModbusRTU::DiagnosticRetMessage& reply );
 
 		virtual ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query,
 											   ModbusRTU::MEIMessageRetRDI& reply );
 
 		virtual ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query,
-				ModbusRTU::JournalCommandRetMessage& reply );
+													 ModbusRTU::JournalCommandRetMessage& reply );
 
 		virtual ModbusRTU::mbErrCode setDateTime( ModbusRTU::SetDateTimeMessage& query,
-				ModbusRTU::SetDateTimeRetMessage& reply );
+												  ModbusRTU::SetDateTimeRetMessage& reply );
 
 		virtual ModbusRTU::mbErrCode remoteService( ModbusRTU::RemoteServiceMessage& query,
-				ModbusRTU::RemoteServiceRetMessage& reply );
+													ModbusRTU::RemoteServiceRetMessage& reply );
 
 		virtual ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query,
-				ModbusRTU::FileTransferRetMessage& reply );
+												   ModbusRTU::FileTransferRetMessage& reply );
 
 	private:
 		std::queue<unsigned char> qrecv;
@@ -144,6 +147,8 @@ class ModbusTCPSession:
 		PassiveTimer pt;
 		PassiveTimer ptWait;
 };
+// -------------------------------------------------------------------------
+} // end of namespace uniset
 // -------------------------------------------------------------------------
 #endif // ModbusTCPSession_H_
 // -------------------------------------------------------------------------

@@ -275,8 +275,8 @@
 
 		</sensors>
 		<thresholds name="thresholds">
-			<sensor iotype="AI" name="AI_AS">
-				<threshold hilimit="376" id="1" lowlimit="374" name="t1" sensibility="0" sid="Threshold1_S">
+			<sensor name="AI_AS">
+				<threshold hilimit="376" id="1" lowlimit="374" name="t1" sid="Threshold1_S">
 					<consumers>
 						<consumer name="TestProc" type="objects"/>
 					</consumers>

@@ -23,9 +23,11 @@
 #include "ORepHelpers.h"
 #include "SMLogSugar.h"
 // -----------------------------------------------------------------------------
+namespace uniset
+{
+// -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 void SharedMemory::help_print( int argc, const char* const* argv )
 {
@@ -34,16 +36,19 @@ void SharedMemory::help_print( int argc, const char* const* argv )
 	cout << "--s-filter-field       - Фильтр для загрузки списка датчиков." << endl;
 	cout << "--s-filter-value       - Значение фильтра для загрузки списка датчиков." << endl;
 	cout << "--c-filter-field       - Фильтр для загрузки списка заказчиков." << endl;
-	cout << "--c-filter-value       - Значение фильтр для загрузки списка заказчиков." << endl;
+	cout << "--c-filter-value       - Значение фильтра для загрузки списка заказчиков." << endl;
+	cout << "--t-filter-field       - Фильтр для загрузки списка порогов из секции <thresholds>." << endl;
+	cout << "--t-filter-value       - Значение фильтра для загрузки списка порогов из секции <thresholds>." << endl;
 	cout << "--wdt-device           - Использовать в качестве WDT указанный файл." << endl;
 	cout << "--heartbeat-node       - Загружать heartbeat датчики для указанного узла." << endl;
 	cout << "--heartbeat-check-time - период проверки 'счётчиков'. По умолчанию 1000 мсек" << endl;
 	cout << "--e-filter             - фильтр для считывания <eventlist>" << endl;
 	cout << "--e-startup-pause      - пауза перед посылкой уведомления о старте SM. (По умолчанию: 1500 мсек)." << endl;
-	cout << "--activate-timeout     - время ожидания активизации (По умолчанию: 15000 мсек)." << endl;
+	cout << "--activate-timeout     - время ожидания активизации (По умолчанию: 60000 мсек)." << endl;
 	cout << "--sm-no-history        - отключить ведение истории (аварийного следа)" << endl;
 	cout << "--pulsar-id            - датчик 'мигания'" << endl;
 	cout << "--pulsar-msec          - период 'мигания'. По умолчанию: 5000." << endl;
+	cout << "--db-logging [1,0]     - включение или отключение логирования датчиков в БД (должен быть запущен DBServer)" << endl;
 	cout << endl;
 	cout << " Logs: " << endl;
 	cout << "--sm-log-...            - log control" << endl;
@@ -153,7 +158,7 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 
 	evntPause = conf->getArgPInt("--e-startup-pause", 5000);
 
-	activateTimeout = conf->getArgPInt("--activate-timeout", 60000);
+	activateTimeout = conf->getArgPInt("--activate-timeout", 90000);
 
 	sidPulsar = DefaultObjectId;
 	string p = conf->getArgParam("--pulsar-id", it.getProp("pulsar_id"));
@@ -244,7 +249,7 @@ void SharedMemory::sysCommand( const SystemMessage* sm )
 
 			if( !activated  )
 			{
-				smcrit << myname << "(sysCommand): Don`t activate! TERMINATE.." << endl;
+				smcrit << myname << "(sysCommand): Don`t activate [timeout=" << activateTimeout << " msec]! TERMINATE.." << endl;
 				std::terminate();
 			}
 
@@ -398,7 +403,7 @@ void SharedMemory::checkHeartBeat()
 				}
 			}
 		}
-		catch( const Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			smcrit << myname << "(checkHeartBeat): " << ex << endl;
 		}
@@ -516,9 +521,9 @@ shared_ptr<SharedMemory> SharedMemory::init_smemory( int argc, const char* const
 
 
 	dinfo << "(smemory): datfile = " << dfile << endl;
-	UniSetTypes::ObjectId ID = conf->getControllerID(conf->getArgParam("--smemory-id", "SharedMemory"));
+	uniset::ObjectId ID = conf->getControllerID(conf->getArgParam("--smemory-id", "SharedMemory"));
 
-	if( ID == UniSetTypes::DefaultObjectId )
+	if( ID == uniset::DefaultObjectId )
 	{
 		cerr << "(smemory): НЕ ЗАДАН идентификатор '"
 			 << " или не найден в " << conf->getControllersSection()
@@ -573,7 +578,7 @@ void SharedMemory::readEventList( const std::string& oname )
 	}
 }
 // -----------------------------------------------------------------------------
-void SharedMemory::sendEvent( UniSetTypes::SystemMessage& sm )
+void SharedMemory::sendEvent( uniset::SystemMessage& sm )
 {
 	TransportMessage tm( std::move(sm.transport_msg()) );
 
@@ -932,7 +937,7 @@ void SharedMemory::initFromReserv()
 	smwarn << myname << "(initFromReserv): FAILED INIT FROM <ReservList>" << endl;
 }
 // ----------------------------------------------------------------------------
-bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectId sm_node )
+bool SharedMemory::initFromSM( uniset::ObjectId sm_id, uniset::ObjectId sm_node )
 {
 	sminfo << myname << "(initFromSM): init from sm_id='" << sm_id << "' sm_node='" << sm_node << "'" << endl;
 
@@ -973,7 +978,7 @@ bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectI
 
 #endif
 			}
-			catch( const Exception& ex )
+			catch( const uniset::Exception& ex )
 			{
 				smcrit << myname << "(initFromSM): " << ex << endl;
 			}
@@ -985,7 +990,7 @@ bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectI
 
 		return true;
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		smwarn << myname << "(initFromSM): " << ex << endl;
 	}
@@ -993,9 +998,9 @@ bool SharedMemory::initFromSM( UniSetTypes::ObjectId sm_id, UniSetTypes::ObjectI
 	return false;
 }
 // ----------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* SharedMemory::getInfo( CORBA::Long userparam )
+uniset::SimpleInfo* SharedMemory::getInfo( const char* userparam )
 {
-	UniSetTypes::SimpleInfo_var i = IONotifyController::getInfo(userparam);
+	uniset::SimpleInfo_var i = IONotifyController::getInfo(userparam);
 
 	ostringstream inf;
 
@@ -1011,3 +1016,4 @@ UniSetTypes::SimpleInfo* SharedMemory::getInfo( CORBA::Long userparam )
 	return i._retn();
 }
 // ----------------------------------------------------------------------------
+} // end of namespace uniset

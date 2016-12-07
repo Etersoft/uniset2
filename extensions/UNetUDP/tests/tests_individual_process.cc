@@ -10,8 +10,8 @@
 #include "UNetExchange.h"
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // --------------------------------------------------------------------------
 int main(int argc, char* argv[] )
 {
@@ -69,7 +69,7 @@ int main(int argc, char* argv[] )
 	{
 		cerr << "(tests_with_sm): " << err << endl;
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		cerr << "(tests_with_sm): " << ex << endl;
 	}

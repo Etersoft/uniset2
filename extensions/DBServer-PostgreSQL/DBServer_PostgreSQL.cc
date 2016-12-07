@@ -26,7 +26,7 @@
 #include "UniXML.h"
 #include "DBLogSugar.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 DBServer_PostgreSQL::DBServer_PostgreSQL(ObjectId id, const std::string& prefix ):
@@ -74,7 +74,7 @@ DBServer_PostgreSQL::~DBServer_PostgreSQL()
 		db->close();
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_PostgreSQL::sysCommand( const UniSetTypes::SystemMessage* sm )
+void DBServer_PostgreSQL::sysCommand( const uniset::SystemMessage* sm )
 {
 	DBServer::sysCommand(sm);
 
@@ -104,7 +104,7 @@ void DBServer_PostgreSQL::sysCommand( const UniSetTypes::SystemMessage* sm )
 }
 
 //--------------------------------------------------------------------------------------------
-void DBServer_PostgreSQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
+void DBServer_PostgreSQL::confirmInfo( const uniset::ConfirmMessage* cem )
 {
 	DBServer::confirmInfo(cem);
 
@@ -129,7 +129,7 @@ void DBServer_PostgreSQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 			dbcrit << myname << "(update_confirm):  db error: " << db->error() << endl;
 		}
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		dbcrit << myname << "(update_confirm): " << ex << endl;
 	}
@@ -222,7 +222,7 @@ void DBServer_PostgreSQL::flushInsertBuffer()
 		ibuf.erase(beg, end);
 
 		// ibufSize - беззнаковое, так что надо аккуратно
-		ibufSize = (delnum < ibufSize) ? (ibufSize-delnum) : 0;
+		ibufSize = (delnum < ibufSize) ? (ibufSize - delnum) : 0;
 
 		dbwarn << myname << "(flushInsertBuffer): overflow: clear data " << delnum << " records." << endl;
 		return;
@@ -244,7 +244,7 @@ void DBServer_PostgreSQL::flushInsertBuffer()
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_PostgreSQL::sensorInfo( const UniSetTypes::SensorMessage* si )
+void DBServer_PostgreSQL::sensorInfo( const uniset::SensorMessage* si )
 {
 	try
 	{
@@ -275,7 +275,7 @@ void DBServer_PostgreSQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 		if( ibufSize >= ibufMaxSize )
 			flushInsertBuffer();
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		dbcrit << myname << "(insert_main_history): " << ex << endl;
 	}
@@ -299,7 +299,7 @@ void DBServer_PostgreSQL::initDBServer()
 
 	auto conf = uniset_conf();
 
-	if( conf->getDBServer() == UniSetTypes::DefaultObjectId )
+	if( conf->getDBServer() == uniset::DefaultObjectId )
 	{
 		ostringstream msg;
 		msg << myname << "(init): DBServer OFF for this node.."
@@ -330,8 +330,8 @@ void DBServer_PostgreSQL::initDBServer()
 	std::string sfactor = conf->getArg2Param("--" + prefix + "-ibuf-overflow-cleanfactor", it.getProp("ibufOverflowCleanFactor"), "0.5");
 	ibufOverflowCleanFactor = atof(sfactor.c_str());
 
-	tblMap[UniSetTypes::Message::SensorInfo] = "main_history";
-	tblMap[UniSetTypes::Message::Confirm] = "main_history";
+	tblMap[uniset::Message::SensorInfo] = "main_history";
+	tblMap[uniset::Message::Confirm] = "main_history";
 
 	PingTime = conf->getArgPInt("--" + prefix + "-pingTime", it.getProp("pingTime"), 15000);
 	ReconnectTime = conf->getArgPInt("--" + prefix + "-reconnectTime", it.getProp("reconnectTime"), 30000);
@@ -402,7 +402,7 @@ void DBServer_PostgreSQL::createTables( std::shared_ptr<PostgreSQLInterface>& db
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_PostgreSQL::timerInfo( const UniSetTypes::TimerMessage* tm )
+void DBServer_PostgreSQL::timerInfo( const uniset::TimerMessage* tm )
 {
 	DBServer::timerInfo(tm);
 
@@ -488,7 +488,7 @@ std::shared_ptr<DBServer_PostgreSQL> DBServer_PostgreSQL::init_dbserver( int arg
 	{
 		ObjectId ID = conf->getObjectID(name);
 
-		if( ID == UniSetTypes::DefaultObjectId )
+		if( ID == uniset::DefaultObjectId )
 		{
 			cerr << "(DBServer_PostgreSQL): Unknown ObjectID for '" << name << endl;
 			return 0;

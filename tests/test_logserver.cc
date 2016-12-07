@@ -12,7 +12,7 @@
 #include "LogReader.h"
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // --------------------------------------------------------------------------
 static const std::string ip = "localhost";
 static const int port = 33333;
@@ -82,6 +82,7 @@ bool readlog_thread2()
 
 		while( !g_read_cancel )
 			lr.readlogs(ip, port); // ,LogServerTypes::cmdNOP,0,"",true);
+
 		return true;
 	}
 	catch( std::exception& ex )

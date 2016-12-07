@@ -19,7 +19,7 @@
 #include "MessageType.h"
 #include "MQMutex.h"
 //--------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 //--------------------------------------------------------------------------
 MQMutex::MQMutex( size_t qsize ):
@@ -68,7 +68,7 @@ VoidMessagePtr MQMutex::top() noexcept
 		mqueue.pop_front();
 		return m;
 	}
-	catch(...){}
+	catch(...) {}
 
 	return nullptr;
 }

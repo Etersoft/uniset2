@@ -6,6 +6,8 @@
 #include "MessageType.h"
 #include "Configuration.h"
 // --------------------------------------------------------------------------
+using namespace uniset;
+// --------------------------------------------------------------------------
 // ВНИМАНИЕ! ЗДЕСЬ ОПРЕДЕЛЯЕТСЯ ТИП ТЕСТИРУЕМОЙ ОЧЕРЕДИ
 // (пока не придумал как параметризовать тест)
 #define TEST_MQ_ATOMIC 1
@@ -40,7 +42,7 @@ class MQAtomicTest:
 typedef MQAtomic UMessageQueue;
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // --------------------------------------------------------------------------
 static bool pushMessage( UMessageQueue& mq, long id )
 {

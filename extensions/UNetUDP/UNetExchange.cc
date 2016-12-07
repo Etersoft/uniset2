@@ -22,24 +22,24 @@
 #include "UNetLogSugar.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
-UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
+UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
 	UniSetObject(objId),
 	initPause(0),
 	activated(false),
 	no_sender(false)
 {
 	if( objId == DefaultObjectId )
-		throw UniSetTypes::SystemError("(UNetExchange): objId=-1?!! Use --" + prefix + "-unet-name" );
+		throw uniset::SystemError("(UNetExchange): objId=-1?!! Use --" + prefix + "-unet-name" );
 
 	auto conf = uniset_conf();
 
 	cnode = conf->getNode(myname);
 
 	if( cnode == NULL )
-		throw UniSetTypes::SystemError("(UNetExchange): Not found conf-node for " + myname );
+		throw uniset::SystemError("(UNetExchange): Not found conf-node for " + myname );
 
 	unetlog = make_shared<DebugStream>();
 	unetlog->setLogName(myname);
@@ -85,7 +85,7 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 	int maxProcessingCount = conf->getArgPInt("--" + prefix + "-maxprocessingcount", it.getProp("maxProcessingCount"), 100);
 	int checkConnectionPause = conf->getArgPInt("--" + prefix + "-checkconnection-pause", it.getProp("checkConnectionPause"), 10000);
 
-	std::string updateStrategy = conf->getArg2Param("--" + prefix + "-update-strategy", it.getProp("updateStartegy"),"evloop");
+	std::string updateStrategy = conf->getArg2Param("--" + prefix + "-update-strategy", it.getProp("updateStrategy"), "evloop");
 
 	no_sender = conf->getArgInt("--" + prefix + "-nosender", it.getProp("nosender"));
 
@@ -104,7 +104,7 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 	unetinfo << myname << "(init):  init from <" << nconfname << ">" << endl;
 
 	if( !nodes )
-		throw UniSetTypes::SystemError("(UNetExchange): Not found confnode <" + nconfname + ">");
+		throw uniset::SystemError("(UNetExchange): Not found confnode <" + nconfname + ">");
 
 	UniXML::iterator n_it(nodes);
 
@@ -112,7 +112,7 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 	string default_ip2(n_it.getProp("unet_broadcast_ip2"));
 
 	if( !n_it.goChildren() )
-		throw UniSetTypes::SystemError("(UNetExchange): Items not found for <nodes>");
+		throw uniset::SystemError("(UNetExchange): Items not found for <nodes>");
 
 	for( ; n_it.getCurrent(); n_it.goNext() )
 	{
@@ -123,7 +123,7 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 		}
 
 		// проверяем фильтры для подсетей
-		if( !UniSetTypes::check_filter(n_it, n_field, n_fvalue) )
+		if( !uniset::check_filter(n_it, n_field, n_fvalue) )
 			continue;
 
 		// Если указано поле unet_broadcast_ip непосредственно у узла - берём его
@@ -137,7 +137,7 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 			ostringstream err;
 			err << myname << "(init): Unknown broadcast IP for " << n_it.getProp("name");
 			unetcrit << err.str() << endl;
-			throw UniSetTypes::SystemError(err.str());
+			throw uniset::SystemError(err.str());
 		}
 
 		if( h2.empty() )
@@ -201,13 +201,13 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 		bool resp_invert = n_it.getIntProp("unet_respond_invert");
 
 		string s_resp_id(n_it.getProp("unet_respond1_id"));
-		UniSetTypes::ObjectId resp_id = UniSetTypes::DefaultObjectId;
+		uniset::ObjectId resp_id = uniset::DefaultObjectId;
 
 		if( !s_resp_id.empty() )
 		{
 			resp_id = conf->getSensorID(s_resp_id);
 
-			if( resp_id == UniSetTypes::DefaultObjectId )
+			if( resp_id == uniset::DefaultObjectId )
 			{
 				ostringstream err;
 				err << myname << ": Unknown RespondID.. Not found id for '" << s_resp_id << "'" << endl;
@@ -217,13 +217,13 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 		}
 
 		string s_resp2_id(n_it.getProp("unet_respond2_id"));
-		UniSetTypes::ObjectId resp2_id = UniSetTypes::DefaultObjectId;
+		uniset::ObjectId resp2_id = uniset::DefaultObjectId;
 
 		if( !s_resp2_id.empty() )
 		{
 			resp2_id = conf->getSensorID(s_resp2_id);
 
-			if( resp2_id == UniSetTypes::DefaultObjectId )
+			if( resp2_id == uniset::DefaultObjectId )
 			{
 				ostringstream err;
 				err << myname << ": Unknown RespondID(2).. Not found id for '" << s_resp2_id << "'" << endl;
@@ -233,13 +233,13 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 		}
 
 		string s_lp_id(n_it.getProp("unet_lostpackets1_id"));
-		UniSetTypes::ObjectId lp_id = UniSetTypes::DefaultObjectId;
+		uniset::ObjectId lp_id = uniset::DefaultObjectId;
 
 		if( !s_lp_id.empty() )
 		{
 			lp_id = conf->getSensorID(s_lp_id);
 
-			if( lp_id == UniSetTypes::DefaultObjectId )
+			if( lp_id == uniset::DefaultObjectId )
 			{
 				ostringstream err;
 				err << myname << ": Unknown LostPacketsID.. Not found id for '" << s_lp_id << "'" << endl;
@@ -249,13 +249,13 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 		}
 
 		string s_lp2_id(n_it.getProp("unet_lostpackets2_id"));
-		UniSetTypes::ObjectId lp2_id = UniSetTypes::DefaultObjectId;
+		uniset::ObjectId lp2_id = uniset::DefaultObjectId;
 
 		if( !s_lp2_id.empty() )
 		{
 			lp2_id = conf->getSensorID(s_lp2_id);
 
-			if( lp2_id == UniSetTypes::DefaultObjectId )
+			if( lp2_id == uniset::DefaultObjectId )
 			{
 				ostringstream err;
 				err << myname << ": Unknown LostPacketsID(2).. Not found id for '" << s_lp2_id << "'" << endl;
@@ -265,13 +265,13 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 		}
 
 		string s_lp_comm_id(n_it.getProp("unet_lostpackets_id"));
-		UniSetTypes::ObjectId lp_comm_id = UniSetTypes::DefaultObjectId;
+		uniset::ObjectId lp_comm_id = uniset::DefaultObjectId;
 
 		if( !s_lp_comm_id.empty() )
 		{
 			lp_comm_id = conf->getSensorID(s_lp_comm_id);
 
-			if( lp_comm_id == UniSetTypes::DefaultObjectId )
+			if( lp_comm_id == uniset::DefaultObjectId )
 			{
 				ostringstream err;
 				err << myname << ": Unknown LostPacketsID(comm).. Not found id for '" << s_lp_comm_id << "'" << endl;
@@ -281,13 +281,13 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 		}
 
 		string s_resp_comm_id(n_it.getProp("unet_respond_id"));
-		UniSetTypes::ObjectId resp_comm_id = UniSetTypes::DefaultObjectId;
+		uniset::ObjectId resp_comm_id = uniset::DefaultObjectId;
 
 		if( !s_resp_comm_id.empty() )
 		{
 			resp_comm_id = conf->getSensorID(s_resp_comm_id);
 
-			if( resp_comm_id == UniSetTypes::DefaultObjectId )
+			if( resp_comm_id == uniset::DefaultObjectId )
 			{
 				ostringstream err;
 				err << myname << ": Unknown RespondID(comm).. Not found id for '" << s_resp_comm_id << "'" << endl;
@@ -297,13 +297,13 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 		}
 
 		string s_numchannel_id(n_it.getProp("unet_numchannel_id"));
-		UniSetTypes::ObjectId numchannel_id = UniSetTypes::DefaultObjectId;
+		uniset::ObjectId numchannel_id = uniset::DefaultObjectId;
 
 		if( !s_numchannel_id.empty() )
 		{
 			numchannel_id = conf->getSensorID(s_numchannel_id);
 
-			if( numchannel_id == UniSetTypes::DefaultObjectId )
+			if( numchannel_id == uniset::DefaultObjectId )
 			{
 				ostringstream err;
 				err << myname << ": Unknown NumChannelID.. Not found id for '" << s_numchannel_id << "'" << endl;
@@ -312,11 +312,12 @@ UNetExchange::UNetExchange(UniSetTypes::ObjectId objId, UniSetTypes::ObjectId sh
 			}
 		}
 
-		UNetReceiver::UpdateStrategy r_upStrategy = UNetReceiver::strToUpdateStrategy( n_it.getProp2("unet_update_strategy",updateStrategy) );
+		UNetReceiver::UpdateStrategy r_upStrategy = UNetReceiver::strToUpdateStrategy( n_it.getProp2("unet_update_strategy", updateStrategy) );
+
 		if( r_upStrategy == UNetReceiver::useUpdateUnknown )
 		{
 			ostringstream err;
-			err << myname << ": Unknown update strategy!!! '" << n_it.getProp2("unet_update_startegy",updateStrategy) << "'" << endl;
+			err << myname << ": Unknown update strategy!!! '" << n_it.getProp2("unet_update_strategy", updateStrategy) << "'" << endl;
 			unetcrit << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
@@ -580,7 +581,7 @@ void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface>& shm, 
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetExchange::sysCommand( const UniSetTypes::SystemMessage* sm )
+void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
 {
 	switch( sm->command )
 	{
@@ -588,8 +589,15 @@ void UNetExchange::sysCommand( const UniSetTypes::SystemMessage* sm )
 		{
 			if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
 			{
-				unetinfo << myname << "(init): run log server " << logserv_host << ":" << logserv_port << endl;
-				logserv->run(logserv_host, logserv_port, true);
+				try
+				{
+					unetinfo << myname << "(init): run log server " << logserv_host << ":" << logserv_port << endl;
+					logserv->run(logserv_host, logserv_port, true);
+				}
+				catch( std::exception& ex )
+				{
+					unetwarn << myname << "(init): run logserver FAILED. ERR: " << ex.what() << endl;
+				}
 			}
 
 			waitSMReady();
@@ -612,7 +620,7 @@ void UNetExchange::sysCommand( const UniSetTypes::SystemMessage* sm )
 				unetcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 
 			{
-				UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
+				uniset::uniset_rwmutex_rlock l(mutex_start);
 
 				if( shm->isLocalwork() )
 					askSensors(UniversalIO::UIONotify);
@@ -689,7 +697,7 @@ void UNetExchange::askSensors( UniversalIO::UIOCommand cmd )
 		sender2->askSensors(cmd);
 }
 // ------------------------------------------------------------------------------------------
-void UNetExchange::sensorInfo( const UniSetTypes::SensorMessage* sm )
+void UNetExchange::sensorInfo( const uniset::SensorMessage* sm )
 {
 	if( sender )
 		sender->updateSensor( sm->id , sm->value );
@@ -705,7 +713,7 @@ bool UNetExchange::activateObject()
 	// см. sysCommand()
 	{
 		activated = false;
-		UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
+		uniset::uniset_rwmutex_wrlock l(mutex_start);
 		UniSetObject::activateObject();
 		initIterators();
 		activated = true;
@@ -831,7 +839,7 @@ void UNetExchange::help_print( int argc, const char* argv[] ) noexcept
 	cout << LogServer::help_print("prefix-logserver") << endl;
 }
 // -----------------------------------------------------------------------------
-std::shared_ptr<UNetExchange> UNetExchange::init_unetexchange(int argc, const char* const argv[], UniSetTypes::ObjectId icID,
+std::shared_ptr<UNetExchange> UNetExchange::init_unetexchange(int argc, const char* const argv[], uniset::ObjectId icID,
 		const std::shared_ptr<SharedMemory>& ic, const std::string& prefix )
 {
 	auto conf = uniset_conf();
@@ -847,7 +855,7 @@ std::shared_ptr<UNetExchange> UNetExchange::init_unetexchange(int argc, const ch
 
 	ObjectId ID = conf->getObjectID(name);
 
-	if( ID == UniSetTypes::DefaultObjectId )
+	if( ID == uniset::DefaultObjectId )
 	{
 		cerr << "(unetexchange): Not found ObjectID for '" << name
 			 << " in section '" << conf->getObjectsSection() << "'" << endl;
@@ -938,16 +946,27 @@ void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceive
 	}
 }
 // -----------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* UNetExchange::getInfo( CORBA::Long userparam )
+uniset::SimpleInfo* UNetExchange::getInfo( const char* userparam )
 {
-	UniSetTypes::SimpleInfo_var i = UniSetObject::getInfo(userparam);
+	uniset::SimpleInfo_var i = UniSetObject::getInfo(userparam);
 
 	ostringstream inf;
 
 	inf << i->info << endl;
 	inf << vmon.pretty_str() << endl;
 	inf << endl;
-	inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
+
+	if( logserv )
+	{
+		inf << "LogServer: " << logserv_host << ":" << logserv_port
+			<< ( logserv->isRunning() ? "   [RUNNIG]" : "   [STOPPED]" )
+			<< endl
+			<< "         " << logserv->getShortInfo()
+			<< endl;
+	}
+	else
+		inf << "LogServer: NONE" << endl;
+
 	inf << endl;
 	inf << "Receivers: " << endl;
 

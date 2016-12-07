@@ -17,42 +17,65 @@
 #ifndef UTypes_H_
 #define UTypes_H_
 // --------------------------------------------------------------------------
-#include <UniSetTypes.h>
+#include <string>
+#include "Configuration.h"
+#include "UniSetTypes.h"
 // --------------------------------------------------------------------------
 namespace UTypes
 {
-	const long DefaultID = UniSetTypes::DefaultObjectId;
-	const long DefaultSupplerID = UniSetTypes::AdminID;
+const long DefaultID = uniset::DefaultObjectId;
+const long DefaultSupplerID = uniset::AdminID;
 
-	struct Params
+struct Params
+{
+	static const int max = 20;
+
+	Params(): argc(0)
 	{
-		static const int max = 20;
+		memset(argv, 0, sizeof(argv));
+	}
 
-		Params(): argc(0)
+	bool add( char* s )
+	{
+		if( argc < Params::max )
 		{
-			memset(argv, 0, sizeof(argv));
+			argv[argc++] = uniset::uni_strdup(s);
+			return true;
 		}
 
-		bool add( char* s )
-		{
-			if( argc < Params::max )
-			{
-				argv[argc++] = s;
-				return true;
-			}
+		return false;
+	}
 
-			return false;
+	bool add_str( const std::string s )
+	{
+		if( argc < Params::max )
+		{
+			argv[argc++] = uniset::uni_strdup(s);
+			return true;
 		}
 
-		int argc;
-		char* argv[max];
+		return false;
+	}
 
-		static Params inst()
-		{
-			return Params();
-		}
-	};
+	int argc;
+	char* argv[max];
+
+	static Params inst()
+	{
+		return Params();
+	}
+};
+
+struct ShortIOInfo
+{
+	long value;
+	unsigned long tv_sec;
+	unsigned long tv_nsec;
+	long supplier;
+	long supplier_node;
+};
 }
+
 //---------------------------------------------------------------------------
 #endif
 //---------------------------------------------------------------------------

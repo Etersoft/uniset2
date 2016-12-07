@@ -6,7 +6,7 @@
 #include "UniSetTypes.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: uni_atoi", "[utypes][uni_atoi]" )
 {
@@ -79,29 +79,29 @@ TEST_CASE("UniSetTypes: explode", "[utypes][explode]" )
 {
 	const std::string str1("id1/wed/wedwed/");
 
-	auto t1 = UniSetTypes::explode_str(str1, '/');
+	auto t1 = uniset::explode_str(str1, '/');
 	CHECK( t1.size() == 3 );
 
-	auto t2 = UniSetTypes::explode_str(str1, '.');
+	auto t2 = uniset::explode_str(str1, '.');
 	CHECK( t2.size() == 1 );
 
 	const std::string str2("id1/wed/wedwed/f");
 
-	auto t3 = UniSetTypes::explode_str(str2, '/');
+	auto t3 = uniset::explode_str(str2, '/');
 	CHECK( t3.size() == 4 );
 
 	const std::string str3("/id1/wed/wedwed/");
 
-	auto t4 = UniSetTypes::explode_str(str3, '/');
+	auto t4 = uniset::explode_str(str3, '/');
 	CHECK( t4.size() == 3 );
 
 
 	const std::string str4("");
-	auto t5 = UniSetTypes::explode_str(str4, '/');
+	auto t5 = uniset::explode_str(str4, '/');
 	CHECK( t5.size() == 0 );
 
 	const std::string str5("/");
-	auto t6 = UniSetTypes::explode_str(str5, '/');
+	auto t6 = uniset::explode_str(str5, '/');
 	CHECK( t6.size() == 0 );
 }
 // -----------------------------------------------------------------------------
@@ -109,11 +109,11 @@ TEST_CASE("UniSetTypes: getSInfoList", "[utypes][getsinfo]" )
 {
 	const std::string str1("Input4_S@node2,Input1_S,5,5@node3,6@1001");
 
-	auto t1 = UniSetTypes::getSInfoList(str1, UniSetTypes::uniset_conf());
+	auto t1 = uniset::getSInfoList(str1, uniset::uniset_conf());
 
 	CHECK( t1.size() == 5 );
 
-	vector<UniSetTypes::ParamSInfo> v(t1.begin(), t1.end());
+	vector<uniset::ParamSInfo> v(t1.begin(), t1.end());
 
 	REQUIRE( v[0].si.id == 141 );
 	REQUIRE( v[0].si.node == 1001 );
@@ -135,11 +135,11 @@ TEST_CASE("UniSetTypes: getObjectsList", "[utypes][getolist]" )
 {
 	const std::string str1("TestProc@node2,TestProc,102,102@node3,103@1001");
 
-	auto t1 = UniSetTypes::getObjectsList(str1);
+	auto t1 = uniset::getObjectsList(str1);
 
 	CHECK( t1.size() == 5 );
 
-	vector<UniSetTypes::ConsumerInfo> v(t1.begin(), t1.end());
+	vector<uniset::ConsumerInfo> v(t1.begin(), t1.end());
 
 	REQUIRE( v[0].id == 100 );
 	REQUIRE( v[0].node == 1001 );
@@ -161,17 +161,17 @@ TEST_CASE("UniSetTypes: replace_all", "[utypes][replace_all]" )
 {
 	const std::string str1("Text %p test text %p");
 
-	std::string res = UniSetTypes::replace_all(str1, "%p", "my");
+	std::string res = uniset::replace_all(str1, "%p", "my");
 	REQUIRE( res == "Text my test text my" );
 
 	const std::string str2("Text %rlong test text %rlong");
-	res = UniSetTypes::replace_all(str2, "%rlong", "2");
+	res = uniset::replace_all(str2, "%rlong", "2");
 	REQUIRE( res == "Text 2 test text 2" );
 
-	res = UniSetTypes::replace_all(str2, "", "my");
+	res = uniset::replace_all(str2, "", "my");
 	REQUIRE( res == str2 );
 
-	res = UniSetTypes::replace_all(str2, "not found", "my");
+	res = uniset::replace_all(str2, "not found", "my");
 	REQUIRE( res == str2 );
 }
 // -----------------------------------------------------------------------------

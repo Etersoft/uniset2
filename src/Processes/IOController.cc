@@ -23,9 +23,10 @@
 #include <cmath>
 #include "UInterface.h"
 #include "IOController.h"
+#include "ORepHelpers.h"
 #include "Debug.h"
 // ------------------------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace UniversalIO;
 using namespace std;
 // ------------------------------------------------------------------------------------------
@@ -83,7 +84,7 @@ void IOController::sensorsUnregistration()
 		{
 			ioUnRegistration( li.second->si.id );
 		}
-		catch( const Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			ucrit << myname << "(sensorsUnregistration): " << ex << endl;
 		}
@@ -115,20 +116,20 @@ void IOController::activateInit()
 
 			sigInit.emit(s, this);
 		}
-		catch( const Exception& ex )
+		catch( const uniset::Exception& ex )
 		{
 			ucrit << myname << "(activateInit): " << ex << endl;
 		}
 	}
 }
 // ------------------------------------------------------------------------------------------
-CORBA::Long IOController::getValue( UniSetTypes::ObjectId sid )
+CORBA::Long IOController::getValue( uniset::ObjectId sid )
 {
 	auto li = ioList.end();
 	return localGetValue(li, sid);
 }
 // ------------------------------------------------------------------------------------------
-long IOController::localGetValue( IOController::IOStateList::iterator& li, const UniSetTypes::ObjectId sid )
+long IOController::localGetValue( IOController::IOStateList::iterator& li, const uniset::ObjectId sid )
 {
 	if( li == ioList.end() )
 	{
@@ -167,14 +168,14 @@ long IOController::localGetValue( std::shared_ptr<USensorInfo>& usi )
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // ------------------------------------------------------------------------------------------
-void IOController::setUndefinedState( UniSetTypes::ObjectId sid, CORBA::Boolean undefined, UniSetTypes::ObjectId sup_id )
+void IOController::setUndefinedState( uniset::ObjectId sid, CORBA::Boolean undefined, uniset::ObjectId sup_id )
 {
 	auto li = ioList.end();
 	localSetUndefinedState( li, undefined, sid );
 }
 // -----------------------------------------------------------------------------
 void IOController::localSetUndefinedState( IOStateList::iterator& li,
-		bool undefined, const UniSetTypes::ObjectId sid )
+										   bool undefined, const uniset::ObjectId sid )
 {
 	// сохранение текущего состояния
 	if( li == ioList.end() )
@@ -241,27 +242,17 @@ void IOController::localSetUndefinedState( IOStateList::iterator& li,
 	catch(...) {}
 }
 // ------------------------------------------------------------------------------------------
-void IOController::fastSetValue( UniSetTypes::ObjectId sid, CORBA::Long value, UniSetTypes::ObjectId sup_id )
-{
-	try
-	{
-		auto li = ioList.end();
-		localSetValueIt( li, sid, value, sup_id );
-	}
-	catch(...) {}
-}
-// ------------------------------------------------------------------------------------------
-void IOController::setValue( UniSetTypes::ObjectId sid, CORBA::Long value, UniSetTypes::ObjectId sup_id )
+void IOController::setValue( uniset::ObjectId sid, CORBA::Long value, uniset::ObjectId sup_id )
 {
 	auto li = ioList.end();
 	localSetValueIt( li, sid, value, sup_id );
 }
 // ------------------------------------------------------------------------------------------
 long IOController::localSetValueIt( IOController::IOStateList::iterator& li,
-									UniSetTypes::ObjectId sid,
-									CORBA::Long value, UniSetTypes::ObjectId sup_id )
+									uniset::ObjectId sid,
+									CORBA::Long value, uniset::ObjectId sup_id )
 {
-	if( sup_id == UniSetTypes::DefaultObjectId )
+	if( sup_id == uniset::DefaultObjectId )
 		sup_id = getId();
 
 	// сохранение текущего состояния
@@ -283,7 +274,7 @@ long IOController::localSetValueIt( IOController::IOStateList::iterator& li,
 }
 // ------------------------------------------------------------------------------------------
 long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
-								  CORBA::Long value, UniSetTypes::ObjectId sup_id )
+								  CORBA::Long value, uniset::ObjectId sup_id )
 {
 	// if( !usi ) - не проверяем, т.к. считаем что это внутренние функции и несуществующий указатель передать не могут
 
@@ -300,7 +291,10 @@ long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 		bool blocked = ( usi->blocked || usi->undefined );
 		changed = ( usi->real_value != value );
 
-		// если поменялось состояние блокировки
+		// Смотрим поменялось ли состояние блокировки.
+		// т.е. смотрим записано ли у нас уже value = d_off_value и флаг блокировки
+		// т.к. если blocked=true то должно быть usi->value = usi->d_off_value
+		// если флаг снимется, то значит должны "восстанавливать" значение из real_value
 		blockChanged = ( blocked != (usi->value == usi->d_off_value ) );
 
 		if( changed || blockChanged )
@@ -318,10 +312,19 @@ long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 			usi->value = (blocked ? usi->d_off_value : value);
 			retValue = usi->value;
 
+			usi->nchanges++; // статистика
+
 			// запоминаем время изменения
-			struct timespec tm = UniSetTypes::now_to_timespec();
-			usi->tv_sec  = tm.tv_sec;
-			usi->tv_nsec = tm.tv_nsec;
+			try
+			{
+				struct timespec tm = uniset::now_to_timespec();
+				usi->tv_sec  = tm.tv_sec;
+				usi->tv_nsec = tm.tv_nsec;
+			}
+			catch( std::exception& ex )
+			{
+				ucrit << myname << "(localSetValue): setValue (" << usi->si.id << ") ERROR: " << ex.what() << endl;
+			}
 		}
 	}    // unlock
 
@@ -348,7 +351,7 @@ long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 	return retValue;
 }
 // ------------------------------------------------------------------------------------------
-IOType IOController::getIOType( UniSetTypes::ObjectId sid )
+IOType IOController::getIOType( uniset::ObjectId sid )
 {
 	auto ali = ioList.find(sid);
 
@@ -390,7 +393,7 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi, bool force
 
 		IOStateList::mapped_type ai = usi;
 		// запоминаем начальное время
-		struct timespec tm = UniSetTypes::now_to_timespec();
+		struct timespec tm = uniset::now_to_timespec();
 		ai->tv_sec   = tm.tv_sec;
 		ai->tv_nsec  = tm.tv_nsec;
 		ai->value    = ai->default_val;
@@ -406,9 +409,9 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi, bool force
 		{
 			try
 			{
-				uinfo << myname
-					  << "(ioRegistration): регистрирую "
-					  << uniset_conf()->oind->getNameById(usi->si.id) << endl;
+				ulogrep << myname
+						<< "(ioRegistration): регистрирую "
+						<< uniset_conf()->oind->getNameById(usi->si.id) << endl;
 
 				ui->registered( usi->si.id, getRef(), true );
 				return;
@@ -420,18 +423,18 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi, bool force
 			}
 		}
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		ucrit << myname << "(ioRegistration): " << ex << endl;
 	}
 }
 // ---------------------------------------------------------------------------
-void IOController::ioUnRegistration( const UniSetTypes::ObjectId sid )
+void IOController::ioUnRegistration( const uniset::ObjectId sid )
 {
 	ui->unregister(sid);
 }
 // ---------------------------------------------------------------------------
-void IOController::logging( UniSetTypes::SensorMessage& sm )
+void IOController::logging( uniset::SensorMessage& sm )
 {
 	std::lock_guard<std::mutex> l(loggingMutex);
 
@@ -440,7 +443,7 @@ void IOController::logging( UniSetTypes::SensorMessage& sm )
 		ObjectId dbID = uniset_conf()->getDBServer();
 
 		// значит на этом узле нет DBServer-а
-		if( dbID == UniSetTypes::DefaultObjectId )
+		if( dbID == uniset::DefaultObjectId )
 		{
 			isPingDBServer = false;
 			return;
@@ -464,7 +467,7 @@ void IOController::logging( UniSetTypes::SensorMessage& sm )
 void IOController::dumpToDB()
 {
 	// значит на этом узле нет DBServer-а
-	if( uniset_conf()->getDBServer() == UniSetTypes::DefaultObjectId )
+	if( uniset_conf()->getDBServer() == uniset::DefaultObjectId )
 		return;
 
 	{
@@ -500,17 +503,17 @@ IOController_i::SensorInfoSeq* IOController::getSensorsMap()
 	return res;
 }
 // --------------------------------------------------------------------------------------------------------------
-UniSetTypes::Message::Priority IOController::getPriority( const UniSetTypes::ObjectId sid )
+uniset::Message::Priority IOController::getPriority( const uniset::ObjectId sid )
 {
 	auto it = ioList.find(sid);
 
 	if( it != ioList.end() )
-		return (UniSetTypes::Message::Priority)it->second->priority;
+		return (uniset::Message::Priority)it->second->priority;
 
-	return UniSetTypes::Message::Medium; // ??
+	return uniset::Message::Medium; // ??
 }
 // --------------------------------------------------------------------------------------------------------------
-IOController_i::SensorIOInfo IOController::getSensorIOInfo( const UniSetTypes::ObjectId sid )
+IOController_i::SensorIOInfo IOController::getSensorIOInfo( const uniset::ObjectId sid )
 {
 	auto it = ioList.find(sid);
 
@@ -530,7 +533,7 @@ IOController_i::SensorIOInfo IOController::getSensorIOInfo( const UniSetTypes::O
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // --------------------------------------------------------------------------------------------------------------
-CORBA::Long IOController::getRawValue( UniSetTypes::ObjectId sid )
+CORBA::Long IOController::getRawValue( uniset::ObjectId sid )
 {
 	auto it = ioList.find(sid);
 
@@ -548,18 +551,18 @@ CORBA::Long IOController::getRawValue( UniSetTypes::ObjectId sid )
 	if( ci.maxCal != 0 && ci.maxCal != ci.minCal )
 	{
 		if( it->second->type == UniversalIO::AI )
-			return UniSetTypes::lcalibrate(it->second->value, ci.minRaw, ci.maxRaw, ci.minCal, ci.maxCal, true);
+			return uniset::lcalibrate(it->second->value, ci.minRaw, ci.maxRaw, ci.minCal, ci.maxCal, true);
 
 		if( it->second->type == UniversalIO::AO )
-			return UniSetTypes::lcalibrate(it->second->value, ci.minCal, ci.maxCal, ci.minRaw, ci.maxRaw, true);
+			return uniset::lcalibrate(it->second->value, ci.minCal, ci.maxCal, ci.minRaw, ci.maxRaw, true);
 	}
 
 	return it->second->value;
 }
 // --------------------------------------------------------------------------------------------------------------
-void IOController::calibrate( UniSetTypes::ObjectId sid,
+void IOController::calibrate( uniset::ObjectId sid,
 							  const IOController_i::CalibrateInfo& ci,
-							  UniSetTypes::ObjectId adminId )
+							  uniset::ObjectId adminId )
 {
 	auto it = ioList.find(sid);
 
@@ -576,7 +579,7 @@ void IOController::calibrate( UniSetTypes::ObjectId sid,
 	it->second->ci = ci;
 }
 // --------------------------------------------------------------------------------------------------------------
-IOController_i::CalibrateInfo IOController::getCalibrateInfo( UniSetTypes::ObjectId sid )
+IOController_i::CalibrateInfo IOController::getCalibrateInfo( uniset::ObjectId sid )
 {
 	auto it = ioList.find(sid);
 
@@ -631,6 +634,11 @@ void IOController::USensorInfo::init( const IOController_i::SensorIOInfo& s )
 	(*this) = std::move(r);
 }
 // ----------------------------------------------------------------------------------------
+size_t IOController::ioCount()
+{
+	return ioList.size();
+}
+// ----------------------------------------------------------------------------------------
 IOController::IOStateList::iterator IOController::myioBegin()
 {
 	return ioList.begin();
@@ -641,7 +649,7 @@ IOController::IOStateList::iterator IOController::myioEnd()
 	return ioList.end();
 }
 
-IOController::IOStateList::iterator IOController::myiofind( const UniSetTypes::ObjectId id )
+IOController::IOStateList::iterator IOController::myiofind( const uniset::ObjectId id )
 {
 	return ioList.find(id);
 }
@@ -674,7 +682,7 @@ IOController_i::SensorInfoSeq* IOController::getSensorSeq( const IDSeq& lst )
 // -----------------------------------------------------------------------------
 IDSeq* IOController::setOutputSeq(const IOController_i::OutSeq& lst, ObjectId sup_id )
 {
-	UniSetTypes::IDList badlist; // список не найденных идентификаторов
+	uniset::IDList badlist; // список не найденных идентификаторов
 
 	int size = lst.length();
 
@@ -699,7 +707,7 @@ IDSeq* IOController::setOutputSeq(const IOController_i::OutSeq& lst, ObjectId su
 	return badlist.getIDSeq();
 }
 // -----------------------------------------------------------------------------
-IOController_i::ShortIOInfo IOController::getChangedTime( UniSetTypes::ObjectId sid )
+IOController_i::ShortIOInfo IOController::getTimeChange( uniset::ObjectId sid )
 {
 	auto ait = ioList.find(sid);
 
@@ -748,7 +756,7 @@ IOController_i::ShortMapSeq* IOController::getSensors()
 	return res;
 }
 // -----------------------------------------------------------------------------
-IOController::ChangeSignal IOController::signal_change_value( UniSetTypes::ObjectId sid )
+IOController::ChangeSignal IOController::signal_change_value( uniset::ObjectId sid )
 {
 	auto it = ioList.find(sid);
 
@@ -770,7 +778,7 @@ IOController::ChangeSignal IOController::signal_change_value()
 	return sigAnyChange;
 }
 // -----------------------------------------------------------------------------
-IOController::ChangeUndefinedStateSignal IOController::signal_change_undefined_state( UniSetTypes::ObjectId sid )
+IOController::ChangeUndefinedStateSignal IOController::signal_change_undefined_state( uniset::ObjectId sid )
 {
 	auto it = ioList.find(sid);
 
@@ -820,9 +828,9 @@ void IOController::USensorInfo::checkDepend( std::shared_ptr<USensorInfo>& d_it,
 		ic->localSetValue( d_usi, real_value, sup_id );
 }
 // -----------------------------------------------------------------------------
-UniSetTypes::SimpleInfo* IOController::getInfo( ::CORBA::Long userparam )
+uniset::SimpleInfo* IOController::getInfo( const char* userparam )
 {
-	UniSetTypes::SimpleInfo_var i = UniSetManager::getInfo();
+	uniset::SimpleInfo_var i = UniSetManager::getInfo(userparam);
 
 	ostringstream inf;
 
@@ -834,3 +842,192 @@ UniSetTypes::SimpleInfo* IOController::getInfo( ::CORBA::Long userparam )
 	return i._retn();
 }
 // -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+Poco::JSON::Object::Ptr IOController::httpHelp( const Poco::URI::QueryParameters& p )
+{
+	uniset::json::help::object myhelp( myname, UniSetManager::httpHelp(p) );
+
+	{
+		// 'get'
+		uniset::json::help::item cmd("get value for sensor");
+		cmd.param("id1,name2,id3", "get value for id1,name2,id3 sensors");
+		cmd.param("shortInfo", "get short information for sensors");
+		myhelp.add(cmd);
+	}
+
+	{
+		// 'sensors'
+		uniset::json::help::item cmd("et all sensors");
+		cmd.param("nameonly", "get only name sensors");
+		cmd.param("offset=N", "get from N record");
+		cmd.param("limit=M", "limit of records");
+		myhelp.add(cmd);
+	}
+
+	return myhelp;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr IOController::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
+{
+	if( req == "get" )
+		return request_get(req, p);
+
+	if( req == "sensors" )
+		return request_sensors(req, p);
+
+	return UniSetManager::httpRequest(req, p);
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco::URI::QueryParameters& p )
+{
+	if( p.empty() )
+	{
+		ostringstream err;
+		err << myname << "(request): 'get'. Unknown ID or Name. Use parameters: get?ID1,name2,ID3,...";
+		throw uniset::SystemError(err.str());
+	}
+
+	auto conf = uniset_conf();
+	auto slist = uniset::getSInfoList( p[0].first, conf );
+
+	if( slist.empty() )
+	{
+		ostringstream err;
+		err << myname << "(request): 'get'. Unknown ID or Name. Use parameters: get?ID1,name2,ID3,...";
+		throw uniset::SystemError(err.str());
+	}
+
+	bool shortInfo = false;
+
+	if( p.size() > 1 && p[1].first == "shortInfo" )
+		shortInfo = true;
+
+	//	ulog1 << myname << "(GET): " << p[0].first << " size=" << slist.size() << endl;
+
+	//	myname {
+	//			sensors: [
+	//               sid:
+	//	               value: long
+	//			       error: string
+	//			]
+	//	}
+
+	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+	Poco::JSON::Array::Ptr jsens = new Poco::JSON::Array();
+	jdata->set("sensors", jsens);
+	auto my = httpGetMyInfo(jdata);
+	Poco::JSON::Object::Ptr nullObject = new Poco::JSON::Object();
+
+	for( const auto& s : slist )
+	{
+		try
+		{
+			auto sinf = ioList.find(s.si.id);
+
+			if( sinf == ioList.end() )
+			{
+				string sid( std::to_string(s.si.id) );
+				jsens->add(json::make_object(sid, json::make_object("value", nullObject)));
+				jsens->add(json::make_object(sid, json::make_object("error", "Sensor not found")));
+				continue;
+			}
+
+			getSensorInfo(jsens, sinf->second, shortInfo);
+		}
+		catch( IOController_i::NameNotFound& ex )
+		{
+			string sid( std::to_string(s.si.id) );
+			jsens->add(json::make_object(sid, uniset::json::make_object("value", nullObject)));
+			jsens->add(json::make_object(sid, uniset::json::make_object("error", string(ex.err))));
+		}
+		catch( std::exception& ex )
+		{
+			string sid( std::to_string(s.si.id) );
+			jsens->add(json::make_object(sid, uniset::json::make_object("value", nullObject)));
+			jsens->add(json::make_object(sid, uniset::json::make_object("error", ex.what())));
+		}
+	}
+
+	return jdata;
+}
+// -----------------------------------------------------------------------------
+void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr<USensorInfo>& s, bool shortInfo )
+{
+	Poco::JSON::Object::Ptr mydata = new Poco::JSON::Object();
+	Poco::JSON::Object::Ptr jsens = new Poco::JSON::Object();
+
+	jdata->add(mydata);
+
+	std::string sid(to_string(s->si.id));
+	mydata->set(sid, jsens);
+
+	{
+		uniset_rwmutex_rlock lock(s->val_lock);
+		jsens->set("value", s->value);
+		jsens->set("real_value", s->real_value);
+	}
+
+	jsens->set("id", sid);
+	jsens->set("name", ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->si.id)));
+	jsens->set("tv_sec", s->tv_sec);
+	jsens->set("tv_nsec", s->tv_nsec);
+
+	if( shortInfo )
+		return;
+
+	jsens->set("type", uniset::iotype2str(s->type));
+	jsens->set("default_val", s->default_val);
+	jsens->set("dbignore", s->dbignore);
+	jsens->set("nchanges", s->nchanges);
+
+	Poco::JSON::Object::Ptr calibr = uniset::json::make_child(jsens, "calibration");
+	calibr->set("cmin", s->ci.minCal);
+	calibr->set("cmax", s->ci.maxCal);
+	calibr->set("rmin", s->ci.minRaw);
+	calibr->set("rmax", s->ci.maxRaw);
+	calibr->set("precision", s->ci.precision);
+
+	//	::CORBA::Boolean undefined;
+	//	::CORBA::Boolean blocked;
+	//	::CORBA::Long priority;
+	//	IOController_i::SensorInfo d_si = { uniset::DefaultObjectId, uniset::DefaultObjectId };  /*!< идентификатор датчика, от которого зависит данный */
+	//	long d_value = { 1 }; /*!< разрешающее работу значение датчика от которого зависит данный */
+	//	long d_off_value = { 0 }; /*!< блокирующее значение */
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const Poco::URI::QueryParameters& params )
+{
+	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+	Poco::JSON::Array::Ptr jsens = uniset::json::make_child_array(jdata, "sensors");
+	auto my = httpGetMyInfo(jdata);
+
+	size_t num = 0;
+	size_t offset = 0;
+	size_t limit = 0;
+
+	for( const auto& p : params )
+	{
+		if( p.first == "offset" )
+			offset = uni_atoi(p.second);
+		else if( p.first == "limit" )
+			limit = uni_atoi(p.second);
+	}
+
+	size_t endnum = offset + limit;
+
+	for( auto it = myioBegin(); it != myioEnd(); ++it, num++ )
+	{
+		if( limit > 0 && num >= endnum )
+			break;
+
+		if( offset > 0 && num < offset )
+			continue;
+
+		getSensorInfo(jsens, it->second, false);
+	}
+
+	jdata->set("count", num);
+	return jdata;
+}
+// -----------------------------------------------------------------------------
+#endif // #ifndef DISABLE_REST_API

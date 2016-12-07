@@ -5,7 +5,7 @@
 #include "UniSetTypes.h"
 
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 
 TEST_CASE("UInterface", "[UInterface]")
 {
@@ -27,23 +27,23 @@ TEST_CASE("UInterface", "[UInterface]")
 
 	CHECK( ui.getConfIOType(sid) != UniversalIO::UnknownIOType );
 
-	REQUIRE_THROWS_AS( ui.getValue(DefaultObjectId), UniSetTypes::ORepFailed );
-	REQUIRE_THROWS_AS( ui.getValue(sid), UniSetTypes::Exception );
-	REQUIRE_THROWS_AS( ui.getValue(sid, DefaultObjectId), UniSetTypes::Exception );
-	REQUIRE_THROWS_AS( ui.getValue(sid, 100), UniSetTypes::Exception );
+	REQUIRE_THROWS_AS( ui.getValue(DefaultObjectId), uniset::ORepFailed );
+	REQUIRE_THROWS_AS( ui.getValue(sid), uniset::Exception );
+	REQUIRE_THROWS_AS( ui.getValue(sid, DefaultObjectId), uniset::Exception );
+	REQUIRE_THROWS_AS( ui.getValue(sid, 100), uniset::Exception );
 
-	REQUIRE_THROWS_AS( ui.resolve(sid), UniSetTypes::ORepFailed );
-	REQUIRE_THROWS_AS( ui.resolve(sid, 10), UniSetTypes::ResolveNameError );
+	REQUIRE_THROWS_AS( ui.resolve(sid), uniset::ORepFailed );
+	REQUIRE_THROWS_AS( ui.resolve(sid, 10), uniset::ResolveNameError );
 	REQUIRE_THROWS_AS( ui.resolve(sid, DefaultObjectId), ResolveNameError );
 
 	TransportMessage tm( SensorMessage(sid, 10).transport_msg() );
 
-	REQUIRE_THROWS_AS( ui.send(testOID, tm), UniSetTypes::Exception );
-	REQUIRE_THROWS_AS( ui.send(testOID, tm, -20), UniSetTypes::Exception );
-	REQUIRE_THROWS_AS( ui.send(testOID, tm, DefaultObjectId), UniSetTypes::Exception );
-	REQUIRE_THROWS_AS( ui.getChangedTime(sid, -20), UniSetTypes::Exception );
-	REQUIRE_THROWS_AS( ui.getChangedTime(sid, DefaultObjectId), UniSetTypes::Exception );
-	REQUIRE_THROWS_AS( ui.getChangedTime(sid, conf->getLocalNode()), UniSetTypes::Exception );
+	REQUIRE_THROWS_AS( ui.send(testOID, tm), uniset::Exception );
+	REQUIRE_THROWS_AS( ui.send(testOID, tm, -20), uniset::Exception );
+	REQUIRE_THROWS_AS( ui.send(testOID, tm, DefaultObjectId), uniset::Exception );
+	REQUIRE_THROWS_AS( ui.getTimeChange(sid, -20), uniset::Exception );
+	REQUIRE_THROWS_AS( ui.getTimeChange(sid, DefaultObjectId), uniset::Exception );
+	REQUIRE_THROWS_AS( ui.getTimeChange(sid, conf->getLocalNode()), uniset::Exception );
 
 	CHECK_FALSE( ui.isExist(sid) );
 	CHECK_FALSE( ui.isExist(sid, DefaultObjectId) );

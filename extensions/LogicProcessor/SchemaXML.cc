@@ -20,10 +20,12 @@
 #include "Extensions.h"
 #include "Schema.h"
 #include "TDelay.h"
-
+// -----------------------------------------------------------------------------
+namespace uniset
+{
 // -------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetExtensions;
+using namespace uniset::extensions;
 // -------------------------------------------------------------------------
 SchemaXML::SchemaXML()
 {
@@ -146,3 +148,4 @@ void SchemaXML::read( const string& xmlfile )
 	}
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

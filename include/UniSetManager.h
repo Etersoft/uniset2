@@ -28,6 +28,9 @@
 #include "UniSetObject.h"
 #include "UniSetManager_i.hh"
 //---------------------------------------------------------------------------
+namespace uniset
+{
+//---------------------------------------------------------------------------
 class UniSetActivator;
 
 class UniSetManager;
@@ -56,20 +59,20 @@ class UniSetManager:
 	public POA_UniSetManager_i
 {
 	public:
-		UniSetManager( UniSetTypes::ObjectId id);
+		UniSetManager( uniset::ObjectId id);
 		UniSetManager( const std::string& name, const std::string& section );
 		virtual ~UniSetManager();
 
 		std::shared_ptr<UniSetManager> get_mptr();
 
-		virtual UniSetTypes::ObjectType getType() override
+		virtual uniset::ObjectType getType() override
 		{
-			return UniSetTypes::ObjectType("UniSetManager");
+			return uniset::ObjectType("UniSetManager");
 		}
 
 		// ------  функции объявленные в интерфейсе(IDL) ------
-		virtual void broadcast( const UniSetTypes::TransportMessage& msg) override;
-		virtual UniSetTypes::SimpleInfoSeq* getObjectsInfo( CORBA::Long MaxLength = 300, CORBA::Long userparam = 0  ) override ;
+		virtual void broadcast( const uniset::TransportMessage& msg) override;
+		virtual uniset::SimpleInfoSeq* getObjectsInfo( CORBA::Long MaxLength = 300, const char* userparam = 0  ) override ;
 
 		// --------------------------
 		virtual bool add( const std::shared_ptr<UniSetObject>& obj );
@@ -78,12 +81,12 @@ class UniSetManager:
 		/*! Получение доступа к подчиненному менеджеру по идентификатору
 		 * \return shared_ptr<>, если объект не найден будет возвращен shared_ptr<> = nullptr
 		*/
-		const std::shared_ptr<UniSetManager> itemM(const UniSetTypes::ObjectId id);
+		const std::shared_ptr<UniSetManager> itemM(const uniset::ObjectId id);
 
 		/*! Получение доступа к подчиненному объекту по идентификатору
 		 * \return shared_ptr<>, если объект не найден будет возвращен shared_ptr<> = nullptr
 		*/
-		const std::shared_ptr<UniSetObject> itemO( const UniSetTypes::ObjectId id );
+		const std::shared_ptr<UniSetObject> itemO( const uniset::ObjectId id );
 
 		// Функции для работы со списками подчиненных объектов
 		// ---------------
@@ -108,7 +111,7 @@ class UniSetManager:
 		virtual bool removeObject( const std::shared_ptr<UniSetObject>& obj );
 
 		enum OManagerCommand { deactiv, activ, initial, term };
-		friend std::ostream& operator<<(std::ostream& os, OManagerCommand& cmd );
+		friend std::ostream& operator<<(std::ostream& os, uniset::UniSetManager::OManagerCommand& cmd );
 
 		// работа со списком объектов
 		void objects(OManagerCommand cmd);
@@ -124,10 +127,19 @@ class UniSetManager:
 		//! \note Переопределяя не забывайте вызвать базовую
 		virtual bool deactivateObject() override;
 
+		const std::shared_ptr<UniSetObject> findObject( const std::string& name );
+		const std::shared_ptr<UniSetManager> findManager( const std::string& name );
+
+		// рекурсивный поиск по всем объекам
+		const std::shared_ptr<UniSetObject> deepFindObject( const std::string& name );
+
+		// рекурсивное наполнение списка объектов
+		void getAllObjectsList( std::vector<std::shared_ptr<UniSetObject>>& vec, size_t lim = 1000 );
+
 		typedef UniSetManagerList::iterator MListIterator;
 
-		int getObjectsInfo(const std::shared_ptr<UniSetManager>& mngr, UniSetTypes::SimpleInfoSeq* seq,
-						   int begin, const long uplimit, CORBA::Long userparam );
+		int getObjectsInfo(const std::shared_ptr<UniSetManager>& mngr, uniset::SimpleInfoSeq* seq,
+						   int begin, const long uplimit, const char* userparam );
 
 		PortableServer::POA_var poa;
 		PortableServer::POAManager_var pman;
@@ -138,8 +150,9 @@ class UniSetManager:
 		UniSetManagerList mlist;
 		ObjectsList olist;
 
-		UniSetTypes::uniset_rwmutex olistMutex;
-		UniSetTypes::uniset_rwmutex mlistMutex;
+		uniset::uniset_rwmutex olistMutex;
+		uniset::uniset_rwmutex mlistMutex;
 };
-
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 #endif

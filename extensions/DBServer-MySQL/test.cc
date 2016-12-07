@@ -3,7 +3,7 @@
 #include "Exceptions.h"
 #include "MySQLInterface.h"
 // --------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 int main(int argc, char** argv)
@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 
 		db.close();
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		cerr << "(test): " << ex << endl;
 	}

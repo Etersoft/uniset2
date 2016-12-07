@@ -27,6 +27,8 @@
 #include "DebugStream.h"
 #include "LogAgregator.h"
 //------------------------------------------------------------------------------------------
+namespace uniset
+{
 /*!
      \page ServicesPage
      \section secDBServer Сервис ведения БД
@@ -40,7 +42,7 @@
         - при помощи UInterface::send()
 
         Сервис является системным, поэтому его идентификатор можно получить при помощи
-    UniSetTypes::Configuration::getDBServer() объекта UniSetTypes::conf.
+    uniset::Configuration::getDBServer() объекта uniset::conf.
 
     Реализацию см. \ref page_DBServer_MySQL и \ref page_DBServer_SQLite
 */
@@ -50,7 +52,7 @@ class DBServer:
 	public UniSetObject
 {
 	public:
-		DBServer( UniSetTypes::ObjectId id, const std::string& prefix = "db" );
+		DBServer( uniset::ObjectId id, const std::string& prefix = "db" );
 		DBServer( const std::string& prefix = "db" );
 		~DBServer();
 
@@ -58,9 +60,9 @@ class DBServer:
 
 	protected:
 
-		virtual void processingMessage( const UniSetTypes::VoidMessage* msg ) override;
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
-		virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ) {}
+		virtual void processingMessage( const uniset::VoidMessage* msg ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
+		virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) {}
 
 		virtual bool activateObject() override;
 		virtual void initDBServer() {};
@@ -76,5 +78,7 @@ class DBServer:
 
 	private:
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 //------------------------------------------------------------------------------------------
 #endif

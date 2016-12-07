@@ -6,7 +6,7 @@
 #include "TCPCheck.h"
 
 using namespace std;
-using namespace UniSetTypes;
+using namespace uniset;
 
 
 const string ip1 = "localhost:2049";

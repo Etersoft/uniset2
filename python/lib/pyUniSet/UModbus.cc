@@ -60,7 +60,7 @@ UModbus::UModbus():
 	ip(""),
 	tout_msec(5000)
 {
-	mb = new ModbusTCPMaster();
+	mb = new uniset::ModbusTCPMaster();
 }
 // --------------------------------------------------------------------------
 UModbus::~UModbus()
@@ -129,7 +129,8 @@ bool UModbus::getBit( int addr, int mbreg, int mbfunc )throw(UException)
 long UModbus::mbread(int mbaddr, int mbreg, int mbfunc, const string& s_vtype, int nbit,
 					 const string& new_ip, int new_port )throw(UException)
 {
-	using namespace VTypes;
+	using namespace uniset;
+	using namespace uniset::VTypes;
 
 	string n_ip( ( new_ip.empty() ? ip : new_ip ) );
 	int n_port = ( new_port > 0 ) ? new_port : port;
@@ -222,7 +223,7 @@ long UModbus::mbread(int mbaddr, int mbreg, int mbfunc, const string& s_vtype, i
 	}
 }
 //---------------------------------------------------------------------------
-long UModbus::data2value( VTypes::VType vtype, ModbusRTU::ModbusData* data )
+long UModbus::data2value( uniset::VTypes::VType vtype, uniset::ModbusRTU::ModbusData* data )
 {
 #if 0
 
@@ -253,6 +254,7 @@ long UModbus::data2value( VTypes::VType vtype, ModbusRTU::ModbusData* data )
 	}
 
 #endif
+	using namespace uniset;
 
 	if( vtype == VTypes::vtSigned )
 		return (signed short)(data[0]);
@@ -300,7 +302,7 @@ void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const string&
 	{
 		switch( mbfunc )
 		{
-			case ModbusRTU::fnWriteOutputSingleRegister:
+			case uniset::ModbusRTU::fnWriteOutputSingleRegister:
 			{
 				// ModbusRTU::WriteSingleOutputRetMessage ret =
 				// игнорируем return т.к. если будет ошибка, то будет исключение
@@ -308,9 +310,9 @@ void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const string&
 			}
 			break;
 
-			case ModbusRTU::fnWriteOutputRegisters:
+			case uniset::ModbusRTU::fnWriteOutputRegisters:
 			{
-				ModbusRTU::WriteOutputMessage msg(mbaddr, mbreg);
+				uniset::ModbusRTU::WriteOutputMessage msg(mbaddr, mbreg);
 				msg.addData(val);
 				//ModbusRTU::WriteOutputRetMessage ret =
 				// игнорируем return т.к. если будет ошибка, то будет исключение
@@ -318,7 +320,7 @@ void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const string&
 			}
 			break;
 
-			case ModbusRTU::fnForceSingleCoil:
+			case uniset::ModbusRTU::fnForceSingleCoil:
 			{
 				// ModbusRTU::ForceSingleCoilRetMessage ret =
 				// игнорируем return т.к. если будет ошибка, то будет исключение
@@ -326,9 +328,9 @@ void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const string&
 			}
 			break;
 
-			case ModbusRTU::fnForceMultipleCoils:
+			case uniset::ModbusRTU::fnForceMultipleCoils:
 			{
-				ModbusRTU::ForceCoilsMessage msg(mbaddr, mbreg);
+				uniset::ModbusRTU::ForceCoilsMessage msg(mbaddr, mbreg);
 				msg.addBit( (val ? true : false) );
 				// ModbusRTU::ForceCoilsRetMessage ret =
 				// игнорируем return т.к. если будет ошибка, то будет исключение
@@ -345,9 +347,9 @@ void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const string&
 			break;
 		}
 	}
-	catch( const ModbusRTU::mbException& ex )
+	catch( const uniset::ModbusRTU::mbException& ex )
 	{
-		if( ex.err != ModbusRTU::erTimeOut )
+		if( ex.err != uniset::ModbusRTU::erTimeOut )
 			throw UTimeOut();
 
 		std::ostringstream err;

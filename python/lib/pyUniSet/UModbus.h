@@ -40,7 +40,7 @@ class UModbus
 
 		inline bool isWriteFunction( int mbfunc )
 		{
-			return ModbusRTU::isWriteFunction((ModbusRTU::SlaveFunctionCode)mbfunc);
+			return uniset::ModbusRTU::isWriteFunction((uniset::ModbusRTU::SlaveFunctionCode)mbfunc);
 		}
 
 		// выставление паметров связи, без установления соединения (!)
@@ -86,11 +86,11 @@ class UModbus
 		void mbwrite( int addr, int mbreg, int val, int mbfunc, const std::string& ip = "", int port = -1 )throw(UException);
 
 	protected:
-		long data2value( VTypes::VType vt, ModbusRTU::ModbusData* data );
+		long data2value( uniset::VTypes::VType vt, uniset::ModbusRTU::ModbusData* data );
 
 	private:
 		// DebugStream dlog;
-		ModbusTCPMaster* mb;
+		uniset::ModbusTCPMaster* mb;
 		int port;
 		string ip;
 		int tout_msec;

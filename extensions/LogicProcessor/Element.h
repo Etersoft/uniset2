@@ -22,14 +22,17 @@
 #include <list>
 #include <ostream>
 #include "Exceptions.h"
+//--------------------------------------------------------------------------
+namespace uniset
+{
 // --------------------------------------------------------------------------
 
 class LogicException:
-	public UniSetTypes::Exception
+	public uniset::Exception
 {
 	public:
-		LogicException(): UniSetTypes::Exception("LogicException") {}
-		explicit LogicException( const std::string& err): UniSetTypes::Exception(err) {}
+		LogicException(): uniset::Exception("LogicException") {}
+		explicit LogicException( const std::string& err): uniset::Exception(err) {}
 };
 
 
@@ -212,6 +215,7 @@ class TNOT:
 
 	private:
 };
-
+// --------------------------------------------------------------------------
+} // end of namespace uniset
 // ---------------------------------------------------------------------------
 #endif

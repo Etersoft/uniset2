@@ -8,3 +8,5 @@ from UInterface import *
 from pyUniSet import *
 from pyUModbus import *
 from pyUConnector import *
+
+from pyUExceptions import *

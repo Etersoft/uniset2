@@ -29,6 +29,9 @@
 #include "UInterface.h"
 #include "PassiveTimer.h"
 //--------------------------------------------------------------------------------
+namespace uniset
+{
+
 class SViewer
 {
 	public:
@@ -41,13 +44,13 @@ class SViewer
 
 	protected:
 		void readSection(const std::string& sec, const std::string& secRoot);
-		void getInfo(UniSetTypes::ObjectId id);
+		void getInfo(uniset::ObjectId id);
 
-		virtual void updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetTypes::ObjectId oid );
-		virtual void updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tlst, UniSetTypes::ObjectId oid );
+		virtual void updateSensors( IOController_i::SensorInfoSeq_var& amap, uniset::ObjectId oid );
+		virtual void updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tlst, uniset::ObjectId oid );
 
 		const std::string csec;
-		void printInfo(UniSetTypes::ObjectId id, const std::string& sname, long value, const std::string& supplier,
+		void printInfo(uniset::ObjectId id, const std::string& sname, long value, const std::string& supplier,
 					   const std::string& txtname, const std::string& iotype);
 
 		std::shared_ptr<UInterface> ui;
@@ -57,6 +60,8 @@ class SViewer
 		bool isShortName = { true };
 
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // --------------------------------------------------------------------------
 #endif
 // --------------------------------------------------------------------------

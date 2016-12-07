@@ -23,9 +23,12 @@
 #include "modbus/ModbusTCPMaster.h"
 #include "modbus/ModbusTCPCore.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
+// -------------------------------------------------------------------------
 using namespace std;
 using namespace ModbusRTU;
-using namespace UniSetTypes;
+using namespace uniset;
 using namespace Poco;
 // -------------------------------------------------------------------------
 ModbusTCPMaster::ModbusTCPMaster():
@@ -186,11 +189,11 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				{
 					try
 					{
-						Poco::Net::SocketAddress  iaddr = tcp->peerAddress();
+						Poco::Net::SocketAddress  ia = tcp->peerAddress();
 
 						dlog->warn() << "(ModbusTCPMaster::query): ret=" << ret
 									 << " < rmh=" << sizeof(reply.aduhead)
-									 << " perr: " << iaddr.host().toString() << ":" << iaddr.port()
+									 << " perr: " << ia.host().toString() << ":" << ia.port()
 									 << endl;
 					}
 					catch( const Poco::Net::NetException& ex )
@@ -201,8 +204,10 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				}
 
 				cleanInputStream();
+
 				if( tcp )
 					tcp->forceDisconnect();
+
 				return erTimeOut; // return erHardwareError;
 			}
 
@@ -285,7 +290,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		if( dlog->is_warn() )
 			dlog->warn() << "(query): " << err << endl;
 	}
-	catch( const UniSetTypes::CommFailed& ex )
+	catch( const uniset::CommFailed& ex )
 	{
 		if( dlog->is_crit() )
 			dlog->crit() << "(query): " << ex << endl;
@@ -293,7 +298,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		if( tcp )
 			tcp->forceDisconnect();
 	}
-	catch( const UniSetTypes::Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		if( dlog->is_warn() )
 			dlog->warn() << "(query): " << ex << endl;
@@ -499,3 +504,4 @@ bool ModbusTCPMaster::isConnection() const
 	return tcp && tcp->isConnected();
 }
 // -------------------------------------------------------------------------
+} // end of namespace uniset

@@ -26,6 +26,8 @@
 #include "DebugStream.h"
 #include "LogServerTypes.h"
 // -------------------------------------------------------------------------
+namespace uniset
+{
 /*!
 	\page page_LogAgregator Агрегатор логов (LogAgregator)
 
@@ -202,6 +204,8 @@ class LogAgregator:
 		typedef std::unordered_map<std::shared_ptr<DebugStream>, sigc::connection> ConnectionMap;
 		ConnectionMap conmap;
 };
+// -------------------------------------------------------------------------
+} // end of uniset namespace
 // -------------------------------------------------------------------------
 #endif // LogAgregator_H_
 // -------------------------------------------------------------------------

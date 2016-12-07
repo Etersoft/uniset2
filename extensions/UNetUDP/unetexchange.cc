@@ -4,8 +4,8 @@
 #include "UNetExchange.h"
 // -----------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
-using namespace UniSetExtensions;
+using namespace uniset;
+using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 int main( int argc, const char** argv )
 {
@@ -60,7 +60,7 @@ int main( int argc, const char** argv )
 		act->run(false);
 		on_sigchild(SIGTERM);
 	}
-	catch( const Exception& ex )
+	catch( const uniset::Exception& ex )
 	{
 		dcrit << "(unetexchange): " << ex << std::endl;
 	}

@@ -16,13 +16,13 @@ GENUOBJ=UObject_SK.cc UObject_SK.h
 BUILT_SOURCES=$(GENERATED) $(GENERATED2) $(GENOBJ)
 
 TestGen-main.cc TestGen_SK.cc TestGen_SK.h: ../@PACKAGE@-codegen testgen.src.xml ../*.xsl
-	../@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen --gen-varmap --local-include -n TestGen testgen.src.xml
+	$(SHELL) ../@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen --gen-varmap --local-include -n TestGen testgen.src.xml
 
 TestGenAlone-main.cc TestGenAlone_SK.cc TestGenAlone_SK.h: ../@PACKAGE@-codegen testgen-alone.src.xml ../*.xsl
-	../@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen --local-include --alone -n TestGenAlone testgen-alone.src.xml
+	$(SHELL) ../@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen --local-include --alone -n TestGenAlone testgen-alone.src.xml
 
 $(GENUOBJ): ../@PACKAGE@-codegen uobject.src.xml ../*.xsl
-	../@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen -n UObject --no-main uobject.src.xml
+	$(SHELL) ../@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen -n UObject --no-main uobject.src.xml
 
 clean-local:
 	rm -rf $(GENERATED) $(GENERATED2) $(GENUOBJ)

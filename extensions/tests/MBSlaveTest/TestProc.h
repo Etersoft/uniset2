@@ -11,7 +11,7 @@ class TestProc:
 	public TestProc_SK
 {
 	public:
-		TestProc( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::uniset_conf()->getNode("TestProc") );
+		TestProc( uniset::ObjectId id, xmlNode* confnode = uniset::uniset_conf()->getNode("TestProc") );
 		virtual ~TestProc();
 
 	protected:
@@ -26,9 +26,9 @@ class TestProc:
 		};
 
 		virtual void step();
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm );
-		virtual void timerInfo( const UniSetTypes::TimerMessage* tm );
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
+		virtual void sensorInfo( const uniset::SensorMessage* sm );
+		virtual void timerInfo( const uniset::TimerMessage* tm );
+		virtual void sysCommand( const uniset::SystemMessage* sm );
 
 		void test_depend();
 		void test_undefined_state();
@@ -36,18 +36,18 @@ class TestProc:
 		void test_loglevel();
 
 	private:
-		bool state;
-		bool undef;
+		bool state = { false };
+		bool undef = { false };
 
 		std::vector<Debug::type> loglevels;
 		std::vector<Debug::type>::iterator lit;
 
-		std::shared_ptr<ModbusTCPServerSlot> mbslave;
+		std::shared_ptr<uniset::ModbusTCPServerSlot> mbslave;
 		/*! обработка 0x06 */
-		ModbusRTU::mbErrCode writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
-				ModbusRTU::WriteSingleOutputRetMessage& reply );
+		uniset::ModbusRTU::mbErrCode writeOutputSingleRegister( uniset::ModbusRTU::WriteSingleOutputMessage& query,
+				uniset::ModbusRTU::WriteSingleOutputRetMessage& reply );
 
-		std::shared_ptr< ThreadCreator<TestProc> > mbthr;
+		std::shared_ptr< uniset::ThreadCreator<TestProc> > mbthr;
 		void mbThread();
 };
 // -----------------------------------------------------------------------------

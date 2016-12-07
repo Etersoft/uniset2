@@ -80,10 +80,11 @@ Debug::type Debug::value(string const& val)
 			break;
 
 		bool del = false;
+
 		if( tmp[0] == '-' )
 		{
 			del = true;
-			tmp = tmp.substr(1,tmp.size());
+			tmp = tmp.substr(1, tmp.size());
 		}
 
 		for (int i = 0 ; i < numErrorTags ; ++i)
@@ -128,7 +129,7 @@ void Debug::showTags(ostream& os) noexcept
 	{
 		os.flush();
 	}
-	catch(...){}
+	catch(...) {}
 }
 
 std::ostream& operator<<(std::ostream& os, Debug::type level ) noexcept
@@ -174,7 +175,7 @@ std::string Debug::str( Debug::type level ) noexcept
 	{
 		return s.str();
 	}
-	catch(...){}
+	catch(...) {}
 
 	return "";
 }

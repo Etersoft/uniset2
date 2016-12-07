@@ -98,6 +98,7 @@ Utilities/Admin/test.xml
 Utilities/Admin/uniset2-admin
 Utilities/Admin/uniset-functions.sh
 Utilities/Admin/uniset-start.sh
+*/cov-html/*
 
 Utilities/DBServer-MySQL/uniset-mysql-dbserver
 Utilities/InfoServer/uniset-infoserver
@@ -188,3 +189,4 @@ tests/tests
 tests/tests_with_conf
 testsuite/atconfig
 
+*

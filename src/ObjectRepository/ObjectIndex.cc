@@ -23,7 +23,7 @@
 #include "Configuration.h"
 
 // -----------------------------------------------------------------------------------------
-using namespace UniSetTypes;
+using namespace uniset;
 // -----------------------------------------------------------------------------------------
 //const std::string ObjectIndex::sepName = "@";
 //const std::string ObjectIndex::sepNode = ":";
@@ -43,7 +43,7 @@ std::string ObjectIndex::getBaseName( const std::string& fname ) noexcept
 		if( pos != string::npos )
 			return fname.substr(pos + 1);
 	}
-	catch(...){}
+	catch(...) {}
 
 	return fname;
 }

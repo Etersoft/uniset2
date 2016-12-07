@@ -25,6 +25,9 @@
 #include "SMInterface.h"
 #include "SharedMemory.h"
 #include "extensions/Extensions.h"
+// -------------------------------------------------------------------------
+namespace uniset
+{
 // -----------------------------------------------------------------------------
 /*!
 	\page page_MQTTPublisher Реализация MQTT издателя
@@ -105,13 +108,13 @@ class MQTTPublisher:
 	public UObject_SK
 {
 	public:
-		MQTTPublisher( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+		MQTTPublisher( uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 					   const std::string& prefix = "mqtt" );
 		virtual ~MQTTPublisher();
 
 		/*! глобальная функция для инициализации объекта */
 		static std::shared_ptr<MQTTPublisher> init_mqttpublisher( int argc, const char* const* argv,
-				UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+				uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 				const std::string& prefix = "mqtt" );
 
 		/*! глобальная функция для вывода help-а */
@@ -125,23 +128,23 @@ class MQTTPublisher:
 		MQTTPublisher();
 
 		virtual void askSensors( UniversalIO::UIOCommand cmd ) override;
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 		virtual void sigterm( int signo ) override;
 		virtual bool deactivateObject() override;
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 
 		std::shared_ptr<SMInterface> shm;
 
 		struct MQTTInfo
 		{
-			UniSetTypes::ObjectId sid;
+			uniset::ObjectId sid;
 			std::string pubname;
 
-			MQTTInfo( UniSetTypes::ObjectId id, const std::string& name ):
+			MQTTInfo( uniset::ObjectId id, const std::string& name ):
 				sid(id), pubname(name) {}
 		};
 
-		typedef std::unordered_map<UniSetTypes::ObjectId, MQTTInfo> MQTTMap;
+		typedef std::unordered_map<uniset::ObjectId, MQTTInfo> MQTTMap;
 
 		struct RangeInfo
 		{
@@ -155,7 +158,7 @@ class MQTTPublisher:
 
 		struct MQTTTextInfo
 		{
-			UniSetTypes::ObjectId sid;
+			uniset::ObjectId sid;
 			std::string pubname;
 			UniXML::iterator xmlnode;
 
@@ -169,7 +172,7 @@ class MQTTPublisher:
 			std::string replace( RangeInfo* ri, long value );
 		};
 
-		typedef std::unordered_map<UniSetTypes::ObjectId, MQTTTextInfo> MQTTTextMap;
+		typedef std::unordered_map<uniset::ObjectId, MQTTTextInfo> MQTTTextMap;
 
 		MQTTMap publist;
 		MQTTTextMap textpublist;
@@ -183,6 +186,8 @@ class MQTTPublisher:
 		int port = { 1883 };
 		int keepalive = { 60 };
 };
+// ----------------------------------------------------------------------------------
+} // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // _MQTTPublisher_H_
 // -----------------------------------------------------------------------------

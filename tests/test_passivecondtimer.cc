@@ -3,6 +3,7 @@
 #include "PassiveTimer.h"
 #include "UniSetTypes.h"
 using namespace std;
+using namespace uniset;
 // --------------------------------------------------------------------------
 static std::atomic_int g_num = ATOMIC_VAR_INIT(0);
 static std::mutex      g_mutex;
