@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt4
+Release: alt5
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -507,6 +507,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # history of current unpublished changes
 
 %changelog
+* Thu Dec 08 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt5
+- fixed bug in uniset2-admin --oinfo
+
 * Wed Dec 07 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt4
 - new version
 - getChangedTime --> getTimeChange
