@@ -75,7 +75,7 @@ elif [ -n "$JENKINS_BUILD_AUTOINCREMENT" ]; then
 	
 	# Смотрим номер сборки в JENKINS
 	if [ -n "$BUILD_NUMBER" ]; then
-		rel="${rel}.${BUILD_NUMBER}"
+		rel="${rel}.${JENKINS_PREFIX}${BUILD_NUMBER}"
 		set_release $SPECNAME $rel
 	else
 		# просто увеличиваем subrelease
