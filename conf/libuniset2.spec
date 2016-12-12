@@ -316,7 +316,7 @@ SharedMemoryPlus extension ('all in one') for libuniset
 %build
 %autoreconf
 %configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api}
-%make
+%make_build
 
 %install
 %makeinstall_std
