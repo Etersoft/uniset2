@@ -21,28 +21,28 @@
 // -----------------------------------------------------------------------------
 namespace uniset
 {
-// -------------------------------------------------------------------------
-using namespace std;
-using namespace uniset::extensions;
-// -------------------------------------------------------------------------
-TNOT::TNOT( ElementID id, bool out_default ):
-	Element(id),
-	myout(out_default)
-{
-	ins.emplace_front(1, !out_default);
-}
-// -------------------------------------------------------------------------
-TNOT::~TNOT()
-{
-}
-// -------------------------------------------------------------------------
-void TNOT::setIn( size_t num, bool state )
-{
-	bool prev = myout;
-	myout = !state;
+	// -------------------------------------------------------------------------
+	using namespace std;
+	using namespace uniset::extensions;
+	// -------------------------------------------------------------------------
+	TNOT::TNOT( ElementID id, bool out_default ):
+		Element(id),
+		myout(out_default)
+	{
+		ins.emplace_front(1, !out_default);
+	}
+	// -------------------------------------------------------------------------
+	TNOT::~TNOT()
+	{
+	}
+	// -------------------------------------------------------------------------
+	void TNOT::setIn( size_t num, bool state )
+	{
+		bool prev = myout;
+		myout = !state;
 
-	if( prev != myout )
-		Element::setChildOut();
-}
-// -------------------------------------------------------------------------
+		if( prev != myout )
+			Element::setChildOut();
+	}
+	// -------------------------------------------------------------------------
 } // end of namespace uniset

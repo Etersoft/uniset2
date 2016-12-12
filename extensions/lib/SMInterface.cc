@@ -249,8 +249,8 @@ using namespace uniset;
 	}
 	// --------------------------------------------------------------------------
 	void SMInterface::localSetUndefinedState( IOController::IOStateList::iterator& it,
-											  bool undefined,
-											  uniset::ObjectId sid )
+			bool undefined,
+			uniset::ObjectId sid )
 	{
 		//    CHECK_IC_PTR(localSetUndefinedState)
 		if( !ic )

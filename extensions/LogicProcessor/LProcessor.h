@@ -110,84 +110,84 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-// --------------------------------------------------------------------------
-class LProcessor
-{
-	public:
-		explicit LProcessor( const std::string& name = "" );
-		virtual ~LProcessor();
+	// --------------------------------------------------------------------------
+	class LProcessor
+	{
+		public:
+			explicit LProcessor( const std::string& name = "" );
+			virtual ~LProcessor();
 
-		void open( const std::string& lfile );
+			void open( const std::string& lfile );
 
-		inline bool isOpen() const
-		{
-			return !fSchema.empty();
-		}
+			inline bool isOpen() const
+			{
+				return !fSchema.empty();
+			}
 
-		virtual void execute( const std::string& lfile = "" );
+			virtual void execute( const std::string& lfile = "" );
 
-		virtual void terminate()
-		{
-			canceled = true;
-		}
+			virtual void terminate()
+			{
+				canceled = true;
+			}
 
-		inline std::shared_ptr<SchemaXML> getSchema()
-		{
-			return sch;
-		}
+			inline std::shared_ptr<SchemaXML> getSchema()
+			{
+				return sch;
+			}
 
-		inline int getSleepTime() const
-		{
-			return sleepTime;
-		}
+			inline int getSleepTime() const
+			{
+				return sleepTime;
+			}
 
-	protected:
+		protected:
 
-		virtual void build( const string& lfile );
+			virtual void build( const string& lfile );
 
-		virtual void step();
+			virtual void step();
 
-		virtual void getInputs();
-		virtual void processing();
-		virtual void setOuts();
+			virtual void getInputs();
+			virtual void processing();
+			virtual void setOuts();
 
-		struct EXTInfo
-		{
-			uniset::ObjectId sid;
-			UniversalIO::IOType iotype;
-			bool state;
-			std::shared_ptr<Element> el;
-			int numInput = { -1};
-		};
+			struct EXTInfo
+			{
+				uniset::ObjectId sid;
+				UniversalIO::IOType iotype;
+				bool state;
+				std::shared_ptr<Element> el;
+				int numInput = { -1};
+			};
 
-		struct EXTOutInfo
-		{
-			uniset::ObjectId sid;
-			UniversalIO::IOType iotype;
-			std::shared_ptr<Element> el;
-		};
+			struct EXTOutInfo
+			{
+				uniset::ObjectId sid;
+				UniversalIO::IOType iotype;
+				std::shared_ptr<Element> el;
+			};
 
-		typedef std::list<EXTInfo> EXTList;
-		typedef std::list<EXTOutInfo> OUTList;
+			typedef std::list<EXTInfo> EXTList;
+			typedef std::list<EXTOutInfo> OUTList;
 
-		EXTList extInputs;
-		OUTList extOuts;
+			EXTList extInputs;
+			OUTList extOuts;
 
-		std::shared_ptr<SchemaXML> sch;
+			std::shared_ptr<SchemaXML> sch;
 
-		UInterface ui;
-		timeout_t sleepTime = { 200 };
-		timeout_t smReadyTimeout = { 30000 } ;     /*!< время ожидания готовности SM, мсек */
+			UInterface ui;
+			timeout_t sleepTime = { 200 };
+			timeout_t smReadyTimeout = { 30000 } ;     /*!< время ожидания готовности SM, мсек */
 
-		std::string logname = { "" };
+			std::string logname = { "" };
 
-		std::atomic_bool canceled = {false};
+			std::atomic_bool canceled = {false};
 
-		std::string fSchema = {""};
+			std::string fSchema = {""};
 
-	private:
-};
-// --------------------------------------------------------------------------
+		private:
+	};
+	// --------------------------------------------------------------------------
 } // end of namespace uniset
 // ---------------------------------------------------------------------------
 #endif

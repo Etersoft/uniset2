@@ -370,90 +370,63 @@ void on_finish_timeout()
 // ------------------------------------------------------------------------------------------
 namespace uniset
 {
-void terminate_thread()
-{
-	ulogsys << "****** TERMINATE THREAD: STARTED *******" << endl << flush;
-
+	void terminate_thread()
 	{
-		std::unique_lock<std::mutex> locker(g_termmutex);
-		g_term = false;
+		ulogsys << "****** TERMINATE THREAD: STARTED *******" << endl << flush;
 
-		while( !g_term )
-			g_termevent.wait(locker);
-
-		// g_termmutex надо отпустить, т.к. он будет проверяться  в ~UniSetActvator
-	}
-
-	ulogsys << "****** TERMINATE THREAD: event signo=" << g_signo << endl << flush;
-
-	{
-		std::unique_lock<std::mutex> locker(g_finimutex);
-
-		if( g_finished )
-			return;
-	}
-
-	{
-		std::unique_lock<std::mutex> lk(g_donemutex);
-		g_done = false;
-		g_kill_thread = make_shared<std::thread>(on_finish_timeout);
-	}
-
-	if( g_act )
-	{
 		{
-			std::unique_lock<std::mutex> lk(g_finimutex);
+			std::unique_lock<std::mutex> locker(g_termmutex);
+			g_term = false;
 
-			if( g_finished )
-			{
-				ulogsys << "...FINISHED ALREADY STARTED..." << endl << flush;
-				return;
-			}
+			while( !g_term )
+				g_termevent.wait(locker);
 
-			g_fini_thread = make_shared<std::thread>(finished_thread);
+			// g_termmutex надо отпустить, т.к. он будет проверяться  в ~UniSetActvator
 		}
 
+		ulogsys << "****** TERMINATE THREAD: event signo=" << g_signo << endl << flush;
 
-		ulogsys << "(TERMINATE THREAD): call terminated.." << endl << flush;
-		g_act->terminated(g_signo);
+		{
+			std::unique_lock<std::mutex> locker(g_finimutex);
+
+			if( g_finished )
+				return;
+		}
+
+		{
+			std::unique_lock<std::mutex> lk(g_donemutex);
+			g_done = false;
+			g_kill_thread = make_shared<std::thread>(on_finish_timeout);
+		}
+
+		if( g_act )
+		{
+			{
+				std::unique_lock<std::mutex> lk(g_finimutex);
+
+				if( g_finished )
+				{
+					ulogsys << "...FINISHED ALREADY STARTED..." << endl << flush;
+					return;
+				}
+
+				g_fini_thread = make_shared<std::thread>(finished_thread);
+			}
+
+
+			ulogsys << "(TERMINATE THREAD): call terminated.." << endl << flush;
+			g_act->terminated(g_signo);
 
 #if 0
 
-		try
-		{
-			ulogsys << "TERMINATE THREAD: orb shutdown.." << endl;
-
-			if( g_act->orb )
-				g_act->orb->shutdown(true);
-
-			ulogsys << "TERMINATE THREAD: orb shutdown ok.." << endl;
-		}
-		catch( const omniORB::fatalException& fe )
-		{
-			ulogsys << "(TERMINATE THREAD): : omniORB::fatalException:" << endl;
-			ulogsys << "(TERMINATE THREAD):   file: " << fe.file() << endl;
-			ulogsys << "(TERMINATE THREAD):   line: " << fe.line() << endl;
-			ulogsys << "(TERMINATE THREAD):   mesg: " << fe.errmsg() << endl;
-		}
-		catch( const std::exception& ex )
-		{
-			ulogsys << "(TERMINATE THREAD): " << ex.what() << endl;
-		}
-
-#endif
-
-		if( g_fini_thread && g_fini_thread->joinable() )
-			g_fini_thread->join();
-
-		ulogsys << "(TERMINATE THREAD): FINISHED OK.." << endl << flush;
-
-		if( g_act &&  g_act->orb )
-		{
 			try
 			{
-				ulogsys << "(TERMINATE THREAD): destroy.." << endl;
-				g_act->orb->destroy();
-				ulogsys << "(TERMINATE THREAD): destroy ok.." << endl;
+				ulogsys << "TERMINATE THREAD: orb shutdown.." << endl;
+
+				if( g_act->orb )
+					g_act->orb->shutdown(true);
+
+				ulogsys << "TERMINATE THREAD: orb shutdown ok.." << endl;
 			}
 			catch( const omniORB::fatalException& fe )
 			{
@@ -466,22 +439,49 @@ void terminate_thread()
 			{
 				ulogsys << "(TERMINATE THREAD): " << ex.what() << endl;
 			}
+
+#endif
+
+			if( g_fini_thread && g_fini_thread->joinable() )
+				g_fini_thread->join();
+
+			ulogsys << "(TERMINATE THREAD): FINISHED OK.." << endl << flush;
+
+			if( g_act &&  g_act->orb )
+			{
+				try
+				{
+					ulogsys << "(TERMINATE THREAD): destroy.." << endl;
+					g_act->orb->destroy();
+					ulogsys << "(TERMINATE THREAD): destroy ok.." << endl;
+				}
+				catch( const omniORB::fatalException& fe )
+				{
+					ulogsys << "(TERMINATE THREAD): : omniORB::fatalException:" << endl;
+					ulogsys << "(TERMINATE THREAD):   file: " << fe.file() << endl;
+					ulogsys << "(TERMINATE THREAD):   line: " << fe.line() << endl;
+					ulogsys << "(TERMINATE THREAD):   mesg: " << fe.errmsg() << endl;
+				}
+				catch( const std::exception& ex )
+				{
+					ulogsys << "(TERMINATE THREAD): " << ex.what() << endl;
+				}
+			}
+
+			g_act.reset();
+			UniSetActivator::set_signals(false);
 		}
 
-		g_act.reset();
-		UniSetActivator::set_signals(false);
+		{
+			std::unique_lock<std::mutex> lk(g_donemutex);
+			g_done = true;
+		}
+
+		g_doneevent.notify_all();
+
+		g_kill_thread->join();
+		ulogsys << "(TERMINATE THREAD): ..bye.." << endl;
 	}
-
-	{
-		std::unique_lock<std::mutex> lk(g_donemutex);
-		g_done = true;
-	}
-
-	g_doneevent.notify_all();
-
-	g_kill_thread->join();
-	ulogsys << "(TERMINATE THREAD): ..bye.." << endl;
-}
 }
 // ---------------------------------------------------------------------------
 UniSetActivatorPtr UniSetActivator::inst;

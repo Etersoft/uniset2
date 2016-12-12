@@ -23,118 +23,118 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-/*! Класс реализующий формирование импульсов заданной длительности(t1) и заданных пауз между ними(t0).
-    Класс пассивный, для работы требует постоянного вызова функции step().
-    Для получения текущего состояния "выхода" использовать out().
-    Формирование импульсов включается функцией run() либо функцией set(true).
-    Вызов reset() тоже включает формирование импульсов.
-    Выключается формирование вызовом set(false).
+	/*! Класс реализующий формирование импульсов заданной длительности(t1) и заданных пауз между ними(t0).
+	    Класс пассивный, для работы требует постоянного вызова функции step().
+	    Для получения текущего состояния "выхода" использовать out().
+	    Формирование импульсов включается функцией run() либо функцией set(true).
+	    Вызов reset() тоже включает формирование импульсов.
+	    Выключается формирование вызовом set(false).
 
-	\warning Точность поддержания "импульсов" зависит от частоты вызова step() или out()
-*/
-class Pulse
-{
-	public:
-		Pulse() noexcept {}
-		~Pulse() noexcept {}
+		\warning Точность поддержания "импульсов" зависит от частоты вызова step() или out()
+	*/
+	class Pulse
+	{
+		public:
+			Pulse() noexcept {}
+			~Pulse() noexcept {}
 
-		// t1_msec - интервал "вкл"
-		// t0_msec - интерфал "откл"
-		inline void run( timeout_t _t1_msec, timeout_t _t0_msec ) noexcept
-		{
-			t1_msec = _t1_msec;
-			t0_msec = _t0_msec;
-			t1.setTiming(t1_msec);
-			t0.setTiming(t0_msec);
-			set(true);
-		}
-
-		inline void set_next( timeout_t _t1_msec, timeout_t _t0_msec ) noexcept
-		{
-			t1_msec = _t1_msec;
-			t0_msec = _t0_msec;
-		}
-
-		inline void reset() noexcept
-		{
-			set(true);
-		}
-
-		inline bool step() noexcept
-		{
-			if( !isOn )
+			// t1_msec - интервал "вкл"
+			// t0_msec - интерфал "откл"
+			inline void run( timeout_t _t1_msec, timeout_t _t0_msec ) noexcept
 			{
-				ostate = false;
-				return false;
-			}
-
-			if( ostate && t1.checkTime() )
-			{
-				ostate = false;
-				t0.setTiming(t0_msec);
-			}
-
-			if( !ostate && t0.checkTime() )
-			{
-				ostate = true;
+				t1_msec = _t1_msec;
+				t0_msec = _t0_msec;
 				t1.setTiming(t1_msec);
+				t0.setTiming(t0_msec);
+				set(true);
 			}
 
-			return ostate;
-		}
-
-		inline bool out() noexcept
-		{
-			return step(); // ostate;
-		}
-
-		inline void set( bool state ) noexcept
-		{
-			isOn = state;
-
-			if( !isOn )
-				ostate = false;
-			else
+			inline void set_next( timeout_t _t1_msec, timeout_t _t0_msec ) noexcept
 			{
-				t1.reset();
-				t0.reset();
-				ostate     = true;
+				t1_msec = _t1_msec;
+				t0_msec = _t0_msec;
 			}
-		}
 
-		friend std::ostream& operator<<(std::ostream& os, Pulse& p )
-		{
-			return os << " idOn=" << p.isOn
-				   << " t1=" << p.t1.getInterval()
-				   << " t0=" << p.t0.getInterval()
-				   << " out=" << p.out();
-		}
+			inline void reset() noexcept
+			{
+				set(true);
+			}
 
-		friend std::ostream& operator<<(std::ostream& os, Pulse* p )
-		{
-			return os << (*p);
-		}
+			inline bool step() noexcept
+			{
+				if( !isOn )
+				{
+					ostate = false;
+					return false;
+				}
 
-		inline timeout_t getT1() const noexcept
-		{
-			return t1_msec;
-		}
-		inline timeout_t getT0() const noexcept
-		{
-			return t0_msec;
-		}
+				if( ostate && t1.checkTime() )
+				{
+					ostate = false;
+					t0.setTiming(t0_msec);
+				}
 
-	protected:
-		PassiveTimer t1;    // таймер "1"
-		PassiveTimer t0;    // таймер "0"
-		PassiveTimer tCorr;    // корректирующий таймер
-		bool ostate = { false };
-		bool isOn = { false };
-		timeout_t t1_msec = { 0 };
-		timeout_t t0_msec = { 0 };
+				if( !ostate && t0.checkTime() )
+				{
+					ostate = true;
+					t1.setTiming(t1_msec);
+				}
 
-};
-// -------------------------------------------------------------------------
+				return ostate;
+			}
+
+			inline bool out() noexcept
+			{
+				return step(); // ostate;
+			}
+
+			inline void set( bool state ) noexcept
+			{
+				isOn = state;
+
+				if( !isOn )
+					ostate = false;
+				else
+				{
+					t1.reset();
+					t0.reset();
+					ostate     = true;
+				}
+			}
+
+			friend std::ostream& operator<<(std::ostream& os, Pulse& p )
+			{
+				return os << " idOn=" << p.isOn
+					   << " t1=" << p.t1.getInterval()
+					   << " t0=" << p.t0.getInterval()
+					   << " out=" << p.out();
+			}
+
+			friend std::ostream& operator<<(std::ostream& os, Pulse* p )
+			{
+				return os << (*p);
+			}
+
+			inline timeout_t getT1() const noexcept
+			{
+				return t1_msec;
+			}
+			inline timeout_t getT0() const noexcept
+			{
+				return t0_msec;
+			}
+
+		protected:
+			PassiveTimer t1;    // таймер "1"
+			PassiveTimer t0;    // таймер "0"
+			PassiveTimer tCorr;    // корректирующий таймер
+			bool ostate = { false };
+			bool isOn = { false };
+			timeout_t t1_msec = { 0 };
+			timeout_t t0_msec = { 0 };
+
+	};
+	// -------------------------------------------------------------------------
 } // end of uniset namespace
 // --------------------------------------------------------------------------
 #endif

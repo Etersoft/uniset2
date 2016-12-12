@@ -26,74 +26,74 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-// --------------------------------------------------------------------------
-class SMInterface
-{
-	public:
+	// --------------------------------------------------------------------------
+	class SMInterface
+	{
+		public:
 
-		SMInterface( uniset::ObjectId _shmID, const std::shared_ptr<UInterface>& ui,
-					 uniset::ObjectId myid, const std::shared_ptr<IONotifyController> ic = nullptr );
-		~SMInterface();
+			SMInterface( uniset::ObjectId _shmID, const std::shared_ptr<UInterface>& ui,
+						 uniset::ObjectId myid, const std::shared_ptr<IONotifyController> ic = nullptr );
+			~SMInterface();
 
-		void setValue ( uniset::ObjectId, long value );
-		void setUndefinedState( const IOController_i::SensorInfo& si, bool undefined, uniset::ObjectId supplier );
+			void setValue ( uniset::ObjectId, long value );
+			void setUndefinedState( const IOController_i::SensorInfo& si, bool undefined, uniset::ObjectId supplier );
 
-		long getValue ( uniset::ObjectId id );
+			long getValue ( uniset::ObjectId id );
 
-		void askSensor( uniset::ObjectId id, UniversalIO::UIOCommand cmd,
-						uniset::ObjectId backid = uniset::DefaultObjectId );
+			void askSensor( uniset::ObjectId id, UniversalIO::UIOCommand cmd,
+							uniset::ObjectId backid = uniset::DefaultObjectId );
 
-		IOController_i::SensorInfoSeq* getSensorsMap();
-		IONotifyController_i::ThresholdsListSeq* getThresholdsList();
+			IOController_i::SensorInfoSeq* getSensorsMap();
+			IONotifyController_i::ThresholdsListSeq* getThresholdsList();
 
-		void localSetValue( IOController::IOStateList::iterator& it,
-							uniset::ObjectId sid,
-							CORBA::Long newvalue, uniset::ObjectId sup_id );
+			void localSetValue( IOController::IOStateList::iterator& it,
+								uniset::ObjectId sid,
+								CORBA::Long newvalue, uniset::ObjectId sup_id );
 
-		long localGetValue( IOController::IOStateList::iterator& it,
-							uniset::ObjectId sid );
+			long localGetValue( IOController::IOStateList::iterator& it,
+								uniset::ObjectId sid );
 
-		/*! функция выставления признака неопределённого состояния для аналоговых датчиков
-		    // для дискретных датчиков необходимости для подобной функции нет.
-		    // см. логику выставления в функции localSaveState
-		*/
-		void localSetUndefinedState( IOController::IOStateList::iterator& it,
-									 bool undefined, uniset::ObjectId sid );
+			/*! функция выставления признака неопределённого состояния для аналоговых датчиков
+			    // для дискретных датчиков необходимости для подобной функции нет.
+			    // см. логику выставления в функции localSaveState
+			*/
+			void localSetUndefinedState( IOController::IOStateList::iterator& it,
+										 bool undefined, uniset::ObjectId sid );
 
-		// специальные функции
-		IOController::IOStateList::iterator ioEnd();
-		void initIterator( IOController::IOStateList::iterator& it );
+			// специальные функции
+			IOController::IOStateList::iterator ioEnd();
+			void initIterator( IOController::IOStateList::iterator& it );
 
-		bool exist();
-		bool waitSMready( int msec, int pause = 5000 );
-		bool waitSMworking( uniset::ObjectId, int msec, int pause = 3000 );
+			bool exist();
+			bool waitSMready( int msec, int pause = 5000 );
+			bool waitSMworking( uniset::ObjectId, int msec, int pause = 3000 );
 
-		inline bool isLocalwork()
-		{
-			return (ic == NULL);
-		}
-		inline uniset::ObjectId ID()
-		{
-			return myid;
-		}
-		inline const std::shared_ptr<IONotifyController> SM()
-		{
-			return ic;
-		}
-		inline uniset::ObjectId getSMID()
-		{
-			return shmID;
-		}
+			inline bool isLocalwork()
+			{
+				return (ic == NULL);
+			}
+			inline uniset::ObjectId ID()
+			{
+				return myid;
+			}
+			inline const std::shared_ptr<IONotifyController> SM()
+			{
+				return ic;
+			}
+			inline uniset::ObjectId getSMID()
+			{
+				return shmID;
+			}
 
-	protected:
-		const std::shared_ptr<IONotifyController> ic;
-		const std::shared_ptr<UInterface> ui;
-		CORBA::Object_var oref;
-		uniset::ObjectId shmID;
-		uniset::ObjectId myid;
-		uniset::uniset_rwmutex shmMutex;
-};
-// --------------------------------------------------------------------------
+		protected:
+			const std::shared_ptr<IONotifyController> ic;
+			const std::shared_ptr<UInterface> ui;
+			CORBA::Object_var oref;
+			uniset::ObjectId shmID;
+			uniset::ObjectId myid;
+			uniset::uniset_rwmutex shmMutex;
+	};
+	// --------------------------------------------------------------------------
 } // end of namespace uniset
 //--------------------------------------------------------------------------
 #endif

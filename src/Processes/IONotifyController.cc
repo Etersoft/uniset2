@@ -609,7 +609,7 @@ void IONotifyController::initItem( std::shared_ptr<USensorInfo>& usi, IOControll
 }
 // ------------------------------------------------------------------------------------------
 void IONotifyController::dumpOrdersList( const uniset::ObjectId sid,
-										 const IONotifyController::ConsumerListInfo& lst )
+		const IONotifyController::ConsumerListInfo& lst )
 {
 	if( restorer == NULL )
 		return;
@@ -855,8 +855,8 @@ bool IONotifyController::removeThreshold( ThresholdExtList& lst, ThresholdInfoEx
 }
 // --------------------------------------------------------------------------------------------------------------
 void IONotifyController::checkThreshold( IOController::IOStateList::iterator& li,
-										 const uniset::ObjectId sid,
-										 bool send_msg )
+		const uniset::ObjectId sid,
+		bool send_msg )
 {
 	if( li == myioEnd() )
 		li = myiofind(sid);
@@ -1149,8 +1149,8 @@ void IONotifyController::onChangeUndefinedState( std::shared_ptr<USensorInfo>& u
 
 // -----------------------------------------------------------------------------
 IDSeq* IONotifyController::askSensorsSeq( const uniset::IDSeq& lst,
-										  const uniset::ConsumerInfo& ci,
-										  UniversalIO::UIOCommand cmd)
+		const uniset::ConsumerInfo& ci,
+		UniversalIO::UIOCommand cmd)
 {
 	uniset::IDList badlist; // cписок не найденных идентификаторов
 
@@ -1252,6 +1252,7 @@ Poco::JSON::Object::Ptr IONotifyController::request_consumers( const string& req
 		{
 			// добавляем только датчики только с непустым списком заказчиков
 			auto jret = getConsumers(a.first, a.second, true);
+
 			if( jret )
 				jdata->add(jret);
 		}
@@ -1289,6 +1290,7 @@ Poco::JSON::Object::Ptr IONotifyController::getConsumers(ObjectId sid, ConsumerL
 	jsens->set("name", ORepHelpers::getShortName(oind->getMapName(sid)));
 
 	auto jcons = uniset::json::make_child_array(jret, "consumers");
+
 	for( const auto& c : ci.clst )
 	{
 		Poco::JSON::Object::Ptr consumer = new Poco::JSON::Object();

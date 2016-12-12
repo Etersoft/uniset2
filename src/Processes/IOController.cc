@@ -175,7 +175,7 @@ void IOController::setUndefinedState( uniset::ObjectId sid, CORBA::Boolean undef
 }
 // -----------------------------------------------------------------------------
 void IOController::localSetUndefinedState( IOStateList::iterator& li,
-										   bool undefined, const uniset::ObjectId sid )
+		bool undefined, const uniset::ObjectId sid )
 {
 	// сохранение текущего состояния
 	if( li == ioList.end() )

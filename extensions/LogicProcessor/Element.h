@@ -25,197 +25,197 @@
 //--------------------------------------------------------------------------
 namespace uniset
 {
-// --------------------------------------------------------------------------
+	// --------------------------------------------------------------------------
 
-class LogicException:
-	public uniset::Exception
-{
-	public:
-		LogicException(): uniset::Exception("LogicException") {}
-		explicit LogicException( const std::string& err): uniset::Exception(err) {}
-};
-
-
-class Element
-{
-	public:
-
-		typedef std::string ElementID;
-		static const ElementID DefaultElementID;
-
-		enum InputType
-		{
-			unknown,
-			external,
-			internal
-		};
-
-		explicit Element( const ElementID& id ): myid(id) {};
-		virtual ~Element() {};
+	class LogicException:
+		public uniset::Exception
+	{
+		public:
+			LogicException(): uniset::Exception("LogicException") {}
+			explicit LogicException( const std::string& err): uniset::Exception(err) {}
+	};
 
 
-		/*!< функция вызываемая мастером для элементов, которым требуется
-		    работа во времени.
-		    По умолчанию ничего не делает.
-		*/
-		virtual void tick() {}
+	class Element
+	{
+		public:
 
-		virtual void setIn( size_t num, bool state ) = 0;
-		virtual bool getOut() const = 0;
+			typedef std::string ElementID;
+			static const ElementID DefaultElementID;
 
-		inline ElementID getId() const
-		{
-			return myid;
-		}
-		virtual std::string getType() const
-		{
-			return "?type?";
-		}
+			enum InputType
+			{
+				unknown,
+				external,
+				internal
+			};
 
-		virtual std::shared_ptr<Element> find( const ElementID& id );
-
-		virtual void addChildOut( std::shared_ptr<Element> el, size_t in_num );
-		virtual void delChildOut( std::shared_ptr<Element> el );
-		inline size_t outCount() const
-		{
-			return outs.size();
-		}
-
-		virtual void addInput( size_t num, bool state = false );
-		virtual void delInput( size_t num );
-		inline size_t inCount() const
-		{
-			return ins.size();
-		}
-
-		friend std::ostream& operator<<(std::ostream& os, Element& el )
-		{
-			return os << "[" << el.getType() << "]" << el.getId();
-		}
-
-		friend std::ostream& operator<<(std::ostream& os, std::shared_ptr<Element> el )
-		{
-			if( el )
-				return os << (*(el.get()));
-
-			return os;
-		}
-
-	protected:
-		Element(): myid(DefaultElementID) {}; // нельзя создать элемент без id
-
-		struct ChildInfo
-		{
-			ChildInfo(std::shared_ptr<Element> e, size_t n):
-				el(e), num(n) {}
-			ChildInfo(): el(0), num(0) {}
-
-			std::shared_ptr<Element> el;
-			size_t num;
-		};
-
-		typedef std::list<ChildInfo> OutputList;
-		OutputList outs;
-		virtual void setChildOut();
-
-		struct InputInfo
-		{
-			InputInfo(): num(0), state(false), type(unknown) {}
-			InputInfo(size_t n, bool s): num(n), state(s), type(unknown) {}
-			size_t num;
-			bool state;
-			InputType type;
-		};
-
-		typedef std::list<InputInfo> InputList;
-		InputList ins;
-
-		ElementID myid;
-
-	private:
+			explicit Element( const ElementID& id ): myid(id) {};
+			virtual ~Element() {};
 
 
-};
-// ---------------------------------------------------------------------------
-class TOR:
-	public Element
-{
+			/*!< функция вызываемая мастером для элементов, которым требуется
+			    работа во времени.
+			    По умолчанию ничего не делает.
+			*/
+			virtual void tick() {}
 
-	public:
-		TOR( ElementID id, size_t numbers = 0, bool st = false );
-		virtual ~TOR();
+			virtual void setIn( size_t num, bool state ) = 0;
+			virtual bool getOut() const = 0;
 
-		virtual void setIn( size_t num, bool state ) override;
-		virtual bool getOut() const override
-		{
-			return myout;
-		}
+			inline ElementID getId() const
+			{
+				return myid;
+			}
+			virtual std::string getType() const
+			{
+				return "?type?";
+			}
 
-		virtual std::string getType() const override
-		{
-			return "OR";
-		}
+			virtual std::shared_ptr<Element> find( const ElementID& id );
 
-	protected:
-		TOR(): myout(false) {}
-		bool myout;
+			virtual void addChildOut( std::shared_ptr<Element> el, size_t in_num );
+			virtual void delChildOut( std::shared_ptr<Element> el );
+			inline size_t outCount() const
+			{
+				return outs.size();
+			}
+
+			virtual void addInput( size_t num, bool state = false );
+			virtual void delInput( size_t num );
+			inline size_t inCount() const
+			{
+				return ins.size();
+			}
+
+			friend std::ostream& operator<<(std::ostream& os, Element& el )
+			{
+				return os << "[" << el.getType() << "]" << el.getId();
+			}
+
+			friend std::ostream& operator<<(std::ostream& os, std::shared_ptr<Element> el )
+			{
+				if( el )
+					return os << (*(el.get()));
+
+				return os;
+			}
+
+		protected:
+			Element(): myid(DefaultElementID) {}; // нельзя создать элемент без id
+
+			struct ChildInfo
+			{
+				ChildInfo(std::shared_ptr<Element> e, size_t n):
+					el(e), num(n) {}
+				ChildInfo(): el(0), num(0) {}
+
+				std::shared_ptr<Element> el;
+				size_t num;
+			};
+
+			typedef std::list<ChildInfo> OutputList;
+			OutputList outs;
+			virtual void setChildOut();
+
+			struct InputInfo
+			{
+				InputInfo(): num(0), state(false), type(unknown) {}
+				InputInfo(size_t n, bool s): num(n), state(s), type(unknown) {}
+				size_t num;
+				bool state;
+				InputType type;
+			};
+
+			typedef std::list<InputInfo> InputList;
+			InputList ins;
+
+			ElementID myid;
+
+		private:
 
 
-	private:
-};
-// ---------------------------------------------------------------------------
-class TAND:
-	public TOR
-{
+	};
+	// ---------------------------------------------------------------------------
+	class TOR:
+		public Element
+	{
 
-	public:
-		TAND(ElementID id, size_t numbers = 0, bool st = false );
-		virtual ~TAND();
+		public:
+			TOR( ElementID id, size_t numbers = 0, bool st = false );
+			virtual ~TOR();
 
-		virtual void setIn( size_t num, bool state ) override;
-		virtual std::string getType() const override
-		{
-			return "AND";
-		}
+			virtual void setIn( size_t num, bool state ) override;
+			virtual bool getOut() const override
+			{
+				return myout;
+			}
 
-	protected:
-		TAND() {}
+			virtual std::string getType() const override
+			{
+				return "OR";
+			}
 
-	private:
-};
+		protected:
+			TOR(): myout(false) {}
+			bool myout;
 
-// ---------------------------------------------------------------------------
-// элемент с одним входом и выходом
-class TNOT:
-	public Element
-{
 
-	public:
-		TNOT( ElementID id, bool out_default );
-		virtual ~TNOT();
+		private:
+	};
+	// ---------------------------------------------------------------------------
+	class TAND:
+		public TOR
+	{
 
-		virtual bool getOut() const override
-		{
-			return myout;
-		}
+		public:
+			TAND(ElementID id, size_t numbers = 0, bool st = false );
+			virtual ~TAND();
 
-		/* num игнорируется, т.к. элемент с одним входом
-		 */
-		virtual void setIn( size_t num, bool state ) override ;
-		virtual std::string getType() const override
-		{
-			return "NOT";
-		}
-		virtual void addInput( size_t num, bool state = false ) override {}
-		virtual void delInput( size_t num ) override {}
+			virtual void setIn( size_t num, bool state ) override;
+			virtual std::string getType() const override
+			{
+				return "AND";
+			}
 
-	protected:
-		TNOT(): myout(false) {}
-		bool myout;
+		protected:
+			TAND() {}
 
-	private:
-};
-// --------------------------------------------------------------------------
+		private:
+	};
+
+	// ---------------------------------------------------------------------------
+	// элемент с одним входом и выходом
+	class TNOT:
+		public Element
+	{
+
+		public:
+			TNOT( ElementID id, bool out_default );
+			virtual ~TNOT();
+
+			virtual bool getOut() const override
+			{
+				return myout;
+			}
+
+			/* num игнорируется, т.к. элемент с одним входом
+			 */
+			virtual void setIn( size_t num, bool state ) override ;
+			virtual std::string getType() const override
+			{
+				return "NOT";
+			}
+			virtual void addInput( size_t num, bool state = false ) override {}
+			virtual void delInput( size_t num ) override {}
+
+		protected:
+			TNOT(): myout(false) {}
+			bool myout;
+
+		private:
+	};
+	// --------------------------------------------------------------------------
 } // end of namespace uniset
 // ---------------------------------------------------------------------------
 #endif

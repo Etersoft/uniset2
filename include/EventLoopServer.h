@@ -8,47 +8,47 @@
 // -------------------------------------------------------------------------
 namespace uniset
 {
-/*!
- * \brief The EventLoopServer class
- * Реализация общей части всех процессов использующих libev.
- * Содержит свой (динамический) eventloop;
- */
-class EventLoopServer
-{
-	public:
+	/*!
+	 * \brief The EventLoopServer class
+	 * Реализация общей части всех процессов использующих libev.
+	 * Содержит свой (динамический) eventloop;
+	 */
+	class EventLoopServer
+	{
+		public:
 
-		EventLoopServer();
-		virtual ~EventLoopServer();
+			EventLoopServer();
+			virtual ~EventLoopServer();
 
-		bool evIsActive() const noexcept;
+			bool evIsActive() const noexcept;
 
-	protected:
-		// действия при завершении
-		// завершение своих ev::xxx.stop()
-		virtual void evfinish() {}
+		protected:
+			// действия при завершении
+			// завершение своих ev::xxx.stop()
+			virtual void evfinish() {}
 
-		// подготовка перед запуском loop
-		// запусу своих ev::xxx.start()
-		virtual void evprepare() {}
+			// подготовка перед запуском loop
+			// запусу своих ev::xxx.start()
+			virtual void evprepare() {}
 
-		// Управление потоком событий
-		void evrun( bool thread = true );
-		void evstop();
+			// Управление потоком событий
+			void evrun( bool thread = true );
+			void evstop();
 
-		ev::dynamic_loop loop;
+			ev::dynamic_loop loop;
 
-	private:
+		private:
 
-		void onStop() noexcept;
-		void defaultLoop() noexcept;
+			void onStop() noexcept;
+			void defaultLoop() noexcept;
 
-		std::atomic_bool cancelled = { false };
-		std::atomic_bool isrunning = { false };
+			std::atomic_bool cancelled = { false };
+			std::atomic_bool isrunning = { false };
 
-		ev::async evterm;
-		std::shared_ptr<std::thread> thr;
-};
-// -------------------------------------------------------------------------
+			ev::async evterm;
+			std::shared_ptr<std::thread> thr;
+	};
+	// -------------------------------------------------------------------------
 } // end of uniset namespace
 // -------------------------------------------------------------------------
 #endif // EventLoopServer_H_
