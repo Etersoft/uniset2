@@ -168,6 +168,8 @@ class ShortIOInfo:
     __swig_getmethods__["tv_nsec"] = _pyUniSet.ShortIOInfo_tv_nsec_get
     __swig_setmethods__["supplier"] = _pyUniSet.ShortIOInfo_supplier_set
     __swig_getmethods__["supplier"] = _pyUniSet.ShortIOInfo_supplier_get
+    __swig_setmethods__["supplier_node"] = _pyUniSet.ShortIOInfo_supplier_node_set
+    __swig_getmethods__["supplier_node"] = _pyUniSet.ShortIOInfo_supplier_node_get
 
     def __init__(self):
         this = _pyUniSet.new_ShortIOInfo()

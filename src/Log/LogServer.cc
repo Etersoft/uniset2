@@ -203,7 +203,7 @@ namespace uniset
 			if( mylog.is_crit() )
 				mylog.crit() << err.str() << endl;
 
-			throw SystemError( err.str() );
+			throw uniset::SystemError( err.str() );
 		}
 
 		try
@@ -219,7 +219,18 @@ namespace uniset
 			if( mylog.is_crit() )
 				mylog.crit() << err.str() << endl;
 
-			throw SystemError( err.str() );
+			throw uniset::SystemError( err.str() );
+		}
+		catch( std::exception& ex )
+		{
+			ostringstream err;
+
+			err << myname << "(evprepare): " << ex.what();
+
+			if( mylog.is_crit() )
+				mylog.crit() << err.str() << endl;
+
+			throw uniset::SystemError( err.str() );
 		}
 
 		sock->setBlocking(false);

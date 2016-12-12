@@ -386,6 +386,7 @@ src/Communications/TCP/UTCPStream.cc
 src/Communications/TCP/UTCPSocket.cc
 src/Communications/TCP/USocket.cc
 src/Communications/Http/UHttpRequestHandler.cc
+src/Communications/Http/UHttpServer.cc
 src/Communications/ComPort.cc
 src/Communications/ComPort485F.cc
 src/Communications/Makefile.am

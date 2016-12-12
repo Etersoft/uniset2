@@ -21,8 +21,10 @@
 #include "Exceptions.h"
 // -------------------------------------------------------------------------
 using namespace Poco::Net;
-using namespace uniset;
-using namespace UHttp;
+// -------------------------------------------------------------------------
+namespace uniset
+{
+	using namespace UHttp;
 // -------------------------------------------------------------------------
 
 UHttpServer::UHttpServer(std::shared_ptr<IHttpRequestRegistry>& supplier, const std::string& _host, int _port ):
@@ -75,5 +77,7 @@ std::shared_ptr<DebugStream> UHttpServer::log()
 {
 	return mylog;
 }
+// -------------------------------------------------------------------------
+} // end of namespace uniset
 // -------------------------------------------------------------------------
 #endif // #ifndef DISABLE_REST_API

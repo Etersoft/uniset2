@@ -1259,9 +1259,9 @@ end_private(false)
 	if( smTestID == DefaultObjectId )
 		smTestID = getSMTestID();
 
-	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 40000);
+	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 90000);
 
-	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 30000);
+	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 50000);
 	ptStartUpTimeout.setTiming(msec);
 
 	// ===================== &lt;variables&gt; =====================
@@ -1730,9 +1730,9 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 	vmonit(smReadyTimeout);
 	vmonit(activateTimeout);
 
-	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 40000);
+	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 90000);
 
-	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 30000);
+	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 60000);
 	ptStartUpTimeout.setTiming(msec);
 }
 
