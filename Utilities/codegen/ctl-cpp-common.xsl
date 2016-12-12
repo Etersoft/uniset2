@@ -416,6 +416,8 @@
 		
 		std::unordered_map&lt;const uniset::ObjectId,size_t, StatHashFn&gt; smStat; /*!&lt; количество сообщений по датчикам */
 		size_t processingMessageCatchCount = { 0 }; /*!&lt; количество исключений пойманных в processingMessage */
+		
+		std::string ostate = { "" }; /*!&lt; состояние процесса (выводится в getInfo()) */
 		</xsl:if>
 </xsl:template>
 
@@ -476,22 +478,42 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 			}
 		case SystemMessage::StartUp:
 		{
-			if( !logserv_host.empty() &amp;&amp; logserv_port != 0 &amp;&amp; !logserv-&gt;isRunning() )
+			ostate = "StartUp...";
+			try
 			{
-				myinfo &lt;&lt; myname &lt;&lt; "(preSysCommand): run log server " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port &lt;&lt; endl;
-				logserv-&gt;run(logserv_host, logserv_port, true);
+				if( !logserv_host.empty() &amp;&amp; logserv_port != 0 &amp;&amp; !logserv-&gt;isRunning() )
+				{
+					ostate = "StartUp: run log server...";
+					myinfo &lt;&lt; myname &lt;&lt; "(preSysCommand): run log server " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port &lt;&lt; endl;
+					logserv-&gt;run(logserv_host, logserv_port, true);
+				}
+			}
+			catch( std::exception&amp; ex )
+			{
+				mywarn &lt;&lt; myname &lt;&lt; "(preSysCommand): CAN`t run log server err: " &lt;&lt; ex.what() &lt;&lt; endl;
+			}
+			catch( ... )
+			{
+				mywarn &lt;&lt; myname &lt;&lt; "(preSysCommand): CAN`t run log server err: catch ..." &lt;&lt; endl;
 			}
 
+			ostate = "StartUp: wait sm ready..";
 			waitSM(smReadyTimeout);
 			ptStartUpTimeout.reset();
 			// т.к. для io-переменных важно соблюдать последовательность!
 			// сперва обновить входы..
+			ostate = "StartUp: update values..";
 			updateValues();
+			ostate = "StartUp: init from SM..";
 			initFromSM(); // потом обновить значения переменных, помеченных как инициализируемые из SM
+			ostate = "StartUp: update outputs..";
 			updateOutputs(true); // а потом уже выходы (принудительное обновление)
+			ostate = "StartUp: pre ask sensors..";
 			preAskSensors(UniversalIO::UIONotify);
+			ostate = "StartUp: ask sensors..";
 			askSensors(UniversalIO::UIONotify);
 			active = true;
+			ostate = "StartUp: [OK]";
 			break;
 		}
 		
@@ -514,8 +536,19 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 			
 			if( logserv &amp;&amp; !logserv_host.empty() &amp;&amp; logserv_port != 0 )
 			{
-				mylogany &lt;&lt; myname &lt;&lt; "(preSysCommand): try restart logserver.." &lt;&lt; endl;
-				logserv-&gt;check(true);
+				try
+				{
+					mylogany &lt;&lt; myname &lt;&lt; "(preSysCommand): try restart logserver.." &lt;&lt; endl;
+					logserv-&gt;check(true);
+				}
+				catch( std::exception&amp; ex )
+				{
+					mywarn &lt;&lt; myname &lt;&lt; "(preSysCommand): CAN`t restart log server err: " &lt;&lt; ex.what() &lt;&lt; endl;
+				}
+				catch( ... )
+				{
+					mywarn &lt;&lt; myname &lt;&lt; "(preSysCommand): CAN`t restart log server err: catch ..." &lt;&lt; endl;
+				}
 			}
 		}
 		break;
@@ -536,6 +569,8 @@ uniset::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( const char*
 	ostringstream inf;
 	
 	inf &lt;&lt; i->info &lt;&lt; endl;
+	inf &lt;&lt; "process state: " &lt;&lt; ostate &lt;&lt; endl;
+	
 	if( logserv /* &amp;&amp; userparam &lt; 0 */ )
 	{
 		inf &lt;&lt; "LogServer: " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port 
@@ -801,10 +836,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 			&lt;&lt; wait_msec &lt;&lt; " мсек";
 
         mycrit &lt;&lt; err.str() &lt;&lt; endl;
-//		terminate();
-//		abort();
-//		raise(SIGTERM);
-		std::terminate();
+		std::abort();
 //		throw uniset::SystemError(err.str());
 	}
 
@@ -816,10 +848,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 			&lt;&lt; wait_msec &lt;&lt; " мсек";
 	
 		mycrit &lt;&lt; err.str() &lt;&lt; endl;
-//		terminate();
-//		abort();
-		//raise(SIGTERM);
-		std::terminate();
+		std::abort();
 //		throw uniset::SystemError(err.str());
 	}
 }
@@ -1230,9 +1259,9 @@ end_private(false)
 	if( smTestID == DefaultObjectId )
 		smTestID = getSMTestID();
 
-	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 20000);
+	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 40000);
 
-	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 10000);
+	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 30000);
 	ptStartUpTimeout.setTiming(msec);
 
 	// ===================== &lt;variables&gt; =====================
@@ -1699,10 +1728,11 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 
 	vmonit(smTestID);
 	vmonit(smReadyTimeout);
+	vmonit(activateTimeout);
 
-	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 20000);
+	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 40000);
 
-	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 10000);
+	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 30000);
 	ptStartUpTimeout.setTiming(msec);
 }
 
