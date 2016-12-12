@@ -361,7 +361,7 @@ AM_CONDITIONAL(HAVE_TESTS, test ${buildtests} = true)
 # -D_GLIBCXX_USE_NANOSLEEP - for std::this_thread::sleep_for
 
 # -Weffc++ -Wno-unused-variable -Werror -Wctor-dtor-privacy
-CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Woverloaded-virtual -Woverflow -D_GLIBCXX_USE_NANOSLEEP"
+CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Woverloaded-virtual -Woverflow -D_GLIBCXX_USE_NANOSLEEP -fstack-protector"
 
 # export
 LDFLAGS="$LDFLAGS ${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS} ${POCO_LIBS} ${EV_LIBS}"
