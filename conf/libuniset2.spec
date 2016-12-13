@@ -508,6 +508,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # Modbus: refactoring code and test (for 64bit)
 # iobase: refactoring tests for 64bit
 # TCPCheck: fixed bug (for exit thread)
+# UNetUDP: minor fixes in tests
 
 %changelog
 * Mon Dec 12 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt6
