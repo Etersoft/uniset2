@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt6
+Release: alt7
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -505,12 +505,14 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
         
 # history of current unpublished changes
-# Modbus: refactoring code and test (for 64bit)
-# iobase: refactoring tests for 64bit
-# TCPCheck: fixed bug (for exit thread)
-# UNetUDP: minor fixes in tests
 
 %changelog
+* Tue Dec 13 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt7
+- Modbus: refactoring code and test (for 64bit)
+- iobase: refactoring tests for 64bit
+- TCPCheck: fixed bug (for exit thread)
+- UNetUDP: minor fixes in tests
+
 * Mon Dec 12 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt6
 - codegen: up timeout or activate
 - codegen: add logs for startup

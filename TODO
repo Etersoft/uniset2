@@ -64,8 +64,6 @@ HTTP API:
 - /conf/services?...
 - /conf/...
 
-Version 2.5
-============
 - smonit запись значений в файл (csv?,sqlite?,gnuplot)
 - python: gui sensor monitor 
 
