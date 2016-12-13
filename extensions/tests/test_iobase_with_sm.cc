@@ -1,6 +1,7 @@
 #include <catch.hpp>
 // -----------------------------------------------------------------------------
 #include <memory>
+#include <cmath>
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "tests_with_sm.h"
@@ -15,6 +16,11 @@ static void init_test()
 {
 	shm = smiInstance();
 	CHECK( shm != nullptr );
+}
+// -----------------------------------------------------------------------------
+static float myRound( float v, size_t delim )
+{
+	return ( std::round(v*delim) / (float)delim );
 }
 // -----------------------------------------------------------------------------
 static bool init_iobase( IOBase* ib, const std::string& sensor )
@@ -262,7 +268,7 @@ TEST_CASE("[IOBase::calibration]: AI calibration", "[iobase][calibration][ai][ex
 		REQUIRE( IOBase::processingFasAO(&ib, shm, true) == 99.5f );
 
 		shm->setValue(ai, 994);
-		REQUIRE( IOBase::processingFasAO(&ib, shm, true) == 99.4f );
+		REQUIRE( myRound( IOBase::processingFasAO(&ib, shm, true), 10 ) == 99.4f );
 	}
 
 	SECTION("AI calibration rawdata=1 (asAI)")
@@ -374,19 +380,19 @@ TEST_CASE("[IOBase::calibration]: AI calibration (precision)", "[iobase][calibra
 		REQUIRE( IOBase::processingFasAO(&ib, shm, true) == 0 );
 
 		shm->setValue(ai, -990);
-		REQUIRE( IOBase::processingFasAO(&ib, shm, true) == -0.99f );
+		REQUIRE( myRound( IOBase::processingFasAO(&ib, shm, true), 1000 ) == -0.99f );
 
 		shm->setValue(ai, -995);
-		REQUIRE( IOBase::processingFasAO(&ib, shm, true) == -0.995f );
+		REQUIRE( myRound( IOBase::processingFasAO(&ib, shm, true), 1000 ) == -0.995f );
 
 		shm->setValue(ai, 1000);
 		REQUIRE( IOBase::processingFasAO(&ib, shm, true) == 1.0f );
 
 		shm->setValue(ai, 995);
-		REQUIRE( IOBase::processingFasAO(&ib, shm, true) == 0.995f );
+		REQUIRE( myRound( IOBase::processingFasAO(&ib, shm, true), 1000 ) == 0.995f );
 
 		shm->setValue(ai, 994);
-		REQUIRE( IOBase::processingFasAO(&ib, shm, true) == 0.994f );
+		REQUIRE( myRound( IOBase::processingFasAO(&ib, shm, true), 1000 ) == 0.994f );
 	}
 
 	SECTION("AI calibration noprecision=1 (FasAO)")
@@ -397,19 +403,19 @@ TEST_CASE("[IOBase::calibration]: AI calibration (precision)", "[iobase][calibra
 		REQUIRE( IOBase::processingFasAO(&ib, shm, true) == 0 );
 
 		shm->setValue(ai, -990);
-		REQUIRE( IOBase::processingFasAO(&ib, shm, true) == -99.0f );
+		REQUIRE( myRound( IOBase::processingFasAO(&ib, shm, true), 100 ) == -99.0f );
 
 		shm->setValue(ai, -995);
-		REQUIRE( IOBase::processingFasAO(&ib, shm, true) == -99.5f );
+		REQUIRE( myRound( IOBase::processingFasAO(&ib, shm, true), 100 ) == -99.5f );
 
 		shm->setValue(ai, 1000);
 		REQUIRE( IOBase::processingFasAO(&ib, shm, true) == 100.0f );
 
 		shm->setValue(ai, 995);
-		REQUIRE( IOBase::processingFasAO(&ib, shm, true) == 99.5f );
+		REQUIRE( myRound( IOBase::processingFasAO(&ib, shm, true), 100 ) == 99.5f );
 
 		shm->setValue(ai, 994);
-		REQUIRE( IOBase::processingFasAO(&ib, shm, true) == 99.4f );
+		REQUIRE( myRound( IOBase::processingFasAO(&ib, shm, true), 100 ) == 99.4f );
 
 		ib.noprecision = false;
 	}

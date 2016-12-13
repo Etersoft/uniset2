@@ -506,6 +506,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
         
 # history of current unpublished changes
 # Modbus: refactoring code and test (for 64bit)
+# iobase: refactoring tests for 64bit
 
 %changelog
 * Mon Dec 12 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt6
