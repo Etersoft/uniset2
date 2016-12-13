@@ -156,13 +156,13 @@ namespace uniset
 		private:
 			ThreadCreator();
 
-			ThreadMaster* m;
+			ThreadMaster* m = { nullptr };
 			Action act;
 
-			ThreadMaster* finm;
+			ThreadMaster* finm = { nullptr };
 			Action finact;
 
-			ThreadMaster* initm;
+			ThreadMaster* initm = { nullptr };
 			Action initact;
 
 			Poco::Thread thr;
@@ -173,10 +173,10 @@ namespace uniset
 	ThreadCreator<ThreadMaster>::ThreadCreator( ThreadMaster* m, Action a ):
 		m(m),
 		act(a),
-		finm(0),
-		finact(0),
-		initm(0),
-		initact(0)
+		finm(nullptr),
+		finact(nullptr),
+		initm(nullptr),
+		initact(nullptr)
 	{
 	}
 	//----------------------------------------------------------------------------------------

@@ -63,6 +63,8 @@ namespace uniset
 			{
 				if( t.isRunning() )
 					t.stop();
+
+				t.join();
 			}
 
 		protected:
