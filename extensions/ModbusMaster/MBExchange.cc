@@ -30,6 +30,22 @@ namespace uniset
 	using namespace std;
 	using namespace uniset::extensions;
 	// -----------------------------------------------------------------------------
+	// вспомогательная структура для предотвращения утечки памяти
+	struct DataGuard
+	{
+		DataGuard( size_t sz )
+		{
+			data = new ModbusRTU::ModbusData[sz];
+		}
+
+		~DataGuard()
+		{
+			delete[] data;
+		}
+
+		ModbusRTU::ModbusData* data;
+	};
+	// -----------------------------------------------------------------------------
 	MBExchange::MBExchange(uniset::ObjectId objId, uniset::ObjectId shmId,
 						   const std::shared_ptr<SharedMemory>& _ic, const std::string& prefix ):
 		UniSetObject(objId),
@@ -715,7 +731,7 @@ namespace uniset
 			return true;
 
 		auto dev = p->dev;
-		unsigned int q_count = p->p.rnum;
+		size_t q_count = p->p.rnum;
 
 		if( mblog->is_level3()  )
 		{
@@ -754,38 +770,36 @@ namespace uniset
 			case ModbusRTU::fnReadInputStatus:
 			{
 				ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr, p->mbreg, q_count);
-				ModbusRTU::ModbusData* dat = new ModbusRTU::ModbusData[q_count];
-				unsigned int m = 0;
+				DataGuard d(q_count);
+				size_t m = 0;
 
-				for( unsigned int i = 0; i < ret.bcnt; i++ )
+				for( size_t i = 0; i < ret.bcnt; i++ )
 				{
 					ModbusRTU::DataBits b(ret.data[i]);
 
-					for( unsigned int k = 0; k < ModbusRTU::BitsPerByte && m < q_count; k++, m++ )
-						dat[m] = b[k];
+					for( size_t k = 0; k < ModbusRTU::BitsPerByte && m < q_count; k++, m++ )
+						d.data[m] = b[k];
 				}
 
-				p->initOK = initSMValue(dat, q_count, &(p->p));
-				delete[] dat;
+				p->initOK = initSMValue(d.data, q_count, &(p->p));
 			}
 			break;
 
 			case ModbusRTU::fnReadCoilStatus:
 			{
 				ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr, p->mbreg, q_count);
-				ModbusRTU::ModbusData* dat = new ModbusRTU::ModbusData[q_count];
-				unsigned int m = 0;
+				DataGuard d(q_count);
+				size_t m = 0;
 
-				for( unsigned int i = 0; i < ret.bcnt; i++ )
+				for( size_t i = 0; i < ret.bcnt; i++ )
 				{
 					ModbusRTU::DataBits b(ret.data[i]);
 
-					for( unsigned int k = 0; k < ModbusRTU::BitsPerByte && m < q_count; k++, m++ )
-						dat[m] = b[k];
+					for( size_t k = 0; k < ModbusRTU::BitsPerByte && m < q_count; k++, m++ )
+						d.data[m] = b[k];
 				}
 
-				p->initOK = initSMValue(dat, q_count, &(p->p));
-				delete[] dat;
+				p->initOK = initSMValue(d.data, q_count, &(p->p));
 			}
 			break;
 
@@ -833,7 +847,7 @@ namespace uniset
 						IOBase::processingAsDI( p, data[0], shm, true );
 					}
 					else
-						IOBase::processingAsAI( p, (signed short)(data[0]), shm, true );
+						IOBase::processingAsAI( p, (int16_t)(data[0]), shm, true );
 
 					return true;
 				}
@@ -851,7 +865,7 @@ namespace uniset
 					IOBase::processingAsDI( p, data[0], shm, true );
 				}
 				else
-					IOBase::processingAsAI( p, (signed short)(data[0]), shm, true );
+					IOBase::processingAsAI( p, (int16_t)(data[0]), shm, true );
 
 				return true;
 			}
@@ -863,7 +877,7 @@ namespace uniset
 					IOBase::processingAsDI( p, data[0], shm, true );
 				}
 				else
-					IOBase::processingAsAI( p, (unsigned short)data[0], shm, true );
+					IOBase::processingAsAI( p, (uint16_t)data[0], shm, true );
 
 				return true;
 			}
@@ -898,22 +912,22 @@ namespace uniset
 			else if( p->vType == VTypes::vtI2 )
 			{
 				VTypes::I2 i2(data, VTypes::I2::wsize());
-				IOBase::processingAsAI( p, (int)i2, shm, true );
+				IOBase::processingAsAI( p, (int32_t)i2, shm, true );
 			}
 			else if( p->vType == VTypes::vtI2r )
 			{
 				VTypes::I2r i2(data, VTypes::I2::wsize());
-				IOBase::processingAsAI( p, (int)i2, shm, true );
+				IOBase::processingAsAI( p, (int32_t)i2, shm, true );
 			}
 			else if( p->vType == VTypes::vtU2 )
 			{
 				VTypes::U2 u2(data, VTypes::U2::wsize());
-				IOBase::processingAsAI( p, (unsigned int)u2, shm, true );
+				IOBase::processingAsAI( p, (uint32_t)u2, shm, true );
 			}
 			else if( p->vType == VTypes::vtU2r )
 			{
 				VTypes::U2r u2(data, VTypes::U2::wsize());
-				IOBase::processingAsAI( p, (unsigned int)u2, shm, true );
+				IOBase::processingAsAI( p, (uint32_t)u2, shm, true );
 			}
 
 			return true;
@@ -996,7 +1010,7 @@ namespace uniset
 			{
 				ModbusRTU::ReadInputRetMessage ret = mb->read04(dev->mbaddr, p->mbreg, p->q_count);
 
-				for( unsigned int i = 0; i < p->q_count; i++, it++ )
+				for( size_t i = 0; i < p->q_count; i++, it++ )
 				{
 					it->second->mbval = ret.data[i];
 					it->second->mb_initOK = true;
@@ -1010,7 +1024,7 @@ namespace uniset
 			{
 				ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr, p->mbreg, p->q_count);
 
-				for( unsigned int i = 0; i < p->q_count; i++, it++ )
+				for( size_t i = 0; i < p->q_count; i++, it++ )
 				{
 					it->second->mbval = ret.data[i];
 					it->second->mb_initOK = true;
@@ -1023,13 +1037,13 @@ namespace uniset
 			case ModbusRTU::fnReadInputStatus:
 			{
 				ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr, p->mbreg, p->q_count);
-				unsigned int m = 0;
+				size_t m = 0;
 
 				for( uint i = 0; i < ret.bcnt; i++ )
 				{
 					ModbusRTU::DataBits b(ret.data[i]);
 
-					for( unsigned int k = 0; k < ModbusRTU::BitsPerByte && m < p->q_count; k++, it++, m++ )
+					for( size_t k = 0; k < ModbusRTU::BitsPerByte && m < p->q_count; k++, it++, m++ )
 					{
 						it->second->mbval = b[k];
 						it->second->mb_initOK = true;
@@ -1043,13 +1057,13 @@ namespace uniset
 			case ModbusRTU::fnReadCoilStatus:
 			{
 				ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr, p->mbreg, p->q_count);
-				unsigned int m = 0;
+				size_t m = 0;
 
 				for( auto i = 0; i < ret.bcnt; i++ )
 				{
 					ModbusRTU::DataBits b(ret.data[i]);
 
-					for( unsigned int k = 0; k < ModbusRTU::BitsPerByte && m < p->q_count; k++, it++, m++ )
+					for( size_t k = 0; k < ModbusRTU::BitsPerByte && m < p->q_count; k++, it++, m++ )
 					{
 						it->second->mbval = b[k] ? 1 : 0;
 						it->second->mb_initOK = true;
@@ -1102,7 +1116,7 @@ namespace uniset
 
 				ModbusRTU::WriteOutputMessage msg(dev->mbaddr, p->mbreg);
 
-				for( unsigned int i = 0; i < p->q_count; i++, it++ )
+				for( size_t i = 0; i < p->q_count; i++, it++ )
 					msg.addData(it->second->mbval);
 
 				it--;
@@ -1144,7 +1158,7 @@ namespace uniset
 
 				ModbusRTU::ForceCoilsMessage msg(dev->mbaddr, p->mbreg);
 
-				for( unsigned i = 0; i < p->q_count; i++, it++ )
+				for( size_t i = 0; i < p->q_count; i++, it++ )
 					msg.addBit( (it->second->mbval ? true : false) );
 
 				it--;
@@ -1400,10 +1414,10 @@ namespace uniset
 						if( p->stype == UniversalIO::DI ||
 								p->stype == UniversalIO::DO )
 						{
-							r->mbval = (unsigned short)IOBase::processingAsDO( p, shm, force_out );
+							r->mbval = (uint16_t)IOBase::processingAsDO( p, shm, force_out );
 						}
 						else
-							r->mbval = (unsigned short)IOBase::processingAsAO( p, shm, force_out );
+							r->mbval = (uint16_t)IOBase::processingAsAO( p, shm, force_out );
 
 						r->sm_initOK = true;
 					}
@@ -1417,7 +1431,7 @@ namespace uniset
 					}
 					else
 					{
-						IOBase::processingAsAI( p, (unsigned short)r->mbval, shm, force );
+						IOBase::processingAsAI( p, (uint16_t)r->mbval, shm, force );
 					}
 				}
 
@@ -1481,25 +1495,23 @@ namespace uniset
 				}
 				else
 				{
-					ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F2::wsize()];
+					DataGuard d(VTypes::F2::wsize());
 
 					for( size_t k = 0; k < VTypes::F2::wsize(); k++, i++ )
-						data[k] = i->second->mbval;
+						d.data[k] = i->second->mbval;
 
 					float f = 0;
 
 					if( p->vType == VTypes::vtF2 )
 					{
-						VTypes::F2 f1(data, VTypes::F2::wsize());
+						VTypes::F2 f1(d.data, VTypes::F2::wsize());
 						f = (float)f1;
 					}
 					else if( p->vType == VTypes::vtF2r )
 					{
-						VTypes::F2r f1(data, VTypes::F2r::wsize());
+						VTypes::F2r f1(d.data, VTypes::F2r::wsize());
 						f = (float)f1;
 					}
-
-					delete[] data;
 
 					IOBase::processingFasAI( p, f, shm, force );
 				}
@@ -1523,13 +1535,12 @@ namespace uniset
 				}
 				else
 				{
-					ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F4::wsize()];
+					DataGuard d(VTypes::F4::wsize());
 
 					for( size_t k = 0; k < VTypes::F4::wsize(); k++, i++ )
-						data[k] = i->second->mbval;
+						d.data[k] = i->second->mbval;
 
-					VTypes::F4 f(data, VTypes::F4::wsize());
-					delete[] data;
+					VTypes::F4 f(d.data, VTypes::F4::wsize());
 
 					IOBase::processingFasAI( p, (float)f, shm, force );
 				}
@@ -1546,14 +1557,14 @@ namespace uniset
 
 						if( p->vType == VTypes::vtI2 )
 						{
-							VTypes::I2 i2(v);
+							VTypes::I2 i2( (int32_t)v );
 
 							for( size_t k = 0; k < VTypes::I2::wsize(); k++, i++ )
 								i->second->mbval = i2.raw.v[k];
 						}
 						else if( p->vType == VTypes::vtI2r )
 						{
-							VTypes::I2r i2(v);
+							VTypes::I2r i2( (int32_t)v );
 
 							for( size_t k = 0; k < VTypes::I2::wsize(); k++, i++ )
 								i->second->mbval = i2.raw.v[k];
@@ -1564,25 +1575,24 @@ namespace uniset
 				}
 				else
 				{
-					ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::I2::wsize()];
+					DataGuard d(VTypes::I2::wsize());
 
 					for( size_t k = 0; k < VTypes::I2::wsize(); k++, i++ )
-						data[k] = i->second->mbval;
+						d.data[k] = i->second->mbval;
 
 					int v = 0;
 
 					if( p->vType == VTypes::vtI2 )
 					{
-						VTypes::I2 i2(data, VTypes::I2::wsize());
+						VTypes::I2 i2(d.data, VTypes::I2::wsize());
 						v = (int)i2;
 					}
 					else if( p->vType == VTypes::vtI2r )
 					{
-						VTypes::I2r i2(data, VTypes::I2::wsize());
+						VTypes::I2r i2(d.data, VTypes::I2::wsize());
 						v = (int)i2;
 					}
 
-					delete[] data;
 					IOBase::processingAsAI( p, v, shm, force );
 				}
 			}
@@ -1616,25 +1626,24 @@ namespace uniset
 				}
 				else
 				{
-					ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::U2::wsize()];
+					DataGuard d(VTypes::U2::wsize());
 
 					for( size_t k = 0; k < VTypes::U2::wsize(); k++, i++ )
-						data[k] = i->second->mbval;
+						d.data[k] = i->second->mbval;
 
-					unsigned int v = 0;
+					uint32_t v = 0;
 
 					if( p->vType == VTypes::vtU2 )
 					{
-						VTypes::U2 u2(data, VTypes::U2::wsize());
-						v = (unsigned int)u2;
+						VTypes::U2 u2(d.data, VTypes::U2::wsize());
+						v = (uint32_t)u2;
 					}
 					else if( p->vType == VTypes::vtU2r )
 					{
-						VTypes::U2r u2(data, VTypes::U2::wsize());
-						v = (unsigned int)u2;
+						VTypes::U2r u2(d.data, VTypes::U2::wsize());
+						v = (uint32_t)u2;
 					}
 
-					delete[] data;
 					IOBase::processingAsAI( p, v, shm, force );
 				}
 			}
@@ -1727,18 +1736,17 @@ namespace uniset
 						{
 							MTR::T3 t(IOBase::processingAsAO( &(*it), shm, force_out ));
 
-							for( unsigned int k = 0; k < MTR::T3::wsize(); k++, i++ )
+							for( size_t k = 0; k < MTR::T3::wsize(); k++, i++ )
 								i->second->mbval = t.raw.v[k];
 						}
 						else
 						{
-							ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::T3::wsize()];
+							DataGuard d(MTR::T3::wsize());
 
-							for( unsigned int k = 0; k < MTR::T3::wsize(); k++, i++ )
-								data[k] = i->second->mbval;
+							for( size_t k = 0; k < MTR::T3::wsize(); k++, i++ )
+								d.data[k] = i->second->mbval;
 
-							MTR::T3 t(data, MTR::T3::wsize());
-							delete[] data;
+							MTR::T3 t(d.data, MTR::T3::wsize());
 							IOBase::processingAsAI( &(*it), (long)t, shm, force );
 						}
 
@@ -1768,18 +1776,17 @@ namespace uniset
 						{
 							MTR::T5 t(IOBase::processingAsAO( &(*it), shm, force_out ));
 
-							for( unsigned int k = 0; k < MTR::T5::wsize(); k++, i++ )
+							for( size_t k = 0; k < MTR::T5::wsize(); k++, i++ )
 								i->second->mbval = t.raw.v[k];
 						}
 						else
 						{
-							ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::T5::wsize()];
+							DataGuard d(MTR::T5::wsize());
 
-							for( unsigned int k = 0; k < MTR::T5::wsize(); k++, i++ )
-								data[k] = i->second->mbval;
+							for( size_t k = 0; k < MTR::T5::wsize(); k++, i++ )
+								d.data[k] = i->second->mbval;
 
-							MTR::T5 t(data, MTR::T5::wsize());
-							delete[] data;
+							MTR::T5 t(d.data, MTR::T5::wsize());
 
 							IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
 						}
@@ -1795,18 +1802,17 @@ namespace uniset
 						{
 							MTR::T6 t(IOBase::processingAsAO( &(*it), shm, force_out ));
 
-							for( unsigned int k = 0; k < MTR::T6::wsize(); k++, i++ )
+							for( size_t k = 0; k < MTR::T6::wsize(); k++, i++ )
 								i->second->mbval = t.raw.v[k];
 						}
 						else
 						{
-							ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::T6::wsize()];
+							DataGuard d(MTR::T6::wsize());
 
-							for( unsigned int k = 0; k < MTR::T6::wsize(); k++, i++ )
-								data[k] = i->second->mbval;
+							for( size_t k = 0; k < MTR::T6::wsize(); k++, i++ )
+								d.data[k] = i->second->mbval;
 
-							MTR::T6 t(data, MTR::T6::wsize());
-							delete[] data;
+							MTR::T6 t(d.data, MTR::T6::wsize());
 
 							IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
 						}
@@ -1822,18 +1828,17 @@ namespace uniset
 						{
 							MTR::T7 t(IOBase::processingAsAO( &(*it), shm, force_out ));
 
-							for( unsigned int k = 0; k < MTR::T7::wsize(); k++, i++ )
+							for( size_t k = 0; k < MTR::T7::wsize(); k++, i++ )
 								i->second->mbval = t.raw.v[k];
 						}
 						else
 						{
-							ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::T7::wsize()];
+							DataGuard d(MTR::T7::wsize());
 
-							for( unsigned int k = 0; k < MTR::T7::wsize(); k++, i++ )
-								data[k] = i->second->mbval;
+							for( size_t k = 0; k < MTR::T7::wsize(); k++, i++ )
+								d.data[k] = i->second->mbval;
 
-							MTR::T7 t(data, MTR::T7::wsize());
-							delete[] data;
+							MTR::T7 t(d.data, MTR::T7::wsize());
 
 							IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
 						}
@@ -1882,19 +1887,17 @@ namespace uniset
 							float f = IOBase::processingFasAO( &(*it), shm, force_out );
 							MTR::F1 f1(f);
 
-							for( unsigned int k = 0; k < MTR::F1::wsize(); k++, i++ )
+							for( size_t k = 0; k < MTR::F1::wsize(); k++, i++ )
 								i->second->mbval = f1.raw.v[k];
 						}
 						else
 						{
-							ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::F1::wsize()];
+							DataGuard d(MTR::F1::wsize());
 
-							for( unsigned int k = 0; k < MTR::F1::wsize(); k++, i++ )
-								data[k] = i->second->mbval;
+							for( size_t k = 0; k < MTR::F1::wsize(); k++, i++ )
+								d.data[k] = i->second->mbval;
 
-							MTR::F1 t(data, MTR::F1::wsize());
-							delete[] data;
-
+							MTR::F1 t(d.data, MTR::F1::wsize());
 							IOBase::processingFasAI( &(*it), (float)t, shm, force );
 						}
 

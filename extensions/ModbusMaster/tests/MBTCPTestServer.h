@@ -19,7 +19,7 @@ class MBTCPTestServer
 			verbose = state;
 		}
 
-		inline void setReply( long val )
+		inline void setReply( uint32_t val )
 		{
 			replyVal = val;
 		}
@@ -47,7 +47,7 @@ class MBTCPTestServer
 		{
 			return forceSingleCoilCmd;
 		}
-		inline int getLastWriteOutputSingleRegister()
+		inline int16_t getLastWriteOutputSingleRegister()
 		{
 			return lastWriteOutputSingleRegister;
 		}
@@ -131,9 +131,9 @@ class MBTCPTestServer
 		std::unordered_set<uniset::ModbusRTU::ModbusAddr> vaddr; /*!< адреса данного узла */
 
 		bool verbose;
-		long replyVal;
+		uint32_t replyVal;
 		bool forceSingleCoilCmd;
-		int lastWriteOutputSingleRegister;
+		int16_t lastWriteOutputSingleRegister;
 		uniset::ModbusRTU::ForceCoilsMessage lastForceCoilsQ;
 		uniset::ModbusRTU::WriteOutputMessage lastWriteOutputQ;
 		float f2_test_value = {0.0};

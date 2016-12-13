@@ -19,6 +19,7 @@
 #define _RTUTypes_H_
 // -----------------------------------------------------------------------------
 #include <string>
+#include <stdint.h>
 #include <cmath>
 #include <cstring>
 #include <ostream>
@@ -61,7 +62,7 @@ namespace uniset
 				/*! тип хранения в памяти */
 				typedef union
 				{
-					unsigned short v[f2Size];
+					uint16_t v[f2Size];
 					float val; //
 				} F2mem;
 				// ------------------------------------------
@@ -147,7 +148,7 @@ namespace uniset
 				/*! тип хранения в памяти */
 				typedef union
 				{
-					unsigned short v[f4Size];
+					uint16_t v[f4Size];
 					float val; //
 				} F4mem;
 				// ------------------------------------------
@@ -202,8 +203,8 @@ namespace uniset
 				/*! тип хранения в памяти */
 				typedef union
 				{
-					unsigned short w;
-					unsigned char b[bsize];
+					uint16_t w;
+					uint8_t b[bsize];
 				} Bytemem;
 				// ------------------------------------------
 				// конструкторы на разные случаи...
@@ -212,14 +213,10 @@ namespace uniset
 					raw.w = 0;
 				}
 
-				Byte( unsigned char b1, unsigned char b2 ) noexcept
+				Byte( uint8_t b1, uint8_t b2 ) noexcept
 				{
 					raw.b[0] = b1;
 					raw.b[1] = b2;
-				}
-				Byte( const long& val ) noexcept
-				{
-					raw.w = val;
 				}
 
 				Byte( const ModbusRTU::ModbusData dat ) noexcept
@@ -240,16 +237,12 @@ namespace uniset
 					return vtByte;
 				}
 				// ------------------------------------------
-				operator long()
-				{
-					return lroundf(raw.w);
-				}
-				operator unsigned short()
+				operator uint16_t()
 				{
 					return raw.w;
 				}
 
-				unsigned char operator[]( const int i )
+				uint8_t operator[]( const size_t i )
 				{
 					return raw.b[i];
 				}
@@ -293,7 +286,7 @@ namespace uniset
 					return raw;
 				}
 
-				unsigned short raw;
+				uint16_t raw;
 		};
 		// --------------------------------------------------------------------------
 		class Signed
@@ -332,7 +325,7 @@ namespace uniset
 					return raw;
 				}
 
-				signed short raw;
+				int16_t raw;
 		};
 		// --------------------------------------------------------------------------
 		class I2
@@ -344,8 +337,8 @@ namespace uniset
 				/*! тип хранения в памяти */
 				typedef union
 				{
-					unsigned short v[i2Size];
-					int val; //
+					uint16_t v[i2Size];
+					int32_t val; //
 				} I2mem;
 				// ------------------------------------------
 				// конструкторы на разные случаи...
@@ -354,7 +347,7 @@ namespace uniset
 					memset(raw.v, 0, sizeof(raw.v));
 				}
 
-				I2( int v ) noexcept
+				I2( int32_t v ) noexcept
 				{
 					raw.val = v;
 				}
@@ -377,7 +370,7 @@ namespace uniset
 					return vtI2;
 				}
 				// ------------------------------------------
-				operator int()
+				operator int32_t()
 				{
 					return raw.val;
 				}
@@ -394,7 +387,7 @@ namespace uniset
 					raw_backorder.val = 0;
 				}
 
-				I2r( const int v ) noexcept: I2(v)
+				I2r( const int32_t v ) noexcept: I2(v)
 				{
 					raw_backorder = raw;
 					std::swap(raw_backorder.v[0], raw_backorder.v[1]);
@@ -421,8 +414,8 @@ namespace uniset
 				/*! тип хранения в памяти */
 				typedef union
 				{
-					unsigned short v[u2Size];
-					unsigned int val; //
+					uint16_t v[u2Size];
+					uint32_t val; //
 				} U2mem;
 				// ------------------------------------------
 				// конструкторы на разные случаи...
@@ -431,7 +424,7 @@ namespace uniset
 					memset(raw.v, 0, sizeof(raw.v));
 				}
 
-				U2( unsigned int v ) noexcept
+				U2( uint32_t v ) noexcept
 				{
 					raw.val = v;
 				}
@@ -454,9 +447,19 @@ namespace uniset
 					return vtU2;
 				}
 				// ------------------------------------------
-				operator unsigned int()
+				operator uint32_t()
 				{
 					return raw.val;
+				}
+
+				operator long()
+				{
+					return raw.val;
+				}
+
+				operator unsigned long()
+				{
+					return (uint32_t)raw.val;
 				}
 
 				U2mem raw;
@@ -471,7 +474,7 @@ namespace uniset
 					raw_backorder.val = 0;
 				}
 
-				U2r( int v ) noexcept: U2(v)
+				U2r( int32_t v ) noexcept: U2(v)
 				{
 					raw_backorder = raw;
 					std::swap(raw_backorder.v[0], raw_backorder.v[1]);
