@@ -1,6 +1,7 @@
 #include <catch.hpp>
 // -----------------------------------------------------------------------------
 #include <iostream>
+#include <sstream>
 // -----------------------------------------------------------------------------
 #include "Exceptions.h"
 #include "UniXML.h"
@@ -162,3 +163,32 @@ TEST_CASE("UniXML::iterator::find", "[unixml][iterator-find][basic]" )
 	CHECK( sIt.find("subnode") );
 	REQUIRE( sIt.getProp("name") == "Test5" );
 }
+// -----------------------------------------------------------------------------
+TEST_CASE("UniXML::iterator::getPropList", "[unixml][iterator-proplist][basic]" )
+{
+	UniXML uxml("tests_unixml.xml");
+	REQUIRE( uxml.isOpen() );
+
+	UniXML::iterator it = uxml.begin();
+
+	REQUIRE( it.find("TestPropList") != 0 );
+
+	UniXML::PropList lst = it.getPropList();
+	REQUIRE( lst.size() == 5 );
+
+	std::ostringstream n;
+	std::ostringstream v;
+
+	for( size_t i=0; i<5; i++ )
+	{
+		n.str("");
+		n << "prop" << (i+1);
+
+		v.str("");
+		v << "val" << (i+1);
+
+		REQUIRE( lst[i].first == n.str() );
+		REQUIRE( lst[i].second == v.str() );
+	}
+}
+// -----------------------------------------------------------------------------

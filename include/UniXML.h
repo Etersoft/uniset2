@@ -31,12 +31,14 @@
 #include <string>
 #include <cstddef>
 #include <memory>
+#include <vector>
 
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 // --------------------------------------------------------------------------
 namespace uniset
 {
+	typedef std::vector< std::pair<const std::string, const std::string> > UniXMLPropList;
 
 	class UniXML_iterator:
 		public std::iterator<std::bidirectional_iterator_tag, xmlNode, ptrdiff_t, xmlNode*, xmlNode&>
@@ -104,6 +106,8 @@ namespace uniset
 			void goBegin() noexcept;
 			void goEnd() noexcept;
 
+			UniXMLPropList getPropList() const;
+
 		private:
 
 			xmlNode* curNode;
@@ -114,6 +118,7 @@ namespace uniset
 		public:
 
 			typedef UniXML_iterator iterator;
+			typedef UniXMLPropList PropList;
 
 			UniXML( const std::string& filename );
 			UniXML();
@@ -148,6 +153,8 @@ namespace uniset
 
 			// Установить свойство name указанного узла node
 			static void setProp(xmlNode* node, const std::string& name, const std::string& text);
+
+			static UniXMLPropList getPropList( xmlNode* node );
 
 			// Добавить новый дочерний узел
 			static xmlNode* createChild(xmlNode* node, const std::string& title, const std::string& text);

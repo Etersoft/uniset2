@@ -16,6 +16,7 @@ extensions/tests/SMemoryTest
 extensions/UNetUDP
 extensions/UniNetwork
 include
+include/libxml2/libxml
 include/modbus
 python/lib/pyUniSet
 src/Log
