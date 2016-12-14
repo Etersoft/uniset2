@@ -598,7 +598,12 @@ void IONotifyController::readDump()
 	}
 	catch( const std::exception& ex )
 	{
-		uwarn << myname << "(IONotifyController::readDump): " << ex.what() << endl;
+		// Если дамп не удалось считать, значит что-то не то в configure.xml
+		// и безопаснее "вылететь", чем запустится, но половина датчиков работать не будет
+		// как ожидается.
+
+		ucrit << myname << "(IONotifyController::readDump): " << ex.what() << endl;
+		std::terminate(); // std::abort();
 	}
 }
 // --------------------------------------------------------------------------------------------------------------
