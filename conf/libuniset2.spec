@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt8
+Release: alt9
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -507,6 +507,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # history of current unpublished changes
 
 %changelog
+* Fri Dec 16 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt9
+- UObject: added attempts to activate the object
+
 * Wed Dec 14 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt8
 - SM: terminate if read dump (configuration) failed
 

@@ -221,9 +221,9 @@ namespace uniset
 			//! Непосредственная активизация объекта
 			bool activate();
 			/* регистрация в репозитории объектов */
-			void registered();
+			void registration();
 			/* удаление ссылки из репозитория объектов     */
-			void unregister();
+			void unregistration();
 
 			void initObject();
 

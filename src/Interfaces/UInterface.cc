@@ -851,7 +851,7 @@ namespace uniset
 				string nodeName(s.str());
 				string bname(nodeName); // сохраняем базовое название
 
-				for(unsigned int curNet = 1; curNet <= uconf->getCountOfNet(); curNet++)
+				for( size_t curNet = 1; curNet <= uconf->getCountOfNet(); curNet++)
 				{
 					try
 					{

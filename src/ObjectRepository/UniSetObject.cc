@@ -224,13 +224,13 @@ namespace uniset
 		return receiveMessage();
 	}
 	// ------------------------------------------------------------------------------------------
-	void UniSetObject::registered()
+	void UniSetObject::registration()
 	{
 		ulogrep << myname << ": registration..." << endl;
 
 		if( myid == uniset::DefaultObjectId )
 		{
-			ulogrep << myname << "(registered): Don`t registration. myid=DefaultObjectId \n";
+			ulogrep << myname << "(registration): Don`t registration. myid=DefaultObjectId \n";
 			return;
 		}
 
@@ -238,7 +238,7 @@ namespace uniset
 
 		if( !m )
 		{
-			uwarn << myname << "(registered): unknown my manager" << endl;
+			uwarn << myname << "(registration): unknown my manager" << endl;
 			string err(myname + ": unknown my manager");
 			throw ORepFailed(err);
 		}
@@ -248,55 +248,58 @@ namespace uniset
 
 			if( !oref )
 			{
-				ucrit << myname << "(registered): oref is NULL!..." << endl;
+				uwarn << myname << "(registration): oref is NULL!..." << endl;
 				return;
 			}
 		}
 
-		try
+		auto conf = uniset_conf();
+		regOK = false;
+
+		for( size_t i = 0; i < conf->getRepeatCount(); i++ )
 		{
-			for( unsigned int i = 0; i < 2; i++ )
+			try
 			{
-				try
-				{
-					ui->registered(myid, getRef(), true);
-					break;
-				}
-				catch( ObjectNameAlready& al )
-				{
-					/*!
-					    \warning По умолчанию объекты должны быть уникальны! Поэтому если идёт попытка повторной регистрации.
-					    Мы чистим существующую ссылку и заменяем её на новую.
-					    Это сделано для более надежной работы, иначе может получится, что если объект перед завершением
-					    не очистил за собой ссылку(не разрегистрировался), то больше он никогда не сможет вновь зарегистрироваться.
-					    Т.к. \b надёжной функции проверки "жив" ли объект пока нет...
-					    (так бы можно было проверить и если "не жив", то смело заменять ссылку на новую). Но существует обратная сторона:
-					    если заменяемый объект "жив" и завершит свою работу, то он может почистить за собой ссылку и это тогда наш(новый)
-					    объект станет недоступен другим, а знать об этом не будет!!!
-					*/
-					ucrit << myname << "(registered): replace object (ObjectNameAlready)" << endl;
-					regOK = true;
-					unregister();
-				}
+				ui->registered(myid, getRef(), true);
+				regOK = true;
+				break;
 			}
-		}
-		catch( ORepFailed )
-		{
-			string err(myname + ": don`t registration in object reposotory");
-			uwarn << myname << "(registered):  " << err << endl;
-			throw ORepFailed(err);
-		}
-		catch( const uniset::Exception& ex )
-		{
-			uwarn << myname << "(registered):  " << ex << endl;
-			string err(myname + ": don`t registration in object reposotory");
-			throw ORepFailed(err);
+			catch( ObjectNameAlready& al )
+			{
+				/*!
+						\warning По умолчанию объекты должны быть уникальны! Поэтому если идёт попытка повторной регистрации.
+						Мы чистим существующую ссылку и заменяем её на новую.
+						Это сделано для более надежной работы, иначе может получится, что если объект перед завершением
+						не очистил за собой ссылку(не разрегистрировался), то больше он никогда не сможет вновь зарегистрироваться.
+						Т.к. \b надёжной функции проверки "жив" ли объект пока нет...
+						(так бы можно было проверить и если "не жив", то смело заменять ссылку на новую). Но существует обратная сторона:
+						если заменяемый объект "жив" и завершит свою работу, то он может почистить за собой ссылку и это тогда наш(новый)
+						объект станет недоступен другим, а знать об этом не будет!!!
+					*/
+				uwarn << myname << "(registration): replace object (ObjectNameAlready)" << endl;
+				unregistration();
+			}
+			catch( uniset::ORepFailed )
+			{
+				uwarn << myname << "(registration): don`t registration in object reposotory " << endl;
+			}
+			catch( const uniset::Exception& ex )
+			{
+				uwarn << myname << "(registration):  " << ex << endl;
+			}
+
+			msleep(conf->getRepeatTimeout());
 		}
 
-		regOK = true;
+		if( !regOK )
+		{
+			string err(myname + "(registration): don`t registration in object reposotory");
+			ucrit << err << endl;
+			throw ORepFailed(err);
+		}
 	}
 	// ------------------------------------------------------------------------------------------
-	void UniSetObject::unregister()
+	void UniSetObject::unregistration()
 	{
 		if( myid < 0 ) // || !reg )
 			return;
@@ -529,7 +532,7 @@ namespace uniset
 						uwarn << myname << "(deactivate): " << ex.what() << endl;
 					}
 
-					unregister();
+					unregistration();
 					PortableServer::ObjectId_var oid = poamngr->servant_to_id(static_cast<PortableServer::ServantBase*>(this));
 					poamngr->deactivate_object(oid);
 					uinfo << myname << "(disacivate): finished..." << endl;
@@ -587,48 +590,64 @@ namespace uniset
 			throw ORepFailed(err);
 		}
 
-		try
+		bool actOK = false;
+		auto conf = uniset_conf();
+		for( size_t i = 0; i < conf->getRepeatCount(); i++ )
 		{
-			if( uniset_conf()->isTransientIOR() )
+			try
 			{
-				// activate witch generate id
-				poa->activate_object(static_cast<PortableServer::ServantBase*>(this));
-			}
-			else
-			{
-				// А если myid==uniset::DefaultObjectId
-				// то myname = noname. ВСЕГДА!
-				if( myid == uniset::DefaultObjectId )
+				if( conf->isTransientIOR() )
 				{
-					ucrit << myname << "(activate): Не задан ID!!! activate failure..." << endl;
-					// вызываем на случай если она переопределена в дочерних классах
-					// Например в UniSetManager, если здесь не вызвать, то не будут инициализированы подчинённые объекты.
-					// (см. UniSetManager::activateObject)
-					activateObject();
-					return false;
+					// activate witch generate id
+					poa->activate_object(static_cast<PortableServer::ServantBase*>(this));
+					actOK = true;
+					break;
+				}
+				else
+				{
+					// А если myid==uniset::DefaultObjectId
+					// то myname = noname. ВСЕГДА!
+					if( myid == uniset::DefaultObjectId )
+					{
+						uwarn << myname << "(activate): Не задан ID!!! IGNORE ACTIVATE..." << endl;
+						// вызываем на случай если она переопределена в дочерних классах
+						// Например в UniSetManager, если здесь не вызвать, то не будут инициализированы подчинённые объекты.
+						// (см. UniSetManager::activateObject)
+						activateObject();
+						return false;
+					}
+
+					// Always use the same object id.
+					PortableServer::ObjectId_var oid = PortableServer::string_to_ObjectId(myname.c_str());
+
+					// Activate object...
+					poa->activate_object_with_id(oid, this);
+					actOK = true;
+					break;
+				}
+			}
+			catch( const CORBA::Exception& ex )
+			{
+				if( string(ex._name()) != "ObjectAlreadyActive" )
+				{
+					ostringstream err;
+					err << myname << "(activate): ACTIVATE ERROR: " << ex._name();
+					ucrit << myname << "(activate): " << err.str() << endl;
+					throw uniset::SystemError(err.str());
 				}
 
-				// Always use the same object id.
-				PortableServer::ObjectId_var oid =
-					PortableServer::string_to_ObjectId(myname.c_str());
-
-				//        cerr << myname << "(activate): " << _refcount_value() << endl;
-
-				// Activate object...
-				poa->activate_object_with_id(oid, this);
+				uwarn << myname << "(activate): IGNORE.. catch " << ex._name() << endl;
 			}
+
+			msleep( conf->getRepeatTimeout() );
 		}
-		catch( const CORBA::Exception& ex )
-		{
-			if( string(ex._name()) != "ObjectAlreadyActive" )
-			{
-				ostringstream err;
-				err << myname << "(activate): ACTIVATE ERROR: " << ex._name();
-				ucrit << myname << "(activate): " << err.str() << endl;
-				throw uniset::SystemError(err.str());
-			}
 
-			uwarn << myname << "(activate): IGNORE.. catch " << ex._name() << endl;
+		if( !actOK )
+		{
+			ostringstream err;
+			err << myname << "(activate): DON`T ACTIVATE..";
+			ucrit << myname << "(activate): " << err.str() << endl;
+			throw uniset::SystemError(err.str());
 		}
 
 		{
@@ -636,7 +655,8 @@ namespace uniset
 			oref = poa->servant_to_reference(static_cast<PortableServer::ServantBase*>(this) );
 		}
 
-		registered();
+		registration();
+
 		// Запускаем поток обработки сообщений
 		setActive(true);
 
