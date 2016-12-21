@@ -107,8 +107,7 @@ namespace uniset
 	{
 		public:
 
-			IDList( std::vector<std::string>& v );
-			IDList( std::vector<std::string>&& v );
+			IDList( const std::vector<std::string>& v );
 			IDList();
 			~IDList();
 
@@ -143,12 +142,12 @@ namespace uniset
 	{
 		ObjectInfo() noexcept:
 			id(DefaultObjectId),
-			repName(""), textName(""), data(0) {}
+			repName(""), textName(""), xmlnode(0) {}
 
 		ObjectId id;        /*!< идентификатор */
 		std::string repName;      /*!< текстовое имя для регистрации в репозитории */
 		std::string textName;     /*!< текстовое имя */
-		void* data;
+		xmlNode* xmlnode;
 
 		inline bool operator < ( const ObjectInfo& o ) const
 		{

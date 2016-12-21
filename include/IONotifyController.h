@@ -165,7 +165,7 @@ namespace uniset
 #ifndef DISABLE_REST_API
 			// http API
 			virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
-			Poco::JSON::Object::Ptr httpRequest( const string& req, const Poco::URI::QueryParameters& p );
+			virtual Poco::JSON::Object::Ptr httpRequest( const string& req, const Poco::URI::QueryParameters& p ) override;
 #endif
 
 			// --------------------------------------------

@@ -52,6 +52,10 @@ namespace uniset
 	 *
 	 * --uniset-no-use-gdb-for-stacktrace - НЕ ИСПОЛЬЗОВАТЬ gdb для stacktrace
 	 * --uniset-abort-script  - скрипт запускаемый при вылете, в качестве аргумента передаётся имя программы и pid
+	 *
+	 * \section act_HttpAPI REST API
+	 * UniSetActivator реализует обработку команд /conf/..
+	 *
 	*/
 	class UniSetActivator:
 		public UniSetManager

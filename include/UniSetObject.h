@@ -205,6 +205,8 @@ namespace uniset
 #ifndef DISABLE_REST_API
 			// вспомогательные функции
 			virtual Poco::JSON::Object::Ptr httpGetMyInfo( Poco::JSON::Object::Ptr root );
+			Poco::JSON::Object::Ptr request_conf( const std::string& req, const Poco::URI::QueryParameters& p );
+			Poco::JSON::Object::Ptr request_conf_name( const std::string& name, const std::string& props );
 #endif
 
 		private:

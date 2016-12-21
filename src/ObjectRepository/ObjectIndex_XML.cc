@@ -197,7 +197,7 @@ size_t ObjectIndex_XML::read_section( const std::shared_ptr<UniXML>& xml, const 
 
 		omap[ind].textName = textname;
 
-		omap[ind].data = (void*)(xmlNode*)it;
+		omap[ind].xmlnode = it;
 
 		//        cout << "read: " << "(" << ind << ") " << omap[ind].repName << "\t" << omap[ind].textName << endl;
 		ind++;
@@ -258,7 +258,7 @@ size_t ObjectIndex_XML::read_nodes(const std::shared_ptr<UniXML>& xml, const std
 			textname = nodename;
 
 		omap[ind].textName = textname;
-		omap[ind].data = (void*)(xmlNode*)(it);
+		omap[ind].xmlnode = it;
 		//
 		mok[omap[ind].repName] = ind;
 

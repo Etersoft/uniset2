@@ -424,6 +424,104 @@ namespace uniset
 		my->set("objectType", getStrType());
 		return my;
 	}
+	// ------------------------------------------------------------------------------------------
+	// обработка запроса вида: /conf/get?[ID|NAME]&props=testname,name] from condigure.xml
+	Poco::JSON::Object::Ptr UniSetObject::request_conf( const std::string& req, const Poco::URI::QueryParameters& params )
+	{
+		Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+		Poco::JSON::Array::Ptr jdata = uniset::json::make_child_array(json, "conf");
+		auto my = httpGetMyInfo(json);
+
+		if( req != "get" )
+		{
+			ostringstream err;
+			err << "(request_conf):  Unknown command: '" << req << "'";
+			throw uniset::SystemError(err.str());
+		}
+
+		if( params.empty() )
+		{
+			ostringstream err;
+			err << "(request_conf):  BAD REQUEST: Unknown id or name...";
+			throw uniset::SystemError(err.str());
+		}
+
+		auto idlist = uniset::explode_str(params[0].first,',');
+		if( idlist.empty() )
+		{
+			ostringstream err;
+			err << "(request_conf):  BAD REQUEST: Unknown id or name in '" << params[0].first << "'";
+			throw uniset::SystemError(err.str());
+		}
+
+		string props = {""};
+		for( const auto& p: params )
+		{
+			if( p.first == "props" )
+			{
+				props = p.second;
+				break;
+			}
+		}
+
+		for( const auto& id: idlist )
+		{
+			Poco::JSON::Object::Ptr j = request_conf_name(id,props);
+			if( j )
+				jdata->add(j);
+		}
+
+		return json;
+	}
+	// ------------------------------------------------------------------------------------------
+	Poco::JSON::Object::Ptr UniSetObject::request_conf_name( const string& name, const std::string& props )
+	{
+		Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+		auto conf = uniset_conf();
+
+		ObjectId id = conf->getAnyID(name);
+
+		if( id == DefaultObjectId )
+		{
+			ostringstream err;
+			err << name << " not found..";
+			jdata->set(name,"");
+			jdata->set("error",err.str());
+			return jdata;
+		}
+
+		xmlNode* xmlnode = conf->getXMLObjectNode(id);
+
+		if( !xmlnode )
+		{
+			ostringstream err;
+			err << name << " not found confnode..";
+			jdata->set(name,"");
+			jdata->set("error",err.str());
+			return jdata;
+		}
+
+		UniXML::iterator it(xmlnode);
+
+		jdata->set("name",it.getProp("name"));
+		jdata->set("id",it.getProp("id"));
+
+		if( !props.empty() )
+		{
+			auto lst = uniset::explode_str(props,',');
+			for( const auto& p: lst )
+				jdata->set(p,it.getProp(p));
+		}
+		else
+		{
+			auto lst = it.getPropList();
+			for( const auto& p: lst )
+				jdata->set(p.first,p.second);
+		}
+
+		return jdata;
+	}
+	// ------------------------------------------------------------------------------------------
 #endif
 	// ------------------------------------------------------------------------------------------
 	ObjectPtr UniSetObject::getRef() const
@@ -662,7 +760,7 @@ namespace uniset
 
 		if( myid != uniset::DefaultObjectId && threadcreate )
 		{
-			thr = make_shared< ThreadCreator<UniSetObject> >(this, &UniSetObject::work);
+			thr = std::make_shared< ThreadCreator<UniSetObject> >(this, &UniSetObject::work);
 			//thr->setCancel(ost::Thread::cancelDeferred);
 
 			std::unique_lock<std::mutex> locker(m_working);
@@ -857,6 +955,7 @@ namespace uniset
 			// но если указан, то проверяем..
 			std::vector<std::string> seg;
 			uri.getPathSegments(seg);
+			size_t qind = 0;
 
 			if( seg.size() > 0 && seg[0] == "api" )
 			{
@@ -873,16 +972,26 @@ namespace uniset
 				}
 
 				if( seg.size() > 2 )
-					query = seg[2];
+					qind = 2;
 			}
 			else if( seg.size() == 1 )
-				query = seg[0];
+				qind = 0;
+
+
+			query = seg[qind];
 
 			// обработка запроса..
 			if( query == "help" )
 			{
 				// запрос вида: /help?params
 				auto reply = httpHelp(uri.getQueryParameters());
+				reply->stringify(out);
+			}
+			else if( query == "conf" )
+			{
+				// запрос вида: /conf/qconf?params
+				string qconf = ( seg.size() > (qind+1) ) ? seg[qind+1] : "";
+				auto reply = request_conf(qconf, uri.getQueryParameters());
 				reply->stringify(out);
 			}
 			else if( !query.empty() )
@@ -905,6 +1014,10 @@ namespace uniset
 		{
 			err << ex.displayText();
 		}
+		catch( uniset::SystemError& ex )
+		{
+			err << ex;
+		}
 		catch( std::exception& ex )
 		{
 			err << ex.what();
@@ -912,7 +1025,8 @@ namespace uniset
 
 		Poco::JSON::Object jdata;
 		jdata.set("error", err.str());
-		jdata.set("ecode", Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+		jdata.set("ecode", (int)Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+//		jdata.set("ename", Poco::Net::HTTPResponse::getReasonForStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR));
 
 		ostringstream out;
 		jdata.stringify(out);

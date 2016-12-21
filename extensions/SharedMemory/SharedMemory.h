@@ -318,6 +318,9 @@ namespace uniset
 										 Не обязательные параметры:
 										   sens1,... - список по каким датчикам выдать ответ
 		/lost                            - получить список заказчиков с которыми терялась связь (и они удалялись из списка)
+
+		/conf/get?id,name,...&props=textname,iotype,...  - Получить указанные параметры объектов (по id или name) из configure.xml.
+													 Если props не указаны, то отдаются все поля какие есть.
 	*/
 	class SharedMemory:
 		public IONotifyController

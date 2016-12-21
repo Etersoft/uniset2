@@ -114,14 +114,7 @@ long uniset::setoutregion(long ret, long calMin, long calMax)
 }
 
 // -------------------------------------------------------------------------
-uniset::IDList::IDList( std::vector<std::string>&& svec ):
-	uniset::IDList::IDList()
-{
-	for( const auto& s : svec )
-		add( uni_atoi(s) );
-}
-// ------------------------------------------------------------------
-uniset::IDList::IDList( std::vector<std::string>& svec ):
+uniset::IDList::IDList( const std::vector<string>& svec ):
 	uniset::IDList::IDList()
 {
 	auto conf = uniset_conf();
@@ -216,13 +209,13 @@ bool uniset::file_exist( const std::string& filename )
 	return result;
 }
 // -------------------------------------------------------------------------
-uniset::IDList uniset::explode( const string& str, char sep )
+uniset::IDList uniset::explode( const std::string& str, char sep )
 {
 	uniset::IDList l( explode_str(str, sep) );
 	return std::move(l);
 }
 // -------------------------------------------------------------------------
-std::vector<std::string> uniset::explode_str( const string& str, char sep )
+std::vector<std::string> uniset::explode_str( const std::string& str, char sep )
 {
 	std::vector<std::string> v;
 

@@ -1151,6 +1151,34 @@ namespace uniset
 		return oind->getNodeId( name );
 	}
 	// -------------------------------------------------------------------------
+	ObjectId Configuration::getAnyID( const string& name ) const noexcept
+	{
+		ObjectId id = DefaultObjectId;
+		if( uniset::is_digit(name) )
+			return uni_atoi(name);
+
+		// ищем в <sensors>
+		id = getSensorID(name);
+
+		// ищем в <objects>
+		if( id == DefaultObjectId )
+			id = getObjectID(name);
+
+		// ищем в <controllers>
+		if( id == DefaultObjectId )
+			id = getObjectID(name);
+
+		// ищем в <nodes>
+		if( id == DefaultObjectId )
+			id = getNodeID(name);
+
+		// ищем в <services>
+		if( id == DefaultObjectId )
+			id = getServiceID(name);
+
+		return id;
+	}
+	// -------------------------------------------------------------------------
 	const string Configuration::getConfFileName() const noexcept
 	{
 		return fileConfName;
@@ -1258,7 +1286,7 @@ namespace uniset
 		const ObjectInfo* i = oind->getObjectInfo(id);
 
 		if( i )
-			return (xmlNode*)(i->data);
+			return i->xmlnode;
 
 		return 0;
 	}
@@ -1267,9 +1295,9 @@ namespace uniset
 	{
 		const ObjectInfo* i = oind->getObjectInfo(id);
 
-		if( i && (xmlNode*)(i->data) )
+		if( i && i->xmlnode )
 		{
-			UniXML::iterator it((xmlNode*)(i->data));
+			UniXML::iterator it(i->xmlnode);
 			return uniset::getIOType( it.getProp("iotype") );
 		}
 
@@ -1290,9 +1318,9 @@ namespace uniset
 		// ("RootSection/Sensors/name")
 		const ObjectInfo* i = oind->getObjectInfo(name);
 
-		if( i && (xmlNode*)(i->data) )
+		if( i && i->xmlnode )
 		{
-			UniXML::iterator it((xmlNode*)(i->data));
+			UniXML::iterator it(i->xmlnode);
 			return uniset::getIOType( it.getProp("iotype") );
 		}
 

@@ -929,6 +929,11 @@ Poco::JSON::Object::Ptr UniSetActivator::httpRequestByName( const string& name, 
 	if( name == myname )
 		return httpRequest(req, p);
 
+	// а вдруг встретится объект с именем "conf" а мы перекрываем имя?!
+	// (пока считаем что такого не будет)
+	if( name == "conf" )
+		return request_conf(req, p);
+
 	auto obj = deepFindObject(name);
 
 	if( obj )
@@ -938,6 +943,7 @@ Poco::JSON::Object::Ptr UniSetActivator::httpRequestByName( const string& name, 
 	err << "Object '" << name << "' not found";
 	throw uniset::NameNotFound(err.str());
 }
+// ------------------------------------------------------------------------------------------
 #endif // #ifndef DISABLE_REST_API
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::terminated( int signo )

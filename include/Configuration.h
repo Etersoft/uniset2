@@ -115,6 +115,10 @@ namespace uniset
 			uniset::ObjectId getServiceID( const std::string& name ) const noexcept;
 			uniset::ObjectId getNodeID( const std::string& name ) const noexcept;
 
+			// поиск в sensors,objects,controlles,services,nodes
+			uniset::ObjectId getAnyID( const std::string& name ) const noexcept;
+
+
 			const std::string getConfFileName() const noexcept;
 			std::string getImagesDir() const noexcept;
 

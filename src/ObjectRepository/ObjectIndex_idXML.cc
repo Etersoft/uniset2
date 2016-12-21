@@ -188,7 +188,7 @@ void ObjectIndex_idXML::read_section( const std::shared_ptr<UniXML>& xml, const 
 			textname = xml->getProp(it, "name");
 
 		inf.textName = textname;
-		inf.data = (void*)(xmlNode*)(it);
+		inf.xmlnode = it;
 
 		mok.emplace(name, inf.id);
 		omap.emplace(inf.id, std::move(inf));
@@ -240,7 +240,7 @@ void ObjectIndex_idXML::read_nodes( const std::shared_ptr<UniXML>& xml, const st
 			textname = name;
 
 		inf.textName = textname;
-		inf.data = (void*)(xmlNode*)(it);
+		inf.xmlnode = it;
 
 		omap.emplace(inf.id, inf);
 		mok.emplace(name, inf.id);
