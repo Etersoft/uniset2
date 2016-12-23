@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2016-12-12+03:00
+// generate timestamp: 2016-12-23+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -116,7 +116,7 @@ class UObject_SK:
         std::string strval( uniset::ObjectId id, bool showLinkName=true ) const;        
         
         /*! Вывод состояния внутренних переменных */
-        inline std::string dumpVars(){ return std::move(vmon.pretty_str()); }
+        inline std::string dumpVars(){ return vmon.pretty_str(); }
         // ------------------------------------------------------------
         std::string help() noexcept;
 

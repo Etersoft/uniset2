@@ -758,7 +758,7 @@ const std::string MBTCPMultiMaster::MBSlaveInfo::getShortInfo() const
 	  << " persistent-connection=" << !force_disconnect
 	  << ")";
 
-	return std::move(s.str());
+	return s.str();
 }
 // -----------------------------------------------------------------------------
 uniset::SimpleInfo* MBTCPMultiMaster::getInfo( const char* userparam )

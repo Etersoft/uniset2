@@ -3326,7 +3326,7 @@ namespace uniset
 		  << " type=" << dtype
 		  << " ask_every_reg=" << ask_every_reg
 		  << ")" << endl;
-		return std::move( s.str() );
+		return s.str();
 	}
 	// ----------------------------------------------------------------------------
 } // end of namespace uniset

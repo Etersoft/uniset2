@@ -360,7 +360,7 @@ namespace uniset
 
 		// длина сообщения...
 		mm.dlen = ind; // szData();
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	std::ostream& ModbusRTU::operator<<(std::ostream& os, ErrorRetMessage& m )
@@ -409,7 +409,7 @@ namespace uniset
 		memcpy(&(mm.data[last]), &crc, szCRC);
 
 		mm.dlen = szData();
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	ReadCoilMessage::ReadCoilMessage( const ModbusMessage& m )
@@ -539,7 +539,7 @@ namespace uniset
 				udata |= 1 << i;
 		}
 
-		return std::move(udata);
+		return udata;
 	}
 	// -------------------------------------------------------------------------
 	const DataBits16& DataBits16::operator=( const ModbusData& r )
@@ -677,7 +677,7 @@ namespace uniset
 
 		// длина сообщения...
 		mm.dlen = ind;
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	size_t ReadCoilRetMessage::szData() const
@@ -729,7 +729,7 @@ namespace uniset
 		memcpy(&(mm.data[last]), &crc, szCRC);
 
 		mm.dlen = szData();
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	ReadInputStatusMessage::ReadInputStatusMessage( const ModbusMessage& m )
@@ -878,7 +878,7 @@ namespace uniset
 
 		// длина сообщения...
 		mm.dlen = ind;
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	size_t ReadInputStatusRetMessage::szData() const
@@ -933,7 +933,7 @@ namespace uniset
 		// длина сообщения...
 		mm.dlen = szData();
 
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	ReadOutputMessage::ReadOutputMessage( const ModbusMessage& m )
@@ -1088,7 +1088,7 @@ namespace uniset
 		// длина сообщения...
 		mm.dlen = ind;
 
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	size_t ReadOutputRetMessage::szData() const
@@ -1141,7 +1141,7 @@ namespace uniset
 
 		// длина сообщения...
 		mm.dlen = szData();
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	ReadInputMessage::ReadInputMessage( const ModbusMessage& m )
@@ -1301,7 +1301,7 @@ namespace uniset
 
 		// длина сообщения...
 		mm.dlen = ind;
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	size_t ReadInputRetMessage::szData()
@@ -1423,7 +1423,7 @@ namespace uniset
 
 		// длина сообщения...
 		mm.dlen = ind;
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 
@@ -1583,7 +1583,7 @@ namespace uniset
 		// длина сообщения...
 		mm.dlen = szData();
 
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceCoilsRetMessage& m )
@@ -1666,7 +1666,7 @@ namespace uniset
 
 		// длина сообщения...
 		mm.dlen = ind;
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 
@@ -1842,7 +1842,7 @@ namespace uniset
 		// длина сообщения...
 		mm.dlen = szData();
 
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteOutputRetMessage& m )
@@ -1876,7 +1876,7 @@ namespace uniset
 		// копируем CRC (последний элемент). Без переворачивания...
 		memcpy(&(mm.data[last]), &crc, szCRC);
 		mm.dlen = szData();
-		return std::move(mm);
+		return mm;
 	}
 	// --------------------------------------------------------------------------------
 
@@ -2012,7 +2012,7 @@ namespace uniset
 		// длина сообщения...
 		mm.dlen = szData();
 
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceSingleCoilRetMessage& m )
@@ -2047,7 +2047,7 @@ namespace uniset
 		// копируем CRC (последний элемент). Без переворачивания...
 		memcpy(&(mm.data[last]), &crc, szCRC);
 		mm.dlen = szData();
-		return std::move(mm);
+		return mm;
 	}
 	// --------------------------------------------------------------------------------
 
@@ -2190,7 +2190,7 @@ namespace uniset
 		// длина сообщения...
 		mm.dlen = szData();
 
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteSingleOutputRetMessage& m )
@@ -2379,7 +2379,7 @@ namespace uniset
 
 		// длина сообщения...
 		mm.dlen = szData();
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	size_t DiagnosticMessage::szData() const
@@ -2475,7 +2475,7 @@ namespace uniset
 
 		// длина сообщения...
 		mm.dlen = szData();
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 
@@ -2710,7 +2710,7 @@ namespace uniset
 
 		// длина сообщения...
 		mm.dlen = ind;
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	size_t MEIMessageRetRDI::szData() const
@@ -2881,7 +2881,7 @@ namespace uniset
 
 		// длина сообщения...
 		mm.dlen = ind;
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	size_t JournalCommandRetMessage::szData() const
@@ -3118,7 +3118,7 @@ namespace uniset
 		memcpy(&(mm.data[bcnt]), &crc, szCRC);
 		// длина сообщения...
 		mm.dlen = szData(); // bcnt + szCRC
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	SetDateTimeRetMessage::SetDateTimeRetMessage( const ModbusMessage& m )
@@ -3192,7 +3192,7 @@ namespace uniset
 		// длина сообщения...
 		mm.dlen = szData(); // bcnt + szCRC
 
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	RemoteServiceMessage::RemoteServiceMessage( const ModbusMessage& m )
@@ -3311,7 +3311,7 @@ namespace uniset
 
 		// длина сообщения...
 		mm.dlen = ind;
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	ReadFileRecordMessage::ReadFileRecordMessage( const ModbusMessage& m )
@@ -3415,7 +3415,7 @@ namespace uniset
 
 		// длина сообщения...
 		mm.dlen = szData();
-		return std::move(mm);
+		return mm;
 	}
 	// -------------------------------------------------------------------------
 	FileTransferMessage::FileTransferMessage( const ModbusMessage& m )
@@ -3576,7 +3576,7 @@ namespace uniset
 
 		// длина сообщения...
 		mm.dlen = ind;
-		return std::move(mm);
+		return mm;
 	}
 	// -----------------------------------------------------------------------
 	std::ostream& ModbusRTU::operator<<(std::ostream& os, FileTransferRetMessage& m )

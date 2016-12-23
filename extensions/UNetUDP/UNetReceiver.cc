@@ -948,7 +948,7 @@ const std::string UNetReceiver::getShortInfo() const noexcept
 	  << endl
 	  << "\t[ qsize=" << qpack.size() << " recv=" << statRecvPerSec << " update=" << statUpPerSec << " per sec ]";
 
-	return std::move(s.str());
+	return s.str();
 }
 // -----------------------------------------------------------------------------
 UNetReceiver::pack_guard::pack_guard( mutex& _m, UNetReceiver::UpdateStrategy _s ):

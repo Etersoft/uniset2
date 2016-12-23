@@ -412,6 +412,6 @@ std::string MQTTPublisher::MQTTTextInfo::replace( RangeInfo* ri, long value )
 	txt = replace_all(txt, "%rmax", smax.str());
 	txt = replace_all(txt, "%r", r.str());
 
-	return std::move(txt);
+	return txt;
 }
 //--------------------------------------------------------------------------------

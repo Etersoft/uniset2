@@ -840,7 +840,7 @@ namespace uniset
 		b.ondelay_state = ondelay_state;
 		b.offdelay_state = offdelay_state;
 
-		return std::move(b);
+		return b;
 	}
 	// ------------------------------------------------------------------------------------------
 	void IOBase::create_from_iobase( const IOBase& b )

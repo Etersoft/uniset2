@@ -138,6 +138,6 @@ std::string DBServer::help_print()
 	h << "--prefix-logserver-port num  - listen port. Default: ID" << endl;
 	h << LogServer::help_print("prefix-logserver") << endl;
 
-	return std::move( h.str() );
+	return h.str();
 }
 //--------------------------------------------------------------------------------------------

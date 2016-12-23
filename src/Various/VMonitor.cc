@@ -33,7 +33,7 @@ namespace uniset
 	{ \
 		std::ostringstream s; \
 		s << std::right << std::setw(nwidth) << name << std::left << " = " << std::right << std::setw(10)  << *(v); \
-		return std::move(s.str()); \
+		return s.str(); \
 	} \
 	const std::string VMonitor::pretty_str( const std::string& name, const T& v, int nwidth ) \
 	{ \
@@ -49,7 +49,7 @@ namespace uniset
 	{ \
 		std::ostringstream s; \
 		s << std::right << std::setw(nwidth) << name << std::left << " = " << std::right << std::setw(10)  << *(v); \
-		return std::move(s.str()); \
+		return s.str(); \
 	} \
 	const std::string VMonitor::pretty_str( const std::string& name, const T& v, int nwidth ) \
 	{ \
@@ -69,13 +69,13 @@ namespace uniset
 	{ \
 		std::ostringstream s; \
 		s << std::right << std::setw(nwidth) << name << std::left << " = " << std::right << std::setw(10)  << *(v); \
-		return std::move(s.str()); \
+		return s.str(); \
 	} \
 	const std::string VMonitor::pretty_str( const std::string& name, const unsigned T* v, int nwidth ) \
 	{ \
 		std::ostringstream s; \
 		s << std::right << std::setw(nwidth) << name << std::left << " = " << std::right << std::setw(10)  << *(v); \
-		return std::move(s.str()); \
+		return s.str(); \
 	} \
 	const std::string VMonitor::pretty_str( const std::string& name, const T& v, int nwidth ) \
 	{ \
@@ -94,7 +94,7 @@ namespace uniset
 	{ \
 		std::ostringstream s; \
 		s << std::right << std::setw(nwidth) << name << std::left << " = " << std::right << std::setw(10)  << *(v); \
-		return std::move(s.str()); \
+		return s.str(); \
 	} \
 	const std::string VMonitor::pretty_str( const std::string& name, const T& v, int nwidth ) \
 	{ \
@@ -167,7 +167,7 @@ namespace uniset
 	{
 		std::ostringstream s;
 		s << (*this);
-		return std::move(s.str());
+		return s.str();
 	}
 	// --------------------------------------------------------------------------
 	std::list<std::pair<std::string, std::string> > VMonitor::getList()
@@ -181,7 +181,7 @@ namespace uniset
 		VMON_MAKE_PAIR(vlist, float);
 		VMON_MAKE_PAIR(vlist, double);
 		VMON_MAKE_PAIR_S(vlist, string);
-		return std::move(vlist);
+		return vlist;
 	}
 	// --------------------------------------------------------------------------
 	std::string VMonitor::pretty_str( int namewidth, int colnum )
@@ -205,7 +205,7 @@ namespace uniset
 				os << std::endl;
 		}
 
-		return std::move(os.str());
+		return os.str();
 	}
 	// --------------------------------------------------------------------------
 } // end of namespace uniset

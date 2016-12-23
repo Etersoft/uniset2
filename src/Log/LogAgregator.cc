@@ -249,11 +249,11 @@ namespace uniset
 		if( pos == string::npos )
 		{
 			vector<string> v{lname, ""};
-			return std::move(v);
+			return v;
 		}
 
 		vector<string> v = {lname.substr(0, pos), lname.substr(pos + 1, lname.length()) };
-		return std::move(v);
+		return v;
 	}
 	// -------------------------------------------------------------------------
 	bool LogAgregator::logExist( std::shared_ptr<DebugStream>& log ) const
@@ -326,7 +326,7 @@ namespace uniset
 			cerr << "(LogAgregator::getLogList): " << ex.what() << std::endl;
 		}
 
-		return std::move(l);
+		return l;
 	}
 	// -------------------------------------------------------------------------
 	std::list<LogAgregator::iLog> LogAgregator::getLogList() const
@@ -336,7 +336,7 @@ namespace uniset
 		{
 			return a.name < b.name;
 		});
-		return std::move(lst);
+		return lst;
 	}
 	// -------------------------------------------------------------------------
 	std::list<LogAgregator::iLog> LogAgregator::makeLogNameList( const std::string& prefix ) const
@@ -363,7 +363,7 @@ namespace uniset
 			}
 		}
 
-		return std::move(lst);
+		return lst;
 	}
 	// -------------------------------------------------------------------------
 	void LogAgregator::offLogFile( const std::string& logname )

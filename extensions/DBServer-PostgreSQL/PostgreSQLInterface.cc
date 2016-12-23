@@ -182,7 +182,7 @@ DBResult PostgreSQLInterface::query( const string& q )
 		result res( n.exec(q) );
 		DBResult dbres;
 		makeResult(dbres, res);
-		return std::move(dbres);
+		return dbres;
 	}
 	catch( const std::exception& e )
 	{

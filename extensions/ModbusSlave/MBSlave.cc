@@ -2590,7 +2590,7 @@ namespace uniset
 
 		s << iaddr << " askCount=" << askCount;
 
-		return std::move(s.str());
+		return s.str();
 	}
 	// -------------------------------------------------------------------------
 	uniset::SimpleInfo* MBSlave::getInfo( const char* userparam )

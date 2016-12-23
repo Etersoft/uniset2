@@ -333,7 +333,7 @@ namespace uniset
 	{
 		ostringstream h;
 		h << "--" << prefix << "-cmd-timeout msec      - Timeout for wait command. Default: 2000 msec." << endl;
-		return std::move( h.str() );
+		return h.str();
 	}
 	// -----------------------------------------------------------------------------
 	string LogServer::getShortInfo()
@@ -353,7 +353,7 @@ namespace uniset
 				inf << " " << s->getShortInfo() << endl;
 		}
 
-		return std::move(inf.str());
+		return inf.str();
 	}
 	// -----------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
@@ -491,7 +491,7 @@ namespace uniset
 
 			s << "=================================" << endl << endl;
 
-			return std::move(s.str());
+			return s.str();
 		}
 
 		return "";

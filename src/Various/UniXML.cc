@@ -160,7 +160,7 @@ string UniXML::getProp2(const xmlNode* node, const string& name, const string& d
 		string s(getProp(node, name));
 
 		if( !s.empty() )
-			return std::move(s);
+			return s;
 	}
 	catch(...) {}
 
@@ -182,7 +182,7 @@ string UniXML::getProp(const xmlNode* node, const string& name) noexcept
 		// формально при конструировании строки может быть exception
 		const string t( (const char*)text );
 		xmlFree( (xmlChar*) text );
-		return std::move(t);
+		return t;
 	}
 	catch(...) {}
 
@@ -214,7 +214,7 @@ UniXMLPropList UniXML::getPropList( xmlNode* node )
 {
 	UniXMLPropList lst;
 	if( !node )
-		return std::move(lst);
+		return lst;
 
 	xmlAttr* attribute = node->properties;
 	while( attribute )
@@ -227,7 +227,7 @@ UniXMLPropList UniXML::getPropList( xmlNode* node )
 		attribute = attribute->next;
 	}
 
-	return std::move(lst);
+	return lst;
 }
 // -----------------------------------------------------------------------------
 xmlNode* UniXML::createChild(xmlNode* node, const string& title, const string& text)

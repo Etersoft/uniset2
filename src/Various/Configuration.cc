@@ -331,7 +331,7 @@ namespace uniset
 					{
 						const string a(omniIt.getProp("arg"));
 						uinfo << "(Configuration): add omniORB option '" << p << "' " << a << endl;
-						omniParams.emplace_back( std::move(std::make_pair(p, a)) );
+						omniParams.emplace_back( std::make_pair(p, a) );
 					}
 				}
 			}
@@ -485,7 +485,7 @@ namespace uniset
 		string s(uniset::getArgParam(name, _argc, _argv, ""));
 
 		if( !s.empty() )
-			return std::move(s);
+			return s;
 
 		if( !defval.empty() )
 			return defval;
@@ -1010,7 +1010,7 @@ namespace uniset
 	{
 		ostringstream n;
 		n << sec << "/" << name;
-		return std::move(n.str());
+		return n.str();
 	}
 	// -------------------------------------------------------------------------
 	void Configuration::initRepSections()
@@ -1052,7 +1052,7 @@ namespace uniset
 		if( ret.empty() )
 			ret = unixml->getProp(secnode, "name");
 
-		return std::move(ret);
+		return ret;
 	}
 	// -------------------------------------------------------------------------
 	void Configuration::setConfFileName( const string& fn )

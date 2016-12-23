@@ -250,7 +250,7 @@
         std::string strval( uniset::ObjectId id, bool showLinkName=true ) const;        
         
         /*! Вывод состояния внутренних переменных */
-        inline std::string dumpVars(){ return std::move(vmon.pretty_str()); }
+        inline std::string dumpVars(){ return vmon.pretty_str(); }
         // ------------------------------------------------------------
         std::string help() noexcept;
 
@@ -878,7 +878,7 @@ std::string <xsl:value-of select="$CLASSNAME"/>_SK::help() noexcept
 	s &lt;&lt; " ****************************************************************************************** " &lt;&lt; endl;
 	
 	
-	return std::move(s.str());
+	return s.str();
 }
 // ----------------------------------------------------------------------------
 </xsl:template>
@@ -1529,7 +1529,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 			s &lt;&lt; std::endl;
 	}
 	
-	return std::move(s.str());
+	return s.str();
 }
 // ----------------------------------------------------------------------------
 std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( uniset::ObjectId id, bool showLinkName ) const
@@ -1540,7 +1540,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( uniset::ObjectId id, b
 	{
 		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>";
 		if( showLinkName ) s &lt;&lt; "(" &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")";
-		return std::move(s.str());
+		return s.str();
 	}
 	</xsl:for-each>	
 	return "";
@@ -1556,7 +1556,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::strval( uniset::ObjectId id
 		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>";
 		if( showLinkName ) s &lt;&lt; "(" &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")";		
 		s &lt;&lt; "=" &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
-		return std::move(s.str());
+		return s.str();
 	}
 	</xsl:for-each>	
 	return "";
@@ -1898,7 +1898,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 		  s &lt;&lt; endl;
 	}
 	
-	return std::move(s.str());
+	return s.str();
 }
 // ----------------------------------------------------------------------------
 std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( uniset::ObjectId id, bool showLinkName ) const
@@ -1911,7 +1911,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( uniset::ObjectId id, b
 	{
 		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>";
 		if( showLinkName ) s &lt;&lt; "(<xsl:value-of select="../../@name"/>)";
-		return std::move(s.str());
+		return s.str();
 	}
 	</xsl:if>
 	</xsl:if>
@@ -1930,7 +1930,7 @@ std::string <xsl:value-of select="$CLASSNAME"/>_SK::strval( uniset::ObjectId id,
 		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>";
 		if( showLinkName ) s &lt;&lt; " ( <xsl:value-of select="../../@name"/> )";
 		s &lt;&lt; "=" &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>;
-		return std::move(s.str());
+		return s.str();
 	}
 	</xsl:if>
 	</xsl:if>

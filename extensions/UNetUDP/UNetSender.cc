@@ -552,7 +552,7 @@ namespace uniset
 			}
 		}
 
-		return std::move(s.str());
+		return s.str();
 	}
 	// -----------------------------------------------------------------------------
 } // end of namespace uniset

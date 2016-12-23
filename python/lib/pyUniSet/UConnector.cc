@@ -122,7 +122,7 @@ static UTypes::ShortIOInfo toUTypes( IOController_i::ShortIOInfo i )
 	ret.tv_nsec = i.tv_nsec;
 	ret.supplier = i.supplier;
 
-	return std::move(ret);
+	return ret;
 }
 //---------------------------------------------------------------------------
 UTypes::ShortIOInfo UConnector::getTimeChange( long id, long node )

@@ -76,7 +76,7 @@ static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 20
 		ncycle--;
 	}
 
-	return std::move(pack);
+	return pack;
 }
 // -----------------------------------------------------------------------------
 void send( UniSetUDP::UDPMessage& pack, int tout = 2000 )

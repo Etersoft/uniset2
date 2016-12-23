@@ -103,7 +103,7 @@ namespace uniset
 
 		s << "]";
 
-		return std::move(s.str());
+		return s.str();
 	}
 	// --------------------------------------------------------------------------------
 	mbErrCode ModbusServer::processing( ModbusMessage& buf )
@@ -1511,7 +1511,7 @@ namespace uniset
 	{
 		std::unordered_set<ModbusRTU::ModbusAddr> v;
 		v.emplace(mbaddr);
-		return std::move(v);
+		return v;
 	}
 	// -------------------------------------------------------------------------
 	mbErrCode ModbusServer::receive(const std::unordered_set<ModbusAddr>& vaddr, timeout_t msecTimeout)
@@ -1658,7 +1658,7 @@ namespace uniset
 	ModbusServer::ExchangeErrorMap ModbusServer::getErrorMap()
 	{
 		ExchangeErrorMap m(errmap);
-		return std::move(m);
+		return m;
 	}
 	// -------------------------------------------------------------------------
 	size_t ModbusServer::getErrCount( mbErrCode e )
