@@ -989,7 +989,7 @@ namespace uniset
 			}
 			else if( query == "conf" )
 			{
-				// запрос вида: /conf/qconf?params
+				// запрос вида: /conf/query?params
 				string qconf = ( seg.size() > (qind+1) ) ? seg[qind+1] : "";
 				auto reply = request_conf(qconf, uri.getQueryParameters());
 				reply->stringify(out);

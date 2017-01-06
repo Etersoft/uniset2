@@ -68,22 +68,26 @@ namespace uniset
 			bool waitSMready( int msec, int pause = 5000 );
 			bool waitSMworking( uniset::ObjectId, int msec, int pause = 3000 );
 
-			inline bool isLocalwork()
+			inline bool isLocalwork() const noexcept
 			{
 				return (ic == NULL);
 			}
-			inline uniset::ObjectId ID()
+			inline uniset::ObjectId ID() const noexcept
 			{
 				return myid;
 			}
-			inline const std::shared_ptr<IONotifyController> SM()
+			inline const std::shared_ptr<IONotifyController> SM() noexcept
 			{
 				return ic;
 			}
-			inline uniset::ObjectId getSMID()
+			inline uniset::ObjectId getSMID() const noexcept
 			{
 				return shmID;
 			}
+
+#ifndef DISABLE_REST_API
+			std::string apiRequest( const std::string& query );
+#endif
 
 		protected:
 			const std::shared_ptr<IONotifyController> ic;

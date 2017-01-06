@@ -212,6 +212,7 @@ extensions/tests/test_iobase.cc
 extensions/tests/test_iobase_with_sm.cc
 extensions/tests/test_ui.cc
 extensions/tests/test_vtypes.cc
+extensions/tests/test_restapi_uniset.cc
 extensions/tests/tests.cc
 extensions/tests/tests_with_conf.cc
 extensions/tests/tests_with_conf.xml
