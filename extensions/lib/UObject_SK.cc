@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2016-12-23+03:00
+// generate timestamp: 2017-01-06+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -626,7 +626,7 @@ Poco::JSON::Object::Ptr UObject_SK::httpRequest( const std::string& req, const P
 Poco::JSON::Object::Ptr UObject_SK::httpRequestLog( const Poco::URI::QueryParameters& p )
 {
 	Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
-	jret->set(myname,uniset::json::make_object("log", Debug::str(mylog->level())));
+	jret->set("log",Debug::str(mylog->level()));
 	return jret;
 }
 // -----------------------------------------------------------------------------

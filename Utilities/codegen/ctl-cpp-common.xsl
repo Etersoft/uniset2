@@ -689,7 +689,7 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpRequest( con
 Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpRequestLog( const Poco::URI::QueryParameters&amp; p )
 {
 	Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
-	jret->set(myname,uniset::json::make_object("log", Debug::str(mylog->level())));
+	jret->set("log",Debug::str(mylog->level()));
 	return jret;
 }
 // -----------------------------------------------------------------------------

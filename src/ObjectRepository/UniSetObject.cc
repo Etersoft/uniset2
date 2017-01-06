@@ -955,6 +955,7 @@ namespace uniset
 			// но если указан, то проверяем..
 			std::vector<std::string> seg;
 			uri.getPathSegments(seg);
+
 			size_t qind = 0;
 
 			if( seg.size() > 0 && seg[0] == "api" )
@@ -977,8 +978,7 @@ namespace uniset
 			else if( seg.size() == 1 )
 				qind = 0;
 
-
-			query = seg[qind];
+			query = seg.empty() ? "" : seg[qind];
 
 			// обработка запроса..
 			if( query == "help" )

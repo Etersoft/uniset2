@@ -14,6 +14,7 @@ using namespace uniset;
 using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 static std::shared_ptr<SMInterface> shm;
+// -----------------------------------------------------------------------------
 static void init_test()
 {
 	shm = smiInstance();
@@ -21,10 +22,9 @@ static void init_test()
 	REQUIRE( uniset_conf() != nullptr );
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("[RESTAPI]: ", "[restapi]")
+TEST_CASE("[REST API: conf]", "[restapi][conf]")
 {
 	init_test();
-	auto conf = uniset_conf();
 
 	std::string s = shm->apiRequest("/conf/get?2,Input5_S&params=iotype");
 	Poco::JSON::Parser parser;
@@ -57,6 +57,32 @@ TEST_CASE("[RESTAPI]: ", "[restapi]")
 	REQUIRE( jret2->get("name").convert<std::string>() == "Input5_S" );
 	REQUIRE( jret2->get("id").convert<ObjectId>() == 5 );
 
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[REST API: /]", "[restapi][info]")
+{
+	init_test();
+
+	std::string s = shm->apiRequest("/");
+	Poco::JSON::Parser parser;
+	auto result = parser.parse(s);
+
+	// Ожидаемый формат ответа:
+	// {"object":{"id":5003,"isActive":true,"lostMessages":0,"maxSizeOfMessageQueue":1000,"msgCount":0,"name":"SharedMemory","objectType":"IONotifyController"}}
+
+	Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+	REQUIRE(json);
+
+	auto jret = json->get("object").extract<Poco::JSON::Object::Ptr>();
+	REQUIRE(jret);
+
+	auto sm = shm->SM();
+
+	REQUIRE( jret->get("id").convert<ObjectId>() == sm->getId() );
+	REQUIRE( jret->get("name").convert<std::string>() == sm->getName() );
+	REQUIRE( jret->get("objectType").convert<std::string>() == "IONotifyController" );
+	REQUIRE( jret->get("isActive").convert<bool>() == true );
+	REQUIRE( jret->get("lostMessages").convert<long>() == 0 );
 }
 // -----------------------------------------------------------------------------
 #endif // ifndef DISABLE_REST_API
