@@ -175,7 +175,70 @@ TEST_CASE("[REST API: /get]", "[restapi][get]")
 	}
 }
 // -----------------------------------------------------------------------------
-//if( req == "sensors"
+TEST_CASE("[REST API: /sensors]", "[restapi][sensors]")
+{
+	init_test();
+
+	// QUERY: /sensors?limit1
+	// Ожидаемый формат ответа:
+	// {"count":1,
+	//	"object":{"id":5003,"isActive":true,"lostMessages":0,"maxSizeOfMessageQueue":1000,"msgCount":0,"name":"SharedMemory","objectType":"IONotifyController"},
+	//	"sensors":[
+	//	    {"calibration":{"cmax":0,"cmin":0,"precision":0,"rmax":0,"rmin":0},"dbignore":false,"default_val":0,"id":15095,"name":"Sensor15095_S","nchanges":0,"real_value":0,"tv_nsec":735385587,"tv_sec":1483744698,"type":"AI","value":0}
+	//	],
+	//	"size":5071}
+
+
+	long lastID = 0;
+
+	SECTION("limit")
+	{
+		std::string s = shm->apiRequest("/sensors?limit=2");
+		Poco::JSON::Parser parser;
+		auto result = parser.parse(s);
+		Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+		REQUIRE(json);
+
+		REQUIRE( json->get("count").convert<int>() == 2 );
+
+		auto jarr = json->get("sensors").extract<Poco::JSON::Array::Ptr>();
+		REQUIRE(jarr);
+
+		Poco::JSON::Object::Ptr jret = jarr->getObject(0);
+		REQUIRE(jret);
+
+		Poco::JSON::Object::Ptr jret2 = jarr->getObject(1);
+		REQUIRE(jret2);
+
+		lastID = jret2->get("id").convert<long>();
+	}
+
+	SECTION("offset")
+	{
+		std::string s = shm->apiRequest("/sensors?offset=2&limit=2");
+		Poco::JSON::Parser parser;
+		auto result = parser.parse(s);
+		Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+		REQUIRE(json);
+
+		REQUIRE( json->get("count").convert<int>() == 2 );
+
+		auto jarr = json->get("sensors").extract<Poco::JSON::Array::Ptr>();
+		REQUIRE(jarr);
+
+		Poco::JSON::Object::Ptr jret = jarr->getObject(0);
+		REQUIRE(jret);
+
+		long firstID = jret->get("id").convert<long>();
+		REQUIRE( firstID != lastID );
+
+		Poco::JSON::Object::Ptr jret2 = jarr->getObject(1);
+		REQUIRE(jret2);
+
+
+	}
+}
+// -----------------------------------------------------------------------------
 //if( req == "consumers" )
 //if( req == "lost"
 // -----------------------------------------------------------------------------

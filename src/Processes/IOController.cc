@@ -1001,6 +1001,7 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
 	size_t num = 0;
 	size_t offset = 0;
 	size_t limit = 0;
+	size_t count = 0;
 
 	for( const auto& p : params )
 	{
@@ -1021,9 +1022,11 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
 			continue;
 
 		getSensorInfo(jsens, it->second, false);
+		count++;
 	}
 
-	jdata->set("count", num);
+	jdata->set("count", count);
+	jdata->set("size",ioCount());
 	return jdata;
 }
 // -----------------------------------------------------------------------------
