@@ -394,15 +394,7 @@ namespace uniset
 	Poco::JSON::Object::Ptr UniSetObject::httpGet( const Poco::URI::QueryParameters& p )
 	{
 		Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
-		Poco::JSON::Object::Ptr jdata = uniset::json::make_child(jret, "object");
-
-		jdata->set("name", myname);
-		jdata->set("id", getId());
-		jdata->set("msgCount", countMessages());
-		jdata->set("lostMessages", getCountOfLostMessages());
-		jdata->set("maxSizeOfMessageQueue", getMaxSizeOfMessageQueue());
-		jdata->set("isActive", isActive());
-		jdata->set("objectType", getStrType());
+		httpGetMyInfo(jret);
 		return jret;
 	}
 	// ------------------------------------------------------------------------------------------

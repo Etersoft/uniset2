@@ -903,21 +903,19 @@ Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco
 	if( p.size() > 1 && p[1].first == "shortInfo" )
 		shortInfo = true;
 
-	//	ulog1 << myname << "(GET): " << p[0].first << " size=" << slist.size() << endl;
-
-	//	myname {
-	//			sensors: [
-	//               sid:
-	//	               value: long
-	//			       error: string
-	//			]
+	// {
+	//	 "sensors" [
+	//           { name: string, value: long, error: string, ...},
+	//           { name: string, value: long, error: string, ...},
+	//           ...
+	//	 ],
+	//
+	//	 "object" { mydata... }
 	//	}
 
 	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
-	Poco::JSON::Array::Ptr jsens = new Poco::JSON::Array();
-	jdata->set("sensors", jsens);
 	auto my = httpGetMyInfo(jdata);
-	Poco::JSON::Object::Ptr nullObject = new Poco::JSON::Object();
+	auto jsens = uniset::json::make_child_array(jdata, "sensors");
 
 	for( const auto& s : slist )
 	{
@@ -927,9 +925,10 @@ Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco
 
 			if( sinf == ioList.end() )
 			{
-				string sid( std::to_string(s.si.id) );
-				jsens->add(json::make_object(sid, json::make_object("value", nullObject)));
-				jsens->add(json::make_object(sid, json::make_object("error", "Sensor not found")));
+				Poco::JSON::Object::Ptr jr = new Poco::JSON::Object();
+				jr->set("name", s.fname);
+				jr->set("error", "Sensor not found");
+				jsens->add(jr);
 				continue;
 			}
 
@@ -937,15 +936,17 @@ Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco
 		}
 		catch( IOController_i::NameNotFound& ex )
 		{
-			string sid( std::to_string(s.si.id) );
-			jsens->add(json::make_object(sid, uniset::json::make_object("value", nullObject)));
-			jsens->add(json::make_object(sid, uniset::json::make_object("error", string(ex.err))));
+			Poco::JSON::Object::Ptr jr = new Poco::JSON::Object();
+			jr->set("name", s.fname);
+			jr->set("error", string(ex.err));
+			jsens->add(jr);
 		}
 		catch( std::exception& ex )
 		{
-			string sid( std::to_string(s.si.id) );
-			jsens->add(json::make_object(sid, uniset::json::make_object("value", nullObject)));
-			jsens->add(json::make_object(sid, uniset::json::make_object("error", ex.what())));
+			Poco::JSON::Object::Ptr jr = new Poco::JSON::Object();
+			jr->set("name", s.fname);
+			jr->set("error", string(ex.what()));
+			jsens->add(jr);
 		}
 	}
 
@@ -954,13 +955,8 @@ Poco::JSON::Object::Ptr IOController::request_get( const string& req, const Poco
 // -----------------------------------------------------------------------------
 void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr<USensorInfo>& s, bool shortInfo )
 {
-	Poco::JSON::Object::Ptr mydata = new Poco::JSON::Object();
 	Poco::JSON::Object::Ptr jsens = new Poco::JSON::Object();
-
-	jdata->add(mydata);
-
-	std::string sid(to_string(s->si.id));
-	mydata->set(sid, jsens);
+	jdata->add(jsens);
 
 	{
 		uniset_rwmutex_rlock lock(s->val_lock);
@@ -968,7 +964,7 @@ void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr
 		jsens->set("real_value", s->real_value);
 	}
 
-	jsens->set("id", sid);
+	jsens->set("id", s->si.id);
 	jsens->set("name", ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->si.id)));
 	jsens->set("tv_sec", s->tv_sec);
 	jsens->set("tv_nsec", s->tv_nsec);

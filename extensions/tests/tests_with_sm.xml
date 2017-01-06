@@ -272,6 +272,8 @@
 			<item id="120" iotype="AI" name="FasAO_S" textname="FasAO" precsision="1"/>
 			<item id="121" iotype="DI" name="FasDI_S" textname="FasDI"/>
 			
+			<!-- REST API test -->
+			<item id="122" iotype="AI" name="API_Sensor_AS" textname="SensorAI" precision="1" default="10" cmin="10" cmax="20" rmin="100" rmax="200"/>
 
 		</sensors>
 		<thresholds name="thresholds">

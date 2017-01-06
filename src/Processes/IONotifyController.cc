@@ -1193,7 +1193,7 @@ Poco::JSON::Object::Ptr IONotifyController::httpHelp(const Poco::URI::QueryParam
 
 	{
 		// 'lost'
-		uniset::json::help::item cmd("et lost consumers list");
+		uniset::json::help::item cmd("get lost consumers list");
 		myhelp.add(cmd);
 	}
 

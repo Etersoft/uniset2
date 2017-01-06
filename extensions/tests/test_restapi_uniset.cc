@@ -85,5 +85,99 @@ TEST_CASE("[REST API: /]", "[restapi][info]")
 	REQUIRE( jret->get("lostMessages").convert<long>() == 0 );
 }
 // -----------------------------------------------------------------------------
+static void check_get( const std::string& query )
+{
+	//	 QUERY: /get?xxx
+	//  REPLY:
+	//	{"object":
+	//	  {"id":5003,"isActive":true,"lostMessages":0,"maxSizeOfMessageQueue":1000,"msgCount":0,"name":"SharedMemory","objectType":"IONotifyController"},
+	//	"sensors":[
+	//	    {"name":"Input2_S","id":"2","calibration":{"cmax":0,"cmin":0,"precision":0,"rmax":0,"rmin":0},"dbignore":false,"default_val":0,"nchanges":0,"real_value":0,"tv_nsec":369597308,"tv_sec":1483733666,"type":"DI","value":0}
+	//	]}
+
+	std::string s = shm->apiRequest(query);
+	Poco::JSON::Parser parser;
+	auto result = parser.parse(s);
+	Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+	REQUIRE(json);
+
+	auto jarr = json->get("sensors").extract<Poco::JSON::Array::Ptr>();
+	REQUIRE(jarr);
+
+	Poco::JSON::Object::Ptr jret = jarr->getObject(0);
+	REQUIRE(jret);
+
+	REQUIRE( jret->get("id").convert<ObjectId>() == 122 );
+	REQUIRE( jret->get("name").convert<std::string>() == "API_Sensor_AS" );
+	REQUIRE( jret->get("type").convert<std::string>() == "AI" );
+	REQUIRE( jret->get("value").convert<long>() == 10 );
+	REQUIRE( jret->get("real_value").convert<long>() == 10 );
+	REQUIRE( jret->get("default_val").convert<long>() == 10 );
+
+	auto jcal = jret->get("calibration").extract<Poco::JSON::Object::Ptr>();
+	REQUIRE( jcal->get("cmin").convert<long>() == 10 );
+	REQUIRE( jcal->get("cmax").convert<long>() == 20 );
+	REQUIRE( jcal->get("rmin").convert<long>() == 100 );
+	REQUIRE( jcal->get("rmax").convert<long>() == 200 );
+	REQUIRE( jcal->get("precision").convert<long>() == 1 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[REST API: /get]", "[restapi][get]")
+{
+	init_test();
+
+	SECTION("getByName")
+	{
+		check_get("/get?API_Sensor_AS");
+	}
+
+	SECTION("getByID")
+	{
+		check_get("/get?122");
+	}
+
+	SECTION("BadFormat")
+	{
+		// Запрос без ответа
+		// QUERY: /get
+		// Ожидаемый формат ответа:
+		// {"ecode":500,"error":"SharedMemory(request): 'get'. Unknown ID or Name. Use parameters: get?ID1,name2,ID3,..."}
+		std::string s = shm->apiRequest("/get");
+		Poco::JSON::Parser parser;
+		auto result = parser.parse(s);
+		Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+		REQUIRE(json);
+
+		REQUIRE( json->get("ecode").convert<int>() == 500 );
+	}
+
+	SECTION("NotFound")
+	{
+		// QUERY: /get?dummy
+		// Ожидаемый формат ответа:
+//		{"object":{"id":5003,"isActive":true,"lostMessages":0,"maxSizeOfMessageQueue":1000,"msgCount":0,"name":"SharedMemory","objectType":"IONotifyController"},
+//			"sensors":[{"error":"Sensor not found","name":"dummy"}]}
+
+		std::string s = shm->apiRequest("/get?dummy");
+		Poco::JSON::Parser parser;
+		auto result = parser.parse(s);
+		Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+		REQUIRE(json);
+
+		auto jarr = json->get("sensors").extract<Poco::JSON::Array::Ptr>();
+		REQUIRE(jarr);
+
+		Poco::JSON::Object::Ptr jret = jarr->getObject(0);
+		REQUIRE(jret);
+
+		// просто проверем что 'error' не пустой..
+		REQUIRE( jret->get("error").convert<std::string>().empty() == false );
+	}
+}
+// -----------------------------------------------------------------------------
+//if( req == "sensors"
+//if( req == "consumers" )
+//if( req == "lost"
+// -----------------------------------------------------------------------------
 #endif // ifndef DISABLE_REST_API
 // -----------------------------------------------------------------------------
