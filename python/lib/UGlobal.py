@@ -164,7 +164,7 @@ def get_mbslave_param( raw_str, sep=':' ):
 
     l = raw_str.split(sep)
     if len(l) > 2:
-       print "(get_mbslave_param:WARNING): BAD STRING FORMAT! strig='%s'. Must be 'hostname:port'"%(raw_str)
+       print "(get_mbslave_param:WARNING): BAD FORMAT! string='%s'. Must be 'hostname:port'"%(raw_str)
        return [None,None]
 
     if len(l) == 2:
