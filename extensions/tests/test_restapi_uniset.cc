@@ -239,8 +239,85 @@ TEST_CASE("[REST API: /sensors]", "[restapi][sensors]")
 	}
 }
 // -----------------------------------------------------------------------------
-//if( req == "consumers" )
-//if( req == "lost"
+TEST_CASE("[REST API: /consumers]", "[restapi][consumers]")
+{
+	init_test();
+
+	// QUERY: /consumers
+	// Ожидаемый формат ответа:
+//	{"object":{"id":5003,"isActive":true,"lostMessages":0,"maxSizeOfMessageQueue":1000,"msgCount":0,"name":"SharedMemory","objectType":"IONotifyController"},
+//	"sensors":[
+//		{"consumers":[
+//			{"attempt":10,"id":6000,"lostEvents":0,"name":"TestProc","node":3000,"node_name":"localhost","smCount":0}
+//		],
+//		"sensor":{"id":1,"name":"Input1_S"}},
+//		{"consumers":[
+//			{"attempt":4,"id":6000,"lostEvents":4,"name":"TestProc","node":3000,"node_name":"localhost","smCount":0}
+//		],
+//		"sensor":{"id":10,"name":"AI_AS"}}
+//	]}
+
+
+	std::string s = shm->apiRequest("/consumers");
+	Poco::JSON::Parser parser;
+	auto result = parser.parse(s);
+	Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+	REQUIRE(json);
+
+	auto jarr = json->get("sensors").extract<Poco::JSON::Array::Ptr>();
+	REQUIRE(jarr);
+
+	auto jret = jarr->getObject(0);
+	REQUIRE(jret);
+
+	auto sens = jret->get("sensor").extract<Poco::JSON::Object::Ptr>();
+	REQUIRE(sens);
+
+	REQUIRE( sens->get("id").convert<ObjectId>() == 1 );
+	REQUIRE( sens->get("name").convert<std::string>() == "Input1_S" );
+
+	auto cons = jret->get("consumers").extract<Poco::JSON::Array::Ptr>();
+	REQUIRE(cons);
+	REQUIRE( cons->size() == 1 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[REST API: /lost]", "[restapi][lost]")
+{
+	init_test();
+
+	// QUERY: /lost
+	// Ожидаемый формат ответа:
+//	{"lost consumers":[
+//		...
+//	],
+//	 "object":{"id":5003,"isActive":true,"lostMessages":0,"maxSizeOfMessageQueue":1000,"msgCount":0,"name":"SharedMemory","objectType":"IONotifyController"}
+//	}
+
+	// Сперва имитируем зазачика (который "исчезнет").
+	const ObjectId myID = 6013; // TestProc2
+	const ObjectId sid = 122; // test sensor
+
+	shm->askSensor(sid, UniversalIO::UIONotify, myID );
+
+	// имитируем изменения
+	for( size_t i=200; i<220; i++ )
+		shm->setValue(sid,i);
+
+	// проверяем список "потерянных"
+	std::string s = shm->apiRequest("/lost");
+	Poco::JSON::Parser parser;
+	auto result = parser.parse(s);
+	Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+	REQUIRE(json);
+
+	auto jarr = json->get("lost consumers").extract<Poco::JSON::Array::Ptr>();
+	REQUIRE(jarr);
+
+	auto jret = jarr->getObject(0);
+	REQUIRE(jret);
+
+	REQUIRE( jret->get("id").convert<ObjectId>() == myID );
+}
 // -----------------------------------------------------------------------------
 #endif // ifndef DISABLE_REST_API
 // -----------------------------------------------------------------------------
