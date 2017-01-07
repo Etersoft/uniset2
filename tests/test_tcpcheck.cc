@@ -79,6 +79,8 @@ TEST_CASE("TCPCheck::ping", "[tcpcheck][tcpcheck_ping]" )
 
 	msleep(200);
 	REQUIRE( t.ping(host) );
-	REQUIRE_FALSE( t.ping("dummy_host_name") );
+
+	// 123.3. - dummy ip
+	REQUIRE_FALSE( t.ping("123.3.") );
 }
 // --------------------------------------------------------

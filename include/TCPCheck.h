@@ -42,33 +42,19 @@ namespace uniset
 			 * Для проверки идёт попытка открыть соединение, но данные не посылаются, а соединение сразу закрывается.
 			 * \note Нужно быть уверенным, что сервис не зависнет от таких попыток "соединений"
 			*/
-			bool check( const std::string& _ip, int _port, timeout_t tout );
+			static bool check( const std::string& _ip, int _port, timeout_t tout ) noexcept;
 
 			/*! \param iaddr - 'ip:port' */
-			bool check( const std::string& iaddr, timeout_t tout );
+			static bool check( const std::string& iaddr, timeout_t tout ) noexcept;
 
 
 			/*! Проверка связи с узлом командой ping
 			 * \note Вызывается через system()! Это может быть опасно с точки зрения безопасности..
 			 * \todo Возможно стоит написать свою реализацию ping
 			 */
-			bool ping(const std::string& _ip, timeout_t tout = 1000, const std::string& ping_argc = "-c 1 -w 0.1 -q -n" );
+			static bool ping( const std::string& _ip, timeout_t tout = 1000, const std::string& ping_argc = "-c 1 -w 0.1 -q -n" ) noexcept;
 
 		protected:
-
-			void check_thread();
-			void ping_thread();
-
-			std::condition_variable thr_event;
-			std::mutex              thr_mutex;
-			std::atomic_bool		thr_finished = { false };
-
-			std::atomic_bool result = {false};
-			std::string ip = {""};
-			int port = {0};
-			int tout_msec;
-
-			std::string ping_args = {"-c 1 -w 0.1 -q -n"};
 	};
 	// -------------------------------------------------------------------------
 } // end of uniset namespace
