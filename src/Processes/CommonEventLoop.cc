@@ -52,7 +52,7 @@ namespace uniset
 			}
 
 			{
-				std::lock_guard<std::mutex> lck(thr_mutex);
+				std::lock_guard<std::mutex> lock(thr_mutex);
 
 				if( !thr )
 				{
@@ -128,7 +128,7 @@ namespace uniset
 		if( !w )
 			return false;
 
-		std::lock_guard<std::mutex> l(wlist_mutex);
+		std::lock_guard<std::mutex> lock(wlist_mutex);
 
 		try
 		{
@@ -168,8 +168,14 @@ namespace uniset
 		return wlist.size();
 	}
 	// -------------------------------------------------------------------------
-	void CommonEventLoop::onPrepare() noexcept
+	void CommonEventLoop::onPrepare( ev::async& w, int revents ) noexcept
 	{
+		if( EV_ERROR & revents )
+		{
+//			cerr << myname << "(CommonEventLoop::onPrepare): invalid event" << endl;
+			return;
+		}
+
 		prep_notify = false;
 		{
 			std::lock_guard<std::mutex> lock(prep_mutex);
@@ -194,8 +200,14 @@ namespace uniset
 		prep_event.notify_all();
 	}
 	// -------------------------------------------------------------------------
-	void CommonEventLoop::onStop() noexcept
+	void CommonEventLoop::onStop( ev::async& aw, int revents ) noexcept
 	{
+		if( EV_ERROR & revents )
+		{
+//			cerr << myname << "(CommonEventLoop::onStop): invalid event" << endl;
+			return;
+		}
+
 		// здесь список не защищаем wlist_mutex
 		// потому-что onStop будет вызываться
 		// из evstop, где он уже будет под "блокировкой"

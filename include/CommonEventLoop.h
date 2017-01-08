@@ -82,8 +82,8 @@ namespace uniset
 
 		private:
 
-			void onStop() noexcept;
-			void onPrepare() noexcept;
+			void onStop( ev::async& w, int revents ) noexcept;
+			void onPrepare( ev::async& w, int revents ) noexcept;
 			void defaultLoop() noexcept;
 
 			std::atomic_bool cancelled = { false };
