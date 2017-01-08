@@ -15,10 +15,8 @@
  */
 // -----------------------------------------------------------------------------
 #include <sstream>
-#include <cstdlib>
 #include <iostream>
 #include <future>
-#include <thread>
 #include <chrono>
 #include "UniSetTypes.h"
 #include "TCPCheck.h"

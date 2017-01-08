@@ -37,7 +37,7 @@ namespace uniset
 			UTCPStream();
 			virtual ~UTCPStream();
 
-			void create( const std::string& hname, int port, timeout_t tout_msec = 1000 );
+			void create( const std::string& hname, uint16_t port, timeout_t tout_msec = 1000 );
 
 			bool isConnected() noexcept;
 

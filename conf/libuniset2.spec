@@ -505,6 +505,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
         
 # history of current unpublished changes
+# add tests for REST API (with RPC)
+# python: refactoring UInterface (add UInterfaceModbus and UInterfaceUniSet)
+# refactoring TCPCheck (use future)
 
 %changelog
 * Fri Dec 16 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt9

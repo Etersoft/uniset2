@@ -27,19 +27,19 @@ namespace uniset
 		return ok;
 	}
 	// -------------------------------------------------------------------------
-	UTCPCore::Buffer::Buffer(const unsigned char* bytes, ssize_t nbytes)
+	UTCPCore::Buffer::Buffer( const unsigned char* bytes, size_t nbytes )
 	{
 		pos = 0;
 		len = nbytes;
 
-		if( len <= 0 ) // ??!!
+		if( len == 0 ) // ??!!
 			return;
 
 		data = new unsigned char[nbytes];
 		std::memcpy(data, bytes, nbytes);
 	}
 	// -------------------------------------------------------------------------
-	UTCPCore::Buffer::Buffer(const string& s)
+	UTCPCore::Buffer::Buffer( const string& s )
 	{
 		pos = 0;
 		len = s.length();
@@ -61,7 +61,7 @@ namespace uniset
 		return data + pos;
 	}
 	// -------------------------------------------------------------------------
-	ssize_t UTCPCore::Buffer::nbytes() noexcept
+	size_t UTCPCore::Buffer::nbytes() noexcept
 	{
 		return len - pos;
 	}

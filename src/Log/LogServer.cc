@@ -331,14 +331,14 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	std::string LogServer::help_print( const std::string& prefix )
 	{
-		ostringstream h;
+		std::ostringstream h;
 		h << "--" << prefix << "-cmd-timeout msec      - Timeout for wait command. Default: 2000 msec." << endl;
 		return h.str();
 	}
 	// -----------------------------------------------------------------------------
 	string LogServer::getShortInfo()
 	{
-		ostringstream inf;
+		std::ostringstream inf;
 
 		inf << "LogServer: " << myname
 			<< " ["

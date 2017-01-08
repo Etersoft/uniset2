@@ -391,7 +391,7 @@ void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNod
 
 		IONotifyController::ThresholdExtList tlst;
 
-		for( ; tit; tit.goNext() )
+		for( ; tit.getCurrent(); tit++ )
 		{
 			IONotifyController::ThresholdInfoExt ti(0, 0, 0, false);
 
@@ -471,7 +471,7 @@ bool NCRestorer_XML::getConsumerList( const std::shared_ptr<UniXML>& xml, xmlNod
 {
 	UniXML::iterator it(node);
 
-	for(; it; it.goNext())
+	for(; it.getCurrent(); it++ )
 	{
 		if( !check_consumer_item(it) )
 			continue;

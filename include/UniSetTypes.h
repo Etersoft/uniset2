@@ -38,9 +38,10 @@
 #include "IOController_i.hh"
 #include "Mutex.h"
 #include "UniXML.h"
+#include "PassiveTimer.h" // for typedef timeout_t
 // -----------------------------------------------------------------------------------------
 /*! Задержка в миллисекундах */
-inline void msleep( unsigned int m )
+inline void msleep( uniset::timeout_t m )
 {
 	std::this_thread::sleep_for(std::chrono::milliseconds(m));
 }
@@ -80,7 +81,6 @@ namespace uniset
 
 	typedef std::list<std::string> ListObjectName;    /*!< Список объектов типа ObjectName */
 
-	typedef ObjectId SysId;
 	typedef CORBA::Object_ptr ObjectPtr;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
 	typedef CORBA::Object_var ObjectVar;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
 
@@ -114,7 +114,7 @@ namespace uniset
 			void add( ObjectId id );
 			void del( ObjectId id );
 
-			inline int size() const noexcept
+			inline size_t size() const noexcept
 			{
 				return lst.size();
 			}
@@ -304,7 +304,7 @@ namespace uniset
 	{
 		while( begin != end)
 		{
-			if( p(*begin) ) &destBegin++ = *begin;
+			if( p(*begin) ) &(destBegin++) = *begin;
 
 			++begin;
 		}

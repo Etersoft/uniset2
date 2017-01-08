@@ -13,8 +13,7 @@ namespace uniset
 	{
 		public:
 
-			// dup and accept...raw socket
-			USocket( int sock );
+			USocket();
 			virtual ~USocket();
 
 			// set keepalive params

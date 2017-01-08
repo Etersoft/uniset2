@@ -202,7 +202,7 @@ bool uniset::file_exist( const std::string& filename )
 #endif
 	bool result = false;
 
-	if( file )
+	if( file.is_open() )
 		result = true;
 
 	file.close();

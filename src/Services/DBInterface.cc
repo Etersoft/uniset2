@@ -9,7 +9,7 @@ namespace uniset
 		std::string user = "";
 		std::string pswd = "";
 		std::string dbname = "";
-		unsigned int port = 0;
+		uint port = 0;
 
 		for(;;)
 		{
@@ -42,7 +42,7 @@ namespace uniset
 
 			prev = pos + 1;
 			pos = param.find_first_of(":", prev);
-			port = atoi( param.substr(prev, pos - prev).c_str() );
+			port = (uint)std::atoi( param.substr(prev, pos - prev).c_str() );
 			break;
 		}
 
@@ -94,7 +94,7 @@ namespace uniset
 		return ((*it)[col]);
 	}
 	// ----------------------------------------------------------------------------
-	int DBResult::num_cols( const DBResult::iterator& it )
+	size_t DBResult::num_cols( const DBResult::iterator& it )
 	{
 		return it->size();
 	}

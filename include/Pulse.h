@@ -127,7 +127,6 @@ namespace uniset
 		protected:
 			PassiveTimer t1;    // таймер "1"
 			PassiveTimer t0;    // таймер "0"
-			PassiveTimer tCorr;    // корректирующий таймер
 			bool ostate = { false };
 			bool isOn = { false };
 			timeout_t t1_msec = { 0 };

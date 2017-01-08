@@ -1332,7 +1332,7 @@ namespace uniset
 		return countOfNet;
 	}
 	// -------------------------------------------------------------------------
-	size_t Configuration::getRepeatTimeout() const noexcept
+	timeout_t Configuration::getRepeatTimeout() const noexcept
 	{
 		return repeatTimeout;
 	}

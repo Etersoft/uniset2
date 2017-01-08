@@ -72,7 +72,7 @@ namespace uniset
 			static int as_int( const DBResult::COL::iterator& it );
 			static double as_double(const  DBResult::COL::iterator& it );
 			static std::string as_string( const DBResult::COL::iterator& it );
-			static int num_cols( const DBResult::iterator& it );
+			static size_t num_cols( const DBResult::iterator& it );
 			// ----------------------------------------------------------------------------
 
 		protected:

@@ -181,12 +181,12 @@ string UniXML::getProp(const xmlNode* node, const string& name) noexcept
 	{
 		// формально при конструировании строки может быть exception
 		const string t( (const char*)text );
-		xmlFree( (xmlChar*) text );
+		xmlFree( text );
 		return t;
 	}
 	catch(...) {}
 
-	xmlFree( (xmlChar*) text );
+	xmlFree( text );
 	return "";
 }
 // -----------------------------------------------------------------------------
@@ -282,7 +282,7 @@ xmlNode* UniXML::copyNode(xmlNode* node, int recursive)
 	return 0;
 }
 // -----------------------------------------------------------------------------
-bool UniXML::save(const string& filename, int level)
+bool UniXML::save( const string& filename, int level )
 {
 	string fn(filename);
 
@@ -450,7 +450,7 @@ bool UniXML_iterator::canPrev() const noexcept
 // -------------------------------------------------------------------------
 bool UniXML_iterator::canNext() const noexcept
 {
-	if (!curNode || !curNode->next )
+	if( !curNode || !curNode->next )
 		return false;
 
 	return true;

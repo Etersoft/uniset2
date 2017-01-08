@@ -90,7 +90,7 @@ void DBServer::processingMessage( const uniset::VoidMessage* msg )
 	switch(msg->type)
 	{
 		case Message::Confirm:
-			confirmInfo( reinterpret_cast<const ConfirmMessage*>(msg) );
+			confirmInfo( reinterpret_cast<const uniset::ConfirmMessage*>(msg) );
 			break;
 
 		default:

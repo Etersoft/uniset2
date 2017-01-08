@@ -811,7 +811,7 @@ void IOController::USensorInfo::checkDepend( std::shared_ptr<USensorInfo>& d_it,
 		uniset_rwmutex_wrlock lock(val_lock);
 		bool prev = blocked;
 		uniset_rwmutex_rlock dlock(d_it->val_lock);
-		blocked = ( d_it->value == d_value ) ? false : true;
+		blocked = ( d_it->value != d_value );
 		changed = ( prev != blocked );
 		sup_id = d_it->supplier;
 	}

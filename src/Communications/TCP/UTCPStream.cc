@@ -107,7 +107,7 @@ namespace uniset
 		return tm.totalMicroseconds();
 	}
 	// -------------------------------------------------------------------------
-	void UTCPStream::create( const std::string& hname, int port, timeout_t tout_msec )
+	void UTCPStream::create( const std::string& hname, uint16_t port, timeout_t tout_msec )
 	{
 		Poco::Net::SocketAddress saddr(hname, port);
 		connect(saddr, UniSetTimer::millisecToPoco(tout_msec));

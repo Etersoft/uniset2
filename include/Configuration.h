@@ -106,7 +106,7 @@ namespace uniset
 
 			// net
 			size_t getCountOfNet() const noexcept;
-			size_t getRepeatTimeout() const noexcept;
+			timeout_t getRepeatTimeout() const noexcept;
 			size_t getRepeatCount() const noexcept;
 
 			uniset::ObjectId getSensorID( const std::string& name ) const noexcept;

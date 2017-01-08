@@ -932,7 +932,7 @@ void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorIn
 
 			// если состояние не normal, значит порог сработал,
 			// не важно какой.. нижний или верхний (зависит от inverse)
-			sm.threshold = ( state != IONotifyController_i::NormalThreshold ) ? true : false;
+			sm.threshold = ( state != IONotifyController_i::NormalThreshold );
 
 			// запоминаем время изменения состояния
 			it->tv_sec     = tm.tv_sec;

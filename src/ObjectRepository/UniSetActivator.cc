@@ -981,7 +981,7 @@ void UniSetActivator::normalexit()
 
 	ulogsys << g_act->getName() << "(default exit): ..begin..." << endl << flush;
 
-	if( g_term == false )
+	if( !g_term )
 	{
 		// прежде чем вызывать notify_one(), мы должны освободить mutex!
 		{
@@ -1021,7 +1021,7 @@ void UniSetActivator::normalterminate()
 
 	ulogsys << g_act->getName() << "(default terminate): ..begin..." << endl << flush;
 
-	if( g_term == false )
+	if( !g_term )
 	{
 		// прежде чем вызывать notify_one(), мы должны освободить mutex!
 		{

@@ -15,8 +15,7 @@ namespace uniset
 		catch(...) {}
 	}
 	// -------------------------------------------------------------------------
-	USocket::USocket( int sock )
-	//	Socket(sock)
+	USocket::USocket()
 	{
 		init();
 	}

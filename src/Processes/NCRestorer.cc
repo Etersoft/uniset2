@@ -63,8 +63,6 @@ void NCRestorer::addlist( IONotifyController* ic, std::shared_ptr<IOController::
 					ucrit << ic->getName() << "(askDumper::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА! -> "
 						  << uniset_conf()->oind->getNameById(inf->si.id) << endl;
 					return;
-					break;
-
 			}
 		}
 	}
