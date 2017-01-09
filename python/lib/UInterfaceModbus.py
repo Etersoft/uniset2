@@ -3,18 +3,18 @@
 
 import sys
 
-from pyUniSet import *
-from pyUModbus import *
+from UInterface import *
 from UGlobal import *
-from pyUExceptions import *
+from pyUModbus import *
 
 
-class UInterfaceModbus():
-    def __init__(self):
+class UInterfaceModbus(UInterface):
+    def __init__(self, ip, port):
         UInterface.__init__(self)
 
         self.itype = "modbus"
         self.i = UModbus()
+        self.i.prepare(ip,port)
 
     # return [id,node,name]
     def getIDinfo(self, s_id):

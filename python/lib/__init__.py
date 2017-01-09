@@ -4,6 +4,8 @@
 from UGlobal import *
 from UniXML import *
 from UInterface import *
+from UInterfaceUniSet import *
+from UInterfaceModbus import *
 
 from pyUniSet import *
 from pyUModbus import *

@@ -4,10 +4,7 @@
 import sys
 
 from pyUniSet import *
-from pyUConnector import *
-from UGlobal import *
 from pyUExceptions import *
-
 
 class UInterface():
     def __init__(self):

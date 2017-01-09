@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt9
+Release: alt10
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -505,11 +505,14 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
         
 # history of current unpublished changes
-# add tests for REST API (with RPC)
-# python: refactoring UInterface (add UInterfaceModbus and UInterfaceUniSet)
-# refactoring TCPCheck (use future)
 
 %changelog
+* Mon Jan 09 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt10
+- add tests for REST API (with RPC)
+- python: refactoring UInterface (add UInterfaceModbus and UInterfaceUniSet)
+- refactoring TCPCheck (use future)
+- minor refactoring and fixes
+
 * Fri Dec 16 2016 Pavel Vainerman <pv@altlinux.ru> 2.6-alt9
 - UObject: added attempts to activate the object
 
