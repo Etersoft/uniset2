@@ -40,19 +40,17 @@ PKG_CHECK_MODULES(XML, libxml-2.0)
 PKG_CHECK_MODULES(OMNI, omniORB4)
 PKG_CHECK_MODULES(SIGC, sigc++-2.0)
 
-nopkgchecklibev=false
-AC_ARG_ENABLE(pkgchecklibev, AC_HELP_STRING([--disable-pkgchecklibev], [disable pkg check modules for libev]),
-[ if test $enableval = yes; then nopkgchecklibev=false; else nopkgchecklibev=true; fi],[ nopkgchecklibev=false; ])
+checklibev=true
+PKG_CHECK_MODULES(EV, libev, [ checklibev=false; ], [ checklibev=true; ])
 
-if test ${nopkgchecklibev} = false; then
-	PKG_CHECK_MODULES(EV, libev)
-else	
+if test $checklibev = true; then
 	AC_CHECK_HEADER(ev++.h,,exit)
 	AC_SEARCH_LIBS(ev_run,ev,[],[],exit)
 	EV_LIBS="-lev"
 	EV_CFLAGS=
 	AC_SUBST(EV_LIBS)
 	AC_SUBST(EV_CFLAGS)
+    AC_MSG_RESULT([ok])
 fi
 
 #check rest api support
