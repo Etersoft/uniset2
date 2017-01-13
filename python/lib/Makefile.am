@@ -6,7 +6,8 @@ SUBDIRS=pyUniSet
 #libUniSet2Python_la_SOURCES	=
 #libUniSet2Python_la_LIBADD	= pyUniSet/_pyUniSet.la
 
-python_SCRIPTS = *.py
+pydir=$(pkgpythondir)
+py_DATA = *.py
 
 include $(top_builddir)/include.mk
 

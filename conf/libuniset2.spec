@@ -322,16 +322,6 @@ SharedMemoryPlus extension ('all in one') for libuniset
 %makeinstall_std
 rm -f %buildroot%_libdir/*.la
 
-%if_enabled python
-mkdir -p %buildroot%python_sitelibdir/%oname
-mv -f %buildroot%python_sitelibdir/*.* %buildroot%python_sitelibdir/%oname/
-
-%ifarch x86_64
-mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
-%endif
-
-%endif
-
 %files utils
 %_bindir/%oname-admin
 %_bindir/%oname-mb*
@@ -398,7 +388,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %if_enabled python
 %files -n python-module-%oname
-%python_sitelibdir/%oname/
+%python_sitelibdir/*
+%python_sitelibdir_noarch/%oname/*
 %endif
 
 %if_enabled netdata

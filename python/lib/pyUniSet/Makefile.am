@@ -1,7 +1,8 @@
 if DISABLE_PYTHON
 else
-python_SCRIPTS = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
-
+#python_SCRIPTS = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
+pydir=$(pkgpythondir)
+py_DATA = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
 
 pyUniSet.py: UInterface_wrap.cxx _pyUniSet.la 
 	
