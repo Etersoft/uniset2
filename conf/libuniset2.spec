@@ -322,6 +322,11 @@ SharedMemoryPlus extension ('all in one') for libuniset
 %makeinstall_std
 rm -f %buildroot%_libdir/*.la
 
+%if_disabled netdata
+rm -rf %buildroot%_libdir/netdata/python.d
+rm -rf %buildroot%_sysconfdir/netdata/*
+%endif
+
 %files utils
 %_bindir/%oname-admin
 %_bindir/%oname-mb*
