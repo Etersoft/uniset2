@@ -315,17 +315,12 @@ SharedMemoryPlus extension ('all in one') for libuniset
 
 %build
 %autoreconf
-%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api}
+%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api} %{subst_enable netdata}
 %make_build
 
 %install
 %makeinstall_std
 rm -f %buildroot%_libdir/*.la
-
-%if_disabled netdata
-rm -rf %buildroot%_libdir/netdata/python.d
-rm -rf %buildroot%_sysconfdir/netdata/*
-%endif
 
 %files utils
 %_bindir/%oname-admin

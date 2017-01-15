@@ -239,6 +239,19 @@ if test ${buildpython} = true; then
 	AM_PATH_PYTHON(,,)
 	PKG_CHECK_MODULES(PYTHON,python-2.7,,exit)
 #	AC_CHECK_PROG(SWIG, swig, yes, exit)
+
+	AC_MSG_CHECKING([netdata python plugin])
+	netdata=true
+	AC_ARG_ENABLE(netdata,AC_HELP_STRING([--disable-netdata], [disable build netdata python plugin]),
+	[ if test $enableval = yes; then netdata=true; else netdata=false;  fi],[ netdata=true; ])
+
+	if test ${netdata} = true; then
+		AC_MSG_RESULT([enabled])
+	else
+		AC_MSG_RESULT([disabled])
+	fi
+
+	AM_CONDITIONAL(HAVE_NETDATA, test ${netdata} = true)
 else
 	AC_MSG_RESULT([disabled])
 fi
