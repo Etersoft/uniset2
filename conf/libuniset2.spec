@@ -77,7 +77,7 @@ BuildRequires(pre): rpm-build-python
 %endif
 
 %if_enabled docs
-BuildRequires: doxygen
+BuildRequires: doxygen graphviz
 %endif
 
 %if_enabled tests
