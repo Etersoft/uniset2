@@ -37,7 +37,7 @@ namespace uniset
 		ComPort::ComSpeed0
 	};
 	// -------------------------------------------------------------------------
-	ModbusAddr ModbusHelpers::autodetectSlave( ModbusRTUMaster* m,
+	ModbusAddr ModbusHelpers::autodetectSlave( ModbusClient* m,
 			ModbusAddr beg, ModbusAddr end,
 			ModbusData reg,
 			SlaveFunctionCode fn )

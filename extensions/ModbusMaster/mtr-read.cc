@@ -19,8 +19,10 @@
 #include <iomanip>
 #include <getopt.h>
 #include "Debug.h"
+#include "UniSetTypes.h"
 #include "modbus/ModbusRTUMaster.h"
 #include "modbus/ModbusHelpers.h"
+#include "modbus/ModbusTCPMaster.h"
 #include "MTR.h"
 // --------------------------------------------------------------------------
 using namespace uniset;
@@ -39,6 +41,8 @@ static struct option longopts[] =
 	{ "use485F", no_argument, 0, 'y' },
 	{ "num-cycles", required_argument, 0, 'l' },
 	{ "timeout", required_argument, 0, 't' },
+	{ "iaddr", required_argument, 0, 'i' },
+	{ "port", required_argument, 0, 'p' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -49,12 +53,16 @@ static void print_help()
 	printf("[--read04] slaveaddr reg mtrtype  - read from MTR (mtrtype: T1...T10,T16,T17,F1)\n");
 	printf("[-m|--read-model] slaveaddr     - read model name from MTR\n");
 	printf("[-n|--read-serial] slaveaddr    - read serial number from MTR\n");
-	printf("[-y|--use485F]                  - use RS485 Fastwel.\n");
-	printf("[-d|--device] dev               - use device dev. Default: /dev/ttyS0\n");
-	printf("[-s|--speed] speed              - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
 	printf("[-t|--timeout] msec             - Timeout. Default: 2000.\n");
 	printf("[-l|--num-cycles] num           - Number of cycles of exchange. Default: -1 infinitely.\n");
 	printf("[-v|--verbose]                  - Print all messages to stdout\n");
+	printf("\nRTU prameters:\n");
+	printf("[-y|--use485F]                  - use RS485 Fastwel.\n");
+	printf("[-d|--device] dev               - use device dev. Default: /dev/ttyS0\n");
+	printf("[-s|--speed] speed              - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
+	printf("\nTCP prameters:\n");
+	printf("[-i|--iaddr] ip                 - Modbus server ip. Default: 127.0.0.1\n");
+	printf("[-p|--port] port                - Modbus server port. Default: 502.\n");
 }
 // --------------------------------------------------------------------------
 enum Command
@@ -67,7 +75,7 @@ enum Command
 };
 // --------------------------------------------------------------------------
 static char* checkArg( int ind, int argc, char* argv[] );
-static void readMTR( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
+static void readMTR( ModbusClient* mb, ModbusRTU::ModbusAddr addr,
 					 ModbusRTU::ModbusData reg, MTR::MTRType t, Command cmd );
 // --------------------------------------------------------------------------
 
@@ -88,12 +96,14 @@ int main( int argc, char** argv )
 	int use485 = 0;
 	int ncycles = -1;
 	MTR::MTRType mtrtype = MTR::mtUnknown;
+	string iaddr("127.0.0.1");
+	int port = 502;
 
 	try
 	{
 		while(1)
 		{
-			opt = getopt_long(argc, argv, "hvyq:r:d:s:t:x:m:n:", longopts, &optindex);
+			opt = getopt_long(argc, argv, "hvyq:r:d:s:t:x:m:n:i:p:", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -176,6 +186,14 @@ int main( int argc, char** argv )
 					ncycles = uni_atoi(optarg);
 					break;
 
+				case 'i':
+					iaddr = string(optarg);
+					break;
+
+				case 'p':
+					port = uni_atoi(optarg);
+					break;
+
 				case '?':
 				default:
 					printf("? argumnet\n");
@@ -190,14 +208,27 @@ int main( int argc, char** argv )
 				 << endl;
 		}
 
-		ModbusRTUMaster mb(dev, use485);
+		ModbusClient* mb = nullptr;
+
+		if( !iaddr.empty() )
+		{
+			auto mbtcp = new ModbusTCPMaster();
+			mbtcp->connect(iaddr, port);
+//			mbtcp->setForceDisconnect(!persist);
+			mb = mbtcp;
+		}
+		else
+		{
+			auto mbrtu = new ModbusRTUMaster(dev, use485);
+			mbrtu->setSpeed(speed);
+			mb = mbrtu;
+		}
 
 		if( verb )
 			dlog->addLevel(Debug::ANY);
 
-		mb.setTimeout(tout);
-		mb.setSpeed(speed);
-		mb.setLog(dlog);
+		mb->setTimeout(tout);
+		mb->setLog(dlog);
 
 		int nc = 1;
 
@@ -222,7 +253,7 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
-						readMTR( &mb, slaveaddr, reg, mtrtype, cmd );
+						readMTR( mb, slaveaddr, reg, mtrtype, cmd );
 					}
 					break;
 
@@ -234,7 +265,7 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
-						string s(MTR::getModelNumber(&mb, slaveaddr));
+						string s = MTR::getModelNumber(mb, slaveaddr);
 						cout << (s.empty() ? "Don`t read model name." : s) << endl;
 						return 0;
 					}
@@ -248,7 +279,7 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
-						string s(MTR::getSerialNumber(&mb, slaveaddr));
+						string s(MTR::getSerialNumber(mb, slaveaddr));
 						cout << (s.empty() ? "Don`t read serial number." : s) << endl;
 						return 0;
 					}
@@ -303,7 +334,7 @@ char* checkArg( int i, int argc, char* argv[] )
 	return 0;
 }
 // --------------------------------------------------------------------------
-void readMTR( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
+void readMTR( ModbusClient* mb, ModbusRTU::ModbusAddr addr,
 			  ModbusRTU::ModbusData reg, MTR::MTRType mtrType, Command cmd )
 {
 	int count = MTR::wsize(mtrType);

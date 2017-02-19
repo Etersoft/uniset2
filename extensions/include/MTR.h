@@ -30,7 +30,7 @@
 namespace uniset
 {
 	// -----------------------------------------------------------------------------
-	class ModbusRTUMaster;
+	class ModbusClient;
 	// -----------------------------------------------------------------------------
 	namespace MTR
 	{
@@ -63,8 +63,8 @@ namespace uniset
 		const ModbusRTU::ModbusData regModelNumber  = 0x01;
 		const ModbusRTU::ModbusData regSerialNumber = 0x09;
 
-		std::string getModelNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr );
-		std::string getSerialNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr );
+		std::string getModelNumber( uniset::ModbusClient* mb, ModbusRTU::ModbusAddr addr );
+		std::string getSerialNumber(uniset::ModbusClient* mb, ModbusRTU::ModbusAddr addr );
 		// -------------------------------------------------------------------------
 		// Настройки связи (чтение - read03, запись - write06)
 		const ModbusRTU::ModbusData regUpdateConfiguration = 53;
@@ -99,11 +99,11 @@ namespace uniset
 			db7Bits = 1
 		};
 
-		bool setAddress( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusAddr newAddr );
-		bool setBaudRate( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, mtrBaudRate br );
-		bool setStopBit( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, bool state );
-		bool setParity( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, mtrParity p );
-		bool setDataBits( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, mtrDataBits d );
+		bool setAddress( uniset::ModbusClient* mb, ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusAddr newAddr );
+		bool setBaudRate(uniset::ModbusClient* mb, ModbusRTU::ModbusAddr addr, mtrBaudRate br );
+		bool setStopBit(uniset::ModbusClient* mb, ModbusRTU::ModbusAddr addr, bool state );
+		bool setParity(uniset::ModbusClient* mb, ModbusRTU::ModbusAddr addr, mtrParity p );
+		bool setDataBits( uniset::ModbusClient* mb, ModbusRTU::ModbusAddr addr, mtrDataBits d );
 		ComPort::Parity get_parity( ModbusRTU::ModbusData data );
 		ComPort::Speed get_speed( ModbusRTU::ModbusData data );
 		// -------------------------------------------------------------------------
@@ -117,7 +117,7 @@ namespace uniset
 		};
 		std::ostream& operator<<(std::ostream& os, MTRError& e );
 		// Настройка из конф. файла
-		MTRError update_configuration( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
+		MTRError update_configuration( uniset::ModbusClient* mb, ModbusRTU::ModbusAddr addr,
 									   const std::string& mtrconfile, int verbose = 0 );
 		// ---------------------------
 		// вспомогательные функции и типы данных
@@ -126,11 +126,11 @@ namespace uniset
 		const int attempts = 3; //
 		static const ModbusRTU::ModbusData skip[] = {48, 49, 59};  // registers which should not write
 
-		bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr, int verb );
+		bool send_param( uniset::ModbusClient* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr, int verb );
 		bool read_param( const std::string& str, std::string& str1, std::string& str2 );
 		DataMap read_confile( const std::string& f );
 		void update_communication_params( ModbusRTU::ModbusAddr reg, ModbusRTU::ModbusData data,
-										  ModbusRTUMaster* mb, ModbusRTU::ModbusAddr& addr, int verb );
+										  uniset::ModbusClient* mb, ModbusRTU::ModbusAddr& addr, int verb );
 		// -------------------------------------------------------------------------
 		static const size_t u2size = 2;
 		// -------------------------------------------------------------------------

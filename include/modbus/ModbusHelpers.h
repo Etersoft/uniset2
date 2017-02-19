@@ -10,10 +10,11 @@ namespace uniset
 {
 	// -------------------------------------------------------------------------
 	class ModbusRTUMaster;
+	class ModbusClient;
 	// -------------------------------------------------------------------------
 	namespace ModbusHelpers
 	{
-		ModbusRTU::ModbusAddr autodetectSlave( ModbusRTUMaster* m,
+		ModbusRTU::ModbusAddr autodetectSlave( uniset::ModbusClient* m,
 											   ModbusRTU::ModbusAddr beg = 0,
 											   ModbusRTU::ModbusAddr end = 255,
 											   ModbusRTU::ModbusData reg = 0,

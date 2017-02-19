@@ -23,6 +23,7 @@
 #include <math.h>
 #include "Debug.h"
 #include "modbus/ModbusRTUMaster.h"
+#include "modbus/ModbusTCPMaster.h"
 #include "modbus/ModbusHelpers.h"
 #include "extensions/MTR.h"
 // --------------------------------------------------------------------------
@@ -40,13 +41,15 @@ static struct option longopts[] =
 	{ "device", required_argument, 0, 'd' },
 	{ "verbose", no_argument, 0, 'v' },
 	{ "speed", required_argument, 0, 's' },
-	{ "stop-bits", required_argument, 0, 'i' },
-	{ "parity", required_argument, 0, 'p' },
+	{ "stop-bits", required_argument, 0, 'o' },
+	{ "parity", required_argument, 0, 'a' },
 	{ "use485F", no_argument, 0, 'y' },
 	{ "min-addr", required_argument, 0, 'b' },
 	{ "max-addr", required_argument, 0, 'e' },
 	{ "model", required_argument, 0, 'x' },
 	{ "serial", required_argument, 0, 'z' },
+	{ "iaddr", required_argument, 0, 'i' },
+	{ "port", required_argument, 0, 'p' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -56,21 +59,26 @@ static void print_help()
 	printf("[--read] mtraddr          - read configuration from MTR\n");
 	printf("[--save] mtraddr confile  - save configureation to MTR\n");
 	printf("             mtraddr=0x00 - autodetect addr\n");
-	printf("[-d|--device] dev         - use device dev. Default: /dev/ttyS0\n");
-	printf("[-s|--speed] speed        - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
-	printf("[--stop-bits] n           - stop bits [1,2]. Default: 1\n");
-	printf("[--parity] par            - parity [odd,even,no]. Default: no\n");
 	printf("[-t|--timeout] msec       - Timeout. Default: 2000.\n");
 	printf("[-v|--verbose]            - Print all messages to stdout\n");
-	printf("[-y|--use485F]            - use RS485 Fastwel.\n");
-	printf("[--autodetect-speed] slaveaddr [reg fn]  - detect speed\n");
-	printf("          reg - register of test. Default: 0\n");
-	printf("          fn - function of test [0x01,0x02,0x03,0x04]. Default: 0x04\n");
 	printf("[--autodetect-slave] [reg fn]  - find slave\n");
 	printf("          reg - register of test. Default: 0\n");
 	printf("          fn - function of test [0x01,0x02,0x03,0x04]. Default: 0x04\n");
 	printf("[--min-addr] - start addres for autodetect. Default: 0\n");
 	printf("[--max-addr] - end addres for autodetect. Default: 254\n");
+	printf("\nRTU prameters:\n");
+	printf("[-y|--use485F]            - use RS485 Fastwel.\n");
+	printf("[-d|--device] dev         - use device dev. Default: /dev/ttyS0\n");
+	printf("[-s|--speed] speed        - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
+	printf("[--parity] par            - parity [odd,even,no]. Default: no\n");
+	printf("[--stop-bits] n           - stop bits [1,2]. Default: 1\n");
+	printf("[--autodetect-speed] slaveaddr [reg fn]  - detect speed\n");
+	printf("          reg - register of test. Default: 0\n");
+	printf("          fn - function of test [0x01,0x02,0x03,0x04]. Default: 0x04\n");
+	printf("\nTCP prameters:\n");
+	printf("[-i|--iaddr] ip                 - Modbus server ip. Default: 127.0.0.1\n");
+	printf("[-p|--port] port                - Modbus server port. Default: 502.\n");
+
 	printf("\n");
 }
 // --------------------------------------------------------------------------
@@ -109,17 +117,14 @@ int main( int argc, char** argv )
 	int use485 = 0;
 	ComPort::StopBits sbits = ComPort::OneBit;
 	ComPort::Parity parity = ComPort::NoParity;
-
-	//    ModbusRTU::ModbusAddr b=255;
-	//
-	//    cout << "b=" << (int)b << " b++=" << (int)(b++) << endl;
-	//    return 0;
+	string iaddr("127.0.0.1");
+	int port = 502;
 
 	try
 	{
 		while(1)
 		{
-			opt = getopt_long(argc, argv, "hvw:r:x:d:s:t:l:n:yb:e:x:z:", longopts, &optindex);
+			opt = getopt_long(argc, argv, "hvw:r:x:d:s:t:l:n:yb:e:x:z:i:p:o:a:", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -171,7 +176,7 @@ int main( int argc, char** argv )
 					speed = string(optarg);
 					break;
 
-				case 'p':
+				case 'a':
 					par = string(optarg);
 
 					if( !par.compare("odd") )
@@ -187,7 +192,7 @@ int main( int argc, char** argv )
 					tout = atoi(optarg);
 					break;
 
-				case 'i':
+				case 'o':
 					if( atoi(optarg) == 2 )
 						sbits = ComPort::TwoBits;
 
@@ -245,6 +250,14 @@ int main( int argc, char** argv )
 				}
 				break;
 
+				case 'i':
+					iaddr = string(optarg);
+					break;
+
+				case 'p':
+					port = uni_atoi(optarg);
+					break;
+
 				case '?':
 				default:
 					printf("? argumnet\n");
@@ -259,16 +272,29 @@ int main( int argc, char** argv )
 				 << endl;
 		}
 
-		ModbusRTUMaster mb(dev, use485);
+		ModbusClient* mb = nullptr;
+
+		if( !iaddr.empty() )
+		{
+			auto mbtcp = new ModbusTCPMaster();
+			mbtcp->connect(iaddr, port);
+//			mbtcp->setForceDisconnect(!persist);
+			mb = mbtcp;
+		}
+		else
+		{
+			auto mbrtu = new ModbusRTUMaster(dev, use485);
+			mbrtu->setSpeed(speed);
+			mbrtu->setParity(parity);
+			mbrtu->setStopBits(sbits);
+			mb = mbrtu;
+		}
 
 		if( verb )
 			dlog->addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
 
-		mb.setTimeout(tout);
-		mb.setSpeed(speed);
-		mb.setParity(parity);
-		mb.setStopBits(sbits);
-		mb.setLog(dlog);
+		mb->setTimeout(tout);
+		mb->setLog(dlog);
 
 		switch(cmd)
 		{
@@ -286,9 +312,9 @@ int main( int argc, char** argv )
 					if( verb )
 						cout << "(mtr-setup): save: autodetect slave addr... (speed=" << speed <<  ")" << endl;
 
-					mb.setTimeout(50);
-					slaveaddr = ModbusHelpers::autodetectSlave(&mb, beg, end, MTR::regModelNumber, ModbusRTU::fnReadInputRegisters);
-					mb.setTimeout(tout);
+					mb->setTimeout(50);
+					slaveaddr = ModbusHelpers::autodetectSlave(mb, beg, end, MTR::regModelNumber, ModbusRTU::fnReadInputRegisters);
+					mb->setTimeout(tout);
 				}
 
 				if( speed.empty() )
@@ -296,10 +322,14 @@ int main( int argc, char** argv )
 					if( verb )
 						cout << "(mtr-setup): save: autodetect speed... (addr=" << ModbusRTU::addr2str(slaveaddr) << ")" << endl;
 
-					mb.setTimeout(50);
-					ComPort::Speed s = ModbusHelpers::autodetectSpeed(&mb, slaveaddr, MTR::regModelNumber, ModbusRTU::fnReadInputRegisters);
-					mb.setSpeed(s);
-					mb.setTimeout(tout);
+					auto mbrtu = dynamic_cast<ModbusRTUMaster*>(mb);
+					if( mbrtu )
+					{
+						mb->setTimeout(50);
+						ComPort::Speed s = ModbusHelpers::autodetectSpeed(mbrtu, slaveaddr, MTR::regModelNumber, ModbusRTU::fnReadInputRegisters);
+						mbrtu->setSpeed(s);
+						mbrtu->setTimeout(tout);
+					}
 				}
 
 				if( verb )
@@ -309,7 +339,7 @@ int main( int argc, char** argv )
 						 << " speed=" << speed
 						 << endl;
 
-				return  MTR::update_configuration(&mb, slaveaddr, mtrconfile, verb) ? 0 : 1;
+				return  MTR::update_configuration(mb, slaveaddr, mtrconfile, verb) ? 0 : 1;
 			}
 			break;
 
@@ -327,7 +357,7 @@ int main( int argc, char** argv )
 
 				try
 				{
-					ModbusRTU::ModbusAddr a = ModbusHelpers::autodetectSlave(&mb, beg, end, reg, fn);
+					ModbusRTU::ModbusAddr a = ModbusHelpers::autodetectSlave(mb, beg, end, reg, fn);
 					cout << "(mtr-setup): autodetect modbus slave: " << ModbusRTU::addr2str(a) << endl;
 				}
 				catch( uniset::TimeOut )
@@ -340,6 +370,14 @@ int main( int argc, char** argv )
 
 			case cmdDetectSpeed:
 			{
+				auto mbrtu = dynamic_cast<ModbusRTUMaster*>(mb);
+
+				if( !mbrtu )
+				{
+					cerr << "autodetect speed only for RTU interface.." << endl;
+					return 1;
+				}
+
 				if( verb )
 				{
 					cout << "(mtr-setup): autodetect speed: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
@@ -350,7 +388,7 @@ int main( int argc, char** argv )
 
 				try
 				{
-					ComPort::Speed s = ModbusHelpers::autodetectSpeed(&mb, slaveaddr, reg, fn);
+					ComPort::Speed s = ModbusHelpers::autodetectSpeed(mbrtu, slaveaddr, reg, fn);
 					cout << "(mtr-setup): autodetect: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
 						 << " speed=" << ComPort::getSpeed(s) << endl;
 				}
@@ -371,7 +409,7 @@ int main( int argc, char** argv )
 						 << endl;
 				}
 
-				cout << "model: " << MTR::getModelNumber(&mb, slaveaddr) << endl;
+				cout << "model: " << MTR::getModelNumber(mb, slaveaddr) << endl;
 			}
 			break;
 
@@ -384,7 +422,7 @@ int main( int argc, char** argv )
 						 << endl;
 				}
 
-				cout << "serial: " << MTR::getSerialNumber(&mb, slaveaddr) << endl;
+				cout << "serial: " << MTR::getSerialNumber(mb, slaveaddr) << endl;
 			}
 			break;
 

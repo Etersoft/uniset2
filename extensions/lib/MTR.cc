@@ -19,6 +19,7 @@
 #include <iomanip>
 #include <fstream>
 #include <algorithm>
+#include "modbus/ModbusClient.h"
 #include "modbus/ModbusRTUMaster.h"
 #include "modbus/ModbusHelpers.h"
 #include "MTR.h"
@@ -181,7 +182,7 @@ namespace uniset
 			return 0;
 		}
 		// -------------------------------------------------------------------------
-		bool setAddress( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusAddr newAddr )
+		bool setAddress( ModbusClient* mb, ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusAddr newAddr )
 		{
 			try
 			{
@@ -197,7 +198,7 @@ namespace uniset
 			return false;
 		}
 		// -----------------------------------------------------------------------------
-		bool setBaudRate( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, mtrBaudRate br )
+		bool setBaudRate( uniset::ModbusClient* mb, ModbusRTU::ModbusAddr addr, mtrBaudRate br )
 		{
 			try
 			{
@@ -213,7 +214,7 @@ namespace uniset
 			return false;
 		}
 		// -----------------------------------------------------------------------------
-		bool setStopBit( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, bool state )
+		bool setStopBit(ModbusClient* mb, ModbusRTU::ModbusAddr addr, bool state )
 		{
 			try
 			{
@@ -230,7 +231,7 @@ namespace uniset
 			return false;
 		}
 		// -----------------------------------------------------------------------------
-		bool setParity( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, mtrParity p )
+		bool setParity( uniset::ModbusClient* mb, ModbusRTU::ModbusAddr addr, mtrParity p )
 		{
 			try
 			{
@@ -246,7 +247,7 @@ namespace uniset
 			return false;
 		}
 		// -----------------------------------------------------------------------------
-		bool setDataBits( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, mtrDataBits d )
+		bool setDataBits( ModbusClient* mb, ModbusRTU::ModbusAddr addr, mtrDataBits d )
 		{
 			try
 			{
@@ -262,7 +263,7 @@ namespace uniset
 			return false;
 		}
 		// -----------------------------------------------------------------------------
-		std::string getModelNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr )
+		std::string getModelNumber( uniset::ModbusClient* mb, ModbusRTU::ModbusAddr addr )
 		{
 			try
 			{
@@ -277,7 +278,7 @@ namespace uniset
 			return "";
 		}
 		// -----------------------------------------------------------------------------
-		std::string getSerialNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr )
+		std::string getSerialNumber( ModbusClient* mb, ModbusRTU::ModbusAddr addr )
 		{
 			try
 			{
@@ -408,8 +409,10 @@ namespace uniset
 		}
 		// ------------------------------------------------------------------------------------------
 		void update_communication_params( ModbusRTU::ModbusAddr reg, ModbusRTU::ModbusData data,
-										  ModbusRTUMaster* mb, ModbusRTU::ModbusAddr& addr, int verb )
+										  ModbusClient* mb, ModbusRTU::ModbusAddr& addr, int verb )
 		{
+			auto mbrtu = dynamic_cast<ModbusRTUMaster*>(mb);
+
 			if( reg == regAddress )
 			{
 				addr = data;
@@ -424,39 +427,46 @@ namespace uniset
 
 				if( speed != ComPort::ComSpeed0 )
 				{
-					mb->setSpeed(speed);
-
-					if( verb )
-						cout << "(mtr-setup): speed is set to "
-							 << ComPort::getSpeed(speed) << endl;
+					if( mbrtu )
+					{
+						mbrtu->setSpeed(speed);
+						if( verb )
+							cout << "(mtr-setup): speed is set to "
+								 << ComPort::getSpeed(speed) << endl;
+					}
 				}
 			}
 			else if( reg == regStopBit )
 			{
-				if( data == 0 )
-					mb->setStopBits(ComPort::OneBit);
-				else if( data == 1)
-					mb->setStopBits(ComPort::TwoBits);
-				else return;
+				if( mbrtu )
+				{
+					if( data == 0 )
+						mbrtu->setStopBits(ComPort::OneBit);
+					else if( data == 1)
+						mbrtu->setStopBits(ComPort::TwoBits);
+					else return;
 
-				if( verb )
-					cout << "(mtr-setup): number of stop bits is set to "
-						 << data + 1 << endl;
+					if( verb )
+						cout << "(mtr-setup): number of stop bits is set to "
+							 << data + 1 << endl;
+				}
 			}
 			else if( reg == regParity )
 			{
 				if (data != 0 && data != 1 && data != 2)
 					return;
 
-				mb->setParity(get_parity(data));
-
-				if( verb )
-					cout << "(mtr-setup): parity is set to "
-						 << (data ? ((data == 1) ? "odd" : "even") : "no") << endl;
+				if( mbrtu )
+				{
+					mbrtu->setParity(get_parity(data));
+					if( verb )
+						cout << "(mtr-setup): parity is set to "
+							 << (data ? ((data == 1) ? "odd" : "even") : "no") << endl;
+				}
 			}
 		}
 		// ------------------------------------------------------------------------------------------
-		bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr, int verb )
+		bool send_param( ModbusClient* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr, int verb )
 		{
 			if( !mb )
 			{
@@ -546,7 +556,7 @@ namespace uniset
 			return false;
 		}
 		// ------------------------------------------------------------------------------------------
-		MTR::MTRError update_configuration( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr slaveaddr,
+		MTR::MTRError update_configuration(ModbusClient* mb, ModbusRTU::ModbusAddr slaveaddr,
 											const std::string& mtrconfile,  int verb )
 		{
 			std::string m = MTR::getModelNumber(mb, slaveaddr);
