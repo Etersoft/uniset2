@@ -1504,6 +1504,24 @@ namespace uniset
 		cout << LogServer::help_print("prefix-logserver") << endl;
 	}
 	// -----------------------------------------------------------------------------
+	string MBSlave::amode2str(MBSlave::AccessMode m)
+	{
+		switch(m)
+		{
+			case amRW:
+				return "rw";
+
+			case amRO:
+				return "ro";
+
+			case amWO:
+				return "wr";
+
+			default:
+				return "";
+		}
+	}
+	// -----------------------------------------------------------------------------
 	std::shared_ptr<MBSlave> MBSlave::init_mbslave(int argc, const char* const* argv, uniset::ObjectId icID,
 			const std::shared_ptr<SharedMemory>& ic, const string& prefix )
 	{
@@ -1983,6 +2001,129 @@ namespace uniset
 		pingOK = false;
 		return ModbusRTU::erTimeOut;
 	}
+#ifndef DISABLE_REST_API
+	// -------------------------------------------------------------------------
+	Poco::JSON::Object::Ptr MBSlave::httpHelp( const Poco::URI::QueryParameters& p )
+	{
+		uniset::json::help::object myhelp(myname, UniSetObject::httpHelp(p));
+
+		{
+			// 'regs'
+			uniset::json::help::item cmd("get registers list");
+			cmd.param("regs=reg1,reg2,reg3..", "get these registers");
+			cmd.param("addr=mbaddr1,mbaddr2,..", "get registers for mbaddr");
+			myhelp.add(cmd);
+		}
+
+		return myhelp;
+	}
+	// -------------------------------------------------------------------------
+	Poco::JSON::Object::Ptr MBSlave::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
+	{
+		if( req == "regs" )
+			return request_regs(req, p);
+
+		return UniSetObject::httpRequest(req, p);
+	}
+	// -------------------------------------------------------------------------
+	Poco::JSON::Object::Ptr MBSlave::request_regs( const string& req, const Poco::URI::QueryParameters& params )
+	{
+		Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+		Poco::JSON::Array::Ptr jdata = uniset::json::make_child_array(json, "regs");
+		auto my = httpGetMyInfo(json);
+		auto oind = uniset_conf()->oind;
+
+		std::vector<std::string> q_regs;
+		std::vector<std::string> q_addr;
+
+		if( !params.empty() )
+		{
+			for( const auto& p: params )
+			{
+				if( p.first == "regs" )
+					q_regs = uniset::explode_str(p.second, ',');
+				else if( p.first == "addr" )
+					q_addr = uniset::explode_str(p.second, ',');
+			}
+		}
+
+		/* Создаём json
+		 * { {"addr":
+		 *         {"regs":
+		 *               {reginfo..},
+		 *               {reginfo..},
+		 *	 }},
+		 * }
+		 */
+
+		// Проход по списку заданных addr..
+		if( !q_addr.empty() )
+		{
+			for( const auto& a: q_addr )
+			{
+				ModbusRTU::ModbusAddr mbaddr = ModbusRTU::str2mbAddr(a);
+				auto i = iomap.find(mbaddr);
+				if( i != iomap.end() )
+				{
+					Poco::JSON::Object::Ptr jaddr = get_regs(i->first,i->second, q_regs);
+					jdata->add(jaddr);
+				}
+			}
+		}
+		else // Проход по всему списку
+		{
+			for( const auto& i: iomap )
+			{
+				Poco::JSON::Object::Ptr jaddr = get_regs(i.first,i.second, q_regs);
+				jdata->add(jaddr);
+			}
+		}
+
+		return json;
+	}
+	// -------------------------------------------------------------------------
+	Poco::JSON::Object::Ptr MBSlave::get_regs(ModbusRTU::ModbusAddr addr, const RegMap& rmap, const std::vector<string>& q_regs )
+	{
+		Poco::JSON::Object::Ptr jaddr = new Poco::JSON::Object();
+		Poco::JSON::Array::Ptr regs = new Poco::JSON::Array();
+		jaddr->set( ModbusRTU::addr2str(addr), regs);
+
+		if( q_regs.empty() )
+		{
+			for( const auto& r: rmap )
+			{
+				Poco::JSON::Object::Ptr reginfo = get_reginfo(r.second);
+				regs->add(reginfo);
+			}
+		}
+		else
+		{
+			for( const auto& s : q_regs )
+			{
+				auto reg = genRegID( ModbusRTU::str2mbData(s), default_mbfunc);
+				auto r = rmap.find(reg);
+				if( r != rmap.end() )
+				{
+					Poco::JSON::Object::Ptr reginfo = get_reginfo(r->second);
+					regs->add(reginfo);
+				}
+			}
+		}
+
+		return jaddr;
+	}
+	// -------------------------------------------------------------------------
+	Poco::JSON::Object::Ptr MBSlave::get_reginfo( const IOProperty& prop )
+	{
+		Poco::JSON::Object::Ptr reginfo = new Poco::JSON::Object();
+		reginfo->set("mbreg", prop.mbreg);
+		reginfo->set("vtype", VTypes::type2str( prop.vtype));
+		reginfo->set("regID",  prop.regID);
+		reginfo->set("amode", amode2str( prop.amode));
+		reginfo->set("value",  prop.value);
+		return reginfo;
+	}
+#endif
 	// -------------------------------------------------------------------------
 	ModbusRTU::mbErrCode MBSlave::much_real_read(RegMap& rmap, const ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat,
 			size_t count, const int fn )
@@ -2652,6 +2793,7 @@ namespace uniset
 		i->info = inf.str().c_str();
 		return i._retn();
 	}
+
 	// ----------------------------------------------------------------------------
 	void MBSlave::initTCPClients( UniXML::iterator confnode )
 	{

@@ -60,6 +60,7 @@ namespace uniset
 	      - \ref sec_MBSlave_MEIRDI
 		  - \ref sec_MBSlave_DIAG
 		  - \ref sec_MBSlave_TCP
+		  - \ref sec_MBSlave_REST_API
 
 	      \section sec_MBSlave_Comm Общее описание Modbus slave
 	      Класс реализует базовые функции для протокола Modbus в slave режиме. Реализацию Modbus RTU - см. RTUExchange.
@@ -303,6 +304,15 @@ namespace uniset
 		</MBTCPPersistentSlave>
 		\endcode
 
+		\section sec_MBSlave_REST_API MBSlave HTTP API
+
+
+		/help                            - Получение списка доступных команд
+		/                                - получение стандартной информации
+		/regs?regs=reg1,reg2,reg3,..&addr=addr1,addr2,addr3  - получение списка регистров
+									 Не обязательные параметры:
+									   regs - выдать информацию только по указанным регистрам
+									   addr - выдать информацию только по указанным адресам устройств
 	*/
 	// -----------------------------------------------------------------------------
 	/*! Реализация slave-интерфейса */
@@ -329,6 +339,8 @@ namespace uniset
 				amRO,
 				amWO
 			};
+
+			std::string amode2str( AccessMode m );
 
 			struct BitRegProperty;
 
@@ -387,6 +399,12 @@ namespace uniset
 			}
 
 			virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
+
+#ifndef DISABLE_REST_API
+			// http API
+			virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
+			virtual Poco::JSON::Object::Ptr httpRequest( const string& req, const Poco::URI::QueryParameters& p ) override;
+#endif
 
 		protected:
 
@@ -514,6 +532,12 @@ namespace uniset
 			ModbusRTU::mbErrCode real_bitreg_write_it( std::shared_ptr<BitRegProperty>& bp, const ModbusRTU::ModbusData val );
 			ModbusRTU::mbErrCode real_write_prop(IOProperty* p, ModbusRTU::ModbusData* dat, size_t& i, size_t count );
 
+#ifndef DISABLE_REST_API
+			// http api
+			Poco::JSON::Object::Ptr request_regs( const std::string& req, const Poco::URI::QueryParameters& p );
+			Poco::JSON::Object::Ptr get_regs(ModbusRTU::ModbusAddr addr, const RegMap& rmap, const std::vector<std::string>& q_regs );
+			Poco::JSON::Object::Ptr get_reginfo( const IOProperty& prop );
+#endif
 			MBSlave();
 			timeout_t initPause = { 3000 };
 			uniset::uniset_rwmutex mutex_start;

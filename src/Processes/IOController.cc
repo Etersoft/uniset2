@@ -858,7 +858,7 @@ Poco::JSON::Object::Ptr IOController::httpHelp( const Poco::URI::QueryParameters
 
 	{
 		// 'sensors'
-		uniset::json::help::item cmd("et all sensors");
+		uniset::json::help::item cmd("get all sensors");
 		cmd.param("nameonly", "get only name sensors");
 		cmd.param("offset=N", "get from N record");
 		cmd.param("limit=M", "limit of records");

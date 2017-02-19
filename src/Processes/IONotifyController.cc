@@ -1223,7 +1223,7 @@ Poco::JSON::Object::Ptr IONotifyController::request_consumers( const string& req
 
 	ConsumerListInfo emptyList;
 
-	if( p.size() > 0 )
+	if( !p.empty() )
 	{
 		if( !p[0].first.empty() )
 			slist = uniset::getSInfoList( p[0].first, uniset_conf() );
