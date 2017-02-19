@@ -254,6 +254,7 @@ if test ${buildpython} = true; then
 	AM_CONDITIONAL(HAVE_NETDATA, test ${netdata} = true)
 else
 	AC_MSG_RESULT([disabled])
+	AM_CONDITIONAL(HAVE_NETDATA, false)
 fi
 
 AM_CONDITIONAL(DISABLE_PYTHON, test ${buildpython} = false)
