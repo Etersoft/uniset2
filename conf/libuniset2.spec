@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt10.1
+Release: alt12
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -498,6 +498,9 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
+* Mon Feb 27 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt12
+- up version
+
 * Tue Feb 21 2017 Alexei Takaseev <taf@altlinux.org> 2.6-alt10.1
 - Rebuild with poco 1.7.7
 
