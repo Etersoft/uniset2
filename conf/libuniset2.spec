@@ -77,7 +77,7 @@ BuildRequires(pre): rpm-build-python
 %endif
 
 %if_enabled docs
-BuildRequires: doxygen graphviz
+BuildRequires: doxygen graphviz ImageMagick-tools
 %endif
 
 %if_enabled tests
@@ -317,6 +317,16 @@ SharedMemoryPlus extension ('all in one') for libuniset
 %autoreconf
 %configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api} %{subst_enable netdata}
 %make_build
+
+# fix for ALTLinux build (noarch)
+%if_enabled docs
+cd docs/html
+PNGFILES=`find ./ -name '*.png' -type f`
+for F in ${PNGFILES}; do
+#   echo "$F"
+    convert ${F} -flatten +matte ${F}
+done
+%endif
 
 %install
 %makeinstall_std
