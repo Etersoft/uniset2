@@ -32,35 +32,35 @@
 namespace uniset
 {
 
-class SViewer
-{
-	public:
+	class SViewer
+	{
+		public:
 
-		explicit SViewer(const std::string& ControllersSection, bool isShortName = true);
-		virtual ~SViewer();
+			explicit SViewer(const std::string& ControllersSection, bool isShortName = true);
+			virtual ~SViewer();
 
-		void view();
-		void monitor( timeout_t timeoutMS = 500 );
+			void view();
+			void monitor( timeout_t timeoutMS = 500 );
 
-	protected:
-		void readSection(const std::string& sec, const std::string& secRoot);
-		void getInfo(uniset::ObjectId id);
+		protected:
+			void readSection(const std::string& sec, const std::string& secRoot);
+			void getInfo(uniset::ObjectId id);
 
-		virtual void updateSensors( IOController_i::SensorInfoSeq_var& amap, uniset::ObjectId oid );
-		virtual void updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tlst, uniset::ObjectId oid );
+			virtual void updateSensors( IOController_i::SensorInfoSeq_var& amap, uniset::ObjectId oid );
+			virtual void updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tlst, uniset::ObjectId oid );
 
-		const std::string csec;
-		void printInfo(uniset::ObjectId id, const std::string& sname, long value, const std::string& supplier,
-					   const std::string& txtname, const std::string& iotype);
+			const std::string csec;
+			void printInfo(uniset::ObjectId id, const std::string& sname, long value, const std::string& supplier,
+						   const std::string& txtname, const std::string& iotype);
 
-		std::shared_ptr<UInterface> ui;
+			std::shared_ptr<UInterface> ui;
 
-	private:
-		ObjectRepository rep;
-		bool isShortName = { true };
+		private:
+			ObjectRepository rep;
+			bool isShortName = { true };
 
-};
-// -------------------------------------------------------------------------
+	};
+	// -------------------------------------------------------------------------
 } // end of uniset namespace
 // --------------------------------------------------------------------------
 #endif

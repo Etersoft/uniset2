@@ -23,57 +23,57 @@
 // --------------------------------------------------------------------------
 namespace UTypes
 {
-const long DefaultID = uniset::DefaultObjectId;
-const long DefaultSupplerID = uniset::AdminID;
+	const long DefaultID = uniset::DefaultObjectId;
+	const long DefaultSupplerID = uniset::AdminID;
 
-struct Params
-{
-	static const int max = 20;
-
-	Params(): argc(0)
+	struct Params
 	{
-		memset(argv, 0, sizeof(argv));
-	}
+		static const int max = 20;
 
-	bool add( char* s )
-	{
-		if( argc < Params::max )
+		Params(): argc(0)
 		{
-			argv[argc++] = uniset::uni_strdup(s);
-			return true;
+			memset(argv, 0, sizeof(argv));
 		}
 
-		return false;
-	}
-
-	bool add_str( const std::string s )
-	{
-		if( argc < Params::max )
+		bool add( char* s )
 		{
-			argv[argc++] = uniset::uni_strdup(s);
-			return true;
+			if( argc < Params::max )
+			{
+				argv[argc++] = uniset::uni_strdup(s);
+				return true;
+			}
+
+			return false;
 		}
 
-		return false;
-	}
+		bool add_str( const std::string s )
+		{
+			if( argc < Params::max )
+			{
+				argv[argc++] = uniset::uni_strdup(s);
+				return true;
+			}
 
-	int argc;
-	char* argv[max];
+			return false;
+		}
 
-	static Params inst()
+		int argc;
+		char* argv[max];
+
+		static Params inst()
+		{
+			return Params();
+		}
+	};
+
+	struct ShortIOInfo
 	{
-		return Params();
-	}
-};
-
-struct ShortIOInfo
-{
-	long value;
-	unsigned long tv_sec;
-	unsigned long tv_nsec;
-	long supplier;
-	long supplier_node;
-};
+		long value;
+		unsigned long tv_sec;
+		unsigned long tv_nsec;
+		long supplier;
+		long supplier_node;
+	};
 }
 
 //---------------------------------------------------------------------------

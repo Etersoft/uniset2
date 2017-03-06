@@ -250,7 +250,7 @@
         std::string strval( uniset::ObjectId id, bool showLinkName=true ) const;        
         
         /*! Вывод состояния внутренних переменных */
-        inline std::string dumpVars(){ return std::move(vmon.pretty_str()); }
+        inline std::string dumpVars(){ return vmon.pretty_str(); }
         // ------------------------------------------------------------
         std::string help() noexcept;
 
@@ -416,6 +416,8 @@
 		
 		std::unordered_map&lt;const uniset::ObjectId,size_t, StatHashFn&gt; smStat; /*!&lt; количество сообщений по датчикам */
 		size_t processingMessageCatchCount = { 0 }; /*!&lt; количество исключений пойманных в processingMessage */
+		
+		std::string ostate = { "" }; /*!&lt; состояние процесса (выводится в getInfo()) */
 		</xsl:if>
 </xsl:template>
 
@@ -476,22 +478,42 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 			}
 		case SystemMessage::StartUp:
 		{
-			if( !logserv_host.empty() &amp;&amp; logserv_port != 0 &amp;&amp; !logserv-&gt;isRunning() )
+			ostate = "StartUp...";
+			try
 			{
-				myinfo &lt;&lt; myname &lt;&lt; "(preSysCommand): run log server " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port &lt;&lt; endl;
-				logserv-&gt;run(logserv_host, logserv_port, true);
+				if( !logserv_host.empty() &amp;&amp; logserv_port != 0 &amp;&amp; !logserv-&gt;isRunning() )
+				{
+					ostate = "StartUp: run log server...";
+					myinfo &lt;&lt; myname &lt;&lt; "(preSysCommand): run log server " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port &lt;&lt; endl;
+					logserv-&gt;run(logserv_host, logserv_port, true);
+				}
+			}
+			catch( std::exception&amp; ex )
+			{
+				mywarn &lt;&lt; myname &lt;&lt; "(preSysCommand): CAN`t run log server err: " &lt;&lt; ex.what() &lt;&lt; endl;
+			}
+			catch( ... )
+			{
+				mywarn &lt;&lt; myname &lt;&lt; "(preSysCommand): CAN`t run log server err: catch ..." &lt;&lt; endl;
 			}
 
+			ostate = "StartUp: wait sm ready..";
 			waitSM(smReadyTimeout);
 			ptStartUpTimeout.reset();
 			// т.к. для io-переменных важно соблюдать последовательность!
 			// сперва обновить входы..
+			ostate = "StartUp: update values..";
 			updateValues();
+			ostate = "StartUp: init from SM..";
 			initFromSM(); // потом обновить значения переменных, помеченных как инициализируемые из SM
+			ostate = "StartUp: update outputs..";
 			updateOutputs(true); // а потом уже выходы (принудительное обновление)
+			ostate = "StartUp: pre ask sensors..";
 			preAskSensors(UniversalIO::UIONotify);
+			ostate = "StartUp: ask sensors..";
 			askSensors(UniversalIO::UIONotify);
 			active = true;
+			ostate = "StartUp: [OK]";
 			break;
 		}
 		
@@ -514,8 +536,19 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 			
 			if( logserv &amp;&amp; !logserv_host.empty() &amp;&amp; logserv_port != 0 )
 			{
-				mylogany &lt;&lt; myname &lt;&lt; "(preSysCommand): try restart logserver.." &lt;&lt; endl;
-				logserv-&gt;check(true);
+				try
+				{
+					mylogany &lt;&lt; myname &lt;&lt; "(preSysCommand): try restart logserver.." &lt;&lt; endl;
+					logserv-&gt;check(true);
+				}
+				catch( std::exception&amp; ex )
+				{
+					mywarn &lt;&lt; myname &lt;&lt; "(preSysCommand): CAN`t restart log server err: " &lt;&lt; ex.what() &lt;&lt; endl;
+				}
+				catch( ... )
+				{
+					mywarn &lt;&lt; myname &lt;&lt; "(preSysCommand): CAN`t restart log server err: catch ..." &lt;&lt; endl;
+				}
 			}
 		}
 		break;
@@ -536,6 +569,8 @@ uniset::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( const char*
 	ostringstream inf;
 	
 	inf &lt;&lt; i->info &lt;&lt; endl;
+	inf &lt;&lt; "process state: " &lt;&lt; ostate &lt;&lt; endl;
+	
 	if( logserv /* &amp;&amp; userparam &lt; 0 */ )
 	{
 		inf &lt;&lt; "LogServer: " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port 
@@ -654,7 +689,7 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpRequest( con
 Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpRequestLog( const Poco::URI::QueryParameters&amp; p )
 {
 	Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
-	jret->set(myname,uniset::json::make_object("log", Debug::str(mylog->level())));
+	jret->set("log",Debug::str(mylog->level()));
 	return jret;
 }
 // -----------------------------------------------------------------------------
@@ -801,10 +836,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 			&lt;&lt; wait_msec &lt;&lt; " мсек";
 
         mycrit &lt;&lt; err.str() &lt;&lt; endl;
-//		terminate();
-//		abort();
-//		raise(SIGTERM);
-		std::terminate();
+		std::abort();
 //		throw uniset::SystemError(err.str());
 	}
 
@@ -816,10 +848,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 			&lt;&lt; wait_msec &lt;&lt; " мсек";
 	
 		mycrit &lt;&lt; err.str() &lt;&lt; endl;
-//		terminate();
-//		abort();
-		//raise(SIGTERM);
-		std::terminate();
+		std::abort();
 //		throw uniset::SystemError(err.str());
 	}
 }
@@ -849,7 +878,7 @@ std::string <xsl:value-of select="$CLASSNAME"/>_SK::help() noexcept
 	s &lt;&lt; " ****************************************************************************************** " &lt;&lt; endl;
 	
 	
-	return std::move(s.str());
+	return s.str();
 }
 // ----------------------------------------------------------------------------
 </xsl:template>
@@ -1230,9 +1259,9 @@ end_private(false)
 	if( smTestID == DefaultObjectId )
 		smTestID = getSMTestID();
 
-	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 20000);
+	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 90000);
 
-	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 10000);
+	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 50000);
 	ptStartUpTimeout.setTiming(msec);
 
 	// ===================== &lt;variables&gt; =====================
@@ -1500,7 +1529,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 			s &lt;&lt; std::endl;
 	}
 	
-	return std::move(s.str());
+	return s.str();
 }
 // ----------------------------------------------------------------------------
 std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( uniset::ObjectId id, bool showLinkName ) const
@@ -1511,7 +1540,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( uniset::ObjectId id, b
 	{
 		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>";
 		if( showLinkName ) s &lt;&lt; "(" &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")";
-		return std::move(s.str());
+		return s.str();
 	}
 	</xsl:for-each>	
 	return "";
@@ -1527,7 +1556,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::strval( uniset::ObjectId id
 		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>";
 		if( showLinkName ) s &lt;&lt; "(" &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")";		
 		s &lt;&lt; "=" &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
-		return std::move(s.str());
+		return s.str();
 	}
 	</xsl:for-each>	
 	return "";
@@ -1699,10 +1728,11 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 
 	vmonit(smTestID);
 	vmonit(smReadyTimeout);
+	vmonit(activateTimeout);
 
-	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 20000);
+	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 90000);
 
-	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 10000);
+	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 60000);
 	ptStartUpTimeout.setTiming(msec);
 }
 
@@ -1868,7 +1898,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 		  s &lt;&lt; endl;
 	}
 	
-	return std::move(s.str());
+	return s.str();
 }
 // ----------------------------------------------------------------------------
 std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( uniset::ObjectId id, bool showLinkName ) const
@@ -1881,7 +1911,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( uniset::ObjectId id, b
 	{
 		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>";
 		if( showLinkName ) s &lt;&lt; "(<xsl:value-of select="../../@name"/>)";
-		return std::move(s.str());
+		return s.str();
 	}
 	</xsl:if>
 	</xsl:if>
@@ -1900,7 +1930,7 @@ std::string <xsl:value-of select="$CLASSNAME"/>_SK::strval( uniset::ObjectId id,
 		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>";
 		if( showLinkName ) s &lt;&lt; " ( <xsl:value-of select="../../@name"/> )";
 		s &lt;&lt; "=" &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>;
-		return std::move(s.str());
+		return s.str();
 	}
 	</xsl:if>
 	</xsl:if>

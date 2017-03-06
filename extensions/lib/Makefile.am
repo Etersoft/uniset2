@@ -8,4 +8,9 @@ libUniSet2Extensions_la_LIBADD   = $(SIGC_LIBS) $(POCO_LIBS) $(top_builddir)/lib
 libUniSet2Extensions_la_SOURCES  = Extensions.cc SMInterface.cc Calibration.cc SingleProcess.cc \
 	IOBase.cc DigitalFilter.cc PID.cc MTR.cc VTypes.cc UObject_SK.cc
 
+UObject_SK.cc: $(top_builddir)/Utilities/codegen/*.xsl
+	$(SHEL) $(top_builddir)/Utilities/codegen/uniset2-codegen -l $(top_builddir)/Utilities/codegen -n UObject --no-main $(top_builddir)/Utilities/codegen/tests/uobject.src.xml
+	mv -f UObject_SK.h ../include/
+
 include $(top_builddir)/include.mk
+

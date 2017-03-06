@@ -24,92 +24,92 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-// --------------------------------------------------------------------------------
-using namespace std;
-// --------------------------------------------------------------------------------
-/*! замок для блокирования совместного доступа к функции обрабтки сигналов */
-static std::atomic_bool procterm;
-static std::atomic_bool doneterm;
-static SingleProcess* gMain = NULL;
-static const int TERMINATE_TIMEOUT = 2; //  время отведенное на завершение процесса [сек]
-// --------------------------------------------------------------------------------
-SingleProcess::SingleProcess()
-{
-	gMain = this;
-}
-
-// --------------------------------------------------------------------------------
-SingleProcess::~SingleProcess()
-{
-}
-// --------------------------------------------------------------------------------
-void SingleProcess::finishterm( int signo )
-{
-	if( !doneterm )
+	// --------------------------------------------------------------------------------
+	using namespace std;
+	// --------------------------------------------------------------------------------
+	/*! замок для блокирования совместного доступа к функции обрабтки сигналов */
+	static std::atomic_bool procterm;
+	static std::atomic_bool doneterm;
+	static SingleProcess* gMain = NULL;
+	static const int TERMINATE_TIMEOUT = 2; //  время отведенное на завершение процесса [сек]
+	// --------------------------------------------------------------------------------
+	SingleProcess::SingleProcess()
 	{
-		cerr << "(SingleProcess:finishterm): прерываем процесс завершения...!" << endl << flush;
-		sigset(SIGALRM, SIG_DFL);
-		gMain->set_signals(false);
-		doneterm = 1;
-		raise(SIGKILL);
+		gMain = this;
 	}
-}
-// ------------------------------------------------------------------------------------------
-void SingleProcess::terminated( int signo )
-{
-	if( !signo || doneterm || !gMain || procterm )
-		return;
 
+	// --------------------------------------------------------------------------------
+	SingleProcess::~SingleProcess()
 	{
-		// lock
-
-		// на случай прихода нескольких сигналов
-		if( !procterm )
+	}
+	// --------------------------------------------------------------------------------
+	void SingleProcess::finishterm( int signo )
+	{
+		if( !doneterm )
 		{
-			procterm = 1;
-			sighold(SIGALRM);
-			sigset(SIGALRM, SingleProcess::finishterm);
-			alarm(TERMINATE_TIMEOUT);
-			sigrelse(SIGALRM);
-			gMain->term(signo);
+			cerr << "(SingleProcess:finishterm): прерываем процесс завершения...!" << endl << flush;
+			sigset(SIGALRM, SIG_DFL);
 			gMain->set_signals(false);
 			doneterm = 1;
-			raise(signo);
+			raise(SIGKILL);
 		}
 	}
-}
-// --------------------------------------------------------------------------------
-void SingleProcess::set_signals( bool ask )
-{
-	struct sigaction act, oact;
-	sigemptyset(&act.sa_mask);
+	// ------------------------------------------------------------------------------------------
+	void SingleProcess::terminated( int signo )
+	{
+		if( !signo || doneterm || !gMain || procterm )
+			return;
 
-	act.sa_flags = SA_RESETHAND;
+		{
+			// lock
 
-	// добавляем сигналы, которые будут игнорироваться
-	// при обработке сигнала
-	sigaddset(&act.sa_mask, SIGINT);
-	sigaddset(&act.sa_mask, SIGTERM);
-	sigaddset(&act.sa_mask, SIGABRT );
-	sigaddset(&act.sa_mask, SIGQUIT);
-	//    sigaddset(&act.sa_mask, SIGSEGV);
+			// на случай прихода нескольких сигналов
+			if( !procterm )
+			{
+				procterm = 1;
+				sighold(SIGALRM);
+				sigset(SIGALRM, SingleProcess::finishterm);
+				alarm(TERMINATE_TIMEOUT);
+				sigrelse(SIGALRM);
+				gMain->term(signo);
+				gMain->set_signals(false);
+				doneterm = 1;
+				raise(signo);
+			}
+		}
+	}
+	// --------------------------------------------------------------------------------
+	void SingleProcess::set_signals( bool ask )
+	{
+		struct sigaction act, oact;
+		sigemptyset(&act.sa_mask);
+
+		act.sa_flags = SA_RESETHAND;
+
+		// добавляем сигналы, которые будут игнорироваться
+		// при обработке сигнала
+		sigaddset(&act.sa_mask, SIGINT);
+		sigaddset(&act.sa_mask, SIGTERM);
+		sigaddset(&act.sa_mask, SIGABRT );
+		sigaddset(&act.sa_mask, SIGQUIT);
+		//    sigaddset(&act.sa_mask, SIGSEGV);
 
 
-	//    sigaddset(&act.sa_mask, SIGALRM);
-	//    act.sa_flags = 0;
-	//    act.sa_flags |= SA_RESTART;
-	//    act.sa_flags |= SA_RESETHAND;
-	if(ask)
-		act.sa_handler = terminated;
-	else
-		act.sa_handler = SIG_DFL;
+		//    sigaddset(&act.sa_mask, SIGALRM);
+		//    act.sa_flags = 0;
+		//    act.sa_flags |= SA_RESTART;
+		//    act.sa_flags |= SA_RESETHAND;
+		if(ask)
+			act.sa_handler = terminated;
+		else
+			act.sa_handler = SIG_DFL;
 
-	sigaction(SIGINT, &act, &oact);
-	sigaction(SIGTERM, &act, &oact);
-	sigaction(SIGABRT, &act, &oact);
-	sigaction(SIGQUIT, &act, &oact);
+		sigaction(SIGINT, &act, &oact);
+		sigaction(SIGTERM, &act, &oact);
+		sigaction(SIGABRT, &act, &oact);
+		sigaction(SIGQUIT, &act, &oact);
 
-	//    sigaction(SIGSEGV, &act, &oact);
-}
-// --------------------------------------------------------------------------------
+		//    sigaction(SIGSEGV, &act, &oact);
+	}
+	// --------------------------------------------------------------------------------
 } // end of namespace uniset

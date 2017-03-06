@@ -107,7 +107,7 @@ void MBSlave::sigterm( int signo )
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
-											  ReadCoilRetMessage& reply )
+		ReadCoilRetMessage& reply )
 {
 	if( verbose )
 		cout << "(readCoilStatus): " << query << endl;
@@ -136,7 +136,7 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
-											   ReadInputStatusRetMessage& reply )
+		ReadInputStatusRetMessage& reply )
 {
 	if( verbose )
 		cout << "(readInputStatus): " << query << endl;
@@ -276,7 +276,7 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters(
 
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
-												  ModbusRTU::ForceCoilsRetMessage& reply )
+		ModbusRTU::ForceCoilsRetMessage& reply )
 {
 	if( verbose )
 		cout << "(forceMultipleCoils): " << query << endl;
@@ -310,7 +310,7 @@ ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( ModbusRTU::WriteSingleO
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
-											   ModbusRTU::ForceSingleCoilRetMessage& reply )
+		ModbusRTU::ForceSingleCoilRetMessage& reply )
 {
 	if( verbose )
 		cout << "(forceSingleCoil): " << query << endl;
@@ -322,7 +322,7 @@ ModbusRTU::mbErrCode MBSlave::forceSingleCoil( ModbusRTU::ForceSingleCoilMessage
 
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::journalCommand( ModbusRTU::JournalCommandMessage& query,
-											  ModbusRTU::JournalCommandRetMessage& reply )
+		ModbusRTU::JournalCommandRetMessage& reply )
 {
 	if( verbose )
 		cout << "(journalCommand): " << query << endl;
@@ -359,7 +359,7 @@ ModbusRTU::mbErrCode MBSlave::journalCommand( ModbusRTU::JournalCommandMessage& 
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::setDateTime( ModbusRTU::SetDateTimeMessage& query,
-										   ModbusRTU::SetDateTimeRetMessage& reply )
+		ModbusRTU::SetDateTimeRetMessage& reply )
 {
 	if( verbose )
 		cout << "(setDateTime): " << query << endl;
@@ -371,14 +371,14 @@ ModbusRTU::mbErrCode MBSlave::setDateTime( ModbusRTU::SetDateTimeMessage& query,
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::remoteService( ModbusRTU::RemoteServiceMessage& query,
-											 ModbusRTU::RemoteServiceRetMessage& reply )
+		ModbusRTU::RemoteServiceRetMessage& reply )
 {
 	cerr << "(remoteService): " << query << endl;
 	return ModbusRTU::erOperationFailed;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& query,
-											ModbusRTU::FileTransferRetMessage& reply )
+		ModbusRTU::FileTransferRetMessage& reply )
 {
 	if( verbose )
 		cout << "(fileTransfer): " << query << endl;
@@ -459,7 +459,7 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
-										   ModbusRTU::DiagnosticRetMessage& reply )
+		ModbusRTU::DiagnosticRetMessage& reply )
 {
 	if( verbose )
 		cout << "(diagnostics): " << query << endl;

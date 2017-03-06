@@ -5,87 +5,87 @@ using namespace std;
 // -------------------------------------------------------------------------
 namespace uniset
 {
-// -------------------------------------------------------------------------
-EventLoopServer::EventLoopServer():
-	loop(ev::AUTO)
-{
-	evterm.set(loop);
-	evterm.set<EventLoopServer, &EventLoopServer::onStop>(this);
-}
-// -------------------------------------------------------------------------
-EventLoopServer::~EventLoopServer()
-{
-	if( !cancelled )
-		evstop();
-}
-// ---------------------------------------------------------------------------
-void EventLoopServer::evrun( bool thread )
-{
-	if( isrunning )
-		return;
-
-	isrunning = true;
-
-	if( !thread )
+	// -------------------------------------------------------------------------
+	EventLoopServer::EventLoopServer():
+		loop(ev::AUTO)
 	{
-		defaultLoop();
-		return;
+		evterm.set(loop);
+		evterm.set<EventLoopServer, &EventLoopServer::onStop>(this);
 	}
-	else if( !thr )
-		thr = make_shared<std::thread>( [ = ] { defaultLoop(); } );
-}
-// ---------------------------------------------------------------------------
-bool EventLoopServer::evIsActive() const noexcept
-{
-	return isrunning;
-}
-// -------------------------------------------------------------------------
-void EventLoopServer::evstop()
-{
-	cancelled = true;
-	evterm.send();
-
-	if( thr )
+	// -------------------------------------------------------------------------
+	EventLoopServer::~EventLoopServer()
 	{
-		thr->join();
-		thr = nullptr;
+		if( !cancelled )
+			evstop();
 	}
-}
-// -------------------------------------------------------------------------
-void EventLoopServer::onStop() noexcept
-{
-	try
+	// ---------------------------------------------------------------------------
+	void EventLoopServer::evrun( bool thread )
 	{
-		evfinish();
+		if( isrunning )
+			return;
+
+		isrunning = true;
+
+		if( !thread )
+		{
+			defaultLoop();
+			return;
+		}
+		else if( !thr )
+			thr = make_shared<std::thread>( [ = ] { defaultLoop(); } );
 	}
-	catch( std::exception& ex )
+	// ---------------------------------------------------------------------------
+	bool EventLoopServer::evIsActive() const noexcept
 	{
-
+		return isrunning;
 	}
+	// -------------------------------------------------------------------------
+	void EventLoopServer::evstop()
+	{
+		cancelled = true;
+		evterm.send();
 
-	evterm.stop();
-	loop.break_loop(ev::ALL);
-}
-// -------------------------------------------------------------------------
-void EventLoopServer::defaultLoop() noexcept
-{
-	evterm.start();
-	evprepare();
-
-	while( !cancelled )
+		if( thr )
+		{
+			thr->join();
+			thr = nullptr;
+		}
+	}
+	// -------------------------------------------------------------------------
+	void EventLoopServer::onStop() noexcept
 	{
 		try
 		{
-			loop.run(0);
+			evfinish();
 		}
 		catch( std::exception& ex )
 		{
-			cerr << "(EventLoopServer::defaultLoop): " << ex.what() << endl;
-		}
-	}
 
-	cancelled = true;
-	isrunning = false;
-}
-// -------------------------------------------------------------------------
+		}
+
+		evterm.stop();
+		loop.break_loop(ev::ALL);
+	}
+	// -------------------------------------------------------------------------
+	void EventLoopServer::defaultLoop() noexcept
+	{
+		evterm.start();
+		evprepare();
+
+		while( !cancelled )
+		{
+			try
+			{
+				loop.run(0);
+			}
+			catch( std::exception& ex )
+			{
+				cerr << "(EventLoopServer::defaultLoop): " << ex.what() << endl;
+			}
+		}
+
+		cancelled = true;
+		isrunning = false;
+	}
+	// -------------------------------------------------------------------------
 } // end of uniset namespace

@@ -212,6 +212,7 @@ extensions/tests/test_iobase.cc
 extensions/tests/test_iobase_with_sm.cc
 extensions/tests/test_ui.cc
 extensions/tests/test_vtypes.cc
+extensions/tests/test_restapi_uniset.cc
 extensions/tests/tests.cc
 extensions/tests/tests_with_conf.cc
 extensions/tests/tests_with_conf.xml
@@ -386,6 +387,7 @@ src/Communications/TCP/UTCPStream.cc
 src/Communications/TCP/UTCPSocket.cc
 src/Communications/TCP/USocket.cc
 src/Communications/Http/UHttpRequestHandler.cc
+src/Communications/Http/UHttpServer.cc
 src/Communications/ComPort.cc
 src/Communications/ComPort485F.cc
 src/Communications/Makefile.am

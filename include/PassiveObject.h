@@ -30,46 +30,46 @@
 namespace uniset
 {
 
-/*!
- * Пасивный объект не имеющий самостоятельного потока обработки сообщений, но имеющий
- * уникальный идентификатор. Предназначен для работы под управлением ProxyManager.
- *
-*/
-class PassiveObject
-{
-	public:
-		PassiveObject();
-		PassiveObject( uniset::ObjectId id );
-		PassiveObject( uniset::ObjectId id, ProxyManager* mngr );
-		virtual ~PassiveObject();
+	/*!
+	 * Пасивный объект не имеющий самостоятельного потока обработки сообщений, но имеющий
+	 * уникальный идентификатор. Предназначен для работы под управлением ProxyManager.
+	 *
+	*/
+	class PassiveObject
+	{
+		public:
+			PassiveObject();
+			PassiveObject( uniset::ObjectId id );
+			PassiveObject( uniset::ObjectId id, ProxyManager* mngr );
+			virtual ~PassiveObject();
 
-		virtual void processingMessage( const uniset::VoidMessage* msg );
+			virtual void processingMessage( const uniset::VoidMessage* msg );
 
-		void setID( uniset::ObjectId id );
-		void init(ProxyManager* mngr);
+			void setID( uniset::ObjectId id );
+			void init(ProxyManager* mngr);
 
-		inline uniset::ObjectId getId() const
-		{
-			return id;
-		}
-		inline std::string getName() const
-		{
-			return myname;
-		}
+			inline uniset::ObjectId getId() const
+			{
+				return id;
+			}
+			inline std::string getName() const
+			{
+				return myname;
+			}
 
-	protected:
-		virtual void sysCommand( const uniset::SystemMessage* sm );
-		virtual void askSensors( UniversalIO::UIOCommand cmd ) {}
-		virtual void timerInfo( const uniset::TimerMessage* tm ) {}
-		virtual void sensorInfo( const uniset::SensorMessage* sm ) {}
+		protected:
+			virtual void sysCommand( const uniset::SystemMessage* sm );
+			virtual void askSensors( UniversalIO::UIOCommand cmd ) {}
+			virtual void timerInfo( const uniset::TimerMessage* tm ) {}
+			virtual void sensorInfo( const uniset::SensorMessage* sm ) {}
 
-		std::string myname = { "" };
-		ProxyManager* mngr = { nullptr };
+			std::string myname = { "" };
+			ProxyManager* mngr = { nullptr };
 
-	private:
-		uniset::ObjectId id = { uniset::DefaultObjectId };
-};
-// -------------------------------------------------------------------------
+		private:
+			uniset::ObjectId id = { uniset::DefaultObjectId };
+	};
+	// -------------------------------------------------------------------------
 } // end of uniset namespace
 // -------------------------------------------------------------------------
 #endif // PassiveObject_H_

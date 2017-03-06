@@ -31,157 +31,164 @@
 #include <string>
 #include <cstddef>
 #include <memory>
+#include <vector>
 
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 // --------------------------------------------------------------------------
 namespace uniset
 {
+	typedef std::vector< std::pair<const std::string, const std::string> > UniXMLPropList;
 
-class UniXML_iterator:
-	public std::iterator<std::bidirectional_iterator_tag, xmlNode, ptrdiff_t, xmlNode*, xmlNode&>
-{
-	public:
-		UniXML_iterator(xmlNode* node) noexcept:
-			curNode(node)
-		{}
-		UniXML_iterator() noexcept: curNode(0) {}
+	class UniXML_iterator:
+		public std::iterator<std::bidirectional_iterator_tag, xmlNode, ptrdiff_t, xmlNode*, xmlNode&>
+	{
+		public:
+			UniXML_iterator(xmlNode* node) noexcept:
+				curNode(node)
+			{}
+			UniXML_iterator() noexcept: curNode(0) {}
 
-		std::string getProp2( const std::string& name, const std::string& defval = "" ) const noexcept;
-		std::string getProp( const std::string& name ) const noexcept;
-		int getIntProp( const std::string& name ) const noexcept;
-		/// if value if not positive ( <= 0 ), returns def
-		int getPIntProp( const std::string& name, int def ) const noexcept;
-		void setProp( const std::string& name, const std::string& text ) noexcept;
+			std::string getProp2( const std::string& name, const std::string& defval = "" ) const noexcept;
+			std::string getProp( const std::string& name ) const noexcept;
+			int getIntProp( const std::string& name ) const noexcept;
+			/// if value if not positive ( <= 0 ), returns def
+			int getPIntProp( const std::string& name, int def ) const noexcept;
+			void setProp( const std::string& name, const std::string& text ) noexcept;
 
-		bool findName( const std::string& node, const std::string& searchname, bool deepfind = true ) noexcept;
-		bool find( const std::string& searchnode, bool deepfind = true) noexcept;
-		xmlNode* findX( xmlNode* root, const std::string& searchnode, bool deepfind = true ) noexcept;
+			bool findName( const std::string& node, const std::string& searchname, bool deepfind = true ) noexcept;
+			bool find( const std::string& searchnode, bool deepfind = true) noexcept;
+			xmlNode* findX( xmlNode* root, const std::string& searchnode, bool deepfind = true ) noexcept;
 
-		/*! Перейти к следующему узлу. Возвращает false, если некуда перейти */
-		bool goNext() noexcept;
+			/*! Перейти к следующему узлу. Возвращает false, если некуда перейти */
+			bool goNext() noexcept;
 
-		/*! Перейти насквозь к следующему узлу. Возвращает false, если некуда перейти */
-		bool goThrowNext() noexcept;
+			/*! Перейти насквозь к следующему узлу. Возвращает false, если некуда перейти */
+			bool goThrowNext() noexcept;
 
-		/*! Перейти к предыдущему узлу */
-		bool goPrev() noexcept;
+			/*! Перейти к предыдущему узлу */
+			bool goPrev() noexcept;
 
-		bool canPrev() const noexcept;
-		bool canNext() const noexcept;
+			bool canPrev() const noexcept;
+			bool canNext() const noexcept;
 
-		// Перейти к следующему узлу
-		UniXML_iterator& operator+(int) noexcept;
-		UniXML_iterator& operator++(int) noexcept;
-		UniXML_iterator& operator+=(int) noexcept;
-		UniXML_iterator& operator++() noexcept;
+			// Перейти к следующему узлу
+			UniXML_iterator& operator+(int) noexcept;
+			UniXML_iterator& operator++(int) noexcept;
+			UniXML_iterator& operator+=(int) noexcept;
+			UniXML_iterator& operator++() noexcept;
 
-		// Перейти к предыдущему узлу
-		UniXML_iterator& operator-(int) noexcept;
-		UniXML_iterator& operator--(int) noexcept;
-		UniXML_iterator& operator--() noexcept;
-		UniXML_iterator& operator-=(int) noexcept;
+			// Перейти к предыдущему узлу
+			UniXML_iterator& operator-(int) noexcept;
+			UniXML_iterator& operator--(int) noexcept;
+			UniXML_iterator& operator--() noexcept;
+			UniXML_iterator& operator-=(int) noexcept;
 
-		/*! Перейти на один уровень выше
-		    \note Если перейти не удалось, итератор остаётся указывать на прежний узел
-		*/
-		bool goParent() noexcept;
+			/*! Перейти на один уровень выше
+			    \note Если перейти не удалось, итератор остаётся указывать на прежний узел
+			*/
+			bool goParent() noexcept;
 
-		/*! Перейти на один уровень ниже
-		    \note Если перейти не удалось, итератор остаётся указывать на прежний узел
-		*/
-		bool goChildren() noexcept;
+			/*! Перейти на один уровень ниже
+			    \note Если перейти не удалось, итератор остаётся указывать на прежний узел
+			*/
+			bool goChildren() noexcept;
 
-		// Получить текущий узел
-		xmlNode* getCurrent() noexcept;
+			// Получить текущий узел
+			xmlNode* getCurrent() noexcept;
 
-		// Получить название текущего узла
-		const std::string getName() const noexcept;
-		const std::string getContent() const noexcept;
+			// Получить название текущего узла
+			const std::string getName() const noexcept;
+			const std::string getContent() const noexcept;
 
-		operator xmlNode* () const noexcept;
+			operator xmlNode* () const noexcept;
 
-		void goBegin() noexcept;
-		void goEnd() noexcept;
+			void goBegin() noexcept;
+			void goEnd() noexcept;
 
-	private:
+			UniXMLPropList getPropList() const;
 
-		xmlNode* curNode;
-};
-// --------------------------------------------------------------------------
-class UniXML
-{
-	public:
+		private:
 
-		typedef UniXML_iterator iterator;
+			xmlNode* curNode;
+	};
+	// --------------------------------------------------------------------------
+	class UniXML
+	{
+		public:
 
-		UniXML( const std::string& filename );
-		UniXML();
-		~UniXML();
+			typedef UniXML_iterator iterator;
+			typedef UniXMLPropList PropList;
 
-		xmlNode* getFirstNode() noexcept;
-		xmlNode* getFirstNode() const noexcept;
+			UniXML( const std::string& filename );
+			UniXML();
+			~UniXML();
 
-		/*! возвращает итератор на самый первый узел документа */
-		iterator begin() noexcept;
-		iterator end() noexcept;
+			xmlNode* getFirstNode() noexcept;
+			xmlNode* getFirstNode() const noexcept;
 
-		// Загружает указанный файл
-		void open( const std::string& filename );
-		bool isOpen() const noexcept;
+			/*! возвращает итератор на самый первый узел документа */
+			iterator begin() noexcept;
+			iterator end() noexcept;
 
-		void close();
+			// Загружает указанный файл
+			void open( const std::string& filename );
+			bool isOpen() const noexcept;
 
-		std::string getFileName() const noexcept;
+			void close();
 
-		// Создать новый XML-документ
-		void newDoc( const std::string& root_node, const std::string& xml_ver = "1.0");
+			std::string getFileName() const noexcept;
 
-		// Получить свойство name указанного узла node
-		static std::string getProp(const xmlNode* node, const std::string& name) noexcept;
-		static std::string getProp2(const xmlNode* node, const std::string& name, const std::string& defval = "" ) noexcept;
+			// Создать новый XML-документ
+			void newDoc( const std::string& root_node, const std::string& xml_ver = "1.0");
 
-		static int getIntProp(const xmlNode* node, const std::string& name) noexcept;
+			// Получить свойство name указанного узла node
+			static std::string getProp(const xmlNode* node, const std::string& name) noexcept;
+			static std::string getProp2(const xmlNode* node, const std::string& name, const std::string& defval = "" ) noexcept;
 
-		/// if value if not positive ( <= 0 ), returns def
-		static int getPIntProp(const xmlNode* node, const std::string& name, int def) noexcept;
+			static int getIntProp(const xmlNode* node, const std::string& name) noexcept;
 
-		// Установить свойство name указанного узла node
-		static void setProp(xmlNode* node, const std::string& name, const std::string& text);
+			/// if value if not positive ( <= 0 ), returns def
+			static int getPIntProp(const xmlNode* node, const std::string& name, int def) noexcept;
 
-		// Добавить новый дочерний узел
-		static xmlNode* createChild(xmlNode* node, const std::string& title, const std::string& text);
+			// Установить свойство name указанного узла node
+			static void setProp(xmlNode* node, const std::string& name, const std::string& text);
 
-		// Добавить следующий узел
-		static xmlNode* createNext(xmlNode* node, const std::string& title, const std::string& text);
+			static UniXMLPropList getPropList( xmlNode* node );
 
-		// Удалить указанный узел и все вложенные узлы
-		static void removeNode(xmlNode* node);
+			// Добавить новый дочерний узел
+			static xmlNode* createChild(xmlNode* node, const std::string& title, const std::string& text);
 
-		// копировать указанный узел и все вложенные узлы
-		static xmlNode* copyNode(xmlNode* node, int recursive = 1);
+			// Добавить следующий узел
+			static xmlNode* createNext(xmlNode* node, const std::string& title, const std::string& text);
 
-		// Сохранить в файл, если параметр не указан, сохраняет в тот файл
-		// который был загружен последним.
-		bool save(const std::string& filename = "", int level = 2);
+			// Удалить указанный узел и все вложенные узлы
+			static void removeNode(xmlNode* node);
 
-		// Переместить указатель к следующему узлу
-		static xmlNode* nextNode(xmlNode* node);
+			// копировать указанный узел и все вложенные узлы
+			static xmlNode* copyNode(xmlNode* node, int recursive = 1);
 
-		// После проверки исправить рекурсивный алгоритм на обычный,
-		// используя ->parent
-		xmlNode* findNode( xmlNode* node, const std::string& searchnode, const std::string& name = "") const;
+			// Сохранить в файл, если параметр не указан, сохраняет в тот файл
+			// который был загружен последним.
+			bool save(const std::string& filename = "", int level = 2);
 
-		// ??
-		//width means number of nodes of the same level as node in 1-st parameter (width number includes first node)
-		//depth means number of times we can go to the children, if 0 we can't go only to elements of the same level
-		xmlNode* extFindNode( xmlNode* node, int depth, int width, const std::string& searchnode, const std::string& name = "", bool top = true ) const;
+			// Переместить указатель к следующему узлу
+			static xmlNode* nextNode(xmlNode* node);
 
-	protected:
-		std::string filename;
-		std::shared_ptr<xmlDoc> doc = { nullptr };
-};
-// -------------------------------------------------------------------------
+			// После проверки исправить рекурсивный алгоритм на обычный,
+			// используя ->parent
+			xmlNode* findNode( xmlNode* node, const std::string& searchnode, const std::string& name = "") const;
+
+			// ??
+			//width means number of nodes of the same level as node in 1-st parameter (width number includes first node)
+			//depth means number of times we can go to the children, if 0 we can't go only to elements of the same level
+			xmlNode* extFindNode( xmlNode* node, int depth, int width, const std::string& searchnode, const std::string& name = "", bool top = true ) const;
+
+		protected:
+			std::string filename;
+			std::shared_ptr<xmlDoc> doc = { nullptr };
+	};
+	// -------------------------------------------------------------------------
 } // end of uniset namespace
 // --------------------------------------------------------------------------
 #endif

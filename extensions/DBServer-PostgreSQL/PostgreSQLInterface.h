@@ -28,49 +28,49 @@
 // -------------------------------------------------------------------------
 namespace uniset
 {
-// ----------------------------------------------------------------------------
-class PostgreSQLInterface:
-	public DBNetInterface
-{
-	public:
+	// ----------------------------------------------------------------------------
+	class PostgreSQLInterface:
+		public DBNetInterface
+	{
+		public:
 
-		PostgreSQLInterface();
-		~PostgreSQLInterface();
+			PostgreSQLInterface();
+			~PostgreSQLInterface();
 
-		virtual bool nconnect( const std::string& host, const std::string& user,
-							   const std::string& pswd, const std::string& dbname,
-							   unsigned int port = 5432) override;
-		virtual bool close() override;
-		virtual bool isConnection() const override;
-		virtual bool ping() const override;
+			virtual bool nconnect( const std::string& host, const std::string& user,
+								   const std::string& pswd, const std::string& dbname,
+								   unsigned int port = 5432) override;
+			virtual bool close() override;
+			virtual bool isConnection() const override;
+			virtual bool ping() const override;
 
-		virtual DBResult query( const std::string& q ) override;
-		virtual const std::string lastQuery() override;
+			virtual DBResult query( const std::string& q ) override;
+			virtual const std::string lastQuery() override;
 
-		virtual bool insert( const std::string& q ) override;
-		bool insertAndSaveRowid( const std::string& q );
-		virtual double insert_id() override;
-		void save_inserted_id( const pqxx::result& res );
+			virtual bool insert( const std::string& q ) override;
+			bool insertAndSaveRowid( const std::string& q );
+			virtual double insert_id() override;
+			void save_inserted_id( const pqxx::result& res );
 
-		typedef std::list<std::string> Record;
-		typedef std::vector<Record> Data;
+			typedef std::list<std::string> Record;
+			typedef std::vector<Record> Data;
 
-		// fast insert: Use COPY..from SDTIN..
-		bool copy( const std::string& tblname, const std::list<std::string>& cols, const Data& data );
+			// fast insert: Use COPY..from SDTIN..
+			bool copy( const std::string& tblname, const std::list<std::string>& cols, const Data& data );
 
-		virtual const std::string error() override;
+			virtual const std::string error() override;
 
-	protected:
+		protected:
 
-	private:
+		private:
 
-		void makeResult(DBResult& dbres, const pqxx::result& res );
-		std::shared_ptr<pqxx::connection> db;
-		std::string lastQ;
-		std::string lastE;
-		double last_inserted_id;
-};
-// ----------------------------------------------------------------------------------
+			void makeResult(DBResult& dbres, const pqxx::result& res );
+			std::shared_ptr<pqxx::connection> db;
+			std::string lastQ;
+			std::string lastE;
+			double last_inserted_id;
+	};
+	// ----------------------------------------------------------------------------------
 } // end of namespace uniset
 // ----------------------------------------------------------------------------
 #endif

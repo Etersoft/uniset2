@@ -90,7 +90,7 @@ void DBServer::processingMessage( const uniset::VoidMessage* msg )
 	switch(msg->type)
 	{
 		case Message::Confirm:
-			confirmInfo( reinterpret_cast<const ConfirmMessage*>(msg) );
+			confirmInfo( reinterpret_cast<const uniset::ConfirmMessage*>(msg) );
 			break;
 
 		default:
@@ -138,6 +138,6 @@ std::string DBServer::help_print()
 	h << "--prefix-logserver-port num  - listen port. Default: ID" << endl;
 	h << LogServer::help_print("prefix-logserver") << endl;
 
-	return std::move( h.str() );
+	return h.str();
 }
 //--------------------------------------------------------------------------------------------

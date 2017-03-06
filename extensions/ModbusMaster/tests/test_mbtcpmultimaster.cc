@@ -127,6 +127,8 @@ TEST_CASE("MBTCPMultiMaster: rotate channel", "[modbus][mbmaster][mbtcpmultimast
 	InitTest();
 	CHECK( ui->isExist(mbID) );
 
+	mbs1->setReply(0);
+	msleep(polltime + 1000);
 	REQUIRE( ui->getValue(1003) == 0 );
 	mbs1->setReply(100);
 	mbs2->setReply(10);

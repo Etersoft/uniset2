@@ -1,5 +1,6 @@
 // -------------------------------------------------------------------------
 #include <sstream>
+#include <limits>
 #include <Poco/Net/NetException.h>
 #include "UniSetTypes.h"
 #include "MBTCPTestServer.h"
@@ -23,7 +24,7 @@ MBTCPTestServer::MBTCPTestServer( const std::unordered_set<ModbusAddr>& _vaddr, 
 	sslot(NULL),
 	vaddr(_vaddr),
 	verbose(verb),
-	replyVal(-1),
+	replyVal(std::numeric_limits<uint32_t>::max()),
 	forceSingleCoilCmd(false),
 	lastWriteOutputSingleRegister(0),
 	lastForceCoilsQ(0, 0),
@@ -122,7 +123,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::readCoilStatus( ReadCoilMessage& query,
 
 	if( query.count <= 1 )
 	{
-		if( replyVal != -1 )
+		if( replyVal != std::numeric_limits<uint32_t>::max() )
 			reply.addData(replyVal);
 		else
 			reply.addData(d);
@@ -136,7 +137,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::readCoilStatus( ReadCoilMessage& query,
 
 	for( ; num < query.count; num++, reg++ )
 	{
-		if( replyVal != -1 )
+		if( replyVal != std::numeric_limits<uint32_t>::max() )
 			reply.addData(replyVal);
 		else
 			reply.addData(d);
@@ -167,7 +168,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::readInputStatus( ReadInputStatusMessage& q
 	d.b[3] = 1;
 	d.b[7] = 1;
 
-	if( replyVal == -1 )
+	if( replyVal == std::numeric_limits<uint32_t>::max() )
 	{
 		size_t bnum = 0;
 		size_t i = 0;
@@ -197,7 +198,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::readInputStatus( ReadInputStatusMessage& q
 }
 // -------------------------------------------------------------------------
 mbErrCode MBTCPTestServer::readInputRegisters( ReadInputMessage& query,
-											   ReadInputRetMessage& reply )
+		ReadInputRetMessage& reply )
 {
 	if( disabled )
 		return ModbusRTU::erTimeOut;
@@ -207,7 +208,7 @@ mbErrCode MBTCPTestServer::readInputRegisters( ReadInputMessage& query,
 
 	if( query.count <= 1 )
 	{
-		if( replyVal != -1 )
+		if( replyVal != std::numeric_limits<uint32_t>::max() )
 			reply.addData(replyVal);
 		else
 			reply.addData(query.start);
@@ -221,7 +222,7 @@ mbErrCode MBTCPTestServer::readInputRegisters( ReadInputMessage& query,
 
 	for( ; num < query.count; num++, reg++ )
 	{
-		if( replyVal != -1 )
+		if( replyVal != std::numeric_limits<uint32_t>::max() )
 			reply.addData(replyVal);
 		else
 			reply.addData(reg);
@@ -252,7 +253,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::readOutputRegisters(
 
 	if( query.count <= 1 )
 	{
-		if( replyVal != -1 )
+		if( replyVal != std::numeric_limits<uint32_t>::max() )
 			reply.addData(replyVal);
 		else
 			reply.addData(query.start);
@@ -266,7 +267,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::readOutputRegisters(
 
 	for( ; num < query.count; num++, reg++ )
 	{
-		if( replyVal != -1 )
+		if( replyVal != std::numeric_limits<uint32_t>::max() )
 			reply.addData(replyVal);
 		else
 			reply.addData(reg);
@@ -539,7 +540,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::diagnostics( ModbusRTU::DiagnosticMessage&
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBTCPTestServer::read4314( ModbusRTU::MEIMessageRDI& query,
-												ModbusRTU::MEIMessageRetRDI& reply )
+		ModbusRTU::MEIMessageRetRDI& reply )
 {
 	if( disabled )
 		return ModbusRTU::erTimeOut;

@@ -76,7 +76,7 @@ static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 20
 		ncycle--;
 	}
 
-	return std::move(pack);
+	return pack;
 }
 // -----------------------------------------------------------------------------
 void send( UniSetUDP::UDPMessage& pack, int tout = 2000 )
@@ -298,7 +298,7 @@ TEST_CASE("[UNetUDP]: check receiver", "[unetudp][receiver]")
 		REQUIRE( ui->getValue(11) == 0 );
 
 		send(pack);
-		msleep(200);
+		msleep(500);
 		REQUIRE( ui->getValue(8) == 100 );
 		REQUIRE( ui->getValue(9) == -100 );
 		REQUIRE( ui->getValue(10) == 1 );
@@ -316,7 +316,7 @@ TEST_CASE("[UNetUDP]: check receiver", "[unetudp][receiver]")
 		pack.addDData(10, false);
 		pack.addDData(11, true);
 		send(pack);
-		msleep(200);
+		msleep(500);
 		REQUIRE( ui->getValue(8) == 10 );
 		REQUIRE( ui->getValue(9) == -10 );
 		REQUIRE( ui->getValue(10) == 0 );

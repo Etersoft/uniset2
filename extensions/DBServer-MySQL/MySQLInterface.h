@@ -32,56 +32,56 @@
 // -------------------------------------------------------------------------
 namespace uniset
 {
-// ----------------------------------------------------------------------------
-class MySQLInterface:
-	public DBNetInterface
-{
-	public:
+	// ----------------------------------------------------------------------------
+	class MySQLInterface:
+		public DBNetInterface
+	{
+		public:
 
-		MySQLInterface();
-		~MySQLInterface();
+			MySQLInterface();
+			~MySQLInterface();
 
-		//            DBResult listFields( const std::string& table, const std::string& wild );
+			//            DBResult listFields( const std::string& table, const std::string& wild );
 
-		virtual bool nconnect( const std::string& host, const std::string& user, const std::string& pswd,
-							   const std::string& dbname, unsigned int port = 0 ) override;
-		virtual bool close() override;
+			virtual bool nconnect( const std::string& host, const std::string& user, const std::string& pswd,
+								   const std::string& dbname, unsigned int port = 0 ) override;
+			virtual bool close() override;
 
-		bool query_ok( const std::string& q );
+			bool query_ok( const std::string& q );
 
-		// \param finalize - освободить буфер после запроса
-		virtual DBResult query( const std::string& q ) override;
+			// \param finalize - освободить буфер после запроса
+			virtual DBResult query( const std::string& q ) override;
 
-		virtual const std::string lastQuery() override;
-		virtual bool insert( const std::string& q ) override;
+			virtual const std::string lastQuery() override;
+			virtual bool insert( const std::string& q ) override;
 
-		std::string addslashes(const std::string& str);
+			std::string addslashes(const std::string& str);
 
-		/*!
-		    проверка связи с БД.
-		    в случае отсутсвия попытка восстановить...
-		*/
-		virtual bool ping() const override;
+			/*!
+			    проверка связи с БД.
+			    в случае отсутсвия попытка восстановить...
+			*/
+			virtual bool ping() const override;
 
-		/*! связь с БД установлена (была) */
-		virtual bool isConnection() const override;
+			/*! связь с БД установлена (была) */
+			virtual bool isConnection() const override;
 
-		virtual double insert_id() override;
+			virtual double insert_id() override;
 
-		virtual const std::string error() override;
+			virtual const std::string error() override;
 
-		// *******************
-		const char* gethostinfo() const;
-	protected:
+			// *******************
+			const char* gethostinfo() const;
+		protected:
 
-	private:
+		private:
 
-		void makeResult(DBResult& dbres, MYSQL_RES* r, bool finalize = true );
-		MYSQL* mysql;
-		std::string lastQ;
-		bool connected;
-};
-// ----------------------------------------------------------------------------------
+			void makeResult(DBResult& dbres, MYSQL_RES* r, bool finalize = true );
+			MYSQL* mysql;
+			std::string lastQ;
+			bool connected;
+	};
+	// ----------------------------------------------------------------------------------
 } // end of namespace uniset
 // ----------------------------------------------------------------------------------
 #endif

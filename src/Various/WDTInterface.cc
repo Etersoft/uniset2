@@ -28,60 +28,60 @@ using namespace std;
 // --------------------------------------------------------------------------
 namespace uniset
 {
-// --------------------------------------------------------------------------
-WDTInterface::WDTInterface( const std::string& _dev ):
-	dev(_dev)
-{
-}
-// --------------------------------------------------------------------------
-WDTInterface::~WDTInterface()
-{
-}
-// --------------------------------------------------------------------------
-bool WDTInterface::ping()
-{
-	int fd = open( dev.c_str(), O_WRONLY );
-
-	if( fd < 0 )
+	// --------------------------------------------------------------------------
+	WDTInterface::WDTInterface( const std::string& _dev ):
+		dev(_dev)
 	{
-		cerr << ": Unable to open device " << dev << " with err: " << strerror(errno) << endl;
-		return false;
 	}
-
-	int ret = write(fd, (void*)CMD_PING, sizeof(CMD_PING));
-
-	if( ret == -1 )
+	// --------------------------------------------------------------------------
+	WDTInterface::~WDTInterface()
 	{
-		cerr << ": Unable to open device " << dev << " with err: " << strerror(errno) << endl;
+	}
+	// --------------------------------------------------------------------------
+	bool WDTInterface::ping()
+	{
+		int fd = open( dev.c_str(), O_WRONLY );
+
+		if( fd < 0 )
+		{
+			cerr << ": Unable to open device " << dev << " with err: " << strerror(errno) << endl;
+			return false;
+		}
+
+		int ret = write(fd, (void*)CMD_PING, sizeof(CMD_PING));
+
+		if( ret == -1 )
+		{
+			cerr << ": Unable to open device " << dev << " with err: " << strerror(errno) << endl;
+			close(fd);
+			return false;
+		}
+
 		close(fd);
-		return false;
+		return true;
 	}
-
-	close(fd);
-	return true;
-}
-// --------------------------------------------------------------------------
-bool WDTInterface::stop()
-{
-	int fd = open( dev.c_str(), O_WRONLY );
-
-	if( fd < 0 )
+	// --------------------------------------------------------------------------
+	bool WDTInterface::stop()
 	{
-		cerr << ": Unable to open device " << dev << " with err: " << strerror(errno) << endl;
-		return false;
-	}
+		int fd = open( dev.c_str(), O_WRONLY );
 
-	int ret = write(fd, (void*)CMD_STOP, sizeof(CMD_STOP));
+		if( fd < 0 )
+		{
+			cerr << ": Unable to open device " << dev << " with err: " << strerror(errno) << endl;
+			return false;
+		}
 
-	if( ret == -1 )
-	{
-		cerr << ": Unable to open device " << dev << " with err: " << strerror(errno) << endl;
+		int ret = write(fd, (void*)CMD_STOP, sizeof(CMD_STOP));
+
+		if( ret == -1 )
+		{
+			cerr << ": Unable to open device " << dev << " with err: " << strerror(errno) << endl;
+			close(fd);
+			return false;
+		}
+
 		close(fd);
-		return false;
+		return true;
 	}
-
-	close(fd);
-	return true;
-}
-// ------------------------------------------------------------------------------------------
+	// ------------------------------------------------------------------------------------------
 } // end of namespace uniset

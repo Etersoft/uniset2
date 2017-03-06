@@ -19,7 +19,7 @@ class MBTCPTestServer
 			verbose = state;
 		}
 
-		inline void setReply( long val )
+		inline void setReply( uint32_t val )
 		{
 			replyVal = val;
 		}
@@ -47,7 +47,7 @@ class MBTCPTestServer
 		{
 			return forceSingleCoilCmd;
 		}
-		inline int getLastWriteOutputSingleRegister()
+		inline int16_t getLastWriteOutputSingleRegister()
 		{
 			return lastWriteOutputSingleRegister;
 		}
@@ -73,26 +73,26 @@ class MBTCPTestServer
 
 		/*! обработка 0x01 */
 		uniset::ModbusRTU::mbErrCode readCoilStatus( uniset::ModbusRTU::ReadCoilMessage& query,
-													 uniset::ModbusRTU::ReadCoilRetMessage& reply );
+				uniset::ModbusRTU::ReadCoilRetMessage& reply );
 		/*! обработка 0x02 */
 		uniset::ModbusRTU::mbErrCode readInputStatus( uniset::ModbusRTU::ReadInputStatusMessage& query,
-													  uniset::ModbusRTU::ReadInputStatusRetMessage& reply );
+				uniset::ModbusRTU::ReadInputStatusRetMessage& reply );
 
 		/*! обработка 0x03 */
 		uniset::ModbusRTU::mbErrCode readOutputRegisters( uniset::ModbusRTU::ReadOutputMessage& query,
-														  uniset::ModbusRTU::ReadOutputRetMessage& reply );
+				uniset::ModbusRTU::ReadOutputRetMessage& reply );
 
 		/*! обработка 0x04 */
 		uniset::ModbusRTU::mbErrCode readInputRegisters( uniset::ModbusRTU::ReadInputMessage& query,
-														 uniset::ModbusRTU::ReadInputRetMessage& reply );
+				uniset::ModbusRTU::ReadInputRetMessage& reply );
 
 		/*! обработка 0x05 */
 		uniset::ModbusRTU::mbErrCode forceSingleCoil( uniset::ModbusRTU::ForceSingleCoilMessage& query,
-													  uniset::ModbusRTU::ForceSingleCoilRetMessage& reply );
+				uniset::ModbusRTU::ForceSingleCoilRetMessage& reply );
 
 		/*! обработка 0x0F */
 		uniset::ModbusRTU::mbErrCode forceMultipleCoils( uniset::ModbusRTU::ForceCoilsMessage& query,
-														 uniset::ModbusRTU::ForceCoilsRetMessage& reply );
+				uniset::ModbusRTU::ForceCoilsRetMessage& reply );
 
 
 		/*! обработка 0x10 */
@@ -105,25 +105,25 @@ class MBTCPTestServer
 
 
 		uniset::ModbusRTU::mbErrCode diagnostics( uniset::ModbusRTU::DiagnosticMessage& query,
-												  uniset::ModbusRTU::DiagnosticRetMessage& reply );
+				uniset::ModbusRTU::DiagnosticRetMessage& reply );
 
 		uniset::ModbusRTU::mbErrCode read4314( uniset::ModbusRTU::MEIMessageRDI& query,
 											   uniset::ModbusRTU::MEIMessageRetRDI& reply );
 
 		/*! обработка запросов на чтение ошибок */
 		uniset::ModbusRTU::mbErrCode journalCommand( uniset::ModbusRTU::JournalCommandMessage& query,
-													 uniset::ModbusRTU::JournalCommandRetMessage& reply );
+				uniset::ModbusRTU::JournalCommandRetMessage& reply );
 
 		/*! обработка запроса на установку времени */
 		uniset::ModbusRTU::mbErrCode setDateTime( uniset::ModbusRTU::SetDateTimeMessage& query,
-												  uniset::ModbusRTU::SetDateTimeRetMessage& reply );
+				uniset::ModbusRTU::SetDateTimeRetMessage& reply );
 
 		/*! обработка запроса удалённого сервиса */
 		uniset::ModbusRTU::mbErrCode remoteService( uniset::ModbusRTU::RemoteServiceMessage& query,
-													uniset::ModbusRTU::RemoteServiceRetMessage& reply );
+				uniset::ModbusRTU::RemoteServiceRetMessage& reply );
 
 		uniset::ModbusRTU::mbErrCode fileTransfer( uniset::ModbusRTU::FileTransferMessage& query,
-												   uniset::ModbusRTU::FileTransferRetMessage& reply );
+				uniset::ModbusRTU::FileTransferRetMessage& reply );
 
 
 		/*! интерфейс ModbusSlave для обмена по RS */
@@ -131,9 +131,9 @@ class MBTCPTestServer
 		std::unordered_set<uniset::ModbusRTU::ModbusAddr> vaddr; /*!< адреса данного узла */
 
 		bool verbose;
-		long replyVal;
+		uint32_t replyVal;
 		bool forceSingleCoilCmd;
-		int lastWriteOutputSingleRegister;
+		int16_t lastWriteOutputSingleRegister;
 		uniset::ModbusRTU::ForceCoilsMessage lastForceCoilsQ;
 		uniset::ModbusRTU::WriteOutputMessage lastWriteOutputQ;
 		float f2_test_value = {0.0};

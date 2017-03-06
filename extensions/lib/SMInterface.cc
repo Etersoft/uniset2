@@ -249,8 +249,8 @@ using namespace uniset;
 	}
 	// --------------------------------------------------------------------------
 	void SMInterface::localSetUndefinedState( IOController::IOStateList::iterator& it,
-											  bool undefined,
-											  uniset::ObjectId sid )
+			bool undefined,
+			uniset::ObjectId sid )
 	{
 		//    CHECK_IC_PTR(localSetUndefinedState)
 		if( !ic )
@@ -313,4 +313,22 @@ using namespace uniset;
 
 		return sm_ready;
 	}
+	// --------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+	std::string SMInterface::apiRequest( const std::string& query )
+	{
+		if( ic )
+		{
+			BEG_FUNC1(SMInterface::apiRequest)
+			SimpleInfo_var i = ic->apiRequest(query.c_str());
+			return std::string(i->info);
+			END_FUNC(SMInterface::apiRequest)
+		}
+
+		BEG_FUNC(SMInterface::apiRequest)
+		SimpleInfo_var i = shm->apiRequest(query.c_str());
+		return std::string(i->info);
+		END_FUNC(SMInterface::apiRequest)
+	}
+#endif
 	// --------------------------------------------------------------------------

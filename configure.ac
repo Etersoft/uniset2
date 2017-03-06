@@ -32,7 +32,7 @@ AC_ENABLE_SHARED(yes)
 AC_ENABLE_STATIC(no)
 AM_PROG_LIBTOOL
 
-ASTYLE_OPT="-A1 -T -C -S -L -w -Y -M -f -p --mode=c --lineend=linux --align-reference=type --align-pointer=type --suffix=none --style=ansi --max-instatement-indent=50"
+ASTYLE_OPT="-A1 -T -C -S -N -L -w -Y -M -f -p --mode=c --lineend=linux --align-reference=type --align-pointer=type --suffix=none --style=ansi"
 AC_SUBST(ASTYLE_OPT)
 
 # Checks for libraries.
@@ -40,19 +40,17 @@ PKG_CHECK_MODULES(XML, libxml-2.0)
 PKG_CHECK_MODULES(OMNI, omniORB4)
 PKG_CHECK_MODULES(SIGC, sigc++-2.0)
 
-nopkgchecklibev=false
-AC_ARG_ENABLE(pkgchecklibev, AC_HELP_STRING([--disable-pkgchecklibev], [disable pkg check modules for libev]),
-[ if test $enableval = yes; then nopkgchecklibev=false; else nopkgchecklibev=true; fi],[ nopkgchecklibev=false; ])
+checklibev=true
+PKG_CHECK_MODULES(EV, libev, [ checklibev=false; ], [ checklibev=true; ])
 
-if test ${nopkgchecklibev} = false; then
-	PKG_CHECK_MODULES(EV, libev)
-else	
+if test $checklibev = true; then
 	AC_CHECK_HEADER(ev++.h,,exit)
 	AC_SEARCH_LIBS(ev_run,ev,[],[],exit)
 	EV_LIBS="-lev"
 	EV_CFLAGS=
 	AC_SUBST(EV_LIBS)
 	AC_SUBST(EV_CFLAGS)
+    AC_MSG_RESULT([ok])
 fi
 
 #check rest api support
@@ -239,10 +237,24 @@ if test ${buildpython} = true; then
 	AC_MSG_RESULT([enabled])
 	dnl Python
 	AM_PATH_PYTHON(,,)
-	PKG_CHECK_MODULES(PYTHON,python,,exit)
+	PKG_CHECK_MODULES(PYTHON,python-2.7,,exit)
 #	AC_CHECK_PROG(SWIG, swig, yes, exit)
+
+	AC_MSG_CHECKING([netdata python plugin])
+	netdata=true
+	AC_ARG_ENABLE(netdata,AC_HELP_STRING([--disable-netdata], [disable build netdata python plugin]),
+	[ if test $enableval = yes; then netdata=true; else netdata=false;  fi],[ netdata=true; ])
+
+	if test ${netdata} = true; then
+		AC_MSG_RESULT([enabled])
+	else
+		AC_MSG_RESULT([disabled])
+	fi
+
+	AM_CONDITIONAL(HAVE_NETDATA, test ${netdata} = true)
 else
 	AC_MSG_RESULT([disabled])
+	AM_CONDITIONAL(HAVE_NETDATA, false)
 fi
 
 AM_CONDITIONAL(DISABLE_PYTHON, test ${buildpython} = false)
@@ -361,7 +373,7 @@ AM_CONDITIONAL(HAVE_TESTS, test ${buildtests} = true)
 # -D_GLIBCXX_USE_NANOSLEEP - for std::this_thread::sleep_for
 
 # -Weffc++ -Wno-unused-variable -Werror -Wctor-dtor-privacy
-CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Woverloaded-virtual -Woverflow -D_GLIBCXX_USE_NANOSLEEP"
+CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Woverloaded-virtual -Woverflow -D_GLIBCXX_USE_NANOSLEEP -fstack-protector"
 
 # export
 LDFLAGS="$LDFLAGS ${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS} ${POCO_LIBS} ${EV_LIBS}"

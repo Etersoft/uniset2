@@ -24,41 +24,41 @@
 namespace uniset
 {
 
-/*! Специальная "обёртка" над ost::TCPStream, устанавливающая ещё и параметры KeepAlive,
- * для открытого сокета.
- * \note Правда это linux-only
-*/
-class UTCPStream:
-	public Poco::Net::StreamSocket
-{
-	public:
+	/*! Специальная "обёртка" над ost::TCPStream, устанавливающая ещё и параметры KeepAlive,
+	 * для открытого сокета.
+	 * \note Правда это linux-only
+	*/
+	class UTCPStream:
+		public Poco::Net::StreamSocket
+	{
+		public:
 
-		UTCPStream( const Poco::Net::StreamSocket& so );
-		UTCPStream();
-		virtual ~UTCPStream();
+			UTCPStream( const Poco::Net::StreamSocket& so );
+			UTCPStream();
+			virtual ~UTCPStream();
 
-		void create( const std::string& hname, int port, timeout_t tout_msec = 1000 );
+			void create( const std::string& hname, uint16_t port, timeout_t tout_msec = 1000 );
 
-		bool isConnected() noexcept;
+			bool isConnected() noexcept;
 
-		// set keepalive params
-		// return true if OK
-		bool setKeepAliveParams( timeout_t timeout_sec = 5, int conn_keepcnt = 1, int keepintvl = 2 );
+			// set keepalive params
+			// return true if OK
+			bool setKeepAliveParams( timeout_t timeout_sec = 5, int conn_keepcnt = 1, int keepintvl = 2 );
 
-		bool isSetLinger() const;
-		void forceDisconnect(); // disconnect() без ожидания (с отключением SO_LINGER)
-		void disconnect();
+			bool isSetLinger() const;
+			void forceDisconnect(); // disconnect() без ожидания (с отключением SO_LINGER)
+			void disconnect();
 
-		// --------------------------------------------------------------------
-		int getSocket() const;
-		timeout_t getTimeout() const;
+			// --------------------------------------------------------------------
+			int getSocket() const;
+			timeout_t getTimeout() const;
 
-	protected:
+		protected:
 
-	private:
+		private:
 
-};
-// -------------------------------------------------------------------------
+	};
+	// -------------------------------------------------------------------------
 } // end of uniset namespace
 // -------------------------------------------------------------------------
 #endif // UTCPStream_H_

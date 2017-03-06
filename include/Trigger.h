@@ -25,62 +25,62 @@
 namespace uniset
 {
 
-/*! Триггер, позволяющий красиво засекать изменения во флаге */
-class Trigger
-{
-	public:
-		Trigger(bool initial = false) noexcept
-		{
-			oldstate = initial;
-		}
-
-		/*! Срабатываем по верхнему фронту (при наступлении true) */
-		bool hi(bool state) noexcept
-		{
-			if (oldstate != state)
+	/*! Триггер, позволяющий красиво засекать изменения во флаге */
+	class Trigger
+	{
+		public:
+			Trigger(bool initial = false) noexcept
 			{
-				oldstate = state;
+				oldstate = initial;
+			}
 
-				if (state)
+			/*! Срабатываем по верхнему фронту (при наступлении true) */
+			bool hi(bool state) noexcept
+			{
+				if (oldstate != state)
+				{
+					oldstate = state;
+
+					if (state)
+						return true;
+				}
+
+				return false;
+			}
+			/*! Срабатываем по нижнему фронту (при наступлении false) */
+			bool low(bool state) noexcept
+			{
+				if (oldstate != state)
+				{
+					oldstate = state;
+
+					if (!state)
+						return true;
+				}
+
+				return false;
+			}
+			/*! Срабатывает при любом изменении */
+			bool change(bool state) noexcept
+			{
+				if (oldstate != state)
+				{
+					oldstate = state;
 					return true;
+				}
+
+				return false;
 			}
 
-			return false;
-		}
-		/*! Срабатываем по нижнему фронту (при наступлении false) */
-		bool low(bool state) noexcept
-		{
-			if (oldstate != state)
+			inline bool get() const noexcept
 			{
-				oldstate = state;
-
-				if (!state)
-					return true;
+				return oldstate;
 			}
 
-			return false;
-		}
-		/*! Срабатывает при любом изменении */
-		bool change(bool state) noexcept
-		{
-			if (oldstate != state)
-			{
-				oldstate = state;
-				return true;
-			}
-
-			return false;
-		}
-
-		inline bool get() const noexcept
-		{
-			return oldstate;
-		}
-
-	private:
-		bool oldstate; /*!< предыдущее состояние */
-};
-// -------------------------------------------------------------------------
+		private:
+			bool oldstate; /*!< предыдущее состояние */
+	};
+	// -------------------------------------------------------------------------
 } // end of uniset namespace
 // --------------------------------------------------------------------------
 #endif

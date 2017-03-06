@@ -181,9 +181,9 @@ void UProxyObject_impl::impl_addToAsk( ObjectId id ) throw( UException )
 
 	auto inf = conf->oind->getObjectInfo(id);
 
-	if( inf && inf->data )
+	if( inf && inf->xmlnode )
 	{
-		UniXML::iterator it( (xmlNode*)(inf->data) );
+		UniXML::iterator it( inf->xmlnode );
 		i.precision = it.getIntProp("precision");
 	}
 

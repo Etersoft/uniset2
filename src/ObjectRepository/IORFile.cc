@@ -41,7 +41,7 @@ string IORFile::getIOR( const ObjectId id )
 	string sior;
 	ior_file >> sior;
 
-	return std::move(sior);
+	return sior;
 }
 // -----------------------------------------------------------------------------------------
 void IORFile::setIOR( const ObjectId id, const string& sior )
@@ -69,6 +69,6 @@ string IORFile::getFileName( const ObjectId id )
 {
 	ostringstream fname;
 	fname << uniset_conf()->getLockDir() << id;
-	return std::move( fname.str() );
+	return fname.str();
 }
 // -----------------------------------------------------------------------------------------

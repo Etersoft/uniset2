@@ -54,7 +54,7 @@ string LostTestProc::getMonitInfo()
 {
 	ostringstream inf;
 	inf << "COUNT SENSORS: " << slist.size() << endl;
-	return std::move(inf.str());
+	return inf.str();
 }
 // -----------------------------------------------------------------------------
 void LostTestProc::timerInfo( const TimerMessage* tm )

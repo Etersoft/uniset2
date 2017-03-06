@@ -9,33 +9,33 @@
 namespace uniset
 {
 
-class UTCPSocket:
-	public Poco::Net::ServerSocket
-{
-	public:
+	class UTCPSocket:
+		public Poco::Net::ServerSocket
+	{
+		public:
 
-		UTCPSocket();
+			UTCPSocket();
 
-		// dup and accept...raw socket
-		UTCPSocket( int sock );
+			// dup and accept...raw socket
+			UTCPSocket( int sock );
 
-		UTCPSocket( const std::string& host, int port );
+			UTCPSocket( const std::string& host, int port );
 
-		virtual ~UTCPSocket();
+			virtual ~UTCPSocket();
 
-		// set keepalive params
-		// return true if OK
-		bool setKeepAliveParams( timeout_t timeout_sec = 5, int conn_keepcnt = 1, int keepintvl = 2 );
+			// set keepalive params
+			// return true if OK
+			bool setKeepAliveParams( timeout_t timeout_sec = 5, int conn_keepcnt = 1, int keepintvl = 2 );
 
-		int getSocket() noexcept;
+			int getSocket() noexcept;
 
-	protected:
-		void init();
+		protected:
+			void init();
 
-	private:
+		private:
 
-};
-// -------------------------------------------------------------------------
+	};
+	// -------------------------------------------------------------------------
 } // end of uniset namespace
 // -------------------------------------------------------------------------
 #endif // UTCPSocket_H_

@@ -20,86 +20,86 @@
 // -----------------------------------------------------------------------------
 namespace uniset
 {
-// -------------------------------------------------------------------------
-using namespace std;
-using namespace uniset::extensions;
-// -------------------------------------------------------------------------
-TDelay::TDelay(Element::ElementID id, timeout_t delayMS, size_t inCount):
-	Element(id),
-	myout(false),
-	delay(delayMS)
-{
-	if( inCount != 0 )
+	// -------------------------------------------------------------------------
+	using namespace std;
+	using namespace uniset::extensions;
+	// -------------------------------------------------------------------------
+	TDelay::TDelay(Element::ElementID id, timeout_t delayMS, size_t inCount):
+		Element(id),
+		myout(false),
+		delay(delayMS)
 	{
-		// создаём заданное количество входов
-		for( unsigned int i = 1; i <= inCount; i++ )
-			ins.emplace_front(i, false); // addInput(i,st);
+		if( inCount != 0 )
+		{
+			// создаём заданное количество входов
+			for( unsigned int i = 1; i <= inCount; i++ )
+				ins.emplace_front(i, false); // addInput(i,st);
+		}
 	}
-}
 
-TDelay::~TDelay()
-{
-}
-// -------------------------------------------------------------------------
-void TDelay::setIn( size_t num, bool state )
-{
-	bool prev = myout;
-
-	// сбрасываем сразу
-	if( !state )
+	TDelay::~TDelay()
 	{
-		pt.setTiming(0); // reset timer
-		myout = false;
-		dinfo << this << ": set " << myout << endl;
+	}
+	// -------------------------------------------------------------------------
+	void TDelay::setIn( size_t num, bool state )
+	{
+		bool prev = myout;
 
-		if( prev != myout )
+		// сбрасываем сразу
+		if( !state )
+		{
+			pt.setTiming(0); // reset timer
+			myout = false;
+			dinfo << this << ": set " << myout << endl;
+
+			if( prev != myout )
+				Element::setChildOut();
+
+			return;
+		}
+
+		//    if( state )
+
+		// выставляем без задержки
+		if( delay <= 0 )
+		{
+			pt.setTiming(0); // reset timer
+			myout = true;
+			dinfo << this << ": set " << myout << endl;
+
+			if( prev != myout )
+				Element::setChildOut();
+
+			return;
+		}
+
+		// засекаем, если ещё не установлен таймер
+		if( !myout && !prev  ) // т.е. !myout && prev != myout
+		{
+			dinfo << this << ": set timer " << delay << " [msec]" << endl;
+			pt.setTiming(delay);
+		}
+	}
+	// -------------------------------------------------------------------------
+	void TDelay::tick()
+	{
+		if( pt.getInterval() != 0 && pt.checkTime() )
+		{
+			myout = true;
+			pt.setTiming(0); // reset timer
+			dinfo << getType() << "(" << myid << "): TIMER!!!! myout=" << myout << endl;
 			Element::setChildOut();
-
-		return;
+		}
 	}
-
-	//    if( state )
-
-	// выставляем без задержки
-	if( delay <= 0 )
+	// -------------------------------------------------------------------------
+	bool TDelay::getOut() const
 	{
-		pt.setTiming(0); // reset timer
-		myout = true;
-		dinfo << this << ": set " << myout << endl;
-
-		if( prev != myout )
-			Element::setChildOut();
-
-		return;
+		return myout;
 	}
-
-	// засекаем, если ещё не установлен таймер
-	if( !myout && !prev  ) // т.е. !myout && prev != myout
+	// -------------------------------------------------------------------------
+	void TDelay::setDelay( timeout_t timeMS )
 	{
-		dinfo << this << ": set timer " << delay << " [msec]" << endl;
-		pt.setTiming(delay);
+		delay = timeMS;
 	}
-}
-// -------------------------------------------------------------------------
-void TDelay::tick()
-{
-	if( pt.getInterval() != 0 && pt.checkTime() )
-	{
-		myout = true;
-		pt.setTiming(0); // reset timer
-		dinfo << getType() << "(" << myid << "): TIMER!!!! myout=" << myout << endl;
-		Element::setChildOut();
-	}
-}
-// -------------------------------------------------------------------------
-bool TDelay::getOut() const
-{
-	return myout;
-}
-// -------------------------------------------------------------------------
-void TDelay::setDelay( timeout_t timeMS )
-{
-	delay = timeMS;
-}
-// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 } // end of namespace uniset

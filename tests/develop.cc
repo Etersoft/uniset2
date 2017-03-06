@@ -6,7 +6,6 @@
 #include <type_traits>
 #include <tuple>
 #include "UTCPCore.h"
-#include <chrono>
 
 template<typename... Args>
 class VMon
@@ -18,91 +17,81 @@ class VMon
 
 // ------------------------------------------------------------------------------
 using namespace std;
-using namespace uniset;
-
-
-class PtrMapHashFn
+// ------------------------------------------------------------------------------
+struct TestClass
 {
-	public:
-		size_t operator() (const long* const& key) const
-		{
-			return std::hash<long>()((long)key);
-		}
+	TestClass()
+	{
+		cerr << "TEST CLASS CREATE.." << endl;
+	}
+
+	//	TestClass( TestClass&& ) = default;
+	TestClass( const TestClass& t )
+	{
+		cerr << "TEST CLASS COPY.." << endl;
+		(*this) = t;
+	}
+
+	TestClass& operator=(const TestClass&  t )
+	{
+		cerr << "TEST CLASS COPY FUNC.." << endl;
+		(*this) = t;
+		return (*this);
+	}
+
+	TestClass& operator=( TestClass&& t ) = default;
+
+	TestClass( TestClass&& t )
+	{
+		cerr << "TEST CLASS MOVE.." << endl;
+		(*this) = std::move(t);
+	}
+
+	size_t len = { 10 };
+	int data[10];
 };
-struct struct_t
+
+struct MClass
 {
-	unsigned char hour = { 0 };    /*!< часы [0..23] */
-	unsigned char min = { 0 };        /*!< минуты [0..59] */
-	unsigned char sec = { 0 };        /*!< секунды [0..59] */
-	unsigned char day = { 1 };        /*!< день [1..31] */
-	unsigned char mon = { 1 };        /*!< месяц [1..12] */
-	unsigned char year = { 0 };    /*!< год [0..99] */
-	unsigned char century = { 20 };    /*!<*/
-} __attribute__((packed));
+	MClass( int d1, int d2 = 0 )
+	{
+		data[0] = d1;
+		data[1] = d2;
+	}
+
+	size_t len = { 2 };
+	int data[2];
+
+	TestClass get()
+	{
+		TestClass m;
+		m.len = len;
+		memcpy(data, &m.data, sizeof(data));
+		//return std::move(m);
+		return m;
+	}
+};
+
+void test_func( TestClass& m )
+{
+	cerr << "func.." << endl;
+}
+
+void test_func( TestClass&& m )
+{
+	cerr << "move func.." << endl;
+}
+
+// ------------------------------------------------------------------------------
 
 int main( int argc, const char** argv )
 {
-	cerr << "2000%1000000=" << int(2000 % 1000000) << endl;
-	return 0;
+	MClass m(10, 11);
 
-	unordered_map<const long*, const long*, PtrMapHashFn> vmap;
+	TestClass c = m.get();
 
-	const long id = 10;
-	long prive_val = 100;
-	const long& val(prive_val);
-
-	vmap.emplace(&id, &val);
-
-
-	auto i = vmap.find(&id);
-	return 0;
-
-
-
-	auto now = std::chrono::system_clock::now();
-	auto sec = std::chrono::time_point_cast<std::chrono::nanoseconds>(now);
-	auto nsec = std::chrono::time_point_cast<std::chrono::seconds>(now);
-
-	cout << "SEC=" << std::chrono::duration<double>(sec.time_since_epoch()).count()
-		 << endl;
-	return 0;
-
-
-	std::chrono::time_point<std::chrono::system_clock> p1, p2, p3;
-
-	p2 = std::chrono::system_clock::now();
-	p3 = p2 - std::chrono::hours(24);
-
-	std::time_t epoch_time = std::chrono::system_clock::to_time_t(p1);
-	std::cout << "epoch: " << std::ctime(&epoch_time);
-	std::time_t today_time = std::chrono::system_clock::to_time_t(p2);
-	std::cout << "today: " << std::ctime(&today_time);
-
-	std::cout << "hours since epoch: "
-			  << std::chrono::duration_cast<std::chrono::hours>(
-				  p2.time_since_epoch()).count()
-			  << '\n';
-	std::cout << "yesterday, hours since epoch: "
-			  << std::chrono::duration_cast<std::chrono::hours>(
-				  p3.time_since_epoch()).count()
-			  << '\n';
-
-	return 0;
-	unsigned char dat[] = { '1', '2', '3' , '4' };
-
-	//	UTCPCore::Buffer*  buf = new UTCPCore::Buffer( dat, 0 );
-	UTCPCore::Buffer*  buf = new UTCPCore::Buffer( dat, 3 );
-
-	//	if( buf->nbytes() == 0 )
-	//		delete buf;
-	cout << "buf: " << buf->dpos() << endl;
-
-
-	delete buf;
-
-	//	VMon<int,double,char> vmon;
-
-	//	cout << std::get<0>(vmon.m_tuple).size() << endl;
+	test_func(c);
+	test_func( std::move(c) );
 
 	return 0;
 }

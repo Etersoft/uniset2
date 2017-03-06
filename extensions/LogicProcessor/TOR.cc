@@ -21,69 +21,69 @@
 // -----------------------------------------------------------------------------
 namespace uniset
 {
-// -------------------------------------------------------------------------
-using namespace std;
-using namespace uniset::extensions;
-// -------------------------------------------------------------------------
-TOR::TOR(ElementID id, size_t num, bool st):
-	Element(id),
-	myout(false)
-{
-	if( num != 0 )
+	// -------------------------------------------------------------------------
+	using namespace std;
+	using namespace uniset::extensions;
+	// -------------------------------------------------------------------------
+	TOR::TOR(ElementID id, size_t num, bool st):
+		Element(id),
+		myout(false)
 	{
-		// создаём заданное количество входов
-		for( unsigned int i = 1; i <= num; i++ )
+		if( num != 0 )
 		{
-			ins.emplace_front(i, st); // addInput(i,st);
+			// создаём заданное количество входов
+			for( unsigned int i = 1; i <= num; i++ )
+			{
+				ins.emplace_front(i, st); // addInput(i,st);
 
-			if( st == true )
+				if( st == true )
+					myout = true;
+			}
+		}
+	}
+
+	TOR::~TOR()
+	{
+	}
+	// -------------------------------------------------------------------------
+	void TOR::setIn( size_t num, bool state )
+	{
+		//    cout << getType() << "(" << myid << "):  input " << num << " set " << state << endl;
+
+		for( auto& it : ins )
+		{
+			if( it.num == num )
+			{
+				if( it.state == state )
+					return; // вход не менялся можно вообще прервать проверку
+
+				it.state = state;
+				break;
+			}
+		}
+
+		bool prev = myout;
+		bool brk = false; // признак досрочного завершения проверки
+
+		// проверяем изменился ли выход
+		// для тригера 'OR' проверка до первой единицы
+		for( auto& it : ins )
+		{
+			if( it.state )
+			{
 				myout = true;
+				brk = true;
+				break;
+			}
 		}
+
+		if( !brk )
+			myout = false;
+
+		dinfo << this << ": myout " << myout << endl;
+
+		if( prev != myout )
+			Element::setChildOut();
 	}
-}
-
-TOR::~TOR()
-{
-}
-// -------------------------------------------------------------------------
-void TOR::setIn( size_t num, bool state )
-{
-	//    cout << getType() << "(" << myid << "):  input " << num << " set " << state << endl;
-
-	for( auto& it : ins )
-	{
-		if( it.num == num )
-		{
-			if( it.state == state )
-				return; // вход не менялся можно вообще прервать проверку
-
-			it.state = state;
-			break;
-		}
-	}
-
-	bool prev = myout;
-	bool brk = false; // признак досрочного завершения проверки
-
-	// проверяем изменился ли выход
-	// для тригера 'OR' проверка до первой единицы
-	for( auto& it : ins )
-	{
-		if( it.state )
-		{
-			myout = true;
-			brk = true;
-			break;
-		}
-	}
-
-	if( !brk )
-		myout = false;
-
-	dinfo << this << ": myout " << myout << endl;
-
-	if( prev != myout )
-		Element::setChildOut();
-}
-// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 } // end of namespace uniset

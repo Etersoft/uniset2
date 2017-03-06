@@ -22,55 +22,55 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-namespace json
-{
-Poco::JSON::Object::Ptr make_object( const std::string& key, const Poco::Dynamic::Var& val );
-Poco::JSON::Object::Ptr make_object( const std::string& key, const Poco::Dynamic::Var&& val );
-Poco::JSON::Object::Ptr make_child( Poco::JSON::Object::Ptr& root, const std::string& key );
-Poco::JSON::Array::Ptr make_child_array( Poco::JSON::Object::Ptr& root, const std::string& key );
+	namespace json
+	{
+		Poco::JSON::Object::Ptr make_object( const std::string& key, const Poco::Dynamic::Var& val );
+		Poco::JSON::Object::Ptr make_object( const std::string& key, const Poco::Dynamic::Var&& val );
+		Poco::JSON::Object::Ptr make_child( Poco::JSON::Object::Ptr& root, const std::string& key );
+		Poco::JSON::Array::Ptr make_child_array( Poco::JSON::Object::Ptr& root, const std::string& key );
 
-namespace help
-{
+		namespace help
+		{
 
-class item
-{
-	public:
+			class item
+			{
+				public:
 
-		item( Poco::JSON::Object::Ptr& ptr );
-		item( const std::string& description );
+					item( Poco::JSON::Object::Ptr& ptr );
+					item( const std::string& description );
 
-		void param(const std::string& name, const std::string& description );
-		Poco::JSON::Object::Ptr get();
+					void param(const std::string& name, const std::string& description );
+					Poco::JSON::Object::Ptr get();
 
-		operator Poco::JSON::Object::Ptr();
-		operator Poco::Dynamic::Var();
+					operator Poco::JSON::Object::Ptr();
+					operator Poco::Dynamic::Var();
 
-	private:
-		Poco::JSON::Object::Ptr root;
-		Poco::JSON::Array::Ptr params;
-};
+				private:
+					Poco::JSON::Object::Ptr root;
+					Poco::JSON::Array::Ptr params;
+			};
 
-class object
-{
-	public:
-		object( const std::string& name );
-		object( const std::string& name, Poco::JSON::Object::Ptr ptr );
+			class object
+			{
+				public:
+					object( const std::string& name );
+					object( const std::string& name, Poco::JSON::Object::Ptr ptr );
 
-		void add( item& i );
+					void add( item& i );
 
-		Poco::JSON::Object::Ptr get();
+					Poco::JSON::Object::Ptr get();
 
-		operator Poco::JSON::Object::Ptr();
-		operator Poco::Dynamic::Var();
+					operator Poco::JSON::Object::Ptr();
+					operator Poco::Dynamic::Var();
 
-	private:
-		Poco::JSON::Object::Ptr root;
-		Poco::JSON::Array::Ptr cmdlist;
-};
+				private:
+					Poco::JSON::Object::Ptr root;
+					Poco::JSON::Array::Ptr cmdlist;
+			};
 
-} // end of namespace help
-} // end of namespace json
-// --------------------------------------------------------------------------
+		} // end of namespace help
+	} // end of namespace json
+	// --------------------------------------------------------------------------
 } // end of namespace uniset
 // --------------------------------------------------------------------------
 #endif // end of #ifndef DISABLE_REST_API

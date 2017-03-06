@@ -244,8 +244,9 @@ int main(int argc, char** argv)
 
 					std::string userparam = { "" };
 
-					if( checkArg(optind + 1, argc, argv) )
-						userparam = string(argv[optind + 1]);
+					// смотрим второй параметр
+					if( checkArg(optind, argc, argv) )
+						userparam = string(argv[optind]);
 
 					return oinfo(optarg, ui, userparam);
 				}
@@ -253,6 +254,7 @@ int main(int argc, char** argv)
 
 				case 'a':    //--apiRequest
 				{
+					// смотрим второй параметр
 					if( checkArg(optind, argc, argv) == 0 )
 					{
 						if( !quiet )
@@ -338,6 +340,7 @@ int main(int argc, char** argv)
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
 					ui.initBackId(uniset::AdminID);
+
 					string name = ( optarg ) ? optarg : "";
 					return logRotate(name, ui);
 				}

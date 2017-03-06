@@ -114,14 +114,7 @@ long uniset::setoutregion(long ret, long calMin, long calMax)
 }
 
 // -------------------------------------------------------------------------
-uniset::IDList::IDList( std::vector<std::string>&& svec ):
-	uniset::IDList::IDList()
-{
-	for( const auto& s : svec )
-		add( uni_atoi(s) );
-}
-// ------------------------------------------------------------------
-uniset::IDList::IDList( std::vector<std::string>& svec ):
+uniset::IDList::IDList( const std::vector<string>& svec ):
 	uniset::IDList::IDList()
 {
 	auto conf = uniset_conf();
@@ -209,20 +202,20 @@ bool uniset::file_exist( const std::string& filename )
 #endif
 	bool result = false;
 
-	if( file )
+	if( file.is_open() )
 		result = true;
 
 	file.close();
 	return result;
 }
 // -------------------------------------------------------------------------
-uniset::IDList uniset::explode( const string& str, char sep )
+uniset::IDList uniset::explode( const std::string& str, char sep )
 {
 	uniset::IDList l( explode_str(str, sep) );
-	return std::move(l);
+	return l;
 }
 // -------------------------------------------------------------------------
-std::vector<std::string> uniset::explode_str( const string& str, char sep )
+std::vector<std::string> uniset::explode_str( const std::string& str, char sep )
 {
 	std::vector<std::string> v;
 
@@ -263,7 +256,7 @@ std::vector<std::string> uniset::explode_str( const string& str, char sep )
 	}
 	while( pos != string::npos );
 
-	return std::move(v);
+	return v;
 }
 // ------------------------------------------------------------------------------------------
 bool uniset::is_digit( const std::string& s ) noexcept
@@ -345,7 +338,7 @@ std::list<uniset::ParamSInfo> uniset::getSInfoList( const string& str, std::shar
 		res.emplace_back( std::move(item) );
 	}
 
-	return std::move(res);
+	return res;
 }
 // --------------------------------------------------------------------------------------
 std::list<uniset::ConsumerInfo> uniset::getObjectsList( const string& str, std::shared_ptr<Configuration> conf )
@@ -408,7 +401,7 @@ std::list<uniset::ConsumerInfo> uniset::getObjectsList( const string& str, std::
 		res.emplace_back( std::move(item) );
 	}
 
-	return std::move(res);
+	return res;
 }
 // --------------------------------------------------------------------------------------
 UniversalIO::IOType uniset::getIOType( const std::string& stype ) noexcept
@@ -578,7 +571,7 @@ std::string uniset::replace_all( const std::string& src, const std::string& from
 	string res(src);
 
 	if( from.empty() )
-		return std::move(res);
+		return res;
 
 	size_t pos = res.find(from, 0);
 
@@ -589,7 +582,7 @@ std::string uniset::replace_all( const std::string& src, const std::string& from
 		pos = res.find(from, pos);
 	}
 
-	return std::move(res);
+	return res;
 }
 // -------------------------------------------------------------------------
 timeval uniset::to_timeval( const chrono::system_clock::duration& d )
@@ -605,7 +598,7 @@ timeval uniset::to_timeval( const chrono::system_clock::duration& d )
 		tv.tv_usec = std::chrono::duration_cast<std::chrono::microseconds>(d - sec).count();
 	}
 
-	return std::move(tv);
+	return tv;
 }
 // -------------------------------------------------------------------------
 timespec uniset::to_timespec( const chrono::system_clock::duration& d )
@@ -621,7 +614,7 @@ timespec uniset::to_timespec( const chrono::system_clock::duration& d )
 		ts.tv_nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(d - sec).count();
 	}
 
-	return std::move(ts);
+	return ts;
 }
 // -------------------------------------------------------------------------
 timespec uniset::now_to_timespec()

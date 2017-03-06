@@ -155,7 +155,7 @@ LT_Object::TimersList LT_Object::getTimersList()
 {
 	uniset_rwmutex_rlock l(lstMutex);
 	TimersList lst(tlst);
-	return std::move(lst);
+	return lst;
 }
 // ------------------------------------------------------------------------------------------
 string LT_Object::getTimerName(int id)

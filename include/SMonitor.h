@@ -24,28 +24,28 @@
 namespace uniset
 {
 
-class SMonitor:
-	public UniSetObject
-{
-	public:
+	class SMonitor:
+		public UniSetObject
+	{
+		public:
 
-		SMonitor( uniset::ObjectId id );
-		~SMonitor();
+			SMonitor( uniset::ObjectId id );
+			~SMonitor();
 
-		// -----
-	protected:
-		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
-		virtual void sensorInfo( const uniset::SensorMessage* si ) override;
-		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
-		virtual void sigterm( int signo ) override;
-		SMonitor();
+			// -----
+		protected:
+			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
+			virtual void sensorInfo( const uniset::SensorMessage* si ) override;
+			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
+			virtual void sigterm( int signo ) override;
+			SMonitor();
 
-	private:
-		typedef std::list<uniset::ParamSInfo> MyIDList;
-		MyIDList lst;
-		std::string script;
-};
-// -------------------------------------------------------------------------
+		private:
+			typedef std::list<uniset::ParamSInfo> MyIDList;
+			MyIDList lst;
+			std::string script;
+	};
+	// -------------------------------------------------------------------------
 } // end of uniset namespace
 // -----------------------------------------------------------------------------
 #endif

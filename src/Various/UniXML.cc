@@ -160,7 +160,7 @@ string UniXML::getProp2(const xmlNode* node, const string& name, const string& d
 		string s(getProp(node, name));
 
 		if( !s.empty() )
-			return std::move(s);
+			return s;
 	}
 	catch(...) {}
 
@@ -181,12 +181,12 @@ string UniXML::getProp(const xmlNode* node, const string& name) noexcept
 	{
 		// формально при конструировании строки может быть exception
 		const string t( (const char*)text );
-		xmlFree( (xmlChar*) text );
-		return std::move(t);
+		xmlFree( text );
+		return t;
 	}
 	catch(...) {}
 
-	xmlFree( (xmlChar*) text );
+	xmlFree( text );
 	return "";
 }
 // -----------------------------------------------------------------------------
@@ -208,6 +208,26 @@ int UniXML::getPIntProp(const xmlNode* node, const string& name, int def ) noexc
 void UniXML::setProp(xmlNode* node, const string& name, const string& text )
 {
 	::xmlSetProp(node, (const xmlChar*)name.c_str(), (const xmlChar*)text.c_str());
+}
+// -----------------------------------------------------------------------------
+UniXMLPropList UniXML::getPropList( xmlNode* node )
+{
+	UniXMLPropList lst;
+	if( !node )
+		return lst;
+
+	xmlAttr* attribute = node->properties;
+	while( attribute )
+	{
+		xmlChar* value = ::xmlNodeListGetString(node->doc, attribute->children, 1);
+		const std::string nm( (const char*)attribute->name );
+		const std::string val( (const char*)value );
+		lst.push_back( {nm,val} );
+		xmlFree(value);
+		attribute = attribute->next;
+	}
+
+	return lst;
 }
 // -----------------------------------------------------------------------------
 xmlNode* UniXML::createChild(xmlNode* node, const string& title, const string& text)
@@ -262,7 +282,7 @@ xmlNode* UniXML::copyNode(xmlNode* node, int recursive)
 	return 0;
 }
 // -----------------------------------------------------------------------------
-bool UniXML::save(const string& filename, int level)
+bool UniXML::save( const string& filename, int level )
 {
 	string fn(filename);
 
@@ -430,7 +450,7 @@ bool UniXML_iterator::canPrev() const noexcept
 // -------------------------------------------------------------------------
 bool UniXML_iterator::canNext() const noexcept
 {
-	if (!curNode || !curNode->next )
+	if( !curNode || !curNode->next )
 		return false;
 
 	return true;
@@ -524,6 +544,11 @@ void UniXML_iterator::goEnd() noexcept
 	{
 		goNext();
 	}
+}
+// -------------------------------------------------------------------------
+UniXMLPropList UniXML_iterator::getPropList() const
+{
+	return UniXML::getPropList(curNode);
 }
 // -------------------------------------------------------------------------
 UniXML_iterator::operator xmlNode* () const noexcept

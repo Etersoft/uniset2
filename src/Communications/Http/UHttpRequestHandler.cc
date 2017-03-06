@@ -22,8 +22,11 @@
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace Poco::Net;
-using namespace uniset;
-using namespace UHttp;
+// -------------------------------------------------------------------------
+namespace uniset
+{
+	using namespace UHttp;
+
 // -------------------------------------------------------------------------
 UHttpRequestHandler::UHttpRequestHandler(std::shared_ptr<IHttpRequestRegistry> _registry ):
 	registry(_registry)
@@ -165,5 +168,7 @@ Poco::JSON::Object::Ptr IHttpRequest::httpRequest( const string& req, const Poco
 	err << "(IHttpRequest::Request): " << req << " not supported";
 	throw uniset::SystemError(err.str());
 }
+// -------------------------------------------------------------------------
+} // end of namespace uniset
 // -------------------------------------------------------------------------
 #endif

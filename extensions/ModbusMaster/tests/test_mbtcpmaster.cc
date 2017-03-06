@@ -222,12 +222,12 @@ TEST_CASE("MBTCPMaster: 0x03 (read register outputs or memories or read word out
 	REQUIRE( ui->getValue(1004) == -10 );
 	REQUIRE( ui->getValue(1005) == -10 );
 	REQUIRE( ui->getValue(1006) == -10 );
-	mbs->setReply(0);
+	mbs->setReply(1);
 	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1003) == 0 );
-	REQUIRE( ui->getValue(1004) == 0 );
-	REQUIRE( ui->getValue(1005) == 0 );
-	REQUIRE( ui->getValue(1006) == 0 );
+	REQUIRE( ui->getValue(1003) == 1 );
+	REQUIRE( ui->getValue(1004) == 1 );
+	REQUIRE( ui->getValue(1005) == 1 );
+	REQUIRE( ui->getValue(1006) == 1 );
 	mbs->setReply(65535);
 	msleep(polltime + 200);
 	REQUIRE( ui->getValue(1003) == -1 );
@@ -236,10 +236,14 @@ TEST_CASE("MBTCPMaster: 0x03 (read register outputs or memories or read word out
 	REQUIRE( ui->getValue(1006) == -1 );
 	REQUIRE( ui->getValue(1007) == 65535 ); // unsigned
 
-	mbs->setReply(0xffff);
+	mbs->setReply( std::numeric_limits<uint16_t>::max() );
 	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1008) == 0xffffffff ); // I2
-	REQUIRE( ui->getValue(1009) == 0xffffffff ); // U2
+	REQUIRE( (uint16_t)ui->getValue(1009) == std::numeric_limits<uint16_t>::max() ); // U2
+
+	mbs->setReply( std::numeric_limits<int16_t>::max() );
+	msleep(polltime + 200);
+	REQUIRE( (int16_t)ui->getValue(1008) == std::numeric_limits<int16_t>::max() ); // I2
+
 	mbs->setReply(0xff);
 	msleep(polltime + 200);
 	REQUIRE( ui->getValue(1008) == 0x00ff00ff ); // I2
@@ -281,10 +285,14 @@ TEST_CASE("MBTCPMaster: 0x04 (read input registers or memories or read word outp
 	REQUIRE( ui->getValue(1013) == -1 );
 	REQUIRE( ui->getValue(1014) == 65535 ); // unsigned
 
-	mbs->setReply(0xffff);
+	mbs->setReply( std::numeric_limits<uint16_t>::max() );
 	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1015) == 0xffffffff ); // I2
-	REQUIRE( ui->getValue(1016) == 0xffffffff ); // U2
+	REQUIRE( (uint16_t)ui->getValue(1009) == std::numeric_limits<uint16_t>::max() ); // U2
+
+	mbs->setReply( std::numeric_limits<int16_t>::max() );
+	msleep(polltime + 200);
+	REQUIRE( (int16_t)ui->getValue(1008) == std::numeric_limits<int16_t>::max() ); // I2
+
 	mbs->setReply(0xff);
 	msleep(polltime + 200);
 	REQUIRE( ui->getValue(1015) == 0x00ff00ff ); // I2
@@ -457,23 +465,23 @@ TEST_CASE("MBTCPMaster: 0x10 (write register outputs or memories)", "[modbus][0x
 		REQUIRE( q.addr == slaveADDR );
 		REQUIRE( q.start == 31 );
 		REQUIRE( q.quant == 6 );
-		REQUIRE( q.data[0] == (unsigned short)(-100) );
-		REQUIRE( q.data[2] == (unsigned short)(-10) );
-		REQUIRE( q.data[3] == (unsigned short)(-32767) );
+		REQUIRE( q.data[0] == (uint16_t)(-100) );
+		REQUIRE( q.data[2] == (uint16_t)(-10) );
+		REQUIRE( q.data[3] == (uint16_t)(-32767) );
 	}
 
 	SECTION("I2")
 	{
-		ui->setValue(1023, 0xffffffff);
-		REQUIRE( ui->getValue(1023) == 0xffffffff );
+		ui->setValue(1023, std::numeric_limits<uint32_t>::max());
+		REQUIRE( (uint32_t)ui->getValue(1023) == std::numeric_limits<uint32_t>::max() );
 		msleep(polltime + 200);
 
 		ModbusRTU::WriteOutputMessage q = mbs->getLastWriteOutput();
 		REQUIRE( q.addr == slaveADDR );
 		REQUIRE( q.start == 31 );
 		REQUIRE( q.quant == 6 );
-		REQUIRE( q.data[4] == 0xffff );
-		REQUIRE( q.data[5] == 0xffff );
+		REQUIRE( q.data[4] == std::numeric_limits<uint16_t>::max() );
+		REQUIRE( q.data[5] == std::numeric_limits<uint16_t>::max() );
 	}
 }
 // -----------------------------------------------------------------------------

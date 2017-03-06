@@ -203,7 +203,7 @@ bool UniSetManager::removeObject( const std::shared_ptr<UniSetObject>& obj )
 
 			try
 			{
-				if(obj)
+				if( obj )
 					obj->deactivate();
 			}
 			catch( const uniset::Exception& ex )
@@ -225,7 +225,6 @@ bool UniSetManager::removeObject( const std::shared_ptr<UniSetObject>& obj )
 					  << " line: " << fe.line()
 					  << " mesg: " << fe.errmsg() << endl;
 			}
-
 			catch(...) {}
 
 			olist.erase(li);

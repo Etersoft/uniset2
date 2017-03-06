@@ -598,7 +598,12 @@ void IONotifyController::readDump()
 	}
 	catch( const std::exception& ex )
 	{
-		uwarn << myname << "(IONotifyController::readDump): " << ex.what() << endl;
+		// Если дамп не удалось считать, значит что-то не то в configure.xml
+		// и безопаснее "вылететь", чем запустится, но половина датчиков работать не будет
+		// как ожидается.
+
+		ucrit << myname << "(IONotifyController::readDump): " << ex.what() << endl;
+		std::terminate(); // std::abort();
 	}
 }
 // --------------------------------------------------------------------------------------------------------------
@@ -609,7 +614,7 @@ void IONotifyController::initItem( std::shared_ptr<USensorInfo>& usi, IOControll
 }
 // ------------------------------------------------------------------------------------------
 void IONotifyController::dumpOrdersList( const uniset::ObjectId sid,
-										 const IONotifyController::ConsumerListInfo& lst )
+		const IONotifyController::ConsumerListInfo& lst )
 {
 	if( restorer == NULL )
 		return;
@@ -855,8 +860,8 @@ bool IONotifyController::removeThreshold( ThresholdExtList& lst, ThresholdInfoEx
 }
 // --------------------------------------------------------------------------------------------------------------
 void IONotifyController::checkThreshold( IOController::IOStateList::iterator& li,
-										 const uniset::ObjectId sid,
-										 bool send_msg )
+		const uniset::ObjectId sid,
+		bool send_msg )
 {
 	if( li == myioEnd() )
 		li = myiofind(sid);
@@ -927,7 +932,7 @@ void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorIn
 
 			// если состояние не normal, значит порог сработал,
 			// не важно какой.. нижний или верхний (зависит от inverse)
-			sm.threshold = ( state != IONotifyController_i::NormalThreshold ) ? true : false;
+			sm.threshold = ( state != IONotifyController_i::NormalThreshold );
 
 			// запоминаем время изменения состояния
 			it->tv_sec     = tm.tv_sec;
@@ -1149,8 +1154,8 @@ void IONotifyController::onChangeUndefinedState( std::shared_ptr<USensorInfo>& u
 
 // -----------------------------------------------------------------------------
 IDSeq* IONotifyController::askSensorsSeq( const uniset::IDSeq& lst,
-										  const uniset::ConsumerInfo& ci,
-										  UniversalIO::UIOCommand cmd)
+		const uniset::ConsumerInfo& ci,
+		UniversalIO::UIOCommand cmd)
 {
 	uniset::IDList badlist; // cписок не найденных идентификаторов
 
@@ -1188,7 +1193,7 @@ Poco::JSON::Object::Ptr IONotifyController::httpHelp(const Poco::URI::QueryParam
 
 	{
 		// 'lost'
-		uniset::json::help::item cmd("et lost consumers list");
+		uniset::json::help::item cmd("get lost consumers list");
 		myhelp.add(cmd);
 	}
 
@@ -1218,7 +1223,7 @@ Poco::JSON::Object::Ptr IONotifyController::request_consumers( const string& req
 
 	ConsumerListInfo emptyList;
 
-	if( p.size() > 0 )
+	if( !p.empty() )
 	{
 		if( !p[0].first.empty() )
 			slist = uniset::getSInfoList( p[0].first, uniset_conf() );
@@ -1252,6 +1257,7 @@ Poco::JSON::Object::Ptr IONotifyController::request_consumers( const string& req
 		{
 			// добавляем только датчики только с непустым списком заказчиков
 			auto jret = getConsumers(a.first, a.second, true);
+
 			if( jret )
 				jdata->add(jret);
 		}
@@ -1289,6 +1295,7 @@ Poco::JSON::Object::Ptr IONotifyController::getConsumers(ObjectId sid, ConsumerL
 	jsens->set("name", ORepHelpers::getShortName(oind->getMapName(sid)));
 
 	auto jcons = uniset::json::make_child_array(jret, "consumers");
+
 	for( const auto& c : ci.clst )
 	{
 		Poco::JSON::Object::Ptr consumer = new Poco::JSON::Object();

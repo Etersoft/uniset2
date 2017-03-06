@@ -177,7 +177,7 @@ string MySQLInterface::addslashes( const string& str )
 		tmp << str[i];
 	}
 
-	return std::move(tmp.str());
+	return tmp.str();
 }
 // -----------------------------------------------------------------------------------------
 void MySQLInterface::makeResult(DBResult& dbres, MYSQL_RES* myres, bool finalize )

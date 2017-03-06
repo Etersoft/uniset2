@@ -9,7 +9,6 @@ REL=eter
 MAILDOMAIN=server
 
 [ -z "$TOPDIR" ] && TOPDIR=/var/ftp/pub/Ourside
-[ -z "$GEN" ] && GEN=/var/ftp/pub/Ourside/$PLATFORM/genb.sh
 
 PKGNAME=uniset2
 SPECNAME=libuniset2.spec
@@ -22,6 +21,7 @@ fi
 PROJECT=$1
 test -n "$PROJECT" || PROJECT=$PKGNAME
 
+[ -z "$GEN" ] && GEN=/var/ftp/pub/Ourside/$PLATFORM/genb.sh
 [ -a "$GEN" ] || GEN="genbasedir --create --progress --topdir=$TOPDIR $PLATFORM $PROJECT"
 
 [ -z "$FTPDIR" ] && FTPDIR=$TOPDIR/$PLATFORM/RPMS.$PROJECT
@@ -62,13 +62,38 @@ function cp2ftp()
 
 # ------------------------------------------------------------------------
 
-add_changelog_helper "- new build" $SPECNAME
+ # Увеличиваем подрелиз (.x+1) до сборки!
+if [ -n "$BUILD_AUTOINCREMENT_SUBRELEASE" ]; then
+	inc_subrelease $SPECNAME
+
+	COMMIT="$(git rev-parse --verify HEAD)"
+	add_changelog -e "- (autobuild): commit $COMMIT" $SPECNAME
+
+elif [ -n "$JENKINS_BUILD_AUTOINCREMENT" ]; then
+	
+	rel="$(get_release $SPECNAME)"
+	
+	# Смотрим номер сборки в JENKINS
+	if [ -n "$BUILD_NUMBER" ]; then
+		rel="${rel}.${JENKINS_PREFIX}${BUILD_NUMBER}"
+		set_release $SPECNAME $rel
+	else
+		# просто увеличиваем subrelease
+		inc_subrelease $SPECNAME
+	fi
+
+	COMMIT="$(git rev-parse --verify HEAD)"
+	add_changelog -e "- (jenkinsbuild): commit $COMMIT" $SPECNAME
+else
+	# обычный build
+   add_changelog_helper "- new build" $SPECNAME
+fi
 
 rpmbb ${UNISET_BUILD_ADDON_OPTIONS} $SPECNAME || fatal "Can't build"
 
 cp2ftp
-
-rpmbs $SPECNAME
+             
+#rpmbs $SPECNAME
 #send_notify
 
 # Увеличиваем релиз и запоминаем спек после успешной сборки
