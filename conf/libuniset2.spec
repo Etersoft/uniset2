@@ -510,7 +510,7 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
-* Mon Mar 06 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt11.M80P.12
+* Tue Mar 07 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt11.M80P.12
 - backport to ALTLinux p8 (by rpmbph script)
 
 * Mon Feb 27 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt12
