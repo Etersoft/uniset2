@@ -11,7 +11,7 @@ libUniSet2LProcessor_la_LIBADD	= $(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la $(SIGC_LIBS)
 libUniSet2LProcessor_la_CXXFLAGS	= -I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)
-libUniSet2LProcessor_la_SOURCES 	= Element.cc TOR.cc TAND.cc TDelay.cc TNOT.cc \
+libUniSet2LProcessor_la_SOURCES 	= Element.cc TOR.cc TAND.cc TDelay.cc TNOT.cc TA2D.cc \
 Schema.cc SchemaXML.cc LProcessor.cc PassiveLProcessor.cc
 
 bin_PROGRAMS = @PACKAGE@-logicproc @PACKAGE@-plogicproc

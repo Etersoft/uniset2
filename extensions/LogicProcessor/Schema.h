@@ -39,8 +39,8 @@ namespace uniset
 			void unlink( Element::ElementID rootID, Element::ElementID childID );
 			void extlink( const std::string& name, Element::ElementID childID, int numIn );
 
-			void setIn( Element::ElementID ID, int inNum, bool state );
-			bool getOut( Element::ElementID ID );
+			void setIn( Element::ElementID ID, int inNum, long state );
+			long getOut( Element::ElementID ID );
 
 			struct INLink;
 			struct EXTLink;

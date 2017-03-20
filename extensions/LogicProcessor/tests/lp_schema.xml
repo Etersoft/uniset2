@@ -15,6 +15,12 @@
        ----                  |---|TOR4|-----|    |     |       |
                            2 ----|    |     |    |     |       |
                                   ----       ----       -------
+          ---
+         |   |
+  AI_S --|A2D|-- Output_S
+         |   |
+          ---
+
 </text-view>
 
 <elements>
@@ -24,6 +30,7 @@
 	<item id="4" type="OR" inCount="2"/>
 	<item id="5" type="OR" inCount="2"/>
 	<item id="6" type="Delay" inCount="1" delayMS="3000"/>
+	<item id="7" type="A2D" filterValue="6"/>
 </elements>
 
 <connections>
@@ -39,6 +46,8 @@
 	<item type="int" from="4" to="5" toInput="2" />
 	<item type="int" from="5" to="6" toInput="1" />
 	<item type="out" from="6" to="Out1_S"/>
+	<item type="ext" from="AI_S" to="7" toInput="1" />
+	<item type="out" from="7" to="Out2_S" />
 </connections>
 
 </Schema>

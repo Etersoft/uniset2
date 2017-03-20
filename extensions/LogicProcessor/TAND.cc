@@ -33,17 +33,17 @@ namespace uniset
 	{
 	}
 	// -------------------------------------------------------------------------
-	void TAND::setIn(size_t num, bool state )
+	void TAND::setIn( size_t num, long value )
 	{
 		//    cout << this << ": input " << num << " set " << state << endl;
-		for( auto& it : ins )
+		for( auto&& it : ins )
 		{
 			if( it.num == num )
 			{
-				if( it.state == state )
+				if( it.value == value )
 					return; // вход не менялся можно вообще прервать проверку
 
-				it.state = state;
+				it.value = value;
 				break;
 			}
 		}
@@ -53,9 +53,9 @@ namespace uniset
 
 		// проверяем изменился ли выход
 		// для тригера 'AND' проверка до первого 0
-		for( auto& it : ins )
+		for( auto&& it : ins )
 		{
-			if( !it.state )
+			if( !it.value )
 			{
 				myout = false;
 				brk = true;

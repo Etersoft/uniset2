@@ -6,6 +6,7 @@
 #include "UniSetTypes.h"
 #include "Schema.h"
 #include "TDelay.h"
+#include "TA2D.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -140,6 +141,31 @@ TEST_CASE("Logic processor: elements", "[LogicProcessor][elements]")
 		e.setIn(1, true);
 		CHECK( e.getOut() );
 	}
+
+	SECTION( "TA2D" )
+	{
+		TA2D e("1",10);
+		REQUIRE_FALSE( e.getOut() );
+
+		e.setIn(1, 5);
+		REQUIRE_FALSE( e.getOut() );
+
+		e.setIn(1, 10);
+		REQUIRE( e.getOut() );
+
+
+		e.setIn(1, 9);
+		REQUIRE_FALSE( e.getOut() );
+
+		e.setFilterValue(5);
+		REQUIRE_FALSE( e.getOut() );
+
+		e.setIn(1, 5);
+		REQUIRE( e.getOut() );
+
+		e.setIn(1, 6);
+		REQUIRE_FALSE( e.getOut() );
+	}
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("Logic processor: schema", "[LogicProcessor][schema]")
@@ -148,7 +174,7 @@ TEST_CASE("Logic processor: schema", "[LogicProcessor][schema]")
 	sch.read("schema.xml");
 
 	CHECK( !sch.empty() );
-	REQUIRE( sch.size() == 6 );
+	REQUIRE( sch.size() == 7 );
 
 	REQUIRE( sch.find("1") != nullptr );
 	REQUIRE( sch.find("2") != nullptr );
@@ -156,6 +182,7 @@ TEST_CASE("Logic processor: schema", "[LogicProcessor][schema]")
 	REQUIRE( sch.find("4") != nullptr );
 	REQUIRE( sch.find("5") != nullptr );
 	REQUIRE( sch.find("6") != nullptr );
+	REQUIRE( sch.find("7") != nullptr );
 
 	REQUIRE( sch.findOut("TestMode_S") != nullptr );
 
@@ -192,12 +219,16 @@ TEST_CASE("Logic processor: lp", "[LogicProcessor][logic]")
 	auto e6 = sch->find("6");
 	REQUIRE( e6 != nullptr );
 
+	auto e7 = sch->find("7");
+	REQUIRE( e7 != nullptr );
+
 	CHECK_FALSE( e1->getOut() );
 	CHECK_FALSE( e2->getOut() );
 	CHECK_FALSE( e3->getOut() );
 	CHECK_FALSE( e4->getOut() );
 	CHECK_FALSE( e5->getOut() );
 	CHECK_FALSE( e6->getOut() );
+	CHECK_FALSE( e7->getOut() );
 
 	// e1
 	ui->setValue(500, 1);
@@ -249,5 +280,22 @@ TEST_CASE("Logic processor: lp", "[LogicProcessor][logic]")
 	CHECK_FALSE( e6->getOut() );
 	msleep(2100);
 	CHECK( e6->getOut() );
+
+	// e7 (Out2_S=507, AI_S=508)
+	CHECK_FALSE( e7->getOut() );
+	ui->setValue(508, 1);
+	msleep(1000);
+	REQUIRE_FALSE( e7->getOut() );
+	REQUIRE_FALSE( ui->getValue(507) );
+	ui->setValue(508, 6);
+	msleep(1000);
+	REQUIRE( e7->getOut() );
+	msleep(1000);
+	REQUIRE( ui->getValue(507) );
+	ui->setValue(508, 7);
+	msleep(1000);
+	REQUIRE_FALSE( e7->getOut() );
+	msleep(1000);
+	REQUIRE_FALSE( ui->getValue(507) );
 }
 // -----------------------------------------------------------------------------

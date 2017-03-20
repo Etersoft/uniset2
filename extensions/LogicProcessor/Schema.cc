@@ -168,7 +168,7 @@ namespace uniset
 
 	}
 	// -------------------------------------------------------------------------
-	void Schema::setIn( Element::ElementID ID, int inNum, bool state )
+	void Schema::setIn(Element::ElementID ID, int inNum, long state )
 	{
 		auto it = emap.find(ID);
 
@@ -176,7 +176,7 @@ namespace uniset
 			it->second->setIn(inNum, state);
 	}
 	// -------------------------------------------------------------------------
-	bool Schema::getOut( Element::ElementID ID )
+	long Schema::getOut( Element::ElementID ID )
 	{
 		auto it = emap.find(ID);
 

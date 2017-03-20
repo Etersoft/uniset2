@@ -74,13 +74,13 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	void Element::setChildOut()
 	{
-		bool _myout = getOut();
+		long _myout = getOut();
 
-		for( auto && it : outs )
+		for( auto&& it: outs )
 			it.el->setIn(it.num, _myout);
 	}
 	// -------------------------------------------------------------------------
-	std::shared_ptr<Element> Element::find(const ElementID& id )
+	std::shared_ptr<Element> Element::find( const ElementID& id )
 	{
 		for( const auto& it : outs )
 		{
@@ -93,9 +93,9 @@ namespace uniset
 		return nullptr;
 	}
 	// -------------------------------------------------------------------------
-	void Element::addInput(size_t num, bool state)
+	void Element::addInput(size_t num, long value )
 	{
-		for( auto& it : ins )
+		for( auto&& it : ins )
 		{
 			if( it.num == num )
 			{
@@ -105,10 +105,10 @@ namespace uniset
 			}
 		}
 
-		ins.emplace_front(num, state);
+		ins.emplace_front(num, value);
 	}
 	// -------------------------------------------------------------------------
-	void Element::delInput(size_t num )
+	void Element::delInput( size_t num )
 	{
 		for( auto it = ins.begin(); it != ins.end(); ++it )
 		{
