@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt12
+Release: alt13
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -507,9 +507,10 @@ rm -f %buildroot%_libdir/*.la
         
 # history of current unpublished changes
 
+%changelog
+* Mon Mar 20 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt13
 - LogicProcessor: add "A2D" element (analog to discrete)
 
-%changelog
 * Mon Feb 27 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt12
 - up version
 
