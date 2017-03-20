@@ -54,14 +54,14 @@ namespace uniset
 			virtual ~Element() {};
 
 
-			/*!< функция вызываемая мастером для элементов, которым требуется
+			/*! функция вызываемая мастером для элементов, которым требуется
 			    работа во времени.
 			    По умолчанию ничего не делает.
 			*/
 			virtual void tick() {}
 
-			virtual void setIn( size_t num, bool state ) = 0;
-			virtual bool getOut() const = 0;
+			virtual void setIn( size_t num, long value ) = 0;
+			virtual long getOut() const = 0;
 
 			inline ElementID getId() const
 			{
@@ -81,7 +81,7 @@ namespace uniset
 				return outs.size();
 			}
 
-			virtual void addInput( size_t num, bool state = false );
+			virtual void addInput( size_t num, long value = 0 );
 			virtual void delInput( size_t num );
 			inline size_t inCount() const
 			{
@@ -120,10 +120,10 @@ namespace uniset
 
 			struct InputInfo
 			{
-				InputInfo(): num(0), state(false), type(unknown) {}
-				InputInfo(size_t n, bool s): num(n), state(s), type(unknown) {}
+				InputInfo(): num(0), value(0), type(unknown) {}
+				InputInfo(size_t n, long v): num(n), value(v), type(unknown) {}
 				size_t num;
-				bool state;
+				long value;
 				InputType type;
 			};
 
@@ -142,13 +142,13 @@ namespace uniset
 	{
 
 		public:
-			TOR( ElementID id, size_t numbers = 0, bool st = false );
+			TOR( ElementID id, size_t numbers = 0, bool outstate = false );
 			virtual ~TOR();
 
-			virtual void setIn( size_t num, bool state ) override;
-			virtual bool getOut() const override
+			virtual void setIn( size_t num, long value ) override;
+			virtual long getOut() const override
 			{
-				return myout;
+				return (myout ? 1 : 0);
 			}
 
 			virtual std::string getType() const override
@@ -172,7 +172,7 @@ namespace uniset
 			TAND(ElementID id, size_t numbers = 0, bool st = false );
 			virtual ~TAND();
 
-			virtual void setIn( size_t num, bool state ) override;
+			virtual void setIn( size_t num, long value ) override;
 			virtual std::string getType() const override
 			{
 				return "AND";
@@ -194,19 +194,18 @@ namespace uniset
 			TNOT( ElementID id, bool out_default );
 			virtual ~TNOT();
 
-			virtual bool getOut() const override
+			virtual long getOut() const override
 			{
-				return myout;
+				return ( myout ? 1 : 0 );
 			}
 
-			/* num игнорируется, т.к. элемент с одним входом
-			 */
-			virtual void setIn( size_t num, bool state ) override ;
+			/*! num игнорируется, т.к. элемент с одним входом */
+			virtual void setIn( size_t num, long value ) override ;
 			virtual std::string getType() const override
 			{
 				return "NOT";
 			}
-			virtual void addInput( size_t num, bool state = false ) override {}
+			virtual void addInput( size_t num, long value = 0 ) override {}
 			virtual void delInput( size_t num ) override {}
 
 		protected:

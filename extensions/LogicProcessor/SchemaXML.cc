@@ -20,6 +20,7 @@
 #include "Extensions.h"
 #include "Schema.h"
 #include "TDelay.h"
+#include "TA2D.h"
 // -----------------------------------------------------------------------------
 namespace uniset
 {
@@ -87,6 +88,11 @@ namespace uniset
 				bool defout = xml.getIntProp(it, "default_out_state");
 				manage( make_shared<TNOT>(ID, defout) );
 			}
+			else if( type == "A2D" )
+			{
+				int filterValue = xml.getIntProp(it, "filterValue");
+				manage( make_shared<TA2D>(ID, filterValue) );
+			}
 			else
 			{
 				ostringstream msg;
@@ -143,6 +149,7 @@ namespace uniset
 				}
 
 				dinfo << "SchemaXML: set Out: from=" << fID << " to=" << tID << endl;
+
 				outList.emplace_front(tID, el);
 			}
 		}

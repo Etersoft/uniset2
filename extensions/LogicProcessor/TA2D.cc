@@ -14,10 +14,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -------------------------------------------------------------------------
-#include <sstream>
 #include <iostream>
 #include "Extensions.h"
-#include "Element.h"
+#include "TA2D.h"
 // -----------------------------------------------------------------------------
 namespace uniset
 {
@@ -25,65 +24,40 @@ namespace uniset
 	using namespace std;
 	using namespace uniset::extensions;
 	// -------------------------------------------------------------------------
-	TOR::TOR(ElementID id, size_t num, bool st):
+	TA2D::TA2D(Element::ElementID id , long filterValue ):
 		Element(id),
-		myout(false)
+		myout(false),
+		fvalue(filterValue)
 	{
-		if( num != 0 )
-		{
-			// создаём заданное количество входов
-			for( size_t i = 1; i <= num; i++ )
-			{
-				ins.emplace_front(i, st); // addInput(i,st);
-
-				if( st == true )
-					myout = true;
-			}
-		}
+		ins.emplace_front(1, myout);
 	}
 
-	TOR::~TOR()
+	TA2D::~TA2D()
 	{
 	}
 	// -------------------------------------------------------------------------
-	void TOR::setIn( size_t num, long value )
+	void TA2D::setIn( size_t num, long value )
 	{
-		//    cout << getType() << "(" << myid << "):  input " << num << " set " << state << endl;
-
-		for( auto&& it : ins )
-		{
-			if( it.num == num )
-			{
-				if( it.value == value )
-					return; // вход не менялся можно вообще прервать проверку
-
-				it.value = value;
-				break;
-			}
-		}
+		// num игнорируем, т.к у нас всего один вход..
 
 		bool prev = myout;
-		bool brk = false; // признак досрочного завершения проверки
-
-		// проверяем изменился ли выход
-		// для тригера 'OR' проверка до первой единицы
-		for( auto&& it : ins )
-		{
-			if( it.value )
-			{
-				myout = true;
-				brk = true;
-				break;
-			}
-		}
-
-		if( !brk )
-			myout = false;
-
-		dinfo << this << ": myout " << myout << endl;
+		myout = ( fvalue == value );
 
 		if( prev != myout )
 			Element::setChildOut();
+	}
+	// -------------------------------------------------------------------------
+	long TA2D::getOut() const
+	{
+		return ( myout ? 1 : 0 );
+	}
+	// -------------------------------------------------------------------------
+	void TA2D::setFilterValue( long value )
+	{
+		if( fvalue != value && myout )
+			myout = false;
+
+		fvalue = value;
 	}
 	// -------------------------------------------------------------------------
 } // end of namespace uniset

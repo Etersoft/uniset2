@@ -41,12 +41,12 @@ namespace uniset
 	{
 	}
 	// -------------------------------------------------------------------------
-	void TDelay::setIn( size_t num, bool state )
+	void TDelay::setIn( size_t num, long value )
 	{
 		bool prev = myout;
 
 		// сбрасываем сразу
-		if( !state )
+		if( !value )
 		{
 			pt.setTiming(0); // reset timer
 			myout = false;
@@ -92,9 +92,9 @@ namespace uniset
 		}
 	}
 	// -------------------------------------------------------------------------
-	bool TDelay::getOut() const
+	long TDelay::getOut() const
 	{
-		return myout;
+		return (myout ? 1 : 0);
 	}
 	// -------------------------------------------------------------------------
 	void TDelay::setDelay( timeout_t timeMS )

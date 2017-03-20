@@ -34,6 +34,11 @@
     -# \b "ИЛИ" \b (OR)
     -# \b "Задержка" \b (Delay)
     -# \b "Отрицание" \b (NOT)
+	-# \b "Преобразование аналогового значения в логическое" \b (A2D)
+
+	Стоит отметить, что по мере развития, процесс стал поддерживать не только логические операции,
+	а работу с числовыми(аналоговыми) величинами. Например элемент "TA2D".
+	Но в названии оставлено "Logic".
 
     \section sec_lpShema Конфигурирование
         Конфигурирование процесса осуществляется при помощи xml-файла задающего
@@ -153,18 +158,16 @@ namespace uniset
 
 			struct EXTInfo
 			{
-				uniset::ObjectId sid;
-				UniversalIO::IOType iotype;
-				bool state;
-				std::shared_ptr<Element> el;
-				int numInput = { -1};
+				uniset::ObjectId sid = { uniset::DefaultObjectId };
+				long value = { 0 };
+				std::shared_ptr<Element> el = { nullptr };
+				int numInput = { -1 };
 			};
 
 			struct EXTOutInfo
 			{
-				uniset::ObjectId sid;
-				UniversalIO::IOType iotype;
-				std::shared_ptr<Element> el;
+				uniset::ObjectId sid = { uniset::DefaultObjectId };
+				std::shared_ptr<Element> el = { nullptr };
 			};
 
 			typedef std::list<EXTInfo> EXTList;
@@ -180,9 +183,7 @@ namespace uniset
 			timeout_t smReadyTimeout = { 30000 } ;     /*!< время ожидания готовности SM, мсек */
 
 			std::string logname = { "" };
-
 			std::atomic_bool canceled = {false};
-
 			std::string fSchema = {""};
 
 		private:

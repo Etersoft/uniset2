@@ -507,6 +507,8 @@ rm -f %buildroot%_libdir/*.la
         
 # history of current unpublished changes
 
+- LogicProcessor: add "A2D" element (analog to discrete)
+
 %changelog
 * Mon Feb 27 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt12
 - up version
