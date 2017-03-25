@@ -108,22 +108,18 @@ void LProcessor::build( const string& lfile )
 
 		if( sid == DefaultObjectId )
 		{
-			dcrit << "НЕ НАЙДЕН ИДЕНТИФИКАТОР ДАТЧИКА: " << it->name << endl;
-			continue;
+			ostringstream err;
+			err << "Unknown sensor ID for " << it->name;
+
+			dcrit << err.str() << endl;
+			throw SystemError(err.str());
 		}
 
 		EXTInfo ei;
 		ei.sid = sid;
-		ei.state = false;
+		ei.value = false;
 		ei.el = it->to;
-		ei.iotype = conf->getIOType(sid);
 		ei.numInput = it->numInput;
-
-		if( ei.iotype == UniversalIO::UnknownIOType )
-		{
-			dcrit << "Unkown iotype for sid=" << sid << "(" << it->name << ")" << endl;
-			continue;
-		}
 
 		extInputs.emplace_front( std::move(ei) );
 	}
@@ -134,20 +130,16 @@ void LProcessor::build( const string& lfile )
 
 		if( sid == DefaultObjectId )
 		{
-			dcrit << "НЕ НАЙДЕН ИДЕНТИФИКАТОР ВЫХОДА: " << it->name << endl;
-			continue;
+			ostringstream err;
+			err << "Unknown sensor ID for " << it->name;
+
+			dcrit << err.str() << endl;
+			throw SystemError(err.str());
 		}
 
 		EXTOutInfo ei;
 		ei.sid = sid;
 		ei.el = it->from;
-		ei.iotype = conf->getIOType(sid);
-
-		if( ei.iotype == UniversalIO::UnknownIOType )
-		{
-			dcrit << "Unkown iotype for sid=" << sid << "(" << it->name << ")" << endl;
-			continue;
-		}
 
 		extOuts.emplace_front(std::move(ei));
 	}
@@ -161,11 +153,11 @@ void LProcessor::build( const string& lfile )
 */
 void LProcessor::getInputs()
 {
-	for( auto& it : extInputs )
+	for( auto&& it : extInputs )
 	{
 		//        try
 		//        {
-		it.state = (bool)ui.getValue(it.sid);
+		it.value = ui.getValue(it.sid);
 		//        }
 	}
 }
@@ -174,7 +166,7 @@ void LProcessor::processing()
 {
 	// выcтавляем все внешние входы
 	for( const auto& it : extInputs )
-		it.el->setIn(it.numInput, it.state);
+		it.el->setIn(it.numInput, it.value);
 
 	// проходим по всем элементам
 	for_each( sch->begin(), sch->end(), [](Schema::ElementMap::value_type it)
@@ -190,7 +182,7 @@ void LProcessor::setOuts()
 	{
 		try
 		{
-			ui.setValue(it.sid, it.el->getOut(), DefaultObjectId);
+			ui.setValue(it.sid, it.el->getOut());
 		}
 		catch( const uniset::Exception& ex )
 		{

@@ -14,45 +14,41 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 //--------------------------------------------------------------------------
-#ifndef TDelay_H_
-#define TDelay_H_
+#ifndef TA2D_H_
+#define TA2D_H_
 // --------------------------------------------------------------------------
-#include "PassiveTimer.h"
 #include "Element.h"
 // --------------------------------------------------------------------------
 namespace uniset
 {
 	// ---------------------------------------------------------------------------
-	// "ON" delay element
-	// Сбрасывается без задержки.. а срабатывает с задержкой.
-	class TDelay:
+	// "A2D"(analog to discrete)
+	// Преобразование аналогового датчика в дискретный по заданному значению. (Value=XXX --> True).
+	// Может быть один вход и много выходов.
+	class TA2D:
 		public Element
 	{
 
 		public:
-			TDelay( Element::ElementID id, timeout_t delayMS = 0, size_t inCount = 0 );
-			virtual ~TDelay();
+			TA2D( Element::ElementID id, long filterValue=1 );
+			virtual ~TA2D();
 
-			virtual void tick() override;
+			/*! num игнорируется, т.к. элемент с одним входом */
 			virtual void setIn( size_t num, long value ) override;
+
 			virtual long getOut() const override;
 			virtual std::string getType() const override
 			{
-				return "Delay";
+				return "A2D";
 			}
 
-			void setDelay( timeout_t timeMS );
-			inline timeout_t getDelay() const
-			{
-				return delay;
-			}
+			void setFilterValue( long value );
 
 		protected:
-			TDelay(): myout(false), delay(0) {};
+			TA2D(): myout(false) {};
 
 			bool myout;
-			PassiveTimer pt;
-			timeout_t delay;
+			long fvalue = { 1 };
 
 		private:
 	};

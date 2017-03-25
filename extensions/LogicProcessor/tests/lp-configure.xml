@@ -40,6 +40,8 @@
 			<item id="504" iotype="DI" name="In5_S" textname="In5"/>
 			<item id="505" iotype="DI" name="In6_S" textname="In6"/>
 			<item id="506" iotype="DI" name="Out1_S" textname="Out1"/>
+			<item id="507" iotype="DI" name="Out2_S" textname="Out2"/>
+			<item id="508" iotype="AI" name="AI_S" textname="AI_S"/>
 		</sensors>
 		<thresholds name="thresholds">
 		</thresholds>

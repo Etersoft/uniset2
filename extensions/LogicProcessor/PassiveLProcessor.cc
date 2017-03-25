@@ -132,7 +132,7 @@ void PassiveLProcessor::sensorInfo( const uniset::SensorMessage* sm )
 	for( auto& it : extInputs )
 	{
 		if( it.sid == sm->id )
-			it.state = sm->value ? true : false;
+			it.value = sm->value;
 	}
 }
 // -------------------------------------------------------------------------

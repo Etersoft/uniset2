@@ -36,10 +36,10 @@ namespace uniset
 	{
 	}
 	// -------------------------------------------------------------------------
-	void TNOT::setIn( size_t num, bool state )
+	void TNOT::setIn( size_t num, long value )
 	{
 		bool prev = myout;
-		myout = !state;
+		myout = ( value ? false : true ); // отрицание.. !value
 
 		if( prev != myout )
 			Element::setChildOut();

@@ -104,6 +104,8 @@ extensions/LogicProcessor/TDelay.cc
 extensions/LogicProcessor/TDelay.h
 extensions/LogicProcessor/TNOT.cc
 extensions/LogicProcessor/TOR.cc
+extensions/LogicProcessor/TA2D.h
+extensions/LogicProcessor/TA2D.cc
 extensions/ModbusMaster/tests/Makefile.am
 extensions/ModbusMaster/tests/mbmaster-test-configure.xml
 extensions/ModbusMaster/tests/MBTCPTestServer.cc
