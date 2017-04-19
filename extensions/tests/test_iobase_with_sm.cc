@@ -330,10 +330,10 @@ TEST_CASE("[IOBase::calibration]: AI calibration (precision)", "[iobase][calibra
 	init_test();
 
 	ObjectId ai = conf->getSensorID("CalibrationTest_AI2_AS");
-	CHECK( ai != DefaultObjectId );
+	REQUIRE( ai != DefaultObjectId );
 
 	IOBase ib;
-	CHECK( init_iobase(&ib, "CalibrationTest_AI2_AS") );
+	REQUIRE( init_iobase(&ib, "CalibrationTest_AI2_AS") );
 
 	SECTION("AI calibration with precision (asAI)")
 	{
@@ -434,6 +434,22 @@ TEST_CASE("[IOBase::calibration]: AI calibration (precision)", "[iobase][calibra
 		REQUIRE(  shm->getValue(ai) == 990 );
 
 		ib.noprecision = false;
+	}
+
+	ai = conf->getSensorID("CalibrationTest_AI3_AS");
+	REQUIRE( ai != DefaultObjectId );
+	REQUIRE( init_iobase(&ib, "CalibrationTest_AI3_AS") );
+
+	SECTION("AI calibration with precision < 0 (asAI)")
+	{
+		IOBase::processingAsAI(&ib, 0, shm, true);
+		REQUIRE( shm->getValue(ai) == 0 );
+
+		IOBase::processingAsAI(&ib, 1000, shm, true);
+		REQUIRE( shm->getValue(ai) == 1 );
+
+		IOBase::processingAsAI(&ib, -10, shm, true);
+		REQUIRE(  shm->getValue(ai) == 0 );
 	}
 }
 // -----------------------------------------------------------------------------

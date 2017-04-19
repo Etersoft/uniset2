@@ -246,8 +246,8 @@ namespace uniset
 							val = uniset::lcalibrate(val, cal->minRaw, cal->maxRaw, cal->minCal, cal->maxCal, it->calcrop);
 					}
 
-					if( !it->noprecision && it->cal.precision > 0 )
-						val *= lround(pow10(it->cal.precision));
+					if( !it->noprecision && it->cal.precision != 0 )
+						val = lround( val*pow10(it->cal.precision) );
 				}
 			} // end of 'check_depend'
 
@@ -282,7 +282,7 @@ namespace uniset
 				val = 0;
 				memcpy(&val, &fval, std::min(sizeof(val), sizeof(fval)));
 			}
-			else if( it->cal.precision > 0 && !it->noprecision )
+			else if( it->cal.precision != 0 && !it->noprecision )
 				val = lroundf( fval * pow10(it->cal.precision) );
 
 			// проверка на обрыв
@@ -394,7 +394,7 @@ namespace uniset
 			else
 			{
 				// сперва "убираем степень", потом калибруем.. (это обратная последовательность для AsAI)
-				if( !it->noprecision && it->cal.precision > 0 )
+				if( !it->noprecision && it->cal.precision != 0 )
 					val = lroundf( (float)it->value / pow10(it->cal.precision) );
 
 				IOController_i::CalibrateInfo* cal( &(it->cal) );
@@ -460,7 +460,7 @@ namespace uniset
 				fval = uniset::fcalibrate(fval, cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
 			}
 
-			if( !it->noprecision && it->cal.precision > 0 )
+			if( !it->noprecision && it->cal.precision != 0 )
 				return ( fval / pow10(it->cal.precision) );
 		}
 		else // if( it->stype == UniversalIO::DI || it->stype == UniversalIO::DO )

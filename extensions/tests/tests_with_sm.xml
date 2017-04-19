@@ -261,6 +261,7 @@
 			<!-- calibration test -->
 			<item id="114" iotype="AI" name="CalibrationTest_AI1_AS" textname="Calibration test: AI1" rmin="-100" rmax="100" cmin="-1000" cmax="1000"/>
 			<item id="115" iotype="AI" name="CalibrationTest_AI2_AS" textname="Calibration test: AI2" rmin="-100" rmax="100" cmin="-1000" cmax="1000" precision="2"/>
+			<item id="123" iotype="AI" name="CalibrationTest_AI3_AS" textname="Calibration test: AI3" precision="-3"/>
 
 			<!-- asDI, asDO -->
 			<item id="116" iotype="AI" name="AsDI1_AS" textname="AsDI1"/>
