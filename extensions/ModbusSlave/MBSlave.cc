@@ -561,7 +561,7 @@ namespace uniset
 
 		if( vaddr.empty() )
 		{
-			mbcrit << "(execute_rtu): Unknown my modbus adresses!" << endl;
+			mbcrit << "(execute_rtu): Unknown my modbus addresses!" << endl;
 			raise(SIGTERM);
 			return;
 		}
@@ -622,7 +622,7 @@ namespace uniset
 
 		if( vaddr.empty() )
 		{
-			mbcrit << "(execute_tcp): Unknown my modbus adresses!" << endl;
+			mbcrit << "(execute_tcp): Unknown my modbus addresses!" << endl;
 			raise(SIGTERM);
 			return;
 		}

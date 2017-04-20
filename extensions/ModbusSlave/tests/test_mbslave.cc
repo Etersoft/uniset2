@@ -1181,7 +1181,7 @@ TEST_CASE("(0x10): write register outputs or memories [F2](precision)", "[modbus
 	REQUIRE( (float)r_f2 == 20.3f );
 }
 // -------------------------------------------------------------
-TEST_CASE("Multi adress check", "[modbus][mbslave][multiaddress]")
+TEST_CASE("Multi address check", "[modbus][mbslave][multiaddress]")
 {
 	InitTest();
 
