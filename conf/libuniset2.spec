@@ -18,7 +18,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt12.M80P.13
+Release: alt12.M80P.13.1
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -510,6 +510,9 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
+* Thu Apr 20 2017 Alexei Takaseev <taf@altlinux.org> 2.6-alt12.M80P.13.1
+- Rebuild with poco 1.7.8p2
+
 * Sat Mar 25 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt12.M80P.13
 - backport to ALTLinux p8 (by rpmbph script)
 
