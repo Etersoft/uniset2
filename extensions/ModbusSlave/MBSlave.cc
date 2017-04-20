@@ -620,6 +620,13 @@ namespace uniset
 
 		tcpserver->setMaxSessions( sessMaxNum );
 
+		if( vaddr.empty() )
+		{
+			mbcrit << "(execute_tcp): Unknown my modbus adresses!" << endl;
+			raise(SIGTERM);
+			return;
+		}
+
 		// Чтобы не создавать отдельный поток для tcpserver (или для обновления статистики)
 		// воспользуемся таймером tcpserver-а..
 		tcpserver->signal_timer().connect( sigc::mem_fun(this, &MBSlave::updateTCPStatistics) );
