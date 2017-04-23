@@ -210,7 +210,10 @@ namespace uniset
 	  Если @node не указано, возвращается node=DefaultObjectId */
 	std::list<uniset::ConsumerInfo> getObjectsList( const std::string& s, std::shared_ptr<uniset::Configuration> conf = nullptr );
 
-	/*! проверка является текст в строке - числом..*/
+	/*! проверка является текст в строке - числом..
+	 * \warning Числом будет считаться только строка ПОЛНОСТЬЮ состоящая из чисел.
+	 * Т.е. например "-10" или "100.0" или "10 000" - числом считаться не будут!
+	*/
 	bool is_digit( const std::string& s ) noexcept;
 
 	/*! замена всех вхождений подстроки
@@ -225,6 +228,7 @@ namespace uniset
 	/*! Получение параметра командной строки
 	    \param name - название параметра
 	    \param defval - значение, которое будет возвращено, если параметр не найден
+		\warning Поиск ведётся с первого аргумента, а не с нулевого!
 	*/
 	inline std::string getArgParam( const std::string& name,
 									int _argc, const char* const* _argv,
@@ -252,6 +256,8 @@ namespace uniset
 	    \param _argv - argv
 	    \return Возвращает -1, если параметр не найден.
 	        Или позицию параметра, если найден.
+
+		\warning Поиск ведётся с первого аргумента, а не с нулевого!
 	*/
 	inline int findArgParam( const std::string& name, int _argc, const char* const* _argv )
 	{

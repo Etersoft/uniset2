@@ -2,6 +2,7 @@
 // -----------------------------------------------------------------------------
 #include <sstream>
 #include <limits>
+#include <cstdint>
 #include "Configuration.h"
 #include "UniSetTypes.h"
 // -----------------------------------------------------------------------------
@@ -48,11 +49,9 @@ TEST_CASE("UniSetTypes: uni_atoi", "[utypes][uni_atoi]" )
 		REQUIRE( uni_atoi("0xff") == 0xff );
 		REQUIRE( uni_atoi("0xffff") == 0xffff );
 		REQUIRE( uni_atoi("0x0") == 0 );
-		REQUIRE( (unsigned int)uni_atoi("0xffffffff") == 0xffffffff );
+		REQUIRE( (uint32_t)uni_atoi("0xffffffff") == 0xffffffff );
 		REQUIRE( uni_atoi("0xfffffff8") == 0xfffffff8 );
 	}
-
-	WARN("Tests for 'UniSetTypes' incomplete...");
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: uni_strdup", "[utypes][uni_strdup]" )
@@ -188,5 +187,154 @@ TEST_CASE("UniSetTypes: timespec comapre", "[utypes][timespec]" )
 
 	REQUIRE_FALSE( t3 != t4 );
 	REQUIRE( t3 == t4 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: fcalibrate", "[utypes][fcalibrate]" )
+{
+	//	float fcalibrate(float raw, float rawMin, float rawMax, float calMin, float calMax, bool limit = true );
+
+	REQUIRE( fcalibrate(0.5,0.1,1.0,100.0,1000.0,true) == 500.0 );
+	REQUIRE( fcalibrate(10.0,0.1,1.0,100.0,1000.0,true) == 1000.0 );
+	REQUIRE( fcalibrate(10.0,0.1,1.0,100.0,1000.0,false) == 10000.0 );
+
+	REQUIRE( fcalibrate(0.0,0.1,1.0,100.0,1000.0,true) == 100.0 );
+	REQUIRE( fcalibrate(0.0,0.1,1.0,100.0,1000.0,false) == 0.0 );
+
+	REQUIRE( fcalibrate(-10.0,0.1,1.0,100.0,1000.0,true) == 100.0 );
+	REQUIRE( fcalibrate(-10.0,0.1,1.0,100.0,1000.0,false) == -10000.0 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: lcalibrate", "[utypes][lcalibrate]" )
+{
+	// long lcalibrate(long raw, long rawMin, long rawMax, long calMin, long calMax, bool limit = true );
+
+	REQUIRE( lcalibrate(5,1,10,100,1000,true) == 500 );
+	REQUIRE( lcalibrate(5,1,10,100,1000,false) == 500 );
+
+	REQUIRE( lcalibrate(0,1,10,100,1000,true) == 100 );
+	REQUIRE( lcalibrate(0,1,10,100,1000,false) == 0 );
+
+	REQUIRE( lcalibrate(100,1,10,100,1000,true) == 1000 );
+	REQUIRE( lcalibrate(100,1,10,100,1000,false) == 10000 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: setinregion", "[utypes][setinregion]" )
+{
+	//  long setinregion(long raw, long rawMin, long rawMax);
+
+	REQUIRE( setinregion(5,1,10) == 5 );
+	REQUIRE( setinregion(1,1,10) == 1 );
+	REQUIRE( setinregion(10,1,10) == 10 );
+	REQUIRE( setinregion(0,1,10) == 1 );
+	REQUIRE( setinregion(100,1,10) == 10 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: setoutregion", "[utypes][setoutregion]" )
+{
+	//  long setoutregion(long raw, long calMin, long calMax);
+
+	REQUIRE( setoutregion(5,1,10) == 1 );
+	REQUIRE( setoutregion(1,1,10) == 1 );
+	REQUIRE( setoutregion(10,1,10) == 10 );
+	REQUIRE( setoutregion(100,1,10) == 100 );
+	REQUIRE( setoutregion(0,1,10) == 0 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: file_exist", "[utypes][file_exist]" )
+{
+	CHECK_FALSE( file_exist("uknown_file") );
+
+	auto conf = uniset_conf();
+	REQUIRE( conf );
+	CHECK( file_exist(conf->getConfFileName()) );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: check_filter", "[utypes][check_filter]" )
+{
+	// bool check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val = "" ) noexcept;
+	auto xml = uniset_conf()->getConfXML();
+
+	xmlNode* xnode = xml->findNode(xml->getFirstNode(),"test_check_filter");
+	REQUIRE(xnode);
+
+	UniXML::iterator it(xnode);
+
+	CHECK( check_filter(it, "one_prop", "") );
+	CHECK_FALSE( check_filter(it, "empty_prop", "") );
+	CHECK( check_filter(it, "fprop", "fvalue") );
+	CHECK_FALSE( check_filter(it, "fprop", "badvalue") );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: findArgParam", "[utypes][findArgParam]" )
+{
+	// int findArgParam( const std::string& name, int _argc, const char* const* _argv )
+	int argc = 5;
+	char* argv[] = {"progname", "--param1", "val", "--param2", "val2"};
+
+	REQUIRE( findArgParam("--param1", argc, argv) == 1 );
+	REQUIRE( findArgParam("--param2", argc, argv) == 3 );
+	REQUIRE( findArgParam("--unknownparam", argc, argv) == -1 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: getArgParam", "[utypes][getArgParam]" )
+{
+//	getArgParam( const std::string& name,
+//									   int _argc, const char* const* _argv,
+//									   const std::string& defval = "" ) noexcept
+	int argc = 5;
+	char* argv[] = {"progname", "--param1", "val", "--param2", "val2"};
+
+	REQUIRE( getArgParam("--param1", argc, argv) == "val" );
+	REQUIRE( getArgParam("--param2", argc, argv) == "val2" );
+	REQUIRE( getArgParam("--unknownparam", argc, argv, "val3") == "val3" );
+	REQUIRE( getArgParam("--unknownparam2", argc, argv) == "" );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: getArgInt", "[utypes][getArgInt]" )
+{
+//	inline int getArgInt( const std::string& name,
+//					  int _argc, const char* const* _argv,
+//					  const std::string& defval = "" ) noexcept
+	int argc = 5;
+	char* argv[] = {"progname", "--param1", "1", "--param2", "text"};
+
+	REQUIRE( getArgInt("--param1", argc, argv) == 1 );
+	REQUIRE( getArgInt("--param2", argc, argv) == 0 );
+	REQUIRE( getArgInt("--unknownparam", argc, argv, "3") == 3 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: is_digit", "[utypes][is_digit]" )
+{
+	// bool is_digit( const std::string& s ) noexcept;
+	CHECK( is_digit("1") );
+	CHECK( is_digit("100") );
+	CHECK( is_digit("0") );
+	CHECK_FALSE( is_digit("-1") );
+	CHECK_FALSE( is_digit("10 000") );
+	CHECK_FALSE( is_digit("100.0") );
+	CHECK_FALSE( is_digit("a") );
+	CHECK_FALSE( is_digit("'") );
+	CHECK_FALSE( is_digit(";") );
+	CHECK_FALSE( is_digit("") );
+	CHECK_FALSE( is_digit("abs10as") );
+	CHECK_FALSE( is_digit("10a") );
+	CHECK_FALSE( is_digit("a10") );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: getIOType", "[utypes][getIOType]" )
+{
+	// UniversalIO::IOType getIOType( const std::string& s ) noexcept;
+	REQUIRE( getIOType("DI") == UniversalIO::DI );
+	REQUIRE( getIOType("di") == UniversalIO::DI );
+	REQUIRE( getIOType("DO") == UniversalIO::DO );
+	REQUIRE( getIOType("do") == UniversalIO::DO );
+	REQUIRE( getIOType("AI") == UniversalIO::AI );
+	REQUIRE( getIOType("ai") == UniversalIO::AI );
+	REQUIRE( getIOType("AO") == UniversalIO::AO );
+	REQUIRE( getIOType("ao") == UniversalIO::AO );
+
+	REQUIRE( getIOType("a") == UniversalIO::UnknownIOType );
+	REQUIRE( getIOType("d") == UniversalIO::UnknownIOType );
+	REQUIRE( getIOType("") == UniversalIO::UnknownIOType );
 }
 // -----------------------------------------------------------------------------

@@ -261,6 +261,9 @@ std::vector<std::string> uniset::explode_str( const std::string& str, char sep )
 // ------------------------------------------------------------------------------------------
 bool uniset::is_digit( const std::string& s ) noexcept
 {
+	if( s.empty() )
+		return false;
+
 	for( const auto& c : s )
 	{
 		if( !isdigit(c) )

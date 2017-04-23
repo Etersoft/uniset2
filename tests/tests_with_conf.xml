@@ -30,6 +30,7 @@
 		<LockDir name=""/>
 
 	<testnode name="testnode" id2="-100"/>
+	<test_check_filter name="test_check_filter" one_prop="1" empty_prop="" fprop="fvalue"/>
 	<Services>
 		<LocalTimeService name="TimeService" MaxCountTimers="100" AskLifeTimeSEC="10"/>
 		<LocalInfoServer name="InfoServer" dbrepeat="1">
