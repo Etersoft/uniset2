@@ -274,6 +274,7 @@
 		virtual void sigterm( int signo ) override;
 		virtual bool activateObject() override;
 		virtual std::string getMonitInfo(){ return ""; } /*!&lt; пользовательская информация выводимая в getInfo() */
+		virtual std::string getTypeOfMessage( int t ){ return uniset::strTypeOfMessage(t); } /*!&lt; получение названия типа сообщения. Используется в getInfo() */
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 #ifndef DISABLE_REST_API
 		virtual void httpGetUserData( Poco::JSON::Object::Ptr&amp; jdata ){} /*!&lt;  для пользовательских данных в httpGet() */
@@ -416,7 +417,9 @@
 		
 		std::unordered_map&lt;const uniset::ObjectId,size_t, StatHashFn&gt; smStat; /*!&lt; количество сообщений по датчикам */
 		size_t processingMessageCatchCount = { 0 }; /*!&lt; количество исключений пойманных в processingMessage */
-		
+
+		std::unordered_map&lt;long,size_t&gt; msgTypeStat; /*!&lt; количество сообщений по типам */
+
 		std::string ostate = { "" }; /*!&lt; состояние процесса (выводится в getInfo()) */
 		</xsl:if>
 </xsl:template>
@@ -432,6 +435,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( const uniset::Vo
 {
 	try
 	{
+		<xsl:if test="normalize-space($STAT)='1'">
+		msgTypeStat[_msg->type] += 1;
+		</xsl:if>
 		switch( _msg->type )
 		{
 			case Message::SensorInfo:
@@ -580,6 +586,16 @@ uniset::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( const char*
 	}
 	else
 		inf &lt;&lt; "LogServer: NONE" &lt;&lt; endl;
+	
+	<xsl:if test="normalize-space($STAT)='1'">
+
+	inf &lt;&lt; "statistics: " &lt;&lt; endl
+		&lt;&lt; "  processingMessageCatchCount: " &lt;&lt; processingMessageCatchCount &lt;&lt; endl;
+	inf &lt;&lt; "  Type of messages: " &lt;&lt; endl;
+	for( const auto&amp; s: msgTypeStat )
+		inf &lt;&lt; "    (" &lt;&lt; s.first &lt;&lt; ")" &lt;&lt; setw(10)  &lt;&lt; getTypeOfMessage(s.first) &lt;&lt; ": " &lt;&lt; setw(5) &lt;&lt; s.second &lt;&lt; endl;
+	inf &lt;&lt; endl;
+	</xsl:if>
 	
 	inf &lt;&lt; dumpIO() &lt;&lt; endl;
 	inf &lt;&lt; endl;
@@ -1491,9 +1507,12 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 	<xsl:sort select="@name" order="ascending" data-type="text"/>
 	<xsl:if test="normalize-space(@vartype)='in'">
 		s1.str("");
-		s1 &lt;&lt; "    " &lt;&lt; setw(30) &lt;&lt; std::right &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"
+		s1 &lt;&lt; "    " &lt;&lt; setw(24) &lt;&lt; std::right &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"
 				&lt;&lt; " ( " &lt;&lt; setw(30) &lt;&lt; std::left &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; " )"
 				&lt;&lt; std::right &lt;&lt; " = " &lt;&lt; setw(6) &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
+		<xsl:if test="normalize-space($STAT)='1'">
+		s1 &lt;&lt; " [" &lt;&lt; setw(5) &lt;&lt; smStat[<xsl:value-of select="@name"/>] &lt;&lt; "]";
+		</xsl:if>
 		v_in.emplace_back(s1.str());
 	</xsl:if>
 	</xsl:for-each>
@@ -1503,7 +1522,7 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 	<xsl:sort select="@name" order="ascending" data-type="text"/>
 	<xsl:if test="normalize-space(@vartype)='out'">
 		s1.str("");
-		s1 &lt;&lt; "    " &lt;&lt; setw(30) &lt;&lt; std::right &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"
+		s1 &lt;&lt; "    " &lt;&lt; setw(24) &lt;&lt; std::right &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>"
 				&lt;&lt; " ( " &lt;&lt; setw(30) &lt;&lt; std::left &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; " )"
 				&lt;&lt; std::right &lt;&lt; " = " &lt;&lt; setw(6) &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 		v_out.emplace_back(s1.str());

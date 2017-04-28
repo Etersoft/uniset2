@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2017-01-06+03:00
+// generate timestamp: 2017-04-29+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -373,6 +373,9 @@ void UObject_SK::processingMessage( const uniset::VoidMessage* _msg )
 {
 	try
 	{
+		
+		msgTypeStat[_msg->type] += 1;
+		
 		switch( _msg->type )
 		{
 			case Message::SensorInfo:
@@ -520,6 +523,16 @@ uniset::SimpleInfo* UObject_SK::getInfo( const char* userparam )
 	}
 	else
 		inf << "LogServer: NONE" << endl;
+	
+	
+
+	inf << "statistics: " << endl
+		<< "  processingMessageCatchCount: " << processingMessageCatchCount << endl;
+	inf << "  Type of messages: " << endl;
+	for( const auto& s: msgTypeStat )
+		inf << "    (" << s.first << ")" << setw(10)  << getTypeOfMessage(s.first) << ": " << setw(5) << s.second << endl;
+	inf << endl;
+	
 	
 	inf << dumpIO() << endl;
 	inf << endl;

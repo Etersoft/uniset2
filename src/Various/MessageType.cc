@@ -31,24 +31,29 @@
 namespace uniset
 {
 	//--------------------------------------------------------------------------------------------
+	std::string strTypeOfMessage( int type )
+	{
+		if( type == Message::SensorInfo )
+			return "SensorInfo";
+
+		if( type == Message::SysCommand )
+			return "SysCommand";
+
+		if( type == Message::Confirm )
+			return "Confirm";
+
+		if( type == Message::Timer )
+			return "Timer";
+
+		if( type == Message::Unused )
+			return "Unused";
+
+		return "Unkown";
+	}
+
 	std::ostream& operator<<( std::ostream& os, const Message::TypeOfMessage& t )
 	{
-		if( t == Message::Unused )
-			return os << "Unused";
-
-		if( t == Message::SensorInfo )
-			return os << "SensorInfo";
-
-		if( t == Message::SysCommand )
-			return os << "SysCommand";
-
-		if( t == Message::Confirm )
-			return os << "Confirm";
-
-		if( t == Message::Timer )
-			return os << "Timer";
-
-		return os << "Unkown";
+		return os << strTypeOfMessage(t);
 	}
 	//--------------------------------------------------------------------------------------------
 	Message::Message() noexcept:

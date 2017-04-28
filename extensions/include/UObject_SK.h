@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2017-01-06+03:00
+// generate timestamp: 2017-04-29+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -159,6 +159,7 @@ class UObject_SK:
 		virtual void sigterm( int signo ) override;
 		virtual bool activateObject() override;
 		virtual std::string getMonitInfo(){ return ""; } /*!< пользовательская информация выводимая в getInfo() */
+		virtual std::string getTypeOfMessage( int t ){ return uniset::strTypeOfMessage(t); } /*!< получение названия типа сообщения. Используется в getInfo() */
 
 #ifndef DISABLE_REST_API
 		virtual void httpGetUserData( Poco::JSON::Object::Ptr& jdata ){} /*!<  для пользовательских данных в httpGet() */
@@ -251,7 +252,9 @@ class UObject_SK:
 		
 		std::unordered_map<const uniset::ObjectId,size_t, StatHashFn> smStat; /*!< количество сообщений по датчикам */
 		size_t processingMessageCatchCount = { 0 }; /*!< количество исключений пойманных в processingMessage */
-		
+
+		std::unordered_map<long,size_t> msgTypeStat; /*!< количество сообщений по типам */
+
 		std::string ostate = { "" }; /*!< состояние процесса (выводится в getInfo()) */
 		
 

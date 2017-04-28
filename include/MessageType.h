@@ -24,6 +24,7 @@
 // --------------------------------------------------------------------------
 #include <time.h> // for timespec
 #include <cstring>
+#include <string>
 #include <ostream>
 #include "UniSetTypes.h"
 #include "IOController_i.hh"
@@ -80,6 +81,7 @@ namespace uniset
 			}
 	};
 
+	std::string strTypeOfMessage( int type );
 	std::ostream& operator<<( std::ostream& os, const Message::TypeOfMessage& t );
 
 	// ------------------------------------------------------------------------
