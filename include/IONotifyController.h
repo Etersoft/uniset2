@@ -293,7 +293,11 @@ namespace uniset
 			virtual void checkThreshold(IOController::IOStateList::iterator& li, const uniset::ObjectId sid, bool send_msg = true );
 
 			//! поиск информации о пороговом датчике
-			ThresholdExtList::iterator findThreshold( const uniset::ObjectId sid, const uniset::ThresholdId tid );
+			ThresholdInfoExt* findThreshold( AskThresholdMap& tmap, const uniset::ObjectId sid, const uniset::ThresholdId tid );
+
+			// обновление статистики
+			bool updateThresholdStat( AskThresholdMap& tmap, uniset::ObjectId sid, uniset::ThresholdId tid, const uniset::ConsumerInfo& ci, size_t stat_smCount );
+			bool updateSensorStat( IOController::IOStateList::iterator& it, const uniset::ConsumerInfo& ci, size_t stat_smCount );
 
 			/*! сохранение списка заказчиков
 			    По умолчанию делает dump, если объявлен dumper.
@@ -330,6 +334,12 @@ namespace uniset
 			Poco::JSON::Object::Ptr request_lost( const string& req, const Poco::URI::QueryParameters& p );
 			Poco::JSON::Object::Ptr getConsumers(uniset::ObjectId sid, ConsumerListInfo& clist, bool ifNotEmpty = true );
 #endif
+
+			// статистика
+			void showStatisticsForConsumer( std::ostringstream& inf, const std::string& consumer );
+			void showStatisticsForLostConsumers( std::ostringstream& inf );
+			void showStatisticsForConsusmers( std::ostringstream& inf );
+			void showStatisticsForConsumersWithLostEvent( std::ostringstream& inf );
 
 		private:
 			friend class NCRestorer;
