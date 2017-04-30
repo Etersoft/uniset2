@@ -693,7 +693,7 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpHelp( const 
 	<xsl:if test="normalize-space($BASECLASS)=''">uniset::json::help::object myhelp(myname, UniSetObject::httpGet(params));</xsl:if>
 
 	// 'log'
-	uniset::json::help::item cmd("show log level");
+	uniset::json::help::item cmd("log","show log level");
 	myhelp.add(cmd);
 
 	return myhelp;

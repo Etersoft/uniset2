@@ -628,7 +628,7 @@ Poco::JSON::Object::Ptr UObject_SK::httpHelp( const Poco::URI::QueryParameters& 
 	uniset::json::help::object myhelp(myname, UniSetObject::httpGet(params));
 
 	// 'log'
-	uniset::json::help::item cmd("show log level");
+	uniset::json::help::item cmd("log","show log level");
 	myhelp.add(cmd);
 
 	return myhelp;

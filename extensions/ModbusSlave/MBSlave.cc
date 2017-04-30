@@ -2016,7 +2016,7 @@ namespace uniset
 
 		{
 			// 'regs'
-			uniset::json::help::item cmd("get registers list");
+			uniset::json::help::item cmd("regs", "get registers list");
 			cmd.param("regs=reg1,reg2,reg3..", "get these registers");
 			cmd.param("addr=mbaddr1,mbaddr2,..", "get registers for mbaddr");
 			myhelp.add(cmd);

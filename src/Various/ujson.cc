@@ -41,10 +41,10 @@ namespace uniset
 		params = ptr->getArray("parameters");
 	}
 	// --------------------------------------------------------------------------
-	json::help::item::item(const std::string& description)
+	json::help::item::item( const std::string& cmd, const std::string& description )
 	{
 		root = new Poco::JSON::Object();
-		root->set("description", description);
+		root->set(cmd, description);
 	}
 	// --------------------------------------------------------------------------
 	void json::help::item::param(const std::string& name, const std::string& description)

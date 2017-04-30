@@ -850,7 +850,7 @@ Poco::JSON::Object::Ptr IOController::httpHelp( const Poco::URI::QueryParameters
 
 	{
 		// 'get'
-		uniset::json::help::item cmd("get value for sensor");
+		uniset::json::help::item cmd("get","get value for sensor");
 		cmd.param("id1,name2,id3", "get value for id1,name2,id3 sensors");
 		cmd.param("shortInfo", "get short information for sensors");
 		myhelp.add(cmd);
@@ -858,7 +858,7 @@ Poco::JSON::Object::Ptr IOController::httpHelp( const Poco::URI::QueryParameters
 
 	{
 		// 'sensors'
-		uniset::json::help::item cmd("get all sensors");
+		uniset::json::help::item cmd("sensors", "get all sensors");
 		cmd.param("nameonly", "get only name sensors");
 		cmd.param("offset=N", "get from N record");
 		cmd.param("limit=M", "limit of records");
