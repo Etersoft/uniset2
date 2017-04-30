@@ -80,6 +80,12 @@ void IONotifyController::showStatisticsForConsumer( ostringstream& inf, const st
 {
 	ObjectId consumer_id = uniset_conf()->getObjectID(consumer);
 	if( consumer_id == DefaultObjectId )
+		consumer_id = uniset_conf()->getControllerID(consumer);
+
+	if( consumer_id == DefaultObjectId )
+		consumer_id = uniset_conf()->getServiceID(consumer);
+
+	if( consumer_id == DefaultObjectId )
 	{
 		inf << "not found consumer '" << consumer << "'" << endl;
 		return;
@@ -196,6 +202,11 @@ void IONotifyController::showStatisticsForLostConsumers( ostringstream& inf )
 		return;
 	}
 
+	inf << "Statisctic for consumer with lost event:"
+		<< endl
+		<< "----------------------------------------"
+		<< endl;
+
 	auto oind = uniset_conf()->oind;
 	for( const auto& l : lostConsumers )
 	{
@@ -275,6 +286,7 @@ void IONotifyController::showStatisticsForConsumersWithLostEvent( ostringstream&
 		empty = false;
 		// выводим тех у кого lostEvent>0
 		inf << "(" << setw(6) << a.first << ")[" << oind->getMapName(a.first) << "]" << endl;
+		inf << "--------------------------------------------------------------------" << endl;
 
 		for( const auto& c : i.clst )
 		{
@@ -294,6 +306,54 @@ void IONotifyController::showStatisticsForConsumersWithLostEvent( ostringstream&
 
 	if( empty )
 		inf << "...not found consumers with lost event..." << endl;
+	else
+		inf << "--------------------------------------------------------------------" << endl;
+}
+// ------------------------------------------------------------------------------------------
+void IONotifyController::showStatisticsForSensor( ostringstream& inf, const string& name )
+{
+	auto conf = uniset_conf();
+	auto oind = conf->oind;
+
+	ObjectId sid = conf->getSensorID(name);
+	if( sid == DefaultObjectId )
+	{
+		inf << "..not found ID for sensor '" << name << "'" << endl;
+		return;
+	}
+
+	ConsumerListInfo* clist = nullptr;
+
+	{
+		uniset_rwmutex_rlock lock(askIOMutex);
+		auto s = askIOList.find(sid);
+		if( s == askIOList.end() )
+		{
+			inf << "..not found consumers for sensor '" << name << "'" << endl;
+			return;
+		}
+
+		clist = &(s->second);
+	}
+
+	inf << "Statisctic for sensor "
+		<< "(" << setw(6) << sid << ")[" << name << "]: " << endl
+		<< "--------------------------------------------------------------------" << endl;
+
+	uniset_rwmutex_rlock lock2(clist->mut);
+	for( const auto& c: clist->clst )
+	{
+		inf << "        (" << setw(6) << c.id << ")"
+			<< setw(35) << ORepHelpers::getShortName(oind->getMapName(c.id))
+			<< " ["
+			<< " lostEvents=" << c.lostEvents
+			<< " attempt=" << c.attempt
+			<< " smCount=" << c.smCount
+			<< "]"
+			<< endl;
+	}
+
+	inf << "--------------------------------------------------------------------" << endl;
 }
 // ------------------------------------------------------------------------------------------
 SimpleInfo* IONotifyController::getInfo( const char* userparam )
@@ -323,7 +383,7 @@ SimpleInfo* IONotifyController::getInfo( const char* userparam )
 		showStatisticsForConsusmers(inf);
 		inf << "-----------------------------------------------------------------------------" << endl << endl;
 	}
-	else if( param ==  "lost" )
+	else if( param == "lost" )
 	{
 		inf << "------------------------------- consumers list (lost event)------------------" << endl;
 		showStatisticsForConsumersWithLostEvent(inf);
@@ -331,15 +391,27 @@ SimpleInfo* IONotifyController::getInfo( const char* userparam )
 	}
 	else if( !param.empty() )
 	{
-		showStatisticsForConsumer(inf, param);
+		auto query = uniset::explode_str(param,':');
+		if( query.empty() || query.size() == 1 )
+			showStatisticsForConsumer(inf, param);
+		else if( query.size() > 1 )
+		{
+			if( query[0] == "consumer" )
+				showStatisticsForConsumer(inf, query[1]);
+			else if( query[0] == "sensor" )
+				showStatisticsForSensor(inf, query[1]);
+			else
+				inf << "Unknown command: " << param << endl;
+		}
 	}
 	else
 	{
 		inf << "IONotifyController::UserParam help: " << endl
-			<< "  Default   - Common info" << endl
-			<< "  consumers - Consumers list " << endl
-			<< "  lost      - Consumers list with lostEvent > 0" << endl
-			<< "  name      - Statistic for consumer 'name'"
+			<< "  Default         - Common info" << endl
+			<< "  consumers       - Consumers list " << endl
+			<< "  lost            - Consumers list with lostEvent > 0" << endl
+			<< "  consumer:name   - Statistic for consumer 'name'" << endl
+			<< "  sensor:name     - Statistic for sensor 'name'"
 			<< endl;
 	}
 
@@ -1403,14 +1475,14 @@ Poco::JSON::Object::Ptr IONotifyController::httpHelp(const Poco::URI::QueryParam
 
 	{
 		// 'consumers'
-		uniset::json::help::item cmd("get consumers list");
+		uniset::json::help::item cmd("consumers", "get consumers list");
 		cmd.param("sensor1,sensor2,sensor3", "get consumers for sensors");
 		myhelp.add(cmd);
 	}
 
 	{
 		// 'lost'
-		uniset::json::help::item cmd("get lost consumers list");
+		uniset::json::help::item cmd("lost", "get lost consumers list");
 		myhelp.add(cmd);
 	}
 

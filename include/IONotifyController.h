@@ -340,6 +340,7 @@ namespace uniset
 			void showStatisticsForLostConsumers( std::ostringstream& inf );
 			void showStatisticsForConsusmers( std::ostringstream& inf );
 			void showStatisticsForConsumersWithLostEvent( std::ostringstream& inf );
+			void showStatisticsForSensor( std::ostringstream& inf, const std::string& name );
 
 		private:
 			friend class NCRestorer;
