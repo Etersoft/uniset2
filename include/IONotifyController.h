@@ -285,8 +285,8 @@ namespace uniset
 			virtual bool activateObject() override;
 			virtual void initItem(std::shared_ptr<USensorInfo>& usi, IOController* ic );
 
-			//! посылка информации об изменении состояния датчика
-			virtual void send( ConsumerListInfo& lst, const uniset::SensorMessage& sm );
+			//! посылка информации об изменении состояния датчика (всем или указанному заказчику)
+			virtual void send( ConsumerListInfo& lst, const uniset::SensorMessage& sm, const uniset::ConsumerInfo* ci = nullptr );
 
 			//! проверка срабатывания пороговых датчиков
 			virtual void checkThreshold( std::shared_ptr<USensorInfo>& usi, bool send = true );
@@ -294,10 +294,6 @@ namespace uniset
 
 			//! поиск информации о пороговом датчике
 			ThresholdInfoExt* findThreshold( AskThresholdMap& tmap, const uniset::ObjectId sid, const uniset::ThresholdId tid );
-
-			// обновление статистики
-			bool updateThresholdStat( AskThresholdMap& tmap, uniset::ObjectId sid, uniset::ThresholdId tid, const uniset::ConsumerInfo& ci, size_t stat_smCount );
-			bool updateSensorStat( IOController::IOStateList::iterator& it, const uniset::ConsumerInfo& ci, size_t stat_smCount );
 
 			/*! сохранение списка заказчиков
 			    По умолчанию делает dump, если объявлен dumper.

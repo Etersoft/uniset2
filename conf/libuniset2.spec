@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt15
+Release: alt16
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -508,6 +508,9 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
+* Wed May 03 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt16
+- IOC:askSensor() refactoring
+
 * Mon May 01 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt15
 - (codegen): add msg statistic for getInfo()
 - (http): minor fixes format for help
