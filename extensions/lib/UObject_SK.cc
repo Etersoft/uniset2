@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2017-04-30+03:00
+// generate timestamp: 2017-05-03+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -526,12 +526,6 @@ uniset::SimpleInfo* UObject_SK::getInfo( const char* userparam )
 	
 	
 	
-	size_t smCount = 0;
-	for( const auto& s: smStat )
-		smCount += s.second;
-	
-	inf << "smCount=" << smCount << endl;
-
 	inf << "statistics: " << endl
 		<< "  processingMessageCatchCount: " << processingMessageCatchCount << endl;
 	inf << "  Type of messages: " << endl;

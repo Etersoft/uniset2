@@ -589,12 +589,6 @@ uniset::SimpleInfo* <xsl:value-of select="$CLASSNAME"/>_SK::getInfo( const char*
 	
 	<xsl:if test="normalize-space($STAT)='1'">
 	
-	size_t smCount = 0;
-	for( const auto&amp; s: smStat )
-		smCount += s.second;
-	
-	inf &lt;&lt; "smCount=" &lt;&lt; smCount &lt;&lt; endl;
-
 	inf &lt;&lt; "statistics: " &lt;&lt; endl
 		&lt;&lt; "  processingMessageCatchCount: " &lt;&lt; processingMessageCatchCount &lt;&lt; endl;
 	inf &lt;&lt; "  Type of messages: " &lt;&lt; endl;
