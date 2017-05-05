@@ -33,7 +33,15 @@
 //---------------------------------------------------------------------------
 namespace uniset
 {
-	/*! Реализация интерфейса IOController-а */
+	/*! Реализация интерфейса IOController-а
+	 * Важной особенностью данной реализации является то, что
+	 * список входов/выходов (ioList) формируется один раз во время создания объекта
+	 * и не меняется (!) в процессе работы. На этом построены некоторые оптимизации!
+	 * Поэтому неизменность ioList во время всей жизни объекта должна гарантироваться.
+	 * В частности, очень важной является структура USensorInfo, а также userdata,
+	 * которые используются для "кэширования" (сохранения) указателей на специальные данные.
+	 * (см. также IONotifyContoller).
+	*/
 	class IOController:
 		public UniSetManager,
 		public POA_IOController_i
@@ -298,8 +306,13 @@ namespace uniset
 				// Дополнительные (вспомогательные поля)
 				uniset::uniset_rwmutex val_lock; /*!< флаг блокирующий работу со значением */
 
+				// userdata (универасльный, небезопасный способ расширения информации связанной с датчиком)
 				static const size_t MaxUserData = 4;
 				void* userdata[MaxUserData] = { nullptr, nullptr, nullptr, nullptr }; /*!< расширение для возможности хранения своей информации */
+				uniset::uniset_rwmutex userdata_lock; /*!< mutex для работы с userdata */
+
+				void* getUserData( size_t index );
+				void setUserData( size_t index, void* data );
 
 				// сигнал для реализации механизма зависимостией..
 				// (все зависимые датчики подключаются к нему (см. NCRestorer::init_depends_signals)
@@ -328,7 +341,7 @@ namespace uniset
 					return std::move(s);
 				}
 
-				inline uniset::SensorMessage makeSensorMessage()
+				inline uniset::SensorMessage makeSensorMessage( bool with_lock = false )
 				{
 					uniset::SensorMessage sm;
 					sm.id           = si.id;
@@ -337,8 +350,18 @@ namespace uniset
 					sm.priority     = (uniset::Message::Priority)priority;
 
 					// лочим только изменяемые поля
+					if( with_lock )
 					{
 						uniset::uniset_rwmutex_rlock lock(val_lock);
+						sm.value        = value;
+						sm.sm_tv.tv_sec    = tv_sec;
+						sm.sm_tv.tv_nsec   = tv_nsec;
+						sm.ci           = ci;
+						sm.supplier     = supplier;
+						sm.undefined    = undefined;
+					}
+					else
+					{
 						sm.value        = value;
 						sm.sm_tv.tv_sec    = tv_sec;
 						sm.sm_tv.tv_nsec   = tv_nsec;

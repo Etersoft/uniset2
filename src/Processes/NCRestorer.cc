@@ -75,7 +75,7 @@ void NCRestorer::addlist( IONotifyController* ic, std::shared_ptr<IOController::
 		case UniversalIO::AO:
 		{
 			ic->askIOList[inf->si.id] = std::move(lst);
-			inf->userdata[IONotifyController::udataConsumerList] = &(ic->askIOList[inf->si.id]);
+			inf->setUserData(IONotifyController::udataConsumerList, &(ic->askIOList[inf->si.id]) );
 			break;
 		}
 
@@ -151,28 +151,14 @@ NCRestorer::SInfo& NCRestorer::SInfo::operator=( const IOController_i::SensorIOI
 	this->blocked = inf.blocked;
 	this->dbignore = inf.dbignore;
 
-	for( size_t i = 0; i < IOController::USensorInfo::MaxUserData; i++ )
-		this->userdata[i] = nullptr;
+	{
+		uniset_rwmutex_wrlock l(this->userdata_lock);
+		for( size_t i = 0; i < IOController::USensorInfo::MaxUserData; i++ )
+			this->userdata[i] = nullptr;
+	}
 
 	return *this;
 }
-// ------------------------------------------------------------------------------------------
-#if 0
-NCRestorer::SInfo& NCRestorer::SInfo::operator=( const std::shared_ptr<IOController_i::SensorIOInfo>& inf )
-{
-	this->si          = inf->si;
-	this->type        = inf->type;
-	this->priority    = inf->priority;
-	this->default_val = inf->default_val;
-	this->real_value = inf->real_value;
-	this->ci         = inf->ci;
-	this->undefined = inf->undefined;
-	this->blocked = inf->blocked;
-	this->dbignore = inf->dbignore;
-	this->any = 0;
-	return *this;
-}
-#endif
 // ------------------------------------------------------------------------------------------
 void NCRestorer::init_depends_signals( IONotifyController* ic )
 {

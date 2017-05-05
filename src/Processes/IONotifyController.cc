@@ -513,27 +513,25 @@ void IONotifyController::askSensor(const uniset::ObjectId sid,
 	}
 	catch( IOController_i::Undefined& ex ) {}
 
-	// Чтобы не было гонки между текущей функцией (askSensor)
-	// и setValue(), которая может происходить параллельно с этой
-	// держим askIOMutex до конца функции, а также для посылки пользуемся функцией send()...
-
-	uniset_rwmutex_wrlock lock(askIOMutex);
-	ask(askIOList, sid, ci, cmd);
+	{
+		uniset_rwmutex_wrlock lock(askIOMutex);
+		ask(askIOList, sid, ci, cmd);
+	}
 
 	auto usi = li->second;
 
 	// посылка первый раз состояния
 	if( cmd == UniversalIO::UIONotify || (cmd == UIONotifyFirstNotNull && usi->value) )
 	{
-		if( usi->userdata[udataConsumerList] != nullptr )
+		ConsumerListInfo* lst = static_cast<ConsumerListInfo*>(usi->getUserData(udataConsumerList));
+		if( lst )
 		{
-			ConsumerListInfo& lst = *(static_cast<ConsumerListInfo*>(usi->userdata[udataConsumerList]));
-			SensorMessage smsg( std::move(usi->makeSensorMessage()) );
-			send(lst,smsg,&ci);
+			uniset::uniset_rwmutex_rlock lock(usi->val_lock);
+			SensorMessage smsg( std::move(usi->makeSensorMessage(false)) );
+			send(*lst,smsg,&ci);
 		}
 	}
 }
-
 // ------------------------------------------------------------------------------------------
 void IONotifyController::ask( AskMap& askLst, const uniset::ObjectId sid,
 							  const uniset::ConsumerInfo& cons, UniversalIO::UIOCommand cmd)
@@ -549,18 +547,23 @@ void IONotifyController::ask( AskMap& askLst, const uniset::ObjectId sid,
 		{
 			if( askIterator == askLst.end() )
 			{
-				ConsumerListInfo lst; // создаем новый список
-				addConsumer(lst, cons);
-				// более оптимальный способ(при условии вставки первый раз)
-				askLst.emplace(sid, std::move(lst));
+				ConsumerListInfo newlst; // создаем новый список
+				addConsumer(newlst, cons);
+				askLst.emplace(sid, std::move(newlst));
 
-				try
+				// т.к. мы делали move
+				// то теперь надо достучаться до списка..
+				auto i = askLst.find(sid);
+				if( i != askLst.end() )
 				{
-					dumpOrdersList(sid, lst);
-				}
-				catch( const uniset::Exception& ex )
-				{
-					uwarn << myname << " не смогли сделать dump: " << ex << endl;
+					try
+					{
+						dumpOrdersList(sid, i->second);
+					}
+					catch( const uniset::Exception& ex )
+					{
+						uwarn << myname << " не смогли сделать dump: " << ex << endl;
+					}
 				}
 			}
 			else
@@ -595,9 +598,9 @@ void IONotifyController::ask( AskMap& askLst, const uniset::ObjectId sid,
 
 					if( askIterator->second.clst.empty() )
 					{
-						//                         не удаляем, т.к. могут поломаться итераторы
-						//                         используемые в это время в других потоках..
-						//                         askLst.erase(askIterator);
+						// не удаляем, т.к. могут поломаться итераторы
+						// используемые в это время в других потоках..
+						// askLst.erase(askIterator);
 					}
 					else
 					{
@@ -629,13 +632,11 @@ void IONotifyController::ask( AskMap& askLst, const uniset::ObjectId sid,
 
 	if( askIterator != askLst.end() )
 	{
-		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
 		auto s = myiofind(sid);
-
 		if( s != myioEnd() )
-			s->second->userdata[udataConsumerList] = &(askIterator->second);
+			s->second->setUserData(udataConsumerList,&(askIterator->second));
 		else
-			s->second->userdata[udataConsumerList] = nullptr;
+			s->second->setUserData(udataConsumerList,nullptr);
 	}
 }
 // ------------------------------------------------------------------------------------------
@@ -658,24 +659,26 @@ long IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInf
 	if( prevValue == curValue )
 		return curValue;
 
-	SensorMessage sm(std::move(usi->makeSensorMessage()));
-
-	try
-	{
-		if( !usi->dbignore )
-			logging(sm);
-	}
-	catch(...) {}
 
 	{
-		uniset_rwmutex_rlock lock(askIOMutex);
+		// с учётом того, что параллельно с этой функцией может
+		// выполняться askSensor, то
+		// посылать сообщение надо "заблокировав" доступ к value...
 
-		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
-		if( usi->userdata[udataConsumerList] != nullptr )
+		uniset::uniset_rwmutex_rlock lock(usi->val_lock);
+
+		SensorMessage sm(std::move(usi->makeSensorMessage(false)));
+
+		try
 		{
-			ConsumerListInfo& lst = *(static_cast<ConsumerListInfo*>(usi->userdata[udataConsumerList]));
-			send(lst, sm);
+			if( !usi->dbignore )
+				logging(sm);
 		}
+		catch(...) {}
+
+		ConsumerListInfo* lst = static_cast<ConsumerListInfo*>(usi->getUserData(udataConsumerList));
+		if( lst )
+			send(*lst, sm);
 	}
 
 	// проверка порогов
@@ -789,7 +792,7 @@ void IONotifyController::send( ConsumerListInfo& lst, const uniset::SensorMessag
 // --------------------------------------------------------------------------------------------------------------
 bool IONotifyController::activateObject()
 {
-	// сперва вычитаем датчиков и заказчиков..
+	// сперва загружаем датчики и заказчиков..
 	readDump();
 	// а потом уже собственно активация..
 	return IOController::activateObject();
@@ -805,9 +808,8 @@ void IONotifyController::readDump()
 	catch( const std::exception& ex )
 	{
 		// Если дамп не удалось считать, значит что-то не то в configure.xml
-		// и безопаснее "вылететь", чем запустится, но половина датчиков работать не будет
+		// и безопаснее "вылететь", чем запустится, т.к. часть датчиков не будет работать
 		// как ожидается.
-
 		ucrit << myname << "(IONotifyController::readDump): " << ex.what() << endl;
 		std::terminate(); // std::abort();
 	}
@@ -991,15 +993,9 @@ void IONotifyController::askThreshold(uniset::ObjectId sid, const uniset::Consum
 			it = askTMap.find(sid);
 
 		if( li != myioEnd() )
-		{
-			//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
-			if( it == askTMap.end() )
-				li->second->userdata[udataThresholdList] = nullptr;
-			else
-				li->second->userdata[udataThresholdList] = (void*)(&(it->second));
-		}
+			li->second->setUserData(udataThresholdList, &(it->second));
 
-	}    // unlock
+	} // unlock trshMutex
 }
 // --------------------------------------------------------------------------------------------------------------
 bool IONotifyController::addThreshold( ThresholdExtList& lst, ThresholdInfoExt&& ti, const uniset::ConsumerInfo& ci )
@@ -1063,24 +1059,17 @@ void IONotifyController::checkThreshold( IOController::IOStateList::iterator& li
 // --------------------------------------------------------------------------------------------------------------
 void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorInfo>& usi, bool send_msg )
 {
-	// поиск списка порогов
-	ThresholdsListInfo* ti = nullptr;
+	uniset_rwmutex_rlock lock(trshMutex);
 
-	{
-		uniset_rwmutex_rlock lock(trshMutex);
+	ThresholdsListInfo* ti = static_cast<ThresholdsListInfo*>(usi->getUserData(udataThresholdList));
+	if( !ti || ti->list.empty() )
+		return;
 
-		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
-		if( usi->userdata[udataThresholdList] == nullptr )
-			return;
+	// обрабатываем текущее состояние датчика обязательно "залочив" значение..
 
-		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
-		ti = static_cast<ThresholdsListInfo*>(usi->userdata[udataThresholdList]);
+	uniset_rwmutex_rlock vlock(usi->val_lock);
 
-		if( ti->list.empty() )
-			return;
-	}
-
-	SensorMessage sm(std::move(usi->makeSensorMessage()));
+	SensorMessage sm(std::move(usi->makeSensorMessage(false)));
 
 	// текущее время
 	struct timespec tm = uniset::now_to_timespec();
@@ -1316,7 +1305,8 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 // -----------------------------------------------------------------------------
 void IONotifyController::onChangeUndefinedState( std::shared_ptr<USensorInfo>& usi, IOController* ic )
 {
-	SensorMessage sm( std::move(usi->makeSensorMessage()) );
+	uniset_rwmutex_rlock vlock(usi->val_lock);
+	SensorMessage sm( std::move(usi->makeSensorMessage(false)) );
 
 	try
 	{
@@ -1325,17 +1315,9 @@ void IONotifyController::onChangeUndefinedState( std::shared_ptr<USensorInfo>& u
 	}
 	catch(...) {}
 
-	{
-		// lock
-		uniset_rwmutex_rlock lock(askIOMutex);
-
-		//! \warning Оптимизация использует userdata! Это опасно, если кто-то ещё захочет его использовать!
-		if( usi->userdata[udataConsumerList] != nullptr )
-		{
-			ConsumerListInfo& lst = *(static_cast<ConsumerListInfo*>(usi->userdata[udataConsumerList]));
-			send(lst, sm);
-		}
-	} // unlock
+	ConsumerListInfo* lst = static_cast<ConsumerListInfo*>(usi->getUserData(udataConsumerList));
+	if( lst )
+		send(*lst, sm);
 }
 
 // -----------------------------------------------------------------------------

@@ -620,7 +620,25 @@ IOController::USensorInfo::operator=(IOController_i::SensorIOInfo* r)
 	(*this) = (*r);
 	return *this;
 }
+// ----------------------------------------------------------------------------------------
+void* IOController::USensorInfo::getUserData( size_t index )
+{
+	if( index > MaxUserData )
+		return nullptr;
 
+	uniset::uniset_rwmutex_rlock ulock(userdata_lock);
+	return userdata[index];
+}
+
+void IOController::USensorInfo::setUserData( size_t index, void* data )
+{
+	if( index > MaxUserData )
+		return;
+
+	uniset::uniset_rwmutex_wrlock ulock(userdata_lock);
+	userdata[index] = data;
+}
+// ----------------------------------------------------------------------------------------
 const IOController::USensorInfo&
 IOController::USensorInfo::operator=(const IOController_i::SensorIOInfo& r)
 {
@@ -628,7 +646,7 @@ IOController::USensorInfo::operator=(const IOController_i::SensorIOInfo& r)
 	//    any=0;
 	return *this;
 }
-
+// ----------------------------------------------------------------------------------------
 void IOController::USensorInfo::init( const IOController_i::SensorIOInfo& s )
 {
 	IOController::USensorInfo r(s);

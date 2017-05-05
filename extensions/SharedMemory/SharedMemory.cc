@@ -762,14 +762,9 @@ namespace uniset
 		if( hist.empty() )
 			return;
 
-		if( usi->userdata[udataHistory] == nullptr )
+		HistoryItList* lst = static_cast<HistoryItList*>(usi->getUserData(udataHistory));
+		if( !lst )
 			return;
-
-		HistoryItList& lst = *(static_cast<HistoryItList*>(usi->userdata[udataHistory]));
-
-		//	auto i = histmap.find(s_it->si.id);
-		//	if( i == histmap.end() )
-		//		return;
 
 		long value = 0;
 		unsigned long sm_tv_sec = 0;
@@ -786,7 +781,7 @@ namespace uniset
 			   << " value=" << value
 			   << endl;
 
-		for( auto && it1 : lst)
+		for( auto&& it1 : (*lst) )
 		{
 			History::iterator it = it1;
 

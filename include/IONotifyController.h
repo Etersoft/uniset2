@@ -111,23 +111,25 @@ namespace uniset
 	\note Следует иметь ввиду, что для \b ЗАВИСИМОГО датчика функция setValue(..) действует как обычно и
 	даже если он "заблокирован", значение в него можно сохранять. Оно "появиться" как только сниметься блокировка.
 
-		\section sec_NC_Optimization Оптимизация работы со списком "заказчиков"
-		Для оптимизации поиска списка заказчиков для конкретного датчика используется поле userdata (void*) у USensorInfo!
-		Это опасный и "некрасивый" хак, но который позволяет избавиться от одного лишнего поиска по unordered_map<SensorID,ConsumerList>.
-		Суть в том что к датчику через usedata мы привязываем указатель на список заказчиков. Сделано через userdata,
-		т.к. сам map "хранится" в IOController и IONotifyController не может поменять тип (в текущей реализации по крайней мере).
-		В userdata задействованы два места (см. UserDataID) для списка заказчиков и для списка порогов.
+	\section sec_NC_Optimization Оптимизация работы со списком "заказчиков"
+	Для оптимизации поиска списка заказчиков для конкретного датчика используется поле userdata (void*) у USensorInfo!
+	Это опасный и "некрасивый" хак, но он позволяет избавиться от одного лишнего поиска по unordered_map<SensorID,ConsumerList>.
+	Суть в том что к датчику через usedata мы привязываем указатель на список заказчиков. Сделано через userdata,
+	т.к. сам map "хранится" в IOController и IONotifyController не может поменять тип (в текущей реализации по крайней мере).
+	В userdata задействованы два места (см. UserDataID) для списка заказчиков и для списка порогов.
+	ри этом, чтобы гарантировать корректность работы, cписки заказчиков по тому или иному датчику,
+	создаются (см. функцию ask()), но никогда не удаляются, даже если остаются пустыми.
+	Это сделано, чтобы сохранённые указатели в userdata, оставались всегда валидными
+	(т.к. используются из разных потоков).
 	*/
 	//---------------------------------------------------------------------------
 	/*! \class IONotifyController
-
-	 \section AskSensors Заказ датчиков
-
-	    ....
-	    ConsumerMaxAttempts - максимальное число неудачных
-	попыток послать сообщение "заказчику". Настраивается в
-	конфигурационном файле. По умолчанию = 5.
-	*/
+	 *
+	 * \section AskSensors Заказ датчиков
+	 * ....
+	 * \b ConsumerMaxAttempts - максимальное число неудачных попыток послать сообщение "заказчику".
+	 * Настраивается в конфигурационном файле. По умолчанию = 5.
+	 */
 	class IONotifyController:
 		public IOController,
 		public POA_IONotifyController_i
@@ -179,7 +181,7 @@ namespace uniset
 					ref(ref), attempt(maxAttemtps) {}
 
 				UniSetObject_i_var ref;
-				size_t attempt;
+				size_t attempt = { 10 };
 				size_t lostEvents = { 0 }; // количество потерянных сообщений (не смогли послать)
 				size_t smCount = { 0 }; // количество посланных SensorMessage
 
@@ -283,7 +285,7 @@ namespace uniset
 		protected:
 			IONotifyController();
 			virtual bool activateObject() override;
-			virtual void initItem(std::shared_ptr<USensorInfo>& usi, IOController* ic );
+			virtual void initItem( std::shared_ptr<USensorInfo>& usi, IOController* ic );
 
 			//! посылка информации об изменении состояния датчика (всем или указанному заказчику)
 			virtual void send( ConsumerListInfo& lst, const uniset::SensorMessage& sm, const uniset::ConsumerInfo* ci = nullptr );
@@ -351,6 +353,7 @@ namespace uniset
 
 			/*! добавить новый порог для датчика */
 			bool addThreshold(ThresholdExtList& lst, ThresholdInfoExt&& ti, const uniset::ConsumerInfo& ci);
+
 			/*! удалить порог для датчика */
 			bool removeThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const uniset::ConsumerInfo& ci);
 
@@ -380,8 +383,6 @@ namespace uniset
 
 			/*! map для хранения информации о заказчиках с которыми была потеряна связь
 			 * и которые были удалены из списка заказчиков
-			 * size_t - количество раз
-			 * ObjectId - id заказчика
 			 */
 			std::unordered_map<uniset::ObjectId, LostConsumerInfo> lostConsumers;
 	};
