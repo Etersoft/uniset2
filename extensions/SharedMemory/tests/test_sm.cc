@@ -262,6 +262,8 @@ TEST_CASE("[SM]: monitonic sensor message", "[sm][monitonic]")
 {
 	InitTest();
 
+	REQUIRE( obj->exist() );
+
 	// Проверка корректной последовательности прихода SensorMessage.
 	// Тест заключается в том, что параллельно вызывается setValue()
 	// и askSensors() и сообщения должны приходить в правильном порядке.
@@ -287,13 +289,11 @@ TEST_CASE("[SM]: monitonic sensor message", "[sm][monitonic]")
 
 	obj->startMonitonicTest();
 
-//	std::thread t(write_worker);
 	auto ret = std::async(std::launch::async, write_worker);
 
 	for( long n=0; n <= max; n++ )
 		obj->askMonotonic();
 
-//	t.join();
 	REQUIRE( ret.get() );
 
 	DelayTimer dt(2000,0);
@@ -301,8 +301,12 @@ TEST_CASE("[SM]: monitonic sensor message", "[sm][monitonic]")
 		msleep(500);
 
 	REQUIRE( obj->isMonotonicTestOK() );
-	REQUIRE_FALSE( obj->isLostMessages() );
+	REQUIRE( obj->getLostMessages() == 0 );
 	REQUIRE_FALSE( obj->isFullQueue() );
 	REQUIRE( obj->getLastValue() == max );
+
+	// print statistic
+//	uniset::SimpleInfo_var si = obj->getInfo(0);
+//	cerr << std::string(si->info) << endl;
 }
 // -----------------------------------------------------------------------------

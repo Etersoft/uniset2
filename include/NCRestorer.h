@@ -77,6 +77,9 @@ namespace uniset
 			virtual void dump(const IONotifyController* ic, std::shared_ptr<SInfo>& inf, const IONotifyController::ConsumerListInfo& lst) = 0;
 			virtual void dumpThreshold(const IONotifyController* ic, std::shared_ptr<SInfo>& inf, const IONotifyController::ThresholdExtList& lst) = 0;
 
+			// проверка поддерживаются ли функции dumpXXX (т.е. обновление списков)
+			virtual bool readOnly() const = 0;
+
 		protected:
 
 			// добавление списка заказчиков
@@ -162,6 +165,7 @@ namespace uniset
 
 			virtual void dump(const IONotifyController* ic, std::shared_ptr<NCRestorer::SInfo>& inf, const IONotifyController::ConsumerListInfo& lst) override;
 			virtual void dumpThreshold(const IONotifyController* ic, std::shared_ptr<NCRestorer::SInfo>& inf, const IONotifyController::ThresholdExtList& lst) override;
+			virtual bool readOnly() const { return true; }
 
 		protected:
 

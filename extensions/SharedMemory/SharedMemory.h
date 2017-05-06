@@ -497,7 +497,7 @@ namespace uniset
 			int activateTimeout;
 
 			virtual void logging( uniset::SensorMessage& sm ) override;
-			virtual void dumpOrdersList( const uniset::ObjectId sid, const IONotifyController::ConsumerListInfo& lst ) override {};
+			virtual void dumpOrdersList( const uniset::ObjectId sid, const IONotifyController::ConsumerListInfo& lst ) override {}
 			virtual void dumpThresholdList( const uniset::ObjectId sid, const IONotifyController::ThresholdExtList& lst ) override {}
 
 			bool dblogging = { false };

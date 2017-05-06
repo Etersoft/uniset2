@@ -31,7 +31,7 @@ class TestObject:
 		void askMonotonic();
 		void startMonitonicTest();
 		bool isMonotonicTestOK() const;
-		bool isLostMessages() const;
+		long getLostMessages() const;
 		long getLastValue() const;
 		bool isEmptyQueue();
 		bool isFullQueue();
@@ -46,8 +46,8 @@ class TestObject:
 	private:
 		bool evntIsOK = { false };
 
-		bool monitonicFailed = { false };
-		bool lostMessages = { false };
+		bool monotonicFailed = { false };
+		long lostMessages = { false };
 		long lastValue = { 0 };
 };
 // -----------------------------------------------------------------------------

@@ -41,7 +41,7 @@ void TestObject::sensorInfo( const SensorMessage* sm )
 	if( sm->id == monotonic_s )
 	{
 		if( (sm->value - lastValue) < 0 )
-			monitonicFailed = true;
+			monotonicFailed = true;
 
 		if( (sm->value - lastValue) > 1 )
 		{
@@ -49,7 +49,7 @@ void TestObject::sensorInfo( const SensorMessage* sm )
 				 << " lost: " << (sm->value - lastValue)
 				 << endl;
 
-			lostMessages = true;
+			lostMessages += (sm->value - lastValue -1);
 		}
 
 		lastValue = sm->value;
@@ -73,17 +73,17 @@ void TestObject::askMonotonic()
 // -----------------------------------------------------------------------------
 void TestObject::startMonitonicTest()
 {
-	monitonicFailed = false;
+	monotonicFailed = false;
 	lostMessages = false;
 	lastValue = in_monotonic_s;
 }
 // -----------------------------------------------------------------------------
 bool TestObject::isMonotonicTestOK() const
 {
-	return !monitonicFailed;
+	return !monotonicFailed;
 }
 // -----------------------------------------------------------------------------
-bool TestObject::isLostMessages() const
+long TestObject::getLostMessages() const
 {
 	return lostMessages;
 }

@@ -20,6 +20,8 @@ include/libxml2/libxml
 include/modbus
 python/lib/pyUniSet
 src/Log
+src/Processes
+src/Communications
 Utilities/codegen
 Utilities/codegen/tests
 Utilities/MBTester

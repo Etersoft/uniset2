@@ -3,7 +3,7 @@
   <settings>
 	<set name="class-name" val="TestObject"/>
 	<set name="msg-count" val="30"/>
-	<set name="sleep-msec" val="100"/>
+	<set name="sleep-msec" val="50"/>
   </settings>
   <variables>
   </variables>

@@ -802,7 +802,7 @@ void IONotifyController::readDump()
 {
 	try
 	{
-		if( restorer != NULL )
+		if( restorer )
 			restorer->read(this);
 	}
 	catch( const std::exception& ex )
@@ -824,7 +824,7 @@ void IONotifyController::initItem( std::shared_ptr<USensorInfo>& usi, IOControll
 void IONotifyController::dumpOrdersList( const uniset::ObjectId sid,
 		const IONotifyController::ConsumerListInfo& lst )
 {
-	if( restorer == NULL )
+	if( !restorer || restorer->readOnly() )
 		return;
 
 	try
@@ -844,7 +844,7 @@ void IONotifyController::dumpOrdersList( const uniset::ObjectId sid,
 
 void IONotifyController::dumpThresholdList( const uniset::ObjectId sid, const IONotifyController::ThresholdExtList& lst )
 {
-	if( restorer == NULL )
+	if( !restorer || restorer->readOnly() )
 		return;
 
 	try
@@ -1030,12 +1030,13 @@ bool IONotifyController::removeThreshold( ThresholdExtList& lst, ThresholdInfoEx
 		{
 			if( removeConsumer(it->clst, ci) )
 			{
-				/*                Даже если список заказчиков по данному датчику стал пуст.
-				                  Не удаляем датчик из списка, чтобы не поломать итераторы
-				                  которые могут использоваться в этот момент в других потоках */
-				//                uniset_rwmutex_wrlock lock(it->clst.mut);
-				//                if( it->clst.clst.empty() )
-				//                    lst.erase(it);
+				/* Даже если список заказчиков по данному датчику стал пуст.
+				 * Не удаляем датчик из списка, чтобы не поломать итераторы
+				 * которые могут использоваться в этот момент в других потоках
+				 */
+				// uniset_rwmutex_wrlock lock(it->clst.mut);
+				// if( it->clst.clst.empty() )
+				//     lst.erase(it);
 				return true;
 			}
 		}
@@ -1066,7 +1067,6 @@ void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorIn
 		return;
 
 	// обрабатываем текущее состояние датчика обязательно "залочив" значение..
-
 	uniset_rwmutex_rlock vlock(usi->val_lock);
 
 	SensorMessage sm(std::move(usi->makeSensorMessage(false)));
