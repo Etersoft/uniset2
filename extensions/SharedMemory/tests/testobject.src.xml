@@ -12,6 +12,7 @@
     <item name="output_c" vartype="out" iotype="AO" comment="Test output"/>
     <item name="dependDI_s" vartype="in" iotype="DI" comment="Test input"/>
     <item name="dependAI_s" vartype="in" iotype="AI" comment="Test input"/>
+    <item name="monotonic_s" vartype="in" iotype="AI" comment="Test analog input"/>
   </smap>
 
   <msgmap>
