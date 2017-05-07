@@ -180,7 +180,7 @@ string MySQLInterface::addslashes( const string& str )
 	return tmp.str();
 }
 // -----------------------------------------------------------------------------------------
-void MySQLInterface::makeResult(DBResult& dbres, MYSQL_RES* myres, bool finalize )
+void MySQLInterface::makeResult( DBResult& dbres, MYSQL_RES* myres, bool finalize )
 {
 	if( !myres )
 	{
@@ -198,7 +198,12 @@ void MySQLInterface::makeResult(DBResult& dbres, MYSQL_RES* myres, bool finalize
 		DBResult::COL c;
 
 		for( unsigned int i = 0; i < nfields; i++ )
+		{
+			MYSQL_FIELD* field_info = mysql_fetch_field_direct(myres, i);
+			dbres.setColName( i, std::string(field_info->name) );
+
 			c.emplace_back( (mysql_row[i] != 0 ? string(mysql_row[i]) : "") );
+		}
 
 		dbres.row().emplace_back(c);
 	}

@@ -38,6 +38,8 @@ int main(int argc, char** argv)
 				cout << DBResult::as_string(cit) << "(" << DBResult::as_double(cit) << ")  |  ";
 
 			cout << endl;
+			
+			cout << "ID: " << r.as_string(it,"id") << endl;
 		}
 
 		db.close();

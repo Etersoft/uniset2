@@ -64,7 +64,7 @@ namespace uniset
 
 		private:
 
-			void makeResult(DBResult& dbres, const pqxx::result& res );
+			void makeResult( DBResult& dbres, const pqxx::result& res );
 			std::shared_ptr<pqxx::connection> db;
 			std::string lastQ;
 			std::string lastE;

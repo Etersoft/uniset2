@@ -126,7 +126,7 @@ namespace uniset
 
 		private:
 
-			void makeResult(DBResult& dbres, sqlite3_stmt* s, bool finalize = true );
+			void makeResult( DBResult& dbres, sqlite3_stmt* s, bool finalize = true );
 			sqlite3* db;
 			// sqlite3_stmt* curStmt;
 

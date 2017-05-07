@@ -4,6 +4,7 @@
 #include <string>
 #include <deque>
 #include <vector>
+#include <unordered_map>
 #include "UniSetTypes.h"
 // --------------------------------------------------------------------------
 namespace uniset
@@ -67,6 +68,10 @@ namespace uniset
 			static int as_int( const DBResult::iterator& it, int col );
 			static double as_double( const DBResult::iterator& it, int col );
 			static std::string as_string( const DBResult::iterator& it, int col );
+
+			int as_int( const DBResult::iterator& it, const std::string& colname );
+			double as_double( const DBResult::iterator& it, const std::string& colname );
+			std::string as_string(const DBResult::iterator& it, const std::string& colname );
 			// ----------------------------------------------------------------------------
 			// COL
 			static int as_int( const DBResult::COL::iterator& it );
@@ -75,9 +80,16 @@ namespace uniset
 			static size_t num_cols( const DBResult::iterator& it );
 			// ----------------------------------------------------------------------------
 
+			// установить соответсвие индекса и имени поля
+			void setColName( int index, const std::string& name );
+
+			std::string getColName( int index ); // slow function
+
 		protected:
 
 			ROW row_;
+
+			std::unordered_map<std::string, int> colname;
 	};
 	// ----------------------------------------------------------------------------------
 	struct DBInterfaceDeleter

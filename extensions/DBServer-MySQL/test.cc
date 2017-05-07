@@ -42,8 +42,9 @@ int main(int argc, char** argv)
 
 			for( DBResult::COL::iterator cit = it->begin(); cit != it->end(); cit++ )
 				cout << DBResult::as_string(cit) << "(" << DBResult::as_double(cit) << ")  |  ";
-
 			cout << endl;
+
+			cout << "ID: " << r.as_string(it,"id") << endl;
 		}
 
 		db.close();

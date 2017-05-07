@@ -253,7 +253,12 @@ void SQLiteInterface::makeResult(DBResult& dbres, sqlite3_stmt* s, bool finalize
 			char* p = (char*)sqlite3_column_text(s, i);
 
 			if( p )
+			{
+				const char* cname = (const char*)sqlite3_column_name(s,i);
+				if( cname )
+					dbres.setColName(i,cname);
 				c.emplace_back(p);
+			}
 			else
 				c.emplace_back("");
 		}

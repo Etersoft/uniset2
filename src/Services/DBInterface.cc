@@ -93,10 +93,53 @@ namespace uniset
 	{
 		return ((*it)[col]);
 	}
+
+	int DBResult::as_int( const DBResult::iterator& it, const std::string& cname )
+	{
+		auto i = colname.find(cname);
+		if( i == colname.end() )
+			throw std::runtime_error("(DBInterface): Unknown field ='" + cname + "'");
+
+		return as_int(it,i->second);
+	}
+
+	double DBResult::as_double(const DBResult::iterator& it, const std::string& cname)
+	{
+		auto i = colname.find(cname);
+		if( i == colname.end() )
+			throw std::runtime_error("(DBInterface): Unknown field ='" + cname + "'");
+
+		return as_double(it, i->second);
+	}
+
+	std::string DBResult::as_string(const DBResult::iterator& it, const std::string& cname )
+	{
+		auto i = colname.find(cname);
+		if( i == colname.end() )
+			throw std::runtime_error("(DBInterface): Unknown field ='" + cname + "'");
+
+		return as_string(it, i->second);
+	}
 	// ----------------------------------------------------------------------------
 	size_t DBResult::num_cols( const DBResult::iterator& it )
 	{
 		return it->size();
+	}
+	// ----------------------------------------------------------------------------
+	void DBResult::setColName( int index, const std::string& name )
+	{
+		colname[name] = index;
+	}
+	// ----------------------------------------------------------------------------
+	std::string DBResult::getColName( int index )
+	{
+		for( auto&& c: colname )
+		{
+			if( c.second == index )
+				return c.first;
+		}
+
+		return "";
 	}
 	// ----------------------------------------------------------------------------
 	int DBResult::as_int( const DBResult::COL::iterator& it )
