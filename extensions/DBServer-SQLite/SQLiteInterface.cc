@@ -175,9 +175,7 @@ DBResult SQLiteInterface::query( const string& q )
 
 	lastQ = q;
 	queryok = true;
-	DBResult dbres;
-	makeResult(dbres, pStmt, true);
-	return dbres;
+	return makeResult(pStmt, true);
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::wait( sqlite3_stmt* stmt, int result )
@@ -224,14 +222,15 @@ bool SQLiteInterface::isConnection() const
 	return connected;
 }
 // -----------------------------------------------------------------------------------------
-void SQLiteInterface::makeResult(DBResult& dbres, sqlite3_stmt* s, bool finalize )
+DBResult SQLiteInterface::makeResult( sqlite3_stmt* s, bool finalize )
 {
+	DBResult result;
 	if( !s )
 	{
 		if( finalize )
 			sqlite3_finalize(s);
 
-		return;
+		return result;
 	}
 
 	do
@@ -243,7 +242,7 @@ void SQLiteInterface::makeResult(DBResult& dbres, sqlite3_stmt* s, bool finalize
 			if( finalize )
 				sqlite3_finalize(s);
 
-			return;
+			return result;
 		}
 
 		DBResult::COL c;
@@ -256,7 +255,7 @@ void SQLiteInterface::makeResult(DBResult& dbres, sqlite3_stmt* s, bool finalize
 			{
 				const char* cname = (const char*)sqlite3_column_name(s,i);
 				if( cname )
-					dbres.setColName(i,cname);
+					result.setColName(i,cname);
 
 				c.emplace_back(p);
 			}
@@ -264,12 +263,14 @@ void SQLiteInterface::makeResult(DBResult& dbres, sqlite3_stmt* s, bool finalize
 				c.emplace_back("");
 		}
 
-		dbres.row().emplace_back(c);
+		result.row().emplace_back(c);
 	}
 	while( sqlite3_step(s) == SQLITE_ROW );
 
 	if( finalize )
 		sqlite3_finalize(s);
+
+	return result;
 }
 // -----------------------------------------------------------------------------------------
 extern "C" std::shared_ptr<DBInterface> create_sqliteinterface()

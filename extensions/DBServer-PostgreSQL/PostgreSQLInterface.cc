@@ -180,9 +180,7 @@ DBResult PostgreSQLInterface::query( const string& q )
 
 		/* Execute SQL query */
 		result res( n.exec(q) );
-		DBResult dbres;
-		makeResult(dbres, res);
-		return dbres;
+		return makeResult(res);
 	}
 	catch( const std::exception& e )
 	{
@@ -218,8 +216,10 @@ bool PostgreSQLInterface::isConnection() const
 	return (db && db->is_open());
 }
 // -----------------------------------------------------------------------------------------
-void PostgreSQLInterface::makeResult( DBResult& dbres, const pqxx::result& res )
+DBResult PostgreSQLInterface::makeResult( const pqxx::result& res )
 {
+	DBResult result;
+
 	for( result::const_iterator c = res.begin(); c != res.end(); ++c )
 	{
 		DBResult::COL col;
@@ -230,13 +230,15 @@ void PostgreSQLInterface::makeResult( DBResult& dbres, const pqxx::result& res )
 				col.push_back("");
 			else
 			{
-				dbres.setColName(i.num(),i.name());
+				result.setColName(i.num(),i.name());
 				col.push_back( i.as<string>() );
 			}
 		}
 
-		dbres.row().push_back( std::move(col) );
+		result.row().push_back( std::move(col) );
 	}
+
+	return result;
 }
 // -----------------------------------------------------------------------------------------
 extern "C" std::shared_ptr<DBInterface> create_postgresqlinterface()
