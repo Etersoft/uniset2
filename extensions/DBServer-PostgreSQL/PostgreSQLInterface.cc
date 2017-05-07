@@ -226,10 +226,13 @@ void PostgreSQLInterface::makeResult( DBResult& dbres, const pqxx::result& res )
 
 		for( pqxx::result::tuple::const_iterator i = c.begin(); i != c.end(); i++ )
 		{
-			if( !i.is_null() )
+			if( i.is_null() )
+				col.push_back("");
+			else
+			{
 				dbres.setColName(i.num(),i.name());
-
-			col.push_back( (i.is_null() ? "" : i.as<string>()) );
+				col.push_back( i.as<string>() );
+			}
 		}
 
 		dbres.row().push_back( std::move(col) );

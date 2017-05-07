@@ -20,14 +20,14 @@ CREATE TABLE main_history (
   confirm INTEGER DEFAULT NULL
 );
 
-INSERT INTO main_history VALUES(NULL,0,0,0,100,20.3,1,0);
-INSERT INTO main_history VALUES(NULL,0,0,0,101,20.65,1,0);
-INSERT INTO main_history VALUES(NULL,0,0,0,102,20.7,1,0);
-INSERT INTO main_history VALUES(NULL,0,0,0,103,20.1,1,0);
-INSERT INTO main_history VALUES(NULL,0,0,0,105,20.3,1,0);
-INSERT INTO main_history VALUES(NULL,0,0,0,106,20.65,1,0);
-INSERT INTO main_history VALUES(NULL,0,0,0,107,20233.7,1,0);
-INSERT INTO main_history VALUES(NULL,0,0,0,108,245560.67671,1,0);
+INSERT INTO main_history VALUES(NULL,date('now'),time('now'),0,100,20.3,1,0);
+INSERT INTO main_history VALUES(NULL,date('now'),time('now'),0,101,20.65,1,0);
+INSERT INTO main_history VALUES(NULL,date('now'),time('now'),0,102,20.7,1,0);
+INSERT INTO main_history VALUES(NULL,date('now'),time('now'),0,103,20.1,1,0);
+INSERT INTO main_history VALUES(NULL,date('now'),time('now'),0,105,20.3,1,0);
+INSERT INTO main_history VALUES(NULL,date('now'),time('now'),0,106,20.65,1,0);
+INSERT INTO main_history VALUES(NULL,date('now'),time('now'),0,107,20233.7,1,0);
+INSERT INTO main_history VALUES(NULL,date('now'),time('now'),0,108,245560.67671,1,0);
 
 DROP TABLE IF EXISTS `main_emergencylog`;
 CREATE TABLE `main_emergencylog` (

@@ -39,7 +39,11 @@ int main(int argc, char** argv)
 
 			cout << endl;
 			
+//			for( int i=0; i<col.size(); i++ )
+//				cerr << "[" << i << "]: " << r.getColName(i) << endl;
+
 			cout << "ID: " << r.as_string(it,"id") << endl;
+			cout << "date: " << it.as_string("date") << endl;
 		}
 
 		db.close();
