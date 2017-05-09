@@ -648,9 +648,11 @@ UniXML_iterator& UniXML_iterator::operator++() noexcept
 	return (*this) + 1;
 }
 // -------------------------------------------------------------------------
-UniXML_iterator& UniXML_iterator::operator++(int) noexcept
+UniXML_iterator UniXML_iterator::operator++(int) noexcept
 {
-	return (*this) + 1;
+	UniXML_iterator temp(*this);
+	(*this) = (*this)+1;
+	return temp;
 }
 // -------------------------------------------------------------------------
 UniXML_iterator& UniXML_iterator::operator+=(int s) noexcept
@@ -678,9 +680,11 @@ UniXML_iterator& UniXML_iterator::operator+(int step) noexcept
 	return *this;
 }
 // -------------------------------------------------------------------------
-UniXML_iterator& UniXML_iterator::operator--(int) noexcept
+UniXML_iterator UniXML_iterator::operator--(int) noexcept
 {
-	return (*this) - 1;
+	UniXML_iterator temp(*this);
+	(*this) = (*this)-1;
+	return temp;
 }
 
 UniXML_iterator& UniXML_iterator::operator--() noexcept

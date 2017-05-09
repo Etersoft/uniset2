@@ -74,13 +74,13 @@ namespace uniset
 
 			// Перейти к следующему узлу
 			UniXML_iterator& operator+(int) noexcept;
-			UniXML_iterator& operator++(int) noexcept;
+			UniXML_iterator operator++(int) noexcept;
 			UniXML_iterator& operator+=(int) noexcept;
 			UniXML_iterator& operator++() noexcept;
 
 			// Перейти к предыдущему узлу
 			UniXML_iterator& operator-(int) noexcept;
-			UniXML_iterator& operator--(int) noexcept;
+			UniXML_iterator operator--(int) noexcept;
 			UniXML_iterator& operator--() noexcept;
 			UniXML_iterator& operator-=(int) noexcept;
 
