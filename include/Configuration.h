@@ -167,6 +167,8 @@ namespace uniset
 			CORBA::ORB_ptr getORB() const;
 			const CORBA::PolicyList getPolicy() const noexcept;
 
+			static bool checkOmniORBendPoint( const std::string& endPoint );
+
 		protected:
 			Configuration();
 

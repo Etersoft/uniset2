@@ -329,9 +329,40 @@ namespace uniset
 					}
 					else
 					{
-						const string a(omniIt.getProp("arg"));
-						uinfo << "(Configuration): add omniORB option '" << p << "' " << a << endl;
-						omniParams.emplace_back( std::make_pair(p, a) );
+						// для endPoint надо отдельно проверить доступность адреса
+						// иначе иницилизация omni не произойдёт, а нужно чтобы
+						// всё запускалось даже если сеть не вся "поднялась"
+						if( p == "endPoint" )
+						{
+							const string param(omniIt.getProp("arg"));
+							bool endPointIsAvailable = checkOmniORBendPoint(param);
+
+							// по умолчанию "недоступность" игнорируется
+							// но если указан параметр 'error_if_not_available'
+							// то кидаем исключение при недоступности
+							if( !endPointIsAvailable && !omniIt.getProp("error_if_not_available").empty() )
+							{
+								ostringstream err;
+								err << "Configuration: ERROR: endpoint '"
+									<< param
+									<< "' not available!";
+
+								ucrit << err.str() << endl;
+								throw Exception(err.str());
+							}
+
+							if( endPointIsAvailable )
+							{
+								uinfo << "(Configuration): add omniORB option '" << p << "' " << param << endl;
+								omniParams.emplace_back( std::make_pair(p, param) );
+							}
+						}
+						else
+						{
+							const string a(omniIt.getProp("arg"));
+							uinfo << "(Configuration): add omniORB option '" << p << "' " << a << endl;
+							omniParams.emplace_back( std::make_pair(p, a) );
+						}
 					}
 				}
 			}
@@ -658,6 +689,29 @@ namespace uniset
 
 		localNodeName = nodename;
 		oind->initLocalNode(localNode);
+	}
+	// -------------------------------------------------------------------------
+	bool Configuration::checkOmniORBendPoint( const std::string& endPoint )
+	{
+		// проверяем доступность endPoint попыткой создать соединение
+		auto ep = omni::giopEndpoint::str2Endpoint( endPoint.c_str() );
+		if( !ep )
+			return false;
+
+		bool ret = false;
+		try
+		{
+			bool ret = ep->Bind();
+			if( ret )
+				ep->Shutdown();
+		}
+		catch( std::exception& ex )
+		{
+			uwarn << "(Configuration::checkOmniORBendPoint): " << ex.what() << endl;
+			ret = false;
+		}
+
+		return ret;
 	}
 	// -------------------------------------------------------------------------
 	xmlNode* Configuration::getNode(const string& path) const noexcept
