@@ -8,6 +8,8 @@
 #include <mutex>
 #include <condition_variable>
 #include <vector>
+#include <queue>
+#include <future>
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -47,7 +49,7 @@ namespace uniset
 	 * Т.к. evprepare необходимо вызывать из потока в котором крутится event loop (иначе libev не работает),
 	 * а функция run() в общем случае вызывается "откуда угодно" и может быть вызвана в том числе уже после
 	 * запуска event loop, то задействован механизм асинхронного уведомления (см. evprep, onPrepapre) и ожидания
-	 * на condition_variable, когда произойдёт инициализация (см. реализацию evrun()).
+	 * когда произойдёт инициализация при помощи promise/future (см. реализацию evrun()).
 	 */
 	class CommonEventLoop
 	{
@@ -84,7 +86,9 @@ namespace uniset
 
 			void onStop( ev::async& w, int revents ) noexcept;
 			void onPrepare( ev::async& w, int revents ) noexcept;
-			void defaultLoop() noexcept;
+			void defaultLoop( std::promise<bool>& runOK ) noexcept;
+			bool runDefaultLoop( size_t waitTimeout_msec );
+			bool activateWatcher( EvWatcher* w, size_t waitTimeout_msec );
 
 			std::atomic_bool cancelled = { false };
 			std::atomic_bool isrunning = { false };
@@ -101,13 +105,19 @@ namespace uniset
 			std::mutex wlist_mutex;
 			std::vector<EvWatcher*> wlist;
 
-			// готовящийся Watcher..он может быть только один в единицу времени
-			// это гарантирует prep_mutex
-			EvWatcher* wprep = { nullptr };
+			// очередь wather-ов для инициализации (добавления в обработку)
+			struct WatcherInfo
+			{
+				WatcherInfo( EvWatcher* w, std::promise<bool>& p ):
+					watcher(w),result(p){}
+
+				EvWatcher* watcher;
+				std::promise<bool>& result;
+			};
+
+			std::queue<WatcherInfo> wactlist;
+			std::mutex wact_mutex;
 			ev::async evprep;
-			std::condition_variable prep_event;
-			std::mutex              prep_mutex;
-			std::atomic_bool prep_notify = { false };
 	};
 	// -------------------------------------------------------------------------
 } // end of uniset namespace

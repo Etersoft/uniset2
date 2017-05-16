@@ -176,9 +176,13 @@ int main( int argc, char** argv )
 		dlog4->addLevel(Debug::ANY);
 
 		ls.run( addr, port, true );
-
+		
 		if( verb )
 			ls.setSessionLog(Debug::ANY);
+
+		
+		if( !ls.isRunning() )
+			cerr << "LOG SERVER NOT RUNNING!!" << endl;
 
 		unsigned int i = 0;
 
