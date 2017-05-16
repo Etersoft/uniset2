@@ -36,8 +36,9 @@ namespace uniset
 
 			/*! Запуск сервера
 			 * \param thread - создавать ли отдельный поток
+			 * \return TRUE - если поток успешно удалось запустить
 			 */
-			void run( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, bool thread = false );
+			bool run( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, bool thread = false );
 
 			virtual bool isActive() const override;
 

@@ -5,6 +5,7 @@
 #include <ev++.h>
 #include <atomic>
 #include <thread>
+#include <future>
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -32,7 +33,7 @@ namespace uniset
 			virtual void evprepare() {}
 
 			// Управление потоком событий
-			void evrun( bool thread = true );
+			bool evrun( bool thread = true );
 			void evstop();
 
 			ev::dynamic_loop loop;
@@ -40,7 +41,7 @@ namespace uniset
 		private:
 
 			void onStop() noexcept;
-			void defaultLoop() noexcept;
+			void defaultLoop( std::promise<bool>& prepareOK ) noexcept;
 
 			std::atomic_bool cancelled = { false };
 			std::atomic_bool isrunning = { false };

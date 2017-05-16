@@ -202,6 +202,9 @@ namespace uniset
 
 			int port = conf->getArgPInt("--" + prefix + "-inet-port", it.getProp("iport"), 502);
 
+			tcpBreakIfFailRun = conf->getArgPInt("--" + prefix + "-break-if-fail-run", it.getProp("tcpBreakIfFailRun"), 0);
+			tcpRepeatCreateSocketPause = conf->getArgPInt("--" + prefix + "-repeat-create-socket", it.getProp("tcpRepeatCreateSocket"), 30000);
+
 			mbinfo << myname << "(init): type=TCP inet=" << iaddr << " port=" << port << endl;
 
 			tcpserver = make_shared<ModbusTCPServerSlot>(iaddr, port);
@@ -637,44 +640,68 @@ namespace uniset
 
 		mbinfo << myname << "(execute_tcp): run tcpserver ("
 			   << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort()
-			   << ")" << endl;
+			   << ")"
+			   << "["
+			   << " tcpBreakIfFailRun=" << tcpBreakIfFailRun
+			   << " tcpRepeatCreateSocketPause=" << tcpRepeatCreateSocketPause
+			   << "]"
+			   << endl;
 
 		tcpCancelled = false;
 
-		try
+		while( isActive() && !tcpserver->isActive() )
 		{
-			tcpserver->run( vaddr, true );
-		}
-		catch( ModbusRTU::mbException& ex )
-		{
-			mbcrit << myname << "(execute_tcp): catch excaption: "
-				   << tcpserver->getInetAddress()
-				   << ":" << tcpserver->getInetPort() << " err: " << ex << endl;
-			throw ex;
-		}
-		catch( const Poco::Net::NetException& e )
-		{
-			mbcrit << myname << "(execute_tcp): Can`t create socket "
-				   << tcpserver->getInetAddress()
-				   << ":" << tcpserver->getInetPort()
-				   << " err: " << e.displayText() << endl;
-			throw e;
-		}
-		catch( const std::exception& e )
-		{
-			mbcrit << myname << "(execute_tcp): Can`t create socket "
-				   << tcpserver->getInetAddress()
-				   << ":" << tcpserver->getInetPort()
-				   << " err: " << e.what() << endl;
-			throw e;
-		}
-		catch(...)
-		{
-			mbcrit << myname << "(execute_tcp): catch exception ... ("
-				   << tcpserver->getInetAddress()
-				   << ":" << tcpserver->getInetPort()
-				   << endl;
-			throw;
+			try
+			{
+				if( tcpserver->run( vaddr, true ) )
+					break;
+
+				if( tcpBreakIfFailRun )
+				{
+					mbcrit << myname << "(execute_tcp): error run tcpserver: "
+						   << tcpserver->getInetAddress()
+						   << ":" << tcpserver->getInetPort() << " err: not active.." << endl;
+					std::terminate();
+					return;
+				}
+			}
+			catch( ModbusRTU::mbException& ex )
+			{
+				mbcrit << myname << "(execute_tcp): catch exception: "
+					   << tcpserver->getInetAddress()
+					   << ":" << tcpserver->getInetPort() << " err: " << ex << endl;
+				if( tcpBreakIfFailRun )
+					throw ex;
+			}
+			catch( const Poco::Net::NetException& e )
+			{
+				mbcrit << myname << "(execute_tcp): Can`t create socket "
+					   << tcpserver->getInetAddress()
+					   << ":" << tcpserver->getInetPort()
+					   << " err: " << e.displayText() << endl;
+				if( tcpBreakIfFailRun )
+					throw e;
+			}
+			catch( const std::exception& e )
+			{
+				mbcrit << myname << "(execute_tcp): Can`t create socket "
+					   << tcpserver->getInetAddress()
+					   << ":" << tcpserver->getInetPort()
+					   << " err: " << e.what() << endl;
+				if( tcpBreakIfFailRun )
+					throw e;
+			}
+			catch(...)
+			{
+				mbcrit << myname << "(execute_tcp): catch exception ... ("
+					   << tcpserver->getInetAddress()
+					   << ":" << tcpserver->getInetPort()
+					   << endl;
+				if( tcpBreakIfFailRun )
+					throw;
+			}
+
+			msleep(tcpRepeatCreateSocketPause);
 		}
 
 		//	tcpCancelled = true;

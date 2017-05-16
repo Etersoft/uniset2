@@ -304,6 +304,19 @@ namespace uniset
 		</MBTCPPersistentSlave>
 		\endcode
 
+		По умолчанию если не удалось создать сокет процесс пытается повторять попытки каждые
+		tcpRepeatCreateSocketPause и не вылетает. Но если задан параметр tcpBreakIfFailRun="1",
+		то процессы завершает работу после первой неудачной попытки.
+		Изменить эти параметры можно либо в конфигурационном файле:
+		\code
+		<MBTCPPersistentSlave ... tcpBreakIfFailRun="1" tcpRepeatCreateSocket="xxx msec"/>
+		\endcode
+
+		Либо аргументами командной строки:
+		- --prefix--break-if-fail-run 1
+		- --prefix-repeat-create-socket msec.
+
+
 		\section sec_MBSlave_REST_API MBSlave HTTP API
 
 
@@ -646,6 +659,9 @@ namespace uniset
 			IOController::IOStateList::iterator sesscount_it;
 
 			std::atomic_bool tcpCancelled = { true };
+
+			bool tcpBreakIfFailRun = { false };
+			timeout_t tcpRepeatCreateSocketPause = { 30000 }; /*! пауза между попытками открыть сокет */
 	};
 	// --------------------------------------------------------------------------
 } // end of namespace uniset

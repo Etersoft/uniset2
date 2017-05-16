@@ -19,20 +19,34 @@ namespace uniset
 			evstop();
 	}
 	// ---------------------------------------------------------------------------
-	void EventLoopServer::evrun( bool thread )
+	bool EventLoopServer::evrun( bool thread )
 	{
 		if( isrunning )
-			return;
+			return true;
 
 		isrunning = true;
 
+		std::promise<bool> p;
+
+		auto prepareOK = p.get_future();
+
 		if( !thread )
 		{
-			defaultLoop();
-			return;
+			defaultLoop(p);
+			return prepareOK.get();
 		}
 		else if( !thr )
-			thr = make_shared<std::thread>( [ = ] { defaultLoop(); } );
+			thr = make_shared<std::thread>( [ &p, this ] { defaultLoop(std::ref(p)); } );
+
+		bool ret = prepareOK.get();
+		// если запуститься не удалось
+		if( !ret && thr )
+		{
+			thr->join();
+			thr = nullptr;
+		}
+
+		return ret;
 	}
 	// ---------------------------------------------------------------------------
 	bool EventLoopServer::evIsActive() const noexcept
@@ -67,21 +81,30 @@ namespace uniset
 		loop.break_loop(ev::ALL);
 	}
 	// -------------------------------------------------------------------------
-	void EventLoopServer::defaultLoop() noexcept
+	void EventLoopServer::defaultLoop( std::promise<bool>& prepareOK ) noexcept
 	{
 		evterm.start();
-		evprepare();
-
-		while( !cancelled )
+		try
 		{
-			try
+			evprepare();
+			prepareOK.set_value(true);
+
+			while( !cancelled )
 			{
-				loop.run(0);
+				try
+				{
+					loop.run(0);
+				}
+				catch( std::exception& ex )
+				{
+					cerr << "(EventLoopServer::defaultLoop): " << ex.what() << endl;
+				}
 			}
-			catch( std::exception& ex )
-			{
-				cerr << "(EventLoopServer::defaultLoop): " << ex.what() << endl;
-			}
+		}
+		catch( std::exception& ex )
+		{
+			cerr << "(EventLoopServer::defaultLoop): " << ex.what() << endl;
+			prepareOK.set_value(false);
 		}
 
 		isrunning = false;

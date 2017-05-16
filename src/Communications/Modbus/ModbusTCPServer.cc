@@ -81,15 +81,15 @@ namespace uniset
 		sessTimeout = msec;
 	}
 	// -------------------------------------------------------------------------
-	void ModbusTCPServer::run( const std::unordered_set<ModbusAddr>& _vmbaddr, bool thread )
+	bool ModbusTCPServer::run( const std::unordered_set<ModbusAddr>& _vmbaddr, bool thread )
 	{
 		vmbaddr = &_vmbaddr;
-		evrun(thread);
+		return evrun(thread);
 	}
 	// -------------------------------------------------------------------------
 	bool ModbusTCPServer::isActive() const
 	{
-		return evIsActive();
+		return evIsActive() && sock;
 	}
 	// -------------------------------------------------------------------------
 	void ModbusTCPServer::evprepare()
@@ -103,14 +103,14 @@ namespace uniset
 			ostringstream err;
 			err << "(ModbusTCPServer::evprepare): connect " << iaddr << ":" << port << " err: " << ex.what();
 			dlog->crit() << err.str() << endl;
-			throw SystemError(err.str());
+			throw uniset::SystemError(err.str());
 		}
 		catch( const std::exception& ex )
 		{
 			ostringstream err;
 			err << "(ModbusTCPServer::evprepare): connect " << iaddr << ":" << port << " err: " << ex.what();
 			dlog->crit() << err.str() << endl;
-			throw SystemError(err.str());
+			throw uniset::SystemError(err.str());
 		}
 
 		sock->setBlocking(false);
