@@ -98,12 +98,11 @@ IOController::InitSignal IOController::signal_init()
 // ------------------------------------------------------------------------------------------
 void IOController::activateInit()
 {
-	// Разрегистрируем аналоговые датчики
-	for( auto li = ioList.begin(); li != ioList.end(); ++li )
+	for( auto&& io: ioList )
 	{
 		try
 		{
-			auto s = li->second;
+			auto s = io.second;
 
 			// Проверка зависимостей
 			if( s->d_si.id != DefaultObjectId )
@@ -209,7 +208,7 @@ void IOController::localSetUndefinedState( IOStateList::iterator& li,
 	}
 	catch(...) {}
 
-	// потом глобольное, но конкретно для 'undefchange'
+	// потом глобальное, но конкретно для 'undefchange'
 	try
 	{
 		if( changed )
@@ -474,11 +473,12 @@ void IOController::dumpToDB()
 	{
 		// lock
 		//        uniset_mutex_lock lock(ioMutex, 100);
-		for( auto li = ioList.begin(); li != ioList.end(); ++li )
+		for( auto&& usi: ioList )
 		{
-			if ( !li->second->dbignore )
+			auto& s = usi.second;
+			if ( !s->dbignore )
 			{
-				SensorMessage sm( std::move(li->second->makeSensorMessage()) );
+				SensorMessage sm( std::move(s->makeSensorMessage()) );
 				logging(sm);
 			}
 		}

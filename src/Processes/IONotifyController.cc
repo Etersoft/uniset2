@@ -710,7 +710,7 @@ void IONotifyController::send( ConsumerListInfo& lst, const uniset::SensorMessag
 				continue;
 		}
 
-		for( int i = 0; i < sendAttemtps; i++ ) // на каждый объект по две попытки послать
+		for( int i = 0; i < sendAttemtps; i++ )
 		{
 			try
 			{

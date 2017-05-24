@@ -506,6 +506,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet2.pc
         
 # history of current unpublished changes
+- minor fixes
+- MBSlave: Now does not terminate when socket is not open
+- Configuration: Now does not terminate when endPoint is not available
 
 %changelog
 * Tue May 09 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt18

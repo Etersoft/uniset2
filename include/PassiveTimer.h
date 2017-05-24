@@ -43,9 +43,9 @@ namespace uniset
 	class UniSetTimer
 	{
 		public:
-			virtual ~UniSetTimer() {};
+			virtual ~UniSetTimer() {}
 
-			virtual bool checkTime() const noexcept = 0;					/*!< проверка наступления заданного времени */
+			virtual bool checkTime() const noexcept = 0;				/*!< проверка наступления заданного времени */
 			virtual timeout_t setTiming( timeout_t msec ) noexcept = 0;	/*!< установить таймер и запустить */
 			virtual void reset() noexcept = 0;							/*!< перезапустить таймер */
 
