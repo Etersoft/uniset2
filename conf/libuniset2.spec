@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt18
+Release: alt19
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -506,11 +506,13 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet2.pc
         
 # history of current unpublished changes
-- minor fixes
-- MBSlave: Now does not terminate when socket is not open
-- Configuration: Now does not terminate when endPoint is not available
 
 %changelog
+* Thu May 25 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt19
+- MBSlave: Now does not terminate when socket is not open
+- Configuration: Now does not terminate when endPoint is not available
+- minor fixes
+
 * Tue May 09 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt18
 - DBInterface refactoring (setbug #12672)
 
