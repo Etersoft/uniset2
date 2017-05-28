@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt20
+Release: alt21
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -508,6 +508,9 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
+* Mon May 29 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt21
+- (UNetExchange): add function for setup eventloop timeout 
+
 * Sun May 28 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt20
 - (Configuration): fixed bug in check endPoint function
 

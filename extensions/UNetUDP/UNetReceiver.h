@@ -137,6 +137,7 @@ namespace uniset
 			void setPrepareTime( timeout_t msec ) noexcept;
 			void setCheckConnectionPause( timeout_t msec ) noexcept;
 			void setMaxDifferens( unsigned long set ) noexcept;
+			void setEvrunTimeout(timeout_t msec ) noexcept;
 
 			void setRespondID( uniset::ObjectId id, bool invert = false ) noexcept;
 			void setLostPacketsID( uniset::ObjectId id ) noexcept;
@@ -279,6 +280,7 @@ namespace uniset
 			PassiveTimer ptPrepare;
 			timeout_t recvTimeout = { 5000 }; // msec
 			timeout_t prepareTime = { 2000 };
+			timeout_t evrunTimeout = { 15000 };
 			timeout_t lostTimeout = { 200 };
 			PassiveTimer ptLostTimeout;
 			size_t lostPackets = { 0 }; /*!< счётчик потерянных пакетов */

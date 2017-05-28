@@ -194,6 +194,7 @@ TEST_CASE("[UNetUDP]: sizeOf", "[unetudp][sizeof]")
 	REQUIRE( len == m.sizeOf() );
 }
 // -----------------------------------------------------------------------------
+#if 0
 TEST_CASE("[UNetUDP]: respond sensor", "[unetudp]")
 {
 	InitTest();
@@ -206,6 +207,7 @@ TEST_CASE("[UNetUDP]: respond sensor", "[unetudp]")
 	msleep(5000);
 	REQUIRE( ui->getValue(node1_not_respond_s) == 1 );
 }
+#endif
 // -----------------------------------------------------------------------------
 TEST_CASE("[UNetUDP]: check sender", "[unetudp][sender]")
 {

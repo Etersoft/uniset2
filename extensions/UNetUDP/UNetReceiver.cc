@@ -139,6 +139,11 @@ void UNetReceiver::setMaxDifferens( unsigned long set ) noexcept
 	maxDifferens = set;
 }
 // -----------------------------------------------------------------------------
+void UNetReceiver::setEvrunTimeout( timeout_t msec ) noexcept
+{
+	evrunTimeout = msec;
+}
+// -----------------------------------------------------------------------------
 void UNetReceiver::setRespondID( uniset::ObjectId id, bool invert ) noexcept
 {
 	sidRespond = id;
@@ -224,7 +229,12 @@ void UNetReceiver::start()
 	if( !activated )
 	{
 		activated = true;
-		loop.evrun(this, true);
+		if( !loop.evrun(this, true, evrunTimeout) )
+		{
+			unetcrit << myname << "(start): evrun FAILED! (timeout=" << evrunTimeout << " msec)" << endl;
+			std::terminate();
+			return;
+		}
 
 		if( upStrategy == useUpdateThread && !upThread->isRunning() )
 			upThread->start();
@@ -938,6 +948,7 @@ const std::string UNetReceiver::getShortInfo() const noexcept
 	  << "\t["
 	  << " recvTimeout=" << setw(6) << recvTimeout
 	  << " prepareTime=" << setw(6) << prepareTime
+	  << " evrunTimeout=" << setw(6) << evrunTimeout
 	  << " lostTimeout=" << setw(6) << lostTimeout
 	  << " recvpause=" << setw(6) << recvpause
 	  << " updatepause=" << setw(6) << updatepause
