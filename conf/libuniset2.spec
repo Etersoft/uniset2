@@ -511,6 +511,9 @@ rm -f %buildroot%_libdir/*.la
 * Tue Sep 12 2017 Alexei Takaseev <taf@altlinux.org> 2.6-alt19.1
 - Rebuild with poco 1.7.9
 
+# * Sun May 28 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt20
+# - (Configuration): fixed bug in check endPoint function
+
 * Thu May 25 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt19
 - MBSlave: Now does not terminate when socket is not open
 - Configuration: Now does not terminate when endPoint is not available
