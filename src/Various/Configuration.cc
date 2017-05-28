@@ -335,7 +335,7 @@ namespace uniset
 						if( p == "endPoint" )
 						{
 							const string param(omniIt.getProp("arg"));
-							bool endPointIsAvailable = checkOmniORBendPoint(param);
+							bool endPointIsAvailable = omniIt.getProp("ignore_checking").empty() ? checkOmniORBendPoint(param) : true;
 
 							// по умолчанию "недоступность" игнорируется
 							// но если указан параметр 'error_if_not_available'
@@ -701,7 +701,7 @@ namespace uniset
 		bool ret = false;
 		try
 		{
-			bool ret = ep->Bind();
+			ret = ep->Bind();
 			if( ret )
 				ep->Shutdown();
 		}
@@ -710,6 +710,10 @@ namespace uniset
 			uwarn << "(Configuration::checkOmniORBendPoint): " << ex.what() << endl;
 			ret = false;
 		}
+
+		ulogsys << "(Configuration::checkOmniORBendPoint): check " << endPoint << " "
+				<< ( ret ? "OK" : "FAILED" )
+				<< endl;
 
 		return ret;
 	}
