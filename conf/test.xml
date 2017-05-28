@@ -213,6 +213,12 @@
 			<item id="3001" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode1" textname="Локальный узел" unet_ignore="0" unet_port="2049"/>
 			<item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="0" unet_port="3001" unet_respond_id="Input1_S" unet_respond_invert="1"/>
 			<item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_ignore="0" unet_port="3002"/>
+			<item id="3004" ip="192.168.56.12" name="Node3" textname="Node3"/>
+			<item id="3005" ip="192.168.56.13" name="Node4" textname="Node4"/>
+			<item id="3006" ip="192.168.56.14" name="Node5" textname="Node5"/>
+			<item id="3007" ip="192.168.56.15" name="Node6" textname="Node6"/>
+			<item id="3008" ip="192.168.56.16" name="Node7" textname="Node7"/>
+			<item id="3009" ip="192.168.56.17" name="Node8" textname="Node8"/>
 		</nodes>
 		<!-- ************************ Датчики ********************** -->
 		<sensors name="Sensors">

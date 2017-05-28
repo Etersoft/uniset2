@@ -75,7 +75,8 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 			 << "' nodes-filter-value='" << n_fvalue << "'" << endl;
 
 	int recvTimeout = conf->getArgPInt("--" + prefix + "-recv-timeout", it.getProp("recvTimeout"), 5000);
-	int prepareTime = conf->getArgPInt("--" + prefix + "-preapre-time", it.getProp("prepareTime"), 2000);
+	int prepareTime = conf->getArgPInt("--" + prefix + "-prepare-time", it.getProp("prepareTime"), 2000);
+	int evrunTimeout = conf->getArgPInt("--" + prefix + "-evrun-timeout", it.getProp("evrunTimeout"), 15000);
 	int recvpause = conf->getArgPInt("--" + prefix + "-recvpause", it.getProp("recvpause"), 10);
 	int sendpause = conf->getArgPInt("--" + prefix + "-sendpause", it.getProp("sendpause"), 100);
 	int updatepause = conf->getArgPInt("--" + prefix + "-updatepause", it.getProp("updatepause"), 100);
@@ -334,6 +335,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 
 		r->setReceiveTimeout(recvTimeout);
 		r->setPrepareTime(prepareTime);
+		r->setEvrunTimeout(evrunTimeout);
 		r->setLostTimeout(lostTimeout);
 		r->setReceivePause(recvpause);
 		r->setUpdatePause(updatepause);
@@ -362,6 +364,8 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 				r2->setLockUpdate(true);
 
 				r2->setReceiveTimeout(recvTimeout);
+				r2->setPrepareTime(prepareTime);
+				r2->setEvrunTimeout(evrunTimeout);
 				r2->setLostTimeout(lostTimeout);
 				r2->setReceivePause(recvpause);
 				r2->setUpdatePause(updatepause);
