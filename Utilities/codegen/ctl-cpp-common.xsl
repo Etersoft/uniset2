@@ -1258,7 +1258,7 @@ end_private(false)
 
 	int sm_tout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
 	if( sm_tout == 0 )
-		smReadyTimeout = 60000;
+		smReadyTimeout = 120000;
 	else if( sm_tout &lt; 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 	else
@@ -1734,7 +1734,7 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 
 	int sm_tout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
 	if( sm_tout == 0 )
-		smReadyTimeout = 60000;
+		smReadyTimeout = 120000;
 	else if( sm_tout &lt; 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 	else
