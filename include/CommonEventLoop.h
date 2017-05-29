@@ -67,7 +67,7 @@ namespace uniset
 			 * Даже если thread = false, но wather не сможет быть "активирован" функция вернёт управление
 			 * с return false.
 			 */
-			bool evrun( EvWatcher* w, bool thread = true, size_t waitPrepareTimeout_msec = 15000);
+			bool evrun( EvWatcher* w, bool thread = true, size_t waitPrepareTimeout_msec = 5000);
 
 			/*! \return TRUE - если это был последний EvWatcher и loop остановлен */
 			bool evstop( EvWatcher* w );

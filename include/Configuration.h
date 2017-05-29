@@ -124,6 +124,7 @@ namespace uniset
 
 			timeout_t getHeartBeatTime() const noexcept;
 			timeout_t getNCReadyTimeout() const noexcept;
+			timeout_t getStartupIgnoreTimeout() const noexcept;
 
 			// dirs
 			const std::string getConfDir() const noexcept;
@@ -235,6 +236,7 @@ namespace uniset
 
 			timeout_t heartbeat_msec = { 3000 };
 			timeout_t ncreadytimeout_msec = { 180000 };
+			timeout_t startupIgnoretimeout_msec = { 5000 };
 	};
 
 	/*! Глобальный указатель на конфигурацию (singleton) */

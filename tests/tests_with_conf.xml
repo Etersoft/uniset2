@@ -23,6 +23,7 @@
 		
 		<HeartBeatTime msec="2000"/>
 		<NCReadyTimeout msec="60000"/>
+		<StartUpIgnoreTimeout msec="6000"/>
 
 		<!-- Если не указано, то считается текущий каталог -->
 		<ConfDir name=""/>
