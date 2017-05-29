@@ -242,7 +242,7 @@ namespace uniset
 		int sm_tout = conf->getArgInt("--" + prefix + "-sm-ready-timeout", it.getProp("ready_timeout"));
 
 		if( sm_tout == 0 )
-			smReadyTimeout = 60000;
+			smReadyTimeout = 120000;
 		else if( sm_tout < 0 )
 			smReadyTimeout = UniSetTimer::WaitUpTime;
 		else
@@ -1561,7 +1561,8 @@ namespace uniset
 				<< smReadyTimeout << " msec";
 
 			iocrit << err.str() << endl;
-			throw SystemError(err.str());
+			//throw SystemError(err.str());
+			std::terminate();
 		}
 	}
 	// -----------------------------------------------------------------------------

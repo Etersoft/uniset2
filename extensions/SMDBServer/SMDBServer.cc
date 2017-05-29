@@ -100,10 +100,10 @@ SMDBServer::~SMDBServer()
 void SMDBServer::waitSMReady()
 {
 	// waiting for SM is ready...
-	int ready_timeout = conf->getArgInt("--" + prefix + "-sm-ready-timeout", "15000");
+	int ready_timeout = conf->getArgInt("--" + prefix + "-sm-ready-timeout", "120000");
 
 	if( ready_timeout == 0 )
-		ready_timeout = 60000;
+		ready_timeout = 120000;
 	else if( ready_timeout < 0 )
 		ready_timeout = UniSetTimer::WaitUpTime;
 
@@ -112,7 +112,8 @@ void SMDBServer::waitSMReady()
 		ostringstream err;
 		err << myname << "(waitSMReady): Wait SharedMemory failed. [ " << ready_timeout << " msec ]";
 		dcrit << err.str() << endl;
-		throw SystemError(err.str());
+		//throw SystemError(err.str());
+		std::terminate();
 	}
 }
 // -----------------------------------------------------------------------------

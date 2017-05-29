@@ -152,7 +152,8 @@ void UniExchange::execute()
 			<< smReadyTimeout << " мсек";
 
 		ucrit << err.str() << endl;
-		throw SystemError(err.str());
+		//throw SystemError(err.str());
+		std::terminate();
 	}
 
 	PassiveTimer pt(UniSetTimer::WaitUpTime);

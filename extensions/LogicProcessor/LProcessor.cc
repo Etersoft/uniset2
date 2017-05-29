@@ -30,10 +30,10 @@ LProcessor::LProcessor( const std::string& name ):
 {
 	auto conf = uniset_conf();
 	sleepTime = conf->getArgPInt("--sleepTime", 200);
-	int tout = conf->getArgInt("--sm-ready-timeout", "");
+	int tout = conf->getArgInt("--sm-ready-timeout", "120000");
 
 	if( tout == 0 )
-		smReadyTimeout = 60000;
+		smReadyTimeout = 120000;
 	else if( tout < 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 	else

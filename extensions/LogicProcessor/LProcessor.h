@@ -180,7 +180,7 @@ namespace uniset
 
 			UInterface ui;
 			timeout_t sleepTime = { 200 };
-			timeout_t smReadyTimeout = { 30000 } ;     /*!< время ожидания готовности SM, мсек */
+			timeout_t smReadyTimeout = { 120000 } ;     /*!< время ожидания готовности SM, мсек */
 
 			std::string logname = { "" };
 			std::atomic_bool canceled = {false};

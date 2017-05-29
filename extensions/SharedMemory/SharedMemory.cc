@@ -894,7 +894,8 @@ namespace uniset
 				err << myname << "(initFromReserv): Not found ID for '" << smName << "'";
 				smcrit << err.str() << endl;
 				// throw SystemError(err.str());
-				raise(SIGTERM);
+				//raise(SIGTERM);
+				std::terminate();
 			}
 
 			std::string smNode(it.getProp("node"));
@@ -910,7 +911,8 @@ namespace uniset
 				err << myname << "(initFromReserv): Not found NodeID for '" << smNode << "'";
 				smcrit << err.str() << endl;
 				// throw SystemError(err.str());
-				raise(SIGTERM);
+				//raise(SIGTERM);
+				std::terminate();
 			}
 
 

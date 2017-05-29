@@ -74,12 +74,14 @@ void SMonitor::sysCommand( const SystemMessage* sm )
 				catch( const uniset::Exception& ex )
 				{
 					cerr << myname << ":(askSensor): " << ex << endl;
-					raise(SIGTERM);
+//					raise(SIGTERM);
+					std::terminate();
 				}
 				catch(...)
 				{
 					cerr << myname << ": НЕ СМОГ ЗАКАЗТЬ датчики " << endl;
-					raise(SIGTERM);
+//					raise(SIGTERM);
+					std::terminate();
 				}
 			}
 		}
