@@ -511,8 +511,12 @@ rm -f %buildroot%_libdir/*.la
 * Tue Sep 12 2017 Alexei Takaseev <taf@altlinux.org> 2.6-alt19.1
 - Rebuild with poco 1.7.9
 
+# * Mon May 29 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt22
+# - set default sm-ready-timeout to 120000 msec (2 min)
+# - changed raise(SIGTERM) --> std::terminate()
+
 # * Mon May 29 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt21
-# - (UNetExchange): add function for setup eventloop timeout
+# - (UNetExchange): add function for setup eventloop timeout 
 
 # * Sun May 28 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt20
 # - (Configuration): fixed bug in check endPoint function
