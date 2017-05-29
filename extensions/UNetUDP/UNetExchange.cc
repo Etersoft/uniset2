@@ -475,9 +475,9 @@ void UNetExchange::startReceivers()
 void UNetExchange::waitSMReady()
 {
 	// waiting for SM is ready...
-	int tout = uniset_conf()->getArgInt("--unet-sm-ready-timeout", "15000");
+	int tout = uniset_conf()->getArgInt("--unet-sm-ready-timeout", "120000");
 
-	timeout_t ready_timeout = 60000;
+	timeout_t ready_timeout = 120000;
 
 	if( tout > 0 )
 		ready_timeout = tout;
@@ -489,7 +489,7 @@ void UNetExchange::waitSMReady()
 		ostringstream err;
 		err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
 		unetcrit << err.str() << endl;
-		throw SystemError(err.str());
+		std::terminate();
 	}
 }
 // -----------------------------------------------------------------------------
@@ -821,7 +821,7 @@ void UNetExchange::help_print( int argc, const char* argv[] ) noexcept
 	cout << "                                         'evloop' - используется общий (с приёмом сообщений) event loop" << endl;
 	cout << "                                 По умолчанию: evloop" << endl;
 
-	cout << "--prefix-sm-ready-timeout msec   - Время ожидание я готовности SM к работе. По умолчанию 15000" << endl;
+	cout << "--prefix-sm-ready-timeout msec   - Время ожидание я готовности SM к работе. По умолчанию 120000" << endl;
 	cout << "--prefix-filter-field name       - Название фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
 	cout << "--prefix-filter-value name       - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
 	cout << endl;

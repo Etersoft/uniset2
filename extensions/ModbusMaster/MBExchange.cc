@@ -302,8 +302,8 @@ namespace uniset
 	void MBExchange::waitSMReady()
 	{
 		// waiting for SM is ready...
-		int tout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "15000");
-		timeout_t ready_timeout = 60000;
+		int tout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "120000");
+		timeout_t ready_timeout = 120000;
 
 		if( tout > 0 )
 			ready_timeout = tout;
@@ -315,10 +315,7 @@ namespace uniset
 			ostringstream err;
 			err << myname << "(waitSMReady): failed waiting SharedMemory " << ready_timeout << " msec. ==> TERMINATE!";
 			mbcrit << err.str() << endl;
-			raise(SIGTERM);
-			//if( checkProcActive() )
-			//       throw SystemError(err.str());
-
+			std::terminate();
 		}
 	}
 	// -----------------------------------------------------------------------------
@@ -2817,7 +2814,8 @@ namespace uniset
 				if( devices.empty() )
 				{
 					mbcrit << myname << "(sysCommand): ************* ITEM MAP EMPTY! terminated... *************" << endl;
-					raise(SIGTERM);
+					//raise(SIGTERM);
+					std::terminate();
 					return;
 				}
 

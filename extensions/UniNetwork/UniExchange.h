@@ -142,7 +142,7 @@ namespace uniset
 
 			SList mymap;
 			size_t maxIndex = { 0 };
-			timeout_t smReadyTimeout = { 15000 }; // msec
+			timeout_t smReadyTimeout = { 60000 }; // msec
 
 		private:
 	};

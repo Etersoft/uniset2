@@ -528,8 +528,8 @@ namespace uniset
 	void MBSlave::waitSMReady()
 	{
 		// waiting for SM is ready...
-		int tout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "15000");
-		timeout_t ready_timeout = 60000;
+		int tout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "120000");
+		timeout_t ready_timeout = 120000;
 
 		if( tout > 0 )
 			ready_timeout = tout;
@@ -541,10 +541,8 @@ namespace uniset
 			ostringstream err;
 			err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
 			mbcrit << err.str() << endl;
-			//        throw SystemError(err.str());
-			raise(SIGTERM);
-			terminate();
-			//        abort();
+			//terminate();
+			std::terminate();
 		}
 	}
 	// -----------------------------------------------------------------------------
@@ -565,7 +563,8 @@ namespace uniset
 		if( vaddr.empty() )
 		{
 			mbcrit << "(execute_rtu): Unknown my modbus addresses!" << endl;
-			raise(SIGTERM);
+			//raise(SIGTERM);
+			std::terminate();
 			return;
 		}
 
@@ -604,7 +603,8 @@ namespace uniset
 		if( !tcpserver )
 		{
 			mbcrit << myname << "(execute_tcp): DYNAMIC CAST ERROR (mbslot --> ModbusTCPServerSlot)" << std::endl;
-			raise(SIGTERM);
+			//raise(SIGTERM);
+			std::terminate();
 			return;
 		}
 
@@ -626,7 +626,8 @@ namespace uniset
 		if( vaddr.empty() )
 		{
 			mbcrit << "(execute_tcp): Unknown my modbus addresses!" << endl;
-			raise(SIGTERM);
+			//raise(SIGTERM);
+			std::terminate();
 			return;
 		}
 
@@ -892,7 +893,8 @@ namespace uniset
 				if( iomap.empty() )
 				{
 					mbcrit << myname << "(sysCommand): iomap EMPTY! terminated..." << endl;
-					raise(SIGTERM);
+					// raise(SIGTERM);
+					std::terminate();
 					return;
 				}
 
