@@ -673,6 +673,20 @@ namespace uniset
 			if( heartbeat_msec <= 0 )
 				heartbeat_msec = 3000;
 		}
+
+		// NC ready timeout init...
+		cnode = getNode("NCReadyTimeout");
+
+		if( cnode )
+		{
+			UniXML::iterator hit(cnode);
+			ncreadytimeout_msec = hit.getIntProp("msec");
+
+			if( ncreadytimeout_msec < 0 )
+				ncreadytimeout_msec = UniSetTimer::WaitUpTime;
+			else if( ncreadytimeout_msec == 0 )
+				ncreadytimeout_msec = 180000;
+		}
 	}
 	// -------------------------------------------------------------------------
 	void Configuration::setLocalNode( const string& nodename )
@@ -1250,6 +1264,11 @@ namespace uniset
 	timeout_t Configuration::getHeartBeatTime() const noexcept
 	{
 		return heartbeat_msec;
+	}
+
+	timeout_t Configuration::getNCReadyTimeout() const noexcept
+	{
+		return ncreadytimeout_msec;
 	}
 	// -------------------------------------------------------------------------
 	const string Configuration::getConfDir() const noexcept

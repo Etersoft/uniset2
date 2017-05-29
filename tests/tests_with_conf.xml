@@ -20,6 +20,9 @@
 
 		<!-- Debug, logs -->
 		<UniSetDebug name="unideb" levels="crit,warn" file=""/>
+		
+		<HeartBeatTime msec="2000"/>
+		<NCReadyTimeout msec="60000"/>
 
 		<!-- Если не указано, то считается текущий каталог -->
 		<ConfDir name=""/>

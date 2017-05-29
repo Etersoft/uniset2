@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2017-05-03+03:00
+// generate timestamp: 2017-05-29+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -184,7 +184,7 @@ end_private(false)
 
 	int sm_tout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","");
 	if( sm_tout == 0 )
-		smReadyTimeout = 60000;
+		smReadyTimeout = conf->getNCReadyTimeout();
 	else if( sm_tout < 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 	else

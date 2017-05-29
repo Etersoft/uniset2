@@ -33,7 +33,7 @@ LProcessor::LProcessor( const std::string& name ):
 	int tout = conf->getArgInt("--sm-ready-timeout", "120000");
 
 	if( tout == 0 )
-		smReadyTimeout = 120000;
+		smReadyTimeout = conf->getNCReadyTimeout();
 	else if( tout < 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 	else
