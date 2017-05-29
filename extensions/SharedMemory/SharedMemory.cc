@@ -158,7 +158,7 @@ namespace uniset
 
 		evntPause = conf->getArgPInt("--e-startup-pause", 5000);
 
-		activateTimeout = conf->getArgPInt("--activate-timeout", 90000);
+		activateTimeout = conf->getArgPInt("--activate-timeout", 120000);
 
 		sidPulsar = DefaultObjectId;
 		string p = conf->getArgParam("--pulsar-id", it.getProp("pulsar_id"));

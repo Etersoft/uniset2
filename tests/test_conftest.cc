@@ -79,6 +79,7 @@ TEST_CASE( "Configuration", "[Configuration]" )
 		REQUIRE( conf->getCountOfNet() == 1 );
 		REQUIRE( conf->getRepeatCount() == 3 );
 		REQUIRE( conf->getRepeatTimeout() == 50 );
+		REQUIRE( conf->getStartupIgnoreTimeout() == 6000 );
 	}
 
 	SECTION( "Empty Constructor" )

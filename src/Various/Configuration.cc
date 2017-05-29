@@ -687,6 +687,20 @@ namespace uniset
 			else if( ncreadytimeout_msec == 0 )
 				ncreadytimeout_msec = 180000;
 		}
+
+		// startup ingore timeout init...
+		cnode = getNode("StartUpIgnoreTimeout");
+
+		if( cnode )
+		{
+			UniXML::iterator hit(cnode);
+			startupIgnoretimeout_msec = hit.getIntProp("msec");
+
+			if( startupIgnoretimeout_msec < 0 )
+				startupIgnoretimeout_msec = UniSetTimer::WaitUpTime;
+			else if( startupIgnoretimeout_msec == 0 )
+				startupIgnoretimeout_msec = 5000;
+		}
 	}
 	// -------------------------------------------------------------------------
 	void Configuration::setLocalNode( const string& nodename )
@@ -1269,6 +1283,11 @@ namespace uniset
 	timeout_t Configuration::getNCReadyTimeout() const noexcept
 	{
 		return ncreadytimeout_msec;
+	}
+
+	timeout_t Configuration::getStartupIgnoreTimeout() const noexcept
+	{
+		return startupIgnoretimeout_msec;
 	}
 	// -------------------------------------------------------------------------
 	const string Configuration::getConfDir() const noexcept
