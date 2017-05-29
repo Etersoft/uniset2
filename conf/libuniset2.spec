@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt22
+Release: alt23
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -508,6 +508,10 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
+* Mon May 29 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt23
+- (Configuration): add getStartapIgnoreTimeout()
+- minor fixes
+
 * Mon May 29 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt22
 - set default sm-ready-timeout to 120000 msec (2 min)
 - changed raise(SIGTERM) --> std::terminate()
