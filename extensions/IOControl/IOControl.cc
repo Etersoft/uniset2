@@ -242,7 +242,7 @@ namespace uniset
 		int sm_tout = conf->getArgInt("--" + prefix + "-sm-ready-timeout", it.getProp("ready_timeout"));
 
 		if( sm_tout == 0 )
-			smReadyTimeout = 120000;
+			smReadyTimeout = conf->getNCReadyTimeout();
 		else if( sm_tout < 0 )
 			smReadyTimeout = UniSetTimer::WaitUpTime;
 		else

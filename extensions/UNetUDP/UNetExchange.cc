@@ -475,9 +475,9 @@ void UNetExchange::startReceivers()
 void UNetExchange::waitSMReady()
 {
 	// waiting for SM is ready...
-	int tout = uniset_conf()->getArgInt("--unet-sm-ready-timeout", "120000");
+	int tout = uniset_conf()->getArgPInt("--unet-sm-ready-timeout", "",uniset_conf()->getNCReadyTimeout());
 
-	timeout_t ready_timeout = 120000;
+	timeout_t ready_timeout = uniset_conf()->getNCReadyTimeout();
 
 	if( tout > 0 )
 		ready_timeout = tout;

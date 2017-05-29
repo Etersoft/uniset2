@@ -302,8 +302,8 @@ namespace uniset
 	void MBExchange::waitSMReady()
 	{
 		// waiting for SM is ready...
-		int tout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "120000");
-		timeout_t ready_timeout = 120000;
+		int tout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "");
+		timeout_t ready_timeout = uniset_conf()->getNCReadyTimeout();
 
 		if( tout > 0 )
 			ready_timeout = tout;
