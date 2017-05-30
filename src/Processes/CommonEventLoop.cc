@@ -15,6 +15,9 @@ namespace uniset
 
 		evprep.set(loop);
 		evprep.set<CommonEventLoop, &CommonEventLoop::onPrepare>(this);
+
+		evruntimer.set(loop);
+		evruntimer.set<CommonEventLoop, &CommonEventLoop::onLoopOK>(this);
 	}
 	// -------------------------------------------------------------------------
 	CommonEventLoop::~CommonEventLoop()
@@ -38,31 +41,15 @@ namespace uniset
 		if( thr )
 			return true;
 
-		bool defaultLoopOK = true;
+		thr = make_shared<std::thread>( [&] { CommonEventLoop::defaultLoop(); } );
 
-		std::promise<bool> pRun;
-		auto runOK = pRun.get_future();
-
-		thr = make_shared<std::thread>( [ &pRun, this ] { CommonEventLoop::defaultLoop(pRun); } );
-
-		// ожидание старта потока
-		while( true )
+		std::unique_lock<std::mutex> lock2(looprunOK_mutex);
+		looprunOK_event.wait_for(lock2, std::chrono::milliseconds(waitTimeout_msec), [&]()
 		{
-			auto status = runOK.wait_for(std::chrono::milliseconds(waitTimeout_msec));
-			if( status == future_status::timeout )
-			{
-				defaultLoopOK = false;
-				break;
-			}
+			return (looprunOK_state == true);
+		} );
 
-			if( status == future_status::ready )
-			{
-				defaultLoopOK = runOK.get();
-				break;
-			}
-		}
-
-		return defaultLoopOK;
+		return looprunOK_state;
 	}
 	// ---------------------------------------------------------------------------
 	bool CommonEventLoop::activateWatcher( EvWatcher* w, size_t waitTimeout_msec )
@@ -77,6 +64,9 @@ namespace uniset
 		}
 
 		bool ret = true;
+
+		if( !evprep.is_active() )
+			evprep.start();
 
 		// посылаем сигнал для обработки
 		evprep.send(); // будим default loop
@@ -99,6 +89,16 @@ namespace uniset
 		}
 
 		return ret;
+	}
+	// ---------------------------------------------------------------------------
+	void CommonEventLoop::onLoopOK( ev::timer& t, int revents ) noexcept
+	{
+		if( EV_ERROR & revents )
+			return;
+
+		looprunOK_state = true;
+		looprunOK_event.notify_all();
+		t.stop();
 	}
 	// ---------------------------------------------------------------------------
 	bool CommonEventLoop::evrun( EvWatcher* w, bool thread, size_t waitTimeout_msec )
@@ -249,14 +249,16 @@ namespace uniset
 	}
 	// -------------------------------------------------------------------------
 
-	void CommonEventLoop::defaultLoop( std::promise<bool>& runOK ) noexcept
+	void CommonEventLoop::defaultLoop() noexcept
 	{
 		evterm.start();
 		evprep.start();
 
-		isrunning = true;
+		// делаем очень маленькое время старта
+		// т.к. нам надо просто зафиксировать, что loop начал работать
+		evruntimer.start(0, 0.001);
 
-		runOK.set_value(true);
+		isrunning = true;
 
 		while( !cancelled )
 		{

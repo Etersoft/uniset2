@@ -182,7 +182,10 @@ int main( int argc, char** argv )
 
 		
 		if( !ls.isRunning() )
+		{
 			cerr << "LOG SERVER NOT RUNNING!!" << endl;
+			return 1;
+		}
 
 		unsigned int i = 0;
 

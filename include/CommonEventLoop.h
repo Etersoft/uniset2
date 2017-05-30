@@ -67,7 +67,7 @@ namespace uniset
 			 * Даже если thread = false, но wather не сможет быть "активирован" функция вернёт управление
 			 * с return false.
 			 */
-			bool evrun( EvWatcher* w, bool thread = true, size_t waitPrepareTimeout_msec = 5000);
+			bool evrun( EvWatcher* w, bool thread = true, size_t waitPrepareTimeout_msec = 60000);
 
 			/*! \return TRUE - если это был последний EvWatcher и loop остановлен */
 			bool evstop( EvWatcher* w );
@@ -86,9 +86,10 @@ namespace uniset
 
 			void onStop( ev::async& w, int revents ) noexcept;
 			void onPrepare( ev::async& w, int revents ) noexcept;
-			void defaultLoop( std::promise<bool>& runOK ) noexcept;
+			void defaultLoop() noexcept;
 			bool runDefaultLoop( size_t waitTimeout_msec );
 			bool activateWatcher( EvWatcher* w, size_t waitTimeout_msec );
+			void onLoopOK( ev::timer& t, int revents ) noexcept;
 
 			std::atomic_bool cancelled = { false };
 			std::atomic_bool isrunning = { false };
@@ -118,6 +119,11 @@ namespace uniset
 			std::queue<WatcherInfo> wactlist;
 			std::mutex wact_mutex;
 			ev::async evprep;
+
+			std::mutex              looprunOK_mutex;
+			std::condition_variable looprunOK_event;
+			std::atomic_bool looprunOK_state;
+			ev::timer evruntimer;
 	};
 	// -------------------------------------------------------------------------
 } // end of uniset namespace
