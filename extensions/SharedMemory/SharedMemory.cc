@@ -31,7 +31,7 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	void SharedMemory::help_print( int argc, const char* const* argv )
 	{
-		cout << "--smemory-id           - SharedMemeory ID" << endl;
+		cout << "--smemory-id           - SharedMemory ID" << endl;
 		cout << "--datfile fname        - Файл с картой датчиков. По умолчанию configure.xml" << endl;
 		cout << "--s-filter-field       - Фильтр для загрузки списка датчиков." << endl;
 		cout << "--s-filter-value       - Значение фильтра для загрузки списка датчиков." << endl;
@@ -156,7 +156,7 @@ namespace uniset
 		e_filter = conf->getArgParam("--e-filter");
 		buildEventList(confnode);
 
-		evntPause = conf->getArgPInt("--e-startup-pause", 5000);
+		evntPause = conf->getArgPInt("--e-startup-pause", 2000);
 
 		activateTimeout = conf->getArgPInt("--activate-timeout", 120000);
 
