@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt25
+Release: alt25.1
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
