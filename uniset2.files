@@ -143,6 +143,7 @@ extensions/ModbusSlave/tests/t.cc
 extensions/ModbusSlave/tests/test_mbslave.cc
 extensions/ModbusSlave/tests/tests_individual_process.cc
 extensions/ModbusSlave/tests/tests_with_sm.cc
+extensions/ModbusSlave/tests/mbslave_perf_test.cc
 extensions/ModbusSlave/epoll-test/mbslave-epoll.cc
 extensions/ModbusSlave/libUniSet2MBSlave.pc.in
 extensions/ModbusSlave/Makefile.am
