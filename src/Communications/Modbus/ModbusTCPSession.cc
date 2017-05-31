@@ -163,11 +163,12 @@ namespace uniset
 			ioTimeout.start(sessTimeout); // restart timer..
 	}
 	// -------------------------------------------------------------------------
-	void ModbusTCPSession::onTimeout( ev::timer& watcher, int revents )
+	void ModbusTCPSession::onTimeout( ev::timer& t, int revents )
 	{
 		if( dlog->is_info() )
 			dlog->info() << peername << ": timeout connection activity..(terminate session)" << endl;
 
+		t.stop();
 		terminate();
 	}
 	// -------------------------------------------------------------------------

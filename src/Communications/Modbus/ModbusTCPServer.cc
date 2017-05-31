@@ -312,8 +312,6 @@ namespace uniset
 			if( dlog->is_crit() )
 				dlog->crit() << myname << "(onTimer): " << ex.what() << endl;
 		}
-
-		t.start(tmTime); // restart timer
 	}
 	// -------------------------------------------------------------------------
 

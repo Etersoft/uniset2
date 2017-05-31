@@ -19,6 +19,7 @@ static struct option longopts[] =
 	{ "verbose", no_argument, 0, 'v' },
 	{ "delay", required_argument, 0, 'd' },
 	{ "max-sessions", required_argument, 0, 'm' },
+	{ "silent", no_argument, 0, 's' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -31,6 +32,7 @@ static void print_help()
 	printf("[-p|--port] port    - Bind port.\n");
 	printf("[-d|--delay] msec   - Delay for generate message. Default 5000.\n");
 	printf("[-m|--max-sessions] num - Maximum count sessions for server. Default: 5\n");
+	printf("[-s|--silent]       - Silent mode. Not write logs..\n");
 }
 // --------------------------------------------------------------------------
 int main( int argc, char** argv )
@@ -45,12 +47,13 @@ int main( int argc, char** argv )
 	//int tout = 2000;
 	timeout_t delay = 5000;
 	int msess = 5;
+	bool silent = false;
 
 	try
 	{
 		while(1)
 		{
-			opt = getopt_long(argc, argv, "hvi:p:d:m:", longopts, &optindex);
+			opt = getopt_long(argc, argv, "hvi:p:d:m:s", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -79,6 +82,10 @@ int main( int argc, char** argv )
 
 				case 'v':
 					verb = 1;
+					break;
+
+				case 's':
+					silent = true;
 					break;
 
 				case '?':
@@ -192,22 +199,25 @@ int main( int argc, char** argv )
 		while( true )
 			//        for( int n=0; n<2; n++ )
 		{
-			dlog->any() << "[" << ++i << "] Test message for log" << endl;
-			dlog->info() << ": dlog : INFO message" << endl;
-			dlog->warn() << ": dlog : WARN message" << endl;
-			dlog->crit() << ": dlog : CRIT message" << endl;
+			if( !silent )
+			{
+				dlog->any() << "[" << ++i << "] Test message for log" << endl;
+				dlog->info() << ": dlog : INFO message" << endl;
+				dlog->warn() << ": dlog : WARN message" << endl;
+				dlog->crit() << ": dlog : CRIT message" << endl;
 
-			dlog2->info() << ": dlog2: INFO message" << endl;
-			dlog2->warn() << ": dlog2: WARN message" << endl;
-			dlog2->crit() << ": dlog2: CRIT message" << endl;
+				dlog2->info() << ": dlog2: INFO message" << endl;
+				dlog2->warn() << ": dlog2: WARN message" << endl;
+				dlog2->crit() << ": dlog2: CRIT message" << endl;
 
-			dlog3->info() << ": dlog3: INFO message" << endl;
-			dlog3->warn() << ": dlog3: WARN message" << endl;
-			dlog3->crit() << ": dlog3: CRIT message" << endl;
+				dlog3->info() << ": dlog3: INFO message" << endl;
+				dlog3->warn() << ": dlog3: WARN message" << endl;
+				dlog3->crit() << ": dlog3: CRIT message" << endl;
 
-			dlog4->info() << ": dlog4: INFO message" << endl;
-			dlog4->warn() << ": dlog4: WARN message" << endl;
-			dlog4->crit() << ": dlog4: CRIT message" << endl;
+				dlog4->info() << ": dlog4: INFO message" << endl;
+				dlog4->warn() << ": dlog4: WARN message" << endl;
+				dlog4->crit() << ": dlog4: CRIT message" << endl;
+			}
 
 			msleep(delay);
 		}
