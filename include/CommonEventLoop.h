@@ -116,7 +116,7 @@ namespace uniset
 				std::promise<bool>& result;
 			};
 
-			std::queue<WatcherInfo> wactlist;
+			std::shared_ptr<WatcherInfo> wact_info = { nullptr };
 			std::mutex wact_mutex;
 			ev::async evprep;
 
