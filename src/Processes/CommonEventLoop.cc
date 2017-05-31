@@ -277,6 +277,7 @@ namespace uniset
 
 		evterm.stop();
 		evprep.stop();
+		evruntimer.stop();
 
 		term_notify = true;
 		term_event.notify_all();

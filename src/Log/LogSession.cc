@@ -568,7 +568,7 @@ namespace uniset
 		}
 	}
 	// -------------------------------------------------------------------------
-	void LogSession::onCmdTimeout( ev::timer& watcher, int revents ) noexcept
+	void LogSession::onCmdTimeout( ev::timer& t, int revents ) noexcept
 	{
 		if( EV_ERROR & revents )
 		{
@@ -578,11 +578,12 @@ namespace uniset
 			return;
 		}
 
+		t.stop();
 		io.set(ev::WRITE);
 		asyncEvent.start();
 	}
 	// -------------------------------------------------------------------------
-	void LogSession::onCheckConnectionTimer( ev::timer& watcher, int revents ) noexcept
+	void LogSession::onCheckConnectionTimer( ev::timer& t, int revents ) noexcept
 	{
 		if( EV_ERROR & revents )
 		{
@@ -595,10 +596,7 @@ namespace uniset
 		std::unique_lock<std::mutex> lk(logbuf_mutex);
 
 		if( !logbuf.empty() )
-		{
-			checkConnectionTimer.start( checkConnectionTime ); // restart timer
 			return;
-		}
 
 		// если клиент уже отвалился.. то при попытке write.. сессия будет закрыта.
 
@@ -612,7 +610,6 @@ namespace uniset
 		catch(...) {}
 
 		io.set(ev::WRITE);
-		checkConnectionTimer.start( checkConnectionTime ); // restart timer
 	}
 	// -------------------------------------------------------------------------
 	void LogSession::final() noexcept
