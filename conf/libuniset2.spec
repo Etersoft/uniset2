@@ -511,6 +511,9 @@ rm -f %buildroot%_libdir/*.la
 * Tue Sep 12 2017 Alexei Takaseev <taf@altlinux.org> 2.6-alt19.1
 - Rebuild with poco 1.7.9
 
+# * Wed May 31 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt24
+# - minor release
+
 # * Tue May 30 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt23.1
 # - CommonEventLoop refactring start process
 
