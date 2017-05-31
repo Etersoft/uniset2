@@ -54,16 +54,17 @@ namespace uniset
 	// ---------------------------------------------------------------------------
 	bool CommonEventLoop::activateWatcher( EvWatcher* w, size_t waitTimeout_msec )
 	{
+		std::lock_guard<std::mutex> l(wact_mutex);
+
 		std::promise<bool> p;
-		WatcherInfo winfo(w,p);
+		wact_info = std::make_shared<WatcherInfo>(w,p);
+
 		auto result = p.get_future();
 
-		{
-			std::unique_lock<std::mutex> l(wact_mutex);
-			wactlist.push(winfo);
-		}
-
 		bool ret = true;
+
+		if( !evprep.is_active() )
+			evprep.start();
 
 		// посылаем сигнал для обработки
 		evprep.send(); // будим default loop
@@ -88,6 +89,7 @@ namespace uniset
 			}
 		}
 
+		wact_info = nullptr;
 		return ret;
 	}
 	// ---------------------------------------------------------------------------
@@ -196,25 +198,18 @@ namespace uniset
 			return;
 		}
 
+		if( !wact_info )
+			return;
+
+		try
 		{
-			std::lock_guard<std::mutex> lock(wact_mutex);
-
-			while( !wactlist.empty() )
-			{
-				auto winf = wactlist.front();
-				wactlist.pop();
-
-				try
-				{
-					winf.watcher->evprepare(loop);
-					winf.result.set_value(true);
-				}
-				catch( std::exception& ex )
-				{
-					cerr << "(CommonEventLoop::onPrepare): evprepare err: " << ex.what() << endl;
-					winf.result.set_value(false);
-				}
-			}
+			wact_info->watcher->evprepare(loop);
+			wact_info->result.set_value(true);
+		}
+		catch( std::exception& ex )
+		{
+			cerr << "(CommonEventLoop::onPrepare): evprepare err: " << ex.what() << endl;
+			wact_info->result.set_value(false);
 		}
 	}
 	// -------------------------------------------------------------------------
