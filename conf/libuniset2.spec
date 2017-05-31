@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt23.1
+Release: alt24
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -508,6 +508,9 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
+* Wed May 31 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt24
+- minor release
+
 * Tue May 30 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt23.1
 - CommonEventLoop refactring start process
 
