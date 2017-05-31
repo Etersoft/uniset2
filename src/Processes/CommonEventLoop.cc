@@ -65,9 +65,6 @@ namespace uniset
 
 		bool ret = true;
 
-		if( !evprep.is_active() )
-			evprep.start();
-
 		// посылаем сигнал для обработки
 		evprep.send(); // будим default loop
 
@@ -83,8 +80,11 @@ namespace uniset
 
 			if( status == future_status::ready )
 			{
-				ret = result.get();
-				break;
+				if( result.valid() )
+				{
+					ret = result.get();
+					break;
+				}
 			}
 		}
 
@@ -201,7 +201,8 @@ namespace uniset
 
 			while( !wactlist.empty() )
 			{
-				auto&& winf = wactlist.front();
+				auto winf = wactlist.front();
+				wactlist.pop();
 
 				try
 				{
@@ -213,8 +214,6 @@ namespace uniset
 					cerr << "(CommonEventLoop::onPrepare): evprepare err: " << ex.what() << endl;
 					winf.result.set_value(false);
 				}
-
-				wactlist.pop();
 			}
 		}
 	}
