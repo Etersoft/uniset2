@@ -105,7 +105,7 @@ namespace uniset
 			void logOnEvent( const std::string& s ) noexcept;
 
 			timeout_t cmdTimeout = { 2000 };
-			float checkConnectionTime = { 10. }; // время на проверку живости соединения..(сек)
+			double checkConnectionTime = { 10. }; // время на проверку живости соединения..(сек)
 
 			// Т.к. сообщений может быть ОЧЕНЬ МНОГО.. сеть медленная
 			// очередь будет не успевать рассасываться,

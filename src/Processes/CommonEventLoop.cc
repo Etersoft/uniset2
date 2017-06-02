@@ -246,9 +246,9 @@ namespace uniset
 		evterm.start();
 		evprep.start();
 
-		// делаем очень маленькое время старта
+		// нам нужен "одноразовый таймер"
 		// т.к. нам надо просто зафиксировать, что loop начал работать
-		evruntimer.start(0, 0.001);
+		evruntimer.start(0);
 
 		isrunning = true;
 

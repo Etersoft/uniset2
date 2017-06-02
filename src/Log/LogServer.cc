@@ -70,7 +70,6 @@ namespace uniset
 	}
 	// -------------------------------------------------------------------------
 	LogServer::LogServer():
-		timeout(UniSetTimer::WaitUpTime),
 		cmdTimeout(2000),
 		sessLogLevel(Debug::NONE),
 		sock(nullptr),
