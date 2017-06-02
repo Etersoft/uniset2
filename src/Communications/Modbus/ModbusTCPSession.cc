@@ -102,7 +102,9 @@ namespace uniset
 	{
 		sessTimeout = t;
 
-		if( ioTimeout.is_active() )
+		if( t <= 0 )
+			ioTimeout.stop();
+		else if( ioTimeout.is_active() )
 			ioTimeout.start(t);
 	}
 	// -------------------------------------------------------------------------
@@ -123,7 +125,8 @@ namespace uniset
 		io.start(sock->getSocket(), ev::READ);
 
 		ioTimeout.set(loop);
-		ioTimeout.start(sessTimeout);
+		if( sessTimeout > 0 )
+			ioTimeout.start(sessTimeout);
 	}
 	// -------------------------------------------------------------------------
 	bool ModbusTCPSession::isActive() const
@@ -159,7 +162,7 @@ namespace uniset
 
 			terminate();
 		}
-		else
+		else if( sessTimeout > 0 )
 			ioTimeout.start(sessTimeout); // restart timer..
 	}
 	// -------------------------------------------------------------------------

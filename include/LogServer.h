@@ -150,7 +150,6 @@ namespace uniset
 
 		private:
 
-			timeout_t timeout = { UniSetTimer::WaitUpTime };
 			timeout_t cmdTimeout = { 2000 };
 			Debug::type sessLogLevel = { Debug::NONE };
 			size_t sessMaxCount = { 10 };
