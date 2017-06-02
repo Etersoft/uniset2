@@ -106,19 +106,14 @@ namespace uniset
 			std::mutex wlist_mutex;
 			std::vector<EvWatcher*> wlist;
 
-			// очередь wather-ов для инициализации (добавления в обработку)
-			struct WatcherInfo
-			{
-				WatcherInfo( EvWatcher* w, std::promise<bool>& p ):
-					watcher(w),result(p){}
-
-				EvWatcher* watcher;
-				std::promise<bool>& result;
-			};
-
-			std::shared_ptr<WatcherInfo> wact_info = { nullptr };
-			std::mutex wact_mutex;
+			// готовящийся Watcher..он может быть только один в единицу времени
+			// это гарантирует prep_mutex
+			EvWatcher* wprep = { nullptr };
 			ev::async evprep;
+			std::condition_variable prep_event;
+			std::mutex              prep_mutex;
+			std::atomic_bool prep_notify = { false };
+			
 
 			std::mutex              looprunOK_mutex;
 			std::condition_variable looprunOK_event;

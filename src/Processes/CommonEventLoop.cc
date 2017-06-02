@@ -54,42 +54,32 @@ namespace uniset
 	// ---------------------------------------------------------------------------
 	bool CommonEventLoop::activateWatcher( EvWatcher* w, size_t waitTimeout_msec )
 	{
-		std::lock_guard<std::mutex> l(wact_mutex);
+		// готовим "указатель" на объект требующий активации
+		std::unique_lock<std::mutex> locker(prep_mutex);
+		wprep = w;
 
-		std::promise<bool> p;
-		wact_info = std::make_shared<WatcherInfo>(w,p);
+		// взводим флаг
+		prep_notify = false;
 
-		auto result = p.get_future();
-
-		bool ret = true;
-
+		// посылаем сигнал для обработки
 		if( !evprep.is_active() )
 			evprep.start();
 
-		// посылаем сигнал для обработки
 		evprep.send(); // будим default loop
 
-		// ждём инициализации
-		while( true )
+		// ожидаем обработки evprepare (которая будет в defaultLoop)
+		prep_event.wait_for(locker, std::chrono::milliseconds(waitTimeout_msec), [ = ]()
 		{
-			auto status = result.wait_for(std::chrono::milliseconds(waitTimeout_msec));
-			if( status == future_status::timeout )
-			{
-				ret = false;
-				break;
-			}
+			return ( prep_notify == true );
+		} );
 
-			if( status == future_status::ready )
-			{
-				if( result.valid() )
-				{
-					ret = result.get();
-					break;
-				}
-			}
-		}
+		// сбрасываем флаг
+		prep_notify = false;
 
-		wact_info = nullptr;
+		// если wprep стал nullptr - значит evprepare отработал нормально
+		bool ret = ( wprep == nullptr );
+		wprep = nullptr;
+
 		return ret;
 	}
 	// ---------------------------------------------------------------------------
@@ -194,23 +184,31 @@ namespace uniset
 	{
 		if( EV_ERROR & revents )
 		{
-//			cerr << myname << "(CommonEventLoop::onPrepare): invalid event" << endl;
+			//			cerr << myname << "(CommonEventLoop::onPrepare): invalid event" << endl;
 			return;
 		}
 
-		if( !wact_info )
-			return;
+		prep_notify = false;
+		{
+			std::lock_guard<std::mutex> lock(prep_mutex);
 
-		try
-		{
-			wact_info->watcher->evprepare(loop);
-			wact_info->result.set_value(true);
+			if( wprep )
+			{
+				try
+				{
+					wprep->evprepare(loop);
+					wprep = nullptr;
+				}
+				catch( std::exception& ex )
+				{
+					cerr << "(CommonEventLoop::onPrepare): evprepare err: " << ex.what() << endl;
+				}
+			}
 		}
-		catch( std::exception& ex )
-		{
-			cerr << "(CommonEventLoop::onPrepare): evprepare err: " << ex.what() << endl;
-			wact_info->result.set_value(false);
-		}
+
+		// будим всех ожидающих..
+		prep_notify = true;
+		prep_event.notify_all();
 	}
 	// -------------------------------------------------------------------------
 	void CommonEventLoop::onStop( ev::async& aw, int revents ) noexcept
