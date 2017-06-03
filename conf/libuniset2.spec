@@ -511,6 +511,9 @@ rm -f %buildroot%_libdir/*.la
 * Tue Sep 12 2017 Alexei Takaseev <taf@altlinux.org> 2.6-alt19.1
 - Rebuild with poco 1.7.9
 
+# * Sat Jun 03 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt32
+# - refactoring function names
+
 # * Sat Jun 03 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt31
 # - (EventLoopServer): refactoring start process
 

@@ -182,7 +182,7 @@ int main( int argc, char** argv )
 		dlog3->addLevel(Debug::ANY);
 		dlog4->addLevel(Debug::ANY);
 
-		ls.run( addr, port, true );
+		ls.async_run( addr, port );
 		
 		if( verb )
 			ls.setSessionLog(Debug::ANY);

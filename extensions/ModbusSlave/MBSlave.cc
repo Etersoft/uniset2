@@ -654,7 +654,7 @@ namespace uniset
 		{
 			try
 			{
-				if( tcpserver->run( vaddr, true ) )
+				if( tcpserver->async_run(vaddr) )
 					break;
 
 				if( tcpBreakIfFailRun )
@@ -901,7 +901,7 @@ namespace uniset
 				if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
 				{
 					mbinfo << myname << "(init): run log server " << logserv_host << ":" << logserv_port << endl;
-					logserv->run(logserv_host, logserv_port, true);
+					logserv->async_run(logserv_host, logserv_port);
 				}
 
 				waitSMReady();

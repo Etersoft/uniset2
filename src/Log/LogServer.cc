@@ -111,7 +111,7 @@ namespace uniset
 			mylog.info() << myname << "(LogServer): finished." << endl;
 	}
 	// -------------------------------------------------------------------------
-	void LogServer::run(const std::string& _addr, Poco::UInt16 _port, bool thread )
+	bool LogServer::run( const std::string& _addr, Poco::UInt16 _port )
 	{
 		addr = _addr;
 		port = _port;
@@ -122,7 +122,20 @@ namespace uniset
 			myname = s.str();
 		}
 
-		loop.evrun(this, thread);
+		return loop.evrun(this);
+	}
+	// -------------------------------------------------------------------------
+	bool LogServer::async_run( const std::string& _addr, Poco::UInt16 _port )
+	{
+		addr = _addr;
+		port = _port;
+
+		{
+			ostringstream s;
+			s << _addr << ":" << _port;
+			myname = s.str();
+		}
+		return loop.async_evrun(this);
 	}
 	// -------------------------------------------------------------------------
 	void LogServer::terminate()

@@ -81,10 +81,16 @@ namespace uniset
 		sessTimeout = msec;
 	}
 	// -------------------------------------------------------------------------
-	bool ModbusTCPServer::run( const std::unordered_set<ModbusAddr>& _vmbaddr, bool thread )
+	bool ModbusTCPServer::run( const std::unordered_set<ModbusAddr>& _vmbaddr )
 	{
 		vmbaddr = &_vmbaddr;
-		return evrun(thread);
+		return evrun();
+	}
+	// -------------------------------------------------------------------------
+	bool ModbusTCPServer::async_run( const std::unordered_set<ModbusAddr>& _vmbaddr )
+	{
+		vmbaddr = &_vmbaddr;
+		return async_evrun();
 	}
 	// -------------------------------------------------------------------------
 	bool ModbusTCPServer::isActive() const

@@ -491,7 +491,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 				{
 					ostate = "StartUp: run log server...";
 					myinfo &lt;&lt; myname &lt;&lt; "(preSysCommand): run log server " &lt;&lt; logserv_host &lt;&lt; ":" &lt;&lt; logserv_port &lt;&lt; endl;
-					logserv-&gt;run(logserv_host, logserv_port, true);
+					logserv-&gt;async_run(logserv_host, logserv_port);
 				}
 			}
 			catch( std::exception&amp; ex )
