@@ -22,18 +22,18 @@ namespace uniset
 			evstop();
 	}
 	// ---------------------------------------------------------------------------
-	bool EventLoopServer::evrun( bool thread, size_t timeout_msec )
+	bool EventLoopServer::evrun()
 	{
-		if( isrunning )
+		defaultLoop(); // <-- здесь бесконечный цикл..
+		return false;
+	}
+	// ---------------------------------------------------------------------------
+	bool EventLoopServer::async_evrun( size_t timeout_msec )
+	{
+		if( isactive )
 			return true;
 
-		isrunning = true;
-
-		if( !thread )
-		{
-			defaultLoop(); // <-- здесь бесконечный цикл..
-			return false;
-		}
+		isactive = true;
 
 		if( !thr )
 			thr = make_shared<std::thread>( [&] { defaultLoop(); } );
@@ -111,10 +111,10 @@ namespace uniset
 			cerr << "(EventLoopServer::defaultLoop): " << ex.what() << endl;
 		}
 
-		looprunOK_state = false;
+		isrunning = false;
 		looprunOK_event.notify_all();
 
-		isrunning = false;
+		isactive = false;
 	}
 	// -------------------------------------------------------------------------
 	bool EventLoopServer::waitDefaultLoopRunning( size_t waitTimeout_msec )
@@ -122,10 +122,10 @@ namespace uniset
 		std::unique_lock<std::mutex> lock(looprunOK_mutex);
 		looprunOK_event.wait_for(lock, std::chrono::milliseconds(waitTimeout_msec), [&]()
 		{
-			return (looprunOK_state == true);
+			return (isrunning == true);
 		} );
 
-		return looprunOK_state;
+		return isrunning;
 	}
 	// -------------------------------------------------------------------------
 	void EventLoopServer::onLoopOK( ev::timer& t, int revents ) noexcept
@@ -133,7 +133,7 @@ namespace uniset
 		if( EV_ERROR & revents )
 			return;
 
-		looprunOK_state = true;
+		isrunning = true;
 		looprunOK_event.notify_all();
 		t.stop();
 	}

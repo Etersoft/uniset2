@@ -33,8 +33,18 @@ namespace uniset
 			virtual void evprepare() {}
 
 			// Управление потоком событий
-			bool evrun( bool thread = true, size_t waitRunningTimeout_msec = 60000 );
-			void evstop();
+
+			/*! асинхронный запуск (создаётся отдельный поток)
+			 * \return true - если всё хорошо
+			 */
+			bool async_evrun( size_t waitRunningTimeout_msec = 60000 );
+
+			/*! синхронный запуск
+			 * функция вернёт управление, только в случае неудачного запуска
+			 */
+			bool evrun();
+
+			void evstop(); /*!< остановить раннее запущенный поток (event loop) */
 
 			ev::dynamic_loop loop;
 
@@ -46,14 +56,14 @@ namespace uniset
 			void onLoopOK( ev::timer& t, int revents ) noexcept;
 
 			std::atomic_bool cancelled = { false };
-			std::atomic_bool isrunning = { false };
+			std::atomic_bool isactive = { false };
 
 			ev::async evterm;
 			std::shared_ptr<std::thread> thr;
 
 			std::mutex              looprunOK_mutex;
 			std::condition_variable looprunOK_event;
-			std::atomic_bool looprunOK_state;
+			std::atomic_bool isrunning;
 			ev::timer evruntimer;
 	};
 	// -------------------------------------------------------------------------

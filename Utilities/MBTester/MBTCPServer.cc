@@ -75,7 +75,7 @@ void MBTCPServer::setMaxSessions( size_t max )
 // -------------------------------------------------------------------------
 void MBTCPServer::execute()
 {
-	sslot->run( vaddr, false );
+	sslot->run(vaddr);
 }
 // -------------------------------------------------------------------------
 void MBTCPServer::sigterm( int signo )

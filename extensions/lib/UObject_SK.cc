@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2017-05-29+03:00
+// generate timestamp: 2017-06-03+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -429,7 +429,7 @@ void UObject_SK::preSysCommand( const SystemMessage* _sm )
 				{
 					ostate = "StartUp: run log server...";
 					myinfo << myname << "(preSysCommand): run log server " << logserv_host << ":" << logserv_port << endl;
-					logserv->run(logserv_host, logserv_port, true);
+					logserv->async_run(logserv_host, logserv_port);
 				}
 			}
 			catch( std::exception& ex )

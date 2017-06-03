@@ -46,10 +46,10 @@ namespace uniset
 		std::unique_lock<std::mutex> lock2(looprunOK_mutex);
 		looprunOK_event.wait_for(lock2, std::chrono::milliseconds(waitTimeout_msec), [&]()
 		{
-			return (looprunOK_state == true);
+			return (isrunning == true);
 		} );
 
-		return looprunOK_state;
+		return isrunning;
 	}
 	// ---------------------------------------------------------------------------
 	bool CommonEventLoop::activateWatcher( EvWatcher* w, size_t waitTimeout_msec )
@@ -88,12 +88,12 @@ namespace uniset
 		if( EV_ERROR & revents )
 			return;
 
-		looprunOK_state = true;
+		isrunning = true;
 		looprunOK_event.notify_all();
 		t.stop();
 	}
 	// ---------------------------------------------------------------------------
-	bool CommonEventLoop::evrun( EvWatcher* w, bool thread, size_t waitTimeout_msec )
+	bool CommonEventLoop::evrun( EvWatcher* w, size_t waitTimeout_msec )
 	{
 		if( w == nullptr )
 			return false;
@@ -113,9 +113,8 @@ namespace uniset
 		bool defaultLoopOK = runDefaultLoop(waitTimeout_msec);
 		bool ret = defaultLoopOK && activateWatcher(w, waitTimeout_msec);
 
-		// если ждать завершения не надо (thread=true)
 		// или activateWatcher не удалось.. выходим..
-		if( thread || !ret )
+		if( !ret )
 			return ret;
 
 		// ожидаем завершения основного потока..
@@ -128,6 +127,27 @@ namespace uniset
 			thr->join();
 
 		return true;
+	}
+	// ---------------------------------------------------------------------------
+	bool CommonEventLoop::async_evrun( EvWatcher* w, size_t waitTimeout_msec )
+	{
+		if( w == nullptr )
+			return false;
+
+		{
+			std::lock_guard<std::mutex> lck(wlist_mutex);
+
+			if( std::find(wlist.begin(), wlist.end(), w) != wlist.end() )
+			{
+				cerr << "(CommonEventLoop::evrun): " << w->wname() << " ALREADY ADDED.." << endl;
+				return false;
+			}
+
+			wlist.push_back(w);
+		}
+
+		bool defaultLoopOK = runDefaultLoop(waitTimeout_msec);
+		return defaultLoopOK && activateWatcher(w, waitTimeout_msec);
 	}
 	// ---------------------------------------------------------------------------
 	bool CommonEventLoop::evIsActive() const noexcept
@@ -249,8 +269,6 @@ namespace uniset
 		// нам нужен "одноразовый таймер"
 		// т.к. нам надо просто зафиксировать, что loop начал работать
 		evruntimer.start(0);
-
-		isrunning = true;
 
 		while( !cancelled )
 		{

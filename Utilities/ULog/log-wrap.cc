@@ -80,7 +80,7 @@ int main( int argc, char* argv[], char* envp[] )
 				LogServer ls(zlog);
 
 				cout << "wrap: server " << addr << ":" << port << endl;
-				ls.run( addr, port, true );
+				ls.async_run( addr, port );
 
 				char buf[5000];
 

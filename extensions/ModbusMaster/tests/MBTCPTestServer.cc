@@ -97,7 +97,7 @@ void MBTCPTestServer::setLog( std::shared_ptr<DebugStream> dlog )
 void MBTCPTestServer::execute()
 {
 	if( sslot )
-		sslot->run( vaddr, true );
+		sslot->async_run( vaddr );
 }
 // -------------------------------------------------------------------------
 void MBTCPTestServer::sigterm( int signo )

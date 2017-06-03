@@ -112,7 +112,9 @@ namespace uniset
 				sessMaxCount = num;
 			}
 
-			void run( const std::string& addr, Poco::UInt16 port, bool thread = true );
+			bool async_run( const std::string& addr, Poco::UInt16 port );
+			bool run( const std::string& addr, Poco::UInt16 port );
+
 			void terminate();
 
 			inline bool isRunning() const noexcept

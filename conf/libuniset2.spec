@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt31
+Release: alt32
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -508,6 +508,9 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
+* Sat Jun 03 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt32
+- refactoring function names
+
 * Sat Jun 03 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt31
 - (EventLoopServer): refactoring start process
 

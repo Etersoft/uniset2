@@ -34,11 +34,19 @@ namespace uniset
 			ModbusTCPServer( const std::string& addr, int port = 502 );
 			virtual ~ModbusTCPServer();
 
-			/*! Запуск сервера
-			 * \param thread - создавать ли отдельный поток
+			/*! Запуск сервера. Функция не возвращет управление.
+			 * Но может быть прервана вызовом terminate()
+			 * \return FALSE - если не удалось запустить
+			 */
+			bool run( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr );
+
+			/*! Асинхронный запуск сервера (создаётся отдельный поток)
 			 * \return TRUE - если поток успешно удалось запустить
 			 */
-			bool run( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, bool thread = false );
+			bool async_run( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr );
+
+			/*! остановить поток выполнения (см. run или async_run) */
+			virtual void terminate();
 
 			virtual bool isActive() const override;
 
@@ -66,8 +74,6 @@ namespace uniset
 			{
 				return ignoreAddr;
 			}
-
-			virtual void terminate();
 
 			// Сбор статистики по соединениям...
 			struct SessionInfo

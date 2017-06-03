@@ -596,7 +596,7 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
 				try
 				{
 					unetinfo << myname << "(init): run log server " << logserv_host << ":" << logserv_port << endl;
-					logserv->run(logserv_host, logserv_port, true);
+					logserv->async_run(logserv_host, logserv_port);
 				}
 				catch( std::exception& ex )
 				{

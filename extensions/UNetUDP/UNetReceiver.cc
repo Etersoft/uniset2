@@ -229,7 +229,7 @@ void UNetReceiver::start()
 	if( !activated )
 	{
 		activated = true;
-		if( !loop.evrun(this, true, evrunTimeout) )
+		if( !loop.async_evrun(this, evrunTimeout) )
 		{
 			unetcrit << myname << "(start): evrun FAILED! (timeout=" << evrunTimeout << " msec)" << endl;
 			std::terminate();
@@ -251,7 +251,6 @@ void UNetReceiver::evprepare( const ev::loop_ref& eloop ) noexcept
 	if( upStrategy == useUpdateEventLoop )
 	{
 		evUpdate.set(eloop);
-		evUpdate.start();
 		evUpdate.start( 0, ((float)updatepause / 1000.) );
 	}
 
