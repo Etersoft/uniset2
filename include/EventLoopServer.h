@@ -33,7 +33,7 @@ namespace uniset
 			virtual void evprepare() {}
 
 			// Управление потоком событий
-			bool evrun( bool thread = true );
+			bool evrun( bool thread = true, size_t waitRunningTimeout_msec = 60000 );
 			void evstop();
 
 			ev::dynamic_loop loop;
@@ -41,13 +41,20 @@ namespace uniset
 		private:
 
 			void onStop() noexcept;
-			void defaultLoop( std::promise<bool>& prepareOK ) noexcept;
+			void defaultLoop() noexcept;
+			bool waitDefaultLoopRunning( size_t waitTimeout_msec );
+			void onLoopOK( ev::timer& t, int revents ) noexcept;
 
 			std::atomic_bool cancelled = { false };
 			std::atomic_bool isrunning = { false };
 
 			ev::async evterm;
 			std::shared_ptr<std::thread> thr;
+
+			std::mutex              looprunOK_mutex;
+			std::condition_variable looprunOK_event;
+			std::atomic_bool looprunOK_state;
+			ev::timer evruntimer;
 	};
 	// -------------------------------------------------------------------------
 } // end of uniset namespace
