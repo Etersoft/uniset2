@@ -27,7 +27,7 @@ int main( int argc, const char** argv )
 
 		for( int i = 1; i <= num; i++)
 		{
-//			auto mbs = MBSlave::init_mbslave(argc, argv, shm->getId(), shm, "mbs");
+			//			auto mbs = MBSlave::init_mbslave(argc, argv, shm->getId(), shm, "mbs");
 			ostringstream s;
 			s << "MBTCP" << i;
 
@@ -36,7 +36,7 @@ int main( int argc, const char** argv )
 			ostringstream p;
 			p << "mbs" << i;
 
-			auto mbs = make_shared<MBSlave>( conf->getObjectID(s.str()),shm->getId(), shm, p.str());
+			auto mbs = make_shared<MBSlave>( conf->getObjectID(s.str()), shm->getId(), shm, p.str());
 
 			if( !mbs )
 			{

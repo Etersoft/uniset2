@@ -225,6 +225,7 @@ bool SQLiteInterface::isConnection() const
 DBResult SQLiteInterface::makeResult( sqlite3_stmt* s, bool finalize )
 {
 	DBResult result;
+
 	if( !s )
 	{
 		if( finalize )
@@ -253,9 +254,10 @@ DBResult SQLiteInterface::makeResult( sqlite3_stmt* s, bool finalize )
 
 			if( p )
 			{
-				const char* cname = (const char*)sqlite3_column_name(s,i);
+				const char* cname = (const char*)sqlite3_column_name(s, i);
+
 				if( cname )
-					result.setColName(i,cname);
+					result.setColName(i, cname);
 
 				c.emplace_back(p);
 			}

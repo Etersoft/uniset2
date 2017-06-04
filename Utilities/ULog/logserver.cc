@@ -183,11 +183,11 @@ int main( int argc, char** argv )
 		dlog4->addLevel(Debug::ANY);
 
 		ls.async_run( addr, port );
-		
+
 		if( verb )
 			ls.setSessionLog(Debug::ANY);
 
-		
+
 		if( !ls.isRunning() )
 		{
 			cerr << "LOG SERVER NOT RUNNING!!" << endl;
@@ -218,7 +218,7 @@ int main( int argc, char** argv )
 				dlog4->warn() << ": dlog4: WARN message" << endl;
 				dlog4->crit() << ": dlog4: CRIT message" << endl;
 			}
-			
+
 			msleep(delay);
 		}
 	}

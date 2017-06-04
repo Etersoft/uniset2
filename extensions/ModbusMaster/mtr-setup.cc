@@ -278,7 +278,7 @@ int main( int argc, char** argv )
 		{
 			auto mbtcp = new ModbusTCPMaster();
 			mbtcp->connect(iaddr, port);
-//			mbtcp->setForceDisconnect(!persist);
+			//			mbtcp->setForceDisconnect(!persist);
 			mb = mbtcp;
 		}
 		else
@@ -323,6 +323,7 @@ int main( int argc, char** argv )
 						cout << "(mtr-setup): save: autodetect speed... (addr=" << ModbusRTU::addr2str(slaveaddr) << ")" << endl;
 
 					auto mbrtu = dynamic_cast<ModbusRTUMaster*>(mb);
+
 					if( mbrtu )
 					{
 						mb->setTimeout(50);

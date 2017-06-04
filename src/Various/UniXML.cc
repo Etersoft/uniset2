@@ -213,16 +213,18 @@ void UniXML::setProp(xmlNode* node, const string& name, const string& text )
 UniXMLPropList UniXML::getPropList( xmlNode* node )
 {
 	UniXMLPropList lst;
+
 	if( !node )
 		return lst;
 
 	xmlAttr* attribute = node->properties;
+
 	while( attribute )
 	{
 		xmlChar* value = ::xmlNodeListGetString(node->doc, attribute->children, 1);
 		const std::string nm( (const char*)attribute->name );
 		const std::string val( (const char*)value );
-		lst.push_back( {nm,val} );
+		lst.push_back( {nm, val} );
 		xmlFree(value);
 		attribute = attribute->next;
 	}
@@ -651,7 +653,7 @@ UniXML_iterator& UniXML_iterator::operator++() noexcept
 UniXML_iterator UniXML_iterator::operator++(int) noexcept
 {
 	UniXML_iterator temp(*this);
-	(*this) = (*this)+1;
+	(*this) = (*this) + 1;
 	return temp;
 }
 // -------------------------------------------------------------------------
@@ -683,7 +685,7 @@ UniXML_iterator& UniXML_iterator::operator+(int step) noexcept
 UniXML_iterator UniXML_iterator::operator--(int) noexcept
 {
 	UniXML_iterator temp(*this);
-	(*this) = (*this)-1;
+	(*this) = (*this) - 1;
 	return temp;
 }
 

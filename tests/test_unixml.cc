@@ -179,13 +179,13 @@ TEST_CASE("UniXML::iterator::getPropList", "[unixml][iterator-proplist][basic]" 
 	std::ostringstream n;
 	std::ostringstream v;
 
-	for( size_t i=0; i<5; i++ )
+	for( size_t i = 0; i < 5; i++ )
 	{
 		n.str("");
-		n << "prop" << (i+1);
+		n << "prop" << (i + 1);
 
 		v.str("");
-		v << "val" << (i+1);
+		v << "val" << (i + 1);
 
 		REQUIRE( lst[i].first == n.str() );
 		REQUIRE( lst[i].second == v.str() );

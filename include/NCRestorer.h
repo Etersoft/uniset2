@@ -165,7 +165,10 @@ namespace uniset
 
 			virtual void dump(const IONotifyController* ic, std::shared_ptr<NCRestorer::SInfo>& inf, const IONotifyController::ConsumerListInfo& lst) override;
 			virtual void dumpThreshold(const IONotifyController* ic, std::shared_ptr<NCRestorer::SInfo>& inf, const IONotifyController::ThresholdExtList& lst) override;
-			virtual bool readOnly() const { return true; }
+			virtual bool readOnly() const
+			{
+				return true;
+			}
 
 		protected:
 

@@ -50,7 +50,7 @@ namespace uniset
 	{
 		//    cout << getType() << "(" << myid << "):  input " << num << " set " << state << endl;
 
-		for( auto&& it : ins )
+		for( auto && it : ins )
 		{
 			if( it.num == num )
 			{
@@ -67,7 +67,7 @@ namespace uniset
 
 		// проверяем изменился ли выход
 		// для тригера 'OR' проверка до первой единицы
-		for( auto&& it : ins )
+		for( auto && it : ins )
 		{
 			if( it.value )
 			{

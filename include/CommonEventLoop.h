@@ -116,7 +116,7 @@ namespace uniset
 			std::condition_variable prep_event;
 			std::mutex              prep_mutex;
 			std::atomic_bool prep_notify = { false };
-			
+
 
 			std::mutex              looprunOK_mutex;
 			std::condition_variable looprunOK_event;

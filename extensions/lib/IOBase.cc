@@ -247,7 +247,7 @@ namespace uniset
 					}
 
 					if( !it->noprecision && it->cal.precision != 0 )
-						val = lround( val*pow10(it->cal.precision) );
+						val = lround( val * pow10(it->cal.precision) );
 				}
 			} // end of 'check_depend'
 

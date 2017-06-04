@@ -30,7 +30,7 @@ namespace uniset
 	{
 
 		public:
-			TA2D( Element::ElementID id, long filterValue=1 );
+			TA2D( Element::ElementID id, long filterValue = 1 );
 			virtual ~TA2D();
 
 			/*! num игнорируется, т.к. элемент с одним входом */

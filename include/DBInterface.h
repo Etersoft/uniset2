@@ -112,10 +112,10 @@ namespace uniset
 	// ----------------------------------------------------------------------------------
 	class DBRowIterator:
 		public std::iterator<std::bidirectional_iterator_tag,
-			DBResult::ROW::value_type,
-			DBResult::ROW::difference_type,
-			DBResult::ROW::pointer,
-			DBResult::ROW::reference>
+		DBResult::ROW::value_type,
+		DBResult::ROW::difference_type,
+		DBResult::ROW::pointer,
+		DBResult::ROW::reference>
 	{
 
 		public:

@@ -723,13 +723,16 @@ namespace uniset
 	{
 		// проверяем доступность endPoint попыткой создать соединение
 		auto ep = omni::giopEndpoint::str2Endpoint( endPoint.c_str() );
+
 		if( !ep )
 			return false;
 
 		bool ret = false;
+
 		try
 		{
 			ret = ep->Bind();
+
 			if( ret )
 				ep->Shutdown();
 		}
@@ -1240,6 +1243,7 @@ namespace uniset
 	ObjectId Configuration::getAnyID( const string& name ) const noexcept
 	{
 		ObjectId id = DefaultObjectId;
+
 		if( uniset::is_digit(name) )
 			return uni_atoi(name);
 

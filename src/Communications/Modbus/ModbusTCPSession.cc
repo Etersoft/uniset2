@@ -125,6 +125,7 @@ namespace uniset
 		io.start(sock->getSocket(), ev::READ);
 
 		ioTimeout.set(loop);
+
 		if( sessTimeout > 0 )
 			ioTimeout.start(sessTimeout);
 	}
