@@ -255,6 +255,7 @@ void UNetReceiver::start()
 	if( !activated )
 	{
 		activated = true;
+
 		if( !loop.async_evrun(this, evrunTimeout) )
 		{
 			unetcrit << myname << "(start): evrun FAILED! (timeout=" << evrunTimeout << " msec)" << endl;
