@@ -153,6 +153,7 @@ NCRestorer::SInfo& NCRestorer::SInfo::operator=( const IOController_i::SensorIOI
 
 	{
 		uniset_rwmutex_wrlock l(this->userdata_lock);
+
 		for( size_t i = 0; i < IOController::USensorInfo::MaxUserData; i++ )
 			this->userdata[i] = nullptr;
 	}

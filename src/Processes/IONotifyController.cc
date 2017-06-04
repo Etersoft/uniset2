@@ -79,6 +79,7 @@ IONotifyController::~IONotifyController()
 void IONotifyController::showStatisticsForConsumer( ostringstream& inf, const std::string& consumer )
 {
 	ObjectId consumer_id = uniset_conf()->getObjectID(consumer);
+
 	if( consumer_id == DefaultObjectId )
 		consumer_id = uniset_conf()->getControllerID(consumer);
 
@@ -94,7 +95,7 @@ void IONotifyController::showStatisticsForConsumer( ostringstream& inf, const st
 	// Формируем статистику по каждому датчику..
 	struct StatInfo
 	{
-		StatInfo( ObjectId id, const ConsumerInfoExt& c ):inf(c),sid(id){}
+		StatInfo( ObjectId id, const ConsumerInfoExt& c ): inf(c), sid(id) {}
 
 		const ConsumerInfoExt inf;
 		ObjectId sid;
@@ -105,12 +106,13 @@ void IONotifyController::showStatisticsForConsumer( ostringstream& inf, const st
 	// общее количество SensorMessage полученное этим заказчиком
 	size_t smCount = 0;
 
-	{ // lock askIOMutex
+	{
+		// lock askIOMutex
 
 		// выводим информацию по конкретному объекту
 		uniset_rwmutex_rlock lock(askIOMutex);
 
-		for( auto&& a : askIOList )
+		for( auto && a : askIOList )
 		{
 			auto& i = a.second;
 
@@ -124,7 +126,7 @@ void IONotifyController::showStatisticsForConsumer( ostringstream& inf, const st
 			{
 				if( c.id == consumer_id )
 				{
-					stat.emplace_back(a.first,c);
+					stat.emplace_back(a.first, c);
 					smCount += c.smCount;
 					break;
 				}
@@ -136,20 +138,22 @@ void IONotifyController::showStatisticsForConsumer( ostringstream& inf, const st
 		// выводим информацию по конкретному объекту
 		uniset_rwmutex_rlock lock(trshMutex);
 
-		for( auto&& a: askTMap )
+		for( auto && a : askTMap )
 		{
 			uniset_rwmutex_rlock lock2(a.second.mut);
-			for( auto&& t: a.second.list )
+
+			for( auto && t : a.second.list )
 			{
 				uniset_rwmutex_rlock lock3(t.clst.mut);
-				for( const auto& c: t.clst.clst )
+
+				for( const auto& c : t.clst.clst )
 				{
 					if( c.id == consumer_id )
 					{
 						if( t.sid != DefaultObjectId )
-							stat.emplace_back(t.sid,c);
+							stat.emplace_back(t.sid, c);
 						else
-							stat.emplace_back(a.first,c);
+							stat.emplace_back(a.first, c);
 
 						smCount += c.smCount;
 						break;
@@ -175,7 +179,7 @@ void IONotifyController::showStatisticsForConsumer( ostringstream& inf, const st
 
 		auto oind = uniset_conf()->oind;
 
-		for( const auto& s: stat )
+		for( const auto& s : stat )
 		{
 			inf << "        " << "(" << setw(6) << s.sid << ") "
 				<< setw(35) << ORepHelpers::getShortName(oind->getMapName(s.sid))
@@ -208,6 +212,7 @@ void IONotifyController::showStatisticsForLostConsumers( ostringstream& inf )
 		<< endl;
 
 	auto oind = uniset_conf()->oind;
+
 	for( const auto& l : lostConsumers )
 	{
 		inf << "        " << "(" << setw(6) << l.first << ") "
@@ -223,7 +228,7 @@ void IONotifyController::showStatisticsForConsusmers( ostringstream& inf )
 
 	auto oind = uniset_conf()->oind;
 
-	for( auto&& a : askIOList )
+	for( auto && a : askIOList )
 	{
 		auto& i = a.second;
 
@@ -234,6 +239,7 @@ void IONotifyController::showStatisticsForConsusmers( ostringstream& inf )
 			continue;
 
 		inf << "(" << setw(6) << a.first << ")[" << oind->getMapName(a.first) << "]" << endl;
+
 		for( const auto& c : i.clst )
 		{
 			inf << "        " << "(" << setw(6) << c.id << ")"
@@ -255,7 +261,7 @@ void IONotifyController::showStatisticsForConsumersWithLostEvent( ostringstream&
 	auto oind = uniset_conf()->oind;
 	bool empty = true;
 
-	for( auto&& a : askIOList )
+	for( auto && a : askIOList )
 	{
 		auto& i = a.second;
 
@@ -316,6 +322,7 @@ void IONotifyController::showStatisticsForSensor( ostringstream& inf, const stri
 	auto oind = conf->oind;
 
 	ObjectId sid = conf->getSensorID(name);
+
 	if( sid == DefaultObjectId )
 	{
 		inf << "..not found ID for sensor '" << name << "'" << endl;
@@ -327,6 +334,7 @@ void IONotifyController::showStatisticsForSensor( ostringstream& inf, const stri
 	{
 		uniset_rwmutex_rlock lock(askIOMutex);
 		auto s = askIOList.find(sid);
+
 		if( s == askIOList.end() )
 		{
 			inf << "..not found consumers for sensor '" << name << "'" << endl;
@@ -341,7 +349,8 @@ void IONotifyController::showStatisticsForSensor( ostringstream& inf, const stri
 		<< "--------------------------------------------------------------------" << endl;
 
 	uniset_rwmutex_rlock lock2(clist->mut);
-	for( const auto& c: clist->clst )
+
+	for( const auto& c : clist->clst )
 	{
 		inf << "        (" << setw(6) << c.id << ")"
 			<< setw(35) << ORepHelpers::getShortName(oind->getMapName(c.id))
@@ -391,7 +400,8 @@ SimpleInfo* IONotifyController::getInfo( const char* userparam )
 	}
 	else if( !param.empty() )
 	{
-		auto query = uniset::explode_str(param,':');
+		auto query = uniset::explode_str(param, ':');
+
 		if( query.empty() || query.size() == 1 )
 			showStatisticsForConsumer(inf, param);
 		else if( query.size() > 1 )
@@ -524,11 +534,12 @@ void IONotifyController::askSensor(const uniset::ObjectId sid,
 	if( cmd == UniversalIO::UIONotify || (cmd == UIONotifyFirstNotNull && usi->value) )
 	{
 		ConsumerListInfo* lst = static_cast<ConsumerListInfo*>(usi->getUserData(udataConsumerList));
+
 		if( lst )
 		{
 			uniset::uniset_rwmutex_rlock lock(usi->val_lock);
 			SensorMessage smsg( std::move(usi->makeSensorMessage(false)) );
-			send(*lst,smsg,&ci);
+			send(*lst, smsg, &ci);
 		}
 	}
 }
@@ -554,6 +565,7 @@ void IONotifyController::ask( AskMap& askLst, const uniset::ObjectId sid,
 				// т.к. мы делали move
 				// то теперь надо достучаться до списка..
 				auto i = askLst.find(sid);
+
 				if( i != askLst.end() )
 				{
 					try
@@ -633,10 +645,11 @@ void IONotifyController::ask( AskMap& askLst, const uniset::ObjectId sid,
 	if( askIterator != askLst.end() )
 	{
 		auto s = myiofind(sid);
+
 		if( s != myioEnd() )
-			s->second->setUserData(udataConsumerList,&(askIterator->second));
+			s->second->setUserData(udataConsumerList, &(askIterator->second));
 		else
-			s->second->setUserData(udataConsumerList,nullptr);
+			s->second->setUserData(udataConsumerList, nullptr);
 	}
 }
 // ------------------------------------------------------------------------------------------
@@ -677,6 +690,7 @@ long IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInf
 		catch(...) {}
 
 		ConsumerListInfo* lst = static_cast<ConsumerListInfo*>(usi->getUserData(udataConsumerList));
+
 		if( lst )
 			send(*lst, sm);
 	}
@@ -943,6 +957,7 @@ void IONotifyController::askThreshold(uniset::ObjectId sid, const uniset::Consum
 				SensorMessage sm(std::move(li->second->makeSensorMessage()));
 				sm.consumer   = ci.id;
 				sm.tid        = tid;
+
 				// Проверка нижнего предела
 				if( val <= lowLimit )
 					sm.threshold = false;
@@ -953,11 +968,12 @@ void IONotifyController::askThreshold(uniset::ObjectId sid, const uniset::Consum
 				if( it != askTMap.end() )
 				{
 					uniset_rwmutex_rlock l(it->second.mut);
+
 					for( auto i = it->second.list.begin(); i != it->second.list.end(); ++i )
 					{
 						if( i->id == tid )
 						{
-							send(i->clst,sm,&ci);
+							send(i->clst, sm, &ci);
 							break;
 						}
 					}
@@ -1063,6 +1079,7 @@ void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorIn
 	uniset_rwmutex_rlock lock(trshMutex);
 
 	ThresholdsListInfo* ti = static_cast<ThresholdsListInfo*>(usi->getUserData(udataThresholdList));
+
 	if( !ti || ti->list.empty() )
 		return;
 
@@ -1316,6 +1333,7 @@ void IONotifyController::onChangeUndefinedState( std::shared_ptr<USensorInfo>& u
 	catch(...) {}
 
 	ConsumerListInfo* lst = static_cast<ConsumerListInfo*>(usi->getUserData(udataConsumerList));
+
 	if( lst )
 		send(*lst, sm);
 }

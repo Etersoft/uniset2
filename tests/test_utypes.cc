@@ -193,51 +193,51 @@ TEST_CASE("UniSetTypes: fcalibrate", "[utypes][fcalibrate]" )
 {
 	//	float fcalibrate(float raw, float rawMin, float rawMax, float calMin, float calMax, bool limit = true );
 
-	REQUIRE( fcalibrate(0.5,0.1,1.0,100.0,1000.0,true) == 500.0 );
-	REQUIRE( fcalibrate(10.0,0.1,1.0,100.0,1000.0,true) == 1000.0 );
-	REQUIRE( fcalibrate(10.0,0.1,1.0,100.0,1000.0,false) == 10000.0 );
+	REQUIRE( fcalibrate(0.5, 0.1, 1.0, 100.0, 1000.0, true) == 500.0 );
+	REQUIRE( fcalibrate(10.0, 0.1, 1.0, 100.0, 1000.0, true) == 1000.0 );
+	REQUIRE( fcalibrate(10.0, 0.1, 1.0, 100.0, 1000.0, false) == 10000.0 );
 
-	REQUIRE( fcalibrate(0.0,0.1,1.0,100.0,1000.0,true) == 100.0 );
-	REQUIRE( fcalibrate(0.0,0.1,1.0,100.0,1000.0,false) == 0.0 );
+	REQUIRE( fcalibrate(0.0, 0.1, 1.0, 100.0, 1000.0, true) == 100.0 );
+	REQUIRE( fcalibrate(0.0, 0.1, 1.0, 100.0, 1000.0, false) == 0.0 );
 
-	REQUIRE( fcalibrate(-10.0,0.1,1.0,100.0,1000.0,true) == 100.0 );
-	REQUIRE( fcalibrate(-10.0,0.1,1.0,100.0,1000.0,false) == -10000.0 );
+	REQUIRE( fcalibrate(-10.0, 0.1, 1.0, 100.0, 1000.0, true) == 100.0 );
+	REQUIRE( fcalibrate(-10.0, 0.1, 1.0, 100.0, 1000.0, false) == -10000.0 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: lcalibrate", "[utypes][lcalibrate]" )
 {
 	// long lcalibrate(long raw, long rawMin, long rawMax, long calMin, long calMax, bool limit = true );
 
-	REQUIRE( lcalibrate(5,1,10,100,1000,true) == 500 );
-	REQUIRE( lcalibrate(5,1,10,100,1000,false) == 500 );
+	REQUIRE( lcalibrate(5, 1, 10, 100, 1000, true) == 500 );
+	REQUIRE( lcalibrate(5, 1, 10, 100, 1000, false) == 500 );
 
-	REQUIRE( lcalibrate(0,1,10,100,1000,true) == 100 );
-	REQUIRE( lcalibrate(0,1,10,100,1000,false) == 0 );
+	REQUIRE( lcalibrate(0, 1, 10, 100, 1000, true) == 100 );
+	REQUIRE( lcalibrate(0, 1, 10, 100, 1000, false) == 0 );
 
-	REQUIRE( lcalibrate(100,1,10,100,1000,true) == 1000 );
-	REQUIRE( lcalibrate(100,1,10,100,1000,false) == 10000 );
+	REQUIRE( lcalibrate(100, 1, 10, 100, 1000, true) == 1000 );
+	REQUIRE( lcalibrate(100, 1, 10, 100, 1000, false) == 10000 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: setinregion", "[utypes][setinregion]" )
 {
 	//  long setinregion(long raw, long rawMin, long rawMax);
 
-	REQUIRE( setinregion(5,1,10) == 5 );
-	REQUIRE( setinregion(1,1,10) == 1 );
-	REQUIRE( setinregion(10,1,10) == 10 );
-	REQUIRE( setinregion(0,1,10) == 1 );
-	REQUIRE( setinregion(100,1,10) == 10 );
+	REQUIRE( setinregion(5, 1, 10) == 5 );
+	REQUIRE( setinregion(1, 1, 10) == 1 );
+	REQUIRE( setinregion(10, 1, 10) == 10 );
+	REQUIRE( setinregion(0, 1, 10) == 1 );
+	REQUIRE( setinregion(100, 1, 10) == 10 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: setoutregion", "[utypes][setoutregion]" )
 {
 	//  long setoutregion(long raw, long calMin, long calMax);
 
-	REQUIRE( setoutregion(5,1,10) == 1 );
-	REQUIRE( setoutregion(1,1,10) == 1 );
-	REQUIRE( setoutregion(10,1,10) == 10 );
-	REQUIRE( setoutregion(100,1,10) == 100 );
-	REQUIRE( setoutregion(0,1,10) == 0 );
+	REQUIRE( setoutregion(5, 1, 10) == 1 );
+	REQUIRE( setoutregion(1, 1, 10) == 1 );
+	REQUIRE( setoutregion(10, 1, 10) == 10 );
+	REQUIRE( setoutregion(100, 1, 10) == 100 );
+	REQUIRE( setoutregion(0, 1, 10) == 0 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: file_exist", "[utypes][file_exist]" )
@@ -254,7 +254,7 @@ TEST_CASE("UniSetTypes: check_filter", "[utypes][check_filter]" )
 	// bool check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val = "" ) noexcept;
 	auto xml = uniset_conf()->getConfXML();
 
-	xmlNode* xnode = xml->findNode(xml->getFirstNode(),"test_check_filter");
+	xmlNode* xnode = xml->findNode(xml->getFirstNode(), "test_check_filter");
 	REQUIRE(xnode);
 
 	UniXML::iterator it(xnode);
@@ -278,9 +278,9 @@ TEST_CASE("UniSetTypes: findArgParam", "[utypes][findArgParam]" )
 // -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: getArgParam", "[utypes][getArgParam]" )
 {
-//	getArgParam( const std::string& name,
-//									   int _argc, const char* const* _argv,
-//									   const std::string& defval = "" ) noexcept
+	//	getArgParam( const std::string& name,
+	//									   int _argc, const char* const* _argv,
+	//									   const std::string& defval = "" ) noexcept
 	int argc = 5;
 	char* argv[] = {"progname", "--param1", "val", "--param2", "val2"};
 
@@ -292,9 +292,9 @@ TEST_CASE("UniSetTypes: getArgParam", "[utypes][getArgParam]" )
 // -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: getArgInt", "[utypes][getArgInt]" )
 {
-//	inline int getArgInt( const std::string& name,
-//					  int _argc, const char* const* _argv,
-//					  const std::string& defval = "" ) noexcept
+	//	inline int getArgInt( const std::string& name,
+	//					  int _argc, const char* const* _argv,
+	//					  const std::string& defval = "" ) noexcept
 	int argc = 5;
 	char* argv[] = {"progname", "--param1", "1", "--param2", "text"};
 

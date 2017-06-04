@@ -438,7 +438,8 @@ namespace uniset
 			throw uniset::SystemError(err.str());
 		}
 
-		auto idlist = uniset::explode_str(params[0].first,',');
+		auto idlist = uniset::explode_str(params[0].first, ',');
+
 		if( idlist.empty() )
 		{
 			ostringstream err;
@@ -447,7 +448,8 @@ namespace uniset
 		}
 
 		string props = {""};
-		for( const auto& p: params )
+
+		for( const auto& p : params )
 		{
 			if( p.first == "props" )
 			{
@@ -456,9 +458,10 @@ namespace uniset
 			}
 		}
 
-		for( const auto& id: idlist )
+		for( const auto& id : idlist )
 		{
-			Poco::JSON::Object::Ptr j = request_conf_name(id,props);
+			Poco::JSON::Object::Ptr j = request_conf_name(id, props);
+
 			if( j )
 				jdata->add(j);
 		}
@@ -477,8 +480,8 @@ namespace uniset
 		{
 			ostringstream err;
 			err << name << " not found..";
-			jdata->set(name,"");
-			jdata->set("error",err.str());
+			jdata->set(name, "");
+			jdata->set("error", err.str());
 			return jdata;
 		}
 
@@ -488,27 +491,29 @@ namespace uniset
 		{
 			ostringstream err;
 			err << name << " not found confnode..";
-			jdata->set(name,"");
-			jdata->set("error",err.str());
+			jdata->set(name, "");
+			jdata->set("error", err.str());
 			return jdata;
 		}
 
 		UniXML::iterator it(xmlnode);
 
-		jdata->set("name",it.getProp("name"));
-		jdata->set("id",it.getProp("id"));
+		jdata->set("name", it.getProp("name"));
+		jdata->set("id", it.getProp("id"));
 
 		if( !props.empty() )
 		{
-			auto lst = uniset::explode_str(props,',');
-			for( const auto& p: lst )
-				jdata->set(p,it.getProp(p));
+			auto lst = uniset::explode_str(props, ',');
+
+			for( const auto& p : lst )
+				jdata->set(p, it.getProp(p));
 		}
 		else
 		{
 			auto lst = it.getPropList();
-			for( const auto& p: lst )
-				jdata->set(p.first,p.second);
+
+			for( const auto& p : lst )
+				jdata->set(p.first, p.second);
 		}
 
 		return jdata;
@@ -682,6 +687,7 @@ namespace uniset
 
 		bool actOK = false;
 		auto conf = uniset_conf();
+
 		for( size_t i = 0; i < conf->getRepeatCount(); i++ )
 		{
 			try
@@ -982,7 +988,7 @@ namespace uniset
 			else if( query == "conf" )
 			{
 				// запрос вида: /conf/query?params
-				string qconf = ( seg.size() > (qind+1) ) ? seg[qind+1] : "";
+				string qconf = ( seg.size() > (qind + 1) ) ? seg[qind + 1] : "";
 				auto reply = request_conf(qconf, uri.getQueryParameters());
 				reply->stringify(out);
 			}
@@ -1018,7 +1024,7 @@ namespace uniset
 		Poco::JSON::Object jdata;
 		jdata.set("error", err.str());
 		jdata.set("ecode", (int)Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
-//		jdata.set("ename", Poco::Net::HTTPResponse::getReasonForStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR));
+		//		jdata.set("ename", Poco::Net::HTTPResponse::getReasonForStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR));
 
 		ostringstream out;
 		jdata.stringify(out);

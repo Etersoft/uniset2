@@ -98,7 +98,7 @@ IOController::InitSignal IOController::signal_init()
 // ------------------------------------------------------------------------------------------
 void IOController::activateInit()
 {
-	for( auto&& io: ioList )
+	for( auto && io : ioList )
 	{
 		try
 		{
@@ -473,9 +473,10 @@ void IOController::dumpToDB()
 	{
 		// lock
 		//        uniset_mutex_lock lock(ioMutex, 100);
-		for( auto&& usi: ioList )
+		for( auto && usi : ioList )
 		{
 			auto& s = usi.second;
+
 			if ( !s->dbignore )
 			{
 				SensorMessage sm( std::move(s->makeSensorMessage()) );
@@ -868,7 +869,7 @@ Poco::JSON::Object::Ptr IOController::httpHelp( const Poco::URI::QueryParameters
 
 	{
 		// 'get'
-		uniset::json::help::item cmd("get","get value for sensor");
+		uniset::json::help::item cmd("get", "get value for sensor");
 		cmd.param("id1,name2,id3", "get value for id1,name2,id3 sensors");
 		cmd.param("shortInfo", "get short information for sensors");
 		myhelp.add(cmd);
@@ -1044,7 +1045,7 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
 	}
 
 	jdata->set("count", count);
-	jdata->set("size",ioCount());
+	jdata->set("size", ioCount());
 	return jdata;
 }
 // -----------------------------------------------------------------------------

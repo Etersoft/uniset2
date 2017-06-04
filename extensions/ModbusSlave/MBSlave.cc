@@ -671,6 +671,7 @@ namespace uniset
 				mbcrit << myname << "(execute_tcp): catch exception: "
 					   << tcpserver->getInetAddress()
 					   << ":" << tcpserver->getInetPort() << " err: " << ex << endl;
+
 				if( tcpBreakIfFailRun )
 					throw ex;
 			}
@@ -680,6 +681,7 @@ namespace uniset
 					   << tcpserver->getInetAddress()
 					   << ":" << tcpserver->getInetPort()
 					   << " err: " << e.displayText() << endl;
+
 				if( tcpBreakIfFailRun )
 					throw e;
 			}
@@ -689,6 +691,7 @@ namespace uniset
 					   << tcpserver->getInetAddress()
 					   << ":" << tcpserver->getInetPort()
 					   << " err: " << e.what() << endl;
+
 				if( tcpBreakIfFailRun )
 					throw e;
 			}
@@ -698,6 +701,7 @@ namespace uniset
 					   << tcpserver->getInetAddress()
 					   << ":" << tcpserver->getInetPort()
 					   << endl;
+
 				if( tcpBreakIfFailRun )
 					throw;
 			}
@@ -2074,7 +2078,7 @@ namespace uniset
 
 		if( !params.empty() )
 		{
-			for( const auto& p: params )
+			for( const auto& p : params )
 			{
 				if( p.first == "regs" )
 					q_regs = uniset::explode_str(p.second, ',');
@@ -2095,22 +2099,23 @@ namespace uniset
 		// Проход по списку заданных addr..
 		if( !q_addr.empty() )
 		{
-			for( const auto& a: q_addr )
+			for( const auto& a : q_addr )
 			{
 				ModbusRTU::ModbusAddr mbaddr = ModbusRTU::str2mbAddr(a);
 				auto i = iomap.find(mbaddr);
+
 				if( i != iomap.end() )
 				{
-					Poco::JSON::Object::Ptr jaddr = get_regs(i->first,i->second, q_regs);
+					Poco::JSON::Object::Ptr jaddr = get_regs(i->first, i->second, q_regs);
 					jdata->add(jaddr);
 				}
 			}
 		}
 		else // Проход по всему списку
 		{
-			for( const auto& i: iomap )
+			for( const auto& i : iomap )
 			{
-				Poco::JSON::Object::Ptr jaddr = get_regs(i.first,i.second, q_regs);
+				Poco::JSON::Object::Ptr jaddr = get_regs(i.first, i.second, q_regs);
 				jdata->add(jaddr);
 			}
 		}
@@ -2126,7 +2131,7 @@ namespace uniset
 
 		if( q_regs.empty() )
 		{
-			for( const auto& r: rmap )
+			for( const auto& r : rmap )
 			{
 				Poco::JSON::Object::Ptr reginfo = get_reginfo(r.second);
 				regs->add(reginfo);
@@ -2138,6 +2143,7 @@ namespace uniset
 			{
 				auto reg = genRegID( ModbusRTU::str2mbData(s), default_mbfunc);
 				auto r = rmap.find(reg);
+
 				if( r != rmap.end() )
 				{
 					Poco::JSON::Object::Ptr reginfo = get_reginfo(r->second);

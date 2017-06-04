@@ -230,7 +230,7 @@ DBResult PostgreSQLInterface::makeResult( const pqxx::result& res )
 				col.push_back("");
 			else
 			{
-				result.setColName(i.num(),i.name());
+				result.setColName(i.num(), i.name());
 				col.push_back( i.as<string>() );
 			}
 		}

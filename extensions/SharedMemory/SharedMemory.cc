@@ -763,6 +763,7 @@ namespace uniset
 			return;
 
 		HistoryItList* lst = static_cast<HistoryItList*>(usi->getUserData(udataHistory));
+
 		if( !lst )
 			return;
 
@@ -781,7 +782,7 @@ namespace uniset
 			   << " value=" << value
 			   << endl;
 
-		for( auto&& it1 : (*lst) )
+		for( auto && it1 : (*lst) )
 		{
 			History::iterator it = it1;
 

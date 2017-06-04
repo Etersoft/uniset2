@@ -160,7 +160,7 @@ int main( int argc, char** argv )
 
 				case 'g':
 					ignoreErrors = true;
-				break;
+					break;
 
 				case 'n':
 				{
@@ -221,7 +221,7 @@ int main( int argc, char** argv )
 		{
 			auto mbtcp = new ModbusTCPMaster();
 			mbtcp->connect(iaddr, port);
-//			mbtcp->setForceDisconnect(!persist);
+			//			mbtcp->setForceDisconnect(!persist);
 			mb = mbtcp;
 		}
 		else

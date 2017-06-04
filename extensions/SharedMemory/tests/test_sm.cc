@@ -270,13 +270,13 @@ TEST_CASE("[SM]: monitonic sensor message", "[sm][monitonic]")
 	// Для проверки этого датчик монотонно увеличивается на +1
 	// сама проверка см. TestObject::sensorInfo()
 	auto conf = uniset_conf();
-	const long max = uniset::getArgInt("--monotonic-max-value", conf->getArgc(),conf->getArgv(),"1000");
+	const long max = uniset::getArgInt("--monotonic-max-value", conf->getArgc(), conf->getArgv(), "1000");
 
 	auto&& write_worker = [&max]
 	{
 		try
 		{
-			for( long val=0; val<=max; val++ )
+			for( long val = 0; val <= max; val++ )
 				ui->setValue(516, val);
 		}
 		catch( std::exception& ex )
@@ -291,12 +291,13 @@ TEST_CASE("[SM]: monitonic sensor message", "[sm][monitonic]")
 
 	auto ret = std::async(std::launch::async, write_worker);
 
-	for( long n=0; n <= max; n++ )
+	for( long n = 0; n <= max; n++ )
 		obj->askMonotonic();
 
 	REQUIRE( ret.get() );
 
-	DelayTimer dt(2000,0);
+	DelayTimer dt(2000, 0);
+
 	while( !dt.check(obj->isEmptyQueue()) )
 		msleep(500);
 
@@ -306,7 +307,7 @@ TEST_CASE("[SM]: monitonic sensor message", "[sm][monitonic]")
 	REQUIRE( obj->getLastValue() == max );
 
 	// print statistic
-//	uniset::SimpleInfo_var si = obj->getInfo(0);
-//	cerr << std::string(si->info) << endl;
+	//	uniset::SimpleInfo_var si = obj->getInfo(0);
+	//	cerr << std::string(si->info) << endl;
 }
 // -----------------------------------------------------------------------------

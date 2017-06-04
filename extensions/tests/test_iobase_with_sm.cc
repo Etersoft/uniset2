@@ -20,7 +20,7 @@ static void init_test()
 // -----------------------------------------------------------------------------
 static float myRound( float v, size_t delim )
 {
-	return ( std::round(v*delim) / (float)delim );
+	return ( std::round(v * delim) / (float)delim );
 }
 // -----------------------------------------------------------------------------
 static bool init_iobase( IOBase* ib, const std::string& sensor )

@@ -38,6 +38,7 @@ namespace uniset
 	bool CommonEventLoop::runDefaultLoop( size_t waitTimeout_msec )
 	{
 		std::lock_guard<std::mutex> lock(thr_mutex);
+
 		if( thr )
 			return true;
 
@@ -235,7 +236,7 @@ namespace uniset
 	{
 		if( EV_ERROR & revents )
 		{
-//			cerr << myname << "(CommonEventLoop::onStop): invalid event" << endl;
+			//			cerr << myname << "(CommonEventLoop::onStop): invalid event" << endl;
 			return;
 		}
 

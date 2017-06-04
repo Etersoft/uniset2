@@ -430,6 +430,7 @@ namespace uniset
 					if( mbrtu )
 					{
 						mbrtu->setSpeed(speed);
+
 						if( verb )
 							cout << "(mtr-setup): speed is set to "
 								 << ComPort::getSpeed(speed) << endl;
@@ -459,6 +460,7 @@ namespace uniset
 				if( mbrtu )
 				{
 					mbrtu->setParity(get_parity(data));
+
 					if( verb )
 						cout << "(mtr-setup): parity is set to "
 							 << (data ? ((data == 1) ? "odd" : "even") : "no") << endl;
@@ -557,7 +559,7 @@ namespace uniset
 		}
 		// ------------------------------------------------------------------------------------------
 		MTR::MTRError update_configuration(ModbusClient* mb, ModbusRTU::ModbusAddr slaveaddr,
-											const std::string& mtrconfile,  int verb )
+										   const std::string& mtrconfile,  int verb )
 		{
 			std::string m = MTR::getModelNumber(mb, slaveaddr);
 

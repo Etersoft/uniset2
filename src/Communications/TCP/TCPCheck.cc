@@ -50,10 +50,11 @@ namespace uniset
 	{
 		try
 		{
-			std::future<bool> future = std::async(std::launch::async, [=]()
+			std::future<bool> future = std::async(std::launch::async, [ = ]()
 			{
 				// Сама проверка...
 				bool result = false;
+
 				try
 				{
 					UTCPStream t;
@@ -68,9 +69,11 @@ namespace uniset
 			});
 
 			std::future_status status;
+
 			do
 			{
 				status = future.wait_for(std::chrono::milliseconds(tout_msec));
+
 				if( status == std::future_status::timeout )
 					return false;
 			}
@@ -82,6 +85,7 @@ namespace uniset
 		{
 
 		}
+
 		return false;
 	}
 	// -----------------------------------------------------------------------------
@@ -89,7 +93,7 @@ namespace uniset
 	{
 		try
 		{
-			std::future<bool> future = std::async(std::launch::async, [=]()
+			std::future<bool> future = std::async(std::launch::async, [ = ]()
 			{
 				// Сама проверка...
 				ostringstream cmd;
@@ -101,9 +105,11 @@ namespace uniset
 			});
 
 			std::future_status status;
+
 			do
 			{
 				status = future.wait_for(std::chrono::milliseconds(tout_msec));
+
 				if( status == std::future_status::timeout )
 					return false;
 			}

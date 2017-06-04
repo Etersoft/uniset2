@@ -177,7 +177,7 @@ int main( int argc, char** argv )
 
 				case 'g':
 					ignoreErrors = true;
-				break;
+					break;
 
 				case 'e':
 				{

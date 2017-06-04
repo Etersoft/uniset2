@@ -75,7 +75,7 @@ namespace uniset
 	namespace UHttp
 	{
 		// текущая версия API
-		const std::string UHTTP_API_VERSION="v01";
+		const std::string UHTTP_API_VERSION = "v01";
 
 		/*! интерфейс для объекта выдающего json-данные */
 		class IHttpRequest

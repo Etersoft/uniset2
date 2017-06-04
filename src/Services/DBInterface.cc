@@ -122,6 +122,7 @@ namespace uniset
 	int DBResult::getColIndex( const std::string& name )
 	{
 		auto i = colname.find(name);
+
 		if( i == colname.end() )
 			throw std::runtime_error("(DBInterface): Unknown field ='" + name + "'");
 
@@ -130,7 +131,7 @@ namespace uniset
 	// ----------------------------------------------------------------------------
 	std::string DBResult::getColName( int index )
 	{
-		for( auto&& c: colname )
+		for( auto && c : colname )
 		{
 			if( c.second == index )
 				return c.first;
@@ -155,13 +156,13 @@ namespace uniset
 	}
 	// ----------------------------------------------------------------------------
 	DBRowIterator::DBRowIterator( DBResult& _dbres, const DBResult::ROW::iterator& _it ):
-		dbres(_dbres),it(_it)
+		dbres(_dbres), it(_it)
 	{
 
 	}
 
 	DBRowIterator::DBRowIterator( const DBRowIterator& i ):
-		dbres(i.dbres),it(i.it)
+		dbres(i.dbres), it(i.it)
 	{
 
 	}

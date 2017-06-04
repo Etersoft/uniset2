@@ -49,7 +49,7 @@ void TestObject::sensorInfo( const SensorMessage* sm )
 				 << " lost: " << (sm->value - lastValue)
 				 << endl;
 
-			lostMessages += (sm->value - lastValue -1);
+			lostMessages += (sm->value - lastValue - 1);
 		}
 
 		lastValue = sm->value;

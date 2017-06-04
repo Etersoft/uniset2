@@ -45,16 +45,17 @@ int main(int argc, char** argv)
 		for( DBResult::iterator it = r.begin(); it != r.end(); it++ )
 		{
 			cout << "ROW: ";
-//			DBResult::COL col(*it);
-//			for( DBResult::COL::iterator cit = col.begin(); cit != col.end(); cit++ )
-//				cout << DBResult::as_string(cit) << "(" << DBResult::as_double(cit) << ")  |  ";
-//			cout << endl;
+			//			DBResult::COL col(*it);
+			//			for( DBResult::COL::iterator cit = col.begin(); cit != col.end(); cit++ )
+			//				cout << DBResult::as_string(cit) << "(" << DBResult::as_double(cit) << ")  |  ";
+			//			cout << endl;
 
 			for( DBResult::COL::iterator cit = it->begin(); cit != it->end(); cit++ )
 				cout << DBResult::as_string(cit) << "(" << DBResult::as_double(cit) << ")  |  ";
+
 			cout << endl;
 
-			cout << "ID: " << r.as_string(it,"id") << endl;
+			cout << "ID: " << r.as_string(it, "id") << endl;
 			cout << "ID: " << it.as_string("id") << endl;
 		}
 
