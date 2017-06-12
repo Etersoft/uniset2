@@ -33,7 +33,7 @@ before_script:
   # due broken comedi
   - export CXXFLAGS="$CXXFLAGS -Wl,--unresolved-symbols=ignore-in-shared-libs"
   - autoreconf -fiv
-  - ./configure --enable-tests --enable-mysql --enable-sqlite --enable-rrd --enable-io --enable-logicproc --disable-python --disable-mqtt --disable-pgsql --disable-api --disable-pkgchecklibev --disable-netdata
+  - ./configure --enable-tests --enable-mysql --enable-sqlite --enable-rrd --enable-io --disable-python --disable-mqtt --disable-pgsql --disable-api --disable-pkgchecklibev --disable-netdata
 
 script:
   - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make ; fi
