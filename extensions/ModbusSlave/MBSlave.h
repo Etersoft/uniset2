@@ -474,14 +474,6 @@ namespace uniset
 			ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query,
 										   ModbusRTU::MEIMessageRetRDI& reply );
 
-			/*! Проверка корректности регистра перед сохранением.
-			    Вызывается для каждого регистра не зависимо от используемой функции (06 или 10)
-			*/
-			virtual ModbusRTU::mbErrCode checkRegister( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val )
-			{
-				return ModbusRTU::erNoError;
-			}
-
 			// т.к. в функциях (much_real_read,nuch_real_write) рассчёт на отсортированность IOMap
 			// то использовать unordered_map нельзя
 			typedef std::map<ModbusRTU::RegID, IOProperty> RegMap;
