@@ -110,7 +110,7 @@ TEST_CASE("Function (0x03): 'read register outputs or memories or read word outp
 	{
 		try
 		{
-			mb->read03(slaveaddr, -23, 1200);
+			mb->read03(slaveaddr, 23, 1200);
 		}
 		catch( ModbusRTU::mbException& ex )
 		{
@@ -128,17 +128,7 @@ TEST_CASE("Function (0x03): 'read register outputs or memories or read word outp
 			REQUIRE( ex.err == ModbusRTU::erBadDataAddress );
 		}
 	}
-	SECTION("Test: incorrect number")
-	{
-		try
-		{
-			mb->read03(slaveaddr, tREG, -3);
-		}
-		catch( ModbusRTU::mbException& ex )
-		{
-			REQUIRE( ex.err == ModbusRTU::erTimeOut );
-		}
-	}
+
 	SECTION("Test: zero number")
 	{
 		try
@@ -147,7 +137,7 @@ TEST_CASE("Function (0x03): 'read register outputs or memories or read word outp
 		}
 		catch( ModbusRTU::mbException& ex )
 		{
-			REQUIRE( ex.err == ModbusRTU::erTimeOut );
+			REQUIRE( ex.err == ModbusRTU::erBadDataValue );
 		}
 	}
 }
@@ -178,7 +168,7 @@ TEST_CASE("Function (0x04): 'read input registers or memories or read word outpu
 	{
 		try
 		{
-			mb->read04(slaveaddr, -23, 1200);
+			mb->read04(slaveaddr, 23, 1200);
 		}
 		catch( ModbusRTU::mbException& ex )
 		{
@@ -196,17 +186,7 @@ TEST_CASE("Function (0x04): 'read input registers or memories or read word outpu
 			REQUIRE( ex.err == ModbusRTU::erBadDataAddress );
 		}
 	}
-	SECTION("Test: incorrect number")
-	{
-		try
-		{
-			mb->read04(slaveaddr, tREG, -3);
-		}
-		catch( ModbusRTU::mbException& ex )
-		{
-			REQUIRE( ex.err == ModbusRTU::erTimeOut );
-		}
-	}
+
 	SECTION("Test: zero number")
 	{
 		try
@@ -215,7 +195,7 @@ TEST_CASE("Function (0x04): 'read input registers or memories or read word outpu
 		}
 		catch( ModbusRTU::mbException& ex )
 		{
-			REQUIRE( ex.err == ModbusRTU::erTimeOut );
+			REQUIRE( ex.err == ModbusRTU::erBadDataValue );
 		}
 	}
 }

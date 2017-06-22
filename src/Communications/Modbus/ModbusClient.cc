@@ -66,7 +66,14 @@ namespace uniset
 		mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
 		if( res == erNoError )
-			return ReadCoilRetMessage(qreply);
+		{
+			ReadCoilRetMessage ret(qreply);
+
+			if( ret.bcnt != (count*2) )
+				throw mbException(erBadDataValue);
+
+			return ret;
+		}
 
 		throw mbException(res);
 	}
@@ -80,7 +87,14 @@ namespace uniset
 		mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
 		if( res == erNoError )
-			return ReadInputStatusRetMessage(qreply);
+		{
+			ReadInputStatusRetMessage ret(qreply);
+
+			if( ret.bcnt != (count*2) )
+				throw mbException(erBadDataValue);
+
+			return ret;
+		}
 
 		throw mbException(res);
 	}
@@ -96,7 +110,14 @@ namespace uniset
 		mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
 		if( res == erNoError )
-			return ReadOutputRetMessage(qreply);
+		{
+			ReadOutputRetMessage ret(qreply);
+
+			if( ret.count != count )
+				throw mbException(erBadDataValue);
+
+			return ret;
+		}
 
 		throw mbException(res);
 	}
@@ -110,7 +131,14 @@ namespace uniset
 		mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
 		if( res == erNoError )
-			return ReadInputRetMessage(qreply);
+		{
+			ReadInputRetMessage ret(qreply);
+
+			if( ret.count != count )
+				throw mbException(erBadDataValue);
+
+			return ret;
+		}
 
 		throw mbException(res);
 	}
@@ -125,7 +153,17 @@ namespace uniset
 		mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
 		if( res == erNoError )
-			return ForceSingleCoilRetMessage(qreply);
+		{
+			ForceSingleCoilRetMessage ret(qreply);
+
+			if( ret.start != start )
+				throw mbException(erBadDataValue);
+
+			if( ret.cmd() != cmd )
+				throw mbException(erBadDataValue);
+
+			return ret;
+		}
 
 		throw mbException(res);
 	}
@@ -141,7 +179,17 @@ namespace uniset
 		mbErrCode res = query(addr, qbuf, qreply, replyTimeOut_ms);
 
 		if( res == erNoError )
-			return WriteSingleOutputRetMessage(qreply);
+		{
+			WriteSingleOutputRetMessage ret(qreply);
+
+			if( ret.start != start )
+				throw mbException(erBadDataValue);
+
+			if( ret.data != data )
+				throw mbException(erBadDataValue);
+
+			return ret;
+		}
 
 		throw mbException(res);
 	}
@@ -153,7 +201,17 @@ namespace uniset
 		mbErrCode res = query(msg.addr, qbuf, qreply, replyTimeOut_ms);
 
 		if( res == erNoError )
-			return ForceCoilsRetMessage(qreply);
+		{
+			ForceCoilsRetMessage ret(qreply);
+
+			if( ret.start != msg.start )
+				throw mbException(erBadDataValue);
+
+			if( ret.quant != msg.quant )
+				throw mbException(erBadDataValue);
+
+			return ret;
+		}
 
 		throw mbException(res);
 	}
@@ -166,7 +224,17 @@ namespace uniset
 		mbErrCode res = query(msg.addr, qbuf, qreply, replyTimeOut_ms);
 
 		if( res == erNoError )
-			return WriteOutputRetMessage(qreply);
+		{
+			WriteOutputRetMessage ret(qreply);
+
+			if( ret.start != msg.start )
+				throw mbException(erBadDataValue);
+
+			if( ret.quant != msg.quant )
+				throw mbException(erBadDataValue);
+
+			return ret;
+		}
 
 		throw mbException(res);
 	}
@@ -181,7 +249,14 @@ namespace uniset
 		mbErrCode res = query(msg.addr, qbuf, qreply, replyTimeOut_ms);
 
 		if( res == erNoError )
-			return DiagnosticRetMessage(qreply);
+		{
+			DiagnosticRetMessage ret(qreply);
+
+			if( ret.subf != subfunc )
+				throw mbException(erBadDataValue);
+
+			return ret;
+		}
 
 		throw mbException(res);
 	}
@@ -196,7 +271,17 @@ namespace uniset
 		mbErrCode res = query(msg.addr, qbuf, qreply, replyTimeOut_ms);
 
 		if( res == erNoError )
-			return MEIMessageRetRDI(qreply);
+		{
+			MEIMessageRetRDI ret(qreply);
+
+			if( ret.devID != devID )
+				throw mbException(erBadDataValue);
+
+			if( ret.objID != objID )
+				throw mbException(erBadDataValue);
+
+			return ret;
+		}
 
 		throw mbException(res);
 	}

@@ -246,33 +246,33 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	unsigned char* ModbusMessage::buf()
 	{
-		if( aduhead.len == 0 )
+		if( mbaphead.len == 0 )
 			return (unsigned char*)&pduhead;
 
-		return (unsigned char*)&aduhead;
+		return (unsigned char*)&mbaphead;
 	}
 	// -------------------------------------------------------------------------
 	ModbusData ModbusMessage::len() const
 	{
-		if( aduhead.len == 0 )
+		if( mbaphead.len == 0 )
 			return pduLen();
 
-		return (sizeof(aduhead) + aduhead.len);
+		return (sizeof(mbaphead) + mbaphead.len);
 	}
 	// -------------------------------------------------------------------------
 	void ModbusMessage::swapHead()
 	{
-		aduhead.swapdata();
+		mbaphead.swapdata();
 	}
 	// -------------------------------------------------------------------------
-	void ModbusMessage::makeHead( ModbusData tID, bool noCRC, ModbusData pID )
+	void ModbusMessage::makeMBAPHeader( ModbusData tID, bool noCRC, ModbusData pID )
 	{
-		aduhead.tID = tID;
-		aduhead.pID = pID;
-		aduhead.len = pduLen();
+		mbaphead.tID = tID;
+		mbaphead.pID = pID;
+		mbaphead.len = pduLen();
 
 		if( noCRC )
-			aduhead.len -= szCRC;
+			mbaphead.len -= szCRC;
 	}
 	// -------------------------------------------------------------------------
 	ModbusData ModbusMessage::pduLen() const
@@ -287,7 +287,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	size_t ModbusMessage::maxSizeOfMessage()
 	{
-		return (MAXLENPACKET + szModbusHeader + sizeof(ModbusRTU::ADUHeader));
+		return (MAXLENPACKET + szModbusHeader + sizeof(ModbusRTU::MBAPHeader));
 	}
 	// -------------------------------------------------------------------------
 	void ModbusMessage::clear()
@@ -297,7 +297,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusMessage& m )
 	{
-		os << m.aduhead << "| ";
+		os << m.mbaphead << "| ";
 
 		if( m.aduLen() == 0 )
 			mbPrintMessage(os, (ModbusByte*)(&m.pduhead), sizeof(m.pduhead) + m.dlen);
@@ -2987,7 +2987,7 @@ namespace uniset
 				return "У пакета не сошлась контрольная сумма";
 
 			case erBadReplyNodeAddress:
-				return "Ответ на запрос адресован не мне или от станции,которую не спрашивали";
+				return "Ответ на запрос адресован не мне или от станции, которую не спрашивали";
 
 			case erTimeOut:
 				return "Тайм-аут при приеме";
@@ -3005,7 +3005,7 @@ namespace uniset
 				return "регистр не существует или запрещён к опросу";
 
 			case erBadDataValue:
-				return "значение не входит в разрешённый диапазон";
+				return "недопустимое значение";
 
 			case erAnknowledge:
 				return "запрос принят в исполнению, но ещё не выполнен";
@@ -3018,6 +3018,12 @@ namespace uniset
 
 			case erMemoryParityError:
 				return "ошибка паритета при чтении памяти";
+
+			case erGatewayUnavailable:
+				return "шлюз не смог обработать запрос";
+
+			case erGatewayTargetUnavailable:
+				return "устройство за шлюзом не отвечает";
 
 			default:
 				return "Неизвестный код ошибки";
@@ -3589,12 +3595,12 @@ namespace uniset
 		return mbPrintMessage(os, (ModbusByte*)m, szModbusHeader + m->szData() );
 	}
 	// -----------------------------------------------------------------------
-	std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusRTU::ADUHeader& m )
+	std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusRTU::MBAPHeader& m )
 	{
 		return mbPrintMessage(os, (ModbusByte*)(&m), sizeof(m));
 	}
 	// -----------------------------------------------------------------------
-	void ModbusRTU::ADUHeader::swapdata()
+	void ModbusRTU::MBAPHeader::swapdata()
 	{
 		tID = SWAPSHORT(tID);
 		pID = SWAPSHORT(pID);

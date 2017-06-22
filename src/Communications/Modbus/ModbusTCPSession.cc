@@ -216,7 +216,7 @@ namespace uniset
 		try
 		{
 			buf.clear();
-			res = tcp_processing(buf.aduhead);
+			res = tcp_processing(buf.mbaphead);
 
 			if( res != erNoError )
 				return res;
@@ -237,7 +237,7 @@ namespace uniset
 
 			// запоминаем принятый заголовок,
 			// для формирования ответа (см. make_adu_header)
-			curQueryHeader = buf.aduhead;
+			curQueryHeader = buf.mbaphead;
 
 			if( dlog->is_level9() )
 				dlog->level9() << "(ModbusTCPSession::recv): ADU len=" << curQueryHeader.len << endl;
@@ -325,7 +325,7 @@ namespace uniset
 		return 0;
 	}
 	// --------------------------------------------------------------------------------
-	mbErrCode ModbusTCPSession::tcp_processing( ModbusRTU::ADUHeader& mhead )
+	mbErrCode ModbusTCPSession::tcp_processing( ModbusRTU::MBAPHeader& mhead )
 	{
 		// чистим очередь
 		while( !qrecv.empty() )
@@ -409,7 +409,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	mbErrCode ModbusTCPSession::make_adu_header( ModbusMessage& req )
 	{
-		req.makeHead(curQueryHeader.tID, isCRCNoCheckit(), curQueryHeader.pID);
+		req.makeMBAPHeader(curQueryHeader.tID, isCRCNoCheckit(), curQueryHeader.pID);
 		return erNoError;
 	}
 	// -------------------------------------------------------------------------

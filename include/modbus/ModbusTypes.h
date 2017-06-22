@@ -125,7 +125,7 @@ namespace uniset
 		{
 			/*! максимальное количество данных в пакете (c учётом контрольной суммы) */
 			MAXLENPACKET     = 508, /*!< максимальная длина пакета 512 - header(2) - CRC(2) */
-			BroadcastAddr    = 255, /*!< адрес для широковещательных сообщений */
+			BroadcastAddr    = 0, /*!< адрес для широковещательных сообщений */
 			MAXPDULEN       = 253, // 255 - 2(CRC)
 			MAXDATALEN       = 125  /*!< максимальное число слов, которое можно запросить.
                                     Связано с тем, что в ответе есть поле bcnt - количество байт
@@ -169,19 +169,19 @@ namespace uniset
 		std::ostream& operator<<(std::ostream& os, const ModbusHeader& m );
 		std::ostream& operator<<(std::ostream& os, const ModbusHeader* m );
 		// -----------------------------------------------------------------------
-		struct ADUHeader
+		struct MBAPHeader
 		{
 			ModbusRTU::ModbusData tID; /*!< transaction ID */
 			ModbusRTU::ModbusData pID; /*!< protocol ID */
 			ModbusRTU::ModbusData len; /*!< lenght */
 
-			ADUHeader(): tID(0), pID(0), len(0) {}
+			MBAPHeader(): tID(0), pID(0), len(0) {}
 
 			void swapdata();
 
 		} __attribute__((packed));
 
-		std::ostream& operator<<(std::ostream& os, const ADUHeader& m );
+		std::ostream& operator<<(std::ostream& os, const MBAPHeader& m );
 		// -----------------------------------------------------------------------
 
 		/*! Базовое (сырое) сообщение
@@ -206,21 +206,21 @@ namespace uniset
 			}
 			inline ModbusRTU::ModbusData tID() const
 			{
-				return aduhead.tID;
+				return mbaphead.tID;
 			}
 			inline ModbusRTU::ModbusData pID() const
 			{
-				return aduhead.pID;
+				return mbaphead.pID;
 			}
 			inline ModbusRTU::ModbusData aduLen() const
 			{
-				return aduhead.len;
+				return mbaphead.len;
 			}
 
 			unsigned char* buf();
 			ModbusRTU::ModbusData len() const;
 			void swapHead();
-			void makeHead( ModbusRTU::ModbusData tID, bool noCRC = true, ModbusRTU::ModbusData pID = 0 );
+			void makeMBAPHeader( ModbusRTU::ModbusData tID, bool noCRC = true, ModbusRTU::ModbusData pID = 0 );
 
 			ModbusRTU::ModbusData pduLen() const;
 			ModbusCRC pduCRC( size_t len ) const;
@@ -228,7 +228,7 @@ namespace uniset
 
 			void clear();
 
-			ADUHeader aduhead;
+			MBAPHeader mbaphead;
 			ModbusHeader pduhead;
 			ModbusByte data[MAXLENPACKET + szCRC];   /*!< данные */
 
@@ -968,8 +968,8 @@ namespace uniset
 		struct ForceSingleCoilRetMessage:
 			public ModbusHeader
 		{
-			ModbusData start = { 0 };     /*!< записанный начальный адрес */
-			ModbusData data = { 0 };     /*!< данные */
+			ModbusData start = { 0 };   /*!< записанный начальный адрес */
+			ModbusData data = { 0 };    /*!< данные */
 			ModbusCRC crc = { 0 };
 
 			/*! получить значение команды */
