@@ -442,6 +442,7 @@ AC_CONFIG_FILES([Makefile
 				 tests/MQPerfTest/Makefile
 				 tests/PocoTest/Makefile
 				 tests/UHttpTest/Makefile
+				 tests/TCPSocketTest/Makefile
 				 docs/Makefile
 				 docs/UniSetDox.cfg
 				 docs/UniSetDoxDevel.cfg
