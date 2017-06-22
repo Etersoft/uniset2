@@ -146,7 +146,7 @@ namespace uniset
 			std::string iaddr;
 			std::string myname;
 			std::queue<unsigned char> qrecv;
-			ModbusRTU::ADUHeader curQueryHeader;
+			ModbusRTU::MBAPHeader curQueryHeader;
 
 			std::mutex sMutex;
 			typedef std::list<std::shared_ptr<ModbusTCPSession>> SessionList;

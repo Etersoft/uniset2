@@ -75,7 +75,7 @@ namespace uniset
 			virtual size_t getNextData( unsigned char* buf, int len ) override;
 			virtual void setChannelTimeout( timeout_t msec );
 			virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override;
-			virtual ModbusRTU::mbErrCode tcp_processing( ModbusRTU::ADUHeader& mhead );
+			virtual ModbusRTU::mbErrCode tcp_processing( ModbusRTU::MBAPHeader& mhead );
 			virtual ModbusRTU::mbErrCode make_adu_header( ModbusRTU::ModbusMessage& request ) override;
 			virtual ModbusRTU::mbErrCode post_send_request(ModbusRTU::ModbusMessage& request ) override;
 
@@ -124,7 +124,7 @@ namespace uniset
 		private:
 			std::queue<unsigned char> qrecv;
 			std::unordered_set<ModbusRTU::ModbusAddr> vaddr;
-			ModbusRTU::ADUHeader curQueryHeader;
+			ModbusRTU::MBAPHeader curQueryHeader;
 			PassiveTimer ptTimeout;
 			timeout_t timeout = { 0 };
 			ModbusRTU::ModbusMessage buf;

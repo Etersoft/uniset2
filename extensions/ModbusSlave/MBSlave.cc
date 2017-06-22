@@ -1638,7 +1638,13 @@ namespace uniset
 			return ModbusRTU::erTimeOut;
 		}
 
-		if( query.count <= 1 )
+		if( query.count <= 0 )
+		{
+			mbinfo << myname << "(readOutputRegisters): BAD QUERY: count=0!" << endl;
+			return ModbusRTU::erBadDataValue;
+		}
+
+		if( query.count == 1 )
 		{
 			ModbusRTU::ModbusData d = 0;
 			ModbusRTU::mbErrCode ret = real_read(regmap->second, query.start, d, query.func);
@@ -2435,7 +2441,13 @@ namespace uniset
 			return ModbusRTU::erTimeOut;
 		}
 
-		if( query.count <= 1 )
+		if( query.count <= 0 )
+		{
+			mbinfo << myname << "(readInputRegisters): BAD QUERY: count=0!" << endl;
+			return ModbusRTU::erBadDataValue;
+		}
+
+		if( query.count == 1 )
 		{
 			ModbusRTU::ModbusData d = 0;
 			ModbusRTU::mbErrCode ret = real_read(regmap->second, query.start, d, query.func);
@@ -2500,9 +2512,15 @@ namespace uniset
 			return ModbusRTU::erTimeOut;
 		}
 
+		if( query.count <= 0 )
+		{
+			mbinfo << myname << "(readCoilStatus): BAD QUERY: count=0!" << endl;
+			return ModbusRTU::erBadDataValue;
+		}
+
 		try
 		{
-			if( query.count <= 1 )
+			if( query.count == 1 )
 			{
 				ModbusRTU::ModbusData d = 0;
 				ModbusRTU::mbErrCode ret = real_read(regmap->second, query.start, d, query.func);
@@ -2573,9 +2591,15 @@ namespace uniset
 			return ModbusRTU::erTimeOut;
 		}
 
+		if( query.count <= 0 )
+		{
+			mbinfo << myname << "(readInputStatus): BAD QUERY: count=0!" << endl;
+			return ModbusRTU::erBadDataValue;
+		}
+
 		try
 		{
-			if( query.count <= 1 )
+			if( query.count == 1 )
 			{
 				ModbusRTU::ModbusData d = 0;
 				ModbusRTU::mbErrCode ret = real_read(regmap->second, query.start, d, query.func);

@@ -2152,8 +2152,8 @@ namespace uniset
 				( p.stype == UniversalIO::AI ||
 				  p.stype == UniversalIO::AO ) )
 		{
-			mbwarn << "(initRSProperty): (ignore) uncorrect param`s nbit>1 (" << p.nbit << ")"
-				   << " but iotype=" << p.stype << " for " << it.getProp("name") << endl;
+			mbwarn << "(initRSProperty): (ignore) uncorrect param`s nbit!=0(" << p.nbit << ")"
+				   << " for iotype=" << p.stype << " for " << it.getProp("name") << endl;
 		}
 
 		string sbyte(IOBase::initProp(it, "nbyte", prop_prefix, false) );
