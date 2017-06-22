@@ -453,6 +453,9 @@ src/Various/ujson.cc
 src/Makefile.am
 tests/UniXmlTest/Makefile.am
 tests/UniXmlTest/XmlTest.cc
+tests/TCPSocketTest/sock-client.cc
+tests/TCPSocketTest/sock-server.cc
+tests/TCPSocketTest/Makefile.am
 tests/int_unsigned.cc
 tests/Makefile.am
 tests/test.xml
