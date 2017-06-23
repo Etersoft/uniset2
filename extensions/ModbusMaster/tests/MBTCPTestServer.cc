@@ -125,6 +125,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::readCoilStatus( ReadCoilMessage& query,
 	{
 		if( verbose )
 			cout << "(readCoilStatus): ERROR qount=0" << endl;
+
 		return ModbusRTU::erBadDataValue;
 	}
 
@@ -171,6 +172,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::readInputStatus( ReadInputStatusMessage& q
 	{
 		if( verbose )
 			cout << "(readInputStatus): ERROR qount=0" << endl;
+
 		return ModbusRTU::erBadDataValue;
 	}
 

@@ -3656,6 +3656,7 @@ namespace uniset
 			return 1;
 
 		size_t bcnt = ( nbits / ModbusRTU::BitsPerByte );
+
 		if( nbits % BitsPerByte )
 			bcnt++;
 
