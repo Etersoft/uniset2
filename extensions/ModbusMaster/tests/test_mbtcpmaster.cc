@@ -71,7 +71,7 @@ static void InitTest()
 			throw;
 		}
 
-		//mbs->setVerbose(true);
+//		mbs->setVerbose(true);
 		CHECK( mbs != nullptr );
 		mbs->execute();
 

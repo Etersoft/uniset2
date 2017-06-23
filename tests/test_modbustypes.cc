@@ -112,6 +112,19 @@ TEST_CASE("checkCRC", "[modbus][checkCRC]" )
 	// ModbusCRC checkCRC( ModbusByte* start, int len );
 }
 // ---------------------------------------------------------------
+TEST_CASE("numBytes function", "[modbus][numbytes]" )
+{
+	REQUIRE( ModbusRTU::numBytes(0) == 0 );
+	REQUIRE( ModbusRTU::numBytes(1) == 1 );
+	REQUIRE( ModbusRTU::numBytes(8) == 1 );
+
+	REQUIRE( ModbusRTU::numBytes(10) == 2 );
+	REQUIRE( ModbusRTU::numBytes(16) == 2 );
+
+	REQUIRE( ModbusRTU::numBytes(256) == 32 );
+	REQUIRE( ModbusRTU::numBytes(257) == 33 );
+}
+// ---------------------------------------------------------------
 #if 0
 #warning VERY LONG TIME TEST
 TEST_CASE("genRegID", "[modbus][genRegID]" )

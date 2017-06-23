@@ -151,6 +151,7 @@ namespace uniset
 		std::string b2str( const ModbusByte b );
 		// -------------------------------------------------------------------------
 		float dat2f( const ModbusData dat1, const ModbusData dat2 );
+		size_t numBytes( const size_t nbits ); // сколько байт нужно для указанного количества бит
 		// -------------------------------------------------------------------------
 		bool isWriteFunction( SlaveFunctionCode c );
 		bool isReadFunction( SlaveFunctionCode c );
@@ -392,7 +393,7 @@ namespace uniset
 			 * \return TRUE - если есть
 			 * \return FALSE - если НЕ найдено
 			*/
-			bool setBit( unsigned char dnum, unsigned char bnum, bool state );
+			bool setBit( uint8_t dnum, uint8_t bnum, bool state );
 
 			/*! получение данных.
 			 * \param bnum  - номер байта(0..MAXLENPACKET)
@@ -400,7 +401,7 @@ namespace uniset
 			 * \return TRUE - если есть
 			 * \return FALSE - если НЕ найдено
 			*/
-			bool getData( unsigned char bnum, DataBits& d ) const;
+			bool getData( uint8_t bnum, DataBits& d ) const;
 
 			/*! очистка данных */
 			void clear();
@@ -492,7 +493,7 @@ namespace uniset
 			 * \return TRUE - если есть
 			 * \return FALSE - если НЕ найдено
 			*/
-			bool setBit( unsigned char dnum, unsigned char bnum, bool state );
+			bool setBit( uint8_t dnum, uint8_t bnum, bool state );
 
 			/*! получение данных.
 			 * \param dnum  - номер байта (0..MAXLENPACKET)
@@ -500,7 +501,7 @@ namespace uniset
 			 * \return TRUE - если есть
 			 * \return FALSE - если НЕ найдено
 			*/
-			bool getData( unsigned char dnum, DataBits& d ) const;
+			bool getData( uint8_t dnum, DataBits& d ) const;
 
 			/*! очистка данных */
 			void clear();
@@ -727,7 +728,7 @@ namespace uniset
 			// -1 - error
 			int addBit( bool state );
 
-			bool setBit( int nbit, bool state );
+			bool setBit( uint8_t nbit, bool state );
 
 			inline size_t last() const
 			{
@@ -740,9 +741,7 @@ namespace uniset
 			 * \return TRUE - если есть
 			 * \return FALSE - если НЕ найдено
 			*/
-			bool getData( unsigned char dnum, DataBits& d );
-
-			bool getBit( unsigned char bnum );
+			bool getData( uint8_t dnum, DataBits& d );
 
 			void clear();
 			inline bool isFull() const

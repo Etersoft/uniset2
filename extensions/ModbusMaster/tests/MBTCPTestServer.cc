@@ -121,6 +121,13 @@ ModbusRTU::mbErrCode MBTCPTestServer::readCoilStatus( ReadCoilMessage& query,
 	d.b[4] = 1;
 	d.b[6] = 1;
 
+	if( query.count == 0 )
+	{
+		if( verbose )
+			cout << "(readCoilStatus): ERROR qount=0" << endl;
+		return ModbusRTU::erBadDataValue;
+	}
+
 	if( query.count <= 1 )
 	{
 		if( replyVal != std::numeric_limits<uint32_t>::max() )
@@ -132,23 +139,15 @@ ModbusRTU::mbErrCode MBTCPTestServer::readCoilStatus( ReadCoilMessage& query,
 	}
 
 	// Фомирование ответа:
-	int num = 0; // добавленное количество данных
-	ModbusData reg = query.start;
+	ModbusData num = 0; // добавленное количество данных
+	size_t bcnt = numBytes(query.count);
 
-	for( ; num < query.count; num++, reg++ )
+	for( ; num < bcnt; num++ )
 	{
 		if( replyVal != std::numeric_limits<uint32_t>::max() )
 			reply.addData(replyVal);
 		else
 			reply.addData(d);
-	}
-
-	// Если мы в начале проверили, что запрос входит в разрешёный диапазон
-	// то теоретически этой ситуации возникнуть не может...
-	if( reply.bcnt < query.count )
-	{
-		cerr << "(readCoilStatus): Получили меньше чем ожидали. "
-			 << " Запросили " << query.count << " получили " << reply.bcnt << endl;
 	}
 
 	return ModbusRTU::erNoError;
@@ -168,6 +167,13 @@ ModbusRTU::mbErrCode MBTCPTestServer::readInputStatus( ReadInputStatusMessage& q
 	d.b[3] = 1;
 	d.b[7] = 1;
 
+	if( query.count == 0 )
+	{
+		if( verbose )
+			cout << "(readInputStatus): ERROR qount=0" << endl;
+		return ModbusRTU::erBadDataValue;
+	}
+
 	if( replyVal == std::numeric_limits<uint32_t>::max() )
 	{
 		size_t bnum = 0;
@@ -185,10 +191,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::readInputStatus( ReadInputStatusMessage& q
 	}
 	else
 	{
-		size_t bcnt = query.count / ModbusRTU::BitsPerByte;
-
-		if( (query.count % ModbusRTU::BitsPerByte) > 0 )
-			bcnt++;
+		size_t bcnt = ModbusRTU::numBytes(query.count);
 
 		for( size_t i = 0; i < bcnt; i++ )
 			reply.addData(replyVal);

@@ -119,12 +119,9 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 	d.b[6] = 1;
 
 	// Фомирование ответа:
-	unsigned int bcnt = query.count / ModbusRTU::BitsPerByte;
+	size_t bcnt = ModbusRTU::numBytes(query.count);
 
-	if( (query.count % ModbusRTU::BitsPerByte) > 0 )
-		bcnt++;
-
-	for( unsigned int i = 0; i < bcnt; i++ )
+	for( size_t i = 0; i < bcnt; i++ )
 	{
 		if( replyVal != -1 )
 			reply.addData(replyVal);
@@ -163,12 +160,9 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 	}
 	else
 	{
-		unsigned int bcnt = query.count / ModbusRTU::BitsPerByte;
+		size_t bcnt = ModbusRTU::numBytes(query.count);
 
-		if( (query.count % ModbusRTU::BitsPerByte) > 0 )
-			bcnt++;
-
-		for( unsigned int i = 0; i < bcnt; i++ )
+		for( size_t i = 0; i < bcnt; i++ )
 		{
 			if( i == 1 )
 				reply.addData(replyVal2);
