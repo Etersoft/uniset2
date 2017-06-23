@@ -119,6 +119,8 @@ namespace uniset
 				return lockUpdate;
 			}
 
+			bool isInitOK() const noexcept;
+
 			void resetTimeout() noexcept;
 
 			inline bool isRecvOK() const noexcept
@@ -138,6 +140,7 @@ namespace uniset
 			void setCheckConnectionPause( timeout_t msec ) noexcept;
 			void setMaxDifferens( unsigned long set ) noexcept;
 			void setEvrunTimeout(timeout_t msec ) noexcept;
+			void setInitPause( timeout_t msec ) noexcept;
 
 			void setRespondID( uniset::ObjectId id, bool invert = false ) noexcept;
 			void setLostPacketsID( uniset::ObjectId id ) noexcept;
@@ -278,10 +281,12 @@ namespace uniset
 
 			PassiveTimer ptRecvTimeout;
 			PassiveTimer ptPrepare;
+			PassiveTimer ptInitOK;
 			timeout_t recvTimeout = { 5000 }; // msec
 			timeout_t prepareTime = { 2000 };
 			timeout_t evrunTimeout = { 15000 };
 			timeout_t lostTimeout = { 200 };
+			timeout_t initPause = { 5000 }; // пауза на начальную инициализацию
 			PassiveTimer ptLostTimeout;
 			size_t lostPackets = { 0 }; /*!< счётчик потерянных пакетов */
 
