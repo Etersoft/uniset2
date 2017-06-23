@@ -69,7 +69,7 @@ namespace uniset
 		{
 			ReadCoilRetMessage ret(qreply);
 
-			if( ret.bcnt != (count*2) )
+			if( ret.bcnt != numBytes(count) )
 				throw mbException(erBadDataValue);
 
 			return ret;
@@ -90,7 +90,7 @@ namespace uniset
 		{
 			ReadInputStatusRetMessage ret(qreply);
 
-			if( ret.bcnt != (count*2) )
+			if( ret.bcnt != numBytes(count) )
 				throw mbException(erBadDataValue);
 
 			return ret;
@@ -309,15 +309,15 @@ namespace uniset
 		throw mbException(res);
 	}
 	// --------------------------------------------------------------------------------
-	void ModbusClient::fileTransfer( ModbusAddr addr, ModbusData numfile,
-									 const char* save2filename, timeout_t part_timeout_msec )
+	void ModbusClient::fileTransfer(ModbusAddr addr, ModbusData numfile,
+									 const std::string& save2filename, timeout_t part_timeout_msec )
 	throw(ModbusRTU::mbException)
 	{
 		//#warning Необходимо реализовать
 		//    throw mbException(erUnExpectedPacketType);
 		mbErrCode res = erNoError;
 
-		FILE* fdsave = fopen(save2filename, "w");
+		FILE* fdsave = fopen(save2filename.c_str(), "w");
 
 		if( fdsave == NULL )
 		{
@@ -329,8 +329,8 @@ namespace uniset
 			throw mbException(erHardwareError);
 		}
 
-		unsigned short maxpackets    = 65535;
-		unsigned short curpack        = 0;
+		uint16_t maxpackets = 65535;
+		uint16_t curpack = 0;
 
 		PassiveTimer ptTimeout(part_timeout_msec);
 

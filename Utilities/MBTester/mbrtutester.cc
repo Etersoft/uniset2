@@ -712,7 +712,7 @@ int main( int argc, char** argv )
 							tofile = s.str();
 						}
 
-						mb.fileTransfer( slaveaddr, reg, tofile.c_str(), tout);
+						mb.fileTransfer( slaveaddr, reg, tofile, tout);
 					}
 					break;
 

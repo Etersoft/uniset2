@@ -155,12 +155,10 @@ ModbusRTU::mbErrCode MBTCPServer::readInputStatus( ReadInputStatusMessage& query
 	}
 	else
 	{
-		int bcnt = query.count / ModbusRTU::BitsPerByte;
 
-		if( (query.count % ModbusRTU::BitsPerByte) > 0 )
-			bcnt++;
+		size_t bcnt = ModbusRTU::numBytes(query.count);
 
-		for( auto i = 0; i < bcnt; i++ )
+		for( size_t i = 0; i < bcnt; i++ )
 			reply.addData(replyVal);
 	}
 

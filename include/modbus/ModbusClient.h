@@ -132,7 +132,7 @@ namespace uniset
 			    \param part_timeout_msec - таймаут на получение очередной части файла.
 			*/
 			void fileTransfer( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusData idFile,
-							   const char* save2filename, timeout_t part_timeout_msec = 2000 )
+							   const std::string& save2filename, timeout_t part_timeout_msec = 2000 )
 			throw(ModbusRTU::mbException);
 
 			// ---------------------------------------------------------------------
