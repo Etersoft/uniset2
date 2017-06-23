@@ -83,8 +83,7 @@ UNetReceiver::UNetReceiver(const std::string& s_host, int _port, const std::shar
 
 	evStatistic.set<UNetReceiver, &UNetReceiver::statisticsEvent>(this);
 	evUpdate.set<UNetReceiver, &UNetReceiver::updateEvent>(this);
-
-	ptInitOK.setTiming(initPause);
+	evInitPause.set<UNetReceiver, &UNetReceiver::initEvent>(this);
 }
 // -----------------------------------------------------------------------------
 UNetReceiver::~UNetReceiver()
@@ -148,8 +147,7 @@ void UNetReceiver::setEvrunTimeout( timeout_t msec ) noexcept
 // -----------------------------------------------------------------------------
 void UNetReceiver::setInitPause( timeout_t msec ) noexcept
 {
-	initPause = msec;
-	ptInitOK.setTiming(initPause);
+	initPause = (msec / 1000.0);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setRespondID( uniset::ObjectId id, bool invert ) noexcept
@@ -174,9 +172,14 @@ void UNetReceiver::setLockUpdate( bool st ) noexcept
 		ptPrepare.reset();
 }
 // -----------------------------------------------------------------------------
+bool UNetReceiver::isLockUpdate() const noexcept
+{
+	return lockUpdate;
+}
+// -----------------------------------------------------------------------------
 bool UNetReceiver::isInitOK() const noexcept
 {
-	return ptInitOK.checkTime();
+	return initOK.load();
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::resetTimeout() noexcept
@@ -184,6 +187,16 @@ void UNetReceiver::resetTimeout() noexcept
 	std::lock_guard<std::mutex> l(tmMutex);
 	ptRecvTimeout.reset();
 	trTimeout.change(false);
+}
+// -----------------------------------------------------------------------------
+bool UNetReceiver::isRecvOK() const noexcept
+{
+	return !ptRecvTimeout.checkTime();
+}
+// -----------------------------------------------------------------------------
+size_t UNetReceiver::getLostPacketsNum() const noexcept
+{
+	return lostPackets;
 }
 // -----------------------------------------------------------------------------
 bool UNetReceiver::createConnection( bool throwEx )
@@ -251,10 +264,7 @@ void UNetReceiver::start()
 		}
 
 		if( upStrategy == useUpdateThread && !upThread->isRunning() )
-		{
-			ptInitOK.reset();
 			upThread->start();
-		}
 	}
 	else
 		forceUpdate();
@@ -264,7 +274,8 @@ void UNetReceiver::evprepare( const ev::loop_ref& eloop ) noexcept
 {
 	evStatistic.set(eloop);
 	evStatistic.start(0, 1.0); // раз в сек
-	ptInitOK.reset();
+
+	evInitPause.set(eloop);
 
 	if( upStrategy == useUpdateEventLoop )
 	{
@@ -276,11 +287,13 @@ void UNetReceiver::evprepare( const ev::loop_ref& eloop ) noexcept
 	{
 		evCheckConnection.set(eloop);
 		evCheckConnection.start(0, checkConnectionTime);
+		evInitPause.stop();
 	}
 	else
 	{
 		evReceive.set(eloop);
 		evReceive.start(udp->getSocket(), ev::READ);
+		evInitPause.start(0);
 	}
 }
 // -----------------------------------------------------------------------------
@@ -334,6 +347,18 @@ void UNetReceiver::statisticsEvent(ev::periodic& tm, int revents) noexcept
 	recvCount = 0;
 	upCount = 0;
 	tm.again();
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::initEvent( ev::timer& tmr, int revents ) noexcept
+{
+	if( EV_ERROR & revents )
+	{
+		unetcrit << myname << "(initEvent): EVENT ERROR.." << endl;
+		return;
+	}
+
+	initOK.store(true);
+	tmr.stop();
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::update() noexcept
@@ -513,8 +538,11 @@ void UNetReceiver::updateThread() noexcept
 		{
 			try
 			{
-				bool r = respondInvert ? !isRecvOK() : isRecvOK();
-				shm->localSetValue(itRespond, sidRespond, ( r ? 1 : 0 ), shm->ID());
+				if( isInitOK() )
+				{
+					bool r = respondInvert ? !isRecvOK() : isRecvOK();
+					shm->localSetValue(itRespond, sidRespond, ( r ? 1 : 0 ), shm->ID());
+				}
 			}
 			catch( const std::exception& ex )
 			{
@@ -630,8 +658,11 @@ void UNetReceiver::updateEvent( ev::periodic& tm, int revents ) noexcept
 	{
 		try
 		{
-			bool r = respondInvert ? !isRecvOK() : isRecvOK();
-			shm->localSetValue(itRespond, sidRespond, ( r ? 1 : 0 ), shm->ID());
+			if( isInitOK() )
+			{
+				bool r = respondInvert ? !isRecvOK() : isRecvOK();
+				shm->localSetValue(itRespond, sidRespond, ( r ? 1 : 0 ), shm->ID());
+			}
 		}
 		catch( const std::exception& ex )
 		{

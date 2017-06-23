@@ -114,23 +114,13 @@ namespace uniset
 
 			// блокировать сохранение данных в SM
 			void setLockUpdate( bool st ) noexcept;
-			inline bool isLockUpdate() const noexcept
-			{
-				return lockUpdate;
-			}
-
-			bool isInitOK() const noexcept;
+			bool isLockUpdate() const noexcept;
 
 			void resetTimeout() noexcept;
 
-			inline bool isRecvOK() const noexcept
-			{
-				return !ptRecvTimeout.checkTime();
-			}
-			inline size_t getLostPacketsNum() const noexcept
-			{
-				return lostPackets;
-			}
+			bool isInitOK() const noexcept;
+			bool isRecvOK() const noexcept;
+			size_t getLostPacketsNum() const noexcept;
 
 			void setReceiveTimeout( timeout_t msec ) noexcept;
 			void setReceivePause( timeout_t msec ) noexcept;
@@ -219,6 +209,7 @@ namespace uniset
 			void updateEvent( ev::periodic& watcher, int revents ) noexcept;
 			void checkConnectionEvent( ev::periodic& watcher, int revents ) noexcept;
 			void statisticsEvent( ev::periodic& watcher, int revents ) noexcept;
+			void initEvent( ev::timer& watcher, int revents ) noexcept;
 			virtual void evprepare( const ev::loop_ref& eloop ) noexcept override;
 			virtual void evfinish(const ev::loop_ref& eloop ) noexcept override;
 			virtual std::string wname() const noexcept override
@@ -260,6 +251,7 @@ namespace uniset
 			ev::periodic evCheckConnection;
 			ev::periodic evStatistic;
 			ev::periodic evUpdate;
+			ev::timer evInitPause;
 
 			UpdateStrategy upStrategy = { useUpdateEventLoop };
 
@@ -281,12 +273,14 @@ namespace uniset
 
 			PassiveTimer ptRecvTimeout;
 			PassiveTimer ptPrepare;
-			PassiveTimer ptInitOK;
 			timeout_t recvTimeout = { 5000 }; // msec
 			timeout_t prepareTime = { 2000 };
 			timeout_t evrunTimeout = { 15000 };
 			timeout_t lostTimeout = { 200 };
-			timeout_t initPause = { 5000 }; // пауза на начальную инициализацию
+
+			double initPause = { 5.0 }; // пауза на начальную инициализацию (сек)
+			std::atomic_bool initOK = { false };
+
 			PassiveTimer ptLostTimeout;
 			size_t lostPackets = { 0 }; /*!< счётчик потерянных пакетов */
 
