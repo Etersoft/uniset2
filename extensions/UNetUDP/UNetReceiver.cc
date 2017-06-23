@@ -83,6 +83,8 @@ UNetReceiver::UNetReceiver(const std::string& s_host, int _port, const std::shar
 
 	evStatistic.set<UNetReceiver, &UNetReceiver::statisticsEvent>(this);
 	evUpdate.set<UNetReceiver, &UNetReceiver::updateEvent>(this);
+
+	ptInitOK.setTiming(initPause);
 }
 // -----------------------------------------------------------------------------
 UNetReceiver::~UNetReceiver()
@@ -144,6 +146,12 @@ void UNetReceiver::setEvrunTimeout( timeout_t msec ) noexcept
 	evrunTimeout = msec;
 }
 // -----------------------------------------------------------------------------
+void UNetReceiver::setInitPause( timeout_t msec ) noexcept
+{
+	initPause = msec;
+	ptInitOK.setTiming(initPause);
+}
+// -----------------------------------------------------------------------------
 void UNetReceiver::setRespondID( uniset::ObjectId id, bool invert ) noexcept
 {
 	sidRespond = id;
@@ -164,6 +172,11 @@ void UNetReceiver::setLockUpdate( bool st ) noexcept
 
 	if( !st )
 		ptPrepare.reset();
+}
+// -----------------------------------------------------------------------------
+bool UNetReceiver::isInitOK() const noexcept
+{
+	return ptInitOK.checkTime();
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::resetTimeout() noexcept
@@ -238,7 +251,10 @@ void UNetReceiver::start()
 		}
 
 		if( upStrategy == useUpdateThread && !upThread->isRunning() )
+		{
+			ptInitOK.reset();
 			upThread->start();
+		}
 	}
 	else
 		forceUpdate();
@@ -248,6 +264,7 @@ void UNetReceiver::evprepare( const ev::loop_ref& eloop ) noexcept
 {
 	evStatistic.set(eloop);
 	evStatistic.start(0, 1.0); // раз в сек
+	ptInitOK.reset();
 
 	if( upStrategy == useUpdateEventLoop )
 	{

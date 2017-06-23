@@ -85,6 +85,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 	int maxDiff = conf->getArgPInt("--" + prefix + "-maxdifferense", it.getProp("maxDifferense"), 100);
 	int maxProcessingCount = conf->getArgPInt("--" + prefix + "-maxprocessingcount", it.getProp("maxProcessingCount"), 100);
 	int checkConnectionPause = conf->getArgPInt("--" + prefix + "-checkconnection-pause", it.getProp("checkConnectionPause"), 10000);
+	int initpause = conf->getArgPInt("--" + prefix + "-initpause", it.getProp("initpause"), 5000);
 
 	std::string updateStrategy = conf->getArg2Param("--" + prefix + "-update-strategy", it.getProp("updateStrategy"), "evloop");
 
@@ -340,6 +341,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 		r->setReceivePause(recvpause);
 		r->setUpdatePause(updatepause);
 		r->setCheckConnectionPause(checkConnectionPause);
+		r->setInitPause(initpause);
 		r->setMaxDifferens(maxDiff);
 		r->setMaxProcessingCount(maxProcessingCount);
 		r->setRespondID(resp_id, resp_invert);
@@ -370,6 +372,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 				r2->setReceivePause(recvpause);
 				r2->setUpdatePause(updatepause);
 				r2->setCheckConnectionPause(checkConnectionPause);
+				r2->setInitPause(initpause);
 				r2->setMaxDifferens(maxDiff);
 				r2->setMaxProcessingCount(maxProcessingCount);
 				r2->setRespondID(resp2_id, resp_invert);
@@ -536,7 +539,9 @@ void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface>& shm, 
 			if( respondInvert )
 				resp = !resp;
 
-			shm->localSetValue(itRespond, sidRespond, resp, shm->ID());
+			// сохраняем только если закончилось время на начальную инициализацию
+			if( (r1 && r1->isInitOK()) || (r2 && r2->isInitOK()) )
+				shm->localSetValue(itRespond, sidRespond, resp, shm->ID());
 		}
 	}
 	catch( const std::exception& ex )
