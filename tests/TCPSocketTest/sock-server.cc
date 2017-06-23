@@ -10,7 +10,7 @@ int main(int argc, const char** argv)
 {
 	try
 	{
-		uniset::UTCPSocket sock("localhost",2048);
+		uniset::UTCPSocket sock("localhost", 2048);
 
 		while(true)
 		{
@@ -22,12 +22,13 @@ int main(int argc, const char** argv)
 				int r = ss.receiveBytes(buf);
 
 				cout << "recv(" << r << "): used=" << buf.used() << " [ ";
-				for( size_t i=0; i<r; i++)
+
+				for( size_t i = 0; i < r; i++)
 					cout << (int)buf[i];
 
-//				std::unique_ptr<char[]> data(new char[buf.used()]);
-//				buf.read(data.get(), r);
-//				cout << std::string(data.get(), r) << endl;
+				//				std::unique_ptr<char[]> data(new char[buf.used()]);
+				//				buf.read(data.get(), r);
+				//				cout << std::string(data.get(), r) << endl;
 				cout << " ]" << endl;
 			}
 		}

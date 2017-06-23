@@ -310,7 +310,7 @@ namespace uniset
 	}
 	// --------------------------------------------------------------------------------
 	void ModbusClient::fileTransfer(ModbusAddr addr, ModbusData numfile,
-									 const std::string& save2filename, timeout_t part_timeout_msec )
+									const std::string& save2filename, timeout_t part_timeout_msec )
 	throw(ModbusRTU::mbException)
 	{
 		//#warning Необходимо реализовать
