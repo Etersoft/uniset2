@@ -511,6 +511,9 @@ rm -f %buildroot%_libdir/*.la
 * Tue Sep 12 2017 Alexei Takaseev <taf@altlinux.org> 2.6-alt19.1
 - Rebuild with poco 1.7.9
 
+# * Sun Jun 25 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt34
+# - (DelayTimer): add new functions (isWaiting[On|Off])
+
 # * Sun Jun 25 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt33
 # - (ModbusSlave): Added processing of a couple of new errors
 # - (UNet): added initial pause mechanism
