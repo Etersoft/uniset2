@@ -59,7 +59,7 @@ namespace uniset
 			Command cmd;
 			unsigned int data;
 
-			static const size_t MAXLOGNAME = 30;
+			static const size_t MAXLOGNAME = 120;
 			char logname[MAXLOGNAME + 1]; // +1 reserverd for '\0'
 
 			void setLogName( const std::string& name );
