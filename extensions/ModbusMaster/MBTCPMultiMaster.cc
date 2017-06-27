@@ -204,21 +204,36 @@ MBTCPMultiMaster::~MBTCPMultiMaster()
 {
 	if( pollThread )
 	{
-		pollThread->stop();
+		try
+		{
+			pollThread->stop();
 
-		if( pollThread->isRunning() )
-			pollThread->join();
+			if( pollThread->isRunning() )
+				pollThread->join();
+		}
+		catch( Poco::NullPointerException& ex )
+		{
+
+		}
 	}
 
 	if( checkThread )
 	{
-		checkThread->stop();
+		try
+		{
+			checkThread->stop();
 
-		if( checkThread->isRunning() )
-			checkThread->join();
+			if( checkThread->isRunning() )
+				checkThread->join();
+		}
+		catch( Poco::NullPointerException& ex )
+		{
+
+		}
 	}
 
 	mbi = mblist.rend();
+
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
@@ -504,6 +519,7 @@ void MBTCPMultiMaster::check_thread()
 					   << " respond_id=" << it->respond_id
 					   << " respond_force=" << it->respond_force
 					   << " respond=" << it->respond
+					   << " respond_invert=" << it->respond_invert
 					   << " activated=" << checkProcActive()
 					   << " ]"
 					   << endl;

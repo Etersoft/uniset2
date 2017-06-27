@@ -116,7 +116,8 @@ namespace uniset
 	}
 
 	SensorMessage::SensorMessage( int dummy ) noexcept:
-		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
+		Message(1), // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
+		ci(IOController_i::CalibrateInfo())
 	{
 		type    = Message::SensorInfo;
 	}

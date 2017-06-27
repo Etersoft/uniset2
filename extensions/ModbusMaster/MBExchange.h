@@ -95,10 +95,10 @@ namespace uniset
 				public IOBase
 			{
 				// only for RTU
-				short nbit;				/*!< bit number (-1 - not used) */
+				int16_t nbit;			/*!< bit number (-1 - not used) */
 				VTypes::VType vType;    /*!< type of value */
-				unsigned short rnum;    /*!< count of registers */
-				unsigned short nbyte;   /*!< byte number (1-2) */
+				uint16_t rnum;    /*!< count of registers */
+				uint16_t nbyte;   /*!< byte number (1-2) */
 
 				RSProperty():
 					nbit(-1), vType(VTypes::vtUnknown),

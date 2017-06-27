@@ -512,10 +512,17 @@ namespace uniset
 		if( tcpserver && tcpserver->isActive() )
 			tcpserver->terminate();
 
-		if( thr && thr->isRunning() )
+		try
 		{
-			thr->stop();
-			//        thr->join();
+			if( thr && thr->isRunning() )
+			{
+				thr->stop();
+				//        thr->join();
+			}
+		}
+		catch( Poco::NullPointerException& ex )
+		{
+
 		}
 	}
 	// -----------------------------------------------------------------------------
