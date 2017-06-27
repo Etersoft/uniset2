@@ -2390,7 +2390,7 @@ namespace uniset
 		/*! приоритет опроса:
 		 * 1...n - задаёт "часоту" опроса. Т.е. каждые 1...n циклов
 		*/
-		unsigned int pollfactor = IOBase::initIntProp(it, "pollfactor", prop_prefix, false, 0);
+		size_t pollfactor = IOBase::initIntProp(it, "pollfactor", prop_prefix, false, 0);
 
 		std::shared_ptr<RegMap> rmap;
 
