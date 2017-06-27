@@ -2162,7 +2162,7 @@ namespace uniset
 		{
 			p.nbyte = uniset::uni_atoi(sbyte.c_str());
 
-			if( p.nbyte < 0 || p.nbyte > VTypes::Byte::bsize )
+			if( p.nbyte > VTypes::Byte::bsize )
 			{
 				mbwarn << myname << "(initRSProperty): BAD nbyte=" << p.nbyte
 					   << ". (0 >= nbyte < " << VTypes::Byte::bsize << ")." << endl;

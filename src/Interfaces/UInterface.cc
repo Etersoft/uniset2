@@ -1332,10 +1332,10 @@ namespace uniset
 
 	void UInterface::CacheOfResolve::erase( const uniset::ObjectId id, const uniset::ObjectId node ) const noexcept
 	{
-		uniset::uniset_rwmutex_wrlock l(cmutex);
-
 		try
 		{
+			uniset::uniset_rwmutex_wrlock l(cmutex);
+
 			auto it = mcache.find( uniset::key(id, node) );
 
 			if( it != mcache.end() )

@@ -121,6 +121,7 @@ static UTypes::ShortIOInfo toUTypes( IOController_i::ShortIOInfo i )
 	ret.tv_sec = i.tv_sec;
 	ret.tv_nsec = i.tv_nsec;
 	ret.supplier = i.supplier;
+	ret.supplier_node = UTypes::DefaultID;
 
 	return ret;
 }
