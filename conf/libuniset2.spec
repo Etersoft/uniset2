@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt34
+Release: alt35
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -508,6 +508,9 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
+* Tue Jun 27 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt35
+- (Modbus): add new log
+
 * Sun Jun 25 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt34
 - (DelayTimer): add new functions (isWaiting[On|Off])
 

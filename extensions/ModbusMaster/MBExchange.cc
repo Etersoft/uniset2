@@ -3295,6 +3295,7 @@ namespace uniset
 
 		inf << i->info << endl;
 		inf << vmon.pretty_str() << endl;
+		inf << "activated: " << activated << endl;
 		inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
 		inf << "Parameters: reopenTimeout=" << ptReopen.getInterval()
 			<< endl;
