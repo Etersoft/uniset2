@@ -95,10 +95,10 @@ namespace uniset
 				public IOBase
 			{
 				// only for RTU
-				int16_t nbit;			/*!< bit number (-1 - not used) */
-				VTypes::VType vType;    /*!< type of value */
-				uint16_t rnum;    /*!< count of registers */
-				uint16_t nbyte;   /*!< byte number (1-2) */
+				int8_t nbit;		 /*!< bit number (-1 - not used) */
+				VTypes::VType vType; /*!< type of value */
+				uint16_t rnum;   /*!< count of registers */
+				uint8_t nbyte;   /*!< byte number (1-2) */
 
 				RSProperty():
 					nbit(-1), vType(VTypes::vtUnknown),
@@ -194,7 +194,7 @@ namespace uniset
 				}
 
 				ModbusRTU::ModbusAddr mbaddr;    /*!< адрес устройства */
-				std::unordered_map<unsigned int, std::shared_ptr<RegMap>> pollmap;
+				std::unordered_map<size_t, std::shared_ptr<RegMap>> pollmap;
 
 				DeviceType dtype;    /*!< тип устройства */
 
