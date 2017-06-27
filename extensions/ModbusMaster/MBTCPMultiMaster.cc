@@ -501,6 +501,10 @@ void MBTCPMultiMaster::check_thread()
 					   << " timeout=" << it->channel_timeout
 					   << " use=" << it->use
 					   << " ignore=" << it->ignore
+					   << " respond_id=" << it->respond_id
+					   << " respond_force=" << it->respond_force
+					   << " respond=" << it->respond
+					   << " activated=" << checkProcActive()
 					   << " ]"
 					   << endl;
 
