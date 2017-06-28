@@ -511,6 +511,9 @@ rm -f %buildroot%_libdir/*.la
 * Tue Sep 12 2017 Alexei Takaseev <taf@altlinux.org> 2.6-alt19.1
 - Rebuild with poco 1.7.9
 
+# * Wed Jun 28 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt36
+# - new release (fixes after coverity scan)
+
 # * Tue Jun 27 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt35
 # - (Modbus): add new log
 
