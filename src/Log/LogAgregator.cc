@@ -315,7 +315,7 @@ namespace uniset
 
 			for( const auto& i : lst )
 			{
-				if( std::regex_match(i.name, rule) )
+				if( std::regex_search(i.name, rule) )
 				{
 					l.push_back(i);
 				}

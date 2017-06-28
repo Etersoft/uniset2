@@ -19,6 +19,7 @@
 #include <Poco/Net/NetException.h>
 #include <iostream>
 #include <sstream>
+#include <regex>
 #include "PassiveTimer.h"
 #include "Exceptions.h"
 #include "LogReader.h"
@@ -301,6 +302,8 @@ void LogReader::readlogs( const std::string& _addr, int _port, LogServerTypes::C
 
 	bool send_ok = cmd == LogServerTypes::cmdNOP ? true : false;
 
+	std::regex rule(textfilter);
+
 	while( rcount > 0 )
 	{
 		try
@@ -328,6 +331,10 @@ void LogReader::readlogs( const std::string& _addr, int _port, LogServerTypes::C
 				send_ok = true;
 			}
 
+			// Если мы работаем с текстовым фильтром
+			// то надо читать построчно..
+			ostringstream line;
+
 			while( tcp->poll(UniSetTimer::millisecToPoco(inTimeout), Poco::Net::Socket::SELECT_READ) )
 			{
 				ssize_t n = tcp->available();
@@ -337,7 +344,34 @@ void LogReader::readlogs( const std::string& _addr, int _port, LogServerTypes::C
 					tcp->receiveBytes(buf, n);
 					buf[n] = '\0';
 
-					outlog->any(false) << buf;
+					if( textfilter.empty() )
+					{
+						outlog->any(false) << buf;
+					}
+					else
+					{
+						// Всё это пока не оптимально,
+						// но мы ведь и не спешим..
+						for( ssize_t i=0; i<n; i++ )
+						{
+							// пока не встретили конец строки
+							// наполняем line..
+							if( buf[i] != '\n' )
+							{
+								line << buf[i];
+								continue;
+							}
+
+							line << endl;
+
+							std::string s(line.str());
+
+							if( std::regex_search(s, rule) )
+								outlog->any(false) << s;
+
+							line.str("");
+						}
+					}
 				}
 				else if( n == 0 && readcount <= 0 )
 					break;
