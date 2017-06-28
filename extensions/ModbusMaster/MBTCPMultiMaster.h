@@ -354,7 +354,6 @@ namespace uniset
 				bool init( std::shared_ptr<DebugStream>& mblog );
 				bool check();
 				void setUse( bool st );
-				bool isUse();
 
 				timeout_t recv_timeout;
 				timeout_t aftersend_pause;

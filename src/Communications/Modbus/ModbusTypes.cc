@@ -757,7 +757,9 @@ namespace uniset
 	void ReadInputStatusMessage::init( const ModbusMessage& m )
 	{
 		assert( m.pduhead.func == fnReadInputStatus );
-		memcpy(this, &(m.pduhead), sizeof(m.pduhead) + szData());
+		func = m.pduhead.func;
+		addr = m.pduhead.addr;
+		memcpy(&start, &m.data, szData());
 
 		// переворачиваем слова
 		start = SWAPSHORT(start);
