@@ -102,7 +102,15 @@ uniset_rwmutex_wrlock::uniset_rwmutex_wrlock( uniset_rwmutex& _m ):
 
 uniset_rwmutex_wrlock::~uniset_rwmutex_wrlock()
 {
-	m.unlock();
+	try
+	{
+		m.unlock();
+	}
+	//catch( Poco::SystemException& ex )
+	catch( std::exception& ex )
+	{
+		std::terminate();
+	}
 }
 // -------------------------------------------------------------------------------------------
 uniset_rwmutex_rlock::uniset_rwmutex_rlock( uniset_rwmutex& _m ):
@@ -113,6 +121,13 @@ uniset_rwmutex_rlock::uniset_rwmutex_rlock( uniset_rwmutex& _m ):
 
 uniset_rwmutex_rlock::~uniset_rwmutex_rlock()
 {
-	m.unlock();
+	try
+	{
+		m.unlock();
+	}
+	catch( std::exception& ex )
+	{
+		std::terminate();
+	}
 }
 // -----------------------------------------------------------------------------

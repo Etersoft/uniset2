@@ -37,7 +37,7 @@
 #include "Configuration.h"
 
 // -----------------------------------------------------------------------------------------
-#define UI_THROW_EXCEPTIONS uniset::TimeOut,uniset::IOBadParam,uniset::ORepFailed
+#define UI_THROW_EXCEPTIONS uniset::TimeOut,uniset::IOBadParam,uniset::ORepFailed,uniset::SystemError
 // -----------------------------------------------------------------------------------------
 namespace uniset
 {
@@ -248,7 +248,7 @@ namespace uniset
 						MaxSize(maxsize), minCallCount(cleancount) {};
 					~CacheOfResolve() {};
 
-					uniset::ObjectPtr resolve( const uniset::ObjectId id, const uniset::ObjectId node ) const throw(uniset::NameNotFound);
+					uniset::ObjectPtr resolve( const uniset::ObjectId id, const uniset::ObjectId node ) const throw(uniset::NameNotFound,uniset::SystemError);
 					void cache(const uniset::ObjectId id, const uniset::ObjectId node, uniset::ObjectVar& ptr ) const;
 					void erase( const uniset::ObjectId id, const uniset::ObjectId node ) const noexcept;
 

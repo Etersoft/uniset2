@@ -175,6 +175,8 @@ void IONotifyController::showStatisticsForConsumer( ostringstream& inf, const st
 	}
 	else
 	{
+		std::ios_base::fmtflags old_flags = inf.flags();
+
 		inf << std::right;
 
 		auto oind = uniset_conf()->oind;
@@ -190,6 +192,8 @@ void IONotifyController::showStatisticsForConsumer( ostringstream& inf, const st
 				<< " ]"
 				<< endl;
 		}
+
+		inf.setf(old_flags);
 	}
 
 	inf << "--------------------------------------------" << endl;

@@ -45,7 +45,7 @@ int main(int argc, const char** argv)
 		end = std::chrono::system_clock::now();
 		int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 		std::cerr << "elapsed time: " << elapsed_seconds << " ms num=" << num << endl;
-		std::cerr << "speed: " << ((float)elapsed_seconds / num) << " msg per sec" << endl;
+		std::cerr << "speed: " << ( num > 0 ? ((float)elapsed_seconds / num) : 0 ) << " msg per sec" << endl;
 
 		return 0;
 	}

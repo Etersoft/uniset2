@@ -238,10 +238,14 @@ std::ostream& DebugStream::printDateTime(Debug::type t) noexcept
 			  << std::setw(2) << std::setfill('0') << tms.tm_sec;
 #endif
 
+		std::ios_base::fmtflags old_flags = this->flags();
+
 		if( show_usec )
 			(*this) << "." << std::setw(6) << std::setfill('0') << (tv.tv_nsec / 1000);
 		else if( show_msec )
 			(*this) << "." << std::setw(3) << std::setfill('0') << (tv.tv_nsec / 1000000);
+
+		this->setf(old_flags);
 
 		return *this;
 	}

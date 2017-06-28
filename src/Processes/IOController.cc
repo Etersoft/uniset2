@@ -624,7 +624,7 @@ IOController::USensorInfo::operator=(IOController_i::SensorIOInfo* r)
 // ----------------------------------------------------------------------------------------
 void* IOController::USensorInfo::getUserData( size_t index )
 {
-	if( index > MaxUserData )
+	if( index >= MaxUserData )
 		return nullptr;
 
 	uniset::uniset_rwmutex_rlock ulock(userdata_lock);
@@ -633,7 +633,7 @@ void* IOController::USensorInfo::getUserData( size_t index )
 
 void IOController::USensorInfo::setUserData( size_t index, void* data )
 {
-	if( index > MaxUserData )
+	if( index >= MaxUserData )
 		return;
 
 	uniset::uniset_rwmutex_wrlock ulock(userdata_lock);

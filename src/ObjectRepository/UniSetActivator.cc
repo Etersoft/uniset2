@@ -215,7 +215,14 @@ bool gdb_print_trace()
 	char pid_buf[30];
 	sprintf(pid_buf, "%d", getpid());
 	char name_buf[512];
-	name_buf[readlink("/proc/self/exe", name_buf, 511)] = 0;
+	ssize_t ind = readlink("/proc/self/exe", name_buf, 511);
+	if( ind < 0 )
+	{
+		perror("Can't readlink...");
+		return false;
+	}
+
+	name_buf[ind] = 0;
 
 	TRACELOG << "stack trace: for " << name_buf << " pid=" << pid_buf << endl;
 

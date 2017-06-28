@@ -422,6 +422,12 @@ void MBTCPMultiMaster::MBSlaveInfo::setUse( bool st )
 	use = st;
 }
 // -----------------------------------------------------------------------------
+bool MBTCPMultiMaster::MBSlaveInfo::isUse()
+{
+	std::lock_guard<std::mutex> l(mutInit);
+	return use;
+}
+// -----------------------------------------------------------------------------
 bool MBTCPMultiMaster::MBSlaveInfo::init( std::shared_ptr<DebugStream>& mblog )
 {
 	std::lock_guard<std::mutex> l(mutInit);
