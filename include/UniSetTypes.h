@@ -317,6 +317,27 @@ namespace uniset
 
 		return destBegin;
 	}
+
+	// RAII для флагов форматирования ostream..
+	class ios_fmt_restorer
+	{
+		public:
+			ios_fmt_restorer( std::ostream& s ):
+				os(s),f(nullptr){ f.copyfmt(s); }
+
+			~ios_fmt_restorer()
+			{
+				os.copyfmt(f);
+			}
+
+			ios_fmt_restorer( const ios_fmt_restorer& ) = delete;
+			ios_fmt_restorer& operator=( const ios_fmt_restorer& ) = delete;
+
+		private:
+			std::ostream& os;
+			std::ios f;
+	};
+
 	// -----------------------------------------------------------------------------------------
 } // end of namespace uniset
 // -----------------------------------------------------------------------------------------
