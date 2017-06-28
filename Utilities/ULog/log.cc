@@ -25,7 +25,7 @@ static struct option longopts[] =
 	{ "off", required_argument, 0, 'o' },
 	{ "on", required_argument, 0, 'e' },
 	{ "save-loglevels", required_argument, 0, 'u' },
-	{ "restore-loglevels", required_argument, 0, 'g' },
+	{ "restore-loglevels", required_argument, 0, 'y' },
 	{ "view-default-loglevels", required_argument, 0, 'b' },
 	{ "list", optional_argument, 0, 'l' },
 	{ "rotate", optional_argument, 0, 'r' },
@@ -35,6 +35,7 @@ static struct option longopts[] =
 	{ "reconnect-delay", required_argument, 0, 'x' },
 	{ "logfile", required_argument, 0, 'w' },
 	{ "logfile-truncate", required_argument, 0, 'z' },
+	{ "grep", required_argument, 0, 'g' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -60,10 +61,11 @@ static void print_help()
 	printf("[-e | --on] [logfilter]                     - On(enable) the write log file (if before disabled).\n");
 	printf("[-r | --rotate] [logfilter]                 - rotate log file.\n");
 	printf("[-u | --save-loglevels] [logfilter]         - save log levels (disable restore after disconnected).\n");
-	printf("[-g | --restore-loglevels] [logfilter]      - restore default log levels.\n");
+	printf("[-y | --restore-loglevels] [logfilter]      - restore default log levels.\n");
 	printf("[-b | --view-default-loglevels] [logfilter] - list of default log levels.\n");
 
 	printf("[-l | --list] [logfilter]                   - List of managed logs.\n");
+	printf("[-g | --grep pattern                        - Print lines matching a pattern (c++ regexp)\n");
 	printf("[-f | --filter] logfilter                   - ('filter mode'). View log only from 'logfilter'(regexp)\n");
 	printf("\n");
 	printf("Note: 'logfilter' -  regexp for name of log. Default: ALL logs.\n");
@@ -90,12 +92,13 @@ int main( int argc, char** argv )
 	timeout_t rdelay = 8000;
 	string logfile("");
 	bool logtruncate = false;
+	std::string textfilter("");
 
 	try
 	{
 		while(1)
 		{
-			opt = getopt_long(argc, argv, "chvlf:a:p:i:d:s:n:eorbx:w:zt:gub", longopts, &optindex);
+			opt = getopt_long(argc, argv, "chvlf:a:p:i:d:s:n:eorbx:w:zt:g:uby:", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -187,7 +190,7 @@ int main( int argc, char** argv )
 				}
 				break;
 
-				case 'g':  // --restore-loglevels
+				case 'y':  // --restore-loglevels
 				{
 					LogServerTypes::Command cmd = LogServerTypes::cmdRestoreLogLevel;
 					std::string filter("");
@@ -277,6 +280,10 @@ int main( int argc, char** argv )
 					logfile = string(optarg);
 					break;
 
+				case 'g':
+					textfilter = string(optarg);
+					break;
+
 				case 'z':
 					logtruncate = true;
 					break;
@@ -303,6 +310,7 @@ int main( int argc, char** argv )
 		lr.setCommandOnlyMode(cmdonly);
 		lr.setinTimeout(tout);
 		lr.setReconnectDelay(rdelay);
+		lr.setTextFilter(textfilter);
 
 		if( !logfile.empty() )
 			lr.log()->logFile(logfile, logtruncate);
