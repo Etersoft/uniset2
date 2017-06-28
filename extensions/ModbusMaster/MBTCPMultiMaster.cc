@@ -422,12 +422,6 @@ void MBTCPMultiMaster::MBSlaveInfo::setUse( bool st )
 	use = st;
 }
 // -----------------------------------------------------------------------------
-bool MBTCPMultiMaster::MBSlaveInfo::isUse()
-{
-	std::lock_guard<std::mutex> l(mutInit);
-	return use;
-}
-// -----------------------------------------------------------------------------
 bool MBTCPMultiMaster::MBSlaveInfo::init( std::shared_ptr<DebugStream>& mblog )
 {
 	std::lock_guard<std::mutex> l(mutInit);
@@ -543,7 +537,11 @@ void MBTCPMultiMaster::check_thread()
 					{
 						bool set = it->respond_invert ? !r : r;
 						shm->localSetValue(it->respond_it, it->respond_id, (set ? 1 : 0), getId());
-						it->respond_init = true;
+
+						{
+							std::lock_guard<std::mutex> l(it->mutInit);
+							it->respond_init = true;
+						}
 					}
 				}
 				catch( const uniset::Exception& ex )

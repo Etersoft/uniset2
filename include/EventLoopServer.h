@@ -63,7 +63,7 @@ namespace uniset
 
 			std::mutex              looprunOK_mutex;
 			std::condition_variable looprunOK_event;
-			std::atomic_bool isrunning;
+			std::atomic_bool isrunning = { false };
 			ev::timer evruntimer;
 	};
 	// -------------------------------------------------------------------------
