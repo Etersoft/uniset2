@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt35
+Release: alt36
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -508,6 +508,9 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
+* Wed Jun 28 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt36
+- new release (fixes after coverity scan)
+
 * Tue Jun 27 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt35
 - (Modbus): add new log
 
