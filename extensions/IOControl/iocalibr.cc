@@ -506,7 +506,7 @@ void openXML()
 // --------------------------------------------------------------------------
 void dispDiagram()
 {
-	std::ios_base::fmtflags old_flags = cout.flags();
+	uniset::ios_fmt_restorer l(cout);
 	cout.setf( ios::right, ios::adjustfield );
 	cout << endl << "=================================" << endl;
 	cout << "|      data    |   calibrated    |" << endl;
@@ -521,7 +521,6 @@ void dispDiagram()
 
 	cout << "=================================" << endl;
 	cout << sortedMass.size() << "    " << massDat.size() << endl;
-	cout.setf(old_flags);
 }
 
 // --------------------------------------------------------------------------

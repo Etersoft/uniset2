@@ -80,12 +80,9 @@ int apiRequest( const string& args, UInterface& ui, const string& query );
 // --------------------------------------------------------------------------
 static void print_help(int width, const string& cmd, const string& help, const string& tab = " " )
 {
-	// чтобы не менять параметры основного потока
-	// создаём свой stream...
-	ostringstream info;
-	info.setf(ios::left, ios::adjustfield);
-	info << tab << setw(width) << cmd << " - " << help;
-	cout << info.str();
+	uniset::ios_fmt_restorer ifs(cout);
+	cout.setf(ios::left, ios::adjustfield);
+	cout << tab << setw(width) << cmd << " - " << help;
 }
 // --------------------------------------------------------------------------
 static void short_usage()
@@ -430,7 +427,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 	if( verb )
 		cout << "\n||=======********  " << section << "  ********=========||\n" << endl;
 
-	std::ios_base::fmtflags old_flags = cout.flags();
+	uniset::ios_fmt_restorer ifs(cout);
 
 	try
 	{
@@ -549,7 +546,6 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 						if( !quiet )
 							cout << "неизвестная команда -" << cmd << endl;
 
-						cout.setf(old_flags);
 						return false;
 					}
 				}
@@ -576,11 +572,9 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 		if( !quiet )
 			cerr << "..ORepFailed.." << endl;
 
-		cout.setf(old_flags);
 		return false;
 	}
 
-	cout.setf(old_flags);
 	return true;
 }
 
@@ -602,7 +596,7 @@ static void createSections( const std::shared_ptr<uniset::Configuration>& rconf 
 // ==============================================================================================
 int omap()
 {
-	std::ios_base::fmtflags old_flags = cout.flags();
+	uniset::ios_fmt_restorer ifs(cout);
 
 	try
 	{
@@ -616,7 +610,6 @@ int omap()
 		if( !quiet )
 			cerr << " configuration init failed: " << ex << endl;
 
-		cout.setf(old_flags);
 		return 1;
 	}
 	catch( const std::exception& ex )
@@ -624,11 +617,9 @@ int omap()
 		if( !quiet )
 			cerr << "std::exception: " << ex.what() << endl;
 
-		cout.setf(old_flags);
 		return 1;
 	}
 
-	cout.setf(old_flags);
 	return 0;
 }
 

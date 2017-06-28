@@ -2,6 +2,7 @@
 // -----------------------------------------------------------------------------
 #include <sstream>
 #include <limits>
+#include <iomanip>
 #include <cstdint>
 #include "Configuration.h"
 #include "UniSetTypes.h"
@@ -336,5 +337,36 @@ TEST_CASE("UniSetTypes: getIOType", "[utypes][getIOType]" )
 	REQUIRE( getIOType("a") == UniversalIO::UnknownIOType );
 	REQUIRE( getIOType("d") == UniversalIO::UnknownIOType );
 	REQUIRE( getIOType("") == UniversalIO::UnknownIOType );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: ostream_guard", "[utypes][ostream_guard]" )
+{
+	std::ostringstream s;
+
+	int value = 5;
+	s << setw(2) << value;
+	REQUIRE( s.str() == " 5" );
+
+	{
+		s.str("");
+
+		uniset::ios_fmt_restorer l(s);
+		s << std::setfill('0') << setw(2) << value;
+		REQUIRE( s.str() == "05" );
+	}
+
+	{
+		s.str("");
+
+		uniset::ios_fmt_restorer l(s);
+		s.setf(ios::left, ios::adjustfield);
+
+		s << setw(2) << value;
+		REQUIRE( s.str() == "5 " );
+	}
+
+	s.str("");
+	s << setw(2) << value;
+	REQUIRE( s.str() == " 5" );
 }
 // -----------------------------------------------------------------------------

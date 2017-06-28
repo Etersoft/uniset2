@@ -145,7 +145,7 @@ std::ostream& DebugStream::debug(Debug::type t) noexcept
 {
 	if(dt & t)
 	{
-		IosFlagSaver ifs(*this);
+		uniset::ios_fmt_restorer ifs(*this);
 
 		if( show_datetime )
 			printDateTime(t);
@@ -192,7 +192,7 @@ std::ostream& DebugStream::printTime(Debug::type t, char brk) noexcept
 {
 	if(dt && t)
 	{
-		IosFlagSaver ifs(*this);
+		uniset::ios_fmt_restorer ifs(*this);
 
 		timespec tv = uniset::now_to_timespec(); // gettimeofday(tv,0);
 		std::tm tms = *std::localtime(&tv.tv_sec);
@@ -222,7 +222,7 @@ std::ostream& DebugStream::printDateTime(Debug::type t) noexcept
 {
 	if(dt & t)
 	{
-		IosFlagSaver ifs(*this);
+		uniset::ios_fmt_restorer ifs(*this);
 
 		timespec tv = uniset::now_to_timespec(); // gettimeofday(tv,0);
 		std::tm tms = *std::localtime(&tv.tv_sec);
@@ -238,14 +238,10 @@ std::ostream& DebugStream::printDateTime(Debug::type t) noexcept
 			  << std::setw(2) << std::setfill('0') << tms.tm_sec;
 #endif
 
-		std::ios_base::fmtflags old_flags = this->flags();
-
 		if( show_usec )
 			(*this) << "." << std::setw(6) << std::setfill('0') << (tv.tv_nsec / 1000);
 		else if( show_msec )
 			(*this) << "." << std::setw(3) << std::setfill('0') << (tv.tv_nsec / 1000000);
-
-		this->setf(old_flags);
 
 		return *this;
 	}

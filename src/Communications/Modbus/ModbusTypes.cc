@@ -212,7 +212,7 @@ namespace uniset
 
 	std::ostream& ModbusRTU::mbPrintMessage( std::ostream& os, ModbusByte* m, size_t len )
 	{
-		DebugStream::IosFlagSaver ifs(os);
+		uniset::ios_fmt_restorer ifs(os);
 
 		// << setiosflags(ios::showbase) // для вывода в формате 0xNN
 		ostringstream s;
@@ -3067,7 +3067,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	std::ostream& ModbusRTU::operator<<(std::ostream& os, SetDateTimeMessage& m )
 	{
-		DebugStream::IosFlagSaver ifs(os);
+		uniset::ios_fmt_restorer ifs(os);
 
 		ostringstream s;
 		s << setfill('0')
