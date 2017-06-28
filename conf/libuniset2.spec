@@ -506,6 +506,8 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet2.pc
         
 # history of current unpublished changes
+- (LogReader): add '--grep' mode
+- minor fixes
 
 %changelog
 * Sun Nov 12 2017 Alexei Takaseev <taf@altlinux.org> 2.6-alt41.1
