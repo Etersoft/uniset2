@@ -466,7 +466,7 @@ namespace uniset
 			return;
 
 		// Опрос приоритетной очереди
-		for( auto it : pmap )
+		for( auto&& it : pmap )
 		{
 			if( it.priority > 0 )
 			{
@@ -491,7 +491,7 @@ namespace uniset
 			// опять опросим приоритетные
 			if( !prior && i > maxHalf )
 			{
-				for( auto& p : pmap )
+				for( auto&& p : pmap )
 				{
 					if( p.priority > 1 )
 					{
@@ -505,7 +505,7 @@ namespace uniset
 		}
 
 		// Опрос приоритетной очереди
-		for( auto& it : pmap )
+		for( auto&& it : pmap )
 		{
 			if( it.priority > 2 )
 			{
@@ -1304,8 +1304,8 @@ namespace uniset
 				{
 					if( !force )
 					{
-						force = true;
 						std::lock_guard<std::mutex> l(iopollMutex);
+						force = true;
 						iopoll();
 						force = false;
 					}

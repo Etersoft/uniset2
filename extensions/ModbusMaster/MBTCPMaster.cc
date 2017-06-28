@@ -80,10 +80,17 @@ MBTCPMaster::~MBTCPMaster()
 {
 	if( pollThread )
 	{
-		pollThread->stop();
+		try
+		{
+			pollThread->stop();
 
-		if( pollThread->isRunning() )
-			pollThread->join();
+			if( pollThread->isRunning() )
+				pollThread->join();
+		}
+		catch( Poco::NullPointerException& ex )
+		{
+
+		}
 	}
 }
 // -----------------------------------------------------------------------------

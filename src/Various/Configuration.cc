@@ -139,9 +139,6 @@ namespace uniset
 		localNodeName(""),
 		fileConfName(xmlfile)
 	{
-		if( xmlfile.empty() )
-			setConfFileName();
-
 		initConfiguration(argc, argv);
 	}
 	// ---------------------------------------------------------------------------------
@@ -158,9 +155,6 @@ namespace uniset
 		localNodeName(""),
 		fileConfName(fileConf)
 	{
-		if( fileConf.empty() )
-			setConfFileName();
-
 		oind = _oind;
 		initConfiguration(argc, argv);
 	}
@@ -177,9 +171,6 @@ namespace uniset
 		localNodeName(""),
 		fileConfName(fileConf)
 	{
-		if( fileConf.empty() )
-			setConfFileName();
-
 		shared_ptr<ObjectIndex_Array> _oi = make_shared<ObjectIndex_Array>(omap);
 		oind = static_pointer_cast<ObjectIndex>(_oi);
 
@@ -188,9 +179,6 @@ namespace uniset
 	// ---------------------------------------------------------------------------------
 	void Configuration::initConfiguration( int argc, const char* const* argv )
 	{
-		//    PassiveTimer pt(UniSetTimer::WaitUpTime);
-		ulogsys << "*** configure from file: " << fileConfName << endl;
-
 		// т.к. мы не знаем откуда эти argc и argv и может они будут удалены сразу после завершения функции
 		// то надёжнее скопировать себе всё..
 		_argc = argc;
@@ -200,6 +188,13 @@ namespace uniset
 			_argv[i] = uniset::uni_strdup(argv[i]);
 
 		iorfile = make_shared<IORFile>();
+
+		// инициализировать надо после argc,argv
+		if( fileConfName.empty() )
+			setConfFileName();
+
+		//    PassiveTimer pt(UniSetTimer::WaitUpTime);
+		ulogsys << "*** configure from file: " << fileConfName << endl;
 
 		// -------------------------------------------------------------------------
 		xmlSensorsSec = 0;

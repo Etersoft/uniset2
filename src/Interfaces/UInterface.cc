@@ -1265,23 +1265,30 @@ namespace uniset
 	}
 	// ------------------------------------------------------------------------------------------------------------
 	uniset::ObjectPtr UInterface::CacheOfResolve::resolve( const uniset::ObjectId id, const uniset::ObjectId node ) const
-	throw(uniset::NameNotFound)
+	throw(uniset::NameNotFound,uniset::SystemError)
 	{
-		uniset::uniset_rwmutex_rlock l(cmutex);
+		try
+		{
+			uniset::uniset_rwmutex_rlock l(cmutex);
 
-		auto it = mcache.find( uniset::key(id, node) );
+			auto it = mcache.find( uniset::key(id, node) );
 
-		if( it == mcache.end() )
-			throw uniset::NameNotFound();
+			if( it != mcache.end() )
+			{
+				it->second.ncall++;
 
-		it->second.ncall++;
-
-		// т.к. функция возвращает указатель
-		// и тот кто вызывает отвечает за освобождение памяти
-		// то мы делаем _duplicate....
-
-		if( !CORBA::is_nil(it->second.ptr) )
-			return CORBA::Object::_duplicate(it->second.ptr);
+				// т.к. функция возвращает указатель
+				// и тот кто вызывает отвечает за освобождение памяти
+				// то мы делаем _duplicate....
+				if( !CORBA::is_nil(it->second.ptr) )
+					return CORBA::Object::_duplicate(it->second.ptr);
+			}
+		}
+		catch( std::exception& ex )
+		{
+			uwarn << "UI(CacheOfResolve::resolve): exception: " << ex.what() << endl;
+			throw uniset::SystemError(ex.what());
+		}
 
 		throw uniset::NameNotFound();
 	}
@@ -1305,22 +1312,29 @@ namespace uniset
 	// ------------------------------------------------------------------------------------------------------------
 	bool UInterface::CacheOfResolve::clean() noexcept
 	{
-		uniset::uniset_rwmutex_wrlock l(cmutex);
-
-		uinfo << "UI: clean cache...." << endl;
-
-		for( auto it = mcache.begin(); it != mcache.end();)
+		try
 		{
-			if( it->second.ncall <= minCallCount )
+			uniset::uniset_rwmutex_wrlock l(cmutex);
+
+			uinfo << "UI: clean cache...." << endl;
+
+			for( auto it = mcache.begin(); it != mcache.end();)
 			{
-				try
+				if( it->second.ncall <= minCallCount )
 				{
-					mcache.erase(it++);
+					try
+					{
+						mcache.erase(it++);
+					}
+					catch(...) {}
 				}
-				catch(...) {}
+				else
+					++it;
 			}
-			else
-				++it;
+		}
+		catch( std::exception& ex )
+		{
+			uwarn << "UI::Chache::clean: exception: " << ex.what() << endl;
 		}
 
 		if( mcache.size() < MaxSize )
@@ -1341,7 +1355,10 @@ namespace uniset
 			if( it != mcache.end() )
 				mcache.erase(it);
 		}
-		catch(...) {}
+		catch( std::exception& ex )
+		{
+			uwarn << "UI::Chache::erase: exception: " << ex.what() << endl;
+		}
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

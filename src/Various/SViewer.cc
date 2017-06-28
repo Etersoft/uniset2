@@ -306,8 +306,10 @@ void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tls
 void SViewer::printInfo(uniset::ObjectId id, const string& sname, long value, const string& supplier,
 						const string& txtname, const string& iotype)
 {
+	std::ios_base::fmtflags old_flags = cout.flags();
 	cout << "(" << setw(5) << id << ")" << " | " << setw(2) << iotype << " | " << setw(60) << sname
 		 << "   | " << setw(5) << value << "\t | "
 		 << setw(40) << left << supplier << endl; // "\t | " << txtname << endl;
+	cout.setf(old_flags);
 }
 // ---------------------------------------------------------------------------
