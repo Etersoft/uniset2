@@ -670,7 +670,7 @@ namespace uniset
 			<< " numLostMsg=" << numLostMsg
 			<< endl;
 
-		return std::move(inf.str());
+		return inf.str();
 	}
 	// ---------------------------------------------------------------------
 #ifndef DISABLE_REST_API

@@ -77,7 +77,7 @@ namespace uniset
 				assert(sizeof(uniset::RawDataOfTransportMessage) >= sizeof(msg));
 				std::memcpy(&tmsg.data, &msg, sizeof(msg));
 				tmsg.consumer = msg.consumer;
-				return std::move(tmsg);
+				return tmsg;
 			}
 	};
 
