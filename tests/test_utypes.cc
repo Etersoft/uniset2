@@ -339,7 +339,7 @@ TEST_CASE("UniSetTypes: getIOType", "[utypes][getIOType]" )
 	REQUIRE( getIOType("") == UniversalIO::UnknownIOType );
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("UniSetTypes: ostream_guard", "[utypes][ostream_guard]" )
+TEST_CASE("UniSetTypes: ios_fmt_restorer", "[utypes][ios_fmt_restorer]" )
 {
 	std::ostringstream s;
 
