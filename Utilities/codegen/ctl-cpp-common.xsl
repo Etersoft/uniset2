@@ -1567,6 +1567,9 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( uniset::ObjectId id, b
 // ----------------------------------------------------------------------------
 std::string  <xsl:value-of select="$CLASSNAME"/>_SK::strval( uniset::ObjectId id, bool showLinkName ) const
 {
+	if( id == DefaultObjectId )
+		return "";
+
 	ostringstream s;
 	<xsl:for-each select="//smap/item">
 	if( id == <xsl:value-of select="@name"/> )
@@ -1940,6 +1943,9 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( uniset::ObjectId id, b
 // ----------------------------------------------------------------------------
 std::string <xsl:value-of select="$CLASSNAME"/>_SK::strval( uniset::ObjectId id, bool showLinkName ) const
 {
+	if( id == DefaultObjectId )
+		return "";
+
 	ostringstream s;
 	<xsl:for-each select="//sensors/item/consumers/consumer">
 	<xsl:if test="normalize-space(../../@msg)!='1'">
