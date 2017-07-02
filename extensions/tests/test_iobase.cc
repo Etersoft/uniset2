@@ -30,7 +30,7 @@ TEST_CASE("[IOBase]: default constructor", "[iobase][extensions]")
 	CHECK( ib.value == 0 );
 	CHECK( ib.craw == 0 );
 	CHECK( ib.cprev == 0 );     /*!< предыдущее значение после калибровки */
-	CHECK( ib.safety == 0 );    /*!< безопасное состояние при завершении процесса */
+	CHECK( ib.safeval == 0 );    /*!< безопасное состояние при завершении процесса */
 	CHECK( ib.defval == 0 );    /*!< состояние по умолчанию (при запуске) */
 
 	CHECK( ib.nofilter == 0 );      /*!< отключение фильтра */

@@ -1619,7 +1619,7 @@ namespace uniset
 			<< " stype=" << p.stype
 			<< " wnum=" << p.wnum
 			<< " nbyte=" << p.nbyte
-			<< " safety=" << p.safety
+			<< " safeval=" << p.safeval
 			<< " invert=" << p.invert
 			<< " regID=" << p.regID;
 
