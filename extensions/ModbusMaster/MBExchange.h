@@ -74,8 +74,17 @@ namespace uniset
 				emSkipSaveToSM = 3, /*!< не писать данные в SM (при этом работают и read и write функции) */
 				emSkipExchange = 4 /*!< отключить обмен */
 			};
-
 			friend std::ostream& operator<<( std::ostream& os, const ExchangeMode& em );
+
+			/*! Режимы работы процесса обмена */
+			enum SafeMode
+			{
+				safeNone = 0,               /*!< не использовать безопасный режим (по умолчанию) */
+				safeResetIfNotRespond = 1,  /*!< выставлять безопасное значение, если пропала связь с устройством */
+				safeExternalControl = 2     /*!< управление сбросом по внешнему датчику */
+			};
+
+			friend std::ostream& operator<<( std::ostream& os, const SafeMode& em );
 
 			enum DeviceType
 			{
@@ -356,6 +365,11 @@ namespace uniset
 			uniset::ObjectId sidExchangeMode = { uniset::DefaultObjectId }; /*!< иденидентификатор для датчика режима работы */
 			IOController::IOStateList::iterator itExchangeMode;
 			long exchangeMode = {emNone}; /*!< режим работы см. ExchangeMode */
+
+			long safeMode = { safeNone }; /*!< режим безопасного состояния см. SafeMode */
+			uniset::ObjectId sidSafeModeExternal = { uniset::DefaultObjectId }; /*!< иденидентификатор для датчика безопасного режима */
+			IOController::IOStateList::iterator itSafeModeExternal;
+			long valueSafeModeExternal = { 1 };
 
 			std::atomic_bool activated = { false };
 			timeout_t activateTimeout = { 20000 }; // msec

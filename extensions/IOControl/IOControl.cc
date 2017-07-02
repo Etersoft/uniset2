@@ -32,7 +32,7 @@ namespace uniset
 		os << "(" << inf.si.id << ")" << uniset_conf()->oind->getMapName(inf.si.id)
 		   << " card=" << inf.ncard << " channel=" << inf.channel << " subdev=" << inf.subdev
 		   << " aref=" << inf.aref << " range=" << inf.range
-		   << " default=" << inf.defval << " safety=" << inf.safety;
+		   << " default=" << inf.defval << " safeval=" << inf.safeval;
 
 		if( inf.cal.minRaw != inf.cal.maxRaw )
 			os << inf.cal;
@@ -543,7 +543,7 @@ namespace uniset
 
 		ComediInterface* card = cards.getCard(it->ncard);
 
-		if( card == NULL || it->subdev == DefaultSubdev || it->channel == DefaultChannel )
+		if( card == NULL || it->subdev == IOBase::DefaultSubdev || it->channel == IOBase::DefaultChannel )
 			return;
 
 		if( it->si.id == DefaultObjectId )
@@ -761,7 +761,7 @@ namespace uniset
 		inf.subdev = it.getIntProp("subdev");
 
 		if( inf.subdev < 0 )
-			inf.subdev = DefaultSubdev;
+			inf.subdev = IOBase::DefaultSubdev;
 
 		string jack = it.getProp("jack");
 
@@ -778,7 +778,7 @@ namespace uniset
 			else if( jack == "J5" )
 				inf.subdev = 4;
 			else
-				inf.subdev = DefaultSubdev;
+				inf.subdev = IOBase::DefaultSubdev;
 		}
 
 		std::string prop_prefix( prefix + "_" );
@@ -893,17 +893,17 @@ namespace uniset
 
 			try
 			{
-				if( it.subdev == DefaultSubdev || it.safety == NoSafety )
+				if( it.subdev == IOBase::DefaultSubdev || it.safeval == IOBase::UnusedSafeValue )
 					continue;
 
 				if( it.stype == UniversalIO::DO || it.lamp )
 				{
-					bool set = it.invert ? !((bool)it.safety) : (bool)it.safety;
+					bool set = it.invert ? !((bool)it.safeval) : (bool)it.safeval;
 					card->setDigitalChannel(it.subdev, it.channel, set);
 				}
 				else if( it.stype == UniversalIO::AO )
 				{
-					card->setAnalogChannel(it.subdev, it.channel, it.safety, it.range, it.aref);
+					card->setAnalogChannel(it.subdev, it.channel, it.safeval, it.range, it.aref);
 				}
 			}
 			catch( const std::exception& ex )
@@ -928,7 +928,7 @@ namespace uniset
 
 			ComediInterface* card = cards.getCard(it.ncard);
 
-			if( card == NULL || it.subdev == DefaultSubdev || it.channel == DefaultChannel )
+			if( card == NULL || it.subdev == IOBase::DefaultSubdev || it.channel == IOBase::DefaultChannel )
 				continue;
 
 			try
@@ -954,12 +954,12 @@ namespace uniset
 
 		for( auto& it : iomap )
 		{
-			if( it.subdev == DefaultSubdev )
+			if( it.subdev == IOBase::DefaultSubdev )
 				continue;
 
 			ComediInterface* card = cards.getCard(it.ncard);
 
-			if( card == NULL || it.subdev == DefaultSubdev || it.channel == DefaultChannel )
+			if( card == NULL || it.subdev == IOBase::DefaultSubdev || it.channel == IOBase::DefaultChannel )
 				continue;
 
 			try
@@ -995,7 +995,7 @@ namespace uniset
 
 		for( auto& io : lst )
 		{
-			if( io->subdev == DefaultSubdev || io->channel == DefaultChannel )
+			if( io->subdev == IOBase::DefaultSubdev || io->channel == IOBase::DefaultChannel )
 				continue;
 
 			ComediInterface* card = cards.getCard(io->ncard);
@@ -1080,17 +1080,17 @@ namespace uniset
 
 					try
 					{
-						if( it.subdev == DefaultSubdev || it.safety == NoSafety )
+						if( it.subdev == IOBase::DefaultSubdev || it.safeval == IOBase::UnusedSafeValue )
 							continue;
 
 						if( it.stype == UniversalIO::DO || it.lamp )
 						{
-							bool set = it.invert ? !((bool)it.safety) : (bool)it.safety;
+							bool set = it.invert ? !((bool)it.safeval) : (bool)it.safeval;
 							card->setDigitalChannel(it.subdev, it.channel, set);
 						}
 						else if( it.stype == UniversalIO::AO )
 						{
-							card->setAnalogChannel(it.subdev, it.channel, it.safety, it.range, it.aref);
+							card->setAnalogChannel(it.subdev, it.channel, it.safeval, it.range, it.aref);
 						}
 					}
 					catch( const uniset::Exception& ex )
@@ -1393,7 +1393,7 @@ namespace uniset
 
 			ComediInterface* card = cards.getCard(it.ncard);
 
-			if( card == NULL || it.subdev == DefaultSubdev || it.channel == DefaultChannel )
+			if( card == NULL || it.subdev == IOBase::DefaultSubdev || it.channel == IOBase::DefaultChannel )
 				continue;
 
 			if( it.stype == UniversalIO::AO || it.stype == UniversalIO::DO )
@@ -1475,7 +1475,7 @@ namespace uniset
 
 									// и сразу зажигаем, чтобы не было паузы
 									// (так комфортнее выглядит для оператора)
-									if( it.ignore || it.subdev == DefaultSubdev || it.channel == DefaultChannel )
+									if( it.ignore || it.subdev == IOBase::DefaultSubdev || it.channel == IOBase::DefaultChannel )
 										break;
 
 									ComediInterface* card = cards.getCard(it.ncard);
@@ -1496,7 +1496,7 @@ namespace uniset
 
 									// и сразу зажигаем, чтобы не было паузы
 									// (так комфортнее выглядит для оператора)
-									if( it.ignore || it.subdev == DefaultSubdev || it.channel == DefaultChannel )
+									if( it.ignore || it.subdev == IOBase::DefaultSubdev || it.channel == IOBase::DefaultChannel )
 										break;
 
 									ComediInterface* card = cards.getCard(it.ncard);
@@ -1517,7 +1517,7 @@ namespace uniset
 
 									// и сразу зажигаем, чтобы не было паузы
 									// (так комфортнее выглядит для оператора)
-									if( it.ignore || it.subdev == DefaultSubdev || it.channel == DefaultChannel )
+									if( it.ignore || it.subdev == IOBase::DefaultSubdev || it.channel == IOBase::DefaultChannel )
 										break;
 
 									ComediInterface* card = cards.getCard(it.ncard);

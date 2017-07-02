@@ -28,7 +28,7 @@ namespace uniset
 	{
 		return os << "(" << inf.si.id << ")" << uniset_conf()->oind->getMapName(inf.si.id)
 			   << " default=" << inf.defval
-			   << " safety=" << inf.safety
+			   << " safeval=" << inf.safeval
 			   << " stype=" << inf.stype
 			   << " calibration=" << inf.cal
 			   << " cdiagram=" << ( inf.cdiagram ? inf.cdiagram->getName() : "null" )
@@ -632,7 +632,7 @@ namespace uniset
 			}
 		}
 
-		b->safety = initIntProp(it, "safety", prefix, init_prefix_only, NoSafety);
+		b->safeval = initIntProp(it, "safeval", prefix, init_prefix_only, UnusedSafeValue);
 
 		b->stype = uniset::getIOType(initProp(it, "iotype", prefix, init_prefix_only));
 
@@ -814,7 +814,7 @@ namespace uniset
 		b.value = value;
 		b.craw = craw;
 		b.cprev = cprev;
-		b.safety = safety;
+		b.safeval = safeval;
 		b.defval = defval;
 		b.df = df;
 		b.nofilter = nofilter;
@@ -853,7 +853,7 @@ namespace uniset
 		value = b.value;
 		craw = b.craw;
 		cprev = b.cprev;
-		safety = b.safety;
+		safeval = b.safeval;
 		defval = b.defval;
 		df = b.df;
 		nofilter = b.nofilter;

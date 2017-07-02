@@ -221,6 +221,37 @@ namespace uniset
 			}
 		}
 
+		if( findArgParam("--" + prefix + "-safemode-reset-if-not-repond", conf->getArgc(), conf->getArgv()) != -1 )
+		{
+			safeMode = safeResetIfNotRespond;
+			vmonit(safeMode);
+		}
+
+		string safemode = conf->getArgParam("--" + prefix + "-safemode-external-control-sid", it.getProp("safeModeExternalControl"));
+
+		if( !safemode.empty() )
+		{
+			sidSafeModeExternal = conf->getSensorID(emode);
+
+			if( sidSafeModeExternal == DefaultObjectId )
+			{
+				ostringstream err;
+				err << myname << ": ID not found for " << safemode;
+				mbcrit << myname << "(init): " << err.str() << endl;
+				throw SystemError(err.str());
+			}
+
+			// если указан датчик, то
+			safeMode = safeExternalControl;
+			vmonit(safeMode);
+		}
+
+		string safemodeValue = conf->getArgParam("--" + prefix + "-safemode-external-control-value", it.getProp("safeModeExternalControlValue"));
+		if( !safemodeValue.empty() )
+			valueSafeModeExternal = uni_atoi(safemodeValue);
+
+		vmonit(valueSafeModeExternal);
+
 		activateTimeout    = conf->getArgPInt("--" + prefix + "-activate-timeout", 20000);
 
 		vmonit(allInitOK);
@@ -281,6 +312,11 @@ namespace uniset
 		cout << "--prefix-default-mbinit-ok 0,1  - Флаг инициализации. 1 - не ждать первого обмена с устройством, а сохранить при старте в SM значение 'default'" << endl;
 		cout << "--prefix-query-max-count max    - Максимальное количество запрашиваемых за один раз регистров (При условии no-query-optimization=0). По умолчанию: " << ModbusRTU::MAXDATALEN << "." << endl;
 		cout << endl;
+		cout << "SafeMode:";
+		cout << "--prefix-safemode-reset-if-not-respond        - Включить режим сброса значений в safeval, при пропадании связи с устройством" << endl;
+		cout << "--prefix-safemode-external-control-sid id     - Управление сбросом значений в безопасное состояние по внешнему датчику." << endl;
+		cout << "--prefix-safemode-external-control-value val  - Значение срабатывания для датчика управления сбросом. Default: 1" << endl;
+		cout << endl;
 		cout << " Logs: " << endl;
 		cout << "--prefix-log-...            - log control" << endl;
 		cout << "             add-levels ...  " << endl;
@@ -294,6 +330,7 @@ namespace uniset
 		cout << "--prefix-logserver-port num - listen port. Default: ID" << endl;
 		cout << LogServer::help_print("prefix-logserver") << endl;
 	}
+
 	// -----------------------------------------------------------------------------
 	MBExchange::~MBExchange()
 	{
@@ -2455,7 +2492,7 @@ namespace uniset
 					   << " tcp_mbreg=" << ModbusRTU::dat2str(ri->mbreg) << "(" << (int)ri->mbreg << ")"
 					   << " conflict with sensors " << sl.str() << endl;
 
-				abort();     // ABORT PROGRAM!!!!
+				std::abort();     // ABORT PROGRAM!!!!
 				return false;
 			}
 
@@ -2468,7 +2505,7 @@ namespace uniset
 					mbcrit << myname << "(initItem): FAILED! Sharing SAVE (mbreg="
 						   << ModbusRTU::dat2str(ri->mbreg) << "(" << (int)ri->mbreg << ") already used)!"
 						   << " IGNORE --> " << it.getProp("name") << endl;
-					abort();     // ABORT PROGRAM!!!!
+					std::abort();     // ABORT PROGRAM!!!!
 					return false;
 				}
 			}
@@ -2675,7 +2712,7 @@ namespace uniset
 			   << " nbit=" << p.nbit
 			   << " nbyte=" << p.nbyte
 			   << " rnum=" << p.rnum
-			   << " safety=" << p.safety
+			   << " safeval=" << p.safeval
 			   << " invert=" << p.invert;
 
 		if( p.stype == UniversalIO::AI || p.stype == UniversalIO::AO )
@@ -2932,6 +2969,20 @@ namespace uniset
 		catch(...)
 		{
 			mbwarn << myname << "(askSensors): 'sidExchangeMode' catch..." << std::endl;
+		}
+
+		try
+		{
+			if( sidSafeModeExternal != DefaultObjectId )
+				shm->askSensor(sidSafeModeExternal, cmd);
+		}
+		catch( uniset::Exception& ex )
+		{
+			mbwarn << myname << "(askSensors): " << ex << std::endl;
+		}
+		catch(...)
+		{
+			mbwarn << myname << "(askSensors): 'sidSafeModeExternal' catch..." << std::endl;
 		}
 
 		for( auto it1 = devices.begin(); it1 != devices.end(); ++it1 )
@@ -3283,6 +3334,20 @@ namespace uniset
 
 		if( em == MBExchange::emSkipExchange )
 			return os << "emSkipExchange";
+
+		return os;
+	}
+	// -----------------------------------------------------------------------------
+	ostream& operator<<( ostream& os, const MBExchange::SafeMode& sm )
+	{
+		if( sm == MBExchange::safeNone )
+			return os << "safeNone";
+
+		if( sm == MBExchange::safeResetIfNotRespond )
+			return os << "safeResetIfNotRespond";
+
+		if( sm == MBExchange::safeExternalControl )
+			return os << "safeExternalControl";
 
 		return os;
 	}
