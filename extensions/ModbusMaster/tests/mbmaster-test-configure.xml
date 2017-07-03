@@ -115,9 +115,9 @@
 			<item id="1028" mb="2" mbtype="rtu" mbaddr="0x01" mbreg="47" mbfunc="0x03" vtype="F2" iotype="DI" name="TestWrite1028_F2" textname="F2: Тестовый регистр для 0x10"/>
 
 			<!-- SafeMode tests -->
-			<item id="1040" name="Slave1_SafemodeSensor_S" iotype="AI" textname="Управление safeMode" />
-			<item id="1041" safeval="42" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="10" mbfunc="0x03" iotype="AI" name="SafeMode_TestRead03" textname="(safemode): Тестовый регистр для 0x03"/>
-			<item id="1042" safeval="1" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="11" mbfunc="0x02" iotype="DI" name="SafeMode_TestRead02" textname="(safemode): Тестовый регистр для 0x02"/>
+			<item id="1050" name="Slave1_SafemodeSensor_S" iotype="AI" textname="Управление safeMode" />
+			<item id="1051" safeval="42" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="10" mbfunc="0x03" iotype="AI" name="SafeMode_TestRead03" textname="(safemode): Тестовый регистр для 0x03"/>
+			<item id="1052" safeval="1" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="11" mbfunc="0x02" iotype="DI" name="SafeMode_TestRead02" textname="(safemode): Тестовый регистр для 0x02"/>
 
 			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
 
