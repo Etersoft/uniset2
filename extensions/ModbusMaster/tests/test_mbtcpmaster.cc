@@ -684,29 +684,32 @@ TEST_CASE("MBTCPMaster: 0x66 (file transfer)", "[modbus][0x66][mbmaster][mbtcpma
 TEST_CASE("MBTCPMaster: safe mode", "[modbus][safemode][mbmaster][mbtcpmaster]")
 {
 	InitTest();
+	ui->setValue(1050,0); // отключаем safeMode
 
-	smi->setValue(1040,0); // отключаем safeMode
-
-	mbs->setReply(50);
+	mbs->setReply(53);
 	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1041) == 50 );
-//	REQUIRE( ui->getValue(1042) == 1 );
+	REQUIRE( ui->getValue(1051) == 53 );
+	REQUIRE( ui->getValue(1052) == 1 );
 
 	mbs->setReply(0);
 	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1041) == 0 );
-	REQUIRE( ui->getValue(1042) == 0 );
+	REQUIRE( ui->getValue(1051) == 0 );
+	REQUIRE( ui->getValue(1052) == 0 );
 
-	smi->setValue(1040,42); // включаем safeMode
+	ui->setValue(1050,42); // включаем safeMode
 	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1041) == 42 );
-	REQUIRE( ui->getValue(1042) == 1 );
+	REQUIRE( ui->getValue(1051) == 42 );
+	REQUIRE( ui->getValue(1052) == 1 );
 
-	smi->setValue(1040,0); // отключаем safeMode
-	mbs->setReply(0);
+	mbs->setReply(53);
 	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1041) == 0 );
-	REQUIRE( ui->getValue(1042) == 0 );
+	REQUIRE( ui->getValue(1051) == 42 );
+	REQUIRE( ui->getValue(1052) == 1 );
+
+	ui->setValue(1050,0); // отключаем safeMode
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1051) == 53 );
+	REQUIRE( ui->getValue(1052) == 1 );
 }
 // -----------------------------------------------------------------------------
 #if 0
