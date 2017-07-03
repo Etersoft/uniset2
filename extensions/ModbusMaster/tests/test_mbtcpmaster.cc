@@ -12,11 +12,10 @@
 using namespace std;
 using namespace uniset;
 // -----------------------------------------------------------------------------
-static ModbusRTU::ModbusAddr slaveaddr = 0x01; // conf->getArgInt("--mbs-my-addr");
+static ModbusRTU::ModbusAddr slaveADDR = 0x01; // conf->getArgInt("--mbs-my-addr");
 static int port = 20048; // conf->getArgInt("--mbs-inet-port");
 static string iaddr("127.0.0.1"); // conf->getArgParam("--mbs-inet-addr");
-static const ModbusRTU::ModbusAddr slaveADDR = 0x01;
-static unordered_set<ModbusRTU::ModbusAddr> vaddr = { slaveADDR };
+static unordered_set<ModbusRTU::ModbusAddr> vaddr = { slaveADDR, 0x02 };
 static shared_ptr<MBTCPTestServer> mbs;
 static shared_ptr<UInterface> ui;
 static std::shared_ptr<SMInterface> smi;
@@ -626,13 +625,13 @@ TEST_CASE("MBTCPMaster: check respond resnsor", "[modbus][respond][mbmaster][mbt
 {
 	InitTest();
 	mbs->disableExchange(false);
-	msleep(1100);
+	msleep(3500);
 	CHECK( ui->getValue(slaveNotRespond) == 0 );
 	mbs->disableExchange(true);
-	msleep(1100);
+	msleep(3000);
 	CHECK( ui->getValue(slaveNotRespond) == 1 );
 	mbs->disableExchange(false);
-	msleep(1100);
+	msleep(3000);
 	CHECK( ui->getValue(slaveNotRespond) == 0 );
 }
 // -----------------------------------------------------------------------------
@@ -710,6 +709,36 @@ TEST_CASE("MBTCPMaster: safe mode", "[modbus][safemode][mbmaster][mbtcpmaster]")
 	msleep(polltime + 200);
 	REQUIRE( ui->getValue(1051) == 53 );
 	REQUIRE( ui->getValue(1052) == 1 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: safe mode (resetIfNotRespond)", "[modbus][safemode][mbmaster][mbtcpmaster]")
+{
+	InitTest();
+
+	mbs->setReply(53);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1053) == 53 );
+	REQUIRE( ui->getValue(1054) == 1 );
+
+	mbs->setReply(0);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1053) == 0 );
+	REQUIRE( ui->getValue(1054) == 0 );
+
+	mbs->disableExchange(true); // отключаем связь
+	msleep(5000);
+	REQUIRE( ui->getValue(1053) == 42 );
+	REQUIRE( ui->getValue(1054) == 1 );
+
+	mbs->setReply(53);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1053) == 42 );
+	REQUIRE( ui->getValue(1054) == 1 );
+
+	mbs->disableExchange(false); // включаем связь
+	msleep(5000);
+	REQUIRE( ui->getValue(1053) == 53 );
+	REQUIRE( ui->getValue(1054) == 1 );
 }
 // -----------------------------------------------------------------------------
 #if 0
