@@ -681,6 +681,34 @@ TEST_CASE("MBTCPMaster: 0x66 (file transfer)", "[modbus][0x66][mbmaster][mbtcpma
 	WARN("Test of '0x66'..not yet.. ");
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: safe mode", "[modbus][safemode][mbmaster][mbtcpmaster]")
+{
+	InitTest();
+
+	smi->setValue(1040,0); // отключаем safeMode
+
+	mbs->setReply(50);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1041) == 50 );
+//	REQUIRE( ui->getValue(1042) == 1 );
+
+	mbs->setReply(0);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1041) == 0 );
+	REQUIRE( ui->getValue(1042) == 0 );
+
+	smi->setValue(1040,42); // включаем safeMode
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1041) == 42 );
+	REQUIRE( ui->getValue(1042) == 1 );
+
+	smi->setValue(1040,0); // отключаем safeMode
+	mbs->setReply(0);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1041) == 0 );
+	REQUIRE( ui->getValue(1042) == 0 );
+}
+// -----------------------------------------------------------------------------
 #if 0
 // -----------------------------------------------------------------------------
 static bool init_iobase( IOBase* ib, const std::string& sensor )

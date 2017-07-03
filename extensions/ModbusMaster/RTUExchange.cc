@@ -201,7 +201,7 @@ bool RTUExchange::poll()
 	{
 		mb = initMB(false);
 
-		if( !checkProcActive() )
+		if( !isProcActive() )
 			return false;
 
 		updateSM();
@@ -212,7 +212,7 @@ bool RTUExchange::poll()
 	if( !allInitOK )
 		firstInitRegisters();
 
-	if( !checkProcActive() )
+	if( !isProcActive() )
 		return false;
 
 	ncycle++;
@@ -301,7 +301,7 @@ bool RTUExchange::poll()
 					if( it == rmap->end() )
 						break;
 
-					if( !checkProcActive() )
+					if( !isProcActive() )
 						return false;
 				}
 			}
@@ -314,7 +314,7 @@ bool RTUExchange::poll()
 	// check thresholds
 	for( auto && t : thrlist )
 	{
-		if( !checkProcActive() )
+		if( !isProcActive() )
 			return false;
 
 		IOBase::processingThreshold(&t, shm, force);

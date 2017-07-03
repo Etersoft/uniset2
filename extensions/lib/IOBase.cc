@@ -632,7 +632,11 @@ namespace uniset
 			}
 		}
 
-		b->safeval = initIntProp(it, "safeval", prefix, init_prefix_only, UnusedSafeValue);
+		std::string ssafe = initProp(it, "safeval", prefix, init_prefix_only);
+
+		b->safevalDefined = !ssafe.empty();
+		if( b->safevalDefined )
+			b->safeval = uni_atoi(ssafe);
 
 		b->stype = uniset::getIOType(initProp(it, "iotype", prefix, init_prefix_only));
 
@@ -815,6 +819,7 @@ namespace uniset
 		b.craw = craw;
 		b.cprev = cprev;
 		b.safeval = safeval;
+		b.safevalDefined = safevalDefined;
 		b.defval = defval;
 		b.df = df;
 		b.nofilter = nofilter;
@@ -854,6 +859,7 @@ namespace uniset
 		craw = b.craw;
 		cprev = b.cprev;
 		safeval = b.safeval;
+		safevalDefined = b.safevalDefined;
 		defval = b.defval;
 		df = b.df;
 		nofilter = b.nofilter;
