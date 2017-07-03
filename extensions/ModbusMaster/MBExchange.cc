@@ -553,6 +553,13 @@ namespace uniset
 		if( !dev )
 			return false;
 
+		// если режим, сброс когда исчезла связь
+		// то проверяем таймер
+		// resp_Delay - это задержка на отпускание "пропадание" связи,
+		// поэтому проверка на "0" (0 - связи нет), а значит должен включиться safeMode
+		if( dev->safeMode == safeResetIfNotRespond )
+			return !dev->resp_Delay.get();
+
 		return ( dev->safeMode != safeNone );
 	}
 	// -----------------------------------------------------------------------------
@@ -2931,7 +2938,12 @@ namespace uniset
 			}
 		}
 
-		string safemode(it.getProp("safemodeSensor"));
+		// сперва проверим не задан ли режим "safemodeResetIfNotRespond"
+		if( it.getIntProp("safemodeResetIfNotRespond") )
+			dev->safeMode = MBExchange::safeResetIfNotRespond;
+
+		// потом проверим датчик для "safeExternalControl"
+		string safemode = it.getProp("safemodeSensor");
 
 		if( !safemode.empty() )
 		{
