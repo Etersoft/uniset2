@@ -151,3 +151,31 @@ TEST_CASE("MBTCPMultiMaster: rotate channel", "[modbus][mbmaster][mbtcpmultimast
 	REQUIRE( ui->getValue(1003) == 100 );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMultiMaster: safe mode", "[modbus][safemode][mbmaster][mbtcpmultimaster]")
+{
+	InitTest();
+
+	ui->setValue(1040,0); // отключаем safeMode
+
+	mbs1->setReply(50);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1041) == 50 );
+//	REQUIRE( ui->getValue(1042) == 1 );
+
+	mbs1->setReply(0);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1041) == 0 );
+	REQUIRE( ui->getValue(1042) == 0 );
+
+	ui->setValue(1040,42); // включаем safeMode
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1041) == 42 );
+	REQUIRE( ui->getValue(1042) == 1 );
+
+	ui->setValue(1040,0); // отключаем safeMode
+	mbs1->setReply(0);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1041) == 0 );
+	REQUIRE( ui->getValue(1042) == 0 );
+}
+// -----------------------------------------------------------------------------

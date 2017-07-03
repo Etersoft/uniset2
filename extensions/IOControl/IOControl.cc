@@ -893,7 +893,7 @@ namespace uniset
 
 			try
 			{
-				if( it.subdev == IOBase::DefaultSubdev || it.safeval == IOBase::UnusedSafeValue )
+				if( it.subdev == IOBase::DefaultSubdev || !it.safevalDefined )
 					continue;
 
 				if( it.stype == UniversalIO::DO || it.lamp )
@@ -1080,7 +1080,7 @@ namespace uniset
 
 					try
 					{
-						if( it.subdev == IOBase::DefaultSubdev || it.safeval == IOBase::UnusedSafeValue )
+						if( it.subdev == IOBase::DefaultSubdev || !it.safevalDefined )
 							continue;
 
 						if( it.stype == UniversalIO::DO || it.lamp )

@@ -35,7 +35,6 @@ namespace uniset
 	{
 		static const int DefaultSubdev  = -1;
 		static const int DefaultChannel = -1;
-		static const int UnusedSafeValue = -1; // значение обозначающее, не использовать safe value
 
 		// т.к. IOBase содержит rwmutex с запрещённым конструктором копирования
 		// приходится здесь тоже объявлять разрешенными только операции "перемещения"
@@ -108,8 +107,9 @@ namespace uniset
 		long value;     /*!< текущее значение */
 		long craw;      /*!< текущее 'сырое' значение до калибровки */
 		long cprev;     /*!< предыдущее значение после калибровки */
-		long safeval;      /*!< безопасное значение */
+		long safeval;   /*!< безопасное значение */
 		long defval;    /*!< состояние по умолчанию (при запуске) */
+		bool safevalDefined = { false }; /*!< флаг, означающий что safeval задан (можно использовать) */
 
 		DigitalFilter df;   /*!< реализация программного фильтра */
 		bool nofilter;      /*!< отключение фильтра */

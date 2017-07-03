@@ -463,13 +463,13 @@ void MBTCPMultiMaster::sysCommand( const uniset::SystemMessage* sm )
 void MBTCPMultiMaster::poll_thread()
 {
 	// ждём начала работы..(см. MBExchange::activateObject)
-	while( !checkProcActive() )
+	while( !isProcActive() )
 	{
 		uniset::uniset_rwmutex_rlock l(mutex_start);
 	}
 
 	// работаем..
-	while( checkProcActive() )
+	while( isProcActive() )
 	{
 		try
 		{
@@ -490,7 +490,7 @@ void MBTCPMultiMaster::poll_thread()
 			mbwarn << myname << "(poll_thread): "  << ex.what() << endl;
 		}
 
-		if( !checkProcActive() )
+		if( !isProcActive() )
 			break;
 
 		msleep(polltime);
@@ -499,7 +499,7 @@ void MBTCPMultiMaster::poll_thread()
 // -----------------------------------------------------------------------------
 void MBTCPMultiMaster::check_thread()
 {
-	while( checkProcActive() )
+	while( isProcActive() )
 	{
 		for( auto && it : mblist )
 		{
@@ -520,7 +520,7 @@ void MBTCPMultiMaster::check_thread()
 					   << " respond_force=" << it->respond_force
 					   << " respond=" << it->respond
 					   << " respond_invert=" << it->respond_invert
-					   << " activated=" << checkProcActive()
+					   << " activated=" << isProcActive()
 					   << " ]"
 					   << endl;
 
@@ -528,7 +528,7 @@ void MBTCPMultiMaster::check_thread()
 				if( it->respond_init )
 					r = it->respondDelay.check( r );
 
-				if( !checkProcActive() )
+				if( !isProcActive() )
 					break;
 
 				try
@@ -560,11 +560,11 @@ void MBTCPMultiMaster::check_thread()
 				mbcrit << myname << "(check): (respond) "  << it->myname << " : " << ex.what() << std::endl;
 			}
 
-			if( !checkProcActive() )
+			if( !isProcActive() )
 				break;
 		}
 
-		if( !checkProcActive() )
+		if( !isProcActive() )
 			break;
 
 		msleep(checktime);

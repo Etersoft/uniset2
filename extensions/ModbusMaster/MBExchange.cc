@@ -221,37 +221,6 @@ namespace uniset
 			}
 		}
 
-		if( findArgParam("--" + prefix + "-safemode-reset-if-not-repond", conf->getArgc(), conf->getArgv()) != -1 )
-		{
-			safeMode = safeResetIfNotRespond;
-			vmonit(safeMode);
-		}
-
-		string safemode = conf->getArgParam("--" + prefix + "-safemode-external-control-sid", it.getProp("safeModeExternalControl"));
-
-		if( !safemode.empty() )
-		{
-			sidSafeModeExternal = conf->getSensorID(emode);
-
-			if( sidSafeModeExternal == DefaultObjectId )
-			{
-				ostringstream err;
-				err << myname << ": ID not found for " << safemode;
-				mbcrit << myname << "(init): " << err.str() << endl;
-				throw SystemError(err.str());
-			}
-
-			// если указан датчик, то
-			safeMode = safeExternalControl;
-			vmonit(safeMode);
-		}
-
-		string safemodeValue = conf->getArgParam("--" + prefix + "-safemode-external-control-value", it.getProp("safeModeExternalControlValue"));
-		if( !safemodeValue.empty() )
-			valueSafeModeExternal = uni_atoi(safemodeValue);
-
-		vmonit(valueSafeModeExternal);
-
 		activateTimeout    = conf->getArgPInt("--" + prefix + "-activate-timeout", 20000);
 
 		vmonit(allInitOK);
@@ -312,11 +281,6 @@ namespace uniset
 		cout << "--prefix-default-mbinit-ok 0,1  - Флаг инициализации. 1 - не ждать первого обмена с устройством, а сохранить при старте в SM значение 'default'" << endl;
 		cout << "--prefix-query-max-count max    - Максимальное количество запрашиваемых за один раз регистров (При условии no-query-optimization=0). По умолчанию: " << ModbusRTU::MAXDATALEN << "." << endl;
 		cout << endl;
-		cout << "SafeMode:";
-		cout << "--prefix-safemode-reset-if-not-respond        - Включить режим сброса значений в safeval, при пропадании связи с устройством" << endl;
-		cout << "--prefix-safemode-external-control-sid id     - Управление сбросом значений в безопасное состояние по внешнему датчику." << endl;
-		cout << "--prefix-safemode-external-control-value val  - Значение срабатывания для датчика управления сбросом. Default: 1" << endl;
-		cout << endl;
 		cout << " Logs: " << endl;
 		cout << "--prefix-log-...            - log control" << endl;
 		cout << "             add-levels ...  " << endl;
@@ -358,7 +322,7 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	void MBExchange::step()
 	{
-		if( !checkProcActive() )
+		if( !isProcActive() )
 			return;
 
 		if( ptInitChannel.checkTime() )
@@ -379,7 +343,7 @@ namespace uniset
 	}
 
 	// -----------------------------------------------------------------------------
-	bool MBExchange::checkProcActive() const
+	bool MBExchange::isProcActive() const
 	{
 		return activated;
 	}
@@ -525,7 +489,7 @@ namespace uniset
 		}
 	}
 	// -----------------------------------------------------------------------------
-	bool MBExchange::checkUpdateSM( bool wrFunc, long mdev )
+	bool MBExchange::isUpdateSM( bool wrFunc, long mdev ) const noexcept
 	{
 		if( exchangeMode == emSkipExchange || mdev == emSkipExchange )
 		{
@@ -561,7 +525,7 @@ namespace uniset
 		return true;
 	}
 	// -----------------------------------------------------------------------------
-	bool MBExchange::checkPoll( bool wrFunc ) const
+	bool MBExchange::isPollEnabled( bool wrFunc ) const noexcept
 	{
 		if( exchangeMode == emWriteOnly && !wrFunc )
 		{
@@ -582,6 +546,14 @@ namespace uniset
 		}
 
 		return true;
+	}
+	// -----------------------------------------------------------------------------
+	bool MBExchange::isSafeMode( std::shared_ptr<MBExchange::RTUDevice>& dev ) const noexcept
+	{
+		if( !dev )
+			return false;
+
+		return ( dev->safeMode != safeNone );
 	}
 	// -----------------------------------------------------------------------------
 	void MBExchange::printMap( MBExchange::RTUDeviceMap& m )
@@ -610,6 +582,7 @@ namespace uniset
 			<< " respond_timeout=" << d.resp_Delay.getOffDelay()
 			<< " respond_state=" << d.resp_state
 			<< " respond_invert=" << d.resp_invert
+			<< " safeMode=" << (MBExchange::SafeMode)d.safeMode
 			<< endl;
 
 
@@ -1028,7 +1001,7 @@ namespace uniset
 			}
 		}
 
-		if( !checkPoll(ModbusRTU::isWriteFunction(p->mbfunc)) )
+		if( !isPollEnabled(ModbusRTU::isWriteFunction(p->mbfunc)) )
 			return true;
 
 		if( p->q_count == 0 )
@@ -1234,7 +1207,7 @@ namespace uniset
 				{
 					mblog3 << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
 				}
-				catch(IONotifyController_i::BadRange )
+				catch( IONotifyController_i::BadRange )
 				{
 					mblog3 << myname << "(updateSM): (BadRange)..." << endl;
 				}
@@ -1247,12 +1220,50 @@ namespace uniset
 					mblog3 << myname << "(updateSM): CORBA::SystemException: "
 						   << ex.NP_minorString() << endl;
 				}
-				catch(...)
+				catch( std::exception& ex )
 				{
-					mblog3 << myname << "(updateSM): check modeSensor..catch ..." << endl;
+					mblog3 << myname << "(updateSM): check modeSensor: " << ex.what() << endl;
+				}
+
+				if( d->safemode_id != DefaultObjectId )
+				{
+					try
+					{
+						if( !shm->isLocalwork() )
+						{
+							if( shm->localGetValue(d->safemode_it, d->safemode_id) == d->safemode_value )
+								d->safeMode = safeExternalControl;
+							else
+								d->safeMode = safeNone;
+						}
+					}
+					catch(IOController_i::NameNotFound& ex)
+					{
+						mblog3 << myname << "(updateSM):(NameNotFound) " << ex.err << endl;
+					}
+					catch(IOController_i::IOBadParam& ex )
+					{
+						mblog3 << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
+					}
+					catch( IONotifyController_i::BadRange )
+					{
+						mblog3 << myname << "(updateSM): (BadRange)..." << endl;
+					}
+					catch( const uniset::Exception& ex )
+					{
+						mblog3 << myname << "(updateSM): " << ex << endl;
+					}
+					catch( const CORBA::SystemException& ex )
+					{
+						mblog3 << myname << "(updateSM): CORBA::SystemException: "
+							   << ex.NP_minorString() << endl;
+					}
+					catch( std::exception& ex )
+					{
+						mblog3 << myname << "(updateSM): check safemodeSensor: " << ex.what() << endl;
+					}
 				}
 			}
-
 
 			for( auto && m : d->pollmap )
 			{
@@ -1300,6 +1311,7 @@ namespace uniset
 						mblog3 << myname << "(updateSM): catch ..." << endl;
 					}
 
+					// эта проверка
 					if( it == regmap->end() )
 						break;
 				}
@@ -1327,22 +1339,26 @@ namespace uniset
 		if( !save && write_only )
 			return;
 
-		if( !checkUpdateSM(save, r->dev->mode) )
+		if( !isUpdateSM(save, r->dev->mode) )
 			return;
 
 		// если ещё не обменивались ни разу с устройством, то ингнорируем (не обновляем значение в SM)
-		if( !r->mb_initOK )
+		if( !r->mb_initOK && !isSafeMode(r->dev) )
 			return;
+
+		bool useSafeval = isSafeMode(r->dev) && p->safevalDefined;
 
 		mblog3 << myname << "(updateP): sid=" << p->si.id
 			   << " mbval=" << r->mbval
 			   << " vtype=" << p->vType
 			   << " rnum=" << p->rnum
-			   << " nbit=" << p->nbit
+			   << " nbit=" << (int)p->nbit
 			   << " save=" << save
 			   << " ioype=" << p->stype
 			   << " mb_initOK=" << r->mb_initOK
 			   << " sm_initOK=" << r->sm_initOK
+			   << " safeMode=" << isSafeMode(r->dev)
+			   << " safevalDefined=" << p->safevalDefined
 			   << endl;
 
 		try
@@ -1357,7 +1373,7 @@ namespace uniset
 					{
 						if( r->mb_initOK )
 						{
-							bool set = IOBase::processingAsDO( p, shm, force_out );
+							bool set = useSafeval ? p->safeval : IOBase::processingAsDO( p, shm, force_out );
 							b.set(p->nbit, set);
 							r->mbval = b.mdata();
 							r->sm_initOK = true;
@@ -1365,7 +1381,7 @@ namespace uniset
 					}
 					else
 					{
-						bool set = b[p->nbit];
+						bool set = useSafeval ? (bool)p->safeval : b[p->nbit];
 						IOBase::processingAsDI( p, set, shm, force );
 					}
 
@@ -1378,14 +1394,15 @@ namespace uniset
 					{
 						if(  r->mb_initOK )
 						{
-							if( p->stype == UniversalIO::DI ||
-									p->stype == UniversalIO::DO )
-							{
-								r->mbval = IOBase::processingAsDO( p, shm, force_out );
-							}
+							if( useSafeval )
+								r->mbval = p->safeval;
 							else
-								r->mbval = IOBase::processingAsAO( p, shm, force_out );
-
+							{
+								if( p->stype == UniversalIO::DI || p->stype == UniversalIO::DO )
+									r->mbval = IOBase::processingAsDO( p, shm, force_out );
+								else
+									r->mbval = IOBase::processingAsAO( p, shm, force_out );
+							}
 							r->sm_initOK = true;
 						}
 					}
@@ -1394,10 +1411,18 @@ namespace uniset
 						if( p->stype == UniversalIO::DI ||
 								p->stype == UniversalIO::DO )
 						{
-							IOBase::processingAsDI( p, r->mbval, shm, force );
+							if( useSafeval )
+								IOBase::processingAsDI( p, p->safeval, shm, force );
+							else
+								IOBase::processingAsDI( p, r->mbval, shm, force );
 						}
 						else
-							IOBase::processingAsAI( p, (signed short)(r->mbval), shm, force );
+						{
+							if( useSafeval )
+								IOBase::processingAsAI( p, p->safeval, shm, force );
+							else
+								IOBase::processingAsAI( p, (signed short)(r->mbval), shm, force );
+						}
 					}
 
 					return;
@@ -1413,27 +1438,34 @@ namespace uniset
 				{
 					if( r->mb_initOK )
 					{
-						if( p->stype == UniversalIO::DI ||
-								p->stype == UniversalIO::DO )
-						{
-							r->mbval = (signed short)IOBase::processingAsDO( p, shm, force_out );
-						}
+						if( useSafeval )
+							r->mbval = p->safeval;
 						else
-							r->mbval = (signed short)IOBase::processingAsAO( p, shm, force_out );
+						{
+							if( p->stype == UniversalIO::DI || p->stype == UniversalIO::DO )
+								r->mbval = (int16_t)IOBase::processingAsDO( p, shm, force_out );
+							else
+								r->mbval = (int16_t)IOBase::processingAsAO( p, shm, force_out );
+						}
 
 						r->sm_initOK = true;
 					}
 				}
 				else
 				{
-					if( p->stype == UniversalIO::DI ||
-							p->stype == UniversalIO::DO )
+					if( p->stype == UniversalIO::DI || p->stype == UniversalIO::DO )
 					{
-						IOBase::processingAsDI( p, r->mbval, shm, force );
+						if( useSafeval )
+							IOBase::processingAsDI( p, p->safeval, shm, force );
+						else
+							IOBase::processingAsDI( p, r->mbval, shm, force );
 					}
 					else
 					{
-						IOBase::processingAsAI( p, (signed short)(r->mbval), shm, force );
+						if( useSafeval )
+							IOBase::processingAsAI( p, p->safeval, shm, force );
+						else
+							IOBase::processingAsAI( p, (signed short)(r->mbval), shm, force );
 					}
 				}
 
@@ -1445,28 +1477,25 @@ namespace uniset
 				{
 					if( r->mb_initOK )
 					{
-						if( p->stype == UniversalIO::DI ||
-								p->stype == UniversalIO::DO )
-						{
-							r->mbval = (uint16_t)IOBase::processingAsDO( p, shm, force_out );
-						}
+						if( useSafeval )
+							r->mbval = p->safeval;
 						else
-							r->mbval = (uint16_t)IOBase::processingAsAO( p, shm, force_out );
+						{
+							if( p->stype == UniversalIO::DI || p->stype == UniversalIO::DO )
+								r->mbval = (uint16_t)IOBase::processingAsDO( p, shm, force_out );
+							else
+								r->mbval = (uint16_t)IOBase::processingAsAO( p, shm, force_out );
+						}
 
 						r->sm_initOK = true;
 					}
 				}
 				else
 				{
-					if( p->stype == UniversalIO::DI ||
-							p->stype == UniversalIO::DO )
-					{
-						IOBase::processingAsDI( p, r->mbval, shm, force );
-					}
+					if( p->stype == UniversalIO::DI || p->stype == UniversalIO::DO )
+						IOBase::processingAsDI( p, useSafeval ? p->safeval : r->mbval, shm, force );
 					else
-					{
-						IOBase::processingAsAI( p, (uint16_t)r->mbval, shm, force );
-					}
+						IOBase::processingAsAI( p, useSafeval ? p->safeval : (uint16_t)r->mbval, shm, force );
 				}
 
 				return;
@@ -1484,7 +1513,7 @@ namespace uniset
 				{
 					if( r->mb_initOK )
 					{
-						long v = IOBase::processingAsAO( p, shm, force_out );
+						long v = useSafeval ? p->safeval : IOBase::processingAsAO( p, shm, force_out );
 						VTypes::Byte b(r->mbval);
 						b.raw.b[p->nbyte - 1] = v;
 						r->mbval = b.raw.w;
@@ -1493,8 +1522,13 @@ namespace uniset
 				}
 				else
 				{
-					VTypes::Byte b(r->mbval);
-					IOBase::processingAsAI( p, b.raw.b[p->nbyte - 1], shm, force );
+					if( useSafeval )
+						IOBase::processingAsAI( p, p->safeval, shm, force );
+					else
+					{
+						VTypes::Byte b(r->mbval);
+						IOBase::processingAsAI( p, b.raw.b[p->nbyte - 1], shm, force );
+					}
 				}
 
 				return;
@@ -1507,7 +1541,8 @@ namespace uniset
 				{
 					if( r->mb_initOK )
 					{
-						float f = IOBase::processingFasAO( p, shm, force_out );
+						//! \warning НЕ РЕШЕНО safeval --> float !
+						float f = useSafeval ? (float)p->safeval : IOBase::processingFasAO( p, shm, force_out );
 
 						if( p->vType == VTypes::vtF2 )
 						{
@@ -1529,25 +1564,32 @@ namespace uniset
 				}
 				else
 				{
-					DataGuard d(VTypes::F2::wsize());
-
-					for( size_t k = 0; k < VTypes::F2::wsize(); k++, i++ )
-						d.data[k] = i->second->mbval;
-
-					float f = 0;
-
-					if( p->vType == VTypes::vtF2 )
+					if( useSafeval )
 					{
-						VTypes::F2 f1(d.data, VTypes::F2::wsize());
-						f = (float)f1;
+						IOBase::processingAsAI( p, p->safeval, shm, force );
 					}
-					else if( p->vType == VTypes::vtF2r )
+					else
 					{
-						VTypes::F2r f1(d.data, VTypes::F2r::wsize());
-						f = (float)f1;
-					}
+						DataGuard d(VTypes::F2::wsize());
 
-					IOBase::processingFasAI( p, f, shm, force );
+						for( size_t k = 0; k < VTypes::F2::wsize(); k++, i++ )
+							d.data[k] = i->second->mbval;
+
+						float f = 0;
+
+						if( p->vType == VTypes::vtF2 )
+						{
+							VTypes::F2 f1(d.data, VTypes::F2::wsize());
+							f = (float)f1;
+						}
+						else if( p->vType == VTypes::vtF2r )
+						{
+							VTypes::F2r f1(d.data, VTypes::F2r::wsize());
+							f = (float)f1;
+						}
+
+						IOBase::processingFasAI( p, f, shm, force );
+					}
 				}
 			}
 			else if( p->vType == VTypes::vtF4 )
@@ -1558,7 +1600,8 @@ namespace uniset
 				{
 					if( r->mb_initOK )
 					{
-						float f = IOBase::processingFasAO( p, shm, force_out );
+						//! \warning НЕ РЕШЕНО safeval --> float !
+						float f = useSafeval ? (float)p->safeval : IOBase::processingFasAO( p, shm, force_out );
 						VTypes::F4 f4(f);
 
 						for( size_t k = 0; k < VTypes::F4::wsize(); k++, i++ )
@@ -1569,14 +1612,21 @@ namespace uniset
 				}
 				else
 				{
-					DataGuard d(VTypes::F4::wsize());
+					if( useSafeval )
+					{
+						IOBase::processingAsAI( p, p->safeval, shm, force );
+					}
+					else
+					{
+						DataGuard d(VTypes::F4::wsize());
 
-					for( size_t k = 0; k < VTypes::F4::wsize(); k++, i++ )
-						d.data[k] = i->second->mbval;
+						for( size_t k = 0; k < VTypes::F4::wsize(); k++, i++ )
+							d.data[k] = i->second->mbval;
 
-					VTypes::F4 f(d.data, VTypes::F4::wsize());
+						VTypes::F4 f(d.data, VTypes::F4::wsize());
 
-					IOBase::processingFasAI( p, (float)f, shm, force );
+						IOBase::processingFasAI( p, (float)f, shm, force );
+					}
 				}
 			}
 			else if( p->vType == VTypes::vtI2 || p->vType == VTypes::vtI2r )
@@ -1587,7 +1637,7 @@ namespace uniset
 				{
 					if( r->mb_initOK )
 					{
-						long v = IOBase::processingAsAO( p, shm, force_out );
+						long v = useSafeval ? p->safeval : IOBase::processingAsAO( p, shm, force_out );
 
 						if( p->vType == VTypes::vtI2 )
 						{
@@ -1609,25 +1659,32 @@ namespace uniset
 				}
 				else
 				{
-					DataGuard d(VTypes::I2::wsize());
-
-					for( size_t k = 0; k < VTypes::I2::wsize(); k++, i++ )
-						d.data[k] = i->second->mbval;
-
-					int v = 0;
-
-					if( p->vType == VTypes::vtI2 )
+					if( useSafeval )
 					{
-						VTypes::I2 i2(d.data, VTypes::I2::wsize());
-						v = (int)i2;
+						IOBase::processingAsAI( p, p->safeval, shm, force );
 					}
-					else if( p->vType == VTypes::vtI2r )
+					else
 					{
-						VTypes::I2r i2(d.data, VTypes::I2::wsize());
-						v = (int)i2;
-					}
+						DataGuard d(VTypes::I2::wsize());
 
-					IOBase::processingAsAI( p, v, shm, force );
+						for( size_t k = 0; k < VTypes::I2::wsize(); k++, i++ )
+							d.data[k] = i->second->mbval;
+
+						int v = 0;
+
+						if( p->vType == VTypes::vtI2 )
+						{
+							VTypes::I2 i2(d.data, VTypes::I2::wsize());
+							v = (int)i2;
+						}
+						else if( p->vType == VTypes::vtI2r )
+						{
+							VTypes::I2r i2(d.data, VTypes::I2::wsize());
+							v = (int)i2;
+						}
+
+						IOBase::processingAsAI( p, v, shm, force );
+					}
 				}
 			}
 			else if( p->vType == VTypes::vtU2 || p->vType == VTypes::vtU2r )
@@ -1638,7 +1695,7 @@ namespace uniset
 				{
 					if( r->mb_initOK )
 					{
-						long v = IOBase::processingAsAO( p, shm, force_out );
+						long v = useSafeval ? p->safeval : IOBase::processingAsAO( p, shm, force_out );
 
 						if( p->vType == VTypes::vtU2 )
 						{
@@ -1660,25 +1717,33 @@ namespace uniset
 				}
 				else
 				{
-					DataGuard d(VTypes::U2::wsize());
-
-					for( size_t k = 0; k < VTypes::U2::wsize(); k++, i++ )
-						d.data[k] = i->second->mbval;
-
-					uint32_t v = 0;
-
-					if( p->vType == VTypes::vtU2 )
+					if( useSafeval )
 					{
-						VTypes::U2 u2(d.data, VTypes::U2::wsize());
-						v = (uint32_t)u2;
+						IOBase::processingAsAI( p, p->safeval, shm, force );
 					}
-					else if( p->vType == VTypes::vtU2r )
+					else
 					{
-						VTypes::U2r u2(d.data, VTypes::U2::wsize());
-						v = (uint32_t)u2;
-					}
 
-					IOBase::processingAsAI( p, v, shm, force );
+						DataGuard d(VTypes::U2::wsize());
+
+						for( size_t k = 0; k < VTypes::U2::wsize(); k++, i++ )
+							d.data[k] = i->second->mbval;
+
+						uint32_t v = 0;
+
+						if( p->vType == VTypes::vtU2 )
+						{
+							VTypes::U2 u2(d.data, VTypes::U2::wsize());
+							v = (uint32_t)u2;
+						}
+						else if( p->vType == VTypes::vtU2r )
+						{
+							VTypes::U2r u2(d.data, VTypes::U2::wsize());
+							v = (uint32_t)u2;
+						}
+
+						IOBase::processingAsAI( p, v, shm, force );
+					}
 				}
 			}
 
@@ -1725,53 +1790,77 @@ namespace uniset
 		using namespace ModbusRTU;
 		bool save = isWriteFunction( r->mbfunc );
 
-		if( !checkUpdateSM(save, r->dev->mode) )
+		if( !isUpdateSM(save, r->dev->mode) )
 			return;
 
+		for( auto it = r->slst.begin(); it != r->slst.end(); ++it )
 		{
-			for( auto it = r->slst.begin(); it != r->slst.end(); ++it )
+			try
 			{
-				try
+				bool safeMode = isSafeMode(r->dev) && it->safevalDefined;
+
+				if( r->mtrType == MTR::mtT1 )
 				{
-					if( r->mtrType == MTR::mtT1 )
+					if( save )
+						r->mbval = safeMode ? it->safeval : IOBase::processingAsAO( &(*it), shm, force_out );
+					else
 					{
-						if( save )
-							r->mbval = IOBase::processingAsAO( &(*it), shm, force_out );
+						if( safeMode )
+						{
+							IOBase::processingAsAI( &(*it), it->safeval, shm, force );
+						}
 						else
 						{
 							MTR::T1 t(r->mbval);
 							IOBase::processingAsAI( &(*it), t.val, shm, force );
 						}
-
-						continue;
 					}
 
-					if( r->mtrType == MTR::mtT2 )
+					continue;
+				}
+
+				if( r->mtrType == MTR::mtT2 )
+				{
+					if( save )
 					{
-						if( save )
+						long val = safeMode ? it->safeval : IOBase::processingAsAO( &(*it), shm, force_out );
+						MTR::T2 t(val);
+						r->mbval = t.val;
+					}
+					else
+					{
+						if( safeMode )
 						{
-							MTR::T2 t(IOBase::processingAsAO( &(*it), shm, force_out ));
-							r->mbval = t.val;
+							IOBase::processingAsAI( &(*it), it->safeval, shm, force );
 						}
 						else
 						{
 							MTR::T2 t(r->mbval);
 							IOBase::processingAsAI( &(*it), t.val, shm, force );
 						}
-
-						continue;
 					}
 
-					if( r->mtrType == MTR::mtT3 )
+					continue;
+				}
+
+				if( r->mtrType == MTR::mtT3 )
+				{
+					auto i = rit;
+
+					if( save )
 					{
-						auto i = rit;
+						long val = safeMode ? it->safeval : IOBase::processingAsAO( &(*it), shm, force_out );
 
-						if( save )
+						MTR::T3 t(val);
+
+						for( size_t k = 0; k < MTR::T3::wsize(); k++, i++ )
+							i->second->mbval = t.raw.v[k];
+					}
+					else
+					{
+						if( safeMode )
 						{
-							MTR::T3 t(IOBase::processingAsAO( &(*it), shm, force_out ));
-
-							for( size_t k = 0; k < MTR::T3::wsize(); k++, i++ )
-								i->second->mbval = t.raw.v[k];
+							IOBase::processingAsAI( &(*it), it->safeval, shm, force );
 						}
 						else
 						{
@@ -1783,35 +1872,50 @@ namespace uniset
 							MTR::T3 t(d.data, MTR::T3::wsize());
 							IOBase::processingAsAI( &(*it), (long)t, shm, force );
 						}
-
-						continue;
 					}
 
-					if( r->mtrType == MTR::mtT4 )
+					continue;
+				}
+
+				if( r->mtrType == MTR::mtT4 )
+				{
+					if( save )
 					{
-						if( save )
+						mbwarn << myname << "(updateMTR): write (T4) reg(" << dat2str(r->mbreg) << ") to MTR NOT YET!!!" << endl;
+					}
+					else
+					{
+						if( safeMode )
 						{
-							mbwarn << myname << "(updateMTR): write (T4) reg(" << dat2str(r->mbreg) << ") to MTR NOT YET!!!" << endl;
+							IOBase::processingAsAI( &(*it), it->safeval, shm, force );
 						}
 						else
 						{
 							MTR::T4 t(r->mbval);
 							IOBase::processingAsAI( &(*it), uni_atoi(t.sval), shm, force );
 						}
-
-						continue;
 					}
 
-					if( r->mtrType == MTR::mtT5 )
+					continue;
+				}
+
+				if( r->mtrType == MTR::mtT5 )
+				{
+					auto i = rit;
+
+					if( save )
 					{
-						auto i = rit;
+						long val = safeMode ? it->safeval : IOBase::processingAsAO( &(*it), shm, force_out );
 
-						if( save )
+						MTR::T5 t(val);
+						for( size_t k = 0; k < MTR::T5::wsize(); k++, i++ )
+							i->second->mbval = t.raw.v[k];
+					}
+					else
+					{
+						if( safeMode )
 						{
-							MTR::T5 t(IOBase::processingAsAO( &(*it), shm, force_out ));
-
-							for( size_t k = 0; k < MTR::T5::wsize(); k++, i++ )
-								i->second->mbval = t.raw.v[k];
+							IOBase::processingAsAI( &(*it), it->safeval, shm, force );
 						}
 						else
 						{
@@ -1824,20 +1928,29 @@ namespace uniset
 
 							IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
 						}
-
-						continue;
 					}
 
-					if( r->mtrType == MTR::mtT6 )
+					continue;
+				}
+
+				if( r->mtrType == MTR::mtT6 )
+				{
+					auto i = rit;
+
+					if( save )
 					{
-						auto i = rit;
+						long val = safeMode ? it->safeval : IOBase::processingAsAO( &(*it), shm, force_out );
 
-						if( save )
+						MTR::T6 t(val);
+
+						for( size_t k = 0; k < MTR::T6::wsize(); k++, i++ )
+							i->second->mbval = t.raw.v[k];
+					}
+					else
+					{
+						if( safeMode )
 						{
-							MTR::T6 t(IOBase::processingAsAO( &(*it), shm, force_out ));
-
-							for( size_t k = 0; k < MTR::T6::wsize(); k++, i++ )
-								i->second->mbval = t.raw.v[k];
+							IOBase::processingAsAI( &(*it), it->safeval, shm, force );
 						}
 						else
 						{
@@ -1850,20 +1963,28 @@ namespace uniset
 
 							IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
 						}
-
-						continue;
 					}
 
-					if( r->mtrType == MTR::mtT7 )
+					continue;
+				}
+
+				if( r->mtrType == MTR::mtT7 )
+				{
+					auto i = rit;
+
+					if( save )
 					{
-						auto i = rit;
+						long val = safeMode ? it->safeval : IOBase::processingAsAO( &(*it), shm, force_out );
+						MTR::T7 t(val);
 
-						if( save )
+						for( size_t k = 0; k < MTR::T7::wsize(); k++, i++ )
+							i->second->mbval = t.raw.v[k];
+					}
+					else
+					{
+						if( safeMode )
 						{
-							MTR::T7 t(IOBase::processingAsAO( &(*it), shm, force_out ));
-
-							for( size_t k = 0; k < MTR::T7::wsize(); k++, i++ )
-								i->second->mbval = t.raw.v[k];
+							IOBase::processingAsAI( &(*it), it->safeval, shm, force );
 						}
 						else
 						{
@@ -1876,53 +1997,81 @@ namespace uniset
 
 							IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
 						}
-
-						continue;
 					}
 
-					if( r->mtrType == MTR::mtT16 )
+					continue;
+				}
+
+				if( r->mtrType == MTR::mtT16 )
+				{
+					if( save )
 					{
-						if( save )
+						//! \warning НЕ РЕШЕНО safeval --> float !
+						float fval = safeMode ? (float)it->safeval : IOBase::processingFasAO( &(*it), shm, force_out );
+
+						MTR::T16 t(fval);
+						r->mbval = t.val;
+					}
+					else
+					{
+						if( safeMode )
 						{
-							MTR::T16 t(IOBase::processingFasAO( &(*it), shm, force_out ));
-							r->mbval = t.val;
+							IOBase::processingAsAI( &(*it), it->safeval, shm, force );
 						}
 						else
 						{
 							MTR::T16 t(r->mbval);
 							IOBase::processingFasAI( &(*it), t.fval, shm, force );
 						}
-
-						continue;
 					}
 
-					if( r->mtrType == MTR::mtT17 )
+					continue;
+				}
+
+				if( r->mtrType == MTR::mtT17 )
+				{
+					if( save )
 					{
-						if( save )
+						//! \warning НЕ РЕШЕНО safeval --> float !
+						float fval = safeMode ? (float)it->safeval : IOBase::processingFasAO( &(*it), shm, force_out );
+
+						MTR::T17 t(fval);
+						r->mbval = t.val;
+					}
+					else
+					{
+						if( safeMode )
 						{
-							MTR::T17 t(IOBase::processingFasAO( &(*it), shm, force_out ));
-							r->mbval = t.val;
+							IOBase::processingAsAI( &(*it), it->safeval, shm, force );
 						}
 						else
 						{
 							MTR::T17 t(r->mbval);
 							IOBase::processingFasAI( &(*it), t.fval, shm, force );
 						}
-
-						continue;
 					}
 
-					if( r->mtrType == MTR::mtF1 )
+					continue;
+				}
+
+				if( r->mtrType == MTR::mtF1 )
+				{
+					auto i = rit;
+
+					if( save )
 					{
-						auto i = rit;
+						//! \warning НЕ РЕШЕНО safeval --> float !
+						float f = safeMode ? (float)it->safeval : IOBase::processingFasAO( &(*it), shm, force_out );
+						MTR::F1 f1(f);
 
-						if( save )
+						for( size_t k = 0; k < MTR::F1::wsize(); k++, i++ )
+							i->second->mbval = f1.raw.v[k];
+					}
+					else
+					{
+						if( safeMode )
 						{
-							float f = IOBase::processingFasAO( &(*it), shm, force_out );
-							MTR::F1 f1(f);
-
-							for( size_t k = 0; k < MTR::F1::wsize(); k++, i++ )
-								i->second->mbval = f1.raw.v[k];
+							IOBase::processingAsAI( &(*it), it->safeval, shm, force );
 						}
 						else
 						{
@@ -1934,35 +2083,35 @@ namespace uniset
 							MTR::F1 t(d.data, MTR::F1::wsize());
 							IOBase::processingFasAI( &(*it), (float)t, shm, force );
 						}
-
-						continue;
 					}
+
+					continue;
 				}
-				catch(IOController_i::NameNotFound& ex)
-				{
-					mblog3 << myname << "(updateMTR):(NameNotFound) " << ex.err << endl;
-				}
-				catch(IOController_i::IOBadParam& ex )
-				{
-					mblog3 << myname << "(updateMTR):(IOBadParam) " << ex.err << endl;
-				}
-				catch(IONotifyController_i::BadRange )
-				{
-					mblog3 << myname << "(updateMTR): (BadRange)..." << endl;
-				}
-				catch( const uniset::Exception& ex )
-				{
-					mblog3 << myname << "(updateMTR): " << ex << endl;
-				}
-				catch( const CORBA::SystemException& ex )
-				{
-					mblog3 << myname << "(updateMTR): CORBA::SystemException: "
-						   << ex.NP_minorString() << endl;
-				}
-				catch(...)
-				{
-					mblog3 << myname << "(updateMTR): catch ..." << endl;
-				}
+			}
+			catch(IOController_i::NameNotFound& ex)
+			{
+				mblog3 << myname << "(updateMTR):(NameNotFound) " << ex.err << endl;
+			}
+			catch(IOController_i::IOBadParam& ex )
+			{
+				mblog3 << myname << "(updateMTR):(IOBadParam) " << ex.err << endl;
+			}
+			catch(IONotifyController_i::BadRange )
+			{
+				mblog3 << myname << "(updateMTR): (BadRange)..." << endl;
+			}
+			catch( const uniset::Exception& ex )
+			{
+				mblog3 << myname << "(updateMTR): " << ex << endl;
+			}
+			catch( const CORBA::SystemException& ex )
+			{
+				mblog3 << myname << "(updateMTR): CORBA::SystemException: "
+					   << ex.NP_minorString() << endl;
+			}
+			catch(...)
+			{
+				mblog3 << myname << "(updateMTR): catch ..." << endl;
 			}
 		}
 	}
@@ -1986,46 +2135,23 @@ namespace uniset
 			return;
 		}
 
-		if( exchangeMode == emSkipExchange || r->dev->mode == emSkipExchange )
-		{
-			mblog3 << myname << "(updateRTU188):"
-				   << " skip... mode=emSkipExchange " << endl;
+		if( !isUpdateSM(save, r->dev->mode) )
 			return;
-		}
-
-		if( save && (exchangeMode == emReadOnly || r->dev->mode == emReadOnly) )
-		{
-			mblog3 << myname << "(updateRTU188):"
-				   << " skip... mode=emReadOnly " << endl;
-			return;
-		}
-
-		if( !save && ( exchangeMode == emWriteOnly || r->dev->mode == emWriteOnly) )
-		{
-			mblog3 << myname << "(updateRTU188):"
-				   << " skip... mode=emWriteOnly " << endl;
-			return;
-		}
-
-		if( save && ( exchangeMode == emSkipSaveToSM || r->dev->mode == emSkipSaveToSM) )
-		{
-			mblog3 << myname << "(updateRT188):"
-				   << " skip... mode=emSkipSaveToSM " << endl;
-			return;
-		}
 
 		for( auto it = r->slst.begin(); it != r->slst.end(); ++it )
 		{
 			try
 			{
+				bool safeMode = isSafeMode(r->dev) && it->safevalDefined;
+
 				if( it->stype == UniversalIO::DI )
 				{
-					bool set = r->dev->rtu188->getState(r->rtuJack, r->rtuChan, it->stype);
+					bool set = safeMode ? (bool)it->safeval : r->dev->rtu188->getState(r->rtuJack, r->rtuChan, it->stype);
 					IOBase::processingAsDI( &(*it), set, shm, force );
 				}
 				else if( it->stype == UniversalIO::AI )
 				{
-					long val = r->dev->rtu188->getInt(r->rtuJack, r->rtuChan, it->stype);
+					long val = safeMode ? it->safeval : r->dev->rtu188->getInt(r->rtuJack, r->rtuChan, it->stype);
 					IOBase::processingAsAI( &(*it), val, shm, force );
 				}
 			}
@@ -2179,7 +2305,7 @@ namespace uniset
 
 			if( p.nbit < 0 || p.nbit >= ModbusRTU::BitsPerData )
 			{
-				mbcrit << myname << "(initRSProperty): BAD nbit=" << p.nbit
+				mbcrit << myname << "(initRSProperty): BAD nbit=" << (int)p.nbit
 					   << ". (0 >= nbit < " << ModbusRTU::BitsPerData << ")." << endl;
 				return false;
 			}
@@ -2417,7 +2543,7 @@ namespace uniset
 			{
 				if( fn == ModbusRTU::fnReadCoilStatus || fn == ModbusRTU::fnReadInputStatus )
 				{
-					mbcrit << myname << "(initItem): MISMATCHED CONFIGURATION!  nbit=" << p.nbit << " func=" << fn
+					mbcrit << myname << "(initItem): MISMATCHED CONFIGURATION!  nbit=" << (int)p.nbit << " func=" << fn
 						   << " for " << it.getProp("name") << endl;
 					return false;
 				}
@@ -2709,7 +2835,7 @@ namespace uniset
 		os     << " (" << ModbusRTU::dat2str(p.reg->mbreg) << ")"
 			   << " sid=" << p.si.id
 			   << " stype=" << p.stype
-			   << " nbit=" << p.nbit
+			   << " nbit=" << (int)p.nbit
 			   << " nbyte=" << p.nbyte
 			   << " rnum=" << p.rnum
 			   << " safeval=" << p.safeval
@@ -2762,18 +2888,20 @@ namespace uniset
 			return false;
 		}
 
-		d->second->ask_every_reg = it.getIntProp("ask_every_reg");
+		auto& dev = d->second;
+
+		dev->ask_every_reg = it.getIntProp("ask_every_reg");
 
 		mbinfo << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a)
-			   << " ask_every_reg=" << d->second->ask_every_reg << endl;
+			   << " ask_every_reg=" << dev->ask_every_reg << endl;
 
 		string s(it.getProp("respondSensor"));
 
 		if( !s.empty() )
 		{
-			d->second->resp_id = uniset_conf()->getSensorID(s);
+			dev->resp_id = uniset_conf()->getSensorID(s);
 
-			if( d->second->resp_id == DefaultObjectId )
+			if( dev->resp_id == DefaultObjectId )
 			{
 				mbinfo << myname << "(initDeviceInfo): not found ID for respondSensor=" << s << endl;
 				return false;
@@ -2786,15 +2914,15 @@ namespace uniset
 
 		if( !mod.empty() )
 		{
-			d->second->mode_id = conf->getSensorID(mod);
+			dev->mode_id = conf->getSensorID(mod);
 
-			if( d->second->mode_id == DefaultObjectId )
+			if( dev->mode_id == DefaultObjectId )
 			{
 				mbcrit << myname << "(initDeviceInfo): not found ID for modeSensor=" << mod << endl;
 				return false;
 			}
 
-			UniversalIO::IOType m_iotype = conf->getIOType(d->second->mode_id);
+			UniversalIO::IOType m_iotype = conf->getIOType(dev->mode_id);
 
 			if( m_iotype != UniversalIO::AI )
 			{
@@ -2803,15 +2931,35 @@ namespace uniset
 			}
 		}
 
+		string safemode(it.getProp("safemodeSensor"));
+
+		if( !safemode.empty() )
+		{
+			dev->safemode_id = conf->getSensorID(safemode);
+
+			if( dev->safemode_id == DefaultObjectId )
+			{
+				mbcrit << myname << "(initDeviceInfo): not found ID for safemodeSensor=" << safemode << endl;
+				return false;
+			}
+
+			string safemodeValue(it.getProp("safemodeValue"));
+
+			if( !safemodeValue.empty() )
+				dev->safemode_value = uni_atoi(safemodeValue);
+
+			dev->safeMode = MBExchange::safeExternalControl;
+		}
+
 		mbinfo << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
 		int tout = it.getPIntProp("timeout", default_timeout );
 
-		d->second->resp_Delay.set(0, tout);
-		d->second->resp_invert = it.getIntProp("invert");
-		d->second->resp_force =  it.getIntProp("force");
+		dev->resp_Delay.set(0, tout);
+		dev->resp_invert = it.getIntProp("invert");
+		dev->resp_force =  it.getIntProp("force");
 
 		int init_tout = it.getPIntProp("respondInitTimeout", tout);
-		d->second->resp_ptInit.setTiming(init_tout);
+		dev->resp_ptInit.setTiming(init_tout);
 
 		return true;
 	}
@@ -2868,16 +3016,16 @@ namespace uniset
 				msleep(initPause);
 				PassiveTimer ptAct(activateTimeout);
 
-				while( !checkProcActive() && !ptAct.checkTime() )
+				while( !isProcActive() && !ptAct.checkTime() )
 				{
 					cout << myname << "(sysCommand): wait activate..." << endl;
 					msleep(300);
 
-					if( checkProcActive() )
+					if( isProcActive() )
 						break;
 				}
 
-				if( !checkProcActive() )
+				if( !isProcActive() )
 					mbcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 
 				{
@@ -2952,7 +3100,7 @@ namespace uniset
 				<< activateTimeout << " мсек";
 
 			mbcrit << err.str() << endl;
-			kill(SIGTERM, getpid());   // прерываем (перезапускаем) процесс...
+			std::terminate();  // прерываем (перезапускаем) процесс...
 			// throw SystemError(err.str());
 			return;
 		}
@@ -2971,20 +3119,6 @@ namespace uniset
 			mbwarn << myname << "(askSensors): 'sidExchangeMode' catch..." << std::endl;
 		}
 
-		try
-		{
-			if( sidSafeModeExternal != DefaultObjectId )
-				shm->askSensor(sidSafeModeExternal, cmd);
-		}
-		catch( uniset::Exception& ex )
-		{
-			mbwarn << myname << "(askSensors): " << ex << std::endl;
-		}
-		catch(...)
-		{
-			mbwarn << myname << "(askSensors): 'sidSafeModeExternal' catch..." << std::endl;
-		}
-
 		for( auto it1 = devices.begin(); it1 != devices.end(); ++it1 )
 		{
 			auto d = it1->second;
@@ -2993,6 +3127,9 @@ namespace uniset
 			{
 				if( d->mode_id != DefaultObjectId )
 					shm->askSensor(d->mode_id, cmd);
+
+				if( d->safemode_id != DefaultObjectId )
+					shm->askSensor(d->safemode_id, cmd);
 			}
 			catch( uniset::Exception& ex )
 			{
@@ -3000,7 +3137,11 @@ namespace uniset
 			}
 			catch(...)
 			{
-				mbwarn << myname << "(askSensors): (mode_id=" << d->mode_id << ").. catch..." << std::endl;
+				mbwarn << myname << "(askSensors): "
+					   << "("
+					   << " mode_id=" << d->mode_id
+					   << " safemode_id=" << d->safemode_id
+					   << ").. catch..." << std::endl;
 			}
 
 			if( force_out )
@@ -3046,10 +3187,18 @@ namespace uniset
 
 		for( auto it1 = devices.begin(); it1 != devices.end(); ++it1 )
 		{
-			auto d(it1->second);
+			auto& d(it1->second);
 
 			if( sm->id == d->mode_id )
 				d->mode = sm->value;
+
+			if( sm->id == d->safemode_id )
+			{
+				if( sm->value == d->safemode_value )
+					d->safeMode = safeExternalControl;
+				else
+					d->safeMode = safeNone;
+			}
 
 			if( force_out )
 				continue;
@@ -3102,7 +3251,7 @@ namespace uniset
 		{
 			mb = initMB(false);
 
-			if( !checkProcActive() )
+			if( !isProcActive() )
 				return false;
 
 			updateSM();
@@ -3118,7 +3267,7 @@ namespace uniset
 		if( !allInitOK )
 			firstInitRegisters();
 
-		if( !checkProcActive() )
+		if( !isProcActive() )
 			return false;
 
 		ncycle++;
@@ -3145,7 +3294,7 @@ namespace uniset
 
 				for( auto it = regmap->begin(); it != regmap->end(); ++it )
 				{
-					if( !checkProcActive() )
+					if( !isProcActive() )
 						return false;
 
 					if( exchangeMode == emSkipExchange )
@@ -3177,7 +3326,7 @@ namespace uniset
 					if( it == regmap->end() )
 						break;
 
-					if( !checkProcActive() )
+					if( !isProcActive() )
 						return false;
 				}
 			}
@@ -3196,7 +3345,7 @@ namespace uniset
 			poll_count = 0;
 		}
 
-		if( !checkProcActive() )
+		if( !isProcActive() )
 			return false;
 
 		// update SharedMemory...
@@ -3205,7 +3354,7 @@ namespace uniset
 		// check thresholds
 		for( auto t = thrlist.begin(); t != thrlist.end(); ++t )
 		{
-			if( !checkProcActive() )
+			if( !isProcActive() )
 				return false;
 
 			IOBase::processingThreshold(&(*t), shm, force);
@@ -3338,18 +3487,23 @@ namespace uniset
 		return os;
 	}
 	// -----------------------------------------------------------------------------
-	ostream& operator<<( ostream& os, const MBExchange::SafeMode& sm )
+	std::string to_string( const MBExchange::SafeMode & m )
 	{
-		if( sm == MBExchange::safeNone )
-			return os << "safeNone";
+		if( m == MBExchange::safeNone )
+			return "safeNone";
 
-		if( sm == MBExchange::safeResetIfNotRespond )
-			return os << "safeResetIfNotRespond";
+		if( m == MBExchange::safeResetIfNotRespond )
+			return "safeResetIfNotRespond";
 
-		if( sm == MBExchange::safeExternalControl )
-			return os << "safeExternalControl";
+		if( m == MBExchange::safeExternalControl )
+			return "safeExternalControl";
 
-		return os;
+		return "";
+	}
+
+	ostream& operator<<( ostream& os, const MBExchange::SafeMode& m )
+	{
+		return os << to_string(m);
 	}
 	// -----------------------------------------------------------------------------
 	uniset::SimpleInfo* MBExchange::getInfo( const char* userparam )

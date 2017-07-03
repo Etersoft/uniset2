@@ -63,8 +63,6 @@ namespace uniset
 			/*! глобальная функция для вывода help-а */
 			static void help_print( int argc, const char* const* argv );
 
-			static const int NoSafetyState = -1;
-
 			/*! Режимы работы процесса обмена */
 			enum ExchangeMode
 			{
@@ -84,7 +82,9 @@ namespace uniset
 				safeExternalControl = 2     /*!< управление сбросом по внешнему датчику */
 			};
 
-			friend std::ostream& operator<<( std::ostream& os, const SafeMode& em );
+
+			friend std::string to_string( const SafeMode & m );
+			friend std::ostream& operator<<( std::ostream& os, const SafeMode& m );
 
 			enum DeviceType
 			{
@@ -139,33 +139,26 @@ namespace uniset
 				RegInfo& operator=(const RegInfo& r) = delete;
 				RegInfo( RegInfo&& r ) = delete;
 				RegInfo& operator=(RegInfo&& r) = default;
+				RegInfo() = default;
 
-				RegInfo():
-					mbval(0), mbreg(0), mbfunc(ModbusRTU::fnUnknown),
-					id(0), dev(0),
-					rtuJack(RTUStorage::nUnknown), rtuChan(0),
-					mtrType(MTR::mtUnknown),
-					q_num(0), q_count(1), mb_initOK(false), sm_initOK(false)
-				{}
-
-				ModbusRTU::ModbusData mbval;
-				ModbusRTU::ModbusData mbreg;            /*!< регистр */
-				ModbusRTU::SlaveFunctionCode mbfunc;    /*!< функция для чтения/записи */
+				ModbusRTU::ModbusData mbval = { 0 };
+				ModbusRTU::ModbusData mbreg = { 0 }; /*!< регистр */
+				ModbusRTU::SlaveFunctionCode mbfunc = { ModbusRTU::fnUnknown };    /*!< функция для чтения/записи */
 				PList slst;
-				ModbusRTU::RegID id;
+				ModbusRTU::RegID id = { 0 };
 
 				std::shared_ptr<RTUDevice> dev;
 
 				// only for RTU188
-				RTUStorage::RTUJack rtuJack;
-				int rtuChan;
+				RTUStorage::RTUJack rtuJack = { RTUStorage::nUnknown };
+				int rtuChan = { 0 };
 
 				// only for MTR
-				MTR::MTRType mtrType;    /*!< тип регистра (согласно спецификации на MTR) */
+				MTR::MTRType mtrType = { MTR::mtUnknown };    /*!< тип регистра (согласно спецификации на MTR) */
 
 				// optimization
-				size_t q_num;      /*!< number in query */
-				size_t q_count;    /*!< count registers for query */
+				size_t q_num = { 0 };      /*!< number in query */
+				size_t q_count = { 0 };    /*!< count registers for query */
 
 				RegMap::iterator rit;
 
@@ -174,11 +167,11 @@ namespace uniset
 				// Если tcp_preinit="1", то сперва будет сделано чтение значения из устройства.
 				// при этом флаг mb_init=false пока не пройдёт успешной инициализации
 				// Если tcp_preinit="0", то флаг mb_init сразу выставляется в true.
-				bool mb_initOK;    /*!< инициализировалось ли значение из устройства */
+				bool mb_initOK = { false };    /*!< инициализировалось ли значение из устройства */
 
 				// Флаг sm_init означает, что писать в устройство нельзя, т.к. значение в "карте регистров"
 				// ещё не инициализировано из SM
-				bool sm_initOK;    /*!< инициализировалось ли значение из SM */
+				bool sm_initOK = { false };    /*!< инициализировалось ли значение из SM */
 			};
 
 			friend std::ostream& operator<<( std::ostream& os, RegInfo& r );
@@ -186,52 +179,42 @@ namespace uniset
 
 			struct RTUDevice
 			{
-				RTUDevice():
-					mbaddr(0),
-					dtype(dtUnknown),
-					resp_id(uniset::DefaultObjectId),
-					resp_state(false),
-					resp_invert(false),
-					numreply(0),
-					prev_numreply(0),
-					ask_every_reg(false),
-					mode_id(uniset::DefaultObjectId),
-					mode(emNone),
-					speed(ComPort::ComSpeed38400),
-					rtu188(0)
-				{
-				}
-
-				ModbusRTU::ModbusAddr mbaddr;    /*!< адрес устройства */
+				ModbusRTU::ModbusAddr mbaddr = { 0 };    /*!< адрес устройства */
 				std::unordered_map<size_t, std::shared_ptr<RegMap>> pollmap;
 
-				DeviceType dtype;    /*!< тип устройства */
+				DeviceType dtype = { dtUnknown };    /*!< тип устройства */
 
 				// resp - respond..(контроль наличия связи)
-				uniset::ObjectId resp_id;
+				uniset::ObjectId resp_id = { uniset::DefaultObjectId };
 				IOController::IOStateList::iterator resp_it;
 				DelayTimer resp_Delay; // таймер для формирования задержки на отпускание (пропадание связи)
 				PassiveTimer resp_ptInit; // таймер для формирования задержки на инициализацию связи (задержка на выставление датчика связи после запуска)
-				bool resp_state;
-				bool resp_invert;
+				bool resp_state = { false };
+				bool resp_invert = { false };
 				bool resp_force = { false };
 				Trigger trInitOK; // триггер для "инициализации"
-				std::atomic<size_t> numreply; // количество успешных запросов..
-				std::atomic<size_t> prev_numreply;
+				std::atomic<size_t> numreply = { 0 }; // количество успешных запросов..
+				std::atomic<size_t> prev_numreply = { 0 };
 
 				//
-				bool ask_every_reg; /*!< опрашивать ли каждый регистр, независимо от результата опроса предыдущего. По умолчанию false - прервать опрос при первом же timeout */
+				bool ask_every_reg = { false }; /*!< опрашивать ли каждый регистр, независимо от результата опроса предыдущего. По умолчанию false - прервать опрос при первом же timeout */
 
 				// режим работы
-				uniset::ObjectId mode_id;
+				uniset::ObjectId mode_id = { uniset::DefaultObjectId };
 				IOController::IOStateList::iterator mode_it;
-				long mode; // режим работы с устройством (см. ExchangeMode)
+				long mode = { emNone }; // режим работы с устройством (см. ExchangeMode)
+
+				// safe mode
+				long safeMode = { safeNone }; /*!< режим безопасного состояния см. SafeMode */
+				uniset::ObjectId safemode_id = { uniset::DefaultObjectId }; /*!< иденидентификатор для датчика безопасного режима */
+				IOController::IOStateList::iterator safemode_it;
+				long safemode_value = { 1 };
 
 				// return TRUE if state changed
 				bool checkRespond( std::shared_ptr<DebugStream>& log );
 
 				// специфические поля для RS
-				ComPort::Speed speed;
+				ComPort::Speed speed = { ComPort::ComSpeed38400 };
 				std::shared_ptr<RTUStorage> rtu188;
 
 				std::string getShortInfo() const;
@@ -298,7 +281,6 @@ namespace uniset
 
 			RTUDeviceMap devices;
 			InitList initRegList;    /*!< список регистров для инициализации */
-			//		uniset::uniset_rwmutex pollMutex;
 
 			virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) = 0;
 
@@ -312,10 +294,11 @@ namespace uniset
 			void updateRSProperty( RSProperty* p, bool write_only = false );
 			virtual void updateRespondSensors();
 
-			bool checkUpdateSM( bool wrFunc, long devMode );
-			bool checkPoll( bool wrFunc ) const;
+			bool isUpdateSM( bool wrFunc, long devMode ) const noexcept;
+			bool isPollEnabled( bool wrFunc ) const noexcept;
+			bool isSafeMode( std::shared_ptr<RTUDevice>& dev ) const noexcept;
 
-			bool checkProcActive() const;
+			bool isProcActive() const;
 			void setProcActive( bool st );
 			void waitSMReady();
 
@@ -353,7 +336,7 @@ namespace uniset
 			bool force_out = { false };    /*!< флаг означающий, принудительного чтения выходов */
 			bool mbregFromID = { false };
 			timeout_t polltime = { 100 };    /*!< переодичность обновления данных, [мсек] */
-			timeout_t sleepPause_msec;
+			timeout_t sleepPause_msec = { 10 };
 			size_t maxQueryCount = { ModbusRTU::MAXDATALEN }; /*!< максимальное количество регистров для одного запроса */
 
 			PassiveTimer ptHeartBeat;
@@ -364,12 +347,7 @@ namespace uniset
 
 			uniset::ObjectId sidExchangeMode = { uniset::DefaultObjectId }; /*!< иденидентификатор для датчика режима работы */
 			IOController::IOStateList::iterator itExchangeMode;
-			long exchangeMode = {emNone}; /*!< режим работы см. ExchangeMode */
-
-			long safeMode = { safeNone }; /*!< режим безопасного состояния см. SafeMode */
-			uniset::ObjectId sidSafeModeExternal = { uniset::DefaultObjectId }; /*!< иденидентификатор для датчика безопасного режима */
-			IOController::IOStateList::iterator itSafeModeExternal;
-			long valueSafeModeExternal = { 1 };
+			long exchangeMode = { emNone }; /*!< режим работы см. ExchangeMode */
 
 			std::atomic_bool activated = { false };
 			timeout_t activateTimeout = { 20000 }; // msec

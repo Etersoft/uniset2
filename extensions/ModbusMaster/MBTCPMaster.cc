@@ -150,13 +150,13 @@ void MBTCPMaster::final_thread()
 void MBTCPMaster::poll_thread()
 {
 	// ждём начала работы..(см. MBExchange::activateObject)
-	while( !checkProcActive() )
+	while( !isProcActive() )
 	{
 		uniset::uniset_rwmutex_rlock l(mutex_start);
 	}
 
 	// работаем
-	while( checkProcActive() )
+	while( isProcActive() )
 	{
 		try
 		{
@@ -178,7 +178,7 @@ void MBTCPMaster::poll_thread()
 			throw;
 		}
 
-		if( !checkProcActive() )
+		if( !isProcActive() )
 			break;
 
 		msleep(polltime);
