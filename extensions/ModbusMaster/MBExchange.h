@@ -94,7 +94,7 @@ namespace uniset
 				dtRTU188        /*!< RTU188 (Fastwell) */
 			};
 
-			static DeviceType getDeviceType( const std::string& dtype );
+			static DeviceType getDeviceType( const std::string& dtype ) noexcept;
 			friend std::ostream& operator<<( std::ostream& os, const DeviceType& dt );
 
 			struct RTUDevice;
@@ -352,7 +352,7 @@ namespace uniset
 			std::atomic_bool activated = { false };
 			timeout_t activateTimeout = { 20000 }; // msec
 			bool noQueryOptimization = { false };
-			bool no_extimer = { false };
+			bool notUseExchangeTimer = { false };
 
 			std::string prefix;
 
