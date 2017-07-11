@@ -58,7 +58,7 @@ namespace uniset
 		exchangeMode(emNone),
 		activated(false),
 		noQueryOptimization(false),
-		no_extimer(false),
+		notUseExchangeTimer(false),
 		prefix(prefix),
 		poll_count(0),
 		prop_prefix(""),
@@ -411,7 +411,7 @@ namespace uniset
 	}
 
 	// ------------------------------------------------------------------------------------------
-	MBExchange::DeviceType MBExchange::getDeviceType( const std::string& dtype )
+	MBExchange::DeviceType MBExchange::getDeviceType( const std::string& dtype ) noexcept
 	{
 		if( dtype.empty() )
 			return dtUnknown;
@@ -3250,7 +3250,7 @@ namespace uniset
 	{
 		if( tm->id == tmExchange )
 		{
-			if( no_extimer )
+			if( notUseExchangeTimer )
 				askTimer(tm->id, 0);
 			else
 				step();
@@ -3448,7 +3448,7 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	void MBExchange::execute()
 	{
-		no_extimer = true;
+		notUseExchangeTimer = true;
 
 		try
 		{
