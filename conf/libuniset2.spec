@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt36
+Release: alt37
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -506,10 +506,13 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet2.pc
         
 # history of current unpublished changes
-- (LogReader): add '--grep' mode
-- minor fixes
 
 %changelog
+* Tue Jul 11 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt37
+- (LogReader): add '--grep' mode
+- minor fixes
+- MBExchange: safemode
+
 * Wed Jun 28 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt36
 - new release (fixes after coverity scan)
 
