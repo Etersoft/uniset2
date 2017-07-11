@@ -506,12 +506,15 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet2.pc
         
 # history of current unpublished changes
-- (LogReader): add '--grep' mode
-- minor fixes
 
 %changelog
 * Tue Sep 12 2017 Alexei Takaseev <taf@altlinux.org> 2.6-alt19.1
 - Rebuild with poco 1.7.9
+
+# * Tue Jul 11 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt37
+# - (LogReader): add '--grep' mode
+# - minor fixes
+# - MBExchange: safemode
 
 # * Wed Jun 28 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt36
 # - new release (fixes after coverity scan)
