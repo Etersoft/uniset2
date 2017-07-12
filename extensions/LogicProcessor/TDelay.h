@@ -42,10 +42,7 @@ namespace uniset
 			}
 
 			void setDelay( timeout_t timeMS );
-			inline timeout_t getDelay() const
-			{
-				return delay;
-			}
+			timeout_t getDelay() const;
 
 		protected:
 			TDelay(): myout(false), delay(0) {};

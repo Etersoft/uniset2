@@ -63,10 +63,8 @@ namespace uniset
 			virtual void setIn( size_t num, long value ) = 0;
 			virtual long getOut() const = 0;
 
-			inline ElementID getId() const
-			{
-				return myid;
-			}
+			ElementID getId() const;
+
 			virtual std::string getType() const
 			{
 				return "?type?";
@@ -76,30 +74,14 @@ namespace uniset
 
 			virtual void addChildOut( std::shared_ptr<Element> el, size_t in_num );
 			virtual void delChildOut( std::shared_ptr<Element> el );
-			inline size_t outCount() const
-			{
-				return outs.size();
-			}
+			size_t outCount() const;
 
 			virtual void addInput( size_t num, long value = 0 );
 			virtual void delInput( size_t num );
-			inline size_t inCount() const
-			{
-				return ins.size();
-			}
+			size_t inCount() const;
 
-			friend std::ostream& operator<<(std::ostream& os, Element& el )
-			{
-				return os << "[" << el.getType() << "]" << el.getId();
-			}
-
-			friend std::ostream& operator<<(std::ostream& os, std::shared_ptr<Element> el )
-			{
-				if( el )
-					return os << (*(el.get()));
-
-				return os;
-			}
+			friend std::ostream& operator<<(std::ostream& os, Element& el );
+			friend std::ostream& operator<<(std::ostream& os, std::shared_ptr<Element> el );
 
 		protected:
 			Element(): myid(DefaultElementID) {}; // нельзя создать элемент без id
@@ -146,10 +128,7 @@ namespace uniset
 			virtual ~TOR();
 
 			virtual void setIn( size_t num, long value ) override;
-			virtual long getOut() const override
-			{
-				return (myout ? 1 : 0);
-			}
+			virtual long getOut() const override;
 
 			virtual std::string getType() const override
 			{
