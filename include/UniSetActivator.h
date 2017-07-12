@@ -84,15 +84,8 @@ namespace uniset
 			typedef sigc::signal<void, int> TerminateEvent_Signal;
 			TerminateEvent_Signal signal_terminate_event();
 
-			inline bool noUseGdbForStackTrace() const
-			{
-				return _noUseGdbForStackTrace;
-			}
-
-			inline const std::string getAbortScript()
-			{
-				return abortScript;
-			}
+			bool noUseGdbForStackTrace() const;
+			const std::string getAbortScript() const;
 
 #ifndef DISABLE_REST_API
 			// Поддрежка REST API (IHttpRequestRegistry)

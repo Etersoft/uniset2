@@ -591,4 +591,9 @@ namespace uniset
 		slFin = sl;
 	}
 	// -------------------------------------------------------------------------
+	string ModbusTCPSession::getClientAddress() const
+	{
+		return caddr;
+	}
+	// -------------------------------------------------------------------------
 } // end of namespace uniset

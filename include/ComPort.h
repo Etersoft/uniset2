@@ -95,10 +95,7 @@ namespace uniset
 
 			void setSpeed( Speed s );
 			void setSpeed( const std::string& speed );
-			inline Speed getSpeed()
-			{
-				return speed;
-			}
+			Speed getSpeed() const;
 
 			static Speed getSpeed( const std::string& s );
 			static std::string getSpeed( Speed s );
@@ -108,10 +105,7 @@ namespace uniset
 			void setStopBits(StopBits sBit);
 
 			virtual void setTimeout( timeout_t msec );
-			inline timeout_t getTimeout()
-			{
-				return uTimeout / 1000;    // msec
-			}
+			timeout_t getTimeout() const;
 
 			void setWaiting(bool waiting);
 

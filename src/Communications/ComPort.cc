@@ -298,6 +298,11 @@ void ComPort::setTimeout( timeout_t msec )
 	uTimeout = msec * 1000;
 }
 // --------------------------------------------------------------------------------
+timeout_t ComPort::getTimeout() const
+{
+	return uTimeout / 1000;    // msec
+}
+// --------------------------------------------------------------------------------
 // Lav: ситуация, когда отправлено меньше запрошенного, не типична и должна
 // генерировать исключение
 size_t ComPort::sendBlock(unsigned char* msg, size_t len)
@@ -389,6 +394,11 @@ void ComPort::setSpeed( const std::string& s )
 
 	if( sp != ComPort::ComSpeed0 )
 		setSpeed(sp);
+}
+// --------------------------------------------------------------------------------
+ComPort::Speed ComPort::getSpeed() const
+{
+	return speed;
 }
 // --------------------------------------------------------------------------------
 std::string ComPort::getSpeed( Speed s )

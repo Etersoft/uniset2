@@ -882,6 +882,16 @@ UniSetActivator::TerminateEvent_Signal UniSetActivator::signal_terminate_event()
 	return s_term;
 }
 // ------------------------------------------------------------------------------------------
+bool UniSetActivator::noUseGdbForStackTrace() const
+{
+	return _noUseGdbForStackTrace;
+}
+// ------------------------------------------------------------------------------------------
+const string UniSetActivator::getAbortScript() const
+{
+	return abortScript;
+}
+// ------------------------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
 Poco::JSON::Object::Ptr UniSetActivator::httpGetByName( const string& name, const Poco::URI::QueryParameters& p )
 {

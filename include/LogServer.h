@@ -98,29 +98,16 @@ namespace uniset
 			LogServer( std::shared_ptr<LogAgregator> log );
 			virtual ~LogServer() noexcept;
 
-			inline void setCmdTimeout( timeout_t msec ) noexcept
-			{
-				cmdTimeout = msec;
-			}
-
-			inline void setSessionLog( Debug::type t ) noexcept
-			{
-				sessLogLevel = t;
-			}
-			inline void setMaxSessionCount( int num ) noexcept
-			{
-				sessMaxCount = num;
-			}
+			void setCmdTimeout( timeout_t msec ) noexcept;
+			void setSessionLog( Debug::type t ) noexcept;
+			void setMaxSessionCount( size_t num ) noexcept;
 
 			bool async_run( const std::string& addr, Poco::UInt16 port );
 			bool run( const std::string& addr, Poco::UInt16 port );
 
 			void terminate();
 
-			inline bool isRunning() const noexcept
-			{
-				return isrunning;
-			}
+			bool isRunning() const noexcept;
 
 			bool check( bool restart_if_fail = true );
 
@@ -139,10 +126,7 @@ namespace uniset
 
 			virtual void evprepare( const ev::loop_ref& loop ) override;
 			virtual void evfinish( const ev::loop_ref& loop ) override;
-			virtual std::string wname() const noexcept override
-			{
-				return myname;
-			}
+			virtual std::string wname() const noexcept override;
 
 			void ioAccept( ev::io& watcher, int revents );
 			void sessionFinished( LogSession* s );

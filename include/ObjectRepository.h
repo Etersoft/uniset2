@@ -88,10 +88,10 @@ namespace uniset
 			};
 
 			//! Получение списка how_many объектов из секции section.
-			bool list(const std::string& section, uniset::ListObjectName* ls, size_t how_many = 300)throw(uniset::ORepFailed);
+			bool list(const std::string& section, uniset::ListObjectName* ls, size_t how_many = 300) const throw(uniset::ORepFailed);
 
 			//! Получние списка how_many подсекций из секции in_section.
-			bool listSections(const std::string& in_section, uniset::ListObjectName* ls, size_t how_many = 300)throw(uniset::ORepFailed);
+			bool listSections(const std::string& in_section, uniset::ListObjectName* ls, size_t how_many = 300) const throw(uniset::ORepFailed);
 
 			// -------------------------------------------------------------------
 			//! Создание секции
@@ -110,7 +110,7 @@ namespace uniset
 			bool renameSection(const std::string& newName, const std::string& fullName);
 
 			/*! Функция выводящая на экран список всех объектов расположенных в данной секции */
-			void printSection(const std::string& fullName);
+			void printSection(const std::string& fullName) const;
 
 			// @}
 			// end of add to ORepServiceGroup
@@ -121,7 +121,7 @@ namespace uniset
 			mutable std::string nsName;
 			std::shared_ptr<uniset::Configuration> uconf;
 
-			bool list(const std::string& section, uniset::ListObjectName* ls, unsigned int how_many, ObjectType type);
+			bool list(const std::string& section, uniset::ListObjectName* ls, unsigned int how_many, ObjectType type) const;
 
 			/*! Создание нового контекста(секции) */
 			bool createContext( const std::string& cname, CosNaming::NamingContext_ptr ctx);

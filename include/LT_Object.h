@@ -72,7 +72,7 @@ namespace uniset
 
 	                sleepTime=lt.checkTimers(this);
 	            }
-	            catch(Exception& ex)
+				catch( uniset::Exception& ex)
 	            {
 	                cout << myname << "(callback): " << ex << endl;
 	            }

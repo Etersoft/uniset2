@@ -48,10 +48,7 @@ namespace uniset
 
 			void connectFinalSession( FinalSlot sl );
 
-			inline std::string getClientAddress() const
-			{
-				return caddr;
-			}
+			std::string getClientAddress() const;
 
 			void setSessionTimeout( double t );
 

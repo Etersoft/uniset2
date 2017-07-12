@@ -170,8 +170,8 @@ timeout_t LT_Object::askTimer( uniset::TimerId timerid, timeout_t timeMS, clock_
 	{
 		if( timeMS < UniSetTimer::MinQuantityTime )
 		{
-			ucrit << "(LT_askTimer): [мс] попытка заказть таймер " << getTimerName(timerid)
-				  << " со временем срабатыания "
+			ucrit << "(LT_askTimer): [мс] попытка заказать таймер " << getTimerName(timerid)
+				  << " со временем срабатывания "
 				  << " меньше разрешённого " << UniSetTimer::MinQuantityTime << endl;
 			timeMS = UniSetTimer::MinQuantityTime;
 		}

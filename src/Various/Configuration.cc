@@ -26,6 +26,7 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include <cassert>
 #include <omniORB4/internal/initRefs.h>
 
 #include "Configuration.h"
@@ -73,8 +74,8 @@ ostream& uniset::Configuration::help(ostream& os)
 // -------------------------------------------------------------------------
 namespace uniset
 {
-	static shared_ptr<Configuration> uconf;
-	static std::shared_ptr<DebugStream> _ulog = nullptr;
+	static std::shared_ptr<Configuration> uconf;
+	static std::shared_ptr<DebugStream> _ulog;
 
 	std::shared_ptr<DebugStream> ulog() noexcept
 	{
@@ -88,8 +89,14 @@ namespace uniset
 
 	std::shared_ptr<Configuration> uniset_conf() noexcept
 	{
-		//        if( uconf == nullptr )
-		//            throw SystemError("Don`t init uniset configuration! First use uniset_init().");
+		// Не делаем assert или exception
+		// потому-что считаем, что может быть необходимость не вызывать uniset_init()
+		// Т.е. проверка if( uconf ) возлагается на пользователя.
+
+		// assert( uconf );
+
+		// if( uconf == nullptr )
+		//		throw SystemError("Don`t init uniset configuration! First use uniset_init().");
 
 		return uconf; // см. uniset_init..
 	}

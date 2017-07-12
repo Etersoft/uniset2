@@ -150,7 +150,8 @@ namespace uniset
 			{
 				return ioList.find(k);
 			}
-			inline int ioCount() const
+
+			inline int ioCount() const noexcept
 			{
 				return ioList.size();
 			}
@@ -250,8 +251,6 @@ namespace uniset
 			IOStateList::iterator myioBegin();
 			IOStateList::iterator myioEnd();
 			IOStateList::iterator myiofind( uniset::ObjectId id );
-			size_t ioCount();
-			// --------------------------
 
 		private:
 			friend class NCRestorer;
@@ -338,7 +337,7 @@ namespace uniset
 				{
 					uniset::uniset_rwmutex_rlock lock(val_lock);
 					IOController_i::SensorIOInfo s(*this);
-					return std::move(s);
+					return s;
 				}
 
 				inline uniset::SensorMessage makeSensorMessage( bool with_lock = false )
@@ -370,7 +369,7 @@ namespace uniset
 						sm.undefined    = undefined;
 					}
 
-					return std::move(sm);
+					return sm;
 				}
 			};
 	};

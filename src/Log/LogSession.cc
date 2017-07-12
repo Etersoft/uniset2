@@ -636,6 +636,26 @@ namespace uniset
 		cancelled = true;
 	}
 	// ---------------------------------------------------------------------
+	string LogSession::getClientAddress() const noexcept
+	{
+		return caddr;
+	}
+	// ---------------------------------------------------------------------
+	void LogSession::setSessionLogLevel(Debug::type t) noexcept
+	{
+		mylog.level(t);
+	}
+	// ---------------------------------------------------------------------
+	void LogSession::addSessionLogLevel(Debug::type t) noexcept
+	{
+		mylog.addLevel(t);
+	}
+	// ---------------------------------------------------------------------
+	void LogSession::delSessionLogLevel(Debug::type t) noexcept
+	{
+		mylog.delLevel(t);
+	}
+	// ---------------------------------------------------------------------
 	void LogSession::setMaxBufSize( size_t num )
 	{
 		std::unique_lock<std::mutex> lk(logbuf_mutex);

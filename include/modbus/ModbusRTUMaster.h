@@ -26,10 +26,7 @@ namespace uniset
 			ModbusRTUMaster( const std::string& dev, bool use485 = false, bool tr_ctl = false );
 			virtual ~ModbusRTUMaster();
 
-			virtual void cleanupChannel() override
-			{
-				if( port ) port->cleanupChannel();
-			}
+			virtual void cleanupChannel() override;
 
 			void setSpeed( ComPort::Speed s );
 			void setSpeed( const std::string& s );
@@ -39,7 +36,7 @@ namespace uniset
 			void setCharacterSize( ComPort::CharacterSize csize );
 			void setStopBits( ComPort::StopBits sBit );
 
-			int getTimeout();
+			timeout_t getTimeout() const;
 
 		protected:
 

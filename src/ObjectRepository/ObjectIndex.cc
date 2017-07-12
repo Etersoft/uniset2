@@ -34,6 +34,16 @@ string ObjectIndex::getNameById( const ObjectId id ) const noexcept
 	return getMapName(id);
 }
 // -----------------------------------------------------------------------------------------
+std::string ObjectIndex::getNodeName(const ObjectId id) const noexcept
+{
+	return getNameById(id);
+}
+// -----------------------------------------------------------------------------------------
+ObjectId ObjectIndex::getNodeId(const std::__cxx11::string& name) const noexcept
+{
+	return getIdByName(name);
+}
+// -----------------------------------------------------------------------------------------
 std::string ObjectIndex::getBaseName( const std::string& fname ) noexcept
 {
 	string::size_type pos = fname.rfind('/');
