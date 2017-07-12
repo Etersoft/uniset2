@@ -70,6 +70,11 @@ namespace uniset
 			}
 		}
 	}
+	// -------------------------------------------------------------------------
+	size_t Element::outCount() const
+	{
+		return outs.size();
+	}
 
 	// -------------------------------------------------------------------------
 	void Element::setChildOut()
@@ -78,6 +83,11 @@ namespace uniset
 
 		for( auto && it : outs )
 			it.el->setIn(it.num, _myout);
+	}
+	// -------------------------------------------------------------------------
+	Element::ElementID Element::getId() const
+	{
+		return myid;
 	}
 	// -------------------------------------------------------------------------
 	std::shared_ptr<Element> Element::find( const ElementID& id )
@@ -119,5 +129,29 @@ namespace uniset
 			}
 		}
 	}
+	// -------------------------------------------------------------------------
+	size_t Element::inCount() const
+	{
+		return ins.size();
+	}
+	// -------------------------------------------------------------------------
+	ostream& operator<<( ostream& os, Element& el )
+	{
+		return os << "[" << el.getType() << "]" << el.getId();
+	}
+
+	ostream& operator<<( ostream& os, std::shared_ptr<Element> el )
+	{
+		if( el )
+			return os << (*(el.get()));
+
+		return os;
+	}
+	// -------------------------------------------------------------------------
+	long TOR::getOut() const
+	{
+		return (myout ? 1 : 0);
+	}
+
 	// -------------------------------------------------------------------------
 } // end of namespace uniset

@@ -124,27 +124,15 @@ namespace uniset
 
 			void open( const std::string& lfile );
 
-			inline bool isOpen() const
-			{
-				return !fSchema.empty();
-			}
+			bool isOpen() const;
+
+			timeout_t getSleepTime() const noexcept;
+
+			std::shared_ptr<SchemaXML> getSchema();
 
 			virtual void execute( const std::string& lfile = "" );
 
-			virtual void terminate()
-			{
-				canceled = true;
-			}
-
-			inline std::shared_ptr<SchemaXML> getSchema()
-			{
-				return sch;
-			}
-
-			inline int getSleepTime() const
-			{
-				return sleepTime;
-			}
+			virtual void terminate();
 
 		protected:
 

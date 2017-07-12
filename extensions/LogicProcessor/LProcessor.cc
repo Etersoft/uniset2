@@ -59,6 +59,11 @@ void LProcessor::open( const string& lfile )
 	build(lfile);
 }
 // -------------------------------------------------------------------------
+bool LProcessor::isOpen() const
+{
+	return !fSchema.empty();
+}
+// -------------------------------------------------------------------------
 void LProcessor::execute( const std::string& lfile )
 {
 	if( !lfile.empty() )
@@ -85,6 +90,21 @@ void LProcessor::execute( const std::string& lfile )
 
 		msleep(sleepTime);
 	}
+}
+// -------------------------------------------------------------------------
+void LProcessor::terminate()
+{
+	canceled = true;
+}
+// -------------------------------------------------------------------------
+std::shared_ptr<SchemaXML> LProcessor::getSchema()
+{
+	return sch;
+}
+// -------------------------------------------------------------------------
+timeout_t LProcessor::getSleepTime() const noexcept
+{
+	return sleepTime;
 }
 // -------------------------------------------------------------------------
 void LProcessor::step()
