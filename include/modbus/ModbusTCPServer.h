@@ -51,51 +51,33 @@ namespace uniset
 			virtual bool isActive() const override;
 
 			void setMaxSessions( size_t num );
-			inline size_t getMaxSessions()
-			{
-				return maxSessions;
-			}
+			size_t getMaxSessions() const;
 
 			/*! установить timeout для поддержания соединения с "клиентом" (Default: 10 сек) */
 			void setSessionTimeout( timeout_t msec );
-			inline timeout_t getSessionTimeout()
-			{
-				return sessTimeout;
-			}
+			timeout_t getSessionTimeout() const;
 
 			/*! текущее количество подключений */
-			size_t getCountSessions();
+			size_t getCountSessions() const;
 
-			inline void setIgnoreAddrMode( bool st )
-			{
-				ignoreAddr = st;
-			}
-			inline bool getIgnoreAddrMode()
-			{
-				return ignoreAddr;
-			}
+			void setIgnoreAddrMode( bool st );
+			bool getIgnoreAddrMode() const;
 
 			// Сбор статистики по соединениям...
 			struct SessionInfo
 			{
-				SessionInfo( const std::string& a, unsigned int ask ): iaddr(a), askCount(ask) {}
+				SessionInfo( const std::string& a, size_t ask ): iaddr(a), askCount(ask) {}
 
 				std::string iaddr;
-				unsigned int askCount;
+				size_t askCount;
 			};
 
 			typedef std::list<SessionInfo> Sessions;
 
 			void getSessions( Sessions& lst );
 
-			inline std::string getInetAddress()
-			{
-				return iaddr;
-			}
-			inline int getInetPort()
-			{
-				return port;
-			}
+			std::string getInetAddress() const;
+			int getInetPort() const;
 
 			// -------------------------------------------------
 			// Таймер.
@@ -108,10 +90,7 @@ namespace uniset
 			TimerSignal signal_timer();
 
 			void setTimer( timeout_t msec );
-			inline timeout_t getTimer()
-			{
-				return tmTime;
-			}
+			inline timeout_t getTimer() const;
 
 		protected:
 

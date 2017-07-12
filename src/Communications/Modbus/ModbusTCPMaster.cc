@@ -333,6 +333,21 @@ namespace uniset
 		catch( ... ) {}
 	}
 	// -------------------------------------------------------------------------
+	void ModbusTCPMaster::cleanupChannel()
+	{
+		cleanInputStream();
+	}
+	// -------------------------------------------------------------------------
+	string ModbusTCPMaster::getAddress() const
+	{
+		return iaddr;
+	}
+	// -------------------------------------------------------------------------
+	int ModbusTCPMaster::getPort() const
+	{
+		return port;
+	}
+	// -------------------------------------------------------------------------
 	void ModbusTCPMaster::setReadTimeout( timeout_t msec )
 	{
 		readTimeout = msec;
@@ -364,6 +379,11 @@ namespace uniset
 		}
 
 		return false;
+	}
+	// -------------------------------------------------------------------------
+	void ModbusTCPMaster::setForceDisconnect( bool s )
+	{
+		force_disconnect = s;
 	}
 	// -------------------------------------------------------------------------
 	bool ModbusTCPMaster::reconnect()

@@ -41,6 +41,21 @@ namespace uniset
 		catch(...) {}
 	}
 	// -------------------------------------------------------------------------
+	void LogServer::setCmdTimeout( timeout_t msec ) noexcept
+	{
+		cmdTimeout = msec;
+	}
+	// -------------------------------------------------------------------------
+	void LogServer::setSessionLog( Debug::type t ) noexcept
+	{
+		sessLogLevel = t;
+	}
+	// -------------------------------------------------------------------------
+	void LogServer::setMaxSessionCount( size_t num ) noexcept
+	{
+		sessMaxCount = num;
+	}
+	// -------------------------------------------------------------------------
 	LogServer::LogServer( std::shared_ptr<LogAgregator> log ):
 		LogServer()
 	{
@@ -111,6 +126,11 @@ namespace uniset
 			mylog.info() << myname << "(LogServer): finished." << endl;
 	}
 	// -------------------------------------------------------------------------
+	std::string LogServer::wname() const noexcept
+	{
+		return myname;
+	}
+	// -------------------------------------------------------------------------
 	bool LogServer::run( const std::string& _addr, Poco::UInt16 _port )
 	{
 		addr = _addr;
@@ -141,6 +161,11 @@ namespace uniset
 	void LogServer::terminate()
 	{
 		loop.evstop(this);
+	}
+	// -------------------------------------------------------------------------
+	bool LogServer::isRunning() const noexcept
+	{
+		return isrunning;
 	}
 	// -------------------------------------------------------------------------
 	bool LogServer::check( bool restart_if_fail )

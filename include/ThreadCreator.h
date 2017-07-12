@@ -90,7 +90,7 @@ namespace uniset
 		public:
 
 			/*! прототип функции вызова
-			 * use std::function ?
+			 * \todo use std::function ?
 			 */
 			typedef void(ThreadMaster::* Action)(void);
 
@@ -113,7 +113,7 @@ namespace uniset
 
 			void sleep( long milliseconds );
 
-			inline bool isRunning()
+			inline bool isRunning() const
 			{
 				return thr.isRunning();
 			}

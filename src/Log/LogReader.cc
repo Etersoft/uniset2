@@ -54,6 +54,11 @@ void LogReader::setLogLevel( Debug::type t )
 	outlog->level(t);
 }
 // -------------------------------------------------------------------------
+std::shared_ptr<DebugStream> LogReader::log()
+{
+	return outlog;
+}
+// -------------------------------------------------------------------------
 DebugStream::StreamEvent_Signal LogReader::signal_stream_event()
 {
 	return m_logsig;
@@ -146,6 +151,36 @@ void LogReader::disconnect()
 bool LogReader::isConnection() const
 {
 	return (tcp && tcp->isConnected() );
+}
+// -------------------------------------------------------------------------
+void LogReader::setReadCount(unsigned int n)
+{
+	readcount = n;
+}
+// -------------------------------------------------------------------------
+void LogReader::setCommandOnlyMode(bool s)
+{
+	cmdonly = s;
+}
+// -------------------------------------------------------------------------
+void LogReader::setinTimeout(timeout_t msec)
+{
+	inTimeout = msec;
+}
+// -------------------------------------------------------------------------
+void LogReader::setoutTimeout(timeout_t msec)
+{
+	outTimeout = msec;
+}
+// -------------------------------------------------------------------------
+void LogReader::setReconnectDelay(timeout_t msec)
+{
+	reconDelay = msec;
+}
+// -------------------------------------------------------------------------
+void LogReader::setTextFilter(const string& f)
+{
+	textfilter  = f;
 }
 // -------------------------------------------------------------------------
 void LogReader::sendCommand(const std::string& _addr, int _port, std::vector<Command>& vcmd, bool cmd_only, bool verbose )

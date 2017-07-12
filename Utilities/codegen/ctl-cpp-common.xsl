@@ -252,7 +252,7 @@
         /*! Вывод состояния внутренних переменных */
         inline std::string dumpVars(){ return vmon.pretty_str(); }
         // ------------------------------------------------------------
-        std::string help() noexcept;
+        std::string help() const noexcept;
 
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 #ifndef DISABLE_REST_API
@@ -869,7 +869,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 	}
 }
 // ----------------------------------------------------------------------------
-std::string <xsl:value-of select="$CLASSNAME"/>_SK::help() noexcept
+std::string <xsl:value-of select="$CLASSNAME"/>_SK::help() const noexcept
 {
 	ostringstream s;
 	s &lt;&lt; " ************* " &lt;&lt; myname &lt;&lt; " HELP:" &lt;&lt; " ************* " &lt;&lt; endl;

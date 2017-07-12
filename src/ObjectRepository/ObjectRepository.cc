@@ -308,7 +308,7 @@ throw(ORepFailed,  NameNotFound)
  * количество объектов в этой секции превышает заданное how_many.
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepository::list(const string& section, ListObjectName* ls, size_t how_many)throw(ORepFailed)
+bool ObjectRepository::list(const string& section, ListObjectName* ls, size_t how_many) const throw(ORepFailed)
 {
 	return list(section, ls, how_many, ObjectRef);
 }
@@ -322,7 +322,7 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, size_t ho
  * количество объектов в этой секции превышает заданное how_many.
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepository::listSections(const string& in_section, ListObjectName* ls, size_t how_many)throw(ORepFailed)
+bool ObjectRepository::listSections(const string& in_section, ListObjectName* ls, size_t how_many) const throw(ORepFailed)
 {
 	return list(in_section, ls, how_many, Section);
 }
@@ -337,7 +337,7 @@ bool ObjectRepository::listSections(const string& in_section, ListObjectName* ls
  * количество объектов в этой секции превышает заданное how_many.
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned int how_many, ObjectType type)
+bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned int how_many, ObjectType type) const
 {
 	// Возвращает false если вынут не весь список...
 	CosNaming::NamingContext_var ctx;
@@ -563,7 +563,7 @@ bool ObjectRepository::createContext( const string& cname, CosNaming::NamingCont
 /*!
 	\note Функция не вывести список, если не сможет получить доступ к секции
 */
-void ObjectRepository::printSection( const string& fullName )
+void ObjectRepository::printSection( const string& fullName ) const
 {
 	ListObjectName ls;
 

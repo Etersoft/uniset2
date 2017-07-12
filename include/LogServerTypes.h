@@ -25,7 +25,7 @@ namespace uniset
 
 	namespace LogServerTypes
 	{
-		const unsigned int MAGICNUM = 0x20160417;
+		const uint MAGICNUM = 0x20160417;
 		enum Command
 		{
 			cmdNOP,         /*!< отсутствие команды */
@@ -55,9 +55,10 @@ namespace uniset
 			{
 				std::memset(logname, 0, sizeof(logname));
 			}
-			unsigned int magic;
+
+			uint magic;
 			Command cmd;
-			unsigned int data;
+			uint data;
 
 			static const size_t MAXLOGNAME = 120;
 			char logname[MAXLOGNAME + 1]; // +1 reserverd for '\0'

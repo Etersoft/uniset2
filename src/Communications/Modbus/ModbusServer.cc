@@ -63,6 +63,41 @@ namespace uniset
 			recvTimeOut_ms = msec;
 	}
 	// -------------------------------------------------------------------------
+	void ModbusServer::setSleepPause(timeout_t msec)
+	{
+		sleepPause_msec = msec;
+	}
+	// -------------------------------------------------------------------------
+	void ModbusServer::setCRCNoCheckit(bool set)
+	{
+		crcNoCheckit = set;
+	}
+	// -------------------------------------------------------------------------
+	bool ModbusServer::isCRCNoCheckit() const
+	{
+		return crcNoCheckit;
+	}
+	// -------------------------------------------------------------------------
+	void ModbusServer::setBroadcastMode( bool set )
+	{
+		onBroadcast = set;
+	}
+	// -------------------------------------------------------------------------
+	bool ModbusServer::getBroadcastMode() const
+	{
+		return onBroadcast;
+	}
+	// -------------------------------------------------------------------------
+	void ModbusServer::setCleanBeforeSend(bool set)
+	{
+		cleanBeforeSend = set;
+	}
+	// -------------------------------------------------------------------------
+	bool ModbusServer::getCleanBeforeSend() const
+	{
+		return cleanBeforeSend;
+	}
+	// -------------------------------------------------------------------------
 	timeout_t ModbusServer::setReplyTimeout( timeout_t msec )
 	{
 		// #warning "Why msec can be 0?"
@@ -1675,7 +1710,7 @@ namespace uniset
 		return m;
 	}
 	// -------------------------------------------------------------------------
-	size_t ModbusServer::getErrCount( mbErrCode e )
+	size_t ModbusServer::getErrCount( mbErrCode e ) const
 	{
 		auto i = errmap.find(e);
 
@@ -1695,6 +1730,11 @@ namespace uniset
 		size_t ret = i->second;
 		i->second = set;
 		return ret;
+	}
+	// -------------------------------------------------------------------------
+	size_t ModbusServer::getAskCount() const
+	{
+		return askCount;
 	}
 	// -------------------------------------------------------------------------
 	void ModbusServer::resetAskCounter()

@@ -71,14 +71,34 @@ namespace uniset
 		maxSessions = num;
 	}
 	// -------------------------------------------------------------------------
-	size_t ModbusTCPServer::getCountSessions()
+	size_t ModbusTCPServer::getMaxSessions() const
+	{
+		return maxSessions;
+	}
+	// -------------------------------------------------------------------------
+	size_t ModbusTCPServer::getCountSessions() const
 	{
 		return sessCount;
+	}
+	// -------------------------------------------------------------------------
+	void ModbusTCPServer::setIgnoreAddrMode(bool st)
+	{
+		ignoreAddr = st;
+	}
+	// -------------------------------------------------------------------------
+	bool ModbusTCPServer::getIgnoreAddrMode() const
+	{
+		return ignoreAddr;
 	}
 	// -------------------------------------------------------------------------
 	void ModbusTCPServer::setSessionTimeout( timeout_t msec )
 	{
 		sessTimeout = msec;
+	}
+	// -------------------------------------------------------------------------
+	timeout_t ModbusTCPServer::getSessionTimeout() const
+	{
+		return sessTimeout;
 	}
 	// -------------------------------------------------------------------------
 	bool ModbusTCPServer::run( const std::unordered_set<ModbusAddr>& _vmbaddr )
@@ -188,6 +208,16 @@ namespace uniset
 		}
 	}
 	// -------------------------------------------------------------------------
+	string ModbusTCPServer::getInetAddress() const
+	{
+		return iaddr;
+	}
+	// -------------------------------------------------------------------------
+	int ModbusTCPServer::getInetPort() const
+	{
+		return port;
+	}
+	// -------------------------------------------------------------------------
 	ModbusTCPServer::TimerSignal ModbusTCPServer::signal_timer()
 	{
 		return m_timer_signal;
@@ -211,6 +241,11 @@ namespace uniset
 			if( ioTimer.is_active() )
 				ioTimer.start( tmTime );
 		}
+	}
+	// -------------------------------------------------------------------------
+	timeout_t ModbusTCPServer::getTimer() const
+	{
+		return tmTime;
 	}
 	// -------------------------------------------------------------------------
 	void ModbusTCPServer::iowait( timeout_t msec )

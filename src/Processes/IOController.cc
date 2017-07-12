@@ -654,11 +654,6 @@ void IOController::USensorInfo::init( const IOController_i::SensorIOInfo& s )
 	(*this) = std::move(r);
 }
 // ----------------------------------------------------------------------------------------
-size_t IOController::ioCount()
-{
-	return ioList.size();
-}
-// ----------------------------------------------------------------------------------------
 IOController::IOStateList::iterator IOController::myioBegin()
 {
 	return ioList.begin();

@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */
 // --------------------------------------------------------------------------
-// generate timestamp: 2017-07-02+03:00
+// generate timestamp: 2017-07-13+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -717,7 +717,7 @@ void UObject_SK::waitSM( int wait_msec, ObjectId _testID )
 	}
 }
 // ----------------------------------------------------------------------------
-std::string UObject_SK::help() noexcept
+std::string UObject_SK::help() const noexcept
 {
 	ostringstream s;
 	s << " ************* " << myname << " HELP:" << " ************* " << endl;

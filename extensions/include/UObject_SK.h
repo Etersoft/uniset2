@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */
 // --------------------------------------------------------------------------
-// generate timestamp: 2017-07-02+03:00
+// generate timestamp: 2017-07-13+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -118,7 +118,7 @@ class UObject_SK:
         /*! Вывод состояния внутренних переменных */
         inline std::string dumpVars(){ return vmon.pretty_str(); }
         // ------------------------------------------------------------
-        std::string help() noexcept;
+        std::string help() const noexcept;
 
 
 #ifndef DISABLE_REST_API
