@@ -57,9 +57,9 @@ namespace uniset
 
 			virtual bool isActive() const override;
 
-			void iowait( timeout_t msec );
-
 		protected:
+
+			virtual void iowait( timeout_t msec ) override;
 
 			virtual ModbusRTU::mbErrCode realReceive( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, timeout_t msecTimeout ) override;
 

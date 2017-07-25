@@ -38,11 +38,11 @@ namespace uniset
 		askcount_id(DefaultObjectId),
 		respond_id(DefaultObjectId),
 		respond_invert(false),
-		askCount(0),
+		connCount(0),
 		activated(false),
 		cancelled(false),
 		activateTimeout(500),
-		pingOK(true),
+		smPingOK(true),
 		force(false),
 		mbregFromID(false),
 		prefix(prefix),
@@ -713,6 +713,7 @@ namespace uniset
 					throw;
 			}
 
+			cerr << myname << "**************** " << endl;
 			msleep(tcpRepeatCreateSocketPause);
 		}
 
@@ -758,7 +759,7 @@ namespace uniset
 			{
 				try
 				{
-					shm->localSetValue(itAskCount, askcount_id, askCount, getId());
+					shm->localSetValue(itAskCount, askcount_id, connCount, getId());
 				}
 				catch( const uniset::Exception& ex )
 				{
@@ -786,6 +787,11 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	void MBSlave::updateTCPStatistics()
 	{
+		// ВНИМАНИЕ! Эта функция вызывается из основного eventLoop
+		// поэтому она должна быть максимально быстрой и безопасной
+		// иначе накроется весь обмен
+		// т.к. на это время останавливается работа основного потока (eventLoop)
+
 		try
 		{
 			if( !tcpserver )
@@ -798,14 +804,11 @@ namespace uniset
 				tcpserver->getSessions(sess);
 			}
 
-			askCount = tcpserver->getAskCount();
+			connCount = tcpserver->getConnectionCount();
 
 			// если список сессий не пустой.. значит связь есть..
 			if( !sess.empty() )
 				ptTimeout.reset(); // см. updateStatistics()
-
-			// суммарное количество по всем
-			askCount = 0;
 
 			for( const auto& s : sess )
 			{
@@ -869,9 +872,13 @@ namespace uniset
 
 			updateStatistics();
 		}
-		catch( std::exception& ex)
+		catch( std::exception& ex )
 		{
 			mbwarn << myname << "(updateStatistics): " << ex.what() << endl;
+		}
+		catch( ... )
+		{
+			mbwarn << myname << "(updateStatistics): unknown exception..." << endl;
 		}
 	}
 	// -------------------------------------------------------------------------
@@ -2021,7 +2028,7 @@ namespace uniset
 			            IOBase::processingAsAI( p, val, shm, force );
 			        }
 			*/
-			pingOK = true;
+			smPingOK = true;
 			return ModbusRTU::erNoError;
 		}
 		catch( uniset::NameNotFound& ex )
@@ -2036,22 +2043,22 @@ namespace uniset
 		}
 		catch( const uniset::Exception& ex )
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(real_write_prop): " << ex << endl;
 		}
 		catch( const CORBA::SystemException& ex )
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(real_write_prop): СORBA::SystemException: "
 					   << ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(real_write_prop) catch ..." << endl;
 		}
 
-		pingOK = false;
+		smPingOK = false;
 		return ModbusRTU::erTimeOut;
 	}
 #ifndef DISABLE_REST_API
@@ -2399,7 +2406,7 @@ namespace uniset
 				return ModbusRTU::erBadDataAddress;
 
 			mblog3 << myname << "(real_read_prop): read OK. sid=" << p->si.id << " val=" << val << endl;
-			pingOK = true;
+			smPingOK = true;
 			return ModbusRTU::erNoError;
 		}
 		catch( uniset::NameNotFound& ex )
@@ -2414,24 +2421,24 @@ namespace uniset
 		}
 		catch( const uniset::Exception& ex )
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(real_read_prop): " << ex << endl;
 		}
 		catch( const CORBA::SystemException& ex )
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(real_read_prop): CORBA::SystemException: "
 					   << ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(real_read_prop) catch ..." << endl;
 		}
 
 		mbwarn << myname << "(real_read_prop): read sid=" << p->si.id << " FAILED!!" << endl;
 
-		pingOK = false;
+		smPingOK = false;
 		return ModbusRTU::erTimeOut;
 	}
 	// -------------------------------------------------------------------------
@@ -2538,7 +2545,7 @@ namespace uniset
 				else
 					reply.setBit(0, 0, 0);
 
-				pingOK = true;
+				smPingOK = true;
 				return ret;
 			}
 
@@ -2556,7 +2563,7 @@ namespace uniset
 				bnum++;
 			}
 
-			pingOK = true;
+			smPingOK = true;
 			return ModbusRTU::erNoError;
 		}
 		catch( uniset::NameNotFound& ex )
@@ -2566,22 +2573,22 @@ namespace uniset
 		}
 		catch( const uniset::Exception& ex )
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(readCoilStatus): " << ex << endl;
 		}
 		catch( const CORBA::SystemException& ex )
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(readCoilStatus): СORBA::SystemException: "
 					   << ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(readCoilStatus): catch ..." << endl;
 		}
 
-		pingOK = false;
+		smPingOK = false;
 		return ModbusRTU::erTimeOut;
 	}
 	// -------------------------------------------------------------------------
@@ -2617,7 +2624,7 @@ namespace uniset
 				else
 					reply.setBit(0, 0, 0);
 
-				pingOK = true;
+				smPingOK = true;
 				return ret;
 			}
 
@@ -2635,7 +2642,7 @@ namespace uniset
 				bnum++;
 			}
 
-			pingOK = true;
+			smPingOK = true;
 			return ModbusRTU::erNoError;
 		}
 		catch( uniset::NameNotFound& ex )
@@ -2645,22 +2652,22 @@ namespace uniset
 		}
 		catch( const uniset::Exception& ex )
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(readInputStatus): " << ex << endl;
 		}
 		catch( const CORBA::SystemException& ex )
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(readInputStatus): СORBA::SystemException: "
 					   << ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(readInputStatus): catch ..." << endl;
 		}
 
-		pingOK = false;
+		smPingOK = false;
 		return ModbusRTU::erTimeOut;
 	}
 	// -------------------------------------------------------------------------
@@ -2747,7 +2754,7 @@ namespace uniset
 		if( query.subf == ModbusRTU::dgMsgSlaveCount || query.subf == ModbusRTU::dgBusMsgCount )
 		{
 			reply = query;
-			reply.data[0] = askCount;
+			reply.data[0] = connCount;
 			return ModbusRTU::erNoError;
 		}
 
@@ -2832,7 +2839,7 @@ namespace uniset
 			inf << "  " << ModbusRTU::addr2str(m.first) << ": iomap=" << m.second.size() << endl;
 
 		inf << " myaddr: " << ModbusServer::vaddr2str(vaddr) << endl;
-		inf << "Statistic: askCount=" << askCount << " pingOK=" << pingOK << endl;
+		inf << "Statistic: connectionCount=" << connCount << " smPingOK=" << smPingOK << endl;
 
 		if( sslot ) // т.е. если у нас tcp
 		{

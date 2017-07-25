@@ -71,12 +71,12 @@ namespace uniset
 		maxSessions = num;
 	}
 	// -------------------------------------------------------------------------
-	size_t ModbusTCPServer::getMaxSessions() const
+	size_t ModbusTCPServer::getMaxSessions() const noexcept
 	{
 		return maxSessions;
 	}
 	// -------------------------------------------------------------------------
-	size_t ModbusTCPServer::getCountSessions() const
+	size_t ModbusTCPServer::getCountSessions() const noexcept
 	{
 		return sessCount;
 	}
@@ -86,7 +86,7 @@ namespace uniset
 		ignoreAddr = st;
 	}
 	// -------------------------------------------------------------------------
-	bool ModbusTCPServer::getIgnoreAddrMode() const
+	bool ModbusTCPServer::getIgnoreAddrMode() const noexcept
 	{
 		return ignoreAddr;
 	}
@@ -96,7 +96,7 @@ namespace uniset
 		sessTimeout = msec;
 	}
 	// -------------------------------------------------------------------------
-	timeout_t ModbusTCPServer::getSessionTimeout() const
+	timeout_t ModbusTCPServer::getSessionTimeout() const noexcept
 	{
 		return sessTimeout;
 	}
@@ -147,7 +147,7 @@ namespace uniset
 		ioTimer.set(loop);
 
 		if( tmTime_msec != UniSetTimer::WaitUpTime )
-			ioTimer.start(tmTime);
+			ioTimer.start(0,tmTime);
 	}
 	// -------------------------------------------------------------------------
 	void ModbusTCPServer::terminate()
@@ -171,7 +171,8 @@ namespace uniset
 		// Копируем сперва себе список сессий..
 		// т.к при вызове terminate()
 		// у Session будет вызван сигнал "final"
-		// который приведёт к вызову sessionFinished()..в котором список будет меняться..
+		// который приведёт к вызову sessionFinished()..
+		// в котором этот список будет меняться (удалится сессия из списка)
 		for( const auto& s : lst )
 		{
 			try
@@ -202,20 +203,22 @@ namespace uniset
 		std::lock_guard<std::mutex> l(sMutex);
 
 		for( const auto& i : slist )
-		{
-			SessionInfo inf( i->getClientAddress(), i->getAskCount() );
-			lst.emplace_back( std::move(inf) );
-		}
+			lst.emplace_back( i->getClientAddress(), i->getAskCount() );
 	}
 	// -------------------------------------------------------------------------
-	string ModbusTCPServer::getInetAddress() const
+	string ModbusTCPServer::getInetAddress() const noexcept
 	{
 		return iaddr;
 	}
 	// -------------------------------------------------------------------------
-	int ModbusTCPServer::getInetPort() const
+	int ModbusTCPServer::getInetPort() const noexcept
 	{
 		return port;
+	}
+	// -------------------------------------------------------------------------
+	size_t ModbusTCPServer::getConnectionCount() const noexcept
+	{
+		return connCount;
 	}
 	// -------------------------------------------------------------------------
 	ModbusTCPServer::TimerSignal ModbusTCPServer::signal_timer()
@@ -239,11 +242,11 @@ namespace uniset
 			tmTime = (double)msec / 1000.;
 
 			if( ioTimer.is_active() )
-				ioTimer.start( tmTime );
+				ioTimer.start( 0, tmTime );
 		}
 	}
 	// -------------------------------------------------------------------------
-	timeout_t ModbusTCPServer::getTimer() const
+	timeout_t ModbusTCPServer::getTimer() const noexcept
 	{
 		return tmTime;
 	}
@@ -291,6 +294,8 @@ namespace uniset
 		{
 			Poco::Net::StreamSocket ss = sock->acceptConnection();
 
+			connCount++;
+
 			auto s = make_shared<ModbusTCPSession>(ss, *vmbaddr, sessTimeout);
 			s->connectReadCoil( sigc::mem_fun(this, &ModbusTCPServer::readCoilStatus) );
 			s->connectReadInputStatus( sigc::mem_fun(this, &ModbusTCPServer::readInputStatus) );
@@ -327,10 +332,10 @@ namespace uniset
 			s->run(loop);
 			sessCount++;
 		}
-		catch( Exception& ex )
+		catch( std::exception& ex )
 		{
 			if( dlog->is_crit() )
-				dlog->crit() << myname << "(ModbusTCPServer): new connection error: " << ex << endl;
+				dlog->crit() << myname << "(ModbusTCPServer): new connection error: " << ex.what() << endl;
 		}
 	}
 	// -------------------------------------------------------------------------

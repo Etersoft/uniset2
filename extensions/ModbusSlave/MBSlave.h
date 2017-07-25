@@ -397,9 +397,9 @@ namespace uniset
 				friend std::ostream& operator<<( std::ostream& os, BitRegProperty* p );
 			};
 
-			inline long getAskCount()
+			inline long getConnCount()
 			{
-				return askCount;
+				return connCount;
 			}
 
 			inline std::shared_ptr<LogAgregator> getLogAggregator()
@@ -565,12 +565,12 @@ namespace uniset
 			bool respond_invert = { false };
 
 			PassiveTimer ptTimeout;
-			long askCount = { 0 };
+			long connCount = { 0 };
 
 			std::atomic_bool activated = { false };
 			std::atomic_bool cancelled = { false };
 			timeout_t activateTimeout = { 20000 }; // msec
-			bool pingOK = { false };
+			bool smPingOK = { false };
 			timeout_t wait_msec = { 3000 };
 			bool force = { false };        /*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
 
