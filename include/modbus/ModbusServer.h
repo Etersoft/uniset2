@@ -133,13 +133,12 @@ namespace uniset
 			size_t getErrCount( ModbusRTU::mbErrCode e ) const;
 			size_t resetErrCount( ModbusRTU::mbErrCode e, size_t set = 0 );
 
-			size_t getAskCount() const;
+			size_t getAskCount() const noexcept;
 			void resetAskCounter();
 
 		protected:
 
 			virtual void iowait( timeout_t usec );
-
 
 			/*! реализация получения очередного сообщения */
 			virtual ModbusRTU::mbErrCode realReceive( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, timeout_t msecTimeout ) = 0;

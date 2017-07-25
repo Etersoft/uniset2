@@ -1732,7 +1732,7 @@ namespace uniset
 		return ret;
 	}
 	// -------------------------------------------------------------------------
-	size_t ModbusServer::getAskCount() const
+	size_t ModbusServer::getAskCount() const noexcept
 	{
 		return askCount;
 	}

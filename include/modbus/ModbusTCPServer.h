@@ -51,17 +51,17 @@ namespace uniset
 			virtual bool isActive() const override;
 
 			void setMaxSessions( size_t num );
-			size_t getMaxSessions() const;
+			size_t getMaxSessions() const noexcept;
 
 			/*! установить timeout для поддержания соединения с "клиентом" (Default: 10 сек) */
 			void setSessionTimeout( timeout_t msec );
-			timeout_t getSessionTimeout() const;
+			timeout_t getSessionTimeout() const noexcept;
 
 			/*! текущее количество подключений */
-			size_t getCountSessions() const;
+			size_t getCountSessions() const noexcept;
 
 			void setIgnoreAddrMode( bool st );
-			bool getIgnoreAddrMode() const;
+			bool getIgnoreAddrMode() const noexcept;
 
 			// Сбор статистики по соединениям...
 			struct SessionInfo
@@ -76,8 +76,11 @@ namespace uniset
 
 			void getSessions( Sessions& lst );
 
-			std::string getInetAddress() const;
-			int getInetPort() const;
+			std::string getInetAddress() const noexcept;
+			int getInetPort() const noexcept;
+
+			// статистика
+			size_t getConnectionCount() const noexcept;
 
 			// -------------------------------------------------
 			// Таймер.
@@ -90,7 +93,7 @@ namespace uniset
 			TimerSignal signal_timer();
 
 			void setTimer( timeout_t msec );
-			inline timeout_t getTimer() const;
+			timeout_t getTimer() const noexcept;
 
 		protected:
 
@@ -135,6 +138,9 @@ namespace uniset
 
 			size_t maxSessions = { 100 };
 			size_t sessCount = { 0 };
+
+			// Статистика
+			size_t connCount = { 0 }; // количество обработанных соединений
 
 			timeout_t sessTimeout = { 10000 }; // msec
 

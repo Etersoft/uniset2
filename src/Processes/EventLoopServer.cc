@@ -110,6 +110,10 @@ namespace uniset
 		{
 			cerr << "(EventLoopServer::defaultLoop): " << ex.what() << endl;
 		}
+		catch( ... )
+		{
+			cerr << "(EventLoopServer::defaultLoop): UNKNOWN EXCEPTION.." << endl;
+		}
 
 		isrunning = false;
 		looprunOK_event.notify_all();
