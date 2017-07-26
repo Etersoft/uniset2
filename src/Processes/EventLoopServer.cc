@@ -24,16 +24,37 @@ namespace uniset
 	// ---------------------------------------------------------------------------
 	bool EventLoopServer::evrun()
 	{
+		{
+			std::lock_guard<std::timed_mutex> l(run_mutex);
+			if( isactive )
+				return false;
+
+			isactive = true;
+		}
+
 		defaultLoop(); // <-- здесь бесконечный цикл..
 		return false;
 	}
 	// ---------------------------------------------------------------------------
 	bool EventLoopServer::async_evrun( size_t timeout_msec )
 	{
+		if( !run_mutex.try_lock_for(std::chrono::milliseconds(timeout_msec)) )
+			return false;
+
+		std::lock_guard<std::timed_mutex> l(run_mutex,std::adopt_lock);
+
 		if( isactive )
 			return true;
 
 		isactive = true;
+
+		if( thr )
+		{
+			if( thr->joinable() )
+				thr->join();
+
+			thr = nullptr;
+		}
 
 		if( !thr )
 			thr = make_shared<std::thread>( [&] { defaultLoop(); } );
@@ -43,7 +64,9 @@ namespace uniset
 		// если запуститься не удалось
 		if( !ret && thr )
 		{
-			thr->join();
+			if( thr->joinable() )
+				thr->join();
+
 			thr = nullptr;
 		}
 
@@ -57,12 +80,26 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	void EventLoopServer::evstop()
 	{
-		cancelled = true;
-		evterm.send();
+		{
+			std::lock_guard<std::timed_mutex> l(run_mutex);
+
+			if( thr && !isactive )
+			{
+				if( thr->joinable() )
+					thr->join();
+
+				thr = nullptr;
+				return;
+			}
+
+			cancelled = true;
+			evterm.send();
+		}
 
 		if( thr )
 		{
-			thr->join();
+			if( thr->joinable() )
+				thr->join();
 			thr = nullptr;
 		}
 	}
@@ -115,10 +152,12 @@ namespace uniset
 			cerr << "(EventLoopServer::defaultLoop): UNKNOWN EXCEPTION.." << endl;
 		}
 
-		isrunning = false;
-		looprunOK_event.notify_all();
-
-		isactive = false;
+		{
+			std::lock_guard<std::timed_mutex> l(run_mutex);
+			isrunning = false;
+			looprunOK_event.notify_all();
+			isactive = false;
+		}
 	}
 	// -------------------------------------------------------------------------
 	bool EventLoopServer::waitDefaultLoopRunning( size_t waitTimeout_msec )

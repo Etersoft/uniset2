@@ -150,6 +150,10 @@ namespace uniset
 
 		timeout_t aftersend_pause = conf->getArgInt("--" + prefix + "-aftersend-pause", it.getProp("afterSendPause"));
 
+		checkExchangeTime = conf->getArgPInt("--" + prefix + "-check-exchange-time", it.getProp("checkExchangeTime"), 10000);
+		vmonit(checkExchangeTime);
+		vmonit(restartTCPServerCount);
+
 		mbtype = conf->getArgParam("--" + prefix + "-type", it.getProp("type"));
 
 		if( mbtype == "RTU" )
@@ -646,7 +650,12 @@ namespace uniset
 		// для обновления пороговых датчиков
 		tcpserver->signal_post_receive().connect( sigc::mem_fun(this, &MBSlave::postReceiveEvent) );
 
-		mbinfo << myname << "(execute_tcp): run tcpserver ("
+		runTCPServer();
+	}
+	// -------------------------------------------------------------------------
+	void MBSlave::runTCPServer()
+	{
+		mbinfo << myname << "(runTCPServer): run tcpserver ("
 			   << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort()
 			   << ")"
 			   << "["
@@ -713,12 +722,9 @@ namespace uniset
 					throw;
 			}
 
-			cerr << myname << "**************** " << endl;
 			msleep(tcpRepeatCreateSocketPause);
 		}
 
-		//	tcpCancelled = true;
-		//	mbinfo << myname << "(execute_tcp): tcpserver stopped.." << endl;
 	}
 	// -------------------------------------------------------------------------
 	void MBSlave::updateStatistics()
@@ -787,10 +793,29 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	void MBSlave::updateTCPStatistics()
 	{
+#if 0
+		// тестирование вылета при SEGFAULT
+		// или перезапуска при невыловленном EXCEPTION
+		// для mainloop
+		static size_t upCounter = 0;
+
+		upCounter++;
+		if( ++upCounter > 5 )
+		{
+//			IOMap::iterator i;
+//			cout << "SEGFAULT: " << i->first << endl;
+
+			upCounter = 0;
+			cerr << ".....THROW...." << endl;
+			throw std::string("TEST STRING EXCEPTION");
+		}
+#endif
+
 		// ВНИМАНИЕ! Эта функция вызывается из основного eventLoop
 		// поэтому она должна быть максимально быстрой и безопасной
 		// иначе накроется весь обмен
 		// т.к. на это время останавливается работа основного потока (eventLoop)
+		// принимающего запросы
 
 		try
 		{
@@ -951,6 +976,8 @@ namespace uniset
 						thr->start();
 					else if( mbtype == "TCP")
 						execute_tcp();
+
+					askTimer(tmCheckExchange,checkExchangeTime);
 				}
 
 				break;
@@ -1083,9 +1110,25 @@ namespace uniset
 		}
 	}
 	// ------------------------------------------------------------------------------------------
+	void MBSlave::timerInfo( const TimerMessage* tm )
+	{
+		if( tm->id == tmCheckExchange )
+		{
+			if( !tcpserver )
+				return;
+
+			if( !tcpserver->isActive() )
+			{
+				mbwarn << myname << "(timerInfo): tcpserver thread failed! restart.." << endl;
+				restartTCPServerCount++;
+				runTCPServer();
+			}
+		}
+	}
+	// ------------------------------------------------------------------------------------------
 	bool MBSlave::activateObject()
 	{
-		// блокирование обработки Starsp
+		// блокирование обработки StartUp
 		// пока не пройдёт инициализация датчиков
 		// см. sysCommand()
 		{
@@ -2839,7 +2882,14 @@ namespace uniset
 			inf << "  " << ModbusRTU::addr2str(m.first) << ": iomap=" << m.second.size() << endl;
 
 		inf << " myaddr: " << ModbusServer::vaddr2str(vaddr) << endl;
-		inf << "Statistic: connectionCount=" << connCount << " smPingOK=" << smPingOK << endl;
+		inf << "Statistic:"
+			<< " connectionCount=" << connCount
+			<< " smPingOK=" << smPingOK;
+
+		if( tcpserver )
+			inf << " restartTCPServerCount=" << restartTCPServerCount;
+
+		inf << endl;
 
 		if( sslot ) // т.е. если у нас tcp
 		{

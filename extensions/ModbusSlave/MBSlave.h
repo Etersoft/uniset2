@@ -500,6 +500,7 @@ namespace uniset
 
 			virtual void sysCommand( const uniset::SystemMessage* msg ) override;
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
+			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 			void askSensors( UniversalIO::UIOCommand cmd );
 			void waitSMReady();
 			virtual void execute_rtu();
@@ -508,6 +509,7 @@ namespace uniset
 			virtual void updateTCPStatistics();
 			virtual void updateThresholds();
 			virtual void postReceiveEvent( ModbusRTU::mbErrCode res );
+			void runTCPServer();
 
 			virtual bool activateObject() override;
 			virtual bool deactivateObject() override;
@@ -515,6 +517,13 @@ namespace uniset
 			// действия при завершении работы
 			virtual void sigterm( int signo ) override;
 			virtual void finalThread();
+
+			enum Timer
+			{
+				tmCheckExchange
+			};
+
+			uniset::timeout_t checkExchangeTime = { 10000 }; // контроль "живости" потока обмена, мсек
 
 			virtual void initIterators();
 			bool initItem( UniXML::iterator& it );
@@ -566,6 +575,7 @@ namespace uniset
 
 			PassiveTimer ptTimeout;
 			long connCount = { 0 };
+			long restartTCPServerCount = { 0 };
 
 			std::atomic_bool activated = { false };
 			std::atomic_bool cancelled = { false };
