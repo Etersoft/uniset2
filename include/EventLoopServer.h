@@ -39,12 +39,13 @@ namespace uniset
 			 */
 			bool async_evrun( size_t waitRunningTimeout_msec = 60000 );
 
+			void evstop(); /*!< остановить раннее запущенный поток (async_run) */
+
 			/*! синхронный запуск
 			 * функция вернёт управление, только в случае неудачного запуска
+			 * либо если evrun уже был вызван
 			 */
 			bool evrun();
-
-			void evstop(); /*!< остановить раннее запущенный поток (event loop) */
 
 			ev::dynamic_loop loop;
 
@@ -57,6 +58,7 @@ namespace uniset
 
 			std::atomic_bool cancelled = { false };
 			std::atomic_bool isactive = { false };
+			std::timed_mutex run_mutex;
 
 			ev::async evterm;
 			std::shared_ptr<std::thread> thr;
