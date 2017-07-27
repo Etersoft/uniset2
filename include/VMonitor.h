@@ -132,7 +132,7 @@ namespace uniset
 			 */
 			std::string pretty_str( int namewidth = NameWidth, int colnum = ColCount );
 
-			// функции добавления..
+			// перегрузки для стандартных типов..
 			VMON_DEF_FUNC2(int);
 			VMON_DEF_FUNC2(long);
 			VMON_DEF_FUNC2(short);
@@ -156,6 +156,7 @@ namespace uniset
 
 		private:
 
+			// определения для стандартных типов
 			VMON_DEF_MAP2(int);
 			VMON_DEF_MAP2(long);
 			VMON_DEF_MAP2(short);

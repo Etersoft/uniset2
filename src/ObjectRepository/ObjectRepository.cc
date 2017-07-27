@@ -333,13 +333,12 @@ bool ObjectRepository::listSections(const string& in_section, ListObjectName* ls
  * \param how_many - максимальное количество заносимых элементов
  * \param in_section - полное имя секции начиная с Root.
  * \param type - тип вынимаемых(заносимых в список) объектов.
- * \return Функция возвращает true, если в список были внесены не все элементы. Т.е. действительное
+ * \return Функция возвращает false, если в список были внесены не все элементы. Т.е. действительное
  * количество объектов в этой секции превышает заданное how_many.
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned int how_many, ObjectType type) const
+bool ObjectRepository::list( const string& section, ListObjectName* olist, size_t how_many, ObjectType type ) const
 {
-	// Возвращает false если вынут не весь список...
 	CosNaming::NamingContext_var ctx;
 
 	try
@@ -363,7 +362,7 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned 
 	CosNaming::BindingIterator_var bi;
 	ctx->list(how_many, bl, bi);
 
-	// хитрая проверка на null приобращении к bl
+	// хитрая проверка на null при обращении к bl
 	// coverity говорит потенциально это возможно
 	// т.к. там возвращается указатель, который по умолчанию null
 	if( !bl.operator->() )
@@ -371,7 +370,7 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned 
 
 	bool res = true;
 
-	if(how_many >= bl->length())
+	if( how_many >= bl->length() )
 		how_many = bl->length();
 	else
 	{
@@ -381,14 +380,14 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned 
 
 	//    cout << "получили список "<< section << " размером " << bl->length()<< endl;
 
-	for( unsigned int i = 0; i < how_many; i++)
+	for( size_t i = 0; i < how_many; i++ )
 	{
 		switch( type )
 		{
 			case ObjectRef:
 			{
 				if(bl[i].binding_type == CosNaming::nobject)
-					ls->emplace_front(omniURI::nameToString(bl[i].binding_name));
+					olist->emplace_front(omniURI::nameToString(bl[i].binding_name));
 
 				break;
 			}
@@ -396,7 +395,7 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned 
 			case Section:
 			{
 				if( bl[i].binding_type == CosNaming::ncontext)
-					ls->emplace_front(omniURI::nameToString(bl[i].binding_name));
+					olist->emplace_front(omniURI::nameToString(bl[i].binding_name));
 
 				break;
 			}
@@ -565,13 +564,13 @@ bool ObjectRepository::createContext( const string& cname, CosNaming::NamingCont
 */
 void ObjectRepository::printSection( const string& fullName ) const
 {
-	ListObjectName ls;
+	ListObjectName olist;
 
 	try
 	{
-		list(fullName.c_str(), &ls);
+		list(fullName.c_str(), &olist);
 
-		if( ls.empty() )
+		if( olist.empty() )
 			cout << fullName << " пуст!!!" << endl;
 	}
 	catch( ORepFailed )
@@ -580,9 +579,9 @@ void ObjectRepository::printSection( const string& fullName ) const
 		return ;
 	}
 
-	cout << fullName << "(" << ls.size() << "):" << endl;
+	cout << fullName << "(" << olist.size() << "):" << endl;
 
-	for( auto v : ls )
+	for( const auto& v: olist )
 		cout << v << endl;
 }
 
