@@ -376,32 +376,36 @@ bool MBTCPMultiMaster::MBSlaveInfo::check()
 	{
 		mbtcp->connect(ip, port, false);
 
+		// результат возврата функции нам не важен
+		// т.к. если не будет связи будет выкинуто исключение
+		// если пришёл хоть какой-то ответ, значит связь есть
+		// (по крайней мере со шлюзом)
 		switch(checkFunc)
 		{
 			case ModbusRTU::fnReadCoilStatus:
 			{
-				auto ret = mbtcp->read01(checkAddr, checkReg, 1);
+				(void)mbtcp->read01(checkAddr, checkReg, 1);
 				return true;
 			}
 			break;
 
 			case ModbusRTU::fnReadInputStatus:
 			{
-				auto ret = mbtcp->read02(checkAddr, checkReg, 1);
+				(void)mbtcp->read02(checkAddr, checkReg, 1);
 				return true;
 			}
 			break;
 
 			case ModbusRTU::fnReadOutputRegisters:
 			{
-				auto ret = mbtcp->read03(checkAddr, checkReg, 1);
+				(void)mbtcp->read03(checkAddr, checkReg, 1);
 				return true;
 			}
 			break;
 
 			case ModbusRTU::fnReadInputRegisters:
 			{
-				auto ret = mbtcp->read04(checkAddr, checkReg, 1);
+				(void)mbtcp->read04(checkAddr, checkReg, 1);
 				return true;
 			}
 			break;

@@ -896,9 +896,12 @@ namespace uniset
 	{
 		ostringstream info;
 		info.setf(ios::left, ios::adjustfield);
-		info << "(" << myid << ")" << setw(40) << myname << "\n==================================================\n";
-		info << "pid=" << setw(10) << Poco::Process::id();
-		info << " tid=" << setw(10);
+		info << "(" << myid << ")" << setw(40) << myname
+			 << " date: " << uniset::dateToString()
+			 << " time: " << uniset::timeToString()
+			 << "\n===============================================================================\n"
+			 << " pid=" << setw(10) << Poco::Process::id()
+			 << " tid=" << setw(10);
 
 		if( threadcreate )
 		{

@@ -121,7 +121,7 @@ namespace uniset
 			mutable std::string nsName;
 			std::shared_ptr<uniset::Configuration> uconf;
 
-			bool list(const std::string& section, uniset::ListObjectName* ls, unsigned int how_many, ObjectType type) const;
+			bool list(const std::string& section, uniset::ListObjectName* ls, size_t how_many, ObjectType type) const;
 
 			/*! Создание нового контекста(секции) */
 			bool createContext( const std::string& cname, CosNaming::NamingContext_ptr ctx);
