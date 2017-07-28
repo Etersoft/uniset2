@@ -163,5 +163,3 @@ UValidateError_swigregister = _pyUExceptions.UValidateError_swigregister
 UValidateError_swigregister(UValidateError)
 
 # This file is compatible with both classic and new-style classes.
-
-

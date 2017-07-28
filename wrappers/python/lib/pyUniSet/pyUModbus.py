@@ -131,5 +131,3 @@ UModbus_swigregister = _pyUModbus.UModbus_swigregister
 UModbus_swigregister(UModbus)
 
 # This file is compatible with both classic and new-style classes.
-
-
