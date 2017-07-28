@@ -423,11 +423,11 @@ AC_CONFIG_FILES([Makefile
 				 IDL/UniSetTypes/Makefile
 				 IDL/UniSetTypes/UniSetBaseConstants.idl
 				 IDL/Processes/Makefile
+				 src/Core/Makefile
 				 src/Communications/Makefile
 				 src/Communications/Modbus/Makefile
 				 src/Communications/TCP/Makefile
 				 src/Communications/Http/Makefile
-				 src/Interfaces/Makefile
 				 src/ObjectRepository/Makefile
 				 src/Processes/Makefile
 				 src/Services/Makefile
@@ -500,10 +500,11 @@ AC_CONFIG_FILES([Makefile
 				 extensions/tests/MBSlaveTest/Makefile
 				 extensions/tests/MQPerfTest/Makefile
 				 testsuite/Makefile
-				 python/lib/Makefile
-				 python/lib/pyUniSet/Makefile
-				 python/netdata-plugin/Makefile
-				 python/Makefile])
+				 wrappers/Makefile
+				 wrappers/python/lib/Makefile
+				 wrappers/python/lib/pyUniSet/Makefile
+				 wrappers/python/netdata-plugin/Makefile
+				 wrappers/python/Makefile])
 				 
 
 AC_OUTPUT
