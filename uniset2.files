@@ -347,6 +347,7 @@ include/UHelpers.h
 include/UHttpRequestHandler.h
 include/UHttpServer.h
 include/ujson.h
+include/unisetstd.h
 lib/Makefile.am
 
 python/examples/test.xml

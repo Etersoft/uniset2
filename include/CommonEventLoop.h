@@ -99,7 +99,7 @@ namespace uniset
 
 			ev::dynamic_loop loop;
 			ev::async evterm;
-			std::shared_ptr<std::thread> thr;
+			std::unique_ptr<std::thread> thr;
 			std::mutex              thr_mutex;
 
 			std::mutex              term_mutex;

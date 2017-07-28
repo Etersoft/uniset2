@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <algorithm>
+#include "unisetstd.h"
 #include "CommonEventLoop.h"
 // -------------------------------------------------------------------------
 using namespace std;
@@ -42,7 +43,7 @@ namespace uniset
 		if( thr )
 			return true;
 
-		thr = make_shared<std::thread>( [&] { CommonEventLoop::defaultLoop(); } );
+		thr = unisetstd::make_unique<std::thread>( [&] { CommonEventLoop::defaultLoop(); } );
 
 		std::unique_lock<std::mutex> lock2(looprunOK_mutex);
 		looprunOK_event.wait_for(lock2, std::chrono::milliseconds(waitTimeout_msec), [&]()

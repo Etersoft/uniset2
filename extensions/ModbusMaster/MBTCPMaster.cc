@@ -19,6 +19,7 @@
 #include <sstream>
 #include <Exceptions.h>
 #include <extensions/Extensions.h>
+#include "unisetstd.h"
 #include "MBTCPMaster.h"
 #include "modbus/MBLogSugar.h"
 // -----------------------------------------------------------------------------
@@ -69,7 +70,7 @@ MBTCPMaster::MBTCPMaster(uniset::ObjectId objId, uniset::ObjectId shmId,
 	else
 		ic->addReadItem( sigc::mem_fun(this, &MBTCPMaster::readItem) );
 
-	pollThread = make_shared<ThreadCreator<MBTCPMaster>>(this, &MBTCPMaster::poll_thread);
+	pollThread = unisetstd::make_unique<ThreadCreator<MBTCPMaster>>(this, &MBTCPMaster::poll_thread);
 	pollThread->setFinalAction(this, &MBTCPMaster::final_thread);
 
 	if( mblog->is_info() )

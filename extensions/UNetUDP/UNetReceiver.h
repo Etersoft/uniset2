@@ -242,7 +242,7 @@ namespace uniset
 			timeout_t recvpause = { 10 };      /*!< пауза меджду приёмами пакетов, [мсек] */
 			timeout_t updatepause = { 100 };    /*!< переодичность обновления данных в SM, [мсек] */
 
-			std::shared_ptr<UDPReceiveU> udp;
+			std::unique_ptr<UDPReceiveU> udp;
 			std::string addr;
 			int port = { 0 };
 			Poco::Net::SocketAddress saddr;
@@ -263,7 +263,7 @@ namespace uniset
 			size_t statRecvPerSec = { 0 }; /*!< количество принимаемых пакетов в секунду */
 			size_t statUpPerSec = { 0 };	/*!< количество обработанных пакетов в секунду */
 
-			std::shared_ptr< ThreadCreator<UNetReceiver> > upThread;    // update thread
+			std::unique_ptr< ThreadCreator<UNetReceiver> > upThread;    // update thread
 
 			// делаем loop общим.. одним на всех!
 			static CommonEventLoop loop;

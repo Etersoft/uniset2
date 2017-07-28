@@ -18,8 +18,9 @@
 #include <limits>
 #include <iomanip>
 #include <sstream>
-#include <Exceptions.h>
-#include <extensions/Extensions.h>
+#include "unisetstd.h"
+#include "Exceptions.h"
+#include "extensions/Extensions.h"
 #include "MBTCPMultiMaster.h"
 #include "modbus/MBLogSugar.h"
 // -----------------------------------------------------------------------------
@@ -186,9 +187,9 @@ MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shm
 	else
 		ic->addReadItem( sigc::mem_fun(this, &MBTCPMultiMaster::readItem) );
 
-	pollThread = make_shared<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::poll_thread);
+	pollThread =unisetstd::make_unique<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::poll_thread);
 	pollThread->setFinalAction(this, &MBTCPMultiMaster::final_thread);
-	checkThread = make_shared<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::check_thread);
+	checkThread = unisetstd::make_unique<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::check_thread);
 	checkThread->setFinalAction(this, &MBTCPMultiMaster::final_thread);
 
 	// Т.к. при "многоканальном" доступе к slave, смена канала должна происходит сразу после

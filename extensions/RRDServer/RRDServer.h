@@ -133,11 +133,11 @@ namespace uniset
 
 			// Т.к. RRD требует чтобы данные записывались именно в том порядке в котором они были добавлены
 			// при инициализации и при этом, нам нужен быстрый доступ в обработчике sensorInfo.
-			// То создаём list<> для последовательного прохода по элементам в нужном порядке
+			// То создаём vector<> для последовательного прохода по элементам в нужном порядке
 			// и unordered_map<> для быстрого доступа к элементам в sensorInfo
 			// При этом используем shared_ptr чтобы элементы указывали на один и тот же DSInfo
 			typedef std::unordered_map<uniset::ObjectId, std::shared_ptr<DSInfo>> DSMap;
-			typedef std::list<std::shared_ptr<DSInfo>> DSList;
+			typedef std::vector<std::shared_ptr<DSInfo>> DSList;
 
 			struct RRDInfo
 			{
@@ -150,7 +150,7 @@ namespace uniset
 				RRDInfo( const std::string& fname, long tmID, long sec, const DSList& lst );
 			};
 
-			typedef std::list<RRDInfo> RRDList;
+			typedef std::vector<RRDInfo> RRDList;
 
 			RRDList rrdlist;
 

@@ -17,6 +17,7 @@
 #include <sstream>
 #include <iomanip>
 #include <Poco/Net/NetException.h>
+#include "unisetstd.h"
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UNetSender.h"
@@ -70,7 +71,7 @@ namespace uniset
 		ptCheckConnection.setTiming(10000); // default 10 сек
 		createConnection(nocheckConnection);
 
-		s_thr = make_shared< ThreadCreator<UNetSender> >(this, &UNetSender::send);
+		s_thr = unisetstd::make_unique< ThreadCreator<UNetSender> >(this, &UNetSender::send);
 
 		mypacks[0].resize(1);
 		packs_anum[0] = 0;
@@ -115,7 +116,7 @@ namespace uniset
 		try
 		{
 			//udp = make_shared<UDPSocketU>(addr, port);
-			udp = make_shared<UDPSocketU>();
+			udp = unisetstd::make_unique<UDPSocketU>();
 			udp->setBroadcast(true);
 			udp->setSendTimeout( UniSetTimer::millisecToPoco(writeTimeout) );
 			//		udp->setNoDelay(true);

@@ -61,7 +61,7 @@ namespace uniset
 			std::timed_mutex run_mutex;
 
 			ev::async evterm;
-			std::shared_ptr<std::thread> thr;
+			std::unique_ptr<std::thread> thr;
 
 			std::mutex              looprunOK_mutex;
 			std::condition_variable looprunOK_event;

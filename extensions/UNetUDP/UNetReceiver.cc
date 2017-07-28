@@ -17,6 +17,7 @@
 #include <sstream>
 #include <iomanip>
 #include <Poco/Net/NetException.h>
+#include "unisetstd.h"
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UNetReceiver.h"
@@ -76,7 +77,7 @@ UNetReceiver::UNetReceiver(const std::string& s_host, int _port, const std::shar
 	auto conf = uniset_conf();
 	conf->initLogStream(unetlog, myname);
 
-	upThread = make_shared< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::updateThread);
+	upThread = unisetstd::make_unique< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::updateThread);
 
 	if( !createConnection(nocheckConnection /* <-- это флаг throwEx */) )
 		evCheckConnection.set<UNetReceiver, &UNetReceiver::checkConnectionEvent>(this);
@@ -206,7 +207,7 @@ bool UNetReceiver::createConnection( bool throwEx )
 
 	try
 	{
-		udp = make_shared<UDPReceiveU>(addr, port);
+		udp = unisetstd::make_unique<UDPReceiveU>(addr, port);
 		udp->setBlocking(false); // делаем неблокирующее чтение (нужно для libev)
 		evReceive.set<UNetReceiver, &UNetReceiver::callback>(this);
 

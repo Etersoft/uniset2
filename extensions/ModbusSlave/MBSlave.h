@@ -555,7 +555,7 @@ namespace uniset
 			MBSlave();
 			timeout_t initPause = { 3000 };
 			uniset::uniset_rwmutex mutex_start;
-			std::shared_ptr< ThreadCreator<MBSlave> > thr;
+			std::unique_ptr< ThreadCreator<MBSlave> > thr;
 
 			std::mutex mutexStartNotify;
 			std::condition_variable startNotifyEvent;

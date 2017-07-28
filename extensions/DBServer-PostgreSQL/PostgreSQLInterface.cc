@@ -86,7 +86,7 @@ bool PostgreSQLInterface::close()
 	return true;
 }
 // -----------------------------------------------------------------------------------------
-bool PostgreSQLInterface::copy( const std::string& tblname, const std::list<std::string>& cols,
+bool PostgreSQLInterface::copy( const std::string& tblname, const std::vector<std::string>& cols,
 								const PostgreSQLInterface::Data& data )
 {
 	if( !db )

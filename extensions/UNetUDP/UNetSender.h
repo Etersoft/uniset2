@@ -186,7 +186,7 @@ namespace uniset
 		private:
 			UNetSender();
 
-			std::shared_ptr<UDPSocketU> udp = { nullptr };
+			std::unique_ptr<UDPSocketU> udp;
 			std::string addr;
 			int port = { 0 };
 			std::string s_host = { "" };
@@ -214,7 +214,7 @@ namespace uniset
 			size_t maxAData = { UniSetUDP::MaxACount };
 			size_t maxDData = { UniSetUDP::MaxDCount };
 
-			std::shared_ptr< ThreadCreator<UNetSender> > s_thr;    // send thread
+			std::unique_ptr< ThreadCreator<UNetSender> > s_thr;    // send thread
 
 			size_t ncycle = { 0 }; /*!< номер цикла посылки */
 
