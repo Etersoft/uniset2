@@ -137,7 +137,7 @@ namespace uniset
 
 		// ---------------------------------------------------------------------------------------------------------------
 		/*!    \param orb - ссылка на ORB */
-		CosNaming::NamingContext_ptr getRootNamingContext(const CORBA::ORB_ptr orb, const string& nsName, int timeoutSec)
+		CosNaming::NamingContext_ptr getRootNamingContext( const CORBA::ORB_ptr orb, const string& nsName )
 		{
 			CosNaming::NamingContext_var rootContext;
 

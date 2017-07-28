@@ -118,26 +118,22 @@ namespace uniset
 			*/
 			timeout_t checkTimers( UniSetObject* obj );
 
-			/*! получить текущее время ожидания */
-			//inline timeout_t getSleepTimeMS(){ return sleepTime; }
-
-
 			/*! получить время на которое установлен таймер timerid
 			 * \param timerid - идентификатор таймера
 			 * \return 0 - если таймер не найден, время (мсек) если таймер есть.
 			 */
-			timeout_t getTimeInterval( uniset::TimerId timerid );
+			timeout_t getTimeInterval( uniset::TimerId timerid ) const;
 
 			/*! получить оставшееся время для таймера timerid
 			 * \param timerid - идентификатор таймера
 			 * \return 0 - если таймер не найден, время (мсек) если таймер есть.
 			 */
-			timeout_t getTimeLeft( uniset::TimerId timerid );
+			timeout_t getTimeLeft( uniset::TimerId timerid ) const;
 
 		protected:
 
 			/*! пользовательская функция для вывода названия таймера */
-			virtual std::string getTimerName( int id );
+			virtual std::string getTimerName( int id ) const;
 
 			/*! Информация о таймере */
 			struct TimerInfo
@@ -159,7 +155,7 @@ namespace uniset
 				}
 
 				uniset::TimerId id = { 0 };    /*!<  идентификатор таймера */
-				timeout_t curTimeMS = { 0 };        /*!<  остаток времени */
+				timeout_t curTimeMS = { 0 };   /*!<  остаток времени */
 				uniset::Message::Priority priority = { uniset::Message::High }; /*!<  приоритет посылаемого сообщения */
 
 				/*!
@@ -195,13 +191,13 @@ namespace uniset
 
 			timeout_t sleepTime; /*!< текущее время ожидания */
 
-			TimersList getTimersList();
+			TimersList getTimersList() const;
 
 		private:
 			TimersList tlst;
 
 			/*! замок для блокирования совместного доступа к cписку таймеров */
-			uniset::uniset_rwmutex lstMutex;
+			mutable uniset::uniset_rwmutex lstMutex;
 			PassiveTimer tmLast;
 	};
 	// -------------------------------------------------------------------------

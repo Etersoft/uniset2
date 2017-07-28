@@ -35,8 +35,7 @@ namespace uniset
 	namespace ORepHelpers
 	{
 		//! Получение ссылки на корень репозитория
-		CosNaming::NamingContext_ptr getRootNamingContext( const CORBA::ORB_ptr orb,
-				const std::string& nsName, int timeOutSec = 2);
+		CosNaming::NamingContext_ptr getRootNamingContext( const CORBA::ORB_ptr orb, const std::string& nsName );
 
 		//! Получение контекста по заданному имени
 		CosNaming::NamingContext_ptr getContext(const std::string& cname, int argc,

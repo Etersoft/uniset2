@@ -26,7 +26,7 @@ namespace uniset
 	const Element::ElementID Element::DefaultElementID = "?id?";
 	// -------------------------------------------------------------------------
 
-	void Element::addChildOut( std::shared_ptr<Element> el, size_t num )
+	void Element::addChildOut( std::shared_ptr<Element>& el, size_t num )
 	{
 		if( el.get() == this )
 		{
@@ -38,7 +38,7 @@ namespace uniset
 
 		for( const auto& it : outs )
 		{
-			if( it.el == el )
+			if( it.el.get() == el.get() )
 			{
 				ostringstream msg;
 				msg << "(" << myid << "):" << el->getId() << " уже есть в списке дочерних(такое соединение уже есть)...";
@@ -59,11 +59,11 @@ namespace uniset
 		outs.emplace_front(el, num);
 	}
 	// -------------------------------------------------------------------------
-	void Element::delChildOut( std::shared_ptr<Element> el )
+	void Element::delChildOut( std::shared_ptr<Element>& el )
 	{
 		for( auto it = outs.begin(); it != outs.end(); ++it )
 		{
-			if( it->el == el )
+			if( it->el.get() == el.get() )
 			{
 				outs.erase(it);
 				return;
@@ -135,12 +135,12 @@ namespace uniset
 		return ins.size();
 	}
 	// -------------------------------------------------------------------------
-	ostream& operator<<( ostream& os, Element& el )
+	ostream& operator<<( ostream& os, const Element& el )
 	{
 		return os << "[" << el.getType() << "]" << el.getId();
 	}
 
-	ostream& operator<<( ostream& os, std::shared_ptr<Element> el )
+	ostream& operator<<( ostream& os, const std::shared_ptr<Element>& el )
 	{
 		if( el )
 			return os << (*(el.get()));

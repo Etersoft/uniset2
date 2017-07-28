@@ -449,7 +449,8 @@ bool ObjectRepository::isExist( const ObjectPtr& oref ) const
  * \param section - полное имя секции начиная с Root.
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepository::createSection(const string& name, const string& in_section)throw(ORepFailed, InvalidObjectName)
+bool ObjectRepository::createSection(const string& name, const string& in_section) const
+	throw(ORepFailed, InvalidObjectName)
 {
 	char bad = ORepHelpers::checkBadSymbols(name);
 
@@ -471,7 +472,7 @@ bool ObjectRepository::createSection(const string& name, const string& in_sectio
 
 	int argc(uconf->getArgc());
 	const char* const* argv(uconf->getArgv());
-	CosNaming::NamingContext_var ctx = ORepHelpers::getContext(in_section, argc, argv, uconf->getNSName() );
+	CosNaming::NamingContext_var ctx = ORepHelpers::getContext(in_section, argc, argv, nsName );
 	return createContext( name, ctx.in() );
 }
 // -------------------------------------------------------------------------------------------------------
@@ -479,7 +480,7 @@ bool ObjectRepository::createSection(const string& name, const string& in_sectio
  * \param fullName - полное имя создаваемой секции
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepository::createSectionF( const string& fullName )throw(ORepFailed, InvalidObjectName)
+bool ObjectRepository::createSectionF( const string& fullName ) const throw(ORepFailed, InvalidObjectName)
 {
 	string name(ObjectIndex::getBaseName(fullName));
 	string sec(ORepHelpers::getSectionName(fullName));
@@ -498,14 +499,14 @@ bool ObjectRepository::createSectionF( const string& fullName )throw(ORepFailed,
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-bool ObjectRepository::createRootSection( const string& name )
+bool ObjectRepository::createRootSection( const string& name ) const
 {
 	CORBA::ORB_var orb = uconf->getORB();
-	CosNaming::NamingContext_var ctx = ORepHelpers::getRootNamingContext(orb, uconf->getNSName());
+	CosNaming::NamingContext_var ctx = ORepHelpers::getRootNamingContext(orb, nsName);
 	return createContext(name, ctx);
 }
 // -----------------------------------------------------------------------------------------------------------
-bool ObjectRepository::createContext( const string& cname, CosNaming::NamingContext_ptr ctx )
+bool ObjectRepository::createContext( const string& cname, CosNaming::NamingContext_ptr ctx ) const
 {
 	CosNaming::Name_var nc = omniURI::stringToName(cname.c_str());
 
@@ -591,12 +592,12 @@ void ObjectRepository::printSection( const string& fullName ) const
  * \param recursive - удлаять рекурсивно все секции или возвращать не удалять и ошибку ( временно )
  * \warning Функция вынимает только первые 1000 объектов, остальные игнорируются...
 */
-bool ObjectRepository::removeSection(const string& fullName, bool recursive)
+bool ObjectRepository::removeSection( const string& fullName, bool recursive ) const
 {
 	//    string name = getName(fullName.c_str(),'/');
 	//  string sec = getSectionName(fullName.c_str(),'/');
 	//    CosNaming::NamingContext_var ctx = getContext(sec, argc, argv);
-	unsigned int how_many = 1000;
+	size_t how_many = 1000;
 	CosNaming::NamingContext_var ctx;
 
 	try
@@ -626,7 +627,7 @@ bool ObjectRepository::removeSection(const string& fullName, bool recursive)
 
 	bool rem = true; // удалять или нет
 
-	for(unsigned int i = 0; i < how_many; i++)
+	for( size_t i = 0; i < how_many; i++)
 	{
 
 		if( bl[i].binding_type == CosNaming::nobject)
@@ -700,7 +701,7 @@ bool ObjectRepository::removeSection(const string& fullName, bool recursive)
  * \param newFName - полное имя новой секции
  * \param oldFName - полное имя удаляемрй секции
 */
-bool ObjectRepository::renameSection( const string& newFName, const string& oldFName )
+bool ObjectRepository::renameSection( const string& newFName, const string& oldFName ) const
 {
 	string newName(ObjectIndex::getBaseName(newFName));
 	string oldName(ObjectIndex::getBaseName(oldFName));
