@@ -37,9 +37,9 @@ namespace uniset
 
 	/*! \class ObjectRepository
 	 * \par
-	 * ... а здесь идет кратенькое описание... (коротенько минут на 40!...)
+	 * Работа с CORBA-репозиторием (NameService).
 	 *
-	 *    \note Репозиторий работает только, с локальным репозиторием
+	 * \note Репозиторий работает только, с локальным репозиторием
 	 * \todo получение списка начиная с элемента номер N.
 	*/
 	class ObjectRepository
@@ -54,16 +54,19 @@ namespace uniset
 			 @{     */
 			//! Функция регистрации объекта по имени с указанием секции
 			void registration(const std::string& name, const uniset::ObjectPtr oRef, const std::string& section, bool force = false) const
-			throw(uniset::ORepFailed, uniset::ObjectNameAlready, uniset::InvalidObjectName, uniset::NameNotFound);
+				 throw(uniset::ORepFailed, uniset::ObjectNameAlready, uniset::InvalidObjectName, uniset::NameNotFound);
 
 			//! Функция регистрации объекта по полному имени.
 			void registration(const std::string& fullName, const uniset::ObjectPtr oRef, bool force = false) const
-			throw(uniset::ORepFailed, uniset::ObjectNameAlready, uniset::InvalidObjectName, uniset::NameNotFound);
+				 throw(uniset::ORepFailed, uniset::ObjectNameAlready, uniset::InvalidObjectName, uniset::NameNotFound);
 
 			//! Удаление записи об объекте name в секции section
-			void unregistration(const std::string& name, const std::string& section) const throw(uniset::ORepFailed, uniset::NameNotFound);
+			void unregistration(const std::string& name, const std::string& section) const
+				 throw(uniset::ORepFailed, uniset::NameNotFound);
+
 			//! Удаление записи об объекте по полному имени
-			void unregistration(const std::string& fullName) const throw(uniset::ORepFailed, uniset::NameNotFound);
+			void unregistration(const std::string& fullName) const
+				 throw(uniset::ORepFailed, uniset::NameNotFound);
 			// @}
 			// end of ORepGroup
 
@@ -95,19 +98,21 @@ namespace uniset
 
 			// -------------------------------------------------------------------
 			//! Создание секции
-			bool createSection( const std::string& name, const std::string& in_section )throw(uniset::ORepFailed, uniset::InvalidObjectName);
+			bool createSection( const std::string& name, const std::string& in_section ) const
+					throw(uniset::ORepFailed, uniset::InvalidObjectName);
 
 			/*! Создание секции по полному имени */
-			bool createSectionF(const std::string& fullName)throw(uniset::ORepFailed, uniset::InvalidObjectName);
+			bool createSectionF(const std::string& fullName) const
+					throw(uniset::ORepFailed, uniset::InvalidObjectName);
 
 			//! Функция создания секции в корневом 'каталоге'
-			bool createRootSection(const std::string& name);
+			bool createRootSection( const std::string& name ) const;
 
 			//! Функция удаления секции
-			bool removeSection(const std::string& fullName, bool recursive = false);
+			bool removeSection(const std::string& fullName, bool recursive = false) const;
 
 			//! Функция переименования секции
-			bool renameSection(const std::string& newName, const std::string& fullName);
+			bool renameSection(const std::string& newName, const std::string& fullName) const;
 
 			/*! Функция выводящая на экран список всех объектов расположенных в данной секции */
 			void printSection(const std::string& fullName) const;
@@ -124,7 +129,7 @@ namespace uniset
 			bool list(const std::string& section, uniset::ListObjectName* ls, size_t how_many, ObjectType type) const;
 
 			/*! Создание нового контекста(секции) */
-			bool createContext( const std::string& cname, CosNaming::NamingContext_ptr ctx);
+			bool createContext( const std::string& cname, CosNaming::NamingContext_ptr ctx) const;
 
 		private:
 			bool init() const;

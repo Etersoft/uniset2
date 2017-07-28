@@ -72,16 +72,16 @@ namespace uniset
 
 			virtual std::shared_ptr<Element> find( const ElementID& id );
 
-			virtual void addChildOut( std::shared_ptr<Element> el, size_t in_num );
-			virtual void delChildOut( std::shared_ptr<Element> el );
+			virtual void addChildOut( std::shared_ptr<Element>& el, size_t in_num );
+			virtual void delChildOut( std::shared_ptr<Element>& el );
 			size_t outCount() const;
 
 			virtual void addInput( size_t num, long value = 0 );
 			virtual void delInput( size_t num );
 			size_t inCount() const;
 
-			friend std::ostream& operator<<(std::ostream& os, Element& el );
-			friend std::ostream& operator<<(std::ostream& os, std::shared_ptr<Element> el );
+			friend std::ostream& operator<<(std::ostream& os, const Element& el );
+			friend std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Element>& el );
 
 		protected:
 			Element(): myid(DefaultElementID) {}; // нельзя создать элемент без id

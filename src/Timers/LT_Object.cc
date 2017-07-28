@@ -123,7 +123,7 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
 	return sleepTime;
 }
 // ------------------------------------------------------------------------------------------
-timeout_t LT_Object::getTimeInterval( TimerId timerid )
+timeout_t LT_Object::getTimeInterval( TimerId timerid ) const
 {
 	// lock
 	uniset_rwmutex_rlock lock(lstMutex);
@@ -137,7 +137,7 @@ timeout_t LT_Object::getTimeInterval( TimerId timerid )
 	return 0;
 }
 // ------------------------------------------------------------------------------------------
-timeout_t LT_Object::getTimeLeft( TimerId timerid )
+timeout_t LT_Object::getTimeLeft( TimerId timerid ) const
 {
 	// lock
 	uniset_rwmutex_rlock lock(lstMutex);
@@ -151,14 +151,14 @@ timeout_t LT_Object::getTimeLeft( TimerId timerid )
 	return 0;
 }
 // ------------------------------------------------------------------------------------------
-LT_Object::TimersList LT_Object::getTimersList()
+LT_Object::TimersList LT_Object::getTimersList() const
 {
 	uniset_rwmutex_rlock l(lstMutex);
 	TimersList lst(tlst);
 	return lst;
 }
 // ------------------------------------------------------------------------------------------
-string LT_Object::getTimerName(int id)
+string LT_Object::getTimerName( int id ) const
 {
 	return "";
 }
