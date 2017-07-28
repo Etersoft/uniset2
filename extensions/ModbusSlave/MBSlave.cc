@@ -17,6 +17,7 @@
 #include <cmath>
 #include <sstream>
 #include <Poco/Net/NetException.h>
+#include "unisetstd.h"
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "MBSlave.h"
@@ -180,7 +181,7 @@ namespace uniset
 			// rs->setLog(mblog);
 
 			mbslot = std::static_pointer_cast<ModbusServerSlot>(rs);
-			thr = make_shared< ThreadCreator<MBSlave> >(this, &MBSlave::execute_rtu);
+			thr = unisetstd::make_unique< ThreadCreator<MBSlave> >(this, &MBSlave::execute_rtu);
 			thr->setFinalAction(this, &MBSlave::finalThread);
 			mbinfo << myname << "(init): type=RTU dev=" << dev << " speed=" << speed << endl;
 

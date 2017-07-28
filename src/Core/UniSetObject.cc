@@ -29,6 +29,7 @@
 #include <chrono>
 #include <Poco/Process.h>
 
+#include "unisetstd.h"
 #include "Exceptions.h"
 #include "ORepHelpers.h"
 #include "ObjectRepository.h"
@@ -42,7 +43,7 @@ using namespace std;
 namespace uniset
 {
 
-#define CREATE_TIMER    make_shared<PassiveCondTimer>();
+#define CREATE_TIMER    unisetstd::make_unique<PassiveCondTimer>();
 	// new PassiveSysTimer();
 
 	// ------------------------------------------------------------------------------------------
@@ -758,7 +759,7 @@ namespace uniset
 
 		if( myid != uniset::DefaultObjectId && threadcreate )
 		{
-			thr = std::make_shared< ThreadCreator<UniSetObject> >(this, &UniSetObject::work);
+			thr = unisetstd::make_unique< ThreadCreator<UniSetObject> >(this, &UniSetObject::work);
 			//thr->setCancel(ost::Thread::cancelDeferred);
 
 			std::unique_lock<std::mutex> locker(m_working);

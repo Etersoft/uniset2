@@ -186,7 +186,17 @@ namespace uniset
 
 		protected:
 			std::string filename;
-			std::shared_ptr<xmlDoc> doc = { nullptr };
+
+			struct UniXMLDocDeleter
+			{
+				void operator()(xmlDoc* doc) const noexcept
+				{
+					if( doc )
+						xmlFreeDoc(doc);
+				}
+			};
+
+			std::unique_ptr<xmlDoc,UniXMLDocDeleter> doc;
 	};
 	// -------------------------------------------------------------------------
 } // end of uniset namespace

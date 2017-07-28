@@ -161,7 +161,7 @@ namespace uniset
 			typedef std::unordered_map<int, std::string> DBTableMap;
 
 			virtual void initDBServer() override;
-			virtual void initDB( std::shared_ptr<MySQLInterface>& db ) {};
+			virtual void initDB( const std::unique_ptr<MySQLInterface>& db ) {};
 			virtual void initDBTableMap(DBTableMap& tblMap) {};
 
 			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
@@ -185,18 +185,18 @@ namespace uniset
 			};
 
 
-			std::shared_ptr<MySQLInterface> db;
-			int PingTime;
-			int ReconnectTime;
-			bool connect_ok;     /*! признак наличия соеднинения с сервером БД */
+			std::unique_ptr<MySQLInterface> db;
+			int PingTime = { 15000 };
+			int ReconnectTime = { 30000 };
+			bool connect_ok = { false };     /*! признак наличия соеднинения с сервером БД */
 
-			bool activate;
+			bool activate = { false };
 
 			typedef std::queue<std::string> QueryBuffer;
 
 			QueryBuffer qbuf;
-			unsigned int qbufSize; // размер буфера сообщений.
-			bool lastRemove;
+			size_t qbufSize = { 200 }; // размер буфера сообщений.
+			bool lastRemove = { false };
 
 			void flushBuffer();
 			uniset::uniset_rwmutex mqbuf;

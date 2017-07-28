@@ -1,4 +1,5 @@
 #include <iostream>
+#include "unisetstd.h"
 #include "EventLoopServer.h"
 // -------------------------------------------------------------------------
 using namespace std;
@@ -57,7 +58,7 @@ namespace uniset
 		}
 
 		if( !thr )
-			thr = make_shared<std::thread>( [&] { defaultLoop(); } );
+			thr = unisetstd::make_unique<std::thread>( [&] { defaultLoop(); } );
 
 		bool ret = waitDefaultLoopRunning(timeout_msec);
 

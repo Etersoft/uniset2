@@ -283,7 +283,7 @@ namespace uniset
 
 			// т.к. TCP может "зависнуть" на подключении к недоступному узлу
 			// делаем опрос в отдельном потоке
-			std::shared_ptr<ThreadCreator<MBTCPMaster>> pollThread; /*!< поток опроса */
+			std::unique_ptr<ThreadCreator<MBTCPMaster>> pollThread; /*!< поток опроса */
 	};
 	// --------------------------------------------------------------------------
 } // end of namespace uniset

@@ -234,14 +234,14 @@ namespace uniset
 			std::atomic_bool active;
 
 			bool threadcreate;
-			std::shared_ptr<UniSetTimer> tmr;
+			std::unique_ptr<UniSetTimer> tmr;
 			uniset::ObjectId myid;
 			CORBA::Object_var oref;
 
 			/*! замок для блокирования совместного доступа к oRef */
 			mutable uniset::uniset_rwmutex refmutex;
 
-			std::shared_ptr< ThreadCreator<UniSetObject> > thr;
+			std::unique_ptr< ThreadCreator<UniSetObject> > thr;
 
 			/*! очереди сообщений в зависимости от приоритета */
 			MQMutex mqueueLow;
