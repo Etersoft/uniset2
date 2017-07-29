@@ -432,9 +432,6 @@ rm -f %buildroot%_libdir/*.la
 %_libdir/libUniSet2Network*.so.*
 %_libdir/libUniSet2UNetUDP*.so.*
 
-%files extension-smplus
-%_bindir/%oname-smemory-plus
-
 %if_enabled logicproc
 %files extension-logicproc
 %_libdir/libUniSet2LP*.so.*
@@ -510,6 +507,9 @@ rm -f %buildroot%_libdir/*.la
 %changelog
 * Mon Jul 31 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt38
 - iocontrol: fix segfault
+
+* Sat Jul 29 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt37.1
+- devel new build
 
 * Tue Jul 11 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt37
 - (LogReader): add '--grep' mode
