@@ -64,7 +64,8 @@ MBTCPMaster::MBTCPMaster(uniset::ObjectId objId, uniset::ObjectId shmId,
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
-		rtuQueryOptimization(devices);
+		if( !noQueryOptimization )
+			rtuQueryOptimization(devices);
 		initDeviceList();
 	}
 	else

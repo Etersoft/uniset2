@@ -597,21 +597,21 @@ namespace uniset
 
 		for( const auto& m : d.pollmap )
 		{
-			for( const auto& it : * (m.second) )
+			for( const auto& it : *(m.second) )
 				os << "     " << it.second << endl;
 		}
 
 		return os;
 	}
 	// -----------------------------------------------------------------------------
-	std::ostream& operator<<( std::ostream& os, MBExchange::RegInfo* r )
+	std::ostream& operator<<( std::ostream& os, const MBExchange::RegInfo* r )
 	{
 		return os << (*r);
 	}
 	// -----------------------------------------------------------------------------
-	std::ostream& operator<<( std::ostream& os, MBExchange::RegInfo& r )
+	std::ostream& operator<<( std::ostream& os, const MBExchange::RegInfo& r )
 	{
-		os << " id=" << r.id
+		os << " id=" << r.regID
 		   << " mbreg=" << ModbusRTU::dat2str(r.mbreg)
 		   << " mbfunc=" << r.mbfunc
 		   << " q_num=" << r.q_num
@@ -620,82 +620,93 @@ namespace uniset
 		   << " mtrType=" << MTR::type2str(r.mtrType)
 		   << endl;
 
-		for( auto it = r.slst.begin(); it != r.slst.end(); ++it )
-			os << "         " << (*it) << endl;
+		for( const auto& s: r.slst )
+			os << "         " << s << endl;
 
 		return os;
 	}
 	// -----------------------------------------------------------------------------
 	void MBExchange::rtuQueryOptimization( RTUDeviceMap& dm )
 	{
-		if( noQueryOptimization )
+		mbinfo << myname << "(rtuQueryOptimization): optimization..." << endl;
+		for( const auto& d: dm )
+			rtuQueryOptimizationForDevice(d.second);
+
+//		printMap(dm);
+//		assert(false);
+	}
+	// -----------------------------------------------------------------------------
+	void MBExchange::rtuQueryOptimizationForDevice( const std::shared_ptr<RTUDevice>& d )
+	{
+		mbinfo << myname << "(rtuQueryOptimizationForDevice): dev addr="
+			   << ModbusRTU::addr2str(d->mbaddr) << " optimization..." << endl;
+
+		for( const auto& m : d->pollmap )
+			rtuQueryOptimizationForRegMap(m.second);
+	}
+	// -----------------------------------------------------------------------------
+	void MBExchange::rtuQueryOptimizationForRegMap( const std::shared_ptr<RegMap>& regmap )
+	{
+		if( regmap->size() <= 1 )
 			return;
 
-		mbinfo << myname << "(rtuQueryOptimization): optimization..." << endl;
-
-		for( auto && it1 : dm )
+		// Вообще в map они уже лежат в нужном порядке, т.е. функция genRegID() гарантирует
+		// что регистры идущие подряд с одниковой функцией чтения/записи получат подряд идущие RegID.
+		// так что оптимтизация это просто нахождение мест где RegID идут не подряд...
+		for( auto it = regmap->begin(); it != regmap->end(); ++it )
 		{
-			auto d = it1.second;
+			auto& beg = it->second;
+			ModbusRTU::RegID regID = beg->regID;
+			beg->q_count = 1;
+			beg->q_num = 0;
+			++it;
 
-			for( auto && m : d->pollmap )
+			// склеиваем регистры идущие подряд
+			for( ; it != regmap->end(); ++it )
 			{
-				auto& regmap = m.second;
-
-				// Вообще в map они уже лежат в нужном порядке, т.е. функция genRegID() гарантирует
-				// что регистры идущие подряд с одниковой функцией чтения/записи получат подряд идущие ID.
-				// так что оптимтизация это просто нахождение мест где id идут не подряд...
-				for( auto it = regmap->begin(); it != regmap->end(); ++it )
+				if( (it->second->regID - regID) > 1 )
 				{
-					auto beg = it;
-					ModbusRTU::RegID id = it->second->id; // или собственно it->first
-					beg->second->q_num = 1;
-					beg->second->q_count = 1;
-					++it;
-
-					for( ; it != regmap->end(); ++it )
-					{
-						if( (it->second->id - id) > 1 )
-						{
-							--it;  // раз это регистр уже следующий, то надо вернуть на шаг обратно..
-							break;
-						}
-
-						beg->second->q_count++;
-
-						if( beg->second->q_count >= maxQueryCount )
-							break;
-
-						id = it->second->id;
-						it->second->q_num = beg->second->q_count;
-						it->second->q_count = 0;
-					}
-
-					// check correct function...
-					if( beg->second->q_count > 1 && beg->second->mbfunc == ModbusRTU::fnWriteOutputSingleRegister )
-					{
-						mbwarn << myname << "(rtuQueryOptimization): "
-							   << " optimization change func=" << ModbusRTU::fnWriteOutputSingleRegister
-							   << " <--> func=" << ModbusRTU::fnWriteOutputRegisters
-							   << " for mbaddr=" << ModbusRTU::addr2str(d->mbaddr)
-							   << " mbreg=" << ModbusRTU::dat2str(beg->second->mbreg);
-
-						beg->second->mbfunc = ModbusRTU::fnWriteOutputRegisters;
-					}
-					else if( beg->second->q_count > 1 && beg->second->mbfunc == ModbusRTU::fnForceSingleCoil )
-					{
-						mbwarn << myname << "(rtuQueryOptimization): "
-							   << " optimization change func=" << ModbusRTU::fnForceSingleCoil
-							   << " <--> func=" << ModbusRTU::fnForceMultipleCoils
-							   << " for mbaddr=" << ModbusRTU::addr2str(d->mbaddr)
-							   << " mbreg=" << ModbusRTU::dat2str(beg->second->mbreg);
-
-						beg->second->mbfunc = ModbusRTU::fnForceMultipleCoils;
-					}
-
-					if( it == regmap->end() )
-						break;
+					// этот регистр должен войти уже в следующий запрос,
+					// надо вернуть на шаг обратно..
+					--it;
+					break;
 				}
+
+				beg->q_count++;
+				regID = it->second->regID;
+				it->second->q_num = beg->q_count-1;
+				it->second->q_count = 0;
+
+				if( beg->q_count >= maxQueryCount )
+					break;
 			}
+
+			// Корректировка типа функции, в случае необходимости...
+			if( beg->q_count > 1 && beg->mbfunc == ModbusRTU::fnWriteOutputSingleRegister )
+			{
+				mbwarn << myname << "(rtuQueryOptimization): "
+					   << " optimization change func=" << ModbusRTU::fnWriteOutputSingleRegister
+					   << " <--> func=" << ModbusRTU::fnWriteOutputRegisters
+					   << " for mbaddr=" << ModbusRTU::addr2str(beg->dev->mbaddr)
+					   << " mbreg=" << ModbusRTU::dat2str(beg->mbreg);
+
+				beg->mbfunc = ModbusRTU::fnWriteOutputRegisters;
+			}
+			else if( beg->q_count > 1 && beg->mbfunc == ModbusRTU::fnForceSingleCoil )
+			{
+				mbwarn << myname << "(rtuQueryOptimization): "
+					   << " optimization change func=" << ModbusRTU::fnForceSingleCoil
+					   << " <--> func=" << ModbusRTU::fnForceMultipleCoils
+					   << " for mbaddr=" << ModbusRTU::addr2str(beg->dev->mbaddr)
+					   << " mbreg=" << ModbusRTU::dat2str(beg->mbreg);
+
+				beg->mbfunc = ModbusRTU::fnForceMultipleCoils;
+			}
+
+			// надо до внешнего цикла, где будет ++it
+			// проверить условие.. (т.к. мы во внутреннем цикле итерировались
+			if( it == regmap->end() )
+				break;
 		}
 	}
 	// -----------------------------------------------------------------------------
@@ -706,8 +717,8 @@ namespace uniset
 
 		os << "[ ";
 
-		for( auto it = lst.begin(); it != lst.end(); ++it )
-			os << "(" << it->si.id << ")" << conf->oind->getBaseName(conf->oind->getMapName(it->si.id)) << " ";
+		for( const auto& p: lst )
+			os << "(" << p.si.id << ")" << conf->oind->getBaseName(conf->oind->getMapName(p.si.id)) << " ";
 
 		os << "]";
 
@@ -2231,10 +2242,10 @@ namespace uniset
 		return d;
 	}
 	// ------------------------------------------------------------------------------------------
-	std::shared_ptr<MBExchange::RegInfo> MBExchange::addReg( std::shared_ptr<RegMap>& mp, ModbusRTU::RegID id, ModbusRTU::ModbusData r,
+	std::shared_ptr<MBExchange::RegInfo> MBExchange::addReg( std::shared_ptr<RegMap>& mp, ModbusRTU::RegID regID, ModbusRTU::ModbusData r,
 			UniXML::iterator& xmlit, std::shared_ptr<MBExchange::RTUDevice> dev )
 	{
-		auto it = mp->find(id);
+		auto it = mp->find(regID);
 
 		if( it != mp->end() )
 		{
@@ -2253,7 +2264,7 @@ namespace uniset
 			}
 
 			mbinfo << myname << "(addReg): reg=" << ModbusRTU::dat2str(r)
-				   << "(id=" << id << ")"
+				   << "(id=" << regID << ")"
 				   << " already added for " << (*it->second)
 				   << " Ignore register params for " << xmlit.getProp("name") << " ..." << endl;
 
@@ -2267,12 +2278,12 @@ namespace uniset
 			return 0;
 
 		ri->mbreg = r;
-		ri->id = id;
+		ri->regID = regID;
 
-		mp->insert( std::make_pair(id, ri) );
-		ri->rit = mp->find(id);
+		mp->insert( std::make_pair(regID, ri) );
+		ri->rit = mp->find(regID);
 
-		mbinfo << myname << "(addReg): reg=" << ModbusRTU::dat2str(r) << "(id=" << id << ")" << endl;
+		mbinfo << myname << "(addReg): reg=" << ModbusRTU::dat2str(r) << "(id=" << regID << ")" << endl;
 
 		return ri;
 	}

@@ -85,7 +85,8 @@ RTUExchange::RTUExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const s
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
-		rtuQueryOptimization(devices);
+		if( !noQueryOptimization )
+			rtuQueryOptimization(devices);
 		initDeviceList();
 	}
 	else
