@@ -424,7 +424,6 @@ rm -f %buildroot%_libdir/*.la
 %_bindir/%oname-smviewer
 %_bindir/%oname-network
 %_bindir/%oname-unet*
-#%_bindir/%oname-smdbserver
 
 %_libdir/libUniSet2Extensions.so.*
 %_libdir/libUniSet2MB*.so.*
@@ -432,7 +431,6 @@ rm -f %buildroot%_libdir/*.la
 %_libdir/libUniSet2Shared*.so.*
 %_libdir/libUniSet2Network*.so.*
 %_libdir/libUniSet2UNetUDP*.so.*
-#%_libdir/libUniSet2SMDBServer*.so.*
 
 %files extension-smplus
 %_bindir/%oname-smemory-plus
@@ -493,7 +491,6 @@ rm -f %buildroot%_libdir/*.la
 %_libdir/libUniSet2Shared*.so
 %_libdir/libUniSet2Network.so
 %_libdir/libUniSet2UNetUDP.so
-#%_libdir/libUniSet2SMDBServer.so
 %_pkgconfigdir/libUniSet2Extensions.pc
 %_pkgconfigdir/libUniSet2MB*.pc
 %_pkgconfigdir/libUniSet2RT*.pc
@@ -501,11 +498,14 @@ rm -f %buildroot%_libdir/*.la
 %_pkgconfigdir/libUniSet2Network*.pc
 %_pkgconfigdir/libUniSet2UNet*.pc
 
-#%_pkgconfigdir/libUniSet2SMDBServer.pc
 #%_pkgconfigdir/libUniSet2*.pc
 %exclude %_pkgconfigdir/libUniSet2.pc
         
 # history of current unpublished changes
+# - change directory structure
+# - shared_ptr --> unique_ptr
+# - minor refactoring
+# - remote deprecated components
 
 %changelog
 * Sun Nov 12 2017 Alexei Takaseev <taf@altlinux.org> 2.6-alt41.1

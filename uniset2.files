@@ -175,14 +175,6 @@ extensions/SharedMemory/tests/TestObject.cc
 extensions/SharedMemory/tests/TestObject.h
 extensions/SharedMemory/tests/testobject.src.xml
 extensions/SharedMemory/tests/sm-configure.xml
-extensions/SharedMemoryPlus/Makefile.am
-extensions/SharedMemoryPlus/smemory-plus.cc
-extensions/SharedMemoryPlus/test.xml
-extensions/SMDBServer/libUniSet2SMDBServer.pc.in
-extensions/SMDBServer/main.cc
-extensions/SMDBServer/Makefile.am
-extensions/SMDBServer/SMDBServer.cc
-extensions/SMDBServer/SMDBServer.h
 extensions/SMViewer/main.cc
 extensions/SMViewer/Makefile.am
 extensions/SMViewer/SMViewer.cc

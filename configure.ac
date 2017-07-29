@@ -490,7 +490,6 @@ AC_CONFIG_FILES([Makefile
 				 extensions/SharedMemory/Makefile
 				 extensions/SharedMemory/tests/Makefile
 				 extensions/SharedMemory/libUniSet2SharedMemory.pc
-				 extensions/SharedMemoryPlus/Makefile
 				 extensions/RRDServer/Makefile
 				 extensions/RRDServer/libUniSet2RRDServer.pc
 				 extensions/MQTTPublisher/Makefile
@@ -508,7 +507,3 @@ AC_CONFIG_FILES([Makefile
 				 
 
 AC_OUTPUT
-
-#				 extensions/SMDBServer/Makefile
-#				 extensions/SMDBServer/libUniSet2SMDBServer.pc
-
