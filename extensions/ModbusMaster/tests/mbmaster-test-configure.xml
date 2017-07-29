@@ -123,6 +123,14 @@
 			<item id="1053" safeval="42" mb="1" mbtype="rtu" mbaddr="0x02" mbreg="10" mbfunc="0x03" iotype="AI" name="SafeMode2_TestRead03" textname="(safemode): Тестовый регистр для 0x03"/>
 			<item id="1054" safeval="1" mb="1" mbtype="rtu" mbaddr="0x02" mbreg="11" mbfunc="0x02" iotype="DI" name="SafeMode2_TestRead02" textname="(safemode): Тестовый регистр для 0x02"/>
 
+            <!-- query optimization test -->
+            <item id="1060" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="200" mbfunc="0x03" vtype="F2" iotype="AI" name="TestQueryOptimization1_F2" textname="F2: Тестовый регистр для 0x03"/>
+            <item id="1061" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="202" mbfunc="0x03" vtype="F2" iotype="AI" name="TestQueryOptimization2_F2" textname="F2: Тестовый регистр для 0x03"/>
+            <item id="1062" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="204" mbfunc="0x03" vtype="F2" iotype="AI" name="TestQueryOptimization3_F2" textname="F2: Тестовый регистр для 0x03"/>
+            <item id="1063" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="206" mbfunc="0x03" vtype="F2" iotype="AI" name="TestQueryOptimization4_F2" textname="F2: Тестовый регистр для 0x03"/>
+            <item id="1064" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="208" mbfunc="0x03" vtype="F2" iotype="AI" name="TestQueryOptimization5_F2" textname="F2: Тестовый регистр для 0x03"/>
+            <item id="1065" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="210" mbfunc="0x03" vtype="F2" iotype="AI" name="TestQueryOptimization6_F2" textname="F2: Тестовый регистр для 0x03"/>
+
 			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
 
 		</sensors>

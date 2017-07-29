@@ -181,7 +181,8 @@ MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shm
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
-		rtuQueryOptimization(devices);
+		if( !noQueryOptimization )
+			rtuQueryOptimization(devices);
 		initDeviceList();
 	}
 	else

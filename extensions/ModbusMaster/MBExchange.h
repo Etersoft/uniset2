@@ -145,7 +145,7 @@ namespace uniset
 				ModbusRTU::ModbusData mbreg = { 0 }; /*!< регистр */
 				ModbusRTU::SlaveFunctionCode mbfunc = { ModbusRTU::fnUnknown };    /*!< функция для чтения/записи */
 				PList slst;
-				ModbusRTU::RegID id = { 0 };
+				ModbusRTU::RegID regID = { 0 };
 
 				std::shared_ptr<RTUDevice> dev;
 
@@ -158,7 +158,7 @@ namespace uniset
 
 				// optimization
 				size_t q_num = { 0 };      /*!< number in query */
-				size_t q_count = { 0 };    /*!< count registers for query */
+				size_t q_count = { 1 };    /*!< count registers for query */
 
 				RegMap::iterator rit;
 
@@ -174,8 +174,8 @@ namespace uniset
 				bool sm_initOK = { false };    /*!< инициализировалось ли значение из SM */
 			};
 
-			friend std::ostream& operator<<( std::ostream& os, RegInfo& r );
-			friend std::ostream& operator<<( std::ostream& os, RegInfo* r );
+			friend std::ostream& operator<<( std::ostream& os, const RegInfo& r );
+			friend std::ostream& operator<<( std::ostream& os, const RegInfo* r );
 
 			struct RTUDevice
 			{
@@ -288,6 +288,9 @@ namespace uniset
 			bool pollRTU( std::shared_ptr<RTUDevice>& dev, RegMap::iterator& it );
 
 			void updateSM();
+
+			// в функции передаётся итератор,
+			// т.к. в них идёт итерирование в случае если запрос в несколько регистров
 			void updateRTU(RegMap::iterator& it);
 			void updateMTR(RegMap::iterator& it);
 			void updateRTU188(RegMap::iterator& it);
@@ -322,6 +325,8 @@ namespace uniset
 			std::string initPropPrefix( const std::string& def_prop_prefix = "" );
 
 			void rtuQueryOptimization( RTUDeviceMap& m );
+			void rtuQueryOptimizationForDevice( const std::shared_ptr<RTUDevice>& d );
+			void rtuQueryOptimizationForRegMap( const std::shared_ptr<RegMap>& regmap );
 
 			xmlNode* cnode = { 0 };
 			std::string s_field;
