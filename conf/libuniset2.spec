@@ -432,9 +432,6 @@ rm -f %buildroot%_libdir/*.la
 %_libdir/libUniSet2Network*.so.*
 %_libdir/libUniSet2UNetUDP*.so.*
 
-%files extension-smplus
-%_bindir/%oname-smemory-plus
-
 %if_enabled logicproc
 %files extension-logicproc
 %_libdir/libUniSet2LP*.so.*
