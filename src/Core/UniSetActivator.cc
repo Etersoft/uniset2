@@ -93,7 +93,6 @@ using namespace std;
 */
 // ------------------------------------------------------------------------------------------
 static std::shared_ptr<UniSetActivator> g_act;
-static std::atomic_bool g_finished = ATOMIC_VAR_INIT(0);
 static std::atomic_bool g_term = ATOMIC_VAR_INIT(0);
 static std::atomic_bool g_done = ATOMIC_VAR_INIT(0);
 static std::atomic_bool g_work_stopped = ATOMIC_VAR_INIT(0);
@@ -101,16 +100,14 @@ static std::atomic_int g_signo = ATOMIC_VAR_INIT(0);
 static std::atomic_bool g_trace_done = ATOMIC_VAR_INIT(0);
 
 static std::mutex              g_workmutex;
+static std::condition_variable g_finievent;
 static std::mutex              g_termmutex;
 static std::condition_variable g_termevent;
-static std::mutex              g_finimutex;
-static std::condition_variable g_finievent;
 static std::mutex              g_donemutex;
 static std::condition_variable g_doneevent;
 static std::mutex              g_trace_donemutex;
 static std::condition_variable g_trace_doneevent;
 static std::shared_ptr<std::thread> g_term_thread;
-static std::shared_ptr<std::thread> g_fini_thread;
 static std::shared_ptr<std::thread> g_kill_thread;
 static const int TERMINATE_TIMEOUT_SEC = 3; //  время отведенное на завершение процесса [сек]
 static const int THREAD_TERMINATE_PAUSE = 50; // [мсек] пауза при завершении потока (см. work())
@@ -205,7 +202,7 @@ static inline void printStackTrace()
 }
 // ------------------------------------------------------------------------------------------
 // за основу взят код функции отсюда https://habrahabr.ru/company/ispsystem/blog/144198/
-bool gdb_print_trace()
+static bool gdb_print_trace()
 {
 	auto log = ulog();
 
@@ -356,25 +353,7 @@ static void activator_terminate_with_calltrace( int signo )
 	raise(signo);
 }
 // ------------------------------------------------------------------------------------------
-void finished_thread()
-{
-	ulogsys << "****** WAIT FINISH START **** " << endl << flush;
-	std::unique_lock<std::mutex> lk(g_finimutex);
-
-	if( g_finished )
-		return;
-
-	g_finished = true;
-
-	std::unique_lock<std::mutex> lkw(g_workmutex);
-	g_finievent.wait_for(lkw, std::chrono::milliseconds(TERMINATE_TIMEOUT_SEC * 1000), []()
-	{
-		return (g_work_stopped == true);
-	} );
-	ulogsys << "****** WAIT FINISH END(" << g_work_stopped << ") ****" << endl << flush;
-}
-// ------------------------------------------------------------------------------------------
-void on_finish_timeout()
+static void on_finish_timeout()
 {
 	std::unique_lock<std::mutex> lk(g_donemutex);
 
@@ -411,14 +390,7 @@ namespace uniset
 			// g_termmutex надо отпустить, т.к. он будет проверяться  в ~UniSetActvator
 		}
 
-		ulogsys << "****** TERMINATE THREAD: event signo=" << g_signo << endl << flush;
-
-		{
-			std::unique_lock<std::mutex> locker(g_finimutex);
-
-			if( g_finished )
-				return;
-		}
+		ulogsys << "****** TERMINATE THREAD: signo=" << g_signo << endl << flush;
 
 		{
 			std::unique_lock<std::mutex> lk(g_donemutex);
@@ -428,19 +400,6 @@ namespace uniset
 
 		if( g_act )
 		{
-			{
-				std::unique_lock<std::mutex> lk(g_finimutex);
-
-				if( g_finished )
-				{
-					ulogsys << "...FINISHED ALREADY STARTED..." << endl << flush;
-					return;
-				}
-
-				g_fini_thread = make_shared<std::thread>(finished_thread);
-			}
-
-
 			ulogsys << "(TERMINATE THREAD): call terminated.." << endl << flush;
 			g_act->terminated(g_signo);
 
@@ -469,8 +428,11 @@ namespace uniset
 
 #endif
 
-			if( g_fini_thread && g_fini_thread->joinable() )
-				g_fini_thread->join();
+			std::unique_lock<std::mutex> lkw(g_workmutex);
+			g_finievent.wait_for(lkw, std::chrono::milliseconds(TERMINATE_TIMEOUT_SEC * 1000), []()
+			{
+				return (g_work_stopped == true);
+			} );
 
 			ulogsys << "(TERMINATE THREAD): FINISHED OK.." << endl << flush;
 
@@ -495,8 +457,9 @@ namespace uniset
 				}
 			}
 
-//			g_act = nullptr;
+			g_act = nullptr;
 			UniSetActivator::set_signals(false);
+			UniSetActivator::destroy();
 		}
 
 		{
@@ -507,8 +470,8 @@ namespace uniset
 		g_doneevent.notify_all();
 
 		g_kill_thread->join();
+		g_kill_thread = nullptr;
 		ulogsys << "(TERMINATE THREAD): ..bye.." << endl;
-
 	}
 }
 // ---------------------------------------------------------------------------
@@ -773,7 +736,7 @@ void UniSetActivator::work()
 		std::unique_lock<std::mutex> lkw(g_workmutex);
 		g_work_stopped = true;
 	}
-	g_finievent.notify_one();
+	g_finievent.notify_all();
 
 	if( orbthr )
 	{
@@ -870,7 +833,11 @@ void UniSetActivator::set_signals(bool ask)
 
 	sigaction(SIGSEGV, &act, &oact);
 }
-
+// ------------------------------------------------------------------------------------------
+void UniSetActivator::destroy()
+{
+//	inst = nullptr;
+}
 // ------------------------------------------------------------------------------------------
 UniSetActivator::TerminateEvent_Signal UniSetActivator::signal_terminate_event()
 {
@@ -999,6 +966,8 @@ void UniSetActivator::normalexit()
 
 	if( g_term_thread && g_term_thread->joinable() )
 		g_term_thread->join();
+
+	g_term_thread = nullptr;
 
 #else
 

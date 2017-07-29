@@ -502,6 +502,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/tests/MQPerfTest/Makefile
 				 testsuite/Makefile
 				 wrappers/Makefile
+				 wrappers/go/Makefile
 				 wrappers/python/lib/Makefile
 				 wrappers/python/lib/pyUniSet/Makefile
 				 wrappers/python/netdata-plugin/Makefile
