@@ -338,6 +338,7 @@ if test ${buildtests} = true; then
 	AC_CONFIG_TESTDIR(extensions/ModbusMaster/tests)
 	AC_CONFIG_TESTDIR(extensions/UNetUDP/tests)
 	AC_CONFIG_TESTDIR(extensions/SharedMemory/tests)
+	AC_CONFIG_TESTDIR(extensions/IOControl/tests)
 
 	TESTSUITE_DIR="\$(top_builddir)/testsuite"
 	AC_SUBST(TESTSUITE_DIR)
@@ -470,6 +471,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/DBServer-PostgreSQL/libUniSet2PostgreSQL.pc
 				 extensions/IOControl/Makefile
 				 extensions/IOControl/libUniSet2IOControl.pc
+				 extensions/IOControl/tests/Makefile
 				 extensions/ModbusMaster/Makefile
 				 extensions/ModbusMaster/libUniSet2RTU.pc
 				 extensions/ModbusMaster/libUniSet2MBTCPMaster.pc

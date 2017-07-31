@@ -41,7 +41,7 @@ ComediInterface::~ComediInterface()
 
 }
 // -----------------------------------------------------------------------------
-int ComediInterface::getAnalogChannel( int subdev, int channel, int range, int aref )
+int ComediInterface::getAnalogChannel( int subdev, int channel, int range, int aref ) const
 throw(uniset::Exception)
 {
 	lsampl_t data = 0;
@@ -54,13 +54,13 @@ throw(uniset::Exception)
 			<< " channel=" << channel << " range=" << range << " aref=" << aref
 			<< " dev=" << dname
 			<< " err: " << ret << " (" << strerror(ret) << ")";
-		throw Exception(err.str());
+		throw uniset::Exception(err.str());
 	}
 
 	return data;
 }
 // -----------------------------------------------------------------------------
-void ComediInterface::setAnalogChannel( int subdev, int channel, int data, int range, int aref )
+void ComediInterface::setAnalogChannel( int subdev, int channel, int data, int range, int aref ) const
 throw(uniset::Exception)
 {
 	if( comedi_data_write(card, subdev, channel, range, aref, data) < 0 )
@@ -74,7 +74,7 @@ throw(uniset::Exception)
 	}
 }
 // -----------------------------------------------------------------------------
-bool ComediInterface::getDigitalChannel( int subdev, int channel ) throw(uniset::Exception)
+bool ComediInterface::getDigitalChannel( int subdev, int channel ) const throw(uniset::Exception)
 {
 	lsampl_t data = 0;
 
@@ -89,7 +89,7 @@ bool ComediInterface::getDigitalChannel( int subdev, int channel ) throw(uniset:
 	return ((bool)(data));
 }
 // -----------------------------------------------------------------------------
-void ComediInterface::setDigitalChannel( int subdev, int channel, bool bit )
+void ComediInterface::setDigitalChannel( int subdev, int channel, bool bit ) const
 throw(uniset::Exception)
 {
 	if( comedi_dio_write(card, subdev, channel, bit) < 0 )
@@ -102,7 +102,7 @@ throw(uniset::Exception)
 }
 // -----------------------------------------------------------------------------
 void ComediInterface::configureChannel( int subdev, int channel, ChannelType t,
-										int range, int aref )
+										int range, int aref ) const
 throw(uniset::Exception)
 {
 	switch( t )
@@ -161,7 +161,7 @@ throw(uniset::Exception)
 	throw Exception(err.str());
 }
 // -----------------------------------------------------------------------------
-void ComediInterface::configureSubdev( int subdev, SubdevType type )
+void ComediInterface::configureSubdev( int subdev, SubdevType type ) const
 throw(uniset::Exception)
 {
 	lsampl_t data[2];

@@ -29,20 +29,19 @@ namespace uniset
 	{
 		public:
 			explicit ComediInterface( const std::string& dev );
-			~ComediInterface();
+			virtual ~ComediInterface();
 
-			int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND )
+			virtual int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND ) const
 			throw(uniset::Exception);
 
-			void setAnalogChannel( int subdev, int channel, int data, int range = 0, int aref = AREF_GROUND )
+			virtual void setAnalogChannel( int subdev, int channel, int data, int range = 0, int aref = AREF_GROUND ) const
 			throw(uniset::Exception);
 
-			bool getDigitalChannel( int subdev, int channel )
+			virtual bool getDigitalChannel( int subdev, int channel ) const
 			throw(uniset::Exception);
 
-			void setDigitalChannel( int subdev, int channel, bool bit )
+			virtual void setDigitalChannel( int subdev, int channel, bool bit ) const
 			throw(uniset::Exception);
-
 
 			// Конфигурирование входов / выходов
 			enum ChannelType
@@ -65,17 +64,18 @@ namespace uniset
 			static std::string type2str( SubdevType t );
 			static SubdevType str2type( const std::string& s );
 
-			void configureSubdev( int subdev, SubdevType type ) throw(uniset::Exception);
+			virtual void configureSubdev( int subdev, SubdevType type ) const throw(uniset::Exception);
 
-			void configureChannel( int subdev, int channel, ChannelType type, int range = 0, int aref = 0 )
+			virtual void configureChannel( int subdev, int channel, ChannelType type, int range = 0, int aref = 0 ) const
 			throw(uniset::Exception);
 
-			inline const std::string devname()
+			inline const std::string devname() const
 			{
 				return dname;
 			}
 
 		protected:
+			ComediInterface():card(nullptr){}
 
 			comedi_t* card;    /*!< интерфейс для работы с картами в/в */
 			std::string dname;
