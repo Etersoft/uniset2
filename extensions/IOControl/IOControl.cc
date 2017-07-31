@@ -27,7 +27,12 @@ namespace uniset
 	using namespace std;
 	using namespace extensions;
 	// -----------------------------------------------------------------------------
-	std::ostream& operator<<( std::ostream& os, IOControl::IOInfo& inf )
+	std::ostream& operator<<( std::ostream& os, const std::shared_ptr<IOControl::IOInfo>& inf )
+	{
+		return os << *(inf.get());
+	}
+	// -----------------------------------------------------------------------------
+	std::ostream& operator<<( std::ostream& os, const IOControl::IOInfo& inf )
 	{
 		os << "(" << inf.si.id << ")" << uniset_conf()->oind->getMapName(inf.si.id)
 		   << " card=" << inf.ncard << " channel=" << inf.channel << " subdev=" << inf.subdev
@@ -291,6 +296,8 @@ namespace uniset
 
 		if( !shm->isLocalwork() ) // ic
 			ic->addReadItem( sigc::mem_fun(this, &IOControl::readItem) );
+
+		ioThread = make_shared< ThreadCreator<IOControl> >(this, &IOControl::iothread);
 	}
 
 	// --------------------------------------------------------------------------------
@@ -300,12 +307,12 @@ namespace uniset
 		// здесь бы ещё пройтись по списку с сделать delete для
 		// всех cdiagram созданных через new
 		//
-		for( unsigned int i = 0; i < cards.size(); i++ )
-			delete cards[i];
+//		for( unsigned int i = 0; i < cards.size(); i++ )
+//			delete cards[i];
 	}
 
 	// --------------------------------------------------------------------------------
-	void IOControl::execute()
+	void IOControl::iothread()
 	{
 		//    set_signals(true);
 		UniXML::iterator it(confnode);
@@ -326,10 +333,10 @@ namespace uniset
 			iomap.resize(maxItem);
 
 			// init iterators
-			for( auto& it : iomap )
+			for( const auto& it : iomap )
 			{
-				shm->initIterator(it.ioit);
-				shm->initIterator(it.t_ait);
+				shm->initIterator(it->ioit);
+				shm->initIterator(it->t_ait);
 			}
 
 			readconf_ok = true; // т.к. waitSM() уже был...
@@ -457,6 +464,7 @@ namespace uniset
 			msleep( polltime );
 		}
 
+		ioinfo << myname << "(iothread): terminated..." << endl;
 		term = false;
 	}
 	// --------------------------------------------------------------------------------
@@ -466,37 +474,42 @@ namespace uniset
 			return;
 
 		// Опрос приоритетной очереди
-		for( auto&& it : pmap )
+		for( const auto& it : pmap )
 		{
 			if( it.priority > 0 )
 			{
-				ioread( &(iomap[it.index]) );
-				IOBase::processingThreshold((IOBase*) & (iomap[it.index]), shm, force);
+				ioread( iomap[it.index] );
+				IOBase::processingThreshold(iomap[it.index].get(), shm, force);
 			}
 		}
 
 		bool prior = false;
-		unsigned int i = 0;
+		size_t i = 0;
 
 		for( auto it = iomap.begin(); it != iomap.end(); ++it, i++ )
 		{
-			if( it->ignore )
+			if( term )
+				break;
+
+			auto io = (*it);
+
+			if( io->ignore )
 				continue;
 
-			IOBase::processingThreshold((IOBase*) & (*it), shm, force);
+			IOBase::processingThreshold(io.get(), shm, force);
 
-			ioread( (IOInfo*) & (*it) );
+			ioread(io);
 
 			// на середине
 			// опять опросим приоритетные
 			if( !prior && i > maxHalf )
 			{
-				for( auto&& p : pmap )
+				for( const auto& p: pmap )
 				{
 					if( p.priority > 1 )
 					{
-						ioread( &(iomap[p.index]) );
-						IOBase::processingThreshold((IOBase*) & (iomap[p.index]), shm, force);
+						ioread(iomap[p.index]);
+						IOBase::processingThreshold( iomap[p.index].get(), shm, force );
 					}
 				}
 
@@ -505,17 +518,20 @@ namespace uniset
 		}
 
 		// Опрос приоритетной очереди
-		for( auto&& it : pmap )
+		for( const auto& it : pmap )
 		{
+			if( term )
+				break;
+
 			if( it.priority > 2 )
 			{
-				ioread( &(iomap[it.index]) );
-				IOBase::processingThreshold((IOBase*) & (iomap[it.index]), shm, force);
+				ioread( iomap[it.index] );
+				IOBase::processingThreshold( iomap[it.index].get(), shm, force );
 			}
 		}
 	}
 	// --------------------------------------------------------------------------------
-	void IOControl::ioread( IOInfo* it )
+	void IOControl::ioread( std::shared_ptr<IOInfo>& it )
 	{
 		//    cout  << conf->oind->getMapName(it->si.id)  << " ignore=" << it->ignore << " ncard=" << it->ncard << endl;
 
@@ -541,9 +557,9 @@ namespace uniset
 				return;
 		}
 
-		ComediInterface* card = cards.getCard(it->ncard);
+		auto card = cards.getCard(it->ncard);
 
-		if( card == NULL || it->subdev == IOBase::DefaultSubdev || it->channel == IOBase::DefaultChannel )
+		if( !card || it->subdev == IOBase::DefaultSubdev || it->channel == IOBase::DefaultChannel )
 			return;
 
 		if( it->si.id == DefaultObjectId )
@@ -552,7 +568,7 @@ namespace uniset
 			return;
 		}
 
-		IOBase* ib = static_cast<IOBase*>(it);
+		IOBase* ib = static_cast<IOBase*>(it.get());
 
 		try
 		{
@@ -743,47 +759,47 @@ namespace uniset
 	// ------------------------------------------------------------------------------------------
 	bool IOControl::initIOItem( UniXML::iterator& it )
 	{
-		IOInfo inf;
+		auto inf = make_shared<IOInfo>();
 
 		string c(it.getProp("card"));
 
-		inf.ncard = uni_atoi( c );
+		inf->ncard = uni_atoi( c );
 
-		if( c.empty() || inf.ncard < 0 || inf.ncard >= (int)cards.size() )
+		if( c.empty() || inf->ncard < 0 || inf->ncard >= (int)cards.size() )
 		{
 			iolog3 << myname
 				   << "(initIOItem): Unknown or bad card number ("
-				   << inf.ncard << ") for " << it.getProp("name")
+				   << inf->ncard << ") for " << it.getProp("name")
 				   << " set default=" << defCardNum << endl;
-			inf.ncard = defCardNum;
+			inf->ncard = defCardNum;
 		}
 
-		inf.subdev = it.getIntProp("subdev");
+		inf->subdev = it.getIntProp("subdev");
 
-		if( inf.subdev < 0 )
-			inf.subdev = IOBase::DefaultSubdev;
+		if( inf->subdev < 0 )
+			inf->subdev = IOBase::DefaultSubdev;
 
 		string jack = it.getProp("jack");
 
 		if( !jack.empty() )
 		{
 			if( jack == "J1" )
-				inf.subdev = 0;
+				inf->subdev = 0;
 			else if( jack == "J2" )
-				inf.subdev = 1;
+				inf->subdev = 1;
 			else if( jack == "J3" )
-				inf.subdev = 2;
+				inf->subdev = 2;
 			else if( jack == "J4" )
-				inf.subdev = 3;
+				inf->subdev = 3;
 			else if( jack == "J5" )
-				inf.subdev = 4;
+				inf->subdev = 4;
 			else
-				inf.subdev = IOBase::DefaultSubdev;
+				inf->subdev = IOBase::DefaultSubdev;
 		}
 
 		std::string prop_prefix( prefix + "_" );
 
-		if( !IOBase::initItem(&inf, it, shm, prop_prefix, false, iolog, myname, filtersize, filterT) )
+		if( !IOBase::initItem( inf.get(), it, shm, prop_prefix, false, iolog, myname, filtersize, filterT) )
 			return false;
 
 		// если вектор уже заполнен
@@ -804,57 +820,57 @@ namespace uniset
 		}
 
 		// значит это пороговый датчик..
-		if( inf.t_ai != DefaultObjectId )
+		if( inf->t_ai != DefaultObjectId )
 		{
-			iomap[maxItem++] = std::move(inf);
 			iolog3 << myname << "(readItem): add threshold '" << it.getProp("name")
-				   << " for '" << uniset_conf()->oind->getNameById(inf.t_ai) << endl;
+				   << " for '" << uniset_conf()->oind->getNameById(inf->t_ai) << endl;
+			std::swap(iomap[maxItem++],inf);
 			return true;
 		}
 
-		inf.channel = IOBase::initIntProp(it, "channel", prop_prefix, false);
+		inf->channel = IOBase::initIntProp(it, "channel", prop_prefix, false);
 
-		if( inf.channel < 0 || inf.channel > 32 )
+		if( inf->channel < 0 || inf->channel > 32 )
 		{
-			iowarn << myname << "(readItem): Unknown channel: " << inf.channel
+			iowarn << myname << "(readItem): Unknown channel: " << inf->channel
 				   << " for " << it.getProp("name") << endl;
 			return false;
 		}
 
 
-		inf.lamp = IOBase::initIntProp(it, "lamp", prop_prefix, false);
-		inf.no_testlamp = IOBase::initIntProp(it, "no_iotestlamp", prop_prefix, false);
-		inf.enable_testmode = IOBase::initIntProp(it, "enable_testmode", prop_prefix, false);
-		inf.disable_testmode = IOBase::initIntProp(it, "disable_testmode", prop_prefix, false);
-		inf.aref = 0;
-		inf.range = 0;
+		inf->lamp = IOBase::initIntProp(it, "lamp", prop_prefix, false);
+		inf->no_testlamp = IOBase::initIntProp(it, "no_iotestlamp", prop_prefix, false);
+		inf->enable_testmode = IOBase::initIntProp(it, "enable_testmode", prop_prefix, false);
+		inf->disable_testmode = IOBase::initIntProp(it, "disable_testmode", prop_prefix, false);
+		inf->aref = 0;
+		inf->range = 0;
 
-		if( inf.stype == UniversalIO::AI || inf.stype == UniversalIO::AO )
+		if( inf->stype == UniversalIO::AI || inf->stype == UniversalIO::AO )
 		{
-			inf.range = IOBase::initIntProp(it, "range", prop_prefix, false);
+			inf->range = IOBase::initIntProp(it, "range", prop_prefix, false);
 
-			if( inf.range < 0 || inf.range > 3 )
+			if( inf->range < 0 || inf->range > 3 )
 			{
-				iocrit << myname << "(readItem): Unknown 'range': " << inf.range
+				iocrit << myname << "(readItem): Unknown 'range': " << inf->range
 					   << " for " << it.getProp("name")
 					   << " Must be range=[0..3]" << endl;
 				return false;
 			}
 
-			inf.aref = IOBase::initIntProp(it, "aref", prop_prefix, false);
+			inf->aref = IOBase::initIntProp(it, "aref", prop_prefix, false);
 
-			if( inf.aref < 0 || inf.aref > 3 )
+			if( inf->aref < 0 || inf->aref > 3 )
 			{
-				iocrit << myname << "(readItem): Unknown 'aref': " << inf.aref
+				iocrit << myname << "(readItem): Unknown 'aref': " << inf->aref
 					   << " for " << it.getProp("name")
 					   << ". Must be aref=[0..3]" << endl;
 				return false;
 			}
 		}
 
-		iolog3 << myname << "(readItem): add: " << inf.stype << " " << inf << endl;
+		iolog3 << myname << "(readItem): add: " << inf->stype << " " << inf << endl;
 
-		iomap[maxItem++] = std::move(inf);
+		std::swap(iomap[maxItem++],inf);
 		return true;
 	}
 	// ------------------------------------------------------------------------------------------
@@ -873,37 +889,46 @@ namespace uniset
 		return true;
 	}
 	// ------------------------------------------------------------------------------------------
+	bool IOControl::deactivateObject()
+	{
+		sigterm(0);
+		return UniSetObject::deactivateObject();
+	}
+	// ------------------------------------------------------------------------------------------
 	void IOControl::sigterm( int signo )
 	{
 		term = true;
+
+		if( ioThread && ioThread->isRunning() )
+			ioThread->join();
 
 		if( noCards )
 			return;
 
 		// выставляем безопасные состояния
-		for( auto& it : iomap )
+		for( const auto& it : iomap )
 		{
-			if( it.ignore )
+			if( it->ignore )
 				continue;
 
-			ComediInterface* card = cards.getCard(it.ncard);
+			auto card = cards.getCard(it->ncard);
 
 			if( card == NULL )
 				continue;
 
 			try
 			{
-				if( it.subdev == IOBase::DefaultSubdev || !it.safevalDefined )
+				if( it->subdev == IOBase::DefaultSubdev || !it->safevalDefined )
 					continue;
 
-				if( it.stype == UniversalIO::DO || it.lamp )
+				if( it->stype == UniversalIO::DO || it->lamp )
 				{
-					bool set = it.invert ? !((bool)it.safeval) : (bool)it.safeval;
-					card->setDigitalChannel(it.subdev, it.channel, set);
+					bool set = it->invert ? !((bool)it->safeval) : (bool)it->safeval;
+					card->setDigitalChannel(it->subdev, it->channel, set);
 				}
-				else if( it.stype == UniversalIO::AO )
+				else if( it->stype == UniversalIO::AO )
 				{
-					card->setAnalogChannel(it.subdev, it.channel, it.safeval, it.range, it.aref);
+					card->setAnalogChannel(it->subdev, it->channel, it->safeval, it->range, it->aref);
 				}
 			}
 			catch( const std::exception& ex )
@@ -911,8 +936,6 @@ namespace uniset
 				iolog3 << myname << "(sigterm): " << ex.what() << endl;
 			}
 		}
-
-		while( term ) {}
 	}
 	// -----------------------------------------------------------------------------
 	void IOControl::initOutputs()
@@ -921,24 +944,24 @@ namespace uniset
 			return;
 
 		// выставляем значение по умолчанию
-		for( auto& it : iomap )
+		for( const auto& it : iomap )
 		{
-			if( it.ignore )
+			if( it->ignore )
 				continue;
 
-			ComediInterface* card = cards.getCard(it.ncard);
+			auto card = cards.getCard(it->ncard);
 
-			if( card == NULL || it.subdev == IOBase::DefaultSubdev || it.channel == IOBase::DefaultChannel )
+			if( card == NULL || it->subdev == IOBase::DefaultSubdev || it->channel == IOBase::DefaultChannel )
 				continue;
 
 			try
 			{
-				if( it.lamp )
-					card->setDigitalChannel(it.subdev, it.channel, (bool)it.defval);
-				else if( it.stype == UniversalIO::DO )
-					card->setDigitalChannel(it.subdev, it.channel, (bool)it.defval);
-				else if( it.stype == UniversalIO::AO )
-					card->setAnalogChannel(it.subdev, it.channel, it.defval, it.range, it.aref);
+				if( it->lamp )
+					card->setDigitalChannel(it->subdev, it->channel, (bool)it->defval);
+				else if( it->stype == UniversalIO::DO )
+					card->setDigitalChannel(it->subdev, it->channel, (bool)it->defval);
+				else if( it->stype == UniversalIO::AO )
+					card->setAnalogChannel(it->subdev, it->channel, it->defval, it->range, it->aref);
 			}
 			catch( const uniset::Exception& ex )
 			{
@@ -952,38 +975,38 @@ namespace uniset
 		if( noCards )
 			return;
 
-		for( auto& it : iomap )
+		for( const auto& it : iomap )
 		{
-			if( it.subdev == IOBase::DefaultSubdev )
+			if( it->subdev == IOBase::DefaultSubdev )
 				continue;
 
-			ComediInterface* card = cards.getCard(it.ncard);
+			auto card = cards.getCard(it->ncard);
 
-			if( card == NULL || it.subdev == IOBase::DefaultSubdev || it.channel == IOBase::DefaultChannel )
+			if( card == NULL || it->subdev == IOBase::DefaultSubdev || it->channel == IOBase::DefaultChannel )
 				continue;
 
 			try
 			{
 				// конфигурировать необходимо только дискретные входы/выходы
 				// или "лампочки" (т.к. они фиктивные аналоговые датчики)
-				if( it.lamp )
-					card->configureChannel(it.subdev, it.channel, ComediInterface::DO);
-				else if( it.stype == UniversalIO::DI )
-					card->configureChannel(it.subdev, it.channel, ComediInterface::DI);
-				else if( it.stype == UniversalIO::DO )
-					card->configureChannel(it.subdev, it.channel, ComediInterface::DO);
-				else if( it.stype == UniversalIO::AI )
+				if( it->lamp )
+					card->configureChannel(it->subdev, it->channel, ComediInterface::DO);
+				else if( it->stype == UniversalIO::DI )
+					card->configureChannel(it->subdev, it->channel, ComediInterface::DI);
+				else if( it->stype == UniversalIO::DO )
+					card->configureChannel(it->subdev, it->channel, ComediInterface::DO);
+				else if( it->stype == UniversalIO::AI )
 				{
-					card->configureChannel(it.subdev, it.channel, ComediInterface::AI);
-					it.df.init( card->getAnalogChannel(it.subdev, it.channel, it.range, it.aref) );
+					card->configureChannel(it->subdev, it->channel, ComediInterface::AI);
+					it->df.init( card->getAnalogChannel(it->subdev, it->channel, it->range, it->aref) );
 				}
-				else if( it.stype == UniversalIO::AO )
-					card->configureChannel(it.subdev, it.channel, ComediInterface::AO);
+				else if( it->stype == UniversalIO::AO )
+					card->configureChannel(it->subdev, it->channel, ComediInterface::AO);
 
 			}
 			catch( const uniset::Exception& ex)
 			{
-				iocrit << myname << "(initIOCard): sid=" << it.si.id << " " << ex << endl;
+				iocrit << myname << "(initIOCard): sid=" << it->si.id << " " << ex << endl;
 			}
 		}
 	}
@@ -993,14 +1016,14 @@ namespace uniset
 		if( lst.empty() )
 			return;
 
-		for( auto& io : lst )
+		for( const auto& io: lst )
 		{
 			if( io->subdev == IOBase::DefaultSubdev || io->channel == IOBase::DefaultChannel )
 				continue;
 
-			ComediInterface* card = cards.getCard(io->ncard);
+			auto card = cards.getCard(io->ncard);
 
-			if( card == NULL )
+			if( !card )
 				continue;
 
 			try
@@ -1017,22 +1040,22 @@ namespace uniset
 	}
 	// -----------------------------------------------------------------------------
 
-	void IOControl::addBlink( IOInfo* io, BlinkList& lst )
+	void IOControl::addBlink( std::shared_ptr<IOInfo>& io, BlinkList& lst )
 	{
-		for( auto& it : lst )
+		for( const auto& it : lst )
 		{
-			if( it == io )
+			if( it.get() == io.get() )
 				return;
 		}
 
 		lst.push_back(io);
 	}
 	// -----------------------------------------------------------------------------
-	void IOControl::delBlink( IOInfo* io, BlinkList& lst )
+	void IOControl::delBlink( std::shared_ptr<IOInfo>& io, BlinkList& lst )
 	{
 		for( auto it = lst.begin(); it != lst.end(); ++it )
 		{
-			if( (*it) == io )
+			if( it->get() == io.get() )
 			{
 				lst.erase(it);
 				return;
@@ -1062,35 +1085,35 @@ namespace uniset
 					testmode == tmConfigDisable )
 			{
 				// выставляем безопасные состояния
-				for( auto& it : iomap )
+				for( const auto& it : iomap )
 				{
-					if( it.ignore )
+					if( it->ignore )
 						continue;
 
-					ComediInterface* card = cards.getCard(it.ncard);
+					auto card = cards.getCard(it->ncard);
 
 					if( card == NULL )
 						continue;
 
-					if( testmode == tmConfigEnable && !it.enable_testmode )
+					if( testmode == tmConfigEnable && !it->enable_testmode )
 						return;
 
-					if( testmode == tmConfigDisable && it.disable_testmode )
+					if( testmode == tmConfigDisable && it->disable_testmode )
 						return;
 
 					try
 					{
-						if( it.subdev == IOBase::DefaultSubdev || !it.safevalDefined )
+						if( it->subdev == IOBase::DefaultSubdev || !it->safevalDefined )
 							continue;
 
-						if( it.stype == UniversalIO::DO || it.lamp )
+						if( it->stype == UniversalIO::DO || it->lamp )
 						{
-							bool set = it.invert ? !((bool)it.safeval) : (bool)it.safeval;
-							card->setDigitalChannel(it.subdev, it.channel, set);
+							bool set = it->invert ? !((bool)it->safeval) : (bool)it->safeval;
+							card->setDigitalChannel(it->subdev, it->channel, set);
 						}
-						else if( it.stype == UniversalIO::AO )
+						else if( it->stype == UniversalIO::AO )
 						{
-							card->setAnalogChannel(it.subdev, it.channel, it.safeval, it.range, it.aref);
+							card->setAnalogChannel(it->subdev, it->channel, it->safeval, it->range, it->aref);
 						}
 					}
 					catch( const uniset::Exception& ex )
@@ -1134,36 +1157,36 @@ namespace uniset
 			// проходим по списку и формируем список мигающих выходов...
 			for( auto& it : iomap )
 			{
-				if( !it.lamp || it.no_testlamp )
+				if( !it->lamp || it->no_testlamp )
 					continue;
 
-				if(  it.stype == UniversalIO::AO )
+				if(  it->stype == UniversalIO::AO )
 				{
 					if( isTestLamp )
 					{
-						addBlink( &it, lstBlink);
-						delBlink( &it, lstBlink2);
-						delBlink( &it, lstBlink3);
+						addBlink( it, lstBlink);
+						delBlink( it, lstBlink2);
+						delBlink( it, lstBlink3);
 					}
-					else if( it.value == lmpBLINK )
-						addBlink( &it, lstBlink);
-					else if( it.value == lmpBLINK2 )
-						addBlink( &it, lstBlink2);
-					else if( it.value == lmpBLINK3 )
-						addBlink( &it, lstBlink3);
+					else if( it->value == lmpBLINK )
+						addBlink( it, lstBlink);
+					else if( it->value == lmpBLINK2 )
+						addBlink( it, lstBlink2);
+					else if( it->value == lmpBLINK3 )
+						addBlink( it, lstBlink3);
 					else
 					{
-						delBlink(&it, lstBlink);
-						delBlink(&it, lstBlink2);
-						delBlink(&it, lstBlink3);
+						delBlink(it, lstBlink);
+						delBlink(it, lstBlink2);
+						delBlink(it, lstBlink3);
 					}
 				}
-				else if( it.stype == UniversalIO::DO )
+				else if( it->stype == UniversalIO::DO )
 				{
 					if( isTestLamp )
-						addBlink(&it, lstBlink);
+						addBlink(it, lstBlink);
 					else
-						delBlink(&it, lstBlink);
+						delBlink(it, lstBlink);
 				}
 			}
 		}
@@ -1278,6 +1301,9 @@ namespace uniset
 				if( !activated )
 					iocrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 
+				if( ioThread && !ioThread->isRunning() )
+					ioThread->start();
+
 				askSensors(UniversalIO::UIONotify);
 				break;
 			}
@@ -1348,8 +1374,9 @@ namespace uniset
 				<< activateTimeout << " мсек";
 
 			iocrit << err.str() << endl;
-			kill(SIGTERM, getpid());   // прерываем (перезапускаем) процесс...
-			throw SystemError(err.str());
+//			kill(SIGTERM, getpid());   // прерываем (перезапускаем) процесс...
+			std::terminate();
+//			throw SystemError(err.str());
 		}
 
 		PassiveTimer ptAct(activateTimeout);
@@ -1386,21 +1413,21 @@ namespace uniset
 			iocrit << myname << "(askSensors): " << ex << endl;
 		}
 
-		for( auto& it : iomap )
+		for( const auto& it : iomap )
 		{
-			if( it.ignore )
+			if( it->ignore )
 				continue;
 
-			ComediInterface* card = cards.getCard(it.ncard);
+			auto card = cards.getCard(it->ncard);
 
-			if( card == NULL || it.subdev == IOBase::DefaultSubdev || it.channel == IOBase::DefaultChannel )
+			if( card == NULL || it->subdev == IOBase::DefaultSubdev || it->channel == IOBase::DefaultChannel )
 				continue;
 
-			if( it.stype == UniversalIO::AO || it.stype == UniversalIO::DO )
+			if( it->stype == UniversalIO::AO || it->stype == UniversalIO::DO )
 			{
 				try
 				{
-					shm->askSensor(it.si.id, cmd, myid);
+					shm->askSensor(it->si.id, cmd, myid);
 				}
 				catch( const uniset::Exception& ex )
 				{
@@ -1429,39 +1456,39 @@ namespace uniset
 			check_testmode();
 		}
 
-		for( auto& it : iomap )
+		for( auto&& it : iomap )
 		{
-			if( it.si.id == sm->id )
+			if( it->si.id == sm->id )
 			{
 				ioinfo << myname << "(sensorInfo): sid=" << sm->id
 					   << " value=" << sm->value
 					   << endl;
 
-				if( it.stype == UniversalIO::AO )
+				if( it->stype == UniversalIO::AO )
 				{
 					long prev_val = 0;
 					long cur_val = 0;
 					{
-						uniset_rwmutex_wrlock lock(it.val_lock);
-						prev_val = it.value;
-						it.value = sm->value;
+						uniset_rwmutex_wrlock lock(it->val_lock);
+						prev_val = it->value;
+						it->value = sm->value;
 						cur_val = sm->value;
 					}
 
-					if( it.lamp )
+					if( it->lamp )
 					{
 						switch( cur_val )
 						{
 							case lmpOFF:
-								delBlink(&it, lstBlink);
-								delBlink(&it, lstBlink2);
-								delBlink(&it, lstBlink3);
+								delBlink(it, lstBlink);
+								delBlink(it, lstBlink2);
+								delBlink(it, lstBlink3);
 								break;
 
 							case lmpON:
-								delBlink(&it, lstBlink);
-								delBlink(&it, lstBlink2);
-								delBlink(&it, lstBlink3);
+								delBlink(it, lstBlink);
+								delBlink(it, lstBlink2);
+								delBlink(it, lstBlink3);
 								break;
 
 
@@ -1469,19 +1496,19 @@ namespace uniset
 							{
 								if( prev_val != lmpBLINK )
 								{
-									delBlink(&it, lstBlink2);
-									delBlink(&it, lstBlink3);
-									addBlink(&it, lstBlink);
+									delBlink(it, lstBlink2);
+									delBlink(it, lstBlink3);
+									addBlink(it, lstBlink);
 
 									// и сразу зажигаем, чтобы не было паузы
 									// (так комфортнее выглядит для оператора)
-									if( it.ignore || it.subdev == IOBase::DefaultSubdev || it.channel == IOBase::DefaultChannel )
+									if( it->ignore || it->subdev == IOBase::DefaultSubdev || it->channel == IOBase::DefaultChannel )
 										break;
 
-									ComediInterface* card = cards.getCard(it.ncard);
+									auto card = cards.getCard(it->ncard);
 
-									if( card != NULL )
-										card->setDigitalChannel(it.subdev, it.channel, 1);
+									if( card )
+										card->setDigitalChannel(it->subdev, it->channel, 1);
 								}
 							}
 							break;
@@ -1490,19 +1517,19 @@ namespace uniset
 							{
 								if( prev_val != lmpBLINK2 )
 								{
-									delBlink(&it, lstBlink);
-									delBlink(&it, lstBlink3);
-									addBlink(&it, lstBlink2);
+									delBlink(it, lstBlink);
+									delBlink(it, lstBlink3);
+									addBlink(it, lstBlink2);
 
 									// и сразу зажигаем, чтобы не было паузы
 									// (так комфортнее выглядит для оператора)
-									if( it.ignore || it.subdev == IOBase::DefaultSubdev || it.channel == IOBase::DefaultChannel )
+									if( it->ignore || it->subdev == IOBase::DefaultSubdev || it->channel == IOBase::DefaultChannel )
 										break;
 
-									ComediInterface* card = cards.getCard(it.ncard);
+									auto card = cards.getCard(it->ncard);
 
-									if( card != NULL )
-										card->setDigitalChannel(it.subdev, it.channel, 1);
+									if( card )
+										card->setDigitalChannel(it->subdev, it->channel, 1);
 								}
 							}
 							break;
@@ -1511,19 +1538,19 @@ namespace uniset
 							{
 								if( prev_val != lmpBLINK3 )
 								{
-									delBlink(&it, lstBlink);
-									delBlink(&it, lstBlink2);
-									addBlink(&it, lstBlink3);
+									delBlink(it, lstBlink);
+									delBlink(it, lstBlink2);
+									addBlink(it, lstBlink3);
 
 									// и сразу зажигаем, чтобы не было паузы
 									// (так комфортнее выглядит для оператора)
-									if( it.ignore || it.subdev == IOBase::DefaultSubdev || it.channel == IOBase::DefaultChannel )
+									if( it->ignore || it->subdev == IOBase::DefaultSubdev || it->channel == IOBase::DefaultChannel )
 										break;
 
-									ComediInterface* card = cards.getCard(it.ncard);
+									auto card = cards.getCard(it->ncard);
 
-									if( card != NULL )
-										card->setDigitalChannel(it.subdev, it.channel, 1);
+									if( card )
+										card->setDigitalChannel(it->subdev, it->channel, 1);
 								}
 							}
 							break;
@@ -1533,13 +1560,13 @@ namespace uniset
 						}
 					}
 				}
-				else if( it.stype == UniversalIO::DO )
+				else if( it->stype == UniversalIO::DO )
 				{
 					iolog1 << myname << "(sensorInfo): DO: sm->id=" << sm->id
 						   << " val=" << sm->value << endl;
 
-					uniset_rwmutex_wrlock lock(it.val_lock);
-					it.value = sm->value ? 1 : 0;
+					uniset_rwmutex_wrlock lock(it->val_lock);
+					it->value = sm->value ? 1 : 0;
 				}
 
 				break;

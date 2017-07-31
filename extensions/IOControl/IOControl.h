@@ -22,6 +22,7 @@
 #include <deque>
 #include <string>
 #include "UniXML.h"
+#include "ThreadCreator.h"
 #include "PassiveTimer.h"
 #include "Trigger.h"
 #include "IONotifyController.h"
@@ -197,12 +198,12 @@ namespace uniset
 					delete (*this)[i];
 			}
 
-			inline ComediInterface* getCard(int ncard) const
+			inline ComediInterface* getCard( size_t ncard ) const
 			{
-				if( ncard >= 0 && ncard < (int)size() )
+				if( ncard < size() )
 					return (*this)[ncard];
 
-				return NULL;
+				return nullptr;
 			}
 
 	};
@@ -284,7 +285,8 @@ namespace uniset
 				bool enable_testmode;  /*!< флаг для режима тестирования tmConfigEnable */
 				bool disable_testmode; /*!< флаг для режима тестирования tmConfigDisable */
 
-				friend std::ostream& operator<<(std::ostream& os, IOInfo& inf );
+				friend std::ostream& operator<<(std::ostream& os, const IOInfo& inf );
+				friend std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IOInfo>& inf );
 			};
 
 			struct IOPriority
@@ -306,15 +308,14 @@ namespace uniset
 				tmOnlyOutputs   = 5   /*!< включены только выходы */
 			};
 
-			void execute();
-
 		protected:
 
 			void iopoll(); /*!< опрос карт в/в */
-			void ioread( IOInfo* it );
+			void ioread( std::shared_ptr<IOInfo>& it );
 			void check_testlamp();
 			void check_testmode();
 			void blink();
+			void iothread();
 
 			// действия при завершении работы
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
@@ -323,6 +324,7 @@ namespace uniset
 			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 			virtual void sigterm( int signo ) override;
 			virtual bool activateObject() override;
+			virtual bool deactivateObject() override;
 
 			// начальная инициализация выходов
 			void initOutputs();
@@ -344,14 +346,14 @@ namespace uniset
 			CardList cards; /*!< список карт - массив созданных ComediInterface */
 			bool noCards = { false };
 
-			typedef std::vector<IOInfo> IOMap;
+			typedef std::vector< std::shared_ptr<IOInfo> > IOMap;
 			IOMap iomap;    /*!< список входов/выходов */
 
 			typedef std::deque<IOPriority> PIOMap;
 			PIOMap pmap;    /*!< список приоритетных входов/выходов */
 
-			unsigned int maxItem = { 0 };    /*!< количество элементов (используется на момент инициализации) */
-			unsigned int maxHalf = { 0 };
+			size_t maxItem = { 0 };    /*!< количество элементов (используется на момент инициализации) */
+			size_t maxHalf = { 0 };
 			int filtersize = { 0 };
 			float filterT = { 0.0 };
 
@@ -362,10 +364,10 @@ namespace uniset
 			uniset::ObjectId myid = { uniset::DefaultObjectId };
 			std::string prefix;
 
-			typedef std::list<IOInfo*> BlinkList;
+			typedef std::list<std::shared_ptr<IOInfo>> BlinkList;
 
-			void addBlink( IOInfo* it, BlinkList& lst );
-			void delBlink( IOInfo* it, BlinkList& lst );
+			void addBlink( std::shared_ptr<IOInfo>& it, BlinkList& lst );
+			void delBlink( std::shared_ptr<IOInfo>& it, BlinkList& lst );
 			void blink( BlinkList& lst, bool& bstate );
 
 			// обычное мигание
@@ -416,6 +418,8 @@ namespace uniset
 			std::shared_ptr<LogServer> logserv;
 			std::string logserv_host = {""};
 			int logserv_port = {0};
+
+			std::shared_ptr< ThreadCreator<IOControl> > ioThread;
 
 		private:
 	};
