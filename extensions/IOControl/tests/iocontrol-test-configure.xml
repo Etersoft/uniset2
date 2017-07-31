@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UNISETPLC xmlns:xi="http://www.w3.org/2001/XInclude">
+	<UserData/>
+	<!-- Общие(стартовые) параметры по UniSet -->
+	<UniSet>
+		<NameService host="localhost" port="2809"/>
+		<LocalNode name="LocalhostNode"/>
+		<RootSection name="UNISET_PLC"/>
+		<CountOfNet name="1"/>
+		<RepeatCount name="3"/>
+		<RepeatTimeoutMS name="50"/>
+		<WatchDogTime name="0"/>
+		<PingNodeTime name="0"/>
+		<AutoStartUpTime name="1"/>
+		<DumpStateTime name="10"/>
+		<SleepTickMS name="500"/>
+		<UniSetDebug levels="" name="ulog"/>
+		<ConfDir name="./"/>
+		<DataDir name="./"/>
+		<BinDir name="./"/>
+		<LogDir name="./"/>
+		<DocDir name="./"/>
+		<LockDir name="./"/>
+		<Services></Services>
+	</UniSet>
+	<dlog name="dlog"/>
+
+	<settings>
+	    <SharedMemory name="SharedMemory" shmID="SharedMemory"/>
+	    <IOControl1 name="IOControl"/>
+    </settings>
+	<ObjectsMap idfromfile="1">
+		<!--
+	Краткие пояснения к полям секции 'sensors'
+	==========================================
+	node 		- узел на котором физически находится данный датчик
+	iotype 		- тип датчика
+	priority 	- приоритет сообщения об изменении данного датчика
+	textname 	- текстовое имя датчика
+-->
+		<nodes port="2809">
+			<item id="3000" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел">
+				<iocards>
+					<item name="AI16-5A-3" avg="16" baddr="0x130" card="1" dev="/dev/null" module="aixx5a" module_params="1,16"/>
+				</iocards>
+			</item>
+		</nodes>
+		<!-- ************************ Датчики ********************** -->
+		<sensors name="Sensors">
+			<item id="1000" io="1" iotype="DI" name="TestDI1_S" textname="Тестовый DI1" card="1" subdev="1" channel="0"/>
+			<item id="1001" io="1" iotype="DI" name="TestDI2_S" textname="Тестовый DI2" card="1" subdev="1" channel="0" ioinvert="1" />
+			<item id="1002" io="1" iotype="DO" name="TestDO1_C" textname="Тестовый DO1" card="1" subdev="1" channel="0"/>
+			<item id="1003" io="1" iotype="DO" name="TestDO2_C" textname="Тестовый DO2" card="1" subdev="1" channel="1" ioinvert="1" />
+
+			<item id="1004" io="1" iotype="AO" name="Lamp1_C" textname="Lamp 1" card="1" subdev="1" channel="4" lamp="1" />
+			<item id="1005" io="1" iotype="AO" name="AO1_C" textname="AO1" card="1" subdev="1" channel="5"/>
+			<item id="1006" io="1" iotype="AO" name="AO2_C" textname="AO2" card="1" subdev="1" channel="6" cmin="-100" cmax="100" rmin="0" rmax="1000"/>
+			<item id="1007" io="1" iotype="AO" name="AO3_C" textname="AO3" card="1" subdev="1" channel="7" caldiagram="testcal"/>
+
+			<item id="1010" io="1" iotype="AI" name="AI_T_AS" textname="AI for threshold" card="1" subdev="1" channel="10"/>
+			<item id="1011" io="1" iotype="DI" name="T1_S" textname="Threshold 1" threshold_aid="AI_T_AS" lowlimit="30" hilimit="40"/>
+
+
+
+			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
+
+		</sensors>
+		<thresholds/>
+		<controllers name="Controllers">
+			<item id="5000" name="SharedMemory"/>
+		</controllers>
+		<!-- ******************* Идентификаторы сервисов ***************** -->
+		<services name="Services">
+		</services>
+		<!-- ******************* Идентификаторы объектов ***************** -->
+		<objects name="UniObjects">
+			<item id="6000" name="TestProc"/>
+			<item id="6004" name="IOControl1"/>
+		</objects>
+	</ObjectsMap>
+	<messages idfromfile="1" name="messages"/>
+	<Calibrations name="Calibrations">
+	   <diagram name="testcal">
+		  <point x="-1000" y="-300"/>
+		  <point x="0" y="10"/>
+		  <point x="1000" y="300"/>
+	   </diagram>
+	</Calibrations>
+</UNISETPLC>

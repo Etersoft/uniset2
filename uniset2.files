@@ -70,6 +70,12 @@ extensions/IOControl/IOControl.h
 extensions/IOControl/iotest.cc
 extensions/IOControl/libUniSet2IOControl.pc.in
 extensions/IOControl/Makefile.am
+extensions/IOControl/tests/Makefile.am
+extensions/IOControl/tests/test_iocontrol.cc
+extensions/IOControl/tests/run_test_iocontrol.cc
+extensions/IOControl/tests/iocontrol-test-configure.xml
+extensions/IOControl/tests/FakeIOControl.h
+extensions/IOControl/tests/FakeIOControl.cc
 extensions/lib/Calibration.cc
 extensions/lib/DigitalFilter.cc
 extensions/lib/Extensions.cc

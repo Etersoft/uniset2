@@ -227,7 +227,7 @@ namespace uniset
 		public UniSetObject
 	{
 		public:
-			IOControl( uniset::ObjectId id, uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr, int numcards = 2, const std::string& prefix = "io" );
+			IOControl( uniset::ObjectId id, uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr, size_t numcards = 2, const std::string& prefix = "io" );
 			virtual ~IOControl();
 
 			/*! глобальная функция для инициализации объекта */
@@ -398,8 +398,8 @@ namespace uniset
 			bool force = { false };            /*!< флаг, означающий, что надо сохранять в SM, даже если значение не менялось */
 			bool force_out = { false };        /*!< флаг, включающий принудительное чтения выходов */
 			timeout_t smReadyTimeout = { 15000 };    /*!< время ожидания готовности SM к работе, мсек */
-			int defCardNum = { -1 };        /*!< номер карты по умолчанию */
-			int maxCardNum = { 10 };        /*! максимально разрешённый номер для карты */
+			ssize_t defCardNum = { -1 };        /*!< номер карты по умолчанию */
+			size_t maxCardNum = { 10 };        /*! максимально разрешённый номер для карты */
 
 			std::mutex iopollMutex;
 			std::atomic_bool activated = { false };

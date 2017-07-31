@@ -47,10 +47,10 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 
 	IOControl::IOControl(uniset::ObjectId id, uniset::ObjectId icID,
-						 const std::shared_ptr<SharedMemory>& ic, int numcards, const std::string& prefix_ ):
+						 const std::shared_ptr<SharedMemory>& ic, size_t numcards, const std::string& prefix_ ):
 		UniSetObject(id),
 		polltime(150),
-		cards(11),
+		cards(numcards),
 		noCards(true),
 		iomap(100),
 		maxItem(0),
@@ -112,12 +112,12 @@ namespace uniset
 
 		noCards = true;
 
-		for( unsigned int i = 1; i < cards.size(); i++ )
-			cards[i] = NULL;
+		for( size_t i = 1; i < cards.size(); i++ )
+			cards[i] = nullptr;
 
 		buildCardsList();
 
-		for( unsigned int i = 1; i < cards.size(); i++ )
+		for( size_t i = 1; i < cards.size(); i++ )
 		{
 			stringstream s1;
 			s1 << "--" << prefix << "-dev" << i;
@@ -131,7 +131,7 @@ namespace uniset
 
 			if( iodev == "/dev/null" )
 			{
-				if( cards[i] == NULL )
+				if( !cards[i] )
 				{
 					iolog3 << myname << "(init): Card N" << i
 						   << " DISABLED! dev='"
@@ -145,9 +145,9 @@ namespace uniset
 				iolog3 << myname << "(init): ADD card" << i  << " dev=" << iodev << endl;
 			}
 
-			if( cards[i] != NULL )
+			if( !cards[i] )
 			{
-				for( unsigned int s = 1; s <= 4; s++ )
+				for( size_t s = 1; s <= 4; s++ )
 				{
 					stringstream t1;
 					t1 << s1.str() << "-subdev" << s << "-type";
@@ -180,10 +180,7 @@ namespace uniset
 
 		ioinfo << myname << "(init): result numcards=" << cards.size() << endl;
 
-		polltime = conf->getArgInt("--" + prefix + "-polltime", it.getProp("polltime"));
-
-		if( !polltime )
-			polltime = 100;
+		polltime = conf->getArgPInt("--" + prefix + "-polltime", it.getProp("polltime"), polltime);
 
 		force         = conf->getArgInt("--" + prefix + "-force", it.getProp("force"));
 		force_out     = conf->getArgInt("--" + prefix + "-force-out", it.getProp("force_out"));
@@ -261,10 +258,10 @@ namespace uniset
 			sidTestSMReady = conf->getSensorID("TestMode_S");
 			iowarn << myname
 				   << "(init): Unknown ID for sm-ready-test-sid (--" << prefix << "-sm-ready-test-sid)."
-				   << " Use 'TestMode_S'" << endl;
+				   << " Use 'TestMode_S' (if present)" << endl;
 		}
 		else
-			ioinfo << myname << "(init): test-sid: " << sm_ready_sid << endl;
+			ioinfo << myname << "(init): sm-ready-test-sid: " << sm_ready_sid << endl;
 
 
 		// -----------------------
@@ -304,11 +301,6 @@ namespace uniset
 
 	IOControl::~IOControl()
 	{
-		// здесь бы ещё пройтись по списку с сделать delete для
-		// всех cdiagram созданных через new
-		//
-//		for( unsigned int i = 0; i < cards.size(); i++ )
-//			delete cards[i];
 	}
 
 	// --------------------------------------------------------------------------------
@@ -389,6 +381,7 @@ namespace uniset
 		}
 		catch(...) {}
 
+		ioinfo << myname << "(iothread): run..." << endl;
 		while( !term )
 		{
 			try
@@ -533,7 +526,8 @@ namespace uniset
 	// --------------------------------------------------------------------------------
 	void IOControl::ioread( std::shared_ptr<IOInfo>& it )
 	{
-		//    cout  << conf->oind->getMapName(it->si.id)  << " ignore=" << it->ignore << " ncard=" << it->ncard << endl;
+//		 cout  << uniset_conf()->oind->getMapName(it->si.id)  << " ignore=" << it->ignore << " ncard=" << it->ncard << endl;
+//		cerr << it << endl;
 
 		if( it->ignore || it->ncard == defCardNum )
 			return;
@@ -1660,11 +1654,11 @@ namespace uniset
 		{
 			std::string cname(it.getProp("name"));
 
-			int cardnum = it.getIntProp("card");
+			size_t cardnum = it.getIntProp("card");
 
-			if( cardnum <= 0 )
+			if( cardnum == 0 )
 			{
-				iolog3 << myname << "(init): Unknown card number?!  card=" << it.getIntProp("card") << "(" << cname << ")" << endl;
+				iolog3 << myname << "(init): card number=0?!  card=" << it.getIntProp("card") << "(" << cname << ")" << endl;
 				continue;
 
 			}
@@ -1677,7 +1671,7 @@ namespace uniset
 
 			if( it.getIntProp("ignore") )
 			{
-				cards[cardnum] = NULL;
+				cards[cardnum] = nullptr;
 				iolog3 << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
 					   << " DISABLED! ignore=1" << endl;
 				continue;
@@ -1688,7 +1682,7 @@ namespace uniset
 
 			if( findArgParam( s.str(), conf->getArgc(), conf->getArgv()) != -1 )
 			{
-				cards[cardnum] = NULL;
+				cards[cardnum] = nullptr;
 				iolog3 << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
 					   << " DISABLED! (" << s.str() << ")" << endl;
 				continue;
@@ -1698,7 +1692,7 @@ namespace uniset
 
 			if( iodev.empty() || iodev == "/dev/null" )
 			{
-				cards[cardnum] = NULL;
+				cards[cardnum] = nullptr;
 				iolog3 << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
 					   << " DISABLED! iodev='"
 					   << iodev << "'" << endl;
@@ -1729,13 +1723,13 @@ namespace uniset
 			}
 			else if( cname == "UNIO48" || cname == "UNIO96" )
 			{
-				unsigned int k = 4;
+				size_t k = 4;
 
 				if( cname == "UNIO48" )
 					k = 2;
 
 				// инициализация subdev-ов
-				for( unsigned int i = 1; i <= k; i++ )
+				for( size_t i = 1; i <= k; i++ )
 				{
 					ostringstream s;
 					s << "subdev" << i;
