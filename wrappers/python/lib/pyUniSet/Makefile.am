@@ -1,5 +1,8 @@
 if DISABLE_PYTHON
 else
+
+SWIG=swig
+
 #python_SCRIPTS = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
 pydir=$(pkgpythondir)
 py_DATA = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py

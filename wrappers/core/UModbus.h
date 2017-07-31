@@ -17,6 +17,7 @@
 #ifndef UModbus_H_
 #define UModbus_H_
 // --------------------------------------------------------------------------
+#include <string>
 #include "Configuration.h"
 #include "UInterface.h"
 #include "modbus/ModbusTCPMaster.h"
@@ -35,7 +36,7 @@ class UModbus
 
 		inline std::string getUIType()
 		{
-			return string("modbus");
+			return std::string("modbus");
 		}
 
 		inline bool isWriteFunction( int mbfunc )

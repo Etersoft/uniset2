@@ -68,7 +68,7 @@ UModbus::~UModbus()
 	delete mb;
 }
 // --------------------------------------------------------------------------
-void UModbus::prepare( const string& _ip, int _port )throw(UException)
+void UModbus::prepare( const std::string& _ip, int _port )throw(UException)
 {
 	if( !mb )
 		throw UException("(connect): mb=NULL?!");
@@ -87,7 +87,7 @@ void UModbus::prepare( const string& _ip, int _port )throw(UException)
 	port = _port;
 }
 // --------------------------------------------------------------------------
-void UModbus::connect( const string& _ip, int _port )throw(UException)
+void UModbus::connect( const std::string& _ip, int _port )throw(UException)
 {
 	if( !mb )
 		throw UException("(connect): mb=NULL?!");
@@ -291,9 +291,9 @@ long UModbus::data2value( uniset::VTypes::VType vtype, uniset::ModbusRTU::Modbus
 	return 0;
 }
 //---------------------------------------------------------------------------
-void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const string& new_ip, int new_port )throw(UException)
+void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const std::string& new_ip, int new_port )throw(UException)
 {
-	string n_ip( ( new_ip.empty() ? ip : new_ip ) );
+	std::string n_ip( ( new_ip.empty() ? ip : new_ip ) );
 	int n_port = ( new_port > 0 ) ? new_port : port;
 
 	connect(n_ip, n_port);

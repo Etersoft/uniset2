@@ -124,6 +124,8 @@ class ShortIOInfo:
     __swig_getmethods__["tv_nsec"] = _pyUConnector.ShortIOInfo_tv_nsec_get
     __swig_setmethods__["supplier"] = _pyUConnector.ShortIOInfo_supplier_set
     __swig_getmethods__["supplier"] = _pyUConnector.ShortIOInfo_supplier_get
+    __swig_setmethods__["supplier_node"] = _pyUConnector.ShortIOInfo_supplier_node_set
+    __swig_getmethods__["supplier_node"] = _pyUConnector.ShortIOInfo_supplier_node_get
 
     def __init__(self):
         this = _pyUConnector.new_ShortIOInfo()

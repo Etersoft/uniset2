@@ -17,6 +17,8 @@
 #ifndef UExceptions_H_
 #define UExceptions_H_
 // --------------------------------------------------------------------------
+#include <string>
+// --------------------------------------------------------------------------
 struct UException
 {
 	UException(): err("UException") {}
