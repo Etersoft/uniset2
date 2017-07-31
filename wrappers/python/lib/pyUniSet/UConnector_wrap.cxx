@@ -3997,6 +3997,58 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_ShortIOInfo_supplier_node_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"OO:ShortIOInfo_supplier_node_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_supplier_node_set" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
+  ecode2 = SWIG_AsVal_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ShortIOInfo_supplier_node_set" "', argument " "2"" of type '" "long""'");
+  }
+  arg2 = static_cast< long >(val2);
+  if (arg1) (arg1)->supplier_node = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ShortIOInfo_supplier_node_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  long result;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:ShortIOInfo_supplier_node_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_supplier_node_get" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
+  result = (long) ((arg1)->supplier_node);
+  resultobj = SWIG_From_long(static_cast< long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_new_ShortIOInfo(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   UTypes::ShortIOInfo *result = 0 ;
@@ -5251,6 +5303,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"ShortIOInfo_tv_nsec_get", _wrap_ShortIOInfo_tv_nsec_get, METH_VARARGS, NULL},
 	 { (char *)"ShortIOInfo_supplier_set", _wrap_ShortIOInfo_supplier_set, METH_VARARGS, NULL},
 	 { (char *)"ShortIOInfo_supplier_get", _wrap_ShortIOInfo_supplier_get, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_supplier_node_set", _wrap_ShortIOInfo_supplier_node_set, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_supplier_node_get", _wrap_ShortIOInfo_supplier_node_get, METH_VARARGS, NULL},
 	 { (char *)"new_ShortIOInfo", _wrap_new_ShortIOInfo, METH_VARARGS, NULL},
 	 { (char *)"delete_ShortIOInfo", _wrap_delete_ShortIOInfo, METH_VARARGS, NULL},
 	 { (char *)"ShortIOInfo_swigregister", ShortIOInfo_swigregister, METH_VARARGS, NULL},
