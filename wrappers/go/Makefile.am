@@ -2,7 +2,7 @@
 #else
 
 BUILD_SRCDIR=$(srcdir)/../core
-BUILD_SRC=UProxyObject.cc
+BUILD_SRC=UProxy.cc
 
 GO_PACKAGE_NAME=uniset_internal_api
 GO_SRC_DIR=src/uniset_internal_api
@@ -15,7 +15,7 @@ UInterface_wrap.cxx: UInterface.i goUInterface.h
 
 lib_LTLIBRARIES = libgoUniSet.la
 
-libgoUniSet_la_SOURCES    = goUInterface.cc UInterface_wrap.cxx UProxyObject.cc
+libgoUniSet_la_SOURCES    = goUInterface.cc UInterface_wrap.cxx UProxy.cc
 libgoUniSet_la_CXXFLAGS   = -I$(BUILD_SRCDIR) $(UNISET_CFLAGS) $(UNISET_EXT_CFLAGS) $(PYTHON_CFLAGS)
 libgoUniSet_la_LDFLAGS    = -module -avoid-version
 libgoUniSet_la_LIBADD     = $(UNISET_LIBS) $(UNISET_EXT_LIBS) $(PYTHON_LIBS)

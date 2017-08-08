@@ -4,7 +4,7 @@
 
 %{
 #include "goUInterface.h"
-#include "UProxyObject.h"
+#include "UProxy.h"
 #include "UTypes.h"
 %}
 
@@ -18,4 +18,4 @@
 %include "goUInterface.h"
 %include "UTypes.h"
 %include "UExceptions.h"
-%include "UProxyObject.h"
+%include "UProxy.h"

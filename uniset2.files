@@ -575,4 +575,16 @@ libUniSet2.pc.in
 Makefile.am
 uniset-config.h
 configure.ac
+wrappers/core/UTypes.h
+wrappers/core/UProxyObject.h
+wrappers/core/UProxyObject.cc
+wrappers/core/UModbus.h
+wrappers/core/UModbus.cc
+wrappers/core/UExceptions.h
+wrappers/core/UConnector.h
+wrappers/core/UConnector.cc
+wrappers/go/goUInterface.cc
+wrappers/go/goUInterface.h
+wrappers/core/UProxy.h
+wrappers/core/UProxy.cc
 

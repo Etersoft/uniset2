@@ -67,6 +67,7 @@ class UProxyObject
 		/*! Проверка работы SM */
 		bool smIsOK();
 
+
 	protected:
 		void init( long id ) throw( UException );
 
