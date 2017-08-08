@@ -4,6 +4,10 @@
 BUILD_SRCDIR=$(srcdir)/../core
 BUILD_SRC=UProxyObject.cc
 
+GO_PACKAGE_NAME=uniset_internal_api
+GO_SRC_DIR=src/uniset_internal_api
+
+
 UInterface_wrap.cxx: UInterface.i goUInterface.h
 	swig -go -cgo -intgosize 64 -c++ -outcurrentdir -I$(BUILD_SRCDIR) UInterface.i
 
@@ -17,15 +21,15 @@ libgoUniSet_la_LDFLAGS    = -module -avoid-version
 libgoUniSet_la_LIBADD     = $(UNISET_LIBS) $(UNISET_EXT_LIBS) $(PYTHON_LIBS)
 
 
-uniset.go: libgoUniSet.la
+${GO_PACKAGE_NAME}.go: libgoUniSet.la
 
 
-src/local-uniset/local-uniset.go: uniset.go
-	mkdir -p src/local-uniset
-	cp -f uniset.go src/local-uniset/local-uniset.go
-	subst "s|#define intgo swig_intg|#cgo LDFLAGS: -L\$$\{SRCDIR\} -lgoUniSet\n#define intgo swig_intg|g" src/local-uniset/local-uniset.go
+${GO_SRC_DIR}/${GO_PACKAGE_NAME}.go: ${GO_PACKAGE_NAME}.go
+	mkdir -p ${GO_SRC_DIR}
+	cp -f ${GO_PACKAGE_NAME}.go ${GO_SRC_DIR}/${GO_PACKAGE_NAME}.go
+	subst "s|#define intgo swig_intg|#cgo LDFLAGS: -L\$$\{SRCDIR\} -lgoUniSet\n#define intgo swig_intg|g" ${GO_SRC_DIR}/${GO_PACKAGE_NAME}.go
 	ln -sf .libs/libgoUniSet.so ./
-	ln -sf ../../.libs/libgoUniSet.so src/local-uniset/
+	ln -sf ../../.libs/libgoUniSet.so ${GO_SRC_DIR}/
 
 test:
 	go build mtest.go
@@ -33,12 +37,12 @@ test:
 # Специальное правило для удаления сгенерированного кода
 # для дальнейшей перегенерации
 clean-gen:
-	rm -rf uniset.go *_wrap.cxx *_gc.c src
+	rm -rf ${GO_PACKAGE_NAME}.go *_wrap.cxx *_gc.c src
 
 $(BUILD_SRC):
 	ln -sf $(BUILD_SRCDIR)/$@
 
-all-local: src/local-uniset/local-uniset.go
+all-local: ${GO_SRC_DIR}/${GO_PACKAGE_NAME}.go
 
 
 include $(top_builddir)/include.mk
