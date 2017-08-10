@@ -583,8 +583,10 @@ wrappers/core/UModbus.cc
 wrappers/core/UExceptions.h
 wrappers/core/UConnector.h
 wrappers/core/UConnector.cc
-wrappers/go/goUInterface.cc
-wrappers/go/goUInterface.h
 wrappers/core/UProxy.h
 wrappers/core/UProxy.cc
+wrappers/go/goUInterface.cc
+wrappers/go/goUInterface.h
+wrappers/python/lib/pyUniSet/PyUInterface.cc
+wrappers/python/lib/pyUniSet/PyUInterface.h
 

@@ -29,41 +29,39 @@ using namespace std;
 static uniset::UInterface* uInterface = 0;
 static std::mutex umutex;
 //---------------------------------------------------------------------------
-void goUInterface::uniset_init_params( UTypes::Params* p, const std::string& xmlfile )throw(UException)
+UTypes::ResultBool goUInterface::uniset_init_params( UTypes::Params* p, const std::string& xmlfile ) noexcept
 {
-	goUInterface::uniset_init(p->argc, p->argv, xmlfile);
+	return goUInterface::uniset_init(p->argc, p->argv, xmlfile);
 }
 //---------------------------------------------------------------------------
 
-void goUInterface::uniset_init( int argc, char* argv[], const std::string& xmlfile )throw(UException)
+UTypes::ResultBool goUInterface::uniset_init( int argc, char* argv[], const std::string& xmlfile ) noexcept
 {
 	std::lock_guard<std::mutex> l(umutex);
 
 	if( uInterface )
-		return;
+		return UTypes::ResultBool(true);
 
 	try
 	{
 		uniset::uniset_init(argc, argv, xmlfile);
 		uInterface = new uniset::UInterface();
-		return;
-	}
-	catch( uniset::Exception& ex )
-	{
-		throw UException(ex.what());
+		return UTypes::ResultBool(true);
 	}
 	catch( std::exception& ex )
 	{
-		throw UException(ex.what());
+		return UTypes::ResultBool(false,ex.what());
 	}
+
+	return UTypes::ResultBool(false,"Unknown error");
 }
 //---------------------------------------------------------------------------
-long goUInterface::getValue( long id )throw(UException)
+UTypes::ResultValue goUInterface::getValue( long id ) noexcept
 {
 	auto conf = uniset::uniset_conf();
 
 	if( !conf || !uInterface )
-		throw USysError();
+		return UTypes::ResultValue(0,"USysError");
 
 	using namespace uniset;
 
@@ -73,33 +71,31 @@ long goUInterface::getValue( long id )throw(UException)
 	{
 		ostringstream e;
 		e << "(getValue): Unknown iotype for id=" << id;
-		throw UException(e.str());
+		return UTypes::ResultValue(0, e.str());
 	}
 
 	try
 	{
-		return uInterface->getValue(id);
+		return UTypes::ResultValue( uInterface->getValue(id) );
 	}
 	catch( UException& ex )
 	{
-		throw;
-	}
-	catch( uniset::Exception& ex )
-	{
-		throw UException(ex.what());
+		return UTypes::ResultValue(0, ex.err);
 	}
 	catch( std::exception& ex )
 	{
-		throw UException(ex.what());
+		return UTypes::ResultValue(0, ex.what());
 	}
+
+	return UTypes::ResultValue(0, "Unknown error");
 }
 //---------------------------------------------------------------------------
-void goUInterface::setValue( long id, long val, long supplier )throw(UException)
+UTypes::ResultBool goUInterface::setValue( long id, long val, long supplier ) noexcept
 {
 	auto conf = uniset::uniset_conf();
 
 	if( !conf || !uInterface )
-		throw USysError();
+		return UTypes::ResultBool(0,"USysError");
 
 	using namespace uniset;
 
@@ -109,28 +105,27 @@ void goUInterface::setValue( long id, long val, long supplier )throw(UException)
 	{
 		ostringstream e;
 		e << "(setValue): Unknown iotype for id=" << id;
-		throw UException(e.str());
+		return UTypes::ResultBool(0, e.str());
 	}
 
 	try
 	{
-		uInterface->setValue(id, val, supplier);
+		uInterface->setValue(id, val, conf->getLocalNode(), supplier);
+		return UTypes::ResultBool(true);
 	}
 	catch( UException& ex )
 	{
-		throw;
-	}
-	catch( uniset::Exception& ex )
-	{
-		throw UException(ex.what());
+		return UTypes::ResultBool(false, ex.err);
 	}
 	catch( std::exception& ex )
 	{
-		throw UException(ex.what());
+		return UTypes::ResultBool(false, ex.what());
 	}
+
+	return UTypes::ResultBool(false, "Unknown error");
 }
 //---------------------------------------------------------------------------
-long goUInterface::getSensorID(const string& name )
+long goUInterface::getSensorID(const string& name ) noexcept
 {
 	auto conf = uniset::uniset_conf();
 
@@ -140,7 +135,7 @@ long goUInterface::getSensorID(const string& name )
 	return uniset::DefaultObjectId;
 }
 //---------------------------------------------------------------------------
-long goUInterface::getObjectID(const string& name )
+long goUInterface::getObjectID(const string& name ) noexcept
 {
 	auto conf = uniset::uniset_conf();
 
@@ -150,7 +145,7 @@ long goUInterface::getObjectID(const string& name )
 	return uniset::DefaultObjectId;
 }
 //---------------------------------------------------------------------------
-std::string goUInterface::getName( long id )
+std::string goUInterface::getName( long id ) noexcept
 {
 	auto conf = uniset::uniset_conf();
 
@@ -160,7 +155,7 @@ std::string goUInterface::getName( long id )
 	return "";
 }
 //---------------------------------------------------------------------------
-string goUInterface::getShortName( long id )
+string goUInterface::getShortName( long id ) noexcept
 {
 	auto conf = uniset::uniset_conf();
 
@@ -170,7 +165,7 @@ string goUInterface::getShortName( long id )
 	return "";
 }
 //---------------------------------------------------------------------------
-std::string goUInterface::getTextName( long id )
+std::string goUInterface::getTextName( long id ) noexcept
 {
 	auto conf = uniset::uniset_conf();
 
@@ -180,7 +175,7 @@ std::string goUInterface::getTextName( long id )
 	return "";
 }
 //---------------------------------------------------------------------------
-string goUInterface::getConfFileName()
+string goUInterface::getConfFileName() noexcept
 {
 	auto conf = uniset::uniset_conf();
 
@@ -191,16 +186,19 @@ string goUInterface::getConfFileName()
 
 }
 //---------------------------------------------------------------------------
-void goUInterface::uniset_activate_objects()throw(UException)
+UTypes::ResultBool goUInterface::uniset_activate_objects() noexcept
 {
 	try
 	{
 		auto act = uniset::UniSetActivator::Instance();
 		act->run(true);
+		return UTypes::ResultBool(true);
 	}
 	catch( const std::exception& ex )
 	{
-		throw UException("(uniset_activate_objects): catch " + std::string(ex.what()) );
+		return UTypes::ResultBool(false, "(uniset_activate_objects): catch " + std::string(ex.what()) );
 	}
+
+	return UTypes::ResultBool(false, "Unknown error");
 }
 //---------------------------------------------------------------------------

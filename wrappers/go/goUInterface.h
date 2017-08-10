@@ -23,22 +23,23 @@
 // --------------------------------------------------------------------------
 namespace goUInterface
 {
-	void uniset_init_params( UTypes::Params* p, const std::string& xmlfile )throw(UException);
-	void uniset_init( int argc, char** argv, const std::string& xmlfile )throw(UException);
-	void uniset_activate_objects() throw(UException);
+	UTypes::ResultBool uniset_init_params( UTypes::Params* p, const std::string& xmlfile ) noexcept;
+	UTypes::ResultBool uniset_init( int argc, char** argv, const std::string& xmlfile ) noexcept;
+	UTypes::ResultBool uniset_activate_objects() noexcept;
 
 	//---------------------------------------------------------------------------
-	long getValue( long id )throw(UException);
-	void setValue( long id, long val, long supplier = UTypes::DefaultSupplerID )throw(UException);
+	UTypes::ResultValue getValue( long id ) noexcept;
+	UTypes::ResultBool setValue( long id, long val, long supplier = UTypes::DefaultSupplerID ) noexcept;
 
-	long getSensorID(  const std::string& name );
-	long getObjectID(  const std::string& name );
+	// return DefaultObjectId if not found
+	long getSensorID( const std::string& name ) noexcept;
+	long getObjectID( const std::string& name ) noexcept;
 
-	std::string getShortName( long id );
-	std::string getName( long id );
-	std::string getTextName( long id );
+	std::string getShortName( long id ) noexcept;
+	std::string getName( long id ) noexcept;
+	std::string getTextName( long id ) noexcept;
 
-	std::string getConfFileName();
+	std::string getConfFileName() noexcept;
 }
 //---------------------------------------------------------------------------
 #endif

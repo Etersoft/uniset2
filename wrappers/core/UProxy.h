@@ -52,11 +52,11 @@ class UProxy
 
 		UTypes::ResultIO safeWaitMessage( unsigned long timeout_msec ) noexcept;
 
-		bool safeSetValue( long id, long val ) noexcept;
+		UTypes::ResultBool safeSetValue( long id, long val ) noexcept;
 
 		UTypes::ResultValue safeGetValue( long id ) noexcept;
 
-		bool safeAskSensor( long id ) noexcept;
+		UTypes::ResultBool safeAskSensor( long id ) noexcept;
 
 		bool isExist( long id ) noexcept;
 

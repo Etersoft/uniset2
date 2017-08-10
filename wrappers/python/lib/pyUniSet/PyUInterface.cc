@@ -110,7 +110,7 @@ void pyUInterface::setValue( long id, long val, long supplier )throw(UException)
 
 	try
 	{
-		uInterface->setValue(id, val, supplier);
+		uInterface->setValue(id, val, conf->getLocalNode(), supplier);
 	}
 	catch( UException& ex )
 	{

@@ -110,43 +110,51 @@ void UProxy::setValue( long id, long val ) throw( UException )
 	uobj->impl_setValue(id, val);
 }
 // --------------------------------------------------------------------------
-bool UProxy::safeSetValue( long id, long val ) noexcept
+UTypes::ResultBool UProxy::safeSetValue( long id, long val ) noexcept
 {
 	try
 	{
 		uobj->impl_setValue(id, val);
-		return true;
+		return UTypes::ResultBool(true);
+	}
+	catch( std::exception& ex )
+	{
+		return UTypes::ResultBool( false, ex.what() );
 	}
 	catch(...){}
 
-	return false;
+	return UTypes::ResultBool(false,"Unknown error");
 }
 // --------------------------------------------------------------------------
 UTypes::ResultValue UProxy::safeGetValue( long id ) noexcept
 {
 	try
 	{
-		return UTypes::ResultValue( uobj->getValue(id), true );
+		return UTypes::ResultValue( uobj->getValue(id) );
+	}
+	catch( std::exception& ex )
+	{
+		return UTypes::ResultValue( 0, ex.what() );
 	}
 	catch(...){}
 
-	return UTypes::ResultValue(0,false);
+	return UTypes::ResultValue(0,"Unknown error");
 }
 // --------------------------------------------------------------------------
-bool UProxy::safeAskSensor( long id ) noexcept
+UTypes::ResultBool UProxy::safeAskSensor( long id ) noexcept
 {
 	try
 	{
 		uobj->askSensor(id,UniversalIO::UIONotify);
-		return true;
+		return UTypes::ResultBool(true);
 	}
 	catch( std::exception& ex )
 	{
-		std::cerr << "(AskSensor): " << ex.what() << std::endl;
+		return UTypes::ResultBool(false, ex.what());
 	}
-//	catch(...){}
+	catch(...){}
 
-	return false;
+	return UTypes::ResultBool(false,"Unknown error");
 }
 // --------------------------------------------------------------------------
 bool UProxy::isExist( long id ) noexcept
@@ -196,7 +204,7 @@ long UProxy_impl::impl_getValue( long id ) throw(UException)
 	catch( std::exception& ex )
 	{
 		std::ostringstream err;
-		err << myname << "(setValue): " << id << " error: " << std::string(ex.what());
+		err << myname << "(impl_getValue): " << id << " error: " << std::string(ex.what());
 		throw UException(err.str());
 	}
 }
@@ -210,7 +218,7 @@ void UProxy_impl::impl_setValue( long id, long val ) throw(UException)
 	catch( std::exception& ex )
 	{
 		std::ostringstream err;
-		err << myname << "(setValue): " << id << " error: " << std::string(ex.what());
+		err << myname << "(impl_setValue): " << id << " error: " << std::string(ex.what());
 		throw UException(err.str());
 	}
 }

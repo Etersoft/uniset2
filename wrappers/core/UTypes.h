@@ -77,7 +77,7 @@ namespace UTypes
 		long node = { DefaultID };
 	};
 
-	// специальная структура для языков не поддерживающих Exception (например go)
+	// специальные структуры для языков не поддерживающих Exception (например go)
 	struct ResultIO
 	{
 		ShortIOInfo sinfo;
@@ -90,10 +90,37 @@ namespace UTypes
 	struct ResultValue
 	{
 		long value = { 0 };
+
+		// ok = false - флаг ошибки
 		bool ok = { false };
 
-		ResultValue( long v, bool _ok ): value(v), ok(_ok){}
+		// описание ошибки
+		std::string err;
+
+		ResultValue( long v, const std::string& _err="" ): value(v), ok(_err.empty()), err(_err){}
 		ResultValue(){}
+		ResultValue( ResultValue&& r ) = default;
+		ResultValue& operator=( ResultValue&& r) = default;
+		ResultValue( const ResultValue& r ) = default;
+		ResultValue& operator=(const ResultValue& r) = default;
+	};
+
+	struct ResultBool
+	{
+		bool result = { false };
+
+		// ok = false - флаг ошибки
+		bool ok = { false };
+		// описание ошибки
+		std::string err;
+
+		ResultBool( bool _result, const std::string& _err="" ): result(_result), ok(_err.empty()), err(_err){}
+		ResultBool(){}
+
+		ResultBool( ResultBool&& r ) = default;
+		ResultBool& operator=(ResultBool&& r) = default;
+		ResultBool( const ResultBool& r ) = default;
+		ResultBool& operator=(const ResultBool& r) = default;
 	};
 }
 
