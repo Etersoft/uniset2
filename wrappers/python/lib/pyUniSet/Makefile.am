@@ -4,6 +4,8 @@ else
 SWIG=swig
 
 #python_SCRIPTS = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
+SWIG=swig
+
 pydir=$(pkgpythondir)
 py_DATA = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
 
@@ -21,6 +23,7 @@ pyUModbus.py: _pyUModbus.la UModbus_wrap.cxx
 
 pyUExceptions.py: _pyUExceptions.la
 
+BUILT_SOURCES = UInterface_wrap.cxx UModbus_wrap.cxx UConnector_wrap.cxx UExceptions_wrap.cxx
 
 pyexec_LTLIBRARIES = _pyUConnector.la _pyUModbus.la _pyUExceptions.la _pyUniSet.la
 

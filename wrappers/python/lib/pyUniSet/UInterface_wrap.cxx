@@ -4222,6 +4222,58 @@ SWIGINTERN PyObject *Params_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObjec
   return SWIG_Py_Void();
 }
 
+SWIGINTERN PyObject *_wrap_ShortIOInfo_id_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"OO:ShortIOInfo_id_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_id_set" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
+  ecode2 = SWIG_AsVal_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ShortIOInfo_id_set" "', argument " "2"" of type '" "long""'");
+  }
+  arg2 = static_cast< long >(val2);
+  if (arg1) (arg1)->id = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ShortIOInfo_id_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  long result;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:ShortIOInfo_id_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_id_get" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
+  result = (long) ((arg1)->id);
+  resultobj = SWIG_From_long(static_cast< long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_ShortIOInfo_value_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
@@ -4430,7 +4482,7 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_ShortIOInfo_supplier_node_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_ShortIOInfo_consumer_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
   long arg2 ;
@@ -4441,18 +4493,18 @@ SWIGINTERN PyObject *_wrap_ShortIOInfo_supplier_node_set(PyObject *SWIGUNUSEDPAR
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
 
-  if (!PyArg_ParseTuple(args,(char *)"OO:ShortIOInfo_supplier_node_set",&obj0,&obj1)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:ShortIOInfo_consumer_set",&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_supplier_node_set" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'");
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_consumer_set" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'");
   }
   arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
   ecode2 = SWIG_AsVal_long(obj1, &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ShortIOInfo_supplier_node_set" "', argument " "2"" of type '" "long""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ShortIOInfo_consumer_set" "', argument " "2"" of type '" "long""'");
   }
   arg2 = static_cast< long >(val2);
-  if (arg1) (arg1)->supplier_node = arg2;
+  if (arg1) (arg1)->consumer = arg2;
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4460,7 +4512,7 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_ShortIOInfo_supplier_node_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_ShortIOInfo_consumer_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
   void *argp1 = 0 ;
@@ -4468,13 +4520,65 @@ SWIGINTERN PyObject *_wrap_ShortIOInfo_supplier_node_get(PyObject *SWIGUNUSEDPAR
   PyObject * obj0 = 0 ;
   long result;
 
-  if (!PyArg_ParseTuple(args,(char *)"O:ShortIOInfo_supplier_node_get",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:ShortIOInfo_consumer_get",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_supplier_node_get" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'");
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_consumer_get" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'");
   }
   arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
-  result = (long) ((arg1)->supplier_node);
+  result = (long) ((arg1)->consumer);
+  resultobj = SWIG_From_long(static_cast< long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ShortIOInfo_node_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"OO:ShortIOInfo_node_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_node_set" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
+  ecode2 = SWIG_AsVal_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ShortIOInfo_node_set" "', argument " "2"" of type '" "long""'");
+  }
+  arg2 = static_cast< long >(val2);
+  if (arg1) (arg1)->node = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ShortIOInfo_node_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  long result;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:ShortIOInfo_node_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_node_get" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
+  result = (long) ((arg1)->node);
   resultobj = SWIG_From_long(static_cast< long >(result));
   return resultobj;
 fail:
@@ -5447,6 +5551,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Params_inst", _wrap_Params_inst, METH_VARARGS, NULL},
 	 { (char *)"delete_Params", _wrap_delete_Params, METH_VARARGS, NULL},
 	 { (char *)"Params_swigregister", Params_swigregister, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_id_set", _wrap_ShortIOInfo_id_set, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_id_get", _wrap_ShortIOInfo_id_get, METH_VARARGS, NULL},
 	 { (char *)"ShortIOInfo_value_set", _wrap_ShortIOInfo_value_set, METH_VARARGS, NULL},
 	 { (char *)"ShortIOInfo_value_get", _wrap_ShortIOInfo_value_get, METH_VARARGS, NULL},
 	 { (char *)"ShortIOInfo_tv_sec_set", _wrap_ShortIOInfo_tv_sec_set, METH_VARARGS, NULL},
@@ -5455,8 +5561,10 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"ShortIOInfo_tv_nsec_get", _wrap_ShortIOInfo_tv_nsec_get, METH_VARARGS, NULL},
 	 { (char *)"ShortIOInfo_supplier_set", _wrap_ShortIOInfo_supplier_set, METH_VARARGS, NULL},
 	 { (char *)"ShortIOInfo_supplier_get", _wrap_ShortIOInfo_supplier_get, METH_VARARGS, NULL},
-	 { (char *)"ShortIOInfo_supplier_node_set", _wrap_ShortIOInfo_supplier_node_set, METH_VARARGS, NULL},
-	 { (char *)"ShortIOInfo_supplier_node_get", _wrap_ShortIOInfo_supplier_node_get, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_consumer_set", _wrap_ShortIOInfo_consumer_set, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_consumer_get", _wrap_ShortIOInfo_consumer_get, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_node_set", _wrap_ShortIOInfo_node_set, METH_VARARGS, NULL},
+	 { (char *)"ShortIOInfo_node_get", _wrap_ShortIOInfo_node_get, METH_VARARGS, NULL},
 	 { (char *)"new_ShortIOInfo", _wrap_new_ShortIOInfo, METH_VARARGS, NULL},
 	 { (char *)"delete_ShortIOInfo", _wrap_delete_ShortIOInfo, METH_VARARGS, NULL},
 	 { (char *)"ShortIOInfo_swigregister", ShortIOInfo_swigregister, METH_VARARGS, NULL},

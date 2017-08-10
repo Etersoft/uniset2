@@ -160,6 +160,8 @@ class ShortIOInfo:
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, ShortIOInfo, name)
     __repr__ = _swig_repr
+    __swig_setmethods__["id"] = _pyUniSet.ShortIOInfo_id_set
+    __swig_getmethods__["id"] = _pyUniSet.ShortIOInfo_id_get
     __swig_setmethods__["value"] = _pyUniSet.ShortIOInfo_value_set
     __swig_getmethods__["value"] = _pyUniSet.ShortIOInfo_value_get
     __swig_setmethods__["tv_sec"] = _pyUniSet.ShortIOInfo_tv_sec_set
@@ -168,8 +170,10 @@ class ShortIOInfo:
     __swig_getmethods__["tv_nsec"] = _pyUniSet.ShortIOInfo_tv_nsec_get
     __swig_setmethods__["supplier"] = _pyUniSet.ShortIOInfo_supplier_set
     __swig_getmethods__["supplier"] = _pyUniSet.ShortIOInfo_supplier_get
-    __swig_setmethods__["supplier_node"] = _pyUniSet.ShortIOInfo_supplier_node_set
-    __swig_getmethods__["supplier_node"] = _pyUniSet.ShortIOInfo_supplier_node_get
+    __swig_setmethods__["consumer"] = _pyUniSet.ShortIOInfo_consumer_set
+    __swig_getmethods__["consumer"] = _pyUniSet.ShortIOInfo_consumer_get
+    __swig_setmethods__["node"] = _pyUniSet.ShortIOInfo_node_set
+    __swig_getmethods__["node"] = _pyUniSet.ShortIOInfo_node_get
 
     def __init__(self):
         this = _pyUniSet.new_ShortIOInfo()
