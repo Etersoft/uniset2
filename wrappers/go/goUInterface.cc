@@ -14,6 +14,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -------------------------------------------------------------------------
+#include <mutex>
 #include <ostream>
 #include "Exceptions.h"
 #include "ORepHelpers.h"
@@ -26,6 +27,7 @@
 using namespace std;
 //---------------------------------------------------------------------------
 static uniset::UInterface* uInterface = 0;
+static std::mutex umutex;
 //---------------------------------------------------------------------------
 void goUInterface::uniset_init_params( UTypes::Params* p, const std::string& xmlfile )throw(UException)
 {
@@ -35,6 +37,8 @@ void goUInterface::uniset_init_params( UTypes::Params* p, const std::string& xml
 
 void goUInterface::uniset_init( int argc, char* argv[], const std::string& xmlfile )throw(UException)
 {
+	std::lock_guard<std::mutex> l(umutex);
+
 	if( uInterface )
 		return;
 

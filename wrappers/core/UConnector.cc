@@ -114,14 +114,14 @@ void UConnector::setValue( long id, long val, long node, long supplier )throw(UE
 	}
 }
 //---------------------------------------------------------------------------
-static UTypes::ShortIOInfo toUTypes( IOController_i::ShortIOInfo i )
+static UTypes::ShortIOInfo toUTypes( const IOController_i::ShortIOInfo& i, long node )
 {
 	UTypes::ShortIOInfo ret;
 	ret.value = i.value;
 	ret.tv_sec = i.tv_sec;
 	ret.tv_nsec = i.tv_nsec;
 	ret.supplier = i.supplier;
-	ret.supplier_node = UTypes::DefaultID;
+	ret.node = node;
 
 	return ret;
 }
@@ -137,7 +137,7 @@ UTypes::ShortIOInfo UConnector::getTimeChange( long id, long node )
 	try
 	{
 		IOController_i::ShortIOInfo i = ui->getTimeChange(id, node);
-		return toUTypes(i);
+		return toUTypes(i,node);
 	}
 	catch( const std::exception& ex )
 	{

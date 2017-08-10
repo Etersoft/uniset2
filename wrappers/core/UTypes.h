@@ -68,11 +68,32 @@ namespace UTypes
 
 	struct ShortIOInfo
 	{
-		long value;
-		unsigned long tv_sec;
-		unsigned long tv_nsec;
-		long supplier;
-		long supplier_node;
+		long id = { DefaultID };
+		long value = { 0 };
+		long tv_sec = { 0 };
+		long tv_nsec = { 0 };
+		long supplier= { DefaultID };
+		long consumer= { DefaultID };
+		long node = { DefaultID };
+	};
+
+	// специальная структура для языков не поддерживающих Exception (например go)
+	struct ResultIO
+	{
+		ShortIOInfo sinfo;
+		bool ok = { false };
+
+		ResultIO( const ShortIOInfo& _s, bool _ok ): sinfo(_s),ok(_ok){}
+		ResultIO():ok(false){}
+	};
+
+	struct ResultValue
+	{
+		long value = { 0 };
+		bool ok = { false };
+
+		ResultValue( long v, bool _ok ): value(v), ok(_ok){}
+		ResultValue(){}
 	};
 }
 

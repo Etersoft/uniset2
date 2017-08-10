@@ -38,7 +38,9 @@ class UProxy_impl:
 		void impl_setValue( long id, long val ) throw(UException);
 		void impl_askSensor( long id ) throw(UException);
 
-		UProxy::ShortSensorMessage impl_waitMessage( uint timeout_msec ) throw(UException);
+		UTypes::ShortIOInfo impl_waitMessage( unsigned long timeout_msec ) throw(UException);
+
+		bool impl_isExist( long id ) throw(UException);
 
 	protected:
 
@@ -103,14 +105,74 @@ long UProxy::getValue( long id ) throw(UException)
 	return uobj->impl_getValue(id);
 }
 // --------------------------------------------------------------------------
-void UProxy::setValue( long id, long val ) throw(UException)
+void UProxy::setValue( long id, long val ) throw( UException )
 {
 	uobj->impl_setValue(id, val);
 }
 // --------------------------------------------------------------------------
-UProxy::ShortSensorMessage UProxy::waitMessage( uint timeout_msec ) throw(UException)
+bool UProxy::safeSetValue( long id, long val ) noexcept
+{
+	try
+	{
+		uobj->impl_setValue(id, val);
+		return true;
+	}
+	catch(...){}
+
+	return false;
+}
+// --------------------------------------------------------------------------
+UTypes::ResultValue UProxy::safeGetValue( long id ) noexcept
+{
+	try
+	{
+		return UTypes::ResultValue( uobj->getValue(id), true );
+	}
+	catch(...){}
+
+	return UTypes::ResultValue(0,false);
+}
+// --------------------------------------------------------------------------
+bool UProxy::safeAskSensor( long id ) noexcept
+{
+	try
+	{
+		uobj->askSensor(id,UniversalIO::UIONotify);
+		return true;
+	}
+	catch( std::exception& ex )
+	{
+		std::cerr << "(AskSensor): " << ex.what() << std::endl;
+	}
+//	catch(...){}
+
+	return false;
+}
+// --------------------------------------------------------------------------
+bool UProxy::isExist( long id ) noexcept
+{
+	try
+	{
+		return uobj->impl_isExist(id);
+	}
+	catch(...){}
+	return false;
+}
+// --------------------------------------------------------------------------
+UTypes::ShortIOInfo UProxy::waitMessage( unsigned long timeout_msec ) throw(UException)
 {
 	return uobj->impl_waitMessage(timeout_msec);
+}
+// --------------------------------------------------------------------------
+UTypes::ResultIO UProxy::safeWaitMessage( unsigned long timeout_msec ) noexcept
+{
+	try
+	{
+		return UTypes::ResultIO( uobj->impl_waitMessage(timeout_msec), true );
+	}
+	catch(...){}
+
+	return UTypes::ResultIO();
 }
 // --------------------------------------------------------------------------
 UProxy_impl::UProxy_impl( ObjectId id ):
@@ -167,21 +229,21 @@ void UProxy_impl::impl_askSensor( long id ) throw(UException)
 	}
 }
 // --------------------------------------------------------------------------
-static UProxy::ShortSensorMessage smConvert( const uniset::SensorMessage* sm )
+static UTypes::ShortIOInfo smConvert( const uniset::SensorMessage* sm )
 {
-	UProxy::ShortSensorMessage m;
+	UTypes::ShortIOInfo m;
 	m.id = sm->id;
 	m.value = sm->value;
 	m.tv_sec = sm->sm_tv.tv_sec;
 	m.tv_nsec = sm->sm_tv.tv_nsec;
 	m.supplier = sm->supplier;
-	m.supplier_node = sm->node;
+	m.node = sm->node;
 	m.consumer = sm->consumer;
 
 	return m;
 }
 // --------------------------------------------------------------------------
-UProxy::ShortSensorMessage UProxy_impl::impl_waitMessage( uint timeout_msec ) throw(UException)
+UTypes::ShortIOInfo UProxy_impl::impl_waitMessage( unsigned long timeout_msec ) throw(UException)
 {
 	while( true )
 	{
@@ -191,6 +253,20 @@ UProxy::ShortSensorMessage UProxy_impl::impl_waitMessage( uint timeout_msec ) th
 
 		if( vm->type == uniset::Message::SensorInfo )
 			return smConvert( reinterpret_cast<const SensorMessage*>(vm.get()) );
+	}
+}
+// --------------------------------------------------------------------------
+bool UProxy_impl::impl_isExist( long id ) throw(UException)
+{
+	try
+	{
+		return ui->isExist(id);
+	}
+	catch( std::exception& ex )
+	{
+		std::ostringstream err;
+		err << myname << "(isExist): " << id << " error: " << std::string(ex.what());
+		throw UException(err.str());
 	}
 }
 // --------------------------------------------------------------------------

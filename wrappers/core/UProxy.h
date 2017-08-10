@@ -42,20 +42,24 @@ class UProxy
 		/*! изменить состояние датчика */
 		void setValue( long id, long val ) throw(UException);
 
-
-		struct ShortSensorMessage
-		{
-			long id;
-			long value;
-			unsigned long tv_sec;
-			unsigned long tv_nsec;
-			long supplier;
-			long supplier_node;
-			long consumer;
-		};
-
 		// ожидание события "SensorMessage"
-		ShortSensorMessage waitMessage( uint timeout_msec = 0 ) throw(UException);
+		// timeout_msec <= 0 - ждать вечно
+		UTypes::ShortIOInfo waitMessage( unsigned long timeout_msec ) throw(UException);
+
+		// -----------------------------------
+		// релизации без кидания исключений
+		// -----------------------------------
+
+		UTypes::ResultIO safeWaitMessage( unsigned long timeout_msec ) noexcept;
+
+		bool safeSetValue( long id, long val ) noexcept;
+
+		UTypes::ResultValue safeGetValue( long id ) noexcept;
+
+		bool safeAskSensor( long id ) noexcept;
+
+		bool isExist( long id ) noexcept;
+
 
 	protected:
 		void init( long id ) throw( UException );

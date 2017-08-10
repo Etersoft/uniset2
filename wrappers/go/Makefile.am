@@ -8,18 +8,19 @@ GO_PACKAGE_NAME=uniset_internal_api
 GO_SRC_DIR=src/uniset_internal_api
 
 
-UInterface_wrap.cxx: UInterface.i goUInterface.h
+BUILT_SOURCES = UInterface_wrap.cxx
+
+UInterface_wrap.cxx: UInterface.i goUInterface.h $(BUILD_SRCDIR)/UProxy.cc $(BUILD_SRCDIR)/UProxy.h
 	swig -go -cgo -intgosize 64 -c++ -outcurrentdir -I$(BUILD_SRCDIR) UInterface.i
 
 # -use-shlib
 
 lib_LTLIBRARIES = libgoUniSet.la
 
-libgoUniSet_la_SOURCES    = goUInterface.cc UInterface_wrap.cxx UProxy.cc
+libgoUniSet_la_SOURCES    = goUInterface.cc  UProxy.cc UInterface_wrap.cxx
 libgoUniSet_la_CXXFLAGS   = -I$(BUILD_SRCDIR) $(UNISET_CFLAGS) $(UNISET_EXT_CFLAGS) $(PYTHON_CFLAGS)
 libgoUniSet_la_LDFLAGS    = -module -avoid-version
 libgoUniSet_la_LIBADD     = $(UNISET_LIBS) $(UNISET_EXT_LIBS) $(PYTHON_LIBS)
-
 
 ${GO_PACKAGE_NAME}.go: libgoUniSet.la
 
