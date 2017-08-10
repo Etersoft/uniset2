@@ -225,6 +225,26 @@ namespace uniset
 			}
 		}
 	}
+	// ------------------------------------------------------------------------------------------
+	string SharedMemory::getTimerName( int id ) const
+	{
+		if( id == tmHeartBeatCheck )
+			return "HeartBeatCheckTimer";
+
+		if( id == tmEvent )
+			return "EventTimer";
+
+		if( id == tmHistory )
+			return "HistoryTimer";
+
+		if( id == tmPulsar )
+			return "PulsarTimer";
+
+		if( id == tmLastOfTimerID )
+			return "??LastOfTimerID??";
+
+		return IONotifyController::getTimerName(id);
+	}
 
 	// ------------------------------------------------------------------------------------------
 	void SharedMemory::sysCommand( const SystemMessage* sm )

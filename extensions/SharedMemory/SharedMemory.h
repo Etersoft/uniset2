@@ -429,6 +429,8 @@ namespace uniset
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 			virtual void askSensors( UniversalIO::UIOCommand cmd ) {};
+			virtual std::string getTimerName(int id) const override;
+
 			void sendEvent( uniset::SystemMessage& sm );
 			void initFromReserv();
 			bool initFromSM( uniset::ObjectId sm_id, uniset::ObjectId sm_node );

@@ -299,8 +299,8 @@ long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 
 		if( changed || blockChanged )
 		{
-			ulog4 << myname << ": save sensor value (" << usi->si.id << ")"
-				  << " name: " << uniset_conf()->oind->getNameById(usi->si.id)
+			ulog4 << myname << "(localSetValue): (" << usi->si.id << ")"
+				  << uniset_conf()->oind->getNameById(usi->si.id)
 				  << " newvalue=" << value
 				  << " value=" << usi->value
 				  << " blocked=" << usi->blocked
