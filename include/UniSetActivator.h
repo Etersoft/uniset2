@@ -66,7 +66,6 @@ namespace uniset
 		public:
 
 			static UniSetActivatorPtr Instance();
-			void Destroy();
 
 			std::shared_ptr<UniSetActivator> get_aptr();
 			// ------------------------------------
