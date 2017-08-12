@@ -296,15 +296,32 @@ static void on_stacktrace_timeout()
 		ulogsys << "****** STACK TRACE guard thread finish ******" << endl << flush;
 }
 // ------------------------------------------------------------------------------------------
+static void start_terminate_process()
+{
+	// посылаем сигнал потоку завершения, чтобы проснулся и начал заверешение
+	{
+		std::unique_lock<std::mutex> lk(g_termmutex);
+		if( g_term )
+			return;
+
+		g_term = true;
+	}
+	g_termevent.notify_all();
+}
+// ------------------------------------------------------------------------------------------
+static void wait_done()
+{
+	std::unique_lock<std::mutex> lk(g_donemutex);
+	while( !g_done )
+		g_doneevent.wait(lk, []() { return (g_done == true); } );
+}
+// ------------------------------------------------------------------------------------------
 static void activator_terminate( int signo )
 {
 	if( g_term )
 		return;
 
-	ulogsys << "****** TERMINATE SIGNAL=" << signo << endl << flush;
-
-	g_term = true;
-
+	g_signo = signo;
 	if( signo == SIGABRT )
 	{
 		if( g_act && !g_act->noUseGdbForStackTrace() )
@@ -314,11 +331,14 @@ static void activator_terminate( int signo )
 		}
 		else
 			printStackTrace();
-	}
 
-	ulogsys << "****** TERMINATE NOTIFY...(signo=" << signo << ")" << endl << flush;
-	g_signo = signo;
-	g_termevent.notify_one();
+//		exit(EXIT_FAILURE);
+//		return;
+	}
+//	else
+//		exit(EXIT_SUCCESS);
+
+	start_terminate_process();
 }
 // ------------------------------------------------------------------------------------------
 static void activator_terminate_with_calltrace( int signo )
@@ -338,7 +358,7 @@ static void activator_terminate_with_calltrace( int signo )
 // ------------------------------------------------------------------------------------------
 void finished_thread()
 {
-	ulogsys << "****** FINISHED START **** " << endl << flush;
+	ulogsys << "****** WAIT FINISH START **** " << endl << flush;
 	std::unique_lock<std::mutex> lk(g_finimutex);
 
 	if( g_finished )
@@ -351,7 +371,7 @@ void finished_thread()
 	{
 		return (g_work_stopped == true);
 	} );
-	ulogsys << "****** FINISHED END ****" << endl << flush;
+	ulogsys << "****** WAIT FINISH END(" << g_work_stopped << ") ****" << endl << flush;
 }
 // ------------------------------------------------------------------------------------------
 void on_finish_timeout()
@@ -368,11 +388,11 @@ void on_finish_timeout()
 
 	if( !g_done )
 	{
-		ulogsys << "****** KILL TIMEOUT.. *******" << endl << flush;
+		ulogsys << "(KILL THREAD): WAIT TIMEOUT..KILL *******" << endl << flush;
 		raise(SIGKILL);
 	}
 
-	ulogsys << "KILL THREAD: ..bye.." << endl;
+	ulogsys << "(KILL THREAD): ..bye.." << endl;
 }
 // ------------------------------------------------------------------------------------------
 namespace uniset
@@ -475,7 +495,7 @@ namespace uniset
 				}
 			}
 
-			g_act.reset();
+			g_act = nullptr;
 			UniSetActivator::set_signals(false);
 		}
 
@@ -504,11 +524,6 @@ UniSetActivatorPtr UniSetActivator::Instance()
 	return inst;
 }
 
-// ---------------------------------------------------------------------------
-void UniSetActivator::Destroy()
-{
-	inst.reset();
-}
 // ---------------------------------------------------------------------------
 std::shared_ptr<UniSetActivator> UniSetActivator::get_aptr()
 {
@@ -565,35 +580,12 @@ void UniSetActivator::init()
 }
 
 // ------------------------------------------------------------------------------------------
-
 UniSetActivator::~UniSetActivator()
 {
-	if( !g_term && orbthr )
-	{
-		{
-			std::unique_lock<std::mutex> locker(g_termmutex);
-			g_term = true;
-		}
-		g_signo = 0;
-		g_termevent.notify_one();
-		ulogsys << myname << "(~UniSetActivator): wait done.." << endl;
-#if 1
-		//        if( g_term_thread->joinable() )
-		//            g_term_thread->join();
-#else
-		std::unique_lock<std::mutex> locker(g_donemutex);
-
-		while( !g_done )
-			g_doneevent.wait(locker);
-
-#endif
-
-		ulogsys << myname << "(~UniSetActivator): wait done OK." << endl;
-	}
 }
 // ------------------------------------------------------------------------------------------
 
-void UniSetActivator::uaDestroy(int signo)
+void UniSetActivator::uaDestroy( int signo )
 {
 	if( omDestroy || !g_act )
 		return;
@@ -783,13 +775,7 @@ void UniSetActivator::work()
 	g_finievent.notify_one();
 
 	if( orbthr )
-	{
-		// HACK: почему-то мы должны тут застрять,
-		// иначе "где-то" возникает "гонка" с потоком завершения
-		// и мы получаем SIGABRT уже на самом завершении
-		// (помоему как-то связано с завершением потоков)
-		msleep(THREAD_TERMINATE_PAUSE); // pause();
-	}
+		wait_done();
 }
 // ------------------------------------------------------------------------------------------
 CORBA::ORB_ptr UniSetActivator::getORB()
@@ -880,6 +866,16 @@ void UniSetActivator::set_signals(bool ask)
 UniSetActivator::TerminateEvent_Signal UniSetActivator::signal_terminate_event()
 {
 	return s_term;
+}
+// ------------------------------------------------------------------------------------------
+bool UniSetActivator::noUseGdbForStackTrace() const
+{
+	return _noUseGdbForStackTrace;
+}
+// ------------------------------------------------------------------------------------------
+const string UniSetActivator::getAbortScript() const
+{
+	return abortScript;
 }
 // ------------------------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
@@ -986,21 +982,10 @@ void UniSetActivator::normalexit()
 	if( !g_act )
 		return;
 
-	ulogsys << g_act->getName() << "(default exit): ..begin..." << endl << flush;
+	ulogsys << g_act->getName() << "(exit): ..begin..." << endl << flush;
+	start_terminate_process();
 
-	if( !g_term )
-	{
-		// прежде чем вызывать notify_one(), мы должны освободить mutex!
-		{
-			std::unique_lock<std::mutex> locker(g_termmutex);
-			g_term = true;
-			g_signo = 0;
-		}
-		ulogsys << "(default exit): notify terminate.." << endl << flush;
-		g_termevent.notify_one();
-	}
-
-	ulogsys << "(default exit): wait done.." << endl << flush;
+	ulogsys << "(exit): wait done.." << endl << flush;
 #if 1
 
 	if( g_term_thread && g_term_thread->joinable() )
@@ -1018,7 +1003,7 @@ void UniSetActivator::normalexit()
 
 #endif
 
-	ulogsys << "(default exit): wait done OK (good bye)" << endl << flush;
+	ulogsys << "(exit): wait done OK (good bye)" << endl << flush;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::normalterminate()
@@ -1027,37 +1012,7 @@ void UniSetActivator::normalterminate()
 		return;
 
 	ulogsys << g_act->getName() << "(default terminate): ..begin..." << endl << flush;
-
-	if( !g_term )
-	{
-		// прежде чем вызывать notify_one(), мы должны освободить mutex!
-		{
-			std::unique_lock<std::mutex> locker(g_termmutex);
-			g_term = true;
-			g_signo = 0;
-		}
-		ulogsys << "(default terminate): notify terminate.." << endl << flush;
-		g_termevent.notify_one();
-	}
-
-	ulogsys << "(default terminate): wait done.." << endl << flush;
-#if 1
-
-	if( g_term_thread && g_term_thread->joinable() )
-		g_term_thread->join();
-
-#else
-
-	if( g_doneevent )
-	{
-		std::unique_lock<std::mutex> locker(g_donemutex);
-
-		while( !g_done )
-			g_doneevent.wait(locker);
-	}
-
-#endif
-	ulogsys << "(default terminate): wait done OK (good bye)" << endl << flush;
+	normalexit();
 }
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::term( int signo )
