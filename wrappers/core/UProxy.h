@@ -24,7 +24,7 @@
 // --------------------------------------------------------------------------
 class UProxy_impl; // PIMPL
 // --------------------------------------------------------------------------
-/*! Интерфейс для взаимодействия с SM (с заказом датчиков).
+/*! Интерфейс для взаимодействия с SM (с активным опросом датчиков).
  * Но при этом, обработка сообщений ложится на вызывающего.
  */
 class UProxy
@@ -44,13 +44,13 @@ class UProxy
 
 		// ожидание события "SensorMessage"
 		// timeout_msec <= 0 - ждать вечно
-		UTypes::ShortIOInfo waitMessage( unsigned long timeout_msec ) throw(UException);
+		UTypes::ShortIOInfo waitMessage( int timeout_msec ) throw(UException);
 
 		// -----------------------------------
 		// релизации без кидания исключений
 		// -----------------------------------
 
-		UTypes::ResultIO safeWaitMessage( unsigned long timeout_msec ) noexcept;
+		UTypes::ResultIO safeWaitMessage( int timeout_msec ) noexcept;
 
 		UTypes::ResultBool safeSetValue( long id, long val ) noexcept;
 
@@ -60,14 +60,19 @@ class UProxy
 
 		bool isExist( long id ) noexcept;
 
+		bool run( int sleep_msec ) noexcept;
+		void terminate() noexcept;
+
 
 	protected:
 		void init( long id ) throw( UException );
+		void on_terminate( int signo );
 
 	private:
 		UProxy()throw(UException);
 
 		std::shared_ptr<UProxy_impl> uobj;
+		std::string myname;
 };
 //---------------------------------------------------------------------------
 #endif

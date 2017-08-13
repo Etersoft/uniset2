@@ -25,7 +25,6 @@ namespace goUInterface
 {
 	UTypes::ResultBool uniset_init_params( UTypes::Params* p, const std::string& xmlfile ) noexcept;
 	UTypes::ResultBool uniset_init( int argc, char** argv, const std::string& xmlfile ) noexcept;
-	UTypes::ResultBool uniset_activate_objects() noexcept;
 
 	//---------------------------------------------------------------------------
 	UTypes::ResultValue getValue( long id ) noexcept;

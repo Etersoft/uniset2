@@ -109,13 +109,13 @@ namespace uniset
 
 		private:
 			friend void uniset::terminate_thread();
-			friend void uniset::finished_thread();
 			friend std::shared_ptr<uniset::Configuration> uniset::uniset_init( int argc, const char* const* argv, const std::string& xmlfile );
 
 			static void terminated(int signo);
 			static void normalexit();
 			static void normalterminate();
 			static void set_signals(bool ask);
+			static void destroy();
 			void term( int signo );
 			void init();
 

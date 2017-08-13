@@ -15,6 +15,7 @@
  */
 // -------------------------------------------------------------------------
 #include <mutex>
+#include <memory>
 #include <ostream>
 #include "Exceptions.h"
 #include "ORepHelpers.h"
@@ -26,18 +27,21 @@
 //---------------------------------------------------------------------------
 using namespace std;
 //---------------------------------------------------------------------------
-static uniset::UInterface* uInterface = 0;
-static std::mutex umutex;
+static std::shared_ptr<uniset::UInterface> uInterface;
+
+static std::mutex& umutex() {
+	static std::mutex _mutex;
+	return _mutex;
+}
 //---------------------------------------------------------------------------
 UTypes::ResultBool goUInterface::uniset_init_params( UTypes::Params* p, const std::string& xmlfile ) noexcept
 {
 	return goUInterface::uniset_init(p->argc, p->argv, xmlfile);
 }
 //---------------------------------------------------------------------------
-
 UTypes::ResultBool goUInterface::uniset_init( int argc, char* argv[], const std::string& xmlfile ) noexcept
 {
-	std::lock_guard<std::mutex> l(umutex);
+	std::lock_guard<std::mutex> l(umutex());
 
 	if( uInterface )
 		return UTypes::ResultBool(true);
@@ -45,7 +49,7 @@ UTypes::ResultBool goUInterface::uniset_init( int argc, char* argv[], const std:
 	try
 	{
 		uniset::uniset_init(argc, argv, xmlfile);
-		uInterface = new uniset::UInterface();
+		uInterface = make_shared<uniset::UInterface>();
 		return UTypes::ResultBool(true);
 	}
 	catch( std::exception& ex )
@@ -184,21 +188,5 @@ string goUInterface::getConfFileName() noexcept
 
 	return "";
 
-}
-//---------------------------------------------------------------------------
-UTypes::ResultBool goUInterface::uniset_activate_objects() noexcept
-{
-	try
-	{
-		auto act = uniset::UniSetActivator::Instance();
-		act->run(true);
-		return UTypes::ResultBool(true);
-	}
-	catch( const std::exception& ex )
-	{
-		return UTypes::ResultBool(false, "(uniset_activate_objects): catch " + std::string(ex.what()) );
-	}
-
-	return UTypes::ResultBool(false, "Unknown error");
 }
 //---------------------------------------------------------------------------

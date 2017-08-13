@@ -295,17 +295,6 @@ UTypes::ResultBool *_wrap_uniset_init_uniset_internal_api_576c1e11c33cb6aa(intgo
 }
 
 
-UTypes::ResultBool *_wrap_uniset_activate_objects_uniset_internal_api_576c1e11c33cb6aa() {
-  UTypes::ResultBool result;
-  UTypes::ResultBool *_swig_go_result;
-
-
-  result = goUInterface::uniset_activate_objects();
-  *(UTypes::ResultBool **)&_swig_go_result = new UTypes::ResultBool(result);
-  return _swig_go_result;
-}
-
-
 UTypes::ResultValue *_wrap_getValue_uniset_internal_api_576c1e11c33cb6aa(long long _swig_go_0) {
   long arg1 ;
   UTypes::ResultValue result;
@@ -1631,14 +1620,14 @@ void _wrap_UProxy_setValue_uniset_internal_api_576c1e11c33cb6aa(UProxy *_swig_go
 }
 
 
-UTypes::ShortIOInfo *_wrap_UProxy_waitMessage_uniset_internal_api_576c1e11c33cb6aa(UProxy *_swig_go_0, long long _swig_go_1) {
+UTypes::ShortIOInfo *_wrap_UProxy_waitMessage_uniset_internal_api_576c1e11c33cb6aa(UProxy *_swig_go_0, intgo _swig_go_1) {
   UProxy *arg1 = (UProxy *) 0 ;
-  unsigned long arg2 ;
+  int arg2 ;
   UTypes::ShortIOInfo result;
   UTypes::ShortIOInfo *_swig_go_result;
 
   arg1 = *(UProxy **)&_swig_go_0;
-  arg2 = (unsigned long)_swig_go_1;
+  arg2 = (int)_swig_go_1;
 
   try {
     result = (arg1)->waitMessage(arg2);
@@ -1654,14 +1643,14 @@ UTypes::ShortIOInfo *_wrap_UProxy_waitMessage_uniset_internal_api_576c1e11c33cb6
 }
 
 
-UTypes::ResultIO *_wrap_UProxy_safeWaitMessage_uniset_internal_api_576c1e11c33cb6aa(UProxy *_swig_go_0, long long _swig_go_1) {
+UTypes::ResultIO *_wrap_UProxy_safeWaitMessage_uniset_internal_api_576c1e11c33cb6aa(UProxy *_swig_go_0, intgo _swig_go_1) {
   UProxy *arg1 = (UProxy *) 0 ;
-  unsigned long arg2 ;
+  int arg2 ;
   UTypes::ResultIO result;
   UTypes::ResultIO *_swig_go_result;
 
   arg1 = *(UProxy **)&_swig_go_0;
-  arg2 = (unsigned long)_swig_go_1;
+  arg2 = (int)_swig_go_1;
 
   result = (arg1)->safeWaitMessage(arg2);
   *(UTypes::ResultIO **)&_swig_go_result = new UTypes::ResultIO(result);
@@ -1728,6 +1717,31 @@ bool _wrap_UProxy_isExist_uniset_internal_api_576c1e11c33cb6aa(UProxy *_swig_go_
   result = (bool)(arg1)->isExist(arg2);
   _swig_go_result = result;
   return _swig_go_result;
+}
+
+
+bool _wrap_UProxy_run_uniset_internal_api_576c1e11c33cb6aa(UProxy *_swig_go_0, intgo _swig_go_1) {
+  UProxy *arg1 = (UProxy *) 0 ;
+  int arg2 ;
+  bool result;
+  bool _swig_go_result;
+
+  arg1 = *(UProxy **)&_swig_go_0;
+  arg2 = (int)_swig_go_1;
+
+  result = (bool)(arg1)->run(arg2);
+  _swig_go_result = result;
+  return _swig_go_result;
+}
+
+
+void _wrap_UProxy_terminate_uniset_internal_api_576c1e11c33cb6aa(UProxy *_swig_go_0) {
+  UProxy *arg1 = (UProxy *) 0 ;
+
+  arg1 = *(UProxy **)&_swig_go_0;
+
+  (arg1)->terminate();
+
 }
 
 

@@ -104,12 +104,9 @@ typedef long long swig_type_73;
 typedef long long swig_type_74;
 typedef long long swig_type_75;
 typedef long long swig_type_76;
-typedef long long swig_type_77;
-typedef long long swig_type_78;
 extern void _wrap_Swig_free_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
 extern uintptr_t _wrap_uniset_init_params_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_1 arg2);
 extern uintptr_t _wrap_uniset_init_uniset_internal_api_576c1e11c33cb6aa(swig_intgo arg1, swig_voidp arg2, swig_type_2 arg3);
-extern uintptr_t _wrap_uniset_activate_objects_uniset_internal_api_576c1e11c33cb6aa(void);
 extern uintptr_t _wrap_getValue_uniset_internal_api_576c1e11c33cb6aa(swig_type_3 arg1);
 extern uintptr_t _wrap_setValue__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(swig_type_4 arg1, swig_type_5 arg2, swig_type_6 arg3);
 extern uintptr_t _wrap_setValue__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(swig_type_7 arg1, swig_type_8 arg2);
@@ -209,12 +206,14 @@ extern void _wrap_delete_UProxy_uniset_internal_api_576c1e11c33cb6aa(uintptr_t a
 extern void _wrap_UProxy_askSensor_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_67 arg2);
 extern swig_type_68 _wrap_UProxy_getValue_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_69 arg2);
 extern void _wrap_UProxy_setValue_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_70 arg2, swig_type_71 arg3);
-extern uintptr_t _wrap_UProxy_waitMessage_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_72 arg2);
-extern uintptr_t _wrap_UProxy_safeWaitMessage_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_73 arg2);
-extern uintptr_t _wrap_UProxy_safeSetValue_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_74 arg2, swig_type_75 arg3);
-extern uintptr_t _wrap_UProxy_safeGetValue_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_76 arg2);
-extern uintptr_t _wrap_UProxy_safeAskSensor_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_77 arg2);
-extern _Bool _wrap_UProxy_isExist_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_78 arg2);
+extern uintptr_t _wrap_UProxy_waitMessage_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_intgo arg2);
+extern uintptr_t _wrap_UProxy_safeWaitMessage_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_intgo arg2);
+extern uintptr_t _wrap_UProxy_safeSetValue_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_72 arg2, swig_type_73 arg3);
+extern uintptr_t _wrap_UProxy_safeGetValue_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_74 arg2);
+extern uintptr_t _wrap_UProxy_safeAskSensor_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_75 arg2);
+extern _Bool _wrap_UProxy_isExist_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_76 arg2);
+extern _Bool _wrap_UProxy_run_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_intgo arg2);
+extern void _wrap_UProxy_terminate_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
 #undef intgo
 */
 import "C"
@@ -272,12 +271,6 @@ func Uniset_init(arg1 int, arg2 *string, arg3 string) (_swig_ret ResultBool) {
 	if Swig_escape_always_false {
 		Swig_escape_val = arg3
 	}
-	return swig_r
-}
-
-func Uniset_activate_objects() (_swig_ret ResultBool) {
-	var swig_r ResultBool
-	swig_r = (ResultBool)(SwigcptrResultBool(C._wrap_uniset_activate_objects_uniset_internal_api_576c1e11c33cb6aa()))
 	return swig_r
 }
 
@@ -1365,19 +1358,19 @@ func (arg1 SwigcptrUProxy) SetValue(arg2 int64, arg3 int64) {
 	C._wrap_UProxy_setValue_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_70(_swig_i_1), C.swig_type_71(_swig_i_2))
 }
 
-func (arg1 SwigcptrUProxy) WaitMessage(arg2 uint64) (_swig_ret ShortIOInfo) {
+func (arg1 SwigcptrUProxy) WaitMessage(arg2 int) (_swig_ret ShortIOInfo) {
 	var swig_r ShortIOInfo
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	swig_r = (ShortIOInfo)(SwigcptrShortIOInfo(C._wrap_UProxy_waitMessage_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_72(_swig_i_1))))
+	swig_r = (ShortIOInfo)(SwigcptrShortIOInfo(C._wrap_UProxy_waitMessage_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_intgo(_swig_i_1))))
 	return swig_r
 }
 
-func (arg1 SwigcptrUProxy) SafeWaitMessage(arg2 uint64) (_swig_ret ResultIO) {
+func (arg1 SwigcptrUProxy) SafeWaitMessage(arg2 int) (_swig_ret ResultIO) {
 	var swig_r ResultIO
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	swig_r = (ResultIO)(SwigcptrResultIO(C._wrap_UProxy_safeWaitMessage_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_73(_swig_i_1))))
+	swig_r = (ResultIO)(SwigcptrResultIO(C._wrap_UProxy_safeWaitMessage_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_intgo(_swig_i_1))))
 	return swig_r
 }
 
@@ -1386,7 +1379,7 @@ func (arg1 SwigcptrUProxy) SafeSetValue(arg2 int64, arg3 int64) (_swig_ret Resul
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
 	_swig_i_2 := arg3
-	swig_r = (ResultBool)(SwigcptrResultBool(C._wrap_UProxy_safeSetValue_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_74(_swig_i_1), C.swig_type_75(_swig_i_2))))
+	swig_r = (ResultBool)(SwigcptrResultBool(C._wrap_UProxy_safeSetValue_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_72(_swig_i_1), C.swig_type_73(_swig_i_2))))
 	return swig_r
 }
 
@@ -1394,7 +1387,7 @@ func (arg1 SwigcptrUProxy) SafeGetValue(arg2 int64) (_swig_ret ResultValue) {
 	var swig_r ResultValue
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	swig_r = (ResultValue)(SwigcptrResultValue(C._wrap_UProxy_safeGetValue_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_76(_swig_i_1))))
+	swig_r = (ResultValue)(SwigcptrResultValue(C._wrap_UProxy_safeGetValue_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_74(_swig_i_1))))
 	return swig_r
 }
 
@@ -1402,7 +1395,7 @@ func (arg1 SwigcptrUProxy) SafeAskSensor(arg2 int64) (_swig_ret ResultBool) {
 	var swig_r ResultBool
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	swig_r = (ResultBool)(SwigcptrResultBool(C._wrap_UProxy_safeAskSensor_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_77(_swig_i_1))))
+	swig_r = (ResultBool)(SwigcptrResultBool(C._wrap_UProxy_safeAskSensor_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_75(_swig_i_1))))
 	return swig_r
 }
 
@@ -1410,8 +1403,21 @@ func (arg1 SwigcptrUProxy) IsExist(arg2 int64) (_swig_ret bool) {
 	var swig_r bool
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	swig_r = (bool)(C._wrap_UProxy_isExist_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_78(_swig_i_1)))
+	swig_r = (bool)(C._wrap_UProxy_isExist_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_76(_swig_i_1)))
 	return swig_r
+}
+
+func (arg1 SwigcptrUProxy) Run(arg2 int) (_swig_ret bool) {
+	var swig_r bool
+	_swig_i_0 := arg1
+	_swig_i_1 := arg2
+	swig_r = (bool)(C._wrap_UProxy_run_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_intgo(_swig_i_1)))
+	return swig_r
+}
+
+func (arg1 SwigcptrUProxy) Terminate() {
+	_swig_i_0 := arg1
+	C._wrap_UProxy_terminate_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0))
 }
 
 type UProxy interface {
@@ -1420,10 +1426,12 @@ type UProxy interface {
 	AskSensor(arg2 int64)
 	GetValue(arg2 int64) (_swig_ret int64)
 	SetValue(arg2 int64, arg3 int64)
-	WaitMessage(arg2 uint64) (_swig_ret ShortIOInfo)
-	SafeWaitMessage(arg2 uint64) (_swig_ret ResultIO)
+	WaitMessage(arg2 int) (_swig_ret ShortIOInfo)
+	SafeWaitMessage(arg2 int) (_swig_ret ResultIO)
 	SafeSetValue(arg2 int64, arg3 int64) (_swig_ret ResultBool)
 	SafeGetValue(arg2 int64) (_swig_ret ResultValue)
 	SafeAskSensor(arg2 int64) (_swig_ret ResultBool)
 	IsExist(arg2 int64) (_swig_ret bool)
+	Run(arg2 int) (_swig_ret bool)
+	Terminate()
 }
