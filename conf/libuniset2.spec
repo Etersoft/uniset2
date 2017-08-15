@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt38
+Release: alt39
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -505,6 +505,9 @@ rm -f %buildroot%_libdir/*.la
 # - remote deprecated components
 
 %changelog
+* Tue Aug 15 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt39
+- devel build
+
 * Mon Jul 31 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt38
 - iocontrol: fix segfault
 
