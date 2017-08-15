@@ -38,7 +38,7 @@ int main( int argc, const char* argv[] )
 			return returnCode;
 
 		auto conf = uniset_init(argc, argv);
-		dlog()->logFile("./smtest.log");
+//		dlog()->logFile("./smtest.log");
 
 		bool apart = findArgParam("--apart", argc, argv) != -1;
 

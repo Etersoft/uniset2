@@ -22,9 +22,10 @@
 using namespace uniset;
 using namespace std;
 // -----------------------------------------------------------------------------
-ComediInterface::ComediInterface( const std::string& dev ):
+ComediInterface::ComediInterface( const std::string& dev, const std::string& cname ):
 	card(0),
-	dname(dev)
+	dname(dev),
+	name(cname)
 {
 	card = comedi_open(dev.c_str());
 

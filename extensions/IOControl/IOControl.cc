@@ -15,6 +15,7 @@
  */
 // -------------------------------------------------------------------------
 #include <sstream>
+#include <iomanip>
 #include "ORepHelpers.h"
 #include "UniSetTypes.h"
 #include "Extensions.h"
@@ -141,7 +142,7 @@ namespace uniset
 			else
 			{
 				noCards = false;
-				cards[i] = new ComediInterface(iodev);
+				cards[i] = new ComediInterface(iodev,"");
 				iolog3 << myname << "(init): ADD card" << i  << " dev=" << iodev << endl;
 			}
 
@@ -181,13 +182,20 @@ namespace uniset
 		ioinfo << myname << "(init): result numcards=" << cards.size() << endl;
 
 		polltime = conf->getArgPInt("--" + prefix + "-polltime", it.getProp("polltime"), polltime);
+		vmonit(polltime);
 
 		force         = conf->getArgInt("--" + prefix + "-force", it.getProp("force"));
 		force_out     = conf->getArgInt("--" + prefix + "-force-out", it.getProp("force_out"));
 
+		vmonit(force);
+		vmonit(force_out);
+
 		filtersize = conf->getArgPInt("--" + prefix + "-filtersize", it.getProp("filtersize"), 1);
 
 		filterT = atof(conf->getArgParam("--" + prefix + "-filterT", it.getProp("filterT")).c_str());
+
+		vmonit(filtersize);
+		vmonit(filterT);
 
 		string testlamp = conf->getArgParam("--" + prefix + "-test-lamp", it.getProp("testlamp_s"));
 
@@ -206,6 +214,8 @@ namespace uniset
 			ioinfo << myname << "(init): testLamp_S='" << testlamp << "'" << endl;
 		}
 
+		vmonit(testLamp_s);
+
 		string tmode = conf->getArgParam("--" + prefix + "-test-mode", it.getProp("testmode_as"));
 
 		if( !tmode.empty() )
@@ -223,11 +233,16 @@ namespace uniset
 			ioinfo << myname << "(init): testMode_as='" << testmode << "'" << endl;
 		}
 
+		vmonit(testMode_as);
+
 		shm = make_shared<SMInterface>(icID, ui, myid, ic);
 
 		// определяем фильтр
 		s_field = conf->getArgParam("--" + prefix + "-s-filter-field");
 		s_fvalue = conf->getArgParam("--" + prefix + "-s-filter-value");
+
+		vmonit(s_field);
+		vmonit(s_fvalue);
 
 		ioinfo << myname << "(init): read s_field='" << s_field
 			   << "' s_fvalue='" << s_fvalue << "'" << endl;
@@ -250,6 +265,8 @@ namespace uniset
 		else
 			smReadyTimeout = sm_tout;
 
+		vmonit(smReadyTimeout);
+
 		string sm_ready_sid = conf->getArgParam("--" + prefix + "-sm-ready-test-sid", it.getProp("sm_ready_test_sid"));
 		sidTestSMReady = conf->getSensorID(sm_ready_sid);
 
@@ -263,6 +280,7 @@ namespace uniset
 		else
 			ioinfo << myname << "(init): sm-ready-test-sid: " << sm_ready_sid << endl;
 
+		vmonit(sidTestSMReady);
 
 		// -----------------------
 		string heart = conf->getArgParam("--" + prefix + "-heartbeat-id", it.getProp("heartbeat_id"));
@@ -291,10 +309,15 @@ namespace uniset
 
 		activateTimeout    = conf->getArgPInt("--" + prefix + "-activate-timeout", 25000);
 
+		vmonit(activateTimeout);
+
 		if( !shm->isLocalwork() ) // ic
 			ic->addReadItem( sigc::mem_fun(this, &IOControl::readItem) );
 
 		ioThread = make_shared< ThreadCreator<IOControl> >(this, &IOControl::iothread);
+
+		vmonit(maxCardNum);
+		vmonit(sidHeartBeat);
 	}
 
 	// --------------------------------------------------------------------------------
@@ -1145,9 +1168,6 @@ namespace uniset
 			if( isTestLamp )
 				blink_state = true; // первый такт всегда зажигаем...
 
-			//        cout << myname << "(check_test_lamp): ************* test lamp "
-			//            << isTestLamp << " *************" << endl;
-
 			// проходим по списку и формируем список мигающих выходов...
 			for( auto& it : iomap )
 			{
@@ -1267,6 +1287,50 @@ namespace uniset
 		cout << "--prefix-logserver-host ip   - listen ip. Default: localhost" << endl;
 		cout << "--prefix-logserver-port num  - listen port. Default: ID" << endl;
 		cout << LogServer::help_print("prefix-logserver") << endl;
+	}
+	// -----------------------------------------------------------------------------
+	SimpleInfo*IOControl::getInfo( const char* userparam )
+	{
+		uniset::SimpleInfo_var i = UniSetObject::getInfo(userparam);
+
+		ostringstream inf;
+
+		inf << i->info << endl;
+
+		inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
+		if( logserv )
+			inf << logserv->getShortInfo() << endl;
+		else
+			inf << "No logserver running." << endl;
+
+
+		inf << endl;
+		inf << "iomap: " << iomap.size()
+			<< " isTestLamp=" << isTestLamp
+			<< " blink1=" << ptBlink.getInterval()
+			<< " blink2=" << ptBlink2.getInterval()
+			<< " blink3=" << ptBlink3.getInterval()
+			<< endl;
+
+		inf << endl;
+		for( size_t i=0; i<cards.size(); i++ )
+		{
+			auto c = cards[i];
+			if( c )
+			{
+				inf << "card[" << setw(2) << i << "]:"
+					<< " " << setw(10) << c->cardname()
+					<< "  dev=" << c->devname()
+					<< endl;
+			}
+		}
+
+		inf << endl;
+
+		inf << vmon.pretty_str() << endl;
+
+		i->info = inf.str().c_str();
+		return i._retn();
 	}
 	// -----------------------------------------------------------------------------
 	void IOControl::sysCommand( const SystemMessage* sm )
@@ -1703,7 +1767,7 @@ namespace uniset
 
 			try
 			{
-				cards[cardnum] = new ComediInterface(iodev);
+				cards[cardnum] = new ComediInterface(iodev,cname);
 				noCards = false;
 			}
 			catch( const uniset::Exception& ex )

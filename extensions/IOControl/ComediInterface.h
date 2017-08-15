@@ -28,7 +28,7 @@ namespace uniset
 	class ComediInterface
 	{
 		public:
-			explicit ComediInterface( const std::string& dev );
+			explicit ComediInterface( const std::string& dev, const std::string& cname );
 			virtual ~ComediInterface();
 
 			virtual int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND ) const
@@ -74,11 +74,17 @@ namespace uniset
 				return dname;
 			}
 
+			inline const std::string cardname() const
+			{
+				return name;
+			}
+
 		protected:
 			ComediInterface():card(nullptr){}
 
 			comedi_t* card;    /*!< интерфейс для работы с картами в/в */
 			std::string dname;
+			std::string name;
 
 		private:
 	};

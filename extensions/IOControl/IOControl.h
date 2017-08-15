@@ -41,9 +41,13 @@
 #include "DebugStream.h"
 #include "LogAgregator.h"
 // -------------------------------------------------------------------------
+#ifndef vmonit
+#define vmonit( var ) vmon.add( #var, var )
+#endif
+// -------------------------------------------------------------------------
 namespace uniset
 {
-	// -----------------------------------------------------------------------------
+	// ---------------------------------------------------------------------
 	/*!
 	      \page page_IOControl (IOControl) Реализация процесса ввода/вывода
 
@@ -237,6 +241,8 @@ namespace uniset
 			/*! глобальная функция для вывода help-а */
 			static void help_print( int argc, const char* const* argv );
 
+			virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
+
 			/*! Информация о входе/выходе */
 			struct IOInfo:
 				public IOBase
@@ -420,6 +426,8 @@ namespace uniset
 			int logserv_port = {0};
 
 			std::shared_ptr< ThreadCreator<IOControl> > ioThread;
+
+			VMonitor vmon;
 
 		private:
 	};

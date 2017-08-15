@@ -87,7 +87,8 @@ namespace uniset
 		chInputs(maxChannelNum),
 		chOutputs(maxChannelNum)
 	{
-
+		name="FakeCard";
+		dname="/dev/fakecomedi";
 	}
 	// -----------------------------------------------------------------------------
 	FakeComediInterface::~FakeComediInterface()
