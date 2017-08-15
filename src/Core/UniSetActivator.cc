@@ -113,7 +113,7 @@ static std::shared_ptr<std::thread> g_term_thread;
 static std::shared_ptr<std::thread> g_fini_thread;
 static std::shared_ptr<std::thread> g_kill_thread;
 static const int TERMINATE_TIMEOUT_SEC = 3; //  время отведенное на завершение процесса [сек]
-static const int THREAD_TERMINATE_PAUSE = 500; // [мсек] пауза при завершении потока (см. work())
+static const int THREAD_TERMINATE_PAUSE = 50; // [мсек] пауза при завершении потока (см. work())
 static const int KILL_TIMEOUT_SEC = 8;
 static pid_t g_stacktrace_proc_pid = 0; // pid процесса делающего stack trace (для защиты от зависания)
 // ------------------------------------------------------------------------------------------
@@ -495,7 +495,7 @@ namespace uniset
 				}
 			}
 
-			g_act = nullptr;
+//			g_act = nullptr;
 			UniSetActivator::set_signals(false);
 		}
 
@@ -508,6 +508,7 @@ namespace uniset
 
 		g_kill_thread->join();
 		ulogsys << "(TERMINATE THREAD): ..bye.." << endl;
+
 	}
 }
 // ---------------------------------------------------------------------------
@@ -775,7 +776,15 @@ void UniSetActivator::work()
 	g_finievent.notify_one();
 
 	if( orbthr )
+	{
+		// почему-то без этой паузы при завершении возникает "double free or corruption"
+		// и вообще какой-то race между завершением штатным и нашим
+		// видимо потому-что обычно activator запускается в main()
+		// и как только этот поток прерывается идёт завершение работы
+		// а мы и так уже завершаемся.. и получается какой-то race..
+		msleep(THREAD_TERMINATE_PAUSE);
 		wait_done();
+	}
 }
 // ------------------------------------------------------------------------------------------
 CORBA::ORB_ptr UniSetActivator::getORB()
