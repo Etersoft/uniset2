@@ -819,7 +819,7 @@ void UNetExchange::help_print( int argc, const char* argv[] ) noexcept
 	cout << "--prefix-steptime msec           - Пауза между обновлением информации о связи с узлами." << endl;
 	cout << "--prefix-checkconnection-pause msec  - Пауза между попытками открыть соединение (если это не удалось до этого). По умолчанию: 10000 (10 сек)" << endl;
 	cout << "--prefix-maxdifferense num       - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;
-	cout << "--prefix-maxprocessingcount num  - время на ожидание старта SM" << endl;
+	cout << "--prefix-maxprocessingcount num  - Максимальное количество пакетов обрабатываемых за один раз (если их слишком много)" << endl;
 	cout << "--prefix-nosender [0,1]          - Отключить посылку." << endl;
 	cout << "--prefix-update-strategy [thread,evloop] - Стратегия обновления данных в SM. " << endl;
 	cout << "                                         'thread' - у каждого UNetReceiver отдельный поток" << endl;
