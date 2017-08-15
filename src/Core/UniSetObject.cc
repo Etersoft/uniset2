@@ -901,7 +901,7 @@ namespace uniset
 			 << " date: " << uniset::dateToString()
 			 << " time: " << uniset::timeToString()
 			 << "\n===============================================================================\n"
-			 << " pid=" << setw(10) << Poco::Process::id()
+			 << "pid=" << setw(10) << Poco::Process::id()
 			 << " tid=" << setw(10);
 
 		if( threadcreate )

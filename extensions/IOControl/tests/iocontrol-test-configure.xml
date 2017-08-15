@@ -27,7 +27,7 @@
 
 	<settings>
 	    <SharedMemory name="SharedMemory" shmID="SharedMemory"/>
-	    <IOControl1 name="IOControl"/>
+		<IOControl1 name="IOControl" testlamp_s="TestLamp_S"/>
     </settings>
 	<ObjectsMap idfromfile="1">
 		<!--
@@ -60,6 +60,8 @@
 			<item id="1010" io="1" iotype="AI" name="AI_T_AS" textname="AI for threshold" card="1" subdev="1" channel="10"/>
 			<item id="1011" io="1" iotype="DI" name="T1_S" textname="Threshold 1" threshold_aid="AI_T_AS" lowlimit="30" hilimit="40"/>
 
+            <item id="1012" io="1" iotype="DI" name="TestLamp_S" textname="TestLamp_S" card="1" subdev="1" channel="12"/>
+            <item id="1013" io="1" iotype="AO" name="Lamp_C" textname="TLamp_C" lamp="1" card="1" subdev="1" channel="13"/>
 
 
 			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>

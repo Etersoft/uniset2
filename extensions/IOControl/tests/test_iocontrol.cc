@@ -73,22 +73,16 @@ TEST_CASE("IOControl: DO", "[iocontrol][do]")
 	REQUIRE( ioc->fcard->chOutputs[1] == 1 ); // invert
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("IOControl: AO (lamp)", "[iocontrol][lamp]")
+static size_t pulseCount( FakeComediInterface* card, size_t ch )
 {
-	InitTest();
-
-	auto card = ioc->fcard;
-
-	ui->setValue(1004, uniset::lmpBLINK);
-
 	// считаем количество импульсов "0 -> 1 -> 0"
 	size_t npulse = 0;
 	bool prev = false;
 	for( size_t i=0; i < 20 && npulse < 3; i ++ )
 	{
-		if( card->chOutputs[4] == 1 && !prev )
+		if( card->chOutputs[ch] == 1 && !prev )
 			prev = true;
-		else if( card->chOutputs[4] == 0 && prev )
+		else if( card->chOutputs[ch] == 0 && prev )
 		{
 			prev = false;
 			npulse++;
@@ -98,6 +92,19 @@ TEST_CASE("IOControl: AO (lamp)", "[iocontrol][lamp]")
 		msleep( polltime / 2 );
 	}
 
+	return npulse;
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("IOControl: AO (lamp)", "[iocontrol][lamp]")
+{
+	InitTest();
+
+	auto card = ioc->fcard;
+
+	ui->setValue(1004, uniset::lmpBLINK);
+
+	// считаем количество импульсов "0 -> 1 -> 0"
+	size_t npulse = pulseCount(card, 4);
 	REQUIRE( npulse >= 2 );
 }
 // -----------------------------------------------------------------------------
@@ -156,5 +163,39 @@ TEST_CASE("IOControl: threshold", "[iocontrol][threshold]")
 	msleep(polltime+10);
 	REQUIRE( ui->getValue(1010) == 25 );
 	REQUIRE( ui->getValue(1011) == 0 ); // < lowlimit (30)
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("IOControl: test lamp", "[iocontrol][testlamp]")
+{
+	InitTest();
+
+	auto card = ioc->fcard;
+
+	// отключаем тест ламп
+	card->chInputs[12] = 0;
+	msleep(polltime+10);
+	REQUIRE( ui->getValue(1012) == 0 );
+	REQUIRE( ui->getValue(1013) == 0 );
+	REQUIRE( card->chOutputs[13] == 0 );
+
+	// включаем тест ламп
+	card->chInputs[12] = 1;
+	msleep(polltime+10);
+	REQUIRE( ui->getValue(1012) == 1 );
+
+	// должны ловить мигание лампочки..
+	size_t npulse = pulseCount(card, 13);
+	REQUIRE( npulse >= 2 );
+
+	// отключаем тест ламп
+	card->chInputs[12] = 0;
+	msleep(polltime+10);
+	REQUIRE( ui->getValue(1012) == 0 );
+	REQUIRE( ui->getValue(1013) == 0 );
+	REQUIRE( card->chOutputs[13] == 0 );
+
+	npulse = pulseCount(card, 13);
+	REQUIRE( npulse == 0 );
+
 }
 // -----------------------------------------------------------------------------
