@@ -87,7 +87,7 @@ namespace uniset
 			virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) override;
 			virtual void sigterm( int signo ) override;
 
-			bool writeToBase( const string& query );
+			bool writeToBase( const std::string& query );
 			void createTables( std::shared_ptr<PostgreSQLInterface>& db );
 
 			inline std::string tblName(int key)

@@ -169,7 +169,7 @@ namespace uniset
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 			virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) override;
 
-			bool writeToBase( const string& query );
+			bool writeToBase( const std::string& query );
 			void createTables( MySQLInterface* db );
 
 			inline std::string tblName( int key )

@@ -2122,7 +2122,7 @@ namespace uniset
 		return myhelp;
 	}
 	// -------------------------------------------------------------------------
-	Poco::JSON::Object::Ptr MBSlave::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
+	Poco::JSON::Object::Ptr MBSlave::httpRequest( const std::string& req, const Poco::URI::QueryParameters& p )
 	{
 		if( req == "regs" )
 			return request_regs(req, p);

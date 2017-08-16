@@ -38,19 +38,19 @@ namespace uniset
 		uniset::ObjectId id = conf->getObjectID(idname);
 
 		if( id == uniset::DefaultObjectId )
-			throw uniset::SystemError("(make_object<" + string(typeid(T).name()) + ">): Not found ID for '" + idname + "'");
+			throw uniset::SystemError("(make_object<" + std::string(typeid(T).name()) + ">): Not found ID for '" + idname + "'");
 
 		auto xml = conf->getConfXML();
 		std::string s( (secname.empty() ? idname : secname) );
 		xmlNode* cnode = conf->findNode(xml->getFirstNode(), s, idname);
 
 		if( cnode == 0 )
-			throw uniset::SystemError("(make_object<" + string(typeid(T).name()) + ">): Not found xmlnode <" + s + " name='" + idname + "' ... >");
+			throw uniset::SystemError("(make_object<" + std::string(typeid(T).name()) + ">): Not found xmlnode <" + s + " name='" + idname + "' ... >");
 
 		std::shared_ptr<T> obj = std::make_shared<T>(id, cnode, std::forward<_Args>(__args)...);
 
 		if (obj == nullptr)
-			throw uniset::SystemError("(make_object<T>  == nullptr" + string(typeid(T).name()));
+			throw uniset::SystemError("(make_object<T>  == nullptr" + std::string(typeid(T).name()));
 
 		return obj;
 	}
@@ -65,13 +65,13 @@ namespace uniset
 		xmlNode* cnode = conf->findNode(root, secname, "");
 
 		if( cnode == 0 )
-			throw uniset::SystemError("(make_object_x<" + string(typeid(T).name()) + ">): Not found xmlnode <" + secname + " ... >");
+			throw uniset::SystemError("(make_object_x<" + std::string(typeid(T).name()) + ">): Not found xmlnode <" + secname + " ... >");
 
-		string idname = conf->getProp(cnode, "name");
+		std::string idname = conf->getProp(cnode, "name");
 		uniset::ObjectId id = conf->getObjectID(idname);
 
 		if( id == uniset::DefaultObjectId )
-			throw uniset::SystemError("(make_object_x<" + string(typeid(T).name()) + ">): Not found ID for '" + idname + "'");
+			throw uniset::SystemError("(make_object_x<" + std::string(typeid(T).name()) + ">): Not found ID for '" + idname + "'");
 
 		return std::make_shared<T>(id, cnode, std::forward<_Args>(__args)...);
 
@@ -114,7 +114,7 @@ namespace uniset
 		}
 		catch( const uniset::Exception& ex )
 		{
-			m->log()->crit() << m->getName() << "(" << __FUNCTION__ << "): " << "(create " << string(typeid(T).name()) << "): " << ex << std::endl;
+			m->log()->crit() << m->getName() << "(" << __FUNCTION__ << "): " << "(create " << std::string(typeid(T).name()) << "): " << ex << std::endl;
 			throw;
 		}
 	}

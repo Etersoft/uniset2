@@ -29,7 +29,7 @@ using namespace uniset;
 //const std::string ObjectIndex::sepNode = ":";
 // -----------------------------------------------------------------------------------------
 
-string ObjectIndex::getNameById( const ObjectId id ) const noexcept
+std::string ObjectIndex::getNameById( const ObjectId id ) const noexcept
 {
 	return getMapName(id);
 }
@@ -46,11 +46,11 @@ ObjectId ObjectIndex::getNodeId(const std::__cxx11::string& name) const noexcept
 // -----------------------------------------------------------------------------------------
 std::string ObjectIndex::getBaseName( const std::string& fname ) noexcept
 {
-	string::size_type pos = fname.rfind('/');
+	std::string::size_type pos = fname.rfind('/');
 
 	try
 	{
-		if( pos != string::npos )
+		if( pos != std::string::npos )
 			return fname.substr(pos + 1);
 	}
 	catch(...) {}

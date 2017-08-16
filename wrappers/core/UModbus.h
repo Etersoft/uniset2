@@ -93,7 +93,7 @@ class UModbus
 		// DebugStream dlog;
 		uniset::ModbusTCPMaster* mb;
 		int port;
-		string ip;
+		std::string ip;
 		int tout_msec;
 };
 //---------------------------------------------------------------------------

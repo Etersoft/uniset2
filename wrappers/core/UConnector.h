@@ -34,7 +34,7 @@ class UConnector
 
 		inline std::string getUIType()
 		{
-			return string("uniset");
+			return std::string("uniset");
 		}
 
 		std::string getConfFileName();

@@ -121,7 +121,7 @@ void DBServer_MySQL::confirmInfo( const uniset::ConfirmMessage* cem )
 	}
 }
 //--------------------------------------------------------------------------------------------
-bool DBServer_MySQL::writeToBase( const string& query )
+bool DBServer_MySQL::writeToBase( const std::string& query )
 {
 	dbinfo << myname << "(writeToBase): " << query << endl;
 

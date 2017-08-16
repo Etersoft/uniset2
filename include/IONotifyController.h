@@ -167,7 +167,7 @@ namespace uniset
 #ifndef DISABLE_REST_API
 			// http API
 			virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
-			virtual Poco::JSON::Object::Ptr httpRequest( const string& req, const Poco::URI::QueryParameters& p ) override;
+			virtual Poco::JSON::Object::Ptr httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
 #endif
 
 			// --------------------------------------------
@@ -329,7 +329,7 @@ namespace uniset
 #ifndef DISABLE_REST_API
 			// http api
 			Poco::JSON::Object::Ptr request_consumers( const std::string& req, const Poco::URI::QueryParameters& p );
-			Poco::JSON::Object::Ptr request_lost( const string& req, const Poco::URI::QueryParameters& p );
+			Poco::JSON::Object::Ptr request_lost( const std::string& req, const Poco::URI::QueryParameters& p );
 			Poco::JSON::Object::Ptr getConsumers(uniset::ObjectId sid, ConsumerListInfo& clist, bool ifNotEmpty = true );
 #endif
 
