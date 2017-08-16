@@ -199,6 +199,8 @@ namespace uniset
 			/*! замок для блокирования совместного доступа к cписку таймеров */
 			mutable uniset::uniset_rwmutex lstMutex;
 			PassiveTimer tmLast;
+
+			Debug::type loglevel = { Debug::LEVEL3 };
 	};
 	// -------------------------------------------------------------------------
 } // end of uniset namespace

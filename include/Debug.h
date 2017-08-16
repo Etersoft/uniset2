@@ -29,7 +29,6 @@
 //    #define _(n) n
 //#endif
 
-using std::string;
 
 /** Ideally this should have been a namespace, but since we try to be
     compilable on older C++ compilators too, we use a struct instead.

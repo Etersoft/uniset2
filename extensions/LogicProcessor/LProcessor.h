@@ -136,7 +136,7 @@ namespace uniset
 
 		protected:
 
-			virtual void build( const string& lfile );
+			virtual void build( const std::string& lfile );
 
 			virtual void step();
 
