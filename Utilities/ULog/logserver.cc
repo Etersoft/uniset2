@@ -1,6 +1,7 @@
 // --------------------------------------------------------------------------
 #include <string>
 #include <iomanip>
+#include <regex>
 #include <getopt.h>
 #include "Debug.h"
 #include "UniSetTypes.h"
@@ -20,6 +21,7 @@ static struct option longopts[] =
 	{ "delay", required_argument, 0, 'd' },
 	{ "max-sessions", required_argument, 0, 'm' },
 	{ "silent", no_argument, 0, 's' },
+	{ "checkfilter", required_argument, 0, 'c' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -35,6 +37,8 @@ static void print_help()
 	printf("[-s|--silent]       - Silent mode. Not write logs..\n");
 }
 // --------------------------------------------------------------------------
+static char* checkArg( int i, int argc, char* argv[] );
+// --------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
 	//	std::ios::sync_with_stdio(false);
@@ -48,12 +52,14 @@ int main( int argc, char** argv )
 	timeout_t delay = 5000;
 	int msess = 5;
 	bool silent = false;
+	std::string checkfilter = "";
+	std::string checkstr = "";
 
 	try
 	{
 		while(1)
 		{
-			opt = getopt_long(argc, argv, "hvi:p:d:m:s", longopts, &optindex);
+			opt = getopt_long(argc, argv, "hvi:p:d:m:sc:", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -88,11 +94,38 @@ int main( int argc, char** argv )
 					silent = true;
 					break;
 
+				case 'c':
+				{
+					checkfilter = std::string(optarg);
+					char* arg2 = checkArg(optind, argc, argv);
+
+					if( arg2 )
+						checkstr = std::string(arg2);
+
+					std::regex rule(checkfilter);
+
+					cout << "filter: " << checkfilter << endl;
+					cout << "  text: " << checkstr << endl;
+
+					if( std::regex_search(checkstr, rule) )
+						cout << "result: YES" << endl;
+					else
+						cout << "result: NO" << endl;
+
+					return 0;
+				}
+				break;
+
 				case '?':
 				default:
 					printf("? argumnet\n");
 					return 0;
 			}
+		}
+
+		if( !checkfilter.empty() )
+		{
+
 		}
 
 		if( verb )
@@ -236,5 +269,13 @@ int main( int argc, char** argv )
 	}
 
 	return 0;
+}
+// --------------------------------------------------------------------------
+char* checkArg( int i, int argc, char* argv[] )
+{
+	if( i < argc && (argv[i])[0] != '-' )
+		return argv[i];
+
+	return nullptr;
 }
 // --------------------------------------------------------------------------
