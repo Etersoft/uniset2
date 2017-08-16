@@ -39,6 +39,19 @@ namespace goUInterface
 	std::string getTextName( long id ) noexcept;
 
 	std::string getConfFileName() noexcept;
+
+	/*
+	 *  return json
+	 *  "config": {
+	 *	   [
+	 *         {"prop": "propname", "value": "propvalue"},
+	 *         {"prop": "propname", "value": "propvalue"},
+	 *         {"prop": "propname", "value": "propvalue"},
+	 *         {"prop": "propname", "value": "propvalue"},
+	 *	   ]
+	 * }
+	 */
+	std::string getConfigParamsByName( const std::string& name, const std::string& section="" );
 }
 //---------------------------------------------------------------------------
 #endif

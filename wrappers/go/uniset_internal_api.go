@@ -47,15 +47,15 @@ typedef long long swig_type_16;
 typedef _gostring_ swig_type_17;
 typedef long long swig_type_18;
 typedef _gostring_ swig_type_19;
-typedef long long swig_type_20;
-typedef long long swig_type_21;
+typedef _gostring_ swig_type_20;
+typedef _gostring_ swig_type_21;
 typedef _gostring_ swig_type_22;
 typedef _gostring_ swig_type_23;
-typedef long long swig_type_24;
+typedef _gostring_ swig_type_24;
 typedef long long swig_type_25;
 typedef long long swig_type_26;
-typedef long long swig_type_27;
-typedef long long swig_type_28;
+typedef _gostring_ swig_type_27;
+typedef _gostring_ swig_type_28;
 typedef long long swig_type_29;
 typedef long long swig_type_30;
 typedef long long swig_type_31;
@@ -67,16 +67,16 @@ typedef long long swig_type_36;
 typedef long long swig_type_37;
 typedef long long swig_type_38;
 typedef long long swig_type_39;
-typedef _gostring_ swig_type_40;
-typedef _gostring_ swig_type_41;
+typedef long long swig_type_40;
+typedef long long swig_type_41;
 typedef long long swig_type_42;
-typedef _gostring_ swig_type_43;
+typedef long long swig_type_43;
 typedef long long swig_type_44;
 typedef _gostring_ swig_type_45;
 typedef _gostring_ swig_type_46;
-typedef _gostring_ swig_type_47;
+typedef long long swig_type_47;
 typedef _gostring_ swig_type_48;
-typedef _gostring_ swig_type_49;
+typedef long long swig_type_49;
 typedef _gostring_ swig_type_50;
 typedef _gostring_ swig_type_51;
 typedef _gostring_ swig_type_52;
@@ -93,17 +93,22 @@ typedef _gostring_ swig_type_62;
 typedef _gostring_ swig_type_63;
 typedef _gostring_ swig_type_64;
 typedef _gostring_ swig_type_65;
-typedef long long swig_type_66;
-typedef long long swig_type_67;
-typedef long long swig_type_68;
-typedef long long swig_type_69;
-typedef long long swig_type_70;
+typedef _gostring_ swig_type_66;
+typedef _gostring_ swig_type_67;
+typedef _gostring_ swig_type_68;
+typedef _gostring_ swig_type_69;
+typedef _gostring_ swig_type_70;
 typedef long long swig_type_71;
 typedef long long swig_type_72;
 typedef long long swig_type_73;
 typedef long long swig_type_74;
 typedef long long swig_type_75;
 typedef long long swig_type_76;
+typedef long long swig_type_77;
+typedef long long swig_type_78;
+typedef long long swig_type_79;
+typedef long long swig_type_80;
+typedef long long swig_type_81;
 extern void _wrap_Swig_free_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
 extern uintptr_t _wrap_uniset_init_params_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_1 arg2);
 extern uintptr_t _wrap_uniset_init_uniset_internal_api_576c1e11c33cb6aa(swig_intgo arg1, swig_voidp arg2, swig_type_2 arg3);
@@ -116,32 +121,34 @@ extern swig_type_13 _wrap_getShortName_uniset_internal_api_576c1e11c33cb6aa(swig
 extern swig_type_15 _wrap_getName_uniset_internal_api_576c1e11c33cb6aa(swig_type_16 arg1);
 extern swig_type_17 _wrap_getTextName_uniset_internal_api_576c1e11c33cb6aa(swig_type_18 arg1);
 extern swig_type_19 _wrap_getConfFileName_uniset_internal_api_576c1e11c33cb6aa(void);
-extern swig_type_20 _wrap_DefaultID_get_uniset_internal_api_576c1e11c33cb6aa(void);
-extern swig_type_21 _wrap_DefaultSupplerID_get_uniset_internal_api_576c1e11c33cb6aa(void);
+extern swig_type_20 _wrap_getConfigParamsByName__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(swig_type_21 arg1, swig_type_22 arg2);
+extern swig_type_23 _wrap_getConfigParamsByName__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(swig_type_24 arg1);
+extern swig_type_25 _wrap_DefaultID_get_uniset_internal_api_576c1e11c33cb6aa(void);
+extern swig_type_26 _wrap_DefaultSupplerID_get_uniset_internal_api_576c1e11c33cb6aa(void);
 extern swig_intgo _wrap_Params_max_Params_uniset_internal_api_576c1e11c33cb6aa(void);
 extern uintptr_t _wrap_new_Params_uniset_internal_api_576c1e11c33cb6aa(void);
-extern _Bool _wrap_Params_add_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_22 arg2);
-extern _Bool _wrap_Params_add_str_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_23 arg2);
+extern _Bool _wrap_Params_add_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_27 arg2);
+extern _Bool _wrap_Params_add_str_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_28 arg2);
 extern void _wrap_Params_argc_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_intgo arg2);
 extern swig_intgo _wrap_Params_argc_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
 extern void _wrap_Params_argv_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_voidp arg2);
 extern swig_voidp _wrap_Params_argv_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
 extern uintptr_t _wrap_Params_inst_uniset_internal_api_576c1e11c33cb6aa(void);
 extern void _wrap_delete_Params_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern void _wrap_ShortIOInfo_id_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_24 arg2);
-extern swig_type_25 _wrap_ShortIOInfo_id_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern void _wrap_ShortIOInfo_value_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_26 arg2);
-extern swig_type_27 _wrap_ShortIOInfo_value_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern void _wrap_ShortIOInfo_tv_sec_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_28 arg2);
-extern swig_type_29 _wrap_ShortIOInfo_tv_sec_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern void _wrap_ShortIOInfo_tv_nsec_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_30 arg2);
-extern swig_type_31 _wrap_ShortIOInfo_tv_nsec_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern void _wrap_ShortIOInfo_supplier_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_32 arg2);
-extern swig_type_33 _wrap_ShortIOInfo_supplier_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern void _wrap_ShortIOInfo_consumer_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_34 arg2);
-extern swig_type_35 _wrap_ShortIOInfo_consumer_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern void _wrap_ShortIOInfo_node_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_36 arg2);
-extern swig_type_37 _wrap_ShortIOInfo_node_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
+extern void _wrap_ShortIOInfo_id_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_29 arg2);
+extern swig_type_30 _wrap_ShortIOInfo_id_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
+extern void _wrap_ShortIOInfo_value_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_31 arg2);
+extern swig_type_32 _wrap_ShortIOInfo_value_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
+extern void _wrap_ShortIOInfo_tv_sec_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_33 arg2);
+extern swig_type_34 _wrap_ShortIOInfo_tv_sec_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
+extern void _wrap_ShortIOInfo_tv_nsec_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_35 arg2);
+extern swig_type_36 _wrap_ShortIOInfo_tv_nsec_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
+extern void _wrap_ShortIOInfo_supplier_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_37 arg2);
+extern swig_type_38 _wrap_ShortIOInfo_supplier_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
+extern void _wrap_ShortIOInfo_consumer_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_39 arg2);
+extern swig_type_40 _wrap_ShortIOInfo_consumer_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
+extern void _wrap_ShortIOInfo_node_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_41 arg2);
+extern swig_type_42 _wrap_ShortIOInfo_node_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
 extern uintptr_t _wrap_new_ShortIOInfo_uniset_internal_api_576c1e11c33cb6aa(void);
 extern void _wrap_delete_ShortIOInfo_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
 extern void _wrap_ResultIO_sinfo_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, uintptr_t arg2);
@@ -151,14 +158,14 @@ extern _Bool _wrap_ResultIO_ok_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_
 extern uintptr_t _wrap_new_ResultIO__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, _Bool arg2);
 extern uintptr_t _wrap_new_ResultIO__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(void);
 extern void _wrap_delete_ResultIO_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern void _wrap_ResultValue_value_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_38 arg2);
-extern swig_type_39 _wrap_ResultValue_value_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
+extern void _wrap_ResultValue_value_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_43 arg2);
+extern swig_type_44 _wrap_ResultValue_value_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
 extern void _wrap_ResultValue_ok_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, _Bool arg2);
 extern _Bool _wrap_ResultValue_ok_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern void _wrap_ResultValue_err_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_40 arg2);
-extern swig_type_41 _wrap_ResultValue_err_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern uintptr_t _wrap_new_ResultValue__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(swig_type_42 arg1, swig_type_43 arg2);
-extern uintptr_t _wrap_new_ResultValue__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(swig_type_44 arg1);
+extern void _wrap_ResultValue_err_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_45 arg2);
+extern swig_type_46 _wrap_ResultValue_err_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
+extern uintptr_t _wrap_new_ResultValue__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(swig_type_47 arg1, swig_type_48 arg2);
+extern uintptr_t _wrap_new_ResultValue__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(swig_type_49 arg1);
 extern uintptr_t _wrap_new_ResultValue__SWIG_2_uniset_internal_api_576c1e11c33cb6aa(void);
 extern uintptr_t _wrap_new_ResultValue__SWIG_3_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
 extern uintptr_t _wrap_new_ResultValue__SWIG_4_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
@@ -167,51 +174,51 @@ extern void _wrap_ResultBool_result_set_uniset_internal_api_576c1e11c33cb6aa(uin
 extern _Bool _wrap_ResultBool_result_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
 extern void _wrap_ResultBool_ok_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, _Bool arg2);
 extern _Bool _wrap_ResultBool_ok_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern void _wrap_ResultBool_err_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_45 arg2);
-extern swig_type_46 _wrap_ResultBool_err_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern uintptr_t _wrap_new_ResultBool__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(_Bool arg1, swig_type_47 arg2);
+extern void _wrap_ResultBool_err_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_50 arg2);
+extern swig_type_51 _wrap_ResultBool_err_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
+extern uintptr_t _wrap_new_ResultBool__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(_Bool arg1, swig_type_52 arg2);
 extern uintptr_t _wrap_new_ResultBool__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(_Bool arg1);
 extern uintptr_t _wrap_new_ResultBool__SWIG_2_uniset_internal_api_576c1e11c33cb6aa(void);
 extern uintptr_t _wrap_new_ResultBool__SWIG_3_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
 extern uintptr_t _wrap_new_ResultBool__SWIG_4_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
 extern void _wrap_delete_ResultBool_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
 extern uintptr_t _wrap_new_UException__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(void);
-extern uintptr_t _wrap_new_UException__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(swig_type_48 arg1);
-extern uintptr_t _wrap_new_UException__SWIG_2_uniset_internal_api_576c1e11c33cb6aa(swig_type_49 arg1);
+extern uintptr_t _wrap_new_UException__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(swig_type_53 arg1);
+extern uintptr_t _wrap_new_UException__SWIG_2_uniset_internal_api_576c1e11c33cb6aa(swig_type_54 arg1);
 extern void _wrap_delete_UException_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern swig_type_50 _wrap_UException_getError_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern void _wrap_UException_err_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_51 arg2);
-extern swig_type_52 _wrap_UException_err_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
+extern swig_type_55 _wrap_UException_getError_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
+extern void _wrap_UException_err_set_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_56 arg2);
+extern swig_type_57 _wrap_UException_err_get_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
 extern uintptr_t _wrap_new_UTimeOut__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(void);
-extern uintptr_t _wrap_new_UTimeOut__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(swig_type_53 arg1);
+extern uintptr_t _wrap_new_UTimeOut__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(swig_type_58 arg1);
 extern void _wrap_delete_UTimeOut_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern swig_type_54 _wrap_UTimeOut_getError_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base);
-extern void _wrap_SetUTimeOut_Err_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base, swig_type_55 arg1);
-extern swig_type_56 _wrap_GetUTimeOut_Err_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base);
+extern swig_type_59 _wrap_UTimeOut_getError_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base);
+extern void _wrap_SetUTimeOut_Err_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base, swig_type_60 arg1);
+extern swig_type_61 _wrap_GetUTimeOut_Err_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base);
 extern uintptr_t _wrap_new_USysError__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(void);
-extern uintptr_t _wrap_new_USysError__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(swig_type_57 arg1);
+extern uintptr_t _wrap_new_USysError__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(swig_type_62 arg1);
 extern void _wrap_delete_USysError_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern swig_type_58 _wrap_USysError_getError_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base);
-extern void _wrap_SetUSysError_Err_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base, swig_type_59 arg1);
-extern swig_type_60 _wrap_GetUSysError_Err_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base);
+extern swig_type_63 _wrap_USysError_getError_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base);
+extern void _wrap_SetUSysError_Err_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base, swig_type_64 arg1);
+extern swig_type_65 _wrap_GetUSysError_Err_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base);
 extern uintptr_t _wrap_new_UValidateError__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(void);
-extern uintptr_t _wrap_new_UValidateError__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(swig_type_61 arg1);
+extern uintptr_t _wrap_new_UValidateError__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(swig_type_66 arg1);
 extern void _wrap_delete_UValidateError_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern swig_type_62 _wrap_UValidateError_getError_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base);
-extern void _wrap_SetUValidateError_Err_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base, swig_type_63 arg1);
-extern swig_type_64 _wrap_GetUValidateError_Err_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base);
-extern uintptr_t _wrap_new_UProxy__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(swig_type_65 arg1);
-extern uintptr_t _wrap_new_UProxy__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(swig_type_66 arg1);
+extern swig_type_67 _wrap_UValidateError_getError_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base);
+extern void _wrap_SetUValidateError_Err_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base, swig_type_68 arg1);
+extern swig_type_69 _wrap_GetUValidateError_Err_uniset_internal_api_576c1e11c33cb6aa(uintptr_t _swig_base);
+extern uintptr_t _wrap_new_UProxy__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(swig_type_70 arg1);
+extern uintptr_t _wrap_new_UProxy__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(swig_type_71 arg1);
 extern void _wrap_delete_UProxy_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
-extern void _wrap_UProxy_askSensor_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_67 arg2);
-extern swig_type_68 _wrap_UProxy_getValue_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_69 arg2);
-extern void _wrap_UProxy_setValue_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_70 arg2, swig_type_71 arg3);
+extern void _wrap_UProxy_askSensor_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_72 arg2);
+extern swig_type_73 _wrap_UProxy_getValue_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_74 arg2);
+extern void _wrap_UProxy_setValue_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_75 arg2, swig_type_76 arg3);
 extern uintptr_t _wrap_UProxy_waitMessage_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_intgo arg2);
 extern uintptr_t _wrap_UProxy_safeWaitMessage_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_intgo arg2);
-extern uintptr_t _wrap_UProxy_safeSetValue_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_72 arg2, swig_type_73 arg3);
-extern uintptr_t _wrap_UProxy_safeGetValue_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_74 arg2);
-extern uintptr_t _wrap_UProxy_safeAskSensor_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_75 arg2);
-extern _Bool _wrap_UProxy_isExist_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_76 arg2);
+extern uintptr_t _wrap_UProxy_safeSetValue_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_77 arg2, swig_type_78 arg3);
+extern uintptr_t _wrap_UProxy_safeGetValue_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_79 arg2);
+extern uintptr_t _wrap_UProxy_safeAskSensor_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_80 arg2);
+extern _Bool _wrap_UProxy_isExist_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_81 arg2);
 extern _Bool _wrap_UProxy_run_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_intgo arg2);
 extern void _wrap_UProxy_terminate_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
 #undef intgo
@@ -368,6 +375,47 @@ func GetConfFileName() (_swig_ret string) {
 	return swig_r_1
 }
 
+func GetConfigParamsByName__SWIG_0(arg1 string, arg2 string) (_swig_ret string) {
+	var swig_r string
+	_swig_i_0 := arg1
+	_swig_i_1 := arg2
+	swig_r_p := C._wrap_getConfigParamsByName__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(*(*C.swig_type_21)(unsafe.Pointer(&_swig_i_0)), *(*C.swig_type_22)(unsafe.Pointer(&_swig_i_1)))
+	swig_r = *(*string)(unsafe.Pointer(&swig_r_p))
+	if Swig_escape_always_false {
+		Swig_escape_val = arg1
+	}
+	if Swig_escape_always_false {
+		Swig_escape_val = arg2
+	}
+	var swig_r_1 string
+ swig_r_1 = swigCopyString(swig_r)
+	return swig_r_1
+}
+
+func GetConfigParamsByName__SWIG_1(arg1 string) (_swig_ret string) {
+	var swig_r string
+	_swig_i_0 := arg1
+	swig_r_p := C._wrap_getConfigParamsByName__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(*(*C.swig_type_24)(unsafe.Pointer(&_swig_i_0)))
+	swig_r = *(*string)(unsafe.Pointer(&swig_r_p))
+	if Swig_escape_always_false {
+		Swig_escape_val = arg1
+	}
+	var swig_r_1 string
+ swig_r_1 = swigCopyString(swig_r)
+	return swig_r_1
+}
+
+func GetConfigParamsByName(a ...interface{}) string {
+	argc := len(a)
+	if argc == 1 {
+		return GetConfigParamsByName__SWIG_1(a[0].(string))
+	}
+	if argc == 2 {
+		return GetConfigParamsByName__SWIG_0(a[0].(string), a[1].(string))
+	}
+	panic("No match for overloaded function call")
+}
+
 func GetDefaultID() (_swig_ret int64) {
 	var swig_r int64
 	swig_r = (int64)(C._wrap_DefaultID_get_uniset_internal_api_576c1e11c33cb6aa())
@@ -406,7 +454,7 @@ func (arg1 SwigcptrParams) Add(arg2 string) (_swig_ret bool) {
 	var swig_r bool
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	swig_r = (bool)(C._wrap_Params_add_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), *(*C.swig_type_22)(unsafe.Pointer(&_swig_i_1))))
+	swig_r = (bool)(C._wrap_Params_add_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), *(*C.swig_type_27)(unsafe.Pointer(&_swig_i_1))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -417,7 +465,7 @@ func (arg1 SwigcptrParams) Add_str(arg2 string) (_swig_ret bool) {
 	var swig_r bool
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	swig_r = (bool)(C._wrap_Params_add_str_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), *(*C.swig_type_23)(unsafe.Pointer(&_swig_i_1))))
+	swig_r = (bool)(C._wrap_Params_add_str_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), *(*C.swig_type_28)(unsafe.Pointer(&_swig_i_1))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -484,7 +532,7 @@ func (p SwigcptrShortIOInfo) SwigIsShortIOInfo() {
 func (arg1 SwigcptrShortIOInfo) SetId(arg2 int64) {
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	C._wrap_ShortIOInfo_id_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_24(_swig_i_1))
+	C._wrap_ShortIOInfo_id_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_29(_swig_i_1))
 }
 
 func (arg1 SwigcptrShortIOInfo) GetId() (_swig_ret int64) {
@@ -497,7 +545,7 @@ func (arg1 SwigcptrShortIOInfo) GetId() (_swig_ret int64) {
 func (arg1 SwigcptrShortIOInfo) SetValue(arg2 int64) {
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	C._wrap_ShortIOInfo_value_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_26(_swig_i_1))
+	C._wrap_ShortIOInfo_value_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_31(_swig_i_1))
 }
 
 func (arg1 SwigcptrShortIOInfo) GetValue() (_swig_ret int64) {
@@ -510,7 +558,7 @@ func (arg1 SwigcptrShortIOInfo) GetValue() (_swig_ret int64) {
 func (arg1 SwigcptrShortIOInfo) SetTv_sec(arg2 int64) {
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	C._wrap_ShortIOInfo_tv_sec_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_28(_swig_i_1))
+	C._wrap_ShortIOInfo_tv_sec_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_33(_swig_i_1))
 }
 
 func (arg1 SwigcptrShortIOInfo) GetTv_sec() (_swig_ret int64) {
@@ -523,7 +571,7 @@ func (arg1 SwigcptrShortIOInfo) GetTv_sec() (_swig_ret int64) {
 func (arg1 SwigcptrShortIOInfo) SetTv_nsec(arg2 int64) {
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	C._wrap_ShortIOInfo_tv_nsec_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_30(_swig_i_1))
+	C._wrap_ShortIOInfo_tv_nsec_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_35(_swig_i_1))
 }
 
 func (arg1 SwigcptrShortIOInfo) GetTv_nsec() (_swig_ret int64) {
@@ -536,7 +584,7 @@ func (arg1 SwigcptrShortIOInfo) GetTv_nsec() (_swig_ret int64) {
 func (arg1 SwigcptrShortIOInfo) SetSupplier(arg2 int64) {
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	C._wrap_ShortIOInfo_supplier_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_32(_swig_i_1))
+	C._wrap_ShortIOInfo_supplier_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_37(_swig_i_1))
 }
 
 func (arg1 SwigcptrShortIOInfo) GetSupplier() (_swig_ret int64) {
@@ -549,7 +597,7 @@ func (arg1 SwigcptrShortIOInfo) GetSupplier() (_swig_ret int64) {
 func (arg1 SwigcptrShortIOInfo) SetConsumer(arg2 int64) {
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	C._wrap_ShortIOInfo_consumer_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_34(_swig_i_1))
+	C._wrap_ShortIOInfo_consumer_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_39(_swig_i_1))
 }
 
 func (arg1 SwigcptrShortIOInfo) GetConsumer() (_swig_ret int64) {
@@ -562,7 +610,7 @@ func (arg1 SwigcptrShortIOInfo) GetConsumer() (_swig_ret int64) {
 func (arg1 SwigcptrShortIOInfo) SetNode(arg2 int64) {
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	C._wrap_ShortIOInfo_node_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_36(_swig_i_1))
+	C._wrap_ShortIOInfo_node_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_41(_swig_i_1))
 }
 
 func (arg1 SwigcptrShortIOInfo) GetNode() (_swig_ret int64) {
@@ -688,7 +736,7 @@ func (p SwigcptrResultValue) SwigIsResultValue() {
 func (arg1 SwigcptrResultValue) SetValue(arg2 int64) {
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	C._wrap_ResultValue_value_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_38(_swig_i_1))
+	C._wrap_ResultValue_value_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_43(_swig_i_1))
 }
 
 func (arg1 SwigcptrResultValue) GetValue() (_swig_ret int64) {
@@ -714,7 +762,7 @@ func (arg1 SwigcptrResultValue) GetOk() (_swig_ret bool) {
 func (arg1 SwigcptrResultValue) SetErr(arg2 string) {
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	C._wrap_ResultValue_err_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), *(*C.swig_type_40)(unsafe.Pointer(&_swig_i_1)))
+	C._wrap_ResultValue_err_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), *(*C.swig_type_45)(unsafe.Pointer(&_swig_i_1)))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -734,7 +782,7 @@ func NewResultValue__SWIG_0(arg1 int64, arg2 string) (_swig_ret ResultValue) {
 	var swig_r ResultValue
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	swig_r = (ResultValue)(SwigcptrResultValue(C._wrap_new_ResultValue__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(C.swig_type_42(_swig_i_0), *(*C.swig_type_43)(unsafe.Pointer(&_swig_i_1)))))
+	swig_r = (ResultValue)(SwigcptrResultValue(C._wrap_new_ResultValue__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(C.swig_type_47(_swig_i_0), *(*C.swig_type_48)(unsafe.Pointer(&_swig_i_1)))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -744,7 +792,7 @@ func NewResultValue__SWIG_0(arg1 int64, arg2 string) (_swig_ret ResultValue) {
 func NewResultValue__SWIG_1(arg1 int64) (_swig_ret ResultValue) {
 	var swig_r ResultValue
 	_swig_i_0 := arg1
-	swig_r = (ResultValue)(SwigcptrResultValue(C._wrap_new_ResultValue__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(C.swig_type_44(_swig_i_0))))
+	swig_r = (ResultValue)(SwigcptrResultValue(C._wrap_new_ResultValue__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(C.swig_type_49(_swig_i_0))))
 	return swig_r
 }
 
@@ -850,7 +898,7 @@ func (arg1 SwigcptrResultBool) GetOk() (_swig_ret bool) {
 func (arg1 SwigcptrResultBool) SetErr(arg2 string) {
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	C._wrap_ResultBool_err_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), *(*C.swig_type_45)(unsafe.Pointer(&_swig_i_1)))
+	C._wrap_ResultBool_err_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), *(*C.swig_type_50)(unsafe.Pointer(&_swig_i_1)))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -870,7 +918,7 @@ func NewResultBool__SWIG_0(arg1 bool, arg2 string) (_swig_ret ResultBool) {
 	var swig_r ResultBool
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	swig_r = (ResultBool)(SwigcptrResultBool(C._wrap_new_ResultBool__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(C._Bool(_swig_i_0), *(*C.swig_type_47)(unsafe.Pointer(&_swig_i_1)))))
+	swig_r = (ResultBool)(SwigcptrResultBool(C._wrap_new_ResultBool__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(C._Bool(_swig_i_0), *(*C.swig_type_52)(unsafe.Pointer(&_swig_i_1)))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -966,7 +1014,7 @@ func NewUException__SWIG_0() (_swig_ret UException) {
 func NewUException__SWIG_1(arg1 string) (_swig_ret UException) {
 	var swig_r UException
 	_swig_i_0 := arg1
-	swig_r = (UException)(SwigcptrUException(C._wrap_new_UException__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(*(*C.swig_type_48)(unsafe.Pointer(&_swig_i_0)))))
+	swig_r = (UException)(SwigcptrUException(C._wrap_new_UException__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(*(*C.swig_type_53)(unsafe.Pointer(&_swig_i_0)))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg1
 	}
@@ -976,7 +1024,7 @@ func NewUException__SWIG_1(arg1 string) (_swig_ret UException) {
 func NewUException__SWIG_2(arg1 string) (_swig_ret UException) {
 	var swig_r UException
 	_swig_i_0 := arg1
-	swig_r = (UException)(SwigcptrUException(C._wrap_new_UException__SWIG_2_uniset_internal_api_576c1e11c33cb6aa(*(*C.swig_type_49)(unsafe.Pointer(&_swig_i_0)))))
+	swig_r = (UException)(SwigcptrUException(C._wrap_new_UException__SWIG_2_uniset_internal_api_576c1e11c33cb6aa(*(*C.swig_type_54)(unsafe.Pointer(&_swig_i_0)))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg1
 	}
@@ -1015,7 +1063,7 @@ func (arg1 SwigcptrUException) GetError() (_swig_ret string) {
 func (arg1 SwigcptrUException) SetErr(arg2 string) {
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	C._wrap_UException_err_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), *(*C.swig_type_51)(unsafe.Pointer(&_swig_i_1)))
+	C._wrap_UException_err_set_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), *(*C.swig_type_56)(unsafe.Pointer(&_swig_i_1)))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg2
 	}
@@ -1057,7 +1105,7 @@ func NewUTimeOut__SWIG_0() (_swig_ret UTimeOut) {
 func NewUTimeOut__SWIG_1(arg1 string) (_swig_ret UTimeOut) {
 	var swig_r UTimeOut
 	_swig_i_0 := arg1
-	swig_r = (UTimeOut)(SwigcptrUTimeOut(C._wrap_new_UTimeOut__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(*(*C.swig_type_53)(unsafe.Pointer(&_swig_i_0)))))
+	swig_r = (UTimeOut)(SwigcptrUTimeOut(C._wrap_new_UTimeOut__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(*(*C.swig_type_58)(unsafe.Pointer(&_swig_i_0)))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg1
 	}
@@ -1091,7 +1139,7 @@ func (_swig_base SwigcptrUTimeOut) GetError() (_swig_ret string) {
 
 func (_swig_base SwigcptrUTimeOut) SetErr(arg1 string) {
 	_swig_i_0 := arg1
-	C._wrap_SetUTimeOut_Err_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_base), *(*C.swig_type_55)(unsafe.Pointer(&_swig_i_0)))
+	C._wrap_SetUTimeOut_Err_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_base), *(*C.swig_type_60)(unsafe.Pointer(&_swig_i_0)))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg1
 	}
@@ -1141,7 +1189,7 @@ func NewUSysError__SWIG_0() (_swig_ret USysError) {
 func NewUSysError__SWIG_1(arg1 string) (_swig_ret USysError) {
 	var swig_r USysError
 	_swig_i_0 := arg1
-	swig_r = (USysError)(SwigcptrUSysError(C._wrap_new_USysError__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(*(*C.swig_type_57)(unsafe.Pointer(&_swig_i_0)))))
+	swig_r = (USysError)(SwigcptrUSysError(C._wrap_new_USysError__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(*(*C.swig_type_62)(unsafe.Pointer(&_swig_i_0)))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg1
 	}
@@ -1175,7 +1223,7 @@ func (_swig_base SwigcptrUSysError) GetError() (_swig_ret string) {
 
 func (_swig_base SwigcptrUSysError) SetErr(arg1 string) {
 	_swig_i_0 := arg1
-	C._wrap_SetUSysError_Err_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_base), *(*C.swig_type_59)(unsafe.Pointer(&_swig_i_0)))
+	C._wrap_SetUSysError_Err_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_base), *(*C.swig_type_64)(unsafe.Pointer(&_swig_i_0)))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg1
 	}
@@ -1225,7 +1273,7 @@ func NewUValidateError__SWIG_0() (_swig_ret UValidateError) {
 func NewUValidateError__SWIG_1(arg1 string) (_swig_ret UValidateError) {
 	var swig_r UValidateError
 	_swig_i_0 := arg1
-	swig_r = (UValidateError)(SwigcptrUValidateError(C._wrap_new_UValidateError__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(*(*C.swig_type_61)(unsafe.Pointer(&_swig_i_0)))))
+	swig_r = (UValidateError)(SwigcptrUValidateError(C._wrap_new_UValidateError__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(*(*C.swig_type_66)(unsafe.Pointer(&_swig_i_0)))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg1
 	}
@@ -1259,7 +1307,7 @@ func (_swig_base SwigcptrUValidateError) GetError() (_swig_ret string) {
 
 func (_swig_base SwigcptrUValidateError) SetErr(arg1 string) {
 	_swig_i_0 := arg1
-	C._wrap_SetUValidateError_Err_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_base), *(*C.swig_type_63)(unsafe.Pointer(&_swig_i_0)))
+	C._wrap_SetUValidateError_Err_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_base), *(*C.swig_type_68)(unsafe.Pointer(&_swig_i_0)))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg1
 	}
@@ -1303,7 +1351,7 @@ func (p SwigcptrUProxy) SwigIsUProxy() {
 func NewUProxy__SWIG_0(arg1 string) (_swig_ret UProxy) {
 	var swig_r UProxy
 	_swig_i_0 := arg1
-	swig_r = (UProxy)(SwigcptrUProxy(C._wrap_new_UProxy__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(*(*C.swig_type_65)(unsafe.Pointer(&_swig_i_0)))))
+	swig_r = (UProxy)(SwigcptrUProxy(C._wrap_new_UProxy__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(*(*C.swig_type_70)(unsafe.Pointer(&_swig_i_0)))))
 	if Swig_escape_always_false {
 		Swig_escape_val = arg1
 	}
@@ -1313,7 +1361,7 @@ func NewUProxy__SWIG_0(arg1 string) (_swig_ret UProxy) {
 func NewUProxy__SWIG_1(arg1 int64) (_swig_ret UProxy) {
 	var swig_r UProxy
 	_swig_i_0 := arg1
-	swig_r = (UProxy)(SwigcptrUProxy(C._wrap_new_UProxy__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(C.swig_type_66(_swig_i_0))))
+	swig_r = (UProxy)(SwigcptrUProxy(C._wrap_new_UProxy__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(C.swig_type_71(_swig_i_0))))
 	return swig_r
 }
 
@@ -1340,14 +1388,14 @@ func DeleteUProxy(arg1 UProxy) {
 func (arg1 SwigcptrUProxy) AskSensor(arg2 int64) {
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	C._wrap_UProxy_askSensor_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_67(_swig_i_1))
+	C._wrap_UProxy_askSensor_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_72(_swig_i_1))
 }
 
 func (arg1 SwigcptrUProxy) GetValue(arg2 int64) (_swig_ret int64) {
 	var swig_r int64
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	swig_r = (int64)(C._wrap_UProxy_getValue_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_69(_swig_i_1)))
+	swig_r = (int64)(C._wrap_UProxy_getValue_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_74(_swig_i_1)))
 	return swig_r
 }
 
@@ -1355,7 +1403,7 @@ func (arg1 SwigcptrUProxy) SetValue(arg2 int64, arg3 int64) {
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
 	_swig_i_2 := arg3
-	C._wrap_UProxy_setValue_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_70(_swig_i_1), C.swig_type_71(_swig_i_2))
+	C._wrap_UProxy_setValue_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_75(_swig_i_1), C.swig_type_76(_swig_i_2))
 }
 
 func (arg1 SwigcptrUProxy) WaitMessage(arg2 int) (_swig_ret ShortIOInfo) {
@@ -1379,7 +1427,7 @@ func (arg1 SwigcptrUProxy) SafeSetValue(arg2 int64, arg3 int64) (_swig_ret Resul
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
 	_swig_i_2 := arg3
-	swig_r = (ResultBool)(SwigcptrResultBool(C._wrap_UProxy_safeSetValue_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_72(_swig_i_1), C.swig_type_73(_swig_i_2))))
+	swig_r = (ResultBool)(SwigcptrResultBool(C._wrap_UProxy_safeSetValue_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_77(_swig_i_1), C.swig_type_78(_swig_i_2))))
 	return swig_r
 }
 
@@ -1387,7 +1435,7 @@ func (arg1 SwigcptrUProxy) SafeGetValue(arg2 int64) (_swig_ret ResultValue) {
 	var swig_r ResultValue
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	swig_r = (ResultValue)(SwigcptrResultValue(C._wrap_UProxy_safeGetValue_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_74(_swig_i_1))))
+	swig_r = (ResultValue)(SwigcptrResultValue(C._wrap_UProxy_safeGetValue_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_79(_swig_i_1))))
 	return swig_r
 }
 
@@ -1395,7 +1443,7 @@ func (arg1 SwigcptrUProxy) SafeAskSensor(arg2 int64) (_swig_ret ResultBool) {
 	var swig_r ResultBool
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	swig_r = (ResultBool)(SwigcptrResultBool(C._wrap_UProxy_safeAskSensor_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_75(_swig_i_1))))
+	swig_r = (ResultBool)(SwigcptrResultBool(C._wrap_UProxy_safeAskSensor_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_80(_swig_i_1))))
 	return swig_r
 }
 
@@ -1403,7 +1451,7 @@ func (arg1 SwigcptrUProxy) IsExist(arg2 int64) (_swig_ret bool) {
 	var swig_r bool
 	_swig_i_0 := arg1
 	_swig_i_1 := arg2
-	swig_r = (bool)(C._wrap_UProxy_isExist_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_76(_swig_i_1)))
+	swig_r = (bool)(C._wrap_UProxy_isExist_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0), C.swig_type_81(_swig_i_1)))
 	return swig_r
 }
 

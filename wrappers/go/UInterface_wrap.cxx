@@ -422,6 +422,43 @@ _gostring_ _wrap_getConfFileName_uniset_internal_api_576c1e11c33cb6aa() {
 }
 
 
+_gostring_ _wrap_getConfigParamsByName__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(_gostring_ _swig_go_0, _gostring_ _swig_go_1) {
+  std::string *arg1 = 0 ;
+  std::string *arg2 = 0 ;
+  std::string result;
+  _gostring_ _swig_go_result;
+
+
+  std::string arg1_str(_swig_go_0.p, _swig_go_0.n);
+  arg1 = &arg1_str;
+
+
+  std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
+  arg2 = &arg2_str;
+
+
+  result = goUInterface::getConfigParamsByName((std::string const &)*arg1,(std::string const &)*arg2);
+  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length());
+  return _swig_go_result;
+}
+
+
+_gostring_ _wrap_getConfigParamsByName__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(_gostring_ _swig_go_0) {
+  std::string *arg1 = 0 ;
+  std::string result;
+  _gostring_ _swig_go_result;
+
+
+  std::string arg1_str(_swig_go_0.p, _swig_go_0.n);
+  arg1 = &arg1_str;
+
+
+  result = goUInterface::getConfigParamsByName((std::string const &)*arg1);
+  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length());
+  return _swig_go_result;
+}
+
+
 long long _wrap_DefaultID_get_uniset_internal_api_576c1e11c33cb6aa() {
   long result;
   long long _swig_go_result;

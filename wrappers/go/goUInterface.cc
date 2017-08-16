@@ -23,6 +23,7 @@
 #include "Configuration.h"
 #include "UniSetActivator.h"
 #include "UniSetTypes.h"
+#include "ujson.h"
 #include "goUInterface.h"
 //---------------------------------------------------------------------------
 using namespace std;
@@ -188,5 +189,42 @@ string goUInterface::getConfFileName() noexcept
 
 	return "";
 
+}
+//---------------------------------------------------------------------------
+std::string goUInterface::getConfigParamsByName( const std::string& name , const std::string& section )
+{
+	auto conf = uniset::uniset_conf();
+
+	if( !conf )
+		return "";
+
+	auto xml = conf->getConfXML();
+
+	std::string s( (section.empty() ? name : section) );
+
+	xmlNode* cnode = conf->findNode( xml->getFirstNode(), s, name );
+
+	if( !cnode )
+		return "";
+
+	uniset::UniXML::iterator it(cnode);
+	auto proplist = it.getPropList();
+
+	Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+	Poco::JSON::Array::Ptr jdata = uniset::json::make_child_array(json, "config");
+
+	for( const auto& p: proplist )
+	{
+		Poco::JSON::Object::Ptr item = new Poco::JSON::Object();
+		item->set("prop", p.first);
+		item->set("value", p.second);
+		jdata->add(item);
+	}
+
+	ostringstream result;
+	json->stringify(result);
+
+	// Poco::JSON::Object::Ptr это SharedPtr поэтому вызывать delete не нужно
+	return result.str();
 }
 //---------------------------------------------------------------------------
