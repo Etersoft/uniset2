@@ -295,6 +295,17 @@ UTypes::ResultBool *_wrap_uniset_init_uniset_internal_api_576c1e11c33cb6aa(intgo
 }
 
 
+bool _wrap_isUniSetInitOK_uniset_internal_api_576c1e11c33cb6aa() {
+  bool result;
+  bool _swig_go_result;
+
+
+  result = (bool)goUInterface::isUniSetInitOK();
+  _swig_go_result = result;
+  return _swig_go_result;
+}
+
+
 UTypes::ResultValue *_wrap_getValue_uniset_internal_api_576c1e11c33cb6aa(long long _swig_go_0) {
   long arg1 ;
   UTypes::ResultValue result;

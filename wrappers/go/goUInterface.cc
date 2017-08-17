@@ -228,3 +228,9 @@ std::string goUInterface::getConfigParamsByName( const std::string& name , const
 	return result.str();
 }
 //---------------------------------------------------------------------------
+bool goUInterface::isUniSetInitOK() noexcept
+{
+	std::lock_guard<std::mutex> l(umutex());
+	return uInterface != nullptr;
+}
+//---------------------------------------------------------------------------

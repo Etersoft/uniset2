@@ -112,6 +112,7 @@ typedef long long swig_type_81;
 extern void _wrap_Swig_free_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1);
 extern uintptr_t _wrap_uniset_init_params_uniset_internal_api_576c1e11c33cb6aa(uintptr_t arg1, swig_type_1 arg2);
 extern uintptr_t _wrap_uniset_init_uniset_internal_api_576c1e11c33cb6aa(swig_intgo arg1, swig_voidp arg2, swig_type_2 arg3);
+extern _Bool _wrap_isUniSetInitOK_uniset_internal_api_576c1e11c33cb6aa(void);
 extern uintptr_t _wrap_getValue_uniset_internal_api_576c1e11c33cb6aa(swig_type_3 arg1);
 extern uintptr_t _wrap_setValue__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(swig_type_4 arg1, swig_type_5 arg2, swig_type_6 arg3);
 extern uintptr_t _wrap_setValue__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(swig_type_7 arg1, swig_type_8 arg2);
@@ -278,6 +279,12 @@ func Uniset_init(arg1 int, arg2 *string, arg3 string) (_swig_ret ResultBool) {
 	if Swig_escape_always_false {
 		Swig_escape_val = arg3
 	}
+	return swig_r
+}
+
+func IsUniSetInitOK() (_swig_ret bool) {
+	var swig_r bool
+	swig_r = (bool)(C._wrap_isUniSetInitOK_uniset_internal_api_576c1e11c33cb6aa())
 	return swig_r
 }
 
