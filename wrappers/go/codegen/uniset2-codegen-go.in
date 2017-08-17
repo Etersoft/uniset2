@@ -1,0 +1,110 @@
+#!/bin/sh
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+datarootdir=@datarootdir@
+datadir=@datadir@
+sysconfdir=@sysconfdir@
+
+top_builddir=@top_builddir@
+
+xsltdir=@datadir@/@PACKAGE@/xslt
+
+PROG="${0##*/}"
+
+print_usage()
+{
+    [ "$1" = 0 ] || exec >&2
+    cat <<EOF
+Usage: $PROG [options] [xmlfile]
+
+$PROG 	- generate source code for control process
+xmlfile - source xml-file
+
+Valid options are:
+  -h, --help        - display help
+  -n, --name        - filename for *_SK files (base class implementation). Default: xmlfilename_SK.go
+
+EOF
+    [ -n "$1" ] && exit "$1" || exit
+}
+
+#parse command line options
+TEMP=`getopt -n $PROG -o h,n:,l: -l help,name:,topdir:,path:,local: -- "$@"` || exit 1
+eval set -- "$TEMP"
+
+name=
+xmlfile=
+localinc=0
+xsltpath=
+
+xls_go="go.xsl"
+go_gen_file=
+
+while :; do
+    case "$1" in
+	-h|--help) print_usage 0
+	    ;;
+	-n|--name)
+	    shift
+		name="$1"
+	    ;;
+
+	--topdir)
+		shift
+		top_builddir="$1"
+		;;
+
+	--local-include)
+		localinc=1
+		;;
+
+	-l|--local)
+		shift
+		xsltdir=$1
+		[ -z "${xsltdir}" ] && xsltdir=.
+		;;
+
+	--xsltdir)
+		shift
+		xsltdir="$1"
+		;;
+
+	--path)
+		shift
+		xsltpath="--path $1"
+		;;
+
+	--) shift; break
+	;;
+	*) "unrecognized option: $1"
+	exit 1
+	;;
+    esac
+    shift
+done
+
+
+xmlfile="$1"
+
+[ -n "$xmlfile" ] || print_usage
+
+if [ -z "$name" ]; then
+	name=$( basename $( basename $xmlfile .xml ) .src )
+fi
+
+[ -z "${name}" ] && print_usage 0
+
+go_gen_file=`echo ${name}_SK.go | tr '[:upper:]' '[:lower:]'`
+
+fname=$( basename $xmlfile )
+
+PARAMS=$( echo \
+		--stringparam XML_FILENAME "${fname}" \
+		--stringparam CNAME "${name}" \
+		--stringparam LOCALINC "${localinc}" \
+		$xsltpath \
+		)
+
+xsltproc ${PARAMS} ${xsltdir}/${xls_go} $xmlfile > $go_gen_file && gofmt -w $go_gen_file || rm -f $go_gen_file

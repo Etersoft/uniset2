@@ -3012,12 +3012,15 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIGTYPE_p_USysError swig_types[2]
 #define SWIGTYPE_p_UTimeOut swig_types[3]
 #define SWIGTYPE_p_UTypes__Params swig_types[4]
-#define SWIGTYPE_p_UTypes__ShortIOInfo swig_types[5]
-#define SWIGTYPE_p_UValidateError swig_types[6]
-#define SWIGTYPE_p_char swig_types[7]
-#define SWIGTYPE_p_p_char swig_types[8]
-static swig_type_info *swig_types[10];
-static swig_module_info swig_module = {swig_types, 9, 0, 0, 0, 0};
+#define SWIGTYPE_p_UTypes__ResultBool swig_types[5]
+#define SWIGTYPE_p_UTypes__ResultIO swig_types[6]
+#define SWIGTYPE_p_UTypes__ResultValue swig_types[7]
+#define SWIGTYPE_p_UTypes__ShortIOInfo swig_types[8]
+#define SWIGTYPE_p_UValidateError swig_types[9]
+#define SWIGTYPE_p_char swig_types[10]
+#define SWIGTYPE_p_p_char swig_types[11]
+static swig_type_info *swig_types[13];
+static swig_module_info swig_module = {swig_types, 12, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3476,58 +3479,16 @@ SWIGINTERNINLINE PyObject*
 
 
 SWIGINTERN int
-SWIG_AsVal_unsigned_SS_long (PyObject *obj, unsigned long *val)
+SWIG_AsVal_bool (PyObject *obj, bool *val)
 {
-#if PY_VERSION_HEX < 0x03000000
-  if (PyInt_Check(obj)) {
-    long v = PyInt_AsLong(obj);
-    if (v >= 0) {
-      if (val) *val = v;
-      return SWIG_OK;
-    } else {
-      return SWIG_OverflowError;
-    }
-  } else
-#endif
-  if (PyLong_Check(obj)) {
-    unsigned long v = PyLong_AsUnsignedLong(obj);
-    if (!PyErr_Occurred()) {
-      if (val) *val = v;
-      return SWIG_OK;
-    } else {
-      PyErr_Clear();
-      return SWIG_OverflowError;
-    }
-  }
-#ifdef SWIG_PYTHON_CAST_MODE
-  {
-    int dispatch = 0;
-    unsigned long v = PyLong_AsUnsignedLong(obj);
-    if (!PyErr_Occurred()) {
-      if (val) *val = v;
-      return SWIG_AddCast(SWIG_OK);
-    } else {
-      PyErr_Clear();
-    }
-    if (!dispatch) {
-      double d;
-      int res = SWIG_AddCast(SWIG_AsVal_double (obj,&d));
-      if (SWIG_IsOK(res) && SWIG_CanCastAsInteger(&d, 0, ULONG_MAX)) {
-	if (val) *val = (unsigned long)(d);
-	return res;
-      }
-    }
-  }
-#endif
-  return SWIG_TypeError;
-}
-
-
-SWIGINTERNINLINE PyObject*
-SWIG_From_unsigned_SS_long  (unsigned long value)
-{
-  return (value > LONG_MAX) ?
-    PyLong_FromUnsignedLong(value) : PyLong_FromLong(static_cast< long >(value));
+  int r;
+  if (!PyBool_Check(obj))
+    return SWIG_ERROR;
+  r = PyObject_IsTrue(obj);
+  if (r == -1)
+    return SWIG_ERROR;
+  if (val) *val = r ? true : false;
+  return SWIG_OK;
 }
 
 
@@ -4329,10 +4290,10 @@ fail:
 SWIGINTERN PyObject *_wrap_ShortIOInfo_tv_sec_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
-  unsigned long arg2 ;
+  long arg2 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  unsigned long val2 ;
+  long val2 ;
   int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
@@ -4343,11 +4304,11 @@ SWIGINTERN PyObject *_wrap_ShortIOInfo_tv_sec_set(PyObject *SWIGUNUSEDPARM(self)
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_tv_sec_set" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'");
   }
   arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
-  ecode2 = SWIG_AsVal_unsigned_SS_long(obj1, &val2);
+  ecode2 = SWIG_AsVal_long(obj1, &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ShortIOInfo_tv_sec_set" "', argument " "2"" of type '" "unsigned long""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ShortIOInfo_tv_sec_set" "', argument " "2"" of type '" "long""'");
   }
-  arg2 = static_cast< unsigned long >(val2);
+  arg2 = static_cast< long >(val2);
   if (arg1) (arg1)->tv_sec = arg2;
   resultobj = SWIG_Py_Void();
   return resultobj;
@@ -4362,7 +4323,7 @@ SWIGINTERN PyObject *_wrap_ShortIOInfo_tv_sec_get(PyObject *SWIGUNUSEDPARM(self)
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-  unsigned long result;
+  long result;
 
   if (!PyArg_ParseTuple(args,(char *)"O:ShortIOInfo_tv_sec_get",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
@@ -4370,8 +4331,8 @@ SWIGINTERN PyObject *_wrap_ShortIOInfo_tv_sec_get(PyObject *SWIGUNUSEDPARM(self)
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_tv_sec_get" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'");
   }
   arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
-  result = (unsigned long) ((arg1)->tv_sec);
-  resultobj = SWIG_From_unsigned_SS_long(static_cast< unsigned long >(result));
+  result = (long) ((arg1)->tv_sec);
+  resultobj = SWIG_From_long(static_cast< long >(result));
   return resultobj;
 fail:
   return NULL;
@@ -4381,10 +4342,10 @@ fail:
 SWIGINTERN PyObject *_wrap_ShortIOInfo_tv_nsec_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
-  unsigned long arg2 ;
+  long arg2 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  unsigned long val2 ;
+  long val2 ;
   int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
@@ -4395,11 +4356,11 @@ SWIGINTERN PyObject *_wrap_ShortIOInfo_tv_nsec_set(PyObject *SWIGUNUSEDPARM(self
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_tv_nsec_set" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'");
   }
   arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
-  ecode2 = SWIG_AsVal_unsigned_SS_long(obj1, &val2);
+  ecode2 = SWIG_AsVal_long(obj1, &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ShortIOInfo_tv_nsec_set" "', argument " "2"" of type '" "unsigned long""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ShortIOInfo_tv_nsec_set" "', argument " "2"" of type '" "long""'");
   }
-  arg2 = static_cast< unsigned long >(val2);
+  arg2 = static_cast< long >(val2);
   if (arg1) (arg1)->tv_nsec = arg2;
   resultobj = SWIG_Py_Void();
   return resultobj;
@@ -4414,7 +4375,7 @@ SWIGINTERN PyObject *_wrap_ShortIOInfo_tv_nsec_get(PyObject *SWIGUNUSEDPARM(self
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-  unsigned long result;
+  long result;
 
   if (!PyArg_ParseTuple(args,(char *)"O:ShortIOInfo_tv_nsec_get",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
@@ -4422,8 +4383,8 @@ SWIGINTERN PyObject *_wrap_ShortIOInfo_tv_nsec_get(PyObject *SWIGUNUSEDPARM(self
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ShortIOInfo_tv_nsec_get" "', argument " "1"" of type '" "UTypes::ShortIOInfo *""'");
   }
   arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
-  result = (unsigned long) ((arg1)->tv_nsec);
-  resultobj = SWIG_From_unsigned_SS_long(static_cast< unsigned long >(result));
+  result = (long) ((arg1)->tv_nsec);
+  resultobj = SWIG_From_long(static_cast< long >(result));
   return resultobj;
 fail:
   return NULL;
@@ -4624,6 +4585,990 @@ SWIGINTERN PyObject *ShortIOInfo_swigregister(PyObject *SWIGUNUSEDPARM(self), Py
   PyObject *obj;
   if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
   SWIG_TypeNewClientData(SWIGTYPE_p_UTypes__ShortIOInfo, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_ResultIO_sinfo_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultIO *arg1 = (UTypes::ResultIO *) 0 ;
+  UTypes::ShortIOInfo *arg2 = (UTypes::ShortIOInfo *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"OO:ResultIO_sinfo_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultIO, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultIO_sinfo_set" "', argument " "1"" of type '" "UTypes::ResultIO *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultIO * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "ResultIO_sinfo_set" "', argument " "2"" of type '" "UTypes::ShortIOInfo *""'");
+  }
+  arg2 = reinterpret_cast< UTypes::ShortIOInfo * >(argp2);
+  if (arg1) (arg1)->sinfo = *arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ResultIO_sinfo_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultIO *arg1 = (UTypes::ResultIO *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  UTypes::ShortIOInfo *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:ResultIO_sinfo_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultIO, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultIO_sinfo_get" "', argument " "1"" of type '" "UTypes::ResultIO *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultIO * >(argp1);
+  result = (UTypes::ShortIOInfo *)& ((arg1)->sinfo);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UTypes__ShortIOInfo, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ResultIO_ok_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultIO *arg1 = (UTypes::ResultIO *) 0 ;
+  bool arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  bool val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"OO:ResultIO_ok_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultIO, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultIO_ok_set" "', argument " "1"" of type '" "UTypes::ResultIO *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultIO * >(argp1);
+  ecode2 = SWIG_AsVal_bool(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ResultIO_ok_set" "', argument " "2"" of type '" "bool""'");
+  }
+  arg2 = static_cast< bool >(val2);
+  if (arg1) (arg1)->ok = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ResultIO_ok_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultIO *arg1 = (UTypes::ResultIO *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  bool result;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:ResultIO_ok_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultIO, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultIO_ok_get" "', argument " "1"" of type '" "UTypes::ResultIO *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultIO * >(argp1);
+  result = (bool) ((arg1)->ok);
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_ResultIO__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ShortIOInfo *arg1 = 0 ;
+  bool arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  bool val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  UTypes::ResultIO *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"OO:new_ResultIO",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1, SWIGTYPE_p_UTypes__ShortIOInfo,  0  | 0);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_ResultIO" "', argument " "1"" of type '" "UTypes::ShortIOInfo const &""'");
+  }
+  if (!argp1) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_ResultIO" "', argument " "1"" of type '" "UTypes::ShortIOInfo const &""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ShortIOInfo * >(argp1);
+  ecode2 = SWIG_AsVal_bool(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_ResultIO" "', argument " "2"" of type '" "bool""'");
+  }
+  arg2 = static_cast< bool >(val2);
+  result = (UTypes::ResultIO *)new UTypes::ResultIO((UTypes::ShortIOInfo const &)*arg1,arg2);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UTypes__ResultIO, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_ResultIO__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultIO *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)":new_ResultIO")) SWIG_fail;
+  result = (UTypes::ResultIO *)new UTypes::ResultIO();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UTypes__ResultIO, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_ResultIO(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[3] = {
+    0
+  };
+  Py_ssize_t ii;
+
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 2) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 0) {
+    return _wrap_new_ResultIO__SWIG_1(self, args);
+  }
+  if (argc == 2) {
+    int _v;
+    int res = SWIG_ConvertPtr(argv[0], 0, SWIGTYPE_p_UTypes__ShortIOInfo, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_bool(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        return _wrap_new_ResultIO__SWIG_0(self, args);
+      }
+    }
+  }
+
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'new_ResultIO'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    UTypes::ResultIO::ResultIO(UTypes::ShortIOInfo const &,bool)\n"
+    "    UTypes::ResultIO::ResultIO()\n");
+  return 0;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_ResultIO(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultIO *arg1 = (UTypes::ResultIO *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_ResultIO",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultIO, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_ResultIO" "', argument " "1"" of type '" "UTypes::ResultIO *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultIO * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *ResultIO_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_UTypes__ResultIO, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_ResultValue_value_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultValue *arg1 = (UTypes::ResultValue *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"OO:ResultValue_value_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultValue, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultValue_value_set" "', argument " "1"" of type '" "UTypes::ResultValue *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultValue * >(argp1);
+  ecode2 = SWIG_AsVal_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ResultValue_value_set" "', argument " "2"" of type '" "long""'");
+  }
+  arg2 = static_cast< long >(val2);
+  if (arg1) (arg1)->value = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ResultValue_value_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultValue *arg1 = (UTypes::ResultValue *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  long result;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:ResultValue_value_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultValue, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultValue_value_get" "', argument " "1"" of type '" "UTypes::ResultValue *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultValue * >(argp1);
+  result = (long) ((arg1)->value);
+  resultobj = SWIG_From_long(static_cast< long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ResultValue_ok_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultValue *arg1 = (UTypes::ResultValue *) 0 ;
+  bool arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  bool val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"OO:ResultValue_ok_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultValue, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultValue_ok_set" "', argument " "1"" of type '" "UTypes::ResultValue *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultValue * >(argp1);
+  ecode2 = SWIG_AsVal_bool(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ResultValue_ok_set" "', argument " "2"" of type '" "bool""'");
+  }
+  arg2 = static_cast< bool >(val2);
+  if (arg1) (arg1)->ok = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ResultValue_ok_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultValue *arg1 = (UTypes::ResultValue *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  bool result;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:ResultValue_ok_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultValue, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultValue_ok_get" "', argument " "1"" of type '" "UTypes::ResultValue *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultValue * >(argp1);
+  result = (bool) ((arg1)->ok);
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ResultValue_err_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultValue *arg1 = (UTypes::ResultValue *) 0 ;
+  std::string *arg2 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int res2 = SWIG_OLDOBJ ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"OO:ResultValue_err_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultValue, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultValue_err_set" "', argument " "1"" of type '" "UTypes::ResultValue *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultValue * >(argp1);
+  {
+    std::string *ptr = (std::string *)0;
+    res2 = SWIG_AsPtr_std_string(obj1, &ptr);
+    if (!SWIG_IsOK(res2)) {
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "ResultValue_err_set" "', argument " "2"" of type '" "std::string const &""'");
+    }
+    if (!ptr) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "ResultValue_err_set" "', argument " "2"" of type '" "std::string const &""'");
+    }
+    arg2 = ptr;
+  }
+  if (arg1) (arg1)->err = *arg2;
+  resultobj = SWIG_Py_Void();
+  if (SWIG_IsNewObj(res2)) delete arg2;
+  return resultobj;
+fail:
+  if (SWIG_IsNewObj(res2)) delete arg2;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ResultValue_err_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultValue *arg1 = (UTypes::ResultValue *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  std::string *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:ResultValue_err_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultValue, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultValue_err_get" "', argument " "1"" of type '" "UTypes::ResultValue *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultValue * >(argp1);
+  result = (std::string *) & ((arg1)->err);
+  resultobj = SWIG_From_std_string(static_cast< std::string >(*result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_ResultValue__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  long arg1 ;
+  std::string *arg2 = 0 ;
+  long val1 ;
+  int ecode1 = 0 ;
+  int res2 = SWIG_OLDOBJ ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  UTypes::ResultValue *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"OO:new_ResultValue",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_long(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_ResultValue" "', argument " "1"" of type '" "long""'");
+  }
+  arg1 = static_cast< long >(val1);
+  {
+    std::string *ptr = (std::string *)0;
+    res2 = SWIG_AsPtr_std_string(obj1, &ptr);
+    if (!SWIG_IsOK(res2)) {
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "new_ResultValue" "', argument " "2"" of type '" "std::string const &""'");
+    }
+    if (!ptr) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_ResultValue" "', argument " "2"" of type '" "std::string const &""'");
+    }
+    arg2 = ptr;
+  }
+  result = (UTypes::ResultValue *)new UTypes::ResultValue(arg1,(std::string const &)*arg2);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UTypes__ResultValue, SWIG_POINTER_NEW |  0 );
+  if (SWIG_IsNewObj(res2)) delete arg2;
+  return resultobj;
+fail:
+  if (SWIG_IsNewObj(res2)) delete arg2;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_ResultValue__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  long arg1 ;
+  long val1 ;
+  int ecode1 = 0 ;
+  PyObject * obj0 = 0 ;
+  UTypes::ResultValue *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:new_ResultValue",&obj0)) SWIG_fail;
+  ecode1 = SWIG_AsVal_long(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_ResultValue" "', argument " "1"" of type '" "long""'");
+  }
+  arg1 = static_cast< long >(val1);
+  result = (UTypes::ResultValue *)new UTypes::ResultValue(arg1);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UTypes__ResultValue, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_ResultValue__SWIG_2(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultValue *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)":new_ResultValue")) SWIG_fail;
+  result = (UTypes::ResultValue *)new UTypes::ResultValue();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UTypes__ResultValue, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_ResultValue__SWIG_3(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultValue *arg1 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  UTypes::ResultValue *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:new_ResultValue",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1, SWIGTYPE_p_UTypes__ResultValue,  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_ResultValue" "', argument " "1"" of type '" "UTypes::ResultValue &&""'");
+  }
+  if (!argp1) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_ResultValue" "', argument " "1"" of type '" "UTypes::ResultValue &&""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultValue * >(argp1);
+  result = (UTypes::ResultValue *)new UTypes::ResultValue((UTypes::ResultValue &&)*arg1);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UTypes__ResultValue, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_ResultValue__SWIG_4(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultValue *arg1 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  UTypes::ResultValue *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:new_ResultValue",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1, SWIGTYPE_p_UTypes__ResultValue,  0  | 0);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_ResultValue" "', argument " "1"" of type '" "UTypes::ResultValue const &""'");
+  }
+  if (!argp1) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_ResultValue" "', argument " "1"" of type '" "UTypes::ResultValue const &""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultValue * >(argp1);
+  result = (UTypes::ResultValue *)new UTypes::ResultValue((UTypes::ResultValue const &)*arg1);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UTypes__ResultValue, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_ResultValue(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[3] = {
+    0
+  };
+  Py_ssize_t ii;
+
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 2) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 0) {
+    return _wrap_new_ResultValue__SWIG_2(self, args);
+  }
+  if (argc == 1) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_UTypes__ResultValue, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      return _wrap_new_ResultValue__SWIG_3(self, args);
+    }
+  }
+  if (argc == 1) {
+    int _v;
+    int res = SWIG_ConvertPtr(argv[0], 0, SWIGTYPE_p_UTypes__ResultValue, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      return _wrap_new_ResultValue__SWIG_4(self, args);
+    }
+  }
+  if (argc == 1) {
+    int _v;
+    {
+      int res = SWIG_AsVal_long(argv[0], NULL);
+      _v = SWIG_CheckState(res);
+    }
+    if (_v) {
+      return _wrap_new_ResultValue__SWIG_1(self, args);
+    }
+  }
+  if (argc == 2) {
+    int _v;
+    {
+      int res = SWIG_AsVal_long(argv[0], NULL);
+      _v = SWIG_CheckState(res);
+    }
+    if (_v) {
+      int res = SWIG_AsPtr_std_string(argv[1], (std::string**)(0));
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        return _wrap_new_ResultValue__SWIG_0(self, args);
+      }
+    }
+  }
+
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'new_ResultValue'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    UTypes::ResultValue::ResultValue(long,std::string const &)\n"
+    "    UTypes::ResultValue::ResultValue(long)\n"
+    "    UTypes::ResultValue::ResultValue()\n"
+    "    UTypes::ResultValue::ResultValue(UTypes::ResultValue &&)\n"
+    "    UTypes::ResultValue::ResultValue(UTypes::ResultValue const &)\n");
+  return 0;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_ResultValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultValue *arg1 = (UTypes::ResultValue *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_ResultValue",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultValue, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_ResultValue" "', argument " "1"" of type '" "UTypes::ResultValue *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultValue * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *ResultValue_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_UTypes__ResultValue, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *_wrap_ResultBool_result_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultBool *arg1 = (UTypes::ResultBool *) 0 ;
+  bool arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  bool val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"OO:ResultBool_result_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultBool, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultBool_result_set" "', argument " "1"" of type '" "UTypes::ResultBool *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultBool * >(argp1);
+  ecode2 = SWIG_AsVal_bool(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ResultBool_result_set" "', argument " "2"" of type '" "bool""'");
+  }
+  arg2 = static_cast< bool >(val2);
+  if (arg1) (arg1)->result = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ResultBool_result_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultBool *arg1 = (UTypes::ResultBool *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  bool result;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:ResultBool_result_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultBool, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultBool_result_get" "', argument " "1"" of type '" "UTypes::ResultBool *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultBool * >(argp1);
+  result = (bool) ((arg1)->result);
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ResultBool_ok_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultBool *arg1 = (UTypes::ResultBool *) 0 ;
+  bool arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  bool val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"OO:ResultBool_ok_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultBool, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultBool_ok_set" "', argument " "1"" of type '" "UTypes::ResultBool *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultBool * >(argp1);
+  ecode2 = SWIG_AsVal_bool(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ResultBool_ok_set" "', argument " "2"" of type '" "bool""'");
+  }
+  arg2 = static_cast< bool >(val2);
+  if (arg1) (arg1)->ok = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ResultBool_ok_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultBool *arg1 = (UTypes::ResultBool *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  bool result;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:ResultBool_ok_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultBool, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultBool_ok_get" "', argument " "1"" of type '" "UTypes::ResultBool *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultBool * >(argp1);
+  result = (bool) ((arg1)->ok);
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ResultBool_err_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultBool *arg1 = (UTypes::ResultBool *) 0 ;
+  std::string *arg2 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int res2 = SWIG_OLDOBJ ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"OO:ResultBool_err_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultBool, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultBool_err_set" "', argument " "1"" of type '" "UTypes::ResultBool *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultBool * >(argp1);
+  {
+    std::string *ptr = (std::string *)0;
+    res2 = SWIG_AsPtr_std_string(obj1, &ptr);
+    if (!SWIG_IsOK(res2)) {
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "ResultBool_err_set" "', argument " "2"" of type '" "std::string const &""'");
+    }
+    if (!ptr) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "ResultBool_err_set" "', argument " "2"" of type '" "std::string const &""'");
+    }
+    arg2 = ptr;
+  }
+  if (arg1) (arg1)->err = *arg2;
+  resultobj = SWIG_Py_Void();
+  if (SWIG_IsNewObj(res2)) delete arg2;
+  return resultobj;
+fail:
+  if (SWIG_IsNewObj(res2)) delete arg2;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ResultBool_err_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultBool *arg1 = (UTypes::ResultBool *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  std::string *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:ResultBool_err_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultBool, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultBool_err_get" "', argument " "1"" of type '" "UTypes::ResultBool *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultBool * >(argp1);
+  result = (std::string *) & ((arg1)->err);
+  resultobj = SWIG_From_std_string(static_cast< std::string >(*result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_ResultBool__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  bool arg1 ;
+  std::string *arg2 = 0 ;
+  bool val1 ;
+  int ecode1 = 0 ;
+  int res2 = SWIG_OLDOBJ ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  UTypes::ResultBool *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"OO:new_ResultBool",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_bool(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_ResultBool" "', argument " "1"" of type '" "bool""'");
+  }
+  arg1 = static_cast< bool >(val1);
+  {
+    std::string *ptr = (std::string *)0;
+    res2 = SWIG_AsPtr_std_string(obj1, &ptr);
+    if (!SWIG_IsOK(res2)) {
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "new_ResultBool" "', argument " "2"" of type '" "std::string const &""'");
+    }
+    if (!ptr) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_ResultBool" "', argument " "2"" of type '" "std::string const &""'");
+    }
+    arg2 = ptr;
+  }
+  result = (UTypes::ResultBool *)new UTypes::ResultBool(arg1,(std::string const &)*arg2);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UTypes__ResultBool, SWIG_POINTER_NEW |  0 );
+  if (SWIG_IsNewObj(res2)) delete arg2;
+  return resultobj;
+fail:
+  if (SWIG_IsNewObj(res2)) delete arg2;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_ResultBool__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  bool arg1 ;
+  bool val1 ;
+  int ecode1 = 0 ;
+  PyObject * obj0 = 0 ;
+  UTypes::ResultBool *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:new_ResultBool",&obj0)) SWIG_fail;
+  ecode1 = SWIG_AsVal_bool(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_ResultBool" "', argument " "1"" of type '" "bool""'");
+  }
+  arg1 = static_cast< bool >(val1);
+  result = (UTypes::ResultBool *)new UTypes::ResultBool(arg1);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UTypes__ResultBool, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_ResultBool__SWIG_2(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultBool *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)":new_ResultBool")) SWIG_fail;
+  result = (UTypes::ResultBool *)new UTypes::ResultBool();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UTypes__ResultBool, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_ResultBool__SWIG_3(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultBool *arg1 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  UTypes::ResultBool *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:new_ResultBool",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1, SWIGTYPE_p_UTypes__ResultBool,  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_ResultBool" "', argument " "1"" of type '" "UTypes::ResultBool &&""'");
+  }
+  if (!argp1) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_ResultBool" "', argument " "1"" of type '" "UTypes::ResultBool &&""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultBool * >(argp1);
+  result = (UTypes::ResultBool *)new UTypes::ResultBool((UTypes::ResultBool &&)*arg1);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UTypes__ResultBool, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_ResultBool__SWIG_4(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultBool *arg1 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  UTypes::ResultBool *result = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:new_ResultBool",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1, SWIGTYPE_p_UTypes__ResultBool,  0  | 0);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_ResultBool" "', argument " "1"" of type '" "UTypes::ResultBool const &""'");
+  }
+  if (!argp1) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_ResultBool" "', argument " "1"" of type '" "UTypes::ResultBool const &""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultBool * >(argp1);
+  result = (UTypes::ResultBool *)new UTypes::ResultBool((UTypes::ResultBool const &)*arg1);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UTypes__ResultBool, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_ResultBool(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[3] = {
+    0
+  };
+  Py_ssize_t ii;
+
+  if (!PyTuple_Check(args)) SWIG_fail;
+  argc = args ? PyObject_Length(args) : 0;
+  for (ii = 0; (ii < 2) && (ii < argc); ii++) {
+    argv[ii] = PyTuple_GET_ITEM(args,ii);
+  }
+  if (argc == 0) {
+    return _wrap_new_ResultBool__SWIG_2(self, args);
+  }
+  if (argc == 1) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_UTypes__ResultBool, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      return _wrap_new_ResultBool__SWIG_3(self, args);
+    }
+  }
+  if (argc == 1) {
+    int _v;
+    int res = SWIG_ConvertPtr(argv[0], 0, SWIGTYPE_p_UTypes__ResultBool, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      return _wrap_new_ResultBool__SWIG_4(self, args);
+    }
+  }
+  if (argc == 1) {
+    int _v;
+    {
+      int res = SWIG_AsVal_bool(argv[0], NULL);
+      _v = SWIG_CheckState(res);
+    }
+    if (_v) {
+      return _wrap_new_ResultBool__SWIG_1(self, args);
+    }
+  }
+  if (argc == 2) {
+    int _v;
+    {
+      int res = SWIG_AsVal_bool(argv[0], NULL);
+      _v = SWIG_CheckState(res);
+    }
+    if (_v) {
+      int res = SWIG_AsPtr_std_string(argv[1], (std::string**)(0));
+      _v = SWIG_CheckState(res);
+      if (_v) {
+        return _wrap_new_ResultBool__SWIG_0(self, args);
+      }
+    }
+  }
+
+fail:
+  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'new_ResultBool'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    UTypes::ResultBool::ResultBool(bool,std::string const &)\n"
+    "    UTypes::ResultBool::ResultBool(bool)\n"
+    "    UTypes::ResultBool::ResultBool()\n"
+    "    UTypes::ResultBool::ResultBool(UTypes::ResultBool &&)\n"
+    "    UTypes::ResultBool::ResultBool(UTypes::ResultBool const &)\n");
+  return 0;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_ResultBool(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UTypes::ResultBool *arg1 = (UTypes::ResultBool *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_ResultBool",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTypes__ResultBool, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_ResultBool" "', argument " "1"" of type '" "UTypes::ResultBool *""'");
+  }
+  arg1 = reinterpret_cast< UTypes::ResultBool * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *ResultBool_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_UTypes__ResultBool, SWIG_NewClientData(obj));
   return SWIG_Py_Void();
 }
 
@@ -5568,6 +6513,31 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"new_ShortIOInfo", _wrap_new_ShortIOInfo, METH_VARARGS, NULL},
 	 { (char *)"delete_ShortIOInfo", _wrap_delete_ShortIOInfo, METH_VARARGS, NULL},
 	 { (char *)"ShortIOInfo_swigregister", ShortIOInfo_swigregister, METH_VARARGS, NULL},
+	 { (char *)"ResultIO_sinfo_set", _wrap_ResultIO_sinfo_set, METH_VARARGS, NULL},
+	 { (char *)"ResultIO_sinfo_get", _wrap_ResultIO_sinfo_get, METH_VARARGS, NULL},
+	 { (char *)"ResultIO_ok_set", _wrap_ResultIO_ok_set, METH_VARARGS, NULL},
+	 { (char *)"ResultIO_ok_get", _wrap_ResultIO_ok_get, METH_VARARGS, NULL},
+	 { (char *)"new_ResultIO", _wrap_new_ResultIO, METH_VARARGS, NULL},
+	 { (char *)"delete_ResultIO", _wrap_delete_ResultIO, METH_VARARGS, NULL},
+	 { (char *)"ResultIO_swigregister", ResultIO_swigregister, METH_VARARGS, NULL},
+	 { (char *)"ResultValue_value_set", _wrap_ResultValue_value_set, METH_VARARGS, NULL},
+	 { (char *)"ResultValue_value_get", _wrap_ResultValue_value_get, METH_VARARGS, NULL},
+	 { (char *)"ResultValue_ok_set", _wrap_ResultValue_ok_set, METH_VARARGS, NULL},
+	 { (char *)"ResultValue_ok_get", _wrap_ResultValue_ok_get, METH_VARARGS, NULL},
+	 { (char *)"ResultValue_err_set", _wrap_ResultValue_err_set, METH_VARARGS, NULL},
+	 { (char *)"ResultValue_err_get", _wrap_ResultValue_err_get, METH_VARARGS, NULL},
+	 { (char *)"new_ResultValue", _wrap_new_ResultValue, METH_VARARGS, NULL},
+	 { (char *)"delete_ResultValue", _wrap_delete_ResultValue, METH_VARARGS, NULL},
+	 { (char *)"ResultValue_swigregister", ResultValue_swigregister, METH_VARARGS, NULL},
+	 { (char *)"ResultBool_result_set", _wrap_ResultBool_result_set, METH_VARARGS, NULL},
+	 { (char *)"ResultBool_result_get", _wrap_ResultBool_result_get, METH_VARARGS, NULL},
+	 { (char *)"ResultBool_ok_set", _wrap_ResultBool_ok_set, METH_VARARGS, NULL},
+	 { (char *)"ResultBool_ok_get", _wrap_ResultBool_ok_get, METH_VARARGS, NULL},
+	 { (char *)"ResultBool_err_set", _wrap_ResultBool_err_set, METH_VARARGS, NULL},
+	 { (char *)"ResultBool_err_get", _wrap_ResultBool_err_get, METH_VARARGS, NULL},
+	 { (char *)"new_ResultBool", _wrap_new_ResultBool, METH_VARARGS, NULL},
+	 { (char *)"delete_ResultBool", _wrap_delete_ResultBool, METH_VARARGS, NULL},
+	 { (char *)"ResultBool_swigregister", ResultBool_swigregister, METH_VARARGS, NULL},
 	 { (char *)"new_UException", _wrap_new_UException, METH_VARARGS, NULL},
 	 { (char *)"delete_UException", _wrap_delete_UException, METH_VARARGS, NULL},
 	 { (char *)"UException_getError", _wrap_UException_getError, METH_VARARGS, NULL},
@@ -5614,6 +6584,9 @@ static swig_type_info _swigt__p_UProxyObject = {"_p_UProxyObject", "UProxyObject
 static swig_type_info _swigt__p_USysError = {"_p_USysError", "USysError *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UTimeOut = {"_p_UTimeOut", "UTimeOut *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UTypes__Params = {"_p_UTypes__Params", "UTypes::Params *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_UTypes__ResultBool = {"_p_UTypes__ResultBool", "UTypes::ResultBool *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_UTypes__ResultIO = {"_p_UTypes__ResultIO", "UTypes::ResultIO *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_UTypes__ResultValue = {"_p_UTypes__ResultValue", "UTypes::ResultValue *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UTypes__ShortIOInfo = {"_p_UTypes__ShortIOInfo", "UTypes::ShortIOInfo *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UValidateError = {"_p_UValidateError", "UValidateError *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
@@ -5625,6 +6598,9 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_USysError,
   &_swigt__p_UTimeOut,
   &_swigt__p_UTypes__Params,
+  &_swigt__p_UTypes__ResultBool,
+  &_swigt__p_UTypes__ResultIO,
+  &_swigt__p_UTypes__ResultValue,
   &_swigt__p_UTypes__ShortIOInfo,
   &_swigt__p_UValidateError,
   &_swigt__p_char,
@@ -5636,6 +6612,9 @@ static swig_cast_info _swigc__p_UProxyObject[] = {  {&_swigt__p_UProxyObject, 0,
 static swig_cast_info _swigc__p_USysError[] = {  {&_swigt__p_USysError, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UTimeOut[] = {  {&_swigt__p_UTimeOut, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UTypes__Params[] = {  {&_swigt__p_UTypes__Params, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_UTypes__ResultBool[] = {  {&_swigt__p_UTypes__ResultBool, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_UTypes__ResultIO[] = {  {&_swigt__p_UTypes__ResultIO, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_UTypes__ResultValue[] = {  {&_swigt__p_UTypes__ResultValue, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UTypes__ShortIOInfo[] = {  {&_swigt__p_UTypes__ShortIOInfo, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UValidateError[] = {  {&_swigt__p_UValidateError, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
@@ -5647,6 +6626,9 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_USysError,
   _swigc__p_UTimeOut,
   _swigc__p_UTypes__Params,
+  _swigc__p_UTypes__ResultBool,
+  _swigc__p_UTypes__ResultIO,
+  _swigc__p_UTypes__ResultValue,
   _swigc__p_UTypes__ShortIOInfo,
   _swigc__p_UValidateError,
   _swigc__p_char,

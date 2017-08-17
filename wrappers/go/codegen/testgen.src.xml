@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	name 		- название класса
+	msgcount	- сколько сообщений обрабатывается за один раз
+	sleep_msec	- пауза между итерациями в работе процесса
+
+	type
+	====
+		in 	- входные регистры (только для чтения)
+		out	- выходные регистры (запись)
+		io  - запись и чтение
+-->
+<Test>
+  <settings>
+	<set name="class-name" val="TestGen"/>
+	<set name="base-class" val="UniSetManager"/>
+	<set name="msg-count" val="20"/>
+	<set name="sleep-msec" val="150"/>
+	<set name="arg-prefix" val="test-"/>
+	<set name="resetMsgTime" val="300"/>
+  </settings>
+  <variables>
+      <!-- type = [int,str,bool,float]
+         int:  max,min,no_range_exception=[0,1]
+         str:
+         float: max,min,no_range_exception=[0,1]
+         bool:
+
+		 min - минимальное значение (может быть не задано)
+		 max - максимальное значение (может быть не задано)
+		 default - значение по умолчанию (может быть не задано)
+		 no_range_exception=1 - при выходе за границы min или max только писать unideb[WARN].
+      -->
+		<item name="test_int" type="int" min="0" comment="test int variable" const="1" public="1"/>
+		<item name="test_int2" type="int" max="100" default="110" no_range_exception="1"/>
+		<item name="test_long" type="long" max="100" default="110" no_range_exception="1"/>
+		<item name="test_float" type="float" max="100.0" default="50.0" />
+		<item name="test_double" type="double" max="100.340" default="52.044" />
+		<item name="test_bool" type="bool" private="1" no_vmonit="1"/>
+		<item name="test_str" type="str" default="ddd"/>
+  </variables>
+  <smap>
+	<!-- name - название переменной в конф. файле -->
+	<item name="input1_s" vartype="in" comment="comment for input1" smTestID="1"/>
+	<item name="input2_s" vartype="in" comment="comment for input2" initFromSM="1"/>
+	<item name="output1_c" vartype="out" omment="comment for output1" no_check_id="1"/>
+	<item name="output2_c" vartype="out" omment="comment for output2" force="1"/>
+<!--	<item name="loglevel_s" vartype="in" comment="log level control" loglevel="1"/> -->
+  </smap>
+
+  <msgmap>
+	<!-- name - название переменной в конф. файле -->
+		<item name="mid_Message1" comment="comment for Message 1" />
+  </msgmap>
+</Test>

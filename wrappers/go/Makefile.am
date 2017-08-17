@@ -1,5 +1,7 @@
 #if DISABLE_GO
 #else
+SUBDIRS=codegen
+
 
 BUILD_SRCDIR=$(srcdir)/../core
 BUILD_SRC=UProxy.cc

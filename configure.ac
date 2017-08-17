@@ -503,6 +503,8 @@ AC_CONFIG_FILES([Makefile
 				 testsuite/Makefile
 				 wrappers/Makefile
 				 wrappers/go/Makefile
+				 wrappers/go/codegen/Makefile
+				 wrappers/go/codegen/uniset2-codegen-go
 				 wrappers/python/lib/Makefile
 				 wrappers/python/lib/pyUniSet/Makefile
 				 wrappers/python/netdata-plugin/Makefile

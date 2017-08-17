@@ -186,6 +186,76 @@ class ShortIOInfo:
 ShortIOInfo_swigregister = _pyUniSet.ShortIOInfo_swigregister
 ShortIOInfo_swigregister(ShortIOInfo)
 
+class ResultIO:
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ResultIO, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, ResultIO, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["sinfo"] = _pyUniSet.ResultIO_sinfo_set
+    __swig_getmethods__["sinfo"] = _pyUniSet.ResultIO_sinfo_get
+    __swig_setmethods__["ok"] = _pyUniSet.ResultIO_ok_set
+    __swig_getmethods__["ok"] = _pyUniSet.ResultIO_ok_get
+
+    def __init__(self, *args):
+        this = _pyUniSet.new_ResultIO(*args)
+        try:
+            self.this.append(this)
+        except Exception:
+            self.this = this
+    __swig_destroy__ = _pyUniSet.delete_ResultIO
+    __del__ = lambda self: None
+ResultIO_swigregister = _pyUniSet.ResultIO_swigregister
+ResultIO_swigregister(ResultIO)
+
+class ResultValue:
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ResultValue, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, ResultValue, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["value"] = _pyUniSet.ResultValue_value_set
+    __swig_getmethods__["value"] = _pyUniSet.ResultValue_value_get
+    __swig_setmethods__["ok"] = _pyUniSet.ResultValue_ok_set
+    __swig_getmethods__["ok"] = _pyUniSet.ResultValue_ok_get
+    __swig_setmethods__["err"] = _pyUniSet.ResultValue_err_set
+    __swig_getmethods__["err"] = _pyUniSet.ResultValue_err_get
+
+    def __init__(self, *args):
+        this = _pyUniSet.new_ResultValue(*args)
+        try:
+            self.this.append(this)
+        except Exception:
+            self.this = this
+    __swig_destroy__ = _pyUniSet.delete_ResultValue
+    __del__ = lambda self: None
+ResultValue_swigregister = _pyUniSet.ResultValue_swigregister
+ResultValue_swigregister(ResultValue)
+
+class ResultBool:
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ResultBool, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, ResultBool, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["result"] = _pyUniSet.ResultBool_result_set
+    __swig_getmethods__["result"] = _pyUniSet.ResultBool_result_get
+    __swig_setmethods__["ok"] = _pyUniSet.ResultBool_ok_set
+    __swig_getmethods__["ok"] = _pyUniSet.ResultBool_ok_get
+    __swig_setmethods__["err"] = _pyUniSet.ResultBool_err_set
+    __swig_getmethods__["err"] = _pyUniSet.ResultBool_err_get
+
+    def __init__(self, *args):
+        this = _pyUniSet.new_ResultBool(*args)
+        try:
+            self.this.append(this)
+        except Exception:
+            self.this = this
+    __swig_destroy__ = _pyUniSet.delete_ResultBool
+    __del__ = lambda self: None
+ResultBool_swigregister = _pyUniSet.ResultBool_swigregister
+ResultBool_swigregister(ResultBool)
+
 class UException(Exception):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, UException, name, value)
