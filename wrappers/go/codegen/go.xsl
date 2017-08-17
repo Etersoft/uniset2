@@ -35,7 +35,6 @@ package <xsl:value-of select="$PACKAGE"/>
 import (
 	"fmt"
 	"uniset"
-	"reflect"
 	"uniset_internal_api"
 	"encoding/json"
 	"strconv"
@@ -53,15 +52,17 @@ type  <xsl:value-of select="$CLASSNAME"/>_SK struct {
 	// variables
 	<xsl:call-template name="VAR-LIST"/>
 
-	din  []*uniset.BoolValue  // список bool-вых входов
-	ain  []*uniset.Int64Value // список аналоговых входов
-	dout []*uniset.BoolValue  // список bool-вых выходов
-	aout []*uniset.Int64Value // список аналоговых выходов
+	ins  []*uniset.Int64Value // список входов
+	outs []*uniset.Int64Value // список выходов
 
+	myname string
+	id uniset.ObjectID
 }
 
 // ----------------------------------------------------------------------------------
 func Init_<xsl:value-of select="$CLASSNAME"/>( sk* <xsl:value-of select="$CLASSNAME"/>, name string, section string ) {
+
+	sk.myname = name
 
 	jstr := uniset_internal_api.GetConfigParamsByName(name, section)
 	cfg := uniset.UConfig{}
@@ -72,66 +73,117 @@ func Init_<xsl:value-of select="$CLASSNAME"/>( sk* <xsl:value-of select="$CLASSN
 		panic(fmt.Sprintf("(Init_<xsl:value-of select="$CLASSNAME"/>): error: %s", err))
 	}
 
+	sk.id = InitObjectID(&amp;cfg, name,name)
+
+	<xsl:call-template name="VAR-INIT"/>
+	<xsl:call-template name="ID-INIT"/>
+
+	<xsl:call-template name="INS-INIT"/>
+	<xsl:call-template name="OUTS-INIT"/>
+}
+// ----------------------------------------------------------------------------------
+func PropValueByName( cfg *uniset.UConfig, propname string, defval string ) string {
+
 	for _, v := range cfg.Config {
 
-		f := reflect.ValueOf(sk).Elem().FieldByName(v.Prop)
-		if f.IsValid() {
-			switch t := f.Interface().(type) {
-
-			case int:
-			case int64:
-				i, err := strconv.ParseInt(v.Value, 10, 64)
-				if err != nil{
-					panic(fmt.Sprintf("(Init_<xsl:value-of select="$CLASSNAME"/>): convert type '%s' error: %s", v.Value, err))
-				}
-				f.SetInt(i)
-
-			case float32:
-				i, err := strconv.ParseFloat(v.Value, 32)
-				if err != nil{
-					panic(fmt.Sprintf("(Init_<xsl:value-of select="$CLASSNAME"/>): convert type '%s' error: %s", v.Value, err))
-				}
-				f.SetFloat(i)
-
-			case float64:
-				i, err := strconv.ParseFloat(v.Value, 64)
-				if err != nil{
-					panic(fmt.Sprintf("(Init_<xsl:value-of select="$CLASSNAME"/>): convert type '%s' error: %s", v.Value, err))
-				}
-				f.SetFloat(i)
-
-			case string:
-				f.SetString(v.Value)
-
-			case bool:
-				i, err := strconv.ParseBool(v.Value)
-				if err != nil{
-					panic(fmt.Sprintf("(Init_<xsl:value-of select="$CLASSNAME"/>): convert type '%s' error: %s", v.Value, err))
-				}
-				f.SetBool(i)
-
-			case uniset.SensorID:
-			case uniset.ObjectID:
-				i, err := strconv.ParseInt(v.Value, 10, 64)
-				if err != nil{
-					panic(fmt.Sprintf("(Init_<xsl:value-of select="$CLASSNAME"/>): convert type '%s' error: %s", v.Value, err))
-				}
-				f.SetInt(i)
-
-			default:
-				panic(fmt.Sprintf("(Init_<xsl:value-of select="$CLASSNAME"/>): Unsupported type of value: %s", t))
-			}
+		if v.Prop == propname {
+			return v.Value
 		}
 	}
 
-<!--	im.aout = []*uniset.Int64Value{uniset.NewInt64Value(&im.level_s, &im.out_level_s)}
-
-	im.din = []*uniset.BoolValue{
-		uniset.NewBoolValue(&im.switchOn_c, &im.in_switchOn_c),
-		uniset.NewBoolValue(&im.switchOff_c, &im.in_switchOff_c)}
-
-	return &im-->
+	return defval
 }
+// ----------------------------------------------------------------------------------
+func InitInt32( cfg *uniset.UConfig, propname string, defval string ) int32 {
+
+	sval := PropValueByName(cfg,propname,defval)
+	if len(sval) == 0 {
+		return 0
+	}
+
+	i, err := strconv.ParseInt(sval, 10, 32)
+	if err != nil{
+		panic(fmt.Sprintf("(Init_Imitator_SK): convert type '%s' error: %s", propname, err))
+	}
+
+	return int32(i)
+}
+// ----------------------------------------------------------------------------------
+func InitInt64( cfg *uniset.UConfig, propname string, defval string ) int64 {
+
+	sval := PropValueByName(cfg,propname,defval)
+	if len(sval) == 0 {
+		return 0
+	}
+
+	i, err := strconv.ParseInt(sval, 10, 64)
+	if err != nil{
+		panic(fmt.Sprintf("(Init_Imitator_SK): convert type '%s' error: %s", propname, err))
+	}
+
+	return i
+}
+// ----------------------------------------------------------------------------------
+func InitFloat32( cfg *uniset.UConfig, propname string, defval string ) float32 {
+
+	sval := PropValueByName(cfg,propname,defval)
+	if len(sval) == 0 {
+		return 0.0
+	}
+	i, err := strconv.ParseFloat(sval, 32)
+	if err != nil{
+		panic(fmt.Sprintf("(Init_Imitator_SK): convert type '%s' error: %s", propname, err))
+	}
+
+	return float32(i)
+}
+// ----------------------------------------------------------------------------------
+func InitFloat64( cfg *uniset.UConfig, propname string, defval string ) float64 {
+
+	sval := PropValueByName(cfg,propname,defval)
+	if len(sval) == 0 {
+		return 0.0
+	}
+
+	i, err := strconv.ParseFloat(sval, 64)
+	if err != nil{
+		panic(fmt.Sprintf("(Init_Imitator_SK): convert type '%s' error: %s", propname, err))
+	}
+
+	return i
+}
+// ----------------------------------------------------------------------------------
+func InitBool( cfg *uniset.UConfig, propname string, defval string ) bool {
+
+	sval := PropValueByName(cfg,propname,defval)
+	if len(sval) == 0 {
+		return false
+	}
+
+	i, err := strconv.ParseBool(sval)
+	if err != nil{
+		panic(fmt.Sprintf("(Init_Imitator_SK): convert type '%s' error: %s", propname, err))
+	}
+
+	return i
+}
+// ----------------------------------------------------------------------------------
+func InitString( cfg *uniset.UConfig, propname string, defval string ) string {
+
+	return PropValueByName(cfg,propname,defval)
+}
+// ----------------------------------------------------------------------------------
+func InitSensorID( cfg *uniset.UConfig, propname string, defval string ) uniset.SensorID {
+
+	//fmt.Printf("init sensorID %s ret=%d\n",propname,uniset_internal_api.GetSensorID(PropValueByName(cfg,propname)))
+	return uniset.SensorID(uniset_internal_api.GetSensorID(PropValueByName(cfg,propname,defval)))
+}
+// ----------------------------------------------------------------------------------
+func InitObjectID( cfg *uniset.UConfig, propname string, defval string ) uniset.ObjectID {
+
+	return uniset.ObjectID(uniset_internal_api.GetObjectID(PropValueByName(cfg,propname,defval)))
+}
+// ----------------------------------------------------------------------------------
 
 </xsl:template>
 
@@ -156,10 +208,11 @@ func Init_<xsl:value-of select="$CLASSNAME"/>( sk* <xsl:value-of select="$CLASSN
 
 <xsl:template name="VAR-LIST">
 	<xsl:for-each select="//variables/item">
-	<xsl:if test="normalize-space(@private)=''">
+<!--	<xsl:if test="normalize-space(@private)=''">
 	<xsl:if test="normalize-space(@public)=''">
-	<xsl:if test="normalize-space(@type)!=''"><xsl:if test="normalize-space(@const)!=''">const </xsl:if></xsl:if>
-	<xsl:if test="normalize-space(@type)='int'"><xsl:value-of select="@name"/> int /*!&lt; <xsl:value-of select="@comment"/> */
+-->
+	<xsl:if test="normalize-space(@type)!=''"></xsl:if>
+	<xsl:if test="normalize-space(@type)='int'"><xsl:value-of select="@name"/> int32 /*!&lt; <xsl:value-of select="@comment"/> */
 	</xsl:if>
 	<xsl:if test="normalize-space(@type)='long'"><xsl:value-of select="@name"/> int64 /*!&lt; <xsl:value-of select="@comment"/> */
 	</xsl:if>
@@ -175,15 +228,49 @@ func Init_<xsl:value-of select="$CLASSNAME"/>( sk* <xsl:value-of select="$CLASSN
 	</xsl:if>
 	<xsl:if test="normalize-space(@type)='object'"><xsl:value-of select="@name"/> uniset.ObjectID /*!&lt; <xsl:value-of select="@comment"/> */
 	</xsl:if>
+<!--
 	</xsl:if>
 	</xsl:if>
+-->
 	</xsl:for-each>
 </xsl:template>
 
-<xsl:template name="IO-LIST">
-	<xsl:for-each select="//smap/item"><xsl:if test="normalize-space(@vartype)='in'"><xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> uniset.SensorID
+<xsl:template name="VAR-INIT">
+	<xsl:for-each select="//variables/item">
+<!--
+	<xsl:if test="normalize-space(@private)=''">
+	<xsl:if test="normalize-space(@public)=''">
+-->
+	<xsl:if test="normalize-space(@type)!=''">
+	<xsl:if test="normalize-space(@type)='int'">sk.<xsl:value-of select="@name"/> = InitInt32(&amp;cfg,"<xsl:value-of select="@name"/>","<xsl:value-of select="@default"/>")
 	</xsl:if>
-	<xsl:if test="normalize-space(@vartype)='out'"><xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> uniset.SensorID
+	<xsl:if test="normalize-space(@type)='long'">sk.<xsl:value-of select="@name"/> =  InitInt64(&amp;cfg,"<xsl:value-of select="@name"/>","<xsl:value-of select="@default"/>")
+	</xsl:if>
+	<xsl:if test="normalize-space(@type)='float'">sk.<xsl:value-of select="@name"/> =  InitFloat32(&amp;cfg,"<xsl:value-of select="@name"/>","<xsl:value-of select="@default"/>")
+	</xsl:if>
+	<xsl:if test="normalize-space(@type)='double'">sk.<xsl:value-of select="@name"/> =  InitFloat64(&amp;cfg,"<xsl:value-of select="@name"/>","<xsl:value-of select="@default"/>")
+	</xsl:if>
+	<xsl:if test="normalize-space(@type)='bool'">sk.<xsl:value-of select="@name"/> = InitBool(&amp;cfg,"<xsl:value-of select="@name"/>","<xsl:value-of select="@default"/>")
+	</xsl:if>
+	<xsl:if test="normalize-space(@type)='str'">sk.<xsl:value-of select="@name"/> =  InitString(&amp;cfg,"<xsl:value-of select="@name"/>","<xsl:value-of select="@default"/>")
+	</xsl:if>
+	<xsl:if test="normalize-space(@type)='sensor'">sk.<xsl:value-of select="@name"/> = InitSensorID(&amp;cfg,"<xsl:value-of select="@name"/>","<xsl:value-of select="@default"/>")
+	</xsl:if>
+	<xsl:if test="normalize-space(@type)='object'">sk.<xsl:value-of select="@name"/> =  InitObjectID(&amp;cfg,"<xsl:value-of select="@name"/>","<xsl:value-of select="@default"/>")
+	</xsl:if>
+	</xsl:if>
+<!--
+	</xsl:if>
+	</xsl:if>
+-->
+	</xsl:for-each>
+
+</xsl:template>
+
+<xsl:template name="IO-LIST">
+	<xsl:for-each select="//smap/item"><xsl:if test="normalize-space(@vartype)='in'"><xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> int64
+	</xsl:if>
+	<xsl:if test="normalize-space(@vartype)='out'"><xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> int64
 	</xsl:if>
 	</xsl:for-each>
 </xsl:template>
@@ -193,54 +280,24 @@ func Init_<xsl:value-of select="$CLASSNAME"/>( sk* <xsl:value-of select="$CLASSN
 	</xsl:for-each>
 </xsl:template>
 
-
-
-<xsl:template name="default-init-variables">
-<xsl:if test="normalize-space(@const)!=''">
-<xsl:if test="normalize-space(@type)='int'"><xsl:value-of select="normalize-space(@name)"/>(0),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='long'"><xsl:value-of select="normalize-space(@name)"/>(0),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='float'"><xsl:value-of select="normalize-space(@name)"/>(0),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='double'"><xsl:value-of select="normalize-space(@name)"/>(0),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='bool'"><xsl:value-of select="normalize-space(@name)"/>(false),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='str'"><xsl:value-of select="normalize-space(@name)"/>(""),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='sensor'"><xsl:value-of select="normalize-space(@name)"/>(DefaultObjectId),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='object'"><xsl:value-of select="normalize-space(@name)"/>(DefaultObjectId),
-</xsl:if>
-</xsl:if>
+<xsl:template name="ID-INIT">
+	<xsl:for-each select="//smap/item">sk.<xsl:value-of select="@name"/> = InitSensorID(&amp;cfg,"<xsl:value-of select="@name"/>","<xsl:value-of select="@default"/>")
+	</xsl:for-each>
 </xsl:template>
 
-<xsl:template name="init-variables">
-<xsl:if test="normalize-space(@type)='int'">
-<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(uniset_conf()->getArgParam("--" + (_argprefix.empty() ? myname+"-" : _argprefix) + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='long'">
-<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(uniset_conf()->getArgParam("--" + (_argprefix.empty() ? myname+"-" : _argprefix) + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='float'">
-<xsl:value-of select="normalize-space(@name)"/>(atof( init3_str(uniset_conf()->getArgParam("--" + (_argprefix.empty() ? myname+"-" : _argprefix) + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>").c_str())),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='double'">
-<xsl:value-of select="normalize-space(@name)"/>(atof( init3_str(uniset_conf()->getArgParam("--" + (_argprefix.empty() ? myname+"-" : _argprefix) + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>").c_str())),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='bool'">
-<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(uniset_conf()->getArgParam("--" + (_argprefix.empty() ? myname+"-" : _argprefix) + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='str'">
-<xsl:value-of select="normalize-space(@name)"/>(init3_str(uniset_conf()->getArgParam("--" + (_argprefix.empty() ? myname+"-" : _argprefix) + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>")),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='sensor'">
-<xsl:value-of select="normalize-space(@name)"/>(uniset_conf()->getSensorID(init3_str(uniset_conf()->getArgParam("--" + (_argprefix.empty() ? myname+"-" : _argprefix) + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='object'">
-<xsl:value-of select="normalize-space(@name)"/>(uniset_conf()->getObjectID(init3_str(uniset_conf()->getArgParam("--" + (_argprefix.empty() ? myname+"-" : _argprefix) + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
-</xsl:if>
+<xsl:template name="INS-INIT">
+	sk.ins = []*uniset.Int64Value {
+	<xsl:for-each select="//smap/item">
+	<xsl:if test="normalize-space(@vartype)='in'">uniset.NewInt64Value(&amp;sk.<xsl:value-of select="@name"/>,&amp;sk.<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>),
+	</xsl:if>
+	</xsl:for-each>}
+</xsl:template>
+<xsl:template name="OUTS-INIT">
+	sk.outs = []*uniset.Int64Value {
+	<xsl:for-each select="//smap/item">
+	<xsl:if test="normalize-space(@vartype)='out'">uniset.NewInt64Value(&amp;sk.<xsl:value-of select="@name"/>,&amp;sk.<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>),
+	</xsl:if>
+	</xsl:for-each>}
 </xsl:template>
 
 </xsl:stylesheet>
