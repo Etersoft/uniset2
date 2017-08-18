@@ -142,6 +142,76 @@ class ShortIOInfo:
 ShortIOInfo_swigregister = _pyUConnector.ShortIOInfo_swigregister
 ShortIOInfo_swigregister(ShortIOInfo)
 
+class ResultIO:
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ResultIO, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, ResultIO, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["sinfo"] = _pyUConnector.ResultIO_sinfo_set
+    __swig_getmethods__["sinfo"] = _pyUConnector.ResultIO_sinfo_get
+    __swig_setmethods__["ok"] = _pyUConnector.ResultIO_ok_set
+    __swig_getmethods__["ok"] = _pyUConnector.ResultIO_ok_get
+
+    def __init__(self, *args):
+        this = _pyUConnector.new_ResultIO(*args)
+        try:
+            self.this.append(this)
+        except Exception:
+            self.this = this
+    __swig_destroy__ = _pyUConnector.delete_ResultIO
+    __del__ = lambda self: None
+ResultIO_swigregister = _pyUConnector.ResultIO_swigregister
+ResultIO_swigregister(ResultIO)
+
+class ResultValue:
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ResultValue, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, ResultValue, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["value"] = _pyUConnector.ResultValue_value_set
+    __swig_getmethods__["value"] = _pyUConnector.ResultValue_value_get
+    __swig_setmethods__["ok"] = _pyUConnector.ResultValue_ok_set
+    __swig_getmethods__["ok"] = _pyUConnector.ResultValue_ok_get
+    __swig_setmethods__["err"] = _pyUConnector.ResultValue_err_set
+    __swig_getmethods__["err"] = _pyUConnector.ResultValue_err_get
+
+    def __init__(self, *args):
+        this = _pyUConnector.new_ResultValue(*args)
+        try:
+            self.this.append(this)
+        except Exception:
+            self.this = this
+    __swig_destroy__ = _pyUConnector.delete_ResultValue
+    __del__ = lambda self: None
+ResultValue_swigregister = _pyUConnector.ResultValue_swigregister
+ResultValue_swigregister(ResultValue)
+
+class ResultBool:
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ResultBool, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, ResultBool, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["result"] = _pyUConnector.ResultBool_result_set
+    __swig_getmethods__["result"] = _pyUConnector.ResultBool_result_get
+    __swig_setmethods__["ok"] = _pyUConnector.ResultBool_ok_set
+    __swig_getmethods__["ok"] = _pyUConnector.ResultBool_ok_get
+    __swig_setmethods__["err"] = _pyUConnector.ResultBool_err_set
+    __swig_getmethods__["err"] = _pyUConnector.ResultBool_err_get
+
+    def __init__(self, *args):
+        this = _pyUConnector.new_ResultBool(*args)
+        try:
+            self.this.append(this)
+        except Exception:
+            self.this = this
+    __swig_destroy__ = _pyUConnector.delete_ResultBool
+    __del__ = lambda self: None
+ResultBool_swigregister = _pyUConnector.ResultBool_swigregister
+ResultBool_swigregister(ResultBool)
+
 class UConnector:
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, UConnector, name, value)
@@ -203,3 +273,5 @@ UConnector_swigregister = _pyUConnector.UConnector_swigregister
 UConnector_swigregister(UConnector)
 
 # This file is compatible with both classic and new-style classes.
+
+

@@ -5,7 +5,6 @@
 #include <unordered_set>
 #include <Poco/Net/NetException.h>
 #include "UniSetTypes.h"
-#include "MBTCPMultiMaster.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;

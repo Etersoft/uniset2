@@ -388,3 +388,5 @@ UProxyObject_swigregister = _pyUniSet.UProxyObject_swigregister
 UProxyObject_swigregister(UProxyObject)
 
 # This file is compatible with both classic and new-style classes.
+
+
