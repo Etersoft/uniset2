@@ -7,15 +7,6 @@
 <xsl:variable name="CLASSNAME">
 	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'class-name'"/></xsl:call-template>
 </xsl:variable>
-<xsl:variable name="BASECLASS">
-	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'base-class'"/></xsl:call-template>
-</xsl:variable>
-<xsl:variable name="OID">
-	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'ID'"/></xsl:call-template>
-</xsl:variable>
-<xsl:variable name="TESTMODE">
-	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'testmode'"/></xsl:call-template>
-</xsl:variable>
 <xsl:variable name="ARGPREFIX">
 	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'arg-prefix'"/></xsl:call-template>
 </xsl:variable>
@@ -66,7 +57,7 @@ func Init_<xsl:value-of select="$CLASSNAME"/>( sk* <xsl:value-of select="$CLASSN
 		panic(fmt.Sprintf("(Init_<xsl:value-of select="$CLASSNAME"/>): error: %s", err))
 	}
 
-	sk.id = uniset.InitObjectID(cfg, name,name)
+	sk.id = uniset.InitObjectID(cfg,"",name)
 
 	<xsl:call-template name="VAR-INIT"/>
 	<xsl:call-template name="ID-INIT"/>

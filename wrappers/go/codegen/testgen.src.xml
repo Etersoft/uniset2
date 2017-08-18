@@ -13,10 +13,7 @@
 <Test>
   <settings>
 	<set name="class-name" val="TestGen"/>
-	<set name="base-class" val="UniSetManager"/>
-	<set name="msg-count" val="20"/>
 	<set name="sleep-msec" val="150"/>
-	<set name="arg-prefix" val="test-"/>
 	<set name="resetMsgTime" val="300"/>
   </settings>
   <variables>

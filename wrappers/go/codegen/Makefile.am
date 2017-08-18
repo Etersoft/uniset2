@@ -11,6 +11,6 @@ all-local:
 
 include $(top_builddir)/include.mk
 
-test:
+test: go.xsl
 	./uniset2-codegen-go -l $(top_builddir)/wrappers/go/codegen -n TestGen testgen.src.xml
 	go build testgen.go testgen_sk.go
