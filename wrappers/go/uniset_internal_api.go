@@ -349,7 +349,7 @@ func GetShortName(arg1 int64) (_swig_ret string) {
 	swig_r_p := C._wrap_getShortName_uniset_internal_api_576c1e11c33cb6aa(C.swig_type_14(_swig_i_0))
 	swig_r = *(*string)(unsafe.Pointer(&swig_r_p))
 	var swig_r_1 string
- swig_r_1 = swigCopyString(swig_r)
+ swig_r_1 = swigCopyString(swig_r) 
 	return swig_r_1
 }
 
@@ -359,7 +359,7 @@ func GetName(arg1 int64) (_swig_ret string) {
 	swig_r_p := C._wrap_getName_uniset_internal_api_576c1e11c33cb6aa(C.swig_type_16(_swig_i_0))
 	swig_r = *(*string)(unsafe.Pointer(&swig_r_p))
 	var swig_r_1 string
- swig_r_1 = swigCopyString(swig_r)
+ swig_r_1 = swigCopyString(swig_r) 
 	return swig_r_1
 }
 
@@ -369,7 +369,7 @@ func GetTextName(arg1 int64) (_swig_ret string) {
 	swig_r_p := C._wrap_getTextName_uniset_internal_api_576c1e11c33cb6aa(C.swig_type_18(_swig_i_0))
 	swig_r = *(*string)(unsafe.Pointer(&swig_r_p))
 	var swig_r_1 string
- swig_r_1 = swigCopyString(swig_r)
+ swig_r_1 = swigCopyString(swig_r) 
 	return swig_r_1
 }
 
@@ -378,7 +378,7 @@ func GetConfFileName() (_swig_ret string) {
 	swig_r_p := C._wrap_getConfFileName_uniset_internal_api_576c1e11c33cb6aa()
 	swig_r = *(*string)(unsafe.Pointer(&swig_r_p))
 	var swig_r_1 string
- swig_r_1 = swigCopyString(swig_r)
+ swig_r_1 = swigCopyString(swig_r) 
 	return swig_r_1
 }
 
@@ -395,7 +395,7 @@ func GetConfigParamsByName__SWIG_0(arg1 string, arg2 string) (_swig_ret string) 
 		Swig_escape_val = arg2
 	}
 	var swig_r_1 string
- swig_r_1 = swigCopyString(swig_r)
+ swig_r_1 = swigCopyString(swig_r) 
 	return swig_r_1
 }
 
@@ -408,7 +408,7 @@ func GetConfigParamsByName__SWIG_1(arg1 string) (_swig_ret string) {
 		Swig_escape_val = arg1
 	}
 	var swig_r_1 string
- swig_r_1 = swigCopyString(swig_r)
+ swig_r_1 = swigCopyString(swig_r) 
 	return swig_r_1
 }
 
@@ -781,7 +781,7 @@ func (arg1 SwigcptrResultValue) GetErr() (_swig_ret string) {
 	swig_r_p := C._wrap_ResultValue_err_get_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0))
 	swig_r = *(*string)(unsafe.Pointer(&swig_r_p))
 	var swig_r_1 string
- swig_r_1 = swigCopyString(swig_r)
+ swig_r_1 = swigCopyString(swig_r) 
 	return swig_r_1
 }
 
@@ -917,7 +917,7 @@ func (arg1 SwigcptrResultBool) GetErr() (_swig_ret string) {
 	swig_r_p := C._wrap_ResultBool_err_get_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0))
 	swig_r = *(*string)(unsafe.Pointer(&swig_r_p))
 	var swig_r_1 string
- swig_r_1 = swigCopyString(swig_r)
+ swig_r_1 = swigCopyString(swig_r) 
 	return swig_r_1
 }
 
@@ -1063,7 +1063,7 @@ func (arg1 SwigcptrUException) GetError() (_swig_ret string) {
 	swig_r_p := C._wrap_UException_getError_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0))
 	swig_r = *(*string)(unsafe.Pointer(&swig_r_p))
 	var swig_r_1 string
- swig_r_1 = swigCopyString(swig_r)
+ swig_r_1 = swigCopyString(swig_r) 
 	return swig_r_1
 }
 
@@ -1082,7 +1082,7 @@ func (arg1 SwigcptrUException) GetErr() (_swig_ret string) {
 	swig_r_p := C._wrap_UException_err_get_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_i_0))
 	swig_r = *(*string)(unsafe.Pointer(&swig_r_p))
 	var swig_r_1 string
- swig_r_1 = swigCopyString(swig_r)
+ swig_r_1 = swigCopyString(swig_r) 
 	return swig_r_1
 }
 
@@ -1140,7 +1140,7 @@ func (_swig_base SwigcptrUTimeOut) GetError() (_swig_ret string) {
 	swig_r_p := C._wrap_UTimeOut_getError_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_base))
 	swig_r = *(*string)(unsafe.Pointer(&swig_r_p))
 	var swig_r_1 string
- swig_r_1 = swigCopyString(swig_r)
+ swig_r_1 = swigCopyString(swig_r) 
 	return swig_r_1
 }
 
@@ -1157,7 +1157,7 @@ func (_swig_base SwigcptrUTimeOut) GetErr() (_swig_ret string) {
 	swig_r_p := C._wrap_GetUTimeOut_Err_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_base))
 	swig_r = *(*string)(unsafe.Pointer(&swig_r_p))
 	var swig_r_1 string
- swig_r_1 = swigCopyString(swig_r)
+ swig_r_1 = swigCopyString(swig_r) 
 	return swig_r_1
 }
 
@@ -1224,7 +1224,7 @@ func (_swig_base SwigcptrUSysError) GetError() (_swig_ret string) {
 	swig_r_p := C._wrap_USysError_getError_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_base))
 	swig_r = *(*string)(unsafe.Pointer(&swig_r_p))
 	var swig_r_1 string
- swig_r_1 = swigCopyString(swig_r)
+ swig_r_1 = swigCopyString(swig_r) 
 	return swig_r_1
 }
 
@@ -1241,7 +1241,7 @@ func (_swig_base SwigcptrUSysError) GetErr() (_swig_ret string) {
 	swig_r_p := C._wrap_GetUSysError_Err_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_base))
 	swig_r = *(*string)(unsafe.Pointer(&swig_r_p))
 	var swig_r_1 string
- swig_r_1 = swigCopyString(swig_r)
+ swig_r_1 = swigCopyString(swig_r) 
 	return swig_r_1
 }
 
@@ -1308,7 +1308,7 @@ func (_swig_base SwigcptrUValidateError) GetError() (_swig_ret string) {
 	swig_r_p := C._wrap_UValidateError_getError_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_base))
 	swig_r = *(*string)(unsafe.Pointer(&swig_r_p))
 	var swig_r_1 string
- swig_r_1 = swigCopyString(swig_r)
+ swig_r_1 = swigCopyString(swig_r) 
 	return swig_r_1
 }
 
@@ -1325,7 +1325,7 @@ func (_swig_base SwigcptrUValidateError) GetErr() (_swig_ret string) {
 	swig_r_p := C._wrap_GetUValidateError_Err_uniset_internal_api_576c1e11c33cb6aa(C.uintptr_t(_swig_base))
 	swig_r = *(*string)(unsafe.Pointer(&swig_r_p))
 	var swig_r_1 string
- swig_r_1 = swigCopyString(swig_r)
+ swig_r_1 = swigCopyString(swig_r) 
 	return swig_r_1
 }
 
@@ -1490,3 +1490,5 @@ type UProxy interface {
 	Run(arg2 int) (_swig_ret bool)
 	Terminate()
 }
+
+

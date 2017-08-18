@@ -249,11 +249,11 @@ extern "C" {
 
 void _wrap_Swig_free_uniset_internal_api_576c1e11c33cb6aa(void *_swig_go_0) {
   void *arg1 = (void *) 0 ;
-
-  arg1 = *(void **)&_swig_go_0;
-
+  
+  arg1 = *(void **)&_swig_go_0; 
+  
   Swig_free(arg1);
-
+  
 }
 
 
@@ -262,15 +262,15 @@ UTypes::ResultBool *_wrap_uniset_init_params_uniset_internal_api_576c1e11c33cb6a
   std::string *arg2 = 0 ;
   UTypes::ResultBool result;
   UTypes::ResultBool *_swig_go_result;
-
-  arg1 = *(UTypes::Params **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::Params **)&_swig_go_0; 
+  
   std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
   arg2 = &arg2_str;
-
-
+  
+  
   result = goUInterface::uniset_init_params(arg1,(std::string const &)*arg2);
-  *(UTypes::ResultBool **)&_swig_go_result = new UTypes::ResultBool(result);
+  *(UTypes::ResultBool **)&_swig_go_result = new UTypes::ResultBool(result); 
   return _swig_go_result;
 }
 
@@ -281,16 +281,16 @@ UTypes::ResultBool *_wrap_uniset_init_uniset_internal_api_576c1e11c33cb6aa(intgo
   std::string *arg3 = 0 ;
   UTypes::ResultBool result;
   UTypes::ResultBool *_swig_go_result;
-
-  arg1 = (int)_swig_go_0;
-  arg2 = *(char ***)&_swig_go_1;
-
+  
+  arg1 = (int)_swig_go_0; 
+  arg2 = *(char ***)&_swig_go_1; 
+  
   std::string arg3_str(_swig_go_2.p, _swig_go_2.n);
   arg3 = &arg3_str;
-
-
+  
+  
   result = goUInterface::uniset_init(arg1,arg2,(std::string const &)*arg3);
-  *(UTypes::ResultBool **)&_swig_go_result = new UTypes::ResultBool(result);
+  *(UTypes::ResultBool **)&_swig_go_result = new UTypes::ResultBool(result); 
   return _swig_go_result;
 }
 
@@ -298,10 +298,10 @@ UTypes::ResultBool *_wrap_uniset_init_uniset_internal_api_576c1e11c33cb6aa(intgo
 bool _wrap_isUniSetInitOK_uniset_internal_api_576c1e11c33cb6aa() {
   bool result;
   bool _swig_go_result;
-
-
+  
+  
   result = (bool)goUInterface::isUniSetInitOK();
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -310,11 +310,11 @@ UTypes::ResultValue *_wrap_getValue_uniset_internal_api_576c1e11c33cb6aa(long lo
   long arg1 ;
   UTypes::ResultValue result;
   UTypes::ResultValue *_swig_go_result;
-
-  arg1 = (long)_swig_go_0;
-
+  
+  arg1 = (long)_swig_go_0; 
+  
   result = goUInterface::getValue(arg1);
-  *(UTypes::ResultValue **)&_swig_go_result = new UTypes::ResultValue(result);
+  *(UTypes::ResultValue **)&_swig_go_result = new UTypes::ResultValue(result); 
   return _swig_go_result;
 }
 
@@ -325,13 +325,13 @@ UTypes::ResultBool *_wrap_setValue__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(
   long arg3 ;
   UTypes::ResultBool result;
   UTypes::ResultBool *_swig_go_result;
-
-  arg1 = (long)_swig_go_0;
-  arg2 = (long)_swig_go_1;
-  arg3 = (long)_swig_go_2;
-
+  
+  arg1 = (long)_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  arg3 = (long)_swig_go_2; 
+  
   result = goUInterface::setValue(arg1,arg2,arg3);
-  *(UTypes::ResultBool **)&_swig_go_result = new UTypes::ResultBool(result);
+  *(UTypes::ResultBool **)&_swig_go_result = new UTypes::ResultBool(result); 
   return _swig_go_result;
 }
 
@@ -341,12 +341,12 @@ UTypes::ResultBool *_wrap_setValue__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(
   long arg2 ;
   UTypes::ResultBool result;
   UTypes::ResultBool *_swig_go_result;
-
-  arg1 = (long)_swig_go_0;
-  arg2 = (long)_swig_go_1;
-
+  
+  arg1 = (long)_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  
   result = goUInterface::setValue(arg1,arg2);
-  *(UTypes::ResultBool **)&_swig_go_result = new UTypes::ResultBool(result);
+  *(UTypes::ResultBool **)&_swig_go_result = new UTypes::ResultBool(result); 
   return _swig_go_result;
 }
 
@@ -355,14 +355,14 @@ long long _wrap_getSensorID_uniset_internal_api_576c1e11c33cb6aa(_gostring_ _swi
   std::string *arg1 = 0 ;
   long result;
   long long _swig_go_result;
-
-
+  
+  
   std::string arg1_str(_swig_go_0.p, _swig_go_0.n);
   arg1 = &arg1_str;
-
-
+  
+  
   result = (long)goUInterface::getSensorID((std::string const &)*arg1);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -371,14 +371,14 @@ long long _wrap_getObjectID_uniset_internal_api_576c1e11c33cb6aa(_gostring_ _swi
   std::string *arg1 = 0 ;
   long result;
   long long _swig_go_result;
-
-
+  
+  
   std::string arg1_str(_swig_go_0.p, _swig_go_0.n);
   arg1 = &arg1_str;
-
-
+  
+  
   result = (long)goUInterface::getObjectID((std::string const &)*arg1);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -387,11 +387,11 @@ _gostring_ _wrap_getShortName_uniset_internal_api_576c1e11c33cb6aa(long long _sw
   long arg1 ;
   std::string result;
   _gostring_ _swig_go_result;
-
-  arg1 = (long)_swig_go_0;
-
+  
+  arg1 = (long)_swig_go_0; 
+  
   result = goUInterface::getShortName(arg1);
-  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length());
+  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length()); 
   return _swig_go_result;
 }
 
@@ -400,11 +400,11 @@ _gostring_ _wrap_getName_uniset_internal_api_576c1e11c33cb6aa(long long _swig_go
   long arg1 ;
   std::string result;
   _gostring_ _swig_go_result;
-
-  arg1 = (long)_swig_go_0;
-
+  
+  arg1 = (long)_swig_go_0; 
+  
   result = goUInterface::getName(arg1);
-  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length());
+  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length()); 
   return _swig_go_result;
 }
 
@@ -413,11 +413,11 @@ _gostring_ _wrap_getTextName_uniset_internal_api_576c1e11c33cb6aa(long long _swi
   long arg1 ;
   std::string result;
   _gostring_ _swig_go_result;
-
-  arg1 = (long)_swig_go_0;
-
+  
+  arg1 = (long)_swig_go_0; 
+  
   result = goUInterface::getTextName(arg1);
-  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length());
+  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length()); 
   return _swig_go_result;
 }
 
@@ -425,10 +425,10 @@ _gostring_ _wrap_getTextName_uniset_internal_api_576c1e11c33cb6aa(long long _swi
 _gostring_ _wrap_getConfFileName_uniset_internal_api_576c1e11c33cb6aa() {
   std::string result;
   _gostring_ _swig_go_result;
-
-
+  
+  
   result = goUInterface::getConfFileName();
-  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length());
+  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length()); 
   return _swig_go_result;
 }
 
@@ -438,18 +438,18 @@ _gostring_ _wrap_getConfigParamsByName__SWIG_0_uniset_internal_api_576c1e11c33cb
   std::string *arg2 = 0 ;
   std::string result;
   _gostring_ _swig_go_result;
-
-
+  
+  
   std::string arg1_str(_swig_go_0.p, _swig_go_0.n);
   arg1 = &arg1_str;
-
-
+  
+  
   std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
   arg2 = &arg2_str;
-
-
+  
+  
   result = goUInterface::getConfigParamsByName((std::string const &)*arg1,(std::string const &)*arg2);
-  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length());
+  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length()); 
   return _swig_go_result;
 }
 
@@ -458,14 +458,14 @@ _gostring_ _wrap_getConfigParamsByName__SWIG_1_uniset_internal_api_576c1e11c33cb
   std::string *arg1 = 0 ;
   std::string result;
   _gostring_ _swig_go_result;
-
-
+  
+  
   std::string arg1_str(_swig_go_0.p, _swig_go_0.n);
   arg1 = &arg1_str;
-
-
+  
+  
   result = goUInterface::getConfigParamsByName((std::string const &)*arg1);
-  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length());
+  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length()); 
   return _swig_go_result;
 }
 
@@ -473,10 +473,10 @@ _gostring_ _wrap_getConfigParamsByName__SWIG_1_uniset_internal_api_576c1e11c33cb
 long long _wrap_DefaultID_get_uniset_internal_api_576c1e11c33cb6aa() {
   long result;
   long long _swig_go_result;
-
-
+  
+  
   result = (long)(long)UTypes::DefaultID;
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -484,10 +484,10 @@ long long _wrap_DefaultID_get_uniset_internal_api_576c1e11c33cb6aa() {
 long long _wrap_DefaultSupplerID_get_uniset_internal_api_576c1e11c33cb6aa() {
   long result;
   long long _swig_go_result;
-
-
+  
+  
   result = (long)(long)UTypes::DefaultSupplerID;
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -495,11 +495,11 @@ long long _wrap_DefaultSupplerID_get_uniset_internal_api_576c1e11c33cb6aa() {
 intgo _wrap_Params_max_Params_uniset_internal_api_576c1e11c33cb6aa() {
   int result;
   intgo _swig_go_result;
-
-
+  
+  
   result = UTypes::Params::max;
-
-  _swig_go_result = result;
+  
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -507,10 +507,10 @@ intgo _wrap_Params_max_Params_uniset_internal_api_576c1e11c33cb6aa() {
 UTypes::Params *_wrap_new_Params_uniset_internal_api_576c1e11c33cb6aa() {
   UTypes::Params *result = 0 ;
   UTypes::Params *_swig_go_result;
-
-
+  
+  
   result = (UTypes::Params *)new UTypes::Params();
-  *(UTypes::Params **)&_swig_go_result = (UTypes::Params *)result;
+  *(UTypes::Params **)&_swig_go_result = (UTypes::Params *)result; 
   return _swig_go_result;
 }
 
@@ -520,12 +520,12 @@ bool _wrap_Params_add_uniset_internal_api_576c1e11c33cb6aa(UTypes::Params *_swig
   char *arg2 = (char *) 0 ;
   bool result;
   bool _swig_go_result;
-
-  arg1 = *(UTypes::Params **)&_swig_go_0;
-  arg2 = (char *)_swig_go_1.p;
-
+  
+  arg1 = *(UTypes::Params **)&_swig_go_0; 
+  arg2 = (char *)_swig_go_1.p; 
+  
   result = (bool)(arg1)->add(arg2);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -535,12 +535,12 @@ bool _wrap_Params_add_str_uniset_internal_api_576c1e11c33cb6aa(UTypes::Params *_
   std::string arg2 ;
   bool result;
   bool _swig_go_result;
-
-  arg1 = *(UTypes::Params **)&_swig_go_0;
-  (&arg2)->assign(_swig_go_1.p, _swig_go_1.n);
-
+  
+  arg1 = *(UTypes::Params **)&_swig_go_0; 
+  (&arg2)->assign(_swig_go_1.p, _swig_go_1.n); 
+  
   result = (bool)(arg1)->add_str(arg2);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -548,12 +548,12 @@ bool _wrap_Params_add_str_uniset_internal_api_576c1e11c33cb6aa(UTypes::Params *_
 void _wrap_Params_argc_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::Params *_swig_go_0, intgo _swig_go_1) {
   UTypes::Params *arg1 = (UTypes::Params *) 0 ;
   int arg2 ;
-
-  arg1 = *(UTypes::Params **)&_swig_go_0;
-  arg2 = (int)_swig_go_1;
-
+  
+  arg1 = *(UTypes::Params **)&_swig_go_0; 
+  arg2 = (int)_swig_go_1; 
+  
   if (arg1) (arg1)->argc = arg2;
-
+  
 }
 
 
@@ -561,11 +561,11 @@ intgo _wrap_Params_argc_get_uniset_internal_api_576c1e11c33cb6aa(UTypes::Params 
   UTypes::Params *arg1 = (UTypes::Params *) 0 ;
   int result;
   intgo _swig_go_result;
-
-  arg1 = *(UTypes::Params **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::Params **)&_swig_go_0; 
+  
   result = (int) ((arg1)->argc);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -573,16 +573,16 @@ intgo _wrap_Params_argc_get_uniset_internal_api_576c1e11c33cb6aa(UTypes::Params 
 void _wrap_Params_argv_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::Params *_swig_go_0, _gostring_* _swig_go_1) {
   UTypes::Params *arg1 = (UTypes::Params *) 0 ;
   char **arg2 ;
-
-  arg1 = *(UTypes::Params **)&_swig_go_0;
-  arg2 = *(char ***)&_swig_go_1;
-
+  
+  arg1 = *(UTypes::Params **)&_swig_go_0; 
+  arg2 = *(char ***)&_swig_go_1; 
+  
   {
     size_t ii;
     char * *b = (char * *) arg1->argv;
     for (ii = 0; ii < (size_t)UTypes::Params::max; ii++) b[ii] = *((char * *) arg2 + ii);
   }
-
+  
 }
 
 
@@ -590,11 +590,11 @@ _gostring_* _wrap_Params_argv_get_uniset_internal_api_576c1e11c33cb6aa(UTypes::P
   UTypes::Params *arg1 = (UTypes::Params *) 0 ;
   char **result = 0 ;
   _gostring_* _swig_go_result;
-
-  arg1 = *(UTypes::Params **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::Params **)&_swig_go_0; 
+  
   result = (char **)(char **) ((arg1)->argv);
-  *(char ***)&_swig_go_result = result;
+  *(char ***)&_swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -602,33 +602,33 @@ _gostring_* _wrap_Params_argv_get_uniset_internal_api_576c1e11c33cb6aa(UTypes::P
 UTypes::Params *_wrap_Params_inst_uniset_internal_api_576c1e11c33cb6aa() {
   UTypes::Params result;
   UTypes::Params *_swig_go_result;
-
-
+  
+  
   result = UTypes::Params::inst();
-  *(UTypes::Params **)&_swig_go_result = new UTypes::Params(result);
+  *(UTypes::Params **)&_swig_go_result = new UTypes::Params(result); 
   return _swig_go_result;
 }
 
 
 void _wrap_delete_Params_uniset_internal_api_576c1e11c33cb6aa(UTypes::Params *_swig_go_0) {
   UTypes::Params *arg1 = (UTypes::Params *) 0 ;
-
-  arg1 = *(UTypes::Params **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::Params **)&_swig_go_0; 
+  
   delete arg1;
-
+  
 }
 
 
 void _wrap_ShortIOInfo_id_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::ShortIOInfo *_swig_go_0, long long _swig_go_1) {
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
   long arg2 ;
-
-  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0;
-  arg2 = (long)_swig_go_1;
-
+  
+  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  
   if (arg1) (arg1)->id = arg2;
-
+  
 }
 
 
@@ -636,11 +636,11 @@ long long _wrap_ShortIOInfo_id_get_uniset_internal_api_576c1e11c33cb6aa(UTypes::
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
   long result;
   long long _swig_go_result;
-
-  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0; 
+  
   result = (long) ((arg1)->id);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -648,12 +648,12 @@ long long _wrap_ShortIOInfo_id_get_uniset_internal_api_576c1e11c33cb6aa(UTypes::
 void _wrap_ShortIOInfo_value_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::ShortIOInfo *_swig_go_0, long long _swig_go_1) {
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
   long arg2 ;
-
-  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0;
-  arg2 = (long)_swig_go_1;
-
+  
+  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  
   if (arg1) (arg1)->value = arg2;
-
+  
 }
 
 
@@ -661,11 +661,11 @@ long long _wrap_ShortIOInfo_value_get_uniset_internal_api_576c1e11c33cb6aa(UType
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
   long result;
   long long _swig_go_result;
-
-  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0; 
+  
   result = (long) ((arg1)->value);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -673,12 +673,12 @@ long long _wrap_ShortIOInfo_value_get_uniset_internal_api_576c1e11c33cb6aa(UType
 void _wrap_ShortIOInfo_tv_sec_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::ShortIOInfo *_swig_go_0, long long _swig_go_1) {
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
   long arg2 ;
-
-  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0;
-  arg2 = (long)_swig_go_1;
-
+  
+  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  
   if (arg1) (arg1)->tv_sec = arg2;
-
+  
 }
 
 
@@ -686,11 +686,11 @@ long long _wrap_ShortIOInfo_tv_sec_get_uniset_internal_api_576c1e11c33cb6aa(UTyp
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
   long result;
   long long _swig_go_result;
-
-  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0; 
+  
   result = (long) ((arg1)->tv_sec);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -698,12 +698,12 @@ long long _wrap_ShortIOInfo_tv_sec_get_uniset_internal_api_576c1e11c33cb6aa(UTyp
 void _wrap_ShortIOInfo_tv_nsec_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::ShortIOInfo *_swig_go_0, long long _swig_go_1) {
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
   long arg2 ;
-
-  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0;
-  arg2 = (long)_swig_go_1;
-
+  
+  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  
   if (arg1) (arg1)->tv_nsec = arg2;
-
+  
 }
 
 
@@ -711,11 +711,11 @@ long long _wrap_ShortIOInfo_tv_nsec_get_uniset_internal_api_576c1e11c33cb6aa(UTy
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
   long result;
   long long _swig_go_result;
-
-  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0; 
+  
   result = (long) ((arg1)->tv_nsec);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -723,12 +723,12 @@ long long _wrap_ShortIOInfo_tv_nsec_get_uniset_internal_api_576c1e11c33cb6aa(UTy
 void _wrap_ShortIOInfo_supplier_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::ShortIOInfo *_swig_go_0, long long _swig_go_1) {
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
   long arg2 ;
-
-  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0;
-  arg2 = (long)_swig_go_1;
-
+  
+  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  
   if (arg1) (arg1)->supplier = arg2;
-
+  
 }
 
 
@@ -736,11 +736,11 @@ long long _wrap_ShortIOInfo_supplier_get_uniset_internal_api_576c1e11c33cb6aa(UT
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
   long result;
   long long _swig_go_result;
-
-  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0; 
+  
   result = (long) ((arg1)->supplier);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -748,12 +748,12 @@ long long _wrap_ShortIOInfo_supplier_get_uniset_internal_api_576c1e11c33cb6aa(UT
 void _wrap_ShortIOInfo_consumer_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::ShortIOInfo *_swig_go_0, long long _swig_go_1) {
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
   long arg2 ;
-
-  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0;
-  arg2 = (long)_swig_go_1;
-
+  
+  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  
   if (arg1) (arg1)->consumer = arg2;
-
+  
 }
 
 
@@ -761,11 +761,11 @@ long long _wrap_ShortIOInfo_consumer_get_uniset_internal_api_576c1e11c33cb6aa(UT
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
   long result;
   long long _swig_go_result;
-
-  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0; 
+  
   result = (long) ((arg1)->consumer);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -773,12 +773,12 @@ long long _wrap_ShortIOInfo_consumer_get_uniset_internal_api_576c1e11c33cb6aa(UT
 void _wrap_ShortIOInfo_node_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::ShortIOInfo *_swig_go_0, long long _swig_go_1) {
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
   long arg2 ;
-
-  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0;
-  arg2 = (long)_swig_go_1;
-
+  
+  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  
   if (arg1) (arg1)->node = arg2;
-
+  
 }
 
 
@@ -786,11 +786,11 @@ long long _wrap_ShortIOInfo_node_get_uniset_internal_api_576c1e11c33cb6aa(UTypes
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
   long result;
   long long _swig_go_result;
-
-  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0; 
+  
   result = (long) ((arg1)->node);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -798,33 +798,33 @@ long long _wrap_ShortIOInfo_node_get_uniset_internal_api_576c1e11c33cb6aa(UTypes
 UTypes::ShortIOInfo *_wrap_new_ShortIOInfo_uniset_internal_api_576c1e11c33cb6aa() {
   UTypes::ShortIOInfo *result = 0 ;
   UTypes::ShortIOInfo *_swig_go_result;
-
-
+  
+  
   result = (UTypes::ShortIOInfo *)new UTypes::ShortIOInfo();
-  *(UTypes::ShortIOInfo **)&_swig_go_result = (UTypes::ShortIOInfo *)result;
+  *(UTypes::ShortIOInfo **)&_swig_go_result = (UTypes::ShortIOInfo *)result; 
   return _swig_go_result;
 }
 
 
 void _wrap_delete_ShortIOInfo_uniset_internal_api_576c1e11c33cb6aa(UTypes::ShortIOInfo *_swig_go_0) {
   UTypes::ShortIOInfo *arg1 = (UTypes::ShortIOInfo *) 0 ;
-
-  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0; 
+  
   delete arg1;
-
+  
 }
 
 
 void _wrap_ResultIO_sinfo_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::ResultIO *_swig_go_0, UTypes::ShortIOInfo *_swig_go_1) {
   UTypes::ResultIO *arg1 = (UTypes::ResultIO *) 0 ;
   UTypes::ShortIOInfo *arg2 = (UTypes::ShortIOInfo *) 0 ;
-
-  arg1 = *(UTypes::ResultIO **)&_swig_go_0;
-  arg2 = *(UTypes::ShortIOInfo **)&_swig_go_1;
-
+  
+  arg1 = *(UTypes::ResultIO **)&_swig_go_0; 
+  arg2 = *(UTypes::ShortIOInfo **)&_swig_go_1; 
+  
   if (arg1) (arg1)->sinfo = *arg2;
-
+  
 }
 
 
@@ -832,11 +832,11 @@ UTypes::ShortIOInfo *_wrap_ResultIO_sinfo_get_uniset_internal_api_576c1e11c33cb6
   UTypes::ResultIO *arg1 = (UTypes::ResultIO *) 0 ;
   UTypes::ShortIOInfo *result = 0 ;
   UTypes::ShortIOInfo *_swig_go_result;
-
-  arg1 = *(UTypes::ResultIO **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultIO **)&_swig_go_0; 
+  
   result = (UTypes::ShortIOInfo *)& ((arg1)->sinfo);
-  *(UTypes::ShortIOInfo **)&_swig_go_result = (UTypes::ShortIOInfo *)result;
+  *(UTypes::ShortIOInfo **)&_swig_go_result = (UTypes::ShortIOInfo *)result; 
   return _swig_go_result;
 }
 
@@ -844,12 +844,12 @@ UTypes::ShortIOInfo *_wrap_ResultIO_sinfo_get_uniset_internal_api_576c1e11c33cb6
 void _wrap_ResultIO_ok_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::ResultIO *_swig_go_0, bool _swig_go_1) {
   UTypes::ResultIO *arg1 = (UTypes::ResultIO *) 0 ;
   bool arg2 ;
-
-  arg1 = *(UTypes::ResultIO **)&_swig_go_0;
-  arg2 = (bool)_swig_go_1;
-
+  
+  arg1 = *(UTypes::ResultIO **)&_swig_go_0; 
+  arg2 = (bool)_swig_go_1; 
+  
   if (arg1) (arg1)->ok = arg2;
-
+  
 }
 
 
@@ -857,11 +857,11 @@ bool _wrap_ResultIO_ok_get_uniset_internal_api_576c1e11c33cb6aa(UTypes::ResultIO
   UTypes::ResultIO *arg1 = (UTypes::ResultIO *) 0 ;
   bool result;
   bool _swig_go_result;
-
-  arg1 = *(UTypes::ResultIO **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultIO **)&_swig_go_0; 
+  
   result = (bool) ((arg1)->ok);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -871,12 +871,12 @@ UTypes::ResultIO *_wrap_new_ResultIO__SWIG_0_uniset_internal_api_576c1e11c33cb6a
   bool arg2 ;
   UTypes::ResultIO *result = 0 ;
   UTypes::ResultIO *_swig_go_result;
-
-  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0;
-  arg2 = (bool)_swig_go_1;
-
+  
+  arg1 = *(UTypes::ShortIOInfo **)&_swig_go_0; 
+  arg2 = (bool)_swig_go_1; 
+  
   result = (UTypes::ResultIO *)new UTypes::ResultIO((UTypes::ShortIOInfo const &)*arg1,arg2);
-  *(UTypes::ResultIO **)&_swig_go_result = (UTypes::ResultIO *)result;
+  *(UTypes::ResultIO **)&_swig_go_result = (UTypes::ResultIO *)result; 
   return _swig_go_result;
 }
 
@@ -884,33 +884,33 @@ UTypes::ResultIO *_wrap_new_ResultIO__SWIG_0_uniset_internal_api_576c1e11c33cb6a
 UTypes::ResultIO *_wrap_new_ResultIO__SWIG_1_uniset_internal_api_576c1e11c33cb6aa() {
   UTypes::ResultIO *result = 0 ;
   UTypes::ResultIO *_swig_go_result;
-
-
+  
+  
   result = (UTypes::ResultIO *)new UTypes::ResultIO();
-  *(UTypes::ResultIO **)&_swig_go_result = (UTypes::ResultIO *)result;
+  *(UTypes::ResultIO **)&_swig_go_result = (UTypes::ResultIO *)result; 
   return _swig_go_result;
 }
 
 
 void _wrap_delete_ResultIO_uniset_internal_api_576c1e11c33cb6aa(UTypes::ResultIO *_swig_go_0) {
   UTypes::ResultIO *arg1 = (UTypes::ResultIO *) 0 ;
-
-  arg1 = *(UTypes::ResultIO **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultIO **)&_swig_go_0; 
+  
   delete arg1;
-
+  
 }
 
 
 void _wrap_ResultValue_value_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::ResultValue *_swig_go_0, long long _swig_go_1) {
   UTypes::ResultValue *arg1 = (UTypes::ResultValue *) 0 ;
   long arg2 ;
-
-  arg1 = *(UTypes::ResultValue **)&_swig_go_0;
-  arg2 = (long)_swig_go_1;
-
+  
+  arg1 = *(UTypes::ResultValue **)&_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  
   if (arg1) (arg1)->value = arg2;
-
+  
 }
 
 
@@ -918,11 +918,11 @@ long long _wrap_ResultValue_value_get_uniset_internal_api_576c1e11c33cb6aa(UType
   UTypes::ResultValue *arg1 = (UTypes::ResultValue *) 0 ;
   long result;
   long long _swig_go_result;
-
-  arg1 = *(UTypes::ResultValue **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultValue **)&_swig_go_0; 
+  
   result = (long) ((arg1)->value);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -930,12 +930,12 @@ long long _wrap_ResultValue_value_get_uniset_internal_api_576c1e11c33cb6aa(UType
 void _wrap_ResultValue_ok_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::ResultValue *_swig_go_0, bool _swig_go_1) {
   UTypes::ResultValue *arg1 = (UTypes::ResultValue *) 0 ;
   bool arg2 ;
-
-  arg1 = *(UTypes::ResultValue **)&_swig_go_0;
-  arg2 = (bool)_swig_go_1;
-
+  
+  arg1 = *(UTypes::ResultValue **)&_swig_go_0; 
+  arg2 = (bool)_swig_go_1; 
+  
   if (arg1) (arg1)->ok = arg2;
-
+  
 }
 
 
@@ -943,11 +943,11 @@ bool _wrap_ResultValue_ok_get_uniset_internal_api_576c1e11c33cb6aa(UTypes::Resul
   UTypes::ResultValue *arg1 = (UTypes::ResultValue *) 0 ;
   bool result;
   bool _swig_go_result;
-
-  arg1 = *(UTypes::ResultValue **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultValue **)&_swig_go_0; 
+  
   result = (bool) ((arg1)->ok);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -955,15 +955,15 @@ bool _wrap_ResultValue_ok_get_uniset_internal_api_576c1e11c33cb6aa(UTypes::Resul
 void _wrap_ResultValue_err_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::ResultValue *_swig_go_0, _gostring_ _swig_go_1) {
   UTypes::ResultValue *arg1 = (UTypes::ResultValue *) 0 ;
   std::string *arg2 = 0 ;
-
-  arg1 = *(UTypes::ResultValue **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultValue **)&_swig_go_0; 
+  
   std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
   arg2 = &arg2_str;
-
-
+  
+  
   if (arg1) (arg1)->err = *arg2;
-
+  
 }
 
 
@@ -971,11 +971,11 @@ _gostring_ _wrap_ResultValue_err_get_uniset_internal_api_576c1e11c33cb6aa(UTypes
   UTypes::ResultValue *arg1 = (UTypes::ResultValue *) 0 ;
   std::string *result = 0 ;
   _gostring_ _swig_go_result;
-
-  arg1 = *(UTypes::ResultValue **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultValue **)&_swig_go_0; 
+  
   result = (std::string *) & ((arg1)->err);
-  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length());
+  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length()); 
   return _swig_go_result;
 }
 
@@ -985,15 +985,15 @@ UTypes::ResultValue *_wrap_new_ResultValue__SWIG_0_uniset_internal_api_576c1e11c
   std::string *arg2 = 0 ;
   UTypes::ResultValue *result = 0 ;
   UTypes::ResultValue *_swig_go_result;
-
-  arg1 = (long)_swig_go_0;
-
+  
+  arg1 = (long)_swig_go_0; 
+  
   std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
   arg2 = &arg2_str;
-
-
+  
+  
   result = (UTypes::ResultValue *)new UTypes::ResultValue(arg1,(std::string const &)*arg2);
-  *(UTypes::ResultValue **)&_swig_go_result = (UTypes::ResultValue *)result;
+  *(UTypes::ResultValue **)&_swig_go_result = (UTypes::ResultValue *)result; 
   return _swig_go_result;
 }
 
@@ -1002,11 +1002,11 @@ UTypes::ResultValue *_wrap_new_ResultValue__SWIG_1_uniset_internal_api_576c1e11c
   long arg1 ;
   UTypes::ResultValue *result = 0 ;
   UTypes::ResultValue *_swig_go_result;
-
-  arg1 = (long)_swig_go_0;
-
+  
+  arg1 = (long)_swig_go_0; 
+  
   result = (UTypes::ResultValue *)new UTypes::ResultValue(arg1);
-  *(UTypes::ResultValue **)&_swig_go_result = (UTypes::ResultValue *)result;
+  *(UTypes::ResultValue **)&_swig_go_result = (UTypes::ResultValue *)result; 
   return _swig_go_result;
 }
 
@@ -1014,10 +1014,10 @@ UTypes::ResultValue *_wrap_new_ResultValue__SWIG_1_uniset_internal_api_576c1e11c
 UTypes::ResultValue *_wrap_new_ResultValue__SWIG_2_uniset_internal_api_576c1e11c33cb6aa() {
   UTypes::ResultValue *result = 0 ;
   UTypes::ResultValue *_swig_go_result;
-
-
+  
+  
   result = (UTypes::ResultValue *)new UTypes::ResultValue();
-  *(UTypes::ResultValue **)&_swig_go_result = (UTypes::ResultValue *)result;
+  *(UTypes::ResultValue **)&_swig_go_result = (UTypes::ResultValue *)result; 
   return _swig_go_result;
 }
 
@@ -1026,11 +1026,11 @@ UTypes::ResultValue *_wrap_new_ResultValue__SWIG_3_uniset_internal_api_576c1e11c
   UTypes::ResultValue *arg1 = 0 ;
   UTypes::ResultValue *result = 0 ;
   UTypes::ResultValue *_swig_go_result;
-
-  arg1 = *(UTypes::ResultValue **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultValue **)&_swig_go_0; 
+  
   result = (UTypes::ResultValue *)new UTypes::ResultValue((UTypes::ResultValue &&)*arg1);
-  *(UTypes::ResultValue **)&_swig_go_result = (UTypes::ResultValue *)result;
+  *(UTypes::ResultValue **)&_swig_go_result = (UTypes::ResultValue *)result; 
   return _swig_go_result;
 }
 
@@ -1039,34 +1039,34 @@ UTypes::ResultValue *_wrap_new_ResultValue__SWIG_4_uniset_internal_api_576c1e11c
   UTypes::ResultValue *arg1 = 0 ;
   UTypes::ResultValue *result = 0 ;
   UTypes::ResultValue *_swig_go_result;
-
-  arg1 = *(UTypes::ResultValue **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultValue **)&_swig_go_0; 
+  
   result = (UTypes::ResultValue *)new UTypes::ResultValue((UTypes::ResultValue const &)*arg1);
-  *(UTypes::ResultValue **)&_swig_go_result = (UTypes::ResultValue *)result;
+  *(UTypes::ResultValue **)&_swig_go_result = (UTypes::ResultValue *)result; 
   return _swig_go_result;
 }
 
 
 void _wrap_delete_ResultValue_uniset_internal_api_576c1e11c33cb6aa(UTypes::ResultValue *_swig_go_0) {
   UTypes::ResultValue *arg1 = (UTypes::ResultValue *) 0 ;
-
-  arg1 = *(UTypes::ResultValue **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultValue **)&_swig_go_0; 
+  
   delete arg1;
-
+  
 }
 
 
 void _wrap_ResultBool_result_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::ResultBool *_swig_go_0, bool _swig_go_1) {
   UTypes::ResultBool *arg1 = (UTypes::ResultBool *) 0 ;
   bool arg2 ;
-
-  arg1 = *(UTypes::ResultBool **)&_swig_go_0;
-  arg2 = (bool)_swig_go_1;
-
+  
+  arg1 = *(UTypes::ResultBool **)&_swig_go_0; 
+  arg2 = (bool)_swig_go_1; 
+  
   if (arg1) (arg1)->result = arg2;
-
+  
 }
 
 
@@ -1074,11 +1074,11 @@ bool _wrap_ResultBool_result_get_uniset_internal_api_576c1e11c33cb6aa(UTypes::Re
   UTypes::ResultBool *arg1 = (UTypes::ResultBool *) 0 ;
   bool result;
   bool _swig_go_result;
-
-  arg1 = *(UTypes::ResultBool **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultBool **)&_swig_go_0; 
+  
   result = (bool) ((arg1)->result);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -1086,12 +1086,12 @@ bool _wrap_ResultBool_result_get_uniset_internal_api_576c1e11c33cb6aa(UTypes::Re
 void _wrap_ResultBool_ok_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::ResultBool *_swig_go_0, bool _swig_go_1) {
   UTypes::ResultBool *arg1 = (UTypes::ResultBool *) 0 ;
   bool arg2 ;
-
-  arg1 = *(UTypes::ResultBool **)&_swig_go_0;
-  arg2 = (bool)_swig_go_1;
-
+  
+  arg1 = *(UTypes::ResultBool **)&_swig_go_0; 
+  arg2 = (bool)_swig_go_1; 
+  
   if (arg1) (arg1)->ok = arg2;
-
+  
 }
 
 
@@ -1099,11 +1099,11 @@ bool _wrap_ResultBool_ok_get_uniset_internal_api_576c1e11c33cb6aa(UTypes::Result
   UTypes::ResultBool *arg1 = (UTypes::ResultBool *) 0 ;
   bool result;
   bool _swig_go_result;
-
-  arg1 = *(UTypes::ResultBool **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultBool **)&_swig_go_0; 
+  
   result = (bool) ((arg1)->ok);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -1111,15 +1111,15 @@ bool _wrap_ResultBool_ok_get_uniset_internal_api_576c1e11c33cb6aa(UTypes::Result
 void _wrap_ResultBool_err_set_uniset_internal_api_576c1e11c33cb6aa(UTypes::ResultBool *_swig_go_0, _gostring_ _swig_go_1) {
   UTypes::ResultBool *arg1 = (UTypes::ResultBool *) 0 ;
   std::string *arg2 = 0 ;
-
-  arg1 = *(UTypes::ResultBool **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultBool **)&_swig_go_0; 
+  
   std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
   arg2 = &arg2_str;
-
-
+  
+  
   if (arg1) (arg1)->err = *arg2;
-
+  
 }
 
 
@@ -1127,11 +1127,11 @@ _gostring_ _wrap_ResultBool_err_get_uniset_internal_api_576c1e11c33cb6aa(UTypes:
   UTypes::ResultBool *arg1 = (UTypes::ResultBool *) 0 ;
   std::string *result = 0 ;
   _gostring_ _swig_go_result;
-
-  arg1 = *(UTypes::ResultBool **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultBool **)&_swig_go_0; 
+  
   result = (std::string *) & ((arg1)->err);
-  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length());
+  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length()); 
   return _swig_go_result;
 }
 
@@ -1141,15 +1141,15 @@ UTypes::ResultBool *_wrap_new_ResultBool__SWIG_0_uniset_internal_api_576c1e11c33
   std::string *arg2 = 0 ;
   UTypes::ResultBool *result = 0 ;
   UTypes::ResultBool *_swig_go_result;
-
-  arg1 = (bool)_swig_go_0;
-
+  
+  arg1 = (bool)_swig_go_0; 
+  
   std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
   arg2 = &arg2_str;
-
-
+  
+  
   result = (UTypes::ResultBool *)new UTypes::ResultBool(arg1,(std::string const &)*arg2);
-  *(UTypes::ResultBool **)&_swig_go_result = (UTypes::ResultBool *)result;
+  *(UTypes::ResultBool **)&_swig_go_result = (UTypes::ResultBool *)result; 
   return _swig_go_result;
 }
 
@@ -1158,11 +1158,11 @@ UTypes::ResultBool *_wrap_new_ResultBool__SWIG_1_uniset_internal_api_576c1e11c33
   bool arg1 ;
   UTypes::ResultBool *result = 0 ;
   UTypes::ResultBool *_swig_go_result;
-
-  arg1 = (bool)_swig_go_0;
-
+  
+  arg1 = (bool)_swig_go_0; 
+  
   result = (UTypes::ResultBool *)new UTypes::ResultBool(arg1);
-  *(UTypes::ResultBool **)&_swig_go_result = (UTypes::ResultBool *)result;
+  *(UTypes::ResultBool **)&_swig_go_result = (UTypes::ResultBool *)result; 
   return _swig_go_result;
 }
 
@@ -1170,10 +1170,10 @@ UTypes::ResultBool *_wrap_new_ResultBool__SWIG_1_uniset_internal_api_576c1e11c33
 UTypes::ResultBool *_wrap_new_ResultBool__SWIG_2_uniset_internal_api_576c1e11c33cb6aa() {
   UTypes::ResultBool *result = 0 ;
   UTypes::ResultBool *_swig_go_result;
-
-
+  
+  
   result = (UTypes::ResultBool *)new UTypes::ResultBool();
-  *(UTypes::ResultBool **)&_swig_go_result = (UTypes::ResultBool *)result;
+  *(UTypes::ResultBool **)&_swig_go_result = (UTypes::ResultBool *)result; 
   return _swig_go_result;
 }
 
@@ -1182,11 +1182,11 @@ UTypes::ResultBool *_wrap_new_ResultBool__SWIG_3_uniset_internal_api_576c1e11c33
   UTypes::ResultBool *arg1 = 0 ;
   UTypes::ResultBool *result = 0 ;
   UTypes::ResultBool *_swig_go_result;
-
-  arg1 = *(UTypes::ResultBool **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultBool **)&_swig_go_0; 
+  
   result = (UTypes::ResultBool *)new UTypes::ResultBool((UTypes::ResultBool &&)*arg1);
-  *(UTypes::ResultBool **)&_swig_go_result = (UTypes::ResultBool *)result;
+  *(UTypes::ResultBool **)&_swig_go_result = (UTypes::ResultBool *)result; 
   return _swig_go_result;
 }
 
@@ -1195,32 +1195,32 @@ UTypes::ResultBool *_wrap_new_ResultBool__SWIG_4_uniset_internal_api_576c1e11c33
   UTypes::ResultBool *arg1 = 0 ;
   UTypes::ResultBool *result = 0 ;
   UTypes::ResultBool *_swig_go_result;
-
-  arg1 = *(UTypes::ResultBool **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultBool **)&_swig_go_0; 
+  
   result = (UTypes::ResultBool *)new UTypes::ResultBool((UTypes::ResultBool const &)*arg1);
-  *(UTypes::ResultBool **)&_swig_go_result = (UTypes::ResultBool *)result;
+  *(UTypes::ResultBool **)&_swig_go_result = (UTypes::ResultBool *)result; 
   return _swig_go_result;
 }
 
 
 void _wrap_delete_ResultBool_uniset_internal_api_576c1e11c33cb6aa(UTypes::ResultBool *_swig_go_0) {
   UTypes::ResultBool *arg1 = (UTypes::ResultBool *) 0 ;
-
-  arg1 = *(UTypes::ResultBool **)&_swig_go_0;
-
+  
+  arg1 = *(UTypes::ResultBool **)&_swig_go_0; 
+  
   delete arg1;
-
+  
 }
 
 
 UException *_wrap_new_UException__SWIG_0_uniset_internal_api_576c1e11c33cb6aa() {
   UException *result = 0 ;
   UException *_swig_go_result;
-
-
+  
+  
   result = (UException *)new UException();
-  *(UException **)&_swig_go_result = (UException *)result;
+  *(UException **)&_swig_go_result = (UException *)result; 
   return _swig_go_result;
 }
 
@@ -1229,14 +1229,14 @@ UException *_wrap_new_UException__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(_g
   std::string *arg1 = 0 ;
   UException *result = 0 ;
   UException *_swig_go_result;
-
-
+  
+  
   std::string arg1_str(_swig_go_0.p, _swig_go_0.n);
   arg1 = &arg1_str;
-
-
+  
+  
   result = (UException *)new UException((std::string const &)*arg1);
-  *(UException **)&_swig_go_result = (UException *)result;
+  *(UException **)&_swig_go_result = (UException *)result; 
   return _swig_go_result;
 }
 
@@ -1245,22 +1245,22 @@ UException *_wrap_new_UException__SWIG_2_uniset_internal_api_576c1e11c33cb6aa(_g
   char *arg1 = (char *) 0 ;
   UException *result = 0 ;
   UException *_swig_go_result;
-
-  arg1 = (char *)_swig_go_0.p;
-
+  
+  arg1 = (char *)_swig_go_0.p; 
+  
   result = (UException *)new UException((char const *)arg1);
-  *(UException **)&_swig_go_result = (UException *)result;
+  *(UException **)&_swig_go_result = (UException *)result; 
   return _swig_go_result;
 }
 
 
 void _wrap_delete_UException_uniset_internal_api_576c1e11c33cb6aa(UException *_swig_go_0) {
   UException *arg1 = (UException *) 0 ;
-
-  arg1 = *(UException **)&_swig_go_0;
-
+  
+  arg1 = *(UException **)&_swig_go_0; 
+  
   delete arg1;
-
+  
 }
 
 
@@ -1268,11 +1268,11 @@ _gostring_ _wrap_UException_getError_uniset_internal_api_576c1e11c33cb6aa(UExcep
   UException *arg1 = (UException *) 0 ;
   std::string result;
   _gostring_ _swig_go_result;
-
-  arg1 = *(UException **)&_swig_go_0;
-
+  
+  arg1 = *(UException **)&_swig_go_0; 
+  
   result = (arg1)->getError();
-  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length());
+  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length()); 
   return _swig_go_result;
 }
 
@@ -1280,15 +1280,15 @@ _gostring_ _wrap_UException_getError_uniset_internal_api_576c1e11c33cb6aa(UExcep
 void _wrap_UException_err_set_uniset_internal_api_576c1e11c33cb6aa(UException *_swig_go_0, _gostring_ _swig_go_1) {
   UException *arg1 = (UException *) 0 ;
   std::string *arg2 = 0 ;
-
-  arg1 = *(UException **)&_swig_go_0;
-
+  
+  arg1 = *(UException **)&_swig_go_0; 
+  
   std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
   arg2 = &arg2_str;
-
-
+  
+  
   if (arg1) (arg1)->err = *arg2;
-
+  
 }
 
 
@@ -1296,11 +1296,11 @@ _gostring_ _wrap_UException_err_get_uniset_internal_api_576c1e11c33cb6aa(UExcept
   UException *arg1 = (UException *) 0 ;
   std::string *result = 0 ;
   _gostring_ _swig_go_result;
-
-  arg1 = *(UException **)&_swig_go_0;
-
+  
+  arg1 = *(UException **)&_swig_go_0; 
+  
   result = (std::string *) & ((arg1)->err);
-  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length());
+  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length()); 
   return _swig_go_result;
 }
 
@@ -1308,10 +1308,10 @@ _gostring_ _wrap_UException_err_get_uniset_internal_api_576c1e11c33cb6aa(UExcept
 UTimeOut *_wrap_new_UTimeOut__SWIG_0_uniset_internal_api_576c1e11c33cb6aa() {
   UTimeOut *result = 0 ;
   UTimeOut *_swig_go_result;
-
-
+  
+  
   result = (UTimeOut *)new UTimeOut();
-  *(UTimeOut **)&_swig_go_result = (UTimeOut *)result;
+  *(UTimeOut **)&_swig_go_result = (UTimeOut *)result; 
   return _swig_go_result;
 }
 
@@ -1320,25 +1320,25 @@ UTimeOut *_wrap_new_UTimeOut__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(_gostr
   std::string *arg1 = 0 ;
   UTimeOut *result = 0 ;
   UTimeOut *_swig_go_result;
-
-
+  
+  
   std::string arg1_str(_swig_go_0.p, _swig_go_0.n);
   arg1 = &arg1_str;
-
-
+  
+  
   result = (UTimeOut *)new UTimeOut((std::string const &)*arg1);
-  *(UTimeOut **)&_swig_go_result = (UTimeOut *)result;
+  *(UTimeOut **)&_swig_go_result = (UTimeOut *)result; 
   return _swig_go_result;
 }
 
 
 void _wrap_delete_UTimeOut_uniset_internal_api_576c1e11c33cb6aa(UTimeOut *_swig_go_0) {
   UTimeOut *arg1 = (UTimeOut *) 0 ;
-
-  arg1 = *(UTimeOut **)&_swig_go_0;
-
+  
+  arg1 = *(UTimeOut **)&_swig_go_0; 
+  
   delete arg1;
-
+  
 }
 
 
@@ -1346,12 +1346,12 @@ _gostring_ _wrap_UTimeOut_getError_uniset_internal_api_576c1e11c33cb6aa(UTimeOut
   UTimeOut *arg1 = (UTimeOut *) 0 ;
   std::string result;
   _gostring_ _swig_go_result;
-
-  arg1 = *(UTimeOut **)&_swig_go_0;
-
+  
+  arg1 = *(UTimeOut **)&_swig_go_0; 
+  
   UException *swig_b0 = (UException *)arg1;
   result = (swig_b0)->getError();
-  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length());
+  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length()); 
   return _swig_go_result;
 }
 
@@ -1359,16 +1359,16 @@ _gostring_ _wrap_UTimeOut_getError_uniset_internal_api_576c1e11c33cb6aa(UTimeOut
 void _wrap_SetUTimeOut_Err_uniset_internal_api_576c1e11c33cb6aa(UTimeOut *_swig_go_0, _gostring_ _swig_go_1) {
   UTimeOut *arg1 = (UTimeOut *) 0 ;
   std::string *arg2 = 0 ;
-
-  arg1 = *(UTimeOut **)&_swig_go_0;
-
+  
+  arg1 = *(UTimeOut **)&_swig_go_0; 
+  
   std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
   arg2 = &arg2_str;
-
-
+  
+  
   UException *swig_b0 = (UException *)arg1;
   if (swig_b0) (swig_b0)->err = *arg2;
-
+  
 }
 
 
@@ -1376,12 +1376,12 @@ _gostring_ _wrap_GetUTimeOut_Err_uniset_internal_api_576c1e11c33cb6aa(UTimeOut *
   UTimeOut *arg1 = (UTimeOut *) 0 ;
   std::string *result = 0 ;
   _gostring_ _swig_go_result;
-
-  arg1 = *(UTimeOut **)&_swig_go_0;
-
+  
+  arg1 = *(UTimeOut **)&_swig_go_0; 
+  
   UException *swig_b0 = (UException *)arg1;
   result = (std::string *) & ((swig_b0)->err);
-  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length());
+  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length()); 
   return _swig_go_result;
 }
 
@@ -1389,10 +1389,10 @@ _gostring_ _wrap_GetUTimeOut_Err_uniset_internal_api_576c1e11c33cb6aa(UTimeOut *
 USysError *_wrap_new_USysError__SWIG_0_uniset_internal_api_576c1e11c33cb6aa() {
   USysError *result = 0 ;
   USysError *_swig_go_result;
-
-
+  
+  
   result = (USysError *)new USysError();
-  *(USysError **)&_swig_go_result = (USysError *)result;
+  *(USysError **)&_swig_go_result = (USysError *)result; 
   return _swig_go_result;
 }
 
@@ -1401,25 +1401,25 @@ USysError *_wrap_new_USysError__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(_gos
   std::string *arg1 = 0 ;
   USysError *result = 0 ;
   USysError *_swig_go_result;
-
-
+  
+  
   std::string arg1_str(_swig_go_0.p, _swig_go_0.n);
   arg1 = &arg1_str;
-
-
+  
+  
   result = (USysError *)new USysError((std::string const &)*arg1);
-  *(USysError **)&_swig_go_result = (USysError *)result;
+  *(USysError **)&_swig_go_result = (USysError *)result; 
   return _swig_go_result;
 }
 
 
 void _wrap_delete_USysError_uniset_internal_api_576c1e11c33cb6aa(USysError *_swig_go_0) {
   USysError *arg1 = (USysError *) 0 ;
-
-  arg1 = *(USysError **)&_swig_go_0;
-
+  
+  arg1 = *(USysError **)&_swig_go_0; 
+  
   delete arg1;
-
+  
 }
 
 
@@ -1427,12 +1427,12 @@ _gostring_ _wrap_USysError_getError_uniset_internal_api_576c1e11c33cb6aa(USysErr
   USysError *arg1 = (USysError *) 0 ;
   std::string result;
   _gostring_ _swig_go_result;
-
-  arg1 = *(USysError **)&_swig_go_0;
-
+  
+  arg1 = *(USysError **)&_swig_go_0; 
+  
   UException *swig_b0 = (UException *)arg1;
   result = (swig_b0)->getError();
-  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length());
+  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length()); 
   return _swig_go_result;
 }
 
@@ -1440,16 +1440,16 @@ _gostring_ _wrap_USysError_getError_uniset_internal_api_576c1e11c33cb6aa(USysErr
 void _wrap_SetUSysError_Err_uniset_internal_api_576c1e11c33cb6aa(USysError *_swig_go_0, _gostring_ _swig_go_1) {
   USysError *arg1 = (USysError *) 0 ;
   std::string *arg2 = 0 ;
-
-  arg1 = *(USysError **)&_swig_go_0;
-
+  
+  arg1 = *(USysError **)&_swig_go_0; 
+  
   std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
   arg2 = &arg2_str;
-
-
+  
+  
   UException *swig_b0 = (UException *)arg1;
   if (swig_b0) (swig_b0)->err = *arg2;
-
+  
 }
 
 
@@ -1457,12 +1457,12 @@ _gostring_ _wrap_GetUSysError_Err_uniset_internal_api_576c1e11c33cb6aa(USysError
   USysError *arg1 = (USysError *) 0 ;
   std::string *result = 0 ;
   _gostring_ _swig_go_result;
-
-  arg1 = *(USysError **)&_swig_go_0;
-
+  
+  arg1 = *(USysError **)&_swig_go_0; 
+  
   UException *swig_b0 = (UException *)arg1;
   result = (std::string *) & ((swig_b0)->err);
-  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length());
+  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length()); 
   return _swig_go_result;
 }
 
@@ -1470,10 +1470,10 @@ _gostring_ _wrap_GetUSysError_Err_uniset_internal_api_576c1e11c33cb6aa(USysError
 UValidateError *_wrap_new_UValidateError__SWIG_0_uniset_internal_api_576c1e11c33cb6aa() {
   UValidateError *result = 0 ;
   UValidateError *_swig_go_result;
-
-
+  
+  
   result = (UValidateError *)new UValidateError();
-  *(UValidateError **)&_swig_go_result = (UValidateError *)result;
+  *(UValidateError **)&_swig_go_result = (UValidateError *)result; 
   return _swig_go_result;
 }
 
@@ -1482,25 +1482,25 @@ UValidateError *_wrap_new_UValidateError__SWIG_1_uniset_internal_api_576c1e11c33
   std::string *arg1 = 0 ;
   UValidateError *result = 0 ;
   UValidateError *_swig_go_result;
-
-
+  
+  
   std::string arg1_str(_swig_go_0.p, _swig_go_0.n);
   arg1 = &arg1_str;
-
-
+  
+  
   result = (UValidateError *)new UValidateError((std::string const &)*arg1);
-  *(UValidateError **)&_swig_go_result = (UValidateError *)result;
+  *(UValidateError **)&_swig_go_result = (UValidateError *)result; 
   return _swig_go_result;
 }
 
 
 void _wrap_delete_UValidateError_uniset_internal_api_576c1e11c33cb6aa(UValidateError *_swig_go_0) {
   UValidateError *arg1 = (UValidateError *) 0 ;
-
-  arg1 = *(UValidateError **)&_swig_go_0;
-
+  
+  arg1 = *(UValidateError **)&_swig_go_0; 
+  
   delete arg1;
-
+  
 }
 
 
@@ -1508,12 +1508,12 @@ _gostring_ _wrap_UValidateError_getError_uniset_internal_api_576c1e11c33cb6aa(UV
   UValidateError *arg1 = (UValidateError *) 0 ;
   std::string result;
   _gostring_ _swig_go_result;
-
-  arg1 = *(UValidateError **)&_swig_go_0;
-
+  
+  arg1 = *(UValidateError **)&_swig_go_0; 
+  
   UException *swig_b0 = (UException *)arg1;
   result = (swig_b0)->getError();
-  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length());
+  _swig_go_result = Swig_AllocateString((&result)->data(), (&result)->length()); 
   return _swig_go_result;
 }
 
@@ -1521,16 +1521,16 @@ _gostring_ _wrap_UValidateError_getError_uniset_internal_api_576c1e11c33cb6aa(UV
 void _wrap_SetUValidateError_Err_uniset_internal_api_576c1e11c33cb6aa(UValidateError *_swig_go_0, _gostring_ _swig_go_1) {
   UValidateError *arg1 = (UValidateError *) 0 ;
   std::string *arg2 = 0 ;
-
-  arg1 = *(UValidateError **)&_swig_go_0;
-
+  
+  arg1 = *(UValidateError **)&_swig_go_0; 
+  
   std::string arg2_str(_swig_go_1.p, _swig_go_1.n);
   arg2 = &arg2_str;
-
-
+  
+  
   UException *swig_b0 = (UException *)arg1;
   if (swig_b0) (swig_b0)->err = *arg2;
-
+  
 }
 
 
@@ -1538,12 +1538,12 @@ _gostring_ _wrap_GetUValidateError_Err_uniset_internal_api_576c1e11c33cb6aa(UVal
   UValidateError *arg1 = (UValidateError *) 0 ;
   std::string *result = 0 ;
   _gostring_ _swig_go_result;
-
-  arg1 = *(UValidateError **)&_swig_go_0;
-
+  
+  arg1 = *(UValidateError **)&_swig_go_0; 
+  
   UException *swig_b0 = (UException *)arg1;
   result = (std::string *) & ((swig_b0)->err);
-  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length());
+  _swig_go_result = Swig_AllocateString((*result).data(), (*result).length()); 
   return _swig_go_result;
 }
 
@@ -1552,22 +1552,22 @@ UProxy *_wrap_new_UProxy__SWIG_0_uniset_internal_api_576c1e11c33cb6aa(_gostring_
   std::string *arg1 = 0 ;
   UProxy *result = 0 ;
   UProxy *_swig_go_result;
-
-
+  
+  
   std::string arg1_str(_swig_go_0.p, _swig_go_0.n);
   arg1 = &arg1_str;
-
-
+  
+  
   try {
     result = (UProxy *)new UProxy((std::string const &)*arg1);
   }
   catch(UException &_e) {
     (void)_e;
     _swig_gopanic("C++ UException exception thrown");
-
+    
   }
-
-  *(UProxy **)&_swig_go_result = (UProxy *)result;
+  
+  *(UProxy **)&_swig_go_result = (UProxy *)result; 
   return _swig_go_result;
 }
 
@@ -1576,50 +1576,50 @@ UProxy *_wrap_new_UProxy__SWIG_1_uniset_internal_api_576c1e11c33cb6aa(long long 
   long arg1 ;
   UProxy *result = 0 ;
   UProxy *_swig_go_result;
-
-  arg1 = (long)_swig_go_0;
-
+  
+  arg1 = (long)_swig_go_0; 
+  
   try {
     result = (UProxy *)new UProxy(arg1);
   }
   catch(UException &_e) {
     (void)_e;
     _swig_gopanic("C++ UException exception thrown");
-
+    
   }
-
-  *(UProxy **)&_swig_go_result = (UProxy *)result;
+  
+  *(UProxy **)&_swig_go_result = (UProxy *)result; 
   return _swig_go_result;
 }
 
 
 void _wrap_delete_UProxy_uniset_internal_api_576c1e11c33cb6aa(UProxy *_swig_go_0) {
   UProxy *arg1 = (UProxy *) 0 ;
-
-  arg1 = *(UProxy **)&_swig_go_0;
-
+  
+  arg1 = *(UProxy **)&_swig_go_0; 
+  
   delete arg1;
-
+  
 }
 
 
 void _wrap_UProxy_askSensor_uniset_internal_api_576c1e11c33cb6aa(UProxy *_swig_go_0, long long _swig_go_1) {
   UProxy *arg1 = (UProxy *) 0 ;
   long arg2 ;
-
-  arg1 = *(UProxy **)&_swig_go_0;
-  arg2 = (long)_swig_go_1;
-
+  
+  arg1 = *(UProxy **)&_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  
   try {
     (arg1)->askSensor(arg2);
   }
   catch(UException &_e) {
     (void)_e;
     _swig_gopanic("C++ UException exception thrown");
-
+    
   }
-
-
+  
+  
 }
 
 
@@ -1628,20 +1628,20 @@ long long _wrap_UProxy_getValue_uniset_internal_api_576c1e11c33cb6aa(UProxy *_sw
   long arg2 ;
   long result;
   long long _swig_go_result;
-
-  arg1 = *(UProxy **)&_swig_go_0;
-  arg2 = (long)_swig_go_1;
-
+  
+  arg1 = *(UProxy **)&_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  
   try {
     result = (long)(arg1)->getValue(arg2);
   }
   catch(UException &_e) {
     (void)_e;
     _swig_gopanic("C++ UException exception thrown");
-
+    
   }
-
-  _swig_go_result = result;
+  
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -1650,21 +1650,21 @@ void _wrap_UProxy_setValue_uniset_internal_api_576c1e11c33cb6aa(UProxy *_swig_go
   UProxy *arg1 = (UProxy *) 0 ;
   long arg2 ;
   long arg3 ;
-
-  arg1 = *(UProxy **)&_swig_go_0;
-  arg2 = (long)_swig_go_1;
-  arg3 = (long)_swig_go_2;
-
+  
+  arg1 = *(UProxy **)&_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  arg3 = (long)_swig_go_2; 
+  
   try {
     (arg1)->setValue(arg2,arg3);
   }
   catch(UException &_e) {
     (void)_e;
     _swig_gopanic("C++ UException exception thrown");
-
+    
   }
-
-
+  
+  
 }
 
 
@@ -1673,20 +1673,20 @@ UTypes::ShortIOInfo *_wrap_UProxy_waitMessage_uniset_internal_api_576c1e11c33cb6
   int arg2 ;
   UTypes::ShortIOInfo result;
   UTypes::ShortIOInfo *_swig_go_result;
-
-  arg1 = *(UProxy **)&_swig_go_0;
-  arg2 = (int)_swig_go_1;
-
+  
+  arg1 = *(UProxy **)&_swig_go_0; 
+  arg2 = (int)_swig_go_1; 
+  
   try {
     result = (arg1)->waitMessage(arg2);
   }
   catch(UException &_e) {
     (void)_e;
     _swig_gopanic("C++ UException exception thrown");
-
+    
   }
-
-  *(UTypes::ShortIOInfo **)&_swig_go_result = new UTypes::ShortIOInfo(result);
+  
+  *(UTypes::ShortIOInfo **)&_swig_go_result = new UTypes::ShortIOInfo(result); 
   return _swig_go_result;
 }
 
@@ -1696,12 +1696,12 @@ UTypes::ResultIO *_wrap_UProxy_safeWaitMessage_uniset_internal_api_576c1e11c33cb
   int arg2 ;
   UTypes::ResultIO result;
   UTypes::ResultIO *_swig_go_result;
-
-  arg1 = *(UProxy **)&_swig_go_0;
-  arg2 = (int)_swig_go_1;
-
+  
+  arg1 = *(UProxy **)&_swig_go_0; 
+  arg2 = (int)_swig_go_1; 
+  
   result = (arg1)->safeWaitMessage(arg2);
-  *(UTypes::ResultIO **)&_swig_go_result = new UTypes::ResultIO(result);
+  *(UTypes::ResultIO **)&_swig_go_result = new UTypes::ResultIO(result); 
   return _swig_go_result;
 }
 
@@ -1712,13 +1712,13 @@ UTypes::ResultBool *_wrap_UProxy_safeSetValue_uniset_internal_api_576c1e11c33cb6
   long arg3 ;
   UTypes::ResultBool result;
   UTypes::ResultBool *_swig_go_result;
-
-  arg1 = *(UProxy **)&_swig_go_0;
-  arg2 = (long)_swig_go_1;
-  arg3 = (long)_swig_go_2;
-
+  
+  arg1 = *(UProxy **)&_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  arg3 = (long)_swig_go_2; 
+  
   result = (arg1)->safeSetValue(arg2,arg3);
-  *(UTypes::ResultBool **)&_swig_go_result = new UTypes::ResultBool(result);
+  *(UTypes::ResultBool **)&_swig_go_result = new UTypes::ResultBool(result); 
   return _swig_go_result;
 }
 
@@ -1728,12 +1728,12 @@ UTypes::ResultValue *_wrap_UProxy_safeGetValue_uniset_internal_api_576c1e11c33cb
   long arg2 ;
   UTypes::ResultValue result;
   UTypes::ResultValue *_swig_go_result;
-
-  arg1 = *(UProxy **)&_swig_go_0;
-  arg2 = (long)_swig_go_1;
-
+  
+  arg1 = *(UProxy **)&_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  
   result = (arg1)->safeGetValue(arg2);
-  *(UTypes::ResultValue **)&_swig_go_result = new UTypes::ResultValue(result);
+  *(UTypes::ResultValue **)&_swig_go_result = new UTypes::ResultValue(result); 
   return _swig_go_result;
 }
 
@@ -1743,12 +1743,12 @@ UTypes::ResultBool *_wrap_UProxy_safeAskSensor_uniset_internal_api_576c1e11c33cb
   long arg2 ;
   UTypes::ResultBool result;
   UTypes::ResultBool *_swig_go_result;
-
-  arg1 = *(UProxy **)&_swig_go_0;
-  arg2 = (long)_swig_go_1;
-
+  
+  arg1 = *(UProxy **)&_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  
   result = (arg1)->safeAskSensor(arg2);
-  *(UTypes::ResultBool **)&_swig_go_result = new UTypes::ResultBool(result);
+  *(UTypes::ResultBool **)&_swig_go_result = new UTypes::ResultBool(result); 
   return _swig_go_result;
 }
 
@@ -1758,12 +1758,12 @@ bool _wrap_UProxy_isExist_uniset_internal_api_576c1e11c33cb6aa(UProxy *_swig_go_
   long arg2 ;
   bool result;
   bool _swig_go_result;
-
-  arg1 = *(UProxy **)&_swig_go_0;
-  arg2 = (long)_swig_go_1;
-
+  
+  arg1 = *(UProxy **)&_swig_go_0; 
+  arg2 = (long)_swig_go_1; 
+  
   result = (bool)(arg1)->isExist(arg2);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
@@ -1773,26 +1773,27 @@ bool _wrap_UProxy_run_uniset_internal_api_576c1e11c33cb6aa(UProxy *_swig_go_0, i
   int arg2 ;
   bool result;
   bool _swig_go_result;
-
-  arg1 = *(UProxy **)&_swig_go_0;
-  arg2 = (int)_swig_go_1;
-
+  
+  arg1 = *(UProxy **)&_swig_go_0; 
+  arg2 = (int)_swig_go_1; 
+  
   result = (bool)(arg1)->run(arg2);
-  _swig_go_result = result;
+  _swig_go_result = result; 
   return _swig_go_result;
 }
 
 
 void _wrap_UProxy_terminate_uniset_internal_api_576c1e11c33cb6aa(UProxy *_swig_go_0) {
   UProxy *arg1 = (UProxy *) 0 ;
-
-  arg1 = *(UProxy **)&_swig_go_0;
-
+  
+  arg1 = *(UProxy **)&_swig_go_0; 
+  
   (arg1)->terminate();
-
+  
 }
 
 
 #ifdef __cplusplus
 }
 #endif
+
