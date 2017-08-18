@@ -1,0 +1,329 @@
+/*! \page page_CodegenGo Генератор go-кода uniset-codegen-go
+
+	- \ref pg_CodegenGo_Common
+	- \ref pg_CodegenGo_XmlFile
+	- \ref pg_CodegenGo_Settings
+	- \ref pg_CodegenGo_SMap
+	- \ref pg_CodegenGo_Variables
+    - \ref pg_CodegenGo_Make
+    - \ref pg_CodegenGo_Example
+
+\section pg_CodegenGo_Common Общее описание утилиты uniset-codegen-go
+ Утилита uniset-codegen-go предназначена для генерирования "скелета"(sk) процесса управления на основе
+заданного xml-описания. В скелет включается "рутинный" код по инициализации и проверке индетификаторов,
+переменных (входов и выходов).
+
+Генерируемый go-код представляет из себя go-структуру с объявленными полями (входами, выходами, настроечными параметрами)
+которая должна встраиваться (анонимное встраивание) в итоговую пользовательскую реализацию.
+
+\section pg_CodegenGo_XmlFile Файл описания для генерирования базового класса
+
+Вообще формат подразумевает совместимость с родным uniset-форматом см. \ref page_Codegen
+но с учётом специфики реализации в go.
+
+Исходный xml-файл описания необходимый для генерирования выглядит следующим образом.
+\code
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	name 		- название класса
+	msgcount	- сколько сообщений обрабатывается за один раз
+	sleep_msec	- пауза между итерациями в работе процесса
+
+	type
+	====
+		in 	- входные регистры (только для чтения)
+		out	- выходные регистры (запись)
+-->
+<Test>
+  <settings>
+	<set name="class-name" val="TestGen"/>
+	<set name="sleep-msec" val="150"/>
+  </settings>
+  <variables>
+      <!-- type = [int,str,bool,float]
+         int:  max,min,no_range_exception=[0,1]
+         str:
+         float: max,min,no_range_exception=[0,1]
+         bool:
+
+		 min - минимальное значение (может быть не задано)
+		 max - максимальное значение (может быть не задано)
+		 default - значение по умолчанию (может быть не задано)
+		 no_range_exception=1 - при выходе за границы min или max только писать unideb[WARN].
+      -->
+		<item name="startTimeout" type="int" min="0" comment="test int variable"/>
+		<item name="stopTimeout" type="int" max="100" default="110" no_range_exception="1"/>
+		<item name="test_float" type="float" max="100.0" default="50.0" public="1" const="1" />
+		<item name="test_bool" type="bool" />
+		<item name="test_str" type="str" default="ddd"/>
+  </variables>
+  <smap>
+	<!-- name - название переменной в конф. файле -->
+	<item name="input1_s" vartype="in" iotype="DI" comment="comment for input1"/>
+	<item name="input2_s" vartype="in" iotype="DI" comment="comment for input2" />
+	<item name="output1_c" vartype="out" iotype="DO" omment="comment for output1" no_check_id="1"/>
+	<item name="output2_c" vartype="out" iotype="DO" omment="comment for output2" force="1"/>
+  </smap>
+</Test>
+\endcode
+\section pg_CodegenGo_Settings Секция <settings>
+  В секции \<settings> описываются следующие параметры:
+ - \b class-name - Имя генерируемой структуры. В итоге будет сгенерирован класс с названием \b "ClassName_SK" (\a "_SK" - сокращение от "skeleton").
+ - \b sleep-msec - пауза между шагами основного цикла процесса
+ - \b package - название генерируемого go-пакета. По умолчанию "main"
+
+\section pg_CodegenGo_SMap Секция <smap>
+ В секции \<smap> описываются "входы" и "выходы" процесса связанные с датчиками. При генерировании процесса,
+для каждого входа или выхода генерируется ряд свойств:
+ - \b name - идентификатор датчика связанного с этим входом или выходом (совпадает с именем указанной переменной)
+ - [\b in |\b out]\b _name - переменная хранящая текущее состояние датчика (генерируется с префиксом в зависимости от \b vartype)
+ - \b no_check_id - no_check_id="1" означает игнорировать (не генерировать исключение) при запуске процесса, если идентификатор датчика не найден.
+ - \b force="1" - принудительно перезаписывать значение в SharedMemory на каждом шаге. Действует только для \b vartype="out"
+ - \b initFromSM="1" - инициализировать значение из SM при старте (точнее при получении StartUp). Действует и на "in" и на "out".
+
+\note Правильнее указывать и \i необязательное поле \b iotype, которое должно совпадать с типом датчика к которому
+будет привязана данная переменная. Это позволит утилите \b uniset-linkeditor отслеживать правильность типов датчиков при "привязке".
+
+\section pg_CodegenGo_Variables Секция <variables>
+  В данной секции можно перечислить \b переменные разных типов, для которых будет сгенерирован код по их "инициализации"
+и проверке "диапазона"(если указаны поля min или max). На данный момент поддерживаются переменные следующих типов:
+ - \b int   - int
+ - \b long  - int64
+ - \b float - float32
+ - \b double - float64
+ - \b bool  - bool
+ - \b str   - string
+ - \b sensor  - uniset.ObjectID
+ - \b object  - uniset.ObjectID
+
+Так же доступны следующие необязательные вспомогательные поля:
+ - \b min - минимальное разрешенное значение
+ - \b max - максимальное разрешенное значение
+ - \b default - значение по умолчанию (при инициализации)
+ - \b no_range_exception - не генерировать исключение (panic) в случае выхода переменной за указанный диапазон (\b min или \b max).
+
+В генерируемом коде для каждой переменной происходит её инициализация по следующему шаблону (псевдокод):
+\code
+  varname = getArgParam("--ObjectName-varname",it.getProp("'varname'"));
+  if( varname.empty() )
+	varname = 'default'
+\endcode
+Где \a it.getProp() - получение значения из соответствующей настроечной секции в конфигурационном файле (см. \ref pg_CodegenGo_Configuration).
+Из кода можно видеть, что приоритетным является аргумент командной строки, потом значение из конф. файла и только потом \a default.
+
+Если указаны поля \b min или \b max происходит проверка значения (после инициализации) на соответствие указанному диапазону.
+По умолчанию, при выходе за диапазон, генериурется исключение. Но если указано \b no_range_exception="1",
+то просто выдаётся warning в stderr.
+
+На текущий момент все генерируемые поля являются приватными.
+
+\section pg_CodegenGo_Make Параметры генерирования кода
+Типичное правило для генерирования в Makefile.am выглядит следующим образом:
+\code
+myobject_sk.go:
+	uniset2-codegen-go -n MyObject myobject.src.xml
+\endcode
+В этом примере
+ - \b myobject.src.xml - это файл с описанием переменных
+ - \b -n - опредеяет название файла для сгенерированного go-кода. Генерируется файл состоящий из прописных букв.
+
+
+\section pg_CodegenGo_Example Пример кода
+ Из такого описания
+ \code
+ <?xml version="1.0" encoding="utf-8"?>
+<!--
+	name 		- название класса
+	sleep_msec	- пауза между итерациями в работе процесса
+
+	type
+	====
+		in 	- входные регистры (только для чтения)
+		out	- выходные регистры (запись)
+-->
+<Test>
+  <settings>
+	<set name="class-name" val="TestGen"/>
+	<set name="sleep-msec" val="150"/>
+	<set name="resetMsgTime" val="300"/>
+  </settings>
+  <variables>
+      <!-- type = [int,str,bool,float]
+		 min - минимальное значение (может быть не задано)
+		 max - максимальное значение (может быть не задано)
+		 default - значение по умолчанию (может быть не задано)
+		 no_range_exception=1 - при выходе за границы min или max только писать unideb[WARN].
+      -->
+		<item name="test_int" type="int" min="0" comment="test int variable" const="1" public="1"/>
+		<item name="test_int2" type="int" max="100" default="110" no_range_exception="1"/>
+		<item name="test_long" type="long" max="100" default="110" no_range_exception="1"/>
+		<item name="test_float" type="float" max="100.0" default="50.0" />
+		<item name="test_double" type="double" max="100.340" default="52.044" />
+		<item name="test_bool" type="bool" private="1" no_vmonit="1"/>
+		<item name="test_str" type="str" default="ddd"/>
+  </variables>
+  <smap>
+	<!-- name - название переменной в конф. файле -->
+	<item name="input1_s" vartype="in" comment="comment for input1" smTestID="1"/>
+	<item name="input2_s" vartype="in" comment="comment for input2" initFromSM="1"/>
+	<item name="output1_c" vartype="out" omment="comment for output1" no_check_id="1"/>
+	<item name="output2_c" vartype="out" omment="comment for output2" force="1"/>
+<!--	<item name="loglevel_s" vartype="in" comment="log level control" loglevel="1"/> -->
+  </smap>
+
+  <msgmap>
+	<!-- name - название переменной в конф. файле -->
+		<item name="mid_Message1" comment="comment for Message 1" />
+  </msgmap>
+</Test>
+\endcode
+
+  Получаем такой код:
+
+ \code
+// DO NOT EDIT THIS FILE. IT IS AUTOGENERATED FILE.
+// ALL YOUR CHANGES WILL BE LOST.
+//
+// НЕ РЕДАКТИРУЙТЕ ЭТОТ ФАЙЛ. ЭТОТ ФАЙЛ СОЗДАН АВТОМАТИЧЕСКИ.
+// ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ
+
+package main
+
+import (
+	"fmt"
+	"time"
+	"uniset"
+)
+
+// ----------------------------------------------------------------------------------
+type TestGen_SK struct {
+
+	// ID
+	input1_s  uniset.ObjectID
+	input2_s  uniset.ObjectID
+	output1_c uniset.ObjectID
+	output2_c uniset.ObjectID
+
+	// i/o
+	in_input1_s   int64
+	in_input2_s   int64
+	out_output1_c int64
+	out_output2_c int64
+
+	// variables
+	test_int    int32   /*!< test int variable */
+	test_int2   int32   /*!<  */
+	test_long   int64   /*!<  */
+	test_float  float32 /*!<  */
+	test_double float64 /*!<  */
+	test_bool   bool    /*!<  */
+	test_str    string  /*!<  */
+
+	ins  []*uniset.Int64Value // список входов
+	outs []*uniset.Int64Value // список выходов
+
+	myname     string
+	id         uniset.ObjectID
+	sleep_msec time.Duration
+}
+
+// ----------------------------------------------------------------------------------
+func Init_TestGen(sk *TestGen, name string, section string) {
+
+	sk.myname = name
+
+	cfg, err := uniset.GetConfigParamsByName(name, section)
+	if err != nil {
+		panic(fmt.Sprintf("(Init_TestGen): error: %s", err))
+	}
+
+	sk.id = uniset.InitObjectID(cfg, "", name)
+	sk.sleep_msec = time.Duration(150 * time.Millisecond)
+
+	sk.test_int = uniset.InitInt32(cfg, "test_int", "")
+	sk.test_int2 = uniset.InitInt32(cfg, "test_int2", "110")
+	sk.test_long = uniset.InitInt64(cfg, "test_long", "110")
+	sk.test_float = uniset.InitFloat32(cfg, "test_float", "50.0")
+	sk.test_double = uniset.InitFloat64(cfg, "test_double", "52.044")
+	sk.test_bool = uniset.InitBool(cfg, "test_bool", "")
+	sk.test_str = uniset.InitString(cfg, "test_str", "ddd")
+
+	if sk.test_int < 0 {
+		panic(fmt.Sprintf("%s(Init_TestGen): test_int must be > 0\n", sk.myname))
+	}
+
+	if sk.test_int2 > 100 {
+		fmt.Printf("%s(Init_TestGen): warning: test_int2 must be < 100\n", sk.myname)
+	}
+
+	if sk.test_long > 100 {
+		fmt.Printf("%s(Init_TestGen): warning: test_long must be < 100\n", sk.myname)
+	}
+
+	if sk.test_float > 100.0 {
+		panic(fmt.Sprintf("%s(Init_TestGen): test_float must be < 100.0\n", sk.myname))
+	}
+
+	if sk.test_double > 100.340 {
+		panic(fmt.Sprintf("%s(Init_TestGen): test_double must be < 100.340\n", sk.myname))
+	}
+
+	sk.input1_s = uniset.InitSensorID(cfg, "input1_s", "")
+	sk.input2_s = uniset.InitSensorID(cfg, "input2_s", "")
+	sk.output1_c = uniset.InitSensorID(cfg, "output1_c", "")
+	sk.output2_c = uniset.InitSensorID(cfg, "output2_c", "")
+
+	if sk.input1_s == uniset.DefaultObjectID {
+		panic(fmt.Sprintf("%s(Init_TestGen): Unknown ID for input1_s\n", sk.myname))
+	}
+	if sk.input2_s == uniset.DefaultObjectID {
+		panic(fmt.Sprintf("%s(Init_TestGen): Unknown ID for input2_s\n", sk.myname))
+	}
+	if sk.output2_c == uniset.DefaultObjectID {
+		panic(fmt.Sprintf("%s(Init_TestGen): Unknown ID for output2_c\n", sk.myname))
+	}
+
+	sk.ins = []*uniset.Int64Value{
+		uniset.NewInt64Value(&sk.input1_s, &sk.in_input1_s),
+		uniset.NewInt64Value(&sk.input2_s, &sk.in_input2_s),
+	}
+
+	sk.outs = []*uniset.Int64Value{
+		uniset.NewInt64Value(&sk.output1_c, &sk.out_output1_c),
+		uniset.NewInt64Value(&sk.output2_c, &sk.out_output2_c),
+	}
+
+}
+
+// ----------------------------------------------------------------------------------
+\endcode
+
+ Использование выглядит следующим образом
+\code
+package main
+
+import (
+	"uniset"
+	"fmt"
+)
+
+type TestGen struct {
+	TestGen_SK
+}
+
+func main() {
+
+	uniset.Init("test.xml")
+
+	tobj := TestGen{}
+
+	Init_TestGen(&tobj,"TestProc1","TestProc")
+
+	fmt.Printf("TestObject: %s\n",tobj.myname)
+	fmt.Printf("TestObject input1_s: %d\n",tobj.input1_s)
+	fmt.Printf("TestObject id: %d\n",tobj.id)
+	fmt.Printf("TestObject test_int: %d\n",tobj.test_int)
+}
+\endcode
+
+*/
