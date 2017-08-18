@@ -39,7 +39,7 @@ std::string ObjectIndex::getNodeName(const ObjectId id) const noexcept
 	return getNameById(id);
 }
 // -----------------------------------------------------------------------------------------
-ObjectId ObjectIndex::getNodeId(const std::__cxx11::string& name) const noexcept
+ObjectId ObjectIndex::getNodeId(const std::string& name) const noexcept
 {
 	return getIdByName(name);
 }
