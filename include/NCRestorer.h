@@ -178,10 +178,10 @@ namespace uniset
 			void read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNode* node, IONotifyController* ic);
 			void init( const std::string& fname );
 
-			bool getBaseInfo( const std::shared_ptr<UniXML>& xml, xmlNode* it, IOController_i::SensorInfo& si );
-			bool getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode* snode, std::shared_ptr<NCRestorer_XML::SInfo>& si );
-			bool getConsumerList( const std::shared_ptr<UniXML>& xml, xmlNode* node, IONotifyController::ConsumerListInfo& lst);
-			bool getThresholdInfo(const std::shared_ptr<UniXML>& xml, xmlNode* tnode, IONotifyController::ThresholdInfoExt& ti);
+			bool getBaseInfo( const std::shared_ptr<UniXML>& xml, xmlNode* it, IOController_i::SensorInfo& si ) const;
+			bool getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode* snode, std::shared_ptr<NCRestorer_XML::SInfo>& si ) const;
+			bool getConsumerList( const std::shared_ptr<UniXML>& xml, xmlNode* node, IONotifyController::ConsumerListInfo& lst) const;
+			bool getThresholdInfo(const std::shared_ptr<UniXML>& xml, xmlNode* tnode, IONotifyController::ThresholdInfoExt& ti) const;
 
 			static void set_dumptime( const std::shared_ptr<UniXML>& xml, xmlNode* node );
 			static xmlNode* bind_node( const std::shared_ptr<UniXML>& xml, xmlNode* root, const std::string& nodename, const std::string& nm = "");

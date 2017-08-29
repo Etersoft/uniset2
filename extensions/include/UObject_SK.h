@@ -29,7 +29,7 @@ class UObject_SK:
 	public uniset::UniSetObject
 {
 	public:
-		UObject_SK( uniset::ObjectId id, xmlNode* node=uniset::uniset_conf()->getNode("UObject"), const std::string& argprefix="" );
+		UObject_SK( uniset::ObjectId id, xmlNode* node = uniset::uniset_conf()->getNode("UObject"), const std::string& argprefix = "" );
 		UObject_SK();
 		virtual ~UObject_SK();
 
@@ -43,89 +43,98 @@ class UObject_SK:
 
 		virtual bool setMsg( uniset::ObjectId code, bool state = true ) noexcept;
 
-		inline std::shared_ptr<DebugStream> log() noexcept { return mylog; }
-		inline std::shared_ptr<uniset::LogAgregator> logAgregator() noexcept { return loga; }
+		inline std::shared_ptr<DebugStream> log() noexcept
+		{
+			return mylog;
+		}
+		inline std::shared_ptr<uniset::LogAgregator> logAgregator() noexcept
+		{
+			return loga;
+		}
 
 		void init_dlog( std::shared_ptr<DebugStream> d ) noexcept;
 
-        // "синтаксический сахар"..для логов
-        #ifndef myinfo
-		#define myinfo if( log()->debugging(Debug::INFO) ) log()->info()
-        #endif
-        #ifndef mywarn
-	        #define mywarn if( log()->debugging(Debug::WARN) ) log()->warn()
-        #endif
-        #ifndef mycrit
-	    #define mycrit if( log()->debugging(Debug::CRIT) ) log()->crit()
-        #endif
-        #ifndef mylog1
-		#define mylog1 if( log()->debugging(Debug::LEVEL1) ) log()->level1()
-        #endif
-        #ifndef mylog2
-	        #define mylog2 if( log()->debugging(Debug::LEVEL2) ) log()->level2()
-        #endif
-        #ifndef mylog3
-	    #define mylog3 if( log()->debugging(Debug::LEVEL3) ) log()->level3()
-        #endif
-        #ifndef mylog4
-		#define mylog4 if( log()->debugging(Debug::LEVEL4) ) log()->level4()
-        #endif
-        #ifndef mylog5
-	        #define mylog5 if( log()->debugging(Debug::LEVEL5) ) log()->level5()
-        #endif
-        #ifndef mylog6
-	    #define mylog6 if( log()->debugging(Debug::LEVEL6) ) log()->level6()
-        #endif
-        #ifndef mylog7
-		#define mylog7 if( log()->debugging(Debug::LEVEL7) ) log()->level7()
-        #endif
-        #ifndef mylog8
-	        #define mylog8 if( log()->debugging(Debug::LEVEL8) ) log()->level8()
-        #endif
-        #ifndef mylog9
-	    #define mylog9 if( log()->debugging(Debug::LEVEL9) ) log()->level9()
-        #endif
-        #ifndef mylogany
-		#define mylogany log()->any()
-        #endif
-        #ifndef vmonit
-            #define vmonit( var ) vmon.add( #var, var )
-        #endif
+		// "синтаксический сахар"..для логов
+#ifndef myinfo
+#define myinfo if( log()->debugging(Debug::INFO) ) log()->info()
+#endif
+#ifndef mywarn
+#define mywarn if( log()->debugging(Debug::WARN) ) log()->warn()
+#endif
+#ifndef mycrit
+#define mycrit if( log()->debugging(Debug::CRIT) ) log()->crit()
+#endif
+#ifndef mylog1
+#define mylog1 if( log()->debugging(Debug::LEVEL1) ) log()->level1()
+#endif
+#ifndef mylog2
+#define mylog2 if( log()->debugging(Debug::LEVEL2) ) log()->level2()
+#endif
+#ifndef mylog3
+#define mylog3 if( log()->debugging(Debug::LEVEL3) ) log()->level3()
+#endif
+#ifndef mylog4
+#define mylog4 if( log()->debugging(Debug::LEVEL4) ) log()->level4()
+#endif
+#ifndef mylog5
+#define mylog5 if( log()->debugging(Debug::LEVEL5) ) log()->level5()
+#endif
+#ifndef mylog6
+#define mylog6 if( log()->debugging(Debug::LEVEL6) ) log()->level6()
+#endif
+#ifndef mylog7
+#define mylog7 if( log()->debugging(Debug::LEVEL7) ) log()->level7()
+#endif
+#ifndef mylog8
+#define mylog8 if( log()->debugging(Debug::LEVEL8) ) log()->level8()
+#endif
+#ifndef mylog9
+#define mylog9 if( log()->debugging(Debug::LEVEL9) ) log()->level9()
+#endif
+#ifndef mylogany
+#define mylogany log()->any()
+#endif
+#ifndef vmonit
+#define vmonit( var ) vmon.add( #var, var )
+#endif
 
-        // Вспомогательные функции для удобства логирования
-        // ------------------------------------------------------------
-        /*! вывод в строку значение всех входов и выходов в формате
-           ObjectName:
-              in_xxx  = val
-              in_xxx2 = val
-              out_zzz = val
-              ...
-        */
-        std::string dumpIO();
+		// Вспомогательные функции для удобства логирования
+		// ------------------------------------------------------------
+		/*! вывод в строку значение всех входов и выходов в формате
+		   ObjectName:
+		      in_xxx  = val
+		      in_xxx2 = val
+		      out_zzz = val
+		      ...
+		*/
+		std::string dumpIO();
 
-        /*! Вывод в строку названия входа/выхода в формате: in_xxx(SensorName)
-           \param id           - идентификатор датчика
-           \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
-        */
-        std::string str( uniset::ObjectId id, bool showLinkName=true ) const;
+		/*! Вывод в строку названия входа/выхода в формате: in_xxx(SensorName)
+		   \param id           - идентификатор датчика
+		   \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
+		*/
+		std::string str( uniset::ObjectId id, bool showLinkName = true ) const;
 
-        /*! Вывод значения входа/выхода в формате: in_xxx(SensorName)=val
-           \param id           - идентификатор датчика
-           \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
-        */
-        std::string strval( uniset::ObjectId id, bool showLinkName=true ) const;
+		/*! Вывод значения входа/выхода в формате: in_xxx(SensorName)=val
+		   \param id           - идентификатор датчика
+		   \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
+		*/
+		std::string strval( uniset::ObjectId id, bool showLinkName = true ) const;
 
-        /*! Вывод состояния внутренних переменных */
-        inline std::string dumpVars(){ return vmon.pretty_str(); }
-        // ------------------------------------------------------------
-        std::string help() const noexcept;
+		/*! Вывод состояния внутренних переменных */
+		inline std::string dumpVars()
+		{
+			return vmon.pretty_str();
+		}
+		// ------------------------------------------------------------
+		std::string help() const noexcept;
 
 
 #ifndef DISABLE_REST_API
-        // HTTP API
-        virtual Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p ) override;
-        virtual Poco::JSON::Object::Ptr httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
-        virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
+		// HTTP API
+		virtual Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p ) override;
+		virtual Poco::JSON::Object::Ptr httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
+		virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
 #endif
 
 
@@ -152,23 +161,29 @@ class UObject_SK:
 
 		virtual void callback() noexcept override;
 		virtual void processingMessage( const uniset::VoidMessage* msg ) override;
-		virtual void sysCommand( const uniset::SystemMessage* sm ){};
-		virtual void askSensors( UniversalIO::UIOCommand cmd ){}
-		virtual void sensorInfo( const uniset::SensorMessage* sm ) override{}
-		virtual void timerInfo( const uniset::TimerMessage* tm ) override{}
+		virtual void sysCommand( const uniset::SystemMessage* sm ) {};
+		virtual void askSensors( UniversalIO::UIOCommand cmd ) {}
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) override {}
+		virtual void timerInfo( const uniset::TimerMessage* tm ) override {}
 		virtual void sigterm( int signo ) override;
 		virtual bool activateObject() override;
-		virtual std::string getMonitInfo() const { return ""; } /*!< пользовательская информация выводимая в getInfo() */
-		virtual std::string getTypeOfMessage( int t ) const { return uniset::strTypeOfMessage(t); } /*!< получение названия типа сообщения. Используется в getInfo() */
+		virtual std::string getMonitInfo() const
+		{
+			return "";    /*!< пользовательская информация выводимая в getInfo() */
+		}
+		virtual std::string getTypeOfMessage( int t ) const
+		{
+			return uniset::strTypeOfMessage(t);    /*!< получение названия типа сообщения. Используется в getInfo() */
+		}
 
 #ifndef DISABLE_REST_API
-		virtual void httpGetUserData( Poco::JSON::Object::Ptr& jdata ){} /*!<  для пользовательских данных в httpGet() */
-        virtual Poco::JSON::Object::Ptr httpDumpIO();
-        virtual Poco::JSON::Object::Ptr httpRequestLog( const Poco::URI::QueryParameters& p );
+		virtual void httpGetUserData( Poco::JSON::Object::Ptr& jdata ) {} /*!<  для пользовательских данных в httpGet() */
+		virtual Poco::JSON::Object::Ptr httpDumpIO();
+		virtual Poco::JSON::Object::Ptr httpRequestLog( const Poco::URI::QueryParameters& p );
 #endif
 
-        // Выполнение очередного шага программы
-		virtual void step(){}
+		// Выполнение очередного шага программы
+		virtual void step() {}
 
 		void preAskSensors( UniversalIO::UIOCommand cmd );
 		void preSysCommand( const uniset::SystemMessage* sm );
@@ -177,7 +192,7 @@ class UObject_SK:
 		void updateOutputs( bool force );
 
 		void waitSM( int wait_msec, uniset::ObjectId testID = uniset::DefaultObjectId );
-		uniset::ObjectId getSMTestID();
+		uniset::ObjectId getSMTestID() const;
 
 		void resetMsg();
 		uniset::Trigger trResetMsg;
@@ -197,9 +212,15 @@ class UObject_SK:
 
 		xmlNode* confnode;
 		/*! получить числовое свойство из конф. файла по привязанной confnode */
-		int getIntProp(const std::string& name) { return uniset::uniset_conf()->getIntProp(confnode, name); }
+		int getIntProp(const std::string& name)
+		{
+			return uniset::uniset_conf()->getIntProp(confnode, name);
+		}
 		/*! получить текстовое свойство из конф. файла по привязанной confnode */
-		inline const std::string getProp(const std::string& name) { return uniset::uniset_conf()->getProp(confnode, name); }
+		inline const std::string getProp(const std::string& name)
+		{
+			return uniset::uniset_conf()->getProp(confnode, name);
+		}
 
 		uniset::timeout_t smReadyTimeout; 	/*!< время ожидания готовности SM */
 		std::atomic_bool activated;
@@ -244,16 +265,16 @@ class UObject_SK:
 		class StatHashFn
 		{
 			public:
-			size_t operator() (const uniset::ObjectId& key) const
-			{
-				return std::hash<long>()(key);
-			}
+				size_t operator() (const uniset::ObjectId& key) const
+				{
+					return std::hash<long>()(key);
+				}
 		};
 
-		std::unordered_map<const uniset::ObjectId,size_t, StatHashFn> smStat; /*!< количество сообщений по датчикам */
+		std::unordered_map<const uniset::ObjectId, size_t, StatHashFn> smStat; /*!< количество сообщений по датчикам */
 		size_t processingMessageCatchCount = { 0 }; /*!< количество исключений пойманных в processingMessage */
 
-		std::unordered_map<long,size_t> msgTypeStat; /*!< количество сообщений по типам */
+		std::unordered_map<long, size_t> msgTypeStat; /*!< количество сообщений по типам */
 
 		std::string ostate = { "" }; /*!< состояние процесса (выводится в getInfo()) */
 

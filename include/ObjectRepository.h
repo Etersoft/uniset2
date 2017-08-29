@@ -54,19 +54,19 @@ namespace uniset
 			 @{     */
 			//! Функция регистрации объекта по имени с указанием секции
 			void registration(const std::string& name, const uniset::ObjectPtr oRef, const std::string& section, bool force = false) const
-				 throw(uniset::ORepFailed, uniset::ObjectNameAlready, uniset::InvalidObjectName, uniset::NameNotFound);
+			throw(uniset::ORepFailed, uniset::ObjectNameAlready, uniset::InvalidObjectName, uniset::NameNotFound);
 
 			//! Функция регистрации объекта по полному имени.
 			void registration(const std::string& fullName, const uniset::ObjectPtr oRef, bool force = false) const
-				 throw(uniset::ORepFailed, uniset::ObjectNameAlready, uniset::InvalidObjectName, uniset::NameNotFound);
+			throw(uniset::ORepFailed, uniset::ObjectNameAlready, uniset::InvalidObjectName, uniset::NameNotFound);
 
 			//! Удаление записи об объекте name в секции section
 			void unregistration(const std::string& name, const std::string& section) const
-				 throw(uniset::ORepFailed, uniset::NameNotFound);
+			throw(uniset::ORepFailed, uniset::NameNotFound);
 
 			//! Удаление записи об объекте по полному имени
 			void unregistration(const std::string& fullName) const
-				 throw(uniset::ORepFailed, uniset::NameNotFound);
+			throw(uniset::ORepFailed, uniset::NameNotFound);
 			// @}
 			// end of ORepGroup
 
@@ -99,11 +99,11 @@ namespace uniset
 			// -------------------------------------------------------------------
 			//! Создание секции
 			bool createSection( const std::string& name, const std::string& in_section ) const
-					throw(uniset::ORepFailed, uniset::InvalidObjectName);
+			throw(uniset::ORepFailed, uniset::InvalidObjectName);
 
 			/*! Создание секции по полному имени */
 			bool createSectionF(const std::string& fullName) const
-					throw(uniset::ORepFailed, uniset::InvalidObjectName);
+			throw(uniset::ORepFailed, uniset::InvalidObjectName);
 
 			//! Функция создания секции в корневом 'каталоге'
 			bool createRootSection( const std::string& name ) const;

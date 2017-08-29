@@ -450,7 +450,7 @@ bool ObjectRepository::isExist( const ObjectPtr& oref ) const
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
 bool ObjectRepository::createSection(const string& name, const string& in_section) const
-	throw(ORepFailed, InvalidObjectName)
+throw(ORepFailed, InvalidObjectName)
 {
 	char bad = ORepHelpers::checkBadSymbols(name);
 
@@ -582,7 +582,7 @@ void ObjectRepository::printSection( const string& fullName ) const
 
 	cout << fullName << "(" << olist.size() << "):" << endl;
 
-	for( const auto& v: olist )
+	for( const auto& v : olist )
 		cout << v << endl;
 }
 

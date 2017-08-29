@@ -63,7 +63,7 @@ namespace uniset
 		// не знаю как по другому
 		// приходиться делать это через промежуточную переменную
 		std::chrono::milliseconds ms(msec);
-		std::swap(t_inner_msec,ms);
+		std::swap(t_inner_msec, ms);
 
 		PassiveTimer::reset();
 		return getInterval();

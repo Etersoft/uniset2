@@ -80,7 +80,7 @@ namespace uniset
 			}
 
 		protected:
-			ComediInterface():card(nullptr){}
+			ComediInterface(): card(nullptr) {}
 
 			comedi_t* card;    /*!< интерфейс для работы с картами в/в */
 			std::string dname;

@@ -30,38 +30,38 @@ namespace uniset
 			FakeComediInterface();
 			virtual ~FakeComediInterface();
 
-		static const size_t maxChannelNum = 32;
+			static const size_t maxChannelNum = 32;
 
-		// Управление тестированием
-		// --------------------------------------------
-		// для простоты массивы специально объявлены в public
-		// warning: надо только иметь ввиду, что доступ к ним будет из разных потоков
-		// из теста и из потока опроса карт в/в (IOControl)
-		// в данном случае это не страшно..
-		// --------------------------------------------
-		std::vector<int> chInputs; // массив значений 'входов' (для проверки чтения)
-		mutable std::vector<int> chOutputs; // массив значений 'выходов' (для проверки функций вывода)
+			// Управление тестированием
+			// --------------------------------------------
+			// для простоты массивы специально объявлены в public
+			// warning: надо только иметь ввиду, что доступ к ним будет из разных потоков
+			// из теста и из потока опроса карт в/в (IOControl)
+			// в данном случае это не страшно..
+			// --------------------------------------------
+			std::vector<int> chInputs; // массив значений 'входов' (для проверки чтения)
+			mutable std::vector<int> chOutputs; // массив значений 'выходов' (для проверки функций вывода)
 
 
-		// --------------------------------------------
-		// при тестировании параметры range,aref,subdev игнорируются!
+			// --------------------------------------------
+			// при тестировании параметры range,aref,subdev игнорируются!
 
-		virtual int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND ) const
+			virtual int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND ) const
 			throw(uniset::Exception) override;
 
-		virtual void setAnalogChannel( int subdev, int channel, int data, int range = 0, int aref = AREF_GROUND ) const
+			virtual void setAnalogChannel( int subdev, int channel, int data, int range = 0, int aref = AREF_GROUND ) const
 			throw(uniset::Exception) override;
 
-		virtual bool getDigitalChannel( int subdev, int channel ) const
+			virtual bool getDigitalChannel( int subdev, int channel ) const
 			throw(uniset::Exception) override;
 
-		virtual void setDigitalChannel( int subdev, int channel, bool bit ) const
+			virtual void setDigitalChannel( int subdev, int channel, bool bit ) const
 			throw(uniset::Exception) override;
 
-		virtual void configureSubdev( int subdev, SubdevType type ) const
+			virtual void configureSubdev( int subdev, SubdevType type ) const
 			throw(uniset::Exception) override;
 
-		virtual void configureChannel( int subdev, int channel, ChannelType type, int range = 0, int aref = 0 ) const
+			virtual void configureChannel( int subdev, int channel, ChannelType type, int range = 0, int aref = 0 ) const
 			throw(uniset::Exception) override;
 	};
 	// --------------------------------------------------------------------------

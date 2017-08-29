@@ -1265,7 +1265,7 @@ namespace uniset
 	}
 	// ------------------------------------------------------------------------------------------------------------
 	uniset::ObjectPtr UInterface::CacheOfResolve::resolve( const uniset::ObjectId id, const uniset::ObjectId node ) const
-	throw(uniset::NameNotFound,uniset::SystemError)
+	throw(uniset::NameNotFound, uniset::SystemError)
 	{
 		try
 		{

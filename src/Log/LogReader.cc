@@ -387,7 +387,7 @@ void LogReader::readlogs( const std::string& _addr, int _port, LogServerTypes::C
 					{
 						// Всё это пока не оптимально,
 						// но мы ведь и не спешим..
-						for( ssize_t i=0; i<n; i++ )
+						for( ssize_t i = 0; i < n; i++ )
 						{
 							// пока не встретили конец строки
 							// наполняем line..

@@ -56,12 +56,12 @@ namespace uniset
 		delete [] data;
 	}
 	// -------------------------------------------------------------------------
-	unsigned char* UTCPCore::Buffer::dpos() noexcept
+	unsigned char* UTCPCore::Buffer::dpos() const noexcept
 	{
 		return data + pos;
 	}
 	// -------------------------------------------------------------------------
-	size_t UTCPCore::Buffer::nbytes() noexcept
+	size_t UTCPCore::Buffer::nbytes() const noexcept
 	{
 		return len - pos;
 	}

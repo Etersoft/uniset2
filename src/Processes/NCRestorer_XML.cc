@@ -222,7 +222,7 @@ void NCRestorer_XML::read( IONotifyController* ic, const std::shared_ptr<UniXML>
 		read_thresholds(xml, tnode, ic);
 }
 // ------------------------------------------------------------------------------------------
-bool NCRestorer_XML::getBaseInfo( const std::shared_ptr<UniXML>& xml, xmlNode* it, IOController_i::SensorInfo& si )
+bool NCRestorer_XML::getBaseInfo( const std::shared_ptr<UniXML>& xml, xmlNode* it, IOController_i::SensorInfo& si ) const
 {
 	string sname( xml->getProp(it, "name"));
 
@@ -267,7 +267,7 @@ bool NCRestorer_XML::getBaseInfo( const std::shared_ptr<UniXML>& xml, xmlNode* i
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode* it, std::shared_ptr<NCRestorer_XML::SInfo>& inf )
+bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode* it, std::shared_ptr<NCRestorer_XML::SInfo>& inf ) const
 {
 	if( !getBaseInfo(xml, it, inf->si) )
 		return false;
@@ -467,7 +467,7 @@ void NCRestorer_XML::read_consumers( const std::shared_ptr<UniXML>& xml, xmlNode
 // ------------------------------------------------------------------------------------------
 
 bool NCRestorer_XML::getConsumerList( const std::shared_ptr<UniXML>& xml, xmlNode* node,
-									  IONotifyController::ConsumerListInfo& lst )
+									  IONotifyController::ConsumerListInfo& lst ) const
 {
 	UniXML::iterator it(node);
 
@@ -490,7 +490,7 @@ bool NCRestorer_XML::getConsumerList( const std::shared_ptr<UniXML>& xml, xmlNod
 }
 // ------------------------------------------------------------------------------------------
 bool NCRestorer_XML::getThresholdInfo( const std::shared_ptr<UniXML>& xml, xmlNode* node,
-									   IONotifyController::ThresholdInfoExt& ti )
+									   IONotifyController::ThresholdInfoExt& ti ) const
 {
 	UniXML::iterator uit(node);
 

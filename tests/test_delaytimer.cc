@@ -203,7 +203,7 @@ TEST_CASE("[DelayTimer]: zero time", "[DelayTimer]" )
 
 		// проверка работы при вызове check()
 		// уже после срабатывания таймера
-		dt.set(0,100);
+		dt.set(0, 100);
 		REQUIRE( dt.check(true) ); // взводим
 		REQUIRE( dt.check(false) ); // отпускаем..
 		msleep(150);

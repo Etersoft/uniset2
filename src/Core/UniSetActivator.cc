@@ -216,6 +216,7 @@ bool gdb_print_trace()
 	sprintf(pid_buf, "%d", getpid());
 	char name_buf[512];
 	ssize_t ind = readlink("/proc/self/exe", name_buf, 511);
+
 	if( ind < 0 )
 	{
 		perror("Can't readlink...");
@@ -301,6 +302,7 @@ static void start_terminate_process()
 	// посылаем сигнал потоку завершения, чтобы проснулся и начал заверешение
 	{
 		std::unique_lock<std::mutex> lk(g_termmutex);
+
 		if( g_term )
 			return;
 
@@ -312,8 +314,12 @@ static void start_terminate_process()
 static void wait_done()
 {
 	std::unique_lock<std::mutex> lk(g_donemutex);
+
 	while( !g_done )
-		g_doneevent.wait(lk, []() { return (g_done == true); } );
+		g_doneevent.wait(lk, []()
+	{
+		return (g_done == true);
+	} );
 }
 // ------------------------------------------------------------------------------------------
 static void activator_terminate( int signo )
@@ -322,6 +328,7 @@ static void activator_terminate( int signo )
 		return;
 
 	g_signo = signo;
+
 	if( signo == SIGABRT )
 	{
 		if( g_act && !g_act->noUseGdbForStackTrace() )
@@ -332,11 +339,12 @@ static void activator_terminate( int signo )
 		else
 			printStackTrace();
 
-//		exit(EXIT_FAILURE);
-//		return;
+		//		exit(EXIT_FAILURE);
+		//		return;
 	}
-//	else
-//		exit(EXIT_SUCCESS);
+
+	//	else
+	//		exit(EXIT_SUCCESS);
 
 	start_terminate_process();
 }
@@ -495,7 +503,7 @@ namespace uniset
 				}
 			}
 
-//			g_act = nullptr;
+			//			g_act = nullptr;
 			UniSetActivator::set_signals(false);
 		}
 

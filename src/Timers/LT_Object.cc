@@ -189,8 +189,11 @@ timeout_t LT_Object::askTimer( uniset::TimerId timerid, timeout_t timeMS, clock_
 					{
 						li->curTick = ticks;
 						li->tmr.setTiming(timeMS);
-						uinfo << "(LT_askTimer): заказ на таймер ["
-							  << timerid << "]" << getTimerName(timerid) << " " << timeMS << " [мс] уже есть..." << endl;
+
+						if( ulog()->debugging(loglevel) )
+							ulog()->debug(loglevel) << "(LT_askTimer): заказ на таймер ["
+													<< timerid << "]" << getTimerName(timerid) << " " << timeMS << " [мс] уже есть..." << endl;
+
 						return sleepTime;
 					}
 				}
@@ -200,13 +203,16 @@ timeout_t LT_Object::askTimer( uniset::TimerId timerid, timeout_t timeMS, clock_
 			tlst.emplace_back(timerid, timeMS, ticks, p);
 		}    // unlock
 
-		uinfo << "(LT_askTimer): поступил заказ на таймер [" << timerid << "]"
-			  << getTimerName(timerid) << " " << timeMS << " [мс]\n";
+		if( ulog()->debugging(loglevel) )
+			ulog()->debug(loglevel) << "(LT_askTimer): поступил заказ на таймер [" << timerid << "]"
+									<< getTimerName(timerid) << " " << timeMS << " [мс]\n";
 	}
 	else // отказ (при timeMS == 0)
 	{
-		uinfo << "(LT_askTimer): поступил отказ по таймеру [" << timerid << "]"
-			  << getTimerName(timerid) << endl;
+		if( ulog()->debugging(loglevel) )
+			ulog()->debug(loglevel) << "(LT_askTimer): поступил отказ по таймеру [" << timerid << "]"
+									<< getTimerName(timerid) << endl;
+
 		{
 			// lock
 			uniset_rwmutex_wrlock lock(lstMutex);

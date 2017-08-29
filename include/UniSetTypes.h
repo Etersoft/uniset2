@@ -122,7 +122,7 @@ namespace uniset
 				return lst.empty();
 			}
 
-			std::list<ObjectId> getList() noexcept;
+			std::list<ObjectId> getList() const noexcept;
 
 			// за освобождение выделеной памяти
 			// отвечает вызывающий!
@@ -322,7 +322,10 @@ namespace uniset
 	{
 		public:
 			ios_fmt_restorer( std::ostream& s ):
-				os(s),f(nullptr){ f.copyfmt(s); }
+				os(s), f(nullptr)
+			{
+				f.copyfmt(s);
+			}
 
 			~ios_fmt_restorer()
 			{

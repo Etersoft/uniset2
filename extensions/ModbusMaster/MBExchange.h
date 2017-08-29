@@ -83,7 +83,7 @@ namespace uniset
 			};
 
 
-			friend std::string to_string( const SafeMode & m );
+			friend std::string to_string( const SafeMode& m );
 			friend std::ostream& operator<<( std::ostream& os, const SafeMode& m );
 
 			enum DeviceType

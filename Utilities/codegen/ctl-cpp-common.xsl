@@ -294,7 +294,7 @@
 		bool checkTestMode() const noexcept;
 </xsl:if>
 		void waitSM( int wait_msec, uniset::ObjectId testID = uniset::DefaultObjectId );
-		uniset::ObjectId getSMTestID();
+		uniset::ObjectId getSMTestID() const;
 
 		void resetMsg();
 		uniset::Trigger trResetMsg;
@@ -1430,7 +1430,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
 </xsl:for-each>
 }
 // -----------------------------------------------------------------------------
-uniset::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID()
+uniset::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID() const
 {
 	if( smTestID != DefaultObjectId )
 		return smTestID;
@@ -1472,6 +1472,8 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 		inf->set("id",<xsl:value-of select="@name"/>);
 		inf->set("name",ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)));
 		inf->set("value",<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>);
+		<xsl:for-each select="@*[not(name()='name')]">inf->set("<xsl:value-of select="name(.)"/>","<xsl:value-of select="."/>");
+		</xsl:for-each>
 	}
 	</xsl:if>
 	</xsl:for-each>
@@ -1486,6 +1488,8 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 		inf->set("id",<xsl:value-of select="@name"/>);
 		inf->set("name",ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)));
 		inf->set("value",<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>);
+		<xsl:for-each select="@*[not(name()='name')]">inf->set("<xsl:value-of select="name(.)"/>","<xsl:value-of select="."/>");
+		</xsl:for-each>
 	}
 	</xsl:if>
 	</xsl:for-each>
@@ -1872,6 +1876,8 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 		inf->set("id",<xsl:value-of select="../../@id"/>);
 		inf->set("name", "<xsl:value-of select="../../@name"/>");
 		inf->set("value",<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>);
+		<xsl:for-each select="@*[not(name()='name' or name()='id')]">inf->set("<xsl:value-of select="name(.)"/>","<xsl:value-of select="."/>");
+		</xsl:for-each>
 	}
 	</xsl:if>
 	<xsl:if test="normalize-space(@vartype)='out'">
@@ -1880,6 +1886,8 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpDumpIO()
 		inf->set("id",<xsl:value-of select="../../@id"/>);
 		inf->set("name", "<xsl:value-of select="../../@name"/>");
 		inf->set("value",<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>);
+		<xsl:for-each select="@*[not(name()='name' or name()='id')]">inf->set("<xsl:value-of select="name(.)"/>","<xsl:value-of select="."/>");
+		</xsl:for-each>
 	}
 	</xsl:if>
 	</xsl:if>

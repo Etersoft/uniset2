@@ -124,13 +124,13 @@ namespace uniset
 			static const int ColCount = { 2 };
 
 			/*! вывести все элементы в "простом формате" (строки "varname = value") */
-			std::string str();
+			std::string str() const;
 
 			/*! вывести все элементы "с форматированием" (отсортированные по алфавиту)
 			 * \param namewidth - ширина резервируемая под "имя"
 			 * \param colnum - количество столбцов вывода
 			 */
-			std::string pretty_str( int namewidth = NameWidth, int colnum = ColCount );
+			std::string pretty_str( int namewidth = NameWidth, int colnum = ColCount ) const;
 
 			// перегрузки для стандартных типов..
 			VMON_DEF_FUNC2(int);
@@ -150,7 +150,7 @@ namespace uniset
 			static const std::string pretty_str( const std::string& name, const std::string* v, int width = NameWidth );
 			static const std::string pretty_str( const std::string& name, const std::string& v, int width = NameWidth );
 
-			std::list<std::pair<std::string, std::string>> getList();
+			std::list<std::pair<std::string, std::string>> getList() const;
 
 		protected:
 

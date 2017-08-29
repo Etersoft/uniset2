@@ -142,7 +142,7 @@ namespace uniset
 			else
 			{
 				noCards = false;
-				cards[i] = new ComediInterface(iodev,"");
+				cards[i] = new ComediInterface(iodev, "");
 				iolog3 << myname << "(init): ADD card" << i  << " dev=" << iodev << endl;
 			}
 
@@ -405,6 +405,7 @@ namespace uniset
 		catch(...) {}
 
 		ioinfo << myname << "(iothread): run..." << endl;
+
 		while( !term )
 		{
 			try
@@ -520,7 +521,7 @@ namespace uniset
 			// опять опросим приоритетные
 			if( !prior && i > maxHalf )
 			{
-				for( const auto& p: pmap )
+				for( const auto& p : pmap )
 				{
 					if( p.priority > 1 )
 					{
@@ -549,8 +550,8 @@ namespace uniset
 	// --------------------------------------------------------------------------------
 	void IOControl::ioread( std::shared_ptr<IOInfo>& it )
 	{
-//		 cout  << uniset_conf()->oind->getMapName(it->si.id)  << " ignore=" << it->ignore << " ncard=" << it->ncard << endl;
-//		cerr << it << endl;
+		//		 cout  << uniset_conf()->oind->getMapName(it->si.id)  << " ignore=" << it->ignore << " ncard=" << it->ncard << endl;
+		//		cerr << it << endl;
 
 		if( it->ignore || it->ncard == defCardNum )
 			return;
@@ -841,7 +842,7 @@ namespace uniset
 		{
 			iolog3 << myname << "(readItem): add threshold '" << it.getProp("name")
 				   << " for '" << uniset_conf()->oind->getNameById(inf->t_ai) << endl;
-			std::swap(iomap[maxItem++],inf);
+			std::swap(iomap[maxItem++], inf);
 			return true;
 		}
 
@@ -887,7 +888,7 @@ namespace uniset
 
 		iolog3 << myname << "(readItem): add: " << inf->stype << " " << inf << endl;
 
-		std::swap(iomap[maxItem++],inf);
+		std::swap(iomap[maxItem++], inf);
 		return true;
 	}
 	// ------------------------------------------------------------------------------------------
@@ -1033,7 +1034,7 @@ namespace uniset
 		if( lst.empty() )
 			return;
 
-		for( const auto& io: lst )
+		for( const auto& io : lst )
 		{
 			if( io->subdev == IOBase::DefaultSubdev || io->channel == IOBase::DefaultChannel )
 				continue;
@@ -1289,7 +1290,7 @@ namespace uniset
 		cout << LogServer::help_print("prefix-logserver") << endl;
 	}
 	// -----------------------------------------------------------------------------
-	SimpleInfo*IOControl::getInfo( const char* userparam )
+	SimpleInfo* IOControl::getInfo( const char* userparam )
 	{
 		uniset::SimpleInfo_var i = UniSetObject::getInfo(userparam);
 
@@ -1298,6 +1299,7 @@ namespace uniset
 		inf << i->info << endl;
 
 		inf << "LogServer:  " << logserv_host << ":" << logserv_port << endl;
+
 		if( logserv )
 			inf << logserv->getShortInfo() << endl;
 		else
@@ -1313,9 +1315,11 @@ namespace uniset
 			<< endl;
 
 		inf << endl;
-		for( size_t i=0; i<cards.size(); i++ )
+
+		for( size_t i = 0; i < cards.size(); i++ )
 		{
 			auto c = cards[i];
+
 			if( c )
 			{
 				inf << "card[" << setw(2) << i << "]:"
@@ -1432,9 +1436,9 @@ namespace uniset
 				<< activateTimeout << " мсек";
 
 			iocrit << err.str() << endl;
-//			kill(SIGTERM, getpid());   // прерываем (перезапускаем) процесс...
+			//			kill(SIGTERM, getpid());   // прерываем (перезапускаем) процесс...
 			std::terminate();
-//			throw SystemError(err.str());
+			//			throw SystemError(err.str());
 		}
 
 		PassiveTimer ptAct(activateTimeout);
@@ -1514,7 +1518,7 @@ namespace uniset
 			check_testmode();
 		}
 
-		for( auto&& it : iomap )
+		for( auto && it : iomap )
 		{
 			if( it->si.id == sm->id )
 			{
@@ -1767,7 +1771,7 @@ namespace uniset
 
 			try
 			{
-				cards[cardnum] = new ComediInterface(iodev,cname);
+				cards[cardnum] = new ComediInterface(iodev, cname);
 				noCards = false;
 			}
 			catch( const uniset::Exception& ex )

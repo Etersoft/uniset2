@@ -180,7 +180,7 @@ namespace uniset
 
 			static std::vector<std::string> splitFirst( const std::string& lname, const std::string s = "/" );
 
-			std::ostream& printLogList( std::ostream& os, const std::string& regexp_str = "" );
+			std::ostream& printLogList( std::ostream& os, const std::string& regexp_str = "" ) const;
 			static std::ostream& printLogList( std::ostream& os, std::list<iLog>& lst );
 
 		protected:
@@ -192,7 +192,7 @@ namespace uniset
 			std::shared_ptr<DebugStream> findLog( const std::string& lname ) const;
 
 			// вывод в виде "дерева"
-			std::ostream& printTree(std::ostream& os, const std::string& g_tab = "");
+			std::ostream& printTree(std::ostream& os, const std::string& g_tab = "") const;
 
 			// получить список с именами (длинными) и с указателями на логи
 			std::list<iLog> makeLogNameList( const std::string& prefix ) const;

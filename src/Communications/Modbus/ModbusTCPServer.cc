@@ -147,7 +147,7 @@ namespace uniset
 		ioTimer.set(loop);
 
 		if( tmTime_msec != UniSetTimer::WaitUpTime )
-			ioTimer.start(0,tmTime);
+			ioTimer.start(0, tmTime);
 	}
 	// -------------------------------------------------------------------------
 	void ModbusTCPServer::terminate()

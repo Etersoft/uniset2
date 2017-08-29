@@ -72,7 +72,7 @@ TEST_CASE("Pulse: basic tests", "[pulse][basic]" )
 TEST_CASE("Pulse: ext tests", "[pulse][ext]" )
 {
 	Pulse p;
-	p.setTiming(50,100,false);
+	p.setTiming(50, 100, false);
 	REQUIRE_FALSE( p.isOn() );
 
 	p.set(true);
@@ -87,7 +87,7 @@ TEST_CASE("Pulse: ext tests", "[pulse][ext]" )
 	REQUIRE_FALSE( p.isOn() );
 	REQUIRE_FALSE( p.step() );
 
-	p.setTiming(50,100,true);
+	p.setTiming(50, 100, true);
 	REQUIRE( p.isOn() );
 	REQUIRE( p.step() );
 }

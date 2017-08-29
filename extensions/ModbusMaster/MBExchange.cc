@@ -597,7 +597,7 @@ namespace uniset
 
 		for( const auto& m : d.pollmap )
 		{
-			for( const auto& it : *(m.second) )
+			for( const auto& it : * (m.second) )
 				os << "     " << it.second << endl;
 		}
 
@@ -620,7 +620,7 @@ namespace uniset
 		   << " mtrType=" << MTR::type2str(r.mtrType)
 		   << endl;
 
-		for( const auto& s: r.slst )
+		for( const auto& s : r.slst )
 			os << "         " << s << endl;
 
 		return os;
@@ -629,11 +629,12 @@ namespace uniset
 	void MBExchange::rtuQueryOptimization( RTUDeviceMap& dm )
 	{
 		mbinfo << myname << "(rtuQueryOptimization): optimization..." << endl;
-		for( const auto& d: dm )
+
+		for( const auto& d : dm )
 			rtuQueryOptimizationForDevice(d.second);
 
-//		printMap(dm);
-//		assert(false);
+		//		printMap(dm);
+		//		assert(false);
 	}
 	// -----------------------------------------------------------------------------
 	void MBExchange::rtuQueryOptimizationForDevice( const std::shared_ptr<RTUDevice>& d )
@@ -674,7 +675,7 @@ namespace uniset
 
 				beg->q_count++;
 				regID = it->second->regID;
-				it->second->q_num = beg->q_count-1;
+				it->second->q_num = beg->q_count - 1;
 				it->second->q_count = 0;
 
 				if( beg->q_count >= maxQueryCount )
@@ -717,7 +718,7 @@ namespace uniset
 
 		os << "[ ";
 
-		for( const auto& p: lst )
+		for( const auto& p : lst )
 			os << "(" << p.si.id << ")" << conf->oind->getBaseName(conf->oind->getMapName(p.si.id)) << " ";
 
 		os << "]";
@@ -1421,6 +1422,7 @@ namespace uniset
 								else
 									r->mbval = IOBase::processingAsAO( p, shm, force_out );
 							}
+
 							r->sm_initOK = true;
 						}
 					}
@@ -1926,6 +1928,7 @@ namespace uniset
 						long val = safeMode ? it->safeval : IOBase::processingAsAO( &(*it), shm, force_out );
 
 						MTR::T5 t(val);
+
 						for( size_t k = 0; k < MTR::T5::wsize(); k++, i++ )
 							i->second->mbval = t.raw.v[k];
 					}
@@ -3510,7 +3513,7 @@ namespace uniset
 		return os;
 	}
 	// -----------------------------------------------------------------------------
-	std::string to_string( const MBExchange::SafeMode & m )
+	std::string to_string( const MBExchange::SafeMode& m )
 	{
 		if( m == MBExchange::safeNone )
 			return "safeNone";

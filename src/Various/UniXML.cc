@@ -74,7 +74,7 @@ void UniXML::newDoc(const string& root_node, const string& xml_ver)
 	if( d == NULL )
 		throw NameNotFound("UniXML(open): не смогли создать doc=" + root_node);
 
-	doc = std::unique_ptr<xmlDoc,UniXMLDocDeleter>(d);
+	doc = std::unique_ptr<xmlDoc, UniXMLDocDeleter>(d);
 
 	//    xmlEncodeEntitiesReentrant(doc, (const xmlChar*)ExternalEncoding.c_str());
 	xmlNode* rootnode = xmlNewDocNode(d, NULL, (const xmlChar*)root_node.c_str(), NULL);
@@ -118,7 +118,7 @@ void UniXML::open( const string& _filename )
 	if( d == NULL )
 		throw NameNotFound("UniXML(open): NotFound file=" + _filename);
 
-	doc = std::unique_ptr<xmlDoc,UniXMLDocDeleter>(d);
+	doc = std::unique_ptr<xmlDoc, UniXMLDocDeleter>(d);
 
 	// Support for XInclude (see eterbug #6304)
 	// main tag must to have follow property: xmlns:xi="http://www.w3.org/2001/XInclude"

@@ -170,7 +170,7 @@ namespace uniset
 		return findLog(logname);
 	}
 	// -------------------------------------------------------------------------
-	std::ostream& LogAgregator::printLogList( std::ostream& os, const std::string& regexp_str )
+	std::ostream& LogAgregator::printLogList( std::ostream& os, const std::string& regexp_str ) const
 	{
 		std::list<iLog> lst;
 
@@ -195,7 +195,7 @@ namespace uniset
 		return os;
 	}
 	// -------------------------------------------------------------------------
-	std::ostream& LogAgregator::printTree( std::ostream& os, const std::string& g_tab )
+	std::ostream& LogAgregator::printTree( std::ostream& os, const std::string& g_tab ) const
 	{
 		const std::string::size_type tab_width = 15;
 

@@ -25,13 +25,13 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 
 	FakeIOControl::FakeIOControl(uniset::ObjectId id, uniset::ObjectId icID,
-						 const std::shared_ptr<SharedMemory>& ic, int numcards, const std::string& prefix_ ):
-		IOControl(id,icID,ic,numcards,prefix_)
+								 const std::shared_ptr<SharedMemory>& ic, int numcards, const std::string& prefix_ ):
+		IOControl(id, icID, ic, numcards, prefix_)
 	{
 		fcard = new FakeComediInterface();
 
 		// Подменяем все карты на fake-овые
-		for( size_t i=0; i < cards.size(); i++ )
+		for( size_t i = 0; i < cards.size(); i++ )
 		{
 			if( cards[i] )
 				delete cards[i];
@@ -44,7 +44,7 @@ namespace uniset
 	// --------------------------------------------------------------------------------
 	FakeIOControl::~FakeIOControl()
 	{
-		for( size_t i=0; i < cards.size(); i++ )
+		for( size_t i = 0; i < cards.size(); i++ )
 		{
 			if( cards[i] )
 			{
@@ -73,7 +73,7 @@ namespace uniset
 		if( ID == uniset::DefaultObjectId )
 		{
 			std::cerr << "(iocontrol): Unknown ID for " << name
-				 << "' Not found in <objects>" << std::endl;
+					  << "' Not found in <objects>" << std::endl;
 			return 0;
 		}
 
@@ -87,8 +87,8 @@ namespace uniset
 		chInputs(maxChannelNum),
 		chOutputs(maxChannelNum)
 	{
-		name="FakeCard";
-		dname="/dev/fakecomedi";
+		name = "FakeCard";
+		dname = "/dev/fakecomedi";
 	}
 	// -----------------------------------------------------------------------------
 	FakeComediInterface::~FakeComediInterface()
@@ -105,6 +105,7 @@ namespace uniset
 				 << " Must be [0," << maxChannelNum << "]" << endl;
 			std::terminate();
 		}
+
 		return chInputs[channel];
 	}
 	// -----------------------------------------------------------------------------
@@ -130,6 +131,7 @@ namespace uniset
 				 << " Must be [0," << maxChannelNum << "]" << endl;
 			std::terminate();
 		}
+
 		return (bool)chInputs[channel];
 	}
 	// -----------------------------------------------------------------------------

@@ -94,15 +94,15 @@ namespace uniset
 			    \return true - если идентификаторы определены
 			*/
 			bool getConsumerInfo( UniXML::iterator& it,
-								  uniset::ObjectId& cid, uniset::ObjectId& cnode );
+								  uniset::ObjectId& cid, uniset::ObjectId& cnode ) const;
 
 			/*! Функция поиска по текущему уровню (без рекурсии для дочерних узлов) */
 			static xmlNode* find_node( const std::shared_ptr<UniXML>& xml, xmlNode* root, const std::string& nodename, const std::string& nm = "" );
 
 		protected:
 
-			virtual bool check_list_item( UniXML::iterator& it );
-			virtual bool check_consumer_item( UniXML::iterator& it );
+			virtual bool check_list_item( UniXML::iterator& it ) const;
+			virtual bool check_consumer_item( UniXML::iterator& it ) const;
 
 			ReaderSlot rslot;
 			ReaderSlot cslot;

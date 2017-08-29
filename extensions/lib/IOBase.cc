@@ -635,6 +635,7 @@ namespace uniset
 		std::string ssafe = initProp(it, "safeval", prefix, init_prefix_only);
 
 		b->safevalDefined = !ssafe.empty();
+
 		if( b->safevalDefined )
 			b->safeval = uni_atoi(ssafe);
 

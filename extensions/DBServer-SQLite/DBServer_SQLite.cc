@@ -254,8 +254,8 @@ void DBServer_SQLite::initDBServer()
 	tblMap[uniset::Message::SensorInfo] = "main_history";
 	tblMap[uniset::Message::Confirm] = "main_history";
 
-	PingTime = conf->getPIntProp(node, "pingTime",PingTime);
-	ReconnectTime = conf->getPIntProp(node, "reconnectTime",ReconnectTime);
+	PingTime = conf->getPIntProp(node, "pingTime", PingTime);
+	ReconnectTime = conf->getPIntProp(node, "reconnectTime", ReconnectTime);
 	qbufSize = conf->getArgPInt("--dbserver-buffer-size", it.getProp("bufferSize"), qbufSize);
 
 	if( findArgParam("--dbserver-buffer-last-remove", conf->getArgc(), conf->getArgv()) != -1 )

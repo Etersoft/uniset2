@@ -495,6 +495,7 @@ namespace uniset
 		os << "[";
 
 		int max = d.b.size();
+
 		if( max > 0 )
 			max--;
 
@@ -3071,13 +3072,13 @@ namespace uniset
 
 		ostringstream s;
 		s << setfill('0')
-		   << setw(2) << (int)m.day << "-"
-		   << setw(2) << (int)m.mon << "-"
-		   << setw(2) << (int)m.century
-		   << setw(2) << (int)m.year << " "
-		   << setw(2) << (int)m.hour << ":"
-		   << setw(2) << (int)m.min << ":"
-		   << setw(2) << (int)m.sec;
+		  << setw(2) << (int)m.day << "-"
+		  << setw(2) << (int)m.mon << "-"
+		  << setw(2) << (int)m.century
+		  << setw(2) << (int)m.year << " "
+		  << setw(2) << (int)m.hour << ":"
+		  << setw(2) << (int)m.min << ":"
+		  << setw(2) << (int)m.sec;
 
 		return os << s.str();
 	}

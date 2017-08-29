@@ -24,9 +24,9 @@ namespace uniset
 			Buffer( const std::string& s );
 			virtual ~Buffer();
 
-			unsigned char* dpos() noexcept;
+			unsigned char* dpos() const noexcept;
 
-			size_t nbytes() noexcept;
+			size_t nbytes() const noexcept;
 
 			unsigned char* data = { 0 };
 			size_t len;

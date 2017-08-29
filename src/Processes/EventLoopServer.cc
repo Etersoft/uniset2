@@ -27,6 +27,7 @@ namespace uniset
 	{
 		{
 			std::lock_guard<std::timed_mutex> l(run_mutex);
+
 			if( isactive )
 				return false;
 
@@ -42,7 +43,7 @@ namespace uniset
 		if( !run_mutex.try_lock_for(std::chrono::milliseconds(timeout_msec)) )
 			return false;
 
-		std::lock_guard<std::timed_mutex> l(run_mutex,std::adopt_lock);
+		std::lock_guard<std::timed_mutex> l(run_mutex, std::adopt_lock);
 
 		if( isactive )
 			return true;
@@ -101,6 +102,7 @@ namespace uniset
 		{
 			if( thr->joinable() )
 				thr->join();
+
 			thr = nullptr;
 		}
 	}

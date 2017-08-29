@@ -448,7 +448,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 		UniSetObject_i_var obj;
 		string fullName;
 
-		for( const auto& oname: olist )
+		for( const auto& oname : olist )
 		{
 			fullName = section + "/" + oname;
 

@@ -27,7 +27,7 @@ namespace uniset
 			// return true if OK
 			bool setKeepAliveParams( timeout_t timeout_sec = 5, int conn_keepcnt = 1, int keepintvl = 2 );
 
-			int getSocket() noexcept;
+			int getSocket() const noexcept;
 
 		protected:
 			void init();

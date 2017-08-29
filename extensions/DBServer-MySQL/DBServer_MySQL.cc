@@ -37,7 +37,7 @@ using namespace std;
 // --------------------------------------------------------------------------
 DBServer_MySQL::DBServer_MySQL(ObjectId id, const std::string& prefix ):
 	DBServer(id, prefix)
- {
+{
 
 	if( getId() == DefaultObjectId )
 	{
@@ -275,8 +275,8 @@ void DBServer_MySQL::initDBServer()
 	tblMap[uniset::Message::SensorInfo] = "main_history";
 	tblMap[uniset::Message::Confirm] = "main_history";
 
-	PingTime = conf->getPIntProp(node, "pingTime",PingTime);
-	ReconnectTime = conf->getPIntProp(node, "reconnectTime",ReconnectTime);
+	PingTime = conf->getPIntProp(node, "pingTime", PingTime);
+	ReconnectTime = conf->getPIntProp(node, "reconnectTime", ReconnectTime);
 	qbufSize = conf->getArgPInt("--dbserver-buffer-size", it.getProp("bufferSize"), qbufSize);
 
 	if( findArgParam("--dbserver-buffer-last-remove", conf->getArgc(), conf->getArgv()) != -1 )

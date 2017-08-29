@@ -44,7 +44,7 @@ namespace uniset
 		return UTCPCore::setKeepAliveParams(Poco::Net::ServerSocket::sockfd() , timeout_sec, keepcnt, keepintvl);
 	}
 	// -------------------------------------------------------------------------
-	int UTCPSocket::getSocket() noexcept
+	int UTCPSocket::getSocket() const noexcept
 	{
 		return Poco::Net::ServerSocket::sockfd();
 	}

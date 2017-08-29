@@ -55,7 +55,7 @@ void Restorer_XML::setConsumerFilter( const string& field, const string& val )
 }
 // -----------------------------------------------------------------------------
 bool Restorer_XML::getConsumerInfo( UniXML::iterator& it,
-									ObjectId& cid, ObjectId& cnode )
+									ObjectId& cid, ObjectId& cnode ) const
 {
 	if( !check_consumer_item(it) )
 		return false;
@@ -110,12 +110,12 @@ bool Restorer_XML::getConsumerInfo( UniXML::iterator& it,
 	return true;
 }
 // -----------------------------------------------------------------------------
-bool Restorer_XML::check_list_item( UniXML::iterator& it )
+bool Restorer_XML::check_list_item( UniXML::iterator& it ) const
 {
 	return uniset::check_filter(it, i_filterField, i_filterValue);
 }
 // -----------------------------------------------------------------------------
-bool Restorer_XML::check_consumer_item( UniXML::iterator& it )
+bool Restorer_XML::check_consumer_item( UniXML::iterator& it ) const
 {
 	return uniset::check_filter(it, c_filterField, c_filterValue);
 }

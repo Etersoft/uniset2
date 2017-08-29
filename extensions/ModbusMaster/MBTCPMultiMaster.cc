@@ -181,14 +181,16 @@ MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shm
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
+
 		if( !noQueryOptimization )
 			rtuQueryOptimization(devices);
+
 		initDeviceList();
 	}
 	else
 		ic->addReadItem( sigc::mem_fun(this, &MBTCPMultiMaster::readItem) );
 
-	pollThread =unisetstd::make_unique<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::poll_thread);
+	pollThread = unisetstd::make_unique<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::poll_thread);
 	pollThread->setFinalAction(this, &MBTCPMultiMaster::final_thread);
 	checkThread = unisetstd::make_unique<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::check_thread);
 	checkThread->setFinalAction(this, &MBTCPMultiMaster::final_thread);

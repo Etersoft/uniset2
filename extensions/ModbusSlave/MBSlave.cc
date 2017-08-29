@@ -801,15 +801,17 @@ namespace uniset
 		static size_t upCounter = 0;
 
 		upCounter++;
+
 		if( ++upCounter > 5 )
 		{
-//			IOMap::iterator i;
-//			cout << "SEGFAULT: " << i->first << endl;
+			//			IOMap::iterator i;
+			//			cout << "SEGFAULT: " << i->first << endl;
 
 			upCounter = 0;
 			cerr << ".....THROW...." << endl;
 			throw std::string("TEST STRING EXCEPTION");
 		}
+
 #endif
 
 		// ВНИМАНИЕ! Эта функция вызывается из основного eventLoop
@@ -978,7 +980,7 @@ namespace uniset
 					else if( mbtype == "TCP")
 						execute_tcp();
 
-					askTimer(tmCheckExchange,checkExchangeTime);
+					askTimer(tmCheckExchange, checkExchangeTime);
 				}
 
 				break;

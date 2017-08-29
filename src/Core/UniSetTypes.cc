@@ -165,7 +165,7 @@ void uniset::IDList::del( ObjectId id )
 	}
 }
 
-std::list<uniset::ObjectId> uniset::IDList::getList() noexcept
+std::list<uniset::ObjectId> uniset::IDList::getList() const noexcept
 {
 	return lst;
 }

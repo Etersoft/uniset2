@@ -196,7 +196,7 @@ namespace uniset
 				}
 			};
 
-			std::unique_ptr<xmlDoc,UniXMLDocDeleter> doc;
+			std::unique_ptr<xmlDoc, UniXMLDocDeleter> doc;
 	};
 	// -------------------------------------------------------------------------
 } // end of uniset namespace

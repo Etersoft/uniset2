@@ -155,7 +155,7 @@ TEST_CASE("MBTCPMultiMaster: safe mode", "[modbus][safemode][mbmaster][mbtcpmult
 {
 	InitTest();
 
-	ui->setValue(1050,0); // отключаем safeMode
+	ui->setValue(1050, 0); // отключаем safeMode
 
 	mbs1->setReply(53);
 	msleep(polltime + 200);
@@ -167,7 +167,7 @@ TEST_CASE("MBTCPMultiMaster: safe mode", "[modbus][safemode][mbmaster][mbtcpmult
 	REQUIRE( ui->getValue(1051) == 0 );
 	REQUIRE( ui->getValue(1052) == 0 );
 
-	ui->setValue(1050,42); // включаем safeMode
+	ui->setValue(1050, 42); // включаем safeMode
 	msleep(polltime + 200);
 	REQUIRE( ui->getValue(1051) == 42 );
 	REQUIRE( ui->getValue(1052) == 1 );
@@ -178,7 +178,7 @@ TEST_CASE("MBTCPMultiMaster: safe mode", "[modbus][safemode][mbmaster][mbtcpmult
 	REQUIRE( ui->getValue(1051) == 42 );
 	REQUIRE( ui->getValue(1052) == 1 );
 
-	ui->setValue(1050,0); // отключаем safeMode
+	ui->setValue(1050, 0); // отключаем safeMode
 	msleep(polltime + 200);
 	REQUIRE( ui->getValue(1051) == 53 );
 	REQUIRE( ui->getValue(1052) == 1 );
