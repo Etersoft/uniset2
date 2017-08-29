@@ -273,8 +273,8 @@
 		virtual void timerInfo( const uniset::TimerMessage* tm ) override{}
 		virtual void sigterm( int signo ) override;
 		virtual bool activateObject() override;
-		virtual std::string getMonitInfo(){ return ""; } /*!&lt; пользовательская информация выводимая в getInfo() */
-		virtual std::string getTypeOfMessage( int t ){ return uniset::strTypeOfMessage(t); } /*!&lt; получение названия типа сообщения. Используется в getInfo() */
+		virtual std::string getMonitInfo() const { return ""; } /*!&lt; пользовательская информация выводимая в getInfo() */
+		virtual std::string getTypeOfMessage( int t ) const { return uniset::strTypeOfMessage(t); } /*!&lt; получение названия типа сообщения. Используется в getInfo() */
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
 #ifndef DISABLE_REST_API
 		virtual void httpGetUserData( Poco::JSON::Object::Ptr&amp; jdata ){} /*!&lt;  для пользовательских данных в httpGet() */
@@ -1042,7 +1042,7 @@ forceOut(false),
 end_private(false)
 {
 	mycrit &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
-	throw uniset::Exception( string(myname+": init failed!!!") );
+	throw uniset::Exception( std::string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
 // ( val, confval, default val )
@@ -1625,10 +1625,10 @@ askPause(2000),
 forceOut(false)
 {
 	mycrit &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
-	throw uniset::SystemError( string(myname+": init failed!!!") );
+	throw uniset::SystemError( std::string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
-<xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK( ObjectId id, xmlNode* cnode, const string&amp; _argprefix ):
+<xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK( ObjectId id, xmlNode* cnode, const std::string&amp; _argprefix ):
 <xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>(id),</xsl:if>
 <xsl:if test="normalize-space($BASECLASS)=''">UniSetObject(id),</xsl:if>
 // Инициализация идентификаторов (имена берутся из конф. файла)

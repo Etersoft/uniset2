@@ -51,7 +51,7 @@ void TestProc::sysCommand( const uniset::SystemMessage* sm )
 	}
 }
 // -----------------------------------------------------------------------------
-string TestProc::getMonitInfo()
+string TestProc::getMonitInfo() const
 {
 	//	int* p = 0;
 	//	(*p) = 10;

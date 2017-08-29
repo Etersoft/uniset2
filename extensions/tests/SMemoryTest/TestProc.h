@@ -28,7 +28,7 @@ class TestProc:
 		virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
-		virtual std::string getMonitInfo() override;
+		virtual std::string getMonitInfo() const override;
 
 		void test_depend();
 		void test_undefined_state();

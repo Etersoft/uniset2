@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */
 // --------------------------------------------------------------------------
-// generate timestamp: 2017-07-13+03:00
+// generate timestamp: 2017-08-29+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -53,7 +53,7 @@ forceOut(false),
 end_private(false)
 {
 	mycrit << "UObject: init failed!!!!!!!!!!!!!!!" << endl;
-	throw uniset::Exception( string(myname+": init failed!!!") );
+	throw uniset::Exception( std::string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
 // ( val, confval, default val )

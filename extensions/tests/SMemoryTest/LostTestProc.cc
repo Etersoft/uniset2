@@ -50,7 +50,7 @@ void LostTestProc::sysCommand( const uniset::SystemMessage* sm )
 	}
 }
 // -----------------------------------------------------------------------------
-string LostTestProc::getMonitInfo()
+string LostTestProc::getMonitInfo() const
 {
 	ostringstream inf;
 	inf << "COUNT SENSORS: " << slist.size() << endl;

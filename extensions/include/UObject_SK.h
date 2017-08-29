@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */
 // --------------------------------------------------------------------------
-// generate timestamp: 2017-07-13+03:00
+// generate timestamp: 2017-08-29+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -158,8 +158,8 @@ class UObject_SK:
 		virtual void timerInfo( const uniset::TimerMessage* tm ) override{}
 		virtual void sigterm( int signo ) override;
 		virtual bool activateObject() override;
-		virtual std::string getMonitInfo(){ return ""; } /*!< пользовательская информация выводимая в getInfo() */
-		virtual std::string getTypeOfMessage( int t ){ return uniset::strTypeOfMessage(t); } /*!< получение названия типа сообщения. Используется в getInfo() */
+		virtual std::string getMonitInfo() const { return ""; } /*!< пользовательская информация выводимая в getInfo() */
+		virtual std::string getTypeOfMessage( int t ) const { return uniset::strTypeOfMessage(t); } /*!< получение названия типа сообщения. Используется в getInfo() */
 
 #ifndef DISABLE_REST_API
 		virtual void httpGetUserData( Poco::JSON::Object::Ptr& jdata ){} /*!<  для пользовательских данных в httpGet() */
