@@ -78,23 +78,6 @@ namespace uniset
 			virtual bool add( const std::shared_ptr<UniSetObject>& obj );
 			virtual bool remove( const std::shared_ptr<UniSetObject>& obj );
 			// --------------------------
-			/*! Получение доступа к подчиненному менеджеру по идентификатору
-			 * \return shared_ptr<>, если объект не найден будет возвращен shared_ptr<> = nullptr
-			*/
-			const std::shared_ptr<UniSetManager> itemM(const uniset::ObjectId id);
-
-			/*! Получение доступа к подчиненному объекту по идентификатору
-			 * \return shared_ptr<>, если объект не найден будет возвращен shared_ptr<> = nullptr
-			*/
-			const std::shared_ptr<UniSetObject> itemO( const uniset::ObjectId id );
-
-			// Функции для работы со списками подчиненных объектов
-			// ---------------
-			UniSetManagerList::const_iterator beginMList();
-			UniSetManagerList::const_iterator endMList();
-			ObjectsList::const_iterator beginOList();
-			ObjectsList::const_iterator endOList();
-
 			size_t objectsCount() const;    // количество подчиненных объектов
 			// ---------------
 
@@ -127,14 +110,14 @@ namespace uniset
 			//! \note Переопределяя не забывайте вызвать базовую
 			virtual bool deactivateObject() override;
 
-			const std::shared_ptr<UniSetObject> findObject( const std::string& name );
-			const std::shared_ptr<UniSetManager> findManager( const std::string& name );
+			const std::shared_ptr<UniSetObject> findObject( const std::string& name ) const;
+			const std::shared_ptr<UniSetManager> findManager( const std::string& name ) const;
 
 			// рекурсивный поиск по всем объекам
-			const std::shared_ptr<UniSetObject> deepFindObject( const std::string& name );
+			const std::shared_ptr<UniSetObject> deepFindObject( const std::string& name ) const;
 
 			// рекурсивное наполнение списка объектов
-			void getAllObjectsList( std::vector<std::shared_ptr<UniSetObject>>& vec, size_t lim = 1000 );
+			void getAllObjectsList(std::vector<std::shared_ptr<UniSetObject> >& vec, size_t lim = 1000 );
 
 			typedef UniSetManagerList::iterator MListIterator;
 
@@ -144,14 +127,21 @@ namespace uniset
 			PortableServer::POA_var poa;
 			PortableServer::POAManager_var pman;
 
+			// Функции для работы со списками подчиненных объектов
+			// ---------------
+			UniSetManagerList::const_iterator beginMList();
+			UniSetManagerList::const_iterator endMList();
+			ObjectsList::const_iterator beginOList();
+			ObjectsList::const_iterator endOList();
+
 		private:
 
 			int sig;
 			UniSetManagerList mlist;
 			ObjectsList olist;
 
-			uniset::uniset_rwmutex olistMutex;
-			uniset::uniset_rwmutex mlistMutex;
+			mutable uniset::uniset_rwmutex olistMutex;
+			mutable uniset::uniset_rwmutex mlistMutex;
 	};
 	// -------------------------------------------------------------------------
 } // end of uniset namespace

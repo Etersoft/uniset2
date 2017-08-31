@@ -25,9 +25,11 @@
 #include <deque>
 #include <memory>
 #include <omniORB4/CORBA.h>
+#include <ev++.h>
 #include "UniSetTypes.h"
 #include "UniSetObject.h"
 #include "UniSetManager.h"
+#include "EventLoopServer.h"
 #include "OmniThreadCreator.h"
 #include "UHttpRequestHandler.h"
 #include "UHttpServer.h"
@@ -58,6 +60,7 @@ namespace uniset
 	 *
 	*/
 	class UniSetActivator:
+		public EventLoopServer,
 		public UniSetManager
 #ifndef DISABLE_REST_API
 		, public uniset::UHttp::IHttpRequestRegistry
@@ -67,24 +70,16 @@ namespace uniset
 
 			static UniSetActivatorPtr Instance();
 
-			std::shared_ptr<UniSetActivator> get_aptr();
-			// ------------------------------------
 			virtual ~UniSetActivator();
 
-			virtual void run(bool thread);
-			virtual void stop();
-			virtual void uaDestroy(int signo = 0);
+			void run( bool async );
+			void stop();
 
 			virtual uniset::ObjectType getType() override
 			{
 				return uniset::ObjectType("UniSetActivator");
 			}
 
-			typedef sigc::signal<void, int> TerminateEvent_Signal;
-			TerminateEvent_Signal signal_terminate_event();
-
-			bool noUseGdbForStackTrace() const;
-			const std::string getAbortScript() const;
 
 #ifndef DISABLE_REST_API
 			// Поддрежка REST API (IHttpRequestRegistry)
@@ -98,38 +93,25 @@ namespace uniset
 
 			virtual void work();
 
-			CORBA::ORB_ptr getORB();
-
-			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
-
 			// уносим в protected, т.к. Activator должен быть только один..
 			UniSetActivator();
 
 			static std::shared_ptr<UniSetActivator> inst;
 
 		private:
-			friend void uniset::terminate_thread();
-			friend void uniset::finished_thread();
-			friend std::shared_ptr<uniset::Configuration> uniset::uniset_init( int argc, const char* const* argv, const std::string& xmlfile );
-
-			static void terminated(int signo);
-			static void normalexit();
-			static void normalterminate();
-			static void set_signals(bool ask);
-			void term( int signo );
 			void init();
+			static void evsignal( ev::sig& signal, int signo );
+			virtual void evprepare() override;
+			virtual void evfinish() override;
 
 			std::shared_ptr< OmniThreadCreator<UniSetActivator> > orbthr;
 
 			CORBA::ORB_var orb;
-			TerminateEvent_Signal s_term;
 
-			std::atomic_bool omDestroy;
-			pid_t thid = { 0 }; // id orb потока
-
-			bool _noUseGdbForStackTrace = { false };
-
-			std::string abortScript = { "" }; // скрипт вызываемый при прерывании программы (SIGSEGV,SIGABRT)
+			ev::sig sigINT;
+			ev::sig sigTERM;
+			ev::sig sigABRT;
+			ev::sig sigQUIT;
 
 #ifndef DISABLE_REST_API
 			std::shared_ptr<uniset::UHttp::UHttpServer> httpserv;

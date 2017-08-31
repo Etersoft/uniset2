@@ -465,7 +465,7 @@ bool UniSetManager::deactivateObject()
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-const std::shared_ptr<UniSetObject> UniSetManager::findObject( const string& name )
+const std::shared_ptr<UniSetObject> UniSetManager::findObject( const string& name ) const
 {
 	uniset_rwmutex_rlock lock(olistMutex);
 
@@ -478,7 +478,7 @@ const std::shared_ptr<UniSetObject> UniSetManager::findObject( const string& nam
 	return nullptr;
 }
 // ------------------------------------------------------------------------------------------
-const std::shared_ptr<UniSetManager> UniSetManager::findManager( const string& name )
+const std::shared_ptr<UniSetManager> UniSetManager::findManager( const string& name ) const
 {
 	uniset_rwmutex_rlock lock(mlistMutex);
 
@@ -491,7 +491,7 @@ const std::shared_ptr<UniSetManager> UniSetManager::findManager( const string& n
 	return nullptr;
 }
 // ------------------------------------------------------------------------------------------
-const std::shared_ptr<UniSetObject> UniSetManager::deepFindObject( const string& name )
+const std::shared_ptr<UniSetObject> UniSetManager::deepFindObject( const string& name ) const
 {
 	{
 		auto obj = findObject(name);
@@ -617,7 +617,7 @@ bool UniSetManager::removeManager( const std::shared_ptr<UniSetManager>& child )
 }
 
 // ------------------------------------------------------------------------------------------
-
+#if 0
 const std::shared_ptr<UniSetManager> UniSetManager::itemM( const ObjectId id )
 {
 
@@ -652,7 +652,7 @@ const std::shared_ptr<UniSetObject> UniSetManager::itemO( const ObjectId id )
 
 	return nullptr; // std::shared_ptr<UniSetObject>();
 }
-
+#endif
 // ------------------------------------------------------------------------------------------
 
 int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, SimpleInfoSeq* seq,
