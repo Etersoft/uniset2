@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */
 // --------------------------------------------------------------------------
-// generate timestamp: 2017-08-29+03:00
+// generate timestamp: 2017-08-31+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -32,28 +32,28 @@ using namespace uniset;
 
 // -----------------------------------------------------------------------------
 UObject_SK::UObject_SK():
-	// Инициализация идентификаторов (имена берутся из конф. файла)
+// Инициализация идентификаторов (имена берутся из конф. файла)
 
-	// Используемые идентификаторы сообщений (имена берутся из конф. файла)
+// Используемые идентификаторы сообщений (имена берутся из конф. файла)
 
-	// variables (public and proteced)
+// variables (public and proteced)
 
-	// ------------------
-	active(false),
+// ------------------
+active(false),
 
-	idHeartBeat(DefaultObjectId),
-	maxHeartBeat(10),
-	confnode(0),
-	smReadyTimeout(0),
-	activated(false),
-	askPause(2000),
-	forceOut(false),
-	// private variables
+idHeartBeat(DefaultObjectId),
+maxHeartBeat(10),
+confnode(0),
+smReadyTimeout(0),
+activated(false),
+askPause(2000),
+forceOut(false),
+// private variables
 
-	end_private(false)
+end_private(false)
 {
 	mycrit << "UObject: init failed!!!!!!!!!!!!!!!" << endl;
-	throw uniset::Exception( std::string(myname + ": init failed!!!") );
+	throw uniset::Exception( std::string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
 // ( val, confval, default val )
@@ -61,7 +61,6 @@ static const std::string init3_str( const std::string& s1, const std::string& s2
 {
 	if( !s1.empty() )
 		return s1;
-
 	if( !s2.empty() )
 		return s2;
 
@@ -75,41 +74,41 @@ static uniset::ObjectId init_node( xmlNode* cnode, const std::string& prop )
 
 	auto conf = uniset_conf();
 
-	if( conf->getProp(cnode, prop).empty() )
+	if( conf->getProp(cnode,prop).empty() )
 		return conf->getLocalNode();
 
-	return conf->getNodeID(conf->getProp(cnode, prop));
+	return conf->getNodeID(conf->getProp(cnode,prop));
 }
 // -----------------------------------------------------------------------------
 UObject_SK::UObject_SK( ObjectId id, xmlNode* cnode, const std::string& _argprefix ):
-	UniSetObject(id),
-	// Инициализация идентификаторов (имена берутся из конф. файла)
+UniSetObject(id),
+// Инициализация идентификаторов (имена берутся из конф. файла)
 
-	// Используемые идентификаторы сообщений (имена берутся из конф. файла)
+// Используемые идентификаторы сообщений (имена берутся из конф. файла)
 
-	// variables
+// variables
 
-	sleep_msec(150),
-	active(true),
-	argprefix( (_argprefix.empty() ? myname + "-" : _argprefix) ),
+sleep_msec(150),
+active(true),
+argprefix( (_argprefix.empty() ? myname+"-" : _argprefix) ),
 
-	idHeartBeat(DefaultObjectId),
-	maxHeartBeat(10),
-	confnode(cnode),
-	smReadyTimeout(0),
-	activated(false),
-	askPause(uniset_conf()->getPIntProp(cnode, "askPause", 2000)),
-	forceOut(false),
+idHeartBeat(DefaultObjectId),
+maxHeartBeat(10),
+confnode(cnode),
+smReadyTimeout(0),
+activated(false),
+askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000)),
+forceOut(false),
 
-	end_private(false)
+end_private(false)
 {
 	auto conf = uniset_conf();
 
 
-	if( uniset::findArgParam("--print-id-list", uniset_conf()->getArgc(), uniset_conf()->getArgv()) != -1 )
+	if( uniset::findArgParam("--print-id-list",uniset_conf()->getArgc(),uniset_conf()->getArgv()) != -1 )
 	{
 
-		//		abort();
+//		abort();
 	}
 
 
@@ -120,15 +119,15 @@ UObject_SK::UObject_SK( ObjectId id, xmlNode* cnode, const std::string& _argpref
 		throw uniset::SystemError( err.str() );
 	}
 
-	mylog = make_shared<DebugStream>();
+    mylog = make_shared<DebugStream>();
 	mylog->setLogName(myname);
 	{
 		ostringstream s;
 		s << argprefix << "log";
-		conf->initLogStream(mylog, s.str());
+		conf->initLogStream(mylog,s.str());
 	}
 
-	loga = make_shared<LogAgregator>(myname + "-loga");
+	loga = make_shared<LogAgregator>(myname+"-loga");
 	loga->add(mylog);
 	loga->add(ulog());
 
@@ -146,14 +145,12 @@ UObject_SK::UObject_SK( ObjectId id, xmlNode* cnode, const std::string& _argpref
 		logserv_port = conf->getArgPInt("--" + argprefix + "logserver-port", it.getProp("logserverPort"), getId());
 	}
 
-	forceOut = conf->getArgPInt("--" + argprefix + "force-out", it.getProp("forceOut"), false);
+	forceOut = conf->getArgPInt("--" + argprefix + "force-out",it.getProp("forceOut"),false);
 
-	string heart = conf->getArgParam("--" + argprefix + "heartbeat-id", it.getProp("heartbeat_id"));
-
+	string heart = conf->getArgParam("--" + argprefix + "heartbeat-id",it.getProp("heartbeat_id"));
 	if( !heart.empty() )
 	{
 		idHeartBeat = conf->getSensorID(heart);
-
 		if( idHeartBeat == DefaultObjectId )
 		{
 			ostringstream err;
@@ -161,14 +158,13 @@ UObject_SK::UObject_SK( ObjectId id, xmlNode* cnode, const std::string& _argpref
 			throw uniset::SystemError(err.str());
 		}
 
-		int heartbeatTime = conf->getArgPInt("--" + argprefix + "heartbeat-time", it.getProp("heartbeatTime"), conf->getHeartBeatTime());
-
-		if( heartbeatTime > 0 )
+		int heartbeatTime = conf->getArgPInt("--" + argprefix + "heartbeat-time",it.getProp("heartbeatTime"),conf->getHeartBeatTime());
+		if( heartbeatTime>0 )
 			ptHeartBeat.setTiming(heartbeatTime);
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = conf->getArgPInt("--" + argprefix + "heartbeat-max", it.getProp("heartbeat_max"), 10);
+		maxHeartBeat = conf->getArgPInt("--" + argprefix + "heartbeat-max",it.getProp("heartbeat_max"), 10);
 	}
 
 	// Инициализация значений
@@ -177,18 +173,16 @@ UObject_SK::UObject_SK( ObjectId id, xmlNode* cnode, const std::string& _argpref
 	si.id = uniset::DefaultObjectId;
 	si.node = conf->getLocalNode();
 
-	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec", "150", 150);
+	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec","150", 150);
 
 	string s_resetTime("");
-
 	if( s_resetTime.empty() )
 		s_resetTime = "500";
 
-	resetMsgTime = uni_atoi(init3_str(conf->getArgParam("--" + argprefix + "resetMsgTime"), conf->getProp(cnode, "resetMsgTime"), s_resetTime));
+	resetMsgTime = uni_atoi(init3_str(conf->getArgParam("--" + argprefix + "resetMsgTime"),conf->getProp(cnode,"resetMsgTime"),s_resetTime));
 	ptResetMsg.setTiming(resetMsgTime);
 
-	int sm_tout = conf->getArgInt("--" + argprefix + "sm-ready-timeout", "");
-
+	int sm_tout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","");
 	if( sm_tout == 0 )
 		smReadyTimeout = conf->getNCReadyTimeout();
 	else if( sm_tout < 0 )
@@ -196,7 +190,7 @@ UObject_SK::UObject_SK( ObjectId id, xmlNode* cnode, const std::string& _argpref
 	else
 		smReadyTimeout = sm_tout;
 
-	smTestID = conf->getSensorID(init3_str(conf->getArgParam("--" + argprefix + "sm-test-id"), conf->getProp(cnode, "smTestID"), ""));
+	smTestID = conf->getSensorID(init3_str(conf->getArgParam("--" + argprefix + "sm-test-id"),conf->getProp(cnode,"smTestID"),""));
 
 
 	if( smTestID == DefaultObjectId )
@@ -223,7 +217,7 @@ UObject_SK::UObject_SK( ObjectId id, xmlNode* cnode, const std::string& _argpref
 
 
 	// help надо выводить в конце, когда уже все переменные инициализированы по умолчанию
-	if( uniset::findArgParam("--" + argprefix + "help", uniset_conf()->getArgc(), uniset_conf()->getArgv()) != -1 )
+	if( uniset::findArgParam("--" + argprefix + "help",uniset_conf()->getArgc(),uniset_conf()->getArgv()) != -1 )
 		cout << help() << endl;
 }
 
@@ -257,25 +251,25 @@ bool UObject_SK::setMsg( uniset::ObjectId _code, bool _state ) noexcept
 		return false;
 	}
 
-	mylog8 << myname << "(setMsg): " << ( _state ? "SEND " : "RESET " ) << endl;
+    mylog8 << myname << "(setMsg): " << ( _state ? "SEND " : "RESET " ) << endl;
 
-	// взводим автоматический сброс
-	if( _state )
-	{
-		ptResetMsg.reset();
-		trResetMsg.hi(false);
-	}
+    // взводим автоматический сброс
+    if( _state )
+    {
+        ptResetMsg.reset();
+        trResetMsg.hi(false);
+    }
 
 
 
-	mylog8 << myname << "(setMsg): not found MessgeOID?!!" << endl;
+    mylog8 << myname << "(setMsg): not found MessgeOID?!!" << endl;
 	return false;
 }
 // -----------------------------------------------------------------------------
 void UObject_SK::resetMsg()
 {
-	mylog8 << myname << "(resetMsg): reset messages.." << endl;
-	// reset messages
+    mylog8 << myname << "(resetMsg): reset messages.." << endl;
+// reset messages
 
 }
 // -----------------------------------------------------------------------------
@@ -304,11 +298,11 @@ Poco::JSON::Object::Ptr UObject_SK::httpDumpIO()
 {
 	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
 
-	Poco::JSON::Object::Ptr j_in = uniset::json::make_child(jdata, "in");
+	Poco::JSON::Object::Ptr j_in = uniset::json::make_child(jdata,"in");
 
 
 
-	Poco::JSON::Object::Ptr j_out = uniset::json::make_child(jdata, "out");
+	Poco::JSON::Object::Ptr j_out = uniset::json::make_child(jdata,"out");
 
 
 
@@ -333,23 +327,19 @@ std::string  UObject_SK::dumpIO()
 	s << endl;
 
 	int n = 0;
-
-	for( const auto& e : v_in )
+	for( const auto& e: v_in )
 	{
 		s << e;
-
-		if( (n++) % 2 )
+		if( (n++)%2 )
 			s << std::endl;
 	}
 
 	s << endl;
 	n = 0;
-
-	for( const auto& e : v_out )
+	for( const auto& e: v_out )
 	{
 		s << e;
-
-		if( (n++) % 2 )
+		if( (n++)%2 )
 			s << std::endl;
 	}
 
@@ -403,11 +393,11 @@ void UObject_SK::processingMessage( const uniset::VoidMessage* _msg )
 
 			case Message::Timer:
 				preTimerInfo( reinterpret_cast<const TimerMessage*>(_msg) );
-				break;
+			break;
 
 			case Message::SysCommand:
 				preSysCommand( reinterpret_cast<const SystemMessage*>(_msg) );
-				break;
+			break;
 
 			default:
 				break;
@@ -428,17 +418,14 @@ void UObject_SK::preSysCommand( const SystemMessage* _sm )
 	{
 		case SystemMessage::WatchDog:
 			myinfo << myname << "(preSysCommand): WatchDog" << endl;
-
 			if( !active || !ptStartUpTimeout.checkTime() )
 			{
 				mywarn << myname << "(preSysCommand): игнорируем WatchDog, потому-что только-что стартанули" << endl;
 				break;
 			}
-
 		case SystemMessage::StartUp:
 		{
 			ostate = "StartUp...";
-
 			try
 			{
 				if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
@@ -488,10 +475,9 @@ void UObject_SK::preSysCommand( const SystemMessage* _sm )
 			// переоткрываем логи
 			mylogany << myname << "(preSysCommand): logRotate" << endl;
 			string fname( log()->getLogFile() );
-
 			if( !fname.empty() )
 			{
-				mylog->logFile(fname.c_str(), true);
+				mylog->logFile(fname.c_str(),true);
 				mylogany << myname << "(preSysCommand): ***************** mylog LOG ROTATE *****************" << endl;
 			}
 
@@ -546,10 +532,8 @@ uniset::SimpleInfo* UObject_SK::getInfo( const char* userparam )
 	inf << "statistics: " << endl
 		<< "  processingMessageCatchCount: " << processingMessageCatchCount << endl;
 	inf << "  Type of messages: " << endl;
-
-	for( const auto& s : msgTypeStat )
+	for( const auto& s: msgTypeStat )
 		inf << "    (" << s.first << ")" << setw(10)  << getTypeOfMessage(s.first) << ": " << setw(5) << s.second << endl;
-
 	inf << endl;
 
 
@@ -557,16 +541,14 @@ uniset::SimpleInfo* UObject_SK::getInfo( const char* userparam )
 	inf << endl;
 	auto timers = getTimersList();
 	inf << "Timers[" << timers.size() << "]:" << endl;
-
-	for( const auto& t : timers )
+	for( const auto& t: timers )
 	{
 		inf << "  " << setw(15) << getTimerName(t.id) << "[" << t.id  << "]: msec="
 			<< setw(6) << t.tmr.getInterval()
 			<< "    timeleft="  << setw(6) << t.curTimeMS
-			<< "    tick="  << setw(3) << ( t.curTick >= 0 ? t.curTick : -1 )
+			<< "    tick="  << setw(3) << ( t.curTick>=0 ? t.curTick : -1 )
 			<< endl;
 	}
-
 	inf << endl;
 	inf << vmon.pretty_str() << endl;
 	inf << endl;
@@ -584,53 +566,49 @@ Poco::JSON::Object::Ptr UObject_SK::httpGet( const Poco::URI::QueryParameters& p
 	Poco::JSON::Object::Ptr json = UniSetObject::httpGet(params);
 
 	Poco::JSON::Object::Ptr jdata = json->getObject(myname);
-
 	if( !jdata )
-		jdata = uniset::json::make_child(json, myname);
+		jdata = uniset::json::make_child(json,myname);
 
-	Poco::JSON::Object::Ptr jserv = uniset::json::make_child(jdata, "LogServer");
-
+	Poco::JSON::Object::Ptr jserv = uniset::json::make_child(jdata,"LogServer");
 	if( logserv )
 	{
-		jserv->set("host", logserv_host);
-		jserv->set("port", logserv_port);
-		jserv->set("state", ( logserv->isRunning() ? "RUNNIG" : "STOPPED" ));
+		jserv->set("host",logserv_host);
+		jserv->set("port",logserv_port);
+		jserv->set("state",( logserv->isRunning() ? "RUNNIG" : "STOPPED" ));
 		jserv->set("info", logserv->httpGetShortInfo());
 	}
 
 	jdata->set("io", httpDumpIO());
 
 	auto timers = getTimersList();
-	auto jtm = uniset::json::make_child(jdata, "Timers");
+	auto jtm = uniset::json::make_child(jdata,"Timers");
 
-	jtm->set("count", timers.size());
-
-	for( const auto& t : timers )
+	jtm->set("count",timers.size());
+	for( const auto& t: timers )
 	{
-		auto jt = uniset::json::make_child(jtm, to_string(t.id));
+		auto jt = uniset::json::make_child(jtm,to_string(t.id));
 		jt->set("id", t.id);
 		jt->set("name", getTimerName(t.id));
 		jt->set("msec", t.tmr.getInterval());
 		jt->set("timeleft", t.curTimeMS);
-		jt->set("tick", ( t.curTick >= 0 ? t.curTick : -1 ));
+		jt->set("tick", ( t.curTick>=0 ? t.curTick : -1 ));
 	}
 
 	auto vlist = vmon.getList();
-	auto jvmon = uniset::json::make_child(jdata, "Variables");
+	auto jvmon = uniset::json::make_child(jdata,"Variables");
 
-	for( const auto& v : vlist )
-		jvmon->set(v.first, v.second);
+	for( const auto& v: vlist )
+		jvmon->set(v.first,v.second);
 
 
-	auto jstat = uniset::json::make_child(jdata, "Statistics");
+	auto jstat = uniset::json::make_child(jdata,"Statistics");
 	jstat->set("processingMessageCatchCount", processingMessageCatchCount);
 
-	auto jsens = uniset::json::make_child(jstat, "sensors");
-
-	for( const auto& s : smStat )
+	auto jsens = uniset::json::make_child(jstat,"sensors");
+	for( const auto& s: smStat )
 	{
 		std::string sname(ORepHelpers::getShortName( uniset_conf()->oind->getMapName(s.first)));
-		auto js = uniset::json::make_child(jsens, sname);
+		auto js = uniset::json::make_child(jsens,sname);
 		js->set("id", s.first);
 		js->set("name", sname);
 		js->set("count", s.second);
@@ -647,7 +625,7 @@ Poco::JSON::Object::Ptr UObject_SK::httpHelp( const Poco::URI::QueryParameters& 
 	uniset::json::help::object myhelp(myname, UniSetObject::httpGet(params));
 
 	// 'log'
-	uniset::json::help::item cmd("log", "show log level");
+	uniset::json::help::item cmd("log","show log level");
 	myhelp.add(cmd);
 
 	return myhelp;
@@ -658,26 +636,19 @@ Poco::JSON::Object::Ptr UObject_SK::httpRequest( const std::string& req, const P
 	if( req == "log" )
 		return httpRequestLog(p);
 
-	return UniSetObject::httpRequest(req, p);
+	return UniSetObject::httpRequest(req,p);
 }
 // -----------------------------------------------------------------------------
 Poco::JSON::Object::Ptr UObject_SK::httpRequestLog( const Poco::URI::QueryParameters& p )
 {
 	Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
-	jret->set("log", Debug::str(mylog->level()));
+	jret->set("log",Debug::str(mylog->level()));
 	return jret;
 }
 // -----------------------------------------------------------------------------
 #endif
 
 // -----------------------------------------------------------------------------
-
-// -----------------------------------------------------------------------------
-void UObject_SK::sigterm( int signo )
-{
-	UniSetObject::sigterm(signo);
-	active = false;
-}
 
 // -----------------------------------------------------------------------------
 bool UObject_SK::activateObject()
@@ -692,6 +663,12 @@ bool UObject_SK::activateObject()
 	}
 
 	return true;
+}
+// -----------------------------------------------------------------------------
+bool UObject_SK::deactivateObject()
+{
+	cancelled = true;
+	return UniSetObject::deactivateObject();
 }
 // -----------------------------------------------------------------------------
 void UObject_SK::preTimerInfo( const uniset::TimerMessage* _tm )
@@ -710,23 +687,23 @@ void UObject_SK::waitSM( int wait_msec, ObjectId _testID )
 		return;
 
 	myinfo << myname << "(waitSM): waiting SM ready "
-		   << wait_msec << " msec"
-		   << " testID=" << _testID << endl;
+			<< wait_msec << " msec"
+			<< " testID=" << _testID << endl;
 
 	// waitReady можно использовать т.к. датчик это по сути IONotifyController
-	if( !ui->waitReady(_testID, wait_msec) )
+	if( !ui->waitReadyWithCancellation(_testID,wait_msec,cancelled) )
 	{
 		ostringstream err;
 		err << myname
 			<< "(waitSM): Не дождались готовности(exist) SharedMemory к работе в течение "
 			<< wait_msec << " мсек";
 
-		mycrit << err.str() << endl;
+        mycrit << err.str() << endl;
 		std::abort();
-		//		throw uniset::SystemError(err.str());
+//		throw uniset::SystemError(err.str());
 	}
 
-	if( !ui->waitWorking(_testID, wait_msec) )
+	if( !ui->waitWorking(_testID,wait_msec) )
 	{
 		ostringstream err;
 		err << myname
@@ -735,7 +712,7 @@ void UObject_SK::waitSM( int wait_msec, ObjectId _testID )
 
 		mycrit << err.str() << endl;
 		std::abort();
-		//		throw uniset::SystemError(err.str());
+//		throw uniset::SystemError(err.str());
 	}
 }
 // ----------------------------------------------------------------------------
@@ -753,9 +730,9 @@ std::string UObject_SK::help() const noexcept
 
 	s <<  "--"  <<  argprefix  <<  "activate-timeout msec   - activate process timeout. Now: "  << activateTimeout << endl;
 	s <<  "--"  <<  argprefix  <<  "startup-timeout msec    - wait startup timeout. Now: "  << ptStartUpTimeout.getInterval() << endl;
-	s <<  "--"  <<  argprefix  <<  "force-out [0|1]         - 1 - save out-values in SM at each step. Now: " << forceOut  << endl;
-	s <<  "--"  <<  argprefix  <<  "heartbeat-max num       - max value for heartbeat counter. Now: " <<  maxHeartBeat << endl;
-	s <<  "--"  <<  argprefix  <<  "heartbeat-time msec     - heartbeat periond. Now: " << ptHeartBeat.getInterval() << endl;
+    s <<  "--"  <<  argprefix  <<  "force-out [0|1]         - 1 - save out-values in SM at each step. Now: " << forceOut  << endl;
+    s <<  "--"  <<  argprefix  <<  "heartbeat-max num       - max value for heartbeat counter. Now: " <<  maxHeartBeat << endl;
+    s <<  "--"  <<  argprefix  <<  "heartbeat-time msec     - heartbeat periond. Now: " << ptHeartBeat.getInterval() << endl;
 	s << endl;
 	s << "--print-id-list - print ID list" << endl;
 	s << endl;
@@ -771,42 +748,39 @@ void UObject_SK::callback() noexcept
 {
 	if( !active )
 		return;
-
 	try
 	{
 
 		// проверка таймеров
 		checkTimers(this);
 
-		if( resetMsgTime > 0 && trResetMsg.hi(ptResetMsg.checkTime()) )
+		if( resetMsgTime>0 && trResetMsg.hi(ptResetMsg.checkTime()) )
 		{
-			//			cout << myname <<  ": ********* reset messages *********" << endl;
+//			cout << myname <<  ": ********* reset messages *********" << endl;
 			resetMsg();
 		}
 
 		// обработка сообщений (таймеров и т.п.)
-		for( unsigned int i = 0; i < 20; i++ )
+		for( unsigned int i=0; i<20; i++ )
 		{
-			auto m = receiveMessage();
-
-			if( !m )
-				break;
-
-			processingMessage(m.get());
+            auto m = receiveMessage();
+            if( !m )
+                break;
+            processingMessage(m.get());
 
 			updateOutputs(forceOut);
-			//			updatePreviousValues();
+//			updatePreviousValues();
 		}
 
 		// Выполнение шага программы
 		step();
 
 		// "сердцебиение"
-		if( idHeartBeat != DefaultObjectId && ptHeartBeat.checkTime() )
+		if( idHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
 		{
 			try
 			{
-				ui->setValue(idHeartBeat, maxHeartBeat);
+				ui->setValue(idHeartBeat,maxHeartBeat);
 				ptHeartBeat.reset();
 			}
 			catch( const uniset::Exception& ex )
@@ -821,17 +795,17 @@ void UObject_SK::callback() noexcept
 	}
 	catch( const uniset::Exception& ex )
 	{
-		mycrit << myname << "(execute): " << ex << endl;
+        mycrit << myname << "(execute): " << ex << endl;
 	}
 	catch( const CORBA::SystemException& ex )
 	{
-		mycrit << myname << "(execute): СORBA::SystemException: "
-			   << ex.NP_minorString() << endl;
+        mycrit << myname << "(execute): СORBA::SystemException: "
+                << ex.NP_minorString() << endl;
 	}
-	catch( const std::exception& ex )
-	{
-		mycrit << myname << "(execute): catch " << ex.what()  <<   endl;
-	}
+    catch( const std::exception& ex )
+    {
+        mycrit << myname << "(execute): catch " << ex.what()  <<   endl;
+    }
 
 	if( !active )
 		return;
@@ -846,7 +820,7 @@ void UObject_SK::setValue( uniset::ObjectId _sid, long _val )
 
 
 
-	ui->setValue(_sid, _val);
+	ui->setValue(_sid,_val);
 }
 // -----------------------------------------------------------------------------
 void UObject_SK::updateOutputs( bool _force )
@@ -868,7 +842,7 @@ void UObject_SK::initFromSM()
 // -----------------------------------------------------------------------------
 void UObject_SK::askSensor( uniset::ObjectId _sid, UniversalIO::UIOCommand _cmd, uniset::ObjectId _node )
 {
-	ui->askRemoteSensor(_sid, _cmd, _node, getId());
+	ui->askRemoteSensor(_sid,_cmd,_node,getId());
 }
 // -----------------------------------------------------------------------------
 long UObject_SK::getValue( uniset::ObjectId _sid )
@@ -881,7 +855,7 @@ long UObject_SK::getValue( uniset::ObjectId _sid )
 	}
 	catch( const uniset::Exception& ex )
 	{
-		mycrit << myname << "(getValue): " << ex << endl;
+        mycrit << myname << "(getValue): " << ex << endl;
 		throw;
 	}
 }
@@ -890,21 +864,19 @@ long UObject_SK::getValue( uniset::ObjectId _sid )
 void UObject_SK::preAskSensors( UniversalIO::UIOCommand _cmd )
 {
 	PassiveTimer ptAct(activateTimeout);
-
 	while( !activated && !ptAct.checkTime() )
 	{
 		cout << myname << "(preAskSensors): wait activate..." << endl;
 		msleep(300);
-
 		if( activated )
 			break;
 	}
 
 	if( !activated )
 		mycrit << myname
-			   << "(preAskSensors): ************* don`t activated?! ************" << endl;
+			<< "(preAskSensors): ************* don`t activated?! ************" << endl;
 
-	for( ;; )
+	while( !cancelled )
 	{
 		try
 		{
@@ -913,12 +885,12 @@ void UObject_SK::preAskSensors( UniversalIO::UIOCommand _cmd )
 		}
 		catch( const uniset::Exception& ex )
 		{
-			mycrit << myname << "(preAskSensors): " << ex << endl;
+            mycrit << myname << "(preAskSensors): " << ex << endl;
 		}
-		catch( const std::exception& ex )
-		{
-			mycrit << myname << "(execute): catch " << ex.what()  <<   endl;
-		}
+	    catch( const std::exception&ex )
+	{
+		mycrit << myname << "(execute): catch " << ex.what()  <<   endl;
+	    }
 
 		msleep(askPause);
 	}

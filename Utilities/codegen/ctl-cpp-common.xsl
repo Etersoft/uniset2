@@ -271,8 +271,8 @@
 		virtual void askSensors( UniversalIO::UIOCommand cmd ){}
 		virtual void sensorInfo( const uniset::SensorMessage* sm ) override{}
 		virtual void timerInfo( const uniset::TimerMessage* tm ) override{}
-		virtual void sigterm( int signo ) override;
 		virtual bool activateObject() override;
+		virtual bool deactivateObject() override;
 		virtual std::string getMonitInfo() const { return ""; } /*!&lt; пользовательская информация выводимая в getInfo() */
 		virtual std::string getTypeOfMessage( int t ) const { return uniset::strTypeOfMessage(t); } /*!&lt; получение названия типа сообщения. Используется в getInfo() */
 <xsl:if test="normalize-space($DISABLE_REST_API)!='1'">
@@ -326,7 +326,8 @@
 		inline const std::string getProp(const std::string&amp; name) { return uniset::uniset_conf()->getProp(confnode, name); }
 
 		uniset::timeout_t smReadyTimeout; 	/*!&lt; время ожидания готовности SM */
-		std::atomic_bool activated;
+		std::atomic_bool activated = { false };
+		std::atomic_bool cancelled = { false };
 		uniset::timeout_t activateTimeout;	/*!&lt; время ожидания готовности UniSetObject к работе */
 		uniset::PassiveTimer ptStartUpTimeout;	/*!&lt; время на блокировку обработки WatchDog, если недавно был StartUp */
 		int askPause; /*!&lt; пауза между неудачными попытками заказать датчики */
@@ -798,14 +799,6 @@ uniset::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::idval( long* p ) const 
 }
 </xsl:if>
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::sigterm( int signo )
-{
-	<xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>::sigterm(signo);</xsl:if>
-	<xsl:if test="normalize-space($BASECLASS)=''">UniSetObject::sigterm(signo);</xsl:if>
-	active = false;
-}
-
-// -----------------------------------------------------------------------------
 bool <xsl:value-of select="$CLASSNAME"/>_SK::activateObject()
 {
 	// блокирование обработки Startup 
@@ -819,6 +812,13 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::activateObject()
 	}
 
 	return true;
+}
+// -----------------------------------------------------------------------------
+bool <xsl:value-of select="$CLASSNAME"/>_SK::deactivateObject()
+{
+	cancelled = true;
+	<xsl:if test="normalize-space($BASECLASS)!=''">return <xsl:value-of select="normalize-space($BASECLASS)"/>::deactivateObject();</xsl:if>
+	<xsl:if test="normalize-space($BASECLASS)=''">return UniSetObject::deactivateObject();</xsl:if>
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::preTimerInfo( const uniset::TimerMessage* _tm )
@@ -844,7 +844,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 			&lt;&lt; " testID=" &lt;&lt; _testID &lt;&lt; endl;
 		
 	// waitReady можно использовать т.к. датчик это по сути IONotifyController
-	if( !ui-&gt;waitReady(_testID,wait_msec) )
+	if( !ui-&gt;waitReadyWithCancellation(_testID,wait_msec,cancelled) )
 	{
 		ostringstream err;
 		err &lt;&lt; myname 

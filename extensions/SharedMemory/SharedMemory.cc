@@ -310,6 +310,9 @@ namespace uniset
 		if( logserv && logserv->isRunning() )
 			logserv->terminate();
 
+		if( wdt )
+			wdt->stop();
+
 		return IONotifyController::deactivateObject();
 	}
 	// ------------------------------------------------------------------------------------------
@@ -365,19 +368,6 @@ namespace uniset
 	CORBA::Boolean SharedMemory::exist()
 	{
 		return workready;
-	}
-	// ------------------------------------------------------------------------------------------
-	void SharedMemory::sigterm( int signo )
-	{
-		workready = false;
-
-		if( signo == SIGTERM && wdt )
-			wdt->stop();
-
-		if( logserv && logserv->isRunning() )
-			logserv->terminate();
-
-		IONotifyController::sigterm(signo);
 	}
 	// ------------------------------------------------------------------------------------------
 	void SharedMemory::checkHeartBeat()

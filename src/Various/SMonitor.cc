@@ -50,11 +50,6 @@ SMonitor::~SMonitor()
 {
 }
 // ------------------------------------------------------------------------------------------
-void SMonitor::sigterm( int signo )
-{
-	cout << myname << "SMonitor: sigterm " << endl;
-}
-// ------------------------------------------------------------------------------------------
 void SMonitor::sysCommand( const SystemMessage* sm )
 {
 	switch(sm->command)

@@ -266,10 +266,6 @@ void UniSetManager::managers( OManagerCommand cmd )
 						li->deactivate();
 						break;
 
-					case term:
-						li->sigterm(sig);
-						break;
-
 					default:
 						break;
 				}
@@ -367,10 +363,6 @@ void UniSetManager::objects(OManagerCommand cmd)
 
 					case deactiv:
 						li->deactivate();
-						break;
-
-					case term:
-						li->sigterm(sig);
 						break;
 
 					default:
@@ -542,26 +534,6 @@ void UniSetManager::getAllObjectsList( std::vector<std::shared_ptr<UniSetObject>
 	}
 }
 // ------------------------------------------------------------------------------------------
-void UniSetManager::sigterm( int signo )
-{
-	sig = signo;
-
-	try
-	{
-		objects(term);
-	}
-	catch(...) {}
-
-	try
-	{
-		managers(term);
-	}
-	catch(...) {}
-
-	UniSetObject::sigterm(signo);
-}
-// ------------------------------------------------------------------------------------------
-
 void UniSetManager::broadcast(const TransportMessage& msg)
 {
 	// себя не забыть...
@@ -778,9 +750,6 @@ std::ostream& uniset::operator<<(std::ostream& os, uniset::UniSetManager::OManag
 
 	if( cmd == uniset::UniSetManager::initial )
 		return os << "init";
-
-	if( cmd == uniset::UniSetManager::term )
-		return os << "terminate";
 
 	return os << "unkwnown";
 }

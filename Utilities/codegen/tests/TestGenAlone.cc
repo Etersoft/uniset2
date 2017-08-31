@@ -28,8 +28,3 @@ void TestGenAlone::timerInfo( const TimerMessage* tm )
 {
 }
 // -----------------------------------------------------------------------------
-void TestGenAlone::sigterm( int signo )
-{
-	TestGenAlone_SK::sigterm(signo);
-}
-// -----------------------------------------------------------------------------

@@ -435,8 +435,6 @@ namespace uniset
 			void initFromReserv();
 			bool initFromSM( uniset::ObjectId sm_id, uniset::ObjectId sm_node );
 
-			// действия при завершении работы
-			virtual void sigterm( int signo ) override;
 			virtual bool activateObject() override;
 			virtual bool deactivateObject() override;
 			bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );

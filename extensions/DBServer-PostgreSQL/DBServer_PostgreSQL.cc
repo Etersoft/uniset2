@@ -450,7 +450,7 @@ void DBServer_PostgreSQL::timerInfo( const uniset::TimerMessage* tm )
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_PostgreSQL::sigterm( int signo )
+bool DBServer_PostgreSQL::deactivateObject()
 {
 	if( db && connect_ok )
 	{
@@ -461,7 +461,7 @@ void DBServer_PostgreSQL::sigterm( int signo )
 		catch(...) {}
 	}
 
-	DBServer::sigterm(signo);
+	return DBServer::deactivateObject();
 }
 //--------------------------------------------------------------------------------------------
 std::shared_ptr<DBServer_PostgreSQL> DBServer_PostgreSQL::init_dbserver( int argc, const char* const* argv,

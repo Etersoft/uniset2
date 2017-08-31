@@ -24,6 +24,7 @@
 // ---------------------------------------------------------------------------
 #include <memory>
 #include <string>
+#include <atomic>
 #include <sstream>
 #include <unordered_map>
 #include <functional>
@@ -182,13 +183,16 @@ namespace uniset
 			bool isExist( const uniset::ObjectId id ) const noexcept;
 			bool isExist( const uniset::ObjectId id, const uniset::ObjectId node ) const noexcept;
 
-			// used for check 'isExist'
+			//! used for check 'isExist' \deprecated! Use waitReadyWithCancellation(..)
 			bool waitReady( const uniset::ObjectId id, int msec, int pause = 5000,
 							const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() ) noexcept;
 
-			// used for check 'getValue'
+			//! used for check 'getValue'
 			bool waitWorking( const uniset::ObjectId id, int msec, int pause = 3000,
 							  const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() ) noexcept;
+
+			bool waitReadyWithCancellation( const uniset::ObjectId id, int msec, std::atomic_bool& cancelFlag, int pause = 5000,
+							const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() ) noexcept;
 
 			// ---------------------------------------------------------------
 			// Работа с ID, Name

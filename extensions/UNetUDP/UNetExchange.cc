@@ -487,12 +487,15 @@ void UNetExchange::waitSMReady()
 	else if( tout < 0 )
 		ready_timeout = UniSetTimer::WaitUpTime;
 
-	if( !shm->waitSMready(ready_timeout, 50) )
+	if( !shm->waitSMreadyWithCancellation(ready_timeout, cannceled, 50) )
 	{
-		ostringstream err;
-		err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
-		unetcrit << err.str() << endl;
-		std::terminate();
+		if( !cannceled )
+		{
+			ostringstream err;
+			err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
+			unetcrit << err.str() << endl;
+			std::terminate();
+		}
 	}
 }
 // -----------------------------------------------------------------------------
@@ -733,6 +736,7 @@ bool UNetExchange::activateObject()
 // ------------------------------------------------------------------------------------------
 bool UNetExchange::deactivateObject()
 {
+	cannceled = true;
 	if( activated )
 	{
 		unetinfo << myname << "(deactivateObject): disactivate.." << endl;
@@ -779,17 +783,6 @@ void UNetExchange::termSenders()
 			sender2->stop();
 	}
 	catch(...) {}
-}
-// ------------------------------------------------------------------------------------------
-void UNetExchange::sigterm( int signo )
-{
-	unetinfo << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
-	activated = false;
-
-	termReceivers();
-	termSenders();
-
-	UniSetObject::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------
 void UNetExchange::initIterators() noexcept

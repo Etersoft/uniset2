@@ -85,7 +85,7 @@ namespace uniset
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 			virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) override;
-			virtual void sigterm( int signo ) override;
+			virtual bool deactivateObject() override;
 
 			bool writeToBase( const std::string& query );
 			void createTables( std::shared_ptr<PostgreSQLInterface>& db );

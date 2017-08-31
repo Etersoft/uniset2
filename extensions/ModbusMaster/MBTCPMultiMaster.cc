@@ -587,40 +587,6 @@ void MBTCPMultiMaster::initIterators()
 		shm->initIterator(it->respond_it);
 }
 // -----------------------------------------------------------------------------
-void MBTCPMultiMaster::sigterm( int signo )
-{
-	if( pollThread )
-	{
-		pollThread->stop();
-
-		if( pollThread->isRunning() )
-			pollThread->join();
-	}
-
-	if( checkThread )
-	{
-		checkThread->stop();
-
-		if( checkThread->isRunning() )
-			checkThread->join();
-	}
-
-	try
-	{
-		MBExchange::sigterm(signo);
-	}
-	catch( const std::exception& ex )
-	{
-		mbcrit << myname << "(sigterm): " << ex.what() << std::endl;
-	}
-
-	//	catch( ... )
-	//	{
-	//		std::exception_ptr p = std::current_exception();
-	//		std::clog << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
-	//	}
-}
-// -----------------------------------------------------------------------------
 bool MBTCPMultiMaster::deactivateObject()
 {
 	setProcActive(false);

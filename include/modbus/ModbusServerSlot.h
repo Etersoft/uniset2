@@ -114,7 +114,7 @@ namespace uniset
 			/*! подключение обработчика 'передача файла' 0x66 */
 			void connectFileTransfer( FileTransferSlot sl );
 
-			virtual void sigterm( int signo ) {}
+			virtual void terminate(){}
 
 		protected:
 			ReadCoilSlot slReadCoil;

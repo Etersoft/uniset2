@@ -33,7 +33,6 @@
 #include "DigitalFilter.h"
 #include "Calibration.h"
 #include "SMInterface.h"
-#include "SingleProcess.h"
 #include "IOController.h"
 #include "IOBase.h"
 #include "SharedMemory.h"
@@ -328,7 +327,6 @@ namespace uniset
 			virtual void askSensors( UniversalIO::UIOCommand cmd );
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
-			virtual void sigterm( int signo ) override;
 			virtual bool activateObject() override;
 			virtual bool deactivateObject() override;
 
@@ -409,10 +407,10 @@ namespace uniset
 
 			std::mutex iopollMutex;
 			std::atomic_bool activated = { false };
+			std::atomic_bool cancelled = { false };
 			bool readconf_ok = { false };
 			int activateTimeout;
 			uniset::ObjectId sidTestSMReady = { uniset::DefaultObjectId };
-			std::atomic_bool term = { false };
 
 			uniset::ObjectId testMode_as = { uniset::DefaultObjectId };
 			IOController::IOStateList::iterator itTestMode;

@@ -93,15 +93,13 @@ namespace uniset
 			virtual bool addObject( const std::shared_ptr<UniSetObject>& obj );
 			virtual bool removeObject( const std::shared_ptr<UniSetObject>& obj );
 
-			enum OManagerCommand { deactiv, activ, initial, term };
+			enum OManagerCommand { deactiv, activ, initial };
 			friend std::ostream& operator<<(std::ostream& os, uniset::UniSetManager::OManagerCommand& cmd );
 
 			// работа со списком объектов
 			void objects(OManagerCommand cmd);
 			// работа со списком менеджеров
 			void managers(OManagerCommand cmd);
-
-			virtual void sigterm( int signo ) override;
 
 			void initPOA( const std::weak_ptr<UniSetManager>& rmngr );
 

@@ -174,7 +174,7 @@ namespace uniset
 		return slFileTransfer(query, reply);
 	}
 	// -------------------------------------------------------------------------
-	void ModbusRTUSlaveSlot::sigterm( int signo )
+	void ModbusRTUSlaveSlot::terminate()
 	{
 		try
 		{

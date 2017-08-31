@@ -18,7 +18,7 @@ namespace uniset
 			ModbusTCPServerSlot( const std::string& ia, int port = 502 );
 			virtual ~ModbusTCPServerSlot();
 
-			virtual void sigterm( int signo );
+			virtual void terminate() override;
 
 		protected:
 

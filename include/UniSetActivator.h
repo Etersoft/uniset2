@@ -100,6 +100,7 @@ namespace uniset
 
 		private:
 			void init();
+			static void on_finish_timeout();
 			static void evsignal( ev::sig& signal, int signo );
 			virtual void evprepare() override;
 			virtual void evfinish() override;

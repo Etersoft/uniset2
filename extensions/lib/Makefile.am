@@ -5,7 +5,7 @@ lib_LTLIBRARIES 			= libUniSet2Extensions.la
 libUniSet2Extensions_la_LDFLAGS  = -version-info $(UEXT_VER)
 libUniSet2Extensions_la_CPPFLAGS = $(SIGC_CFLAGS) $(POCO_CFLAGS) -I$(top_builddir)/extensions/include
 libUniSet2Extensions_la_LIBADD   = $(SIGC_LIBS) $(POCO_LIBS) $(top_builddir)/lib/libUniSet2.la
-libUniSet2Extensions_la_SOURCES  = Extensions.cc SMInterface.cc Calibration.cc SingleProcess.cc \
+libUniSet2Extensions_la_SOURCES  = Extensions.cc SMInterface.cc Calibration.cc \
 	IOBase.cc DigitalFilter.cc PID.cc MTR.cc VTypes.cc UObject_SK.cc
 
 UObject_SK.cc: $(top_builddir)/Utilities/codegen/*.xsl

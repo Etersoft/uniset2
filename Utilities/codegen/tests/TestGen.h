@@ -18,7 +18,6 @@ class TestGen:
 		virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
-		virtual void sigterm( int signo ) override;
 #ifndef DISABLE_REST_API
 		virtual void httpGetUserData( Poco::JSON::Object::Ptr& jdata ) override;
 #endif

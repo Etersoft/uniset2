@@ -69,7 +69,6 @@ namespace uniset
 		maxCardNum(10),
 		activated(false),
 		readconf_ok(false),
-		term(false),
 		testMode_as(uniset::DefaultObjectId),
 		testmode(tmNone),
 		prev_testmode(tmNone)
@@ -406,7 +405,7 @@ namespace uniset
 
 		ioinfo << myname << "(iothread): run..." << endl;
 
-		while( !term )
+		while( !cancelled )
 		{
 			try
 			{
@@ -475,14 +474,13 @@ namespace uniset
 				iolog3 << myname << "(execute): catch ..." << endl;
 			}
 
-			if( term )
+			if( cancelled )
 				break;
 
 			msleep( polltime );
 		}
 
 		ioinfo << myname << "(iothread): terminated..." << endl;
-		term = false;
 	}
 	// --------------------------------------------------------------------------------
 	void IOControl::iopoll()
@@ -505,7 +503,7 @@ namespace uniset
 
 		for( auto it = iomap.begin(); it != iomap.end(); ++it, i++ )
 		{
-			if( term )
+			if( cancelled )
 				break;
 
 			auto io = (*it);
@@ -537,7 +535,7 @@ namespace uniset
 		// Опрос приоритетной очереди
 		for( const auto& it : pmap )
 		{
-			if( term )
+			if( cancelled )
 				break;
 
 			if( it.priority > 2 )
@@ -909,19 +907,13 @@ namespace uniset
 	// ------------------------------------------------------------------------------------------
 	bool IOControl::deactivateObject()
 	{
-		sigterm(0);
-		return UniSetObject::deactivateObject();
-	}
-	// ------------------------------------------------------------------------------------------
-	void IOControl::sigterm( int signo )
-	{
-		term = true;
+		cancelled = true;
 
 		if( ioThread && ioThread->isRunning() )
 			ioThread->join();
 
 		if( noCards )
-			return;
+			return UniSetObject::deactivateObject();
 
 		// выставляем безопасные состояния
 		for( const auto& it : iomap )
@@ -954,6 +946,8 @@ namespace uniset
 				iolog3 << myname << "(sigterm): " << ex.what() << endl;
 			}
 		}
+
+		return UniSetObject::deactivateObject();
 	}
 	// -----------------------------------------------------------------------------
 	void IOControl::initOutputs()
@@ -1427,20 +1421,6 @@ namespace uniset
 
 		waitSM();
 
-		if( sidTestSMReady != DefaultObjectId &&
-				!shm->waitSMworking(sidTestSMReady , activateTimeout, 50) )
-		{
-			ostringstream err;
-			err << myname
-				<< "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение "
-				<< activateTimeout << " мсек";
-
-			iocrit << err.str() << endl;
-			//			kill(SIGTERM, getpid());   // прерываем (перезапускаем) процесс...
-			std::terminate();
-			//			throw SystemError(err.str());
-		}
-
 		PassiveTimer ptAct(activateTimeout);
 
 		while( !readconf_ok && !ptAct.checkTime() )
@@ -1643,15 +1623,17 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	void IOControl::waitSM()
 	{
-		if( !shm->waitSMready(smReadyTimeout, 50) )
+		if( !shm->waitSMreadyWithCancellation(smReadyTimeout, cancelled, 50) )
 		{
-			ostringstream err;
-			err << myname << "(execute): did not wait for the ready 'SharedMemory'. Timeout "
-				<< smReadyTimeout << " msec";
+			if( !cancelled )
+			{
+				ostringstream err;
+				err << myname << "(execute): did not wait for the ready 'SharedMemory'. Timeout "
+					<< smReadyTimeout << " msec";
 
-			iocrit << err.str() << endl;
-			//throw SystemError(err.str());
-			std::terminate();
+				iocrit << err.str() << endl;
+				std::terminate();
+			}
 		}
 	}
 	// -----------------------------------------------------------------------------

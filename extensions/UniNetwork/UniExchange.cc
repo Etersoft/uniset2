@@ -145,7 +145,7 @@ UniExchange::~UniExchange()
 // -----------------------------------------------------------------------------
 void UniExchange::execute()
 {
-	if( !shm->waitSMready(smReadyTimeout, 50) )
+	if( !shm->waitSMreadyWithCancellation(smReadyTimeout, canncelled, 50) )
 	{
 		ostringstream err;
 		err << myname << "(execute): Не дождались готовности SharedMemory к работе в течение "
@@ -328,6 +328,12 @@ void UniExchange::askSensors( UniversalIO::UIOCommand cmd )
 
 }
 // -----------------------------------------------------------------------------
+bool UniExchange::deactivateObject()
+{
+	canncelled = true;
+	return IOController::deactivateObject();
+}
+// -----------------------------------------------------------------------------
 void UniExchange::sysCommand( const SystemMessage* sm )
 {
 	switch( sm->command )
@@ -350,10 +356,6 @@ void UniExchange::sysCommand( const SystemMessage* sm )
 		default:
 			break;
 	}
-}
-// -----------------------------------------------------------------------------
-void UniExchange::sigterm( int signo )
-{
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<UniExchange> UniExchange::init_exchange(int argc, const char* const* argv,

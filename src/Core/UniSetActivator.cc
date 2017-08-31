@@ -18,9 +18,6 @@
  *  \author Pavel Vainerman
 */
 // --------------------------------------------------------------------------
-#include <sys/wait.h>
-#include <sys/types.h>
-#include <signal.h>
 #include <sstream>
 #include <fstream>
 
@@ -32,9 +29,9 @@
 
 // for stack trace
 // --------------------
-#include <execinfo.h>
-#include <cxxabi.h>
-#include <dlfcn.h>
+//#include <execinfo.h>
+//#include <cxxabi.h>
+//#include <dlfcn.h>
 #include <iomanip>
 // --------------------
 
@@ -49,6 +46,13 @@
 // ------------------------------------------------------------------------------------------
 using namespace uniset;
 using namespace std;
+// ------------------------------------------------------------------------------------------
+static std::mutex              g_donemutex;
+static std::condition_variable g_doneevent;
+static std::shared_ptr<std::thread> g_finish_guard_thread;
+static std::atomic_bool g_done = ATOMIC_VAR_INIT(0);
+
+static const int TERMINATE_TIMEOUT_SEC = 15; //  время отведенное на завершение процесса [сек]
 // ------------------------------------------------------------------------------------------
 namespace uniset
 {
@@ -104,11 +108,11 @@ void UniSetActivator::init()
 
 	sigTERM.set(loop);
 	sigINT.set(loop);
-	sigABRT.set(loop);
+//	sigABRT.set(loop);
 	sigQUIT.set(loop);
 	sigINT.set<&UniSetActivator::evsignal>();
 	sigTERM.set<&UniSetActivator::evsignal>();
-	sigABRT.set<&UniSetActivator::evsignal>();
+//	sigABRT.set<&UniSetActivator::evsignal>();
 	sigQUIT.set<&UniSetActivator::evsignal>();
 }
 
@@ -191,6 +195,13 @@ void UniSetActivator::stop()
 
 	active = false;
 
+	{
+		std::unique_lock<std::mutex> lk(g_donemutex);
+		g_done = false;
+		g_finish_guard_thread = make_shared<std::thread>(on_finish_timeout);
+	}
+
+
 	ulogsys << myname << "(stop): deactivate...  " << endl;
 
 	deactivate();
@@ -236,6 +247,16 @@ void UniSetActivator::stop()
 
 	if( orbthr )
 		orbthr->join();
+
+	{
+		std::unique_lock<std::mutex> lk(g_donemutex);
+		g_done = true;
+	}
+
+	g_doneevent.notify_all();
+
+	if( g_finish_guard_thread )
+		g_finish_guard_thread->join();
 }
 
 // ------------------------------------------------------------------------------------------
@@ -293,6 +314,33 @@ void UniSetActivator::work()
 	ulogsys << myname << "(work): orb thread stopped!" << endl << flush;
 }
 // ------------------------------------------------------------------------------------------
+void UniSetActivator::on_finish_timeout()
+{
+	std::unique_lock<std::mutex> lk(g_donemutex);
+
+	if( g_done )
+		return;
+
+	ulogsys << "(FINISH GUARD THREAD): activate... " << endl << flush;
+
+	g_doneevent.wait_for(lk, std::chrono::milliseconds(TERMINATE_TIMEOUT_SEC * 1000), []()
+	{
+		return (g_done == true);
+	} );
+
+	if( !g_done )
+	{
+		ulogsys << "(FINISH GUARD THREAD): WAIT TIMEOUT "
+				<< TERMINATE_TIMEOUT_SEC << " sec..KILL *******" << endl << flush;
+		//raise(SIGKILL);
+		std::abort();
+		return;
+	}
+
+	ulogsys << "(FINISH GUARD THREAD): [OK]..bye.." << endl;
+}
+// ------------------------------------------------------------------------------------------
+
 #ifndef DISABLE_REST_API
 Poco::JSON::Object::Ptr UniSetActivator::httpGetByName( const string& name, const Poco::URI::QueryParameters& p )
 {

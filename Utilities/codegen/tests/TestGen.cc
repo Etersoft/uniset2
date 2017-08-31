@@ -78,11 +78,6 @@ void TestGen::timerInfo( const TimerMessage* tm )
 	}
 }
 // -----------------------------------------------------------------------------
-void TestGen::sigterm( int signo )
-{
-	TestGen_SK::sigterm(signo);
-}
-// -----------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
 void TestGen::httpGetUserData( Poco::JSON::Object::Ptr& jdata )
 {

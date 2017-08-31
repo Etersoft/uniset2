@@ -16,7 +16,6 @@ class TestGenAlone:
 		virtual void step() override;
 		void sensorInfo( const uniset::SensorMessage* sm ) override;
 		void timerInfo( const uniset::TimerMessage* tm ) override;
-		virtual void sigterm( int signo ) override;
 
 	private:
 };

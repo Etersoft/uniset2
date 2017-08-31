@@ -2375,39 +2375,8 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	bool UInterface::waitReady( const uniset::ObjectId id, int msec, int pmsec, const uniset::ObjectId node ) noexcept
 	{
-		if( msec < 0 )
-			msec = 0;
-
-		if( pmsec < 0 )
-			pmsec = 0;
-
-		PassiveTimer ptReady(msec);
-		bool ready = false;
-
-		while( !ptReady.checkTime() && !ready )
-		{
-			try
-			{
-				ready = isExist(id, node);
-
-				if( ready )
-					break;
-			}
-			catch( const CORBA::OBJECT_NOT_EXIST& )
-			{
-			}
-			catch( const CORBA::COMM_FAILURE& ex )
-			{
-			}
-			catch(...)
-			{
-				break;
-			}
-
-			msleep(pmsec);
-		}
-
-		return ready;
+		std::atomic_bool cancelFlag = { false };
+		return waitReadyWithCancellation(id,msec,cancelFlag,pmsec,node);
 	}
 	// -----------------------------------------------------------------------------
 	bool UInterface::waitWorking( const uniset::ObjectId id, int msec, int pmsec, const uniset::ObjectId node ) noexcept
@@ -2430,6 +2399,44 @@ namespace uniset
 				break;
 			}
 			catch(...) {}
+
+			msleep(pmsec);
+		}
+
+		return ready;
+	}
+	// -----------------------------------------------------------------------------
+	bool UInterface::waitReadyWithCancellation(const ObjectId id, int msec,
+											   std::atomic_bool& cancelFlag, int pmsec, const ObjectId node) noexcept
+	{
+		if( msec < 0 )
+			msec = 0;
+
+		if( pmsec < 0 )
+			pmsec = 0;
+
+		PassiveTimer ptReady(msec);
+		bool ready = false;
+
+		while( !ptReady.checkTime() && !ready && !cancelFlag )
+		{
+			try
+			{
+				ready = isExist(id, node);
+
+				if( ready )
+					break;
+			}
+			catch( const CORBA::OBJECT_NOT_EXIST& )
+			{
+			}
+			catch( const CORBA::COMM_FAILURE& ex )
+			{
+			}
+			catch(...)
+			{
+				break;
+			}
 
 			msleep(pmsec);
 		}

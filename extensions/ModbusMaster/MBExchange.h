@@ -253,7 +253,7 @@ namespace uniset
 			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 			virtual void askSensors( UniversalIO::UIOCommand cmd );
 			virtual void initOutput();
-			virtual void sigterm( int signo ) override;
+			virtual bool deactivateObject() override;
 			virtual bool activateObject() override;
 			virtual void initIterators();
 			virtual void initValues();
@@ -355,6 +355,7 @@ namespace uniset
 			long exchangeMode = { emNone }; /*!< режим работы см. ExchangeMode */
 
 			std::atomic_bool activated = { false };
+			std::atomic_bool canceled = { false };
 			timeout_t activateTimeout = { 20000 }; // msec
 			bool noQueryOptimization = { false };
 			bool notUseExchangeTimer = { false };

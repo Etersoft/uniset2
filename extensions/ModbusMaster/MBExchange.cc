@@ -311,12 +311,15 @@ namespace uniset
 		else if( tout < 0 )
 			ready_timeout = UniSetTimer::WaitUpTime;
 
-		if( !shm->waitSMready(ready_timeout, 50) )
+		if( !shm->waitSMreadyWithCancellation(ready_timeout, canceled, 50) )
 		{
-			ostringstream err;
-			err << myname << "(waitSMReady): failed waiting SharedMemory " << ready_timeout << " msec. ==> TERMINATE!";
-			mbcrit << err.str() << endl;
-			std::terminate();
+			if( !canceled )
+			{
+				ostringstream err;
+				err << myname << "(waitSMReady): failed waiting SharedMemory " << ready_timeout << " msec. ==> TERMINATE!";
+				mbcrit << err.str() << endl;
+				std::terminate();
+			}
 		}
 	}
 	// -----------------------------------------------------------------------------
@@ -353,24 +356,11 @@ namespace uniset
 		activated = st;
 	}
 	// -----------------------------------------------------------------------------
-	void MBExchange::sigterm( int signo )
+	bool MBExchange::deactivateObject()
 	{
-		mbwarn << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
 		setProcActive(false);
-
-		try
-		{
-			UniSetObject::sigterm(signo);
-		}
-		catch( std::exception& ex)
-		{
-			mbwarn << myname << "SIGTERM(" << signo << "): "  << ex.what() << endl;
-		}
-
-		//	{
-		//        std::exception_ptr p = std::current_exception();
-		//        std::clog <<(p ? p.__cxa_exception_type()->name() : "null") << std::endl;
-		//	}
+		canceled = true;
+		return UniSetObject::deactivateObject();
 	}
 	// ------------------------------------------------------------------------------------------
 	void MBExchange::readConfiguration()

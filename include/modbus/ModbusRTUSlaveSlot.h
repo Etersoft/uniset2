@@ -24,7 +24,7 @@ namespace uniset
 			ModbusRTUSlaveSlot( const std::string& dev, bool use485 = false, bool tr_ctl = false );
 			virtual ~ModbusRTUSlaveSlot();
 
-			virtual void sigterm( int signo );
+			virtual void terminate();
 
 			inline ComPort* getComPort()
 			{

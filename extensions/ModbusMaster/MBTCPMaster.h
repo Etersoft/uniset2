@@ -266,7 +266,6 @@ namespace uniset
 		protected:
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;
-			virtual void sigterm( int signo ) override;
 			virtual bool deactivateObject() override;
 
 			std::string iaddr;

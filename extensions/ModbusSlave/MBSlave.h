@@ -515,7 +515,6 @@ namespace uniset
 			virtual bool deactivateObject() override;
 
 			// действия при завершении работы
-			virtual void sigterm( int signo ) override;
 			virtual void finalThread();
 
 			enum Timer

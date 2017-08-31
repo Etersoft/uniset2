@@ -548,13 +548,16 @@ namespace uniset
 		else if( tout < 0 )
 			ready_timeout = UniSetTimer::WaitUpTime;
 
-		if( !shm->waitSMready(ready_timeout, 50) )
+		if( !shm->waitSMreadyWithCancellation(ready_timeout, cancelled, 50) )
 		{
-			ostringstream err;
-			err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
-			mbcrit << err.str() << endl;
-			//terminate();
-			std::terminate();
+			if( !cancelled )
+			{
+				ostringstream err;
+				err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
+				mbcrit << err.str() << endl;
+				//terminate();
+				std::terminate();
+			}
 		}
 	}
 	// -----------------------------------------------------------------------------
@@ -1156,41 +1159,8 @@ namespace uniset
 		activated = false;
 		cancelled = true;
 
-		if( mbtype == "RTU" )
-		{
-			try
-			{
-				if( mbslot )
-					mbslot->sigterm(SIGTERM);
-			}
-			catch( std::exception& ex)
-			{
-				mbwarn << myname << "(deactivateObject): " << ex.what() << endl;
-			}
-		}
-
-
-		return UniSetObject::deactivateObject();
-	}
-	// ------------------------------------------------------------------------------------------
-	void MBSlave::sigterm( int signo )
-	{
-		mbinfo << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
-
-		if( cancelled )
-		{
-			UniSetObject::sigterm(signo);
-			return;
-		}
-
-		activated = false;
-		cancelled = true;
-
 		if( tcpserver )
 		{
-			cancelled = true;
-			cerr << "********* MBSlave::sigterm" << endl;
-
 			if( tcpserver->isActive() )
 				tcpserver->terminate();
 		}
@@ -1199,15 +1169,15 @@ namespace uniset
 			try
 			{
 				if( mbslot )
-					mbslot->sigterm(signo);
+					mbslot->terminate();
 			}
 			catch( std::exception& ex)
 			{
-				mbwarn << myname << "SIGTERM(" << signo << "): " << ex.what() << endl;
+				mbwarn << myname << "(deactivateObject): " << ex.what() << endl;
 			}
 		}
 
-		UniSetObject::sigterm(signo);
+		return UniSetObject::deactivateObject();
 	}
 	// ------------------------------------------------------------------------------------------
 	void MBSlave::readConfiguration()

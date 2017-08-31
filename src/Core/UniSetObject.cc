@@ -550,14 +550,10 @@ namespace uniset
 		return true;
 	}
 	// ------------------------------------------------------------------------------------------
-	void UniSetObject::sigterm( int signo )
-	{
-	}
-	// ------------------------------------------------------------------------------------------
-	void UniSetObject::terminate()
-	{
-		deactivate();
-	}
+//	void UniSetObject::terminate()
+//	{
+//		deactivate();
+//	}
 	// ------------------------------------------------------------------------------------------
 	void UniSetObject::thread(bool create)
 	{
@@ -594,18 +590,6 @@ namespace uniset
 
 		if( tmr )
 			tmr->terminate();
-
-		if( thr )
-		{
-			std::unique_lock<std::mutex> lk(m_working);
-
-			//        cv_working.wait_for(lk, std::chrono::milliseconds(workingTerminateTimeout), [&](){ return (a_working == false); } );
-			if( a_working )
-				cv_working.wait(lk);
-
-			if( a_working )
-				thr->stop();
-		}
 
 		try
 		{
@@ -659,6 +643,18 @@ namespace uniset
 			uwarn << myname << "(deactivate): " << ex.what() << endl;
 		}
 
+
+		if( thr )
+		{
+			std::unique_lock<std::mutex> lk(m_working);
+
+			//        cv_working.wait_for(lk, std::chrono::milliseconds(workingTerminateTimeout), [&](){ return (a_working == false); } );
+			if( a_working )
+				cv_working.wait(lk);
+
+			if( a_working )
+				thr->stop();
+		}
 
 		return false;
 	}
