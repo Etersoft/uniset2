@@ -500,6 +500,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/tests/SMemoryTest/Makefile
 				 extensions/tests/MBSlaveTest/Makefile
 				 extensions/tests/MQPerfTest/Makefile
+				 extensions/LogDB/Makefile
 				 testsuite/Makefile
 				 wrappers/Makefile
 				 wrappers/python/lib/Makefile

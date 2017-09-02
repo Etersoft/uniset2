@@ -27,6 +27,11 @@ extensions/DBServer-PostgreSQL/Makefile.am
 extensions/DBServer-PostgreSQL/PostgreSQLInterface.cc
 extensions/DBServer-PostgreSQL/PostgreSQLInterface.h
 extensions/DBServer-PostgreSQL/test.cc
+extensions/LogDB/LogDB.cc
+extensions/LogDB/LogDB.h
+extensions/LogDB/LogDBSugar.h
+extensions/LogDB/main.cc
+extensions/LogDB/Makefile.am
 extensions/include/Calibration.h
 extensions/include/ComediInterface.h
 extensions/include/DigitalFilter.h
