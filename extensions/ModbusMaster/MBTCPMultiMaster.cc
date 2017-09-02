@@ -206,19 +206,10 @@ MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shm
 // -----------------------------------------------------------------------------
 MBTCPMultiMaster::~MBTCPMultiMaster()
 {
-	if( pollThread )
+	if( pollThread && !canceled )
 	{
-		try
-		{
-			pollThread->stop();
-
-			if( pollThread->isRunning() )
-				pollThread->join();
-		}
-		catch( Poco::NullPointerException& ex )
-		{
-
-		}
+		if( pollThread->isRunning() )
+			pollThread->join();
 	}
 
 	if( checkThread )
@@ -352,6 +343,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 void MBTCPMultiMaster::final_thread()
 {
 	setProcActive(false);
+	canceled = true;
 }
 // -----------------------------------------------------------------------------
 
@@ -471,7 +463,7 @@ void MBTCPMultiMaster::sysCommand( const uniset::SystemMessage* sm )
 void MBTCPMultiMaster::poll_thread()
 {
 	// ждём начала работы..(см. MBExchange::activateObject)
-	while( !isProcActive() )
+	while( !isProcActive() && !canceled )
 	{
 		uniset::uniset_rwmutex_rlock l(mutex_start);
 	}
@@ -590,6 +582,7 @@ void MBTCPMultiMaster::initIterators()
 bool MBTCPMultiMaster::deactivateObject()
 {
 	setProcActive(false);
+	canceled = true;
 
 	if( pollThread )
 	{

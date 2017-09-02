@@ -502,7 +502,7 @@ namespace uniset
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 			void askSensors( UniversalIO::UIOCommand cmd );
-			void waitSMReady();
+			bool waitSMReady();
 			virtual void execute_rtu();
 			virtual void execute_tcp();
 			virtual void updateStatistics();

@@ -300,7 +300,7 @@ namespace uniset
 	{
 	}
 	// -----------------------------------------------------------------------------
-	void MBExchange::waitSMReady()
+	bool MBExchange::waitSMReady()
 	{
 		// waiting for SM is ready...
 		int tout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "");
@@ -318,9 +318,12 @@ namespace uniset
 				ostringstream err;
 				err << myname << "(waitSMReady): failed waiting SharedMemory " << ready_timeout << " msec. ==> TERMINATE!";
 				mbcrit << err.str() << endl;
-				std::terminate();
 			}
+
+			return false;
 		}
+
+		return true;
 	}
 	// -----------------------------------------------------------------------------
 	void MBExchange::step()
@@ -348,7 +351,7 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	bool MBExchange::isProcActive() const
 	{
-		return activated;
+		return activated && !canceled;
 	}
 	// -----------------------------------------------------------------------------
 	void MBExchange::setProcActive( bool st )
@@ -360,6 +363,10 @@ namespace uniset
 	{
 		setProcActive(false);
 		canceled = true;
+
+		if( logserv && logserv->isRunning() )
+			logserv->terminate();
+
 		return UniSetObject::deactivateObject();
 	}
 	// ------------------------------------------------------------------------------------------
@@ -3015,8 +3022,8 @@ namespace uniset
 				if( devices.empty() )
 				{
 					mbcrit << myname << "(sysCommand): ************* ITEM MAP EMPTY! terminated... *************" << endl;
-					//raise(SIGTERM);
-					std::terminate();
+					//					std::terminate();
+					uterminate();
 					return;
 				}
 
@@ -3025,7 +3032,13 @@ namespace uniset
 				if( !shm->isLocalwork() )
 					initDeviceList();
 
-				waitSMReady();
+				if( !waitSMReady() )
+				{
+					if( !canceled )
+						uterminate();
+
+					return;
+				}
 
 				// подождать пока пройдёт инициализация датчиков
 				// см. activateObject()
@@ -3042,7 +3055,11 @@ namespace uniset
 				}
 
 				if( !isProcActive() )
+				{
 					mbcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
+					uterminate();
+					return;
+				}
 
 				{
 					uniset::uniset_rwmutex_rlock l(mutex_start);
@@ -3116,8 +3133,8 @@ namespace uniset
 				<< activateTimeout << " мсек";
 
 			mbcrit << err.str() << endl;
-			std::terminate();  // прерываем (перезапускаем) процесс...
-			// throw SystemError(err.str());
+			//			std::terminate();  // прерываем (перезапускаем) процесс...
+			uterminate();
 			return;
 		}
 

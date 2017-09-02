@@ -261,16 +261,21 @@ namespace uniset
 
 				PassiveTimer ptAct(activateTimeout);
 
-				while( !activated && !ptAct.checkTime() )
+				while( !cancelled && !activated && !ptAct.checkTime() )
 				{
 					cout << myname << "(sysCommand): wait activate..." << endl;
 					msleep(100);
 				}
 
+				if( cancelled )
+					return;
+
 				if( !activated  )
 				{
 					smcrit << myname << "(sysCommand): Don`t activate [timeout=" << activateTimeout << " msec]! TERMINATE.." << endl;
-					std::terminate();
+					//					std::terminate();
+					uterminate();
+					return;
 				}
 
 				// подождать пока пройдёт инициализация
@@ -306,6 +311,7 @@ namespace uniset
 	bool SharedMemory::deactivateObject()
 	{
 		workready = false;
+		cancelled = true;
 
 		if( logserv && logserv->isRunning() )
 			logserv->terminate();
@@ -904,9 +910,9 @@ namespace uniset
 				ostringstream err;
 				err << myname << "(initFromReserv): Not found ID for '" << smName << "'";
 				smcrit << err.str() << endl;
-				// throw SystemError(err.str());
-				//raise(SIGTERM);
-				std::terminate();
+				//				std::terminate();
+				uterminate();
+				return;
 			}
 
 			std::string smNode(it.getProp("node"));
@@ -921,9 +927,9 @@ namespace uniset
 				ostringstream err;
 				err << myname << "(initFromReserv): Not found NodeID for '" << smNode << "'";
 				smcrit << err.str() << endl;
-				// throw SystemError(err.str());
-				//raise(SIGTERM);
-				std::terminate();
+				//std::terminate();
+				uterminate();
+				return;
 			}
 
 

@@ -51,14 +51,6 @@ namespace uniset
 
 		//! Функция выделения имени из полного имени
 		const std::string getShortName(const std::string& fullName, const std::string& brk = "/");
-
-
-		//! Проверка на наличие недопустимых символов
-		char checkBadSymbols(const std::string& str);
-
-		/*! Получение строки запрещенных символов в виде '.', '/', и т.д. */
-		std::string BadSymbolsToStr();
-
 	}
 	// -------------------------------------------------------------------------
 } // end of uniset namespace

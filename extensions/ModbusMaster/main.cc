@@ -63,14 +63,12 @@ int main( int argc, const char** argv )
 	}
 	catch( const uniset::Exception& ex )
 	{
-		dcrit << "(mbtcpmaster): " << ex << std::endl;
+		cerr << "(mbtcpmaster): " << ex << std::endl;
 	}
 	catch(...)
 	{
 		std::exception_ptr p = std::current_exception();
-		std::clog << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
-
-		dcrit << "(mbtcpmaster): catch ..." << std::endl;
+		cerr << "(mbtcpmaster): catch.." << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
 	}
 
 	return 1;

@@ -192,7 +192,7 @@ namespace uniset
 							  const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() ) noexcept;
 
 			bool waitReadyWithCancellation( const uniset::ObjectId id, int msec, std::atomic_bool& cancelFlag, int pause = 5000,
-							const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() ) noexcept;
+											const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() ) noexcept;
 
 			// ---------------------------------------------------------------
 			// Работа с ID, Name

@@ -130,7 +130,7 @@ namespace uniset
 
 			    Если range=false, то может быть возвращено значение outOfRange.
 			*/
-			long getRawValue( const long cal, bool range = false );
+			long getRawValue( const long cal, bool range = false ) const;
 
 			/*! Возвращает минимальное значение 'y' встретившееся в диаграмме */
 			inline long getMinRaw() const noexcept

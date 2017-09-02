@@ -63,8 +63,6 @@ namespace uniset
 			UniSetManager( const std::string& name, const std::string& section );
 			virtual ~UniSetManager();
 
-			std::shared_ptr<UniSetManager> get_mptr();
-
 			virtual uniset::ObjectType getType() override
 			{
 				return uniset::ObjectType("UniSetManager");
@@ -83,6 +81,7 @@ namespace uniset
 
 			PortableServer::POA_ptr getPOA();
 			PortableServer::POAManager_ptr getPOAManager();
+			std::shared_ptr<UniSetManager> get_mptr();
 
 		protected:
 
@@ -134,7 +133,6 @@ namespace uniset
 
 		private:
 
-			int sig;
 			UniSetManagerList mlist;
 			ObjectsList olist;
 

@@ -224,41 +224,5 @@ namespace uniset
 		}
 
 		// ---------------------------------------------------------------------------------------------------------------
-		/*
-		 *    Запрещенные символы см. uniset::BadSymbols[]
-		 *    \return Если не найдено запрещенных символов то будет возвращен 0, иначе найденный символ
-		*/
-		char checkBadSymbols( const string& str )
-		{
-			using namespace uniset;
-
-			for ( size_t i = 0; i < str.length(); i++)
-			{
-				for(unsigned int k = 0; k < sizeof(BadSymbols); k++)
-				{
-					if ( str[i] == BadSymbols[k] )
-						return (char)BadSymbols[k];
-				}
-			}
-
-			return 0;
-		}
-
-		// ---------------------------------------------------------------------------------------------------------------
-		string BadSymbolsToStr()
-		{
-			string bad = "";
-
-			for( size_t i = 0; i < sizeof(uniset::BadSymbols); i++ )
-			{
-				bad += "'";
-				bad += uniset::BadSymbols[i];
-				bad += "', ";
-
-			}
-
-			return bad;
-		}
-		// ---------------------------------------------------------------------------------------------------------------
 	}
 }

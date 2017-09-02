@@ -25,11 +25,9 @@
 #include <deque>
 #include <memory>
 #include <omniORB4/CORBA.h>
-#include <ev++.h>
 #include "UniSetTypes.h"
 #include "UniSetObject.h"
 #include "UniSetManager.h"
-#include "EventLoopServer.h"
 #include "OmniThreadCreator.h"
 #include "UHttpRequestHandler.h"
 #include "UHttpServer.h"
@@ -52,15 +50,14 @@ namespace uniset
 	\endcode
 	 * Активатор в свою очередь сам является менеджером(и объектом) и обладает всеми его свойствами
 	 *
-	 * --uniset-no-use-gdb-for-stacktrace - НЕ ИСПОЛЬЗОВАТЬ gdb для stacktrace
-	 * --uniset-abort-script  - скрипт запускаемый при вылете, в качестве аргумента передаётся имя программы и pid
-	 *
 	 * \section act_HttpAPI REST API
-	 * UniSetActivator реализует обработку команд /conf/..
+	 * UniSetActivator выступает в роли http-сервера и релизует первчиную обработку запросов
+	 * и перенаправление их указанным объектам. Помимо этого UniSetActivator реализует обработку команд /conf/..
+	 * Для запуска http-сервера необходимо в аргументах командной строки указать  --activator-run-httpserver
+	 * Помимо этого можно задать параметры --activator-httpserver-host и --activator-httpserver-port.
 	 *
 	*/
 	class UniSetActivator:
-		public EventLoopServer,
 		public UniSetManager
 #ifndef DISABLE_REST_API
 		, public uniset::UHttp::IHttpRequestRegistry
@@ -72,8 +69,15 @@ namespace uniset
 
 			virtual ~UniSetActivator();
 
+			// запуск системы
+			// async = true - асинхронный запуск (создаётся отдельный поток).
 			void run( bool async );
-			void stop();
+
+			// штатное завершение работы
+			void shutdown();
+
+			// прерывание работы
+			void terminate();
 
 			virtual uniset::ObjectType getType() override
 			{
@@ -91,7 +95,7 @@ namespace uniset
 
 		protected:
 
-			virtual void work();
+			void work();
 
 			// уносим в protected, т.к. Activator должен быть только один..
 			UniSetActivator();
@@ -101,18 +105,11 @@ namespace uniset
 		private:
 			void init();
 			static void on_finish_timeout();
-			static void evsignal( ev::sig& signal, int signo );
-			virtual void evprepare() override;
-			virtual void evfinish() override;
+			static void set_signals( bool set );
 
 			std::shared_ptr< OmniThreadCreator<UniSetActivator> > orbthr;
 
 			CORBA::ORB_var orb;
-
-			ev::sig sigINT;
-			ev::sig sigTERM;
-			ev::sig sigABRT;
-			ev::sig sigQUIT;
 
 #ifndef DISABLE_REST_API
 			std::shared_ptr<uniset::UHttp::UHttpServer> httpserv;

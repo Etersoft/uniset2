@@ -331,7 +331,13 @@ namespace uniset
 		//    set_signals(true);
 		UniXML::iterator it(confnode);
 
-		waitSM(); // необходимо дождаться, чтобы нормально инициализировать итераторы
+		if( !waitSM() ) // необходимо дождаться, чтобы нормально инициализировать итераторы
+		{
+			if( !cancelled )
+				uterminate();
+
+			return;
+		}
 
 		PassiveTimer pt(UniSetTimer::WaitUpTime);
 
@@ -375,7 +381,7 @@ namespace uniset
 
 		PassiveTimer ptAct(activateTimeout);
 
-		while( !activated && !ptAct.checkTime() )
+		while( !activated && !cancelled && !ptAct.checkTime() )
 		{
 			cout << myname << "(execute): wait activate..." << endl;
 			msleep(300);
@@ -386,6 +392,9 @@ namespace uniset
 				break;
 			}
 		}
+
+		if( cancelled )
+			return;
 
 		if( !activated )
 			iocrit << myname << "(execute): ************* don`t activate?! ************" << endl;
@@ -1345,7 +1354,7 @@ namespace uniset
 
 				PassiveTimer ptAct(activateTimeout);
 
-				while( !activated && !ptAct.checkTime() )
+				while( !cancelled && !activated && !ptAct.checkTime() )
 				{
 					ioinfo << myname << "(sysCommand): wait activate..." << endl;
 					msleep(300);
@@ -1353,6 +1362,9 @@ namespace uniset
 					if( activated )
 						break;
 				}
+
+				if( cancelled )
+					return;
 
 				if( !activated )
 					iocrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
@@ -1419,11 +1431,15 @@ namespace uniset
 		if( force_out )
 			return;
 
-		waitSM();
+		if( !waitSM() )
+		{
+			if( !cancelled )
+				uterminate();
+		}
 
 		PassiveTimer ptAct(activateTimeout);
 
-		while( !readconf_ok && !ptAct.checkTime() )
+		while( !cancelled && !readconf_ok && !ptAct.checkTime() )
 		{
 			ioinfo << myname << "(askSensors): wait read configuration..." << endl;
 			msleep(50);
@@ -1431,6 +1447,9 @@ namespace uniset
 			if( readconf_ok )
 				break;
 		}
+
+		if( cancelled )
+			return;
 
 		if( !readconf_ok )
 			iocrit << myname << "(askSensors): ************* don`t read configuration?! ************" << endl;
@@ -1621,7 +1640,7 @@ namespace uniset
 
 	}
 	// -----------------------------------------------------------------------------
-	void IOControl::waitSM()
+	bool IOControl::waitSM()
 	{
 		if( !shm->waitSMreadyWithCancellation(smReadyTimeout, cancelled, 50) )
 		{
@@ -1632,9 +1651,12 @@ namespace uniset
 					<< smReadyTimeout << " msec";
 
 				iocrit << err.str() << endl;
-				std::terminate();
 			}
+
+			return false;
 		}
+
+		return true;
 	}
 	// -----------------------------------------------------------------------------
 	void IOControl::buildCardsList()

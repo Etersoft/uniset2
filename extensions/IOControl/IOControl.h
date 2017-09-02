@@ -342,7 +342,7 @@ namespace uniset
 			bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
 			void buildCardsList();
 
-			void waitSM();
+			bool waitSM();
 
 			xmlNode* confnode = { 0 }; /*!< xml-узел в настроечном файле */
 

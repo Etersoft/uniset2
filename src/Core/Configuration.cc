@@ -1452,8 +1452,8 @@ namespace uniset
 			return uniset::uconf;
 		}
 
-//		atexit( UniSetActivator::normalexit );
-//		set_terminate( UniSetActivator::normalterminate ); // ловушка для неизвестных исключений
+		//		atexit( UniSetActivator::normalexit );
+		//		set_terminate( UniSetActivator::normalterminate ); // ловушка для неизвестных исключений
 
 		string confile = uniset::getArgParam( "--confile", argc, argv, xmlfile );
 		uniset::uconf = make_shared<Configuration>(argc, argv, confile);

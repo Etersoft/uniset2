@@ -443,7 +443,6 @@ namespace uniset
 						 << "(readItem): OVERFLOW! MAX UDP DIGITAL DATA LIMIT! max="
 						 << UniSetUDP::MaxDCount << endl;
 
-				//				raise(SIGTERM);
 				std::terminate();
 				return false;
 			}
@@ -482,7 +481,6 @@ namespace uniset
 						 << "(readItem): OVERFLOW! MAX UDP ANALOG DATA LIMIT! max="
 						 << UniSetUDP::MaxACount << endl;
 
-				//				raise(SIGTERM);
 				std::terminate();
 				return false;
 			}
@@ -495,7 +493,6 @@ namespace uniset
 		{
 			unetcrit << myname
 					 << "(readItem): Sensor (" << p.id << ")" << sname << " ALREADY ADDED!!  ABORT!" << endl;
-			//			raise(SIGTERM);
 			std::terminate();
 			return false;
 		}

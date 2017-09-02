@@ -53,6 +53,19 @@ namespace uniset
 	// ---------------------------------------------------------------
 	// Вспомогательные типы данных и константы
 
+	/*! Запрещенные для использования в именах объектов символы */
+	const char BadSymbols[] = {'.', '/'};
+
+	/*! Проверка на наличие недопустимых символов
+	 * Запрещенные символы см. uniset::BadSymbols[]
+	 * \return Если не найдено запрещенных символов то будет возвращен 0, иначе найденный символ
+	 */
+	char checkBadSymbols(const std::string& str);
+
+	/*! Получение запрещенных символов в виде строки '.', '/', и т.д. */
+	std::string BadSymbolsToStr();
+
+
 	const ObjectId DefaultObjectId = -1;    /*!< Идентификатор объекта по умолчанию */
 	const ThresholdId DefaultThresholdId = -1;      /*!< идентификатор порогов по умолчанию */
 	const ThresholdId DefaultTimerId = -1;      /*!< идентификатор таймера по умолчанию */
@@ -139,14 +152,10 @@ namespace uniset
 	/*! Информация об имени объекта */
 	struct ObjectInfo
 	{
-		ObjectInfo() noexcept:
-			id(DefaultObjectId),
-			repName(""), textName(""), xmlnode(0) {}
-
-		ObjectId id;        /*!< идентификатор */
-		std::string repName;      /*!< текстовое имя для регистрации в репозитории */
-		std::string textName;     /*!< текстовое имя */
-		xmlNode* xmlnode;
+		ObjectId id = { DefaultObjectId };        /*!< идентификатор */
+		std::string repName = { "" };      /*!< текстовое имя для регистрации в репозитории */
+		std::string textName = { "" };     /*!< текстовое имя */
+		xmlNode* xmlnode = { nullptr };
 
 		inline bool operator < ( const ObjectInfo& o ) const
 		{
@@ -155,9 +164,6 @@ namespace uniset
 	};
 
 	typedef std::list<NodeInfo> ListOfNode;
-
-	/*! Запрещенные для использования в именах объектов символы */
-	const char BadSymbols[] = {'.', '/'};
 
 	// ---------------------------------------------------------------
 	// Различные преобразования
@@ -297,25 +303,6 @@ namespace uniset
 	// Проверка xml-узла на соответствие <...f_prop="f_val">,
 	// если не задано f_val, то проверяется, что просто f_prop!=""
 	bool check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val = "" ) noexcept;
-
-	/*! алгоритм копирования элементов последовательности удовлетворяющих условию */
-	template<typename InputIterator,
-			 typename OutputIterator,
-			 typename Predicate>
-	OutputIterator copy_if(InputIterator begin,
-						   InputIterator end,
-						   OutputIterator destBegin,
-						   Predicate p)
-	{
-		while( begin != end)
-		{
-			if( p(*begin) ) &(destBegin++) = *begin;
-
-			++begin;
-		}
-
-		return destBegin;
-	}
 
 	// RAII для флагов форматирования ostream..
 	class ios_fmt_restorer

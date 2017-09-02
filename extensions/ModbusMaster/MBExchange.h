@@ -303,7 +303,7 @@ namespace uniset
 
 			bool isProcActive() const;
 			void setProcActive( bool st );
-			void waitSMReady();
+			bool waitSMReady();
 
 			void readConfiguration();
 			bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );

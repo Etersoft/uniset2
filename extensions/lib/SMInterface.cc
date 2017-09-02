@@ -274,7 +274,7 @@ using namespace uniset;
 	bool SMInterface::waitSMready( int ready_timeout, int pmsec )
 	{
 		std::atomic_bool cancelFlag = { false };
-		return waitSMreadyWithCancellation(ready_timeout,cancelFlag,pmsec);
+		return waitSMreadyWithCancellation(ready_timeout, cancelFlag, pmsec);
 	}
 	// --------------------------------------------------------------------------
 	bool SMInterface::waitSMworking( uniset::ObjectId sid, int msec, int pmsec )

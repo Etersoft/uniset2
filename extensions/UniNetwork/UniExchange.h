@@ -144,7 +144,7 @@ namespace uniset
 			size_t maxIndex = { 0 };
 			timeout_t smReadyTimeout = { 60000 }; // msec
 
-			std::atomic_bool canncelled = { false };
+			std::atomic_bool cancelled = { false };
 
 		private:
 	};

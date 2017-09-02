@@ -118,7 +118,8 @@ void IOController::activateInit()
 		catch( const uniset::Exception& ex )
 		{
 			ucrit << myname << "(activateInit): " << ex << endl;
-			std::terminate();
+			//std::terminate();
+			uterminate();
 		}
 	}
 }

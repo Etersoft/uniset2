@@ -36,6 +36,7 @@
 #include "UInterface.h"
 #include "UniSetObject.h"
 #include "UniSetManager.h"
+#include "UniSetActivator.h"
 #include "Debug.h"
 
 // ------------------------------------------------------------------------------------------
@@ -59,7 +60,6 @@ namespace uniset
 
 		tmr = CREATE_TIMER;
 		myname = "noname";
-		section = "nonameSection";
 		initObject();
 	}
 	// ------------------------------------------------------------------------------------------
@@ -74,18 +74,12 @@ namespace uniset
 		ui = make_shared<UInterface>(id);
 		tmr = CREATE_TIMER;
 
-		if (myid >= 0)
-		{
-			string myfullname = ui->getNameById(id);
-			myname = ORepHelpers::getShortName(myfullname);
-			section = ORepHelpers::getSectionName(myfullname);
-		}
+		if( myid != DefaultObjectId )
+			setID(id);
 		else
 		{
 			threadcreate = false;
-			myid = uniset::DefaultObjectId;
 			myname = "UnknownUniSetObject";
-			section = "UnknownSection";
 		}
 
 		initObject();
@@ -106,15 +100,8 @@ namespace uniset
 		tmr = CREATE_TIMER;
 		myname = section + "/" + name;
 		myid = ui->getIdByName(myname);
-
-		if( myid == DefaultObjectId )
-		{
-			uwarn << "name: my ID not found!" << endl;
-			throw Exception(name + ": my ID not found!");
-		}
-
+		setID(myid);
 		initObject();
-		ui->initBackId(myid);
 	}
 
 	// ------------------------------------------------------------------------------------------
@@ -129,11 +116,10 @@ namespace uniset
 	// ------------------------------------------------------------------------------------------
 	void UniSetObject::initObject()
 	{
-		a_working = ATOMIC_VAR_INIT(0);
+		//		a_working = ATOMIC_VAR_INIT(0);
 		active = ATOMIC_VAR_INIT(0);
 
 		refmutex.setName(myname + "_refmutex");
-		//    mutex_act.setName(myname + "_mutex_act");
 
 		auto conf = uniset_conf();
 
@@ -167,12 +153,11 @@ namespace uniset
 	// ------------------------------------------------------------------------------------------
 	void UniSetObject::setID( uniset::ObjectId id )
 	{
-		if( myid != uniset::DefaultObjectId )
-			throw ObjectNameAlready("ObjectId already set(setID)");
+		if( isActive() )
+			throw ObjectNameAlready("Set ID error: ObjectId is active..");
 
 		string myfullname = ui->getNameById(id);
 		myname = ORepHelpers::getShortName(myfullname);
-		section = ORepHelpers::getSectionName(myfullname);
 		myid = id;
 		ui->initBackId(myid);
 	}
@@ -332,10 +317,31 @@ namespace uniset
 		}
 		catch(...)
 		{
-			uwarn << myname << ": don`t registration in object repository" << endl;
+			std::exception_ptr p = std::current_exception();
+			uwarn << myname << ": don`t registration in object repository"
+				  << " err: " << (p ? p.__cxa_exception_type()->name() : "unknown")
+				  << endl;
 		}
 
 		regOK = false;
+	}
+	// ------------------------------------------------------------------------------------------
+	void UniSetObject::waitFinish()
+	{
+		// поток завершаем в конце, после пользовательских deactivateObject()
+		if( !thr )
+			return;
+
+		std::unique_lock<std::mutex> lk(m_working);
+
+		//        cv_working.wait_for(lk, std::chrono::milliseconds(workingTerminateTimeout), [&](){ return (a_working == false); } );
+		cv_working.wait(lk, [ = ]()
+		{
+			return a_working == false;
+		});
+
+		if( thr->isRunning() )
+			thr->join();
 	}
 	// ------------------------------------------------------------------------------------------
 	CORBA::Boolean UniSetObject::exist()
@@ -550,10 +556,12 @@ namespace uniset
 		return true;
 	}
 	// ------------------------------------------------------------------------------------------
-//	void UniSetObject::terminate()
-//	{
-//		deactivate();
-//	}
+	void UniSetObject::uterminate()
+	{
+		//		setActive(false);
+		auto act = UniSetActivator::Instance();
+		act->terminate();
+	}
 	// ------------------------------------------------------------------------------------------
 	void UniSetObject::thread(bool create)
 	{
@@ -615,7 +623,8 @@ namespace uniset
 					unregistration();
 					PortableServer::ObjectId_var oid = poamngr->servant_to_id(static_cast<PortableServer::ServantBase*>(this));
 					poamngr->deactivate_object(oid);
-					uinfo << myname << "(disacivate): finished..." << endl;
+					uinfo << myname << "(deactivate): finished..." << endl;
+					waitFinish();
 					return true;
 				}
 			}
@@ -641,19 +650,6 @@ namespace uniset
 		catch( std::exception& ex )
 		{
 			uwarn << myname << "(deactivate): " << ex.what() << endl;
-		}
-
-
-		if( thr )
-		{
-			std::unique_lock<std::mutex> lk(m_working);
-
-			//        cv_working.wait_for(lk, std::chrono::milliseconds(workingTerminateTimeout), [&](){ return (a_working == false); } );
-			if( a_working )
-				cv_working.wait(lk);
-
-			if( a_working )
-				thr->stop();
 		}
 
 		return false;
@@ -811,6 +807,9 @@ namespace uniset
 
 			if( m )
 				processingMessage(m.get());
+
+			if( !isActive() )
+				return;
 
 			sleepTime = checkTimers(this);
 		}

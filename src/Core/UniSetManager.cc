@@ -87,15 +87,13 @@ class OPush: public unary_function< const std::shared_ptr<uniset::UniSetObject>&
 // ------------------------------------------------------------------------------------------
 UniSetManager::UniSetManager():
 	UniSetObject(uniset::DefaultObjectId),
-	sig(0),
 	olistMutex("UniSetManager_olistMutex"),
 	mlistMutex("UniSetManager_mlistMutex")
 {
 }
 // ------------------------------------------------------------------------------------------
 UniSetManager::UniSetManager( ObjectId id ):
-	UniSetObject(id),
-	sig(0)
+	UniSetObject(id)
 {
 	olistMutex.setName(myname + "_olistMutex");
 	mlistMutex.setName(myname + "_mlistMutex");
@@ -104,8 +102,7 @@ UniSetManager::UniSetManager( ObjectId id ):
 // ------------------------------------------------------------------------------------------
 
 UniSetManager::UniSetManager(const string& name, const string& section):
-	UniSetObject(name, section),
-	sig(0)
+	UniSetObject(name, section)
 {
 	olistMutex.setName(myname + "_olistMutex");
 	mlistMutex.setName(myname + "_mlistMutex");
@@ -132,7 +129,7 @@ void UniSetManager::initPOA( const std::weak_ptr<UniSetManager>& rmngr )
 		ostringstream err;
 		err << myname << "(initPOA): failed weak_ptr !!";
 		ucrit << err.str() << endl;
-		throw SystemError(err.str());
+		throw uniset::SystemError(err.str());
 	}
 
 	if( CORBA::is_nil(pman) )
@@ -144,7 +141,12 @@ void UniSetManager::initPOA( const std::weak_ptr<UniSetManager>& rmngr )
 		poa = m->getPOA();
 
 	if( CORBA::is_nil(poa) )
-		ucrit << myname << "(initPOA): failed init poa " << endl;
+	{
+		ostringstream err;
+		err << myname << "(initPOA): failed init poa ";
+		ucrit << err.str() << endl;
+		throw uniset::SystemError(err.str());
+	}
 
 	// Инициализация самого менеджера и его подобъектов
 	UniSetObject::init(rmngr);
@@ -588,43 +590,6 @@ bool UniSetManager::removeManager( const std::shared_ptr<UniSetManager>& child )
 	return true;
 }
 
-// ------------------------------------------------------------------------------------------
-#if 0
-const std::shared_ptr<UniSetManager> UniSetManager::itemM( const ObjectId id )
-{
-
-	{
-		//lock
-		uniset_rwmutex_rlock lock(mlistMutex);
-
-		for( const auto& li : mlist )
-		{
-			if ( li->getId() == id )
-				return li;
-		}
-	} // unlock
-
-	return nullptr; // std::shared_ptr<UniSetManager>();
-}
-
-// ------------------------------------------------------------------------------------------
-
-const std::shared_ptr<UniSetObject> UniSetManager::itemO( const ObjectId id )
-{
-	{
-		//lock
-		uniset_rwmutex_rlock lock(olistMutex);
-
-		for( const auto& li : olist )
-		{
-			if ( li->getId() == id )
-				return li;
-		}
-	} // unlock
-
-	return nullptr; // std::shared_ptr<UniSetObject>();
-}
-#endif
 // ------------------------------------------------------------------------------------------
 
 int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, SimpleInfoSeq* seq,

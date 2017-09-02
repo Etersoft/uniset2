@@ -829,7 +829,8 @@ void IONotifyController::readDump()
 		// и безопаснее "вылететь", чем запустится, т.к. часть датчиков не будет работать
 		// как ожидается.
 		ucrit << myname << "(IONotifyController::readDump): " << ex.what() << endl;
-		std::terminate(); // std::abort();
+		//std::terminate(); // std::abort();
+		uterminate();
 	}
 }
 // --------------------------------------------------------------------------------------------------------------

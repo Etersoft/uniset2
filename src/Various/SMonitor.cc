@@ -70,13 +70,15 @@ void SMonitor::sysCommand( const SystemMessage* sm )
 				{
 					cerr << myname << ":(askSensor): " << ex << endl;
 					//					raise(SIGTERM);
-					std::terminate();
+					//std::terminate();
+					uterminate();
 				}
 				catch(...)
 				{
 					cerr << myname << ": НЕ СМОГ ЗАКАЗТЬ датчики " << endl;
 					//					raise(SIGTERM);
-					std::terminate();
+					//std::terminate();
+					uterminate();
 				}
 			}
 		}

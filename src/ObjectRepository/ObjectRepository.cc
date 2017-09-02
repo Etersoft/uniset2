@@ -103,7 +103,7 @@ throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
 	}
 
 	// Проверка корректности имени
-	char bad = ORepHelpers::checkBadSymbols(name);
+	char bad = uniset::checkBadSymbols(name);
 
 	if( bad != 0 )
 	{
@@ -452,7 +452,7 @@ bool ObjectRepository::isExist( const ObjectPtr& oref ) const
 bool ObjectRepository::createSection(const string& name, const string& in_section) const
 throw(ORepFailed, InvalidObjectName)
 {
-	char bad = ORepHelpers::checkBadSymbols(name);
+	char bad = uniset::checkBadSymbols(name);
 
 	if (bad != 0)
 	{

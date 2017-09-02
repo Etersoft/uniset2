@@ -330,7 +330,11 @@ void RRDServer::askSensors( UniversalIO::UIOCommand cmd )
 	UObject_SK::askSensors(cmd);
 
 	// прежде чем заказывать датчики, надо убедиться что SM доступна
-	waitSM(smReadyTimeout);
+	if( !waitSM(smReadyTimeout) )
+	{
+		uterminate();
+		return;
+	}
 
 	for( const auto& it : rrdlist )
 	{

@@ -109,7 +109,7 @@ uniset_rwmutex_wrlock::~uniset_rwmutex_wrlock()
 	//catch( Poco::SystemException& ex )
 	catch( std::exception& ex )
 	{
-		std::terminate();
+		std::abort();
 	}
 }
 // -------------------------------------------------------------------------------------------
@@ -127,7 +127,7 @@ uniset_rwmutex_rlock::~uniset_rwmutex_rlock()
 	}
 	catch( std::exception& ex )
 	{
-		std::terminate();
+		std::abort();
 	}
 }
 // -----------------------------------------------------------------------------

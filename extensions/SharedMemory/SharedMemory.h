@@ -487,8 +487,9 @@ namespace uniset
 			typedef std::list<HeartBeatInfo> HeartBeatList;
 			HeartBeatList hblist; // список датчиков "сердцебиения"
 			std::shared_ptr<WDTInterface> wdt;
-			std::atomic_bool activated;
-			std::atomic_bool workready;
+			std::atomic_bool activated = { false };
+			std::atomic_bool workready = { false };
+			std::atomic_bool cancelled = { false };
 
 			typedef std::list<uniset::ObjectId> EventList;
 			EventList elst;

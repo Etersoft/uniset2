@@ -82,19 +82,12 @@ MBTCPMaster::MBTCPMaster(uniset::ObjectId objId, uniset::ObjectId shmId,
 // -----------------------------------------------------------------------------
 MBTCPMaster::~MBTCPMaster()
 {
-	if( pollThread )
+	if( pollThread && !canceled )
 	{
-		try
-		{
-			pollThread->stop();
+		canceled = true;
 
-			if( pollThread->isRunning() )
-				pollThread->join();
-		}
-		catch( Poco::NullPointerException& ex )
-		{
-
-		}
+		if( pollThread->isRunning() )
+			pollThread->join();
 	}
 }
 // -----------------------------------------------------------------------------
@@ -149,15 +142,19 @@ void MBTCPMaster::sysCommand( const uniset::SystemMessage* sm )
 void MBTCPMaster::final_thread()
 {
 	setProcActive(false);
+	canceled = true;
 }
 // -----------------------------------------------------------------------------
 void MBTCPMaster::poll_thread()
 {
 	// ждём начала работы..(см. MBExchange::activateObject)
-	while( !isProcActive() )
+	while( !isProcActive() && !canceled )
 	{
 		uniset::uniset_rwmutex_rlock l(mutex_start);
 	}
+
+	//	if( canceled )
+	//		return;
 
 	// работаем
 	while( isProcActive() )
@@ -187,18 +184,20 @@ void MBTCPMaster::poll_thread()
 
 		msleep(polltime);
 	}
+
+	dinfo << myname << "(poll_thread): thread finished.." << endl;
 }
 // -----------------------------------------------------------------------------
 bool MBTCPMaster::deactivateObject()
 {
 	setProcActive(false);
+	canceled = true;
 
 	if( pollThread )
 	{
-		pollThread->stop();
-
 		if( pollThread->isRunning() )
 			pollThread->join();
+
 	}
 
 	return MBExchange::deactivateObject();

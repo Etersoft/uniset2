@@ -145,7 +145,7 @@ UniExchange::~UniExchange()
 // -----------------------------------------------------------------------------
 void UniExchange::execute()
 {
-	if( !shm->waitSMreadyWithCancellation(smReadyTimeout, canncelled, 50) )
+	if( !shm->waitSMreadyWithCancellation(smReadyTimeout, cancelled, 50) )
 	{
 		ostringstream err;
 		err << myname << "(execute): Не дождались готовности SharedMemory к работе в течение "
@@ -153,7 +153,9 @@ void UniExchange::execute()
 
 		ucrit << err.str() << endl;
 		//throw SystemError(err.str());
-		std::terminate();
+		//std::terminate();
+		uterminate();
+		return;
 	}
 
 	PassiveTimer pt(UniSetTimer::WaitUpTime);
@@ -169,10 +171,13 @@ void UniExchange::execute()
 	initIterators();
 	init_ok = true;
 
-	while(1)
+	while( !cancelled )
 	{
 		for( auto& it : nlst )
 		{
+			if( cancelled )
+				break;
+
 			bool ok = false;
 
 			try
@@ -330,7 +335,7 @@ void UniExchange::askSensors( UniversalIO::UIOCommand cmd )
 // -----------------------------------------------------------------------------
 bool UniExchange::deactivateObject()
 {
-	canncelled = true;
+	cancelled = true;
 	return IOController::deactivateObject();
 }
 // -----------------------------------------------------------------------------

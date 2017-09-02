@@ -475,7 +475,7 @@ void UNetExchange::startReceivers()
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetExchange::waitSMReady()
+bool UNetExchange::waitSMReady()
 {
 	// waiting for SM is ready...
 	int tout = uniset_conf()->getArgPInt("--unet-sm-ready-timeout", "", uniset_conf()->getNCReadyTimeout());
@@ -487,16 +487,19 @@ void UNetExchange::waitSMReady()
 	else if( tout < 0 )
 		ready_timeout = UniSetTimer::WaitUpTime;
 
-	if( !shm->waitSMreadyWithCancellation(ready_timeout, cannceled, 50) )
+	if( !shm->waitSMreadyWithCancellation(ready_timeout, cancelled, 50) )
 	{
-		if( !cannceled )
+		if( !cancelled )
 		{
 			ostringstream err;
 			err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
 			unetcrit << err.str() << endl;
-			std::terminate();
 		}
+
+		return false;
 	}
+
+	return true;
 }
 // -----------------------------------------------------------------------------
 void UNetExchange::timerInfo( const TimerMessage* tm )
@@ -612,14 +615,23 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
 				}
 			}
 
-			waitSMReady();
+			if( !waitSMReady() )
+			{
+				if( !cancelled )
+				{
+					//					std::terminate();
+					uterminate();
+				}
+
+				return;
+			}
 
 			// подождать пока пройдёт инициализация датчиков
 			// см. activateObject()
 			msleep(initPause);
 			PassiveTimer ptAct(activateTimeout);
 
-			while( !activated && !ptAct.checkTime() )
+			while( !cancelled && !activated && !ptAct.checkTime() )
 			{
 				cout << myname << "(sysCommand): wait activate..." << endl;
 				msleep(300);
@@ -627,6 +639,9 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
 				if( activated )
 					break;
 			}
+
+			if( cancelled )
+				return;
 
 			if( !activated )
 				unetcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
@@ -736,7 +751,8 @@ bool UNetExchange::activateObject()
 // ------------------------------------------------------------------------------------------
 bool UNetExchange::deactivateObject()
 {
-	cannceled = true;
+	cancelled = true;
+
 	if( activated )
 	{
 		unetinfo << myname << "(deactivateObject): disactivate.." << endl;

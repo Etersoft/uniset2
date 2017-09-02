@@ -293,7 +293,7 @@
 <xsl:if test="normalize-space($TESTMODE)!=''">
 		bool checkTestMode() const noexcept;
 </xsl:if>
-		void waitSM( int wait_msec, uniset::ObjectId testID = uniset::DefaultObjectId );
+		bool waitSM( int wait_msec, uniset::ObjectId testID = uniset::DefaultObjectId );
 		uniset::ObjectId getSMTestID() const;
 
 		void resetMsg();
@@ -505,7 +505,13 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 			}
 
 			ostate = "StartUp: wait sm ready..";
-			waitSM(smReadyTimeout);
+			if( !waitSM(smReadyTimeout) )
+			{
+				if( !cancelled )
+					uterminate();
+				return;
+			}
+
 			ptStartUpTimeout.reset();
 			// т.к. для io-переменных важно соблюдать последовательность!
 			// сперва обновить входы..
@@ -826,7 +832,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preTimerInfo( const uniset::TimerMe
 	timerInfo(_tm);
 }
 // ----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _testID )
+bool <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _testID )
 {
 <xsl:if test="normalize-space($TESTMODE)!=''">
 	if( _testID == DefaultObjectId )
@@ -837,7 +843,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 		_testID = smTestID;
 
 	if( _testID == DefaultObjectId )
-		return;
+		return true;
 		
 	myinfo &lt;&lt; myname &lt;&lt; "(waitSM): waiting SM ready "
 			&lt;&lt; wait_msec &lt;&lt; " msec"
@@ -852,8 +858,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 			&lt;&lt; wait_msec &lt;&lt; " мсек";
 
         mycrit &lt;&lt; err.str() &lt;&lt; endl;
-		std::abort();
-//		throw uniset::SystemError(err.str());
+		return false;
 	}
 
 	if( !ui->waitWorking(_testID,wait_msec) )
@@ -864,9 +869,10 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 			&lt;&lt; wait_msec &lt;&lt; " мсек";
 	
 		mycrit &lt;&lt; err.str() &lt;&lt; endl;
-		std::abort();
-//		throw uniset::SystemError(err.str());
+		return false;
 	}
+
+	return true;
 }
 // ----------------------------------------------------------------------------
 std::string <xsl:value-of select="$CLASSNAME"/>_SK::help() const noexcept

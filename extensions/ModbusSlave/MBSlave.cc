@@ -537,7 +537,7 @@ namespace uniset
 		cancelled = true;
 	}
 	// -----------------------------------------------------------------------------
-	void MBSlave::waitSMReady()
+	bool MBSlave::waitSMReady()
 	{
 		// waiting for SM is ready...
 		int tout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "");
@@ -555,10 +555,12 @@ namespace uniset
 				ostringstream err;
 				err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
 				mbcrit << err.str() << endl;
-				//terminate();
-				std::terminate();
 			}
+
+			return false;
 		}
+
+		return true;
 	}
 	// -----------------------------------------------------------------------------
 	void MBSlave::execute_rtu()
@@ -571,15 +573,18 @@ namespace uniset
 		{
 			std::unique_lock<std::mutex> locker(mutexStartNotify);
 
-			while( !activated )
+			while( !activated && !cancelled )
 				startNotifyEvent.wait(locker);
+
+			if( cancelled )
+				return;
 		}
 
 		if( vaddr.empty() )
 		{
 			mbcrit << "(execute_rtu): Unknown my modbus addresses!" << endl;
-			//raise(SIGTERM);
-			std::terminate();
+			//std::terminate();
+			uterminate();
 			return;
 		}
 
@@ -618,8 +623,8 @@ namespace uniset
 		if( !tcpserver )
 		{
 			mbcrit << myname << "(execute_tcp): DYNAMIC CAST ERROR (mbslot --> ModbusTCPServerSlot)" << std::endl;
-			//raise(SIGTERM);
-			std::terminate();
+			//			std::terminate();
+			uterminate();
 			return;
 		}
 
@@ -641,8 +646,8 @@ namespace uniset
 		if( vaddr.empty() )
 		{
 			mbcrit << "(execute_tcp): Unknown my modbus addresses!" << endl;
-			//raise(SIGTERM);
-			std::terminate();
+			//			std::terminate();
+			uterminate();
 			return;
 		}
 
@@ -682,7 +687,8 @@ namespace uniset
 					mbcrit << myname << "(execute_tcp): error run tcpserver: "
 						   << tcpserver->getInetAddress()
 						   << ":" << tcpserver->getInetPort() << " err: not active.." << endl;
-					std::terminate();
+					//					std::terminate();
+					uterminate();
 					return;
 				}
 			}
@@ -942,8 +948,8 @@ namespace uniset
 				if( iomap.empty() )
 				{
 					mbcrit << myname << "(sysCommand): iomap EMPTY! terminated..." << endl;
-					// raise(SIGTERM);
-					std::terminate();
+					//					std::terminate();
+					uterminate();
 					return;
 				}
 
@@ -953,14 +959,20 @@ namespace uniset
 					logserv->async_run(logserv_host, logserv_port);
 				}
 
-				waitSMReady();
+				if( !waitSMReady() )
+				{
+					if( !cancelled )
+						uterminate();
+
+					return;
+				}
 
 				// подождать пока пройдёт инициализация датчиков
 				// см. activateObject()
 				msleep(initPause);
 				PassiveTimer ptAct(activateTimeout);
 
-				while( !activated && !ptAct.checkTime() )
+				while( !cancelled && !activated && !ptAct.checkTime() )
 				{
 					cout << myname << "(sysCommand): wait activate..." << endl;
 					msleep(300);
@@ -968,6 +980,9 @@ namespace uniset
 					if( activated )
 						break;
 				}
+
+				if( cancelled )
+					return;
 
 				if( !activated )
 				{
@@ -1170,12 +1185,18 @@ namespace uniset
 			{
 				if( mbslot )
 					mbslot->terminate();
+
+				if( thr )
+					thr->join();
 			}
 			catch( std::exception& ex)
 			{
 				mbwarn << myname << "(deactivateObject): " << ex.what() << endl;
 			}
 		}
+
+		if( logserv && logserv->isRunning() )
+			logserv->terminate();
 
 		return UniSetObject::deactivateObject();
 	}
@@ -1527,7 +1548,6 @@ namespace uniset
 		cout << "--prefix-filter-value val  - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
 		cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
 		cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-		cout << "--prefix-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
 		cout << "--prefix-initPause         - Задержка перед инициализацией (время на активизация процесса)" << endl;
 		cout << "--prefix-force 1           - Читать данные из SM каждый раз, а не по изменению." << endl;
 		cout << "--prefix-respond-id - respond sensor id" << endl;

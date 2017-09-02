@@ -2376,7 +2376,7 @@ namespace uniset
 	bool UInterface::waitReady( const uniset::ObjectId id, int msec, int pmsec, const uniset::ObjectId node ) noexcept
 	{
 		std::atomic_bool cancelFlag = { false };
-		return waitReadyWithCancellation(id,msec,cancelFlag,pmsec,node);
+		return waitReadyWithCancellation(id, msec, cancelFlag, pmsec, node);
 	}
 	// -----------------------------------------------------------------------------
 	bool UInterface::waitWorking( const uniset::ObjectId id, int msec, int pmsec, const uniset::ObjectId node ) noexcept
@@ -2407,7 +2407,7 @@ namespace uniset
 	}
 	// -----------------------------------------------------------------------------
 	bool UInterface::waitReadyWithCancellation(const ObjectId id, int msec,
-											   std::atomic_bool& cancelFlag, int pmsec, const ObjectId node) noexcept
+			std::atomic_bool& cancelFlag, int pmsec, const ObjectId node) noexcept
 	{
 		if( msec < 0 )
 			msec = 0;

@@ -626,3 +626,32 @@ timespec uniset::now_to_timespec()
 	return to_timespec(d);
 }
 // -------------------------------------------------------------------------
+char uniset::checkBadSymbols( const string& str )
+{
+	for ( const auto& c: str )
+	{
+		for( size_t k = 0; k < sizeof(BadSymbols); k++ )
+		{
+			if ( c == BadSymbols[k] )
+				return (char)BadSymbols[k];
+		}
+	}
+
+	return 0;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+string uniset::BadSymbolsToStr()
+{
+	string bad = "";
+
+	for( size_t i = 0; i < sizeof(BadSymbols); i++ )
+	{
+		bad += "'" +
+		bad += BadSymbols[i];
+		bad += "', ";
+	}
+
+	return bad;
+}
+// ---------------------------------------------------------------------------------------------------------------
