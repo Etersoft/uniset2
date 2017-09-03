@@ -52,7 +52,7 @@ namespace uniset
 
 			bool isConnection() const;
 
-			void setReadCount( unsigned int n );
+			void setReadCount( size_t n );
 			void setCommandOnlyMode( bool s );
 
 			void setinTimeout( timeout_t msec );

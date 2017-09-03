@@ -152,7 +152,9 @@ namespace uniset
 		}
 		catch( ... )
 		{
-			cerr << "(EventLoopServer::defaultLoop): UNKNOWN EXCEPTION.." << endl;
+			std::exception_ptr p = std::current_exception();
+			cerr << "(EventLoopServer::defaultLoop): error: "
+				 << (p ? p.__cxa_exception_type()->name() : "null") << endl;
 		}
 
 		{

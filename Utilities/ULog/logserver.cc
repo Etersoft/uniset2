@@ -31,7 +31,7 @@ static void print_help()
 	//    printf("[-t|--timeout] msec  - Timeout. Default: 2000.\n");
 	printf("[-v|--verbose]      - Print all messages to stdout\n");
 	printf("[-i|--iaddr] addr   - Inet address for listen connections.\n");
-	printf("[-p|--port] port    - Bind port.\n");
+	printf("[-p|--port] port    - Bind port. Default: 3333\n");
 	printf("[-d|--delay] msec   - Delay for generate message. Default 5000.\n");
 	printf("[-m|--max-sessions] num - Maximum count sessions for server. Default: 5\n");
 	printf("[-s|--silent]       - Silent mode. Not write logs..\n");

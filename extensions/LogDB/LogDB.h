@@ -23,10 +23,14 @@
 // --------------------------------------------------------------------------
 #include <queue>
 #include <memory>
+#include <ev++.h>
+#include <sigc++/sigc++.h>
 #include "UniSetTypes.h"
 #include "LogAgregator.h"
 #include "DebugStream.h"
 #include "SQLiteInterface.h"
+#include "EventLoopServer.h"
+#include "UTCPStream.h"
 #include "LogReader.h"
 // -------------------------------------------------------------------------
 namespace uniset
@@ -56,8 +60,11 @@ namespace uniset
 
 
 		\section sec_LogDB_REST LogDB REST API
+
+		\todo Продумать поддержку websocket
 	*/
-	class LogDB
+	class LogDB:
+		public EventLoopServer
 	{
 		public:
 			LogDB( const std::string& name, const std::string& prefix = "" );
@@ -78,6 +85,10 @@ namespace uniset
 
 		protected:
 
+			virtual void evfinish() override;
+			virtual void evprepare() override;
+			void onTimer( ev::timer& t, int revents );
+
 			std::string myname;
 			std::unique_ptr<SQLiteInterface> db;
 
@@ -92,15 +103,43 @@ namespace uniset
 
 			std::shared_ptr<DebugStream> dblog;
 
-			struct Log
+			class Log
 			{
+				public:
 				std::string name;
 				std::string ip;
 				int port = { 0 };
 				std::string cmd;
+				std::shared_ptr<DebugStream> dblog;
+
+				bool connect() noexcept;
+				bool isConnected() const;
+				void ioprepare( ev::dynamic_loop& loop );
+				void read();
+				void write();
+				void event( ev::io& watcher, int revents );
+
+				typedef sigc::signal<void, Log*, const std::string&> ReadSignal;
+				ReadSignal signal_on_read();
+
+				private:
+				   ReadSignal sigRead;
+				   ev::io io;
+				   std::shared_ptr<UTCPStream> tcp;
+				   static const int bufsize = { 10001 };
+				   char buf[bufsize];
+
+				   static const size_t reservsize = { 1000 };
+				   std::string text;
 			};
 
-			std::vector<Log> logservers;
+			void onRead(Log* log, const std::string& txt );
+
+			std::vector< std::shared_ptr<Log> > logservers;
+
+			ev::timer connectionTimer;
+			timeout_t tmConnection_msec = { 5000 }; // пауза между попытками установить соединение
+			double tmConnection_sec = { 0.0 };
 
 		private:
 	};

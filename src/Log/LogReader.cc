@@ -102,7 +102,7 @@ void LogReader::connect( const std::string& _addr, int _port, timeout_t msec )
 		if( rlog.debugging(Debug::CRIT) )
 		{
 			ostringstream s;
-			s << "(LogReader): connection " << s.str() << " error: " << e.what();
+			s << "(LogReader): connection " << iaddr << ":" << port << " error: " << e.what();
 			rlog.crit() << s.str() << std::endl;
 		}
 	}
@@ -111,7 +111,7 @@ void LogReader::connect( const std::string& _addr, int _port, timeout_t msec )
 		if( rlog.debugging(Debug::CRIT) )
 		{
 			ostringstream s;
-			s << "(LogReader): connection " << s.str() << " error: " << e.what();
+			s << "(LogReader): connection " << iaddr << ":" << port << " error: " << e.what();
 			rlog.crit() << s.str() << std::endl;
 		}
 	}
@@ -120,7 +120,7 @@ void LogReader::connect( const std::string& _addr, int _port, timeout_t msec )
 		if( rlog.debugging(Debug::CRIT) )
 		{
 			ostringstream s;
-			s << "(LogReader): connection " << s.str() << " error: catch ...";
+			s << "(LogReader): connection " << iaddr << ":" << port << " error: catch ...";
 			rlog.crit() << s.str() << std::endl;
 		}
 	}
@@ -153,7 +153,7 @@ bool LogReader::isConnection() const
 	return (tcp && tcp->isConnected() );
 }
 // -------------------------------------------------------------------------
-void LogReader::setReadCount(unsigned int n)
+void LogReader::setReadCount( size_t n )
 {
 	readcount = n;
 }
