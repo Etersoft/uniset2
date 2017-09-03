@@ -23,6 +23,7 @@
 // --------------------------------------------------------------------------
 #include <queue>
 #include <memory>
+#include <chrono>
 #include <ev++.h>
 #include <sigc++/sigc++.h>
 #include "UniSetTypes.h"
@@ -61,6 +62,8 @@ namespace uniset
 
 		\section sec_LogDB_REST LogDB REST API
 
+		\todo Добавить настройки таймаутов, размера буфера, размера для резервирования под строку,...
+		\todo Добавить ротацию БД
 		\todo Продумать поддержку websocket
 	*/
 	class LogDB:
@@ -85,9 +88,13 @@ namespace uniset
 
 		protected:
 
+			class Log;
+
 			virtual void evfinish() override;
 			virtual void evprepare() override;
 			void onTimer( ev::timer& t, int revents );
+			void onCheckBuffer( ev::timer& t, int revents );
+			void addLog( Log* log, const std::string& txt );
 
 			std::string myname;
 			std::unique_ptr<SQLiteInterface> db;
@@ -99,9 +106,6 @@ namespace uniset
 			size_t qbufSize = { 200 }; // размер буфера сообщений.
 
 			void flushBuffer();
-			uniset::uniset_rwmutex mqbuf;
-
-			std::shared_ptr<DebugStream> dblog;
 
 			class Log
 			{
@@ -133,13 +137,15 @@ namespace uniset
 				   std::string text;
 			};
 
-			void onRead(Log* log, const std::string& txt );
-
 			std::vector< std::shared_ptr<Log> > logservers;
+			std::shared_ptr<DebugStream> dblog;
 
 			ev::timer connectionTimer;
 			timeout_t tmConnection_msec = { 5000 }; // пауза между попытками установить соединение
 			double tmConnection_sec = { 0.0 };
+
+			ev::timer checkBufferTimer;
+			double tmCheckBuffer_sec = { 1.0 };
 
 		private:
 	};

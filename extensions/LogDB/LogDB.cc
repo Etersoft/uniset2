@@ -55,9 +55,11 @@ LogDB::LogDB( const string& name , const string& prefix ):
 	UniXML::iterator it(cnode);
 
 	qbufSize = conf->getArgPInt("--" + prefix + "-buffer-size", it.getProp("bufferSize"), qbufSize);
+
 	tmConnection_sec = tmConnection_msec / 1000.;
 
 	connectionTimer.set<LogDB, &LogDB::onTimer>(this);
+	checkBufferTimer.set<LogDB, &LogDB::onCheckBuffer>(this);
 
 	UniXML::iterator sit(cnode);
 	if( !sit.goChildren() )
@@ -111,7 +113,7 @@ LogDB::LogDB( const string& name , const string& prefix ):
 
 //		l->tcp = make_shared<UTCPStream>();
 		l->dblog = dblog;
-		l->signal_on_read().connect(sigc::mem_fun(this, &LogDB::onRead));
+		l->signal_on_read().connect(sigc::mem_fun(this, &LogDB::addLog));
 
 		logservers.push_back(l);
 	}
@@ -125,31 +127,25 @@ LogDB::LogDB( const string& name , const string& prefix ):
 	}
 
 
-	db = unisetstd::make_unique<SQLiteInterface>();
+	std::string dbfile = conf->getArgParam("--" + prefix + "-dbfile", it.getProp("dbfile"));
+	if( dbfile.empty() )
+	{
+		ostringstream err;
+		err << name << "(init): dbfile (sqlite) not defined. Use: <LogDB name='" << name << "' dbfile='..' ...>";
+		dbcrit << err.str() << endl;
+		throw uniset::SystemError(err.str());
+	}
 
-#if 0
+	db = unisetstd::make_unique<SQLiteInterface>();
 	if( !db->connect(dbfile, false) )
 	{
-		//        ostringstream err;
-		dbcrit << myname
+		ostringstream err;
+		err << myname
 			   << "(init): DB connection error: "
-			   << db->error() << endl;
-		//        throw Exception( string(myname+"(init): не смогли создать соединение с БД "+db->error()) );
-		askTimer(LogDB::ReconnectTimer, ReconnectTime);
+			   << db->error();
+		dbcrit << err.str() << endl;
+		throw uniset::SystemError(err.str());
 	}
-	else
-	{
-		dbinfo <<  myname << "(init): connect [OK]" << endl;
-		connect_ok = true;
-		askTimer(LogDB::ReconnectTimer, 0);
-		askTimer(LogDB::PingTimer, PingTime);
-		//        createTables(db);
-		initDB(db);
-		initDBTableMap(tblMap);
-		flushBuffer();
-	}
-#endif
-
 }
 //--------------------------------------------------------------------------------------------
 LogDB::~LogDB()
@@ -158,50 +154,8 @@ LogDB::~LogDB()
 		db->close();
 }
 //--------------------------------------------------------------------------------------------
-#if 0
-bool LogDB::writeToBase( const string& query )
-{
-	dbinfo <<  myname << "(writeToBase): " << query << endl;
-
-	//    cout << "LogDB: " << query << endl;
-	if( !db || !connect_ok )
-	{
-		uniset_rwmutex_wrlock l(mqbuf);
-		qbuf.push(query);
-
-		if( qbuf.size() > qbufSize )
-		{
-			std::string qlost;
-
-			if( lastRemove )
-				qlost = qbuf.back();
-			else
-				qlost = qbuf.front();
-
-			qbuf.pop();
-
-			dbcrit << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
-				   << ") overflow! lost query: " << qlost << endl;
-		}
-
-		return false;
-	}
-
-	// На всякий скидываем очередь
-	flushBuffer();
-
-	// А теперь собственно запрос..
-	if( db->insert(query) )
-		return true;
-
-	return false;
-}
-#endif
-//--------------------------------------------------------------------------------------------
 void LogDB::flushBuffer()
 {
-	uniset_rwmutex_wrlock l(mqbuf);
-
 	// Сперва пробуем очистить всё что накопилось в очереди до этого...
 	while( !qbuf.empty() )
 	{
@@ -215,9 +169,19 @@ void LogDB::flushBuffer()
 	}
 }
 //--------------------------------------------------------------------------------------------
-void LogDB::onRead( LogDB::Log* log, const string& txt )
+void LogDB::addLog( LogDB::Log* log, const string& txt )
 {
-	cout << txt << endl;
+	auto tm = uniset::now_to_timespec();
+
+	ostringstream q;
+
+	q << "INSERT INTO log(tms,usec,name,text) VALUES('"
+	  << tm.tv_sec << "','"   //  timestamp
+	  << tm.tv_nsec << "','"  //  usec
+	  << log->name << "','"
+	  << txt << "');";
+
+	qbuf.emplace(q.str());
 }
 //--------------------------------------------------------------------------------------------
 std::shared_ptr<LogDB> LogDB::init_logdb( int argc, const char* const* argv, const std::string& prefix )
@@ -253,39 +217,18 @@ void LogDB::run( bool async )
 void LogDB::evfinish()
 {
 	connectionTimer.stop();
+	checkBufferTimer.stop();
 }
 // -----------------------------------------------------------------------------
 void LogDB::evprepare()
 {
 	connectionTimer.set(loop);
+	checkBufferTimer.set(loop);
 
 	if( tmConnection_msec != UniSetTimer::WaitUpTime )
 		connectionTimer.start(0, tmConnection_sec);
 
-#if 0
-	try
-	{
-		sock = make_shared<UTCPSocket>(iaddr, port);
-	}
-	catch( const Poco::Net::NetException& ex )
-	{
-		ostringstream err;
-		err << "(ModbusTCPServer::evprepare): connect " << iaddr << ":" << port << " err: " << ex.what();
-		dlog->crit() << err.str() << endl;
-		throw uniset::SystemError(err.str());
-	}
-	catch( const std::exception& ex )
-	{
-		ostringstream err;
-		err << "(ModbusTCPServer::evprepare): connect " << iaddr << ":" << port << " err: " << ex.what();
-		dlog->crit() << err.str() << endl;
-		throw uniset::SystemError(err.str());
-	}
-
-	sock->setBlocking(false);
-	io.set(loop);
-	io.start(sock->getSocket(), ev::READ);
-#endif
+	checkBufferTimer.start(0, tmCheckBuffer_sec);
 }
 // -----------------------------------------------------------------------------
 void LogDB::onTimer( ev::timer& t, int revents )
@@ -305,6 +248,18 @@ void LogDB::onTimer( ev::timer& t, int revents )
 				s->ioprepare(loop);
 		}
 	}
+}
+// -----------------------------------------------------------------------------
+void LogDB::onCheckBuffer(ev::timer& t, int revents)
+{
+	if (EV_ERROR & revents)
+	{
+		dbcrit << myname << "(LogDB::onTimer): invalid event" << endl;
+		return;
+	}
+
+	if( qbuf.size() >= qbufSize )
+		flushBuffer();
 }
 // -----------------------------------------------------------------------------
 bool LogDB::Log::isConnected() const
