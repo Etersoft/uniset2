@@ -274,6 +274,9 @@ bool LogDB::Log::connect() noexcept
 
 //	dbinfo << name << "(connect): connect " << ip << ":" << port << "..." << endl;
 
+	if( peername.empty() )
+		peername = ip + ":" + std::to_string(port);
+
 	try
 	{
 		tcp = make_shared<UTCPStream>();
@@ -287,20 +290,20 @@ bool LogDB::Log::connect() noexcept
 	}
 	catch( const Poco::TimeoutException& e )
 	{
-		dbwarn << name << "(connect): connection " << ip << ":" << port << " timeout.." << endl;
+		dbwarn << name << "(connect): connection " << peername << " timeout.." << endl;
 	}
 	catch( const Poco::Net::NetException& e )
 	{
-		dbwarn << name << "(connect): connection " << ip << ":" << port << " error: " << e.what() << endl;
+		dbwarn << name << "(connect): connection " << peername << " error: " << e.what() << endl;
 	}
 	catch( const std::exception& e )
 	{
-		dbwarn << name << "(connect): connection " << ip << ":" << port << " error: " << e.what() << endl;
+		dbwarn << name << "(connect): connection " << peername << " error: " << e.what() << endl;
 	}
 	catch( ... )
 	{
 		std::exception_ptr p = std::current_exception();
-		dbwarn << name << "(connect): connection " << ip << ":" << port << " error: "
+		dbwarn << name << "(connect): connection " << peername << " error: "
 			 << (p ? p.__cxa_exception_type()->name() : "null") << endl;
 	}
 
@@ -319,6 +322,18 @@ void LogDB::Log::ioprepare( ev::dynamic_loop& loop )
 	io.set<LogDB::Log, &LogDB::Log::event>(this);
 	io.start(tcp->getSocket(), ev::READ);
 	text.reserve(reservsize);
+
+	// первый раз при подключении надо послать команды
+
+	//! \todo Пока закрываем глаза на не оптимальность, того, что парсим строку каждый раз
+	auto cmdlist = LogServerTypes::getCommands(cmd);
+	if( !cmdlist.empty() )
+	{
+		for( const auto& msg: cmdlist )
+			wbuf.emplace(new UTCPCore::Buffer((unsigned char*)&msg, sizeof(msg)));
+
+		io.set(ev::WRITE);
+	}
 }
 // -----------------------------------------------------------------------------
 void LogDB::Log::event( ev::io& watcher, int revents )
@@ -330,12 +345,10 @@ void LogDB::Log::event( ev::io& watcher, int revents )
 	}
 
 	if( revents & EV_READ )
-		read();
+		read(watcher);
 
 	if( revents & EV_WRITE )
-	{
-		dbinfo << name << "(event): ..write event.." << endl;
-	}
+		write(watcher);
 }
 // -----------------------------------------------------------------------------
 LogDB::Log::ReadSignal LogDB::Log::signal_on_read()
@@ -343,8 +356,11 @@ LogDB::Log::ReadSignal LogDB::Log::signal_on_read()
 	return sigRead;
 }
 // -----------------------------------------------------------------------------
-void LogDB::Log::read()
+void LogDB::Log::read( ev::io& watcher )
 {
+	if( !tcp )
+		return;
+
 	int n = tcp->available();
 
 	n = std::min(n,bufsize);
@@ -370,7 +386,6 @@ void LogDB::Log::read()
 	else if( n == 0 )
 	{
 		dbinfo << name << ": " << ip << ":" << port << " connection is closed.." << endl;
-		tcp->disconnect();
 		if( !text.empty() )
 		{
 			sigRead.emit(this,text);
@@ -378,11 +393,57 @@ void LogDB::Log::read()
 			if( text.capacity() < reservsize )
 				text.reserve(reservsize);
 		}
+		close();
 	}
 }
 // -----------------------------------------------------------------------------
-void LogDB::Log::write()
+void LogDB::Log::write( ev::io& io )
 {
+	UTCPCore::Buffer* buffer = 0;
+	if( wbuf.empty() )
+	{
+		io.set(EV_READ);
+		return;
+	}
 
+	buffer = wbuf.front();
+
+	if( !buffer )
+		return;
+
+	ssize_t ret = ::write(io.fd, buffer->dpos(), buffer->nbytes());
+
+	if( ret < 0 )
+	{
+		dbwarn << peername << "(write): write to socket error(" << errno << "): " << strerror(errno) << endl;
+
+		if( errno == EPIPE || errno == EBADF )
+		{
+			dbwarn << peername << "(write): write error.. terminate session.." << endl;
+			io.set(EV_NONE);
+			close();
+		}
+
+		return;
+	}
+
+	buffer->pos += ret;
+
+	if( buffer->nbytes() == 0 )
+	{
+		wbuf.pop();
+		delete buffer;
+	}
+
+	if( wbuf.empty() )
+		io.set(EV_READ);
+	else
+		io.set(EV_WRITE);
+}
+// -----------------------------------------------------------------------------
+void LogDB::Log::close()
+{
+	tcp->disconnect();
+	//tcp = nullptr;
 }
 // -----------------------------------------------------------------------------

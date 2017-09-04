@@ -33,6 +33,9 @@
 #include "EventLoopServer.h"
 #include "UTCPStream.h"
 #include "LogReader.h"
+#include "UHttpRequestHandler.h"
+#include "UHttpServer.h"
+#include "UTCPCore.h"
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -63,7 +66,9 @@ namespace uniset
 		\section sec_LogDB_REST LogDB REST API
 
 		\todo Добавить настройки таймаутов, размера буфера, размера для резервирования под строку,...
+		\todo Реализовать посылку команд
 		\todo Добавить ротацию БД
+		\todo REST API: продумать команды и реализовать
 		\todo Продумать поддержку websocket
 	*/
 	class LogDB:
@@ -114,14 +119,17 @@ namespace uniset
 				std::string ip;
 				int port = { 0 };
 				std::string cmd;
+				std::string peername;
+
 				std::shared_ptr<DebugStream> dblog;
 
 				bool connect() noexcept;
 				bool isConnected() const;
 				void ioprepare( ev::dynamic_loop& loop );
-				void read();
-				void write();
 				void event( ev::io& watcher, int revents );
+				void read( ev::io& watcher);
+				void write(ev::io& io );
+				void close();
 
 				typedef sigc::signal<void, Log*, const std::string&> ReadSignal;
 				ReadSignal signal_on_read();
@@ -135,6 +143,9 @@ namespace uniset
 
 				   static const size_t reservsize = { 1000 };
 				   std::string text;
+
+				   // буфер для посылаемых данных (write buffer)
+				   std::queue<UTCPCore::Buffer*> wbuf;
 			};
 
 			std::vector< std::shared_ptr<Log> > logservers;

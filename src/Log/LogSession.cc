@@ -396,7 +396,18 @@ namespace uniset
 		if( ret != sizeof(msg) || msg.magic != LogServerTypes::MAGICNUM )
 		{
 			if( mylog.is_warn() )
-				mylog.warn() << peername << "(LogSession::readEvent): BAD MESSAGE..." << endl;
+			{
+				ostringstream err;
+				err << peername << "(LogSession::readEvent): MESSAGE ERROR: ";
+
+				if( msg.magic != LogServerTypes::MAGICNUM )
+					err << "BAD MAGICNUM";
+
+				if( ret != sizeof(msg) )
+					err << "BAD soze of message (" << ret << ")";
+
+				mylog.warn() << err.str() << endl;
+			}
 
 			return;
 		}

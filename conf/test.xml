@@ -38,10 +38,10 @@
 	</UniSet>
 	<dlog name="dlog"/>
 	<LogServer name="smplus" port="3333" host="localhost" />
-	
+
 	<LogDB name="LogDB">
-		<logserver name="logserver1" ip="localhost" port="3333" cmd=""/>
-		<logserver name="logserver2" ip="localhost" port="3333" cmd=""/>
+		<logserver name="logserver1" ip="localhost" port="3333" cmd="-s level1"/>
+		<!-- <logserver name="logserver2" ip="localhost" port="3333" cmd=""/> -->
 	</LogDB>
 
 	<settings>

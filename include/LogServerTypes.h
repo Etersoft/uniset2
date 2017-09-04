@@ -19,6 +19,7 @@
 // -------------------------------------------------------------------------
 #include <ostream>
 #include <cstring>
+#include <vector>
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -56,6 +57,12 @@ namespace uniset
 				std::memset(logname, 0, sizeof(logname));
 			}
 
+			explicit lsMessage( Command c, uint d, const std::string& logname ):
+				magic(MAGICNUM),cmd(c),data(d)
+			{
+				setLogName(logname);
+			}
+
 			uint magic;
 			Command cmd;
 			uint data;
@@ -70,7 +77,22 @@ namespace uniset
 			// char logfile[MAXLOGFILENAME];
 		} __attribute__((packed));
 
-		std::ostream& operator<<(std::ostream& os, lsMessage& m );
+		std::ostream& operator<<(std::ostream& os, const lsMessage& m );
+
+		/*! Разбор строки на команды:
+		 *
+		 * [-a | --add] info,warn,crit,... [logfilter] - Add log levels.
+		 * [-d | --del] info,warn,crit,... [logfilter] - Delete log levels.
+		 * [-s | --set] info,warn,crit,... [logfilter] - Set log levels.
+		 * [-o | --off] [logfilter]                    - Off the write log file (if enabled).
+		 * [-e | --on] [logfilter]                     - On(enable) the write log file (if before disabled).
+		 * [-r | --rotate] [logfilter]                 - rotate log file.
+		 * [-u | --save-loglevels] [logfilter]         - save log levels (disable restore after disconnected).
+		 * [-y | --restore-loglevels] [logfilter]      - restore default log levels.
+		 *
+		 * 'logfilter' - regexp for name of log. Default: ALL logs
+		 */
+		std::vector<lsMessage> getCommands( const std::string& cmd );
 	}
 	// -------------------------------------------------------------------------
 } // end of uniset namespace
