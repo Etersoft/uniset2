@@ -57,6 +57,7 @@ namespace uniset
 					object( const std::string& name, Poco::JSON::Object::Ptr ptr );
 
 					void add( item& i );
+					void emplace( item&& i );
 
 					Poco::JSON::Object::Ptr get();
 

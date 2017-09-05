@@ -23,6 +23,7 @@
 
 #include "unisetstd.h"
 #include <Poco/Net/NetException.h>
+#include "ujson.h"
 #include "LogDB.h"
 #include "Configuration.h"
 #include "Debug.h"
@@ -104,14 +105,6 @@ LogDB::LogDB( const string& name , const string& prefix ):
 			dbcrit << err.str() << endl;
 			throw uniset::SystemError(err.str());
 		}
-
-		//		if( l->cmd.empty() )
-		//		{
-		//			ostringstream err;
-		//			err << name << "(init): Unknown 'cmd' for '" << l->name << "'..";
-		//			dbcrit << err.str() << endl;
-		//			throw uniset::SystemError(err.str());
-		//		}
 
 		//		l->tcp = make_shared<UTCPStream>();
 		l->dblog = dblog;
@@ -562,12 +555,22 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
 
 		if( cmd == "help" )
 		{
-			out << "{ \"help\": ["
-				"{\"help\": {\"desc\": \"this help\"}},"
-				"{\"list\": {\"desc\": \"list of logs\"}},"
-				"{\"read?logname&offset=N&limit=M\": {\"desc\": \"read logs\"}},"
-				"{\"apidocs\": {\"desc\": \"https://github.com/Etersoft/uniset2\"}}"
-				"]}";
+			using uniset::json::help::item;
+			uniset::json::help::object myhelp("help");
+			myhelp.emplace(item("help", "this help"));
+			myhelp.emplace(item("list", "list of logs"));
+			myhelp.emplace(item("count?logname", "count of logs for logname"));
+
+			item l("logs", "read logs");
+			l.param("from='YYYY-MM-DD'", "From date");
+			l.param("to='YYYY-MM-DD'", "To date");
+			l.param("last=XX[m|h|d|M]", "Last records (m - minute, h - hour, d - day, M - month)");
+			l.param("offset=N", "offset");
+			l.param("limit=M", "limit records for response");
+			myhelp.add(l);
+
+			myhelp.emplace(item("apidocs", "https://github.com/Etersoft/uniset2"));
+			myhelp.get()->stringify(out);
 		}
 		else
 		{
@@ -676,17 +679,19 @@ Poco::JSON::Object::Ptr LogDB::httpGetLogs( const Poco::URI::QueryParameters& pa
 {
 	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
 
-	std::string logname = params[0].first;
-
-	if( logname.empty() )
+	if( params.empty() || params[0].first.empty() )
 	{
 		ostringstream err;
 		err << "BAD REQUEST: unknown logname";
 		throw uniset::SystemError(err.str());
 	}
 
+	std::string logname = params[0].first;
+
 	size_t offset = 0;
 	size_t limit = 0;
+
+	vector<std::string> q_where;
 
 	for( const auto& p : params )
 	{
@@ -694,6 +699,12 @@ Poco::JSON::Object::Ptr LogDB::httpGetLogs( const Poco::URI::QueryParameters& pa
 			offset = uni_atoi(p.second);
 		else if( p.first == "limit" )
 			limit = uni_atoi(p.second);
+		else if( p.first == "from" )
+			q_where.push_back("tms>='" + p.second + "'");
+		else if( p.first == "to" )
+			q_where.push_back("tms<='" + p.second + "'");
+		else if( p.first == "last" )
+			q_where.push_back(qLast(p.second));
 	}
 
 	Poco::JSON::Array::Ptr jlist = uniset::json::make_child_array(jdata, "logs");
@@ -704,6 +715,12 @@ Poco::JSON::Object::Ptr LogDB::httpGetLogs( const Poco::URI::QueryParameters& pa
 	  << " strftime('%d-%m-%Y',datetime(tms,'unixepoch')) as date,"
 	  << " strftime('%H:%M:%S',datetime(tms,'unixepoch')) as time,"
 	  << " usec, text FROM logs WHERE name='" << logname << "'";
+
+	if( !q_where.empty() )
+	{
+		for( const auto& w : q_where )
+			q << " AND " << w;
+	}
 
 	if( limit > 0 )
 		q << " ORDER BY tms ASC LIMIT " << offset << "," << limit;
@@ -758,6 +775,46 @@ Poco::JSON::Object::Ptr LogDB::httpGetCount( const Poco::URI::QueryParameters& p
 	jdata->set("name", logname);
 	jdata->set("count", it.as_int(0));
 	return jdata;
+}
+// -----------------------------------------------------------------------------
+string LogDB::qLast( const string& p )
+{
+	if( p.empty() )
+		return "";
+
+	char unit =  p[p.size() - 1];
+	std::string sval = p.substr(0, p.size() - 1);
+
+	if( unit == 'h' || unit == 'H' )
+	{
+		size_t h = uni_atoi(sval);
+		ostringstream q;
+		q << "tms >= strftime('%s',datetime('now')) - " << h << "*60*60";
+		return q.str();
+	}
+	else if( unit == 'd' || unit == 'D' )
+	{
+		size_t d = uni_atoi(sval);
+		ostringstream q;
+		q << "tms >= strftime('%s',datetime('now')) - " << d << "*24*60*60";
+		return q.str();
+	}
+	else if( unit == 'M' )
+	{
+		size_t m = uni_atoi(sval);
+		ostringstream q;
+		q << "tms >= strftime('%s',datetime('now')) - " << m << "*30*24*60*60";
+		return q.str();
+	}
+	else // по умолчанию минут
+	{
+		size_t m = (unit == 'm') ? uni_atoi(sval) : uni_atoi(p);
+		ostringstream q;
+		q << "tms >= strftime('%s',datetime('now')) - " << m << "*60";
+		return q.str();
+	}
+
+	return "";
 }
 // -----------------------------------------------------------------------------
 #endif

@@ -73,25 +73,29 @@ namespace uniset
 		http-сервер. Параметры запуска можно указать при помощи:
 		--prefix-httpserver-host и --prefix-httpserver-port.
 
-		Запросы принимаются по: api/version/logdb/...
+		Запросы обрабатываются по пути: api/version/logdb/...
 
 		/help                            - Получение списка доступных команд
 		/list                            - список доступных логов
-		/logs?logname&offset=N&limit=M   - получение логов 'logname'
-										   Не обязательные параметры:
-										   offset  - начиная с,
-										   limit   - количество в ответе.
+		/logs?logname&..parameters..     - получение логов 'logname'
+			  Не обязательные параметры:
+				  offset=N               - начиная с N-ой записи,
+				  limit=M                - количество в ответе.
+				  from='YYYY-MM-DD'      - 'с' указанной даты
+				  to='YYYY-MM-DD'        - 'по' указанную дату
+				  last=XX[m|h|d|M]       - за последние XX m-минут, h-часов, d-дней, M-месяцев
+										   По умолчанию: минут
 
 		/count?logname                   - Получить текущее количество записей
 
 
 		\todo Добавить настройки таймаутов, размера буфера, размера для резервирования под строку, количество потоков для http и т.п.
 		\todo Добавить ротацию БД
-		\todo REST API: продумать команды и реализовать
 		\todo Сделать настройку, для формата даты и времени при выгрузке из БД (при формировании json).
 		\todo Возможно в /logs стоит в ответе сразу возвращать и общее количество в БД (это один лишний запрос, каждый раз).
-		\todo Продумать поддержку websocket
+		\todo Встроить поддержку websocket
 		\todo Возможно в последствии оптимизировать таблицы (нормализовать) если будет тормозить. Сейчас пока прототип.
+		\todo Пока не очень эффективная работа с датой и временем (заодно подумать всё-таки в чём хранить)
 	*/
 	class LogDB:
 		public EventLoopServer
@@ -136,6 +140,10 @@ namespace uniset
 			Poco::JSON::Object::Ptr httpGetList( const Poco::URI::QueryParameters& p );
 			Poco::JSON::Object::Ptr httpGetLogs( const Poco::URI::QueryParameters& p );
 			Poco::JSON::Object::Ptr httpGetCount( const Poco::URI::QueryParameters& p );
+
+			// формирование условия where для строки XX[m|h|d|M]
+			// XX m - минут, h-часов, d-дней, M - месяцев
+			static std::string qLast( const std::string& p );
 #endif
 			std::string myname;
 			std::unique_ptr<SQLiteInterface> db;

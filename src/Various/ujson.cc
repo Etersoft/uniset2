@@ -92,9 +92,14 @@ namespace uniset
 		}
 	}
 	// --------------------------------------------------------------------------
-	void json::help::object::add(json::help::item& i)
+	void json::help::object::add( json::help::item& i)
 	{
 		cmdlist->add(i);
+	}
+	// --------------------------------------------------------------------------
+	void json::help::object::emplace( json::help::item&& i )
+	{
+		cmdlist->add( std::move(i) );
 	}
 	// --------------------------------------------------------------------------
 	Poco::JSON::Object::Ptr json::help::object::get()
