@@ -605,6 +605,9 @@ Poco::JSON::Object::Ptr LogDB::httpGetRequest( const string& cmd, const Poco::UR
 	if( cmd == "logs" )
 		return httpGetLogs(p);
 
+	if( cmd == "count" )
+		return httpGetCount(p);
+
 	ostringstream err;
 	err << "Unknown command '" << cmd << "'";
 	throw uniset::SystemError(err.str());
@@ -721,6 +724,39 @@ Poco::JSON::Object::Ptr LogDB::httpGetLogs( const Poco::URI::QueryParameters& pa
 		jlist->add(j);
 	}
 
+	return jdata;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr LogDB::httpGetCount( const Poco::URI::QueryParameters& params )
+{
+	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+
+	std::string logname = params[0].first;
+
+	if( logname.empty() )
+	{
+		ostringstream err;
+		err << "BAD REQUEST: unknown logname";
+		throw uniset::SystemError(err.str());
+	}
+
+	ostringstream q;
+
+	q << "SELECT count(*) FROM logs WHERE name='" << logname << "'";
+
+	DBResult ret = db->query(q.str());
+
+	if( !ret )
+	{
+		jdata->set("name", logname);
+		jdata->set("count", 0);
+		return jdata;
+	}
+
+	auto it = ret.begin();
+
+	jdata->set("name", logname);
+	jdata->set("count", it.as_int(0));
 	return jdata;
 }
 // -----------------------------------------------------------------------------

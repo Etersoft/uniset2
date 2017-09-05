@@ -82,6 +82,7 @@ namespace uniset
 										   offset  - начиная с,
 										   limit   - количество в ответе.
 
+		/count?logname                   - Получить текущее количество записей
 
 
 		\todo Добавить настройки таймаутов, размера буфера, размера для резервирования под строку, количество потоков для http и т.п.
@@ -133,6 +134,7 @@ namespace uniset
 			Poco::JSON::Object::Ptr httpGetRequest( const std::string& cmd, const Poco::URI::QueryParameters& p );
 			Poco::JSON::Object::Ptr httpGetList( const Poco::URI::QueryParameters& p );
 			Poco::JSON::Object::Ptr httpGetLogs( const Poco::URI::QueryParameters& p );
+			Poco::JSON::Object::Ptr httpGetCount( const Poco::URI::QueryParameters& p );
 #endif
 			std::string myname;
 			std::unique_ptr<SQLiteInterface> db;
