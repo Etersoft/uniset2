@@ -55,11 +55,15 @@ namespace uniset
 		и сохранении их в БД (sqlite). Помимо этого LogDB выступает в качестве
 		REST сервиса, позволяющего получать логи за указанный период в виде json.
 
+		Реализация намеренно простая, т.к. пока неясно нужно ли это и в каком виде.
+		Ожидается что контролируемых логов будет не очень много (максимум несколько десятков)
+		и каждый лог будет генерировать не более 2-5 мегабайт записей. Поэтому sqlite должно хватить.
+
 		\section sec_LogDB_Conf Конфигурирвание LogDB
 
 		<LogDB name="LogDB" ...>
-			<logserver name="" ip=".." port=".." cmd=".."/>
-			<logserver name="" ip=".." port=".." cmd=".."/>
+			<logserver name="" ip=".." port=".." cmd=".." description=".."/>
+			<logserver name="" ip=".." port=".." cmd=".." description=".."/>
 			<logserver name="" ip=".." port=".." cmd=".."/>
 		</LogDB>
 
@@ -73,16 +77,17 @@ namespace uniset
 
 		/help                            - Получение списка доступных команд
 		/list                            - список доступных логов
-		/read?logname&offset=N&limit=M   - получение логов 'logname'
+		/logs?logname&offset=N&limit=M   - получение логов 'logname'
 										   Не обязательные параметры:
-											offset  - начиная с,
-											limit   - количество в ответе.
+										   offset  - начиная с,
+										   limit   - количество в ответе.
 
 
 
 		\todo Добавить настройки таймаутов, размера буфера, размера для резервирования под строку, количество потоков для http и т.п.
 		\todo Добавить ротацию БД
 		\todo REST API: продумать команды и реализовать
+		\todo Сделать настройку, для формата даты и времени при выгрузке из БД (при формировании json).
 		\todo Продумать поддержку websocket
 		\todo Возможно в последствии оптимизировать таблицы (нормализовать) если будет тормозить. Сейчас пока прототип.
 	*/
@@ -127,6 +132,7 @@ namespace uniset
 			Poco::JSON::Object::Ptr respError( Poco::Net::HTTPServerResponse& resp, Poco::Net::HTTPResponse::HTTPStatus s, const std::string& message );
 			Poco::JSON::Object::Ptr httpGetRequest( const std::string& cmd, const Poco::URI::QueryParameters& p );
 			Poco::JSON::Object::Ptr httpGetList( const Poco::URI::QueryParameters& p );
+			Poco::JSON::Object::Ptr httpGetLogs( const Poco::URI::QueryParameters& p );
 #endif
 			std::string myname;
 			std::unique_ptr<SQLiteInterface> db;
@@ -147,6 +153,7 @@ namespace uniset
 					int port = { 0 };
 					std::string cmd;
 					std::string peername;
+					std::string description;
 
 					std::shared_ptr<DebugStream> dblog;
 
