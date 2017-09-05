@@ -91,7 +91,7 @@ namespace uniset
 			~SQLiteInterface();
 
 			virtual bool connect( const std::string& param ) override;
-			bool connect( const std::string& dbfile, bool create );
+			bool connect(const std::string& dbfile, bool create, int extra_sqlite_flags = 0 );
 			virtual bool close() override;
 			virtual bool isConnection() const override;
 			virtual bool ping() const override;

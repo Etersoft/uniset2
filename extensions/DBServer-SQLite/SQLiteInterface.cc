@@ -73,13 +73,16 @@ bool SQLiteInterface::connect( const std::string& param )
 	return connect( dbfile, false );
 }
 // -----------------------------------------------------------------------------------------
-bool SQLiteInterface::connect( const string& dbfile, bool create )
+bool SQLiteInterface::connect( const string& dbfile, bool create, int extra_sqlite_flags )
 {
 	// т.к. sqlite3 по умолчанию, создаёт файл при открытии, то проверим "сами"
 	//    if( !create && !uniset::file_exist(dbfile) )
 	//        return false;
 
 	int flags = create ? 0 : SQLITE_OPEN_READWRITE;
+
+	if( extra_sqlite_flags )
+		flags |= extra_sqlite_flags;
 
 	int rc = sqlite3_open_v2(dbfile.c_str(), &db, flags, NULL);
 

@@ -141,7 +141,7 @@ LogDB::LogDB( const string& name , const string& prefix ):
 
 	db = unisetstd::make_unique<SQLiteInterface>();
 
-	if( !db->connect(dbfile, false) )
+	if( !db->connect(dbfile, false, SQLITE_OPEN_FULLMUTEX) )
 	{
 		ostringstream err;
 		err << myname
