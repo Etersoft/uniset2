@@ -64,6 +64,10 @@ namespace uniset
 
 
 		\section sec_LogDB_REST LogDB REST API
+			LogDB предоставляет возможность получения логов через REST API. Для этого запускается
+		http-сервер. Параметры запуска можно указать при помощи:
+		--prefix-httpserver-host и --prefix-httpserver-port.
+
 
 		\todo Добавить настройки таймаутов, размера буфера, размера для резервирования под строку,...
 		\todo Реализовать посылку команд
@@ -73,13 +77,17 @@ namespace uniset
 	*/
 	class LogDB:
 		public EventLoopServer
+#ifndef DISABLE_REST_API
+		, public Poco::Net::HTTPRequestHandler
+		, public Poco::Net::HTTPRequestHandlerFactory
+#endif
 	{
 		public:
 			LogDB( const std::string& name, const std::string& prefix = "" );
 			virtual ~LogDB();
 
 			/*! глобальная функция для инициализации объекта */
-			static std::shared_ptr<LogDB> init_logdb( int argc, const char* const* argv, const std::string& prefix = "logdb" );
+			static std::shared_ptr<LogDB> init_logdb( int argc, const char* const* argv, const std::string& prefix = "logdb-" );
 
 			/*! глобальная функция для вывода help-а */
 			static void help_print();
@@ -90,6 +98,10 @@ namespace uniset
 			}
 
 			void run( bool async );
+#ifndef DISABLE_REST_API
+			Poco::Net::HTTPRequestHandler* createRequestHandler( const Poco::Net::HTTPServerRequest& req );
+			virtual void handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp ) override;
+#endif
 
 		protected:
 
@@ -100,7 +112,9 @@ namespace uniset
 			void onTimer( ev::timer& t, int revents );
 			void onCheckBuffer( ev::timer& t, int revents );
 			void addLog( Log* log, const std::string& txt );
-
+#ifndef DISABLE_REST_API
+			void respError( Poco::Net::HTTPServerResponse& resp, Poco::Net::HTTPResponse::HTTPStatus s, const std::string& message );
+#endif
 			std::string myname;
 			std::unique_ptr<SQLiteInterface> db;
 
@@ -157,6 +171,13 @@ namespace uniset
 
 			ev::timer checkBufferTimer;
 			double tmCheckBuffer_sec = { 1.0 };
+
+
+#ifndef DISABLE_REST_API
+			std::shared_ptr<Poco::Net::HTTPServer> httpserv;
+			std::string httpHost = { "" };
+			int httpPort = { 0 };
+#endif
 
 		private:
 	};

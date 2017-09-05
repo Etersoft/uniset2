@@ -20,7 +20,12 @@ int main(int argc, char** argv)
 		uniset_init(argc, argv, "configure.xml");
 
 		auto db = LogDB::init_logdb(argc, argv);
+
+		if( !db )
+			return 1;
+
 		db->run(false);
+		return 0;
 	}
 	catch( const std::exception& ex )
 	{
@@ -31,5 +36,5 @@ int main(int argc, char** argv)
 		cerr << "(LogDB::main): catch ..." << endl;
 	}
 
-	return 0;
+	return 1;
 }

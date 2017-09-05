@@ -40,7 +40,7 @@ LogDB::LogDB( const string& name , const string& prefix ):
 	auto conf = uniset_conf();
 	auto xml = conf->getConfXML();
 
-	conf->initLogStream(dblog, prefix + "-log" );
+	conf->initLogStream(dblog, prefix + "log" );
 
 	xmlNode* cnode = conf->findNode(xml->getFirstNode(), "LogDB", name);
 
@@ -54,7 +54,7 @@ LogDB::LogDB( const string& name , const string& prefix ):
 
 	UniXML::iterator it(cnode);
 
-	qbufSize = conf->getArgPInt("--" + prefix + "-buffer-size", it.getProp("bufferSize"), qbufSize);
+	qbufSize = conf->getArgPInt("--" + prefix + "buffer-size", it.getProp("bufferSize"), qbufSize);
 
 	tmConnection_sec = tmConnection_msec / 1000.;
 
@@ -128,7 +128,7 @@ LogDB::LogDB( const string& name , const string& prefix ):
 	}
 
 
-	std::string dbfile = conf->getArgParam("--" + prefix + "-dbfile", it.getProp("dbfile"));
+	std::string dbfile = conf->getArgParam("--" + prefix + "dbfile", it.getProp("dbfile"));
 
 	if( dbfile.empty() )
 	{
@@ -149,10 +149,40 @@ LogDB::LogDB( const string& name , const string& prefix ):
 		dbcrit << err.str() << endl;
 		throw uniset::SystemError(err.str());
 	}
+
+
+#ifndef DISABLE_REST_API
+	httpHost = conf->getArgParam("--" + prefix + "httpserver-host", "localhost");
+	httpPort = conf->getArgInt("--" + prefix + "httpserver-port", "8080");
+	dblog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
+	Poco::Net::SocketAddress sa(httpHost, httpPort);
+
+	try
+	{
+		/*! \FIXME: доделать конфигурирование параметров */
+		Poco::Net::HTTPServerParams* httpParams = new Poco::Net::HTTPServerParams;
+		httpParams->setMaxQueued(100);
+		httpParams->setMaxThreads(1);
+		httpserv = std::make_shared<Poco::Net::HTTPServer>(this, Poco::Net::ServerSocket(sa), httpParams );
+	}
+	catch( std::exception& ex )
+	{
+		std::stringstream err;
+		err << myname << "(init): " << httpHost << ":" << httpPort << " ERROR: " << ex.what();
+		throw uniset::SystemError(err.str());
+	}
+
+#endif
 }
 //--------------------------------------------------------------------------------------------
 LogDB::~LogDB()
 {
+	if( evIsActive() )
+		evstop();
+
+	if( httpserv )
+		httpserv->stop();
+
 	if( db )
 		db->close();
 }
@@ -186,16 +216,17 @@ void LogDB::addLog( LogDB::Log* log, const string& txt )
 
 	qbuf.emplace(q.str());
 }
+
 //--------------------------------------------------------------------------------------------
 std::shared_ptr<LogDB> LogDB::init_logdb( int argc, const char* const* argv, const std::string& prefix )
 {
 	auto conf = uniset_conf();
 
-	string name = conf->getArgParam("--" + prefix + "-name", "");
+	string name = conf->getArgParam("--" + prefix + "name", "");
 
 	if( name.empty() )
 	{
-		cerr << "(LogDB): Unknown name. Use --" << prefix << "-name" << endl;
+		cerr << "(LogDB): Unknown name. Use --" << prefix << "name" << endl;
 		return nullptr;
 	}
 
@@ -211,6 +242,9 @@ void LogDB::help_print()
 // -----------------------------------------------------------------------------
 void LogDB::run( bool async )
 {
+	if( httpserv )
+		httpserv->start();
+
 	if( async )
 		async_evrun();
 	else
@@ -374,7 +408,7 @@ void LogDB::Log::read( ev::io& watcher )
 		tcp->receiveBytes(buf, n);
 
 		// нарезаем на строки
-		for( size_t i = 0; i < n; i++ )
+		for( int i = 0; i < n; i++ )
 		{
 			if( buf[i] != '\n' )
 				text += buf[i];
@@ -455,4 +489,166 @@ void LogDB::Log::close()
 	tcp->disconnect();
 	//tcp = nullptr;
 }
+// -----------------------------------------------------------------------------
+#ifndef DISABLE_REST_API
+// -----------------------------------------------------------------------------
+class LogDBRequestHandler:
+	public Poco::Net::HTTPRequestHandler
+{
+	public:
+
+		LogDBRequestHandler( LogDB* l ): logdb(l) {}
+
+		virtual void handleRequest( Poco::Net::HTTPServerRequest& request,
+									Poco::Net::HTTPServerResponse& response ) override
+		{
+			logdb->handleRequest(request, response);
+		}
+
+	private:
+		LogDB* logdb;
+};
+// -----------------------------------------------------------------------------
+Poco::Net::HTTPRequestHandler* LogDB::createRequestHandler( const Poco::Net::HTTPServerRequest& req )
+{
+	return new LogDBRequestHandler(this);
+}
+// -----------------------------------------------------------------------------
+void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp )
+{
+	dbinfo << myname << "(handleRequest): ...." << endl;
+
+	using Poco::Net::HTTPResponse;
+
+	//	std::ostream& out = resp.send();
+
+	try
+	{
+		respError(resp, HTTPResponse::HTTP_INTERNAL_SERVER_ERROR, "Unknown request");
+	}
+	catch( std::exception& ex )
+	{
+		dbcrit << myname << "(handleRequest): request error: " << ex.what() << endl;
+		respError(resp, HTTPResponse::HTTP_INTERNAL_SERVER_ERROR, ex.what());
+	}
+
+#if 0
+
+	// В этой версии API поддерживается только GET
+	if( req.getMethod() != "GET" )
+	{
+		resp.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
+		resp.setContentType("text/json");
+		std::ostream& out = resp.send();
+		Poco::JSON::Object jdata;
+		jdata.set("error", resp.getReasonForStatus(resp.getStatus()));
+		jdata.set("ecode", (int)resp.getStatus());
+		jdata.set("message", "method must be 'GET'");
+		jdata.stringify(out);
+		out.flush();
+		return;
+	}
+
+	Poco::URI uri(req.getURI());
+
+	if( log->is_info() )
+		log->info() << req.getHost() << ": query: " << uri.getQuery() << endl;
+
+	std::vector<std::string> seg;
+	uri.getPathSegments(seg);
+
+	// example: http://host:port/api/version/ObjectName
+	if( seg.size() < 3
+			|| seg[0] != "api"
+			|| seg[1] != UHTTP_API_VERSION
+			|| seg[2].empty() )
+	{
+		resp.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
+		resp.setContentType("text/json");
+		std::ostream& out = resp.send();
+		Poco::JSON::Object jdata;
+		jdata.set("error", resp.getReasonForStatus(resp.getStatus()));
+		jdata.set("ecode", (int)resp.getStatus());
+		jdata.set("message", "BAD REQUEST STRUCTURE");
+		jdata.stringify(out);
+		out.flush();
+		return;
+	}
+
+	const std::string objectName(seg[2]);
+	auto qp = uri.getQueryParameters();
+
+	resp.setStatus(HTTPResponse::HTTP_OK);
+	resp.setContentType("text/json");
+	std::ostream& out = resp.send();
+
+	try
+	{
+		if( objectName == "help" )
+		{
+			out << "{ \"help\": ["
+				"{\"help\": {\"desc\": \"this help\"}},"
+				"{\"list\": {\"desc\": \"list of objects\"}},"
+				"{\"ObjectName\": {\"desc\": \"ObjectName information\"}},"
+				"{\"ObjectName/help\": {\"desc\": \"help for ObjectName\"}},"
+				"{\"apidocs\": {\"desc\": \"https://github.com/Etersoft/uniset2\"}}"
+				"]}";
+		}
+		else if( objectName == "list" )
+		{
+			auto json = registry->httpGetObjectsList(qp);
+			json->stringify(out);
+		}
+		else if( seg.size() == 4 && seg[3] == "help" ) // /api/version/ObjectName/help
+		{
+			auto json = registry->httpHelpByName(objectName, qp);
+			json->stringify(out);
+		}
+		else if( seg.size() >= 4 ) // /api/version/ObjectName/xxx..
+		{
+			auto json = registry->httpRequestByName(objectName, seg[3], qp);
+			json->stringify(out);
+		}
+		else
+		{
+			auto json = registry->httpGetByName(objectName, qp);
+			json->stringify(out);
+		}
+	}
+	//	catch( Poco::JSON::JSONException jsone )
+	//	{
+	//		std::cout << "JSON ERROR: " << jsone.message() << std::endl;
+	//	}
+	catch( std::exception& ex )
+	{
+		ostringstream err;
+		err << ex.what();
+		resp.setStatus(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
+		resp.setContentType("text/json");
+		Poco::JSON::Object jdata;
+		jdata.set("error", err.str());
+		jdata.set("ecode", (int)resp.getStatus());
+		jdata.stringify(out);
+	}
+
+	out.flush();
+#endif
+}
+// -----------------------------------------------------------------------------
+void LogDB::respError( Poco::Net::HTTPServerResponse& resp,
+					   Poco::Net::HTTPResponse::HTTPStatus estatus,
+					   const string& message )
+{
+	resp.setStatus(estatus);
+	resp.setContentType("text/json");
+	std::ostream& out = resp.send();
+	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+	jdata->set("error", resp.getReasonForStatus(resp.getStatus()));
+	jdata->set("ecode", (int)resp.getStatus());
+	jdata->set("message", message);
+	jdata->stringify(out);
+	out.flush();
+}
+// -----------------------------------------------------------------------------
+#endif
 // -----------------------------------------------------------------------------
