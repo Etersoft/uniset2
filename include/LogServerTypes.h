@@ -84,11 +84,6 @@ namespace uniset
 		 * [-a | --add] info,warn,crit,... [logfilter] - Add log levels.
 		 * [-d | --del] info,warn,crit,... [logfilter] - Delete log levels.
 		 * [-s | --set] info,warn,crit,... [logfilter] - Set log levels.
-		 * [-o | --off] [logfilter]                    - Off the write log file (if enabled).
-		 * [-e | --on] [logfilter]                     - On(enable) the write log file (if before disabled).
-		 * [-r | --rotate] [logfilter]                 - rotate log file.
-		 * [-u | --save-loglevels] [logfilter]         - save log levels (disable restore after disconnected).
-		 * [-y | --restore-loglevels] [logfilter]      - restore default log levels.
 		 *
 		 * 'logfilter' - regexp for name of log. Default: ALL logs
 		 */

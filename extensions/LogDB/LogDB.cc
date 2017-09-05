@@ -62,6 +62,7 @@ LogDB::LogDB( const string& name , const string& prefix ):
 	checkBufferTimer.set<LogDB, &LogDB::onCheckBuffer>(this);
 
 	UniXML::iterator sit(cnode);
+
 	if( !sit.goChildren() )
 	{
 		ostringstream err;
@@ -70,7 +71,7 @@ LogDB::LogDB( const string& name , const string& prefix ):
 		throw uniset::SystemError(err.str());
 	}
 
-	for( ;sit.getCurrent(); sit++ )
+	for( ; sit.getCurrent(); sit++ )
 	{
 		auto l = make_shared<Log>();
 
@@ -103,15 +104,15 @@ LogDB::LogDB( const string& name , const string& prefix ):
 			throw uniset::SystemError(err.str());
 		}
 
-//		if( l->cmd.empty() )
-//		{
-//			ostringstream err;
-//			err << name << "(init): Unknown 'cmd' for '" << l->name << "'..";
-//			dbcrit << err.str() << endl;
-//			throw uniset::SystemError(err.str());
-//		}
+		//		if( l->cmd.empty() )
+		//		{
+		//			ostringstream err;
+		//			err << name << "(init): Unknown 'cmd' for '" << l->name << "'..";
+		//			dbcrit << err.str() << endl;
+		//			throw uniset::SystemError(err.str());
+		//		}
 
-//		l->tcp = make_shared<UTCPStream>();
+		//		l->tcp = make_shared<UTCPStream>();
 		l->dblog = dblog;
 		l->signal_on_read().connect(sigc::mem_fun(this, &LogDB::addLog));
 
@@ -128,6 +129,7 @@ LogDB::LogDB( const string& name , const string& prefix ):
 
 
 	std::string dbfile = conf->getArgParam("--" + prefix + "-dbfile", it.getProp("dbfile"));
+
 	if( dbfile.empty() )
 	{
 		ostringstream err;
@@ -137,12 +139,13 @@ LogDB::LogDB( const string& name , const string& prefix ):
 	}
 
 	db = unisetstd::make_unique<SQLiteInterface>();
+
 	if( !db->connect(dbfile, false) )
 	{
 		ostringstream err;
 		err << myname
-			   << "(init): DB connection error: "
-			   << db->error();
+			<< "(init): DB connection error: "
+			<< db->error();
 		dbcrit << err.str() << endl;
 		throw uniset::SystemError(err.str());
 	}
@@ -240,7 +243,7 @@ void LogDB::onTimer( ev::timer& t, int revents )
 	}
 
 	// проверяем соединения..
-	for( const auto& s: logservers )
+	for( const auto& s : logservers )
 	{
 		if( !s->isConnected() )
 		{
@@ -272,7 +275,7 @@ bool LogDB::Log::connect() noexcept
 	if( tcp && tcp->isConnected() )
 		return true;
 
-//	dbinfo << name << "(connect): connect " << ip << ":" << port << "..." << endl;
+	//	dbinfo << name << "(connect): connect " << ip << ":" << port << "..." << endl;
 
 	if( peername.empty() )
 		peername = ip + ":" + std::to_string(port);
@@ -281,8 +284,8 @@ bool LogDB::Log::connect() noexcept
 	{
 		tcp = make_shared<UTCPStream>();
 		tcp->create(ip, port);
-//		tcp->setReceiveTimeout( UniSetTimer::millisecToPoco(inTimeout) );
-//		tcp->setSendTimeout( UniSetTimer::millisecToPoco(outTimeout) );
+		//		tcp->setReceiveTimeout( UniSetTimer::millisecToPoco(inTimeout) );
+		//		tcp->setSendTimeout( UniSetTimer::millisecToPoco(outTimeout) );
 		tcp->setKeepAlive(true);
 		tcp->setBlocking(false);
 		dbinfo << name << "(connect): connect OK to " << ip << ":" << port << endl;
@@ -304,7 +307,7 @@ bool LogDB::Log::connect() noexcept
 	{
 		std::exception_ptr p = std::current_exception();
 		dbwarn << name << "(connect): connection " << peername << " error: "
-			 << (p ? p.__cxa_exception_type()->name() : "null") << endl;
+			   << (p ? p.__cxa_exception_type()->name() : "null") << endl;
 	}
 
 	tcp->disconnect();
@@ -327,9 +330,10 @@ void LogDB::Log::ioprepare( ev::dynamic_loop& loop )
 
 	//! \todo Пока закрываем глаза на не оптимальность, того, что парсим строку каждый раз
 	auto cmdlist = LogServerTypes::getCommands(cmd);
+
 	if( !cmdlist.empty() )
 	{
-		for( const auto& msg: cmdlist )
+		for( const auto& msg : cmdlist )
 			wbuf.emplace(new UTCPCore::Buffer((unsigned char*)&msg, sizeof(msg)));
 
 		io.set(ev::WRITE);
@@ -363,21 +367,22 @@ void LogDB::Log::read( ev::io& watcher )
 
 	int n = tcp->available();
 
-	n = std::min(n,bufsize);
+	n = std::min(n, bufsize);
 
 	if( n > 0 )
 	{
 		tcp->receiveBytes(buf, n);
 
 		// нарезаем на строки
-		for( size_t i=0; i<n; i++ )
+		for( size_t i = 0; i < n; i++ )
 		{
 			if( buf[i] != '\n' )
 				text += buf[i];
 			else
 			{
-				sigRead.emit(this,text);
+				sigRead.emit(this, text);
 				text = "";
+
 				if( text.capacity() < reservsize )
 					text.reserve(reservsize);
 			}
@@ -386,13 +391,16 @@ void LogDB::Log::read( ev::io& watcher )
 	else if( n == 0 )
 	{
 		dbinfo << name << ": " << ip << ":" << port << " connection is closed.." << endl;
+
 		if( !text.empty() )
 		{
-			sigRead.emit(this,text);
+			sigRead.emit(this, text);
 			text = "";
+
 			if( text.capacity() < reservsize )
 				text.reserve(reservsize);
 		}
+
 		close();
 	}
 }
@@ -400,6 +408,7 @@ void LogDB::Log::read( ev::io& watcher )
 void LogDB::Log::write( ev::io& io )
 {
 	UTCPCore::Buffer* buffer = 0;
+
 	if( wbuf.empty() )
 	{
 		io.set(EV_READ);

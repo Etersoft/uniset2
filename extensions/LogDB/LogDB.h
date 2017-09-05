@@ -115,37 +115,37 @@ namespace uniset
 			class Log
 			{
 				public:
-				std::string name;
-				std::string ip;
-				int port = { 0 };
-				std::string cmd;
-				std::string peername;
+					std::string name;
+					std::string ip;
+					int port = { 0 };
+					std::string cmd;
+					std::string peername;
 
-				std::shared_ptr<DebugStream> dblog;
+					std::shared_ptr<DebugStream> dblog;
 
-				bool connect() noexcept;
-				bool isConnected() const;
-				void ioprepare( ev::dynamic_loop& loop );
-				void event( ev::io& watcher, int revents );
-				void read( ev::io& watcher);
-				void write(ev::io& io );
-				void close();
+					bool connect() noexcept;
+					bool isConnected() const;
+					void ioprepare( ev::dynamic_loop& loop );
+					void event( ev::io& watcher, int revents );
+					void read( ev::io& watcher);
+					void write( ev::io& io );
+					void close();
 
-				typedef sigc::signal<void, Log*, const std::string&> ReadSignal;
-				ReadSignal signal_on_read();
+					typedef sigc::signal<void, Log*, const std::string&> ReadSignal;
+					ReadSignal signal_on_read();
 
 				private:
-				   ReadSignal sigRead;
-				   ev::io io;
-				   std::shared_ptr<UTCPStream> tcp;
-				   static const int bufsize = { 10001 };
-				   char buf[bufsize];
+					ReadSignal sigRead;
+					ev::io io;
+					std::shared_ptr<UTCPStream> tcp;
+					static const int bufsize = { 10001 };
+					char buf[bufsize];
 
-				   static const size_t reservsize = { 1000 };
-				   std::string text;
+					static const size_t reservsize = { 1000 };
+					std::string text;
 
-				   // буфер для посылаемых данных (write buffer)
-				   std::queue<UTCPCore::Buffer*> wbuf;
+					// буфер для посылаемых данных (write buffer)
+					std::queue<UTCPCore::Buffer*> wbuf;
 			};
 
 			std::vector< std::shared_ptr<Log> > logservers;
