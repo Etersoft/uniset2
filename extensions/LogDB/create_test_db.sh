@@ -8,8 +8,8 @@ sqlite3 $dbname <<"_EOF_"
 
 PRAGMA foreign_keys=ON;
 
-DROP TABLE IF EXISTS log;
-CREATE TABLE log (
+DROP TABLE IF EXISTS logs;
+CREATE TABLE logs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   tms timestamp KEY default (strftime('%s', 'now')),
   usec INTEGER(5) NOT NULL,

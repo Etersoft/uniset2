@@ -26,6 +26,7 @@
 #include <chrono>
 #include <ev++.h>
 #include <sigc++/sigc++.h>
+#include <Poco/JSON/Object.h>
 #include "UniSetTypes.h"
 #include "LogAgregator.h"
 #include "DebugStream.h"
@@ -68,12 +69,22 @@ namespace uniset
 		http-сервер. Параметры запуска можно указать при помощи:
 		--prefix-httpserver-host и --prefix-httpserver-port.
 
+		Запросы принимаются по: api/version/logdb/...
 
-		\todo Добавить настройки таймаутов, размера буфера, размера для резервирования под строку,...
-		\todo Реализовать посылку команд
+		/help                            - Получение списка доступных команд
+		/list                            - список доступных логов
+		/read?logname&offset=N&limit=M   - получение логов 'logname'
+										   Не обязательные параметры:
+											offset  - начиная с,
+											limit   - количество в ответе.
+
+
+
+		\todo Добавить настройки таймаутов, размера буфера, размера для резервирования под строку, количество потоков для http и т.п.
 		\todo Добавить ротацию БД
 		\todo REST API: продумать команды и реализовать
 		\todo Продумать поддержку websocket
+		\todo Возможно в последствии оптимизировать таблицы (нормализовать) если будет тормозить. Сейчас пока прототип.
 	*/
 	class LogDB:
 		public EventLoopServer
@@ -113,7 +124,9 @@ namespace uniset
 			void onCheckBuffer( ev::timer& t, int revents );
 			void addLog( Log* log, const std::string& txt );
 #ifndef DISABLE_REST_API
-			void respError( Poco::Net::HTTPServerResponse& resp, Poco::Net::HTTPResponse::HTTPStatus s, const std::string& message );
+			Poco::JSON::Object::Ptr respError( Poco::Net::HTTPServerResponse& resp, Poco::Net::HTTPResponse::HTTPStatus s, const std::string& message );
+			Poco::JSON::Object::Ptr httpGetRequest( const std::string& cmd, const Poco::URI::QueryParameters& p );
+			Poco::JSON::Object::Ptr httpGetList( const Poco::URI::QueryParameters& p );
 #endif
 			std::string myname;
 			std::unique_ptr<SQLiteInterface> db;

@@ -195,7 +195,7 @@ void LogDB::flushBuffer()
 		if( !db->insert(qbuf.front()) )
 		{
 			dbcrit << myname << "(flushBuffer): error: " << db->error() <<
-				   " lost query: " << qbuf.front() << endl;
+					  " lost query: " << qbuf.front() << endl;
 		}
 
 		qbuf.pop();
@@ -208,7 +208,7 @@ void LogDB::addLog( LogDB::Log* log, const string& txt )
 
 	ostringstream q;
 
-	q << "INSERT INTO log(tms,usec,name,text) VALUES('"
+	q << "INSERT INTO logs(tms,usec,name,text) VALUES('"
 	  << tm.tv_sec << "','"   //  timestamp
 	  << tm.tv_nsec << "','"  //  usec
 	  << log->name << "','"
@@ -493,7 +493,7 @@ void LogDB::Log::close()
 #ifndef DISABLE_REST_API
 // -----------------------------------------------------------------------------
 class LogDBRequestHandler:
-	public Poco::Net::HTTPRequestHandler
+		public Poco::Net::HTTPRequestHandler
 {
 	public:
 
@@ -516,138 +516,149 @@ Poco::Net::HTTPRequestHandler* LogDB::createRequestHandler( const Poco::Net::HTT
 // -----------------------------------------------------------------------------
 void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp )
 {
-	dbinfo << myname << "(handleRequest): ...." << endl;
-
 	using Poco::Net::HTTPResponse;
 
-	//	std::ostream& out = resp.send();
-
-	try
-	{
-		respError(resp, HTTPResponse::HTTP_INTERNAL_SERVER_ERROR, "Unknown request");
-	}
-	catch( std::exception& ex )
-	{
-		dbcrit << myname << "(handleRequest): request error: " << ex.what() << endl;
-		respError(resp, HTTPResponse::HTTP_INTERNAL_SERVER_ERROR, ex.what());
-	}
-
-#if 0
-
-	// В этой версии API поддерживается только GET
-	if( req.getMethod() != "GET" )
-	{
-		resp.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
-		resp.setContentType("text/json");
-		std::ostream& out = resp.send();
-		Poco::JSON::Object jdata;
-		jdata.set("error", resp.getReasonForStatus(resp.getStatus()));
-		jdata.set("ecode", (int)resp.getStatus());
-		jdata.set("message", "method must be 'GET'");
-		jdata.stringify(out);
-		out.flush();
-		return;
-	}
-
-	Poco::URI uri(req.getURI());
-
-	if( log->is_info() )
-		log->info() << req.getHost() << ": query: " << uri.getQuery() << endl;
-
-	std::vector<std::string> seg;
-	uri.getPathSegments(seg);
-
-	// example: http://host:port/api/version/ObjectName
-	if( seg.size() < 3
-			|| seg[0] != "api"
-			|| seg[1] != UHTTP_API_VERSION
-			|| seg[2].empty() )
-	{
-		resp.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
-		resp.setContentType("text/json");
-		std::ostream& out = resp.send();
-		Poco::JSON::Object jdata;
-		jdata.set("error", resp.getReasonForStatus(resp.getStatus()));
-		jdata.set("ecode", (int)resp.getStatus());
-		jdata.set("message", "BAD REQUEST STRUCTURE");
-		jdata.stringify(out);
-		out.flush();
-		return;
-	}
-
-	const std::string objectName(seg[2]);
-	auto qp = uri.getQueryParameters();
-
-	resp.setStatus(HTTPResponse::HTTP_OK);
-	resp.setContentType("text/json");
 	std::ostream& out = resp.send();
+	resp.setContentType("text/json");
 
 	try
 	{
-		if( objectName == "help" )
+		// В этой версии API поддерживается только GET
+		if( req.getMethod() != "GET" )
+		{
+			auto jdata = respError(resp, HTTPResponse::HTTP_BAD_REQUEST,"method must be 'GET'");
+			jdata->stringify(out);
+			out.flush();
+			return;
+		}
+
+		Poco::URI uri(req.getURI());
+
+		dblog3 << req.getHost() << ": query: " << uri.getQuery() << endl;
+
+		std::vector<std::string> seg;
+		uri.getPathSegments(seg);
+
+		// example: http://host:port/api/version/logdb/..
+		if( seg.size() < 4
+				|| seg[0] != "api"
+				|| seg[1] != uniset::UHttp::UHTTP_API_VERSION
+				|| seg[2].empty()
+				|| seg[2] != "logdb")
+		{
+			ostringstream err;
+			err << "Bad request structure. Must be /api/" << uniset::UHttp::UHTTP_API_VERSION << "/logdb/xxx";
+			auto jdata = respError(resp, HTTPResponse::HTTP_BAD_REQUEST,err.str());
+			jdata->stringify(out);
+			out.flush();
+			return;
+		}
+
+		auto qp = uri.getQueryParameters();
+
+		resp.setStatus(HTTPResponse::HTTP_OK);
+		string cmd = seg[3];
+
+		if( cmd == "help" )
 		{
 			out << "{ \"help\": ["
-				"{\"help\": {\"desc\": \"this help\"}},"
-				"{\"list\": {\"desc\": \"list of objects\"}},"
-				"{\"ObjectName\": {\"desc\": \"ObjectName information\"}},"
-				"{\"ObjectName/help\": {\"desc\": \"help for ObjectName\"}},"
-				"{\"apidocs\": {\"desc\": \"https://github.com/Etersoft/uniset2\"}}"
-				"]}";
-		}
-		else if( objectName == "list" )
-		{
-			auto json = registry->httpGetObjectsList(qp);
-			json->stringify(out);
-		}
-		else if( seg.size() == 4 && seg[3] == "help" ) // /api/version/ObjectName/help
-		{
-			auto json = registry->httpHelpByName(objectName, qp);
-			json->stringify(out);
-		}
-		else if( seg.size() >= 4 ) // /api/version/ObjectName/xxx..
-		{
-			auto json = registry->httpRequestByName(objectName, seg[3], qp);
-			json->stringify(out);
+				   "{\"help\": {\"desc\": \"this help\"}},"
+				   "{\"list\": {\"desc\": \"list of logs\"}},"
+				   "{\"read?logname&offset=N&limit=M\": {\"desc\": \"read logs\"}},"
+				   "{\"apidocs\": {\"desc\": \"https://github.com/Etersoft/uniset2\"}}"
+				   "]}";
 		}
 		else
 		{
-			auto json = registry->httpGetByName(objectName, qp);
+			auto json = httpGetRequest(cmd, qp);
 			json->stringify(out);
 		}
 	}
-	//	catch( Poco::JSON::JSONException jsone )
-	//	{
-	//		std::cout << "JSON ERROR: " << jsone.message() << std::endl;
-	//	}
 	catch( std::exception& ex )
 	{
-		ostringstream err;
-		err << ex.what();
-		resp.setStatus(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
-		resp.setContentType("text/json");
-		Poco::JSON::Object jdata;
-		jdata.set("error", err.str());
-		jdata.set("ecode", (int)resp.getStatus());
-		jdata.stringify(out);
+		auto jdata = respError(resp, HTTPResponse::HTTP_INTERNAL_SERVER_ERROR,ex.what());
+		jdata->stringify(out);
 	}
 
 	out.flush();
-#endif
 }
 // -----------------------------------------------------------------------------
-void LogDB::respError( Poco::Net::HTTPServerResponse& resp,
-					   Poco::Net::HTTPResponse::HTTPStatus estatus,
-					   const string& message )
+Poco::JSON::Object::Ptr LogDB::respError( Poco::Net::HTTPServerResponse& resp,
+										  Poco::Net::HTTPResponse::HTTPStatus estatus,
+										  const string& message )
 {
 	resp.setStatus(estatus);
 	resp.setContentType("text/json");
-	std::ostream& out = resp.send();
 	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
 	jdata->set("error", resp.getReasonForStatus(resp.getStatus()));
 	jdata->set("ecode", (int)resp.getStatus());
 	jdata->set("message", message);
-	jdata->stringify(out);
-	out.flush();
+	return jdata;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr LogDB::httpGetRequest( const string& cmd, const Poco::URI::QueryParameters& p )
+{
+	if( cmd == "list" )
+		return httpGetList(p);
+
+	ostringstream err;
+	err << "Unknown command '" << cmd << "'";
+	throw uniset::SystemError(err.str());
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr LogDB::httpGetList( const Poco::URI::QueryParameters& p )
+{
+	if( !db )
+	{
+		ostringstream err;
+		err << "DB unavailable..";
+		throw uniset::SystemError(err.str());
+	}
+
+	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+
+	Poco::JSON::Array::Ptr jlist = uniset::json::make_child_array(jdata, "logs");
+
+#if 0
+	// Получение из БД
+	// хорошо тем, что возвращаем список реально доступных логов (т.е. тех что есть в БД)
+	// плохо тем, что если в конфигурации добавили какие-то логи, но в БД
+	// ещё ничего не попало, мы их не увидим
+
+	ostringstream q;
+
+	q << "SELECT COUNT(*), name FROM logs GROUP BY name";
+	DBResult ret = db->query(q.str());
+	if( !ret )
+		return jdata;
+
+	for( auto it = ret.begin(); it!=ret.end(); ++it )
+	{
+		Poco::JSON::Object::Ptr j = new Poco::JSON::Object();
+		j->set("name", it.as_string("name"));
+		jlist->add(j);
+	}
+#else
+		// Получение из конфигурации
+		// хорошо тем, что если логов ещё не было
+		// то всё-равно видно, какие доступны потенциально
+		// плохо тем, что если конфигурацию поменяли (убрали какой-то лог)
+		// а в БД записи по нему остались, то мы не получим к ним доступ
+
+	 /*! \todo пока список logservers формируется только в начале (в конструкторе)
+	  * можно не защищаться mutex-ом, т.к. мы его не меняем
+	  * если вдруг в REST API будет возможность добавлять логи.. нужно защищаться
+	  * либо переделывать обработку
+	  */
+	 for( const auto& s: logservers )
+	 {
+		 Poco::JSON::Object::Ptr j = new Poco::JSON::Object();
+		 j->set("name", s->name);
+		 jlist->add(j);
+	 }
+#endif
+
+	return jdata;
 }
 // -----------------------------------------------------------------------------
 #endif
