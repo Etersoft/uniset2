@@ -23,10 +23,13 @@
 // --------------------------------------------------------------------------
 #include <queue>
 #include <memory>
+#include <mutex>
+#include <condition_variable>
 #include <chrono>
 #include <ev++.h>
 #include <sigc++/sigc++.h>
 #include <Poco/JSON/Object.h>
+#include <Poco/Net/WebSocket.h>
 #include "UniSetTypes.h"
 #include "LogAgregator.h"
 #include "DebugStream.h"
@@ -93,9 +96,13 @@ namespace uniset
 		\todo Добавить ротацию БД
 		\todo Сделать настройку, для формата даты и времени при выгрузке из БД (при формировании json).
 		\todo Возможно в /logs стоит в ответе сразу возвращать и общее количество в БД (это один лишний запрос, каждый раз).
-		\todo Встроить поддержку websocket
 		\todo Возможно в последствии оптимизировать таблицы (нормализовать) если будет тормозить. Сейчас пока прототип.
 		\todo Пока не очень эффективная работа с датой и временем (заодно подумать всё-таки в чём хранить)
+		\todo WebSocket: Сделать запись через UTCPCore::Buffer, чтобы не терять данные при записи в сокет
+		\todo WebSocket: Доделать ограничение на размер буфера для каждого сокета
+		\todo WebSocket: доделать настройку всевозможных timeout-ов
+		\todo WebSocket: доделать проверку соединения
+		\todo WebSocket: сделать ограничение на максимальное количество соединений (websocket)
 	*/
 	class LogDB:
 		public EventLoopServer
@@ -123,17 +130,20 @@ namespace uniset
 #ifndef DISABLE_REST_API
 			Poco::Net::HTTPRequestHandler* createRequestHandler( const Poco::Net::HTTPServerRequest& req );
 			virtual void handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp ) override;
+			void onWebSocketSession( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp );
 #endif
 
 		protected:
 
 			class Log;
+			class LogWebSocket;
 
 			virtual void evfinish() override;
 			virtual void evprepare() override;
 			void onTimer( ev::timer& t, int revents );
 			void onCheckBuffer( ev::timer& t, int revents );
 			void addLog( Log* log, const std::string& txt );
+
 #ifndef DISABLE_REST_API
 			Poco::JSON::Object::Ptr respError( Poco::Net::HTTPServerResponse& resp, Poco::Net::HTTPResponse::HTTPStatus s, const std::string& message );
 			Poco::JSON::Object::Ptr httpGetRequest( const std::string& cmd, const Poco::URI::QueryParameters& p );
@@ -144,6 +154,10 @@ namespace uniset
 			// формирование условия where для строки XX[m|h|d|M]
 			// XX m - минут, h-часов, d-дней, M - месяцев
 			static std::string qLast( const std::string& p );
+
+			std::shared_ptr<LogWebSocket> newWebSocket( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp, const std::string& logname );
+			void delWebSocket( std::shared_ptr<LogWebSocket>& ws );
+			void onPingWebSockets( ev::timer& t, int revents );
 #endif
 			std::string myname;
 			std::unique_ptr<SQLiteInterface> db;
@@ -172,7 +186,7 @@ namespace uniset
 					bool isConnected() const;
 					void ioprepare( ev::dynamic_loop& loop );
 					void event( ev::io& watcher, int revents );
-					void read( ev::io& watcher);
+					void read( ev::io& watcher );
 					void write( ev::io& io );
 					void close();
 
@@ -203,11 +217,73 @@ namespace uniset
 			ev::timer checkBufferTimer;
 			double tmCheckBuffer_sec = { 1.0 };
 
+			ev::timer pingWebSockets;
+			double tmPingWebSockets_sec = { 3.0 };
 
 #ifndef DISABLE_REST_API
 			std::shared_ptr<Poco::Net::HTTPServer> httpserv;
 			std::string httpHost = { "" };
 			int httpPort = { 0 };
+
+			class LogWebSocket:
+				public Poco::Net::WebSocket
+			{
+				public:
+					LogWebSocket(Poco::Net::HTTPServerRequest& req,
+								 Poco::Net::HTTPServerResponse& resp,
+								 std::shared_ptr<Log>& log);
+
+					virtual ~LogWebSocket();
+
+					// получение очередного сообщения
+					// (с засыпанием в случае отсутствия сообщения в очереди)
+					std::string get();
+
+					// вызывается из потока eventloop..
+					void ping();
+
+					// вызывается из потока eventloop..
+					void add( Log* log, const std::string& txt );
+
+					// надо вызывать только из потока eventloop
+					// т.к. идёт обращение sigc::connection
+					void term();
+
+				protected:
+					std::mutex              mut;
+					std::condition_variable event;
+
+					uniset::uniset_rwmutex mqmut;
+					std::queue<std::string> mqueue;
+
+					std::atomic_bool cancelled = { false };
+
+					sigc::connection con;
+					// std::shared_ptr<Log> log;
+			};
+
+			class LogWebSocketGuard
+			{
+				public:
+
+					LogWebSocketGuard( std::shared_ptr<LogWebSocket>& s, LogDB* l ):
+						ws(s), logdb(l) {}
+
+					~LogWebSocketGuard()
+					{
+						logdb->delWebSocket(ws);
+					}
+
+
+				private:
+					std::shared_ptr<LogWebSocket> ws;
+					LogDB* logdb;
+			};
+
+			friend class LogWebSocketGuard;
+
+			std::list<std::shared_ptr<LogWebSocket>> wsocks;
+			uniset::uniset_rwmutex wsocksMutex;
 #endif
 
 		private:
