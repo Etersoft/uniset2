@@ -114,7 +114,6 @@ namespace uniset
 		\todo Возможно в /logs стоит в ответе сразу возвращать и общее количество в БД (это один лишний запрос, каждый раз).
 		\todo Возможно в последствии оптимизировать таблицы (нормализовать) если будет тормозить. Сейчас пока прототип.
 		\todo Пока не очень эффективная работа с датой и временем (заодно подумать всё-таки в чём хранить)
-		\todo WebSocket: Доделать ограничение на размер буфера для каждого сокета
 		\todo WebSocket: доделать настройку всевозможных timeout-ов
 		\todo WebSocket: доделать проверку соединения
 		\todo WebSocket: сделать ограничение на максимальное количество соединений (websocket)
@@ -155,8 +154,8 @@ namespace uniset
 
 			virtual void evfinish() override;
 			virtual void evprepare() override;
-			void onTimer( ev::timer& t, int revents );
 			void onCheckBuffer( ev::timer& t, int revents );
+			void onActivate( ev::async& watcher, int revents ) ;
 			void addLog( Log* log, const std::string& txt );
 
 #ifndef DISABLE_REST_API
@@ -172,7 +171,6 @@ namespace uniset
 
 			std::shared_ptr<LogWebSocket> newWebSocket(Poco::Net::HTTPServerRequest* req, Poco::Net::HTTPServerResponse* resp, const std::string& logname );
 			void delWebSocket( std::shared_ptr<LogWebSocket>& ws );
-			void onPingWebSockets( ev::timer& t, int revents );
 #endif
 			std::string myname;
 			std::unique_ptr<SQLiteInterface> db;
@@ -183,7 +181,11 @@ namespace uniset
 			QueryBuffer qbuf;
 			size_t qbufSize = { 200 }; // размер буфера сообщений.
 
+			ev::timer flushBufferTimer;
+			double tmFlushBuffer_sec = { 1.0 };
 			void flushBuffer();
+
+			ev::async wsactivate; // активация LogWebSocket-ов
 
 			class Log
 			{
@@ -197,9 +199,10 @@ namespace uniset
 
 					std::shared_ptr<DebugStream> dblog;
 
-					bool connect() noexcept;
 					bool isConnected() const;
-					void ioprepare( ev::dynamic_loop& loop );
+
+					void set( ev::dynamic_loop& loop );
+					void check( ev::timer& t, int revents );
 					void event( ev::io& watcher, int revents );
 					void read( ev::io& watcher );
 					void write( ev::io& io );
@@ -208,12 +211,20 @@ namespace uniset
 					typedef sigc::signal<void, Log*, const std::string&> ReadSignal;
 					ReadSignal signal_on_read();
 
+				protected:
+					void ioprepare();
+					bool connect() noexcept;
+
 				private:
 					ReadSignal sigRead;
 					ev::io io;
+					ev::timer iocheck;
+
+					double checkConnection_sec = { 5.0 };
+
 					std::shared_ptr<UTCPStream> tcp;
 					static const int bufsize = { 10001 };
-					char buf[bufsize];
+					char buf[bufsize]; // буфер для чтения сообщений
 
 					static const size_t reservsize = { 1000 };
 					std::string text;
@@ -224,16 +235,6 @@ namespace uniset
 
 			std::vector< std::shared_ptr<Log> > logservers;
 			std::shared_ptr<DebugStream> dblog;
-
-			ev::timer connectionTimer;
-			timeout_t tmConnection_msec = { 5000 }; // пауза между попытками установить соединение
-			double tmConnection_sec = { 0.0 };
-
-			ev::timer checkBufferTimer;
-			double tmCheckBuffer_sec = { 1.0 };
-
-			ev::timer pingWebSockets;
-			double tmPingWebSockets_sec = { 3.0 };
 
 #ifndef DISABLE_REST_API
 			std::shared_ptr<Poco::Net::HTTPServer> httpserv;
@@ -246,14 +247,18 @@ namespace uniset
 				public:
 					LogWebSocket(Poco::Net::HTTPServerRequest* req,
 								 Poco::Net::HTTPServerResponse* resp,
-								 std::shared_ptr<Log>& log,
-								 ev::dynamic_loop& loop );
+								 std::shared_ptr<Log>& log );
 
 					virtual ~LogWebSocket();
 
-					void event( ev::io& watcher, int revents );
+					// конечно некрасиво что это в public
+					std::shared_ptr<DebugStream> dblog;
 
-					void ping();
+					bool isActive();
+					void start( ev::dynamic_loop& loop );
+
+					void event( ev::io& watcher, int revents );
+					void ping( ev::timer& t, int revents );
 
 					void add( Log* log, const std::string& txt );
 
@@ -266,6 +271,8 @@ namespace uniset
 					void write( ev::io& w );
 
 					ev::io io;
+					ev::timer ioping;
+					double ping_sec = { 3.0 };
 
 					std::mutex              finishmut;
 					std::condition_variable finish;
