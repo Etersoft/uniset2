@@ -49,7 +49,10 @@ namespace uniset
 
 		  - \ref sec_LogDB_Comm
 		  - \ref sec_LogDB_Conf
+		  - \ref sec_LogDB_DB
 		  - \ref sec_LogDB_REST
+		  - \ref sec_LogDB_WEBSOCK
+		  - \ref sec_LogDB_DETAIL
 
 
 		\section sec_LogDB_Comm Общее описание работы LogDB
@@ -70,6 +73,9 @@ namespace uniset
 			<logserver name="" ip=".." port=".." cmd=".."/>
 		</LogDB>
 
+		\section sec_LogDB_DB LogDB Работа с БД
+		Для оптимизации, запись в БД сделана не по каждому сообщению, а через промежуточнй буффер.
+		Т.е. только после того как в буфере скапливается \a qbufSize сообщений (строк) буфер скидывается в базу.
 
 		\section sec_LogDB_REST LogDB REST API
 			LogDB предоставляет возможность получения логов через REST API. Для этого запускается
@@ -105,18 +111,20 @@ namespace uniset
 
 		\section sec_LogDB_DETAIL LogDB Технические детали
 		   Вся релизация построена на "однопоточном" eventloop. В нём происходит,
-		 чтение данных от логсерверов, посылка сообщений в websockets.
-		 При этом обработка запросов REST API реалиуется отдельными потоками контролируемыми libpoco.
+		 чтение данных от логсерверов, посылка сообщений в websockets, запись в БД.
+		 При этом обработка запросов REST API реализуется отдельными потоками контролируемыми libpoco.
 
+		\todo conf: Отвязать конфигурирование от uniset (uniset_conf). Чтобы можно было просто указать xml-файл с настройками
+		\todo conf: может быть даже добавить поддержку конфигурирования в формате yaml.
 		\todo Добавить настройки таймаутов, размера буфера, размера для резервирования под строку, количество потоков для http и т.п.
-		\todo Добавить ротацию БД
-		\todo Сделать настройку, для формата даты и времени при выгрузке из БД (при формировании json).
-		\todo Возможно в /logs стоит в ответе сразу возвращать и общее количество в БД (это один лишний запрос, каждый раз).
-		\todo Возможно в последствии оптимизировать таблицы (нормализовать) если будет тормозить. Сейчас пока прототип.
-		\todo Пока не очень эффективная работа с датой и временем (заодно подумать всё-таки в чём хранить)
+		\todo db: Добавить ротацию БД (удаление старых записей и vacuum)
+		\todo db: Сделать настройку, для формата даты и времени при выгрузке из БД (при формировании json).
+		\todo rest: Возможно в /logs стоит в ответе сразу возвращать и общее количество в БД (это один лишний запрос, каждый раз).
+		\todo db: Возможно в последствии оптимизировать таблицы (нормализовать) если будет тормозить. Сейчас пока прототип.
+		\todo db: Пока не очень эффективная работа с датой и временем (заодно подумать всё-таки в чём хранить)
 		\todo WebSocket: доделать настройку всевозможных timeout-ов
 		\todo WebSocket: доделать проверку соединения
-		\todo WebSocket: сделать ограничение на максимальное количество соединений (websocket)
+		\todo WebSocket: сделать ограничение на максимальное количество соединений
 	*/
 	class LogDB:
 		public EventLoopServer
@@ -179,7 +187,7 @@ namespace uniset
 
 			typedef std::queue<std::string> QueryBuffer;
 			QueryBuffer qbuf;
-			size_t qbufSize = { 200 }; // размер буфера сообщений.
+			size_t qbufSize = { 1000 }; // размер буфера сообщений.
 
 			ev::timer flushBufferTimer;
 			double tmFlushBuffer_sec = { 1.0 };
@@ -241,6 +249,13 @@ namespace uniset
 			std::string httpHost = { "" };
 			int httpPort = { 0 };
 
+			/*! класс реализует работу с websocket через eventloop
+			 * Из-за того, что поступление логов может быть достаточно быстрым
+			 * чтобы не "завалить" браузер кучей сообщений,
+			 * сделана посылка не по факту приёма сообщения, а раз в send_sec,
+			 * не более maxsend сообщений.
+			 * \todo websocket: может стоит объединять сообщения в одну посылку (пока считаю преждевременной оптимизацией)
+			 */
 			class LogWebSocket:
 				public Poco::Net::WebSocket
 			{
@@ -255,9 +270,9 @@ namespace uniset
 					std::shared_ptr<DebugStream> dblog;
 
 					bool isActive();
-					void start( ev::dynamic_loop& loop );
+					void set( ev::dynamic_loop& loop );
 
-					void event( ev::io& watcher, int revents );
+					void send( ev::timer& t, int revents );
 					void ping( ev::timer& t, int revents );
 
 					void add( Log* log, const std::string& txt );
@@ -268,9 +283,12 @@ namespace uniset
 
 				protected:
 
-					void write( ev::io& w );
+					void write();
 
-					ev::io io;
+					ev::timer iosend;
+					double send_sec = { 0.5 };
+					size_t maxsend = { 200 };
+
 					ev::timer ioping;
 					double ping_sec = { 3.0 };
 
@@ -286,6 +304,7 @@ namespace uniset
 
 					// очередь данных на посылку..
 					std::queue<UTCPCore::Buffer*> wbuf;
+					size_t maxsize; // рассчитывается сходя из max_send (см. конструктор)
 			};
 
 			class LogWebSocketGuard

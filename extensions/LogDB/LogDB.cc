@@ -108,7 +108,7 @@ LogDB::LogDB( const string& name , const string& prefix ):
 		//		l->tcp = make_shared<UTCPStream>();
 		l->dblog = dblog;
 		l->signal_on_read().connect(sigc::mem_fun(this, &LogDB::addLog));
-//		l->set(loop);
+		//		l->set(loop);
 
 		logservers.push_back(l);
 	}
@@ -183,7 +183,10 @@ LogDB::~LogDB()
 //--------------------------------------------------------------------------------------------
 void LogDB::flushBuffer()
 {
-	// Сперва пробуем очистить всё что накопилось в очереди до этого...
+	// без BEGIN и COMMIT вставка большого количества данных будет тормозить!
+
+	db->query("BEGIN;");
+
 	while( !qbuf.empty() )
 	{
 		if( !db->insert(qbuf.front()) )
@@ -194,6 +197,8 @@ void LogDB::flushBuffer()
 
 		qbuf.pop();
 	}
+
+	db->query("COMMIT;");
 }
 //--------------------------------------------------------------------------------------------
 void LogDB::addLog( LogDB::Log* log, const string& txt )
@@ -284,10 +289,11 @@ void LogDB::onActivate( ev::async& watcher, int revents )
 	}
 
 	uniset_rwmutex_rlock lk(wsocksMutex);
-	for( const auto& s: wsocks )
+
+	for( const auto& s : wsocks )
 	{
 		if( !s->isActive() )
-			s->start(loop);
+			s->set(loop);
 	}
 }
 // -----------------------------------------------------------------------------
@@ -301,7 +307,7 @@ void LogDB::Log::set( ev::dynamic_loop& loop )
 	io.set(loop);
 	iocheck.set(loop);
 	iocheck.set<LogDB::Log, &LogDB::Log::check>(this);
-	iocheck.start(0,checkConnection_sec);
+	iocheck.start(0, checkConnection_sec);
 }
 // -----------------------------------------------------------------------------
 void LogDB::Log::check( ev::timer& t, int revents )
@@ -977,10 +983,12 @@ LogDB::LogWebSocket::LogWebSocket(Poco::Net::HTTPServerRequest* _req,
 	con = _log->signal_on_read().connect( sigc::mem_fun(*this, &LogWebSocket::add));
 
 	// т.к. создание websocket-а происходит в другом потоке
-	// то активация и привязка к loop происходит в функции start()
+	// то активация и привязка к loop происходит в функции set()
 	// вызываемой из eventloop
-	io.set<LogDB::LogWebSocket, &LogDB::LogWebSocket::event>(this);
 	ioping.set<LogDB::LogWebSocket, &LogDB::LogWebSocket::ping>(this);
+	iosend.set<LogDB::LogWebSocket, &LogDB::LogWebSocket::send>(this);
+
+	maxsize = maxsend * 10; // пока так
 }
 // -----------------------------------------------------------------------------
 LogDB::LogWebSocket::~LogWebSocket()
@@ -998,25 +1006,25 @@ LogDB::LogWebSocket::~LogWebSocket()
 // -----------------------------------------------------------------------------
 bool LogDB::LogWebSocket::isActive()
 {
-	return io.is_active();
+	return iosend.is_active();
 }
 // -----------------------------------------------------------------------------
-void LogDB::LogWebSocket::start( ev::dynamic_loop& loop )
+void LogDB::LogWebSocket::set( ev::dynamic_loop& loop )
 {
-	io.set(loop);
+	iosend.set(loop);
 	ioping.set(loop);
 
-	io.start();
-	ioping.start(ping_sec,ping_sec);
+	iosend.start(0, send_sec);
+	ioping.start(ping_sec, ping_sec);
 }
 // -----------------------------------------------------------------------------
-void LogDB::LogWebSocket::event( ev::io& watcher, int revents )
+void LogDB::LogWebSocket::send( ev::timer& t, int revents )
 {
 	if( EV_ERROR & revents )
 		return;
 
-	if( revents & EV_WRITE )
-		write(watcher);
+	for( size_t i = 0; !wbuf.empty() && i < maxsend && !cancelled; i++ )
+		write();
 }
 // -----------------------------------------------------------------------------
 void LogDB::LogWebSocket::ping( ev::timer& t, int revents )
@@ -1037,8 +1045,6 @@ void LogDB::LogWebSocket::ping( ev::timer& t, int revents )
 
 	if( ioping.is_active() )
 		ioping.stop();
-
-	io.set(ev::WRITE);
 }
 // -----------------------------------------------------------------------------
 void LogDB::LogWebSocket::add( LogDB::Log* log, const string& txt )
@@ -1046,25 +1052,27 @@ void LogDB::LogWebSocket::add( LogDB::Log* log, const string& txt )
 	if( cancelled || txt.empty())
 		return;
 
+	if( wbuf.size() > maxsize )
+	{
+		dbwarn << req->clientAddress().toString() << " lost messages..." << endl;
+		return;
+	}
+
 	wbuf.emplace(new UTCPCore::Buffer(txt));
+
 	if( ioping.is_active() )
 		ioping.stop();
-
-	io.set(ev::WRITE);
 }
 // -----------------------------------------------------------------------------
-void LogDB::LogWebSocket::write( ev::io& w )
+void LogDB::LogWebSocket::write()
 {
 	UTCPCore::Buffer* msg = 0;
 
-	cerr << "write: " << wbuf.size()
-		 << endl;
-
 	if( wbuf.empty() )
 	{
-		io.set(EV_NONE);
 		if( !ioping.is_active() )
-			ioping.start(ping_sec,ping_sec);
+			ioping.start(ping_sec, ping_sec);
+
 		return;
 	}
 
@@ -1090,13 +1098,13 @@ void LogDB::LogWebSocket::write( ev::io& w )
 		if( ret < 0 )
 		{
 			dblog3 << "(websocket): " << req->clientAddress().toString()
-				 << "  write to socket error(" << errno << "): " << strerror(errno) << endl;
+				   << "  write to socket error(" << errno << "): " << strerror(errno) << endl;
 
 			if( errno == EPIPE || errno == EBADF )
 			{
 				dblog3 << "(websocket): "
-					 << req->clientAddress().toString()
-					 << " write error.. terminate session.." << endl;
+					   << req->clientAddress().toString()
+					   << " write error.. terminate session.." << endl;
 
 				term();
 			}
@@ -1114,15 +1122,13 @@ void LogDB::LogWebSocket::write( ev::io& w )
 
 		if( !wbuf.empty() )
 		{
-			io.set(EV_WRITE);
 			if( ioping.is_active() )
 				ioping.stop();
 		}
 		else
 		{
-			io.set(EV_NONE);
 			if( !ioping.is_active() )
-				ioping.start(ping_sec,ping_sec);
+				ioping.start(ping_sec, ping_sec);
 		}
 
 		return;
@@ -1168,14 +1174,15 @@ void LogDB::LogWebSocket::term()
 
 	cancelled = true;
 	con.disconnect();
-	io.stop();
 	ioping.stop();
+	iosend.stop();
 	finish.notify_all();
 }
 // -----------------------------------------------------------------------------
 void LogDB::LogWebSocket::waitCompletion()
 {
 	std::unique_lock<std::mutex> lk(finishmut);
+
 	while( !cancelled )
 		finish.wait(lk);
 }
