@@ -1,4 +1,8 @@
 <html>
+<!--
+	Base on example from
+	https://github.com/pocoproject/poco/blob/develop/Net/samples/WebSocketServer/src/WebSocketServer.cpp
+-->
 		<head>
 		<title>WebSocketServer</title>
 		<script type="text/javascript">
@@ -7,10 +11,10 @@
 		  if ("WebSocket" in window)
 		  {
 		    var ws = new WebSocket("ws://localhost:8888/logdb/ws/logserver1");
-		    ws.onopen = function()
-		      {
-		        ws.send("Hello, world!");
-		      };
+// 		    ws.onopen = function()
+// 		    {
+// 		        ws.send("Hello, world!");
+// 		    };
 
 		    ws.onmessage = ws.onmessage = function(evt)
 		    {
@@ -33,8 +37,8 @@
 		</script>
 		</head>
 		<body>
-		  <h1>WebSocket Server</h1>
-		  <p><a href="javascript:WebSocketTest()">Run WebSocket</a></p>
+		  <h1>Test uniset logdb websocket</h1>
+		  <p><a href="javascript:WebSocketTest()">Connect to 'logserver1'</a></p>
 		  <div id="logs"></div>
 		</body>
 </html>

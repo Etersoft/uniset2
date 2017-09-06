@@ -872,100 +872,24 @@ void LogDB::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco::Net::HTT
 		return;
 	}
 
-	auto ws = newWebSocket(req, resp, seg[2]);
+	auto ws = newWebSocket(&req, &resp, seg[2]);
 
 	if( !ws )
 		return;
 
 	LogWebSocketGuard lk(ws, this);
 
-	char buf[100];
+	dblog3 << myname << "(onWebSocketSession): start session for " << req.clientAddress().toString() << endl;
 
-	while( true )
-	{
-		try
-		{
-			std::string txt = ws->get();
+	// т.к. вся работа происходит в eventloop
+	// то здесь просто ждём..
+	ws->waitCompletion();
 
-			if( txt.empty() )
-				continue;
-
-			int flags = WebSocket::FRAME_TEXT;
-
-			if( txt == "." )
-				flags = WebSocket::FRAME_FLAG_FIN | WebSocket::FRAME_OP_PING;
-
-			ssize_t ret = ws->sendFrame(txt.data(), txt.size(), flags);
-
-			if( ret < 0 )
-			{
-				dbwarn << myname << "(websocket): " << req.clientAddress().toString()
-					   << "  write to socket error(" << errno << "): " << strerror(errno) << endl;
-
-				if( errno == EPIPE || errno == EBADF )
-				{
-					dbwarn << myname << "(websocket): "
-						   << req.clientAddress().toString()
-						   << " write error.. terminate session.." << endl;
-
-				}
-
-				return;
-			}
-
-			// проверяем соединение
-			//			ssize_t n = ws->receiveFrame(buf, sizeof(buf), flags);
-
-			//			cerr << "read from websocket: " << n << endl;
-
-			//			if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_CLOSE )
-			//			{
-			//				dbwarn << myname << "(websocket): "
-			//					   << req.clientAddress().toString()
-			//					   << " connection closed.." << endl;
-			//				return;
-			//			}
-
-			continue;
-		}
-		catch( WebSocketException& exc )
-		{
-			switch( exc.code() )
-			{
-				case WebSocket::WS_ERR_HANDSHAKE_UNSUPPORTED_VERSION:
-					resp.set("Sec-WebSocket-Version", WebSocket::WEBSOCKET_VERSION);
-
-				case WebSocket::WS_ERR_NO_HANDSHAKE:
-				case WebSocket::WS_ERR_HANDSHAKE_NO_VERSION:
-				case WebSocket::WS_ERR_HANDSHAKE_NO_KEY:
-					resp.setStatusAndReason(HTTPResponse::HTTP_BAD_REQUEST);
-					resp.setContentLength(0);
-					resp.send();
-					break;
-			}
-		}
-		catch( const Poco::Net::NetException& e )
-		{
-			dbwarn << myname << "(websocket):NetException: "
-				   << req.clientAddress().toString()
-				   << " error: " << e.displayText()
-				   << endl;
-		}
-		catch( Poco::IOException& ex )
-		{
-			dbwarn << myname << "(websocket): IOException: "
-				   << req.clientAddress().toString()
-				   << " error: " << ex.displayText()
-				   << endl;
-		}
-
-		return;
-	}
-
+	dblog3 << myname << "(onWebSocketSession): finish session for " << req.clientAddress().toString() << endl;
 }
 // -----------------------------------------------------------------------------
-std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerRequest& req,
-		Poco::Net::HTTPServerResponse& resp,
+std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerRequest* req,
+		Poco::Net::HTTPServerResponse* resp,
 		const std::string& logname )
 {
 	using Poco::Net::WebSocket;
@@ -986,10 +910,10 @@ std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerR
 
 	if( !log )
 	{
-		resp.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
-		resp.setContentType("text/html");
-		resp.setStatusAndReason(HTTPResponse::HTTP_NOT_FOUND);
-		std::ostream& err = resp.send();
+		resp->setStatus(HTTPResponse::HTTP_BAD_REQUEST);
+		resp->setContentType("text/html");
+		resp->setStatusAndReason(HTTPResponse::HTTP_NOT_FOUND);
+		std::ostream& err = resp->send();
 		err << "Not found '" << logname << "'";
 		err.flush();
 		return nullptr;
@@ -997,8 +921,7 @@ std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerR
 
 
 	uniset_rwmutex_wrlock lock(wsocksMutex);
-
-	std::shared_ptr<LogWebSocket> ws = make_shared<LogWebSocket>(req, resp, log);
+	std::shared_ptr<LogWebSocket> ws = make_shared<LogWebSocket>(req, resp, log, loop);
 	wsocks.emplace_back(ws);
 	return ws;
 }
@@ -1006,8 +929,6 @@ std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerR
 void LogDB::delWebSocket( std::shared_ptr<LogWebSocket>& ws )
 {
 	uniset_rwmutex_wrlock lock(wsocksMutex);
-
-	ws->term(); // надо вызывать под mutex-ом, т.к. там идёт вызов
 
 	for( auto it = wsocks.begin(); it != wsocks.end(); it++ )
 	{
@@ -1035,56 +956,42 @@ void LogDB::onPingWebSockets( ev::timer& t, int revents )
 		s->ping();
 }
 // -----------------------------------------------------------------------------
-LogDB::LogWebSocket::LogWebSocket(Poco::Net::HTTPServerRequest& req,
-								  Poco::Net::HTTPServerResponse& resp,
-								  std::shared_ptr<Log>& _log):
-	Poco::Net::WebSocket(req, resp)
+LogDB::LogWebSocket::LogWebSocket(Poco::Net::HTTPServerRequest* _req,
+								  Poco::Net::HTTPServerResponse* _resp,
+								  std::shared_ptr<Log>& _log,
+								  ev::dynamic_loop& loop ):
+	Poco::Net::WebSocket(*_req, *_resp),
+	req(_req),
+	resp(_resp)
 	//	log(_log)
 {
+	setBlocking(false);
 	con = _log->signal_on_read().connect( sigc::mem_fun(*this, &LogWebSocket::add));
+	io.set(loop);
+	io.set<LogDB::LogWebSocket, &LogDB::LogWebSocket::event>(this);
+	io.start();
 }
 // -----------------------------------------------------------------------------
 LogDB::LogWebSocket::~LogWebSocket()
 {
 	if( !cancelled )
 		term();
+
+	// удаляем всё что осталось
+	while(!wbuf.empty())
+	{
+		delete wbuf.front();
+		wbuf.pop();
+	}
 }
 // -----------------------------------------------------------------------------
-std::string LogDB::LogWebSocket::get()
+void LogDB::LogWebSocket::event( ev::io& watcher, int revents )
 {
-	if( cancelled )
-		return "";
+	if( EV_ERROR & revents )
+		return;
 
-	std::string ret;
-
-	{
-		uniset_rwmutex_wrlock lk(mqmut);
-
-		if( !mqueue.empty() )
-		{
-			ret = mqueue.front();
-			mqueue.pop();
-			return ret;
-		}
-	}
-
-	{
-		std::unique_lock<std::mutex> lk(mut);
-		event.wait(lk);
-	}
-
-	if( cancelled )
-		return "";
-
-	uniset_rwmutex_wrlock lk(mqmut);
-
-	if( !mqueue.empty() )
-	{
-		ret = mqueue.front();
-		mqueue.pop();
-	}
-
-	return ret;
+	if( revents & EV_WRITE )
+		write(watcher);
 }
 // -----------------------------------------------------------------------------
 void LogDB::LogWebSocket::ping()
@@ -1092,31 +999,128 @@ void LogDB::LogWebSocket::ping()
 	if( cancelled )
 		return;
 
-	{
-		uniset_rwmutex_wrlock lk(mqmut);
-		// в качестве ping-а просто добавляем фейковое сообщение '.'
-		mqueue.push(".");
-	}
-	event.notify_all();
+	wbuf.emplace(new UTCPCore::Buffer("."));
+	io.set(ev::WRITE);
 }
 // -----------------------------------------------------------------------------
 void LogDB::LogWebSocket::add( LogDB::Log* log, const string& txt )
 {
-	if( cancelled )
+	if( cancelled || txt.empty())
 		return;
 
+	wbuf.emplace(new UTCPCore::Buffer(txt));
+	io.set(ev::WRITE);
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::write( ev::io& w )
+{
+	UTCPCore::Buffer* msg = 0;
+
+	if( wbuf.empty() )
 	{
-		uniset_rwmutex_wrlock lk(mqmut);
-		mqueue.push(txt);
+		io.set(EV_NONE);
+		return;
 	}
-	event.notify_all();
+
+	msg = wbuf.front();
+
+	if( !msg )
+		return;
+
+	using Poco::Net::WebSocket;
+	using Poco::Net::WebSocketException;
+	using Poco::Net::HTTPResponse;
+	using Poco::Net::HTTPServerRequest;
+
+	int flags = WebSocket::FRAME_TEXT;
+
+	if( msg->len == 1 ) // это пинг состоящий из "."
+		flags = WebSocket::FRAME_FLAG_FIN | WebSocket::FRAME_OP_PING;
+
+	try
+	{
+		ssize_t ret = sendFrame(msg->dpos(), msg->nbytes(), flags);
+
+		if( ret < 0 )
+		{
+			cerr << "(websocket): " << req->clientAddress().toString()
+				 << "  write to socket error(" << errno << "): " << strerror(errno) << endl;
+
+			if( errno == EPIPE || errno == EBADF )
+			{
+				cerr << "(websocket): "
+					 << req->clientAddress().toString()
+					 << " write error.. terminate session.." << endl;
+
+				term();
+			}
+
+			return;
+		}
+
+		msg->pos += ret;
+
+		if( msg->nbytes() == 0 )
+		{
+			wbuf.pop();
+			delete msg;
+		}
+
+		if( !wbuf.empty() )
+			io.set(EV_WRITE);
+
+		return;
+	}
+	catch( WebSocketException& exc )
+	{
+		switch( exc.code() )
+		{
+			case WebSocket::WS_ERR_HANDSHAKE_UNSUPPORTED_VERSION:
+				resp->set("Sec-WebSocket-Version", WebSocket::WEBSOCKET_VERSION);
+
+			case WebSocket::WS_ERR_NO_HANDSHAKE:
+			case WebSocket::WS_ERR_HANDSHAKE_NO_VERSION:
+			case WebSocket::WS_ERR_HANDSHAKE_NO_KEY:
+				resp->setStatusAndReason(HTTPResponse::HTTP_BAD_REQUEST);
+				resp->setContentLength(0);
+				resp->send();
+				break;
+		}
+	}
+	catch( const Poco::Net::NetException& e )
+	{
+		cerr << "(websocket):NetException: "
+			 << req->clientAddress().toString()
+			 << " error: " << e.displayText()
+			 << endl;
+	}
+	catch( Poco::IOException& ex )
+	{
+		cerr << "(websocket): IOException: "
+			 << req->clientAddress().toString()
+			 << " error: " << ex.displayText()
+			 << endl;
+	}
+
+	term();
 }
 // -----------------------------------------------------------------------------
 void LogDB::LogWebSocket::term()
 {
+	if( cancelled )
+		return;
+
 	cancelled = true;
-	con.disconnect(); // вот тут не безпасный вызов, т.е. sigc там в других потоках используется
-	event.notify_all();
+	con.disconnect();
+	io.stop();
+	finish.notify_all();
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::waitCompletion()
+{
+	std::unique_lock<std::mutex> lk(finishmut);
+	while( !cancelled )
+		finish.wait(lk);
 }
 // -----------------------------------------------------------------------------
 #endif

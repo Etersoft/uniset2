@@ -62,7 +62,7 @@ namespace uniset
 		Ожидается что контролируемых логов будет не очень много (максимум несколько десятков)
 		и каждый лог будет генерировать не более 2-5 мегабайт записей. Поэтому sqlite должно хватить.
 
-		\section sec_LogDB_Conf Конфигурирвание LogDB
+		\section sec_LogDB_Conf Конфигурирование LogDB
 
 		<LogDB name="LogDB" ...>
 			<logserver name="" ip=".." port=".." cmd=".." description=".."/>
@@ -92,13 +92,28 @@ namespace uniset
 		/count?logname                   - Получить текущее количество записей
 
 
+
+		\section sec_LogDB_WEBSOCK LogDB Поддержка web socket
+
+		 В LogDB встроена возможность realtime чтения логов, через websocket.
+		 Подключение (создание) сокета происходит по адресу
+		 \code
+		 ws://host:port/logdb/ws/logname
+		 \endcode
+		 Где \a logname - это имя логсервера от которого мы хотим получать логи (см. \ref sec_LogDB_Conf).
+
+
+		\section sec_LogDB_DETAIL LogDB Технические детали
+		   Вся релизация построена на "однопоточном" eventloop. В нём происходит,
+		 чтение данных от логсерверов, посылка сообщений в websockets.
+		 При этом обработка запросов REST API реалиуется отдельными потоками контролируемыми libpoco.
+
 		\todo Добавить настройки таймаутов, размера буфера, размера для резервирования под строку, количество потоков для http и т.п.
 		\todo Добавить ротацию БД
 		\todo Сделать настройку, для формата даты и времени при выгрузке из БД (при формировании json).
 		\todo Возможно в /logs стоит в ответе сразу возвращать и общее количество в БД (это один лишний запрос, каждый раз).
 		\todo Возможно в последствии оптимизировать таблицы (нормализовать) если будет тормозить. Сейчас пока прототип.
 		\todo Пока не очень эффективная работа с датой и временем (заодно подумать всё-таки в чём хранить)
-		\todo WebSocket: Сделать запись через UTCPCore::Buffer, чтобы не терять данные при записи в сокет
 		\todo WebSocket: Доделать ограничение на размер буфера для каждого сокета
 		\todo WebSocket: доделать настройку всевозможных timeout-ов
 		\todo WebSocket: доделать проверку соединения
@@ -155,7 +170,7 @@ namespace uniset
 			// XX m - минут, h-часов, d-дней, M - месяцев
 			static std::string qLast( const std::string& p );
 
-			std::shared_ptr<LogWebSocket> newWebSocket( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp, const std::string& logname );
+			std::shared_ptr<LogWebSocket> newWebSocket(Poco::Net::HTTPServerRequest* req, Poco::Net::HTTPServerResponse* resp, const std::string& logname );
 			void delWebSocket( std::shared_ptr<LogWebSocket>& ws );
 			void onPingWebSockets( ev::timer& t, int revents );
 #endif
@@ -229,37 +244,41 @@ namespace uniset
 				public Poco::Net::WebSocket
 			{
 				public:
-					LogWebSocket(Poco::Net::HTTPServerRequest& req,
-								 Poco::Net::HTTPServerResponse& resp,
-								 std::shared_ptr<Log>& log);
+					LogWebSocket(Poco::Net::HTTPServerRequest* req,
+								 Poco::Net::HTTPServerResponse* resp,
+								 std::shared_ptr<Log>& log,
+								 ev::dynamic_loop& loop );
 
 					virtual ~LogWebSocket();
 
-					// получение очередного сообщения
-					// (с засыпанием в случае отсутствия сообщения в очереди)
-					std::string get();
+					void event( ev::io& watcher, int revents );
 
-					// вызывается из потока eventloop..
 					void ping();
 
-					// вызывается из потока eventloop..
 					void add( Log* log, const std::string& txt );
 
-					// надо вызывать только из потока eventloop
-					// т.к. идёт обращение sigc::connection
 					void term();
 
-				protected:
-					std::mutex              mut;
-					std::condition_variable event;
+					void waitCompletion();
 
-					uniset::uniset_rwmutex mqmut;
-					std::queue<std::string> mqueue;
+				protected:
+
+					void write( ev::io& w );
+
+					ev::io io;
+
+					std::mutex              finishmut;
+					std::condition_variable finish;
 
 					std::atomic_bool cancelled = { false };
 
-					sigc::connection con;
-					// std::shared_ptr<Log> log;
+					sigc::connection con; // подписка на появление логов..
+
+					Poco::Net::HTTPServerRequest* req;
+					Poco::Net::HTTPServerResponse* resp;
+
+					// очередь данных на посылку..
+					std::queue<UTCPCore::Buffer*> wbuf;
 			};
 
 			class LogWebSocketGuard
