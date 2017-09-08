@@ -106,7 +106,11 @@ namespace uniset
 		\section sec_LogDB_WEBSOCK LogDB Поддержка web socket
 
 		 В LogDB встроена возможность realtime чтения логов, через websocket.
-		 Подключение (создание) сокета происходит по адресу
+		 Список доступных для подключения лог-серверов доступен по адресу:
+		 \code
+		 ws://host:port/logdb/ws/
+		 \endcode
+		 Прямое подключение к websocket-у доступно по адресу:
 		 \code
 		 ws://host:port/logdb/ws/logname
 		 \endcode
@@ -182,6 +186,7 @@ namespace uniset
 			Poco::JSON::Object::Ptr httpGetLogs( const Poco::URI::QueryParameters& p );
 			Poco::JSON::Object::Ptr httpGetCount( const Poco::URI::QueryParameters& p );
 			void httpWebSocketPage( std::ostream& out, Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp );
+			void httpWebSocketConnectPage( std::ostream& out, Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp, const std::string& logname );
 
 			// формирование условия where для строки XX[m|h|d|M]
 			// XX m - минут, h-часов, d-дней, M - месяцев

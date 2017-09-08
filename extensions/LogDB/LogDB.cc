@@ -663,8 +663,16 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
 		uri.getPathSegments(seg);
 
 		// проверка подключения к страничке со списком websocket-ов
-		if( seg.size() >= 1 && seg[0] == "ws" )
+		if( seg.size() > 1 && seg[0] == "logdb" && seg[1] == "ws" )
 		{
+			// подключение..
+			if( seg.size() > 2 )
+			{
+				httpWebSocketConnectPage(out, req, resp, seg[2]);
+				return;
+			}
+
+			// default page
 			httpWebSocketPage(out, req, resp);
 			out.flush();
 			return;
@@ -1275,20 +1283,52 @@ void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest&
 	resp.setChunkedTransferEncoding(true);
 	resp.setContentType("text/html");
 
+	ostr << "<html>" << endl;
+	ostr << "<head>" << endl;
+	ostr << "<title>" << myname << ": log servers list</title>" << endl;
+	ostr << "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">" << endl;
+	ostr << "</head>" << endl;
+	ostr << "<body>" << endl;
+	ostr << "<h1>servers:</h1>" << endl;
+	ostr << "<ul>" << endl;
+
+	for( const auto& l : logservers )
+	{
+		ostr << "  <li><a target='_blank' href=\"http://"
+			 << req.serverAddress().toString()
+			 << "/logdb/ws/" << l->name << "\">"
+			 << l->name << "</a>  &#8211; "
+			 << "<i>" << l->description << "</i></li>"
+			 << endl;
+	}
+
+	ostr << "</ul>" << endl;
+	ostr << "</body>" << endl;
+}
+// -----------------------------------------------------------------------------
+void LogDB::httpWebSocketConnectPage( ostream& ostr,
+									  Poco::Net::HTTPServerRequest& req,
+									  Poco::Net::HTTPServerResponse& resp,
+									  const std::string& logname )
+{
+	resp.setChunkedTransferEncoding(true);
+	resp.setContentType("text/html");
+
 	// code base on example from
 	// https://github.com/pocoproject/poco/blob/developNet/samples/WebSocketServer/src/WebSocketServer.cpp
 
 	ostr << "<html>" << endl;
 	ostr << "<head>" << endl;
-	ostr << "<title>" << myname << " log servers list</title>" << endl;
+	ostr << "<title>" << myname << " log '" << logname << "'</title>" << endl;
+	ostr << "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">" << endl;
 	ostr << "<script type=\"text/javascript\">" << endl;
 	ostr << "function WebSocketCreate(logname)" << endl;
 	ostr << "{" << endl;
 	ostr << "  if (\"WebSocket\" in window)" << endl;
 	ostr << "  {" << endl;
 	ostr << "    var ws = new WebSocket(\"ws://" << req.serverAddress().toString() << "/logdb/ws/\" + logname);" << endl;
-	ostr << "    	var l = document.getElementById('logname');" << endl;
-	ostr << "    	l.innerHTML = logname" << endl;
+	ostr << "    var l = document.getElementById('logname');" << endl;
+	ostr << "    l.innerHTML = logname" << endl;
 	ostr << "    ws.onmessage = function(evt)" << endl;
 	ostr << "    {" << endl;
 	ostr << "    	var p = document.getElementById('logs');" << endl;
@@ -1308,16 +1348,7 @@ void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest&
 	ostr << "}" << endl;
 	ostr << "</script>" << endl;
 	ostr << "</head>" << endl;
-	ostr << "<body>" << endl;
-	ostr << "  <h1>" << myname << " WebSocket Server:</h1>" << endl;
-
-	ostr << "<ul>" << endl;
-
-	for( const auto& l : logservers )
-		ostr << "  <li><a href=\"javascript:WebSocketCreate('" << l->name << "')\">" << l->name << "</a></li>" << endl;
-
-	ostr << "</ul>" << endl;
-
+	ostr << "<body onload=\"javascript:WebSocketCreate('" << logname << "')\">" << endl;
 	ostr << "<h4><div id='logname'></div></h4>" << endl;
 	ostr << "<div id='logs'></div>" << endl;
 	ostr << "</body>" << endl;

@@ -234,7 +234,7 @@ int main( int argc, char** argv )
 		{
 			if( !silent )
 			{
-				dlog->any() << "[" << ++i << "] Test message for log" << endl;
+				dlog->any() << "[" << ++i << "] Test message for log (русский текст)" << endl;
 				dlog->info() << ": dlog : INFO message" << endl;
 				dlog->warn() << ": dlog : WARN message" << endl;
 				dlog->crit() << ": dlog : CRIT message" << endl;
@@ -250,6 +250,7 @@ int main( int argc, char** argv )
 				dlog4->info() << ": dlog4: INFO message" << endl;
 				dlog4->warn() << ": dlog4: WARN message" << endl;
 				dlog4->crit() << ": dlog4: CRIT message" << endl;
+
 			}
 
 			msleep(delay);
