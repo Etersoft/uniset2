@@ -20,6 +20,7 @@
 // --------------------------------------------------------------------------
 #include <sstream>
 #include <iomanip>
+#include <unistd.h>
 
 #include "unisetstd.h"
 #include <Poco/Net/NetException.h>
@@ -57,6 +58,16 @@ LogDB::LogDB( const string& name , const string& prefix ):
 	UniXML::iterator it(cnode);
 
 	qbufSize = conf->getArgPInt("--" + prefix + "buffer-size", it.getProp("bufferSize"), qbufSize);
+	maxdbRecords = conf->getArgPInt("--" + prefix + "max-records", it.getProp("maxRecords"), qbufSize);
+
+	std::string s_overflow = conf->getArg2Param("--" + prefix + "overflow-factor", it.getProp("overflowFactor"), "1.3");
+	float ovf = atof(s_overflow.c_str());
+
+	numOverflow = lroundf( (float)maxdbRecords*ovf );
+	if( numOverflow == 0 )
+		numOverflow = maxdbRecords;
+
+	dbinfo << myname << "(init) maxdbRecords=" << maxdbRecords << " numOverflow=" << numOverflow << endl;
 
 	flushBufferTimer.set<LogDB, &LogDB::onCheckBuffer>(this);
 	wsactivate.set<LogDB, &LogDB::onActivate>(this);
@@ -122,7 +133,7 @@ LogDB::LogDB( const string& name , const string& prefix ):
 	}
 
 
-	std::string dbfile = conf->getArgParam("--" + prefix + "dbfile", it.getProp("dbfile"));
+	const std::string dbfile = conf->getArgParam("--" + prefix + "dbfile", it.getProp("dbfile"));
 
 	if( dbfile.empty() )
 	{
@@ -183,8 +194,10 @@ LogDB::~LogDB()
 //--------------------------------------------------------------------------------------------
 void LogDB::flushBuffer()
 {
-	// без BEGIN и COMMIT вставка большого количества данных будет тормозить!
+	if( qbuf.empty() || !db->isConnection() )
+		return;
 
+	// без BEGIN и COMMIT вставка большого количества данных будет тормозить!
 	db->query("BEGIN;");
 
 	while( !qbuf.empty() )
@@ -199,6 +212,44 @@ void LogDB::flushBuffer()
 	}
 
 	db->query("COMMIT;");
+
+	if( !db->error().empty() )
+	{
+		dbcrit << myname << "(flushBuffer): error: " << db->error() << endl;
+	}
+
+	// вызываем каждый раз, для отслеживания переполнения..
+	rotateDB();
+}
+//--------------------------------------------------------------------------------------------
+void LogDB::rotateDB()
+{
+	// ротация отключена
+	if( maxdbRecords == 0 )
+		return;
+
+	size_t num = getCountOfRecords();
+
+	if( num <= numOverflow )
+		return;
+
+	dblog2 << myname << "(rotateDB): num=" << num << " > " << numOverflow << endl;
+
+	size_t firstOldID = getFirstOfOldRecord(numOverflow);
+
+	DBResult ret = db->query("DELETE FROM logs WHERE id <= " + std::to_string(firstOldID) + ";");
+	if( !db->lastQueryOK() )
+	{
+		dbwarn << myname << "(rotateDB): delete error: " << db->error() << endl;
+	}
+
+	ret = db->query("VACUUM;");
+	if( !db->lastQueryOK() )
+	{
+		dbwarn << myname << "(rotateDB): vacuum error: " << db->error() << endl;
+	}
+
+//	dblog3 <<  myname << "(rotateDB): after rotate: " << getCountOfRecords() << " records" << endl;
 }
 //--------------------------------------------------------------------------------------------
 void LogDB::addLog( LogDB::Log* log, const string& txt )
@@ -215,7 +266,35 @@ void LogDB::addLog( LogDB::Log* log, const string& txt )
 
 	qbuf.emplace(q.str());
 }
+//--------------------------------------------------------------------------------------------
+size_t LogDB::getCountOfRecords( const std::string& logname )
+{
+	ostringstream q;
 
+	q << "SELECT count(*) FROM logs";
+	if( !logname.empty() )
+		q << " WHERE name='" << logname << "'";
+
+	DBResult ret = db->query(q.str());
+
+	if( !ret )
+		return 0;
+
+	return (size_t) DBResult::as_int(ret.begin(),0);
+}
+//--------------------------------------------------------------------------------------------
+size_t LogDB::getFirstOfOldRecord( size_t maxnum )
+{
+	ostringstream q;
+
+	q << "SELECT id FROM logs order by id DESC limit " << maxnum << ",1";
+	DBResult ret = db->query(q.str());
+
+	if( !ret )
+		return 0;
+
+	return (size_t) DBResult::as_int(ret.begin(),0);
+}
 //--------------------------------------------------------------------------------------------
 std::shared_ptr<LogDB> LogDB::init_logdb( int argc, const char* const* argv, const std::string& prefix )
 {
@@ -235,8 +314,10 @@ std::shared_ptr<LogDB> LogDB::init_logdb( int argc, const char* const* argv, con
 void LogDB::help_print()
 {
 	cout << "Default: prefix='logdb'" << endl;
-	cout << "--prefix-name name        - Имя. Для поиска настроечной секции в configure.xml" << endl;
-	cout << "--prefix-buffer-size sz   - Размер буфера (до скидывания в БД)." << endl;
+	cout << "--prefix-name name               - Имя. Для поиска настроечной секции в configure.xml" << endl;
+	cout << "--prefix-buffer-size sz          - Размер буфера (до скидывания в БД)." << endl;
+	cout << "--prefix-max-records sz          - Максимальное количество записей в БД. При превышении, старые удаляются. 0 - не удалять" << endl;
+	cout << "--prefix-overflow-factor float   - Коэффициент переполнения, после которого запускается удаление старых записей. По умолчанию: 1.3" << endl;
 }
 // -----------------------------------------------------------------------------
 void LogDB::run( bool async )
@@ -800,23 +881,9 @@ Poco::JSON::Object::Ptr LogDB::httpGetCount( const Poco::URI::QueryParameters& p
 		throw uniset::SystemError(err.str());
 	}
 
-	ostringstream q;
-
-	q << "SELECT count(*) FROM logs WHERE name='" << logname << "'";
-
-	DBResult ret = db->query(q.str());
-
-	if( !ret )
-	{
-		jdata->set("name", logname);
-		jdata->set("count", 0);
-		return jdata;
-	}
-
-	auto it = ret.begin();
-
+	size_t count = getCountOfRecords(logname);
 	jdata->set("name", logname);
-	jdata->set("count", it.as_int(0));
+	jdata->set("count",count);
 	return jdata;
 }
 // -----------------------------------------------------------------------------

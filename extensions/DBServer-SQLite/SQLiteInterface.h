@@ -113,6 +113,7 @@ namespace uniset
 
 			virtual DBResult query( const std::string& q ) override;
 			virtual const std::string lastQuery() override;
+			bool lastQueryOK() const;
 
 			virtual bool insert( const std::string& q ) override;
 			virtual double insert_id() override;

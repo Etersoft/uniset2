@@ -202,7 +202,10 @@ bool SQLiteInterface::wait( sqlite3_stmt* stmt, int result )
 const string SQLiteInterface::error()
 {
 	if( db )
-		lastE = sqlite3_errmsg(db);
+	{
+		int errcode = sqlite3_errcode(db);
+		lastE = ( errcode == SQLITE_OK ) ? "" : sqlite3_errmsg(db);
+	}
 
 	return lastE;
 }
@@ -210,6 +213,11 @@ const string SQLiteInterface::error()
 const string SQLiteInterface::lastQuery()
 {
 	return lastQ;
+}
+// -----------------------------------------------------------------------------------------
+bool SQLiteInterface::lastQueryOK() const
+{
+	return queryok;
 }
 // -----------------------------------------------------------------------------------------
 double SQLiteInterface::insert_id()

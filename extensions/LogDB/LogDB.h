@@ -76,6 +76,10 @@ namespace uniset
 		\section sec_LogDB_DB LogDB Работа с БД
 		Для оптимизации, запись в БД сделана не по каждому сообщению, а через промежуточнй буффер.
 		Т.е. только после того как в буфере скапливается \a qbufSize сообщений (строк) буфер скидывается в базу.
+		Помимо этого, встроен механизм "ротации БД". Если задан параметр maxRecords (--prefix-max-records),
+		то в БД будет поддерживаться ограниченное количество записей. При этом введён "гистерезис",
+		т.е. фактически удаление старых записей начинается при переполнении БД определяемом коэффициентом
+		переполнения overflowFactor (--prefix-overflow-factor). По умолчанию 1.3.
 
 		\section sec_LogDB_REST LogDB REST API
 			LogDB предоставляет возможность получения логов через REST API. Для этого запускается
@@ -117,7 +121,6 @@ namespace uniset
 		\todo conf: Отвязать конфигурирование от uniset (uniset_conf). Чтобы можно было просто указать xml-файл с настройками
 		\todo conf: может быть даже добавить поддержку конфигурирования в формате yaml.
 		\todo Добавить настройки таймаутов, размера буфера, размера для резервирования под строку, количество потоков для http и т.п.
-		\todo db: Добавить ротацию БД (удаление старых записей и vacuum)
 		\todo db: Сделать настройку, для формата даты и времени при выгрузке из БД (при формировании json).
 		\todo rest: Возможно в /logs стоит в ответе сразу возвращать и общее количество в БД (это один лишний запрос, каждый раз).
 		\todo db: Возможно в последствии оптимизировать таблицы (нормализовать) если будет тормозить. Сейчас пока прототип.
@@ -166,6 +169,9 @@ namespace uniset
 			void onActivate( ev::async& watcher, int revents ) ;
 			void addLog( Log* log, const std::string& txt );
 
+			size_t getCountOfRecords( const std::string& logname="" );
+			size_t getFirstOfOldRecord( size_t maxnum );
+
 #ifndef DISABLE_REST_API
 			Poco::JSON::Object::Ptr respError( Poco::Net::HTTPServerResponse& resp, Poco::Net::HTTPResponse::HTTPStatus s, const std::string& message );
 			Poco::JSON::Object::Ptr httpGetRequest( const std::string& cmd, const Poco::URI::QueryParameters& p );
@@ -192,6 +198,10 @@ namespace uniset
 			ev::timer flushBufferTimer;
 			double tmFlushBuffer_sec = { 1.0 };
 			void flushBuffer();
+			void rotateDB();
+
+			size_t maxdbRecords = { 200*1000 };
+			size_t numOverflow = { 0 }; // вычисляется из параметра "overflow factor"(float)
 
 			ev::async wsactivate; // активация LogWebSocket-ов
 

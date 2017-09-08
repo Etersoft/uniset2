@@ -8,5 +8,6 @@ ulimit -Sc 1000000
  --logdb-dbfile ./test.db \
  --logdb-buffer-size 5 \
  --logdb-httpserver-port 8888 \
+ --logdb-max-records 20000 \
  $*
 
