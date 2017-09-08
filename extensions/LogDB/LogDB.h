@@ -130,6 +130,7 @@ namespace uniset
 		\todo WebSocket: сделать ограничение на максимальное количество соединений
 		\todo utils: написать конвертор обычных uniset-логов в БД.
 		\todo db: возможно всё-таки стоит парсить логи на предмет loglevel, и тогда уж и дату с временем вынимать
+		\todo web: генерировать html-страничку со списком подключения к логам с использованием готового шаблона
 	*/
 	class LogDB:
 		public EventLoopServer
@@ -180,6 +181,7 @@ namespace uniset
 			Poco::JSON::Object::Ptr httpGetList( const Poco::URI::QueryParameters& p );
 			Poco::JSON::Object::Ptr httpGetLogs( const Poco::URI::QueryParameters& p );
 			Poco::JSON::Object::Ptr httpGetCount( const Poco::URI::QueryParameters& p );
+			void httpWebSocketPage( std::ostream& out, Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp );
 
 			// формирование условия where для строки XX[m|h|d|M]
 			// XX m - минут, h-часов, d-дней, M - месяцев

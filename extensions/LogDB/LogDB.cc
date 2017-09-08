@@ -641,6 +641,7 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
 	using Poco::Net::HTTPResponse;
 
 	std::ostream& out = resp.send();
+
 	resp.setContentType("text/json");
 
 	try
@@ -660,6 +661,15 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
 
 		std::vector<std::string> seg;
 		uri.getPathSegments(seg);
+
+		// проверка подключения к страничке со списком websocket-ов
+		if( seg.size() >= 1 && seg[0] == "ws" )
+		{
+			httpWebSocketPage(out, req, resp);
+			out.flush();
+			return;
+		}
+
 
 		// example: http://host:port/api/version/logdb/..
 		if( seg.size() < 4
@@ -1256,6 +1266,61 @@ void LogDB::LogWebSocket::waitCompletion()
 
 	while( !cancelled )
 		finish.wait(lk);
+}
+// -----------------------------------------------------------------------------
+void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp )
+{
+	using Poco::Net::HTTPResponse;
+
+	resp.setChunkedTransferEncoding(true);
+	resp.setContentType("text/html");
+
+	// code base on example from
+	// https://github.com/pocoproject/poco/blob/developNet/samples/WebSocketServer/src/WebSocketServer.cpp
+
+	ostr << "<html>" << endl;
+	ostr << "<head>" << endl;
+	ostr << "<title>" << myname << " log servers list</title>" << endl;
+	ostr << "<script type=\"text/javascript\">" << endl;
+	ostr << "function WebSocketCreate(logname)" << endl;
+	ostr << "{" << endl;
+	ostr << "  if (\"WebSocket\" in window)" << endl;
+	ostr << "  {" << endl;
+	ostr << "    var ws = new WebSocket(\"ws://" << req.serverAddress().toString() << "/logdb/ws/\" + logname);" << endl;
+	ostr << "    	var l = document.getElementById('logname');" << endl;
+	ostr << "    	l.innerHTML = logname" << endl;
+	ostr << "    ws.onmessage = function(evt)" << endl;
+	ostr << "    {" << endl;
+	ostr << "    	var p = document.getElementById('logs');" << endl;
+	ostr << "    	if( evt.data != '.' ) {" << endl;
+	ostr << "    		p.innerHTML = p.innerHTML + \"</br>\"+evt.data" << endl;
+	ostr << "    	}" << endl;
+	ostr << "    };" << endl;
+	ostr << "    ws.onclose = function()" << endl;
+	ostr << "      { " << endl;
+	ostr << "        alert(\"WebSocket closed.\");" << endl;
+	ostr << "      };" << endl;
+	ostr << "  }" << endl;
+	ostr << "  else" << endl;
+	ostr << "  {" << endl;
+	ostr << "     alert(\"This browser does not support WebSockets.\");" << endl;
+	ostr << "  }" << endl;
+	ostr << "}" << endl;
+	ostr << "</script>" << endl;
+	ostr << "</head>" << endl;
+	ostr << "<body>" << endl;
+	ostr << "  <h1>" << myname << " WebSocket Server:</h1>" << endl;
+
+	ostr << "<ul>" << endl;
+
+	for( const auto& l : logservers )
+		ostr << "  <li><a href=\"javascript:WebSocketCreate('" << l->name << "')\">" << l->name << "</a></li>" << endl;
+
+	ostr << "</ul>" << endl;
+
+	ostr << "<h4><div id='logname'></div></h4>" << endl;
+	ostr << "<div id='logs'></div>" << endl;
+	ostr << "</body>" << endl;
 }
 // -----------------------------------------------------------------------------
 #endif

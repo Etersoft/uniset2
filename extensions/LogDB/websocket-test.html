@@ -16,7 +16,7 @@
 // 		        ws.send("Hello, world!");
 // 		    };
 
-		    ws.onmessage = ws.onmessage = function(evt)
+		    ws.onmessage = function(evt)
 		    {
 				var p = document.getElementById('logs');
 				if( evt.data != '.' ) {

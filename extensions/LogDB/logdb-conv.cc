@@ -105,12 +105,12 @@ LogInfo makeLogInfo( const std::string& name )
 
 void parseLine( SQLiteInterface* db, const LogInfo& loginfo, const std::string& line )
 {
-	// 28/07/2017 10:55:19(  info):  QG3(AutomatTransientMode): ждем отключения автомата
+	// 28/07/2017 10:55:19(  info):  text...text...more text
 
 	static const std::regex re("[::space::]{0,}"
-							   "(\\d{2})[/-]{1}(\\d{2})[/-]{1}(\\d{4})"
+							   "(\\d{2})[/-]{1}(\\d{2})[/-]{1}(\\d{4})" //date
 							   " "
-							   "(\\d{2}:\\d{2}:\\d{2})"
+							   "(\\d{2}:\\d{2}:\\d{2})"  // time
 							   //							   "(.*)$"
 							  );
 
