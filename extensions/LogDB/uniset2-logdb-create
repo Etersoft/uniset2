@@ -1,10 +1,18 @@
 #!/bin/sh
 
-dbname=test.db
 
-[ -n "$1" ] && dbname="$1"
+usage()
+{
+	echo "Usage: ${0##*/} dbfile"
+}
 
-sqlite3 $dbname <<"_EOF_"
+[ -z "$1" ] && usage && exit 1
+dbfile="$1"
+
+[ -a "$dbfile" ] && echo "$dbfile already exists.." && exit 1
+
+
+sqlite3 $dbfile <<"_EOF_"
 
 PRAGMA foreign_keys=ON;
 

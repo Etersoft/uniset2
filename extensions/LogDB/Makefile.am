@@ -2,6 +2,8 @@ if DISABLE_SQLITE
 
 else
 
+bin_SCRIPTS = @PACKAGE@-logdb-create
+
 bin_PROGRAMS = @PACKAGE@-logdb
 @PACKAGE@_logdb_LDADD = $(top_builddir)/extensions/DBServer-SQLite/libUniSet2-sqlite.la $(top_builddir)/lib/libUniSet2.la
 @PACKAGE@_logdb_CXXFLAGS = $(SQLITE3_CFLAGS) -I$(top_builddir)/extensions/DBServer-SQLite
