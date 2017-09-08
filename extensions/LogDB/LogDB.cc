@@ -846,9 +846,9 @@ Poco::JSON::Object::Ptr LogDB::httpGetLogs( const Poco::URI::QueryParameters& pa
 		else if( p.first == "limit" )
 			limit = uni_atoi(p.second);
 		else if( p.first == "from" )
-			q_where.push_back("tms>='" + p.second + "'");
-		else if( p.first == "to" )
-			q_where.push_back("tms<='" + p.second + "'");
+			q_where.push_back("tms>=CAST(strftime('%s','" + qDate(p.second) + "') AS INT)");
+		else if( p.first == "to" ) // <-- нужно добавить + 1 день, что диапазон вошёл
+			q_where.push_back("tms<=CAST(strftime('%s','" + qDate(p.second) + "') AS INT) + 24*60*60");
 		else if( p.first == "last" )
 			q_where.push_back(qLast(p.second));
 	}
@@ -894,14 +894,10 @@ Poco::JSON::Object::Ptr LogDB::httpGetCount( const Poco::URI::QueryParameters& p
 {
 	Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
 
-	std::string logname = params[0].first;
+	std::string logname;
 
-	if( logname.empty() )
-	{
-		ostringstream err;
-		err << "BAD REQUEST: unknown logname";
-		throw uniset::SystemError(err.str());
-	}
+	if( !params.empty() )
+		logname = params[0].first;
 
 	size_t count = getCountOfRecords(logname);
 	jdata->set("name", logname);
@@ -947,6 +943,25 @@ string LogDB::qLast( const string& p )
 	}
 
 	return "";
+}
+// -----------------------------------------------------------------------------
+string LogDB::qDate( const string& p, const char sep )
+{
+	if( p.size() < 8 || p.size() > 10 )
+		return ""; // bad format
+
+	// преобразование в дату 'YYYY-MM-DD' из строки 'YYYYMMDD' или 'YYYY/MM/DD'
+	if( p.size() == 10 ) // <-- значит у нас длинная строка
+	{
+		std::string ret(p);
+		// независимо от того, правильная она или нет
+		// расставляем разделитель
+		ret[4] = sep;
+		ret[8] = sep;
+		return ret;
+	}
+
+	return p.substr(0, 4) + "-" + p.substr(4, 2) + "-" + p.substr(6, 2);
 }
 // -----------------------------------------------------------------------------
 void LogDB::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp)

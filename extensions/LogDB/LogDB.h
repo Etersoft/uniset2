@@ -192,6 +192,9 @@ namespace uniset
 			// XX m - минут, h-часов, d-дней, M - месяцев
 			static std::string qLast( const std::string& p );
 
+			// преобразование в дату 'YYYY-MM-DD' из строки 'YYYYMMDD' или 'YYYY/MM/DD'
+			static std::string qDate(const std::string& p , const char sep = '-');
+
 			std::shared_ptr<LogWebSocket> newWebSocket(Poco::Net::HTTPServerRequest* req, Poco::Net::HTTPServerResponse* resp, const std::string& logname );
 			void delWebSocket( std::shared_ptr<LogWebSocket>& ws );
 #endif
