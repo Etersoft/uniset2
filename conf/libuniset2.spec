@@ -352,6 +352,10 @@ rm -f %buildroot%_libdir/*.la
 %_datadir/%oname/xslt/*.xsl
 %_datadir/%oname/xslt/skel*
 
+%if_enabled sqlite
+%_bindir/%oname-logdb*
+%endif
+
 %files
 %_libdir/libUniSet2.so.*
 
