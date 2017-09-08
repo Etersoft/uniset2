@@ -31,6 +31,7 @@ extensions/LogDB/LogDB.cc
 extensions/LogDB/LogDB.h
 extensions/LogDB/LogDBSugar.h
 extensions/LogDB/main.cc
+extensions/LogDB/logdb-conv.cc
 extensions/LogDB/Makefile.am
 extensions/include/Calibration.h
 extensions/include/ComediInterface.h

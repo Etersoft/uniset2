@@ -128,6 +128,8 @@ namespace uniset
 		\todo WebSocket: доделать настройку всевозможных timeout-ов
 		\todo WebSocket: доделать проверку соединения
 		\todo WebSocket: сделать ограничение на максимальное количество соединений
+		\todo utils: написать конвертор обычных uniset-логов в БД.
+		\todo db: возможно всё-таки стоит парсить логи на предмет loglevel, и тогда уж и дату с временем вынимать
 	*/
 	class LogDB:
 		public EventLoopServer
@@ -169,7 +171,7 @@ namespace uniset
 			void onActivate( ev::async& watcher, int revents ) ;
 			void addLog( Log* log, const std::string& txt );
 
-			size_t getCountOfRecords( const std::string& logname="" );
+			size_t getCountOfRecords( const std::string& logname = "" );
 			size_t getFirstOfOldRecord( size_t maxnum );
 
 #ifndef DISABLE_REST_API
@@ -200,7 +202,7 @@ namespace uniset
 			void flushBuffer();
 			void rotateDB();
 
-			size_t maxdbRecords = { 200*1000 };
+			size_t maxdbRecords = { 200 * 1000 };
 			size_t numOverflow = { 0 }; // вычисляется из параметра "overflow factor"(float)
 
 			ev::async wsactivate; // активация LogWebSocket-ов

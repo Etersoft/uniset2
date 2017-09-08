@@ -63,7 +63,8 @@ LogDB::LogDB( const string& name , const string& prefix ):
 	std::string s_overflow = conf->getArg2Param("--" + prefix + "overflow-factor", it.getProp("overflowFactor"), "1.3");
 	float ovf = atof(s_overflow.c_str());
 
-	numOverflow = lroundf( (float)maxdbRecords*ovf );
+	numOverflow = lroundf( (float)maxdbRecords * ovf );
+
 	if( numOverflow == 0 )
 		numOverflow = maxdbRecords;
 
@@ -213,7 +214,7 @@ void LogDB::flushBuffer()
 
 	db->query("COMMIT;");
 
-	if( !db->error().empty() )
+	if( !db->lastQueryOK() )
 	{
 		dbcrit << myname << "(flushBuffer): error: " << db->error() << endl;
 	}
@@ -238,18 +239,20 @@ void LogDB::rotateDB()
 	size_t firstOldID = getFirstOfOldRecord(numOverflow);
 
 	DBResult ret = db->query("DELETE FROM logs WHERE id <= " + std::to_string(firstOldID) + ";");
+
 	if( !db->lastQueryOK() )
 	{
 		dbwarn << myname << "(rotateDB): delete error: " << db->error() << endl;
 	}
 
 	ret = db->query("VACUUM;");
+
 	if( !db->lastQueryOK() )
 	{
 		dbwarn << myname << "(rotateDB): vacuum error: " << db->error() << endl;
 	}
 
-//	dblog3 <<  myname << "(rotateDB): after rotate: " << getCountOfRecords() << " records" << endl;
+	//	dblog3 <<  myname << "(rotateDB): after rotate: " << getCountOfRecords() << " records" << endl;
 }
 //--------------------------------------------------------------------------------------------
 void LogDB::addLog( LogDB::Log* log, const string& txt )
@@ -272,6 +275,7 @@ size_t LogDB::getCountOfRecords( const std::string& logname )
 	ostringstream q;
 
 	q << "SELECT count(*) FROM logs";
+
 	if( !logname.empty() )
 		q << " WHERE name='" << logname << "'";
 
@@ -280,7 +284,7 @@ size_t LogDB::getCountOfRecords( const std::string& logname )
 	if( !ret )
 		return 0;
 
-	return (size_t) DBResult::as_int(ret.begin(),0);
+	return (size_t) DBResult::as_int(ret.begin(), 0);
 }
 //--------------------------------------------------------------------------------------------
 size_t LogDB::getFirstOfOldRecord( size_t maxnum )
@@ -293,7 +297,7 @@ size_t LogDB::getFirstOfOldRecord( size_t maxnum )
 	if( !ret )
 		return 0;
 
-	return (size_t) DBResult::as_int(ret.begin(),0);
+	return (size_t) DBResult::as_int(ret.begin(), 0);
 }
 //--------------------------------------------------------------------------------------------
 std::shared_ptr<LogDB> LogDB::init_logdb( int argc, const char* const* argv, const std::string& prefix )
@@ -883,7 +887,7 @@ Poco::JSON::Object::Ptr LogDB::httpGetCount( const Poco::URI::QueryParameters& p
 
 	size_t count = getCountOfRecords(logname);
 	jdata->set("name", logname);
-	jdata->set("count",count);
+	jdata->set("count", count);
 	return jdata;
 }
 // -----------------------------------------------------------------------------
