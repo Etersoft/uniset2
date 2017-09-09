@@ -265,7 +265,7 @@ void LogDB::addLog( LogDB::Log* log, const string& txt )
 	  << tm.tv_sec << "','"   //  timestamp
 	  << tm.tv_nsec << "','"  //  usec
 	  << log->name << "','"
-	  << txt << "');";
+	  << qEscapeString(txt) << "');";
 
 	qbuf.emplace(q.str());
 }
@@ -962,6 +962,21 @@ string LogDB::qDate( const string& p, const char sep )
 	}
 
 	return p.substr(0, 4) + "-" + p.substr(4, 2) + "-" + p.substr(6, 2);
+}
+// -----------------------------------------------------------------------------
+std::string LogDB::qEscapeString( const string& txt )
+{
+	ostringstream ret;
+
+	for( const auto& c : txt )
+	{
+		ret << c;
+
+		if( c == '\'' || c == '"' )
+			ret << c;
+	}
+
+	return ret.str();
 }
 // -----------------------------------------------------------------------------
 void LogDB::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp)

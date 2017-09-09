@@ -66,12 +66,13 @@ namespace uniset
 		и каждый лог будет генерировать не более 2-5 мегабайт записей. Поэтому sqlite должно хватить.
 
 		\section sec_LogDB_Conf Конфигурирование LogDB
-
+		\code
 		<LogDB name="LogDB" ...>
 			<logserver name="" ip=".." port=".." cmd=".." description=".."/>
 			<logserver name="" ip=".." port=".." cmd=".." description=".."/>
 			<logserver name="" ip=".." port=".." cmd=".."/>
 		</LogDB>
+		\endcode
 
 		\section sec_LogDB_DB LogDB Работа с БД
 		Для оптимизации, запись в БД сделана не по каждому сообщению, а через промежуточнй буффер.
@@ -87,7 +88,7 @@ namespace uniset
 		--prefix-httpserver-host и --prefix-httpserver-port.
 
 		Запросы обрабатываются по пути: api/version/logdb/...
-
+		\code
 		/help                            - Получение списка доступных команд
 		/list                            - список доступных логов
 		/logs?logname&..parameters..     - получение логов 'logname'
@@ -100,7 +101,7 @@ namespace uniset
 										   По умолчанию: минут
 
 		/count?logname                   - Получить текущее количество записей
-
+		\endcode
 
 
 		\section sec_LogDB_WEBSOCK LogDB Поддержка web socket
@@ -194,6 +195,9 @@ namespace uniset
 
 			// преобразование в дату 'YYYY-MM-DD' из строки 'YYYYMMDD' или 'YYYY/MM/DD'
 			static std::string qDate(const std::string& p , const char sep = '-');
+
+			// экранирование кавычек (удваивание для sqlite)
+			static std::string qEscapeString( const std::string& s );
 
 			std::shared_ptr<LogWebSocket> newWebSocket(Poco::Net::HTTPServerRequest* req, Poco::Net::HTTPServerResponse* resp, const std::string& logname );
 			void delWebSocket( std::shared_ptr<LogWebSocket>& ws );
