@@ -117,6 +117,8 @@ namespace uniset
 		 \endcode
 		 Где \a logname - это имя логсервера от которого мы хотим получать логи (см. \ref sec_LogDB_Conf).
 
+		Количество создаваемых websocket-ов можно ограничить при помощи параметр maxWebsockets (--prefix-max-websockets).
+
 
 		\section sec_LogDB_DETAIL LogDB Технические детали
 		   Вся релизация построена на "однопоточном" eventloop. В нём происходит,
@@ -131,9 +133,6 @@ namespace uniset
 		\todo db: Возможно в последствии оптимизировать таблицы (нормализовать) если будет тормозить. Сейчас пока прототип.
 		\todo db: Пока не очень эффективная работа с датой и временем (заодно подумать всё-таки в чём хранить)
 		\todo WebSocket: доделать настройку всевозможных timeout-ов
-		\todo WebSocket: доделать проверку соединения
-		\todo WebSocket: сделать ограничение на максимальное количество соединений
-		\todo utils: написать конвертор обычных uniset-логов в БД.
 		\todo db: возможно всё-таки стоит парсить логи на предмет loglevel, и тогда уж и дату с временем вынимать
 		\todo web: генерировать html-страничку со списком подключения к логам с использованием готового шаблона
 	*/
@@ -355,6 +354,7 @@ namespace uniset
 
 			std::list<std::shared_ptr<LogWebSocket>> wsocks;
 			uniset::uniset_rwmutex wsocksMutex;
+			size_t maxwsocks = { 50 }; // максимальное количество websocket-ов
 #endif
 
 		private:

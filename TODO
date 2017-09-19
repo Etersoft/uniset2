@@ -86,6 +86,9 @@ DB: Сделать регулируемый буфер на INSERT-ы БД, чт
 
 в ThreadCreator использовать std::function()..
 
+
+Разобраться с BigEndian и LittleEndian! Использовать htons,htol и т.п. (и реализации для 64bit)
+
 ВОЗМОЖНО СТОИТ:
 Уйти от использования libxml2,DebugLog ==> и применять одну библиотеку libpoco (http://pocoproject.org/documentation/index.html)
 или всё-таки на boost?

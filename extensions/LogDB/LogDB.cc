@@ -59,6 +59,7 @@ LogDB::LogDB( const string& name , const string& prefix ):
 
 	qbufSize = conf->getArgPInt("--" + prefix + "buffer-size", it.getProp("bufferSize"), qbufSize);
 	maxdbRecords = conf->getArgPInt("--" + prefix + "max-records", it.getProp("maxRecords"), qbufSize);
+	maxwsocks = conf->getArgPInt("--" + prefix + "max-websockets", it.getProp("maxWebsockets"), maxwsocks);
 
 	std::string s_overflow = conf->getArg2Param("--" + prefix + "overflow-factor", it.getProp("overflowFactor"), "1.3");
 	float ovf = atof(s_overflow.c_str());
@@ -322,6 +323,7 @@ void LogDB::help_print()
 	cout << "--prefix-buffer-size sz          - Размер буфера (до скидывания в БД)." << endl;
 	cout << "--prefix-max-records sz          - Максимальное количество записей в БД. При превышении, старые удаляются. 0 - не удалять" << endl;
 	cout << "--prefix-overflow-factor float   - Коэффициент переполнения, после которого запускается удаление старых записей. По умолчанию: 1.3" << endl;
+	cout << "--prefix-max-websockets num      - Максимальное количество websocket-ов" << endl;
 }
 // -----------------------------------------------------------------------------
 void LogDB::run( bool async )
@@ -1007,6 +1009,21 @@ void LogDB::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco::Net::HTT
 		err << "Bad request. Must be:  http://host:port/logdb/ws/logname";
 		err.flush();
 		return;
+	}
+
+	{
+		uniset_rwmutex_rlock lk(wsocksMutex);
+		if( wsocks.size() >= maxwsocks )
+		{
+			resp.setStatus(HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
+			resp.setContentType("text/html");
+			resp.setStatusAndReason(HTTPResponse::HTTP_SERVICE_UNAVAILABLE);
+			resp.setContentLength(0);
+			std::ostream& err = resp.send();
+			err << "Error: exceeding the maximum number of open connections (" << maxwsocks << ")";
+			err.flush();
+			return;
+		}
 	}
 
 	auto ws = newWebSocket(&req, &resp, seg[2]);
