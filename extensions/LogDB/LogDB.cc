@@ -1369,10 +1369,28 @@ void LogDB::httpWebSocketConnectPage( ostream& ostr,
 	ostr << "<title>" << myname << " log '" << logname << "'</title>" << endl;
 	ostr << "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">" << endl;
 	ostr << "<script type=\"text/javascript\">" << endl;
+	ostr << "logscrollStopped = false;" << endl;
+	ostr << "" << endl;
+	ostr << "function clickScroll()" << endl;
+	ostr << "{" << endl;
+	ostr << "	if( logscrollStopped )" << endl;
+	ostr << "		logscrollStopped = false;" << endl;
+	ostr << "	else" << endl;
+	ostr << "		logscrollStopped = true;" << endl;
+	ostr << "}" << endl;
+	ostr << "function LogAutoScroll()" << endl;
+	ostr << "{" << endl;
+	ostr << "   if( logscrollStopped == false )" << endl;
+	ostr << "   {" << endl;
+	ostr << "	   document.getElementById('end').scrollIntoView();" << endl;
+	ostr << "   }" << endl;
+	ostr << "}" << endl;
+	ostr << "" << endl;
 	ostr << "function WebSocketCreate(logname)" << endl;
 	ostr << "{" << endl;
 	ostr << "  if (\"WebSocket\" in window)" << endl;
 	ostr << "  {" << endl;
+	ostr << "    // LogScrollTimer = setInterval(LogAutoScroll,800);" << endl;
 	ostr << "    var ws = new WebSocket(\"ws://" << req.serverAddress().toString() << "/logdb/ws/\" + logname);" << endl;
 	ostr << "    var l = document.getElementById('logname');" << endl;
 	ostr << "    l.innerHTML = logname" << endl;
@@ -1381,6 +1399,7 @@ void LogDB::httpWebSocketConnectPage( ostream& ostr,
 	ostr << "    	var p = document.getElementById('logs');" << endl;
 	ostr << "    	if( evt.data != '.' ) {" << endl;
 	ostr << "    		p.innerHTML = p.innerHTML + \"</br>\"+evt.data" << endl;
+	ostr << "    		LogAutoScroll();" << endl;
 	ostr << "    	}" << endl;
 	ostr << "    };" << endl;
 	ostr << "    ws.onclose = function()" << endl;
@@ -1393,11 +1412,14 @@ void LogDB::httpWebSocketConnectPage( ostream& ostr,
 	ostr << "     alert(\"This browser does not support WebSockets.\");" << endl;
 	ostr << "  }" << endl;
 	ostr << "}" << endl;
+
 	ostr << "</script>" << endl;
 	ostr << "</head>" << endl;
-	ostr << "<body onload=\"javascript:WebSocketCreate('" << logname << "')\">" << endl;
-	ostr << "<h4><div id='logname'></div></h4>" << endl;
+	ostr << "<body style='background: #111111; color: #ececec;' onload=\"javascript:WebSocketCreate('" << logname << "')\">" << endl;
+	ostr << "<h4><div onclick='javascritpt:clickScroll()' id='logname' style='position: fixed; top: 0; left: 0; padding: 10px; width: 100%; height: 25px; background-color: green; border-top: 2px solid; border-bottom: 2px solid; border-color: white; '></div></h4>" << endl;
 	ostr << "<div id='logs'></div>" << endl;
+	ostr << "<div id='end' style='display: hidden;'></div>" << endl;
+	ostr << "<p height='10px'>&nbsp;</p>" << endl;
 	ostr << "</body>" << endl;
 }
 // -----------------------------------------------------------------------------
