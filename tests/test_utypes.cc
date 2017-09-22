@@ -291,6 +291,20 @@ TEST_CASE("UniSetTypes: getArgParam", "[utypes][getArgParam]" )
 	REQUIRE( getArgParam("--unknownparam2", argc, argv) == "" );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: getArg2Param", "[utypes][getArg2Param]" )
+{
+//	inline std::string getArg2Param(const std::string& name,
+//									int _argc, const char* const* _argv,
+//									const std::string& defval, const std::string& defval2 = "") noexcept
+	int argc = 5;
+	char* argv[] = {"progname", "--param1", "val", "--param2", "val2"};
+
+	REQUIRE( getArg2Param("--param1", argc, argv, "") == "val" );
+	REQUIRE( getArg2Param("--param2", argc, argv, "") == "val2" );
+	REQUIRE( getArg2Param("--unknownparam", argc, argv, "val3") == "val3" );
+	REQUIRE( getArg2Param("--unknownparam2", argc, argv,"","val4") == "val4" );
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: getArgInt", "[utypes][getArgInt]" )
 {
 	//	inline int getArgInt( const std::string& name,
@@ -302,6 +316,20 @@ TEST_CASE("UniSetTypes: getArgInt", "[utypes][getArgInt]" )
 	REQUIRE( getArgInt("--param1", argc, argv) == 1 );
 	REQUIRE( getArgInt("--param2", argc, argv) == 0 );
 	REQUIRE( getArgInt("--unknownparam", argc, argv, "3") == 3 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: getArgPInt", "[utypes][getArgPInt]" )
+{
+//	inline int getArgPInt( const std::string& name,
+//						   int _argc, const char* const* _argv,
+//						   const std::string& strdefval, int defval ) noexcept
+	int argc = 5;
+	char* argv[] = {"progname", "--param1", "1", "--param2", "text"};
+
+	REQUIRE( getArgPInt("--param1", argc, argv, "", 0) == 1 );
+	REQUIRE( getArgPInt("--param2", argc, argv, "", 0) == 0 );
+	REQUIRE( getArgPInt("--unknownparam", argc, argv, "3", 0) == 3 );
+	REQUIRE( getArgPInt("--unknownparam", argc, argv, "", 42) == 42 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: is_digit", "[utypes][is_digit]" )

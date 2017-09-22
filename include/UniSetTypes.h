@@ -248,12 +248,41 @@ namespace uniset
 		return defval;
 	}
 
+	/*! получить значение, если пустое, то defval, если defval="" return defval2 */
+	inline std::string getArg2Param(const std::string& name,
+									int _argc, const char* const* _argv,
+									const std::string& defval, const std::string& defval2 = "") noexcept
+	{
+		std::string s(uniset::getArgParam(name, _argc, _argv, ""));
+
+		if( !s.empty() )
+			return s;
+
+		if( !defval.empty() )
+			return defval;
+
+		return defval2;
+	}
+
 	inline int getArgInt( const std::string& name,
 						  int _argc, const char* const* _argv,
 						  const std::string& defval = "" ) noexcept
 	{
 		return uni_atoi(getArgParam(name, _argc, _argv, defval));
 	}
+
+	inline int getArgPInt( const std::string& name,
+						   int _argc, const char* const* _argv,
+						   const std::string& strdefval, int defval ) noexcept
+	{
+		std::string param = uniset::getArgParam(name, _argc, _argv, strdefval);
+
+		if( param.empty() && strdefval.empty() )
+			return defval;
+
+		return uniset::uni_atoi(param);
+	}
+
 
 	/*! Проверка наличия параметра в командной строке
 	    \param name - название параметра

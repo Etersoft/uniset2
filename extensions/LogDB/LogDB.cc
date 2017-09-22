@@ -35,17 +35,43 @@
 using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
-LogDB::LogDB( const string& name , const string& prefix ):
+LogDB::LogDB( const string& name, int argc, const char* const* argv, const string& prefix ):
 	myname(name)
 {
 	dblog = make_shared<DebugStream>();
 
-	auto conf = uniset_conf();
-	auto xml = conf->getConfXML();
+	std::string specconfig;
 
-	conf->initLogStream(dblog, prefix + "log" );
+	int i = uniset::findArgParam("--" + prefix + "single-confile", argc, argv);
+	if( i != -1 )
+		specconfig = uniset::getArgParam("--" + prefix + "single-confile", argc, argv,"");
 
-	xmlNode* cnode = conf->findNode(xml->getFirstNode(), "LogDB", name);
+	std::shared_ptr<UniXML> xml;
+
+	if( specconfig.empty() )
+	{
+		cout << myname << "(init): init from uniset configure..." << endl;
+		uniset_init(argc, argv, "configure.xml");
+		auto conf = uniset_conf();
+
+		xml = conf->getConfXML();
+		conf->initLogStream(dblog, prefix + "log" );
+	}
+	else
+	{
+		cout << myname << "(init): init from single-confile " << specconfig << endl;
+		xml = make_shared<UniXML>();
+		try
+		{
+			xml->open(specconfig);
+		}
+		catch( std::exception& ex )
+		{
+			throw ex;
+		}
+	}
+
+	xmlNode* cnode = xml->findNode(xml->getFirstNode(), "LogDB", name);
 
 	if( !cnode )
 	{
@@ -57,11 +83,11 @@ LogDB::LogDB( const string& name , const string& prefix ):
 
 	UniXML::iterator it(cnode);
 
-	qbufSize = conf->getArgPInt("--" + prefix + "buffer-size", it.getProp("bufferSize"), qbufSize);
-	maxdbRecords = conf->getArgPInt("--" + prefix + "max-records", it.getProp("maxRecords"), qbufSize);
-	maxwsocks = conf->getArgPInt("--" + prefix + "max-websockets", it.getProp("maxWebsockets"), maxwsocks);
+	qbufSize = uniset::getArgPInt("--" + prefix + "buffer-size", argc, argv, it.getProp("bufferSize"), qbufSize);
+	maxdbRecords = uniset::getArgPInt("--" + prefix + "max-records", argc, argv, it.getProp("maxRecords"), qbufSize);
+	maxwsocks = uniset::getArgPInt("--" + prefix + "max-websockets", argc, argv, it.getProp("maxWebsockets"), maxwsocks);
 
-	std::string s_overflow = conf->getArg2Param("--" + prefix + "overflow-factor", it.getProp("overflowFactor"), "1.3");
+	std::string s_overflow = uniset::getArg2Param("--" + prefix + "overflow-factor", argc, argv, it.getProp("overflowFactor"), "1.3");
 	float ovf = atof(s_overflow.c_str());
 
 	numOverflow = lroundf( (float)maxdbRecords * ovf );
@@ -135,7 +161,7 @@ LogDB::LogDB( const string& name , const string& prefix ):
 	}
 
 
-	const std::string dbfile = conf->getArgParam("--" + prefix + "dbfile", it.getProp("dbfile"));
+	const std::string dbfile = uniset::getArgParam("--" + prefix + "dbfile", argc, argv, it.getProp("dbfile"));
 
 	if( dbfile.empty() )
 	{
@@ -159,8 +185,8 @@ LogDB::LogDB( const string& name , const string& prefix ):
 
 
 #ifndef DISABLE_REST_API
-	httpHost = conf->getArgParam("--" + prefix + "httpserver-host", "localhost");
-	httpPort = conf->getArgInt("--" + prefix + "httpserver-port", "8080");
+	httpHost = uniset::getArgParam("--" + prefix + "httpserver-host", argc, argv, "localhost");
+	httpPort = uniset::getArgInt("--" + prefix + "httpserver-port", argc, argv, "8080");
 	dblog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
 	Poco::Net::SocketAddress sa(httpHost, httpPort);
 
@@ -303,9 +329,7 @@ size_t LogDB::getFirstOfOldRecord( size_t maxnum )
 //--------------------------------------------------------------------------------------------
 std::shared_ptr<LogDB> LogDB::init_logdb( int argc, const char* const* argv, const std::string& prefix )
 {
-	auto conf = uniset_conf();
-
-	string name = conf->getArgParam("--" + prefix + "name", "");
+	string name = uniset::getArgParam("--" + prefix + "name", argc, argv, "LogDB");
 
 	if( name.empty() )
 	{
@@ -313,12 +337,13 @@ std::shared_ptr<LogDB> LogDB::init_logdb( int argc, const char* const* argv, con
 		return nullptr;
 	}
 
-	return make_shared<LogDB>(name, prefix);
+	return make_shared<LogDB>(name, argc, argv, prefix);
 }
 // -----------------------------------------------------------------------------
 void LogDB::help_print()
 {
 	cout << "Default: prefix='logdb'" << endl;
+	cout << "--prefix-single-confile conf.xml - Отдельный конфигурационный файл (не требующий структуры uniset)" << endl;
 	cout << "--prefix-name name               - Имя. Для поиска настроечной секции в configure.xml" << endl;
 	cout << "--prefix-buffer-size sz          - Размер буфера (до скидывания в БД)." << endl;
 	cout << "--prefix-max-records sz          - Максимальное количество записей в БД. При превышении, старые удаляются. 0 - не удалять" << endl;
