@@ -3,7 +3,7 @@
 ulimit -Sc 1000000
 
 #uniset2-start.sh -g \
-./uniset2-logdb --logdb-single-confile logdb-conf.xml --logdb-name LogDB \
+./uniset2-logdb --logdb-single-confile logdb-conf.xml --logdb-name LogDB --logdb-db-disable \
  --logdb-log-add-levels any \
  --logdb-dbfile ./test.db \
  --logdb-buffer-size 5 \

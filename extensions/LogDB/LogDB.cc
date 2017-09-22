@@ -100,6 +100,11 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 	flushBufferTimer.set<LogDB, &LogDB::onCheckBuffer>(this);
 	wsactivate.set<LogDB, &LogDB::onActivate>(this);
 
+	bool dbDisabled = ( uniset::findArgParam("--" + prefix + "db-disable", argc, argv) != -1 );
+
+	if( dbDisabled )
+		dbinfo << myname << "(init): save to database DISABLED.." << endl;
+
 	UniXML::iterator sit(cnode);
 
 	if( !sit.goChildren() )
@@ -146,7 +151,8 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 
 		//		l->tcp = make_shared<UTCPStream>();
 		l->dblog = dblog;
-		l->signal_on_read().connect(sigc::mem_fun(this, &LogDB::addLog));
+		if( !dbDisabled )
+			l->signal_on_read().connect(sigc::mem_fun(this, &LogDB::addLog));
 		//		l->set(loop);
 
 		logservers.push_back(l);
@@ -161,28 +167,30 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 	}
 
 
-	const std::string dbfile = uniset::getArgParam("--" + prefix + "dbfile", argc, argv, it.getProp("dbfile"));
-
-	if( dbfile.empty() )
+	if( !dbDisabled )
 	{
-		ostringstream err;
-		err << name << "(init): dbfile (sqlite) not defined. Use: <LogDB name='" << name << "' dbfile='..' ...>";
-		dbcrit << err.str() << endl;
-		throw uniset::SystemError(err.str());
+		const std::string dbfile = uniset::getArgParam("--" + prefix + "dbfile", argc, argv, it.getProp("dbfile"));
+
+		if( dbfile.empty() )
+		{
+			ostringstream err;
+			err << name << "(init): dbfile (sqlite) not defined. Use: <LogDB name='" << name << "' dbfile='..' ...>";
+			dbcrit << err.str() << endl;
+			throw uniset::SystemError(err.str());
+		}
+
+		db = unisetstd::make_unique<SQLiteInterface>();
+
+		if( !db->connect(dbfile, false, SQLITE_OPEN_FULLMUTEX) )
+		{
+			ostringstream err;
+			err << myname
+				<< "(init): DB connection error: "
+				<< db->error();
+			dbcrit << err.str() << endl;
+			throw uniset::SystemError(err.str());
+		}
 	}
-
-	db = unisetstd::make_unique<SQLiteInterface>();
-
-	if( !db->connect(dbfile, false, SQLITE_OPEN_FULLMUTEX) )
-	{
-		ostringstream err;
-		err << myname
-			<< "(init): DB connection error: "
-			<< db->error();
-		dbcrit << err.str() << endl;
-		throw uniset::SystemError(err.str());
-	}
-
 
 #ifndef DISABLE_REST_API
 	httpHost = uniset::getArgParam("--" + prefix + "httpserver-host", argc, argv, "localhost");
@@ -222,7 +230,7 @@ LogDB::~LogDB()
 //--------------------------------------------------------------------------------------------
 void LogDB::flushBuffer()
 {
-	if( qbuf.empty() || !db->isConnection() )
+	if( !db || qbuf.empty() || !db->isConnection() )
 		return;
 
 	// без BEGIN и COMMIT вставка большого количества данных будет тормозить!
@@ -252,6 +260,9 @@ void LogDB::flushBuffer()
 //--------------------------------------------------------------------------------------------
 void LogDB::rotateDB()
 {
+	if( !db )
+		return;
+
 	// ротация отключена
 	if( maxdbRecords == 0 )
 		return;
@@ -349,6 +360,7 @@ void LogDB::help_print()
 	cout << "--prefix-max-records sz          - Максимальное количество записей в БД. При превышении, старые удаляются. 0 - не удалять" << endl;
 	cout << "--prefix-overflow-factor float   - Коэффициент переполнения, после которого запускается удаление старых записей. По умолчанию: 1.3" << endl;
 	cout << "--prefix-max-websockets num      - Максимальное количество websocket-ов" << endl;
+	cout << "--prefix-db-disable              - Отключить запись в БД" << endl;
 }
 // -----------------------------------------------------------------------------
 void LogDB::run( bool async )
@@ -370,8 +382,11 @@ void LogDB::evfinish()
 // -----------------------------------------------------------------------------
 void LogDB::evprepare()
 {
-	flushBufferTimer.set(loop);
-	flushBufferTimer.start(0, tmFlushBuffer_sec);
+	if( db )
+	{
+		flushBufferTimer.set(loop);
+		flushBufferTimer.start(0, tmFlushBuffer_sec);
+	}
 
 	wsactivate.set(loop);
 	wsactivate.start();
@@ -716,6 +731,16 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
 			ostringstream err;
 			err << "Bad request structure. Must be /api/" << uniset::UHttp::UHTTP_API_VERSION << "/logdb/xxx";
 			auto jdata = respError(resp, HTTPResponse::HTTP_BAD_REQUEST, err.str());
+			jdata->stringify(out);
+			out.flush();
+			return;
+		}
+
+		if( !db )
+		{
+			ostringstream err;
+			err << "Working with the database is disabled";
+			auto jdata = respError(resp, HTTPResponse::HTTP_SERVICE_UNAVAILABLE, err.str());
 			jdata->stringify(out);
 			out.flush();
 			return;
