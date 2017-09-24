@@ -43,8 +43,9 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 	std::string specconfig;
 
 	int i = uniset::findArgParam("--" + prefix + "single-confile", argc, argv);
+
 	if( i != -1 )
-		specconfig = uniset::getArgParam("--" + prefix + "single-confile", argc, argv,"");
+		specconfig = uniset::getArgParam("--" + prefix + "single-confile", argc, argv, "");
 
 	std::shared_ptr<UniXML> xml;
 
@@ -61,6 +62,7 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 	{
 		cout << myname << "(init): init from single-confile " << specconfig << endl;
 		xml = make_shared<UniXML>();
+
 		try
 		{
 			xml->open(specconfig);
@@ -159,8 +161,10 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 
 		//		l->tcp = make_shared<UTCPStream>();
 		l->dblog = dblog;
+
 		if( !dbDisabled )
 			l->signal_on_read().connect(sigc::mem_fun(this, &LogDB::addLog));
+
 		//		l->set(loop);
 
 		logservers.push_back(l);
@@ -1097,6 +1101,7 @@ void LogDB::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco::Net::HTT
 
 	{
 		uniset_rwmutex_rlock lk(wsocksMutex);
+
 		if( wsocks.size() >= maxwsocks )
 		{
 			resp.setStatus(HTTPResponse::HTTP_SERVICE_UNAVAILABLE);

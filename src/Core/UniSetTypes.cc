@@ -628,7 +628,7 @@ timespec uniset::now_to_timespec()
 // -------------------------------------------------------------------------
 char uniset::checkBadSymbols( const string& str )
 {
-	for ( const auto& c: str )
+	for ( const auto& c : str )
 	{
 		for( size_t k = 0; k < sizeof(BadSymbols); k++ )
 		{
@@ -648,7 +648,7 @@ string uniset::BadSymbolsToStr()
 	for( size_t i = 0; i < sizeof(BadSymbols); i++ )
 	{
 		bad += "'" +
-		bad += BadSymbols[i];
+			   bad += BadSymbols[i];
 		bad += "', ";
 	}
 

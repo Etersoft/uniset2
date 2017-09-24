@@ -515,7 +515,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	std::string Configuration::getArg2Param( const std::string& name, const std::string& defval, const std::string& defval2 ) const noexcept
 	{
-		return uniset::getArg2Param(name,_argc,_argv,defval,defval2);
+		return uniset::getArg2Param(name, _argc, _argv, defval, defval2);
 	}
 
 	string Configuration::getArgParam( const string& name, const string& defval ) const noexcept
@@ -530,12 +530,12 @@ namespace uniset
 
 	int Configuration::getArgPInt( const string& name, int defval ) const noexcept
 	{
-		return uniset::getArgPInt(name,_argc,_argv,"",defval);
+		return uniset::getArgPInt(name, _argc, _argv, "", defval);
 	}
 
 	int Configuration::getArgPInt( const string& name, const string& strdefval, int defval ) const noexcept
 	{
-		return uniset::getArgPInt(name,_argc,_argv,strdefval,defval);
+		return uniset::getArgPInt(name, _argc, _argv, strdefval, defval);
 	}
 
 	// -------------------------------------------------------------------------

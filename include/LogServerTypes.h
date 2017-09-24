@@ -58,7 +58,7 @@ namespace uniset
 			}
 
 			explicit lsMessage( Command c, uint d, const std::string& logname ):
-				magic(MAGICNUM),cmd(c),data(d)
+				magic(MAGICNUM), cmd(c), data(d)
 			{
 				setLogName(logname);
 			}

@@ -96,22 +96,24 @@ namespace uniset
 	{
 		vector<lsMessage> vcmd;
 
-		auto v = uniset::explode_str(cmd,' ');
+		auto v = uniset::explode_str(cmd, ' ');
 
 		if( v.empty() )
 			return vcmd;
 
-		for( size_t i=0; i < v.size(); i++ )
+		for( size_t i = 0; i < v.size(); i++ )
 		{
 			auto c = v[i];
 
-			string arg1 = checkArg(i+1, v);
+			string arg1 = checkArg(i + 1, v);
+
 			if( arg1.empty() )
 				continue;
 
 			i++;
 
-			std::string filter = checkArg(i+2,v);
+			std::string filter = checkArg(i + 2, v);
+
 			if( !filter.empty() )
 				i++;
 

@@ -293,16 +293,16 @@ TEST_CASE("UniSetTypes: getArgParam", "[utypes][getArgParam]" )
 // -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: getArg2Param", "[utypes][getArg2Param]" )
 {
-//	inline std::string getArg2Param(const std::string& name,
-//									int _argc, const char* const* _argv,
-//									const std::string& defval, const std::string& defval2 = "") noexcept
+	//	inline std::string getArg2Param(const std::string& name,
+	//									int _argc, const char* const* _argv,
+	//									const std::string& defval, const std::string& defval2 = "") noexcept
 	int argc = 5;
 	char* argv[] = {"progname", "--param1", "val", "--param2", "val2"};
 
 	REQUIRE( getArg2Param("--param1", argc, argv, "") == "val" );
 	REQUIRE( getArg2Param("--param2", argc, argv, "") == "val2" );
 	REQUIRE( getArg2Param("--unknownparam", argc, argv, "val3") == "val3" );
-	REQUIRE( getArg2Param("--unknownparam2", argc, argv,"","val4") == "val4" );
+	REQUIRE( getArg2Param("--unknownparam2", argc, argv, "", "val4") == "val4" );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: getArgInt", "[utypes][getArgInt]" )
@@ -320,9 +320,9 @@ TEST_CASE("UniSetTypes: getArgInt", "[utypes][getArgInt]" )
 // -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: getArgPInt", "[utypes][getArgPInt]" )
 {
-//	inline int getArgPInt( const std::string& name,
-//						   int _argc, const char* const* _argv,
-//						   const std::string& strdefval, int defval ) noexcept
+	//	inline int getArgPInt( const std::string& name,
+	//						   int _argc, const char* const* _argv,
+	//						   const std::string& strdefval, int defval ) noexcept
 	int argc = 5;
 	char* argv[] = {"progname", "--param1", "1", "--param2", "text"};
 
