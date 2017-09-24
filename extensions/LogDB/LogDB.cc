@@ -89,6 +89,11 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 	maxdbRecords = uniset::getArgPInt("--" + prefix + "db-max-records", argc, argv, it.getProp("dbMaxRecords"), qbufSize);
 	maxwsocks = uniset::getArgPInt("--" + prefix + "ws-max", argc, argv, it.getProp("wsMax"), maxwsocks);
 
+	string tformat = uniset::getArg2Param("--" + prefix + "db-timestamp-format", argc, argv, it.getProp("dbTeimastampFormat"), "localtime");
+
+	if( tformat == "localtime" || tformat == "utc" )
+		tmsFormat = tformat;
+
 	double checkConnection_sec = atof( uniset::getArg2Param("--" + prefix + "ls-check-connection-sec", argc, argv, it.getProp("lsCheckConnectionSec"), "5").c_str());
 
 	int bufSize = uniset::getArgPInt("--" + prefix + "ls-read-buffer-size", argc, argv, it.getProp("lsReadBufferSize"), 10001);
@@ -315,8 +320,8 @@ void LogDB::addLog( LogDB::Log* log, const string& txt )
 
 	ostringstream q;
 
-	q << "INSERT INTO logs(tms,usec,name,text) VALUES('"
-	  << tm.tv_sec << "','"   //  timestamp
+	q << "INSERT INTO logs(tms,usec,name,text) VALUES("
+	  << "datetime(" << tm.tv_sec << ",'unixepoch'),'"   //  timestamp
 	  << tm.tv_nsec << "','"  //  usec
 	  << log->name << "','"
 	  << qEscapeString(txt) << "');";
@@ -373,10 +378,11 @@ void LogDB::help_print()
 	cout << "--prefix-single-confile conf.xml     - Отдельный конфигурационный файл (не требующий структуры uniset)" << endl;
 	cout << "--prefix-name name                   - Имя. Для поиска настроечной секции в configure.xml" << endl;
 	cout << "database: " << endl;
-	cout << "--prefix-db-buffer-size sz           - Размер буфера (до скидывания в БД)." << endl;
-	cout << "--prefix-db-max-records sz           - Максимальное количество записей в БД. При превышении, старые удаляются. 0 - не удалять" << endl;
-	cout << "--prefix-db-overflow-factor float    - Коэффициент переполнения, после которого запускается удаление старых записей. По умолчанию: 1.3" << endl;
-	cout << "--prefix-db-disable                  - Отключить запись в БД" << endl;
+	cout << "--prefix-db-buffer-size sz                  - Размер буфера (до скидывания в БД)." << endl;
+	cout << "--prefix-db-max-records sz                  - Максимальное количество записей в БД. При превышении, старые удаляются. 0 - не удалять" << endl;
+	cout << "--prefix-db-overflow-factor float           - Коэффициент переполнения, после которого запускается удаление старых записей. По умолчанию: 1.3" << endl;
+	cout << "--prefix-db-disable                         - Отключить запись в БД" << endl;
+	cout << "--prefix-db-timestamp-format localtime|utc  - Формат времени в ответе на запросы. По умолчанию: localtime" << endl;
 
 	cout << "websockets: " << endl;
 	cout << "--prefix-ws-max num                  - Максимальное количество websocket-ов" << endl;
@@ -938,9 +944,9 @@ Poco::JSON::Object::Ptr LogDB::httpGetLogs( const Poco::URI::QueryParameters& pa
 		else if( p.first == "limit" )
 			limit = uni_atoi(p.second);
 		else if( p.first == "from" )
-			q_where.push_back("tms>=CAST(strftime('%s','" + qDate(p.second) + "') AS INT)");
-		else if( p.first == "to" ) // <-- нужно добавить + 1 день, что диапазон вошёл
-			q_where.push_back("tms<=CAST(strftime('%s','" + qDate(p.second) + "') AS INT) + 24*60*60");
+			q_where.push_back("tms>='" + qDate(p.second) + " 00:00:00'");
+		else if( p.first == "to" )
+			q_where.push_back("tms<='" + qDate(p.second) + " 23:59:59'");
 		else if( p.first == "last" )
 			q_where.push_back(qLast(p.second));
 	}
@@ -950,8 +956,8 @@ Poco::JSON::Object::Ptr LogDB::httpGetLogs( const Poco::URI::QueryParameters& pa
 	ostringstream q;
 
 	q << "SELECT tms,"
-	  << " strftime('%d-%m-%Y',datetime(tms,'unixepoch')) as date,"
-	  << " strftime('%H:%M:%S',datetime(tms,'unixepoch')) as time,"
+	  << " strftime('%d-%m-%Y',datetime(tms,'" << tmsFormat << "')) as date,"
+	  << " strftime('%H:%M:%S',datetime(tms,'" << tmsFormat << "')) as time,"
 	  << " usec, text FROM logs WHERE name='" << logname << "'";
 
 	if( !q_where.empty() )

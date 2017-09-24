@@ -13,12 +13,15 @@ function atexit()
 {
 	trap - EXIT
 
+	[ -n "$LOGSERVER_PID" ] && kill $LOGSERVER_PID 2>/dev/null
+	[ -n "$LOGDB_PID" ] && kill $LOGDB_PID 2>/dev/null
+	sleep 4
 	[ -n "$LOGSERVER_PID" ] && kill -9 $LOGSERVER_PID 2>/dev/null
 	[ -n "$LOGDB_PID" ] && kill -9 $LOGDB_PID 2>/dev/null
 
-    sleep 3
+    sleep 2
 
-	rm -f "$dbfile*"
+	[ -a "$dbfile" ] && rm -f $dbfile*
 
 	exit $RET
 }

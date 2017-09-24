@@ -235,6 +235,8 @@ namespace uniset
 			std::string myname;
 			std::unique_ptr<SQLiteInterface> db;
 
+			std::string tmsFormat = { "localtime" }; /*!< формат возвращаемого времени */
+
 			bool activate = { false };
 
 			typedef std::queue<std::string> QueryBuffer;
