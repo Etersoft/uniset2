@@ -275,6 +275,9 @@ namespace uniset
 					typedef sigc::signal<void, Log*, const std::string&> ReadSignal;
 					ReadSignal signal_on_read();
 
+
+					void setCheckConnectionTime( double sec );
+
 				protected:
 					void ioprepare();
 					bool connect() noexcept;

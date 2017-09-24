@@ -87,6 +87,8 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 	maxdbRecords = uniset::getArgPInt("--" + prefix + "max-records", argc, argv, it.getProp("maxRecords"), qbufSize);
 	maxwsocks = uniset::getArgPInt("--" + prefix + "max-websockets", argc, argv, it.getProp("maxWebsockets"), maxwsocks);
 
+	double checkConnection_sec = atof( uniset::getArg2Param("--" + prefix + "check-connection-sec", argc, argv, it.getProp("checkConnectionSec"), "5").c_str());
+
 	std::string s_overflow = uniset::getArg2Param("--" + prefix + "overflow-factor", argc, argv, it.getProp("overflowFactor"), "1.3");
 	float ovf = atof(s_overflow.c_str());
 
@@ -124,6 +126,8 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 		l->port = sit.getIntProp("port");
 		l->cmd = sit.getProp("cmd");
 		l->description = sit.getProp("description");
+
+		l->setCheckConnectionTime(checkConnection_sec);
 
 		if( l->name.empty()  )
 		{
@@ -202,8 +206,12 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 	{
 		/*! \FIXME: доделать конфигурирование параметров */
 		Poco::Net::HTTPServerParams* httpParams = new Poco::Net::HTTPServerParams;
-		httpParams->setMaxQueued(100);
-		httpParams->setMaxThreads(3);
+
+		int maxQ = uniset::getArgPInt("--" + prefix + "httpserver-max-queued", argc, argv, it.getProp("httpMaxQueued"), 100);
+		int maxT = uniset::getArgPInt("--" + prefix + "httpserver-max-threads", argc, argv, it.getProp("httpMaxThreads"), 3);
+
+		httpParams->setMaxQueued(maxQ);
+		httpParams->setMaxThreads(maxT);
 		httpserv = std::make_shared<Poco::Net::HTTPServer>(this, Poco::Net::ServerSocket(sa), httpParams );
 	}
 	catch( std::exception& ex )
@@ -354,13 +362,19 @@ std::shared_ptr<LogDB> LogDB::init_logdb( int argc, const char* const* argv, con
 void LogDB::help_print()
 {
 	cout << "Default: prefix='logdb'" << endl;
-	cout << "--prefix-single-confile conf.xml - Отдельный конфигурационный файл (не требующий структуры uniset)" << endl;
-	cout << "--prefix-name name               - Имя. Для поиска настроечной секции в configure.xml" << endl;
-	cout << "--prefix-buffer-size sz          - Размер буфера (до скидывания в БД)." << endl;
-	cout << "--prefix-max-records sz          - Максимальное количество записей в БД. При превышении, старые удаляются. 0 - не удалять" << endl;
-	cout << "--prefix-overflow-factor float   - Коэффициент переполнения, после которого запускается удаление старых записей. По умолчанию: 1.3" << endl;
-	cout << "--prefix-max-websockets num      - Максимальное количество websocket-ов" << endl;
-	cout << "--prefix-db-disable              - Отключить запись в БД" << endl;
+	cout << "--prefix-single-confile conf.xml  - Отдельный конфигурационный файл (не требующий структуры uniset)" << endl;
+	cout << "--prefix-name name                - Имя. Для поиска настроечной секции в configure.xml" << endl;
+	cout << "--prefix-buffer-size sz           - Размер буфера (до скидывания в БД)." << endl;
+	cout << "--prefix-max-records sz           - Максимальное количество записей в БД. При превышении, старые удаляются. 0 - не удалять" << endl;
+	cout << "--prefix-overflow-factor float    - Коэффициент переполнения, после которого запускается удаление старых записей. По умолчанию: 1.3" << endl;
+	cout << "--prefix-max-websockets num       - Максимальное количество websocket-ов" << endl;
+	cout << "--prefix-check-connection-sec sec - Период проверки соединения с logserver-ом" << endl;
+
+	cout << "--prefix-db-disable               - Отключить запись в БД" << endl;
+
+	cout << "http: " << endl;
+	cout << "--prefix-httpserver-max-queued num           - Размер очереди запросов к http серверу. Default: 100" << endl;
+	cout << "--prefix-httpserver-max-threads num          - Разрешённое количество потоков для http-сервера. Default: 3" << endl;
 }
 // -----------------------------------------------------------------------------
 void LogDB::run( bool async )
@@ -536,6 +550,12 @@ void LogDB::Log::event( ev::io& watcher, int revents )
 LogDB::Log::ReadSignal LogDB::Log::signal_on_read()
 {
 	return sigRead;
+}
+// -----------------------------------------------------------------------------
+void LogDB::Log::setCheckConnectionTime( double sec )
+{
+	if( sec > 0 )
+		checkConnection_sec = sec;
 }
 // -----------------------------------------------------------------------------
 void LogDB::Log::read( ev::io& watcher )
