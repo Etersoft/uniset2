@@ -209,6 +209,14 @@ Requires: %name-extension-common = %version-%release
 
 %description extension-sqlite-devel
 Libraries needed to develop for uniset SQLite
+
+%package extension-logdb
+Group: Development/C++
+Summary: database for %name logs (sqlite)
+Requires: %name-extension-sqlite = %version-%release
+
+%description extension-logdb
+Database (sqlite) for logs for %name
 %endif
 
 %if_enabled pgsql
@@ -352,9 +360,6 @@ rm -f %buildroot%_libdir/*.la
 %_datadir/%oname/xslt/*.xsl
 %_datadir/%oname/xslt/skel*
 
-%if_enabled sqlite
-%_bindir/%oname-logdb*
-%endif
 
 %files
 %_libdir/libUniSet2.so.*
@@ -388,6 +393,9 @@ rm -f %buildroot%_libdir/*.la
 %files extension-sqlite-devel
 %_pkgconfigdir/libUniSet2SQLite.pc
 %_includedir/%oname/extensions/sqlite/
+
+%files extension-logdb
+%_bindir/%oname-logdb*
 %endif
 
 %if_enabled pgsql
