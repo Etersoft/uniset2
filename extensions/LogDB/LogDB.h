@@ -277,6 +277,7 @@ namespace uniset
 
 
 					void setCheckConnectionTime( double sec );
+					void setReadBufSize( size_t sz );
 
 				protected:
 					void ioprepare();
@@ -290,8 +291,7 @@ namespace uniset
 					double checkConnection_sec = { 5.0 };
 
 					std::shared_ptr<UTCPStream> tcp;
-					static const int bufsize = { 10001 };
-					char buf[bufsize]; // буфер для чтения сообщений
+					std::vector<char> buf; // буфер для чтения сообщений
 
 					static const size_t reservsize = { 1000 };
 					std::string text;

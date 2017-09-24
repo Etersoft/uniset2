@@ -89,6 +89,8 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 
 	double checkConnection_sec = atof( uniset::getArg2Param("--" + prefix + "check-connection-sec", argc, argv, it.getProp("checkConnectionSec"), "5").c_str());
 
+	int bufSize = uniset::getArgPInt("--" + prefix + "read-buffer-size", argc, argv, it.getProp("readBufferSize"), 10001);
+
 	std::string s_overflow = uniset::getArg2Param("--" + prefix + "overflow-factor", argc, argv, it.getProp("overflowFactor"), "1.3");
 	float ovf = atof(s_overflow.c_str());
 
@@ -126,6 +128,8 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 		l->port = sit.getIntProp("port");
 		l->cmd = sit.getProp("cmd");
 		l->description = sit.getProp("description");
+
+		l->setReadBufSize(bufSize);
 
 		l->setCheckConnectionTime(checkConnection_sec);
 
@@ -368,7 +372,8 @@ void LogDB::help_print()
 	cout << "--prefix-max-records sz           - Максимальное количество записей в БД. При превышении, старые удаляются. 0 - не удалять" << endl;
 	cout << "--prefix-overflow-factor float    - Коэффициент переполнения, после которого запускается удаление старых записей. По умолчанию: 1.3" << endl;
 	cout << "--prefix-max-websockets num       - Максимальное количество websocket-ов" << endl;
-	cout << "--prefix-check-connection-sec sec - Период проверки соединения с logserver-ом" << endl;
+	cout << "--prefix-check-connection-sec sec - Период проверки соединения с логсервером" << endl;
+	cout << "--prefix-read-buffer-size num     - Размер буфера для чтения сообщений от логсервера. Deault: 10001" << endl;
 
 	cout << "--prefix-db-disable               - Отключить запись в БД" << endl;
 
@@ -558,6 +563,11 @@ void LogDB::Log::setCheckConnectionTime( double sec )
 		checkConnection_sec = sec;
 }
 // -----------------------------------------------------------------------------
+void LogDB::Log::setReadBufSize( size_t sz )
+{
+	buf.resize(sz);
+}
+// -----------------------------------------------------------------------------
 void LogDB::Log::read( ev::io& watcher )
 {
 	if( !tcp )
@@ -565,11 +575,11 @@ void LogDB::Log::read( ev::io& watcher )
 
 	int n = tcp->available();
 
-	n = std::min(n, bufsize);
+	n = std::min(n, (int)buf.size());
 
 	if( n > 0 )
 	{
-		tcp->receiveBytes(buf, n);
+		tcp->receiveBytes(buf.data(), n);
 
 		// нарезаем на строки
 		for( int i = 0; i < n; i++ )
