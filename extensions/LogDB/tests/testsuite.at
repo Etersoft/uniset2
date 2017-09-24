@@ -1,0 +1,7 @@
+m4_include(package.m4)
+
+AT_COLOR_TESTS
+
+AT_INIT([Loggb tests])
+
+m4_include(logdb-tests.at)

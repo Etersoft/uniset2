@@ -383,11 +383,13 @@ void LogDB::help_print()
 
 	cout << "logservers: " << endl;
 	cout << "--prefix-ls-check-connection-sec sec    - Период проверки соединения с логсервером" << endl;
-	cout << "--prefix-ls-read-buffer-size num        - Размер буфера для чтения сообщений от логсервера. Deault: 10001" << endl;
+	cout << "--prefix-ls-read-buffer-size num        - Размер буфера для чтения сообщений от логсервера. По умолчанию: 10001" << endl;
 
 	cout << "http: " << endl;
-	cout << "--prefix-httpserver-max-queued num           - Размер очереди запросов к http серверу. Default: 100" << endl;
-	cout << "--prefix-httpserver-max-threads num          - Разрешённое количество потоков для http-сервера. Default: 3" << endl;
+	cout << "--prefix-httpserver-host ip             - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
+	cout << "--prefix-httpserver-port num            - Порт на котором принимать запросы. По умолчанию: 8080" << endl;
+	cout << "--prefix-httpserver-max-queued num      - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
+	cout << "--prefix-httpserver-max-threads num     - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
 }
 // -----------------------------------------------------------------------------
 void LogDB::run( bool async )

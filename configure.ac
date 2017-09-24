@@ -339,6 +339,7 @@ if test ${buildtests} = true; then
 	AC_CONFIG_TESTDIR(extensions/UNetUDP/tests)
 	AC_CONFIG_TESTDIR(extensions/SharedMemory/tests)
 	AC_CONFIG_TESTDIR(extensions/IOControl/tests)
+	AC_CONFIG_TESTDIR(extensions/LogDB/tests)
 
 	TESTSUITE_DIR="\$(top_builddir)/testsuite"
 	AC_SUBST(TESTSUITE_DIR)
@@ -501,6 +502,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/tests/MBSlaveTest/Makefile
 				 extensions/tests/MQPerfTest/Makefile
 				 extensions/LogDB/Makefile
+				 extensions/LogDB/tests/Makefile
 				 testsuite/Makefile
 				 wrappers/Makefile
 				 wrappers/python/lib/Makefile
