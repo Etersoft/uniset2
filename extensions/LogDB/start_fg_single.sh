@@ -5,8 +5,8 @@ ulimit -Sc 1000000
 #uniset2-start.sh -g \
 ./uniset2-logdb --logdb-single-confile logdb-conf.xml --logdb-name LogDB --logdb-db-disable \
  --logdb-log-add-levels any \
- --logdb-dbfile ./test.db \
- --logdb-buffer-size 5 \
+ --logdb-db-dbfile ./test.db \
+ --logdb-db-buffer-size 5 \
  --logdb-httpserver-port 8888 \
- --logdb-max-records 20000 \
+ --logdb-db-max-records 20000 \
  $*

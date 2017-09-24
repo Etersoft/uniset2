@@ -83,15 +83,15 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 
 	UniXML::iterator it(cnode);
 
-	qbufSize = uniset::getArgPInt("--" + prefix + "buffer-size", argc, argv, it.getProp("bufferSize"), qbufSize);
-	maxdbRecords = uniset::getArgPInt("--" + prefix + "max-records", argc, argv, it.getProp("maxRecords"), qbufSize);
-	maxwsocks = uniset::getArgPInt("--" + prefix + "max-websockets", argc, argv, it.getProp("maxWebsockets"), maxwsocks);
+	qbufSize = uniset::getArgPInt("--" + prefix + "db-buffer-size", argc, argv, it.getProp("dbBufferSize"), qbufSize);
+	maxdbRecords = uniset::getArgPInt("--" + prefix + "db-max-records", argc, argv, it.getProp("dbMaxRecords"), qbufSize);
+	maxwsocks = uniset::getArgPInt("--" + prefix + "ws-max", argc, argv, it.getProp("wsMax"), maxwsocks);
 
-	double checkConnection_sec = atof( uniset::getArg2Param("--" + prefix + "check-connection-sec", argc, argv, it.getProp("checkConnectionSec"), "5").c_str());
+	double checkConnection_sec = atof( uniset::getArg2Param("--" + prefix + "ls-check-connection-sec", argc, argv, it.getProp("lsCheckConnectionSec"), "5").c_str());
 
-	int bufSize = uniset::getArgPInt("--" + prefix + "read-buffer-size", argc, argv, it.getProp("readBufferSize"), 10001);
+	int bufSize = uniset::getArgPInt("--" + prefix + "ls-read-buffer-size", argc, argv, it.getProp("lsReadBufferSize"), 10001);
 
-	std::string s_overflow = uniset::getArg2Param("--" + prefix + "overflow-factor", argc, argv, it.getProp("overflowFactor"), "1.3");
+	std::string s_overflow = uniset::getArg2Param("--" + prefix + "db-overflow-factor", argc, argv, it.getProp("dbOverflowFactor"), "1.3");
 	float ovf = atof(s_overflow.c_str());
 
 	numOverflow = lroundf( (float)maxdbRecords * ovf );
@@ -366,16 +366,20 @@ std::shared_ptr<LogDB> LogDB::init_logdb( int argc, const char* const* argv, con
 void LogDB::help_print()
 {
 	cout << "Default: prefix='logdb'" << endl;
-	cout << "--prefix-single-confile conf.xml  - Отдельный конфигурационный файл (не требующий структуры uniset)" << endl;
-	cout << "--prefix-name name                - Имя. Для поиска настроечной секции в configure.xml" << endl;
-	cout << "--prefix-buffer-size sz           - Размер буфера (до скидывания в БД)." << endl;
-	cout << "--prefix-max-records sz           - Максимальное количество записей в БД. При превышении, старые удаляются. 0 - не удалять" << endl;
-	cout << "--prefix-overflow-factor float    - Коэффициент переполнения, после которого запускается удаление старых записей. По умолчанию: 1.3" << endl;
-	cout << "--prefix-max-websockets num       - Максимальное количество websocket-ов" << endl;
-	cout << "--prefix-check-connection-sec sec - Период проверки соединения с логсервером" << endl;
-	cout << "--prefix-read-buffer-size num     - Размер буфера для чтения сообщений от логсервера. Deault: 10001" << endl;
+	cout << "--prefix-single-confile conf.xml     - Отдельный конфигурационный файл (не требующий структуры uniset)" << endl;
+	cout << "--prefix-name name                   - Имя. Для поиска настроечной секции в configure.xml" << endl;
+	cout << "database: " << endl;
+	cout << "--prefix-db-buffer-size sz           - Размер буфера (до скидывания в БД)." << endl;
+	cout << "--prefix-db-max-records sz           - Максимальное количество записей в БД. При превышении, старые удаляются. 0 - не удалять" << endl;
+	cout << "--prefix-db-overflow-factor float    - Коэффициент переполнения, после которого запускается удаление старых записей. По умолчанию: 1.3" << endl;
+	cout << "--prefix-db-disable                  - Отключить запись в БД" << endl;
 
-	cout << "--prefix-db-disable               - Отключить запись в БД" << endl;
+	cout << "websockets: " << endl;
+	cout << "--prefix-ws-max num                  - Максимальное количество websocket-ов" << endl;
+
+	cout << "logservers: " << endl;
+	cout << "--prefix-ls-check-connection-sec sec    - Период проверки соединения с логсервером" << endl;
+	cout << "--prefix-ls-read-buffer-size num        - Размер буфера для чтения сообщений от логсервера. Deault: 10001" << endl;
 
 	cout << "http: " << endl;
 	cout << "--prefix-httpserver-max-queued num           - Размер очереди запросов к http серверу. Default: 100" << endl;

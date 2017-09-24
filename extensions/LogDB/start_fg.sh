@@ -6,8 +6,8 @@ ulimit -Sc 1000000
 ./uniset2-logdb --confile test.xml --logdb-name LogDB \
  --logdb-log-add-levels any \
  --logdb-dbfile ./test.db \
- --logdb-buffer-size 5 \
+ --logdb-db-buffer-size 5 \
  --logdb-httpserver-port 8888 \
- --logdb-max-records 20000 \
+ --logdb-db-max-records 20000 \
  $*
 
