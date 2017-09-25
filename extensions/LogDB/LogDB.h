@@ -313,6 +313,10 @@ namespace uniset
 			std::string httpHost = { "" };
 			int httpPort = { 0 };
 
+			double wsHeartbeatTime_sec = { 3.0 };
+			double wsSendTime_sec = { 0.5 };
+			size_t wsMaxSend = { 200 };
+
 			/*! класс реализует работу с websocket через eventloop
 			 * Из-за того, что поступление логов может быть достаточно быстрым
 			 * чтобы не "завалить" браузер кучей сообщений,
@@ -344,6 +348,11 @@ namespace uniset
 					void term();
 
 					void waitCompletion();
+
+					// настройка
+					void setHearbeatTime( const double& sec );
+					void setSendPeriod( const double& sec );
+					void setMaxSendCount( size_t val );
 
 				protected:
 
@@ -401,7 +410,7 @@ namespace uniset
 			{
 				public:
 					LogDBRequestHandlerFactory( LogDB* l ): logdb(l) {}
-					virtual ~LogDBRequestHandlerFactory() {};
+					virtual ~LogDBRequestHandlerFactory() {}
 
 					virtual Poco::Net::HTTPRequestHandler* createRequestHandler( const Poco::Net::HTTPServerRequest& req ) override;
 

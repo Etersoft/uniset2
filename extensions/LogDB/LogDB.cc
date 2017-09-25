@@ -213,6 +213,10 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 	}
 
 #ifndef DISABLE_REST_API
+	wsHeartbeatTime_sec = (float)uniset::getArgPInt("--" + prefix + "ws-heartbeat-time", argc, argv, it.getProp("wsPingTime"),wsHeartbeatTime_sec) / 1000.0;
+	wsSendTime_sec = (float)uniset::getArgPInt("--" + prefix + "ws-send-time", argc, argv, it.getProp("wsSendTime"),wsSendTime_sec) / 1000.0;
+	wsMaxSend = uniset::getArgPInt("--" + prefix + "ws-max-send", argc, argv, it.getProp("wsMaxSend"),wsMaxSend);
+
 	httpHost = uniset::getArgParam("--" + prefix + "httpserver-host", argc, argv, "localhost");
 	httpPort = uniset::getArgInt("--" + prefix + "httpserver-port", argc, argv, "8080");
 	dblog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
@@ -220,7 +224,6 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 
 	try
 	{
-		/*! \FIXME: доделать конфигурирование параметров */
 		Poco::Net::HTTPServerParams* httpParams = new Poco::Net::HTTPServerParams;
 
 		int maxQ = uniset::getArgPInt("--" + prefix + "httpserver-max-queued", argc, argv, it.getProp("httpMaxQueued"), 100);
@@ -432,6 +435,9 @@ void LogDB::help_print()
 
 	cout << "websockets: " << endl;
 	cout << "--prefix-ws-max num                  - Максимальное количество websocket-ов" << endl;
+	cout << "--prefix-ws-heartbeat-time msec         - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
+	cout << "--prefix-ws-send-time msec              - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
+	cout << "--prefix-ws-max num                  - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
 
 	cout << "logservers: " << endl;
 	cout << "--prefix-ls-check-connection-sec sec    - Период проверки соединения с логсервером" << endl;
@@ -1229,6 +1235,9 @@ std::shared_ptr<LogDB::LogWebSocket> LogDB::newWebSocket( Poco::Net::HTTPServerR
 	{
 		uniset_rwmutex_wrlock lock(wsocksMutex);
 		ws = make_shared<LogWebSocket>(req, resp, log);
+		ws->setHearbeatTime(wsHeartbeatTime_sec);
+		ws->setSendPeriod(wsSendTime_sec);
+		ws->setMaxSendCount(wsMaxSend);
 		ws->dblog = dblog;
 		wsocks.emplace_back(ws);
 	}
@@ -1471,6 +1480,24 @@ void LogDB::LogWebSocket::waitCompletion()
 
 	while( !cancelled )
 		finish.wait(lk);
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::setHearbeatTime( const double& sec )
+{
+	if( sec > 0 )
+		ping_sec = sec;
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::setSendPeriod ( const double& sec )
+{
+	if( sec > 0 )
+		send_sec = sec;
+}
+// -----------------------------------------------------------------------------
+void LogDB::LogWebSocket::setMaxSendCount( size_t val )
+{
+	if( val > 0 )
+		maxsend = val;
 }
 // -----------------------------------------------------------------------------
 void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp )
