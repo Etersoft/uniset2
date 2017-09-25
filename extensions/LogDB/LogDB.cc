@@ -213,9 +213,9 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 	}
 
 #ifndef DISABLE_REST_API
-	wsHeartbeatTime_sec = (float)uniset::getArgPInt("--" + prefix + "ws-heartbeat-time", argc, argv, it.getProp("wsPingTime"),wsHeartbeatTime_sec) / 1000.0;
-	wsSendTime_sec = (float)uniset::getArgPInt("--" + prefix + "ws-send-time", argc, argv, it.getProp("wsSendTime"),wsSendTime_sec) / 1000.0;
-	wsMaxSend = uniset::getArgPInt("--" + prefix + "ws-max-send", argc, argv, it.getProp("wsMaxSend"),wsMaxSend);
+	wsHeartbeatTime_sec = (float)uniset::getArgPInt("--" + prefix + "ws-heartbeat-time", argc, argv, it.getProp("wsPingTime"), wsHeartbeatTime_sec) / 1000.0;
+	wsSendTime_sec = (float)uniset::getArgPInt("--" + prefix + "ws-send-time", argc, argv, it.getProp("wsSendTime"), wsSendTime_sec) / 1000.0;
+	wsMaxSend = uniset::getArgPInt("--" + prefix + "ws-max-send", argc, argv, it.getProp("wsMaxSend"), wsMaxSend);
 
 	httpHost = uniset::getArgParam("--" + prefix + "httpserver-host", argc, argv, "localhost");
 	httpPort = uniset::getArgInt("--" + prefix + "httpserver-port", argc, argv, "8080");
@@ -1591,12 +1591,30 @@ void LogDB::httpWebSocketConnectPage( ostream& ostr,
 	ostr << "}" << endl;
 
 	ostr << "</script>" << endl;
+	ostr << "<style media='all' type='text/css'>" << endl;
+	ostr << ".logs {" << endl;
+	ostr << "	font-family: 'Liberation Mono', 'DejaVu Sans Mono', 'Courier New', monospace;" << endl;
+	ostr << "	padding-top: 30px;" << endl;
+	ostr << "}" << endl;
+	ostr << "" << endl;
+	ostr << ".logtitle {" << endl;
+	ostr << "	position: fixed;" << endl;
+	ostr << "	top: 0;" << endl;
+	ostr << "	left: 0;" << endl;
+	ostr << "	padding: 10px;" << endl;
+	ostr << "	width: 100%;" << endl;
+	ostr << "	height: 25px;" << endl;
+	ostr << "	background-color: green;" << endl;
+	ostr << "	border-top: 2px solid;" << endl;
+	ostr << "	border-bottom: 2px solid;" << endl;
+	ostr << "	border-color: white;" << endl;
+	ostr << "}" << endl;
+	ostr << "</style>" << endl;
 	ostr << "</head>" << endl;
 	ostr << "<body style='background: #111111; color: #ececec;' onload=\"javascript:WebSocketCreate('" << logname << "')\">" << endl;
-	ostr << "<h4><div onclick='javascritpt:clickScroll()' id='logname' style='position: fixed; top: 0; left: 0; padding: 10px; width: 100%; height: 25px; background-color: green; border-top: 2px solid; border-bottom: 2px solid; border-color: white; '></div></h4>" << endl;
-	ostr << "<div id='logs'></div>" << endl;
-	ostr << "<div id='end' style='display: hidden;'></div>" << endl;
-	ostr << "<p height='10px'>&nbsp;</p>" << endl;
+	ostr << "<h4><div onclick='javascritpt:clickScroll()' id='logname' class='logtitle'></div></h4>" << endl;
+	ostr << "<div id='logs' class='logs'></div>" << endl;
+	ostr << "<p><div id='end' style='display: hidden;'>&nbsp;</div></p>" << endl;
 	ostr << "</body>" << endl;
 }
 // -----------------------------------------------------------------------------
