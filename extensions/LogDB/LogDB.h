@@ -87,7 +87,7 @@ namespace uniset
 		\endcode
 
 
-		\section sec_LogDB_DB LogDB Работа с БД
+		\section sec_LogDB_DB LogDB: Работа с БД
 		Для оптимизации, запись в БД сделана не по каждому сообщению, а через промежуточнй буффер.
 		Т.е. только после того как в буфере скапливается \a qbufSize сообщений (строк) буфер скидывается в базу.
 		Помимо этого, встроен механизм "ротации БД". Если задан параметр maxRecords (--prefix-db-max-records),
@@ -95,7 +95,7 @@ namespace uniset
 		т.е. фактически удаление старых записей начинается при переполнении БД определяемом коэффициентом
 		переполнения overflowFactor (--prefix-db-overflow-factor). По умолчанию 1.3.
 
-		\section sec_LogDB_REST LogDB REST API
+		\section sec_LogDB_REST LogDB: REST API
 			LogDB предоставляет возможность получения логов через REST API. Для этого запускается
 		http-сервер. Параметры запуска можно указать при помощи:
 		--prefix-httpserver-host и --prefix-httpserver-port.
@@ -120,7 +120,7 @@ namespace uniset
 		\endcode
 
 
-		\section sec_LogDB_WEBSOCK LogDB Поддержка web socket
+		\section sec_LogDB_WEBSOCK LogDB: Поддержка web socket
 
 		 В LogDB встроена возможность просмотра логов в реальном времени, через websocket.
 		 Список лог-серверов доступен по адресу:
@@ -136,7 +136,7 @@ namespace uniset
 		Количество создаваемых websocket-ов можно ограничить при помощи параметр maxWebsockets (--prefix-ws-max).
 
 
-		\section sec_LogDB_DETAIL LogDB Технические детали
+		\section sec_LogDB_DETAIL LogDB: Технические детали
 		   Вся релизация построена на "однопоточном" eventloop. В нём происходит,
 		 чтение данных от логсерверов, посылка сообщений в websockets, запись в БД.
 		 При этом обработка запросов REST API реализуется отдельными потоками контролируемыми libpoco.

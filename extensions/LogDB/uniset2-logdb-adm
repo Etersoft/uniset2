@@ -17,6 +17,12 @@ usage()
 [ -z "$1" ] && usage && exit 1
 
 
+if [ "$1" == "help" ] || [ "$1" == "h" ]; then
+	usage
+	exit 0
+fi
+
+
 # create database
 if [ "$1" == "create" ]; then
 
@@ -62,3 +68,7 @@ if [ "$1" == "load" ]; then
 	uniset2-logdb-conv $*
 	exit $?
 fi
+
+
+usage
+exit 1
