@@ -15,8 +15,8 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.6
-Release: alt41.1
+Version: 2.7
+Release: alt1
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -511,17 +511,20 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet2.pc
         
 # history of current unpublished changes
-# - change directory structure
-# - shared_ptr --> unique_ptr
-# - minor refactoring
-# - remote deprecated components
 
 %changelog
 * Sun Nov 12 2017 Alexei Takaseev <taf@altlinux.org> 2.6-alt41.1
 - Rebuild with poco 1.8.0.1
 
-* Thu Nov 02 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt41
-- build new version
+# * Thu Nov 02 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt41
+#- build new version
+
+#* Mon Sep 25 2017 Pavel Vainerman <pv@altlinux.ru> 2.7-alt1
+#- change directory structure
+#- shared_ptr --> unique_ptr
+#- minor refactoring
+#- remote deprecated components
+#- added LogDB
 
 # * Thu Nov 02 2017 Vinogradov Aleksei <uzum@server> 2.6-alt40
 # - DBInterface: minor fix in method name
