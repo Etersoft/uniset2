@@ -120,7 +120,7 @@ namespace uniset
 		\section sec_LogDB_WEBSOCK LogDB Поддержка web socket
 
 		 В LogDB встроена возможность просмотра логов в реальном времени, через websocket.
-		 Список доступных для подключения лог-серверов доступен по адресу:
+		 Список лог-серверов доступен по адресу:
 		 \code
 		 ws://host:port/logdb/ws/
 		 \endcode
@@ -171,7 +171,6 @@ namespace uniset
 		public EventLoopServer
 #ifndef DISABLE_REST_API
 		, public Poco::Net::HTTPRequestHandler
-		, public Poco::Net::HTTPRequestHandlerFactory
 #endif
 	{
 		public:
@@ -191,7 +190,6 @@ namespace uniset
 
 			void run( bool async );
 #ifndef DISABLE_REST_API
-			Poco::Net::HTTPRequestHandler* createRequestHandler( const Poco::Net::HTTPServerRequest& req );
 			virtual void handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp ) override;
 			void onWebSocketSession( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp );
 #endif
@@ -250,6 +248,11 @@ namespace uniset
 
 			size_t maxdbRecords = { 200 * 1000 };
 			size_t numOverflow = { 0 }; // вычисляется из параметра "overflow factor"(float)
+
+			ev::sig sigTERM;
+			ev::sig sigQUIT;
+			ev::sig sigINT;
+			void onTerminate( ev::sig& evsig , int revents );
 
 			ev::async wsactivate; // активация LogWebSocket-ов
 
@@ -391,6 +394,20 @@ namespace uniset
 			std::list<std::shared_ptr<LogWebSocket>> wsocks;
 			uniset::uniset_rwmutex wsocksMutex;
 			size_t maxwsocks = { 50 }; // максимальное количество websocket-ов
+
+
+			class LogDBRequestHandlerFactory:
+				public Poco::Net::HTTPRequestHandlerFactory
+			{
+				public:
+					LogDBRequestHandlerFactory( LogDB* l ): logdb(l) {}
+					virtual ~LogDBRequestHandlerFactory() {};
+
+					virtual Poco::Net::HTTPRequestHandler* createRequestHandler( const Poco::Net::HTTPServerRequest& req ) override;
+
+				private:
+					LogDB* logdb;
+			};
 #endif
 
 		private:

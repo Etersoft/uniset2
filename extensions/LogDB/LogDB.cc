@@ -110,6 +110,9 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 
 	flushBufferTimer.set<LogDB, &LogDB::onCheckBuffer>(this);
 	wsactivate.set<LogDB, &LogDB::onActivate>(this);
+	sigTERM.set<LogDB, &LogDB::onTerminate>(this);
+	sigQUIT.set<LogDB, &LogDB::onTerminate>(this);
+	sigINT.set<LogDB, &LogDB::onTerminate>(this);
 
 	bool dbDisabled = ( uniset::findArgParam("--" + prefix + "db-disable", argc, argv) != -1 );
 
@@ -225,7 +228,7 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 
 		httpParams->setMaxQueued(maxQ);
 		httpParams->setMaxThreads(maxT);
-		httpserv = std::make_shared<Poco::Net::HTTPServer>(this, Poco::Net::ServerSocket(sa), httpParams );
+		httpserv = std::make_shared<Poco::Net::HTTPServer>(new LogDBRequestHandlerFactory(this), Poco::Net::ServerSocket(sa), httpParams );
 	}
 	catch( std::exception& ex )
 	{
@@ -247,6 +250,49 @@ LogDB::~LogDB()
 
 	if( db )
 		db->close();
+}
+//--------------------------------------------------------------------------------------------
+void LogDB::onTerminate( ev::sig& evsig, int revents )
+{
+	if( EV_ERROR & revents )
+	{
+		dbcrit << myname << "(onTerminate): invalid event" << endl;
+		return;
+	}
+
+	dbinfo << myname << "(onTerminate): terminate..." << endl;
+
+	try
+	{
+		flushBuffer();
+	}
+	catch( std::exception& ex )
+	{
+		dbinfo << myname << "(onTerminate): "  << ex.what() << endl;
+
+	}
+
+	evsig.stop();
+
+	//evsig.loop.break_loop();
+	try
+	{
+		httpserv->stop();
+	}
+	catch( std::exception& ex )
+	{
+		dbinfo << myname << "(onTerminate): "  << ex.what() << endl;
+	}
+
+	try
+	{
+		evstop();
+	}
+	catch( std::exception& ex )
+	{
+		dbinfo << myname << "(onTerminate): "  << ex.what() << endl;
+
+	}
 }
 //--------------------------------------------------------------------------------------------
 void LogDB::flushBuffer()
@@ -428,6 +474,13 @@ void LogDB::evprepare()
 
 	for( const auto& s : logservers )
 		s->set(loop);
+
+	sigTERM.set(loop);
+	sigTERM.start(SIGTERM);
+	sigQUIT.set(loop);
+	sigQUIT.start(SIGQUIT);
+	sigINT.set(loop);
+	sigINT.start(SIGINT);
 }
 // -----------------------------------------------------------------------------
 void LogDB::onCheckBuffer(ev::timer& t, int revents)
@@ -716,12 +769,12 @@ class LogDBWebSocketRequestHandler:
 		LogDB* logdb;
 };
 // -----------------------------------------------------------------------------
-Poco::Net::HTTPRequestHandler* LogDB::createRequestHandler( const Poco::Net::HTTPServerRequest& req )
+Poco::Net::HTTPRequestHandler* LogDB::LogDBRequestHandlerFactory::createRequestHandler( const Poco::Net::HTTPServerRequest& req )
 {
 	if( req.find("Upgrade") != req.end() && Poco::icompare(req["Upgrade"], "websocket") == 0 )
-		return new LogDBWebSocketRequestHandler(this);
+		return new LogDBWebSocketRequestHandler(logdb);
 
-	return new LogDBRequestHandler(this);
+	return new LogDBRequestHandler(logdb);
 }
 // -----------------------------------------------------------------------------
 void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp )

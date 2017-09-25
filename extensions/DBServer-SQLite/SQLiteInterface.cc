@@ -46,7 +46,10 @@ SQLiteInterface::~SQLiteInterface()
 	}
 	catch( ... ) // пропускаем все необработанные исключения, если требуется обработать нужно вызывать close() до деструктора
 	{
-		cerr << "MySQLInterface::~MySQLInterface(): an error occured while closing connection!" << endl;
+		std::exception_ptr p = std::current_exception();
+		cerr << "(SQLiteInterface::~SQLiteInterface): "
+			 << (p ? p.__cxa_exception_type()->name() : "an error occured while closing connection!")
+			 << std::endl;
 	}
 }
 
