@@ -99,7 +99,7 @@ namespace uniset
 
 			virtual bool checkTime() const noexcept override; /*!< проверка наступления заданного времени */
 			virtual timeout_t setTiming( timeout_t msec ) noexcept override;     /*!< установить таймер и запустить. timeMS = 0 вызовет немедленное срабатывание */
-			virtual void reset() noexcept; /*!< перезапустить таймер */
+			virtual void reset() noexcept override; /*!< перезапустить таймер */
 
 			virtual timeout_t getCurrent() const noexcept override;  /*!< получить текущее значение таймера, в мс */
 
@@ -108,7 +108,7 @@ namespace uniset
 			 */
 			virtual timeout_t getInterval() const noexcept override;
 
-			virtual void terminate() noexcept; /*!< прервать работу таймера */
+			virtual void terminate() noexcept override; /*!< прервать работу таймера */
 
 		protected:
 			timeout_t t_msec = { 0 };  /*!< интервал таймера, в милисекундах (для "пользователей") */
