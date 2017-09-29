@@ -34,8 +34,8 @@ namespace uniset
 			explicit RTUStorage( ModbusRTU::ModbusAddr addr );
 			~RTUStorage();
 
-			void poll( const std::shared_ptr<ModbusRTUMaster>& mb )
-			throw(ModbusRTU::mbException);
+			// throw(ModbusRTU::mbException);
+			void poll( const std::shared_ptr<ModbusRTUMaster>& mb );
 
 			inline ModbusRTU::ModbusAddr getAddress()
 			{

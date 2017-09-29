@@ -37,14 +37,21 @@ namespace uniset
 		//! Получение ссылки на корень репозитория
 		CosNaming::NamingContext_ptr getRootNamingContext( const CORBA::ORB_ptr orb, const std::string& nsName );
 
-		//! Получение контекста по заданному имени
+		/*!
+		 * Получение контекста по заданному имени
+		 * \param cname - полное имя контекста ссылку на который, возвратит функция.
+		 * \param argc  - argc
+		 * \param argc  - argv
+		 * \param nsName  - параметры инициализации ORB
+		 *
+		 * throw uniset::ORepFailed
+		*/
 		CosNaming::NamingContext_ptr getContext(const std::string& cname, int argc,
-												const char* const* argv, const std::string& nsName)
-		throw(uniset::ORepFailed);
+												const char* const* argv, const std::string& nsName);
 
+		// throw uniset::ORepFailed
 		CosNaming::NamingContext_ptr getContext(const CORBA::ORB_ptr orb, const std::string& cname,
-												const std::string& nsName)
-		throw(uniset::ORepFailed);
+												const std::string& nsName);
 
 		//! Функция отделяющая имя секции от полного имени
 		const std::string getSectionName(const std::string& fullName, const std::string& brk = "/");

@@ -97,7 +97,6 @@ namespace uniset
 	}
 	// -----------------------------------------------------------------------------
 	int FakeComediInterface::getAnalogChannel(int subdev, int channel, int range, int aref) const
-	throw(uniset::Exception)
 	{
 		if( channel < 0 || channel > maxChannelNum )
 		{
@@ -110,7 +109,6 @@ namespace uniset
 	}
 	// -----------------------------------------------------------------------------
 	void FakeComediInterface::setAnalogChannel(int subdev, int channel, int data, int range, int aref) const
-	throw(uniset::Exception)
 	{
 		if( channel < 0 || channel > maxChannelNum )
 		{
@@ -123,7 +121,6 @@ namespace uniset
 	}
 	// -----------------------------------------------------------------------------
 	bool FakeComediInterface::getDigitalChannel( int subdev, int channel ) const
-	throw(uniset::Exception)
 	{
 		if( channel < 0 || channel > maxChannelNum )
 		{
@@ -136,7 +133,6 @@ namespace uniset
 	}
 	// -----------------------------------------------------------------------------
 	void FakeComediInterface::setDigitalChannel( int subdev, int channel, bool bit ) const
-	throw(uniset::Exception)
 	{
 		if( channel < 0 || channel > maxChannelNum )
 		{
@@ -149,13 +145,11 @@ namespace uniset
 	}
 	// -----------------------------------------------------------------------------
 	void FakeComediInterface::configureSubdev( int subdev, ComediInterface::SubdevType type ) const
-	throw(uniset::Exception)
 	{
 
 	}
 	// -----------------------------------------------------------------------------
 	void FakeComediInterface::configureChannel(int subdev, int channel, ComediInterface::ChannelType type, int range, int aref) const
-	throw(uniset::Exception)
 	{
 
 	}

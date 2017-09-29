@@ -31,17 +31,17 @@ namespace uniset
 			explicit ComediInterface( const std::string& dev, const std::string& cname );
 			virtual ~ComediInterface();
 
-			virtual int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND ) const
-			throw(uniset::Exception);
+			// throw uniset::Exception
+			virtual int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND ) const;
 
-			virtual void setAnalogChannel( int subdev, int channel, int data, int range = 0, int aref = AREF_GROUND ) const
-			throw(uniset::Exception);
+			// throw uniset::Exception
+			virtual void setAnalogChannel( int subdev, int channel, int data, int range = 0, int aref = AREF_GROUND ) const;
 
-			virtual bool getDigitalChannel( int subdev, int channel ) const
-			throw(uniset::Exception);
+			// throw uniset::Exception
+			virtual bool getDigitalChannel( int subdev, int channel ) const;
 
-			virtual void setDigitalChannel( int subdev, int channel, bool bit ) const
-			throw(uniset::Exception);
+			// throw uniset::Exception
+			virtual void setDigitalChannel( int subdev, int channel, bool bit ) const;
 
 			// Конфигурирование входов / выходов
 			enum ChannelType
@@ -64,10 +64,11 @@ namespace uniset
 			static std::string type2str( SubdevType t );
 			static SubdevType str2type( const std::string& s );
 
-			virtual void configureSubdev( int subdev, SubdevType type ) const throw(uniset::Exception);
+			// throw uniset::Exception
+			virtual void configureSubdev( int subdev, SubdevType type ) const;
 
-			virtual void configureChannel( int subdev, int channel, ChannelType type, int range = 0, int aref = 0 ) const
-			throw(uniset::Exception);
+			// throw uniset::Exception
+			virtual void configureChannel( int subdev, int channel, ChannelType type, int range = 0, int aref = 0 ) const;
 
 			inline const std::string devname() const
 			{
@@ -93,4 +94,3 @@ namespace uniset
 // -----------------------------------------------------------------------------
 #endif // ComediInterface_H_
 // -----------------------------------------------------------------------------
-

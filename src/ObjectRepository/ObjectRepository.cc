@@ -84,7 +84,6 @@ bool ObjectRepository::init() const
  * \sa registration(const std::string& fullName, const CORBA::Object_ptr oRef)
 */
 void ObjectRepository::registration(const string& name, const ObjectPtr oRef, const string& section, bool force) const
-throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
 {
 	ostringstream err;
 
@@ -183,7 +182,6 @@ throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
  *  \sa registration(const string name, const ObjectPtr oRef, const string section)
 */
 void ObjectRepository::registration( const std::string& fullName, const uniset::ObjectPtr oRef, bool force ) const
-throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
 {
 	//    string n(ORepHelpers::getShortName(fullName));
 	string n( uconf->oind->getBaseName(fullName) );
@@ -200,8 +198,7 @@ throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
  *    проверки на, то не является ли имя ссылкой на объект или контекст
  *    т.к. для удаления ссылки на контекст нужен алгоритм посложнее...
 */
-void ObjectRepository::unregistration(const string& name, const string& section) const
-throw(ORepFailed, NameNotFound)
+void ObjectRepository::unregistration( const string& name, const string& section ) const
 {
 	ostringstream err;
 	CosNaming::Name_var oName = omniURI::stringToName(name.c_str());
@@ -241,7 +238,6 @@ throw(ORepFailed, NameNotFound)
  *     \sa unregistration(const string name, const string section)
 */
 void ObjectRepository::unregistration(const string& fullName) const
-throw(ORepFailed, NameNotFound)
 {
 	//    string n(ORepHelpers::getShortName(fullName));
 	string n(uconf->oind->getBaseName(fullName));
@@ -251,7 +247,6 @@ throw(ORepFailed, NameNotFound)
 // --------------------------------------------------------------------------
 
 ObjectPtr ObjectRepository::resolve( const string& name, const string& NSName ) const
-throw(ORepFailed,  NameNotFound)
 {
 	ostringstream err;
 
@@ -308,7 +303,7 @@ throw(ORepFailed,  NameNotFound)
  * количество объектов в этой секции превышает заданное how_many.
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepository::list(const string& section, ListObjectName* ls, size_t how_many) const throw(ORepFailed)
+bool ObjectRepository::list(const string& section, ListObjectName* ls, size_t how_many) const
 {
 	return list(section, ls, how_many, ObjectRef);
 }
@@ -322,7 +317,7 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, size_t ho
  * количество объектов в этой секции превышает заданное how_many.
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepository::listSections(const string& in_section, ListObjectName* ls, size_t how_many) const throw(ORepFailed)
+bool ObjectRepository::listSections(const string& in_section, ListObjectName* ls, size_t how_many) const
 {
 	return list(in_section, ls, how_many, Section);
 }
@@ -450,7 +445,6 @@ bool ObjectRepository::isExist( const ObjectPtr& oref ) const
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
 bool ObjectRepository::createSection(const string& name, const string& in_section) const
-throw(ORepFailed, InvalidObjectName)
 {
 	char bad = uniset::checkBadSymbols(name);
 
@@ -480,7 +474,7 @@ throw(ORepFailed, InvalidObjectName)
  * \param fullName - полное имя создаваемой секции
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepository::createSectionF( const string& fullName ) const throw(ORepFailed, InvalidObjectName)
+bool ObjectRepository::createSectionF( const string& fullName ) const
 {
 	string name(ObjectIndex::getBaseName(fullName));
 	string sec(ORepHelpers::getSectionName(fullName));
@@ -488,14 +482,14 @@ bool ObjectRepository::createSectionF( const string& fullName ) const throw(ORep
 	ulogrep << name << endl;
 	ulogrep << sec << endl;
 
-	if ( sec.empty() )
+	if( sec.empty() )
 	{
 		ulogrep << "SectionName is empty!!!" << endl;
 		ulogrep << "Добавляем в " << uconf->getRootSection() << endl;
 		return createSection(name, uconf->getRootSection());
 	}
-	else
-		return createSection(name, sec);
+
+	return createSection(name, sec);
 }
 
 // ---------------------------------------------------------------------------------------------------------------

@@ -51,7 +51,7 @@ namespace uniset
 
 	}
 	// -----------------------------------------------------------------------------
-	void RTUStorage::poll( const std::shared_ptr<ModbusRTUMaster>& mb ) throw( ModbusRTU::mbException )
+	void RTUStorage::poll( const std::shared_ptr<ModbusRTUMaster>& mb )
 	{
 		try
 		{

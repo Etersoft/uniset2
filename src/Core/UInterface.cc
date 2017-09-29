@@ -115,7 +115,6 @@ namespace uniset
 	 * \exception IOTimeOut - генерируется если в течение времени timeout небыл получен ответ
 	*/
 	long UInterface::getValue( const uniset::ObjectId id, const uniset::ObjectId node ) const
-	throw(UI_THROW_EXCEPTIONS)
 	{
 		if ( id == uniset::DefaultObjectId )
 			throw uniset::ORepFailed("UI(getValue): error id=uniset::DefaultObjectId");
@@ -285,7 +284,6 @@ namespace uniset
 	 * \exception IOBadParam - генерируется если указано неправильное имя вывода или секции
 	*/
 	void UInterface::setValue( const uniset::ObjectId id, long value, const uniset::ObjectId node, const uniset::ObjectId sup_id ) const
-	throw(UI_THROW_EXCEPTIONS)
 	{
 		if ( id == uniset::DefaultObjectId )
 			throw uniset::ORepFailed("UI(setValue): error: id=uniset::DefaultObjectId");
@@ -478,7 +476,7 @@ namespace uniset
 	*/
 	void UInterface::askRemoteSensor( const uniset::ObjectId id, UniversalIO::UIOCommand cmd,
 									  const uniset::ObjectId node,
-									  uniset::ObjectId backid ) const throw(UI_THROW_EXCEPTIONS)
+									  uniset::ObjectId backid ) const
 	{
 		if( backid == uniset::DefaultObjectId )
 			backid = myid;
@@ -581,7 +579,6 @@ namespace uniset
 	 * \param node - идентификатор узла
 	*/
 	IOType UInterface::getIOType( const uniset::ObjectId id, const uniset::ObjectId node ) const
-	throw(UI_THROW_EXCEPTIONS)
 	{
 		if ( id == uniset::DefaultObjectId )
 			throw uniset::ORepFailed("UI(getIOType): error: id=uniset::DefaultObjectId");
@@ -672,7 +669,6 @@ namespace uniset
 	 * \param node - идентификатор узла
 	*/
 	uniset::ObjectType UInterface::getType( const uniset::ObjectId name, const uniset::ObjectId node) const
-	throw(UI_THROW_EXCEPTIONS)
 	{
 		if ( name == uniset::DefaultObjectId )
 			throw uniset::ORepFailed("UI(getType): попытка обратиться к объекту с id=uniset::DefaultObjectId");
@@ -760,7 +756,7 @@ namespace uniset
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
-	void UInterface::registered( const uniset::ObjectId id, const uniset::ObjectPtr oRef, bool force ) const throw(uniset::ORepFailed)
+	void UInterface::registered( const uniset::ObjectId id, const uniset::ObjectPtr oRef, bool force ) const
 	{
 		// если влючён режим использования локальных файлов
 		// то пишем IOR в файл
@@ -784,7 +780,7 @@ namespace uniset
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
-	void UInterface::unregister( const uniset::ObjectId id )throw(uniset::ORepFailed)
+	void UInterface::unregister( const uniset::ObjectId id )
 	{
 		if( uconf->isLocalIOR() )
 		{
@@ -804,7 +800,6 @@ namespace uniset
 
 	// ------------------------------------------------------------------------------------------------------------
 	uniset::ObjectPtr UInterface::resolve( const uniset::ObjectId rid , const uniset::ObjectId node ) const
-	throw(uniset::ResolveNameError, uniset::TimeOut )
 	{
 		if ( rid == uniset::DefaultObjectId )
 			throw uniset::ResolveNameError("UI(resolve): ID=uniset::DefaultObjectId");
@@ -950,7 +945,6 @@ namespace uniset
 
 	// -------------------------------------------------------------------------------------------
 	void UInterface::send( const uniset::ObjectId name, const uniset::TransportMessage& msg, const uniset::ObjectId node )
-	throw(UI_THROW_EXCEPTIONS)
 	{
 		if ( name == uniset::DefaultObjectId )
 			throw uniset::ORepFailed("UI(send): ERROR: id=uniset::DefaultObjectId");
@@ -985,7 +979,7 @@ namespace uniset
 				}
 				catch( const CORBA::TRANSIENT& ) {}
 				catch( const CORBA::OBJECT_NOT_EXIST& ) {}
-				catch( const CORBA::SystemException& ex ) {}
+				catch( const CORBA::SystemException& ) {}
 
 				msleep(uconf->getRepeatTimeout());
 				oref = CORBA::Object::_nil();
@@ -1006,12 +1000,12 @@ namespace uniset
 			rcache.erase(name, node);
 			throw uniset::IOBadParam(set_err("UI(send): object not exist", name, node));
 		}
-		catch( const CORBA::COMM_FAILURE& ex )
+		catch( const CORBA::COMM_FAILURE& )
 		{
 			// ошибка системы коммуникации
 			// uwarn << "UI(send): ошибка системы коммуникации" << endl;
 		}
-		catch( const CORBA::SystemException& ex )
+		catch( const CORBA::SystemException& )
 		{
 			// ошибка системы коммуникации
 			// uwarn << "UI(send): CORBA::SystemException" << endl;
@@ -1061,7 +1055,7 @@ namespace uniset
 				}
 				catch( const CORBA::TRANSIENT& ) {}
 				catch( const CORBA::OBJECT_NOT_EXIST& ) {}
-				catch( const CORBA::SystemException& ex ) {}
+				catch( const CORBA::SystemException& ) {}
 
 				msleep(uconf->getRepeatTimeout());
 				oref = CORBA::Object::_nil();
@@ -1265,7 +1259,6 @@ namespace uniset
 	}
 	// ------------------------------------------------------------------------------------------------------------
 	uniset::ObjectPtr UInterface::CacheOfResolve::resolve( const uniset::ObjectId id, const uniset::ObjectId node ) const
-	throw(uniset::NameNotFound, uniset::SystemError)
 	{
 		try
 		{

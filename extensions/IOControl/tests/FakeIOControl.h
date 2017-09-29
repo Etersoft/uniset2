@@ -46,23 +46,17 @@ namespace uniset
 			// --------------------------------------------
 			// при тестировании параметры range,aref,subdev игнорируются!
 
-			virtual int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND ) const
-			throw(uniset::Exception) override;
+			virtual int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND ) const override;
 
-			virtual void setAnalogChannel( int subdev, int channel, int data, int range = 0, int aref = AREF_GROUND ) const
-			throw(uniset::Exception) override;
+			virtual void setAnalogChannel( int subdev, int channel, int data, int range = 0, int aref = AREF_GROUND ) const override;
 
-			virtual bool getDigitalChannel( int subdev, int channel ) const
-			throw(uniset::Exception) override;
+			virtual bool getDigitalChannel( int subdev, int channel ) const override;
 
-			virtual void setDigitalChannel( int subdev, int channel, bool bit ) const
-			throw(uniset::Exception) override;
+			virtual void setDigitalChannel( int subdev, int channel, bool bit ) const override;
 
-			virtual void configureSubdev( int subdev, SubdevType type ) const
-			throw(uniset::Exception) override;
+			virtual void configureSubdev( int subdev, SubdevType type ) const override;
 
-			virtual void configureChannel( int subdev, int channel, ChannelType type, int range = 0, int aref = 0 ) const
-			throw(uniset::Exception) override;
+			virtual void configureChannel( int subdev, int channel, ChannelType type, int range = 0, int aref = 0 ) const override;
 	};
 	// --------------------------------------------------------------------------
 	/*! Специальный IOControl для тестирвания подменяющий все карты в/в на FakeComediInterface */

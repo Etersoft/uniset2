@@ -59,7 +59,6 @@ namespace uniset
 	// --------------------------------------------------------------------------------
 	ReadCoilRetMessage ModbusClient::read01( ModbusAddr addr,
 			ModbusData start, ModbusData count )
-	throw(ModbusRTU::mbException)
 	{
 		ReadCoilMessage msg(addr, start, count);
 		qbuf = msg.transport_msg();
@@ -80,7 +79,6 @@ namespace uniset
 	// --------------------------------------------------------------------------------
 	ReadInputStatusRetMessage ModbusClient::read02( ModbusAddr addr,
 			ModbusData start, ModbusData count )
-	throw(ModbusRTU::mbException)
 	{
 		ReadInputStatusMessage msg(addr, start, count);
 		qbuf = msg.transport_msg();
@@ -102,7 +100,6 @@ namespace uniset
 	// --------------------------------------------------------------------------------
 	ReadOutputRetMessage ModbusClient::read03( ModbusAddr addr,
 			ModbusData start, ModbusData count )
-	throw(ModbusRTU::mbException)
 	{
 		ReadOutputMessage msg(addr, start, count);
 		qbuf = msg.transport_msg();
@@ -124,7 +121,6 @@ namespace uniset
 	// --------------------------------------------------------------------------------
 	ReadInputRetMessage ModbusClient::read04( ModbusAddr addr,
 			ModbusData start, ModbusData count )
-	throw(ModbusRTU::mbException)
 	{
 		ReadInputMessage msg(addr, start, count);
 		qbuf = msg.transport_msg();
@@ -145,7 +141,6 @@ namespace uniset
 	// --------------------------------------------------------------------------------
 	ForceSingleCoilRetMessage ModbusClient::write05( ModbusAddr addr,
 			ModbusData start, bool cmd )
-	throw(ModbusRTU::mbException)
 	{
 		ForceSingleCoilMessage msg(addr, start, cmd);
 		qbuf = msg.transport_msg();
@@ -171,7 +166,6 @@ namespace uniset
 
 	WriteSingleOutputRetMessage ModbusClient::write06( ModbusAddr addr,
 			ModbusData start, ModbusData data )
-	throw(ModbusRTU::mbException)
 	{
 		WriteSingleOutputMessage msg(addr, start, data);
 		qbuf = msg.transport_msg();
@@ -195,7 +189,6 @@ namespace uniset
 	}
 	// --------------------------------------------------------------------------------
 	ForceCoilsRetMessage ModbusClient::write0F( ForceCoilsMessage& msg )
-	throw(ModbusRTU::mbException)
 	{
 		qbuf = msg.transport_msg();
 		mbErrCode res = query(msg.addr, qbuf, qreply, replyTimeOut_ms);
@@ -218,7 +211,6 @@ namespace uniset
 	// --------------------------------------------------------------------------------
 
 	WriteOutputRetMessage ModbusClient::write10( WriteOutputMessage& msg )
-	throw(ModbusRTU::mbException)
 	{
 		qbuf = msg.transport_msg();
 		mbErrCode res = query(msg.addr, qbuf, qreply, replyTimeOut_ms);
@@ -242,7 +234,6 @@ namespace uniset
 	DiagnosticRetMessage ModbusClient::diag08( ModbusAddr addr,
 			DiagnosticsSubFunction subfunc,
 			ModbusRTU::ModbusData dat )
-	throw(ModbusRTU::mbException)
 	{
 		DiagnosticMessage msg(addr, subfunc, dat);
 		qbuf = msg.transport_msg();
@@ -264,7 +255,6 @@ namespace uniset
 	ModbusRTU::MEIMessageRetRDI ModbusClient::read4314( ModbusRTU::ModbusAddr addr,
 			ModbusRTU::ModbusByte devID,
 			ModbusRTU::ModbusByte objID )
-	throw(ModbusRTU::mbException)
 	{
 		MEIMessageRDI msg(addr, devID, objID);
 		qbuf = msg.transport_msg();
@@ -289,7 +279,6 @@ namespace uniset
 	SetDateTimeRetMessage ModbusClient::setDateTime( ModbusAddr addr, ModbusByte hour, ModbusByte min, ModbusByte sec,
 			ModbusByte day, ModbusByte mon, ModbusByte year,
 			ModbusByte century )
-	throw(ModbusRTU::mbException)
 	{
 		SetDateTimeMessage msg(addr);
 		msg.hour     = hour;
@@ -311,7 +300,6 @@ namespace uniset
 	// --------------------------------------------------------------------------------
 	void ModbusClient::fileTransfer(ModbusAddr addr, ModbusData numfile,
 									const std::string& save2filename, timeout_t part_timeout_msec )
-	throw(ModbusRTU::mbException)
 	{
 		//#warning Необходимо реализовать
 		//    throw mbException(erUnExpectedPacketType);
@@ -403,7 +391,6 @@ namespace uniset
 	FileTransferRetMessage ModbusClient::partOfFileTransfer( ModbusAddr addr,
 			ModbusData idFile, ModbusData numpack,
 			timeout_t part_timeout_msec )
-	throw(ModbusRTU::mbException)
 	{
 		FileTransferMessage msg(addr, idFile, numpack);
 		qbuf = msg.transport_msg();
