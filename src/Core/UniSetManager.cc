@@ -25,6 +25,7 @@
 #include <functional>
 #include <algorithm>
 
+#include "Configuration.h"
 #include "Exceptions.h"
 #include "ORepHelpers.h"
 #include "UInterface.h"
@@ -247,7 +248,7 @@ void UniSetManager::managers( OManagerCommand cmd )
 		//lock
 		uniset_rwmutex_rlock lock(mlistMutex);
 
-		for( auto& li : mlist )
+		for( const auto& li: mlist )
 		{
 			if( !li )
 				continue;
@@ -346,7 +347,7 @@ void UniSetManager::objects(OManagerCommand cmd)
 		//lock
 		uniset_rwmutex_rlock lock(olistMutex);
 
-		for( auto& li : olist )
+		for( const auto& li: olist )
 		{
 			if( !li )
 				continue;
@@ -606,11 +607,11 @@ int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, S
 	if( ind > uplimit )
 		return ind;
 
-	for( auto it = mngr->beginOList(); it != mngr->endOList(); ++it )
+	for( const auto& o: olist )
 	{
 		try
 		{
-			SimpleInfo_var si = (*it)->getInfo(userparam);
+			SimpleInfo_var si = o->getInfo(userparam);
 			(*seq)[ind] = si;
 			ind++;
 
@@ -624,7 +625,7 @@ int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, S
 		catch(...)
 		{
 			uwarn << myname << "(getObjectsInfo): не смог получить у объекта "
-				  << uniset_conf()->oind->getNameById( (*it)->getId() ) << " информацию" << endl;
+				  << uniset_conf()->oind->getNameById( o->getId() ) << " информацию" << endl;
 		}
 	}
 
@@ -632,9 +633,9 @@ int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, S
 		return ind;
 
 	// а далее у его менеджеров (рекурсивно)
-	for( auto& i : mlist )
+	for( const auto& m: mlist )
 	{
-		ind = getObjectsInfo(i, seq, ind, uplimit, userparam );
+		ind = getObjectsInfo(m, seq, ind, uplimit, userparam );
 
 		if( ind > uplimit )
 			break;
@@ -664,24 +665,16 @@ SimpleInfoSeq* UniSetManager::getObjectsInfo(CORBA::Long maxlength, const char* 
 }
 
 // ------------------------------------------------------------------------------------------
-UniSetManagerList::const_iterator UniSetManager::beginMList()
+void UniSetManager::apply_for_objects( OFunction f )
 {
-	return mlist.begin();
+	for( const auto& o: olist )
+		f(o);
 }
 // ------------------------------------------------------------------------------------------
-UniSetManagerList::const_iterator UniSetManager::endMList()
+void UniSetManager::apply_for_managers(UniSetManager::MFunction f)
 {
-	return mlist.end();
-}
-// ------------------------------------------------------------------------------------------
-ObjectsList::const_iterator UniSetManager::beginOList()
-{
-	return olist.begin();
-}
-// ------------------------------------------------------------------------------------------
-ObjectsList::const_iterator UniSetManager::endOList()
-{
-	return olist.end();
+	for( const auto& m: mlist )
+		f(m);
 }
 // ------------------------------------------------------------------------------------------
 size_t UniSetManager::objectsCount() const

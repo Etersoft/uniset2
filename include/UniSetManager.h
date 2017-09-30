@@ -126,10 +126,11 @@ namespace uniset
 
 			// Функции для работы со списками подчиненных объектов
 			// ---------------
-			UniSetManagerList::const_iterator beginMList();
-			UniSetManagerList::const_iterator endMList();
-			ObjectsList::const_iterator beginOList();
-			ObjectsList::const_iterator endOList();
+			typedef std::function<void(const std::shared_ptr<UniSetObject>&)> OFunction;
+			void apply_for_objects( OFunction f );
+
+			typedef std::function<void(const std::shared_ptr<UniSetManager>&)> MFunction;
+			void apply_for_managers( MFunction f );
 
 		private:
 
