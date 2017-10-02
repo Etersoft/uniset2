@@ -36,6 +36,7 @@ namespace uniset
 	 *
 	 * \todo Перейти на shared_ptr, weak_ptr для взаимодействия с ProxyManager
 	 *
+	 * DEPRECATED
 	*/
 	class PassiveObject
 	{

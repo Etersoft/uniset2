@@ -75,9 +75,8 @@ void SMonitor::sysCommand( const SystemMessage* sm )
 				}
 				catch(...)
 				{
-					cerr << myname << ": НЕ СМОГ ЗАКАЗТЬ датчики " << endl;
-					//					raise(SIGTERM);
-					//std::terminate();
+					std::exception_ptr p = std::current_exception();
+					cerr << myname << ": " << (p ? p.__cxa_exception_type()->name() : "FAIL ask sensors..") << std::endl;
 					uterminate();
 				}
 			}
@@ -140,10 +139,5 @@ void SMonitor::sensorInfo( const SensorMessage* si )
 		//            cout << "finish..." << endl;
 		//        }
 	}
-}
-// ------------------------------------------------------------------------------------------
-void SMonitor::timerInfo( const uniset::TimerMessage* tm )
-{
-
 }
 // ------------------------------------------------------------------------------------------

@@ -27,15 +27,6 @@ using namespace std;
 namespace uniset
 {
 	// -----------------------------------------------------------------------------
-	TCPCheck::TCPCheck() noexcept
-	{
-	}
-	// -----------------------------------------------------------------------------
-	TCPCheck::~TCPCheck() noexcept
-	{
-
-	}
-	// -----------------------------------------------------------------------------
 	bool TCPCheck::check( const std::string& _iaddr, timeout_t tout ) noexcept
 	{
 		auto v = uniset::explode_str(_iaddr, ':');

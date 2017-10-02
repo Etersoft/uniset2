@@ -31,8 +31,6 @@ namespace uniset
 	class TCPCheck
 	{
 		public:
-			TCPCheck() noexcept;
-			~TCPCheck() noexcept;
 
 			/*! Проверка связи с сервисом на определённом порту
 			 * \param _ip - ip проверяемого узла
@@ -53,8 +51,6 @@ namespace uniset
 			 * \todo Возможно стоит написать свою реализацию ping
 			 */
 			static bool ping( const std::string& _ip, timeout_t tout = 1000, const std::string& ping_argc = "-c 1 -w 0.1 -q -n" ) noexcept;
-
-		protected:
 	};
 	// -------------------------------------------------------------------------
 } // end of uniset namespace

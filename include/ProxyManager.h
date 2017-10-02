@@ -34,11 +34,12 @@ namespace uniset
 
 	/*! \class ProxyManager
 	 *    Менеджер пассивных объектов, который выступает вместо них во всех внешних связях...
-	 *  В целом связка ProxyManager-PassiveObject является DEPRECATED и лучше строить
+	 *  В целом связка ProxyManager-PassiveObject является DEPRECATED и лучше её не использовать.
 	 *
 	 *  \todo Перейти на shared_ptr, weak_ptr для взаимодействия с PassiveObject
 	 *  своё взаимодействие "менеджер-объекты" исходя из условий "бизнес"-задачи
 	 *
+	 * DEPRECATED
 	*/
 	class ProxyManager:
 		public UniSetObject
