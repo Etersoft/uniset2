@@ -392,7 +392,7 @@ size_t LogDB::getCountOfRecords( const std::string& logname )
 	if( !ret )
 		return 0;
 
-	return (size_t) DBResult::as_int(ret.begin(), 0);
+	return (size_t) ret.begin().as_int(0);
 }
 //--------------------------------------------------------------------------------------------
 size_t LogDB::getFirstOfOldRecord( size_t maxnum )
@@ -405,7 +405,7 @@ size_t LogDB::getFirstOfOldRecord( size_t maxnum )
 	if( !ret )
 		return 0;
 
-	return (size_t) DBResult::as_int(ret.begin(), 0);
+	return (size_t) ret.begin().as_int(0);
 }
 //--------------------------------------------------------------------------------------------
 std::shared_ptr<LogDB> LogDB::init_logdb( int argc, const char* const* argv, const std::string& prefix )

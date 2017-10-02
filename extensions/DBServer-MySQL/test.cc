@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 
 			cout << endl;
 
-			cout << "ID: " << r.as_string(it, "id") << endl;
+			//			cout << "ID: " << r.as_string(it, "id") << endl;
 			cout << "ID: " << it.as_string("id") << endl;
 		}
 

@@ -75,33 +75,12 @@ namespace uniset
 			// slow function
 			std::string getColName( int index );
 
-
-			// ======================= DEPRECATED FUNCTIONS ===============================
-			// ROW
-			static int as_int( const DBResult::iterator& it, int col );
-			static double as_double( const DBResult::iterator& it, int col );
-			static std::string as_string( const DBResult::iterator& it, int col );
-
-			int as_int( const DBResult::iterator& it, const std::string& colname );
-			double as_double( const DBResult::iterator& it, const std::string& colname );
-			std::string as_string(const DBResult::iterator& it, const std::string& colname );
 			// ----------------------------------------------------------------------------
 			// COL
 			static int as_int( const DBResult::COL::iterator& it );
 			static double as_double(const  DBResult::COL::iterator& it );
 			static std::string as_string( const DBResult::COL::iterator& it );
 			static size_t num_cols( const DBResult::iterator& it );
-			// ----------------------------------------------------------------------------
-			// =====      END OF DEPRECATED FUNCTIONS    =====
-			// ----------------------------------------------------------------------------
-			// USE NEW INTERFACE:
-			// ------------------
-			// for( auto it = dbres.begin(); it!= dbres.end(); ++it )
-			//     cout << it.as_string("field_name") << endl;
-			// OR
-			//     cout << it.as_string(index) << endl;
-			//
-			// available functions: as_string(), as_int(), as_double()
 			// ----------------------------------------------------------------------------
 
 		protected:

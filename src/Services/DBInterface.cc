@@ -79,36 +79,36 @@ namespace uniset
 		return row_.empty();
 	}
 	// ----------------------------------------------------------------------------
-	int DBResult::as_int( const DBResult::iterator& it, int col )
-	{
-		return it.as_int(col);
-	}
-	// ----------------------------------------------------------------------------
-	double DBResult::as_double( const DBResult::iterator& it, int col )
-	{
-		return it.as_double(col);
-	}
-	// ----------------------------------------------------------------------------
-	std::string DBResult::as_string( const DBResult::iterator& it, int col )
-	{
-		return it.as_string(col);
-	}
+	//	int DBResult::as_int( const DBResult::iterator& it, int col )
+	//	{
+	//		return it.as_int(col);
+	//	}
+	//	// ----------------------------------------------------------------------------
+	//	double DBResult::as_double( const DBResult::iterator& it, int col )
+	//	{
+	//		return it.as_double(col);
+	//	}
+	//	// ----------------------------------------------------------------------------
+	//	std::string DBResult::as_string( const DBResult::iterator& it, int col )
+	//	{
+	//		return it.as_string(col);
+	//	}
 
-	int DBResult::as_int( const DBResult::iterator& it, const std::string& cname )
-	{
-		return it.as_int(cname);
-	}
+	//	int DBResult::as_int( const DBResult::iterator& it, const std::string& cname )
+	//	{
+	//		return it.as_int(cname);
+	//	}
 
-	double DBResult::as_double(const DBResult::iterator& it, const std::string& cname)
-	{
-		return it.as_double(cname);
-	}
+	//	double DBResult::as_double(const DBResult::iterator& it, const std::string& cname)
+	//	{
+	//		return it.as_double(cname);
+	//	}
 
-	std::string DBResult::as_string( const DBResult::iterator& it, const std::string& cname )
-	{
-		return it.as_string(cname);
-	}
-	// ----------------------------------------------------------------------------
+	//	std::string DBResult::as_string( const DBResult::iterator& it, const std::string& cname )
+	//	{
+	//		return it.as_string(cname);
+	//	}
+	//	// ----------------------------------------------------------------------------
 	size_t DBResult::num_cols( const DBResult::iterator& it )
 	{
 		return it.num_cols();
