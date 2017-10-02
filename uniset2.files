@@ -310,7 +310,8 @@ include/LT_Object.h
 include/Makefile.am
 include/MessageType.h
 include/Mutex.h
-include/NCRestorer.h
+include/IOConfig.h
+include/IOConfig_XML.h
 include/ObjectIndex.h
 include/ObjectIndex_Array.h
 include/ObjectIndex_idXML.h
@@ -322,8 +323,6 @@ include/PassiveObject.h
 include/PassiveTimer.h
 include/ProxyManager.h
 include/Pulse.h
-include/Restorer.h
-include/RunLock.h
 include/SMonitor.h
 include/VMonitor.h
 include/SViewer.h
@@ -432,12 +431,11 @@ src/ObjectRepository/ORepHelpers.cc
 src/Processes/IOController.cc
 src/Processes/IONotifyController.cc
 src/Processes/Makefile.am
-src/Processes/NCRestorer.cc
-src/Processes/NCRestorer_XML.cc
 src/Processes/CommonEventLoop.cc
 src/Processes/EventLoopServer.cc
 src/Processes/PassiveObject.cc
 src/Processes/ProxyManager.cc
+src/Processes/IOConfig_XML.cc
 
 src/Services/DBServer.cc
 src/Services/DBInterface.cc
@@ -452,8 +450,6 @@ src/Timers/LT_Object.cc
 
 src/Various/Makefile.am
 src/Various/Mutex.cc
-src/Various/Restorer_XML.cc
-src/Various/RunLock.cc
 src/Various/SMonitor.cc
 src/Various/VMonitor.cc
 src/Various/SViewer.cc

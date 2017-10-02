@@ -164,6 +164,19 @@ TEST_CASE("UniXML::iterator::find", "[unixml][iterator-find][basic]" )
 	REQUIRE( sIt.getProp("name") == "Test5" );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("UniXML::iterator::find1Level", "[unixml][find1levels]" )
+{
+	UniXML uxml("tests_unixml.xml");
+	CHECK( uxml.isOpen() );
+
+	xmlNode* onode = uxml.findNode(uxml.getFirstNode(), "onelevelfind");
+	REQUIRE( onode != NULL );
+	UniXML::iterator oit(onode);
+	UniXML::iterator oit2 = uxml.findNodeLevel1(oit,"item","l2");
+	REQUIRE(oit2);
+	REQUIRE(oit2.getProp("prop") == "yes");
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("UniXML::iterator::getPropList", "[unixml][iterator-proplist][basic]" )
 {
 	UniXML uxml("tests_unixml.xml");

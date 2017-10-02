@@ -364,7 +364,7 @@ IOType IOController::getIOType( uniset::ObjectId sid )
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // ---------------------------------------------------------------------------
-void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi, bool force )
+void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi )
 {
 	// проверка задан ли контроллеру идентификатор
 	if( getId() == DefaultObjectId )
@@ -373,35 +373,6 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi, bool force
 		err << "(IOCOntroller::ioRegistration): КОНТРОЛЛЕРУ НЕ ЗАДАН ObjectId. Регистрация невозможна.";
 		uwarn << err.str() << endl;
 		throw ResolveNameError(err.str());
-	}
-
-	{
-		// lock
-		uniset_rwmutex_wrlock lock(ioMutex);
-
-		if( !force )
-		{
-			auto li = ioList.find(usi->si.id);
-
-			if( li != ioList.end() )
-			{
-				ostringstream err;
-				err << "Попытка повторной регистрации датчика(" << usi->si.id << "). имя: "
-					<< uniset_conf()->oind->getNameById(usi->si.id);
-				throw ObjectNameAlready(err.str());
-			}
-		}
-
-		IOStateList::mapped_type ai = usi;
-		// запоминаем начальное время
-		struct timespec tm = uniset::now_to_timespec();
-		ai->tv_sec   = tm.tv_sec;
-		ai->tv_nsec  = tm.tv_nsec;
-		ai->value    = ai->default_val;
-		ai->supplier = getId();
-
-		// более оптимальный способ(при условии вставки первый раз)
-		ioList.emplace( IOStateList::value_type(usi->si.id, std::move(ai) ));
 	}
 
 	try
@@ -659,12 +630,25 @@ IOController::IOStateList::iterator IOController::myioBegin()
 {
 	return ioList.begin();
 }
-
+// ----------------------------------------------------------------------------------------
 IOController::IOStateList::iterator IOController::myioEnd()
 {
 	return ioList.end();
 }
+// ----------------------------------------------------------------------------------------
+void IOController::initIOList( const IOController::IOStateList&& l )
+{
+	ioList = std::move(l);
+}
+// ----------------------------------------------------------------------------------------
+void IOController::for_iolist( IOController::UFunction f )
+{
+	uniset_rwmutex_rlock lck(ioMutex);
 
+	for( auto && s : ioList )
+		f(s.second);
+}
+// ----------------------------------------------------------------------------------------
 IOController::IOStateList::iterator IOController::myiofind( const uniset::ObjectId id )
 {
 	return ioList.find(id);

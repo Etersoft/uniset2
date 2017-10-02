@@ -248,13 +248,13 @@ TEST_CASE("[REST API: /consumers]", "[restapi][consumers]")
 	//	{"object":{"id":5003,"isActive":true,"lostMessages":0,"maxSizeOfMessageQueue":1000,"msgCount":0,"name":"SharedMemory","objectType":"IONotifyController"},
 	//	"sensors":[
 	//		{"consumers":[
-	//			{"attempt":10,"id":6000,"lostEvents":0,"name":"TestProc","node":3000,"node_name":"localhost","smCount":0}
-	//		],
-	//		"sensor":{"id":1,"name":"Input1_S"}},
-	//		{"consumers":[
 	//			{"attempt":4,"id":6000,"lostEvents":4,"name":"TestProc","node":3000,"node_name":"localhost","smCount":0}
 	//		],
 	//		"sensor":{"id":10,"name":"AI_AS"}}
+	//		{"consumers":[
+	//			{"attempt":10,"id":6000,"lostEvents":0,"name":"TestProc","node":3000,"node_name":"localhost","smCount":0}
+	//		],
+	//		"sensor":{"id":1,"name":"Input1_S"}},
 	//	]}
 
 
@@ -273,8 +273,8 @@ TEST_CASE("[REST API: /consumers]", "[restapi][consumers]")
 	auto sens = jret->get("sensor").extract<Poco::JSON::Object::Ptr>();
 	REQUIRE(sens);
 
-	REQUIRE( sens->get("id").convert<ObjectId>() == 1 );
-	REQUIRE( sens->get("name").convert<std::string>() == "Input1_S" );
+	REQUIRE( sens->get("id").convert<ObjectId>() == 10 );
+	REQUIRE( sens->get("name").convert<std::string>() == "AI_AS" );
 
 	auto cons = jret->get("consumers").extract<Poco::JSON::Array::Ptr>();
 	REQUIRE(cons);

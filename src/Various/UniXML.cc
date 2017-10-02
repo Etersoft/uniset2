@@ -379,6 +379,28 @@ xmlNode* UniXML::extFindNode( xmlNode* node, int depth, int width, const string&
 	return NULL;
 }
 // -----------------------------------------------------------------------------
+xmlNode* UniXML::findNodeLevel1( xmlNode* root, const string& nodename, const string& nm )
+{
+	UniXML::iterator it(root);
+
+	if( it.goChildren() )
+	{
+		for( ; it; it.goNext() )
+		{
+			if( it.getName() == nodename )
+			{
+				if( nm.empty() )
+					return it;
+
+				if( it.getProp("name") == nm )
+					return it;
+			}
+		}
+	}
+
+	return 0;
+}
+// -----------------------------------------------------------------------------
 bool UniXML_iterator::goNext() noexcept
 {
 	if( !curNode ) // || !curNode->next )

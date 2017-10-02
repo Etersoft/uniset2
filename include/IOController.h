@@ -138,6 +138,7 @@ namespace uniset
 			// полнейшее нарушение икапсуляции
 			// но пока, это попытка оптимизировать работу с IOController через указатель.
 			// Т.е. работая с датчиками через итераторы..
+#if 1
 			inline IOStateList::iterator ioBegin()
 			{
 				return ioList.begin();
@@ -150,7 +151,7 @@ namespace uniset
 			{
 				return ioList.find(k);
 			}
-
+#endif
 			inline int ioCount() const noexcept
 			{
 				return ioList.size();
@@ -200,10 +201,8 @@ namespace uniset
 			// signal по изменению определённого датчика
 			InitSignal signal_init();
 
-			/*! регистрация датчика
-			    force=true - не проверять на дублирование (оптимизация)
-			*/
-			void ioRegistration(std::shared_ptr<USensorInfo>& usi, bool force = false );
+			/*! регистрация датчика в репозитории */
+			void ioRegistration(std::shared_ptr<USensorInfo>& usi );
 
 			/*! разрегистрация датчика */
 			void ioUnRegistration( const uniset::ObjectId sid );
@@ -252,6 +251,12 @@ namespace uniset
 			IOStateList::iterator myioEnd();
 			IOStateList::iterator myiofind( uniset::ObjectId id );
 
+			void initIOList( const IOStateList&& l );
+
+			typedef std::function<void(std::shared_ptr<USensorInfo>&)> UFunction;
+			// функция работает с mutex
+			void for_iolist( UFunction f );
+
 		private:
 			friend class NCRestorer;
 			friend class SMInterface;
@@ -271,6 +276,10 @@ namespace uniset
 			std::mutex loggingMutex; /*!< logging info mutex */
 
 		public:
+
+			struct UThresholdInfo;
+			typedef std::list<std::shared_ptr<UThresholdInfo>> ThresholdExtList;
+
 			struct USensorInfo:
 				public IOController_i::SensorIOInfo
 			{
@@ -305,7 +314,7 @@ namespace uniset
 				// Дополнительные (вспомогательные поля)
 				uniset::uniset_rwmutex val_lock; /*!< флаг блокирующий работу со значением */
 
-				// userdata (универасльный, небезопасный способ расширения информации связанной с датчиком)
+				// userdata (универсальный, но небезопасный способ расширения информации связанной с датчиком)
 				static const size_t MaxUserData = 4;
 				void* userdata[MaxUserData] = { nullptr, nullptr, nullptr, nullptr }; /*!< расширение для возможности хранения своей информации */
 				uniset::uniset_rwmutex userdata_lock; /*!< mutex для работы с userdata */
@@ -325,6 +334,10 @@ namespace uniset
 				long d_value = { 1 }; /*!< разрешающее работу значение датчика от которого зависит данный */
 				long d_off_value = { 0 }; /*!< блокирующее значение */
 				std::shared_ptr<USensorInfo> d_usi; // shared_ptr на датчик от которого зависит этот.
+
+				// список пороговых датчиков для данного
+				uniset::uniset_rwmutex tmut;
+				ThresholdExtList thresholds;
 
 				size_t nchanges = { 0 }; // количество изменений датчика
 
@@ -371,6 +384,57 @@ namespace uniset
 
 					return sm;
 				}
+			};
+
+			/*! Информация о пороговом значении */
+			struct UThresholdInfo:
+				public IONotifyController_i::ThresholdInfo
+			{
+				UThresholdInfo( uniset::ThresholdId tid, CORBA::Long low, CORBA::Long hi, bool inv,
+								uniset::ObjectId _sid = uniset::DefaultObjectId ):
+					sid(_sid),
+					invert(inv)
+				{
+					id       = tid;
+					hilimit  = hi;
+					lowlimit = low;
+					state    = IONotifyController_i::NormalThreshold;
+				}
+
+				/*! идентификатор дискретного датчика связанного с данным порогом */
+				uniset::ObjectId sid;
+
+				/*! итератор в списке датчиков (для быстрого доступа) */
+				IOController::IOStateList::iterator sit;
+
+				/*! инверсная логика */
+				bool invert;
+
+				inline bool operator== ( const ThresholdInfo& r ) const
+				{
+					return ((id == r.id) &&
+							(hilimit == r.hilimit) &&
+							(lowlimit == r.lowlimit) &&
+							(invert == r.invert) );
+				}
+
+				operator IONotifyController_i::ThresholdInfo()
+				{
+					IONotifyController_i::ThresholdInfo r;
+					r.id = id;
+					r.hilimit = hilimit;
+					r.lowlimit = lowlimit;
+					r.invert = invert;
+					r.tv_sec = tv_sec;
+					r.tv_nsec = tv_nsec;
+					r.state = state;
+					return r;
+				}
+
+				UThresholdInfo( const UThresholdInfo& ) = delete;
+				UThresholdInfo& operator=( const UThresholdInfo& ) = delete;
+				UThresholdInfo( UThresholdInfo&& ) = default;
+				UThresholdInfo& operator=(UThresholdInfo&& ) = default;
 			};
 	};
 	// -------------------------------------------------------------------------

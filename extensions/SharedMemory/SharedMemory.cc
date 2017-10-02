@@ -17,7 +17,7 @@
 #include <iomanip>
 #include <sstream>
 #include "UniXML.h"
-#include "NCRestorer.h"
+#include "IOConfig_XML.h"
 #include "SharedMemory.h"
 #include "Extensions.h"
 #include "ORepHelpers.h"
@@ -64,8 +64,10 @@ namespace uniset
 		cout << LogServer::help_print("sm-logserver") << endl;
 	}
 	// -----------------------------------------------------------------------------
-	SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std::string& confname ):
-		IONotifyController(id),
+	SharedMemory::SharedMemory( ObjectId id,
+								const std::shared_ptr<IOConfig_XML>& ioconf,
+								const std::string& confname ):
+		IONotifyController(id, static_pointer_cast<IOConfig>(ioconf)),
 		heartbeatCheckTime(5000),
 		histSaveTime(0),
 		activated(false),
@@ -117,8 +119,6 @@ namespace uniset
 			histmap[i->fuse_id].push_back(i);
 
 		// ----------------------
-		auto rxml = make_shared<NCRestorer_XML>(datafile);
-
 		string s_field(conf->getArgParam("--s-filter-field"));
 		string s_fvalue(conf->getArgParam("--s-filter-value"));
 		string c_field(conf->getArgParam("--c-filter-field"));
@@ -137,12 +137,10 @@ namespace uniset
 
 		heartbeatCheckTime = conf->getArgInt("--heartbeat-check-time", "1000");
 
-		rxml->setItemFilter(s_field, s_fvalue);
-		rxml->setConsumerFilter(c_field, c_fvalue);
-		rxml->setThresholdsFilter(t_field, t_fvalue);
-
-		restorer = std::static_pointer_cast<NCRestorer>(rxml);
-		rxml->setReadItem( sigc::mem_fun(this, &SharedMemory::readItem) );
+		ioconf->setItemFilter(s_field, s_fvalue);
+		ioconf->setConsumerFilter(c_field, c_fvalue);
+		ioconf->setThresholdsFilter(t_field, t_fvalue);
+		ioconf->setReadItem( sigc::mem_fun(this, &SharedMemory::readItem) );
 
 		string wdt_dev = conf->getArgParam("--wdt-device");
 
@@ -524,31 +522,38 @@ namespace uniset
 	shared_ptr<SharedMemory> SharedMemory::init_smemory( int argc, const char* const* argv )
 	{
 		auto conf = uniset_conf();
-		string dfile = conf->getArgParam("--datfile", conf->getConfFileName());
+		string dfile = conf->getArgParam("--datfile", "");
 
-		// если dfile == confile, то преобразовывать имя не надо, чтобы сработала
-		// оптимизация и когда NCRestorer_XML будет загружать файл, он использует conf->getUniXML()
-		// т.е. не будет загружать повторно.. (см. конструктор SharedMemory и NCRestorer_XML).
-		if( dfile != conf->getConfFileName() )
+		std::shared_ptr<uniset::IOConfig_XML> ioconf;
+
+		if( !dfile.empty() )
 		{
 			if( dfile[0] != '.' && dfile[0] != '/' )
 				dfile = conf->getConfDir() + dfile;
+
+			dinfo << "(smemory): init from datfile " << dfile << endl;
+			ioconf = make_shared<IOConfig_XML>(dfile, conf);
+		}
+		else
+		{
+			dinfo << "(smemory): init from configure: " << conf->getConfFileName() << endl;
+			UniXML::iterator it(conf->getXMLSensorsSection());
+			it.goChildren();
+			ioconf = make_shared<IOConfig_XML>(conf->getConfXML(), conf, it);
 		}
 
-
-		dinfo << "(smemory): datfile = " << dfile << endl;
 		uniset::ObjectId ID = conf->getControllerID(conf->getArgParam("--smemory-id", "SharedMemory"));
 
 		if( ID == uniset::DefaultObjectId )
 		{
-			cerr << "(smemory): НЕ ЗАДАН идентификатор '"
-				 << " или не найден в " << conf->getControllersSection()
+			cerr << "(smemory): Not found ID for SharedMemory in section "
+				 << conf->getControllersSection()
 				 << endl;
-			return 0;
+			return nullptr;
 		}
 
 		string cname = conf->getArgParam("--smemory--confnode", ORepHelpers::getShortName(conf->oind->getMapName(ID)) );
-		return make_shared<SharedMemory>(ID, dfile, cname);
+		return make_shared<SharedMemory>(ID, ioconf, cname);
 	}
 	// -----------------------------------------------------------------------------
 	void SharedMemory::buildEventList( xmlNode* cnode )
@@ -619,7 +624,7 @@ namespace uniset
 		}
 	}
 	// -----------------------------------------------------------------------------
-	void SharedMemory::addReadItem( Restorer_XML::ReaderSlot sl )
+	void SharedMemory::addReadItem( IOConfig_XML::ReaderSlot sl )
 	{
 		lstRSlot.push_back(sl);
 	}

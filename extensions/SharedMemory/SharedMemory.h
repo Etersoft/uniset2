@@ -25,12 +25,12 @@
 #include "IONotifyController.h"
 #include "Mutex.h"
 #include "PassiveTimer.h"
-#include "NCRestorer.h"
 #include "WDTInterface.h"
 #include "LogServer.h"
 #include "DebugStream.h"
 #include "LogAgregator.h"
 #include "VMonitor.h"
+#include "IOConfig_XML.h"
 // -----------------------------------------------------------------------------
 #ifndef vmonit
 #define vmonit( var ) vmon.add( #var, var )
@@ -326,7 +326,12 @@ namespace uniset
 		public IONotifyController
 	{
 		public:
-			SharedMemory( uniset::ObjectId id, const std::string& datafile, const std::string& confname = "" );
+
+			// конструктор с конфигурированием через xml
+			SharedMemory( ObjectId id,
+						  const std::shared_ptr<IOConfig_XML>& ioconf,
+						  const std::string& confname = "" );
+
 			virtual ~SharedMemory();
 
 			/*! глобальная функция для инициализации объекта */
@@ -342,7 +347,7 @@ namespace uniset
 
 			virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
 
-			void addReadItem( Restorer_XML::ReaderSlot sl );
+			void addReadItem( IOConfig_XML::ReaderSlot sl );
 
 			// ------------  HISTORY  --------------------
 			typedef std::deque<long> HBuffer;
@@ -423,12 +428,11 @@ namespace uniset
 			}
 
 		protected:
-			typedef std::list<Restorer_XML::ReaderSlot> ReadSlotList;
+			typedef std::list<IOConfig_XML::ReaderSlot> ReadSlotList;
 			ReadSlotList lstRSlot;
 
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
-			virtual void askSensors( UniversalIO::UIOCommand cmd ) {};
 			virtual std::string getTimerName(int id) const override;
 
 			void sendEvent( uniset::SystemMessage& sm );
@@ -498,8 +502,6 @@ namespace uniset
 			int activateTimeout;
 
 			virtual void logging( uniset::SensorMessage& sm ) override;
-			virtual void dumpOrdersList( const uniset::ObjectId sid, const IONotifyController::ConsumerListInfo& lst ) override {}
-			virtual void dumpThresholdList( const uniset::ObjectId sid, const IONotifyController::ThresholdExtList& lst ) override {}
 
 			bool dblogging = { false };
 

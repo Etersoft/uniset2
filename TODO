@@ -89,6 +89,9 @@ DB: Сделать регулируемый буфер на INSERT-ы БД, чт
 
 Разобраться с BigEndian и LittleEndian! Использовать htons,htol и т.п. (и реализации для 64bit)
 
+
+timeout_t перевести всё на chrono.. чтобы использовать setTimeout( 2msec );
+
 ВОЗМОЖНО СТОИТ:
 Уйти от использования libxml2,DebugLog ==> и применять одну библиотеку libpoco (http://pocoproject.org/documentation/index.html)
 или всё-таки на boost?

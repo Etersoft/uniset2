@@ -1,5 +1,5 @@
 #include "Configuration.h"
-#include "NCRestorer.h"
+#include "IOConfig_XML.h"
 #include "NullController.h"
 #include "PassiveTimer.h"
 // --------------------------------------------------------------------------------
@@ -7,7 +7,7 @@ using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------------
 
-NullController::NullController( ObjectId id, const string& askdump,
+NullController::NullController( ObjectId id, const string& ioconfile,
 								const std::string& s_filterField,
 								const std::string& s_filterValue,
 								const std::string& c_filterField,
@@ -18,11 +18,11 @@ NullController::NullController( ObjectId id, const string& askdump,
 {
 	restorer = NULL;
 
-	shared_ptr<NCRestorer_XML> askd = make_shared<NCRestorer_XML>(askdump);
-	askd->setItemFilter(s_filterField, s_filterValue);
-	askd->setConsumerFilter(c_filterField, c_filterValue);
+	auto ioconf = make_shared<IOConfig_XML>(ioconfile, uniset_conf());
+	ioconf->setItemFilter(s_filterField, s_filterValue);
+	ioconf->setConsumerFilter(c_filterField, c_filterValue);
 
-	restorer = std::static_pointer_cast<NCRestorer>(askd);
+	restorer = std::static_pointer_cast<IOConfig>(ioconf);
 
 	/*
 	//    askd->setReadItem( sigc::mem_fun(this,&NullController::readSItem) );

@@ -248,7 +248,7 @@ void UniSetManager::managers( OManagerCommand cmd )
 		//lock
 		uniset_rwmutex_rlock lock(mlistMutex);
 
-		for( const auto& li: mlist )
+		for( const auto& li : mlist )
 		{
 			if( !li )
 				continue;
@@ -347,7 +347,7 @@ void UniSetManager::objects(OManagerCommand cmd)
 		//lock
 		uniset_rwmutex_rlock lock(olistMutex);
 
-		for( const auto& li: olist )
+		for( const auto& li : olist )
 		{
 			if( !li )
 				continue;
@@ -607,7 +607,7 @@ int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, S
 	if( ind > uplimit )
 		return ind;
 
-	for( const auto& o: olist )
+	for( const auto& o : olist )
 	{
 		try
 		{
@@ -633,7 +633,7 @@ int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, S
 		return ind;
 
 	// а далее у его менеджеров (рекурсивно)
-	for( const auto& m: mlist )
+	for( const auto& m : mlist )
 	{
 		ind = getObjectsInfo(m, seq, ind, uplimit, userparam );
 
@@ -667,13 +667,13 @@ SimpleInfoSeq* UniSetManager::getObjectsInfo(CORBA::Long maxlength, const char* 
 // ------------------------------------------------------------------------------------------
 void UniSetManager::apply_for_objects( OFunction f )
 {
-	for( const auto& o: olist )
+	for( const auto& o : olist )
 		f(o);
 }
 // ------------------------------------------------------------------------------------------
 void UniSetManager::apply_for_managers(UniSetManager::MFunction f)
 {
-	for( const auto& m: mlist )
+	for( const auto& m : mlist )
 		f(m);
 }
 // ------------------------------------------------------------------------------------------
