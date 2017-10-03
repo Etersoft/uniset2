@@ -19,6 +19,7 @@
 // -----------------------------------------------------------------------------
 #include <string>
 #include <map>
+#include <cstdint>
 #include <unordered_map>
 #include <list>
 #include <ostream>
@@ -57,7 +58,7 @@ namespace uniset
 		// -------------------------------------------------------------------------
 		std::string type2str( MTRType t );          /*!< преоразование строки в тип */
 		MTRType str2type( const std::string& s );   /*!< преобразование названия в строку */
-		size_t wsize( MTRType t );                     /*!< длина данных в словах */
+		size_t wsize( MTRType t );                  /*!< длина данных в словах */
 		// -------------------------------------------------------------------------
 		// Информация
 		const ModbusRTU::ModbusData regModelNumber  = 0x01;
@@ -138,7 +139,7 @@ namespace uniset
 		{
 			public:
 				T1(): val(0) {}
-				T1( unsigned short v ): val(v) {}
+				T1( uint16_t v ): val(v) {}
 				T1( const ModbusRTU::ModbusData* data ): val(data[0]) {}
 				~T1() {}
 				// ------------------------------------------
@@ -153,7 +154,7 @@ namespace uniset
 					return mtT1;
 				}
 				// ------------------------------------------
-				unsigned short val;
+				uint16_t val;
 		};
 		std::ostream& operator<<(std::ostream& os, T1& t );
 		// -------------------------------------------------------------------------
@@ -161,7 +162,7 @@ namespace uniset
 		{
 			public:
 				T2(): val(0) {}
-				T2( signed short v ): val(v) {}
+				T2( int16_t v ): val(v) {}
 				T2( const ModbusRTU::ModbusData* data ): val(data[0]) {}
 				~T2() {}
 				// ------------------------------------------
@@ -176,7 +177,7 @@ namespace uniset
 					return mtT2;
 				}
 				// ------------------------------------------
-				signed short val;
+				int16_t val;
 		};
 		std::ostream& operator<<(std::ostream& os, T2& t );
 		// -------------------------------------------------------------------------
@@ -187,8 +188,8 @@ namespace uniset
 				/*! тип хранения в памяти */
 				typedef union
 				{
-					unsigned short v[u2size];
-					signed int val; // :32
+					uint16_t v[u2size];
+					int32_t val; // :32
 				} T3mem;
 				// ------------------------------------------
 				// конструкторы на разные случаи...
@@ -197,12 +198,12 @@ namespace uniset
 					memset(raw.v, 0, sizeof(raw.v));
 				}
 
-				T3( signed int i )
+				T3( int32_t i )
 				{
 					raw.val = i;
 				}
 
-				T3( unsigned short v1, unsigned short v2 )
+				T3( uint16_t v1, uint16_t v2 )
 				{
 					raw.v[0] = v1;
 					raw.v[1] = v2;
@@ -278,7 +279,7 @@ namespace uniset
 				}
 				// ------------------------------------------
 				std::string sval;
-				unsigned short raw;
+				uint16_t raw;
 		};
 		std::ostream& operator<<(std::ostream& os, T4& t );
 		// --------------------------------------------------------------------------
@@ -289,11 +290,11 @@ namespace uniset
 				/*! тип хранения в памяти */
 				typedef union
 				{
-					unsigned short v[u2size];
+					uint16_t v[u2size];
 					struct u_T5
 					{
-						unsigned int val: 24;
-						signed char exp; // :8
+						uint32_t val: 24;
+						int8_t exp; // :8
 					} __attribute__( ( packed ) ) u2;
 					long lval;
 				} T5mem;
@@ -303,7 +304,7 @@ namespace uniset
 				{
 					memset(raw.v, 0, sizeof(raw.v));
 				}
-				T5( unsigned short v1, unsigned short v2 )
+				T5( uint16_t v1, uint16_t v2 )
 				{
 					raw.v[0] = v1;
 					raw.v[1] = v2;
@@ -352,11 +353,11 @@ namespace uniset
 				/*! тип хранения в памяти */
 				typedef union
 				{
-					unsigned short v[u2size];
+					uint16_t v[u2size];
 					struct u_T6
 					{
-						signed int val: 24;
-						signed char exp; // :8
+						int32_t val: 24;
+						int8_t exp; // :8
 					} u2;
 					long lval;
 				} T6mem;
@@ -366,7 +367,7 @@ namespace uniset
 				{
 					memset(raw.v, 0, sizeof(raw.v));
 				}
-				T6( unsigned short v1, unsigned short v2 )
+				T6( uint16_t v1, uint16_t v2 )
 				{
 					raw.v[0] = v1;
 					raw.v[1] = v2;
@@ -415,12 +416,12 @@ namespace uniset
 				/*! тип хранения в памяти */
 				typedef union
 				{
-					unsigned short v[u2size];
+					uint16_t v[u2size];
 					struct u_T7
 					{
-						unsigned int val: 16;
-						unsigned char ic; // :8 - Inductive/capacitive
-						unsigned char ie; // :8 - Import/export
+						uint32_t val: 16;
+						uint8_t ic; // :8 - Inductive/capacitive
+						uint8_t ie; // :8 - Import/export
 					} __attribute__( ( packed ) ) u2;
 					long lval;
 				} T7mem;
@@ -430,7 +431,7 @@ namespace uniset
 				{
 					memset(raw.v, 0, sizeof(raw.v));
 				}
-				T7( unsigned short v1, unsigned short v2 )
+				T7( uint16_t v1, uint16_t v2 )
 				{
 					raw.v[0] = v1;
 					raw.v[1] = v2;
@@ -478,13 +479,13 @@ namespace uniset
 				/*! тип хранения в памяти */
 				typedef union
 				{
-					unsigned short v[u2size];
+					uint16_t v[u2size];
 					struct u_T8
 					{
-						unsigned short mon: 8;
-						unsigned short day: 8;
-						unsigned short hour: 8;
-						unsigned short min: 8;
+						uint16_t mon: 8;
+						uint16_t day: 8;
+						uint16_t hour: 8;
+						uint16_t min: 8;
 					} __attribute__( ( packed ) ) u2;
 				} T8mem;
 				// ------------------------------------------
@@ -493,7 +494,7 @@ namespace uniset
 				{
 					memset(raw.v, 0, sizeof(raw.v));
 				}
-				T8( unsigned short v1, unsigned short v2 )
+				T8( uint16_t v1, uint16_t v2 )
 				{
 					raw.v[0] = v1;
 					raw.v[1] = v2;
@@ -509,19 +510,19 @@ namespace uniset
 					}
 				}
 
-				inline unsigned short day()
+				inline uint16_t day()
 				{
 					return raw.u2.day;
 				}
-				inline unsigned short mon()
+				inline uint16_t mon()
 				{
 					return raw.u2.mon;
 				}
-				inline unsigned short hour()
+				inline uint16_t hour()
 				{
 					return raw.u2.hour;
 				}
-				inline unsigned short min()
+				inline uint16_t min()
 				{
 					return raw.u2.min;
 				}
@@ -550,13 +551,13 @@ namespace uniset
 				/*! тип хранения в памяти */
 				typedef union
 				{
-					unsigned short v[u2size];
+					uint16_t v[u2size];
 					struct u_T9
 					{
-						unsigned short hour: 8;
-						unsigned short min: 8;
-						unsigned short sec: 8;
-						unsigned short ssec: 8;
+						uint16_t hour: 8;
+						uint16_t min: 8;
+						uint16_t sec: 8;
+						uint16_t ssec: 8;
 					} __attribute__( ( packed ) ) u2;
 				} T9mem;
 				// ------------------------------------------
@@ -565,7 +566,7 @@ namespace uniset
 				{
 					memset(raw.v, 0, sizeof(raw.v));
 				}
-				T9( unsigned short v1, unsigned short v2 )
+				T9( uint16_t v1, uint16_t v2 )
 				{
 					raw.v[0] = v1;
 					raw.v[1] = v2;
@@ -581,19 +582,19 @@ namespace uniset
 					}
 				}
 
-				inline unsigned short hour()
+				inline uint16_t hour()
 				{
 					return raw.u2.hour;
 				}
-				inline unsigned short min()
+				inline uint16_t min()
 				{
 					return raw.u2.min;
 				}
-				inline unsigned short sec()
+				inline uint16_t sec()
 				{
 					return raw.u2.sec;
 				}
-				inline unsigned short ssec()
+				inline uint16_t ssec()
 				{
 					return raw.u2.ssec;
 				}
@@ -622,12 +623,12 @@ namespace uniset
 				/*! тип хранения в памяти */
 				typedef union
 				{
-					unsigned short v[u2size];
+					uint16_t v[u2size];
 					struct u_T10
 					{
-						unsigned short year: 16;
-						unsigned short mon: 8;
-						unsigned short day: 8;
+						uint16_t year: 16;
+						uint16_t mon: 8;
+						uint16_t day: 8;
 					} __attribute__( ( packed ) ) u2;
 				} T10mem;
 				// ------------------------------------------
@@ -636,7 +637,7 @@ namespace uniset
 				{
 					memset(raw.v, 0, sizeof(raw.v));
 				}
-				T10( unsigned short v1, unsigned short v2 )
+				T10( uint16_t v1, uint16_t v2 )
 				{
 					raw.v[0] = v1;
 					raw.v[1] = v2;
@@ -652,15 +653,15 @@ namespace uniset
 					}
 				}
 
-				inline unsigned short year()
+				inline uint16_t year()
 				{
 					return raw.u2.year;
 				}
-				inline unsigned short mon()
+				inline uint16_t mon()
 				{
 					return raw.u2.mon;
 				}
-				inline unsigned short day()
+				inline uint16_t day()
 				{
 					return raw.u2.day;
 				}
@@ -687,7 +688,7 @@ namespace uniset
 		{
 			public:
 				T16(): val(0) {}
-				T16( unsigned short v ): val(v)
+				T16( uint16_t v ): val(v)
 				{
 					fval = (float)(val) / 100.0;
 				}
@@ -717,12 +718,12 @@ namespace uniset
 				{
 					return fval;
 				}
-				operator unsigned short()
+				operator uint16_t()
 				{
 					return val;
 				}
 
-				unsigned short val = { 0 };
+				uint16_t val = { 0 };
 				float fval = { 0.0 };
 		};
 		std::ostream& operator<<(std::ostream& os, T16& t );
@@ -731,13 +732,13 @@ namespace uniset
 		{
 			public:
 				T17(): val(0) {}
-				T17( signed short v ): val(v)
+				T17( int16_t v ): val(v)
 				{
 					fval = (float)(v) / 100.0;
 				}
-				T17( unsigned short v ): val(v)
+				T17( uint16_t v ): val(v)
 				{
-					fval = (float)( (signed short)(v) ) / 100.0;
+					fval = (float)( (int16_t)(v) ) / 100.0;
 				}
 
 				T17( const ModbusRTU::ModbusData* data ): val(data[0])
@@ -765,12 +766,12 @@ namespace uniset
 				{
 					return fval;
 				}
-				operator signed short()
+				operator int16_t()
 				{
 					return val;
 				}
 
-				signed short val = { 0 };
+				int16_t val = { 0 };
 				float fval = { 0 };
 		};
 		std::ostream& operator<<(std::ostream& os, T17& t );
@@ -782,7 +783,7 @@ namespace uniset
 				/*! тип хранения в памяти */
 				typedef union
 				{
-					unsigned short v[2];
+					uint16_t v[2];
 					float val; //
 				} F1mem;
 				// ------------------------------------------
@@ -791,7 +792,7 @@ namespace uniset
 				{
 					memset(raw.v, 0, sizeof(raw.v));
 				}
-				F1( unsigned short v1, unsigned short v2 )
+				F1( uint16_t v1, uint16_t v2 )
 				{
 					raw.v[0] = v1;
 					raw.v[1] = v2;

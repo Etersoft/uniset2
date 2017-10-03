@@ -220,7 +220,7 @@ void ComPort::setWaiting(bool waiting)
 // Lav: сделать корректное определение таймаута
 unsigned char ComPort::m_receiveByte( bool wait )
 {
-	if(curSym >= bufLength)
+	if( curSym >= bufLength )
 	{
 		curSym = 0;
 
@@ -246,7 +246,7 @@ unsigned char ComPort::m_receiveByte( bool wait )
 		else
 			bufLength = ::read(fd, buf, BufSize);
 
-		if(bufLength <= 0)
+		if( bufLength <= 0 )
 		{
 			throw uniset::TimeOut();
 		}
@@ -305,7 +305,7 @@ timeout_t ComPort::getTimeout() const
 // --------------------------------------------------------------------------------
 // Lav: ситуация, когда отправлено меньше запрошенного, не типична и должна
 // генерировать исключение
-size_t ComPort::sendBlock(unsigned char* msg, size_t len)
+ssize_t ComPort::sendBlock( unsigned char* msg, size_t len )
 {
 	//    fcntl(fd,F_SETFL,0);
 
@@ -368,7 +368,7 @@ void ComPort::cleanupChannel()
 	    while( k>0 );
 	*/
 	unsigned char tmpbuf[100];
-	int k = 0;
+	ssize_t k = 0;
 	bool old_waiting = waiting;
 	waiting = false;
 	int mask = fcntl(fd, F_GETFL);

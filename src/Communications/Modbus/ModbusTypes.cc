@@ -119,7 +119,7 @@ namespace uniset
 	// Lav: отключил, раз не используем
 #if 0
 	// -------------------------------------------------------------------------
-	static int get_crc_ccitt( uint16_t crc, uint8_t* buf, size_t size )
+	static int32_t get_crc_ccitt( uint16_t crc, uint8_t* buf, size_t size )
 	{
 		while( size-- )
 		{
@@ -127,7 +127,7 @@ namespace uniset
 			crc = (crc << 8) ^ crc_ccitt_tab[ (crc >> 8) ^ * (buf++) ];
 #else
 			register int i;
-			crc ^= (unsigned short)(*(buf++)) << 8;
+			crc ^= (uint16_t)(*(buf++)) << 8;
 
 			for (i = 0; i < 8; i++)
 			{
@@ -146,7 +146,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	/* CRC-16 is based on the polynomial x^16 + x^15 + x^2 + 1.  Bits are */
 	/* sent LSB to MSB. */
-	static int get_crc_16( uint16_t crc, uint8_t* buf, size_t size )
+	static int32_t get_crc_16( uint16_t crc, uint8_t* buf, size_t size )
 	{
 
 		while( size-- )
@@ -180,7 +180,7 @@ namespace uniset
 	*/
 	ModbusCRC ModbusRTU::checkCRC( ModbusByte* buf, size_t len )
 	{
-		unsigned short crc = 0xffff;
+		uint16_t crc = 0xffff;
 		crc = get_crc_16(crc, (uint8_t*)(buf), len);
 
 		//    crc = SWAPSHORT(crc);
@@ -219,7 +219,7 @@ namespace uniset
 		s << hex << showbase << setfill('0'); // << showbase;
 
 		for( size_t i = 0; i < len; i++ )
-			s << setw(2) << (short)(m[i]) << " ";
+			s << setw(2) << (int16_t)(m[i]) << " ";
 
 		return os << s.str();
 	}
@@ -243,12 +243,12 @@ namespace uniset
 		memset(data, 0, sizeof(data));
 	}
 	// -------------------------------------------------------------------------
-	unsigned char* ModbusMessage::buf()
+	u_int8_t* ModbusMessage::buf()
 	{
 		if( mbaphead.len == 0 )
-			return (unsigned char*)&pduhead;
+			return (uint8_t*)&pduhead;
 
-		return (unsigned char*)&mbaphead;
+		return (uint8_t*)&mbaphead;
 	}
 	// -------------------------------------------------------------------------
 	ModbusData ModbusMessage::len() const

@@ -3,6 +3,7 @@
 #define ModbusTypes_H_
 // -------------------------------------------------------------------------
 #include <ostream>
+#include <cstdint>
 #include <bitset>
 #include <string>
 #include <list>
@@ -218,7 +219,7 @@ namespace uniset
 				return mbaphead.len;
 			}
 
-			unsigned char* buf();
+			u_int8_t* buf();
 			ModbusRTU::ModbusData len() const;
 			void swapHead();
 			void makeMBAPHeader( ModbusRTU::ModbusData tID, bool noCRC = true, ModbusRTU::ModbusData pID = 0 );

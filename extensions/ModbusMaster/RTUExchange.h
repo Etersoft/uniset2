@@ -41,7 +41,6 @@ namespace uniset
 					uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 					const std::string& prefix = "rs" );
 
-			/*! глобальная функция для вывода help-а */
 			static void help_print( int argc, const char* const* argv );
 
 		protected:

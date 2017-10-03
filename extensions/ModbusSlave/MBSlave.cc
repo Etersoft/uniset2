@@ -1712,7 +1712,7 @@ namespace uniset
 
 		if( ret == ModbusRTU::erNoError )
 		{
-			for( unsigned int i = 0; i < query.count; i++ )
+			for( uint16_t i = 0; i < query.count; i++ )
 				reply.addData( buf[i] );
 		}
 
@@ -1916,12 +1916,12 @@ namespace uniset
 			}
 			else if( p->vtype == VTypes::vtUnsigned )
 			{
-				long val = (unsigned short)(mbval);
+				long val = (uint16_t)(mbval);
 				IOBase::processingAsAI( p, val, shm, force );
 			}
 			else if( p->vtype == VTypes::vtSigned )
 			{
-				long val = (signed short)(mbval);
+				long val = (int16_t)(mbval);
 				IOBase::processingAsAI( p, val, shm, force );
 			}
 			else if( p->vtype == VTypes::vtI2 )
@@ -2515,7 +2515,7 @@ namespace uniset
 
 		if( ret == ModbusRTU::erNoError )
 		{
-			for( unsigned int i = 0; i < query.count; i++ )
+			for( uint16_t i = 0; i < query.count; i++ )
 				reply.addData( buf[i] );
 		}
 

@@ -14,8 +14,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // --------------------------------------------------------------------------
-#ifndef _COMPORT_H_
-#define _COMPORT_H_
+#ifndef COMPORT_H_
+#define COMPORT_H_
 // --------------------------------------------------------------------------
 #include <termios.h>
 #include <fcntl.h>
@@ -112,8 +112,8 @@ namespace uniset
 			virtual unsigned char receiveByte();
 			virtual void sendByte(unsigned char x);
 
-			virtual size_t receiveBlock(unsigned char* msg, size_t len);
-			virtual size_t sendBlock(unsigned char* msg, size_t len);
+			virtual size_t receiveBlock( unsigned char* msg, size_t len );
+			virtual ssize_t sendBlock( unsigned char* msg, size_t len );
 
 			void setBlocking(bool blocking);
 
@@ -125,8 +125,8 @@ namespace uniset
 
 			static const size_t BufSize = 8192;
 			unsigned char buf[BufSize];
-			size_t curSym = { 0 };
-			size_t bufLength = { 0 };
+			ssize_t curSym = { 0 };
+			ssize_t bufLength = { 0 };
 			int fd = { -1 };
 			timeout_t uTimeout = { 0 };
 			bool waiting = { false };
@@ -136,10 +136,10 @@ namespace uniset
 			virtual unsigned char m_receiveByte( bool wait );
 
 		private:
-			struct termios oldTermios = { 0 };
+			struct termios oldTermios;
 	};
 	// -------------------------------------------------------------------------
 } // end of uniset namespace
 // --------------------------------------------------------------------------
-#endif // _COMPORT_H_
+#endif // COMPORT_H_
 // --------------------------------------------------------------------------

@@ -99,7 +99,7 @@ TEST_CASE("Function (0x03): 'read register outputs or memories or read word outp
 		ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr, tREG, 3);
 		REQUIRE( ret.data[0] == 10 );
 		REQUIRE( ret.data[1] == 11 );
-		REQUIRE( (signed short)(ret.data[2]) == -10 );
+		REQUIRE( (int16_t)(ret.data[2]) == -10 );
 	}
 	SECTION("Test: read MAXDATA count..")
 	{
@@ -156,8 +156,8 @@ TEST_CASE("Function (0x04): 'read input registers or memories or read word outpu
 		ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr, tREG, 4);
 		REQUIRE( ret.data[0] == 10 );
 		REQUIRE( ret.data[1] == 11 );
-		REQUIRE( (signed short)(ret.data[2]) == -10 );
-		REQUIRE( (signed short)(ret.data[3]) == -10000 );
+		REQUIRE( (int16_t)(ret.data[2]) == -10 );
+		REQUIRE( (int16_t)(ret.data[3]) == -10000 );
 	}
 	SECTION("Test: read MAXDATA count..")
 	{
@@ -237,8 +237,8 @@ TEST_CASE("(0x06): write register outputs or memories", "[modbus][mbslave][mbtcp
 	{
 		ModbusRTU::WriteSingleOutputRetMessage  ret = mb->write06(slaveaddr, tREG, -10);
 		REQUIRE( ret.start == tREG );
-		REQUIRE( (signed short)ret.data == -10 );
-		REQUIRE( (signed short)ui->getValue(tID) == -10 );
+		REQUIRE( (int16_t)ret.data == -10 );
+		REQUIRE( (int16_t)ui->getValue(tID) == -10 );
 	}
 	SECTION("Test: write zero value")
 	{
@@ -344,8 +344,8 @@ TEST_CASE("(0x10): write register outputs or memories", "[modbus][mbslave][mbtcp
 		ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
 		REQUIRE( ret.start == tREG );
 		REQUIRE( ret.quant == 2 );
-		REQUIRE( (signed short)ui->getValue(tID) == -10 );
-		REQUIRE( (signed short)ui->getValue(tID + 1) == -100 );
+		REQUIRE( (int16_t)ui->getValue(tID) == -10 );
+		REQUIRE( (int16_t)ui->getValue(tID + 1) == -100 );
 	}
 	SECTION("Test: write zero registers")
 	{
@@ -481,13 +481,13 @@ TEST_CASE("Read(0x03,0x04): vtypes..", "[modbus][mbslave][mbread][mbtcpslave]")
 		{
 			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr, tREG, U2::wsize());
 			U2 u2(ret.data, ret.count);
-			REQUIRE( (unsigned int)u2 == 4294967295 );
+			REQUIRE( (uint32_t)u2 == 4294967295 );
 		}
 		SECTION("Test: read04")
 		{
 			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr, tREG, U2::wsize());
 			U2 u2(ret.data, ret.count);
-			REQUIRE( (unsigned int)u2 == 4294967295 );
+			REQUIRE( (uint32_t)u2 == 4294967295 );
 		}
 	}
 	SECTION("Test: read vtype 'U2r'")
@@ -497,13 +497,13 @@ TEST_CASE("Read(0x03,0x04): vtypes..", "[modbus][mbslave][mbread][mbtcpslave]")
 		{
 			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr, tREG, U2r::wsize());
 			U2r u2r(ret.data, ret.count);
-			REQUIRE( (unsigned int)u2r == 4294967295 );
+			REQUIRE( (uint32_t)u2r == 4294967295 );
 		}
 		SECTION("Test: read04")
 		{
 			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr, tREG, U2r::wsize());
 			U2r u2r(ret.data, ret.count);
-			REQUIRE( (unsigned int)u2r == 4294967295 );
+			REQUIRE( (uint32_t)u2r == 4294967295 );
 		}
 	}
 	SECTION("Test: read vtype 'F2'")
@@ -561,13 +561,13 @@ TEST_CASE("Read(0x03,0x04): vtypes..", "[modbus][mbslave][mbread][mbtcpslave]")
 		{
 			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr, tREG, Byte::wsize());
 			Byte b(ret.data[0]);
-			REQUIRE(  (unsigned short)b == 200 );
+			REQUIRE(  (uint16_t)b == 200 );
 		}
 		SECTION("Test: read04")
 		{
 			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr, tREG, Byte::wsize());
 			Byte b(ret.data[0]);
-			REQUIRE(  (unsigned short)b == 200 );
+			REQUIRE(  (uint16_t)b == 200 );
 		}
 	}
 	SECTION("Test: read vtype 'Byte N2'")
@@ -577,13 +577,13 @@ TEST_CASE("Read(0x03,0x04): vtypes..", "[modbus][mbslave][mbread][mbtcpslave]")
 		{
 			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr, tREG, Byte::wsize());
 			Byte b(ret.data[0]);
-			REQUIRE(  (unsigned short)b == 200 );
+			REQUIRE(  (uint16_t)b == 200 );
 		}
 		SECTION("Test: read04")
 		{
 			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr, tREG, Byte::wsize());
 			Byte b(ret.data[0]);
-			REQUIRE(  (unsigned short)b == 200 );
+			REQUIRE(  (uint16_t)b == 200 );
 		}
 	}
 #endif
@@ -616,7 +616,7 @@ static void test_write10_I2r( int val )
 	REQUIRE( ret.quant == I2r::wsize() );
 	REQUIRE( ui->getValue(2002) == val );
 }
-static void test_write10_U2( unsigned int val )
+static void test_write10_U2( uint32_t val )
 {
 	using namespace VTypes;
 	ModbusRTU::ModbusData tREG = 104;
@@ -627,9 +627,9 @@ static void test_write10_U2( unsigned int val )
 	ModbusRTU::WriteOutputRetMessage  ret = mb->write10(msg);
 	REQUIRE( ret.start == tREG );
 	REQUIRE( ret.quant == U2::wsize() );
-	REQUIRE( (unsigned int)ui->getValue(2003) == val );
+	REQUIRE( (uint32_t)ui->getValue(2003) == val );
 }
-static void test_write10_U2r( unsigned int val )
+static void test_write10_U2r( uint32_t val )
 {
 	using namespace VTypes;
 	ModbusRTU::ModbusData tREG = 106;
@@ -640,7 +640,7 @@ static void test_write10_U2r( unsigned int val )
 	ModbusRTU::WriteOutputRetMessage  ret = mb->write10(msg);
 	REQUIRE( ret.start == tREG );
 	REQUIRE( ret.quant == U2r::wsize() );
-	REQUIRE( (unsigned int)ui->getValue(2004) == val );
+	REQUIRE( (uint32_t)ui->getValue(2004) == val );
 }
 static void test_write10_F2( const float& val )
 {
@@ -733,26 +733,26 @@ static void test_write10_F4prec( const float& val )
 
 	REQUIRE( fval == val );
 }
-static void test_write10_byte1( unsigned char val )
+static void test_write10_byte1( uint8_t val )
 {
 	using namespace VTypes;
 	ModbusRTU::ModbusData tREG = 108;
 	ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
 	Byte tmp(val, 0);
-	msg.addData( (unsigned short)tmp );
+	msg.addData( (uint16_t)tmp );
 
 	ModbusRTU::WriteOutputRetMessage  ret = mb->write10(msg);
 	REQUIRE( ret.start == tREG );
 	REQUIRE( ret.quant == Byte::wsize() );
 	REQUIRE( ui->getValue(2005) == (long)val );
 }
-static void test_write10_byte2( unsigned char val )
+static void test_write10_byte2( uint8_t val )
 {
 	using namespace VTypes;
 	ModbusRTU::ModbusData tREG = 109;
 	ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
 	Byte tmp(0, val);
-	msg.addData( (unsigned short)tmp );
+	msg.addData( (uint16_t)tmp );
 
 	ModbusRTU::WriteOutputRetMessage  ret = mb->write10(msg);
 	REQUIRE( ret.start == tREG );
@@ -767,27 +767,27 @@ TEST_CASE("Write(0x10): vtypes..", "[modbus][mbslave][mbtcpslave]")
 
 	SECTION("Test: write vtype 'I2'")
 	{
-		test_write10_I2(numeric_limits<int>::max());
+		test_write10_I2(numeric_limits<int32_t>::max());
 		test_write10_I2(0);
-		test_write10_I2(numeric_limits<int>::min());
+		test_write10_I2(numeric_limits<int32_t>::min());
 	}
 	SECTION("Test: write vtype 'I2r'")
 	{
-		test_write10_I2r(numeric_limits<int>::max());
+		test_write10_I2r(numeric_limits<int32_t>::max());
 		test_write10_I2r(0);
-		test_write10_I2r(numeric_limits<int>::min());
+		test_write10_I2r(numeric_limits<int32_t>::min());
 	}
 	SECTION("Test: write vtype 'U2'")
 	{
-		test_write10_U2(numeric_limits<unsigned int>::max());
+		test_write10_U2(numeric_limits<uint32_t>::max());
 		test_write10_U2(0);
-		test_write10_U2(numeric_limits<unsigned int>::min());
+		test_write10_U2(numeric_limits<uint32_t>::min());
 	}
 	SECTION("Test: write vtype 'U2r'")
 	{
-		test_write10_U2r(numeric_limits<unsigned int>::max());
+		test_write10_U2r(numeric_limits<uint32_t>::max());
 		test_write10_U2r(0);
-		test_write10_U2r(numeric_limits<unsigned int>::min());
+		test_write10_U2r(numeric_limits<uint32_t>::min());
 	}
 	SECTION("Test: write vtype 'F2'")
 	{
@@ -815,19 +815,19 @@ TEST_CASE("Write(0x10): vtypes..", "[modbus][mbslave][mbtcpslave]")
 	}
 	SECTION("Test: write vtype 'Byte N1'")
 	{
-		test_write10_byte1(numeric_limits<unsigned char>::max());
+		test_write10_byte1(numeric_limits<uint8_t>::max());
 		test_write10_byte1(0);
-		test_write10_byte1(numeric_limits<unsigned char>::min());
-		test_write10_byte1(numeric_limits<char>::max());
-		test_write10_byte1(numeric_limits<char>::min());
+		test_write10_byte1(numeric_limits<uint8_t>::min());
+		test_write10_byte1(numeric_limits<int8_t>::max());
+		test_write10_byte1(numeric_limits<int8_t>::min());
 	}
 	SECTION("Test: write vtype 'Byte N2'")
 	{
-		test_write10_byte2(numeric_limits<unsigned char>::max());
+		test_write10_byte2(numeric_limits<uint8_t>::max());
 		test_write10_byte2(0);
-		test_write10_byte2(numeric_limits<unsigned char>::min());
-		test_write10_byte2(numeric_limits<char>::max());
-		test_write10_byte2(numeric_limits<char>::min());
+		test_write10_byte2(numeric_limits<uint8_t>::min());
+		test_write10_byte2(numeric_limits<int8_t>::max());
+		test_write10_byte2(numeric_limits<int8_t>::min());
 	}
 }
 
@@ -1029,13 +1029,13 @@ TEST_CASE("read03(04) 10 registers", "[modbus][mbslave][mbtcpslave][readmore]")
 	InitTest();
 
 	ModbusRTU::ModbusData tREG = 130;
-	int num = 10;
+	size_t num = 10;
 
 	SECTION("Test: read03 num=10")
 	{
 		ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr, tREG, num);
 
-		for( int i = 0; i < num; i++ )
+		for( size_t i = 0; i < num; i++ )
 		{
 			REQUIRE( ret.data[i] == (i + 1) );
 		}
@@ -1051,7 +1051,7 @@ TEST_CASE("read03(04) 10 registers", "[modbus][mbslave][mbtcpslave][readmore]")
 	{
 		ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr, tREG, num);
 
-		for( int i = 0; i < num; i++ )
+		for( size_t i = 0; i < num; i++ )
 		{
 			REQUIRE( ret.data[i] == (i + 1) );
 		}
@@ -1073,20 +1073,20 @@ TEST_CASE("write10: 10 registers", "[modbus][mbslave][mbtcpslave][writemore]")
 	uniset::ObjectId id = 2036;
 	int offset = 2;
 	ModbusRTU::ModbusData tREG = 150 - offset; // реальные регистры начинаются с 150
-	int num = 10;
+	size_t num = 10;
 
 	ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
 
-	for( int i = 1; i <= num; i++ )
+	for( size_t i = 1; i <= num; i++ )
 		msg.addData(i);
 
 	ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
 	REQUIRE( ret.start == tREG );
 	REQUIRE( ret.quant == num );
 
-	for( int i = 0; i < num; i++ )
+	for( size_t i = 0; i < num; i++ )
 	{
-		REQUIRE( (signed short)ui->getValue(id + i) == (i + 1) );
+		REQUIRE( (int16_t)ui->getValue(id + i) == (i + 1) );
 	}
 }
 // -------------------------------------------------------------
@@ -1105,8 +1105,8 @@ TEST_CASE("write10: more..", "[modbus][mbslave][mbtcpslave][write10]")
 	REQUIRE( ret.start == tREG );
 	REQUIRE( ret.quant == 2 );
 
-	REQUIRE( (signed short)ui->getValue(2048) == 11 );
-	REQUIRE( (signed short)ui->getValue(2049) == 10 );
+	REQUIRE( (int16_t)ui->getValue(2048) == 11 );
+	REQUIRE( (int16_t)ui->getValue(2049) == 10 );
 }
 // -------------------------------------------------------------
 TEST_CASE("(0x10): write register outputs or memories [F2]", "[modbus][mbslave][F2][mbtcpslave]")
