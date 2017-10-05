@@ -253,8 +253,8 @@ namespace uniset
 			ConfirmMessage( const ConfirmMessage& ) noexcept = default;
 			ConfirmMessage& operator=( const ConfirmMessage& ) noexcept = default;
 
-			ObjectId sensor_id;   /* ID датчика (события) */
-			double sensor_value;  /* значение датчика (события) */
+			ObjectId sensor_id = { uniset::DefaultObjectId };   /* ID датчика (события) */
+			double sensor_value = { 0.0 };  /* значение датчика (события) */
 			struct timespec sensor_time = { 0, 0 }; /* время срабатывания датчика(события), который квитируем */
 			struct timespec confirm_time = { 0, 0 }; /* * время прошедшее до момента квитирования */
 

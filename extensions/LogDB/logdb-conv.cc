@@ -9,7 +9,7 @@ using namespace std;
 // --------------------------------------------------------------------------
 typedef std::pair<std::string, std::string> LogInfo;
 const size_t maxRead = 5000; // сколько читать прежде чем записать в БД
-std::vector<std::string> qbuf;
+static std::vector<std::string> qbuf;
 // --------------------------------------------------------------------------
 void saveToDB( SQLiteInterface* db );
 void parseLine( SQLiteInterface* db, const LogInfo& loginfo, const std::string& line );

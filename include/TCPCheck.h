@@ -14,8 +14,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -----------------------------------------------------------------------------
-#ifndef _TCPCheck_H_
-#define _TCPCheck_H_
+#ifndef TCPCheck_H_
+#define TCPCheck_H_
 // -----------------------------------------------------------------------------
 #include <atomic>
 #include "ThreadCreator.h"
@@ -55,5 +55,5 @@ namespace uniset
 	// -------------------------------------------------------------------------
 } // end of uniset namespace
 // -----------------------------------------------------------------------------
-#endif // _TCPCheck_H_
+#endif // TCPCheck_H_
 // -----------------------------------------------------------------------------

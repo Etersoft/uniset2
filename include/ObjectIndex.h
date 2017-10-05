@@ -31,8 +31,8 @@ namespace uniset
 	class ObjectIndex
 	{
 		public:
-			ObjectIndex() {};
-			virtual ~ObjectIndex() {};
+			ObjectIndex() {}
+			virtual ~ObjectIndex() {}
 
 			// info
 			// \return nullptr if not found

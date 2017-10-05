@@ -28,6 +28,7 @@
 #include "ujson.h"
 #include "LogDB.h"
 #include "Configuration.h"
+#include "Exceptions.h"
 #include "Debug.h"
 #include "UniXML.h"
 #include "LogDBSugar.h"

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "Configuration.h"
+#include "Exceptions.h"
 
 int main( int argc, const char* argv[] )
 {

@@ -20,6 +20,7 @@
 // --------------------------------------------------------------------------
 #include <omniORB4/CORBA.h>
 #include <omniORB4/omniURI.h>
+#include <omniORB4/Naming.hh>
 #include <string.h>
 #include <sstream>
 #include "ObjectRepository.h"
@@ -125,7 +126,7 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 			ctx->bind(oName, oRef);
 			return;
 		}
-		catch(const CosNaming::NamingContext::AlreadyBound& nf)
+		catch(const CosNaming::NamingContext::AlreadyBound&)
 		{
 			uwarn << "(registration): " << name << " уже зарегестрирован в " << section << "!!!" << endl;
 
@@ -147,7 +148,7 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 		{
 			throw NameNotFound();
 		}
-		catch( const CosNaming::NamingContext::InvalidName& nf )
+		catch( const CosNaming::NamingContext::InvalidName& )
 		{
 			err << "ObjectRepository(registration): (InvalidName) не смог зарегистрировать ссылку  " << name;;
 		}
@@ -212,11 +213,11 @@ void ObjectRepository::unregistration( const string& name, const string& section
 		ctx->unbind(oName);
 		return;
 	}
-	catch(const CosNaming::NamingContext::NotFound& nf)
+	catch(const CosNaming::NamingContext::NotFound&)
 	{
 		err << "ObjectRepository(unregistrartion): не найден объект ->" << name;
 	}
-	catch(const CosNaming::NamingContext::InvalidName& in)
+	catch(const CosNaming::NamingContext::InvalidName&)
 	{
 		err << "ObjectRepository(unregistrartion): не корректное имя объекта -> " << name;
 	}
@@ -264,11 +265,11 @@ ObjectPtr ObjectRepository::resolve( const string& name, const string& NSName ) 
 
 		err << "ObjectRepository(resolve): не смог получить ссылку на объект " << name.c_str();
 	}
-	catch(const CosNaming::NamingContext::NotFound& nf)
+	catch(const CosNaming::NamingContext::NotFound&)
 	{
 		err << "ObjectRepository(resolve): NameNotFound name= " << name;
 	}
-	catch(const CosNaming::NamingContext::InvalidName& nf)
+	catch(const CosNaming::NamingContext::InvalidName&)
 	{
 		err << "ObjectRepository(resolve): не смог получить ссылку на контекст(InvalidName) ";
 	}
@@ -511,10 +512,10 @@ bool ObjectRepository::createContext( const string& cname, CosNaming::NamingCont
 		ulogrep << "ORepFactory(createContext): создал. " << endl;
 		return true;
 	}
-	catch(const CosNaming::NamingContext::AlreadyBound& ab)
+	catch(const CosNaming::NamingContext::AlreadyBound ab)
 	{
 		//        ctx->resolve(nc);
-		ulogrep << "ORepFactory(createContext): context " << cname << " уже есть" << endl;
+		ulogrep << "ORepFactory(createContext): context " << cname << " already exist" << endl;
 		return true;
 	}
 	catch( const CosNaming::NamingContext::NotFound )
@@ -522,7 +523,7 @@ bool ObjectRepository::createContext( const string& cname, CosNaming::NamingCont
 		ulogrep << "ORepFactory(createContext): NotFound " << cname << endl;
 		throw NameNotFound();
 	}
-	catch( const CosNaming::NamingContext::InvalidName& nf )
+	catch( const CosNaming::NamingContext::InvalidName& )
 	{
 		uwarn << "ORepFactory(createContext): (InvalidName)  " << cname;
 	}

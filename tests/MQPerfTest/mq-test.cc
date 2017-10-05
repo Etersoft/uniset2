@@ -4,6 +4,7 @@
 #include <thread>
 #include <atomic>
 #include "Configuration.h"
+#include "Exceptions.h"
 #include "MQAtomic.h"
 #include "MQMutex.h"
 // --------------------------------------------------------------------------

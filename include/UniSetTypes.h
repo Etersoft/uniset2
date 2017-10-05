@@ -113,7 +113,7 @@ namespace uniset
 		lmpBLINK3   = 4     /*!< мигать */
 	};
 
-	static const long ChannelBreakValue = std::numeric_limits<long>::max();
+	const long ChannelBreakValue = std::numeric_limits<long>::max();
 
 	class IDList
 	{

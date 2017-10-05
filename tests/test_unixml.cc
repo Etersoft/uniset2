@@ -172,7 +172,7 @@ TEST_CASE("UniXML::iterator::find1Level", "[unixml][find1levels]" )
 	xmlNode* onode = uxml.findNode(uxml.getFirstNode(), "onelevelfind");
 	REQUIRE( onode != NULL );
 	UniXML::iterator oit(onode);
-	UniXML::iterator oit2 = uxml.findNodeLevel1(oit,"item","l2");
+	UniXML::iterator oit2 = uxml.findNodeLevel1(oit, "item", "l2");
 	REQUIRE(oit2);
 	REQUIRE(oit2.getProp("prop") == "yes");
 }

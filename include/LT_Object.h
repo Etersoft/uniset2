@@ -22,6 +22,7 @@
 #define Object_LT_H_
 //--------------------------------------------------------------------------
 #include <deque>
+#include "Debug.h"
 #include "UniSetTypes.h"
 #include "MessageType.h"
 #include "PassiveTimer.h"

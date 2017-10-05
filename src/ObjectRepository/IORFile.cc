@@ -18,6 +18,7 @@
 #include <fstream>
 #include <unistd.h>
 #include "IORFile.h"
+#include "Exceptions.h"
 #include "Configuration.h"
 #include "ORepHelpers.h"
 
