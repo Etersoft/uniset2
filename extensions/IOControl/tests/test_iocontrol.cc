@@ -5,17 +5,6 @@
 #include <unordered_set>
 #include <Poco/Net/NetException.h>
 #include "UniSetTypes.h"
-#include "MBTCPMultiMaster.h"
-// -----------------------------------------------------------------------------
-using namespace std;
-using namespace uniset;
-// -----------------------------------------------------------------------------
-#include <catch.hpp>
-// -----------------------------------------------------------------------------
-#include <time.h>
-#include <memory>
-#include <limits>
-#include "UniSetTypes.h"
 #include "FakeIOControl.h"
 // -----------------------------------------------------------------------------
 using namespace std;
