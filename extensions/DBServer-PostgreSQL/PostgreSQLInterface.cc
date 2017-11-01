@@ -129,6 +129,7 @@ bool PostgreSQLInterface::insert( const string& q )
 	try
 	{
 		work w( *(db.get()) );
+		lastQ = q;
 		w.exec(q);
 		w.commit();
 		return true;
@@ -155,6 +156,7 @@ bool PostgreSQLInterface::insertAndSaveRowid( const string& q )
 	try
 	{
 		work w( *(db.get()) );
+		lastQ = q;
 		pqxx::result res = w.exec(qplus);
 		w.commit();
 		save_inserted_id(res);
@@ -176,8 +178,9 @@ DBResult PostgreSQLInterface::query( const string& q )
 
 	try
 	{
-		nontransaction n(*(db.get()));
 
+		nontransaction n(*(db.get()));
+		lastQ = q;
 		/* Execute SQL query */
 		result res( n.exec(q) );
 		return makeResult(res);
@@ -188,6 +191,13 @@ DBResult PostgreSQLInterface::query( const string& q )
 	}
 
 	return DBResult();
+}
+// -----------------------------------------------------------------------------------------
+void PostgreSQLInterface::cancel()
+{
+	if( !db )
+		return;
+	db->cancel_query();
 }
 // -----------------------------------------------------------------------------------------
 const string PostgreSQLInterface::error()
