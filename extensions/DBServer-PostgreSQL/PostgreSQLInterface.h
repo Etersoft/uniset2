@@ -45,6 +45,7 @@ namespace uniset
 			virtual bool ping() const override;
 
 			virtual DBResult query( const std::string& q ) override;
+			virtual void cancel() override;
 			virtual const std::string lastQuery() override;
 
 			virtual bool insert( const std::string& q ) override;
