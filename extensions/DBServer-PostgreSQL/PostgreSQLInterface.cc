@@ -193,7 +193,7 @@ DBResult PostgreSQLInterface::query( const string& q )
 	return DBResult();
 }
 // -----------------------------------------------------------------------------------------
-void PostgreSQLInterface::cancel()
+void PostgreSQLInterface::cancel_query()
 {
 	if( !db )
 		return;
