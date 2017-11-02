@@ -16,7 +16,7 @@
 
 Name: libuniset2
 Version: 2.6
-Release: alt40
+Release: alt41
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -508,11 +508,14 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
-* Thu Nov 02 2017 Vinogradov Aleksei <uzum@server> 2.6-alt40
-- DBInterface: minor fix in method name
+* Thu Nov 02 2017 Pavel Vainerman <pv@altlinux.ru> 2.6-alt41
+- build new version
 
-* Wed Nov 01 2017 Vinogradov Aleksei <uzum@server> 2.6-alt39
-- PostgreSQLInterface: cancel query method added
+# * Thu Nov 02 2017 Vinogradov Aleksei <uzum@server> 2.6-alt40
+# - DBInterface: minor fix in method name
+
+# * Wed Nov 01 2017 Vinogradov Aleksei <uzum@server> 2.6-alt39
+# - PostgreSQLInterface: cancel query method added
 
 * Tue Sep 12 2017 Alexei Takaseev <taf@altlinux.org> 2.6-alt19.1
 - Rebuild with poco 1.7.9
