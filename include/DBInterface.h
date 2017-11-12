@@ -26,7 +26,7 @@ namespace uniset
 			virtual bool ping() const = 0; // проверка доступности БД
 
 			virtual DBResult query( const std::string& q ) = 0;
-			virtual void cancel_query(){}; // попытка отменить текущий запрос
+			virtual void cancel_query() {}; // попытка отменить текущий запрос
 			virtual const std::string lastQuery() = 0;
 			virtual bool insert( const std::string& q ) = 0;
 			virtual double insert_id() = 0;

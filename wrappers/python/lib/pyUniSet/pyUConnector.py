@@ -199,3 +199,5 @@ UConnector_swigregister = _pyUConnector.UConnector_swigregister
 UConnector_swigregister(UConnector)
 
 # This file is compatible with both classic and new-style classes.
+
+

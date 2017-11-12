@@ -197,6 +197,7 @@ void PostgreSQLInterface::cancel_query()
 {
 	if( !db )
 		return;
+
 	db->cancel_query();
 }
 // -----------------------------------------------------------------------------------------
