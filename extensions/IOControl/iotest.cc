@@ -312,7 +312,7 @@ int main(int argc, char* argv[])
 				if( autoconf )
 					insn_config(card, subdev, chan[k], 100, range, aref);
 
-				int ret = comedi_data_read(card, subdev, chan[k], range, aref, &data);
+				int ret = comedi_data_read_delayed(card, subdev, chan[k], range, aref, &data, 10000);
 
 				if( ret < 0)
 				{

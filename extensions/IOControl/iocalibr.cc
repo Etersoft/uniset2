@@ -202,7 +202,7 @@ int main(int argc, char* argv[])
 
 	while(1)
 	{
-		if(comedi_data_read(card, subdev, chan, range, aref, &data) < 0)
+		if(comedi_data_read_delayed(card, subdev, chan, range, aref, &data, 10000) < 0)
 		{
 			fprintf(stderr, "can't read from channel %d\n", chan);
 			exit(EXIT_FAILURE);
