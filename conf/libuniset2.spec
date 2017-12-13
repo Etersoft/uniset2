@@ -513,6 +513,12 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
+* Wed Dec 13 2017 Pavel Vainerman <pv@altlinux.ru> 2.7-alt1
+- new component 'logdb'
+- added 'const' for more functions
+- minor fixes
+- remove deprecated components
+
 * Sun Nov 12 2017 Alexei Takaseev <taf@altlinux.org> 2.6-alt41.1
 - Rebuild with poco 1.8.0.1
 
