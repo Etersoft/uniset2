@@ -17,7 +17,7 @@
 
 Name: libuniset2
 Version: 2.7
-Release: alt1
+Release: alt2
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -518,6 +518,9 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
+* Thu Dec 14 2017 Pavel Vainerman <pv@altlinux.ru> 2.7-alt2
+- minor fixes
+
 * Wed Dec 13 2017 Pavel Vainerman <pv@altlinux.ru> 2.7-alt1
 - new component 'logdb'
 - added 'const' for more functions
