@@ -1,4 +1,4 @@
-if DISABLE_SQLITE
+if DISABLE_LOGDB
 
 else
 

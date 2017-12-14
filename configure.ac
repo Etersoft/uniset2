@@ -330,6 +330,26 @@ if cat ${CATCH_FILE} | grep -q "Catch v2."; then
 fi
 AC_MSG_RESULT([$CATCH_VERSION_MAJOR])
 
+#check logdb support
+AC_MSG_CHECKING([logdb build])
+buildlogdb=true
+AC_ARG_ENABLE(logdb, AC_HELP_STRING([--disable-logdb], [disable LogDB build]),
+[ if test $enableval = yes; then buildlogdb=true; else buildlogdb=false; fi],[ buildlogdb=true; ])
+
+if test ${buildsqlite} = true; then
+
+  if test ${buildlogdb} = true; then
+	AC_MSG_RESULT([enabled])
+  else
+	AC_MSG_RESULT([disabled])
+  fi
+else
+    buildlogdb=false
+    AC_MSG_RESULT([disabled (sqlite disabled)])
+fi
+
+AM_CONDITIONAL(DISABLE_LOGDB, test ${buildlogdb} = false)
+
 COV_LIBS=
 COV_CFLAGS=
 AC_MSG_CHECKING([tests support])
