@@ -314,6 +314,21 @@ AC_SUBST(UNISET_EXT_CFLAGS)
 UNISET_EXT_LIBS="\$(top_builddir)/extensions/lib/libUniSet2Extensions.la"
 AC_SUBST(UNISET_EXT_LIBS)
 
+#AC_LANG_PUSH([C++])
+#AC_CHECK_HEADERS([catch.hpp],,exit)
+#AC_LANG_POP([C++])
+CATCH_VERSION_MAJOR=1
+CATCH_FILE="include/catch.hpp"
+if test ! -e ${CATCH_FILE}; then 
+	CATCH_FILE="/usr/include/catch.hpp"
+fi
+
+AC_MSG_CHECKING([catch version in $CATCH_FILE])
+CATCH_RESULT=
+if cat ${CATCH_FILE} | grep -q "Catch v2."; then 
+	CATCH_VERSION_MAJOR=2; 
+fi
+AC_MSG_RESULT([$CATCH_VERSION_MAJOR])
 
 COV_LIBS=
 COV_CFLAGS=
@@ -380,7 +395,7 @@ CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Woverloaded-virtual -Woverflow -D_GLIBCXX_U
 # export
 LDFLAGS="$LDFLAGS ${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS} ${POCO_LIBS} ${EV_LIBS}"
 # all developer liked options add to autogen.sh, please
-CXXFLAGS="-I\$(top_builddir)/include $CXXFLAGS -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${REST_API_CFLAGS} ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${POCO_CFLAGS} ${EV_CFLAGS} $CXX_EXTRA_FLAGS"
+CXXFLAGS="-I\$(top_builddir)/include $CXXFLAGS -funsigned-char -std=c++11 -g -DCATCH_VERSION_MAJOR=${CATCH_VERSION_MAJOR} -D_GNU_SOURCE ${REST_API_CFLAGS} ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${POCO_CFLAGS} ${EV_CFLAGS} $CXX_EXTRA_FLAGS"
 
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)
