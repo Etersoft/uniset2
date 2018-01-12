@@ -39,7 +39,6 @@
 #include "modbus/ModbusClient.h"
 #include "LogAgregator.h"
 #include "LogServer.h"
-#include "LogAgregator.h"
 #include "VMonitor.h"
 // -----------------------------------------------------------------------------
 #ifndef vmonit
