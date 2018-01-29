@@ -1,3 +1,4 @@
+#ifndef DISABLE_COMPORT_485F
 /*
  * Copyright (c) 2015 Pavel Vainerman.
  *
@@ -71,3 +72,4 @@ namespace uniset
 // --------------------------------------------------------------------------
 #endif // COMPORT_485F_H_
 // --------------------------------------------------------------------------
+#endif // #ifndef DISABLE_COMPORT_485F

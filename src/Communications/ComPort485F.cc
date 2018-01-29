@@ -1,3 +1,4 @@
+#ifndef DISABLE_COMPORT_485F
 /*
  * Copyright (c) 2015 Pavel Vainerman.
  *
@@ -334,3 +335,4 @@ void ComPort485F::reopen()
 	ComPort::reopen();
 }
 // --------------------------------------------------------------------------------
+#endif // #ifndef DISABLE_COMPORT_485F
