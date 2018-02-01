@@ -180,7 +180,7 @@ fi
 AM_CONDITIONAL(DISABLE_RRD, test ${buildrrd} = false)
 
 #check opentsdb support
-AC_MSG_CHECKING([opentsdb support])
+AC_MSG_CHECKING([OpenTSDB backend])
 buildtsdb=true
 AC_ARG_ENABLE(opentsdb, AC_HELP_STRING([--disable-opentsdb], [disable OpenTSDB backend]),
 [ if test $enableval = yes; then buildtsdb=true; else buildtsdb=false; fi],[ buildtsdb=true; ])

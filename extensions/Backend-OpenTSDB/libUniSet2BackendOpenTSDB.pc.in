@@ -8,4 +8,4 @@ Description: Support library for UniSet2BackendOpenTSDB
 Requires: libUniSet2Extensions
 Version: @VERSION@
 Libs: -L${libdir} -lUniSet2BackendOpenTSDB
-Cflags: -I${includedir}/@PACKAGE@/extensions/backend-opentsdb
+Cflags: -I${includedir}/@PACKAGE@/extensions
