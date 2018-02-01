@@ -45,6 +45,8 @@
 		<logserver name="ses" ip="localhost" port="21107" cmd="-d level8 ALL" description="SES"/>
 	</LogDB>
 
+	<BackendOpenTSDB name="BackendOpenTSDB" host="localhost" filter_field="tsdb" filter_value="1" tags="host=localhost uniset=1" prefix="uniset"/>
+
 	<settings>
 
 		<LostTestProc name="TestProc1" sensor_s="Input4_S"/>
@@ -320,8 +322,13 @@
 			<item id="201" iotype="DI" name="UNET_DATA2_S" textname="UNET: data2" ndata="unet"/>
 			<item id="202" iotype="DI" name="UNET_DATA3_S" textname="UNET: data3" ndata="unet"/>
 			
+			<!-- test BackendOpenTSDB  -->
+			<item id="210" iotype="AI" name="DATA1_S" textname="UNET: data1" tsdb="1"/>
+			<item id="211" iotype="AI" name="DATA2_S" textname="UNET: data2" tsdb="1"/>
+
+
 			<!-- IO TEST -->
-		<!-- Датчики системы смазочного масла (сгенерировано из csv) alex: 05.07.2017 -->
+			<!-- Датчики системы смазочного масла (сгенерировано из csv) alex: 05.07.2017 -->
 			<item id="301" name="01_01_S" iotype="DI" mtype="2" textname="ГДГ1: Аварийно-низкое давление смазочного масла" unet="gdg1" aps="301" mko_aps="1" depend1="D1_State_FS" depend_value="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4526" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="0" jardelay="8000"/>
 			<item id="302" name="01_02_S" iotype="DI" mtype="2" textname="ГДГ2: Аварийно-низкое давление смазочного масла" unet="gdg2" aps="301" mko_aps="1" depend1="D2_State_FS" depend_value="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4846" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="0" jardelay="8000"/>
 			<item id="303" name="01_04_AS" iotype="AI" textname="ГДГ1: Давление смазочного масла" unet="gdg1" analog_group="1" filtersize="300" iir_thr="2000" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x06" arm_mbreg="7086" arm_mbtype="rtu" io="1" card="3" subdev="2" channel="0" range="1" aref="2" cmin="0" cmax="300" rmin="820" rmax="4095" precision="1" noprecision="1"/>
@@ -5492,6 +5499,7 @@
 			<item id="6087" name="MBSlave10"/>
 			<item id="6088" name="TestGroup"/>
 			<item id="6089" name="MQTTPublisher1"/>
+			<item id="6090" name="BackendOpenTSDB"/>
 			<item id="6101" name="MBTCP1"/>
 			<item id="6102" name="MBTCP2"/>
 			<item id="6103" name="MBTCP3"/>
