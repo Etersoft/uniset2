@@ -659,7 +659,7 @@ static void test_write10_F2( const float& val )
 	si.id = 2007;
 	si.node = conf->getLocalNode();
 	IOController_i::CalibrateInfo cal = ui->getCalibrateInfo(si);
-	float fval = (float)ui->getValue(si.id) / pow10(cal.precision);
+	float fval = (float)ui->getValue(si.id) / pow(10.0, cal.precision);
 
 	REQUIRE( fval == val );
 }
@@ -680,7 +680,7 @@ static void test_write10_F2r( const float& val )
 	si.id = 2008;
 	si.node = conf->getLocalNode();
 	IOController_i::CalibrateInfo cal = ui->getCalibrateInfo(si);
-	float fval = (float)ui->getValue(si.id) / pow10(cal.precision);
+	float fval = (float)ui->getValue(si.id) / pow(10.0, cal.precision);
 
 	REQUIRE( fval == val );
 }
@@ -729,7 +729,7 @@ static void test_write10_F4prec( const float& val )
 	si.id = 2009;
 	si.node = conf->getLocalNode();
 	IOController_i::CalibrateInfo cal = ui->getCalibrateInfo(si);
-	float fval = (float)ui->getValue(si.id) / pow10(cal.precision);
+	float fval = (float)ui->getValue(si.id) / pow(10.0, cal.precision);
 
 	REQUIRE( fval == val );
 }

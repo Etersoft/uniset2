@@ -14,6 +14,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -------------------------------------------------------------------------
+#include <cmath>
 #include "Configuration.h"
 #include "Extensions.h"
 #include "UniSetTypes.h"
@@ -247,7 +248,7 @@ namespace uniset
 					}
 
 					if( !it->noprecision && it->cal.precision != 0 )
-						val = lround( val * pow10(it->cal.precision) );
+						val = lround( val * pow(10.0, it->cal.precision) );
 				}
 			} // end of 'check_depend'
 
@@ -283,7 +284,7 @@ namespace uniset
 				memcpy(&val, &fval, std::min(sizeof(val), sizeof(fval)));
 			}
 			else if( it->cal.precision != 0 && !it->noprecision )
-				val = lroundf( fval * pow10(it->cal.precision) );
+				val = lroundf( fval * pow(10.0, it->cal.precision) );
 
 			// проверка на обрыв
 			if( it->check_channel_break(val) )
@@ -395,7 +396,7 @@ namespace uniset
 			{
 				// сперва "убираем степень", потом калибруем.. (это обратная последовательность для AsAI)
 				if( !it->noprecision && it->cal.precision != 0 )
-					val = lroundf( (float)it->value / pow10(it->cal.precision) );
+					val = lroundf( (float)it->value / pow(10.0, it->cal.precision) );
 
 				IOController_i::CalibrateInfo* cal( &(it->cal) );
 
@@ -461,7 +462,7 @@ namespace uniset
 			}
 
 			if( !it->noprecision && it->cal.precision != 0 )
-				return ( fval / pow10(it->cal.precision) );
+				return ( fval / pow(10.0, it->cal.precision) );
 		}
 		else // if( it->stype == UniversalIO::DI || it->stype == UniversalIO::DO )
 			fval = val ? 1.0 : 0.0;

@@ -187,7 +187,7 @@ void DBServer_SQLite::sensorInfo( const uniset::SensorMessage* si )
 				   << endl;
 		}
 
-		float val = (float)si->value / (float)pow10(si->ci.precision);
+		float val = (float)si->value / (float)pow(10.0, si->ci.precision);
 
 		// см. DBTABLE AnalogSensors, DigitalSensors
 		ostringstream data;
