@@ -99,17 +99,17 @@ namespace uniset
 			OmniThreadCreator( const std::shared_ptr<ThreadMaster>& m, Action a, bool undetached = false );
 			~OmniThreadCreator() {}
 
-			inline bool isRunning() const
+			inline bool isRunning()
 			{
-				return state() == omni_thread::STATE_RUNNING;
+				return omni_thread::state() == omni_thread::STATE_RUNNING;
 			}
 			inline void stop()
 			{
-				exit(0);
+				omni_thread::exit(0);
 			}
 			inline int getTID()
 			{
-				return id();
+				return omni_thread::id();
 			}
 
 			inline void join()
