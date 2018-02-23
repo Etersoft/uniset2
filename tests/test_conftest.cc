@@ -72,6 +72,16 @@ TEST_CASE( "Configuration", "[Configuration]" )
 		CHECK( conf->getServiceID(testService) != DefaultObjectId );
 	}
 
+	SECTION( "Default parameters" )
+	{
+		REQUIRE( conf->getNCReadyTimeout() == 60000 );
+		REQUIRE( conf->getHeartBeatTime() == 2000 );
+		REQUIRE( conf->getCountOfNet() == 1 );
+		REQUIRE( conf->getRepeatCount() == 3 );
+		REQUIRE( conf->getRepeatTimeout() == 50 );
+		REQUIRE( conf->getStartupIgnoreTimeout() == 6000 );
+	}
+
 	SECTION( "Empty Constructor" )
 	{
 		int t_argc = 0;

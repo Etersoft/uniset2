@@ -1,6 +1,7 @@
 #include <catch.hpp>
 
 #include <time.h>
+#include "IOController_i.hh"
 #include "UInterface.h"
 #include "UniSetTypes.h"
 
@@ -173,6 +174,12 @@ TEST_CASE("UInterface", "[UInterface]")
 		REQUIRE_NOTHROW( ui.askThreshold(aid, 11, UniversalIO::UIONotify, 50, 70, false, testOID) );
 		REQUIRE_NOTHROW( ui.askThreshold(aid, 12, UniversalIO::UIONotify, 20, 40, false, testOID) );
 		REQUIRE_THROWS_AS( ui.askThreshold(aid, 3, UniversalIO::UIONotify, 50, 20, false, testOID), IONotifyController_i::BadRange );
+
+		IONotifyController_i::ThresholdsListSeq_var slist = ui.getThresholdsList(aid);
+		REQUIRE( slist->length() == 1 ); // количество датчиков с порогоами = 1 (это aid)
+
+		// 3 порога мы создали выше(askThreshold) + 1 который в настроечном файле в секции <thresholds>
+		REQUIRE( slist[0].tlist.length() == 4 );
 
 		IONotifyController_i::ThresholdInfo ti1 = ui.getThresholdInfo(aid, 10);
 		REQUIRE( ti1.id == 10 );

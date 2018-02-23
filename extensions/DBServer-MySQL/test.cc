@@ -9,23 +9,30 @@ using namespace std;
 int main(int argc, char** argv)
 {
 	std::string dbname("test-db");
+	std::string host("localhost");
+	std::string table("main_history");
 
 	if( argc > 1 )
 		dbname = string(argv[1]);
+
+	if( argc > 2 )
+		host = string(argv[2]);
+
+	if( argc > 3 )
+		table = string(argv[3]);
 
 	try
 	{
 		MySQLInterface db;
 
-		if( !db.nconnect("localhost", "dbadmin", "dbadmin", dbname) )
+		if( !db.nconnect(host, "dbadmin", "dbadmin", dbname) )
 		{
 			cerr << "db connect error: " << db.error() << endl;
 			return 1;
 		}
 
-
 		stringstream q;
-		q << "SELECT * from main_history";
+		q << "SELECT * from " << table;
 
 		DBResult r = db.query(q.str());
 
@@ -38,12 +45,18 @@ int main(int argc, char** argv)
 		for( DBResult::iterator it = r.begin(); it != r.end(); it++ )
 		{
 			cout << "ROW: ";
-			DBResult::COL col(*it);
+			//			DBResult::COL col(*it);
+			//			for( DBResult::COL::iterator cit = col.begin(); cit != col.end(); cit++ )
+			//				cout << DBResult::as_string(cit) << "(" << DBResult::as_double(cit) << ")  |  ";
+			//			cout << endl;
 
 			for( DBResult::COL::iterator cit = it->begin(); cit != it->end(); cit++ )
 				cout << DBResult::as_string(cit) << "(" << DBResult::as_double(cit) << ")  |  ";
 
 			cout << endl;
+
+			//			cout << "ID: " << r.as_string(it, "id") << endl;
+			cout << "ID: " << it.as_string("id") << endl;
 		}
 
 		db.close();

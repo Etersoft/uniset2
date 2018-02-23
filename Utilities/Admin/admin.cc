@@ -80,12 +80,9 @@ int apiRequest( const string& args, UInterface& ui, const string& query );
 // --------------------------------------------------------------------------
 static void print_help(int width, const string& cmd, const string& help, const string& tab = " " )
 {
-	// чтобы не менять параметры основного потока
-	// создаём свой stream...
-	ostringstream info;
-	info.setf(ios::left, ios::adjustfield);
-	info << tab << setw(width) << cmd << " - " << help;
-	cout << info.str();
+	uniset::ios_fmt_restorer ifs(cout);
+	cout.setf(ios::left, ios::adjustfield);
+	cout << tab << setw(width) << cmd << " - " << help;
 }
 // --------------------------------------------------------------------------
 static void short_usage()
@@ -430,17 +427,19 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 	if( verb )
 		cout << "\n||=======********  " << section << "  ********=========||\n" << endl;
 
-	std::ios_base::fmtflags old_flags = cout.flags();
+	uniset::ios_fmt_restorer ifs(cout);
+
+	cout.setf(ios::left, ios::adjustfield);
 
 	try
 	{
-		ListObjectName ls;
-		rep->list(section, &ls);
+		ListObjectName olist;
+		rep->list(section, &olist);
 
-		if( ls.empty() )
+		if( olist.empty() )
 		{
 			if( verb )
-				cout << "пусто!!!!!!" << endl;
+				cout << "пусто!" << endl;
 
 			return false;
 		}
@@ -448,16 +447,10 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 		UniSetManager_i_var proc;
 		UniSetObject_i_var obj;
 		string fullName;
-		ListObjectName::const_iterator li;
-		string buf;
 
-		cout.setf(ios::left, ios::adjustfield);
-
-		for ( li = ls.begin(); li != ls.end(); ++li)
+		for( const auto& oname : olist )
 		{
-			string ob(*li);
-			buf = section + "/" + ob;
-			fullName = buf;
+			fullName = section + "/" + oname;
 
 			try
 			{
@@ -470,7 +463,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 					{
 						if( CORBA::is_nil(obj) )
 						{
-							errDoNotResolve(ob);
+							errDoNotResolve(oname);
 							break;
 						}
 
@@ -478,7 +471,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 						obj->push( Message::transport(msg) );
 
 						if( verb )
-							cout << setw(55) << ob << "   <--- start OK" <<   endl;
+							cout << setw(55) << oname << "   <--- start OK" <<   endl;
 					}
 					break;
 
@@ -486,7 +479,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 					{
 						if(CORBA::is_nil(obj))
 						{
-							errDoNotResolve(ob);
+							errDoNotResolve(oname);
 							break;
 						}
 
@@ -494,7 +487,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 						obj->push( Message::transport(msg) );
 
 						if( verb )
-							cout << setw(55) << ob << "   <--- foldUp OK" <<   endl;
+							cout << setw(55) << oname << "   <--- foldUp OK" <<   endl;
 					}
 					break;
 
@@ -502,7 +495,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 					{
 						if(CORBA::is_nil(obj))
 						{
-							errDoNotResolve(ob);
+							errDoNotResolve(oname);
 							break;
 						}
 
@@ -510,16 +503,16 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 						obj->push( Message::transport(msg) );
 
 						if( verb )
-							cout << setw(55) << ob << "   <--- finish OK" <<   endl;
+							cout << setw(55) << oname << "   <--- finish OK" <<   endl;
 					}
 					break;
 
 					case Exist:
 					{
 						if( obj->exist() )
-							cout << "(" << setw(6) << obj->getId() << ")" << setw(55) << ob << "   <--- exist ok\n";
+							cout << "(" << setw(6) << obj->getId() << ")" << setw(55) << oname << "   <--- exist ok\n";
 						else
-							cout << "(" << setw(6) << obj->getId() << ")" << setw(55) << ob << "   <--- exist NOT OK\n";
+							cout << "(" << setw(6) << obj->getId() << ")" << setw(55) << oname << "   <--- exist NOT OK\n";
 					}
 					break;
 
@@ -529,7 +522,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 						obj->push(sm.transport_msg());
 
 						if( verb )
-							cout << setw(55) << ob << "   <--- configure ok\n";
+							cout << setw(55) << oname << "   <--- configure ok\n";
 					}
 					break;
 
@@ -539,7 +532,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 						obj->push( Message::transport(msg) );
 
 						if( verb )
-							cout << setw(55) << ob << "   <--- logrotate ok\n";
+							cout << setw(55) << oname << "   <--- logrotate ok\n";
 
 						break;
 					}
@@ -549,7 +542,6 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 						if( !quiet )
 							cout << "неизвестная команда -" << cmd << endl;
 
-						cout.setf(old_flags);
 						return false;
 					}
 				}
@@ -557,12 +549,12 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 			catch( const uniset::Exception& ex )
 			{
 				if( !quiet )
-					cerr << setw(55) << ob << "   <--- " << ex << endl;
+					cerr << setw(55) << oname << "   <--- " << ex << endl;
 			}
 			catch( const CORBA::SystemException& ex )
 			{
 				if( !quiet )
-					cerr << setw(55) << ob  << "   <--- недоступен!!(CORBA::SystemException): " << ex.NP_minorString() << endl;
+					cerr << setw(55) << oname  << "   <--- недоступен!!(CORBA::SystemException): " << ex.NP_minorString() << endl;
 			}
 			catch( const std::exception& ex )
 			{
@@ -576,11 +568,9 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 		if( !quiet )
 			cerr << "..ORepFailed.." << endl;
 
-		cout.setf(old_flags);
 		return false;
 	}
 
-	cout.setf(old_flags);
 	return true;
 }
 
@@ -602,7 +592,7 @@ static void createSections( const std::shared_ptr<uniset::Configuration>& rconf 
 // ==============================================================================================
 int omap()
 {
-	std::ios_base::fmtflags old_flags = cout.flags();
+	uniset::ios_fmt_restorer ifs(cout);
 
 	try
 	{
@@ -616,7 +606,6 @@ int omap()
 		if( !quiet )
 			cerr << " configuration init failed: " << ex << endl;
 
-		cout.setf(old_flags);
 		return 1;
 	}
 	catch( const std::exception& ex )
@@ -624,11 +613,9 @@ int omap()
 		if( !quiet )
 			cerr << "std::exception: " << ex.what() << endl;
 
-		cout.setf(old_flags);
 		return 1;
 	}
 
-	cout.setf(old_flags);
 	return 0;
 }
 

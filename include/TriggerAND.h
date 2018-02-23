@@ -114,7 +114,7 @@ namespace uniset
 		protected:
 			void check();
 			InputMap inputs; // список входов
-			bool out;
+			bool out = { false };
 			Caller* cal;
 			Action act;
 	};

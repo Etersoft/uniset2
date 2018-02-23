@@ -138,7 +138,7 @@ namespace uniset
 		return el;
 	}
 	// -------------------------------------------------------------------------
-	void Schema::remove( std::shared_ptr<Element> el )
+	void Schema::remove( std::shared_ptr<Element>& el )
 	{
 		for( auto && it = emap.begin(); it != emap.end(); ++it )
 		{

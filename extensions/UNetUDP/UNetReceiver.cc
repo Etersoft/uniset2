@@ -17,6 +17,7 @@
 #include <sstream>
 #include <iomanip>
 #include <Poco/Net/NetException.h>
+#include "unisetstd.h"
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UNetReceiver.h"
@@ -76,13 +77,14 @@ UNetReceiver::UNetReceiver(const std::string& s_host, int _port, const std::shar
 	auto conf = uniset_conf();
 	conf->initLogStream(unetlog, myname);
 
-	upThread = make_shared< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::updateThread);
+	upThread = unisetstd::make_unique< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::updateThread);
 
 	if( !createConnection(nocheckConnection /* <-- это флаг throwEx */) )
 		evCheckConnection.set<UNetReceiver, &UNetReceiver::checkConnectionEvent>(this);
 
 	evStatistic.set<UNetReceiver, &UNetReceiver::statisticsEvent>(this);
 	evUpdate.set<UNetReceiver, &UNetReceiver::updateEvent>(this);
+	evInitPause.set<UNetReceiver, &UNetReceiver::initEvent>(this);
 }
 // -----------------------------------------------------------------------------
 UNetReceiver::~UNetReceiver()
@@ -139,6 +141,16 @@ void UNetReceiver::setMaxDifferens( unsigned long set ) noexcept
 	maxDifferens = set;
 }
 // -----------------------------------------------------------------------------
+void UNetReceiver::setEvrunTimeout( timeout_t msec ) noexcept
+{
+	evrunTimeout = msec;
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::setInitPause( timeout_t msec ) noexcept
+{
+	initPause = (msec / 1000.0);
+}
+// -----------------------------------------------------------------------------
 void UNetReceiver::setRespondID( uniset::ObjectId id, bool invert ) noexcept
 {
 	sidRespond = id;
@@ -161,11 +173,31 @@ void UNetReceiver::setLockUpdate( bool st ) noexcept
 		ptPrepare.reset();
 }
 // -----------------------------------------------------------------------------
+bool UNetReceiver::isLockUpdate() const noexcept
+{
+	return lockUpdate;
+}
+// -----------------------------------------------------------------------------
+bool UNetReceiver::isInitOK() const noexcept
+{
+	return initOK.load();
+}
+// -----------------------------------------------------------------------------
 void UNetReceiver::resetTimeout() noexcept
 {
 	std::lock_guard<std::mutex> l(tmMutex);
 	ptRecvTimeout.reset();
 	trTimeout.change(false);
+}
+// -----------------------------------------------------------------------------
+bool UNetReceiver::isRecvOK() const noexcept
+{
+	return !ptRecvTimeout.checkTime();
+}
+// -----------------------------------------------------------------------------
+size_t UNetReceiver::getLostPacketsNum() const noexcept
+{
+	return lostPackets;
 }
 // -----------------------------------------------------------------------------
 bool UNetReceiver::createConnection( bool throwEx )
@@ -175,7 +207,7 @@ bool UNetReceiver::createConnection( bool throwEx )
 
 	try
 	{
-		udp = make_shared<UDPReceiveU>(addr, port);
+		udp = unisetstd::make_unique<UDPReceiveU>(addr, port);
 		udp->setBlocking(false); // делаем неблокирующее чтение (нужно для libev)
 		evReceive.set<UNetReceiver, &UNetReceiver::callback>(this);
 
@@ -224,7 +256,13 @@ void UNetReceiver::start()
 	if( !activated )
 	{
 		activated = true;
-		loop.evrun(this, true);
+
+		if( !loop.async_evrun(this, evrunTimeout) )
+		{
+			unetcrit << myname << "(start): evrun FAILED! (timeout=" << evrunTimeout << " msec)" << endl;
+			std::terminate();
+			return;
+		}
 
 		if( upStrategy == useUpdateThread && !upThread->isRunning() )
 			upThread->start();
@@ -238,10 +276,11 @@ void UNetReceiver::evprepare( const ev::loop_ref& eloop ) noexcept
 	evStatistic.set(eloop);
 	evStatistic.start(0, 1.0); // раз в сек
 
+	evInitPause.set(eloop);
+
 	if( upStrategy == useUpdateEventLoop )
 	{
 		evUpdate.set(eloop);
-		evUpdate.start();
 		evUpdate.start( 0, ((float)updatepause / 1000.) );
 	}
 
@@ -249,11 +288,13 @@ void UNetReceiver::evprepare( const ev::loop_ref& eloop ) noexcept
 	{
 		evCheckConnection.set(eloop);
 		evCheckConnection.start(0, checkConnectionTime);
+		evInitPause.stop();
 	}
 	else
 	{
 		evReceive.set(eloop);
 		evReceive.start(udp->getSocket(), ev::READ);
+		evInitPause.start(0);
 	}
 }
 // -----------------------------------------------------------------------------
@@ -307,6 +348,18 @@ void UNetReceiver::statisticsEvent(ev::periodic& tm, int revents) noexcept
 	recvCount = 0;
 	upCount = 0;
 	tm.again();
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::initEvent( ev::timer& tmr, int revents ) noexcept
+{
+	if( EV_ERROR & revents )
+	{
+		unetcrit << myname << "(initEvent): EVENT ERROR.." << endl;
+		return;
+	}
+
+	initOK.store(true);
+	tmr.stop();
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::update() noexcept
@@ -486,8 +539,11 @@ void UNetReceiver::updateThread() noexcept
 		{
 			try
 			{
-				bool r = respondInvert ? !isRecvOK() : isRecvOK();
-				shm->localSetValue(itRespond, sidRespond, ( r ? 1 : 0 ), shm->ID());
+				if( isInitOK() )
+				{
+					bool r = respondInvert ? !isRecvOK() : isRecvOK();
+					shm->localSetValue(itRespond, sidRespond, ( r ? 1 : 0 ), shm->ID());
+				}
 			}
 			catch( const std::exception& ex )
 			{
@@ -603,8 +659,11 @@ void UNetReceiver::updateEvent( ev::periodic& tm, int revents ) noexcept
 	{
 		try
 		{
-			bool r = respondInvert ? !isRecvOK() : isRecvOK();
-			shm->localSetValue(itRespond, sidRespond, ( r ? 1 : 0 ), shm->ID());
+			if( isInitOK() )
+			{
+				bool r = respondInvert ? !isRecvOK() : isRecvOK();
+				shm->localSetValue(itRespond, sidRespond, ( r ? 1 : 0 ), shm->ID());
+			}
 		}
 		catch( const std::exception& ex )
 		{
@@ -938,6 +997,7 @@ const std::string UNetReceiver::getShortInfo() const noexcept
 	  << "\t["
 	  << " recvTimeout=" << setw(6) << recvTimeout
 	  << " prepareTime=" << setw(6) << prepareTime
+	  << " evrunTimeout=" << setw(6) << evrunTimeout
 	  << " lostTimeout=" << setw(6) << lostTimeout
 	  << " recvpause=" << setw(6) << recvpause
 	  << " updatepause=" << setw(6) << updatepause

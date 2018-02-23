@@ -91,7 +91,7 @@ namespace uniset
 			~SQLiteInterface();
 
 			virtual bool connect( const std::string& param ) override;
-			bool connect( const std::string& dbfile, bool create );
+			bool connect(const std::string& dbfile, bool create, int extra_sqlite_flags = 0 );
 			virtual bool close() override;
 			virtual bool isConnection() const override;
 			virtual bool ping() const override;
@@ -113,6 +113,7 @@ namespace uniset
 
 			virtual DBResult query( const std::string& q ) override;
 			virtual const std::string lastQuery() override;
+			bool lastQueryOK() const;
 
 			virtual bool insert( const std::string& q ) override;
 			virtual double insert_id() override;
@@ -126,7 +127,7 @@ namespace uniset
 
 		private:
 
-			void makeResult(DBResult& dbres, sqlite3_stmt* s, bool finalize = true );
+			DBResult makeResult( sqlite3_stmt* s, bool finalize = true );
 			sqlite3* db;
 			// sqlite3_stmt* curStmt;
 

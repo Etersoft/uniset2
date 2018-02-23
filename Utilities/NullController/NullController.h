@@ -4,18 +4,17 @@
 // --------------------------------------------------------------------------
 #include <string>
 #include "IONotifyController.h"
-#include "NCRestorer.h"
 // --------------------------------------------------------------------------
 class NullController:
 	public uniset::IONotifyController
 {
 	public:
-		NullController( uniset::ObjectId id, const std::string& restorfile,
-						const std::string& s_filterField = "",
-						const std::string& s_filterValue = "",
-						const std::string& c_filterField = "",
-						const std::string& c_filterValue = "",
-						bool _dumpingToDB = false );
+		NullController(uniset::ObjectId id, const std::string& ioconfile,
+					   const std::string& s_filterField = "",
+					   const std::string& s_filterValue = "",
+					   const std::string& c_filterField = "",
+					   const std::string& c_filterValue = "",
+					   bool _dumpingToDB = false );
 
 		virtual ~NullController();
 

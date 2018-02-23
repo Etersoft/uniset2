@@ -34,6 +34,9 @@ namespace uniset
 	 * Пасивный объект не имеющий самостоятельного потока обработки сообщений, но имеющий
 	 * уникальный идентификатор. Предназначен для работы под управлением ProxyManager.
 	 *
+	 * \todo Перейти на shared_ptr, weak_ptr для взаимодействия с ProxyManager
+	 *
+	 * DEPRECATED
 	*/
 	class PassiveObject
 	{

@@ -225,7 +225,7 @@ void TestProc::mbThread()
 	mylog9 << myname << "(mbThread): run tcpserver.." << endl;
 	ModbusRTU::ModbusAddr mba(mbADDR);
 	auto vaddr = mbslave->addr2vaddr(mba);
-	mbslave->run( vaddr, false ); // true - создаёт поток
+	mbslave->run( vaddr ); // async_run()?
 
 	mylog9 << myname << "ModbusSlave stopped.." << endl;
 }

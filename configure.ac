@@ -3,10 +3,10 @@
 # See doc: http://www.gnu.org/software/hello/manual/autoconf/Generic-Programs.html
 
 # AC_PREREQ(2.59)
-AC_INIT([uniset2], [2.6.0], pv@etersoft.ru)
+AC_INIT([uniset2], [2.7.0], pv@etersoft.ru)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME,AC_PACKAGE_VERSION)
 
-LIBVER=2:6:0
+LIBVER=2:7:0
 AC_SUBST(LIBVER)
 
 # AC_CONFIG_MACRO_DIR([m4])
@@ -314,6 +314,41 @@ AC_SUBST(UNISET_EXT_CFLAGS)
 UNISET_EXT_LIBS="\$(top_builddir)/extensions/lib/libUniSet2Extensions.la"
 AC_SUBST(UNISET_EXT_LIBS)
 
+#AC_LANG_PUSH([C++])
+#AC_CHECK_HEADERS([catch.hpp],,exit)
+#AC_LANG_POP([C++])
+CATCH_VERSION_MAJOR=1
+CATCH_FILE="include/catch.hpp"
+if test ! -e ${CATCH_FILE}; then 
+	CATCH_FILE="/usr/include/catch.hpp"
+fi
+
+AC_MSG_CHECKING([catch version in $CATCH_FILE])
+CATCH_RESULT=
+if cat ${CATCH_FILE} | grep -q "Catch v2."; then 
+	CATCH_VERSION_MAJOR=2; 
+fi
+AC_MSG_RESULT([$CATCH_VERSION_MAJOR])
+
+#check logdb support
+AC_MSG_CHECKING([logdb build])
+buildlogdb=true
+AC_ARG_ENABLE(logdb, AC_HELP_STRING([--disable-logdb], [disable LogDB build]),
+[ if test $enableval = yes; then buildlogdb=true; else buildlogdb=false; fi],[ buildlogdb=true; ])
+
+if test ${buildsqlite} = true; then
+
+  if test ${buildlogdb} = true; then
+	AC_MSG_RESULT([enabled])
+  else
+	AC_MSG_RESULT([disabled])
+  fi
+else
+    buildlogdb=false
+    AC_MSG_RESULT([disabled (sqlite disabled)])
+fi
+
+AM_CONDITIONAL(DISABLE_LOGDB, test ${buildlogdb} = false)
 
 COV_LIBS=
 COV_CFLAGS=
@@ -338,6 +373,8 @@ if test ${buildtests} = true; then
 	AC_CONFIG_TESTDIR(extensions/ModbusMaster/tests)
 	AC_CONFIG_TESTDIR(extensions/UNetUDP/tests)
 	AC_CONFIG_TESTDIR(extensions/SharedMemory/tests)
+	AC_CONFIG_TESTDIR(extensions/IOControl/tests)
+	AC_CONFIG_TESTDIR(extensions/LogDB/tests)
 
 	TESTSUITE_DIR="\$(top_builddir)/testsuite"
 	AC_SUBST(TESTSUITE_DIR)
@@ -378,7 +415,7 @@ CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Woverloaded-virtual -Woverflow -D_GLIBCXX_U
 # export
 LDFLAGS="$LDFLAGS ${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS} ${POCO_LIBS} ${EV_LIBS}"
 # all developer liked options add to autogen.sh, please
-CXXFLAGS="-I\$(top_builddir)/include $CXXFLAGS -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${REST_API_CFLAGS} ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${POCO_CFLAGS} ${EV_CFLAGS} $CXX_EXTRA_FLAGS"
+CXXFLAGS="-I\$(top_builddir)/include $CXXFLAGS -funsigned-char -std=c++11 -g -DCATCH_VERSION_MAJOR=${CATCH_VERSION_MAJOR} -D_GNU_SOURCE ${REST_API_CFLAGS} ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${POCO_CFLAGS} ${EV_CFLAGS} $CXX_EXTRA_FLAGS"
 
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)
@@ -423,11 +460,11 @@ AC_CONFIG_FILES([Makefile
 				 IDL/UniSetTypes/Makefile
 				 IDL/UniSetTypes/UniSetBaseConstants.idl
 				 IDL/Processes/Makefile
+				 src/Core/Makefile
 				 src/Communications/Makefile
 				 src/Communications/Modbus/Makefile
 				 src/Communications/TCP/Makefile
 				 src/Communications/Http/Makefile
-				 src/Interfaces/Makefile
 				 src/ObjectRepository/Makefile
 				 src/Processes/Makefile
 				 src/Services/Makefile
@@ -442,6 +479,7 @@ AC_CONFIG_FILES([Makefile
 				 tests/MQPerfTest/Makefile
 				 tests/PocoTest/Makefile
 				 tests/UHttpTest/Makefile
+				 tests/TCPSocketTest/Makefile
 				 docs/Makefile
 				 docs/UniSetDox.cfg
 				 docs/UniSetDoxDevel.cfg
@@ -469,6 +507,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/DBServer-PostgreSQL/libUniSet2PostgreSQL.pc
 				 extensions/IOControl/Makefile
 				 extensions/IOControl/libUniSet2IOControl.pc
+				 extensions/IOControl/tests/Makefile
 				 extensions/ModbusMaster/Makefile
 				 extensions/ModbusMaster/libUniSet2RTU.pc
 				 extensions/ModbusMaster/libUniSet2MBTCPMaster.pc
@@ -489,7 +528,6 @@ AC_CONFIG_FILES([Makefile
 				 extensions/SharedMemory/Makefile
 				 extensions/SharedMemory/tests/Makefile
 				 extensions/SharedMemory/libUniSet2SharedMemory.pc
-				 extensions/SharedMemoryPlus/Makefile
 				 extensions/RRDServer/Makefile
 				 extensions/RRDServer/libUniSet2RRDServer.pc
 				 extensions/MQTTPublisher/Makefile
@@ -498,15 +536,14 @@ AC_CONFIG_FILES([Makefile
 				 extensions/tests/SMemoryTest/Makefile
 				 extensions/tests/MBSlaveTest/Makefile
 				 extensions/tests/MQPerfTest/Makefile
+				 extensions/LogDB/Makefile
+				 extensions/LogDB/tests/Makefile
 				 testsuite/Makefile
-				 python/lib/Makefile
-				 python/lib/pyUniSet/Makefile
-				 python/netdata-plugin/Makefile
-				 python/Makefile])
+				 wrappers/Makefile
+				 wrappers/python/lib/Makefile
+				 wrappers/python/lib/pyUniSet/Makefile
+				 wrappers/python/netdata-plugin/Makefile
+				 wrappers/python/Makefile])
 				 
 
 AC_OUTPUT
-
-#				 extensions/SMDBServer/Makefile
-#				 extensions/SMDBServer/libUniSet2SMDBServer.pc
-

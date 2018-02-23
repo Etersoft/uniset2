@@ -22,12 +22,12 @@ using namespace uniset;
 using namespace std;
 using namespace uniset;
 // -----------------------------------------------------------------------------
-static ModbusRTU::ModbusAddr slaveaddr = 0x01; // conf->getArgInt("--mbs-my-addr");
+static ModbusRTU::ModbusAddr slaveADDR = 0x01; // conf->getArgInt("--mbs-my-addr");
+static unordered_set<ModbusRTU::ModbusAddr> vaddr = { slaveADDR, 0x02 };
 static int port = 20053; // conf->getArgInt("--mbs-inet-port");
 static const string iaddr("127.0.0.1"); // conf->getArgParam("--mbs-inet-addr");
 static int port2 = 20055;
 static const string iaddr2("127.0.0.1");
-static unordered_set<ModbusRTU::ModbusAddr> slaveADDR = { 0x01 };
 static shared_ptr<MBTCPTestServer> mbs1;
 static shared_ptr<MBTCPTestServer> mbs2;
 static shared_ptr<UInterface> ui;
@@ -56,7 +56,7 @@ static void InitTest()
 	{
 		try
 		{
-			mbs1 = make_shared<MBTCPTestServer>(slaveADDR, iaddr, port, false);
+			mbs1 = make_shared<MBTCPTestServer>(vaddr, iaddr, port, false);
 		}
 		catch( const Poco::Net::NetException& e )
 		{
@@ -87,7 +87,7 @@ static void InitTest()
 	{
 		try
 		{
-			mbs2 = make_shared<MBTCPTestServer>(slaveADDR, iaddr2, port2, false);
+			mbs2 = make_shared<MBTCPTestServer>(vaddr, iaddr2, port2, false);
 		}
 		catch( const Poco::Net::NetException& e )
 		{
@@ -149,5 +149,77 @@ TEST_CASE("MBTCPMultiMaster: rotate channel", "[modbus][mbmaster][mbtcpmultimast
 	mbs1->disableExchange(false);
 	msleep(4000); // --mbtcp-timeout 3000 (см. run_test_mbtcmultipmaster.sh)
 	REQUIRE( ui->getValue(1003) == 100 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMultiMaster: safe mode", "[modbus][safemode][mbmaster][mbtcpmultimaster]")
+{
+	InitTest();
+
+	ui->setValue(1050, 0); // отключаем safeMode
+
+	mbs1->setReply(53);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1051) == 53 );
+	REQUIRE( ui->getValue(1052) == 1 );
+
+	mbs1->setReply(0);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1051) == 0 );
+	REQUIRE( ui->getValue(1052) == 0 );
+
+	ui->setValue(1050, 42); // включаем safeMode
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1051) == 42 );
+	REQUIRE( ui->getValue(1052) == 1 );
+
+
+	mbs1->setReply(53);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1051) == 42 );
+	REQUIRE( ui->getValue(1052) == 1 );
+
+	ui->setValue(1050, 0); // отключаем safeMode
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1051) == 53 );
+	REQUIRE( ui->getValue(1052) == 1 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: safe mode (resetIfNotRespond)", "[modbus][safemode][mbmaster][mbtcpmaster]")
+{
+	InitTest();
+
+	mbs1->disableExchange(false); // включаем связь
+	mbs2->disableExchange(false); // включаем связь
+	msleep(2000);
+
+	mbs1->setReply(53);
+	mbs2->setReply(53);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1053) == 53 );
+	REQUIRE( ui->getValue(1054) == 1 );
+
+	mbs1->setReply(0);
+	mbs2->setReply(0);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1053) == 0 );
+	REQUIRE( ui->getValue(1054) == 0 );
+
+	mbs1->disableExchange(true); // отключаем связь
+	mbs2->disableExchange(true); // отключаем связь
+	msleep(5000);
+	REQUIRE( ui->getValue(1053) == 42 );
+	REQUIRE( ui->getValue(1054) == 1 );
+
+	mbs1->setReply(53);
+	mbs2->setReply(53);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1053) == 42 );
+	REQUIRE( ui->getValue(1054) == 1 );
+
+	mbs1->disableExchange(false); // включаем связь
+	mbs2->disableExchange(false); // включаем связь
+	msleep(5000);
+	REQUIRE( ui->getValue(1053) == 53 );
+	REQUIRE( ui->getValue(1054) == 1 );
 }
 // -----------------------------------------------------------------------------

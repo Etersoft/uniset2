@@ -30,13 +30,13 @@ class UTestSupplier:
 		{
 			uniset::json::help::object myhelp("test");
 
-			uniset::json::help::item cmd1("description for cmd1");
+			uniset::json::help::item cmd1("cmd1", "description for cmd1");
 			cmd1.param("p1", "description of p1");
 			cmd1.param("p2", "description of p1");
 			cmd1.param("p3", "description of p1");
 			myhelp.add(cmd1);
 
-			uniset::json::help::item cmd2("description for cmd2");
+			uniset::json::help::item cmd2("cmd2", "description for cmd2");
 			cmd2.param("p1", "description of p1");
 			cmd2.param("p2", "description of p1");
 			cmd2.param("p3", "description of p1");

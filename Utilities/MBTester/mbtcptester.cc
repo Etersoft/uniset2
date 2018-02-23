@@ -31,6 +31,7 @@ static struct option longopts[] =
 	{ "num-cycles", required_argument, 0, 'l' },
 	{ "sleep-msec", required_argument, 0, 's' },
 	{ "check", no_argument, 0, 'n' },
+	{ "ignore-errors", no_argument, 0, 'g' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -62,6 +63,7 @@ static void print_help()
 	printf("[-v|--verbose]                  - Print all messages to stdout\n");
 	printf("[-s|--sleep-msec]               - send pause. Default: 200 msec\n");
 	printf("[-n|--check]                    - Check connection for (-i)ip (-p)port\n");
+	printf("[-g|--ignore-errors]            - Ignore errors\n");
 }
 // --------------------------------------------------------------------------
 enum Command
@@ -95,6 +97,7 @@ int main( int argc, char** argv )
 	ModbusRTU::ModbusData reg = 0;
 	int val = 0;
 	int sleep_msec = 500;
+	bool ignoreErrors = false;
 
 	union DValue
 	{
@@ -124,7 +127,7 @@ int main( int argc, char** argv )
 	{
 		while( 1 )
 		{
-			opt = getopt_long(argc, argv, "hvna:w:z:r:x:c:b:d:s:t:p:i:ol:d:e:u:", longopts, &optindex);
+			opt = getopt_long(argc, argv, "hvgna:w:z:r:x:c:b:d:s:t:p:i:ol:d:e:u:", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -170,6 +173,10 @@ int main( int argc, char** argv )
 
 				case 'n':
 					cmd = cmdCheck;
+					break;
+
+				case 'g':
+					ignoreErrors = true;
 					break;
 
 				case 'e':
@@ -685,10 +692,24 @@ int main( int argc, char** argv )
 			}
 			catch( ModbusRTU::mbException& ex )
 			{
-				if( ex.err != ModbusRTU::erTimeOut )
+				if( ex.err == ModbusRTU::erTimeOut )
+				{
+					cout << "timeout..." << endl;
+				}
+				else
+				{
+					if( !ignoreErrors )
+						throw;
+
+					cerr << ex << endl;
+				}
+			}
+			catch( std::exception& ex )
+			{
+				if( !ignoreErrors )
 					throw;
 
-				cout << "timeout..." << endl;
+				cerr << ex.what() << endl;
 			}
 
 			if( ncycles > 0 )

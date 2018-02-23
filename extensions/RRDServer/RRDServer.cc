@@ -330,11 +330,15 @@ void RRDServer::askSensors( UniversalIO::UIOCommand cmd )
 	UObject_SK::askSensors(cmd);
 
 	// прежде чем заказывать датчики, надо убедиться что SM доступна
-	waitSM(smReadyTimeout);
-
-	for( auto& it : rrdlist )
+	if( !waitSM(smReadyTimeout) )
 	{
-		for( auto& s : it.dsmap )
+		uterminate();
+		return;
+	}
+
+	for( const auto& it : rrdlist )
+	{
+		for( const auto& s : it.dsmap )
 		{
 			try
 			{
@@ -354,7 +358,7 @@ void RRDServer::sysCommand( const uniset::SystemMessage* sm )
 
 	if( sm->command == SystemMessage::StartUp || sm->command == SystemMessage::WatchDog )
 	{
-		for( auto && it : rrdlist )
+		for( const auto& it : rrdlist )
 		{
 			try
 			{
@@ -370,7 +374,7 @@ void RRDServer::sysCommand( const uniset::SystemMessage* sm )
 // -----------------------------------------------------------------------------
 void RRDServer::sensorInfo( const uniset::SensorMessage* sm )
 {
-	for( auto& it : rrdlist )
+	for( const auto& it : rrdlist )
 	{
 		auto s = it.dsmap.find(sm->id);
 
@@ -383,7 +387,7 @@ void RRDServer::sensorInfo( const uniset::SensorMessage* sm )
 // -----------------------------------------------------------------------------
 void RRDServer::timerInfo( const uniset::TimerMessage* tm )
 {
-	for( auto& it : rrdlist )
+	for( const auto& it : rrdlist )
 	{
 		if( it.tid == tm->id )
 		{

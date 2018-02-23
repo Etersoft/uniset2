@@ -30,7 +30,7 @@
                 <item node="localhost" name="ReservSharedMemory"/>
             </ReservList>		
 		</SharedMemory>
-		<TestObject name="TestObject" sensor_s="DI2_S" output_c="AO2_C" dependDI_s="DependDI_S" dependAI_s="DependAI_S" heartbeat_id="TO_Heartbeat_Counter" heartbeatTime="500" heartbeat_max="5"/>
+		<TestObject name="TestObject" sensor_s="DI2_S" output_c="AO2_C" dependDI_s="DependDI_S" dependAI_s="DependAI_S" monotonic_s="MonotonicAI_S" heartbeat_id="TO_Heartbeat_Counter" heartbeatTime="500" heartbeat_max="5"/>
 	</settings>
 	<ObjectsMap idfromfile="1">
 		<nodes port="2809" unet_broadcast_ip="192.168.1.255" unet_broadcast_ip2="192.168.122.255">
@@ -55,6 +55,7 @@
 			<item id="513" iotype="DI" name="DependDI_S" depend="Depend_BlockSensor_S" depend_value="0" depend_off_value="0" priority="Medium" textname="Depend DI sesnor"/>
 			<item id="514" iotype="DI" name="Depend_BlockSensor_S" priority="Medium" textname="Block Sensor for depend"/>
 			<item id="515" iotype="DI" name="Threshold2_S" priority="Medium" textname="Threshold 2"/>
+			<item id="516" iotype="AI" name="MonotonicAI_S" priority="Medium" textname="monitonic AI"/>
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor name="AI1_AS">

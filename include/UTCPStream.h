@@ -39,7 +39,7 @@ namespace uniset
 
 			void create( const std::string& hname, uint16_t port, timeout_t tout_msec = 1000 );
 
-			bool isConnected() noexcept;
+			bool isConnected() const noexcept;
 
 			// set keepalive params
 			// return true if OK

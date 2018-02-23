@@ -56,12 +56,12 @@ namespace uniset
 	// ----------------------------------------------------------------------------
 	DBResult::iterator DBResult::begin()
 	{
-		return row_.begin();
+		return DBRowIterator(*this, row_.begin());
 	}
 	// ----------------------------------------------------------------------------
 	DBResult::iterator DBResult::end()
 	{
-		return row_.end();
+		return DBRowIterator(*this, row_.end());
 	}
 	// ----------------------------------------------------------------------------
 	DBResult::operator bool() const
@@ -79,24 +79,65 @@ namespace uniset
 		return row_.empty();
 	}
 	// ----------------------------------------------------------------------------
-	int DBResult::as_int( const DBResult::iterator& it, int col )
-	{
-		return uniset::uni_atoi( (*it)[col] );
-	}
-	// ----------------------------------------------------------------------------
-	double DBResult::as_double( const DBResult::iterator& it, int col )
-	{
-		return atof( ((*it)[col]).c_str() );
-	}
-	// ----------------------------------------------------------------------------
-	std::string DBResult::as_string( const DBResult::iterator& it, int col )
-	{
-		return ((*it)[col]);
-	}
-	// ----------------------------------------------------------------------------
+	//	int DBResult::as_int( const DBResult::iterator& it, int col )
+	//	{
+	//		return it.as_int(col);
+	//	}
+	//	// ----------------------------------------------------------------------------
+	//	double DBResult::as_double( const DBResult::iterator& it, int col )
+	//	{
+	//		return it.as_double(col);
+	//	}
+	//	// ----------------------------------------------------------------------------
+	//	std::string DBResult::as_string( const DBResult::iterator& it, int col )
+	//	{
+	//		return it.as_string(col);
+	//	}
+
+	//	int DBResult::as_int( const DBResult::iterator& it, const std::string& cname )
+	//	{
+	//		return it.as_int(cname);
+	//	}
+
+	//	double DBResult::as_double(const DBResult::iterator& it, const std::string& cname)
+	//	{
+	//		return it.as_double(cname);
+	//	}
+
+	//	std::string DBResult::as_string( const DBResult::iterator& it, const std::string& cname )
+	//	{
+	//		return it.as_string(cname);
+	//	}
+	//	// ----------------------------------------------------------------------------
 	size_t DBResult::num_cols( const DBResult::iterator& it )
 	{
-		return it->size();
+		return it.num_cols();
+	}
+	// ----------------------------------------------------------------------------
+	void DBResult::setColName( int index, const std::string& name )
+	{
+		colname[name] = index;
+	}
+
+	int DBResult::getColIndex( const std::string& name )
+	{
+		auto i = colname.find(name);
+
+		if( i == colname.end() )
+			throw std::runtime_error("(DBInterface): Unknown field ='" + name + "'");
+
+		return i->second;
+	}
+	// ----------------------------------------------------------------------------
+	std::string DBResult::getColName( int index )
+	{
+		for( auto && c : colname )
+		{
+			if( c.second == index )
+				return c.first;
+		}
+
+		return "";
 	}
 	// ----------------------------------------------------------------------------
 	int DBResult::as_int( const DBResult::COL::iterator& it )
@@ -114,11 +155,126 @@ namespace uniset
 		return (*it);
 	}
 	// ----------------------------------------------------------------------------
-#if 0
-	DBResult::COL DBResult::get_col( DBResult::iterator& it )
+	DBRowIterator::DBRowIterator( DBResult& _dbres, const DBResult::ROW::iterator& _it ):
+		dbres(_dbres), it(_it)
+	{
+
+	}
+
+	DBRowIterator::DBRowIterator( const DBRowIterator& i ):
+		dbres(i.dbres), it(i.it)
+	{
+
+	}
+
+	bool DBRowIterator::operator!=( const DBRowIterator& i ) const
+	{
+		return (it != i.it);
+	}
+
+	bool DBRowIterator::operator==( const DBRowIterator& i) const
+	{
+		return (it == i.it);
+	}
+
+
+	DBRowIterator& DBRowIterator::operator+(int i) noexcept
+	{
+		it += i;
+		return (*this);
+	}
+
+	DBRowIterator& DBRowIterator::operator-(int i) noexcept
+	{
+		it -= i;
+		return (*this);
+	}
+
+	DBRowIterator DBRowIterator::operator--(int) noexcept
+	{
+		DBRowIterator  tmp(*this);
+		it--;
+		return tmp;
+	}
+
+	DBRowIterator& DBRowIterator::operator--() noexcept
+	{
+		it--;
+		return (*this);
+	}
+
+	DBRowIterator& DBRowIterator::operator-=(int i) noexcept
+	{
+		return (*this) - i;
+	}
+
+	DBRowIterator& DBRowIterator::operator+=(int i) noexcept
+	{
+		return (*this) + i;
+	}
+
+	DBRowIterator& DBRowIterator::operator++() noexcept
+	{
+		++it;
+		return (*this);
+	}
+
+	DBRowIterator DBRowIterator::operator++(int) noexcept
+	{
+		DBRowIterator tmp(*this);
+		it++;
+		return tmp;
+	}
+
+	// ----------------------------------------------------------------------------
+	std::string DBRowIterator::as_string( const char* name ) const
+	{
+		return as_string( dbres.getColIndex(name) );
+	}
+
+	std::string DBRowIterator::as_string( const std::string& name ) const
+	{
+		return as_string( dbres.getColIndex(name) );
+	}
+
+	int DBRowIterator::as_int(const std::string& name ) const
+	{
+		return as_int(dbres.getColIndex(name));
+	}
+
+	double DBRowIterator::as_double( const std::string& name ) const
+	{
+		return as_double(dbres.getColIndex(name));
+	}
+
+	std::string DBRowIterator::as_string( int col ) const
+	{
+		return ((*it)[col]);
+	}
+
+	int DBRowIterator::as_int( int col ) const
+	{
+		return uniset::uni_atoi( (*it)[col] );
+	}
+
+	double DBRowIterator::as_double( int col ) const
+	{
+		return atof( ((*it)[col]).c_str() );
+	}
+
+	size_t DBRowIterator::num_cols() const
+	{
+		return it->size();
+	}
+
+	DBRowIterator::pointer DBRowIterator::operator->()
+	{
+		return it.operator->();
+	}
+
+	DBRowIterator::reference DBRowIterator::operator*() const
 	{
 		return (*it);
 	}
-#endif
 	// ----------------------------------------------------------------------------
 } // end of namespace uniset

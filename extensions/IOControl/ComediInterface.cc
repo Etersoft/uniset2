@@ -22,9 +22,10 @@
 using namespace uniset;
 using namespace std;
 // -----------------------------------------------------------------------------
-ComediInterface::ComediInterface( const std::string& dev ):
+ComediInterface::ComediInterface( const std::string& dev, const std::string& cname ):
 	card(0),
-	dname(dev)
+	dname(dev),
+	name(cname)
 {
 	card = comedi_open(dev.c_str());
 
@@ -41,8 +42,7 @@ ComediInterface::~ComediInterface()
 
 }
 // -----------------------------------------------------------------------------
-int ComediInterface::getAnalogChannel( int subdev, int channel, int range, int aref )
-throw(uniset::Exception)
+int ComediInterface::getAnalogChannel( int subdev, int channel, int range, int aref ) const
 {
 	lsampl_t data = 0;
 	int ret = comedi_data_read(card, subdev, channel, range, aref, &data);
@@ -54,14 +54,13 @@ throw(uniset::Exception)
 			<< " channel=" << channel << " range=" << range << " aref=" << aref
 			<< " dev=" << dname
 			<< " err: " << ret << " (" << strerror(ret) << ")";
-		throw Exception(err.str());
+		throw uniset::Exception(err.str());
 	}
 
 	return data;
 }
 // -----------------------------------------------------------------------------
-void ComediInterface::setAnalogChannel( int subdev, int channel, int data, int range, int aref )
-throw(uniset::Exception)
+void ComediInterface::setAnalogChannel( int subdev, int channel, int data, int range, int aref ) const
 {
 	if( comedi_data_write(card, subdev, channel, range, aref, data) < 0 )
 	{
@@ -74,7 +73,7 @@ throw(uniset::Exception)
 	}
 }
 // -----------------------------------------------------------------------------
-bool ComediInterface::getDigitalChannel( int subdev, int channel ) throw(uniset::Exception)
+bool ComediInterface::getDigitalChannel( int subdev, int channel ) const
 {
 	lsampl_t data = 0;
 
@@ -89,8 +88,7 @@ bool ComediInterface::getDigitalChannel( int subdev, int channel ) throw(uniset:
 	return ((bool)(data));
 }
 // -----------------------------------------------------------------------------
-void ComediInterface::setDigitalChannel( int subdev, int channel, bool bit )
-throw(uniset::Exception)
+void ComediInterface::setDigitalChannel( int subdev, int channel, bool bit ) const
 {
 	if( comedi_dio_write(card, subdev, channel, bit) < 0 )
 	{
@@ -102,8 +100,7 @@ throw(uniset::Exception)
 }
 // -----------------------------------------------------------------------------
 void ComediInterface::configureChannel( int subdev, int channel, ChannelType t,
-										int range, int aref )
-throw(uniset::Exception)
+										int range, int aref ) const
 {
 	switch( t )
 	{
@@ -161,8 +158,7 @@ throw(uniset::Exception)
 	throw Exception(err.str());
 }
 // -----------------------------------------------------------------------------
-void ComediInterface::configureSubdev( int subdev, SubdevType type )
-throw(uniset::Exception)
+void ComediInterface::configureSubdev( int subdev, SubdevType type ) const
 {
 	lsampl_t data[2];
 	comedi_insn insn;

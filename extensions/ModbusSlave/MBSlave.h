@@ -304,6 +304,19 @@ namespace uniset
 		</MBTCPPersistentSlave>
 		\endcode
 
+		По умолчанию если не удалось создать сокет процесс пытается повторять попытки каждые
+		tcpRepeatCreateSocketPause и не вылетает. Но если задан параметр tcpBreakIfFailRun="1",
+		то процессы завершает работу после первой неудачной попытки.
+		Изменить эти параметры можно либо в конфигурационном файле:
+		\code
+		<MBTCPPersistentSlave ... tcpBreakIfFailRun="1" tcpRepeatCreateSocket="xxx msec"/>
+		\endcode
+
+		Либо аргументами командной строки:
+		- --prefix--break-if-fail-run 1
+		- --prefix-repeat-create-socket msec.
+
+
 		\section sec_MBSlave_REST_API MBSlave HTTP API
 
 
@@ -328,7 +341,6 @@ namespace uniset
 					uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 					const std::string& prefix = "mbs" );
 
-			/*! глобальная функция для вывода help-а */
 			static void help_print( int argc, const char* const* argv );
 
 			static const int NoSafetyState = -1;
@@ -384,9 +396,9 @@ namespace uniset
 				friend std::ostream& operator<<( std::ostream& os, BitRegProperty* p );
 			};
 
-			inline long getAskCount()
+			inline long getConnCount()
 			{
-				return askCount;
+				return connCount;
 			}
 
 			inline std::shared_ptr<LogAgregator> getLogAggregator()
@@ -403,7 +415,7 @@ namespace uniset
 #ifndef DISABLE_REST_API
 			// http API
 			virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;
-			virtual Poco::JSON::Object::Ptr httpRequest( const string& req, const Poco::URI::QueryParameters& p ) override;
+			virtual Poco::JSON::Object::Ptr httpRequest( const std::string& req, const Poco::URI::QueryParameters& p ) override;
 #endif
 
 		protected:
@@ -461,14 +473,6 @@ namespace uniset
 			ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query,
 										   ModbusRTU::MEIMessageRetRDI& reply );
 
-			/*! Проверка корректности регистра перед сохранением.
-			    Вызывается для каждого регистра не зависимо от используемой функции (06 или 10)
-			*/
-			virtual ModbusRTU::mbErrCode checkRegister( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val )
-			{
-				return ModbusRTU::erNoError;
-			}
-
 			// т.к. в функциях (much_real_read,nuch_real_write) рассчёт на отсортированность IOMap
 			// то использовать unordered_map нельзя
 			typedef std::map<ModbusRTU::RegID, IOProperty> RegMap;
@@ -495,21 +499,29 @@ namespace uniset
 
 			virtual void sysCommand( const uniset::SystemMessage* msg ) override;
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
+			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 			void askSensors( UniversalIO::UIOCommand cmd );
-			void waitSMReady();
+			bool waitSMReady();
 			virtual void execute_rtu();
 			virtual void execute_tcp();
 			virtual void updateStatistics();
 			virtual void updateTCPStatistics();
 			virtual void updateThresholds();
 			virtual void postReceiveEvent( ModbusRTU::mbErrCode res );
+			void runTCPServer();
 
 			virtual bool activateObject() override;
 			virtual bool deactivateObject() override;
 
 			// действия при завершении работы
-			virtual void sigterm( int signo ) override;
 			virtual void finalThread();
+
+			enum Timer
+			{
+				tmCheckExchange
+			};
+
+			uniset::timeout_t checkExchangeTime = { 10000 }; // контроль "живости" потока обмена, мсек
 
 			virtual void initIterators();
 			bool initItem( UniXML::iterator& it );
@@ -541,7 +553,7 @@ namespace uniset
 			MBSlave();
 			timeout_t initPause = { 3000 };
 			uniset::uniset_rwmutex mutex_start;
-			std::shared_ptr< ThreadCreator<MBSlave> > thr;
+			std::unique_ptr< ThreadCreator<MBSlave> > thr;
 
 			std::mutex mutexStartNotify;
 			std::condition_variable startNotifyEvent;
@@ -560,12 +572,13 @@ namespace uniset
 			bool respond_invert = { false };
 
 			PassiveTimer ptTimeout;
-			long askCount = { 0 };
+			long connCount = { 0 };
+			long restartTCPServerCount = { 0 };
 
 			std::atomic_bool activated = { false };
 			std::atomic_bool cancelled = { false };
 			timeout_t activateTimeout = { 20000 }; // msec
-			bool pingOK = { false };
+			bool smPingOK = { false };
 			timeout_t wait_msec = { 3000 };
 			bool force = { false };        /*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
 
@@ -646,6 +659,9 @@ namespace uniset
 			IOController::IOStateList::iterator sesscount_it;
 
 			std::atomic_bool tcpCancelled = { true };
+
+			bool tcpBreakIfFailRun = { false };
+			timeout_t tcpRepeatCreateSocketPause = { 30000 }; /*! пауза между попытками открыть сокет */
 	};
 	// --------------------------------------------------------------------------
 } // end of namespace uniset

@@ -52,37 +52,19 @@ namespace uniset
 
 			bool isConnection() const;
 
-			inline void setReadCount( unsigned int n )
-			{
-				readcount = n;
-			}
+			void setReadCount( size_t n );
+			void setCommandOnlyMode( bool s );
 
-			inline void setCommandOnlyMode( bool s )
-			{
-				cmdonly = s;
-			}
-
-			inline void setinTimeout( timeout_t msec )
-			{
-				inTimeout = msec;
-			}
-			inline void setoutTimeout( timeout_t msec )
-			{
-				outTimeout = msec;
-			}
-			inline void setReconnectDelay( timeout_t msec )
-			{
-				reconDelay = msec;
-			}
+			void setinTimeout( timeout_t msec );
+			void setoutTimeout( timeout_t msec );
+			void setReconnectDelay( timeout_t msec );
+			void setTextFilter( const std::string& f );
 
 			DebugStream::StreamEvent_Signal signal_stream_event();
 
 			void setLogLevel( Debug::type t );
 
-			inline std::shared_ptr<DebugStream> log()
-			{
-				return outlog;
-			}
+			std::shared_ptr<DebugStream> log();
 
 		protected:
 
@@ -100,7 +82,8 @@ namespace uniset
 			std::string iaddr = { "" };
 			int port = { 0 };
 			bool cmdonly { false };
-			unsigned int readcount = { 0 }; // количество циклов чтения
+			size_t readcount = { 0 }; // количество циклов чтения
+			std::string textfilter = { "" };
 
 			DebugStream rlog;
 			std::shared_ptr<DebugStream> outlog; // рабочий лог в который выводиться полученная информация..

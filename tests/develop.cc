@@ -22,6 +22,7 @@ struct TestClass
 {
 	TestClass()
 	{
+		memset(&data, 0, sizeof(data));
 		cerr << "TEST CLASS CREATE.." << endl;
 	}
 

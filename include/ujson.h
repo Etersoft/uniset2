@@ -37,7 +37,7 @@ namespace uniset
 				public:
 
 					item( Poco::JSON::Object::Ptr& ptr );
-					item( const std::string& description );
+					item( const std::string& cmd, const std::string& description );
 
 					void param(const std::string& name, const std::string& description );
 					Poco::JSON::Object::Ptr get();
@@ -57,6 +57,7 @@ namespace uniset
 					object( const std::string& name, Poco::JSON::Object::Ptr ptr );
 
 					void add( item& i );
+					void emplace( item&& i );
 
 					Poco::JSON::Object::Ptr get();
 

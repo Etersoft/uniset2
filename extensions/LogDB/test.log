@@ -1,0 +1,27 @@
+08/09/2017 14:54:29(  info):  Object1(make_child_object): create Object8...
+08/09/2017 14:54:29(  info):  Object1(make_child_object): create Object7...
+08/09/2017 14:54:29(  crit):  Object2(setdata): UI(setValue): resolve failed  (6518:60000)localhost
+08/09/2017 14:54:29(  crit):  Object2(setOut): UI(setValue): resolve failed  (6518:60000)localhost
+08/09/2017 14:54:29(  crit):  Object2(setdata): UI(setValue): resolve failed  (6519:60000)localhost
+08/09/2017 14:54:29(  crit):  Object2(setOut): UI(setValue): resolve failed  (6519:60000)localhost
+08/09/2017 14:54:29(  crit):  Object2(setdata): UI(setValue): resolve failed  (6521:60000)localhost
+08/09/2017 14:54:29(  crit):  Object2(setOut): UI(setValue): resolve failed  (6521:60000)localhost
+08/09/2017 14:54:29(  info):  Object1(make_child_object): create Object3...
+08/09/2017 14:54:29(  crit):  Object3(setdata): UI(setValue): resolve failed  (6618:60000)localhost
+08/09/2017 14:54:29(  crit):  Object3(setOut): UI(setValue): resolve failed  (6618:60000)localhost
+08/09/2017 14:54:29(  crit):  Object3(setdata): UI(setValue): resolve failed  (6619:60000)localhost
+08/09/2017 14:54:29(  crit):  Object3(setOut): UI(setValue): resolve failed  (6619:60000)localhost
+08/09/2017 14:54:29(  crit):  Object3(setdata): UI(setValue): resolve failed  (6621:60000)localhost
+08/09/2017 14:54:29(  crit):  Object3(setOut): UI(setValue): resolve failed  (6621:60000)localhost
+08/09/2017 14:54:29(  info):  Object1(make_child_object): create Control1...
+08/09/2017 14:54:29(  info):  Object1(make_child_object): create Object1...
+08/09/2017 14:54:29(  crit):  Object4(setdata): UI(setValue): resolve failed  (6912:60000)localhost
+08/09/2017 14:54:29(  crit):  Object4(setOut): UI(setValue): resolve failed  (6912:60000)localhost
+08/09/2017 14:54:29(  crit):  Object4(setdata): UI(setValue): resolve failed  (6913:60000)localhost
+08/09/2017 14:54:29(  crit):  Object4(setOut): UI(setValue): resolve failed  (6913:60000)localhost
+08/09/2017 14:54:29(  crit):  Object4(setdata): UI(setValue): resolve failed  (6915:60000)localhost
+08/09/2017 14:54:29(  crit):  Object4(setOut): UI(setValue): resolve failed  (6915:60000)localhost
+08/09/2017 14:54:29(  info):  Object1(make_child_object): create Object2...
+08/09/2017 14:54:29(  info):  Object1(make_child_object): create Object5...
+08/09/2017 14:54:29(  info):  Object1(make_child_object): create Object6...
+08/09/2017 14:54:29(  init):  (main): -------------- process start -------------------------

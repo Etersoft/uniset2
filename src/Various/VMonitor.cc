@@ -150,7 +150,13 @@ namespace uniset
 	// --------------------------------------------------------------------------
 	std::ostream& operator<<( std::ostream& os, VMonitor& m )
 	{
-		auto vlist = m.getList();
+		return os << m.str();
+	}
+	// --------------------------------------------------------------------------
+	std::string VMonitor::str() const
+	{
+		std::ostringstream s;
+		auto vlist = getList();
 		// сортируем по алфавиту
 		vlist.sort( []( const std::pair<std::string, std::string>& a, const std::pair<std::string, std::string>& b )
 		{
@@ -158,19 +164,12 @@ namespace uniset
 		});
 
 		for( const auto& e : vlist )
-			os << e.first << " = " << e.second;
+			s << e.first << " = " << e.second;
 
-		return os;
-	}
-	// --------------------------------------------------------------------------
-	std::string VMonitor::str()
-	{
-		std::ostringstream s;
-		s << (*this);
 		return s.str();
 	}
 	// --------------------------------------------------------------------------
-	std::list<std::pair<std::string, std::string> > VMonitor::getList()
+	std::list<std::pair<std::string, std::string> > VMonitor::getList() const
 	{
 		std::list<std::pair<std::string, std::string>> vlist;
 		VMON_MAKE_PAIR2(vlist, int);
@@ -184,7 +183,7 @@ namespace uniset
 		return vlist;
 	}
 	// --------------------------------------------------------------------------
-	std::string VMonitor::pretty_str( int namewidth, int colnum )
+	std::string VMonitor::pretty_str( int namewidth, int colnum ) const
 	{
 		auto vlist = getList();
 		std::ostringstream os;

@@ -30,10 +30,10 @@ LProcessor::LProcessor( const std::string& name ):
 {
 	auto conf = uniset_conf();
 	sleepTime = conf->getArgPInt("--sleepTime", 200);
-	int tout = conf->getArgInt("--sm-ready-timeout", "");
+	int tout = conf->getArgInt("--sm-ready-timeout", "120000");
 
 	if( tout == 0 )
-		smReadyTimeout = 60000;
+		smReadyTimeout = conf->getNCReadyTimeout();
 	else if( tout < 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 	else
@@ -57,6 +57,11 @@ void LProcessor::open( const string& lfile )
 
 	fSchema = lfile;
 	build(lfile);
+}
+// -------------------------------------------------------------------------
+bool LProcessor::isOpen() const
+{
+	return !fSchema.empty();
 }
 // -------------------------------------------------------------------------
 void LProcessor::execute( const std::string& lfile )
@@ -85,6 +90,21 @@ void LProcessor::execute( const std::string& lfile )
 
 		msleep(sleepTime);
 	}
+}
+// -------------------------------------------------------------------------
+void LProcessor::terminate()
+{
+	canceled = true;
+}
+// -------------------------------------------------------------------------
+std::shared_ptr<SchemaXML> LProcessor::getSchema()
+{
+	return sch;
+}
+// -------------------------------------------------------------------------
+timeout_t LProcessor::getSleepTime() const noexcept
+{
+	return sleepTime;
 }
 // -------------------------------------------------------------------------
 void LProcessor::step()
@@ -153,7 +173,7 @@ void LProcessor::build( const string& lfile )
 */
 void LProcessor::getInputs()
 {
-	for( auto&& it : extInputs )
+	for( auto && it : extInputs )
 	{
 		//        try
 		//        {

@@ -74,13 +74,13 @@ namespace uniset
 
 			// Перейти к следующему узлу
 			UniXML_iterator& operator+(int) noexcept;
-			UniXML_iterator& operator++(int) noexcept;
+			UniXML_iterator operator++(int) noexcept;
 			UniXML_iterator& operator+=(int) noexcept;
 			UniXML_iterator& operator++() noexcept;
 
 			// Перейти к предыдущему узлу
 			UniXML_iterator& operator-(int) noexcept;
-			UniXML_iterator& operator--(int) noexcept;
+			UniXML_iterator operator--(int) noexcept;
 			UniXML_iterator& operator--() noexcept;
 			UniXML_iterator& operator-=(int) noexcept;
 
@@ -184,9 +184,25 @@ namespace uniset
 			//depth means number of times we can go to the children, if 0 we can't go only to elements of the same level
 			xmlNode* extFindNode( xmlNode* node, int depth, int width, const std::string& searchnode, const std::string& name = "", bool top = true ) const;
 
+			// Функция поиска по текущему уровню (без рекурсии для дочерних узлов)
+			// root  указывается исходный, внутри функции осуществляется переход к списку дочерних узлов
+			// (другими словами делать goChildren() не надо)
+			xmlNode* findNodeLevel1( xmlNode* root, const std::string& nodename, const std::string& nm = "" );
+
+
 		protected:
 			std::string filename;
-			std::shared_ptr<xmlDoc> doc = { nullptr };
+
+			struct UniXMLDocDeleter
+			{
+				void operator()(xmlDoc* doc) const noexcept
+				{
+					if( doc )
+						xmlFreeDoc(doc);
+				}
+			};
+
+			std::unique_ptr<xmlDoc, UniXMLDocDeleter> doc;
 	};
 	// -------------------------------------------------------------------------
 } // end of uniset namespace

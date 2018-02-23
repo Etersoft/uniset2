@@ -19,6 +19,7 @@
 #include <Poco/Net/NetException.h>
 #include <iostream>
 #include <sstream>
+#include <regex>
 #include "PassiveTimer.h"
 #include "Exceptions.h"
 #include "LogReader.h"
@@ -51,6 +52,11 @@ LogReader::~LogReader()
 void LogReader::setLogLevel( Debug::type t )
 {
 	outlog->level(t);
+}
+// -------------------------------------------------------------------------
+std::shared_ptr<DebugStream> LogReader::log()
+{
+	return outlog;
 }
 // -------------------------------------------------------------------------
 DebugStream::StreamEvent_Signal LogReader::signal_stream_event()
@@ -96,7 +102,7 @@ void LogReader::connect( const std::string& _addr, int _port, timeout_t msec )
 		if( rlog.debugging(Debug::CRIT) )
 		{
 			ostringstream s;
-			s << "(LogReader): connection " << s.str() << " error: " << e.what();
+			s << "(LogReader): connection " << iaddr << ":" << port << " error: " << e.what();
 			rlog.crit() << s.str() << std::endl;
 		}
 	}
@@ -105,7 +111,7 @@ void LogReader::connect( const std::string& _addr, int _port, timeout_t msec )
 		if( rlog.debugging(Debug::CRIT) )
 		{
 			ostringstream s;
-			s << "(LogReader): connection " << s.str() << " error: " << e.what();
+			s << "(LogReader): connection " << iaddr << ":" << port << " error: " << e.what();
 			rlog.crit() << s.str() << std::endl;
 		}
 	}
@@ -114,7 +120,7 @@ void LogReader::connect( const std::string& _addr, int _port, timeout_t msec )
 		if( rlog.debugging(Debug::CRIT) )
 		{
 			ostringstream s;
-			s << "(LogReader): connection " << s.str() << " error: catch ...";
+			s << "(LogReader): connection " << iaddr << ":" << port << " error: catch ...";
 			rlog.crit() << s.str() << std::endl;
 		}
 	}
@@ -145,6 +151,36 @@ void LogReader::disconnect()
 bool LogReader::isConnection() const
 {
 	return (tcp && tcp->isConnected() );
+}
+// -------------------------------------------------------------------------
+void LogReader::setReadCount( size_t n )
+{
+	readcount = n;
+}
+// -------------------------------------------------------------------------
+void LogReader::setCommandOnlyMode(bool s)
+{
+	cmdonly = s;
+}
+// -------------------------------------------------------------------------
+void LogReader::setinTimeout(timeout_t msec)
+{
+	inTimeout = msec;
+}
+// -------------------------------------------------------------------------
+void LogReader::setoutTimeout(timeout_t msec)
+{
+	outTimeout = msec;
+}
+// -------------------------------------------------------------------------
+void LogReader::setReconnectDelay(timeout_t msec)
+{
+	reconDelay = msec;
+}
+// -------------------------------------------------------------------------
+void LogReader::setTextFilter(const string& f)
+{
+	textfilter  = f;
 }
 // -------------------------------------------------------------------------
 void LogReader::sendCommand(const std::string& _addr, int _port, std::vector<Command>& vcmd, bool cmd_only, bool verbose )
@@ -301,6 +337,8 @@ void LogReader::readlogs( const std::string& _addr, int _port, LogServerTypes::C
 
 	bool send_ok = cmd == LogServerTypes::cmdNOP ? true : false;
 
+	std::regex rule(textfilter);
+
 	while( rcount > 0 )
 	{
 		try
@@ -328,6 +366,10 @@ void LogReader::readlogs( const std::string& _addr, int _port, LogServerTypes::C
 				send_ok = true;
 			}
 
+			// Если мы работаем с текстовым фильтром
+			// то надо читать построчно..
+			ostringstream line;
+
 			while( tcp->poll(UniSetTimer::millisecToPoco(inTimeout), Poco::Net::Socket::SELECT_READ) )
 			{
 				ssize_t n = tcp->available();
@@ -337,7 +379,34 @@ void LogReader::readlogs( const std::string& _addr, int _port, LogServerTypes::C
 					tcp->receiveBytes(buf, n);
 					buf[n] = '\0';
 
-					outlog->any(false) << buf;
+					if( textfilter.empty() )
+					{
+						outlog->any(false) << buf;
+					}
+					else
+					{
+						// Всё это пока не оптимально,
+						// но мы ведь и не спешим..
+						for( ssize_t i = 0; i < n; i++ )
+						{
+							// пока не встретили конец строки
+							// наполняем line..
+							if( buf[i] != '\n' )
+							{
+								line << buf[i];
+								continue;
+							}
+
+							line << endl;
+
+							std::string s(line.str());
+
+							if( std::regex_search(s, rule) )
+								outlog->any(false) << s;
+
+							line.str("");
+						}
+					}
 				}
 				else if( n == 0 && readcount <= 0 )
 					break;

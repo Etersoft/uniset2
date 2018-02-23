@@ -47,7 +47,11 @@
 	<item type="int" from="5" to="6" toInput="1" />
 	<item type="out" from="6" to="Out1_S"/>
 	<item type="ext" from="AI_S" to="7" toInput="1" />
+<<<<<<< HEAD
 	<item type="out" from="7" to="Out2_S" />	
+=======
+	<item type="out" from="7" to="Out2_S" />
+>>>>>>> 2.7-alt4
 </connections>
 
 </Schema>

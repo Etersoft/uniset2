@@ -117,7 +117,7 @@ void PassiveLProcessor::askSensors( UniversalIO::UIOCommand cmd )
 {
 	try
 	{
-		for( auto& it : extInputs )
+		for( auto && it : extInputs )
 			shm->askSensor(it.sid, cmd);
 	}
 	catch( const uniset::Exception& ex )
@@ -129,7 +129,7 @@ void PassiveLProcessor::askSensors( UniversalIO::UIOCommand cmd )
 // -------------------------------------------------------------------------
 void PassiveLProcessor::sensorInfo( const uniset::SensorMessage* sm )
 {
-	for( auto& it : extInputs )
+	for( auto && it : extInputs )
 	{
 		if( it.sid == sm->id )
 			it.value = sm->value;
@@ -148,10 +148,11 @@ void PassiveLProcessor::sysCommand( const uniset::SystemMessage* sm )
 	{
 		case SystemMessage::StartUp:
 		{
-			if( !shm->waitSMready(smReadyTimeout) )
+			if( !shm->waitSMreadyWithCancellation(smReadyTimeout, cannceled) )
 			{
 				dcrit << myname << "(ERR): SM not ready. Terminated... " << endl;
-				raise(SIGTERM);
+				//				std::terminate();
+				uterminate();
 				return;
 			}
 
@@ -222,6 +223,25 @@ bool PassiveLProcessor::activateObject()
 	return true;
 }
 // ------------------------------------------------------------------------------------------
+bool PassiveLProcessor::deactivateObject()
+{
+	cannceled = true;
+
+	for( const auto& it : extOuts )
+	{
+		try
+		{
+			shm->setValue(it.sid, 0);
+		}
+		catch( const std::exception& ex )
+		{
+			dcrit << myname << "(sigterm): catch:" << ex.what() << endl;
+		}
+	}
+
+	return UniSetObject::deactivateObject();
+}
+// ------------------------------------------------------------------------------------------
 void PassiveLProcessor::initIterators()
 {
 	shm->initIterator(itHeartBeat);
@@ -230,7 +250,7 @@ void PassiveLProcessor::initIterators()
 void PassiveLProcessor::setOuts()
 {
 	// выcтавляем выходы
-	for( auto& it : extOuts )
+	for( auto && it : extOuts )
 	{
 		try
 		{
@@ -243,25 +263,6 @@ void PassiveLProcessor::setOuts()
 		catch( const std::exception& ex )
 		{
 			dcrit << myname << "(setOuts): catch: " << ex.what() << endl;
-		}
-	}
-}
-// -------------------------------------------------------------------------
-void PassiveLProcessor::sigterm( int signo )
-{
-	for( auto& it : extOuts )
-	{
-		try
-		{
-			shm->setValue(it.sid, 0);
-		}
-		catch( const uniset::Exception& ex )
-		{
-			dcrit << myname << "(sigterm): " << ex << endl;
-		}
-		catch( const std::exception& ex )
-		{
-			dcrit << myname << "(sigterm): catch:" << ex.what() << endl;
 		}
 	}
 }

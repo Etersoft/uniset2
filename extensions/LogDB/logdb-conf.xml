@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LogDB name="LogDB">
+	<logserver name="ses" ip="localhost" port="21107" cmd="-d level8 ALL" description="(ses): управление электростанцией"/>
+	<logserver name="geu" ip="localhost" port="21202" cmd="-a any -d any .*ulog.* -d level8 ALL" description="(geu): управление ГЭУ1 (правый борт)"/>
+	<logserver name="logserver1" ip="localhost" port="3333" cmd="-s level1" description="Лог сервер процесса управления N1"/>
+	<logserver name="logserver2" ip="localhost" port="3333" cmd="" description="Лог сервер процесса управления N2"/>
+</LogDB>

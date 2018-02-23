@@ -161,15 +161,15 @@ namespace uniset
 			typedef std::unordered_map<int, std::string> DBTableMap;
 
 			virtual void initDBServer() override;
-			virtual void initDB( std::shared_ptr<SQLiteInterface>& db ) {};
-			virtual void initDBTableMap(DBTableMap& tblMap) {};
+			virtual void initDB( const std::unique_ptr<SQLiteInterface>& db ) {};
+			virtual void initDBTableMap( DBTableMap& tblMap ) {};
 
 			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 			virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) override;
 
-			bool writeToBase( const string& query );
+			bool writeToBase( const std::string& query );
 			void createTables( SQLiteInterface* db );
 
 			inline std::string tblName(int key)
@@ -184,19 +184,18 @@ namespace uniset
 				lastNumberOfTimer
 			};
 
+			std::unique_ptr<SQLiteInterface> db;
+			int PingTime = { 300000 };
+			int ReconnectTime = { 180000 };
 
-			std::shared_ptr<SQLiteInterface> db;
-			int PingTime;
-			int ReconnectTime;
-			bool connect_ok;     /*! признак наличия соеднинения с сервером БД */
-
-			bool activate;
+			bool connect_ok = { false };     /*! признак наличия соеднинения с сервером БД */
+			bool activate = { false };
 
 			typedef std::queue<std::string> QueryBuffer;
 
 			QueryBuffer qbuf;
-			unsigned int qbufSize; // размер буфера сообщений.
-			bool lastRemove;
+			size_t qbufSize = { 200 }; // размер буфера сообщений.
+			bool lastRemove = { false };
 
 			void flushBuffer();
 			uniset::uniset_rwmutex mqbuf;

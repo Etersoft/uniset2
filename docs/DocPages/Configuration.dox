@@ -1,19 +1,16 @@
-/* OBSOLETE DOC!!!
-	\page ConfigurationPage Конфигурирование системы
+/*! \page ConfigurationPage Конфигурирование системы
 
 	- \ref ConfigurationPage_secCommon
-	- \ref ConfigurationPage_secConfFile
+	- \ref ConfigurationPage_secOmniORB
 
 	\section ConfigurationPage_secCommon Общее описание
 
 	Для конфигурирования сиситемы используется файл (обычно "configure.xml").
-	Все параметры програмно можно получить при помощи указателя на конфигуратор UniSetTypes::conf (см. UniSetTypes::Configuration).
-	Он позволяет работать с картой объектов при помощи вызова UniSetTypes::conf->oind (см. UniSetTypes::Configuration::oind),
-	картой сообщений при помощи вызова UniSetTypes::conf->mi (см. UniSetTypes::Configuration::mi),
-	получать идентификаторы сервисов...
+	Конфигурация является глобальным объектом. Для получения доступа к ней используется фунуция auto conf = uniset_conf();
+	До начала работы, обычно в функции main(), конфигурация должна быть инициализирована при помощи функции uniset_init().
+	При этом третий параметр, указывающий название конфигурационного файла, является не обязательным.
+	По умолчанию обрабатывается аргумент командной строки --confile filename.
 	
-	Указатель UniSetTypes::conf должен быть обязательно инициализирован. Обычно это происходит в начале
-	функции main. Например так:
 \code
 ...
 #include <Configuration.h>
@@ -30,69 +27,34 @@ int main(int argc, char **argv)
 	}
 	catch(Exception& ex )
     {
-		unideb[Debug::CRIT] << "(main): Поймали исключение " << ex <<  endl;
+		cerr << "(main): Поймали исключение " << ex <<  endl;
     }
     catch(...)
     {
-    	unideb[Debug::CRIT] << "Неизвестное исключение!!!!"<< endl;
+    	cerr << "Неизвестное исключение!!!!"<< endl;
     }
 	
 	...
 }	
 \endcode
+
+	\section ConfigurationPage_secOmniORB Конфигурирование OmniORB
+	Для возможности задать напрямую параметры для omniORB заложена специальная секция <omniORB>.
 	
-	\section ConfigurationPage_secConfFile Пример конфигурационного файла
+	В данную секцию можно записывать любые параметры поддерживаемые библиотекой omniORB.
+	Формат и назавание параметров см. документацию по omniORB.
 	
+	Пример:
 \code
-<?xml version = '1.0' encoding = 'koi8-r' ?>
-<UniSetTestConfiguration>
-
-	<!-- Общие параметры по UniSet -->
-	<UniSet>
-		<LocalNode name="LocalhostNode"/>
-		<RootSection name="UniSet"/>
-		<ServicesSection name="Services"/>
-		<ImagesPath name="images"/>
-		<CountOfNet name="1"/>
-		<RepeatCount name="3"/>
-		<RepeatTimeoutMS name="50"/>
-		<UniSetDebug name="unideb" levels="crit,warn" file=""/>
-
-		<!-- параметры для SystemGuard -->
-		<WatchDogTime 	name="0"/> <!-- [мин] -->
-		<PingNodeTime 	name="15"/> <!-- [сек] -->
-		<AutoStartUpTime name="1"/> <!-- [сек] -->
-		<DumpStateTime 	name="0"/><!-- [сек] -->
-		<SleepTickMS	name="2000"/><!-- [мсек] -->
-
-		<!-- Если не указано, то считается текущий каталог -->
-		<ConfDir name=""/>
-		<DataDir name=""/>
-		<BinDir name=""/>
-		<LogDir name=""/>
-		<DocDir name=""/>
-		<LockDir name=""/>
-
-		
-	</UniSet>
-
-	<Services section="Services">
-		<LocalDBServer name="DBServer1" dbnode="" dbname="Theatre" dbuser="dbadmin" dbpass="dbadmin">
-			<Tables></Tables>
-		</LocalDBServer>
-	</Services>
-
-	<!-- список узлов в сиситеме -->
-	<ListOfNodes>
-	<!-- 
-		Параметры:
-			dbnode - id db-сервера на данном узле DB(если указать "", значит нет)
-	-->
-
-		<Node name="LocalhostNode" dbserver="DBServer1"/>
-	</ListOfNodes>
-
-</UniSetTestConfiguration>
+	<omniORB>
+		<option name="endPoint" arg="giop:tcp:host1:"/>
+		<option name="endPoint" arg="giop:tcp:host2:" error_if_not_available="1"/>
+	</omniORB>
 \endcode
+
+	Для параметра 'endPoint' встроена дополнительная проверка доступности указанной адреса.
+	\warning По умолчанию \b недоступность \b игнорируется, если не указан параметр \a error_if_not_available="1"
+
+	Помимо этого можно задать параметр \a ignore_checking="1", чтобы не происходило проверки доступности endPoint.
 
 */

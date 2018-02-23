@@ -78,6 +78,7 @@ namespace uniset
 		  - \b force [1,0] - "1" - обновлять значение датчика связи в SM принудительно на каждом цикле проверки ("0" - только по изменению).
 	      - \b exchangeModeID - идентификатор датчика режима работы (см. MBExchange::ExchangeMode).
 	      - \b ask_every_reg - 1 - опрашивать ВСЕ регистры подряд, не обращая внимания на timeout. По умолчанию - "0" Т.е. опрос устройства (на текущем шаге цикла опроса), прерывается на первом же регистре, при опросе которого возникнет timeout.
+		  - \b safemodeXXX - см. \ref sec_MBTCP_SafeMode
 
 	      Секция <GateList> позволяет задать несколько каналов связи со Slave-устройством. Это удобно для случая, когда Slave имеет
 	    более одного канала связи с ним (основной и резервный например).
@@ -295,7 +296,6 @@ namespace uniset
 					uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 					const std::string& prefix = "mbtcp" );
 
-			/*! глобальная функция для вывода help-а */
 			static void help_print( int argc, const char* const* argv );
 
 			virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
@@ -304,7 +304,6 @@ namespace uniset
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual void initIterators() override;
 			virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;
-			virtual void sigterm( int signo ) override;
 			virtual bool deactivateObject() override;
 			void initCheckConnectionParameters();
 
@@ -379,8 +378,8 @@ namespace uniset
 
 			// т.к. TCP может "зависнуть" на подключении к недоступному узлу
 			// делаем опрос в отдельном потоке
-			std::shared_ptr< ThreadCreator<MBTCPMultiMaster> > pollThread; /*!< поток опроса */
-			std::shared_ptr< ThreadCreator<MBTCPMultiMaster> > checkThread; /*!< поток проверки связи по другим каналам */
+			std::unique_ptr< ThreadCreator<MBTCPMultiMaster> > pollThread; /*!< поток опроса */
+			std::unique_ptr< ThreadCreator<MBTCPMultiMaster> > checkThread; /*!< поток проверки связи по другим каналам */
 	};
 	// --------------------------------------------------------------------------
 } // end of namespace uniset

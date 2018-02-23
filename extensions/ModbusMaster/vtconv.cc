@@ -74,7 +74,7 @@ int main( int argc, const char** argv )
 
 	//    return 0;
 	*/
-	unsigned short v[4];
+	uint16_t v[4];
 	memset(v, 0, sizeof(v));
 
 	const char* type = "";

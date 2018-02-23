@@ -44,19 +44,19 @@ static void gpio_low_out_en( char gpio_num )
 // --------------------------------------------------------------------------------
 static void gpio_low_set_value( char gpio_num, char value )
 {
-	unsigned long val;
+	unsigned int val;
 
 	val = inl(GPIO_BA);
 
 	if (value)
 	{
-		val |= (((unsigned long)1) << gpio_num);
-		val &= ~(((unsigned long)1) << (gpio_num + 16));
+		val |= (((unsigned int)1) << gpio_num);
+		val &= ~(((unsigned int)1) << (gpio_num + 16));
 	}
 	else
 	{
-		val &= ~(((unsigned long)1) << gpio_num);
-		val |= (((unsigned long)1) << (gpio_num + 16));
+		val &= ~(((unsigned int)1) << gpio_num);
+		val |= (((unsigned int)1) << (gpio_num + 16));
 	}
 
 	outl(val, GPIO_BA);
@@ -77,7 +77,7 @@ static void setRTS(int fd, int state)
 	ioctl(fd, TIOCMSET, &status);
 }
 // --------------------------------------------------------------------------------
-ComPort485F::ComPort485F( const string& dev, int gpio_num, bool tmit_ctrl ):
+ComPort485F::ComPort485F( const string& dev, char gpio_num, bool tmit_ctrl ):
 	ComPort(dev, false),
 	gpio_num(gpio_num),
 	tmit_ctrl_on(tmit_ctrl)
@@ -107,7 +107,7 @@ unsigned char ComPort485F::m_receiveByte( bool wait )
 
 	if( rq.empty() )
 	{
-		int rc = 0;
+		ssize_t rc = 0;
 
 		if( wait )
 		{
@@ -163,7 +163,7 @@ unsigned char ComPort485F::m_receiveByte( bool wait )
 	return x;
 }
 // --------------------------------------------------------------------------------
-size_t ComPort485F::sendBlock(unsigned char* msg, size_t len )
+ssize_t ComPort485F::sendBlock(unsigned char* msg, size_t len )
 {
 	if( tmit_ctrl_on )
 	{
@@ -171,7 +171,7 @@ size_t ComPort485F::sendBlock(unsigned char* msg, size_t len )
 		gpio_low_set_value(gpio_num, 1);
 	}
 
-	size_t r = 0;
+	ssize_t r = 0;
 
 	try
 	{
@@ -191,7 +191,7 @@ size_t ComPort485F::sendBlock(unsigned char* msg, size_t len )
 			m_read(2000);
 		}
 	}
-	catch( const uniset::Exception& ex )
+	catch( const uniset::Exception& )
 	{
 		if( tmit_ctrl_on )
 		{
@@ -234,7 +234,7 @@ void ComPort485F::sendByte( unsigned char x )
 		wq.push(x);
 		m_read(2000);
 	}
-	catch( const uniset::Exception& ex )
+	catch( const uniset::Exception& )
 	{
 		if( tmit_ctrl_on )
 		{
@@ -259,9 +259,9 @@ void ComPort485F::save2queue( unsigned char* msg, size_t len, size_t bnum )
 		wq.push(msg[i]);
 }
 // --------------------------------------------------------------------------------
-bool ComPort485F::remove_echo( unsigned char tb[], size_t len )
+bool ComPort485F::remove_echo( unsigned char tb[], ssize_t len )
 {
-	size_t i = 0;
+	ssize_t i = 0;
 
 	while( !wq.empty() )
 	{

@@ -98,12 +98,11 @@ IOController::InitSignal IOController::signal_init()
 // ------------------------------------------------------------------------------------------
 void IOController::activateInit()
 {
-	// Разрегистрируем аналоговые датчики
-	for( auto li = ioList.begin(); li != ioList.end(); ++li )
+	for( auto && io : ioList )
 	{
 		try
 		{
-			auto s = li->second;
+			auto s = io.second;
 
 			// Проверка зависимостей
 			if( s->d_si.id != DefaultObjectId )
@@ -119,7 +118,8 @@ void IOController::activateInit()
 		catch( const uniset::Exception& ex )
 		{
 			ucrit << myname << "(activateInit): " << ex << endl;
-			std::terminate();
+			//std::terminate();
+			uterminate();
 		}
 	}
 }
@@ -209,7 +209,7 @@ void IOController::localSetUndefinedState( IOStateList::iterator& li,
 	}
 	catch(...) {}
 
-	// потом глобольное, но конкретно для 'undefchange'
+	// потом глобальное, но конкретно для 'undefchange'
 	try
 	{
 		if( changed )
@@ -300,8 +300,8 @@ long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 
 		if( changed || blockChanged )
 		{
-			ulog4 << myname << ": save sensor value (" << usi->si.id << ")"
-				  << " name: " << uniset_conf()->oind->getNameById(usi->si.id)
+			ulog4 << myname << "(localSetValue): (" << usi->si.id << ")"
+				  << uniset_conf()->oind->getNameById(usi->si.id)
 				  << " newvalue=" << value
 				  << " value=" << usi->value
 				  << " blocked=" << usi->blocked
@@ -364,7 +364,7 @@ IOType IOController::getIOType( uniset::ObjectId sid )
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // ---------------------------------------------------------------------------
-void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi, bool force )
+void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi )
 {
 	// проверка задан ли контроллеру идентификатор
 	if( getId() == DefaultObjectId )
@@ -373,35 +373,6 @@ void IOController::ioRegistration( std::shared_ptr<USensorInfo>& usi, bool force
 		err << "(IOCOntroller::ioRegistration): КОНТРОЛЛЕРУ НЕ ЗАДАН ObjectId. Регистрация невозможна.";
 		uwarn << err.str() << endl;
 		throw ResolveNameError(err.str());
-	}
-
-	{
-		// lock
-		uniset_rwmutex_wrlock lock(ioMutex);
-
-		if( !force )
-		{
-			auto li = ioList.find(usi->si.id);
-
-			if( li != ioList.end() )
-			{
-				ostringstream err;
-				err << "Попытка повторной регистрации датчика(" << usi->si.id << "). имя: "
-					<< uniset_conf()->oind->getNameById(usi->si.id);
-				throw ObjectNameAlready(err.str());
-			}
-		}
-
-		IOStateList::mapped_type ai = usi;
-		// запоминаем начальное время
-		struct timespec tm = uniset::now_to_timespec();
-		ai->tv_sec   = tm.tv_sec;
-		ai->tv_nsec  = tm.tv_nsec;
-		ai->value    = ai->default_val;
-		ai->supplier = getId();
-
-		// более оптимальный способ(при условии вставки первый раз)
-		ioList.emplace( IOStateList::value_type(usi->si.id, std::move(ai) ));
 	}
 
 	try
@@ -474,11 +445,13 @@ void IOController::dumpToDB()
 	{
 		// lock
 		//        uniset_mutex_lock lock(ioMutex, 100);
-		for( auto li = ioList.begin(); li != ioList.end(); ++li )
+		for( auto && usi : ioList )
 		{
-			if ( !li->second->dbignore )
+			auto& s = usi.second;
+
+			if ( !s->dbignore )
 			{
-				SensorMessage sm( std::move(li->second->makeSensorMessage()) );
+				SensorMessage sm( std::move(s->makeSensorMessage()) );
 				logging(sm);
 			}
 		}
@@ -620,7 +593,25 @@ IOController::USensorInfo::operator=(IOController_i::SensorIOInfo* r)
 	(*this) = (*r);
 	return *this;
 }
+// ----------------------------------------------------------------------------------------
+void* IOController::USensorInfo::getUserData( size_t index )
+{
+	if( index >= MaxUserData )
+		return nullptr;
 
+	uniset::uniset_rwmutex_rlock ulock(userdata_lock);
+	return userdata[index];
+}
+
+void IOController::USensorInfo::setUserData( size_t index, void* data )
+{
+	if( index >= MaxUserData )
+		return;
+
+	uniset::uniset_rwmutex_wrlock ulock(userdata_lock);
+	userdata[index] = data;
+}
+// ----------------------------------------------------------------------------------------
 const IOController::USensorInfo&
 IOController::USensorInfo::operator=(const IOController_i::SensorIOInfo& r)
 {
@@ -628,28 +619,36 @@ IOController::USensorInfo::operator=(const IOController_i::SensorIOInfo& r)
 	//    any=0;
 	return *this;
 }
-
+// ----------------------------------------------------------------------------------------
 void IOController::USensorInfo::init( const IOController_i::SensorIOInfo& s )
 {
 	IOController::USensorInfo r(s);
 	(*this) = std::move(r);
 }
 // ----------------------------------------------------------------------------------------
-size_t IOController::ioCount()
-{
-	return ioList.size();
-}
-// ----------------------------------------------------------------------------------------
 IOController::IOStateList::iterator IOController::myioBegin()
 {
 	return ioList.begin();
 }
-
+// ----------------------------------------------------------------------------------------
 IOController::IOStateList::iterator IOController::myioEnd()
 {
 	return ioList.end();
 }
+// ----------------------------------------------------------------------------------------
+void IOController::initIOList( const IOController::IOStateList&& l )
+{
+	ioList = std::move(l);
+}
+// ----------------------------------------------------------------------------------------
+void IOController::for_iolist( IOController::UFunction f )
+{
+	uniset_rwmutex_rlock lck(ioMutex);
 
+	for( auto && s : ioList )
+		f(s.second);
+}
+// ----------------------------------------------------------------------------------------
 IOController::IOStateList::iterator IOController::myiofind( const uniset::ObjectId id )
 {
 	return ioList.find(id);
@@ -850,7 +849,7 @@ Poco::JSON::Object::Ptr IOController::httpHelp( const Poco::URI::QueryParameters
 
 	{
 		// 'get'
-		uniset::json::help::item cmd("get value for sensor");
+		uniset::json::help::item cmd("get", "get value for sensor");
 		cmd.param("id1,name2,id3", "get value for id1,name2,id3 sensors");
 		cmd.param("shortInfo", "get short information for sensors");
 		myhelp.add(cmd);
@@ -858,7 +857,7 @@ Poco::JSON::Object::Ptr IOController::httpHelp( const Poco::URI::QueryParameters
 
 	{
 		// 'sensors'
-		uniset::json::help::item cmd("get all sensors");
+		uniset::json::help::item cmd("sensors", "get all sensors");
 		cmd.param("nameonly", "get only name sensors");
 		cmd.param("offset=N", "get from N record");
 		cmd.param("limit=M", "limit of records");
@@ -1026,7 +1025,7 @@ Poco::JSON::Object::Ptr IOController::request_sensors( const string& req, const 
 	}
 
 	jdata->set("count", count);
-	jdata->set("size",ioCount());
+	jdata->set("size", ioCount());
 	return jdata;
 }
 // -----------------------------------------------------------------------------

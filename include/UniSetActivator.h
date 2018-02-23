@@ -50,11 +50,11 @@ namespace uniset
 	\endcode
 	 * Активатор в свою очередь сам является менеджером(и объектом) и обладает всеми его свойствами
 	 *
-	 * --uniset-no-use-gdb-for-stacktrace - НЕ ИСПОЛЬЗОВАТЬ gdb для stacktrace
-	 * --uniset-abort-script  - скрипт запускаемый при вылете, в качестве аргумента передаётся имя программы и pid
-	 *
 	 * \section act_HttpAPI REST API
-	 * UniSetActivator реализует обработку команд /conf/..
+	 * UniSetActivator выступает в роли http-сервера и релизует первчиную обработку запросов
+	 * и перенаправление их указанным объектам. Помимо этого UniSetActivator реализует обработку команд /conf/..
+	 * Для запуска http-сервера необходимо в аргументах командной строки указать  --activator-run-httpserver
+	 * Помимо этого можно задать параметры --activator-httpserver-host и --activator-httpserver-port.
 	 *
 	*/
 	class UniSetActivator:
@@ -66,33 +66,24 @@ namespace uniset
 		public:
 
 			static UniSetActivatorPtr Instance();
-			void Destroy();
 
-			std::shared_ptr<UniSetActivator> get_aptr();
-			// ------------------------------------
 			virtual ~UniSetActivator();
 
-			virtual void run(bool thread);
-			virtual void stop();
-			virtual void uaDestroy(int signo = 0);
+			// запуск системы
+			// async = true - асинхронный запуск (создаётся отдельный поток).
+			void run( bool async );
+
+			// штатное завершение работы
+			void shutdown();
+
+			// прерывание работы
+			void terminate();
 
 			virtual uniset::ObjectType getType() override
 			{
 				return uniset::ObjectType("UniSetActivator");
 			}
 
-			typedef sigc::signal<void, int> TerminateEvent_Signal;
-			TerminateEvent_Signal signal_terminate_event();
-
-			inline bool noUseGdbForStackTrace() const
-			{
-				return _noUseGdbForStackTrace;
-			}
-
-			inline const std::string getAbortScript()
-			{
-				return abortScript;
-			}
 
 #ifndef DISABLE_REST_API
 			// Поддрежка REST API (IHttpRequestRegistry)
@@ -104,11 +95,7 @@ namespace uniset
 
 		protected:
 
-			virtual void work();
-
-			CORBA::ORB_ptr getORB();
-
-			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
+			void work();
 
 			// уносим в protected, т.к. Activator должен быть только один..
 			UniSetActivator();
@@ -116,28 +103,13 @@ namespace uniset
 			static std::shared_ptr<UniSetActivator> inst;
 
 		private:
-			friend void uniset::terminate_thread();
-			friend void uniset::finished_thread();
-			friend std::shared_ptr<uniset::Configuration> uniset::uniset_init( int argc, const char* const* argv, const std::string& xmlfile );
-
-			static void terminated(int signo);
-			static void normalexit();
-			static void normalterminate();
-			static void set_signals(bool ask);
-			void term( int signo );
 			void init();
+			static void on_finish_timeout();
+			static void set_signals( bool set );
 
 			std::shared_ptr< OmniThreadCreator<UniSetActivator> > orbthr;
 
 			CORBA::ORB_var orb;
-			TerminateEvent_Signal s_term;
-
-			std::atomic_bool omDestroy;
-			pid_t thid = { 0 }; // id orb потока
-
-			bool _noUseGdbForStackTrace = { false };
-
-			std::string abortScript = { "" }; // скрипт вызываемый при прерывании программы (SIGSEGV,SIGABRT)
 
 #ifndef DISABLE_REST_API
 			std::shared_ptr<uniset::UHttp::UHttpServer> httpserv;

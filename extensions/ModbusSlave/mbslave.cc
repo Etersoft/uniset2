@@ -80,21 +80,15 @@ int main(int argc, const char** argv)
 		//        on_sigchild(SIGTERM);
 		return 0;
 	}
-	catch( const SystemError& err )
-	{
-		dcrit << "(mbslave): " << err << endl;
-	}
-	catch( const uniset::Exception& ex )
-	{
-		dcrit << "(mbslave): " << ex << endl;
-	}
 	catch( const std::exception& e )
 	{
-		dcrit << "(mbslave): " << e.what() << endl;
+		cerr << "(mbslave): " << e.what() << endl;
 	}
 	catch(...)
 	{
-		dcrit << "(mbslave): catch(...)" << endl;
+		cerr << "(mbslave): catch(...)" << endl;
+		std::exception_ptr p = std::current_exception();
+		cerr << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
 	}
 
 	//  on_sigchild(SIGTERM);

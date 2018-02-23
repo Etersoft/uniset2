@@ -36,8 +36,6 @@ namespace uniset
 		protected:
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual void sensorInfo( const uniset::SensorMessage* si ) override;
-			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
-			virtual void sigterm( int signo ) override;
 			SMonitor();
 
 		private:

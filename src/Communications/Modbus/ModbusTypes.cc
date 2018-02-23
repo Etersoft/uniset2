@@ -119,7 +119,7 @@ namespace uniset
 	// Lav: отключил, раз не используем
 #if 0
 	// -------------------------------------------------------------------------
-	static int get_crc_ccitt( uint16_t crc, uint8_t* buf, size_t size )
+	static int32_t get_crc_ccitt( uint16_t crc, uint8_t* buf, size_t size )
 	{
 		while( size-- )
 		{
@@ -127,7 +127,7 @@ namespace uniset
 			crc = (crc << 8) ^ crc_ccitt_tab[ (crc >> 8) ^ * (buf++) ];
 #else
 			register int i;
-			crc ^= (unsigned short)(*(buf++)) << 8;
+			crc ^= (uint16_t)(*(buf++)) << 8;
 
 			for (i = 0; i < 8; i++)
 			{
@@ -146,7 +146,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	/* CRC-16 is based on the polynomial x^16 + x^15 + x^2 + 1.  Bits are */
 	/* sent LSB to MSB. */
-	static int get_crc_16( uint16_t crc, uint8_t* buf, size_t size )
+	static int32_t get_crc_16( uint16_t crc, uint8_t* buf, size_t size )
 	{
 
 		while( size-- )
@@ -180,7 +180,7 @@ namespace uniset
 	*/
 	ModbusCRC ModbusRTU::checkCRC( ModbusByte* buf, size_t len )
 	{
-		unsigned short crc = 0xffff;
+		uint16_t crc = 0xffff;
 		crc = get_crc_16(crc, (uint8_t*)(buf), len);
 
 		//    crc = SWAPSHORT(crc);
@@ -212,17 +212,16 @@ namespace uniset
 
 	std::ostream& ModbusRTU::mbPrintMessage( std::ostream& os, ModbusByte* m, size_t len )
 	{
-		DebugStream::IosFlagSaver ifs(os);
+		uniset::ios_fmt_restorer ifs(os);
 
 		// << setiosflags(ios::showbase) // для вывода в формате 0xNN
-		os << hex << showbase << setfill('0'); // << showbase;
+		ostringstream s;
+		s << hex << showbase << setfill('0'); // << showbase;
 
 		for( size_t i = 0; i < len; i++ )
-			os << setw(2) << (short)(m[i]) << " ";
+			s << setw(2) << (int16_t)(m[i]) << " ";
 
-		//        s << "<" << setw(2) << (int)(m[i]) << ">";
-
-		return os;
+		return os << s.str();
 	}
 	// -------------------------------------------------------------------------
 	std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusHeader& m )
@@ -244,35 +243,35 @@ namespace uniset
 		memset(data, 0, sizeof(data));
 	}
 	// -------------------------------------------------------------------------
-	unsigned char* ModbusMessage::buf()
+	u_int8_t* ModbusMessage::buf()
 	{
-		if( aduhead.len == 0 )
-			return (unsigned char*)&pduhead;
+		if( mbaphead.len == 0 )
+			return (uint8_t*)&pduhead;
 
-		return (unsigned char*)&aduhead;
+		return (uint8_t*)&mbaphead;
 	}
 	// -------------------------------------------------------------------------
 	ModbusData ModbusMessage::len() const
 	{
-		if( aduhead.len == 0 )
+		if( mbaphead.len == 0 )
 			return pduLen();
 
-		return (sizeof(aduhead) + aduhead.len);
+		return (sizeof(mbaphead) + mbaphead.len);
 	}
 	// -------------------------------------------------------------------------
 	void ModbusMessage::swapHead()
 	{
-		aduhead.swapdata();
+		mbaphead.swapdata();
 	}
 	// -------------------------------------------------------------------------
-	void ModbusMessage::makeHead( ModbusData tID, bool noCRC, ModbusData pID )
+	void ModbusMessage::makeMBAPHeader( ModbusData tID, bool noCRC, ModbusData pID )
 	{
-		aduhead.tID = tID;
-		aduhead.pID = pID;
-		aduhead.len = pduLen();
+		mbaphead.tID = tID;
+		mbaphead.pID = pID;
+		mbaphead.len = pduLen();
 
 		if( noCRC )
-			aduhead.len -= szCRC;
+			mbaphead.len -= szCRC;
 	}
 	// -------------------------------------------------------------------------
 	ModbusData ModbusMessage::pduLen() const
@@ -287,7 +286,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	size_t ModbusMessage::maxSizeOfMessage()
 	{
-		return (MAXLENPACKET + szModbusHeader + sizeof(ModbusRTU::ADUHeader));
+		return (MAXLENPACKET + szModbusHeader + sizeof(ModbusRTU::MBAPHeader));
 	}
 	// -------------------------------------------------------------------------
 	void ModbusMessage::clear()
@@ -297,7 +296,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusMessage& m )
 	{
-		os << m.aduhead << "| ";
+		os << m.mbaphead << "| ";
 
 		if( m.aduLen() == 0 )
 			mbPrintMessage(os, (ModbusByte*)(&m.pduhead), sizeof(m.pduhead) + m.dlen);
@@ -474,7 +473,7 @@ namespace uniset
 	{
 		ModbusByte ubyte = 0;
 
-		for( unsigned int i = 0; i < b.size(); i++ )
+		for( size_t i = 0; i < b.size(); i++ )
 		{
 			if( b[i] )
 				ubyte |= 1 << i;
@@ -485,7 +484,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	const DataBits& DataBits::operator=( const ModbusByte& r )
 	{
-		for( unsigned int i = 0; i < b.size(); i++ )
+		for( size_t i = 0; i < b.size(); i++ )
 			b[i] = r & (1 << i);
 
 		return (*this);
@@ -495,7 +494,13 @@ namespace uniset
 	{
 		os << "[";
 
-		for( int i = d.b.size() - 1; i >= 0; i-- )
+		int max = d.b.size();
+
+		if( max > 0 )
+			max--;
+
+		// вывод в обратном порядке
+		for( int i = max; i >= 0; i-- )
 			os << d.b[i];
 
 		os << "]";
@@ -533,7 +538,7 @@ namespace uniset
 	{
 		ModbusData udata = 0;
 
-		for( unsigned int i = 0; i < b.size(); i++ )
+		for( size_t i = 0; i < b.size(); i++ )
 		{
 			if( b[i] )
 				udata |= 1 << i;
@@ -546,7 +551,7 @@ namespace uniset
 	{
 		const size_t sz = b.size();
 
-		for( unsigned int i = 0; i < sz; i++ )
+		for( size_t i = 0; i < sz; i++ )
 			b[i] = r & (1 << i);
 
 		return (*this);
@@ -556,7 +561,13 @@ namespace uniset
 	{
 		os << "[";
 
-		for( int i = d.b.size() - 1; i >= 0; i-- )
+		int sz = d.b.size();
+
+		if( sz > 0 )
+			sz--;
+
+		// выводим в обратном порядке
+		for( int i = sz; i >= 0; i-- )
 			os << d.b[i];
 
 		os << "]";
@@ -613,7 +624,7 @@ namespace uniset
 		memset(data, 0, sizeof(data));
 	}
 	// -------------------------------------------------------------------------
-	bool ReadCoilRetMessage::setBit( unsigned char dnum, unsigned char bnum, bool state )
+	bool ReadCoilRetMessage::setBit( uint8_t dnum, uint8_t bnum, bool state )
 	{
 		if( dnum < bcnt && bnum < BitsPerByte )
 		{
@@ -635,7 +646,7 @@ namespace uniset
 		return true;
 	}
 	// -------------------------------------------------------------------------
-	bool ReadCoilRetMessage::getData( unsigned char dnum, DataBits& d ) const
+	bool ReadCoilRetMessage::getData( uint8_t dnum, DataBits& d ) const
 	{
 		if( dnum < bcnt )
 		{
@@ -656,7 +667,7 @@ namespace uniset
 	{
 		ModbusMessage mm;
 		//    assert(sizeof(ModbusMessage)>=sizeof(ReadCoilRetMessage));
-		assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
+		assert( sizeof(ModbusMessage) >= szModbusHeader + szData() );
 
 		// копируем заголовок и данные
 		memcpy(&mm.pduhead, this, szModbusHeader);
@@ -747,7 +758,9 @@ namespace uniset
 	void ReadInputStatusMessage::init( const ModbusMessage& m )
 	{
 		assert( m.pduhead.func == fnReadInputStatus );
-		memcpy(this, &m.pduhead, sizeof(m.pduhead) + szData());
+		func = m.pduhead.func;
+		addr = m.pduhead.addr;
+		memcpy(&start, &m.data, szData());
 
 		// переворачиваем слова
 		start = SWAPSHORT(start);
@@ -814,7 +827,7 @@ namespace uniset
 		memset(data, 0, sizeof(data));
 	}
 	// -------------------------------------------------------------------------
-	bool ReadInputStatusRetMessage::setBit( unsigned char dnum, unsigned char bnum, bool state )
+	bool ReadInputStatusRetMessage::setBit( uint8_t dnum, uint8_t bnum, bool state )
 	{
 		if( dnum < bcnt && bnum < BitsPerByte )
 		{
@@ -836,7 +849,7 @@ namespace uniset
 		return true;
 	}
 	// -------------------------------------------------------------------------
-	bool ReadInputStatusRetMessage::getData( unsigned char dnum, DataBits& d ) const
+	bool ReadInputStatusRetMessage::getData( uint8_t dnum, DataBits& d ) const
 	{
 		if( dnum < bcnt )
 		{
@@ -857,7 +870,7 @@ namespace uniset
 	{
 		ModbusMessage mm;
 		//    assert(sizeof(ModbusMessage)>=sizeof(ReadCoilRetMessage));
-		assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
+		assert( sizeof(ModbusMessage) >= szModbusHeader + szData() );
 
 		// копируем заголовок и данные
 		memcpy(&mm.pduhead, this, szModbusHeader);
@@ -951,8 +964,10 @@ namespace uniset
 	void ReadOutputMessage::init( const ModbusMessage& m )
 	{
 		assert( m.pduhead.func == fnReadOutputRegisters );
+		func = m.pduhead.func;
+		addr = m.pduhead.addr;
 		//memset(this, 0, sizeof(*this));
-		memcpy(this, &m.pduhead, sizeof(m.pduhead) + szData());
+		memcpy(&start, &m.data, szData());
 
 		// переворачиваем слова
 		start = SWAPSHORT(start);
@@ -1005,7 +1020,7 @@ namespace uniset
 		memcpy(&data, &(m.data[1]), bcnt);
 
 		// переворачиваем данные
-		for( unsigned int i = 0; i < cnt; i++ )
+		for( size_t i = 0; i < cnt; i++ )
 			data[i] = SWAPSHORT(data[i]);
 
 		memcpy(&crc, &(m.data[bcnt + 1]), szCRC);
@@ -1049,7 +1064,7 @@ namespace uniset
 	{
 		ModbusMessage mm;
 		//    assert(sizeof(ModbusMessage)>=sizeof(ReadOutputRetMessage));
-		assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
+		assert( sizeof(ModbusMessage) >= szModbusHeader + szData() );
 
 		// копируем заголовок и данные
 		memcpy(&mm.pduhead, this, szModbusHeader);
@@ -1264,7 +1279,7 @@ namespace uniset
 	ModbusMessage ReadInputRetMessage::transport_msg()
 	{
 		ModbusMessage mm;
-		assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
+		assert( sizeof(ModbusMessage) >= szModbusHeader + szData() );
 
 		// копируем заголовок и данные
 		memcpy(&mm.pduhead, this, szModbusHeader);
@@ -1343,7 +1358,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	int ForceCoilsMessage::addBit( bool state )
 	{
-		int qnum = quant % BitsPerByte;
+		size_t qnum = quant % BitsPerByte;
 
 		if( qnum == 0 )
 			bcnt++;
@@ -1351,17 +1366,17 @@ namespace uniset
 		DataBits b(data[bcnt - 1]);
 		b.b[qnum] = state;
 		data[bcnt - 1] = b.mbyte();
-		quant++;
+		++quant;
 		return (quant - 1);
 	}
 	// -------------------------------------------------------------------------
-	bool ForceCoilsMessage::setBit( int nbit, bool state )
+	bool ForceCoilsMessage::setBit( uint8_t nbit, bool state )
 	{
-		if( nbit < 0 || nbit >= quant )
+		if( nbit >= quant )
 			return false;
 
-		int bnum = nbit / BitsPerByte;
-		int qnum = nbit % BitsPerByte;
+		size_t bnum = nbit / BitsPerByte;
+		size_t qnum = nbit % BitsPerByte;
 
 		DataBits b(data[bnum]);
 		b.b[qnum] = state;
@@ -1369,7 +1384,7 @@ namespace uniset
 		return true;
 	}
 	// -------------------------------------------------------------------------
-	bool ForceCoilsMessage::getData( unsigned char dnum, DataBits& d )
+	bool ForceCoilsMessage::getData( uint8_t dnum, DataBits& d )
 	{
 		if( dnum < bcnt )
 		{
@@ -1390,7 +1405,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	ModbusMessage ForceCoilsMessage::transport_msg()
 	{
-		assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
+		assert( sizeof(ModbusMessage) >= szModbusHeader + szData() );
 		ModbusMessage mm;
 
 		// копируем заголовок
@@ -1625,7 +1640,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	ModbusMessage WriteOutputMessage::transport_msg()
 	{
-		assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
+		assert( sizeof(ModbusMessage) >= szModbusHeader + szData() );
 		ModbusMessage mm;
 
 		// копируем заголовок
@@ -2343,7 +2358,7 @@ namespace uniset
 	{
 		ModbusMessage mm;
 		//    assert(sizeof(ModbusMessage)>=sizeof(DiagnosticMessage));
-		assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
+		assert( sizeof(ModbusMessage) >= szModbusHeader + szData() );
 
 		// копируем заголовок и данные
 		memcpy(&mm.pduhead, this, szModbusHeader);
@@ -2456,7 +2471,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	ModbusMessage MEIMessageRDI::transport_msg()
 	{
-		assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
+		assert( sizeof(ModbusMessage) >= szModbusHeader + szData() );
 		ModbusMessage mm;
 
 		// копируем заголовок
@@ -2679,7 +2694,7 @@ namespace uniset
 	ModbusMessage MEIMessageRetRDI::transport_msg()
 	{
 		ModbusMessage mm;
-		assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
+		assert( sizeof(ModbusMessage) >= szModbusHeader + szData() );
 
 		// копируем заголовок и данные
 		memcpy(&mm.pduhead, this, szModbusHeader);
@@ -2768,7 +2783,7 @@ namespace uniset
 	{
 		assert( m.pduhead.func == fnJournalCommand );
 		//memset(this, 0, sizeof(*this));
-		memcpy(this, &m.pduhead, sizeof(*this)); // m.len
+		memcpy(this, &m.pduhead, sizeof(m.pduhead)); // m.len
 
 		// переворачиваем слова
 		cmd = SWAPSHORT(cmd);
@@ -2779,7 +2794,7 @@ namespace uniset
 	{
 		assert( m.pduhead.func == fnJournalCommand );
 		//	memset(this, 0, sizeof(*this));
-		memcpy(this, &m.pduhead, sizeof(*this)); // m.len
+		memcpy(this, &m.pduhead, sizeof(m.pduhead)); // m.len
 
 		// переворачиваем слова
 		cmd = SWAPSHORT(cmd);
@@ -2820,7 +2835,7 @@ namespace uniset
 		// копируем
 		memcpy( data, buf, len );
 
-		count     = len / sizeof(ModbusData);
+		count = len / sizeof(ModbusData);
 
 		// выравниваем до границы слова..
 		if( len % sizeof(ModbusData) )
@@ -2841,7 +2856,7 @@ namespace uniset
 	{
 		ModbusMessage mm;
 		//    assert(sizeof(ModbusMessage)>=sizeof(ReadOutputRetMessage));
-		assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
+		assert( sizeof(ModbusMessage) >= szModbusHeader + szData() );
 
 		// копируем заголовок и данные
 		memcpy(&mm.pduhead, this, szModbusHeader);
@@ -2961,14 +2976,14 @@ namespace uniset
 	std::string ModbusRTU::addr2str( const ModbusAddr addr )
 	{
 		ostringstream s;
-		s << "0x" << hex << setfill('0') << setw(2) << (unsigned short)addr;
+		s << "0x" << hex << setfill('0') << setw(2) << (int)addr;
 		return s.str();
 	}
 	// -------------------------------------------------------------------------
 	std::string ModbusRTU::b2str( const ModbusByte b )
 	{
 		ostringstream s;
-		s << hex << setfill('0') << setw(2) << (unsigned short)b;
+		s << hex << setfill('0') << setw(2) << (int)b;
 		return s.str();
 	}
 	// -------------------------------------------------------------------------
@@ -2987,7 +3002,7 @@ namespace uniset
 				return "У пакета не сошлась контрольная сумма";
 
 			case erBadReplyNodeAddress:
-				return "Ответ на запрос адресован не мне или от станции,которую не спрашивали";
+				return "Ответ на запрос адресован не мне или от станции, которую не спрашивали";
 
 			case erTimeOut:
 				return "Тайм-аут при приеме";
@@ -3005,7 +3020,7 @@ namespace uniset
 				return "регистр не существует или запрещён к опросу";
 
 			case erBadDataValue:
-				return "значение не входит в разрешённый диапазон";
+				return "недопустимое значение";
 
 			case erAnknowledge:
 				return "запрос принят в исполнению, но ещё не выполнен";
@@ -3019,6 +3034,12 @@ namespace uniset
 			case erMemoryParityError:
 				return "ошибка паритета при чтении памяти";
 
+			case erGatewayUnavailable:
+				return "шлюз не смог обработать запрос";
+
+			case erGatewayTargetUnavailable:
+				return "устройство за шлюзом не отвечает";
+
 			default:
 				return "Неизвестный код ошибки";
 		}
@@ -3028,14 +3049,14 @@ namespace uniset
 	{
 		assert( m.pduhead.func == fnSetDateTime );
 		memset(this, 0, sizeof(*this));
-		memcpy(this, &m.pduhead, sizeof(*this)); // m.len
+		memcpy(this, &m.pduhead, sizeof(m.pduhead)); // m.len
 	}
 	// -------------------------------------------------------------------------
 	SetDateTimeMessage& SetDateTimeMessage::operator=( const ModbusMessage& m )
 	{
 		assert( m.pduhead.func == fnSetDateTime );
 		memset(this, 0, sizeof(*this));
-		memcpy(this, &m.pduhead, sizeof(*this)); // m.len
+		memcpy(this, &m.pduhead, sizeof(m.pduhead)); // m.len
 		return *this;
 	}
 	// -------------------------------------------------------------------------
@@ -3047,18 +3068,19 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	std::ostream& ModbusRTU::operator<<(std::ostream& os, SetDateTimeMessage& m )
 	{
-		DebugStream::IosFlagSaver ifs(os);
+		uniset::ios_fmt_restorer ifs(os);
 
-		os << setfill('0')
-		   << setw(2) << (int)m.day << "-"
-		   << setw(2) << (int)m.mon << "-"
-		   << setw(2) << (int)m.century
-		   << setw(2) << (int)m.year << " "
-		   << setw(2) << (int)m.hour << ":"
-		   << setw(2) << (int)m.min << ":"
-		   << setw(2) << (int)m.sec;
+		ostringstream s;
+		s << setfill('0')
+		  << setw(2) << (int)m.day << "-"
+		  << setw(2) << (int)m.mon << "-"
+		  << setw(2) << (int)m.century
+		  << setw(2) << (int)m.year << " "
+		  << setw(2) << (int)m.hour << ":"
+		  << setw(2) << (int)m.min << ":"
+		  << setw(2) << (int)m.sec;
 
-		return os;
+		return os << s.str();
 	}
 
 	std::ostream& ModbusRTU::operator<<(std::ostream& os, SetDateTimeMessage* m )
@@ -3096,7 +3118,7 @@ namespace uniset
 	ModbusMessage SetDateTimeMessage::transport_msg()
 	{
 		ModbusMessage mm;
-		assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
+		assert( sizeof(ModbusMessage) >= szModbusHeader + szData() );
 
 		// копируем заголовок и данные
 		memcpy(&mm.pduhead, this, szModbusHeader);
@@ -3136,7 +3158,7 @@ namespace uniset
 	{
 		assert( m.pduhead.func == fnSetDateTime );
 		memset(this, 0, sizeof(*this));
-		memcpy(this, &m.pduhead, sizeof(*this)); // m.len
+		memcpy(this, &m.pduhead, sizeof(m.pduhead)); // m.len
 	}
 	// -------------------------------------------------------------------------
 	SetDateTimeRetMessage::SetDateTimeRetMessage( ModbusAddr _from )
@@ -3169,7 +3191,7 @@ namespace uniset
 	ModbusMessage SetDateTimeRetMessage::transport_msg()
 	{
 		ModbusMessage mm;
-		assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
+		assert( sizeof(ModbusMessage) >= szModbusHeader + szData() );
 
 		// копируем заголовок и данные
 		memcpy(&mm.pduhead, this, szModbusHeader);
@@ -3284,7 +3306,7 @@ namespace uniset
 	ModbusMessage RemoteServiceRetMessage::transport_msg()
 	{
 		ModbusMessage mm;
-		assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader + szData() );
+		assert( sizeof(ModbusMessage) >= szModbusHeader + szData() );
 
 		// копируем заголовок и данные
 		memcpy(&mm.pduhead, this, szModbusHeader);
@@ -3539,7 +3561,7 @@ namespace uniset
 	ModbusMessage FileTransferRetMessage::transport_msg()
 	{
 		ModbusMessage mm;
-		assert( sizeof(ModbusMessage) >= (unsigned int)(szModbusHeader + szData()) );
+		assert( sizeof(ModbusMessage) >= (szModbusHeader + szData()) );
 
 		// копируем заголовок и данные
 		memcpy(&mm.pduhead, this, szModbusHeader);
@@ -3589,12 +3611,12 @@ namespace uniset
 		return mbPrintMessage(os, (ModbusByte*)m, szModbusHeader + m->szData() );
 	}
 	// -----------------------------------------------------------------------
-	std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusRTU::ADUHeader& m )
+	std::ostream& ModbusRTU::operator<<(std::ostream& os, const ModbusRTU::MBAPHeader& m )
 	{
 		return mbPrintMessage(os, (ModbusByte*)(&m), sizeof(m));
 	}
 	// -----------------------------------------------------------------------
-	void ModbusRTU::ADUHeader::swapdata()
+	void ModbusRTU::MBAPHeader::swapdata()
 	{
 		tID = SWAPSHORT(tID);
 		pID = SWAPSHORT(pID);
@@ -3628,7 +3650,7 @@ namespace uniset
 		s << id;
 		return s.str();
 	}
-	// -----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 	ModbusRTU::RegID ModbusRTU::genRegID( const ModbusRTU::ModbusData mbreg, const int fn )
 	{
 		// диапазоны:
@@ -3639,6 +3661,22 @@ namespace uniset
 
 		// fn необходимо привести к диапазону 0..max
 		return max + mbreg + max + uniset::lcalibrate(fn, 0, fn_max, 0, max, false);
+	}
+	// ----------------------------------------------------------------------
+	size_t ModbusRTU::numBytes( const size_t nbits )
+	{
+		if( nbits == 0 )
+			return 0;
+
+		if( nbits < ModbusRTU::BitsPerByte )
+			return 1;
+
+		size_t bcnt = ( nbits / ModbusRTU::BitsPerByte );
+
+		if( nbits % BitsPerByte )
+			bcnt++;
+
+		return bcnt;
 	}
 	// -----------------------------------------------------------------------
 } // end of namespace uniset

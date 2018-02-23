@@ -65,10 +65,9 @@ namespace uniset
 			void askSensors( const UniversalIO::UIOCommand cmd );
 			//        void initOutput();
 
-			// действия при завершении работы
-			virtual void sigterm( int signo ) override;
 			void initIterators();
 			virtual bool activateObject() override;
+			virtual bool deactivateObject() override;
 
 			std::shared_ptr<SMInterface> shm;
 
@@ -78,6 +77,7 @@ namespace uniset
 			int maxHeartBeat = { 10 };
 			IOController::IOStateList::iterator itHeartBeat;
 			std::mutex mutex_start;
+			std::atomic_bool cannceled = { false };
 	};
 	// --------------------------------------------------------------------------
 } // end of namespace uniset

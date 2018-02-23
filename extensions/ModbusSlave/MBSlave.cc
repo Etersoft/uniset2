@@ -17,6 +17,7 @@
 #include <cmath>
 #include <sstream>
 #include <Poco/Net/NetException.h>
+#include "unisetstd.h"
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "MBSlave.h"
@@ -38,11 +39,11 @@ namespace uniset
 		askcount_id(DefaultObjectId),
 		respond_id(DefaultObjectId),
 		respond_invert(false),
-		askCount(0),
+		connCount(0),
 		activated(false),
 		cancelled(false),
 		activateTimeout(500),
-		pingOK(true),
+		smPingOK(true),
 		force(false),
 		mbregFromID(false),
 		prefix(prefix),
@@ -150,6 +151,10 @@ namespace uniset
 
 		timeout_t aftersend_pause = conf->getArgInt("--" + prefix + "-aftersend-pause", it.getProp("afterSendPause"));
 
+		checkExchangeTime = conf->getArgPInt("--" + prefix + "-check-exchange-time", it.getProp("checkExchangeTime"), 10000);
+		vmonit(checkExchangeTime);
+		vmonit(restartTCPServerCount);
+
 		mbtype = conf->getArgParam("--" + prefix + "-type", it.getProp("type"));
 
 		if( mbtype == "RTU" )
@@ -176,7 +181,7 @@ namespace uniset
 			// rs->setLog(mblog);
 
 			mbslot = std::static_pointer_cast<ModbusServerSlot>(rs);
-			thr = make_shared< ThreadCreator<MBSlave> >(this, &MBSlave::execute_rtu);
+			thr = unisetstd::make_unique< ThreadCreator<MBSlave> >(this, &MBSlave::execute_rtu);
 			thr->setFinalAction(this, &MBSlave::finalThread);
 			mbinfo << myname << "(init): type=RTU dev=" << dev << " speed=" << speed << endl;
 
@@ -201,6 +206,9 @@ namespace uniset
 				throw uniset::SystemError(myname + "(MBSlave): Unknown TCP server address. Use: --prefix-inet-addr [ XXX.XXX.XXX.XXX| hostname ]");
 
 			int port = conf->getArgPInt("--" + prefix + "-inet-port", it.getProp("iport"), 502);
+
+			tcpBreakIfFailRun = conf->getArgPInt("--" + prefix + "-break-if-fail-run", it.getProp("tcpBreakIfFailRun"), 0);
+			tcpRepeatCreateSocketPause = conf->getArgPInt("--" + prefix + "-repeat-create-socket", it.getProp("tcpRepeatCreateSocket"), 30000);
 
 			mbinfo << myname << "(init): type=TCP inet=" << iaddr << " port=" << port << endl;
 
@@ -509,10 +517,17 @@ namespace uniset
 		if( tcpserver && tcpserver->isActive() )
 			tcpserver->terminate();
 
-		if( thr && thr->isRunning() )
+		try
 		{
-			thr->stop();
-			//        thr->join();
+			if( thr && thr->isRunning() )
+			{
+				thr->stop();
+				//        thr->join();
+			}
+		}
+		catch( Poco::NullPointerException& ex )
+		{
+
 		}
 	}
 	// -----------------------------------------------------------------------------
@@ -522,27 +537,30 @@ namespace uniset
 		cancelled = true;
 	}
 	// -----------------------------------------------------------------------------
-	void MBSlave::waitSMReady()
+	bool MBSlave::waitSMReady()
 	{
 		// waiting for SM is ready...
-		int tout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "15000");
-		timeout_t ready_timeout = 60000;
+		int tout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout", "");
+		timeout_t ready_timeout = uniset_conf()->getNCReadyTimeout();
 
 		if( tout > 0 )
 			ready_timeout = tout;
 		else if( tout < 0 )
 			ready_timeout = UniSetTimer::WaitUpTime;
 
-		if( !shm->waitSMready(ready_timeout, 50) )
+		if( !shm->waitSMreadyWithCancellation(ready_timeout, cancelled, 50) )
 		{
-			ostringstream err;
-			err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
-			mbcrit << err.str() << endl;
-			//        throw SystemError(err.str());
-			raise(SIGTERM);
-			terminate();
-			//        abort();
+			if( !cancelled )
+			{
+				ostringstream err;
+				err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
+				mbcrit << err.str() << endl;
+			}
+
+			return false;
 		}
+
+		return true;
 	}
 	// -----------------------------------------------------------------------------
 	void MBSlave::execute_rtu()
@@ -555,14 +573,18 @@ namespace uniset
 		{
 			std::unique_lock<std::mutex> locker(mutexStartNotify);
 
-			while( !activated )
+			while( !activated && !cancelled )
 				startNotifyEvent.wait(locker);
+
+			if( cancelled )
+				return;
 		}
 
 		if( vaddr.empty() )
 		{
-			mbcrit << "(execute_rtu): Unknown my modbus adresses!" << endl;
-			raise(SIGTERM);
+			mbcrit << "(execute_rtu): Unknown my modbus addresses!" << endl;
+			//std::terminate();
+			uterminate();
 			return;
 		}
 
@@ -601,7 +623,8 @@ namespace uniset
 		if( !tcpserver )
 		{
 			mbcrit << myname << "(execute_tcp): DYNAMIC CAST ERROR (mbslot --> ModbusTCPServerSlot)" << std::endl;
-			raise(SIGTERM);
+			//			std::terminate();
+			uterminate();
 			return;
 		}
 
@@ -620,6 +643,14 @@ namespace uniset
 
 		tcpserver->setMaxSessions( sessMaxNum );
 
+		if( vaddr.empty() )
+		{
+			mbcrit << "(execute_tcp): Unknown my modbus addresses!" << endl;
+			//			std::terminate();
+			uterminate();
+			return;
+		}
+
 		// Чтобы не создавать отдельный поток для tcpserver (или для обновления статистики)
 		// воспользуемся таймером tcpserver-а..
 		tcpserver->signal_timer().connect( sigc::mem_fun(this, &MBSlave::updateTCPStatistics) );
@@ -628,50 +659,82 @@ namespace uniset
 		// для обновления пороговых датчиков
 		tcpserver->signal_post_receive().connect( sigc::mem_fun(this, &MBSlave::postReceiveEvent) );
 
-		mbinfo << myname << "(execute_tcp): run tcpserver ("
+		runTCPServer();
+	}
+	// -------------------------------------------------------------------------
+	void MBSlave::runTCPServer()
+	{
+		mbinfo << myname << "(runTCPServer): run tcpserver ("
 			   << tcpserver->getInetAddress() << ":" << tcpserver->getInetPort()
-			   << ")" << endl;
+			   << ")"
+			   << "["
+			   << " tcpBreakIfFailRun=" << tcpBreakIfFailRun
+			   << " tcpRepeatCreateSocketPause=" << tcpRepeatCreateSocketPause
+			   << "]"
+			   << endl;
 
 		tcpCancelled = false;
 
-		try
+		while( isActive() && !tcpserver->isActive() )
 		{
-			tcpserver->run( vaddr, true );
-		}
-		catch( ModbusRTU::mbException& ex )
-		{
-			mbcrit << myname << "(execute_tcp): catch excaption: "
-				   << tcpserver->getInetAddress()
-				   << ":" << tcpserver->getInetPort() << " err: " << ex << endl;
-			throw ex;
-		}
-		catch( const Poco::Net::NetException& e )
-		{
-			mbcrit << myname << "(execute_tcp): Can`t create socket "
-				   << tcpserver->getInetAddress()
-				   << ":" << tcpserver->getInetPort()
-				   << " err: " << e.displayText() << endl;
-			throw e;
-		}
-		catch( const std::exception& e )
-		{
-			mbcrit << myname << "(execute_tcp): Can`t create socket "
-				   << tcpserver->getInetAddress()
-				   << ":" << tcpserver->getInetPort()
-				   << " err: " << e.what() << endl;
-			throw e;
-		}
-		catch(...)
-		{
-			mbcrit << myname << "(execute_tcp): catch exception ... ("
-				   << tcpserver->getInetAddress()
-				   << ":" << tcpserver->getInetPort()
-				   << endl;
-			throw;
+			try
+			{
+				if( tcpserver->async_run(vaddr) )
+					break;
+
+				if( tcpBreakIfFailRun )
+				{
+					mbcrit << myname << "(execute_tcp): error run tcpserver: "
+						   << tcpserver->getInetAddress()
+						   << ":" << tcpserver->getInetPort() << " err: not active.." << endl;
+					//					std::terminate();
+					uterminate();
+					return;
+				}
+			}
+			catch( ModbusRTU::mbException& ex )
+			{
+				mbcrit << myname << "(execute_tcp): catch exception: "
+					   << tcpserver->getInetAddress()
+					   << ":" << tcpserver->getInetPort() << " err: " << ex << endl;
+
+				if( tcpBreakIfFailRun )
+					throw ex;
+			}
+			catch( const Poco::Net::NetException& e )
+			{
+				mbcrit << myname << "(execute_tcp): Can`t create socket "
+					   << tcpserver->getInetAddress()
+					   << ":" << tcpserver->getInetPort()
+					   << " err: " << e.displayText() << endl;
+
+				if( tcpBreakIfFailRun )
+					throw e;
+			}
+			catch( const std::exception& e )
+			{
+				mbcrit << myname << "(execute_tcp): Can`t create socket "
+					   << tcpserver->getInetAddress()
+					   << ":" << tcpserver->getInetPort()
+					   << " err: " << e.what() << endl;
+
+				if( tcpBreakIfFailRun )
+					throw e;
+			}
+			catch(...)
+			{
+				mbcrit << myname << "(execute_tcp): catch exception ... ("
+					   << tcpserver->getInetAddress()
+					   << ":" << tcpserver->getInetPort()
+					   << endl;
+
+				if( tcpBreakIfFailRun )
+					throw;
+			}
+
+			msleep(tcpRepeatCreateSocketPause);
 		}
 
-		//	tcpCancelled = true;
-		//	mbinfo << myname << "(execute_tcp): tcpserver stopped.." << endl;
 	}
 	// -------------------------------------------------------------------------
 	void MBSlave::updateStatistics()
@@ -712,7 +775,7 @@ namespace uniset
 			{
 				try
 				{
-					shm->localSetValue(itAskCount, askcount_id, askCount, getId());
+					shm->localSetValue(itAskCount, askcount_id, connCount, getId());
 				}
 				catch( const uniset::Exception& ex )
 				{
@@ -740,6 +803,32 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	void MBSlave::updateTCPStatistics()
 	{
+#if 0
+		// тестирование вылета при SEGFAULT
+		// или перезапуска при невыловленном EXCEPTION
+		// для mainloop
+		static size_t upCounter = 0;
+
+		upCounter++;
+
+		if( ++upCounter > 5 )
+		{
+			//			IOMap::iterator i;
+			//			cout << "SEGFAULT: " << i->first << endl;
+
+			upCounter = 0;
+			cerr << ".....THROW...." << endl;
+			throw std::string("TEST STRING EXCEPTION");
+		}
+
+#endif
+
+		// ВНИМАНИЕ! Эта функция вызывается из основного eventLoop
+		// поэтому она должна быть максимально быстрой и безопасной
+		// иначе накроется весь обмен
+		// т.к. на это время останавливается работа основного потока (eventLoop)
+		// принимающего запросы
+
 		try
 		{
 			if( !tcpserver )
@@ -752,14 +841,11 @@ namespace uniset
 				tcpserver->getSessions(sess);
 			}
 
-			askCount = tcpserver->getAskCount();
+			connCount = tcpserver->getConnectionCount();
 
 			// если список сессий не пустой.. значит связь есть..
 			if( !sess.empty() )
 				ptTimeout.reset(); // см. updateStatistics()
-
-			// суммарное количество по всем
-			askCount = 0;
 
 			for( const auto& s : sess )
 			{
@@ -823,9 +909,13 @@ namespace uniset
 
 			updateStatistics();
 		}
-		catch( std::exception& ex)
+		catch( std::exception& ex )
 		{
 			mbwarn << myname << "(updateStatistics): " << ex.what() << endl;
+		}
+		catch( ... )
+		{
+			mbwarn << myname << "(updateStatistics): unknown exception..." << endl;
 		}
 	}
 	// -------------------------------------------------------------------------
@@ -858,24 +948,31 @@ namespace uniset
 				if( iomap.empty() )
 				{
 					mbcrit << myname << "(sysCommand): iomap EMPTY! terminated..." << endl;
-					raise(SIGTERM);
+					//					std::terminate();
+					uterminate();
 					return;
 				}
 
 				if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
 				{
 					mbinfo << myname << "(init): run log server " << logserv_host << ":" << logserv_port << endl;
-					logserv->run(logserv_host, logserv_port, true);
+					logserv->async_run(logserv_host, logserv_port);
 				}
 
-				waitSMReady();
+				if( !waitSMReady() )
+				{
+					if( !cancelled )
+						uterminate();
+
+					return;
+				}
 
 				// подождать пока пройдёт инициализация датчиков
 				// см. activateObject()
 				msleep(initPause);
 				PassiveTimer ptAct(activateTimeout);
 
-				while( !activated && !ptAct.checkTime() )
+				while( !cancelled && !activated && !ptAct.checkTime() )
 				{
 					cout << myname << "(sysCommand): wait activate..." << endl;
 					msleep(300);
@@ -883,6 +980,9 @@ namespace uniset
 					if( activated )
 						break;
 				}
+
+				if( cancelled )
+					return;
 
 				if( !activated )
 				{
@@ -897,6 +997,8 @@ namespace uniset
 						thr->start();
 					else if( mbtype == "TCP")
 						execute_tcp();
+
+					askTimer(tmCheckExchange, checkExchangeTime);
 				}
 
 				break;
@@ -1029,9 +1131,25 @@ namespace uniset
 		}
 	}
 	// ------------------------------------------------------------------------------------------
+	void MBSlave::timerInfo( const TimerMessage* tm )
+	{
+		if( tm->id == tmCheckExchange )
+		{
+			if( !tcpserver )
+				return;
+
+			if( !tcpserver->isActive() )
+			{
+				mbwarn << myname << "(timerInfo): tcpserver thread failed! restart.." << endl;
+				restartTCPServerCount++;
+				runTCPServer();
+			}
+		}
+	}
+	// ------------------------------------------------------------------------------------------
 	bool MBSlave::activateObject()
 	{
-		// блокирование обработки Starsp
+		// блокирование обработки StartUp
 		// пока не пройдёт инициализация датчиков
 		// см. sysCommand()
 		{
@@ -1056,41 +1174,8 @@ namespace uniset
 		activated = false;
 		cancelled = true;
 
-		if( mbtype == "RTU" )
-		{
-			try
-			{
-				if( mbslot )
-					mbslot->sigterm(SIGTERM);
-			}
-			catch( std::exception& ex)
-			{
-				mbwarn << myname << "(deactivateObject): " << ex.what() << endl;
-			}
-		}
-
-
-		return UniSetObject::deactivateObject();
-	}
-	// ------------------------------------------------------------------------------------------
-	void MBSlave::sigterm( int signo )
-	{
-		mbinfo << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
-
-		if( cancelled )
-		{
-			UniSetObject::sigterm(signo);
-			return;
-		}
-
-		activated = false;
-		cancelled = true;
-
 		if( tcpserver )
 		{
-			cancelled = true;
-			cerr << "********* MBSlave::sigterm" << endl;
-
 			if( tcpserver->isActive() )
 				tcpserver->terminate();
 		}
@@ -1099,15 +1184,21 @@ namespace uniset
 			try
 			{
 				if( mbslot )
-					mbslot->sigterm(signo);
+					mbslot->terminate();
+
+				if( thr )
+					thr->join();
 			}
 			catch( std::exception& ex)
 			{
-				mbwarn << myname << "SIGTERM(" << signo << "): " << ex.what() << endl;
+				mbwarn << myname << "(deactivateObject): " << ex.what() << endl;
 			}
 		}
 
-		UniSetObject::sigterm(signo);
+		if( logserv && logserv->isRunning() )
+			logserv->terminate();
+
+		return UniSetObject::deactivateObject();
 	}
 	// ------------------------------------------------------------------------------------------
 	void MBSlave::readConfiguration()
@@ -1457,7 +1548,6 @@ namespace uniset
 		cout << "--prefix-filter-value val  - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
 		cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
 		cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-		cout << "--prefix-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
 		cout << "--prefix-initPause         - Задержка перед инициализацией (время на активизация процесса)" << endl;
 		cout << "--prefix-force 1           - Читать данные из SM каждый раз, а не по изменению." << endl;
 		cout << "--prefix-respond-id - respond sensor id" << endl;
@@ -1572,7 +1662,7 @@ namespace uniset
 			<< " stype=" << p.stype
 			<< " wnum=" << p.wnum
 			<< " nbyte=" << p.nbyte
-			<< " safety=" << p.safety
+			<< " safeval=" << p.safeval
 			<< " invert=" << p.invert
 			<< " regID=" << p.regID;
 
@@ -1598,7 +1688,13 @@ namespace uniset
 			return ModbusRTU::erTimeOut;
 		}
 
-		if( query.count <= 1 )
+		if( query.count <= 0 )
+		{
+			mbinfo << myname << "(readOutputRegisters): BAD QUERY: count=0!" << endl;
+			return ModbusRTU::erBadDataValue;
+		}
+
+		if( query.count == 1 )
 		{
 			ModbusRTU::ModbusData d = 0;
 			ModbusRTU::mbErrCode ret = real_read(regmap->second, query.start, d, query.func);
@@ -1616,7 +1712,7 @@ namespace uniset
 
 		if( ret == ModbusRTU::erNoError )
 		{
-			for( unsigned int i = 0; i < query.count; i++ )
+			for( uint16_t i = 0; i < query.count; i++ )
 				reply.addData( buf[i] );
 		}
 
@@ -1820,12 +1916,12 @@ namespace uniset
 			}
 			else if( p->vtype == VTypes::vtUnsigned )
 			{
-				long val = (unsigned short)(mbval);
+				long val = (uint16_t)(mbval);
 				IOBase::processingAsAI( p, val, shm, force );
 			}
 			else if( p->vtype == VTypes::vtSigned )
 			{
-				long val = (signed short)(mbval);
+				long val = (int16_t)(mbval);
 				IOBase::processingAsAI( p, val, shm, force );
 			}
 			else if( p->vtype == VTypes::vtI2 )
@@ -1968,7 +2064,7 @@ namespace uniset
 			            IOBase::processingAsAI( p, val, shm, force );
 			        }
 			*/
-			pingOK = true;
+			smPingOK = true;
 			return ModbusRTU::erNoError;
 		}
 		catch( uniset::NameNotFound& ex )
@@ -1983,22 +2079,22 @@ namespace uniset
 		}
 		catch( const uniset::Exception& ex )
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(real_write_prop): " << ex << endl;
 		}
 		catch( const CORBA::SystemException& ex )
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(real_write_prop): СORBA::SystemException: "
 					   << ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(real_write_prop) catch ..." << endl;
 		}
 
-		pingOK = false;
+		smPingOK = false;
 		return ModbusRTU::erTimeOut;
 	}
 #ifndef DISABLE_REST_API
@@ -2009,7 +2105,7 @@ namespace uniset
 
 		{
 			// 'regs'
-			uniset::json::help::item cmd("get registers list");
+			uniset::json::help::item cmd("regs", "get registers list");
 			cmd.param("regs=reg1,reg2,reg3..", "get these registers");
 			cmd.param("addr=mbaddr1,mbaddr2,..", "get registers for mbaddr");
 			myhelp.add(cmd);
@@ -2018,7 +2114,7 @@ namespace uniset
 		return myhelp;
 	}
 	// -------------------------------------------------------------------------
-	Poco::JSON::Object::Ptr MBSlave::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
+	Poco::JSON::Object::Ptr MBSlave::httpRequest( const std::string& req, const Poco::URI::QueryParameters& p )
 	{
 		if( req == "regs" )
 			return request_regs(req, p);
@@ -2038,7 +2134,7 @@ namespace uniset
 
 		if( !params.empty() )
 		{
-			for( const auto& p: params )
+			for( const auto& p : params )
 			{
 				if( p.first == "regs" )
 					q_regs = uniset::explode_str(p.second, ',');
@@ -2059,22 +2155,23 @@ namespace uniset
 		// Проход по списку заданных addr..
 		if( !q_addr.empty() )
 		{
-			for( const auto& a: q_addr )
+			for( const auto& a : q_addr )
 			{
 				ModbusRTU::ModbusAddr mbaddr = ModbusRTU::str2mbAddr(a);
 				auto i = iomap.find(mbaddr);
+
 				if( i != iomap.end() )
 				{
-					Poco::JSON::Object::Ptr jaddr = get_regs(i->first,i->second, q_regs);
+					Poco::JSON::Object::Ptr jaddr = get_regs(i->first, i->second, q_regs);
 					jdata->add(jaddr);
 				}
 			}
 		}
 		else // Проход по всему списку
 		{
-			for( const auto& i: iomap )
+			for( const auto& i : iomap )
 			{
-				Poco::JSON::Object::Ptr jaddr = get_regs(i.first,i.second, q_regs);
+				Poco::JSON::Object::Ptr jaddr = get_regs(i.first, i.second, q_regs);
 				jdata->add(jaddr);
 			}
 		}
@@ -2090,7 +2187,7 @@ namespace uniset
 
 		if( q_regs.empty() )
 		{
-			for( const auto& r: rmap )
+			for( const auto& r : rmap )
 			{
 				Poco::JSON::Object::Ptr reginfo = get_reginfo(r.second);
 				regs->add(reginfo);
@@ -2102,6 +2199,7 @@ namespace uniset
 			{
 				auto reg = genRegID( ModbusRTU::str2mbData(s), default_mbfunc);
 				auto r = rmap.find(reg);
+
 				if( r != rmap.end() )
 				{
 					Poco::JSON::Object::Ptr reginfo = get_reginfo(r->second);
@@ -2344,7 +2442,7 @@ namespace uniset
 				return ModbusRTU::erBadDataAddress;
 
 			mblog3 << myname << "(real_read_prop): read OK. sid=" << p->si.id << " val=" << val << endl;
-			pingOK = true;
+			smPingOK = true;
 			return ModbusRTU::erNoError;
 		}
 		catch( uniset::NameNotFound& ex )
@@ -2359,24 +2457,24 @@ namespace uniset
 		}
 		catch( const uniset::Exception& ex )
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(real_read_prop): " << ex << endl;
 		}
 		catch( const CORBA::SystemException& ex )
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(real_read_prop): CORBA::SystemException: "
 					   << ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(real_read_prop) catch ..." << endl;
 		}
 
 		mbwarn << myname << "(real_read_prop): read sid=" << p->si.id << " FAILED!!" << endl;
 
-		pingOK = false;
+		smPingOK = false;
 		return ModbusRTU::erTimeOut;
 	}
 	// -------------------------------------------------------------------------
@@ -2393,7 +2491,13 @@ namespace uniset
 			return ModbusRTU::erTimeOut;
 		}
 
-		if( query.count <= 1 )
+		if( query.count <= 0 )
+		{
+			mbinfo << myname << "(readInputRegisters): BAD QUERY: count=0!" << endl;
+			return ModbusRTU::erBadDataValue;
+		}
+
+		if( query.count == 1 )
 		{
 			ModbusRTU::ModbusData d = 0;
 			ModbusRTU::mbErrCode ret = real_read(regmap->second, query.start, d, query.func);
@@ -2411,7 +2515,7 @@ namespace uniset
 
 		if( ret == ModbusRTU::erNoError )
 		{
-			for( unsigned int i = 0; i < query.count; i++ )
+			for( uint16_t i = 0; i < query.count; i++ )
 				reply.addData( buf[i] );
 		}
 
@@ -2458,9 +2562,15 @@ namespace uniset
 			return ModbusRTU::erTimeOut;
 		}
 
+		if( query.count <= 0 )
+		{
+			mbinfo << myname << "(readCoilStatus): BAD QUERY: count=0!" << endl;
+			return ModbusRTU::erBadDataValue;
+		}
+
 		try
 		{
-			if( query.count <= 1 )
+			if( query.count == 1 )
 			{
 				ModbusRTU::ModbusData d = 0;
 				ModbusRTU::mbErrCode ret = real_read(regmap->second, query.start, d, query.func);
@@ -2471,7 +2581,7 @@ namespace uniset
 				else
 					reply.setBit(0, 0, 0);
 
-				pingOK = true;
+				smPingOK = true;
 				return ret;
 			}
 
@@ -2489,7 +2599,7 @@ namespace uniset
 				bnum++;
 			}
 
-			pingOK = true;
+			smPingOK = true;
 			return ModbusRTU::erNoError;
 		}
 		catch( uniset::NameNotFound& ex )
@@ -2499,22 +2609,22 @@ namespace uniset
 		}
 		catch( const uniset::Exception& ex )
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(readCoilStatus): " << ex << endl;
 		}
 		catch( const CORBA::SystemException& ex )
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(readCoilStatus): СORBA::SystemException: "
 					   << ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(readCoilStatus): catch ..." << endl;
 		}
 
-		pingOK = false;
+		smPingOK = false;
 		return ModbusRTU::erTimeOut;
 	}
 	// -------------------------------------------------------------------------
@@ -2531,9 +2641,15 @@ namespace uniset
 			return ModbusRTU::erTimeOut;
 		}
 
+		if( query.count <= 0 )
+		{
+			mbinfo << myname << "(readInputStatus): BAD QUERY: count=0!" << endl;
+			return ModbusRTU::erBadDataValue;
+		}
+
 		try
 		{
-			if( query.count <= 1 )
+			if( query.count == 1 )
 			{
 				ModbusRTU::ModbusData d = 0;
 				ModbusRTU::mbErrCode ret = real_read(regmap->second, query.start, d, query.func);
@@ -2544,7 +2660,7 @@ namespace uniset
 				else
 					reply.setBit(0, 0, 0);
 
-				pingOK = true;
+				smPingOK = true;
 				return ret;
 			}
 
@@ -2562,7 +2678,7 @@ namespace uniset
 				bnum++;
 			}
 
-			pingOK = true;
+			smPingOK = true;
 			return ModbusRTU::erNoError;
 		}
 		catch( uniset::NameNotFound& ex )
@@ -2572,22 +2688,22 @@ namespace uniset
 		}
 		catch( const uniset::Exception& ex )
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(readInputStatus): " << ex << endl;
 		}
 		catch( const CORBA::SystemException& ex )
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(readInputStatus): СORBA::SystemException: "
 					   << ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			if( pingOK )
+			if( smPingOK )
 				mbcrit << myname << "(readInputStatus): catch ..." << endl;
 		}
 
-		pingOK = false;
+		smPingOK = false;
 		return ModbusRTU::erTimeOut;
 	}
 	// -------------------------------------------------------------------------
@@ -2674,7 +2790,7 @@ namespace uniset
 		if( query.subf == ModbusRTU::dgMsgSlaveCount || query.subf == ModbusRTU::dgBusMsgCount )
 		{
 			reply = query;
-			reply.data[0] = askCount;
+			reply.data[0] = connCount;
 			return ModbusRTU::erNoError;
 		}
 
@@ -2759,7 +2875,14 @@ namespace uniset
 			inf << "  " << ModbusRTU::addr2str(m.first) << ": iomap=" << m.second.size() << endl;
 
 		inf << " myaddr: " << ModbusServer::vaddr2str(vaddr) << endl;
-		inf << "Statistic: askCount=" << askCount << " pingOK=" << pingOK << endl;
+		inf << "Statistic:"
+			<< " connectionCount=" << connCount
+			<< " smPingOK=" << smPingOK;
+
+		if( tcpserver )
+			inf << " restartTCPServerCount=" << restartTCPServerCount;
+
+		inf << endl;
 
 		if( sslot ) // т.е. если у нас tcp
 		{

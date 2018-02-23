@@ -24,6 +24,7 @@
 #include <iomanip>
 #include <cmath>
 
+#include "unisetstd.h"
 #include "ORepHelpers.h"
 #include "DBServer_MySQL.h"
 #include "Configuration.h"
@@ -35,14 +36,9 @@ using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 DBServer_MySQL::DBServer_MySQL(ObjectId id, const std::string& prefix ):
-	DBServer(id, prefix),
-	PingTime(300000),
-	ReconnectTime(180000),
-	connect_ok(false),
-	activate(true),
-	qbufSize(200),
-	lastRemove(false)
+	DBServer(id, prefix)
 {
+
 	if( getId() == DefaultObjectId )
 	{
 		ostringstream msg;
@@ -50,7 +46,7 @@ DBServer_MySQL::DBServer_MySQL(ObjectId id, const std::string& prefix ):
 		throw Exception(msg.str());
 	}
 
-	db = make_shared<MySQLInterface>();
+	db = unisetstd::make_unique<MySQLInterface>();
 
 	mqbuf.setName(myname  + "_qbufMutex");
 }
@@ -125,7 +121,7 @@ void DBServer_MySQL::confirmInfo( const uniset::ConfirmMessage* cem )
 	}
 }
 //--------------------------------------------------------------------------------------------
-bool DBServer_MySQL::writeToBase( const string& query )
+bool DBServer_MySQL::writeToBase( const std::string& query )
 {
 	dbinfo << myname << "(writeToBase): " << query << endl;
 
@@ -209,7 +205,7 @@ void DBServer_MySQL::sensorInfo( const uniset::SensorMessage* si )
 				   << endl;
 		}
 
-		float val = (float)si->value / (float)pow10(si->ci.precision);
+		float val = (float)si->value / (float)pow(10.0, si->ci.precision);
 
 		// см. DBTABLE AnalogSensors, DigitalSensors
 		ostringstream data;
@@ -279,9 +275,9 @@ void DBServer_MySQL::initDBServer()
 	tblMap[uniset::Message::SensorInfo] = "main_history";
 	tblMap[uniset::Message::Confirm] = "main_history";
 
-	PingTime = conf->getIntProp(node, "pingTime");
-	ReconnectTime = conf->getIntProp(node, "reconnectTime");
-	qbufSize = conf->getArgPInt("--dbserver-buffer-size", it.getProp("bufferSize"), 200);
+	PingTime = conf->getPIntProp(node, "pingTime", PingTime);
+	ReconnectTime = conf->getPIntProp(node, "reconnectTime", ReconnectTime);
+	qbufSize = conf->getArgPInt("--dbserver-buffer-size", it.getProp("bufferSize"), qbufSize);
 
 	if( findArgParam("--dbserver-buffer-last-remove", conf->getArgc(), conf->getArgv()) != -1 )
 		lastRemove = true;

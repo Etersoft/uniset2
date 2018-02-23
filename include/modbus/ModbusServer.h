@@ -92,37 +92,16 @@ namespace uniset
 			void setRecvTimeout( timeout_t msec );
 
 			/*! установить паузу при ожидании символа */
-			inline void setSleepPause( timeout_t msec )
-			{
-				sleepPause_msec = msec;
-			}
+			void setSleepPause( timeout_t msec );
 
-			inline void setCRCNoCheckit( bool set )
-			{
-				crcNoCheckit = set;
-			}
-			inline bool isCRCNoCheckit() const
-			{
-				return crcNoCheckit;
-			}
+			void setCRCNoCheckit( bool set );
+			bool isCRCNoCheckit() const;
 
-			inline void setBroadcastMode( bool set )
-			{
-				onBroadcast = set;
-			}
-			inline bool getBroadcastMode() const
-			{
-				return onBroadcast;
-			}
+			void setBroadcastMode( bool set );
+			bool getBroadcastMode() const;
 
-			inline void setCleanBeforeSend( bool set )
-			{
-				cleanBeforeSend = set;
-			}
-			inline bool getCleanBeforeSend()
-			{
-				return cleanBeforeSend;
-			}
+			void setCleanBeforeSend( bool set );
+			bool getCleanBeforeSend() const;
 
 			/*! Вспомогательная функция реализующая обработку запроса на установку времени.
 			    Основана на использовании gettimeofday и settimeofday.
@@ -151,19 +130,15 @@ namespace uniset
 			typedef std::unordered_map<ModbusRTU::mbErrCode, size_t> ExchangeErrorMap;
 
 			ExchangeErrorMap getErrorMap();
-			size_t getErrCount( ModbusRTU::mbErrCode e );
+			size_t getErrCount( ModbusRTU::mbErrCode e ) const;
 			size_t resetErrCount( ModbusRTU::mbErrCode e, size_t set = 0 );
 
-			inline size_t getAskCount() const
-			{
-				return askCount;
-			}
+			size_t getAskCount() const noexcept;
 			void resetAskCounter();
 
 		protected:
 
 			virtual void iowait( timeout_t usec );
-
 
 			/*! реализация получения очередного сообщения */
 			virtual ModbusRTU::mbErrCode realReceive( const std::unordered_set<ModbusRTU::ModbusAddr>& vaddr, timeout_t msecTimeout ) = 0;

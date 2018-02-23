@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <algorithm>
+#include "unisetstd.h"
 #include "CommonEventLoop.h"
 // -------------------------------------------------------------------------
 using namespace std;
@@ -15,6 +16,9 @@ namespace uniset
 
 		evprep.set(loop);
 		evprep.set<CommonEventLoop, &CommonEventLoop::onPrepare>(this);
+
+		evruntimer.set(loop);
+		evruntimer.set<CommonEventLoop, &CommonEventLoop::onLoopOK>(this);
 	}
 	// -------------------------------------------------------------------------
 	CommonEventLoop::~CommonEventLoop()
@@ -32,78 +36,87 @@ namespace uniset
 		}
 	}
 	// ---------------------------------------------------------------------------
-	bool CommonEventLoop::evrun( EvWatcher* w, bool thread, size_t waitTimeout_msec )
+	bool CommonEventLoop::runDefaultLoop( size_t waitTimeout_msec )
+	{
+		std::lock_guard<std::mutex> lock(thr_mutex);
+
+		if( thr )
+			return true;
+
+		thr = unisetstd::make_unique<std::thread>( [&] { CommonEventLoop::defaultLoop(); } );
+
+		std::unique_lock<std::mutex> lock2(looprunOK_mutex);
+		looprunOK_event.wait_for(lock2, std::chrono::milliseconds(waitTimeout_msec), [&]()
+		{
+			return (isrunning == true);
+		} );
+
+		return isrunning;
+	}
+	// ---------------------------------------------------------------------------
+	bool CommonEventLoop::activateWatcher( EvWatcher* w, size_t waitTimeout_msec )
+	{
+		// готовим "указатель" на объект требующий активации
+		std::unique_lock<std::mutex> locker(prep_mutex);
+		wprep = w;
+
+		// взводим флаг
+		prep_notify = false;
+
+		// посылаем сигнал для обработки
+		if( !evprep.is_active() )
+			evprep.start();
+
+		evprep.send(); // будим default loop
+
+		// ожидаем обработки evprepare (которая будет в defaultLoop)
+		prep_event.wait_for(locker, std::chrono::milliseconds(waitTimeout_msec), [ = ]()
+		{
+			return ( prep_notify == true );
+		} );
+
+		// сбрасываем флаг
+		prep_notify = false;
+
+		// если wprep стал nullptr - значит evprepare отработал нормально
+		bool ret = ( wprep == nullptr );
+		wprep = nullptr;
+
+		return ret;
+	}
+	// ---------------------------------------------------------------------------
+	void CommonEventLoop::onLoopOK( ev::timer& t, int revents ) noexcept
+	{
+		if( EV_ERROR & revents )
+			return;
+
+		isrunning = true;
+		looprunOK_event.notify_all();
+		t.stop();
+	}
+	// ---------------------------------------------------------------------------
+	bool CommonEventLoop::evrun( EvWatcher* w, size_t waitTimeout_msec )
 	{
 		if( w == nullptr )
 			return false;
 
-		bool ret = false;
 		{
+			std::lock_guard<std::mutex> lck(wlist_mutex);
+
+			if( std::find(wlist.begin(), wlist.end(), w) != wlist.end() )
 			{
-				std::lock_guard<std::mutex> lck(wlist_mutex);
-
-				if( std::find(wlist.begin(), wlist.end(), w) != wlist.end() )
-				{
-					cerr << "(CommonEventLoop::evrun): " << w->wname() << " ALREADY ADDED.." << endl;
-					return false;
-				}
-
-				wlist.push_back(w);
+				cerr << "(CommonEventLoop::evrun): " << w->wname() << " ALREADY ADDED.." << endl;
+				return false;
 			}
 
-			{
-				std::lock_guard<std::mutex> lock(thr_mutex);
-
-				if( !thr )
-				{
-					thr = make_shared<std::thread>( [ = ] { CommonEventLoop::defaultLoop(); } );
-
-					std::unique_lock<std::mutex> locker(prep_mutex);
-					// ожидаем запуска loop
-					// иначе evprep.send() улетит в никуда
-					prep_event.wait_for(locker, std::chrono::milliseconds(waitTimeout_msec), [ = ]()
-					{
-						return ( isrunning == true );
-					} );
-
-					if( !isrunning )
-					{
-						cerr << "(CommonEventLoop::evrun): " << w->wname() << " evloop NOT RUN!.." << endl;
-						return false;
-					}
-
-					// небольшая пауза после запуск event loop
-					// чтобы "надёжнее" сработал evprep.send() (см. ниже)
-					std::this_thread::sleep_for(std::chrono::milliseconds(50));
-				}
-			}
-
-			// готовим "указатель" на объект требующий активации
-			std::unique_lock<std::mutex> locker(prep_mutex);
-			wprep = w;
-
-			// взводим флаг
-			prep_notify = false;
-
-			// посылаем сигнал для обработки
-			evprep.send(); // будим default loop
-
-			// ожидаем обработки evprepare (которая будет в defaultLoop)
-			prep_event.wait_for(locker, std::chrono::milliseconds(waitTimeout_msec), [ = ]()
-			{
-				return ( prep_notify == true );
-			} );
-
-			// сбрасываем флаг
-			prep_notify = false;
-
-			// если wprep стал nullptr - значит evprepare отработал нормально
-			ret = ( wprep == nullptr );
+			wlist.push_back(w);
 		}
 
-		// если ждать завершения не надо (thread=true)
-		// или evprepare не удалось.. выходим..
-		if( thread || !ret )
+		bool defaultLoopOK = runDefaultLoop(waitTimeout_msec);
+		bool ret = defaultLoopOK && activateWatcher(w, waitTimeout_msec);
+
+		// или activateWatcher не удалось.. выходим..
+		if( !ret )
 			return ret;
 
 		// ожидаем завершения основного потока..
@@ -116,6 +129,27 @@ namespace uniset
 			thr->join();
 
 		return true;
+	}
+	// ---------------------------------------------------------------------------
+	bool CommonEventLoop::async_evrun( EvWatcher* w, size_t waitTimeout_msec )
+	{
+		if( w == nullptr )
+			return false;
+
+		{
+			std::lock_guard<std::mutex> lck(wlist_mutex);
+
+			if( std::find(wlist.begin(), wlist.end(), w) != wlist.end() )
+			{
+				cerr << "(CommonEventLoop::evrun): " << w->wname() << " ALREADY ADDED.." << endl;
+				return false;
+			}
+
+			wlist.push_back(w);
+		}
+
+		bool defaultLoopOK = runDefaultLoop(waitTimeout_msec);
+		return defaultLoopOK && activateWatcher(w, waitTimeout_msec);
 	}
 	// ---------------------------------------------------------------------------
 	bool CommonEventLoop::evIsActive() const noexcept
@@ -172,7 +206,7 @@ namespace uniset
 	{
 		if( EV_ERROR & revents )
 		{
-//			cerr << myname << "(CommonEventLoop::onPrepare): invalid event" << endl;
+			//			cerr << myname << "(CommonEventLoop::onPrepare): invalid event" << endl;
 			return;
 		}
 
@@ -185,13 +219,12 @@ namespace uniset
 				try
 				{
 					wprep->evprepare(loop);
+					wprep = nullptr;
 				}
 				catch( std::exception& ex )
 				{
 					cerr << "(CommonEventLoop::onPrepare): evprepare err: " << ex.what() << endl;
 				}
-
-				wprep = nullptr;
 			}
 		}
 
@@ -204,7 +237,7 @@ namespace uniset
 	{
 		if( EV_ERROR & revents )
 		{
-//			cerr << myname << "(CommonEventLoop::onStop): invalid event" << endl;
+			//			cerr << myname << "(CommonEventLoop::onStop): invalid event" << endl;
 			return;
 		}
 
@@ -235,7 +268,9 @@ namespace uniset
 		evterm.start();
 		evprep.start();
 
-		isrunning = true;
+		// нам нужен "одноразовый таймер"
+		// т.к. нам надо просто зафиксировать, что loop начал работать
+		evruntimer.start(0);
 
 		while( !cancelled )
 		{
@@ -254,6 +289,7 @@ namespace uniset
 
 		evterm.stop();
 		evprep.stop();
+		evruntimer.stop();
 
 		term_notify = true;
 		term_event.notify_all();

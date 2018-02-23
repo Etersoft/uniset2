@@ -101,15 +101,15 @@ namespace uniset
 
 			inline bool isRunning()
 			{
-				return state() == omni_thread::STATE_RUNNING;
+				return omni_thread::state() == omni_thread::STATE_RUNNING;
 			}
 			inline void stop()
 			{
-				exit(0);
+				omni_thread::exit(0);
 			}
 			inline int getTID()
 			{
-				return id();
+				return omni_thread::id();
 			}
 
 			inline void join()

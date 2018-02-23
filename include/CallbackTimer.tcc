@@ -26,14 +26,14 @@
 #include "CallbackTimer.h"
 
 // ------------------------------------------------------------------------------------------
-template <class Caller> class CallbackTimer;
+//template <class Caller> class uniset::CallbackTimer;
 
 // ------------------------------------------------------------------------------------------
 /*! Создание таймера
 	\param r - указатель на заказчика
 */
 template <class Caller>
-CallbackTimer<Caller>::CallbackTimer( Caller* r, Action a ):
+CallbackTimer<Caller>::CallbackTimer( Caller* r, CallbackTimer<Caller>::Action a ):
 	cal(r),
 	act(a),
 	terminated(false)
@@ -102,7 +102,7 @@ void CallbackTimer<Caller>::terminate()
 // ------------------------------------------------------------------------------------------
 
 template <class Caller>
-void CallbackTimer<Caller>::add(size_t id, timeout_t timeMS )throw(uniset::LimitTimers)
+void CallbackTimer<Caller>::add(size_t id, timeout_t timeMS )
 {
 	if( lst.size() >= MAXCallbackTimer )
 	{

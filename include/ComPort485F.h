@@ -39,11 +39,11 @@ namespace uniset
 	{
 		public:
 
-			ComPort485F( const std::string& comDevice, int gpio_num, bool tmit_ctrl = false );
+			ComPort485F( const std::string& comDevice, char gpio_num, bool tmit_ctrl = false );
 
 			virtual void sendByte( unsigned char x ) override;
 			virtual void setTimeout( timeout_t timeout ) override;
-			virtual size_t sendBlock( unsigned char* msg, size_t len ) override;
+			virtual ssize_t sendBlock( unsigned char* msg, size_t len ) override;
 
 			virtual void cleanupChannel() override;
 			virtual void reopen() override;
@@ -51,8 +51,8 @@ namespace uniset
 		protected:
 
 			virtual unsigned char m_receiveByte( bool wait ) override;
-			void save2queue(unsigned char* msg, size_t len, size_t bnum );
-			bool remove_echo( unsigned char tb[], size_t len );
+			void save2queue( unsigned char* msg, size_t len, size_t bnum );
+			bool remove_echo( unsigned char tb[], ssize_t len );
 			void m_read( timeout_t tmsec );
 
 			/*! просто временный буфер для считывания данных */
@@ -61,7 +61,7 @@ namespace uniset
 			std::queue<unsigned char> wq; /*!< хранилище байтов записанных в канал */
 			std::queue<unsigned char> rq; /*!< очередь для чтения */
 
-			int gpio_num;
+			char gpio_num;
 			bool tmit_ctrl_on;
 			PassiveTimer ptRecv;
 			timeout_t tout_msec = { 2000 };

@@ -33,7 +33,7 @@
 	</UniSet>
 	<dlog name="dlog"/>
 	<LogServer name="smplus" port="3333" host="localhost" />
-	
+
 	<settings>
 		<TestData x="10" y="100" text="text" zero="0" negative="-10"/>
 		<TestNode name="TestNode1"/>
@@ -171,6 +171,25 @@
 				<item rra="RRA:MAX:0.5:1:4320"/>
 			</rrd>
 		</RRDServer1>
+
+		<onelevelfind name="onelevelfind">
+		  <item name="l1">
+			  <item name="l1"/>
+			  <item name="l2" prop="bad"/>
+			  <item name="l3"/>
+		  </item>
+		  <item name="l2" prop="yes">
+			  <item name="l1"/>
+			  <item name="l2" prop="bad"/>
+			  <item name="l3"/>
+		  </item>
+		  <item name="l3">
+			 <item name="l1"/>
+			 <item name="l2" prop="bad"/>
+			 <item name="l3"/>
+		  </item>
+		  <item name="l4"/>
+		</onelevelfind>
 	</settings>
 	<ObjectsMap idfromfile="1">
 		<!--

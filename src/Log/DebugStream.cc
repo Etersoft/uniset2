@@ -145,7 +145,7 @@ std::ostream& DebugStream::debug(Debug::type t) noexcept
 {
 	if(dt & t)
 	{
-		IosFlagSaver ifs(*this);
+		uniset::ios_fmt_restorer ifs(*this);
 
 		if( show_datetime )
 			printDateTime(t);
@@ -192,7 +192,7 @@ std::ostream& DebugStream::printTime(Debug::type t, char brk) noexcept
 {
 	if(dt && t)
 	{
-		IosFlagSaver ifs(*this);
+		uniset::ios_fmt_restorer ifs(*this);
 
 		timespec tv = uniset::now_to_timespec(); // gettimeofday(tv,0);
 		std::tm tms = *std::localtime(&tv.tv_sec);
@@ -222,7 +222,7 @@ std::ostream& DebugStream::printDateTime(Debug::type t) noexcept
 {
 	if(dt & t)
 	{
-		IosFlagSaver ifs(*this);
+		uniset::ios_fmt_restorer ifs(*this);
 
 		timespec tv = uniset::now_to_timespec(); // gettimeofday(tv,0);
 		std::tm tms = *std::localtime(&tv.tv_sec);

@@ -8,6 +8,8 @@
 #include <mutex>
 #include <condition_variable>
 #include <vector>
+#include <queue>
+#include <future>
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -58,14 +60,17 @@ namespace uniset
 
 			bool evIsActive() const noexcept;
 
-			/*! \return TRUE - если всё удалось. return актуален только для случая когда thread = true
-			 * \param thread - создать отдельный (асинхронный) поток для event loop.
-			 * Если thread=false  - функция не вернёт управление и будет ждать завершения работы ( см. evstop())
-			 * \param waitPrepareTimeout_msec - сколько ждать активации, либо функция вернёт false.
-			 * Даже если thread = false, но wather не сможет быть "активирован" функция вернёт управление
-			 * с return false.
+			/*! Синхронный запуск. Функция возвращает управление (false), только если запуск не удался,
+			 * либо был остановлен вызовом evstop();
+			 * \param prepareTimeout_msec - сколько ждать активации, либо функция вернёт false.
 			 */
-			bool evrun( EvWatcher* w, bool thread = true, size_t waitPrepareTimeout_msec = 8000);
+			bool evrun( EvWatcher* w, size_t prepareTimeout_msec = 60000);
+
+			/*! Асинхронный запуск (запуск в отдельном потоке)
+			 * \return TRUE - если всё удалось.
+			 * \param prepareTimeout_msec - сколько ждать активации, либо функция вернёт false.
+			 */
+			bool async_evrun( EvWatcher* w, size_t prepareTimeout_msec = 60000 );
 
 			/*! \return TRUE - если это был последний EvWatcher и loop остановлен */
 			bool evstop( EvWatcher* w );
@@ -85,13 +90,16 @@ namespace uniset
 			void onStop( ev::async& w, int revents ) noexcept;
 			void onPrepare( ev::async& w, int revents ) noexcept;
 			void defaultLoop() noexcept;
+			bool runDefaultLoop( size_t waitTimeout_msec );
+			bool activateWatcher( EvWatcher* w, size_t waitTimeout_msec );
+			void onLoopOK( ev::timer& t, int revents ) noexcept;
 
 			std::atomic_bool cancelled = { false };
 			std::atomic_bool isrunning = { false };
 
 			ev::dynamic_loop loop;
 			ev::async evterm;
-			std::shared_ptr<std::thread> thr;
+			std::unique_ptr<std::thread> thr;
 			std::mutex              thr_mutex;
 
 			std::mutex              term_mutex;
@@ -108,6 +116,11 @@ namespace uniset
 			std::condition_variable prep_event;
 			std::mutex              prep_mutex;
 			std::atomic_bool prep_notify = { false };
+
+
+			std::mutex              looprunOK_mutex;
+			std::condition_variable looprunOK_event;
+			ev::timer evruntimer;
 	};
 	// -------------------------------------------------------------------------
 } // end of uniset namespace

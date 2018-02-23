@@ -139,14 +139,6 @@ MQTTPublisher::~MQTTPublisher()
 	mosqpp::lib_cleanup();  // Mosquitto library cleanup
 }
 // -----------------------------------------------------------------------------
-void MQTTPublisher::sigterm(int signo )
-{
-	myinfo << myname << "(sigterm): signo=" << signo << endl;
-	disconnect();
-	connectOK = false;
-	UObject_SK::sigterm(signo);
-}
-//--------------------------------------------------------------------------------
 bool MQTTPublisher::deactivateObject()
 {
 	myinfo << myname << "(deactivateObject): ...disconnect.." << endl;

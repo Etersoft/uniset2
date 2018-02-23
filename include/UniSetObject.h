@@ -84,8 +84,6 @@ namespace uniset
 			UniSetObject();
 			virtual ~UniSetObject();
 
-			std::shared_ptr<UniSetObject> get_ptr();
-
 			// Функции объявленные в IDL
 			virtual CORBA::Boolean exist() override;
 
@@ -117,6 +115,7 @@ namespace uniset
 			// -------------- вспомогательные --------------
 			/*! получить ссылку (на себя) */
 			uniset::ObjectPtr getRef() const;
+			std::shared_ptr<UniSetObject> get_ptr();
 
 			/*! заказ таймера (вынесена в public, хотя должна была бы быть в protected */
 			virtual timeout_t askTimer( uniset::TimerId timerid, timeout_t timeMS, clock_t ticks = -1,
@@ -128,7 +127,6 @@ namespace uniset
 
 			std::shared_ptr<UInterface> ui; /*!< универсальный интерфейс для работы с другими процессами */
 			std::string myname;
-			std::string section;
 			std::weak_ptr<UniSetManager> mymngr;
 
 			/*! обработка приходящих сообщений */
@@ -143,7 +141,7 @@ namespace uniset
 			VoidMessagePtr receiveMessage();
 
 			/*! Ожидать сообщения заданное время */
-			virtual VoidMessagePtr waitMessage( timeout_t msec = UniSetTimer::WaitUpTime );
+			VoidMessagePtr waitMessage( timeout_t msec = UniSetTimer::WaitUpTime );
 
 			/*! прервать ожидание сообщений */
 			void termWaiting();
@@ -157,17 +155,11 @@ namespace uniset
 			//! Активизация объекта (переопределяется для необходимых действий после активизации)
 			virtual bool activateObject();
 
-			//! Деактивиция объекта (переопределяется для необходимых действий перед деактивацией)
+			//! Деактивиция объекта (переопределяется для необходимых действий при завершении работы)
 			virtual bool deactivateObject();
 
-			/*! Функция вызываемая при приходе сигнала завершения или прерывания процесса. Переопределив ее можно
-			 *    выполнять специфичные для процесса действия по обработке сигнала.
-			 *    Например переход в безопасное состояние.
-			 *  \warning В обработчике сигналов \b ЗАПРЕЩЕНО вызывать функции подобные exit(..), abort()!!!!
-			*/
-			virtual void sigterm( int signo );
-
-			void terminate();
+			// прерывание работы всей программы (с вызовом shutdown)
+			void uterminate();
 
 			// управление созданием потока обработки сообщений -------
 
@@ -227,6 +219,8 @@ namespace uniset
 			/* удаление ссылки из репозитория объектов     */
 			void unregistration();
 
+			void waitFinish();
+
 			void initObject();
 
 			pid_t msgpid = { 0 }; // pid потока обработки сообщений
@@ -234,21 +228,21 @@ namespace uniset
 			std::atomic_bool active;
 
 			bool threadcreate;
-			std::shared_ptr<UniSetTimer> tmr;
+			std::unique_ptr<UniSetTimer> tmr;
 			uniset::ObjectId myid;
 			CORBA::Object_var oref;
 
 			/*! замок для блокирования совместного доступа к oRef */
 			mutable uniset::uniset_rwmutex refmutex;
 
-			std::shared_ptr< ThreadCreator<UniSetObject> > thr;
+			std::unique_ptr< ThreadCreator<UniSetObject> > thr;
 
 			/*! очереди сообщений в зависимости от приоритета */
 			MQMutex mqueueLow;
 			MQMutex mqueueMedium;
 			MQMutex mqueueHi;
 
-			std::atomic_bool a_working;
+			bool a_working;
 			std::mutex    m_working;
 			std::condition_variable cv_working;
 	};

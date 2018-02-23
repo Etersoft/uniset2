@@ -18,6 +18,7 @@
 #define _RTUSTORAGE_H_
 // -----------------------------------------------------------------------------
 #include <ostream>
+#include <cstdint>
 #include <string>
 #include <memory>
 #include "modbus/ModbusTypes.h"
@@ -34,8 +35,8 @@ namespace uniset
 			explicit RTUStorage( ModbusRTU::ModbusAddr addr );
 			~RTUStorage();
 
-			void poll( const std::shared_ptr<ModbusRTUMaster>& mb )
-			throw(ModbusRTU::mbException);
+			// throw(ModbusRTU::mbException);
+			void poll( const std::shared_ptr<ModbusRTUMaster>& mb );
 
 			inline ModbusRTU::ModbusAddr getAddress()
 			{
@@ -78,13 +79,13 @@ namespace uniset
 			static RTUJack s2j( const std::string& jack );
 			static std::string j2s( RTUJack j );
 
-			long getInt( RTUJack jack, unsigned short channel, UniversalIO::IOType t );
-			float getFloat( RTUJack jack, unsigned short channel, UniversalIO::IOType t );
-			bool getState( RTUJack jack, unsigned short channel, UniversalIO::IOType t );
+			long getInt( RTUJack jack, uint16_t channel, UniversalIO::IOType t );
+			float getFloat( RTUJack jack, uint16_t channel, UniversalIO::IOType t );
+			bool getState( RTUJack jack, uint16_t channel, UniversalIO::IOType t );
 
-			static ModbusRTU::ModbusData getRegister( RTUJack jack, unsigned short channel, UniversalIO::IOType t );
+			static ModbusRTU::ModbusData getRegister( RTUJack jack, uint16_t channel, UniversalIO::IOType t );
 
-			static ModbusRTU::SlaveFunctionCode getFunction( RTUJack jack, unsigned short channel, UniversalIO::IOType t );
+			static ModbusRTU::SlaveFunctionCode getFunction( RTUJack jack, uint16_t channel, UniversalIO::IOType t );
 
 			// ДОДЕЛАТЬ: setState, setValue
 			void print();

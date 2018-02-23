@@ -75,7 +75,8 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 			 << "' nodes-filter-value='" << n_fvalue << "'" << endl;
 
 	int recvTimeout = conf->getArgPInt("--" + prefix + "-recv-timeout", it.getProp("recvTimeout"), 5000);
-	int prepareTime = conf->getArgPInt("--" + prefix + "-preapre-time", it.getProp("prepareTime"), 2000);
+	int prepareTime = conf->getArgPInt("--" + prefix + "-prepare-time", it.getProp("prepareTime"), 2000);
+	int evrunTimeout = conf->getArgPInt("--" + prefix + "-evrun-timeout", it.getProp("evrunTimeout"), 60000);
 	int recvpause = conf->getArgPInt("--" + prefix + "-recvpause", it.getProp("recvpause"), 10);
 	int sendpause = conf->getArgPInt("--" + prefix + "-sendpause", it.getProp("sendpause"), 100);
 	int updatepause = conf->getArgPInt("--" + prefix + "-updatepause", it.getProp("updatepause"), 100);
@@ -84,6 +85,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 	int maxDiff = conf->getArgPInt("--" + prefix + "-maxdifferense", it.getProp("maxDifferense"), 100);
 	int maxProcessingCount = conf->getArgPInt("--" + prefix + "-maxprocessingcount", it.getProp("maxProcessingCount"), 100);
 	int checkConnectionPause = conf->getArgPInt("--" + prefix + "-checkconnection-pause", it.getProp("checkConnectionPause"), 10000);
+	int initpause = conf->getArgPInt("--" + prefix + "-initpause", it.getProp("initpause"), 5000);
 
 	std::string updateStrategy = conf->getArg2Param("--" + prefix + "-update-strategy", it.getProp("updateStrategy"), "evloop");
 
@@ -334,10 +336,12 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 
 		r->setReceiveTimeout(recvTimeout);
 		r->setPrepareTime(prepareTime);
+		r->setEvrunTimeout(evrunTimeout);
 		r->setLostTimeout(lostTimeout);
 		r->setReceivePause(recvpause);
 		r->setUpdatePause(updatepause);
 		r->setCheckConnectionPause(checkConnectionPause);
+		r->setInitPause(initpause);
 		r->setMaxDifferens(maxDiff);
 		r->setMaxProcessingCount(maxProcessingCount);
 		r->setRespondID(resp_id, resp_invert);
@@ -362,10 +366,13 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 				r2->setLockUpdate(true);
 
 				r2->setReceiveTimeout(recvTimeout);
+				r2->setPrepareTime(prepareTime);
+				r2->setEvrunTimeout(evrunTimeout);
 				r2->setLostTimeout(lostTimeout);
 				r2->setReceivePause(recvpause);
 				r2->setUpdatePause(updatepause);
 				r2->setCheckConnectionPause(checkConnectionPause);
+				r2->setInitPause(initpause);
 				r2->setMaxDifferens(maxDiff);
 				r2->setMaxProcessingCount(maxProcessingCount);
 				r2->setRespondID(resp2_id, resp_invert);
@@ -468,25 +475,31 @@ void UNetExchange::startReceivers()
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetExchange::waitSMReady()
+bool UNetExchange::waitSMReady()
 {
 	// waiting for SM is ready...
-	int tout = uniset_conf()->getArgInt("--unet-sm-ready-timeout", "15000");
+	int tout = uniset_conf()->getArgPInt("--unet-sm-ready-timeout", "", uniset_conf()->getNCReadyTimeout());
 
-	timeout_t ready_timeout = 60000;
+	timeout_t ready_timeout = uniset_conf()->getNCReadyTimeout();
 
 	if( tout > 0 )
 		ready_timeout = tout;
 	else if( tout < 0 )
 		ready_timeout = UniSetTimer::WaitUpTime;
 
-	if( !shm->waitSMready(ready_timeout, 50) )
+	if( !shm->waitSMreadyWithCancellation(ready_timeout, cancelled, 50) )
 	{
-		ostringstream err;
-		err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
-		unetcrit << err.str() << endl;
-		throw SystemError(err.str());
+		if( !cancelled )
+		{
+			ostringstream err;
+			err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
+			unetcrit << err.str() << endl;
+		}
+
+		return false;
 	}
+
+	return true;
 }
 // -----------------------------------------------------------------------------
 void UNetExchange::timerInfo( const TimerMessage* tm )
@@ -532,7 +545,9 @@ void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface>& shm, 
 			if( respondInvert )
 				resp = !resp;
 
-			shm->localSetValue(itRespond, sidRespond, resp, shm->ID());
+			// сохраняем только если закончилось время на начальную инициализацию
+			if( (r1 && r1->isInitOK()) || (r2 && r2->isInitOK()) )
+				shm->localSetValue(itRespond, sidRespond, resp, shm->ID());
 		}
 	}
 	catch( const std::exception& ex )
@@ -592,7 +607,7 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
 				try
 				{
 					unetinfo << myname << "(init): run log server " << logserv_host << ":" << logserv_port << endl;
-					logserv->run(logserv_host, logserv_port, true);
+					logserv->async_run(logserv_host, logserv_port);
 				}
 				catch( std::exception& ex )
 				{
@@ -600,14 +615,23 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
 				}
 			}
 
-			waitSMReady();
+			if( !waitSMReady() )
+			{
+				if( !cancelled )
+				{
+					//					std::terminate();
+					uterminate();
+				}
+
+				return;
+			}
 
 			// подождать пока пройдёт инициализация датчиков
 			// см. activateObject()
 			msleep(initPause);
 			PassiveTimer ptAct(activateTimeout);
 
-			while( !activated && !ptAct.checkTime() )
+			while( !cancelled && !activated && !ptAct.checkTime() )
 			{
 				cout << myname << "(sysCommand): wait activate..." << endl;
 				msleep(300);
@@ -615,6 +639,9 @@ void UNetExchange::sysCommand( const uniset::SystemMessage* sm )
 				if( activated )
 					break;
 			}
+
+			if( cancelled )
+				return;
 
 			if( !activated )
 				unetcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
@@ -724,6 +751,8 @@ bool UNetExchange::activateObject()
 // ------------------------------------------------------------------------------------------
 bool UNetExchange::deactivateObject()
 {
+	cancelled = true;
+
 	if( activated )
 	{
 		unetinfo << myname << "(deactivateObject): disactivate.." << endl;
@@ -772,17 +801,6 @@ void UNetExchange::termSenders()
 	catch(...) {}
 }
 // ------------------------------------------------------------------------------------------
-void UNetExchange::sigterm( int signo )
-{
-	unetinfo << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
-	activated = false;
-
-	termReceivers();
-	termSenders();
-
-	UniSetObject::sigterm(signo);
-}
-// ------------------------------------------------------------------------------------------
 void UNetExchange::initIterators() noexcept
 {
 	shm->initIterator(itHeartBeat);
@@ -810,14 +828,14 @@ void UNetExchange::help_print( int argc, const char* argv[] ) noexcept
 	cout << "--prefix-steptime msec           - Пауза между обновлением информации о связи с узлами." << endl;
 	cout << "--prefix-checkconnection-pause msec  - Пауза между попытками открыть соединение (если это не удалось до этого). По умолчанию: 10000 (10 сек)" << endl;
 	cout << "--prefix-maxdifferense num       - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;
-	cout << "--prefix-maxprocessingcount num  - время на ожидание старта SM" << endl;
+	cout << "--prefix-maxprocessingcount num  - Максимальное количество пакетов обрабатываемых за один раз (если их слишком много)" << endl;
 	cout << "--prefix-nosender [0,1]          - Отключить посылку." << endl;
 	cout << "--prefix-update-strategy [thread,evloop] - Стратегия обновления данных в SM. " << endl;
 	cout << "                                         'thread' - у каждого UNetReceiver отдельный поток" << endl;
 	cout << "                                         'evloop' - используется общий (с приёмом сообщений) event loop" << endl;
 	cout << "                                 По умолчанию: evloop" << endl;
 
-	cout << "--prefix-sm-ready-timeout msec   - Время ожидание я готовности SM к работе. По умолчанию 15000" << endl;
+	cout << "--prefix-sm-ready-timeout msec   - Время ожидание я готовности SM к работе. По умолчанию 120000" << endl;
 	cout << "--prefix-filter-field name       - Название фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
 	cout << "--prefix-filter-value name       - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
 	cout << endl;

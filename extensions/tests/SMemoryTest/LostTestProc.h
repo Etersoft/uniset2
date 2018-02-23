@@ -30,7 +30,7 @@ class LostTestProc:
 
 		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
-		virtual std::string getMonitInfo() override;
+		virtual std::string getMonitInfo() const override;
 
 		size_t ncycle = { 0 };
 		bool waitEmpty = { false };

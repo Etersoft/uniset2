@@ -14,6 +14,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -------------------------------------------------------------------------
+#include <cstdint>
 #include <iostream>
 #include <iomanip>
 #include "UniSetTypes.h"
@@ -30,8 +31,8 @@ static void print_help()
 int main( int argc, const char** argv )
 {
 	//	std::ios::sync_with_stdio(false);
-	unsigned short v1 = 0;
-	unsigned short v2 = 0;
+	uint16_t v1 = 0;
+	uint16_t v2 = 0;
 	const char* type = "";
 
 	if( argc < 2 )

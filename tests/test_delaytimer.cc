@@ -199,6 +199,45 @@ TEST_CASE("[DelayTimer]: zero time", "[DelayTimer]" )
 			msleep(100);
 
 		REQUIRE( pt.getCurrent() >= 2000 );
+
+
+		// проверка работы при вызове check()
+		// уже после срабатывания таймера
+		dt.set(0, 100);
+		REQUIRE( dt.check(true) ); // взводим
+		REQUIRE( dt.check(false) ); // отпускаем..
+		msleep(150);
+		REQUIRE_FALSE( dt.check(false) ); // к этому моменту уже должен отпустить
 	}
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[DelayTimer]: wait[On|Off]", "[DelayTimer]" )
+{
+	DelayTimer dt(100, 100);
+	REQUIRE_FALSE(dt.isWaitingOn());
+	REQUIRE_FALSE(dt.isWaitingOff());
+	REQUIRE_FALSE(dt.isWaiting());
+	REQUIRE_FALSE( dt.get() );
+
+	dt.check(true);
+	REQUIRE(dt.isWaitingOn());
+	REQUIRE_FALSE(dt.isWaitingOff());
+	REQUIRE(dt.isWaiting());
+
+	msleep(200);
+	REQUIRE_FALSE(dt.isWaitingOn());
+	REQUIRE_FALSE(dt.isWaitingOff());
+	REQUIRE_FALSE(dt.isWaiting());
+
+	dt.check(false);
+	REQUIRE_FALSE(dt.isWaitingOn());
+	REQUIRE(dt.isWaitingOff());
+	REQUIRE(dt.isWaiting());
+
+	msleep(200);
+	REQUIRE_FALSE(dt.isWaitingOn());
+	REQUIRE_FALSE(dt.isWaitingOff());
+	REQUIRE_FALSE(dt.isWaiting());
+	REQUIRE_FALSE( dt.get() );
 }
 // -----------------------------------------------------------------------------

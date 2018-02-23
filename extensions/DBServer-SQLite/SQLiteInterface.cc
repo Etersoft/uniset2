@@ -46,7 +46,10 @@ SQLiteInterface::~SQLiteInterface()
 	}
 	catch( ... ) // пропускаем все необработанные исключения, если требуется обработать нужно вызывать close() до деструктора
 	{
-		cerr << "MySQLInterface::~MySQLInterface(): an error occured while closing connection!" << endl;
+		std::exception_ptr p = std::current_exception();
+		cerr << "(SQLiteInterface::~SQLiteInterface): "
+			 << (p ? p.__cxa_exception_type()->name() : "an error occured while closing connection!")
+			 << std::endl;
 	}
 }
 
@@ -73,13 +76,16 @@ bool SQLiteInterface::connect( const std::string& param )
 	return connect( dbfile, false );
 }
 // -----------------------------------------------------------------------------------------
-bool SQLiteInterface::connect( const string& dbfile, bool create )
+bool SQLiteInterface::connect( const string& dbfile, bool create, int extra_sqlite_flags )
 {
 	// т.к. sqlite3 по умолчанию, создаёт файл при открытии, то проверим "сами"
 	//    if( !create && !uniset::file_exist(dbfile) )
 	//        return false;
 
 	int flags = create ? 0 : SQLITE_OPEN_READWRITE;
+
+	if( extra_sqlite_flags )
+		flags |= extra_sqlite_flags;
 
 	int rc = sqlite3_open_v2(dbfile.c_str(), &db, flags, NULL);
 
@@ -175,9 +181,7 @@ DBResult SQLiteInterface::query( const string& q )
 
 	lastQ = q;
 	queryok = true;
-	DBResult dbres;
-	makeResult(dbres, pStmt, true);
-	return dbres;
+	return makeResult(pStmt, true);
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::wait( sqlite3_stmt* stmt, int result )
@@ -201,7 +205,10 @@ bool SQLiteInterface::wait( sqlite3_stmt* stmt, int result )
 const string SQLiteInterface::error()
 {
 	if( db )
-		lastE = sqlite3_errmsg(db);
+	{
+		int errcode = sqlite3_errcode(db);
+		lastE = ( errcode == SQLITE_OK ) ? "" : sqlite3_errmsg(db);
+	}
 
 	return lastE;
 }
@@ -209,6 +216,11 @@ const string SQLiteInterface::error()
 const string SQLiteInterface::lastQuery()
 {
 	return lastQ;
+}
+// -----------------------------------------------------------------------------------------
+bool SQLiteInterface::lastQueryOK() const
+{
+	return queryok;
 }
 // -----------------------------------------------------------------------------------------
 double SQLiteInterface::insert_id()
@@ -224,14 +236,16 @@ bool SQLiteInterface::isConnection() const
 	return connected;
 }
 // -----------------------------------------------------------------------------------------
-void SQLiteInterface::makeResult(DBResult& dbres, sqlite3_stmt* s, bool finalize )
+DBResult SQLiteInterface::makeResult( sqlite3_stmt* s, bool finalize )
 {
+	DBResult result;
+
 	if( !s )
 	{
 		if( finalize )
 			sqlite3_finalize(s);
 
-		return;
+		return result;
 	}
 
 	do
@@ -243,27 +257,36 @@ void SQLiteInterface::makeResult(DBResult& dbres, sqlite3_stmt* s, bool finalize
 			if( finalize )
 				sqlite3_finalize(s);
 
-			return;
+			return result;
 		}
 
 		DBResult::COL c;
 
 		for( int i = 0; i < n; i++ )
 		{
-			char* p = (char*)sqlite3_column_text(s, i);
+			const char* p = (const char*)sqlite3_column_text(s, i);
 
 			if( p )
+			{
+				const char* cname = (const char*)sqlite3_column_name(s, i);
+
+				if( cname )
+					result.setColName(i, cname);
+
 				c.emplace_back(p);
+			}
 			else
 				c.emplace_back("");
 		}
 
-		dbres.row().emplace_back(c);
+		result.row().emplace_back(c);
 	}
 	while( sqlite3_step(s) == SQLITE_ROW );
 
 	if( finalize )
 		sqlite3_finalize(s);
+
+	return result;
 }
 // -----------------------------------------------------------------------------------------
 extern "C" std::shared_ptr<DBInterface> create_sqliteinterface()

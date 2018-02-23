@@ -19,6 +19,7 @@
 //--------------------------------------------------------------------------
 #include <string>
 #include <memory>
+#include <atomic>
 #include "UniSetTypes.h"
 #include "Mutex.h"
 #include "IONotifyController.h"
@@ -67,6 +68,7 @@ namespace uniset
 			bool exist();
 			bool waitSMready( int msec, int pause = 5000 );
 			bool waitSMworking( uniset::ObjectId, int msec, int pause = 3000 );
+			bool waitSMreadyWithCancellation( int msec, std::atomic_bool& cancelFlag, int pause = 5000 );
 
 			inline bool isLocalwork() const noexcept
 			{

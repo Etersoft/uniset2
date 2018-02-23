@@ -45,6 +45,7 @@ namespace uniset
 			virtual bool ping() const override;
 
 			virtual DBResult query( const std::string& q ) override;
+			virtual void cancel_query() override;
 			virtual const std::string lastQuery() override;
 
 			virtual bool insert( const std::string& q ) override;
@@ -56,7 +57,7 @@ namespace uniset
 			typedef std::vector<Record> Data;
 
 			// fast insert: Use COPY..from SDTIN..
-			bool copy( const std::string& tblname, const std::list<std::string>& cols, const Data& data );
+			bool copy( const std::string& tblname, const std::vector<std::string>& cols, const Data& data );
 
 			virtual const std::string error() override;
 
@@ -64,7 +65,7 @@ namespace uniset
 
 		private:
 
-			void makeResult(DBResult& dbres, const pqxx::result& res );
+			DBResult makeResult( const pqxx::result& res );
 			std::shared_ptr<pqxx::connection> db;
 			std::string lastQ;
 			std::string lastE;

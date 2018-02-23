@@ -24,6 +24,7 @@
 // --------------------------------------------------------------------------
 #include <time.h> // for timespec
 #include <cstring>
+#include <string>
 #include <ostream>
 #include "UniSetTypes.h"
 #include "IOController_i.hh"
@@ -76,10 +77,11 @@ namespace uniset
 				assert(sizeof(uniset::RawDataOfTransportMessage) >= sizeof(msg));
 				std::memcpy(&tmsg.data, &msg, sizeof(msg));
 				tmsg.consumer = msg.consumer;
-				return std::move(tmsg);
+				return tmsg;
 			}
 	};
 
+	std::string strTypeOfMessage( int type );
 	std::ostream& operator<<( std::ostream& os, const Message::TypeOfMessage& t );
 
 	// ------------------------------------------------------------------------
@@ -198,7 +200,7 @@ namespace uniset
 				return transport(*this);
 			}
 
-			int command;
+			int command = { 0 };
 			long data[2];
 	};
 	std::ostream& operator<<( std::ostream& os, const SystemMessage::Command& c );
@@ -251,19 +253,19 @@ namespace uniset
 			ConfirmMessage( const ConfirmMessage& ) noexcept = default;
 			ConfirmMessage& operator=( const ConfirmMessage& ) noexcept = default;
 
-			ObjectId sensor_id;   /* ID датчика (события) */
-			double sensor_value;  /* значение датчика (события) */
-			struct timespec sensor_time;	/* время срабатывания датчика(события), который квитируем */
-			struct timespec confirm_time;   /* * время прошедшее до момента квитирования */
+			ObjectId sensor_id = { uniset::DefaultObjectId };   /* ID датчика (события) */
+			double sensor_value = { 0.0 };  /* значение датчика (события) */
+			struct timespec sensor_time = { 0, 0 }; /* время срабатывания датчика(события), который квитируем */
+			struct timespec confirm_time = { 0, 0 }; /* * время прошедшее до момента квитирования */
 
-			bool broadcast;
+			bool broadcast = { false };
 
 			/*!
 			    признак, что сообщение является пересланным.
 			    (т.е. в БД второй раз сохранять не надо, пересылать
 			     второй раз тоже не надо).
 			*/
-			bool forward;
+			bool forward = { false };
 
 		protected:
 			ConfirmMessage() noexcept;

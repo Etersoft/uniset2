@@ -129,7 +129,6 @@ namespace uniset
 
 			virtual void askSensors( UniversalIO::UIOCommand cmd ) override;
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
-			virtual void sigterm( int signo ) override;
 			virtual bool deactivateObject() override;
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 

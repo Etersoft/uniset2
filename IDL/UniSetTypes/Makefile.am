@@ -3,7 +3,7 @@
 ############################################################################
 
 # Каталоги для размещения генерируемых CC- и HH-файлов соответственно
-CCDIR=$(top_builddir)/src/ObjectRepository
+CCDIR=$(top_builddir)/src/Core
 HHDIR=$(top_builddir)/include
 
 # Исходные файлы IDL

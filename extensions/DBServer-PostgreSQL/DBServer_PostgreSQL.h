@@ -78,16 +78,16 @@ namespace uniset
 			typedef std::unordered_map<int, std::string> DBTableMap;
 
 			virtual void initDBServer() override;
-			virtual void initDB( std::shared_ptr<PostgreSQLInterface>& db ) {};
+			virtual void initDB( std::unique_ptr<PostgreSQLInterface>& db ) {};
 			virtual void initDBTableMap(DBTableMap& tblMap) {};
 
 			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 			virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) override;
-			virtual void sigterm( int signo ) override;
+			virtual bool deactivateObject() override;
 
-			bool writeToBase( const string& query );
+			bool writeToBase( const std::string& query );
 			void createTables( std::shared_ptr<PostgreSQLInterface>& db );
 
 			inline std::string tblName(int key)
@@ -103,24 +103,24 @@ namespace uniset
 				lastNumberOfTimer
 			};
 
-			std::shared_ptr<PostgreSQLInterface> db;
+			std::unique_ptr<PostgreSQLInterface> db;
 			int PingTime = { 15000 };
-			int ReconnectTime;
-			bool connect_ok;     /*! признак наличия соеднинения с сервером БД */
+			int ReconnectTime = { 30000 };
 
-			bool activate;
+			bool connect_ok = { false };     /*! признак наличия соеднинения с сервером БД */
+			bool activate = { false };
 
 			typedef std::queue<std::string> QueryBuffer;
 
 			QueryBuffer qbuf;
-			size_t qbufSize; // размер буфера сообщений.
+			size_t qbufSize = { 200 }; // размер буфера сообщений.
 			bool lastRemove = { false };
 
 			void flushBuffer();
 			std::mutex mqbuf;
 
 			// writeBuffer
-			const std::list<std::string> tblcols = { "date", "time", "time_usec", "sensor_id", "value", "node" };
+			const std::vector<std::string> tblcols = { "date", "time", "time_usec", "sensor_id", "value", "node" };
 
 			typedef std::vector<PostgreSQLInterface::Record> InsertBuffer;
 			InsertBuffer ibuf;

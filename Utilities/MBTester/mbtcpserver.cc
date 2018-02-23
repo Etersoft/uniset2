@@ -27,7 +27,7 @@ static void print_help()
 	printf("[-v|--verbose]                 - Print all messages to stdout\n");
 	printf("[-i|--iaddr] ip                - Server listen ip. Default 127.0.0.1\n");
 	printf("[-a|--myaddr] addr1,addr2,...  - Modbus address for master. Default: 0x01.\n");
-	printf("                    myaddr=255 - Reply to all RTU-addresses.\n");
+	printf("                    myaddr=0   - Reply to all RTU-addresses (broadcast).\n");
 	printf("[-p|--port] port               - Server port. Default: 502.\n");
 	printf("[-c|--const-reply] val         - Reply 'val' for all queries\n");
 	printf("[-s|--after-send-pause] msec   - Pause after send request. Default: 0\n");

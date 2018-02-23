@@ -43,6 +43,7 @@ static struct option longopts[] =
 	{ "timeout", required_argument, 0, 't' },
 	{ "iaddr", required_argument, 0, 'i' },
 	{ "port", required_argument, 0, 'p' },
+	{ "ignore-errors", no_argument, 0, 'g' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -55,6 +56,7 @@ static void print_help()
 	printf("[-n|--read-serial] slaveaddr    - read serial number from MTR\n");
 	printf("[-t|--timeout] msec             - Timeout. Default: 2000.\n");
 	printf("[-l|--num-cycles] num           - Number of cycles of exchange. Default: -1 infinitely.\n");
+	printf("[-g|--ignore-errors]            - Ignore errors\n");
 	printf("[-v|--verbose]                  - Print all messages to stdout\n");
 	printf("\nRTU prameters:\n");
 	printf("[-y|--use485F]                  - use RS485 Fastwel.\n");
@@ -98,12 +100,13 @@ int main( int argc, char** argv )
 	MTR::MTRType mtrtype = MTR::mtUnknown;
 	string iaddr("127.0.0.1");
 	int port = 502;
+	bool ignoreErrors = false;
 
 	try
 	{
 		while(1)
 		{
-			opt = getopt_long(argc, argv, "hvyq:r:d:s:t:x:m:n:i:p:", longopts, &optindex);
+			opt = getopt_long(argc, argv, "hvygq:r:d:s:t:x:m:n:i:p:", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -154,6 +157,10 @@ int main( int argc, char** argv )
 					slaveaddr = ModbusRTU::str2mbAddr( optarg );
 				}
 				break;
+
+				case 'g':
+					ignoreErrors = true;
+					break;
 
 				case 'n':
 				{
@@ -214,7 +221,7 @@ int main( int argc, char** argv )
 		{
 			auto mbtcp = new ModbusTCPMaster();
 			mbtcp->connect(iaddr, port);
-//			mbtcp->setForceDisconnect(!persist);
+			//			mbtcp->setForceDisconnect(!persist);
 			mb = mbtcp;
 		}
 		else
@@ -293,10 +300,24 @@ int main( int argc, char** argv )
 			}
 			catch( ModbusRTU::mbException& ex )
 			{
-				if( ex.err != ModbusRTU::erTimeOut )
+				if( ex.err == ModbusRTU::erTimeOut )
+				{
+					cout << "timeout..." << endl;
+				}
+				else
+				{
+					if( !ignoreErrors )
+						throw;
+
+					cerr << ex << endl;
+				}
+			}
+			catch( std::exception& ex )
+			{
+				if( !ignoreErrors )
 					throw;
 
-				cout << "timeout..." << endl;
+				cerr << ex.what() << endl;
 			}
 
 			if( ncycles > 0 )

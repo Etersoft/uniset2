@@ -102,7 +102,9 @@ namespace uniset
 	{
 		sessTimeout = t;
 
-		if( ioTimeout.is_active() )
+		if( t <= 0 )
+			ioTimeout.stop();
+		else if( ioTimeout.is_active() )
 			ioTimeout.start(t);
 	}
 	// -------------------------------------------------------------------------
@@ -123,7 +125,9 @@ namespace uniset
 		io.start(sock->getSocket(), ev::READ);
 
 		ioTimeout.set(loop);
-		ioTimeout.start(sessTimeout);
+
+		if( sessTimeout > 0 )
+			ioTimeout.start(sessTimeout);
 	}
 	// -------------------------------------------------------------------------
 	bool ModbusTCPSession::isActive() const
@@ -159,15 +163,16 @@ namespace uniset
 
 			terminate();
 		}
-		else
+		else if( sessTimeout > 0 )
 			ioTimeout.start(sessTimeout); // restart timer..
 	}
 	// -------------------------------------------------------------------------
-	void ModbusTCPSession::onTimeout( ev::timer& watcher, int revents )
+	void ModbusTCPSession::onTimeout( ev::timer& t, int revents )
 	{
 		if( dlog->is_info() )
 			dlog->info() << peername << ": timeout connection activity..(terminate session)" << endl;
 
+		t.stop();
 		terminate();
 	}
 	// -------------------------------------------------------------------------
@@ -211,7 +216,7 @@ namespace uniset
 		try
 		{
 			buf.clear();
-			res = tcp_processing(buf.aduhead);
+			res = tcp_processing(buf.mbaphead);
 
 			if( res != erNoError )
 				return res;
@@ -232,7 +237,7 @@ namespace uniset
 
 			// запоминаем принятый заголовок,
 			// для формирования ответа (см. make_adu_header)
-			curQueryHeader = buf.aduhead;
+			curQueryHeader = buf.mbaphead;
 
 			if( dlog->is_level9() )
 				dlog->level9() << "(ModbusTCPSession::recv): ADU len=" << curQueryHeader.len << endl;
@@ -320,7 +325,7 @@ namespace uniset
 		return 0;
 	}
 	// --------------------------------------------------------------------------------
-	mbErrCode ModbusTCPSession::tcp_processing( ModbusRTU::ADUHeader& mhead )
+	mbErrCode ModbusTCPSession::tcp_processing( ModbusRTU::MBAPHeader& mhead )
 	{
 		// чистим очередь
 		while( !qrecv.empty() )
@@ -404,7 +409,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	mbErrCode ModbusTCPSession::make_adu_header( ModbusMessage& req )
 	{
-		req.makeHead(curQueryHeader.tID, isCRCNoCheckit(), curQueryHeader.pID);
+		req.makeMBAPHeader(curQueryHeader.tID, isCRCNoCheckit(), curQueryHeader.pID);
 		return erNoError;
 	}
 	// -------------------------------------------------------------------------
@@ -584,6 +589,11 @@ namespace uniset
 	void ModbusTCPSession::connectFinalSession( FinalSlot sl )
 	{
 		slFin = sl;
+	}
+	// -------------------------------------------------------------------------
+	string ModbusTCPSession::getClientAddress() const
+	{
+		return caddr;
 	}
 	// -------------------------------------------------------------------------
 } // end of namespace uniset

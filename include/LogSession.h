@@ -53,23 +53,11 @@ namespace uniset
 			// прервать работу
 			void cancel() noexcept;
 
-			inline std::string getClientAddress() const noexcept
-			{
-				return caddr;
-			}
+			std::string getClientAddress() const noexcept;
 
-			inline void setSessionLogLevel( Debug::type t ) noexcept
-			{
-				mylog.level(t);
-			}
-			inline void addSessionLogLevel( Debug::type t ) noexcept
-			{
-				mylog.addLevel(t);
-			}
-			inline void delSessionLogLevel( Debug::type t ) noexcept
-			{
-				mylog.delLevel(t);
-			}
+			void setSessionLogLevel( Debug::type t ) noexcept;
+			void addSessionLogLevel( Debug::type t ) noexcept;
+			void delSessionLogLevel( Debug::type t ) noexcept;
 
 			//! Установить размер буфера для сообщений (количество записей. Не в байтах!!)
 			void setMaxBufSize( size_t num );
@@ -105,7 +93,7 @@ namespace uniset
 			void logOnEvent( const std::string& s ) noexcept;
 
 			timeout_t cmdTimeout = { 2000 };
-			float checkConnectionTime = { 10. }; // время на проверку живости соединения..(сек)
+			double checkConnectionTime = { 10. }; // время на проверку живости соединения..(сек)
 
 			// Т.к. сообщений может быть ОЧЕНЬ МНОГО.. сеть медленная
 			// очередь будет не успевать рассасываться,

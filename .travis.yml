@@ -1,5 +1,6 @@
 language: c++
 
+# group: deprecated-2017Q4
 compiler:
 #  - clang
   - gcc
@@ -26,14 +27,18 @@ before_install:
 install:
   # have no catch package
   - sudo apt-get install libcomedi-dev libpoco-dev libmysqlclient-dev libomniorb4-dev libev-dev omniidl xsltproc libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev libmosquittopp0-dev
-  - wget https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp -O include/catch.hpp
+  # catch 2.x
+  # - wget https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp -O include/catch.hpp
+  
+  # catch 1.x
+  - wget https://github.com/catchorg/Catch2/releases/download/v1.11.0/catch.hpp -O include/catch.hpp
 
 before_script:
   - export CXXFLAGS='-pipe -O2 -pedantic -Wall'
   # due broken comedi
   - export CXXFLAGS="$CXXFLAGS -Wl,--unresolved-symbols=ignore-in-shared-libs"
   - autoreconf -fiv
-  - ./configure --enable-tests --enable-mysql --enable-sqlite --enable-rrd --enable-io --enable-logicproc --disable-python --disable-mqtt --disable-pgsql --disable-api --disable-pkgchecklibev --disable-netdata
+  - ./configure --enable-tests --enable-mysql --enable-sqlite --enable-rrd --enable-io --disable-python --disable-mqtt --disable-pgsql --disable-api --disable-pkgchecklibev --disable-netdata --disable-logdb
 
 script:
   - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make ; fi

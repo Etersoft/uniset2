@@ -22,6 +22,7 @@
 #include <deque>
 #include <string>
 #include "UniXML.h"
+#include "ThreadCreator.h"
 #include "PassiveTimer.h"
 #include "Trigger.h"
 #include "IONotifyController.h"
@@ -32,7 +33,6 @@
 #include "DigitalFilter.h"
 #include "Calibration.h"
 #include "SMInterface.h"
-#include "SingleProcess.h"
 #include "IOController.h"
 #include "IOBase.h"
 #include "SharedMemory.h"
@@ -40,9 +40,13 @@
 #include "DebugStream.h"
 #include "LogAgregator.h"
 // -------------------------------------------------------------------------
+#ifndef vmonit
+#define vmonit( var ) vmon.add( #var, var )
+#endif
+// -------------------------------------------------------------------------
 namespace uniset
 {
-	// -----------------------------------------------------------------------------
+	// ---------------------------------------------------------------------
 	/*!
 	      \page page_IOControl (IOControl) Реализация процесса ввода/вывода
 
@@ -197,12 +201,12 @@ namespace uniset
 					delete (*this)[i];
 			}
 
-			inline ComediInterface* getCard(int ncard) const
+			inline ComediInterface* getCard( size_t ncard ) const
 			{
-				if( ncard >= 0 && ncard < (int)size() )
+				if( ncard < size() )
 					return (*this)[ncard];
 
-				return NULL;
+				return nullptr;
 			}
 
 	};
@@ -226,7 +230,7 @@ namespace uniset
 		public UniSetObject
 	{
 		public:
-			IOControl( uniset::ObjectId id, uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr, int numcards = 2, const std::string& prefix = "io" );
+			IOControl( uniset::ObjectId id, uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& shm = nullptr, size_t numcards = 2, const std::string& prefix = "io" );
 			virtual ~IOControl();
 
 			/*! глобальная функция для инициализации объекта */
@@ -235,6 +239,8 @@ namespace uniset
 					const std::string& prefix = "io" );
 			/*! глобальная функция для вывода help-а */
 			static void help_print( int argc, const char* const* argv );
+
+			virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
 
 			/*! Информация о входе/выходе */
 			struct IOInfo:
@@ -284,7 +290,8 @@ namespace uniset
 				bool enable_testmode;  /*!< флаг для режима тестирования tmConfigEnable */
 				bool disable_testmode; /*!< флаг для режима тестирования tmConfigDisable */
 
-				friend std::ostream& operator<<(std::ostream& os, IOInfo& inf );
+				friend std::ostream& operator<<(std::ostream& os, const IOInfo& inf );
+				friend std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IOInfo>& inf );
 			};
 
 			struct IOPriority
@@ -306,23 +313,22 @@ namespace uniset
 				tmOnlyOutputs   = 5   /*!< включены только выходы */
 			};
 
-			void execute();
-
 		protected:
 
 			void iopoll(); /*!< опрос карт в/в */
-			void ioread( IOInfo* it );
+			void ioread( std::shared_ptr<IOInfo>& it );
 			void check_testlamp();
 			void check_testmode();
 			void blink();
+			void iothread();
 
 			// действия при завершении работы
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual void askSensors( UniversalIO::UIOCommand cmd );
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
-			virtual void sigterm( int signo ) override;
 			virtual bool activateObject() override;
+			virtual bool deactivateObject() override;
 
 			// начальная инициализация выходов
 			void initOutputs();
@@ -336,7 +342,7 @@ namespace uniset
 			bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
 			void buildCardsList();
 
-			void waitSM();
+			bool waitSM();
 
 			xmlNode* confnode = { 0 }; /*!< xml-узел в настроечном файле */
 
@@ -344,14 +350,14 @@ namespace uniset
 			CardList cards; /*!< список карт - массив созданных ComediInterface */
 			bool noCards = { false };
 
-			typedef std::vector<IOInfo> IOMap;
+			typedef std::vector< std::shared_ptr<IOInfo> > IOMap;
 			IOMap iomap;    /*!< список входов/выходов */
 
 			typedef std::deque<IOPriority> PIOMap;
 			PIOMap pmap;    /*!< список приоритетных входов/выходов */
 
-			unsigned int maxItem = { 0 };    /*!< количество элементов (используется на момент инициализации) */
-			unsigned int maxHalf = { 0 };
+			size_t maxItem = { 0 };    /*!< количество элементов (используется на момент инициализации) */
+			size_t maxHalf = { 0 };
 			int filtersize = { 0 };
 			float filterT = { 0.0 };
 
@@ -362,10 +368,10 @@ namespace uniset
 			uniset::ObjectId myid = { uniset::DefaultObjectId };
 			std::string prefix;
 
-			typedef std::list<IOInfo*> BlinkList;
+			typedef std::list<std::shared_ptr<IOInfo>> BlinkList;
 
-			void addBlink( IOInfo* it, BlinkList& lst );
-			void delBlink( IOInfo* it, BlinkList& lst );
+			void addBlink( std::shared_ptr<IOInfo>& it, BlinkList& lst );
+			void delBlink( std::shared_ptr<IOInfo>& it, BlinkList& lst );
 			void blink( BlinkList& lst, bool& bstate );
 
 			// обычное мигание
@@ -396,15 +402,15 @@ namespace uniset
 			bool force = { false };            /*!< флаг, означающий, что надо сохранять в SM, даже если значение не менялось */
 			bool force_out = { false };        /*!< флаг, включающий принудительное чтения выходов */
 			timeout_t smReadyTimeout = { 15000 };    /*!< время ожидания готовности SM к работе, мсек */
-			int defCardNum = { -1 };        /*!< номер карты по умолчанию */
-			int maxCardNum = { 10 };        /*! максимально разрешённый номер для карты */
+			ssize_t defCardNum = { -1 };        /*!< номер карты по умолчанию */
+			size_t maxCardNum = { 10 };        /*! максимально разрешённый номер для карты */
 
 			std::mutex iopollMutex;
 			std::atomic_bool activated = { false };
+			std::atomic_bool cancelled = { false };
 			bool readconf_ok = { false };
 			int activateTimeout;
 			uniset::ObjectId sidTestSMReady = { uniset::DefaultObjectId };
-			std::atomic_bool term = { false };
 
 			uniset::ObjectId testMode_as = { uniset::DefaultObjectId };
 			IOController::IOStateList::iterator itTestMode;
@@ -416,6 +422,10 @@ namespace uniset
 			std::shared_ptr<LogServer> logserv;
 			std::string logserv_host = {""};
 			int logserv_port = {0};
+
+			std::shared_ptr< ThreadCreator<IOControl> > ioThread;
+
+			VMonitor vmon;
 
 		private:
 	};

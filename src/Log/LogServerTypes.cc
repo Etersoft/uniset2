@@ -14,7 +14,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -------------------------------------------------------------------------
+#include "UniSetTypes.h"
 #include "LogServerTypes.h"
+#include "Debug.h"
+
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -68,7 +71,7 @@ namespace uniset
 		return os;
 	}
 	// -------------------------------------------------------------------------
-	std::ostream& LogServerTypes::operator<<(std::ostream& os, LogServerTypes::lsMessage& m )
+	std::ostream& LogServerTypes::operator<<(std::ostream& os, const LogServerTypes::lsMessage& m )
 	{
 		return os << " magic=" << m.magic << " cmd=" << m.cmd << " data=" << m.data;
 	}
@@ -79,5 +82,62 @@ namespace uniset
 		memcpy( &logname, name.data(), s );
 		logname[s] = '\0';
 	}
+	// -------------------------------------------------------------------------
+	static const std::string checkArg( size_t i, const std::vector<std::string>& v )
+	{
+		if( i < v.size() && (v[i])[0] != '-' )
+			return v[i];
+
+		return "";
+	}
+	// --------------------------------------------------------------------------
+
+	std::vector<LogServerTypes::lsMessage> LogServerTypes::getCommands( const std::string& cmd )
+	{
+		vector<lsMessage> vcmd;
+
+		auto v = uniset::explode_str(cmd, ' ');
+
+		if( v.empty() )
+			return vcmd;
+
+		for( size_t i = 0; i < v.size(); i++ )
+		{
+			auto c = v[i];
+
+			string arg1 = checkArg(i + 1, v);
+
+			if( arg1.empty() )
+				continue;
+
+			i++;
+
+			std::string filter = checkArg(i + 2, v);
+
+			if( !filter.empty() )
+				i++;
+
+			if( c == "-s" || c == "--set" )
+			{
+				LogServerTypes::Command cmd = LogServerTypes::cmdSetLevel;
+				vcmd.emplace_back(cmd, (int)Debug::value(arg1), filter);
+			}
+			else if( c == "-a" || c == "--add" )
+			{
+				LogServerTypes::Command cmd = LogServerTypes::cmdAddLevel;
+				vcmd.emplace_back(cmd, (int)Debug::value(arg1), filter);
+			}
+			else if( c == "-d" || c == "--del" )
+			{
+				LogServerTypes::Command cmd = LogServerTypes::cmdDelLevel;
+				vcmd.emplace_back(cmd, (int)Debug::value(arg1), filter);
+			}
+		}
+
+		return vcmd;
+	}
+	// -------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
+
 	// -------------------------------------------------------------------------
 } // end of namespace uniset

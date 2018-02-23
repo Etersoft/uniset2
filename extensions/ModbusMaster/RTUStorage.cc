@@ -51,7 +51,7 @@ namespace uniset
 
 	}
 	// -----------------------------------------------------------------------------
-	void RTUStorage::poll( const std::shared_ptr<ModbusRTUMaster>& mb ) throw( ModbusRTU::mbException )
+	void RTUStorage::poll( const std::shared_ptr<ModbusRTUMaster>& mb )
 	{
 		try
 		{
@@ -208,12 +208,12 @@ namespace uniset
 		}
 	}
 	// -----------------------------------------------------------------------------
-	long RTUStorage::getInt( RTUJack jack, unsigned short int chan, UniversalIO::IOType t )
+	long RTUStorage::getInt( RTUJack jack, uint16_t chan, UniversalIO::IOType t )
 	{
 		return lroundf( getFloat(jack, chan, t) );
 	}
 	// -----------------------------------------------------------------------------
-	float RTUStorage::getFloat( RTUJack jack, unsigned short int chan, UniversalIO::IOType t )
+	float RTUStorage::getFloat( RTUJack jack, uint16_t chan, UniversalIO::IOType t )
 	{
 		if( t == UniversalIO::AI )
 		{
@@ -270,7 +270,7 @@ namespace uniset
 		return 0;
 	}
 	// -----------------------------------------------------------------------------
-	bool RTUStorage::getState( RTUJack jack, unsigned short int chan, UniversalIO::IOType t )
+	bool RTUStorage::getState( RTUJack jack, uint16_t chan, UniversalIO::IOType t )
 	{
 		if( t == UniversalIO::DI )
 		{
@@ -321,7 +321,7 @@ namespace uniset
 		return false;
 	}
 	// -----------------------------------------------------------------------------
-	ModbusRTU::ModbusData RTUStorage::getRegister( RTUJack jack, unsigned short chan, UniversalIO::IOType t )
+	ModbusRTU::ModbusData RTUStorage::getRegister( RTUJack jack, uint16_t chan, UniversalIO::IOType t )
 	{
 		if( t == UniversalIO::AI )
 		{
@@ -424,7 +424,7 @@ namespace uniset
 		return -1;
 	}
 	// -----------------------------------------------------------------------------
-	ModbusRTU::SlaveFunctionCode RTUStorage::getFunction( RTUJack jack, unsigned short chan, UniversalIO::IOType t )
+	ModbusRTU::SlaveFunctionCode RTUStorage::getFunction( RTUJack jack, uint16_t chan, UniversalIO::IOType t )
 	{
 		if( t == UniversalIO::AI )
 		{

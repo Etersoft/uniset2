@@ -23,7 +23,6 @@
 // --------------------------------------------------------------------------
 #include <string>
 #include "UniSetTypes.h"
-#include "Exceptions.h"
 // --------------------------------------------------------------------------
 namespace uniset
 {
@@ -33,17 +32,12 @@ namespace uniset
 	class IORFile
 	{
 		public:
-			IORFile();
 
 			static std::string getIOR( const ObjectId id );
 			static void setIOR( const ObjectId id, const std::string& sior );
 			static void unlinkIOR( const ObjectId id );
 
 			static std::string getFileName( const ObjectId id );
-
-		protected:
-
-		private:
 	};
 	// -----------------------------------------------------------------------------------------
 }    // end of namespace

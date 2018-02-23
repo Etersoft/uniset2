@@ -146,7 +146,7 @@ TEST_CASE("LogServer", "[LogServer]" )
 
 	LogServer ls(la);
 	//ls.setSessionLog(Debug::ANY);
-	ls.run( ip, port, true );
+	ls.async_run( ip, port);
 
 	for( int i = 0; i < 3 && !ls.isRunning(); i++ )
 		msleep(600);
@@ -213,7 +213,7 @@ TEST_CASE("MaxSessions", "[LogServer]" )
 	ls.setCmdTimeout(100);
 	//ls.setSessionLog(Debug::ANY);
 	ls.setMaxSessionCount(1);
-	ls.run( ip, port, true );
+	ls.async_run( ip, port );
 
 	for( int i = 0; i < 4 && !ls.isRunning(); i++ )
 		msleep(600);
@@ -249,9 +249,9 @@ TEST_CASE("MaxSessions", "[LogServer]" )
 	{
 		std::lock_guard<std::mutex> l(r2_mutex);
 		/*
-				// Ищем часть сообщения об ошибке: '(LOG SERVER): Exceeded the limit on the number of sessions = 1'
-				size_t pos = msg2.str().find("Exceeded the limit");
-				REQUIRE( pos != std::string::npos );
+			// Ищем часть сообщения об ошибке: '(LOG SERVER): Exceeded the limit on the number of sessions = 1'
+			size_t pos = msg2.str().find("Exceeded the limit");
+			REQUIRE( pos != std::string::npos );
 		*/
 		// ничего не получили..
 		REQUIRE( msg2.str() == "" );

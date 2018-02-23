@@ -40,7 +40,7 @@ namespace uniset
 			virtual ~SViewer();
 
 			void view();
-			void monitor( timeout_t timeoutMS = 500 );
+			void monitor( timeout_t msec = 500 );
 
 		protected:
 			void readSection(const std::string& sec, const std::string& secRoot);
@@ -50,7 +50,11 @@ namespace uniset
 			virtual void updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tlst, uniset::ObjectId oid );
 
 			const std::string csec;
-			void printInfo(uniset::ObjectId id, const std::string& sname, long value, const std::string& supplier,
+
+			void printInfo(uniset::ObjectId id,
+						   const std::string& sname,
+						   long value,
+						   const std::string& supplier,
 						   const std::string& txtname, const std::string& iotype);
 
 			std::shared_ptr<UInterface> ui;

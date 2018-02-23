@@ -98,9 +98,7 @@ DBResult MySQLInterface::query( const std::string& q )
 	if( !res || mysql_num_rows(res) == 0 )
 		return DBResult();
 
-	DBResult dbres;
-	makeResult(dbres, res, true);
-	return dbres;
+	return makeResult(res, true);
 }
 // -----------------------------------------------------------------------------------------
 bool MySQLInterface::query_ok( const string& q )
@@ -180,14 +178,16 @@ string MySQLInterface::addslashes( const string& str )
 	return tmp.str();
 }
 // -----------------------------------------------------------------------------------------
-void MySQLInterface::makeResult(DBResult& dbres, MYSQL_RES* myres, bool finalize )
+DBResult MySQLInterface::makeResult( MYSQL_RES* myres, bool finalize )
 {
+	DBResult result;
+
 	if( !myres )
 	{
 		if( finalize )
 			mysql_free_result(myres);
 
-		return;
+		return result;
 	}
 
 	MYSQL_ROW mysql_row;
@@ -198,13 +198,20 @@ void MySQLInterface::makeResult(DBResult& dbres, MYSQL_RES* myres, bool finalize
 		DBResult::COL c;
 
 		for( unsigned int i = 0; i < nfields; i++ )
-			c.emplace_back( (mysql_row[i] != 0 ? string(mysql_row[i]) : "") );
+		{
+			MYSQL_FIELD* field_info = mysql_fetch_field_direct(myres, i);
+			result.setColName( i, std::string(field_info->name) );
 
-		dbres.row().emplace_back(c);
+			c.emplace_back( (mysql_row[i] != 0 ? string(mysql_row[i]) : "") );
+		}
+
+		result.row().emplace_back(c);
 	}
 
 	if( finalize )
 		mysql_free_result(myres);
+
+	return result;
 }
 // -----------------------------------------------------------------------------------------
 extern "C" std::shared_ptr<DBInterface> create_mysqlinterface()

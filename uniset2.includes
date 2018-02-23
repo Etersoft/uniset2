@@ -16,10 +16,11 @@ extensions/tests/SMemoryTest
 extensions/UNetUDP
 extensions/UniNetwork
 include
-include/libxml2/libxml
 include/modbus
 python/lib/pyUniSet
 src/Log
+src/Processes
+src/Communications
 Utilities/codegen
 Utilities/codegen/tests
 Utilities/MBTester
@@ -27,3 +28,5 @@ Utilities/NullController
 /usr/include/sigc++-2.0
 /usr/include/omniORB4
 /usr/include/Poco
+/usr/include/c++/5
+/usr/include/libxml2

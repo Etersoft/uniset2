@@ -18,6 +18,7 @@
 #include <string>
 #include <sys/wait.h>
 #include "Configuration.h"
+#include "Exceptions.h"
 #include "Extensions.h"
 // -------------------------------------------------------------------------
 using namespace std;

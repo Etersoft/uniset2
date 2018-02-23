@@ -396,7 +396,18 @@ namespace uniset
 		if( ret != sizeof(msg) || msg.magic != LogServerTypes::MAGICNUM )
 		{
 			if( mylog.is_warn() )
-				mylog.warn() << peername << "(LogSession::readEvent): BAD MESSAGE..." << endl;
+			{
+				ostringstream err;
+				err << peername << "(LogSession::readEvent): MESSAGE ERROR: ";
+
+				if( msg.magic != LogServerTypes::MAGICNUM )
+					err << "BAD MAGICNUM";
+
+				if( ret != sizeof(msg) )
+					err << "BAD soze of message (" << ret << ")";
+
+				mylog.warn() << err.str() << endl;
+			}
 
 			return;
 		}
@@ -568,7 +579,7 @@ namespace uniset
 		}
 	}
 	// -------------------------------------------------------------------------
-	void LogSession::onCmdTimeout( ev::timer& watcher, int revents ) noexcept
+	void LogSession::onCmdTimeout( ev::timer& t, int revents ) noexcept
 	{
 		if( EV_ERROR & revents )
 		{
@@ -578,11 +589,12 @@ namespace uniset
 			return;
 		}
 
+		t.stop();
 		io.set(ev::WRITE);
 		asyncEvent.start();
 	}
 	// -------------------------------------------------------------------------
-	void LogSession::onCheckConnectionTimer( ev::timer& watcher, int revents ) noexcept
+	void LogSession::onCheckConnectionTimer( ev::timer& t, int revents ) noexcept
 	{
 		if( EV_ERROR & revents )
 		{
@@ -595,10 +607,7 @@ namespace uniset
 		std::unique_lock<std::mutex> lk(logbuf_mutex);
 
 		if( !logbuf.empty() )
-		{
-			checkConnectionTimer.start( checkConnectionTime ); // restart timer
 			return;
-		}
 
 		// если клиент уже отвалился.. то при попытке write.. сессия будет закрыта.
 
@@ -612,7 +621,6 @@ namespace uniset
 		catch(...) {}
 
 		io.set(ev::WRITE);
-		checkConnectionTimer.start( checkConnectionTime ); // restart timer
 	}
 	// -------------------------------------------------------------------------
 	void LogSession::final() noexcept
@@ -637,6 +645,26 @@ namespace uniset
 	void LogSession::cancel() noexcept
 	{
 		cancelled = true;
+	}
+	// ---------------------------------------------------------------------
+	string LogSession::getClientAddress() const noexcept
+	{
+		return caddr;
+	}
+	// ---------------------------------------------------------------------
+	void LogSession::setSessionLogLevel(Debug::type t) noexcept
+	{
+		mylog.level(t);
+	}
+	// ---------------------------------------------------------------------
+	void LogSession::addSessionLogLevel(Debug::type t) noexcept
+	{
+		mylog.addLevel(t);
+	}
+	// ---------------------------------------------------------------------
+	void LogSession::delSessionLogLevel(Debug::type t) noexcept
+	{
+		mylog.delLevel(t);
 	}
 	// ---------------------------------------------------------------------
 	void LogSession::setMaxBufSize( size_t num )
@@ -673,7 +701,7 @@ namespace uniset
 			<< " numLostMsg=" << numLostMsg
 			<< endl;
 
-		return std::move(inf.str());
+		return inf.str();
 	}
 	// ---------------------------------------------------------------------
 #ifndef DISABLE_REST_API

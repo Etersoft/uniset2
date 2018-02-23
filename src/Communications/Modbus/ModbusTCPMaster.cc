@@ -114,7 +114,7 @@ namespace uniset
 			ptTimeout.setTiming(timeout_msec);
 
 			tcp->setReceiveTimeout( UniSetTimer::millisecToPoco(timeout_msec) );
-			msg.makeHead(++nTransaction, crcNoCheckit);
+			msg.makeMBAPHeader(++nTransaction, crcNoCheckit);
 
 			for( size_t i = 0; i < 2; i++ )
 			{
@@ -170,20 +170,20 @@ namespace uniset
 
 				while( !ptTimeout.checkTime() )
 				{
-					ret = getNextData((unsigned char*)(&reply.aduhead), sizeof(reply.aduhead));
+					ret = getNextData((unsigned char*)(&reply.mbaphead), sizeof(reply.mbaphead));
 
-					if( ret == sizeof(reply.aduhead) )
+					if( ret == sizeof(reply.mbaphead) )
 						break;
 				}
 
 				if( ret > 0 && dlog->is_info() )
 				{
 					dlog->info() << "(ModbusTCPMaster::query): recv tcp header(" << ret << "): ";
-					mbPrintMessage( dlog->info(false), (ModbusByte*)(&reply.aduhead), sizeof(reply.aduhead));
+					mbPrintMessage( dlog->info(false), (ModbusByte*)(&reply.mbaphead), sizeof(reply.mbaphead));
 					dlog->info(false) << endl;
 				}
 
-				if( ret < sizeof(reply.aduhead) )
+				if( ret < sizeof(reply.mbaphead) )
 				{
 					if( dlog->is_warn() )
 					{
@@ -192,7 +192,7 @@ namespace uniset
 							Poco::Net::SocketAddress  ia = tcp->peerAddress();
 
 							dlog->warn() << "(ModbusTCPMaster::query): ret=" << ret
-										 << " < rmh=" << sizeof(reply.aduhead)
+										 << " < rmh=" << sizeof(reply.mbaphead)
 										 << " perr: " << ia.host().toString() << ":" << ia.port()
 										 << endl;
 						}
@@ -333,6 +333,21 @@ namespace uniset
 		catch( ... ) {}
 	}
 	// -------------------------------------------------------------------------
+	void ModbusTCPMaster::cleanupChannel()
+	{
+		cleanInputStream();
+	}
+	// -------------------------------------------------------------------------
+	string ModbusTCPMaster::getAddress() const
+	{
+		return iaddr;
+	}
+	// -------------------------------------------------------------------------
+	int ModbusTCPMaster::getPort() const
+	{
+		return port;
+	}
+	// -------------------------------------------------------------------------
 	void ModbusTCPMaster::setReadTimeout( timeout_t msec )
 	{
 		readTimeout = msec;
@@ -364,6 +379,11 @@ namespace uniset
 		}
 
 		return false;
+	}
+	// -------------------------------------------------------------------------
+	void ModbusTCPMaster::setForceDisconnect( bool s )
+	{
+		force_disconnect = s;
 	}
 	// -------------------------------------------------------------------------
 	bool ModbusTCPMaster::reconnect()

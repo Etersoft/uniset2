@@ -30,27 +30,15 @@ namespace uniset
 
 			static bool checkConnection( const std::string& ip, int port, int timeout_msec = 100 );
 
-			inline void setForceDisconnect( bool s )
-			{
-				force_disconnect = s;
-			}
+			void setForceDisconnect( bool s );
 
 			bool reconnect();
 			void cleanInputStream();
 
-			virtual void cleanupChannel() override
-			{
-				cleanInputStream();
-			}
+			virtual void cleanupChannel() override;
 
-			inline std::string getAddress() const
-			{
-				return iaddr;
-			}
-			inline int getPort() const
-			{
-				return port;
-			}
+			std::string getAddress() const;
+			int getPort() const;
 
 			void setReadTimeout( timeout_t msec );
 			timeout_t getReadTimeout() const;

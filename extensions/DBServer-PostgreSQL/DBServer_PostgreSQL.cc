@@ -19,6 +19,7 @@
 #include <iomanip>
 #include <cmath>
 
+#include "unisetstd.h"
 #include "ORepHelpers.h"
 #include "DBServer_PostgreSQL.h"
 #include "Configuration.h"
@@ -30,15 +31,9 @@ using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
 DBServer_PostgreSQL::DBServer_PostgreSQL(ObjectId id, const std::string& prefix ):
-	DBServer(id, prefix),
-	PingTime(300000),
-	ReconnectTime(180000),
-	connect_ok(false),
-	activate(true),
-	qbufSize(200),
-	lastRemove(false)
+	DBServer(id, prefix)
 {
-	db = make_shared<PostgreSQLInterface>();
+	db = unisetstd::make_unique<PostgreSQLInterface>();
 
 	if( getId() == DefaultObjectId )
 	{
@@ -49,15 +44,9 @@ DBServer_PostgreSQL::DBServer_PostgreSQL(ObjectId id, const std::string& prefix 
 }
 
 DBServer_PostgreSQL::DBServer_PostgreSQL():
-	DBServer(uniset_conf()->getDBServer()),
-	db(make_shared<PostgreSQLInterface>()),
-	PingTime(300000),
-	ReconnectTime(180000),
-	connect_ok(false),
-	activate(true),
-	qbufSize(200),
-	lastRemove(false)
+	DBServer(uniset_conf()->getDBServer())
 {
+	db = unisetstd::make_unique<PostgreSQLInterface>();
 
 	//    init();
 	if( getId() == DefaultObjectId )
@@ -333,10 +322,10 @@ void DBServer_PostgreSQL::initDBServer()
 	tblMap[uniset::Message::SensorInfo] = "main_history";
 	tblMap[uniset::Message::Confirm] = "main_history";
 
-	PingTime = conf->getArgPInt("--" + prefix + "-pingTime", it.getProp("pingTime"), 15000);
-	ReconnectTime = conf->getArgPInt("--" + prefix + "-reconnectTime", it.getProp("reconnectTime"), 30000);
+	PingTime = conf->getArgPInt("--" + prefix + "-pingTime", it.getProp("pingTime"), PingTime);
+	ReconnectTime = conf->getArgPInt("--" + prefix + "-reconnectTime", it.getProp("reconnectTime"), ReconnectTime);
 
-	qbufSize = conf->getArgPInt("--" + prefix + "-buffer-size", it.getProp("bufferSize"), 200);
+	qbufSize = conf->getArgPInt("--" + prefix + "-buffer-size", it.getProp("bufferSize"), qbufSize);
 
 	if( findArgParam("--" + prefix + "-buffer-last-remove", conf->getArgc(), conf->getArgv()) != -1 )
 		lastRemove = true;
@@ -461,7 +450,7 @@ void DBServer_PostgreSQL::timerInfo( const uniset::TimerMessage* tm )
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_PostgreSQL::sigterm( int signo )
+bool DBServer_PostgreSQL::deactivateObject()
 {
 	if( db && connect_ok )
 	{
@@ -472,7 +461,7 @@ void DBServer_PostgreSQL::sigterm( int signo )
 		catch(...) {}
 	}
 
-	DBServer::sigterm(signo);
+	return DBServer::deactivateObject();
 }
 //--------------------------------------------------------------------------------------------
 std::shared_ptr<DBServer_PostgreSQL> DBServer_PostgreSQL::init_dbserver( int argc, const char* const* argv,

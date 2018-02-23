@@ -28,21 +28,20 @@ namespace uniset
 	class ComediInterface
 	{
 		public:
-			explicit ComediInterface( const std::string& dev );
-			~ComediInterface();
+			explicit ComediInterface( const std::string& dev, const std::string& cname );
+			virtual ~ComediInterface();
 
-			int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND )
-			throw(uniset::Exception);
+			// throw uniset::Exception
+			virtual int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND ) const;
 
-			void setAnalogChannel( int subdev, int channel, int data, int range = 0, int aref = AREF_GROUND )
-			throw(uniset::Exception);
+			// throw uniset::Exception
+			virtual void setAnalogChannel( int subdev, int channel, int data, int range = 0, int aref = AREF_GROUND ) const;
 
-			bool getDigitalChannel( int subdev, int channel )
-			throw(uniset::Exception);
+			// throw uniset::Exception
+			virtual bool getDigitalChannel( int subdev, int channel ) const;
 
-			void setDigitalChannel( int subdev, int channel, bool bit )
-			throw(uniset::Exception);
-
+			// throw uniset::Exception
+			virtual void setDigitalChannel( int subdev, int channel, bool bit ) const;
 
 			// Конфигурирование входов / выходов
 			enum ChannelType
@@ -65,20 +64,28 @@ namespace uniset
 			static std::string type2str( SubdevType t );
 			static SubdevType str2type( const std::string& s );
 
-			void configureSubdev( int subdev, SubdevType type ) throw(uniset::Exception);
+			// throw uniset::Exception
+			virtual void configureSubdev( int subdev, SubdevType type ) const;
 
-			void configureChannel( int subdev, int channel, ChannelType type, int range = 0, int aref = 0 )
-			throw(uniset::Exception);
+			// throw uniset::Exception
+			virtual void configureChannel( int subdev, int channel, ChannelType type, int range = 0, int aref = 0 ) const;
 
-			inline const std::string devname()
+			inline const std::string devname() const
 			{
 				return dname;
 			}
 
+			inline const std::string cardname() const
+			{
+				return name;
+			}
+
 		protected:
+			ComediInterface(): card(nullptr) {}
 
 			comedi_t* card;    /*!< интерфейс для работы с картами в/в */
 			std::string dname;
+			std::string name;
 
 		private:
 	};
@@ -87,4 +94,3 @@ namespace uniset
 // -----------------------------------------------------------------------------
 #endif // ComediInterface_H_
 // -----------------------------------------------------------------------------
-

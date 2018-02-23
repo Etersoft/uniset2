@@ -33,7 +33,7 @@ namespace uniset
 
 			std::shared_ptr<Element> manage( std::shared_ptr<Element> el );
 
-			void remove( std::shared_ptr<Element> el );
+			void remove( std::shared_ptr<Element>& el );
 
 			void link( Element::ElementID rootID, Element::ElementID childID, int numIn );
 			void unlink( Element::ElementID rootID, Element::ElementID childID );

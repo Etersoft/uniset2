@@ -69,6 +69,7 @@ namespace uniset
 	      - \b respondSensor - название(name) датчика связи.
 		  - \b respondInitTimeout - msec, время на инициализацию связи после запуска процесса. Т.е. только после этого времени будет выставлен(обновлён) датчик наличия связи. По умолчанию время равно timeout.
 	      - \b ask_every_reg - 1 - опрашивать ВСЕ регистры подряд, не обращая внимания на timeout. По умолчанию - "0" Т.е. опрос устройства (на текущем шаге цикла опроса), прерывается на первом же регистре, при опросе которого возникнет timeout.
+		  - \b safemodeXXX - см. \ref sec_MBTCP_SafeMode
 
 	      \par Параметры запуска
 
@@ -207,6 +208,32 @@ namespace uniset
 	    Режимы переключаются при помощи датчика, который можно задать либо аргументом командной строки
 	    \b --prefix-exchange-mode-id либо в конф. файле параметром \b exchangeModeID="". Константы определяющие режимы объявлены в MBTCPMaster::ExchangeMode.
 
+		\section sec_MBTCP_SafeMode Управление режимом "безопасного состояния"
+			В MBTCPMaster заложена возможность управлять режимом выставления безопасного состояния входов и выходов.
+		Возможны следующие режимы:
+		- \b safeNone - режим отключён (по умолчанию)
+		- \b safeExternalControl - управление при помощи внешнего датчика
+		- \b safeResetIfNotRespond - выставление безопасных значение, если пропала связь с устройством.
+
+		Суть этого режима, в том, что все входы и выходы у которых в настройках указан параметр safeval=""
+		выставляются в это значение, при срабатывании внешнего датчика (режим "safeExternalControl") или
+		при отсутсвии связи с устройством (режим "safeResetIfNotRespond").
+
+		Режим задаётся в секции <DeviceList> для каждого устройства отдельно.
+		\code
+			<DeviceList>
+				<item addr="01" .. safemodeSensor="Slave1_SafemodeSensor_S" safemodeValue="42"/>
+				<item addr="02" .. safemodeResetIfNotRespond="1"/>
+			</DeviceList>
+		\endcode
+		Если указан параметр \a safemodeSensor="..", то используется режим \b safeExternalControl.
+		При этом можно указать конкретное значение датчика \a safemodeSensorValue="..",
+		при котором будет сделан сброс значений в безопасное состояние.
+
+		Если указан параметр safemodeResetIfNotRespond="1", то будет использован режим \b safeResetIfNotRespond.
+		Если указан и параметр \a safemodeSensor=".." и \a safemodeResetIfNotRespond="1", то будет использован
+		режим \b safeExternalControl (как более приоритетный).
+
 	*/
 	// -----------------------------------------------------------------------------
 	/*!
@@ -231,7 +258,6 @@ namespace uniset
 					uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
 					const std::string& prefix = "mbtcp" );
 
-			/*! глобальная функция для вывода help-а */
 			static void help_print( int argc, const char* const* argv );
 
 			virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
@@ -239,7 +265,6 @@ namespace uniset
 		protected:
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;
-			virtual void sigterm( int signo ) override;
 			virtual bool deactivateObject() override;
 
 			std::string iaddr;
@@ -256,7 +281,7 @@ namespace uniset
 
 			// т.к. TCP может "зависнуть" на подключении к недоступному узлу
 			// делаем опрос в отдельном потоке
-			std::shared_ptr<ThreadCreator<MBTCPMaster>> pollThread; /*!< поток опроса */
+			std::unique_ptr<ThreadCreator<MBTCPMaster>> pollThread; /*!< поток опроса */
 	};
 	// --------------------------------------------------------------------------
 } // end of namespace uniset

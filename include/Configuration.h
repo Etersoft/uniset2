@@ -38,7 +38,7 @@
 namespace uniset
 {
 	/*!
-	     Конфигуратор системы
+		 Конфигурация системы
 	     \note В случае обнаружения критической ошибки в настроечном файле файле.
 	     Вырабатывает исключение и прекращает работу.
 	*/
@@ -123,6 +123,8 @@ namespace uniset
 			std::string getImagesDir() const noexcept;
 
 			timeout_t getHeartBeatTime() const noexcept;
+			timeout_t getNCReadyTimeout() const noexcept;
+			timeout_t getStartupIgnoreTimeout() const noexcept;
 
 			// dirs
 			const std::string getConfDir() const noexcept;
@@ -166,6 +168,8 @@ namespace uniset
 
 			CORBA::ORB_ptr getORB() const;
 			const CORBA::PolicyList getPolicy() const noexcept;
+
+			static bool checkOmniORBendPoint( const std::string& endPoint );
 
 		protected:
 			Configuration();
@@ -231,6 +235,8 @@ namespace uniset
 			bool transientIOR = { false };
 
 			timeout_t heartbeat_msec = { 3000 };
+			timeout_t ncreadytimeout_msec = { 180000 };
+			timeout_t startupIgnoretimeout_msec = { 5000 };
 	};
 
 	/*! Глобальный указатель на конфигурацию (singleton) */

@@ -116,7 +116,7 @@ namespace uniset
 		setKeepAliveParams();
 	}
 	// -------------------------------------------------------------------------
-	bool UTCPStream::isConnected() noexcept
+	bool UTCPStream::isConnected() const noexcept
 	{
 		return ( Poco::Net::StreamSocket::sockfd() != POCO_INVALID_SOCKET );
 		/*

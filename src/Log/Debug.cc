@@ -64,16 +64,16 @@ Debug::type const Debug::ANY = Debug::type(
 								   Debug::EXCEPTION );
 
 
-Debug::type Debug::value(string const& val)
+Debug::type Debug::value( std::string const& val)
 {
 	type l = Debug::NONE;
-	string v(val);
+	std::string v(val);
 
 	while (!v.empty())
 	{
-		string::size_type st = v.find(',');
+		std::string::size_type st = v.find(',');
 		//string tmp(lowercase(v.substr(0, st)));
-		string tmp(v.substr(0, st));
+		std::string tmp(v.substr(0, st));
 
 
 		if(tmp.empty())
@@ -98,7 +98,7 @@ Debug::type Debug::value(string const& val)
 				break;
 			}
 
-		if (st == string::npos) break;
+		if (st == std::string::npos) break;
 
 		v.erase(0, st + 1);
 	}

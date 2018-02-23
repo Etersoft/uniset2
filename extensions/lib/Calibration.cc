@@ -346,7 +346,7 @@ namespace uniset
 		sort(cache.begin(), cache.end()); // пересортируем в порядке уменьшения обращений (см. CacheInfo::operator< )
 	}
 	// ----------------------------------------------------------------------------
-	long Calibration::getRawValue( const long cal, bool range )
+	long Calibration::getRawValue( const long cal, bool range ) const
 	{
 		for( auto& it : pvec )
 		{

@@ -20,6 +20,7 @@
 // --------------------------------------------------------------------------
 #include <omniORB4/CORBA.h>
 #include <omniORB4/omniURI.h>
+#include <omniORB4/Naming.hh>
 #include <string.h>
 #include <sstream>
 #include "ObjectRepository.h"
@@ -84,7 +85,6 @@ bool ObjectRepository::init() const
  * \sa registration(const std::string& fullName, const CORBA::Object_ptr oRef)
 */
 void ObjectRepository::registration(const string& name, const ObjectPtr oRef, const string& section, bool force) const
-throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
 {
 	ostringstream err;
 
@@ -103,7 +103,7 @@ throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
 	}
 
 	// Проверка корректности имени
-	char bad = ORepHelpers::checkBadSymbols(name);
+	char bad = uniset::checkBadSymbols(name);
 
 	if( bad != 0 )
 	{
@@ -126,7 +126,7 @@ throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
 			ctx->bind(oName, oRef);
 			return;
 		}
-		catch(const CosNaming::NamingContext::AlreadyBound& nf)
+		catch(const CosNaming::NamingContext::AlreadyBound&)
 		{
 			uwarn << "(registration): " << name << " уже зарегестрирован в " << section << "!!!" << endl;
 
@@ -148,7 +148,7 @@ throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
 		{
 			throw NameNotFound();
 		}
-		catch( const CosNaming::NamingContext::InvalidName& nf )
+		catch( const CosNaming::NamingContext::InvalidName& )
 		{
 			err << "ObjectRepository(registration): (InvalidName) не смог зарегистрировать ссылку  " << name;;
 		}
@@ -183,7 +183,6 @@ throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
  *  \sa registration(const string name, const ObjectPtr oRef, const string section)
 */
 void ObjectRepository::registration( const std::string& fullName, const uniset::ObjectPtr oRef, bool force ) const
-throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
 {
 	//    string n(ORepHelpers::getShortName(fullName));
 	string n( uconf->oind->getBaseName(fullName) );
@@ -200,8 +199,7 @@ throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
  *    проверки на, то не является ли имя ссылкой на объект или контекст
  *    т.к. для удаления ссылки на контекст нужен алгоритм посложнее...
 */
-void ObjectRepository::unregistration(const string& name, const string& section) const
-throw(ORepFailed, NameNotFound)
+void ObjectRepository::unregistration( const string& name, const string& section ) const
 {
 	ostringstream err;
 	CosNaming::Name_var oName = omniURI::stringToName(name.c_str());
@@ -215,11 +213,11 @@ throw(ORepFailed, NameNotFound)
 		ctx->unbind(oName);
 		return;
 	}
-	catch(const CosNaming::NamingContext::NotFound& nf)
+	catch(const CosNaming::NamingContext::NotFound&)
 	{
 		err << "ObjectRepository(unregistrartion): не найден объект ->" << name;
 	}
-	catch(const CosNaming::NamingContext::InvalidName& in)
+	catch(const CosNaming::NamingContext::InvalidName&)
 	{
 		err << "ObjectRepository(unregistrartion): не корректное имя объекта -> " << name;
 	}
@@ -241,7 +239,6 @@ throw(ORepFailed, NameNotFound)
  *     \sa unregistration(const string name, const string section)
 */
 void ObjectRepository::unregistration(const string& fullName) const
-throw(ORepFailed, NameNotFound)
 {
 	//    string n(ORepHelpers::getShortName(fullName));
 	string n(uconf->oind->getBaseName(fullName));
@@ -251,7 +248,6 @@ throw(ORepFailed, NameNotFound)
 // --------------------------------------------------------------------------
 
 ObjectPtr ObjectRepository::resolve( const string& name, const string& NSName ) const
-throw(ORepFailed,  NameNotFound)
 {
 	ostringstream err;
 
@@ -269,11 +265,11 @@ throw(ORepFailed,  NameNotFound)
 
 		err << "ObjectRepository(resolve): не смог получить ссылку на объект " << name.c_str();
 	}
-	catch(const CosNaming::NamingContext::NotFound& nf)
+	catch(const CosNaming::NamingContext::NotFound&)
 	{
 		err << "ObjectRepository(resolve): NameNotFound name= " << name;
 	}
-	catch(const CosNaming::NamingContext::InvalidName& nf)
+	catch(const CosNaming::NamingContext::InvalidName&)
 	{
 		err << "ObjectRepository(resolve): не смог получить ссылку на контекст(InvalidName) ";
 	}
@@ -308,7 +304,7 @@ throw(ORepFailed,  NameNotFound)
  * количество объектов в этой секции превышает заданное how_many.
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepository::list(const string& section, ListObjectName* ls, size_t how_many)throw(ORepFailed)
+bool ObjectRepository::list(const string& section, ListObjectName* ls, size_t how_many) const
 {
 	return list(section, ls, how_many, ObjectRef);
 }
@@ -322,7 +318,7 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, size_t ho
  * количество объектов в этой секции превышает заданное how_many.
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepository::listSections(const string& in_section, ListObjectName* ls, size_t how_many)throw(ORepFailed)
+bool ObjectRepository::listSections(const string& in_section, ListObjectName* ls, size_t how_many) const
 {
 	return list(in_section, ls, how_many, Section);
 }
@@ -333,13 +329,12 @@ bool ObjectRepository::listSections(const string& in_section, ListObjectName* ls
  * \param how_many - максимальное количество заносимых элементов
  * \param in_section - полное имя секции начиная с Root.
  * \param type - тип вынимаемых(заносимых в список) объектов.
- * \return Функция возвращает true, если в список были внесены не все элементы. Т.е. действительное
+ * \return Функция возвращает false, если в список были внесены не все элементы. Т.е. действительное
  * количество объектов в этой секции превышает заданное how_many.
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned int how_many, ObjectType type)
+bool ObjectRepository::list( const string& section, ListObjectName* olist, size_t how_many, ObjectType type ) const
 {
-	// Возвращает false если вынут не весь список...
 	CosNaming::NamingContext_var ctx;
 
 	try
@@ -363,7 +358,7 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned 
 	CosNaming::BindingIterator_var bi;
 	ctx->list(how_many, bl, bi);
 
-	// хитрая проверка на null приобращении к bl
+	// хитрая проверка на null при обращении к bl
 	// coverity говорит потенциально это возможно
 	// т.к. там возвращается указатель, который по умолчанию null
 	if( !bl.operator->() )
@@ -371,7 +366,7 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned 
 
 	bool res = true;
 
-	if(how_many >= bl->length())
+	if( how_many >= bl->length() )
 		how_many = bl->length();
 	else
 	{
@@ -381,14 +376,14 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned 
 
 	//    cout << "получили список "<< section << " размером " << bl->length()<< endl;
 
-	for( unsigned int i = 0; i < how_many; i++)
+	for( size_t i = 0; i < how_many; i++ )
 	{
 		switch( type )
 		{
 			case ObjectRef:
 			{
 				if(bl[i].binding_type == CosNaming::nobject)
-					ls->emplace_front(omniURI::nameToString(bl[i].binding_name));
+					olist->emplace_front(omniURI::nameToString(bl[i].binding_name));
 
 				break;
 			}
@@ -396,7 +391,7 @@ bool ObjectRepository::list(const string& section, ListObjectName* ls, unsigned 
 			case Section:
 			{
 				if( bl[i].binding_type == CosNaming::ncontext)
-					ls->emplace_front(omniURI::nameToString(bl[i].binding_name));
+					olist->emplace_front(omniURI::nameToString(bl[i].binding_name));
 
 				break;
 			}
@@ -450,9 +445,9 @@ bool ObjectRepository::isExist( const ObjectPtr& oref ) const
  * \param section - полное имя секции начиная с Root.
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepository::createSection(const string& name, const string& in_section)throw(ORepFailed, InvalidObjectName)
+bool ObjectRepository::createSection(const string& name, const string& in_section) const
 {
-	char bad = ORepHelpers::checkBadSymbols(name);
+	char bad = uniset::checkBadSymbols(name);
 
 	if (bad != 0)
 	{
@@ -472,7 +467,7 @@ bool ObjectRepository::createSection(const string& name, const string& in_sectio
 
 	int argc(uconf->getArgc());
 	const char* const* argv(uconf->getArgv());
-	CosNaming::NamingContext_var ctx = ORepHelpers::getContext(in_section, argc, argv, uconf->getNSName() );
+	CosNaming::NamingContext_var ctx = ORepHelpers::getContext(in_section, argc, argv, nsName );
 	return createContext( name, ctx.in() );
 }
 // -------------------------------------------------------------------------------------------------------
@@ -480,7 +475,7 @@ bool ObjectRepository::createSection(const string& name, const string& in_sectio
  * \param fullName - полное имя создаваемой секции
  * \exception ORepFailed - генерируется если произошла при получении доступа к секции
 */
-bool ObjectRepository::createSectionF( const string& fullName )throw(ORepFailed, InvalidObjectName)
+bool ObjectRepository::createSectionF( const string& fullName ) const
 {
 	string name(ObjectIndex::getBaseName(fullName));
 	string sec(ORepHelpers::getSectionName(fullName));
@@ -488,25 +483,25 @@ bool ObjectRepository::createSectionF( const string& fullName )throw(ORepFailed,
 	ulogrep << name << endl;
 	ulogrep << sec << endl;
 
-	if ( sec.empty() )
+	if( sec.empty() )
 	{
 		ulogrep << "SectionName is empty!!!" << endl;
 		ulogrep << "Добавляем в " << uconf->getRootSection() << endl;
 		return createSection(name, uconf->getRootSection());
 	}
-	else
-		return createSection(name, sec);
+
+	return createSection(name, sec);
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-bool ObjectRepository::createRootSection( const string& name )
+bool ObjectRepository::createRootSection( const string& name ) const
 {
 	CORBA::ORB_var orb = uconf->getORB();
-	CosNaming::NamingContext_var ctx = ORepHelpers::getRootNamingContext(orb, uconf->getNSName());
+	CosNaming::NamingContext_var ctx = ORepHelpers::getRootNamingContext(orb, nsName);
 	return createContext(name, ctx);
 }
 // -----------------------------------------------------------------------------------------------------------
-bool ObjectRepository::createContext( const string& cname, CosNaming::NamingContext_ptr ctx )
+bool ObjectRepository::createContext( const string& cname, CosNaming::NamingContext_ptr ctx ) const
 {
 	CosNaming::Name_var nc = omniURI::stringToName(cname.c_str());
 
@@ -517,10 +512,10 @@ bool ObjectRepository::createContext( const string& cname, CosNaming::NamingCont
 		ulogrep << "ORepFactory(createContext): создал. " << endl;
 		return true;
 	}
-	catch(const CosNaming::NamingContext::AlreadyBound& ab)
+	catch(const CosNaming::NamingContext::AlreadyBound ab)
 	{
 		//        ctx->resolve(nc);
-		ulogrep << "ORepFactory(createContext): context " << cname << " уже есть" << endl;
+		ulogrep << "ORepFactory(createContext): context " << cname << " already exist" << endl;
 		return true;
 	}
 	catch( const CosNaming::NamingContext::NotFound )
@@ -528,7 +523,7 @@ bool ObjectRepository::createContext( const string& cname, CosNaming::NamingCont
 		ulogrep << "ORepFactory(createContext): NotFound " << cname << endl;
 		throw NameNotFound();
 	}
-	catch( const CosNaming::NamingContext::InvalidName& nf )
+	catch( const CosNaming::NamingContext::InvalidName& )
 	{
 		uwarn << "ORepFactory(createContext): (InvalidName)  " << cname;
 	}
@@ -563,15 +558,15 @@ bool ObjectRepository::createContext( const string& cname, CosNaming::NamingCont
 /*!
 	\note Функция не вывести список, если не сможет получить доступ к секции
 */
-void ObjectRepository::printSection( const string& fullName )
+void ObjectRepository::printSection( const string& fullName ) const
 {
-	ListObjectName ls;
+	ListObjectName olist;
 
 	try
 	{
-		list(fullName.c_str(), &ls);
+		list(fullName.c_str(), &olist);
 
-		if( ls.empty() )
+		if( olist.empty() )
 			cout << fullName << " пуст!!!" << endl;
 	}
 	catch( ORepFailed )
@@ -580,9 +575,9 @@ void ObjectRepository::printSection( const string& fullName )
 		return ;
 	}
 
-	cout << fullName << "(" << ls.size() << "):" << endl;
+	cout << fullName << "(" << olist.size() << "):" << endl;
 
-	for( auto v : ls )
+	for( const auto& v : olist )
 		cout << v << endl;
 }
 
@@ -592,12 +587,12 @@ void ObjectRepository::printSection( const string& fullName )
  * \param recursive - удлаять рекурсивно все секции или возвращать не удалять и ошибку ( временно )
  * \warning Функция вынимает только первые 1000 объектов, остальные игнорируются...
 */
-bool ObjectRepository::removeSection(const string& fullName, bool recursive)
+bool ObjectRepository::removeSection( const string& fullName, bool recursive ) const
 {
 	//    string name = getName(fullName.c_str(),'/');
 	//  string sec = getSectionName(fullName.c_str(),'/');
 	//    CosNaming::NamingContext_var ctx = getContext(sec, argc, argv);
-	unsigned int how_many = 1000;
+	size_t how_many = 1000;
 	CosNaming::NamingContext_var ctx;
 
 	try
@@ -627,7 +622,7 @@ bool ObjectRepository::removeSection(const string& fullName, bool recursive)
 
 	bool rem = true; // удалять или нет
 
-	for(unsigned int i = 0; i < how_many; i++)
+	for( size_t i = 0; i < how_many; i++)
 	{
 
 		if( bl[i].binding_type == CosNaming::nobject)
@@ -701,7 +696,7 @@ bool ObjectRepository::removeSection(const string& fullName, bool recursive)
  * \param newFName - полное имя новой секции
  * \param oldFName - полное имя удаляемрй секции
 */
-bool ObjectRepository::renameSection( const string& newFName, const string& oldFName )
+bool ObjectRepository::renameSection( const string& newFName, const string& oldFName ) const
 {
 	string newName(ObjectIndex::getBaseName(newFName));
 	string oldName(ObjectIndex::getBaseName(oldFName));

@@ -24,6 +24,7 @@
 // ---------------------------------------------------------------------------
 #include <memory>
 #include <string>
+#include <atomic>
 #include <sstream>
 #include <unordered_map>
 #include <functional>
@@ -35,9 +36,6 @@
 #include "IOController_i.hh"
 #include "MessageType.h"
 #include "Configuration.h"
-
-// -----------------------------------------------------------------------------------------
-#define UI_THROW_EXCEPTIONS uniset::TimeOut,uniset::IOBadParam,uniset::ORepFailed
 // -----------------------------------------------------------------------------------------
 namespace uniset
 {
@@ -63,12 +61,12 @@ namespace uniset
 			// Работа с датчиками
 
 			//! Получение состояния датчика
-			long getValue (const uniset::ObjectId id, const uniset::ObjectId node) const throw(UI_THROW_EXCEPTIONS);
+			long getValue (const uniset::ObjectId id, const uniset::ObjectId node) const;
 			long getValue ( const uniset::ObjectId id ) const;
 			long getRawValue( const IOController_i::SensorInfo& si );
 
 			//! Выставление состояния датчика
-			void setValue ( const uniset::ObjectId id, long value, const uniset::ObjectId node, uniset::ObjectId sup_id = uniset::DefaultObjectId ) const throw(UI_THROW_EXCEPTIONS);
+			void setValue ( const uniset::ObjectId id, long value, const uniset::ObjectId node, uniset::ObjectId sup_id = uniset::DefaultObjectId ) const;
 			void setValue ( const uniset::ObjectId id, long value ) const;
 			void setValue ( const IOController_i::SensorInfo& si, long value, const uniset::ObjectId supplier ) const;
 
@@ -91,7 +89,7 @@ namespace uniset
 							uniset::ObjectId backid = uniset::DefaultObjectId ) const;
 
 			void askRemoteSensor( const uniset::ObjectId id, UniversalIO::UIOCommand cmd, const uniset::ObjectId node,
-								  uniset::ObjectId backid = uniset::DefaultObjectId ) const throw(UI_THROW_EXCEPTIONS);
+								  uniset::ObjectId backid = uniset::DefaultObjectId ) const;
 
 			//! Заказ по списку
 			uniset::IDSeq_var askSensorsSeq( const uniset::IDList& lst, UniversalIO::UIOCommand cmd,
@@ -128,14 +126,14 @@ namespace uniset
 			// ---------------------------------------------------------------
 			// Вспомогательные функции
 
-			UniversalIO::IOType getIOType(const uniset::ObjectId id, uniset::ObjectId node) const throw(UI_THROW_EXCEPTIONS);
+			UniversalIO::IOType getIOType(const uniset::ObjectId id, uniset::ObjectId node) const;
 			UniversalIO::IOType getIOType(const uniset::ObjectId id) const;
 
 			// read from xml (only for xml!) т.е. без удалённого запроса
 			UniversalIO::IOType getConfIOType( const uniset::ObjectId id ) const noexcept;
 
 			// Получение типа объекта..
-			uniset::ObjectType getType(const uniset::ObjectId id, const uniset::ObjectId node) const throw(UI_THROW_EXCEPTIONS);
+			uniset::ObjectType getType(const uniset::ObjectId id, const uniset::ObjectId node) const;
 			uniset::ObjectType getType(const uniset::ObjectId id) const;
 
 			//! Время последнего изменения датчика
@@ -157,11 +155,13 @@ namespace uniset
 			// ---------------------------------------------------------------
 			// Работа с репозиторием
 
-			//        /*! регистрация объекта в репозитории */
-			void registered(const uniset::ObjectId id, const uniset::ObjectPtr oRef, bool force = false)const throw(uniset::ORepFailed);
+			/*! регистрация объекта в репозитории
+			 *  throw(uniset::ORepFailed)
+			 */
+			void registered(const uniset::ObjectId id, const uniset::ObjectPtr oRef, bool force = false) const;
 
-			//        /*! разрегистрация объекта */
-			void unregister(const uniset::ObjectId id)throw(uniset::ORepFailed);
+			// throw(uniset::ORepFailed)
+			void unregister(const uniset::ObjectId id);
 
 			/*! получение ссылки на объект */
 			inline uniset::ObjectPtr resolve( const std::string& name ) const
@@ -174,21 +174,23 @@ namespace uniset
 				return rep.resolve( oind->getNameById(id) );
 			}
 
-			uniset::ObjectPtr resolve(const uniset::ObjectId id, const uniset::ObjectId nodeName) const
-			throw(uniset::ResolveNameError, uniset::TimeOut);
-
+			// throw(uniset::ResolveNameError, uniset::TimeOut);
+			uniset::ObjectPtr resolve(const uniset::ObjectId id, const uniset::ObjectId nodeName) const;
 
 			// Проверка доступности объекта или датчика
 			bool isExist( const uniset::ObjectId id ) const noexcept;
 			bool isExist( const uniset::ObjectId id, const uniset::ObjectId node ) const noexcept;
 
-			// used for check 'isExist'
+			//! used for check 'isExist' \deprecated! Use waitReadyWithCancellation(..)
 			bool waitReady( const uniset::ObjectId id, int msec, int pause = 5000,
 							const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() ) noexcept;
 
-			// used for check 'getValue'
+			//! used for check 'getValue'
 			bool waitWorking( const uniset::ObjectId id, int msec, int pause = 3000,
 							  const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() ) noexcept;
+
+			bool waitReadyWithCancellation( const uniset::ObjectId id, int msec, std::atomic_bool& cancelFlag, int pause = 5000,
+											const uniset::ObjectId node = uniset::uniset_conf()->getLocalNode() ) noexcept;
 
 			// ---------------------------------------------------------------
 			// Работа с ID, Name
@@ -229,7 +231,7 @@ namespace uniset
 			// Посылка сообщений
 
 			/*! посылка сообщения msg объекту name на узел node */
-			void send( const uniset::ObjectId name, const uniset::TransportMessage& msg, uniset::ObjectId node ) throw(UI_THROW_EXCEPTIONS);
+			void send( const uniset::ObjectId name, const uniset::TransportMessage& msg, uniset::ObjectId node );
 			void send( const uniset::ObjectId name, const uniset::TransportMessage& msg);
 
 			// ---------------------------------------------------------------
@@ -248,7 +250,9 @@ namespace uniset
 						MaxSize(maxsize), minCallCount(cleancount) {};
 					~CacheOfResolve() {};
 
-					uniset::ObjectPtr resolve( const uniset::ObjectId id, const uniset::ObjectId node ) const throw(uniset::NameNotFound);
+					//  throw(uniset::NameNotFound, uniset::SystemError)
+					uniset::ObjectPtr resolve( const uniset::ObjectId id, const uniset::ObjectId node ) const;
+
 					void cache(const uniset::ObjectId id, const uniset::ObjectId node, uniset::ObjectVar& ptr ) const;
 					void erase( const uniset::ObjectId id, const uniset::ObjectId node ) const noexcept;
 

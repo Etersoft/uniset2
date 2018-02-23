@@ -15,7 +15,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- * \author Vitaly Lipatov
+ * \author Vitaly Lipatov, Pavel Vainerman
  */
 // --------------------------------------------------------------------------
 #ifndef ObjcetIndex_H_
@@ -27,11 +27,12 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
+	/*! Базовый интерфейс для работы с преобразованиями ObjectID <--> ObjectName */
 	class ObjectIndex
 	{
 		public:
-			ObjectIndex() {};
-			virtual ~ObjectIndex() {};
+			ObjectIndex() {}
+			virtual ~ObjectIndex() {}
 
 			// info
 			// \return nullptr if not found
@@ -50,16 +51,10 @@ namespace uniset
 
 			// node
 			//! \return "" if not found
-			inline std::string getNodeName( const uniset::ObjectId id ) const noexcept
-			{
-				return getNameById(id);
-			}
+			std::string getNodeName( const uniset::ObjectId id ) const noexcept;
 
 			//! \return uniset::DefaultObjectId if not found
-			inline ObjectId getNodeId( const std::string& name ) const noexcept
-			{
-				return getIdByName(name);
-			}
+			ObjectId getNodeId( const std::string& name ) const noexcept;
 
 			// src name
 			//! \return "" if not found

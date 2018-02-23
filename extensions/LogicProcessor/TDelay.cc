@@ -101,5 +101,10 @@ namespace uniset
 	{
 		delay = timeMS;
 	}
+
+	timeout_t TDelay::getDelay() const
+	{
+		return delay;
+	}
 	// -------------------------------------------------------------------------
 } // end of namespace uniset

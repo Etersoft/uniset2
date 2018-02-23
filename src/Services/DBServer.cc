@@ -116,7 +116,7 @@ void DBServer::sysCommand( const uniset::SystemMessage* sm )
 		if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
 		{
 			dbinfo << myname << "(init): run log server " << logserv_host << ":" << logserv_port << endl;
-			logserv->run(logserv_host, logserv_port, true);
+			logserv->async_run(logserv_host, logserv_port);
 		}
 	}
 }

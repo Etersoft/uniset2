@@ -64,19 +64,6 @@ string UniXML::getFileName() const noexcept
 	return filename;
 }
 // -----------------------------------------------------------------------------
-struct UniXMLDocDeleter
-{
-	void operator()(xmlDoc* doc) const noexcept
-	{
-		try
-		{
-			if( doc )
-				xmlFreeDoc(doc);
-		}
-		catch(...) {}
-	}
-};
-// -----------------------------------------------------------------------------
 void UniXML::newDoc(const string& root_node, const string& xml_ver)
 {
 	assert(doc == nullptr);  // предыдущий doc не удален из памяти
@@ -87,7 +74,7 @@ void UniXML::newDoc(const string& root_node, const string& xml_ver)
 	if( d == NULL )
 		throw NameNotFound("UniXML(open): не смогли создать doc=" + root_node);
 
-	doc = std::shared_ptr<xmlDoc>(d, UniXMLDocDeleter());
+	doc = std::unique_ptr<xmlDoc, UniXMLDocDeleter>(d);
 
 	//    xmlEncodeEntitiesReentrant(doc, (const xmlChar*)ExternalEncoding.c_str());
 	xmlNode* rootnode = xmlNewDocNode(d, NULL, (const xmlChar*)root_node.c_str(), NULL);
@@ -131,7 +118,7 @@ void UniXML::open( const string& _filename )
 	if( d == NULL )
 		throw NameNotFound("UniXML(open): NotFound file=" + _filename);
 
-	doc = std::shared_ptr<xmlDoc>(d, UniXMLDocDeleter());
+	doc = std::unique_ptr<xmlDoc, UniXMLDocDeleter>(d);
 
 	// Support for XInclude (see eterbug #6304)
 	// main tag must to have follow property: xmlns:xi="http://www.w3.org/2001/XInclude"
@@ -213,16 +200,18 @@ void UniXML::setProp(xmlNode* node, const string& name, const string& text )
 UniXMLPropList UniXML::getPropList( xmlNode* node )
 {
 	UniXMLPropList lst;
+
 	if( !node )
 		return lst;
 
 	xmlAttr* attribute = node->properties;
+
 	while( attribute )
 	{
 		xmlChar* value = ::xmlNodeListGetString(node->doc, attribute->children, 1);
 		const std::string nm( (const char*)attribute->name );
 		const std::string val( (const char*)value );
-		lst.push_back( {nm,val} );
+		lst.push_back( {nm, val} );
 		xmlFree(value);
 		attribute = attribute->next;
 	}
@@ -388,6 +377,28 @@ xmlNode* UniXML::extFindNode( xmlNode* node, int depth, int width, const string&
 	}
 
 	return NULL;
+}
+// -----------------------------------------------------------------------------
+xmlNode* UniXML::findNodeLevel1( xmlNode* root, const string& nodename, const string& nm )
+{
+	UniXML::iterator it(root);
+
+	if( it.goChildren() )
+	{
+		for( ; it; it.goNext() )
+		{
+			if( it.getName() == nodename )
+			{
+				if( nm.empty() )
+					return it;
+
+				if( it.getProp("name") == nm )
+					return it;
+			}
+		}
+	}
+
+	return 0;
 }
 // -----------------------------------------------------------------------------
 bool UniXML_iterator::goNext() noexcept
@@ -648,9 +659,11 @@ UniXML_iterator& UniXML_iterator::operator++() noexcept
 	return (*this) + 1;
 }
 // -------------------------------------------------------------------------
-UniXML_iterator& UniXML_iterator::operator++(int) noexcept
+UniXML_iterator UniXML_iterator::operator++(int) noexcept
 {
-	return (*this) + 1;
+	UniXML_iterator temp(*this);
+	(*this) = (*this) + 1;
+	return temp;
 }
 // -------------------------------------------------------------------------
 UniXML_iterator& UniXML_iterator::operator+=(int s) noexcept
@@ -678,9 +691,11 @@ UniXML_iterator& UniXML_iterator::operator+(int step) noexcept
 	return *this;
 }
 // -------------------------------------------------------------------------
-UniXML_iterator& UniXML_iterator::operator--(int) noexcept
+UniXML_iterator UniXML_iterator::operator--(int) noexcept
 {
-	return (*this) - 1;
+	UniXML_iterator temp(*this);
+	(*this) = (*this) - 1;
+	return temp;
 }
 
 UniXML_iterator& UniXML_iterator::operator--() noexcept

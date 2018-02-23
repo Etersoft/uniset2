@@ -26,7 +26,7 @@ static void print_help()
 	printf("[-v|--verbose]                  - Print all messages to stdout\n");
 	printf("[-d|--device] dev               - use device dev. Default: /dev/ttyS0\n");
 	printf("[-a|--myaddr] addr1,addr2,...   - Modbus address for this slave. Default: 0x01.\n");
-	printf("                     myaddr=255 - Reply to all RTU-addresses.\n");
+	printf("                     myaddr=0 - Reply to all RTU-addresses (broadcast).\n");
 	printf("[-s|--speed] speed   - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
 	printf("[-v|--verbose]       - Print all messages to stdout\n");
 	printf("[-g|--f485]          - Use 485 Fastwel\n");

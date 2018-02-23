@@ -27,78 +27,81 @@ namespace uniset
 			    \param addr - адрес slave-узла
 			    \param start - начальный регистр с которого читать
 			    \param count - сколько регистров читать
+
+				throw ModbusRTU::mbException
 			*/
 			ModbusRTU::ReadCoilRetMessage read01( ModbusRTU::ModbusAddr addr,
-												  ModbusRTU::ModbusData start, ModbusRTU::ModbusData count )
-			throw(ModbusRTU::mbException);
+												  ModbusRTU::ModbusData start, ModbusRTU::ModbusData count );
 
 			/*! Чтение группы регистров (0x02)
 			    \param addr - адрес slave-узла
 			    \param start - начальный регистр с которого читать
 			    \param count - сколько регистров читать
+
+				throw ModbusRTU::mbException
 			*/
 			ModbusRTU::ReadInputStatusRetMessage read02( ModbusRTU::ModbusAddr addr,
-					ModbusRTU::ModbusData start, ModbusRTU::ModbusData count )
-			throw(ModbusRTU::mbException);
+					ModbusRTU::ModbusData start, ModbusRTU::ModbusData count );
 
 
 			/*! Чтение группы регистров (0x03)
 			    \param addr - адрес slave-узла
 			    \param start - начальный регистр с которого читать
 			    \param count - сколько регистров читать
+
+				throw ModbusRTU::mbException
 			*/
 			ModbusRTU::ReadOutputRetMessage read03( ModbusRTU::ModbusAddr addr,
-													ModbusRTU::ModbusData start, ModbusRTU::ModbusData count )
-			throw(ModbusRTU::mbException);
+													ModbusRTU::ModbusData start, ModbusRTU::ModbusData count );
 
 			/*! Чтение группы регистров (0x04)
 			    \param addr - адрес slave-узла
 			    \param start - начальный регистр с которого читать
 			    \param count - сколько регистров читать
+
+				throw ModbusRTU::mbException
 			*/
 			ModbusRTU::ReadInputRetMessage read04( ModbusRTU::ModbusAddr addr,
-												   ModbusRTU::ModbusData start, ModbusRTU::ModbusData count )
-			throw(ModbusRTU::mbException);
+												   ModbusRTU::ModbusData start, ModbusRTU::ModbusData count );
 
 			/*! 0x05
 			    \param addr - адрес slave-узла
 			    \param reg - записываемый регистр
 			    \param cmd - команда ON | OFF
+
+				throw ModbusRTU::mbException
 			*/
 			ModbusRTU::ForceSingleCoilRetMessage write05( ModbusRTU::ModbusAddr addr,
-					ModbusRTU::ModbusData reg, bool cmd )
-			throw(ModbusRTU::mbException);
+					ModbusRTU::ModbusData reg, bool cmd );
 
 			/*! Запись одного регистра (0x06)
 			    \param addr - адрес slave-узла
 			    \param reg - записываемый регистр
 			    \param data    - данные
+
+				throw ModbusRTU::mbException
 			*/
 			ModbusRTU::WriteSingleOutputRetMessage write06( ModbusRTU::ModbusAddr addr,
-					ModbusRTU::ModbusData reg, ModbusRTU::ModbusData data )
-			throw(ModbusRTU::mbException);
+					ModbusRTU::ModbusData reg, ModbusRTU::ModbusData data );
 
-			/*! Запись группы выходов (0x0F) */
-			ModbusRTU::ForceCoilsRetMessage write0F( ModbusRTU::ForceCoilsMessage& msg )
-			throw(ModbusRTU::mbException);
+			/*! Запись группы выходов (0x0F) throw ModbusRTU::mbException*/
+			ModbusRTU::ForceCoilsRetMessage write0F( ModbusRTU::ForceCoilsMessage& msg );
 
-			/*! Запись группы регистров (0x10) */
-			ModbusRTU::WriteOutputRetMessage write10( ModbusRTU::WriteOutputMessage& msg )
-			throw(ModbusRTU::mbException);
+			/*! Запись группы регистров (0x10) throw ModbusRTU::mbException*/
+			ModbusRTU::WriteOutputRetMessage write10( ModbusRTU::WriteOutputMessage& msg );
 
-			/*! Диагностика (0x08) */
+			/*! Диагностика (0x08) throw ModbusRTU::mbException*/
 			ModbusRTU::DiagnosticRetMessage diag08( ModbusRTU::ModbusAddr addr,
 													ModbusRTU::DiagnosticsSubFunction subfunc,
-													ModbusRTU::ModbusData dat = 0 )
-			throw(ModbusRTU::mbException);
+													ModbusRTU::ModbusData dat = 0 );
 
 			/*! Modbus Encapsulated Interface 43(0x2B)
 			    Read Device Identification 14(0x0E)
+				throw ModbusRTU::mbException
 			*/
 			ModbusRTU::MEIMessageRetRDI read4314( ModbusRTU::ModbusAddr addr,
 												  ModbusRTU::ModbusByte devID,
-												  ModbusRTU::ModbusByte objID )
-			throw(ModbusRTU::mbException);
+												  ModbusRTU::ModbusByte objID );
 
 			/*! Установить системное время (0x50)
 			    hour    - часы [0..23]
@@ -108,12 +111,13 @@ namespace uniset
 			    mon        - месяц [1..12]
 			    year    - год [0..99]
 			    century - столетие [19-20]
+
+				throw ModbusRTU::mbException
 			*/
 			ModbusRTU::SetDateTimeRetMessage setDateTime( ModbusRTU::ModbusAddr addr,
 					ModbusRTU::ModbusByte hour, ModbusRTU::ModbusByte min, ModbusRTU::ModbusByte sec,
 					ModbusRTU::ModbusByte day, ModbusRTU::ModbusByte mon, ModbusRTU::ModbusByte year,
-					ModbusRTU::ModbusByte century )
-			throw(ModbusRTU::mbException);
+					ModbusRTU::ModbusByte century );
 
 
 			/*! Загрузить файл (0x66)
@@ -121,19 +125,21 @@ namespace uniset
 			    \param numpack - номер очередного запрашиваемого пакета
 			    \param save2filename - имя файла, под которым будет сохранён полученный файл
 			    \param part_timeout_msec - таймаут на получение очередной части файла.
+
+				throw ModbusRTU::mbException
 			*/
 			ModbusRTU::FileTransferRetMessage partOfFileTransfer( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusData idFile,
-					ModbusRTU::ModbusData numpack, timeout_t part_timeout_msec = 2000 )
-			throw(ModbusRTU::mbException);
+					ModbusRTU::ModbusData numpack, timeout_t part_timeout_msec = 2000 );
 
 			/*! Загрузить файл
 			    \param idFile - идентификатор файла
 			    \param save2filename - имя файла, под которым будет сохранён полученный файл
 			    \param part_timeout_msec - таймаут на получение очередной части файла.
+
+				throw ModbusRTU::mbException
 			*/
 			void fileTransfer( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusData idFile,
-							   const char* save2filename, timeout_t part_timeout_msec = 2000 )
-			throw(ModbusRTU::mbException);
+							   const std::string& save2filename, timeout_t part_timeout_msec = 2000 );
 
 			// ---------------------------------------------------------------------
 			/*! установить время ожидания по умолчанию */

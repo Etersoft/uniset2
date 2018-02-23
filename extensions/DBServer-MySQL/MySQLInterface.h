@@ -76,7 +76,7 @@ namespace uniset
 
 		private:
 
-			void makeResult(DBResult& dbres, MYSQL_RES* r, bool finalize = true );
+			DBResult makeResult( MYSQL_RES* r, bool finalize = true );
 			MYSQL* mysql;
 			std::string lastQ;
 			bool connected;

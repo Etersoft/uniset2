@@ -18,8 +18,9 @@
 #include <limits>
 #include <iomanip>
 #include <sstream>
-#include <Exceptions.h>
-#include <extensions/Extensions.h>
+#include "unisetstd.h"
+#include "Exceptions.h"
+#include "extensions/Extensions.h"
 #include "MBTCPMultiMaster.h"
 #include "modbus/MBLogSugar.h"
 // -----------------------------------------------------------------------------
@@ -180,15 +181,18 @@ MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shm
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
-		rtuQueryOptimization(devices);
+
+		if( !noQueryOptimization )
+			rtuQueryOptimization(devices);
+
 		initDeviceList();
 	}
 	else
 		ic->addReadItem( sigc::mem_fun(this, &MBTCPMultiMaster::readItem) );
 
-	pollThread = make_shared<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::poll_thread);
+	pollThread = unisetstd::make_unique<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::poll_thread);
 	pollThread->setFinalAction(this, &MBTCPMultiMaster::final_thread);
-	checkThread = make_shared<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::check_thread);
+	checkThread = unisetstd::make_unique<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::check_thread);
 	checkThread->setFinalAction(this, &MBTCPMultiMaster::final_thread);
 
 	// Т.к. при "многоканальном" доступе к slave, смена канала должна происходит сразу после
@@ -202,23 +206,29 @@ MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shm
 // -----------------------------------------------------------------------------
 MBTCPMultiMaster::~MBTCPMultiMaster()
 {
-	if( pollThread )
+	if( pollThread && !canceled )
 	{
-		pollThread->stop();
-
 		if( pollThread->isRunning() )
 			pollThread->join();
 	}
 
 	if( checkThread )
 	{
-		checkThread->stop();
+		try
+		{
+			checkThread->stop();
 
-		if( checkThread->isRunning() )
-			checkThread->join();
+			if( checkThread->isRunning() )
+				checkThread->join();
+		}
+		catch( Poco::NullPointerException& ex )
+		{
+
+		}
 	}
 
 	mbi = mblist.rend();
+
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
@@ -333,6 +343,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 void MBTCPMultiMaster::final_thread()
 {
 	setProcActive(false);
+	canceled = true;
 }
 // -----------------------------------------------------------------------------
 
@@ -361,32 +372,36 @@ bool MBTCPMultiMaster::MBSlaveInfo::check()
 	{
 		mbtcp->connect(ip, port, false);
 
+		// результат возврата функции нам не важен
+		// т.к. если не будет связи будет выкинуто исключение
+		// если пришёл хоть какой-то ответ, значит связь есть
+		// (по крайней мере со шлюзом)
 		switch(checkFunc)
 		{
 			case ModbusRTU::fnReadCoilStatus:
 			{
-				auto ret = mbtcp->read01(checkAddr, checkReg, 1);
+				(void)mbtcp->read01(checkAddr, checkReg, 1);
 				return true;
 			}
 			break;
 
 			case ModbusRTU::fnReadInputStatus:
 			{
-				auto ret = mbtcp->read02(checkAddr, checkReg, 1);
+				(void)mbtcp->read02(checkAddr, checkReg, 1);
 				return true;
 			}
 			break;
 
 			case ModbusRTU::fnReadOutputRegisters:
 			{
-				auto ret = mbtcp->read03(checkAddr, checkReg, 1);
+				(void)mbtcp->read03(checkAddr, checkReg, 1);
 				return true;
 			}
 			break;
 
 			case ModbusRTU::fnReadInputRegisters:
 			{
-				auto ret = mbtcp->read04(checkAddr, checkReg, 1);
+				(void)mbtcp->read04(checkAddr, checkReg, 1);
 				return true;
 			}
 			break;
@@ -448,13 +463,13 @@ void MBTCPMultiMaster::sysCommand( const uniset::SystemMessage* sm )
 void MBTCPMultiMaster::poll_thread()
 {
 	// ждём начала работы..(см. MBExchange::activateObject)
-	while( !checkProcActive() )
+	while( !isProcActive() && !canceled )
 	{
 		uniset::uniset_rwmutex_rlock l(mutex_start);
 	}
 
 	// работаем..
-	while( checkProcActive() )
+	while( isProcActive() )
 	{
 		try
 		{
@@ -475,7 +490,7 @@ void MBTCPMultiMaster::poll_thread()
 			mbwarn << myname << "(poll_thread): "  << ex.what() << endl;
 		}
 
-		if( !checkProcActive() )
+		if( !isProcActive() )
 			break;
 
 		msleep(polltime);
@@ -484,7 +499,7 @@ void MBTCPMultiMaster::poll_thread()
 // -----------------------------------------------------------------------------
 void MBTCPMultiMaster::check_thread()
 {
-	while( checkProcActive() )
+	while( isProcActive() )
 	{
 		for( auto && it : mblist )
 		{
@@ -501,6 +516,11 @@ void MBTCPMultiMaster::check_thread()
 					   << " timeout=" << it->channel_timeout
 					   << " use=" << it->use
 					   << " ignore=" << it->ignore
+					   << " respond_id=" << it->respond_id
+					   << " respond_force=" << it->respond_force
+					   << " respond=" << it->respond
+					   << " respond_invert=" << it->respond_invert
+					   << " activated=" << isProcActive()
 					   << " ]"
 					   << endl;
 
@@ -508,7 +528,7 @@ void MBTCPMultiMaster::check_thread()
 				if( it->respond_init )
 					r = it->respondDelay.check( r );
 
-				if( !checkProcActive() )
+				if( !isProcActive() )
 					break;
 
 				try
@@ -517,7 +537,11 @@ void MBTCPMultiMaster::check_thread()
 					{
 						bool set = it->respond_invert ? !r : r;
 						shm->localSetValue(it->respond_it, it->respond_id, (set ? 1 : 0), getId());
-						it->respond_init = true;
+
+						{
+							std::lock_guard<std::mutex> l(it->mutInit);
+							it->respond_init = true;
+						}
 					}
 				}
 				catch( const uniset::Exception& ex )
@@ -536,11 +560,11 @@ void MBTCPMultiMaster::check_thread()
 				mbcrit << myname << "(check): (respond) "  << it->myname << " : " << ex.what() << std::endl;
 			}
 
-			if( !checkProcActive() )
+			if( !isProcActive() )
 				break;
 		}
 
-		if( !checkProcActive() )
+		if( !isProcActive() )
 			break;
 
 		msleep(checktime);
@@ -555,43 +579,10 @@ void MBTCPMultiMaster::initIterators()
 		shm->initIterator(it->respond_it);
 }
 // -----------------------------------------------------------------------------
-void MBTCPMultiMaster::sigterm( int signo )
-{
-	if( pollThread )
-	{
-		pollThread->stop();
-
-		if( pollThread->isRunning() )
-			pollThread->join();
-	}
-
-	if( checkThread )
-	{
-		checkThread->stop();
-
-		if( checkThread->isRunning() )
-			checkThread->join();
-	}
-
-	try
-	{
-		MBExchange::sigterm(signo);
-	}
-	catch( const std::exception& ex )
-	{
-		mbcrit << myname << "(sigterm): " << ex.what() << std::endl;
-	}
-
-	//	catch( ... )
-	//	{
-	//		std::exception_ptr p = std::current_exception();
-	//		std::clog << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
-	//	}
-}
-// -----------------------------------------------------------------------------
 bool MBTCPMultiMaster::deactivateObject()
 {
 	setProcActive(false);
+	canceled = true;
 
 	if( pollThread )
 	{

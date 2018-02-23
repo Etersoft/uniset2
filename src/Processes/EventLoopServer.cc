@@ -1,4 +1,5 @@
 #include <iostream>
+#include "unisetstd.h"
 #include "EventLoopServer.h"
 // -------------------------------------------------------------------------
 using namespace std;
@@ -11,6 +12,9 @@ namespace uniset
 	{
 		evterm.set(loop);
 		evterm.set<EventLoopServer, &EventLoopServer::onStop>(this);
+
+		evruntimer.set(loop);
+		evruntimer.set<EventLoopServer, &EventLoopServer::onLoopOK>(this);
 	}
 	// -------------------------------------------------------------------------
 	EventLoopServer::~EventLoopServer()
@@ -19,20 +23,56 @@ namespace uniset
 			evstop();
 	}
 	// ---------------------------------------------------------------------------
-	void EventLoopServer::evrun( bool thread )
+	bool EventLoopServer::evrun()
 	{
-		if( isrunning )
-			return;
-
-		isrunning = true;
-
-		if( !thread )
 		{
-			defaultLoop();
-			return;
+			std::lock_guard<std::timed_mutex> l(run_mutex);
+
+			if( isactive )
+				return false;
+
+			isactive = true;
 		}
-		else if( !thr )
-			thr = make_shared<std::thread>( [ = ] { defaultLoop(); } );
+
+		defaultLoop(); // <-- здесь бесконечный цикл..
+		return false;
+	}
+	// ---------------------------------------------------------------------------
+	bool EventLoopServer::async_evrun( size_t timeout_msec )
+	{
+		if( !run_mutex.try_lock_for(std::chrono::milliseconds(timeout_msec)) )
+			return false;
+
+		std::lock_guard<std::timed_mutex> l(run_mutex, std::adopt_lock);
+
+		if( isactive )
+			return true;
+
+		isactive = true;
+
+		if( thr )
+		{
+			if( thr->joinable() )
+				thr->join();
+
+			thr = nullptr;
+		}
+
+		if( !thr )
+			thr = unisetstd::make_unique<std::thread>( [&] { defaultLoop(); } );
+
+		bool ret = waitDefaultLoopRunning(timeout_msec);
+
+		// если запуститься не удалось
+		if( !ret && thr )
+		{
+			if( thr->joinable() )
+				thr->join();
+
+			thr = nullptr;
+		}
+
+		return ret;
 	}
 	// ---------------------------------------------------------------------------
 	bool EventLoopServer::evIsActive() const noexcept
@@ -42,12 +82,27 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	void EventLoopServer::evstop()
 	{
-		cancelled = true;
-		evterm.send();
+		{
+			std::lock_guard<std::timed_mutex> l(run_mutex);
+
+			if( thr && !isactive )
+			{
+				if( thr->joinable() )
+					thr->join();
+
+				thr = nullptr;
+				return;
+			}
+
+			cancelled = true;
+			evterm.send();
+		}
 
 		if( thr )
 		{
-			thr->join();
+			if( thr->joinable() )
+				thr->join();
+
 			thr = nullptr;
 		}
 	}
@@ -70,22 +125,65 @@ namespace uniset
 	void EventLoopServer::defaultLoop() noexcept
 	{
 		evterm.start();
-		evprepare();
 
-		while( !cancelled )
+		// нам нужен "одноразовый таймер"
+		// т.к. нам надо просто зафиксировать, что loop начал работать
+		evruntimer.start(0);
+
+		try
 		{
-			try
+			evprepare();
+
+			while( !cancelled )
 			{
-				loop.run(0);
-			}
-			catch( std::exception& ex )
-			{
-				cerr << "(EventLoopServer::defaultLoop): " << ex.what() << endl;
+				try
+				{
+					loop.run(0);
+				}
+				catch( std::exception& ex )
+				{
+					cerr << "(EventLoopServer::defaultLoop): " << ex.what() << endl;
+				}
 			}
 		}
+		catch( std::exception& ex )
+		{
+			cerr << "(EventLoopServer::defaultLoop): " << ex.what() << endl;
+		}
+		catch( ... )
+		{
+			std::exception_ptr p = std::current_exception();
+			cerr << "(EventLoopServer::defaultLoop): error: "
+				 << (p ? p.__cxa_exception_type()->name() : "null") << endl;
+		}
 
-		cancelled = true;
-		isrunning = false;
+		{
+			std::lock_guard<std::timed_mutex> l(run_mutex);
+			isrunning = false;
+			looprunOK_event.notify_all();
+			isactive = false;
+		}
+	}
+	// -------------------------------------------------------------------------
+	bool EventLoopServer::waitDefaultLoopRunning( size_t waitTimeout_msec )
+	{
+		std::unique_lock<std::mutex> lock(looprunOK_mutex);
+		looprunOK_event.wait_for(lock, std::chrono::milliseconds(waitTimeout_msec), [&]()
+		{
+			return (isrunning == true);
+		} );
+
+		return isrunning;
+	}
+	// -------------------------------------------------------------------------
+	void EventLoopServer::onLoopOK( ev::timer& t, int revents ) noexcept
+	{
+		if( EV_ERROR & revents )
+			return;
+
+		isrunning = true;
+		looprunOK_event.notify_all();
+		t.stop();
 	}
 	// -------------------------------------------------------------------------
 } // end of uniset namespace

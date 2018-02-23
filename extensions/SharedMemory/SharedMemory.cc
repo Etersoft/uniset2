@@ -17,7 +17,7 @@
 #include <iomanip>
 #include <sstream>
 #include "UniXML.h"
-#include "NCRestorer.h"
+#include "IOConfig_XML.h"
 #include "SharedMemory.h"
 #include "Extensions.h"
 #include "ORepHelpers.h"
@@ -31,7 +31,7 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	void SharedMemory::help_print( int argc, const char* const* argv )
 	{
-		cout << "--smemory-id           - SharedMemeory ID" << endl;
+		cout << "--smemory-id           - SharedMemory ID" << endl;
 		cout << "--datfile fname        - Файл с картой датчиков. По умолчанию configure.xml" << endl;
 		cout << "--s-filter-field       - Фильтр для загрузки списка датчиков." << endl;
 		cout << "--s-filter-value       - Значение фильтра для загрузки списка датчиков." << endl;
@@ -64,8 +64,10 @@ namespace uniset
 		cout << LogServer::help_print("sm-logserver") << endl;
 	}
 	// -----------------------------------------------------------------------------
-	SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std::string& confname ):
-		IONotifyController(id),
+	SharedMemory::SharedMemory( ObjectId id,
+								const std::shared_ptr<IOConfig_XML>& ioconf,
+								const std::string& confname ):
+		IONotifyController(id, static_pointer_cast<IOConfig>(ioconf)),
 		heartbeatCheckTime(5000),
 		histSaveTime(0),
 		activated(false),
@@ -117,8 +119,6 @@ namespace uniset
 			histmap[i->fuse_id].push_back(i);
 
 		// ----------------------
-		auto rxml = make_shared<NCRestorer_XML>(datafile);
-
 		string s_field(conf->getArgParam("--s-filter-field"));
 		string s_fvalue(conf->getArgParam("--s-filter-value"));
 		string c_field(conf->getArgParam("--c-filter-field"));
@@ -137,12 +137,10 @@ namespace uniset
 
 		heartbeatCheckTime = conf->getArgInt("--heartbeat-check-time", "1000");
 
-		rxml->setItemFilter(s_field, s_fvalue);
-		rxml->setConsumerFilter(c_field, c_fvalue);
-		rxml->setThresholdsFilter(t_field, t_fvalue);
-
-		restorer = std::static_pointer_cast<NCRestorer>(rxml);
-		rxml->setReadItem( sigc::mem_fun(this, &SharedMemory::readItem) );
+		ioconf->setItemFilter(s_field, s_fvalue);
+		ioconf->setConsumerFilter(c_field, c_fvalue);
+		ioconf->setThresholdsFilter(t_field, t_fvalue);
+		ioconf->setReadItem( sigc::mem_fun(this, &SharedMemory::readItem) );
 
 		string wdt_dev = conf->getArgParam("--wdt-device");
 
@@ -156,9 +154,9 @@ namespace uniset
 		e_filter = conf->getArgParam("--e-filter");
 		buildEventList(confnode);
 
-		evntPause = conf->getArgPInt("--e-startup-pause", 5000);
+		evntPause = conf->getArgPInt("--e-startup-pause", 2000);
 
-		activateTimeout = conf->getArgPInt("--activate-timeout", 90000);
+		activateTimeout = conf->getArgPInt("--activate-timeout", 120000);
 
 		sidPulsar = DefaultObjectId;
 		string p = conf->getArgParam("--pulsar-id", it.getProp("pulsar_id"));
@@ -225,6 +223,26 @@ namespace uniset
 			}
 		}
 	}
+	// ------------------------------------------------------------------------------------------
+	string SharedMemory::getTimerName( int id ) const
+	{
+		if( id == tmHeartBeatCheck )
+			return "HeartBeatCheckTimer";
+
+		if( id == tmEvent )
+			return "EventTimer";
+
+		if( id == tmHistory )
+			return "HistoryTimer";
+
+		if( id == tmPulsar )
+			return "PulsarTimer";
+
+		if( id == tmLastOfTimerID )
+			return "??LastOfTimerID??";
+
+		return IONotifyController::getTimerName(id);
+	}
 
 	// ------------------------------------------------------------------------------------------
 	void SharedMemory::sysCommand( const SystemMessage* sm )
@@ -236,21 +254,26 @@ namespace uniset
 				if( !logserv_host.empty() && logserv_port != 0 && !logserv->isRunning() )
 				{
 					sminfo << myname << "(init): run log server " << logserv_host << ":" << logserv_port << endl;
-					logserv->run(logserv_host, logserv_port, true);
+					logserv->async_run(logserv_host, logserv_port);
 				}
 
 				PassiveTimer ptAct(activateTimeout);
 
-				while( !activated && !ptAct.checkTime() )
+				while( !cancelled && !activated && !ptAct.checkTime() )
 				{
 					cout << myname << "(sysCommand): wait activate..." << endl;
 					msleep(100);
 				}
 
+				if( cancelled )
+					return;
+
 				if( !activated  )
 				{
 					smcrit << myname << "(sysCommand): Don`t activate [timeout=" << activateTimeout << " msec]! TERMINATE.." << endl;
-					std::terminate();
+					//					std::terminate();
+					uterminate();
+					return;
 				}
 
 				// подождать пока пройдёт инициализация
@@ -286,9 +309,13 @@ namespace uniset
 	bool SharedMemory::deactivateObject()
 	{
 		workready = false;
+		cancelled = true;
 
 		if( logserv && logserv->isRunning() )
 			logserv->terminate();
+
+		if( wdt )
+			wdt->stop();
 
 		return IONotifyController::deactivateObject();
 	}
@@ -345,19 +372,6 @@ namespace uniset
 	CORBA::Boolean SharedMemory::exist()
 	{
 		return workready;
-	}
-	// ------------------------------------------------------------------------------------------
-	void SharedMemory::sigterm( int signo )
-	{
-		workready = false;
-
-		if( signo == SIGTERM && wdt )
-			wdt->stop();
-
-		if( logserv && logserv->isRunning() )
-			logserv->terminate();
-
-		IONotifyController::sigterm(signo);
 	}
 	// ------------------------------------------------------------------------------------------
 	void SharedMemory::checkHeartBeat()
@@ -508,31 +522,38 @@ namespace uniset
 	shared_ptr<SharedMemory> SharedMemory::init_smemory( int argc, const char* const* argv )
 	{
 		auto conf = uniset_conf();
-		string dfile = conf->getArgParam("--datfile", conf->getConfFileName());
+		string dfile = conf->getArgParam("--datfile", "");
 
-		// если dfile == confile, то преобразовывать имя не надо, чтобы сработала
-		// оптимизация и когда NCRestorer_XML будет загружать файл, он использует conf->getUniXML()
-		// т.е. не будет загружать повторно.. (см. конструктор SharedMemory и NCRestorer_XML).
-		if( dfile != conf->getConfFileName() )
+		std::shared_ptr<uniset::IOConfig_XML> ioconf;
+
+		if( !dfile.empty() )
 		{
 			if( dfile[0] != '.' && dfile[0] != '/' )
 				dfile = conf->getConfDir() + dfile;
+
+			dinfo << "(smemory): init from datfile " << dfile << endl;
+			ioconf = make_shared<IOConfig_XML>(dfile, conf);
+		}
+		else
+		{
+			dinfo << "(smemory): init from configure: " << conf->getConfFileName() << endl;
+			UniXML::iterator it(conf->getXMLSensorsSection());
+			it.goChildren();
+			ioconf = make_shared<IOConfig_XML>(conf->getConfXML(), conf, it);
 		}
 
-
-		dinfo << "(smemory): datfile = " << dfile << endl;
 		uniset::ObjectId ID = conf->getControllerID(conf->getArgParam("--smemory-id", "SharedMemory"));
 
 		if( ID == uniset::DefaultObjectId )
 		{
-			cerr << "(smemory): НЕ ЗАДАН идентификатор '"
-				 << " или не найден в " << conf->getControllersSection()
+			cerr << "(smemory): Not found ID for SharedMemory in section "
+				 << conf->getControllersSection()
 				 << endl;
-			return 0;
+			return nullptr;
 		}
 
 		string cname = conf->getArgParam("--smemory--confnode", ORepHelpers::getShortName(conf->oind->getMapName(ID)) );
-		return make_shared<SharedMemory>(ID, dfile, cname);
+		return make_shared<SharedMemory>(ID, ioconf, cname);
 	}
 	// -----------------------------------------------------------------------------
 	void SharedMemory::buildEventList( xmlNode* cnode )
@@ -587,7 +608,7 @@ namespace uniset
 			bool ok = false;
 			tm.consumer = it;
 
-			for( unsigned int i = 0; i < 2; i++ )
+			for( size_t i = 0; i < 2; i++ )
 			{
 				try
 				{
@@ -603,7 +624,7 @@ namespace uniset
 		}
 	}
 	// -----------------------------------------------------------------------------
-	void SharedMemory::addReadItem( Restorer_XML::ReaderSlot sl )
+	void SharedMemory::addReadItem( IOConfig_XML::ReaderSlot sl )
 	{
 		lstRSlot.push_back(sl);
 	}
@@ -762,14 +783,10 @@ namespace uniset
 		if( hist.empty() )
 			return;
 
-		if( usi->userdata[udataHistory] == nullptr )
+		HistoryItList* lst = static_cast<HistoryItList*>(usi->getUserData(udataHistory));
+
+		if( !lst )
 			return;
-
-		HistoryItList& lst = *(static_cast<HistoryItList*>(usi->userdata[udataHistory]));
-
-		//	auto i = histmap.find(s_it->si.id);
-		//	if( i == histmap.end() )
-		//		return;
 
 		long value = 0;
 		unsigned long sm_tv_sec = 0;
@@ -786,7 +803,7 @@ namespace uniset
 			   << " value=" << value
 			   << endl;
 
-		for( auto && it1 : lst)
+		for( auto && it1 : (*lst) )
 		{
 			History::iterator it = it1;
 
@@ -898,8 +915,9 @@ namespace uniset
 				ostringstream err;
 				err << myname << "(initFromReserv): Not found ID for '" << smName << "'";
 				smcrit << err.str() << endl;
-				// throw SystemError(err.str());
-				raise(SIGTERM);
+				//				std::terminate();
+				uterminate();
+				return;
 			}
 
 			std::string smNode(it.getProp("node"));
@@ -914,8 +932,9 @@ namespace uniset
 				ostringstream err;
 				err << myname << "(initFromReserv): Not found NodeID for '" << smNode << "'";
 				smcrit << err.str() << endl;
-				// throw SystemError(err.str());
-				raise(SIGTERM);
+				//std::terminate();
+				uterminate();
+				return;
 			}
 
 

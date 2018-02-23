@@ -3,7 +3,7 @@
   <settings>
 	<set name="class-name" val="TestObject"/>
 	<set name="msg-count" val="30"/>
-	<set name="sleep-msec" val="100"/>
+	<set name="sleep-msec" val="50"/>
   </settings>
   <variables>
   </variables>
@@ -12,6 +12,7 @@
     <item name="output_c" vartype="out" iotype="AO" comment="Test output"/>
     <item name="dependDI_s" vartype="in" iotype="DI" comment="Test input"/>
     <item name="dependAI_s" vartype="in" iotype="AI" comment="Test input"/>
+    <item name="monotonic_s" vartype="in" iotype="AI" comment="Test analog input"/>
   </smap>
 
   <msgmap>

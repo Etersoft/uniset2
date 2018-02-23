@@ -14,6 +14,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -------------------------------------------------------------------------
+#include <cmath>
 #include "Configuration.h"
 #include "Extensions.h"
 #include "UniSetTypes.h"
@@ -28,7 +29,7 @@ namespace uniset
 	{
 		return os << "(" << inf.si.id << ")" << uniset_conf()->oind->getMapName(inf.si.id)
 			   << " default=" << inf.defval
-			   << " safety=" << inf.safety
+			   << " safeval=" << inf.safeval
 			   << " stype=" << inf.stype
 			   << " calibration=" << inf.cal
 			   << " cdiagram=" << ( inf.cdiagram ? inf.cdiagram->getName() : "null" )
@@ -246,8 +247,8 @@ namespace uniset
 							val = uniset::lcalibrate(val, cal->minRaw, cal->maxRaw, cal->minCal, cal->maxCal, it->calcrop);
 					}
 
-					if( !it->noprecision && it->cal.precision > 0 )
-						val *= lround(pow10(it->cal.precision));
+					if( !it->noprecision && it->cal.precision != 0 )
+						val = lround( val * pow(10.0, it->cal.precision) );
 				}
 			} // end of 'check_depend'
 
@@ -282,8 +283,8 @@ namespace uniset
 				val = 0;
 				memcpy(&val, &fval, std::min(sizeof(val), sizeof(fval)));
 			}
-			else if( it->cal.precision > 0 && !it->noprecision )
-				val = lroundf( fval * pow10(it->cal.precision) );
+			else if( it->cal.precision != 0 && !it->noprecision )
+				val = lroundf( fval * pow(10.0, it->cal.precision) );
 
 			// проверка на обрыв
 			if( it->check_channel_break(val) )
@@ -394,8 +395,8 @@ namespace uniset
 			else
 			{
 				// сперва "убираем степень", потом калибруем.. (это обратная последовательность для AsAI)
-				if( !it->noprecision && it->cal.precision > 0 )
-					val = lroundf( (float)it->value / pow10(it->cal.precision) );
+				if( !it->noprecision && it->cal.precision != 0 )
+					val = lroundf( (float)it->value / pow(10.0, it->cal.precision) );
 
 				IOController_i::CalibrateInfo* cal( &(it->cal) );
 
@@ -460,8 +461,8 @@ namespace uniset
 				fval = uniset::fcalibrate(fval, cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
 			}
 
-			if( !it->noprecision && it->cal.precision > 0 )
-				return ( fval / pow10(it->cal.precision) );
+			if( !it->noprecision && it->cal.precision != 0 )
+				return ( fval / pow(10.0, it->cal.precision) );
 		}
 		else // if( it->stype == UniversalIO::DI || it->stype == UniversalIO::DO )
 			fval = val ? 1.0 : 0.0;
@@ -632,7 +633,12 @@ namespace uniset
 			}
 		}
 
-		b->safety = initIntProp(it, "safety", prefix, init_prefix_only, NoSafety);
+		std::string ssafe = initProp(it, "safeval", prefix, init_prefix_only);
+
+		b->safevalDefined = !ssafe.empty();
+
+		if( b->safevalDefined )
+			b->safeval = uni_atoi(ssafe);
 
 		b->stype = uniset::getIOType(initProp(it, "iotype", prefix, init_prefix_only));
 
@@ -814,7 +820,8 @@ namespace uniset
 		b.value = value;
 		b.craw = craw;
 		b.cprev = cprev;
-		b.safety = safety;
+		b.safeval = safeval;
+		b.safevalDefined = safevalDefined;
 		b.defval = defval;
 		b.df = df;
 		b.nofilter = nofilter;
@@ -853,7 +860,8 @@ namespace uniset
 		value = b.value;
 		craw = b.craw;
 		cprev = b.cprev;
-		safety = b.safety;
+		safeval = b.safeval;
+		safevalDefined = b.safevalDefined;
 		defval = b.defval;
 		df = b.df;
 		nofilter = b.nofilter;

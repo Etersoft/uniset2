@@ -38,7 +38,13 @@
 	</UniSet>
 	<dlog name="dlog"/>
 	<LogServer name="smplus" port="3333" host="localhost" />
-	
+
+	<LogDB name="LogDB">
+		<logserver name="logserver1" ip="localhost" port="3333" cmd="-s level1" description="Лог сервер процесса управления N1"/>
+		<logserver name="logserver2" ip="localhost" port="3333" cmd="" description="Лог сервер процесса управления N2"/>
+		<logserver name="ses" ip="localhost" port="21107" cmd="-d level8 ALL" description="SES"/>
+	</LogDB>
+
 	<settings>
 
 		<LostTestProc name="TestProc1" sensor_s="Input4_S"/>
@@ -171,7 +177,8 @@
 		<UDPExchange name="UDPExchange"/>
 		<UDPExchange2 name="UDPExchange2"/>
 		<UNetExchange name="UNetExchange"/>
-		<HeartBeatTime time_msec="5000"/>
+		<HeartBeatTime msec="5000"/>
+		<NCReadyTimeout msec="120000"/>
 		<TestGen input1_s="Input1_S" input2_s="DumpSensor1_S" name="TestGen" output1_c="DO_C" output2_c="DO1_C"/>
 		<RRDServer1 name="RRDServer1">
 			<rrd filename="rrdtest.rrd" filter_field="rrd" filter_value="1" step="5" ds_field="rrd1_ds" overwrite="0">
@@ -213,6 +220,12 @@
 			<item id="3001" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode1" textname="Локальный узел" unet_ignore="0" unet_port="2049"/>
 			<item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="0" unet_port="3001" unet_respond_id="Input1_S" unet_respond_invert="1"/>
 			<item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_ignore="0" unet_port="3002"/>
+			<item id="3004" ip="192.168.56.12" name="Node3" textname="Node3"/>
+			<item id="3005" ip="192.168.56.13" name="Node4" textname="Node4"/>
+			<item id="3006" ip="192.168.56.14" name="Node5" textname="Node5"/>
+			<item id="3007" ip="192.168.56.15" name="Node6" textname="Node6"/>
+			<item id="3008" ip="192.168.56.16" name="Node7" textname="Node7"/>
+			<item id="3009" ip="192.168.56.17" name="Node8" textname="Node8"/>
 		</nodes>
 		<!-- ************************ Датчики ********************** -->
 		<sensors name="Sensors">
@@ -307,6 +320,68 @@
 			<item id="201" iotype="DI" name="UNET_DATA2_S" textname="UNET: data2" ndata="unet"/>
 			<item id="202" iotype="DI" name="UNET_DATA3_S" textname="UNET: data3" ndata="unet"/>
 			
+			<!-- IO TEST -->
+		<!-- Датчики системы смазочного масла (сгенерировано из csv) alex: 05.07.2017 -->
+			<item id="301" name="01_01_S" iotype="DI" mtype="2" textname="ГДГ1: Аварийно-низкое давление смазочного масла" unet="gdg1" aps="301" mko_aps="1" depend1="D1_State_FS" depend_value="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4526" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="0" jardelay="8000"/>
+			<item id="302" name="01_02_S" iotype="DI" mtype="2" textname="ГДГ2: Аварийно-низкое давление смазочного масла" unet="gdg2" aps="301" mko_aps="1" depend1="D2_State_FS" depend_value="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4846" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="0" jardelay="8000"/>
+			<item id="303" name="01_04_AS" iotype="AI" textname="ГДГ1: Давление смазочного масла" unet="gdg1" analog_group="1" filtersize="300" iir_thr="2000" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x06" arm_mbreg="7086" arm_mbtype="rtu" io="1" card="3" subdev="2" channel="0" range="1" aref="2" cmin="0" cmax="300" rmin="820" rmax="4095" precision="1" noprecision="1"/>
+			<item id="304" name="01_05_S" iotype="DI" mtype="1" textname="ГДГ1: Низкое давление смазочного масла" unet="gdg1" aps="300.1" mko_aps="1" depend1="D1_State_FS" depend_value="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4527" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="1" ioinvert="1" jardelay="4000"/>
+			<item id="305" name="01_06_AS" iotype="AI" textname="ГДГ2: Давление смазочного масла" unet="gdg2" analog_group="1" filtersize="300" iir_thr="2000" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x06" arm_mbreg="7106" arm_mbtype="rtu" io="1" card="3" subdev="2" channel="0" range="1" aref="2" cmin="0" cmax="300" rmin="820" rmax="4095" precision="1" noprecision="1"/>
+			<item id="306" name="01_07_S" iotype="DI" mtype="1" textname="ГДГ2: Низкое давление смазочного масла" unet="gdg2" aps="300.2" mko_aps="1" depend1="D2_State_FS" depend_value="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4847" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="1" ioinvert="1" jardelay="4000"/>
+			<item id="307" name="01_13_AS" iotype="AI" textname="ГДГ1: Температура смазочного масла" unet="gdg1" analog_group="1" filtersize="70" iir_thr="3000" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x06" arm_mbreg="7090" arm_mbtype="rtu" io="1" card="3" subdev="2" channel="2" range="1" aref="2" cmin="0" cmax="300" rmin="820" rmax="4095" precision="1" noprecision="1"/>
+			<item id="308" name="01_14_S" iotype="DI" mtype="1" textname="ГДГ1: Высокая температура масла" unet="gdg1" aps="300.1" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4528" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="2" ioinvert="1"/>
+			<item id="309" name="01_14_1_S" iotype="DI" mtype="2" textname="ГДГ1: Максимальная температура масла" unet="gdg1" aps="300.1" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4529" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="3" ioinvert="1"/>
+			<item id="310" name="01_15_AS" iotype="AI" textname="ГДГ2: Температура смазочного масла" unet="gdg2" analog_group="1" filtersize="70" iir_thr="3000" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x06" arm_mbreg="7110" arm_mbtype="rtu" io="1" card="3" subdev="2" channel="2" range="1" aref="2" cmin="0" cmax="300" rmin="820" rmax="4095" precision="1" noprecision="1"/>
+			<item id="311" name="01_16_S" iotype="DI" mtype="1" textname="ГДГ2: Высокая температура масла" unet="gdg2" aps="300.2" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4848" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="2" ioinvert="1"/>
+			<item id="312" name="01_16_1_S" iotype="DI" mtype="2" textname="ГДГ2: Максимальная температура масла" unet="gdg2" aps="300.2" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4849" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="3" ioinvert="1"/>
+			<item id="313" name="01_17_AS" iotype="AI" textname="ГДГ1: Перепад давления на масляном фильтре" unet="gdg1" analog_group="1" filtersize="70" iir_thr="3000" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x06" arm_mbreg="7087" arm_mbtype="rtu" io="1" card="3" subdev="2" channel="1" range="1" aref="2" cmin="0" cmax="25" rmin="820" rmax="4095" precision="1" noprecision="1"/>
+			<item id="314" name="01_18_S" iotype="DI" mtype="1" textname="ГДГ1: Высокий перепад давления на масляном фильтре" unet="gdg1" aps="300.1" mko_aps="1" depend1="D1_State_FS" depend_value="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4530" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="4" ioinvert="1"/>
+			<item id="315" name="01_19_AS" iotype="AI" textname="ГДГ2: Перепад давления на масляном фильтре" unet="gdg2" analog_group="1" filtersize="70" iir_thr="3000" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x06" arm_mbreg="7107" arm_mbtype="rtu" io="1" card="3" subdev="2" channel="1" range="1" aref="2" cmin="0" cmax="25" rmin="820" rmax="4095" precision="1" noprecision="1"/>
+			<item id="316" name="01_20_S" iotype="DI" mtype="1" textname="ГДГ2: Высокий перепад давления на масляном фильтре" unet="gdg2" aps="300.2" mko_aps="1" depend1="D2_State_FS" depend_value="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4850" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="4" ioinvert="1"/>
+			<item id="317" name="01_22_S" iotype="DI" mtype="1" textname="Верхний уровень в запасной цистерне МЦ-2" unet="ts1k1" aps="304" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4206" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="0" ioinvert="1"/>
+			<item id="318" name="01_23_S" iotype="DI" mtype="1" textname="Нижний уровень в запасной цистерне МЦ-2" unet="ts1k1" aps="304" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4207" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="1" ioinvert="1"/>
+			<item id="319" name="01_24_S" iotype="DI" mtype="1" textname="Верхний уровень в цистерне отработанного масла МЦ-1" unet="ts1k1" aps="304" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4208" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="2" ioinvert="1"/>
+			<!-- OIL_END_REPLACE -->
+			<!-- GDGCOOL_BEGIN_REPLACE -->
+			<!-- Датчики ГДГ (сгенерировано из csv) alex: 05.07.2017 -->
+			<item id="401" name="02_01_AS" iotype="AI" textname="ГДГ1: Давление охлаждающей пресной воды" unet="gdg1" analog_group="1" filtersize="100" iir_thr="4000" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x06" arm_mbreg="7091" arm_mbtype="rtu" io="1" card="3" subdev="2" channel="3" range="1" aref="2" cmin="0" cmax="40" rmin="820" rmax="4095" precision="1" noprecision="1"/>
+			<item id="402" name="02_02_S" iotype="DI" mtype="1" textname="ГДГ1: Низкое давление пресной воды" unet="gdg1" aps="100.1" mko_aps="1" depend1="D1_State_FS" depend_value="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4531" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="5" ioinvert="1" jardelay="4000"/>
+			<item id="403" name="02_03_AS" iotype="AI" textname="ГДГ2: Давление охлаждающей пресной воды" unet="gdg2" analog_group="1" filtersize="100" iir_thr="4000" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x06" arm_mbreg="7111" arm_mbtype="rtu" io="1" card="3" subdev="2" channel="3" range="1" aref="2" cmin="0" cmax="40" rmin="820" rmax="4095" precision="1" noprecision="1"/>
+			<item id="404" name="02_04_S" iotype="DI" mtype="1" textname="ГДГ2: Низкое давление пресной воды" unet="gdg2" aps="100.2" mko_aps="1" depend1="D2_State_FS" depend_value="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4851" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="5" ioinvert="1" jardelay="4000"/>
+			<item id="405" name="02_05_S" iotype="DI" mtype="1" textname="ГДГ1: Нижний уровень пресной воды в расширительной цистерне" unet="gdg1" aps="100.1" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4532" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="6" ioinvert="1"/>
+			<item id="406" name="02_06_S" iotype="DI" mtype="1" textname="ГДГ2: Нижний уровень пресной воды в расширительной цистерне" unet="gdg2" aps="100.2" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4852" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="6" ioinvert="1"/>
+			<item id="407" name="02_07_AS" iotype="AI" textname="ГДГ1: Температура охлаждающей пресной воды" unet="gdg1" analog_group="1" filtersize="70" iir_thr="1000" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x06" arm_mbreg="7094" arm_mbtype="rtu" io="1" card="3" subdev="2" channel="4" range="1" aref="2" cmin="0" cmax="150" rmin="820" rmax="4095" precision="1" noprecision="1"/>
+			<item id="408" name="02_08_S" iotype="DI" mtype="1" textname="ГДГ1: Высокая температура охлаждающей пресной воды" unet="gdg1" aps="100.1" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4533" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="7" ioinvert="1"/>
+			<item id="409" name="02_09_AS" iotype="AI" textname="ГДГ2: Температура охлаждающей пресной воды" unet="gdg2" analog_group="1" filtersize="70" iir_thr="1000" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x06" arm_mbreg="7114" arm_mbtype="rtu" io="1" card="3" subdev="2" channel="4" range="1" aref="2" cmin="0" cmax="150" rmin="820" rmax="4095" precision="1" noprecision="1"/>
+			<item id="410" name="02_10_S" iotype="DI" mtype="1" textname="ГДГ2: Высокая температура охлаждающей пресной воды" unet="gdg2" aps="100.2" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4853" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="7" ioinvert="1"/>
+			<item id="411" name="02_17_AS" iotype="AI" textname="Давление воды в системе охлаждения генераторов пресной водой" unet="ts1k1" analog_group="1" filtersize="100" iir_thr="4000" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x06" arm_mbreg="7054" arm_mbtype="rtu" io="1" card="3" subdev="2" channel="0" range="1" aref="2" cmin="0" cmax="300" rmin="820" rmax="4095" precision="1" noprecision="1"/>
+			<item id="412" name="02_18_S" iotype="DI" mtype="1" textname="Низкое давление воды в системе охлаждения генераторов пресной водой" unet="ts1k1" aps="103" mko_aps="1" io="1" hilimit="430" lowlimit="420" threshold_aid="02_17_AS" inverse="1"/>
+			<item id="413" name="02_19_S" iotype="DI" mtype="1" textname="Нижний уровень воды в расширительной цистерне системы охлаждения генераторов" unet="ts1k1" aps="104" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4209" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="5" ioinvert="1"/>
+			<item id="414" name="02_20_S" iotype="DI" mtype="1" textname="Верхний уровень воды в цистерне сбора пресной воды дизелей ВЦ-6" unet="ts1k1" aps="104" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4210" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="6" ioinvert="1"/>
+			<item id="415" name="02_21_S" iotype="DI" mtype="1" textname="Сигнализация об автоматическом включении резервного насоса охлаждения пресной водой генераторов" unet="ts1k1" aps="103" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4211" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="7" ioinvert="1"/>
+			<item id="416" name="02_22_S" iotype="DI" textname="Работает насос 1 охлаждения пресной водой генераторов" unet="ts1k1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4212" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="8"/>
+			<item id="417" name="02_23_S" iotype="DI" textname="Работает насос 2 охлаждения пресной водой генераторов" unet="ts1k1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4213" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="9"/>
+			<item id="418" name="02_24_AS" iotype="AI" textname="ГДГ1: Давление охлаждающей забортной воды" unet="gdg1" analog_group="1" filtersize="100" iir_thr="4000" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x06" arm_mbreg="7095" arm_mbtype="rtu" io="1" card="3" subdev="2" channel="5" range="1" aref="2" cmin="0" cmax="300" rmin="820" rmax="4095" precision="1" noprecision="1"/>
+			<item id="419" name="02_25_S" iotype="DI" mtype="1" textname="ГДГ1: Низкое давление забортной воды" unet="gdg1" aps="100.1" mko_aps="1" depend1="D1_State_FS" depend_value="1" io="1" hilimit="430" lowlimit="420" threshold_aid="02_24_AS" inverse="1"/>
+			<item id="420" name="02_27_AS" iotype="AI" textname="ГДГ2: Давление охлаждающей забортной воды" unet="gdg2" analog_group="1" filtersize="100" iir_thr="4000" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x06" arm_mbreg="7115" arm_mbtype="rtu" io="1" card="3" subdev="2" channel="5" range="1" aref="2" cmin="0" cmax="300" rmin="820" rmax="4095" precision="1" noprecision="1"/>
+			<item id="421" name="02_28_S" iotype="DI" mtype="1" textname="ГДГ2: Низкое давление забортной воды" unet="gdg2" aps="100.2" mko_aps="1" depend1="D2_State_FS" depend_value="1" io="1" hilimit="430" lowlimit="420" threshold_aid="02_27_AS" inverse="1"/>
+			<item id="422" name="02_30_S" iotype="DI" mtype="1" textname="Сигнализация об автоматическом включении резервного насоса 3 охлаждения забортной водой генераторов" unet="ts1k1" aps="103" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4222" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="10" ioinvert="1"/>
+			<item id="423" name="02_31_S" iotype="DI" textname="Работает насос 1 охлаждения забортной водой генераторов" unet="ts1k1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4223" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="11"/>
+			<item id="424" name="02_32_S" iotype="DI" textname="Работает насос 2 охлаждения забортной водой генераторов" unet="ts1k1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4224" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="12"/>
+			<item id="425" name="02_33_S" iotype="DI" mtype="1" textname="ГДГ1: Низкий поток забортной воды" unet="gdg1" aps="100.1" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4542" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="8" ioinvert="1"/>
+			<item id="426" name="02_34_S" iotype="DI" mtype="1" textname="ГДГ2: Низкий поток забортной воды" unet="gdg2" aps="100.2" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4862" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="8" ioinvert="1"/>
+			<item id="427" name="02_35_S" iotype="DI" mtype="1" textname="ГДГ1: Низкое давление забортной воды охлаждения" unet="gdg1" aps="100.1" mko_aps="1" depend1="D1_State_FS" depend_value="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4543" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="9" ioinvert="1" jardelay="4000"/>
+			<item id="428" name="02_36_S" iotype="DI" mtype="1" textname="ГДГ2: Низкое давление забортной воды охлаждения" unet="gdg2" aps="100.2" mko_aps="1" depend1="D2_State_FS" depend_value="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4863" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="9" ioinvert="1" jardelay="4000"/>
+			<item id="429" name="02_37_S" iotype="DI" mtype="1" textname="ГДГ1: Максимальная температура пресной воды" unet="gdg1" aps="100.1" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4544" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="10" ioinvert="1"/>
+			<item id="430" name="02_38_S" iotype="DI" mtype="1" textname="ГДГ2: Максимальная температура пресной воды" unet="gdg2" aps="100.2" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4864" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="10" ioinvert="1"/>
+			<item id="431" name="02_39_AS" iotype="AI" textname="ГДГ1: Давление забортной воды" unet="gdg1" analog_group="1" filtersize="100" iir_thr="4000" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x06" arm_mbreg="7098" arm_mbtype="rtu" io="1" card="3" subdev="2" channel="6" range="1" aref="2" cmin="0" cmax="40" rmin="820" rmax="4095" precision="1" noprecision="1"/>
+			<item id="432" name="02_40_AS" iotype="AI" textname="ГДГ2: Давление забортной воды" unet="gdg2" analog_group="1" filtersize="100" iir_thr="4000" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x06" arm_mbreg="7118" arm_mbtype="rtu" io="1" card="3" subdev="2" channel="6" range="1" aref="2" cmin="0" cmax="40" rmin="820" rmax="4095" precision="1" noprecision="1"/>
+			<item id="433" name="02_41_S" iotype="DI" mtype="1" textname="ГДГ1: Высокая температура воздуха на входе в генератор" unet="gdg1" aps="100.1" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4577" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="28" ioinvert="1" jardelay="4000"/>
+			<item id="434" name="02_43_S" iotype="DI" mtype="1" textname="ГДГ2: Высокая температура воздуха на входе в генератор" unet="gdg2" aps="100.2" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4897" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="28" ioinvert="1" jardelay="4000"/>
+			<item id="435" name="02_42_S" iotype="DI" mtype="1" textname="ГДГ1: Высокая температура воздуха на выходе генератора" unet="gdg1" aps="100.1" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4578" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="29" ioinvert="1" jardelay="4000"/>
+			<item id="436" name="02_44_S" iotype="DI" mtype="1" textname="ГДГ2: Высокая температура воздуха на выходе генератора" unet="gdg2" aps="100.2" mko_aps="1" arm="arm_gui" arm_mbaddr="0x01" arm_mbfunc="0x05" arm_mbreg="4898" arm_mbtype="rtu" io="1" card="1" subdev="0" channel="29" ioinvert="1" jardelay="4000"/>
+
+
 			<!-- MBTCP PERF TEST -->
 			<item id="10001" losttest="1" mbperf="1" iotype="AI" mbaddr="0x01" mbfunc="0x03" mbreg="3" mbtype="rtu" name="Sensor10001_S" textname="test sensor 10001"/>
 			<item id="10002" losttest="1" mbperf="1" iotype="AI" mbaddr="0x01" mbfunc="0x03" mbreg="5" mbtype="rtu" name="Sensor10002_S" textname="test sensor 10002"/>

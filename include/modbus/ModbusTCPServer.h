@@ -34,61 +34,53 @@ namespace uniset
 			ModbusTCPServer( const std::string& addr, int port = 502 );
 			virtual ~ModbusTCPServer();
 
-			/*! Запуск сервера
-			 * \param thread - создавать ли отдельный поток
+			/*! Запуск сервера. Функция не возвращет управление.
+			 * Но может быть прервана вызовом terminate()
+			 * \return FALSE - если не удалось запустить
 			 */
-			void run( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr, bool thread = false );
+			bool run( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr );
+
+			/*! Асинхронный запуск сервера (создаётся отдельный поток)
+			 * \return TRUE - если поток успешно удалось запустить
+			 */
+			bool async_run( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr );
+
+			/*! остановить поток выполнения (см. run или async_run) */
+			virtual void terminate();
 
 			virtual bool isActive() const override;
 
 			void setMaxSessions( size_t num );
-			inline size_t getMaxSessions()
-			{
-				return maxSessions;
-			}
+			size_t getMaxSessions() const noexcept;
 
 			/*! установить timeout для поддержания соединения с "клиентом" (Default: 10 сек) */
 			void setSessionTimeout( timeout_t msec );
-			inline timeout_t getSessionTimeout()
-			{
-				return sessTimeout;
-			}
+			timeout_t getSessionTimeout() const noexcept;
 
 			/*! текущее количество подключений */
-			size_t getCountSessions();
+			size_t getCountSessions() const noexcept;
 
-			inline void setIgnoreAddrMode( bool st )
-			{
-				ignoreAddr = st;
-			}
-			inline bool getIgnoreAddrMode()
-			{
-				return ignoreAddr;
-			}
-
-			virtual void terminate();
+			void setIgnoreAddrMode( bool st );
+			bool getIgnoreAddrMode() const noexcept;
 
 			// Сбор статистики по соединениям...
 			struct SessionInfo
 			{
-				SessionInfo( const std::string& a, unsigned int ask ): iaddr(a), askCount(ask) {}
+				SessionInfo( const std::string& a, size_t ask ): iaddr(a), askCount(ask) {}
 
 				std::string iaddr;
-				unsigned int askCount;
+				size_t askCount;
 			};
 
 			typedef std::list<SessionInfo> Sessions;
 
 			void getSessions( Sessions& lst );
 
-			inline std::string getInetAddress()
-			{
-				return iaddr;
-			}
-			inline int getInetPort()
-			{
-				return port;
-			}
+			std::string getInetAddress() const noexcept;
+			int getInetPort() const noexcept;
+
+			// статистика
+			size_t getConnectionCount() const noexcept;
 
 			// -------------------------------------------------
 			// Таймер.
@@ -101,10 +93,7 @@ namespace uniset
 			TimerSignal signal_timer();
 
 			void setTimer( timeout_t msec );
-			inline timeout_t getTimer()
-			{
-				return tmTime;
-			}
+			timeout_t getTimer() const noexcept;
 
 		protected:
 
@@ -139,7 +128,7 @@ namespace uniset
 			std::string iaddr;
 			std::string myname;
 			std::queue<unsigned char> qrecv;
-			ModbusRTU::ADUHeader curQueryHeader;
+			ModbusRTU::MBAPHeader curQueryHeader;
 
 			std::mutex sMutex;
 			typedef std::list<std::shared_ptr<ModbusTCPSession>> SessionList;
@@ -149,6 +138,9 @@ namespace uniset
 
 			size_t maxSessions = { 100 };
 			size_t sessCount = { 0 };
+
+			// Статистика
+			size_t connCount = { 0 }; // количество обработанных соединений
 
 			timeout_t sessTimeout = { 10000 }; // msec
 

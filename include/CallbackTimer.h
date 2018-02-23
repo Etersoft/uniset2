@@ -65,6 +65,8 @@ namespace uniset
 	 *
 	 * \note Каждый экземпляр класса CallbackTimer создает поток, поэтому \b желательно не создавать больше одного экземпляра,
 	 * для одного процесса (чтобы не порождать много потоков).
+	 *
+	 * \todo Можно уже переписать с использованием c++11 и далее..
 	*/
 	template <class Caller>
 	class CallbackTimer
@@ -92,8 +94,13 @@ namespace uniset
 			timeout_t getCurrent(size_t id);             /*!< получить текущее значение таймера */
 
 
-			void add( size_t id, timeout_t timeMS )throw(uniset::LimitTimers); /*!< добавление нового таймера */
-			void remove( size_t id ); /*!< удаление таймера */
+			/*! добавление нового таймера.
+			 * throw(uniset::LimitTimers)
+			 */
+			void add( size_t id, timeout_t timeMS );
+
+			/*! удаление таймера */
+			void remove( size_t id );
 
 		protected:
 
@@ -116,7 +123,7 @@ namespace uniset
 			struct TimerInfo
 			{
 				TimerInfo(size_t id, PassiveTimer& pt):
-					id(id), pt(pt) {};
+					id(id), pt(pt) {}
 
 				size_t id;
 				PassiveTimer pt;

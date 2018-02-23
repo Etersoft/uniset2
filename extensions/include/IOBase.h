@@ -30,13 +30,12 @@
 namespace uniset
 {
 	// -----------------------------------------------------------------------------
-	static const int DefaultSubdev  = -1;
-	static const int DefaultChannel = -1;
-	static const int NoSafety       = -1;
-	// -----------------------------------------------------------------------------
 	/*! Свойства переменной в/в */
 	struct IOBase
 	{
+		static const int DefaultSubdev  = -1;
+		static const int DefaultChannel = -1;
+
 		// т.к. IOBase содержит rwmutex с запрещённым конструктором копирования
 		// приходится здесь тоже объявлять разрешенными только операции "перемещения"
 		IOBase( const IOBase& r ) = delete;
@@ -53,7 +52,7 @@ namespace uniset
 			value(0),
 			craw(0),
 			cprev(0),
-			safety(0),
+			safeval(0),
 			defval(0),
 			df(1),
 			nofilter(false),
@@ -108,8 +107,9 @@ namespace uniset
 		long value;     /*!< текущее значение */
 		long craw;      /*!< текущее 'сырое' значение до калибровки */
 		long cprev;     /*!< предыдущее значение после калибровки */
-		long safety;    /*!< безопасное состояние при завершении процесса */
+		long safeval;   /*!< безопасное значение */
 		long defval;    /*!< состояние по умолчанию (при запуске) */
+		bool safevalDefined = { false }; /*!< флаг, означающий что safeval задан (можно использовать) */
 
 		DigitalFilter df;   /*!< реализация программного фильтра */
 		bool nofilter;      /*!< отключение фильтра */

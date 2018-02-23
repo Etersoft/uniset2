@@ -41,10 +41,10 @@ namespace uniset
 		params = ptr->getArray("parameters");
 	}
 	// --------------------------------------------------------------------------
-	json::help::item::item(const std::string& description)
+	json::help::item::item( const std::string& cmd, const std::string& description )
 	{
 		root = new Poco::JSON::Object();
-		root->set("description", description);
+		root->set(cmd, description);
 	}
 	// --------------------------------------------------------------------------
 	void json::help::item::param(const std::string& name, const std::string& description)
@@ -92,9 +92,14 @@ namespace uniset
 		}
 	}
 	// --------------------------------------------------------------------------
-	void json::help::object::add(json::help::item& i)
+	void json::help::object::add( json::help::item& i)
 	{
 		cmdlist->add(i);
+	}
+	// --------------------------------------------------------------------------
+	void json::help::object::emplace( json::help::item&& i )
+	{
+		cmdlist->add( std::move(i) );
 	}
 	// --------------------------------------------------------------------------
 	Poco::JSON::Object::Ptr json::help::object::get()

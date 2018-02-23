@@ -43,9 +43,9 @@ namespace uniset
 	class UniSetTimer
 	{
 		public:
-			virtual ~UniSetTimer() {};
+			virtual ~UniSetTimer() {}
 
-			virtual bool checkTime() const noexcept = 0;					/*!< проверка наступления заданного времени */
+			virtual bool checkTime() const noexcept = 0;				/*!< проверка наступления заданного времени */
 			virtual timeout_t setTiming( timeout_t msec ) noexcept = 0;	/*!< установить таймер и запустить */
 			virtual void reset() noexcept = 0;							/*!< перезапустить таймер */
 
@@ -86,6 +86,8 @@ namespace uniset
 	 * можно с помощью checkTime проверять, не наступило ли нужное время
 	 * \note Если t_msec==WaitUpTime, таймер никогда не сработает
 	 * \note t_msec=0 - таймер сработает сразу
+	 * \todo Можно оптимизировать вызовы проверки таймера, если ввести внутренний флаг, что он уже сработал
+	 * но ещё не был заново переустановлен.
 	*/
 	class PassiveTimer:
 		public UniSetTimer
@@ -97,7 +99,7 @@ namespace uniset
 
 			virtual bool checkTime() const noexcept override; /*!< проверка наступления заданного времени */
 			virtual timeout_t setTiming( timeout_t msec ) noexcept override;     /*!< установить таймер и запустить. timeMS = 0 вызовет немедленное срабатывание */
-			virtual void reset() noexcept; /*!< перезапустить таймер */
+			virtual void reset() noexcept override; /*!< перезапустить таймер */
 
 			virtual timeout_t getCurrent() const noexcept override;  /*!< получить текущее значение таймера, в мс */
 
@@ -106,7 +108,7 @@ namespace uniset
 			 */
 			virtual timeout_t getInterval() const noexcept override;
 
-			virtual void terminate() noexcept; /*!< прервать работу таймера */
+			virtual void terminate() noexcept override; /*!< прервать работу таймера */
 
 		protected:
 			timeout_t t_msec = { 0 };  /*!< интервал таймера, в милисекундах (для "пользователей") */

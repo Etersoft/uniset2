@@ -3,6 +3,7 @@
 #define ModbusTypes_H_
 // -------------------------------------------------------------------------
 #include <ostream>
+#include <cstdint>
 #include <bitset>
 #include <string>
 #include <list>
@@ -125,7 +126,7 @@ namespace uniset
 		{
 			/*! максимальное количество данных в пакете (c учётом контрольной суммы) */
 			MAXLENPACKET     = 508, /*!< максимальная длина пакета 512 - header(2) - CRC(2) */
-			BroadcastAddr    = 255, /*!< адрес для широковещательных сообщений */
+			BroadcastAddr    = 0, /*!< адрес для широковещательных сообщений */
 			MAXPDULEN       = 253, // 255 - 2(CRC)
 			MAXDATALEN       = 125  /*!< максимальное число слов, которое можно запросить.
                                     Связано с тем, что в ответе есть поле bcnt - количество байт
@@ -151,6 +152,7 @@ namespace uniset
 		std::string b2str( const ModbusByte b );
 		// -------------------------------------------------------------------------
 		float dat2f( const ModbusData dat1, const ModbusData dat2 );
+		size_t numBytes( const size_t nbits ); // сколько байт нужно для указанного количества бит
 		// -------------------------------------------------------------------------
 		bool isWriteFunction( SlaveFunctionCode c );
 		bool isReadFunction( SlaveFunctionCode c );
@@ -169,19 +171,19 @@ namespace uniset
 		std::ostream& operator<<(std::ostream& os, const ModbusHeader& m );
 		std::ostream& operator<<(std::ostream& os, const ModbusHeader* m );
 		// -----------------------------------------------------------------------
-		struct ADUHeader
+		struct MBAPHeader
 		{
 			ModbusRTU::ModbusData tID; /*!< transaction ID */
 			ModbusRTU::ModbusData pID; /*!< protocol ID */
 			ModbusRTU::ModbusData len; /*!< lenght */
 
-			ADUHeader(): tID(0), pID(0), len(0) {}
+			MBAPHeader(): tID(0), pID(0), len(0) {}
 
 			void swapdata();
 
 		} __attribute__((packed));
 
-		std::ostream& operator<<(std::ostream& os, const ADUHeader& m );
+		std::ostream& operator<<(std::ostream& os, const MBAPHeader& m );
 		// -----------------------------------------------------------------------
 
 		/*! Базовое (сырое) сообщение
@@ -206,21 +208,21 @@ namespace uniset
 			}
 			inline ModbusRTU::ModbusData tID() const
 			{
-				return aduhead.tID;
+				return mbaphead.tID;
 			}
 			inline ModbusRTU::ModbusData pID() const
 			{
-				return aduhead.pID;
+				return mbaphead.pID;
 			}
 			inline ModbusRTU::ModbusData aduLen() const
 			{
-				return aduhead.len;
+				return mbaphead.len;
 			}
 
-			unsigned char* buf();
+			u_int8_t* buf();
 			ModbusRTU::ModbusData len() const;
 			void swapHead();
-			void makeHead( ModbusRTU::ModbusData tID, bool noCRC = true, ModbusRTU::ModbusData pID = 0 );
+			void makeMBAPHeader( ModbusRTU::ModbusData tID, bool noCRC = true, ModbusRTU::ModbusData pID = 0 );
 
 			ModbusRTU::ModbusData pduLen() const;
 			ModbusCRC pduCRC( size_t len ) const;
@@ -228,7 +230,7 @@ namespace uniset
 
 			void clear();
 
-			ADUHeader aduhead;
+			MBAPHeader mbaphead;
 			ModbusHeader pduhead;
 			ModbusByte data[MAXLENPACKET + szCRC];   /*!< данные */
 
@@ -392,7 +394,7 @@ namespace uniset
 			 * \return TRUE - если есть
 			 * \return FALSE - если НЕ найдено
 			*/
-			bool setBit( unsigned char dnum, unsigned char bnum, bool state );
+			bool setBit( uint8_t dnum, uint8_t bnum, bool state );
 
 			/*! получение данных.
 			 * \param bnum  - номер байта(0..MAXLENPACKET)
@@ -400,7 +402,7 @@ namespace uniset
 			 * \return TRUE - если есть
 			 * \return FALSE - если НЕ найдено
 			*/
-			bool getData( unsigned char bnum, DataBits& d ) const;
+			bool getData( uint8_t bnum, DataBits& d ) const;
 
 			/*! очистка данных */
 			void clear();
@@ -492,7 +494,7 @@ namespace uniset
 			 * \return TRUE - если есть
 			 * \return FALSE - если НЕ найдено
 			*/
-			bool setBit( unsigned char dnum, unsigned char bnum, bool state );
+			bool setBit( uint8_t dnum, uint8_t bnum, bool state );
 
 			/*! получение данных.
 			 * \param dnum  - номер байта (0..MAXLENPACKET)
@@ -500,7 +502,7 @@ namespace uniset
 			 * \return TRUE - если есть
 			 * \return FALSE - если НЕ найдено
 			*/
-			bool getData( unsigned char dnum, DataBits& d ) const;
+			bool getData( uint8_t dnum, DataBits& d ) const;
 
 			/*! очистка данных */
 			void clear();
@@ -727,7 +729,7 @@ namespace uniset
 			// -1 - error
 			int addBit( bool state );
 
-			bool setBit( int nbit, bool state );
+			bool setBit( uint8_t nbit, bool state );
 
 			inline size_t last() const
 			{
@@ -740,9 +742,7 @@ namespace uniset
 			 * \return TRUE - если есть
 			 * \return FALSE - если НЕ найдено
 			*/
-			bool getData( unsigned char dnum, DataBits& d );
-
-			bool getBit( unsigned char bnum );
+			bool getData( uint8_t dnum, DataBits& d );
 
 			void clear();
 			inline bool isFull() const
@@ -968,8 +968,8 @@ namespace uniset
 		struct ForceSingleCoilRetMessage:
 			public ModbusHeader
 		{
-			ModbusData start = { 0 };     /*!< записанный начальный адрес */
-			ModbusData data = { 0 };     /*!< данные */
+			ModbusData start = { 0 };   /*!< записанный начальный адрес */
+			ModbusData data = { 0 };    /*!< данные */
 			ModbusCRC crc = { 0 };
 
 			/*! получить значение команды */

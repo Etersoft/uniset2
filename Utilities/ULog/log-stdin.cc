@@ -74,7 +74,7 @@ int main( int argc, char* argv[], char* envp[] )
 		auto log = make_shared<DebugStream>();
 		LogServer ls(log);
 
-		ls.run(addr, port, true);
+		ls.async_run(addr, port);
 
 		char buf[10000];
 

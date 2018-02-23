@@ -163,7 +163,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 </xsl:for-each>
 }
 // -----------------------------------------------------------------------------
-uniset::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID()
+uniset::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID() const
 {
 	if( smTestID != DefaultObjectId )
 		return smTestID;
@@ -193,7 +193,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 		mycrit &lt;&lt; myname
 			&lt;&lt; "(preAskSensors): ************* don`t activated?! ************" &lt;&lt; endl;
 
-	for( ;; )
+	while( !cancelled )
 	{
 		try
 		{

@@ -43,7 +43,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	/*! \page pgLogServer Лог сервер
 	    Лог сервер предназначен для возможности удалённого чтения логов (DebugStream).
-	Ему указывается host и port для прослушивания запросов, которые можно делать при помощи
+	Ему указывается host и port на котором он отвечает, подключаться можно при помощи
 	LogReader. Читающих клиентов может быть скольугодно много, на каждого создаётся своя "сессия"(LogSession).
 	При этом через лог сервер имеется возможность управлять включением или отключением определённых уровней логов,
 	записью, отключением записи или ротацией файла с логами.  DebugStream за которым ведётся "слежение"
@@ -98,27 +98,16 @@ namespace uniset
 			LogServer( std::shared_ptr<LogAgregator> log );
 			virtual ~LogServer() noexcept;
 
-			inline void setCmdTimeout( timeout_t msec ) noexcept
-			{
-				cmdTimeout = msec;
-			}
+			void setCmdTimeout( timeout_t msec ) noexcept;
+			void setSessionLog( Debug::type t ) noexcept;
+			void setMaxSessionCount( size_t num ) noexcept;
 
-			inline void setSessionLog( Debug::type t ) noexcept
-			{
-				sessLogLevel = t;
-			}
-			inline void setMaxSessionCount( int num ) noexcept
-			{
-				sessMaxCount = num;
-			}
+			bool async_run( const std::string& addr, Poco::UInt16 port );
+			bool run( const std::string& addr, Poco::UInt16 port );
 
-			void run( const std::string& addr, Poco::UInt16 port, bool thread = true );
 			void terminate();
 
-			inline bool isRunning() const noexcept
-			{
-				return isrunning;
-			}
+			bool isRunning() const noexcept;
 
 			bool check( bool restart_if_fail = true );
 
@@ -137,10 +126,7 @@ namespace uniset
 
 			virtual void evprepare( const ev::loop_ref& loop ) override;
 			virtual void evfinish( const ev::loop_ref& loop ) override;
-			virtual std::string wname() const noexcept override
-			{
-				return myname;
-			}
+			virtual std::string wname() const noexcept override;
 
 			void ioAccept( ev::io& watcher, int revents );
 			void sessionFinished( LogSession* s );
@@ -150,7 +136,6 @@ namespace uniset
 
 		private:
 
-			timeout_t timeout = { UniSetTimer::WaitUpTime };
 			timeout_t cmdTimeout = { 2000 };
 			Debug::type sessLogLevel = { Debug::NONE };
 			size_t sessMaxCount = { 10 };

@@ -273,24 +273,8 @@ using namespace uniset;
 	// --------------------------------------------------------------------------
 	bool SMInterface::waitSMready( int ready_timeout, int pmsec )
 	{
-		PassiveTimer ptSMready(ready_timeout);
-		bool sm_ready = false;
-
-		while( !ptSMready.checkTime() && !sm_ready )
-		{
-			try
-			{
-				sm_ready = exist();
-
-				if( sm_ready )
-					break;
-			}
-			catch(...) {}
-
-			msleep(pmsec);
-		}
-
-		return sm_ready;
+		std::atomic_bool cancelFlag = { false };
+		return waitSMreadyWithCancellation(ready_timeout, cancelFlag, pmsec);
 	}
 	// --------------------------------------------------------------------------
 	bool SMInterface::waitSMworking( uniset::ObjectId sid, int msec, int pmsec )
@@ -305,6 +289,28 @@ using namespace uniset;
 				getValue(sid);
 				sm_ready = true;
 				break;
+			}
+			catch(...) {}
+
+			msleep(pmsec);
+		}
+
+		return sm_ready;
+	}
+	// --------------------------------------------------------------------------
+	bool SMInterface::waitSMreadyWithCancellation(int ready_timeout, std::atomic_bool& cancelFlag, int pmsec)
+	{
+		PassiveTimer ptSMready(ready_timeout);
+		bool sm_ready = false;
+
+		while( !ptSMready.checkTime() && !sm_ready && !cancelFlag )
+		{
+			try
+			{
+				sm_ready = exist();
+
+				if( sm_ready )
+					break;
 			}
 			catch(...) {}
 

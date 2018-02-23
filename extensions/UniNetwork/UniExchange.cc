@@ -76,7 +76,7 @@ UniExchange::UniExchange(uniset::ObjectId id, uniset::ObjectId shmID,
 	int sm_tout = conf->getArgInt("--io-sm-ready-timeout", it.getProp("ready_timeout"));
 
 	if( sm_tout == 0 )
-		smReadyTimeout = 60000;
+		smReadyTimeout = conf->getNCReadyTimeout();
 	else if( sm_tout < 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 	else
@@ -145,14 +145,17 @@ UniExchange::~UniExchange()
 // -----------------------------------------------------------------------------
 void UniExchange::execute()
 {
-	if( !shm->waitSMready(smReadyTimeout, 50) )
+	if( !shm->waitSMreadyWithCancellation(smReadyTimeout, cancelled, 50) )
 	{
 		ostringstream err;
 		err << myname << "(execute): Не дождались готовности SharedMemory к работе в течение "
 			<< smReadyTimeout << " мсек";
 
 		ucrit << err.str() << endl;
-		throw SystemError(err.str());
+		//throw SystemError(err.str());
+		//std::terminate();
+		uterminate();
+		return;
 	}
 
 	PassiveTimer pt(UniSetTimer::WaitUpTime);
@@ -168,10 +171,13 @@ void UniExchange::execute()
 	initIterators();
 	init_ok = true;
 
-	while(1)
+	while( !cancelled )
 	{
 		for( auto& it : nlst )
 		{
+			if( cancelled )
+				break;
+
 			bool ok = false;
 
 			try
@@ -327,6 +333,12 @@ void UniExchange::askSensors( UniversalIO::UIOCommand cmd )
 
 }
 // -----------------------------------------------------------------------------
+bool UniExchange::deactivateObject()
+{
+	cancelled = true;
+	return IOController::deactivateObject();
+}
+// -----------------------------------------------------------------------------
 void UniExchange::sysCommand( const SystemMessage* sm )
 {
 	switch( sm->command )
@@ -349,10 +361,6 @@ void UniExchange::sysCommand( const SystemMessage* sm )
 		default:
 			break;
 	}
-}
-// -----------------------------------------------------------------------------
-void UniExchange::sigterm( int signo )
-{
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<UniExchange> UniExchange::init_exchange(int argc, const char* const* argv,

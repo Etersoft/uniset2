@@ -1,0 +1,74 @@
+#!/bin/bash
+
+
+usage()
+{
+	echo "Usage: ${0##*/} command [arguments]"
+	echo "Commands:"
+	echo " help                                                            - this mesage"
+	echo " create [-f|--force] dbfile                                      - create database. (force - remove if exists)"
+	echo " load dbfile [logname1:]logfile1.log [logname2:]logfile2.log...  - load logs to database"
+	echo "    logfile    - log file"
+	echo "    [lognameX] - log name for db. Default: name of logfile"
+	echo "    :          - separator for logname"
+	echo ""
+}
+
+[ -z "$1" ] && usage && exit 1
+
+
+if [ "$1" == "help" ] || [ "$1" == "h" ]; then
+	usage
+	exit 0
+fi
+
+
+# create database
+if [ "$1" == "create" ]; then
+
+	shift
+
+	force=
+	[ "$1" == "-f" ] && force=1 && shift
+	[ "$1" == "--force" ] && force=1 && shift
+
+	dbfile="$1"
+
+	[ -z "$dbfile" ] && usage && exit 1
+
+	[ -n "$force" ] && [ -a "$dbfile" ] && rm -f "$dbfile"
+
+	[ -a "$dbfile" ] && echo "$dbfile already exists.." && exit 1
+
+	sqlite3 $dbfile <<"_EOF_"
+
+PRAGMA foreign_keys=ON;
+
+DROP TABLE IF EXISTS logs;
+CREATE TABLE logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  tms timestamp KEY default (strftime('%s', 'now')),
+  usec INTEGER(5) NOT NULL,
+  name TEXT KEY NOT NULL,
+  text TEXT
+);
+
+_EOF_
+
+	exit $?
+fi
+
+# load
+if [ "$1" == "load" ]; then
+	shift
+
+	[ -z "$1" ] && usage && exit 1
+	[ -z "$2" ] && usage && exit 1
+
+	uniset2-logdb-conv $*
+	exit $?
+fi
+
+
+usage
+exit 1

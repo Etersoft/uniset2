@@ -233,7 +233,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
 -->
 }
 // -----------------------------------------------------------------------------
-uniset::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID()
+uniset::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID() const
 {
 	if( smTestID != DefaultObjectId )
 		return smTestID;

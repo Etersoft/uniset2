@@ -74,7 +74,7 @@ namespace uniset
 
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual void askSensors( UniversalIO::UIOCommand cmd );
-			virtual void sigterm( int signo ) override;
+			virtual bool deactivateObject() override;
 
 			xmlNode* cnode = { 0 };
 			std::string s_field = { "" };
@@ -142,7 +142,9 @@ namespace uniset
 
 			SList mymap;
 			size_t maxIndex = { 0 };
-			timeout_t smReadyTimeout = { 15000 }; // msec
+			timeout_t smReadyTimeout = { 60000 }; // msec
+
+			std::atomic_bool cancelled = { false };
 
 		private:
 	};

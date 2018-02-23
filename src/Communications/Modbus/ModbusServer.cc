@@ -63,6 +63,41 @@ namespace uniset
 			recvTimeOut_ms = msec;
 	}
 	// -------------------------------------------------------------------------
+	void ModbusServer::setSleepPause(timeout_t msec)
+	{
+		sleepPause_msec = msec;
+	}
+	// -------------------------------------------------------------------------
+	void ModbusServer::setCRCNoCheckit(bool set)
+	{
+		crcNoCheckit = set;
+	}
+	// -------------------------------------------------------------------------
+	bool ModbusServer::isCRCNoCheckit() const
+	{
+		return crcNoCheckit;
+	}
+	// -------------------------------------------------------------------------
+	void ModbusServer::setBroadcastMode( bool set )
+	{
+		onBroadcast = set;
+	}
+	// -------------------------------------------------------------------------
+	bool ModbusServer::getBroadcastMode() const
+	{
+		return onBroadcast;
+	}
+	// -------------------------------------------------------------------------
+	void ModbusServer::setCleanBeforeSend(bool set)
+	{
+		cleanBeforeSend = set;
+	}
+	// -------------------------------------------------------------------------
+	bool ModbusServer::getCleanBeforeSend() const
+	{
+		return cleanBeforeSend;
+	}
+	// -------------------------------------------------------------------------
 	timeout_t ModbusServer::setReplyTimeout( timeout_t msec )
 	{
 		// #warning "Why msec can be 0?"
@@ -122,7 +157,8 @@ namespace uniset
 
 				// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 				// то посылаем
-				if( res < erInternalErrorCode )
+				// если адрес запроса является broadcast-овым, то ответ тоже не посылается
+				if( res < erInternalErrorCode && mRead.addr != BroadcastAddr )
 				{
 					ErrorRetMessage em( mRead.addr, mRead.func, res );
 					buf = em.transport_msg();
@@ -155,7 +191,8 @@ namespace uniset
 
 				// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 				// то посылаем
-				if( res < erInternalErrorCode )
+				// если адрес запроса является broadcast-овым, то ответ тоже не посылается
+				if( res < erInternalErrorCode && mRead.addr != BroadcastAddr )
 				{
 					ErrorRetMessage em( mRead.addr, mRead.func, res );
 					buf = em.transport_msg();
@@ -188,7 +225,8 @@ namespace uniset
 
 				// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 				// то посылаем
-				if( res < erInternalErrorCode )
+				// если адрес запроса является broadcast-овым, то ответ тоже не посылается
+				if( res < erInternalErrorCode && mRead.addr != BroadcastAddr )
 				{
 					ErrorRetMessage em( mRead.addr, mRead.func, res );
 					buf = em.transport_msg();
@@ -221,7 +259,8 @@ namespace uniset
 
 				// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 				// то посылаем
-				if( res < erInternalErrorCode )
+				// если адрес запроса является broadcast-овым, то ответ тоже не посылается
+				if( res < erInternalErrorCode && mRead.addr != BroadcastAddr )
 				{
 					ErrorRetMessage em( mRead.addr, mRead.func, res );
 					buf = em.transport_msg();
@@ -255,7 +294,8 @@ namespace uniset
 
 				// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 				// то посылаем
-				if( res < erInternalErrorCode )
+				// если адрес запроса является broadcast-овым, то ответ тоже не посылается
+				if( res < erInternalErrorCode && mWrite.addr != BroadcastAddr )
 				{
 					ErrorRetMessage em( mWrite.addr, mWrite.func, res );
 					buf = em.transport_msg();
@@ -289,7 +329,8 @@ namespace uniset
 
 				// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 				// то посылаем
-				if( res < erInternalErrorCode )
+				// если адрес запроса является broadcast-овым, то ответ тоже не посылается
+				if( res < erInternalErrorCode && mWrite.addr != BroadcastAddr )
 				{
 					ErrorRetMessage em( mWrite.addr, mWrite.func, res );
 					buf = em.transport_msg();
@@ -321,7 +362,8 @@ namespace uniset
 
 				// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 				// то посылаем
-				if( res < erInternalErrorCode )
+				// если адрес запроса является broadcast-овым, то ответ тоже не посылается
+				if( res < erInternalErrorCode && mDiag.addr != BroadcastAddr )
 				{
 					ErrorRetMessage em( mDiag.addr, mDiag.func, res );
 					buf = em.transport_msg();
@@ -353,7 +395,8 @@ namespace uniset
 
 				// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 				// то посылаем
-				if( res < erInternalErrorCode )
+				// если адрес запроса является broadcast-овым, то ответ тоже не посылается
+				if( res < erInternalErrorCode && mRDI.addr != BroadcastAddr )
 				{
 					ErrorRetMessage em( mRDI.addr, mRDI.func, res );
 					buf = em.transport_msg();
@@ -386,7 +429,8 @@ namespace uniset
 
 				// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 				// то посылаем
-				if( res < erInternalErrorCode )
+				// если адрес запроса является broadcast-овым, то ответ тоже не посылается
+				if( res < erInternalErrorCode && mWrite.addr != BroadcastAddr )
 				{
 					ErrorRetMessage em( mWrite.addr, mWrite.func, res );
 					buf = em.transport_msg();
@@ -420,7 +464,8 @@ namespace uniset
 
 				// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 				// то посылаем
-				if( res < erInternalErrorCode )
+				// если адрес запроса является broadcast-овым, то ответ тоже не посылается
+				if( res < erInternalErrorCode && mWrite.addr != BroadcastAddr )
 				{
 					ErrorRetMessage em( mWrite.addr, mWrite.func, res );
 					buf = em.transport_msg();
@@ -453,7 +498,8 @@ namespace uniset
 
 				// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 				// то посылаем
-				if( res < erInternalErrorCode )
+				// если адрес запроса является broadcast-овым, то ответ тоже не посылается
+				if( res < erInternalErrorCode && mJournal.addr != BroadcastAddr )
 				{
 					ErrorRetMessage em( mJournal.addr, mJournal.func, res );
 					buf = em.transport_msg();
@@ -486,7 +532,8 @@ namespace uniset
 
 				// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 				// то посылаем
-				if( res < erInternalErrorCode )
+				// если адрес запроса является broadcast-овым, то ответ тоже не посылается
+				if( res < erInternalErrorCode && mSet.addr != BroadcastAddr )
 				{
 					ErrorRetMessage em( mSet.addr, mSet.func, res );
 					buf = em.transport_msg();
@@ -519,7 +566,8 @@ namespace uniset
 
 				// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 				// то посылаем
-				if( res < erInternalErrorCode )
+				// если адрес запроса является broadcast-овым, то ответ тоже не посылается
+				if( res < erInternalErrorCode && query.addr != BroadcastAddr )
 				{
 					ErrorRetMessage em( query.addr, query.func, res );
 					buf = em.transport_msg();
@@ -552,7 +600,8 @@ namespace uniset
 
 				// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 				// то посылаем
-				if( res < erInternalErrorCode )
+				// если адрес запроса является broadcast-овым, то ответ тоже не посылается
+				if( res < erInternalErrorCode && query.addr != BroadcastAddr )
 				{
 					ErrorRetMessage em( query.addr, query.func, res );
 					buf = em.transport_msg();
@@ -1661,7 +1710,7 @@ namespace uniset
 		return m;
 	}
 	// -------------------------------------------------------------------------
-	size_t ModbusServer::getErrCount( mbErrCode e )
+	size_t ModbusServer::getErrCount( mbErrCode e ) const
 	{
 		auto i = errmap.find(e);
 
@@ -1681,6 +1730,11 @@ namespace uniset
 		size_t ret = i->second;
 		i->second = set;
 		return ret;
+	}
+	// -------------------------------------------------------------------------
+	size_t ModbusServer::getAskCount() const noexcept
+	{
+		return askCount;
 	}
 	// -------------------------------------------------------------------------
 	void ModbusServer::resetAskCounter()

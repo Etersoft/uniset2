@@ -162,14 +162,13 @@ namespace uniset
 			void sensorInfo( const uniset::SensorMessage* sm ) override;
 			void timerInfo( const uniset::TimerMessage* tm ) override;
 			void askSensors( UniversalIO::UIOCommand cmd );
-			void waitSMReady();
+			bool waitSMReady();
 			void receiverEvent( const std::shared_ptr<UNetReceiver>& r, UNetReceiver::Event ev ) noexcept;
 
 			virtual bool activateObject() override;
 			virtual bool deactivateObject() override;
 
 			// действия при завершении работы
-			virtual void sigterm( int signo );
 			void termSenders();
 			void termReceivers();
 
@@ -195,6 +194,7 @@ namespace uniset
 			timeout_t steptime = { 1000 };    /*!< периодичность вызова step, [мсек] */
 
 			std::atomic_bool activated = { false };
+			std::atomic_bool cancelled = { false };
 			timeout_t activateTimeout = { 20000 }; // msec
 
 			struct ReceiverInfo

@@ -26,7 +26,7 @@ namespace uniset
 	const Element::ElementID Element::DefaultElementID = "?id?";
 	// -------------------------------------------------------------------------
 
-	void Element::addChildOut( std::shared_ptr<Element> el, size_t num )
+	void Element::addChildOut( std::shared_ptr<Element>& el, size_t num )
 	{
 		if( el.get() == this )
 		{
@@ -38,7 +38,7 @@ namespace uniset
 
 		for( const auto& it : outs )
 		{
-			if( it.el == el )
+			if( it.el.get() == el.get() )
 			{
 				ostringstream msg;
 				msg << "(" << myid << "):" << el->getId() << " уже есть в списке дочерних(такое соединение уже есть)...";
@@ -59,16 +59,21 @@ namespace uniset
 		outs.emplace_front(el, num);
 	}
 	// -------------------------------------------------------------------------
-	void Element::delChildOut( std::shared_ptr<Element> el )
+	void Element::delChildOut( std::shared_ptr<Element>& el )
 	{
 		for( auto it = outs.begin(); it != outs.end(); ++it )
 		{
-			if( it->el == el )
+			if( it->el.get() == el.get() )
 			{
 				outs.erase(it);
 				return;
 			}
 		}
+	}
+	// -------------------------------------------------------------------------
+	size_t Element::outCount() const
+	{
+		return outs.size();
 	}
 
 	// -------------------------------------------------------------------------
@@ -76,8 +81,13 @@ namespace uniset
 	{
 		long _myout = getOut();
 
-		for( auto&& it: outs )
+		for( auto && it : outs )
 			it.el->setIn(it.num, _myout);
+	}
+	// -------------------------------------------------------------------------
+	Element::ElementID Element::getId() const
+	{
+		return myid;
 	}
 	// -------------------------------------------------------------------------
 	std::shared_ptr<Element> Element::find( const ElementID& id )
@@ -95,7 +105,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	void Element::addInput(size_t num, long value )
 	{
-		for( auto&& it : ins )
+		for( auto && it : ins )
 		{
 			if( it.num == num )
 			{
@@ -119,5 +129,29 @@ namespace uniset
 			}
 		}
 	}
+	// -------------------------------------------------------------------------
+	size_t Element::inCount() const
+	{
+		return ins.size();
+	}
+	// -------------------------------------------------------------------------
+	ostream& operator<<( ostream& os, const Element& el )
+	{
+		return os << "[" << el.getType() << "]" << el.getId();
+	}
+
+	ostream& operator<<( ostream& os, const std::shared_ptr<Element>& el )
+	{
+		if( el )
+			return os << (*(el.get()));
+
+		return os;
+	}
+	// -------------------------------------------------------------------------
+	long TOR::getOut() const
+	{
+		return (myout ? 1 : 0);
+	}
+
 	// -------------------------------------------------------------------------
 } // end of namespace uniset

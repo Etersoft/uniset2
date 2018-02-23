@@ -29,12 +29,14 @@
 	    <SharedMemory name="SharedMemory" shmID="SharedMemory"/>
 	    <MBTCPMaster1 name="MBTCPMaster1" exchangeModeID="MBTCPMaster_Mode_AS">
             <DeviceList>
-                <item addr="0x01" invert="1" respondSensor="Slave_Not_Respond_S" timeout="1000"/>
+                <item addr="0x01" timeout="1000" invert="1" respondSensor="Slave_Not_Respond_S" safemodeSensor="Slave1_SafemodeSensor_S" safemodeValue="42"/>
+                <item addr="0x02" timeout="1000" safemodeResetIfNotRespond="1"/>
             </DeviceList>
         </MBTCPMaster1>
         <MBTCPMultiMaster1 name="MBTCPMultiMaster1" poll_time="200" reply_timeout="60">
             <DeviceList>
-                <item addr="0x01" invert="1" respondSensor="Slave_Not_Respond_S" timeout="1000"/>
+                <item addr="0x01" invert="1" respondSensor="Slave_Not_Respond_S" timeout="1000" safemodeSensor="Slave1_SafemodeSensor_S" safemodeValue="42" />
+                <item addr="0x02" timeout="1000" safemodeResetIfNotRespond="1"/>
             </DeviceList>
             <GateList>
                 <item ip="127.0.0.1" port="20053" recv_timeout="200" invert="1" respondSensor="Slave1_Not_Respond_S"/>
@@ -113,6 +115,21 @@
 -->			
 			<item id="1027" mb="2" mbtype="rtu" mbaddr="0x01" mbreg="41" mbfunc="0x10" vtype="F2" iotype="AO" name="TestWrite1027_F2" precision="1" textname="F2: Тестовый регистр для 0x10"/>
 			<item id="1028" mb="2" mbtype="rtu" mbaddr="0x01" mbreg="47" mbfunc="0x03" vtype="F2" iotype="DI" name="TestWrite1028_F2" textname="F2: Тестовый регистр для 0x10"/>
+
+			<!-- SafeMode tests -->
+			<item id="1050" name="Slave1_SafemodeSensor_S" iotype="AI" textname="Управление safeMode" />
+			<item id="1051" safeval="42" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="10" mbfunc="0x03" iotype="AI" name="SafeMode_TestRead03" textname="(safemode): Тестовый регистр для 0x03"/>
+			<item id="1052" safeval="1" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="11" mbfunc="0x02" iotype="DI" name="SafeMode_TestRead02" textname="(safemode): Тестовый регистр для 0x02"/>
+			<item id="1053" safeval="42" mb="1" mbtype="rtu" mbaddr="0x02" mbreg="10" mbfunc="0x03" iotype="AI" name="SafeMode2_TestRead03" textname="(safemode): Тестовый регистр для 0x03"/>
+			<item id="1054" safeval="1" mb="1" mbtype="rtu" mbaddr="0x02" mbreg="11" mbfunc="0x02" iotype="DI" name="SafeMode2_TestRead02" textname="(safemode): Тестовый регистр для 0x02"/>
+
+            <!-- query optimization test -->
+            <item id="1060" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="200" mbfunc="0x03" vtype="F2" iotype="AI" name="TestQueryOptimization1_F2" textname="F2: Тестовый регистр для 0x03"/>
+            <item id="1061" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="202" mbfunc="0x03" vtype="F2" iotype="AI" name="TestQueryOptimization2_F2" textname="F2: Тестовый регистр для 0x03"/>
+            <item id="1062" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="204" mbfunc="0x03" vtype="F2" iotype="AI" name="TestQueryOptimization3_F2" textname="F2: Тестовый регистр для 0x03"/>
+            <item id="1063" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="206" mbfunc="0x03" vtype="F2" iotype="AI" name="TestQueryOptimization4_F2" textname="F2: Тестовый регистр для 0x03"/>
+            <item id="1064" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="208" mbfunc="0x03" vtype="F2" iotype="AI" name="TestQueryOptimization5_F2" textname="F2: Тестовый регистр для 0x03"/>
+            <item id="1065" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="210" mbfunc="0x03" vtype="F2" iotype="AI" name="TestQueryOptimization6_F2" textname="F2: Тестовый регистр для 0x03"/>
 
 			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
 

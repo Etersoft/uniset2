@@ -45,12 +45,12 @@ SViewer::~SViewer()
 {
 }
 // --------------------------------------------------------------------------
-void SViewer::monitor( timeout_t timeMS )
+void SViewer::monitor( timeout_t msec )
 {
 	for(;;)
 	{
 		view();
-		msleep(timeMS);
+		msleep(msec);
 	}
 }
 
@@ -90,7 +90,8 @@ void SViewer::readSection( const string& section, const string& secRoot )
 	catch( ORepFailed ) {}
 	catch(...)
 	{
-		cout << "(readSection): get sectionlist ... catch..." << endl;
+		std::exception_ptr p = std::current_exception();
+		cout << "(readSection): get section list: " << (p ? p.__cxa_exception_type()->name() : "catch..") << std::endl;
 	}
 
 	if( !lst.empty() )
@@ -118,7 +119,8 @@ void SViewer::readSection( const string& section, const string& secRoot )
 		}
 		catch(...)
 		{
-			cout << "(readSection): catch..." << endl;
+			std::exception_ptr p = std::current_exception();
+			cout << "(readSection): " << (p ? p.__cxa_exception_type()->name() : "catch..") << std::endl;
 			return;
 		}
 
@@ -193,7 +195,8 @@ void SViewer::getInfo( ObjectId id )
 	}
 	catch(...)
 	{
-		cout << "(getInfo): catch ..." << endl;
+		std::exception_ptr p = std::current_exception();
+		cout << "(getInfo): " << (p ? p.__cxa_exception_type()->name() : "catch..") << std::endl;
 	}
 }
 
@@ -306,8 +309,10 @@ void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tls
 void SViewer::printInfo(uniset::ObjectId id, const string& sname, long value, const string& supplier,
 						const string& txtname, const string& iotype)
 {
+	std::ios_base::fmtflags old_flags = cout.flags();
 	cout << "(" << setw(5) << id << ")" << " | " << setw(2) << iotype << " | " << setw(60) << sname
 		 << "   | " << setw(5) << value << "\t | "
 		 << setw(40) << left << supplier << endl; // "\t | " << txtname << endl;
+	cout.setf(old_flags);
 }
 // ---------------------------------------------------------------------------

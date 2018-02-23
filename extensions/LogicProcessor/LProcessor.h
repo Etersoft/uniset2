@@ -37,8 +37,8 @@
 	-# \b "Преобразование аналогового значения в логическое" \b (A2D)
 
 	Стоит отметить, что по мере развития, процесс стал поддерживать не только логические операции,
-	а работу с числовыми(аналоговыми) величинами. Например элемент "TA2D".
-	Но в названии оставлено "Logic".
+	а работу с числовыми(аналоговыми) величинами. Например элемент "TA2D",
+	но в названии оставлено "Logic".
 
     \section sec_lpShema Конфигурирование
         Конфигурирование процесса осуществляется при помощи xml-файла задающего
@@ -124,31 +124,19 @@ namespace uniset
 
 			void open( const std::string& lfile );
 
-			inline bool isOpen() const
-			{
-				return !fSchema.empty();
-			}
+			bool isOpen() const;
+
+			timeout_t getSleepTime() const noexcept;
+
+			std::shared_ptr<SchemaXML> getSchema();
 
 			virtual void execute( const std::string& lfile = "" );
 
-			virtual void terminate()
-			{
-				canceled = true;
-			}
-
-			inline std::shared_ptr<SchemaXML> getSchema()
-			{
-				return sch;
-			}
-
-			inline int getSleepTime() const
-			{
-				return sleepTime;
-			}
+			virtual void terminate();
 
 		protected:
 
-			virtual void build( const string& lfile );
+			virtual void build( const std::string& lfile );
 
 			virtual void step();
 
@@ -180,7 +168,7 @@ namespace uniset
 
 			UInterface ui;
 			timeout_t sleepTime = { 200 };
-			timeout_t smReadyTimeout = { 30000 } ;     /*!< время ожидания готовности SM, мсек */
+			timeout_t smReadyTimeout = { 120000 } ;     /*!< время ожидания готовности SM, мсек */
 
 			std::string logname = { "" };
 			std::atomic_bool canceled = {false};

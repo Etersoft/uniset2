@@ -36,20 +36,14 @@ namespace uniset
 
 
 		// --------------------------------------------------------------------------
-		/*!
-		 *    \param cname - полное имя контекста ссылку на который, возвратит функция.
-		 *    \param argc  - argc
-		 *    \param argc  - argv
-		 *    \param nsName  - параметры инициализации ORB
-		*/
-		CosNaming::NamingContext_ptr getContext(const string& cname, int argc, const char* const* argv, const string& nsName ) throw(ORepFailed)
+		CosNaming::NamingContext_ptr getContext(const string& cname, int argc, const char* const* argv, const string& nsName )
 		{
-			CORBA::ORB_var orb = CORBA::ORB_init( argc, (char**)argv );
+			CORBA::ORB_var orb = CORBA::ORB_init( argc, const_cast<char**>(argv) );
 			ulogrep << "OREPHELP: orb init ok" << endl;
 			return getContext(orb, cname, nsName);
 		}
 		// --------------------------------------------------------------------------
-		CosNaming::NamingContext_ptr getContext(const CORBA::ORB_ptr orb, const string& cname,  const string& servname) throw(ORepFailed)
+		CosNaming::NamingContext_ptr getContext(const CORBA::ORB_ptr orb, const string& cname,  const string& servname)
 		{
 			CosNaming::NamingContext_var rootC;
 
@@ -84,14 +78,14 @@ namespace uniset
 					throw ORepFailed(err.c_str());
 				}
 			}
-			catch(const CosNaming::NamingContext::InvalidName& nf)
+			catch(const CosNaming::NamingContext::InvalidName&)
 			{
 				ostringstream err;
 				err << "OREPHELPER(getContext): не смог получить ссылку на контекст " << cname;
 				uwarn << err.str() << endl;
 				throw ORepFailed(err.str());
 			}
-			catch(const CosNaming::NamingContext::NotFound& nf)
+			catch(const CosNaming::NamingContext::NotFound&)
 			{
 				ostringstream err;
 				err << "OREPHELPER(getContext): не найден контекст " << cname;
@@ -137,7 +131,7 @@ namespace uniset
 
 		// ---------------------------------------------------------------------------------------------------------------
 		/*!    \param orb - ссылка на ORB */
-		CosNaming::NamingContext_ptr getRootNamingContext(const CORBA::ORB_ptr orb, const string& nsName, int timeoutSec)
+		CosNaming::NamingContext_ptr getRootNamingContext( const CORBA::ORB_ptr orb, const string& nsName )
 		{
 			CosNaming::NamingContext_var rootContext;
 
@@ -163,20 +157,20 @@ namespace uniset
 
 				ulogrep << "OREPHELP: init NameService ok" << endl;
 			}
-			catch( const CORBA::ORB::InvalidName& ex )
+			catch( const CORBA::ORB::InvalidName& )
 			{
 				ostringstream err;
 				err << "ORepHelpers(getRootNamingContext): InvalidName=" << nsName;
 				uwarn << err.str() << endl;
 				throw ORepFailed(err.str());
 			}
-			catch( const CORBA::COMM_FAILURE& ex )
+			catch( const CORBA::COMM_FAILURE& )
 			{
 				ostringstream err;
 				err << "ORepHelpers(getRootNamingContext): Не смог получить ссылку на контекст ->" << nsName;
 				throw ORepFailed(err.str());
 			}
-			catch( const omniORB::fatalException& ex )
+			catch( const omniORB::fatalException& )
 			{
 				string err("ORepHelpers(getRootNamingContext): Caught Fatal Exception");
 				throw ORepFailed(err);
@@ -223,42 +217,6 @@ namespace uniset
 			return fullName.substr(0, pos);
 		}
 
-		// ---------------------------------------------------------------------------------------------------------------
-		/*
-		 *    Запрещенные символы см. uniset::BadSymbols[]
-		 *    \return Если не найдено запрещенных символов то будет возвращен 0, иначе найденный символ
-		*/
-		char checkBadSymbols( const string& str )
-		{
-			using namespace uniset;
-
-			for ( size_t i = 0; i < str.length(); i++)
-			{
-				for(unsigned int k = 0; k < sizeof(BadSymbols); k++)
-				{
-					if ( str[i] == BadSymbols[k] )
-						return (char)BadSymbols[k];
-				}
-			}
-
-			return 0;
-		}
-
-		// ---------------------------------------------------------------------------------------------------------------
-		string BadSymbolsToStr()
-		{
-			string bad = "";
-
-			for( size_t i = 0; i < sizeof(uniset::BadSymbols); i++ )
-			{
-				bad += "'";
-				bad += uniset::BadSymbols[i];
-				bad += "', ";
-
-			}
-
-			return bad;
-		}
 		// ---------------------------------------------------------------------------------------------------------------
 	}
 }

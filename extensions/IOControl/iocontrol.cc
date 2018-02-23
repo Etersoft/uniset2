@@ -61,7 +61,6 @@ int main(int argc, const char** argv)
 			return 1;
 		}
 
-
 		auto ic = IOControl::init_iocontrol(argc, argv, shmID);
 
 		if( !ic )
@@ -80,18 +79,16 @@ int main(int argc, const char** argv)
 		ulogany << "(main): -------------- IOControl START -------------------------\n\n";
 		dlogany << "\n\n\n";
 		dlogany << "(main): -------------- IOControl START -------------------------\n\n";
-		act->run(true);
-		msleep(500);
-		ic->execute();
+		act->run(false);
 		return 0;
 	}
 	catch( const std::exception& ex )
 	{
-		dcrit << "(iocontrol): " << ex.what() << endl;
+		cerr << "(iocontrol): " << ex.what() << endl;
 	}
 	catch(...)
 	{
-		dcrit << "(iocontrol): catch(...)" << endl;
+		cerr << "(iocontrol): catch(...)" << endl;
 	}
 
 	return 1;

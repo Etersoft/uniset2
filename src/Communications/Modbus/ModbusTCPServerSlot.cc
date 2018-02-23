@@ -168,11 +168,11 @@ namespace uniset
 		return slFileTransfer(query, reply);
 	}
 	// -------------------------------------------------------------------------
-	void ModbusTCPServerSlot::sigterm( int signo )
+	void ModbusTCPServerSlot::terminate()
 	{
 		try
 		{
-			terminate();
+			ModbusTCPServer::terminate();
 		}
 		catch( std::exception& ex ) {}
 	}

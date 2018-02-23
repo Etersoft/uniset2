@@ -53,6 +53,19 @@ namespace uniset
 	// ---------------------------------------------------------------
 	// Вспомогательные типы данных и константы
 
+	/*! Запрещенные для использования в именах объектов символы */
+	const char BadSymbols[] = {'.', '/'};
+
+	/*! Проверка на наличие недопустимых символов
+	 * Запрещенные символы см. uniset::BadSymbols[]
+	 * \return Если не найдено запрещенных символов то будет возвращен 0, иначе найденный символ
+	 */
+	char checkBadSymbols(const std::string& str);
+
+	/*! Получение запрещенных символов в виде строки '.', '/', и т.д. */
+	std::string BadSymbolsToStr();
+
+
 	const ObjectId DefaultObjectId = -1;    /*!< Идентификатор объекта по умолчанию */
 	const ThresholdId DefaultThresholdId = -1;      /*!< идентификатор порогов по умолчанию */
 	const ThresholdId DefaultTimerId = -1;      /*!< идентификатор таймера по умолчанию */
@@ -62,8 +75,7 @@ namespace uniset
 	typedef size_t KeyType;    /*!< уникальный ключ объекта */
 
 	/*! генератор уникального положительного ключа
-	 *    Уникальность гарантируется только для пары значений
-	 *  id и node.
+	 *  Уникальность гарантируется только для пары значений id и node.
 	 * \warning что тут у нас с переполнением..
 	 * \warning Уникальность генерируемого ключа еще не проверялась,
 	     но нареканий по использованию тоже не было :)
@@ -101,7 +113,7 @@ namespace uniset
 		lmpBLINK3   = 4     /*!< мигать */
 	};
 
-	static const long ChannelBreakValue = std::numeric_limits<long>::max();
+	const long ChannelBreakValue = std::numeric_limits<long>::max();
 
 	class IDList
 	{
@@ -123,7 +135,7 @@ namespace uniset
 				return lst.empty();
 			}
 
-			std::list<ObjectId> getList() noexcept;
+			std::list<ObjectId> getList() const noexcept;
 
 			// за освобождение выделеной памяти
 			// отвечает вызывающий!
@@ -140,14 +152,10 @@ namespace uniset
 	/*! Информация об имени объекта */
 	struct ObjectInfo
 	{
-		ObjectInfo() noexcept:
-			id(DefaultObjectId),
-			repName(""), textName(""), xmlnode(0) {}
-
-		ObjectId id;        /*!< идентификатор */
-		std::string repName;      /*!< текстовое имя для регистрации в репозитории */
-		std::string textName;     /*!< текстовое имя */
-		xmlNode* xmlnode;
+		ObjectId id = { DefaultObjectId };        /*!< идентификатор */
+		std::string repName = { "" };      /*!< текстовое имя для регистрации в репозитории */
+		std::string textName = { "" };     /*!< текстовое имя */
+		xmlNode* xmlnode = { nullptr };
 
 		inline bool operator < ( const ObjectInfo& o ) const
 		{
@@ -156,9 +164,6 @@ namespace uniset
 	};
 
 	typedef std::list<NodeInfo> ListOfNode;
-
-	/*! Запрещенные для использования в именах объектов символы */
-	const char BadSymbols[] = {'.', '/'};
 
 	// ---------------------------------------------------------------
 	// Различные преобразования
@@ -210,7 +215,10 @@ namespace uniset
 	  Если @node не указано, возвращается node=DefaultObjectId */
 	std::list<uniset::ConsumerInfo> getObjectsList( const std::string& s, std::shared_ptr<uniset::Configuration> conf = nullptr );
 
-	/*! проверка является текст в строке - числом..*/
+	/*! проверка является текст в строке - числом..
+	 * \warning Числом будет считаться только строка ПОЛНОСТЬЮ состоящая из чисел.
+	 * Т.е. например "-10" или "100.0" или "10 000" - числом считаться не будут!
+	*/
 	bool is_digit( const std::string& s ) noexcept;
 
 	/*! замена всех вхождений подстроки
@@ -225,6 +233,7 @@ namespace uniset
 	/*! Получение параметра командной строки
 	    \param name - название параметра
 	    \param defval - значение, которое будет возвращено, если параметр не найден
+		\warning Поиск ведётся с первого аргумента, а не с нулевого!
 	*/
 	inline std::string getArgParam( const std::string& name,
 									int _argc, const char* const* _argv,
@@ -239,6 +248,22 @@ namespace uniset
 		return defval;
 	}
 
+	/*! получить значение, если пустое, то defval, если defval="" return defval2 */
+	inline std::string getArg2Param(const std::string& name,
+									int _argc, const char* const* _argv,
+									const std::string& defval, const std::string& defval2 = "") noexcept
+	{
+		std::string s(uniset::getArgParam(name, _argc, _argv, ""));
+
+		if( !s.empty() )
+			return s;
+
+		if( !defval.empty() )
+			return defval;
+
+		return defval2;
+	}
+
 	inline int getArgInt( const std::string& name,
 						  int _argc, const char* const* _argv,
 						  const std::string& defval = "" ) noexcept
@@ -246,12 +271,27 @@ namespace uniset
 		return uni_atoi(getArgParam(name, _argc, _argv, defval));
 	}
 
+	inline int getArgPInt( const std::string& name,
+						   int _argc, const char* const* _argv,
+						   const std::string& strdefval, int defval ) noexcept
+	{
+		std::string param = uniset::getArgParam(name, _argc, _argv, strdefval);
+
+		if( param.empty() && strdefval.empty() )
+			return defval;
+
+		return uniset::uni_atoi(param);
+	}
+
+
 	/*! Проверка наличия параметра в командной строке
 	    \param name - название параметра
 	    \param _argc - argc
 	    \param _argv - argv
 	    \return Возвращает -1, если параметр не найден.
 	        Или позицию параметра, если найден.
+
+		\warning Поиск ведётся с первого аргумента, а не с нулевого!
 	*/
 	inline int findArgParam( const std::string& name, int _argc, const char* const* _argv )
 	{
@@ -293,24 +333,29 @@ namespace uniset
 	// если не задано f_val, то проверяется, что просто f_prop!=""
 	bool check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val = "" ) noexcept;
 
-	/*! алгоритм копирования элементов последовательности удовлетворяющих условию */
-	template<typename InputIterator,
-			 typename OutputIterator,
-			 typename Predicate>
-	OutputIterator copy_if(InputIterator begin,
-						   InputIterator end,
-						   OutputIterator destBegin,
-						   Predicate p)
+	// RAII для флагов форматирования ostream..
+	class ios_fmt_restorer
 	{
-		while( begin != end)
-		{
-			if( p(*begin) ) &(destBegin++) = *begin;
+		public:
+			ios_fmt_restorer( std::ostream& s ):
+				os(s), f(nullptr)
+			{
+				f.copyfmt(s);
+			}
 
-			++begin;
-		}
+			~ios_fmt_restorer()
+			{
+				os.copyfmt(f);
+			}
 
-		return destBegin;
-	}
+			ios_fmt_restorer( const ios_fmt_restorer& ) = delete;
+			ios_fmt_restorer& operator=( const ios_fmt_restorer& ) = delete;
+
+		private:
+			std::ostream& os;
+			std::ios f;
+	};
+
 	// -----------------------------------------------------------------------------------------
 } // end of namespace uniset
 // -----------------------------------------------------------------------------------------

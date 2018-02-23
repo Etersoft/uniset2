@@ -145,6 +145,22 @@ namespace uniset
 				return pt.getCurrent();
 			}
 
+			inline bool isWaitingOn() noexcept
+			{
+				return !get() && waiting_on;
+			}
+
+			inline bool isWaitingOff() noexcept
+			{
+				return get() && waiting_off;
+			}
+
+			inline bool isWaiting() noexcept
+			{
+				check(prevState);
+				return (waiting_off || waiting_on);
+			}
+
 		protected:
 			PassiveTimer pt;
 			bool prevState = { false };

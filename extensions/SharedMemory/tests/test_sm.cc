@@ -1,8 +1,10 @@
 #include <catch.hpp>
 // -----------------------------------------------------------------------------
 #include <memory>
+#include <future>
 #include "UniSetTypes.h"
 #include "UInterface.h"
+#include "DelayTimer.h"
 #include "TestObject.h"
 // -----------------------------------------------------------------------------
 using namespace std;
@@ -254,5 +256,58 @@ TEST_CASE("[SM]: depend test", "[sm][depend]")
 	REQUIRE( ui->getValue(513) == 1 );
 	msleep(300);
 	REQUIRE( obj->in_dependDI_s == 1 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[SM]: monitonic sensor message", "[sm][monitonic]")
+{
+	InitTest();
+
+	REQUIRE( obj->exist() );
+
+	// Проверка корректной последовательности прихода SensorMessage.
+	// Тест заключается в том, что параллельно вызывается setValue()
+	// и askSensors() и сообщения должны приходить в правильном порядке.
+	// Для проверки этого датчик монотонно увеличивается на +1
+	// сама проверка см. TestObject::sensorInfo()
+	auto conf = uniset_conf();
+	const long max = uniset::getArgInt("--monotonic-max-value", conf->getArgc(), conf->getArgv(), "1000");
+
+	auto&& write_worker = [&max]
+	{
+		try
+		{
+			for( long val = 0; val <= max; val++ )
+				ui->setValue(516, val);
+		}
+		catch( std::exception& ex )
+		{
+			return false;
+		}
+
+		return true;
+	};
+
+	obj->startMonitonicTest();
+
+	auto ret = std::async(std::launch::async, write_worker);
+
+	for( long n = 0; n <= max; n++ )
+		obj->askMonotonic();
+
+	REQUIRE( ret.get() );
+
+	DelayTimer dt(2000, 0);
+
+	while( !dt.check(obj->isEmptyQueue()) )
+		msleep(500);
+
+	REQUIRE( obj->isMonotonicTestOK() );
+	REQUIRE( obj->getLostMessages() == 0 );
+	REQUIRE_FALSE( obj->isFullQueue() );
+	REQUIRE( obj->getLastValue() == max );
+
+	// print statistic
+	//	uniset::SimpleInfo_var si = obj->getInfo(0);
+	//	cerr << std::string(si->info) << endl;
 }
 // -----------------------------------------------------------------------------

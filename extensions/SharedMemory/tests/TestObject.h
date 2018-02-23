@@ -27,13 +27,28 @@ class TestObject:
 			return ptHeartBeat.getInterval();
 		}
 
+		// тест на последовательность SensorMessage
+		void askMonotonic();
+		void startMonitonicTest();
+		bool isMonotonicTestOK() const;
+		long getLostMessages() const;
+		long getLastValue() const;
+		bool isEmptyQueue();
+		bool isFullQueue();
+
+
 	protected:
 		TestObject();
 
 		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 
 	private:
 		bool evntIsOK = { false };
+
+		bool monotonicFailed = { false };
+		long lostMessages = { false };
+		long lastValue = { 0 };
 };
 // -----------------------------------------------------------------------------
 #endif // _TestObject_H_

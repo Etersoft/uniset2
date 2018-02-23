@@ -4,7 +4,6 @@
 // --------------------------------------------------------------------------
 #include <string>
 #include "IONotifyController.h"
-#include "NCRestorer.h"
 // --------------------------------------------------------------------------
 class NullSM:
 	public uniset::IONotifyController
@@ -17,9 +16,6 @@ class NullSM:
 	protected:
 
 		virtual void logging( uniset::SensorMessage& sm ) override {};
-
-		virtual void dumpOrdersList( const uniset::ObjectId sid, const IONotifyController::ConsumerListInfo& lst ) override {};
-		virtual void dumpThresholdList( const uniset::ObjectId sid, const IONotifyController::ThresholdExtList& lst ) override {};
 
 	private:
 

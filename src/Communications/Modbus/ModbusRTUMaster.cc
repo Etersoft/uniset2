@@ -81,6 +81,12 @@ namespace uniset
 			delete port;
 	}
 	// -------------------------------------------------------------------------
+	void ModbusRTUMaster::cleanupChannel()
+	{
+		if( port )
+			port->cleanupChannel();
+	}
+	// -------------------------------------------------------------------------
 	void ModbusRTUMaster::setSpeed( ComPort::Speed s )
 	{
 		if( port != NULL )
@@ -119,7 +125,7 @@ namespace uniset
 			port->setStopBits(sBit);
 	}
 	// -------------------------------------------------------------------------
-	int ModbusRTUMaster::getTimeout()
+	timeout_t ModbusRTUMaster::getTimeout() const
 	{
 		if( port == NULL )
 			return 0;

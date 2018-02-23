@@ -114,21 +114,13 @@ namespace uniset
 
 			// блокировать сохранение данных в SM
 			void setLockUpdate( bool st ) noexcept;
-			inline bool isLockUpdate() const noexcept
-			{
-				return lockUpdate;
-			}
+			bool isLockUpdate() const noexcept;
 
 			void resetTimeout() noexcept;
 
-			inline bool isRecvOK() const noexcept
-			{
-				return !ptRecvTimeout.checkTime();
-			}
-			inline size_t getLostPacketsNum() const noexcept
-			{
-				return lostPackets;
-			}
+			bool isInitOK() const noexcept;
+			bool isRecvOK() const noexcept;
+			size_t getLostPacketsNum() const noexcept;
 
 			void setReceiveTimeout( timeout_t msec ) noexcept;
 			void setReceivePause( timeout_t msec ) noexcept;
@@ -137,6 +129,8 @@ namespace uniset
 			void setPrepareTime( timeout_t msec ) noexcept;
 			void setCheckConnectionPause( timeout_t msec ) noexcept;
 			void setMaxDifferens( unsigned long set ) noexcept;
+			void setEvrunTimeout(timeout_t msec ) noexcept;
+			void setInitPause( timeout_t msec ) noexcept;
 
 			void setRespondID( uniset::ObjectId id, bool invert = false ) noexcept;
 			void setLostPacketsID( uniset::ObjectId id ) noexcept;
@@ -215,6 +209,7 @@ namespace uniset
 			void updateEvent( ev::periodic& watcher, int revents ) noexcept;
 			void checkConnectionEvent( ev::periodic& watcher, int revents ) noexcept;
 			void statisticsEvent( ev::periodic& watcher, int revents ) noexcept;
+			void initEvent( ev::timer& watcher, int revents ) noexcept;
 			virtual void evprepare( const ev::loop_ref& eloop ) noexcept override;
 			virtual void evfinish(const ev::loop_ref& eloop ) noexcept override;
 			virtual std::string wname() const noexcept override
@@ -247,7 +242,7 @@ namespace uniset
 			timeout_t recvpause = { 10 };      /*!< пауза меджду приёмами пакетов, [мсек] */
 			timeout_t updatepause = { 100 };    /*!< переодичность обновления данных в SM, [мсек] */
 
-			std::shared_ptr<UDPReceiveU> udp;
+			std::unique_ptr<UDPReceiveU> udp;
 			std::string addr;
 			int port = { 0 };
 			Poco::Net::SocketAddress saddr;
@@ -256,6 +251,7 @@ namespace uniset
 			ev::periodic evCheckConnection;
 			ev::periodic evStatistic;
 			ev::periodic evUpdate;
+			ev::timer evInitPause;
 
 			UpdateStrategy upStrategy = { useUpdateEventLoop };
 
@@ -267,7 +263,7 @@ namespace uniset
 			size_t statRecvPerSec = { 0 }; /*!< количество принимаемых пакетов в секунду */
 			size_t statUpPerSec = { 0 };	/*!< количество обработанных пакетов в секунду */
 
-			std::shared_ptr< ThreadCreator<UNetReceiver> > upThread;    // update thread
+			std::unique_ptr< ThreadCreator<UNetReceiver> > upThread;    // update thread
 
 			// делаем loop общим.. одним на всех!
 			static CommonEventLoop loop;
@@ -279,7 +275,12 @@ namespace uniset
 			PassiveTimer ptPrepare;
 			timeout_t recvTimeout = { 5000 }; // msec
 			timeout_t prepareTime = { 2000 };
+			timeout_t evrunTimeout = { 15000 };
 			timeout_t lostTimeout = { 200 };
+
+			double initPause = { 5.0 }; // пауза на начальную инициализацию (сек)
+			std::atomic_bool initOK = { false };
+
 			PassiveTimer ptLostTimeout;
 			size_t lostPackets = { 0 }; /*!< счётчик потерянных пакетов */
 

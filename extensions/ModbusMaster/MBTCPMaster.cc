@@ -19,6 +19,7 @@
 #include <sstream>
 #include <Exceptions.h>
 #include <extensions/Extensions.h>
+#include "unisetstd.h"
 #include "MBTCPMaster.h"
 #include "modbus/MBLogSugar.h"
 // -----------------------------------------------------------------------------
@@ -63,13 +64,16 @@ MBTCPMaster::MBTCPMaster(uniset::ObjectId objId, uniset::ObjectId shmId,
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
-		rtuQueryOptimization(devices);
+
+		if( !noQueryOptimization )
+			rtuQueryOptimization(devices);
+
 		initDeviceList();
 	}
 	else
 		ic->addReadItem( sigc::mem_fun(this, &MBTCPMaster::readItem) );
 
-	pollThread = make_shared<ThreadCreator<MBTCPMaster>>(this, &MBTCPMaster::poll_thread);
+	pollThread = unisetstd::make_unique<ThreadCreator<MBTCPMaster>>(this, &MBTCPMaster::poll_thread);
 	pollThread->setFinalAction(this, &MBTCPMaster::final_thread);
 
 	if( mblog->is_info() )
@@ -78,9 +82,9 @@ MBTCPMaster::MBTCPMaster(uniset::ObjectId objId, uniset::ObjectId shmId,
 // -----------------------------------------------------------------------------
 MBTCPMaster::~MBTCPMaster()
 {
-	if( pollThread )
+	if( pollThread && !canceled )
 	{
-		pollThread->stop();
+		canceled = true;
 
 		if( pollThread->isRunning() )
 			pollThread->join();
@@ -138,18 +142,22 @@ void MBTCPMaster::sysCommand( const uniset::SystemMessage* sm )
 void MBTCPMaster::final_thread()
 {
 	setProcActive(false);
+	canceled = true;
 }
 // -----------------------------------------------------------------------------
 void MBTCPMaster::poll_thread()
 {
 	// ждём начала работы..(см. MBExchange::activateObject)
-	while( !checkProcActive() )
+	while( !isProcActive() && !canceled )
 	{
 		uniset::uniset_rwmutex_rlock l(mutex_start);
 	}
 
+	//	if( canceled )
+	//		return;
+
 	// работаем
-	while( checkProcActive() )
+	while( isProcActive() )
 	{
 		try
 		{
@@ -171,50 +179,25 @@ void MBTCPMaster::poll_thread()
 			throw;
 		}
 
-		if( !checkProcActive() )
+		if( !isProcActive() )
 			break;
 
 		msleep(polltime);
 	}
-}
-// -----------------------------------------------------------------------------
-void MBTCPMaster::sigterm( int signo )
-{
-	setProcActive(false);
 
-	if( pollThread )
-	{
-		pollThread->stop();
-
-		if( pollThread->isRunning() )
-			pollThread->join();
-	}
-
-	try
-	{
-		MBExchange::sigterm(signo);
-	}
-	catch( const std::exception& ex )
-	{
-		cerr << "catch: " << ex.what() << endl;
-	}
-	catch( ... )
-	{
-		std::exception_ptr p = std::current_exception();
-		std::clog << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
-	}
+	dinfo << myname << "(poll_thread): thread finished.." << endl;
 }
 // -----------------------------------------------------------------------------
 bool MBTCPMaster::deactivateObject()
 {
 	setProcActive(false);
+	canceled = true;
 
 	if( pollThread )
 	{
-		pollThread->stop();
-
 		if( pollThread->isRunning() )
 			pollThread->join();
+
 	}
 
 	return MBExchange::deactivateObject();

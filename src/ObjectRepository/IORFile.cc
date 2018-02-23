@@ -14,25 +14,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -----------------------------------------------------------------------------------------
-/*!
-    \todo Добавить проверку на предельный номер id
-*/
-// -----------------------------------------------------------------------------------------
 #include <sstream>
 #include <fstream>
 #include <unistd.h>
 #include "IORFile.h"
+#include "Exceptions.h"
 #include "Configuration.h"
 #include "ORepHelpers.h"
 
 // -----------------------------------------------------------------------------------------
 using namespace uniset;
 using namespace std;
-// -----------------------------------------------------------------------------------------
-IORFile::IORFile()
-{
-}
-
 // -----------------------------------------------------------------------------------------
 string IORFile::getIOR( const ObjectId id )
 {

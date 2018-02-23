@@ -23,7 +23,6 @@
 // -----------------------------------------------------------------------------------------
 #include <string>
 #include <memory>
-#include <mutex>
 #include <Poco/RWLock.h>
 // -----------------------------------------------------------------------------------------
 namespace uniset
@@ -52,10 +51,11 @@ namespace uniset
 			uniset_rwmutex( uniset_rwmutex&& r ) = default;
 			uniset_rwmutex& operator=(uniset_rwmutex&& r) = default;
 
-			inline std::string name()
+			inline std::string name() const
 			{
 				return nm;
 			}
+
 			inline void setName( const std::string& name )
 			{
 				nm = name;

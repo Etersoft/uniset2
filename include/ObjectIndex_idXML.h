@@ -24,7 +24,7 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-
+	/*! реализация интерфейса ObjectIndex на основе xml-файла, в котором прописаны id объектов  */
 	class ObjectIndex_idXML:
 		public uniset::ObjectIndex
 	{

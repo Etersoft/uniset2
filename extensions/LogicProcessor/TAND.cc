@@ -36,7 +36,7 @@ namespace uniset
 	void TAND::setIn( size_t num, long value )
 	{
 		//    cout << this << ": input " << num << " set " << state << endl;
-		for( auto&& it : ins )
+		for( auto && it : ins )
 		{
 			if( it.num == num )
 			{
@@ -53,7 +53,7 @@ namespace uniset
 
 		// проверяем изменился ли выход
 		// для тригера 'AND' проверка до первого 0
-		for( auto&& it : ins )
+		for( auto && it : ins )
 		{
 			if( !it.value )
 			{

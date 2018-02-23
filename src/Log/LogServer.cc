@@ -41,6 +41,21 @@ namespace uniset
 		catch(...) {}
 	}
 	// -------------------------------------------------------------------------
+	void LogServer::setCmdTimeout( timeout_t msec ) noexcept
+	{
+		cmdTimeout = msec;
+	}
+	// -------------------------------------------------------------------------
+	void LogServer::setSessionLog( Debug::type t ) noexcept
+	{
+		sessLogLevel = t;
+	}
+	// -------------------------------------------------------------------------
+	void LogServer::setMaxSessionCount( size_t num ) noexcept
+	{
+		sessMaxCount = num;
+	}
+	// -------------------------------------------------------------------------
 	LogServer::LogServer( std::shared_ptr<LogAgregator> log ):
 		LogServer()
 	{
@@ -70,7 +85,6 @@ namespace uniset
 	}
 	// -------------------------------------------------------------------------
 	LogServer::LogServer():
-		timeout(UniSetTimer::WaitUpTime),
 		cmdTimeout(2000),
 		sessLogLevel(Debug::NONE),
 		sock(nullptr),
@@ -112,7 +126,12 @@ namespace uniset
 			mylog.info() << myname << "(LogServer): finished." << endl;
 	}
 	// -------------------------------------------------------------------------
-	void LogServer::run(const std::string& _addr, Poco::UInt16 _port, bool thread )
+	std::string LogServer::wname() const noexcept
+	{
+		return myname;
+	}
+	// -------------------------------------------------------------------------
+	bool LogServer::run( const std::string& _addr, Poco::UInt16 _port )
 	{
 		addr = _addr;
 		port = _port;
@@ -123,12 +142,30 @@ namespace uniset
 			myname = s.str();
 		}
 
-		loop.evrun(this, thread);
+		return loop.evrun(this);
+	}
+	// -------------------------------------------------------------------------
+	bool LogServer::async_run( const std::string& _addr, Poco::UInt16 _port )
+	{
+		addr = _addr;
+		port = _port;
+
+		{
+			ostringstream s;
+			s << _addr << ":" << _port;
+			myname = s.str();
+		}
+		return loop.async_evrun(this);
 	}
 	// -------------------------------------------------------------------------
 	void LogServer::terminate()
 	{
 		loop.evstop(this);
+	}
+	// -------------------------------------------------------------------------
+	bool LogServer::isRunning() const noexcept
+	{
+		return isrunning;
 	}
 	// -------------------------------------------------------------------------
 	bool LogServer::check( bool restart_if_fail )
