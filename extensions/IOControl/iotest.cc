@@ -28,6 +28,7 @@
 int subdev = 0;
 int range = 0;
 int aref = AREF_GROUND;
+int adelay = 10 * 1000; // 10 мкс
 int chan[50];
 int blink_msec = 300;
 
@@ -42,6 +43,7 @@ static struct option longopts[] =
 	{ "device", required_argument, 0, 'd' },
 	{ "verbose", no_argument, 0, 'v' },
 	{ "aref", required_argument, 0, 'z' },
+	{ "adelay", required_argument, 0, 'y' },
 	{ "range", required_argument, 0, 'x' },
 	{ "config", required_argument, 0, 'c' },
 	{ "autoconf", no_argument, 0, 'a' },
@@ -172,6 +174,10 @@ int main(int argc, char* argv[])
 
 			case 'x':
 				range = atoi(optarg);
+				break;
+
+			case 'y':
+				adelay = atoi(optarg);
 				break;
 
 			case 'z':
@@ -312,7 +318,7 @@ int main(int argc, char* argv[])
 				if( autoconf )
 					insn_config(card, subdev, chan[k], 100, range, aref);
 
-				int ret = comedi_data_read_delayed(card, subdev, chan[k], range, aref, &data, 10000);
+				int ret = comedi_data_read_delayed(card, subdev, chan[k], range, aref, &data, adelay);
 
 				if( ret < 0)
 				{

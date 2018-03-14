@@ -42,10 +42,10 @@ ComediInterface::~ComediInterface()
 
 }
 // -----------------------------------------------------------------------------
-int ComediInterface::getAnalogChannel( int subdev, int channel, int range, int aref ) const
+int ComediInterface::getAnalogChannel( int subdev, int channel, int range, int aref, int adelay ) const
 {
 	lsampl_t data = 0;
-	int ret = comedi_data_read_delayed(card, subdev, channel, range, aref, &data, 10000);
+	int ret = comedi_data_read_delayed(card, subdev, channel, range, aref, &data, adelay);
 
 	if( ret < 0 )
 	{
