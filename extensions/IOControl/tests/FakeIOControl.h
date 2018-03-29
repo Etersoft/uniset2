@@ -46,7 +46,7 @@ namespace uniset
 			// --------------------------------------------
 			// при тестировании параметры range,aref,subdev игнорируются!
 
-			virtual int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND ) const override;
+			virtual int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND, int adelay = 10 * 1000 ) const override;
 
 			virtual void setAnalogChannel( int subdev, int channel, int data, int range = 0, int aref = AREF_GROUND ) const override;
 
