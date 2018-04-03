@@ -18,7 +18,7 @@
 
 Name: libuniset2
 Version: 2.7
-Release: alt5
+Release: alt6
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -519,8 +519,11 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
-* Wed Mar 28 2018 Vinogradov Aleksei <uzum@server> 2.7-alt5
-- test build after rebase pv/master
+* Tue Apr 03 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt6
+- new minor release
+
+# * Wed Mar 28 2018 Vinogradov Aleksei <uzum@server> 2.7-alt5
+# - test build after rebase pv/master
 
 * Fri Mar 09 2018 Alexei Takaseev <taf@altlinux.org> 2.7-alt4.1
 - Rebuild with poco 1.9.0
