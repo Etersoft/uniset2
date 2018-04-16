@@ -312,16 +312,6 @@ Requires: %name-extension-common-devel = %version-%release
 Libraries needed to develop for uniset MQTT extension
 %endif
 
-
-%package extension-smplus
-Group: Development/C++
-Summary: libUniSet2 SharedMemoryPlus extension ('all in one')
-Requires: %name-extension-common = %version-%release
-
-%description extension-smplus
-SharedMemoryPlus extension ('all in one') for libuniset
-
-
 %prep
 %setup
 
