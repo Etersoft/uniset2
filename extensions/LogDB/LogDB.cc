@@ -220,6 +220,7 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 
 	httpHost = uniset::getArgParam("--" + prefix + "httpserver-host", argc, argv, "localhost");
 	httpPort = uniset::getArgInt("--" + prefix + "httpserver-port", argc, argv, "8080");
+	httpCORS_allow = uniset::getArgParam("--" + prefix + "httpserver-cors-allow", argc, argv, httpCORS_allow);
 	dblog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
 	Poco::Net::SocketAddress sa(httpHost, httpPort);
 
@@ -449,6 +450,7 @@ void LogDB::help_print()
 	cout << "--prefix-httpserver-port num            - Порт на котором принимать запросы. По умолчанию: 8080" << endl;
 	cout << "--prefix-httpserver-max-queued num      - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
 	cout << "--prefix-httpserver-max-threads num     - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
+	cout << "--prefix-httpserver-cors-allow addr     - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
 }
 // -----------------------------------------------------------------------------
 void LogDB::run( bool async )
@@ -791,6 +793,9 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
 	std::ostream& out = resp.send();
 
 	resp.setContentType("text/json");
+	resp.set("Access-Control-Allow-Methods", "GET");
+	resp.set("Access-Control-Allow-Request-Method", "*");
+	resp.set("Access-Control-Allow-Origin", httpCORS_allow /* req.get("Origin") */);
 
 	try
 	{

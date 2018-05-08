@@ -55,6 +55,7 @@ namespace uniset
 	 * и перенаправление их указанным объектам. Помимо этого UniSetActivator реализует обработку команд /conf/..
 	 * Для запуска http-сервера необходимо в аргументах командной строки указать  --activator-run-httpserver
 	 * Помимо этого можно задать параметры --activator-httpserver-host и --activator-httpserver-port.
+	 * --activator-httpserver-cors-allow addr - (CORS): Access-Control-Allow-Origin. Default: *.
 	 *
 	*/
 	class UniSetActivator:
@@ -115,6 +116,7 @@ namespace uniset
 			std::shared_ptr<uniset::UHttp::UHttpServer> httpserv;
 			std::string httpHost = { "" };
 			int httpPort = { 0 };
+			std::string httpCORS_allow = { "*" };
 #endif
 	};
 	// -------------------------------------------------------------------------

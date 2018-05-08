@@ -45,6 +45,8 @@ namespace uniset
 
 				std::shared_ptr<DebugStream> log();
 
+				// (CORS): Access-Control-Allow-Origin. Default: *
+				void setCORS_allow( const std::string& CORS_allow );
 			protected:
 				UHttpServer();
 

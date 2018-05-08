@@ -28,14 +28,21 @@ namespace uniset
 	using namespace UHttp;
 
 	// -------------------------------------------------------------------------
-	UHttpRequestHandler::UHttpRequestHandler(std::shared_ptr<IHttpRequestRegistry> _registry ):
-		registry(_registry)
+	UHttpRequestHandler::UHttpRequestHandler(std::shared_ptr<IHttpRequestRegistry> _registry
+			, const std::string& allow )
+		: registry(_registry)
+		, httpCORS_allow(allow)
 	{
 		log = make_shared<DebugStream>();
 	}
 	// -------------------------------------------------------------------------
-	void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp )
+	void UHttpRequestHandler::handleRequest( Poco::Net::HTTPServerRequest& req
+			, Poco::Net::HTTPServerResponse& resp )
 	{
+		// В этой версии API поддерживается только GET
+		resp.set("Access-Control-Allow-Methods", "GET");
+		resp.set("Access-Control-Allow-Request-Method", "*");
+		resp.set("Access-Control-Allow-Origin", httpCORS_allow /* req.get("Origin") */);
 		if( !registry )
 		{
 			resp.setStatus(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
@@ -159,7 +166,12 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	HTTPRequestHandler* UHttpRequestHandlerFactory::createRequestHandler( const HTTPServerRequest& req )
 	{
-		return new UHttpRequestHandler(registry);
+		return new UHttpRequestHandler(registry, httpCORS_allow);
+	}
+	// -------------------------------------------------------------------------
+	void UHttpRequestHandlerFactory::setCORS_allow( const std::string& allow )
+	{
+		httpCORS_allow = allow;
 	}
 	// -------------------------------------------------------------------------
 	Poco::JSON::Object::Ptr IHttpRequest::httpRequest( const string& req, const Poco::URI::QueryParameters& p )
