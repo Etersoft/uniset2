@@ -57,7 +57,6 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 		auto conf = uniset_conf();
 
 		xml = conf->getConfXML();
-		conf->initLogStream(dblog, prefix + "log" );
 	}
 	else
 	{
@@ -85,6 +84,17 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 	}
 
 	UniXML::iterator it(cnode);
+
+	if( specconfig.empty() )
+		uniset_conf()->initLogStream(dblog, prefix + "log" );
+	else
+	{
+		// инициализируем сами, т.к. conf нету..
+		const std::string loglevels = uniset::getArg2Param("--" + prefix + "log-add-levels", argc, argv, it.getProp("log"),"");
+		if( !loglevels.empty() )
+			dblog->level(Debug::value(loglevels));
+	}
+
 
 	qbufSize = uniset::getArgPInt("--" + prefix + "db-buffer-size", argc, argv, it.getProp("dbBufferSize"), qbufSize);
 	maxdbRecords = uniset::getArgPInt("--" + prefix + "db-max-records", argc, argv, it.getProp("dbMaxRecords"), qbufSize);
