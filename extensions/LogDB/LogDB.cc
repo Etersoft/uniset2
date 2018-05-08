@@ -231,6 +231,8 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 	httpHost = uniset::getArgParam("--" + prefix + "httpserver-host", argc, argv, "localhost");
 	httpPort = uniset::getArgInt("--" + prefix + "httpserver-port", argc, argv, "8080");
 	httpCORS_allow = uniset::getArgParam("--" + prefix + "httpserver-cors-allow", argc, argv, httpCORS_allow);
+	httpReplyAddr = uniset::getArgParam("--" + prefix + "httpserver-reply-addr", argc, argv, "");
+
 	dblog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
 	Poco::Net::SocketAddress sa(httpHost, httpPort);
 
@@ -456,11 +458,12 @@ void LogDB::help_print()
 	cout << "--prefix-ls-read-buffer-size num        - Размер буфера для чтения сообщений от логсервера. По умолчанию: 10001" << endl;
 
 	cout << "http: " << endl;
-	cout << "--prefix-httpserver-host ip             - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
-	cout << "--prefix-httpserver-port num            - Порт на котором принимать запросы. По умолчанию: 8080" << endl;
-	cout << "--prefix-httpserver-max-queued num      - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
-	cout << "--prefix-httpserver-max-threads num     - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
-	cout << "--prefix-httpserver-cors-allow addr     - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
+	cout << "--prefix-httpserver-host ip                 - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
+	cout << "--prefix-httpserver-port num                - Порт на котором принимать запросы. По умолчанию: 8080" << endl;
+	cout << "--prefix-httpserver-max-queued num          - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
+	cout << "--prefix-httpserver-max-threads num         - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
+	cout << "--prefix-httpserver-cors-allow addr         - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
+	cout << "--prefix-httpserver-reply-addr host[:port]  - Адрес отдаваемый клиенту для подключения. По умолчанию адрес узла где запущен logdb" << endl;
 }
 // -----------------------------------------------------------------------------
 void LogDB::run( bool async )
@@ -1539,7 +1542,7 @@ void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest&
 	for( const auto& l : logservers )
 	{
 		ostr << "  <li><a target='_blank' href=\"http://"
-			 << req.serverAddress().toString()
+			 << ( httpReplyAddr.empty() ? req.serverAddress().toString() : httpReplyAddr )
 			 << "/logdb/ws/" << l->name << "\">"
 			 << l->name << "</a>  &#8211; "
 			 << "<i>" << l->description << "</i></li>"
@@ -1588,7 +1591,7 @@ void LogDB::httpWebSocketConnectPage( ostream& ostr,
 	ostr << "  if (\"WebSocket\" in window)" << endl;
 	ostr << "  {" << endl;
 	ostr << "    // LogScrollTimer = setInterval(LogAutoScroll,800);" << endl;
-	ostr << "    var ws = new WebSocket(\"ws://" << req.serverAddress().toString() << "/logdb/ws/\" + logname);" << endl;
+	ostr << "    var ws = new WebSocket(\"ws://" << ( httpReplyAddr.empty() ? req.serverAddress().toString() : httpReplyAddr ) << "/logdb/ws/\" + logname);" << endl;
 	ostr << "    var l = document.getElementById('logname');" << endl;
 	ostr << "    l.innerHTML = logname" << endl;
 	ostr << "    ws.onmessage = function(evt)" << endl;

@@ -511,6 +511,8 @@ rm -f %buildroot%_libdir/*.la
 %changelog
 * Tue May 08 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt7
 - (http): added support "CORS" (Access-Control-Allow-Origin)
+- (logdb): added --logdb-httpserver-reply-addr host:port
+- minor fixes in LogSession
 
 * Tue Apr 03 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt6
 - new minor release
