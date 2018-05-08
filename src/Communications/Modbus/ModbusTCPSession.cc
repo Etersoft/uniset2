@@ -307,8 +307,9 @@ namespace uniset
 
 			if( res < 0 )
 			{
-				if( errno != EAGAIN && dlog->is_warn() )
-					dlog->warn() << peername << "(getNextData): read from socket error(" << errno << "): " << strerror(errno) << endl;
+				int errnum = errno;
+				if( errnum != EAGAIN && dlog->is_warn() )
+					dlog->warn() << peername << "(getNextData): read from socket error(" << errnum << "): " << strerror(errnum) << endl;
 
 				return 0;
 			}

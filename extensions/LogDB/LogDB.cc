@@ -710,9 +710,10 @@ void LogDB::Log::write( ev::io& io )
 
 	if( ret < 0 )
 	{
-		dbwarn << peername << "(write): write to socket error(" << errno << "): " << strerror(errno) << endl;
+		int errnum = errno;
+		dbwarn << peername << "(write): write to socket error(" << errnum << "): " << strerror(errnum) << endl;
 
-		if( errno == EPIPE || errno == EBADF )
+		if( errnum == EPIPE || errnum == EBADF )
 		{
 			dbwarn << peername << "(write): write error.. terminate session.." << endl;
 			io.set(EV_NONE);
@@ -816,6 +817,7 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
 		uri.getPathSegments(seg);
 
 		// проверка подключения к страничке со списком websocket-ов
+		// http://[xxxx:port]/logdb/ws/
 		if( seg.size() > 1 && seg[0] == "logdb" && seg[1] == "ws" )
 		{
 			// подключение..
@@ -1398,10 +1400,12 @@ void LogDB::LogWebSocket::write()
 
 		if( ret < 0 )
 		{
-			dblog3 << "(websocket): " << req->clientAddress().toString()
-				   << "  write to socket error(" << errno << "): " << strerror(errno) << endl;
+			int errnum = errno;
 
-			if( errno == EPIPE || errno == EBADF )
+			dblog3 << "(websocket): " << req->clientAddress().toString()
+				   << "  write to socket error(" << errnum << "): " << strerror(errnum) << endl;
+
+			if( errnum == EPIPE || errnum == EBADF )
 			{
 				dblog3 << "(websocket): "
 					   << req->clientAddress().toString()
