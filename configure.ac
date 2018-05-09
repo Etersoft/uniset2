@@ -199,6 +199,31 @@ fi
 AM_CONDITIONAL(DISABLE_IO, test ${buildio} = false)
 AM_CONDITIONAL(ENABLE_IO, test ${buildio} = true)
 
+#check sys/io.h support
+AC_MSG_CHECKING([sys/io.h support])
+buildcom485f=true
+#AC_CHECK_HEADERS
+AC_ARG_ENABLE(com485f, AC_HELP_STRING([--disable-com485f], [disable sys/io.h support]),
+[ if test $enableval = yes; then buildcom485f=true; else buildcom485f=false; fi],[ buildcom485f=true; ])
+
+COMPORT_485F_CFLAGS=
+COMPORT_485F_CLIBS=
+DISABLE_COMPORT_485F=
+
+if test ${buildcom485f} = true; then
+    AC_MSG_RESULT([enabled])
+else
+    AC_MSG_RESULT([disabled])
+	COMPORT_485F_CFLAGS="-DDISABLE_COMPORT_485F"
+    DISABLE_COMPORT_485F=1
+fi
+
+AM_CONDITIONAL(DISABLE_COMPORT_485F, test ${buildcom485f} = false)
+AC_SUBST(DISABLE_COMPORT_485F)
+AC_SUBST(COMPORT_485F_CFLAGS)
+#AC_SUBST(COMPORT_485F_CLIBS)
+
+
 #check logicproc build
 AC_MSG_CHECKING([build logic processor extension])
 buildlproc=true
@@ -415,7 +440,7 @@ CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Woverloaded-virtual -Woverflow -D_GLIBCXX_U
 # export
 LDFLAGS="$LDFLAGS ${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS} ${POCO_LIBS} ${EV_LIBS}"
 # all developer liked options add to autogen.sh, please
-CXXFLAGS="-I\$(top_builddir)/include $CXXFLAGS -funsigned-char -std=c++11 -g -DCATCH_VERSION_MAJOR=${CATCH_VERSION_MAJOR} -D_GNU_SOURCE ${REST_API_CFLAGS} ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${POCO_CFLAGS} ${EV_CFLAGS} $CXX_EXTRA_FLAGS"
+CXXFLAGS="-I\$(top_builddir)/include $CXXFLAGS -funsigned-char -std=c++11 -g -DCATCH_VERSION_MAJOR=${CATCH_VERSION_MAJOR} -D_GNU_SOURCE ${REST_API_CFLAGS} ${COMPORT_485F_CFLAGS} ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${POCO_CFLAGS} ${EV_CFLAGS} $CXX_EXTRA_FLAGS"
 
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)

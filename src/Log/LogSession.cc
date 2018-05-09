@@ -301,10 +301,18 @@ namespace uniset
 
 		if( ret < 0 )
 		{
-			if( mylog.is_warn() )
-				mylog.warn() << peername << "(LogSession::writeEvent): write to socket error(" << errno << "): " << strerror(errno) << endl;
+			// копируем, а потом проверяем
+			// хоть POSIX говорит о том, что errno thread-local
+			// но почему-то словил, что errno (по крайней мере для EPIPE "broken pipe")
+			// в лог выводилось, а в if( ... ) уже не ловилось
+			// возможно связано с тем, что ввод/вывод "прерываемая" операция при многопоточности
+			int errnum = errno;
 
-			if( errno == EPIPE || errno == EBADF )
+			// можно было бы конечно убрать вывод лога в else, после проверки в if
+			if( mylog.is_warn() )
+				mylog.warn() << peername << "(LogSession::writeEvent): write to socket error(" << errnum << "): " << strerror(errnum) << endl;
+
+			if( errnum == EPIPE || errnum == EBADF )
 			{
 				if( mylog.is_warn() )
 					mylog.warn() << peername << "(LogSession::writeEvent): write error.. terminate session.." << endl;

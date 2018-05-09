@@ -128,7 +128,8 @@ uniset::IDList::IDList( const std::vector<string>& svec ):
 		else
 			id = conf->getSensorID(s);
 
-		add(id);
+		if( id != DefaultObjectId )
+			add(id);
 	}
 }
 // -------------------------------------------------------------------------

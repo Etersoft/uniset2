@@ -110,6 +110,8 @@ int main( int argc, char** argv )
 
 		if( f485 )
 		{
+#ifndef DISABLE_COMPORT_485F
+
 			ComPort485F* cp;
 
 			if( dev == "/dev/ttyS2" )
@@ -126,6 +128,10 @@ int main( int argc, char** argv )
 			mbs.setLog(dlog);
 			mbs.setVerbose(verb);
 			mbs.execute();
+#else
+			cerr << "DISABLE_COMPORT_485F" << endl;
+			return 1;
+#endif // #ifndef DISABLE_COMPORT_485F
 		}
 		else
 		{

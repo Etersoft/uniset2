@@ -36,6 +36,7 @@ namespace uniset
 	{
 		if( use485 )
 		{
+#ifndef DISABLE_COMPORT_485F
 			ComPort485F* cp;
 
 			if( dev == "/dev/ttyS2" )
@@ -46,6 +47,9 @@ namespace uniset
 				throw Exception("Open ComPort FAILED! dev must be /dev/ttyS2 or /dev/tytS3");
 
 			port = cp;
+#else
+			throw Exception("Open ComPort485F FAILED! DISABLE_COMPORT_485F");
+#endif // #ifndef DISABLE_COMPORT_485F
 		}
 		else
 			port = new ComPort(dev);

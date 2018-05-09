@@ -32,7 +32,7 @@ namespace uniset
 			virtual ~ComediInterface();
 
 			// throw uniset::Exception
-			virtual int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND ) const;
+			virtual int getAnalogChannel( int subdev, int channel, int range = 0, int aref = AREF_GROUND, int adelay = 10 * 1000 ) const; // adelay = 10 мкс
 
 			// throw uniset::Exception
 			virtual void setAnalogChannel( int subdev, int channel, int data, int range = 0, int aref = AREF_GROUND ) const;

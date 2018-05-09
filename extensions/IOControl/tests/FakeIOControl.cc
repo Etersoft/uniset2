@@ -96,7 +96,7 @@ namespace uniset
 
 	}
 	// -----------------------------------------------------------------------------
-	int FakeComediInterface::getAnalogChannel(int subdev, int channel, int range, int aref) const
+	int FakeComediInterface::getAnalogChannel(int subdev, int channel, int range, int aref, int adelay ) const
 	{
 		if( channel < 0 || channel > maxChannelNum )
 		{

@@ -85,6 +85,11 @@ namespace uniset
 				return step(); // ostate;
 			}
 
+			inline bool out() const noexcept
+			{
+				return ostate;
+			}
+
 			inline void set( bool state ) noexcept
 			{
 				enabled = state;

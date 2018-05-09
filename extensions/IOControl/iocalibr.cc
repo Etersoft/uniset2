@@ -72,6 +72,7 @@ int subdev = 0;
 int chan = 0;
 int range = 0;
 int aref = AREF_GROUND;
+int adelay = 10 * 1000; // 10 мкс
 
 static struct option longopts[] =
 {
@@ -79,6 +80,7 @@ static struct option longopts[] =
 	{ "read", required_argument, 0, 'r' },
 	{ "subdev", required_argument, 0, 's' },
 	{ "aref", required_argument, 0, 'a' },
+	{ "adelay", required_argument, 0, 'y' },
 	{ "range", required_argument, 0, 'x' },
 	{ "device", required_argument, 0, 'd' },
 	{ "open_xml", required_argument, 0, 'o' },
@@ -143,6 +145,10 @@ int main(int argc, char* argv[])
 				range = uni_atoi(optarg);
 				break;
 
+			case 'y':
+				adelay = atoi(optarg);
+				break;
+
 			case 'a':
 				aref = uni_atoi(optarg);
 				break;
@@ -202,7 +208,7 @@ int main(int argc, char* argv[])
 
 	while(1)
 	{
-		if(comedi_data_read(card, subdev, chan, range, aref, &data) < 0)
+		if(comedi_data_read_delayed(card, subdev, chan, range, aref, &data, adelay) < 0)
 		{
 			fprintf(stderr, "can't read from channel %d\n", chan);
 			exit(EXIT_FAILURE);

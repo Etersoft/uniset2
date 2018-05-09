@@ -78,6 +78,11 @@ namespace uniset
 		return mylog;
 	}
 	// -------------------------------------------------------------------------
+	void UHttpServer::setCORS_allow( const std::string& allow )
+	{
+		reqFactory->setCORS_allow(allow);
+	}
+	// -------------------------------------------------------------------------
 } // end of namespace uniset
 // -------------------------------------------------------------------------
 #endif // #ifndef DISABLE_REST_API

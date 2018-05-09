@@ -14,12 +14,13 @@
 %def_disable netdata
 %def_enable api
 %def_enable logdb
+%def_enable com485f
 
 %define oname uniset2
 
 Name: libuniset2
 Version: 2.7
-Release: alt3.M80P.4
+Release: alt6.M80P.7
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -313,22 +314,12 @@ Requires: %name-extension-common-devel = %version-%release
 Libraries needed to develop for uniset MQTT extension
 %endif
 
-
-%package extension-smplus
-Group: Development/C++
-Summary: libUniSet2 SharedMemoryPlus extension ('all in one')
-Requires: %name-extension-common = %version-%release
-
-%description extension-smplus
-SharedMemoryPlus extension ('all in one') for libuniset
-
-
 %prep
 %setup
 
 %build
 %autoreconf
-%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api} %{subst_enable netdata} %{subst_enable logdb}
+%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api} %{subst_enable netdata} %{subst_enable logdb} %{subst_enable com485f}
 %make_build
 
 # fix for ALTLinux build (noarch)
@@ -520,8 +511,22 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
-* Fri Feb 23 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt3.M80P.4
+* Wed May 09 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt6.M80P.7
 - backport to ALTLinux p8 (by rpmbph script)
+
+* Tue May 08 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt7
+- (http): added support "CORS" (Access-Control-Allow-Origin)
+- (logdb): added --logdb-httpserver-reply-addr host:port
+- minor fixes in LogSession
+
+* Tue Apr 03 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt6
+- new minor release
+
+# * Wed Mar 28 2018 Vinogradov Aleksei <uzum@server> 2.7-alt5
+# - test build after rebase pv/master
+
+* Fri Mar 09 2018 Alexei Takaseev <taf@altlinux.org> 2.7-alt4.1
+- Rebuild with poco 1.9.0
 
 * Wed Feb 21 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt4
 - (omniThread): fix compile error for 'const' function and other minor fixes

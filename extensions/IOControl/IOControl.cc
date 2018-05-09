@@ -37,7 +37,7 @@ namespace uniset
 	{
 		os << "(" << inf.si.id << ")" << uniset_conf()->oind->getMapName(inf.si.id)
 		   << " card=" << inf.ncard << " channel=" << inf.channel << " subdev=" << inf.subdev
-		   << " aref=" << inf.aref << " range=" << inf.range
+		   << " aref=" << inf.aref << " range=" << inf.range << " adelay=" << inf.adelay
 		   << " default=" << inf.defval << " safeval=" << inf.safeval;
 
 		if( inf.cal.minRaw != inf.cal.maxRaw )
@@ -599,7 +599,7 @@ namespace uniset
 		{
 			if( it->stype == UniversalIO::AI )
 			{
-				int val = card->getAnalogChannel(it->subdev, it->channel, it->range, it->aref);
+				int val = card->getAnalogChannel(it->subdev, it->channel, it->range, it->aref, it->adelay);
 
 				iolog3 << myname << "(iopoll): read AI "
 					   << " sid=" << it->si.id
@@ -869,6 +869,7 @@ namespace uniset
 		inf->disable_testmode = IOBase::initIntProp(it, "disable_testmode", prop_prefix, false);
 		inf->aref = 0;
 		inf->range = 0;
+		inf->adelay = 10000;
 
 		if( inf->stype == UniversalIO::AI || inf->stype == UniversalIO::AO )
 		{
@@ -891,6 +892,8 @@ namespace uniset
 					   << ". Must be aref=[0..3]" << endl;
 				return false;
 			}
+			
+			inf->adelay = IOBase::initIntProp(it, "adelay", prop_prefix, false);
 		}
 
 		iolog3 << myname << "(readItem): add: " << inf->stype << " " << inf << endl;
@@ -1019,7 +1022,7 @@ namespace uniset
 				else if( it->stype == UniversalIO::AI )
 				{
 					card->configureChannel(it->subdev, it->channel, ComediInterface::AI);
-					it->df.init( card->getAnalogChannel(it->subdev, it->channel, it->range, it->aref) );
+					it->df.init( card->getAnalogChannel(it->subdev, it->channel, it->range, it->aref, it->adelay) );
 				}
 				else if( it->stype == UniversalIO::AO )
 					card->configureChannel(it->subdev, it->channel, ComediInterface::AO);

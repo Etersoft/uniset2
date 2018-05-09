@@ -315,6 +315,8 @@ namespace uniset
 			std::shared_ptr<Poco::Net::HTTPServer> httpserv;
 			std::string httpHost = { "" };
 			int httpPort = { 0 };
+			std::string httpCORS_allow = { "*" };
+			std::string httpReplyAddr = { "" };
 
 			double wsHeartbeatTime_sec = { 3.0 };
 			double wsSendTime_sec = { 0.5 };

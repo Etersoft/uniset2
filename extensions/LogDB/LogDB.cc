@@ -57,7 +57,6 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 		auto conf = uniset_conf();
 
 		xml = conf->getConfXML();
-		conf->initLogStream(dblog, prefix + "log" );
 	}
 	else
 	{
@@ -85,6 +84,17 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 	}
 
 	UniXML::iterator it(cnode);
+
+	if( specconfig.empty() )
+		uniset_conf()->initLogStream(dblog, prefix + "log" );
+	else
+	{
+		// инициализируем сами, т.к. conf нету..
+		const std::string loglevels = uniset::getArg2Param("--" + prefix + "log-add-levels", argc, argv, it.getProp("log"),"");
+		if( !loglevels.empty() )
+			dblog->level(Debug::value(loglevels));
+	}
+
 
 	qbufSize = uniset::getArgPInt("--" + prefix + "db-buffer-size", argc, argv, it.getProp("dbBufferSize"), qbufSize);
 	maxdbRecords = uniset::getArgPInt("--" + prefix + "db-max-records", argc, argv, it.getProp("dbMaxRecords"), qbufSize);
@@ -220,6 +230,9 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 
 	httpHost = uniset::getArgParam("--" + prefix + "httpserver-host", argc, argv, "localhost");
 	httpPort = uniset::getArgInt("--" + prefix + "httpserver-port", argc, argv, "8080");
+	httpCORS_allow = uniset::getArgParam("--" + prefix + "httpserver-cors-allow", argc, argv, httpCORS_allow);
+	httpReplyAddr = uniset::getArgParam("--" + prefix + "httpserver-reply-addr", argc, argv, "");
+
 	dblog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
 	Poco::Net::SocketAddress sa(httpHost, httpPort);
 
@@ -445,10 +458,12 @@ void LogDB::help_print()
 	cout << "--prefix-ls-read-buffer-size num        - Размер буфера для чтения сообщений от логсервера. По умолчанию: 10001" << endl;
 
 	cout << "http: " << endl;
-	cout << "--prefix-httpserver-host ip             - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
-	cout << "--prefix-httpserver-port num            - Порт на котором принимать запросы. По умолчанию: 8080" << endl;
-	cout << "--prefix-httpserver-max-queued num      - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
-	cout << "--prefix-httpserver-max-threads num     - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
+	cout << "--prefix-httpserver-host ip                 - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
+	cout << "--prefix-httpserver-port num                - Порт на котором принимать запросы. По умолчанию: 8080" << endl;
+	cout << "--prefix-httpserver-max-queued num          - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
+	cout << "--prefix-httpserver-max-threads num         - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
+	cout << "--prefix-httpserver-cors-allow addr         - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
+	cout << "--prefix-httpserver-reply-addr host[:port]  - Адрес отдаваемый клиенту для подключения. По умолчанию адрес узла где запущен logdb" << endl;
 }
 // -----------------------------------------------------------------------------
 void LogDB::run( bool async )
@@ -708,9 +723,10 @@ void LogDB::Log::write( ev::io& io )
 
 	if( ret < 0 )
 	{
-		dbwarn << peername << "(write): write to socket error(" << errno << "): " << strerror(errno) << endl;
+		int errnum = errno;
+		dbwarn << peername << "(write): write to socket error(" << errnum << "): " << strerror(errnum) << endl;
 
-		if( errno == EPIPE || errno == EBADF )
+		if( errnum == EPIPE || errnum == EBADF )
 		{
 			dbwarn << peername << "(write): write error.. terminate session.." << endl;
 			io.set(EV_NONE);
@@ -791,6 +807,9 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
 	std::ostream& out = resp.send();
 
 	resp.setContentType("text/json");
+	resp.set("Access-Control-Allow-Methods", "GET");
+	resp.set("Access-Control-Allow-Request-Method", "*");
+	resp.set("Access-Control-Allow-Origin", httpCORS_allow /* req.get("Origin") */);
 
 	try
 	{
@@ -811,6 +830,7 @@ void LogDB::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPSer
 		uri.getPathSegments(seg);
 
 		// проверка подключения к страничке со списком websocket-ов
+		// http://[xxxx:port]/logdb/ws/
 		if( seg.size() > 1 && seg[0] == "logdb" && seg[1] == "ws" )
 		{
 			// подключение..
@@ -1393,10 +1413,12 @@ void LogDB::LogWebSocket::write()
 
 		if( ret < 0 )
 		{
-			dblog3 << "(websocket): " << req->clientAddress().toString()
-				   << "  write to socket error(" << errno << "): " << strerror(errno) << endl;
+			int errnum = errno;
 
-			if( errno == EPIPE || errno == EBADF )
+			dblog3 << "(websocket): " << req->clientAddress().toString()
+				   << "  write to socket error(" << errnum << "): " << strerror(errnum) << endl;
+
+			if( errnum == EPIPE || errnum == EBADF )
 			{
 				dblog3 << "(websocket): "
 					   << req->clientAddress().toString()
@@ -1520,7 +1542,7 @@ void LogDB::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest&
 	for( const auto& l : logservers )
 	{
 		ostr << "  <li><a target='_blank' href=\"http://"
-			 << req.serverAddress().toString()
+			 << ( httpReplyAddr.empty() ? req.serverAddress().toString() : httpReplyAddr )
 			 << "/logdb/ws/" << l->name << "\">"
 			 << l->name << "</a>  &#8211; "
 			 << "<i>" << l->description << "</i></li>"
@@ -1569,7 +1591,7 @@ void LogDB::httpWebSocketConnectPage( ostream& ostr,
 	ostr << "  if (\"WebSocket\" in window)" << endl;
 	ostr << "  {" << endl;
 	ostr << "    // LogScrollTimer = setInterval(LogAutoScroll,800);" << endl;
-	ostr << "    var ws = new WebSocket(\"ws://" << req.serverAddress().toString() << "/logdb/ws/\" + logname);" << endl;
+	ostr << "    var ws = new WebSocket(\"ws://" << ( httpReplyAddr.empty() ? req.serverAddress().toString() : httpReplyAddr ) << "/logdb/ws/\" + logname);" << endl;
 	ostr << "    var l = document.getElementById('logname');" << endl;
 	ostr << "    l.innerHTML = logname" << endl;
 	ostr << "    ws.onmessage = function(evt)" << endl;

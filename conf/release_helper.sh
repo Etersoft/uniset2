@@ -7,6 +7,7 @@ load_mod spec
 
 REL=eter
 MAILDOMAIN=server
+OPTS=$*
 
 [ -z "$TOPDIR" ] && TOPDIR=/var/ftp/pub/Ourside
 
@@ -16,10 +17,10 @@ SPECNAME=libuniset2.spec
 if [ -z "$PLATFORM" ]; then
 	PLATFORM=i586
 	[[ `uname -m` == "x86_64" ]] && PLATFORM=x86_64
+	[[ `uname -m` == "aarch64" ]] && PLATFORM=aarch64
 fi
 
-PROJECT=$1
-test -n "$PROJECT" || PROJECT=$PKGNAME
+PROJECT=$PKGNAME
 
 [ -z "$GEN" ] && GEN=/var/ftp/pub/Ourside/$PLATFORM/genb.sh
 [ -a "$GEN" ] || GEN="genbasedir --create --progress --topdir=$TOPDIR $PLATFORM $PROJECT"
@@ -89,7 +90,7 @@ else
    add_changelog_helper "- new build" $SPECNAME
 fi
 
-rpmbb ${UNISET_BUILD_ADDON_OPTIONS} $SPECNAME || fatal "Can't build"
+rpmbb ${UNISET_BUILD_ADDON_OPTIONS} ${OPTS} $SPECNAME || fatal "Can't build"
 
 cp2ftp
              
