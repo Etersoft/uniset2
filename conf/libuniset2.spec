@@ -20,7 +20,7 @@
 
 Name: libuniset2
 Version: 2.7
-Release: alt6.M80P.7
+Release: alt7.M80P.8
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -511,8 +511,12 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
-* Wed May 09 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt6.M80P.7
+* Fri May 18 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt7.M80P.8
 - backport to ALTLinux p8 (by rpmbph script)
+
+* Fri May 18 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt8
+- (codegen): added msgstr() function
+- make style
 
 * Tue May 08 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt7
 - (http): added support "CORS" (Access-Control-Allow-Origin)

@@ -248,6 +248,13 @@
            \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
         */
         std::string strval( uniset::ObjectId id, bool showLinkName=true ) const;        
+
+        /*! Вывод в строку названия датчика-сообщения: xxx(SensorName) 
+           \param id           - идентификатор датчика
+           \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
+        */
+        std::string msgstr( uniset::ObjectId id, bool showLinkName=true ) const;
+
         
         /*! Вывод состояния внутренних переменных */
         inline std::string dumpVars(){ return vmon.pretty_str(); }
@@ -1559,6 +1566,20 @@ std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
 	}
 	
 	return s.str();
+}
+// ----------------------------------------------------------------------------
+std::string  <xsl:value-of select="$CLASSNAME"/>_SK::msgstr( uniset::ObjectId id, bool showLinkName ) const
+{
+	ostringstream s;
+	<xsl:for-each select="//msgmap/item">
+	if( id == <xsl:value-of select="@name"/> )
+	{
+		s &lt;&lt; "<xsl:value-of select="@name"/>";
+		if( showLinkName ) s &lt;&lt; "(" &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")";
+		return s.str();
+	}
+	</xsl:for-each>	
+	return "";
 }
 // ----------------------------------------------------------------------------
 std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( uniset::ObjectId id, bool showLinkName ) const

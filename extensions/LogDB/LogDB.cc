@@ -90,7 +90,8 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 	else
 	{
 		// инициализируем сами, т.к. conf нету..
-		const std::string loglevels = uniset::getArg2Param("--" + prefix + "log-add-levels", argc, argv, it.getProp("log"),"");
+		const std::string loglevels = uniset::getArg2Param("--" + prefix + "log-add-levels", argc, argv, it.getProp("log"), "");
+
 		if( !loglevels.empty() )
 			dblog->level(Debug::value(loglevels));
 	}
