@@ -892,7 +892,7 @@ namespace uniset
 					   << ". Must be aref=[0..3]" << endl;
 				return false;
 			}
-			
+
 			inf->adelay = IOBase::initIntProp(it, "adelay", prop_prefix, false);
 		}
 

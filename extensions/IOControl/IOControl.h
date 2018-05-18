@@ -276,7 +276,7 @@ namespace uniset
 				    3    - analog ref = other (undefined)
 				*/
 				int aref;
-				
+
 				int adelay; /*! Задержка на чтение аналоговых входов с мультиплексированием ( в мкс ) */
 
 				/*! Измерительный диапазон

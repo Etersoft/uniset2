@@ -43,6 +43,7 @@ namespace uniset
 		resp.set("Access-Control-Allow-Methods", "GET");
 		resp.set("Access-Control-Allow-Request-Method", "*");
 		resp.set("Access-Control-Allow-Origin", httpCORS_allow /* req.get("Origin") */);
+
 		if( !registry )
 		{
 			resp.setStatus(HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
