@@ -272,6 +272,7 @@ namespace uniset
 			uniset::uniset_rwmutex ioMutex; /*!< замок для блокирования совместного доступа к ioList */
 
 			bool isPingDBServer;    // флаг связи с DBServer-ом
+			uniset::ObjectId dbserverID = { uniset::DefaultObjectId };
 
 			std::mutex loggingMutex; /*!< logging info mutex */
 
