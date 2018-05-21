@@ -141,3 +141,12 @@ std::string DBServer::help_print()
 	return h.str();
 }
 //--------------------------------------------------------------------------------------------
+SimpleInfo* DBServer::getInfo( const char* userparam )
+{
+	uniset::SimpleInfo_var i = UniSetObject::getInfo(userparam);
+
+	const std::string inf = getMonitInfo( std::string(userparam) );
+	i->info = inf.c_str();
+	return i._retn();
+}
+//--------------------------------------------------------------------------------------------

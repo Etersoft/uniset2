@@ -27,4 +27,6 @@ devel_includedir = $(includedir)/@PACKAGE@/extensions/pgsql
 pkgconfigdir    = $(libdir)/pkgconfig
 pkgconfig_DATA  = libUniSet2PostgreSQL.pc
 
+include $(top_builddir)/include.mk
+
 endif

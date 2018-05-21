@@ -58,6 +58,8 @@ namespace uniset
 
 			static std::string help_print();
 
+			virtual uniset::SimpleInfo* getInfo( const char* userparam = "" ) override;
+
 		protected:
 
 			virtual void processingMessage( const uniset::VoidMessage* msg ) override;
@@ -65,7 +67,8 @@ namespace uniset
 			virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) {}
 
 			virtual bool activateObject() override;
-			virtual void initDBServer() {};
+			virtual void initDBServer() {}
+			virtual std::string getMonitInfo( const std::string& params ){ return ""; }
 
 
 			std::shared_ptr<LogAgregator> loga;

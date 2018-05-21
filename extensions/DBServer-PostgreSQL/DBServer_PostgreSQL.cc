@@ -464,6 +464,31 @@ bool DBServer_PostgreSQL::deactivateObject()
 	return DBServer::deactivateObject();
 }
 //--------------------------------------------------------------------------------------------
+string DBServer_PostgreSQL::getMonitInfo( const string& params )
+{
+	ostringstream inf;
+
+	inf << "Database: "
+		<< "[ ping=" << PingTime
+		<< " reconnect=" << ReconnectTime
+		<< " qbufSize=" << qbufSize
+		<< " ]" << endl
+		<< "  connection: " << (connect_ok ? "OK" : "FAILED") << endl;
+	{
+		std::lock_guard<std::mutex> lock(mqbuf);
+		inf << " buffer size: " << qbuf.size() << endl;
+	}
+	inf << "   lastError: " << db->error() << endl;
+
+	inf	<< "Insert buffer: "
+		<< "[ ibufMaxSize=" << ibufMaxSize
+		<< " ibufSize=" << ibufSize
+		<< " ibufSyncTimeout=" << ibufSyncTimeout
+		<< " ]"	<< endl;
+
+	return inf.str();
+}
+//--------------------------------------------------------------------------------------------
 std::shared_ptr<DBServer_PostgreSQL> DBServer_PostgreSQL::init_dbserver( int argc, const char* const* argv,
 		const std::string& prefix )
 {
