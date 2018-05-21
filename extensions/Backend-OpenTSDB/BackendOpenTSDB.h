@@ -135,6 +135,7 @@ namespace uniset
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
+			virtual std::string getMonitInfo() const override;
 
 			void init( xmlNode* cnode );
 			bool flushBuffer();
@@ -159,6 +160,7 @@ namespace uniset
 			size_t bufSize = { 100 };
 			bool timerIsOn = { false };
 			timeout_t reconnectTime = { 5000 };
+			std::string lastError;
 
 			// буфер mutex-ом можно не защищать
 			// т.к. к нему идёт обращение только из основного потока обработки

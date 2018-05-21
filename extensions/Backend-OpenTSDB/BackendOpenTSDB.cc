@@ -56,16 +56,16 @@ void BackendOpenTSDB::init( xmlNode* cnode )
 
 	auto conf = uniset_conf();
 
-	host = conf->getArg2Param("--" + prefix+ "-host", it.getProp("host"), "localhost");
-	port = conf->getArgPInt("--" + prefix+ "-port", it.getProp("port"), port);
-	tsdbPrefix = conf->getArg2Param("--" + prefix+ "-prefix", it.getProp("prefix"), "");
-	tsdbTags = conf->getArg2Param("--" + prefix+ "-tags", it.getProp("tags"), "");
-	reconnectTime = conf->getArgPInt("--" + prefix+ "-reconnect-time", it.getProp("reconnectTime"), reconnectTime);
-	bufSize = conf->getArgPInt("--" + prefix+ "-buf-size", it.getProp("bufMaxSize"),bufSize);
-	bufSyncTime = conf->getArgPInt("--" + prefix+ "-buf-sync-time", it.getProp("bufSyncTimeout"),bufSyncTime);
+	host = conf->getArg2Param("--" + prefix + "-host", it.getProp("host"), "localhost");
+	port = conf->getArgPInt("--" + prefix + "-port", it.getProp("port"), port);
+	tsdbPrefix = conf->getArg2Param("--" + prefix + "-prefix", it.getProp("prefix"), "");
+	tsdbTags = conf->getArg2Param("--" + prefix + "-tags", it.getProp("tags"), "");
+	reconnectTime = conf->getArgPInt("--" + prefix + "-reconnect-time", it.getProp("reconnectTime"), reconnectTime);
+	bufSize = conf->getArgPInt("--" + prefix + "-buf-size", it.getProp("bufMaxSize"), bufSize);
+	bufSyncTime = conf->getArgPInt("--" + prefix + "-buf-sync-time", it.getProp("bufSyncTimeout"), bufSyncTime);
 
-	const string ff = conf->getArg2Param("--" + prefix+ "-filter-field", it.getProp("filter_field"), "" );
-	const string fv = conf->getArg2Param("--" + prefix+ "-filter-value", it.getProp("filter_value"), "" );
+	const string ff = conf->getArg2Param("--" + prefix + "-filter-field", it.getProp("filter_field"), "" );
+	const string fv = conf->getArg2Param("--" + prefix + "-filter-value", it.getProp("filter_value"), "" );
 
 	myinfo << myname << "(init): opentsdb host=" << host << ":" << port
 		   << " " << ff << "='" << fv << "'"
@@ -328,11 +328,16 @@ bool BackendOpenTSDB::flushBuffer()
 		buf.clear();
 		askTimer(tmFlushBuffer, 0);
 		timerIsOn = false;
+
+		if( !lastError.empty() )
+			lastError = "";
+
 		return true;
 	}
 	catch( std::exception& ex )
 	{
 		mywarn << "(flushBuffer): " << ex.what() << endl;
+		lastError = ex.what();
 	}
 
 	return false;
@@ -355,19 +360,26 @@ bool BackendOpenTSDB::reconnect()
 		//		tcp->setReceiveTimeout(UniSetTimer::millisecToPoco(replyTimeOut_ms));
 		tcp->setKeepAlive(true); // tcp->setKeepAliveParams((replyTimeOut_ms > 1000 ? replyTimeOut_ms / 1000 : 1));
 		tcp->setNoDelay(true);
+
+		if( !lastError.empty() )
+			lastError = "";
+
 		return true;
 	}
 	catch( Poco::TimeoutException& ex)
 	{
 		mycrit << myname << "(connect): " << host << ":" << port << " timeout exception" << endl;
+		lastError = "connect timeout";
 	}
 	catch( Poco::Net::NetException& ex)
 	{
 		mycrit << myname << "(connect): " << host << ":" << port << " error: " << ex.displayText() << endl;
+		lastError = ex.displayText();
 	}
 	catch( const std::exception& e )
 	{
 		mycrit << myname << "(connect): " << host << ":" << port << " error: " << e.what() << endl;
+		lastError = e.what();
 	}
 	catch( ... )
 	{
@@ -378,3 +390,21 @@ bool BackendOpenTSDB::reconnect()
 	return false;
 }
 //------------------------------------------------------------------------------
+std::string BackendOpenTSDB::getMonitInfo() const
+{
+	ostringstream inf;
+
+	inf << "Database: " << host << ":" << port
+		<< " ["
+		<< " reconnect=" << reconnectTime
+		<< " bufSize=" << bufSize
+		<< " tsdbPrefix: '" << tsdbPrefix << "'"
+		<< " tsdbTags: '" << tsdbTags << "'"
+		<< " ]" << endl
+		<< "  connection: " << ( tcp && tcp->isConnected() ? "OK" : "FAILED") << endl
+		<< " buffer size: " << buf.size() << endl
+		<< "   lastError: " << lastError << endl;
+
+	return inf.str();
+}
+// -----------------------------------------------------------------------------
