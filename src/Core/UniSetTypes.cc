@@ -372,6 +372,9 @@ std::list<uniset::ConsumerInfo> uniset::getObjectsList( const string& str, std::
 
 				if( item.id == DefaultObjectId )
 					item.id = conf->getControllerID(s_id);
+
+				if( item.id == DefaultObjectId )
+					item.id = conf->getServiceID(s_id);
 			}
 
 			item.node = DefaultObjectId;
@@ -389,6 +392,9 @@ std::list<uniset::ConsumerInfo> uniset::getObjectsList( const string& str, std::
 
 				if( item.id == DefaultObjectId )
 					item.id = conf->getControllerID(s_id);
+
+				if( item.id == DefaultObjectId )
+					item.id = conf->getServiceID(s_id);
 			}
 
 			if( is_digit(s_node) )

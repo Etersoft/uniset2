@@ -401,3 +401,22 @@ void DBServer_SQLite::help_print( int argc, const char* const* argv )
 	cout << DBServer::help_print() << endl;
 }
 // -----------------------------------------------------------------------------
+std::string DBServer_SQLite::getMonitInfo( const std::string& params )
+{
+	ostringstream inf;
+
+	inf << "Database: "
+		<< "[ ping=" << PingTime
+		<< " reconnect=" << ReconnectTime
+		<< " qbufSize=" << qbufSize
+		<< " ]" << endl
+		<< "  connection: " << (connect_ok ? "OK" : "FAILED") << endl;
+	{
+		uniset_rwmutex_rlock lock(mqbuf);
+		inf << " buffer size: " << qbuf.size() << endl;
+	}
+	inf << "   lastError: " << db->error() << endl;
+
+	return inf.str();
+}
+// -----------------------------------------------------------------------------

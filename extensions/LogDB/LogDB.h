@@ -322,6 +322,11 @@ namespace uniset
 			double wsSendTime_sec = { 0.5 };
 			size_t wsMaxSend = { 200 };
 
+			std::string fgColor = { "#c4c4c4" };
+			std::string bgColor = { "#111111" };
+			std::string bgColorTitle = { "green" };
+			std::string fgColorTitle = { "#ececec" };
+
 			/*! класс реализует работу с websocket через eventloop
 			 * Из-за того, что поступление логов может быть достаточно быстрым
 			 * чтобы не "завалить" браузер кучей сообщений,

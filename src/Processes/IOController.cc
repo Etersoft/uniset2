@@ -43,6 +43,9 @@ IOController::IOController(const string& name, const string& section):
 	ioMutex(name + "_ioMutex"),
 	isPingDBServer(true)
 {
+	auto conf = uniset_conf();
+	if( conf )
+		dbserverID = conf->getDBServer();
 }
 
 IOController::IOController(ObjectId id):
@@ -50,6 +53,9 @@ IOController::IOController(ObjectId id):
 	ioMutex(string(uniset_conf()->oind->getMapName(id)) + "_ioMutex"),
 	isPingDBServer(true)
 {
+	auto conf = uniset_conf();
+	if( conf )
+		dbserverID = conf->getDBServer();
 }
 
 // ------------------------------------------------------------------------------------------
@@ -412,16 +418,14 @@ void IOController::logging( uniset::SensorMessage& sm )
 
 	try
 	{
-		ObjectId dbID = uniset_conf()->getDBServer();
-
 		// значит на этом узле нет DBServer-а
-		if( dbID == uniset::DefaultObjectId )
+		if( dbserverID == uniset::DefaultObjectId )
 		{
 			isPingDBServer = false;
 			return;
 		}
 
-		sm.consumer = dbID;
+		sm.consumer = dbserverID;
 		TransportMessage tm(std::move(sm.transport_msg()));
 		ui->send( sm.consumer, std::move(tm) );
 		isPingDBServer = true;
@@ -439,7 +443,7 @@ void IOController::logging( uniset::SensorMessage& sm )
 void IOController::dumpToDB()
 {
 	// значит на этом узле нет DBServer-а
-	if( uniset_conf()->getDBServer() == uniset::DefaultObjectId )
+	if( dbserverID == uniset::DefaultObjectId )
 		return;
 
 	{

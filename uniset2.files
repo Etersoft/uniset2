@@ -172,6 +172,11 @@ extensions/MQTTPublisher/main.cc
 extensions/MQTTPublisher/Makefile.am
 extensions/MQTTPublisher/MQTTPublisher.cc
 extensions/MQTTPublisher/MQTTPublisher.h
+extensions/Backend-OpenTSDB/libUniSet2BackendOpenTSDB.pc.in
+extensions/Backend-OpenTSDB/main.cc
+extensions/Backend-OpenTSDB/Makefile.am
+extensions/Backend-OpenTSDB/BackendOpenTSDB.cc
+extensions/Backend-OpenTSDB/BackendOpenTSDB.h
 extensions/SharedMemory/libUniSet2SharedMemory.pc.in
 extensions/SharedMemory/Makefile.am
 extensions/SharedMemory/SharedMemory.cc
