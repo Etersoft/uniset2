@@ -19,7 +19,7 @@
 
 Name: libuniset2
 Version: 2.7
-Release: alt8
+Release: alt9
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -538,6 +538,9 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
+* Thu May 24 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt9
+- added opentsdb backend
+
 * Fri May 18 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt8
 - (codegen): added msgstr() function
 - make style
