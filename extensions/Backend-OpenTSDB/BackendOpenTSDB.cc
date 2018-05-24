@@ -162,8 +162,7 @@ void BackendOpenTSDB::help_print( int argc, const char* const* argv )
 	cout << "             set-levels ...  " << endl;
 	cout << "             logfile filanme " << endl;
 	cout << "             no-debug " << endl;
-	cout << " Base oprtions: " << endl;
-	//	cout << UObject_SK::help() << endl;
+	cout << endl;
 	cout << " LogServer: " << endl;
 	cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;
 	cout << "--prefix-logserver-host ip  - listen ip. Default: localhost" << endl;
