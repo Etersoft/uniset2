@@ -19,7 +19,7 @@
 
 Name: libuniset2
 Version: 2.7
-Release: alt9
+Release: alt10
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -417,10 +417,12 @@ rm -f %buildroot%_libdir/*.la
 %if_enabled opentsdb
 %files extension-opentsdb
 %_bindir/%oname-backend-opentsdb*
+%_libdir/libUniSet2BackendOpenTSDB.so*
 
 %files extension-opentsdb-devel
 %_pkgconfigdir/libUniSet2BackendOpenTSDB.pc
 %_includedir/%oname/extensions/BackendOpenTSDB.h
+%_libdir/libUniSet2BackendOpenTSDB.so
 %endif
 
 %if_enabled pgsql
@@ -538,6 +540,9 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
+* Thu May 24 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt10
+- fix pack opentsdb backend
+
 * Thu May 24 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt9
 - added opentsdb backend
 
