@@ -55,26 +55,25 @@ namespace uniset
 		IOController::IOStateList lst;
 
 		if( !root )
-		{
 			root = uxml->findNode( uxml->getFirstNode(), "sensors");
 
-			UniXML::iterator it(root);
-			it.goChildren();
-			root = it.getCurrent();
-		}
+		if( !root )
+			return lst;
 
-		if( root )
-		{
-			lst = read_list(root);
-			// только после чтения всех датчиков и формирования списка IOList
-			// можно инициализировать списки зависимостей
-			init_depends_signals(lst);
+		UniXML::iterator it(root);
 
-			xmlNode* tnode = uxml->findNode(uxml->getFirstNode(), "thresholds");
+		if( !it.goChildren() )
+			return lst;
 
-			if( tnode )
-				init_thresholds(tnode, lst);
-		}
+		lst = read_list(it);
+		// только после чтения всех датчиков и формирования списка IOList
+		// можно инициализировать списки зависимостей
+		init_depends_signals(lst);
+
+		xmlNode* tnode = uxml->findNode(uxml->getFirstNode(), "thresholds");
+
+		if( tnode )
+			init_thresholds(tnode, lst);
 
 		return lst;
 	}
