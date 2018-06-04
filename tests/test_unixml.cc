@@ -97,6 +97,10 @@ TEST_CASE("UniXML::iterator", "[unixml][iterator][basic]" )
 	--it;
 	CHECK( it.getName() == "UserData" );
 
+	UniXML::iterator it_bad = uxml.begin();
+	REQUIRE_FALSE( it_bad.findName("UnknownNode","NOTFOUND") );
+	REQUIRE_FALSE( !it_bad );
+
 	it = uxml.begin();
 	CHECK( it.findName("TestNode", "TestNode1") != 0 );
 	it = uxml.begin();
