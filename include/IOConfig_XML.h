@@ -51,7 +51,7 @@ namespace uniset
 			/*!
 			 * \param xml  - xml формата uniset-project
 			 * \param conf - конфигурация
-			 * \param root - узел с датчиками (если не задан, ищется "sensors")
+			 * \param root - узел со списком датчиков (если не задан, ищется "sensors")
 			 */
 			IOConfig_XML( const std::shared_ptr<UniXML>& _xml, const std::shared_ptr<Configuration>& conf, xmlNode* root = nullptr );
 

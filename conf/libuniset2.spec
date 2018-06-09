@@ -14,14 +14,19 @@
 %def_disable netdata
 %def_enable api
 %def_enable logdb
-%def_enable com485f
 %def_enable opentsdb
+
+%ifarch %ix86
+%def_enable com485f
+%else
+%def_disable com485f
+%endif
 
 %define oname uniset2
 
 Name: libuniset2
 Version: 2.7
-Release: alt9.M80P.10
+Release: alt10.M80P.11
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -542,8 +547,11 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
-* Thu May 24 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt9.M80P.10
+* Sun Jun 10 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt10.M80P.11
 - backport to ALTLinux p8 (by rpmbph script)
+
+* Sat Jun 09 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt11
+- PostgreSQL: extended the interface
 
 * Thu May 24 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt10
 - fix pack opentsdb backend

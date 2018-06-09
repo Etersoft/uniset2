@@ -598,6 +598,9 @@ bool UniXML_iterator::findName( const std::string& nodename, const std::string& 
 	{
 		fnode = this->findX(fnode, nodename, deepfind);
 
+		if( !fnode )
+			return false;
+
 		if ( searchname == UniXML::getProp(fnode, "name") )
 		{
 			curNode = fnode;
