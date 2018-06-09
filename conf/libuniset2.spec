@@ -19,7 +19,7 @@
 
 Name: libuniset2
 Version: 2.7
-Release: alt10
+Release: alt11
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -540,6 +540,9 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
+* Sat Jun 09 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt11
+- PostgreSQL: extended the interface
+
 * Thu May 24 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt10
 - fix pack opentsdb backend
 

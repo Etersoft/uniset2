@@ -129,6 +129,10 @@ namespace uniset
 			size_t ibufMaxSize = { 2000 };
 			timeout_t ibufSyncTimeout = { 15000 };
 			void flushInsertBuffer();
+			virtual bool writeBufferToDB( const std::string& table
+										  , const std::vector<std::string>& colname
+										  , InsertBuffer& ibuf );
+
 			float ibufOverflowCleanFactor = { 0.5 }; // коэфициент {0...1} чистки буфера при переполнении
 
 		private:
