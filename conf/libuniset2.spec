@@ -12,8 +12,13 @@
 %def_disable netdata
 %def_enable api
 %def_enable logdb
-%def_enable com485f
 %def_enable opentsdb
+
+%ifarch %ix86
+%def_enable com485f
+%else
+%def_disable com485f
+%endif
 
 %define oname uniset2
 
