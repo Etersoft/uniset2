@@ -222,7 +222,7 @@ void DBServer_PostgreSQL::flushInsertBuffer()
 
 	dbinfo << myname << "(flushInsertBuffer): write insert buffer[" << ibufSize << "] to DB.." << endl;
 
-	if( !db->copy("main_history", tblcols, ibuf) )
+	if( !writeBufferToDB("main_history", tblcols, ibuf) )
 	{
 		dbcrit << myname << "(flushInsertBuffer): error: " << db->error() << endl;
 	}
@@ -231,6 +231,13 @@ void DBServer_PostgreSQL::flushInsertBuffer()
 		ibuf.clear();
 		ibufSize = 0;
 	}
+}
+//--------------------------------------------------------------------------------------------
+bool DBServer_PostgreSQL::writeBufferToDB( const std::string& tableName
+		, const std::vector<std::string>& colNames
+		, DBServer_PostgreSQL::InsertBuffer& wbuf )
+{
+	return db->copy(tableName, colNames, wbuf);
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_PostgreSQL::sensorInfo( const uniset::SensorMessage* si )
