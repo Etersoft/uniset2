@@ -544,6 +544,9 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
+* Sun Jun 10 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt12
+- spec cleanup
+
 * Mon Jun 04 2018 Alexey Shabalin <shaba@altlinux.ru> 2.7-alt11
 - rebuild with libmariadb
 
