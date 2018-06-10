@@ -54,7 +54,8 @@ BuildRequires: libcomedi-devel
 %endif
 
 %if_enabled mysql
-BuildRequires: libmysqlclient-devel
+# build with mariadb 
+BuildRequires: libmariadb-devel
 %endif
 
 %if_enabled sqlite
