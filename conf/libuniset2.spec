@@ -14,13 +14,19 @@
 %def_disable netdata
 %def_enable api
 %def_enable logdb
+%def_enable opentsdb
+
+%ifarch %ix86
 %def_enable com485f
+%else
+%def_disable com485f
+%endif
 
 %define oname uniset2
 
 Name: libuniset2
 Version: 2.7
-Release: alt6.M80P.7
+Release: alt11.M80P.12
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -48,7 +54,6 @@ BuildRequires: libcomedi-devel
 %endif
 
 %if_enabled mysql
-# Using old package name instead of libmysqlclient-devel it absent in branch 5.0 for yauza
 BuildRequires: libmysqlclient-devel
 %endif
 
@@ -225,6 +230,25 @@ Database (sqlite) for logs for %name
 %endif
 %endif
 
+%if_enabled opentsdb
+%package extension-opentsdb
+Group: Development/C++
+Summary: backend for OpenTSDB
+Requires: %name-extension-common = %version-%release
+
+%description extension-opentsdb
+Backend for OpenTSDB
+
+%package extension-opentsdb-devel
+Group: Development/Databases
+Summary: Libraries needed to develop for uniset OpenTSDB backend
+Requires: %name-extension-common-devel = %version-%release
+
+%description extension-opentsdb-devel
+Libraries needed to develop for backend for OpenTSDB
+
+%endif
+
 %if_enabled pgsql
 %package extension-pgsql
 Group: Development/Databases
@@ -319,22 +343,17 @@ Libraries needed to develop for uniset MQTT extension
 
 %build
 %autoreconf
-%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api} %{subst_enable netdata} %{subst_enable logdb} %{subst_enable com485f}
+%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api} %{subst_enable netdata} %{subst_enable logdb} %{subst_enable com485f} %{subst_enable opentsdb}
 %make_build
-
-# fix for ALTLinux build (noarch)
-%if_enabled docs
-cd docs/html
-PNGFILES=`find ./ -name '*.png' -type f`
-for F in ${PNGFILES}; do
-#   echo "$F"
-    convert ${F} -flatten +matte ${F}
-done
-%endif
 
 %install
 %makeinstall_std
 rm -f %buildroot%_libdir/*.la
+
+%if_enabled docs
+rm -f %buildroot%_docdir/%oname/html/*.map
+rm -f %buildroot%_docdir/%oname/html/*.md5
+%endif
 
 %files utils
 %_bindir/%oname-admin
@@ -384,11 +403,12 @@ rm -f %buildroot%_libdir/*.la
 %if_enabled sqlite
 %files extension-sqlite
 %_bindir/%oname-sqlite-*dbserver
-%_libdir/*-sqlite.so*
+%_libdir/*-sqlite.so.*
 
 %files extension-sqlite-devel
 %_pkgconfigdir/libUniSet2SQLite.pc
 %_includedir/%oname/extensions/sqlite/
+%_libdir/*-sqlite.so
 
 %if_enabled logdb
 %files extension-logdb
@@ -396,20 +416,33 @@ rm -f %buildroot%_libdir/*.la
 %endif
 %endif
 
+%if_enabled opentsdb
+%files extension-opentsdb
+%_bindir/%oname-backend-opentsdb*
+%_libdir/libUniSet2BackendOpenTSDB.so.*
+
+%files extension-opentsdb-devel
+%_pkgconfigdir/libUniSet2BackendOpenTSDB.pc
+%_includedir/%oname/extensions/BackendOpenTSDB.h
+%_libdir/libUniSet2BackendOpenTSDB.so
+%endif
+
 %if_enabled pgsql
 %files extension-pgsql
 %_bindir/%oname-pgsql-*dbserver
-%_libdir/*-pgsql.so*
+%_libdir/*-pgsql.so.*
 
 %files extension-pgsql-devel
 %_pkgconfigdir/libUniSet2PostgreSQL.pc
 %_includedir/%oname/extensions/pgsql/
+%_libdir/*-pgsql.so
 %endif
 
 %if_enabled python
 %files -n python-module-%oname
 %python_sitelibdir/*
 %python_sitelibdir_noarch/%oname/*
+%dir %python_sitelibdir_noarch/%oname
 %endif
 
 %if_enabled netdata
@@ -492,6 +525,7 @@ rm -f %buildroot%_libdir/*.la
 %files extension-common-devel
 %dir %_includedir/%oname/extensions
 %_includedir/%oname/extensions/*.*
+%exclude %_includedir/%oname/extensions/BackendOpenTSDB.h
 %_libdir/libUniSet2Extensions.so
 %_libdir/libUniSet2MB*.so
 %_libdir/libUniSet2RT*.so
@@ -511,8 +545,24 @@ rm -f %buildroot%_libdir/*.la
 # history of current unpublished changes
 
 %changelog
-* Wed May 09 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt6.M80P.7
+* Sun Jun 10 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt11.M80P.12
 - backport to ALTLinux p8 (by rpmbph script)
+
+* Sun Jun 10 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt12
+- spec cleanup
+
+* Mon Jun 04 2018 Alexey Shabalin <shaba@altlinux.ru> 2.7-alt11
+- rebuild with libmariadb
+
+* Thu May 24 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt10
+- fix pack opentsdb backend
+
+* Thu May 24 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt9
+- added opentsdb backend
+
+* Fri May 18 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt8
+- (codegen): added msgstr() function
+- make style
 
 * Tue May 08 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt7
 - (http): added support "CORS" (Access-Control-Allow-Origin)

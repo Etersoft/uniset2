@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */
 // --------------------------------------------------------------------------
-// generate timestamp: 2017-09-01+03:00
+// generate timestamp: 2018-05-18+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -354,6 +354,13 @@ std::string  UObject_SK::dumpIO()
 	}
 
 	return s.str();
+}
+// ----------------------------------------------------------------------------
+std::string  UObject_SK::msgstr( uniset::ObjectId id, bool showLinkName ) const
+{
+	ostringstream s;
+
+	return "";
 }
 // ----------------------------------------------------------------------------
 std::string  UObject_SK::str( uniset::ObjectId id, bool showLinkName ) const

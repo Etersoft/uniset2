@@ -18,6 +18,7 @@
 #define UHelpers_H_
 // --------------------------------------------------------------------------
 #include "UniSetTypes.h"
+#include "Exceptions.h"
 #include "Configuration.h"
 // --------------------------------------------------------------------------
 namespace uniset

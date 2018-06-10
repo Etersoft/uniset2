@@ -90,7 +90,8 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 	else
 	{
 		// инициализируем сами, т.к. conf нету..
-		const std::string loglevels = uniset::getArg2Param("--" + prefix + "log-add-levels", argc, argv, it.getProp("log"),"");
+		const std::string loglevels = uniset::getArg2Param("--" + prefix + "log-add-levels", argc, argv, it.getProp("log"), "");
+
 		if( !loglevels.empty() )
 			dblog->level(Debug::value(loglevels));
 	}
@@ -104,6 +105,11 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 
 	if( tformat == "localtime" || tformat == "utc" )
 		tmsFormat = tformat;
+
+	bgColor = uniset::getArg2Param("--" + prefix + "bg-color", argc, argv, it.getProp("bgColor"), bgColor);
+	fgColor = uniset::getArg2Param("--" + prefix + "fg-color", argc, argv, it.getProp("fgColor"), fgColor);
+	fgColorTitle = uniset::getArg2Param("--" + prefix + "fg-color-title", argc, argv, it.getProp("fgColorTitle"), fgColorTitle);
+	bgColorTitle = uniset::getArg2Param("--" + prefix + "bg-color-title", argc, argv, it.getProp("bgColorTitle"), bgColorTitle);
 
 	double checkConnection_sec = atof( uniset::getArg2Param("--" + prefix + "ls-check-connection-sec", argc, argv, it.getProp("lsCheckConnectionSec"), "5").c_str());
 
@@ -449,9 +455,13 @@ void LogDB::help_print()
 
 	cout << "websockets: " << endl;
 	cout << "--prefix-ws-max num                  - Максимальное количество websocket-ов" << endl;
-	cout << "--prefix-ws-heartbeat-time msec         - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
-	cout << "--prefix-ws-send-time msec              - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
+	cout << "--prefix-ws-heartbeat-time msec      - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
+	cout << "--prefix-ws-send-time msec           - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
 	cout << "--prefix-ws-max num                  - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
+	cout << "--prefix-bg-color clr                - Цвет фона при выводе логов. По умолчанию: #111111" << endl;
+	cout << "--prefix-fg-color clr                - Цвет текста при выводе логов. По умолчанию: #c4c4c4" << endl;
+	cout << "--prefix-bg-color-title clr          - Цвет фона заголовка окна. По умолчанию: green" << endl;
+	cout << "--prefix-fg-color-title clr          - Цвет текста заголовка окна. По умолчанию: #ececec" << endl;
 
 	cout << "logservers: " << endl;
 	cout << "--prefix-ls-check-connection-sec sec    - Период проверки соединения с логсервером" << endl;
@@ -1627,14 +1637,15 @@ void LogDB::httpWebSocketConnectPage( ostream& ostr,
 	ostr << "	padding: 10px;" << endl;
 	ostr << "	width: 100%;" << endl;
 	ostr << "	height: 25px;" << endl;
-	ostr << "	background-color: green;" << endl;
+	ostr << "	background-color: " << bgColorTitle << ";" << endl;
+	ostr << "	color: " << fgColorTitle << ";" << endl;
 	ostr << "	border-top: 2px solid;" << endl;
 	ostr << "	border-bottom: 2px solid;" << endl;
 	ostr << "	border-color: white;" << endl;
 	ostr << "}" << endl;
 	ostr << "</style>" << endl;
 	ostr << "</head>" << endl;
-	ostr << "<body style='background: #111111; color: #ececec;' onload=\"javascript:WebSocketCreate('" << logname << "')\">" << endl;
+	ostr << "<body style='background: " << bgColor << "; color: " << fgColor << ";' onload=\"javascript:WebSocketCreate('" << logname << "')\">" << endl;
 	ostr << "<h4><div onclick='javascritpt:clickScroll()' id='logname' class='logtitle'></div></h4>" << endl;
 	ostr << "<div id='logs' class='logs'></div>" << endl;
 	ostr << "<p><div id='end' style='display: hidden;'>&nbsp;</div></p>" << endl;

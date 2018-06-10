@@ -74,21 +74,24 @@ namespace uniset
 				return dblog;
 			}
 
+			bool isConnectOk() const;
+
 		protected:
 			typedef std::unordered_map<int, std::string> DBTableMap;
 
 			virtual void initDBServer() override;
 			virtual void initDB( std::unique_ptr<PostgreSQLInterface>& db ) {};
-			virtual void initDBTableMap(DBTableMap& tblMap) {};
+			virtual void initDBTableMap( DBTableMap& tblMap ) {};
 
 			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 			virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) override;
 			virtual bool deactivateObject() override;
+			virtual std::string getMonitInfo( const std::string& params ) override;
 
 			bool writeToBase( const std::string& query );
-			void createTables( std::shared_ptr<PostgreSQLInterface>& db );
+			void createTables( const std::shared_ptr<PostgreSQLInterface>& db );
 
 			inline std::string tblName(int key)
 			{
@@ -104,35 +107,38 @@ namespace uniset
 			};
 
 			std::unique_ptr<PostgreSQLInterface> db;
-			int PingTime = { 15000 };
-			int ReconnectTime = { 30000 };
-
-			bool connect_ok = { false };     /*! признак наличия соеднинения с сервером БД */
-			bool activate = { false };
-
 			typedef std::queue<std::string> QueryBuffer;
 
-			QueryBuffer qbuf;
-			size_t qbufSize = { 200 }; // размер буфера сообщений.
-			bool lastRemove = { false };
-
 			void flushBuffer();
-			std::mutex mqbuf;
 
 			// writeBuffer
 			const std::vector<std::string> tblcols = { "date", "time", "time_usec", "sensor_id", "value", "node" };
 
 			typedef std::vector<PostgreSQLInterface::Record> InsertBuffer;
-			InsertBuffer ibuf;
-			size_t ibufSize = { 0 };
-			size_t ibufMaxSize = { 2000 };
-			timeout_t ibufSyncTimeout = { 15000 };
 			void flushInsertBuffer();
-			float ibufOverflowCleanFactor = { 0.5 }; // коэфициент {0...1} чистки буфера при переполнении
+			virtual void addRecord( const PostgreSQLInterface::Record&& rec );
+			virtual bool writeInsertBufferToDB( const std::string& table
+										  , const std::vector<std::string>& colname
+										  , const InsertBuffer& ibuf );
 
 		private:
 			DBTableMap tblMap;
 
+			int PingTime = { 15000 };
+			int ReconnectTime = { 30000 };
+
+			bool connect_ok = { false }; /*! признак наличия соеднинения с сервером БД */
+
+			QueryBuffer qbuf;
+			size_t qbufSize = { 200 }; // размер буфера сообщений.
+			bool lastRemove = { false };
+			std::mutex mqbuf;
+
+			InsertBuffer ibuf;
+			size_t ibufSize = { 0 };
+			size_t ibufMaxSize = { 2000 };
+			timeout_t ibufSyncTimeout = { 15000 };
+			float ibufOverflowCleanFactor = { 0.5 }; // коэфициент {0...1} чистки буфера при переполнении
 	};
 	// ----------------------------------------------------------------------------------
 } // end of namespace uniset

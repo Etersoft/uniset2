@@ -168,6 +168,7 @@ namespace uniset
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 			virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) override;
+			virtual std::string getMonitInfo( const std::string& params ) override;
 
 			bool writeToBase( const std::string& query );
 			void createTables( MySQLInterface* db );
@@ -183,7 +184,6 @@ namespace uniset
 				ReconnectTimer,   /*!< таймер на повторную попытку соединения с сервером БД (или восстановления связи) */
 				lastNumberOfTimer
 			};
-
 
 			std::unique_ptr<MySQLInterface> db;
 			int PingTime = { 15000 };

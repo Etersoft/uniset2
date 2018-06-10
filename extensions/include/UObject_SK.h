@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */
 // --------------------------------------------------------------------------
-// generate timestamp: 2017-09-01+03:00
+// generate timestamp: 2018-05-18+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -120,6 +120,13 @@ class UObject_SK:
 		   \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
 		*/
 		std::string strval( uniset::ObjectId id, bool showLinkName = true ) const;
+
+		/*! Вывод в строку названия датчика-сообщения: xxx(SensorName)
+		   \param id           - идентификатор датчика
+		   \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
+		*/
+		std::string msgstr( uniset::ObjectId id, bool showLinkName = true ) const;
+
 
 		/*! Вывод состояния внутренних переменных */
 		inline std::string dumpVars()

@@ -74,17 +74,11 @@ void DBServer_PostgreSQL::sysCommand( const uniset::SystemMessage* sm )
 			break;
 
 		case SystemMessage::Finish:
-		{
-			activate = false;
 			db->close();
-		}
 		break;
 
 		case SystemMessage::FoldUp:
-		{
-			activate = false;
 			db->close();
-		}
 		break;
 
 		default:
@@ -151,6 +145,11 @@ bool DBServer_PostgreSQL::writeToBase( const string& query )
 				   << ") overflow! lost query: " << qlost << endl;
 		}
 
+		// Надо подумать, что тут лучше возвращать true или false
+		// вроде бы фактически запись не сделали, но запрос поместили в буфер
+		// А вызывающая сторона может посчитать, что раз вернули false, значит
+		// можно/нужно потом запрос повторить..
+
 		return false;
 	}
 
@@ -171,7 +170,7 @@ void DBServer_PostgreSQL::flushBuffer()
 	// Сперва пробуем очистить всё что накопилось в очереди до этого...
 	while( !qbuf.empty() )
 	{
-		if(!db->insert( qbuf.front() ))
+		if( !db->insert(qbuf.front()) )
 		{
 			dbcrit << myname << "(writeToBase): error: " << db->error() << " lost query: " << qbuf.front() << endl;
 		}
@@ -222,7 +221,7 @@ void DBServer_PostgreSQL::flushInsertBuffer()
 
 	dbinfo << myname << "(flushInsertBuffer): write insert buffer[" << ibufSize << "] to DB.." << endl;
 
-	if( !db->copy("main_history", tblcols, ibuf) )
+	if( !writeInsertBufferToDB("main_history", tblcols, ibuf) )
 	{
 		dbcrit << myname << "(flushInsertBuffer): error: " << db->error() << endl;
 	}
@@ -231,6 +230,22 @@ void DBServer_PostgreSQL::flushInsertBuffer()
 		ibuf.clear();
 		ibufSize = 0;
 	}
+}
+//--------------------------------------------------------------------------------------------
+void DBServer_PostgreSQL::addRecord( const PostgreSQLInterface::Record&& rec )
+{
+	ibuf.emplace_back( std::move(rec) );
+	ibufSize++;
+
+	if( ibufSize >= ibufMaxSize )
+		flushInsertBuffer();
+}
+//--------------------------------------------------------------------------------------------
+bool DBServer_PostgreSQL::writeInsertBufferToDB( const std::string& tableName
+		, const std::vector<std::string>& colNames
+		, const InsertBuffer& wbuf )
+{
+	return db->copy(tableName, colNames, wbuf);
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_PostgreSQL::sensorInfo( const uniset::SensorMessage* si )
@@ -258,11 +273,7 @@ void DBServer_PostgreSQL::sensorInfo( const uniset::SensorMessage* si )
 			std::to_string(si->node),
 		};
 
-		ibuf.emplace_back(std::move(rec));
-		ibufSize++;
-
-		if( ibufSize >= ibufMaxSize )
-			flushInsertBuffer();
+		addRecord( std::move(rec) );
 	}
 	catch( const uniset::Exception& ex )
 	{
@@ -360,7 +371,7 @@ void DBServer_PostgreSQL::initDBServer()
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_PostgreSQL::createTables( std::shared_ptr<PostgreSQLInterface>& db )
+void DBServer_PostgreSQL::createTables( const std::shared_ptr<PostgreSQLInterface>& db )
 {
 	auto conf = uniset_conf();
 
@@ -464,6 +475,31 @@ bool DBServer_PostgreSQL::deactivateObject()
 	return DBServer::deactivateObject();
 }
 //--------------------------------------------------------------------------------------------
+string DBServer_PostgreSQL::getMonitInfo( const string& params )
+{
+	ostringstream inf;
+
+	inf << "Database: "
+		<< "[ ping=" << PingTime
+		<< " reconnect=" << ReconnectTime
+		<< " qbufSize=" << qbufSize
+		<< " ]" << endl
+		<< "  connection: " << (connect_ok ? "OK" : "FAILED") << endl;
+	{
+		std::lock_guard<std::mutex> lock(mqbuf);
+		inf << " buffer size: " << qbuf.size() << endl;
+	}
+	inf << "   lastError: " << db->error() << endl;
+
+	inf	<< "Insert buffer: "
+		<< "[ ibufMaxSize=" << ibufMaxSize
+		<< " ibufSize=" << ibufSize
+		<< " ibufSyncTimeout=" << ibufSyncTimeout
+		<< " ]"	<< endl;
+
+	return inf.str();
+}
+//--------------------------------------------------------------------------------------------
 std::shared_ptr<DBServer_PostgreSQL> DBServer_PostgreSQL::init_dbserver( int argc, const char* const* argv,
 		const std::string& prefix )
 {
@@ -514,5 +550,10 @@ void DBServer_PostgreSQL::help_print( int argc, const char* const* argv )
 	cout << "--prefix-buffer-last-remove  - Delete the last recording buffer overflow." << endl;
 
 	cout << DBServer::help_print() << endl;
+}
+// -----------------------------------------------------------------------------
+bool DBServer_PostgreSQL::isConnectOk() const
+{
+	return connect_ok;
 }
 // -----------------------------------------------------------------------------

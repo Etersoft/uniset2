@@ -537,9 +537,7 @@ namespace uniset
 		else
 		{
 			dinfo << "(smemory): init from configure: " << conf->getConfFileName() << endl;
-			UniXML::iterator it(conf->getXMLSensorsSection());
-			it.goChildren();
-			ioconf = make_shared<IOConfig_XML>(conf->getConfXML(), conf, it);
+			ioconf = make_shared<IOConfig_XML>(conf->getConfXML(), conf, conf->getXMLSensorsSection());
 		}
 
 		uniset::ObjectId ID = conf->getControllerID(conf->getArgParam("--smemory-id", "SharedMemory"));

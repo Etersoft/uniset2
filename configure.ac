@@ -179,6 +179,20 @@ fi
 
 AM_CONDITIONAL(DISABLE_RRD, test ${buildrrd} = false)
 
+#check opentsdb support
+AC_MSG_CHECKING([OpenTSDB backend])
+buildtsdb=true
+AC_ARG_ENABLE(opentsdb, AC_HELP_STRING([--disable-opentsdb], [disable OpenTSDB backend]),
+[ if test $enableval = yes; then buildtsdb=true; else buildtsdb=false; fi],[ buildtsdb=true; ])
+
+if test ${buildtsdb} = true; then
+	AC_MSG_RESULT([enabled])
+else
+	AC_MSG_RESULT([disabled])
+fi
+
+AM_CONDITIONAL(DISABLE_OPENTSDB, test ${buildtsdb} = false)
+
 #check io support
 AC_MSG_CHECKING([io support])
 buildio=true
@@ -557,6 +571,8 @@ AC_CONFIG_FILES([Makefile
 				 extensions/RRDServer/libUniSet2RRDServer.pc
 				 extensions/MQTTPublisher/Makefile
 				 extensions/MQTTPublisher/libUniSet2MQTTPublisher.pc
+				 extensions/Backend-OpenTSDB/Makefile
+				 extensions/Backend-OpenTSDB/libUniSet2BackendOpenTSDB.pc
 				 extensions/tests/Makefile
 				 extensions/tests/SMemoryTest/Makefile
 				 extensions/tests/MBSlaveTest/Makefile
