@@ -145,6 +145,11 @@ bool DBServer_PostgreSQL::writeToBase( const string& query )
 				   << ") overflow! lost query: " << qlost << endl;
 		}
 
+		// Надо подумать, что тут лучше возвращать true или false
+		// вроде бы фактически запись не сделали, но запрос поместили в буфер
+		// А вызывающая сторона может посчитать, что раз вернули false, значит
+		// можно/нужно потом запрос повторить..
+
 		return false;
 	}
 
