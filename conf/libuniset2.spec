@@ -402,11 +402,12 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %if_enabled sqlite
 %files extension-sqlite
 %_bindir/%oname-sqlite-*dbserver
-%_libdir/*-sqlite.so*
+%_libdir/*-sqlite.so.*
 
 %files extension-sqlite-devel
 %_pkgconfigdir/libUniSet2SQLite.pc
 %_includedir/%oname/extensions/sqlite/
+%_libdir/*-sqlite.so
 
 %if_enabled logdb
 %files extension-logdb
@@ -417,7 +418,7 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %if_enabled opentsdb
 %files extension-opentsdb
 %_bindir/%oname-backend-opentsdb*
-%_libdir/libUniSet2BackendOpenTSDB.so*
+%_libdir/libUniSet2BackendOpenTSDB.so.*
 
 %files extension-opentsdb-devel
 %_pkgconfigdir/libUniSet2BackendOpenTSDB.pc
@@ -428,17 +429,19 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %if_enabled pgsql
 %files extension-pgsql
 %_bindir/%oname-pgsql-*dbserver
-%_libdir/*-pgsql.so*
+%_libdir/*-pgsql.so.*
 
 %files extension-pgsql-devel
 %_pkgconfigdir/libUniSet2PostgreSQL.pc
 %_includedir/%oname/extensions/pgsql/
+%_libdir/*-pgsql.so
 %endif
 
 %if_enabled python
 %files -n python-module-%oname
 %python_sitelibdir/*
 %python_sitelibdir_noarch/%oname/*
+%dir %python_sitelibdir_noarch/%oname
 %endif
 
 %if_enabled netdata
@@ -521,6 +524,7 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %files extension-common-devel
 %dir %_includedir/%oname/extensions
 %_includedir/%oname/extensions/*.*
+%exclude %_includedir/%oname/extensions/BackendOpenTSDB.h
 %_libdir/libUniSet2Extensions.so
 %_libdir/libUniSet2MB*.so
 %_libdir/libUniSet2RT*.so
