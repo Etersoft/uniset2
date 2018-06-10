@@ -349,6 +349,11 @@ Libraries needed to develop for uniset MQTT extension
 %makeinstall_std
 rm -f %buildroot%_libdir/*.la
 
+%if_enabled docs
+rm -f %buildroot%_docdir/%oname/html/*.map
+rm -f %buildroot%_docdir/%oname/html/*.md5
+%endif
+
 %files utils
 %_bindir/%oname-admin
 %_bindir/%oname-mb*
