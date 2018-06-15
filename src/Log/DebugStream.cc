@@ -171,6 +171,8 @@ std::ostream& DebugStream::printDate(Debug::type t, char brk) noexcept
 {
 	if(dt && t)
 	{
+		uniset::ios_fmt_restorer ifs(*this);
+
 		std::time_t tv = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 		std::tm tms = *std::localtime(&tv);
 
