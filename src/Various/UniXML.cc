@@ -379,7 +379,7 @@ xmlNode* UniXML::extFindNode( xmlNode* node, int depth, int width, const string&
 	return NULL;
 }
 // -----------------------------------------------------------------------------
-xmlNode* UniXML::findNodeLevel1( xmlNode* root, const string& nodename, const string& nm )
+xmlNode* UniXML::findNodeLevel1( xmlNode* root, const string& nodename, const string& nm ) const
 {
 	UniXML::iterator it(root);
 
@@ -628,7 +628,7 @@ bool UniXML_iterator::find( const std::string& searchnode, bool deepfind ) noexc
 	return false;
 }
 // -------------------------------------------------------------------------
-xmlNode* UniXML_iterator::findX( xmlNode* root, const std::string& searchnode, bool deepfind ) noexcept
+xmlNode* UniXML_iterator::findX( xmlNode* root, const std::string& searchnode, bool deepfind ) const noexcept
 {
 	if( root == NULL )
 		return NULL;

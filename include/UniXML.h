@@ -58,7 +58,7 @@ namespace uniset
 
 			bool findName( const std::string& node, const std::string& searchname, bool deepfind = true ) noexcept;
 			bool find( const std::string& searchnode, bool deepfind = true) noexcept;
-			xmlNode* findX( xmlNode* root, const std::string& searchnode, bool deepfind = true ) noexcept;
+			xmlNode* findX( xmlNode* root, const std::string& searchnode, bool deepfind = true ) const noexcept;
 
 			/*! Перейти к следующему узлу. Возвращает false, если некуда перейти */
 			bool goNext() noexcept;
@@ -187,7 +187,7 @@ namespace uniset
 			// Функция поиска по текущему уровню (без рекурсии для дочерних узлов)
 			// root  указывается исходный, внутри функции осуществляется переход к списку дочерних узлов
 			// (другими словами делать goChildren() не надо)
-			xmlNode* findNodeLevel1( xmlNode* root, const std::string& nodename, const std::string& nm = "" );
+			xmlNode* findNodeLevel1( xmlNode* root, const std::string& nodename, const std::string& nm = "" ) const;
 
 
 		protected:
