@@ -18,5 +18,7 @@ with open source third-party libraries. UniSet provide the consistent interface 
 add-on components and third-party libraries. Python wrapper helps in using the library
 in python scripts.
 
-More information in Russian:
-http://wiki.etersoft.ru/UniSet
+More information:
+* [RU] https://habr.com/post/278535/
+* [RU] https://habr.com/post/171711/
+* [RU] https://wiki.etersoft.ru/UniSet2/docs/
