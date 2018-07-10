@@ -159,8 +159,11 @@ namespace uniset
 			// Добавить новый дочерний узел
 			static xmlNode* createChild(xmlNode* node, const std::string& title, const std::string& text);
 
-			// Добавить следующий узел
+			// Добавить следующий узел (добавление в конец списка узлов на уровне node)
 			static xmlNode* createNext(xmlNode* node, const std::string& title, const std::string& text);
+
+			// Создать новый узел следующим за node
+			static xmlNode* insertNext(xmlNode* node, const std::string& title, const std::string& text);
 
 			// Удалить указанный узел и все вложенные узлы
 			static void removeNode(xmlNode* node);

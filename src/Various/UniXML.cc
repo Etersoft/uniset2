@@ -159,10 +159,7 @@ string UniXML::getProp(const xmlNode* node, const string& name) noexcept
 	xmlChar* text = ::xmlGetProp((xmlNode*)node, (const xmlChar*)name.c_str());
 
 	if( text == NULL )
-	{
-		xmlFree(text);
 		return "";
-	}
 
 	try
 	{
@@ -224,10 +221,19 @@ xmlNode* UniXML::createChild(xmlNode* node, const string& title, const string& t
 	return ::xmlNewChild(node, NULL, (const xmlChar*)title.c_str(), (const xmlChar*)text.c_str());
 }
 // -----------------------------------------------------------------------------
-xmlNode* UniXML::createNext(xmlNode* node, const string& title, const string& text)
+xmlNode* UniXML::createNext( xmlNode* node, const string& title, const string& text )
 {
 	if( node->parent )
 		return createChild(node->parent, title, text);
+
+	return 0;
+}
+// -----------------------------------------------------------------------------
+xmlNode* UniXML::insertNext( xmlNode* node, const string& title, const string& text )
+{
+	xmlNode* newNode = createNext(node,title,text);
+	if( newNode )
+		return ::xmlAddNextSibling(node,newNode);
 
 	return 0;
 }
