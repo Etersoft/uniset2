@@ -223,6 +223,9 @@ void UniExchange::execute()
 			ptUpdate.reset();
 		}
 
+		if( cancelled )
+			break;
+
 		msleep(polltime);
 	}
 }
