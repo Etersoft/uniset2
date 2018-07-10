@@ -712,8 +712,8 @@ void UNetExchange::askSensors( UniversalIO::UIOCommand cmd )
 			<< "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение "
 			<< activateTimeout << " мсек";
 
-		unetcrit << err.str() << endl;
-		kill(SIGTERM, getpid());   // прерываем (перезапускаем) процесс...
+		unetcrit << err.str() << endl << flush;
+		uterminate();
 		throw SystemError(err.str());
 	}
 

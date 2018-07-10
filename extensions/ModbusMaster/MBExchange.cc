@@ -3021,7 +3021,7 @@ namespace uniset
 
 				if( devices.empty() )
 				{
-					mbcrit << myname << "(sysCommand): ************* ITEM MAP EMPTY! terminated... *************" << endl;
+					mbcrit << myname << "(sysCommand): ************* ITEM MAP EMPTY! terminated... *************" << endl << flush;
 					//					std::terminate();
 					uterminate();
 					return;
@@ -3056,7 +3056,7 @@ namespace uniset
 
 				if( !isProcActive() )
 				{
-					mbcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
+					mbcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl << flush;
 					uterminate();
 					return;
 				}
@@ -3132,7 +3132,7 @@ namespace uniset
 				<< "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение "
 				<< activateTimeout << " мсек";
 
-			mbcrit << err.str() << endl;
+			mbcrit << err.str() << endl << flush;
 			//			std::terminate();  // прерываем (перезапускаем) процесс...
 			uterminate();
 			return;

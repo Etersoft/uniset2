@@ -97,7 +97,7 @@ namespace uniset
 			typedef void(ThreadMaster::* Action)();
 
 			OmniThreadCreator( const std::shared_ptr<ThreadMaster>& m, Action a, bool undetached = false );
-			~OmniThreadCreator() {}
+			virtual ~OmniThreadCreator() {}
 
 			inline bool isRunning()
 			{

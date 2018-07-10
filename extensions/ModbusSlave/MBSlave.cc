@@ -582,7 +582,7 @@ namespace uniset
 
 		if( vaddr.empty() )
 		{
-			mbcrit << "(execute_rtu): Unknown my modbus addresses!" << endl;
+			mbcrit << "(execute_rtu): Unknown my modbus addresses!" << endl << flush;
 			//std::terminate();
 			uterminate();
 			return;
@@ -622,7 +622,7 @@ namespace uniset
 	{
 		if( !tcpserver )
 		{
-			mbcrit << myname << "(execute_tcp): DYNAMIC CAST ERROR (mbslot --> ModbusTCPServerSlot)" << std::endl;
+			mbcrit << myname << "(execute_tcp): DYNAMIC CAST ERROR (mbslot --> ModbusTCPServerSlot)" << std::endl << flush;
 			//			std::terminate();
 			uterminate();
 			return;
@@ -645,7 +645,7 @@ namespace uniset
 
 		if( vaddr.empty() )
 		{
-			mbcrit << "(execute_tcp): Unknown my modbus addresses!" << endl;
+			mbcrit << "(execute_tcp): Unknown my modbus addresses!" << endl << flush;
 			//			std::terminate();
 			uterminate();
 			return;
@@ -686,7 +686,8 @@ namespace uniset
 				{
 					mbcrit << myname << "(execute_tcp): error run tcpserver: "
 						   << tcpserver->getInetAddress()
-						   << ":" << tcpserver->getInetPort() << " err: not active.." << endl;
+						   << ":" << tcpserver->getInetPort() << " err: not active.." 
+						   << endl << flush;
 					//					std::terminate();
 					uterminate();
 					return;
@@ -947,7 +948,7 @@ namespace uniset
 			{
 				if( iomap.empty() )
 				{
-					mbcrit << myname << "(sysCommand): iomap EMPTY! terminated..." << endl;
+					mbcrit << myname << "(sysCommand): iomap EMPTY! terminated..." << endl << flush;
 					//					std::terminate();
 					uterminate();
 					return;
@@ -1049,8 +1050,8 @@ namespace uniset
 				<< "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение "
 				<< activateTimeout << " мсек";
 
-			mbcrit << err.str() << endl;
-			kill(SIGTERM, getpid());   // прерываем (перезапускаем) процесс...
+			mbcrit << err.str() << endl << flush;
+			uterminate();
 			throw SystemError(err.str());
 		}
 

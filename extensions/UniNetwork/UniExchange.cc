@@ -151,7 +151,7 @@ void UniExchange::execute()
 		err << myname << "(execute): Не дождались готовности SharedMemory к работе в течение "
 			<< smReadyTimeout << " мсек";
 
-		ucrit << err.str() << endl;
+		ucrit << err.str() << endl << flush;
 		//throw SystemError(err.str());
 		//std::terminate();
 		uterminate();

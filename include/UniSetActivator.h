@@ -72,10 +72,14 @@ namespace uniset
 
 			// запуск системы
 			// async = true - асинхронный запуск (создаётся отдельный поток).
-			void run( bool async );
+			// terminate_control = true - управление процессом завершения (обработка сигналов завершения)
+			void run( bool async, bool terminate_control = true );
 
 			// штатное завершение работы
 			void shutdown();
+
+			// ожидание завершения (если был запуск run(true))
+			void join();
 
 			// прерывание работы
 			void terminate();
@@ -96,7 +100,7 @@ namespace uniset
 
 		protected:
 
-			void work();
+			void mainWork();
 
 			// уносим в protected, т.к. Activator должен быть только один..
 			UniSetActivator();
@@ -111,6 +115,7 @@ namespace uniset
 			std::shared_ptr< OmniThreadCreator<UniSetActivator> > orbthr;
 
 			CORBA::ORB_var orb;
+			bool termControl = { true };
 
 #ifndef DISABLE_REST_API
 			std::shared_ptr<uniset::UHttp::UHttpServer> httpserv;
