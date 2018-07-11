@@ -58,7 +58,6 @@ int main( int argc, const char** argv )
 		dlogany << "(main): -------------- UDPReceiver START -------------------------\n\n";
 
 		act->run(false);
-		on_sigchild(SIGTERM);
 	}
 	catch( const uniset::Exception& ex )
 	{
@@ -69,6 +68,5 @@ int main( int argc, const char** argv )
 		dcrit << "(unetexchange): catch ..." << std::endl;
 	}
 
-	on_sigchild(SIGTERM);
 	return 0;
 }

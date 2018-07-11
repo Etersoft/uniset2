@@ -106,7 +106,7 @@ bool ProxyManager::activateObject()
 		}
 		catch( const uniset::Exception& ex )
 		{
-			ucrit << myname << "(activate): " << ex << endl;
+			ucrit << myname << "(activate): " << ex << endl << flush;
 			//std::terminate();
 			uterminate();
 		}

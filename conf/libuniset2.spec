@@ -26,7 +26,7 @@
 
 Name: libuniset2
 Version: 2.7
-Release: alt11.M80P.12
+Release: alt12.M80P.13
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -54,7 +54,8 @@ BuildRequires: libcomedi-devel
 %endif
 
 %if_enabled mysql
-BuildRequires: libmysqlclient-devel
+# build with mariadb 
+BuildRequires: libmariadb-devel
 %endif
 
 %if_enabled sqlite
@@ -545,8 +546,12 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
-* Sun Jun 10 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt11.M80P.12
+* Wed Jul 11 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt12.M80P.13
 - backport to ALTLinux p8 (by rpmbph script)
+
+* Wed Jul 11 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt13
+- (UActivator): refactoring the program termination process
+- minor fixes 
 
 * Sun Jun 10 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt12
 - spec cleanup

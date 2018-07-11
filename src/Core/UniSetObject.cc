@@ -760,9 +760,14 @@ namespace uniset
 		}
 		else
 		{
-			uinfo << myname << ": ?? не задан ObjectId...("
-				  << "myid=" << myid << " threadcreate=" << threadcreate
-				  << ")" << endl;
+			// выдаём предупреждение только если поток не отключён, но при этом не задан ID
+			if( threadcreate )
+			{
+				uinfo << myname << ": ?? не задан ObjectId...("
+					  << "myid=" << myid << " threadcreate=" << threadcreate
+					  << ")" << endl;
+			}
+
 			thread(false);
 		}
 

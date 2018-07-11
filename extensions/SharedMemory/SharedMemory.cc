@@ -270,7 +270,7 @@ namespace uniset
 
 				if( !activated  )
 				{
-					smcrit << myname << "(sysCommand): Don`t activate [timeout=" << activateTimeout << " msec]! TERMINATE.." << endl;
+					smcrit << myname << "(sysCommand): Don`t activate [timeout=" << activateTimeout << " msec]! TERMINATE.." << endl << flush;
 					//					std::terminate();
 					uterminate();
 					return;
@@ -463,9 +463,9 @@ namespace uniset
 				<< ") указан неверно ("
 				<< it.getProp("iotype") << ") должен быть 'AI'";
 
-			smcrit << msg.str() << endl;
-			kill(getpid(), SIGTERM);
-			//        throw NameNotFound(msg.str());
+			smcrit << msg.str() << endl << flush;
+			uterminate();
+			throw SystemError(msg.str());
 		};
 
 		HeartBeatInfo hi;
@@ -478,7 +478,7 @@ namespace uniset
 			{
 				ostringstream msg;
 				msg << "(SharedMemory::readItem): дискретный датчик (heartbeat_ds_name) связанный с " << it.getProp("name");
-				smwarn << msg.str() << endl;
+				smwarn << msg.str() << endl << flush;
 			}
 		}
 		else
@@ -492,9 +492,9 @@ namespace uniset
 
 				// Если уж задали имя для датчика, то он должен существовать..
 				// поэтому завершаем процесс, если не нашли..
-				smcrit << msg.str() << endl;
-				kill(getpid(), SIGTERM);
-				//            throw NameNotFound(msg.str());
+				smcrit << msg.str() << endl << flush;
+				uterminate();
+				throw SystemError(msg.str());
 			}
 		}
 
@@ -507,9 +507,9 @@ namespace uniset
 			msg << "(SharedMemory::readItem): НЕ УКАЗАН id для "
 				<< it.getProp("name") << " секция " << sec;
 
-			smcrit << msg.str() << endl;
-			kill(getpid(), SIGTERM);
-			//        throw NameNotFound(msg.str());
+			smcrit << msg.str() << endl << flush;
+			uterminate();
+			throw SystemError(msg.str());
 		};
 
 		// без проверки на дублирование т.к.
@@ -912,7 +912,7 @@ namespace uniset
 			{
 				ostringstream err;
 				err << myname << "(initFromReserv): Not found ID for '" << smName << "'";
-				smcrit << err.str() << endl;
+				smcrit << err.str() << endl << flush;
 				//				std::terminate();
 				uterminate();
 				return;
@@ -929,7 +929,7 @@ namespace uniset
 			{
 				ostringstream err;
 				err << myname << "(initFromReserv): Not found NodeID for '" << smNode << "'";
-				smcrit << err.str() << endl;
+				smcrit << err.str() << endl << flush;
 				//std::terminate();
 				uterminate();
 				return;

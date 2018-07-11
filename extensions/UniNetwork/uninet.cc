@@ -68,7 +68,7 @@ int main(int argc, const char** argv)
 		act->broadcast( sm.transport_msg() );
 		act->run(true);
 		uex->execute();
-		on_sigchild(SIGTERM);
+		act->join();
 		return 0;
 	}
 	catch( const std::exception& ex )
@@ -80,6 +80,5 @@ int main(int argc, const char** argv)
 		dcrit << "(uninetwork): catch(...)" << endl;
 	}
 
-	on_sigchild(SIGTERM);
 	return 1;
 }

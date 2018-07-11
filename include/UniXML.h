@@ -58,7 +58,7 @@ namespace uniset
 
 			bool findName( const std::string& node, const std::string& searchname, bool deepfind = true ) noexcept;
 			bool find( const std::string& searchnode, bool deepfind = true) noexcept;
-			xmlNode* findX( xmlNode* root, const std::string& searchnode, bool deepfind = true ) noexcept;
+			xmlNode* findX( xmlNode* root, const std::string& searchnode, bool deepfind = true ) const noexcept;
 
 			/*! Перейти к следующему узлу. Возвращает false, если некуда перейти */
 			bool goNext() noexcept;
@@ -159,8 +159,11 @@ namespace uniset
 			// Добавить новый дочерний узел
 			static xmlNode* createChild(xmlNode* node, const std::string& title, const std::string& text);
 
-			// Добавить следующий узел
+			// Добавить следующий узел (добавление в конец списка узлов на уровне node)
 			static xmlNode* createNext(xmlNode* node, const std::string& title, const std::string& text);
+
+			// Создать новый узел следующим за node
+			static xmlNode* insertNext(xmlNode* node, const std::string& title, const std::string& text);
 
 			// Удалить указанный узел и все вложенные узлы
 			static void removeNode(xmlNode* node);
@@ -187,7 +190,7 @@ namespace uniset
 			// Функция поиска по текущему уровню (без рекурсии для дочерних узлов)
 			// root  указывается исходный, внутри функции осуществляется переход к списку дочерних узлов
 			// (другими словами делать goChildren() не надо)
-			xmlNode* findNodeLevel1( xmlNode* root, const std::string& nodename, const std::string& nm = "" );
+			xmlNode* findNodeLevel1( xmlNode* root, const std::string& nodename, const std::string& nm = "" ) const;
 
 
 		protected:

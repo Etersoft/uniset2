@@ -150,7 +150,7 @@ void PassiveLProcessor::sysCommand( const uniset::SystemMessage* sm )
 		{
 			if( !shm->waitSMreadyWithCancellation(smReadyTimeout, cannceled) )
 			{
-				dcrit << myname << "(ERR): SM not ready. Terminated... " << endl;
+				dcrit << myname << "(ERR): SM not ready. Terminated... " << endl << flush;
 				//				std::terminate();
 				uterminate();
 				return;

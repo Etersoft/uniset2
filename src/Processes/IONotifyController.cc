@@ -772,7 +772,7 @@ void IONotifyController::readConf()
 		// Если дамп не удалось считать, значит что-то не то в configure.xml
 		// и безопаснее "вылететь", чем запустится, т.к. часть датчиков не будет работать
 		// как ожидается.
-		ucrit << myname << "(IONotifyController::readConf): " << ex.what() << endl;
+		ucrit << myname << "(IONotifyController::readConf): " << ex.what() << endl << flush;
 		//std::terminate(); // std::abort();
 		uterminate();
 	}

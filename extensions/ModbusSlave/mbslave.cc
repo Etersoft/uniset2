@@ -77,7 +77,6 @@ int main(int argc, const char** argv)
 		dlogany << "(main): -------------- MBSlave START -------------------------\n\n";
 
 		act->run(false);
-		//        on_sigchild(SIGTERM);
 		return 0;
 	}
 	catch( const std::exception& e )
@@ -91,7 +90,6 @@ int main(int argc, const char** argv)
 		cerr << (p ? p.__cxa_exception_type()->name() : "null") << std::endl;
 	}
 
-	//  on_sigchild(SIGTERM);
 	return 1;
 }
 // --------------------------------------------------------------------------

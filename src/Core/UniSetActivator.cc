@@ -54,6 +54,14 @@ static std::atomic_bool g_done = ATOMIC_VAR_INIT(0);
 
 static const int TERMINATE_TIMEOUT_SEC = 15; //  время отведенное на завершение процесса [сек]
 // ------------------------------------------------------------------------------------------
+struct ORBThreadDeleter
+{
+	void operator()( OmniThreadCreator<UniSetActivator>* p ) const
+	{
+		// не удаляем..
+	}
+};
+// ---------------------------------------------------------------------------
 namespace uniset
 {
 	UniSetActivatorPtr UniSetActivator::inst;
@@ -126,10 +134,11 @@ namespace uniset
 	}
 	// ------------------------------------------------------------------------------------------
 
-	void UniSetActivator::run( bool thread )
+	void UniSetActivator::run( bool thread, bool terminate_control  )
 	{
 		ulogsys << myname << "(run): создаю менеджер " << endl;
 
+		termControl = terminate_control;
 		auto aptr = std::static_pointer_cast<UniSetActivator>(get_ptr());
 
 		UniSetManager::initPOA(aptr);
@@ -144,7 +153,8 @@ namespace uniset
 		pman->activate();
 		msleep(50);
 
-		set_signals(true);
+		if( termControl )
+			set_signals(true);
 
 #ifndef DISABLE_REST_API
 
@@ -168,13 +178,13 @@ namespace uniset
 		if( thread )
 		{
 			uinfo << myname << "(run): запускаемся с созданием отдельного потока...  " << endl;
-			orbthr = make_shared< OmniThreadCreator<UniSetActivator> >( aptr, &UniSetActivator::work);
+			orbthr = std::shared_ptr<OmniThreadCreator<UniSetActivator>>(new OmniThreadCreator<UniSetActivator>(aptr, &UniSetActivator::mainWork), ORBThreadDeleter());
 			orbthr->start();
 		}
 		else
 		{
 			uinfo << myname << "(run): запускаемся без создания отдельного потока...  " << endl;
-			work();
+			mainWork();
 			shutdown();
 		}
 	}
@@ -189,14 +199,15 @@ namespace uniset
 			return;
 
 		active = false;
-		set_signals(false);
-
+		if( termControl )
 		{
-			std::unique_lock<std::mutex> lk(g_donemutex);
-			g_done = false;
-			g_finish_guard_thread = make_shared<std::thread>(on_finish_timeout);
+			set_signals(false);
+			{
+				std::unique_lock<std::mutex> lk(g_donemutex);
+				g_done = false;
+				g_finish_guard_thread = make_shared<std::thread>(on_finish_timeout);
+			}
 		}
-
 
 		ulogsys << myname << "(shutdown): deactivate...  " << endl;
 		deactivate();
@@ -238,9 +249,6 @@ namespace uniset
 			ucrit << myname << "(shutdown): " << ex.what() << endl;
 		}
 
-		if( orbthr )
-			orbthr->join();
-
 		{
 			std::unique_lock<std::mutex> lk(g_donemutex);
 			g_done = true;
@@ -250,6 +258,20 @@ namespace uniset
 
 		if( g_finish_guard_thread )
 			g_finish_guard_thread->join();
+	}
+	// ------------------------------------------------------------------------------------------
+	void UniSetActivator::join()
+	{
+		if( g_done )
+			return;
+
+		ulogsys << myname << "(join): ..." << endl;
+
+		std::unique_lock<std::mutex> lk(g_donemutex);
+		g_doneevent.wait(lk, []()
+		{
+			return (g_done == true);
+		} );
 	}
 	// ------------------------------------------------------------------------------------------
 	void UniSetActivator::terminate()
@@ -262,6 +284,7 @@ namespace uniset
 	{
 		auto act = UniSetActivator::Instance();
 		act->shutdown();
+		ulogsys << "******** activator_terminate finished **** " << endl;
 	}
 	// ------------------------------------------------------------------------------------------
 	void UniSetActivator::on_finish_timeout()
@@ -340,7 +363,7 @@ namespace uniset
 		//	sigaction(SIGSEGV, &act, &oact);
 	}
 	// ------------------------------------------------------------------------------------------
-	void UniSetActivator::work()
+	void UniSetActivator::mainWork()
 	{
 		ulogsys << myname << "(work): запускаем orb на обработку запросов..." << endl;
 
