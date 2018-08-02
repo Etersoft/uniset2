@@ -287,7 +287,6 @@ include/modbus/ModbusTCPServer.h
 include/modbus/ModbusTCPServerSlot.h
 include/modbus/ModbusTCPSession.h
 include/modbus/ModbusTypes.h
-include/CallbackTimer.h
 include/ComPort.h
 include/ComPort485F.h
 include/Configuration.1.h

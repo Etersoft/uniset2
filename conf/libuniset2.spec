@@ -26,7 +26,7 @@
 
 Name: libuniset2
 Version: 2.7
-Release: alt12.M80P.13
+Release: alt13.M80P.14
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -546,8 +546,12 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
-* Wed Jul 11 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt12.M80P.13
+* Thu Aug 02 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt13.M80P.14
 - backport to ALTLinux p8 (by rpmbph script)
+
+* Thu Aug 02 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt14
+- remove deprecated classes
+- (SM): fixed bug 'uninitialized time value'
 
 * Wed Jul 11 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt13
 - (UActivator): refactoring the program termination process

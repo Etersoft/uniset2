@@ -18,7 +18,6 @@ test_hourglass.cc \
 test_delaytimer.cc \
 test_unixml.cc \
 test_sscanf_hex.cc \
-test_callbacktimer.cc \
 test_trigger.cc \
 test_triggerOR.cc \
 test_triggerAND.cc \
