@@ -590,7 +590,27 @@ IOController::USensorInfo::operator=(IOController_i::SensorIOInfo& r)
 	(*this) = r;
 	return *this;
 }
+// ----------------------------------------------------------------------------------------
+IOController::USensorInfo::USensorInfo(): d_value(1), d_off_value(0)
+{
+	d_si.id = uniset::DefaultObjectId;
+	d_si.node = uniset::DefaultObjectId;
+	default_val = 0;
+	value = default_val;
+	real_value = default_val;
+	dbignore = false;
+	undefined = false;
+	blocked = false;
+	supplier = uniset::DefaultObjectId;
 
+	// стоит ли выставлять текущее время
+	// Мы теряем возможность понять (по tv_sec=0),
+	// что значение ещё ни разу никем не менялось
+	auto tm = uniset::now_to_timespec();
+	tv_sec = tm.tv_sec;
+	tv_nsec = tm.tv_nsec;
+}
+// ----------------------------------------------------------------------------------------
 IOController::USensorInfo&
 IOController::USensorInfo::operator=(IOController_i::SensorIOInfo* r)
 {

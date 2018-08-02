@@ -289,19 +289,7 @@ namespace uniset
 				USensorInfo( USensorInfo&& ) = default;
 				USensorInfo& operator=(USensorInfo&& ) = default;
 
-				USensorInfo(): d_value(1), d_off_value(0)
-				{
-					d_si.id = uniset::DefaultObjectId;
-					d_si.node = uniset::DefaultObjectId;
-					default_val = 0;
-					value = default_val;
-					real_value = default_val;
-					dbignore = false;
-					undefined = false;
-					blocked = false;
-					supplier = uniset::DefaultObjectId;
-				}
-
+				USensorInfo();
 				virtual ~USensorInfo() {}
 
 				USensorInfo(IOController_i::SensorIOInfo& r);
