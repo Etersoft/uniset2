@@ -98,7 +98,7 @@ int main( int argc, char** argv )
 	int use485 = 0;
 	int ncycles = -1;
 	MTR::MTRType mtrtype = MTR::mtUnknown;
-	string iaddr("127.0.0.1");
+	std::string iaddr;
 	int port = 502;
 	bool ignoreErrors = false;
 
