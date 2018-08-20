@@ -193,9 +193,23 @@ void RTUExchange::step()
 	}
 	catch(...) {}
 
-	poll();
+	try
+	{
+		poll();
+	}
+	catch( std::exception& ex )
+	{
+		mbwarn << myname << "(step): poll error:  " << ex.what() << endl;
+	}
 
-	MBExchange::step();
+	try
+	{
+		MBExchange::step();
+	}
+	catch( std::exception& ex )
+	{
+		mbwarn << myname << "(step): MBExchange::step error:  " << ex.what() << endl;
+	}
 }
 // -----------------------------------------------------------------------------
 bool RTUExchange::poll()
@@ -298,7 +312,7 @@ bool RTUExchange::poll()
 							  << " reg=" << ModbusRTU::dat2str(it->second->mbreg)
 							  << " for sensors: ";
 						print_plist(dlog()->level3(), it->second->slst);
-						dlog()->level3() << " err: " << ex << endl;
+						dlog()->level3(false) << " err: " << ex << endl;
 					}
 
 					if( it == rmap->end() )
