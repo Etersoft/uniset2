@@ -40,12 +40,13 @@ namespace uniset
 			т.к. это не сильно актуально, пока не переделываю.
 		*/
 
-		const uint32_t UNETUDP_MAGICNUM = 0x1337A1D; // идентификатор протокола
+		const uint32_t UNETUDP_MAGICNUM = 0x133EF54; // идентификатор протокола
 
 		struct UDPHeader
 		{
-			UDPHeader() noexcept: magic(UNETUDP_MAGICNUM), num(0), nodeID(0), procID(0), dcount(0), acount(0) {}
+			UDPHeader() noexcept;
 			uint32_t magic;
+			u_char _be_order; // 1 - BE byte order, 0 - LE byte order
 			size_t num;
 			long nodeID;
 			long procID;
