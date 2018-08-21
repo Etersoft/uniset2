@@ -18,15 +18,28 @@
 #include <endian.h>
 #include "UDPPacket.h"
 // -------------------------------------------------------------------------
-#if INTPTR_MAX == INT64_MAX
-#define LE_TO_H(x) le64toh(x)
-#define BE_TO_H(x) be64toh(x)
-
+// сделано так, чтобы макросы раскрывались в "пустоту" если не требуется преобразование
+// поэтому использование выглядит как LE_TO_H( myvar ), а не
+// myvar = LE_TO_H(myvar)
+// -------------------------------------------------------------------------
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#define LE_TO_H(x) {}
+#elif INTPTR_MAX == INT64_MAX
+#define LE_TO_H(x) x = le64toh(x)
 #elif INTPTR_MAX == INT32_MAX
-#define LE_TO_H(x) le32toh(x)
-#define BE_TO_H(x) be32toh(x)
+#define LE_TO_H(x) x = le32toh(x)
 #else
-#error UNET: Unknown pointer size
+#error UNET(LE_TO_H): Unknown byte order or size of pointer
+#endif
+
+#if __BYTE_ORDER == __BIG_ENDIAN
+#define BE_TO_H(x) {}
+#elif INTPTR_MAX == INT64_MAX
+#define BE_TO_H(x) x = be64toh(x)
+#elif INTPTR_MAX == INT32_MAX
+#define BE_TO_H(x) x = be32toh(x)
+#else
+#error UNET(BE_TO_H): Unknown byte order or size of pointer
 #endif
 // -------------------------------------------------------------------------
 namespace uniset
@@ -309,21 +322,21 @@ namespace uniset
 
 		if( be_order )
 		{
-			m.magic = BE_TO_H(m.magic);
-			m.num = BE_TO_H(m.num);
-			m.procID = BE_TO_H(m.procID);
-			m.nodeID = BE_TO_H(m.nodeID);
-			m.dcount = BE_TO_H(m.dcount);
-			m.acount = BE_TO_H(m.acount);
+			BE_TO_H(m.magic);
+			BE_TO_H(m.num);
+			BE_TO_H(m.procID);
+			BE_TO_H(m.nodeID);
+			BE_TO_H(m.dcount);
+			BE_TO_H(m.acount);
 		}
 		else
 		{
-			m.magic = LE_TO_H(m.magic);
-			m.num = LE_TO_H(m.num);
-			m.procID = LE_TO_H(m.procID);
-			m.nodeID = LE_TO_H(m.nodeID);
-			m.dcount = LE_TO_H(m.dcount);
-			m.acount = LE_TO_H(m.acount);
+			LE_TO_H(m.magic);
+			LE_TO_H(m.num);
+			LE_TO_H(m.procID);
+			LE_TO_H(m.nodeID);
+			LE_TO_H(m.dcount);
+			LE_TO_H(m.acount);
 		}
 
 		// set host byte order
@@ -376,22 +389,26 @@ namespace uniset
 		{
 			if( be_order )
 			{
-				m.a_dat[n].id = BE_TO_H(m.a_dat[n].id);
-				m.a_dat[n].val = BE_TO_H(m.a_dat[n].val);
+				BE_TO_H(m.a_dat[n].id);
+				BE_TO_H(m.a_dat[n].val);
 			}
 			else
 			{
-				m.a_dat[n].id = LE_TO_H(m.a_dat[n].id);
-				m.a_dat[n].val = LE_TO_H(m.a_dat[n].val);
+				LE_TO_H(m.a_dat[n].id);
+				LE_TO_H(m.a_dat[n].val);
 			}
 		}
 
 		for( size_t n = 0; n < m.dcount; n++ )
 		{
 			if( be_order )
-				m.d_id[n] = BE_TO_H(m.d_id[n]);
+			{
+				BE_TO_H(m.d_id[n]);
+			}
 			else
-				m.d_id[n] = LE_TO_H(m.d_id[n]);
+			{
+				LE_TO_H(m.d_id[n]);
+			}
 		}
 
 		return i + sz;
