@@ -43,7 +43,7 @@
 			<item id="100" iotype="DI" name="TestMode_S" textname="Test sensor"/>
 
 			<item id="1" iotype="DI" name="Node1_Not_Respond_S" textname="Node1 not respond"/>
-			<item id="2" iotype="AI" name="AI1_S" textname="AI sensor 1" unet="1" default="1"/>
+			<item id="2" iotype="AI" name="AI1_S" textname="AI sensor 1" unet="1" default="1" undefined_value="65635"/>
 			<item id="3" iotype="AI" name="AI2_S" textname="AI sensor 2" unet="1" default="2"/>
 			<item id="4" iotype="AI" name="AI3_S" textname="AI sensor 3" unet="1" default="3"/>
 			<item id="5" iotype="AI" name="AI4_S" textname="AI sensor 4" unet="1" default="4"/>

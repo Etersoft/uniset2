@@ -468,3 +468,41 @@ TEST_CASE("[UNetUDP]: switching channels", "[unetudp][chswitch]")
 	REQUIRE( ui->getValue(node1_numchannel_as) == 1 );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: check undefined value", "[unetudp][sender]")
+{
+	InitTest();
+
+	UniSetUDP::UDPMessage pack = receive();
+
+	ui->setValue(2, 110);
+	REQUIRE( ui->getValue(2) == 110 );
+	msleep(600);
+	pack = receive();
+
+	REQUIRE( pack.num != 0 );
+	REQUIRE( pack.asize() == 4 );
+	REQUIRE( pack.dsize() == 2 );
+	REQUIRE( pack.a_dat[0].val == 110 );
+
+	IOController_i::SensorInfo si;
+	si.id = 2;
+	si.node = uniset_conf()->getLocalNode();
+	ui->setUndefinedState(si, true, 6000 /* TestProc */ );
+	msleep(600);
+	pack = receive();
+
+	REQUIRE( pack.num != 0 );
+	REQUIRE( pack.asize() == 4 );
+	REQUIRE( pack.dsize() == 2 );
+	REQUIRE( pack.a_dat[0].val == 65635 );
+
+	ui->setUndefinedState(si, false, 6000 /* TestProc */ );
+	msleep(600);
+	pack = receive();
+
+	REQUIRE( pack.num != 0 );
+	REQUIRE( pack.asize() == 4 );
+	REQUIRE( pack.dsize() == 2 );
+	REQUIRE( pack.a_dat[0].val == 110 );
+}
+// -----------------------------------------------------------------------------

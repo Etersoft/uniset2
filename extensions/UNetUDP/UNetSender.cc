@@ -152,8 +152,27 @@ namespace uniset
 		for( auto && it : items )
 		{
 			UItem& i = it.second;
-			long value = shm->localGetValue(i.ioit, i.id);
-			updateItem(i, value);
+
+			try
+			{
+				long value = shm->localGetValue(i.ioit, i.id);
+				updateItem(i, value);
+			}
+			catch( IOController_i::Undefined& ex )
+			{
+				unetwarn << myname << "(updateFromSM): sid=" << i.id
+						 << " undefined state..." << endl;
+
+				if( i.undefined_value != not_specified_value )
+					updateItem( i, i.undefined_value );
+			}
+			catch( std::exception& ex )
+			{
+				unetwarn << myname << "(updateFromSM): " << ex.what() << endl;
+
+				if( i.undefined_value != not_specified_value )
+					updateItem( i, i.undefined_value );
+			}
 		}
 	}
 	// -----------------------------------------------------------------------------
@@ -293,7 +312,6 @@ namespace uniset
 			if( packetnum == 0 )
 				packetnum = 1;
 
-
 			if( !udp || !udp->poll( UniSetTimer::millisecToPoco(writeTimeout), Poco::Net::Socket::SELECT_WRITE) )
 				return;
 
@@ -398,6 +416,9 @@ namespace uniset
 		UItem p;
 		p.iotype = uniset::getIOType(it.getProp("iotype"));
 		p.pack_sendfactor = priority;
+
+		if( !it.getProp("undefined_value").empty() )
+			p.undefined_value = it.getIntProp("undefined_value");
 
 		if( p.iotype == UniversalIO::UnknownIOType )
 		{
