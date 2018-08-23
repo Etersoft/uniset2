@@ -161,10 +161,8 @@ namespace uniset
 			catch( IOController_i::Undefined& ex )
 			{
 				unetwarn << myname << "(updateFromSM): sid=" << i.id
-						 << " undefined state..." << endl;
-
-				if( i.undefined_value != not_specified_value )
-					updateItem( i, i.undefined_value );
+						 << " undefined state (value=" << ex.value << ")." << endl;
+				updateItem( i, ex.value );
 			}
 			catch( std::exception& ex )
 			{

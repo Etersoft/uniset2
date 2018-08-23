@@ -213,6 +213,9 @@ namespace uniset
 		inf->undefined = false;
 		inf->real_value = inf->value;
 
+		if( !it.getProp("undefined_value").empty() )
+			inf->undef_value = it.getIntProp("undefined_value");
+
 		string d_txt( it.getProp("depend") );
 
 		if( !d_txt.empty() )

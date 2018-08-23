@@ -769,7 +769,8 @@ namespace uniset
 				}
 				catch( IOController_i::Undefined& ex )
 				{
-					hit.add( numeric_limits<long>::max(), it.size );
+					hit.add( ex.value, it.size );
+					// hit.add( numeric_limits<long>::max(), it.size );
 				}
 				catch(...) {}
 			}

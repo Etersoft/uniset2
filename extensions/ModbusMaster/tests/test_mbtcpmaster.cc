@@ -741,6 +741,31 @@ TEST_CASE("MBTCPMaster: safe mode (resetIfNotRespond)", "[modbus][safemode][mbma
 	REQUIRE( ui->getValue(1054) == 1 );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: udefined value", "[modbus][undefined][mbmaster][mbtcpmaster]")
+{
+	InitTest();
+
+	mbs->setReply(120);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1070) == 120 );
+
+	mbs->setReply(10);
+	msleep(polltime + 200);
+
+	try
+	{
+		ui->getValue(1070);
+	}
+	catch( IOController_i::Undefined& ex )
+	{
+		REQUIRE( ex.value == 65535 );
+	}
+
+	mbs->setReply(120);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1070) == 120 );
+}
+// -----------------------------------------------------------------------------
 #if 0
 // -----------------------------------------------------------------------------
 static bool init_iobase( IOBase* ib, const std::string& sensor )

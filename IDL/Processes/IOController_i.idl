@@ -50,6 +50,7 @@ interface IOController_i : UniSetManager_i
     */
     exception Undefined
     {
+        long value; // текущее значение (может быть специальным undefined_value)
     };
 
     /*! Информация о датчике */
