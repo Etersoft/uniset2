@@ -125,6 +125,9 @@ unsigned char ComPort485F::m_receiveByte( bool wait )
 				{
 					rc = ::read(fd, tbuf, sizeof(tbuf));
 
+					if( rc < 0 && errno != EAGAIN )
+						break;
+
 					if( rc > 0 )
 					{
 						if( remove_echo(tbuf, rc) )
@@ -143,6 +146,9 @@ unsigned char ComPort485F::m_receiveByte( bool wait )
 			for( unsigned int i = 0; i < 3; i++ )
 			{
 				rc = ::read(fd, tbuf, sizeof(tbuf));
+
+				if( rc < 0 && errno != EAGAIN )
+					break;
 
 				if( rc > 0 )
 				{
@@ -301,6 +307,9 @@ void ComPort485F::m_read( timeout_t tmsec )
 		if( rc > 0 )
 		{
 			rc = ::read(fd, tbuf, sizeof(tbuf));
+
+			if( rc < 0 && errno != EAGAIN )
+				break;
 
 			if( rc > 0 )
 			{
