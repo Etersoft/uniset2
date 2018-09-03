@@ -50,7 +50,7 @@ case "$1" in
 esac
 shift
 
-if [ -n "OPORT" ]
+if [ -n "$OPORT" ]
 then
 	echo "Uniset default omni port for user '$USER': $OMNIPORT"
 	exit 0
