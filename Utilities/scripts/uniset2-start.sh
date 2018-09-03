@@ -21,6 +21,7 @@ Usage: ${0##*/} [options] programm [arguments]
 
 Valid options are:
   -h, --help	display help screen
+  -o, --omni-port     print default omni port for current user
   -f, --foreground   start programm on foreground. Default 'background'.
 
   -g, --gdb     start programm with gdb
@@ -39,14 +40,21 @@ EOF
 #parse command line options
 case "$1" in
 	-h|--help) print_usage 0;;
-    -f|--foreground) FG=1;;
+	-f|--foreground) FG=1;;
+	-o|--omni-port) OPORT="omni-port";;
 	-vmem|--vg-memcheck) DBG="mem";;
 	-vcall|--vg-callgrind) DBG="call";;
 	-vcache|--vg-cachegrind) DBG="cache";;
-    -vhel|--vg-helgrind) DBG="hel";;
+	-vhel|--vg-helgrind) DBG="hel";;
 	-g|--gdb) DBG="gdb";;
 esac
 shift
+
+if [ -n "OPORT" ]
+then
+	echo "Uniset default omni port for user '$USER': $OMNIPORT"
+	exit 0
+fi
 
 if [ -n "$DBG" ]
 then
