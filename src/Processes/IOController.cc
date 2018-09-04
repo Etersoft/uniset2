@@ -163,7 +163,11 @@ long IOController::localGetValue( std::shared_ptr<USensorInfo>& usi )
 		uniset_rwmutex_rlock lock(usi->val_lock);
 
 		if( usi->undefined )
-			throw IOController_i::Undefined();
+		{
+			auto ex = IOController_i::Undefined();
+			ex.value = usi->value;
+			throw ex;
+		}
 
 		return usi->value;
 	}
@@ -198,10 +202,19 @@ void IOController::localSetUndefinedState( IOStateList::iterator& li,
 
 	bool changed = false;
 	{
+		auto usi = li->second;
 		// lock
-		uniset_rwmutex_wrlock lock(li->second->val_lock);
-		changed = (li->second->undefined != undefined);
-		li->second->undefined = undefined;
+		uniset_rwmutex_wrlock lock(usi->val_lock);
+		changed = (usi->undefined != undefined);
+		usi->undefined = undefined;
+		if( usi->undef_value != not_specified_value )
+		{
+			if( undefined )
+				usi->value = usi->undef_value;
+			else
+				usi->value = usi->real_value;
+		}
+
 	}    // unlock
 
 	// сперва локальные события...

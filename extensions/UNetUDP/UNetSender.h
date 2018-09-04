@@ -20,6 +20,7 @@
 #include <ostream>
 #include <string>
 #include <vector>
+#include <limits>
 #include <unordered_map>
 #include "UniSetObject.h"
 #include "Trigger.h"
@@ -76,6 +77,8 @@ namespace uniset
 
 			typedef size_t sendfactor_t;
 
+			static const long not_specified_value = { std::numeric_limits<long>::max() };
+
 			struct UItem
 			{
 				UItem():
@@ -91,6 +94,7 @@ namespace uniset
 				size_t pack_num;
 				size_t pack_ind;
 				sendfactor_t pack_sendfactor = { 0 };
+				long undefined_value = { not_specified_value };
 				friend std::ostream& operator<<( std::ostream& os, UItem& p );
 			};
 

@@ -14,16 +14,42 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // -------------------------------------------------------------------------
+#include <cstdint>
+#include <endian.h>
 #include "UDPPacket.h"
+// -------------------------------------------------------------------------
+// сделано так, чтобы макросы раскрывались в "пустоту" если не требуется преобразование
+// поэтому использование выглядит как LE_TO_H( myvar ), а не
+// myvar = LE_TO_H(myvar)
+// -------------------------------------------------------------------------
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#define LE_TO_H(x) {}
+#elif INTPTR_MAX == INT64_MAX
+#define LE_TO_H(x) x = le64toh(x)
+#elif INTPTR_MAX == INT32_MAX
+#define LE_TO_H(x) x = le32toh(x)
+#else
+#error UNET(LE_TO_H): Unknown byte order or size of pointer
+#endif
+
+#if __BYTE_ORDER == __BIG_ENDIAN
+#define BE_TO_H(x) {}
+#elif INTPTR_MAX == INT64_MAX
+#define BE_TO_H(x) x = be64toh(x)
+#elif INTPTR_MAX == INT32_MAX
+#define BE_TO_H(x) x = be32toh(x)
+#else
+#error UNET(BE_TO_H): Unknown byte order or size of pointer
+#endif
 // -------------------------------------------------------------------------
 namespace uniset
 {
-	// -----------------------------------------------------------------------------
+	// ---------------------------------------------------------------------
 	using namespace std;
 	using namespace UniSetUDP;
-	// -----------------------------------------------------------------------------
+	// ---------------------------------------------------------------------
 #define USE_CRC_TAB 1 // при расчёте использовать таблицы
-	// -------------------------------------------------------------------------
+	// ---------------------------------------------------------------------
 #ifdef USE_CRC_TAB
 	static unsigned short crc_16_tab[] =
 	{
@@ -291,6 +317,37 @@ namespace uniset
 		memcpy(&m, &(p.data[i]), sizeof(UDPHeader));
 		i += sizeof(UDPHeader);
 
+		// byte order from packet
+		u_char be_order = m._be_order;
+
+		if( be_order )
+		{
+			BE_TO_H(m.magic);
+			BE_TO_H(m.num);
+			BE_TO_H(m.procID);
+			BE_TO_H(m.nodeID);
+			BE_TO_H(m.dcount);
+			BE_TO_H(m.acount);
+		}
+		else
+		{
+			LE_TO_H(m.magic);
+			LE_TO_H(m.num);
+			LE_TO_H(m.procID);
+			LE_TO_H(m.nodeID);
+			LE_TO_H(m.dcount);
+			LE_TO_H(m.acount);
+		}
+
+		// set host byte order
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+		m._be_order = 0;
+#elif __BYTE_ORDER == __BIG_ENDIAN
+		m. be_order = 1;
+#else
+#error UNET(getMessage): Unknown byte order!
+#endif
+
 		// проверяем наш ли пакет..
 		if( m.magic != UniSetUDP::UNETUDP_MAGICNUM )
 		{
@@ -326,6 +383,34 @@ namespace uniset
 
 		memcpy(m.d_dat, &(p.data[i]), sz);
 
+		// CONVERT DATA TO HOST BYTE ORDER
+		// -------------------------------
+		for( size_t n = 0; n < m.acount; n++ )
+		{
+			if( be_order )
+			{
+				BE_TO_H(m.a_dat[n].id);
+				BE_TO_H(m.a_dat[n].val);
+			}
+			else
+			{
+				LE_TO_H(m.a_dat[n].id);
+				LE_TO_H(m.a_dat[n].val);
+			}
+		}
+
+		for( size_t n = 0; n < m.dcount; n++ )
+		{
+			if( be_order )
+			{
+				BE_TO_H(m.d_id[n]);
+			}
+			else
+			{
+				LE_TO_H(m.d_id[n]);
+			}
+		}
+
 		return i + sz;
 	}
 	// -----------------------------------------------------------------------------
@@ -337,5 +422,22 @@ namespace uniset
 		crc[2] = makeCRC( (unsigned char*)(d_dat), sizeof(d_dat) );
 		return makeCRC( (unsigned char*)(&crc), sizeof(crc) );
 	}
+
+	UDPHeader::UDPHeader() noexcept
+		: magic(UNETUDP_MAGICNUM)
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+		, _be_order(0)
+#elif __BYTE_ORDER == __BIG_ENDIAN
+		, _be_order(1)
+#else
+#error UNET: Unknown byte order!
+#endif
+		, num(0)
+		, nodeID(0)
+		, procID(0)
+		, dcount(0)
+		, acount(0)
+	{}
+
 	// -----------------------------------------------------------------------------
 } // end of namespace uniset

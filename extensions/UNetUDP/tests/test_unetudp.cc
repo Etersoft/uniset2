@@ -56,7 +56,7 @@ void InitTest()
 // -----------------------------------------------------------------------------
 // pnum - минималный номер ожидаемого пакета ( 0 - любой пришедщий )
 // ncycle - сколько пакетов разрешено "пропустить" прежде чем дождёмся нужного.. (чтобы не ждать бесконечно)
-static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 2000, int ncycle = 10 )
+static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 2000, int ncycle = 20 )
 {
 	UniSetUDP::UDPMessage pack;
 	UniSetUDP::UDPPacket buf;
@@ -75,6 +75,9 @@ static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 20
 		REQUIRE( pack.magic == UniSetUDP::UNETUDP_MAGICNUM );
 		ncycle--;
 	}
+
+	//	if( pnum > 0 && pack.num < pnum )
+	//		return UniSetUDP::UDPMessage(); // empty message
 
 	return pack;
 }
@@ -300,7 +303,7 @@ TEST_CASE("[UNetUDP]: check receiver", "[unetudp][receiver]")
 		REQUIRE( ui->getValue(11) == 0 );
 
 		send(pack);
-		msleep(500);
+		msleep(600);
 		REQUIRE( ui->getValue(8) == 100 );
 		REQUIRE( ui->getValue(9) == -100 );
 		REQUIRE( ui->getValue(10) == 1 );
@@ -318,7 +321,7 @@ TEST_CASE("[UNetUDP]: check receiver", "[unetudp][receiver]")
 		pack.addDData(10, false);
 		pack.addDData(11, true);
 		send(pack);
-		msleep(500);
+		msleep(600);
 		REQUIRE( ui->getValue(8) == 10 );
 		REQUIRE( ui->getValue(9) == -10 );
 		REQUIRE( ui->getValue(10) == 0 );
@@ -466,5 +469,44 @@ TEST_CASE("[UNetUDP]: switching channels", "[unetudp][chswitch]")
 	// т.к. на втором нет связи и мы не должны на него переключаться
 	msleep(recvTimeout * 2);
 	REQUIRE( ui->getValue(node1_numchannel_as) == 1 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: check undefined value", "[unetudp][sender]")
+{
+	InitTest();
+
+	UniSetUDP::UDPMessage pack0 = receive();
+
+	ui->setValue(2, 110);
+	REQUIRE( ui->getValue(2) == 110 );
+	msleep(600);
+
+	UniSetUDP::UDPMessage pack = receive( pack0.num + 1, 2000, 40 );
+
+	REQUIRE( pack.num != 0 );
+	REQUIRE( pack.asize() == 4 );
+	REQUIRE( pack.dsize() == 2 );
+	REQUIRE( pack.a_dat[0].val == 110 );
+
+	IOController_i::SensorInfo si;
+	si.id = 2;
+	si.node = uniset_conf()->getLocalNode();
+	ui->setUndefinedState(si, true, 6000 /* TestProc */ );
+	msleep(600);
+	pack = receive(pack.num + 1);
+
+	REQUIRE( pack.num != 0 );
+	REQUIRE( pack.asize() == 4 );
+	REQUIRE( pack.dsize() == 2 );
+	REQUIRE( pack.a_dat[0].val == 65635 );
+
+	ui->setUndefinedState(si, false, 6000 /* TestProc */ );
+	msleep(600);
+	pack = receive(pack.num + 1);
+
+	REQUIRE( pack.num != 0 );
+	REQUIRE( pack.asize() == 4 );
+	REQUIRE( pack.dsize() == 2 );
+	REQUIRE( pack.a_dat[0].val == 110 );
 }
 // -----------------------------------------------------------------------------

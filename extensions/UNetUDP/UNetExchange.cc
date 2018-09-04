@@ -103,7 +103,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 		nodes = conf->findNode(xml->getFirstNode(), nconfname);
 	}
 
-	unetinfo << myname << "(init):  init from <" << nconfname << ">" << endl;
+	unetinfo << myname << "(init): init from <" << nconfname << ">" << endl;
 
 	if( !nodes )
 		throw uniset::SystemError("(UNetExchange): Not found confnode <" + nconfname + ">");

@@ -24,6 +24,7 @@
 //---------------------------------------------------------------------------
 #include <unordered_map>
 #include <list>
+#include <limits>
 #include <sigc++/sigc++.h>
 #include "IOController_i.hh"
 #include "UniSetTypes.h"
@@ -59,15 +60,14 @@ namespace uniset
 
 			virtual uniset::SimpleInfo* getInfo( const char* userparam = "" ) override;
 
+			// ----------------------------------------------------------------
+			// Публичный (IDL) интерфейс IOController_i
+			// ----------------------------------------------------------------
+
 			virtual CORBA::Long getValue( uniset::ObjectId sid ) override;
 
-			//     -------------------- !!!!!!!!! ---------------------------------
-			//        Реализуются конкретным i/o контроллером
-			//        Не забывайте писать реализацию этих функций
 			virtual void setValue( uniset::ObjectId sid, CORBA::Long value,
 								   uniset::ObjectId sup_id = uniset::DefaultObjectId ) override;
-
-			//     ----------------------------------------------------------------
 			virtual void setUndefinedState( uniset::ObjectId sid,
 											CORBA::Boolean undefined,
 											uniset::ObjectId sup_id = uniset::DefaultObjectId ) override;
@@ -115,6 +115,8 @@ namespace uniset
 			// предварительное объявление..
 			struct USensorInfo;
 			typedef std::unordered_map<uniset::ObjectId, std::shared_ptr<USensorInfo>> IOStateList;
+
+			static const long not_specified_value = { std::numeric_limits<long>::max() };
 
 			// ================== Достпуные сигналы =================
 			/*!
@@ -329,6 +331,8 @@ namespace uniset
 				ThresholdExtList thresholds;
 
 				size_t nchanges = { 0 }; // количество изменений датчика
+
+				long undef_value = { not_specified_value }; // значение для "неопределённого состояния датчика"
 
 				// функция обработки информации об изменении состояния датчика, от которого зависит данный
 				void checkDepend( std::shared_ptr<USensorInfo>& d_usi, IOController* );
