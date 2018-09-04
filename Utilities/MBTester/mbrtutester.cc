@@ -34,6 +34,7 @@ static struct option longopts[] =
 	{ "speed", required_argument, 0, 's' },
 	{ "use485F", no_argument, 0, 'y' },
 	{ "num-cycles", required_argument, 0, 'l' },
+	{ "polltime", required_argument, 0, 'p' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -67,6 +68,7 @@ static void print_help()
 	printf("[-a|--myaddr] addr                - Modbus address for master. Default: 0x01.\n");
 	printf("[-s|--speed] speed                - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
 	printf("[-t|--timeout] msec               - Timeout. Default: 2000.\n");
+	printf("[-p|--polltime] msec              - Polling time. Default: 200 msec.\n");
 	printf("[-l|--num-cycles] num             - Number of cycles of exchange. Default: -1 - infinitely.\n");
 	printf("[-v|--verbose]                    - Print all messages to stdout\n");
 }
@@ -119,6 +121,7 @@ int main( int argc, char** argv )
 	string tofile("");
 	int use485 = 0;
 	int ncycles = -1;
+	int polltime = 200;
 	ModbusRTU::ModbusByte devID = 0;
 	ModbusRTU::ModbusByte objID = 0;
 
@@ -126,7 +129,7 @@ int main( int argc, char** argv )
 	{
 		while(1)
 		{
-			opt = getopt_long(argc, argv, "hva:w:z:m:r:x:c:b:d:s:t:qn:u:yl:t:o:e:", longopts, &optindex);
+			opt = getopt_long(argc, argv, "hva:w:z:m:r:x:c:b:d:s:t:qn:u:yl:t:o:e:p:", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -274,6 +277,10 @@ int main( int argc, char** argv )
 					tout = uni_atoi(optarg);
 					break;
 
+				case 'p':
+					polltime = uni_atoi(optarg);
+					break;
+
 				case 'a':
 					myaddr = ModbusRTU::str2mbAddr(optarg);
 					break;
@@ -298,7 +305,7 @@ int main( int argc, char** argv )
 					}
 				}
 				break;
-
+#if 0
 				case 'g':
 				{
 					if( cmd == cmdNOP )
@@ -318,7 +325,7 @@ int main( int argc, char** argv )
 					}
 				}
 				break;
-
+#endif
 				case 'v':
 					verb = 1;
 					break;
@@ -739,7 +746,7 @@ int main( int argc, char** argv )
 					break;
 			}
 
-			msleep(200);
+			msleep(polltime);
 		}
 	}
 	catch( ModbusRTU::mbException& ex )
