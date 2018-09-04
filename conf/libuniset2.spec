@@ -552,8 +552,6 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 - (UNetUDP): check byte order
 - (UNetUDP): encoding is not used if the byte order is the same as the system
 - (ComPort485F): added error handling for read
-- Добавил вывод на каком omni порте uniset2-start.sh будет запускать процессы
-- (scripts): fix error in uniset2-start.sh
 - (mbrtutest): added 'polltime' option eterbug #13154
 
 * Thu Aug 02 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt14
