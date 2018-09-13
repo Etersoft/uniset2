@@ -323,21 +323,21 @@ uniset::ObjectId <xsl:value-of select="$CLASSNAME"/>_SK::getSMTestID() const
 <xsl:param name="onlymsg"></xsl:param>	
 <xsl:if test="normalize-space(../../@msg)!='1'">
 <xsl:if test="normalize-space(@name)=$OID">
-		<xsl:if test="normalize-space($onlymsg)=''">
-		if( prev_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> != <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> )
-		</xsl:if>
-		{
-		<xsl:if test="normalize-space($onlymsg)=''">		
-//			cout &lt;&lt; myname &lt;&lt; ": (AO) change value <xsl:value-of select="../../@name"/> set " 
-//					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
-		</xsl:if>
-			// приходится искуственно использовать третий параметр, 
-			// что-бы компилятор выбрал
-			// правильный(для аналоговых) конструктор у SensorMessage
-			SensorMessage _sm( <xsl:value-of select="../../@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>);
-			_sm.sensor_type = UniversalIO::AI;
-			sensorInfo(&amp;_sm);
-		}
+	<xsl:if test="normalize-space($onlymsg)=''">
+	if( prev_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> != <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> )
+	</xsl:if>
+	{
+	<xsl:if test="normalize-space($onlymsg)=''">		
+//		cout &lt;&lt; myname &lt;&lt; ": (AO) change value <xsl:value-of select="../../@name"/> set " 
+//				&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
+	</xsl:if>
+		// приходится искуственно использовать третий параметр, 
+		// что-бы компилятор выбрал
+		// правильный(для аналоговых) конструктор у SensorMessage
+		SensorMessage _sm( <xsl:value-of select="../../@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>);
+		_sm.sensor_type = UniversalIO::AI;
+		sensorInfo(&amp;_sm);
+	}
 </xsl:if>
 </xsl:if>
 </xsl:template>

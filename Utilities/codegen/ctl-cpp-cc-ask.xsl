@@ -121,15 +121,15 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( uniset::ObjectId _sid, lo
 		return;
 		
 	<xsl:for-each select="//smap/item">
-		<xsl:if test="normalize-space(@vartype)='out'">
-		if( _sid == <xsl:value-of select="@name"/> )
-		{
-            mylog8 &lt;&lt; myname &lt;&lt; "(setValue): <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = " &lt;&lt;  _val &lt;&lt;  endl;
-			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>	= _val;
-				<xsl:call-template name="setdata"/>
-			return;
-		}
-		</xsl:if>
+	<xsl:if test="normalize-space(@vartype)='out'">
+	if( _sid == <xsl:value-of select="@name"/> )
+	{
+		mylog8 &lt;&lt; myname &lt;&lt; "(setValue): <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = " &lt;&lt;  _val &lt;&lt;  endl;
+		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>	= _val;
+		<xsl:call-template name="setdata"/>
+		return;
+	}
+	</xsl:if>
 	</xsl:for-each>
 
 	ui->setValue(_sid,_val);
@@ -289,20 +289,20 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 </xsl:template>
 
 <xsl:template name="setdata">
-			if( <xsl:value-of select="@name"/> != DefaultObjectId )
+		if( <xsl:value-of select="@name"/> != DefaultObjectId )
+		{
+			try
 			{
-				try
-				{
-					si.id 	= <xsl:value-of select="@name"/>;
-					si.node = node_<xsl:value-of select="@name"/>;
-					ui->setValue( si, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, getId() );
-				}
-				catch( uniset::Exception&amp; ex )
-				{
-                    mycrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
-					throw;
-				}
+				si.id 	= <xsl:value-of select="@name"/>;
+				si.node = node_<xsl:value-of select="@name"/>;
+				ui->setValue( si, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, getId() );
 			}
+			catch( uniset::Exception&amp; ex )
+			{
+				mycrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
+				throw;
+			}
+		}
 </xsl:template>
 
 <xsl:template name="setdata_value">

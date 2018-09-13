@@ -1372,9 +1372,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updatePreviousValues() noexcept
 void <xsl:value-of select="$CLASSNAME"/>_SK::checkSensors()
 {
 	<xsl:for-each select="//smap/item">
-		<xsl:choose>
-			<xsl:when test="normalize-space(@vartype)='in'"><xsl:call-template name="check_changes"/></xsl:when>
-		</xsl:choose>
+	<xsl:choose>
+	<xsl:when test="normalize-space(@vartype)='in'"><xsl:call-template name="check_changes"/></xsl:when>
+	</xsl:choose>
 	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
@@ -1821,9 +1821,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::checkSensors()
 {
 	// Опрашиваем все входы...
 	<xsl:for-each select="//sensors/item/consumers/consumer">
-		<xsl:choose>
-			<xsl:when test="normalize-space(@vartype)='in'"><xsl:call-template name="check_changes"/></xsl:when>
-		</xsl:choose>
+	<xsl:choose>
+		<xsl:when test="normalize-space(@vartype)='in'"><xsl:call-template name="check_changes"/></xsl:when>
+	</xsl:choose>
 	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
@@ -2002,16 +2002,16 @@ std::string <xsl:value-of select="$CLASSNAME"/>_SK::strval( uniset::ObjectId id,
 
 <xsl:template name="check_changes">
 <xsl:param name="onlymsg"></xsl:param>
-        <xsl:if test="normalize-space($onlymsg)=''">
-        if( prev_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> != <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> )
-        </xsl:if>
-        {
-        <xsl:if test="normalize-space($onlymsg)=''">
-        </xsl:if>
-            SensorMessage _sm( <xsl:value-of select="@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> );
-            _sm.sensor_type = UniversalIO::AI;
-            sensorInfo(&amp;_sm);
-        }
+	<xsl:if test="normalize-space($onlymsg)=''">
+	if( prev_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> != <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> )
+	</xsl:if>
+	{
+	<xsl:if test="normalize-space($onlymsg)=''">
+	</xsl:if>
+		SensorMessage _sm( <xsl:value-of select="@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> );
+		_sm.sensor_type = UniversalIO::AI;
+		sensorInfo(&amp;_sm);
+	}
 </xsl:template>
 
 </xsl:stylesheet>

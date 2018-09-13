@@ -124,14 +124,14 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( uniset::ObjectId sid, lon
         return;
         
 	<xsl:for-each select="//smap/item">
-		<xsl:if test="normalize-space(@vartype)='out'">
-		if( sid == <xsl:value-of select="@name"/> )
-		{
-            mylog8 &lt;&lt;  "(setValue): <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = " &lt;&lt;  val &lt;&lt;  endl;
-			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>	= val;
-			return;
-		}
-		</xsl:if>
+	<xsl:if test="normalize-space(@vartype)='out'">
+	if( sid == <xsl:value-of select="@name"/> )
+	{
+		mylog8 &lt;&lt;  "(setValue): <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = " &lt;&lt;  val &lt;&lt;  endl;
+		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>	= val;
+		return;
+	}
+	</xsl:if>
 	</xsl:for-each>
 
 	ui->setValue(sid,val);
