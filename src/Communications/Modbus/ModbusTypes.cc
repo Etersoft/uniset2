@@ -3659,8 +3659,8 @@ namespace uniset
 		int max = numeric_limits<ModbusRTU::ModbusData>::max(); // по идее 65535
 		int fn_max = numeric_limits<ModbusRTU::ModbusByte>::max(); // по идее 255
 
-		// fn необходимо привести к диапазону 0..max
-		return max + mbreg + max + uniset::lcalibrate(fn, 0, fn_max, 0, max, false);
+		// для fn необходимо сдвинуть регистр max * fn;
+		return max + mbreg + max * fn;
 	}
 	// ----------------------------------------------------------------------
 	size_t ModbusRTU::numBytes( const size_t nbits )
