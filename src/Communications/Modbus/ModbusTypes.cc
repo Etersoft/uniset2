@@ -3651,16 +3651,17 @@ namespace uniset
 		return s.str();
 	}
 	// ----------------------------------------------------------------------
-	ModbusRTU::RegID ModbusRTU::genRegID( const ModbusRTU::ModbusData mbreg, const int fn )
+	ModbusRTU::RegID ModbusRTU::genRegID( const ModbusRTU::ModbusData mbreg, const uint8_t fn )
 	{
 		// диапазоны:
 		// mbreg: 0..65535
 		// fn: 0...255
-		int max = numeric_limits<ModbusRTU::ModbusData>::max(); // по идее 65535
-		int fn_max = numeric_limits<ModbusRTU::ModbusByte>::max(); // по идее 255
+		size_t reg_max = numeric_limits<ModbusRTU::ModbusData>::max(); // по идее 65535
 
-		// для fn необходимо сдвинуть регистр max * fn;
-		return max + mbreg + max * fn;
+		// задача функции сдвинуть диапазон за рабочий диапазон для регистров (65535)
+		// а так же обеспечить, чтобы для каждого нового номера функции был свой диапазон
+		// не пересекающийся с другими
+		return reg_max + mbreg + (reg_max * fn) + 1;
 	}
 	// ----------------------------------------------------------------------
 	size_t ModbusRTU::numBytes( const size_t nbits )

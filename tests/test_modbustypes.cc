@@ -125,23 +125,25 @@ TEST_CASE("numBytes function", "[modbus][numbytes]" )
 	REQUIRE( ModbusRTU::numBytes(257) == 33 );
 }
 // ---------------------------------------------------------------
-#if 0
-#warning VERY LONG TIME TEST
 TEST_CASE("genRegID", "[modbus][genRegID]" )
 {
-	int max_reg = numeric_limits<ModbusRTU::ModbusData>::max();
-	int max_fn = numeric_limits<ModbusRTU::ModbusByte>::max();
+	size_t max_reg = numeric_limits<ModbusRTU::ModbusData>::max();
+	size_t max_fn = numeric_limits<ModbusRTU::ModbusByte>::max();
 
 	ModbusRTU::RegID prevID = ModbusRTU::genRegID(0, 0);
 
-	for( int f = 1; f < max_fn; f++ )
+	for( size_t f = 1; f < max_fn; f++ )
 	{
 		ModbusRTU::RegID minID = ModbusRTU::genRegID(0, f);
-		REQUIRE( minID > prevID );
 
-		for( int r = 1; r < max_reg; r++ )
+		// для каждого нового номера функции должен быть свой диапазон
+		// не пересекающийся с другими
+		REQUIRE( minID > (prevID + max_reg - 1) );
+
+		prevID = minID;
+
+		for( size_t r = 1; r < max_reg; r++ )
 			REQUIRE( ModbusRTU::genRegID(r, f) == minID + r );
 	}
 }
-#endif
 // ---------------------------------------------------------------

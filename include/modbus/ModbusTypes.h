@@ -79,7 +79,7 @@ namespace uniset
 		};
 
 
-		typedef unsigned long RegID;
+		using RegID = size_t;
 
 		/*! Получение уникального ID (hash?) на основе номера функции и регистра
 		 *  Требования к данной функции:
@@ -87,7 +87,7 @@ namespace uniset
 		 *  2. одинаковые регистры, но разные функции должны давать разный ID
 		 *  3. регистры идущие подряд, должны давать ID идущие тоже подряд
 		*/
-		RegID genRegID( const ModbusRTU::ModbusData r, const int fn );
+		RegID genRegID( const ModbusRTU::ModbusData r, const uint8_t fn );
 
 		// определение размера данных в зависимости от типа сообщения
 		// возвращает -1 - если динамический размер сообщения или размер неизвестен
@@ -134,7 +134,7 @@ namespace uniset
                                 */
 		};
 
-		const unsigned char MBErrMask = 0x80;
+		const uint8_t MBErrMask = 0x80;
 		// ---------------------------------------------------------------------
 		uint16_t SWAPSHORT( uint16_t x );
 		// ---------------------------------------------------------------------
@@ -1217,7 +1217,7 @@ namespace uniset
 			std::string val;
 		};
 
-		typedef std::list<RDIObjectInfo> RDIObjectList;
+		using RDIObjectList = std::list<RDIObjectInfo>;
 
 		/*! Ответ для 0x2B/0x0E */
 		struct MEIMessageRetRDI:
