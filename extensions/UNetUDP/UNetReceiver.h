@@ -101,7 +101,9 @@ namespace uniset
 		public std::enable_shared_from_this<UNetReceiver>
 	{
 		public:
-			UNetReceiver( const std::string& host, int port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection = false );
+			UNetReceiver( const std::string& host, int port, const std::shared_ptr<SMInterface>& smi
+						  , bool nocheckConnection = false
+						  , const std::string& prefix = "unet" );
 			virtual ~UNetReceiver();
 
 			void start();

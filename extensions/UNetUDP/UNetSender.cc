@@ -31,10 +31,12 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	UNetSender::UNetSender(const std::string& _host, const int _port, const std::shared_ptr<SMInterface>& smi,
 						   bool nocheckConnection, const std::string& s_f, const std::string& s_val,
-						   const std::string& s_prefix, size_t maxDCount, size_t maxACount ):
+						   const std::string& s_prefix,
+						   const std::string& prefix,
+						   size_t maxDCount, size_t maxACount ):
 		s_field(s_f),
 		s_fvalue(s_val),
-		prefix(s_prefix),
+		prop_prefix(s_prefix),
 		shm(smi),
 		port(_port),
 		s_host(_host),
@@ -55,11 +57,14 @@ namespace uniset
 			myname = s.str();
 		}
 
+		ostringstream logname;
+		logname << prefix << "-S-" << s_host << "-" << port;
+
 		unetlog = make_shared<DebugStream>();
-		unetlog->setLogName(myname);
+		unetlog->setLogName(logname.str());
 
 		auto conf = uniset_conf();
-		conf->initLogStream(unetlog, myname);
+		conf->initLogStream(unetlog, prefix + "-log");
 
 		unetinfo << myname << "(init): read filter-field='" << s_field
 				 << "' filter-value='" << s_fvalue << "'" << endl;
@@ -407,7 +412,7 @@ namespace uniset
 			return false;
 		}
 
-		int priority = it.getPIntProp(prefix + "_sendfactor", 0);
+		int priority = it.getPIntProp(prop_prefix + "_sendfactor", 0);
 
 		auto& pk = mypacks[priority];
 

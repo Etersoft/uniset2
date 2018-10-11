@@ -40,7 +40,10 @@ bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
 }
 */
 // ------------------------------------------------------------------------------------------
-UNetReceiver::UNetReceiver(const std::string& s_host, int _port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection ):
+UNetReceiver::UNetReceiver(const std::string& s_host, int _port
+						   , const std::shared_ptr<SMInterface>& smi
+						   , bool nocheckConnection
+						   , const std::string& prefix ):
 	shm(smi),
 	recvpause(10),
 	updatepause(100),
@@ -71,11 +74,14 @@ UNetReceiver::UNetReceiver(const std::string& s_host, int _port, const std::shar
 
 	addr = s_host.c_str();
 
+	ostringstream logname;
+	logname << prefix << "-R-" << s_host << ":" << setw(4) << port;
+
 	unetlog = make_shared<DebugStream>();
-	unetlog->setLogName(myname);
+	unetlog->setLogName(logname.str());
 
 	auto conf = uniset_conf();
-	conf->initLogStream(unetlog, myname);
+	conf->initLogStream(unetlog, prefix + "-log");
 
 	upThread = unisetstd::make_unique< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::updateThread);
 
