@@ -164,7 +164,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 			}
 
 			unetinfo << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
-			sender = make_shared<UNetSender>(h, p, shm, false, s_field, s_fvalue, prefix);
+			sender = make_shared<UNetSender>(h, p, shm, false, s_field, s_fvalue, "unet", prefix);
 			sender->setSendPause(sendpause);
 			sender->setCheckConnectionPause(checkConnectionPause);
 			loga->add(sender->getLog());
@@ -326,7 +326,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 
 		unetinfo << myname << "(init): (node='" << n << "') add  basic receiver "
 				 << h << ":" << p << endl;
-		auto r = make_shared<UNetReceiver>(h, p, shm);
+		auto r = make_shared<UNetReceiver>(h, p, shm, false, prefix);
 
 		loga->add(r->getLog());
 
@@ -358,7 +358,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 				unetinfo << myname << "(init): (node='" << n << "') add reserv receiver "
 						 << h2 << ":" << p2 << endl;
 
-				r2 = make_shared<UNetReceiver>(h2, p2, shm);
+				r2 = make_shared<UNetReceiver>(h2, p2, shm, false, prefix);
 
 				loga->add(r2->getLog());
 

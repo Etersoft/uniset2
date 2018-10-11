@@ -69,9 +69,14 @@ namespace uniset
 	class UNetSender
 	{
 		public:
-			UNetSender( const std::string& host, const int port, const std::shared_ptr<SMInterface>& smi, bool nocheckConnection = false,
-						const std::string& s_field = "", const std::string& s_fvalue = "", const std::string& prefix = "unet",
-						size_t maxDCount = UniSetUDP::MaxDCount, size_t maxACount = UniSetUDP::MaxACount );
+			UNetSender( const std::string& host, const int port, const std::shared_ptr<SMInterface>& smi
+						, bool nocheckConnection = false
+						, const std::string& s_field = ""
+						, const std::string& s_fvalue = ""
+						, const std::string& prop_prefix = "unet"
+						, const std::string& prefix = "unet"
+						, size_t maxDCount = UniSetUDP::MaxDCount
+						, size_t maxACount = UniSetUDP::MaxACount );
 
 			virtual ~UNetSender();
 
@@ -175,7 +180,7 @@ namespace uniset
 
 			std::string s_field = { "" };
 			std::string s_fvalue = { "" };
-			std::string prefix = { "" };
+			std::string prop_prefix = { "" };
 
 			const std::shared_ptr<SMInterface> shm;
 			std::shared_ptr<DebugStream> unetlog;

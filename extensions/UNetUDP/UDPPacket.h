@@ -87,8 +87,8 @@ namespace uniset
 		// с другой стороны в текущей реализации
 		// в сеть посылается фактическое количество данных, а не sizeof(UDPPacket).
 
-		// При текущих настройках sizeof(UDPPacket) = 32654 (!)
-		static const size_t MaxACount = 1500;
+		// При текущих настройках sizeof(UDPPacket) = 72679 (!)
+		static const size_t MaxACount = 2000;
 		static const size_t MaxDCount = 5000;
 		static const size_t MaxDDataCount = 1 + MaxDCount / 8 * sizeof(unsigned char);
 
