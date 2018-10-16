@@ -19,7 +19,7 @@ const size_t COUNT = 1000000; // сколько сообщений помест�
 void mq_write_thread()
 {
 	SensorMessage smsg(100, 2);
-	TransportMessage tm( std::move(smsg.transport_msg()) );
+	TransportMessage tm( smsg.transport_msg() );
 	auto vm = make_shared<VoidMessage>(tm);
 
 	msleep(100);
@@ -67,7 +67,7 @@ int main(int argc, const char** argv)
 		// сперва просто проверка что очередь работает.
 		{
 			SensorMessage sm(100, 2);
-			TransportMessage tm( std::move(sm.transport_msg()) );
+			TransportMessage tm( sm.transport_msg() );
 			auto vm = make_shared<VoidMessage>(tm);
 			mq.push(vm);
 			auto msg = mq.top();

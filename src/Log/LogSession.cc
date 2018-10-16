@@ -568,7 +568,7 @@ namespace uniset
 
 		try
 		{
-			std::string ret( std::move(m_command_sig.emit(this, msg.cmd, cmdLogName)) );
+			std::string ret( m_command_sig.emit(this, msg.cmd, cmdLogName) );
 
 			if( !ret.empty() )
 			{

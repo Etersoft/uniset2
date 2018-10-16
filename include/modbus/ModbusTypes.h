@@ -29,7 +29,7 @@ namespace uniset
 		const size_t BitsPerByte = 8;
 		typedef uint8_t ModbusAddr;    /*!< адрес узла в modbus-сети */
 		typedef uint16_t ModbusData;    /*!< размер данных в modbus-сообщениях */
-		const size_t BitsPerData = 16;
+		const uint8_t BitsPerData = 16;
 		typedef uint16_t ModbusCRC;    /*!< размер CRC16 в modbus-сообщениях */
 
 		// ---------------------------------------------------------------------

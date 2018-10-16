@@ -139,7 +139,7 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 
 			continue;
 		}
-		catch( const ORepFailed )
+		catch( const ORepFailed& ex )
 		{
 			string er("ObjectRepository(registrartion): (getContext) не смог зарегистрировать " + name);
 			throw ORepFailed(er);
@@ -342,7 +342,7 @@ bool ObjectRepository::list( const string& section, ListObjectName* olist, size_
 		CORBA::ORB_var orb = uconf->getORB();
 		ctx = ORepHelpers::getContext(orb, section, nsName);
 	}
-	catch( const ORepFailed )
+	catch( const ORepFailed& ex )
 	{
 		uwarn << "ORepository(list): не смог получить ссылку на " << section << endl;
 		throw;
@@ -423,7 +423,7 @@ bool ObjectRepository::isExist( const ObjectPtr& oref ) const
 		UniSetObject_i_var o = UniSetObject_i::_narrow(oref);
 		return o->exist();
 	}
-	catch( const CORBA::TRANSIENT) {}
+	catch( const CORBA::TRANSIENT& ) {}
 	catch( const CORBA::SystemException&) {}
 	catch( const CORBA::Exception&) {}
 	catch( const omniORB::fatalException& fe )
@@ -512,13 +512,13 @@ bool ObjectRepository::createContext( const string& cname, CosNaming::NamingCont
 		ulogrep << "ORepFactory(createContext): создал. " << endl;
 		return true;
 	}
-	catch(const CosNaming::NamingContext::AlreadyBound ab)
+	catch(const CosNaming::NamingContext::AlreadyBound& ab)
 	{
 		//        ctx->resolve(nc);
 		ulogrep << "ORepFactory(createContext): context " << cname << " already exist" << endl;
 		return true;
 	}
-	catch( const CosNaming::NamingContext::NotFound )
+	catch( const CosNaming::NamingContext::NotFound& ex )
 	{
 		ulogrep << "ORepFactory(createContext): NotFound " << cname << endl;
 		throw NameNotFound();
@@ -569,7 +569,7 @@ void ObjectRepository::printSection( const string& fullName ) const
 		if( olist.empty() )
 			cout << fullName << " пуст!!!" << endl;
 	}
-	catch( ORepFailed )
+	catch( ORepFailed& ex )
 	{
 		cout << "printSection: cath exceptions ORepFailed..." << endl;
 		return ;
@@ -601,7 +601,7 @@ bool ObjectRepository::removeSection( const string& fullName, bool recursive ) c
 		const char* const* argv(uconf->getArgv());
 		ctx = ORepHelpers::getContext(fullName, argc, argv, nsName);
 	}
-	catch( ORepFailed )
+	catch( ORepFailed& ex )
 	{
 		return false;
 	}
@@ -677,7 +677,7 @@ bool ObjectRepository::removeSection( const string& fullName, bool recursive ) c
 			ulogrep << "ORepFactory: контекст" << fullName << " не пустой " << endl;
 			rem = false;
 		}
-		catch( ORepFailed )
+		catch( ORepFailed& ex )
 		{
 			ulogrep << "ORepFactory: не удаось получить ссылку на контекст " << in_sec << endl;
 			rem = false;
@@ -716,7 +716,7 @@ bool ObjectRepository::renameSection( const string& newFName, const string& oldF
 		in_ctx->rebind_context(ctxNewName, ctx);
 		in_ctx->unbind(ctxOldName);
 	}
-	catch( ORepFailed )
+	catch( ORepFailed& ex )
 	{
 		return false;
 	}

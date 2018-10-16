@@ -599,7 +599,7 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	void SharedMemory::sendEvent( uniset::SystemMessage& sm )
 	{
-		TransportMessage tm( std::move(sm.transport_msg()) );
+		TransportMessage tm( sm.transport_msg() );
 
 		for( const auto& it : elst )
 		{

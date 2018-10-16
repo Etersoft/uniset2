@@ -963,7 +963,7 @@ namespace uniset
 		{
 			mblog3 << myname << "(initSMValue):(IOBadParam) " << ex.err << endl;
 		}
-		catch(IONotifyController_i::BadRange )
+		catch(IONotifyController_i::BadRange& ex )
 		{
 			mblog3 << myname << "(initSMValue): (BadRange)..." << endl;
 		}
@@ -1223,7 +1223,7 @@ namespace uniset
 				{
 					mblog3 << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
 				}
-				catch( IONotifyController_i::BadRange )
+				catch( IONotifyController_i::BadRange& ex )
 				{
 					mblog3 << myname << "(updateSM): (BadRange)..." << endl;
 				}
@@ -1261,7 +1261,7 @@ namespace uniset
 					{
 						mblog3 << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
 					}
-					catch( IONotifyController_i::BadRange )
+					catch( IONotifyController_i::BadRange& ex )
 					{
 						mblog3 << myname << "(updateSM): (BadRange)..." << endl;
 					}
@@ -1309,7 +1309,7 @@ namespace uniset
 					{
 						mblog3 << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
 					}
-					catch(IONotifyController_i::BadRange )
+					catch(IONotifyController_i::BadRange& ex )
 					{
 						mblog3 << myname << "(updateSM): (BadRange)..." << endl;
 					}
@@ -1774,7 +1774,7 @@ namespace uniset
 		{
 			mblog3 << myname << "(updateRSProperty):(IOBadParam) " << ex.err << endl;
 		}
-		catch(IONotifyController_i::BadRange )
+		catch(IONotifyController_i::BadRange& ex )
 		{
 			mblog3 << myname << "(updateRSProperty): (BadRange)..." << endl;
 		}
@@ -2114,7 +2114,7 @@ namespace uniset
 			{
 				mblog3 << myname << "(updateMTR):(IOBadParam) " << ex.err << endl;
 			}
-			catch(IONotifyController_i::BadRange )
+			catch(IONotifyController_i::BadRange& ex )
 			{
 				mblog3 << myname << "(updateMTR): (BadRange)..." << endl;
 			}
@@ -2181,7 +2181,7 @@ namespace uniset
 			{
 				mblog3 << myname << "(updateRTU188):(IOBadParam) " << ex.err << endl;
 			}
-			catch(IONotifyController_i::BadRange )
+			catch(IONotifyController_i::BadRange& ex )
 			{
 				mblog3 << myname << "(updateRTU188): (BadRange)..." << endl;
 			}
@@ -3372,7 +3372,7 @@ namespace uniset
 		{
 			ostringstream s;
 			s << "number of calls is " << poll_count << " (poll time: " << stat_time << " sec)";
-			statInfo = std::move(s.str());
+			statInfo = s.str();
 			mblog9 << myname << "(stat): " << statInfo << endl;
 			ptStatistic.reset();
 			poll_count = 0;

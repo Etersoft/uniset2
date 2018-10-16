@@ -563,7 +563,7 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 			}
 		}
 	}
-	catch( ORepFailed )
+	catch( const ORepFailed& ex )
 	{
 		if( !quiet )
 			cerr << "..ORepFailed.." << endl;
@@ -972,7 +972,7 @@ int logRotate( const string& arg, UInterface& ui )
 		}
 
 
-		TransportMessage tm( std::move(SystemMessage(SystemMessage::LogRotate).transport_msg()) );
+		TransportMessage tm( SystemMessage(SystemMessage::LogRotate).transport_msg() );
 		ui.send(id, tm);
 
 		if( verb )
@@ -1013,7 +1013,7 @@ int configure( const string& arg, UInterface& ui )
 			return 1;
 		}
 
-		TransportMessage tm( std::move( SystemMessage(SystemMessage::ReConfiguration).transport_msg() ));
+		TransportMessage tm( SystemMessage(SystemMessage::ReConfiguration).transport_msg() );
 		ui.send(id, tm);
 
 		if( verb )

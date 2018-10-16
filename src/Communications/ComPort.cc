@@ -338,7 +338,7 @@ size_t ComPort::receiveBlock(unsigned char* msg, size_t len)
 		{
 			msg[k] = m_receiveByte(waiting);
 		}
-		catch(TimeOut)
+		catch( const uniset::TimeOut& ex )
 		{
 			break;
 		}

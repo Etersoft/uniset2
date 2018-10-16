@@ -93,7 +93,7 @@ namespace uniset
 			virtual bool removeObject( const std::shared_ptr<UniSetObject>& obj );
 
 			enum OManagerCommand { deactiv, activ, initial };
-			friend std::ostream& operator<<(std::ostream& os, uniset::UniSetManager::OManagerCommand& cmd );
+			friend std::ostream& operator<<( std::ostream& os, uniset::UniSetManager::OManagerCommand& cmd );
 
 			// работа со списком объектов
 			void objects(OManagerCommand cmd);

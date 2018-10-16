@@ -265,7 +265,7 @@ namespace uniset
 				uwarn << myname << "(registration): replace object (ObjectNameAlready)" << endl;
 				unregistration();
 			}
-			catch( uniset::ORepFailed )
+			catch( const uniset::ORepFailed& ex )
 			{
 				uwarn << myname << "(registration): don`t registration in object reposotory " << endl;
 			}

@@ -439,7 +439,7 @@ void IOController::logging( uniset::SensorMessage& sm )
 		}
 
 		sm.consumer = dbserverID;
-		TransportMessage tm(std::move(sm.transport_msg()));
+		TransportMessage tm(sm.transport_msg());
 		ui->send( sm.consumer, std::move(tm) );
 		isPingDBServer = true;
 	}
@@ -468,7 +468,7 @@ void IOController::dumpToDB()
 
 			if ( !s->dbignore )
 			{
-				SensorMessage sm( std::move(s->makeSensorMessage()) );
+				SensorMessage sm( s->makeSensorMessage() );
 				logging(sm);
 			}
 		}
@@ -600,7 +600,8 @@ IOController::USensorInfo::USensorInfo(IOController_i::SensorIOInfo* ai):
 IOController::USensorInfo&
 IOController::USensorInfo::operator=(IOController_i::SensorIOInfo& r)
 {
-	(*this) = r;
+	IOController::USensorInfo tmp(r);
+	(*this) = std::move(tmp);
 	return *this;
 }
 // ----------------------------------------------------------------------------------------
@@ -625,9 +626,10 @@ IOController::USensorInfo::USensorInfo(): d_value(1), d_off_value(0)
 }
 // ----------------------------------------------------------------------------------------
 IOController::USensorInfo&
-IOController::USensorInfo::operator=(IOController_i::SensorIOInfo* r)
+IOController::USensorInfo::operator=( IOController_i::SensorIOInfo* r )
 {
-	(*this) = (*r);
+	IOController::USensorInfo tmp(r);
+	(*this) = std::move(tmp);
 	return *this;
 }
 // ----------------------------------------------------------------------------------------
@@ -650,10 +652,10 @@ void IOController::USensorInfo::setUserData( size_t index, void* data )
 }
 // ----------------------------------------------------------------------------------------
 const IOController::USensorInfo&
-IOController::USensorInfo::operator=(const IOController_i::SensorIOInfo& r)
+IOController::USensorInfo::operator=( const IOController_i::SensorIOInfo& r )
 {
-	(*this) = r;
-	//    any=0;
+	IOController::USensorInfo tmp(r);
+	(*this) = std::move(tmp);
 	return *this;
 }
 // ----------------------------------------------------------------------------------------

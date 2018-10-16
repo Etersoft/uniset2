@@ -160,6 +160,7 @@ namespace uniset
 
 				F4( const float& f ) noexcept
 				{
+					memset(raw.v, 0, sizeof(raw.v));
 					raw.val = f;
 				}
 				F4( const ModbusRTU::ModbusData* data, size_t size ) noexcept

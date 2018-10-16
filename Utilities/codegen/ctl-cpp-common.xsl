@@ -274,10 +274,10 @@
 <xsl:template name="COMMON-HEAD-PROTECTED">
 		virtual void callback() noexcept override;
 		virtual void processingMessage( const uniset::VoidMessage* msg ) override;
-		virtual void sysCommand( const uniset::SystemMessage* sm ){};
-		virtual void askSensors( UniversalIO::UIOCommand cmd ){}
-		virtual void sensorInfo( const uniset::SensorMessage* sm ) override{}
-		virtual void timerInfo( const uniset::TimerMessage* tm ) override{}
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override {}
+		virtual void askSensors( UniversalIO::UIOCommand cmd ) {}
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) override {}
+		virtual void timerInfo( const uniset::TimerMessage* tm ) override {}
 		virtual bool activateObject() override;
 		virtual bool deactivateObject() override;
 		virtual std::string getMonitInfo() const { return ""; } /*!&lt; пользовательская информация выводимая в getInfo() */

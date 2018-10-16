@@ -46,7 +46,7 @@ namespace uniset
 			bool async_run( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr );
 
 			/*! остановить поток выполнения (см. run или async_run) */
-			virtual void terminate();
+			virtual void terminate() override;
 
 			virtual bool isActive() const override;
 

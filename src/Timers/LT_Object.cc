@@ -80,7 +80,7 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
 				if( li->tmr.checkTime() )
 				{
 					// помещаем себе в очередь сообщение
-					TransportMessage tm( std::move(TimerMessage(li->id, li->priority, obj->getId()).transport_msg()) );
+					TransportMessage tm( TimerMessage(li->id, li->priority, obj->getId()).transport_msg() );
 					obj->push(tm);
 
 					// Проверка на количество заданных тактов

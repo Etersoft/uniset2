@@ -63,9 +63,10 @@ namespace uniset
 			size_t dcount; /*!< количество булевых величин */
 			size_t acount; /*!< количество аналоговых величин */
 
-			friend std::ostream& operator<<( std::ostream& os, UDPHeader& p );
-			friend std::ostream& operator<<( std::ostream& os, UDPHeader* p );
 		} __attribute__((packed));
+
+		std::ostream& operator<<( std::ostream& os, UDPHeader& p );
+		std::ostream& operator<<( std::ostream& os, UDPHeader* p );
 
 		const size_t MaxPacketNum = std::numeric_limits<size_t>::max();
 
@@ -77,9 +78,9 @@ namespace uniset
 			long id;
 			long val;
 
-			friend std::ostream& operator<<( std::ostream& os, UDPAData& p );
 		} __attribute__((packed));
 
+		std::ostream& operator<<( std::ostream& os, UDPAData& p );
 
 		// Теоретический размер данных в UDP пакете (исключая заголовки) 65507
 		// Фактически желательно не вылезать за размер MTU (обычно 1500) - заголовки = 1432 байта
@@ -178,9 +179,9 @@ namespace uniset
 			UDPAData a_dat[MaxACount]; /*!< аналоговые величины */
 			long d_id[MaxDCount];      /*!< список дискретных ID */
 			uint8_t d_dat[MaxDDataCount];  /*!< битовые значения */
-
-			friend std::ostream& operator<<( std::ostream& os, UDPMessage& p );
 		};
+
+		std::ostream& operator<<( std::ostream& os, UDPMessage& p );
 
 		uint16_t makeCRC( unsigned char* buf, size_t len ) noexcept;
 	}

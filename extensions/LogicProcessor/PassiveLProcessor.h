@@ -55,9 +55,9 @@ namespace uniset
 		protected:
 			PassiveLProcessor(): shm(0), maxHeartBeat(0) {};
 
-			virtual void step();
-			virtual void getInputs();
-			virtual void setOuts();
+			virtual void step() override;
+			virtual void getInputs() override;
+			virtual void setOuts() override;
 
 			void sysCommand( const uniset::SystemMessage* msg ) override;
 			void sensorInfo( const uniset::SensorMessage* sm ) override;

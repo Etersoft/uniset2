@@ -87,7 +87,7 @@ void SViewer::readSection( const string& section, const string& secRoot )
 			cout << "(readSection): получен не полный список" << endl;
 		}
 	}
-	catch( ORepFailed ) {}
+	catch( const ORepFailed& ex ) {}
 	catch(...)
 	{
 		std::exception_ptr p = std::current_exception();
@@ -112,7 +112,7 @@ void SViewer::readSection( const string& section, const string& secRoot )
 			if( !rep.list(secName, &lstObj, 1000) )
 				cout << "(readSection): получен не полный список" << endl;
 		}
-		catch( ORepFailed )
+		catch( const ORepFailed& ex )
 		{
 			cout << "(readSection):.. catch ORepFailed" << endl;
 			return;
@@ -176,7 +176,7 @@ void SViewer::getInfo( ObjectId id )
 			IOController_i::SensorInfoSeq_var amap = ioc->getSensorsMap();
 			updateSensors(amap, id);
 		}
-		catch( IOController_i::NameNotFound ) {}
+		catch( const IOController_i::NameNotFound& ex ) {}
 		catch(...) {}
 
 		try
@@ -184,7 +184,7 @@ void SViewer::getInfo( ObjectId id )
 			IONotifyController_i::ThresholdsListSeq_var tlst = ioc->getThresholdsList();
 			updateThresholds(tlst, id);
 		}
-		catch( IOController_i::NameNotFound ) {}
+		catch( const IOController_i::NameNotFound& ex ) {}
 		catch(...) {}
 
 		return;

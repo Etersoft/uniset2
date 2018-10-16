@@ -237,7 +237,7 @@ namespace uniset
 					ai.ci.precision = 0;
 				}
 
-				return std::move(ai);
+				return ai;
 			};
 
 			//! сохранение информации об изменении состояния датчика
@@ -409,19 +409,6 @@ namespace uniset
 							(hilimit == r.hilimit) &&
 							(lowlimit == r.lowlimit) &&
 							(invert == r.invert) );
-				}
-
-				operator IONotifyController_i::ThresholdInfo()
-				{
-					IONotifyController_i::ThresholdInfo r;
-					r.id = id;
-					r.hilimit = hilimit;
-					r.lowlimit = lowlimit;
-					r.invert = invert;
-					r.tv_sec = tv_sec;
-					r.tv_nsec = tv_nsec;
-					r.state = state;
-					return r;
 				}
 
 				UThresholdInfo( const UThresholdInfo& ) = delete;
