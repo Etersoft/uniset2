@@ -113,7 +113,7 @@ void TestProc::timerInfo( const TimerMessage* tm )
 		cerr << "======= TEST LOG PRINT ======" << endl;
 		cerr << "LOGLEVEL: [" << (int)(*lit) << "] " << (*lit) << endl;
 
-		for( auto& it : loglevels )
+		for( const auto& it : loglevels )
 			mylog->debug(it) << myname << ": test log print..." << endl;
 
 		cerr << "======= END LOG PRINT ======" << endl;

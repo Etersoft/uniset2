@@ -2750,7 +2750,7 @@ namespace uniset
 		{
 			os << endl;
 
-			for( auto& it : m.dlist )
+			for( const auto& it : m.dlist )
 				os << "     " << rdi2str(it.id) << " : " << it.val << endl;
 		}
 
@@ -2766,7 +2766,7 @@ namespace uniset
 	{
 		if( !dlist.empty() )
 		{
-			for( auto& it : dlist )
+			for( const auto& it : dlist )
 				os << "     " << rdi2str(it.id) << " : " << it.val << endl;
 		}
 

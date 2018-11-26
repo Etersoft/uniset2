@@ -484,7 +484,7 @@ IOController_i::SensorInfoSeq* IOController::getSensorsMap()
 
 	unsigned int i = 0;
 
-	for( auto& it : ioList )
+	for( const auto& it : ioList )
 	{
 		uniset_rwmutex_rlock lock(it.second->val_lock);
 		(*res)[i] = *(it.second.get());

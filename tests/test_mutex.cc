@@ -147,7 +147,7 @@ TEST_CASE("uniset_rwmutex_{wr|r} thread lock", "[mutex][threadlock][basic]" )
 	msleep(10);
 
 	// read захватывают сразу без задержек..
-	for( auto && i : vr )
+	for( auto& i : vr )
 	{
 		if( i.valid()  )
 			REQUIRE( i.get() == true );

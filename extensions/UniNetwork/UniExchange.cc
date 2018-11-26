@@ -288,7 +288,7 @@ IOController_i::ShortMapSeq* UniExchange::getSensors()
 
 	int i = 0;
 
-	for( auto& it : mymap )
+	for( const auto& it : mymap )
 	{
 		IOController_i::ShortMap m;
 		{
@@ -327,7 +327,7 @@ void UniExchange::updateLocalData()
 // --------------------------------------------------------------------------
 void UniExchange::initIterators()
 {
-	for( auto& it : mymap )
+	for( auto&& it : mymap )
 		shm->initIterator(it.ioit);
 }
 // --------------------------------------------------------------------------

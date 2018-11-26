@@ -389,7 +389,7 @@ namespace uniset
 			int i = 0;
 
 			// формируем новые, используя i в качестве индекса
-			for( auto& it : lnodes )
+			for( const auto& it : lnodes )
 			{
 				// делаем uni_strdup чтобы потом не думая
 				// "где мы выделяли, а где не мы"
@@ -415,7 +415,7 @@ namespace uniset
 				assert( i < onum );
 			}
 
-			for( auto& p : omniParams )
+			for( const auto& p : omniParams )
 			{
 				// делаем uni_strdup чтобы потом не думая
 				// "где мы выделяли, а где не мы"

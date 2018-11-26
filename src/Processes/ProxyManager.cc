@@ -73,7 +73,7 @@ bool ProxyManager::activateObject()
 		return false;
 
 	// Регистрируемся от имени объектов
-	for( auto& it : omap )
+	for( const auto& it : omap )
 	{
 		try
 		{
@@ -163,7 +163,7 @@ void ProxyManager::processingMessage( const uniset::VoidMessage* msg )
 // -------------------------------------------------------------------------
 void ProxyManager::allMessage( const uniset::VoidMessage* msg )
 {
-	for( auto& o : omap )
+	for( const auto& o : omap )
 	{
 		try
 		{
