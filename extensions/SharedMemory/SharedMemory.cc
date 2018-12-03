@@ -833,7 +833,7 @@ namespace uniset
 					if( it->fuse_invert )
 						st ^= true;
 
-					if( !st )
+					if( st )
 					{
 						sminfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
