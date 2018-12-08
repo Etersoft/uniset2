@@ -49,6 +49,7 @@ namespace uniset
 	        - \ref pgUNetUDP_Conf
 	        - \ref pgUNetUDP_Reserv
 	        - \ref pgUNetUDP_SendFactor
+	       	- \ref pgUNetUDP_Stat
 
 	    \section pgUNetUDP_Common Общее описание
 	        Обмен построен  на основе протокола UDP.
@@ -57,6 +58,7 @@ namespace uniset
 	    пар [id,value]. Другие узлы принимают их. Помимо этого данный процесс запускает
 		"получателей" по одному на каждый (другой) узел и ловит пакеты от них, сохраняя данные в SM.
 		При этом "получатели" работают на одном(!) потоке с использованием событий libev (см. UNetReceiver).
+		или каждый на своём потоке. Это определяется параметром \b unet_update_strategy.
 
 	    \par
 	        При своём старте процесс считывает из секции \<nodes> список узлов которые необходимо "слушать",
@@ -120,6 +122,19 @@ namespace uniset
 		При загрузке все датчики (относщиеся к данному процессу) разбиваются на группы пакетов согласно своей частоте посылки.
 		При этом внутри одной группы датчики разбиваются по пакетам согласно заданному максимальному размеру пакета
 		(см. конструктор класса UNetSender()).
+
+		 \section pgUNetUDP_Stat Статистика работы канала
+		 Для возможности мониторинга работы имеются счётчики, которые можно привязать к датчикам,
+		 задав их для соответствующего узла в секции '<nodes>' конфигурационного файла.
+
+		 - unet_lostpackets_id=""  - общее количество потерянных пакетов с данным узлом (суммарно по обоим каналам)
+		 - unet_lostpackets1_id=""  - количество потерянных пакетов с данным узлом по первому каналу
+		 - unet_lostpackets2_id=""  - количество потерянных пакетов с данным узлом по второму каналу
+		 - unet_respond_id=""  - наличие связи хотя бы по одному каналу
+		 - unet_respond1_id  - наличие связи по первому каналу
+		 - unet_respond2_id  - наличие связи по второму каналу
+		 - unet_numchannel_id=""   - номер текущего активного канала
+		 - unet_channelswitchcount_id="" - количество переключений с канала на канал
 	*/
 	// -----------------------------------------------------------------------------
 	class UNetExchange:
@@ -233,16 +248,23 @@ namespace uniset
 					sidChannelNum = id;
 				}
 
+				inline void setChannelSwitchCountID( uniset::ObjectId id ) noexcept
+				{
+					sidChannelSwitchCount = id;
+				}
+
 				inline void initIterators( const std::shared_ptr<SMInterface>& shm ) noexcept
 				{
 					shm->initIterator(itLostPackets);
 					shm->initIterator(itRespond);
 					shm->initIterator(itChannelNum);
+					shm->initIterator(itChannelSwitchCount);
 				}
 
 				// Сводная информация по двум каналам
 				// сумма потерянных пакетов и наличие связи
 				// хотя бы по одному каналу, номер рабочего канала
+				// количество переключений с канала на канал
 				// ( реализацию см. ReceiverInfo::step() )
 				uniset::ObjectId sidRespond;
 				IOController::IOStateList::iterator itRespond;
@@ -251,6 +273,10 @@ namespace uniset
 				IOController::IOStateList::iterator itLostPackets;
 				uniset::ObjectId sidChannelNum;
 				IOController::IOStateList::iterator itChannelNum;
+
+				long channelSwitchCount = { 0 }; /*!< счётчик переключений с канала на канал */
+				uniset::ObjectId sidChannelSwitchCount = { uniset::DefaultObjectId };
+				IOController::IOStateList::iterator itChannelSwitchCount;
 			};
 
 			typedef std::deque<ReceiverInfo> ReceiverList;

@@ -242,7 +242,7 @@ namespace uniset
 			UNetReceiver();
 
 			timeout_t recvpause = { 10 };      /*!< пауза меджду приёмами пакетов, [мсек] */
-			timeout_t updatepause = { 100 };    /*!< переодичность обновления данных в SM, [мсек] */
+			timeout_t updatepause = { 100 };   /*!< переодичность обновления данных в SM, [мсек] */
 
 			std::unique_ptr<UDPReceiveU> udp;
 			std::string addr;
