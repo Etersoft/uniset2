@@ -60,7 +60,7 @@ namespace uniset
 	{
 		t_msec = msec;
 
-		// не знаю как по другому
+		// TODO: не знаю как по-другому
 		// приходиться делать это через промежуточную переменную
 		std::chrono::milliseconds ms(msec);
 		std::swap(t_inner_msec, ms);

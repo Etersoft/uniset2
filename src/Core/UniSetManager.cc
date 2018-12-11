@@ -435,7 +435,7 @@ void UniSetManager::objects(OManagerCommand cmd)
 }
 // ------------------------------------------------------------------------------------------
 /*!
- *    Регистрирация объекта и всех его подобъектов в репозитории.
+ *    Регистрация объекта и всех его подобъектов в репозитории.
  *    \note Только после этого он (и они) становятся доступны другим процессам
 */
 bool UniSetManager::activateObject()
@@ -598,7 +598,7 @@ int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, S
 {
 	auto ind = begin;
 
-	// получаем у самого менджера
+	// получаем у самого менеджера
 	SimpleInfo_var msi = mngr->getInfo(userparam);
 	(*seq)[ind] = msi;
 

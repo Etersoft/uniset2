@@ -69,7 +69,7 @@ namespace uniset
 
 	void UInterface::init()
 	{
-		// пытаемся получить ссылку на NameSerivice
+		// пытаемся получить ссылку на NameService
 		// в любом случае. даже если включён режим
 		// localIOR
 		localctx = CosNaming::NamingContext::_nil();
@@ -112,7 +112,7 @@ namespace uniset
 	 * \param id - идентификатор датчика
 	 * \return текущее значение датчика
 	 * \exception IOBadParam - генерируется если указано неправильное имя датчика или секции
-	 * \exception IOTimeOut - генерируется если в течение времени timeout небыл получен ответ
+	 * \exception IOTimeOut - генерируется если в течение времени timeout не был получен ответ
 	*/
 	long UInterface::getValue( const uniset::ObjectId id, const uniset::ObjectId node ) const
 	{
@@ -279,9 +279,9 @@ namespace uniset
 	// ------------------------------------------------------------------------------------------------------------
 	/*!
 	 * \param id - идентификатор датчика
-	 * \param value - значение которое необходимо установить
+	 * \param value - значение, которое необходимо установить
 	 * \return текущее значение датчика
-	 * \exception IOBadParam - генерируется если указано неправильное имя вывода или секции
+	 * \exception IOBadParam - генерируется, если указано неправильное имя вывода или секции
 	*/
 	void UInterface::setValue( const uniset::ObjectId id, long value, const uniset::ObjectId node, const uniset::ObjectId sup_id ) const
 	{
@@ -383,7 +383,7 @@ namespace uniset
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
-	// функция не вырабатывает исключий!
+	// функция не вырабатывает исключений!
 	void UInterface::fastSetValue( const IOController_i::SensorInfo& si, long value, uniset::ObjectId sup_id ) const
 	{
 		if ( si.id == uniset::DefaultObjectId )
@@ -758,7 +758,7 @@ namespace uniset
 	// ------------------------------------------------------------------------------------------------------------
 	void UInterface::registered( const uniset::ObjectId id, const uniset::ObjectPtr oRef, bool force ) const
 	{
-		// если влючён режим использования локальных файлов
+		// если включён режим использования локальных файлов
 		// то пишем IOR в файл
 		if( uconf->isLocalIOR() )
 		{
@@ -860,7 +860,7 @@ namespace uniset
 					catch( const uniset::ORepFailed& ex )
 					{
 						// нет связи с этим узлом
-						// пробуем связатся по другой сети
+						// пробуем связаться по другой сети
 						// ПО ПРАВИЛАМ узел в другой должен иметь имя NodeName1...NodeNameX
 						ostringstream s;
 						s << bname << curNet;

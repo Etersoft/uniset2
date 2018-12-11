@@ -176,7 +176,7 @@ namespace uniset
 			    \param begin - get from position
 			    \param buf  - buffer for data
 			    \param len     - size of buf
-			    \return real data lenght ( must be <= len )
+			    \return real data length ( must be <= len )
 			*/
 			virtual size_t getNextData( unsigned char* buf, size_t len ) = 0;
 

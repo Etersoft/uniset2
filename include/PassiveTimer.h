@@ -37,7 +37,7 @@ namespace uniset
 	typedef Poco::Timespan::TimeDiff timeout_t;
 	//----------------------------------------------------------------------------------------
 	/*! \class UniSetTimer
-	 * \brief Базовый интерфейс пасивных таймеров
+	 * \brief Базовый интерфейс пассивных таймеров
 	 * \author Pavel Vainerman
 	*/
 	class UniSetTimer

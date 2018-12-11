@@ -179,7 +179,7 @@ uniset::ObjectId uniset::IDList::getFirst() const noexcept
 	return (*lst.begin());
 }
 
-// за освобождение выделеной памяти
+// за освобождение выделенной памяти
 // отвечает вызывающий!
 IDSeq* uniset::IDList::getIDSeq() const
 {
@@ -514,7 +514,7 @@ int uniset::uni_atoi( const char* str ) noexcept
 		}
 	}
 
-	n = std::atoll(str); // универсальнее получать unsigned..чтобы не потерять "большие числа"..
+	n = std::atoll(str); // универсальнее получать unsigned, чтобы не потерять "большие числа"..
 	return n; // а возвращаем int..
 }
 //--------------------------------------------------------------------------------------------
