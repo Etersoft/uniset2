@@ -1547,7 +1547,7 @@ namespace uniset
 		cout << "--prefix-reg-from-id 0,1   - Использовать в качестве регистра sensor ID" << endl;
 		cout << "--prefix-filter-field name - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;
 		cout << "--prefix-filter-value val  - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
-		cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
+		cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
 		cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
 		cout << "--prefix-initPause         - Задержка перед инициализацией (время на активизация процесса)" << endl;
 		cout << "--prefix-force 1           - Читать данные из SM каждый раз, а не по изменению." << endl;

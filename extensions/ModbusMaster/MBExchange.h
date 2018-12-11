@@ -162,7 +162,7 @@ namespace uniset
 
 				RegMap::iterator rit;
 
-				// начальная инициалиазция для "записываемых" регистров
+				// начальная инициализация для "записываемых" регистров
 				// Механизм:
 				// Если tcp_preinit="1", то сперва будет сделано чтение значения из устройства.
 				// при этом флаг mb_init=false пока не пройдёт успешной инициализации
@@ -206,7 +206,7 @@ namespace uniset
 
 				// safe mode
 				long safeMode = { safeNone }; /*!< режим безопасного состояния см. SafeMode */
-				uniset::ObjectId safemode_id = { uniset::DefaultObjectId }; /*!< иденидентификатор для датчика безопасного режима */
+				uniset::ObjectId safemode_id = { uniset::DefaultObjectId }; /*!< идентификатор для датчика безопасного режима */
 				IOController::IOStateList::iterator safemode_it;
 				long safemode_value = { 1 };
 
@@ -340,7 +340,7 @@ namespace uniset
 			bool force =  { false };        /*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
 			bool force_out = { false };    /*!< флаг означающий, принудительного чтения выходов */
 			bool mbregFromID = { false };
-			timeout_t polltime = { 100 };    /*!< переодичность обновления данных, [мсек] */
+			timeout_t polltime = { 100 };    /*!< периодичность обновления данных, [мсек] */
 			timeout_t sleepPause_msec = { 10 };
 			size_t maxQueryCount = { ModbusRTU::MAXDATALEN }; /*!< максимальное количество регистров для одного запроса */
 
@@ -350,7 +350,7 @@ namespace uniset
 			IOController::IOStateList::iterator itHeartBeat;
 			uniset::ObjectId test_id = { uniset::DefaultObjectId };
 
-			uniset::ObjectId sidExchangeMode = { uniset::DefaultObjectId }; /*!< иденидентификатор для датчика режима работы */
+			uniset::ObjectId sidExchangeMode = { uniset::DefaultObjectId }; /*!< идентификатор для датчика режима работы */
 			IOController::IOStateList::iterator itExchangeMode;
 			long exchangeMode = { emNone }; /*!< режим работы см. ExchangeMode */
 

@@ -29,7 +29,7 @@ namespace uniset
 			virtual void evfinish() {}
 
 			// подготовка перед запуском loop
-			// запусу своих ev::xxx.start()
+			// запуску своих ev::xxx.start()
 			virtual void evprepare() {}
 
 			// Управление потоком событий

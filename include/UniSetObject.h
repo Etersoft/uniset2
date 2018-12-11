@@ -84,7 +84,7 @@ namespace uniset
 			UniSetObject();
 			virtual ~UniSetObject();
 
-			// Функции объявленные в IDL
+			// Функции объявленые в IDL
 			virtual CORBA::Boolean exist() override;
 
 			virtual uniset::ObjectId getId() override;

@@ -136,7 +136,7 @@ class DebugStream : public std::ostream
 			return fname;
 		}
 
-		// имя лог файла можно установить отдельно, но не вклчать запись..
+		// имя лог файла можно установить отдельно, но не включать запись..
 		inline void setLogFile( const std::string& n ) noexcept
 		{
 			fname = n;

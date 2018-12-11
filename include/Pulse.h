@@ -37,7 +37,7 @@ namespace uniset
 		public:
 
 			// t1_msec - интервал "вкл"
-			// t0_msec - интерфал "откл"
+			// t0_msec - интервал "откл"
 			inline void run( timeout_t _t1_msec, timeout_t _t0_msec ) noexcept
 			{
 				setTiming(_t1_msec, _t0_msec, true);

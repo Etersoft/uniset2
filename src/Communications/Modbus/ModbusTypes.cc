@@ -3011,7 +3011,7 @@ namespace uniset
 				return "Неожидаемый тип пакета";
 
 			case erPacketTooLong:
-				return "пакет длинее буфера приема";
+				return "пакет длиннее буфера приема";
 
 			case erHardwareError:
 				return "ошибка оборудования";

@@ -176,7 +176,7 @@ TEST_CASE("UInterface", "[UInterface]")
 		REQUIRE_THROWS_AS( ui.askThreshold(aid, 3, UniversalIO::UIONotify, 50, 20, false, testOID), IONotifyController_i::BadRange );
 
 		IONotifyController_i::ThresholdsListSeq_var slist = ui.getThresholdsList(aid);
-		REQUIRE( slist->length() == 1 ); // количество датчиков с порогоами = 1 (это aid)
+		REQUIRE( slist->length() == 1 ); // количество датчиков с порогами = 1 (это aid)
 
 		// 3 порога мы создали выше(askThreshold) + 1 который в настроечном файле в секции <thresholds>
 		REQUIRE( slist[0].tlist.length() == 4 );

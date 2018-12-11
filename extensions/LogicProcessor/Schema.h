@@ -133,7 +133,7 @@ namespace uniset
 			std::shared_ptr<Element> findOut(const std::string& name);
 
 			// -----------------------------------------------
-			// внутренее соединения
+			// внутреннее соединения
 			// между элементами
 			struct INLink
 			{
@@ -171,7 +171,7 @@ namespace uniset
 			};
 
 		protected:
-			ElementMap emap; // список элеметов
+			ElementMap emap; // список элементов
 			InternalList inLinks;
 			ExternalList extLinks;
 			OutputsList outList;

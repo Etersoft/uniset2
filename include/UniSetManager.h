@@ -68,7 +68,7 @@ namespace uniset
 				return uniset::ObjectType("UniSetManager");
 			}
 
-			// ------  функции объявленные в интерфейсе(IDL) ------
+			// ------  функции объявленые в интерфейсе(IDL) ------
 			virtual void broadcast( const uniset::TransportMessage& msg) override;
 			virtual uniset::SimpleInfoSeq* getObjectsInfo( CORBA::Long MaxLength = 300, const char* userparam = 0  ) override ;
 

@@ -72,7 +72,7 @@ namespace uniset
 											UniXML::iterator& it, xmlNode* sec)
 
 				uxml  - интерфейс для работы с xml-файлом
-				it    - интератор(указатель) на текущий считываемый xml-узел (item)
+				it    - итератор(указатель) на текущий считываемый xml-узел (item)
 				sec   - указатель на корневой узел секции (SubscriberList)
 			*/
 			void setReadItem( ReaderSlot sl );
@@ -86,7 +86,7 @@ namespace uniset
 											UniXML::iterator& it, xmlNode* sec)
 
 				uxml  - интерфейс для работы с xml-файлом
-				it    - интератор(указатель) на текущий считываемый xml-узел (<consumer>)
+				it    - итератор(указатель) на текущий считываемый xml-узел (<consumer>)
 				sec   - указатель на текущий узел сообщения (<item>)
 			*/
 			void setReadConsumerItem( ReaderSlot sl );
@@ -118,7 +118,7 @@ namespace uniset
 			    bool xxxMyClass::myfunc(UniXML& xml,
 			                            UniXML::iterator& it, xmlNode* sec)
 				uxml   - интерфейс для работы с xml-файлом
-			    it     - интератор(указатель) на текущий считываемый xml-узел (<sensor>)
+			    it     - итератор(указатель) на текущий считываемый xml-узел (<sensor>)
 			    sec    - указатель на корневой узел секции (<threshold>)
 			*/
 			void setReadThresholdItem( ReaderSlot sl );

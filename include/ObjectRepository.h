@@ -101,7 +101,7 @@ namespace uniset
 			 */
 			bool list(const std::string& section, uniset::ListObjectName* ls, size_t how_many = 300) const;
 
-			/*! Получние списка how_many подсекций из секции in_section.
+			/*! Получение списка how_many подсекций из секции in_section.
 			 * throw(uniset::ORepFailed);
 			 */
 			bool listSections(const std::string& in_section, uniset::ListObjectName* ls, size_t how_many = 300) const;

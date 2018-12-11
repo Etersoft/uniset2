@@ -1261,7 +1261,7 @@ namespace uniset
 		cout << "                                   Разрешены: TBI0_24,TBI24_0,TBI16_8" << endl;
 
 		cout << "--prefix-default_cardnum   - Номер карты по умолчанию. По умолчанию -1." << endl;
-		cout << "                             Если задать, то он будет использоватся для датчиков" << endl;
+		cout << "                             Если задать, то он будет использоваться для датчиков" << endl;
 		cout << "                             у которых не задано поле 'card'." << endl;
 
 		cout << "--prefix-test-lamp         - Для данного узла в качестве датчика кнопки 'ТестЛамп' использовать указанный датчик." << endl;
@@ -1274,7 +1274,7 @@ namespace uniset
 		cout << "--prefix-blink-time msec   - Частота мигания, мсек. По умолчанию в configure.xml" << endl;
 		cout << "--prefix-blink2-time msec  - Вторая частота мигания (lmpBLINK2), мсек. По умолчанию в configure.xml" << endl;
 		cout << "--prefix-blink3-time msec  - Вторая частота мигания (lmpBLINK3), мсек. По умолчанию в configure.xml" << endl;
-		cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
+		cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
 		cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
 		cout << "--prefix-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
 		cout << "--prefix-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
