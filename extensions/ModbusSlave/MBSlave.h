@@ -145,7 +145,7 @@ namespace uniset
 
 		  \b --xxx-default-mbaddr addr1 - slave-адрес по умолчанию для данного устройства. Если указан адрес 255 - ответ будет на любые сообщения.
 
-		  \b --xxx-timeout или \b timeout msec  - таймаут на определение отсутсвия связи.
+		  \b --xxx-timeout или \b timeout msec  - таймаут на определение отсутствия связи.
 
 	      \b --xxx-reply-timeout msec  - таймаут на формирование ответа.
 
@@ -363,7 +363,7 @@ namespace uniset
 				AccessMode amode;
 				VTypes::VType vtype;    /*!< type of value */
 				size_t wnum;               /*!< номер слова (для типов с размеров больше 2х байт */
-				size_t nbyte;              /*!< номер байта, который надо "сохранить" из "пришедщего в запросе" слова. [1-2] */
+				size_t nbyte;              /*!< номер байта, который надо "сохранить" из "пришедшего в запросе" слова. [1-2] */
 				std::shared_ptr<BitRegProperty> bitreg; /*!< указатель, как признак является ли данный регистр "сборным" из битовых */
 				ModbusRTU::RegID regID;
 
@@ -473,7 +473,7 @@ namespace uniset
 			ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query,
 										   ModbusRTU::MEIMessageRetRDI& reply );
 
-			// т.к. в функциях (much_real_read,nuch_real_write) рассчёт на отсортированность IOMap
+			// т.к. в функциях (much_real_read,nuch_real_write) расчёт на отсортированность IOMap
 			// то использовать unordered_map нельзя
 			typedef std::map<ModbusRTU::RegID, IOProperty> RegMap;
 

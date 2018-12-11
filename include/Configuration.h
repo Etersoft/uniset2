@@ -160,7 +160,7 @@ namespace uniset
 			/*! интерфейс к карте объектов */
 			std::shared_ptr<ObjectIndex> oind;
 
-			/*! интерфейс к работе с локальнымми ior-файлами */
+			/*! интерфейс к работе с локальными ior-файлами */
 			std::shared_ptr<IORFile> iorfile;
 
 			/*! указатель на конфигурационный xml */

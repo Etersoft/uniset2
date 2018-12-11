@@ -95,7 +95,7 @@ namespace uniset
 			// Вторая ступень фильтра, математическая реализация RC фильтра
 			double secondLevel( double val );
 
-			double Ti;       // Постоянная времени для апериодического звена в милисекундах
+			double Ti;       // Постоянная времени для апериодического звена в миллисекундах
 			double val;      // Текущее значение второй ступени фильтра
 			double M;        // Среднее арифметическое
 			double S;        // Среднеквадратичное отклонение
@@ -107,7 +107,7 @@ namespace uniset
 
 			typedef std::vector<int> MedianVector;
 			MedianVector mvec;
-			bool mvec_sorted; // флаг, что mvec остортирован (заполнен)
+			bool mvec_sorted; // флаг, что mvec отсортирован (заполнен)
 
 			typedef std::vector<double> Coeff;
 			Coeff w;        // Вектор коэффициентов для filterIIR

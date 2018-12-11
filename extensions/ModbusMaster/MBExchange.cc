@@ -261,8 +261,8 @@ namespace uniset
 		cout << "--prefix-recv-timeout msec      - Таймаут на приём одного сообщения" << endl;
 		cout << "--prefix-timeout msec           - Таймаут для определения отсутствия соединения" << endl;
 		cout << "--prefix-aftersend-pause msec   - Пауза после посылки запроса (каждого). По умолчанию: 0." << endl;
-		cout << "--prefix-reopen-timeout msec    - Таймаут для 'переоткрытия соединения' при отсутсвия соединения msec милисекунд. По умолчанию 10 сек." << endl;
-		cout << "--prefix-heartbeat-id  name     - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
+		cout << "--prefix-reopen-timeout msec    - Таймаут для 'переоткрытия соединения' при отсутствия соединения msec милисекунд. По умолчанию 10 сек." << endl;
+		cout << "--prefix-heartbeat-id  name     - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
 		cout << "--prefix-heartbeat-max val      - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
 		cout << "--prefix-ready-timeout msec     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
 		cout << "--prefix-force 0,1              - Сохранять значения в SM на каждом шаге, независимо от, того менялось ли значение" << endl;
@@ -2569,7 +2569,7 @@ namespace uniset
 		}
 
 		/*! приоритет опроса:
-		 * 1...n - задаёт "часоту" опроса. Т.е. каждые 1...n циклов
+		 * 1...n - задаёт "частоту" опроса. Т.е. каждые 1...n циклов
 		*/
 		size_t pollfactor = IOBase::initIntProp(it, "pollfactor", prop_prefix, false, 0);
 

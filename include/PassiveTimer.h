@@ -111,7 +111,7 @@ namespace uniset
 			virtual void terminate() noexcept override; /*!< прервать работу таймера */
 
 		protected:
-			timeout_t t_msec = { 0 };  /*!< интервал таймера, в милисекундах (для "пользователей") */
+			timeout_t t_msec = { 0 };  /*!< интервал таймера, в миллисекундах (для "пользователей") */
 
 			// Т.к. НЕ ВЕСЬ КОД переведён на использование std::chrono
 			// везде используется timeout_t (и WaitUpTime)

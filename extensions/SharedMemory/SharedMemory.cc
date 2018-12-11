@@ -972,7 +972,7 @@ namespace uniset
 				try
 				{
 #if 1
-					// Вариант через setValue...(заодно внтури проверяются пороги)
+					// Вариант через setValue...(заодно внутри проверяются пороги)
 					setValue(ii.si.id, ii.value, getId());
 #else
 

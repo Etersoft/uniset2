@@ -106,7 +106,7 @@ namespace uniset
 			{
 				return minVal;
 			}
-			/*! Возвращает максимальное значение 'x' втретившееся в диаграмме */
+			/*! Возвращает максимальное значение 'x' встретившееся в диаграмме */
 			inline long getMaxValue() const noexcept
 			{
 				return maxVal;
@@ -154,7 +154,7 @@ namespace uniset
 				return rightRaw;
 			}
 
-			/*! построение характеристрики из конф. файла
+			/*! построение характеристики из конф. файла
 			    \param name - название характеристики в файле
 			    \param confile - файл содержащий данные
 			    \param node    - если node!=0, то используется этот узел...
@@ -225,8 +225,8 @@ namespace uniset
 					TypeOfValue getY( const TypeOfValue& x ) const noexcept;	  /*!< получить значение Y */
 					TypeOfValue getX( const TypeOfValue& y ) const noexcept;   /*!< получить значение X */
 
-					TypeOfValue calcY( const TypeOfValue& x ) const noexcept;  /*!< расчитать значение для x */
-					TypeOfValue calcX( const TypeOfValue& y ) const noexcept;  /*!< расчитать значение для y */
+					TypeOfValue calcY( const TypeOfValue& x ) const noexcept;  /*!< рассчитать значение для x */
+					TypeOfValue calcX( const TypeOfValue& y ) const noexcept;  /*!< рассчитать значение для y */
 
 					inline bool operator < ( const Part& p ) const noexcept
 					{

@@ -118,7 +118,7 @@ namespace uniset
 
 			static const long not_specified_value = { std::numeric_limits<long>::max() };
 
-			// ================== Достпуные сигналы =================
+			// ================== Доступные сигналы =================
 			/*!
 			// \warning  В сигнале напрямую передаётся указатель на внутреннюю структуру!
 			// Это не очень хорошо, с точки зрения "архитектуры", но оптимальнее по быстродействию!
@@ -137,7 +137,7 @@ namespace uniset
 			ChangeUndefinedStateSignal signal_change_undefined_state( uniset::ObjectId sid );
 			ChangeUndefinedStateSignal signal_change_undefined_state();
 			// -----------------------------------------------------------------------------------------
-			// полнейшее нарушение икапсуляции
+			// полнейшее нарушение инкапсуляции
 			// но пока, это попытка оптимизировать работу с IOController через указатель.
 			// Т.е. работая с датчиками через итераторы..
 #if 1
@@ -313,7 +313,7 @@ namespace uniset
 				void* getUserData( size_t index );
 				void setUserData( size_t index, void* data );
 
-				// сигнал для реализации механизма зависимостией..
+				// сигнал для реализации механизма зависимостей..
 				// (все зависимые датчики подключаются к нему (см. NCRestorer::init_depends_signals)
 				uniset::uniset_rwmutex changeMutex;
 				ChangeSignal sigChange;

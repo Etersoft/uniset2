@@ -183,7 +183,7 @@ namespace uniset
 		static bool processingAsDO( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force );
 		static void processingThreshold( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force );
 
-		/*! \param initPrefixOnly - TRUE - инициализировать только свойста с prefix (или брать значения по умолчанию).
+		/*! \param initPrefixOnly - TRUE - инициализировать только свойства с prefix (или брать значения по умолчанию).
 		                            FALSE - сперва искать свойство с prefix, если не найдено брать без prefix.
 		*/
 		static bool initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SMInterface>& shm,

@@ -340,7 +340,7 @@
 		int askPause; /*!&lt; пауза между неудачными попытками заказать датчики */
 		
 		IOController_i::SensorInfo si;
-		bool forceOut; /*!&lt; флаг принудительного обноления "выходов" */
+		bool forceOut; /*!&lt; флаг принудительного обнуления "выходов" */
 		
 		std::shared_ptr&lt;uniset::LogAgregator&gt; loga;
 		std::shared_ptr&lt;DebugStream&gt; mylog;

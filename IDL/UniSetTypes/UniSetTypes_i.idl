@@ -74,7 +74,7 @@
         struct ConsumerInfo
         {
             ObjectId id;    /*!< идентификатор заказчика */
-            ObjectId node;  /*!< узел на котором он находится */
+            ObjectId node;  /*!< узел, на котором он находится */
         };
 
 

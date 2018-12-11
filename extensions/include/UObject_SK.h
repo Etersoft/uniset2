@@ -216,7 +216,7 @@ class UObject_SK:
 		int askPause; /*!< пауза между неудачными попытками заказать датчики */
 		
 		IOController_i::SensorInfo si;
-		bool forceOut; /*!< флаг принудительного обноления "выходов" */
+		bool forceOut; /*!< флаг принудительного обнуления "выходов" */
 		
 		std::shared_ptr<uniset::LogAgregator> loga;
 		std::shared_ptr<DebugStream> mylog;

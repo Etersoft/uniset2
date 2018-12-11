@@ -88,7 +88,7 @@ interface IOController_i : UniSetManager_i
     void calibrate( in uniset::ObjectId sid, in CalibrateInfo ci, in uniset::ObjectId adminId ) raises(NameNotFound);
     CalibrateInfo getCalibrateInfo( in uniset::ObjectId sid ) raises(NameNotFound);
 
-    // --- Интерфес получения информации о всех датчиках ---
+    // --- Интерфейс получения информации о всех датчиках ---
     /*! Информация датчике */
     struct SensorIOInfo
     {
@@ -139,7 +139,7 @@ interface IOController_i : UniSetManager_i
     {
         long value;
 
-        // могут быть проблеммы в 64bit-ных
+        // могут быть проблемы в 64bit-ных
         unsigned long tv_sec;    /*!< время последнего изменения датчика, секунды (clock_gettime(CLOCK_REALTIME) */
         unsigned long tv_nsec;   /*!< время последнего изменения датчика, nanosec (clock_gettime(CLOCK_REALTIME) */
         uniset::ObjectId supplier; /*!< идентификатор того, кто менял датчик (последний раз) */
@@ -178,7 +178,7 @@ interface IONotifyController_i : IOController_i
     {
     };
 
-    /*! Универсальная функция заказа уведомления об изменнии датчика.
+    /*! Универсальная функция заказа уведомления об изменении датчика.
      * \sa UniversalIO::UniversalIOController::askSensor()
     */
     void askSensor(in uniset::ObjectId sid, in uniset::ConsumerInfo ci, in UniversalIO::UIOCommand cmd ) raises(NameNotFound,IOBadParam);
@@ -205,7 +205,7 @@ interface IONotifyController_i : IOController_i
     {
         uniset::ThresholdId id;
         long hilimit;         /*!< верхняя граница срабатывания */
-        long lowlimit;        /*!< нижняя гранийа срабатывания */
+        long lowlimit;        /*!< нижняя граница срабатывания */
         ThresholdState state;
         unsigned long tv_sec;    /*!< время последнего изменения датчика, секунды (clock_gettime(CLOCK_REALTIME) */
         unsigned long tv_nsec;   /*!< время последнего изменения датчика, nanosec (clock_gettime(CLOCK_REALTIME) */
@@ -217,7 +217,7 @@ interface IONotifyController_i : IOController_i
     /*! Заказ порогового датчика
      * \sa UniversalIO::UniversalIOController::askThreshold()
      * \param tid - идентификатор порога
-     * \param lowLimit - нижний порог срабатыания
+     * \param lowLimit - нижний порог срабатывания
      * \param hiLimit - верхний порог срабатывания
      * \param invert - инвертировать логику срабатывания
      * Если invert=false, порог срабатывает при условии >= hilimit и отпускается при <= lowlimit
@@ -243,7 +243,7 @@ interface IONotifyController_i : IOController_i
 
     typedef sequence<ThresholdList> ThresholdsListSeq;
 
-    /*! получить список порогов для датчка "si" */
+    /*! получить список порогов для датчика "si" */
     ThresholdList getThresholds( in uniset::ObjectId sid ) raises(NameNotFound);
 
     /*! получить список ВСЕХ датчиков по которым созданы пороги */
