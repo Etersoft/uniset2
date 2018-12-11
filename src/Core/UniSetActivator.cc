@@ -52,7 +52,7 @@ static std::condition_variable g_doneevent;
 static std::shared_ptr<std::thread> g_finish_guard_thread;
 static std::atomic_bool g_done = ATOMIC_VAR_INIT(0);
 
-static const int TERMINATE_TIMEOUT_SEC = 15; //  время отведенное на завершение процесса [сек]
+static const int TERMINATE_TIMEOUT_SEC = 15; //  время, отведённое на завершение процесса [сек]
 // ------------------------------------------------------------------------------------------
 struct ORBThreadDeleter
 {
@@ -190,7 +190,7 @@ namespace uniset
 	}
 	// ------------------------------------------------------------------------------------------
 	/*!
-	 *    Функция останавливает работу orb и завершает поток. А так же удаляет ссылку из репозитория.
+	 *    Функция останавливает работу orb и завершает поток, а также удаляет ссылку из репозитория.
 	 *    \note Объект становится недоступен другим процессам
 	*/
 	void UniSetActivator::shutdown()

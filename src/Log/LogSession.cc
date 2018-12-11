@@ -76,7 +76,7 @@ namespace uniset
 			if( iaddr.host().toString().empty() )
 			{
 				ostringstream err;
-				err << "(LogSession): unknonwn ip(0.0.0.0) client disconnected?!";
+				err << "(LogSession): unknown ip(0.0.0.0) client disconnected?!";
 
 				if( mylog.is_crit() )
 					mylog.crit() << err.str() << endl;
@@ -496,7 +496,7 @@ namespace uniset
 
 		if( msg.cmd == LogServerTypes::cmdFilterMode )
 		{
-			// отлючаем старый обработчик
+			// отключаем старый обработчик
 			if( conn )
 				conn.disconnect();
 		}

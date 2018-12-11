@@ -250,7 +250,7 @@ namespace uniset
 	// --------------------------------------------------------------------------
 }    // end of uniset namespace
 // --------------------------------------------------------------------------
-// "синтаксический сахар"..для логов
+// "синтаксический сахар" для логов
 #define uinfo if( uniset::ulog()->debugging(Debug::INFO) ) uniset::ulog()->info()
 #define uwarn if( uniset::ulog()->debugging(Debug::WARN) ) uniset::ulog()->warn()
 #define ucrit if( uniset::ulog()->debugging(Debug::CRIT) ) uniset::ulog()->crit()

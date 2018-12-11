@@ -433,7 +433,7 @@ SimpleInfo* IONotifyController::getInfo( const char* userparam )
 /*!
  *    \param lst - список в который необходимо внести потребителя
  *    \param name - имя вносимого потребителя
- *    \note Добавление произойдет только если такого потребителя не существует в списке
+ *    \note Добавление произойдёт только если такого потребителя не существует в списке
 */
 bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo& ci )
 {
@@ -481,7 +481,7 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
 }
 // ------------------------------------------------------------------------------------------
 /*!
- *    \param lst - указатель на список из которго происходит удаление потребителя
+ *    \param lst - указатель на список из которого происходит удаление потребителя
  *    \param name - имя удаляемого потребителя
 */
 bool IONotifyController::removeConsumer( ConsumerListInfo& lst, const ConsumerInfo& cons )

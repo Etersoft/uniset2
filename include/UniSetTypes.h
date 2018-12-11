@@ -58,7 +58,7 @@ namespace uniset
 
 	/*! Проверка на наличие недопустимых символов
 	 * Запрещенные символы см. uniset::BadSymbols[]
-	 * \return Если не найдено запрещенных символов то будет возвращен 0, иначе найденный символ
+	 * \return Если не найдено запрещённых символов то будет возвращен 0, иначе найденный символ
 	 */
 	char checkBadSymbols(const std::string& str);
 
@@ -93,8 +93,8 @@ namespace uniset
 
 	typedef std::list<std::string> ListObjectName;    /*!< Список объектов типа ObjectName */
 
-	typedef CORBA::Object_ptr ObjectPtr;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
-	typedef CORBA::Object_var ObjectVar;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
+	typedef CORBA::Object_ptr ObjectPtr;    /*!< Ссылка на объект, регистрируемый в ObjectRepository */
+	typedef CORBA::Object_var ObjectVar;    /*!< Ссылка на объект, регистрируемый в ObjectRepository */
 
 	UniversalIO::IOType getIOType( const std::string& s ) noexcept;
 	std::string iotype2str( const UniversalIO::IOType& t ) noexcept;
@@ -137,7 +137,7 @@ namespace uniset
 
 			std::list<ObjectId> getList() const noexcept;
 
-			// за освобождение выделеной памяти
+			// за освобождение выделенной памяти
 			// отвечает вызывающий!
 			IDSeq* getIDSeq() const;
 

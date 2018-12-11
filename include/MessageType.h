@@ -66,7 +66,7 @@ namespace uniset
 
 			Message() noexcept;
 
-			// для оптимизации, делаем конструктор который не будет инициализировать свойства класса
+			// для оптимизации, делаем конструктор, который не будет инициализировать свойства класса
 			// это необходимо для VoidMessage, который конструируется при помощи memcpy
 			explicit Message( int dummy_init ) noexcept {}
 
@@ -94,7 +94,7 @@ namespace uniset
 			VoidMessage( const VoidMessage& ) noexcept = default;
 			VoidMessage& operator=( const VoidMessage& ) noexcept = default;
 
-			// для оптимизации, делаем конструктор который не будет инициализировать свойства класса
+			// для оптимизации, делаем конструктор, который не будет инициализировать свойства класса
 			// это необходимо для VoidMessage, который конструируется при помощи memcpy
 			VoidMessage( int dummy ) noexcept : Message(dummy) {}
 
@@ -255,7 +255,7 @@ namespace uniset
 
 			ObjectId sensor_id = { uniset::DefaultObjectId };   /* ID датчика (события) */
 			double sensor_value = { 0.0 };  /* значение датчика (события) */
-			struct timespec sensor_time = { 0, 0 }; /* время срабатывания датчика(события), который квитируем */
+			struct timespec sensor_time = { 0, 0 }; /* время срабатывания датчика (события), который квитируем */
 			struct timespec confirm_time = { 0, 0 }; /* * время прошедшее до момента квитирования */
 
 			bool broadcast = { false };
