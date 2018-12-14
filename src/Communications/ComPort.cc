@@ -103,6 +103,11 @@ void ComPort::reopen()
 		tcgetattr(fd, &options);
 		tcsetattr(fd, TCSAFLUSH, &oldTermios);
 		close(fd);
+
+		curSym = 0;
+		bufLength = 0;
+		memset(buf,0,sizeof(buf));
+
 		openPort();
 
 		if( fd > 0 )
