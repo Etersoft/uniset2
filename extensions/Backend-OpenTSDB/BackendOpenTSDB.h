@@ -89,12 +89,14 @@ namespace uniset
 	Параметры буфера задаются аргументами командной строки или в конфигурационном файле.
 	Доступны следующие параметры:
 	- \b bufSize - размер буфера, при заполнении которого происходит посылка данных в БД
+	- \b bufMaxSize - максимальный размер буфера, при котором начинают откидываться новые сообщения (потеря сообщений)
 	- \b bufSyncTimeout - период сброса данных в БД
 	- \b reconnectTime - время на повторную попытку подключения к БД
+	- \b sizeOfMessageQueue - Размер очереди сообщений для обработки изменений по датчикам.
+		 При большом количестве отслеживаемых датчиков, размер должен быть достаточным, чтобы не терять изменения.
 
 	\todo Нужна ли поддержка авторизации для TSDB (возможно придётся перейти на HTTP REST API)
 	\todo Доделать возможность задать политику при переполнении буфера (удалять последние или первые, сколько чистить)
-	\todo Может стоит отделить настройки: размер буфера и сколько за один запрос писать в БД
 	*/
 	class BackendOpenTSDB:
 		public UObject_SK
@@ -131,6 +133,11 @@ namespace uniset
 		protected:
 			BackendOpenTSDB();
 
+			// переопределяем callback, чтобы оптимизировать
+			// обработку большого количества сообщений
+			// и убрать не нужную в данном процессе обработку (включая sleep_msec)
+			virtual void callback() noexcept override;
+
 			virtual void askSensors( UniversalIO::UIOCommand cmd ) override;
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 			virtual void timerInfo( const uniset::TimerMessage* tm ) override;
@@ -157,7 +164,8 @@ namespace uniset
 			std::unordered_map<uniset::ObjectId, ParamInfo> tsdbParams;
 
 			timeout_t bufSyncTime = { 5000 };
-			size_t bufSize = { 100 };
+			size_t bufSize = { 500 };
+			size_t bufMaxSize = { 5000 }; // drop messages
 			bool timerIsOn = { false };
 			timeout_t reconnectTime = { 5000 };
 			std::string lastError;
