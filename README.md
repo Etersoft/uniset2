@@ -7,9 +7,14 @@ There are set of base components to construct this kind of systems:
 * algorithms for a discrete and analog input/output based on COMEDI interface.
 * IPC mechanism based on CORBA (omniORB).
 * logging system based on MySQL, SQLite, PostgreSQL databases.
+* logging to TSDB (influxdb, opentsdb)
+* logging to RRD
+* supported MQTT (libmosquittopp)
+* fast network protocol based on udp (UNet)
 * Web interface to display logging and statistic information.
 * utilities for system's configuration based on XML.
 * python interface
+* go interface (experimental)
 * REST API
 
 UniSet have been written in C++ and IDL languages but you can use another languages in your
