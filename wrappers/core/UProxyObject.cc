@@ -53,6 +53,12 @@ class UProxyObject_impl:
 
 		struct SInfo
 		{
+			SInfo()
+			{
+				si.id = uniset::DefaultObjectId;
+				si.node = uniset::DefaultObjectId;
+			}
+
 			IOController_i::SensorInfo si;
 			long value = { 0 };
 			float fvalue = { 0.0 };

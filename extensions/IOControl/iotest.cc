@@ -302,7 +302,7 @@ int main(int argc, char* argv[])
 					}
 				}
 
-				if( !blink )
+				if( blink == 0 ) // -V776
 					break;
 
 				val = val ? 0 : 1;

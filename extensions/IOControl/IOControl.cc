@@ -158,21 +158,18 @@ namespace uniset
 					{
 						ComediInterface::SubdevType st = ComediInterface::str2type(stype.c_str());
 
-						if( !stype.empty() && st == ComediInterface::Unknown )
+						if( st == ComediInterface::Unknown )
 						{
 							ostringstream err;
 							err << "Unknown subdev type '" << stype << " for " << t1.str();
 							throw SystemError(err.str());
 						}
 
-						if( !stype.empty() )
-						{
-							ioinfo << myname
-								   << "(init): card" << i
-								   << " subdev" << s << " set type " << stype << endl;
+						ioinfo << myname
+							   << "(init): card" << i
+							   << " subdev" << s << " set type " << stype << endl;
 
-							cards[i]->configureSubdev(s - 1, st);
-						}
+						cards[i]->configureSubdev(s - 1, st);
 					}
 				}
 			}
@@ -469,14 +466,14 @@ namespace uniset
 					ptHeartBeat.reset();
 				}
 			}
-			catch( const uniset::Exception& ex )
-			{
-				iolog3 << myname << "(execute): " << ex << endl;
-			}
 			catch( const CORBA::SystemException& ex )
 			{
 				iolog3 << myname << "(execute): CORBA::SystemException: "
 					   << ex.NP_minorString() << endl;
+			}
+			catch( const uniset::Exception& ex )
+			{
+				iolog3 << myname << "(execute): " << ex << endl;
 			}
 			catch(...)
 			{
@@ -733,14 +730,14 @@ namespace uniset
 		{
 			iolog3 << myname << "(iopoll): (BadRange)..." << endl;
 		}
-		catch( const uniset::Exception& ex )
-		{
-			iolog3 << myname << "(iopoll): " << ex << endl;
-		}
 		catch( const CORBA::SystemException& ex )
 		{
 			iolog3 << myname << "(iopoll): СORBA::SystemException: "
 				   << ex.NP_minorString() << endl;
+		}
+		catch( const uniset::Exception& ex )
+		{
+			iolog3 << myname << "(iopoll): " << ex << endl;
 		}
 	}
 	// --------------------------------------------------------------------------------

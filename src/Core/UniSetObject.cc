@@ -288,9 +288,12 @@ namespace uniset
 	void UniSetObject::unregistration()
 	{
 		if( myid < 0 ) // || !reg )
+		{
+			regOK = false;
 			return;
+		}
 
-		if( myid == uniset::DefaultObjectId )
+		if( myid == uniset::DefaultObjectId ) // -V547
 		{
 			uinfo << myname << "(unregister): myid=DefaultObjectId \n";
 			regOK = false;
@@ -846,10 +849,6 @@ namespace uniset
 					break;
 			}
 		}
-		catch( const uniset::Exception& ex )
-		{
-			ucrit  << myname << "(processingMessage): " << ex << endl;
-		}
 		catch( const CORBA::SystemException& ex )
 		{
 			ucrit << myname << "(processingMessage): CORBA::SystemException: " << ex.NP_minorString() << endl;
@@ -867,6 +866,10 @@ namespace uniset
 							   << " line: " << fe.line()
 							   << " mesg: " << fe.errmsg() << endl;
 			}
+		}
+		catch( const uniset::Exception& ex )
+		{
+			ucrit  << myname << "(processingMessage): " << ex << endl;
 		}
 		catch( const std::exception& ex )
 		{

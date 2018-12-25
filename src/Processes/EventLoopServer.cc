@@ -58,8 +58,8 @@ namespace uniset
 			thr = nullptr;
 		}
 
-		if( !thr )
-			thr = unisetstd::make_unique<std::thread>( [&] { defaultLoop(); } );
+		isrunning = false;
+		thr = unisetstd::make_unique<std::thread>( [&] { defaultLoop(); } );
 
 		bool ret = waitDefaultLoopRunning(timeout_msec);
 
@@ -167,6 +167,9 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	bool EventLoopServer::waitDefaultLoopRunning( size_t waitTimeout_msec )
 	{
+		if( isrunning )
+			return true;
+
 		std::unique_lock<std::mutex> lock(looprunOK_mutex);
 		looprunOK_event.wait_for(lock, std::chrono::milliseconds(waitTimeout_msec), [&]()
 		{

@@ -996,13 +996,13 @@ namespace uniset
 
 #endif
 				}
-				catch( const uniset::Exception& ex )
-				{
-					smcrit << myname << "(initFromSM): " << ex << endl;
-				}
 				catch( const IOController_i::NameNotFound& ex )
 				{
 					smcrit << myname << "(initFromSM): not found sensor id=" << ii.si.id << "'" << endl;
+				}
+				catch( const uniset::Exception& ex )
+				{
+					smcrit << myname << "(initFromSM): " << ex << endl;
 				}
 			}
 

@@ -180,7 +180,7 @@ namespace uniset
 			virtual void initNode( uniset::NodeInfo& ninfo, UniXML::iterator& it) noexcept;
 
 			void initRepSections();
-			std::string getRepSectionName(const std::string& sec, xmlNode* secnode = 0 );
+			std::pair<std::string,xmlNode*> getRepSectionName( const std::string& sec );
 			void setConfFileName( const std::string& fn = "" );
 			void initParameters();
 			void setLocalNode( const std::string& nodename );

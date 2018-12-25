@@ -142,6 +142,7 @@ namespace uniset
 		type = Message::SysCommand;
 		this->priority = priority;
 		this->consumer = consumer;
+		memset(data,0,sizeof(data));
 	}
 
 	SystemMessage::SystemMessage(const VoidMessage* msg) noexcept:

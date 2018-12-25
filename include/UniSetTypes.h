@@ -76,20 +76,11 @@ namespace uniset
 
 	/*! генератор уникального положительного ключа
 	 *  Уникальность гарантируется только для пары значений id и node.
-	 * \warning что тут у нас с переполнением..
-	 * \warning Уникальность генерируемого ключа еще не проверялась,
-	     но нареканий по использованию тоже не было :)
-	*  \todo Желательно продумать что-нибудь с использованием хэш.
+	 *  \todo Желательно продумать что-нибудь с использованием хэш.
+	 *  \warning Уникальность не гарантирована, возможны коллизии
 	*/
-	inline static KeyType key( const uniset::ObjectId id, const uniset::ObjectId node )
-	{
-		return KeyType((id * node) + (id + 2 * node));
-	}
-
-	inline static KeyType key( const IOController_i::SensorInfo& si )
-	{
-		return key(si.id, si.node);
-	}
+	KeyType key( const uniset::ObjectId id, const uniset::ObjectId node );
+	KeyType key( const IOController_i::SensorInfo& si );
 
 	typedef std::list<std::string> ListObjectName;    /*!< Список объектов типа ObjectName */
 
@@ -318,6 +309,7 @@ namespace uniset
 	// limit    - обрезать итоговое значение по границам
 	float fcalibrate(float raw, float rawMin, float rawMax, float calMin, float calMax, bool limit = true );
 	long lcalibrate(long raw, long rawMin, long rawMax, long calMin, long calMax, bool limit = true );
+	double dcalibrate(double raw, double rawMin, double rawMax, double calMin, double calMax, bool limit = true );
 
 	// установка значения в нужный диапазон
 	long setinregion(long raw, long rawMin, long rawMax);

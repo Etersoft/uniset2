@@ -30,22 +30,6 @@ namespace uniset
 	using namespace std;
 	using namespace uniset::extensions;
 	// -----------------------------------------------------------------------------
-	// вспомогательная структура для предотвращения утечки памяти
-	struct DataGuard
-	{
-		DataGuard( size_t sz )
-		{
-			data = new ModbusRTU::ModbusData[sz];
-		}
-
-		~DataGuard()
-		{
-			delete[] data;
-		}
-
-		ModbusRTU::ModbusData* data;
-	};
-	// -----------------------------------------------------------------------------
 	MBExchange::MBExchange(uniset::ObjectId objId, uniset::ObjectId shmId,
 						   const std::shared_ptr<SharedMemory>& _ic, const std::string& prefix ):
 		UniSetObject(objId),
@@ -793,7 +777,7 @@ namespace uniset
 			case ModbusRTU::fnReadInputStatus:
 			{
 				ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr, p->mbreg, q_count);
-				DataGuard d(q_count);
+				ModbusRTU::DataGuard d(q_count);
 				size_t m = 0;
 
 				for( size_t i = 0; i < ret.bcnt; i++ )
@@ -804,14 +788,14 @@ namespace uniset
 						d.data[m] = b[k];
 				}
 
-				p->initOK = initSMValue(d.data, q_count, &(p->p));
+				p->initOK = initSMValue(d.data, d.len, &(p->p));
 			}
 			break;
 
 			case ModbusRTU::fnReadCoilStatus:
 			{
 				ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr, p->mbreg, q_count);
-				DataGuard d(q_count);
+				ModbusRTU::DataGuard d(q_count);
 				size_t m = 0;
 
 				for( size_t i = 0; i < ret.bcnt; i++ )
@@ -822,7 +806,7 @@ namespace uniset
 						d.data[m] = b[k];
 				}
 
-				p->initOK = initSMValue(d.data, q_count, &(p->p));
+				p->initOK = initSMValue(d.data, d.len, &(p->p));
 			}
 			break;
 
@@ -930,7 +914,7 @@ namespace uniset
 			else if( p->vType == VTypes::vtF4 )
 			{
 				VTypes::F4 f(data, VTypes::F4::wsize());
-				IOBase::processingFasAI( p, (float)f, shm, true );
+				IOBase::processingF64asAI( p, (double)f, shm, true );
 			}
 			else if( p->vType == VTypes::vtI2 )
 			{
@@ -967,14 +951,14 @@ namespace uniset
 		{
 			mblog3 << myname << "(initSMValue): (BadRange)..." << endl;
 		}
-		catch( const uniset::Exception& ex )
-		{
-			mblog3 << myname << "(initSMValue): " << ex << endl;
-		}
 		catch( const CORBA::SystemException& ex)
 		{
 			mblog3 << myname << "(initSMValue): CORBA::SystemException: "
 				   << ex.NP_minorString() << endl;
+		}
+		catch( const uniset::Exception& ex )
+		{
+			mblog3 << myname << "(initSMValue): " << ex << endl;
 		}
 		catch(...)
 		{
@@ -1227,14 +1211,14 @@ namespace uniset
 				{
 					mblog3 << myname << "(updateSM): (BadRange)..." << endl;
 				}
-				catch( const uniset::Exception& ex )
-				{
-					mblog3 << myname << "(updateSM): " << ex << endl;
-				}
 				catch( const CORBA::SystemException& ex )
 				{
 					mblog3 << myname << "(updateSM): CORBA::SystemException: "
 						   << ex.NP_minorString() << endl;
+				}
+				catch( const uniset::Exception& ex )
+				{
+					mblog3 << myname << "(updateSM): " << ex << endl;
 				}
 				catch( std::exception& ex )
 				{
@@ -1265,14 +1249,14 @@ namespace uniset
 					{
 						mblog3 << myname << "(updateSM): (BadRange)..." << endl;
 					}
-					catch( const uniset::Exception& ex )
-					{
-						mblog3 << myname << "(updateSM): " << ex << endl;
-					}
 					catch( const CORBA::SystemException& ex )
 					{
 						mblog3 << myname << "(updateSM): CORBA::SystemException: "
 							   << ex.NP_minorString() << endl;
+					}
+					catch( const uniset::Exception& ex )
+					{
+						mblog3 << myname << "(updateSM): " << ex << endl;
 					}
 					catch( std::exception& ex )
 					{
@@ -1313,14 +1297,14 @@ namespace uniset
 					{
 						mblog3 << myname << "(updateSM): (BadRange)..." << endl;
 					}
-					catch( const uniset::Exception& ex )
-					{
-						mblog3 << myname << "(updateSM): " << ex << endl;
-					}
 					catch( const CORBA::SystemException& ex )
 					{
 						mblog3 << myname << "(updateSM): CORBA::SystemException: "
 							   << ex.NP_minorString() << endl;
+					}
+					catch( const uniset::Exception& ex )
+					{
+						mblog3 << myname << "(updateSM): " << ex << endl;
 					}
 					catch( const std::exception& ex )
 					{
@@ -1596,7 +1580,7 @@ namespace uniset
 
 						if( p->vType == VTypes::vtF2 )
 						{
-							VTypes::F2 f1(d.data, VTypes::F2::wsize());
+							VTypes::F2 f1(d.data, d.len);
 							f = (float)f1;
 						}
 						else if( p->vType == VTypes::vtF2r )
@@ -1640,9 +1624,9 @@ namespace uniset
 						for( size_t k = 0; k < VTypes::F4::wsize(); k++, i++ )
 							d.data[k] = i->second->mbval;
 
-						VTypes::F4 f(d.data, VTypes::F4::wsize());
+						VTypes::F4 f(d.data, d.len);
 
-						IOBase::processingFasAI( p, (float)f, shm, force );
+						IOBase::processingF64asAI( p, (double)f, shm, force );
 					}
 				}
 			}
@@ -1691,12 +1675,12 @@ namespace uniset
 
 						if( p->vType == VTypes::vtI2 )
 						{
-							VTypes::I2 i2(d.data, VTypes::I2::wsize());
+							VTypes::I2 i2(d.data, d.len);
 							v = (int)i2;
 						}
 						else if( p->vType == VTypes::vtI2r )
 						{
-							VTypes::I2r i2(d.data, VTypes::I2::wsize());
+							VTypes::I2r i2(d.data, d.len);
 							v = (int)i2;
 						}
 
@@ -1704,7 +1688,7 @@ namespace uniset
 					}
 				}
 			}
-			else if( p->vType == VTypes::vtU2 || p->vType == VTypes::vtU2r )
+			else if( p->vType == VTypes::vtU2 || p->vType == VTypes::vtU2r ) // -V560
 			{
 				auto i = p->reg->rit;
 
@@ -1750,12 +1734,12 @@ namespace uniset
 
 						if( p->vType == VTypes::vtU2 )
 						{
-							VTypes::U2 u2(d.data, VTypes::U2::wsize());
+							VTypes::U2 u2(d.data, d.len);
 							v = (uint32_t)u2;
 						}
 						else if( p->vType == VTypes::vtU2r )
 						{
-							VTypes::U2r u2(d.data, VTypes::U2::wsize());
+							VTypes::U2r u2(d.data, d.len);
 							v = (uint32_t)u2;
 						}
 
@@ -1778,14 +1762,14 @@ namespace uniset
 		{
 			mblog3 << myname << "(updateRSProperty): (BadRange)..." << endl;
 		}
-		catch( const uniset::Exception& ex )
-		{
-			mblog3 << myname << "(updateRSProperty): " << ex << endl;
-		}
 		catch( const CORBA::SystemException& ex )
 		{
 			mblog3 << myname << "(updateRSProperty): CORBA::SystemException: "
 				   << ex.NP_minorString() << endl;
+		}
+		catch( const uniset::Exception& ex )
+		{
+			mblog3 << myname << "(updateRSProperty): " << ex << endl;
 		}
 		catch(...)
 		{
@@ -1886,7 +1870,7 @@ namespace uniset
 							for( size_t k = 0; k < MTR::T3::wsize(); k++, i++ )
 								d.data[k] = i->second->mbval;
 
-							MTR::T3 t(d.data, MTR::T3::wsize());
+							MTR::T3 t(d.data, d.len);
 							IOBase::processingAsAI( &(*it), (long)t, shm, force );
 						}
 					}
@@ -1942,7 +1926,7 @@ namespace uniset
 							for( size_t k = 0; k < MTR::T5::wsize(); k++, i++ )
 								d.data[k] = i->second->mbval;
 
-							MTR::T5 t(d.data, MTR::T5::wsize());
+							MTR::T5 t(d.data, d.len);
 
 							IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
 						}
@@ -1977,7 +1961,7 @@ namespace uniset
 							for( size_t k = 0; k < MTR::T6::wsize(); k++, i++ )
 								d.data[k] = i->second->mbval;
 
-							MTR::T6 t(d.data, MTR::T6::wsize());
+							MTR::T6 t(d.data, d.len);
 
 							IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
 						}
@@ -2011,7 +1995,7 @@ namespace uniset
 							for( size_t k = 0; k < MTR::T7::wsize(); k++, i++ )
 								d.data[k] = i->second->mbval;
 
-							MTR::T7 t(d.data, MTR::T7::wsize());
+							MTR::T7 t(d.data, d.len);
 
 							IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
 						}
@@ -2098,7 +2082,7 @@ namespace uniset
 							for( size_t k = 0; k < MTR::F1::wsize(); k++, i++ )
 								d.data[k] = i->second->mbval;
 
-							MTR::F1 t(d.data, MTR::F1::wsize());
+							MTR::F1 t(d.data, d.len);
 							IOBase::processingFasAI( &(*it), (float)t, shm, force );
 						}
 					}
@@ -2118,14 +2102,14 @@ namespace uniset
 			{
 				mblog3 << myname << "(updateMTR): (BadRange)..." << endl;
 			}
-			catch( const uniset::Exception& ex )
-			{
-				mblog3 << myname << "(updateMTR): " << ex << endl;
-			}
 			catch( const CORBA::SystemException& ex )
 			{
 				mblog3 << myname << "(updateMTR): CORBA::SystemException: "
 					   << ex.NP_minorString() << endl;
+			}
+			catch( const uniset::Exception& ex )
+			{
+				mblog3 << myname << "(updateMTR): " << ex << endl;
 			}
 			catch(...)
 			{
@@ -2185,14 +2169,14 @@ namespace uniset
 			{
 				mblog3 << myname << "(updateRTU188): (BadRange)..." << endl;
 			}
-			catch( const uniset::Exception& ex )
-			{
-				mblog3 << myname << "(updateRTU188): " << ex << endl;
-			}
 			catch( const CORBA::SystemException& ex )
 			{
 				mblog3 << myname << "(updateRTU188): CORBA::SystemException: "
 					   << ex.NP_minorString() << endl;
+			}
+			catch( const uniset::Exception& ex )
+			{
+				mblog3 << myname << "(updateRTU188): " << ex << endl;
 			}
 			catch(...)
 			{

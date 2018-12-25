@@ -298,15 +298,15 @@ namespace uniset
 			if( tcp )
 				tcp->forceDisconnect();
 		}
-		catch( const uniset::Exception& ex )
-		{
-			if( dlog->is_warn() )
-				dlog->warn() << "(query): " << ex << endl;
-		}
 		catch( const Poco::Net::NetException& e )
 		{
 			if( dlog->is_warn() )
 				dlog->warn() << "(query): tcp error: " << e.displayText() << endl;
+		}
+		catch( const uniset::Exception& ex )
+		{
+			if( dlog->is_warn() )
+				dlog->warn() << "(query): " << ex << endl;
 		}
 		catch( const std::exception& e )
 		{

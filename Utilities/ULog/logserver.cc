@@ -123,11 +123,6 @@ int main( int argc, char** argv )
 			}
 		}
 
-		if( !checkfilter.empty() )
-		{
-
-		}
-
 		if( verb )
 		{
 			cout << "(init): listen " << addr << ":" << port

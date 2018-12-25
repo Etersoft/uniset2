@@ -399,7 +399,7 @@ namespace uniset
 		size_t last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
 
 		// копируем
-		memcpy(mm.data, &d, last);
+		memcpy(mm.data, &d, last); // -V512
 
 		// пересчитываем CRC по перевёрнутым данным
 		ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(d) );
@@ -428,7 +428,7 @@ namespace uniset
 		assert( m.pduhead.func == fnReadCoilStatus );
 		//	memset(this, 0, sizeof(*this));
 		memcpy(this, &m.pduhead, sizeof(m.pduhead));
-		memcpy(&start, &(m.data[0]), szData());
+		memcpy(&start, m.data, szData()); // -V512
 
 		// переворачиваем слова
 		start = SWAPSHORT(start);
@@ -731,7 +731,7 @@ namespace uniset
 		size_t last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
 
 		// копируем
-		memcpy(mm.data, &d, last);
+		memcpy(mm.data, &d, last); // -V512
 
 		// пересчитываем CRC по перевёрнутым данным
 		ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(d) );
@@ -760,7 +760,7 @@ namespace uniset
 		assert( m.pduhead.func == fnReadInputStatus );
 		func = m.pduhead.func;
 		addr = m.pduhead.addr;
-		memcpy(&start, &m.data, szData());
+		memcpy(&start, &m.data, szData()); // -V512
 
 		// переворачиваем слова
 		start = SWAPSHORT(start);
@@ -935,7 +935,7 @@ namespace uniset
 		size_t last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
 
 		// копируем
-		memcpy(mm.data, &d, last);
+		memcpy(mm.data, &d, last); // -V512
 
 		// пересчитываем CRC по перевёрнутым данным
 		ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(d) );
@@ -967,7 +967,7 @@ namespace uniset
 		func = m.pduhead.func;
 		addr = m.pduhead.addr;
 		//memset(this, 0, sizeof(*this));
-		memcpy(&start, &m.data, szData());
+		memcpy(&start, &m.data, szData()); // -V512
 
 		// переворачиваем слова
 		start = SWAPSHORT(start);
@@ -1012,7 +1012,7 @@ namespace uniset
 
 		size_t cnt = m.data[0] / sizeof(ModbusData);
 
-		if( cnt > MAXLENPACKET / sizeof(ModbusData) )
+		if( cnt > MAXLENPACKET / sizeof(ModbusData) ) // -V547
 			throw mbException(erPacketTooLong);
 
 		count     = cnt;
@@ -1146,7 +1146,7 @@ namespace uniset
 		size_t last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
 
 		// копируем
-		memcpy(mm.data, &d, last);
+		memcpy(mm.data, &d, last); // -V512
 
 		// пересчитываем CRC по перевёрнутым данным
 		ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(d) );
@@ -1176,7 +1176,7 @@ namespace uniset
 		assert( m.pduhead.func == fnReadInputRegisters );
 		//	memset(this, 0, sizeof(*this));
 		memcpy(this, &m.pduhead, sizeof(m.pduhead));
-		memcpy(&start, m.data, szData());
+		memcpy(&start, m.data, szData()); // -V512
 
 		// переворачиваем слова
 		start = SWAPSHORT(start);
@@ -1222,7 +1222,7 @@ namespace uniset
 		// bcnt = m.data[0];
 		size_t cnt = m.data[0] / sizeof(ModbusData);
 
-		if( cnt > MAXLENPACKET / sizeof(ModbusData) )
+		if( cnt > MAXLENPACKET / sizeof(ModbusData) ) // -V547
 			throw mbException(erPacketTooLong);
 
 		count     = cnt;
@@ -1418,7 +1418,7 @@ namespace uniset
 		ind += sizeof(d);
 
 		// копируем
-		memcpy(mm.data, &d, ind);
+		memcpy(mm.data, &d, ind); // -V512
 
 		// copy bcnt
 		memcpy(&(mm.data[ind]), &bcnt, sizeof(bcnt));
@@ -1588,7 +1588,7 @@ namespace uniset
 		ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
 		size_t last = sizeof(d);
 		// копируем
-		memcpy(mm.data, &d, last);
+		memcpy(mm.data, &d, last); // -V512
 
 		// пересчитываем CRC по перевёрнутым данным
 		ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + last );
@@ -1610,7 +1610,6 @@ namespace uniset
 		return os << (*m);
 	}
 	// -------------------------------------------------------------------------
-	// -------------------------------------------------------------------------
 	WriteOutputMessage::WriteOutputMessage( ModbusAddr a, ModbusData s ):
 		start(s),
 		quant(0),
@@ -1618,6 +1617,7 @@ namespace uniset
 	{
 		addr = a;
 		func = fnWriteOutputRegisters;
+		memset(data,0,sizeof(data));
 	}
 	// -------------------------------------------------------------------------
 	bool WriteOutputMessage::addData( ModbusData d )
@@ -1653,7 +1653,7 @@ namespace uniset
 		ind += sizeof(d);
 
 		// копируем
-		memcpy(mm.data, &d, ind);
+		memcpy(mm.data, &d, ind); // -V512
 
 		// copy bcnt
 		bcnt    = quant * sizeof(ModbusData);
@@ -1847,7 +1847,7 @@ namespace uniset
 		ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
 		size_t last = sizeof(d);
 		// копируем
-		memcpy(mm.data, &d, last);
+		memcpy(mm.data, &d, last); // -V512
 
 		// пересчитываем CRC по перевёрнутым данным
 		ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + last );
@@ -1885,7 +1885,7 @@ namespace uniset
 		memcpy(&mm.pduhead, this, szModbusHeader);
 		ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
 		size_t last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
-		memcpy(mm.data, &d, last);
+		memcpy(mm.data, &d, last); // -V512
 		// пересчитываем CRC по перевёрнутым данным
 		ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + last );
 		// копируем CRC (последний элемент). Без переворачивания...
@@ -2016,7 +2016,7 @@ namespace uniset
 		size_t last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
 
 		// копируем
-		memcpy(mm.data, &d, last);
+		memcpy(mm.data, &d, last); // -V512
 
 		// пересчитываем CRC по перевёрнутым данным
 		ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(d) );
@@ -2056,7 +2056,7 @@ namespace uniset
 		memcpy(&mm.pduhead, this, szModbusHeader);
 		ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
 		size_t last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
-		memcpy(mm.data, &d, last);
+		memcpy(mm.data, &d, last); // -V512
 		// пересчитываем CRC по перевёрнутым данным
 		ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + last );
 		// копируем CRC (последний элемент). Без переворачивания...
@@ -2194,7 +2194,7 @@ namespace uniset
 		size_t last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
 
 		// копируем
-		memcpy(mm.data, &d, last);
+		memcpy(mm.data, &d, last); // -V512
 
 		// пересчитываем CRC по перевёрнутым данным
 		ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(d) );
@@ -2679,7 +2679,7 @@ namespace uniset
 
 		RDIObjectInfo r(id, val);
 		dlist.push_back(r);
-		objNum = dlist.size();
+		objNum = (ModbusByte)dlist.size(); // -V1029
 
 		bcnt += val.size() + 2; // 2 = 'id'(byte) + 'len'(byte)
 		return true;
@@ -3132,7 +3132,7 @@ namespace uniset
 		    mm.data[6] = century;
 		*/
 		size_t bcnt = 7;
-		memcpy( mm.data, &hour, bcnt ); // копируем начиная с адреса 'hour' 7 байт.
+		memcpy( mm.data, &hour, bcnt ); // -V512 копируем начиная с адреса 'hour' 7 байт.
 
 		// пересчитываем CRC
 		ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + bcnt );
@@ -3427,7 +3427,7 @@ namespace uniset
 		// копируем данные (переворачиваем байты)
 		ModbusData d[2] = { SWAPSHORT(numfile), SWAPSHORT(numpacket) };
 		size_t last = sizeof(d);
-		memcpy(mm.data, &d, last);
+		memcpy(mm.data, &d, last); // -V512
 
 		// пересчитываем CRC по перевёрнутым данным
 		ModbusData crc = checkCRC( (ModbusByte*)(&mm.pduhead), szModbusHeader + sizeof(d) );

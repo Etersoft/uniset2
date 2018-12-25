@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2018-10-16+03:00
+// generate timestamp: 2018-12-25+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -176,7 +176,7 @@ end_private(false)
 	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec","150", 150);
 
 	string s_resetTime("");
-	if( s_resetTime.empty() )
+	if( s_resetTime.empty() ) // -V547
 		s_resetTime = "500";
 
 	resetMsgTime = uni_atoi(init3_str(conf->getArgParam("--" + argprefix + "resetMsgTime"),conf->getProp(cnode,"resetMsgTime"),s_resetTime));
@@ -193,7 +193,7 @@ end_private(false)
 	smTestID = conf->getSensorID(init3_str(conf->getArgParam("--" + argprefix + "sm-test-id"),conf->getProp(cnode,"smTestID"),""));
 	
 
-	if( smTestID == DefaultObjectId )
+	if( smTestID == DefaultObjectId ) // -V547
 		smTestID = getSMTestID();
 
 	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 120000);
@@ -806,14 +806,14 @@ void UObject_SK::callback() noexcept
 		updateOutputs(forceOut);
 		updatePreviousValues();
 	}
-	catch( const uniset::Exception& ex )
-	{
-        mycrit << myname << "(execute): " << ex << endl;
-	}
 	catch( const CORBA::SystemException& ex )
 	{
         mycrit << myname << "(execute): СORBA::SystemException: "
                 << ex.NP_minorString() << endl;
+	}
+	catch( const uniset::Exception& ex )
+	{
+        mycrit << myname << "(execute): " << ex << endl;
 	}
     catch( const std::exception& ex )
     {

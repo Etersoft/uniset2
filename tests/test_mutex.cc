@@ -11,7 +11,7 @@ using namespace uniset;
 // -----------------------------------------------------------------------------
 TEST_CASE("uniset_rwmutex", "[mutex][basic]" )
 {
-	SECTION("simple lock");
+	SECTION("simple lock")
 	{
 		uniset_rwmutex m("rwmutex");
 
@@ -34,7 +34,7 @@ TEST_CASE("uniset_rwmutex", "[mutex][basic]" )
 // -----------------------------------------------------------------------------
 TEST_CASE("uniset_rwmutex_wrlock", "[mutex][basic]" )
 {
-	SECTION("simple lock");
+	SECTION("simple lock")
 	{
 		uniset_rwmutex m;
 		{
@@ -46,7 +46,7 @@ TEST_CASE("uniset_rwmutex_wrlock", "[mutex][basic]" )
 		CHECK_FALSE( m.try_lock() );
 	}
 
-	SECTION("exception lock");
+	SECTION("exception lock")
 	{
 		uniset_rwmutex m;
 
@@ -67,7 +67,7 @@ TEST_CASE("uniset_rwmutex_wrlock", "[mutex][basic]" )
 // -----------------------------------------------------------------------------
 TEST_CASE("uniset_rwmutex_rlock", "[mutex][basic]" )
 {
-	SECTION("simple lock");
+	SECTION("simple lock")
 	{
 		uniset_rwmutex m;
 		{
@@ -79,7 +79,7 @@ TEST_CASE("uniset_rwmutex_rlock", "[mutex][basic]" )
 		CHECK_FALSE( m.try_lock() );
 	}
 
-	SECTION("exception lock");
+	SECTION("exception lock")
 	{
 		uniset_rwmutex m;
 

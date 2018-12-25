@@ -54,13 +54,13 @@ int main( int argc, const char** argv )
 		act->run(false);
 		return 0;
 	}
-	catch(Exception& ex)
-	{
-		cerr << "(mbslave_perf_test): " << ex << endl;
-	}
 	catch( CORBA::SystemException& ex )
 	{
 		cerr << "(mbslave_perf_test): " << ex.NP_minorString() << endl;
+	}
+	catch( Exception& ex )
+	{
+		cerr << "(mbslave_perf_test): " << ex << endl;
 	}
 	catch(...)
 	{

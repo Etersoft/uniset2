@@ -96,7 +96,7 @@ namespace uniset
 
 			// для оптимизации, делаем конструктор, который не будет инициализировать свойства класса
 			// это необходимо для VoidMessage, который конструируется при помощи memcpy
-			VoidMessage( int dummy ) noexcept : Message(dummy) {}
+			VoidMessage( int dummy ) noexcept : Message(dummy) {} // -V730
 
 			VoidMessage( const TransportMessage& tm ) noexcept;
 			VoidMessage() noexcept;

@@ -27,3 +27,5 @@ More information:
 * [RU] https://habr.com/post/278535/
 * [RU] https://habr.com/post/171711/
 * [RU] https://wiki.etersoft.ru/UniSet2/docs/
+
+periodically checked by [PVS-Studio Analyzer](https://www.viva64.com/en/pvs-studio/)

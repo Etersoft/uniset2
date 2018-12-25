@@ -95,7 +95,7 @@ namespace uniset
 
 		struct UDPPacket
 		{
-			UDPPacket() noexcept: len(0) {}
+			UDPPacket() noexcept: len(0) {} // -V730
 
 			size_t len;
 			uint8_t data[ sizeof(UDPHeader) + MaxDCount * sizeof(long) + MaxDDataCount + MaxACount * sizeof(UDPAData) ];

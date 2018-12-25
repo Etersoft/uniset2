@@ -59,6 +59,37 @@ float uniset::fcalibrate( float raw, float rawMin, float rawMax,
 
 	return ret;
 }
+// -----------------------------------------------------------------------------
+double uniset::dcalibrate( double raw, double rawMin, double rawMax,
+						  double calMin, double calMax, bool limit )
+{
+	if( rawMax == rawMin ) return 0; // деление на 0!!!
+
+	double ret = (raw - rawMin) * (calMax - calMin) / ( rawMax - rawMin ) + calMin;
+
+	if( !limit )
+		return ret;
+
+	// Переворачиваем calMin и calMax для проверки, если calMin > calMax
+	if (calMin < calMax)
+	{
+		if( ret < calMin )
+			return calMin;
+
+		if( ret > calMax )
+			return calMax;
+	}
+	else
+	{
+		if( ret > calMin )
+			return calMin;
+
+		if( ret < calMax )
+			return calMax;
+	}
+
+	return ret;
+}
 // -------------------------------------------------------------------------
 // Пересчитываем из исходных пределов в заданные
 long uniset::lcalibrate(long raw, long rawMin, long rawMax, long calMin, long calMax, bool limit )
@@ -114,7 +145,7 @@ long uniset::setoutregion(long ret, long calMin, long calMax)
 }
 
 // -------------------------------------------------------------------------
-uniset::IDList::IDList( const std::vector<string>& svec ):
+uniset::IDList::IDList( const std::vector<string>& svec ): // -V730
 	uniset::IDList::IDList()
 {
 	auto conf = uniset_conf();
@@ -662,3 +693,15 @@ string uniset::BadSymbolsToStr()
 	return bad;
 }
 // ---------------------------------------------------------------------------------------------------------------
+uniset::KeyType uniset::key( const uniset::ObjectId id, const uniset::ObjectId node )
+{
+	//! \warning что тут у нас с переполнением..
+	return KeyType( (id * node) + (id + 2 * node) );
+}
+// ---------------------------------------------------------------------------------------------------------------
+uniset::KeyType uniset::key( const IOController_i::SensorInfo& si )
+{
+	return key(si.id, si.node);
+}
+// ---------------------------------------------------------------------------------------------------------------
+

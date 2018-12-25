@@ -115,7 +115,7 @@ UniExchange::UniExchange(uniset::ObjectId id, uniset::ObjectId shmID,
 				node = conf->getNodeID(n1);
 			}
 
-			if( id == DefaultObjectId )
+			if( node == DefaultObjectId )
 				throw SystemError("(UniExchange): Uknown ID for node=" + n1 );
 
 			NetNodeInfo ni;

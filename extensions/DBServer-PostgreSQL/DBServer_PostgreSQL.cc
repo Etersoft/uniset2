@@ -192,7 +192,7 @@ void DBServer_PostgreSQL::flushInsertBuffer()
 		// Чистим заданное число
 		size_t delnum = lroundf(ibufSize * ibufOverflowCleanFactor);
 		auto end = ibuf.end();
-		auto beg = ibuf.end();
+		auto beg = ibuf.begin();
 
 		// Удаляем последние (новые)
 		if( lastRemove )
@@ -202,8 +202,6 @@ void DBServer_PostgreSQL::flushInsertBuffer()
 		else
 		{
 			// Удаляем первые (старые)
-			beg = ibuf.begin();
-			end = ibuf.begin();
 			std::advance(end, delnum);
 		}
 

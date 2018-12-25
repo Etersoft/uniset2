@@ -382,11 +382,6 @@ int main(int argc, char** argv)
 
 		return 0;
 	}
-	catch( const uniset::Exception& ex )
-	{
-		if( !quiet )
-			cout << "admin(main): " << ex << endl;
-	}
 	catch( const CORBA::SystemException& ex )
 	{
 		if( !quiet )
@@ -406,6 +401,11 @@ int main(int argc, char** argv)
 			cerr << "  line: " << fe.line() << endl;
 			cerr << "  mesg: " << fe.errmsg() << endl;
 		}
+	}
+	catch( const uniset::Exception& ex )
+	{
+		if( !quiet )
+			cout << "admin(main): " << ex << endl;
 	}
 	catch( std::exception& ex )
 	{
@@ -546,15 +546,15 @@ static bool commandToAll(const string& section, std::shared_ptr<ObjectRepository
 					}
 				}
 			}
-			catch( const uniset::Exception& ex )
-			{
-				if( !quiet )
-					cerr << setw(55) << oname << "   <--- " << ex << endl;
-			}
 			catch( const CORBA::SystemException& ex )
 			{
 				if( !quiet )
 					cerr << setw(55) << oname  << "   <--- недоступен!!(CORBA::SystemException): " << ex.NP_minorString() << endl;
+			}
+			catch( const uniset::Exception& ex )
+			{
+				if( !quiet )
+					cerr << setw(55) << oname << "   <--- " << ex << endl;
 			}
 			catch( const std::exception& ex )
 			{
@@ -730,7 +730,7 @@ int getValue( const string& args, UInterface& ui )
 							// до числа, то сперва получаем val
 							long val = ui.getValue(it.si.id, it.si.node);
 
-							if( csv && num++ > 0 )
+							if( num++ > 0 )
 								cout << ",";
 
 							cout << val;
@@ -888,13 +888,6 @@ int getTimeChange( const std::string& args, UInterface& ui )
 			else
 				cout << ui.getTimeChange(it.si.id, it.si.node);
 		}
-		catch( const uniset::Exception& ex )
-		{
-			if( !quiet )
-				cerr << "(getChangedTime): " << ex << endl;;
-
-			err = 1;
-		}
 		catch( const CORBA::SystemException& ex )
 		{
 			if( !quiet )
@@ -918,6 +911,13 @@ int getTimeChange( const std::string& args, UInterface& ui )
 				cerr << "  line: " << fe.line() << endl;
 				cerr << "  mesg: " << fe.errmsg() << endl;
 			}
+
+			err = 1;
+		}
+		catch( const uniset::Exception& ex )
+		{
+			if( !quiet )
+				cerr << "(getChangedTime): " << ex << endl;;
 
 			err = 1;
 		}

@@ -148,7 +148,7 @@ namespace uniset
 			ev::timer ioTimer;
 			std::shared_ptr<UTCPSocket> sock;
 
-			const std::unordered_set<ModbusRTU::ModbusAddr>* vmbaddr = { nullptr };
+			std::unordered_set<ModbusRTU::ModbusAddr> vmbaddr;
 			TimerSignal m_timer_signal;
 
 			timeout_t tmTime_msec = { UniSetTimer::WaitUpTime }; // время по умолчанию для таймера (TimerSignal)

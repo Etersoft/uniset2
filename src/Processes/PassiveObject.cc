@@ -101,10 +101,6 @@ void PassiveObject::processingMessage( const uniset::VoidMessage* msg )
 				break;
 		}
 	}
-	catch( const uniset::Exception& ex )
-	{
-		ucrit  << myname << "(processingMessage): " << ex << endl;
-	}
 	catch( const CORBA::SystemException& ex )
 	{
 		ucrit << myname << "(processingMessage): CORBA::SystemException: " << ex.NP_minorString() << endl;
@@ -124,6 +120,10 @@ void PassiveObject::processingMessage( const uniset::VoidMessage* msg )
 					   << " line: " << fe.line()
 					   << " mesg: " << fe.errmsg() << endl;
 		}
+	}
+	catch( const uniset::Exception& ex )
+	{
+		ucrit  << myname << "(processingMessage): " << ex << endl;
 	}
 }
 // -------------------------------------------------------------------------

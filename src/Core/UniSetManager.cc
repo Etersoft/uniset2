@@ -209,10 +209,6 @@ bool UniSetManager::removeObject( const std::shared_ptr<UniSetObject>& obj )
 				if( obj )
 					obj->deactivate();
 			}
-			catch( const uniset::Exception& ex )
-			{
-				uwarn << myname << "(removeObject): " << ex << endl;
-			}
 			catch( const CORBA::SystemException& ex )
 			{
 				uwarn << myname << "(removeObject): поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
@@ -227,6 +223,10 @@ bool UniSetManager::removeObject( const std::shared_ptr<UniSetObject>& obj )
 				ucrit << myname << "(managers): file: " << fe.file()
 					  << " line: " << fe.line()
 					  << " mesg: " << fe.errmsg() << endl;
+			}
+			catch( const uniset::Exception& ex )
+			{
+				uwarn << myname << "(removeObject): " << ex << endl;
 			}
 			catch(...) {}
 
@@ -273,21 +273,6 @@ void UniSetManager::managers( OManagerCommand cmd )
 						break;
 				}
 			}
-			catch( const uniset::Exception& ex )
-			{
-				ostringstream err;
-				err << myname << "(managers): " << ex << endl
-					<< " Не смог зарегистрировать (разрегистрировать) объект -->"
-					<< li->getName();
-
-				ucrit << err.str() << endl;
-
-				if( cmd == activ )
-				{
-					cerr << err.str();
-					std::terminate();
-				}
-			}
 			catch( const CORBA::SystemException& ex )
 			{
 				ostringstream err;
@@ -323,6 +308,21 @@ void UniSetManager::managers( OManagerCommand cmd )
 					<< myname << "(managers): file: " << fe.file()
 					<< " line: " << fe.line()
 					<< " mesg: " << fe.errmsg();
+
+				ucrit << err.str() << endl;
+
+				if( cmd == activ )
+				{
+					cerr << err.str();
+					std::terminate();
+				}
+			}
+			catch( const uniset::Exception& ex )
+			{
+				ostringstream err;
+				err << myname << "(managers): " << ex << endl
+					<< " Не смог зарегистрировать (разрегистрировать) объект -->"
+					<< li->getName();
 
 				ucrit << err.str() << endl;
 
@@ -372,20 +372,6 @@ void UniSetManager::objects(OManagerCommand cmd)
 						break;
 				}
 			}
-			catch( const uniset::Exception& ex )
-			{
-				ostringstream err;
-				err << myname << "(objects): " << ex << endl;
-				err << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->" << li->getName() << endl;
-
-				ucrit << err.str();
-
-				if( cmd == activ )
-				{
-					cerr << err.str();
-					std::terminate();
-				}
-			}
 			catch( const CORBA::SystemException& ex )
 			{
 				ostringstream err;
@@ -421,6 +407,20 @@ void UniSetManager::objects(OManagerCommand cmd)
 				err << myname << "(objects): file: " << fe.file()
 					<< " line: " << fe.line()
 					<< " mesg: " << fe.errmsg() << endl;
+
+				ucrit << err.str();
+
+				if( cmd == activ )
+				{
+					cerr << err.str();
+					std::terminate();
+				}
+			}
+			catch( const uniset::Exception& ex )
+			{
+				ostringstream err;
+				err << myname << "(objects): " << ex << endl;
+				err << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->" << li->getName() << endl;
 
 				ucrit << err.str();
 
@@ -660,7 +660,7 @@ SimpleInfoSeq* UniSetManager::getObjectsInfo(CORBA::Long maxlength, const char* 
 	int ind = 0;
 	const int limit = length;
 
-	ind = getObjectsInfo( get_mptr(), res, ind, limit, userparam );
+	(void)getObjectsInfo( get_mptr(), res, ind, limit, userparam );
 	return res;
 }
 

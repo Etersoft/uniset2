@@ -19,7 +19,8 @@
  *  \author Vitaly Lipatov, Pavel Vainerman
  */
 // --------------------------------------------------------------------------
-
+#include <utility>  // for make_pair
+#include <tuple> // for std::tie
 #include <unistd.h>
 #include <libgen.h>
 #include <fstream>
@@ -1099,17 +1100,24 @@ namespace uniset
 		}
 
 		secRoot       = unixml->getProp(node, "name");
-		secSensors    = makeSecName(secRoot, getRepSectionName("sensors", xmlSensorsSec));
-		secObjects    = makeSecName(secRoot, getRepSectionName("objects", xmlObjectsSec));
-		secControlles = makeSecName(secRoot, getRepSectionName("controllers", xmlControllersSec));
-		secServices   = makeSecName(secRoot, getRepSectionName("services", xmlServicesSec));
+
+		std::tie(secSensors, xmlSensorsSec) = getRepSectionName("sensors");
+		secSensors = makeSecName(secRoot, secSensors);
+
+		std::tie(secObjects, xmlObjectsSec) = getRepSectionName("objects");
+		secObjects = makeSecName(secRoot, secObjects);
+
+		std::tie(secControlles, xmlControllersSec) = getRepSectionName("controllers");
+		secControlles = makeSecName(secRoot, secControlles);
+
+		std::tie(secServices, xmlServicesSec) = getRepSectionName("services");
+		secServices = makeSecName(secRoot, secServices);
 	}
 	// -------------------------------------------------------------------------
-	// второй параметр намеренно передаётся и переопределяется
-	// это просто такой способ вернуть и строку и указатель на узел (одним махом)
-	string Configuration::getRepSectionName( const string& sec, xmlNode* secnode )
+
+	std::pair<string,xmlNode*> Configuration::getRepSectionName( const string& sec )
 	{
-		secnode = unixml->findNode(unixml->getFirstNode(), sec);
+		xmlNode* secnode = unixml->findNode(unixml->getFirstNode(), sec);
 
 		if( secnode == NULL )
 		{
@@ -1124,7 +1132,7 @@ namespace uniset
 		if( ret.empty() )
 			ret = unixml->getProp(secnode, "name");
 
-		return ret;
+		return std::make_pair(ret, secnode);
 	}
 	// -------------------------------------------------------------------------
 	void Configuration::setConfFileName( const string& fn )

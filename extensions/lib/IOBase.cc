@@ -270,7 +270,72 @@ namespace uniset
 		}
 	}
 	// -----------------------------------------------------------------------------
-	void IOBase::processingFasAI( IOBase* it, float fval, const std::shared_ptr<SMInterface>& shm, bool force )
+	void IOBase::processingFasAI(IOBase* it, float fval, const std::shared_ptr<SMInterface>& shm, bool force )
+	{
+		long val = lroundf(fval);
+
+		if( it->stype == UniversalIO::DI || it->stype == UniversalIO::DO )
+			val = (fval != 0 ? 1 : 0);
+		else
+		{
+			if( it->rawdata )
+			{
+				val = 0;
+				memcpy(&val, &fval, std::min(sizeof(val), sizeof(fval)));
+			}
+			else if( it->cal.precision != 0 && !it->noprecision )
+				val = lroundf( fval * pow(10.0, it->cal.precision) );
+
+			// проверка на обрыв
+			if( it->check_channel_break(val) )
+			{
+				uniset_rwmutex_wrlock lock(it->val_lock);
+				it->value = ChannelBreakValue;
+				shm->localSetUndefinedState(it->ioit, true, it->si.id);
+				return;
+			}
+
+			// проверка зависимости
+			if( !it->check_depend(shm) )
+				val = it->d_off_value;
+			else
+			{
+				// Читаем с использованием фильтра...
+				if( !it->nofilter )
+				{
+					if( it->df.size() > 1 )
+						it->df.add(val);
+
+					val = it->df.filterRC(val);
+				}
+
+				if( !it->rawdata )
+				{
+					IOController_i::CalibrateInfo* cal( &(it->cal) );
+
+					if( cal->maxRaw != cal->minRaw ) // задана обычная калибровка
+						val = uniset::lcalibrate(val, cal->minRaw, cal->maxRaw, cal->minCal, cal->maxCal, it->calcrop);
+				}
+			}
+		}
+
+		{
+			uniset_rwmutex_wrlock lock(it->val_lock);
+
+			// если предыдущее значение "обрыв",
+			// то сбрасываем признак
+			if( it->value == ChannelBreakValue )
+				shm->localSetUndefinedState(it->ioit, false, it->si.id);
+
+			if( force || it->value != val )
+			{
+				shm->localSetValue( it->ioit, it->si.id, val, shm->ID() );
+				it->value = val;
+			}
+		}
+	}
+	// -----------------------------------------------------------------------------
+	void IOBase::processingF64asAI(IOBase* it, double fval, const std::shared_ptr<SMInterface>& shm, bool force )
 	{
 		long val = lroundf(fval);
 
@@ -398,9 +463,9 @@ namespace uniset
 				if( !it->noprecision && it->cal.precision != 0 )
 					val = lroundf( (float)it->value / pow(10.0, it->cal.precision) );
 
-				IOController_i::CalibrateInfo* cal( &(it->cal) );
+				IOController_i::CalibrateInfo* cal = &(it->cal);
 
-				if( cal && cal->maxRaw != cal->minRaw ) // задана калибровка
+				if( cal->maxRaw != cal->minRaw ) // задана калибровка
 				{
 					// Калибруем в обратную сторону!!!
 					val = uniset::lcalibrate(val, cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
@@ -468,6 +533,49 @@ namespace uniset
 			fval = val ? 1.0 : 0.0;
 
 		return fval;
+	}
+	// -----------------------------------------------------------------------------
+	double IOBase::processingF64asAO( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force )
+	{
+		// проверка зависимости
+		if( !it->check_depend(shm) )
+			return (double)it->d_off_value;
+
+		uniset_rwmutex_rlock lock(it->val_lock);
+		long val = it->value;
+
+		if( force )
+		{
+			val = shm->localGetValue(it->ioit, it->si.id);
+			it->value = val; // обновим на всякий
+		}
+
+		if( it->rawdata )
+		{
+			double fval = 0;
+			memcpy(&fval, &val, std::min(sizeof(val), sizeof(fval)));
+			return fval;
+		}
+
+		double dval = val;
+
+		if( it->stype == UniversalIO::AO || it->stype == UniversalIO::AI )
+		{
+			IOController_i::CalibrateInfo* cal( &(it->cal) );
+
+			if( cal->maxRaw != cal->minRaw ) // задана калибровка
+			{
+				// Калибруем в обратную сторону!!!
+				dval = uniset::dcalibrate(dval, cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
+			}
+
+			if( !it->noprecision && it->cal.precision != 0 )
+				return ( dval / pow(10.0, it->cal.precision) );
+		}
+		else // if( it->stype == UniversalIO::DI || it->stype == UniversalIO::DO )
+			dval = val ? 1.0 : 0.0;
+
+		return dval;
 	}
 	// -----------------------------------------------------------------------------
 	void IOBase::processingThreshold( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force )
@@ -760,7 +868,7 @@ namespace uniset
 					b->cdiagram->setCacheResortCycle(initIntProp(it, "cal_cacheresort", prefix, init_prefix_only));
 			}
 		}
-		else if( b->stype == UniversalIO::DI || b->stype == UniversalIO::DO )
+		else if( b->stype == UniversalIO::DI || b->stype == UniversalIO::DO ) // -V560
 		{
 			string tai(initProp(it, "threshold_aid", prefix, init_prefix_only));
 

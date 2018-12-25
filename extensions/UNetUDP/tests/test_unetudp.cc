@@ -70,7 +70,7 @@ static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 20
 		size_t ret = udp_r->receiveBytes(&(buf.data), sizeof(buf.data) );
 		size_t sz = UniSetUDP::UDPMessage::getMessage(pack, buf);
 
-		if( sz == 0 || pnum == 0 || ( pnum > 0 && pack.num >= pnum ) )
+		if( sz == 0 || pnum == 0 || ( pnum > 0 && pack.num >= pnum ) ) // -V560
 			break;
 
 		REQUIRE( pack.magic == UniSetUDP::UNETUDP_MAGICNUM );

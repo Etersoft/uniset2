@@ -471,7 +471,7 @@ namespace uniset
 				return false;
 			}
 		}
-		else if( p.iotype == UniversalIO::AI || p.iotype == UniversalIO::AO )
+		else if( p.iotype == UniversalIO::AI || p.iotype == UniversalIO::AO ) // -V560
 		{
 			size_t anum = packs_anum[priority];
 

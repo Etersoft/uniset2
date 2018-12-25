@@ -19,6 +19,11 @@ clean-local:
 install-data-local:
 	$(MAKE) -C $(FIRSTSUBDIRS) -j1 install
 
+pvs-check:
+	make clean
+	pvs-studio-analyzer trace -- jmake
+	pvs-studio-analyzer analyze -j$(nproc)
+	plog-converter -a GA:1,2 -t tasklist -o uniset.pvs.tasks PVS-Studio.log
 
 if HAVE_COVERAGE
 COVERAGE_DIRS=$(COVERAGE_DEFAULT_DIRS)

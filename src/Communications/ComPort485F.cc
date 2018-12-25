@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 // --------------------------------------------------------------------------------
-#include <unistd.h>
+#include <cstring>
 #include <termios.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -83,6 +83,8 @@ ComPort485F::ComPort485F( const string& dev, char gpio_num, bool tmit_ctrl ):
 	gpio_num(gpio_num),
 	tmit_ctrl_on(tmit_ctrl)
 {
+	memset(tbuf,0,sizeof(tbuf));
+
 	if( tmit_ctrl_on )
 	{
 		iopl(3);

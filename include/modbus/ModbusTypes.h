@@ -154,6 +154,24 @@ namespace uniset
 		float dat2f( const ModbusData dat1, const ModbusData dat2 );
 		size_t numBytes( const size_t nbits ); // сколько байт нужно для указанного количества бит
 		// -------------------------------------------------------------------------
+		// вспомогательная структура для предотвращения утечки памяти (RAII)
+		struct DataGuard
+		{
+			DataGuard( size_t sz ):
+				len(sz)
+			{
+				data = new ModbusRTU::ModbusData[sz];
+			}
+
+			~DataGuard()
+			{
+				delete[] data;
+			}
+
+			ModbusRTU::ModbusData* data;
+			size_t len;
+		};
+		// -----------------------------------------------------------------------------
 		bool isWriteFunction( SlaveFunctionCode c );
 		bool isReadFunction( SlaveFunctionCode c );
 		// -------------------------------------------------------------------------

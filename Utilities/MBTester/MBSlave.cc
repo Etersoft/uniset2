@@ -29,11 +29,11 @@ MBSlave::MBSlave(const std::unordered_set<ModbusAddr>& _vaddr, const std::string
 	//    if( replyTimeout <= 0 )
 	//        replyTimeout = 2000;
 
-	if( verbose )
-		cout << "(init): "
-			 << " addr=" << ModbusServer::vaddr2str(vaddr)
-			 << " dev=" << dev
-			 << " speed=" << speed;
+//	if( verbose )
+//		cout << "(init): "
+//			 << " addr=" << ModbusServer::vaddr2str(vaddr)
+//			 << " dev=" << dev
+//			 << " speed=" << speed;
 
 	rscomm     = new ModbusRTUSlaveSlot(dev, use485);
 

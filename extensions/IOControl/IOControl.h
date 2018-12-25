@@ -201,6 +201,14 @@ namespace uniset
 					delete (*this)[i];
 			}
 
+			inline ComediInterface* getCard( int ncard ) const
+			{
+				if( ncard > 0 && ncard < size() )
+					return (*this)[ncard];
+
+				return nullptr;
+			}
+
 			inline ComediInterface* getCard( size_t ncard ) const
 			{
 				if( ncard < size() )
@@ -253,21 +261,11 @@ namespace uniset
 				IOInfo( IOInfo&& r ) = default;
 				IOInfo& operator=(IOInfo&& r) = default;
 
-				IOInfo():
-					subdev(DefaultSubdev), channel(DefaultChannel),
-					ncard(-1),
-					aref(0),
-					range(0),
-					lamp(false),
-					no_testlamp(false),
-					enable_testmode(false),
-					disable_testmode(false)
-				{}
+				IOInfo(){}
 
-
-				int subdev;     /*!< (UNIO) подустройство (см. comedi_test для конкретной карты в/в) */
-				int channel;    /*!< (UNIO) канал [0...23] */
-				int ncard;      /*!< номер карты [1|2]. -1 - не определена. */
+				int subdev = { DefaultSubdev };   /*!< (UNIO) подустройство (см. comedi_test для конкретной карты в/в) */
+				int channel = { DefaultChannel }; /*!< (UNIO) канал [0...23] */
+				int ncard = { DefaultCard };      /*!< номер карты [1|2]. -1 - не определена. */
 
 				/*! Вид подключения
 				    0    - analog ref = analog ground
@@ -275,9 +273,9 @@ namespace uniset
 				    2    - analog ref = differential
 				    3    - analog ref = other (undefined)
 				*/
-				int aref;
+				int aref = { 0 };
 
-				int adelay; /*! Задержка на чтение аналоговых входов с мультиплексированием ( в мкс ) */
+				int adelay = { 0 }; /*! Задержка на чтение аналоговых входов с мультиплексированием ( в мкс ) */
 
 				/*! Измерительный диапазон
 				    0    -  -10В - 10В
@@ -285,12 +283,12 @@ namespace uniset
 				    2    -  -2.5В - 2.5В
 				    3    -  -1.25В - 1.25В
 				*/
-				int range;
+				int range = { 0 };
 
-				bool lamp;             /*!< признак, что данный выход является лампочкой (или сигнализатором) */
-				bool no_testlamp;      /*!< флаг исключения из 'проверки ламп' */
-				bool enable_testmode;  /*!< флаг для режима тестирования tmConfigEnable */
-				bool disable_testmode; /*!< флаг для режима тестирования tmConfigDisable */
+				bool lamp = { false };             /*!< признак, что данный выход является лампочкой (или сигнализатором) */
+				bool no_testlamp = { false };      /*!< флаг исключения из 'проверки ламп' */
+				bool enable_testmode = { false };  /*!< флаг для режима тестирования tmConfigEnable */
+				bool disable_testmode = { false }; /*!< флаг для режима тестирования tmConfigDisable */
 
 				friend std::ostream& operator<<(std::ostream& os, const IOInfo& inf );
 				friend std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IOInfo>& inf );

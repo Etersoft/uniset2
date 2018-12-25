@@ -919,7 +919,6 @@ namespace uniset
 		catch(const CosNaming::NamingContext::NotFound& nf) {}
 		catch(const CosNaming::NamingContext::InvalidName& nf) {}
 		catch(const CosNaming::NamingContext::CannotProceed& cp) {}
-		catch( const uniset::Exception& ex ) {}
 		catch( const CORBA::OBJECT_NOT_EXIST& ex )
 		{
 			throw uniset::ResolveNameError("ObjectNOTExist");
@@ -934,6 +933,7 @@ namespace uniset
 			// uwarn << "UI(resolve): CORBA::SystemException" << endl;
 			throw uniset::TimeOut();
 		}
+		catch( const uniset::Exception& ex ) {}
 		catch( std::exception& ex )
 		{
 			ucrit << "UI(resolve): myID=" << myid <<  ": resolve id=" << rid << "@" << node
@@ -2381,22 +2381,20 @@ namespace uniset
 			pmsec = 0;
 
 		PassiveTimer ptReady(msec);
-		bool ready = false;
 
-		while( !ptReady.checkTime() && !ready )
+		while( !ptReady.checkTime() )
 		{
 			try
 			{
 				getValue(id, node);
-				ready = true;
-				break;
+				return true;
 			}
 			catch(...) {}
 
 			msleep(pmsec);
 		}
 
-		return ready;
+		return false;
 	}
 	// -----------------------------------------------------------------------------
 	bool UInterface::waitReadyWithCancellation(const ObjectId id, int msec,

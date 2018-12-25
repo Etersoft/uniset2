@@ -231,7 +231,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::initFromSM()
 <xsl:template name="setdata">
 	try
 	{
-		if( <xsl:value-of select="@name"/> != DefaultObjectId )
+		if( <xsl:value-of select="@name"/> != DefaultObjectId ) // -V547
 		{
 			si.id 	= <xsl:value-of select="@name"/>;
 			si.node = node_<xsl:value-of select="@name"/>;

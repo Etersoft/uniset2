@@ -1263,7 +1263,7 @@ end_private(false)
 	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>", <xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>);
 
 	string s_resetTime("<xsl:call-template name="settings"><xsl:with-param name="varname" select="'resetMsgTime'"/></xsl:call-template>");
-	if( s_resetTime.empty() )
+	if( s_resetTime.empty() ) // -V547
 		s_resetTime = "500";
 
 	resetMsgTime = uni_atoi(init3_str(conf->getArgParam("--" + argprefix + "resetMsgTime"),conf->getProp(cnode,"resetMsgTime"),s_resetTime));
@@ -1285,7 +1285,7 @@ end_private(false)
 	</xsl:if>
 	</xsl:for-each>
 
-	if( smTestID == DefaultObjectId )
+	if( smTestID == DefaultObjectId ) // -V547
 		smTestID = getSMTestID();
 
 	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 120000);
