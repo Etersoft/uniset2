@@ -342,7 +342,20 @@ bool BackendOpenTSDB::flushBuffer()
 	try
 	{
 		const string s(q.str());
-		tcp->sendBytes(s.data(), s.size());
+		ssize_t ret = tcp->sendBytes(s.data(), s.size());
+
+		if( ret < 0 )
+		{
+			int errnum = errno;
+			if( errnum == EPIPE || errnum == EBADF )
+			{
+				mywarn << "(flushBuffer): send error (" << errnum << "): " << strerror(errnum) << endl;
+				reconnect();
+				return false;
+			}
+		}
+
+
 		buf.clear();
 		askTimer(tmFlushBuffer, 0);
 		timerIsOn = false;
