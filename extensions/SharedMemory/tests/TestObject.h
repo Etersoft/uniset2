@@ -36,12 +36,14 @@ class TestObject:
 		bool isEmptyQueue();
 		bool isFullQueue();
 
+		std::string getLastTextMessage() const;
 
 	protected:
 		TestObject();
 
 		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 		virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
+		virtual void onTextMessage( const uniset::TextMessage* msg ) override;
 
 	private:
 		bool evntIsOK = { false };
@@ -49,6 +51,7 @@ class TestObject:
 		bool monotonicFailed = { false };
 		long lostMessages = { false };
 		long lastValue = { 0 };
+		std::string lastText = { "" };
 };
 // -----------------------------------------------------------------------------
 #endif // _TestObject_H_

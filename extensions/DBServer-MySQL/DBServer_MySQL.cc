@@ -121,6 +121,47 @@ void DBServer_MySQL::confirmInfo( const uniset::ConfirmMessage* cem )
 	}
 }
 //--------------------------------------------------------------------------------------------
+void DBServer_MySQL::onTextMessage( const TextMessage* msg )
+{
+	try
+	{
+		// если время не было выставлено (указываем время сохранения в БД)
+		if( !msg->tm.tv_sec )
+		{
+			// Выдаём CRIT, но тем не менее сохраняем в БД
+
+			dbcrit << myname << "(insert_main_messages): UNKNOWN TIMESTAMP! (tm.tv_sec=0)"
+				   << " for msg='" << msg->txt << "'"
+				   << " supplier=" << uniset_conf()->oind->getMapName(msg->supplier)
+				   << endl;
+		}
+
+		ostringstream data;
+		data << "INSERT INTO " << tblName(msg->type)
+			 << "(date, time, time_usec, text, node) VALUES( '"
+			 << dateToString(msg->tm.tv_sec, "-") << "','"   //  date
+			 << timeToString(msg->tm.tv_sec, ":") << "','"   //  time
+			 << msg->tm.tv_nsec << "','"                //  time_usec
+			 << msg->txt << "','"                    // text
+			 << msg->node << "')";                //  node
+
+		dbinfo << myname << "(insert_main_messages): " << data.str() << endl;
+
+		if( !writeToBase(data.str()) )
+		{
+			dbcrit << myname << "(insert_main_messages): error: " << db->error() << endl;
+		}
+	}
+	catch( const uniset::Exception& ex )
+	{
+		dbcrit << myname << "(insert_main_messages): " << ex << endl;
+	}
+	catch( const std::exception& ex )
+	{
+		dbcrit << myname << "(insert_main_messages): catch: " << ex.what() << endl;
+	}
+}
+//--------------------------------------------------------------------------------------------
 bool DBServer_MySQL::writeToBase( const std::string& query )
 {
 	dbinfo << myname << "(writeToBase): " << query << endl;
@@ -274,6 +315,7 @@ void DBServer_MySQL::initDBServer()
 
 	tblMap[uniset::Message::SensorInfo] = "main_history";
 	tblMap[uniset::Message::Confirm] = "main_history";
+	tblMap[uniset::Message::TextMessage] = "main_messages";
 
 	PingTime = conf->getPIntProp(node, "pingTime", PingTime);
 	ReconnectTime = conf->getPIntProp(node, "reconnectTime", ReconnectTime);

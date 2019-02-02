@@ -1019,6 +1019,152 @@ namespace uniset
 	{
 		send(name, msg, uconf->getLocalNode());
 	}
+	// ------------------------------------------------------------------------------------------------------------
+	void UInterface::sendText( const ObjectId name, const std::string& txt, const ObjectId node )
+	{
+		if ( name == uniset::DefaultObjectId )
+			throw uniset::ORepFailed("UI(sendText): ERROR: id=uniset::DefaultObjectId");
+
+		uniset::ObjectId onode = (node == uniset::DefaultObjectId) ? uconf->getLocalNode() : node;
+
+		uniset::Timespec_var ts = uniset::now_to_uniset_timespec();
+
+		uniset::ProducerInfo_var pi;
+		pi->id = myid;
+		pi->node = uconf->getLocalNode();
+
+		try
+		{
+			CORBA::Object_var oref;
+
+			try
+			{
+				oref = rcache.resolve(name, onode);
+			}
+			catch( const uniset::NameNotFound& ) {}
+
+			for (size_t i = 0; i < uconf->getRepeatCount(); i++)
+			{
+				try
+				{
+					if( CORBA::is_nil(oref) )
+						oref = resolve( name, onode );
+
+					UniSetObject_i_var obj = UniSetObject_i::_narrow(oref);
+					obj->pushMessage(txt.c_str(), ts, pi, Message::Medium, uniset::DefaultObjectId);
+					return;
+				}
+				catch( const CORBA::TRANSIENT& ) {}
+				catch( const CORBA::OBJECT_NOT_EXIST& ) {}
+				catch( const CORBA::SystemException& ) {}
+
+				msleep(uconf->getRepeatTimeout());
+				oref = CORBA::Object::_nil();
+			}
+		}
+		catch( const uniset::ORepFailed )
+		{
+			rcache.erase(name, onode);
+			throw uniset::IOBadParam(set_err("UI(sendText): resolve failed ", name, onode));
+		}
+		catch( const CORBA::NO_IMPLEMENT )
+		{
+			rcache.erase(name, onode);
+			throw uniset::IOBadParam(set_err("UI(sendText): method no implement", name, onode));
+		}
+		catch( const CORBA::OBJECT_NOT_EXIST )
+		{
+			rcache.erase(name, onode);
+			throw uniset::IOBadParam(set_err("UI(sendText): object not exist", name, onode));
+		}
+		catch( const CORBA::COMM_FAILURE& )
+		{
+			// ошибка системы коммуникации
+			// uwarn << "UI(sendText): ошибка системы коммуникации" << endl;
+		}
+		catch( const CORBA::SystemException& )
+		{
+			// ошибка системы коммуникации
+			// uwarn << "UI(sendText): CORBA::SystemException" << endl;
+		}
+
+		rcache.erase(name, onode);
+		throw uniset::TimeOut(set_err("UI(sendText): Timeout", name, onode));
+	}
+	// ------------------------------------------------------------------------------------------------------------
+	void UInterface::sendText( const ObjectId name, const TextMessage& msg, const ObjectId node )
+	{
+		if ( name == uniset::DefaultObjectId )
+			throw uniset::ORepFailed("UI(sendText): ERROR: id=uniset::DefaultObjectId");
+
+		uniset::ObjectId onode = (node == uniset::DefaultObjectId) ? uconf->getLocalNode() : node;
+
+		uniset::Timespec_var ts;
+		ts->sec = msg.tm.tv_sec;
+		ts->nsec = msg.tm.tv_nsec;
+
+		uniset::ProducerInfo_var pi;
+		pi->id = msg.supplier;
+		pi->node = msg.node;
+
+		try
+		{
+			CORBA::Object_var oref;
+
+			try
+			{
+				oref = rcache.resolve(name, onode);
+			}
+			catch( const uniset::NameNotFound& ) {}
+
+			for (size_t i = 0; i < uconf->getRepeatCount(); i++)
+			{
+				try
+				{
+					if( CORBA::is_nil(oref) )
+						oref = resolve( name, onode );
+
+					UniSetObject_i_var obj = UniSetObject_i::_narrow(oref);
+					obj->pushMessage(msg.txt.c_str(),ts, pi, msg.priority, msg.consumer);
+					return;
+				}
+				catch( const CORBA::TRANSIENT& ) {}
+				catch( const CORBA::OBJECT_NOT_EXIST& ) {}
+				catch( const CORBA::SystemException& ) {}
+
+				msleep(uconf->getRepeatTimeout());
+				oref = CORBA::Object::_nil();
+			}
+		}
+		catch( const uniset::ORepFailed )
+		{
+			rcache.erase(name, node);
+			throw uniset::IOBadParam(set_err("UI(sendText): resolve failed ", name, node));
+		}
+		catch( const CORBA::NO_IMPLEMENT )
+		{
+			rcache.erase(name, node);
+			throw uniset::IOBadParam(set_err("UI(sendText): method no implement", name, node));
+		}
+		catch( const CORBA::OBJECT_NOT_EXIST )
+		{
+			rcache.erase(name, node);
+			throw uniset::IOBadParam(set_err("UI(sendText): object not exist", name, node));
+		}
+		catch( const CORBA::COMM_FAILURE& )
+		{
+			// ошибка системы коммуникации
+			// uwarn << "UI(sendText): ошибка системы коммуникации" << endl;
+		}
+		catch( const CORBA::SystemException& )
+		{
+			// ошибка системы коммуникации
+			// uwarn << "UI(sendText): CORBA::SystemException" << endl;
+		}
+
+		rcache.erase(name, node);
+		throw uniset::TimeOut(set_err("UI(sendText): Timeout", name, node));
+	}
 
 	// ------------------------------------------------------------------------------------------------------------
 	IOController_i::ShortIOInfo UInterface::getTimeChange( const uniset::ObjectId id, const uniset::ObjectId node ) const

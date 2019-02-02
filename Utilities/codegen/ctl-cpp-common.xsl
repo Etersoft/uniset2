@@ -467,6 +467,12 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( const uniset::Vo
 			break;
                                                                                         
 			default:
+			<xsl:choose>
+			  	<xsl:when test="normalize-space($BASECLASS)='UniSetObject'">	UniSetObject::processingMessage(_msg);</xsl:when>
+			    <xsl:when test="normalize-space($BASECLASS)='UniSetManager'">	UniSetManager::processingMessage(_msg);</xsl:when>
+			    <xsl:when test="normalize-space($BASECLASS)!=''">	<xsl:value-of select="normalize-space($BASECLASS)"/>::processingMessage(_msg);</xsl:when>
+			    <xsl:when test="normalize-space($BASECLASS)=''">	UniSetObject::processingMessage(_msg);</xsl:when>
+			</xsl:choose>				
 				break;
 		}	
 	}

@@ -77,10 +77,24 @@
             ObjectId node;  /*!< узел, на котором он находится */
         };
 
+        /*! Информация о "поставщике" события */
+        struct ProducerInfo
+        {
+            ObjectId id;    /*!< идентификатор заказчика */
+            ObjectId node;  /*!< узел, на котором он находится */
+        };
+
 
         /*! Список идентификаторов */
         typedef sequence<ObjectId> IDSeq;
 
+
+        /*! время  (posix timespec) */
+        struct Timespec
+        {
+             unsigned long long sec;  /* Seconds.  */
+             unsigned long nsec; /* nanoseconds.  */
+        };
 
     };// end of module uniset
 

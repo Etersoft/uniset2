@@ -311,3 +311,14 @@ TEST_CASE("[SM]: monitonic sensor message", "[sm][monitonic]")
 	//	cerr << std::string(si->info) << endl;
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("[SM]: sendText", "[sm][sendText]")
+{
+	InitTest();
+
+	std::string txt = "Hello world";
+
+	ui->sendText(obj->getId(), txt);
+	msleep(300);
+
+	REQUIRE( obj->getLastTextMessage() == txt );
+}

@@ -400,6 +400,27 @@ namespace uniset
 		termWaiting();
 	}
 	// ------------------------------------------------------------------------------------------
+	void UniSetObject::pushMessage( const char* msg,
+									const ::uniset::Timespec& tm,
+									const ::uniset::ProducerInfo& pi,
+									::CORBA::Long priority,
+									::CORBA::Long consumer )
+	{
+		uniset::TextMessage tmsg(msg, tm, pi, (uniset::Message::Priority)priority, consumer);
+		auto vm = tmsg.toLocalVoidMessage();
+
+		if( vm->priority == Message::Medium )
+			mqueueMedium.push(vm);
+		else if( vm->priority == Message::High )
+			mqueueHi.push(vm);
+		else if( vm->priority == Message::Low )
+			mqueueLow.push(vm);
+		else // на всякий по умолчанию medium
+			mqueueMedium.push(vm);
+
+		termWaiting();
+	}
+	// ------------------------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
 	Poco::JSON::Object::Ptr UniSetObject::httpGet( const Poco::URI::QueryParameters& p )
 	{
@@ -844,6 +865,13 @@ namespace uniset
 				case Message::SysCommand:
 					sysCommand( reinterpret_cast<const SystemMessage*>(msg) );
 					break;
+
+				case Message::TextMessage:
+				{
+					TextMessage tm(msg);
+					onTextMessage( &tm );
+					break;
+				}
 
 				default:
 					break;

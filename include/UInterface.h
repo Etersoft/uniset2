@@ -233,6 +233,8 @@ namespace uniset
 			/*! посылка сообщения msg объекту name на узел node */
 			void send( const uniset::ObjectId name, const uniset::TransportMessage& msg, uniset::ObjectId node );
 			void send( const uniset::ObjectId name, const uniset::TransportMessage& msg);
+			void sendText(const uniset::ObjectId name, const std::string& text, const uniset::ObjectId node = uniset::DefaultObjectId );
+			void sendText(const uniset::ObjectId name, const uniset::TextMessage& msg, const uniset::ObjectId node = uniset::DefaultObjectId );
 
 			// ---------------------------------------------------------------
 			// Вспомогательный класс для кэширования ссылок на удалённые объекты

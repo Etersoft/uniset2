@@ -107,6 +107,13 @@ namespace uniset
 			//! поместить сообщение в очередь
 			virtual void push( const uniset::TransportMessage& msg ) override;
 
+			//! поместить текстовое сообщение в очередь
+			virtual void pushMessage( const char* msg,
+									  const ::uniset::Timespec& tm,
+									  const ::uniset::ProducerInfo& pi,
+									  ::CORBA::Long priority,
+									  ::CORBA::Long consumer ) override;
+
 #ifndef DISABLE_REST_API
 			// HTTP API
 			virtual Poco::JSON::Object::Ptr httpGet( const Poco::URI::QueryParameters& p ) override;
@@ -136,6 +143,7 @@ namespace uniset
 			virtual void sysCommand( const uniset::SystemMessage* sm ) {}
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) {}
 			virtual void timerInfo( const uniset::TimerMessage* tm ) {}
+			virtual void onTextMessage( const uniset::TextMessage* tm ) {}
 
 			/*! Получить сообщение */
 			VoidMessagePtr receiveMessage();

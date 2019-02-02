@@ -97,6 +97,13 @@ TEST_CASE("UInterface", "[UInterface]")
 		REQUIRE_NOTHROW( ui.send(sid, tm) );
 	}
 
+	SECTION( "sendText" )
+	{
+		TransportMessage tm( SensorMessage(sid, 10).transport_msg() );
+		REQUIRE_NOTHROW( ui.send(sid, tm) );
+	}
+
+
 	SECTION( "wait..exist.." )
 	{
 		CHECK( ui.waitReady(sid, 200, 50) );
@@ -227,3 +234,4 @@ TEST_CASE("UInterface", "[UInterface]")
 		CHECK( ci.precision == ci2.precision );
 	}
 }
+// -----------------------------------------------------------------------------

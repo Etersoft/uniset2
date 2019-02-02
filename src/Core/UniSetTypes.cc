@@ -664,6 +664,28 @@ timespec uniset::now_to_timespec()
 	return to_timespec(d);
 }
 // -------------------------------------------------------------------------
+uniset::Timespec_var uniset::now_to_uniset_timespec()
+{
+	auto d = std::chrono::system_clock::now().time_since_epoch();
+	return to_uniset_timespec(d);
+}
+// -------------------------------------------------------------------------
+uniset::Timespec_var uniset::to_uniset_timespec( const chrono::system_clock::duration& d )
+{
+	uniset::Timespec_var ts;
+
+	if( d.count() == 0 )
+		ts->sec = ts->nsec = 0;
+	else
+	{
+		std::chrono::seconds const sec = std::chrono::duration_cast<std::chrono::seconds>(d);
+		ts->sec  = sec.count();
+		ts->nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(d - sec).count();
+	}
+
+	return ts;
+}
+// -------------------------------------------------------------------------
 char uniset::checkBadSymbols( const string& str )
 {
 	for ( const auto& c : str )
@@ -704,4 +726,3 @@ uniset::KeyType uniset::key( const IOController_i::SensorInfo& si )
 	return key(si.id, si.node);
 }
 // ---------------------------------------------------------------------------------------------------------------
-

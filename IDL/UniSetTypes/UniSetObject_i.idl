@@ -52,6 +52,14 @@
 
         /*!  Функция посылки сообщения объекту */
         void push( in uniset::TransportMessage msg );
+
+        /*!  Функция посылки текстового сообщения объекту */
+        void pushMessage( in string msg
+                           , in uniset::Timespec tm
+                           , in uniset::ProducerInfo pi
+                           , in long priority
+                           , in long consumer
+                           );
     };
 
 //};    // end of module UniSet

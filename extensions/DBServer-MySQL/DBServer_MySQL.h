@@ -129,6 +129,19 @@ namespace uniset
 	  CONSTRAINT `sensor_id_refs_id_436bab5e` FOREIGN KEY (`sensor_id`) REFERENCES `main_sensor` (`id`)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+	DROP TABLE IF EXISTS `main_messages`;
+	CREATE TABLE `main_messages` (
+	  `id` int(11) NOT NULL AUTO_INCREMENT,
+	  `date` date NOT NULL,
+	  `time` time NOT NULL,
+	  `time_usec` int(10) unsigned NOT NULL,
+	  `text` text NOT NULL,
+	  `node` int(10) unsigned NOT NULL,
+	  `confirm` int(11) DEFAULT NULL,
+	  PRIMARY KEY (`id`),
+	  KEY `main_messages_key` (date,time,node)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
 	\endcode
 
 	\warning Временно, для обратной совместимости поле 'time_usec' в таблицах оставлено с таким названием,
@@ -168,6 +181,7 @@ namespace uniset
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 			virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) override;
+			virtual void onTextMessage( const uniset::TextMessage* msg ) override;
 			virtual std::string getMonitInfo( const std::string& params ) override;
 
 			bool writeToBase( const std::string& query );

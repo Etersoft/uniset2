@@ -55,6 +55,7 @@ static struct option longopts[] =
 	{ "verbose", no_argument, 0, 'v' },
 	{ "quiet", no_argument, 0, 'q' },
 	{ "csv", required_argument, 0, 'z' },
+	{ "sendText", required_argument, 0, 'm' },
 	{ NULL, 0, 0, 0 }
 };
 
@@ -77,6 +78,7 @@ int getState( const string& args, UInterface& ui );
 int getCalibrate( const string& args, UInterface& ui );
 int oinfo(const string& args, UInterface& ui , const string&  userparam );
 int apiRequest( const string& args, UInterface& ui, const string& query );
+void sendText( const string& args, UInterface& ui, const string& txt );
 // --------------------------------------------------------------------------
 static void print_help(int width, const string& cmd, const string& help, const string& tab = " " )
 {
@@ -123,6 +125,7 @@ static void usage()
 	print_help(36, "-v|--verbose", "Подробный вывод логов.\n");
 	print_help(36, "-q|--quiet", "Выводит только результат.\n");
 	print_help(36, "-z|--csv", "Вывести результат (getValue) в виде val1,val2,val3...\n");
+	print_help(36, "-m|--sendText id1@node1,id2@node2,id3,.. text", "Послать объектам текстовое сообщение text\n");
 	cout << endl;
 }
 
@@ -148,7 +151,7 @@ int main(int argc, char** argv)
 
 		while(1)
 		{
-			opt = getopt_long(argc, argv, "hc:beosfur:l:i::x:g:w:y:p:vqz:a:", longopts, &optindex);
+			opt = getopt_long(argc, argv, "hc:beosfur:l:i::x:g:w:y:p:vqz:a:m:", longopts, &optindex);
 
 			if( opt == -1 )
 				break;
@@ -300,7 +303,6 @@ int main(int argc, char** argv)
 					commandToAll(conf->getControllersSection(), rep, (Command)cmd);
 					commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
 				}
-
 				return 0;
 
 				case 'r':    //--configure
@@ -329,7 +331,6 @@ int main(int argc, char** argv)
 					if( verb )
 						cout << "(finish): done" << endl;
 				}
-
 				return 0;
 
 				case 'l':    //--logrotate
@@ -367,9 +368,29 @@ int main(int argc, char** argv)
 					commandToAll(conf->getControllersSection(), rep, (Command)cmd);
 					commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
 					//                    cout<<"(foldUp): done"<<endl;
+					return 0;
 				}
 
-				return 0;
+				case 'm':    //--sendText
+				{
+					// смотрим второй параметр
+					if( checkArg(optind, argc, argv) == 0 )
+					{
+						if( !quiet )
+							cerr << "admin(sendText): Unknown 'text'. Use: id,name,name2@nodeX text" << endl;
+
+						return 1;
+					}
+
+					auto conf = uniset_init(argc, argv, conffile);
+					UInterface ui(conf);
+					ui.initBackId(uniset::AdminID);
+					std::string txt = string(argv[optind]);
+
+					sendText(optarg, ui, txt);
+					return 0;
+				}
+				break;
 
 				case '?':
 				default:
@@ -1087,6 +1108,34 @@ int apiRequest( const string& args, UInterface& ui, const string& query )
 	}
 
 	return 0;
+}
+
+// --------------------------------------------------------------------------------------
+void sendText( const string& args, UInterface& ui, const string& txt )
+{
+	auto conf = uniset_conf();
+	auto sl = uniset::getObjectsList( args, conf );
+
+	for( auto && it : sl )
+	{
+		if( it.node == DefaultObjectId )
+			it.node = conf->getLocalNode();
+
+		try
+		{
+			ui.sendText(it.id, txt, it.node);
+		}
+		catch( const std::exception& ex )
+		{
+			if( !quiet )
+				cerr << "std::exception: " << ex.what() << endl;
+		}
+		catch(...)
+		{
+			if( !quiet )
+				cerr << "Unknown exception.." << endl;
+		}
+	}
 }
 
 // --------------------------------------------------------------------------------------

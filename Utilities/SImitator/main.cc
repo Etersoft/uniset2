@@ -66,8 +66,8 @@ int main( int argc, char** argv )
 
 			if( t != UniversalIO::AI && t != UniversalIO::AO )
 			{
-				cerr << endl << "Неверный типа датчика '" << t << "' для id='" << it.fname << "'. Тип должен быть AI или AO." << endl << endl;
-				return 1;
+				cerr << endl << "WARNING! Неверный типа датчика '" << t << "' для id='" << it.fname << "'. Тип должен быть AI или AO." << endl << endl;
+				// return 1;
 			}
 
 			if( it.si.node == DefaultObjectId )

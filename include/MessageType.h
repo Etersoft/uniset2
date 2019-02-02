@@ -24,6 +24,7 @@
 // --------------------------------------------------------------------------
 #include <time.h> // for timespec
 #include <cstring>
+#include <memory>
 #include <string>
 #include <ostream>
 #include "UniSetTypes.h"
@@ -41,6 +42,7 @@ namespace uniset
 				SysCommand, // Сообщение содержит системную команду
 				Confirm,    // Сообщение содержит подтверждение
 				Timer,        // Сообщения о срабатывании таймера
+				TextMessage,  // текстовое сообщение
 				TheLastFieldOfTypeOfMessage // Обязательно оставьте последним
 			};
 
@@ -269,6 +271,30 @@ namespace uniset
 
 		protected:
 			ConfirmMessage() noexcept;
+	};
+
+	// ------------------------------------------------------------------------
+
+	/*! текстовое сообщение */
+	class TextMessage : public VoidMessage
+	{
+		public:
+			TextMessage( TextMessage&& ) noexcept = default;
+			TextMessage& operator=(TextMessage&& ) noexcept = default;
+			TextMessage( const TextMessage& ) noexcept = default;
+			TextMessage& operator=( const TextMessage& ) noexcept = default;
+
+			TextMessage( const VoidMessage* msg ) noexcept;
+			TextMessage();
+			TextMessage( const char* msg,
+						 const ::uniset::Timespec& tm,
+						 const ::uniset::ProducerInfo& pi,
+						 Priority prior = Message::Medium,
+						 ObjectId cons = uniset::DefaultObjectId );
+
+			std::shared_ptr<VoidMessage> toLocalVoidMessage() const;
+
+			std::string txt;
 	};
 
 }

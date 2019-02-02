@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2018-12-25+03:00
+// generate timestamp: 2019-02-02+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -407,6 +407,7 @@ void UObject_SK::processingMessage( const uniset::VoidMessage* _msg )
 			break;
                                                                                         
 			default:
+				UniSetObject::processingMessage(_msg);				
 				break;
 		}	
 	}

@@ -230,3 +230,55 @@ TEST_CASE("ConfirmMessage", "[basic][message types][ConfirmMessage]" )
 	}
 }
 // ---------------------------------------------------------------
+TEST_CASE("TextMessage", "[basic][message types][TextMessage]" )
+{
+	CHECK( uniset_conf() != nullptr );
+	auto conf = uniset_conf();
+
+	SECTION("Default consturctor")
+	{
+		TextMessage tm;
+		CHECK( tm.type == Message::TextMessage );
+		CHECK( tm.priority == Message::Medium );
+		CHECK( tm.node == conf->getLocalNode() );
+		CHECK( tm.supplier == DefaultObjectId );
+		CHECK( tm.consumer == DefaultObjectId );
+		CHECK( tm.txt == "" );
+	}
+
+	SECTION("TextMessage from network")
+	{
+		std::string txt="Hello world";
+
+		::uniset::Timespec tspec;
+		tspec.sec = 10;
+		tspec.nsec = 100;
+
+		::uniset::ProducerInfo pi;
+		pi.id = 30;
+		pi.node = conf->getLocalNode();
+
+		ObjectId consumer = 40;
+
+		TextMessage tm(txt.c_str(), tspec, pi, uniset::Message::High, consumer );
+		REQUIRE( tm.consumer == consumer );
+		REQUIRE( tm.node == pi.node );
+		REQUIRE( tm.supplier == pi.id );
+		REQUIRE( tm.txt == txt );
+		REQUIRE( tm.tm.tv_sec == tspec.sec );
+		REQUIRE( tm.tm.tv_nsec == tspec.nsec );
+
+		auto vm = tm.toLocalVoidMessage();
+
+		REQUIRE( vm->type == Message::TextMessage );
+
+		TextMessage tm2(vm.get());
+		REQUIRE( tm.consumer == consumer );
+		REQUIRE( tm.node == pi.node );
+		REQUIRE( tm.supplier == pi.id );
+		REQUIRE( tm.txt == txt );
+		REQUIRE( tm.tm.tv_sec == tspec.sec );
+		REQUIRE( tm.tm.tv_nsec == tspec.nsec );
+	}
+}
+// ---------------------------------------------------------------

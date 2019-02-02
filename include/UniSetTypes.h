@@ -175,6 +175,9 @@ namespace uniset
 	struct timespec to_timespec( const std::chrono::system_clock::duration& d ); /*!< конвертирование std::chrono в posix timespec */
 	struct timespec now_to_timespec(); /*!< получение текущего времени */
 
+	uniset::Timespec_var to_uniset_timespec( const std::chrono::system_clock::duration& d );
+	uniset::Timespec_var now_to_uniset_timespec(); /*!< получение текущего времени */
+
 	inline bool operator==( const struct timespec& r1,  const struct timespec& r2 )
 	{
 		return ( r1.tv_sec == r2.tv_sec && r1.tv_nsec == r2.tv_nsec );

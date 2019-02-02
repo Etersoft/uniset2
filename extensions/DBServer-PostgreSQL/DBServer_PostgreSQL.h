@@ -87,6 +87,7 @@ namespace uniset
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 			virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) override;
+			virtual void onTextMessage( const uniset::TextMessage* msg ) override;
 			virtual bool deactivateObject() override;
 			virtual std::string getMonitInfo( const std::string& params ) override;
 
