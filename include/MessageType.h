@@ -280,17 +280,17 @@ namespace uniset
 	{
 		public:
 			TextMessage( TextMessage&& ) noexcept = default;
-			TextMessage& operator=(TextMessage&& ) noexcept = default;
-			TextMessage( const TextMessage& ) noexcept = default;
-			TextMessage& operator=( const TextMessage& ) noexcept = default;
+			TextMessage& operator=(TextMessage&& ) = default;
+			TextMessage( const TextMessage& ) = default;
+			TextMessage& operator=( const TextMessage& ) = default;
 
+			TextMessage() noexcept;
 			TextMessage( const VoidMessage* msg ) noexcept;
-			TextMessage();
 			TextMessage( const char* msg,
 						 const ::uniset::Timespec& tm,
 						 const ::uniset::ProducerInfo& pi,
 						 Priority prior = Message::Medium,
-						 ObjectId cons = uniset::DefaultObjectId );
+						 ObjectId cons = uniset::DefaultObjectId ) noexcept;
 
 			std::shared_ptr<VoidMessage> toLocalVoidMessage() const;
 

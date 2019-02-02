@@ -245,7 +245,7 @@ namespace uniset
 		}
 	}
 	//--------------------------------------------------------------------------------------------
-	TextMessage::TextMessage()
+	TextMessage::TextMessage() noexcept
 	{
 		type = Message::TextMessage;
 	}
@@ -254,7 +254,7 @@ namespace uniset
 							  const uniset::Timespec& tm,
 							  const ::uniset::ProducerInfo& pi,
 							  Priority prior,
-							  ObjectId cons)
+							  ObjectId cons) noexcept
 	{
 		type = Message::TextMessage;
 		this->node = pi.node;
