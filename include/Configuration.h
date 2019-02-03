@@ -160,7 +160,7 @@ namespace uniset
 			/*! интерфейс к карте объектов */
 			std::shared_ptr<ObjectIndex> oind;
 
-			/*! интерфейс к работе с локальнымми ior-файлами */
+			/*! интерфейс к работе с локальными ior-файлами */
 			std::shared_ptr<IORFile> iorfile;
 
 			/*! указатель на конфигурационный xml */
@@ -180,7 +180,7 @@ namespace uniset
 			virtual void initNode( uniset::NodeInfo& ninfo, UniXML::iterator& it) noexcept;
 
 			void initRepSections();
-			std::string getRepSectionName(const std::string& sec, xmlNode* secnode = 0 );
+			std::pair<std::string,xmlNode*> getRepSectionName( const std::string& sec );
 			void setConfFileName( const std::string& fn = "" );
 			void initParameters();
 			void setLocalNode( const std::string& nodename );
@@ -250,7 +250,7 @@ namespace uniset
 	// --------------------------------------------------------------------------
 }    // end of uniset namespace
 // --------------------------------------------------------------------------
-// "синтаксический сахар"..для логов
+// "синтаксический сахар" для логов
 #define uinfo if( uniset::ulog()->debugging(Debug::INFO) ) uniset::ulog()->info()
 #define uwarn if( uniset::ulog()->debugging(Debug::WARN) ) uniset::ulog()->warn()
 #define ucrit if( uniset::ulog()->debugging(Debug::CRIT) ) uniset::ulog()->crit()

@@ -1547,7 +1547,7 @@ namespace uniset
 		cout << "--prefix-reg-from-id 0,1   - Использовать в качестве регистра sensor ID" << endl;
 		cout << "--prefix-filter-field name - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;
 		cout << "--prefix-filter-value val  - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
-		cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
+		cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
 		cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
 		cout << "--prefix-initPause         - Задержка перед инициализацией (время на активизация процесса)" << endl;
 		cout << "--prefix-force 1           - Читать данные из SM каждый раз, а не по изменению." << endl;
@@ -1933,13 +1933,12 @@ namespace uniset
 					return ModbusRTU::erInvalidFormat;
 				}
 
-				ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::I2::wsize()];
+				ModbusRTU::DataGuard d(VTypes::I2::wsize());
 
 				for( size_t k = 0; k < VTypes::I2::wsize(); k++, i++ )
-					d[k] = dat[i];
+					d.data[k] = dat[i];
 
-				VTypes::I2 i2(d, VTypes::I2::wsize());
-				delete[] d;
+				VTypes::I2 i2(d.data, d.len);
 				IOBase::processingAsAI( p, (long)i2, shm, force );
 			}
 			else if( p->vtype == VTypes::vtI2r )
@@ -1950,13 +1949,12 @@ namespace uniset
 					return ModbusRTU::erInvalidFormat;
 				}
 
-				ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::I2r::wsize()];
+				ModbusRTU::DataGuard d(VTypes::I2r::wsize());
 
 				for( size_t k = 0; k < VTypes::I2r::wsize(); k++, i++ )
-					d[k] = dat[i];
+					d.data[k] = dat[i];
 
-				VTypes::I2r i2r(d, VTypes::I2r::wsize());
-				delete[] d;
+				VTypes::I2r i2r(d.data, d.len);
 				IOBase::processingAsAI( p, (long)i2r, shm, force );
 			}
 			else if( p->vtype == VTypes::vtU2 )
@@ -1967,13 +1965,12 @@ namespace uniset
 					return ModbusRTU::erInvalidFormat;
 				}
 
-				ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::U2::wsize()];
+				ModbusRTU::DataGuard d(VTypes::U2::wsize());
 
 				for( size_t k = 0; k < VTypes::U2::wsize(); k++, i++ )
-					d[k] = dat[i];
+					d.data[k] = dat[i];
 
-				VTypes::U2 u2(d, VTypes::U2::wsize());
-				delete[] d;
+				VTypes::U2 u2(d.data, d.len);
 				IOBase::processingAsAI( p, (unsigned long)u2, shm, force );
 			}
 			else if( p->vtype == VTypes::vtU2r )
@@ -1984,13 +1981,12 @@ namespace uniset
 					return ModbusRTU::erInvalidFormat;
 				}
 
-				ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::U2r::wsize()];
+				ModbusRTU::DataGuard d(VTypes::U2r::wsize());
 
 				for( size_t k = 0; k < VTypes::U2r::wsize(); k++, i++ )
-					d[k] = dat[i];
+					d.data[k] = dat[i];
 
-				VTypes::U2r u2r(d, VTypes::U2r::wsize());
-				delete[] d;
+				VTypes::U2r u2r(d.data, d.len);
 				IOBase::processingAsAI( p, (unsigned long)u2r, shm, force );
 			}
 			else if( p->vtype == VTypes::vtF2 )
@@ -2001,14 +1997,12 @@ namespace uniset
 					return ModbusRTU::erInvalidFormat;
 				}
 
-				ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::F2::wsize()];
+				ModbusRTU::DataGuard d(VTypes::F2::wsize());
 
 				for( size_t k = 0; k < VTypes::F2::wsize(); k++, i++ )
-					d[k] = dat[i];
+					d.data[k] = dat[i];
 
-				VTypes::F2 f2(d, VTypes::F2::wsize());
-				delete[] d;
-
+				VTypes::F2 f2(d.data, d.len);
 				IOBase::processingFasAI( p, (float)f2, shm, force );
 			}
 			else if( p->vtype == VTypes::vtF2r )
@@ -2019,13 +2013,11 @@ namespace uniset
 					return ModbusRTU::erInvalidFormat;
 				}
 
-				ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::F2r::wsize()];
-
+				ModbusRTU::DataGuard d(VTypes::F2r::wsize());
 				for( size_t k = 0; k < VTypes::F2r::wsize(); k++, i++ )
-					d[k] = dat[i];
+					d.data[k] = dat[i];
 
-				VTypes::F2r f2r(d, VTypes::F2r::wsize());
-				delete[] d;
+				VTypes::F2r f2r(d.data, d.len);
 				IOBase::processingFasAI( p, (float)f2r, shm, force );
 			}
 			else if( p->vtype == VTypes::vtF4 )
@@ -2036,15 +2028,13 @@ namespace uniset
 					return ModbusRTU::erInvalidFormat;
 				}
 
-				ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::F4::wsize()];
+				ModbusRTU::DataGuard d(VTypes::F4::wsize());
 
 				for( size_t k = 0; k < VTypes::F4::wsize(); k++, i++ )
-					d[k] = dat[i];
+					d.data[k] = dat[i];
 
-				VTypes::F4 f4(d, VTypes::F4::wsize());
-				delete[] d;
-
-				IOBase::processingFasAI( p, (float)f4, shm, force );
+				VTypes::F4 f4(d.data, d.len);
+				IOBase::processingFasAI( p, (double)f4, shm, force );
 			}
 			else if( p->vtype == VTypes::vtByte )
 			{
@@ -2078,16 +2068,16 @@ namespace uniset
 			mbwarn << myname << "(real_write_prop): " << ex << endl;
 			return ModbusRTU::erBadDataValue;
 		}
-		catch( const uniset::Exception& ex )
-		{
-			if( smPingOK )
-				mbcrit << myname << "(real_write_prop): " << ex << endl;
-		}
 		catch( const CORBA::SystemException& ex )
 		{
 			if( smPingOK )
 				mbcrit << myname << "(real_write_prop): СORBA::SystemException: "
 					   << ex.NP_minorString() << endl;
+		}
+		catch( const uniset::Exception& ex )
+		{
+			if( smPingOK )
+				mbcrit << myname << "(real_write_prop): " << ex << endl;
 		}
 		catch(...)
 		{
@@ -2456,16 +2446,16 @@ namespace uniset
 			mbwarn << myname << "(real_read_prop): " << ex << endl;
 			return ModbusRTU::erBadDataValue;
 		}
-		catch( const uniset::Exception& ex )
-		{
-			if( smPingOK )
-				mbcrit << myname << "(real_read_prop): " << ex << endl;
-		}
 		catch( const CORBA::SystemException& ex )
 		{
 			if( smPingOK )
 				mbcrit << myname << "(real_read_prop): CORBA::SystemException: "
 					   << ex.NP_minorString() << endl;
+		}
+		catch( const uniset::Exception& ex )
+		{
+			if( smPingOK )
+				mbcrit << myname << "(real_read_prop): " << ex << endl;
 		}
 		catch(...)
 		{
@@ -2608,16 +2598,16 @@ namespace uniset
 			mbwarn << myname << "(readCoilStatus): " << ex << endl;
 			return ModbusRTU::erBadDataAddress;
 		}
-		catch( const uniset::Exception& ex )
-		{
-			if( smPingOK )
-				mbcrit << myname << "(readCoilStatus): " << ex << endl;
-		}
 		catch( const CORBA::SystemException& ex )
 		{
 			if( smPingOK )
 				mbcrit << myname << "(readCoilStatus): СORBA::SystemException: "
 					   << ex.NP_minorString() << endl;
+		}
+		catch( const uniset::Exception& ex )
+		{
+			if( smPingOK )
+				mbcrit << myname << "(readCoilStatus): " << ex << endl;
 		}
 		catch(...)
 		{
@@ -2687,16 +2677,16 @@ namespace uniset
 			mbwarn << myname << "(readInputStatus): " << ex << endl;
 			return ModbusRTU::erBadDataAddress;
 		}
-		catch( const uniset::Exception& ex )
-		{
-			if( smPingOK )
-				mbcrit << myname << "(readInputStatus): " << ex << endl;
-		}
 		catch( const CORBA::SystemException& ex )
 		{
 			if( smPingOK )
 				mbcrit << myname << "(readInputStatus): СORBA::SystemException: "
 					   << ex.NP_minorString() << endl;
+		}
+		catch( const uniset::Exception& ex )
+		{
+			if( smPingOK )
+				mbcrit << myname << "(readInputStatus): " << ex << endl;
 		}
 		catch(...)
 		{

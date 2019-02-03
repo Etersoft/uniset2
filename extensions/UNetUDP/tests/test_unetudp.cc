@@ -29,6 +29,7 @@ static ObjectId node2_lostpackets_as = 13;
 static int maxDifferense = 5; // см. unetudp-test-configure.xml --unet-maxdifferense
 static int recvTimeout = 1000; // --unet-recv-timeout
 static ObjectId node1_numchannel_as = 14;
+static ObjectId node1_channelSwitchCount_as = 15;
 // -----------------------------------------------------------------------------
 void InitTest()
 {
@@ -69,7 +70,7 @@ static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 20
 		size_t ret = udp_r->receiveBytes(&(buf.data), sizeof(buf.data) );
 		size_t sz = UniSetUDP::UDPMessage::getMessage(pack, buf);
 
-		if( sz == 0 || pnum == 0 || ( pnum > 0 && pack.num >= pnum ) )
+		if( sz == 0 || pnum == 0 || ( pnum > 0 && pack.num >= pnum ) ) // -V560
 			break;
 
 		REQUIRE( pack.magic == UniSetUDP::UNETUDP_MAGICNUM );
@@ -462,6 +463,9 @@ TEST_CASE("[UNetUDP]: switching channels", "[unetudp][chswitch]")
 	msleep(120);
 	REQUIRE( ui->getValue(8) == 70 );
 
+	// и счётчик переключений каналов в нуле
+	REQUIRE( ui->getValue(node1_channelSwitchCount_as) == 0 );
+
 	// К сожалению в текущей реализации тестов
 	// обмена по второму каналу нет
 	// поэтому проверить переключение нет возможности
@@ -469,6 +473,9 @@ TEST_CASE("[UNetUDP]: switching channels", "[unetudp][chswitch]")
 	// т.к. на втором нет связи и мы не должны на него переключаться
 	msleep(recvTimeout * 2);
 	REQUIRE( ui->getValue(node1_numchannel_as) == 1 );
+
+	// и счётчик переключений каналов остался в нуле
+	REQUIRE( ui->getValue(node1_channelSwitchCount_as) == 0 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[UNetUDP]: check undefined value", "[unetudp][sender]")

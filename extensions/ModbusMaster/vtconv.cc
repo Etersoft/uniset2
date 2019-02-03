@@ -118,7 +118,7 @@ int main( int argc, const char** argv )
 			 << " v[1]=" << v[1]
 			 << " v[2]=" << v[2]
 			 << " v[3]=" << v[3]
-			 << " --> (float) " << (float)f << endl;
+			 << " --> (float64) " << (double)f << endl;
 	}
 	else if( !strcmp(type, "I2") )
 	{

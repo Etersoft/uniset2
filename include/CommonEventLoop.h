@@ -48,7 +48,7 @@ namespace uniset
 	 * Некоторые детали:
 	 * Т.к. evprepare необходимо вызывать из потока в котором крутится event loop (иначе libev не работает),
 	 * а функция run() в общем случае вызывается "откуда угодно" и может быть вызвана в том числе уже после
-	 * запуска event loop, то задействован механизм асинхронного уведомления (см. evprep, onPrepapre) и ожидания
+	 * запуска event loop, то задействован механизм асинхронного уведомления (см. evprep, onPrepare) и ожидания
 	 * на condition_variable, когда произойдёт инициализация (см. реализацию evrun()).
 	 */
 	class CommonEventLoop
@@ -109,7 +109,7 @@ namespace uniset
 			std::mutex wlist_mutex;
 			std::vector<EvWatcher*> wlist;
 
-			// готовящийся Watcher..он может быть только один в единицу времени
+			// готовящийся Watcher. Он может быть только один в единицу времени
 			// это гарантирует prep_mutex
 			EvWatcher* wprep = { nullptr };
 			ev::async evprep;

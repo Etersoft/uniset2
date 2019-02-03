@@ -95,14 +95,14 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback() noexcept
 		updateOutputs(forceOut);
 		updatePreviousValues();
 	}
-	catch( const uniset::Exception&amp; ex )
-	{
-        mycrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
-	}
 	catch( const CORBA::SystemException&amp; ex )
 	{
         mycrit &lt;&lt; myname &lt;&lt; "(execute): СORBA::SystemException: "
                 &lt;&lt; ex.NP_minorString() &lt;&lt; endl;
+	}
+	catch( const uniset::Exception&amp; ex )
+	{
+        mycrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
 	}
     catch( const std::exception&amp; ex )
     {
@@ -289,7 +289,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 </xsl:template>
 
 <xsl:template name="setdata">
-		if( <xsl:value-of select="@name"/> != DefaultObjectId )
+		if( <xsl:value-of select="@name"/> != DefaultObjectId ) // -V547
 		{
 			try
 			{
@@ -307,7 +307,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 
 <xsl:template name="setdata_value">
 <xsl:param name="setval">0</xsl:param>	
-	if( <xsl:value-of select="@name"/> != DefaultObjectId )
+	if( <xsl:value-of select="@name"/> != DefaultObjectId ) // -V547
 	{
 		try
 		{

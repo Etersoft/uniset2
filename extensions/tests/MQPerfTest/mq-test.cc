@@ -24,7 +24,7 @@ int main(int argc, const char** argv)
 		act->run(true);
 
 		SensorMessage smsg(100, 2);
-		TransportMessage tm( std::move(smsg.transport_msg()) );
+		TransportMessage tm( smsg.transport_msg() );
 
 		size_t num = 0;
 		const size_t max = 100000;

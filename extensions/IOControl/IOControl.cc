@@ -158,21 +158,18 @@ namespace uniset
 					{
 						ComediInterface::SubdevType st = ComediInterface::str2type(stype.c_str());
 
-						if( !stype.empty() && st == ComediInterface::Unknown )
+						if( st == ComediInterface::Unknown )
 						{
 							ostringstream err;
 							err << "Unknown subdev type '" << stype << " for " << t1.str();
 							throw SystemError(err.str());
 						}
 
-						if( !stype.empty() )
-						{
-							ioinfo << myname
-								   << "(init): card" << i
-								   << " subdev" << s << " set type " << stype << endl;
+						ioinfo << myname
+							   << "(init): card" << i
+							   << " subdev" << s << " set type " << stype << endl;
 
-							cards[i]->configureSubdev(s - 1, st);
-						}
+						cards[i]->configureSubdev(s - 1, st);
 					}
 				}
 			}
@@ -469,14 +466,14 @@ namespace uniset
 					ptHeartBeat.reset();
 				}
 			}
-			catch( const uniset::Exception& ex )
-			{
-				iolog3 << myname << "(execute): " << ex << endl;
-			}
 			catch( const CORBA::SystemException& ex )
 			{
 				iolog3 << myname << "(execute): CORBA::SystemException: "
 					   << ex.NP_minorString() << endl;
+			}
+			catch( const uniset::Exception& ex )
+			{
+				iolog3 << myname << "(execute): " << ex << endl;
 			}
 			catch(...)
 			{
@@ -733,14 +730,14 @@ namespace uniset
 		{
 			iolog3 << myname << "(iopoll): (BadRange)..." << endl;
 		}
-		catch( const uniset::Exception& ex )
-		{
-			iolog3 << myname << "(iopoll): " << ex << endl;
-		}
 		catch( const CORBA::SystemException& ex )
 		{
 			iolog3 << myname << "(iopoll): СORBA::SystemException: "
 				   << ex.NP_minorString() << endl;
+		}
+		catch( const uniset::Exception& ex )
+		{
+			iolog3 << myname << "(iopoll): " << ex << endl;
 		}
 	}
 	// --------------------------------------------------------------------------------
@@ -1261,7 +1258,7 @@ namespace uniset
 		cout << "                                   Разрешены: TBI0_24,TBI24_0,TBI16_8" << endl;
 
 		cout << "--prefix-default_cardnum   - Номер карты по умолчанию. По умолчанию -1." << endl;
-		cout << "                             Если задать, то он будет использоватся для датчиков" << endl;
+		cout << "                             Если задать, то он будет использоваться для датчиков" << endl;
 		cout << "                             у которых не задано поле 'card'." << endl;
 
 		cout << "--prefix-test-lamp         - Для данного узла в качестве датчика кнопки 'ТестЛамп' использовать указанный датчик." << endl;
@@ -1274,7 +1271,7 @@ namespace uniset
 		cout << "--prefix-blink-time msec   - Частота мигания, мсек. По умолчанию в configure.xml" << endl;
 		cout << "--prefix-blink2-time msec  - Вторая частота мигания (lmpBLINK2), мсек. По умолчанию в configure.xml" << endl;
 		cout << "--prefix-blink3-time msec  - Вторая частота мигания (lmpBLINK3), мсек. По умолчанию в configure.xml" << endl;
-		cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
+		cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
 		cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
 		cout << "--prefix-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
 		cout << "--prefix-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;

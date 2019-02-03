@@ -25,8 +25,8 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.7
-Release: alt15.M80P.16
+Version: 2.8
+Release: alt0.M80P.1
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -546,8 +546,14 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
-* Thu Oct 11 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt15.M80P.16
+* Sun Feb 03 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt0.M80P.1
 - backport to ALTLinux p8 (by rpmbph script)
+
+* Sun Feb 03 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt1
+- added new public function 'pushMessage(string)'
+
+* Thu Jan 31 2019 Pavel Vainerman <pv@altlinux.ru> 2.7-alt17
+- new release
 
 * Thu Oct 11 2018 Pavel Vainerman <pv@altlinux.ru> 2.7-alt16
 - (codegen): reformat

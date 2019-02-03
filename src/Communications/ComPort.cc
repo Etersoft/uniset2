@@ -103,6 +103,11 @@ void ComPort::reopen()
 		tcgetattr(fd, &options);
 		tcsetattr(fd, TCSAFLUSH, &oldTermios);
 		close(fd);
+
+		curSym = 0;
+		bufLength = 0;
+		memset(buf,0,sizeof(buf));
+
 		openPort();
 
 		if( fd > 0 )
@@ -338,7 +343,7 @@ size_t ComPort::receiveBlock(unsigned char* msg, size_t len)
 		{
 			msg[k] = m_receiveByte(waiting);
 		}
-		catch(TimeOut)
+		catch( const uniset::TimeOut& ex )
 		{
 			break;
 		}

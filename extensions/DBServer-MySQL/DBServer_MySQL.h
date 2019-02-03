@@ -41,19 +41,19 @@ namespace uniset
 
 	    \section sec_DBS_Comm Общее описание работы DBServer_MySQL
 	        Сервис предназначен для работы с БД MySQL. В его задачи входит
-	    сохранение всех событий происходищих в системе в БД. К этим
+	    сохранение всех событий происходящих в системе в БД. К этим
 	    событиям относятся изменение состояния датчиков, различные логи
 	    работы процессов и т.п.
-	       К моменту запуска, подразумевается, что неободимые таблицы уже
+	       К моменту запуска, подразумевается, что необходимые таблицы уже
 	    созданы, все необходимые настройки mysql сделаны.
 	    \par
 	    При работе с БД, сервис в основном пишет в БД. Обработка накопленных данных
 	    ведётся уже другими программами (web-интерфейс).
 
 	    \par
-	        Для повышения надежности DBServer переодически ( DBServer_MySQL::PingTimer ) проверяет наличие связи с сервером БД.
+	        Для повышения надежности DBServer периодически ( DBServer_MySQL::PingTimer ) проверяет наличие связи с сервером БД.
 	    В случае если связь пропала (или не была установлена при старте) DBServer пытается вновь каждые DBServer::ReconnectTimer
-	    произвести соединение.    При этом все запросы которые поступают для запии в БД, но не мгут быть записаны складываются
+	    произвести соединение.    При этом все запросы которые поступают для записи в БД, но не могут быть записаны складываются
 	    в буфер (см. \ref sec_DBS_Buffer).
 	    \warning При каждой попытке восстановить соединение DBServer заново читает конф. файл. Поэтому он может подхватить
 	    новые настройки.
@@ -73,14 +73,14 @@ namespace uniset
 
 	    \section sec_DBS_Buffer Защита от потери данных
 	     Для того, чтобы на момент отсутствия связи с БД данные по возможности не потерялись,
-	    сделан "кольцевой" буфер. Размер которго можно регулировать параметром "--dbserver-buffer-size"
+	    сделан "кольцевой" буфер. Размер которого можно регулировать параметром "--dbserver-buffer-size"
 	    или параметром \b bufferSize=".." в конфигурационном файле секции "<LocalDBSErver...>".
 
 	    Механизм построен на том, что если связь с mysql сервером отсутствует или пропала,
-	    то сообщения помещаются в колевой буфер, который "опустошается" как только она восстановится.
+	    то сообщения помещаются в нулевой буфер, который "опустошается" как только она восстановится.
 	    Если связь не восстановилась, а буфер достиг максимального заданного размера, то удаляются
 	    более ранние сообщения. Эту логику можно сменить, если указать параметр "--dbserver-buffer-last-remove"
-	    или \b bufferLastRemove="1", то терятся будут сообщения добавляемые в конец.
+	    или \b bufferLastRemove="1", то теряться будут сообщения добавляемые в конец.
 
 	    \section sec_DBS_Tables Таблицы MySQL
 	      К основным таблицам относятся следующие:
@@ -129,6 +129,19 @@ namespace uniset
 	  CONSTRAINT `sensor_id_refs_id_436bab5e` FOREIGN KEY (`sensor_id`) REFERENCES `main_sensor` (`id`)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+	DROP TABLE IF EXISTS `main_messages`;
+	CREATE TABLE `main_messages` (
+	  `id` int(11) NOT NULL AUTO_INCREMENT,
+	  `date` date NOT NULL,
+	  `time` time NOT NULL,
+	  `time_usec` int(10) unsigned NOT NULL,
+	  `text` text NOT NULL,
+	  `node` int(10) unsigned NOT NULL,
+	  `confirm` int(11) DEFAULT NULL,
+	  PRIMARY KEY (`id`),
+	  KEY `main_messages_key` (date,time,node)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
 	\endcode
 
 	\warning Временно, для обратной совместимости поле 'time_usec' в таблицах оставлено с таким названием,
@@ -168,6 +181,7 @@ namespace uniset
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 			virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) override;
+			virtual void onTextMessage( const uniset::TextMessage* msg ) override;
 			virtual std::string getMonitInfo( const std::string& params ) override;
 
 			bool writeToBase( const std::string& query );
@@ -180,7 +194,7 @@ namespace uniset
 
 			enum Timers
 			{
-				PingTimer,        /*!< таймер на переодическую проверку соединения  с сервером БД */
+				PingTimer,        /*!< таймер на пере одическую проверку соединения  с сервером БД */
 				ReconnectTimer,   /*!< таймер на повторную попытку соединения с сервером БД (или восстановления связи) */
 				lastNumberOfTimer
 			};
@@ -188,7 +202,7 @@ namespace uniset
 			std::unique_ptr<MySQLInterface> db;
 			int PingTime = { 15000 };
 			int ReconnectTime = { 30000 };
-			bool connect_ok = { false };     /*! признак наличия соеднинения с сервером БД */
+			bool connect_ok = { false };     /*! признак наличия соединения с сервером БД */
 
 			bool activate = { false };
 

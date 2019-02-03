@@ -71,14 +71,16 @@ void DBServer_SQLite::sysCommand( const uniset::SystemMessage* sm )
 		case SystemMessage::Finish:
 		{
 			activate = false;
-			db->close();
+			if(db)
+				db->close();
 		}
 		break;
 
 		case SystemMessage::FoldUp:
 		{
 			activate = false;
-			db->close();
+			if(db)
+				db->close();
 		}
 		break;
 
@@ -114,6 +116,36 @@ void DBServer_SQLite::confirmInfo( const uniset::ConfirmMessage* cem )
 	catch( const std::exception& ex )
 	{
 		dbcrit << myname << "(update_confirm):  catch: " << ex.what() << endl;
+	}
+}
+//--------------------------------------------------------------------------------------------
+void DBServer_SQLite::onTextMessage( const TextMessage* msg )
+{
+	try
+	{
+		ostringstream data;
+		data << "INSERT INTO " << tblName(msg->type)
+			 << "(date, time, time_usec, text, node) VALUES( '"
+			 << dateToString(msg->tm.tv_sec, "-") << "','"   //  date
+			 << timeToString(msg->tm.tv_sec, ":") << "','"   //  time
+			 << msg->tm.tv_nsec << "','"                //  time_usec
+			 << msg->txt << "','"                    // text
+			 << msg->node << "')";                //  node
+
+		dbinfo << myname << "(insert_main_messages): " << data.str() << endl;
+
+		if( !writeToBase(data.str()) )
+		{
+			dbcrit << myname << "(insert_main_messages): error: " << db->error() << endl;
+		}
+	}
+	catch( const uniset::Exception& ex )
+	{
+		dbcrit << myname << "(insert_main_messages): " << ex << endl;
+	}
+	catch( ... )
+	{
+		dbcrit << myname << "(insert_main_messages): catch..." << endl;
 	}
 }
 //--------------------------------------------------------------------------------------------
@@ -158,6 +190,9 @@ bool DBServer_SQLite::writeToBase( const string& query )
 void DBServer_SQLite::flushBuffer()
 {
 	uniset_rwmutex_wrlock l(mqbuf);
+
+	if( !db || !connect_ok )
+		return;
 
 	// Сперва пробуем очистить всё что накопилось в очереди до этого...
 	while( !qbuf.empty() )
@@ -253,6 +288,7 @@ void DBServer_SQLite::initDBServer()
 
 	tblMap[uniset::Message::SensorInfo] = "main_history";
 	tblMap[uniset::Message::Confirm] = "main_history";
+	tblMap[uniset::Message::TextMessage] = "main_messages";
 
 	PingTime = conf->getPIntProp(node, "pingTime", PingTime);
 	ReconnectTime = conf->getPIntProp(node, "reconnectTime", ReconnectTime);

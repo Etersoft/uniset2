@@ -38,7 +38,7 @@ namespace uniset
 	//---------------------------------------------------------------------------
 	/*! \class UniSetManager
 	 *    \par
-	 *    Содержит в себе функции управления объектами. Их регистрации и т.п.
+	 *    Содержит в себе функции управления объектами. их регистрации и т.п.
 	 *    Создается менеджер объектов, после чего вызывается initObjects()
 	 *    для инициализации объектов которыми управляет
 	 *    данный менеджер...
@@ -49,8 +49,8 @@ namespace uniset
 	 *    \par
 	 *     У базового менеджера имеются базовые три функции см. UniSetManager_i.
 	 *    \note Только при вызове функции UniSetManager::broadcast() происходит
-	 *        формирование сообщения всем подчиненным объектам... Если команда проиходит
-	 *    при помощи push, то пересылки всем починённым объектам не происходит...
+	 *        формирование сообщения всем подчиненным объектам... Если команда происходит
+	 *    при помощи push, то пересылки всем подчинённым объектам не происходит...
 	 *
 	 *
 	*/
@@ -68,7 +68,7 @@ namespace uniset
 				return uniset::ObjectType("UniSetManager");
 			}
 
-			// ------  функции объявленные в интерфейсе(IDL) ------
+			// ------  функции объявленые в интерфейсе(IDL) ------
 			virtual void broadcast( const uniset::TransportMessage& msg) override;
 			virtual uniset::SimpleInfoSeq* getObjectsInfo( CORBA::Long MaxLength = 300, const char* userparam = 0  ) override ;
 
@@ -76,7 +76,7 @@ namespace uniset
 			virtual bool add( const std::shared_ptr<UniSetObject>& obj );
 			virtual bool remove( const std::shared_ptr<UniSetObject>& obj );
 			// --------------------------
-			size_t objectsCount() const;    // количество подчиненных объектов
+			size_t objectsCount() const;    // количество подчинённых объектов
 			// ---------------
 
 			PortableServer::POA_ptr getPOA();
@@ -93,7 +93,7 @@ namespace uniset
 			virtual bool removeObject( const std::shared_ptr<UniSetObject>& obj );
 
 			enum OManagerCommand { deactiv, activ, initial };
-			friend std::ostream& operator<<(std::ostream& os, uniset::UniSetManager::OManagerCommand& cmd );
+			friend std::ostream& operator<<( std::ostream& os, uniset::UniSetManager::OManagerCommand& cmd );
 
 			// работа со списком объектов
 			void objects(OManagerCommand cmd);
@@ -102,15 +102,15 @@ namespace uniset
 
 			void initPOA( const std::weak_ptr<UniSetManager>& rmngr );
 
-			//! \note Переопределяя не забывайте вызвать базовую
+			//! \note Переопределяя, не забывайте вызвать базовую
 			virtual bool activateObject() override;
-			//! \note Переопределяя не забывайте вызвать базовую
+			//! \note Переопределяя, не забывайте вызвать базовую
 			virtual bool deactivateObject() override;
 
 			const std::shared_ptr<UniSetObject> findObject( const std::string& name ) const;
 			const std::shared_ptr<UniSetManager> findManager( const std::string& name ) const;
 
-			// рекурсивный поиск по всем объекам
+			// рекурсивный поиск по всем объектам
 			const std::shared_ptr<UniSetObject> deepFindObject( const std::string& name ) const;
 
 			// рекурсивное наполнение списка объектов
@@ -124,7 +124,7 @@ namespace uniset
 			PortableServer::POA_var poa;
 			PortableServer::POAManager_var pman;
 
-			// Функции для работы со списками подчиненных объектов
+			// Функции для работы со списками подчинённых объектов
 			// ---------------
 			typedef std::function<void(const std::shared_ptr<UniSetObject>&)> OFunction;
 			void apply_for_objects( OFunction f );

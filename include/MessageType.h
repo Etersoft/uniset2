@@ -24,6 +24,7 @@
 // --------------------------------------------------------------------------
 #include <time.h> // for timespec
 #include <cstring>
+#include <memory>
 #include <string>
 #include <ostream>
 #include "UniSetTypes.h"
@@ -41,6 +42,7 @@ namespace uniset
 				SysCommand, // Сообщение содержит системную команду
 				Confirm,    // Сообщение содержит подтверждение
 				Timer,        // Сообщения о срабатывании таймера
+				TextMessage,  // текстовое сообщение
 				TheLastFieldOfTypeOfMessage // Обязательно оставьте последним
 			};
 
@@ -66,7 +68,7 @@ namespace uniset
 
 			Message() noexcept;
 
-			// для оптимизации, делаем конструктор который не будет инициализировать свойства класса
+			// для оптимизации, делаем конструктор, который не будет инициализировать свойства класса
 			// это необходимо для VoidMessage, который конструируется при помощи memcpy
 			explicit Message( int dummy_init ) noexcept {}
 
@@ -94,9 +96,9 @@ namespace uniset
 			VoidMessage( const VoidMessage& ) noexcept = default;
 			VoidMessage& operator=( const VoidMessage& ) noexcept = default;
 
-			// для оптимизации, делаем конструктор который не будет инициализировать свойства класса
+			// для оптимизации, делаем конструктор, который не будет инициализировать свойства класса
 			// это необходимо для VoidMessage, который конструируется при помощи memcpy
-			VoidMessage( int dummy ) noexcept : Message(dummy) {}
+			VoidMessage( int dummy ) noexcept : Message(dummy) {} // -V730
 
 			VoidMessage( const TransportMessage& tm ) noexcept;
 			VoidMessage() noexcept;
@@ -207,7 +209,7 @@ namespace uniset
 
 	// ------------------------------------------------------------------------
 
-	/*! Собщение о срабатывании таймера */
+	/*! Сообщение о срабатывании таймера */
 	class TimerMessage : public Message
 	{
 		public:
@@ -255,7 +257,7 @@ namespace uniset
 
 			ObjectId sensor_id = { uniset::DefaultObjectId };   /* ID датчика (события) */
 			double sensor_value = { 0.0 };  /* значение датчика (события) */
-			struct timespec sensor_time = { 0, 0 }; /* время срабатывания датчика(события), который квитируем */
+			struct timespec sensor_time = { 0, 0 }; /* время срабатывания датчика (события), который квитируем */
 			struct timespec confirm_time = { 0, 0 }; /* * время прошедшее до момента квитирования */
 
 			bool broadcast = { false };
@@ -269,6 +271,30 @@ namespace uniset
 
 		protected:
 			ConfirmMessage() noexcept;
+	};
+
+	// ------------------------------------------------------------------------
+
+	/*! текстовое сообщение */
+	class TextMessage : public VoidMessage
+	{
+		public:
+			TextMessage( TextMessage&& ) noexcept = default;
+			TextMessage& operator=(TextMessage&& ) = default;
+			TextMessage( const TextMessage& ) = default;
+			TextMessage& operator=( const TextMessage& ) = default;
+
+			TextMessage() noexcept;
+			TextMessage( const VoidMessage* msg ) noexcept;
+			TextMessage( const char* msg,
+						 const ::uniset::Timespec& tm,
+						 const ::uniset::ProducerInfo& pi,
+						 Priority prior = Message::Medium,
+						 ObjectId cons = uniset::DefaultObjectId ) noexcept;
+
+			std::shared_ptr<VoidMessage> toLocalVoidMessage() const;
+
+			std::string txt;
 	};
 
 }

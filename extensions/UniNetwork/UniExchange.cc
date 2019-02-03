@@ -115,7 +115,7 @@ UniExchange::UniExchange(uniset::ObjectId id, uniset::ObjectId shmID,
 				node = conf->getNodeID(n1);
 			}
 
-			if( id == DefaultObjectId )
+			if( node == DefaultObjectId )
 				throw SystemError("(UniExchange): Uknown ID for node=" + n1 );
 
 			NetNodeInfo ni;
@@ -288,7 +288,7 @@ IOController_i::ShortMapSeq* UniExchange::getSensors()
 
 	int i = 0;
 
-	for( auto& it : mymap )
+	for( const auto& it : mymap )
 	{
 		IOController_i::ShortMap m;
 		{
@@ -327,7 +327,7 @@ void UniExchange::updateLocalData()
 // --------------------------------------------------------------------------
 void UniExchange::initIterators()
 {
-	for( auto& it : mymap )
+	for( auto&& it : mymap )
 		shm->initIterator(it.ioit);
 }
 // --------------------------------------------------------------------------
@@ -470,7 +470,7 @@ bool UniExchange::initItem( UniXML::iterator& it )
 void UniExchange::help_print( int argc, const char** argv )
 {
 	cout << "--unet-polltime msec     - Пауза между опросами узлов. По умолчанию 200 мсек." << endl;
-	//    cout << "--unet-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
+	//    cout << "--unet-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
 	//    cout << "--unet-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
 	cout << "--unet-sm-ready-timeout - время на ожидание старта SM" << endl;
 }

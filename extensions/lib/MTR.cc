@@ -302,12 +302,15 @@ namespace uniset
 			{
 				bool start = false;
 
-				while( !ifs.eof() )
+				while(true)
 				{
 					std::string str;
 
 					if( getline(ifs, str) )
 					{
+						if( ifs.eof() )
+							break;
+
 						if( str.empty() )
 							continue;
 
@@ -361,7 +364,7 @@ namespace uniset
 							dmap[reg] = dlst;
 						}
 					}
-				}
+				};
 			}
 
 			ifs.close();

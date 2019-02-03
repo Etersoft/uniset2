@@ -433,7 +433,7 @@ SimpleInfo* IONotifyController::getInfo( const char* userparam )
 /*!
  *    \param lst - список в который необходимо внести потребителя
  *    \param name - имя вносимого потребителя
- *    \note Добавление произойдет только если такого потребителя не существует в списке
+ *    \note Добавление произойдёт только если такого потребителя не существует в списке
 */
 bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo& ci )
 {
@@ -481,7 +481,7 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
 }
 // ------------------------------------------------------------------------------------------
 /*!
- *    \param lst - указатель на список из которго происходит удаление потребителя
+ *    \param lst - указатель на список из которого происходит удаление потребителя
  *    \param name - имя удаляемого потребителя
 */
 bool IONotifyController::removeConsumer( ConsumerListInfo& lst, const ConsumerInfo& cons )
@@ -537,7 +537,7 @@ void IONotifyController::askSensor(const uniset::ObjectId sid,
 		if( lst )
 		{
 			uniset::uniset_rwmutex_rlock lock(usi->val_lock);
-			SensorMessage smsg( std::move(usi->makeSensorMessage(false)) );
+			SensorMessage smsg( usi->makeSensorMessage(false) );
 			send(*lst, smsg, &ci);
 		}
 	}
@@ -620,7 +620,7 @@ long IONotifyController::localSetValue( std::shared_ptr<IOController::USensorInf
 
 		uniset::uniset_rwmutex_rlock lock(usi->val_lock);
 
-		SensorMessage sm(std::move(usi->makeSensorMessage(false)));
+		SensorMessage sm(usi->makeSensorMessage(false));
 
 		try
 		{
@@ -833,7 +833,7 @@ void IONotifyController::askThreshold(uniset::ObjectId sid,
 					break;
 
 				// посылка первый раз состояния
-				SensorMessage sm(std::move(li->second->makeSensorMessage()));
+				SensorMessage sm(li->second->makeSensorMessage());
 				sm.consumer   = ci.id;
 				sm.tid        = tid;
 
@@ -946,7 +946,7 @@ void IONotifyController::checkThreshold( std::shared_ptr<IOController::USensorIn
 	// обрабатываем текущее состояние датчика обязательно "залочив" значение..
 	uniset_rwmutex_rlock vlock(usi->val_lock);
 
-	SensorMessage sm(std::move(usi->makeSensorMessage(false)));
+	SensorMessage sm(usi->makeSensorMessage(false));
 
 	// текущее время
 	struct timespec tm = uniset::now_to_timespec();
@@ -1177,7 +1177,7 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 void IONotifyController::onChangeUndefinedState( std::shared_ptr<USensorInfo>& usi, IOController* ic )
 {
 	uniset_rwmutex_rlock vlock(usi->val_lock);
-	SensorMessage sm( std::move(usi->makeSensorMessage(false)) );
+	SensorMessage sm( usi->makeSensorMessage(false) );
 
 	try
 	{

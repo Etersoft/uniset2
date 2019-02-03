@@ -227,10 +227,10 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 
 		int k = 0;
 
-		for( auto& i : rrdparamist )
+		for( const auto& i : rrdparamist )
 			argv[k++] = strdup(i.c_str());
 
-		for( auto& i : rralist )
+		for( const auto& i : rralist )
 			argv[k++] = strdup(i.c_str());
 
 		//         for( k=0; k<argc; k++ )

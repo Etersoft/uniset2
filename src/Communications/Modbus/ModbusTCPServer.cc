@@ -103,13 +103,13 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	bool ModbusTCPServer::run( const std::unordered_set<ModbusAddr>& _vmbaddr )
 	{
-		vmbaddr = &_vmbaddr;
+		vmbaddr = _vmbaddr;
 		return evrun();
 	}
 	// -------------------------------------------------------------------------
 	bool ModbusTCPServer::async_run( const std::unordered_set<ModbusAddr>& _vmbaddr )
 	{
-		vmbaddr = &_vmbaddr;
+		vmbaddr = _vmbaddr;
 		return async_evrun();
 	}
 	// -------------------------------------------------------------------------
@@ -296,7 +296,7 @@ namespace uniset
 
 			connCount++;
 
-			auto s = make_shared<ModbusTCPSession>(ss, *vmbaddr, sessTimeout);
+			auto s = make_shared<ModbusTCPSession>(ss, vmbaddr, sessTimeout);
 			s->connectReadCoil( sigc::mem_fun(this, &ModbusTCPServer::readCoilStatus) );
 			s->connectReadInputStatus( sigc::mem_fun(this, &ModbusTCPServer::readInputStatus) );
 			s->connectReadOutput( sigc::mem_fun(this, &ModbusTCPServer::readOutputRegisters) );

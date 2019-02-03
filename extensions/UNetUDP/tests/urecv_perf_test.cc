@@ -94,7 +94,7 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 
 	size_t nc = 1;
 
-	while( nc )
+	while( nc ) // -V654
 	{
 		mypack.num = packetnum++;
 

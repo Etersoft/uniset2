@@ -15,7 +15,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- * \brief Реализация базового(фундаментального) класса для объектов системы
+ * \brief Реализация базового (фундаментального) класса для объектов системы
  * (процессов управления, элементов графического интерфейса и т.п.)
  * \author Pavel Vainerman
  */
@@ -58,7 +58,7 @@ namespace uniset
 	 *  Класс реализует работу uniset-объекта: работа с очередью сообщений, регистрация объекта, инициализация и т.п.
 	 *	Обработка сообщений ведётся в специально создаваемом потоке.
 	 *  Для ожидания сообщений используется функция waitMessage(msec), основанная на таймере.
-	 *  Ожидание прерывается либо по истечении указанного времени, либо по приходу сообщения, при помощи функциии
+	 *  Ожидание прерывается либо по истечении указанного времени, либо по приходу сообщения, при помощи функции
 	 *  termWaiting() вызываемой из push().
 	 *  \note Если не будет задан ObjectId(-1), то поток обработки запущен не будет.
 	 *  Также создание потока можно принудительно отключить при помощи функции void thread(false). Ее необходимо вызвать до активации объекта
@@ -84,7 +84,7 @@ namespace uniset
 			UniSetObject();
 			virtual ~UniSetObject();
 
-			// Функции объявленные в IDL
+			// Функции объявленые в IDL
 			virtual CORBA::Boolean exist() override;
 
 			virtual uniset::ObjectId getId() override;
@@ -106,6 +106,13 @@ namespace uniset
 
 			//! поместить сообщение в очередь
 			virtual void push( const uniset::TransportMessage& msg ) override;
+
+			//! поместить текстовое сообщение в очередь
+			virtual void pushMessage( const char* msg,
+									  const ::uniset::Timespec& tm,
+									  const ::uniset::ProducerInfo& pi,
+									  ::CORBA::Long priority,
+									  ::CORBA::Long consumer ) override;
 
 #ifndef DISABLE_REST_API
 			// HTTP API
@@ -136,6 +143,7 @@ namespace uniset
 			virtual void sysCommand( const uniset::SystemMessage* sm ) {}
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) {}
 			virtual void timerInfo( const uniset::TimerMessage* tm ) {}
+			virtual void onTextMessage( const uniset::TextMessage* tm ) {}
 
 			/*! Получить сообщение */
 			VoidMessagePtr receiveMessage();
@@ -146,7 +154,7 @@ namespace uniset
 			/*! прервать ожидание сообщений */
 			void termWaiting();
 
-			/*! текущее количесво сообщений в очереди */
+			/*! текущее количество сообщений в очереди */
 			size_t countMessages();
 
 			/*! количество потерянных сообщений */
@@ -155,7 +163,7 @@ namespace uniset
 			//! Активизация объекта (переопределяется для необходимых действий после активизации)
 			virtual bool activateObject();
 
-			//! Деактивиция объекта (переопределяется для необходимых действий при завершении работы)
+			//! Деактивация объекта (переопределяется для необходимых действий при завершении работы)
 			virtual bool deactivateObject();
 
 			// прерывание работы всей программы (с вызовом shutdown)

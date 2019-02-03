@@ -149,7 +149,7 @@ namespace uniset
 				typedef union
 				{
 					uint16_t v[f4Size];
-					float val; //
+					double val; //
 				} F4mem;
 				// ------------------------------------------
 				// конструкторы на разные случаи...
@@ -158,8 +158,9 @@ namespace uniset
 					memset(raw.v, 0, sizeof(raw.v));
 				}
 
-				F4( const float& f ) noexcept
+				F4( const double& f ) noexcept
 				{
+					memset(raw.v, 0, sizeof(raw.v));
 					raw.val = f;
 				}
 				F4( const ModbusRTU::ModbusData* data, size_t size ) noexcept
@@ -181,7 +182,7 @@ namespace uniset
 					return vtF4;
 				}
 				// ------------------------------------------
-				operator float()
+				operator double()
 				{
 					return raw.val;
 				}

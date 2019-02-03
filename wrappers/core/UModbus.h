@@ -44,7 +44,7 @@ class UModbus
 			return uniset::ModbusRTU::isWriteFunction((uniset::ModbusRTU::SlaveFunctionCode)mbfunc);
 		}
 
-		// выставление паметров связи, без установления соединения (!)
+		// выставление параметров связи, без установления соединения (!)
 		void prepare( const std::string& ip, int port )throw(UException);
 
 		void connect( const std::string& ip, int port )throw(UException);

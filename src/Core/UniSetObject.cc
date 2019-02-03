@@ -96,7 +96,7 @@ namespace uniset
 	{
 		ui = make_shared<UInterface>(uniset::DefaultObjectId);
 
-		/*! \warning UniverslalInterface не инициализируется идентификатором объекта */
+		/*! \warning UniversalInterface не инициализируется идентификатором объекта */
 		tmr = CREATE_TIMER;
 		myname = section + "/" + name;
 		myid = ui->getIdByName(myname);
@@ -140,8 +140,8 @@ namespace uniset
 	// ------------------------------------------------------------------------------------------
 
 	/*!
-	 *    \param om - указатель на менеджер управляющий объектом
-	 *    \return Возращает \a true если инициализация прошла успешно, и \a false если нет
+	 *    \param om - указатель на менеджер, управляющий объектом
+	 *    \return Возвращает \a true если инициализация прошла успешно, и \a false если нет
 	*/
 	bool UniSetObject::init( const std::weak_ptr<UniSetManager>& om )
 	{
@@ -185,7 +185,7 @@ namespace uniset
 	}
 	// ------------------------------------------------------------------------------------------
 	/*!
-	 *    \param  vm - указатель на структуру, которая заполняется если есть сообщение
+	 *    \param  vm - указатель на структуру, которая заполняется, если есть сообщение
 	 *    \return Возвращает указатель VoidMessagePtr если сообщение есть, и shared_ptr(nullptr) если нет
 	*/
 	VoidMessagePtr UniSetObject::receiveMessage()
@@ -255,17 +255,17 @@ namespace uniset
 				/*!
 						\warning По умолчанию объекты должны быть уникальны! Поэтому если идёт попытка повторной регистрации.
 						Мы чистим существующую ссылку и заменяем её на новую.
-						Это сделано для более надежной работы, иначе может получится, что если объект перед завершением
-						не очистил за собой ссылку(не разрегистрировался), то больше он никогда не сможет вновь зарегистрироваться.
+						Это сделано для более надёжной работы, иначе может получится, что если объект перед завершением
+						не очистил за собой ссылку (не разрегистрировался), то больше он никогда не сможет вновь зарегистрироваться.
 						Т.к. \b надёжной функции проверки "жив" ли объект пока нет...
 						(так бы можно было проверить и если "не жив", то смело заменять ссылку на новую). Но существует обратная сторона:
-						если заменяемый объект "жив" и завершит свою работу, то он может почистить за собой ссылку и это тогда наш(новый)
+						если заменяемый объект "жив" и завершит свою работу, то он может почистить за собой ссылку и это тогда наш (новый)
 						объект станет недоступен другим, а знать об этом не будет!!!
 					*/
 				uwarn << myname << "(registration): replace object (ObjectNameAlready)" << endl;
 				unregistration();
 			}
-			catch( uniset::ORepFailed )
+			catch( const uniset::ORepFailed& ex )
 			{
 				uwarn << myname << "(registration): don`t registration in object reposotory " << endl;
 			}
@@ -288,9 +288,12 @@ namespace uniset
 	void UniSetObject::unregistration()
 	{
 		if( myid < 0 ) // || !reg )
+		{
+			regOK = false;
 			return;
+		}
 
-		if( myid == uniset::DefaultObjectId )
+		if( myid == uniset::DefaultObjectId ) // -V547
 		{
 			uinfo << myname << "(unregister): myid=DefaultObjectId \n";
 			regOK = false;
@@ -384,6 +387,27 @@ namespace uniset
 	void UniSetObject::push( const TransportMessage& tm )
 	{
 		auto vm = make_shared<VoidMessage>(tm);
+
+		if( vm->priority == Message::Medium )
+			mqueueMedium.push(vm);
+		else if( vm->priority == Message::High )
+			mqueueHi.push(vm);
+		else if( vm->priority == Message::Low )
+			mqueueLow.push(vm);
+		else // на всякий по умолчанию medium
+			mqueueMedium.push(vm);
+
+		termWaiting();
+	}
+	// ------------------------------------------------------------------------------------------
+	void UniSetObject::pushMessage( const char* msg,
+									const ::uniset::Timespec& tm,
+									const ::uniset::ProducerInfo& pi,
+									::CORBA::Long priority,
+									::CORBA::Long consumer )
+	{
+		uniset::TextMessage tmsg(msg, tm, pi, (uniset::Message::Priority)priority, consumer);
+		auto vm = tmsg.toLocalVoidMessage();
 
 		if( vm->priority == Message::Medium )
 			mqueueMedium.push(vm);
@@ -842,13 +866,16 @@ namespace uniset
 					sysCommand( reinterpret_cast<const SystemMessage*>(msg) );
 					break;
 
+				case Message::TextMessage:
+				{
+					TextMessage tm(msg);
+					onTextMessage( &tm );
+					break;
+				}
+
 				default:
 					break;
 			}
-		}
-		catch( const uniset::Exception& ex )
-		{
-			ucrit  << myname << "(processingMessage): " << ex << endl;
 		}
 		catch( const CORBA::SystemException& ex )
 		{
@@ -867,6 +894,10 @@ namespace uniset
 							   << " line: " << fe.line()
 							   << " mesg: " << fe.errmsg() << endl;
 			}
+		}
+		catch( const uniset::Exception& ex )
+		{
+			ucrit  << myname << "(processingMessage): " << ex << endl;
 		}
 		catch( const std::exception& ex )
 		{

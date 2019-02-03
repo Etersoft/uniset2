@@ -681,11 +681,11 @@ namespace uniset
 
 			return recv_pdu(rbuf, timeout);
 		}
-		catch( uniset::TimeOut )
+		catch( const uniset::TimeOut& ex )
 		{
 			//        cout << "(recv): catch TimeOut " << endl;
 		}
-		catch( uniset::CommFailed )
+		catch( const uniset::CommFailed& ex )
 		{
 			cleanupChannel();
 			return erSessionClosed;
@@ -1535,11 +1535,11 @@ namespace uniset
 			cleanupChannel();
 			return ex.err;
 		}
-		catch( uniset::TimeOut )
+		catch( const uniset::TimeOut& ex )
 		{
 			//        cout << "(recv): catch TimeOut " << endl;
 		}
-		catch( uniset::Exception& ex ) // SystemError
+		catch( const uniset::Exception& ex ) // SystemError
 		{
 			if( dlog->is_crit() )
 				dlog->crit() << "(recv): " << ex << endl;

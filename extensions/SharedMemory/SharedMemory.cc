@@ -599,7 +599,7 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	void SharedMemory::sendEvent( uniset::SystemMessage& sm )
 	{
-		TransportMessage tm( std::move(sm.transport_msg()) );
+		TransportMessage tm( sm.transport_msg() );
 
 		for( const auto& it : elst )
 		{
@@ -833,7 +833,7 @@ namespace uniset
 					if( it->fuse_invert )
 						st ^= true;
 
-					if( !st )
+					if( st )
 					{
 						sminfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
@@ -972,7 +972,7 @@ namespace uniset
 				try
 				{
 #if 1
-					// Вариант через setValue...(заодно внтури проверяются пороги)
+					// Вариант через setValue...(заодно внутри проверяются пороги)
 					setValue(ii.si.id, ii.value, getId());
 #else
 
@@ -996,13 +996,13 @@ namespace uniset
 
 #endif
 				}
-				catch( const uniset::Exception& ex )
-				{
-					smcrit << myname << "(initFromSM): " << ex << endl;
-				}
 				catch( const IOController_i::NameNotFound& ex )
 				{
 					smcrit << myname << "(initFromSM): not found sensor id=" << ii.si.id << "'" << endl;
+				}
+				catch( const uniset::Exception& ex )
+				{
+					smcrit << myname << "(initFromSM): " << ex << endl;
 				}
 			}
 

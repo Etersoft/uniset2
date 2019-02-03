@@ -74,7 +74,7 @@ namespace uniset
 	                                 Разрешены: TBI0_24,TBI24_0,TBI16_8
 
 	    <br>\b --io-default_cardnum    - Номер карты по умолчанию. По умолчанию -1.
-	                                 Если задать, то он будет использоватся для датчиков
+	                                 Если задать, то он будет использоваться для датчиков
 	                                 у которых не задано поле 'card'.
 
 	    <br>\b --io-test-lamp        - Для данного узла в качестве датчика кнопки 'ТестЛамп' использовать указанный датчик.
@@ -87,7 +87,7 @@ namespace uniset
 	    <br>\b --io-blink-time msec    - Частота мигания, мсек. По умолчанию в configure.xml
 	    <br>\b --io-blink2-time msec    - Вторая частота мигания (lmpBLINK2), мсек. По умолчанию в configure.xml
 	    <br>\b --io-blink3-time msec    - Вторая частота мигания (lmpBLINK3), мсек. По умолчанию в configure.xml
-	    <br>\b --io-heartbeat-id    - Данный процесс связан с указанным аналоговым heartbeat-дачиком.
+	    <br>\b --io-heartbeat-id    - Данный процесс связан с указанным аналоговым heartbeat-датчиком.
 	    <br>\b --io-heartbeat-max      - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10.
 	    <br>\b --io-ready-timeout    - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')
 	    <br>\b --io-force            - Сохранять значения в SM, независимо от, того менялось ли значение
@@ -106,7 +106,7 @@ namespace uniset
 	                      но будет его присылать в SensorMessage)
 	    <br>\b cal_nocrop     - не обрезать значение по крайним точкам по при калибровке.
 
-	    <br>\b breaklim        - пороговое значение для определения обырва датчика (используется для AI).
+	    <br>\b breaklim        - пороговое значение для определения обрыва датчика (используется для AI).
 	                      Если значение ниже этого порога, то выставляется признак обрыва датчика.
 	    <br>\b debouncedelay   - защита от дребезга. Задержка на дребезг, мсек.
 	    <br>\b ondelay         - задержка на срабатывание, мсек.
@@ -125,7 +125,7 @@ namespace uniset
 	    <br>\b rmax            - максимальное "сырое" значение
 	    <br>\b cmin            - минимальное "калиброванное" значение
 	    <br>\b cmax            - максимальное "калиброванное" значение
-	    <br>\b precision       - Точность. Задаёт количство знаков после запятой.
+	    <br>\b precision       - Точность. Задаёт количество знаков после запятой.
 	                      <br>Т.е. при считывании из канала, значение домножается
 	              <br>на 10^precision и уже таким сохраняется.
 	              <br>А в SensorMessage присылается присылается precision.
@@ -140,8 +140,8 @@ namespace uniset
 
 	    <br>\b threshold_aid   - идентификатор аналогового датчика по которому формируется порог.
 	                      Используется для DI.
-	    <br>\b lowlimit        - нижний порого срабатывания.
-	    <br>\b hilimit         - верхний порого срабатывания.
+	    <br>\b lowlimit        - нижний порог срабатывания.
+	    <br>\b hilimit         - верхний порог срабатывания.
 
 	    <br>\b card            - номер карты
 	    <br>\b subdev          - номер подустройства
@@ -170,7 +170,7 @@ namespace uniset
 	    \section sec_IOC_ConfList Список датчиков для процесса в/в
 
 	    \section sec_IOC_TestMode Тестовый режим
-	        В IOControl встроена возможнось переводить его в один из тестовых режимов.
+	        В IOControl встроена возможность переводить его в один из тестовых режимов.
 	    Для этого необходимо указать для IOControl аналоговый датчик в который будет записан "код"
 	    режима работы. Датчик можно задать либо аргументом командной строки
 	    --io-test-mode ID либо в конфигурационном файле testmode_as="ID"
@@ -199,6 +199,14 @@ namespace uniset
 			{
 				for( size_t i = 0; i < size(); i++ )
 					delete (*this)[i];
+			}
+
+			inline ComediInterface* getCard( int ncard ) const
+			{
+				if( ncard > 0 && ncard < size() )
+					return (*this)[ncard];
+
+				return nullptr;
 			}
 
 			inline ComediInterface* getCard( size_t ncard ) const
@@ -253,31 +261,21 @@ namespace uniset
 				IOInfo( IOInfo&& r ) = default;
 				IOInfo& operator=(IOInfo&& r) = default;
 
-				IOInfo():
-					subdev(DefaultSubdev), channel(DefaultChannel),
-					ncard(-1),
-					aref(0),
-					range(0),
-					lamp(false),
-					no_testlamp(false),
-					enable_testmode(false),
-					disable_testmode(false)
-				{}
+				IOInfo(){}
 
+				int subdev = { DefaultSubdev };   /*!< (UNIO) подустройство (см. comedi_test для конкретной карты в/в) */
+				int channel = { DefaultChannel }; /*!< (UNIO) канал [0...23] */
+				int ncard = { DefaultCard };      /*!< номер карты [1|2]. -1 - не определена. */
 
-				int subdev;     /*!< (UNIO) подустройство (см. comedi_test для конкретной карты в/в) */
-				int channel;    /*!< (UNIO) канал [0...23] */
-				int ncard;      /*!< номер карты [1|2]. -1 - не определена. */
-
-				/*! Вид поключения
+				/*! Вид подключения
 				    0    - analog ref = analog ground
 				    1    - analog ref = analog common
 				    2    - analog ref = differential
 				    3    - analog ref = other (undefined)
 				*/
-				int aref;
+				int aref = { 0 };
 
-				int adelay; /*! Задержка на чтение аналоговых входов с мультиплексированием ( в мкс ) */
+				int adelay = { 0 }; /*! Задержка на чтение аналоговых входов с мультиплексированием ( в мкс ) */
 
 				/*! Измерительный диапазон
 				    0    -  -10В - 10В
@@ -285,12 +283,12 @@ namespace uniset
 				    2    -  -2.5В - 2.5В
 				    3    -  -1.25В - 1.25В
 				*/
-				int range;
+				int range = { 0 };
 
-				bool lamp;             /*!< признак, что данный выход является лампочкой (или сигнализатором) */
-				bool no_testlamp;      /*!< флаг исключения из 'проверки ламп' */
-				bool enable_testmode;  /*!< флаг для режима тестирования tmConfigEnable */
-				bool disable_testmode; /*!< флаг для режима тестирования tmConfigDisable */
+				bool lamp = { false };             /*!< признак, что данный выход является лампочкой (или сигнализатором) */
+				bool no_testlamp = { false };      /*!< флаг исключения из 'проверки ламп' */
+				bool enable_testmode = { false };  /*!< флаг для режима тестирования tmConfigEnable */
+				bool disable_testmode = { false }; /*!< флаг для режима тестирования tmConfigDisable */
 
 				friend std::ostream& operator<<(std::ostream& os, const IOInfo& inf );
 				friend std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IOInfo>& inf );
@@ -348,7 +346,7 @@ namespace uniset
 
 			xmlNode* confnode = { 0 }; /*!< xml-узел в настроечном файле */
 
-			int polltime = { 150 };   /*!< переодичность обновления данных (опроса карт в/в), [мсек] */
+			int polltime = { 150 };   /*!< периодичность обновления данных (опроса карт в/в), [мсек] */
 			CardList cards; /*!< список карт - массив созданных ComediInterface */
 			bool noCards = { false };
 

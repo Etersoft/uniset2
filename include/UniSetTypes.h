@@ -58,7 +58,7 @@ namespace uniset
 
 	/*! Проверка на наличие недопустимых символов
 	 * Запрещенные символы см. uniset::BadSymbols[]
-	 * \return Если не найдено запрещенных символов то будет возвращен 0, иначе найденный символ
+	 * \return Если не найдено запрещённых символов то будет возвращен 0, иначе найденный символ
 	 */
 	char checkBadSymbols(const std::string& str);
 
@@ -76,25 +76,16 @@ namespace uniset
 
 	/*! генератор уникального положительного ключа
 	 *  Уникальность гарантируется только для пары значений id и node.
-	 * \warning что тут у нас с переполнением..
-	 * \warning Уникальность генерируемого ключа еще не проверялась,
-	     но нареканий по использованию тоже не было :)
-	*  \todo Желательно продумать что-нибудь с использованием хэш.
+	 *  \todo Желательно продумать что-нибудь с использованием хэш.
+	 *  \warning Уникальность не гарантирована, возможны коллизии
 	*/
-	inline static KeyType key( const uniset::ObjectId id, const uniset::ObjectId node )
-	{
-		return KeyType((id * node) + (id + 2 * node));
-	}
-
-	inline static KeyType key( const IOController_i::SensorInfo& si )
-	{
-		return key(si.id, si.node);
-	}
+	KeyType key( const uniset::ObjectId id, const uniset::ObjectId node );
+	KeyType key( const IOController_i::SensorInfo& si );
 
 	typedef std::list<std::string> ListObjectName;    /*!< Список объектов типа ObjectName */
 
-	typedef CORBA::Object_ptr ObjectPtr;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
-	typedef CORBA::Object_var ObjectVar;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
+	typedef CORBA::Object_ptr ObjectPtr;    /*!< Ссылка на объект, регистрируемый в ObjectRepository */
+	typedef CORBA::Object_var ObjectVar;    /*!< Ссылка на объект, регистрируемый в ObjectRepository */
 
 	UniversalIO::IOType getIOType( const std::string& s ) noexcept;
 	std::string iotype2str( const UniversalIO::IOType& t ) noexcept;
@@ -137,7 +128,7 @@ namespace uniset
 
 			std::list<ObjectId> getList() const noexcept;
 
-			// за освобождение выделеной памяти
+			// за освобождение выделенной памяти
 			// отвечает вызывающий!
 			IDSeq* getIDSeq() const;
 
@@ -183,6 +174,9 @@ namespace uniset
 	struct timeval to_timeval( const std::chrono::system_clock::duration& d ); /*!< конвертирование std::chrono в posix timeval */
 	struct timespec to_timespec( const std::chrono::system_clock::duration& d ); /*!< конвертирование std::chrono в posix timespec */
 	struct timespec now_to_timespec(); /*!< получение текущего времени */
+
+	uniset::Timespec_var to_uniset_timespec( const std::chrono::system_clock::duration& d );
+	uniset::Timespec_var now_to_uniset_timespec(); /*!< получение текущего времени */
 
 	inline bool operator==( const struct timespec& r1,  const struct timespec& r2 )
 	{
@@ -318,6 +312,7 @@ namespace uniset
 	// limit    - обрезать итоговое значение по границам
 	float fcalibrate(float raw, float rawMin, float rawMax, float calMin, float calMax, bool limit = true );
 	long lcalibrate(long raw, long rawMin, long rawMax, long calMin, long calMax, bool limit = true );
+	double dcalibrate(double raw, double rawMin, double rawMax, double calMin, double calMax, bool limit = true );
 
 	// установка значения в нужный диапазон
 	long setinregion(long raw, long rawMin, long rawMax);

@@ -29,7 +29,7 @@ namespace uniset
 		const size_t BitsPerByte = 8;
 		typedef uint8_t ModbusAddr;    /*!< адрес узла в modbus-сети */
 		typedef uint16_t ModbusData;    /*!< размер данных в modbus-сообщениях */
-		const size_t BitsPerData = 16;
+		const uint8_t BitsPerData = 16;
 		typedef uint16_t ModbusCRC;    /*!< размер CRC16 в modbus-сообщениях */
 
 		// ---------------------------------------------------------------------
@@ -154,6 +154,24 @@ namespace uniset
 		float dat2f( const ModbusData dat1, const ModbusData dat2 );
 		size_t numBytes( const size_t nbits ); // сколько байт нужно для указанного количества бит
 		// -------------------------------------------------------------------------
+		// вспомогательная структура для предотвращения утечки памяти (RAII)
+		struct DataGuard
+		{
+			DataGuard( size_t sz ):
+				len(sz)
+			{
+				data = new ModbusRTU::ModbusData[sz];
+			}
+
+			~DataGuard()
+			{
+				delete[] data;
+			}
+
+			ModbusRTU::ModbusData* data;
+			size_t len;
+		};
+		// -----------------------------------------------------------------------------
 		bool isWriteFunction( SlaveFunctionCode c );
 		bool isReadFunction( SlaveFunctionCode c );
 		// -------------------------------------------------------------------------
@@ -1544,7 +1562,7 @@ namespace uniset
 			/*! проверка корректности данных */
 			bool checkFormat() const;
 
-			// это поле служебное и не используется в релальном обмене
+			// это поле служебное и не используется в реальном обмене
 			size_t count = { 0 }; /*!< фактическое количество данных */
 		};
 

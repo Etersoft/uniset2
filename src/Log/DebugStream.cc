@@ -176,7 +176,7 @@ std::ostream& DebugStream::printDate(Debug::type t, char brk) noexcept
 		std::time_t tv = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 		std::tm tms = *std::localtime(&tv);
 
-#if __GLIBCXX__ >= 20151207
+#if __GNUC__ >= 5
 		std::ostringstream fmt;
 		fmt << "%Od" << brk << "%Om" << brk << "%Y";
 		return (*this) << std::put_time(&tms, fmt.str().c_str());
@@ -199,7 +199,7 @@ std::ostream& DebugStream::printTime(Debug::type t, char brk) noexcept
 		timespec tv = uniset::now_to_timespec(); // gettimeofday(tv,0);
 		std::tm tms = *std::localtime(&tv.tv_sec);
 
-#if __GLIBCXX__ >= 20151207
+#if __GNUC__ >= 5
 		std::ostringstream fmt;
 		fmt << "%OH" << brk << "%OM" << brk << "%OS";
 		(*this) << std::put_time(&tms, fmt.str().c_str());
@@ -229,7 +229,7 @@ std::ostream& DebugStream::printDateTime(Debug::type t) noexcept
 		timespec tv = uniset::now_to_timespec(); // gettimeofday(tv,0);
 		std::tm tms = *std::localtime(&tv.tv_sec);
 
-#if __GLIBCXX__ >= 20151207
+#if __GNUC__ >= 5
 		*this << std::put_time(&tms, "%Od/%Om/%Y %OH:%OM:%OS");
 #else
 		*this << std::setw(2) << std::setfill('0') << tms.tm_mday << "/"

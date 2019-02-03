@@ -1,7 +1,7 @@
 <?xml version = '1.0' encoding = 'koi8-r' ?>
 <UNISETPLC>
 <UserData></UserData>
-<!-- Общие(стартовые) параметры по UniSet -->
+<!-- Общие (стартовые) параметры по UniSet -->
 <Configure>
 		<NameService host="localhost" port="2817"/>
 		<LocalNode	 name="LocalhostNode"/>

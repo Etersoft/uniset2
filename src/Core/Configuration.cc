@@ -19,7 +19,8 @@
  *  \author Vitaly Lipatov, Pavel Vainerman
  */
 // --------------------------------------------------------------------------
-
+#include <utility>  // for make_pair
+#include <tuple> // for std::tie
 #include <unistd.h>
 #include <libgen.h>
 #include <fstream>
@@ -44,7 +45,7 @@ static const string UniSetDefaultPort = "2809";
 static ostream& print_help( ostream& os, int width, const string& cmd,
 							const string& help, const string& tab = "" )
 {
-	// чтобы не менчять параметры основного потока
+	// чтобы не менять параметры основного потока
 	// создаём свой stream...
 	ostringstream info;
 	info.setf(ios::left, ios::adjustfield);
@@ -64,7 +65,7 @@ ostream& uniset::Configuration::help(ostream& os)
 	print_help(os, 25, "--[debname]-del-levels", "удалить уровень вывода логов\n");
 	print_help(os, 25, "--[debname]-show-microseconds", "Выводить время с микросекундами\n");
 	print_help(os, 25, "--[debname]-show-milliseconds", "Выводить время с миллисекундами\n");
-	print_help(os, 25, "--uniport num", "использовать заданный порт (переопеределяет 'defaultport' заданный в конф. файле в разделе <nodes>)\n");
+	print_help(os, 25, "--uniport num", "использовать заданный порт (переопределяет 'defaultport', заданный в конф. файле в разделе <nodes>)\n");
 	print_help(os, 25, "--localIOR {1,0}", "использовать локальные файлы для получения IOR (т.е. не использовать omniNames). Переопределяет параметр в конфигурационном файле.\n");
 	print_help(os, 25, "--transientIOR {1,0}", "использовать генерируемые IOR(не постоянные). Переопределяет параметр в конфигурационном файле. Default=1\n");
 
@@ -332,7 +333,7 @@ namespace uniset
 					else
 					{
 						// для endPoint надо отдельно проверить доступность адреса
-						// иначе иницилизация omni не произойдёт, а нужно чтобы
+						// иначе инициализация omni не произойдёт, а нужно чтобы
 						// всё запускалось даже если сеть не вся "поднялась"
 						if( p == "endPoint" )
 						{
@@ -389,7 +390,7 @@ namespace uniset
 			int i = 0;
 
 			// формируем новые, используя i в качестве индекса
-			for( auto& it : lnodes )
+			for( const auto& it : lnodes )
 			{
 				// делаем uni_strdup чтобы потом не думая
 				// "где мы выделяли, а где не мы"
@@ -415,7 +416,7 @@ namespace uniset
 				assert( i < onum );
 			}
 
-			for( auto& p : omniParams )
+			for( const auto& p : omniParams )
 			{
 				// делаем uni_strdup чтобы потом не думая
 				// "где мы выделяли, а где не мы"
@@ -465,7 +466,7 @@ namespace uniset
 			for( int k = 0; k < onum; k++ )
 			{
 				// на самом деле последний элемент = {0,0}
-				// но delete от 0 разрёшён и не приводит "к краху"
+				// но delete от 0 разрешён и не приводит "к краху"
 				// так что отдельно не обрабатываем этот случай.
 
 				delete[] omni_options[k][0]; // см. uni_strdup()
@@ -1099,17 +1100,24 @@ namespace uniset
 		}
 
 		secRoot       = unixml->getProp(node, "name");
-		secSensors    = makeSecName(secRoot, getRepSectionName("sensors", xmlSensorsSec));
-		secObjects    = makeSecName(secRoot, getRepSectionName("objects", xmlObjectsSec));
-		secControlles = makeSecName(secRoot, getRepSectionName("controllers", xmlControllersSec));
-		secServices   = makeSecName(secRoot, getRepSectionName("services", xmlServicesSec));
+
+		std::tie(secSensors, xmlSensorsSec) = getRepSectionName("sensors");
+		secSensors = makeSecName(secRoot, secSensors);
+
+		std::tie(secObjects, xmlObjectsSec) = getRepSectionName("objects");
+		secObjects = makeSecName(secRoot, secObjects);
+
+		std::tie(secControlles, xmlControllersSec) = getRepSectionName("controllers");
+		secControlles = makeSecName(secRoot, secControlles);
+
+		std::tie(secServices, xmlServicesSec) = getRepSectionName("services");
+		secServices = makeSecName(secRoot, secServices);
 	}
 	// -------------------------------------------------------------------------
-	// второй параметр намеренно передаётся и переопредеяется
-	// это просто такой способ вернуть и строку и указатель на узел (одним махом)
-	string Configuration::getRepSectionName( const string& sec, xmlNode* secnode )
+
+	std::pair<string,xmlNode*> Configuration::getRepSectionName( const string& sec )
 	{
-		secnode = unixml->findNode(unixml->getFirstNode(), sec);
+		xmlNode* secnode = unixml->findNode(unixml->getFirstNode(), sec);
 
 		if( secnode == NULL )
 		{
@@ -1124,7 +1132,7 @@ namespace uniset
 		if( ret.empty() )
 			ret = unixml->getProp(secnode, "name");
 
-		return ret;
+		return std::make_pair(ret, secnode);
 	}
 	// -------------------------------------------------------------------------
 	void Configuration::setConfFileName( const string& fn )

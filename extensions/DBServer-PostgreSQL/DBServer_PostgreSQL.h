@@ -45,7 +45,7 @@ namespace uniset
 	 * Во первых надо иметь ввиду, что буфер - это то, что потеряется если вдруг произойдёт сбой
 	 * по питанию или программа вылетит. Поэтому если он большой, то будет потеряно много данных.
 	 * И второе, т.к. это vector - то идёт выделение "непрерывного куска памяти", поэтому у ОС могут
-	 * быть проблеммы найти "большой непрерывный кусок".
+	 * быть проблемы найти "большой непрерывный кусок".
 	 * Тем не менее реализация сделана на vector-е чтобы избежать лишних "перевыделений" (и сегментации) памяти во время работы.
 	 *
 	 * \warning Временно, для обратной совместимости поле 'time_usec' в таблицах оставлено с таким названием,
@@ -87,6 +87,7 @@ namespace uniset
 			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
 			virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 			virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) override;
+			virtual void onTextMessage( const uniset::TextMessage* msg ) override;
 			virtual bool deactivateObject() override;
 			virtual std::string getMonitInfo( const std::string& params ) override;
 
@@ -100,7 +101,7 @@ namespace uniset
 
 			enum Timers
 			{
-				PingTimer,        /*!< таймер на переодическую проверку соединения  с сервером БД */
+				PingTimer,        /*!< таймер на пере одическую проверку соединения  с сервером БД */
 				ReconnectTimer,   /*!< таймер на повторную попытку соединения с сервером БД (или восстановления связи) */
 				FlushInsertBuffer, /*!< таймер на сброс Insert-буфера */
 				lastNumberOfTimer
@@ -127,7 +128,7 @@ namespace uniset
 			int PingTime = { 15000 };
 			int ReconnectTime = { 30000 };
 
-			bool connect_ok = { false }; /*! признак наличия соеднинения с сервером БД */
+			bool connect_ok = { false }; /*! признак наличия соединения с сервером БД */
 
 			QueryBuffer qbuf;
 			size_t qbufSize = { 200 }; // размер буфера сообщений.
@@ -138,7 +139,7 @@ namespace uniset
 			size_t ibufSize = { 0 };
 			size_t ibufMaxSize = { 2000 };
 			timeout_t ibufSyncTimeout = { 15000 };
-			float ibufOverflowCleanFactor = { 0.5 }; // коэфициент {0...1} чистки буфера при переполнении
+			float ibufOverflowCleanFactor = { 0.5 }; // коэффициент {0...1} чистки буфера при переполнении
 	};
 	// ----------------------------------------------------------------------------------
 } // end of namespace uniset

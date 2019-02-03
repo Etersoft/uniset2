@@ -46,6 +46,6 @@
 \code
 	<item textname="...." iotype="..." ... depend="OtherSensor_AS" depend_value="2" />
 \endcode
-  В данном случае подразумевается, что разрещающим датчиком является OtherSensor_AS=2.
+  В данном случае подразумевается, что разрешающим датчиком является OtherSensor_AS=2.
 
 */

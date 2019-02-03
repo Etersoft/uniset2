@@ -42,7 +42,7 @@ namespace uniset
 	 *    Создает POA менеджер и регистрирует в нем объекты.
 	 *    Для обработки CORBA-запросов создается поток или передаются ресурсы
 	 *        главного потока см. void activate(bool thread)
-	 *    \warning Авктиватор может быть создан только один. Для его создания используйте код:
+	 *    \warning Активатор может быть создан только один. Для его создания используйте код:
 	  \code
 	     ...
 	     auto act = UniSetActivator::Instance()
@@ -51,7 +51,7 @@ namespace uniset
 	 * Активатор в свою очередь сам является менеджером(и объектом) и обладает всеми его свойствами
 	 *
 	 * \section act_HttpAPI REST API
-	 * UniSetActivator выступает в роли http-сервера и релизует первчиную обработку запросов
+	 * UniSetActivator выступает в роли http-сервера и реализует первичную обработку запросов
 	 * и перенаправление их указанным объектам. Помимо этого UniSetActivator реализует обработку команд /conf/..
 	 * Для запуска http-сервера необходимо в аргументах командной строки указать  --activator-run-httpserver
 	 * Помимо этого можно задать параметры --activator-httpserver-host и --activator-httpserver-port.
@@ -91,7 +91,7 @@ namespace uniset
 
 
 #ifndef DISABLE_REST_API
-			// Поддрежка REST API (IHttpRequestRegistry)
+			// Поддержка REST API (IHttpRequestRegistry)
 			virtual Poco::JSON::Object::Ptr httpGetByName( const std::string& name , const Poco::URI::QueryParameters& p ) override;
 			virtual Poco::JSON::Array::Ptr httpGetObjectsList( const Poco::URI::QueryParameters& p ) override;
 			virtual Poco::JSON::Object::Ptr httpHelpByName( const std::string& name, const Poco::URI::QueryParameters& p ) override;

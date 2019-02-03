@@ -350,7 +350,7 @@ void LogReader::readlogs( const std::string& _addr, int _port, LogServerTypes::C
 			{
 				rlog.warn() << "(LogReader): **** connection timeout.." << endl;
 
-				if( rcount > 0 && readcount > 0 )
+				if( readcount > 0 )
 					rcount--;
 
 				if( rcount == 0 )

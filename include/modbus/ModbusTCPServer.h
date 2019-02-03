@@ -20,11 +20,11 @@ namespace uniset
 {
 	// -------------------------------------------------------------------------
 	/*! ModbusTCPServer
-	 * Реализация сервера на основе libev. Подерживается "много" соединений (постоянных).
+	 * Реализация сервера на основе libev. Поддерживается "много" соединений (постоянных).
 	 * Хоть класс и наследуется от ModbusServer на самом деле он не реализует его функции,
 	 * каждое соединение обслуживается классом ModbusTCPSession.
-	 * Но собственно реализаия функций одна на всех, это следует учитывать при реализации обработчиков,
-	 * т.к.из многих "соединений" будут вызываться одни и теже обработатчики.
+	 * Но собственно реализация функций одна на всех, это следует учитывать при реализации обработчиков,
+	 * т.к.из многих "соединений" будут вызываться одни и те же обработчики.
 	*/
 	class ModbusTCPServer:
 		public EventLoopServer,
@@ -34,7 +34,7 @@ namespace uniset
 			ModbusTCPServer( const std::string& addr, int port = 502 );
 			virtual ~ModbusTCPServer();
 
-			/*! Запуск сервера. Функция не возвращет управление.
+			/*! Запуск сервера. Функция не возвращает управление.
 			 * Но может быть прервана вызовом terminate()
 			 * \return FALSE - если не удалось запустить
 			 */
@@ -46,7 +46,7 @@ namespace uniset
 			bool async_run( const std::unordered_set<ModbusRTU::ModbusAddr>& vmbaddr );
 
 			/*! остановить поток выполнения (см. run или async_run) */
-			virtual void terminate();
+			virtual void terminate() override;
 
 			virtual bool isActive() const override;
 
@@ -148,7 +148,7 @@ namespace uniset
 			ev::timer ioTimer;
 			std::shared_ptr<UTCPSocket> sock;
 
-			const std::unordered_set<ModbusRTU::ModbusAddr>* vmbaddr = { nullptr };
+			std::unordered_set<ModbusRTU::ModbusAddr> vmbaddr;
 			TimerSignal m_timer_signal;
 
 			timeout_t tmTime_msec = { UniSetTimer::WaitUpTime }; // время по умолчанию для таймера (TimerSignal)

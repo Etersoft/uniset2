@@ -454,7 +454,7 @@ namespace uniset
 
 			return recv_pdu(qfunc, rbuf, timeout);
 		}
-		catch( uniset::TimeOut )
+		catch( const uniset::TimeOut& ex )
 		{
 			//        cout << "(recv): catch TimeOut " << endl;
 		}
@@ -1390,7 +1390,7 @@ namespace uniset
 
 			return ex.err;
 		}
-		catch( uniset::TimeOut )
+		catch( const uniset::TimeOut& ex )
 		{
 			//        cout << "(recv): catch TimeOut " << endl;
 		}

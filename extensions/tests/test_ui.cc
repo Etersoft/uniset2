@@ -97,6 +97,13 @@ TEST_CASE("UInterface", "[UInterface]")
 		REQUIRE_NOTHROW( ui.send(sid, tm) );
 	}
 
+	SECTION( "sendText" )
+	{
+		TransportMessage tm( SensorMessage(sid, 10).transport_msg() );
+		REQUIRE_NOTHROW( ui.send(sid, tm) );
+	}
+
+
 	SECTION( "wait..exist.." )
 	{
 		CHECK( ui.waitReady(sid, 200, 50) );
@@ -176,7 +183,7 @@ TEST_CASE("UInterface", "[UInterface]")
 		REQUIRE_THROWS_AS( ui.askThreshold(aid, 3, UniversalIO::UIONotify, 50, 20, false, testOID), IONotifyController_i::BadRange );
 
 		IONotifyController_i::ThresholdsListSeq_var slist = ui.getThresholdsList(aid);
-		REQUIRE( slist->length() == 1 ); // количество датчиков с порогоами = 1 (это aid)
+		REQUIRE( slist->length() == 1 ); // количество датчиков с порогами = 1 (это aid)
 
 		// 3 порога мы создали выше(askThreshold) + 1 который в настроечном файле в секции <thresholds>
 		REQUIRE( slist[0].tlist.length() == 4 );
@@ -227,3 +234,4 @@ TEST_CASE("UInterface", "[UInterface]")
 		CHECK( ci.precision == ci2.precision );
 	}
 }
+// -----------------------------------------------------------------------------

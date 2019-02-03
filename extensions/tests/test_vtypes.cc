@@ -219,43 +219,43 @@ TEST_CASE("VTypes: F4", "[vtypes][F4]")
 	SECTION("Default constructor")
 	{
 		F4 v;
-		REQUIRE( (float)v == 0 );
+		REQUIRE( (double)v == 0 );
 	}
-	SECTION("'float' constructor")
+	SECTION("'float64' constructor")
 	{
 		{
-			F4 v( numeric_limits<float>::max() );
-			REQUIRE( (float)v == numeric_limits<float>::max() );
+			F4 v( numeric_limits<double>::max() );
+			REQUIRE( (double)v == numeric_limits<double>::max() );
 		}
 		{
 
-			F4 v( numeric_limits<float>::min() );
-			REQUIRE( (float)v == numeric_limits<float>::min() );
+			F4 v( numeric_limits<double>::min() );
+			REQUIRE( (double)v == numeric_limits<double>::min() );
 		}
 	}
 	SECTION("Modbus constructor")
 	{
 		{
-			float f = numeric_limits<float>::max();
+			double f = numeric_limits<double>::max();
 			ModbusRTU::ModbusData data[4];
-			memcpy(data, &f, sizeof(data));
+			memcpy(data, &f, sizeof(f));
 			F4 v1(data, 4);
-			REQUIRE( (float)v1 == f );
+			REQUIRE( (double)v1 == f );
 		}
 		{
-			float f = numeric_limits<float>::max();
+			double f = numeric_limits<double>::max();
 			ModbusRTU::ModbusData data5[5];
 			memset(data5, 0, sizeof(data5));
-			memcpy(data5, &f, 4 * sizeof(ModbusRTU::ModbusData));
+			memcpy(data5, &f, sizeof(f));
 			F4 v2(data5, 5);
-			REQUIRE( (float)v2 == f );
+			REQUIRE( (double)v2 == f );
 		}
 		{
-			float f = numeric_limits<float>::min();
+			double f = numeric_limits<double>::min();
 			ModbusRTU::ModbusData data[4];
 			memcpy(data, &f, sizeof(data));
 			F4 v1(data, 4);
-			REQUIRE( (float)v1 == f );
+			REQUIRE( (double)v1 == f );
 		}
 	}
 }

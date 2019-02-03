@@ -387,7 +387,7 @@ void UNetReceiver::update() noexcept
 				return;
 
 			p = qpack.top();
-			size_t sub = labs(p.num - pnum);
+			size_t sub = labs( (long int)(p.num - pnum) );
 
 			if( pnum > 0 )
 			{
@@ -762,7 +762,7 @@ bool UNetReceiver::receive() noexcept
 		return false;
 	}
 
-	if( rnum > 0 && labs(pack.num - rnum) > maxDifferens )
+	if( rnum > 0 && labs( (long int)(pack.num - rnum) ) > maxDifferens )
 	{
 		/* А что делать если мы уже ждём и ещё не "разгребли предыдущее".. а тут уже повторный "разрыв"
 		 * Можно откинуть всё.. что сложили во временную очередь и заново "копить" (но тогда теряем информацию)

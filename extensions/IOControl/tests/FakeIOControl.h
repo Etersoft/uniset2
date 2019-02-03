@@ -59,7 +59,7 @@ namespace uniset
 			virtual void configureChannel( int subdev, int channel, ChannelType type, int range = 0, int aref = 0 ) const override;
 	};
 	// --------------------------------------------------------------------------
-	/*! Специальный IOControl для тестирвания подменяющий все карты в/в на FakeComediInterface */
+	/*! Специальный IOControl для тестирования подменяющий все карты в/в на FakeComediInterface */
 	class FakeIOControl:
 		public IOControl
 	{

@@ -27,7 +27,7 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	namespace UniSetUDP
 	{
-		/*! Для оптимизации размера передаваемх данных, но с учётом того, что ID могут идти не подряд.
+		/*! Для оптимизации размера передаваемых данных, но с учётом того, что ID могут идти не подряд.
 		    Сделан следующий формат:
 		    Для аналоговых величин передаётся массив пар "id-value"(UDPAData).
 		    Для булевых величин - отдельно массив ID и отдельно битовый массив со значениями,
@@ -41,7 +41,7 @@ namespace uniset
 
 			"ByteOrder"
 			============
-			В текущей версии протокола. В UDPHeader содержиться информации о порядке байт.
+			В текущей версии протокола. В UDPHeader содержится информации о порядке байт.
 			Поэтому логика следующая:
 			- Узел который посылает, ничего не перекодирует и просто посылает данные так как хранит
 			(информация о порядке байт, если специально не выставить, будет выставлена при компиляции, см. конструктор)
@@ -63,9 +63,10 @@ namespace uniset
 			size_t dcount; /*!< количество булевых величин */
 			size_t acount; /*!< количество аналоговых величин */
 
-			friend std::ostream& operator<<( std::ostream& os, UDPHeader& p );
-			friend std::ostream& operator<<( std::ostream& os, UDPHeader* p );
 		} __attribute__((packed));
+
+		std::ostream& operator<<( std::ostream& os, UDPHeader& p );
+		std::ostream& operator<<( std::ostream& os, UDPHeader* p );
 
 		const size_t MaxPacketNum = std::numeric_limits<size_t>::max();
 
@@ -77,9 +78,9 @@ namespace uniset
 			long id;
 			long val;
 
-			friend std::ostream& operator<<( std::ostream& os, UDPAData& p );
 		} __attribute__((packed));
 
+		std::ostream& operator<<( std::ostream& os, UDPAData& p );
 
 		// Теоретический размер данных в UDP пакете (исключая заголовки) 65507
 		// Фактически желательно не вылезать за размер MTU (обычно 1500) - заголовки = 1432 байта
@@ -94,7 +95,7 @@ namespace uniset
 
 		struct UDPPacket
 		{
-			UDPPacket() noexcept: len(0) {}
+			UDPPacket() noexcept: len(0) {} // -V730
 
 			size_t len;
 			uint8_t data[ sizeof(UDPHeader) + MaxDCount * sizeof(long) + MaxDDataCount + MaxACount * sizeof(UDPAData) ];
@@ -178,9 +179,9 @@ namespace uniset
 			UDPAData a_dat[MaxACount]; /*!< аналоговые величины */
 			long d_id[MaxDCount];      /*!< список дискретных ID */
 			uint8_t d_dat[MaxDDataCount];  /*!< битовые значения */
-
-			friend std::ostream& operator<<( std::ostream& os, UDPMessage& p );
 		};
+
+		std::ostream& operator<<( std::ostream& os, UDPMessage& p );
 
 		uint16_t makeCRC( unsigned char* buf, size_t len ) noexcept;
 	}

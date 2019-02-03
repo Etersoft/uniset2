@@ -100,7 +100,7 @@ namespace uniset
 				long val;
 				long id;
 				UniversalIO::IOType type;
-				uniset::uniset_rwmutex val_lock;
+				mutable uniset::uniset_rwmutex val_lock;
 			};
 
 			typedef std::vector<SInfo> SList;

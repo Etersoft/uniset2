@@ -105,7 +105,7 @@ namespace uniset
 		// считаем среднее арифметическое
 		M = 0;
 
-		for( auto& i : buf )
+		for( const auto& i : buf )
 			M = M + i;
 
 		M = M / buf.size();
@@ -114,7 +114,7 @@ namespace uniset
 		S = 0;
 		double r = 0;
 
-		for( auto& i : buf )
+		for( const auto& i : buf )
 		{
 			r = M - i;
 			S = S + r * r;
@@ -130,7 +130,7 @@ namespace uniset
 		int n = 0;
 		double val = 0; // Конечное среднее значение
 
-		for( auto& i : buf )
+		for( const auto& i : buf )
 		{
 			if( fabs(M - i) < S * 2 ) // откидываем
 			{
@@ -209,7 +209,7 @@ namespace uniset
 	{
 		os << "(" << d.buf.size() << ")[";
 
-		for( auto& i : d.buf )
+		for( const auto& i : d.buf )
 			os << " " << setw(5) << i;
 
 		os << " ]";
@@ -292,7 +292,7 @@ namespace uniset
 
 			add(newval);
 
-			for( auto& i : buf )
+			for( const auto& i : buf )
 				aver += i;
 
 			aver /= maxsize;

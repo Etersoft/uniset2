@@ -348,7 +348,7 @@ namespace uniset
 	// ----------------------------------------------------------------------------
 	long Calibration::getRawValue( const long cal, bool range ) const
 	{
-		for( auto& it : pvec )
+		for( const auto& it : pvec )
 		{
 			TypeOfValue q = it.getX(cal);
 
@@ -372,7 +372,7 @@ namespace uniset
 	{
 		os << "*******************" << endl;
 
-		for( auto& it : c.pvec )
+		for( const auto& it : c.pvec )
 		{
 			os << "[" << it.leftPoint().x << " : " << it.rightPoint().x << " ] --> ["
 			   << it.leftPoint().y  << " : " << it.rightPoint().y << " ]"
@@ -387,7 +387,7 @@ namespace uniset
 	{
 		os << "*******************" << endl;
 
-		for( auto& it : c->pvec )
+		for( const auto& it : c->pvec )
 		{
 			os << "[" << it.leftPoint().x << " : " << it.rightPoint().x << " ] --> ["
 			   << it.leftPoint().y  << " : " << it.rightPoint().y << " ]"

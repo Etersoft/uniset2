@@ -56,7 +56,7 @@ namespace uniset
 	// ---------------------------------------------------------------------------
 	bool CommonEventLoop::activateWatcher( EvWatcher* w, size_t waitTimeout_msec )
 	{
-		// готовим "указатель" на объект требующий активации
+		// готовим "указатель" на объект, требующий активации
 		std::unique_lock<std::mutex> locker(prep_mutex);
 		wprep = w;
 

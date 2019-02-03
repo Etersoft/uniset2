@@ -274,10 +274,10 @@
 <xsl:template name="COMMON-HEAD-PROTECTED">
 		virtual void callback() noexcept override;
 		virtual void processingMessage( const uniset::VoidMessage* msg ) override;
-		virtual void sysCommand( const uniset::SystemMessage* sm ){};
-		virtual void askSensors( UniversalIO::UIOCommand cmd ){}
-		virtual void sensorInfo( const uniset::SensorMessage* sm ) override{}
-		virtual void timerInfo( const uniset::TimerMessage* tm ) override{}
+		virtual void sysCommand( const uniset::SystemMessage* sm ) override {}
+		virtual void askSensors( UniversalIO::UIOCommand cmd ) {}
+		virtual void sensorInfo( const uniset::SensorMessage* sm ) override {}
+		virtual void timerInfo( const uniset::TimerMessage* tm ) override {}
 		virtual bool activateObject() override;
 		virtual bool deactivateObject() override;
 		virtual std::string getMonitInfo() const { return ""; } /*!&lt; пользовательская информация выводимая в getInfo() */
@@ -340,7 +340,7 @@
 		int askPause; /*!&lt; пауза между неудачными попытками заказать датчики */
 		
 		IOController_i::SensorInfo si;
-		bool forceOut; /*!&lt; флаг принудительного обноления "выходов" */
+		bool forceOut; /*!&lt; флаг принудительного обнуления "выходов" */
 		
 		std::shared_ptr&lt;uniset::LogAgregator&gt; loga;
 		std::shared_ptr&lt;DebugStream&gt; mylog;
@@ -467,6 +467,12 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( const uniset::Vo
 			break;
                                                                                         
 			default:
+			<xsl:choose>
+			  	<xsl:when test="normalize-space($BASECLASS)='UniSetObject'">	UniSetObject::processingMessage(_msg);</xsl:when>
+			    <xsl:when test="normalize-space($BASECLASS)='UniSetManager'">	UniSetManager::processingMessage(_msg);</xsl:when>
+			    <xsl:when test="normalize-space($BASECLASS)!=''">	<xsl:value-of select="normalize-space($BASECLASS)"/>::processingMessage(_msg);</xsl:when>
+			    <xsl:when test="normalize-space($BASECLASS)=''">	UniSetObject::processingMessage(_msg);</xsl:when>
+			</xsl:choose>				
 				break;
 		}	
 	}
@@ -1263,7 +1269,7 @@ end_private(false)
 	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>", <xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>);
 
 	string s_resetTime("<xsl:call-template name="settings"><xsl:with-param name="varname" select="'resetMsgTime'"/></xsl:call-template>");
-	if( s_resetTime.empty() )
+	if( s_resetTime.empty() ) // -V547
 		s_resetTime = "500";
 
 	resetMsgTime = uni_atoi(init3_str(conf->getArgParam("--" + argprefix + "resetMsgTime"),conf->getProp(cnode,"resetMsgTime"),s_resetTime));
@@ -1285,7 +1291,7 @@ end_private(false)
 	</xsl:if>
 	</xsl:for-each>
 
-	if( smTestID == DefaultObjectId )
+	if( smTestID == DefaultObjectId ) // -V547
 		smTestID = getSMTestID();
 
 	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 120000);

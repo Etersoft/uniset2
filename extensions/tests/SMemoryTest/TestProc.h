@@ -24,7 +24,7 @@ class TestProc:
 			tmLogControl
 		};
 
-		virtual void step();
+		virtual void step() override;
 		virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
 		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
 		virtual void sysCommand( const uniset::SystemMessage* sm ) override;

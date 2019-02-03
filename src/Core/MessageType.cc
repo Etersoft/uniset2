@@ -45,6 +45,9 @@ namespace uniset
 		if( type == Message::Timer )
 			return "Timer";
 
+		if( type == Message::TextMessage )
+			return "TextMessage";
+
 		if( type == Message::Unused )
 			return "Unused";
 
@@ -66,7 +69,6 @@ namespace uniset
 	}
 
 	//--------------------------------------------------------------------------------------------
-
 	VoidMessage::VoidMessage( const TransportMessage& tm ) noexcept:
 		Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
 	{
@@ -77,6 +79,7 @@ namespace uniset
 
 	VoidMessage::VoidMessage() noexcept
 	{
+
 		assert(sizeof(VoidMessage) >= sizeof(uniset::RawDataOfTransportMessage));
 	}
 
@@ -142,6 +145,7 @@ namespace uniset
 		type = Message::SysCommand;
 		this->priority = priority;
 		this->consumer = consumer;
+		memset(data,0,sizeof(data));
 	}
 
 	SystemMessage::SystemMessage(const VoidMessage* msg) noexcept:
@@ -222,7 +226,59 @@ namespace uniset
 		type = Message::Confirm;
 		priority = in_priority;
 	}
+	//--------------------------------------------------------------------------------------------
+	TextMessage::TextMessage( const VoidMessage* vmsg ) noexcept
+	  : VoidMessage(1) // dummy constructor
+	{
+		assert(vmsg->type == Message::TextMessage);
 
+		auto m = static_cast<const TextMessage*>(vmsg);
+		if( m )
+		{
+			type = m->type;
+			priority = m->priority;
+			node = m->node;
+			tm = m->tm;
+			consumer = m->consumer;
+			supplier = m->supplier;
+			txt = m->txt;
+		}
+	}
+	//--------------------------------------------------------------------------------------------
+	TextMessage::TextMessage() noexcept
+	{
+		type = Message::TextMessage;
+	}
+
+	TextMessage::TextMessage( const char* msg,
+							  const uniset::Timespec& tm,
+							  const ::uniset::ProducerInfo& pi,
+							  Priority prior,
+							  ObjectId cons) noexcept
+	{
+		type = Message::TextMessage;
+		this->node = pi.node;
+		this->supplier = pi.id;
+		this->priority = prior;
+		this->consumer = cons;
+		this->tm.tv_sec = tm.sec;
+		this->tm.tv_nsec = tm.nsec;
+		txt = std::string(msg);
+	}
+	//--------------------------------------------------------------------------------------------
+	std::shared_ptr<VoidMessage> TextMessage::toLocalVoidMessage() const
+	{
+		uniset::ProducerInfo pi;
+		pi.id = supplier;
+		pi.node = node;
+
+		uniset::Timespec ts;
+		ts.sec = tm.tv_sec;
+		ts.nsec = tm.tv_nsec;
+
+		auto tmsg = std::make_shared<TextMessage>(txt.c_str(), ts, pi, priority, consumer);
+		return std::static_pointer_cast<VoidMessage>(tmsg);
+	}
 	//--------------------------------------------------------------------------------------------
 } // end of namespace uniset
 //--------------------------------------------------------------------------------------------

@@ -212,7 +212,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 			if( resp_id == uniset::DefaultObjectId )
 			{
 				ostringstream err;
-				err << myname << ": Unknown RespondID.. Not found id for '" << s_resp_id << "'" << endl;
+				err << myname << ": " << n_it.getProp("name") << " : Unknown RespondID.. Not found id for '" << s_resp_id << "'" << endl;
 				unetcrit << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
@@ -228,7 +228,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 			if( resp2_id == uniset::DefaultObjectId )
 			{
 				ostringstream err;
-				err << myname << ": Unknown RespondID(2).. Not found id for '" << s_resp2_id << "'" << endl;
+				err << myname << ": " << n_it.getProp("name") << " : Unknown RespondID(2).. Not found id for '" << s_resp2_id << "'" << endl;
 				unetcrit << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
@@ -244,7 +244,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 			if( lp_id == uniset::DefaultObjectId )
 			{
 				ostringstream err;
-				err << myname << ": Unknown LostPacketsID.. Not found id for '" << s_lp_id << "'" << endl;
+				err << myname << ": " << n_it.getProp("name") << " : Unknown LostPacketsID.. Not found id for '" << s_lp_id << "'" << endl;
 				unetcrit << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
@@ -260,7 +260,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 			if( lp2_id == uniset::DefaultObjectId )
 			{
 				ostringstream err;
-				err << myname << ": Unknown LostPacketsID(2).. Not found id for '" << s_lp2_id << "'" << endl;
+				err << myname << ": " << n_it.getProp("name") << " : Unknown LostPacketsID(2).. Not found id for '" << s_lp2_id << "'" << endl;
 				unetcrit << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
@@ -276,7 +276,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 			if( lp_comm_id == uniset::DefaultObjectId )
 			{
 				ostringstream err;
-				err << myname << ": Unknown LostPacketsID(comm).. Not found id for '" << s_lp_comm_id << "'" << endl;
+				err << myname << ": " << n_it.getProp("name") << " : Unknown LostPacketsID(comm).. Not found id for '" << s_lp_comm_id << "'" << endl;
 				unetcrit << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
@@ -292,7 +292,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 			if( resp_comm_id == uniset::DefaultObjectId )
 			{
 				ostringstream err;
-				err << myname << ": Unknown RespondID(comm).. Not found id for '" << s_resp_comm_id << "'" << endl;
+				err << myname << ": " << n_it.getProp("name") << " : Unknown RespondID(comm).. Not found id for '" << s_resp_comm_id << "'" << endl;
 				unetcrit << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
@@ -308,7 +308,23 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 			if( numchannel_id == uniset::DefaultObjectId )
 			{
 				ostringstream err;
-				err << myname << ": Unknown NumChannelID.. Not found id for '" << s_numchannel_id << "'" << endl;
+				err << myname << ": " << n_it.getProp("name") << " : Unknown NumChannelID.. Not found id for '" << s_numchannel_id << "'" << endl;
+				unetcrit << myname << "(init): " << err.str() << endl;
+				throw SystemError(err.str());
+			}
+		}
+
+		string s_channelSwitchCount_id(n_it.getProp("unet_channelswitchcount_id"));
+		uniset::ObjectId channelswitchcount_id = uniset::DefaultObjectId;
+
+		if( !s_channelSwitchCount_id.empty() )
+		{
+			channelswitchcount_id = conf->getSensorID(s_channelSwitchCount_id);
+
+			if( channelswitchcount_id == uniset::DefaultObjectId )
+			{
+				ostringstream err;
+				err << myname << ": " << n_it.getProp("name") << " : Unknown ChannelSwitchCountID.. Not found id for '" << channelswitchcount_id << "'" << endl;
 				unetcrit << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
@@ -393,6 +409,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 		ri.setRespondID(resp_comm_id, resp_invert);
 		ri.setLostPacketsID(lp_comm_id);
 		ri.setChannelNumID(numchannel_id);
+		ri.setChannelSwitchCountID(channelswitchcount_id);
 		recvlist.emplace_back( std::move(ri) );
 	}
 
@@ -593,6 +610,16 @@ void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface>& shm, 
 	catch( const std::exception& ex )
 	{
 		unetcrit << myname << "(ReceiverInfo::step): (channelnum): " << ex.what() << std::endl;
+	}
+
+	try
+	{
+		if( sidChannelSwitchCount != DefaultObjectId )
+			shm->localSetValue(itChannelSwitchCount, sidChannelSwitchCount, channelSwitchCount, shm->ID());
+	}
+	catch( const std::exception& ex )
+	{
+		unetcrit << myname << "(ReceiverInfo::step): (channelSwitchCount): " << ex.what() << std::endl;
 	}
 }
 // -----------------------------------------------------------------------------
@@ -901,6 +928,7 @@ void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceive
 				// переключаемся на второй
 				it.r1->setLockUpdate(true);
 				it.r2->setLockUpdate(false);
+				it.channelSwitchCount++;
 
 				dlog8 << myname << "(event): " << r->getName()
 					  << ": timeout for channel1.. select channel 2" << endl;
@@ -916,6 +944,13 @@ void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceive
 
 					if( it.r2 )
 						it.r2->setLockUpdate(true);
+
+					// если какой-то канал уже работал
+					// то увеличиваем счётчик переключений
+					// а если ещё не работал, значит это просто первое включение канала
+					// а не переключение
+					if( it.channelSwitchCount > 0 )
+						it.channelSwitchCount++;
 
 					dlog8 << myname << "(event): " << r->getName()
 						  << ": link failed for channel2.. select again channel1.." << endl;
@@ -938,6 +973,7 @@ void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceive
 				// переключаемся на первый
 				it.r1->setLockUpdate(false);
 				it.r2->setLockUpdate(true);
+				it.channelSwitchCount++;
 
 				dlog8 << myname << "(event): " << r->getName()
 					  << ": timeout for channel2.. select channel 1" << endl;
@@ -953,6 +989,13 @@ void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceive
 						it.r1->setLockUpdate(true);
 
 					it.r2->setLockUpdate(false);
+
+					// если какой-то канал уже работал
+					// то увеличиваем счётчик переключений
+					// а если ещё не работал, значит это просто первое включение канала
+					// а не переключение
+					if( it.channelSwitchCount > 0 )
+						it.channelSwitchCount++;
 
 					dlog8 << myname << "(event): " << r->getName()
 						  << ": link failed for channel1.. select again channel2.." << endl;

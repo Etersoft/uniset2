@@ -69,7 +69,7 @@ namespace uniset
 
 	void UInterface::init()
 	{
-		// пытаемся получить ссылку на NameSerivice
+		// пытаемся получить ссылку на NameService
 		// в любом случае. даже если включён режим
 		// localIOR
 		localctx = CosNaming::NamingContext::_nil();
@@ -112,7 +112,7 @@ namespace uniset
 	 * \param id - идентификатор датчика
 	 * \return текущее значение датчика
 	 * \exception IOBadParam - генерируется если указано неправильное имя датчика или секции
-	 * \exception IOTimeOut - генерируется если в течение времени timeout небыл получен ответ
+	 * \exception IOTimeOut - генерируется если в течение времени timeout не был получен ответ
 	*/
 	long UInterface::getValue( const uniset::ObjectId id, const uniset::ObjectId node ) const
 	{
@@ -279,9 +279,9 @@ namespace uniset
 	// ------------------------------------------------------------------------------------------------------------
 	/*!
 	 * \param id - идентификатор датчика
-	 * \param value - значение которое необходимо установить
+	 * \param value - значение, которое необходимо установить
 	 * \return текущее значение датчика
-	 * \exception IOBadParam - генерируется если указано неправильное имя вывода или секции
+	 * \exception IOBadParam - генерируется, если указано неправильное имя вывода или секции
 	*/
 	void UInterface::setValue( const uniset::ObjectId id, long value, const uniset::ObjectId node, const uniset::ObjectId sup_id ) const
 	{
@@ -383,7 +383,7 @@ namespace uniset
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
-	// функция не вырабатывает исключий!
+	// функция не вырабатывает исключений!
 	void UInterface::fastSetValue( const IOController_i::SensorInfo& si, long value, uniset::ObjectId sup_id ) const
 	{
 		if ( si.id == uniset::DefaultObjectId )
@@ -758,7 +758,7 @@ namespace uniset
 	// ------------------------------------------------------------------------------------------------------------
 	void UInterface::registered( const uniset::ObjectId id, const uniset::ObjectPtr oRef, bool force ) const
 	{
-		// если влючён режим использования локальных файлов
+		// если включён режим использования локальных файлов
 		// то пишем IOR в файл
 		if( uconf->isLocalIOR() )
 		{
@@ -860,7 +860,7 @@ namespace uniset
 					catch( const uniset::ORepFailed& ex )
 					{
 						// нет связи с этим узлом
-						// пробуем связатся по другой сети
+						// пробуем связаться по другой сети
 						// ПО ПРАВИЛАМ узел в другой должен иметь имя NodeName1...NodeNameX
 						ostringstream s;
 						s << bname << curNet;
@@ -919,7 +919,6 @@ namespace uniset
 		catch(const CosNaming::NamingContext::NotFound& nf) {}
 		catch(const CosNaming::NamingContext::InvalidName& nf) {}
 		catch(const CosNaming::NamingContext::CannotProceed& cp) {}
-		catch( const uniset::Exception& ex ) {}
 		catch( const CORBA::OBJECT_NOT_EXIST& ex )
 		{
 			throw uniset::ResolveNameError("ObjectNOTExist");
@@ -934,6 +933,7 @@ namespace uniset
 			// uwarn << "UI(resolve): CORBA::SystemException" << endl;
 			throw uniset::TimeOut();
 		}
+		catch( const uniset::Exception& ex ) {}
 		catch( std::exception& ex )
 		{
 			ucrit << "UI(resolve): myID=" << myid <<  ": resolve id=" << rid << "@" << node
@@ -1018,6 +1018,152 @@ namespace uniset
 	void UInterface::send( const uniset::ObjectId name, const uniset::TransportMessage& msg )
 	{
 		send(name, msg, uconf->getLocalNode());
+	}
+	// ------------------------------------------------------------------------------------------------------------
+	void UInterface::sendText( const ObjectId name, const std::string& txt, const ObjectId node )
+	{
+		if ( name == uniset::DefaultObjectId )
+			throw uniset::ORepFailed("UI(sendText): ERROR: id=uniset::DefaultObjectId");
+
+		uniset::ObjectId onode = (node == uniset::DefaultObjectId) ? uconf->getLocalNode() : node;
+
+		uniset::Timespec_var ts = uniset::now_to_uniset_timespec();
+
+		uniset::ProducerInfo_var pi;
+		pi->id = myid;
+		pi->node = uconf->getLocalNode();
+
+		try
+		{
+			CORBA::Object_var oref;
+
+			try
+			{
+				oref = rcache.resolve(name, onode);
+			}
+			catch( const uniset::NameNotFound& ) {}
+
+			for (size_t i = 0; i < uconf->getRepeatCount(); i++)
+			{
+				try
+				{
+					if( CORBA::is_nil(oref) )
+						oref = resolve( name, onode );
+
+					UniSetObject_i_var obj = UniSetObject_i::_narrow(oref);
+					obj->pushMessage(txt.c_str(), ts, pi, Message::Medium, uniset::DefaultObjectId);
+					return;
+				}
+				catch( const CORBA::TRANSIENT& ) {}
+				catch( const CORBA::OBJECT_NOT_EXIST& ) {}
+				catch( const CORBA::SystemException& ) {}
+
+				msleep(uconf->getRepeatTimeout());
+				oref = CORBA::Object::_nil();
+			}
+		}
+		catch( const uniset::ORepFailed )
+		{
+			rcache.erase(name, onode);
+			throw uniset::IOBadParam(set_err("UI(sendText): resolve failed ", name, onode));
+		}
+		catch( const CORBA::NO_IMPLEMENT )
+		{
+			rcache.erase(name, onode);
+			throw uniset::IOBadParam(set_err("UI(sendText): method no implement", name, onode));
+		}
+		catch( const CORBA::OBJECT_NOT_EXIST )
+		{
+			rcache.erase(name, onode);
+			throw uniset::IOBadParam(set_err("UI(sendText): object not exist", name, onode));
+		}
+		catch( const CORBA::COMM_FAILURE& )
+		{
+			// ошибка системы коммуникации
+			// uwarn << "UI(sendText): ошибка системы коммуникации" << endl;
+		}
+		catch( const CORBA::SystemException& )
+		{
+			// ошибка системы коммуникации
+			// uwarn << "UI(sendText): CORBA::SystemException" << endl;
+		}
+
+		rcache.erase(name, onode);
+		throw uniset::TimeOut(set_err("UI(sendText): Timeout", name, onode));
+	}
+	// ------------------------------------------------------------------------------------------------------------
+	void UInterface::sendText( const ObjectId name, const TextMessage& msg, const ObjectId node )
+	{
+		if ( name == uniset::DefaultObjectId )
+			throw uniset::ORepFailed("UI(sendText): ERROR: id=uniset::DefaultObjectId");
+
+		uniset::ObjectId onode = (node == uniset::DefaultObjectId) ? uconf->getLocalNode() : node;
+
+		uniset::Timespec_var ts;
+		ts->sec = msg.tm.tv_sec;
+		ts->nsec = msg.tm.tv_nsec;
+
+		uniset::ProducerInfo_var pi;
+		pi->id = msg.supplier;
+		pi->node = msg.node;
+
+		try
+		{
+			CORBA::Object_var oref;
+
+			try
+			{
+				oref = rcache.resolve(name, onode);
+			}
+			catch( const uniset::NameNotFound& ) {}
+
+			for (size_t i = 0; i < uconf->getRepeatCount(); i++)
+			{
+				try
+				{
+					if( CORBA::is_nil(oref) )
+						oref = resolve( name, onode );
+
+					UniSetObject_i_var obj = UniSetObject_i::_narrow(oref);
+					obj->pushMessage(msg.txt.c_str(),ts, pi, msg.priority, msg.consumer);
+					return;
+				}
+				catch( const CORBA::TRANSIENT& ) {}
+				catch( const CORBA::OBJECT_NOT_EXIST& ) {}
+				catch( const CORBA::SystemException& ) {}
+
+				msleep(uconf->getRepeatTimeout());
+				oref = CORBA::Object::_nil();
+			}
+		}
+		catch( const uniset::ORepFailed )
+		{
+			rcache.erase(name, node);
+			throw uniset::IOBadParam(set_err("UI(sendText): resolve failed ", name, node));
+		}
+		catch( const CORBA::NO_IMPLEMENT )
+		{
+			rcache.erase(name, node);
+			throw uniset::IOBadParam(set_err("UI(sendText): method no implement", name, node));
+		}
+		catch( const CORBA::OBJECT_NOT_EXIST )
+		{
+			rcache.erase(name, node);
+			throw uniset::IOBadParam(set_err("UI(sendText): object not exist", name, node));
+		}
+		catch( const CORBA::COMM_FAILURE& )
+		{
+			// ошибка системы коммуникации
+			// uwarn << "UI(sendText): ошибка системы коммуникации" << endl;
+		}
+		catch( const CORBA::SystemException& )
+		{
+			// ошибка системы коммуникации
+			// uwarn << "UI(sendText): CORBA::SystemException" << endl;
+		}
+
+		rcache.erase(name, node);
+		throw uniset::TimeOut(set_err("UI(sendText): Timeout", name, node));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -2381,22 +2527,20 @@ namespace uniset
 			pmsec = 0;
 
 		PassiveTimer ptReady(msec);
-		bool ready = false;
 
-		while( !ptReady.checkTime() && !ready )
+		while( !ptReady.checkTime() )
 		{
 			try
 			{
 				getValue(id, node);
-				ready = true;
-				break;
+				return true;
 			}
 			catch(...) {}
 
 			msleep(pmsec);
 		}
 
-		return ready;
+		return false;
 	}
 	// -----------------------------------------------------------------------------
 	bool UInterface::waitReadyWithCancellation(const ObjectId id, int msec,

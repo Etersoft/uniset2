@@ -35,6 +35,7 @@ namespace uniset
 	{
 		static const int DefaultSubdev  = -1;
 		static const int DefaultChannel = -1;
+		static const int DefaultCard = -1;
 
 		// т.к. IOBase содержит rwmutex с запрещённым конструктором копирования
 		// приходится здесь тоже объявлять разрешенными только операции "перемещения"
@@ -175,15 +176,17 @@ namespace uniset
 
 		friend std::ostream& operator<<(std::ostream& os, const IOBase& inf );
 
+		static void processingF64asAI( IOBase* it, double new_val, const std::shared_ptr<SMInterface>& shm, bool force );
 		static void processingFasAI( IOBase* it, float new_val, const std::shared_ptr<SMInterface>& shm, bool force );
 		static void processingAsAI( IOBase* it, long new_val, const std::shared_ptr<SMInterface>& shm, bool force );
 		static void processingAsDI( IOBase* it, bool new_set, const std::shared_ptr<SMInterface>& shm, bool force );
 		static long processingAsAO( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force );
 		static float processingFasAO( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force );
+		static double processingF64asAO( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force );
 		static bool processingAsDO( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force );
 		static void processingThreshold( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force );
 
-		/*! \param initPrefixOnly - TRUE - инициализировать только свойста с prefix (или брать значения по умолчанию).
+		/*! \param initPrefixOnly - TRUE - инициализировать только свойства с prefix (или брать значения по умолчанию).
 		                            FALSE - сперва искать свойство с prefix, если не найдено брать без prefix.
 		*/
 		static bool initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SMInterface>& shm,

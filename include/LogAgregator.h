@@ -134,7 +134,7 @@ namespace uniset
 	{
 		public:
 
-			const std::string sep = {"/"}; /*< раздедитель для имён подчинённых агрегаторов */
+			const std::string sep = {"/"}; /*< разделитель для имён подчинённых агрегаторов */
 
 			explicit LogAgregator( const std::string& name, Debug::type t );
 			explicit LogAgregator( const std::string& name = "" );

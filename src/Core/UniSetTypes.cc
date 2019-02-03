@@ -59,6 +59,37 @@ float uniset::fcalibrate( float raw, float rawMin, float rawMax,
 
 	return ret;
 }
+// -----------------------------------------------------------------------------
+double uniset::dcalibrate( double raw, double rawMin, double rawMax,
+						  double calMin, double calMax, bool limit )
+{
+	if( rawMax == rawMin ) return 0; // деление на 0!!!
+
+	double ret = (raw - rawMin) * (calMax - calMin) / ( rawMax - rawMin ) + calMin;
+
+	if( !limit )
+		return ret;
+
+	// Переворачиваем calMin и calMax для проверки, если calMin > calMax
+	if (calMin < calMax)
+	{
+		if( ret < calMin )
+			return calMin;
+
+		if( ret > calMax )
+			return calMax;
+	}
+	else
+	{
+		if( ret > calMin )
+			return calMin;
+
+		if( ret < calMax )
+			return calMax;
+	}
+
+	return ret;
+}
 // -------------------------------------------------------------------------
 // Пересчитываем из исходных пределов в заданные
 long uniset::lcalibrate(long raw, long rawMin, long rawMax, long calMin, long calMax, bool limit )
@@ -114,7 +145,7 @@ long uniset::setoutregion(long ret, long calMin, long calMax)
 }
 
 // -------------------------------------------------------------------------
-uniset::IDList::IDList( const std::vector<string>& svec ):
+uniset::IDList::IDList( const std::vector<string>& svec ): // -V730
 	uniset::IDList::IDList()
 {
 	auto conf = uniset_conf();
@@ -179,7 +210,7 @@ uniset::ObjectId uniset::IDList::getFirst() const noexcept
 	return (*lst.begin());
 }
 
-// за освобождение выделеной памяти
+// за освобождение выделенной памяти
 // отвечает вызывающий!
 IDSeq* uniset::IDList::getIDSeq() const
 {
@@ -514,7 +545,7 @@ int uniset::uni_atoi( const char* str ) noexcept
 		}
 	}
 
-	n = std::atoll(str); // универсальнее получать unsigned..чтобы не потерять "большие числа"..
+	n = std::atoll(str); // универсальнее получать unsigned, чтобы не потерять "большие числа"..
 	return n; // а возвращаем int..
 }
 //--------------------------------------------------------------------------------------------
@@ -633,6 +664,28 @@ timespec uniset::now_to_timespec()
 	return to_timespec(d);
 }
 // -------------------------------------------------------------------------
+uniset::Timespec_var uniset::now_to_uniset_timespec()
+{
+	auto d = std::chrono::system_clock::now().time_since_epoch();
+	return to_uniset_timespec(d);
+}
+// -------------------------------------------------------------------------
+uniset::Timespec_var uniset::to_uniset_timespec( const chrono::system_clock::duration& d )
+{
+	uniset::Timespec_var ts;
+
+	if( d.count() == 0 )
+		ts->sec = ts->nsec = 0;
+	else
+	{
+		std::chrono::seconds const sec = std::chrono::duration_cast<std::chrono::seconds>(d);
+		ts->sec  = sec.count();
+		ts->nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(d - sec).count();
+	}
+
+	return ts;
+}
+// -------------------------------------------------------------------------
 char uniset::checkBadSymbols( const string& str )
 {
 	for ( const auto& c : str )
@@ -660,5 +713,16 @@ string uniset::BadSymbolsToStr()
 	}
 
 	return bad;
+}
+// ---------------------------------------------------------------------------------------------------------------
+uniset::KeyType uniset::key( const uniset::ObjectId id, const uniset::ObjectId node )
+{
+	//! \warning что тут у нас с переполнением..
+	return KeyType( (id * node) + (id + 2 * node) );
+}
+// ---------------------------------------------------------------------------------------------------------------
+uniset::KeyType uniset::key( const IOController_i::SensorInfo& si )
+{
+	return key(si.id, si.node);
 }
 // ---------------------------------------------------------------------------------------------------------------

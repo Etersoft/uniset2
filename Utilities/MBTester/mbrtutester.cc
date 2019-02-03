@@ -671,7 +671,7 @@ int main( int argc, char** argv )
 							ModbusRTU::ModbusAddr a = ModbusHelpers::autodetectSlave(&mb, beg, end, reg, fn);
 							cout << "autodetect modbus slave: " << ModbusRTU::addr2str(a) << endl;
 						}
-						catch( uniset::TimeOut )
+						catch( const uniset::TimeOut& ex )
 						{
 							cout << "slave not autodetect..." << endl;
 						}
@@ -695,7 +695,7 @@ int main( int argc, char** argv )
 							cout << "autodetect: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
 								 << " speed=" << ComPort::getSpeed(s) << endl;
 						}
-						catch( uniset::TimeOut )
+						catch( const uniset::TimeOut& ex )
 						{
 							cout << "speed not autodetect for slaveaddr="
 								 << ModbusRTU::addr2str(slaveaddr) << endl;

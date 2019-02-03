@@ -315,10 +315,7 @@ namespace uniset
 				return 0;
 			}
 		}
-		catch( uniset::CommFailed )
-		{
-
-		}
+		catch( const uniset::CommFailed& ex ){}
 
 		if( !cancelled && dlog->is_info() )
 			dlog->info() << peername << "(getNextData): client disconnected" << endl;
@@ -387,10 +384,7 @@ namespace uniset
 			}
 			while( len == 0 && !pt.checkTime() );
 		}
-		catch( uniset::CommFailed )
-		{
-
-		}
+		catch( const uniset::CommFailed& ex ){}
 
 		if( len < mhead.len )
 		{

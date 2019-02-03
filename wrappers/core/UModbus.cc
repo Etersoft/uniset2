@@ -275,7 +275,7 @@ long UModbus::data2value( uniset::VTypes::VType vtype, uniset::ModbusRTU::Modbus
 	else if( vtype == VTypes::vtF4 )
 	{
 		VTypes::F4 f(data, VTypes::F4::wsize());
-		return lroundf( (float)f );
+		return lroundf( (double)f );
 	}
 	else if( vtype == VTypes::vtI2 )
 	{

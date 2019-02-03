@@ -56,6 +56,11 @@ void TestObject::sensorInfo( const SensorMessage* sm )
 	}
 }
 // -----------------------------------------------------------------------------
+void TestObject::onTextMessage( const TextMessage* msg )
+{
+	lastText = msg->txt;
+}
+// -----------------------------------------------------------------------------
 void TestObject::stopHeartbeat()
 {
 	maxHeartBeat = 0;
@@ -101,5 +106,10 @@ bool TestObject::isEmptyQueue()
 bool TestObject::isFullQueue()
 {
 	return (getCountOfLostMessages() > 0);
+}
+
+string TestObject::getLastTextMessage() const
+{
+	return lastText;
 }
 // -----------------------------------------------------------------------------

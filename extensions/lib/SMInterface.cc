@@ -74,16 +74,15 @@ using namespace uniset;
 	{ \
 		uwarn << "(" << __STRING(fname) << "): " << ex.err << endl; \
 	} \
-	catch( const uniset::Exception& ex ) \
-	{ \
-		uwarn << "(" << __STRING(fname) << "): " << ex << endl; \
-	} \
 	catch( const CORBA::SystemException& ex ) \
 	{ \
 		uwarn << "(" << __STRING(fname) << "): CORBA::SystemException: " \
 			  << ex.NP_minorString() << endl; \
 	} \
-	\
+	catch( const uniset::Exception& ex ) \
+	{ \
+		uwarn << "(" << __STRING(fname) << "): " << ex << endl; \
+	} \
 	oref = CORBA::Object::_nil(); \
 	throw uniset::TimeOut(); \
 

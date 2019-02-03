@@ -28,7 +28,7 @@
 //{
     /*!
      * \interface UniSetObject_i
-     * \brief Базовый интерфес для всех объектов
+     * \brief Базовый интерфейс для всех объектов
      * \author Pavel Vainerman
      *
      * Первичный базовый класс. Прародитель всех объектов в системе.
@@ -52,6 +52,14 @@
 
         /*!  Функция посылки сообщения объекту */
         void push( in uniset::TransportMessage msg );
+
+        /*!  Функция посылки текстового сообщения объекту */
+        void pushMessage( in string msg
+                           , in uniset::Timespec tm
+                           , in uniset::ProducerInfo pi
+                           , in long priority
+                           , in long consumer
+                           );
     };
 
 //};    // end of module UniSet

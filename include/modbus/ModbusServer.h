@@ -16,13 +16,12 @@
 namespace std
 {
 	template<>
-	class hash<uniset::ModbusRTU::mbErrCode>
+	struct hash<uniset::ModbusRTU::mbErrCode>
 	{
-		public:
-			size_t operator()(const uniset::ModbusRTU::mbErrCode& e) const
-			{
-				return std::hash<size_t>()(e);
-			}
+		size_t operator()(const uniset::ModbusRTU::mbErrCode& e) const
+		{
+			return std::hash<size_t>()(e);
+		}
 	};
 }
 // -------------------------------------------------------------------------
