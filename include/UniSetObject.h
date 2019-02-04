@@ -109,6 +109,7 @@ namespace uniset
 
 			//! поместить текстовое сообщение в очередь
 			virtual void pushMessage( const char* msg,
+									  ::CORBA::Long mtype,
 									  const ::uniset::Timespec& tm,
 									  const ::uniset::ProducerInfo& pi,
 									  ::CORBA::Long priority,

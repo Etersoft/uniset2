@@ -241,6 +241,7 @@ namespace uniset
 			tm = m->tm;
 			consumer = m->consumer;
 			supplier = m->supplier;
+			mtype = m->mtype;
 			txt = m->txt;
 		}
 	}
@@ -250,7 +251,8 @@ namespace uniset
 		type = Message::TextMessage;
 	}
 
-	TextMessage::TextMessage( const char* msg,
+	TextMessage::TextMessage(const char* msg,
+							  int _mtype,
 							  const uniset::Timespec& tm,
 							  const ::uniset::ProducerInfo& pi,
 							  Priority prior,
@@ -263,7 +265,8 @@ namespace uniset
 		this->consumer = cons;
 		this->tm.tv_sec = tm.sec;
 		this->tm.tv_nsec = tm.nsec;
-		txt = std::string(msg);
+		this->txt = std::string(msg);
+		this->mtype = _mtype;
 	}
 	//--------------------------------------------------------------------------------------------
 	std::shared_ptr<VoidMessage> TextMessage::toLocalVoidMessage() const
@@ -276,7 +279,7 @@ namespace uniset
 		ts.sec = tm.tv_sec;
 		ts.nsec = tm.tv_nsec;
 
-		auto tmsg = std::make_shared<TextMessage>(txt.c_str(), ts, pi, priority, consumer);
+		auto tmsg = std::make_shared<TextMessage>(txt.c_str(), mtype, ts, pi, priority, consumer);
 		return std::static_pointer_cast<VoidMessage>(tmsg);
 	}
 	//--------------------------------------------------------------------------------------------

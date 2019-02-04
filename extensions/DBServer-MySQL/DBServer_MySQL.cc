@@ -138,11 +138,12 @@ void DBServer_MySQL::onTextMessage( const TextMessage* msg )
 
 		ostringstream data;
 		data << "INSERT INTO " << tblName(msg->type)
-			 << "(date, time, time_usec, text, node) VALUES( '"
+			 << "(date, time, time_usec, text, mtype, node) VALUES( '"
 			 << dateToString(msg->tm.tv_sec, "-") << "','"   //  date
 			 << timeToString(msg->tm.tv_sec, ":") << "','"   //  time
 			 << msg->tm.tv_nsec << "','"                //  time_usec
 			 << msg->txt << "','"                    // text
+			 << msg->mtype << "','"   // mtype
 			 << msg->node << "')";                //  node
 
 		dbinfo << myname << "(insert_main_messages): " << data.str() << endl;

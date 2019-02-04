@@ -260,25 +260,27 @@ TEST_CASE("TextMessage", "[basic][message types][TextMessage]" )
 
 		ObjectId consumer = 40;
 
-		TextMessage tm(txt.c_str(), tspec, pi, uniset::Message::High, consumer );
+		TextMessage tm(txt.c_str(), 3, tspec, pi, uniset::Message::High, consumer );
 		REQUIRE( tm.consumer == consumer );
 		REQUIRE( tm.node == pi.node );
 		REQUIRE( tm.supplier == pi.id );
 		REQUIRE( tm.txt == txt );
 		REQUIRE( tm.tm.tv_sec == tspec.sec );
 		REQUIRE( tm.tm.tv_nsec == tspec.nsec );
+		REQUIRE( tm.mtype == 3 );
 
 		auto vm = tm.toLocalVoidMessage();
 
 		REQUIRE( vm->type == Message::TextMessage );
 
 		TextMessage tm2(vm.get());
-		REQUIRE( tm.consumer == consumer );
-		REQUIRE( tm.node == pi.node );
-		REQUIRE( tm.supplier == pi.id );
-		REQUIRE( tm.txt == txt );
-		REQUIRE( tm.tm.tv_sec == tspec.sec );
-		REQUIRE( tm.tm.tv_nsec == tspec.nsec );
+		REQUIRE( tm2.consumer == consumer );
+		REQUIRE( tm2.node == pi.node );
+		REQUIRE( tm2.supplier == pi.id );
+		REQUIRE( tm2.txt == txt );
+		REQUIRE( tm2.tm.tv_sec == tspec.sec );
+		REQUIRE( tm2.tm.tv_nsec == tspec.nsec );
+		REQUIRE( tm2.mtype == 3 );
 	}
 }
 // ---------------------------------------------------------------

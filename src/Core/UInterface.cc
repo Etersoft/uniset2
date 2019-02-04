@@ -1020,7 +1020,7 @@ namespace uniset
 		send(name, msg, uconf->getLocalNode());
 	}
 	// ------------------------------------------------------------------------------------------------------------
-	void UInterface::sendText( const ObjectId name, const std::string& txt, const ObjectId node )
+	void UInterface::sendText(const ObjectId name, const std::string& txt, int mtype, const ObjectId node )
 	{
 		if ( name == uniset::DefaultObjectId )
 			throw uniset::ORepFailed("UI(sendText): ERROR: id=uniset::DefaultObjectId");
@@ -1051,7 +1051,7 @@ namespace uniset
 						oref = resolve( name, onode );
 
 					UniSetObject_i_var obj = UniSetObject_i::_narrow(oref);
-					obj->pushMessage(txt.c_str(), ts, pi, Message::Medium, uniset::DefaultObjectId);
+					obj->pushMessage(txt.c_str(), mtype, ts, pi, Message::Medium, uniset::DefaultObjectId);
 					return;
 				}
 				catch( const CORBA::TRANSIENT& ) {}
@@ -1125,7 +1125,7 @@ namespace uniset
 						oref = resolve( name, onode );
 
 					UniSetObject_i_var obj = UniSetObject_i::_narrow(oref);
-					obj->pushMessage(msg.txt.c_str(),ts, pi, msg.priority, msg.consumer);
+					obj->pushMessage(msg.txt.c_str(), msg.mtype, ts, pi, msg.priority, msg.consumer);
 					return;
 				}
 				catch( const CORBA::TRANSIENT& ) {}

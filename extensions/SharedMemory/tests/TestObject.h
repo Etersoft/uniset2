@@ -37,6 +37,7 @@ class TestObject:
 		bool isFullQueue();
 
 		std::string getLastTextMessage() const;
+		int getLastTextMessageType() const;
 
 	protected:
 		TestObject();
@@ -52,6 +53,7 @@ class TestObject:
 		long lostMessages = { false };
 		long lastValue = { 0 };
 		std::string lastText = { "" };
+		int lastTextType = { 0 };
 };
 // -----------------------------------------------------------------------------
 #endif // _TestObject_H_
