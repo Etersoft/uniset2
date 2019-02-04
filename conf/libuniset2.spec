@@ -546,7 +546,7 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
-* Sun Feb 03 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt0.M80P.1
+* Mon Feb 04 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt0.M80P.1
 - backport to ALTLinux p8 (by rpmbph script)
 
 * Sun Feb 03 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt1
