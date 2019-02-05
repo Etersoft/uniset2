@@ -144,11 +144,7 @@ TEST_CASE("Logic processor: elements", "[LogicProcessor][elements]")
 
 	SECTION( "TA2D" )
 	{
-<<<<<<< HEAD
-		TA2D e("1",10);
-=======
 		TA2D e("1", 10);
->>>>>>> 2.7-alt4
 		REQUIRE_FALSE( e.getOut() );
 
 		e.setIn(1, 5);
