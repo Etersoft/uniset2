@@ -59,6 +59,7 @@ void TestObject::sensorInfo( const SensorMessage* sm )
 void TestObject::onTextMessage( const TextMessage* msg )
 {
 	lastText = msg->txt;
+	lastTextType =  msg->mtype;
 }
 // -----------------------------------------------------------------------------
 void TestObject::stopHeartbeat()
@@ -111,5 +112,10 @@ bool TestObject::isFullQueue()
 string TestObject::getLastTextMessage() const
 {
 	return lastText;
+}
+
+int TestObject::getLastTextMessageType() const
+{
+	return lastTextType;
 }
 // -----------------------------------------------------------------------------

@@ -78,7 +78,7 @@ int getState( const string& args, UInterface& ui );
 int getCalibrate( const string& args, UInterface& ui );
 int oinfo(const string& args, UInterface& ui , const string&  userparam );
 int apiRequest( const string& args, UInterface& ui, const string& query );
-void sendText( const string& args, UInterface& ui, const string& txt );
+void sendText( const string& args, UInterface& ui, const string& txt, int mtype );
 // --------------------------------------------------------------------------
 static void print_help(int width, const string& cmd, const string& help, const string& tab = " " )
 {
@@ -125,7 +125,7 @@ static void usage()
 	print_help(36, "-v|--verbose", "Подробный вывод логов.\n");
 	print_help(36, "-q|--quiet", "Выводит только результат.\n");
 	print_help(36, "-z|--csv", "Вывести результат (getValue) в виде val1,val2,val3...\n");
-	print_help(36, "-m|--sendText id1@node1,id2@node2,id3,.. text", "Послать объектам текстовое сообщение text\n");
+	print_help(36, "-m|--sendText id1@node1,id2@node2,id3,.. mtype text", "Послать объектам текстовое сообщение text типа mtype\n");
 	cout << endl;
 }
 
@@ -377,17 +377,35 @@ int main(int argc, char** argv)
 					if( checkArg(optind, argc, argv) == 0 )
 					{
 						if( !quiet )
-							cerr << "admin(sendText): Unknown 'text'. Use: id,name,name2@nodeX text" << endl;
+							cerr << "admin(sendText): Unknown 'mtype'. Use: id,name,name2@nodeX mtype text" << endl;
 
 						return 1;
+					}
+
+					ostringstream txt;
+
+					if( checkArg(optind+1, argc, argv) == 0 )
+					{
+						if( !quiet )
+							cerr << "admin(sendText): Unknown 'text'. Use: id,name,name2@nodeX mtype text" << endl;
+
+						return 1;
+					}
+
+					for( int i=optind+1; i<argc; i++ )
+					{
+						 if( checkArg(i, argc, argv) == 0 )
+							 break;
+
+						 txt << " " << argv[optind+1];
 					}
 
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
 					ui.initBackId(uniset::AdminID);
-					std::string txt = string(argv[optind]);
+					int mtype = uni_atoi(argv[optind]);
 
-					sendText(optarg, ui, txt);
+					sendText(optarg, ui, txt.str(), mtype);
 					return 0;
 				}
 				break;
@@ -1111,7 +1129,7 @@ int apiRequest( const string& args, UInterface& ui, const string& query )
 }
 
 // --------------------------------------------------------------------------------------
-void sendText( const string& args, UInterface& ui, const string& txt )
+void sendText( const string& args, UInterface& ui, const string& txt, int mtype )
 {
 	auto conf = uniset_conf();
 	auto sl = uniset::getObjectsList( args, conf );

@@ -400,13 +400,14 @@ namespace uniset
 		termWaiting();
 	}
 	// ------------------------------------------------------------------------------------------
-	void UniSetObject::pushMessage( const char* msg,
+	void UniSetObject::pushMessage(const char* msg,
+									::CORBA::Long mtype,
 									const ::uniset::Timespec& tm,
 									const ::uniset::ProducerInfo& pi,
 									::CORBA::Long priority,
 									::CORBA::Long consumer )
 	{
-		uniset::TextMessage tmsg(msg, tm, pi, (uniset::Message::Priority)priority, consumer);
+		uniset::TextMessage tmsg(msg, mtype, tm, pi, (uniset::Message::Priority)priority, consumer);
 		auto vm = tmsg.toLocalVoidMessage();
 
 		if( vm->priority == Message::Medium )

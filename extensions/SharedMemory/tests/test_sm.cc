@@ -317,8 +317,9 @@ TEST_CASE("[SM]: sendText", "[sm][sendText]")
 
 	std::string txt = "Hello world";
 
-	ui->sendText(obj->getId(), txt);
+	ui->sendText(obj->getId(), txt, 3);
 	msleep(300);
 
 	REQUIRE( obj->getLastTextMessage() == txt );
+	REQUIRE( obj->getLastTextMessageType() == 3 );
 }

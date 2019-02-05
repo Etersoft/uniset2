@@ -55,6 +55,7 @@
 
         /*!  Функция посылки текстового сообщения объекту */
         void pushMessage( in string msg
+                           , in long mtype
                            , in uniset::Timespec tm
                            , in uniset::ProducerInfo pi
                            , in long priority

@@ -287,6 +287,7 @@ namespace uniset
 			TextMessage() noexcept;
 			TextMessage( const VoidMessage* msg ) noexcept;
 			TextMessage( const char* msg,
+						 int mtype,
 						 const ::uniset::Timespec& tm,
 						 const ::uniset::ProducerInfo& pi,
 						 Priority prior = Message::Medium,
@@ -295,6 +296,7 @@ namespace uniset
 			std::shared_ptr<VoidMessage> toLocalVoidMessage() const;
 
 			std::string txt;
+			int mtype;
 	};
 
 }

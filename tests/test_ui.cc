@@ -44,8 +44,8 @@ TEST_CASE("UInterface", "[UInterface]")
 	REQUIRE_THROWS_AS( ui.getTimeChange(sid, -20), uniset::Exception );
 	REQUIRE_THROWS_AS( ui.getTimeChange(sid, DefaultObjectId), uniset::Exception );
 	REQUIRE_THROWS_AS( ui.getTimeChange(sid, conf->getLocalNode()), uniset::Exception );
-	REQUIRE_THROWS_AS( ui.sendText(testOID, "hello"), uniset::Exception );
-	REQUIRE_THROWS_AS( ui.sendText(testOID, "hello", -20), uniset::Exception );
+	REQUIRE_THROWS_AS( ui.sendText(testOID, "hello", 1), uniset::Exception );
+	REQUIRE_THROWS_AS( ui.sendText(testOID, "hello", 1, -20), uniset::Exception );
 
 	CHECK_FALSE( ui.isExist(sid) );
 	CHECK_FALSE( ui.isExist(sid, DefaultObjectId) );
