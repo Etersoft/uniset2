@@ -212,12 +212,9 @@ void DBServer_PostgreSQL::flushBuffer()
 //--------------------------------------------------------------------------------------------
 void DBServer_PostgreSQL::flushInsertBuffer()
 {
-	if( !db || !connect_ok )
+	if( ibufSize > ibufMaxSize )
 	{
-		if( ibufSize < ibufMaxSize )
-			return;
-
-		dbcrit << myname << "(flushWriteBuffer): DB not connected!"
+		dbcrit << myname << "(flushWriteBuffer): "
 			   << " buffer[" << ibufSize << "] overflow! LOST DATA..." << endl;
 
 		// Чистим заданное число
@@ -228,24 +225,27 @@ void DBServer_PostgreSQL::flushInsertBuffer()
 		// Удаляем последние (новые)
 		if( lastRemove )
 		{
-			std::advance(beg, -delnum);
+			end = std::prev(end, delnum);
 		}
 		else
 		{
 			// Удаляем первые (старые)
-			std::advance(end, delnum);
+			beg = std::next(beg, delnum);
 		}
 
-		ibuf.erase(beg, end);
+		if( beg != ibuf.end() )
+			ibuf.erase(beg, end);
 
 		// ibufSize - беззнаковое, так что надо аккуратно
 		ibufSize = (delnum < ibufSize) ? (ibufSize - delnum) : 0;
 
 		dbwarn << myname << "(flushInsertBuffer): overflow: clear data " << delnum << " records." << endl;
-		return;
 	}
 
 	if( ibufSize == 0 )
+		return;
+
+	if( !db || !connect_ok )
 		return;
 
 	dbinfo << myname << "(flushInsertBuffer): write insert buffer[" << ibufSize << "] to DB.." << endl;
