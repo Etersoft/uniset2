@@ -382,6 +382,8 @@ int main(int argc, char** argv)
 						return 1;
 					}
 
+					int mtype = uni_atoi(argv[optind]);
+					std::string consumers(optarg);
 					ostringstream txt;
 
 					if( checkArg(optind+1, argc, argv) == 0 )
@@ -397,15 +399,14 @@ int main(int argc, char** argv)
 						 if( checkArg(i, argc, argv) == 0 )
 							 break;
 
-						 txt << " " << argv[optind+1];
+						 txt << " " << argv[i];
 					}
 
 					auto conf = uniset_init(argc, argv, conffile);
 					UInterface ui(conf);
 					ui.initBackId(uniset::AdminID);
-					int mtype = uni_atoi(argv[optind]);
 
-					sendText(optarg, ui, txt.str(), mtype);
+					sendText(consumers, ui, txt.str(), mtype);
 					return 0;
 				}
 				break;
@@ -1133,6 +1134,8 @@ void sendText( const string& args, UInterface& ui, const string& txt, int mtype 
 {
 	auto conf = uniset_conf();
 	auto sl = uniset::getObjectsList( args, conf );
+
+	cout << "mtype=" << mtype << " txt: " << txt << endl;
 
 	for( auto && it : sl )
 	{
