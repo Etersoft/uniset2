@@ -556,7 +556,15 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSysCommand( const SystemMessage*
 			string fname( log()->getLogFile() );
 			if( !fname.empty() )
 			{
+			<xsl:if test="normalize-space($LOGROTATE)=''">
+				mylog->logFile(fname.c_str(),false);
+			</xsl:if>
+			<xsl:if test="normalize-space($LOGROTATE)='append'">
+				mylog->logFile(fname.c_str(),false);
+			</xsl:if>
+			<xsl:if test="normalize-space($LOGROTATE)='truncate'">
 				mylog->logFile(fname.c_str(),true);
+			</xsl:if>
 				mylogany &lt;&lt; myname &lt;&lt; "(preSysCommand): ***************** mylog LOG ROTATE *****************" &lt;&lt; endl;
 			}
 			

@@ -18,6 +18,7 @@
 	<set name="sleep-msec" val="150"/>
 	<set name="arg-prefix" val="test-"/>
 	<set name="resetMsgTime" val="300"/>
+	<set name="logrotate" val="truncate"/>
   </settings>
   <variables>
       <!-- type = [int,str,bool,float]
