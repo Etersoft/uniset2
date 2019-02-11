@@ -365,9 +365,16 @@ bool BackendOpenTSDB::flushBuffer()
 
 		return true;
 	}
+	catch( Poco::IOException& ex )
+	{
+		mywarn << "(flushBuffer): (io): " << ex.displayText() << endl;
+		lastError = ex.displayText();
+		if( !reconnect() )
+			askTimer(tmReconnect, reconnectTime);
+	}
 	catch( std::exception& ex )
 	{
-		mywarn << "(flushBuffer): " << ex.what() << endl;
+		mywarn << "(flushBuffer): (std): " << ex.what() << endl;
 		lastError = ex.what();
 	}
 

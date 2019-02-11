@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2019-02-02+03:00
+// generate timestamp: 2019-02-09+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -491,7 +491,9 @@ void UObject_SK::preSysCommand( const SystemMessage* _sm )
 			string fname( log()->getLogFile() );
 			if( !fname.empty() )
 			{
-				mylog->logFile(fname.c_str(),true);
+			
+				mylog->logFile(fname.c_str(),false);
+			
 				mylogany << myname << "(preSysCommand): ***************** mylog LOG ROTATE *****************" << endl;
 			}
 			
