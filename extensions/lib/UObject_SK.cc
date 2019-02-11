@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2019-02-09+03:00
+// generate timestamp: 2019-02-11+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -56,6 +56,21 @@ end_private(false)
 	throw uniset::Exception( std::string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
+// ( val, confval, globalval, default val )
+static const std::string init4_str( const std::string& s1, const std::string& s2,
+				    const std::string& s3, const std::string& s4 )
+{
+	if( !s1.empty() )
+		return s1;
+	if( !s2.empty() )
+		return s2;
+
+	if( !s3.empty() )
+		return s3;
+	
+	return s4;
+}
+// -----------------------------------------------------------------------------
 // ( val, confval, default val )
 static const std::string init3_str( const std::string& s1, const std::string& s2, const std::string& s3 )
 {
@@ -80,7 +95,7 @@ static uniset::ObjectId init_node( xmlNode* cnode, const std::string& prop )
 	return conf->getNodeID(conf->getProp(cnode,prop));
 }
 // -----------------------------------------------------------------------------
-UObject_SK::UObject_SK( ObjectId id, xmlNode* cnode, const std::string& _argprefix ):
+UObject_SK::UObject_SK( ObjectId id, xmlNode* cnode, const std::string& _argprefix, xmlNode* globalnode ):
 UniSetObject(id),
 // Инициализация идентификаторов (имена берутся из конф. файла)
 
@@ -179,7 +194,7 @@ end_private(false)
 	if( s_resetTime.empty() ) // -V547
 		s_resetTime = "500";
 
-	resetMsgTime = uni_atoi(init3_str(conf->getArgParam("--" + argprefix + "resetMsgTime"),conf->getProp(cnode,"resetMsgTime"),s_resetTime));
+	resetMsgTime = uni_atoi(init4_str(conf->getArgParam("--" + argprefix + "resetMsgTime"),conf->getProp(cnode,"resetMsgTime"),conf->getProp(globalnode,"resetMsgTime"), s_resetTime));
 	ptResetMsg.setTiming(resetMsgTime);
 
 	int sm_tout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","");
@@ -190,7 +205,7 @@ end_private(false)
 	else
 		smReadyTimeout = sm_tout;
 
-	smTestID = conf->getSensorID(init3_str(conf->getArgParam("--" + argprefix + "sm-test-id"),conf->getProp(cnode,"smTestID"),""));
+	smTestID = conf->getSensorID(init4_str(conf->getArgParam("--" + argprefix + "sm-test-id"),conf->getProp(cnode,"smTestID"),conf->getProp(globalnode,"smTestID"),""));
 	
 
 	if( smTestID == DefaultObjectId ) // -V547

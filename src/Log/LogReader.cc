@@ -430,7 +430,7 @@ void LogReader::readlogs( const std::string& _addr, int _port, LogServerTypes::C
 		{
 			cerr << "(LogReader): " << e.displayText() << " (" << _addr << ")" << endl;
 		}
-		catch( Poco::IOException& ex )
+		catch( Poco::IOException& e )
 		{
 			cerr << "(LogReader): " << e.displayText() << " (" << _addr << ")" << endl;
 			disconnect();

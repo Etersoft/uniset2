@@ -156,6 +156,9 @@ string UniXML::getProp2(const xmlNode* node, const string& name, const string& d
 // -----------------------------------------------------------------------------
 string UniXML::getProp(const xmlNode* node, const string& name) noexcept
 {
+	if( !node )
+		return "";
+
 	xmlChar* text = ::xmlGetProp((xmlNode*)node, (const xmlChar*)name.c_str());
 
 	if( text == NULL )
