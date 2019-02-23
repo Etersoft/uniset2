@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LogDB name="LogDB">
-	<logserver name="logserver1" ip="localhost" port="3333" cmd="" description="Лог сервер процесса управления N1"/>
+	<logserver name="logserver1" ip="localhost" port="3333" cmd="" description="Лог сервер процесса управления N1" logfile="/tmp/uniset-test.log"/>
 </LogDB>
