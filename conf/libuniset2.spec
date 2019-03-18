@@ -26,7 +26,7 @@
 
 Name: libuniset2
 Version: 2.8
-Release: alt2.M80P.3
+Release: alt7.M80P.8
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -546,8 +546,23 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
-* Tue Feb 05 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt2.M80P.3
+* Mon Mar 18 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt7.M80P.8
 - backport to ALTLinux p8 (by rpmbph script)
+
+* Mon Mar 18 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt8
+- minor fixes
+
+* Sun Feb 24 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt7
+- (LogDB): added support write logfiles
+
+* Mon Feb 11 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt6
+- (TSDB): reopen connection for error "broken pipe"
+
+* Sat Feb 09 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt5
+- (uniset-codegen): setup logrotate command
+
+* Tue Feb 05 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt4
+- (PGSQL): fix SIGSEGV in flushInsertBuffer()
 
 * Tue Feb 05 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt3
 - (admin): fix error in "sendText" funciton

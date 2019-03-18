@@ -10,7 +10,7 @@
 // but should be adaptable to any project.
 
 // (c) 2002 adapted for UniSet by Lav, GNU LGPL license
-// Modify for UniSet by pv@eterspft.ru, GNU LGPL license
+// Modify for UniSet by pv@etersoft.ru, GNU LGPL license
 
 #ifndef DEBUGSTREAM_H
 #define DEBUGSTREAM_H
@@ -68,7 +68,7 @@ struct Debug
 
     If you want to have debug output from time critical code you should
     use this construct:
-    if (debug..is_info()) {
+	if (debug.is_info()) {
      debug << "...debug output...\n";
     }
 
@@ -159,6 +159,12 @@ class DebugStream : public std::ostream
 		{
 			logFile("");
 		}
+
+		// enable print on screen
+		void enableOnScreen();
+
+		// disable print onscreen
+		void disableOnScreen();
 
 		/// Returns true if t is part of the current debug level.
 		inline bool debugging(Debug::type t = Debug::ANY) const noexcept
@@ -297,6 +303,7 @@ class DebugStream : public std::ostream
 		std::string logname = { "" };
 
 		bool isWriteLogFile = { false };
+		bool onScreen = { true };
 };
 // ------------------------------------------------------------------------------------------------
 #endif

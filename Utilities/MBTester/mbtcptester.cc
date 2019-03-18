@@ -84,6 +84,23 @@ enum Command
 };
 // --------------------------------------------------------------------------
 static char* checkArg( int ind, int argc, char* argv[] );
+// --------------------------------------------------------------------------
+struct Interval
+{
+	using time_point = std::chrono::time_point<std::chrono::steady_clock>;
+
+	Interval()
+	 :tmStart(std::chrono::steady_clock::now())
+	{}
+
+	uint64_t microseconds()
+	{
+		return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - tmStart).count();
+	}
+
+	time_point tmStart;
+};
+// --------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
 	//	std::ios::sync_with_stdio(false);
@@ -352,8 +369,6 @@ int main( int argc, char** argv )
 		if( ncycles > 0 )
 			nc = ncycles;
 
-		std::chrono::time_point<std::chrono::system_clock> start, end;
-
 		while( nc )
 		{
 			try
@@ -370,17 +385,15 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
-						start = std::chrono::system_clock::now();
+						Interval i;
 						ModbusRTU::ReadCoilRetMessage ret = mb.read01(slaveaddr, reg, count);
-						end = std::chrono::system_clock::now();
-						int elapsed_usec = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
 						if( verb )
 							cout << "(reply): " << ret << endl;
 
 						cout << "(reply): count=" << (int)ret.bcnt
 							 << "(" << ModbusRTU::dat2str(ret.bcnt) << ")"
-							 << " usec: " << elapsed_usec
+							 << " [" << i.microseconds() << " ms]"
 							 << endl;
 
 						for( int i = 0; i < ret.bcnt; i++ )
@@ -406,17 +419,15 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
-						start = std::chrono::system_clock::now();
+						Interval i;
 						ModbusRTU::ReadInputStatusRetMessage ret = mb.read02(slaveaddr, reg, count);
-						end = std::chrono::system_clock::now();
-						int elapsed_usec = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
 						if( verb )
 							cout << "(reply): " << ret << endl;
 
 						cout << "(reply): count=" << (int)ret.bcnt
 							 << "(" << ModbusRTU::dat2str(ret.bcnt) << ")"
-							 << " usec: " << elapsed_usec
+							 << " [" << i.microseconds() << " ms]"
 							 << endl;
 
 						for( int i = 0; i < ret.bcnt; i++ )
@@ -442,17 +453,15 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
-						start = std::chrono::system_clock::now();
+						Interval i;
 						ModbusRTU::ReadOutputRetMessage ret = mb.read03(slaveaddr, reg, count);
-						end = std::chrono::system_clock::now();
-						int elapsed_usec = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
 						if( verb )
 							cout << "(reply): " << ret << endl;
 
 						cout << "(reply): count=" << (int)ret.count
 							 << "(" << ModbusRTU::dat2str(ret.count) << ")"
-							 << " usec: " << elapsed_usec
+							 << " [" << i.microseconds() << " ms]"
 							 << endl;
 
 						for( size_t i = 0; i < ret.count; i++ )
@@ -483,17 +492,15 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
-						start = std::chrono::system_clock::now();
+						Interval i;
 						ModbusRTU::ReadInputRetMessage ret = mb.read04(slaveaddr, reg, count);
-						end = std::chrono::system_clock::now();
-						int elapsed_usec = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
 						if( verb )
 							cout << "(reply): " << ret << endl;
 
 						cout << "(reply): count=" << (int)ret.count
 							 << "(" << ModbusRTU::dat2str(ret.count) << ")"
-							 << " usec: " << elapsed_usec
+							 << " [" << i.microseconds() << " ms]"
 							 << endl;
 
 						for( size_t i = 0; i < ret.count; i++ )
@@ -524,10 +531,13 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
+						Interval i;
 						ModbusRTU::MEIMessageRetRDI ret = mb.read4314(slaveaddr, devID, objID);
 
 						if( verb )
-							cout << "(reply): " << ret << endl;
+							cout << "(reply): "
+								 << "[" << i.microseconds() << " ms] "
+								 << ret << endl;
 						else
 							cout << "(reply): devID='" << (int)ret.devID << "' objNum='" << (int)ret.objNum << "'" << endl << ret.dlist << endl;
 					}
@@ -543,14 +553,12 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
-						start = std::chrono::system_clock::now();
+						Interval i;
 						ModbusRTU::ForceSingleCoilRetMessage  ret = mb.write05(slaveaddr, reg, (bool)val);
-						end = std::chrono::system_clock::now();
-						int elapsed_usec = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
 						if( verb )
-							cout << "(reply): " << ret
-								 << " usec: " << elapsed_usec
+							cout << "(reply): " << "[" << i.microseconds() << " ms] "
+								 << ret
 								 << endl;
 					}
 					break;
@@ -565,14 +573,12 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
-						start = std::chrono::system_clock::now();
+						Interval i;
 						ModbusRTU::WriteSingleOutputRetMessage  ret = mb.write06(slaveaddr, reg, val);
-						end = std::chrono::system_clock::now();
-						int elapsed_usec = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
 						if( verb )
-							cout << "(reply): " << ret
-								 << " usec: " << elapsed_usec
+							cout << "(reply): " << "[" << i.microseconds() << " ms] "
+								 << ret
 								 << endl;
 
 					}
@@ -591,10 +597,12 @@ int main( int argc, char** argv )
 						ModbusRTU::ForceCoilsMessage msg(slaveaddr, reg);
 						ModbusRTU::DataBits b(val);
 						msg.addData(b);
+						Interval i;
 						ModbusRTU::ForceCoilsRetMessage  ret = mb.write0F(msg);
 
 						if( verb )
-							cout << "(reply): " << ret << endl;
+							cout << "(reply): [" << i.microseconds() << " ms] "
+								 << ret << endl;
 					}
 					break;
 
@@ -617,10 +625,7 @@ int main( int argc, char** argv )
 							cout << "}" << endl;
 						}
 
-						start = std::chrono::system_clock::now();
 						ModbusRTU::WriteOutputMessage msg(slaveaddr, reg);
-						end = std::chrono::system_clock::now();
-						int elapsed_usec = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
 						for( const auto& v : data )
 						{
@@ -639,11 +644,12 @@ int main( int argc, char** argv )
 								msg.addData(v.d.v);
 						}
 
+						Interval i;
 						ModbusRTU::WriteOutputRetMessage  ret = mb.write10(msg);
 
 						if( verb )
-							cout << "(reply): " << ret
-								 << " usec: " << elapsed_usec
+							cout << "(reply): [" << i.microseconds() << " ms] "
+								 << ret
 								 << endl;
 
 					}
@@ -659,12 +665,15 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
+						Interval i;
 						ModbusRTU::DiagnosticRetMessage ret = mb.diag08(slaveaddr, subfunc, dat);
 
 						if( verb )
 							cout << "(reply): " << ret << endl;
 
-						cout << "(reply): count=" << ModbusRTU::dat2str(ret.count) << endl;
+						cout << "(reply): count=" << ModbusRTU::dat2str(ret.count)
+							 << " [" << i.microseconds() << " ms]"
+							 << endl;
 
 						for( size_t i = 0; i < ret.count; i++ )
 						{

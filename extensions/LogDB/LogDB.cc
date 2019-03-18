@@ -190,6 +190,18 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 		if( !dbDisabled )
 			l->signal_on_read().connect(sigc::mem_fun(this, &LogDB::addLog));
 
+		auto lfile = sit.getProp("logfile");
+		if( !lfile.empty() )
+		{
+			l->logfile = make_shared<DebugStream>();
+			l->logfile->logFile(lfile, false);
+			l->logfile->level(Debug::ANY);
+			l->logfile->showDateTime(false);
+			l->logfile->showLogType(false);
+			l->logfile->disableOnScreen();
+			l->signal_on_read().connect(sigc::mem_fun(this, &LogDB::log2File));
+		}
+
 		//		l->set(loop);
 
 		logservers.push_back(l);
@@ -396,6 +408,14 @@ void LogDB::addLog( LogDB::Log* log, const string& txt )
 	  << qEscapeString(txt) << "');";
 
 	qbuf.emplace(q.str());
+}
+//--------------------------------------------------------------------------------------------
+void LogDB::log2File( LogDB::Log* log, const string& txt )
+{
+	if( !log->logfile || !log->logfile->isOnLogFile() )
+		return;
+
+	log->logfile->any() << txt << endl;
 }
 //--------------------------------------------------------------------------------------------
 size_t LogDB::getCountOfRecords( const std::string& logname )

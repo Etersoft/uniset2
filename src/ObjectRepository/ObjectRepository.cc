@@ -128,7 +128,7 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 		}
 		catch(const CosNaming::NamingContext::AlreadyBound&)
 		{
-			uwarn << "(registration): " << name << " уже зарегестрирован в " << section << "!!!" << endl;
+			uwarn << "(registration): " << name << " уже зарегистрирован в " << section << "!!!" << endl;
 
 			if( !force )
 				throw ObjectNameAlready();

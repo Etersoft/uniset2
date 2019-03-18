@@ -308,131 +308,151 @@ TEST_CASE("(0x0F): force multiple coils", "[modbus][mbslave][mbtcpslave]")
 	}
 }
 #endif
-TEST_CASE("(0x10): write register outputs or memories", "[modbus][mbslave][mbtcpslave]")
+TEST_CASE("(0x10): write one register", "[modbus][mbslave][mbtcpslave]")
 {
-	InitTest();
 	InitTest();
 	ObjectId tID = 1025;
 	ModbusRTU::ModbusData tREG = 18;
-	SECTION("Test: write one register")
-	{
-		ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
-		msg.addData(10);
-		ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
-		REQUIRE( ret.start == tREG );
-		REQUIRE( ret.quant == 1 );
-		REQUIRE( ui->getValue(tID) == 10 );
-	}
-	SECTION("Test: write 3 register")
-	{
-		ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
-		msg.addData(10);
-		msg.addData(11);
-		msg.addData(12);
-		ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
-		REQUIRE( ret.start == tREG );
-		REQUIRE( ret.quant == 3 );
-		REQUIRE( ui->getValue(tID) == 10 );
-		REQUIRE( ui->getValue(tID + 1) == 11 );
-		REQUIRE( ui->getValue(tID + 2) == 1 ); // 1 - т.к. это "DI"
-	}
-	SECTION("Test: write negative value")
-	{
-		ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
-		msg.addData(-10);
-		msg.addData(-100);
-		ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
-		REQUIRE( ret.start == tREG );
-		REQUIRE( ret.quant == 2 );
-		REQUIRE( (int16_t)ui->getValue(tID) == -10 );
-		REQUIRE( (int16_t)ui->getValue(tID + 1) == -100 );
-	}
-	SECTION("Test: write zero registers")
-	{
-		ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
-		msg.addData(0);
-		msg.addData(0);
-		msg.addData(0);
-		ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
-		REQUIRE( ret.start == tREG );
-		REQUIRE( ret.quant == 3 );
-		REQUIRE( ui->getValue(tID) == 0 );
-		REQUIRE( ui->getValue(tID + 1) == 0 );
-		REQUIRE( ui->getValue(tID + 2) == 0 );
-	}
-	SECTION("Test: write OVERFLOW VALUE")
-	{
-		WARN("FIXME: what to do in this situation?!");
+
+	ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
+	msg.addData(10);
+	ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == 1 );
+	REQUIRE( ui->getValue(tID) == 10 );
+}
+
+TEST_CASE("(0x10): write 3 register", "[modbus][mbslave][mbtcpslave][write3]")
+{
+	InitTest();
+	ObjectId tID = 1025;
+	ModbusRTU::ModbusData tREG = 18;
+
+	ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
+	msg.addData(10);
+	msg.addData(11);
+	msg.addData(12);
+	ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == 3 );
+	REQUIRE( ui->getValue(tID) == 10 );
+	REQUIRE( ui->getValue(tID + 1) == 11 );
+	REQUIRE( ui->getValue(tID + 2) == 1 ); // 1 - т.к. это "DI"
+}
+TEST_CASE("(0x10): write negative value", "[modbus][mbslave][mbtcpslave]")
+{
+	InitTest();
+	ObjectId tID = 1025;
+	ModbusRTU::ModbusData tREG = 18;
+	ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
+	msg.addData(-10);
+	msg.addData(-100);
+	ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == 2 );
+	REQUIRE( (int16_t)ui->getValue(tID) == -10 );
+	REQUIRE( (int16_t)ui->getValue(tID + 1) == -100 );
+}
+TEST_CASE("(0x10): write zero registers", "[modbus][mbslave][mbtcpslave]")
+{
+	InitTest();
+	ObjectId tID = 1025;
+	ModbusRTU::ModbusData tREG = 18;
+	ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG);
+	msg.addData(0);
+	msg.addData(0);
+	msg.addData(0);
+	ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == 3 );
+	REQUIRE( ui->getValue(tID) == 0 );
+	REQUIRE( ui->getValue(tID + 1) == 0 );
+	REQUIRE( ui->getValue(tID + 2) == 0 );
+}
+TEST_CASE("(0x10): write OVERFLOW VALUE", "[modbus][mbslave][mbtcpslave]")
+{
+	WARN("FIXME: what to do in this situation?!");
 #if 0
-		ModbusRTU::WriteSingleOutputRetMessage  ret = mb->write06(slaveaddr, 15, 100000);
-		REQUIRE( ret.start == 15 );
-		REQUIRE( ret.data == 34464 );
-		REQUIRE( ui->getValue(1008) == 34464 );
+	ModbusRTU::WriteSingleOutputRetMessage  ret = mb->write06(slaveaddr, 15, 100000);
+	REQUIRE( ret.start == 15 );
+	REQUIRE( ret.data == 34464 );
+	REQUIRE( ui->getValue(1008) == 34464 );
 #endif
-	}
-	SECTION("Test: write 2 good registers and unknown register")
-	{
-		ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG + 1);
-		msg.addData(10);
-		msg.addData(11);
-		msg.addData(12); // BAD REG..
-		ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
-		REQUIRE( ret.start == tREG + 1 );
-		WARN("FIXME: 'ret.quant' must be '3' or '2'?!");
-		REQUIRE( ret.quant == 3 ); // "2" ?!! \TODO узнать как нужно поступать по стандарту!
-		REQUIRE( ui->getValue(tID + 1) == 10 );
-		REQUIRE( ui->getValue(tID + 2) == 1 ); // 1 - т.к. это "DI"
-		REQUIRE( ui->getValue(tID + 3) == 0 );
-	}
-	SECTION("Test: write ALL unknown registers")
-	{
-		ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG + 20000);
-		msg.addData(10);
-		msg.addData(11);
-		msg.addData(12);
+}
+TEST_CASE("(0x10): write 2 good registers and unknown register", "[modbus][mbslave][mbtcpslave]")
+{
+	InitTest();
+	ObjectId tID = 1025;
+	ModbusRTU::ModbusData tREG = 18;
+	ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG + 1);
+	msg.addData(10);
+	msg.addData(11);
+	msg.addData(12); // BAD REG..
+	ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG + 1 );
+	WARN("FIXME: 'ret.quant' must be '3' or '2'?!");
+	REQUIRE( ret.quant == 3 ); // "2" ?!! \TODO узнать как нужно поступать по стандарту!
+	REQUIRE( ui->getValue(tID + 1) == 10 );
+	REQUIRE( ui->getValue(tID + 2) == 1 ); // 1 - т.к. это "DI"
+	REQUIRE( ui->getValue(tID + 3) == 0 );
+}
+TEST_CASE("(0x10): write ALL unknown registers", "[modbus][mbslave][mbtcpslave]")
+{
+	InitTest();
+	ObjectId tID = 1025;
+	ModbusRTU::ModbusData tREG = 18;
+	ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG + 20000);
+	msg.addData(10);
+	msg.addData(11);
+	msg.addData(12);
 
-		try
-		{
-			mb->write10(msg);
-		}
-		catch( ModbusRTU::mbException& ex )
-		{
-			REQUIRE( ex.err == ModbusRTU::erBadDataAddress );
-		}
-	}
-	SECTION("Test: write bad format packet..(incorrect data count)")
+	try
 	{
-		ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG + 20000);
-		msg.addData(10);
-		msg.addData(11);
-		msg.addData(12);
-		msg.quant -= 1;
-
-		try
-		{
-			mb->write10(msg);
-		}
-		catch( ModbusRTU::mbException& ex )
-		{
-			REQUIRE( ex.err == ModbusRTU::erBadDataAddress );
-		}
+		mb->write10(msg);
 	}
-	SECTION("Test: write bad format packet..(incorrect size of bytes)")
+	catch( ModbusRTU::mbException& ex )
 	{
-		ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG + 20000);
-		msg.addData(10);
-		msg.addData(11);
-		msg.addData(12);
-		msg.bcnt -= 1;
+		REQUIRE( ex.err == ModbusRTU::erBadDataAddress );
+	}
+}
+TEST_CASE("(0x10):  write bad format packet..(incorrect data count)", "[modbus][mbslave][mbtcpslave]")
+{
+	InitTest();
+	ObjectId tID = 1025;
+	ModbusRTU::ModbusData tREG = 18;
+	ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG + 20000);
+	msg.addData(10);
+	msg.addData(11);
+	msg.addData(12);
+	msg.quant -= 1;
 
-		try
-		{
-			mb->write10(msg);
-		}
-		catch( ModbusRTU::mbException& ex )
-		{
-			REQUIRE( ex.err == ModbusRTU::erBadDataAddress );
-		}
+	try
+	{
+		mb->write10(msg);
+	}
+	catch( ModbusRTU::mbException& ex )
+	{
+		REQUIRE( ex.err == ModbusRTU::erBadDataAddress );
+	}
+}
+TEST_CASE("(0x10): write bad format packet..(incorrect size of bytes)", "[modbus][mbslave][mbtcpslave]")
+{
+	InitTest();
+	ObjectId tID = 1025;
+	ModbusRTU::ModbusData tREG = 18;
+	ModbusRTU::WriteOutputMessage msg(slaveaddr, tREG + 20000);
+	msg.addData(10);
+	msg.addData(11);
+	msg.addData(12);
+	msg.bcnt -= 1;
+
+	try
+	{
+		mb->write10(msg);
+	}
+	catch( ModbusRTU::mbException& ex )
+	{
+		REQUIRE( ex.err == ModbusRTU::erBadDataAddress );
 	}
 }
 

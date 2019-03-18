@@ -14,6 +14,9 @@
 <xsl:variable name="OID">
 	<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'ID'"/></xsl:call-template>
 </xsl:variable>
+<xsl:variable name="LOGROTATE">
+	<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'logrotate'"/></xsl:call-template>
+</xsl:variable>
 
 
 <!-- Генерирование main для UniSet_FSM -->

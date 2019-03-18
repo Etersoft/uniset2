@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2019-02-02+03:00
+// generate timestamp: 2019-02-11+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -29,7 +29,7 @@ class UObject_SK:
 	public uniset::UniSetObject
 {
 	public:
-		UObject_SK( uniset::ObjectId id, xmlNode* node=uniset::uniset_conf()->getNode("UObject"), const std::string& argprefix="" );
+		UObject_SK( uniset::ObjectId id, xmlNode* node=uniset::uniset_conf()->getNode("UObject"), const std::string& argprefix="", xmlNode* globalConfNode=nullptr );
 		UObject_SK();
 		virtual ~UObject_SK();
 

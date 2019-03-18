@@ -1815,7 +1815,7 @@ namespace uniset
 					i++;
 				}
 
-				std::advance(it, sub);
+				it = std::next(it, sub);
 				regID += sub;
 			}
 			else

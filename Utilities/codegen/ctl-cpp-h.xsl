@@ -60,10 +60,10 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 {
 	public:
 		<xsl:if test="not(normalize-space($OID))=''">
-				<xsl:value-of select="$CLASSNAME"/>_SK( uniset::ObjectId id = uniset::uniset_conf()->getObjectID("<xsl:value-of select="$OID"/>"), xmlNode* node=uniset::uniset_conf()->getNode("<xsl:value-of select="normalize-space($CNAME)"/>"), const std::string&amp; argprefix="<xsl:value-of select="normalize-space($ARGPREFIX)"/>" );
+				<xsl:value-of select="$CLASSNAME"/>_SK( uniset::ObjectId id = uniset::uniset_conf()->getObjectID("<xsl:value-of select="$OID"/>"), xmlNode* node=uniset::uniset_conf()->getNode("<xsl:value-of select="normalize-space($CNAME)"/>"), const std::string&amp; argprefix="<xsl:value-of select="normalize-space($ARGPREFIX)"/>", xmlNode* globalConfNode=nullptr );
 		</xsl:if>
 		<xsl:if test="normalize-space($OID)=''">
-				<xsl:value-of select="$CLASSNAME"/>_SK( uniset::ObjectId id, xmlNode* node=uniset::uniset_conf()->getNode("<xsl:value-of select="normalize-space($CNAME)"/>"), const std::string&amp; argprefix="<xsl:value-of select="normalize-space($ARGPREFIX)"/>" );
+				<xsl:value-of select="$CLASSNAME"/>_SK( uniset::ObjectId id, xmlNode* node=uniset::uniset_conf()->getNode("<xsl:value-of select="normalize-space($CNAME)"/>"), const std::string&amp; argprefix="<xsl:value-of select="normalize-space($ARGPREFIX)"/>", xmlNode* globalConfNode=nullptr );
 		</xsl:if>
 		<xsl:value-of select="$CLASSNAME"/>_SK();
 		virtual ~<xsl:value-of select="$CLASSNAME"/>_SK();

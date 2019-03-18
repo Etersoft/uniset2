@@ -430,6 +430,11 @@ void LogReader::readlogs( const std::string& _addr, int _port, LogServerTypes::C
 		{
 			cerr << "(LogReader): " << e.displayText() << " (" << _addr << ")" << endl;
 		}
+		catch( Poco::IOException& e )
+		{
+			cerr << "(LogReader): " << e.displayText() << " (" << _addr << ")" << endl;
+			disconnect();
+		}
 		catch( const std::exception& ex )
 		{
 			cerr << "(LogReader): " << ex.what() << endl;
@@ -469,6 +474,10 @@ void LogReader::sendCommand(LogServerTypes::lsMessage& msg, bool verbose )
 	catch( const Poco::Net::NetException& e )
 	{
 		cerr << "(LogReader): send error:  " << e.displayText() << endl; // " (" << _addr << ")" << endl;
+	}
+	catch( Poco::IOException& ex )
+	{
+		cerr << "(LogReader): send error:  " << ex.displayText() << endl;
 	}
 	catch( const std::exception& ex )
 	{

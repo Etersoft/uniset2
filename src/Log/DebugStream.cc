@@ -134,11 +134,39 @@ void DebugStream::logFile( const std::string& f, bool truncate )
 		mode |= truncate ? ios::trunc : ios::app;
 
 		internal->fbuf.open(f.c_str(), mode);
-		delete rdbuf(new threebuf(cerr.rdbuf(),
-								  &internal->fbuf, &internal->sbuf));
+
+		if( onScreen )
+		{
+			delete rdbuf(new threebuf(cerr.rdbuf(),
+							  &internal->fbuf, &internal->sbuf));
+		}
+		else
+		{
+			// print to cerr disabled
+			delete rdbuf(new teebuf(&internal->fbuf, &internal->sbuf));
+		}
 	}
 	else
-		delete rdbuf(new teebuf(cerr.rdbuf(), &internal->sbuf));
+	{
+		if( onScreen )
+			delete rdbuf(new teebuf(cerr.rdbuf(), &internal->sbuf));
+		else
+			delete rdbuf(&internal->sbuf);
+	}
+}
+//--------------------------------------------------------------------------
+void DebugStream::enableOnScreen()
+{
+	onScreen = true;
+	// reopen streams
+	logFile(fname,false);
+}
+//--------------------------------------------------------------------------
+void DebugStream::disableOnScreen()
+{
+	onScreen = false;
+	// reopen streams
+	logFile(fname,false);
 }
 //--------------------------------------------------------------------------
 std::ostream& DebugStream::debug(Debug::type t) noexcept

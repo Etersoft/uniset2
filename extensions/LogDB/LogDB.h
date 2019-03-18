@@ -54,6 +54,7 @@ namespace uniset
 		  - \ref sec_LogDB_WEBSOCK
 		  - \ref sec_LogDB_DETAIL
 		  - \ref sec_LogDB_ADMIN
+		  - \ref sec_LogDB_LOGFILE
 
 
 		\section sec_LogDB_Comm Общее описание работы LogDB
@@ -72,7 +73,7 @@ namespace uniset
 		<LogDB name="LogDB" ...>
 			<logserver name="" ip=".." port=".." cmd=".." description=".."/>
 			<logserver name="" ip=".." port=".." cmd=".." description=".."/>
-			<logserver name="" ip=".." port=".." cmd=".."/>
+			<logserver name="" ip=".." port=".." cmd=".." logfile=".."/>
 		</LogDB>
 		\endcode
 
@@ -134,6 +135,10 @@ namespace uniset
 		 Где \a logname - это имя логсервера от которого мы хотим получать логи (см. \ref sec_LogDB_Conf).
 
 		Количество создаваемых websocket-ов можно ограничить при помощи параметр maxWebsockets (--prefix-ws-max).
+
+		\section sec_LogDB_LOGFILE LogDB: Файлы логов
+		Несмотря на то, что все логи сохраняются в БД, их так же можно писать в файлы.
+		Для этого каждому логу достаточно указать свойство \b logfile в настройках (см. \ref sec_LogDB_Conf)
 
 
 		\section sec_LogDB_DETAIL LogDB: Технические детали
@@ -207,6 +212,7 @@ namespace uniset
 			void onCheckBuffer( ev::timer& t, int revents );
 			void onActivate( ev::async& watcher, int revents ) ;
 			void addLog( Log* log, const std::string& txt );
+			void log2File( Log* log, const std::string& txt );
 
 			size_t getCountOfRecords( const std::string& logname = "" );
 			size_t getFirstOfOldRecord( size_t maxnum );
@@ -270,6 +276,7 @@ namespace uniset
 					std::string description;
 
 					std::shared_ptr<DebugStream> dblog;
+					std::shared_ptr<DebugStream> logfile;
 
 					bool isConnected() const;
 

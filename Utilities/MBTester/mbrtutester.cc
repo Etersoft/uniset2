@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 #include <getopt.h>
+#include <chrono>
 #include "Debug.h"
 #include "modbus/ModbusRTUMaster.h"
 #include "modbus/ModbusHelpers.h"
@@ -96,7 +97,22 @@ enum Command
 // --------------------------------------------------------------------------
 static char* checkArg( int ind, int argc, char* argv[] );
 // --------------------------------------------------------------------------
+struct Interval
+{
+	using time_point = std::chrono::time_point<std::chrono::steady_clock>;
 
+	Interval()
+	 :tmStart(std::chrono::steady_clock::now())
+	{}
+
+	uint64_t microseconds()
+	{
+		return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - tmStart).count();
+	}
+
+	time_point tmStart;
+};
+// --------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
 	//	std::ios::sync_with_stdio(false);
@@ -413,7 +429,6 @@ int main( int argc, char** argv )
 		{
 			try
 			{
-
 				switch(cmd)
 				{
 					case cmdRead01:
@@ -426,12 +441,15 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
+						Interval i;
 						ModbusRTU::ReadCoilRetMessage ret = mb.read01(slaveaddr, reg, count);
 
 						if( verb )
 							cout << "(reply): " << ret << endl;
 
-						cout << "(reply): count=" << (int)ret.bcnt << endl;
+						cout << "(reply): count=" << (int)ret.bcnt
+							 << " [" << i.microseconds() << " ms]"
+							 << endl;
 
 						for( int i = 0; i < ret.bcnt; i++ )
 						{
@@ -453,12 +471,15 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
+						Interval i;
 						ModbusRTU::ReadInputStatusRetMessage ret = mb.read02(slaveaddr, reg, count);
 
 						if( verb )
 							cout << "(reply): " << ret << endl;
 
-						cout << "(reply): count=" << (int)ret.bcnt << endl;
+						cout << "(reply): count=" << (int)ret.bcnt
+							 << " [" << i.microseconds() << " ms]"
+							 << endl;
 
 						for( int i = 0; i < ret.bcnt; i++ )
 						{
@@ -480,12 +501,15 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
+						Interval i;
 						ModbusRTU::ReadOutputRetMessage ret = mb.read03(slaveaddr, reg, count);
 
 						if( verb )
 							cout << "(reply): " << ret << endl;
 
-						cout << "(reply): count=" << ModbusRTU::dat2str(ret.count) << endl;
+						cout << "(reply): count=" << ModbusRTU::dat2str(ret.count)
+							 << " [" << i.microseconds() << " ms]"
+							 << endl;
 
 						for( size_t i = 0; i < ret.count; i++ )
 						{
@@ -510,12 +534,15 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
+						Interval i;
 						ModbusRTU::ReadInputRetMessage ret = mb.read04(slaveaddr, reg, count);
 
 						if( verb )
 							cout << "(reply): " << ret << endl;
 
-						cout << "(reply): count=" << ModbusRTU::dat2str(ret.count) << endl;
+						cout << "(reply): count=" << ModbusRTU::dat2str(ret.count)
+							 << " [" << i.microseconds() << " ms]"
+							 << endl;
 
 						for( size_t i = 0; i < ret.count; i++ )
 						{
@@ -540,10 +567,13 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
+						Interval i;
 						ModbusRTU::MEIMessageRetRDI ret = mb.read4314(slaveaddr, devID, objID);
 
 						if( verb )
-							cout << "(reply): " << ret << endl;
+							cout << "(reply): "
+								 << "[" << i.microseconds() << " ms] "
+								 << ret << endl;
 						else
 							cout << "(reply): devID='" << (int)ret.devID << "' objNum='" << (int)ret.objNum << "'" << endl << ret.dlist << endl;
 					}
@@ -559,10 +589,13 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
+						Interval i;
 						ModbusRTU::ForceSingleCoilRetMessage  ret = mb.write05(slaveaddr, reg, (bool)val);
 
 						if( verb )
-							cout << "(reply): " << ret << endl;
+							cout << "(reply): "
+								 << " [" << i.microseconds() << " ms] "
+								 << ret << endl;
 					}
 					break;
 
@@ -576,10 +609,13 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
+						Interval i;
 						ModbusRTU::WriteSingleOutputRetMessage  ret = mb.write06(slaveaddr, reg, val);
 
 						if( verb )
-							cout << "(reply): " << ret << endl;
+							cout << "(reply): "
+								 << " [" << i.microseconds() << " ms] "
+								 << ret << endl;
 					}
 					break;
 
@@ -596,10 +632,13 @@ int main( int argc, char** argv )
 						ModbusRTU::ForceCoilsMessage msg(slaveaddr, reg);
 						ModbusRTU::DataBits b(val);
 						msg.addData(b);
+						Interval i;
 						ModbusRTU::ForceCoilsRetMessage  ret = mb.write0F(msg);
 
 						if( verb )
-							cout << "(reply): " << ret << endl;
+							cout << "(reply): "
+								 << " [" << i.microseconds() << " ms] "
+								 << ret << endl;
 					}
 					break;
 
@@ -619,10 +658,13 @@ int main( int argc, char** argv )
 						for( int i = 0; i < count; i++ )
 							msg.addData(val);
 
+						Interval i;
 						ModbusRTU::WriteOutputRetMessage  ret = mb.write10(msg);
 
 						if( verb )
-							cout << "(reply): " << ret << endl;
+							cout << "(reply): "
+								 << " [" << i.microseconds() << " ms] "
+								 << ret << endl;
 					}
 					break;
 
@@ -636,12 +678,15 @@ int main( int argc, char** argv )
 								 << endl;
 						}
 
+						Interval i;
 						ModbusRTU::DiagnosticRetMessage ret = mb.diag08(slaveaddr, subfunc, dat);
 
 						if( verb )
 							cout << "(reply): " << ret << endl;
 
-						cout << "(reply): count=" << ModbusRTU::dat2str(ret.count) << endl;
+						cout << "(reply): count=" << ModbusRTU::dat2str(ret.count)
+							 << " [" << i.microseconds() << " ms]"
+							 << endl;
 
 						for( size_t i = 0; i < ret.count; i++ )
 						{
@@ -719,7 +764,10 @@ int main( int argc, char** argv )
 							tofile = s.str();
 						}
 
+						Interval i;
 						mb.fileTransfer( slaveaddr, reg, tofile, tout);
+						if( verb )
+							cout << i.microseconds() << " ms" << endl;
 					}
 					break;
 
