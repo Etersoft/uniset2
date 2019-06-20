@@ -275,7 +275,7 @@ void BackendOpenTSDB::sensorInfo( const uniset::SensorMessage* sm )
 
 		s << it->second.name
 		  << " " << setw(10) << setfill('0') << sm->sm_tv.tv_sec
-		  << setw(3) << setfill('0') << std::round( sm->sm_tv.tv_nsec / 10e6 )
+		  << setw(3) << setfill('0') << std::round( sm->sm_tv.tv_nsec / 1e6 )
 		  << " "
 		  << sm->value;
 
