@@ -82,6 +82,7 @@ namespace uniset
 		packs_anum[0] = 0;
 		packs_dnum[0] = 0;
 		auto& mypack(mypacks[0][0]);
+
 		// выставляем поля, которые не меняются
 		{
 			uniset_rwmutex_wrlock l(mypack.mut);
@@ -412,6 +413,7 @@ namespace uniset
 			return false;
 		}
 
+
 		int priority = it.getPIntProp(prop_prefix + "_sendfactor", 0);
 
 		auto& pk = mypacks[priority];
@@ -419,6 +421,7 @@ namespace uniset
 		UItem p;
 		p.iotype = uniset::getIOType(it.getProp("iotype"));
 		p.pack_sendfactor = priority;
+		long defval = it.getIntProp("default");
 
 		if( !it.getProp("undefined_value").empty() )
 			p.undefined_value = it.getIntProp("undefined_value");
@@ -438,11 +441,12 @@ namespace uniset
 			if( pk.size() <= dnum )
 				pk.resize(dnum + 1);
 
-			auto& mypack(pk[dnum]);
+			auto& mypack = pk[dnum];
 
-			uniset_rwmutex_wrlock l(mypack.mut);
-
-			p.pack_ind = mypack.msg.addDData(sid, 0);
+			{
+				uniset_rwmutex_wrlock l(mypack.mut);
+				p.pack_ind = mypack.msg.addDData(sid, defval);
+			} // unlock mutex....
 
 			if( p.pack_ind >= maxDData )
 			{
@@ -451,21 +455,21 @@ namespace uniset
 				if( dnum >= pk.size() )
 					pk.resize(dnum + 1);
 
-				auto& mypack2( pk[dnum] );
+				auto& mypack2 = pk[dnum];
 				uniset_rwmutex_wrlock l2(mypack2.mut);
-				p.pack_ind = mypack2.msg.addDData(sid, 0);
+				p.pack_ind = mypack2.msg.addDData(sid, defval);
 				mypack2.msg.nodeID = uniset_conf()->getLocalNode();
 				mypack2.msg.procID = shm->ID();
 			}
 
 			p.pack_num = dnum;
-			packs_anum[priority] = dnum;
+			packs_dnum[priority] = dnum;
 
 			if ( p.pack_ind >= UniSetUDP::MaxDCount )
 			{
 				unetcrit << myname
 						 << "(readItem): OVERFLOW! MAX UDP DIGITAL DATA LIMIT! max="
-						 << UniSetUDP::MaxDCount << endl;
+						 << UniSetUDP::MaxDCount << endl << flush;
 
 				std::terminate();
 				return false;
@@ -478,20 +482,22 @@ namespace uniset
 			if( pk.size() <= anum )
 				pk.resize(anum + 1);
 
-			auto& mypack(pk[anum]);
-			uniset_rwmutex_wrlock l(mypack.mut);
-			p.pack_ind = mypack.msg.addAData(sid, 0);
+			auto& mypack = pk[anum];
+
+			{
+				uniset_rwmutex_wrlock l(mypack.mut);
+				p.pack_ind = mypack.msg.addAData(sid, defval);
+			}
 
 			if( p.pack_ind >= maxAData )
 			{
 				anum++;
-
 				if( anum >= pk.size() )
 					pk.resize(anum + 1);
 
-				auto& mypack2(pk[anum]);
+				auto& mypack2 = pk[anum];
 				uniset_rwmutex_wrlock l2(mypack2.mut);
-				p.pack_ind = mypack2.msg.addAData(sid, 0);
+				p.pack_ind = mypack2.msg.addAData(sid, defval);
 				mypack2.msg.nodeID = uniset_conf()->getLocalNode();
 				mypack2.msg.procID = shm->ID();
 			}
@@ -503,7 +509,7 @@ namespace uniset
 			{
 				unetcrit << myname
 						 << "(readItem): OVERFLOW! MAX UDP ANALOG DATA LIMIT! max="
-						 << UniSetUDP::MaxACount << endl;
+						 << UniSetUDP::MaxACount << endl << flush;
 
 				std::terminate();
 				return false;
