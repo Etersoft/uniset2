@@ -76,7 +76,7 @@ matrix:
       addons:
         apt:
           sources: ['llvm-toolchain-trusty-5.0']
-          packages: ['clang-5.0']
+          packages: ['clang-5.0','libjsoncpp0']
       env: 
         - MATRIX_EVAL="CXX=clang++-5.0 CC=clang-5.0 COMPILER_NAME=clang"
 
@@ -85,7 +85,7 @@ matrix:
       addons:
         apt:
           sources: ['llvm-toolchain-trusty-6.0', 'ubuntu-toolchain-r-test']
-          packages: ['clang-6.0']
+          packages: ['clang-6.0','libjsoncpp0']
       env: 
         - MATRIX_EVAL="CXX=clang++-6.0 CC=clang-6.0 COMPILER_NAME=clang"
 
