@@ -109,7 +109,7 @@ before_install:
 
 install:
   # have no catch package
-  - sudo apt-get install libcomedi-dev libpoco-dev libmysqlclient-dev libomniorb4-dev libev-dev omniidl xsltproc libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev libmosquittopp0-dev
+  - sudo apt-get install libcomedi-dev libpoco-dev libmysqlclient-dev libomniorb4-dev libev-dev omniidl xsltproc libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev libmosquittopp-dev
   # catch 2.x
   # - wget https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp -O include/catch.hpp
   
@@ -145,7 +145,7 @@ addons:
 #      - libsigc++-2.0-dev
 #      - libsqlite3-dev
 #      - python-dev
-#      - libmosquittopp0-dev
+#      - libmosquittopp-dev
 #      - libev-dev
   coverity_scan:
     project:
