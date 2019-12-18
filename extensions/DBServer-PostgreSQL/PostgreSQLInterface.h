@@ -61,6 +61,10 @@ namespace uniset
 
 			virtual const std::string error() override;
 
+			bool reconnect(const std::string& host, const std::string& user,
+						   const std::string& pswd, const std::string& dbname,
+						   unsigned int port = 5432);
+
 		protected:
 
 		private:
