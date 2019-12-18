@@ -40,7 +40,7 @@ PostgreSQLInterface::~PostgreSQLInterface()
 	}
 	catch( ... ) // пропускаем все необработанные исключения, если требуется обработать нужно вызывать close() до деструктора
 	{
-		cerr << "MySQLInterface::~MySQLInterface(): an error occured while closing connection!" << endl;
+		cerr << "PostgresSQLInterface::~PostgresSQLInterface(): an error occured while closing connection!" << endl;
 	}
 }
 
