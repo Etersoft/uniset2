@@ -54,7 +54,7 @@ bool PostgreSQLInterface::ping() const
 	{
 
 		nontransaction n(*(db.get()));
-		n.exec("select version();");
+		n.exec("select 1;");
 		return true;
 	}
 	catch( const std::exception& e )
