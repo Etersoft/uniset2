@@ -1,3 +1,5 @@
+# This spec is backported to ALTLinux p9 automatically by rpmbph script from etersoft-build-utils.
+#
 %def_enable docs
 %def_enable mysql
 %def_enable sqlite
@@ -24,7 +26,7 @@
 
 Name: libuniset2
 Version: 2.8
-Release: alt10
+Release: alt9.M90P.10
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -544,6 +546,9 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
+* Sun Dec 22 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt9.M90P.10
+- backport to ALTLinux p9 (by rpmbph script)
+
 * Thu Dec 19 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt10
 - (DBServer_PostrgeSQL): fix for check connection
 
