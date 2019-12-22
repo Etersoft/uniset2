@@ -269,7 +269,7 @@ namespace uniset
 			rcache.erase(si.id, si.node);
 			uwarn << set_err("UI(setUndefinedState): object not exist", si.id, si.node) << endl;
 		}
-		catch( const CORBA::COMM_FAILURE ) {}
+		catch( const CORBA::COMM_FAILURE& ) {}
 		catch( const CORBA::SystemException& ex ) {}
 		catch(...) {}
 
@@ -985,17 +985,17 @@ namespace uniset
 				oref = CORBA::Object::_nil();
 			}
 		}
-		catch( const uniset::ORepFailed )
+		catch( const uniset::ORepFailed& )
 		{
 			rcache.erase(name, node);
 			throw uniset::IOBadParam(set_err("UI(send): resolve failed ", name, node));
 		}
-		catch( const CORBA::NO_IMPLEMENT )
+		catch( const CORBA::NO_IMPLEMENT& )
 		{
 			rcache.erase(name, node);
 			throw uniset::IOBadParam(set_err("UI(send): method no implement", name, node));
 		}
-		catch( const CORBA::OBJECT_NOT_EXIST )
+		catch( const CORBA::OBJECT_NOT_EXIST& )
 		{
 			rcache.erase(name, node);
 			throw uniset::IOBadParam(set_err("UI(send): object not exist", name, node));
@@ -1062,17 +1062,17 @@ namespace uniset
 				oref = CORBA::Object::_nil();
 			}
 		}
-		catch( const uniset::ORepFailed )
+		catch( const uniset::ORepFailed& )
 		{
 			rcache.erase(name, onode);
 			throw uniset::IOBadParam(set_err("UI(sendText): resolve failed ", name, onode));
 		}
-		catch( const CORBA::NO_IMPLEMENT )
+		catch( const CORBA::NO_IMPLEMENT& )
 		{
 			rcache.erase(name, onode);
 			throw uniset::IOBadParam(set_err("UI(sendText): method no implement", name, onode));
 		}
-		catch( const CORBA::OBJECT_NOT_EXIST )
+		catch( const CORBA::OBJECT_NOT_EXIST& )
 		{
 			rcache.erase(name, onode);
 			throw uniset::IOBadParam(set_err("UI(sendText): object not exist", name, onode));
@@ -1136,17 +1136,17 @@ namespace uniset
 				oref = CORBA::Object::_nil();
 			}
 		}
-		catch( const uniset::ORepFailed )
+		catch( const uniset::ORepFailed& )
 		{
 			rcache.erase(name, node);
 			throw uniset::IOBadParam(set_err("UI(sendText): resolve failed ", name, node));
 		}
-		catch( const CORBA::NO_IMPLEMENT )
+		catch( const CORBA::NO_IMPLEMENT& )
 		{
 			rcache.erase(name, node);
 			throw uniset::IOBadParam(set_err("UI(sendText): method no implement", name, node));
 		}
-		catch( const CORBA::OBJECT_NOT_EXIST )
+		catch( const CORBA::OBJECT_NOT_EXIST& )
 		{
 			rcache.erase(name, node);
 			throw uniset::IOBadParam(set_err("UI(sendText): object not exist", name, node));
@@ -1801,7 +1801,7 @@ namespace uniset
 				}
 				catch( const CORBA::TRANSIENT& ) {}
 				catch( const CORBA::OBJECT_NOT_EXIST& ) {}
-				catch( const CORBA::SystemException& ex ) {}
+				catch( const CORBA::SystemException& ) {}
 
 				msleep(uconf->getRepeatTimeout());
 				oref = CORBA::Object::_nil();

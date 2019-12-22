@@ -50,7 +50,7 @@ namespace uniset
 			 * \note Вызывается через system()! Это может быть опасно с точки зрения безопасности..
 			 * \todo Возможно стоит написать свою реализацию ping
 			 */
-			static bool ping( const std::string& _ip, timeout_t tout = 1000, const std::string& ping_argc = "-c 1 -w 0.1 -q -n" ) noexcept;
+			static bool ping( const std::string& _ip, timeout_t tout = 1100, const std::string& ping_argc = "-c 1 -w 1 -q -n" ) noexcept;
 	};
 	// -------------------------------------------------------------------------
 } // end of uniset namespace
