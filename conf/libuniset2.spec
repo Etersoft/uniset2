@@ -24,7 +24,7 @@
 
 Name: libuniset2
 Version: 2.8
-Release: alt11
+Release: alt12
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -540,10 +540,13 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 
 #%_pkgconfigdir/libUniSet2*.pc
 %exclude %_pkgconfigdir/libUniSet2.pc
-        
+
 # history of current unpublished changes
 
 %changelog
+* Tue Jan 28 2020 Pavel Vainerman <pv@altlinux.ru> 2.8-alt12
+- minor fixes
+
 * Sun Jan 26 2020 Pavel Vainerman <pv@altlinux.ru> 2.8-alt11
 - remove std=c++11 cflags
 
