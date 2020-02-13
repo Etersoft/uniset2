@@ -79,6 +79,8 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 	int evrunTimeout = conf->getArgPInt("--" + prefix + "-evrun-timeout", it.getProp("evrunTimeout"), 60000);
 	int recvpause = conf->getArgPInt("--" + prefix + "-recvpause", it.getProp("recvpause"), 10);
 	int sendpause = conf->getArgPInt("--" + prefix + "-sendpause", it.getProp("sendpause"), 100);
+	int packsendpause = conf->getArgPInt("--" + prefix + "-packsendpause", it.getProp("packsendpause"), 5);
+	int packsendpauseFactor = conf->getArgPInt("--" + prefix + "-packsendpause-factor", it.getProp("packsendpauseFactor"), 0);
 	int updatepause = conf->getArgPInt("--" + prefix + "-updatepause", it.getProp("updatepause"), 100);
 	int lostTimeout = conf->getArgPInt("--" + prefix + "-lost-timeout", it.getProp("lostTimeout"), 2 * updatepause);
 	steptime = conf->getArgPInt("--" + prefix + "-steptime", it.getProp("steptime"), 1000);
@@ -166,6 +168,8 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 			unetinfo << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
 			sender = make_shared<UNetSender>(h, p, shm, false, s_field, s_fvalue, "unet", prefix);
 			sender->setSendPause(sendpause);
+			sender->setPackSendPause(packsendpause);
+			sender->setPackSendPauseFactor(packsendpauseFactor);
 			sender->setCheckConnectionPause(checkConnectionPause);
 			loga->add(sender->getLog());
 

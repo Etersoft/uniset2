@@ -43,6 +43,7 @@ namespace uniset
 		saddr(_host, _port),
 		sendpause(150),
 		packsendpause(5),
+		packsendpauseFactor(1),
 		activated(false),
 		packetnum(1),
 		lastcrc(0),
@@ -259,7 +260,18 @@ namespace uniset
 							break;
 
 						real_send(pk[i]);
-						msleep(packsendpause);
+
+						if( packsendpause > 0 && size > 1 )
+						{
+							if( packsendpauseFactor <= 0 )
+							{
+								msleep(packsendpause);
+							}
+							else if( i > 0 && (i % packsendpauseFactor) == 0 )
+							{
+								msleep(packsendpause);
+							}
+						}
 					}
 				}
 
@@ -565,6 +577,8 @@ namespace uniset
 		  << " lastpacknum=" << packetnum
 		  << " lastcrc=" << setw(6) << lastcrc
 		  << " items=" << items.size() << " maxAData=" << getADataSize() << " maxDData=" << getDDataSize()
+		  << " packsendpause[factor=" << packsendpauseFactor << "]=" << packsendpause
+		  << " sendpause=" << sendpause
 		  << endl
 		  << "\t   packs([sendfactor]=num): "
 		  << endl;
