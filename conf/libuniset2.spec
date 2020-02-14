@@ -24,7 +24,7 @@
 
 Name: libuniset2
 Version: 2.8
-Release: alt13
+Release: alt14
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -544,6 +544,9 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
+* Fri Feb 14 2020 Pavel Vainerman <pv@altlinux.ru> 2.8-alt14
+- removed old define -D_GLIBCXX_USE_NANOSLEEP
+
 * Fri Feb 14 2020 Pavel Vainerman <pv@altlinux.ru> 2.8-alt13
 - (UNetUDP): added --unet-packsendpause and --unet-packsendpause-factor
 
