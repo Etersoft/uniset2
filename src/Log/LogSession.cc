@@ -412,7 +412,7 @@ namespace uniset
 					err << "BAD MAGICNUM";
 
 				if( ret != sizeof(msg) )
-					err << "BAD soze of message (" << ret << ")";
+					err << "BAD size of message (" << ret << ")";
 
 				mylog.warn() << err.str() << endl;
 			}
