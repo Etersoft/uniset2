@@ -1,9 +1,14 @@
 #include <iostream>
+#include <cmath>
+#include <functional>
 #include "Exceptions.h"
 #include "UInterface.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
+
+using ModifyFunc = std::function<long(long)>;
+
 // -----------------------------------------------------------------------------
 void help_print()
 {
@@ -15,6 +20,7 @@ void help_print()
 	cout << "--max val       - Верхняя граница датчика. По умолчанию 100 " << endl;
 	cout << "--step val      - Шаг датчика. По умолчанию 1" << endl;
 	cout << "--pause msec    - Пауза. По умолчанию 200 мсек" << endl << endl;
+	cout << "--func [cos|sin] - Функция модификации значения. По умолчания не используется." << endl << endl;
 }
 // -----------------------------------------------------------------------------
 struct ExtInfo:
@@ -23,9 +29,15 @@ struct ExtInfo:
 	UniversalIO::IOType iotype;
 };
 // -----------------------------------------------------------------------------
+long mf_nop( long v ){ return v; }
+long mf_sin( long v ){ return v*sin(v); }
+long mf_cos( long v ){ return v*cos(v); }
+
+// -----------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
 	//	std::ios::sync_with_stdio(false);
+	ModifyFunc mf = mf_nop;
 
 	try
 	{
@@ -41,6 +53,21 @@ int main( int argc, char** argv )
 
 		auto conf = uniset_init(argc, argv, "configure.xml" );
 		UInterface ui(conf);
+
+		auto funcname = conf->getArg2Param("--func", "");
+		if( !funcname.empty() )
+		{
+			if( funcname == "sin" )
+				mf = mf_sin;
+			else if( funcname == "cos" )
+				mf = mf_cos;
+			else
+			{
+				cerr << "Unknown modify function '" << funcname << "'. Must be [sin,cos]" << endl;
+				return 1;
+			}
+		}
+
 
 		string sid(conf->getArgParam("--sid"));
 
@@ -113,6 +140,8 @@ int main( int argc, char** argv )
 		cout << "  max = " << amax << endl;
 		cout << "  step = " << astep << endl;
 		cout << "  pause = " << amsec << endl;
+		if( !funcname.empty() )
+			cout << "  function = " << funcname << endl;
 		cout << "------------------------------" << endl << endl;
 
 		int i = amin - astep, j = amax;
@@ -127,13 +156,15 @@ int main( int argc, char** argv )
 				if(j < amin)               // Принудительная установка нижней границы датчика
 					j = amin;
 
-				cout << "\r" << " i = " << j << "     " << flush;
+				long val = mf(j);
+
+				cout << "\r" << " val = " << val << "     " << flush;
 
 				for( const auto& it : l )
 				{
 					try
 					{
-						ui.setValue(it.si, j, DefaultObjectId);
+						ui.setValue(it.si, val, DefaultObjectId);
 					}
 					catch( const uniset::Exception& ex )
 					{
@@ -154,17 +185,19 @@ int main( int argc, char** argv )
 				if(i > amax)               // Принудительная установка верхней границы датчика
 					i = amax;
 
-				cout << "\r" << " i = " << i << "     " << flush;
+				long val = mf(i);
 
-				for( std::list<ExtInfo>::iterator it = l.begin(); it != l.end(); ++it )
+				cout << "\r" << " val = " << val << "     " << flush;
+
+				for( const auto& it: l )
 				{
 					try
 					{
-						ui.setValue(it->si, i, DefaultObjectId);
+						ui.setValue(it.si, val, DefaultObjectId);
 					}
 					catch( const uniset::Exception& ex )
 					{
-						cerr << endl << "save id=" << it->fname << " " << ex << endl;
+						cerr << endl << "save id=" << it.fname << " " << ex << endl;
 					}
 				}
 			}
