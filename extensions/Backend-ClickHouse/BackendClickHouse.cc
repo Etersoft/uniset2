@@ -172,7 +172,6 @@ void BackendClickHouse::createColumns()
 	colSensorID = std::make_shared<clickhouse::ColumnUInt64>();
 	colValue = std::make_shared<clickhouse::ColumnFloat64>();
 	colNode = std::make_shared<clickhouse::ColumnUInt64>();
-	colConfirm = std::make_shared<clickhouse::ColumnUInt64>();
 	arrTagKeys = std::make_shared<clickhouse::ColumnArray>(std::make_shared<clickhouse::ColumnString>());
 	arrTagValues = std::make_shared<clickhouse::ColumnArray>(std::make_shared<clickhouse::ColumnString>());
 }
@@ -184,14 +183,13 @@ void BackendClickHouse::clearData()
 	colSensorID->Clear();
 	colValue->Clear();
 	colNode->Clear();
-	colConfirm->Clear();
 	arrTagKeys->Clear();
 	arrTagValues->Clear();
 }
 //--------------------------------------------------------------------------------
 void BackendClickHouse::help_print( int argc, const char* const* argv )
 {
-	cout << " Default prefix='opentsdb'" << endl;
+	cout << " Default prefix='clickhouse'" << endl;
 	cout << "--prefix-name                - ID. Default: BackendClickHouse." << endl;
 	cout << "--prefix-confnode            - configuration section name. Default: <NAME name='NAME'...> " << endl;
 	cout << endl;
@@ -279,6 +277,8 @@ void BackendClickHouse::askSensors( UniversalIO::UIOCommand cmd )
 		return;
 	}
 
+	myinfo << myname << ": ask " << clickhouseParams.size() << " sensors" << endl;
+
 	for( const auto& s : clickhouseParams )
 	{
 		try
@@ -290,6 +290,9 @@ void BackendClickHouse::askSensors( UniversalIO::UIOCommand cmd )
 			mycrit << myname << "(askSensors): " << ex.what() << endl;
 		}
 	}
+
+	myinfo << myname << ": ask " << clickhouseParams.size() << " sensors [OK]" << endl;
+
 }
 // -----------------------------------------------------------------------------
 void BackendClickHouse::sensorInfo( const uniset::SensorMessage* sm )
@@ -315,7 +318,6 @@ void BackendClickHouse::sensorInfo( const uniset::SensorMessage* sm )
 		colSensorID->Append(sm->id);
 		colValue->Append(sm->value);
 		colNode->Append(sm->node);
-		colConfirm->Append(0);
 
 		// TAGS
 		auto key = std::make_shared<clickhouse::ColumnString>();
@@ -404,13 +406,12 @@ bool BackendClickHouse::flushBuffer()
 
 	myinfo << myname << "(flushInsertBuffer): write insert buffer[" << colTimeStamp->Size() << "] to DB.." << endl;
 
-	clickhouse::Block blk(8,colTimeStamp->Size());
+	clickhouse::Block blk(7,colTimeStamp->Size());
 	blk.AppendColumn("timestamp", colTimeStamp);
 	blk.AppendColumn("time_usec", colTimeUsec);
 	blk.AppendColumn("sensor_id", colSensorID);
 	blk.AppendColumn("value", colValue);
 	blk.AppendColumn("node", colNode);
-	blk.AppendColumn("confirm", colConfirm);
 	blk.AppendColumn("tags.name", arrTagKeys);
 	blk.AppendColumn("tags.value", arrTagValues);
 
