@@ -13,6 +13,7 @@
 %def_enable api
 %def_enable logdb
 %def_enable opentsdb
+%def_enable clickhouse
 
 %ifarch %ix86
 %def_enable com485f
@@ -62,6 +63,10 @@ BuildRequires: libsqlite3-devel
 
 %if_enabled pgsql
 BuildRequires: libpqxx-devel
+%endif
+
+%if_enabled clickhouse
+BuildRequires: libclickhouse-cpp-devel
 %endif
 
 %if_enabled rrd
@@ -248,6 +253,25 @@ Libraries needed to develop for backend for OpenTSDB
 
 %endif
 
+%if_enabled clickhouse
+%package extension-clickhouse
+Group: Development/C++
+Summary: backend for ClickHouse
+Requires: %name-extension-common = %version-%release
+
+%description extension-clickhouse
+Backend for ClickHouse
+
+%package extension-clickhouse-devel
+Group: Development/Databases
+Summary: Libraries needed to develop for uniset ClickHouse backend
+Requires: %name-extension-common-devel = %version-%release
+
+%description extension-clickhouse-devel
+Libraries needed to develop for backend for ClickHouse
+
+%endif
+
 %if_enabled pgsql
 %package extension-pgsql
 Group: Development/Databases
@@ -342,7 +366,7 @@ Libraries needed to develop for uniset MQTT extension
 
 %build
 %autoreconf
-%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api} %{subst_enable netdata} %{subst_enable logdb} %{subst_enable com485f} %{subst_enable opentsdb}
+%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api} %{subst_enable netdata} %{subst_enable logdb} %{subst_enable com485f} %{subst_enable opentsdb} %{subst_enable clickhouse}
 %make_build
 
 %install
@@ -424,6 +448,17 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %_pkgconfigdir/libUniSet2BackendOpenTSDB.pc
 %_includedir/%oname/extensions/BackendOpenTSDB.h
 %_libdir/libUniSet2BackendOpenTSDB.so
+%endif
+
+%if_enabled clickhouse
+%files extension-clickhouse
+%_bindir/%oname-backend-clickhouse*
+%_libdir/libUniSet2BackendClickHouse.so.*
+
+%files extension-clickhouse-devel
+%_pkgconfigdir/libUniSet2BackendClickHouse.pc
+%_includedir/%oname/extensions/BackendClickHouse.h
+%_libdir/libUniSet2BackendClickHouse.so
 %endif
 
 %if_enabled pgsql
@@ -525,6 +560,7 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %dir %_includedir/%oname/extensions
 %_includedir/%oname/extensions/*.*
 %exclude %_includedir/%oname/extensions/BackendOpenTSDB.h
+%exclude %_includedir/%oname/extensions/BackendClickHouse.h
 %_libdir/libUniSet2Extensions.so
 %_libdir/libUniSet2MB*.so
 %_libdir/libUniSet2RT*.so
