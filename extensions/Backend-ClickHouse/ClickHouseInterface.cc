@@ -134,45 +134,124 @@ bool ClickHouseInterface::insert( const std::string& tblname, const clickhouse::
 
 	return false;
 }
+// -----------------------------------------------------------------------------------------
+#define CASE_TYPE(type, i) \
+case clickhouse::Type::type: \
+{ \
+	auto c = col->As<clickhouse::Column##type>(); \
+	if( c ) \
+	{ \
+		s << c->At(i); \
+	} \
+}\
 
+static std::string ColumnAsString( clickhouse::ColumnRef col, size_t idx )
+{
+	ostringstream s;
+
+	switch(col->Type()->GetCode())
+	{
+		CASE_TYPE(Int8, idx)
+		CASE_TYPE(Int16, idx)
+		CASE_TYPE(Int32, idx)
+		CASE_TYPE(Int64, idx)
+		CASE_TYPE(UInt8, idx)
+		CASE_TYPE(UInt16, idx)
+		CASE_TYPE(UInt32, idx)
+		CASE_TYPE(UInt64, idx)
+		CASE_TYPE(Float32, idx)
+		CASE_TYPE(Float64, idx)
+		CASE_TYPE(String, idx)
+		CASE_TYPE(FixedString, idx)
+//		CASE_TYPE(Array, idx)
+//		CASE_TYPE(Nullable, idx)
+//		CASE_TYPE(Tuple, idx)
+
+		case clickhouse::Type::Enum8:
+		{
+			s << col->As<clickhouse::ColumnEnum8>()->NameAt(idx);
+		}
+
+		case clickhouse::Type::Enum16:
+		{
+			s << col->As<clickhouse::ColumnEnum16>()->NameAt(idx);
+		}
+
+		// as number
+		CASE_TYPE(DateTime, idx)
+		CASE_TYPE(Date, idx)
+
+//		case clickhouse::Type::DateTime:
+//		{
+//			std::time_t t = col->As<clickhouse::ColumnDateTime>()->At(idx);
+//			s << std::asctime(std::localtime(&t));
+//		}
+
+//		case clickhouse::Type::Date:
+//		{
+//			std::time_t t = col->As<clickhouse::ColumnDate>()->At(idx);
+//			s << std::asctime(std::localtime(&t));
+//		}
+
+		case clickhouse::Type::UUID:
+		{
+			auto v = col->As<clickhouse::ColumnUUID>()->At(idx);
+			s << v.first << v.second;
+		}
+
+		case clickhouse::Type::Void:
+		{
+
+		}
+	}
+
+	return s.str();
+}
 // -----------------------------------------------------------------------------------------
 DBResult ClickHouseInterface::makeResult( const clickhouse::Block& block )
 {
 	DBResult result;
+	appendResult(result, block);
+	return result;
+}
+// -----------------------------------------------------------------------------------------
+void ClickHouseInterface::appendResult( DBResult& result, const clickhouse::Block& block )
+{
+	for( size_t c=0; c < block.GetColumnCount(); ++c )
+		result.setColName(c, block.GetColumnName(c));
 
-	for( clickhouse::Block::Iterator it(block); it.IsValid(); it.Next() )
+	for( size_t r=0; r < block.GetRowCount(); ++r )
 	{
 		DBResult::COL col;
+		for( size_t c=0; c < block.GetColumnCount(); ++c )
+			col.push_back( ColumnAsString(block[c], r));
+
+		result.row().push_back( std::move(col) );
+	}
+}
+// -----------------------------------------------------------------------------------------
+DBResult ClickHouseInterface::query( const std::string& q )
+{
+	if( !db )
+		return DBResult();
+
+	try
+	{
+		DBResult ret;
+
+		db->Select(q, [this, &ret] (const clickhouse::Block& block){
+			appendResult(ret, block);
+		});
+
+		lastQ = q;
+		return ret;
+	}
+	catch( const std::exception& e )
+	{
+		lastE = string(e.what());
 	}
 
-//	for( size_t i = 0; i < block.GetRowCount(); ++i) {
-//		DBResult::COL col;
-//		for(
-
-//		std::cout << block[0]->As<ColumnUInt64>()->At(i) << " "
-//				  << block[1]->As<ColumnString>()->At(i) << "\n";
-//	}
-
-
-//	for( result::const_iterator c = res.begin(); c != res.end(); ++c )
-//	{
-//		DBResult::COL col;
-
-//		for( pqxx::result::tuple::const_iterator i = c.begin(); i != c.end(); i++ )
-//		{
-//			if( i.is_null() )
-//				col.push_back("");
-//			else
-//			{
-//				result.setColName(i.num(), i.name());
-//				col.push_back( i.as<string>() );
-//			}
-//		}
-
-//		result.row().push_back( std::move(col) );
-//	}
-
-	return result;
+	return DBResult();
 }
 // -----------------------------------------------------------------------------------------
 bool ClickHouseInterface::execute( const std::string& q )
@@ -193,21 +272,20 @@ bool ClickHouseInterface::execute( const std::string& q )
 	return false;
 }
 // -----------------------------------------------------------------------------------------
-DBResult ClickHouseInterface::query( const std::string& q )
+const std::vector<clickhouse::Block> ClickHouseInterface::bquery( const std::string& q )
 {
+	std::vector<clickhouse::Block> ret;
+
 	if( !db )
-		return DBResult();
+		return ret;
 
 	try
 	{
-		DBResult ret;
-		db->Select(q, [] (const clickhouse::Block& block){
-				for (size_t i = 0; i < block.GetRowCount(); ++i) {
-					std::cout << block[0]->As<clickhouse::ColumnUInt64>()->At(i) << " "
-							  << block[1]->As<clickhouse::ColumnString>()->At(i) << "\n";
-				}
+		db->Select(q, [this, &ret] (const clickhouse::Block& block){
+			ret.push_back(block);
 		});
 
+		lastQ = q;
 		return ret;
 	}
 	catch( const std::exception& e )
@@ -215,7 +293,7 @@ DBResult ClickHouseInterface::query( const std::string& q )
 		lastE = string(e.what());
 	}
 
-	return DBResult();
+	return ret;
 }
 // -----------------------------------------------------------------------------------------
 const string ClickHouseInterface::error()
