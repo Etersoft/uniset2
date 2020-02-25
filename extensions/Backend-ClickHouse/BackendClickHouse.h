@@ -48,10 +48,10 @@ namespace uniset
 		- \b dbport - port для связи с ClickHouse. Default: 9000
 		- \b dbuser - user
 		- \b dbpass - password
-	    - \b filter_field - поле у датчика, определяющее, что его нужно сохранять в БД
-		- \b filter_value - значение \b filter_field, определяющее, что датчик нужно сохранять в БД
-		- \b tags - теги которые будут добавлены для каждой записи, перечисляемые через пробел.
 		- \b dbtablename - Имя таблицы в которую писать данные. По умолчанию main_history.
+		- \b filter_field - поле у датчика, определяющее, что его нужно сохранять в БД
+		- \b filter_value - значение \b filter_field, определяющее, что датчик нужно сохранять в БД
+		- \b tags - теги которые будут добавлены для каждой записи (перечисляются через пробел)
 	\code
 	    <sensors>
 	        ...
@@ -68,8 +68,8 @@ namespace uniset
 	Доступны следующие параметры:
 	- \b bufSize - размер буфера, при заполнении которого происходит посылка данных в БД
 	- \b bufMaxSize - максимальный размер буфера, при котором все данные теряются (буфер чиститься)
-	- \b bufSyncTimeout - период сброса данных в БД
-	- \b reconnectTime - время на повторную попытку подключения к БД
+	- \b bufSyncTimeout - период принудительного сброса данных в БД, миллисек.
+	- \b reconnectTime - время на повторную попытку подключения к БД, миллисек.
 	- \b sizeOfMessageQueue - Размер очереди сообщений для обработки изменений по датчикам.
 		 При большом количестве отслеживаемых датчиков, размер должен быть достаточным, чтобы не терять изменения.
 	*/
@@ -153,7 +153,6 @@ namespace uniset
 			std::shared_ptr<clickhouse::ColumnUInt64> colSensorID;
 			std::shared_ptr<clickhouse::ColumnFloat64> colValue;
 			std::shared_ptr<clickhouse::ColumnUInt64> colNode;
-			std::shared_ptr<clickhouse::ColumnUInt64> colConfirm;
 			std::shared_ptr<clickhouse::ColumnArray> arrTagKeys;
 			std::shared_ptr<clickhouse::ColumnArray> arrTagValues;
 			void createColumns();
