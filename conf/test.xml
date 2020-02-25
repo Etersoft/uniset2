@@ -50,7 +50,7 @@
 	<BackendOpenTSDB name="BackendOpenTSDB" host="localhost" filter_field="tsdb" filter_value="1" tags="host=localhost uniset=1" prefix="uniset"/>
 	<UWebSocketGate name="UWebSocketGate1"/>
 	<UWebSocketGate name="UWebSocketGate2" port="8082"/>
-
+	<BackendClickHouse name="ClickHouse" dbname="UNISET_PLC" dbuser="" dbhost="localhost" dbport="9000" filter_field="tsdb" filter_value="1" tags="host=localhost uniset=1" prefix="uniset"/>
 	<settings>
 
 		<LostTestProc name="TestProc1" sensor_s="Input4_S"/>
@@ -5525,6 +5525,7 @@
 			<item id="6090" name="BackendOpenTSDB"/>
 			<item id="6091" name="UWebSocketGate1"/>
 			<item id="6092" name="UWebSocketGate2"/>
+			<item id="6092" name="BackendClickHouse"/>
 			<item id="6101" name="MBTCP1"/>
 			<item id="6102" name="MBTCP2"/>
 			<item id="6103" name="MBTCP3"/>
