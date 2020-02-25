@@ -46,7 +46,7 @@
 	</LogDB>
 
 	<BackendOpenTSDB name="BackendOpenTSDB" host="localhost" filter_field="tsdb" filter_value="1" tags="host=localhost uniset=1" prefix="uniset"/>
-	<BackendClickHouse name="ClickHouse" dbname="UNISET_PLC" dbuser="" dbhost="localhost" dbport="9000" filter_field="tsdb" filter_value="1" tags="host=localhost uniset=1" prefix="uniset"/>
+	<BackendClickHouse name="ClickHouse" dbname="UNISET_PLC" dbuser="" dbhost="localhost" dbport="9000" filter_field="clickhouse" filter_value="1" tags="host=localhost uniset=1" prefix="uniset"/>
 
 	<settings>
 
@@ -274,6 +274,9 @@
 			<item id="32" iotype="AI" mbtcp_mbaddr="1" mbtcp_mbfunc="0x04" mbtcp_mbreg="43" mbtcp_mbtype="rtu" mbtcp_vtype="I2" name="performance1" noprecision="1" precision="6" rs="mbmaster" textname="Производительность танка 1"/>
 			<item id="33" iotype="DI" name="Message1" priority="Medium" textname="Текст сообщения 1"/>
 			<item id="34" iotype="AI" name="MB1_Mode_AS" priority="Medium" textname="ModbusExchange Mode"/>
+
+			<item id="40" iotype="AI" name="ClickHouse1_AS" textname="test for ClickHouse" clickhouse="1" clickhouse_tags="system=temp tag3=val3"/>
+			<item id="41" iotype="AI" name="ClickHouse2_AS" textname="test for ClickHouse" clickhouse="1"/>
 
 			<item id="50" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="0" mbtype="rtu" name="Input50_S" pollfactor="4" priority="Medium" rs="5" textname="Команда 2"/>
 			<item id="51" iotype="DI" mbaddr="0x01" mbfunc="0x03" mbreg="0x01" ntit="1" mbtype="rtu" name="Input51_S" pollfactor="4" priority="Medium" rs="5" textname="Команда 2"/>
