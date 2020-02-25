@@ -45,8 +45,14 @@ namespace uniset
 			virtual bool isConnection() const override;
 			virtual bool ping() const override;
 
-			virtual DBResult query( const std::string& q ) override;
+
 			virtual const std::string lastQuery() override;
+
+			// Unsupport types: Array,Nullable,Tuple, idx
+			virtual DBResult query( const std::string& q ) override;
+
+			// supported all types
+			const std::vector<clickhouse::Block> bquery( const std::string& q );
 
 			bool execute( const std::string& q );
 			bool insert( const std::string& tblname, const clickhouse::Block& data );
@@ -66,6 +72,7 @@ namespace uniset
 
 		private:
 			DBResult makeResult( const clickhouse::Block& res );
+			void appendResult( DBResult& ret, const clickhouse::Block& block );
 
 			std::unique_ptr<clickhouse::Client> db;
 			std::string lastQ;
