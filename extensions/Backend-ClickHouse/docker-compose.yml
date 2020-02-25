@@ -1,0 +1,11 @@
+version: '2'
+
+services:
+  ch:
+    image: 'yandex/clickhouse-server'
+    ports:
+      - '8123:8123'
+      - '9000:9000'
+    volumes:
+      # - './testsuite/config.xml:/etc/clickhouse-server/config.xml'
+      - './testsuite/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d'
