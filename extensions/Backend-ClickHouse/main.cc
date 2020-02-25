@@ -58,11 +58,11 @@ int main( int argc, const char** argv )
 	}
 	catch( uniset::Exception& ex )
 	{
-		cerr << "(opendtsdb): " << ex << std::endl;
+		cerr << "(clickhouse): " << ex << std::endl;
 	}
 	catch(...)
 	{
-		cerr << "(opendtsdb): catch ..." << std::endl;
+		cerr << "(clickhouse): catch ..." << std::endl;
 	}
 
 	return 1;
