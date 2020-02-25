@@ -201,6 +201,27 @@ fi
 AM_CONDITIONAL(DISABLE_OPENTSDB, test ${buildtsdb} = false)
 AM_CONDITIONAL(ENABLE_OPENTSDB, test ${buildtsdb} = true)
 
+#check clickhouse support
+AC_MSG_CHECKING([clickhouse support])
+buildclickhouse=true
+AC_ARG_ENABLE(clickhouse, AC_HELP_STRING([--disable-clickhouse], [disable ClickHouse support]),
+[ if test $enableval = yes; then buildclickhouse=true; else buildclickhouse=false; fi],[ buildclickhouse=true; ])
+
+CLICKHOUSE_LIBS=
+CLICKHOUSE_CFLAGS=
+if test ${buildclickhouse} = true; then
+	AC_MSG_RESULT([enabled])
+	AC_CHECK_HEADER(clickhouse-cpp/client.h,,exit)
+    CLICKHOUSE_LIBS="-lclickhouse-cpp"
+    CLICKHOUSE_CFLAGS="-I/usr/include/clickhouse-cpp"
+else
+	AC_MSG_RESULT([disabled])
+fi
+
+AM_CONDITIONAL(DISABLE_CLICKHOUSE, test ${buildclickhouse} = false)
+AC_SUBST(CLICKHOUSE_LIBS)
+AC_SUBST(CLICKHOUSE_CFLAGS)
+
 #check io support
 AC_MSG_CHECKING([io support])
 buildio=true
@@ -610,6 +631,8 @@ AC_CONFIG_FILES([Makefile
 				 extensions/MQTTPublisher/libUniSet2MQTTPublisher.pc
 				 extensions/Backend-OpenTSDB/Makefile
 				 extensions/Backend-OpenTSDB/libUniSet2BackendOpenTSDB.pc
+				 extensions/Backend-ClickHouse/Makefile
+				 extensions/Backend-ClickHouse/libUniSet2BackendClickHouse.pc
 				 extensions/tests/Makefile
 				 extensions/tests/SMemoryTest/Makefile
 				 extensions/tests/MBSlaveTest/Makefile
