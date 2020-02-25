@@ -13,15 +13,10 @@ int main(int argc, char** argv)
 	if( argc > 1 )
 		dbname = string(argv[1]);
 
-	size_t ver = 1;
-
-	if( argc > 2 )
-		ver = atoi(argv[2]);
-
 	size_t num = 10;
 
-	if( argc > 3 )
-		num = atoi(argv[3]);
+	if( argc > 2 )
+		num = atoi(argv[2]);
 
 	try
 	{
@@ -44,7 +39,7 @@ int main(int argc, char** argv)
 		auto arrTagNames = std::make_shared<clickhouse::ColumnArray>(std::make_shared<clickhouse::ColumnString>());
 		auto arrTagValues = std::make_shared<clickhouse::ColumnArray>(std::make_shared<clickhouse::ColumnString>());
 
-		for( int i = 0; i< num; i++ )
+		for( size_t i = 0; i< num; i++ )
 		{
 			col1->Append(i);
 			col2->Append(i);
@@ -92,6 +87,30 @@ int main(int argc, char** argv)
 			int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 			std::cerr << "INSERT " << num << " records elasped time: " << elapsed_seconds << " ms\n";
 		}
+
+
+		stringstream q;
+		q << "SELECT * from " << tblname;
+
+		DBResult r = db.query(q.str());
+
+		if( !r )
+		{
+			cerr << "db connect error: " << db.error() << endl;
+			db.close();
+			return 1;
+		}
+
+		for( DBResult::iterator it = r.begin(); it != r.end(); it++ )
+		{
+			cout << "ROW: ";
+			for( DBResult::COL::iterator cit = it->begin(); cit != it->end(); cit++ )
+				cout << DBResult::as_string(cit) << "(" << DBResult::as_double(cit) << ")  |  ";
+
+			cout << endl;
+			cout << "col1: " << it.as_string("col1") << endl;
+		}
+
 
 		db.close();
 	}
