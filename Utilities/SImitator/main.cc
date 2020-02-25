@@ -1,9 +1,14 @@
 #include <iostream>
+#include <cmath>
+#include <functional>
 #include "Exceptions.h"
 #include "UInterface.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
+
+using ModifyFunc = std::function<long(long)>;
+
 // -----------------------------------------------------------------------------
 void help_print()
 {
@@ -14,6 +19,7 @@ void help_print()
     cout << "--max val       - Верхняя граница датчика. По умолчанию 100 " << endl;
     cout << "--step val      - Шаг датчика. По умолчанию 1" << endl;
     cout << "--pause msec    - Пауза. По умолчанию 200 мсек" << endl << endl;
+    cout << "--func [cos|sin] - Функция модификации значения. По умолчания не используется." << endl << endl;
     cout << uniset::Configuration::help() << endl;
 }
 // -----------------------------------------------------------------------------
@@ -23,9 +29,24 @@ struct ExtInfo:
     UniversalIO::IOType iotype;
 };
 // -----------------------------------------------------------------------------
+long mf_nop( long v )
+{
+    return v;
+}
+long mf_sin( long v )
+{
+    return v * sin(v);
+}
+long mf_cos( long v )
+{
+    return v * cos(v);
+}
+
+// -----------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
     //  std::ios::sync_with_stdio(false);
+    ModifyFunc mf = mf_nop;
 
     try
     {
@@ -43,6 +64,21 @@ int main( int argc, char** argv )
         UInterface ui(conf);
 
         const string sid(conf->getArgParam("--sid"));
+        auto funcname = conf->getArg2Param("--func", "");
+
+        if( !funcname.empty() )
+        {
+            if( funcname == "sin" )
+                mf = mf_sin;
+            else if( funcname == "cos" )
+                mf = mf_cos;
+            else
+            {
+                cerr << "Unknown modify function '" << funcname << "'. Must be [sin,cos]" << endl;
+                return 1;
+            }
+        }
+
 
         if( sid.empty() )
         {
@@ -113,6 +149,10 @@ int main( int argc, char** argv )
         cout << "  max = " << amax << endl;
         cout << "  step = " << astep << endl;
         cout << "  pause = " << amsec << endl;
+
+        if( !funcname.empty() )
+            cout << "  function = " << funcname << endl;
+
         cout << "------------------------------" << endl << endl;
 
         int i = amin - astep, j = amax;
@@ -126,6 +166,8 @@ int main( int argc, char** argv )
 
                 if(j < amin)               // Принудительная установка нижней границы датчика
                     j = amin;
+
+                long val = mf(j);
 
                 cout << "\r" << " i = " << j << "     " << flush;
 
@@ -153,6 +195,8 @@ int main( int argc, char** argv )
 
                 if(i > amax)               // Принудительная установка верхней границы датчика
                     i = amax;
+
+                long val = mf(i);
 
                 cout << "\r" << " i = " << i << "     " << flush;
 
