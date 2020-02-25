@@ -8,10 +8,10 @@ There are set of base components to construct this kind of systems:
 * IPC mechanism based on CORBA (omniORB).
 * logging system based on MySQL, SQLite, PostgreSQL databases.
 * logging to TSDB (influxdb, opentsdb)
+* logging to ClickHouse (experimental)
 * logging to RRD
 * supported MQTT (libmosquittopp)
 * fast network protocol based on udp (UNet)
-* Web interface to display logging and statistic information.
 * utilities for system's configuration based on XML.
 * python interface
 * go interface (experimental)

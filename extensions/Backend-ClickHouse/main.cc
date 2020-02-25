@@ -40,7 +40,7 @@ int main( int argc, const char** argv )
 			return 1;
 		}
 
-		auto db = BackendClickHouse::init_dbserver(argc, argv); // , shmID);
+		auto db = BackendClickHouse::init_clickhouse(argc, argv, shmID);
 
 		if( !db )
 		{
