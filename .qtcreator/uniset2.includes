@@ -30,3 +30,4 @@ Utilities/NullController
 /usr/include/Poco
 /usr/include/c++/5
 /usr/include/libxml2
+/usr/include/clickhouse-cpp
