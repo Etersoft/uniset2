@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TESTCONF xmlns:xi="http://www.w3.org/2001/XInclude">
+	<UniSet>
+	    <LocalNode name="localhost"/>
+	    <NameService host="localhost" port="2809"/>
+	    <RootSection name="THEATRE"/>
+	</UniSet>
+	<settings>
+	  <clickhouse>
+	    <tag name="tags1">
+		<item value="1" tags="tag11=key11"/>
+		<item value="2" tags="tag12=key12"/>
+		<item range="[3,100]" tags="tag13=key13"/>
+		// 101 skip for test!
+		<item range="[102,max]" tags="tag14=key14"/>
+		<item range="[min,0]" tags="tag15=key15"/>
+
+		// пересекающийся диапазон
+		<item range="[103,105]" tags="tag16=key16"/>
+	   </tag>
+	    <tag name="tags2">
+		<item value="1" tags="tag21=key21"/>
+		<item value="2" tags="tag22=key22"/>
+		<item value="3" tags="tag23=key23"/>
+	   </tag>
+	   <tag name="mode1">
+		<item value="0" tags="mode1=manual"/>
+		<item value="1" tags="mode1=auto"/>
+	   </tag>
+	   <tag name="mode2">
+		<item value="0" tags="mode2=manual"/>
+		<item value="1" tags="mode2=auto"/>
+	   </tag>
+	   <tag name="post">
+	        <item value="0" tags="post=none"/>
+		<item value="1" tags="post=1"/>
+		<item value="2" tags="post=2"/>
+	   </tag>
+	   <tag name="dynval">
+        <item range="[0,10]" tags="dyntag=%v"/>
+		<item range="[11,15]" tags="dyntag=%min_%v_%max"/>
+		<item range="[16,20]" tags="dyntag%v=myval"/>
+	   </tag>
+	 </clickhouse>
+	</settings>
+	<ObjectsMap idfromfile="1">
+	    <nodes port="2809">
+		<item id="3000" name="localhost" ip="localhost" textname="Локальный узел"/>
+	    </nodes>
+		<!-- ************************ Датчики ********************** -->
+		<sensors name="Sensors">
+		    <item id="1" iotype="DI" name="Input1_S" clickhouse_dyn_sid="S4_S" clickhouse_dyn_tags="tag1=key1 tag2=key2" textname="Test Sensor1"/>
+		    <item id="2" iotype="DI" name="Input2_S" textname="Test Sensor2">
+		      <clickhouse_tags>
+				<sensor name="S3_S" values="tags1"/>
+				<sensor name="S4_S" values="tags2"/>
+		      </clickhouse_tags>
+		    </item>
+		    <item id="3" iotype="DI" name="S3_S" textname="Test Sensor3"/>
+		    <item id="4" iotype="AI" name="S4_S" textname="Test Sensor4"/>
+		    <item id="5" name="D5_State_FS" iotype="AI" textname="Д5: состояние" mc_iotype="AI" clickhouse="1" D5_alarm="1" group1="1" dnum="5" clickhouse_tags="textname=Д5:_состояние dnum=5">
+			<clickhouse_tags>
+			   <sensor name="D5_AutoMode_State1_FS" values="mode1"/>
+			   <sensor name="D5_AutoMode_State2_FS" values="mode2"/>
+			   <sensor name="D5_ControlPost_C" values="post"/>
+			   <sensor name="D5_ControlPost_C" values="post"/>
+			</clickhouse_tags>
+		    </item>
+		    <item id="6" iotype="AI" name="D5_AutoMode_State1_FS" textname="Test Sensor4"/>
+		    <item id="7" iotype="AI" name="D5_AutoMode_State2_FS" textname="Test Sensor4"/>
+		    <item id="8" iotype="AI" name="D5_ControlPost_C" textname="Test Sensor4"/>
+		    <item id="9" iotype="AI" name="S9_S" textname="Test Sensor9"/>
+		    <item id="10" iotype="AI" name="Input10_S" textname="Test Sensor10">
+		      <clickhouse_tags>
+			    <sensor name="S9_S" values="dynval"/>
+		      </clickhouse_tags>
+		    </item>
+
+		</sensors>
+		<controllers name="Controllers">
+			<item id="5000" name="SharedMemory1"/>
+		</controllers>
+		<!-- ******************* Идентификаторы сервисов ***************** -->
+		<services name="Services">
+		</services>
+		<!-- ******************* Идентификаторы объектов ***************** -->
+		<objects name="UniObjects">
+			<item id="6000" name="TestProc"/>
+		</objects>
+	</ObjectsMap>
+</TESTCONF>
