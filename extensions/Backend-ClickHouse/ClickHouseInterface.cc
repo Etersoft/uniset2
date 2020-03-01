@@ -15,6 +15,7 @@
  */
 // --------------------------------------------------------------------------
 #include <sstream>
+#include <iostream>
 #include <cstdio>
 #include "unisetstd.h"
 #include <UniSetTypes.h>

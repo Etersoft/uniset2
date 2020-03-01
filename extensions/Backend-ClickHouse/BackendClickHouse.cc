@@ -365,7 +365,7 @@ void BackendClickHouse::sensorInfo( const uniset::SensorMessage* sm )
 	}
 	catch( const std::exception& ex )
 	{
-		mycrit << myname << "(insert_main_messages): " << ex.what() << endl;
+		mycrit << myname << "(insert_main_history): " << ex.what() << endl;
 	}
 	catch( ... )
 	{
@@ -404,7 +404,7 @@ bool BackendClickHouse::flushBuffer()
 	if( !db || !connect_ok )
 		return false;
 
-	myinfo << myname << "(flushInsertBuffer): write insert buffer[" << colTimeStamp->Size() << "] to DB.." << endl;
+	myinfo << myname << "(flushBuffer): write insert buffer[" << colTimeStamp->Size() << "] to DB.." << endl;
 
 	clickhouse::Block blk(7,colTimeStamp->Size());
 	blk.AppendColumn("timestamp", colTimeStamp);
@@ -417,7 +417,7 @@ bool BackendClickHouse::flushBuffer()
 
 	if( !db->insert(fullTableName, blk) )
 	{
-		mycrit << myname << "(flushInsertBuffer): error: " << db->error() << endl;
+		mycrit << myname << "(flushBuffer): error: " << db->error() << endl;
 		return false;
 	}
 
