@@ -15,7 +15,7 @@ libUniSet2BackendClickHouse_la_LIBADD		= $(top_builddir)/lib/libUniSet2.la \
 libUniSet2BackendClickHouse_la_CXXFLAGS	= -I$(top_builddir)/extensions/include \
 									-I$(top_builddir)/extensions/SharedMemory \
 									$(SIGC_CFLAGS) $(CLICKHOUSE_CFLAGS)
-libUniSet2BackendClickHouse_la_SOURCES 	= BackendClickHouse.cc ClickHouseInterface.cc
+libUniSet2BackendClickHouse_la_SOURCES 	= BackendClickHouse.cc ClickHouseInterface.cc ClickHouseTagsConfig.cc
 
 @PACKAGE@_backend_clickhouse_SOURCES 	= main.cc
 @PACKAGE@_backend_clickhouse_LDADD 	= libUniSet2BackendClickHouse.la $(top_builddir)/lib/libUniSet2.la \

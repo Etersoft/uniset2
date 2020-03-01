@@ -58,6 +58,8 @@ BackendClickHouse::BackendClickHouse( uniset::ObjectId objId, xmlNode* cnode,
 
 	shm = make_shared<SMInterface>(shmId, ui, objId, ic);
 	db = unisetstd::make_unique<ClickHouseInterface>();
+	dyntags = unisetstd::make_unique<uniset::ClickHouseTagsConfig>();
+
 	createColumns();
 
 	init(cnode);
@@ -107,10 +109,15 @@ void BackendClickHouse::init( xmlNode* cnode )
 		   << " tags='" << gtags << "'"
 		   << endl;
 
+	UniXML::iterator tit = it;
+	if( tit.goChildren() )
+	{
+		if( tit.find("clickhouse_tags", false) )
+			dyntags->loadTagsMap(tit);
+	}
+
 	// try
 	{
-		auto conf = uniset_conf();
-
 		xmlNode* snode = conf->getXMLSensorsSection();
 
 		if( !snode )
@@ -150,6 +157,7 @@ void BackendClickHouse::init( xmlNode* cnode )
 			auto tags = parseTags(it1.getProp("clickhouse_tags"));
 
 			clickhouseParams.emplace( sid, ParamInfo(name, tags) );
+			dyntags->initFromItem(conf, it1);
 		}
 
 		if( clickhouseParams.empty() )
@@ -335,6 +343,16 @@ void BackendClickHouse::sensorInfo( const uniset::SensorMessage* sm )
 			val->Append(t.second);
 		}
 
+		// dyn tags
+		// обновляем значения в динамических тегах
+		dyntags->updateTags(sm->id, sm->value);
+		auto dtags = dyntags->getTags(sm->id);
+		for( const auto& t: dtags )
+		{
+			key->Append(t.key);
+			val->Append(t.value);
+		}
+
 		// save tags
 		arrTagKeys->AppendAsColumn(key);
 		arrTagValues->AppendAsColumn(val);
@@ -379,11 +397,24 @@ void BackendClickHouse::timerInfo( const uniset::TimerMessage* tm )
 	{
 		if( flushBuffer() )
 			timerIsOn = false;
+		else if( !db->ping() )
+		{
+			askTimer(tmFlushBuffer, 0);
+			timerIsOn = false;
+			askTimer(tmReconnect, reconnectTime);
+		}
 	}
 	else if( tm->id == tmReconnect )
 	{
+		myinfo << myname << " try reconnect.." << endl;
 		if( reconnect() )
+		{
+			myinfo << myname << " reconnect [OK]" << endl;
 			askTimer(tmReconnect, 0);
+			flushBuffer();
+			askTimer(tmFlushBuffer, bufSyncTime, 1);
+			timerIsOn = true;
+		}
 	}
 }
 // -----------------------------------------------------------------------------

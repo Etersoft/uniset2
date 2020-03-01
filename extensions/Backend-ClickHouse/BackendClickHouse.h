@@ -25,15 +25,17 @@
 #include "SharedMemory.h"
 #include "extensions/Extensions.h"
 #include "ClickHouseInterface.h"
+#include "ClickHouseTagsConfig.h"
 // --------------------------------------------------------------------------
 namespace uniset
 {
 	// -----------------------------------------------------------------------------
 	/*!
 	 * \brief The BackendClickHouse class
-	 * Реализация работы с ClickHouse.
 
-		\section sec_ClickHouse_Conf Настройка BackendClickHouse
+	\page page_ClickHouse BackendClickHouse: Реализация работы с ClickHouse.
+
+	\section sec_ClickHouse_Conf Настройка BackendClickHouse
 
 	    Пример секции конфигурации:
 	\code
@@ -51,6 +53,8 @@ namespace uniset
 		- \b filter_field - поле у датчика, определяющее, что его нужно сохранять в БД
 		- \b filter_value - значение \b filter_field, определяющее, что датчик нужно сохранять в БД
 		- \b tags - теги которые будут добавлены для каждой записи (перечисляются через пробел)
+
+	Так же статические теги можно указывать непосредственно у датчиков
 	\code
 	    <sensors>
 	        ...
@@ -65,12 +69,23 @@ namespace uniset
 	пачкой в БД. Так же он является защитным механизмом на случай если БД временно недоступна.
 	Параметры буфера задаются аргументами командной строки или в конфигурационном файле.
 	Доступны следующие параметры:
-	- \b bufSize - размер буфера, при заполнении которого происходит посылка данных в БД
+	- \b bufSize - размер буфера, при заполнении которого происходит запись данных в БД
 	- \b bufMaxSize - максимальный размер буфера, при котором все данные теряются (буфер чиститься)
 	- \b bufSyncTimeout - период принудительного сброса данных в БД, миллисек.
 	- \b reconnectTime - время на повторную попытку подключения к БД, миллисек.
 	- \b sizeOfMessageQueue - Размер очереди сообщений для обработки изменений по датчикам.
 		 При большом количестве отслеживаемых датчиков, размер должен быть достаточным, чтобы не терять изменения.
+
+	\section sec_ClickHouse_Tags Настройка динамических тегов
+	Значения тегов настраиваются в секции <clickhouse_tags>
+	\code
+			<BackendClickHouse ...>
+				<clickhouse_tags>
+				   ....
+				</clickhouse_tags>
+			</BackendClickHouse>
+	\endcode
+	см. также \ref pgClickHouseTagsConfig_clickhouse.
 	*/
 	class BackendClickHouse:
 		public UObject_SK
@@ -158,8 +173,10 @@ namespace uniset
 			void clearData();
 			static TagList parseTags( const std::string& tags );
 
+			std::unique_ptr<uniset::ClickHouseTagsConfig> dyntags;
+
 			std::string fullTableName;
-			std::shared_ptr<ClickHouseInterface> db;
+			std::unique_ptr<ClickHouseInterface> db;
 
 			std::string dbhost;
 			int dbport;

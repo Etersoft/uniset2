@@ -25,9 +25,12 @@
 ../extensions/Backend-ClickHouse/BackendClickHouse.h
 ../extensions/Backend-ClickHouse/ClickHouseInterface.cc
 ../extensions/Backend-ClickHouse/ClickHouseInterface.h
+../extensions/Backend-ClickHouse/ClickHouseTagsConfig.cc
+../extensions/Backend-ClickHouse/ClickHouseTagsConfig.h
 ../extensions/Backend-ClickHouse/main.cc
 ../extensions/Backend-ClickHouse/Makefile.am
 ../extensions/Backend-ClickHouse/test.cc
+../extensions/Backend-ClickHouse/tests/test_TSDBTagsConfig.cc
 ../extensions/Backend-OpenTSDB/BackendOpenTSDB.cc
 ../extensions/Backend-OpenTSDB/BackendOpenTSDB.h
 ../extensions/Backend-OpenTSDB/main.cc
