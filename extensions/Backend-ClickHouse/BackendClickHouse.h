@@ -17,7 +17,6 @@
 #ifndef _BackendClickHouse_H_
 #define _BackendClickHouse_H_
 // -----------------------------------------------------------------------------
-#include <deque>
 #include <memory>
 #include <unordered_map>
 #include <chrono>
