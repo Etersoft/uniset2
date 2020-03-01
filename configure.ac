@@ -469,6 +469,7 @@ if test ${buildtests} = true; then
 	AC_CONFIG_TESTDIR(extensions/SharedMemory/tests)
 	AC_CONFIG_TESTDIR(extensions/IOControl/tests)
 	AC_CONFIG_TESTDIR(extensions/LogDB/tests)
+	AC_CONFIG_TESTDIR(extensions/Backend-ClickHouse/tests)
 
 	TESTSUITE_DIR="\$(top_builddir)/testsuite"
 	AC_SUBST(TESTSUITE_DIR)
@@ -633,6 +634,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/Backend-OpenTSDB/libUniSet2BackendOpenTSDB.pc
 				 extensions/Backend-ClickHouse/Makefile
 				 extensions/Backend-ClickHouse/libUniSet2BackendClickHouse.pc
+				 extensions/Backend-ClickHouse/tests/Makefile
 				 extensions/tests/Makefile
 				 extensions/tests/SMemoryTest/Makefile
 				 extensions/tests/MBSlaveTest/Makefile
