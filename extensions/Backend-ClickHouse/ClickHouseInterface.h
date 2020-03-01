@@ -18,13 +18,10 @@
 #define ClickHouseInterface_H_
 // ---------------------------------------------------------------------------
 #include <string>
-#include <list>
 #include <vector>
-#include <queue>
-#include <iostream>
+#include <memory>
 #include <clickhouse-cpp/client.h>
 #include <clickhouse-cpp/block.h>
-#include <PassiveTimer.h>
 #include <DBInterface.h>
 // -------------------------------------------------------------------------
 namespace uniset
