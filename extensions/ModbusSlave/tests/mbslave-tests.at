@@ -2,6 +2,6 @@ AT_SETUP([ModbusSlave tests (with SM)])
 AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/ModbusSlave/tests tests_with_sm.sh],[0],[ignore],[ignore])
 AT_CLEANUP
 
-AT_SETUP([ModbusSlave tests (Apart)])
+AT_SETUP([ModbusSlave tests (separately)])
 AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/ModbusSlave/tests tests_with_sm_apart.sh],[0],[ignore],[ignore])
 AT_CLEANUP
