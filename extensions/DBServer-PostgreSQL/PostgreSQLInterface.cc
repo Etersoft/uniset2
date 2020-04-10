@@ -16,7 +16,8 @@
 // --------------------------------------------------------------------------
 #include <sstream>
 #include <cstdio>
-#include <UniSetTypes.h>
+#include "UniSetTypes.h"
+#include "unisetstd.h"
 #include "PostgreSQLInterface.h"
 // --------------------------------------------------------------------------
 using namespace std;
@@ -52,7 +53,7 @@ bool PostgreSQLInterface::ping() const
 
 	try
 	{
-
+		// pqxx doesn't work with unique_ptr (
 		nontransaction n(*(db.get()));
 		n.exec("select 1;");
 		return true;
@@ -89,7 +90,7 @@ bool PostgreSQLInterface::nconnect(const string& host, const string& user, const
 
 	try
 	{
-		db = make_shared<pqxx::connection>( std::move(conninfo.str()) );
+		db = unisetstd::make_unique<pqxx::connection>( std::move(conninfo.str()) );
 		return db->is_open();
 	}
 	catch( const std::exception& e )
@@ -122,10 +123,11 @@ bool PostgreSQLInterface::copy( const std::string& tblname, const std::vector<st
 
 	try
 	{
+		// pqxx doesn't work with unique_ptr
 		work w( *(db.get()) );
 		tablewriter t(w, tblname, cols.begin(), cols.end());
 
-		t.reserve(data.size()); // size() не дорогая операция для list?
+		t.reserve(data.size());
 
 		for( const auto& d : data )
 			t.push_back(d.begin(), d.end());
@@ -153,6 +155,7 @@ bool PostgreSQLInterface::insert( const string& q )
 
 	try
 	{
+		// pqxx doesn't work with unique_ptr
 		work w( *(db.get()) );
 		lastQ = q;
 		w.exec(q);
@@ -180,6 +183,7 @@ bool PostgreSQLInterface::insertAndSaveRowid( const string& q )
 
 	try
 	{
+		// pqxx doesn't work with unique_ptr
 		work w( *(db.get()) );
 		lastQ = q;
 		pqxx::result res = w.exec(qplus);
@@ -203,7 +207,7 @@ DBResult PostgreSQLInterface::query( const string& q )
 
 	try
 	{
-
+		// pqxx doesn't work with unique_ptr
 		nontransaction n(*(db.get()));
 		lastQ = q;
 		/* Execute SQL query */
