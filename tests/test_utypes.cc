@@ -10,6 +10,8 @@
 using namespace std;
 using namespace uniset;
 // -----------------------------------------------------------------------------
+#pragma GCC diagnostic ignored -Wwrite-strings
+// -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: uni_atoi", "[utypes][uni_atoi]" )
 {
 	SECTION("int")

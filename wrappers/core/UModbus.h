@@ -27,6 +27,10 @@
 #include "UTypes.h"
 #include "UExceptions.h"
 // --------------------------------------------------------------------------
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wdeprecated"
+// --------------------------------------------------------------------------
+
 class UModbus
 {
 	public:

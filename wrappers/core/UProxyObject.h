@@ -22,6 +22,9 @@
 #include "UExceptions.h"
 #include "UTypes.h"
 // --------------------------------------------------------------------------
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wdeprecated"
+// --------------------------------------------------------------------------
 class UProxyObject_impl; // PIMPL
 // --------------------------------------------------------------------------
 /*! Интерфейс для взаимодействия с SM (с заказом датчиков).

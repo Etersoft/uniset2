@@ -25,6 +25,10 @@
 #include "UExceptions.h"
 #include "UniSetActivator.h"
 // --------------------------------------------------------------------------
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wdeprecated"
+// --------------------------------------------------------------------------
+
 class UConnector
 {
 	public:
