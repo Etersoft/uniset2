@@ -419,5 +419,7 @@ TEST_CASE("UniSetTypes: hash32", "[utypes][hash32]" )
 	REQUIRE( uniset::hash32("test") == uint32_t(168770635) );
 	REQUIRE( uniset::hash32("test2") == uint32_t(4018550908) );
 	REQUIRE( uniset::hash32("2tset") == uint32_t(1660083104) );
+	REQUIRE( uniset::hash32("ttt1") != uniset::hash32("1ttt") );
+	REQUIRE( uniset::hash32("ta") != uniset::hash32("at") );
 }
 // -----------------------------------------------------------------------------
