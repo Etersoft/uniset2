@@ -21,8 +21,9 @@
 #include "Configuration.h"
 
 // -----------------------------------------------------------------------------------------
-using namespace uniset;
 using namespace std;
+// -----------------------------------------------------------------------------------------
+namespace uniset {
 // -----------------------------------------------------------------------------------------
 ObjectIndex_XML::ObjectIndex_XML(const string& xmlfile, size_t minSize )
 {
@@ -298,4 +299,6 @@ const ObjectInfo* ObjectIndex_XML::getObjectInfo( const std::string& name ) cons
 
 	return nullptr;
 }
+// ------------------------------------------------------------------------------------------
+} // end of namespace uniset
 // ------------------------------------------------------------------------------------------

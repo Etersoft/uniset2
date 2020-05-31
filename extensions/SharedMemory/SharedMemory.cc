@@ -470,7 +470,14 @@ namespace uniset
 
 		HeartBeatInfo hi;
 
-		hi.a_sid = it.getIntProp("id");
+		if( !it.getProp("id").empty() )
+		{
+			hi.a_sid = it.getIntProp("id");
+		}
+		else
+		{
+			hi.a_sid = uniset_conf()->getSensorID(it.getProp("name"));
+		}
 
 		if( it.getProp("heartbeat_ds_name").empty() )
 		{
