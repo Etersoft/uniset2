@@ -24,7 +24,7 @@ namespace uniset
 	using namespace std;
 	using namespace uniset::extensions;
 	// -------------------------------------------------------------------------
-	TA2D::TA2D(Element::ElementID id , long filterValue ):
+	TA2D::TA2D(Element::ElementID id, long filterValue ):
 		Element(id),
 		myout(false),
 		fvalue(filterValue)

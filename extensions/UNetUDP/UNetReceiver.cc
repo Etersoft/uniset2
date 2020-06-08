@@ -837,7 +837,7 @@ void UNetReceiver::initIterators() noexcept
 	{
 		CacheVec& d_icache(mit->second.cache);
 
-		for( auto && it : d_icache )
+		for( auto&& it : d_icache )
 			shm->initIterator(it.ioit);
 	}
 
@@ -845,7 +845,7 @@ void UNetReceiver::initIterators() noexcept
 	{
 		CacheVec& a_icache(mit->second.cache);
 
-		for( auto && it : a_icache )
+		for( auto&& it : a_icache )
 			shm->initIterator(it.ioit);
 	}
 }

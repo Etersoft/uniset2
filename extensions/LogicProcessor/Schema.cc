@@ -97,7 +97,7 @@ namespace uniset
 		e1->delChildOut(e2);
 
 		// удаляем из списка соединений
-		for( auto && lit = inLinks.begin(); lit != inLinks.end(); ++lit )
+		for( auto&& lit = inLinks.begin(); lit != inLinks.end(); ++lit )
 		{
 			if( lit->from == e1 && lit->to == e2 )
 			{
@@ -140,7 +140,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	void Schema::remove( std::shared_ptr<Element>& el )
 	{
-		for( auto && it = emap.begin(); it != emap.end(); ++it )
+		for( auto&& it = emap.begin(); it != emap.end(); ++it )
 		{
 			if( it->second == el )
 			{
@@ -150,7 +150,7 @@ namespace uniset
 		}
 
 		// помечаем внутренние связи
-		for( auto && lit : inLinks )
+		for( auto&& lit : inLinks )
 		{
 			if( lit.from == el )
 				lit.from = 0;
@@ -160,7 +160,7 @@ namespace uniset
 		}
 
 		// помечаем внешние связи
-		for( auto && lit : extLinks )
+		for( auto&& lit : extLinks )
 		{
 			if( lit.to == el )
 				lit.to = 0;

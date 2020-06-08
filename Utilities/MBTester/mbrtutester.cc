@@ -102,7 +102,7 @@ struct Interval
 	using time_point = std::chrono::time_point<std::chrono::steady_clock>;
 
 	Interval()
-	 :tmStart(std::chrono::steady_clock::now())
+		: tmStart(std::chrono::steady_clock::now())
 	{}
 
 	uint64_t microseconds()
@@ -322,6 +322,7 @@ int main( int argc, char** argv )
 				}
 				break;
 #if 0
+
 				case 'g':
 				{
 					if( cmd == cmdNOP )
@@ -342,6 +343,7 @@ int main( int argc, char** argv )
 				}
 				break;
 #endif
+
 				case 'v':
 					verb = 1;
 					break;
@@ -766,6 +768,7 @@ int main( int argc, char** argv )
 
 						Interval i;
 						mb.fileTransfer( slaveaddr, reg, tofile, tout);
+
 						if( verb )
 							cout << i.microseconds() << " ms" << endl;
 					}

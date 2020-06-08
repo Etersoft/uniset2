@@ -258,7 +258,7 @@ bool UProxyObject_impl::impl_updateValues()
 	std::unique_lock<std::mutex> lk(mutexSMap);
 	bool ret = true;
 
-	for( auto && i : smap )
+	for( auto&& i : smap )
 	{
 		try
 		{

@@ -119,8 +119,8 @@ namespace uniset
 			void flushInsertBuffer();
 			virtual void addRecord( const PostgreSQLInterface::Record&& rec );
 			virtual bool writeInsertBufferToDB( const std::string& table
-										  , const std::vector<std::string>& colname
-										  , const InsertBuffer& ibuf );
+												, const std::vector<std::string>& colname
+												, const InsertBuffer& ibuf );
 
 		private:
 			DBTableMap tblMap;

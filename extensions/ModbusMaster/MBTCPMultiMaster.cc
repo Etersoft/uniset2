@@ -259,7 +259,7 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 	{
 		// сперва надо обновить все ignore
 		// т.к. фактически флаги выставляются и сбрасываются только здесь
-		for( auto && it : mblist )
+		for( auto&& it : mblist )
 			it->ignore = !it->ptIgnoreTimeout.checkTime();
 
 		// если reopen=true - значит почему-то по текущему каналу связи нет (хотя соединение есть)
@@ -501,7 +501,7 @@ void MBTCPMultiMaster::check_thread()
 {
 	while( isProcActive() )
 	{
-		for( auto && it : mblist )
+		for( auto&& it : mblist )
 		{
 			try
 			{
@@ -575,7 +575,7 @@ void MBTCPMultiMaster::initIterators()
 {
 	MBExchange::initIterators();
 
-	for( auto && it : mblist )
+	for( auto&& it : mblist )
 		shm->initIterator(it->respond_it);
 }
 // -----------------------------------------------------------------------------
@@ -678,7 +678,7 @@ void MBTCPMultiMaster::initCheckConnectionParameters()
 		   << endl;
 
 	// инициализируем..
-	for( auto && m : mblist )
+	for( auto&& m : mblist )
 	{
 		m->checkFunc = checkFunc;
 		m->checkAddr = checkAddr;

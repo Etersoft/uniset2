@@ -1517,7 +1517,7 @@ namespace uniset
 			check_testmode();
 		}
 
-		for( auto && it : iomap )
+		for( auto&& it : iomap )
 		{
 			if( it->si.id == sm->id )
 			{

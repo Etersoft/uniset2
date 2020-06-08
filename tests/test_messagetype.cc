@@ -248,7 +248,7 @@ TEST_CASE("TextMessage", "[basic][message types][TextMessage]" )
 
 	SECTION("TextMessage from network")
 	{
-		std::string txt="Hello world";
+		std::string txt = "Hello world";
 
 		::uniset::Timespec tspec;
 		tspec.sec = 10;

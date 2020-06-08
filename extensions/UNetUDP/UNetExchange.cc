@@ -550,7 +550,7 @@ void UNetExchange::step() noexcept
 		}
 	}
 
-	for( auto && it : recvlist )
+	for( auto&& it : recvlist )
 		it.step(shm, myname, unetlog);
 }
 
@@ -758,10 +758,10 @@ void UNetExchange::askSensors( UniversalIO::UIOCommand cmd )
 void UNetExchange::sensorInfo( const uniset::SensorMessage* sm )
 {
 	if( sender )
-		sender->updateSensor( sm->id , sm->value );
+		sender->updateSensor( sm->id, sm->value );
 
 	if( sender2 )
-		sender2->updateSensor( sm->id , sm->value );
+		sender2->updateSensor( sm->id, sm->value );
 }
 // ------------------------------------------------------------------------------------------
 bool UNetExchange::activateObject()
@@ -842,7 +842,7 @@ void UNetExchange::initIterators() noexcept
 	if( sender2 )
 		sender2->initIterators();
 
-	for( auto && it : recvlist )
+	for( auto&& it : recvlist )
 		it.initIterators(shm);
 }
 // -----------------------------------------------------------------------------
@@ -917,7 +917,7 @@ std::shared_ptr<UNetExchange> UNetExchange::init_unetexchange(int argc, const ch
 // -----------------------------------------------------------------------------
 void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceiver::Event ev ) noexcept
 {
-	for( auto && it : recvlist )
+	for( auto&& it : recvlist )
 	{
 		if( it.r1 == r )
 		{

@@ -282,9 +282,9 @@ TEST_CASE("(0x0F): force multiple coils", "[modbus][mbslave][mbtcpslave]")
 {
 	WARN("FIXME: 'force coil status'. Use 'nbit'?"):
 		InitTest();
-		ObjectId tID = 1009;
-		ModbusRTU::ModbusData tREG = 16;
-		SECTION("Test: write 2 bit to 1")
+	ObjectId tID = 1009;
+	ModbusRTU::ModbusData tREG = 16;
+	SECTION("Test: write 2 bit to 1")
 	{
 		ModbusRTU::ForceCoilsMessage msg(slaveaddr, tREG);
 		ModbusRTU::DataBits b(3);

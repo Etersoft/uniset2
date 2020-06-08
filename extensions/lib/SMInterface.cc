@@ -93,247 +93,247 @@ using namespace uniset;
 		throw uniset::TimeOut(); \
 	} \
 
-	// --------------------------------------------------------------------------
-	SMInterface::SMInterface( uniset::ObjectId _shmID, const std::shared_ptr<UInterface>& _ui,
-							  uniset::ObjectId _myid, const std::shared_ptr<IONotifyController> ic ):
-		ic(ic),
-		ui(_ui),
-		oref( CORBA::Object::_nil() ),
-		shmID(_shmID),
-		myid(_myid)
-	{
-		if( shmID == DefaultObjectId )
-			throw uniset::SystemError("(SMInterface): Unknown shmID!" );
-	}
-	// --------------------------------------------------------------------------
-	SMInterface::~SMInterface()
-	{
+// --------------------------------------------------------------------------
+SMInterface::SMInterface( uniset::ObjectId _shmID, const std::shared_ptr<UInterface>& _ui,
+						  uniset::ObjectId _myid, const std::shared_ptr<IONotifyController> ic ):
+	ic(ic),
+	ui(_ui),
+	oref( CORBA::Object::_nil() ),
+	shmID(_shmID),
+	myid(_myid)
+{
+	if( shmID == DefaultObjectId )
+		throw uniset::SystemError("(SMInterface): Unknown shmID!" );
+}
+// --------------------------------------------------------------------------
+SMInterface::~SMInterface()
+{
 
-	}
-	// --------------------------------------------------------------------------
-	void SMInterface::setValue( uniset::ObjectId id, long value )
+}
+// --------------------------------------------------------------------------
+void SMInterface::setValue( uniset::ObjectId id, long value )
+{
+	if( ic )
 	{
-		if( ic )
-		{
-			BEG_FUNC1(SMInterface::setValue)
-			ic->setValue(id, value, myid);
-			return;
-			END_FUNC(SMInterface::setValue)
-		}
-
-		IOController_i::SensorInfo si;
-		si.id = id;
-		si.node = ui->getConf()->getLocalNode();
-
 		BEG_FUNC1(SMInterface::setValue)
-		ui->setValue(si, value, myid);
+		ic->setValue(id, value, myid);
 		return;
 		END_FUNC(SMInterface::setValue)
 	}
-	// --------------------------------------------------------------------------
-	long SMInterface::getValue( uniset::ObjectId id )
-	{
-		if( ic )
-		{
-			BEG_FUNC1(SMInterface::getValue)
-			return ic->getValue(id);
-			END_FUNC(SMInterface::getValue)
-		}
 
+	IOController_i::SensorInfo si;
+	si.id = id;
+	si.node = ui->getConf()->getLocalNode();
+
+	BEG_FUNC1(SMInterface::setValue)
+	ui->setValue(si, value, myid);
+	return;
+	END_FUNC(SMInterface::setValue)
+}
+// --------------------------------------------------------------------------
+long SMInterface::getValue( uniset::ObjectId id )
+{
+	if( ic )
+	{
 		BEG_FUNC1(SMInterface::getValue)
-		return ui->getValue(id);
+		return ic->getValue(id);
 		END_FUNC(SMInterface::getValue)
 	}
-	// --------------------------------------------------------------------------
-	void SMInterface::askSensor( uniset::ObjectId id, UniversalIO::UIOCommand cmd, uniset::ObjectId backid )
+
+	BEG_FUNC1(SMInterface::getValue)
+	return ui->getValue(id);
+	END_FUNC(SMInterface::getValue)
+}
+// --------------------------------------------------------------------------
+void SMInterface::askSensor( uniset::ObjectId id, UniversalIO::UIOCommand cmd, uniset::ObjectId backid )
+{
+	ConsumerInfo_var ci;
+	ci->id   = (backid == DefaultObjectId) ? myid : backid;
+	ci->node = ui->getConf()->getLocalNode();
+
+	if( ic )
 	{
-		ConsumerInfo_var ci;
-		ci->id   = (backid == DefaultObjectId) ? myid : backid;
-		ci->node = ui->getConf()->getLocalNode();
-
-		if( ic )
-		{
-			BEG_FUNC1(SMInterface::askSensor)
-			ic->askSensor(id, ci, cmd);
-			return;
-			END_FUNC(SMInterface::askSensor)
-		}
-
 		BEG_FUNC1(SMInterface::askSensor)
-		ui->askRemoteSensor(id, cmd, conf->getLocalNode(), ci->id);
+		ic->askSensor(id, ci, cmd);
 		return;
 		END_FUNC(SMInterface::askSensor)
 	}
-	// --------------------------------------------------------------------------
-	IOController_i::SensorInfoSeq* SMInterface::getSensorsMap()
-	{
-		if( ic )
-		{
-			BEG_FUNC1(SMInterface::getSensorsMap)
-			return ic->getSensorsMap();
-			END_FUNC(SMInterface::getSensorsMap)
-		}
 
-		BEG_FUNC(SMInterface::getSensorsMap)
-		return shm->getSensorsMap();
+	BEG_FUNC1(SMInterface::askSensor)
+	ui->askRemoteSensor(id, cmd, conf->getLocalNode(), ci->id);
+	return;
+	END_FUNC(SMInterface::askSensor)
+}
+// --------------------------------------------------------------------------
+IOController_i::SensorInfoSeq* SMInterface::getSensorsMap()
+{
+	if( ic )
+	{
+		BEG_FUNC1(SMInterface::getSensorsMap)
+		return ic->getSensorsMap();
 		END_FUNC(SMInterface::getSensorsMap)
 	}
-	// --------------------------------------------------------------------------
-	IONotifyController_i::ThresholdsListSeq* SMInterface::getThresholdsList()
-	{
-		if( ic )
-		{
-			BEG_FUNC1(SMInterface::getThresholdsList)
-			return ic->getThresholdsList();
-			END_FUNC(SMInterface::getThresholdsList)
-		}
 
-		BEG_FUNC(SMInterface::getThresholdsList)
-		return shm->getThresholdsList();
+	BEG_FUNC(SMInterface::getSensorsMap)
+	return shm->getSensorsMap();
+	END_FUNC(SMInterface::getSensorsMap)
+}
+// --------------------------------------------------------------------------
+IONotifyController_i::ThresholdsListSeq* SMInterface::getThresholdsList()
+{
+	if( ic )
+	{
+		BEG_FUNC1(SMInterface::getThresholdsList)
+		return ic->getThresholdsList();
 		END_FUNC(SMInterface::getThresholdsList)
 	}
-	// --------------------------------------------------------------------------
-	void SMInterface::setUndefinedState( const IOController_i::SensorInfo& si, bool undefined,
-										 uniset::ObjectId sup_id )
-	{
-		if( ic )
-		{
-			BEG_FUNC1(SMInterface::setUndefinedState)
-			ic->setUndefinedState(si.id, undefined, sup_id);
-			return;
-			END_FUNC(SMInterface::setUndefinedState)
-		}
 
-		BEG_FUNC(SMInterface::setUndefinedState)
-		shm->setUndefinedState(si.id, undefined, sup_id);
+	BEG_FUNC(SMInterface::getThresholdsList)
+	return shm->getThresholdsList();
+	END_FUNC(SMInterface::getThresholdsList)
+}
+// --------------------------------------------------------------------------
+void SMInterface::setUndefinedState( const IOController_i::SensorInfo& si, bool undefined,
+									 uniset::ObjectId sup_id )
+{
+	if( ic )
+	{
+		BEG_FUNC1(SMInterface::setUndefinedState)
+		ic->setUndefinedState(si.id, undefined, sup_id);
 		return;
 		END_FUNC(SMInterface::setUndefinedState)
 	}
-	// --------------------------------------------------------------------------
-	bool SMInterface::exist()
+
+	BEG_FUNC(SMInterface::setUndefinedState)
+	shm->setUndefinedState(si.id, undefined, sup_id);
+	return;
+	END_FUNC(SMInterface::setUndefinedState)
+}
+// --------------------------------------------------------------------------
+bool SMInterface::exist()
+{
+	if( ic )
 	{
-		if( ic )
+		BEG_FUNC1(SMInterface::exist)
+		return ic->exist();
+		END_FUNC(SMInterface::exist)
+	}
+
+	return ui->isExist(shmID);
+}
+// --------------------------------------------------------------------------
+IOController::IOStateList::iterator SMInterface::ioEnd()
+{
+	CHECK_IC_PTR(ioEnd)
+	return ic->ioEnd();
+}
+// --------------------------------------------------------------------------
+void SMInterface::localSetValue( IOController::IOStateList::iterator& it,
+								 uniset::ObjectId sid,
+								 CORBA::Long value, uniset::ObjectId sup_id )
+{
+	if( !ic )
+		return setValue(sid, value);
+
+	ic->localSetValueIt(it, sid, value, sup_id);
+}
+// --------------------------------------------------------------------------
+long SMInterface::localGetValue( IOController::IOStateList::iterator& it, uniset::ObjectId sid )
+{
+	if( !ic )
+		return getValue( sid );
+
+	//    CHECK_IC_PTR(localGetValue)
+	return ic->localGetValue(it, sid);
+}
+// --------------------------------------------------------------------------
+void SMInterface::localSetUndefinedState( IOController::IOStateList::iterator& it,
+		bool undefined,
+		uniset::ObjectId sid )
+{
+	//    CHECK_IC_PTR(localSetUndefinedState)
+	if( !ic )
+	{
+		IOController_i::SensorInfo si;
+		si.id     = sid;
+		si.node = ui->getConf()->getLocalNode();
+		setUndefinedState(si, undefined, myid);
+		return;
+	}
+
+	ic->localSetUndefinedState(it, undefined, sid);
+}
+// --------------------------------------------------------------------------
+void SMInterface::initIterator( IOController::IOStateList::iterator& it )
+{
+	if( ic )
+		it = ic->ioEnd();
+}
+// --------------------------------------------------------------------------
+bool SMInterface::waitSMready( int ready_timeout, int pmsec )
+{
+	std::atomic_bool cancelFlag = { false };
+	return waitSMreadyWithCancellation(ready_timeout, cancelFlag, pmsec);
+}
+// --------------------------------------------------------------------------
+bool SMInterface::waitSMworking( uniset::ObjectId sid, int msec, int pmsec )
+{
+	PassiveTimer ptSMready(msec);
+	bool sm_ready = false;
+
+	while( !ptSMready.checkTime() && !sm_ready )
+	{
+		try
 		{
-			BEG_FUNC1(SMInterface::exist)
-			return ic->exist();
-			END_FUNC(SMInterface::exist)
+			getValue(sid);
+			sm_ready = true;
+			break;
 		}
+		catch(...) {}
 
-		return ui->isExist(shmID);
+		msleep(pmsec);
 	}
-	// --------------------------------------------------------------------------
-	IOController::IOStateList::iterator SMInterface::ioEnd()
-	{
-		CHECK_IC_PTR(ioEnd)
-		return ic->ioEnd();
-	}
-	// --------------------------------------------------------------------------
-	void SMInterface::localSetValue( IOController::IOStateList::iterator& it,
-									 uniset::ObjectId sid,
-									 CORBA::Long value, uniset::ObjectId sup_id )
-	{
-		if( !ic )
-			return setValue(sid, value);
 
-		ic->localSetValueIt(it, sid, value, sup_id);
-	}
-	// --------------------------------------------------------------------------
-	long SMInterface::localGetValue( IOController::IOStateList::iterator& it, uniset::ObjectId sid )
-	{
-		if( !ic )
-			return getValue( sid );
+	return sm_ready;
+}
+// --------------------------------------------------------------------------
+bool SMInterface::waitSMreadyWithCancellation(int ready_timeout, std::atomic_bool& cancelFlag, int pmsec)
+{
+	PassiveTimer ptSMready(ready_timeout);
+	bool sm_ready = false;
 
-		//    CHECK_IC_PTR(localGetValue)
-		return ic->localGetValue(it, sid);
-	}
-	// --------------------------------------------------------------------------
-	void SMInterface::localSetUndefinedState( IOController::IOStateList::iterator& it,
-			bool undefined,
-			uniset::ObjectId sid )
+	while( !ptSMready.checkTime() && !sm_ready && !cancelFlag )
 	{
-		//    CHECK_IC_PTR(localSetUndefinedState)
-		if( !ic )
+		try
 		{
-			IOController_i::SensorInfo si;
-			si.id     = sid;
-			si.node = ui->getConf()->getLocalNode();
-			setUndefinedState(si, undefined, myid);
-			return;
-		}
+			sm_ready = exist();
 
-		ic->localSetUndefinedState(it, undefined, sid);
-	}
-	// --------------------------------------------------------------------------
-	void SMInterface::initIterator( IOController::IOStateList::iterator& it )
-	{
-		if( ic )
-			it = ic->ioEnd();
-	}
-	// --------------------------------------------------------------------------
-	bool SMInterface::waitSMready( int ready_timeout, int pmsec )
-	{
-		std::atomic_bool cancelFlag = { false };
-		return waitSMreadyWithCancellation(ready_timeout, cancelFlag, pmsec);
-	}
-	// --------------------------------------------------------------------------
-	bool SMInterface::waitSMworking( uniset::ObjectId sid, int msec, int pmsec )
-	{
-		PassiveTimer ptSMready(msec);
-		bool sm_ready = false;
-
-		while( !ptSMready.checkTime() && !sm_ready )
-		{
-			try
-			{
-				getValue(sid);
-				sm_ready = true;
+			if( sm_ready )
 				break;
-			}
-			catch(...) {}
-
-			msleep(pmsec);
 		}
+		catch(...) {}
 
-		return sm_ready;
+		msleep(pmsec);
 	}
-	// --------------------------------------------------------------------------
-	bool SMInterface::waitSMreadyWithCancellation(int ready_timeout, std::atomic_bool& cancelFlag, int pmsec)
-	{
-		PassiveTimer ptSMready(ready_timeout);
-		bool sm_ready = false;
 
-		while( !ptSMready.checkTime() && !sm_ready && !cancelFlag )
-		{
-			try
-			{
-				sm_ready = exist();
-
-				if( sm_ready )
-					break;
-			}
-			catch(...) {}
-
-			msleep(pmsec);
-		}
-
-		return sm_ready;
-	}
-	// --------------------------------------------------------------------------
+	return sm_ready;
+}
+// --------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
-	std::string SMInterface::apiRequest( const std::string& query )
+std::string SMInterface::apiRequest( const std::string& query )
+{
+	if( ic )
 	{
-		if( ic )
-		{
-			BEG_FUNC1(SMInterface::apiRequest)
-			SimpleInfo_var i = ic->apiRequest(query.c_str());
-			return std::string(i->info);
-			END_FUNC(SMInterface::apiRequest)
-		}
-
-		BEG_FUNC(SMInterface::apiRequest)
-		SimpleInfo_var i = shm->apiRequest(query.c_str());
+		BEG_FUNC1(SMInterface::apiRequest)
+		SimpleInfo_var i = ic->apiRequest(query.c_str());
 		return std::string(i->info);
 		END_FUNC(SMInterface::apiRequest)
 	}
+
+	BEG_FUNC(SMInterface::apiRequest)
+	SimpleInfo_var i = shm->apiRequest(query.c_str());
+	return std::string(i->info);
+	END_FUNC(SMInterface::apiRequest)
+}
 #endif
-	// --------------------------------------------------------------------------
+// --------------------------------------------------------------------------

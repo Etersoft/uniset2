@@ -90,7 +90,7 @@ struct Interval
 	using time_point = std::chrono::time_point<std::chrono::steady_clock>;
 
 	Interval()
-	 :tmStart(std::chrono::steady_clock::now())
+		: tmStart(std::chrono::steady_clock::now())
 	{}
 
 	uint64_t microseconds()

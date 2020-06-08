@@ -87,7 +87,7 @@ int main(int argc, const char** argv)
 		// вычисляем среднее
 		int sum = 0;
 
-		for( auto && r : res )
+		for( auto&& r : res )
 			sum += r;
 
 		float avg = (float)sum / tnum;

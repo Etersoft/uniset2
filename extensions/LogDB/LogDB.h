@@ -231,7 +231,7 @@ namespace uniset
 			static std::string qLast( const std::string& p );
 
 			// преобразование в дату 'YYYY-MM-DD' из строки 'YYYYMMDD' или 'YYYY/MM/DD'
-			static std::string qDate(const std::string& p , const char sep = '-');
+			static std::string qDate(const std::string& p, const char sep = '-');
 
 			// экранирование кавычек (удваивание для sqlite)
 			static std::string qEscapeString( const std::string& s );
@@ -261,7 +261,7 @@ namespace uniset
 			ev::sig sigTERM;
 			ev::sig sigQUIT;
 			ev::sig sigINT;
-			void onTerminate( ev::sig& evsig , int revents );
+			void onTerminate( ev::sig& evsig, int revents );
 
 			ev::async wsactivate; // активация LogWebSocket-ов
 

@@ -354,9 +354,9 @@ bool MQTTPublisher::RangeInfo::check( long val ) const
 	return ( val >= rmin && val <= rmax );
 }
 //--------------------------------------------------------------------------------
-void MQTTPublisher::MQTTTextInfo::check( mosqpp::mosquittopp* serv, long value , std::shared_ptr<DebugStream>& log , const string& myname )
+void MQTTPublisher::MQTTTextInfo::check( mosqpp::mosquittopp* serv, long value, std::shared_ptr<DebugStream>& log, const string& myname )
 {
-	for( auto && r : rlist )
+	for( auto&& r : rlist )
 	{
 		if( r.check(value) )
 		{

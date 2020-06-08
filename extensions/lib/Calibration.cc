@@ -143,7 +143,7 @@ namespace uniset
 	}
 
 	// ----------------------------------------------------------------------------
-	Calibration::Calibration(xmlNode* node , size_t reserv ):
+	Calibration::Calibration(xmlNode* node, size_t reserv ):
 		minRaw(0), maxRaw(0), minVal(0), maxVal(0), rightVal(0), leftVal(0), rightRaw(0), leftRaw(0),
 		szCache(5),
 		numCacheResort(20),

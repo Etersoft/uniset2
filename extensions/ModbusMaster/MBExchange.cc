@@ -420,7 +420,7 @@ namespace uniset
 			shm->initIterator(d->resp_it);
 			shm->initIterator(d->mode_it);
 
-			for( auto && m : d->pollmap )
+			for( auto&& m : d->pollmap )
 			{
 				auto& regmap = m.second;
 
@@ -448,7 +448,7 @@ namespace uniset
 		{
 			auto d = it1->second;
 
-			for( auto && m : d->pollmap )
+			for( auto&& m : d->pollmap )
 			{
 				auto regmap = m.second;
 
@@ -1265,7 +1265,7 @@ namespace uniset
 				}
 			}
 
-			for( auto && m : d->pollmap )
+			for( auto&& m : d->pollmap )
 			{
 				auto& regmap = m.second;
 
@@ -1324,7 +1324,7 @@ namespace uniset
 	{
 		auto& r = rit->second;
 
-		for( auto && it : r->slst )
+		for( auto&& it : r->slst )
 			updateRSProperty( &it, false );
 
 	}
@@ -2274,7 +2274,7 @@ namespace uniset
 	// ------------------------------------------------------------------------------------------
 	MBExchange::RSProperty* MBExchange::addProp( PList& plist, RSProperty&& p )
 	{
-		for( auto && it : plist )
+		for( auto&& it : plist )
 		{
 			if( it.si.id == p.si.id && it.si.node == p.si.node )
 				return &it;
@@ -3164,7 +3164,7 @@ namespace uniset
 			if( force_out )
 				return;
 
-			for( auto && m : d->pollmap )
+			for( auto&& m : d->pollmap )
 			{
 				auto& regmap = m.second;
 
@@ -3229,7 +3229,7 @@ namespace uniset
 					if( !isWriteFunction(it.second->mbfunc) )
 						continue;
 
-					for( auto && i : it.second->slst )
+					for( auto&& i : it.second->slst )
 					{
 						if( sm->id == i.si.id && sm->node == i.si.node )
 						{
@@ -3302,7 +3302,7 @@ namespace uniset
 
 			d->prev_numreply.store(d->numreply);
 
-			for( auto && m : d->pollmap )
+			for( auto&& m : d->pollmap )
 			{
 				if( m.first > 1 && (ncycle % m.first) != 0 )
 					continue;

@@ -60,12 +60,12 @@ bool PostgreSQLInterface::ping() const
 	}
 	catch( const std::exception& e )
 	{
-//		lastE = string(e.what());
+		//		lastE = string(e.what());
 	}
 
 	return false;
 
-//	return db && db->is_open();
+	//	return db && db->is_open();
 }
 // -----------------------------------------------------------------------------------------
 bool PostgreSQLInterface::reconnect(const string& host, const string& user, const string& pswd, const string& dbname, unsigned int port )
@@ -73,7 +73,7 @@ bool PostgreSQLInterface::reconnect(const string& host, const string& user, cons
 	if( db )
 		close();
 
-	return nconnect(host,user,pswd, dbname, port);
+	return nconnect(host, user, pswd, dbname, port);
 }
 // -----------------------------------------------------------------------------------------
 bool PostgreSQLInterface::nconnect(const string& host, const string& user, const string& pswd, const string& dbname, unsigned int port )
@@ -254,7 +254,7 @@ void PostgreSQLInterface::save_inserted_id( const pqxx::result& res )
 bool PostgreSQLInterface::isConnection() const
 {
 	return db && ping();
-//	return (db && db->is_open())
+	//	return (db && db->is_open())
 }
 // -----------------------------------------------------------------------------------------
 DBResult PostgreSQLInterface::makeResult( const pqxx::result& res )

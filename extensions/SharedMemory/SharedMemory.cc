@@ -335,7 +335,7 @@ namespace uniset
 			res = IONotifyController::activateObject();
 
 			// инициализируем указатели
-			for( auto && it : hblist )
+			for( auto&& it : hblist )
 			{
 				it.a_it = myioEnd();
 				it.d_it = myioEnd();
@@ -343,13 +343,13 @@ namespace uniset
 
 			itPulsar = myioEnd();
 
-			for( auto && it : hist )
+			for( auto&& it : hist )
 			{
-				for( auto && hit : it.hlst )
+				for( auto&& hit : it.hlst )
 					hit.ioit = myioEnd();
 			}
 
-			for( auto && it : histmap )
+			for( auto&& it : histmap )
 			{
 				auto i = myiofind(it.first);
 
@@ -386,7 +386,7 @@ namespace uniset
 
 		bool wdtpingOK = true;
 
-		for( auto && it : hblist )
+		for( auto&& it : hblist )
 		{
 			try
 			{
@@ -433,7 +433,7 @@ namespace uniset
 	// ------------------------------------------------------------------------------------------
 	bool SharedMemory::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec )
 	{
-		for( auto && r : lstRSlot )
+		for( auto&& r : lstRSlot )
 		{
 			try
 			{
@@ -733,7 +733,7 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	void SharedMemory::checkHistoryFilter( UniXML::iterator& xit )
 	{
-		for( auto && it : hist )
+		for( auto&& it : hist )
 		{
 			if( xit.getProp(it.filter).empty() )
 				continue;
@@ -766,9 +766,9 @@ namespace uniset
 		if( hist.empty() )
 			return;
 
-		for( auto && it : hist )
+		for( auto&& it : hist )
 		{
-			for( auto && hit : it.hlst )
+			for( auto&& hit : it.hlst )
 			{
 				try
 				{
@@ -809,7 +809,7 @@ namespace uniset
 			   << " value=" << value
 			   << endl;
 
-		for( auto && it1 : (*lst) )
+		for( auto&& it1 : (*lst) )
 		{
 			History::iterator it = it1;
 

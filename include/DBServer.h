@@ -68,7 +68,10 @@ namespace uniset
 
 			virtual bool activateObject() override;
 			virtual void initDBServer() {}
-			virtual std::string getMonitInfo( const std::string& params ){ return ""; }
+			virtual std::string getMonitInfo( const std::string& params )
+			{
+				return "";
+			}
 
 
 			std::shared_ptr<LogAgregator> loga;

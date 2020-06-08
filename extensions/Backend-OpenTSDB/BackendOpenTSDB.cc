@@ -66,6 +66,7 @@ void BackendOpenTSDB::init( xmlNode* cnode )
 	bufSyncTime = conf->getArgPInt("--" + prefix + "-buf-sync-time", it.getProp("bufSyncTimeout"), bufSyncTime);
 
 	int sz = conf->getArgPInt("--" + prefix + "-uniset-object-size-message-queue", it.getProp("sizeOfMessageQueue"), 10000);
+
 	if( sz > 0 )
 		setMaxSizeOfMessageQueue(sz);
 
@@ -347,6 +348,7 @@ bool BackendOpenTSDB::flushBuffer()
 		if( ret < 0 )
 		{
 			int errnum = errno;
+
 			if( errnum == EPIPE || errnum == EBADF )
 			{
 				mywarn << "(flushBuffer): send error (" << errnum << "): " << strerror(errnum) << endl;
@@ -369,6 +371,7 @@ bool BackendOpenTSDB::flushBuffer()
 	{
 		mywarn << "(flushBuffer): (io): " << ex.displayText() << endl;
 		lastError = ex.displayText();
+
 		if( !reconnect() )
 			askTimer(tmReconnect, reconnectTime);
 	}

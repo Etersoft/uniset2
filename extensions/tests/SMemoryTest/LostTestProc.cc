@@ -36,7 +36,7 @@ void LostTestProc::sysCommand( const uniset::SystemMessage* sm )
 		askTimer(tmCheck, checkTime);
 
 		// начальная инициализация значений в SM
-		for( auto && s : slist )
+		for( auto&& s : slist )
 		{
 			try
 			{
@@ -79,7 +79,7 @@ void LostTestProc::timerInfo( const TimerMessage* tm )
 
 		myinfo << myname << ": [OK]: empty queue. CHECK VALUE... " << endl;
 
-		for( auto && s : slist )
+		for( auto&& s : slist )
 		{
 			try
 			{
@@ -131,7 +131,7 @@ void LostTestProc::timerInfo( const TimerMessage* tm )
 
 		myinfo << myname << ": [OK]: UPDATE VALUE... " << endl;
 
-		for( auto && s : slist )
+		for( auto&& s : slist )
 		{
 			try
 			{

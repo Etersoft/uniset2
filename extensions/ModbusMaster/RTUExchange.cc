@@ -283,14 +283,14 @@ bool RTUExchange::poll()
 			dlog3 << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr)
 				  << " regs=" << d->pollmap.size() << endl;
 
-			for( auto && m : d->pollmap )
+			for( auto&& m : d->pollmap )
 			{
 				if( m.first != 0 && (ncycle % m.first) != 0 )
 					continue;
 
 				auto rmap = m.second;
 
-				for( auto && it = rmap->begin(); it != rmap->end(); ++it )
+				for( auto&& it = rmap->begin(); it != rmap->end(); ++it )
 				{
 					try
 					{
@@ -329,7 +329,7 @@ bool RTUExchange::poll()
 	updateSM();
 
 	// check thresholds
-	for( auto && t : thrlist )
+	for( auto&& t : thrlist )
 	{
 		if( !isProcActive() )
 			return false;

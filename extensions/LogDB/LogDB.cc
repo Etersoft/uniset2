@@ -191,6 +191,7 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 			l->signal_on_read().connect(sigc::mem_fun(this, &LogDB::addLog));
 
 		auto lfile = sit.getProp("logfile");
+
 		if( !lfile.empty() )
 		{
 			l->logfile = make_shared<DebugStream>();

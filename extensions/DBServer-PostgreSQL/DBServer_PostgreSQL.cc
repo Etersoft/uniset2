@@ -75,11 +75,11 @@ void DBServer_PostgreSQL::sysCommand( const uniset::SystemMessage* sm )
 
 		case SystemMessage::Finish:
 			db->close();
-		break;
+			break;
 
 		case SystemMessage::FoldUp:
 			db->close();
-		break;
+			break;
 
 		default:
 			break;

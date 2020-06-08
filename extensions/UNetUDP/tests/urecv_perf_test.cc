@@ -103,7 +103,7 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 		if( packetnum == 0 )
 			packetnum = 1;
 
-		for( auto && udp : vsend )
+		for( auto&& udp : vsend )
 		{
 			try
 			{
@@ -147,7 +147,7 @@ static void run_test( size_t max, const std::string& host )
 	size_t count = 0;
 
 	// Run receivers..
-	for( auto && r : vrecv )
+	for( auto&& r : vrecv )
 	{
 		if( r )
 		{
@@ -161,7 +161,7 @@ static void run_test( size_t max, const std::string& host )
 	// wait..
 	pause();
 
-	for( auto && r : vrecv )
+	for( auto&& r : vrecv )
 	{
 		if(r)
 			r->stop();

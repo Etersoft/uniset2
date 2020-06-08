@@ -76,7 +76,7 @@ int getRawValue( const string& args, UInterface& ui );
 int getTimeChange( const string& args, UInterface& ui );
 int getState( const string& args, UInterface& ui );
 int getCalibrate( const string& args, UInterface& ui );
-int oinfo(const string& args, UInterface& ui , const string&  userparam );
+int oinfo(const string& args, UInterface& ui, const string&  userparam );
 int apiRequest( const string& args, UInterface& ui, const string& query );
 void sendText( const string& args, UInterface& ui, const string& txt, int mtype );
 // --------------------------------------------------------------------------
@@ -303,6 +303,7 @@ int main(int argc, char** argv)
 					commandToAll(conf->getControllersSection(), rep, (Command)cmd);
 					commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
 				}
+
 				return 0;
 
 				case 'r':    //--configure
@@ -331,6 +332,7 @@ int main(int argc, char** argv)
 					if( verb )
 						cout << "(finish): done" << endl;
 				}
+
 				return 0;
 
 				case 'l':    //--logrotate
@@ -386,7 +388,7 @@ int main(int argc, char** argv)
 					std::string consumers(optarg);
 					ostringstream txt;
 
-					if( checkArg(optind+1, argc, argv) == 0 )
+					if( checkArg(optind + 1, argc, argv) == 0 )
 					{
 						if( !quiet )
 							cerr << "admin(sendText): Unknown 'text'. Use: id,name,name2@nodeX mtype text" << endl;
@@ -394,12 +396,12 @@ int main(int argc, char** argv)
 						return 1;
 					}
 
-					for( int i=optind+1; i<argc; i++ )
+					for( int i = optind + 1; i < argc; i++ )
 					{
-						 if( checkArg(i, argc, argv) == 0 )
-							 break;
+						if( checkArg(i, argc, argv) == 0 )
+							break;
 
-						 txt << " " << argv[i];
+						txt << " " << argv[i];
 					}
 
 					auto conf = uniset_init(argc, argv, conffile);
@@ -669,7 +671,7 @@ int setValue( const string& args, UInterface& ui )
 	if( verb )
 		cout << "====== setValue ======" << endl;
 
-	for( auto && it : sl )
+	for( auto&& it : sl )
 	{
 		try
 		{
@@ -738,7 +740,7 @@ int getValue( const string& args, UInterface& ui )
 
 	size_t num = 0;
 
-	for( auto && it : sl )
+	for( auto&& it : sl )
 	{
 		try
 		{
@@ -817,7 +819,7 @@ int getCalibrate( const std::string& args, UInterface& ui )
 	if( !quiet )
 		cout << "====== getCalibrate ======" << endl;
 
-	for( auto && it : sl )
+	for( auto&& it : sl )
 	{
 		if( it.si.node == DefaultObjectId )
 			it.si.node = conf->getLocalNode();
@@ -867,7 +869,7 @@ int getRawValue( const std::string& args, UInterface& ui )
 	if( !quiet )
 		cout << "====== getRawValue ======" << endl;
 
-	for( auto && it : sl )
+	for( auto&& it : sl )
 	{
 		if( it.si.node == DefaultObjectId )
 			it.si.node = conf->getLocalNode();
@@ -912,7 +914,7 @@ int getTimeChange( const std::string& args, UInterface& ui )
 	if( !quiet )
 		cout << "====== getChangedTime ======" << endl;
 
-	for( auto && it : sl )
+	for( auto&& it : sl )
 	{
 		if( it.si.node == DefaultObjectId )
 			it.si.node = conf->getLocalNode();
@@ -1069,7 +1071,7 @@ int oinfo(const string& args, UInterface& ui, const string& userparam )
 	auto conf = uniset_conf();
 	auto sl = uniset::getObjectsList( args, conf );
 
-	for( auto && it : sl )
+	for( auto&& it : sl )
 	{
 		if( it.node == DefaultObjectId )
 			it.node = conf->getLocalNode();
@@ -1103,7 +1105,7 @@ int apiRequest( const string& args, UInterface& ui, const string& query )
 	//	if( verb )
 	//		cout << "apiRequest: query: " << query << endl;
 
-	for( auto && it : sl )
+	for( auto&& it : sl )
 	{
 		if( it.node == DefaultObjectId )
 			it.node = conf->getLocalNode();
@@ -1137,7 +1139,7 @@ void sendText( const string& args, UInterface& ui, const string& txt, int mtype 
 
 	cout << "mtype=" << mtype << " txt: " << txt << endl;
 
-	for( auto && it : sl )
+	for( auto&& it : sl )
 	{
 		if( it.node == DefaultObjectId )
 			it.node = conf->getLocalNode();

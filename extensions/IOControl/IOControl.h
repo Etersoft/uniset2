@@ -261,7 +261,7 @@ namespace uniset
 				IOInfo( IOInfo&& r ) = default;
 				IOInfo& operator=(IOInfo&& r) = default;
 
-				IOInfo(){}
+				IOInfo() {}
 
 				int subdev = { DefaultSubdev };   /*!< (UNIO) подустройство (см. comedi_test для конкретной карты в/в) */
 				int channel = { DefaultChannel }; /*!< (UNIO) канал [0...23] */

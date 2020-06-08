@@ -92,7 +92,7 @@ namespace uniset
 
 #ifndef DISABLE_REST_API
 			// Поддержка REST API (IHttpRequestRegistry)
-			virtual Poco::JSON::Object::Ptr httpGetByName( const std::string& name , const Poco::URI::QueryParameters& p ) override;
+			virtual Poco::JSON::Object::Ptr httpGetByName( const std::string& name, const Poco::URI::QueryParameters& p ) override;
 			virtual Poco::JSON::Array::Ptr httpGetObjectsList( const Poco::URI::QueryParameters& p ) override;
 			virtual Poco::JSON::Object::Ptr httpHelpByName( const std::string& name, const Poco::URI::QueryParameters& p ) override;
 			virtual Poco::JSON::Object::Ptr httpRequestByName( const std::string& name, const std::string& req, const Poco::URI::QueryParameters& p ) override;

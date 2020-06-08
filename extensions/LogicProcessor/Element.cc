@@ -81,7 +81,7 @@ namespace uniset
 	{
 		long _myout = getOut();
 
-		for( auto && it : outs )
+		for( auto&& it : outs )
 			it.el->setIn(it.num, _myout);
 	}
 	// -------------------------------------------------------------------------
@@ -105,7 +105,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	void Element::addInput(size_t num, long value )
 	{
-		for( auto && it : ins )
+		for( auto&& it : ins )
 		{
 			if( it.num == num )
 			{

@@ -74,7 +74,7 @@ void run_test(std::size_t concurrency, int bound, shared_ptr<SharedMemory>& shm 
 	for (std::size_t i = 0; i < concurrency / 2 - 1; ++i)
 		threads.emplace_back(w_worker);
 
-	for (auto && thread : threads)
+	for (auto&& thread : threads)
 		thread.join();
 }
 // --------------------------------------------------------------------------

@@ -173,7 +173,7 @@ void LProcessor::build( const string& lfile )
 */
 void LProcessor::getInputs()
 {
-	for( auto && it : extInputs )
+	for( auto&& it : extInputs )
 	{
 		//        try
 		//        {

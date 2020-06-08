@@ -638,7 +638,7 @@ namespace uniset
 				startNotifyEvent.wait(locker);
 		}
 
-		for( auto && i : cmap )
+		for( auto&& i : cmap )
 			i.second.ptTimeout.reset();
 
 		tcpserver->setMaxSessions( sessMaxNum );
@@ -686,7 +686,7 @@ namespace uniset
 				{
 					mbcrit << myname << "(execute_tcp): error run tcpserver: "
 						   << tcpserver->getInetAddress()
-						   << ":" << tcpserver->getInetPort() << " err: not active.." 
+						   << ":" << tcpserver->getInetPort() << " err: not active.."
 						   << endl << flush;
 					//					std::terminate();
 					uterminate();
@@ -922,7 +922,7 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	void MBSlave::updateThresholds()
 	{
-		for( auto && i : thrlist )
+		for( auto&& i : thrlist )
 		{
 			try
 			{
@@ -1079,7 +1079,7 @@ namespace uniset
 	// ------------------------------------------------------------------------------------------
 	void MBSlave::sensorInfo( const uniset::SensorMessage* sm )
 	{
-		for( auto && regs : iomap )
+		for( auto&& regs : iomap )
 		{
 			auto& rmap = regs.second;
 
@@ -1507,7 +1507,7 @@ namespace uniset
 	// ------------------------------------------------------------------------------------------
 	void MBSlave::initIterators()
 	{
-		for( auto && regs : iomap )
+		for( auto&& regs : iomap )
 		{
 			auto& rmap = regs.second;
 
@@ -1534,7 +1534,7 @@ namespace uniset
 		// for TCPServer
 		shm->initIterator(sesscount_it);
 
-		for( auto && i : cmap )
+		for( auto&& i : cmap )
 			i.second.initIterators(shm);
 	}
 	// -----------------------------------------------------------------------------
@@ -2014,6 +2014,7 @@ namespace uniset
 				}
 
 				ModbusRTU::DataGuard d(VTypes::F2r::wsize());
+
 				for( size_t k = 0; k < VTypes::F2r::wsize(); k++, i++ )
 					d.data[k] = dat[i];
 

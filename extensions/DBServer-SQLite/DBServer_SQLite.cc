@@ -71,6 +71,7 @@ void DBServer_SQLite::sysCommand( const uniset::SystemMessage* sm )
 		case SystemMessage::Finish:
 		{
 			activate = false;
+
 			if(db)
 				db->close();
 		}
@@ -79,6 +80,7 @@ void DBServer_SQLite::sysCommand( const uniset::SystemMessage* sm )
 		case SystemMessage::FoldUp:
 		{
 			activate = false;
+
 			if(db)
 				db->close();
 		}
