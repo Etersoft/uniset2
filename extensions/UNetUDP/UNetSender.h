@@ -142,6 +142,10 @@ namespace uniset
 			{
 				packsendpause = msec;
 			}
+			inline void setPackSendPauseFactor( int factor )
+			{
+				packsendpauseFactor = factor;
+			}
 
 			void setCheckConnectionPause( int msec );
 
@@ -204,6 +208,7 @@ namespace uniset
 			std::string myname = { "" };
 			timeout_t sendpause = { 150 };
 			timeout_t packsendpause = { 5 };
+			int packsendpauseFactor = { 1 };
 			timeout_t writeTimeout = { 1000 }; // msec
 			std::atomic_bool activated = { false };
 			PassiveTimer ptCheckConnection;

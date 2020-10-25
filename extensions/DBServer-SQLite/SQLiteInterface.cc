@@ -82,6 +82,12 @@ bool SQLiteInterface::connect( const string& dbfile, bool create, int extra_sqli
 	//    if( !create && !uniset::file_exist(dbfile) )
 	//        return false;
 
+	if( db && ping() )
+		return true;
+
+	if( db )
+		close();
+
 	int flags = create ? 0 : SQLITE_OPEN_READWRITE;
 
 	if( extra_sqlite_flags )

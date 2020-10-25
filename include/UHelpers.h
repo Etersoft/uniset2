@@ -93,7 +93,7 @@ namespace uniset
 			auto o = uniset::make_object<T>(idname, secname, std::forward<_Args>(__args)...);
 			m->add(o);
 			m->logAgregator()->add(o->logAgregator());
-			return std::move(o);
+			return o;
 		}
 		catch( const uniset::Exception& ex )
 		{
@@ -111,7 +111,7 @@ namespace uniset
 			auto o = uniset::make_object_x<T>(root, secname, std::forward<_Args>(__args)...);
 			m->add(o);
 			m->logAgregator()->add(o->logAgregator());
-			return std::move(o);
+			return o;
 		}
 		catch( const uniset::Exception& ex )
 		{

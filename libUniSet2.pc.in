@@ -8,4 +8,4 @@ Description: Support library for UniSet
 Requires: libxml-2.0 sigc++-2.0 omniORB4 libev
 Version: @VERSION@
 Libs: -L${libdir} -lUniSet2 -lPocoFoundation -lPocoNet @REST_API_CLIBS@
-Cflags: -I${includedir}/@PACKAGE@ -D__OMNIORB4 -std=c++11 -D_GLIBCXX_USE_NANOSLEEP @REST_API_CFLAGS@
+Cflags: -I${includedir}/@PACKAGE@ -D__OMNIORB4 @REST_API_CFLAGS@

@@ -26,7 +26,7 @@
 
 Name: libuniset2
 Version: 2.8
-Release: alt9.M90P.10
+Release: alt14.M90P.15
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -542,12 +542,27 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 
 #%_pkgconfigdir/libUniSet2*.pc
 %exclude %_pkgconfigdir/libUniSet2.pc
-        
+
 # history of current unpublished changes
 
 %changelog
-* Sun Dec 22 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt9.M90P.10
+* Sun Oct 25 2020 Pavel Vainerman <pv@altlinux.ru> 2.8-alt14.M90P.15
 - backport to ALTLinux p9 (by rpmbph script)
+
+* Sun Oct 25 2020 Pavel Vainerman <pv@altlinux.ru> 2.8-alt15
+- minor fixes
+
+* Fri Feb 14 2020 Pavel Vainerman <pv@altlinux.ru> 2.8-alt14
+- removed old define -D_GLIBCXX_USE_NANOSLEEP
+
+* Fri Feb 14 2020 Pavel Vainerman <pv@altlinux.ru> 2.8-alt13
+- (UNetUDP): added --unet-packsendpause and --unet-packsendpause-factor
+
+* Tue Jan 28 2020 Pavel Vainerman <pv@altlinux.ru> 2.8-alt12
+- minor fixes
+
+* Sun Jan 26 2020 Pavel Vainerman <pv@altlinux.ru> 2.8-alt11
+- remove std=c++11 cflags
 
 * Thu Dec 19 2019 Pavel Vainerman <pv@altlinux.ru> 2.8-alt10
 - (DBServer_PostrgeSQL): fix for check connection

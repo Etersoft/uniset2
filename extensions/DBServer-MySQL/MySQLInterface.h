@@ -33,6 +33,7 @@
 namespace uniset
 {
 	// ----------------------------------------------------------------------------
+	// no thread safety
 	class MySQLInterface:
 		public DBNetInterface
 	{

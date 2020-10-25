@@ -21,6 +21,9 @@
 #include "UTypes.h"
 #include "UExceptions.h"
 // --------------------------------------------------------------------------
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wdeprecated"
+// --------------------------------------------------------------------------
 namespace pyUInterface
 {
 	void uniset_init_params( UTypes::Params* p, const std::string& xmlfile )throw(UException);

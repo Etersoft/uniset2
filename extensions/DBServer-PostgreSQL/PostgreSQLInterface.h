@@ -29,6 +29,7 @@
 namespace uniset
 {
 	// ----------------------------------------------------------------------------
+	// No thread safety!
 	class PostgreSQLInterface:
 		public DBNetInterface
 	{
@@ -70,7 +71,7 @@ namespace uniset
 		private:
 
 			DBResult makeResult( const pqxx::result& res );
-			std::shared_ptr<pqxx::connection> db;
+			std::unique_ptr<pqxx::connection> db;
 			std::string lastQ;
 			std::string lastE;
 			double last_inserted_id;
