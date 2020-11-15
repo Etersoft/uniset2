@@ -26,5 +26,3 @@ jobs:
          ./configure --enable-mysql --enable-sqlite --enable-rrd --enable-io --disable-python --disable-mqtt --disable-pgsql --disable-api --disable-netdata --disable-logdb
     - name: make
       run: make
-    - name: make check
-      run: make check
