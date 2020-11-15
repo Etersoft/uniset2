@@ -2,7 +2,7 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ github-actions ]
+    branches: [ master, github-actions ]
   pull_request:
     branches: [ master ]
 
@@ -26,3 +26,7 @@ jobs:
          ./configure --enable-mysql --enable-sqlite --enable-rrd --enable-io --disable-python --disable-mqtt --disable-pgsql --disable-api --disable-netdata --disable-logdb
     - name: make
       run: make
+    - name: simple tests
+      run: |
+        cd tests;
+        make check
