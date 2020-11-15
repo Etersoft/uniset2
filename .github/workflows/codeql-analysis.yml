@@ -48,21 +48,23 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
-    # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v1
-
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 https://git.io/JvXDl
-
-    # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
-    #    and modify them (or add more) to build your code if your project
-    #    uses a compiled language
-
-    #- run: |
-    #   make bootstrap
-    #   make release
+      # ℹ️ Command-line programs to run using the OS shell.
+      # 📚 https://git.io/JvXDl
+    - name: install packages
+      run: |
+          # have no catch package
+          sudoapt-get install libcomedi-dev libpoco-dev libmysqlclient-dev libomniorb4-dev libev-dev omniidl xsltproc libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev py
+          # catch 1.x
+          wget https://github.com/catchorg/Catch2/releases/download/v1.11.0/catch.hpp -O include/catch.hpp
+    
+    - name: build
+       run: |
+         export CXXFLAGS='-pipe -O2 -pedantic -Wall'
+         # due broken comedi
+         export CXXFLAGS="$CXXFLAGS -Wl,--unresolved-symbols=ignore-in-shared-libs"
+         autoreconf -fiv
+         ./configure $BUILD_TESTS --enable-mysql --enable-sqlite --enable-rrd --enable-io --disable-python --disable-mqtt --disable-pgsql --disable-api --disable-netdata --disab
+         make 
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
