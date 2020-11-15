@@ -18,7 +18,7 @@ jobs:
         sudo apt-get install libcomedi-dev libpoco-dev libmysqlclient-dev libomniorb4-dev libev-dev omniidl xsltproc libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev libmosquittopp-dev
         wget https://github.com/catchorg/Catch2/releases/download/v1.11.0/catch.hpp -O include/catch.hpp
     - name: configure
-      run:
+      run: |
          export CXXFLAGS='-pipe -O2 -pedantic -Wall'
          # due broken comedi
          export CXXFLAGS="$CXXFLAGS -Wl,--unresolved-symbols=ignore-in-shared-libs"
