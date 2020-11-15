@@ -35,30 +35,24 @@ jobs:
         # https://docs.github.com/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#changing-the-languages-that-are-analyzed
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    # Initializes the CodeQL tools for scanning.
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
-      with:
-        languages: ${{ matrix.language }}
-        # If you wish to specify custom queries, you can do so here or in a config file.
-        # By default, queries listed here will override any specified in a config file.
-        # Prefix the list here with "+" to use these queries and those in the config file.
-        # queries: ./path/to/local/query, your-org/your-repo/queries@main
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: ${{ matrix.language }}
 
-      # ℹ️ Command-line programs to run using the OS shell.
-      # 📚 https://git.io/JvXDl
-    - name: install packages
-      run: |
+      - name: install packages
+        run: |
           # have no catch package
           sudoapt-get install libcomedi-dev libpoco-dev libmysqlclient-dev libomniorb4-dev libev-dev omniidl xsltproc libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev py
           # catch 1.x
           wget https://github.com/catchorg/Catch2/releases/download/v1.11.0/catch.hpp -O include/catch.hpp
     
-    - name: build
-       run: |
+      - name: build
+        run: |
          export CXXFLAGS='-pipe -O2 -pedantic -Wall'
          # due broken comedi
          export CXXFLAGS="$CXXFLAGS -Wl,--unresolved-symbols=ignore-in-shared-libs"
@@ -66,5 +60,5 @@ jobs:
          ./configure $BUILD_TESTS --enable-mysql --enable-sqlite --enable-rrd --enable-io --disable-python --disable-mqtt --disable-pgsql --disable-api --disable-netdata --disab
          make 
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
