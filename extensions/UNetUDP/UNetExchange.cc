@@ -69,7 +69,6 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
     int recvTimeout = conf->getArgPInt("--" + prefix + "-recv-timeout", it.getProp("recvTimeout"), 5000);
     int prepareTime = conf->getArgPInt("--" + prefix + "-prepare-time", it.getProp("prepareTime"), 2000);
     int evrunTimeout = conf->getArgPInt("--" + prefix + "-evrun-timeout", it.getProp("evrunTimeout"), 60000);
-    int recvpause = conf->getArgPInt("--" + prefix + "-recvpause", it.getProp("recvpause"), 10);
     int sendpause = conf->getArgPInt("--" + prefix + "-sendpause", it.getProp("sendpause"), 100);
     int packsendpause = conf->getArgPInt("--" + prefix + "-packsendpause", it.getProp("packsendpause"), 5);
     int packsendpauseFactor = conf->getArgPInt("--" + prefix + "-packsendpause-factor", it.getProp("packsendpauseFactor"), 0);
@@ -77,21 +76,10 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
     int lostTimeout = conf->getArgPInt("--" + prefix + "-lost-timeout", it.getProp("lostTimeout"), 2 * updatepause);
     steptime = conf->getArgPInt("--" + prefix + "-steptime", it.getProp("steptime"), 1000);
     int maxDiff = conf->getArgPInt("--" + prefix + "-maxdifferense", it.getProp("maxDifferense"), 100);
-    int maxProcessingCount = conf->getArgPInt("--" + prefix + "-maxprocessingcount", it.getProp("maxProcessingCount"), 100);
     int checkConnectionPause = conf->getArgPInt("--" + prefix + "-checkconnection-pause", it.getProp("checkConnectionPause"), 10000);
     int initpause = conf->getArgPInt("--" + prefix + "-initpause", it.getProp("initpause"), 5000);
+    int recvBufferSize = conf->getArgPInt("--" + prefix + "-recv-buffer-size", it.getProp("recvBufferSize"), 100);
     const string unet_transport = conf->getArg2Param("--" + prefix + "-transport", it.getProp("transport"), "broadcast");
-
-    const std::string updateStrategy = conf->getArg2Param("--" + prefix + "-update-strategy", it.getProp("updateStrategy"), "evloop");
-    UNetReceiver::UpdateStrategy r_upStrategy = UNetReceiver::strToUpdateStrategy(updateStrategy);
-
-    if( r_upStrategy == UNetReceiver::useUpdateUnknown )
-    {
-        ostringstream err;
-        err << myname << ": Unknown update strategy!!! '" << updateStrategy << "'" << endl;
-        unetcrit << myname << "(init): " << err.str() << endl;
-        throw SystemError(err.str());
-    }
 
     no_sender = conf->getArgInt("--" + prefix + "-nosender", it.getProp("nosender"));
 
@@ -138,13 +126,11 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
             r.r1->setPrepareTime(prepareTime);
             r.r1->setEvrunTimeout(evrunTimeout);
             r.r1->setLostTimeout(lostTimeout);
-            r.r1->setReceivePause(recvpause);
             r.r1->setUpdatePause(updatepause);
             r.r1->setCheckConnectionPause(checkConnectionPause);
             r.r1->setInitPause(initpause);
             r.r1->setMaxDifferens(maxDiff);
-            r.r1->setMaxProcessingCount(maxProcessingCount);
-            r.r1->setUpdateStrategy(r_upStrategy);
+            r.r1->setBufferSize(recvBufferSize);
         }
 
         if( r.r2 )
@@ -153,13 +139,11 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
             r.r2->setPrepareTime(prepareTime);
             r.r2->setEvrunTimeout(evrunTimeout);
             r.r2->setLostTimeout(lostTimeout);
-            r.r2->setReceivePause(recvpause);
             r.r2->setUpdatePause(updatepause);
             r.r2->setCheckConnectionPause(checkConnectionPause);
             r.r2->setInitPause(initpause);
             r.r2->setMaxDifferens(maxDiff);
-            r.r2->setMaxProcessingCount(maxProcessingCount);
-            r.r2->setUpdateStrategy(r_upStrategy);
+            r.r2->setBufferSize(recvBufferSize);
         }
     }
 
@@ -615,19 +599,13 @@ void UNetExchange::help_print( int argc, const char* argv[] ) noexcept
     cout << "--prefix-recv-timeout msec       - Время для фиксации события 'отсутсвие связи'" << endl;
     cout << "--prefix-prepare-time msec       - Время необходимое на подготовку (восстановление связи) при переключении на другой канал" << endl;
     cout << "--prefix-lost-timeout msec       - Время ожидания заполнения 'дырки' между пакетами. По умолчанию 5000 мсек." << endl;
-    cout << "--prefix-recvpause msec          - Пауза между приёмами. По умолчанию 10" << endl;
     cout << "--prefix-sendpause msec          - Пауза между посылками. По умолчанию 100" << endl;
-    cout << "--prefix-updatepause msec        - Пауза между обновлением информации в SM (Корелирует с recvpause и sendpause). По умолчанию 100" << endl;
+    cout << "--prefix-updatepause msec        - Пауза между обновлением информации в SM (Корелирует с sendpause). По умолчанию 100" << endl;
     cout << "--prefix-steptime msec           - Пауза между обновлением информации о связи с узлами." << endl;
     cout << "--prefix-checkconnection-pause msec  - Пауза между попытками открыть соединение (если это не удалось до этого). По умолчанию: 10000 (10 сек)" << endl;
     cout << "--prefix-maxdifferense num       - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;
-    cout << "--prefix-maxprocessingcount num  - Максимальное количество пакетов обрабатываемых за один раз (если их слишком много)" << endl;
     cout << "--prefix-nosender [0,1]          - Отключить посылку." << endl;
-    cout << "--prefix-update-strategy [thread,evloop] - Стратегия обновления данных в SM. " << endl;
-    cout << "                                         'thread' - у каждого UNetReceiver отдельный поток" << endl;
-    cout << "                                         'evloop' - используется общий (с приёмом сообщений) event loop" << endl;
-    cout << "                                 По умолчанию: evloop" << endl;
-
+    cout << "--prefix-recv-buffer-size sz     - Размер циклического буфера для приёма сообщений. По умолчанию: 100" << endl;
     cout << "--prefix-sm-ready-timeout msec   - Время ожидание я готовности SM к работе. По умолчанию 120000" << endl;
     cout << "--prefix-filter-field name       - Название фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
     cout << "--prefix-filter-value name       - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
@@ -637,7 +615,7 @@ void UNetExchange::help_print( int argc, const char* argv[] ) noexcept
     cout << "--prefix-nodes-filter-value name - Значение фильтрующего поля для списка узлов" << endl;
     cout << endl;
     cout << " Logs: " << endl;
-    cout << "--prefix-log-...            - log control" << endl;
+    cout << "--prefix-log-...             - log control" << endl;
     cout << "             add-levels ..." << endl;
     cout << "             del-levels ..." << endl;
     cout << "             set-levels ..." << endl;

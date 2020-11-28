@@ -38,7 +38,7 @@ IORFile::~IORFile()
 // -----------------------------------------------------------------------------------------
 string IORFile::getIOR( const ObjectId id )
 {
-	string fname( getFileName(id) );
+	const string fname( getFileName(id) );
 	ifstream ior_file(fname.c_str());
 	string sior;
 	ior_file >> sior;
@@ -48,7 +48,7 @@ string IORFile::getIOR( const ObjectId id )
 // -----------------------------------------------------------------------------------------
 void IORFile::setIOR( const ObjectId id, const string& sior )
 {
-	string fname( getFileName(id) );
+	const string fname( getFileName(id) );
 	ofstream ior_file(fname.c_str(), ios::out | ios::trunc);
 
 	if( !ior_file )
@@ -60,7 +60,7 @@ void IORFile::setIOR( const ObjectId id, const string& sior )
 // -----------------------------------------------------------------------------------------
 void IORFile::unlinkIOR( const ObjectId id )
 {
-	string fname( getFileName(id) );
+	const string fname( getFileName(id) );
 	unlink(fname.c_str());
 }
 // -----------------------------------------------------------------------------------------

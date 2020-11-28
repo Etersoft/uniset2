@@ -399,7 +399,7 @@ void LogReader::readlogs( const std::string& _addr, int _port, LogServerTypes::C
 
 							line << endl;
 
-							std::string s(line.str());
+							const std::string s(line.str());
 
 							if( std::regex_search(s, rule) )
 								outlog->any(false) << s;
