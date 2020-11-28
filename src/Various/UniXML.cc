@@ -171,7 +171,7 @@ string UniXML::getProp2(const xmlNode* node, const string& name, const string& d
 	// формально при конструировании строки может быть exception
 	try
 	{
-		string s(getProp(node, name));
+		const string s(getProp(node, name));
 
 		if( !s.empty() )
 			return s;
@@ -211,7 +211,7 @@ int UniXML::getIntProp(const xmlNode* node, const string& name ) noexcept
 // -----------------------------------------------------------------------------
 int UniXML::getPIntProp(const xmlNode* node, const string& name, int def ) noexcept
 {
-	string param( getProp(node, name) );
+	const string param( getProp(node, name) );
 
 	if( param.empty() )
 		return def;
@@ -315,7 +315,7 @@ bool UniXML::save( const string& filename, int level )
 		fn = this->filename;
 
 	// Если файл уже существует, переименовываем его в *.xml.bak
-	string bakfilename(fn + ".bak");
+	const string bakfilename(fn + ".bak");
 	(void)rename(fn.c_str(), bakfilename.c_str());
 	//    int res = ::xmlSaveFormatFileEnc(fn.c_str(), doc, ExternalEncoding.c_str(), level);
 	// Write in UTF-8 without XML encoding in the header */
@@ -611,7 +611,7 @@ int UniXML_iterator::getIntProp( const string& name ) const noexcept
 
 int UniXML_iterator::getPIntProp( const string& name, int def ) const noexcept
 {
-	string param( getProp(name) );
+	const string param( getProp(name) );
 
 	if( param.empty() )
 		return def;

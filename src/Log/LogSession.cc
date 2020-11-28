@@ -425,7 +425,7 @@ namespace uniset
 		if( mylog.is_info() )
 			mylog.info() << peername << "(LogSession::readEvent): receive command: '" << (LogServerTypes::Command)msg.cmd << "'" << endl;
 
-		string cmdLogName(msg.logname);
+		const string cmdLogName(msg.logname);
 
 		try
 		{
@@ -570,7 +570,7 @@ namespace uniset
 
 		try
 		{
-			std::string ret( m_command_sig.emit(this, LogServerTypes::Command(msg.cmd), cmdLogName) );
+			const std::string ret( m_command_sig.emit(this, LogServerTypes::Command(msg.cmd), cmdLogName) );
 
 			if( !ret.empty() )
 			{

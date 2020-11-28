@@ -165,14 +165,14 @@ namespace uniset
 		{
 			auto c = v[i];
 
-			string arg1 = checkArg(i + 1, v);
+			const string arg1 = checkArg(i + 1, v);
 
 			if( arg1.empty() )
 				continue;
 
 			i++;
 
-			std::string filter = checkArg(i + 2, v);
+			const std::string filter = checkArg(i + 2, v);
 
 			if( !filter.empty() )
 				i++;

@@ -42,7 +42,7 @@ int main( int argc, char** argv )
         auto conf = uniset_init(argc, argv, "configure.xml" );
         UInterface ui(conf);
 
-        string sid(conf->getArgParam("--sid"));
+        const string sid(conf->getArgParam("--sid"));
 
         if( sid.empty() )
         {
