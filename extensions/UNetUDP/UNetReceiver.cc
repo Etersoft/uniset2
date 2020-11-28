@@ -28,6 +28,7 @@ using namespace uniset;
 using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 CommonEventLoop UNetReceiver::loop;
+static UniSetUDP::UDPAData emptyAData;
 // -----------------------------------------------------------------------------
 /*
 bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
@@ -364,165 +365,153 @@ void UNetReceiver::initEvent( ev::timer& tmr, int revents ) noexcept
         return;
     }
 
-    initOK.store(true);
-    tmr.stop();
-}
-// -----------------------------------------------------------------------------
-void UNetReceiver::update() noexcept
-{
-    UniSetUDP::UDPMessage p;
-    // обрабатываем, пока очередь либо не опустеет,
-    // либо обнаружится "дырка" в последовательности,
-    // но при этом обрабатываем не больше maxProcessingCount
-    // за один раз..
-    int k = maxProcessingCount;
+	UniSetUDP::UDPMessage p;
+	CacheItem* c_it = nullptr;
+	UniSetUDP::UDPAData* dat = nullptr;
+	long s_id;
 
-    while( k > 0 )
-    {
-        {
-            // lock qpack
-            pack_guard l(packMutex, upStrategy);
+	// обрабатываем, пока очередь либо не опустеет,
+	// либо обнаружится "дырка" в последовательности,
+	// но при этом обрабатываем не больше maxProcessingCount
+	// за один раз..
+	int k = maxProcessingCount;
 
-            if( qpack.empty() )
-                return;
+	while( k > 0 )
+	{
+		{
+			// lock qpack
+			pack_guard l(packMutex, upStrategy);
 
-            p = qpack.top();
-            size_t sub = labs( (long int)(p.num - pnum) );
+			if( qpack.empty() )
+				return;
 
-            if( pnum > 0 )
-            {
-                // если sub > maxDifferens
-                // значит это просто "разрыв"
-                // и нам ждать lostTimeout не надо
-                // сразу начинаем обрабатывать новые пакеты
-                // а если > 1 && < maxDifferens
-                // значит это временная "дырка"
-                // и надо подождать lostTimeout
-                // чтобы констатировать потерю пакета..
-                if( sub > 1 && sub < maxDifferens )
-                {
-                    // если p.num < pnum, то это какой-то "дубль",
-                    // т.к мы все пакеты <= pnum уже "отработали".
-                    // а значит можно не ждать, а откидывать пакет и
-                    // дальше работать..
-                    if( p.num < pnum )
-                    {
-                        qpack.pop();
-                        continue;
-                    }
+			p = qpack.top();
+			size_t sub = labs( (long int)(p.num - pnum) );
 
-                    if( !ptLostTimeout.checkTime() )
-                        return;
+			if( pnum > 0 )
+			{
+				// если sub > maxDifferens
+				// значит это просто "разрыв"
+				// и нам ждать lostTimeout не надо
+				// сразу начинаем обрабатывать новые пакеты
+				// а если > 1 && < maxDifferens
+				// значит это временная "дырка"
+				// и надо подождать lostTimeout
+				// чтобы констатировать потерю пакета..
+				if( sub > 1 && sub < maxDifferens )
+				{
+					// если p.num < pnum, то это какой-то "дубль",
+					// т.к мы все пакеты <= pnum уже "отработали".
+					// а значит можно не ждать, а откидывать пакет и
+					// дальше работать..
+					if( p.num < pnum )
+					{
+						qpack.pop();
+						continue;
+					}
 
-                    unetwarn << myname << "(update): lostTimeout(" << ptLostTimeout.getInterval() << ")! pnum=" << p.num << " lost " << sub << " packets " << endl;
-                    lostPackets += sub;
-                }
-                else if( p.num == pnum )
-                {
-                    /* а что делать если идут повторные пакеты ?!
-                     * для надёжности лучше обрабатывать..
-                     * для "оптимизации".. лучше игнорировать
-                     */
-                    qpack.pop(); // пока выбрали вариант "оптимизации" (выкидываем из очереди и идём дальше)
-                    continue;
-                }
+					if( !ptLostTimeout.checkTime() )
+						return;
 
-                if( sub >= maxDifferens )
-                {
-                    // считаем сколько пакетов потеряли.. (pnum=0 - означает что мы только что запустились...)
-                    if( pnum != 0 && p.num > pnum )
-                    {
-                        lostPackets += sub;
-                        unetwarn << myname << "(update): sub=" <<  sub << " > maxDifferenst(" << maxDifferens << ")! lost " << sub << " packets " << endl;
-                    }
-                }
-            }
+					unetwarn << myname << "(update): lostTimeout(" << ptLostTimeout.getInterval() << ")! pnum=" << p.num << " lost " << sub << " packets " << endl;
+					lostPackets += sub;
+				}
+				else if( p.num == pnum )
+				{
+					/* а что делать если идут повторные пакеты ?!
+					 * для надёжности лучше обрабатывать..
+					 * для "оптимизации".. лучше игнорировать
+					 */
+					qpack.pop(); // пока выбрали вариант "оптимизации" (выкидываем из очереди и идём дальше)
+					continue;
+				}
 
-            ptLostTimeout.reset();
+				if( sub >= maxDifferens )
+				{
+					// считаем сколько пакетов потеряли.. (pnum=0 - означает что мы только что запустились...)
+					if( pnum != 0 && p.num > pnum )
+					{
+						lostPackets += sub;
+						unetwarn << myname << "(update): sub=" <<  sub << " > maxDifferenst(" << maxDifferens << ")! lost " << sub << " packets " << endl;
+					}
+				}
+			}
 
-            // удаляем из очереди, только если
-            // всё в порядке с последовательностью..
-            qpack.pop();
-            pnum = p.num;
-        } // unlock qpack
+			ptLostTimeout.reset();
 
-        k--;
+			// удаляем из очереди, только если
+			// всё в порядке с последовательностью..
+			qpack.pop();
+			pnum = p.num;
+		} // unlock qpack
 
-        upCount++;
-        //        cerr << myname << "(update): " << p.msg.header << endl;
+		k--;
+		upCount++;
 
-        initDCache(p, !d_cache_init_ok);
-        initACache(p, !a_cache_init_ok);
+		// Обработка дискретных
+		auto d_iv = getDCache(p, !d_cache_init_ok);
+		for( size_t i = 0; i < p.dcount; i++ )
+		{
+			try
+			{
+				s_id = p.dID(i);
+				c_it = &d_iv.cache[i];
 
-        // Обработка дискретных
-        CacheInfo& d_iv = d_icache_map[p.getDataID()];
+				if( c_it->id != s_id )
+				{
+					unetwarn << myname << "(update): reinit dcache for sid=" << s_id << endl;
+					c_it->id = s_id;
+					shm->initIterator(c_it->ioit);
+				}
 
-        for( size_t i = 0; i < p.dcount; i++ )
-        {
-            try
-            {
-                long id = p.dID(i);
-                bool val = p.dValue(i);
+				// обновление данных в SM (блокировано)
+				if( lockUpdate )
+					continue;
 
-                CacheItem& ii(d_iv.cache[i]);
+				shm->localSetValue(c_it->ioit, s_id, p.dValue(i), shm->ID());
+			}
+			catch( const uniset::Exception& ex)
+			{
+				unetcrit << myname << "(update): " << ex << std::endl;
+			}
+			catch(...)
+			{
+				unetcrit << myname << "(update): catch ..." << std::endl;
+			}
+		}
 
-                if( ii.id != id )
-                {
-                    unetwarn << myname << "(update): reinit cache for sid=" << id << endl;
-                    ii.id = id;
-                    shm->initIterator(ii.ioit);
-                }
+		// Обработка аналоговых
+		auto a_iv = getACache(p, !a_cache_init_ok);
+		for( size_t i = 0; i < p.acount; i++ )
+		{
+			try
+			{
+				dat = &p.a_dat[i];
+				c_it = &a_iv.cache[i];
 
-                // обновление данных в SM (блокировано)
-                if( lockUpdate )
-                    continue;
+				if( c_it->id != dat->id )
+				{
+					unetwarn << myname << "(update): reinit acache for sid=" << dat->id << endl;
+					c_it->id = dat->id;
+					shm->initIterator(c_it->ioit);
+				}
 
-                shm->localSetValue(ii.ioit, id, val, shm->ID());
-            }
-            catch( const uniset::Exception& ex)
-            {
-                unetcrit << myname << "(update): " << ex << std::endl;
-            }
-            catch(...)
-            {
-                unetcrit << myname << "(update): catch ..." << std::endl;
-            }
-        }
+				// обновление данных в SM (блокировано)
+				if( lockUpdate )
+					continue;
 
-        // Обработка аналоговых
-        CacheInfo& a_iv = a_icache_map[p.getDataID()];
-
-        for( size_t i = 0; i < p.acount; i++ )
-        {
-            try
-            {
-                UniSetUDP::UDPAData& d = p.a_dat[i];
-
-                CacheItem& ii(a_iv.cache[i]);
-
-                if( ii.id != d.id )
-                {
-                    unetwarn << myname << "(update): reinit cache for sid=" << d.id << endl;
-                    ii.id = d.id;
-                    shm->initIterator(ii.ioit);
-                }
-
-                // обновление данных в SM (блокировано)
-                if( lockUpdate )
-                    continue;
-
-                shm->localSetValue(ii.ioit, d.id, d.val, shm->ID());
-            }
-            catch( const uniset::Exception& ex)
-            {
-                unetcrit << myname << "(update): " << ex << std::endl;
-            }
-            catch(...)
-            {
-                unetcrit << myname << "(update): catch ..." << std::endl;
-            }
-        }
-    }
+				shm->localSetValue(c_it->ioit, dat->id, dat->val, shm->ID());
+			}
+			catch( const uniset::Exception& ex)
+			{
+				unetcrit << myname << "(update): " << ex << std::endl;
+			}
+			catch(...)
+			{
+				unetcrit << myname << "(update): catch ..." << std::endl;
+			}
+		}
+	}
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::updateThread() noexcept
@@ -850,29 +839,30 @@ void UNetReceiver::initIterators() noexcept
     }
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force ) noexcept
+UNetReceiver::CacheInfo& UNetReceiver::getDCache( UniSetUDP::UDPMessage& pack, bool force ) noexcept
 {
-    CacheInfo& d_info(d_icache_map[pack.getDataID()]);
+	// если элемента нет, он будет создан
+	CacheInfo& d_info = d_icache_map[pack.getDataID()];
 
-    if( !force && pack.dcount == d_info.cache.size() )
-        return;
+	if( !force && pack.dcount == d_info.cache.size() )
+		return d_info;
 
     if( d_info.cache_init_ok && pack.dcount == d_info.cache.size() )
     {
         d_cache_init_ok = true;
         auto it = d_icache_map.begin();
 
-        for( ; it != d_icache_map.end(); ++it )
-        {
-            CacheInfo& d_info(it->second);
-            d_cache_init_ok = d_cache_init_ok && d_info.cache_init_ok;
+		for( ; it != d_icache_map.end(); ++it )
+		{
+			d_info = it->second;
+			d_cache_init_ok = d_cache_init_ok && d_info.cache_init_ok;
 
             if(d_cache_init_ok == false)
                 break;
         }
 
-        return;
-    }
+		return d_info;
+	}
 
     unetinfo << myname << ": init dcache for " << pack.getDataID() << endl;
 
@@ -886,37 +876,40 @@ void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force ) noexcep
     {
         CacheItem& d(d_info.cache[i]);
 
-        if( d.id != pack.d_id[i] )
-        {
-            d.id = pack.d_id[i];
-            shm->initIterator(d.ioit);
-        }
-    }
+		if( d.id != pack.d_id[i] )
+		{
+			d.id = pack.d_id[i];
+			shm->initIterator(d.ioit);
+		}
+	}
+
+	return d_info;
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force ) noexcept
+UNetReceiver::CacheInfo& UNetReceiver::getACache( UniSetUDP::UDPMessage& pack, bool force ) noexcept
 {
-    CacheInfo& a_info(a_icache_map[pack.getDataID()]);
+	// если элемента нет, он будет создан
+	CacheInfo& a_info = a_icache_map[pack.getDataID()];
 
-    if( !force && pack.acount == a_info.cache.size() )
-        return;
+	if( !force && pack.acount == a_info.cache.size() )
+		return a_info;
 
     if( a_info.cache_init_ok && pack.acount == a_info.cache.size() )
     {
         a_cache_init_ok = true;
         auto it = a_icache_map.begin();
 
-        for( ; it != a_icache_map.end(); ++it )
-        {
-            CacheInfo& a_info(it->second);
-            a_cache_init_ok = a_cache_init_ok && a_info.cache_init_ok;
+		for( ; it != a_icache_map.end(); ++it )
+		{
+			a_info = it->second;
+			a_cache_init_ok = a_cache_init_ok && a_info.cache_init_ok;
 
             if(a_cache_init_ok == false)
                 break;
         }
 
-        return;
-    }
+		return a_info;
+	}
 
     unetinfo << myname << ": init icache for " << pack.getDataID() << endl;
     a_info.cache_init_ok = true;
@@ -930,12 +923,14 @@ void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force ) noexcep
     {
         CacheItem& d(a_info.cache[i]);
 
-        if( d.id != pack.a_dat[i].id )
-        {
-            d.id = pack.a_dat[i].id;
-            shm->initIterator(d.ioit);
-        }
-    }
+		if( d.id != pack.a_dat[i].id )
+		{
+			d.id = pack.a_dat[i].id;
+			shm->initIterator(d.ioit);
+		}
+	}
+
+	return a_info;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::connectEvent( UNetReceiver::EventSlot sl ) noexcept
