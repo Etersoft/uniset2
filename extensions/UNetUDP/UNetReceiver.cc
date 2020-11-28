@@ -42,30 +42,29 @@ bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
 */
 // ------------------------------------------------------------------------------------------
 UNetReceiver::UNetReceiver(const std::string& s_host, int _port
-                           , const std::shared_ptr<SMInterface>& smi
-                           , bool nocheckConnection
-                           , const std::string& prefix ):
-    shm(smi),
-    recvpause(10),
-    updatepause(100),
-    port(_port),
-    saddr(s_host, _port),
-    recvTimeout(5000),
-    prepareTime(2000),
-    lostTimeout(200), /* 2*updatepause */
-    lostPackets(0),
-    sidRespond(uniset::DefaultObjectId),
-    respondInvert(false),
-    sidLostPackets(uniset::DefaultObjectId),
-    activated(false),
-    pnum(0),
-    maxDifferens(20),
-    waitClean(false),
-    rnum(0),
-    maxProcessingCount(100),
-    lockUpdate(false),
-    d_cache_init_ok(false),
-    a_cache_init_ok(false)
+						   , const std::shared_ptr<SMInterface>& smi
+						   , bool nocheckConnection
+						   , const std::string& prefix ):
+	shm(smi),
+	updatepause(100),
+	port(_port),
+	saddr(s_host, _port),
+	recvTimeout(5000),
+	prepareTime(2000),
+	lostTimeout(200), /* 2*updatepause */
+	lostPackets(0),
+	sidRespond(uniset::DefaultObjectId),
+	respondInvert(false),
+	sidLostPackets(uniset::DefaultObjectId),
+	activated(false),
+	pnum(0),
+	maxDifferens(20),
+	waitClean(false),
+	rnum(0),
+	maxProcessingCount(100),
+	lockUpdate(false),
+	d_cache_init_ok(false),
+	a_cache_init_ok(false)
 {
     {
         ostringstream s;
@@ -123,11 +122,6 @@ void UNetReceiver::setLostTimeout( timeout_t msec ) noexcept
 {
     lostTimeout = msec;
     ptLostTimeout.setTiming(msec);
-}
-// -----------------------------------------------------------------------------
-void UNetReceiver::setReceivePause( timeout_t msec ) noexcept
-{
-    recvpause = msec;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setUpdatePause( timeout_t msec ) noexcept
@@ -983,33 +977,32 @@ void UNetReceiver::setUpdateStrategy( UNetReceiver::UpdateStrategy set )
 // -----------------------------------------------------------------------------
 const std::string UNetReceiver::getShortInfo() const noexcept
 {
-    // warning: будет вызываться из другого потока
-    // (считаем что чтение безопасно)
+	// warning: будет вызываться из другого потока
+	// (считаем что чтение безопасно)
 
-    ostringstream s;
+	ostringstream s;
 
-    s << setw(15) << std::right << getAddress() << ":" << std::left << setw(6) << getPort()
-      << "[ " << setw(7) << ( isLockUpdate() ? "PASSIVE" : "ACTIVE" ) << " ]"
-      << "    recvOK=" << isRecvOK()
-      << " receivepack=" << rnum
-      << " lostPackets=" << setw(6) << getLostPacketsNum()
-      << " updateStrategy=" << to_string(upStrategy)
-      << endl
-      << "\t["
-      << " recvTimeout=" << setw(6) << recvTimeout
-      << " prepareTime=" << setw(6) << prepareTime
-      << " evrunTimeout=" << setw(6) << evrunTimeout
-      << " lostTimeout=" << setw(6) << lostTimeout
-      << " recvpause=" << setw(6) << recvpause
-      << " updatepause=" << setw(6) << updatepause
-      << " maxDifferens=" << setw(6) << maxDifferens
-      << " maxProcessingCount=" << setw(6) << maxProcessingCount
-      << " waitClean=" << waitClean
-      << " ]"
-      << endl
-      << "\t[ qsize=" << qpack.size() << " recv=" << statRecvPerSec << " update=" << statUpPerSec << " per sec ]";
+	s << setw(15) << std::right << getAddress() << ":" << std::left << setw(6) << getPort()
+	  << "[ " << setw(7) << ( isLockUpdate() ? "PASSIVE" : "ACTIVE" ) << " ]"
+	  << "    recvOK=" << isRecvOK()
+	  << " receivepack=" << rnum
+	  << " lostPackets=" << setw(6) << getLostPacketsNum()
+	  << " updateStrategy=" << to_string(upStrategy)
+	  << endl
+	  << "\t["
+	  << " recvTimeout=" << setw(6) << recvTimeout
+	  << " prepareTime=" << setw(6) << prepareTime
+	  << " evrunTimeout=" << setw(6) << evrunTimeout
+	  << " lostTimeout=" << setw(6) << lostTimeout
+	  << " updatepause=" << setw(6) << updatepause
+	  << " maxDifferens=" << setw(6) << maxDifferens
+	  << " maxProcessingCount=" << setw(6) << maxProcessingCount
+	  << " waitClean=" << waitClean
+	  << " ]"
+	  << endl
+	  << "\t[ qsize=" << qpack.size() << " recv=" << statRecvPerSec << " update=" << statUpPerSec << " per sec ]";
 
-    return s.str();
+	return s.str();
 }
 // -----------------------------------------------------------------------------
 UNetReceiver::pack_guard::pack_guard( mutex& _m, UNetReceiver::UpdateStrategy _s ):
