@@ -336,18 +336,18 @@ namespace uniset
                 CacheVec cache;
             };
 
-            // ключом является UDPMessage::getDataID()
-            typedef std::unordered_map<long, CacheInfo> CacheMap;
-            CacheMap d_icache_map;     /*!< кэш итераторов для булевых */
-            CacheMap a_icache_map;     /*!< кэш итераторов для аналоговых */
+			// ключом является UDPMessage::getDataID()
+			typedef std::unordered_map<long, CacheInfo> CacheMap;
+			CacheMap d_icache_map;     /*!< кэш итераторов для булевых */
+			CacheMap a_icache_map;     /*!< кэш итераторов для аналоговых */
 
-            bool d_cache_init_ok = { false };
-            bool a_cache_init_ok = { false };
+			bool d_cache_init_ok = { false };
+			bool a_cache_init_ok = { false };
 
-            void initDCache( UniSetUDP::UDPMessage& pack, bool force = false ) noexcept;
-            void initACache( UniSetUDP::UDPMessage& pack, bool force = false ) noexcept;
-    };
-    // --------------------------------------------------------------------------
+			CacheInfo& getDCache( UniSetUDP::UDPMessage& pack, bool force = false ) noexcept;
+			CacheInfo& getACache( UniSetUDP::UDPMessage& pack, bool force = false ) noexcept;
+	};
+	// --------------------------------------------------------------------------
 } // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // UNetReceiver_H_
