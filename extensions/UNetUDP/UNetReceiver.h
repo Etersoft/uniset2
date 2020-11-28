@@ -344,8 +344,8 @@ namespace uniset
 			bool d_cache_init_ok = { false };
 			bool a_cache_init_ok = { false };
 
-			void initDCache( UniSetUDP::UDPMessage& pack, bool force = false ) noexcept;
-			void initACache( UniSetUDP::UDPMessage& pack, bool force = false ) noexcept;
+			CacheInfo& getDCache( UniSetUDP::UDPMessage& pack, bool force = false ) noexcept;
+			CacheInfo& getACache( UniSetUDP::UDPMessage& pack, bool force = false ) noexcept;
 	};
 	// --------------------------------------------------------------------------
 } // end of namespace uniset

@@ -28,6 +28,7 @@ using namespace uniset;
 using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 CommonEventLoop UNetReceiver::loop;
+static UniSetUDP::UDPAData emptyAData;
 // -----------------------------------------------------------------------------
 /*
 bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
@@ -371,6 +372,10 @@ void UNetReceiver::initEvent( ev::timer& tmr, int revents ) noexcept
 void UNetReceiver::update() noexcept
 {
 	UniSetUDP::UDPMessage p;
+	CacheItem* c_it = nullptr;
+	UniSetUDP::UDPAData* dat = nullptr;
+	long s_id;
+
 	// обрабатываем, пока очередь либо не опустеет,
 	// либо обнаружится "дырка" в последовательности,
 	// но при этом обрабатываем не больше maxProcessingCount
@@ -447,37 +452,29 @@ void UNetReceiver::update() noexcept
 		} // unlock qpack
 
 		k--;
-
 		upCount++;
-		//        cerr << myname << "(update): " << p.msg.header << endl;
-
-		initDCache(p, !d_cache_init_ok);
-		initACache(p, !a_cache_init_ok);
 
 		// Обработка дискретных
-		CacheInfo& d_iv = d_icache_map[p.getDataID()];
-
+		auto d_iv = getDCache(p, !d_cache_init_ok);
 		for( size_t i = 0; i < p.dcount; i++ )
 		{
 			try
 			{
-				long id = p.dID(i);
-				bool val = p.dValue(i);
+				s_id = p.dID(i);
+				c_it = &d_iv.cache[i];
 
-				CacheItem& ii(d_iv.cache[i]);
-
-				if( ii.id != id )
+				if( c_it->id != s_id )
 				{
-					unetwarn << myname << "(update): reinit cache for sid=" << id << endl;
-					ii.id = id;
-					shm->initIterator(ii.ioit);
+					unetwarn << myname << "(update): reinit dcache for sid=" << s_id << endl;
+					c_it->id = s_id;
+					shm->initIterator(c_it->ioit);
 				}
 
 				// обновление данных в SM (блокировано)
 				if( lockUpdate )
 					continue;
 
-				shm->localSetValue(ii.ioit, id, val, shm->ID());
+				shm->localSetValue(c_it->ioit, s_id, p.dValue(i), shm->ID());
 			}
 			catch( const uniset::Exception& ex)
 			{
@@ -490,28 +487,26 @@ void UNetReceiver::update() noexcept
 		}
 
 		// Обработка аналоговых
-		CacheInfo& a_iv = a_icache_map[p.getDataID()];
-
+		auto a_iv = getACache(p, !a_cache_init_ok);
 		for( size_t i = 0; i < p.acount; i++ )
 		{
 			try
 			{
-				UniSetUDP::UDPAData& d = p.a_dat[i];
+				dat = &p.a_dat[i];
+				c_it = &a_iv.cache[i];
 
-				CacheItem& ii(a_iv.cache[i]);
-
-				if( ii.id != d.id )
+				if( c_it->id != dat->id )
 				{
-					unetwarn << myname << "(update): reinit cache for sid=" << d.id << endl;
-					ii.id = d.id;
-					shm->initIterator(ii.ioit);
+					unetwarn << myname << "(update): reinit acache for sid=" << dat->id << endl;
+					c_it->id = dat->id;
+					shm->initIterator(c_it->ioit);
 				}
 
 				// обновление данных в SM (блокировано)
 				if( lockUpdate )
 					continue;
 
-				shm->localSetValue(ii.ioit, d.id, d.val, shm->ID());
+				shm->localSetValue(c_it->ioit, dat->id, dat->val, shm->ID());
 			}
 			catch( const uniset::Exception& ex)
 			{
@@ -850,12 +845,13 @@ void UNetReceiver::initIterators() noexcept
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force ) noexcept
+UNetReceiver::CacheInfo& UNetReceiver::getDCache( UniSetUDP::UDPMessage& pack, bool force ) noexcept
 {
-	CacheInfo& d_info(d_icache_map[pack.getDataID()]);
+	// если элемента нет, он будет создан
+	CacheInfo& d_info = d_icache_map[pack.getDataID()];
 
 	if( !force && pack.dcount == d_info.cache.size() )
-		return;
+		return d_info;
 
 	if( d_info.cache_init_ok && pack.dcount == d_info.cache.size() )
 	{
@@ -864,14 +860,14 @@ void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force ) noexcep
 
 		for( ; it != d_icache_map.end(); ++it )
 		{
-			CacheInfo& d_info(it->second);
+			d_info = it->second;
 			d_cache_init_ok = d_cache_init_ok && d_info.cache_init_ok;
 
 			if(d_cache_init_ok == false)
 				break;
 		}
 
-		return;
+		return d_info;
 	}
 
 	unetinfo << myname << ": init dcache for " << pack.getDataID() << endl;
@@ -892,14 +888,17 @@ void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force ) noexcep
 			shm->initIterator(d.ioit);
 		}
 	}
+
+	return d_info;
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force ) noexcept
+UNetReceiver::CacheInfo& UNetReceiver::getACache( UniSetUDP::UDPMessage& pack, bool force ) noexcept
 {
-	CacheInfo& a_info(a_icache_map[pack.getDataID()]);
+	// если элемента нет, он будет создан
+	CacheInfo& a_info = a_icache_map[pack.getDataID()];
 
 	if( !force && pack.acount == a_info.cache.size() )
-		return;
+		return a_info;
 
 	if( a_info.cache_init_ok && pack.acount == a_info.cache.size() )
 	{
@@ -908,14 +907,14 @@ void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force ) noexcep
 
 		for( ; it != a_icache_map.end(); ++it )
 		{
-			CacheInfo& a_info(it->second);
+			a_info = it->second;
 			a_cache_init_ok = a_cache_init_ok && a_info.cache_init_ok;
 
 			if(a_cache_init_ok == false)
 				break;
 		}
 
-		return;
+		return a_info;
 	}
 
 	unetinfo << myname << ": init icache for " << pack.getDataID() << endl;
@@ -936,6 +935,8 @@ void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force ) noexcep
 			shm->initIterator(d.ioit);
 		}
 	}
+
+	return a_info;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::connectEvent( UNetReceiver::EventSlot sl ) noexcept
