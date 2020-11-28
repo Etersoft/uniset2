@@ -271,7 +271,6 @@ int main(int argc, char* argv[])
                     udp.setLoopBack(true);
 
                 UniSetUDP::UDPMessage pack;
-                UniSetUDP::UDPPacket buf;
                 unsigned long prev_num = 1;
 
                 int nc = 1;
@@ -303,27 +302,35 @@ int main(int argc, char* argv[])
                             continue;
                         }
 
-                        size_t ret = udp.receive(&(buf.data), sizeof(buf.data) );
-                        size_t sz = UniSetUDP::UDPMessage::getMessage(pack, buf);
+                        size_t ret = udp.receive(&pack, sizeof(UniSetUDP::UDPMessage));
 
-                        if( sz == 0 )
+                        if( ret < 0 )
                         {
-                            if( pack.magic != UniSetUDP::UNETUDP_MAGICNUM )
-                                cerr << "(recv): BAD PROTOCOL VERSION! [ need version '" << UniSetUDP::UNETUDP_MAGICNUM << "']" << endl;
-                            else
-                                cerr << "(recv): FAILED header ret=" << ret
-                                     << " sizeof=" << sz << endl;
+                            cerr << "(recv): no data?!" << endl;
+                            continue;
+                        }
 
+                        if( ret == 0 )
+                        {
+                            cerr << "(recv): connection closed?!" << endl;
+                            continue;
+                        }
+
+                        pack.ntoh();
+
+                        if( pack.header.magic != UniSetUDP::UNETUDP_MAGICNUM )
+                        {
+                            cerr << "(recv): BAD PROTOCOL VERSION! [ need version '" << UniSetUDP::UNETUDP_MAGICNUM << "']" << endl;
                             continue;
                         }
 
                         if( lost )
                         {
-                            if( prev_num != (pack.num - 1) )
-                                cerr << "WARNING! Incorrect sequence of packets! current=" << pack.num
+                            if( prev_num != (pack.header.num - 1) )
+                                cerr << "WARNING! Incorrect sequence of packets! current=" << pack.header.num
                                      << " prev=" << prev_num << endl;
 
-                            prev_num = pack.num;
+                            prev_num = pack.header.num;
                         }
 
                         npack++;
@@ -379,8 +386,8 @@ int main(int argc, char* argv[])
                 auto udp = std::make_shared<MulticastSendTransport>(s_host, port, groups[0].toString(), port);
 
                 UniSetUDP::UDPMessage mypack;
-                mypack.nodeID = nodeID;
-                mypack.procID = procID;
+                mypack.header.nodeID = nodeID;
+                mypack.header.procID = procID;
 
                 if( !a_data.empty() )
                 {
@@ -416,9 +423,6 @@ int main(int argc, char* argv[])
 
                 udp->createConnection(true, 500);
                 size_t packetnum = 0;
-
-                UniSetUDP::UDPPacket s_buf;
-
                 size_t nc = 1;
 
                 if( ncycles > 0 )
@@ -426,7 +430,7 @@ int main(int argc, char* argv[])
 
                 while( nc )
                 {
-                    mypack.num = packetnum++;
+                    mypack.header.num = packetnum++;
 
                     // при переходе черех максимум (UniSetUDP::MaxPacketNum)
                     // пакет опять должен иметь номер "1"
@@ -437,16 +441,14 @@ int main(int argc, char* argv[])
                     {
                         if( udp->isReadyForSend(tout) )
                         {
-                            mypack.transport_msg(s_buf);
-
                             if( verb )
-                                cout << "(send): to addr=" << addr << " d_count=" << mypack.dcount
-                                     << " a_count=" << mypack.acount << " bytes=" << s_buf.len << endl;
+                                cout << "(send): to addr=" << addr << " d_count=" << mypack.header.dcount
+                                     << " a_count=" << mypack.header.acount << endl;
 
-                            size_t ret = udp->send((char*)&s_buf.data, s_buf.len);
+                            size_t ret = udp->send(&mypack, sizeof(mypack) );
 
-                            if( ret < s_buf.len )
-                                cerr << "(send): FAILED ret=" << ret << " < sizeof=" << s_buf.len << endl;
+                            if( ret < sizeof(mypack) )
+                                cerr << "(send): FAILED ret=" << ret << " < sizeof=" << sizeof(mypack) << endl;
                         }
                     }
                     catch( Poco::Net::NetException& e )

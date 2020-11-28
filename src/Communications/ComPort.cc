@@ -63,7 +63,7 @@ void ComPort::openPort()
 
 	if( fd == -1 )
 	{
-		string strErr = "Unable to open " + dev + " [Error: " + strerror(errno) + "]";
+		const string strErr = "Unable to open " + dev + " [Error: " + strerror(errno) + "]";
 		throw uniset::SystemError(strErr.c_str());
 	}
 

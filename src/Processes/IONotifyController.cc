@@ -370,7 +370,7 @@ SimpleInfo* IONotifyController::getInfo( const char* userparam )
 
 	//! \todo Назвать параметры нормально
 	//!
-	std::string param(userparam);
+	const std::string param(userparam);
 
 	ostringstream inf;
 

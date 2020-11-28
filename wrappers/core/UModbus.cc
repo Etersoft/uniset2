@@ -132,7 +132,7 @@ long UModbus::mbread(int mbaddr, int mbreg, int mbfunc, const string& s_vtype, i
     using namespace uniset;
     using namespace uniset::VTypes;
 
-    string n_ip( ( new_ip.empty() ? ip : new_ip ) );
+    const string n_ip( ( new_ip.empty() ? ip : new_ip ) );
     int n_port = ( new_port > 0 ) ? new_port : port;
 
     connect(n_ip, n_port);
@@ -293,7 +293,7 @@ long UModbus::data2value( uniset::VTypes::VType vtype, uniset::ModbusRTU::Modbus
 //---------------------------------------------------------------------------
 void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const std::string& new_ip, int new_port )throw(UException)
 {
-    std::string n_ip( ( new_ip.empty() ? ip : new_ip ) );
+    const std::string n_ip( ( new_ip.empty() ? ip : new_ip ) );
     int n_port = ( new_port > 0 ) ? new_port : port;
 
     connect(n_ip, n_port);

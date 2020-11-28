@@ -257,15 +257,15 @@ int main( int argc, char** argv )
                     {
                         if( (argv[optind + 1])[0] == 'b' )
                         {
-                            string v(argv[optind + 1]);
-                            string sb(v, 1);
+                            const string v(argv[optind + 1]);
+                            const string sb(v, 1);
                             ModbusRTU::DataBits d(sb);
                             val = d.mbyte();
                         }
                         else if( (argv[optind + 1])[0] == 'm' )
                         {
-                            string v(argv[optind + 1]);
-                            string sb(v, 1);
+                            const string v(argv[optind + 1]);
+                            const string sb(v, 1);
                             val = -1 * ModbusRTU::str2mbData(sb);
                         }
                         else
