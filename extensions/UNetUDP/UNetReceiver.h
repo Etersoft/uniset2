@@ -125,7 +125,6 @@ namespace uniset
 			size_t getLostPacketsNum() const noexcept;
 
 			void setReceiveTimeout( timeout_t msec ) noexcept;
-			void setReceivePause( timeout_t msec ) noexcept;
 			void setUpdatePause( timeout_t msec ) noexcept;
 			void setLostTimeout( timeout_t msec ) noexcept;
 			void setPrepareTime( timeout_t msec ) noexcept;
@@ -241,7 +240,6 @@ namespace uniset
 		private:
 			UNetReceiver();
 
-			timeout_t recvpause = { 10 };      /*!< пауза между приёмами пакетов, [мсек] */
 			timeout_t updatepause = { 100 };   /*!< периодичность обновления данных в SM, [мсек] */
 
 			std::unique_ptr<UDPReceiveU> udp;

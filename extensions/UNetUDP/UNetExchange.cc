@@ -77,7 +77,6 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 	int recvTimeout = conf->getArgPInt("--" + prefix + "-recv-timeout", it.getProp("recvTimeout"), 5000);
 	int prepareTime = conf->getArgPInt("--" + prefix + "-prepare-time", it.getProp("prepareTime"), 2000);
 	int evrunTimeout = conf->getArgPInt("--" + prefix + "-evrun-timeout", it.getProp("evrunTimeout"), 60000);
-	int recvpause = conf->getArgPInt("--" + prefix + "-recvpause", it.getProp("recvpause"), 10);
 	int sendpause = conf->getArgPInt("--" + prefix + "-sendpause", it.getProp("sendpause"), 100);
 	int packsendpause = conf->getArgPInt("--" + prefix + "-packsendpause", it.getProp("packsendpause"), 5);
 	int packsendpauseFactor = conf->getArgPInt("--" + prefix + "-packsendpause-factor", it.getProp("packsendpauseFactor"), 0);
@@ -358,7 +357,6 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 		r->setPrepareTime(prepareTime);
 		r->setEvrunTimeout(evrunTimeout);
 		r->setLostTimeout(lostTimeout);
-		r->setReceivePause(recvpause);
 		r->setUpdatePause(updatepause);
 		r->setCheckConnectionPause(checkConnectionPause);
 		r->setInitPause(initpause);
@@ -389,7 +387,6 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 				r2->setPrepareTime(prepareTime);
 				r2->setEvrunTimeout(evrunTimeout);
 				r2->setLostTimeout(lostTimeout);
-				r2->setReceivePause(recvpause);
 				r2->setUpdatePause(updatepause);
 				r2->setCheckConnectionPause(checkConnectionPause);
 				r2->setInitPause(initpause);
@@ -853,9 +850,8 @@ void UNetExchange::help_print( int argc, const char* argv[] ) noexcept
 	cout << "--prefix-recv-timeout msec       - Время для фиксации события 'отсутсвие связи'" << endl;
 	cout << "--prefix-prepare-time msec       - Время необходимое на подготовку (восстановление связи) при переключении на другой канал" << endl;
 	cout << "--prefix-lost-timeout msec       - Время ожидания заполнения 'дырки' между пакетами. По умолчанию 5000 мсек." << endl;
-	cout << "--prefix-recvpause msec          - Пауза между приёмами. По умолчанию 10" << endl;
 	cout << "--prefix-sendpause msec          - Пауза между посылками. По умолчанию 100" << endl;
-	cout << "--prefix-updatepause msec        - Пауза между обновлением информации в SM (Корелирует с recvpause и sendpause). По умолчанию 100" << endl;
+	cout << "--prefix-updatepause msec        - Пауза между обновлением информации в SM (Корелирует с sendpause). По умолчанию 100" << endl;
 	cout << "--prefix-steptime msec           - Пауза между обновлением информации о связи с узлами." << endl;
 	cout << "--prefix-checkconnection-pause msec  - Пауза между попытками открыть соединение (если это не удалось до этого). По умолчанию: 10000 (10 сек)" << endl;
 	cout << "--prefix-maxdifferense num       - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;

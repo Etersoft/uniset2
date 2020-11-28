@@ -46,7 +46,6 @@ UNetReceiver::UNetReceiver(const std::string& s_host, int _port
 						   , bool nocheckConnection
 						   , const std::string& prefix ):
 	shm(smi),
-	recvpause(10),
 	updatepause(100),
 	port(_port),
 	saddr(s_host, _port),
@@ -123,11 +122,6 @@ void UNetReceiver::setLostTimeout( timeout_t msec ) noexcept
 {
 	lostTimeout = msec;
 	ptLostTimeout.setTiming(msec);
-}
-// -----------------------------------------------------------------------------
-void UNetReceiver::setReceivePause( timeout_t msec ) noexcept
-{
-	recvpause = msec;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setUpdatePause( timeout_t msec ) noexcept
@@ -1006,7 +1000,6 @@ const std::string UNetReceiver::getShortInfo() const noexcept
 	  << " prepareTime=" << setw(6) << prepareTime
 	  << " evrunTimeout=" << setw(6) << evrunTimeout
 	  << " lostTimeout=" << setw(6) << lostTimeout
-	  << " recvpause=" << setw(6) << recvpause
 	  << " updatepause=" << setw(6) << updatepause
 	  << " maxDifferens=" << setw(6) << maxDifferens
 	  << " maxProcessingCount=" << setw(6) << maxProcessingCount
