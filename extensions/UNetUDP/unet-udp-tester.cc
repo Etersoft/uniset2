@@ -29,6 +29,7 @@ static struct option longopts[] =
 	{ "prof", required_argument, 0, 'y' },
 	{ "a-data", required_argument, 0, 'a' },
 	{ "d-data", required_argument, 0, 'i' },
+	{ "pack-num", required_argument, 0, 'u' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -79,10 +80,11 @@ int main(int argc, char* argv[])
 	unsigned int nprof = 0;
 	std::string d_data = "";
 	std::string a_data = "";
+	size_t packetnum = 1;
 
 	while(1)
 	{
-		opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blvdz:y:a:i:", longopts, &optindex);
+		opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blvdz:y:a:i:u:", longopts, &optindex);
 
 		if( opt == -1 )
 			break;
@@ -106,6 +108,7 @@ int main(int argc, char* argv[])
 				cout << "[-y|--prof] num          - Print receive statistics every NUM packets (for -r only)" << endl;
 				cout << "[-a|--a-data] id1=val1,id2=val2,... - Analog data. Send: id1=id1,id2=id2,.. for analog sensors" << endl;
 				cout << "[-i|--d-data] id1=val1,id2=val2,... - Digital data. Send: id1=id1,id2=id2,.. for digital sensors" << endl;
+				cout << "[-u|--pack-num] num      - first packet numbrt (default: 1)" << endl;
 				cout << endl;
 				return 0;
 
@@ -169,6 +172,10 @@ int main(int argc, char* argv[])
 
 			case 'z':
 				ncycles = atoi(optarg);
+				break;
+
+			case 'u':
+				packetnum = atoi(optarg);
 				break;
 
 			case '?':
@@ -345,7 +352,6 @@ int main(int argc, char* argv[])
 
 				Poco::Net::SocketAddress sa(s_host, port);
 				udp->connect(sa);
-				size_t packetnum = 0;
 
 				UniSetUDP::UDPPacket s_buf;
 
@@ -358,7 +364,7 @@ int main(int argc, char* argv[])
 				{
 					mypack.num = packetnum++;
 
-					// при переходе черех максимум (UniSetUDP::MaxPacketNum)
+					// при переходе через максимум (UniSetUDP::MaxPacketNum)
 					// пакет опять должен иметь номер "1"
 					if( packetnum == 0 )
 						packetnum = 1;

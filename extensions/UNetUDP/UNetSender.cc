@@ -156,7 +156,7 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	void UNetSender::updateFromSM()
 	{
-		for( auto && it : items )
+		for( auto&& it : items )
 		{
 			UItem& i = it.second;
 
@@ -243,7 +243,7 @@ namespace uniset
 				if( !shm->isLocalwork() )
 					updateFromSM();
 
-				for( auto && it : mypacks )
+				for( auto&& it : mypacks )
 				{
 					if( it.first > 1 && (ncycle % it.first) != 0 )
 						continue;
@@ -504,6 +504,7 @@ namespace uniset
 			if( p.pack_ind >= maxAData )
 			{
 				anum++;
+
 				if( anum >= pk.size() )
 					pk.resize(anum + 1);
 
@@ -551,7 +552,7 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	void UNetSender::initIterators()
 	{
-		for( auto && it : items )
+		for( auto&& it : items )
 			shm->initIterator(it.second.ioit);
 	}
 	// -----------------------------------------------------------------------------
