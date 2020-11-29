@@ -42,7 +42,9 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 	{
 		try
 		{
+			cout << "create sender: " << s_host << ":" << begPort + i << endl;
 			auto s = make_shared<UDPSocketU>(s_host, begPort + i);
+			s->setBroadcast(true);
 			vsend.emplace_back(s);
 		}
 		catch( Poco::Net::NetException& e )
@@ -103,7 +105,7 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 		if( packetnum == 0 )
 			packetnum = 1;
 
-		for( auto && udp : vsend )
+		for( auto&& udp : vsend )
 		{
 			try
 			{
@@ -139,15 +141,16 @@ static void run_test( size_t max, const std::string& host )
 	// make receivers..
 	for( size_t i = 0; i < max; i++ )
 	{
+		cout << "create receiver: " << host << ":" << begPort + i << endl;
 		auto r = make_shared<UNetReceiver>(host, begPort + i, smiInstance());
-		r->setLockUpdate(true);
+		//r->setLockUpdate(true);
 		vrecv.emplace_back(r);
 	}
 
 	size_t count = 0;
 
 	// Run receivers..
-	for( auto && r : vrecv )
+	for( auto&& r : vrecv )
 	{
 		if( r )
 		{
@@ -156,12 +159,12 @@ static void run_test( size_t max, const std::string& host )
 		}
 	}
 
-	cerr << "RUn " << count << " receivers..." << endl;
+	cerr << "RUN " << count << " receivers..." << endl;
 
 	// wait..
 	pause();
 
-	for( auto && r : vrecv )
+	for( auto&& r : vrecv )
 	{
 		if(r)
 			r->stop();
@@ -177,9 +180,9 @@ int main(int argc, char* argv[] )
 		auto conf = uniset_init(argc, argv);
 
 		if( argc > 1 && !strcmp(argv[1], "s") )
-			run_senders(10, host);
+			run_senders(1, host);
 		else
-			run_test(10, host);
+			run_test(1, host);
 
 		return 0;
 	}

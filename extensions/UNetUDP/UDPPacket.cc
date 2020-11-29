@@ -23,6 +23,7 @@
 // myvar = LE_TO_H(myvar)
 // -------------------------------------------------------------------------
 #if __BYTE_ORDER == __LITTLE_ENDIAN
+static bool HostIsBigEndian = false;
 #define LE_TO_H(x) {}
 #elif INTPTR_MAX == INT64_MAX
 #define LE_TO_H(x) x = le64toh(x)
@@ -33,6 +34,7 @@
 #endif
 
 #if __BYTE_ORDER == __BIG_ENDIAN
+static bool HostIsBigEndian = true;
 #define BE_TO_H(x) {}
 #elif INTPTR_MAX == INT64_MAX
 #define BE_TO_H(x) x = be64toh(x)
@@ -253,7 +255,7 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	size_t UDPMessage::transport_msg( UDPPacket& p ) const noexcept
 	{
-		memset(&p, 0, sizeof(UDPPacket));
+		p = UDPPacket{}; // reset data
 
 		size_t i = 0;
 		memcpy(&(p.data[i]), this, sizeof(UDPHeader));
@@ -311,7 +313,8 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	size_t UDPMessage::getMessage( UDPMessage& m, UDPPacket& p ) noexcept
 	{
-		memset(&m, 0, sizeof(m));
+		// reset data
+		m = UDPMessage{};
 
 		size_t i = 0;
 		memcpy(&m, &(p.data[i]), sizeof(UDPHeader));
@@ -320,7 +323,7 @@ namespace uniset
 		// byte order from packet
 		u_char be_order = m._be_order;
 
-		if( be_order )
+		if( be_order && !HostIsBigEndian )
 		{
 			BE_TO_H(m.magic);
 			BE_TO_H(m.num);
@@ -329,7 +332,7 @@ namespace uniset
 			BE_TO_H(m.dcount);
 			BE_TO_H(m.acount);
 		}
-		else
+		else if( !be_order && HostIsBigEndian )
 		{
 			LE_TO_H(m.magic);
 			LE_TO_H(m.num);
@@ -385,29 +388,32 @@ namespace uniset
 
 		// CONVERT DATA TO HOST BYTE ORDER
 		// -------------------------------
-		for( size_t n = 0; n < m.acount; n++ )
+		if( (be_order && !HostIsBigEndian) || (!be_order && HostIsBigEndian) )
 		{
-			if( be_order )
+			for( size_t n = 0; n < m.acount; n++ )
 			{
-				BE_TO_H(m.a_dat[n].id);
-				BE_TO_H(m.a_dat[n].val);
+				if( be_order )
+				{
+					BE_TO_H(m.a_dat[n].id);
+					BE_TO_H(m.a_dat[n].val);
+				}
+				else
+				{
+					LE_TO_H(m.a_dat[n].id);
+					LE_TO_H(m.a_dat[n].val);
+				}
 			}
-			else
-			{
-				LE_TO_H(m.a_dat[n].id);
-				LE_TO_H(m.a_dat[n].val);
-			}
-		}
 
-		for( size_t n = 0; n < m.dcount; n++ )
-		{
-			if( be_order )
+			for( size_t n = 0; n < m.dcount; n++ )
 			{
-				BE_TO_H(m.d_id[n]);
-			}
-			else
-			{
-				LE_TO_H(m.d_id[n]);
+				if( be_order )
+				{
+					BE_TO_H(m.d_id[n]);
+				}
+				else
+				{
+					LE_TO_H(m.d_id[n]);
+				}
 			}
 		}
 
