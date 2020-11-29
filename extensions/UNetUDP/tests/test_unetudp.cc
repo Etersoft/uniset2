@@ -97,44 +97,6 @@ void send( UniSetUDP::UDPMessage& pack, int tout = 2000 )
     REQUIRE( ret == s_buf.len );
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: queue sort", "[unetudp][packetqueue]")
-{
-    UNetReceiver::PacketQueue q;
-
-    UniSetUDP::UDPMessage m1;
-    m1.num = 10;
-    UniSetUDP::UDPMessage m2;
-    m2.num = 11;
-    UniSetUDP::UDPMessage m3;
-    m3.num = 13;
-
-    UniSetUDP::UDPMessage m4;
-    m4.num = 100;
-
-    // специально складываем в обратном порядке
-    // чтобы проверить "сортировку"
-    q.push(m1);
-    q.push(m3);
-    q.push(m2);
-    q.push(m4);
-
-    UniSetUDP::UDPMessage t = q.top();
-    REQUIRE( t.num == 10 );
-    q.pop();
-
-    t = q.top();
-    REQUIRE( t.num == 11 );
-    q.pop();
-
-    t = q.top();
-    REQUIRE( t.num == 13 );
-    q.pop();
-
-    t = q.top();
-    REQUIRE( t.num == 100 );
-    q.pop();
-}
-// -----------------------------------------------------------------------------
 TEST_CASE("[UNetUDP]: UDPMessage", "[unetudp][udpmessage]")
 {
     SECTION("UDPMessage::isFull()")
