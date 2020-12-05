@@ -23,8 +23,8 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.8
-Release: alt15
+Version: 2.8.1
+Release: alt1
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -544,6 +544,9 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
+* Sat Dec 05 2020 Pavel Vainerman <pv@altlinux.ru> 2.8.1-alt1
+- (unet): unet recevier refactoring (optimization)
+
 * Sun Oct 25 2020 Pavel Vainerman <pv@altlinux.ru> 2.8-alt15
 - minor fixes
 
