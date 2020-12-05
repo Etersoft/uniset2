@@ -1,0 +1,32 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master, github-actions ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: install packages
+      run: |
+        sudo apt-get install libcomedi-dev libpoco-dev libmysqlclient-dev libomniorb4-dev libev-dev omniidl xsltproc libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev libmosquittopp-dev
+        wget https://github.com/catchorg/Catch2/releases/download/v1.11.0/catch.hpp -O include/catch.hpp
+    - name: configure
+      run: |
+         export CXXFLAGS='-pipe -O2 -pedantic -Wall'
+         # due broken comedi
+         export CXXFLAGS="$CXXFLAGS -Wl,--unresolved-symbols=ignore-in-shared-libs"
+         autoreconf -fiv
+         ./configure --enable-mysql --enable-sqlite --enable-rrd --enable-io --disable-python --disable-mqtt --disable-pgsql --disable-api --disable-netdata --disable-logdb
+    - name: make
+      run: make
+    - name: simple tests
+      run: |
+        cd tests;
+        make check

@@ -77,7 +77,6 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 	int recvTimeout = conf->getArgPInt("--" + prefix + "-recv-timeout", it.getProp("recvTimeout"), 5000);
 	int prepareTime = conf->getArgPInt("--" + prefix + "-prepare-time", it.getProp("prepareTime"), 2000);
 	int evrunTimeout = conf->getArgPInt("--" + prefix + "-evrun-timeout", it.getProp("evrunTimeout"), 60000);
-	int recvpause = conf->getArgPInt("--" + prefix + "-recvpause", it.getProp("recvpause"), 10);
 	int sendpause = conf->getArgPInt("--" + prefix + "-sendpause", it.getProp("sendpause"), 100);
 	int packsendpause = conf->getArgPInt("--" + prefix + "-packsendpause", it.getProp("packsendpause"), 5);
 	int packsendpauseFactor = conf->getArgPInt("--" + prefix + "-packsendpause-factor", it.getProp("packsendpauseFactor"), 0);
@@ -85,9 +84,9 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 	int lostTimeout = conf->getArgPInt("--" + prefix + "-lost-timeout", it.getProp("lostTimeout"), 2 * updatepause);
 	steptime = conf->getArgPInt("--" + prefix + "-steptime", it.getProp("steptime"), 1000);
 	int maxDiff = conf->getArgPInt("--" + prefix + "-maxdifferense", it.getProp("maxDifferense"), 100);
-	int maxProcessingCount = conf->getArgPInt("--" + prefix + "-maxprocessingcount", it.getProp("maxProcessingCount"), 100);
 	int checkConnectionPause = conf->getArgPInt("--" + prefix + "-checkconnection-pause", it.getProp("checkConnectionPause"), 10000);
 	int initpause = conf->getArgPInt("--" + prefix + "-initpause", it.getProp("initpause"), 5000);
+	int recvBufferSize = conf->getArgPInt("--" + prefix + "-recv-buffer-size", it.getProp("recvBufferSize"), 3000);
 
 	std::string updateStrategy = conf->getArg2Param("--" + prefix + "-update-strategy", it.getProp("updateStrategy"), "evloop");
 
@@ -334,16 +333,6 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 			}
 		}
 
-		UNetReceiver::UpdateStrategy r_upStrategy = UNetReceiver::strToUpdateStrategy( n_it.getProp2("unet_update_strategy", updateStrategy) );
-
-		if( r_upStrategy == UNetReceiver::useUpdateUnknown )
-		{
-			ostringstream err;
-			err << myname << ": Unknown update strategy!!! '" << n_it.getProp2("unet_update_strategy", updateStrategy) << "'" << endl;
-			unetcrit << myname << "(init): " << err.str() << endl;
-			throw SystemError(err.str());
-		}
-
 		unetinfo << myname << "(init): (node='" << n << "') add  basic receiver "
 				 << h << ":" << p << endl;
 		auto r = make_shared<UNetReceiver>(h, p, shm, false, prefix);
@@ -358,16 +347,14 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 		r->setPrepareTime(prepareTime);
 		r->setEvrunTimeout(evrunTimeout);
 		r->setLostTimeout(lostTimeout);
-		r->setReceivePause(recvpause);
 		r->setUpdatePause(updatepause);
 		r->setCheckConnectionPause(checkConnectionPause);
 		r->setInitPause(initpause);
 		r->setMaxDifferens(maxDiff);
-		r->setMaxProcessingCount(maxProcessingCount);
 		r->setRespondID(resp_id, resp_invert);
 		r->setLostPacketsID(lp_id);
 		r->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
-		r->setUpdateStrategy(r_upStrategy);
+		r->setBufferSize(recvBufferSize);
 
 		shared_ptr<UNetReceiver> r2(nullptr);
 
@@ -389,16 +376,14 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 				r2->setPrepareTime(prepareTime);
 				r2->setEvrunTimeout(evrunTimeout);
 				r2->setLostTimeout(lostTimeout);
-				r2->setReceivePause(recvpause);
 				r2->setUpdatePause(updatepause);
 				r2->setCheckConnectionPause(checkConnectionPause);
 				r2->setInitPause(initpause);
 				r2->setMaxDifferens(maxDiff);
-				r2->setMaxProcessingCount(maxProcessingCount);
 				r2->setRespondID(resp2_id, resp_invert);
 				r2->setLostPacketsID(lp2_id);
 				r2->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
-				r2->setUpdateStrategy(r_upStrategy);
+				r2->setBufferSize(recvBufferSize);
 			}
 		}
 		catch(...)
@@ -550,7 +535,7 @@ void UNetExchange::step() noexcept
 		}
 	}
 
-	for( auto && it : recvlist )
+	for( auto&& it : recvlist )
 		it.step(shm, myname, unetlog);
 }
 
@@ -758,10 +743,10 @@ void UNetExchange::askSensors( UniversalIO::UIOCommand cmd )
 void UNetExchange::sensorInfo( const uniset::SensorMessage* sm )
 {
 	if( sender )
-		sender->updateSensor( sm->id , sm->value );
+		sender->updateSensor( sm->id, sm->value );
 
 	if( sender2 )
-		sender2->updateSensor( sm->id , sm->value );
+		sender2->updateSensor( sm->id, sm->value );
 }
 // ------------------------------------------------------------------------------------------
 bool UNetExchange::activateObject()
@@ -842,7 +827,7 @@ void UNetExchange::initIterators() noexcept
 	if( sender2 )
 		sender2->initIterators();
 
-	for( auto && it : recvlist )
+	for( auto&& it : recvlist )
 		it.initIterators(shm);
 }
 // -----------------------------------------------------------------------------
@@ -853,19 +838,13 @@ void UNetExchange::help_print( int argc, const char* argv[] ) noexcept
 	cout << "--prefix-recv-timeout msec       - Время для фиксации события 'отсутсвие связи'" << endl;
 	cout << "--prefix-prepare-time msec       - Время необходимое на подготовку (восстановление связи) при переключении на другой канал" << endl;
 	cout << "--prefix-lost-timeout msec       - Время ожидания заполнения 'дырки' между пакетами. По умолчанию 5000 мсек." << endl;
-	cout << "--prefix-recvpause msec          - Пауза между приёмами. По умолчанию 10" << endl;
 	cout << "--prefix-sendpause msec          - Пауза между посылками. По умолчанию 100" << endl;
-	cout << "--prefix-updatepause msec        - Пауза между обновлением информации в SM (Корелирует с recvpause и sendpause). По умолчанию 100" << endl;
+	cout << "--prefix-updatepause msec        - Пауза между обновлением информации в SM (Корелирует с sendpause). По умолчанию 100" << endl;
 	cout << "--prefix-steptime msec           - Пауза между обновлением информации о связи с узлами." << endl;
 	cout << "--prefix-checkconnection-pause msec  - Пауза между попытками открыть соединение (если это не удалось до этого). По умолчанию: 10000 (10 сек)" << endl;
 	cout << "--prefix-maxdifferense num       - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;
-	cout << "--prefix-maxprocessingcount num  - Максимальное количество пакетов обрабатываемых за один раз (если их слишком много)" << endl;
 	cout << "--prefix-nosender [0,1]          - Отключить посылку." << endl;
-	cout << "--prefix-update-strategy [thread,evloop] - Стратегия обновления данных в SM. " << endl;
-	cout << "                                         'thread' - у каждого UNetReceiver отдельный поток" << endl;
-	cout << "                                         'evloop' - используется общий (с приёмом сообщений) event loop" << endl;
-	cout << "                                 По умолчанию: evloop" << endl;
-
+	cout << "--prefix-recv-buffer-size sz     - Размер циклического буфера для приёма сообщений. По умолчанию: 3000" << endl;
 	cout << "--prefix-sm-ready-timeout msec   - Время ожидание я готовности SM к работе. По умолчанию 120000" << endl;
 	cout << "--prefix-filter-field name       - Название фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
 	cout << "--prefix-filter-value name       - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
@@ -875,7 +854,7 @@ void UNetExchange::help_print( int argc, const char* argv[] ) noexcept
 	cout << "--prefix-nodes-filter-value name - Значение фильтрующего поля для списка узлов" << endl;
 	cout << endl;
 	cout << " Logs: " << endl;
-	cout << "--prefix-log-...            - log control" << endl;
+	cout << "--prefix-log-...             - log control" << endl;
 	cout << "             add-levels ..." << endl;
 	cout << "             del-levels ..." << endl;
 	cout << "             set-levels ..." << endl;
@@ -917,7 +896,7 @@ std::shared_ptr<UNetExchange> UNetExchange::init_unetexchange(int argc, const ch
 // -----------------------------------------------------------------------------
 void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceiver::Event ev ) noexcept
 {
-	for( auto && it : recvlist )
+	for( auto&& it : recvlist )
 	{
 		if( it.r1 == r )
 		{
