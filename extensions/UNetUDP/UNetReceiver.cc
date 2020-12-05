@@ -29,7 +29,6 @@ using namespace uniset;
 using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 CommonEventLoop UNetReceiver::loop;
-static UniSetUDP::UDPMessage emptyMessage;
 // -----------------------------------------------------------------------------
 UNetReceiver::UNetReceiver(const std::string& s_host, int _port
 						   , const std::shared_ptr<SMInterface>& smi
@@ -157,7 +156,6 @@ void UNetReceiver::setLostPacketsID( uniset::ObjectId id ) noexcept
 // -----------------------------------------------------------------------------
 void UNetReceiver::setLockUpdate( bool st ) noexcept
 {
-
 	lockUpdate = st;
 
 	if( !st )
@@ -208,9 +206,7 @@ bool UNetReceiver::createConnection( bool throwEx )
 
 		ptRecvTimeout.setTiming(recvTimeout);
 		ptPrepare.setTiming(prepareTime);
-
-		if( activated )
-			evprepare(loop.evloop());
+		evprepare(loop.evloop());
 	}
 	catch( const std::exception& e )
 	{
@@ -306,8 +302,9 @@ void UNetReceiver::evfinish( const ev::loop_ref& eloop ) noexcept
 // -----------------------------------------------------------------------------
 void UNetReceiver::forceUpdate() noexcept
 {
-	rnum = 0; // сбрасываем запомненый номер последнего обработанного пакета
-	// и тем самым заставляем обновить данные в SM (см. update)
+	// сбрасываем запомненый номер последнего обработанного пакета
+	// и тем самым заставляем обработать заново последний пакет и обновить данные в SM (см. update)
+	rnum = wnum - 1;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::statisticsEvent(ev::periodic& tm, int revents) noexcept
@@ -385,7 +382,11 @@ void UNetReceiver::update() noexcept
 			if( !ptLostTimeout.checkTime() )
 				return;
 
-			size_t sub = (p->num - rnum);
+			size_t sub = 1;
+
+			if( p->num > rnum )
+				sub = (p->num - rnum);
+
 			unetwarn << myname << "(update): lostTimeout(" << ptLostTimeout.getInterval() << ")! pnum=" << p->num << " lost " << sub << " packets " << endl;
 			lostPackets += sub;
 
@@ -657,7 +658,7 @@ bool UNetReceiver::receive() noexcept
 		if( pack->magic != UniSetUDP::UNETUDP_MAGICNUM )
 			return false;
 
-		if( abs(long(pack->num - wnum)) > maxDifferens || abs( long(wnum - rnum) ) >= (cbufSize - 2) )
+		if( size_t(abs(long(pack->num - wnum))) > maxDifferens || size_t(abs( long(wnum - rnum) )) >= (cbufSize - 2) )
 		{
 			unetcrit << myname << "(receive): DISAGREE "
 					 << " packnum=" << pack->num
@@ -750,7 +751,7 @@ UNetReceiver::CacheVec* UNetReceiver::getDCache( UniSetUDP::UDPMessage* pack ) n
 	if( pack->dcount == d_info->size() )
 		return d_info;
 
-	unetinfo << myname << ": init dcache for " << pack->getDataID() << endl;
+	unetinfo << myname << ": init dcache[" << pack->dcount << "] for " << pack->getDataID() << endl;
 
 	d_info->resize(pack->dcount);
 
@@ -783,7 +784,7 @@ UNetReceiver::CacheVec* UNetReceiver::getACache( UniSetUDP::UDPMessage* pack ) n
 	if( pack->acount == a_info->size() )
 		return a_info;
 
-	unetinfo << myname << ": init acache for " << pack->getDataID() << endl;
+	unetinfo << myname << ": init acache[" << pack->acount << "] for " << pack->getDataID() << endl;
 
 	a_info->resize(pack->acount);
 
