@@ -49,9 +49,7 @@ UNetReceiver::UNetReceiver(const std::string& s_host, int _port
 	activated(false),
 	cbuf(cbufSize),
 	maxDifferens(20),
-	lockUpdate(false),
-	d_cache_init_ok(false),
-	a_cache_init_ok(false)
+	lockUpdate(false)
 {
 	{
 		ostringstream s;
@@ -87,8 +85,11 @@ UNetReceiver::~UNetReceiver()
 // -----------------------------------------------------------------------------
 void UNetReceiver::setBufferSize( size_t sz ) noexcept
 {
-	cbufSize = sz;
-	cbuf.resize(sz);
+	if( sz > 0 )
+	{
+		cbufSize = sz;
+		cbuf.resize(sz);
+	}
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setReceiveTimeout( timeout_t msec ) noexcept
@@ -398,14 +399,14 @@ void UNetReceiver::update() noexcept
 		upCount++;
 
 		// Обработка дискретных
-		auto d_iv = getDCache(p, !d_cache_init_ok);
+		auto d_iv = getDCache(p);
 
 		for( size_t i = 0; i < p->dcount; i++ )
 		{
 			try
 			{
 				s_id = p->dID(i);
-				c_it = &d_iv.cache[i];
+				c_it = &(*d_iv)[i];
 
 				if( c_it->id != s_id )
 				{
@@ -439,14 +440,14 @@ void UNetReceiver::update() noexcept
 		}
 
 		// Обработка аналоговых
-		auto a_iv = getACache(p, !a_cache_init_ok);
+		auto a_iv = getACache(p);
 
 		for( size_t i = 0; i < p->acount; i++ )
 		{
 			try
 			{
 				dat = &p->a_dat[i];
-				c_it = &a_iv.cache[i];
+				c_it = &(*a_iv)[i];
 
 				if( c_it->id != dat->id )
 				{
@@ -719,7 +720,7 @@ void UNetReceiver::initIterators() noexcept
 {
 	for( auto mit = d_icache_map.begin(); mit != d_icache_map.end(); ++mit )
 	{
-		CacheVec& d_icache(mit->second.cache);
+		CacheVec& d_icache = mit->second;
 
 		for( auto&& it : d_icache )
 			shm->initIterator(it.ioit);
@@ -727,49 +728,35 @@ void UNetReceiver::initIterators() noexcept
 
 	for( auto mit = a_icache_map.begin(); mit != a_icache_map.end(); ++mit )
 	{
-		CacheVec& a_icache(mit->second.cache);
+		CacheVec& a_icache = mit->second;
 
 		for( auto&& it : a_icache )
 			shm->initIterator(it.ioit);
 	}
 }
 // -----------------------------------------------------------------------------
-UNetReceiver::CacheInfo& UNetReceiver::getDCache( UniSetUDP::UDPMessage* pack, bool force ) noexcept
+UNetReceiver::CacheVec* UNetReceiver::getDCache( UniSetUDP::UDPMessage* pack ) noexcept
 {
-	// если элемента нет, он будет создан
-	CacheInfo& d_info = d_icache_map[pack->getDataID()];
+	auto dit = d_icache_map.find(pack->getDataID());
 
-	if( !force && pack->dcount == d_info.cache.size() )
-		return d_info;
-
-	if( d_info.cache_init_ok && pack->dcount == d_info.cache.size() )
+	if( dit == d_icache_map.end() )
 	{
-		d_cache_init_ok = true;
-		auto it = d_icache_map.begin();
-
-		for( ; it != d_icache_map.end(); ++it )
-		{
-			d_info = it->second;
-			d_cache_init_ok = d_cache_init_ok && d_info.cache_init_ok;
-
-			if(d_cache_init_ok == false)
-				break;
-		}
-
-		return d_info;
+		auto p = d_icache_map.emplace(pack->getDataID(), UNetReceiver::CacheVec());
+		dit = p.first;
 	}
+
+	CacheVec* d_info = &dit->second;
+
+	if( pack->dcount == d_info->size() )
+		return d_info;
 
 	unetinfo << myname << ": init dcache for " << pack->getDataID() << endl;
 
-	d_info.cache_init_ok = true;
-	d_info.cache.resize(pack->dcount);
+	d_info->resize(pack->dcount);
 
-	size_t sz = d_info.cache.size();
-	auto conf = uniset_conf();
-
-	for( size_t i = 0; i < sz; i++ )
+	for( size_t i = 0; i < pack->dcount; i++ )
 	{
-		CacheItem& d(d_info.cache[i]);
+		CacheItem& d = (*d_info)[i];
 
 		if( d.id != pack->d_id[i] )
 		{
@@ -781,42 +768,28 @@ UNetReceiver::CacheInfo& UNetReceiver::getDCache( UniSetUDP::UDPMessage* pack, b
 	return d_info;
 }
 // -----------------------------------------------------------------------------
-UNetReceiver::CacheInfo& UNetReceiver::getACache( UniSetUDP::UDPMessage* pack, bool force ) noexcept
+UNetReceiver::CacheVec* UNetReceiver::getACache( UniSetUDP::UDPMessage* pack ) noexcept
 {
-	// если элемента нет, он будет создан
-	CacheInfo& a_info = a_icache_map[pack->getDataID()];
+	auto ait = a_icache_map.find(pack->getDataID());
 
-	if( !force && pack->acount == a_info.cache.size() )
-		return a_info;
-
-	if( a_info.cache_init_ok && pack->acount == a_info.cache.size() )
+	if( ait == a_icache_map.end() )
 	{
-		a_cache_init_ok = true;
-		auto it = a_icache_map.begin();
-
-		for( ; it != a_icache_map.end(); ++it )
-		{
-			a_info = it->second;
-			a_cache_init_ok = a_cache_init_ok && a_info.cache_init_ok;
-
-			if(a_cache_init_ok == false)
-				break;
-		}
-
-		return a_info;
+		auto p = a_icache_map.emplace(pack->getDataID(), UNetReceiver::CacheVec());
+		ait = p.first;
 	}
 
-	unetinfo << myname << ": init icache for " << pack->getDataID() << endl;
-	a_info.cache_init_ok = true;
-	auto conf = uniset_conf();
+	CacheVec* a_info = &ait->second;
 
-	a_info.cache.resize(pack->acount);
+	if( pack->acount == a_info->size() )
+		return a_info;
 
-	size_t sz = a_info.cache.size();
+	unetinfo << myname << ": init acache for " << pack->getDataID() << endl;
 
-	for( size_t i = 0; i < sz; i++ )
+	a_info->resize(pack->acount);
+
+	for( size_t i = 0; i < pack->acount; i++ )
 	{
-		CacheItem& d(a_info.cache[i]);
+		CacheItem& d = (*a_info)[i];
 
 		if( d.id != pack->a_dat[i].id )
 		{

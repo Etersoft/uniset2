@@ -20,8 +20,7 @@
 #include <ostream>
 #include <memory>
 #include <string>
-#include <queue>
-#include <deque>
+#include <vector>
 #include <unordered_map>
 #include <sigc++/sigc++.h>
 #include <ev++.h>
@@ -269,25 +268,14 @@ namespace uniset
 			};
 
 			typedef std::vector<CacheItem> CacheVec;
-			struct CacheInfo
-			{
-				CacheInfo():
-					cache_init_ok(false) {}
-
-				bool cache_init_ok = { false };
-				CacheVec cache;
-			};
 
 			// ключом является UDPMessage::getDataID()
-			typedef std::unordered_map<long, CacheInfo> CacheMap;
+			typedef std::unordered_map<long, CacheVec> CacheMap;
 			CacheMap d_icache_map;     /*!< кэш итераторов для булевых */
 			CacheMap a_icache_map;     /*!< кэш итераторов для аналоговых */
 
-			bool d_cache_init_ok = { false };
-			bool a_cache_init_ok = { false };
-
-			CacheInfo& getDCache( UniSetUDP::UDPMessage* pack, bool force = false ) noexcept;
-			CacheInfo& getACache( UniSetUDP::UDPMessage* pack, bool force = false ) noexcept;
+			CacheVec* getDCache( UniSetUDP::UDPMessage* pack ) noexcept;
+			CacheVec* getACache( UniSetUDP::UDPMessage* pack ) noexcept;
 	};
 	// --------------------------------------------------------------------------
 } // end of namespace uniset
