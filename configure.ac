@@ -590,6 +590,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/tests/MQPerfTest/Makefile
 				 extensions/LogDB/Makefile
 				 extensions/LogDB/tests/Makefile
+				 extensions/HttpResolver/Makefile
 				 testsuite/Makefile
 				 wrappers/Makefile
 				 wrappers/python/lib/Makefile

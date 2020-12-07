@@ -33,13 +33,19 @@ namespace uniset
     {
         public:
 
-            static std::string getIOR( const ObjectId id );
-            static void setIOR( const ObjectId id, const std::string& sior );
-            static void unlinkIOR( const ObjectId id );
+			IORFile( const std::string& iordir );
+			~IORFile();
 
-            static std::string getFileName( const ObjectId id );
-    };
-    // -----------------------------------------------------------------------------------------
+			std::string getIOR( const ObjectId id );
+			void setIOR( const ObjectId id, const std::string& sior );
+			void unlinkIOR( const ObjectId id );
+
+			std::string getFileName( const ObjectId id );
+
+		private:
+			std::string iordir;
+	};
+	// -----------------------------------------------------------------------------------------
 }    // end of namespace
 // -----------------------------------------------------------------------------------------
 #endif
