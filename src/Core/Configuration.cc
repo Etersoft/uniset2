@@ -68,7 +68,6 @@ ostream& uniset::Configuration::help(ostream& os)
 	print_help(os, 25, "--uniport num", "использовать заданный порт (переопределяет 'defaultport', заданный в конф. файле в разделе <nodes>)\n");
 	print_help(os, 25, "--localIOR {1,0}", "использовать локальные файлы для получения IOR (т.е. не использовать omniNames). Переопределяет параметр в конфигурационном файле.\n");
 	print_help(os, 25, "--transientIOR {1,0}", "использовать генерируемые IOR(не постоянные). Переопределяет параметр в конфигурационном файле. Default=1\n");
-
 	return os << "\nПример использования:\t myUniSetProgram "
 		   << "--ulog-add-levels level1,info,system,warn --ulog-logfile myprogrpam.log\n\n";
 }
@@ -195,8 +194,6 @@ namespace uniset
 		for( int i = 0; i < argc; i++ )
 			_argv[i] = uniset::uni_strdup(argv[i]);
 
-		iorfile = make_shared<IORFile>();
-
 		// инициализировать надо после argc,argv
 		if( fileConfName.empty() )
 			setConfFileName();
@@ -287,7 +284,7 @@ namespace uniset
 			initLogStream(ulog(), "ulog");
 
 			// default init...
-			transientIOR     = false;
+			transientIOR = false;
 			localIOR     = false;
 
 			string lnode( getArgParam("--localNode") );
@@ -298,6 +295,8 @@ namespace uniset
 			initParameters();
 			initRepSections();
 
+			iorfile = make_shared<IORFile>(getLockDir());
+
 			// localIOR
 			int lior = getArgInt("--localIOR");
 
@@ -306,7 +305,6 @@ namespace uniset
 
 			// transientIOR
 			int tior = getArgInt("--transientIOR");
-
 			if( tior )
 				transientIOR = tior;
 

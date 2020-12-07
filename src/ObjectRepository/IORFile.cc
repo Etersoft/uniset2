@@ -19,12 +19,22 @@
 #include <unistd.h>
 #include "IORFile.h"
 #include "Exceptions.h"
-#include "Configuration.h"
 #include "ORepHelpers.h"
 
 // -----------------------------------------------------------------------------------------
 using namespace uniset;
 using namespace std;
+// -----------------------------------------------------------------------------------------
+IORFile::IORFile( const std::string& dir ):
+	iordir(dir)
+{
+
+}
+// -----------------------------------------------------------------------------------------
+IORFile::~IORFile()
+{
+
+}
 // -----------------------------------------------------------------------------------------
 string IORFile::getIOR( const ObjectId id )
 {
@@ -42,10 +52,7 @@ void IORFile::setIOR( const ObjectId id, const string& sior )
 	ofstream ior_file(fname.c_str(), ios::out | ios::trunc);
 
 	if( !ior_file )
-	{
-		ucrit << "(IORFile): не смог открыть файл " + fname << endl;
 		throw ORepFailed("(IORFile): не смог создать ior-файл " + fname);
-	}
 
 	ior_file << sior << endl;
 	ior_file.close();
@@ -60,7 +67,7 @@ void IORFile::unlinkIOR( const ObjectId id )
 string IORFile::getFileName( const ObjectId id )
 {
 	ostringstream fname;
-	fname << uniset_conf()->getLockDir() << id;
+	fname << iordir << id;
 	return fname.str();
 }
 // -----------------------------------------------------------------------------------------
