@@ -6,33 +6,33 @@ using namespace std;
 // --------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-	//	std::ios::sync_with_stdio(false);
+    //  std::ios::sync_with_stdio(false);
 
-	try
-	{
-		if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
-		{
-			cout << "--confile filename - configuration file. Default: configure.xml" << endl;
-			HttpResolver::help_print();
-			return 0;
-		}
+    try
+    {
+        if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
+        {
+            cout << "--confile filename - configuration file. Default: configure.xml" << endl;
+            HttpResolver::help_print();
+            return 0;
+        }
 
-		auto resolver = HttpResolver::init_resolver(argc, argv);
+        auto resolver = HttpResolver::init_resolver(argc, argv);
 
-		if( !resolver )
-			return 1;
+        if( !resolver )
+            return 1;
 
-		resolver->run();
-		return 0;
-	}
-	catch( const std::exception& ex )
-	{
-		cerr << "(HttpResolver::main): " << ex.what() << endl;
-	}
-	catch(...)
-	{
-		cerr << "(HttpResolver::main): catch ..." << endl;
-	}
+        resolver->run();
+        return 0;
+    }
+    catch( const std::exception& ex )
+    {
+        cerr << "(HttpResolver::main): " << ex.what() << endl;
+    }
+    catch(...)
+    {
+        cerr << "(HttpResolver::main): catch ..." << endl;
+    }
 
-	return 1;
+    return 1;
 }

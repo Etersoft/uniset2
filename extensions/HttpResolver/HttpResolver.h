@@ -32,74 +32,74 @@ const std::string HTTP_RESOLVER_API_VERSION = "v01";
 // -------------------------------------------------------------------------
 namespace uniset
 {
-	//------------------------------------------------------------------------------------------
-	/*!
-		  \page page_HttpResolver Http-cервис для получения CORBA-ссылок на объекты (HttpResolver)
+    //------------------------------------------------------------------------------------------
+    /*!
+          \page page_HttpResolver Http-cервис для получения CORBA-ссылок на объекты (HttpResolver)
 
-		  - \ref sec_HttpResolver_Comm
+          - \ref sec_HttpResolver_Comm
 
 
-		\section sec_HttpResolver_Comm Общее описание работы HttpResolver
-			HttpResolver это сервис, который отдаёт CORBA-ссылки (в виде строки)
-		на объекты запущенные на данном узле в режиме LocalIOR. Т.е. когда ссылки
-		публикуются в файлах.
-	*/
-	class HttpResolver:
-		public Poco::Net::HTTPRequestHandler
-	{
-		public:
-			HttpResolver( const std::string& name, int argc, const char* const* argv, const std::string& prefix );
-			virtual ~HttpResolver();
+        \section sec_HttpResolver_Comm Общее описание работы HttpResolver
+            HttpResolver это сервис, который отдаёт CORBA-ссылки (в виде строки)
+        на объекты запущенные на данном узле в режиме LocalIOR. Т.е. когда ссылки
+        публикуются в файлах.
+    */
+    class HttpResolver:
+        public Poco::Net::HTTPRequestHandler
+    {
+        public:
+            HttpResolver( const std::string& name, int argc, const char* const* argv, const std::string& prefix );
+            virtual ~HttpResolver();
 
-			/*! глобальная функция для инициализации объекта */
-			static std::shared_ptr<HttpResolver> init_resolver( int argc, const char* const* argv, const std::string& prefix = "httpresolver-" );
+            /*! глобальная функция для инициализации объекта */
+            static std::shared_ptr<HttpResolver> init_resolver( int argc, const char* const* argv, const std::string& prefix = "httpresolver-" );
 
-			/*! глобальная функция для вывода help-а */
-			static void help_print();
+            /*! глобальная функция для вывода help-а */
+            static void help_print();
 
-			inline std::shared_ptr<DebugStream> log()
-			{
-				return rlog;
-			}
+            inline std::shared_ptr<DebugStream> log()
+            {
+                return rlog;
+            }
 
-			virtual void handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp ) override;
+            virtual void handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp ) override;
 
-			void run();
+            void run();
 
-		protected:
+        protected:
 
-			Poco::JSON::Object::Ptr respError( Poco::Net::HTTPServerResponse& resp, Poco::Net::HTTPResponse::HTTPStatus s, const std::string& message );
-			Poco::JSON::Object::Ptr httpGetRequest( const std::string& cmd, const Poco::URI::QueryParameters& p );
-			Poco::JSON::Object::Ptr httpJsonResolve( const std::string& query, const Poco::URI::QueryParameters& p );
-			std::string httpTextResolve( const std::string& query, const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr respError( Poco::Net::HTTPServerResponse& resp, Poco::Net::HTTPResponse::HTTPStatus s, const std::string& message );
+            Poco::JSON::Object::Ptr httpGetRequest( const std::string& cmd, const Poco::URI::QueryParameters& p );
+            Poco::JSON::Object::Ptr httpJsonResolve( const std::string& query, const Poco::URI::QueryParameters& p );
+            std::string httpTextResolve( const std::string& query, const Poco::URI::QueryParameters& p );
 
-			std::shared_ptr<Poco::Net::HTTPServer> httpserv;
-			std::string httpHost = { "" };
-			int httpPort = { 0 };
-			std::string httpCORS_allow = { "*" };
-			std::string httpReplyAddr = { "" };
+            std::shared_ptr<Poco::Net::HTTPServer> httpserv;
+            std::string httpHost = { "" };
+            int httpPort = { 0 };
+            std::string httpCORS_allow = { "*" };
+            std::string httpReplyAddr = { "" };
 
-			std::shared_ptr<DebugStream> rlog;
-			std::string myname;
+            std::shared_ptr<DebugStream> rlog;
+            std::string myname;
 
-			std::shared_ptr<IORFile> iorfile;
+            std::shared_ptr<IORFile> iorfile;
 
-			class HttpResolverRequestHandlerFactory:
-				public Poco::Net::HTTPRequestHandlerFactory
-			{
-				public:
-					HttpResolverRequestHandlerFactory( HttpResolver* r ): resolver(r) {}
-					virtual ~HttpResolverRequestHandlerFactory() {}
+            class HttpResolverRequestHandlerFactory:
+                public Poco::Net::HTTPRequestHandlerFactory
+            {
+                public:
+                    HttpResolverRequestHandlerFactory( HttpResolver* r ): resolver(r) {}
+                    virtual ~HttpResolverRequestHandlerFactory() {}
 
-					virtual Poco::Net::HTTPRequestHandler* createRequestHandler( const Poco::Net::HTTPServerRequest& req ) override;
+                    virtual Poco::Net::HTTPRequestHandler* createRequestHandler( const Poco::Net::HTTPServerRequest& req ) override;
 
-				private:
-					HttpResolver* resolver;
-			};
+                private:
+                    HttpResolver* resolver;
+            };
 
-		private:
-	};
-	// ----------------------------------------------------------------------------------
+        private:
+    };
+    // ----------------------------------------------------------------------------------
 } // end of namespace uniset
 //------------------------------------------------------------------------------------------
 #endif

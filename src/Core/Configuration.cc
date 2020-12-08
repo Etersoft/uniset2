@@ -305,6 +305,7 @@ namespace uniset
 
 			// transientIOR
 			int tior = getArgInt("--transientIOR");
+
 			if( tior )
 				transientIOR = tior;
 
@@ -602,6 +603,10 @@ namespace uniset
 			else if( name == "LocalIOR" )
 			{
 				localIOR = it.getIntProp("name");
+				httpResolverPort = it.getIntProp("httpResolverPort");
+
+				if( httpResolverPort <= 0 )
+					httpResolverPort = 8008;
 			}
 			else if( name == "TransientIOR" )
 			{
@@ -1113,7 +1118,7 @@ namespace uniset
 	}
 	// -------------------------------------------------------------------------
 
-	std::pair<string,xmlNode*> Configuration::getRepSectionName( const string& sec )
+	std::pair<string, xmlNode*> Configuration::getRepSectionName( const string& sec )
 	{
 		xmlNode* secnode = unixml->findNode(unixml->getFirstNode(), sec);
 
@@ -1323,6 +1328,20 @@ namespace uniset
 		return transientIOR;
 	}
 
+	size_t Configuration::getHttpResovlerPort() const noexcept
+	{
+		return httpResolverPort;
+	}
+
+	std::string Configuration::getNodeIp( uniset::ObjectId node )
+	{
+		UniXML::iterator nIt = getXMLObjectNode(node);
+
+		if( !nIt )
+			return "";
+
+		return nIt.getProp("ip");
+	}
 	// -------------------------------------------------------------------------
 	xmlNode* Configuration::getXMLSensorsSection() noexcept
 	{

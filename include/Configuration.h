@@ -121,6 +121,7 @@ namespace uniset
 
             const std::string getConfFileName() const noexcept;
             std::string getImagesDir() const noexcept;
+            std::string getNodeIp( uniset::ObjectId node );
 
             timeout_t getHeartBeatTime() const noexcept;
             timeout_t getNCReadyTimeout() const noexcept;
@@ -136,6 +137,7 @@ namespace uniset
 
             bool isLocalIOR() const noexcept;
             bool isTransientIOR() const noexcept;
+            size_t getHttpResovlerPort() const noexcept;
 
             /*! получить значение указанного параметра, или значение по умолчанию */
             std::string getArgParam(const std::string& name, const std::string& defval = "") const noexcept;
@@ -201,6 +203,8 @@ namespace uniset
                                             прежде чем будет выработано исключение TimeOut.        */
 
             timeout_t repeatTimeout = { 50 };    /*!< пауза между попытками [мс] */
+
+            size_t httpResolverPort = { 8008 };
 
             uniset::ListOfNode lnodes;
 

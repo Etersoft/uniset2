@@ -11,11 +11,11 @@ TEST_CASE("IORFile", "[iorfile][basic]" )
 {
     CHECK( uniset_conf() != nullptr );
 
-	ObjectId testID = 1;
-	const std::string iorstr("testIORstring");
-	IORFile ior(uniset_conf()->getLockDir());
-	ior.setIOR(testID, iorstr);
-	REQUIRE( ior.getIOR(testID) == iorstr );
+    ObjectId testID = 1;
+    const std::string iorstr("testIORstring");
+    IORFile ior(uniset_conf()->getLockDir());
+    ior.setIOR(testID, iorstr);
+    REQUIRE( ior.getIOR(testID) == iorstr );
     CHECK( file_exist(ior.getFileName(testID)) );
 
     ior.unlinkIOR(testID);

@@ -36,6 +36,9 @@
 #include "IOController_i.hh"
 #include "MessageType.h"
 #include "Configuration.h"
+#ifndef DISABLE_REST_API
+#include "UHttpClient.h"
+#endif
 // -----------------------------------------------------------------------------------------
 namespace uniset
 {
@@ -301,6 +304,7 @@ namespace uniset
 
         protected:
             std::string set_err(const std::string& pre, const uniset::ObjectId id, const uniset::ObjectId node) const;
+            std::string httpResolve( const uniset::ObjectId id, const uniset::ObjectId node ) const;
 
         private:
             void init();
