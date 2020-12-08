@@ -199,6 +199,7 @@ namespace uniset
 			return;
 
 		active = false;
+
 		if( termControl )
 		{
 			set_signals(false);

@@ -71,7 +71,6 @@ namespace uniset
             std::shared_ptr<LogServer> logserv;
             std::string logserv_host = {""};
             int logserv_port = {0};
-
             const std::string prefix = { "db" };
 
         private:

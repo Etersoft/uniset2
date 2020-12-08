@@ -49,7 +49,6 @@ namespace uniset
     void TOR::setIn( size_t num, long value )
     {
         //    cout << getType() << "(" << myid << "):  input " << num << " set " << state << endl;
-
         for( auto&& it : ins )
         {
             if( it.num == num )

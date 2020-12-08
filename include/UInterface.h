@@ -316,6 +316,9 @@ namespace uniset
             CacheOfResolve rcache;
             std::shared_ptr<uniset::ObjectIndex> oind;
             std::shared_ptr<uniset::Configuration> uconf;
+#ifndef DISABLE_REST_API
+            mutable UHttp::UHttpClient resolver;
+#endif
     };
     // -------------------------------------------------------------------------
 } // end of uniset namespace
