@@ -27,6 +27,7 @@
 		<DocDir name="./"/>
 		<LockDir name="/tmp/"/>
 		<HttpResolver name="HttpResolver"/>
+		<LocalIOR name="1"/>
 		<Services>
 			<LocalTimeService AskLifeTimeSEC="10" MaxCountTimers="100" name="TimeService"/>
 			<LocalInfoServer dbrepeat="1" name="InfoServer">

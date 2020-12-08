@@ -874,9 +874,9 @@ namespace uniset
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
-	uniset::ObjectPtr UInterface::resolve( const uniset::ObjectId rid , const uniset::ObjectId node ) const
+	uniset::ObjectPtr UInterface::resolve( const uniset::ObjectId rid, const uniset::ObjectId node ) const
 	{
-		if ( rid == uniset::DefaultObjectId )
+		if( rid == uniset::DefaultObjectId )
 			throw uniset::ResolveNameError("UI(resolve): ID=uniset::DefaultObjectId");
 
 		if( node == uniset::DefaultObjectId )
@@ -896,7 +896,12 @@ namespace uniset
 				if( CORBA::is_nil(orb) )
 					orb = uconf->getORB();
 
-				string sior(uconf->iorfile->getIOR(rid));
+				string sior;
+
+				if( node == uconf->getLocalNode() )
+					sior = uconf->iorfile->getIOR(rid);
+				else
+					sior = httpResolve(rid, node);
 
 				if( !sior.empty() )
 				{
@@ -904,13 +909,11 @@ namespace uniset
 					rcache.cache(rid, node, nso); // заносим в кэш
 					return nso._retn();
 				}
-				else
-				{
-					// если NameService недоступен то,
-					// сразу выдаём ошибку
-					uwarn << "not found IOR-file for " << uconf->oind->getNameById(rid) << endl;
-					throw uniset::ResolveNameError();
-				}
+
+				uwarn << "not found IOR-file for " << uconf->oind->getNameById(rid)
+					  << " node=" << uconf->oind->getNameById(node)
+					  << endl;
+				throw uniset::ResolveNameError();
 			}
 
 			if( node != uconf->getLocalNode() )
@@ -1018,6 +1021,36 @@ namespace uniset
 		throw uniset::ResolveNameError();
 	}
 
+	// -------------------------------------------------------------------------------------------
+	std::string UInterface::httpResolve( const uniset::ObjectId id, const uniset::ObjectId node ) const
+	{
+#ifndef DISABLE_REST_API
+		size_t port = uconf->getHttpResovlerPort();
+
+		if( port == 0 )
+			return "";
+
+		const std::string host = uconf->getNodeIp(node);
+
+		if( host.empty() )
+			return "";
+
+		string ret;
+		const string query = "api/v01/resolve/text?" + std::to_string(id);
+
+		for( size_t i = 0; i < uconf->getRepeatCount(); i++ )
+		{
+			ret = resolver.get(host, port, query);
+
+			if( !ret.empty() )
+				return ret;
+
+			msleep(uconf->getRepeatTimeout());
+		}
+
+#endif
+		return "";
+	}
 	// -------------------------------------------------------------------------------------------
 	void UInterface::send( const uniset::ObjectId name, const uniset::TransportMessage& msg, const uniset::ObjectId node )
 	{
