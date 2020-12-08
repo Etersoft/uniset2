@@ -401,11 +401,11 @@ namespace uniset
 	}
 	// ------------------------------------------------------------------------------------------
 	void UniSetObject::pushMessage(const char* msg,
-									::CORBA::Long mtype,
-									const ::uniset::Timespec& tm,
-									const ::uniset::ProducerInfo& pi,
-									::CORBA::Long priority,
-									::CORBA::Long consumer )
+								   ::CORBA::Long mtype,
+								   const ::uniset::Timespec& tm,
+								   const ::uniset::ProducerInfo& pi,
+								   ::CORBA::Long priority,
+								   ::CORBA::Long consumer )
 	{
 		uniset::TextMessage tmsg(msg, mtype, tm, pi, (uniset::Message::Priority)priority, consumer);
 		auto vm = tmsg.toLocalVoidMessage();

@@ -61,7 +61,7 @@ float uniset::fcalibrate( float raw, float rawMin, float rawMax,
 }
 // -----------------------------------------------------------------------------
 double uniset::dcalibrate( double raw, double rawMin, double rawMax,
-						  double calMin, double calMax, bool limit )
+						   double calMin, double calMax, bool limit )
 {
 	if( rawMax == rawMin ) return 0; // деление на 0!!!
 
