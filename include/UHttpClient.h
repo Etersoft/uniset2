@@ -21,11 +21,13 @@
 #include <string>
 #include <Poco/Net/HTTPClientSession.h>
 #include "DebugStream.h"
+#include "PassiveTimer.h"
 // -------------------------------------------------------------------------
 namespace uniset
 {
     namespace UHttp
     {
+        /*! Simple http client interface */
         class UHttpClient
         {
             public:
@@ -33,9 +35,14 @@ namespace uniset
                 UHttpClient();
                 virtual ~UHttpClient();
 
-                // http://site.com/query?params
-                // \return ""
+                // request example: http://site.com/query?params
+                // \return "" if fail
                 std::string get( const std::string& host, int port, const std::string& request );
+
+                void setTimeout( uniset::timeout_t usec );
+
+                // in microseconds
+                uniset::timeout_t getTimeout();
 
             protected:
                 Poco::Net::HTTPClientSession session;
