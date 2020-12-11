@@ -38,21 +38,36 @@ namespace uniset
 	{
 	}
 	// -------------------------------------------------------------------------
+	void UHttpClient::setTimeout( uniset::timeout_t usec )
+	{
+		session.setTimeout( uniset::PassiveTimer::microsecToPoco(usec));
+	}
+	// -------------------------------------------------------------------------
+	uniset::timeout_t UHttpClient::getTimeout()
+	{
+		return session.getTimeout().totalMicroseconds();
+	}
+	// -------------------------------------------------------------------------
 	std::string UHttpClient::get( const std::string& host, int port, const std::string& query )
 	{
 		session.setHost(host);
 		session.setPort(port);
 		HTTPRequest request(HTTPRequest::HTTP_GET, query, HTTPMessage::HTTP_1_1);
-		session.sendRequest(request);
-		HTTPResponse response;
-		std::istream& rs = session.receiveResponse(response);
+		try
+		{
+			session.sendRequest(request);
+			HTTPResponse response;
+			std::istream& rs = session.receiveResponse(response);
+			if( response.getStatus() != Poco::Net::HTTPResponse::HTTP_OK )
+				return "";
 
-		if( response.getStatus() != Poco::Net::HTTPResponse::HTTP_OK )
-			return "";
+			std::stringstream ret;
+			Poco::StreamCopier::copyStream(rs, ret);
+			return ret.str();
+		}
+		catch( const std::exception& e ){}
 
-		std::stringstream ret;
-		Poco::StreamCopier::copyStream(rs, ret);
-		return ret.str();
+		return "";
 	}
 	// -------------------------------------------------------------------------
 } // end of namespace uniset
