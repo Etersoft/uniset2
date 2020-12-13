@@ -87,8 +87,8 @@ namespace uniset
 		// выставляем поля, которые не меняются
 		{
 			uniset_rwmutex_wrlock l(mypack.mut);
-			mypack.msg.nodeID = uniset_conf()->getLocalNode();
-			mypack.msg.procID = shm->ID();
+			mypack.p.msg.header.nodeID = uniset_conf()->getLocalNode();
+			mypack.p.msg.header.procID = shm->ID();
 		}
 
 		// -------------------------------
@@ -200,9 +200,9 @@ namespace uniset
 		uniset::uniset_rwmutex_wrlock l(mypack.mut);
 
 		if( it.iotype == UniversalIO::DI || it.iotype == UniversalIO::DO )
-			mypack.msg.setDData(it.pack_ind, value);
+			mypack.p.msg.setDData(it.pack_ind, value);
 		else if( it.iotype == UniversalIO::AI || it.iotype == UniversalIO::AO )
-			mypack.msg.setAData(it.pack_ind, value);
+			mypack.p.msg.setAData(it.pack_ind, value);
 	}
 	// -----------------------------------------------------------------------------
 	void UNetSender::setCheckConnectionPause( int msec )
@@ -313,13 +313,13 @@ namespace uniset
 #ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
             mypack.msg.num = packetnum++;
 #else
-            uint16_t crc = mypack.msg.getDataCRC();
+			uint16_t crc = mypack.p.msg.getDataCRC();
 
-            if( crc != lastcrc )
-            {
-                mypack.msg.num = packetnum++;
-                lastcrc = crc;
-            }
+			if( crc != lastcrc )
+			{
+				mypack.p.msg.header.num = packetnum++;
+				lastcrc = crc;
+			}
 
 #endif
 			// при переходе через ноль (когда счётчик перевалит через UniSetUDP::MaxPacketNum..
@@ -330,12 +330,10 @@ namespace uniset
 			if( !udp || !udp->poll( UniSetTimer::millisecToPoco(writeTimeout), Poco::Net::Socket::SELECT_WRITE) )
 				return;
 
-			mypack.msg.transport_msg(s_msg);
+			size_t ret = udp->sendTo(mypack.p.raw, mypack.p.msg.len(), saddr);
 
-			size_t ret = udp->sendTo(&s_msg.data, s_msg.len, saddr);
-
-			if( ret < s_msg.len )
-				unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;
+			if( ret < mypack.p.msg.len() )
+				unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << mypack.p.msg.len() << endl;
 		}
 		catch( Poco::Net::NetException& ex )
 		{
@@ -456,7 +454,7 @@ namespace uniset
 
 			{
 				uniset_rwmutex_wrlock l(mypack.mut);
-				p.pack_ind = mypack.msg.addDData(sid, defval);
+				p.pack_ind = mypack.p.msg.addDData(sid, defval);
 			} // unlock mutex....
 
 			if( p.pack_ind >= maxDData )
@@ -468,9 +466,9 @@ namespace uniset
 
 				auto& mypack2 = pk[dnum];
 				uniset_rwmutex_wrlock l2(mypack2.mut);
-				p.pack_ind = mypack2.msg.addDData(sid, defval);
-				mypack2.msg.nodeID = uniset_conf()->getLocalNode();
-				mypack2.msg.procID = shm->ID();
+				p.pack_ind = mypack2.p.msg.addDData(sid, defval);
+				mypack2.p.msg.header.nodeID = uniset_conf()->getLocalNode();
+				mypack2.p.msg.header.procID = shm->ID();
 			}
 
 			p.pack_num = dnum;
@@ -497,7 +495,7 @@ namespace uniset
 
 			{
 				uniset_rwmutex_wrlock l(mypack.mut);
-				p.pack_ind = mypack.msg.addAData(sid, defval);
+				p.pack_ind = mypack.p.msg.addAData(sid, defval);
 			}
 
 			if( p.pack_ind >= maxAData )
@@ -509,9 +507,9 @@ namespace uniset
 
 				auto& mypack2 = pk[anum];
 				uniset_rwmutex_wrlock l2(mypack2.mut);
-				p.pack_ind = mypack2.msg.addAData(sid, defval);
-				mypack2.msg.nodeID = uniset_conf()->getLocalNode();
-				mypack2.msg.procID = shm->ID();
+				p.pack_ind = mypack2.p.msg.addAData(sid, defval);
+				mypack2.p.msg.header.nodeID = uniset_conf()->getLocalNode();
+				mypack2.p.msg.header.procID = shm->ID();
 			}
 
 			p.pack_num = anum;
@@ -588,11 +586,11 @@ namespace uniset
 			s << "        \t[" << i->first << "]=" << i->second.size() << endl;
 			size_t n = 0;
 
-			for( const auto& p : i->second )
+			for( const auto& pack : i->second )
 			{
 				//uniset_rwmutex_rlock l(p->mut);
-				s << "        \t\t[" << (n++) << "]=" << p.msg.sizeOf() << " bytes"
-				  << " ( numA=" << setw(5) << p.msg.asize() << " numD=" << setw(5) << p.msg.dsize() << ")"
+				s << "        \t\t[" << (n++) << "]=" << pack.p.msg.len() << " bytes"
+				  << " ( numA=" << setw(5) << pack.p.msg.asize() << " numD=" << setw(5) << pack.p.msg.dsize() << ")"
 				  << endl;
 			}
 		}
