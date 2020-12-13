@@ -223,9 +223,7 @@ int main(int argc, char* argv[])
 			{
 				UDPReceiveU udp(s_host, port);
 
-				//                char buf[UniSetUDP::MaxDataLen];
-				UniSetUDP::UDPMessage pack;
-				UniSetUDP::UDPPacket buf;
+				UniSetUDP::UDPPacket pack;
 				unsigned long prev_num = 1;
 
 				int nc = 1;
@@ -257,27 +255,35 @@ int main(int argc, char* argv[])
 							continue;
 						}
 
-						size_t ret = udp.receiveBytes(&(buf.data), sizeof(buf.data) );
-						size_t sz = UniSetUDP::UDPMessage::getMessage(pack, buf);
+						size_t ret = udp.receiveBytes(pack.raw, sizeof(pack.raw) );
 
-						if( sz == 0 )
+						if( ret < 0 )
 						{
-							if( pack.magic != UniSetUDP::UNETUDP_MAGICNUM )
-								cerr << "(recv): BAD PROTOCOL VERSION! [ need version '" << UniSetUDP::UNETUDP_MAGICNUM << "']" << endl;
-							else
-								cerr << "(recv): FAILED header ret=" << ret
-									 << " sizeof=" << sz << endl;
+							cerr << "(recv): no data?!" << endl;
+							continue;
+						}
 
+						if( ret == 0 )
+						{
+							cerr << "(recv): connection closed?!" << endl;
+							continue;
+						}
+
+						pack.msg.ntoh();
+
+						if( pack.msg.header.magic != UniSetUDP::UNETUDP_MAGICNUM )
+						{
+							cerr << "(recv): BAD PROTOCOL VERSION! [ need version '" << UniSetUDP::UNETUDP_MAGICNUM << "']" << endl;
 							continue;
 						}
 
 						if( lost )
 						{
-							if( prev_num != (pack.num - 1) )
-								cerr << "WARNING! Incorrect sequence of packets! current=" << pack.num
+							if( prev_num != (pack.msg.header.num - 1) )
+								cerr << "WARNING! Incorrect sequence of packets! current=" << pack.msg.header.num
 									 << " prev=" << prev_num << endl;
 
-							prev_num = pack.num;
+							prev_num = pack.msg.header.num;
 						}
 
 						npack++;
@@ -287,7 +293,7 @@ int main(int argc, char* argv[])
 								 << " bytes: " << ret << endl;
 
 						if( show )
-							cout << "receive data: " << pack << endl;
+							cout << "receive data: " << pack.msg << endl;
 					}
 					catch( Poco::Net::NetException& e )
 					{
@@ -314,9 +320,10 @@ int main(int argc, char* argv[])
 				std::shared_ptr<UDPSocketU> udp = make_shared<UDPSocketU>(s_host, port);
 				udp->setBroadcast(broadcast);
 
-				UniSetUDP::UDPMessage mypack;
-				mypack.nodeID = nodeID;
-				mypack.procID = procID;
+				UniSetUDP::UDPPacket mypack;
+				UDPMessage* msg = &mypack.msg;
+				msg->header.nodeID = nodeID;
+				msg->header.procID = procID;
 
 				if( !a_data.empty() )
 				{
@@ -325,7 +332,7 @@ int main(int argc, char* argv[])
 					for( const auto& v : vlist )
 					{
 						UDPAData d(v.si.id, v.val);
-						mypack.addAData(d);
+						msg->addAData(d);
 					}
 				}
 				else
@@ -333,7 +340,7 @@ int main(int argc, char* argv[])
 					for( size_t i = 0; i < count; i++ )
 					{
 						UDPAData d(i, i);
-						mypack.addAData(d);
+						msg->addAData(d);
 					}
 				}
 
@@ -342,18 +349,16 @@ int main(int argc, char* argv[])
 					auto vlist = uniset::getSInfoList(d_data, nullptr);
 
 					for( const auto& v : vlist )
-						mypack.addDData(v.si.id, v.val);
+						msg->addDData(v.si.id, v.val);
 				}
 				else
 				{
 					for( size_t i = 0; i < count; i++ )
-						mypack.addDData(i, i);
+						msg->addDData(i, i);
 				}
 
 				Poco::Net::SocketAddress sa(s_host, port);
 				udp->connect(sa);
-
-				UniSetUDP::UDPPacket s_buf;
 
 				size_t nc = 1;
 
@@ -362,7 +367,7 @@ int main(int argc, char* argv[])
 
 				while( nc )
 				{
-					mypack.num = packetnum++;
+					msg->header.num = packetnum++;
 
 					// при переходе через максимум (UniSetUDP::MaxPacketNum)
 					// пакет опять должен иметь номер "1"
@@ -373,16 +378,14 @@ int main(int argc, char* argv[])
 					{
 						if( udp->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_WRITE) )
 						{
-							mypack.transport_msg(s_buf);
-
 							if( verb )
-								cout << "(send): to addr=" << addr << " d_count=" << mypack.dcount
-									 << " a_count=" << mypack.acount << " bytes=" << s_buf.len << endl;
+								cout << "(send): to addr=" << addr << " d_count=" << msg->header.dcount
+									 << " a_count=" << msg->header.acount << " bytes=" << msg->len() << endl;
 
-							size_t ret = udp->sendBytes((char*)&s_buf.data, s_buf.len);
+							size_t ret = udp->sendBytes(mypack.raw, sizeof(mypack.raw) /* mypack.msg.len() */);
 
-							if( ret < s_buf.len )
-								cerr << "(send): FAILED ret=" << ret << " < sizeof=" << s_buf.len << endl;
+							if( ret < msg->len() )
+								cerr << "(send): FAILED ret=" << ret << " < sizeof=" << msg->len() << endl;
 						}
 					}
 					catch( Poco::Net::NetException& e )

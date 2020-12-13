@@ -59,18 +59,18 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 		}
 	}
 
-	UniSetUDP::UDPMessage mypack;
-	mypack.nodeID = 100;
-	mypack.procID = 100;
+	UniSetUDP::UDPPacket mypack;
+	mypack.msg.header.nodeID = 100;
+	mypack.msg.header.procID = 100;
 
 	for( size_t i = 0; i < count; i++ )
 	{
 		UniSetUDP::UDPAData d(i, i);
-		mypack.addAData(d);
+		mypack.msg.addAData(d);
 	}
 
 	for( size_t i = 0; i < count; i++ )
-		mypack.addDData(i, i);
+		mypack.msg.addDData(i, i);
 
 	for( size_t i = 0; i < max; i++ )
 	{
@@ -92,13 +92,11 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 	}
 
 	size_t packetnum = 0;
-	UniSetUDP::UDPPacket s_buf;
-
 	size_t nc = 1;
 
 	while( nc ) // -V654
 	{
-		mypack.num = packetnum++;
+		mypack.msg.header.num = packetnum++;
 
 		// при переходе черех максимум (UniSetUDP::MaxPacketNum)
 		// пакет опять должен иметь номер "1"
@@ -111,11 +109,10 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 			{
 				if( udp->poll(100000, Poco::Net::Socket::SELECT_WRITE) )
 				{
-					mypack.transport_msg(s_buf);
-					size_t ret = udp->sendBytes((char*)&s_buf.data, s_buf.len);
+					size_t ret = udp->sendBytes(mypack.raw, mypack.msg.len());
 
-					if( ret < s_buf.len )
-						cerr << "(send): FAILED ret=" << ret << " < sizeof=" << s_buf.len << endl;
+					if( ret < mypack.msg.len() )
+						cerr << "(send): FAILED ret=" << ret << " < sizeof=" << mypack.msg.len() << endl;
 				}
 			}
 			catch( Poco::Net::NetException& e )
@@ -180,9 +177,9 @@ int main(int argc, char* argv[] )
 		auto conf = uniset_init(argc, argv);
 
 		if( argc > 1 && !strcmp(argv[1], "s") )
-			run_senders(1, host);
+			run_senders(10, host);
 		else
-			run_test(1, host);
+			run_test(10, host);
 
 		return 0;
 	}

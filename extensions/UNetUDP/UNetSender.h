@@ -114,12 +114,12 @@ namespace uniset
 
 			struct PackMessage
 			{
-				PackMessage( UniSetUDP::UDPMessage&& m ) noexcept: msg(std::move(m)) {}
-				PackMessage( const UniSetUDP::UDPMessage& m ) = delete;
+				PackMessage( uniset::UniSetUDP::UDPPacket&& p ) noexcept: p(std::move(p)) {}
+				PackMessage( const uniset::UniSetUDP::UDPPacket& p ) = delete;
 
 				PackMessage() noexcept {}
 
-				UniSetUDP::UDPMessage msg;
+				uniset::UniSetUDP::UDPPacket p;
 				uniset::uniset_rwmutex mut;
 			};
 
@@ -223,7 +223,6 @@ namespace uniset
 			UItemMap items;
 			size_t packetnum = { 1 }; /*!< номер очередного посылаемого пакета */
 			uint16_t lastcrc = { 0 };
-			UniSetUDP::UDPPacket s_msg;
 
 			size_t maxAData = { UniSetUDP::MaxACount };
 			size_t maxDData = { UniSetUDP::MaxDCount };
