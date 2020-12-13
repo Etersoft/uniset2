@@ -806,7 +806,7 @@ const std::string UNetReceiver::getShortInfo() const noexcept
 	  << " maxDifferens=" << setw(6) << maxDifferens
 	  << " ]"
 	  << endl
-	  << "\t[ qsize=" << (wnum - rnum - 1) << " recv=" << statRecvPerSec << " update=" << statUpPerSec << " per sec ]";
+	  << "\t[ qsize=" << (wnum - rnum) << " recv=" << statRecvPerSec << " update=" << statUpPerSec << " per sec ]";
 
 	return s.str();
 }
