@@ -223,7 +223,7 @@ int main(int argc, char* argv[])
 			{
 				UDPReceiveU udp(s_host, port);
 
-				UniSetUDP::UDPPacket pack;
+				UniSetUDP::UDPMessage pack;
 				unsigned long prev_num = 1;
 
 				int nc = 1;
@@ -255,7 +255,7 @@ int main(int argc, char* argv[])
 							continue;
 						}
 
-						size_t ret = udp.receiveBytes(pack.raw, sizeof(pack.raw) );
+						size_t ret = udp.receiveBytes(&pack, sizeof(pack) );
 
 						if( ret < 0 )
 						{
@@ -269,9 +269,9 @@ int main(int argc, char* argv[])
 							continue;
 						}
 
-						pack.msg.ntoh();
+						pack.ntoh();
 
-						if( pack.msg.header.magic != UniSetUDP::UNETUDP_MAGICNUM )
+						if( pack.header.magic != UniSetUDP::UNETUDP_MAGICNUM )
 						{
 							cerr << "(recv): BAD PROTOCOL VERSION! [ need version '" << UniSetUDP::UNETUDP_MAGICNUM << "']" << endl;
 							continue;
@@ -279,11 +279,11 @@ int main(int argc, char* argv[])
 
 						if( lost )
 						{
-							if( prev_num != (pack.msg.header.num - 1) )
-								cerr << "WARNING! Incorrect sequence of packets! current=" << pack.msg.header.num
+							if( prev_num != (pack.header.num - 1) )
+								cerr << "WARNING! Incorrect sequence of packets! current=" << pack.header.num
 									 << " prev=" << prev_num << endl;
 
-							prev_num = pack.msg.header.num;
+							prev_num = pack.header.num;
 						}
 
 						npack++;
@@ -293,7 +293,7 @@ int main(int argc, char* argv[])
 								 << " bytes: " << ret << endl;
 
 						if( show )
-							cout << "receive data: " << pack.msg << endl;
+							cout << "receive data: " << pack << endl;
 					}
 					catch( Poco::Net::NetException& e )
 					{
@@ -320,10 +320,9 @@ int main(int argc, char* argv[])
 				std::shared_ptr<UDPSocketU> udp = make_shared<UDPSocketU>(s_host, port);
 				udp->setBroadcast(broadcast);
 
-				UniSetUDP::UDPPacket mypack;
-				UDPMessage* msg = &mypack.msg;
-				msg->header.nodeID = nodeID;
-				msg->header.procID = procID;
+				UniSetUDP::UDPMessage mypack;
+				mypack.header.nodeID = nodeID;
+				mypack.header.procID = procID;
 
 				if( !a_data.empty() )
 				{
@@ -332,7 +331,7 @@ int main(int argc, char* argv[])
 					for( const auto& v : vlist )
 					{
 						UDPAData d(v.si.id, v.val);
-						msg->addAData(d);
+						mypack.addAData(d);
 					}
 				}
 				else
@@ -340,7 +339,7 @@ int main(int argc, char* argv[])
 					for( size_t i = 0; i < count; i++ )
 					{
 						UDPAData d(i, i);
-						msg->addAData(d);
+						mypack.addAData(d);
 					}
 				}
 
@@ -349,12 +348,12 @@ int main(int argc, char* argv[])
 					auto vlist = uniset::getSInfoList(d_data, nullptr);
 
 					for( const auto& v : vlist )
-						msg->addDData(v.si.id, v.val);
+						mypack.addDData(v.si.id, v.val);
 				}
 				else
 				{
 					for( size_t i = 0; i < count; i++ )
-						msg->addDData(i, i);
+						mypack.addDData(i, i);
 				}
 
 				Poco::Net::SocketAddress sa(s_host, port);
@@ -367,7 +366,7 @@ int main(int argc, char* argv[])
 
 				while( nc )
 				{
-					msg->header.num = packetnum++;
+					mypack.header.num = packetnum++;
 
 					// при переходе через максимум (UniSetUDP::MaxPacketNum)
 					// пакет опять должен иметь номер "1"
@@ -379,13 +378,13 @@ int main(int argc, char* argv[])
 						if( udp->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_WRITE) )
 						{
 							if( verb )
-								cout << "(send): to addr=" << addr << " d_count=" << msg->header.dcount
-									 << " a_count=" << msg->header.acount << " bytes=" << msg->len() << endl;
+								cout << "(send): to addr=" << addr << " d_count=" << mypack.header.dcount
+									 << " a_count=" << mypack.header.acount << endl;
 
-							size_t ret = udp->sendBytes(mypack.raw, sizeof(mypack.raw) /* mypack.msg.len() */);
+							size_t ret = udp->sendBytes(&mypack, sizeof(mypack) );
 
-							if( ret < msg->len() )
-								cerr << "(send): FAILED ret=" << ret << " < sizeof=" << msg->len() << endl;
+							if( ret < sizeof(mypack) )
+								cerr << "(send): FAILED ret=" << ret << " < sizeof=" << sizeof(mypack) << endl;
 						}
 					}
 					catch( Poco::Net::NetException& e )

@@ -240,10 +240,10 @@ namespace uniset
 			std::atomic_bool activated = { false };
 
 			size_t cbufSize = { 100 }; /*!< размер буфера для сообщений по умолчанию */
-			std::vector<UniSetUDP::UDPPacket> cbuf; // circular buffer
+			std::vector<UniSetUDP::UDPMessage> cbuf; // circular buffer
 			size_t wnum = { 1 }; /*!< номер следующего ожидаемого пакета */
 			size_t rnum = { 0 }; /*!< номер последнего обработанного пакета */
-			UniSetUDP::UDPPacket* pack; // текущий обрабатываемый пакет
+			UniSetUDP::UDPMessage* pack; // текущий обрабатываемый пакет
 
 			/*! максимальная разница между номерами пакетов, при которой считается, что счётчик пакетов
 			 * прошёл через максимум или сбился...
