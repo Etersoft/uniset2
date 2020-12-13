@@ -44,6 +44,7 @@ IOController::IOController(const string& name, const string& section):
 	isPingDBServer(true)
 {
 	auto conf = uniset_conf();
+
 	if( conf )
 		dbserverID = conf->getDBServer();
 }
@@ -54,6 +55,7 @@ IOController::IOController(ObjectId id):
 	isPingDBServer(true)
 {
 	auto conf = uniset_conf();
+
 	if( conf )
 		dbserverID = conf->getDBServer();
 }
@@ -104,7 +106,7 @@ IOController::InitSignal IOController::signal_init()
 // ------------------------------------------------------------------------------------------
 void IOController::activateInit()
 {
-	for( auto && io : ioList )
+	for( auto&& io : ioList )
 	{
 		try
 		{
@@ -207,6 +209,7 @@ void IOController::localSetUndefinedState( IOStateList::iterator& li,
 		uniset_rwmutex_wrlock lock(usi->val_lock);
 		changed = (usi->undefined != undefined);
 		usi->undefined = undefined;
+
 		if( usi->undef_value != not_specified_value )
 		{
 			if( undefined )
@@ -262,6 +265,68 @@ void IOController::localSetUndefinedState( IOStateList::iterator& li,
 	catch(...) {}
 }
 // ------------------------------------------------------------------------------------------
+void IOController::freezeValue( uniset::ObjectId sid,
+								CORBA::Boolean set,
+								CORBA::Long value,
+								uniset::ObjectId sup_id )
+{
+	auto li = ioList.end();
+	localFreezeValueIt( li, sid, set, value, sup_id );
+}
+// ------------------------------------------------------------------------------------------
+void IOController::localFreezeValueIt( IOController::IOStateList::iterator& li,
+									   uniset::ObjectId sid,
+									   CORBA::Boolean set,
+									   CORBA::Long value,
+									   uniset::ObjectId sup_id )
+{
+	if( sup_id == uniset::DefaultObjectId )
+		sup_id = getId();
+
+	// сохранение текущего состояния
+	if( li == ioList.end() )
+	{
+		if( sid != DefaultObjectId )
+			li = ioList.find(sid);
+	}
+
+	if( li == ioList.end() )
+	{
+		ostringstream err;
+		err << myname << "(localFreezeValue): Unknown sensor (" << sid << ")"
+			<< "name: " << uniset_conf()->oind->getNameById(sid);
+		throw IOController_i::NameNotFound(err.str().c_str());
+	}
+
+	localFreezeValue(li->second, set, value, sup_id);
+}
+// ------------------------------------------------------------------------------------------
+void IOController::localFreezeValue( std::shared_ptr<USensorInfo>& usi,
+									 CORBA::Boolean set,
+									 CORBA::Long value,
+									 uniset::ObjectId sup_id )
+{
+	ulog4 << myname << "(localFreezeValue): (" << usi->si.id << ")"
+		  << uniset_conf()->oind->getNameById(usi->si.id)
+		  << " value=" << value
+		  << " set=" << set
+		  << " supplier=" << sup_id
+		  << endl;
+
+	{
+		// выставляем флаг заморозки
+		uniset_rwmutex_wrlock lock(usi->val_lock);
+		usi->frozen = set;
+		usi->frozen_value = value;
+
+		// берём текущее значение, чтобы его не затереть
+		// при вызове setValue()
+		value = usi->real_value;
+	}
+
+	localSetValue(usi, value, sup_id);
+}
+// ------------------------------------------------------------------------------------------
 void IOController::setValue( uniset::ObjectId sid, CORBA::Long value, uniset::ObjectId sup_id )
 {
 	auto li = ioList.end();
@@ -300,6 +365,7 @@ long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 
 	bool changed = false;
 	bool blockChanged = false;
+	bool freezeChanged = false;
 	long retValue = value;
 
 	{
@@ -311,25 +377,30 @@ long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 		bool blocked = ( usi->blocked || usi->undefined );
 		changed = ( usi->real_value != value );
 
-		// Смотрим поменялось ли состояние блокировки.
-		// т.е. смотрим записано ли у нас уже value = d_off_value и флаг блокировки
-		// т.к. если blocked=true то должно быть usi->value = usi->d_off_value
-		// если флаг снимется, то значит должны "восстанавливать" значение из real_value
-		blockChanged = ( blocked != (usi->value == usi->d_off_value ) );
+		// Выставление запоненного значения (real_value)
+		// если снялась блокировка или заморозка
+		blockChanged = ( blocked != (usi->value == usi->d_off_value) );
+		freezeChanged = ( usi->frozen != (usi->value == usi->frozen_value) );
 
-		if( changed || blockChanged )
+		if( changed || blockChanged || freezeChanged )
 		{
 			ulog4 << myname << "(localSetValue): (" << usi->si.id << ")"
 				  << uniset_conf()->oind->getNameById(usi->si.id)
 				  << " newvalue=" << value
 				  << " value=" << usi->value
 				  << " blocked=" << usi->blocked
+				  << " frozen=" << usi->frozen
 				  << " real_value=" << usi->real_value
 				  << " supplier=" << sup_id
 				  << endl;
 
 			usi->real_value = value;
-			usi->value = (blocked ? usi->d_off_value : value);
+
+			if( usi->frozen )
+				usi->value = usi->frozen_value;
+			else
+				usi->value = (blocked ? usi->d_off_value : value);
+
 			retValue = usi->value;
 
 			usi->nchanges++; // статистика
@@ -350,7 +421,7 @@ long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 
 	try
 	{
-		if( changed || blockChanged )
+		if( changed || blockChanged || freezeChanged )
 		{
 			uniset_rwmutex_wrlock l(usi->changeMutex);
 			usi->sigChange.emit(usi, this);
@@ -360,7 +431,7 @@ long IOController::localSetValue( std::shared_ptr<USensorInfo>& usi,
 
 	try
 	{
-		if( changed || blockChanged )
+		if( changed || blockChanged || freezeChanged )
 		{
 			std::lock_guard<std::mutex> l(siganyMutex);
 			sigAnyChange.emit(usi, this);
@@ -462,7 +533,7 @@ void IOController::dumpToDB()
 	{
 		// lock
 		//        uniset_mutex_lock lock(ioMutex, 100);
-		for( auto && usi : ioList )
+		for( auto&& usi : ioList )
 		{
 			auto& s = usi.second;
 
@@ -615,6 +686,7 @@ IOController::USensorInfo::USensorInfo(): d_value(1), d_off_value(0)
 	dbignore = false;
 	undefined = false;
 	blocked = false;
+	frozen = false;
 	supplier = uniset::DefaultObjectId;
 
 	// стоит ли выставлять текущее время
@@ -684,7 +756,7 @@ void IOController::for_iolist( IOController::UFunction f )
 {
 	uniset_rwmutex_rlock lck(ioMutex);
 
-	for( auto && s : ioList )
+	for( auto&& s : ioList )
 		f(s.second);
 }
 // ----------------------------------------------------------------------------------------

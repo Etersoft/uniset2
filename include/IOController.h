@@ -72,6 +72,10 @@ namespace uniset
                                             CORBA::Boolean undefined,
                                             uniset::ObjectId sup_id = uniset::DefaultObjectId ) override;
 
+            virtual void freezeValue( uniset::ObjectId sid,
+                                      CORBA::Boolean set,
+                                      CORBA::Long value,
+                                      uniset::ObjectId sup_id = uniset::DefaultObjectId ) override;
 
             virtual IOController_i::SensorInfoSeq* getSensorSeq( const uniset::IDSeq& lst ) override;
             virtual uniset::IDSeq* setOutputSeq( const IOController_i::OutSeq& lst, uniset::ObjectId sup_id ) override;
@@ -178,6 +182,16 @@ namespace uniset
             // -- работа через указатель ---
             virtual long localSetValue( std::shared_ptr<USensorInfo>& usi, CORBA::Long value, uniset::ObjectId sup_id );
             long localGetValue( std::shared_ptr<USensorInfo>& usi) ;
+            virtual void localFreezeValueIt( IOController::IOStateList::iterator& li,
+                                             uniset::ObjectId sid,
+                                             CORBA::Boolean set,
+                                             CORBA::Long value,
+                                             uniset::ObjectId sup_id );
+
+            virtual void localFreezeValue( std::shared_ptr<USensorInfo>& usi,
+                                           CORBA::Boolean set,
+                                           CORBA::Long value,
+                                           uniset::ObjectId sup_id );
 
 #ifndef DISABLE_REST_API
             // http API

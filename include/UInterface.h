@@ -39,7 +39,6 @@
 // -----------------------------------------------------------------------------------------
 namespace uniset
 {
-
     /*!
      * \class UInterface
      * Универсальный интерфейс для взаимодействия между объектами (процессами).
@@ -99,6 +98,8 @@ namespace uniset
             // установка неопределённого состояния
             void setUndefinedState( const IOController_i::SensorInfo& si, bool undefined, uniset::ObjectId supplier );
 
+            // заморозка значения (выставить указанный value и не менять)
+            void freezeValue( const IOController_i::SensorInfo& si, bool set, long value, uniset::ObjectId supplier = uniset::DefaultObjectId );
             // ---------------------------------------------------------------
             // Калибровка... пороги...
 

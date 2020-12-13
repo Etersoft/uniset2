@@ -56,6 +56,7 @@ static struct option longopts[] =
     { "quiet", no_argument, 0, 'q' },
     { "csv", required_argument, 0, 'z' },
     { "sendText", required_argument, 0, 'm' },
+    { "freezeValue", required_argument, 0, 'n' },
     { NULL, 0, 0, 0 }
 };
 
@@ -79,6 +80,7 @@ int getCalibrate( const string& args, UInterface& ui );
 int oinfo(const string& args, UInterface& ui, const string&  userparam );
 int apiRequest( const string& args, UInterface& ui, const string& query );
 void sendText( const string& args, UInterface& ui, const string& txt, int mtype );
+int freezeValue( const string& args, bool set, UInterface& ui );
 // --------------------------------------------------------------------------
 static void print_help(int width, const string& cmd, const string& help, const string& tab = " " )
 {
@@ -126,6 +128,7 @@ static void usage()
     print_help(36, "-q|--quiet", "Выводит только результат.\n");
     print_help(36, "-z|--csv", "Вывести результат (getValue) в виде val1,val2,val3...\n");
     print_help(36, "-m|--sendText id1@node1,id2@node2,id3,.. mtype text", "Послать объектам текстовое сообщение text типа mtype\n");
+    print_help(36, "-n|--freezeValue id1@node1=val1,id2@node2=val2,id3=val3,.. set", "Выставить указанным датчикам соответствующие значения и заморозить их (set=true) или разморозить (set=false).\n");
     cout << endl;
 }
 
@@ -196,6 +199,26 @@ int main(int argc, char** argv)
                     ui.initBackId(uniset::AdminID);
                     string name = ( optarg ) ? optarg : "";
                     return setValue(name, ui);
+                }
+                break;
+
+                case 'n':    //--freezeValue
+                {
+                    // смотрим второй параметр
+                    if( checkArg(optind, argc, argv) == 0 )
+                    {
+                        if( !quiet )
+                            cerr << "admin(freezeValue): Unknown 'set'. Use: id=v1,name=v2,name2@nodeX=v3 set" << endl;
+
+                        return 1;
+                    }
+
+                    std::string sensors(optarg);
+                    bool set = uni_atoi(argv[optind]);
+                    auto conf = uniset_init(argc, argv, conffile);
+                    UInterface ui(conf);
+                    ui.initBackId(uniset::AdminID);
+                    return freezeValue(sensors, set, ui);
                 }
                 break;
 
@@ -795,6 +818,68 @@ int getValue( const string& args, UInterface& ui )
         {
             if( !quiet )
                 cerr << "(getValue): " << ex << endl;
+
+            err = 1;
+        }
+        catch( const std::exception& ex )
+        {
+            if( !quiet )
+                cerr << "std::exception: " << ex.what() << endl;
+
+            err = 1;
+        }
+    }
+
+    return err;
+}
+// --------------------------------------------------------------------------------------
+int freezeValue( const string& args, bool set, UInterface& ui )
+{
+    int err = 0;
+    auto conf = ui.getConf();
+    auto sl = uniset::getSInfoList(args, conf);
+
+    if( verb )
+        cout << "====== freezeValue ======" << endl;
+
+    for( auto&& it : sl )
+    {
+        try
+        {
+            UniversalIO::IOType t = conf->getIOType(it.si.id);
+
+            if( verb )
+            {
+                cout << "  value: " << it.val << endl;
+                cout << "   name: (" << it.si.id << ") " << it.fname << endl;
+                cout << " iotype: " << t << endl;
+                cout << "   text: " << conf->oind->getTextName(it.si.id) << "\n\n";
+            }
+
+            if( it.si.node == DefaultObjectId )
+                it.si.node = conf->getLocalNode();
+
+            switch(t)
+            {
+                case UniversalIO::DI:
+                case UniversalIO::DO:
+                case UniversalIO::AI:
+                case UniversalIO::AO:
+                    ui.freezeValue(it.si, set, it.val, AdminID);
+                    break;
+
+                default:
+                    if( !quiet )
+                        cerr << "FAILED: Unknown 'iotype' for " << it.fname << endl;
+
+                    err = 1;
+                    break;
+            }
+        }
+        catch( const uniset::Exception& ex )
+        {
+            if( !quiet )
+                cerr << "(setValue): " << ex << endl;;
 
             err = 1;
         }
