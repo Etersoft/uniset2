@@ -56,24 +56,22 @@ void InitTest()
 }
 // -----------------------------------------------------------------------------
 // pnum - минималный номер ожидаемого пакета ( 0 - любой пришедщий )
-// ncycle - сколько пакетов разрешено "пропустить" прежде чем дождёмся нужного.. (чтобы не ждать бесконечно)
+// ncycle - сколько пакетов разрешено "пропустить" прежде чем дождёмся нужного. (чтобы не ждать бесконечно)
 static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 2000, int ncycle = 20 )
 {
 	UniSetUDP::UDPMessage pack;
-	UniSetUDP::UDPPacket buf;
 
 	while( ncycle > 0 )
 	{
 		if( !udp_r->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_READ) )
 			break;
 
-		size_t ret = udp_r->receiveBytes(&(buf.data), sizeof(buf.data) );
-		size_t sz = UniSetUDP::UDPMessage::getMessage(pack, buf);
+		size_t ret = udp_r->receiveBytes(&pack, sizeof(pack) );
 
-		if( sz == 0 || pnum == 0 || ( pnum > 0 && pack.num >= pnum ) ) // -V560
+		if( ret <= 0 || pnum == 0 || ( pnum > 0 && pack.header.num >= pnum ) ) // -V560
 			break;
 
-		REQUIRE( pack.magic == UniSetUDP::UNETUDP_MAGICNUM );
+		REQUIRE( pack.header.magic == UniSetUDP::UNETUDP_MAGICNUM );
 		ncycle--;
 	}
 
@@ -87,15 +85,49 @@ void send( UniSetUDP::UDPMessage& pack, int tout = 2000 )
 {
 	CHECK( udp_s->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_WRITE) );
 
-	pack.nodeID = s_nodeID;
-	pack.procID = s_procID;
-	pack.num = s_numpack++;
+	pack.header.nodeID = s_nodeID;
+	pack.header.procID = s_procID;
+	pack.header.num = s_numpack++;
 
-	UniSetUDP::UDPPacket s_buf;
-	pack.transport_msg(s_buf);
-	size_t ret = udp_s->sendTo(&s_buf.data, s_buf.len, s_addr);
-	REQUIRE( ret == s_buf.len );
+	size_t ret = udp_s->sendTo(&pack, sizeof(pack), s_addr);
+	REQUIRE( ret == sizeof(pack) );
 }
+<<<<<<< HEAD
+=======
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: repack", "[unetudp][repack]")
+{
+	UniSetUDP::UDPMessage pack;
+
+	pack.header.nodeID = 100;
+	pack.header.procID = 100;
+	pack.header.num = 1;
+	pack.addDData(1, 1);
+	pack.addDData(2, 0);
+	pack.addAData(3, 30);
+	pack.addAData(4, 40);
+
+	REQUIRE(pack.header.magic == UniSetUDP::UNETUDP_MAGICNUM);
+
+	UniSetUDP::UDPMessage pack2(pack);
+	pack2.ntoh();
+
+	REQUIRE(pack2.header.nodeID == 100);
+	REQUIRE(pack2.header.procID == 100);
+	REQUIRE(pack2.header.num == 1);
+	REQUIRE(pack2.header.magic == UniSetUDP::UNETUDP_MAGICNUM);
+	REQUIRE(pack2.dID(0) == 1);
+	REQUIRE(pack2.dValue(0) == true);
+	REQUIRE(pack2.dID(1) == 2);
+	REQUIRE(pack2.dValue(1) == false);
+	REQUIRE(pack2.dID(1) == 2);
+	REQUIRE(pack2.a_dat[0].id == 3);
+	REQUIRE(pack2.a_dat[0].val == 30);
+	REQUIRE(pack2.a_dat[1].id == 4);
+	REQUIRE(pack2.a_dat[1].val == 40);
+}
+// -----------------------------------------------------------------------------
+>>>>>>> 2.9.0-alt1
 TEST_CASE("[UNetUDP]: UDPMessage", "[unetudp][udpmessage]")
 {
 	SECTION("UDPMessage::isFull()")
@@ -122,41 +154,6 @@ TEST_CASE("[UNetUDP]: UDPMessage", "[unetudp][udpmessage]")
 
 		CHECK( u.isFull() );
 	}
-
-	SECTION("UDPMessage transport..")
-	{
-		// создаём сообщение, преобразуем к Package.. потом обратно.. проверяём, что информация не исказилась
-		UniSetUDP::UDPMessage u;
-		size_t a = u.addAData(100, 100);
-		size_t d = u.addDData(110, true);
-
-		UniSetUDP::UDPPacket p;
-		size_t len = u.transport_msg(p);
-		CHECK( len != 0 );
-		REQUIRE( a < UniSetUDP::MaxACount );
-		REQUIRE( d < UniSetUDP::MaxDCount );
-
-		UniSetUDP::UDPMessage u2(p);
-		REQUIRE( u2.a_dat[a].id == 100 );
-		REQUIRE( u2.a_dat[a].val == 100 );
-		REQUIRE( u2.dID(d) == 110 );
-		REQUIRE( u2.dValue(d) == true );
-	}
-}
-// -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: sizeOf", "[unetudp][sizeof]")
-{
-	UniSetUDP::UDPMessage m;
-
-	REQUIRE( m.sizeOf() == sizeof(UniSetUDP::UDPHeader) );
-
-	m.addAData(8, 70);
-
-	REQUIRE( m.sizeOf() == sizeof(UniSetUDP::UDPHeader) + sizeof(UniSetUDP::UDPAData) );
-
-	UniSetUDP::UDPPacket p;
-	size_t len = m.transport_msg(p);
-	REQUIRE( len == m.sizeOf() );
 }
 // -----------------------------------------------------------------------------
 #if 0
@@ -178,34 +175,34 @@ TEST_CASE("[UNetUDP]: check sender", "[unetudp][sender]")
 {
 	InitTest();
 
-	SECTION("Test: read default pack...")
+	SECTION("Test: read default pack..")
 	{
-		UniSetUDP::UDPMessage pack = receive();
-		REQUIRE( pack.num != 0 );
-		REQUIRE( pack.asize() == 4 );
-		REQUIRE( pack.dsize() == 2 );
+		UniSetUDP::UDPMessage p = receive();
+		REQUIRE( p.header.num != 0 );
+		REQUIRE( p.asize() == 4 );
+		REQUIRE( p.dsize() == 2 );
 
-		for( size_t i = 0; i < pack.asize(); i++ )
+		for( size_t i = 0; i < p.asize(); i++ )
 		{
-			REQUIRE( pack.a_dat[i].val == i + 1 );
+			REQUIRE( p.a_dat[i].val == i + 1 );
 		}
 
-		REQUIRE( pack.dValue(0) == 1 );
-		REQUIRE( pack.dValue(1) == 0 );
+		REQUIRE( p.dValue(0) == true );
+		REQUIRE( p.dValue(1) == false );
 
-		// т.к. данные в SM не менялись, то должен придти пакет с тем же номером что и был..
-		UniSetUDP::UDPMessage pack2 = receive();
-		REQUIRE( pack2.num == pack.num );
+		// т.к. данные в SM не менялись, то должен придти пакет с тем же номером что и был.
+		UniSetUDP::UDPMessage p2 = receive();
+		REQUIRE( p2.header.num == p.header.num );
 	}
 
-	SECTION("Test: change AI data...")
+	SECTION("Test: change AI data..")
 	{
 		UniSetUDP::UDPMessage pack0 = receive();
 		ui->setValue(2, 100);
 		REQUIRE( ui->getValue(2) == 100 );
 		msleep(120);
-		UniSetUDP::UDPMessage pack = receive( pack0.num + 1 );
-		REQUIRE( pack.num != 0 );
+		UniSetUDP::UDPMessage pack = receive( pack0.header.num + 1 );
+		REQUIRE( pack.header.num != 0 );
 		REQUIRE( pack.asize() == 4 );
 		REQUIRE( pack.dsize() == 2 );
 		REQUIRE( pack.a_dat[0].val == 100 );
@@ -213,35 +210,35 @@ TEST_CASE("[UNetUDP]: check sender", "[unetudp][sender]")
 		ui->setValue(2, 250);
 		REQUIRE( ui->getValue(2) == 250 );
 		msleep(120);
-		UniSetUDP::UDPMessage pack2 = receive( pack.num + 1 );
-		REQUIRE( pack2.num != 0 );
-		REQUIRE( pack2.num > pack.num );
+		UniSetUDP::UDPMessage pack2 = receive( pack.header.num + 1 );
+		REQUIRE( pack2.header.num != 0 );
+		REQUIRE( pack2.header.num > pack.header.num );
 		REQUIRE( pack2.asize() == 4 );
 		REQUIRE( pack2.dsize() == 2 );
 		REQUIRE( pack2.a_dat[0].val == 250 );
 	}
 
-	SECTION("Test: change DI data...")
+	SECTION("Test: change DI data..")
 	{
 		UniSetUDP::UDPMessage pack0 = receive();
 		ui->setValue(6, 1);
 		REQUIRE( ui->getValue(6) == 1 );
 		msleep(120);
-		UniSetUDP::UDPMessage pack = receive( pack0.num + 1 );
-		REQUIRE( pack.num != 0 );
+		UniSetUDP::UDPMessage pack = receive( pack0.header.num + 1 );
+		REQUIRE( pack.header.num != 0 );
 		REQUIRE( pack.asize() == 4 );
 		REQUIRE( pack.dsize() == 2 );
-		REQUIRE( pack.dValue(0) == 1 );
+		REQUIRE( pack.dValue(0) == true );
 
 		ui->setValue(6, 0);
 		REQUIRE( ui->getValue(6) == 0 );
 		msleep(120);
-		UniSetUDP::UDPMessage pack2 = receive( pack.num + 1 );
-		REQUIRE( pack2.num != 0 );
-		REQUIRE( pack2.num > pack.num );
+		UniSetUDP::UDPMessage pack2 = receive( pack.header.num + 1 );
+		REQUIRE( pack2.header.num != 0 );
+		REQUIRE( pack2.header.num > pack.header.num );
 		REQUIRE( pack2.asize() == 4 );
 		REQUIRE( pack2.dsize() == 2 );
-		REQUIRE( pack2.dValue(0) == 0 );
+		REQUIRE( pack2.dValue(0) == false );
 	}
 }
 // -----------------------------------------------------------------------------
@@ -249,7 +246,7 @@ TEST_CASE("[UNetUDP]: check receiver", "[unetudp][receiver]")
 {
 	InitTest();
 
-	SECTION("Test: send data pack...")
+	SECTION("Test: send data pack..")
 	{
 		REQUIRE( ui->getValue(node2_respond_s) == 0 );
 
@@ -275,7 +272,7 @@ TEST_CASE("[UNetUDP]: check receiver", "[unetudp][receiver]")
 		//        msleep(1500);
 		//        REQUIRE( ui->getValue(node2_respond_s) == 1 );
 	}
-	SECTION("Test: send data pack2..")
+	SECTION("Test: send data pack2.")
 	{
 		UniSetUDP::UDPMessage pack;
 		pack.addAData(8, 10);
@@ -299,7 +296,7 @@ TEST_CASE("[UNetUDP]: check packets 'hole'", "[unetudp][udphole]")
 {
 	InitTest();
 
-	// проверяем обработку "дырок" в пакетах..
+	// проверяем обработку "дырок" в пакетах.
 	UniSetUDP::UDPMessage pack;
 	pack.addAData(8, 15);
 	send(pack);
@@ -323,7 +320,7 @@ TEST_CASE("[UNetUDP]: check packets 'hole'", "[unetudp][udphole]")
 	s_numpack = lastnum + 1;
 	UniSetUDP::UDPMessage pack1;
 	pack1.addAData(8, 21);
-	send(pack1); // заполняем первую дырку..// дырка закроется.. пакет тут же обработается
+	send(pack1); // заполняем первую дырку.// дырка закроется. пакет тут же обработается
 	msleep(100);
 	REQUIRE( ui->getValue(8) == 21 );
 	REQUIRE( ui->getValue(node2_lostpackets_as) == nlost );
@@ -334,11 +331,11 @@ TEST_CASE("[UNetUDP]: check packets 'hole'", "[unetudp][udphole]")
 	send(pack2); // заполняем следующую дырку
 	msleep(120);
 
-	// тут обработка дойдёт уже до "первого" пакета..
+	// тут обработка дойдёт уже до "первого" пакета.
 	REQUIRE( ui->getValue(8) == 30 );
 	REQUIRE( ui->getValue(node2_lostpackets_as) == nlost );
 
-	// возвращаем к нормальному..чтобы следующие тесты не поломались..
+	// возвращаем к нормальному.чтобы следующие тесты не поломались.
 	for( int i = 0; i < 10; i++ )
 	{
 		send(pack2);
@@ -350,7 +347,7 @@ TEST_CASE("[UNetUDP]: check packets 'MaxDifferens'", "[unetudp][maxdifferens]")
 {
 	InitTest();
 
-	// проверяем обработку "дырок" в пакетах..
+	// проверяем обработку "дырок" в пакетах.
 	UniSetUDP::UDPMessage pack;
 	pack.addAData(8, 50);
 	send(pack);
@@ -449,9 +446,9 @@ TEST_CASE("[UNetUDP]: check undefined value", "[unetudp][sender]")
 	REQUIRE( ui->getValue(2) == 110 );
 	msleep(600);
 
-	UniSetUDP::UDPMessage pack = receive( pack0.num + 1, 2000, 40 );
+	UniSetUDP::UDPMessage pack = receive( pack0.header.num + 1, 2000, 40 );
 
-	REQUIRE( pack.num != 0 );
+	REQUIRE( pack.header.num != 0 );
 	REQUIRE( pack.asize() == 4 );
 	REQUIRE( pack.dsize() == 2 );
 	REQUIRE( pack.a_dat[0].val == 110 );
@@ -461,18 +458,18 @@ TEST_CASE("[UNetUDP]: check undefined value", "[unetudp][sender]")
 	si.node = uniset_conf()->getLocalNode();
 	ui->setUndefinedState(si, true, 6000 /* TestProc */ );
 	msleep(600);
-	pack = receive(pack.num + 1);
+	pack = receive(pack.header.num + 1);
 
-	REQUIRE( pack.num != 0 );
+	REQUIRE( pack.header.num != 0 );
 	REQUIRE( pack.asize() == 4 );
 	REQUIRE( pack.dsize() == 2 );
 	REQUIRE( pack.a_dat[0].val == 65635 );
 
 	ui->setUndefinedState(si, false, 6000 /* TestProc */ );
 	msleep(600);
-	pack = receive(pack.num + 1);
+	pack = receive(pack.header.num + 1);
 
-	REQUIRE( pack.num != 0 );
+	REQUIRE( pack.header.num != 0 );
 	REQUIRE( pack.asize() == 4 );
 	REQUIRE( pack.dsize() == 2 );
 	REQUIRE( pack.a_dat[0].val == 110 );

@@ -87,8 +87,8 @@ namespace uniset
 		// выставляем поля, которые не меняются
 		{
 			uniset_rwmutex_wrlock l(mypack.mut);
-			mypack.msg.nodeID = uniset_conf()->getLocalNode();
-			mypack.msg.procID = shm->ID();
+			mypack.msg.header.nodeID = uniset_conf()->getLocalNode();
+			mypack.msg.header.procID = shm->ID();
 		}
 
 		// -------------------------------
@@ -317,7 +317,7 @@ namespace uniset
 
 			if( crc != lastcrc )
 			{
-				mypack.msg.num = packetnum++;
+				mypack.msg.header.num = packetnum++;
 				lastcrc = crc;
 			}
 
@@ -331,12 +331,10 @@ namespace uniset
 			if( !udp || !udp->poll( UniSetTimer::millisecToPoco(writeTimeout), Poco::Net::Socket::SELECT_WRITE) )
 				return;
 
-			mypack.msg.transport_msg(s_msg);
+			size_t ret = udp->sendTo(&mypack.msg, sizeof(mypack.msg), saddr);
 
-			size_t ret = udp->sendTo(&s_msg.data, s_msg.len, saddr);
-
-			if( ret < s_msg.len )
-				unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;
+			if( ret < sizeof(mypack.msg) )
+				unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << sizeof(mypack.msg) << endl;
 		}
 		catch( Poco::Net::NetException& ex )
 		{
@@ -470,8 +468,8 @@ namespace uniset
 				auto& mypack2 = pk[dnum];
 				uniset_rwmutex_wrlock l2(mypack2.mut);
 				p.pack_ind = mypack2.msg.addDData(sid, defval);
-				mypack2.msg.nodeID = uniset_conf()->getLocalNode();
-				mypack2.msg.procID = shm->ID();
+				mypack2.msg.header.nodeID = uniset_conf()->getLocalNode();
+				mypack2.msg.header.procID = shm->ID();
 			}
 
 			p.pack_num = dnum;
@@ -511,8 +509,8 @@ namespace uniset
 				auto& mypack2 = pk[anum];
 				uniset_rwmutex_wrlock l2(mypack2.mut);
 				p.pack_ind = mypack2.msg.addAData(sid, defval);
-				mypack2.msg.nodeID = uniset_conf()->getLocalNode();
-				mypack2.msg.procID = shm->ID();
+				mypack2.msg.header.nodeID = uniset_conf()->getLocalNode();
+				mypack2.msg.header.procID = shm->ID();
 			}
 
 			p.pack_num = anum;
@@ -589,11 +587,11 @@ namespace uniset
 			s << "        \t[" << i->first << "]=" << i->second.size() << endl;
 			size_t n = 0;
 
-			for( const auto& p : i->second )
+			for( const auto& pack : i->second )
 			{
 				//uniset_rwmutex_rlock l(p->mut);
-				s << "        \t\t[" << (n++) << "]=" << p.msg.sizeOf() << " bytes"
-				  << " ( numA=" << setw(5) << p.msg.asize() << " numD=" << setw(5) << p.msg.dsize() << ")"
+				s << "        \t\t[" << (n++) << "]=" << sizeof(pack.msg) << " bytes"
+				  << " ( numA=" << setw(5) << pack.msg.asize() << " numD=" << setw(5) << pack.msg.dsize() << ")"
 				  << endl;
 			}
 		}

@@ -86,7 +86,11 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 	int maxDiff = conf->getArgPInt("--" + prefix + "-maxdifferense", it.getProp("maxDifferense"), 100);
 	int checkConnectionPause = conf->getArgPInt("--" + prefix + "-checkconnection-pause", it.getProp("checkConnectionPause"), 10000);
 	int initpause = conf->getArgPInt("--" + prefix + "-initpause", it.getProp("initpause"), 5000);
+<<<<<<< HEAD
 	int recvBufferSize = conf->getArgPInt("--" + prefix + "-recv-buffer-size", it.getProp("recvBufferSize"), 3000);
+=======
+	int recvBufferSize = conf->getArgPInt("--" + prefix + "-recv-buffer-size", it.getProp("recvBufferSize"), 100);
+>>>>>>> 2.9.0-alt1
 
 	std::string updateStrategy = conf->getArg2Param("--" + prefix + "-update-strategy", it.getProp("updateStrategy"), "evloop");
 
@@ -844,7 +848,11 @@ void UNetExchange::help_print( int argc, const char* argv[] ) noexcept
 	cout << "--prefix-checkconnection-pause msec  - Пауза между попытками открыть соединение (если это не удалось до этого). По умолчанию: 10000 (10 сек)" << endl;
 	cout << "--prefix-maxdifferense num       - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;
 	cout << "--prefix-nosender [0,1]          - Отключить посылку." << endl;
+<<<<<<< HEAD
 	cout << "--prefix-recv-buffer-size sz     - Размер циклического буфера для приёма сообщений. По умолчанию: 3000" << endl;
+=======
+	cout << "--prefix-recv-buffer-size sz     - Размер циклического буфера для приёма сообщений. По умолчанию: 100" << endl;
+>>>>>>> 2.9.0-alt1
 	cout << "--prefix-sm-ready-timeout msec   - Время ожидание я готовности SM к работе. По умолчанию 120000" << endl;
 	cout << "--prefix-filter-field name       - Название фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
 	cout << "--prefix-filter-value name       - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
