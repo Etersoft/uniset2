@@ -114,12 +114,12 @@ namespace uniset
 
 			struct PackMessage
 			{
-				PackMessage( uniset::UniSetUDP::UDPPacket&& p ) noexcept: p(std::move(p)) {}
-				PackMessage( const uniset::UniSetUDP::UDPPacket& p ) = delete;
+				PackMessage( uniset::UniSetUDP::UDPMessage&& m ) noexcept: msg(std::move(m)) {}
+				PackMessage( const uniset::UniSetUDP::UDPMessage& m ) = delete;
 
 				PackMessage() noexcept {}
 
-				uniset::UniSetUDP::UDPPacket p;
+				uniset::UniSetUDP::UDPMessage msg;
 				uniset::uniset_rwmutex mut;
 			};
 

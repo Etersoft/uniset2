@@ -29,7 +29,6 @@ using namespace uniset;
 using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 CommonEventLoop UNetReceiver::loop;
-static UniSetUDP::UDPPacket defpack;
 // -----------------------------------------------------------------------------
 UNetReceiver::UNetReceiver(const std::string& s_host, int _port
 						   , const std::shared_ptr<SMInterface>& smi
@@ -335,7 +334,7 @@ size_t UNetReceiver::rnext( size_t num )
 
 	while( i < wnum )
 	{
-		p = &cbuf[i % cbufSize].msg;
+		p = &cbuf[i % cbufSize];
 
 		if( p->header.num > num )
 			return i;
@@ -361,9 +360,7 @@ void UNetReceiver::update() noexcept
 	// либо обнаружится "дырка" в последовательности,
 	while( rnum < wnum )
 	{
-		p = &(cbuf[rnum % cbufSize].msg);
-
-//		cout << "update: num=" << p->header.num << " rnum=" << rnum << " wnum=" << wnum << endl;
+		p = &(cbuf[rnum % cbufSize]);
 
 		// если номер пакета не равен ожидаемому, ждём считая что это "дырка"
 		// т.к. разрывы и другие случаи обрабатываются при приёме пакетов
@@ -389,6 +386,10 @@ void UNetReceiver::update() noexcept
 		rnum++;
 		upCount++;
 
+		// обновление данных в SM (блокировано)
+		if( lockUpdate )
+			continue;
+
 		// Обработка дискретных
 		auto d_iv = getDCache(p);
 
@@ -405,10 +406,6 @@ void UNetReceiver::update() noexcept
 					c_it->id = s_id;
 					shm->initIterator(c_it->ioit);
 				}
-
-				// обновление данных в SM (блокировано)
-				if( lockUpdate )
-					continue;
 
 				shm->localSetValue(c_it->ioit, s_id, p->dValue(i), shm->ID());
 			}
@@ -446,10 +443,6 @@ void UNetReceiver::update() noexcept
 					c_it->id = dat->id;
 					shm->initIterator(c_it->ioit);
 				}
-
-				// обновление данных в SM (блокировано)
-				if( lockUpdate )
-					continue;
 
 				shm->localSetValue(c_it->ioit, dat->id, dat->val, shm->ID());
 			}
@@ -622,7 +615,7 @@ bool UNetReceiver::receive() noexcept
 	{
 		// сперва пробуем сохранить пакет в том месте, где должен быть очередной пакет
 		pack = &(cbuf[wnum % cbufSize]);
-		ssize_t ret = udp->receiveBytes(pack->raw, sizeof(pack->raw) /* UniSetUDP::MaxDataLen */);
+		ssize_t ret = udp->receiveBytes(pack, sizeof(UniSetUDP::UDPMessage));
 
 		if( ret < 0 )
 		{
@@ -639,17 +632,15 @@ bool UNetReceiver::receive() noexcept
 		recvCount++;
 
 		// конвертируем byte order
-		pack->msg.ntoh();
+		pack->ntoh();
 
-		if( pack->msg.header.magic != UniSetUDP::UNETUDP_MAGICNUM )
+		if( !pack->isOk() )
 			return false;
 
-//		cout << "RECV[" << ret << "]: msg: " << pack->msg << endl;
-
-		if( size_t(abs(long(pack->msg.header.num - wnum))) > maxDifferens || size_t(abs( long(wnum - rnum) )) >= (cbufSize - 2) )
+		if( size_t(abs(long(pack->header.num - wnum))) > maxDifferens || size_t(abs( long(wnum - rnum) )) >= (cbufSize - 2) )
 		{
 			unetcrit << myname << "(receive): DISAGREE "
-					 << " packnum=" << pack->msg.header.num
+					 << " packnum=" << pack->header.num
 					 << " wnum=" << wnum
 					 << " rnum=" << rnum
 					 << " (maxDiff=" << maxDifferens
@@ -657,41 +648,40 @@ bool UNetReceiver::receive() noexcept
 					 << ")"
 					 << endl;
 
-			lostPackets = pack->msg.header.num > wnum ? (pack->msg.header.num - wnum - 1) : lostPackets + 1;
+			lostPackets = pack->header.num > wnum ? (pack->header.num - wnum - 1) : lostPackets + 1;
 			// реинициализируем позицию для чтения
-			rnum = pack->msg.header.num;
-			wnum = pack->msg.header.num + 1;
+			rnum = pack->header.num;
+			wnum = pack->header.num + 1;
 
 			// перемещаем пакет в нужное место (если требуется)
-			if( wnum != pack->msg.header.num )
+			if( wnum != pack->header.num )
 			{
-				cbuf[pack->msg.header.num % cbufSize].msg = pack->msg;
-				pack->msg.header.num = 0;
+				cbuf[pack->header.num % cbufSize] = (*pack);
+				pack->header.num = 0;
 			}
 
 			return true;
 		}
 
-		if( pack->msg.header.num != wnum )
+		if( pack->header.num != wnum )
 		{
 			// перемещаем пакет в правильное место
 			// в соответствии с его номером
-			cbuf[pack->msg.header.num % cbufSize].msg = pack->msg;
+			cbuf[pack->header.num % cbufSize] = (*pack);
 
-			if( pack->msg.header.num >= wnum )
-				wnum = pack->msg.header.num + 1;
+			if( pack->header.num >= wnum )
+				wnum = pack->header.num + 1;
 
 			// обнуляем номер в том месте где записали, чтобы его не обрабатывал update
-			pack->msg.header.num = 0;
+			pack->header.num = 0;
 		}
-		else if( pack->msg.header.num >= wnum )
-			wnum = pack->msg.header.num + 1;
+		else if( pack->header.num >= wnum )
+			wnum = pack->header.num + 1;
 
 		// начальная инициализация для чтения
 		if( rnum == 0 )
-			rnum = pack->msg.header.num;
+			rnum = pack->header.num;
 
-//		cout << "FINAL: msg: " << cbuf[(wnum-1) % cbufSize].msg << endl;
 		return true;
 	}
 	catch( Poco::Net::NetException& ex )

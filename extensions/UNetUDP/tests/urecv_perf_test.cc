@@ -59,18 +59,18 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 		}
 	}
 
-	UniSetUDP::UDPPacket mypack;
-	mypack.msg.header.nodeID = 100;
-	mypack.msg.header.procID = 100;
+	UniSetUDP::UDPMessage mypack;
+	mypack.header.nodeID = 100;
+	mypack.header.procID = 100;
 
 	for( size_t i = 0; i < count; i++ )
 	{
 		UniSetUDP::UDPAData d(i, i);
-		mypack.msg.addAData(d);
+		mypack.addAData(d);
 	}
 
 	for( size_t i = 0; i < count; i++ )
-		mypack.msg.addDData(i, i);
+		mypack.addDData(i, i);
 
 	for( size_t i = 0; i < max; i++ )
 	{
@@ -96,7 +96,7 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 
 	while( nc ) // -V654
 	{
-		mypack.msg.header.num = packetnum++;
+		mypack.header.num = packetnum++;
 
 		// при переходе черех максимум (UniSetUDP::MaxPacketNum)
 		// пакет опять должен иметь номер "1"
@@ -109,10 +109,10 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 			{
 				if( udp->poll(100000, Poco::Net::Socket::SELECT_WRITE) )
 				{
-					size_t ret = udp->sendBytes(mypack.raw, mypack.msg.len());
+					size_t ret = udp->sendBytes(&mypack, sizeof(mypack));
 
-					if( ret < mypack.msg.len() )
-						cerr << "(send): FAILED ret=" << ret << " < sizeof=" << mypack.msg.len() << endl;
+					if( ret < sizeof(mypack) )
+						cerr << "(send): FAILED ret=" << ret << " < sizeof=" << sizeof(mypack) << endl;
 				}
 			}
 			catch( Poco::Net::NetException& e )
@@ -140,7 +140,7 @@ static void run_test( size_t max, const std::string& host )
 	{
 		cout << "create receiver: " << host << ":" << begPort + i << endl;
 		auto r = make_shared<UNetReceiver>(host, begPort + i, smiInstance());
-		//r->setLockUpdate(true);
+		r->setLockUpdate(true);
 		vrecv.emplace_back(r);
 	}
 
@@ -177,9 +177,9 @@ int main(int argc, char* argv[] )
 		auto conf = uniset_init(argc, argv);
 
 		if( argc > 1 && !strcmp(argv[1], "s") )
-			run_senders(10, host);
+			run_senders(1, host);
 		else
-			run_test(10, host);
+			run_test(1, host);
 
 		return 0;
 	}
