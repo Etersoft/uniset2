@@ -323,3 +323,32 @@ TEST_CASE("[SM]: sendText", "[sm][sendText]")
     REQUIRE( obj->getLastTextMessage() == txt );
     REQUIRE( obj->getLastTextMessageType() == 3 );
 }
+// -----------------------------------------------------------------------------
+TEST_CASE("[SM]: freezeValue", "[sm][freezeValue]")
+{
+    InitTest();
+
+    IOController_i::SensorInfo si;
+    si.id = 517;
+    si.node = uniset_conf()->getLocalNode();
+
+    REQUIRE_NOTHROW( ui->setValue(517, 100) );
+    REQUIRE( ui->getValue(517) == 100 );
+    msleep(300);
+    REQUIRE( obj->in_freeze_s == 100 );
+
+    REQUIRE_NOTHROW( ui->freezeValue(si, true, 10) );
+    REQUIRE( ui->getValue(517) == 10 );
+    msleep(300);
+    REQUIRE( obj->in_freeze_s == 10 );
+
+    REQUIRE_NOTHROW( ui->setValue(517, 150) );
+    REQUIRE( ui->getValue(517) == 10 );
+    msleep(300);
+    REQUIRE( obj->in_freeze_s == 10 );
+
+    REQUIRE_NOTHROW( ui->freezeValue(si, false, 10) );
+    REQUIRE( ui->getValue(517) == 150 );
+    msleep(300);
+    REQUIRE( obj->in_freeze_s == 150 );
+}

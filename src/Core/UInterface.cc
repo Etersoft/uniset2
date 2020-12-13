@@ -277,6 +277,81 @@ namespace uniset
 		uwarn << set_err("UI(setUndefinedState): Timeout", si.id, si.node) << endl;
 	}
 	// ------------------------------------------------------------------------------------------------------------
+	void UInterface::freezeValue( const IOController_i::SensorInfo& si, bool set, long value, uniset::ObjectId sup_id )
+	{
+		if( si.id == uniset::DefaultObjectId )
+		{
+			uwarn << "UI(freezeValue): ID=uniset::DefaultObjectId" << endl;
+			return;
+		}
+
+		if( sup_id == uniset::DefaultObjectId )
+			sup_id = myid;
+
+		try
+		{
+			CORBA::Object_var oref;
+
+			try
+			{
+				oref = rcache.resolve(si.id, si.node);
+			}
+			catch( const uniset::NameNotFound&  ) {}
+
+			for (size_t i = 0; i < uconf->getRepeatCount(); i++)
+			{
+				try
+				{
+					if( CORBA::is_nil(oref) )
+						oref = resolve( si.id, si.node );
+
+					IOController_i_var iom = IOController_i::_narrow(oref);
+					iom->freezeValue(si.id, set, value, sup_id );
+					return;
+				}
+				catch( const CORBA::TRANSIENT& ) {}
+				catch( const CORBA::OBJECT_NOT_EXIST& ) {}
+				catch( const CORBA::SystemException& ex ) {}
+
+				msleep(uconf->getRepeatTimeout());
+				oref = CORBA::Object::_nil();
+			}
+		}
+		catch( const uniset::TimeOut& ) {}
+		catch(const IOController_i::NameNotFound&  ex)
+		{
+			rcache.erase(si.id, si.node);
+			uwarn << set_err("UI(freezeValue):" + string(ex.err), si.id, si.node) << endl;
+		}
+		catch(const IOController_i::IOBadParam& ex)
+		{
+			rcache.erase(si.id, si.node);
+			throw uniset::IOBadParam("UI(freezeValue): " + string(ex.err));
+		}
+		catch(const uniset::ORepFailed& )
+		{
+			rcache.erase(si.id, si.node);
+			// не смогли получить ссылку на объект
+			uwarn << set_err("UI(freezeValue): resolve failed", si.id, si.node) << endl;
+		}
+		catch(const CORBA::NO_IMPLEMENT& )
+		{
+			rcache.erase(si.id, si.node);
+			uwarn << set_err("UI(freezeValue): method no implement", si.id, si.node) << endl;
+		}
+		catch( const CORBA::OBJECT_NOT_EXIST& )
+		{
+			rcache.erase(si.id, si.node);
+			uwarn << set_err("UI(freezeValue): object not exist", si.id, si.node) << endl;
+		}
+		catch( const CORBA::COMM_FAILURE& ) {}
+		catch( const CORBA::SystemException& ex ) {}
+		catch(...) {}
+
+		rcache.erase(si.id, si.node);
+		uwarn << set_err("UI(freezeValue): Timeout", si.id, si.node) << endl;
+	}
+	// ------------------------------------------------------------------------------------------------------------
 	/*!
 	 * \param id - идентификатор датчика
 	 * \param value - значение, которое необходимо установить
