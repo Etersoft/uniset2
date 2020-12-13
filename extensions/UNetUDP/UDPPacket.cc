@@ -263,20 +263,9 @@ namespace uniset
 		return header.num;
 	}
 	// -----------------------------------------------------------------------------
-	size_t UniSetUDP::UDPMessage::len() const noexcept
-	{
-		return UniSetUDP::MaxDataLen;
-
-		// биты которые не уместились в очередной байт, добавляют ещё один байт
-//		size_t nbit =  header.dcount % 8 * sizeof(uint8_t);
-//		size_t add = nbit > 0 ? 1 : 0;
-
-//		return sizeof(header) + header.acount * sizeof(UDPAData) + header.dcount * sizeof(long) + (header.dcount / 8 * sizeof(uint8_t) + add);
-	}
-	// -----------------------------------------------------------------------------
 	bool UDPMessage::isOk() noexcept
 	{
-		return ( header.magic != UniSetUDP::UNETUDP_MAGICNUM );
+		return ( header.magic == UniSetUDP::UNETUDP_MAGICNUM );
 	}
 	// -----------------------------------------------------------------------------
 	void UDPMessage::ntoh() noexcept

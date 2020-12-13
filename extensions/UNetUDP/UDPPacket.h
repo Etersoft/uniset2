@@ -27,14 +27,10 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	namespace UniSetUDP
 	{
-		/*! Для оптимизации размера передаваемых данных, но с учётом того, что ID могут идти не подряд.
-			Сделан следующий формат:
+		/*! С учётом того, что ID могут идти не подряд. Сделан следующий формат:
 			Для аналоговых величин передаётся массив пар "id-value"(UDPAData).
 			Для булевых величин - отдельно массив ID и отдельно битовый массив со значениями,
 			(по количеству битов такого же размера).
-
-			\todo Подумать на тему сделать два отдельных вида пакетов для булевых значений и для аналоговых,
-				  чтобы уйти от преобразования UDPMessage --> UDPPacket --> UDPMessage.
 
 			\warning ТЕКУЩАЯ ВЕРСИЯ ПРОТОКОЛА НЕ БУДЕТ РАБОТАТЬ МЕЖДУ 32-битными и 64-битными системами (из-за отличия в типе long).
 			т.к. это не сильно актуально, пока не переделываю.
@@ -83,13 +79,10 @@ namespace uniset
 		// Теоретический размер данных в UDP пакете (исключая заголовки) 65507
 		// Фактически желательно не вылезать за размер MTU (обычно 1500) - заголовки = 1432 байта
 		// т.е. надо чтобы sizeof(UDPPacket) < 1432
-		// с другой стороны в текущей реализации
-		// в сеть посылается фактическое количество данных, а не sizeof(UDPPacket).
-
-		// При текущих настройках sizeof(UDPPacket) = 72679 (!)
-		static const size_t MaxACount = 1000;
+		// При текущих настройках sizeof(UDPPacket) = 56421 (!)
+		static const size_t MaxACount = 2000;
 		static const size_t MaxDCount = 3000;
-		static const size_t MaxDDataCount = 1 + MaxDCount / 8 * sizeof(unsigned char);
+		static const size_t MaxDDataCount = 1 + MaxDCount / 8 * sizeof(uint8_t);
 
 		struct UDPMessage
 		{
@@ -143,16 +136,7 @@ namespace uniset
 				return header.acount;
 			}
 
-			// размер итогового пакета в байтах
-			size_t len() const noexcept;
-
 			uint16_t getDataCRC() const noexcept;
-
-			// количество байт в пакете с булевыми переменными...
-			size_t d_byte() const noexcept
-			{
-				return header.dcount * sizeof(long) + header.dcount;
-			}
 
 			UDPHeader header;
 			UDPAData a_dat[MaxACount]; /*!< аналоговые величины */
@@ -163,15 +147,6 @@ namespace uniset
 		std::ostream& operator<<( std::ostream& os, UDPMessage& p );
 
 		uint16_t makeCRC( unsigned char* buf, size_t len ) noexcept;
-
-		static const size_t MaxDataLen = sizeof(UDPHeader) + MaxDCount * sizeof(long) + MaxDDataCount + MaxACount * sizeof(UDPAData);
-
-		union UDPPacket
-		{
-			UDPPacket():msg(){};
-			uint8_t raw[MaxDataLen];
-			UDPMessage msg;
-		};
 	}
 	// --------------------------------------------------------------------------
 } // end of namespace uniset
