@@ -35,11 +35,7 @@ static bool HostIsBigEndian = false;
 
 #if __BYTE_ORDER == __BIG_ENDIAN
 static bool HostIsBigEndian = true;
-<<<<<<< HEAD
-#define BE_TO_H(x) {}
-=======
 header.#define BE_TO_H(x) {}
->>>>>>> 2.9.0-alt1
 #elif INTPTR_MAX == INT64_MAX
 #define BE_TO_H(x) x = be64toh(x)
 #elif INTPTR_MAX == INT32_MAX
@@ -252,38 +248,6 @@ namespace uniset
 		return ( d_dat[nbyte] & (1 << nbit) );
 	}
 	// -----------------------------------------------------------------------------
-<<<<<<< HEAD
-	size_t UDPMessage::transport_msg( UDPPacket& p ) const noexcept
-	{
-		p = UDPPacket{}; // reset data
-
-		size_t i = 0;
-		memcpy(&(p.data[i]), this, sizeof(UDPHeader));
-		i += sizeof(UDPHeader);
-
-		// копируем аналоговые данные
-		size_t sz = acount * sizeof(UDPAData);
-		memcpy(&(p.data[i]), a_dat, sz);
-		i += sz;
-
-		// копируем булевые индексы
-		sz = dcount * sizeof(long);
-		memcpy(&(p.data[i]), d_id, sz);
-		i += sz;
-
-		// копируем булевые данные
-		size_t nbyte = dcount / 8 * sizeof(unsigned char);
-		size_t nbit =  dcount % 8 * sizeof(unsigned char);
-		sz = nbit > 0 ? nbyte + 1 : nbyte;
-		memcpy(&(p.data[i]), d_dat, sz);
-		i += sz;
-
-		p.len = i;
-		return i;
-	}
-	// -----------------------------------------------------------------------------
-=======
->>>>>>> 2.9.0-alt1
 	long UDPMessage::getDataID() const noexcept
 	{
 		// в качестве идентификатора берётся ID первого датчика в данных
@@ -306,16 +270,6 @@ namespace uniset
 	// -----------------------------------------------------------------------------
 	void UDPMessage::ntoh() noexcept
 	{
-<<<<<<< HEAD
-		// reset data
-		m = UDPMessage{};
-
-		size_t i = 0;
-		memcpy(&m, &(p.data[i]), sizeof(UDPHeader));
-		i += sizeof(UDPHeader);
-
-=======
->>>>>>> 2.9.0-alt1
 		// byte order from packet
 		uint8_t be_order = header._be_order;
 
@@ -351,31 +305,6 @@ namespace uniset
 		// -------------------------------
 		if( (be_order && !HostIsBigEndian) || (!be_order && HostIsBigEndian) )
 		{
-<<<<<<< HEAD
-			for( size_t n = 0; n < m.acount; n++ )
-			{
-				if( be_order )
-				{
-					BE_TO_H(m.a_dat[n].id);
-					BE_TO_H(m.a_dat[n].val);
-				}
-				else
-				{
-					LE_TO_H(m.a_dat[n].id);
-					LE_TO_H(m.a_dat[n].val);
-				}
-			}
-
-			for( size_t n = 0; n < m.dcount; n++ )
-			{
-				if( be_order )
-				{
-					BE_TO_H(m.d_id[n]);
-				}
-				else
-				{
-					LE_TO_H(m.d_id[n]);
-=======
 			for( size_t n = 0; n < header.acount; n++ )
 			{
 				if( be_order )
@@ -399,7 +328,6 @@ namespace uniset
 				else
 				{
 					LE_TO_H(d_id[n]);
->>>>>>> 2.9.0-alt1
 				}
 			}
 		}

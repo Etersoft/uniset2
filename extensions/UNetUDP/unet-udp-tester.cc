@@ -358,11 +358,6 @@ int main(int argc, char* argv[])
 
 				Poco::Net::SocketAddress sa(s_host, port);
 				udp->connect(sa);
-<<<<<<< HEAD
-
-				UniSetUDP::UDPPacket s_buf;
-=======
->>>>>>> 2.9.0-alt1
 
 				size_t nc = 1;
 

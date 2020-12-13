@@ -37,21 +37,7 @@ UNetReceiver::UNetReceiver(const std::string& s_host, int _port
 	shm(smi),
 	port(_port),
 	saddr(s_host, _port),
-<<<<<<< HEAD
-	recvTimeout(5000),
-	prepareTime(2000),
-	lostTimeout(200), /* 2*updatepause */
-	lostPackets(0),
-	sidRespond(uniset::DefaultObjectId),
-	respondInvert(false),
-	sidLostPackets(uniset::DefaultObjectId),
-	activated(false),
-	cbuf(cbufSize),
-	maxDifferens(20),
-	lockUpdate(false)
-=======
 	cbuf(cbufSize)
->>>>>>> 2.9.0-alt1
 {
 	{
 		ostringstream s;
@@ -352,11 +338,7 @@ size_t UNetReceiver::rnext( size_t num )
 	{
 		p = &cbuf[i % cbufSize];
 
-<<<<<<< HEAD
-		if( p->num > num )
-=======
 		if( p->header.num > num )
->>>>>>> 2.9.0-alt1
 			return i;
 
 		i++;
@@ -380,33 +362,16 @@ void UNetReceiver::update() noexcept
 	// либо обнаружится "дырка" в последовательности,
 	while( rnum < wnum )
 	{
-<<<<<<< HEAD
-		p = &cbuf[rnum % cbufSize];
-
-		// если номер пакета не равен ожидаемому, ждём считая что это "дырка"
-		// т.к. разрывы и другие случаи обрабатываются при приёме пакетов
-		if( p->num != rnum )
-=======
 		p = &(cbuf[rnum % cbufSize]);
 
 		// если номер пакета не равен ожидаемому, ждём считая что это "дырка"
 		// т.к. разрывы и другие случаи обрабатываются при приёме пакетов
 		if( p->header.num != rnum )
->>>>>>> 2.9.0-alt1
 		{
 			if( !ptLostTimeout.checkTime() )
 				return;
 
 			size_t sub = 1;
-<<<<<<< HEAD
-
-			if( p->num > rnum )
-				sub = (p->num - rnum);
-
-			unetwarn << myname << "(update): lostTimeout(" << ptLostTimeout.getInterval() << ")! pnum=" << p->num << " lost " << sub << " packets " << endl;
-			lostPackets += sub;
-
-=======
 
 			if( p->header.num > rnum )
 				sub = (p->header.num - rnum);
@@ -414,7 +379,6 @@ void UNetReceiver::update() noexcept
 			unetwarn << myname << "(update): lostTimeout(" << ptLostTimeout.getInterval() << ")! pnum=" << p->header.num << " lost " << sub << " packets " << endl;
 			lostPackets += sub;
 
->>>>>>> 2.9.0-alt1
 			// ищем следующий пакет для обработки
 			rnum = rnext(rnum);
 			continue;
@@ -431,11 +395,7 @@ void UNetReceiver::update() noexcept
 		// Обработка дискретных
 		auto d_iv = getDCache(p);
 
-<<<<<<< HEAD
-		for( size_t i = 0; i < p->dcount; i++ )
-=======
 		for( size_t i = 0; i < p->header.dcount; i++ )
->>>>>>> 2.9.0-alt1
 		{
 			try
 			{
@@ -449,22 +409,11 @@ void UNetReceiver::update() noexcept
 					shm->initIterator(c_it->ioit);
 				}
 
-<<<<<<< HEAD
-				// обновление данных в SM (блокировано)
-				if( lockUpdate )
-					continue;
-
-=======
->>>>>>> 2.9.0-alt1
 				shm->localSetValue(c_it->ioit, s_id, p->dValue(i), shm->ID());
 			}
 			catch( const uniset::Exception& ex)
 			{
-<<<<<<< HEAD
-				unetcrit << myname << "(update): "
-=======
 				unetcrit << myname << "(update): D:"
->>>>>>> 2.9.0-alt1
 						 << " id=" << s_id
 						 << " val=" << p->dValue(i)
 						 << " error: " << ex
@@ -472,11 +421,7 @@ void UNetReceiver::update() noexcept
 			}
 			catch(...)
 			{
-<<<<<<< HEAD
-				unetcrit << myname << "(update): "
-=======
 				unetcrit << myname << "(update): D:"
->>>>>>> 2.9.0-alt1
 						 << " id=" << s_id
 						 << " val=" << p->dValue(i)
 						 << " error: catch..."
@@ -487,11 +432,7 @@ void UNetReceiver::update() noexcept
 		// Обработка аналоговых
 		auto a_iv = getACache(p);
 
-<<<<<<< HEAD
-		for( size_t i = 0; i < p->acount; i++ )
-=======
 		for( size_t i = 0; i < p->header.acount; i++ )
->>>>>>> 2.9.0-alt1
 		{
 			try
 			{
@@ -509,11 +450,7 @@ void UNetReceiver::update() noexcept
 			}
 			catch( const uniset::Exception& ex)
 			{
-<<<<<<< HEAD
-				unetcrit << myname << "(update): "
-=======
 				unetcrit << myname << "(update): A:"
->>>>>>> 2.9.0-alt1
 						 << " id=" << dat->id
 						 << " val=" << dat->val
 						 << " error: " << ex
@@ -521,11 +458,7 @@ void UNetReceiver::update() noexcept
 			}
 			catch(...)
 			{
-<<<<<<< HEAD
-				unetcrit << myname << "(update): "
-=======
 				unetcrit << myname << "(update): A:"
->>>>>>> 2.9.0-alt1
 						 << " id=" << dat->id
 						 << " val=" << dat->val
 						 << " error: catch..."
@@ -682,14 +615,9 @@ bool UNetReceiver::receive() noexcept
 {
 	try
 	{
-<<<<<<< HEAD
-		ssize_t ret = udp->receiveBytes(r_buf.data, sizeof(r_buf.data));
-		recvCount++;
-=======
 		// сперва пробуем сохранить пакет в том месте, где должен быть очередной пакет
 		pack = &(cbuf[wnum % cbufSize]);
 		ssize_t ret = udp->receiveBytes(pack, sizeof(UniSetUDP::UDPMessage));
->>>>>>> 2.9.0-alt1
 
 		if( ret < 0 )
 		{
@@ -703,25 +631,6 @@ bool UNetReceiver::receive() noexcept
 			return false;
 		}
 
-<<<<<<< HEAD
-		// сперва пробуем сохранить пакет в том месте, которе должно быть очередным на запись
-		pack = &cbuf[wnum % cbufSize];
-		size_t sz = UniSetUDP::UDPMessage::getMessage(*pack, r_buf);
-
-		if( sz == 0 )
-		{
-			unetcrit << myname << "(receive): FAILED RECEIVE DATA ret=" << ret << endl;
-			return false;
-		}
-
-		if( pack->magic != UniSetUDP::UNETUDP_MAGICNUM )
-			return false;
-
-		if( size_t(abs(long(pack->num - wnum))) > maxDifferens || size_t(abs( long(wnum - rnum) )) >= (cbufSize - 2) )
-		{
-			unetcrit << myname << "(receive): DISAGREE "
-					 << " packnum=" << pack->num
-=======
 		recvCount++;
 
 		// конвертируем byte order
@@ -734,7 +643,6 @@ bool UNetReceiver::receive() noexcept
 		{
 			unetcrit << myname << "(receive): DISAGREE "
 					 << " packnum=" << pack->header.num
->>>>>>> 2.9.0-alt1
 					 << " wnum=" << wnum
 					 << " rnum=" << rnum
 					 << " (maxDiff=" << maxDifferens
@@ -742,18 +650,6 @@ bool UNetReceiver::receive() noexcept
 					 << ")"
 					 << endl;
 
-<<<<<<< HEAD
-			lostPackets = pack->num > wnum ? (pack->num - wnum - 1) : lostPackets + 1;
-			// реинициализируем позицию для чтения
-			rnum = pack->num;
-			wnum = pack->num + 1;
-
-			// перемещаем пакет в нужное место (если требуется)
-			if( wnum != pack->num )
-			{
-				cbuf[pack->num % cbufSize] = (*pack);
-				pack->num = 0;
-=======
 			lostPackets = pack->header.num > wnum ? (pack->header.num - wnum - 1) : lostPackets + 1;
 			// реинициализируем позицию для чтения
 			rnum = pack->header.num;
@@ -764,33 +660,11 @@ bool UNetReceiver::receive() noexcept
 			{
 				cbuf[pack->header.num % cbufSize] = (*pack);
 				pack->header.num = 0;
->>>>>>> 2.9.0-alt1
 			}
 
 			return true;
 		}
 
-<<<<<<< HEAD
-		if( pack->num != wnum )
-		{
-			// перемещаем пакет в правильное место
-			// в соответствии с его номером
-			cbuf[pack->num % cbufSize] = (*pack);
-
-			if( pack->num >= wnum )
-				wnum = pack->num + 1;
-
-			// обнуляем номер в том месте где записали, чтобы его не обрабатывал update
-			pack->num = 0;
-		}
-		else if( pack->num >= wnum )
-			wnum = pack->num + 1;
-
-		// начальная инициализация для чтения
-		if( rnum == 0 )
-			rnum = pack->num;
-
-=======
 		if( pack->header.num != wnum )
 		{
 			// перемещаем пакет в правильное место
@@ -810,7 +684,6 @@ bool UNetReceiver::receive() noexcept
 		if( rnum == 0 )
 			rnum = pack->header.num;
 
->>>>>>> 2.9.0-alt1
 		return true;
 	}
 	catch( Poco::Net::NetException& ex )
@@ -856,16 +729,6 @@ UNetReceiver::CacheVec* UNetReceiver::getDCache( UniSetUDP::UDPMessage* pack ) n
 
 	CacheVec* d_info = &dit->second;
 
-<<<<<<< HEAD
-	if( pack->dcount == d_info->size() )
-		return d_info;
-
-	unetinfo << myname << ": init dcache[" << pack->dcount << "] for " << pack->getDataID() << endl;
-
-	d_info->resize(pack->dcount);
-
-	for( size_t i = 0; i < pack->dcount; i++ )
-=======
 	if( pack->header.dcount == d_info->size() )
 		return d_info;
 
@@ -874,7 +737,6 @@ UNetReceiver::CacheVec* UNetReceiver::getDCache( UniSetUDP::UDPMessage* pack ) n
 	d_info->resize(pack->header.dcount);
 
 	for( size_t i = 0; i < pack->header.dcount; i++ )
->>>>>>> 2.9.0-alt1
 	{
 		CacheItem& d = (*d_info)[i];
 
@@ -900,16 +762,6 @@ UNetReceiver::CacheVec* UNetReceiver::getACache( UniSetUDP::UDPMessage* pack ) n
 
 	CacheVec* a_info = &ait->second;
 
-<<<<<<< HEAD
-	if( pack->acount == a_info->size() )
-		return a_info;
-
-	unetinfo << myname << ": init acache[" << pack->acount << "] for " << pack->getDataID() << endl;
-
-	a_info->resize(pack->acount);
-
-	for( size_t i = 0; i < pack->acount; i++ )
-=======
 	if( pack->header.acount == a_info->size() )
 		return a_info;
 
@@ -918,7 +770,6 @@ UNetReceiver::CacheVec* UNetReceiver::getACache( UniSetUDP::UDPMessage* pack ) n
 	a_info->resize(pack->header.acount);
 
 	for( size_t i = 0; i < pack->header.acount; i++ )
->>>>>>> 2.9.0-alt1
 	{
 		CacheItem& d = (*a_info)[i];
 

@@ -92,8 +92,6 @@ void send( UniSetUDP::UDPMessage& pack, int tout = 2000 )
 	size_t ret = udp_s->sendTo(&pack, sizeof(pack), s_addr);
 	REQUIRE( ret == sizeof(pack) );
 }
-<<<<<<< HEAD
-=======
 // -----------------------------------------------------------------------------
 TEST_CASE("[UNetUDP]: repack", "[unetudp][repack]")
 {
@@ -127,7 +125,6 @@ TEST_CASE("[UNetUDP]: repack", "[unetudp][repack]")
 	REQUIRE(pack2.a_dat[1].val == 40);
 }
 // -----------------------------------------------------------------------------
->>>>>>> 2.9.0-alt1
 TEST_CASE("[UNetUDP]: UDPMessage", "[unetudp][udpmessage]")
 {
 	SECTION("UDPMessage::isFull()")
