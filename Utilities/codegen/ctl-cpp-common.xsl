@@ -287,6 +287,7 @@
 		virtual void httpGetUserData( Poco::JSON::Object::Ptr&amp; jdata ){} /*!&lt;  для пользовательских данных в httpGet() */
         virtual Poco::JSON::Object::Ptr httpDumpIO();
         virtual Poco::JSON::Object::Ptr httpRequestLog( const Poco::URI::QueryParameters&amp; p );
+        virtual Poco::JSON::Object::Ptr request_conf_set( const std::string&amp; req, const Poco::URI::QueryParameters&amp; p ) override;
 #endif
 </xsl:if>
         // Выполнение очередного шага программы
@@ -737,6 +738,66 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpRequestLog( 
 	return jret;
 }
 // -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::request_conf_set( const std::string&amp; req, const Poco::URI::QueryParameters&amp; params )
+{
+    Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
+    Poco::JSON::Array::Ptr jupdated = uniset::json::make_child_array(jret, "updated");
+    
+    for( const auto&amp; p: params )
+    {
+        if( p.first == "sleep_msec" )
+        {
+            int val = uni_atoi(p.second);
+            if( val &gt; 0 )
+            {
+                sleep_msec = uni_atoi(p.second);
+                jupdated->add(p.first);
+            }
+            continue;
+        }
+
+        if( p.first == "resetMsgTime" )
+        {
+            int val = uni_atoi(p.second);
+            if( val &gt; 0 )
+            {
+                resetMsgTime = uni_atoi(p.second);
+                jupdated->add(p.first);
+            }
+            continue;
+        }
+
+        if( p.first == "forceOut" )
+        {
+            int val = uni_atoi(p.second);
+            if( val &gt; 0 )
+            {
+                forceOut = uni_atoi(p.second);
+                jupdated->add(p.first);
+            }
+            continue;
+        }
+
+        <xsl:for-each select="//variables/item">
+        <xsl:if test="normalize-space(@const)=''">
+        if( p.first == "<xsl:value-of select="@name"/>" )
+        {
+             <xsl:if test="normalize-space(@type)='int'"><xsl:value-of select="@name"/> = uni_atoi(p.second);</xsl:if>
+             <xsl:if test="normalize-space(@type)='long'"><xsl:value-of select="@name"/> = uni_atoi(p.second);</xsl:if>
+             <xsl:if test="normalize-space(@type)='float'"><xsl:value-of select="@name"/> = atof(p.second.c_str());</xsl:if>
+             <xsl:if test="normalize-space(@type)='double'"><xsl:value-of select="@name"/> = atof(p.second.c_str());</xsl:if>
+             <xsl:if test="normalize-space(@type)='bool'"><xsl:value-of select="@name"/> = uni_atoi(p.second);</xsl:if>
+             <xsl:if test="normalize-space(@type)='str'"><xsl:value-of select="@name"/> = p.second;</xsl:if>
+             jupdated->add(p.first);
+             continue;
+        }
+        </xsl:if>
+        </xsl:for-each>
+    }
+
+    jret->set("Result", (jupdated->size() > 0 ? "OK" : "FAIL") );
+    return jret;
+}
 #endif
 </xsl:if>
 // -----------------------------------------------------------------------------

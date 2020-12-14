@@ -1099,36 +1099,54 @@ int oinfo(const string& args, UInterface& ui, const string& userparam )
 // --------------------------------------------------------------------------------------
 int apiRequest( const string& args, UInterface& ui, const string& query )
 {
-    auto conf = uniset_conf();
-    auto sl = uniset::getObjectsList( args, conf );
+	auto conf = uniset_conf();
+	auto sl = uniset::getObjectsList( args, conf );
 
-    //  if( verb )
-    //      cout << "apiRequest: query: " << query << endl;
+	//	if( verb )
+	//		cout << "apiRequest: query: " << query << endl;
 
-    for( auto&& it : sl )
-    {
-        if( it.node == DefaultObjectId )
-            it.node = conf->getLocalNode();
+	if( query.size() < 1 )
+	{
+		if( !quiet )
+			cerr << "query is too small '" << query << "'" << endl;
 
-        try
-        {
-            cout << ui.apiRequest(it.id, query, it.node) << endl;
-        }
-        catch( const std::exception& ex )
-        {
-            if( !quiet )
-                cerr << "std::exception: " << ex.what() << endl;
-        }
-        catch(...)
-        {
-            if( !quiet )
-                cerr << "Unknown exception.." << endl;
-        }
+		return 1;
+	}
 
-        cout << endl << endl;
-    }
+	string q = query;
+	if( q.rfind("/api/", 0) != 0 )
+	{
+		q = "/api/" + uniset::UHttp::UHTTP_API_VERSION;
+		if( query[0] != '/' )
+			q += "/";
 
-    return 0;
+		q += query;
+	}
+
+	for( auto && it : sl )
+	{
+		if( it.node == DefaultObjectId )
+			it.node = conf->getLocalNode();
+
+		try
+		{
+			cout << ui.apiRequest(it.id, q, it.node) << endl;
+		}
+		catch( const std::exception& ex )
+		{
+			if( !quiet )
+				cerr << "std::exception: " << ex.what() << endl;
+		}
+		catch(...)
+		{
+			if( !quiet )
+				cerr << "Unknown exception.." << endl;
+		}
+
+		cout << endl << endl;
+	}
+
+	return 0;
 }
 
 // --------------------------------------------------------------------------------------

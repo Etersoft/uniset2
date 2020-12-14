@@ -86,6 +86,7 @@ void TestGen::httpGetUserData( Poco::JSON::Object::Ptr& jdata )
     jdata->set("myFloatVar", 42.42);
     jdata->set("myMessage", "This is text fot test httpGetUserData");
 }
+// -----------------------------------------------------------------------------
 #endif
 // -----------------------------------------------------------------------------
 void TestGen::sysCommand( const uniset::SystemMessage* sm )
