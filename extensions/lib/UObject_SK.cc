@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */
 // --------------------------------------------------------------------------
-// generate timestamp: 2019-02-11+03:00
+// generate timestamp: 2020-12-15+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include <iomanip>
@@ -702,6 +702,17 @@ Poco::JSON::Object::Ptr UObject_SK::httpRequestLog( const Poco::URI::QueryParame
     return jret;
 }
 // -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UObject_SK::request_conf_set( const std::string& req, const Poco::URI::QueryParameters& params )
+{
+    Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
+    for( const auto& p: params )
+    {
+        
+    }
+
+    jret->set("Result","OK");
+    return jret;
+}
 #endif
 
 // -----------------------------------------------------------------------------

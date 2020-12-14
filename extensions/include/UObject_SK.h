@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */
 // --------------------------------------------------------------------------
-// generate timestamp: 2019-02-11+03:00
+// generate timestamp: 2020-12-15+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -187,6 +187,7 @@ class UObject_SK:
         virtual void httpGetUserData( Poco::JSON::Object::Ptr& jdata ) {} /*!<  для пользовательских данных в httpGet() */
         virtual Poco::JSON::Object::Ptr httpDumpIO();
         virtual Poco::JSON::Object::Ptr httpRequestLog( const Poco::URI::QueryParameters& p );
+        virtual Poco::JSON::Object::Ptr request_conf_set( const std::string& req, const Poco::URI::QueryParameters& p );
 #endif
 
         // Выполнение очередного шага программы

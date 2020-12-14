@@ -449,19 +449,26 @@ namespace uniset
 		return my;
 	}
 	// ------------------------------------------------------------------------------------------
-	// обработка запроса вида: /conf/get?[ID|NAME]&props=testname,name] from condigure.xml
+	// обработка запроса вида: /conf/xxxx
 	Poco::JSON::Object::Ptr UniSetObject::request_conf( const std::string& req, const Poco::URI::QueryParameters& params )
+	{
+		if( req == "get" )
+			return request_conf_get(req, params);
+
+		if( req == "set" )
+			return request_conf_set(req, params);
+
+		ostringstream err;
+		err << "(request_conf):  BAD REQUEST: Unknown command..";
+		throw uniset::SystemError(err.str());
+	}
+	// ------------------------------------------------------------------------------------------
+	// обработка запроса вида: /conf/get?[ID|NAME]&props=testname,name] from configure.xml
+	Poco::JSON::Object::Ptr UniSetObject::request_conf_get( const std::string& req, const Poco::URI::QueryParameters& params )
 	{
 		Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
 		Poco::JSON::Array::Ptr jdata = uniset::json::make_child_array(json, "conf");
 		auto my = httpGetMyInfo(json);
-
-		if( req != "get" )
-		{
-			ostringstream err;
-			err << "(request_conf):  Unknown command: '" << req << "'";
-			throw uniset::SystemError(err.str());
-		}
 
 		if( params.empty() )
 		{
@@ -548,6 +555,14 @@ namespace uniset
 				jdata->set(p.first, p.second);
 		}
 
+		return jdata;
+	}
+	// ------------------------------------------------------------------------------------------
+	// обработка запроса вида: /conf/set?[ID|NAME]&props=testname,name]
+	Poco::JSON::Object::Ptr UniSetObject::request_conf_set( const std::string& req, const Poco::URI::QueryParameters& p )
+	{
+		Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
+		jdata->set("result", "OK");
 		return jdata;
 	}
 	// ------------------------------------------------------------------------------------------
