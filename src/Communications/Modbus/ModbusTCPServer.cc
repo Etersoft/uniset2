@@ -81,16 +81,6 @@ namespace uniset
 		return sessCount;
 	}
 	// -------------------------------------------------------------------------
-	void ModbusTCPServer::setIgnoreAddrMode(bool st)
-	{
-		ignoreAddr = st;
-	}
-	// -------------------------------------------------------------------------
-	bool ModbusTCPServer::getIgnoreAddrMode() const noexcept
-	{
-		return ignoreAddr;
-	}
-	// -------------------------------------------------------------------------
 	void ModbusTCPServer::setSessionTimeout( timeout_t msec )
 	{
 		sessTimeout = msec;

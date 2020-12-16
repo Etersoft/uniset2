@@ -60,15 +60,12 @@ namespace uniset
             /*! текущее количество подключений */
             size_t getCountSessions() const noexcept;
 
-            void setIgnoreAddrMode( bool st );
-            bool getIgnoreAddrMode() const noexcept;
+			// Сбор статистики по соединениям...
+			struct SessionInfo
+			{
+				SessionInfo( const std::string& a, size_t ask ): iaddr(a), askCount(ask) {}
 
-            // Сбор статистики по соединениям...
-            struct SessionInfo
-            {
-                SessionInfo( const std::string& a, size_t ask ): iaddr(a), askCount(ask) {}
-
-                std::string iaddr;
+				std::string iaddr;
                 size_t askCount;
             };
 

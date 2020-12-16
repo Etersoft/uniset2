@@ -53,9 +53,7 @@ namespace uniset
 
             virtual void step() override;
             virtual bool poll() override;
-
-            virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;
-            virtual bool initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML::iterator& it ) override;
+			virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;
 
         private:
             RTUExchange();

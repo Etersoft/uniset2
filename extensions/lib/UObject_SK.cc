@@ -705,12 +705,47 @@ Poco::JSON::Object::Ptr UObject_SK::httpRequestLog( const Poco::URI::QueryParame
 Poco::JSON::Object::Ptr UObject_SK::request_conf_set( const std::string& req, const Poco::URI::QueryParameters& params )
 {
     Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
+    Poco::JSON::Array::Ptr jupdated = uniset::json::make_child_array(jret, "updated");
+    
     for( const auto& p: params )
     {
+        if( p.first == "sleep_msec" )
+        {
+            int val = uni_atoi(p.second);
+            if( val > 0 )
+            {
+                sleep_msec = uni_atoi(p.second);
+                jupdated->add(p.first);
+            }
+            continue;
+        }
+
+        if( p.first == "resetMsgTime" )
+        {
+            int val = uni_atoi(p.second);
+            if( val > 0 )
+            {
+                resetMsgTime = uni_atoi(p.second);
+                jupdated->add(p.first);
+            }
+            continue;
+        }
+
+        if( p.first == "forceOut" )
+        {
+            int val = uni_atoi(p.second);
+            if( val > 0 )
+            {
+                forceOut = uni_atoi(p.second);
+                jupdated->add(p.first);
+            }
+            continue;
+        }
+
         
     }
 
-    jret->set("Result","OK");
+    jret->set("Result", (jupdated->size() > 0 ? "OK" : "FAIL") );
     return jret;
 }
 #endif
