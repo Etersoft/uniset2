@@ -8,6 +8,8 @@
 #include "UniSetTypes.h"
 #include "MBTCPTestServer.h"
 #include "MBTCPMultiMaster.h"
+#include "MBTCPMaster.h"
+#include "UniSetActivator.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -15,7 +17,7 @@ using namespace uniset;
 static ModbusRTU::ModbusAddr slaveADDR = 0x01; // conf->getArgInt("--mbs-my-addr");
 static int port = 20048; // conf->getArgInt("--mbs-inet-port");
 static string iaddr("127.0.0.1"); // conf->getArgParam("--mbs-inet-addr");
-static unordered_set<ModbusRTU::ModbusAddr> vaddr = { slaveADDR, 0x02 };
+static unordered_set<ModbusRTU::ModbusAddr> vaddr = { slaveADDR, 0x02, 0x03 };
 static shared_ptr<MBTCPTestServer> mbs;
 static shared_ptr<UInterface> ui;
 static std::shared_ptr<SMInterface> smi;
@@ -23,64 +25,68 @@ static ObjectId mbID = 6004; // MBTCPMaster1
 static int polltime = 100; // conf->getArgInt("--mbtcp-polltime");
 static ObjectId slaveNotRespond = 10; // Slave_Not_Respond_S
 static const ObjectId exchangeMode = 11; // MBTCPMaster_Mode_AS
+static const string confile2 = "mbmaster-test-configure2.xml";
 // -----------------------------------------------------------------------------
 extern std::shared_ptr<SharedMemory> shm;
+extern std::shared_ptr<MBTCPMaster> mbm;
 // -----------------------------------------------------------------------------
 static void InitTest()
 {
-    auto conf = uniset_conf();
-    CHECK( conf != nullptr );
+	auto conf = uniset_conf();
+	CHECK( conf != nullptr );
 
-    if( !ui )
-    {
-        ui = make_shared<UInterface>();
-        // UI понадобиться для проверки записанных в SM значений.
-        CHECK( ui->getObjectIndex() != nullptr );
-        CHECK( ui->getConf() == conf );
-        CHECK( ui->waitReady(slaveNotRespond, 8000) );
-    }
+	if( !ui )
+	{
+		ui = make_shared<UInterface>();
+		// UI понадобиться для проверки записанных в SM значений.
+		CHECK( ui->getObjectIndex() != nullptr );
+		CHECK( ui->getConf() == conf );
+		CHECK( ui->waitReady(slaveNotRespond, 8000) );
+	}
 
-    if( !smi )
-    {
-        if( shm == nullptr )
-            throw SystemError("SharedMemory don`t initialize..");
+	if( !smi )
+	{
+		if( shm == nullptr )
+			throw SystemError("SharedMemory don`t initialize..");
 
-        if( ui == nullptr )
-            throw SystemError("UInterface don`t initialize..");
+		if( ui == nullptr )
+			throw SystemError("UInterface don`t initialize..");
 
-        smi = make_shared<SMInterface>(shm->getId(), ui, mbID, shm );
-    }
+		smi = make_shared<SMInterface>(shm->getId(), ui, mbID, shm );
+	}
 
-    if( !mbs )
-    {
-        try
-        {
-            mbs = make_shared<MBTCPTestServer>(vaddr, iaddr, port, false);
-        }
-        catch( const Poco::Net::NetException& e )
-        {
-            ostringstream err;
-            err << "(mbs): Can`t create socket " << iaddr << ":" << port << " err: " << e.message() << endl;
-            cerr << err.str() << endl;
-            throw SystemError(err.str());
-        }
-        catch( const std::exception& ex )
-        {
-            cerr << "(mbs): Can`t create socket " << iaddr << ":" << port << " err: " << ex.what() << endl;
-            throw;
-        }
+	if( !mbs )
+	{
+		try
+		{
+			mbs = make_shared<MBTCPTestServer>(vaddr, iaddr, port, false);
+		}
+		catch( const Poco::Net::NetException& e )
+		{
+			ostringstream err;
+			err << "(mbs): Can`t create socket " << iaddr << ":" << port << " err: " << e.message() << endl;
+			cerr << err.str() << endl;
+			throw SystemError(err.str());
+		}
+		catch( const std::exception& ex )
+		{
+			cerr << "(mbs): Can`t create socket " << iaddr << ":" << port << " err: " << ex.what() << endl;
+			throw;
+		}
 
-        //      mbs->setVerbose(true);
-        CHECK( mbs != nullptr );
-        mbs->execute();
+		//		mbs->setVerbose(true);
+		CHECK( mbs != nullptr );
+		mbs->execute();
 
-        for( int i = 0; !mbs->isRunning() && i < 10; i++ )
-            msleep(200);
+		for( int i = 0; !mbs->isRunning() && i < 10; i++ )
+			msleep(200);
 
-        CHECK( mbs->isRunning() );
-        msleep(2000);
-        CHECK( ui->getValue(slaveNotRespond) == 0 );
-    }
+		CHECK( mbs->isRunning() );
+		msleep(2000);
+		CHECK( ui->getValue(slaveNotRespond) == 0 );
+	}
+
+	REQUIRE( mbm != nullptr );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMaster: reconnect", "[modbus][mbmaster][mbtcpmaster]")
@@ -486,139 +492,139 @@ TEST_CASE("MBTCPMaster: 0x10 (write register outputs or memories)", "[modbus][0x
 // -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMaster: exchangeMode", "[modbus][exchangemode][mbmaster][mbtcpmaster]")
 {
-    InitTest();
+	InitTest();
 
-    SECTION("None")
-    {
-        SECTION("read")
-        {
-            mbs->setReply(10);
-            msleep(polltime + 200);
-            REQUIRE( ui->getValue(1003) == 10 );
-        }
-        SECTION("write")
-        {
-            ui->setValue(1018, 10);
-            REQUIRE( ui->getValue(1018) == 10 );
-            msleep(polltime + 200);
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() == 10 );
-        }
-    }
+	SECTION("None")
+	{
+		SECTION("read")
+		{
+			mbs->setReply(10);
+			msleep(polltime + 200);
+			REQUIRE( ui->getValue(1003) == 10 );
+		}
+		SECTION("write")
+		{
+			ui->setValue(1018, 10);
+			REQUIRE( ui->getValue(1018) == 10 );
+			msleep(polltime + 200);
+			REQUIRE( mbs->getLastWriteOutputSingleRegister() == 10 );
+		}
+	}
 
-    SECTION("WriteOnly")
-    {
-        // emWriteOnly=1,     /*!< "только посылка данных" (работают только write-функции) */
-        ui->setValue(exchangeMode, MBExchange::emWriteOnly );
-        REQUIRE( ui->getValue(exchangeMode) == MBExchange::emWriteOnly );
+	SECTION("WriteOnly")
+	{
+		// emWriteOnly=1,     /*!< "только посылка данных" (работают только write-функции) */
+		ui->setValue(exchangeMode, MBConfig::emWriteOnly );
+		REQUIRE( ui->getValue(exchangeMode) == MBConfig::emWriteOnly );
 
-        SECTION("read")
-        {
-            mbs->setReply(150);
-            msleep(2 * polltime + 200);
-            REQUIRE( ui->getValue(1003) != 150 );
-            mbs->setReply(-10);
-            msleep(2 * polltime + 200);
-            REQUIRE( ui->getValue(1003) != -10 );
-            REQUIRE( ui->getValue(1003) != 150 );
-        }
-        SECTION("write")
-        {
-            ui->setValue(1018, 150);
-            REQUIRE( ui->getValue(1018) == 150 );
-            msleep(polltime + 200);
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() == 150 );
-            ui->setValue(1018, 155);
-            REQUIRE( ui->getValue(1018) == 155 );
-            msleep(polltime + 200);
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() == 155 );
-        }
-    }
+		SECTION("read")
+		{
+			mbs->setReply(150);
+			msleep(2 * polltime + 200);
+			REQUIRE( ui->getValue(1003) != 150 );
+			mbs->setReply(-10);
+			msleep(2 * polltime + 200);
+			REQUIRE( ui->getValue(1003) != -10 );
+			REQUIRE( ui->getValue(1003) != 150 );
+		}
+		SECTION("write")
+		{
+			ui->setValue(1018, 150);
+			REQUIRE( ui->getValue(1018) == 150 );
+			msleep(polltime + 200);
+			REQUIRE( mbs->getLastWriteOutputSingleRegister() == 150 );
+			ui->setValue(1018, 155);
+			REQUIRE( ui->getValue(1018) == 155 );
+			msleep(polltime + 200);
+			REQUIRE( mbs->getLastWriteOutputSingleRegister() == 155 );
+		}
+	}
 
-    SECTION("ReadOnly")
-    {
-        // emReadOnly=2,        /*!< "только чтение" (работают только read-функции) */
-        ui->setValue(exchangeMode, MBExchange::emReadOnly );
-        REQUIRE( ui->getValue(exchangeMode) == MBExchange::emReadOnly );
+	SECTION("ReadOnly")
+	{
+		// emReadOnly=2,        /*!< "только чтение" (работают только read-функции) */
+		ui->setValue(exchangeMode, MBConfig::emReadOnly );
+		REQUIRE( ui->getValue(exchangeMode) == MBConfig::emReadOnly );
 
-        SECTION("read")
-        {
-            mbs->setReply(150);
-            msleep(polltime + 200);
-            REQUIRE( ui->getValue(1003) == 150 );
-            mbs->setReply(-100);
-            msleep(polltime + 200);
-            REQUIRE( ui->getValue(1003) == -100 );
-        }
-        SECTION("write")
-        {
-            ui->setValue(1018, 50);
-            REQUIRE( ui->getValue(1018) == 50 );
-            msleep(2 * polltime + 200);
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() != 50 );
-            ui->setValue(1018, 55);
-            REQUIRE( ui->getValue(1018) == 55 );
-            msleep(2 * polltime + 200);
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() != 55 );
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() != 50 );
-        }
-    }
+		SECTION("read")
+		{
+			mbs->setReply(150);
+			msleep(polltime + 200);
+			REQUIRE( ui->getValue(1003) == 150 );
+			mbs->setReply(-100);
+			msleep(polltime + 200);
+			REQUIRE( ui->getValue(1003) == -100 );
+		}
+		SECTION("write")
+		{
+			ui->setValue(1018, 50);
+			REQUIRE( ui->getValue(1018) == 50 );
+			msleep(2 * polltime + 200);
+			REQUIRE( mbs->getLastWriteOutputSingleRegister() != 50 );
+			ui->setValue(1018, 55);
+			REQUIRE( ui->getValue(1018) == 55 );
+			msleep(2 * polltime + 200);
+			REQUIRE( mbs->getLastWriteOutputSingleRegister() != 55 );
+			REQUIRE( mbs->getLastWriteOutputSingleRegister() != 50 );
+		}
+	}
 
-    SECTION("SkipSaveToSM")
-    {
-        // emSkipSaveToSM=3,    /*!< не писать данные в SM (при этом работают и read и write функции */
-        ui->setValue(exchangeMode, MBExchange::emSkipSaveToSM );
-        REQUIRE( ui->getValue(exchangeMode) == MBExchange::emSkipSaveToSM );
+	SECTION("SkipSaveToSM")
+	{
+		// emSkipSaveToSM=3,    /*!< не писать данные в SM (при этом работают и read и write функции */
+		ui->setValue(exchangeMode, MBConfig::emSkipSaveToSM );
+		REQUIRE( ui->getValue(exchangeMode) == MBConfig::emSkipSaveToSM );
 
-        SECTION("read")
-        {
-            mbs->setReply(50);
-            msleep(polltime + 200);
-            REQUIRE( ui->getValue(1003) != 50 );
-        }
-        SECTION("write")
-        {
-            // а write работает в этом режиме.. (а чем отличается от writeOnly?)
-            ui->setValue(1018, 60);
-            REQUIRE( ui->getValue(1018) == 60 );
-            msleep(polltime + 200);
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() == 60 );
-            ui->setValue(1018, 65);
-            REQUIRE( ui->getValue(1018) == 65 );
-            msleep(polltime + 200);
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() == 65 );
-        }
-    }
+		SECTION("read")
+		{
+			mbs->setReply(50);
+			msleep(polltime + 200);
+			REQUIRE( ui->getValue(1003) != 50 );
+		}
+		SECTION("write")
+		{
+			// а write работает в этом режиме.. (а чем отличается от writeOnly?)
+			ui->setValue(1018, 60);
+			REQUIRE( ui->getValue(1018) == 60 );
+			msleep(polltime + 200);
+			REQUIRE( mbs->getLastWriteOutputSingleRegister() == 60 );
+			ui->setValue(1018, 65);
+			REQUIRE( ui->getValue(1018) == 65 );
+			msleep(polltime + 200);
+			REQUIRE( mbs->getLastWriteOutputSingleRegister() == 65 );
+		}
+	}
 
-    SECTION("SkipExchange")
-    {
-        // emSkipExchange=4  /*!< отключить обмен */
-        ui->setValue(exchangeMode, MBExchange::emSkipExchange );
-        REQUIRE( ui->getValue(exchangeMode) == MBExchange::emSkipExchange );
+	SECTION("SkipExchange")
+	{
+		// emSkipExchange=4  /*!< отключить обмен */
+		ui->setValue(exchangeMode, MBConfig::emSkipExchange );
+		REQUIRE( ui->getValue(exchangeMode) == MBConfig::emSkipExchange );
 
-        SECTION("read")
-        {
-            mbs->setReply(70);
-            msleep(polltime + 200);
-            REQUIRE( ui->getValue(1003) != 70 );
-        }
-        SECTION("write")
-        {
-            ui->setValue(1018, 70);
-            REQUIRE( ui->getValue(1018) == 70 );
-            msleep(polltime + 200);
-            REQUIRE( mbs->getLastWriteOutputSingleRegister() != 70 );
-        }
+		SECTION("read")
+		{
+			mbs->setReply(70);
+			msleep(polltime + 200);
+			REQUIRE( ui->getValue(1003) != 70 );
+		}
+		SECTION("write")
+		{
+			ui->setValue(1018, 70);
+			REQUIRE( ui->getValue(1018) == 70 );
+			msleep(polltime + 200);
+			REQUIRE( mbs->getLastWriteOutputSingleRegister() != 70 );
+		}
 
-        SECTION("check connection")
-        {
-            msleep(1100);
-            CHECK( ui->getValue(slaveNotRespond) == 1 );
-            ui->setValue(exchangeMode, MBExchange::emNone );
-            REQUIRE( ui->getValue(exchangeMode) == MBExchange::emNone );
-            msleep(1100);
-            CHECK( ui->getValue(slaveNotRespond) == 0 );
-        }
-    }
+		SECTION("check connection")
+		{
+			msleep(1100);
+			CHECK( ui->getValue(slaveNotRespond) == 1 );
+			ui->setValue(exchangeMode, MBConfig::emNone );
+			REQUIRE( ui->getValue(exchangeMode) == MBConfig::emNone );
+			msleep(1100);
+			CHECK( ui->getValue(slaveNotRespond) == 0 );
+		}
+	}
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMaster: check respond resnsor", "[modbus][respond][mbmaster][mbtcpmaster]")
@@ -766,6 +772,23 @@ TEST_CASE("MBTCPMaster: udefined value", "[modbus][undefined][mbmaster][mbtcpmas
     REQUIRE( ui->getValue(1070) == 120 );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: reload config", "[modbus][reload][mbmaster][mbtcpmaster]")
+{
+	InitTest();
+
+	mbs->setReply(160);
+	msleep(polltime + 200);
+	REQUIRE( ui->getValue(1070) == 160 );
+	REQUIRE( ui->getValue(1080) == 1080 );
+
+	// add new mbreg
+	REQUIRE( mbm->reconfigure(confile2) );
+
+	msleep(polltime + 600);
+	REQUIRE( ui->getValue(1080) == 160 );
+}
+// -----------------------------------------------------------------------------
+
 #if 0
 // -----------------------------------------------------------------------------
 static bool init_iobase( IOBase* ib, const std::string& sensor )

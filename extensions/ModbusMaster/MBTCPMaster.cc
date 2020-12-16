@@ -37,9 +37,9 @@ MBTCPMaster::MBTCPMaster(uniset::ObjectId objId, uniset::ObjectId shmId,
 
     auto conf = uniset_conf();
 
-    // префикс для "свойств" - по умолчанию "tcp_";
-    prop_prefix = initPropPrefix("tcp_");
-    mbinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
+	// префикс для "свойств" - по умолчанию "tcp_";
+	mbconf->prop_prefix = initPropPrefix(mbconf->s_field, "tcp_");
+	mbinfo << myname << "(init): prop_prefix=" << mbconf->prop_prefix << endl;
 
     UniXML::iterator it(cnode);
 
@@ -61,23 +61,16 @@ MBTCPMaster::MBTCPMaster(uniset::ObjectId objId, uniset::ObjectId shmId,
     force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection", it.getProp("persistent_connection")) ? false : true;
     mbinfo << myname << "(init): persisten-connection=" << (!force_disconnect) << endl;
 
-    if( shm->isLocalwork() )
-    {
-        readConfiguration();
-
-        if( !noQueryOptimization )
-            rtuQueryOptimization(devices);
-
-        initDeviceList();
-    }
-    else
-        ic->addReadItem( sigc::mem_fun(this, &MBTCPMaster::readItem) );
+	if( shm->isLocalwork() )
+		mbconf->loadConfig(conf->getConfXML(), conf->getXMLSensorsSection());
+	else
+		ic->addReadItem( sigc::mem_fun(this, &MBTCPMaster::readItem) );
 
     pollThread = unisetstd::make_unique<ThreadCreator<MBTCPMaster>>(this, &MBTCPMaster::poll_thread);
     pollThread->setFinalAction(this, &MBTCPMaster::final_thread);
 
-    if( mblog->is_info() )
-        printMap(devices);
+	if( mblog->is_info() )
+		MBConfig::printMap(mbconf->devices);
 }
 // -----------------------------------------------------------------------------
 MBTCPMaster::~MBTCPMaster()
@@ -112,11 +105,11 @@ std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
     mbtcp->connect(iaddr, port);
     mbtcp->setForceDisconnect(force_disconnect);
 
-    if( recv_timeout > 0 )
-        mbtcp->setTimeout(recv_timeout);
+	if( mbconf->recv_timeout > 0 )
+		mbtcp->setTimeout(mbconf->recv_timeout);
 
-    mbtcp->setSleepPause(sleepPause_msec);
-    mbtcp->setAfterSendPause(aftersend_pause);
+	mbtcp->setSleepPause(mbconf->sleepPause_msec);
+	mbtcp->setAfterSendPause(mbconf->aftersend_pause);
 
     mbinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port
            << " connection=" << (mbtcp->isConnection() ? "OK" : "FAIL" ) << endl;
@@ -147,45 +140,45 @@ void MBTCPMaster::final_thread()
 // -----------------------------------------------------------------------------
 void MBTCPMaster::poll_thread()
 {
-    // ждём начала работы..(см. MBExchange::activateObject)
-    while( !isProcActive() && !canceled )
-    {
-        uniset::uniset_rwmutex_rlock l(mutex_start);
-    }
+	// ждём начала работы..(см. MBExchange::activateObject)
+	while( !isProcActive() && !canceled )
+	{
+		uniset::uniset_rwmutex_rlock l(mutex_start);
+	}
 
-    //  if( canceled )
-    //      return;
+	//	if( canceled )
+	//		return;
 
-    // работаем
-    while( isProcActive() )
-    {
-        try
-        {
-            if( sidExchangeMode != DefaultObjectId && force )
-                exchangeMode = shm->localGetValue(itExchangeMode, sidExchangeMode);
-        }
-        catch(...)
-        {
-            throw;
-        }
+	// работаем
+	while( isProcActive() )
+	{
+		try
+		{
+			if( sidExchangeMode != DefaultObjectId && force )
+				exchangeMode = shm->localGetValue(itExchangeMode, sidExchangeMode);
+		}
+		catch(...)
+		{
+			throw;
+		}
 
-        try
-        {
-            poll();
-        }
-        catch(...)
-        {
-            //            if( !checkProcActive() )
-            throw;
-        }
+		try
+		{
+			poll();
+		}
+		catch(...)
+		{
+			//            if( !checkProcActive() )
+			throw;
+		}
 
-        if( !isProcActive() )
-            break;
+		if( !isProcActive() )
+			break;
 
-        msleep(polltime);
-    }
+		msleep(mbconf->polltime);
+	}
 
-    dinfo << myname << "(poll_thread): thread finished.." << endl;
+	dinfo << myname << "(poll_thread): thread finished.." << endl;
 }
 // -----------------------------------------------------------------------------
 bool MBTCPMaster::deactivateObject()

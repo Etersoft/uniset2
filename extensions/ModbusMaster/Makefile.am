@@ -4,7 +4,7 @@ libMBMaster_la_LIBADD	= $(top_builddir)/lib/libUniSet2.la \
 								$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 								$(SIGC_LIBS)
 libMBMaster_la_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)
-libMBMaster_la_SOURCES 	= MBExchange.cc RTUStorage.cc
+libMBMaster_la_SOURCES 	= MBExchange.cc MBConfig.cc RTUStorage.cc
 
 bin_PROGRAMS 		= @PACKAGE@-mbtcpmaster @PACKAGE@-mbtcpmultimaster @PACKAGE@-rtuexchange @PACKAGE@-mtr-conv @PACKAGE@-rtu188-state @PACKAGE@-vtconv @PACKAGE@-mtr-setup @PACKAGE@-mtr-read
 lib_LTLIBRARIES 	= libUniSet2MBTCPMaster.la libUniSet2RTU.la

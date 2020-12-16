@@ -15,6 +15,7 @@ using namespace uniset;
 using namespace uniset::extensions;
 // --------------------------------------------------------------------------
 std::shared_ptr<SharedMemory> shm;
+std::shared_ptr<MBTCPMaster> mbm;
 // --------------------------------------------------------------------------
 int main( int argc, const char* argv[] )
 {
@@ -46,15 +47,14 @@ int main( int argc, const char* argv[] )
         if( !shm )
             return 1;
 
-        auto mb = MBTCPMaster::init_mbmaster(argc, argv, shm->getId(), (apart ? nullptr : shm ));
+		mbm = MBTCPMaster::init_mbmaster(argc, argv, shm->getId(), (apart ? nullptr : shm ));
 
-        if( !mb )
-            return 1;
+		if( !mbm )
+			return 1;
 
         auto act = UniSetActivator::Instance();
-
-        act->add(shm);
-        act->add(mb);
+		act->add(shm);
+		act->add(mbm);
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
