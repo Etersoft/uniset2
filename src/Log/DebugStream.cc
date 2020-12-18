@@ -18,19 +18,13 @@
 #include "Debug.h"
 #include "Mutex.h"
 
-//�Since the current C++ lib in egcs does not have a standard implementation
-// of basic_streambuf and basic_filebuf we don't have to include this
-// header.
-//#define MODERN_STL_STREAMS
-#ifdef MODERN_STL_STREAMS
-#include <fstream>
-#endif
 #include <iostream>
 #include <sstream>
 #include <iomanip>
 #include <time.h>
 #include <iomanip>
 #include <ctime>
+#include <algorithm>
 #include "DebugExtBuf.h"
 #include "UniSetTypes.h"
 
@@ -183,6 +177,19 @@ std::ostream& DebugStream::debug(Debug::type t) noexcept
 		if( show_logtype )
 			*this << "(" << std::setfill(' ') << std::setw(6) << t << "):  "; // "):\t";
 
+		if( show_labels )
+		{
+			for( const auto& l : labels )
+			{
+				*this << "[";
+
+				if( !hide_label_key )
+					*this << l.first << "=";
+
+				*this << l.second << "]";
+			}
+		}
+
 		return *this;
 	}
 
@@ -301,6 +308,37 @@ DebugStream::StreamEvent_Signal DebugStream::signal_stream_event()
 	return s_stream;
 }
 //--------------------------------------------------------------------------
+void DebugStream::addLabel( const std::string& key, const std::string& value ) noexcept
+{
+	auto it = std::find_if(labels.begin(), labels.end(), [key] (const Label & l)
+	{
+		return l.first == key;
+	} );
+
+	if( it == labels.end() )
+		labels.emplace_back(key, value);
+}
+//--------------------------------------------------------------------------
+void DebugStream::delLabel( const std::string& key ) noexcept
+{
+	auto it = std::find_if(labels.begin(), labels.end(), [key] (const Label & l)
+	{
+		return l.first == key;
+	} );
+
+	if( it != labels.end() )
+		labels.erase(it);
+}
+//--------------------------------------------------------------------------
+void DebugStream::cleanupLabels() noexcept
+{
+	labels.clear();
+}
+//--------------------------------------------------------------------------
+std::vector<DebugStream::Label> DebugStream::getLabels() noexcept
+{
+	return labels;
+}
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
 #ifdef TEST_DEBUGSTREAM

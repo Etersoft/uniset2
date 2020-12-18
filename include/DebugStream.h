@@ -22,6 +22,7 @@
 #include <iostream>
 #include <string>
 #include <sigc++/sigc++.h>
+#include <vector>
 #include "Debug.h"
 
 #ifdef TEST_DEBUGSTREAM
@@ -220,6 +221,16 @@ class DebugStream : public std::ostream
 			show_logtype = s;
 		}
 
+		inline void showLabels(bool s) noexcept
+		{
+			show_labels = s;
+		}
+
+		inline void hideLabelKey(bool s) noexcept
+		{
+			hide_label_key = s;
+		}
+
 		inline std::ostream& log(Debug::type l) noexcept
 		{
 			return this->operator[](l);
@@ -239,6 +250,15 @@ class DebugStream : public std::ostream
 		// example: dlog.V(1)[Debug::INFO] << "some log.." << endl;
 		DebugStream& V( Debug::verbosity v ) noexcept;
 
+		// labels
+		typedef std::pair<std::string, std::string> Label;
+
+		void addLabel( const std::string& key, const std::string& value ) noexcept;
+		void delLabel( const std::string& key ) noexcept;
+		void cleanupLabels() noexcept;
+		std::vector<Label> getLabels() noexcept;
+
+		// -----------------------------------------------------
 		// короткие функции (для удобства)
 		// log.level1()  - вывод с датой и временем  "date time [LEVEL] ...",
 		//    если вывод даты и времени не выключен при помощи showDateTime(false)
@@ -315,8 +335,12 @@ class DebugStream : public std::ostream
 		bool isWriteLogFile = { false };
 		bool onScreen = { true };
 
-		Debug::verbosity verb = 0;
-		Debug::verbosity vv = 0;
+		Debug::verbosity verb = { 0 };
+		Debug::verbosity vv = { 0 };
+
+		std::vector<Label> labels;
+		bool show_labels = { true };
+		bool hide_label_key = { false };
 };
 
 // ------------------------------------------------------------------------------------------------

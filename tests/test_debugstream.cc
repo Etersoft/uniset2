@@ -86,8 +86,16 @@ TEST_CASE("Debugstream: verbose", "[debugstream][verbose]" )
 
 	d.signal_stream_event().connect( &test_log_buffer );
 
-	d.V(1)[Debug::INFO] << "text" << endl;
+	d.V(1)[Debug::INFO] << "text";
 	REQUIRE(test_log_str.str() == "" );
+
+	test_log_str.str(""); // clean
+	d.V(0)(Debug::INFO) << "text";
+	REQUIRE(test_log_str.str().find("text") != std::string::npos );
+
+	test_log_str.str(""); // clean
+	d[Debug::INFO] << "text";
+	REQUIRE(test_log_str.str().find("text") != std::string::npos );
 
 	test_log_str.str(""); // clean
 	d.verbose(1);
@@ -107,5 +115,39 @@ TEST_CASE("Debugstream: verbose", "[debugstream][verbose]" )
 	d.V(2).info() << "text2";
 	d.V(0).warn() << "text warning";
 	REQUIRE(test_log_str.str() == "" );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("Debugstream: labels", "[debugstream][labels]" )
+{
+	DebugStream d(Debug::INFO);
+	d.signal_stream_event().connect( &test_log_buffer );
+
+	d.addLabel("module", "uniset");
+	d.addLabel("version", std::to_string(100));
+
+	auto labels = d.getLabels();
+	REQUIRE( labels.size() == 2 );
+	REQUIRE( labels[0].first == "module" );
+	REQUIRE( labels[0].second == "uniset" );
+
+	test_log_str.str(""); // clean
+	d[Debug::INFO] << "text";
+
+	REQUIRE( test_log_str.str().find("[module=uniset][version=100]") != std::string::npos );
+
+
+	d.delLabel("module");
+	test_log_str.str(""); // clean
+	d[Debug::INFO] << "text";
+	REQUIRE( test_log_str.str().find("[module=uniset]") == std::string::npos );
+
+	d.cleanupLabels();
+	labels = d.getLabels();
+	REQUIRE( labels.size() == 0 );
+
+	test_log_str.str(""); // clean
+	d[Debug::INFO] << "text";
+	REQUIRE( test_log_str.str().find("[version=100]") == std::string::npos );
+
 }
 // -----------------------------------------------------------------------------
