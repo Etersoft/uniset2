@@ -63,8 +63,7 @@ Debug::type const Debug::ANY = Debug::type(
 								   Debug::LEVEL9 | Debug::REPOSITORY | Debug::SYSTEM |
 								   Debug::EXCEPTION );
 
-
-Debug::type Debug::value( std::string const& val)
+Debug::type Debug::value( std::string const& val )
 {
 	type l = Debug::NONE;
 	std::string v(val);
@@ -74,7 +73,6 @@ Debug::type Debug::value( std::string const& val)
 		std::string::size_type st = v.find(',');
 		//string tmp(lowercase(v.substr(0, st)));
 		std::string tmp(v.substr(0, st));
-
 
 		if(tmp.empty())
 			break;
@@ -179,6 +177,5 @@ std::string Debug::str( Debug::type level ) noexcept
 
 	return "";
 }
-
 
 //DebugStream ulog;

@@ -71,3 +71,41 @@ TEST_CASE("Debugstream: del levels", "[debugstream][del]" )
 	REQUIRE(d.is_level3());
 }
 // -----------------------------------------------------------------------------
+static ostringstream test_log_str;
+
+void test_log_buffer(const std::string& txt )
+{
+	test_log_str << txt;
+}
+
+TEST_CASE("Debugstream: verbose", "[debugstream][verbose]" )
+{
+	DebugStream d(Debug::INFO);
+	d.verbose(0);
+	REQUIRE(d.verbose() == 0);
+
+	d.signal_stream_event().connect( &test_log_buffer );
+
+	d.V(1)[Debug::INFO] << "text" << endl;
+	REQUIRE(test_log_str.str() == "" );
+
+	test_log_str.str(""); // clean
+	d.verbose(1);
+	d.V(1)(Debug::INFO) << "text";
+	d.V(2)(Debug::INFO) << "text2";
+	REQUIRE(test_log_str.str() == "text" );
+
+	test_log_str.str(""); // clean
+	d.verbose(2);
+	d.V(2)(Debug::INFO) << "text";
+	d.V(100)(Debug::INFO) << "text100";
+	REQUIRE( test_log_str.str() == "text" );
+
+	test_log_str.str(""); // clean
+	d.verbose(0);
+	d.V(1).info() << "text";
+	d.V(2).info() << "text2";
+	d.V(0).warn() << "text warning";
+	REQUIRE(test_log_str.str() == "" );
+}
+// -----------------------------------------------------------------------------

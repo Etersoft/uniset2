@@ -92,7 +92,7 @@ class DebugStream : public std::ostream
 {
 	public:
 		/// Constructor, sets the debug level to t.
-		explicit DebugStream(Debug::type t = Debug::NONE);
+		explicit DebugStream(Debug::type t = Debug::NONE, Debug::verbosity v = 0);
 
 		/// Constructor, sets the log file to f, and the debug level to t.
 		explicit
@@ -177,10 +177,6 @@ class DebugStream : public std::ostream
 		    is used.
 		*/
 		std::ostream& debug(Debug::type t = Debug::ANY) noexcept;
-		//        if (dt & t) return *this;
-		//        return nullstream;
-		//    }
-
 
 		/** This is an operator to give a more convenient use:
 		    dbgstream[Debug::INFO] << "Info!\n";
@@ -228,6 +224,20 @@ class DebugStream : public std::ostream
 		{
 			return this->operator[](l);
 		}
+
+		void verbose(Debug::verbosity v) noexcept
+		{
+			verb = v;
+		}
+
+		/// Returns the current verbose level.
+		Debug::verbosity verbose() const noexcept
+		{
+			return verb;
+		}
+
+		// example: dlog.V(1)[Debug::INFO] << "some log.." << endl;
+		DebugStream& V( Debug::verbosity v ) noexcept;
 
 		// короткие функции (для удобства)
 		// log.level1()  - вывод с датой и временем  "date time [LEVEL] ...",
@@ -304,6 +314,10 @@ class DebugStream : public std::ostream
 
 		bool isWriteLogFile = { false };
 		bool onScreen = { true };
+
+		Debug::verbosity verb = 0;
+		Debug::verbosity vv = 0;
 };
+
 // ------------------------------------------------------------------------------------------------
 #endif

@@ -78,6 +78,8 @@ struct Debug
 	///
 	static type const ANY;
 
+	typedef uint8_t verbosity;
+
 	///
 	//    friend inline void operator|=(Debug::type & d1, Debug::type d2);
 

@@ -103,7 +103,7 @@ namespace uniset
 
 		auto lst = la->getLogList();
 
-		for( auto && l : lst )
+		for( auto&& l : lst )
 		{
 			auto c = conmap.find(l.log);
 
@@ -217,7 +217,7 @@ namespace uniset
 			return a->getLogName() < b->getLogName();
 		});
 
-		for( auto && l : lst )
+		for( auto&& l : lst )
 		{
 			auto ag = dynamic_pointer_cast<LogAgregator>(l);
 
@@ -350,7 +350,7 @@ namespace uniset
 
 		string p2(p + sep);
 
-		for( auto && l : lmap )
+		for( auto&& l : lmap )
 		{
 			auto ag = dynamic_pointer_cast<LogAgregator>(l.second);
 

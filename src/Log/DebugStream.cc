@@ -44,12 +44,13 @@ using std::cerr;
 using std::ios;
 //--------------------------------------------------------------------------
 /// Constructor, sets the debug level to t.
-DebugStream::DebugStream(Debug::type t)
+DebugStream::DebugStream(Debug::type t, Debug::verbosity v)
 	: /* ostream(new debugbuf(cerr.rdbuf())),*/
 	  dt(t), nullstream(new nullbuf), internal(new debugstream_internal),
 	  show_datetime(true), show_logtype(true),
 	  fname(""),
-	  logname("")
+	  logname(""),
+	  verb(v)
 {
 	delete rdbuf(new teebuf(cerr.rdbuf(), &internal->sbuf));
 	internal->sbuf.signal_overflow().connect(sigc::mem_fun(*this, &DebugStream::sbuf_overflow));
@@ -98,6 +99,7 @@ const DebugStream& DebugStream::operator=( const DebugStream& r )
 		return *this;
 
 	dt = r.dt;
+	verb = r.verb;
 	show_datetime = r.show_datetime;
 	show_logtype = r.show_logtype;
 	show_msec = r.show_msec;
@@ -138,7 +140,7 @@ void DebugStream::logFile( const std::string& f, bool truncate )
 		if( onScreen )
 		{
 			delete rdbuf(new threebuf(cerr.rdbuf(),
-							  &internal->fbuf, &internal->sbuf));
+									  &internal->fbuf, &internal->sbuf));
 		}
 		else
 		{
@@ -159,19 +161,19 @@ void DebugStream::enableOnScreen()
 {
 	onScreen = true;
 	// reopen streams
-	logFile(fname,false);
+	logFile(fname, false);
 }
 //--------------------------------------------------------------------------
 void DebugStream::disableOnScreen()
 {
 	onScreen = false;
 	// reopen streams
-	logFile(fname,false);
+	logFile(fname, false);
 }
 //--------------------------------------------------------------------------
 std::ostream& DebugStream::debug(Debug::type t) noexcept
 {
-	if(dt & t)
+	if( (dt & t) && (vv <= verb) )
 	{
 		uniset::ios_fmt_restorer ifs(*this);
 
@@ -189,15 +191,21 @@ std::ostream& DebugStream::debug(Debug::type t) noexcept
 //--------------------------------------------------------------------------
 std::ostream& DebugStream::operator()(Debug::type t) noexcept
 {
-	if(dt & t)
+	if( (dt & t) && (vv <= verb) )
 		return *this;
 
 	return nullstream;
 }
 //--------------------------------------------------------------------------
+DebugStream& DebugStream::V( Debug::verbosity v ) noexcept
+{
+	vv = v;
+	return *this;
+}
+//--------------------------------------------------------------------------
 std::ostream& DebugStream::printDate(Debug::type t, char brk) noexcept
 {
-	if(dt && t)
+	if( (dt & t) && (vv <= verb) )
 	{
 		uniset::ios_fmt_restorer ifs(*this);
 
@@ -220,7 +228,7 @@ std::ostream& DebugStream::printDate(Debug::type t, char brk) noexcept
 //--------------------------------------------------------------------------
 std::ostream& DebugStream::printTime(Debug::type t, char brk) noexcept
 {
-	if(dt && t)
+	if( (dt & t) && (vv <= verb) )
 	{
 		uniset::ios_fmt_restorer ifs(*this);
 
@@ -250,7 +258,7 @@ std::ostream& DebugStream::printTime(Debug::type t, char brk) noexcept
 //--------------------------------------------------------------------------
 std::ostream& DebugStream::printDateTime(Debug::type t) noexcept
 {
-	if(dt & t)
+	if( (dt & t) && (vv <= verb) )
 	{
 		uniset::ios_fmt_restorer ifs(*this);
 
