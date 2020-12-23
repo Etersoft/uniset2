@@ -154,15 +154,13 @@ int main( int argc, char** argv )
 
 		}
 
-		la->add(dlog);
-
 		auto la2 = make_shared<LogAgregator>("la2");
 
 		auto dlog3 = la2->create("dlog3");
 		auto dlog4 = la2->create("dlog4");
 
-		la2->add(dlog);
-		la2->add(dlog2);
+		la2->add(dlog3);
+		la2->add(dlog4);
 
 		la->add(la2);
 

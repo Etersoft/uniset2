@@ -134,7 +134,7 @@ namespace uniset
 	{
 		public:
 
-			const std::string sep = {"/"}; /*< разделитель для имён подчинённых агрегаторов */
+			static const std::string sep; /*< разделитель для имён подчинённых агрегаторов ('/') */
 
 			explicit LogAgregator( const std::string& name, Debug::type t );
 			explicit LogAgregator( const std::string& name = "" );
@@ -155,9 +155,11 @@ namespace uniset
 			void offLogFile( const std::string& logname );
 			void onLogFile( const std::string& logname );
 
-			// найти лог..
+			// найти лог.. (по полному составному имени)
 			std::shared_ptr<DebugStream> getLog( const std::string& logname );
 			bool logExist( std::shared_ptr<DebugStream>& l ) const;
+			std::shared_ptr<DebugStream> findByLogName( const std::string& logname ) const;
+			// -------------------------------------------------------------------------
 
 			struct iLog
 			{
@@ -196,6 +198,9 @@ namespace uniset
 
 			// получить список с именами (длинными) и с указателями на логи
 			std::list<iLog> makeLogNameList( const std::string& prefix ) const;
+
+			// получить список по именам удовлетворяющим регулярному выражению (рекурсивная функция)
+			void getListByLogNameWithRule( std::list<iLog>& lst, const std::regex& rule, const std::string& prefix ) const;
 
 		private:
 			typedef std::unordered_map<std::string, std::shared_ptr<DebugStream>> LogMap;

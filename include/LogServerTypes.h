@@ -26,7 +26,7 @@ namespace uniset
 
 	namespace LogServerTypes
 	{
-		const uint MAGICNUM = 0x20160417;
+		const uint32_t MAGICNUM = 20201222;
 		enum Command
 		{
 			cmdNOP,         /*!< отсутствие команды */
@@ -41,7 +41,7 @@ namespace uniset
 			cmdSaveLogLevel,   /*!< запомнить текущее состояние логов (для восстановления при завершении сессии или команде Restore) */
 			cmdRestoreLogLevel, /*!< восстановить последнее запомненное (cmdSaveLogLevel) состояние логов (т.е. не восстанавливать как было, при завершении сессии) */
 
-			// команды требующий ответа..
+			// команды требующие ответа..
 			cmdList,		/*!< вывести список контролируемых логов */
 			cmdFilterMode,	/*!< включить режим работы "фильтр" - вывод только от интересующих логов, заданных в logname (regexp) */
 			cmdViewDefaultLogLevel  /*!< вывести уровни логов сохранённых как умолчательный (cmdSaveLogLevel) */
@@ -52,25 +52,19 @@ namespace uniset
 
 		struct lsMessage
 		{
-			lsMessage(): magic(MAGICNUM), cmd(cmdNOP), data(0)
-			{
-				std::memset(logname, 0, sizeof(logname));
-			}
+			lsMessage();
+			explicit lsMessage( Command c, uint32_t d, const std::string& logname );
 
-			explicit lsMessage( Command c, uint d, const std::string& logname ):
-				magic(MAGICNUM), cmd(c), data(d)
-			{
-				setLogName(logname);
-			}
-
-			uint magic;
-			Command cmd;
-			uint data;
+			uint8_t _be_order; // 1 - BE byte order, 0 - LE byte order
+			uint32_t magic;
+			uint32_t data;
+			uint8_t cmd;
 
 			static const size_t MAXLOGNAME = 120;
 			char logname[MAXLOGNAME + 1]; // +1 reserverd for '\0'
 
 			void setLogName( const std::string& name );
+			void convertFromNet() noexcept;
 
 			// для команды 'cmdSetLogFile'
 			// static const size_t MAXLOGFILENAME = 200;

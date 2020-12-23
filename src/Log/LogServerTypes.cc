@@ -17,12 +17,72 @@
 #include "UniSetTypes.h"
 #include "LogServerTypes.h"
 #include "Debug.h"
+// -------------------------------------------------------------------------
+#if __BYTE_ORDER != __LITTLE_ENDIAN && __BYTE_ORDER != __BIG_ENDIAN
+#error LogServerTypes: Unknown byte order!
+#endif
 
+
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#define LE32_TO_H(x) {}
+#else
+#define LE32_TO_H(x) x = le32toh(x)
+#endif
+
+#if __BYTE_ORDER == __BIG_ENDIAN
+#define BE32_TO_H(x) {}
+#else
+#define BE32_TO_H(x) x = be32toh(x)
+#endif
 // -------------------------------------------------------------------------
 namespace uniset
 {
 	// -------------------------------------------------------------------------
 	using namespace std;
+	// -------------------------------------------------------------------------
+	LogServerTypes::lsMessage::lsMessage():
+		magic(MAGICNUM),
+		cmd(cmdNOP),
+		data(0)
+	{
+		std::memset(logname, 0, sizeof(logname));
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+		_be_order = 0;
+#elif __BYTE_ORDER == __BIG_ENDIAN
+		_be_order = 1;
+#endif
+	}
+	// -------------------------------------------------------------------------
+	LogServerTypes::lsMessage::lsMessage( Command c, uint32_t d, const std::string& logname ):
+		magic(MAGICNUM), cmd(c), data(d)
+	{
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+		_be_order = 0;
+#elif __BYTE_ORDER == __BIG_ENDIAN
+		_be_order = 1;
+#endif
+		setLogName(logname);
+	}
+	// -------------------------------------------------------------------------
+	void LogServerTypes::lsMessage::convertFromNet() noexcept
+	{
+		if( _be_order )
+		{
+			BE32_TO_H(data);
+			BE32_TO_H(magic);
+		}
+		else
+		{
+			LE32_TO_H(data);
+			LE32_TO_H(magic);
+		}
+
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+		_be_order = 0;
+#elif __BYTE_ORDER == __BIG_ENDIAN
+		_be_order = 1;
+#endif
+	}
 	// -------------------------------------------------------------------------
 	std::ostream& LogServerTypes::operator<<(std::ostream& os, LogServerTypes::Command cmd )
 	{
@@ -130,7 +190,7 @@ namespace uniset
 			else if( c == "-d" || c == "--del" )
 			{
 				LogServerTypes::Command cmd = LogServerTypes::cmdDelLevel;
-				vcmd.emplace_back(cmd, (int)Debug::value(arg1), filter);
+				vcmd.emplace_back(cmd, (uint32_t)Debug::value(arg1), filter);
 			}
 		}
 

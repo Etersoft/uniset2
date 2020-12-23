@@ -17,6 +17,7 @@
 #include <memory>
 #include <iomanip>
 #include <sstream>
+#include "UniSetTypes.h"
 #include "DebugExtBuf.h"
 #include "LogAgregator.h"
 // -------------------------------------------------------------------------
@@ -24,6 +25,8 @@ namespace uniset
 {
 	// -------------------------------------------------------------------------
 	using namespace std;
+	// -------------------------------------------------------------------------
+	const std::string LogAgregator::sep = "/";
 	// -------------------------------------------------------------------------
 	LogAgregator::LogAgregator( const std::string& name ):
 		LogAgregator(name, Debug::ANY)
@@ -200,34 +203,45 @@ namespace uniset
 		const std::string::size_type tab_width = 15;
 
 		ostringstream s;
-		s << "       ." << g_tab;
+		s << setw(tab_width) << "." << g_tab;
 
 		string s_tab(s.str());
 
-		std::ios_base::fmtflags old_flags = os.flags();
+		uniset::ios_fmt_restorer ifs(os);
 
-		os << std::left << g_tab << getLogName() << sep << endl; // << setw(6) << " " << "[ " << Debug::str(DebugStream::level()) << " ]" << endl;
+		os << std::right << g_tab << setw(tab_width - 1) << std::right << getLogName() << sep << endl; // << setw(6) << " " << "[ " << Debug::str(DebugStream::level()) << " ]" << endl;
+
+		std::list<std::shared_ptr<LogAgregator>> lstA;
 		std::list<std::shared_ptr<DebugStream>> lst;
 
 		for( const auto& l : lmap )
-			lst.push_back(l.second);
+		{
+			auto ag = dynamic_pointer_cast<LogAgregator>(l.second);
+
+			if( ag )
+				lstA.push_back(ag);
+			else
+				lst.push_back(l.second);
+		}
 
 		lst.sort([](const std::shared_ptr<DebugStream>& a, const std::shared_ptr<DebugStream>& b)
 		{
 			return a->getLogName() < b->getLogName();
 		});
 
-		for( auto&& l : lst )
+		lstA.sort([](const std::shared_ptr<LogAgregator>& a, const std::shared_ptr<LogAgregator>& b)
 		{
-			auto ag = dynamic_pointer_cast<LogAgregator>(l);
+			return a->getLogName() < b->getLogName();
+		});
 
-			if( ag )
-				ag->printTree(os, s_tab);
-			else
-				os << s_tab << setw(tab_width) << std::right << l->getLogName() << std::left << " [ " << Debug::str(l->level()) << " ]" << endl;
-		}
+		// сперва выводим просто логи
+		for( auto&& l : lst )
+			os << s_tab << setw(tab_width) << std::right << l->getLogName() << std::left << " [ " << Debug::str(l->level()) << " ]" << endl;
 
-		os.setf(old_flags);
+		// потом дочерние агрегаторы
+		for( auto&& ag : lstA )
+			ag->printTree(os, s_tab);
+
 		return os;
 	}
 	// -------------------------------------------------------------------------
@@ -276,6 +290,29 @@ namespace uniset
 		return false;
 	}
 	// -------------------------------------------------------------------------
+	std::shared_ptr<DebugStream> LogAgregator::findByLogName( const std::string& logname ) const
+	{
+		std::shared_ptr<DebugStream> log;
+
+		for( const auto& l : lmap )
+		{
+			if( l.second->getLogName() == logname )
+				return l.second;
+
+			auto ag = dynamic_pointer_cast<LogAgregator>(l.second);
+
+			if( ag )
+			{
+				log = ag->findByLogName(logname);
+
+				if( log != nullptr )
+					return log;
+			}
+		}
+
+		return nullptr;
+	}
+	// -------------------------------------------------------------------------
 	std::shared_ptr<DebugStream> LogAgregator::findLog( const std::string& lname ) const
 	{
 		auto v = splitFirst(lname, sep);
@@ -303,30 +340,52 @@ namespace uniset
 		return ag->findLog(v[1]); // рекурсия
 	}
 	// -------------------------------------------------------------------------
+	void LogAgregator::getListByLogNameWithRule( std::list<LogAgregator::iLog>& lst, const std::regex& rule, const std::string& prefix ) const
+	{
+		ostringstream s;
+		s << prefix << getLogName();
+		const string p2 = s.str() + sep;
+
+		for( const auto& l : lmap )
+		{
+			auto ag = dynamic_pointer_cast<LogAgregator>(l.second);
+
+			if( !std::regex_match(l.second->getLogName(), rule) )
+			{
+				// recursive
+				if( ag )
+					ag->getListByLogNameWithRule(lst, rule, p2);
+
+				continue;
+			}
+
+			if( !ag )
+			{
+				const std::string nm(p2 + l.second->getLogName());
+				lst.emplace_back(l.second, std::move(nm) );
+				continue;
+			}
+
+			// add all childs
+			lst.splice(lst.end(), ag->getLogList());
+		}
+	}
+	// -------------------------------------------------------------------------
 	std::list<LogAgregator::iLog> LogAgregator::getLogList( const std::string& regex_str ) const
 	{
-		std::list<LogAgregator::iLog> l;
+		std::list<LogAgregator::iLog> lst;
 
 		try
 		{
 			std::regex rule(regex_str);
-
-			auto lst = getLogList();
-
-			for( const auto& i : lst )
-			{
-				if( std::regex_search(i.name, rule) )
-				{
-					l.push_back(i);
-				}
-			}
+			getListByLogNameWithRule(lst, rule, "");
 		}
 		catch( const std::exception& ex )
 		{
 			cerr << "(LogAgregator::getLogList): " << ex.what() << std::endl;
 		}
 
-		return l;
+		return lst;
 	}
 	// -------------------------------------------------------------------------
 	std::list<LogAgregator::iLog> LogAgregator::getLogList() const
@@ -345,12 +404,9 @@ namespace uniset
 
 		ostringstream s;
 		s << prefix << getLogName();
+		const string p2 = s.str() + sep;
 
-		string p(s.str());
-
-		string p2(p + sep);
-
-		for( auto&& l : lmap )
+		for( const auto& l : lmap )
 		{
 			auto ag = dynamic_pointer_cast<LogAgregator>(l.second);
 

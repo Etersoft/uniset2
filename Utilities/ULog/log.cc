@@ -8,6 +8,7 @@
 #include "Exceptions.h"
 #include "LogReader.h"
 #include "LogServerTypes.h"
+#include "LogAgregator.h"
 // --------------------------------------------------------------------------
 using namespace uniset;
 using namespace std;

@@ -262,25 +262,95 @@ TEST_CASE("MaxSessions", "[LogServer]" )
 	ret2.get();
 }
 // --------------------------------------------------------------------------
-TEST_CASE("LogAgregator regexp", "[LogAgregator]" )
+TEST_CASE("LogAgregator regexp", "[LogAgregator][regexp]" )
 {
 	auto la = make_shared<LogAgregator>("ROOT");
 	auto log1 = la->create("log1");
 	auto log2 = la->create("log2");
-	auto log3 = la->create("a3/log1");
-	auto log4 = la->create("a3/log2");
-	auto log5 = la->create("a3/log3");
-	auto log6 = la->create("a3/a4/log1");
-	auto log7 = la->create("a3/a4/log2");
+	auto log31 = la->create("a3-log1");
+	auto log32 = la->create("a3-log2");
+	auto log33 = la->create("a3-log3");
+	auto log341 = la->create("a3-a4-log1");
+	auto log342 = la->create("a3-a4-log2");
 
-	auto lst = la->getLogList(".*/a4/.*");
+	auto lst = la->getLogList(".*a4.*");
 	REQUIRE( lst.size() == 2 );
 
-	lst = la->getLogList(".*a3/.*");
+	lst = la->getLogList(".*a3.*");
 	REQUIRE( lst.size() == 5 );
 
 	lst = la->getLogList(".*log1.*");
 	REQUIRE( lst.size() == 3 );
+
+	lst = la->getLogList("log1");
+	REQUIRE( lst.size() == 1 );
+
+	lst = la->getLogList("log2");
+	REQUIRE( lst.size() == 1 );
+
+	lst = la->getLogList("a3-log3");
+	REQUIRE( lst.size() == 1 );
+
+	lst = la->getLogList("a4-.*");
+	REQUIRE( lst.size() == 0 );
+
+
+	// la/la2/log5
+	// la/la2/log6
+	// la/la2/la3/log7
+	// la/la2/la3/log8
+	auto la2 = make_shared<LogAgregator>("la2");
+	auto la3 = make_shared<LogAgregator>("la3");
+	la2->add(la3);
+	la->add(la2);
+	auto log5 = la2->create("log5");
+	auto log6 = la2->create("log6");
+	auto log7 = la3->create("log7");
+	auto log8 = la3->create("log8");
+
+	lst = la->getLogList("la2"); // log5,log6 + la3/log7,la3/log8
+	REQUIRE( lst.size() == 4 );
+
+	lst = la->getLogList("la3"); // log7,log8
+	REQUIRE( lst.size() == 2 );
+
+	lst = la->getLogList("log.*"); // log[125678]
+	REQUIRE( lst.size() == 6 );
+}
+
+// --------------------------------------------------------------------------
+TEST_CASE("LogAgregator findlog", "[LogAgregator][getLog]" )
+{
+	auto la = make_shared<LogAgregator>("ROOT");
+	auto log1 = la->create("log1");
+	auto la2 = make_shared<LogAgregator>("la2");
+	la->add(la2);
+	auto log2 = la2->create("log2");
+
+	auto la3 = make_shared<LogAgregator>("la3");
+	auto log3 = la3->create("log3");
+	la2->add(la3);
+
+	auto log = la->findByLogName("log1");
+	REQUIRE( log != nullptr );
+	REQUIRE( log->getLogName() == "log1" );
+
+	log = la->findByLogName("log2");
+	REQUIRE( log != nullptr );
+	REQUIRE( log->getLogName() == "log2" );
+
+	log = la->findByLogName("log3");
+	REQUIRE( log != nullptr );
+	REQUIRE( log->getLogName() == "log3" );
+
+	auto agg = la->findByLogName("la2");
+	REQUIRE( agg != nullptr );
+	REQUIRE( agg->getLogName() == "la2" );
+
+	agg = la->findByLogName("la3");
+	REQUIRE( agg != nullptr );
+	REQUIRE( agg->getLogName() == "la3" );
+
 }
 
 // --------------------------------------------------------------------------
