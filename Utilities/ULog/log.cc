@@ -42,6 +42,7 @@ static struct option longopts[] =
 // --------------------------------------------------------------------------
 static void print_help()
 {
+	printf("Configs:\n");
 	printf("-h, --help                  - this message\n");
 	printf("-v, --verbose               - Print all messages to stdout\n");
 	printf("[-i|--iaddr] addr           - LogServer ip or hostname.\n");
@@ -55,21 +56,42 @@ static void print_help()
 	printf("\n");
 	printf("Commands:\n");
 
-	printf("[-a | --add] info,warn,crit,... [logfilter] - Add log levels.\n");
-	printf("[-d | --del] info,warn,crit,... [logfilter] - Delete log levels.\n");
-	printf("[-s | --set] info,warn,crit,... [logfilter] - Set log levels.\n");
-	printf("[-o | --off] [logfilter]                    - Off the write log file (if enabled).\n");
-	printf("[-e | --on] [logfilter]                     - On(enable) the write log file (if before disabled).\n");
-	printf("[-r | --rotate] [logfilter]                 - rotate log file.\n");
-	printf("[-u | --save-loglevels] [logfilter]         - save log levels (disable restore after disconnected).\n");
-	printf("[-y | --restore-loglevels] [logfilter]      - restore default log levels.\n");
-	printf("[-b | --view-default-loglevels] [logfilter] - list of default log levels.\n");
+	printf("[-l | --list] [objName]                   - Show logs hierarchy from logname. Default: ALL\n");
+	printf("[-b | --view-default-loglevels] [objName] - Show current log levels for logname.\n");
 
-	printf("[-l | --list] [logfilter]                   - List of managed logs.\n");
-	printf("[-g | --grep pattern                        - Print lines matching a pattern (c++ regexp)\n");
-	printf("[-f | --filter] logfilter                   - ('filter mode'). View log only from 'logfilter'(regexp)\n");
+	printf("[-a | --add] info,warn,crit,... [objName] - Add log levels.\n");
+	printf("[-d | --del] info,warn,crit,... [objName] - Delete log levels.\n");
+	printf("[-s | --set] info,warn,crit,... [objName] - Set log levels.\n");
+
+	printf("[-f | --filter] logname                   - ('filter mode'). View log only from 'logname'(regexp)\n");
+	printf("[-g | --grep pattern                      - Print lines matching a pattern (c++ regexp)\n");
+
 	printf("\n");
-	printf("Note: 'logfilter' -  regexp for name of log. Default: ALL logs.\n");
+	printf("Note: 'objName' - regexp for name of log. Default: ALL logs.\n");
+	printf("\n");
+	printf("Special commands:\n");
+	printf("[-o | --off] [objName]                    - Off the write log file (if enabled).\n");
+	printf("[-e | --on] [objName]                     - On(enable) the write log file (if before disabled).\n");
+	printf("[-r | --rotate] [objName]                 - rotate log file.\n");
+	printf("[-u | --save-loglevels] [objName]         - save log levels (disable restore after disconnected).\n");
+	printf("[-y | --restore-loglevels] [objName]      - restore default log levels.\n");
+
+	printf("\n");
+	printf("Examples:\n");
+	printf("=========\n");
+	printf("log hierarchy:\n");
+	printf("SESControl1/TV1\n");
+	printf("SESControl1/TV1/HeatExchanger\n");
+	printf("SESControl1/TV1/MyCustomLog\n");
+	printf("\n");
+	printf("* Show all logs for SESControl1 (only for SESControl1 and it's childrens)\n");
+	printf("uniset2-log -i host -p 30202 --del any --set any SESControl1\n");
+	printf("* Show all logs for TV1\n");
+	printf("unsiet2-log -i host -p 30201 --del any --set any TV1.*\n");
+	printf("* Show all logs for MyCustomLog\n");
+	printf("unsiet2-log -i host -p 30201 --del any --set any MyCustomLog\n");
+	printf("* Show info logs with special text for TV1\n");
+	printf("uniset2-log -i host -p 30202 --del any --set info TV1 --grep [Tt]ransient\n");
 }
 // --------------------------------------------------------------------------
 static char* checkArg( int i, int argc, char* argv[] );
