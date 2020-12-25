@@ -120,10 +120,10 @@ TEST_CASE("LogAgregator", "[LogServer][LogAgregator]" )
 	REQUIRE( lst.size() == 2 );
 
 	// Проверка поиска по регулярным выражениям
-	auto lst2 = la->getLogList("/lo.*");
+	auto lst2 = la->getLogList("lo.*");
 	REQUIRE( lst2.size() == 2 );
 
-	auto lst3 = la->getLogList("/log\\d{1}");
+	auto lst3 = la->getLogList("log\\d{1}");
 	REQUIRE( lst3.size() == 2 );
 }
 // --------------------------------------------------------------------------
