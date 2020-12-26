@@ -1,7 +1,4 @@
-if DISABLE_PGSQL
-
-else
-
+if ENABLE_PGSQL
 UPGSQL_VER=@LIBVER@
 
 lib_LTLIBRARIES 			= libUniSet2-pgsql.la

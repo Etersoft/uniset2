@@ -117,6 +117,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_SQLITE, test ${buildsqlite} = false)
+AM_CONDITIONAL(ENABLE_SQLITE, test ${buildsqlite} = true)
 
 # check xsltproc
 AC_CHECK_PROG([XSLTPROC],[xsltproc],[yes])
@@ -143,6 +144,8 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_MYSQL, test ${buildmysql} = false)
+AM_CONDITIONAL(ENABLE_MYSQL, test ${buildmysql} = true)
+
 
 #check pgsql support
 AC_MSG_CHECKING([postgresql support])
@@ -160,6 +163,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_PGSQL, test ${buildpgsql} = false)
+AM_CONDITIONAL(ENABLE_PGSQL, test ${buildpgsql} = true)
 
 
 #check rrd support
@@ -178,6 +182,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_RRD, test ${buildrrd} = false)
+AM_CONDITIONAL(ENABLE_RRD, test ${buildrrd} = true)
 
 #check opentsdb support
 AC_MSG_CHECKING([OpenTSDB backend])
@@ -192,6 +197,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_OPENTSDB, test ${buildtsdb} = false)
+AM_CONDITIONAL(ENABLE_OPENTSDB, test ${buildtsdb} = true)
 
 #check io support
 AC_MSG_CHECKING([io support])
@@ -241,7 +247,7 @@ AC_SUBST(COMPORT_485F_CFLAGS)
 #check logicproc build
 AC_MSG_CHECKING([build logic processor extension])
 buildlproc=true
-AC_ARG_ENABLE(rrd, AC_HELP_STRING([--disable-logicproc], [disable build LogicProcessor extension]),
+AC_ARG_ENABLE(logicproc, AC_HELP_STRING([--disable-logicproc], [disable build LogicProcessor extension]),
 [ if test $enableval = yes; then buildlproc=true; else buildlproc=false; fi],[ buildlproc=true; ])
 if test ${buildlproc} = true; then
 	AC_MSG_RESULT([enabled])
@@ -250,6 +256,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_LOGICPROC, test ${buildlproc} = false)
+AM_CONDITIONAL(ENABLE_LOGICPROC, test ${buildlproc} = true)
 
 #check build extensions
 ext=true
@@ -297,6 +304,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_PYTHON, test ${buildpython} = false)
+AM_CONDITIONAL(ENABLE_PYTHON, test ${buildpython} = true)
 
 #check mqtt support
 AC_MSG_CHECKING([mqtt support])
@@ -316,6 +324,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_MQTT, test ${buildmqtt} = false)
+AM_CONDITIONAL(ENABLE_MQTT, test ${buildmqtt} = true)
 
 
 # check Doxygen
@@ -388,6 +397,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_LOGDB, test ${buildlogdb} = false)
+AM_CONDITIONAL(ENABLE_LOGDB, test ${buildlogdb} = true)
 
 COV_LIBS=
 COV_CFLAGS=

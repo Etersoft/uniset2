@@ -1,6 +1,4 @@
-if DISABLE_LOGICPROC
-
-else
+if ENABLE_LOGICPROC
 
 # не забывайте править версию в2.pc-файле
 ULPROC_VER=@LIBVER@

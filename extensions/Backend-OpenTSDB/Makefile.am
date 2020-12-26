@@ -1,7 +1,4 @@
-if DISABLE_OPENTSDB
-
-else
-
+if ENABLE_OPENTSDB
 bin_PROGRAMS = @PACKAGE@-backend-opentsdb
 
 TSDB_VER=@LIBVER@

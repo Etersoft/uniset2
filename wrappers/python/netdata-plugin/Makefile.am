@@ -1,5 +1,4 @@
-if DISABLE_PYTHON
-else
+if ENABLE_PYTHON
 if HAVE_NETDATA
 netdataconfdir = $(sysconfdir)/netdata/python.d
 netdataconf_DATA = *.conf

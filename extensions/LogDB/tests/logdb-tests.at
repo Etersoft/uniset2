@@ -1,3 +1,4 @@
 AT_SETUP([LogDB tests])
+AT_SKIP_IF([$abs_top_builddir/config.status --config | grep disable-logdb])
 AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/LogDB/tests tests.sh],[0],[ignore],[ignore])
 AT_CLEANUP

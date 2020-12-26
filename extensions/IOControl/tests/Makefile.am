@@ -1,3 +1,4 @@
+if ENABLE_IO
 if HAVE_TESTS
 
 noinst_PROGRAMS = run_test_iocontrol
@@ -22,4 +23,5 @@ clean-local:
 
 include $(top_builddir)/include.mk
 
+endif
 endif

@@ -1,7 +1,4 @@
-if DISABLE_MYSQL
-
-else
-
+if ENABLE_MYSQL
 UMYSQL_VER=@LIBVER@
 
 lib_LTLIBRARIES 			= libUniSet2-mysql.la
