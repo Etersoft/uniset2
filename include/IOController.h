@@ -179,9 +179,6 @@ namespace uniset
             virtual void localSetUndefinedState( IOStateList::iterator& it, bool undefined,
                                                  const uniset::ObjectId sid );
 
-            // -- работа через указатель ---
-            virtual long localSetValue( std::shared_ptr<USensorInfo>& usi, CORBA::Long value, uniset::ObjectId sup_id );
-            long localGetValue( std::shared_ptr<USensorInfo>& usi) ;
             virtual void localFreezeValueIt( IOController::IOStateList::iterator& li,
                                              uniset::ObjectId sid,
                                              CORBA::Boolean set,
@@ -192,6 +189,11 @@ namespace uniset
                                            CORBA::Boolean set,
                                            CORBA::Long value,
                                            uniset::ObjectId sup_id );
+
+
+            // -- работа через указатель ---
+            virtual long localSetValue( std::shared_ptr<USensorInfo>& usi, CORBA::Long value, uniset::ObjectId sup_id );
+            long localGetValue( std::shared_ptr<USensorInfo>& usi) ;
 
 #ifndef DISABLE_REST_API
             // http API
@@ -347,6 +349,7 @@ namespace uniset
                 size_t nchanges = { 0 }; // количество изменений датчика
 
                 long undef_value = { not_specified_value }; // значение для "неопределённого состояния датчика"
+                long frozen_value = { 0 };
 
                 // функция обработки информации об изменении состояния датчика, от которого зависит данный
                 void checkDepend( std::shared_ptr<USensorInfo>& d_usi, IOController* );

@@ -20,18 +20,18 @@ static const std::string aidName = "AI_AS";
 // -----------------------------------------------------------------------------
 static void init_test()
 {
-	shm = smiInstance();
-	REQUIRE( shm != nullptr );
+    shm = smiInstance();
+    REQUIRE( shm != nullptr );
 
-	auto conf = uniset_conf();
+    auto conf = uniset_conf();
 
-	REQUIRE( conf != nullptr );
+    REQUIRE( conf != nullptr );
 
-	testOID = conf->getObjectID("TestProc");
-	CHECK( testOID != DefaultObjectId );
+    testOID = conf->getObjectID("TestProc");
+    CHECK( testOID != DefaultObjectId );
 
-	aid = conf->getSensorID(aidName);
-	CHECK( aid != DefaultObjectId );
+    aid = conf->getSensorID(aidName);
+    CHECK( aid != DefaultObjectId );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[REST API: conf]", "[restapi][conf]")
@@ -255,6 +255,8 @@ TEST_CASE("[REST API: /consumers]", "[restapi][consumers]")
 {
     init_test();
 
+    REQUIRE_NOTHROW( shm->askSensor(aid, UniversalIO::UIONotify, testOID) );
+
     // QUERY: /consumers
     // Ожидаемый формат ответа:
     //  {"object":{"id":5003,"isActive":true,"lostMessages":0,"maxSizeOfMessageQueue":1000,"msgCount":0,"name":"SharedMemory","objectType":"IONotifyController"},
@@ -285,8 +287,8 @@ TEST_CASE("[REST API: /consumers]", "[restapi][consumers]")
     auto sens = jret->get("sensor").extract<Poco::JSON::Object::Ptr>();
     REQUIRE(sens);
 
-    REQUIRE( sens->get("id").convert<ObjectId>() == 10 );
-    REQUIRE( sens->get("name").convert<std::string>() == "AI_AS" );
+    REQUIRE( sens->get("id").convert<ObjectId>() == aid );
+    REQUIRE( sens->get("name").convert<std::string>() == aidName );
 
     auto cons = jret->get("consumers").extract<Poco::JSON::Array::Ptr>();
     REQUIRE(cons);

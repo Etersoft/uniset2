@@ -850,6 +850,7 @@ int freezeValue( const string& args, bool set, UInterface& ui )
 
             if( verb )
             {
+                cout << "    set: " << set << endl;
                 cout << "  value: " << it.val << endl;
                 cout << "   name: (" << it.si.id << ") " << it.fname << endl;
                 cout << " iotype: " << t << endl;

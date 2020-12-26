@@ -253,6 +253,9 @@ TEST_CASE("UInterface::freezeValue", "[UInterface][freezeValue]")
     si.id = aid;
     si.node = conf->getLocalNode();
 
+    REQUIRE_NOTHROW( ui->setValue(aid, 200) );
+    REQUIRE( ui->getValue(aid) == 200 );
+
     REQUIRE_NOTHROW( ui->freezeValue(si, true, 10, testOID) );
     REQUIRE( ui->getValue(aid) == 10 );
 
@@ -264,7 +267,7 @@ TEST_CASE("UInterface::freezeValue", "[UInterface][freezeValue]")
 
     REQUIRE_NOTHROW( ui->freezeValue(si, true, -1, testOID) );
     REQUIRE( ui->getValue(aid) == -1 );
-    REQUIRE_NOTHROW( ui->freezeValue(si, false, -1, testOID) );
+    REQUIRE_NOTHROW( ui->freezeValue(si, false, 0, testOID) );
 
     REQUIRE( ui->getValue(aid) == 100 );
     REQUIRE_NOTHROW( ui->setValue(aid, 200) );

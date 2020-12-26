@@ -317,10 +317,7 @@ void IOController::localFreezeValue( std::shared_ptr<USensorInfo>& usi,
 		// выставляем флаг заморозки
 		uniset_rwmutex_wrlock lock(usi->val_lock);
 		usi->frozen = set;
-		usi->frozen_value = value;
-
-		// берём текущее значение, чтобы его не затереть
-		// при вызове setValue()
+		usi->frozen_value = set ? value : usi->value;
 		value = usi->real_value;
 	}
 
