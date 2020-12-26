@@ -1322,13 +1322,12 @@ Poco::JSON::Object::Ptr IONotifyController::getConsumers(ObjectId sid, ConsumerL
 	 * }
 	 */
 
-	Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
-
 	uniset_rwmutex_rlock lock(ci.mut);
 
 	if( ci.clst.empty() && ifNotEmpty )
-		return jret;
+		return nullptr;
 
+	Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
 	auto oind = uniset_conf()->oind;
 	auto jsens = uniset::json::make_child(jret, "sensor");
 	jsens->set("id", sid);

@@ -14,12 +14,24 @@ using namespace uniset;
 using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 static std::shared_ptr<SMInterface> shm;
+static uniset::ObjectId testOID = DefaultObjectId;
+static ObjectId aid = DefaultObjectId;
+static const std::string aidName = "AI_AS";
 // -----------------------------------------------------------------------------
 static void init_test()
 {
-    shm = smiInstance();
-    REQUIRE( shm != nullptr );
-    REQUIRE( uniset_conf() != nullptr );
+	shm = smiInstance();
+	REQUIRE( shm != nullptr );
+
+	auto conf = uniset_conf();
+
+	REQUIRE( conf != nullptr );
+
+	testOID = conf->getObjectID("TestProc");
+	CHECK( testOID != DefaultObjectId );
+
+	aid = conf->getSensorID(aidName);
+	CHECK( aid != DefaultObjectId );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[REST API: conf]", "[restapi][conf]")
