@@ -13,21 +13,13 @@
 #ifndef LYXDEBUG_H
 #define LYXDEBUG_H
 
-//#ifdef __GNUG__
-//#pragma interface
-//#endif
-
 #if __GNUC__ > 2
 #define MODERN_STL_STREAMS
 #endif
 
 #include <iosfwd>
-
 #include <string>
-//#include <lstrings.h>
-//#ifndef _
-//    #define _(n) n
-//#endif
+
 
 
 /** Ideally this should have been a namespace, but since we try to be
@@ -111,10 +103,7 @@ void operator|=(Debug::type& d1, Debug::type d2) noexcept
 	d1 = static_cast<Debug::type>(d1 | d2);
 }
 
+std::ostream& operator<<(std::ostream& o, Debug::type t) noexcept;
 
 #include "DebugStream.h"
-
-std::ostream& operator<<(std::ostream& o, Debug::type t) noexcept;
-//extern DebugStream ulog;
-
 #endif

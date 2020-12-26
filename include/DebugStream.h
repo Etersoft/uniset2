@@ -15,42 +15,11 @@
 #ifndef DEBUGSTREAM_H
 #define DEBUGSTREAM_H
 
-//#ifdef __GNUG__
-//#pragma interface
-//#endif
-
 #include <iostream>
 #include <string>
 #include <sigc++/sigc++.h>
 #include <vector>
 #include "Debug.h"
-
-#ifdef TEST_DEBUGSTREAM
-#include <string>
-struct Debug
-{
-	enum type
-	{
-		NONE = 0,
-		INFO       = (1 << 0),   // 1
-		WARN       = (1 << 1),   // 2
-		CRIT       = (1 << 2)   // 4
-	};
-	static const type ANY = type(INFO | WARN | CRIT);
-	static Debug::type value(std::string const& val)
-	{
-		if (val == "NONE") return Debug::NONE;
-
-		if (val == "INFO") return Debug::INFO;
-
-		if (val == "WARN") return Debug::WARN;
-
-		if (val == "CRIT") return Debug::CRIT;
-
-		return Debug::NONE;
-	}
-};
-#endif
 
 /** DebugStream is a ostream intended for debug output.
     It has also support for a logfile. Debug output is output to cerr

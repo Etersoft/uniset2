@@ -8,10 +8,6 @@
 * ====================================================== */
 // (c) 2002 adapted for UniSet by Lav, GNU LGPL license
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
 #include <iomanip>
 #include <sstream>
 
