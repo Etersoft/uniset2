@@ -24,7 +24,7 @@
 
 Name: libuniset2
 Version: 2.8.1
-Release: alt1
+Release: alt2
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL
@@ -344,6 +344,15 @@ Libraries needed to develop for uniset MQTT extension
 %autoreconf
 %configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api} %{subst_enable netdata} %{subst_enable logdb} %{subst_enable com485f} %{subst_enable opentsdb}
 %make_build
+
+# fix for ALTLinux build (noarch)
+%if_enabled docs
+cd docs/html
+PNGFILES=`find ./ -name '*.png' -type f`
+for F in ${PNGFILES}; do
+    convert ${F} -flatten +matte ${F}
+done
+%endif
 
 %install
 %makeinstall_std
