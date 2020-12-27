@@ -16,6 +16,7 @@
 // -------------------------------------------------------------------------
 #include "UConnector.h"
 #include "ORepHelpers.h"
+#include "MessageType.h"
 // --------------------------------------------------------------------------
 using namespace std;
 // --------------------------------------------------------------------------
@@ -233,6 +234,8 @@ void UConnector::activate_objects() throw(UException)
 	try
 	{
 		auto act = uniset::UniSetActivator::Instance();
+		uniset::SystemMessage sm(uniset::SystemMessage::StartUp);
+		act->broadcast( sm.transport_msg() );
 		act->run(true);
 	}
 	catch( const std::exception& ex )

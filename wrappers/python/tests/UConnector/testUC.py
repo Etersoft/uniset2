@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
 import sys
@@ -38,14 +38,19 @@ if __name__ == "__main__":
 	p = []
 	print "lst: class: " + str(p.__class__.__name__)
 
-
-
 	try:
 		uc1 = UConnector( lst, "test.xml" )
-		uc2 = UConnector( lst2, "test.xml" )
+#		uc2 = UConnector( lst2, "test.xml" )
 
-		#obj1 = UProxyObject("TestProc")
+		obj1 = UProxyObject("TestProc")
+		obj1.addToAsk(10)
 		#obj2 = UProxyObject("TestProc1")
+
+		uc1.activate_objects()
+
+		while True:
+			print "getValue(10): %d" % obj1.getValue(10)
+			time.sleep(1)
 
 #		print "Info: %s"%uc1.getObjectInfo("TestProc1","")
 

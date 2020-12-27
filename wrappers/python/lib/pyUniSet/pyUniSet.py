@@ -297,6 +297,9 @@ class UProxyObject:
     def addToAsk(self, id):
         return _pyUniSet.UProxyObject_addToAsk(self, id)
 
+    def askSensor(self, id):
+        return _pyUniSet.UProxyObject_askSensor(self, id)
+
     def getValue(self, id):
         return _pyUniSet.UProxyObject_getValue(self, id)
 

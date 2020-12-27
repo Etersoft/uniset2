@@ -25,7 +25,7 @@
 //---------------------------------------------------------------------------
 using namespace std;
 //---------------------------------------------------------------------------
-static uniset::UInterface* uInterface = 0;
+static std::shared_ptr<uniset::UInterface> uInterface;
 //---------------------------------------------------------------------------
 void pyUInterface::uniset_init_params( UTypes::Params* p, const std::string& xmlfile )throw(UException)
 {
@@ -40,8 +40,8 @@ void pyUInterface::uniset_init( int argc, char* argv[], const std::string& xmlfi
 
 	try
 	{
-		uniset::uniset_init(argc, argv, xmlfile);
-		uInterface = new uniset::UInterface();
+		std::shared_ptr<uniset::Configuration> conf = uniset::uniset_init(argc, argv, xmlfile);
+		uInterface = make_shared<uniset::UInterface>(conf);
 		return;
 	}
 	catch( uniset::Exception& ex )
@@ -192,6 +192,8 @@ void pyUInterface::uniset_activate_objects()throw(UException)
 	try
 	{
 		auto act = uniset::UniSetActivator::Instance();
+		uniset::SystemMessage sm(uniset::SystemMessage::StartUp);
+		act->broadcast( sm.transport_msg() );
 		act->run(true);
 	}
 	catch( const std::exception& ex )

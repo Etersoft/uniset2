@@ -48,8 +48,11 @@ class UProxyObject
 		UProxyObject( long id ) throw(UException);
 		~UProxyObject();
 
-		//!  \note Вызывать надо до активации объекта
+		//! \note Вызывать надо до активации объекта
 		void addToAsk( long id ) throw(UException);
+
+		//! можно вызывать в процессе работы
+		void askSensor( long id ) throw(UException);
 
 		long getValue( long id ) throw(UException);
 		float getFloatValue( long id ) throw(UException);

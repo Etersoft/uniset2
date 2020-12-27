@@ -35,6 +35,7 @@ class UProxyObject_impl:
 		virtual ~UProxyObject_impl();
 
 		void impl_addToAsk( uniset::ObjectId id ) throw(UException);
+		void impl_askSensor( uniset::ObjectId id ) throw(UException);
 
 		long impl_getValue( long id ) throw(UException);
 		void impl_setValue( long id, long val ) throw(UException);
@@ -166,6 +167,20 @@ void UProxyObject::addToAsk( long id ) throw(UException)
 	}
 }
 // --------------------------------------------------------------------------
+void UProxyObject::askSensor( long id ) throw(UException)
+{
+	try
+	{
+		uobj->impl_askSensor(id);
+	}
+	catch( std::exception& ex )
+	{
+		std::ostringstream err;
+		err << uobj->getName() << "(askSensor): " << id << " error: " << std::string(ex.what());
+		throw UException(err.str());
+	}
+}
+// --------------------------------------------------------------------------
 UProxyObject_impl::UProxyObject_impl( ObjectId id ):
 	UObject_SK(id, nullptr)
 {
@@ -282,6 +297,12 @@ bool UProxyObject_impl::impl_smIsOK()
 	// проверяем по первому датчику
 	auto s = smap.begin();
 	return ui->isExist(s->second.si.id, s->second.si.node);
+}
+// --------------------------------------------------------------------------
+void UProxyObject_impl::impl_askSensor( uniset::ObjectId id ) throw(UException)
+{
+	ui->askRemoteSensor(id, UniversalIO::UIONotify, uniset_conf()->getLocalNode(), getId());
+	impl_addToAsk(id);
 }
 // --------------------------------------------------------------------------
 void UProxyObject_impl::askSensors( UniversalIO::UIOCommand cmd )

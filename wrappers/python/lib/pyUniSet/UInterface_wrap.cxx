@@ -4957,6 +4957,42 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_UProxyObject_askSensor(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UProxyObject *arg1 = (UProxyObject *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:UProxyObject_askSensor",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UProxyObject, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UProxyObject_askSensor" "', argument " "1"" of type '" "UProxyObject *""'"); 
+  }
+  arg1 = reinterpret_cast< UProxyObject * >(argp1);
+  ecode2 = SWIG_AsVal_long(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "UProxyObject_askSensor" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  try {
+    (arg1)->askSensor(arg2);
+  }
+  catch(UException &_e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
+  }
+  
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_UProxyObject_getValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   UProxyObject *arg1 = (UProxyObject *) 0 ;
@@ -5225,6 +5261,7 @@ static PyMethodDef SwigMethods[] = {
 	 { "new_UProxyObject", _wrap_new_UProxyObject, METH_VARARGS, NULL},
 	 { "delete_UProxyObject", _wrap_delete_UProxyObject, METH_VARARGS, NULL},
 	 { "UProxyObject_addToAsk", _wrap_UProxyObject_addToAsk, METH_VARARGS, NULL},
+	 { "UProxyObject_askSensor", _wrap_UProxyObject_askSensor, METH_VARARGS, NULL},
 	 { "UProxyObject_getValue", _wrap_UProxyObject_getValue, METH_VARARGS, NULL},
 	 { "UProxyObject_getFloatValue", _wrap_UProxyObject_getFloatValue, METH_VARARGS, NULL},
 	 { "UProxyObject_setValue", _wrap_UProxyObject_setValue, METH_VARARGS, NULL},
