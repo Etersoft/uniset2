@@ -48,6 +48,7 @@
 	</LogDB>
 
 	<BackendOpenTSDB name="BackendOpenTSDB" host="localhost" filter_field="tsdb" filter_value="1" tags="host=localhost uniset=1" prefix="uniset"/>
+	<UWebSocketGate name="UWebSocketGate1"/>
 
 	<settings>
 
@@ -5502,6 +5503,7 @@
 			<item id="6088" name="TestGroup"/>
 			<item id="6089" name="MQTTPublisher1"/>
 			<item id="6090" name="BackendOpenTSDB"/>
+			<item id="6091" name="UWebSocketGate1"/>
 			<item id="6101" name="MBTCP1"/>
 			<item id="6102" name="MBTCP2"/>
 			<item id="6103" name="MBTCP3"/>
