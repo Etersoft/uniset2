@@ -27,7 +27,7 @@ Version: 2.8.1
 Release: alt2
 Summary: UniSet - library for building distributed industrial control systems
 
-License: LGPL
+License: LGPL-2.1
 Group: Development/C++
 Url: http://wiki.etersoft.ru/UniSet
 
