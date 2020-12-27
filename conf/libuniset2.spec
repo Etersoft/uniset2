@@ -546,6 +546,8 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %changelog
 * Fri Dec 25 2020 Pavel Vainerman <pv@altlinux.ru> 2.8.1-alt1
 - logserver/logreader refactoring
+- update docs
+- some python-module refactoring
 
 * Sun Oct 25 2020 Pavel Vainerman <pv@altlinux.ru> 2.8-alt15
 - minor fixes
