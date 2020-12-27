@@ -33,6 +33,8 @@ namespace uniset
             ~SMonitor();
 
             // -----
+            static std::string printEvent( const uniset::SensorMessage* sm );
+
         protected:
             virtual void sysCommand( const uniset::SystemMessage* sm ) override;
             virtual void sensorInfo( const uniset::SensorMessage* si ) override;

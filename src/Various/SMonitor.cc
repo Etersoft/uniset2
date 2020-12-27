@@ -95,25 +95,33 @@ void SMonitor::sysCommand( const SystemMessage* sm )
 	}
 }
 // ------------------------------------------------------------------------------------------
-void SMonitor::sensorInfo( const SensorMessage* si )
+std::string SMonitor::printEvent( const uniset::SensorMessage* sm )
 {
 	auto conf = uniset_conf();
+	ostringstream s;
 
 	string s_sup("");
 
-	if( si->supplier == uniset::AdminID )
+	if( sm->supplier == uniset::AdminID )
 		s_sup = "uniset-admin";
 	else
-		s_sup = ORepHelpers::getShortName(conf->oind->getMapName(si->supplier));
+		s_sup = ORepHelpers::getShortName(conf->oind->getMapName(sm->supplier));
 
-	cout << "(" << setw(6) << si->id << "):"
-		 << "[(" << std::right << setw(5) << si->supplier << ")"
-		 << std::left << setw(20) << s_sup <<  "] "
-		 << std::right << setw(8) << timeToString(si->sm_tv.tv_sec, ":")
-		 << "(" << setw(6) << si->sm_tv.tv_nsec << "): "
-		 << std::right << setw(45) << conf->oind->getMapName(si->id)
-		 << "    value:" << std::right << setw(9) << si->value
-		 << "    fvalue:" << std::right << setw(12) << ( (float)si->value / pow(10.0, si->ci.precision) ) << endl;
+	s << "(" << setw(6) << sm->id << "):"
+	  << "[(" << std::right << setw(5) << sm->supplier << ")"
+	  << std::left << setw(20) << s_sup <<  "] "
+	  << std::right << setw(8) << timeToString(sm->sm_tv.tv_sec, ":")
+	  << "(" << setw(6) << sm->sm_tv.tv_nsec << "): "
+	  << std::right << setw(45) << conf->oind->getMapName(sm->id)
+	  << "    value:" << std::right << setw(9) << sm->value
+	  << "    fvalue:" << std::right << setw(12) << ( (float)sm->value / pow(10.0, sm->ci.precision) ) << endl;
+
+	return s.str();
+}
+// ------------------------------------------------------------------------------------------
+void SMonitor::sensorInfo( const SensorMessage* si )
+{
+	cout << printEvent(si) << endl;
 
 	if( !script.empty() )
 	{
@@ -124,7 +132,7 @@ void SMonitor::sensorInfo( const SensorMessage* si )
 		if( script[0] == '.' || script[0] == '/' )
 			cmd << script;
 		else
-			cmd << conf->getBinDir() << script;
+			cmd << uniset_conf()->getBinDir() << script;
 
 		cmd << " " << si->id << " " << si->value << " " << si->sm_tv.tv_sec << " " << si->sm_tv.tv_nsec;
 
