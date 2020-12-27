@@ -553,6 +553,9 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
+* Sun Dec 27 2020 Pavel Vainerman <pv@altlinux.ru> 2.8.1-alt2
+- ALT spec: some fixes
+
 * Fri Dec 25 2020 Pavel Vainerman <pv@altlinux.ru> 2.8.1-alt1
 - logserver/logreader refactoring
 - update docs
