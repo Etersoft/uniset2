@@ -40,216 +40,216 @@ static const ObjectId exchangeMode = 11; // MBTCPMaster_Mode_AS
 // -----------------------------------------------------------------------------
 static void InitTest()
 {
-	auto conf = uniset_conf();
-	CHECK( conf != nullptr );
+    auto conf = uniset_conf();
+    CHECK( conf != nullptr );
 
-	if( !ui )
-	{
-		ui = make_shared<UInterface>();
-		// UI понадобиться для проверки записанных в SM значений.
-		CHECK( ui->getObjectIndex() != nullptr );
-		CHECK( ui->getConf() == conf );
-		CHECK( ui->waitReady(slaveNotRespond, 8000) );
-	}
+    if( !ui )
+    {
+        ui = make_shared<UInterface>();
+        // UI понадобиться для проверки записанных в SM значений.
+        CHECK( ui->getObjectIndex() != nullptr );
+        CHECK( ui->getConf() == conf );
+        CHECK( ui->waitReady(slaveNotRespond, 8000) );
+    }
 
-	if( !mbs1 )
-	{
-		try
-		{
-			mbs1 = make_shared<MBTCPTestServer>(vaddr, iaddr, port, false);
-		}
-		catch( const Poco::Net::NetException& e )
-		{
-			ostringstream err;
-			err << "(mb1): Can`t create socket " << iaddr << ":" << port << " err: " << e.message() << endl;
-			cerr << err.str() << endl;
-			throw SystemError(err.str());
-		}
-		catch( const std::exception& ex )
-		{
-			cerr << "(mb1): Can`t create socket " << iaddr << ":" << port << " err: " << ex.what() << endl;
-			throw;
-		}
+    if( !mbs1 )
+    {
+        try
+        {
+            mbs1 = make_shared<MBTCPTestServer>(vaddr, iaddr, port, false);
+        }
+        catch( const Poco::Net::NetException& e )
+        {
+            ostringstream err;
+            err << "(mb1): Can`t create socket " << iaddr << ":" << port << " err: " << e.message() << endl;
+            cerr << err.str() << endl;
+            throw SystemError(err.str());
+        }
+        catch( const std::exception& ex )
+        {
+            cerr << "(mb1): Can`t create socket " << iaddr << ":" << port << " err: " << ex.what() << endl;
+            throw;
+        }
 
-		CHECK( mbs1 != nullptr );
-		mbs1->setReply(0);
-		mbs1->execute();
+        CHECK( mbs1 != nullptr );
+        mbs1->setReply(0);
+        mbs1->execute();
 
-		for( int i = 0; !mbs1->isRunning() && i < 10; i++ )
-			msleep(200);
+        for( int i = 0; !mbs1->isRunning() && i < 10; i++ )
+            msleep(200);
 
-		CHECK( mbs1->isRunning() );
-		msleep(7000);
-		CHECK( ui->getValue(slaveNotRespond) == 0 );
-	}
+        CHECK( mbs1->isRunning() );
+        msleep(7000);
+        CHECK( ui->getValue(slaveNotRespond) == 0 );
+    }
 
-	if( !mbs2 )
-	{
-		try
-		{
-			mbs2 = make_shared<MBTCPTestServer>(vaddr, iaddr2, port2, false);
-		}
-		catch( const Poco::Net::NetException& e )
-		{
-			ostringstream err;
-			err << "(mb2): Can`t create socket " << iaddr << ":" << port << " err: " << e.message() << endl;
-			cerr << err.str() << endl;
-			throw SystemError(err.str());
-		}
-		catch( const std::exception& ex )
-		{
-			cerr << "(mb2): Can`t create socket " << iaddr << ":" << port << " err: " << ex.what() << endl;
-			throw;
-		}
+    if( !mbs2 )
+    {
+        try
+        {
+            mbs2 = make_shared<MBTCPTestServer>(vaddr, iaddr2, port2, false);
+        }
+        catch( const Poco::Net::NetException& e )
+        {
+            ostringstream err;
+            err << "(mb2): Can`t create socket " << iaddr << ":" << port << " err: " << e.message() << endl;
+            cerr << err.str() << endl;
+            throw SystemError(err.str());
+        }
+        catch( const std::exception& ex )
+        {
+            cerr << "(mb2): Can`t create socket " << iaddr << ":" << port << " err: " << ex.what() << endl;
+            throw;
+        }
 
-		CHECK( mbs2 != nullptr );
-		mbs2->setReply(0);
-		mbs2->execute();
+        CHECK( mbs2 != nullptr );
+        mbs2->setReply(0);
+        mbs2->execute();
 
-		for( int i = 0; !mbs2->isRunning() && i < 10; i++ )
-			msleep(200);
+        for( int i = 0; !mbs2->isRunning() && i < 10; i++ )
+            msleep(200);
 
-		CHECK( mbs2->isRunning() );
-	}
+        CHECK( mbs2->isRunning() );
+    }
 
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMultiMaster: rotate channel", "[modbus][mbmaster][mbtcpmultimaster]")
 {
-	// Т.к. respond/notrespond проверяется по возможности создать соединение
-	// а мы имитируем отключение просто отключением обмена
-	// то датчик связи всё-равно будет показывать что канал1 доступен
-	// поэтому датчик 12 - не проверяем..
-	// а просто проверяем что теперь значение приходит по другому каналу
-	// (см. setReply)
-	// ----------------------------
+    // Т.к. respond/notrespond проверяется по возможности создать соединение
+    // а мы имитируем отключение просто отключением обмена
+    // то датчик связи всё-равно будет показывать что канал1 доступен
+    // поэтому датчик 12 - не проверяем..
+    // а просто проверяем что теперь значение приходит по другому каналу
+    // (см. setReply)
+    // ----------------------------
 
-	InitTest();
-	CHECK( ui->isExist(mbID) );
+    InitTest();
+    CHECK( ui->isExist(mbID) );
 
-	mbs1->setReply(0);
-	msleep(polltime + 1000);
-	REQUIRE( ui->getValue(1003) == 0 );
-	mbs1->setReply(100);
-	mbs2->setReply(10);
-	msleep(polltime + 1000);
-	REQUIRE( ui->getValue(1003) == 100 );
-	mbs1->disableExchange(true);
-	mbs2->disableExchange(false);
-	msleep(4000); // --mbtcp-timeout 3000 (см. run_test_mbtcmultipmaster.sh)
-	REQUIRE( ui->getValue(1003) == 10 );
+    mbs1->setReply(0);
+    msleep(polltime + 1000);
+    REQUIRE( ui->getValue(1003) == 0 );
+    mbs1->setReply(100);
+    mbs2->setReply(10);
+    msleep(polltime + 1000);
+    REQUIRE( ui->getValue(1003) == 100 );
+    mbs1->disableExchange(true);
+    mbs2->disableExchange(false);
+    msleep(4000); // --mbtcp-timeout 3000 (см. run_test_mbtcmultipmaster.sh)
+    REQUIRE( ui->getValue(1003) == 10 );
 
-	// проверяем что канал остался на втором, хотя на первом мы включили связь
-	mbs1->disableExchange(false);
-	mbs2->disableExchange(false);
-	msleep(4000); // --mbtcp-timeout 3000 (см. run_test_mbtcmultipmaster.sh)
-	REQUIRE( ui->getValue(1003) == 10 );
+    // проверяем что канал остался на втором, хотя на первом мы включили связь
+    mbs1->disableExchange(false);
+    mbs2->disableExchange(false);
+    msleep(4000); // --mbtcp-timeout 3000 (см. run_test_mbtcmultipmaster.sh)
+    REQUIRE( ui->getValue(1003) == 10 );
 
-	mbs2->disableExchange(true);
-	mbs1->disableExchange(false);
-	msleep(4000); // --mbtcp-timeout 3000 (см. run_test_mbtcmultipmaster.sh)
-	REQUIRE( ui->getValue(1003) == 100 );
+    mbs2->disableExchange(true);
+    mbs1->disableExchange(false);
+    msleep(4000); // --mbtcp-timeout 3000 (см. run_test_mbtcmultipmaster.sh)
+    REQUIRE( ui->getValue(1003) == 100 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMultiMaster: safe mode", "[modbus][safemode][mbmaster][mbtcpmultimaster]")
 {
-	InitTest();
+    InitTest();
 
-	ui->setValue(1050, 0); // отключаем safeMode
+    ui->setValue(1050, 0); // отключаем safeMode
 
-	mbs1->setReply(53);
-	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1051) == 53 );
-	REQUIRE( ui->getValue(1052) == 1 );
+    mbs1->setReply(53);
+    msleep(polltime + 200);
+    REQUIRE( ui->getValue(1051) == 53 );
+    REQUIRE( ui->getValue(1052) == 1 );
 
-	mbs1->setReply(0);
-	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1051) == 0 );
-	REQUIRE( ui->getValue(1052) == 0 );
+    mbs1->setReply(0);
+    msleep(polltime + 200);
+    REQUIRE( ui->getValue(1051) == 0 );
+    REQUIRE( ui->getValue(1052) == 0 );
 
-	ui->setValue(1050, 42); // включаем safeMode
-	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1051) == 42 );
-	REQUIRE( ui->getValue(1052) == 1 );
+    ui->setValue(1050, 42); // включаем safeMode
+    msleep(polltime + 200);
+    REQUIRE( ui->getValue(1051) == 42 );
+    REQUIRE( ui->getValue(1052) == 1 );
 
 
-	mbs1->setReply(53);
-	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1051) == 42 );
-	REQUIRE( ui->getValue(1052) == 1 );
+    mbs1->setReply(53);
+    msleep(polltime + 200);
+    REQUIRE( ui->getValue(1051) == 42 );
+    REQUIRE( ui->getValue(1052) == 1 );
 
-	ui->setValue(1050, 0); // отключаем safeMode
-	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1051) == 53 );
-	REQUIRE( ui->getValue(1052) == 1 );
+    ui->setValue(1050, 0); // отключаем safeMode
+    msleep(polltime + 200);
+    REQUIRE( ui->getValue(1051) == 53 );
+    REQUIRE( ui->getValue(1052) == 1 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMaster: safe mode (resetIfNotRespond)", "[modbus][safemode][mbmaster][mbtcpmaster]")
 {
-	InitTest();
+    InitTest();
 
-	mbs1->disableExchange(false); // включаем связь
-	mbs2->disableExchange(false); // включаем связь
-	msleep(2000);
+    mbs1->disableExchange(false); // включаем связь
+    mbs2->disableExchange(false); // включаем связь
+    msleep(2000);
 
-	mbs1->setReply(53);
-	mbs2->setReply(53);
-	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1053) == 53 );
-	REQUIRE( ui->getValue(1054) == 1 );
+    mbs1->setReply(53);
+    mbs2->setReply(53);
+    msleep(polltime + 200);
+    REQUIRE( ui->getValue(1053) == 53 );
+    REQUIRE( ui->getValue(1054) == 1 );
 
-	mbs1->setReply(0);
-	mbs2->setReply(0);
-	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1053) == 0 );
-	REQUIRE( ui->getValue(1054) == 0 );
+    mbs1->setReply(0);
+    mbs2->setReply(0);
+    msleep(polltime + 200);
+    REQUIRE( ui->getValue(1053) == 0 );
+    REQUIRE( ui->getValue(1054) == 0 );
 
-	mbs1->disableExchange(true); // отключаем связь
-	mbs2->disableExchange(true); // отключаем связь
-	msleep(5000);
-	REQUIRE( ui->getValue(1053) == 42 );
-	REQUIRE( ui->getValue(1054) == 1 );
+    mbs1->disableExchange(true); // отключаем связь
+    mbs2->disableExchange(true); // отключаем связь
+    msleep(5000);
+    REQUIRE( ui->getValue(1053) == 42 );
+    REQUIRE( ui->getValue(1054) == 1 );
 
-	mbs1->setReply(53);
-	mbs2->setReply(53);
-	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1053) == 42 );
-	REQUIRE( ui->getValue(1054) == 1 );
+    mbs1->setReply(53);
+    mbs2->setReply(53);
+    msleep(polltime + 200);
+    REQUIRE( ui->getValue(1053) == 42 );
+    REQUIRE( ui->getValue(1054) == 1 );
 
-	mbs1->disableExchange(false); // включаем связь
-	mbs2->disableExchange(false); // включаем связь
-	msleep(5000);
-	REQUIRE( ui->getValue(1053) == 53 );
-	REQUIRE( ui->getValue(1054) == 1 );
-	mbs1->setReply(0);
-	mbs2->setReply(0);
+    mbs1->disableExchange(false); // включаем связь
+    mbs2->disableExchange(false); // включаем связь
+    msleep(5000);
+    REQUIRE( ui->getValue(1053) == 53 );
+    REQUIRE( ui->getValue(1054) == 1 );
+    mbs1->setReply(0);
+    mbs2->setReply(0);
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("MBTCPMaster: udefined value", "[modbus][undefined][mbmaster][mbtcpmaster]")
 {
-	InitTest();
+    InitTest();
 
-	mbs1->setReply(120);
-	mbs2->setReply(120);
-	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1070) == 120 );
+    mbs1->setReply(120);
+    mbs2->setReply(120);
+    msleep(polltime + 200);
+    REQUIRE( ui->getValue(1070) == 120 );
 
-	mbs1->setReply(10);
-	mbs2->setReply(10);
-	msleep(polltime + 200);
+    mbs1->setReply(10);
+    mbs2->setReply(10);
+    msleep(polltime + 200);
 
-	try
-	{
-		ui->getValue(1070);
-	}
-	catch( IOController_i::Undefined& ex )
-	{
-		REQUIRE( ex.value == 65535 );
-	}
+    try
+    {
+        ui->getValue(1070);
+    }
+    catch( IOController_i::Undefined& ex )
+    {
+        REQUIRE( ex.value == 65535 );
+    }
 
-	mbs1->setReply(120);
-	mbs2->setReply(120);
-	msleep(polltime + 200);
-	REQUIRE( ui->getValue(1070) == 120 );
+    mbs1->setReply(120);
+    mbs2->setReply(120);
+    msleep(polltime + 200);
+    REQUIRE( ui->getValue(1070) == 120 );
 }
 // -----------------------------------------------------------------------------

@@ -26,196 +26,196 @@ using namespace uniset;
 // -----------------------------------------------------------------------------------------
 
 MySQLInterface::MySQLInterface():
-	lastQ(""),
-	connected(false)
+    lastQ(""),
+    connected(false)
 {
-	mysql = new MYSQL();
-	mysql_init(mysql);
-	//    mysql_options(mysql,MYSQL_READ_DEFAULT_GROUP,"your_prog_name");
-	mysql_options(mysql, MYSQL_OPT_COMPRESS, 0);
+    mysql = new MYSQL();
+    mysql_init(mysql);
+    //    mysql_options(mysql,MYSQL_READ_DEFAULT_GROUP,"your_prog_name");
+    mysql_options(mysql, MYSQL_OPT_COMPRESS, 0);
 }
 
 MySQLInterface::~MySQLInterface()
 {
-	try
-	{
-		close();
-	}
-	catch( ... ) // пропускаем все необработанные исключения, если требуется обработать нужно вызывать close() до деструктора
-	{
-		cerr << "MySQLInterface::~MySQLInterface(): an error occured while closing connection!" << endl;
-	}
+    try
+    {
+        close();
+    }
+    catch( ... ) // пропускаем все необработанные исключения, если требуется обработать нужно вызывать close() до деструктора
+    {
+        cerr << "MySQLInterface::~MySQLInterface(): an error occured while closing connection!" << endl;
+    }
 
-	delete mysql;
+    delete mysql;
 }
 
 // -----------------------------------------------------------------------------------------
 bool MySQLInterface::nconnect(const string& host, const string& user, const string& pswd, const string& dbname, unsigned int port )
 {
-	if( !mysql_real_connect(mysql, host.c_str(), user.c_str(), pswd.c_str(), dbname.c_str(), port, NULL, 0) )
-	{
-		cout << error() << endl;
-		mysql_close(mysql);
-		connected = false;
-		return false;
-	}
+    if( !mysql_real_connect(mysql, host.c_str(), user.c_str(), pswd.c_str(), dbname.c_str(), port, NULL, 0) )
+    {
+        cout << error() << endl;
+        mysql_close(mysql);
+        connected = false;
+        return false;
+    }
 
-	connected = true;
-	return true;
+    connected = true;
+    return true;
 }
 // -----------------------------------------------------------------------------------------
 bool MySQLInterface::close()
 {
-	mysql_close(mysql);
-	return true;
+    mysql_close(mysql);
+    return true;
 }
 // -----------------------------------------------------------------------------------------
 bool MySQLInterface::insert( const string& q )
 {
-	if( !mysql )
-		return false;
+    if( !mysql )
+        return false;
 
-	if( mysql_query(mysql, q.c_str()) )
-		return false;
+    if( mysql_query(mysql, q.c_str()) )
+        return false;
 
-	return true;
+    return true;
 }
 // -----------------------------------------------------------------------------------------
 DBResult MySQLInterface::query( const std::string& q )
 {
-	if( !mysql )
-		return DBResult();
+    if( !mysql )
+        return DBResult();
 
-	if( mysql_query(mysql, q.c_str()) )
-	{
-		cerr << error() << endl;
-		return DBResult();
-	}
+    if( mysql_query(mysql, q.c_str()) )
+    {
+        cerr << error() << endl;
+        return DBResult();
+    }
 
-	lastQ = q;
-	MYSQL_RES* res = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
+    lastQ = q;
+    MYSQL_RES* res = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
 
-	if( !res || mysql_num_rows(res) == 0 )
-		return DBResult();
+    if( !res || mysql_num_rows(res) == 0 )
+        return DBResult();
 
-	return makeResult(res, true);
+    return makeResult(res, true);
 }
 // -----------------------------------------------------------------------------------------
 bool MySQLInterface::query_ok( const string& q )
 {
-	if( !mysql )
-		return false;
+    if( !mysql )
+        return false;
 
-	if( mysql_query(mysql, q.c_str()) )
-		return false;
+    if( mysql_query(mysql, q.c_str()) )
+        return false;
 
-	lastQ = q;
-	MYSQL_RES* res = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
+    lastQ = q;
+    MYSQL_RES* res = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
 
-	if( !res || mysql_num_rows(res) == 0 )
-	{
-		if( res )
-			mysql_free_result(res);
+    if( !res || mysql_num_rows(res) == 0 )
+    {
+        if( res )
+            mysql_free_result(res);
 
-		return false;
-	}
+        return false;
+    }
 
-	mysql_free_result(res);
-	return true;
+    mysql_free_result(res);
+    return true;
 }
 // -----------------------------------------------------------------------------------------
 const string MySQLInterface::error()
 {
-	return mysql_error(mysql);
+    return mysql_error(mysql);
 }
 // -----------------------------------------------------------------------------------------
 const string MySQLInterface::lastQuery()
 {
-	return lastQ;
+    return lastQ;
 }
 // -----------------------------------------------------------------------------------------
 double MySQLInterface::insert_id()
 {
-	if( !mysql )
-		return 0;
+    if( !mysql )
+        return 0;
 
-	return mysql_insert_id(mysql);
+    return mysql_insert_id(mysql);
 }
 // -----------------------------------------------------------------------------------------
 const char* MySQLInterface::gethostinfo() const
 {
-	return mysql_get_host_info(mysql);
+    return mysql_get_host_info(mysql);
 }
 // -----------------------------------------------------------------------------------------
 bool MySQLInterface::ping() const
 {
-	if( !mysql || !connected )
-		return false;
+    if( !mysql || !connected )
+        return false;
 
-	// внимание mysql_ping возвращает 0
-	// если всё хорошо.... (поэтому мы инвертируем)
-	return !mysql_ping(mysql);
+    // внимание mysql_ping возвращает 0
+    // если всё хорошо.... (поэтому мы инвертируем)
+    return !mysql_ping(mysql);
 }
 // -----------------------------------------------------------------------------------------
 bool MySQLInterface::isConnection() const
 {
-	return ping(); //!mysql;
+    return ping(); //!mysql;
 }
 // -----------------------------------------------------------------------------------------
 string MySQLInterface::addslashes( const string& str )
 {
-	ostringstream tmp;
+    ostringstream tmp;
 
-	for( unsigned int i = 0; i < str.size(); i++ )
-	{
-		//        if( !strcmp(str[i],'\'') )
-		if( str[i] == '\'' )
-			tmp << "\\";
+    for( unsigned int i = 0; i < str.size(); i++ )
+    {
+        //        if( !strcmp(str[i],'\'') )
+        if( str[i] == '\'' )
+            tmp << "\\";
 
-		tmp << str[i];
-	}
+        tmp << str[i];
+    }
 
-	return tmp.str();
+    return tmp.str();
 }
 // -----------------------------------------------------------------------------------------
 DBResult MySQLInterface::makeResult( MYSQL_RES* myres, bool finalize )
 {
-	DBResult result;
+    DBResult result;
 
-	if( !myres )
-	{
-		if( finalize )
-			mysql_free_result(myres);
+    if( !myres )
+    {
+        if( finalize )
+            mysql_free_result(myres);
 
-		return result;
-	}
+        return result;
+    }
 
-	MYSQL_ROW mysql_row;
-	unsigned int nfields = mysql_num_fields(myres);
+    MYSQL_ROW mysql_row;
+    unsigned int nfields = mysql_num_fields(myres);
 
-	while( (mysql_row = mysql_fetch_row(myres)) )
-	{
-		DBResult::COL c;
+    while( (mysql_row = mysql_fetch_row(myres)) )
+    {
+        DBResult::COL c;
 
-		for( unsigned int i = 0; i < nfields; i++ )
-		{
-			MYSQL_FIELD* field_info = mysql_fetch_field_direct(myres, i);
-			result.setColName( i, std::string(field_info->name) );
+        for( unsigned int i = 0; i < nfields; i++ )
+        {
+            MYSQL_FIELD* field_info = mysql_fetch_field_direct(myres, i);
+            result.setColName( i, std::string(field_info->name) );
 
-			c.emplace_back( (mysql_row[i] != 0 ? string(mysql_row[i]) : "") );
-		}
+            c.emplace_back( (mysql_row[i] != 0 ? string(mysql_row[i]) : "") );
+        }
 
-		result.row().emplace_back(c);
-	}
+        result.row().emplace_back(c);
+    }
 
-	if( finalize )
-		mysql_free_result(myres);
+    if( finalize )
+        mysql_free_result(myres);
 
-	return result;
+    return result;
 }
 // -----------------------------------------------------------------------------------------
 extern "C" std::shared_ptr<DBInterface> create_mysqlinterface()
 {
-	return std::shared_ptr<DBInterface>(new MySQLInterface(), DBInterfaceDeleter());
+    return std::shared_ptr<DBInterface>(new MySQLInterface(), DBInterfaceDeleter());
 }
 // -----------------------------------------------------------------------------------------

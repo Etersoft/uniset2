@@ -28,275 +28,275 @@ using namespace uniset;
 // --------------------------------------------------------------------------
 
 SQLiteInterface::SQLiteInterface():
-	db(0),
-	lastQ(""),
-	lastE(""),
-	queryok(false),
-	connected(false),
-	opTimeout(300),
-	opCheckPause(50)
+    db(0),
+    lastQ(""),
+    lastE(""),
+    queryok(false),
+    connected(false),
+    opTimeout(300),
+    opCheckPause(50)
 {
 }
 
 SQLiteInterface::~SQLiteInterface()
 {
-	try
-	{
-		close();
-	}
-	catch( ... ) // пропускаем все необработанные исключения, если требуется обработать нужно вызывать close() до деструктора
-	{
-		std::exception_ptr p = std::current_exception();
-		cerr << "(SQLiteInterface::~SQLiteInterface): "
-			 << (p ? p.__cxa_exception_type()->name() : "an error occured while closing connection!")
-			 << std::endl;
-	}
+    try
+    {
+        close();
+    }
+    catch( ... ) // пропускаем все необработанные исключения, если требуется обработать нужно вызывать close() до деструктора
+    {
+        std::exception_ptr p = std::current_exception();
+        cerr << "(SQLiteInterface::~SQLiteInterface): "
+             << (p ? p.__cxa_exception_type()->name() : "an error occured while closing connection!")
+             << std::endl;
+    }
 }
 
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::ping() const
 {
-	return db && ( sqlite3_db_status(db, 0, NULL, NULL, 0) == SQLITE_OK );
+    return db && ( sqlite3_db_status(db, 0, NULL, NULL, 0) == SQLITE_OK );
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::connect( const std::string& param )
 {
-	std::string dbfile;
-	std::string::size_type pos = param.find_first_of(":");
-	dbfile = param.substr(0, pos);
+    std::string dbfile;
+    std::string::size_type pos = param.find_first_of(":");
+    dbfile = param.substr(0, pos);
 
-	if( pos != std::string::npos )
-	{
-		std::string create_str = param.substr(pos + 1, std::string::npos);
+    if( pos != std::string::npos )
+    {
+        std::string create_str = param.substr(pos + 1, std::string::npos);
 
-		if( create_str == "true" )
-			return connect( dbfile, true );
-	}
+        if( create_str == "true" )
+            return connect( dbfile, true );
+    }
 
-	return connect( dbfile, false );
+    return connect( dbfile, false );
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::connect( const string& dbfile, bool create, int extra_sqlite_flags )
 {
-	// т.к. sqlite3 по умолчанию, создаёт файл при открытии, то проверим "сами"
-	//    if( !create && !uniset::file_exist(dbfile) )
-	//        return false;
+    // т.к. sqlite3 по умолчанию, создаёт файл при открытии, то проверим "сами"
+    //    if( !create && !uniset::file_exist(dbfile) )
+    //        return false;
 
-	if( db && ping() )
-		return true;
+    if( db && ping() )
+        return true;
 
-	if( db )
-		close();
+    if( db )
+        close();
 
-	int flags = create ? 0 : SQLITE_OPEN_READWRITE;
+    int flags = create ? 0 : SQLITE_OPEN_READWRITE;
 
-	if( extra_sqlite_flags )
-		flags |= extra_sqlite_flags;
+    if( extra_sqlite_flags )
+        flags |= extra_sqlite_flags;
 
-	int rc = sqlite3_open_v2(dbfile.c_str(), &db, flags, NULL);
+    int rc = sqlite3_open_v2(dbfile.c_str(), &db, flags, NULL);
 
-	if( rc != SQLITE_OK )
-	{
-		// cerr << "SQLiteInterface::connect): rc=" << rc << " error: " << sqlite3_errmsg(db) << endl;
-		lastE = "open '" + dbfile + "' error: " + string(sqlite3_errmsg(db));
-		sqlite3_close(db);
-		db = 0;
-		connected = false;
-		return false;
-	}
+    if( rc != SQLITE_OK )
+    {
+        // cerr << "SQLiteInterface::connect): rc=" << rc << " error: " << sqlite3_errmsg(db) << endl;
+        lastE = "open '" + dbfile + "' error: " + string(sqlite3_errmsg(db));
+        sqlite3_close(db);
+        db = 0;
+        connected = false;
+        return false;
+    }
 
-	setOperationTimeout(opTimeout);
-	connected = true;
-	return true;
+    setOperationTimeout(opTimeout);
+    connected = true;
+    return true;
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::close()
 {
-	if( db )
-	{
-		sqlite3_close(db);
-		db = 0;
-	}
+    if( db )
+    {
+        sqlite3_close(db);
+        db = 0;
+    }
 
-	return true;
+    return true;
 }
 // -----------------------------------------------------------------------------------------
 void SQLiteInterface::setOperationTimeout( timeout_t msec )
 {
-	opTimeout = msec;
+    opTimeout = msec;
 
-	if( db )
-		sqlite3_busy_timeout(db, opTimeout);
+    if( db )
+        sqlite3_busy_timeout(db, opTimeout);
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::insert( const string& q )
 {
-	if( !db )
-		return false;
+    if( !db )
+        return false;
 
-	// char* errmsg;
-	sqlite3_stmt* pStmt;
+    // char* errmsg;
+    sqlite3_stmt* pStmt;
 
-	// Компилируем SQL запрос
-	if( sqlite3_prepare(db, q.c_str(), -1, &pStmt, NULL) != SQLITE_OK )
-	{
-		queryok = false;
-		return false;
-	}
+    // Компилируем SQL запрос
+    if( sqlite3_prepare(db, q.c_str(), -1, &pStmt, NULL) != SQLITE_OK )
+    {
+        queryok = false;
+        return false;
+    }
 
-	int rc = sqlite3_step(pStmt);
+    int rc = sqlite3_step(pStmt);
 
-	if( !checkResult(rc) && !wait(pStmt, SQLITE_DONE) )
-	{
-		sqlite3_finalize(pStmt);
-		queryok = false;
-		return false;
-	}
+    if( !checkResult(rc) && !wait(pStmt, SQLITE_DONE) )
+    {
+        sqlite3_finalize(pStmt);
+        queryok = false;
+        return false;
+    }
 
-	sqlite3_finalize(pStmt);
-	queryok = true;
-	return true;
+    sqlite3_finalize(pStmt);
+    queryok = true;
+    return true;
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::checkResult( int rc )
 {
-	if( rc == SQLITE_BUSY || rc == SQLITE_LOCKED || rc == SQLITE_INTERRUPT || rc == SQLITE_IOERR )
-		return false;
+    if( rc == SQLITE_BUSY || rc == SQLITE_LOCKED || rc == SQLITE_INTERRUPT || rc == SQLITE_IOERR )
+        return false;
 
-	return true;
+    return true;
 }
 // -----------------------------------------------------------------------------------------
 DBResult SQLiteInterface::query( const string& q )
 {
-	if( !db )
-		return DBResult();
+    if( !db )
+        return DBResult();
 
-	// char* errmsg = 0;
-	sqlite3_stmt* pStmt;
+    // char* errmsg = 0;
+    sqlite3_stmt* pStmt;
 
-	// Компилируем SQL запрос
-	sqlite3_prepare(db, q.c_str(), -1, &pStmt, NULL);
-	int rc = sqlite3_step(pStmt);
+    // Компилируем SQL запрос
+    sqlite3_prepare(db, q.c_str(), -1, &pStmt, NULL);
+    int rc = sqlite3_step(pStmt);
 
-	if( !checkResult(rc) && !wait(pStmt, SQLITE_ROW) )
-	{
-		sqlite3_finalize(pStmt);
-		queryok = false;
-		return DBResult();
-	}
+    if( !checkResult(rc) && !wait(pStmt, SQLITE_ROW) )
+    {
+        sqlite3_finalize(pStmt);
+        queryok = false;
+        return DBResult();
+    }
 
-	lastQ = q;
-	queryok = true;
-	return makeResult(pStmt, true);
+    lastQ = q;
+    queryok = true;
+    return makeResult(pStmt, true);
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::wait( sqlite3_stmt* stmt, int result )
 {
-	PassiveTimer ptTimeout(opTimeout);
+    PassiveTimer ptTimeout(opTimeout);
 
-	while( !ptTimeout.checkTime() )
-	{
-		sqlite3_reset(stmt);
-		int rc = sqlite3_step(stmt);
+    while( !ptTimeout.checkTime() )
+    {
+        sqlite3_reset(stmt);
+        int rc = sqlite3_step(stmt);
 
-		if(  rc == result || rc == SQLITE_DONE )
-			return true;
+        if(  rc == result || rc == SQLITE_DONE )
+            return true;
 
-		msleep(opCheckPause);
-	}
+        msleep(opCheckPause);
+    }
 
-	return false;
+    return false;
 }
 // -----------------------------------------------------------------------------------------
 const string SQLiteInterface::error()
 {
-	if( db )
-	{
-		int errcode = sqlite3_errcode(db);
-		lastE = ( errcode == SQLITE_OK ) ? "" : sqlite3_errmsg(db);
-	}
+    if( db )
+    {
+        int errcode = sqlite3_errcode(db);
+        lastE = ( errcode == SQLITE_OK ) ? "" : sqlite3_errmsg(db);
+    }
 
-	return lastE;
+    return lastE;
 }
 // -----------------------------------------------------------------------------------------
 const string SQLiteInterface::lastQuery()
 {
-	return lastQ;
+    return lastQ;
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::lastQueryOK() const
 {
-	return queryok;
+    return queryok;
 }
 // -----------------------------------------------------------------------------------------
 double SQLiteInterface::insert_id()
 {
-	if( !db )
-		return 0;
+    if( !db )
+        return 0;
 
-	return sqlite3_last_insert_rowid(db);
+    return sqlite3_last_insert_rowid(db);
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::isConnection() const
 {
-	return connected;
+    return connected;
 }
 // -----------------------------------------------------------------------------------------
 DBResult SQLiteInterface::makeResult( sqlite3_stmt* s, bool finalize )
 {
-	DBResult result;
+    DBResult result;
 
-	if( !s )
-	{
-		if( finalize )
-			sqlite3_finalize(s);
+    if( !s )
+    {
+        if( finalize )
+            sqlite3_finalize(s);
 
-		return result;
-	}
+        return result;
+    }
 
-	do
-	{
-		int n = sqlite3_data_count(s);
+    do
+    {
+        int n = sqlite3_data_count(s);
 
-		if( n <= 0 )
-		{
-			if( finalize )
-				sqlite3_finalize(s);
+        if( n <= 0 )
+        {
+            if( finalize )
+                sqlite3_finalize(s);
 
-			return result;
-		}
+            return result;
+        }
 
-		DBResult::COL c;
+        DBResult::COL c;
 
-		for( int i = 0; i < n; i++ )
-		{
-			const char* p = (const char*)sqlite3_column_text(s, i);
+        for( int i = 0; i < n; i++ )
+        {
+            const char* p = (const char*)sqlite3_column_text(s, i);
 
-			if( p )
-			{
-				const char* cname = (const char*)sqlite3_column_name(s, i);
+            if( p )
+            {
+                const char* cname = (const char*)sqlite3_column_name(s, i);
 
-				if( cname )
-					result.setColName(i, cname);
+                if( cname )
+                    result.setColName(i, cname);
 
-				c.emplace_back(p);
-			}
-			else
-				c.emplace_back("");
-		}
+                c.emplace_back(p);
+            }
+            else
+                c.emplace_back("");
+        }
 
-		result.row().emplace_back(c);
-	}
-	while( sqlite3_step(s) == SQLITE_ROW );
+        result.row().emplace_back(c);
+    }
+    while( sqlite3_step(s) == SQLITE_ROW );
 
-	if( finalize )
-		sqlite3_finalize(s);
+    if( finalize )
+        sqlite3_finalize(s);
 
-	return result;
+    return result;
 }
 // -----------------------------------------------------------------------------------------
 extern "C" std::shared_ptr<DBInterface> create_sqliteinterface()
 {
-	return std::shared_ptr<DBInterface>(new SQLiteInterface(), DBInterfaceDeleter());
+    return std::shared_ptr<DBInterface>(new SQLiteInterface(), DBInterfaceDeleter());
 }
 // -----------------------------------------------------------------------------------------

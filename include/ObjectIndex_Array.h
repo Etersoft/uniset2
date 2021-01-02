@@ -30,41 +30,41 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-	/*!
-	 * DEPRECATED!
-	 * \todo Проверить функции этого класса на повторную входимость
-	 * \bug При обращении к objectsMap[0].textName срабатывает исключение (видимо какое-то из std).
-	 * Требуется дополнительное изучение.
-	 *
-	 * \deprecated Этот класс нужен для совместимости с очень древними проектами.
-	 * Где список объектов объявлялся статическим массивом
-	*/
-	class ObjectIndex_Array:
-		public ObjectIndex
-	{
-		public:
-			ObjectIndex_Array(const ObjectInfo* objectInfo);
-			virtual ~ObjectIndex_Array();
+    /*!
+     * DEPRECATED!
+     * \todo Проверить функции этого класса на повторную входимость
+     * \bug При обращении к objectsMap[0].textName срабатывает исключение (видимо какое-то из std).
+     * Требуется дополнительное изучение.
+     *
+     * \deprecated Этот класс нужен для совместимости с очень древними проектами.
+     * Где список объектов объявлялся статическим массивом
+    */
+    class ObjectIndex_Array:
+        public ObjectIndex
+    {
+        public:
+            ObjectIndex_Array(const ObjectInfo* objectInfo);
+            virtual ~ObjectIndex_Array();
 
-			virtual const ObjectInfo* getObjectInfo( const ObjectId ) const noexcept override;
-			virtual const ObjectInfo* getObjectInfo( const std::string& name ) const noexcept override;
-			virtual ObjectId getIdByName( const std::string& name ) const noexcept override;
-			virtual std::string getMapName( const ObjectId id ) const noexcept override;
-			virtual std::string getTextName( const ObjectId id ) const noexcept override;
+            virtual const ObjectInfo* getObjectInfo( const ObjectId ) const noexcept override;
+            virtual const ObjectInfo* getObjectInfo( const std::string& name ) const noexcept override;
+            virtual ObjectId getIdByName( const std::string& name ) const noexcept override;
+            virtual std::string getMapName( const ObjectId id ) const noexcept override;
+            virtual std::string getTextName( const ObjectId id ) const noexcept override;
 
-			virtual std::ostream& printMap(std::ostream& os) const noexcept override;
-			friend std::ostream& operator<<(std::ostream& os, ObjectIndex_Array& oi );
+            virtual std::ostream& printMap(std::ostream& os) const noexcept override;
+            friend std::ostream& operator<<(std::ostream& os, ObjectIndex_Array& oi );
 
-		private:
+        private:
 
-			size_t numOfObject;
-			typedef std::unordered_map<std::string, ObjectId> MapObjectKey;
-			MapObjectKey::iterator MapObjectKeyIterator;
-			MapObjectKey mok;
-			const ObjectInfo* objectInfo;
-			size_t maxId;
-	};
-	// -----------------------------------------------------------------------------------------
+            size_t numOfObject;
+            typedef std::unordered_map<std::string, ObjectId> MapObjectKey;
+            MapObjectKey::iterator MapObjectKeyIterator;
+            MapObjectKey mok;
+            const ObjectInfo* objectInfo;
+            size_t maxId;
+    };
+    // -----------------------------------------------------------------------------------------
 }    // end of namespace
 // -----------------------------------------------------------------------------------------
 #endif

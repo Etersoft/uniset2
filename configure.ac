@@ -32,8 +32,9 @@ AC_ENABLE_SHARED(yes)
 AC_ENABLE_STATIC(no)
 AM_PROG_LIBTOOL
 
-ASTYLE_OPT="-A1 -T -C -S -N -L -w -Y -M -f -p --mode=c --lineend=linux --align-reference=type --align-pointer=type --suffix=none --style=ansi"
+ASTYLE_OPT="-A1 -T -C -S -L -w -N -Y -M -f -p --mode=c --lineend=linux --align-reference=type --align-pointer=type --suffix=none --style=ansi --convert-tabs -s4"
 AC_SUBST(ASTYLE_OPT)
+
 
 # Checks for libraries.
 PKG_CHECK_MODULES(XML, libxml-2.0)

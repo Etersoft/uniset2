@@ -24,135 +24,135 @@
 // -----------------------------------------------------------------------------
 namespace uniset
 {
-	// -------------------------------------------------------------------------
-	using namespace std;
-	using namespace uniset::extensions;
-	// -------------------------------------------------------------------------
-	SchemaXML::SchemaXML()
-	{
-	}
+    // -------------------------------------------------------------------------
+    using namespace std;
+    using namespace uniset::extensions;
+    // -------------------------------------------------------------------------
+    SchemaXML::SchemaXML()
+    {
+    }
 
-	SchemaXML::~SchemaXML()
-	{
-	}
-	// -------------------------------------------------------------------------
-	void SchemaXML::read( const string& xmlfile )
-	{
-		UniXML xml;
+    SchemaXML::~SchemaXML()
+    {
+    }
+    // -------------------------------------------------------------------------
+    void SchemaXML::read( const string& xmlfile )
+    {
+        UniXML xml;
 
-		const string sec("elements");
-		const string conn_sec("connections");
+        const string sec("elements");
+        const string conn_sec("connections");
 
-		//    try
-		//    {
-		xml.open(xmlfile);
-		//    }
-		//    catch(...){}
+        //    try
+        //    {
+        xml.open(xmlfile);
+        //    }
+        //    catch(...){}
 
-		xmlNode* root( xml.findNode(xml.getFirstNode(), sec) );
+        xmlNode* root( xml.findNode(xml.getFirstNode(), sec) );
 
-		if( !root )
-		{
-			ostringstream msg;
-			msg << "(SchemaXML::read): не нашли корневого раздела " << sec;
-			throw LogicException(msg.str());
-		}
+        if( !root )
+        {
+            ostringstream msg;
+            msg << "(SchemaXML::read): не нашли корневого раздела " << sec;
+            throw LogicException(msg.str());
+        }
 
-		// Считываем список элементов
-		UniXML::iterator it(root);
+        // Считываем список элементов
+        UniXML::iterator it(root);
 
-		if( !it.goChildren() )
-		{
-			ostringstream msg;
-			msg << "(SchemaXML::read): не удалось перейти к списку элементов " << sec;
-			throw LogicException(msg.str());
-		}
+        if( !it.goChildren() )
+        {
+            ostringstream msg;
+            msg << "(SchemaXML::read): не удалось перейти к списку элементов " << sec;
+            throw LogicException(msg.str());
+        }
 
-		for( ; it.getCurrent(); it.goNext() )
-		{
-			string type(xml.getProp(it, "type"));
-			string ID(xml.getProp(it, "id"));
-			int inCount = xml.getPIntProp(it, "inCount", 1);
+        for( ; it.getCurrent(); it.goNext() )
+        {
+            string type(xml.getProp(it, "type"));
+            string ID(xml.getProp(it, "id"));
+            int inCount = xml.getPIntProp(it, "inCount", 1);
 
-			if( type == "OR" )
-				manage( make_shared<TOR>(ID, inCount) );
-			else if( type == "AND" )
-				manage( make_shared<TAND>(ID, inCount) );
-			else if( type == "Delay" )
-			{
-				int delayMS = xml.getIntProp(it, "delayMS");
-				manage( make_shared<TDelay>(ID, delayMS, inCount) );
-			}
-			else if( type == "NOT" )
-			{
-				bool defout = xml.getIntProp(it, "default_out_state");
-				manage( make_shared<TNOT>(ID, defout) );
-			}
-			else if( type == "A2D" )
-			{
-				int filterValue = xml.getIntProp(it, "filterValue");
-				manage( make_shared<TA2D>(ID, filterValue) );
-			}
-			else
-			{
-				ostringstream msg;
-				msg << "(SchemaXML::read): НЕИЗВЕСТНЫЙ ТИП ЭЛЕМЕНТА -->" << type;
-				throw LogicException(msg.str());
-			}
-		}
+            if( type == "OR" )
+                manage( make_shared<TOR>(ID, inCount) );
+            else if( type == "AND" )
+                manage( make_shared<TAND>(ID, inCount) );
+            else if( type == "Delay" )
+            {
+                int delayMS = xml.getIntProp(it, "delayMS");
+                manage( make_shared<TDelay>(ID, delayMS, inCount) );
+            }
+            else if( type == "NOT" )
+            {
+                bool defout = xml.getIntProp(it, "default_out_state");
+                manage( make_shared<TNOT>(ID, defout) );
+            }
+            else if( type == "A2D" )
+            {
+                int filterValue = xml.getIntProp(it, "filterValue");
+                manage( make_shared<TA2D>(ID, filterValue) );
+            }
+            else
+            {
+                ostringstream msg;
+                msg << "(SchemaXML::read): НЕИЗВЕСТНЫЙ ТИП ЭЛЕМЕНТА -->" << type;
+                throw LogicException(msg.str());
+            }
+        }
 
-		// Строим связи
-		xmlNode* conNode( xml.findNode(xml.getFirstNode(), conn_sec) );
+        // Строим связи
+        xmlNode* conNode( xml.findNode(xml.getFirstNode(), conn_sec) );
 
-		if( !conNode )
-		{
-			ostringstream msg;
-			msg << "(SchemaXML::read): не нашли корневого раздела " << conn_sec;
-			throw LogicException(msg.str());
-		}
+        if( !conNode )
+        {
+            ostringstream msg;
+            msg << "(SchemaXML::read): не нашли корневого раздела " << conn_sec;
+            throw LogicException(msg.str());
+        }
 
-		it = conNode;
+        it = conNode;
 
-		if( !it.goChildren() )
-		{
-			ostringstream msg;
-			msg << "(SchemaXML::read): не удалось перейти к списку элементов " << conn_sec;
-			throw LogicException(msg.str());
-		}
+        if( !it.goChildren() )
+        {
+            ostringstream msg;
+            msg << "(SchemaXML::read): не удалось перейти к списку элементов " << conn_sec;
+            throw LogicException(msg.str());
+        }
 
-		for( ; it.getCurrent(); it.goNext() )
-		{
-			string type(xml.getProp(it, "type"));
-			string fID(xml.getProp(it, "from"));
-			string tID(xml.getProp(it, "to"));
-			int toIn = xml.getIntProp(it, "toInput");
+        for( ; it.getCurrent(); it.goNext() )
+        {
+            string type(xml.getProp(it, "type"));
+            string fID(xml.getProp(it, "from"));
+            string tID(xml.getProp(it, "to"));
+            int toIn = xml.getIntProp(it, "toInput");
 
-			if( type == "ext" )
-			{
-				dinfo << "SchemaXML: set EXTlink: from=" << fID << " to=" << tID << " toInput=" << toIn  << endl;
-				extlink(fID, tID, toIn);
-			}
-			else if( type == "int" )
-			{
-				dinfo << "SchemaXML: set INTlink: from=" << fID << " to=" << tID << " toInput=" << toIn  << endl;
-				link(fID, tID, toIn);
-			}
-			else if( type == "out" )
-			{
-				auto el = find(fID);
+            if( type == "ext" )
+            {
+                dinfo << "SchemaXML: set EXTlink: from=" << fID << " to=" << tID << " toInput=" << toIn  << endl;
+                extlink(fID, tID, toIn);
+            }
+            else if( type == "int" )
+            {
+                dinfo << "SchemaXML: set INTlink: from=" << fID << " to=" << tID << " toInput=" << toIn  << endl;
+                link(fID, tID, toIn);
+            }
+            else if( type == "out" )
+            {
+                auto el = find(fID);
 
-				if( !el )
-				{
-					ostringstream msg;
-					msg << "(SchemaXML::read): НЕ НАЙДЕН ЭЛЕМЕНТ С ID=" << fID;
-					throw LogicException(msg.str());
-				}
+                if( !el )
+                {
+                    ostringstream msg;
+                    msg << "(SchemaXML::read): НЕ НАЙДЕН ЭЛЕМЕНТ С ID=" << fID;
+                    throw LogicException(msg.str());
+                }
 
-				dinfo << "SchemaXML: set Out: from=" << fID << " to=" << tID << endl;
+                dinfo << "SchemaXML: set Out: from=" << fID << " to=" << tID << endl;
 
-				outList.emplace_front(tID, el);
-			}
-		}
-	}
-	// -------------------------------------------------------------------------
+                outList.emplace_front(tID, el);
+            }
+        }
+    }
+    // -------------------------------------------------------------------------
 } // end of namespace uniset

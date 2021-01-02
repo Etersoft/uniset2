@@ -7,29 +7,29 @@
 // -------------------------------------------------------------------------
 namespace uniset
 {
-	// класс обёртка, понадобился только для того, чтобы достучаться до "сырого" сокета
-	// и иметь возможность использовать его с libev
-	class USocket:
-		public Poco::Net::Socket
-	{
-		public:
+    // класс обёртка, понадобился только для того, чтобы достучаться до "сырого" сокета
+    // и иметь возможность использовать его с libev
+    class USocket:
+        public Poco::Net::Socket
+    {
+        public:
 
-			USocket();
-			virtual ~USocket();
+            USocket();
+            virtual ~USocket();
 
-			// set keepalive params
-			// return true if OK
-			bool setKeepAliveParams( timeout_t timeout_sec = 5, int conn_keepcnt = 1, int keepintvl = 2 );
+            // set keepalive params
+            // return true if OK
+            bool setKeepAliveParams( timeout_t timeout_sec = 5, int conn_keepcnt = 1, int keepintvl = 2 );
 
-			int getSocket();
+            int getSocket();
 
-		protected:
-			void init( bool throwflag = false );
+        protected:
+            void init( bool throwflag = false );
 
-		private:
+        private:
 
-	};
-	// -------------------------------------------------------------------------
+    };
+    // -------------------------------------------------------------------------
 } // end of uniset namespace
 // -------------------------------------------------------------------------
 #endif // USocket_H_

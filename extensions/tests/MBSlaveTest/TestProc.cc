@@ -7,46 +7,46 @@ using namespace std;
 using namespace uniset;
 // -----------------------------------------------------------------------------
 TestProc::TestProc( uniset::ObjectId id, xmlNode* confnode ):
-	TestProc_SK( id, confnode ),
-	state(false)
+    TestProc_SK( id, confnode ),
+    state(false)
 {
-	loglevels.push_back(Debug::INFO);
-	loglevels.push_back(Debug::WARN);
-	loglevels.push_back(Debug::CRIT);
-	loglevels.push_back(Debug::LEVEL1);
-	loglevels.push_back(Debug::LEVEL2);
-	loglevels.push_back( Debug::type(Debug::LEVEL2 | Debug::INFO) );
-	loglevels.push_back( Debug::type(Debug::LEVEL2 | Debug::INFO | Debug::WARN | Debug::CRIT) );
+    loglevels.push_back(Debug::INFO);
+    loglevels.push_back(Debug::WARN);
+    loglevels.push_back(Debug::CRIT);
+    loglevels.push_back(Debug::LEVEL1);
+    loglevels.push_back(Debug::LEVEL2);
+    loglevels.push_back( Debug::type(Debug::LEVEL2 | Debug::INFO) );
+    loglevels.push_back( Debug::type(Debug::LEVEL2 | Debug::INFO | Debug::WARN | Debug::CRIT) );
 
-	lit = loglevels.begin();
-	out_log_c = (*lit);
-	vmonit(undef);
+    lit = loglevels.begin();
+    out_log_c = (*lit);
+    vmonit(undef);
 
-	mbPort = 2048; // getId();
-	const std::string mbIAddr("localhost");
+    mbPort = 2048; // getId();
+    const std::string mbIAddr("localhost");
 
-	try
-	{
-		mbslave = make_shared<ModbusTCPServerSlot>(mbIAddr, mbPort);
-		mbslave->connectWriteSingleOutput( sigc::mem_fun(this, &TestProc::writeOutputSingleRegister) );
-		loga->add( mbslave->log() );
-		mbslave->log()->level(Debug::ANY);
+    try
+    {
+        mbslave = make_shared<ModbusTCPServerSlot>(mbIAddr, mbPort);
+        mbslave->connectWriteSingleOutput( sigc::mem_fun(this, &TestProc::writeOutputSingleRegister) );
+        loga->add( mbslave->log() );
+        mbslave->log()->level(Debug::ANY);
 
-		mbthr = make_shared< ThreadCreator<TestProc> >(this, &TestProc::mbThread);
-		myinfo << myname << "(init) ModbusSlave " << mbIP << ":" << mbPort << endl;
-	}
-	catch( const Poco::Net::NetException& e )
-	{
-		ostringstream err;
-		err << myname << "(init) Can`t create socket " << mbIP << ":" << mbPort << " err: " << e.message() << endl;
-		mycrit << err.str() << endl;
-		throw SystemError(err.str());
-	}
-	catch( const std::exception& ex )
-	{
-		mycrit << myname << "(init): " << ex.what() << endl;
-		throw ex;
-	}
+        mbthr = make_shared< ThreadCreator<TestProc> >(this, &TestProc::mbThread);
+        myinfo << myname << "(init) ModbusSlave " << mbIP << ":" << mbPort << endl;
+    }
+    catch( const Poco::Net::NetException& e )
+    {
+        ostringstream err;
+        err << myname << "(init) Can`t create socket " << mbIP << ":" << mbPort << " err: " << e.message() << endl;
+        mycrit << err.str() << endl;
+        throw SystemError(err.str());
+    }
+    catch( const std::exception& ex )
+    {
+        mycrit << myname << "(init): " << ex.what() << endl;
+        throw ex;
+    }
 
 }
 // -----------------------------------------------------------------------------
@@ -55,10 +55,10 @@ TestProc::~TestProc()
 }
 // -----------------------------------------------------------------------------
 TestProc::TestProc():
-	state(false)
+    state(false)
 {
-	cerr << ": init failed!!!!!!!!!!!!!!!" << endl;
-	throw Exception();
+    cerr << ": init failed!!!!!!!!!!!!!!!" << endl;
+    throw Exception();
 }
 // -----------------------------------------------------------------------------
 void TestProc::step()
@@ -67,173 +67,173 @@ void TestProc::step()
 // -----------------------------------------------------------------------------
 void TestProc::sysCommand( const uniset::SystemMessage* sm )
 {
-	TestProc_SK::sysCommand(sm);
+    TestProc_SK::sysCommand(sm);
 
-	if( sm->command == SystemMessage::StartUp || sm->command == SystemMessage::WatchDog )
-	{
-		askTimer(tmCheck, checkTime);
-		askTimer(tmCheckWorking, checkWorkingTime);
-		askTimer(tmLogControl, checkLogTime);
+    if( sm->command == SystemMessage::StartUp || sm->command == SystemMessage::WatchDog )
+    {
+        askTimer(tmCheck, checkTime);
+        askTimer(tmCheckWorking, checkWorkingTime);
+        askTimer(tmLogControl, checkLogTime);
 
-		if( mbthr )
-			mbthr->start();
+        if( mbthr )
+            mbthr->start();
 
-		// В начальный момент времени блокирующий датчик =0, поэтому d2_check_s должен быть равен depend_off_value (-50).
-		cerr << myname << "(startup): check init depend: " << ( getValue(d2_check_s) == -50 ? "ok" : "FAIL" ) << endl;
-	}
+        // В начальный момент времени блокирующий датчик =0, поэтому d2_check_s должен быть равен depend_off_value (-50).
+        cerr << myname << "(startup): check init depend: " << ( getValue(d2_check_s) == -50 ? "ok" : "FAIL" ) << endl;
+    }
 }
 // -----------------------------------------------------------------------------
 void TestProc::sensorInfo( const SensorMessage* sm )
 {
-	/*
-	    mylog2 << myname << "(sensorInfo): id=" << sm->id << " val=" << sm->value
-	            << "  " << timeToString(sm->sm_tv_sec,":")
-	            << "(" << setw(6) << sm->sm_tv_usec << "): "
-	            << endl;
-	*/
-	if( sm->id == on_s )
-	{
-		if( sm->value )
-		{
-			cerr << myname << "(sensorInfo): START WORKING.." << endl;
-			askTimer(tmChange, changeTime);
-		}
-		else
-		{
-			askTimer(tmChange, 0);
-			cerr << myname << "(sensorInfo): STOP WORKING.." << endl;
-		}
-	}
-	else if( sm->id == check_undef_s )
-	{
-		cerr << myname << "(sensorInfo): CHECK UNDEFINED STATE ==> " << (sm->undefined == undef ? "ok" : "FAIL") << endl;
-	}
+    /*
+        mylog2 << myname << "(sensorInfo): id=" << sm->id << " val=" << sm->value
+                << "  " << timeToString(sm->sm_tv_sec,":")
+                << "(" << setw(6) << sm->sm_tv_usec << "): "
+                << endl;
+    */
+    if( sm->id == on_s )
+    {
+        if( sm->value )
+        {
+            cerr << myname << "(sensorInfo): START WORKING.." << endl;
+            askTimer(tmChange, changeTime);
+        }
+        else
+        {
+            askTimer(tmChange, 0);
+            cerr << myname << "(sensorInfo): STOP WORKING.." << endl;
+        }
+    }
+    else if( sm->id == check_undef_s )
+    {
+        cerr << myname << "(sensorInfo): CHECK UNDEFINED STATE ==> " << (sm->undefined == undef ? "ok" : "FAIL") << endl;
+    }
 }
 // -----------------------------------------------------------------------------
 void TestProc::timerInfo( const TimerMessage* tm )
 {
-	if( tm->id == tmChange )
-	{
-		state ^= true;
-		out_lamp_c = ( state ? lmpBLINK : lmpOFF );
-		mylog2 << myname << ": state=" << state << " lmp=" << out_lamp_c << endl;
+    if( tm->id == tmChange )
+    {
+        state ^= true;
+        out_lamp_c = ( state ? lmpBLINK : lmpOFF );
+        mylog2 << myname << ": state=" << state << " lmp=" << out_lamp_c << endl;
 
-		askTimer(tmCheckWorking, 0); // test remove timer
-		askTimer(tmCheckWorking, checkTime); // reset timer
-	}
-	else if( tm->id == tmCheckWorking )
-		cerr << myname << ": WORKING FAIL!" << endl;
-	else if( tm->id == tmCheck )
-	{
-		cerr << endl << endl << "--------" << endl;
-		test_depend();
-		test_undefined_state();
-		test_thresholds();
-		test_loglevel();
-	}
-	else if( tm->id == tmLogControl )
-	{
-		cerr << endl;
-		cerr << "======= TEST LOG PRINT ======" << endl;
-		cerr << "LOGLEVEL: [" << (int)(*lit) << "] " << (*lit) << endl;
+        askTimer(tmCheckWorking, 0); // test remove timer
+        askTimer(tmCheckWorking, checkTime); // reset timer
+    }
+    else if( tm->id == tmCheckWorking )
+        cerr << myname << ": WORKING FAIL!" << endl;
+    else if( tm->id == tmCheck )
+    {
+        cerr << endl << endl << "--------" << endl;
+        test_depend();
+        test_undefined_state();
+        test_thresholds();
+        test_loglevel();
+    }
+    else if( tm->id == tmLogControl )
+    {
+        cerr << endl;
+        cerr << "======= TEST LOG PRINT ======" << endl;
+        cerr << "LOGLEVEL: [" << (int)(*lit) << "] " << (*lit) << endl;
 
-		for( const auto& it : loglevels )
-			mylog->debug(it) << myname << ": test log print..." << endl;
+        for( const auto& it : loglevels )
+            mylog->debug(it) << myname << ": test log print..." << endl;
 
-		cerr << "======= END LOG PRINT ======" << endl;
-	}
+        cerr << "======= END LOG PRINT ======" << endl;
+    }
 }
 // -----------------------------------------------------------------------------
 void TestProc::test_depend()
 {
-	cerr << myname << ": Check depend..." << endl;
+    cerr << myname << ": Check depend..." << endl;
 
-	long test_val = 100;
+    long test_val = 100;
 
-	// set depend 0...
-	setValue(depend_c, 0);
-	setValue(set_d1_check_s, test_val);
-	setValue(set_d2_check_s, test_val);
-	cerr << myname << ": check depend OFF: d1: " << ( getValue(d1_check_s) == 0 ? "ok" : "FAIL" ) << endl;
-	cerr << myname << ": check depend OFF: d2: " << ( getValue(d2_check_s) == -50 ? "ok" : "FAIL" ) << endl;
+    // set depend 0...
+    setValue(depend_c, 0);
+    setValue(set_d1_check_s, test_val);
+    setValue(set_d2_check_s, test_val);
+    cerr << myname << ": check depend OFF: d1: " << ( getValue(d1_check_s) == 0 ? "ok" : "FAIL" ) << endl;
+    cerr << myname << ": check depend OFF: d2: " << ( getValue(d2_check_s) == -50 ? "ok" : "FAIL" ) << endl;
 
-	// set depend 1
-	setValue(depend_c, 1);
-	cerr << myname << ": check depend ON: d1: " << ( getValue(d1_check_s) == test_val ? "ok" : "FAIL" ) << endl;
-	cerr << myname << ": check depend ON: d2: " << ( getValue(d2_check_s) == test_val ? "ok" : "FAIL" ) << endl;
+    // set depend 1
+    setValue(depend_c, 1);
+    cerr << myname << ": check depend ON: d1: " << ( getValue(d1_check_s) == test_val ? "ok" : "FAIL" ) << endl;
+    cerr << myname << ": check depend ON: d2: " << ( getValue(d2_check_s) == test_val ? "ok" : "FAIL" ) << endl;
 }
 // -----------------------------------------------------------------------------
 void TestProc::test_undefined_state()
 {
-	// ---------------- Проверка выставления неопределённого состояния ---------------------
-	cerr << myname << ": Check undef state..." << endl;
-	undef ^= true;
+    // ---------------- Проверка выставления неопределённого состояния ---------------------
+    cerr << myname << ": Check undef state..." << endl;
+    undef ^= true;
 
-	si.id = undef_c;
-	si.node = uniset_conf()->getLocalNode();
-	cerr << myname << ": set undefined=" << undef << endl;
-	ui->setUndefinedState( si, undef, getId() );
+    si.id = undef_c;
+    si.node = uniset_conf()->getLocalNode();
+    cerr << myname << ": set undefined=" << undef << endl;
+    ui->setUndefinedState( si, undef, getId() );
 }
 // -----------------------------------------------------------------------------
 void TestProc::test_thresholds()
 {
-	// ---------------- Проверка работы порогов ---------------------
-	cerr << myname << ": Check thresholds..." << endl;
+    // ---------------- Проверка работы порогов ---------------------
+    cerr << myname << ": Check thresholds..." << endl;
 
-	setValue(t_set_c, 0);
-	cerr << myname << ": check threshold OFF value: " << ( getValue(t_check_s) == 0 ? "ok" : "FAIL" ) << endl;
+    setValue(t_set_c, 0);
+    cerr << myname << ": check threshold OFF value: " << ( getValue(t_check_s) == 0 ? "ok" : "FAIL" ) << endl;
 
-	setValue(t_set_c, 378);
-	cerr << myname << ": check threshold ON value: " << ( getValue(t_check_s) == 1 ? "ok" : "FAIL" ) << endl;
+    setValue(t_set_c, 378);
+    cerr << myname << ": check threshold ON value: " << ( getValue(t_check_s) == 1 ? "ok" : "FAIL" ) << endl;
 
-	cerr << myname << ": ask threshold and check.. " << endl;
+    cerr << myname << ": ask threshold and check.. " << endl;
 
-	try
-	{
-		setValue(t_set_c, 0);
-		uniset::ThresholdId tid = 100;
-		ui->askThreshold( t_set_c, tid, UniversalIO::UIONotify, 10, 20 );
+    try
+    {
+        setValue(t_set_c, 0);
+        uniset::ThresholdId tid = 100;
+        ui->askThreshold( t_set_c, tid, UniversalIO::UIONotify, 10, 20 );
 
-		IONotifyController_i::ThresholdInfo ti = ui->getThresholdInfo(t_set_c, tid);
-		cerr << myname << ": ask OFF threshold: " << ( ti.state == IONotifyController_i::NormalThreshold  ? "ok" : "FAIL" ) << endl;
-		setValue(t_set_c, 25);
-		ti = ui->getThresholdInfo(t_set_c, tid);
-		cerr << myname << ": ask ON threshold: " << ( ti.state == IONotifyController_i::HiThreshold  ? "ok" : "FAIL" ) << endl;
-	}
-	catch( const uniset::Exception& ex )
-	{
-		mylog2 << myname << ": CHECK 'ask and get threshold' FAILED: " << ex << endl;
-	}
+        IONotifyController_i::ThresholdInfo ti = ui->getThresholdInfo(t_set_c, tid);
+        cerr << myname << ": ask OFF threshold: " << ( ti.state == IONotifyController_i::NormalThreshold  ? "ok" : "FAIL" ) << endl;
+        setValue(t_set_c, 25);
+        ti = ui->getThresholdInfo(t_set_c, tid);
+        cerr << myname << ": ask ON threshold: " << ( ti.state == IONotifyController_i::HiThreshold  ? "ok" : "FAIL" ) << endl;
+    }
+    catch( const uniset::Exception& ex )
+    {
+        mylog2 << myname << ": CHECK 'ask and get threshold' FAILED: " << ex << endl;
+    }
 }
 // -----------------------------------------------------------------------------
 void TestProc::test_loglevel()
 {
-	lit++;
+    lit++;
 
-	if( lit == loglevels.end() )
-		lit = loglevels.begin();
+    if( lit == loglevels.end() )
+        lit = loglevels.begin();
 
-	cerr << "SET LOGLEVEL: [" << (int)(*lit) << "] " << (*lit) << endl;
-	setValue(log_c, (*lit));
-	askTimer(tmLogControl, checkLogTime);
+    cerr << "SET LOGLEVEL: [" << (int)(*lit) << "] " << (*lit) << endl;
+    setValue(log_c, (*lit));
+    askTimer(tmLogControl, checkLogTime);
 }
 // -----------------------------------------------------------------------------
 void TestProc::mbThread()
 {
-	mylog9 << myname << "ModbusSlave started " << mbIP << ":" << mbPort << endl;
+    mylog9 << myname << "ModbusSlave started " << mbIP << ":" << mbPort << endl;
 
-	mylog9 << myname << "(mbThread): run tcpserver.." << endl;
-	ModbusRTU::ModbusAddr mba(mbADDR);
-	auto vaddr = mbslave->addr2vaddr(mba);
-	mbslave->run( vaddr ); // async_run()?
+    mylog9 << myname << "(mbThread): run tcpserver.." << endl;
+    ModbusRTU::ModbusAddr mba(mbADDR);
+    auto vaddr = mbslave->addr2vaddr(mba);
+    mbslave->run( vaddr ); // async_run()?
 
-	mylog9 << myname << "ModbusSlave stopped.." << endl;
+    mylog9 << myname << "ModbusSlave stopped.." << endl;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode TestProc::writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
-		ModbusRTU::WriteSingleOutputRetMessage& reply )
+        ModbusRTU::WriteSingleOutputRetMessage& reply )
 {
-	mylog9 << myname << "(writeOutputSingleRegister): " << query << endl;
-	reply.set(query.start, query.data);
-	return ModbusRTU::erNoError;
+    mylog9 << myname << "(writeOutputSingleRegister): " << query << endl;
+    reply.set(query.start, query.data);
+    return ModbusRTU::erNoError;
 }

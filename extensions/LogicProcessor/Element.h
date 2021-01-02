@@ -25,175 +25,175 @@
 //--------------------------------------------------------------------------
 namespace uniset
 {
-	// --------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
 
-	class LogicException:
-		public uniset::Exception
-	{
-		public:
-			LogicException(): uniset::Exception("LogicException") {}
-			explicit LogicException( const std::string& err): uniset::Exception(err) {}
-	};
-
-
-	class Element
-	{
-		public:
-
-			typedef std::string ElementID;
-			static const ElementID DefaultElementID;
-
-			enum InputType
-			{
-				unknown,
-				external,
-				internal
-			};
-
-			explicit Element( const ElementID& id ): myid(id) {};
-			virtual ~Element() {};
+    class LogicException:
+        public uniset::Exception
+    {
+        public:
+            LogicException(): uniset::Exception("LogicException") {}
+            explicit LogicException( const std::string& err): uniset::Exception(err) {}
+    };
 
 
-			/*! функция вызываемая мастером для элементов, которым требуется
-			    работа во времени.
-			    По умолчанию ничего не делает.
-			*/
-			virtual void tick() {}
+    class Element
+    {
+        public:
 
-			virtual void setIn( size_t num, long value ) = 0;
-			virtual long getOut() const = 0;
+            typedef std::string ElementID;
+            static const ElementID DefaultElementID;
 
-			ElementID getId() const;
+            enum InputType
+            {
+                unknown,
+                external,
+                internal
+            };
 
-			virtual std::string getType() const
-			{
-				return "?type?";
-			}
-
-			virtual std::shared_ptr<Element> find( const ElementID& id );
-
-			virtual void addChildOut( std::shared_ptr<Element>& el, size_t in_num );
-			virtual void delChildOut( std::shared_ptr<Element>& el );
-			size_t outCount() const;
-
-			virtual void addInput( size_t num, long value = 0 );
-			virtual void delInput( size_t num );
-			size_t inCount() const;
-
-			friend std::ostream& operator<<(std::ostream& os, const Element& el );
-			friend std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Element>& el );
-
-		protected:
-			Element(): myid(DefaultElementID) {}; // нельзя создать элемент без id
-
-			struct ChildInfo
-			{
-				ChildInfo(std::shared_ptr<Element> e, size_t n):
-					el(e), num(n) {}
-				ChildInfo(): el(0), num(0) {}
-
-				std::shared_ptr<Element> el;
-				size_t num;
-			};
-
-			typedef std::list<ChildInfo> OutputList;
-			OutputList outs;
-			virtual void setChildOut();
-
-			struct InputInfo
-			{
-				InputInfo(): num(0), value(0), type(unknown) {}
-				InputInfo(size_t n, long v): num(n), value(v), type(unknown) {}
-				size_t num;
-				long value;
-				InputType type;
-			};
-
-			typedef std::list<InputInfo> InputList;
-			InputList ins;
-
-			ElementID myid;
-
-		private:
+            explicit Element( const ElementID& id ): myid(id) {};
+            virtual ~Element() {};
 
 
-	};
-	// ---------------------------------------------------------------------------
-	class TOR:
-		public Element
-	{
+            /*! функция вызываемая мастером для элементов, которым требуется
+                работа во времени.
+                По умолчанию ничего не делает.
+            */
+            virtual void tick() {}
 
-		public:
-			TOR( ElementID id, size_t numbers = 0, bool outstate = false );
-			virtual ~TOR();
+            virtual void setIn( size_t num, long value ) = 0;
+            virtual long getOut() const = 0;
 
-			virtual void setIn( size_t num, long value ) override;
-			virtual long getOut() const override;
+            ElementID getId() const;
 
-			virtual std::string getType() const override
-			{
-				return "OR";
-			}
+            virtual std::string getType() const
+            {
+                return "?type?";
+            }
 
-		protected:
-			TOR(): myout(false) {}
-			bool myout;
+            virtual std::shared_ptr<Element> find( const ElementID& id );
+
+            virtual void addChildOut( std::shared_ptr<Element>& el, size_t in_num );
+            virtual void delChildOut( std::shared_ptr<Element>& el );
+            size_t outCount() const;
+
+            virtual void addInput( size_t num, long value = 0 );
+            virtual void delInput( size_t num );
+            size_t inCount() const;
+
+            friend std::ostream& operator<<(std::ostream& os, const Element& el );
+            friend std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Element>& el );
+
+        protected:
+            Element(): myid(DefaultElementID) {}; // нельзя создать элемент без id
+
+            struct ChildInfo
+            {
+                ChildInfo(std::shared_ptr<Element> e, size_t n):
+                    el(e), num(n) {}
+                ChildInfo(): el(0), num(0) {}
+
+                std::shared_ptr<Element> el;
+                size_t num;
+            };
+
+            typedef std::list<ChildInfo> OutputList;
+            OutputList outs;
+            virtual void setChildOut();
+
+            struct InputInfo
+            {
+                InputInfo(): num(0), value(0), type(unknown) {}
+                InputInfo(size_t n, long v): num(n), value(v), type(unknown) {}
+                size_t num;
+                long value;
+                InputType type;
+            };
+
+            typedef std::list<InputInfo> InputList;
+            InputList ins;
+
+            ElementID myid;
+
+        private:
 
 
-		private:
-	};
-	// ---------------------------------------------------------------------------
-	class TAND:
-		public TOR
-	{
+    };
+    // ---------------------------------------------------------------------------
+    class TOR:
+        public Element
+    {
 
-		public:
-			TAND(ElementID id, size_t numbers = 0, bool st = false );
-			virtual ~TAND();
+        public:
+            TOR( ElementID id, size_t numbers = 0, bool outstate = false );
+            virtual ~TOR();
 
-			virtual void setIn( size_t num, long value ) override;
-			virtual std::string getType() const override
-			{
-				return "AND";
-			}
+            virtual void setIn( size_t num, long value ) override;
+            virtual long getOut() const override;
 
-		protected:
-			TAND() {}
+            virtual std::string getType() const override
+            {
+                return "OR";
+            }
 
-		private:
-	};
+        protected:
+            TOR(): myout(false) {}
+            bool myout;
 
-	// ---------------------------------------------------------------------------
-	// элемент с одним входом и выходом
-	class TNOT:
-		public Element
-	{
 
-		public:
-			TNOT( ElementID id, bool out_default );
-			virtual ~TNOT();
+        private:
+    };
+    // ---------------------------------------------------------------------------
+    class TAND:
+        public TOR
+    {
 
-			virtual long getOut() const override
-			{
-				return ( myout ? 1 : 0 );
-			}
+        public:
+            TAND(ElementID id, size_t numbers = 0, bool st = false );
+            virtual ~TAND();
 
-			/*! num игнорируется, т.к. элемент с одним входом */
-			virtual void setIn( size_t num, long value ) override ;
-			virtual std::string getType() const override
-			{
-				return "NOT";
-			}
-			virtual void addInput( size_t num, long value = 0 ) override {}
-			virtual void delInput( size_t num ) override {}
+            virtual void setIn( size_t num, long value ) override;
+            virtual std::string getType() const override
+            {
+                return "AND";
+            }
 
-		protected:
-			TNOT(): myout(false) {}
-			bool myout;
+        protected:
+            TAND() {}
 
-		private:
-	};
-	// --------------------------------------------------------------------------
+        private:
+    };
+
+    // ---------------------------------------------------------------------------
+    // элемент с одним входом и выходом
+    class TNOT:
+        public Element
+    {
+
+        public:
+            TNOT( ElementID id, bool out_default );
+            virtual ~TNOT();
+
+            virtual long getOut() const override
+            {
+                return ( myout ? 1 : 0 );
+            }
+
+            /*! num игнорируется, т.к. элемент с одним входом */
+            virtual void setIn( size_t num, long value ) override ;
+            virtual std::string getType() const override
+            {
+                return "NOT";
+            }
+            virtual void addInput( size_t num, long value = 0 ) override {}
+            virtual void delInput( size_t num ) override {}
+
+        protected:
+            TNOT(): myout(false) {}
+            bool myout;
+
+        private:
+    };
+    // --------------------------------------------------------------------------
 } // end of namespace uniset
 // ---------------------------------------------------------------------------
 #endif

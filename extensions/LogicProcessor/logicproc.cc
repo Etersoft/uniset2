@@ -25,48 +25,48 @@ using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 int main(int argc, const char** argv)
 {
-	//	std::ios::sync_with_stdio(false);
+    //  std::ios::sync_with_stdio(false);
 
-	try
-	{
-		auto conf = uniset_init( argc, argv );
+    try
+    {
+        auto conf = uniset_init( argc, argv );
 
-		string logfilename(conf->getArgParam("--logicproc-logfile"));
+        string logfilename(conf->getArgParam("--logicproc-logfile"));
 
-		if( logfilename.empty() )
-			logfilename = "logicproc.log";
+        if( logfilename.empty() )
+            logfilename = "logicproc.log";
 
-		std::ostringstream logname;
-		string dir(conf->getLogDir());
-		logname << dir << logfilename;
-		ulog()->logFile( logname.str() );
-		dlog()->logFile( logname.str() );
+        std::ostringstream logname;
+        string dir(conf->getLogDir());
+        logname << dir << logfilename;
+        ulog()->logFile( logname.str() );
+        dlog()->logFile( logname.str() );
 
-		string schema = conf->getArgParam("--schema");
+        string schema = conf->getArgParam("--schema");
 
-		if( schema.empty() )
-		{
-			dcrit << "schema-file not defined. Use --schema" << endl;
-			return 1;
-		}
+        if( schema.empty() )
+        {
+            dcrit << "schema-file not defined. Use --schema" << endl;
+            return 1;
+        }
 
-		LProcessor plc;
-		plc.execute(schema);
-		return 0;
-	}
-	catch( const LogicException& ex )
-	{
-		cerr << ex << endl;
-	}
-	catch( const uniset::Exception& ex )
-	{
-		cerr << ex << endl;
-	}
-	catch( ... )
-	{
-		cerr << " catch ... " << endl;
-	}
+        LProcessor plc;
+        plc.execute(schema);
+        return 0;
+    }
+    catch( const LogicException& ex )
+    {
+        cerr << ex << endl;
+    }
+    catch( const uniset::Exception& ex )
+    {
+        cerr << ex << endl;
+    }
+    catch( ... )
+    {
+        cerr << " catch ... " << endl;
+    }
 
-	return 1;
+    return 1;
 }
 // -----------------------------------------------------------------------------

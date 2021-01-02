@@ -1,16 +1,16 @@
 /*! \page ConfigurationPage Конфигурирование системы
 
-	- \ref ConfigurationPage_secCommon
-	- \ref ConfigurationPage_secOmniORB
+- \ref ConfigurationPage_secCommon
+- \ref ConfigurationPage_secOmniORB
 
-	\section ConfigurationPage_secCommon Общее описание
+\section ConfigurationPage_secCommon Общее описание
 
-	Для конфигурирования системы используется файл (обычно "configure.xml").
-	Конфигурация является глобальным объектом. Для получения доступа к ней используется функция auto conf = uniset_conf();
-	До начала работы, обычно в функции main(), конфигурация должна быть инициализирована при помощи функции uniset_init().
-	При этом третий параметр, указывающий название конфигурационного файла, является не обязательным.
-	По умолчанию обрабатывается аргумент командной строки --confile filename.
-	
+Для конфигурирования системы используется файл (обычно "configure.xml").
+Конфигурация является глобальным объектом. Для получения доступа к ней используется функция auto conf = uniset_conf();
+До начала работы, обычно в функции main(), конфигурация должна быть инициализирована при помощи функции uniset_init().
+При этом третий параметр, указывающий название конфигурационного файла, является не обязательным.
+По умолчанию обрабатывается аргумент командной строки --confile filename.
+
 \code
 ...
 #include <Configuration.h>
@@ -20,41 +20,39 @@ int main(int argc, char **argv)
 {
     try
     {
-		uniset_init(argc, argv, "configure.xml");
-		...
-		...
-		
-	}
-	catch(Exception& ex )
+        uniset_init(argc, argv, "configure.xml");
+    ...
+    ...
+    }
+    catch(Exception& ex )
     {
-		cerr << "(main): Поймали исключение " << ex <<  endl;
+        cerr << "(main): Поймали исключение " << ex <<  endl;
     }
     catch(...)
     {
-    	cerr << "Неизвестное исключение!!!!"<< endl;
+        cerr << "Неизвестное исключение!!!!"<< endl;
     }
-	
-	...
-}	
+...
+}
 \endcode
 
-	\section ConfigurationPage_secOmniORB Конфигурирование OmniORB
-	Для возможности задать напрямую параметры для omniORB заложена специальная секция <omniORB>.
-	
-	В данную секцию можно записывать любые параметры поддерживаемые библиотекой omniORB.
-	Формат и название параметров см. документацию по omniORB.
-	
-	Пример:
+\section ConfigurationPage_secOmniORB Конфигурирование OmniORB
+Для возможности задать напрямую параметры для omniORB заложена специальная секция <omniORB>.
+
+В данную секцию можно записывать любые параметры поддерживаемые библиотекой omniORB.
+Формат и название параметров см. документацию по omniORB.
+
+Пример:
 \code
-	<omniORB>
-		<option name="endPoint" arg="giop:tcp:host1:"/>
-		<option name="endPoint" arg="giop:tcp:host2:" error_if_not_available="1"/>
-	</omniORB>
+<omniORB>
+    <option name="endPoint" arg="giop:tcp:host1:"/>
+    <option name="endPoint" arg="giop:tcp:host2:" error_if_not_available="1"/>
+</omniORB>
 \endcode
 
-	Для параметра 'endPoint' встроена дополнительная проверка доступности указанной адреса.
-	\warning По умолчанию \b недоступность \b игнорируется, если не указан параметр \a error_if_not_available="1"
+Для параметра 'endPoint' встроена дополнительная проверка доступности указанного адреса.
+\warning По умолчанию \b недоступность \b игнорируется, если не указан параметр \a error_if_not_available="1"
 
-	Помимо этого можно задать параметр \a ignore_checking="1", чтобы не происходило проверки доступности endPoint.
+Помимо этого можно задать параметр \a ignore_checking="1", чтобы не происходило проверки доступности endPoint.
 
 */

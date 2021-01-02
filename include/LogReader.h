@@ -28,69 +28,69 @@
 namespace uniset
 {
 
-	class LogReader
-	{
-		public:
+    class LogReader
+    {
+        public:
 
-			LogReader();
-			~LogReader();
+            LogReader();
+            ~LogReader();
 
-			struct Command
-			{
-				Command( LogServerTypes::Command c, unsigned int d, const std::string& f = "" ): cmd(c), data(d), logfilter(f) {}
+            struct Command
+            {
+                Command( LogServerTypes::Command c, unsigned int d, const std::string& f = "" ): cmd(c), data(d), logfilter(f) {}
 
-				LogServerTypes::Command cmd = { LogServerTypes::cmdNOP };
-				unsigned int data = {0};
-				std::string logfilter = { "" };
-			};
+                LogServerTypes::Command cmd = { LogServerTypes::cmdNOP };
+                unsigned int data = {0};
+                std::string logfilter = { "" };
+            };
 
-			void sendCommand( const std::string& addr, int port,
-							  std::vector<Command>& vcmd, bool cmd_only = true,
-							  bool verbose = false );
+            void sendCommand( const std::string& addr, int port,
+                              std::vector<Command>& vcmd, bool cmd_only = true,
+                              bool verbose = false );
 
-			void readlogs( const std::string& addr, int port, LogServerTypes::Command c = LogServerTypes::cmdNOP, const std::string logfilter = "", bool verbose = false );
+            void readlogs( const std::string& addr, int port, LogServerTypes::Command c = LogServerTypes::cmdNOP, const std::string logfilter = "", bool verbose = false );
 
-			bool isConnection() const;
+            bool isConnection() const;
 
-			void setReadCount( size_t n );
-			void setCommandOnlyMode( bool s );
+            void setReadCount( size_t n );
+            void setCommandOnlyMode( bool s );
 
-			void setinTimeout( timeout_t msec );
-			void setoutTimeout( timeout_t msec );
-			void setReconnectDelay( timeout_t msec );
-			void setTextFilter( const std::string& f );
+            void setinTimeout( timeout_t msec );
+            void setoutTimeout( timeout_t msec );
+            void setReconnectDelay( timeout_t msec );
+            void setTextFilter( const std::string& f );
 
-			DebugStream::StreamEvent_Signal signal_stream_event();
+            DebugStream::StreamEvent_Signal signal_stream_event();
 
-			void setLogLevel( Debug::type t );
+            void setLogLevel( Debug::type t );
 
-			std::shared_ptr<DebugStream> log();
+            std::shared_ptr<DebugStream> log();
 
-		protected:
+        protected:
 
-			void connect( const std::string& addr, int port, timeout_t tout = UniSetTimer::WaitUpTime );
-			void disconnect();
-			void logOnEvent( const std::string& s );
-			void sendCommand(LogServerTypes::lsMessage& msg, bool verbose = false );
+            void connect( const std::string& addr, int port, timeout_t tout = UniSetTimer::WaitUpTime );
+            void disconnect();
+            void logOnEvent( const std::string& s );
+            void sendCommand(LogServerTypes::lsMessage& msg, bool verbose = false );
 
-			timeout_t inTimeout = { 10000 };
-			timeout_t outTimeout = { 6000 };
-			timeout_t reconDelay = { 5000 };
+            timeout_t inTimeout = { 10000 };
+            timeout_t outTimeout = { 6000 };
+            timeout_t reconDelay = { 5000 };
 
-		private:
-			std::shared_ptr<UTCPStream> tcp;
-			std::string iaddr = { "" };
-			int port = { 0 };
-			bool cmdonly { false };
-			size_t readcount = { 0 }; // количество циклов чтения
-			std::string textfilter = { "" };
+        private:
+            std::shared_ptr<UTCPStream> tcp;
+            std::string iaddr = { "" };
+            int port = { 0 };
+            bool cmdonly { false };
+            size_t readcount = { 0 }; // количество циклов чтения
+            std::string textfilter = { "" };
 
-			DebugStream rlog;
-			std::shared_ptr<DebugStream> outlog; // рабочий лог в который выводиться полученная информация..
+            DebugStream rlog;
+            std::shared_ptr<DebugStream> outlog; // рабочий лог в который выводиться полученная информация..
 
-			DebugStream::StreamEvent_Signal m_logsig;
-	};
-	// -------------------------------------------------------------------------
+            DebugStream::StreamEvent_Signal m_logsig;
+    };
+    // -------------------------------------------------------------------------
 } // end of uniset namespace
 // -------------------------------------------------------------------------
 #endif // LogReader_H_

@@ -26,40 +26,40 @@
 #include "UHttpRequestHandler.h"
 // -------------------------------------------------------------------------
 /*! \page pgUHttpServer Http сервер
-	Http сервер предназначен для получения информации о UniSetObject-ах через http (json).
+    Http сервер предназначен для получения информации о UniSetObject-ах через http (json).
 */
 // -------------------------------------------------------------------------
 namespace uniset
 {
-	namespace UHttp
-	{
-		class UHttpServer
-		{
-			public:
+    namespace UHttp
+    {
+        class UHttpServer
+        {
+            public:
 
-				UHttpServer( std::shared_ptr<IHttpRequestRegistry>& supplier, const std::string& host, int port );
-				virtual ~UHttpServer();
+                UHttpServer( std::shared_ptr<IHttpRequestRegistry>& supplier, const std::string& host, int port );
+                virtual ~UHttpServer();
 
-				void start();
-				void stop();
+                void start();
+                void stop();
 
-				std::shared_ptr<DebugStream> log();
+                std::shared_ptr<DebugStream> log();
 
-				// (CORS): Access-Control-Allow-Origin. Default: *
-				void setCORS_allow( const std::string& CORS_allow );
-			protected:
-				UHttpServer();
+                // (CORS): Access-Control-Allow-Origin. Default: *
+                void setCORS_allow( const std::string& CORS_allow );
+            protected:
+                UHttpServer();
 
-			private:
+            private:
 
-				std::shared_ptr<DebugStream> mylog;
-				Poco::Net::SocketAddress sa;
+                std::shared_ptr<DebugStream> mylog;
+                Poco::Net::SocketAddress sa;
 
-				std::shared_ptr<Poco::Net::HTTPServer> http;
-				std::shared_ptr<UHttpRequestHandlerFactory> reqFactory;
+                std::shared_ptr<Poco::Net::HTTPServer> http;
+                std::shared_ptr<UHttpRequestHandlerFactory> reqFactory;
 
-		};
-	}
+        };
+    }
 }
 // -------------------------------------------------------------------------
 #endif // UHttpServer_H_

@@ -25,136 +25,136 @@ using namespace std;
 // --------------------------------------------------------------------------
 namespace uniset
 {
-	// -------------------------------------------------------------------------
-	namespace extensions
-	{
-		static std::shared_ptr<DebugStream> _dlog;
+    // -------------------------------------------------------------------------
+    namespace extensions
+    {
+        static std::shared_ptr<DebugStream> _dlog;
 
-		std::shared_ptr<DebugStream> dlog()
-		{
-			if( _dlog )
-				return _dlog;
+        std::shared_ptr<DebugStream> dlog()
+        {
+            if( _dlog )
+                return _dlog;
 
-			_dlog = make_shared<DebugStream>();
+            _dlog = make_shared<DebugStream>();
 
-			_dlog->setLogName("dlog");
+            _dlog->setLogName("dlog");
 
-			auto conf = uniset_conf();
+            auto conf = uniset_conf();
 
-			if( conf )
-				conf->initLogStream(_dlog, "dlog");
+            if( conf )
+                conf->initLogStream(_dlog, "dlog");
 
-			return _dlog;
-		}
-		// -------------------------------------------------------------------------
-		static uniset::ObjectId shmID = DefaultObjectId;
+            return _dlog;
+        }
+        // -------------------------------------------------------------------------
+        static uniset::ObjectId shmID = DefaultObjectId;
 
-		uniset::ObjectId getSharedMemoryID()
-		{
-			if( shmID != DefaultObjectId )
-				return shmID;
+        uniset::ObjectId getSharedMemoryID()
+        {
+            if( shmID != DefaultObjectId )
+                return shmID;
 
-			auto conf = uniset_conf();
+            auto conf = uniset_conf();
 
-			string sname = conf->getArgParam("--smemory-id", "SharedMemory1");
-			shmID = conf->getControllerID(sname);
+            string sname = conf->getArgParam("--smemory-id", "SharedMemory1");
+            shmID = conf->getControllerID(sname);
 
-			if( shmID == uniset::DefaultObjectId )
-			{
-				ostringstream err;
-				err << ": Unknown ID for '" << sname << "'" << endl;
-				dcrit << err.str() << endl;
-				throw SystemError(err.str());
-			}
+            if( shmID == uniset::DefaultObjectId )
+            {
+                ostringstream err;
+                err << ": Unknown ID for '" << sname << "'" << endl;
+                dcrit << err.str() << endl;
+                throw SystemError(err.str());
+            }
 
-			// cout << "(uniset): shm=" << name << " id=" << shmID << endl;
-			return shmID;
-		}
-		// -------------------------------------------------------------------------
-		void escape_string( string& s )
-		{
-			if( s.empty() )
-				return;
+            // cout << "(uniset): shm=" << name << " id=" << shmID << endl;
+            return shmID;
+        }
+        // -------------------------------------------------------------------------
+        void escape_string( string& s )
+        {
+            if( s.empty() )
+                return;
 
-			string::size_type pos = s.find("\\n");
+            string::size_type pos = s.find("\\n");
 
-			while( pos != string::npos )
-			{
-				s.replace(pos, 2, "\n");
-				pos = s.find("\\n");
-			}
-		}
-		// -------------------------------------------------------------------------
-		static xmlNode* xmlCalibrationsNode = 0;
+            while( pos != string::npos )
+            {
+                s.replace(pos, 2, "\n");
+                pos = s.find("\\n");
+            }
+        }
+        // -------------------------------------------------------------------------
+        static xmlNode* xmlCalibrationsNode = 0;
 
-		xmlNode* getCalibrationsSection()
-		{
-			if( xmlCalibrationsNode )
-				return xmlCalibrationsNode;
+        xmlNode* getCalibrationsSection()
+        {
+            if( xmlCalibrationsNode )
+                return xmlCalibrationsNode;
 
-			xmlCalibrationsNode = uniset_conf()->getNode("Calibrations");
-			return xmlCalibrationsNode;
+            xmlCalibrationsNode = uniset_conf()->getNode("Calibrations");
+            return xmlCalibrationsNode;
 
-		}
-		// -------------------------------------------------------------------------
+        }
+        // -------------------------------------------------------------------------
 
-		xmlNode* findNode( xmlNode* node, const string& snode, const string& field )
-		{
-			if( !node )
-				return 0;
+        xmlNode* findNode( xmlNode* node, const string& snode, const string& field )
+        {
+            if( !node )
+                return 0;
 
-			UniXML::iterator it(node);
+            UniXML::iterator it(node);
 
-			if( !it.goChildren() )
-				return 0;
+            if( !it.goChildren() )
+                return 0;
 
-			for( ; it; it.goNext() )
-			{
-				if( snode == it.getProp(field) )
-					return it;
-			}
+            for( ; it; it.goNext() )
+            {
+                if( snode == it.getProp(field) )
+                    return it;
+            }
 
-			return 0;
-		}
-		// -------------------------------------------------------------------------
-		Calibration* buildCalibrationDiagram( const std::string& dname )
-		{
-			xmlNode* root = getCalibrationsSection();
+            return 0;
+        }
+        // -------------------------------------------------------------------------
+        Calibration* buildCalibrationDiagram( const std::string& dname )
+        {
+            xmlNode* root = getCalibrationsSection();
 
-			if( !root )
-			{
-				ostringstream err;
-				err << "(buildCalibrationDiagram): НЕ НАЙДЕН корневой узел для калибровочных диаграмм";
-				dcrit << err.str() << endl;
-				throw SystemError( err.str());
-			}
+            if( !root )
+            {
+                ostringstream err;
+                err << "(buildCalibrationDiagram): НЕ НАЙДЕН корневой узел для калибровочных диаграмм";
+                dcrit << err.str() << endl;
+                throw SystemError( err.str());
+            }
 
-			xmlNode* dnode = findNode( root, dname, "name" );
+            xmlNode* dnode = findNode( root, dname, "name" );
 
-			if( !dnode )
-			{
-				ostringstream err;
-				err << "(buildCalibrationDiagram): НЕ НАЙДЕНА калибровочная диаграмма '" << dname << "'";
-				dcrit << err.str() << endl;
-				throw SystemError( err.str());
-			}
+            if( !dnode )
+            {
+                ostringstream err;
+                err << "(buildCalibrationDiagram): НЕ НАЙДЕНА калибровочная диаграмма '" << dname << "'";
+                dcrit << err.str() << endl;
+                throw SystemError( err.str());
+            }
 
-			return new Calibration(dnode);
-		}
-		// -------------------------------------------------------------------------
-		void on_sigchild( int sig )
-		{
-			while(1)
-			{
-				int istatus;
-				pid_t pid = waitpid( -1, &istatus, WNOHANG );
+            return new Calibration(dnode);
+        }
+        // -------------------------------------------------------------------------
+        void on_sigchild( int sig )
+        {
+            while(1)
+            {
+                int istatus;
+                pid_t pid = waitpid( -1, &istatus, WNOHANG );
 
-				if( pid == -1 && errno == EINTR )  continue;
+                if( pid == -1 && errno == EINTR )  continue;
 
-				if( pid <= 0 )  break;
-			}
-		}
-		// --------------------------------------------------------------------------
-	} // end of namespace extensions
+                if( pid <= 0 )  break;
+            }
+        }
+        // --------------------------------------------------------------------------
+    } // end of namespace extensions
 } // end of namespace uniset
 // -------------------------------------------------------------------------

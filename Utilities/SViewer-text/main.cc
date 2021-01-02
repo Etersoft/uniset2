@@ -8,49 +8,49 @@ using namespace std;
 // --------------------------------------------------------------------------
 static void short_usage()
 {
-	cout << "Usage: uniset-sviewer-text [--fullname] [--polltime msec] [--confile uniset-confile]\n";
+    cout << "Usage: uniset-sviewer-text [--fullname] [--polltime msec] [--confile uniset-confile]\n";
 }
 // --------------------------------------------------------------------------
 int main(int argc, const char** argv)
 {
-	//	std::ios::sync_with_stdio(false);
+    //  std::ios::sync_with_stdio(false);
 
-	try
-	{
-		if( argc > 1 && !strcmp(argv[1], "--help") )
-		{
-			short_usage();
-			return 0;
-		}
+    try
+    {
+        if( argc > 1 && !strcmp(argv[1], "--help") )
+        {
+            short_usage();
+            return 0;
+        }
 
-		auto conf = uniset_init(argc, argv, "configure.xml");
+        auto conf = uniset_init(argc, argv, "configure.xml");
 
-		bool fullname = false;
+        bool fullname = false;
 
-		if( findArgParam("--fullname", conf->getArgc(), conf->getArgv()) != -1 )
-			fullname = true;
+        if( findArgParam("--fullname", conf->getArgc(), conf->getArgv()) != -1 )
+            fullname = true;
 
-		SViewer sv(conf->getControllersSection(), !fullname);
-		timeout_t timeMS = conf->getArgInt("--polltime");
+        SViewer sv(conf->getControllersSection(), !fullname);
+        timeout_t timeMS = conf->getArgInt("--polltime");
 
-		if( timeMS )
-		{
-			cout << "(main): просматриваем с периодом " << timeMS << "[мсек]" <<  endl;
-			sv.monitor(timeMS);
-		}
-		else
-			sv.view();
+        if( timeMS )
+        {
+            cout << "(main): просматриваем с периодом " << timeMS << "[мсек]" <<  endl;
+            sv.monitor(timeMS);
+        }
+        else
+            sv.view();
 
-		return 0;
-	}
-	catch( const std::exception& ex )
-	{
-		cerr << "(main): Поймали исключение " << ex.what() <<  endl;
-	}
-	catch(...)
-	{
-		cerr << "(main): Неизвестное исключение!!!!" << endl;
-	}
+        return 0;
+    }
+    catch( const std::exception& ex )
+    {
+        cerr << "(main): Поймали исключение " << ex.what() <<  endl;
+    }
+    catch(...)
+    {
+        cerr << "(main): Неизвестное исключение!!!!" << endl;
+    }
 
-	return 1;
+    return 1;
 }

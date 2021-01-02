@@ -27,55 +27,55 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-	/*! Базовый интерфейс для работы с преобразованиями ObjectID <--> ObjectName */
-	class ObjectIndex
-	{
-		public:
-			ObjectIndex() {}
-			virtual ~ObjectIndex() {}
+    /*! Базовый интерфейс для работы с преобразованиями ObjectID <--> ObjectName */
+    class ObjectIndex
+    {
+        public:
+            ObjectIndex() {}
+            virtual ~ObjectIndex() {}
 
-			// info
-			// \return nullptr if not found
-			virtual const ObjectInfo* getObjectInfo( const uniset::ObjectId ) const noexcept = 0;
-			virtual const ObjectInfo* getObjectInfo( const std::string& name ) const noexcept = 0;
+            // info
+            // \return nullptr if not found
+            virtual const ObjectInfo* getObjectInfo( const uniset::ObjectId ) const noexcept = 0;
+            virtual const ObjectInfo* getObjectInfo( const std::string& name ) const noexcept = 0;
 
-			static std::string getBaseName( const std::string& fname ) noexcept;
+            static std::string getBaseName( const std::string& fname ) noexcept;
 
-			// object id
+            // object id
 
-			//! \return uniset::DefaultObjectId if not found
-			virtual ObjectId getIdByName(const std::string& name) const noexcept = 0;
+            //! \return uniset::DefaultObjectId if not found
+            virtual ObjectId getIdByName(const std::string& name) const noexcept = 0;
 
-			//! \return "" if not found
-			virtual std::string getNameById( const uniset::ObjectId id ) const noexcept;
+            //! \return "" if not found
+            virtual std::string getNameById( const uniset::ObjectId id ) const noexcept;
 
-			// node
-			//! \return "" if not found
-			std::string getNodeName( const uniset::ObjectId id ) const noexcept;
+            // node
+            //! \return "" if not found
+            std::string getNodeName( const uniset::ObjectId id ) const noexcept;
 
-			//! \return uniset::DefaultObjectId if not found
-			ObjectId getNodeId( const std::string& name ) const noexcept;
+            //! \return uniset::DefaultObjectId if not found
+            ObjectId getNodeId( const std::string& name ) const noexcept;
 
-			// src name
-			//! \return "" if not found
-			virtual std::string getMapName( const uniset::ObjectId id ) const noexcept = 0;
-			//! \return "" if not found
-			virtual std::string getTextName( const uniset::ObjectId id ) const noexcept = 0;
+            // src name
+            //! \return "" if not found
+            virtual std::string getMapName( const uniset::ObjectId id ) const noexcept = 0;
+            //! \return "" if not found
+            virtual std::string getTextName( const uniset::ObjectId id ) const noexcept = 0;
 
-			//
-			virtual std::ostream& printMap(std::ostream& os) const noexcept = 0;
+            //
+            virtual std::ostream& printMap(std::ostream& os) const noexcept = 0;
 
-			void initLocalNode( const uniset::ObjectId nodeid ) noexcept;
+            void initLocalNode( const uniset::ObjectId nodeid ) noexcept;
 
-		protected:
-			std::string nmLocalNode = {""};  // поле для оптимизации получения LocalNode
+        protected:
+            std::string nmLocalNode = {""};  // поле для оптимизации получения LocalNode
 
-		private:
+        private:
 
-	};
+    };
 
 
-	// -----------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------
 }    // end of namespace
 // -----------------------------------------------------------------------------------------
 #endif

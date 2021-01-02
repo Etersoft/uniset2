@@ -21,38 +21,38 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-	// ---------------------------------------------------------------------------
-	// "A2D"(analog to discrete)
-	// Преобразование аналогового датчика в дискретный по заданному значению. (Value=XXX --> True).
-	// Может быть один вход и много выходов.
-	class TA2D:
-		public Element
-	{
+    // ---------------------------------------------------------------------------
+    // "A2D"(analog to discrete)
+    // Преобразование аналогового датчика в дискретный по заданному значению. (Value=XXX --> True).
+    // Может быть один вход и много выходов.
+    class TA2D:
+        public Element
+    {
 
-		public:
-			TA2D( Element::ElementID id, long filterValue = 1 );
-			virtual ~TA2D();
+        public:
+            TA2D( Element::ElementID id, long filterValue = 1 );
+            virtual ~TA2D();
 
-			/*! num игнорируется, т.к. элемент с одним входом */
-			virtual void setIn( size_t num, long value ) override;
+            /*! num игнорируется, т.к. элемент с одним входом */
+            virtual void setIn( size_t num, long value ) override;
 
-			virtual long getOut() const override;
-			virtual std::string getType() const override
-			{
-				return "A2D";
-			}
+            virtual long getOut() const override;
+            virtual std::string getType() const override
+            {
+                return "A2D";
+            }
 
-			void setFilterValue( long value );
+            void setFilterValue( long value );
 
-		protected:
-			TA2D(): myout(false) {};
+        protected:
+            TA2D(): myout(false) {};
 
-			bool myout;
-			long fvalue = { 1 };
+            bool myout;
+            long fvalue = { 1 };
 
-		private:
-	};
-	// --------------------------------------------------------------------------
+        private:
+    };
+    // --------------------------------------------------------------------------
 } // end of namespace uniset
 // ---------------------------------------------------------------------------
 #endif

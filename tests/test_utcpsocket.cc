@@ -15,21 +15,21 @@ static int port = 40000;
 // -----------------------------------------------------------------------------
 TEST_CASE("UTCPSocket: create", "[utcpsocket][create]" )
 {
-	{
-		UTCPSocket u;
-		Poco::Net::SocketAddress sa(host, port);
-		REQUIRE_NOTHROW( u.bind(sa) );
-	}
+    {
+        UTCPSocket u;
+        Poco::Net::SocketAddress sa(host, port);
+        REQUIRE_NOTHROW( u.bind(sa) );
+    }
 
-	try
-	{
-		Poco::Net::ServerSocket so(Poco::Net::SocketAddress(host, port));
-	}
-	catch( Poco::Net::NetException& ex )
-	{
-		cerr << ex.displayText() << endl;
-	}
+    try
+    {
+        Poco::Net::ServerSocket so(Poco::Net::SocketAddress(host, port));
+    }
+    catch( Poco::Net::NetException& ex )
+    {
+        cerr << ex.displayText() << endl;
+    }
 
-	REQUIRE_NOTHROW(UTCPSocket(host, port));
+    REQUIRE_NOTHROW(UTCPSocket(host, port));
 }
 // -----------------------------------------------------------------------------

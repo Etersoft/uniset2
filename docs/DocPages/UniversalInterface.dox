@@ -1,56 +1,56 @@
 /* OBSOLETE DOC!!!
  \page UniversalInterfacePage Универсальный интерфейс
 
-	 Этот интерфейс позволяет получать доступ к объекту по идентификатору(или имени), заказывать датчики, и т.п.
-	 Для работы с удаленными объектами необходимо указывать идентификатор узла, на котором 
-	 находится этот объект(если он не задан, идет обращение к локальному).
-	
-	 - \ref secIOControl
-		 - \ref subAsk
-		 - \ref subGet
-		 - \ref subSet
-	 - \ref secTimers
-	 - \ref secORep
+ Этот интерфейс позволяет получать доступ к объекту по идентификатору(или имени), заказывать датчики, и т.п.
+ Для работы с удаленными объектами необходимо указывать идентификатор узла, на котором 
+ находится этот объект(если он не задан, идет обращение к локальному).
 
-	 \sa UniversalInterface
+ - \ref secIOControl
+     - \ref subAsk
+     - \ref subGet
+     - \ref subSet
+ - \ref secTimers
+ - \ref secORep
+
+ \sa UniversalInterface
 
  \section secIOControl Функции работы с вводом/выводом
 
-	 \subsection subAsk Заказ датчиков
+ \subsection subAsk Заказ датчиков
 
-	 Заказ датчиков осуществляется при помощи функций:
-	
-	 для дискретных датчиков 
-	 - \ref void UniversalInterface::askState(...)
+ Заказ датчиков осуществляется при помощи функций:
 
-	 для аналоговых датчиков
-	 - \ref void UniversalInterface::askValue(...)
-	
-	 \subsection subGet Получение информации о текущем состоянии датчика
-	 Информацию о состоянии датчика можно получить при помощи функций:
+ для дискретных датчиков 
+ - \ref void UniversalInterface::askState(...)
+
+ для аналоговых датчиков
+ - \ref void UniversalInterface::askValue(...)
+
+ \subsection subGet Получение информации о текущем состоянии датчика
+ Информацию о состоянии датчика можно получить при помощи функций:
  
-	 для дискретных датчиков 
-	 - \ref void UniversalInterface::getState(...)
+ для дискретных датчиков 
+ - \ref void UniversalInterface::getState(...)
 
-	 для аналоговых датчиков
-	 - \ref void UniversalInterface::getValue(...)
+ для аналоговых датчиков
+ - \ref void UniversalInterface::getValue(...)
 
-	 \subsection subSet Управление выходными сигналом
+ \subsection subSet Управление выходными сигналом
 
-	 для дискретных датчиков 
-	 - \ref void UniversalInterface::setState(...)
+ для дискретных датчиков 
+ - \ref void UniversalInterface::setState(...)
 
-	 для аналоговых датчиков
-	 - \ref void UniversalInterface::setValue(...)
-	 
+ для аналоговых датчиков
+ - \ref void UniversalInterface::setValue(...)
+ 
  \section secORep Функции работы с репозиторием объектов
-  	- \ref void UniversalInterface::registered(...)
-	- \ref void UniversalInterface::unregister(...)
-	- \ref void UniversalInterface::resolve(...)
-	- \ref ObjectId UniversalInterface::getIdByName(...)
-	- \ref const char* UniversalInterface::getNameById(...)
+  - \ref void UniversalInterface::registered(...)
+- \ref void UniversalInterface::unregister(...)
+- \ref void UniversalInterface::resolve(...)
+- \ref ObjectId UniversalInterface::getIdByName(...)
+- \ref const char* UniversalInterface::getNameById(...)
 
  \section secTimers Заказ таймеров
-  	- \ref void UniversalInterface::askTimer(...)
-	 
+  - \ref void UniversalInterface::askTimer(...)
+ 
 */

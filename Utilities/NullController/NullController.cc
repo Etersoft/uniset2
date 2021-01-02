@@ -8,28 +8,28 @@ using namespace std;
 // --------------------------------------------------------------------------------
 
 NullController::NullController( ObjectId id, const string& ioconfile,
-								const std::string& s_filterField,
-								const std::string& s_filterValue,
-								const std::string& c_filterField,
-								const std::string& c_filterValue,
-								bool _dumpingToDB ):
-	IONotifyController(id),
-	dumpingToDB(_dumpingToDB)
+                                const std::string& s_filterField,
+                                const std::string& s_filterValue,
+                                const std::string& c_filterField,
+                                const std::string& c_filterValue,
+                                bool _dumpingToDB ):
+    IONotifyController(id),
+    dumpingToDB(_dumpingToDB)
 {
-	restorer = NULL;
+    restorer = NULL;
 
-	auto ioconf = make_shared<IOConfig_XML>(ioconfile, uniset_conf());
-	ioconf->setItemFilter(s_filterField, s_filterValue);
-	ioconf->setConsumerFilter(c_filterField, c_filterValue);
+    auto ioconf = make_shared<IOConfig_XML>(ioconfile, uniset_conf());
+    ioconf->setItemFilter(s_filterField, s_filterValue);
+    ioconf->setConsumerFilter(c_filterField, c_filterValue);
 
-	restorer = std::static_pointer_cast<IOConfig>(ioconf);
+    restorer = std::static_pointer_cast<IOConfig>(ioconf);
 
-	/*
-	//    askd->setReadItem( sigc::mem_fun(this,&NullController::readSItem) );
-	    askd->setNCReadItem( sigc::mem_fun(this,&NullController::readSItem) );
-	    askd->setReadThresholdItem( sigc::mem_fun(this,&NullController::readTItem) );
-	    askd->setReadConsumerItem( sigc::mem_fun(this,&NullController::readCItem) );
-	*/
+    /*
+    //    askd->setReadItem( sigc::mem_fun(this,&NullController::readSItem) );
+        askd->setNCReadItem( sigc::mem_fun(this,&NullController::readSItem) );
+        askd->setReadThresholdItem( sigc::mem_fun(this,&NullController::readTItem) );
+        askd->setReadConsumerItem( sigc::mem_fun(this,&NullController::readCItem) );
+    */
 }
 
 // --------------------------------------------------------------------------------
@@ -39,8 +39,8 @@ NullController::~NullController()
 // --------------------------------------------------------------------------------
 void NullController::dumpToDB()
 {
-	if( dumpingToDB )
-		IONotifyController::dumpToDB();
+    if( dumpingToDB )
+        IONotifyController::dumpToDB();
 }
 // --------------------------------------------------------------------------------
 /*

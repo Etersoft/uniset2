@@ -22,21 +22,21 @@
 // ------------------------------------------------------------------------------------------
 namespace uniset
 {
-	/*! Интерфейс конфигурирования IOController-ов */
-	class IOConfig
-	{
-		public:
+    /*! Интерфейс конфигурирования IOController-ов */
+    class IOConfig
+    {
+        public:
 
-			IOConfig() {}
-			virtual ~IOConfig() {}
+            IOConfig() {}
+            virtual ~IOConfig() {}
 
-			/*! считать список io */
-			virtual IOController::IOStateList read() = 0;
+            /*! считать список io */
+            virtual IOController::IOStateList read() = 0;
 
-			//			/*! записать текущий список io */
-			//			virtual bool write( const IOController::IOStateList& iolist ) = 0;
-	};
-	// --------------------------------------------------------------------------------------
+            //          /*! записать текущий список io */
+            //          virtual bool write( const IOController::IOStateList& iolist ) = 0;
+    };
+    // --------------------------------------------------------------------------------------
 } // end of uniset namespace
 // --------------------------------------------------------------------------------------
 #endif

@@ -13,22 +13,21 @@
 - \ref sec_Concept_Process
   
 
-	\section sec_Concept_Object Объект
+\section sec_Concept_Object Объект
 В разных местах описаний, в зависимости от контекста,
 под "объектом" подразумевается либо объект класса так или иначе наследующегося
 от базового класса библиотеки UniSetObject, либо
 некий концептуальный программный  объект способный 
 получать и обрабатывать сообщения.
 
-  \section sec_Concept_ObjectTypes Основные типы объектов
+\section sec_Concept_ObjectTypes Основные типы объектов
 В библиотеке произведено условное деление на следующие типы объектов:
-  - (простые) объекты - наследуются от класса UniSetObject
-  - контроллеры - являются наследниками класса IOController
-  - сервисы	- являются наследниками специальных классов
-  - узлы        - в строгом смысле, не являются объектами,
-                  но обладают уникальным идентификатором.
+- (простые) объекты - наследуются от класса UniSetObject
+- контроллеры - являются наследниками класса IOController
+- сервисы    - являются наследниками специальных классов
+- узлы        - в строгом смысле, не являются объектами, но обладают уникальным идентификатором.
 
-	\section sec_Concept_Message Сообщения
+\section sec_Concept_Message Сообщения
 Вся система взаимодействия между объектами в основном
 построена на использовании сообщений (передаваемых
 путём удаленного вызова специальных функций,
@@ -53,7 +52,7 @@ UniSetTypes::Message::TheLastFieldOfTypeOfMessage.
 \endcode
 
 
-	\section sec_Concept_ObjectId Идентификатор объекта
+\section sec_Concept_ObjectId Идентификатор объекта
 Каждый объект, которому необходимо взаимодействовать с другими объектами
 (в том числе датчиками см. \ref sec_Concept_Sensor) должен обладать уникальным
 идентификатором. В качестве идентификатора выступает любое число типа \b UniSetTypes::ObjectId.
@@ -74,33 +73,33 @@ UniSetTypes::Message::TheLastFieldOfTypeOfMessage.
 \code
 <Configurations>
 ...
-<ObjectsMap idfromfile="0">
-	<nodes port="2809">
-	  <item name="LocalhostNode"	alias="" textname="Локальный узел"	ip="127.0.0.1" dbserver=""/>
-	  <item name="Node2"			alias="" textname="Локальный узел"	ip="127.0.0.1" dbserver=""/>
-	</nodes>
-	<sensors>
-	  <item name="Input1_S" textname="Команда 1" node="" iotype="DI" priority="Medium" default="1" />
-	  <item name="Input2_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x04" mbreg="0x02" rs="2" />
-	</sensors>
-	<controllers name="Controllers">
-		<item name="SharedMemory"/>
-		<item name="UniExchange"/>
-		<item name="UniExchange2"/>
-	</controllers>
+  <ObjectsMap idfromfile="0">
+    <nodes port="2809">
+      <item name="LocalhostNode"    alias="" textname="Локальный узел"    ip="127.0.0.1" dbserver=""/>
+      <item name="Node2"            alias="" textname="Локальный узел"    ip="127.0.0.1" dbserver=""/>
+    </nodes>
+    <sensors>
+      <item name="Input1_S" textname="Команда 1" node="" iotype="DI" priority="Medium" default="1" />
+      <item name="Input2_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x04" mbreg="0x02" rs="2" />
+    </sensors>
+    <controllers name="Controllers">
+        <item name="SharedMemory"/>
+        <item name="UniExchange"/>
+        <item name="UniExchange2"/>
+    </controllers>
 
-	<!-- ******************* Идентификаторы сервисов ***************** -->
-	<services name="Services">
-		<item name="DBServer"/>
-		<item name="PrintServer"/>
-	</services>
+    <!-- ******************* Идентификаторы сервисов ***************** -->
+    <services name="Services">
+        <item name="DBServer"/>
+        <item name="PrintServer"/>
+    </services>
 
-	<!-- ******************* Идентификаторы объектов ***************** -->
-	<objects name="UniObjects">
-		<item name="TestProc1"/>
-		<item name="TestProc2"/>
-	</objects>    
-</ObjectsMap>
+    <!-- ******************* Идентификаторы объектов ***************** -->
+    <objects name="UniObjects">
+        <item name="TestProc1"/>
+        <item name="TestProc2"/>
+    </objects>
+  </ObjectsMap>
 ...
 </Configurations>
 \endcode
@@ -130,33 +129,33 @@ UniSetTypes::Message::TheLastFieldOfTypeOfMessage.
 \code
 <Configurations>
 ...
-<ObjectsMap idfromfile="1">
-	<nodes port="2809">
-	  <item id="1000" name="LocalhostNode"	alias="" textname="Локальный узел"	ip="127.0.0.1" dbserver=""/>
-	  <item id="1001" name="Node2"			alias="" textname="Локальный узел"	ip="127.0.0.1" dbserver=""/>
-	</nodes>
-	<sensors>
-	  <item id="1" name="Input1_S" textname="Команда 1" node="" iotype="DI" priority="Medium" default="1" />
-	  <item id="10" name="Input2_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x04" mbreg="0x02" rs="2" />
-	</sensors>
-	<controllers name="Controllers">
-		<item id="100" name="SharedMemory"/>
-		<item id="101" name="UniExchange"/>
-		<item id="102" name="UniExchange2"/>
-	</controllers>
+    <ObjectsMap idfromfile="1">
+        <nodes port="2809">
+            <item id="1000" name="LocalhostNode"    alias="" textname="Локальный узел"    ip="127.0.0.1" dbserver=""/>
+            <item id="1001" name="Node2"            alias="" textname="Локальный узел"    ip="127.0.0.1" dbserver=""/>
+        </nodes>
+        <sensors>
+              <item id="1" name="Input1_S" textname="Команда 1" node="" iotype="DI" priority="Medium" default="1" />
+              <item id="10" name="Input2_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x04" mbreg="0x02" rs="2" />
+        </sensors>
+        <controllers name="Controllers">
+              <item id="100" name="SharedMemory"/>
+              <item id="101" name="UniExchange"/>
+              <item id="102" name="UniExchange2"/>
+        </controllers>
 
-	<!-- ******************* Идентификаторы сервисов ***************** -->
-	<services name="Services">
-		<item id="501" name="DBServer"/>
-		<item id="502" name="PrintServer"/>
-	</services>
+        <!-- ******************* Идентификаторы сервисов ***************** -->
+        <services name="Services">
+            <item id="501" name="DBServer"/>
+            <item id="502" name="PrintServer"/>
+        </services>
 
-	<!-- ******************* Идентификаторы объектов ***************** -->
-	<objects name="UniObjects">
-		<item id="200" name="TestProc1"/>
-		<item id="201" name="TestProc2"/>
-	</objects>    
-</ObjectsMap>
+        <!-- ******************* Идентификаторы объектов ***************** -->
+        <objects name="UniObjects">
+            <item id="200" name="TestProc1"/>
+            <item id="201" name="TestProc2"/>
+        </objects>
+    </ObjectsMap>
 ...
 </Configurations>
 \endcode
@@ -166,17 +165,17 @@ UniSetTypes::Message::TheLastFieldOfTypeOfMessage.
 не сложными скриптами).
 
  
-	\section sec_Concept_Repository Репозиторий объектов
+\section sec_Concept_Repository Репозиторий объектов
 
-	\section sec_Concept_Sensor Датчик
+\section sec_Concept_Sensor Датчик
 Датчик - это одно из базовых понятий при построении систем на основе libuniset.
 Датчик - это информационная единица. Практически любая информация
 (о событиях, о состоянии того или иного процесса, объекта, сообщение оператору и т.п.) 
 передаётся через состояние "датчика". В библиотеке предусмотрено четыре типа датчиков.
-  - DI - UniversalIO::DigitalInput  - дискретный вход
-  - DO - UniversalIO::DigitalOutput - дискретный выход
-  - AI - UniversalIO::AnalogInput   - аналоговый вход
-  - AO - UniversalIO::AnalogOutput  - аналоговый выход
+- DI - UniversalIO::DigitalInput  - дискретный вход
+- DO - UniversalIO::DigitalOutput - дискретный выход
+- AI - UniversalIO::AnalogInput   - аналоговый вход
+- AO - UniversalIO::AnalogOutput  - аналоговый выход
 
 Исходно данные типы используются непосредственно процессами ввода/вывода.
  "Выходы"(DO,AO) - это, команды "от системы управления"
@@ -191,7 +190,7 @@ UniSetTypes::Message::TheLastFieldOfTypeOfMessage.
 на передачу цифровой информации (не текстовой).
 Например CAN, ModbusRTU, ModbusTCP и т.п.
 
-	\section sec_Concept_Process Процесс
+\section sec_Concept_Process Процесс
 Под процессом в документации чаще всего подразумевается системный
 процесс (запущенная программа) выполняющий те или иные функции управления
 и обменивающийся для этого с другими процессами сообщениями или

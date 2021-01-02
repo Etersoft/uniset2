@@ -26,20 +26,20 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-	/*! Класс работы с файлами содержащими IOR объекта
-	    \todo Для оптимизации можно сделать кэширование id:node > filename
-	*/
-	class IORFile
-	{
-		public:
+    /*! Класс работы с файлами содержащими IOR объекта
+        \todo Для оптимизации можно сделать кэширование id:node > filename
+    */
+    class IORFile
+    {
+        public:
 
-			static std::string getIOR( const ObjectId id );
-			static void setIOR( const ObjectId id, const std::string& sior );
-			static void unlinkIOR( const ObjectId id );
+            static std::string getIOR( const ObjectId id );
+            static void setIOR( const ObjectId id, const std::string& sior );
+            static void unlinkIOR( const ObjectId id );
 
-			static std::string getFileName( const ObjectId id );
-	};
-	// -----------------------------------------------------------------------------------------
+            static std::string getFileName( const ObjectId id );
+    };
+    // -----------------------------------------------------------------------------------------
 }    // end of namespace
 // -----------------------------------------------------------------------------------------
 #endif

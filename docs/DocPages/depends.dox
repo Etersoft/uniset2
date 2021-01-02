@@ -1,33 +1,33 @@
 /*!
  \page DependsPage Зависимости между датчиками
 
-	Существует два механизма реализующих зависимость между датчиками:
+Существует два механизма реализующих зависимость между датчиками:
   - \ref pgDep_secIOControl
   - \ref pgDep_secIOBase
 
-	\section pgDep_secIOControl Зависимость на уровне IOController (SharedMemmory)
+\section pgDep_secIOControl Зависимость на уровне IOController (SharedMemmory)
 
-	Механизм зависимостей реализован в классе IOController.
+Механизм зависимостей реализован в классе IOController.
 
-	Пример записи "зависимости" в configure.xml:
+Пример записи "зависимости" в configure.xml:
 \code
-	<item textname="...." iotype="..." .../>
-		<consumers>
-		<consumers>
-		<depends>
-			<depend name="Sensor1" filter="val" />
-			<depend name="Sensor2" filter2="val1" />
-		</depends>
-	</item>
+<item textname="...." iotype="..." .../>
+    <consumers>
+    <consumers>
+    <depends>
+        <depend name="Sensor1" filter="val" />
+        <depend name="Sensor2" filter2="val1" />
+    </depends>
+</item>
 \endcode
-	При считывании конф. файла можно задавать фильтры.
-	
-	
-	ПОКА РЕАЛИЗОВАНА ЗАВИСИМОСТЬ ТОЛЬКО ОТ ОДНОГО ДАТЧИКА!
-	т.е. <depend> может быть только один.
+При считывании конф. файла можно задавать фильтры.
 
-	\section pgDep_secIOBase Зависимость на уровне IOBase
-	Механизм зависимостей между датчиками на уровне IOBase,
+
+ПОКА РЕАЛИЗОВАНА ЗАВИСИМОСТЬ ТОЛЬКО ОТ ОДНОГО ДАТЧИКА!
+т.е. <depend> может быть только один.
+
+\section pgDep_secIOBase Зависимость на уровне IOBase
+Механизм зависимостей между датчиками на уровне IOBase,
 работает на уровне процессов обмена использующих IOBase.
 В ним относятся IOControl, ModbusMaster (RTU,TCP) и т.п.
 Плюсом данного механизма является, то, что он обеспечивает
@@ -42,9 +42,9 @@
 Следует иметь ввиду, что этот механизм не действует при сохранении значений, например при помощи uniset-admin,
 в отличие от механизма \ref  pgDep_secIOControl
 
-	Пример записи "зависимости" в configure.xml:
+Пример записи "зависимости" в configure.xml:
 \code
-	<item textname="...." iotype="..." ... depend="OtherSensor_AS" depend_value="2" />
+<item textname="...." iotype="..." ... depend="OtherSensor_AS" depend_value="2" />
 \endcode
   В данном случае подразумевается, что разрешающим датчиком является OtherSensor_AS=2.
 

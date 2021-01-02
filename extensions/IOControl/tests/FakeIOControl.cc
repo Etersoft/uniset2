@@ -22,137 +22,137 @@ using namespace std;
 // -----------------------------------------------------------------------------
 namespace uniset
 {
-	// -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
 
-	FakeIOControl::FakeIOControl(uniset::ObjectId id, uniset::ObjectId icID,
-								 const std::shared_ptr<SharedMemory>& ic, int numcards, const std::string& prefix_ ):
-		IOControl(id, icID, ic, numcards, prefix_)
-	{
-		fcard = new FakeComediInterface();
+    FakeIOControl::FakeIOControl(uniset::ObjectId id, uniset::ObjectId icID,
+                                 const std::shared_ptr<SharedMemory>& ic, int numcards, const std::string& prefix_ ):
+        IOControl(id, icID, ic, numcards, prefix_)
+    {
+        fcard = new FakeComediInterface();
 
-		// Подменяем все карты на fake-овые
-		for( size_t i = 0; i < cards.size(); i++ )
-		{
-			if( cards[i] )
-				delete cards[i];
+        // Подменяем все карты на fake-овые
+        for( size_t i = 0; i < cards.size(); i++ )
+        {
+            if( cards[i] )
+                delete cards[i];
 
-			cards[i] = fcard;
-		}
+            cards[i] = fcard;
+        }
 
-		noCards = false;
-	}
-	// --------------------------------------------------------------------------------
-	FakeIOControl::~FakeIOControl()
-	{
-		for( size_t i = 0; i < cards.size(); i++ )
-		{
-			if( cards[i] )
-			{
-				delete (FakeComediInterface*)cards[i];
-				cards[i] = nullptr;
-			}
-		}
-	}
+        noCards = false;
+    }
+    // --------------------------------------------------------------------------------
+    FakeIOControl::~FakeIOControl()
+    {
+        for( size_t i = 0; i < cards.size(); i++ )
+        {
+            if( cards[i] )
+            {
+                delete (FakeComediInterface*)cards[i];
+                cards[i] = nullptr;
+            }
+        }
+    }
 
-	// --------------------------------------------------------------------------------
-	std::shared_ptr<FakeIOControl> FakeIOControl::init_iocontrol(int argc, const char* const* argv,
-			uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
-			const std::string& prefix )
-	{
-		auto conf = uniset_conf();
-		string name = conf->getArgParam("--" + prefix + "-name", "FakeIOControl1");
+    // --------------------------------------------------------------------------------
+    std::shared_ptr<FakeIOControl> FakeIOControl::init_iocontrol(int argc, const char* const* argv,
+            uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
+            const std::string& prefix )
+    {
+        auto conf = uniset_conf();
+        string name = conf->getArgParam("--" + prefix + "-name", "FakeIOControl1");
 
-		if( name.empty() )
-		{
-			std::cerr << "(iocontrol): Unknown name. Use --" << prefix << "-name " << std::endl;
-			return 0;
-		}
+        if( name.empty() )
+        {
+            std::cerr << "(iocontrol): Unknown name. Use --" << prefix << "-name " << std::endl;
+            return 0;
+        }
 
-		ObjectId ID = conf->getObjectID(name);
+        ObjectId ID = conf->getObjectID(name);
 
-		if( ID == uniset::DefaultObjectId )
-		{
-			std::cerr << "(iocontrol): Unknown ID for " << name
-					  << "' Not found in <objects>" << std::endl;
-			return 0;
-		}
+        if( ID == uniset::DefaultObjectId )
+        {
+            std::cerr << "(iocontrol): Unknown ID for " << name
+                      << "' Not found in <objects>" << std::endl;
+            return 0;
+        }
 
-		int numcards = conf->getArgPInt("--" + prefix + "-numcards", 1);
+        int numcards = conf->getArgPInt("--" + prefix + "-numcards", 1);
 
-		std::cout << "(iocontrol): name = " << name << "(" << ID << ")" << std::endl;
-		return std::make_shared<FakeIOControl>(ID, icID, ic, numcards, prefix);
-	}
-	// -----------------------------------------------------------------------------
-	FakeComediInterface::FakeComediInterface():
-		chInputs(maxChannelNum),
-		chOutputs(maxChannelNum)
-	{
-		name = "FakeCard";
-		dname = "/dev/fakecomedi";
-	}
-	// -----------------------------------------------------------------------------
-	FakeComediInterface::~FakeComediInterface()
-	{
+        std::cout << "(iocontrol): name = " << name << "(" << ID << ")" << std::endl;
+        return std::make_shared<FakeIOControl>(ID, icID, ic, numcards, prefix);
+    }
+    // -----------------------------------------------------------------------------
+    FakeComediInterface::FakeComediInterface():
+        chInputs(maxChannelNum),
+        chOutputs(maxChannelNum)
+    {
+        name = "FakeCard";
+        dname = "/dev/fakecomedi";
+    }
+    // -----------------------------------------------------------------------------
+    FakeComediInterface::~FakeComediInterface()
+    {
 
-	}
-	// -----------------------------------------------------------------------------
-	int FakeComediInterface::getAnalogChannel(int subdev, int channel, int range, int aref, int adelay ) const
-	{
-		if( channel < 0 || channel > maxChannelNum )
-		{
-			cerr << "(FakeComediInterface::getAnalogChannel): BAD channel num=" << channel
-				 << " Must be [0," << maxChannelNum << "]" << endl;
-			std::terminate();
-		}
+    }
+    // -----------------------------------------------------------------------------
+    int FakeComediInterface::getAnalogChannel(int subdev, int channel, int range, int aref, int adelay ) const
+    {
+        if( channel < 0 || channel > maxChannelNum )
+        {
+            cerr << "(FakeComediInterface::getAnalogChannel): BAD channel num=" << channel
+                 << " Must be [0," << maxChannelNum << "]" << endl;
+            std::terminate();
+        }
 
-		return chInputs[channel];
-	}
-	// -----------------------------------------------------------------------------
-	void FakeComediInterface::setAnalogChannel(int subdev, int channel, int data, int range, int aref) const
-	{
-		if( channel < 0 || channel > maxChannelNum )
-		{
-			cerr << "(FakeComediInterface::setAnalogChannel): BAD channel num=" << channel
-				 << " Must be [0," << maxChannelNum << "]" << endl;
-			std::terminate();
-		}
+        return chInputs[channel];
+    }
+    // -----------------------------------------------------------------------------
+    void FakeComediInterface::setAnalogChannel(int subdev, int channel, int data, int range, int aref) const
+    {
+        if( channel < 0 || channel > maxChannelNum )
+        {
+            cerr << "(FakeComediInterface::setAnalogChannel): BAD channel num=" << channel
+                 << " Must be [0," << maxChannelNum << "]" << endl;
+            std::terminate();
+        }
 
-		chOutputs[channel] = data;
-	}
-	// -----------------------------------------------------------------------------
-	bool FakeComediInterface::getDigitalChannel( int subdev, int channel ) const
-	{
-		if( channel < 0 || channel > maxChannelNum )
-		{
-			cerr << "(FakeComediInterface::getDigitalChannel): BAD channel num=" << channel
-				 << " Must be [0," << maxChannelNum << "]" << endl;
-			std::terminate();
-		}
+        chOutputs[channel] = data;
+    }
+    // -----------------------------------------------------------------------------
+    bool FakeComediInterface::getDigitalChannel( int subdev, int channel ) const
+    {
+        if( channel < 0 || channel > maxChannelNum )
+        {
+            cerr << "(FakeComediInterface::getDigitalChannel): BAD channel num=" << channel
+                 << " Must be [0," << maxChannelNum << "]" << endl;
+            std::terminate();
+        }
 
-		return (bool)chInputs[channel];
-	}
-	// -----------------------------------------------------------------------------
-	void FakeComediInterface::setDigitalChannel( int subdev, int channel, bool bit ) const
-	{
-		if( channel < 0 || channel > maxChannelNum )
-		{
-			cerr << "(FakeComediInterface::setDigitalChannel): BAD channel num=" << channel
-				 << " Must be [0," << maxChannelNum << "]" << endl;
-			std::terminate();
-		}
+        return (bool)chInputs[channel];
+    }
+    // -----------------------------------------------------------------------------
+    void FakeComediInterface::setDigitalChannel( int subdev, int channel, bool bit ) const
+    {
+        if( channel < 0 || channel > maxChannelNum )
+        {
+            cerr << "(FakeComediInterface::setDigitalChannel): BAD channel num=" << channel
+                 << " Must be [0," << maxChannelNum << "]" << endl;
+            std::terminate();
+        }
 
-		chOutputs[channel] = (bit ? 1 : 0);
-	}
-	// -----------------------------------------------------------------------------
-	void FakeComediInterface::configureSubdev( int subdev, ComediInterface::SubdevType type ) const
-	{
+        chOutputs[channel] = (bit ? 1 : 0);
+    }
+    // -----------------------------------------------------------------------------
+    void FakeComediInterface::configureSubdev( int subdev, ComediInterface::SubdevType type ) const
+    {
 
-	}
-	// -----------------------------------------------------------------------------
-	void FakeComediInterface::configureChannel(int subdev, int channel, ComediInterface::ChannelType type, int range, int aref) const
-	{
+    }
+    // -----------------------------------------------------------------------------
+    void FakeComediInterface::configureChannel(int subdev, int channel, ComediInterface::ChannelType type, int range, int aref) const
+    {
 
-	}
+    }
 
-	// -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
 } // end of namespace uniset

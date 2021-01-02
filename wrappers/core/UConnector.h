@@ -31,38 +31,38 @@
 
 class UConnector
 {
-	public:
-		UConnector( int argc, char** argv, const std::string& xmlfile ) throw(UException);
-		UConnector( UTypes::Params* p, const std::string& xmlfile ) throw(UException);
-		~UConnector();
+    public:
+        UConnector( int argc, char** argv, const std::string& xmlfile ) throw(UException);
+        UConnector( UTypes::Params* p, const std::string& xmlfile ) throw(UException);
+        ~UConnector();
 
-		inline std::string getUIType()
-		{
-			return std::string("uniset");
-		}
+        inline std::string getUIType()
+        {
+            return std::string("uniset");
+        }
 
-		std::string getConfFileName();
-		long getValue( long id, long node )throw(UException);
-		void setValue( long id, long val, long node, long supplier = UTypes::DefaultSupplerID ) throw(UException);
-		UTypes::ShortIOInfo getTimeChange( long id, long node = UTypes::DefaultID );
+        std::string getConfFileName();
+        long getValue( long id, long node )throw(UException);
+        void setValue( long id, long val, long node, long supplier = UTypes::DefaultSupplerID ) throw(UException);
+        UTypes::ShortIOInfo getTimeChange( long id, long node = UTypes::DefaultID );
 
-		long getSensorID( const std::string& name );
-		long getNodeID( const std::string& name );
-		long getObjectID( const std::string& name );
+        long getSensorID( const std::string& name );
+        long getNodeID( const std::string& name );
+        long getObjectID( const std::string& name );
 
-		std::string getShortName( long id );
-		std::string getName( long id );
-		std::string getTextName( long id );
+        std::string getShortName( long id );
+        std::string getName( long id );
+        std::string getTextName( long id );
 
-		std::string getObjectInfo( long id, const std::string& params, long node = UTypes::DefaultID ) throw(UException);
-		std::string apiRequest( long id, const std::string& query, long node = UTypes::DefaultID ) throw(UException);
+        std::string getObjectInfo( long id, const std::string& params, long node = UTypes::DefaultID ) throw(UException);
+        std::string apiRequest( long id, const std::string& query, long node = UTypes::DefaultID ) throw(UException);
 
-		void activate_objects() throw(UException);
+        void activate_objects() throw(UException);
 
-	private:
-		std::shared_ptr<uniset::Configuration> conf;
-		std::shared_ptr<uniset::UInterface> ui;
-		std::string xmlfile;
+    private:
+        std::shared_ptr<uniset::Configuration> conf;
+        std::shared_ptr<uniset::UInterface> ui;
+        std::string xmlfile;
 };
 //---------------------------------------------------------------------------
 #endif

@@ -28,45 +28,45 @@
 //----------------------------------------------------------------------------
 namespace uniset
 {
-	//----------------------------------------------------------------------------
-	class PassiveObject;
-	//----------------------------------------------------------------------------
+    //----------------------------------------------------------------------------
+    class PassiveObject;
+    //----------------------------------------------------------------------------
 
-	/*! \class ProxyManager
-	 *    Менеджер пассивных объектов, который выступает вместо них во всех внешних связях...
-	 *  В целом связка ProxyManager-PassiveObject является DEPRECATED и лучше её не использовать.
-	 *
-	 *  \todo Перейти на shared_ptr, weak_ptr для взаимодействия с PassiveObject
-	 *  своё взаимодействие "менеджер-объекты" исходя из условий "бизнес"-задачи
-	 *
-	 * DEPRECATED
-	*/
-	class ProxyManager:
-		public UniSetObject
-	{
+    /*! \class ProxyManager
+     *    Менеджер пассивных объектов, который выступает вместо них во всех внешних связях...
+     *  В целом связка ProxyManager-PassiveObject является DEPRECATED и лучше её не использовать.
+     *
+     *  \todo Перейти на shared_ptr, weak_ptr для взаимодействия с PassiveObject
+     *  своё взаимодействие "менеджер-объекты" исходя из условий "бизнес"-задачи
+     *
+     * DEPRECATED
+    */
+    class ProxyManager:
+        public UniSetObject
+    {
 
-		public:
-			ProxyManager( uniset::ObjectId id );
-			~ProxyManager();
+        public:
+            ProxyManager( uniset::ObjectId id );
+            ~ProxyManager();
 
-			void attachObject( PassiveObject* po, uniset::ObjectId id );
-			void detachObject( uniset::ObjectId id );
+            void attachObject( PassiveObject* po, uniset::ObjectId id );
+            void detachObject( uniset::ObjectId id );
 
-			std::shared_ptr<UInterface> uin;
+            std::shared_ptr<UInterface> uin;
 
-		protected:
-			ProxyManager();
-			virtual void processingMessage( const uniset::VoidMessage* msg ) override;
-			virtual void allMessage( const uniset::VoidMessage* msg );
+        protected:
+            ProxyManager();
+            virtual void processingMessage( const uniset::VoidMessage* msg ) override;
+            virtual void allMessage( const uniset::VoidMessage* msg );
 
-			virtual bool activateObject() override;
-			virtual bool deactivateObject() override;
+            virtual bool activateObject() override;
+            virtual bool deactivateObject() override;
 
-		private:
-			typedef std::unordered_map<uniset::ObjectId, PassiveObject*> PObjectMap;
-			PObjectMap omap;
-	};
-	// -------------------------------------------------------------------------
+        private:
+            typedef std::unordered_map<uniset::ObjectId, PassiveObject*> PObjectMap;
+            PObjectMap omap;
+    };
+    // -------------------------------------------------------------------------
 } // end of uniset namespace
 //----------------------------------------------------------------------------------------
 #endif // ProxyManager

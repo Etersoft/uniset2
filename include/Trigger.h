@@ -24,64 +24,64 @@
 //--------------------------------------------------------------------------
 namespace uniset
 {
-	// header only
+    // header only
 
-	/*! Триггер, позволяющий красиво засекать изменения во флаге */
-	class Trigger
-	{
-		public:
-			Trigger(bool initial = false) noexcept
-			{
-				oldstate = initial;
-			}
+    /*! Триггер, позволяющий красиво засекать изменения во флаге */
+    class Trigger
+    {
+        public:
+            Trigger(bool initial = false) noexcept
+            {
+                oldstate = initial;
+            }
 
-			/*! Срабатываем по верхнему фронту (при наступлении true) */
-			bool hi(bool state) noexcept
-			{
-				if (oldstate != state)
-				{
-					oldstate = state;
+            /*! Срабатываем по верхнему фронту (при наступлении true) */
+            bool hi(bool state) noexcept
+            {
+                if (oldstate != state)
+                {
+                    oldstate = state;
 
-					if (state)
-						return true;
-				}
+                    if (state)
+                        return true;
+                }
 
-				return false;
-			}
-			/*! Срабатываем по нижнему фронту (при наступлении false) */
-			bool low(bool state) noexcept
-			{
-				if (oldstate != state)
-				{
-					oldstate = state;
+                return false;
+            }
+            /*! Срабатываем по нижнему фронту (при наступлении false) */
+            bool low(bool state) noexcept
+            {
+                if (oldstate != state)
+                {
+                    oldstate = state;
 
-					if (!state)
-						return true;
-				}
+                    if (!state)
+                        return true;
+                }
 
-				return false;
-			}
-			/*! Срабатывает при любом изменении */
-			bool change(bool state) noexcept
-			{
-				if (oldstate != state)
-				{
-					oldstate = state;
-					return true;
-				}
+                return false;
+            }
+            /*! Срабатывает при любом изменении */
+            bool change(bool state) noexcept
+            {
+                if (oldstate != state)
+                {
+                    oldstate = state;
+                    return true;
+                }
 
-				return false;
-			}
+                return false;
+            }
 
-			inline bool get() const noexcept
-			{
-				return oldstate;
-			}
+            inline bool get() const noexcept
+            {
+                return oldstate;
+            }
 
-		private:
-			bool oldstate; /*!< предыдущее состояние */
-	};
-	// -------------------------------------------------------------------------
+        private:
+            bool oldstate; /*!< предыдущее состояние */
+    };
+    // -------------------------------------------------------------------------
 } // end of uniset namespace
 // --------------------------------------------------------------------------
 #endif

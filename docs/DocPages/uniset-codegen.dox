@@ -1,21 +1,21 @@
 /*! \page page_Codegen Генератор кода uniset-codegen
 
-	- \ref pg_Codegen_Common
-	- \ref pg_Codegen_XmlFile
-	- \ref pg_Codegen_Settings
-	- \ref pg_Codegen_SMap
-	- \ref pg_Codegen_MsgMap
-	- \ref pg_Codegen_Variables
-	- \ref pg_Codegen_argprefix
-	- \ref pg_Codegen_Configuration
-	- \ref pg_Codegen_TestMode
-    - \ref pg_Codegen_Make
-	- \ref pg_Codegen_Templ_Ask
-	- \ref pg_Codegen_Templ_Alone
-	- \ref pg_Codegen_log
-	- \ref pg_Codegen_loglevel
-	- \ref pg_Codegen_logserver
-	- \ref pg_Codegen_vmonitor
+- \ref pg_Codegen_Common
+- \ref pg_Codegen_XmlFile
+- \ref pg_Codegen_Settings
+- \ref pg_Codegen_SMap
+- \ref pg_Codegen_MsgMap
+- \ref pg_Codegen_Variables
+- \ref pg_Codegen_argprefix
+- \ref pg_Codegen_Configuration
+- \ref pg_Codegen_TestMode
+- \ref pg_Codegen_Make
+- \ref pg_Codegen_Templ_Ask
+- \ref pg_Codegen_Templ_Alone
+- \ref pg_Codegen_log
+- \ref pg_Codegen_loglevel
+- \ref pg_Codegen_logserver
+- \ref pg_Codegen_vmonitor
 
 \section pg_Codegen_Common Общее описание утилиты uniset-codegen
  Утилита uniset-codegen предназначена для генерирования "скелета" процесса управления на основе
@@ -62,50 +62,50 @@
 \code
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-	name 		- название класса
-	msgcount	- сколько сообщений обрабатывается за один раз
-	sleep_msec	- пауза между итерациями в работе процесса
+name         - название класса
+msgcount    - сколько сообщений обрабатывается за один раз
+sleep_msec    - пауза между итерациями в работе процесса
 
-	type
-	====
-		in 	- входные регистры (только для чтения)
-		out	- выходные регистры (запись)
+type
+====
+    in     - входные регистры (только для чтения)
+    out    - выходные регистры (запись)
 -->
 <Test>
   <settings>
-  	<set name="class-name" val="TestGen"/>
-  	<set name="msg-count" val="20"/>
-	<set name="sleep-msec" val="150"/>
-	<set name="logrotate" val="append"/>
+  <set name="class-name" val="TestGen"/>
+  <set name="msg-count" val="20"/>
+<set name="sleep-msec" val="150"/>
+<set name="logrotate" val="append"/>
   </settings>
   <variables>
-      <!-- type = [int,str,bool,float]
-         int:  max,min,no_range_exception=[0,1]
-         str:
-         float: max,min,no_range_exception=[0,1]
-         bool:
+  <!-- type = [int,str,bool,float]
+     int:  max,min,no_range_exception=[0,1]
+     str:
+     float: max,min,no_range_exception=[0,1]
+     bool:
 
-		 min - минимальное значение (может быть не задано)
-		 max - максимальное значение (может быть не задано)
-		 default - значение по умолчанию (может быть не задано)
-		 no_range_exception=1 - при выходе за границы min или max только писать unideb[WARN].
-      -->
-	  	<item name="startTimeout" type="int" min="0" comment="test int variable"/>
-		<item name="stopTimeout" type="int" max="100" default="110" no_range_exception="1"/>
-		<item name="test_float" type="float" max="100.0" default="50.0" public="1" const="1" />
-		<item name="test_bool" type="bool" />
-		<item name="test_str" type="str" default="ddd"/>
+     min - минимальное значение (может быть не задано)
+     max - максимальное значение (может быть не задано)
+     default - значение по умолчанию (может быть не задано)
+     no_range_exception=1 - при выходе за границы min или max только писать unideb[WARN].
+  -->
+      <item name="startTimeout" type="int" min="0" comment="test int variable"/>
+    <item name="stopTimeout" type="int" max="100" default="110" no_range_exception="1"/>
+    <item name="test_float" type="float" max="100.0" default="50.0" public="1" const="1" />
+    <item name="test_bool" type="bool" />
+    <item name="test_str" type="str" default="ddd"/>
   </variables>
   <smap>
-	<!-- name - название переменной в конф. файле -->
-	<item name="input1_s" vartype="in" iotype="DI" comment="comment for input1"/>
-	<item name="input2_s" vartype="in" iotype="DI" comment="comment for input2" />
-	<item name="output1_c" vartype="out" iotype="DO" omment="comment for output1" no_check_id="1"/>
-	<item name="output2_c" vartype="out" iotype="DO" omment="comment for output2" force="1"/>
+<!-- name - название переменной в конф. файле -->
+<item name="input1_s" vartype="in" iotype="DI" comment="comment for input1"/>
+<item name="input2_s" vartype="in" iotype="DI" comment="comment for input2" />
+<item name="output1_c" vartype="out" iotype="DO" omment="comment for output1" no_check_id="1"/>
+<item name="output2_c" vartype="out" iotype="DO" omment="comment for output2" force="1"/>
   </smap>
 
   <msgmap>
-		<item name="msg1" comment="comment for Message 1" />
+    <item name="msg1" comment="comment for Message 1" />
   </msgmap>
 </Test>
 \endcode
@@ -143,8 +143,8 @@
 \a --argprefix-resetMsgTime \a msec, либо задать в файле описания в секции \b <settings>
 \code
   <settings>
-    ...
-	<set name="resetMsgTime" val="500"/>
+...
+<set name="resetMsgTime" val="500"/>
   </settings>
 \endcode
 Для сообщений генерируется такой же набор "переменных" как и для полей указанных в \<smap> (см. \ref pg_Codegen_SMap). За исключением того,
@@ -182,7 +182,7 @@
 \code
   varname = conf->getArgParam("--'arg_prefix'varname'",it.getProp("'varname'"));
   if( varname.empty() )
-	varname = 'default'
+varname = 'default'
 \endcode
 Где \a it.getProp() - получение значения из соответствующей настроечной секции в конфигурационном файле (см. \ref pg_Codegen_Configuration).
 Из кода можно видеть, что приоритетным является аргумент командной строки, потом значение из конф. файла и только потом \a default.
@@ -204,9 +204,9 @@
 Помимо этого \b argprefix можно задать в секции  <settings>
 \code
   <settings>
-      ...
-      <set name="arg-prefix" val="test-"/>
-      ...
+  ...
+  <set name="arg-prefix" val="test-"/>
+  ...
   </settings>
 \endcode
 Тогда вместо \a ObjectName будет использоваться указанный префикс \a --test- (обратите внимание на то, что префикс задаётся с \b - в конце).
@@ -233,18 +233,18 @@
 (обычно в секции \<settings>) создаётся настроечная секция для вашего объекта.
 А в самом классе генерируется специальный конструктор, позволяющий указать настроечный xml-узел:
 \code
-	ClassName( UniSetTypes::ObjectId id, xmlNode* node=UniSetTypes::conf->getNode("ClassName") );
+ClassName( UniSetTypes::ObjectId id, xmlNode* node=UniSetTypes::conf->getNode("ClassName") );
 \endcode
  Ниже приведён пример настроечной секции, для объекта сгенерированного на основе xml-файла указанного в \ref pg_Codegen_XmlFile
 \code
-	...
-	<TestGen name="TestGen" startTimeout="4000" stopTimeout="2000"
-			input1_s="Input1_S" node_input1_s="Node2"
-			input2_s="DumpSensor1_S"
-			output1_c="DO_C"
-			msg1="Message1"
-	/>
-	...
+...
+<TestGen name="TestGen" startTimeout="4000" stopTimeout="2000"
+        input1_s="Input1_S" node_input1_s="Node2"
+        input2_s="DumpSensor1_S"
+        output1_c="DO_C"
+        msg1="Message1"
+/>
+...
 \endcode
    Обычно для каждого объекта класса создаётся своя настроечная секция.
 
@@ -252,13 +252,13 @@
  - \b sleep_msec = conf->getArgPInt("--sleep-msec","150", 150);     - пауза между шагами основного цикла процесса
  - \b resetMsgTime = conf->getPIntProp(cnode,"resetMsgTime", 2000); - время до автоматического сброса датчиков-сообщений в "0".
  - \b smReadyTimeout = conf->getArgInt("--sm-ready-timeout","");  - время ожидания готовности SharedMemory к работе
- - \b activateTimeout	= conf->getArgPInt("--activate-timeout", 20000); - время отведённое на инициализацию процесса
+ - \b activateTimeout    = conf->getArgPInt("--activate-timeout", 20000); - время отведённое на инициализацию процесса
  - \b msec = conf->getArgPInt("--startup-timeout", 10000); - пауза, в течение которой игнорируется сообщение SystemMessage::WatchDog.
 В случае если они приходят подряд.
 
 
 \section pg_Codegen_TestMode Специальный режим "тест" (TestMode)
-	В генератор кода заложен специальный код для перевода процесса в тестовый режим. В этом режиме отключается вся работа процесса.
+В генератор кода заложен специальный код для перевода процесса в тестовый режим. В этом режиме отключается вся работа процесса.
 Перестают обрабатываться сообщения, обновляться входы и выходы и т.д.
 
 Для перевода процесса в "тестовый режим" необходимо задать идентификаторы для двух "DI" датчиков:
@@ -307,36 +307,36 @@
 ...
 <settings>
 ...
-	<TestGenAlone name="TestGenAlone">
-			<set name="ID" val="TestGenAlone"/>
-		  	<set name="class-name" val="TestGenAlone"/>
-		  	<set name="msg-count" val="20"/>
-			<set name="sleep-msec" val="150"/>
-	</TestGenAlone>
+<TestGenAlone name="TestGenAlone">
+        <set name="ID" val="TestGenAlone"/>
+          <set name="class-name" val="TestGenAlone"/>
+          <set name="msg-count" val="20"/>
+        <set name="sleep-msec" val="150"/>
+</TestGenAlone>
 ...
 </settings>
 ...
-		<sensors>
-			<item id="1" name="input1_s" iotype="DI" textname="xxx">
-				<consumers>
-					<consumer name="TestGenAlone" vartype="in" type="objects"/>
-				</consumers>
-			</item>
+    <sensors>
+        <item id="1" name="input1_s" iotype="DI" textname="xxx">
+            <consumers>
+                <consumer name="TestGenAlone" vartype="in" type="objects"/>
+            </consumers>
+        </item>
 
-			<item id="23" name="input2_s" iotype="DI" textname="xxx">
-				<consumers>
-					<consumer name="TestGenAlone" vartype="in" type="objects"/>
-				</consumers>
-			</item>
-			<item id="31" name="output1_c" iotype="DO" textname="xxx" node="Test1Node">
-				<consumers>
-					<consumer name="TestGenAlone" vartype="out" type="objects"/>
-				</consumers>
-			</item>
-		</sensors>
-		<objects>
-			<item id="2000" name="TestGenAlone" />
-		</objects>
+        <item id="23" name="input2_s" iotype="DI" textname="xxx">
+            <consumers>
+                <consumer name="TestGenAlone" vartype="in" type="objects"/>
+            </consumers>
+        </item>
+        <item id="31" name="output1_c" iotype="DO" textname="xxx" node="Test1Node">
+            <consumers>
+                <consumer name="TestGenAlone" vartype="out" type="objects"/>
+            </consumers>
+        </item>
+    </sensors>
+    <objects>
+        <item id="2000" name="TestGenAlone" />
+    </objects>
 \endcode
 Как видно из примера, \b vartype переменных записывается непосредственно в свойствах \b \<consumer>.
 
@@ -353,9 +353,9 @@
 ..._SOURCES= MyClass_SK.cc ...
 
 MyClass_SK.cc: myclass.src.xml
-	@UNISET_CODEGEN@ -n MyClass --no-main myclass.src.xml
+@UNISET_CODEGEN@ -n MyClass --no-main myclass.src.xml
 
-\endcode                                                                                                          
+\endcode
 В этом примере
  - \b myclass.src.xml - это файл с описанием переменных
  - \b --no-main - отключает генерирование "запускающего" файла (функция main)
@@ -372,8 +372,8 @@ MyClass_SK.cc: myclass.src.xml
   
   Так же можно использовать функции напрямую:
 \code
-	mylog->info() << "....test..." << endl;
-	mylog->log1() << "....test..." << endl;
+mylog->info() << "....test..." << endl;
+mylog->log1() << "....test..." << endl;
 \endcode
   
   \p Помимо объекта mylog класс содержит ряд вспомогательных функций:
@@ -381,9 +381,9 @@ MyClass_SK.cc: myclass.src.xml
   - \b string \b dumpIO() - вывод состояния всех входов и выходов в строку, в виде:
 \code
   ObjectName:
-    in_input1_s(Sensor1_S)=1
-    in_output2_c(Output1_C)=0
-    ...
+in_input1_s(Sensor1_S)=1
+in_output2_c(Output1_C)=0
+...
 \endcode
   
   - \b string \b str(ObjectId,showLinkName) - вывод названия указанного входа или выхода в формате "in_input1_s(Sensor1_S)". Если
@@ -408,16 +408,16 @@ MyClass_SK.cc: myclass.src.xml
    loglevel="1".  Пример:
 \code
   <smap>
-    ...
-    <item name="loglevel_s" vartype="in" comment="log level control" loglevel="1"/>
+...
+<item name="loglevel_s" vartype="in" comment="log level control" loglevel="1"/>
   </smap>
 \endcode
   Данный механизм позволяет посредством этого датчика управлять уровнем вывода логов (mylog) во время работы процесса.
   Для удобства предусмотрена утилита \b uniset2-log2val позволяющая преобразовать текстовые названия уровней в число,
   которое необходимо выставить датчику.  Пример:
 \code
-    uniset2-log2val info,level1,warn,level9
-    4117
+uniset2-log2val info,level1,warn,level9
+4117
 \endcode
    Т.е. для того, чтобы включить указанные логи в датчик нужно записать число \b 4117
    
@@ -427,84 +427,84 @@ MyClass_SK.cc: myclass.src.xml
    предусмотрена возможность запуска LogServer, который \b запускается на порту \b равном \b ID-объекта.
    По умолчанию LogServer не запускается (выключен). Для его запуска необходимо указать:
    \code
-		--argprefix-run-logserver   
+    --argprefix-run-logserver   
    \endcode
    Дополнительно доступны следующие аргументы:
    \code
-      --argprefix-logserver-host   - по умолчанию localhost
-      --argprefix-logserver-port   - по умолчанию ID-объекта
+  --argprefix-logserver-host   - по умолчанию localhost
+  --argprefix-logserver-port   - по умолчанию ID-объекта
    \endcode
    
    Непосредственно управление логами производиться при помощи утилиты \b uniset2-log
    \code
-	-h, --help                  - this message
-	-v, --verbose               - Print all messages to stdout
-	[-i|--iaddr] addr           - LogServer ip or hostname.
-	[-p|--port] port            - LogServer port.
-	[-c|--command-only]         - Send command and break. (No read logs).
-	[-w|--timeout] msec         - Timeout for wait data. Default: 0 - endless waiting
-	[-x|--reconnect-delay] msec - Pause for repeat connect to LogServer. Default: 5000 msec.
+-h, --help                  - this message
+-v, --verbose               - Print all messages to stdout
+[-i|--iaddr] addr           - LogServer ip or hostname.
+[-p|--port] port            - LogServer port.
+[-c|--command-only]         - Send command and break. (No read logs).
+[-w|--timeout] msec         - Timeout for wait data. Default: 0 - endless waiting
+[-x|--reconnect-delay] msec - Pause for repeat connect to LogServer. Default: 5000 msec.
 
-	Commands:
-	[--add | -a] info,warn,crit,... [logfilter] - Add log levels.
-	[--del | -d] info,warn,crit,... [logfilter] - Delete log levels.
-	[--set | -s] info,warn,crit,... [logfilter] - Set log levels.
-	--off, -o [logfilter]                       - Off the write log file (if enabled).
-	--on, -e  [logfilter]                       - On(enable) the write log file (if before disabled).
-	--rotate, -r [logfilter]                    - rotate log file.
-	--list, -l   [logfilter]                    - List of managed logs.
-	--filter, -f logfilter                      - ('filter mode'). View log only from 'logfilter'(regexp)
+Commands:
+[--add | -a] info,warn,crit,... [logfilter] - Add log levels.
+[--del | -d] info,warn,crit,... [logfilter] - Delete log levels.
+[--set | -s] info,warn,crit,... [logfilter] - Set log levels.
+--off, -o [logfilter]                       - Off the write log file (if enabled).
+--on, -e  [logfilter]                       - On(enable) the write log file (if before disabled).
+--rotate, -r [logfilter]                    - rotate log file.
+--list, -l   [logfilter]                    - List of managed logs.
+--filter, -f logfilter                      - ('filter mode'). View log only from 'logfilter'(regexp)
 
-	Note: 'logfilter' -  regexp for name of log. Default: ALL logs.
+Note: 'logfilter' -  regexp for name of log. Default: ALL logs.
    \endcode
    
    \section pg_Codegen_vmonitor Мониторинг состояния внутренних переменных
    В генерируемом коде встроена поддержка удалённого просмотра (мониторинга) внутреннего состояния \b ВСЕХ in_xx и out_xxx переменных,
    а также переменных определённых пользователем. Для этого достаточно использовать утилиту uniset2-vmonit
    \code
-		Usage: uniset2-vmonit [-s watch_sec] OBJECT_ID[@node] [uniset-admin-options]
+    Usage: uniset2-vmonit [-s watch_sec] OBJECT_ID[@node] [uniset-admin-options]
    \endcode
-      Где можно указать (-s sec) как часто обновлять информацию и собственно указать ID (или name) объекта (процесса).
+  Где можно указать (-s sec) как часто обновлять информацию и собственно указать ID (или name) объекта (процесса).
  
-      Утилита требует наличия в системе утилиты watch и на самом деле является обёрткой над утилитой uniset2-admin.
-      
-      Например для отслеживания процесса 12000 утилита запускается так:
-      \code
-		uniset2-vmonit 12000
-      \endcode
-      \note При локальной наладке обычно запуск производиться так: uniset2-start.sh -f uniset2-vmonit ObjectID
-      
-      \subsection pg_Codegen_vmonitor_myvar Добавление своих переменных в "мониторинг".
-      Для добавления своей переменной в "мониторинг" достаточно \b один \b раз (например в конструкторе своего класса)
-      вызвать функцию (на самом деле макрос) \b vmonit(var);
-      Пример:
-      \code
-      class MyClass:
-			public MyClass_SK:
-	  {
-	      public:
-	          MyClass(...)
-	          {
-	            vmonit(my_bool);
-	            vmonit(my_int);
-	            vmonit(my_long);
-	            vmonit(my_double);
-	            vmonit(my_float);
-	          }
-	          
-	      private:
-	         bool my_bool;
-	         int my_int;
-	         long my_long;
-	         double my_double;
-	         float my_float;
-		     ...
-		}
-      \endcode
-      После этого они появятся в выводе утилиты uniset2-vmonit
-      
-      \warning На данный момент поддерживаются только простые типы переменных (bool,short,int,long,double,float см. VMonitor)
-      
-     Для пользовательской информации введена виртуальная функция std::string getMonitInfo(), переопределив которую, 
-     можно сформировать свою информацию, которую можно будет удалённо читать.
+  Утилита требует наличия в системе утилиты watch и на самом деле является обёрткой над утилитой uniset2-admin.
+  
+  Например для отслеживания процесса 12000 утилита запускается так:
+  \code
+    uniset2-vmonit 12000
+  \endcode
+  \note При локальной наладке обычно запуск производиться так: uniset2-start.sh -f uniset2-vmonit ObjectID
+  
+  \subsection pg_Codegen_vmonitor_myvar Добавление своих переменных в "мониторинг".
+  Для добавления своей переменной в "мониторинг" достаточно \b один \b раз (например в конструкторе своего класса)
+  вызвать функцию (на самом деле макрос) \b vmonit(var);
+  Пример:
+  \code
+  class MyClass:
+        public MyClass_SK:
+  {
+      public:
+          MyClass(...)
+          {
+            vmonit(my_bool);
+            vmonit(my_int);
+            vmonit(my_long);
+            vmonit(my_double);
+            vmonit(my_float);
+          }
+ 
+      private:
+         bool my_bool;
+         int my_int;
+         long my_long;
+         double my_double;
+         float my_float;
+         ...
+    }
+  \endcode
+  После этого они появятся в выводе утилиты uniset2-vmonit
+  
+  \warning На данный момент поддерживаются только простые типы переменных (bool,short,int,long,double,float см. VMonitor)
+  
+ Для пользовательской информации введена виртуальная функция std::string getMonitInfo(), переопределив которую, 
+ можно сформировать свою информацию, которую можно будет удалённо читать.
 */

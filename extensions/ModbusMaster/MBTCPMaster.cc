@@ -28,229 +28,229 @@ using namespace uniset;
 using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 MBTCPMaster::MBTCPMaster(uniset::ObjectId objId, uniset::ObjectId shmId,
-						 const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
-	MBExchange(objId, shmId, ic, prefix),
-	force_disconnect(true)
+                         const std::shared_ptr<SharedMemory>& ic, const std::string& prefix ):
+    MBExchange(objId, shmId, ic, prefix),
+    force_disconnect(true)
 {
-	if( objId == DefaultObjectId )
-		throw uniset::SystemError("(MBTCPMaster): objId=-1?!! Use --" + prefix + "-name" );
+    if( objId == DefaultObjectId )
+        throw uniset::SystemError("(MBTCPMaster): objId=-1?!! Use --" + prefix + "-name" );
 
-	auto conf = uniset_conf();
+    auto conf = uniset_conf();
 
-	// префикс для "свойств" - по умолчанию "tcp_";
-	prop_prefix = initPropPrefix("tcp_");
-	mbinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
+    // префикс для "свойств" - по умолчанию "tcp_";
+    prop_prefix = initPropPrefix("tcp_");
+    mbinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
-	UniXML::iterator it(cnode);
+    UniXML::iterator it(cnode);
 
-	// ---------- init MBTCP ----------
-	string pname("--" + prefix + "-gateway-iaddr");
-	iaddr    = conf->getArgParam(pname, it.getProp("gateway_iaddr"));
+    // ---------- init MBTCP ----------
+    string pname("--" + prefix + "-gateway-iaddr");
+    iaddr    = conf->getArgParam(pname, it.getProp("gateway_iaddr"));
 
-	if( iaddr.empty() )
-		throw uniset::SystemError(myname + "(MBMaster): Unknown inet addr...(Use: " + pname + ")" );
+    if( iaddr.empty() )
+        throw uniset::SystemError(myname + "(MBMaster): Unknown inet addr...(Use: " + pname + ")" );
 
-	string tmp("--" + prefix + "-gateway-port");
-	port = conf->getArgInt(tmp, it.getProp("gateway_port"));
+    string tmp("--" + prefix + "-gateway-port");
+    port = conf->getArgInt(tmp, it.getProp("gateway_port"));
 
-	if( port <= 0 )
-		throw uniset::SystemError(myname + "(MBMaster): Unknown inet port...(Use: " + tmp + ")" );
+    if( port <= 0 )
+        throw uniset::SystemError(myname + "(MBMaster): Unknown inet port...(Use: " + tmp + ")" );
 
-	mbinfo << myname << "(init): gateway " << iaddr << ":" << port << endl;
+    mbinfo << myname << "(init): gateway " << iaddr << ":" << port << endl;
 
-	force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection", it.getProp("persistent_connection")) ? false : true;
-	mbinfo << myname << "(init): persisten-connection=" << (!force_disconnect) << endl;
+    force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection", it.getProp("persistent_connection")) ? false : true;
+    mbinfo << myname << "(init): persisten-connection=" << (!force_disconnect) << endl;
 
-	if( shm->isLocalwork() )
-	{
-		readConfiguration();
+    if( shm->isLocalwork() )
+    {
+        readConfiguration();
 
-		if( !noQueryOptimization )
-			rtuQueryOptimization(devices);
+        if( !noQueryOptimization )
+            rtuQueryOptimization(devices);
 
-		initDeviceList();
-	}
-	else
-		ic->addReadItem( sigc::mem_fun(this, &MBTCPMaster::readItem) );
+        initDeviceList();
+    }
+    else
+        ic->addReadItem( sigc::mem_fun(this, &MBTCPMaster::readItem) );
 
-	pollThread = unisetstd::make_unique<ThreadCreator<MBTCPMaster>>(this, &MBTCPMaster::poll_thread);
-	pollThread->setFinalAction(this, &MBTCPMaster::final_thread);
+    pollThread = unisetstd::make_unique<ThreadCreator<MBTCPMaster>>(this, &MBTCPMaster::poll_thread);
+    pollThread->setFinalAction(this, &MBTCPMaster::final_thread);
 
-	if( mblog->is_info() )
-		printMap(devices);
+    if( mblog->is_info() )
+        printMap(devices);
 }
 // -----------------------------------------------------------------------------
 MBTCPMaster::~MBTCPMaster()
 {
-	if( pollThread && !canceled )
-	{
-		canceled = true;
+    if( pollThread && !canceled )
+    {
+        canceled = true;
 
-		if( pollThread->isRunning() )
-			pollThread->join();
-	}
+        if( pollThread->isRunning() )
+            pollThread->join();
+    }
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
 {
-	if( mbtcp )
-	{
-		if( !reopen )
-			return mbtcp;
+    if( mbtcp )
+    {
+        if( !reopen )
+            return mbtcp;
 
-		ptInitChannel.reset();
+        ptInitChannel.reset();
 
-		mbtcp->forceDisconnect();
-		mbtcp->connect(iaddr, port);
-		mbinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port
-			   << " connection=" << (mbtcp->isConnection() ? "OK" : "FAIL" ) << endl;
-		mb = mbtcp;
-		return mbtcp;
-	}
+        mbtcp->forceDisconnect();
+        mbtcp->connect(iaddr, port);
+        mbinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port
+               << " connection=" << (mbtcp->isConnection() ? "OK" : "FAIL" ) << endl;
+        mb = mbtcp;
+        return mbtcp;
+    }
 
-	mbtcp = std::make_shared<ModbusTCPMaster>();
-	mbtcp->connect(iaddr, port);
-	mbtcp->setForceDisconnect(force_disconnect);
+    mbtcp = std::make_shared<ModbusTCPMaster>();
+    mbtcp->connect(iaddr, port);
+    mbtcp->setForceDisconnect(force_disconnect);
 
-	if( recv_timeout > 0 )
-		mbtcp->setTimeout(recv_timeout);
+    if( recv_timeout > 0 )
+        mbtcp->setTimeout(recv_timeout);
 
-	mbtcp->setSleepPause(sleepPause_msec);
-	mbtcp->setAfterSendPause(aftersend_pause);
+    mbtcp->setSleepPause(sleepPause_msec);
+    mbtcp->setAfterSendPause(aftersend_pause);
 
-	mbinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port
-		   << " connection=" << (mbtcp->isConnection() ? "OK" : "FAIL" ) << endl;
+    mbinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port
+           << " connection=" << (mbtcp->isConnection() ? "OK" : "FAIL" ) << endl;
 
-	auto l = loga->create(myname + "-exchangelog");
-	mbtcp->setLog(l);
+    auto l = loga->create(myname + "-exchangelog");
+    mbtcp->setLog(l);
 
-	if( ic )
-		ic->logAgregator()->add(loga);
+    if( ic )
+        ic->logAgregator()->add(loga);
 
-	mb = mbtcp;
-	return mbtcp;
+    mb = mbtcp;
+    return mbtcp;
 }
 // -----------------------------------------------------------------------------
 void MBTCPMaster::sysCommand( const uniset::SystemMessage* sm )
 {
-	MBExchange::sysCommand(sm);
+    MBExchange::sysCommand(sm);
 
-	if( sm->command == SystemMessage::StartUp )
-		pollThread->start();
+    if( sm->command == SystemMessage::StartUp )
+        pollThread->start();
 }
 // -----------------------------------------------------------------------------
 void MBTCPMaster::final_thread()
 {
-	setProcActive(false);
-	canceled = true;
+    setProcActive(false);
+    canceled = true;
 }
 // -----------------------------------------------------------------------------
 void MBTCPMaster::poll_thread()
 {
-	// ждём начала работы..(см. MBExchange::activateObject)
-	while( !isProcActive() && !canceled )
-	{
-		uniset::uniset_rwmutex_rlock l(mutex_start);
-	}
+    // ждём начала работы..(см. MBExchange::activateObject)
+    while( !isProcActive() && !canceled )
+    {
+        uniset::uniset_rwmutex_rlock l(mutex_start);
+    }
 
-	//	if( canceled )
-	//		return;
+    //  if( canceled )
+    //      return;
 
-	// работаем
-	while( isProcActive() )
-	{
-		try
-		{
-			if( sidExchangeMode != DefaultObjectId && force )
-				exchangeMode = shm->localGetValue(itExchangeMode, sidExchangeMode);
-		}
-		catch(...)
-		{
-			throw;
-		}
+    // работаем
+    while( isProcActive() )
+    {
+        try
+        {
+            if( sidExchangeMode != DefaultObjectId && force )
+                exchangeMode = shm->localGetValue(itExchangeMode, sidExchangeMode);
+        }
+        catch(...)
+        {
+            throw;
+        }
 
-		try
-		{
-			poll();
-		}
-		catch(...)
-		{
-			//            if( !checkProcActive() )
-			throw;
-		}
+        try
+        {
+            poll();
+        }
+        catch(...)
+        {
+            //            if( !checkProcActive() )
+            throw;
+        }
 
-		if( !isProcActive() )
-			break;
+        if( !isProcActive() )
+            break;
 
-		msleep(polltime);
-	}
+        msleep(polltime);
+    }
 
-	dinfo << myname << "(poll_thread): thread finished.." << endl;
+    dinfo << myname << "(poll_thread): thread finished.." << endl;
 }
 // -----------------------------------------------------------------------------
 bool MBTCPMaster::deactivateObject()
 {
-	setProcActive(false);
-	canceled = true;
+    setProcActive(false);
+    canceled = true;
 
-	if( pollThread )
-	{
-		if( pollThread->isRunning() )
-			pollThread->join();
+    if( pollThread )
+    {
+        if( pollThread->isRunning() )
+            pollThread->join();
 
-	}
+    }
 
-	return MBExchange::deactivateObject();
+    return MBExchange::deactivateObject();
 }
 // -----------------------------------------------------------------------------
 void MBTCPMaster::help_print( int argc, const char* const* argv )
 {
-	cout << "Default: prefix='mbtcp'" << endl;
-	MBExchange::help_print(argc, argv);
-	cout << endl;
-	cout << " Настройки протокола TCP: " << endl;
-	cout << "--prefix-gateway-iaddr hostname,IP     - IP опрашиваемого узла" << endl;
-	cout << "--prefix-gateway-port num              - port на опрашиваемом узле" << endl;
-	cout << "--prefix-persistent-connection 0,1     - Не закрывать соединение на каждом цикле опроса" << endl;
+    cout << "Default: prefix='mbtcp'" << endl;
+    MBExchange::help_print(argc, argv);
+    cout << endl;
+    cout << " Настройки протокола TCP: " << endl;
+    cout << "--prefix-gateway-iaddr hostname,IP     - IP опрашиваемого узла" << endl;
+    cout << "--prefix-gateway-port num              - port на опрашиваемом узле" << endl;
+    cout << "--prefix-persistent-connection 0,1     - Не закрывать соединение на каждом цикле опроса" << endl;
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<MBTCPMaster> MBTCPMaster::init_mbmaster(int argc, const char* const* argv,
-		uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
-		const std::string& prefix )
+        uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
+        const std::string& prefix )
 {
-	auto conf = uniset_conf();
-	string name = conf->getArgParam("--" + prefix + "-name", "MBTCPMaster1");
+    auto conf = uniset_conf();
+    string name = conf->getArgParam("--" + prefix + "-name", "MBTCPMaster1");
 
-	if( name.empty() )
-	{
-		dcrit << "(MBTCPMaster): Не задан name'" << endl;
-		return 0;
-	}
+    if( name.empty() )
+    {
+        dcrit << "(MBTCPMaster): Не задан name'" << endl;
+        return 0;
+    }
 
-	ObjectId ID = conf->getObjectID(name);
+    ObjectId ID = conf->getObjectID(name);
 
-	if( ID == uniset::DefaultObjectId )
-	{
-		dcrit << "(MBTCPMaster): идентификатор '" << name
-			  << "' не найден в конф. файле!"
-			  << " в секции " << conf->getObjectsSection() << endl;
-		return 0;
-	}
+    if( ID == uniset::DefaultObjectId )
+    {
+        dcrit << "(MBTCPMaster): идентификатор '" << name
+              << "' не найден в конф. файле!"
+              << " в секции " << conf->getObjectsSection() << endl;
+        return 0;
+    }
 
-	dinfo << "(MBTCPMaster): name = " << name << "(" << ID << ")" << endl;
-	return make_shared<MBTCPMaster>(ID, icID, ic, prefix);
+    dinfo << "(MBTCPMaster): name = " << name << "(" << ID << ")" << endl;
+    return make_shared<MBTCPMaster>(ID, icID, ic, prefix);
 }
 // -----------------------------------------------------------------------------
 uniset::SimpleInfo* MBTCPMaster::getInfo( const char* userparam )
 {
-	uniset::SimpleInfo_var i = MBExchange::getInfo(userparam);
+    uniset::SimpleInfo_var i = MBExchange::getInfo(userparam);
 
-	ostringstream inf;
+    ostringstream inf;
 
-	inf << i->info << endl;
-	inf << "poll: " << iaddr << ":" << port << " pesrsistent-connection=" << ( force_disconnect ? "NO" : "YES" ) << endl;
+    inf << i->info << endl;
+    inf << "poll: " << iaddr << ":" << port << " pesrsistent-connection=" << ( force_disconnect ? "NO" : "YES" ) << endl;
 
-	i->info = inf.str().c_str();
-	return i._retn();
+    i->info = inf.str().c_str();
+    return i._retn();
 }
 // ----------------------------------------------------------------------------

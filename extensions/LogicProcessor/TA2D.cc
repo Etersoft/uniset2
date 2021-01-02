@@ -20,44 +20,44 @@
 // -----------------------------------------------------------------------------
 namespace uniset
 {
-	// -------------------------------------------------------------------------
-	using namespace std;
-	using namespace uniset::extensions;
-	// -------------------------------------------------------------------------
-	TA2D::TA2D(Element::ElementID id , long filterValue ):
-		Element(id),
-		myout(false),
-		fvalue(filterValue)
-	{
-		ins.emplace_front(1, myout);
-	}
+    // -------------------------------------------------------------------------
+    using namespace std;
+    using namespace uniset::extensions;
+    // -------------------------------------------------------------------------
+    TA2D::TA2D(Element::ElementID id, long filterValue ):
+        Element(id),
+        myout(false),
+        fvalue(filterValue)
+    {
+        ins.emplace_front(1, myout);
+    }
 
-	TA2D::~TA2D()
-	{
-	}
-	// -------------------------------------------------------------------------
-	void TA2D::setIn( size_t num, long value )
-	{
-		// num игнорируем, т.к у нас всего один вход..
+    TA2D::~TA2D()
+    {
+    }
+    // -------------------------------------------------------------------------
+    void TA2D::setIn( size_t num, long value )
+    {
+        // num игнорируем, т.к у нас всего один вход..
 
-		bool prev = myout;
-		myout = ( fvalue == value );
+        bool prev = myout;
+        myout = ( fvalue == value );
 
-		if( prev != myout )
-			Element::setChildOut();
-	}
-	// -------------------------------------------------------------------------
-	long TA2D::getOut() const
-	{
-		return ( myout ? 1 : 0 );
-	}
-	// -------------------------------------------------------------------------
-	void TA2D::setFilterValue( long value )
-	{
-		if( fvalue != value && myout )
-			myout = false;
+        if( prev != myout )
+            Element::setChildOut();
+    }
+    // -------------------------------------------------------------------------
+    long TA2D::getOut() const
+    {
+        return ( myout ? 1 : 0 );
+    }
+    // -------------------------------------------------------------------------
+    void TA2D::setFilterValue( long value )
+    {
+        if( fvalue != value && myout )
+            myout = false;
 
-		fvalue = value;
-	}
-	// -------------------------------------------------------------------------
+        fvalue = value;
+    }
+    // -------------------------------------------------------------------------
 } // end of namespace uniset

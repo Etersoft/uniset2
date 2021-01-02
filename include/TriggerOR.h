@@ -26,100 +26,100 @@
 //---------------------------------------------------------------------------
 namespace uniset
 {
-	/*!
-	    Триггер \b "ИЛИ", со множеством входов.
-	    Логика включения следующая:
-	    - "1" на любом входе даёт на выходе "1"
-	    - "0" на \b ВСЕХ входах даёт на выходе "0"
+    /*!
+        Триггер \b "ИЛИ", со множеством входов.
+        Логика включения следующая:
+        - "1" на любом входе даёт на выходе "1"
+        - "0" на \b ВСЕХ входах даёт на выходе "0"
 
-	    В конструкторе указывается функция, которая будет вызываться при \b ИЗМЕНЕНИИ состояния выхода.
+        В конструкторе указывается функция, которая будет вызываться при \b ИЗМЕНЕНИИ состояния выхода.
 
-	    \warning Нет блокирования совместного доступа(не рассчитан на работу в многопоточной среде).
+        \warning Нет блокирования совместного доступа(не рассчитан на работу в многопоточной среде).
 
-	    \par Пример использования
-	    \code
-	    #include "TriggerOR.h"
-	    class MyClass
-	    {
-	        public:
-	            MyClass(){};
-	            ~MyClass(){};
-	            void out( bool newstate){ cout << "OR out state="<< newstate <<endl;}
-	        ...
-	    };
+        \par Пример использования
+        \code
+        #include "TriggerOR.h"
+        class MyClass
+        {
+            public:
+                MyClass(){};
+                ~MyClass(){};
+                void out( bool newstate){ cout << "OR out state="<< newstate <<endl;}
+            ...
+        };
 
-	    ...
-	    MyClass rec;
-	    // Создание
-	    TriggerOR<MyClass> tr(&rec, &MyClass::out);
+        ...
+        MyClass rec;
+        // Создание
+        TriggerOR<MyClass> tr(&rec, &MyClass::out);
 
-	    // Добавление 'входов'
-	    tr.add(1,true);
-	    tr.add(2,false);
-	    tr.add(3,false);
-	    tr.add(4,false);
-	    ...
+        // Добавление 'входов'
+        tr.add(1,true);
+        tr.add(2,false);
+        tr.add(3,false);
+        tr.add(4,false);
+        ...
 
-	    // Использование:
-	    // подаём на вход N1 "0"
-	    // после чего, при изменении состояния 'выхода' будет вызвана функция MyClass::out, в которой производится
-	    // фактическая обработка 'изменения состояния'
+        // Использование:
+        // подаём на вход N1 "0"
+        // после чего, при изменении состояния 'выхода' будет вызвана функция MyClass::out, в которой производится
+        // фактическая обработка 'изменения состояния'
 
-	    tr.commit(1,false);
+        tr.commit(1,false);
 
-	    \endcode
-	*/
-	template<class Caller, typename InputType = int>
-	class TriggerOR
-	{
-		public:
+        \endcode
+    */
+    template<class Caller, typename InputType = int>
+    class TriggerOR
+    {
+        public:
 
-			/*!
-			    прототип функции вызова
-			    \param newstate - новое состояние 'выхода'
-			*/
-			typedef void(Caller::* Action)(bool newstate);
+            /*!
+                прототип функции вызова
+                \param newstate - новое состояние 'выхода'
+            */
+            typedef void(Caller::* Action)(bool newstate);
 
-			TriggerOR(Caller* r, Action a) noexcept;
-			~TriggerOR() noexcept;
+            TriggerOR(Caller* r, Action a) noexcept;
+            ~TriggerOR() noexcept;
 
-			inline bool state() const noexcept
-			{
-				return out;
-			}
+            inline bool state() const noexcept
+            {
+                return out;
+            }
 
-			bool getState(InputType in) const noexcept;
-			bool commit(InputType in, bool state);
+            bool getState(InputType in) const noexcept;
+            bool commit(InputType in, bool state);
 
-			void add(InputType in, bool state);
-			void remove(InputType in);
+            void add(InputType in, bool state);
+            void remove(InputType in);
 
-			typedef std::unordered_map<InputType, bool> InputMap;
+            typedef std::unordered_map<InputType, bool> InputMap;
 
-			inline typename InputMap::const_iterator begin() noexcept
-			{
-				return inputs.begin();
-			}
+            inline typename InputMap::const_iterator begin() noexcept
+            {
+                return inputs.begin();
+            }
 
-			inline typename InputMap::const_iterator end() noexcept
-			{
-				return inputs.end();
-			}
+            inline typename InputMap::const_iterator end() noexcept
+            {
+                return inputs.end();
+            }
 
-			void update();
-			void reset();
+            void update();
+            void reset();
 
-		protected:
-			void check();
+        protected:
+            void check();
 
-			InputMap inputs; // список входов
-			bool out = { false };
-			Caller* cal;
-			Action act;
-	};
-	// -------------------------------------------------------------------------
+            InputMap inputs; // список входов
+            bool out = { false };
+            Caller* cal;
+            Action act;
+    };
+    // -------------------------------------------------------------------------
 #include "TriggerOR.tcc"
-	//---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
 } // end of uniset namespace
 //---------------------------------------------------------------------------
 #endif

@@ -33,18 +33,18 @@ namespace uniset
 
 #ifndef VMON_DEF_FUNC
 #define VMON_DEF_FUNC(T) \
-	void add( const std::string& name, const T& v );\
-	static const std::string pretty_str( const std::string& name, const T* v, int width = NameWidth ); \
-	static const std::string pretty_str( const std::string& name, const T& v, int width = NameWidth )
+    void add( const std::string& name, const T& v );\
+    static const std::string pretty_str( const std::string& name, const T* v, int width = NameWidth ); \
+    static const std::string pretty_str( const std::string& name, const T& v, int width = NameWidth )
 #endif
 #ifndef VMON_DEF_FUNC2
 #define VMON_DEF_FUNC2(T) \
-	void add( const std::string& name, const T& v );\
-	void add( const std::string& name, const unsigned T& v );\
-	static const std::string pretty_str( const std::string& name, const T* v, int width = NameWidth );\
-	static const std::string pretty_str( const std::string& name, const unsigned T* v, int width = NameWidth ); \
-	static const std::string pretty_str( const std::string& name, const T& v, int width = NameWidth );\
-	static const std::string pretty_str( const std::string& name, const unsigned T& v, int width = NameWidth )
+    void add( const std::string& name, const T& v );\
+    void add( const std::string& name, const unsigned T& v );\
+    static const std::string pretty_str( const std::string& name, const T* v, int width = NameWidth );\
+    static const std::string pretty_str( const std::string& name, const unsigned T* v, int width = NameWidth ); \
+    static const std::string pretty_str( const std::string& name, const T& v, int width = NameWidth );\
+    static const std::string pretty_str( const std::string& name, const unsigned T& v, int width = NameWidth )
 #endif
 
 #ifndef VMON_DEF_MAP
@@ -53,123 +53,123 @@ namespace uniset
 
 #ifndef VMON_DEF_MAP2
 #define VMON_DEF_MAP2(T) \
-	std::unordered_map<const T*,const std::string> m_##T; \
-	std::unordered_map<const unsigned T*,const std::string> m_unsigned_##T
+    std::unordered_map<const T*,const std::string> m_##T; \
+    std::unordered_map<const unsigned T*,const std::string> m_unsigned_##T
 #endif
 
 #ifndef VMON_DEF_MAP3
 #define VMON_DEF_MAP3(T,M) std::unordered_map<const T*,const std::string> m_##M
 #endif
 
-	// --------------------------------------------------------------------------
-	/* EXAMPLE HELPER MACROS
+    // --------------------------------------------------------------------------
+    /* EXAMPLE HELPER MACROS
 
-	#ifndef vmonit
-	#define vmonit( var ) add( #var, var )
-	#endif
+    #ifndef vmonit
+    #define vmonit( var ) add( #var, var )
+    #endif
 
-	*/
-	// --------------------------------------------------------------------------
-	/*! Вспомогательный класс для реализации "мониторинга" состояния переменных стандартных(!) типов.
-	 * Необходимые переменные добавляются при помощи функции add() (специально перегруженной под разные типы).
-	 * Для удобства использования должен быть определён макрос примерно следующего вида
-	 \code
-	  #define vmonit( var ) vmon.add( #var, var )
-	 \endcode
-	 * При условии, что в классе создан объект VMonitor с именем vmon.
-	 \code
-	  class MyClass
-	  {
-		 public:
+    */
+    // --------------------------------------------------------------------------
+    /*! Вспомогательный класс для реализации "мониторинга" состояния переменных стандартных(!) типов.
+     * Необходимые переменные добавляются при помощи функции add() (специально перегруженной под разные типы).
+     * Для удобства использования должен быть определён макрос примерно следующего вида
+     \code
+      #define vmonit( var ) vmon.add( #var, var )
+     \endcode
+     * При условии, что в классе создан объект VMonitor с именем vmon.
+     \code
+      class MyClass
+      {
+         public:
 
-			MyClass()
-			{
-			   // сделать один раз для нужных переменных
-			   vmonit(myvar1);
-			   vmonit(myvar2)
-			   vmonit(myvar3);
-			}
+            MyClass()
+            {
+               // сделать один раз для нужных переменных
+               vmonit(myvar1);
+               vmonit(myvar2)
+               vmonit(myvar3);
+            }
 
-			...
+            ...
 
-			void printState()
-			{
-			  cout << vmon.get_pretty_str() << endl;
-			  // или
-			  cout << vmon.str() << endl;
-			  // или
-			  cout << vmon << endl;
-			}
+            void printState()
+            {
+              cout << vmon.get_pretty_str() << endl;
+              // или
+              cout << vmon.str() << endl;
+              // или
+              cout << vmon << endl;
+            }
 
-		 private:
-			int myvar1;
-			bool myvar2;
-			long myvar3;
-			...
-			VMonitor vmon;
-	  }
-	 \endcode
-	 *
-	 *
-	 * \todo Нужно добавить поддержку "пользовательских типов" (возможно нужно использовать variadic templates)
-	*/
-	class VMonitor
-	{
-		public:
-			VMonitor() {}
+         private:
+            int myvar1;
+            bool myvar2;
+            long myvar3;
+            ...
+            VMonitor vmon;
+      }
+     \endcode
+     *
+     *
+     * \todo Нужно добавить поддержку "пользовательских типов" (возможно нужно использовать variadic templates)
+    */
+    class VMonitor
+    {
+        public:
+            VMonitor() {}
 
-			friend std::ostream& operator<<(std::ostream& os, VMonitor& m );
+            friend std::ostream& operator<<(std::ostream& os, VMonitor& m );
 
-			static const int NameWidth = { 30 };
-			static const int ColCount = { 2 };
+            static const int NameWidth = { 30 };
+            static const int ColCount = { 2 };
 
-			/*! вывести все элементы в "простом формате" (строки "varname = value") */
-			std::string str() const;
+            /*! вывести все элементы в "простом формате" (строки "varname = value") */
+            std::string str() const;
 
-			/*! вывести все элементы "с форматированием" (отсортированные по алфавиту)
-			 * \param namewidth - ширина резервируемая под "имя"
-			 * \param colnum - количество столбцов вывода
-			 */
-			std::string pretty_str( int namewidth = NameWidth, int colnum = ColCount ) const;
+            /*! вывести все элементы "с форматированием" (отсортированные по алфавиту)
+             * \param namewidth - ширина резервируемая под "имя"
+             * \param colnum - количество столбцов вывода
+             */
+            std::string pretty_str( int namewidth = NameWidth, int colnum = ColCount ) const;
 
-			// перегрузки для стандартных типов..
-			VMON_DEF_FUNC2(int);
-			VMON_DEF_FUNC2(long);
-			VMON_DEF_FUNC2(short);
-			VMON_DEF_FUNC2(char);
-			VMON_DEF_FUNC(bool);
-			VMON_DEF_FUNC(float);
-			VMON_DEF_FUNC(double);
+            // перегрузки для стандартных типов..
+            VMON_DEF_FUNC2(int);
+            VMON_DEF_FUNC2(long);
+            VMON_DEF_FUNC2(short);
+            VMON_DEF_FUNC2(char);
+            VMON_DEF_FUNC(bool);
+            VMON_DEF_FUNC(float);
+            VMON_DEF_FUNC(double);
 
-#ifndef	POCO_LONG_IS_64_BIT
-			VMON_DEF_FUNC(Poco::Int64); // <--- for timeout_t
+#ifndef POCO_LONG_IS_64_BIT
+            VMON_DEF_FUNC(Poco::Int64); // <--- for timeout_t
 #endif
 
-			void add( const std::string& name, const std::string& v );
+            void add( const std::string& name, const std::string& v );
 
-			static const std::string pretty_str( const std::string& name, const std::string* v, int width = NameWidth );
-			static const std::string pretty_str( const std::string& name, const std::string& v, int width = NameWidth );
+            static const std::string pretty_str( const std::string& name, const std::string* v, int width = NameWidth );
+            static const std::string pretty_str( const std::string& name, const std::string& v, int width = NameWidth );
 
-			std::list<std::pair<std::string, std::string>> getList() const;
+            std::list<std::pair<std::string, std::string>> getList() const;
 
-		protected:
+        protected:
 
-		private:
+        private:
 
-			// определения для стандартных типов
-			VMON_DEF_MAP2(int);
-			VMON_DEF_MAP2(long);
-			VMON_DEF_MAP2(short);
-			VMON_DEF_MAP2(char);
-			VMON_DEF_MAP(bool);
-			VMON_DEF_MAP(float);
-			VMON_DEF_MAP(double);
-#ifndef	POCO_LONG_IS_64_BIT
-			std::unordered_map<const Poco::Int64*, const std::string> m_Int64;
+            // определения для стандартных типов
+            VMON_DEF_MAP2(int);
+            VMON_DEF_MAP2(long);
+            VMON_DEF_MAP2(short);
+            VMON_DEF_MAP2(char);
+            VMON_DEF_MAP(bool);
+            VMON_DEF_MAP(float);
+            VMON_DEF_MAP(double);
+#ifndef POCO_LONG_IS_64_BIT
+            std::unordered_map<const Poco::Int64*, const std::string> m_Int64;
 #endif
-			VMON_DEF_MAP3(std::string, string);
-	};
-	// -------------------------------------------------------------------------
+            VMON_DEF_MAP3(std::string, string);
+    };
+    // -------------------------------------------------------------------------
 } // end of uniset namespace
 // --------------------------------------------------------------------------
 #endif

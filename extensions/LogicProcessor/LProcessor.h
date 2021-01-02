@@ -34,11 +34,11 @@
     -# \b "ИЛИ" \b (OR)
     -# \b "Задержка" \b (Delay)
     -# \b "Отрицание" \b (NOT)
-	-# \b "Преобразование аналогового значения в логическое" \b (A2D)
+    -# \b "Преобразование аналогового значения в логическое" \b (A2D)
 
-	Стоит отметить, что по мере развития, процесс стал поддерживать не только логические операции,
-	а работу с числовыми(аналоговыми) величинами. Например элемент "TA2D",
-	но в названии оставлено "Logic".
+    Стоит отметить, что по мере развития, процесс стал поддерживать не только логические операции,
+    а работу с числовыми(аналоговыми) величинами. Например элемент "TA2D",
+    но в названии оставлено "Logic".
 
     \section sec_lpShema Конфигурирование
         Конфигурирование процесса осуществляется при помощи xml-файла задающего
@@ -115,68 +115,68 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-	// --------------------------------------------------------------------------
-	class LProcessor
-	{
-		public:
-			explicit LProcessor( const std::string& name = "" );
-			virtual ~LProcessor();
+    // --------------------------------------------------------------------------
+    class LProcessor
+    {
+        public:
+            explicit LProcessor( const std::string& name = "" );
+            virtual ~LProcessor();
 
-			void open( const std::string& lfile );
+            void open( const std::string& lfile );
 
-			bool isOpen() const;
+            bool isOpen() const;
 
-			timeout_t getSleepTime() const noexcept;
+            timeout_t getSleepTime() const noexcept;
 
-			std::shared_ptr<SchemaXML> getSchema();
+            std::shared_ptr<SchemaXML> getSchema();
 
-			virtual void execute( const std::string& lfile = "" );
+            virtual void execute( const std::string& lfile = "" );
 
-			virtual void terminate();
+            virtual void terminate();
 
-		protected:
+        protected:
 
-			virtual void build( const std::string& lfile );
+            virtual void build( const std::string& lfile );
 
-			virtual void step();
+            virtual void step();
 
-			virtual void getInputs();
-			virtual void processing();
-			virtual void setOuts();
+            virtual void getInputs();
+            virtual void processing();
+            virtual void setOuts();
 
-			struct EXTInfo
-			{
-				uniset::ObjectId sid = { uniset::DefaultObjectId };
-				long value = { 0 };
-				std::shared_ptr<Element> el = { nullptr };
-				int numInput = { -1 };
-			};
+            struct EXTInfo
+            {
+                uniset::ObjectId sid = { uniset::DefaultObjectId };
+                long value = { 0 };
+                std::shared_ptr<Element> el = { nullptr };
+                int numInput = { -1 };
+            };
 
-			struct EXTOutInfo
-			{
-				uniset::ObjectId sid = { uniset::DefaultObjectId };
-				std::shared_ptr<Element> el = { nullptr };
-			};
+            struct EXTOutInfo
+            {
+                uniset::ObjectId sid = { uniset::DefaultObjectId };
+                std::shared_ptr<Element> el = { nullptr };
+            };
 
-			typedef std::list<EXTInfo> EXTList;
-			typedef std::list<EXTOutInfo> OUTList;
+            typedef std::list<EXTInfo> EXTList;
+            typedef std::list<EXTOutInfo> OUTList;
 
-			EXTList extInputs;
-			OUTList extOuts;
+            EXTList extInputs;
+            OUTList extOuts;
 
-			std::shared_ptr<SchemaXML> sch;
+            std::shared_ptr<SchemaXML> sch;
 
-			UInterface ui;
-			timeout_t sleepTime = { 200 };
-			timeout_t smReadyTimeout = { 120000 } ;     /*!< время ожидания готовности SM, мсек */
+            UInterface ui;
+            timeout_t sleepTime = { 200 };
+            timeout_t smReadyTimeout = { 120000 } ;     /*!< время ожидания готовности SM, мсек */
 
-			std::string logname = { "" };
-			std::atomic_bool canceled = {false};
-			std::string fSchema = {""};
+            std::string logname = { "" };
+            std::atomic_bool canceled = {false};
+            std::string fSchema = {""};
 
-		private:
-	};
-	// --------------------------------------------------------------------------
+        private:
+    };
+    // --------------------------------------------------------------------------
 } // end of namespace uniset
 // ---------------------------------------------------------------------------
 #endif
