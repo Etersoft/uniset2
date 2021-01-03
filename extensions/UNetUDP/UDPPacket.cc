@@ -114,236 +114,236 @@ namespace uniset
             }
 
 #endif
-			// crc = crc & 0xffff;
-		}
+            // crc = crc & 0xffff;
+        }
 
-		return crc;
-	}
-	// -------------------------------------------------------------------------
-	uint16_t UniSetUDP::makeCRC( unsigned char* buf, size_t len ) noexcept
-	{
-		uint16_t crc = 0xffff;
-		crc = get_crc_16(crc, (unsigned char*)(buf), len);
-		return crc;
-	}
-	// -----------------------------------------------------------------------------
-	std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPHeader& p )
-	{
-		return os << "nodeID=" << p.nodeID
-			   << " procID=" << p.procID
-			   << " dcount=" << p.dcount
-			   << " acount=" << p.acount
-			   << " pnum=" << p.num;
-	}
-	// -----------------------------------------------------------------------------
-	std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPHeader* p )
-	{
-		return os << (*p);
-	}
-	// -----------------------------------------------------------------------------
-	std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPAData& p )
-	{
-		return os << "id=" << p.id << " val=" << p.val;
-	}
-	// -----------------------------------------------------------------------------
-	std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPMessage& p )
-	{
-		os << (UDPHeader*)(&p) << endl;
+        return crc;
+    }
+    // -------------------------------------------------------------------------
+    uint16_t UniSetUDP::makeCRC( unsigned char* buf, size_t len ) noexcept
+    {
+        uint16_t crc = 0xffff;
+        crc = get_crc_16(crc, (unsigned char*)(buf), len);
+        return crc;
+    }
+    // -----------------------------------------------------------------------------
+    std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPHeader& p )
+    {
+        return os << "nodeID=" << p.nodeID
+               << " procID=" << p.procID
+               << " dcount=" << p.dcount
+               << " acount=" << p.acount
+               << " pnum=" << p.num;
+    }
+    // -----------------------------------------------------------------------------
+    std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPHeader* p )
+    {
+        return os << (*p);
+    }
+    // -----------------------------------------------------------------------------
+    std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPAData& p )
+    {
+        return os << "id=" << p.id << " val=" << p.val;
+    }
+    // -----------------------------------------------------------------------------
+    std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPMessage& p )
+    {
+        os << (UDPHeader*)(&p) << endl;
 
-		os << "DIGITAL:" << endl;
+        os << "DIGITAL:" << endl;
 
-		for( size_t i = 0; i < p.header.dcount; i++ )
-			os << "[" << i << "]={" << p.dID(i) << "," << p.dValue(i) << "}" << endl;
+        for( size_t i = 0; i < p.header.dcount; i++ )
+            os << "[" << i << "]={" << p.dID(i) << "," << p.dValue(i) << "}" << endl;
 
-		os << "ANALOG:" << endl;
+        os << "ANALOG:" << endl;
 
-		for( size_t i = 0; i < p.header.acount; i++ )
-			os << "[" << i << "]={" << p.a_dat[i].id << "," << p.a_dat[i].val << "}" << endl;
+        for( size_t i = 0; i < p.header.acount; i++ )
+            os << "[" << i << "]={" << p.a_dat[i].id << "," << p.a_dat[i].val << "}" << endl;
 
-		return os;
-	}
-	// -----------------------------------------------------------------------------
-	size_t UDPMessage::addAData( const UniSetUDP::UDPAData& dat ) noexcept
-	{
-		if( header.acount >= MaxACount )
-			return MaxACount;
+        return os;
+    }
+    // -----------------------------------------------------------------------------
+    size_t UDPMessage::addAData( const UniSetUDP::UDPAData& dat ) noexcept
+    {
+        if( header.acount >= MaxACount )
+            return MaxACount;
 
-		a_dat[header.acount] = dat;
-		header.acount++;
-		return header.acount - 1;
-	}
-	// -----------------------------------------------------------------------------
-	size_t UDPMessage::addAData( long id, long val) noexcept
-	{
-		UDPAData d(id, val);
-		return addAData(d);
-	}
-	// -----------------------------------------------------------------------------
-	bool UDPMessage::setAData( size_t index, long val ) noexcept
-	{
-		if( index < MaxACount )
-		{
-			a_dat[index].val = val;
-			return true;
-		}
+        a_dat[header.acount] = dat;
+        header.acount++;
+        return header.acount - 1;
+    }
+    // -----------------------------------------------------------------------------
+    size_t UDPMessage::addAData( long id, long val) noexcept
+    {
+        UDPAData d(id, val);
+        return addAData(d);
+    }
+    // -----------------------------------------------------------------------------
+    bool UDPMessage::setAData( size_t index, long val ) noexcept
+    {
+        if( index < MaxACount )
+        {
+            a_dat[index].val = val;
+            return true;
+        }
 
-		return false;
-	}
-	// -----------------------------------------------------------------------------
-	size_t UDPMessage::addDData( long id, bool val ) noexcept
-	{
-		if( header.dcount >= MaxDCount )
-			return MaxDCount;
+        return false;
+    }
+    // -----------------------------------------------------------------------------
+    size_t UDPMessage::addDData( long id, bool val ) noexcept
+    {
+        if( header.dcount >= MaxDCount )
+            return MaxDCount;
 
-		// сохраняем ID
-		d_id[header.dcount] = id;
+        // сохраняем ID
+        d_id[header.dcount] = id;
 
-		bool res = setDData( header.dcount, val );
+        bool res = setDData( header.dcount, val );
 
-		if( res )
-		{
-			header.dcount++;
-			return header.dcount - 1;
-		}
+        if( res )
+        {
+            header.dcount++;
+            return header.dcount - 1;
+        }
 
-		return MaxDCount;
-	}
-	// -----------------------------------------------------------------------------
-	bool UDPMessage::setDData( size_t index, bool val ) noexcept
-	{
-		if( index >= MaxDCount )
-			return false;
+        return MaxDCount;
+    }
+    // -----------------------------------------------------------------------------
+    bool UDPMessage::setDData( size_t index, bool val ) noexcept
+    {
+        if( index >= MaxDCount )
+            return false;
 
-		size_t nbyte = index / 8 * sizeof(uint8_t);
-		size_t nbit =  index % 8 * sizeof(uint8_t);
+        size_t nbyte = index / 8 * sizeof(uint8_t);
+        size_t nbit =  index % 8 * sizeof(uint8_t);
 
-		// выставляем бит
-		unsigned char d = d_dat[nbyte];
+        // выставляем бит
+        unsigned char d = d_dat[nbyte];
 
-		if( val )
-			d |= (1 << nbit);
-		else
-			d &= ~(1 << nbit);
+        if( val )
+            d |= (1 << nbit);
+        else
+            d &= ~(1 << nbit);
 
-		d_dat[nbyte] = d;
-		return true;
-	}
-	// -----------------------------------------------------------------------------
-	long UDPMessage::dID( size_t index ) const noexcept
-	{
-		if( index >= MaxDCount )
-			return uniset::DefaultObjectId;
+        d_dat[nbyte] = d;
+        return true;
+    }
+    // -----------------------------------------------------------------------------
+    long UDPMessage::dID( size_t index ) const noexcept
+    {
+        if( index >= MaxDCount )
+            return uniset::DefaultObjectId;
 
-		return d_id[index];
-	}
-	// -----------------------------------------------------------------------------
-	bool UDPMessage::dValue( size_t index ) const noexcept
-	{
-		if( index >= MaxDCount )
-			return uniset::DefaultObjectId;
+        return d_id[index];
+    }
+    // -----------------------------------------------------------------------------
+    bool UDPMessage::dValue( size_t index ) const noexcept
+    {
+        if( index >= MaxDCount )
+            return uniset::DefaultObjectId;
 
-		size_t nbyte = index / 8 * sizeof(uint8_t);
-		size_t nbit =  index % 8 * sizeof(uint8_t);
+        size_t nbyte = index / 8 * sizeof(uint8_t);
+        size_t nbit =  index % 8 * sizeof(uint8_t);
 
-		return ( d_dat[nbyte] & (1 << nbit) );
-	}
-	// -----------------------------------------------------------------------------
-	long UDPMessage::getDataID() const noexcept
-	{
-		// в качестве идентификатора берётся ID первого датчика в данных
-		// приоритет имеет аналоговые датчики
+        return ( d_dat[nbyte] & (1 << nbit) );
+    }
+    // -----------------------------------------------------------------------------
+    long UDPMessage::getDataID() const noexcept
+    {
+        // в качестве идентификатора берётся ID первого датчика в данных
+        // приоритет имеет аналоговые датчики
 
-		if( header.acount > 0 )
-			return a_dat[0].id;
+        if( header.acount > 0 )
+            return a_dat[0].id;
 
-		if( header.dcount > 0 )
-			return d_id[0];
+        if( header.dcount > 0 )
+            return d_id[0];
 
-		// если нет данных(?) просто возвращаем номер пакета
-		return header.num;
-	}
-	// -----------------------------------------------------------------------------
-	bool UDPMessage::isOk() noexcept
-	{
-		return ( header.magic == UniSetUDP::UNETUDP_MAGICNUM );
-	}
-	// -----------------------------------------------------------------------------
-	void UDPMessage::ntoh() noexcept
-	{
-		// byte order from packet
-		uint8_t be_order = header._be_order;
+        // если нет данных(?) просто возвращаем номер пакета
+        return header.num;
+    }
+    // -----------------------------------------------------------------------------
+    bool UDPMessage::isOk() noexcept
+    {
+        return ( header.magic == UniSetUDP::UNETUDP_MAGICNUM );
+    }
+    // -----------------------------------------------------------------------------
+    void UDPMessage::ntoh() noexcept
+    {
+        // byte order from packet
+        uint8_t be_order = header._be_order;
 
-		if( be_order && !HostIsBigEndian )
-		{
-			BE_TO_H(header.magic);
-			BE_TO_H(header.num);
-			BE_TO_H(header.procID);
-			BE_TO_H(header.nodeID);
-			BE_TO_H(header.dcount);
-			BE_TO_H(header.acount);
-		}
-		else if( !be_order && HostIsBigEndian )
-		{
-			LE_TO_H(header.magic);
-			LE_TO_H(header.num);
-			LE_TO_H(header.procID);
-			LE_TO_H(header.nodeID);
-			LE_TO_H(header.dcount);
-			LE_TO_H(header.acount);
-		}
+        if( be_order && !HostIsBigEndian )
+        {
+            BE_TO_H(header.magic);
+            BE_TO_H(header.num);
+            BE_TO_H(header.procID);
+            BE_TO_H(header.nodeID);
+            BE_TO_H(header.dcount);
+            BE_TO_H(header.acount);
+        }
+        else if( !be_order && HostIsBigEndian )
+        {
+            LE_TO_H(header.magic);
+            LE_TO_H(header.num);
+            LE_TO_H(header.procID);
+            LE_TO_H(header.nodeID);
+            LE_TO_H(header.dcount);
+            LE_TO_H(header.acount);
+        }
 
-		// set host byte order
+        // set host byte order
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		header._be_order = 0;
+        header._be_order = 0;
 #elif __BYTE_ORDER == __BIG_ENDIAN
-		header._be_order = 1;
+        header._be_order = 1;
 #else
 #error UNET(getMessage): Unknown byte order!
 #endif
 
-		// CONVERT DATA TO HOST BYTE ORDER
-		// -------------------------------
-		if( (be_order && !HostIsBigEndian) || (!be_order && HostIsBigEndian) )
-		{
-			for( size_t n = 0; n < header.acount; n++ )
-			{
-				if( be_order )
-				{
-					BE_TO_H(a_dat[n].id);
-					BE_TO_H(a_dat[n].val);
-				}
-				else
-				{
-					LE_TO_H(a_dat[n].id);
-					LE_TO_H(a_dat[n].val);
-				}
-			}
+        // CONVERT DATA TO HOST BYTE ORDER
+        // -------------------------------
+        if( (be_order && !HostIsBigEndian) || (!be_order && HostIsBigEndian) )
+        {
+            for( size_t n = 0; n < header.acount; n++ )
+            {
+                if( be_order )
+                {
+                    BE_TO_H(a_dat[n].id);
+                    BE_TO_H(a_dat[n].val);
+                }
+                else
+                {
+                    LE_TO_H(a_dat[n].id);
+                    LE_TO_H(a_dat[n].val);
+                }
+            }
 
-			for( size_t n = 0; n < header.dcount; n++ )
-			{
-				if( be_order )
-				{
-					BE_TO_H(d_id[n]);
-				}
-				else
-				{
-					LE_TO_H(d_id[n]);
-				}
-			}
-		}
-	}
-	// -----------------------------------------------------------------------------
-	uint16_t UDPMessage::getDataCRC() const noexcept
-	{
-		uint16_t crc[3];
-		crc[0] = makeCRC( (unsigned char*)(a_dat), sizeof(a_dat) );
-		crc[1] = makeCRC( (unsigned char*)(d_id), sizeof(d_id) );
-		crc[2] = makeCRC( (unsigned char*)(d_dat), sizeof(d_dat) );
-		return makeCRC( (unsigned char*)(&crc), sizeof(crc) );
-	}
+            for( size_t n = 0; n < header.dcount; n++ )
+            {
+                if( be_order )
+                {
+                    BE_TO_H(d_id[n]);
+                }
+                else
+                {
+                    LE_TO_H(d_id[n]);
+                }
+            }
+        }
+    }
+    // -----------------------------------------------------------------------------
+    uint16_t UDPMessage::getDataCRC() const noexcept
+    {
+        uint16_t crc[3];
+        crc[0] = makeCRC( (unsigned char*)(a_dat), sizeof(a_dat) );
+        crc[1] = makeCRC( (unsigned char*)(d_id), sizeof(d_id) );
+        crc[2] = makeCRC( (unsigned char*)(d_dat), sizeof(d_dat) );
+        return makeCRC( (unsigned char*)(&crc), sizeof(crc) );
+    }
 
-	UDPHeader::UDPHeader() noexcept
-		: magic(UNETUDP_MAGICNUM)
+    UDPHeader::UDPHeader() noexcept
+        : magic(UNETUDP_MAGICNUM)
 #if __BYTE_ORDER == __LITTLE_ENDIAN
         , _be_order(0)
 #elif __BYTE_ORDER == __BIG_ENDIAN
