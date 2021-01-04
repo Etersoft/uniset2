@@ -300,7 +300,7 @@ namespace uniset
             transientIOR = false;
             localIOR     = false;
 
-            string lnode( getArgParam("--localNode") );
+            const string lnode( getArgParam("--localNode") );
 
             if( !lnode.empty() )
                 setLocalNode(lnode);
@@ -336,7 +336,7 @@ namespace uniset
             {
                 for(; omniIt.getCurrent(); omniIt++ )
                 {
-                    std::string p(omniIt.getProp("name"));
+                    const std::string p(omniIt.getProp("name"));
 
                     if( p.empty() )
                     {
@@ -446,7 +446,7 @@ namespace uniset
                 // "где мы выделяли, а где не мы"
                 // делать delete[]
                 omni_options[i][0] = uni_strdup("InitRef");
-                string defPort( getPort( getProp(nsnode, "port") ) );
+                const string defPort( getPort( getProp(nsnode, "port") ) );
 
                 ostringstream param;
                 param << this << "NameService=corbaname::" << getProp(nsnode, "host") << ":" << defPort;
@@ -580,7 +580,7 @@ namespace uniset
             {
                 if( localNode == uniset::DefaultObjectId )
                 {
-                    string nodename( it.getProp("name") );
+                    const string nodename( it.getProp("name") );
                     setLocalNode(nodename);
                 }
             }
@@ -588,7 +588,7 @@ namespace uniset
             {
                 name = it.getProp("name");
                 //DBServer
-                string secDB( getServicesSection() + "/" + name);
+                const string secDB( getServicesSection() + "/" + name);
                 localDBServer = oind->getIdByName(secDB);
 
                 if( localDBServer == DefaultObjectId )
@@ -1035,12 +1035,12 @@ namespace uniset
         }
 
         // теперь смотрим командную строку
-        string logfile("--" + debname + "-logfile");
-        string add_level("--" + debname + "-add-levels");
-        string del_level("--" + debname + "-del-levels");
-        string show_msec("--" + debname + "-show-milliseconds");
-        string show_usec("--" + debname + "-show-microseconds");
-        string verb_level("--" + debname + "-verbosity");
+        const string logfile("--" + debname + "-logfile");
+        const string add_level("--" + debname + "-add-levels");
+        const string del_level("--" + debname + "-del-levels");
+        const string show_msec("--" + debname + "-show-milliseconds");
+        const string show_usec("--" + debname + "-show-microseconds");
+        const string verb_level("--" + debname + "-verbosity");
 
         // смотрим командную строку
         for (int i = 1; i < (_argc - 1); i++)
@@ -1169,7 +1169,7 @@ namespace uniset
         // Определение конфигурационного файла
         // в порядке убывания приоритета
 
-        string tmp( getArgParam("--confile") );
+        const string tmp( getArgParam("--confile") );
 
         if( !tmp.empty() )
         {
@@ -1481,7 +1481,7 @@ namespace uniset
         //      atexit( UniSetActivator::normalexit );
         //      set_terminate( UniSetActivator::normalterminate ); // ловушка для неизвестных исключений
 
-        string confile = uniset::getArgParam( "--confile", argc, argv, xmlfile );
+        const string confile = uniset::getArgParam( "--confile", argc, argv, xmlfile );
         uniset::uconf = make_shared<Configuration>(argc, argv, confile);
 
         return uniset::uconf;

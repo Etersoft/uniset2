@@ -12,7 +12,7 @@ TEST_CASE("UInterface", "[UInterface]")
     auto conf = uniset_conf();
     CHECK( conf != nullptr );
 
-    std::string sidName("Input1_S");
+    const std::string sidName("Input1_S");
 
     ObjectId testOID = conf->getObjectID("TestProc");
     CHECK( testOID != DefaultObjectId );
@@ -63,7 +63,7 @@ TEST_CASE("UInterface", "[UInterface]")
     CHECK_FALSE( ui.waitWorking(sid, -1, 50) );
     CHECK_FALSE( ui.waitWorking(sid, 100, -1) );
 
-    std::string longName("UNISET_PLC/Sensors/" + sidName);
+    const std::string longName("UNISET_PLC/Sensors/" + sidName);
     CHECK( ui.getIdByName(longName) == sid );
     CHECK( ui.getNameById(sid) == longName );
     CHECK( ui.getTextName(sid) == "Команда 1" );

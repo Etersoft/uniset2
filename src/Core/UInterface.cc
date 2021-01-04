@@ -958,7 +958,7 @@ namespace uniset
 				{
 					ostringstream s;
 					s << uconf << oind->getNodeName(node);
-					string nodeName(s.str());
+					const string nodeName(s.str());
 
 					if( CORBA::is_nil(orb) )
 					{

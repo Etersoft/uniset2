@@ -385,7 +385,7 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
     if( it == flist.end() )
         return ModbusRTU::erBadDataValue;
 
-    std::string fname(it->second);
+    const std::string fname(it->second);
 
     int fd = open(fname.c_str(), O_RDONLY | O_NONBLOCK );
 
