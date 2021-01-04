@@ -35,7 +35,7 @@ SMonitor::SMonitor(ObjectId id):
 	UniSetObject(id),
 	script("")
 {
-	string sid(uniset_conf()->getArgParam("--sid"));
+	const string sid(uniset_conf()->getArgParam("--sid"));
 
 	lst = uniset::getSInfoList(sid, uniset_conf());
 

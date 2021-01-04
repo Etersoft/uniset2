@@ -141,7 +141,7 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 		}
 		catch( const ORepFailed& ex )
 		{
-			string er("ObjectRepository(registration): (getContext) не смог зарегистрировать " + name);
+			const string er("ObjectRepository(registration): (getContext) не смог зарегистрировать " + name);
 			throw ORepFailed(er);
 		}
 		catch( const CosNaming::NamingContext::NotFound& )
@@ -185,8 +185,8 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 void ObjectRepository::registration( const std::string& fullName, const uniset::ObjectPtr oRef, bool force ) const
 {
 	//    string n(ORepHelpers::getShortName(fullName));
-	string n( uconf->oind->getBaseName(fullName) );
-	string s(ORepHelpers::getSectionName(fullName));
+	const string n( uconf->oind->getBaseName(fullName) );
+	const string s(ORepHelpers::getSectionName(fullName));
 	registration(n, oRef, s, force);
 }
 // --------------------------------------------------------------------------
@@ -241,8 +241,8 @@ void ObjectRepository::unregistration( const string& name, const string& section
 void ObjectRepository::unregistration(const string& fullName) const
 {
 	//    string n(ORepHelpers::getShortName(fullName));
-	string n(uconf->oind->getBaseName(fullName));
-	string s(ORepHelpers::getSectionName(fullName));
+	const string n(uconf->oind->getBaseName(fullName));
+	const string s(ORepHelpers::getSectionName(fullName));
 	unregistration(n, s);
 }
 // --------------------------------------------------------------------------
@@ -477,8 +477,8 @@ bool ObjectRepository::createSection(const string& name, const string& in_sectio
 */
 bool ObjectRepository::createSectionF( const string& fullName ) const
 {
-	string name(ObjectIndex::getBaseName(fullName));
-	string sec(ORepHelpers::getSectionName(fullName));
+	const string name(ObjectIndex::getBaseName(fullName));
+	const string sec(ORepHelpers::getSectionName(fullName));
 
 	ulogrep << name << endl;
 	ulogrep << sec << endl;
@@ -636,7 +636,7 @@ bool ObjectRepository::removeSection( const string& fullName, bool recursive ) c
 			if( recursive )
 			{
 				ulogrep << "ORepFactory: удаляем рекурсивно..." << endl;
-				string rctx = fullName + "/" + omniURI::nameToString(bl[i].binding_name);
+				const string rctx = fullName + "/" + omniURI::nameToString(bl[i].binding_name);
 				ulogrep << rctx << endl;
 
 				if ( !removeSection(rctx))
@@ -659,9 +659,9 @@ bool ObjectRepository::removeSection( const string& fullName, bool recursive ) c
 	if( rem )
 	{
 		// Получаем имя контекста содержащего удаляемый
-		string in_sec(ORepHelpers::getSectionName(fullName));
+		const string in_sec(ORepHelpers::getSectionName(fullName));
 		//Получаем имя удаляемого контекста
-		string name(ObjectIndex::getBaseName(fullName));
+		const string name(ObjectIndex::getBaseName(fullName));
 
 		try
 		{
@@ -698,12 +698,12 @@ bool ObjectRepository::removeSection( const string& fullName, bool recursive ) c
 */
 bool ObjectRepository::renameSection( const string& newFName, const string& oldFName ) const
 {
-	string newName(ObjectIndex::getBaseName(newFName));
-	string oldName(ObjectIndex::getBaseName(oldFName));
+	const string newName(ObjectIndex::getBaseName(newFName));
+	const string oldName(ObjectIndex::getBaseName(oldFName));
 	CosNaming::Name_var ctxNewName = omniURI::stringToName(newName.c_str());
 	CosNaming::Name_var ctxOldName = omniURI::stringToName(oldName.c_str());
 
-	string in_sec(ORepHelpers::getSectionName(newFName));
+	const string in_sec(ORepHelpers::getSectionName(newFName));
 
 	try
 	{

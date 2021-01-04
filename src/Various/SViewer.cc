@@ -103,7 +103,7 @@ void SViewer::readSection( const string& section, const string& secRoot )
 	}
 	else
 	{
-		string secName(curSection);
+		const string secName(curSection);
 		ListObjectName lstObj;
 		ListObjectName::const_iterator li;
 
@@ -132,8 +132,8 @@ void SViewer::readSection( const string& section, const string& secRoot )
 			{
 				try
 				{
-					string ob(*li);
-					string fname(curSection + "/" + ob);
+					const string ob(*li);
+					const string fname(curSection + "/" + ob);
 					ObjectId id = uniset_conf()->oind->getIdByName( fname );
 
 					if( id == DefaultObjectId )
@@ -203,7 +203,7 @@ void SViewer::getInfo( ObjectId id )
 // ---------------------------------------------------------------------------
 void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, uniset::ObjectId oid )
 {
-	string owner = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(oid));
+	const string owner = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(oid));
 	cout << "\n======================================================\n"
 		 << ORepHelpers::getShortName(uniset_conf()->oind->getMapName(oid))
 		 << "\t Датчики"
@@ -225,7 +225,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, uniset::Ob
 			if( amap[i].supplier == uniset::AdminID )
 				supplier = "uniset-admin";
 
-			string txtname( uniset_conf()->oind->getTextName(amap[i].si.id) );
+			const string txtname( uniset_conf()->oind->getTextName(amap[i].si.id) );
 			printInfo( amap[i].si.id, name, amap[i].value, supplier, txtname, (amap[i].type == UniversalIO::AI ? "AI" : "DI") );
 		}
 	}
@@ -250,7 +250,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, uniset::Ob
 			if( amap[i].supplier == uniset::AdminID )
 				supplier = "uniset-admin";
 
-			string txtname( uniset_conf()->oind->getTextName(amap[i].si.id) );
+			const string txtname( uniset_conf()->oind->getTextName(amap[i].si.id) );
 			printInfo( amap[i].si.id, name, amap[i].value, supplier, txtname, (amap[i].type == UniversalIO::AO ? "AO" : "DO"));
 		}
 	}
@@ -262,7 +262,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, uniset::Ob
 void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tlst, uniset::ObjectId oid )
 {
 	int size = tlst->length();
-	string owner = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(oid));
+	const string owner = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(oid));
 	cout << "\n======================================================\n" << owner;
 	cout << "\t Пороговые датчики";
 	cout << "\n------------------------------------------------------" << endl;

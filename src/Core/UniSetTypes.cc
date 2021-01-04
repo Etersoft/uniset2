@@ -264,7 +264,7 @@ std::vector<std::string> uniset::explode_str( const std::string& str, char sep )
 
 		if( pos == string::npos )
 		{
-			string s(str.substr(prev, sz - prev));
+			const string s(str.substr(prev, sz - prev));
 
 			if( !s.empty() )
 				v.emplace_back( std::move(s) );
@@ -278,7 +278,7 @@ std::vector<std::string> uniset::explode_str( const std::string& str, char sep )
 			continue;
 		}
 
-		string s(str.substr(prev, pos - prev));
+		const string s(str.substr(prev, pos - prev));
 
 		if( !s.empty() )
 		{
@@ -340,7 +340,7 @@ std::list<uniset::ParamSInfo> uniset::getSInfoList( const string& str, std::shar
 
 		if( t.size() == 1 )
 		{
-			std::string s_id = *(t.begin());
+			const std::string s_id = *(t.begin());
 
 			if( is_digit(s_id) || !conf )
 				item.si.id = uni_atoi(s_id);
@@ -351,8 +351,8 @@ std::list<uniset::ParamSInfo> uniset::getSInfoList( const string& str, std::shar
 		}
 		else if( t.size() == 2 )
 		{
-			std::string s_id = *(t.begin());
-			std::string s_node = *(++t.begin());
+			const std::string s_id = *(t.begin());
+			const std::string s_node = *(++t.begin());
 
 			if( is_digit(s_id) || !conf )
 				item.si.id = uni_atoi(s_id);
@@ -393,7 +393,7 @@ std::list<uniset::ConsumerInfo> uniset::getObjectsList( const string& str, std::
 
 		if( t.size() == 1 )
 		{
-			std::string s_id(*(t.begin()));
+			const std::string s_id(*(t.begin()));
 
 			if( is_digit(s_id) )
 				item.id = uni_atoi(s_id);
@@ -412,8 +412,8 @@ std::list<uniset::ConsumerInfo> uniset::getObjectsList( const string& str, std::
 		}
 		else if( t.size() == 2 )
 		{
-			std::string s_id = *(t.begin());
-			std::string s_node = *(++t.begin());
+			const std::string s_id = *(t.begin());
+			const std::string s_node = *(++t.begin());
 
 			if( is_digit(s_id) )
 				item.id = uni_atoi(s_id);
