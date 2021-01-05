@@ -16,7 +16,7 @@
 --mbtcp-persistent-connection 1 \
 --ulog-add-levels system \
 --mbtcp-run-logserver \
---mbtcp-log-add-levels any \
+--mbtcp-log-add-levels info,warn,crit \
 $*
 
 #--mbtcp-log-add-levels level4,level3 \

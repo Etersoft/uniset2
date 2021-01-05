@@ -47,14 +47,14 @@ int main( int argc, const char* argv[] )
         if( !shm )
             return 1;
 
-		mbm = MBTCPMaster::init_mbmaster(argc, argv, shm->getId(), (apart ? nullptr : shm ));
+        mbm = MBTCPMaster::init_mbmaster(argc, argv, shm->getId(), (apart ? nullptr : shm ));
 
-		if( !mbm )
-			return 1;
+        if( !mbm )
+            return 1;
 
         auto act = UniSetActivator::Instance();
-		act->add(shm);
-		act->add(mbm);
+        act->add(shm);
+        act->add(mbm);
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );

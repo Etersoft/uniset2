@@ -988,6 +988,7 @@ namespace uniset
 		return getInfo(request);
 #else
 		SimpleInfo* ret = new SimpleInfo();
+		ret->id = getId();
 		ostringstream err;
 
 		try
