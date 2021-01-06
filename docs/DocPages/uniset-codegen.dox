@@ -16,6 +16,7 @@
 - \ref pg_Codegen_loglevel
 - \ref pg_Codegen_logserver
 - \ref pg_Codegen_vmonitor
+- \ref pg_Codegen_rest_api
 
 \section pg_Codegen_Common Общее описание утилиты uniset-codegen
  Утилита uniset-codegen предназначена для генерирования "скелета" процесса управления на основе
@@ -507,4 +508,13 @@ Note: 'logfilter' -  regexp for name of log. Default: ALL logs.
   
  Для пользовательской информации введена виртуальная функция std::string getMonitInfo(), переопределив которую, 
  можно сформировать свою информацию, которую можно будет удалённо читать.
+ 
+ \section pg_Codegen_rest_api HTTP API
+ Все обращения к api должны быть по такому пути \b `/api/VERSION/command?params..`
+ \code
+  /help                                     - Получение списка доступных команд
+  /                                         - Получение стандартной информации
+  /params/get?param1&param2                 - Получить текущее значение указанных параметров. Если параметры не указаны, будут возвращены все доступные.
+  /params/set?param1=val1&param2=val2&..    - Установить значения для указанных параметров.
+ \endcode
 */
