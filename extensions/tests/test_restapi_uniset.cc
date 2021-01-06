@@ -26,7 +26,7 @@ TEST_CASE("[REST API: conf]", "[restapi][configure]")
 {
     init_test();
 
-	std::string s = shm->apiRequest("/configure/get?2,Input5_S&params=iotype");
+    std::string s = shm->apiRequest("/configure/get?2,Input5_S&params=iotype");
     Poco::JSON::Parser parser;
     auto result = parser.parse(s);
 

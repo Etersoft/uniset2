@@ -140,7 +140,7 @@ ModbusRTU::mbErrCode MBTCPTestServer::readCoilStatus( ReadCoilMessage& query,
     }
 
     // Фомирование ответа:
-    ModbusData num = 0; // добавленное количество данных
+    size_t num = 0; // добавленное количество данных
     size_t bcnt = numBytes(query.count);
 
     for( ; num < bcnt; num++ )
