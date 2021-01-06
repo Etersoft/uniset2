@@ -451,8 +451,8 @@ namespace uniset
 
 		// а вдруг встретится объект с именем "conf" а мы перекрываем имя?!
 		// (пока считаем что такого не будет)
-		if( name == "conf" )
-			return request_conf(req, p);
+		if( name == "configure" )
+			return request_configure(req, p);
 
 		auto obj = deepFindObject(name);
 

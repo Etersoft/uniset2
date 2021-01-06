@@ -433,6 +433,18 @@ namespace uniset
 	Poco::JSON::Object::Ptr UniSetObject::httpHelp( const Poco::URI::QueryParameters& p )
 	{
 		uniset::json::help::object myhelp(myname);
+
+		{
+			uniset::json::help::item cmd("params/get", "get value for parameter");
+			cmd.param("param1,param2,...", "paremeter names. Default: all");
+			myhelp.add(cmd);
+		}
+		{
+			uniset::json::help::item cmd("params/set", "set value for parameter");
+			cmd.param("param1=val1,param2=val2,...", "paremeters");
+			myhelp.add(cmd);
+		}
+
 		return myhelp;
 	}
 	// ------------------------------------------------------------------------------------------
@@ -449,14 +461,25 @@ namespace uniset
 		return my;
 	}
 	// ------------------------------------------------------------------------------------------
-	// обработка запроса вида: /conf/xxxx
-	Poco::JSON::Object::Ptr UniSetObject::request_conf( const std::string& req, const Poco::URI::QueryParameters& params )
+	// обработка запроса вида: /configure/xxxx
+	Poco::JSON::Object::Ptr UniSetObject::request_configure( const std::string& req, const Poco::URI::QueryParameters& params )
 	{
 		if( req == "get" )
-			return request_conf_get(req, params);
+			return request_configure_get(req, params);
+
+		ostringstream err;
+		err << "(request_conf):  BAD REQUEST: Unknown command..";
+		throw uniset::SystemError(err.str());
+	}
+	// ------------------------------------------------------------------------------------------
+	// обработка запроса вида: /params/xxxx
+	Poco::JSON::Object::Ptr UniSetObject::request_params( const std::string& req, const Poco::URI::QueryParameters& params )
+	{
+		if( req == "get" )
+			return request_params_get(req, params);
 
 		if( req == "set" )
-			return request_conf_set(req, params);
+			return request_params_set(req, params);
 
 		ostringstream err;
 		err << "(request_conf):  BAD REQUEST: Unknown command..";
@@ -464,7 +487,7 @@ namespace uniset
 	}
 	// ------------------------------------------------------------------------------------------
 	// обработка запроса вида: /conf/get?[ID|NAME]&props=testname,name] from configure.xml
-	Poco::JSON::Object::Ptr UniSetObject::request_conf_get( const std::string& req, const Poco::URI::QueryParameters& params )
+	Poco::JSON::Object::Ptr UniSetObject::request_configure_get( const std::string& req, const Poco::URI::QueryParameters& params )
 	{
 		Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
 		Poco::JSON::Array::Ptr jdata = uniset::json::make_child_array(json, "conf");
@@ -499,7 +522,7 @@ namespace uniset
 
 		for( const auto& id : idlist )
 		{
-			Poco::JSON::Object::Ptr j = request_conf_name(id, props);
+			Poco::JSON::Object::Ptr j = request_configure_by_name(id, props);
 
 			if( j )
 				jdata->add(j);
@@ -508,7 +531,7 @@ namespace uniset
 		return json;
 	}
 	// ------------------------------------------------------------------------------------------
-	Poco::JSON::Object::Ptr UniSetObject::request_conf_name( const string& name, const std::string& props )
+	Poco::JSON::Object::Ptr UniSetObject::request_configure_by_name( const string& name, const std::string& props )
 	{
 		Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
 		auto conf = uniset_conf();
@@ -558,12 +581,20 @@ namespace uniset
 		return jdata;
 	}
 	// ------------------------------------------------------------------------------------------
-	// обработка запроса вида: /conf/set?[ID|NAME]&props=testname,name]
-	Poco::JSON::Object::Ptr UniSetObject::request_conf_set( const std::string& req, const Poco::URI::QueryParameters& p )
+	// обработка запроса вида: /conf/set?prop1=val1&prop2=val2
+	Poco::JSON::Object::Ptr UniSetObject::request_params_set( const std::string& req, const Poco::URI::QueryParameters& p )
 	{
-		Poco::JSON::Object::Ptr jdata = new Poco::JSON::Object();
-		jdata->set("result", "OK");
-		return jdata;
+		ostringstream err;
+		err << "(request_params): 'set' not realized yet";
+		throw uniset::SystemError(err.str());
+	}
+	// ------------------------------------------------------------------------------------------
+	// обработка запроса вида: /conf/get?prop1&prop2&prop3
+	Poco::JSON::Object::Ptr UniSetObject::request_params_get( const std::string& req, const Poco::URI::QueryParameters& p )
+	{
+		ostringstream err;
+		err << "(request_params): 'get' not realized yet";
+		throw uniset::SystemError(err.str());
 	}
 	// ------------------------------------------------------------------------------------------
 #endif
@@ -1037,11 +1068,18 @@ namespace uniset
 				auto reply = httpHelp(uri.getQueryParameters());
 				reply->stringify(out);
 			}
-			else if( query == "conf" )
+			else if( query == "configure" )
 			{
-				// запрос вида: /conf/query?params
+				// запрос вида: /configure/query?params
 				string qconf = ( seg.size() > (qind + 1) ) ? seg[qind + 1] : "";
-				auto reply = request_conf(qconf, uri.getQueryParameters());
+				auto reply = request_configure(qconf, uri.getQueryParameters());
+				reply->stringify(out);
+			}
+			else if( query == "params" )
+			{
+				// запрос вида: /params/query?params
+				string qconf = ( seg.size() > (qind + 1) ) ? seg[qind + 1] : "";
+				auto reply = request_params(qconf, uri.getQueryParameters());
 				reply->stringify(out);
 			}
 			else if( !query.empty() )

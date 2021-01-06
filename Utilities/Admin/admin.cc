@@ -1206,8 +1206,9 @@ int apiRequest( const string& args, UInterface& ui, const string& query )
 #ifndef DISABLE_REST_API
         q = "/api/" + uniset::UHttp::UHTTP_API_VERSION;
 #else
-		q = "/api/v01";
+        q = "/api/v01";
 #endif
+
         if( query[0] != '/' )
             q += "/";
 

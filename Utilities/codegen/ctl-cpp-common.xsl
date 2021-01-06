@@ -287,7 +287,8 @@
 		virtual void httpGetUserData( Poco::JSON::Object::Ptr&amp; jdata ){} /*!&lt;  для пользовательских данных в httpGet() */
         virtual Poco::JSON::Object::Ptr httpDumpIO();
         virtual Poco::JSON::Object::Ptr httpRequestLog( const Poco::URI::QueryParameters&amp; p );
-        virtual Poco::JSON::Object::Ptr request_conf_set( const std::string&amp; req, const Poco::URI::QueryParameters&amp; p ) override;
+        virtual Poco::JSON::Object::Ptr request_params_set( const std::string&amp; req, const Poco::URI::QueryParameters&amp; p ) override;
+        virtual Poco::JSON::Object::Ptr request_params_get( const std::string&amp; req, const Poco::URI::QueryParameters&amp; p ) override;
 #endif
 </xsl:if>
         // Выполнение очередного шага программы
@@ -738,11 +739,11 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::httpRequestLog( 
 	return jret;
 }
 // -----------------------------------------------------------------------------
-Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::request_conf_set( const std::string&amp; req, const Poco::URI::QueryParameters&amp; params )
+Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::request_params_set( const std::string&amp; req, const Poco::URI::QueryParameters&amp; params )
 {
     Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
     Poco::JSON::Array::Ptr jupdated = uniset::json::make_child_array(jret, "updated");
-    
+
     for( const auto&amp; p: params )
     {
         if( p.first == "sleep_msec" )
@@ -796,6 +797,56 @@ Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::request_conf_set
     }
 
     jret->set("Result", (jupdated->size() > 0 ? "OK" : "FAIL") );
+    return jret;
+}
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr <xsl:value-of select="$CLASSNAME"/>_SK::request_params_get( const std::string&amp; req, const Poco::URI::QueryParameters&amp; params )
+{
+    Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
+
+    if( params.empty() )
+    {
+       jret->set("sleep_msec",sleep_msec);
+       jret->set("resetMsgTime",resetMsgTime);
+       jret->set("forceOut",forceOut);
+        <xsl:for-each select="//variables/item">
+        <xsl:if test="normalize-space(@const)=''">
+        jret->set("<xsl:value-of select="@name"/>", <xsl:value-of select="@name"/>);
+        </xsl:if>
+        </xsl:for-each>
+        return jret;
+    }
+
+    for( const auto&amp; p: params )
+    {
+        if( p.first == "sleep_msec" )
+        {
+            jret->set(p.first,sleep_msec);
+            continue;
+        }
+
+        if( p.first == "resetMsgTime" )
+        {
+            jret->set(p.first,resetMsgTime);
+            continue;
+        }
+
+        if( p.first == "forceOut" )
+        {
+            jret->set(p.first,forceOut);
+            continue;
+        }
+
+        <xsl:for-each select="//variables/item">
+        <xsl:if test="normalize-space(@const)=''">
+        if( p.first == "<xsl:value-of select="@name"/>" )
+        {
+            jret->set(p.first, <xsl:value-of select="@name"/>);
+            continue;
+        }
+        </xsl:if>
+        </xsl:for-each>
+    }
     return jret;
 }
 #endif

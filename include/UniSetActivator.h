@@ -43,7 +43,7 @@ namespace uniset
      *    Для обработки CORBA-запросов создается поток или передаются ресурсы
      *        главного потока см. void activate(bool thread)
      *    \warning Активатор может быть создан только один. Для его создания используйте код:
-      \code
+     \code
          ...
          auto act = UniSetActivator::Instance()
          ...
@@ -52,7 +52,7 @@ namespace uniset
      *
      * \section act_HttpAPI REST API
      * UniSetActivator выступает в роли http-сервера и реализует первичную обработку запросов
-     * и перенаправление их указанным объектам. Помимо этого UniSetActivator реализует обработку команд /conf/..
+     * и перенаправление их указанным объектам. Помимо этого UniSetActivator реализует обработку команд /configure/..
      * Для запуска http-сервера необходимо в аргументах командной строки указать  --activator-run-httpserver
      * Помимо этого можно задать параметры --activator-httpserver-host и --activator-httpserver-port.
      * --activator-httpserver-cors-allow addr - (CORS): Access-Control-Allow-Origin. Default: *.
