@@ -28,7 +28,7 @@
 #include "ujson.h"
 #include "DebugStream.h"
 // -------------------------------------------------------------------------
-/*! \page UHttpServer HTTP API (базовая реализация)
+/*! \page pg_UHttpServer HTTP API (базовая реализация)
  *
  * Формат запроса: /api/version/xxx
  *
@@ -46,20 +46,32 @@
  *  HELP FORMAT:
  *  myname {
  *      help [
- *          {"command":
- *             {"desc": "text"},
- *             {"params": [
- *                  {"p1","desc of p1"},
- *                  {"p2","desc of p2"},
- *                  {"p3","desc of p3"}
+ *          {
+ *             "name": "command1",
+ *             "desc": "text",
+ *             "parameters": [
+ *                  {
+ *                   "name": "p1",
+ *                   "desc": " description of p1"
+ *                  },
+ *                  {
+ *                   "name": "p2",
+ *                   "desc": " description of p2"
+ *                  },
+ *                  {
+ *                   "name": "p3",
+ *                   "desc": " description of p3"
+ *                  }
  *             ]}
  *          },
- *          {"command2":
- *             {"desc": "text"},
- *             {"params": [
- *                  {"p1","desc of p1"},
- *                  {"p2","desc of p2"},
- *                  {"p3","desc of p3"}
+ *          {
+ *             "name": "command2",
+ *             "desc": "text",
+ *             "parameters": [
+ *                  {
+ *                   "name": "p1",
+ *                   "desc": " description of p1"
+ *                  }
  *             ]}
  *          },
  *          ...
@@ -67,6 +79,7 @@
  *  }
  *\endcode
  *
+ * \sa \ref act_HttpAPI
  * \todo подумать над /api/version/tree - получение "дерева" объектов (древовидный список с учётом подчинения Manager/Objects)
 */
 // -------------------------------------------------------------------------

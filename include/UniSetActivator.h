@@ -34,6 +34,24 @@
 //----------------------------------------------------------------------------------------
 namespace uniset
 {
+    /*! \page pg_Act Активтор объектов
+     *
+     * Активатор объектов предназначен для запуска, после которого объекты становятся доступны для удалённого
+     * вызова.
+     *
+     * \section sec_act_HttpAPI Activator HTTP API
+     * UniSetActivator выступает в роли http-сервера и реализует первичную обработку запросов
+     * и перенаправление их указанным объектам. Помимо этого UniSetActivator реализует обработку команд
+     * \code
+     * /api/VERSION/configure/get?[ID|NAME]&props=testname,name]
+     * \endcode
+     * Для запуска http-сервера необходимо в аргументах командной строки указать --activator-run-httpserver
+     * Помимо этого можно задать параметры --activator-httpserver-host и --activator-httpserver-port.
+     * --activator-httpserver-cors-allow addr - (CORS): Access-Control-Allow-Origin. Default: *.
+     *
+     * \sa \ref pg_UHttpServer
+     *
+     **/
     //----------------------------------------------------------------------------------------
     class UniSetActivator;
     typedef std::shared_ptr<UniSetActivator> UniSetActivatorPtr;
@@ -49,14 +67,6 @@ namespace uniset
          ...
     \endcode
      * Активатор в свою очередь сам является менеджером(и объектом) и обладает всеми его свойствами
-     *
-     * \section act_HttpAPI REST API
-     * UniSetActivator выступает в роли http-сервера и реализует первичную обработку запросов
-     * и перенаправление их указанным объектам. Помимо этого UniSetActivator реализует обработку команд /configure/..
-     * Для запуска http-сервера необходимо в аргументах командной строки указать  --activator-run-httpserver
-     * Помимо этого можно задать параметры --activator-httpserver-host и --activator-httpserver-port.
-     * --activator-httpserver-cors-allow addr - (CORS): Access-Control-Allow-Origin. Default: *.
-     *
     */
     class UniSetActivator:
         public UniSetManager

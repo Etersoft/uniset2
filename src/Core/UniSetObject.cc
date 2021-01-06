@@ -486,7 +486,7 @@ namespace uniset
 		throw uniset::SystemError(err.str());
 	}
 	// ------------------------------------------------------------------------------------------
-	// обработка запроса вида: /conf/get?[ID|NAME]&props=testname,name] from configure.xml
+	// обработка запроса вида: /configure/get?[ID|NAME]&props=testname,name] from configure.xml
 	Poco::JSON::Object::Ptr UniSetObject::request_configure_get( const std::string& req, const Poco::URI::QueryParameters& params )
 	{
 		Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
