@@ -12,20 +12,28 @@ jobs:
     container:
       image: alt:sisyphus
     steps:
-      - uses: actions/checkout@v2
       - name: install packages
         run: |
-            apt-get update && apt-get -y install etersoft-build-utils git-core ccache gcc-c++ etersoft-build-utils catch-devel libcomedi-devel libmariadb-devel libpqxx-devel librrd-devel python-devel python-module-distribute
+            apt-get update && apt-get -y install etersoft-build-utils su sudo \
+            git-core ccache gcc-c++ etersoft-build-utils catch-devel \
+            libcomedi-devel libmariadb-devel libpqxx-devel librrd-devel libsqlite3-devel \
+            libxml2-devel libsigc++2-devel libpoco-devel libev-devel libomniORB-devel libmosquitto-devel \
+            xsltproc python-devel python-module-distribute
+      - name: prepare builder
+        run: |
+              useradd builder
+              su - builder
+      - uses: actions/checkout@v2
       - name: configure
         run: |
             export CXXFLAGS='-pipe -O2 -pedantic -Wall'
             # due broken comedi
             export CXXFLAGS="$CXXFLAGS -Wl,--unresolved-symbols=ignore-in-shared-libs"
             autoreconf -fiv
-            ./configure --disable-mysql --enable-sqlite --enable-rrd --enable-io --disable-python --disable-mqtt --disable-pgsql --disable-netdata --disable-logdb
+            ./configure --disable-netdata
       - name: make
-        run: jmake
-      - name: simple tests
+        run: make
+      - name: testsuite
         run: |
             cd testsuite;
             make check
