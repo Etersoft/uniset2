@@ -216,6 +216,9 @@ namespace uniset
             size_t getCountOfRecords( const std::string& logname = "" );
             size_t getFirstOfOldRecord( size_t maxnum );
 
+            // экранирование кавычек (удваивание для sqlite)
+            static std::string qEscapeString( const std::string& s );
+
 #ifndef DISABLE_REST_API
             Poco::JSON::Object::Ptr respError( Poco::Net::HTTPServerResponse& resp, Poco::Net::HTTPResponse::HTTPStatus s, const std::string& message );
             Poco::JSON::Object::Ptr httpGetRequest( const std::string& cmd, const Poco::URI::QueryParameters& p );
@@ -231,9 +234,6 @@ namespace uniset
 
             // преобразование в дату 'YYYY-MM-DD' из строки 'YYYYMMDD' или 'YYYY/MM/DD'
             static std::string qDate(const std::string& p, const char sep = '-');
-
-            // экранирование кавычек (удваивание для sqlite)
-            static std::string qEscapeString( const std::string& s );
 
             std::shared_ptr<LogWebSocket> newWebSocket(Poco::Net::HTTPServerRequest* req, Poco::Net::HTTPServerResponse* resp, const std::string& logname );
             void delWebSocket( std::shared_ptr<LogWebSocket>& ws );
