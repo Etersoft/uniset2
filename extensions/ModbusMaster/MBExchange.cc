@@ -2093,7 +2093,7 @@ namespace uniset
             case SystemMessage::ReConfiguration:
             {
                 mblogany << myname << "(sysCommand): reconfig" << std::endl;
-                reconfigure(uniset_conf()->getConfFileName());
+                reload(uniset_conf()->getConfFileName());
             }
             break;
 
@@ -2102,9 +2102,14 @@ namespace uniset
         }
     }
     // ------------------------------------------------------------------------------------------
-    bool MBExchange::reconfigure( const std::string& confile )
+    bool MBExchange::reconfigure( const std::shared_ptr<uniset::UniXML>& xml, const std::shared_ptr<uniset::MBConfig>& mbconf )
     {
-        mbinfo << myname << ": reconfigure from " << confile << endl;
+        return true;
+    }
+    // ----------------------------------------------------------------------------
+    bool MBExchange::reload( const std::string& confile )
+    {
+        mbinfo << myname << ": relaod from " << confile << endl;
 
         uniset::uniset_rwmutex_wrlock lock(mutex_conf);
 
@@ -2121,7 +2126,7 @@ namespace uniset
 
             if( newCnode == NULL )
             {
-                mbcrit << myname << "(reconfigure): reload config from '" << confile
+                mbcrit << myname << "(reload): reload config from '" << confile
                        << "' FAILED: not found conf node '" << conf_name
                        << "'" << endl;
                 return false;
@@ -2134,9 +2139,12 @@ namespace uniset
 
             if( newConf->devices.empty() )
             {
-                mbcrit << myname << "(reconfigure): reload config from '" << confile << "' FAILED: empty devices list" << std::endl;
+                mbcrit << myname << "(reload): reload config from '" << confile << "' FAILED: empty devices list" << std::endl;
                 return false;
             }
+
+            if( !reconfigure(xml, newConf) )
+                return false;
 
             mbconf = newConf;
 
@@ -2153,7 +2161,7 @@ namespace uniset
         }
         catch( std::exception& ex )
         {
-            mbcrit << myname << "(sysCommand): reload config from '" << confile << "' FAILED: " << ex.what() << std::endl;
+            mbcrit << myname << "(reload): reload config from '" << confile << "' FAILED: " << ex.what() << std::endl;
         }
 
         mbconf = oldConf;
@@ -2550,8 +2558,8 @@ namespace uniset
         uniset::json::help::object myhelp(myname, UniSetObject::httpHelp(p));
 
         {
-            // 'reconfigure'
-            uniset::json::help::item cmd("reconfigure", "reload config from file");
+            // 'reload'
+            uniset::json::help::item cmd("reload", "reload config from file");
             cmd.param("confile", "Absolute path for config file. Optional parameter.");
             myhelp.add(cmd);
         }
@@ -2564,7 +2572,7 @@ namespace uniset
     {
         mbinfo << myname << "(httpRequest): " << req << endl;
 
-        if( req == "reconfigure" )
+        if( req == "reload" )
         {
             std::string confile = uniset_conf()->getConfFileName();
 
@@ -2575,12 +2583,12 @@ namespace uniset
                 if( !uniset::file_exist(confile) )
                 {
                     ostringstream err;
-                    err << myname << "(reconfigure): Not found config file '" << confile << "'";
+                    err << myname << "(reload): Not found config file '" << confile << "'";
                     throw uniset::SystemError(err.str());
                 }
             }
 
-            if( reconfigure(confile) )
+            if( reload(confile) )
             {
                 Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
                 json->set("result", "OK");
@@ -2589,7 +2597,7 @@ namespace uniset
             }
 
             ostringstream err;
-            err << myname << "(reconfigure): Failed reconfigure from '" << confile << "'";
+            err << myname << "(reload): Failed reload from '" << confile << "'";
             throw uniset::SystemError(err.str());
         }
 

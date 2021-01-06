@@ -83,7 +83,7 @@ namespace uniset
 
             virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
 
-            bool reconfigure( const std::string& confile );
+            bool reload( const std::string& confile );
 
         protected:
             virtual void step();
@@ -96,6 +96,7 @@ namespace uniset
             virtual bool activateObject() override;
             virtual void initIterators();
             virtual void initValues();
+            virtual bool reconfigure( const std::shared_ptr<uniset::UniXML>& xml, const std::shared_ptr<uniset::MBConfig>& mbconf );
 #ifndef DISABLE_REST_API
             // http API
             virtual Poco::JSON::Object::Ptr httpHelp( const Poco::URI::QueryParameters& p ) override;

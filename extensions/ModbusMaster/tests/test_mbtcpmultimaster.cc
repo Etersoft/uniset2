@@ -23,7 +23,7 @@ using namespace std;
 using namespace uniset;
 // -----------------------------------------------------------------------------
 static ModbusRTU::ModbusAddr slaveADDR = 0x01; // conf->getArgInt("--mbs-my-addr");
-static unordered_set<ModbusRTU::ModbusAddr> vaddr = { slaveADDR, 0x02 };
+static unordered_set<ModbusRTU::ModbusAddr> vaddr = { slaveADDR, 0x02, 0x03 };
 static int port = 20053; // conf->getArgInt("--mbs-inet-port");
 static const string iaddr("127.0.0.1"); // conf->getArgParam("--mbs-inet-addr");
 static int port2 = 20055;
@@ -37,6 +37,9 @@ static ObjectId slaveNotRespond = 10; // Slave_Not_Respond_S
 static ObjectId slave1NotRespond = 12; // Slave1_Not_Respond_S
 static ObjectId slave2NotRespond = 13; // Slave2_Not_Respond_S
 static const ObjectId exchangeMode = 11; // MBTCPMaster_Mode_AS
+static const string confile2 = "mbmaster-test-configure2.xml";
+// -----------------------------------------------------------------------------
+extern std::shared_ptr<MBTCPMultiMaster> mbmm;
 // -----------------------------------------------------------------------------
 static void InitTest()
 {
@@ -184,7 +187,7 @@ TEST_CASE("MBTCPMultiMaster: safe mode", "[modbus][safemode][mbmaster][mbtcpmult
     REQUIRE( ui->getValue(1052) == 1 );
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("MBTCPMaster: safe mode (resetIfNotRespond)", "[modbus][safemode][mbmaster][mbtcpmaster]")
+TEST_CASE("MBTCPMultiMaster: safe mode (resetIfNotRespond)", "[modbus][safemode][mbmaster][mbtcpmultimaster]")
 {
     InitTest();
 
@@ -225,7 +228,7 @@ TEST_CASE("MBTCPMaster: safe mode (resetIfNotRespond)", "[modbus][safemode][mbma
     mbs2->setReply(0);
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("MBTCPMaster: udefined value", "[modbus][undefined][mbmaster][mbtcpmaster]")
+TEST_CASE("MBTCPMultiMaster: udefined value", "[modbus][undefined][mbmaster][mbtcpmultimaster]")
 {
     InitTest();
 
@@ -251,5 +254,64 @@ TEST_CASE("MBTCPMaster: udefined value", "[modbus][undefined][mbmaster][mbtcpmas
     mbs2->setReply(120);
     msleep(polltime + 200);
     REQUIRE( ui->getValue(1070) == 120 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMultiMaster: reload config", "[modbus][reload][mbmaster][mbtcpmultimaster]")
+{
+    InitTest();
+
+    mbs1->setReply(160);
+    mbs2->setReply(160);
+    msleep(polltime + 500);
+    REQUIRE( ui->getValue(1070) == 160 );
+    REQUIRE( ui->getValue(1080) == 1080 );
+
+    // add new mbreg
+    REQUIRE( mbmm->reload(confile2) );
+
+    msleep(polltime + 600);
+    REQUIRE( ui->getValue(1080) == 160 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMultiMaster: reload config (HTTP API)", "[modbus][reload-api][mbmaster][mbtcpmaster]")
+{
+    InitTest();
+
+    // default reconfigure
+    std::string request = "/api/v01/reload";
+    uniset::SimpleInfo_var ret = mbmm->apiRequest(request.c_str());
+
+    ostringstream sinfo;
+    sinfo << ret->info;
+    std::string info = sinfo.str();
+
+    REQUIRE( ret->id == mbmm->getId() );
+    REQUIRE_FALSE( info.empty() );
+    REQUIRE( info.find("OK") != std::string::npos );
+
+
+    // reconfigure from other file
+    request = "/api/v01/reload?confile=" + confile2;
+    ret = mbmm->apiRequest(request.c_str());
+
+    sinfo.str("");
+    sinfo << ret->info;
+    info = sinfo.str();
+
+    REQUIRE( ret->id == mbmm->getId() );
+    REQUIRE_FALSE( info.empty() );
+    REQUIRE( info.find("OK") != std::string::npos );
+    REQUIRE( info.find(confile2) != std::string::npos );
+
+    // reconfigure FAIL
+    request = "/api/v01/reload?confile=BADFILE";
+    ret = mbmm->apiRequest(request.c_str());
+    sinfo.str("");
+    sinfo << ret->info;
+    info = sinfo.str();
+
+    REQUIRE( ret->id == mbmm->getId() );
+    REQUIRE_FALSE( info.empty() );
+    REQUIRE( info.find("OK") == std::string::npos );
 }
 // -----------------------------------------------------------------------------

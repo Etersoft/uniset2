@@ -13,6 +13,8 @@ using namespace std;
 using namespace uniset;
 using namespace uniset::extensions;
 // --------------------------------------------------------------------------
+std::shared_ptr<MBTCPMultiMaster> mbmm;
+// --------------------------------------------------------------------------
 int main(int argc, const char* argv[] )
 {
     try
@@ -47,6 +49,8 @@ int main(int argc, const char* argv[] )
 
         if( !mb )
             return 1;
+
+        mbmm = mb;
 
         auto act = UniSetActivator::Instance();
 
