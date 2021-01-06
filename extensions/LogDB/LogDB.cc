@@ -99,17 +99,11 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
 
     qbufSize = uniset::getArgPInt("--" + prefix + "db-buffer-size", argc, argv, it.getProp("dbBufferSize"), qbufSize);
     maxdbRecords = uniset::getArgPInt("--" + prefix + "db-max-records", argc, argv, it.getProp("dbMaxRecords"), qbufSize);
-    maxwsocks = uniset::getArgPInt("--" + prefix + "ws-max", argc, argv, it.getProp("wsMax"), maxwsocks);
 
     string tformat = uniset::getArg2Param("--" + prefix + "db-timestamp-format", argc, argv, it.getProp("dbTeimastampFormat"), "localtime");
 
     if( tformat == "localtime" || tformat == "utc" )
         tmsFormat = tformat;
-
-    bgColor = uniset::getArg2Param("--" + prefix + "bg-color", argc, argv, it.getProp("bgColor"), bgColor);
-    fgColor = uniset::getArg2Param("--" + prefix + "fg-color", argc, argv, it.getProp("fgColor"), fgColor);
-    fgColorTitle = uniset::getArg2Param("--" + prefix + "fg-color-title", argc, argv, it.getProp("fgColorTitle"), fgColorTitle);
-    bgColorTitle = uniset::getArg2Param("--" + prefix + "bg-color-title", argc, argv, it.getProp("bgColorTitle"), bgColorTitle);
 
     double checkConnection_sec = atof( uniset::getArg2Param("--" + prefix + "ls-check-connection-sec", argc, argv, it.getProp("lsCheckConnectionSec"), "5").c_str());
 
@@ -255,6 +249,13 @@ LogDB::LogDB( const string& name, int argc, const char* const* argv, const strin
     dblog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
     Poco::Net::SocketAddress sa(httpHost, httpPort);
 
+    maxwsocks = uniset::getArgPInt("--" + prefix + "ws-max", argc, argv, it.getProp("wsMax"), maxwsocks);
+    bgColor = uniset::getArg2Param("--" + prefix + "bg-color", argc, argv, it.getProp("bgColor"), bgColor);
+    fgColor = uniset::getArg2Param("--" + prefix + "fg-color", argc, argv, it.getProp("fgColor"), fgColor);
+    fgColorTitle = uniset::getArg2Param("--" + prefix + "fg-color-title", argc, argv, it.getProp("fgColorTitle"), fgColorTitle);
+    bgColorTitle = uniset::getArg2Param("--" + prefix + "bg-color-title", argc, argv, it.getProp("bgColorTitle"), bgColorTitle);
+
+
     try
     {
         Poco::Net::HTTPServerParams* httpParams = new Poco::Net::HTTPServerParams;
@@ -281,8 +282,12 @@ LogDB::~LogDB()
     if( evIsActive() )
         evstop();
 
+#ifndef DISABLE_REST_API
+
     if( httpserv )
         httpserv->stop();
+
+#endif
 
     if( db )
         db->close();
@@ -311,6 +316,8 @@ void LogDB::onTerminate( ev::sig& evsig, int revents )
     evsig.stop();
 
     //evsig.loop.break_loop();
+#ifndef DISABLE_REST_API
+
     try
     {
         httpserv->stop();
@@ -319,6 +326,8 @@ void LogDB::onTerminate( ev::sig& evsig, int revents )
     {
         dbinfo << myname << "(onTerminate): "  << ex.what() << endl;
     }
+
+#endif
 
     try
     {
@@ -499,8 +508,12 @@ void LogDB::help_print()
 // -----------------------------------------------------------------------------
 void LogDB::run( bool async )
 {
+#ifndef DISABLE_REST_API
+
     if( httpserv )
         httpserv->start();
+
+#endif
 
     if( async )
         async_evrun();
@@ -556,6 +569,7 @@ void LogDB::onActivate( ev::async& watcher, int revents )
         return;
     }
 
+#ifndef DISABLE_REST_API
     uniset_rwmutex_rlock lk(wsocksMutex);
 
     for( const auto& s : wsocks )
@@ -563,6 +577,8 @@ void LogDB::onActivate( ev::async& watcher, int revents )
         if( !s->isActive() )
             s->set(loop);
     }
+
+#endif
 }
 // -----------------------------------------------------------------------------
 bool LogDB::Log::isConnected() const
@@ -785,6 +801,21 @@ void LogDB::Log::close()
 {
     tcp->disconnect();
     //tcp = nullptr;
+}
+// -----------------------------------------------------------------------------
+std::string LogDB::qEscapeString( const string& txt )
+{
+    ostringstream ret;
+
+    for( const auto& c : txt )
+    {
+        ret << c;
+
+        if( c == '\'' || c == '"' )
+            ret << c;
+    }
+
+    return ret.str();
 }
 // -----------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
@@ -1171,21 +1202,6 @@ string LogDB::qDate( const string& p, const char sep )
     }
 
     return p.substr(0, 4) + "-" + p.substr(4, 2) + "-" + p.substr(6, 2);
-}
-// -----------------------------------------------------------------------------
-std::string LogDB::qEscapeString( const string& txt )
-{
-    ostringstream ret;
-
-    for( const auto& c : txt )
-    {
-        ret << c;
-
-        if( c == '\'' || c == '"' )
-            ret << c;
-    }
-
-    return ret.str();
 }
 // -----------------------------------------------------------------------------
 void LogDB::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp)
