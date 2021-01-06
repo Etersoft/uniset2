@@ -1203,8 +1203,11 @@ int apiRequest( const string& args, UInterface& ui, const string& query )
 
     if( q.rfind("/api/", 0) != 0 )
     {
+#ifndef DISABLE_REST_API
         q = "/api/" + uniset::UHttp::UHTTP_API_VERSION;
-
+#else
+		q = "/api/v01";
+#endif
         if( query[0] != '/' )
             q += "/";
 
