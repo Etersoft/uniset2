@@ -44,7 +44,8 @@ namespace uniset
 	json::help::item::item( const std::string& cmd, const std::string& description )
 	{
 		root = new Poco::JSON::Object();
-		root->set(cmd, description);
+		root->set("name", cmd);
+		root->set("desc", description);
 	}
 	// --------------------------------------------------------------------------
 	void json::help::item::param(const std::string& name, const std::string& description)
@@ -55,7 +56,7 @@ namespace uniset
 			root->set("parameters", params);
 		}
 
-		params->add( uniset::json::make_object(name, description) );
+		params->add( item(name, description) );
 	}
 	// --------------------------------------------------------------------------
 	Poco::JSON::Object::Ptr json::help::item::get()

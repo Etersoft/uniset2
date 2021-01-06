@@ -754,6 +754,45 @@ Poco::JSON::Object::Ptr UObject_SK::request_params_set( const std::string& req, 
     jret->set("Result", (jupdated->size() > 0 ? "OK" : "FAIL") );
     return jret;
 }
+// -----------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UObject_SK::request_params_get( const std::string& req, const Poco::URI::QueryParameters& params )
+{
+    Poco::JSON::Object::Ptr jret = new Poco::JSON::Object();
+
+    if( params.empty() )
+    {
+        jret->set("sleep_msec", sleep_msec);
+        jret->set("resetMsgTime", resetMsgTime);
+        jret->set("forceOut", forceOut);
+
+        return jret;
+    }
+
+    for( const auto& p : params )
+    {
+        if( p.first == "sleep_msec" )
+        {
+            jret->set(p.first, sleep_msec);
+            continue;
+        }
+
+        if( p.first == "resetMsgTime" )
+        {
+            jret->set(p.first, resetMsgTime);
+            continue;
+        }
+
+        if( p.first == "forceOut" )
+        {
+            jret->set(p.first, forceOut);
+            continue;
+        }
+
+
+    }
+
+    return jret;
+}
 #endif
 
 // -----------------------------------------------------------------------------

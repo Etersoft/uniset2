@@ -188,6 +188,7 @@ class UObject_SK:
         virtual Poco::JSON::Object::Ptr httpDumpIO();
         virtual Poco::JSON::Object::Ptr httpRequestLog( const Poco::URI::QueryParameters& p );
         virtual Poco::JSON::Object::Ptr request_params_set( const std::string& req, const Poco::URI::QueryParameters& p ) override;
+        virtual Poco::JSON::Object::Ptr request_params_get( const std::string& req, const Poco::URI::QueryParameters& p ) override;
 #endif
 
         // Выполнение очередного шага программы
