@@ -46,13 +46,62 @@ MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shm
     checktime = conf->getArgPInt("--" + prefix + "-checktime", it.getProp("checktime"), 5000);
     force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection", it.getProp("persistent_connection")) ? false : true;
 
-    int ignore_timeout = conf->getArgPInt("--" + prefix + "-ignore-timeout", it.getProp("ignore_timeout"), ptReopen.getInterval());
+    defaultIgnoreTimeout = conf->getArgPInt("--" + prefix + "-ignore-timeout", it.getProp("ignore_timeout"), ptReopen.getInterval());
 
     // Т.к. при "многоканальном" доступе к slave, смена канала должна происходит сразу после
     // неудачной попытки запросов по одному из каналов, то ПЕРЕОПРЕДЕЛЯЕМ reopen, на channel-timeout..
-    int channelTimeout = conf->getArgPInt("--" + prefix + "-default-channel-timeout", it.getProp("channelTimeout"), mbconf->default_timeout);
+    channelTimeout = conf->getArgPInt("--" + prefix + "-default-channel-timeout", it.getProp("channelTimeout"), mbconf->default_timeout);
     ptReopen.setTiming(channelTimeout);
 
+    initGateList(it, mbconf);
+
+    if( ic )
+        ic->logAgregator()->add(loga);
+
+    if( shm->isLocalwork() )
+        mbconf->loadConfig(conf->getConfXML(), conf->getXMLSensorsSection());
+    else
+        ic->addReadItem( sigc::mem_fun(this, &MBTCPMultiMaster::readItem) );
+
+    pollThread = unisetstd::make_unique<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::poll_thread);
+    pollThread->setFinalAction(this, &MBTCPMultiMaster::final_thread);
+    checkThread = unisetstd::make_unique<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::check_thread);
+    checkThread->setFinalAction(this, &MBTCPMultiMaster::final_thread);
+
+    if( mblog->is_info() )
+        MBConfig::printMap(mbconf->devices);
+}
+// -----------------------------------------------------------------------------
+MBTCPMultiMaster::~MBTCPMultiMaster()
+{
+    if( pollThread && !canceled )
+    {
+        if( pollThread->isRunning() )
+            pollThread->join();
+    }
+
+    if( checkThread )
+    {
+        try
+        {
+            checkThread->stop();
+
+            if( checkThread->isRunning() )
+                checkThread->join();
+        }
+        catch( Poco::NullPointerException& ex )
+        {
+
+        }
+    }
+
+    mbi = mblist.rend();
+
+}
+// -----------------------------------------------------------------------------
+void MBTCPMultiMaster::initGateList(uniset::UniXML::iterator it, const std::shared_ptr<uniset::MBConfig>& mconf )
+{
+    auto conf = uniset_conf();
     UniXML::iterator it1(it);
 
     if( !it1.find("GateList") )
@@ -117,14 +166,14 @@ MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shm
         sinf->priority = it1.getIntProp("priority");
         sinf->mbtcp = std::make_shared<ModbusTCPMaster>();
 
-        sinf->ptIgnoreTimeout.setTiming( it1.getPIntProp("ignore_timeout", ignore_timeout) );
-        sinf->recv_timeout = it1.getPIntProp("recv_timeout", mbconf->recv_timeout);
-        sinf->aftersend_pause = it1.getPIntProp("aftersend_pause", mbconf->aftersend_pause);
-        sinf->sleepPause_usec = it1.getPIntProp("sleepPause_msec", mbconf->sleepPause_msec);
+        sinf->ptIgnoreTimeout.setTiming( it1.getPIntProp("ignore_timeout", defaultIgnoreTimeout) );
+        sinf->recv_timeout = it1.getPIntProp("recv_timeout", mconf->recv_timeout);
+        sinf->aftersend_pause = it1.getPIntProp("aftersend_pause", mconf->aftersend_pause);
+        sinf->sleepPause_usec = it1.getPIntProp("sleepPause_msec", mconf->sleepPause_msec);
         sinf->respond_invert = it1.getPIntProp("invert", 0);
         sinf->respond_force = it1.getPIntProp("force", 0);
 
-        int fn = conf->getArgPInt("--" + prefix + "-check-func", it.getProp("checkFunc"), ModbusRTU::fnUnknown);
+        int fn = conf->getArgPInt("--" + mconf->prefix + "-check-func", it.getProp("checkFunc"), ModbusRTU::fnUnknown);
 
         if( fn != ModbusRTU::fnUnknown &&
                 fn != ModbusRTU::fnReadCoilStatus &&
@@ -140,15 +189,14 @@ MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shm
 
         sinf->checkFunc = (ModbusRTU::SlaveFunctionCode)fn;
 
-        sinf->checkAddr = conf->getArgPInt("--" + prefix + "-check-addr", it.getProp("checkAddr"), 0);
-        sinf->checkReg = conf->getArgPInt("--" + prefix + "-check-reg", it.getProp("checkReg"), 0);
+        sinf->checkAddr = conf->getArgPInt("--" + mconf->prefix + "-check-addr", it.getProp("checkAddr"), 0);
+        sinf->checkReg = conf->getArgPInt("--" + mconf->prefix + "-check-reg", it.getProp("checkReg"), 0);
 
         int tout = it1.getPIntProp("timeout", channelTimeout);
         sinf->channel_timeout = (tout >= 0 ? tout : channelTimeout);
 
         // делаем только задержку на отпускание..
         sinf->respondDelay.set(0, sinf->channel_timeout);
-
         sinf->force_disconnect = it.getPIntProp("persistent_connection", !force_disconnect) ? false : true;
 
         ostringstream n;
@@ -162,10 +210,6 @@ MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shm
         mblist.emplace_back(sinf);
     }
 
-    if( ic )
-        ic->logAgregator()->add(loga);
-
-
     if( mblist.empty() )
     {
         ostringstream err;
@@ -177,51 +221,6 @@ MBTCPMultiMaster::MBTCPMultiMaster( uniset::ObjectId objId, uniset::ObjectId shm
     mblist.sort();
     mbi = mblist.rbegin(); // т.к. mbi это reverse_iterator
     (*mbi)->setUse(true);
-
-    if( shm->isLocalwork() )
-        mbconf->loadConfig(conf->getConfXML(), conf->getXMLSensorsSection());
-    else
-        ic->addReadItem( sigc::mem_fun(this, &MBTCPMultiMaster::readItem) );
-
-    pollThread = unisetstd::make_unique<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::poll_thread);
-    pollThread->setFinalAction(this, &MBTCPMultiMaster::final_thread);
-    checkThread = unisetstd::make_unique<ThreadCreator<MBTCPMultiMaster>>(this, &MBTCPMultiMaster::check_thread);
-    checkThread->setFinalAction(this, &MBTCPMultiMaster::final_thread);
-
-    // Т.к. при "многоканальном" доступе к slave, смена канала должна происходит сразу после
-    // неудачной попытки запросов по одному из каналов, то ПЕРЕОПРЕДЕЛЯЕМ reopen, на channel-timeout..
-    int tout = conf->getArgPInt("--" + prefix + "-default-channel-timeout", it.getProp("channelTimeout"), mbconf->default_timeout);
-    ptReopen.setTiming(tout);
-
-    if( mblog->is_info() )
-        MBConfig::printMap(mbconf->devices);
-}
-// -----------------------------------------------------------------------------
-MBTCPMultiMaster::~MBTCPMultiMaster()
-{
-    if( pollThread && !canceled )
-    {
-        if( pollThread->isRunning() )
-            pollThread->join();
-    }
-
-    if( checkThread )
-    {
-        try
-        {
-            checkThread->stop();
-
-            if( checkThread->isRunning() )
-                checkThread->join();
-        }
-        catch( Poco::NullPointerException& ex )
-        {
-
-        }
-    }
-
-    mbi = mblist.rend();
-
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
@@ -607,11 +606,8 @@ void MBTCPMultiMaster::initCheckConnectionParameters()
 
     mbinfo << myname << "(init): init check connection parameters from regmap.." << endl;
 
-
-
     // берём первый попавшийся read-регистр из списка
     // от первого попавшегося устройства..
-
     ModbusRTU::SlaveFunctionCode checkFunc = ModbusRTU::fnUnknown;
     ModbusRTU::ModbusAddr checkAddr = { 0x00 };
     ModbusRTU::ModbusData checkReg = { 0 };
@@ -760,6 +756,49 @@ uniset::SimpleInfo* MBTCPMultiMaster::getInfo( const char* userparam )
 
     i->info = inf.str().c_str();
     return i._retn();
+}
+// ----------------------------------------------------------------------------
+bool MBTCPMultiMaster::reconfigure( const std::shared_ptr<uniset::UniXML>& xml, const std::shared_ptr<uniset::MBConfig>& newConf )
+{
+    newConf->prop_prefix = initPropPrefix(newConf->s_field, "tcp_");
+    UniXML::iterator it(newConf->cnode);
+
+    int newChecktime = it.getIntProp("checktime");
+
+    if( newChecktime > 0 )
+        checktime = newChecktime;
+
+    if( !it.getProp("persistent_connection").empty() )
+        force_disconnect = ( it.getIntProp("persistent_connection") > 0 ) ? false : true;
+
+    int newIgnoreTimeout = it.getIntProp("ignore_timeout");
+
+    if( newIgnoreTimeout > 0 )
+        defaultIgnoreTimeout = newIgnoreTimeout;
+
+    int newChannelTimeout = it.getIntProp("channelTimeout");
+
+    if( newChannelTimeout > 0 )
+    {
+        channelTimeout = newChannelTimeout;
+        ptReopen.setTiming(channelTimeout);
+    }
+
+    auto oldMBList = mblist;
+    mblist.clear();
+
+    try
+    {
+        initGateList(it, newConf);
+        return true;
+    }
+    catch( std::exception& ex )
+    {
+        mbcrit << myname << "(reload): failed: " << ex.what() << endl;
+    }
+
+    mblist = oldMBList;
+    return false;
 }
 // ----------------------------------------------------------------------------
 

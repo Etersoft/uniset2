@@ -247,3 +247,26 @@ uniset::SimpleInfo* MBTCPMaster::getInfo( const char* userparam )
     return i._retn();
 }
 // ----------------------------------------------------------------------------
+bool MBTCPMaster::reconfigure( const std::shared_ptr<uniset::UniXML>& xml, const std::shared_ptr<uniset::MBConfig>& newConf )
+{
+    newConf->prop_prefix = initPropPrefix(newConf->s_field, "tcp_");
+
+    UniXML::iterator it(newConf->cnode);
+
+    auto newIAddr = it.getProp("gateway_iaddr");
+    auto newPort = it.getIntProp("gateway_port");
+
+    if( !iaddr.empty() )
+        iaddr = newIAddr;
+
+    if( newPort > 0 )
+        port = newPort;
+
+    if( !it.getProp("persistent_connection").empty() )
+        force_disconnect = ( it.getIntProp("persistent_connection") > 0 ) ? false : true;
+
+    // reinit connection
+    mbtcp->forceDisconnect();
+    return true;
+}
+// ----------------------------------------------------------------------------

@@ -229,7 +229,7 @@ namespace uniset
      \code
         /help                                  - Получение списка доступных команд
         /                                      - получение стандартной информации
-        /reconfigure?confile=/path/to/confile  - Перезагрузить конфигурацию
+        /reload?confile=/path/to/confile       - Перезагрузить конфигурацию
                                                  confile - абсолютный путь до файла с конфигурацией. Не обязательный параметр.
      \endcode
 
@@ -269,6 +269,7 @@ namespace uniset
             virtual void sysCommand( const uniset::SystemMessage* sm ) override;
             virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;
             virtual bool deactivateObject() override;
+            virtual bool reconfigure( const std::shared_ptr<uniset::UniXML>& xml, const std::shared_ptr<uniset::MBConfig>& mbconf ) override;
 
             std::string iaddr;
             int port;

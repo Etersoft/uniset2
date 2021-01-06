@@ -782,7 +782,7 @@ TEST_CASE("MBTCPMaster: reload config", "[modbus][reload][mbmaster][mbtcpmaster]
     REQUIRE( ui->getValue(1080) == 1080 );
 
     // add new mbreg
-    REQUIRE( mbm->reconfigure(confile2) );
+    REQUIRE( mbm->reload(confile2) );
 
     msleep(polltime + 600);
     REQUIRE( ui->getValue(1080) == 160 );
@@ -793,7 +793,7 @@ TEST_CASE("MBTCPMaster: reload config (HTTP API)", "[modbus][reload-api][mbmaste
     InitTest();
 
     // default reconfigure
-    std::string request = "/api/v01/reconfigure";
+    std::string request = "/api/v01/reload";
     uniset::SimpleInfo_var ret = mbm->apiRequest(request.c_str());
 
     ostringstream sinfo;
@@ -806,7 +806,7 @@ TEST_CASE("MBTCPMaster: reload config (HTTP API)", "[modbus][reload-api][mbmaste
 
 
     // reconfigure from other file
-    request = "/api/v01/reconfigure?confile=" + confile2;
+    request = "/api/v01/reload?confile=" + confile2;
     ret = mbm->apiRequest(request.c_str());
 
     sinfo.str("");
@@ -819,7 +819,7 @@ TEST_CASE("MBTCPMaster: reload config (HTTP API)", "[modbus][reload-api][mbmaste
     REQUIRE( info.find(confile2) != std::string::npos );
 
     // reconfigure FAIL
-    request = "/api/v01/reconfigure?confile=BADFILE";
+    request = "/api/v01/reload?confile=BADFILE";
     ret = mbm->apiRequest(request.c_str());
     sinfo.str("");
     sinfo << ret->info;

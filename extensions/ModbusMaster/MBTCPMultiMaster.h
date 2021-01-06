@@ -36,6 +36,10 @@ namespace uniset
       - \ref sec_MBTCPM_ExchangeMode
       - \ref sec_MBTCPM_CheckConnection
 
+      \sa
+      - \ref sec_MBTCP_ReloadConfig
+      - \ref sec_MBTCP_REST_API
+
       \section sec_MBTCPM_Comm Общее описание ModbusTCPMultiMaster
       Класс реализует процесс обмена (опрос/запись) с RTU-устройствами,
       через TCP-шлюз. Список регистров с которыми работает процесс задаётся в конфигурационном файле
@@ -286,7 +290,9 @@ namespace uniset
             virtual void initIterators() override;
             virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;
             virtual bool deactivateObject() override;
+            virtual bool reconfigure( const std::shared_ptr<uniset::UniXML>& xml, const std::shared_ptr<uniset::MBConfig>& mbconf ) override;
             void initCheckConnectionParameters();
+            void initGateList( uniset::UniXML::iterator it, const std::shared_ptr<uniset::MBConfig>& mbconf );
 
             void poll_thread();
             void check_thread();
@@ -295,6 +301,8 @@ namespace uniset
             uniset::uniset_rwmutex mbMutex;
             bool force_disconnect;
             timeout_t checktime;
+            timeout_t defaultIgnoreTimeout;
+            timeout_t channelTimeout;
 
         private:
             MBTCPMultiMaster();
