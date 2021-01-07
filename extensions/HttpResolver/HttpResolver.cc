@@ -50,12 +50,11 @@ HttpResolver::HttpResolver( const string& name, int argc, const char* const* arg
     if( config.empty() )
         throw SystemError("Unknown config file");
 
-    std::shared_ptr<UniXML> xml;
-    cout << myname << "(init): init from " << config << endl;
-    xml = make_shared<UniXML>();
+    std::shared_ptr<UniXML> xml = make_shared<UniXML>();
 
     try
     {
+        cout << myname << "(init): init from " << config << endl;
         xml->open(config);
     }
     catch( std::exception& ex )
@@ -89,9 +88,9 @@ HttpResolver::HttpResolver( const string& name, int argc, const char* const* arg
     iorfile = make_shared<IORFile>(dirIt.getProp("name"));
     rinfo << myname << "(init): iot directory: " << dirIt.getProp("name") << endl;
 
-    httpHost = uniset::getArgParam("--" + prefix + "httpserver-host", argc, argv, "localhost");
-    httpPort = uniset::getArgInt("--" + prefix + "httpserver-port", argc, argv, "8008");
-    httpCORS_allow = uniset::getArgParam("--" + prefix + "httpserver-cors-allow", argc, argv, httpCORS_allow);
+    httpHost = uniset::getArgParam("--" + prefix + "http-host", argc, argv, it.getProp2("host", "localhost"));
+    httpPort = uniset::getArgInt("--" + prefix + "http-port", argc, argv, it.getProp2("port", "8008"));
+    httpCORS_allow = uniset::getArgParam("--" + prefix + "httpresolver-cors-allow", argc, argv, it.getProp2("cors", httpCORS_allow));
 
     rinfo << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
     Poco::Net::SocketAddress sa(httpHost, httpPort);
@@ -100,8 +99,8 @@ HttpResolver::HttpResolver( const string& name, int argc, const char* const* arg
     {
         Poco::Net::HTTPServerParams* httpParams = new Poco::Net::HTTPServerParams;
 
-        int maxQ = uniset::getArgPInt("--" + prefix + "httpserver-max-queued", argc, argv, it.getProp("httpMaxQueued"), 100);
-        int maxT = uniset::getArgPInt("--" + prefix + "httpserver-max-threads", argc, argv, it.getProp("httpMaxThreads"), 3);
+        int maxQ = uniset::getArgPInt("--" + prefix + "http-max-queued", argc, argv, it.getProp("httpMaxQueued"), 100);
+        int maxT = uniset::getArgPInt("--" + prefix + "http-max-threads", argc, argv, it.getProp("httpMaxThreads"), 3);
 
         httpParams->setMaxQueued(maxQ);
         httpParams->setMaxThreads(maxT);
@@ -140,11 +139,11 @@ void HttpResolver::help_print()
     cout << "--prefix-single-confile conf.xml     - Отдельный конфигурационный файл (не требующий структуры uniset)" << endl;
     cout << "--prefix-name name                   - Имя. Для поиска настроечной секции в configure.xml" << endl;
     cout << "http: " << endl;
-    cout << "--prefix-httpserver-host ip                 - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
-    cout << "--prefix-httpserver-port num                - Порт на котором принимать запросы. По умолчанию: 8080" << endl;
-    cout << "--prefix-httpserver-max-queued num          - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
-    cout << "--prefix-httpserver-max-threads num         - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
-    cout << "--prefix-httpserver-cors-allow addr         - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
+    cout << "--prefix-http-host ip                - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
+    cout << "--prefix-http-port num               - Порт на котором принимать запросы. По умолчанию: 8008" << endl;
+    cout << "--prefix-http-max-queued num         - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
+    cout << "--prefix-http-max-threads num        - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
+    cout << "--prefix-http-cors-allow addr        - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
 }
 // -----------------------------------------------------------------------------
 void HttpResolver::run()
