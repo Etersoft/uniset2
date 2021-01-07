@@ -19,10 +19,6 @@ jobs:
             libcomedi-devel libmariadb-devel libpqxx-devel librrd-devel libsqlite3-devel \
             libxml2-devel libsigc++2-devel libpoco-devel libev-devel libomniORB-devel libmosquitto-devel \
             xsltproc python-devel python-module-distribute libomniORB-names libomniORB-idl libomniORB-utils
-      - name: prepare builder
-        run: |
-              useradd builder
-              su - builder
       - uses: actions/checkout@v2
       - name: configure
         run: |

@@ -922,7 +922,7 @@ namespace uniset
 				ostringstream s;
 				s << uconf << oind->getNodeName(node);
 				string nodeName(s.str());
-				string bname(nodeName); // сохраняем базовое название
+				const string bname(nodeName); // сохраняем базовое название
 
 				for( size_t curNet = 1; curNet <= uconf->getCountOfNet(); curNet++)
 				{
@@ -1512,6 +1512,21 @@ namespace uniset
 		throw uniset::TimeOut(set_err("UI(apiRequest): Timeout", id, node));
 	}
 	// ------------------------------------------------------------------------------------------------------------
+	uniset::ObjectPtr UInterface::resolve( const std::string& name ) const
+	{
+		if( uconf->isLocalIOR() )
+		{
+			if( CORBA::is_nil(orb) )
+				orb = uconf->getORB();
+
+			const string sior( uconf->iorfile->getIOR(oind->getIdByName(name)) );
+			if( !sior.empty() )
+				return orb->string_to_object(sior.c_str());
+		}
+
+		return rep.resolve( name );
+	}
+	// ------------------------------------------------------------------------------------------------------------
 	uniset::ObjectPtr UInterface::resolve( const uniset::ObjectId id ) const
 	{
 		if( uconf->isLocalIOR() )
@@ -1519,14 +1534,14 @@ namespace uniset
 			if( CORBA::is_nil(orb) )
 				orb = uconf->getORB();
 
-			string sior( uconf->iorfile->getIOR(id) );
+			const string sior( uconf->iorfile->getIOR(id) );
 			if( !sior.empty() )
 				return orb->string_to_object(sior.c_str());
 		}
 
 		return rep.resolve( oind->getNameById(id) );
 	}
-
+	// ------------------------------------------------------------------------------------------------------------
 	uniset::ObjectPtr UInterface::CacheOfResolve::resolve( const uniset::ObjectId id, const uniset::ObjectId node ) const
 	{
 		try
@@ -1633,7 +1648,7 @@ namespace uniset
 				if( CORBA::is_nil(orb) )
 					orb = uconf->getORB();
 
-				string sior( uconf->iorfile->getIOR(id) );
+				const string sior( uconf->iorfile->getIOR(id) );
 
 				if( !sior.empty() )
 				{
@@ -1685,13 +1700,10 @@ namespace uniset
 		if( id == uniset::DefaultObjectId )
 			return string(pre + " uniset::DefaultObjectId");
 
-		string nm( oind->getNameById(node) );
-
-		if( nm.empty() )
-			nm = "UnknownName";
+		const string nm = oind->getNameById(id);
 
 		ostringstream s;
-		s << pre << " (" << id << ":" << node << ")" << nm;
+		s << pre << " (" << id << ":" << node << ")" << (nm.empty() ? "UnknownName" : nm);
 		return s.str();
 	}
 	// --------------------------------------------------------------------------------------------
