@@ -29,6 +29,11 @@
 ./extensions/HttpResolver/HttpResolverSugar.h
 ./extensions/HttpResolver/main.cc
 ./extensions/HttpResolver/Makefile.am
+./extensions/HttpResolver/tests/Makefile.am
+./extensions/HttpResolver/tests/run_test_uresolver.cc
+./extensions/HttpResolver/tests/TestObject.cc
+./extensions/HttpResolver/tests/TestObject.h
+./extensions/HttpResolver/tests/test_uresolver.cc
 ./extensions/include/Calibration.h
 ./extensions/include/ComediInterface.h
 ./extensions/include/DigitalFilter.h

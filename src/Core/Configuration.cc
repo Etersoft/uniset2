@@ -557,6 +557,8 @@ namespace uniset
 			throw uniset::SystemError("Configuration: INIT PARAM`s FAILED!!!!");
 		}
 
+		httpResolverPort = 8008;
+
 		for( ; it.getCurrent(); it.goNext() )
 		{
 			string name( it.getName() );
@@ -600,13 +602,13 @@ namespace uniset
 			{
 				imagesDir = dataDir + it.getProp("name") + "/"; // ????????
 			}
+			else if( name == "HttpResolver" )
+			{
+				httpResolverPort = it.getPIntProp("port", httpResolverPort);
+			}
 			else if( name == "LocalIOR" )
 			{
 				localIOR = it.getIntProp("name");
-				httpResolverPort = it.getIntProp("httpResolverPort");
-
-				if( httpResolverPort <= 0 )
-					httpResolverPort = 8008;
 			}
 			else if( name == "TransientIOR" )
 			{

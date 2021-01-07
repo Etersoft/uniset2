@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UNISETPLC xmlns:xi="http://www.w3.org/2001/XInclude">
+	<UserData/>
+	<!-- Общие(стартовые) параметры по UniSet -->
+	<UniSet>
+		<NameService host="localhost" port="2809"/>
+		<LocalNode name="localhost"/>
+		<RootSection name="UNISET_PLC"/>
+		<CountOfNet name="1"/>
+		<RepeatCount name="3"/>
+		<RepeatTimeoutMS name="50"/>
+		<WatchDogTime name="0"/>
+		<PingNodeTime name="0"/>
+		<AutoStartUpTime name="1"/>
+		<DumpStateTime name="10"/>
+		<SleepTickMS name="500"/>
+		<UniSetDebug levels="" name="ulog"/>
+		<ConfDir name="./"/>
+		<DataDir name="./"/>
+		<BinDir name="./"/>
+		<LogDir name="./"/>
+		<DocDir name="./"/>
+		<LockDir name="./"/>
+		<Services></Services>
+		<LocalIOR name="1"/>
+		<HttpResolver name="HttpResolver" port="8008"/>
+	</UniSet>
+	<dlog name="dlog"/>
+	<settings>
+		<TestProc name="TestProc"/>
+	</settings>
+	<ObjectsMap idfromfile="1">
+		<nodes port="2809">
+			<item id="3000" ip="127.0.0.1" name="localhost" textname="Локальный узел"/>
+			<item id="3001" ip="127.0.0.1" name="node1" textname="второй узел"/>
+		</nodes>
+		<sensors name="Sensors">
+		</sensors>
+		<thresholds/>
+		<controllers name="Controllers">
+		</controllers>
+		<services name="Services">
+		</services>
+		<objects name="UniObjects">
+			<item id="6000" name="TestProc"/>
+		</objects>
+	</ObjectsMap>
+</UNISETPLC>

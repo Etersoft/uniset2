@@ -51,7 +51,7 @@ if test $checklibev = true; then
 	EV_CFLAGS=
 	AC_SUBST(EV_LIBS)
 	AC_SUBST(EV_CFLAGS)
-    AC_MSG_RESULT([ok])
+	AC_MSG_RESULT([ok])
 fi
 
 #check rest api support
@@ -65,12 +65,12 @@ REST_API_CLIBS=
 DISABLE_REST_API=
 
 if test ${buildapi} = true; then
-    AC_MSG_RESULT([enabled])
+	AC_MSG_RESULT([enabled])
 	REST_API_CLIBS="-lPocoJSON"
 else
-    AC_MSG_RESULT([disabled])
+	AC_MSG_RESULT([disabled])
 	REST_API_CFLAGS="-DDISABLE_REST_API"
-    DISABLE_REST_API=1
+	DISABLE_REST_API=1
 fi
 
 AM_CONDITIONAL(DISABLE_REST_API, test ${buildapi} = false)
@@ -592,6 +592,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/LogDB/Makefile
 				 extensions/LogDB/tests/Makefile
 				 extensions/HttpResolver/Makefile
+				 extensions/HttpResolver/tests/Makefile
 				 testsuite/Makefile
 				 wrappers/Makefile
 				 wrappers/python/lib/Makefile

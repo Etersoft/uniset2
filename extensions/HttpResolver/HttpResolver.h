@@ -75,7 +75,7 @@ namespace uniset
 
             std::shared_ptr<Poco::Net::HTTPServer> httpserv;
             std::string httpHost = { "" };
-            int httpPort = { 0 };
+            int httpPort = { 8008 };
             std::string httpCORS_allow = { "*" };
             std::string httpReplyAddr = { "" };
 

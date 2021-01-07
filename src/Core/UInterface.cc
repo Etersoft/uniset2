@@ -1512,6 +1512,21 @@ namespace uniset
 		throw uniset::TimeOut(set_err("UI(apiRequest): Timeout", id, node));
 	}
 	// ------------------------------------------------------------------------------------------------------------
+	uniset::ObjectPtr UInterface::resolve( const uniset::ObjectId id ) const
+	{
+		if( uconf->isLocalIOR() )
+		{
+			if( CORBA::is_nil(orb) )
+				orb = uconf->getORB();
+
+			string sior( uconf->iorfile->getIOR(id) );
+			if( !sior.empty() )
+				return orb->string_to_object(sior.c_str());
+		}
+
+		return rep.resolve( oind->getNameById(id) );
+	}
+
 	uniset::ObjectPtr UInterface::CacheOfResolve::resolve( const uniset::ObjectId id, const uniset::ObjectId node ) const
 	{
 		try
