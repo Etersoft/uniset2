@@ -167,13 +167,7 @@ namespace uniset
             // throw(uniset::ORepFailed)
             void unregister(const uniset::ObjectId id);
 
-            /*! получение ссылки на объект (по полному имени) */
-            inline uniset::ObjectPtr resolve( const std::string& name ) const
-            {
-                return rep.resolve(name);
-            }
-
-            // с поддержкой localIOR
+            uniset::ObjectPtr resolve( const std::string& name ) const;
             uniset::ObjectPtr resolve( const uniset::ObjectId id ) const;
 
             // throw(uniset::ResolveNameError, uniset::TimeOut);

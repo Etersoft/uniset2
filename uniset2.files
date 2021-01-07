@@ -550,7 +550,6 @@
 ./tests/umutex.cc
 ./tests/UniXmlTest/Makefile.am
 ./tests/UniXmlTest/XmlTest.cc
-./tt.cc
 ./uniset-config.h
 ./Utilities/Admin/admin.cc
 ./Utilities/Admin/c.cc
