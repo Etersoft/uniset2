@@ -274,3 +274,51 @@ TEST_CASE("UInterface::freezeValue", "[UInterface][freezeValue]")
     REQUIRE_NOTHROW( ui->setValue(aid, 200) );
     REQUIRE( ui->getValue(aid) == 200 );
 }
+
+// -----------------------------------------------------------------------------
+TEST_CASE("UInterface::getSensorIOInfo", "[UInterface][getSensorIOInfo]")
+{
+    init();
+    auto conf = uniset_conf();
+
+    IOController_i::SensorInfo si;
+    si.id = aid;
+    si.node = conf->getLocalNode();
+
+    REQUIRE_NOTHROW( ui->setValue(si, 200, testOID) );
+    REQUIRE( ui->getValue(aid) == 200 );
+
+    REQUIRE_NOTHROW( ui->getSensorIOInfo(si) );
+    auto inf = ui->getSensorIOInfo(si);
+
+    REQUIRE( inf->supplier == testOID );
+    REQUIRE( inf->value == 200 );
+    REQUIRE( inf->real_value == 200 );
+    REQUIRE( inf->blocked == false );
+    REQUIRE( inf->frozen == false );
+    REQUIRE( inf->undefined == false );
+    REQUIRE( inf->tv_sec > 0 );
+    REQUIRE( inf->dbignore == false );
+
+    // freeze/unfreeze
+    REQUIRE_NOTHROW( ui->freezeValue(si, true, 10, testOID) );
+    inf = ui->getSensorIOInfo(si);
+    REQUIRE( inf->frozen == true );
+    REQUIRE( inf->supplier == testOID );
+
+    REQUIRE_NOTHROW( ui->freezeValue(si, false, 10, testOID) );
+    inf = ui->getSensorIOInfo(si);
+    REQUIRE( inf->frozen == false );
+    REQUIRE( inf->supplier == testOID );
+
+    // undef
+    REQUIRE_NOTHROW( ui->setUndefinedState( si, true, testOID ));
+    inf = ui->getSensorIOInfo(si);
+    REQUIRE( inf->undefined == true );
+    REQUIRE( inf->supplier == testOID );
+
+    REQUIRE_NOTHROW( ui->setUndefinedState( si, false, testOID ));
+    inf = ui->getSensorIOInfo(si);
+    REQUIRE( inf->undefined == false );
+    REQUIRE( inf->supplier == testOID );
+}

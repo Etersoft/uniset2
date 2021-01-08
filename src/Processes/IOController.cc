@@ -1083,6 +1083,16 @@ void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr
 	jsens->set("default_val", s->default_val);
 	jsens->set("dbignore", s->dbignore);
 	jsens->set("nchanges", s->nchanges);
+	jsens->set("undefined", s->undefined);
+	jsens->set("frozen", s->frozen);
+	jsens->set("blocked", s->blocked);
+	if( s->d_si.id != DefaultObjectId )
+	{
+		jsens->set("depend_sensor", ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->d_si.id)));
+		jsens->set("depend_sensor_id", s->d_si.id);
+		jsens->set("depend_value", s->d_value);
+		jsens->set("depend_off_value", s->d_off_value);
+	}
 
 	Poco::JSON::Object::Ptr calibr = uniset::json::make_child(jsens, "calibration");
 	calibr->set("cmin", s->ci.minCal);

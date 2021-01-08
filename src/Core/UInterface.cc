@@ -2236,6 +2236,82 @@ namespace uniset
 
 	}
 	// --------------------------------------------------------------------------------------------
+	IOController_i::SensorIOInfo_var UInterface::getSensorIOInfo( const IOController_i::SensorInfo& si )
+	{
+		if ( si.id == uniset::DefaultObjectId )
+			throw uniset::ORepFailed("UI(getSensorIOInfo): error node=uniset::DefaultObjectId");
+
+		if ( si.node == uniset::DefaultObjectId )
+			throw uniset::ORepFailed("UI(getSensorIOInfo): попытка обратиться к объекту с id=uniset::DefaultObjectId");
+
+		try
+		{
+			CORBA::Object_var oref;
+
+			try
+			{
+				oref = rcache.resolve(si.id, si.node);
+			}
+			catch( const uniset::NameNotFound&  ) {}
+
+			for( size_t i = 0; i < uconf->getRepeatCount(); i++)
+			{
+				try
+				{
+					if( CORBA::is_nil(oref) )
+						oref = resolve(si.id, si.node);
+
+					IOController_i_var iom = IOController_i::_narrow(oref);
+					return iom->getSensorIOInfo(si.id);
+				}
+				catch( const CORBA::TRANSIENT& ) {}
+				catch( const CORBA::OBJECT_NOT_EXIST& ) {}
+				catch( const CORBA::SystemException& ex ) {}
+
+				msleep(uconf->getRepeatTimeout());
+				oref = CORBA::Object::_nil();
+			}
+		}
+		catch( const uniset::TimeOut& ) {}
+		catch(const IOController_i::NameNotFound&  ex)
+		{
+			rcache.erase(si.id, si.node);
+			throw uniset::NameNotFound("UI(getSensorIOInfo): " + string(ex.err));
+		}
+		catch(const IOController_i::IOBadParam& ex)
+		{
+			rcache.erase(si.id, si.node);
+			throw uniset::IOBadParam("UI(getSensorIOInfo): " + string(ex.err));
+		}
+		catch(const uniset::ORepFailed& )
+		{
+			rcache.erase(si.id, si.node);
+			// не смогли получить ссылку на объект
+			throw uniset::IOBadParam(set_err("UI(getSensorIOInfo): resolve failed ", si.id, si.node));
+		}
+		catch(const CORBA::NO_IMPLEMENT& )
+		{
+			rcache.erase(si.id, si.node);
+			throw uniset::IOBadParam(set_err("UI(getSensorIOInfo): method no implement", si.id, si.node));
+		}
+		catch( const CORBA::OBJECT_NOT_EXIST& )
+		{
+			rcache.erase(si.id, si.node);
+			throw uniset::IOBadParam(set_err("UI(getSensorIOInfo): object not exist", si.id, si.node));
+		}
+		catch( const CORBA::COMM_FAILURE& ex )
+		{
+			// ошибка системы коммуникации
+		}
+		catch( const CORBA::SystemException& ex )
+		{
+			// ошибка системы коммуникации
+		}
+
+		rcache.erase(si.id, si.node);
+		throw uniset::TimeOut(set_err("UI(getSensorIOInfo): Timeout", si.id, si.node));
+	}
+	// --------------------------------------------------------------------------------------------
 	uniset::IDSeq_var UInterface::setOutputSeq( const IOController_i::OutSeq& lst, uniset::ObjectId sup_id )
 	{
 		if( lst.length() == 0 )
