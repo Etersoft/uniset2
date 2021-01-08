@@ -128,7 +128,7 @@ static void usage()
     print_help(36, "-q|--quiet", "Выводит только результат.\n");
     print_help(36, "-z|--csv", "Вывести результат (getValue) в виде val1,val2,val3...\n");
     print_help(36, "-m|--sendText id1@node1,id2@node2,id3,.. mtype text", "Послать объектам текстовое сообщение text типа mtype\n");
-    print_help(36, "-n|--freezeValue id1@node1=val1,id2@node2=val2,id3=val3,.. set", "Выставить указанным датчикам соответствующие значения и заморозить их (set=true) или разморозить (set=false).\n");
+    print_help(36, "-n|--freezeValue id1@node1=val1,id2@node2=val2,id3=val3,.. [0|1]", "Выставить указанным датчикам соответствующие значения и заморозить(1) или разморозить(0).\n");
     cout << endl;
 }
 
@@ -154,7 +154,7 @@ int main(int argc, char** argv)
 
         while(1)
         {
-            opt = getopt_long(argc, argv, "hc:beosfur:l:i::x:g:w:y:p:vqz:a:m:", longopts, &optindex);
+            opt = getopt_long(argc, argv, "hc:beosfur:l:i::x:g:w:y:p:vqz:a:m:n:", longopts, &optindex);
 
             if( opt == -1 )
                 break;
@@ -208,7 +208,7 @@ int main(int argc, char** argv)
                     if( checkArg(optind, argc, argv) == 0 )
                     {
                         if( !quiet )
-                            cerr << "admin(freezeValue): Unknown 'set'. Use: id=v1,name=v2,name2@nodeX=v3 set" << endl;
+							cerr << "admin(freezeValue): Unknown 'set'. Use: id=v1,name=v2,name2@nodeX=v3 [1|0]" << endl;
 
                         return 1;
                     }
