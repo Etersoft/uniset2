@@ -51,6 +51,7 @@ static struct option longopts[] =
     { "getCalibrate", required_argument, 0, 'y' },
     { "getTimeChange", required_argument, 0, 't' },
     { "oinfo", required_argument, 0, 'p' },
+    { "sinfo", required_argument, 0, 'j' },
     { "apiRequest", required_argument, 0, 'a' },
     { "verbose", no_argument, 0, 'v' },
     { "quiet", no_argument, 0, 'q' },
@@ -79,15 +80,16 @@ int getTimeChange( const string& args, UInterface& ui );
 int getState( const string& args, UInterface& ui );
 int getCalibrate( const string& args, UInterface& ui );
 int oinfo(const string& args, UInterface& ui, const string&  userparam );
+int sinfo(const string& args, UInterface& ui);
 int apiRequest( const string& args, UInterface& ui, const string& query );
 void sendText( const string& args, UInterface& ui, const string& txt, int mtype );
 int freezeValue( const string& args, bool set, UInterface& ui );
 // --------------------------------------------------------------------------
-static void print_help(int width, const string& cmd, const string& help, const string& tab = " " )
+static void print_help(int width, const string& cmd, const string& help, const string& tab = " ", const string& sep = " - " )
 {
     uniset::ios_fmt_restorer ifs(cout);
     cout.setf(ios::left, ios::adjustfield);
-    cout << tab << setw(width) << cmd << " - " << help;
+    cout << tab << setw(width) << cmd << sep << help;
 }
 // --------------------------------------------------------------------------
 static void short_usage()
@@ -99,7 +101,7 @@ static void short_usage()
 static void usage()
 {
     cout << "\nUsage: \n\tuniset-admin [--confile configure.xml] --command [arg]\n";
-	cout << endl;
+    cout << endl;
     cout << "commands list:\n";
     cout << "-----------------------------------------\n";
     print_help(24, "-с|--confile file.xml ", "Используемый конфигурационный файл\n");
@@ -116,6 +118,7 @@ static void usage()
     print_help(36, "-l|--logrotate [FullObjName] ", "Посылка SystemMessage::LogRotate всем объектам (процессам) или заданному по имени (FullObjName).\n");
     print_help(36, "-p|--oinfo id1@node1,id2@node2,id3,... [userparam]", "Получить информацию об объектах (SimpleInfo). \n");
     print_help(36, "", "userparam - необязательный параметр передаваемый в getInfo() каждому объекту\n");
+    print_help(36, "-j|--sinfo id1@node1,id2@node2,id3,...", "Получить информацию о датчиках.\n");
     cout << endl;
     print_help(36, "-a|--apiRequest id1@node1,id2@node2,id3,... query", "Вызов REST API для каждого объекта\n");
     print_help(36, "", "query - Запрос вида: /api/VERSION/query[?param1&param2...]\n");
@@ -162,7 +165,7 @@ int main(int argc, char** argv)
 
         while(1)
         {
-            opt = getopt_long(argc, argv, "hk:beosfur:l:i::x:g:w:y:p:vqz:a:m:n:z:", longopts, &optindex);
+            opt = getopt_long(argc, argv, "hk:beosfur:l:i::x:g:w:y:p:vqz:a:m:n:z:j:", longopts, &optindex);
 
             if( opt == -1 )
                 break;
@@ -280,6 +283,15 @@ int main(int argc, char** argv)
                         userparam = string(argv[optind]);
 
                     return oinfo(optarg, ui, userparam);
+                }
+                break;
+
+                case 'j':  //--sinfo
+                {
+                    auto conf = uniset_init(argc, argv, conffile);
+                    UInterface ui(conf);
+                    ui.initBackId(uniset::AdminID);
+                    return sinfo(optarg, ui);
                 }
                 break;
 
@@ -1188,6 +1200,67 @@ int oinfo(const string& args, UInterface& ui, const string& userparam )
     }
 
     return 0;
+}
+// --------------------------------------------------------------------------------------
+int sinfo(const string& args, UInterface& ui )
+{
+    int err = 0;
+    auto conf = uniset_conf();
+    auto sl = uniset::getSInfoList(args, conf);
+
+    for( auto&& it : sl )
+    {
+        try
+        {
+            // проверка есть ли такой датчик, т.к. тут будет выкинуто исключение
+            // если его нет
+            UniversalIO::IOType t = conf->getIOType(it.si.id);
+
+            if( it.si.node == DefaultObjectId )
+                it.si.node = conf->getLocalNode();
+
+            IOController_i::SensorIOInfo_var sinf = ui.getSensorIOInfo(it.si);
+#if 0
+            UniversalIO::IOType type;     /*!< тип */
+            long priority;                /*!< приоритет уведомления */
+            long default_val;             /*!< значение по умолчанию */
+            CalibrateInfo ci;             /*!< калибровочные параметры */
+#endif
+            print_help(10, "id", std::to_string(it.si.id) + "\n", " ", " : ");
+            print_help(10, "node", std::to_string(it.si.node) + "\n", " ", " : ");
+            print_help(10, "value", std::to_string(sinf->value) + "\n", " ", " : ");
+            print_help(10, "real_value", std::to_string(sinf->real_value) + "\n", " ", " : ");
+            print_help(10, "frozen", std::to_string(sinf->frozen) + "\n", " ", " : ");
+            print_help(10, "blocked", std::to_string(sinf->blocked) + "\n", " ", " : ");
+            print_help(10, "undefined", std::to_string(sinf->undefined) + "\n", " ", " : ");
+            print_help(10, "dbignore", std::to_string(sinf->dbignore) + "\n", " ", " : ");
+
+            if( sinf->supplier == uniset::AdminID )
+                print_help(10, "supplier", "admin\n", " ", " : ");
+            else
+                print_help(10, "supplier", ORepHelpers::getShortName(conf->oind->getMapName(sinf->supplier)) + "\n", " ", " : ");
+
+            ostringstream ts;
+            ts << dateToString(sinf->tv_sec) << " " << timeToString(sinf->tv_sec) << "." << sinf->tv_nsec << "\n";
+            print_help(10, "changed", ts.str(), " ", " : ");
+        }
+        catch( const uniset::Exception& ex )
+        {
+            if( !quiet )
+                cerr << "(sinfo): " << ex << endl;;
+
+            err = 1;
+        }
+        catch( const std::exception& ex )
+        {
+            if( !quiet )
+                cerr << "(sinfo): std::exception: " << ex.what() << endl;
+
+            err = 1;
+        }
+    }
+
+    return err;
 }
 // --------------------------------------------------------------------------------------
 int apiRequest( const string& args, UInterface& ui, const string& query )

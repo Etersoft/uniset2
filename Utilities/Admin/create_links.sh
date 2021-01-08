@@ -21,6 +21,7 @@ ln -s -f admin.sh apiRequest
 ln -s -f admin.sh sendText
 ln -s -f admin.sh freeze
 ln -s -f admin.sh unfreeze
+ln -s -f admin.sh sinfo
 
 ln -s -f ../../Utilities/scripts/uniset2-start.sh
 ln -s -f ../../Utilities/scripts/uniset2-stop.sh stop.sh
