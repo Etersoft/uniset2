@@ -34,15 +34,40 @@ namespace uniset
 {
     //------------------------------------------------------------------------------------------
     /*!
-          \page page_HttpResolver Http-cервис для получения CORBA-ссылок на объекты (HttpResolver)
+        \page page_HttpResolver Http-cервис для получения CORBA-ссылок на объекты (HttpResolver)
 
-          - \ref sec_HttpResolver_Comm
-
+        - \ref sec_HttpResolver_Comm
+        - \ref sec_HttpResolver_Conf
 
         \section sec_HttpResolver_Comm Общее описание работы HttpResolver
             HttpResolver это сервис, который отдаёт CORBA-ссылки (в виде строки)
         на объекты запущенные на данном узле в режиме LocalIOR. Т.е. когда ссылки
         публикуются в файлах.
+
+        \sa \ref ConfigurationPage_secLocalIOR
+
+        \section sec_HttpResolver_Conf Настройка работы HttpResolver
+        Для запуска HttpResolver необходимо настроить на каком порту и сетевом интерфейсе будут приниматься запросы.
+        Для этого необходимо в настройках прописать следующую секцию
+        \code
+        <UniSet>
+          ...
+          <HttpResolver name="HttpResolver" port="8008" host="0.0.0.0"/>
+          ...
+        </UniSet>
+        \endcode
+        - 0.0.0.0 - слушать на всех доступных интерфейсах
+
+        Помимо этого, настройки можно указать в аргументах командной строки
+        - `--httpresolver-host` - интерфейс на котором слушать запросы. По умолчанию: 0.0.0.0
+        - `--httpresolver-port` - порт на котором слушать запросы. По умолчанию: 8008
+
+        Длполнительные параметры:
+        - `--httpresolver-max-queued num `     - Размер очереди запросов к http серверу. По умолчанию: 100.
+        - `--httpresolver-max-threads num`     - Разрешённое количество потоков для http-сервера. По умолчанию: 3.
+        - `--httpresolver-cors-allow addr`     - (CORS): Access-Control-Allow-Origin. Default: *
+        - `--httpresolver-logs-add-levels any` - Управление логами
+        - `--confile configure.xml`            - Файл с настройками
     */
     class HttpResolver:
         public Poco::Net::HTTPRequestHandler

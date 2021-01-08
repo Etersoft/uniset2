@@ -51,7 +51,6 @@ UniSetTypes::Message::TheLastFieldOfTypeOfMessage.
   };
 \endcode
 
-
 \section sec_Concept_ObjectId Идентификатор объекта
 Каждый объект, которому необходимо взаимодействовать с другими объектами
 (в том числе датчиками см. \ref sec_Concept_Sensor) должен обладать уникальным
@@ -165,7 +164,13 @@ UniSetTypes::Message::TheLastFieldOfTypeOfMessage.
 не сложными скриптами).
 
  
-\section sec_Concept_Repository Репозиторий объектов
+\section sec_Concept_Repository Сервис имён (Names service)
+Сервис имён предназначен для получения ссылок на объекты (для возможности удалённого вызова)
+по имени объекта. Все объекты и датчики регистрируются в этом сервисе и становятся доступны
+для удалённого вызова. В данном проекте используется реализация службы имён входящая в состав
+библиотеки omniORB. Сервис поставляется отдельной утилитой под названием omniNames.
+
+см. \ref ConfigurationPage_secOmniNames
 
 \section sec_Concept_Sensor Датчик
 Датчик - это одно из базовых понятий при построении систем на основе libuniset.
