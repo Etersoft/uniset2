@@ -20,91 +20,91 @@
 // -----------------------------------------------------------------------------
 namespace uniset
 {
-	// -------------------------------------------------------------------------
-	using namespace std;
-	using namespace uniset::extensions;
-	// -------------------------------------------------------------------------
-	TDelay::TDelay(Element::ElementID id, timeout_t delayMS, size_t inCount):
-		Element(id),
-		myout(false),
-		delay(delayMS)
-	{
-		if( inCount != 0 )
-		{
-			// создаём заданное количество входов
-			for( unsigned int i = 1; i <= inCount; i++ )
-				ins.emplace_front(i, false); // addInput(i,st);
-		}
-	}
+    // -------------------------------------------------------------------------
+    using namespace std;
+    using namespace uniset::extensions;
+    // -------------------------------------------------------------------------
+    TDelay::TDelay(Element::ElementID id, timeout_t delayMS, size_t inCount):
+        Element(id),
+        myout(false),
+        delay(delayMS)
+    {
+        if( inCount != 0 )
+        {
+            // создаём заданное количество входов
+            for( unsigned int i = 1; i <= inCount; i++ )
+                ins.emplace_front(i, false); // addInput(i,st);
+        }
+    }
 
-	TDelay::~TDelay()
-	{
-	}
-	// -------------------------------------------------------------------------
-	void TDelay::setIn( size_t num, long value )
-	{
-		bool prev = myout;
+    TDelay::~TDelay()
+    {
+    }
+    // -------------------------------------------------------------------------
+    void TDelay::setIn( size_t num, long value )
+    {
+        bool prev = myout;
 
-		// сбрасываем сразу
-		if( !value )
-		{
-			pt.setTiming(0); // reset timer
-			myout = false;
-			dinfo << this << ": set " << myout << endl;
+        // сбрасываем сразу
+        if( !value )
+        {
+            pt.setTiming(0); // reset timer
+            myout = false;
+            dinfo << this << ": set " << myout << endl;
 
-			if( prev != myout )
-				Element::setChildOut();
+            if( prev != myout )
+                Element::setChildOut();
 
-			return;
-		}
+            return;
+        }
 
-		//    if( state )
+        //    if( state )
 
-		// выставляем без задержки
-		if( delay <= 0 )
-		{
-			pt.setTiming(0); // reset timer
-			myout = true;
-			dinfo << this << ": set " << myout << endl;
+        // выставляем без задержки
+        if( delay <= 0 )
+        {
+            pt.setTiming(0); // reset timer
+            myout = true;
+            dinfo << this << ": set " << myout << endl;
 
-			if( prev != myout )
-				Element::setChildOut();
+            if( prev != myout )
+                Element::setChildOut();
 
-			return;
-		}
+            return;
+        }
 
-		// засекаем, если ещё не установлен таймер
-		if( !myout && !prev  ) // т.е. !myout && prev != myout
-		{
-			dinfo << this << ": set timer " << delay << " [msec]" << endl;
-			pt.setTiming(delay);
-		}
-	}
-	// -------------------------------------------------------------------------
-	void TDelay::tick()
-	{
-		if( pt.getInterval() != 0 && pt.checkTime() )
-		{
-			myout = true;
-			pt.setTiming(0); // reset timer
-			dinfo << getType() << "(" << myid << "): TIMER!!!! myout=" << myout << endl;
-			Element::setChildOut();
-		}
-	}
-	// -------------------------------------------------------------------------
-	long TDelay::getOut() const
-	{
-		return (myout ? 1 : 0);
-	}
-	// -------------------------------------------------------------------------
-	void TDelay::setDelay( timeout_t timeMS )
-	{
-		delay = timeMS;
-	}
+        // засекаем, если ещё не установлен таймер
+        if( !myout && !prev  ) // т.е. !myout && prev != myout
+        {
+            dinfo << this << ": set timer " << delay << " [msec]" << endl;
+            pt.setTiming(delay);
+        }
+    }
+    // -------------------------------------------------------------------------
+    void TDelay::tick()
+    {
+        if( pt.getInterval() != 0 && pt.checkTime() )
+        {
+            myout = true;
+            pt.setTiming(0); // reset timer
+            dinfo << getType() << "(" << myid << "): TIMER!!!! myout=" << myout << endl;
+            Element::setChildOut();
+        }
+    }
+    // -------------------------------------------------------------------------
+    long TDelay::getOut() const
+    {
+        return (myout ? 1 : 0);
+    }
+    // -------------------------------------------------------------------------
+    void TDelay::setDelay( timeout_t timeMS )
+    {
+        delay = timeMS;
+    }
 
-	timeout_t TDelay::getDelay() const
-	{
-		return delay;
-	}
-	// -------------------------------------------------------------------------
+    timeout_t TDelay::getDelay() const
+    {
+        return delay;
+    }
+    // -------------------------------------------------------------------------
 } // end of namespace uniset

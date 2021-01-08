@@ -1,3 +1,4 @@
+if ENABLE_LOGDB
 if HAVE_TESTS
 
 include $(top_builddir)/testsuite/testsuite-common.mk
@@ -11,4 +12,5 @@ clean-local:
 
 include $(top_builddir)/include.mk
 
+endif
 endif

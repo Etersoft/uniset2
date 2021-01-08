@@ -13,21 +13,13 @@
 #ifndef LYXDEBUG_H
 #define LYXDEBUG_H
 
-//#ifdef __GNUG__
-//#pragma interface
-//#endif
-
 #if __GNUC__ > 2
 #define MODERN_STL_STREAMS
 #endif
 
 #include <iosfwd>
-
 #include <string>
-//#include <lstrings.h>
-//#ifndef _
-//    #define _(n) n
-//#endif
+
 
 
 /** Ideally this should have been a namespace, but since we try to be
@@ -36,69 +28,71 @@
 */
 struct Debug
 {
-	///
-	enum type
-	{
-		///
-		NONE = 0,
-		///
-		INFO    = (1 << 0),   // 1
-		///
-		INIT    = (1 << 1),   // 2
-		///
-		WARN    = (1 << 2),   // 4
-		///
-		CRIT    = (1 << 3),   // 8
-		///
-		LEVEL1    = (1 << 4),   // 16
-		///
-		LEVEL2    = (1 << 5),   // 32
-		///
-		LEVEL3    = (1 << 6),   // 64
-		///
-		LEVEL4    = (1 << 7),   // 128
-		///
-		LEVEL5    = (1 << 8),   // 256
-		///
-		LEVEL6    = (1 << 9),   // 512
-		///
-		LEVEL7    = (1 << 10),  // 1024
-		///
-		LEVEL8    = (1 << 11),  // 2048
-		///
-		LEVEL9    = (1 << 12),  // 4096
-		///
-		REPOSITORY = (1 << 13),
-		///
-		SYSTEM       = (1 << 14),
-		///
-		EXCEPTION  = (1 << 15)
+    ///
+    enum type
+    {
+        ///
+        NONE = 0,
+        ///
+        INFO    = (1 << 0),   // 1
+        ///
+        INIT    = (1 << 1),   // 2
+        ///
+        WARN    = (1 << 2),   // 4
+        ///
+        CRIT    = (1 << 3),   // 8
+        ///
+        LEVEL1    = (1 << 4),   // 16
+        ///
+        LEVEL2    = (1 << 5),   // 32
+        ///
+        LEVEL3    = (1 << 6),   // 64
+        ///
+        LEVEL4    = (1 << 7),   // 128
+        ///
+        LEVEL5    = (1 << 8),   // 256
+        ///
+        LEVEL6    = (1 << 9),   // 512
+        ///
+        LEVEL7    = (1 << 10),  // 1024
+        ///
+        LEVEL8    = (1 << 11),  // 2048
+        ///
+        LEVEL9    = (1 << 12),  // 4096
+        ///
+        REPOSITORY = (1 << 13),
+        ///
+        SYSTEM       = (1 << 14),
+        ///
+        EXCEPTION  = (1 << 15)
 
-	};
-	///
-	static type const ANY;
+    };
+    ///
+    static type const ANY;
 
-	///
-	//    friend inline void operator|=(Debug::type & d1, Debug::type d2);
+    typedef uint8_t verbosity;
 
-	/** A function to convert symbolic string names on debug levels
-	    to their numerical value.
-		example: level1,level2,-level3
-		supported '-' for disable debug level
-	*/
-	static Debug::type value(std::string const& val);
+    ///
+    //    friend inline void operator|=(Debug::type & d1, Debug::type d2);
 
-	/** Display the tags and descriptions of the current debug level
-	    of ds
-	*/
-	static void showLevel(std::ostream& o, type level) noexcept;
+    /** A function to convert symbolic string names on debug levels
+        to their numerical value.
+        example: level1,level2,-level3
+        supported '-' for disable debug level
+    */
+    static Debug::type value(std::string const& val);
 
-	/** show all the possible tags that can be used for debugging */
-	static void showTags(std::ostream& o) noexcept;
+    /** Display the tags and descriptions of the current debug level
+        of ds
+    */
+    static void showLevel(std::ostream& o, type level) noexcept;
 
-	friend std::ostream& operator<<(std::ostream& os, Debug::type level ) noexcept;
+    /** show all the possible tags that can be used for debugging */
+    static void showTags(std::ostream& o) noexcept;
 
-	static std::string str( Debug::type level ) noexcept;
+    friend std::ostream& operator<<(std::ostream& os, Debug::type level ) noexcept;
+
+    static std::string str( Debug::type level ) noexcept;
 };
 
 
@@ -106,13 +100,10 @@ struct Debug
 inline
 void operator|=(Debug::type& d1, Debug::type d2) noexcept
 {
-	d1 = static_cast<Debug::type>(d1 | d2);
+    d1 = static_cast<Debug::type>(d1 | d2);
 }
 
+std::ostream& operator<<(std::ostream& o, Debug::type t) noexcept;
 
 #include "DebugStream.h"
-
-std::ostream& operator<<(std::ostream& o, Debug::type t) noexcept;
-//extern DebugStream ulog;
-
 #endif

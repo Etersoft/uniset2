@@ -1,188 +1,193 @@
 /*! 
-	\page UniSetLibStylePage Некоторые соглашения о стиле написания
-	
-		- \ref secName
-			- \ref subNameClass
-			- \ref subNameVar
-			- \ref subNameFunc
-			- \ref subNameFile
-			- \ref subNameDefine
-			- \ref subNameConst
-		- \ref secFormat
-		- \ref secNoteHeader
-		- \ref secNoteCpp
-		- \ref secIDL
-			- \ref subIDLCommit
-			- \ref subImplName
-			- \ref subDerivedName
+\page UniSetLibStylePage Некоторые соглашения о стиле написания
 
-	\section secName Названия
-	
-	\subsection subNameClass Названия Классов
-		Названия классов должны начинаться с большой буквы.
-		Если название состоит из нескольких слов, то каждое слово 
-		начинается с большой буквы.
-		\par
-		Обратите внимание, что public рекомендуется записывать
-		с отступом перед ним.
-	\code
-	class MyNameClass
-   	{
-		public:
-		...
-	};
-	\endcode
-		При записи конструктора инициализация членов класса должна записываться
-		так:
-	\code
-	class MyNameClass
-   	{
-		public:
-			MyNameClass():
-				x(5)
-			{
-			}
-		private:
-			int x;
-	};
-	\endcode
-	
-	\subsection subNameVar Названия переменных
-		Названия переменных и членов класса должны начинаться строчными буквами.
-		Если название составное, то второе слово нужно
-		писать с большой буквы.
-		\par
-		Записывать переменные полностью маленькими буквами,
-		разделяя слова подчёркиваниями, запрещается.
-	\code
-	int myVariableName;
-	\endcode
+- \ref secName
+    - \ref subNameClass
+    - \ref subNameVar
+    - \ref subNameFunc
+    - \ref subNameFile
+    - \ref subNameDefine
+    - \ref subNameConst
+- \ref secFormat
+    - \ref secNoteHeader
+    - \ref secNoteCpp
+    - \ref secIDL
+        - \ref subIDLCommit
+        - \ref subImplName
+        - \ref subDerivedName
 
-	\subsection subNameFunc Названия функций
-		Названия функций должны начинаться с маленькой буквы.
-		Первым должен идти глагол. 
-		Если название составное, то второе слово нужно
-		писать с большой буквы.
-		\par
-		Обратите внимание, что при вызове функций пробел между названием
-		функции и скобками, содержащими параметры, не ставится. См. пример.
-		\par
-		Называния функций полностью маленькими буквами с подчёркиваниями
-		между словами допустимо только для тех классов, которые
-		наследуются от библиотек, использующих аналогичную нотацию
-		(например, gtk--)
-	\code
-	void printFunction(void);
-	void debugInfo();
-	\endcode
-	
-	\subsection subNameFile Названия файлов
-		Названия файлов должны начинаться с большой буквы.
-		Если в файлах описывается \b class \c MyNameClass, то названия файлов
-		должны быть соответственно \c MyNameClass.h и \c MyNameClass.cc.
-		Что касается оформления см. \ref secNoteHeader и \ref secNoteCpp
-	
-	\subsection subNameDefine Название макросов
-		Определения макросов пишутся ЗАГЛАВНЫМИ БУКВАМИ (Кроме спец. макросов \c NameHeaderFile_H_)
-		Описание макросов лучше производить в заголовочном файле
-		в начале (см. \ref secNoteHeader).
-		Использование макросов \b не \b рекомендуется.
-		
-	\subsection subNameConst Название констант и enum'ов
-		Названия констант и enum'ов начинаются с большой буквы.
-		\code
-			const int MyConst;
-			enum MyEnum { One, Two, Three };
-		\endcode
-		
-	\section secFormat Форматирование
+\note Для автоматического форматирования проектов рекомендуется использовать программу astyle.
+        
+\section secName Названия
 
-		Ширина текста программы не должна превышать 78 символов для
-		возможности отображения на всех терминалах и печати на принтере.
-		Отступы в программе должны формироваться исключительно
-		знаками табуляции.
-		\par
-		Каждый может выбирать в настройках того редактора, который
-		он использует, сколько пробелов (4 или 8) использовать
-		знак табуляции. Рекомендуется 4 знака.
-		В редакторе mcedit в меню Настройка->Разное должно быть
-		отключено "Симулировать неполную табуляцию".
-		\par
-		Фигурные скобки во всех случаях записываются одна под другой.
-		\par
-		Условия. Скобки записываются через пробел после if.
-		Не используйте лишних скобок при записи || и &&
-		
-	\code
-	function (void)
-	{
-		body of the function;
-		if (a > b || a < c)
-		{
-			body of the condition;
-		}
-		else if (x > y)
-		{
-			body of the not condition;
-		}
-	}
-	\endcode
-	При длинных названиях переменных рекомендуется записывать
-	содержимое круглых скобок как в примере ниже
-	\code
-		if ( veryLongA > veryLongB )
-		{
-			body of the condition;
-		}
-	\endcode
-	С короткими названиями лучше запись
-	\code
-		if (a>b)
-		{
-		}
-	\endcode
-	Присваивания записываются как 
-	\code
-		veryLongA = veryLongB;
-	\endcode
-	для коротких переменных допустима запись
-	\code
-		a=b;
-	\endcode
-	Типы данных. Знаки, относящиеся к типу, записываются слитно
-	с названием типа.
-	\code
-		PointerToObject* p;
-		ReferenceToObject& r;
-	\endcode
-	Часто используемые локальные переменные рекомендуется называть
-	короткими именами, такими как
-	\par
-	i,j для переменных цикла
-	\par
-	p для указателя
-	\par
-	it для итератора
-	\par
-	obj для объекта
-	
-	\section secNoteHeader Оформление заголовочных файлов
-	Заголовочные файлы имеют расширение .h
-	Кроме приведенного в примере, конечно должны быть комментарии.
+\subsection subNameClass Названия Классов
+Названия классов должны начинаться с большой буквы.
+Если название состоит из нескольких слов, то каждое слово начинается с большой буквы.
+\par
+Обратите внимание, что public рекомендуется записывать с отступом перед ним.
 \code
-/***************************************************************************
-* This file is part of the UniSet* library                                 *
-* Copyright (C) 2002 SET Research Institute. All rights reserved.          *
-***************************************************************************/
-/*! \file
- *  \brief Заголовочный файл для организации низкоуровневого ввода-вывода.
- *  \author Vitaly Lipatov <lav>
- *  \date   $Date: 2005/12/03 11:13:10 $
- *  \version $Id: UniSetLibStyle.dox,v 1.2 2005/12/03 11:13:10 vpashka Exp $
- *  \par
- *  Этот файл предназначен для внутреннего использования в классах
- *  ввода-вывода
- */
+class MyNameClass
+{
+    public:
+    ...
+};
+\endcode
+    При записи конструктора инициализация членов класса должна записываться
+    так:
+\code
+class MyNameClass
+{
+    public:
+        MyNameClass():
+            x(5)
+        {
+        }
+    private:
+        int x;
+};
+\endcode
+
+\subsection subNameVar Названия переменных
+    Названия переменных и членов класса должны начинаться строчными буквами.
+    Если название составное, то второе слово нужно
+    писать с большой буквы.
+    \par
+    Записывать переменные полностью маленькими буквами,
+    разделяя слова подчёркиваниями, запрещается.
+\code
+int myVariableName;
+\endcode
+
+\subsection subNameFunc Названия функций
+    Названия функций должны начинаться с маленькой буквы.
+    Первым должен идти глагол. 
+    Если название составное, то второе слово нужно
+    писать с большой буквы.
+    \par
+    Обратите внимание, что при вызове функций пробел между названием
+    функции и скобками, содержащими параметры, не ставится. См. пример.
+    \par
+    Называния функций полностью маленькими буквами с подчёркиваниями
+    между словами допустимо только для тех классов, которые
+    наследуются от библиотек, использующих аналогичную нотацию
+    (например, gtk--)
+\code
+  void printFunction(void);
+  void debugInfo();
+\endcode
+
+\subsection subNameFile Названия файлов
+    Названия файлов должны начинаться с большой буквы.
+    Если в файлах описывается \b class \c MyNameClass, то названия файлов
+    должны быть соответственно \c MyNameClass.h и \c MyNameClass.cc.
+    Что касается оформления см. \ref secNoteHeader и \ref secNoteCpp
+
+\subsection subNameDefine Название макросов
+    Определения макросов пишутся ЗАГЛАВНЫМИ БУКВАМИ (Кроме спец. макросов \c NameHeaderFile_H_)
+    Описание макросов лучше производить в заголовочном файле
+    в начале (см. \ref secNoteHeader).
+    Использование макросов \b не \b рекомендуется.
+    
+\subsection subNameConst Название констант и enum'ов
+    Названия констант и enum'ов начинаются с большой буквы.
+    \code
+        const int MyConst;
+        enum MyEnum { One, Two, Three };
+    \endcode
+
+\section secFormat Форматирование
+
+Ширина текста программы не должна превышать 78 символов для возможности отображения на всех терминалах и печати на принтере.
+Отступы в программе должны формироваться исключительно знаками табуляции.
+\par
+Каждый может выбирать в настройках того редактора, который он использует, сколько пробелов (4 или 8) использовать
+знак табуляции. Рекомендуется 4 знака. В редакторе mcedit в меню Настройка->Разное должно быть отключено 
+"Симулировать неполную табуляцию".
+\par
+ Фигурные скобки во всех случаях записываются одна под другой.
+\par
+ Условия. Скобки записываются через пробел после if. Не используйте лишних скобок при записи || и &&
+    
+\code
+function (void)
+{
+    body of the function;
+    if( a > b || a < c )
+    {
+        body of the condition;
+    }
+    else if( x > y )
+    {
+        body of the not condition;
+    }
+}
+\endcode
+При длинных названиях переменных рекомендуется записывать
+содержимое круглых скобок как в примере ниже
+\code
+    if( veryLongA > veryLongB )
+    {
+        body of the condition;
+    }
+\endcode
+С короткими названиями лучше запись
+\code
+    if( a > b )
+    {
+       ...
+    }
+\endcode
+Присваивания записываются как 
+\code
+    veryLongA = veryLongB;
+\endcode
+для коротких переменных допустима запись
+\code
+    a=b;
+\endcode
+Типы данных. Знаки, относящиеся к типу, записываются слитно
+с названием типа.
+\code
+    PointerToObject* p;
+    ReferenceToObject& r;
+\endcode
+Часто используемые локальные переменные рекомендуется называть
+короткими именами, такими как
+\par
+i,j для переменных цикла
+\par
+p для указателя
+\par
+it для итератора
+\par
+obj для объекта
+
+\section secNoteHeader Оформление заголовочных файлов
+Заголовочные файлы имеют расширение .h
+Кроме приведенного в примере, конечно должны быть комментарии.
+\code
+/*
+ * Copyright (c) xxxx Name Noname
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, version 2.1.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Lesser Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * \file
+ * \brief Заголовочный файл для организации низкоуровневого ввода-вывода.
+ * \author Vitaly Lipatov <lav>
+ * \date   $Date: 2005/12/03 11:13:10 $
+ * \par
+ * Этот файл предназначен для внутреннего использования в классах ввода-вывода
+*/
 /**************************************************************************/
 
 #ifndef MyNameClass_H_
@@ -197,20 +202,25 @@
 // -----------------------------------------------------------------------
 const float MyPI = 3.14;
 
-enum MyEnum { En1, En2, En3 };
+enum MyEnum
+{ 
+    En1, // comment 1
+    En2, // comment 2
+    En3  // comment 3
+};
 
 // -----------------------------------------------------------------------
 
 class MyNameClass
 {
-	public:
-		...
-			
-	protected:			
-		...
-			
-	private:
-		...
+    public:
+        ...
+        
+    protected:
+        ...
+
+    private:
+        ...
 };
 
 #endif
@@ -219,89 +229,92 @@ class MyNameClass
 \note Большая просьба ко всем разработчикам избегать глобальных
 Enum-ов (как в примере), дабы избежать в последствии ошибок.
 
-	\section secNoteCpp Оформление cpp-файлов
-		Кроме приведенного в примере, конечно должны быть комментарии.
-		\code
-/***************************************************************************
-* This file is part of the UniSet* library                                 *
-* Copyright (C) 2002 SET Research Institute. All rights reserved.          *
-***************************************************************************/
-/*! \file
+\section secNoteCpp Оформление cpp-файлов
+    Кроме приведенного в примере, конечно должны быть комментарии.
+\code
+/*
+ * Copyright (c) xxxx Name Noname
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, version 2.1.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Lesser Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * \file
  *  \brief Это файл обеспечения
  *  \author Vitaly Lipatov <lav>
  *  \date   $Date: 2005/12/03 11:13:10 $
- *  \version $Id: UniSetLibStyle.dox,v 1.2 2005/12/03 11:13:10 vpashka Exp $
  *  Некоторые комментарии к файлу
- *  
- */
+*/
 /**************************************************************************/
 
-		#include <std.h>
-		#include <...>
+#include <std.h>
+#include <...>
 
-		#include "MyNameClass.h"
-		#include "..."
-		// -----------------------------------------------------------------------------------------
-	
-		void MyNameClass::func1(void)
-		{
-			...
-		}
-	
-		// -----------------------------------------------------------------------------------------
-		void MyNameClass::func2(void)
-		{
-			...
-		}
-		// -----------------------------------------------------------------------------------------
-		...
-		// -----------------------------------------------------------------------------------------
-	\endcode
-	
-	\section secIDL Написание интерфейсов на языке IDL
-		\subsection subIDLCommit Общая часть
-		Названия интерфейсов(классов), функций и переменных см. \ref secName.
-		Оформление файла IDL аналогично оформлению заголовочных файлов.
-		(См. \ref secNoteHeader) Название интерфейса должно образовываться 
-		от названия и добавления к нему "_i", что означает интерфейсный класс.
+#include "MyNameClass.h"
+#include "..."
+// -----------------------------------------------------------------------------------------
 
-		\subsection subImplName Имена классов реализаций
-			Название класса реализации должно образовываться от
-			названия интерфейса, исключив "_i".
+void MyNameClass::func1(void)
+{
+    ...
+}
 
-		 Пример:
-		\par объявление на IDL
-		\code
-		interface BaseProcess_i
-		{	
-			...
-		}
-		\endcode
-		\par объявление класса реализации
-		\code
-		class BaseProcess:
-			public POA_BaseProcess_i,
-			public ...
-		{	
-			...
-		}
-		\endcode
-		
-		\subsection subDerivedName Класс родитель для реализации
-			В общем случае классом родителем должен являться класс 
-			POA_имя_интерфейса. Этот класс генерируется
-			автоматически и его описание находится в файле 
-			имя_интерфейса.hh . В особо оговариваемых случаях 
-			наследование может происходить от другого класса. 
-			Не исключается множественное наследование
-			для добавления необходимых свойств и т.п. Вот пример 
-			наследования для реализации idl-интерфейса ContolProcess_i:
-		\code
-		class ControlProcess: 
-			public BaseProcess,
-			public POA_ControlProcess_i
-		{
-			...
-		}
-		\endcode
+// -----------------------------------------------------------------------------------------
+void MyNameClass::func2(void)
+{
+    ...
+}
+// -----------------------------------------------------------------------------------------
+...
+// -----------------------------------------------------------------------------------------
+\endcode
+
+\section secIDL Написание интерфейсов на языке IDL
+    \subsection subIDLCommit Общая часть
+    Названия интерфейсов(классов), функций и переменных см. \ref secName.
+    Оформление файла IDL аналогично оформлению заголовочных файлов.
+    (См. \ref secNoteHeader) Название интерфейса должно образовываться 
+    от названия и добавления к нему "_i", что означает интерфейсный класс.
+
+\subsection subImplName Имена классов реализаций
+Название класса реализации должно образовываться от названия интерфейса, исключив "_i".
+Пример:
+\par объявление на IDL
+\code
+    interface BaseProcess_i
+    {
+        ...
+    }
+\endcode
+\par объявление класса реализации
+\code
+    class BaseProcess:
+        public POA_BaseProcess_i,
+        public ...
+    {
+        ...
+    }
+\endcode
+
+\subsection subDerivedName Класс родитель для реализации
+В общем случае классом родителем должен являться класс POA_имя_интерфейса. Этот класс генерируется
+автоматически и его описание находится в файле имя_интерфейса.hh . В особо оговариваемых случаях 
+наследование может происходить от другого класса. 
+Не исключается множественное наследование для добавления необходимых свойств и т.п. 
+Вот пример наследования для реализации idl-интерфейса ContolProcess_i:
+\code
+    class ControlProcess: 
+        public BaseProcess,
+        public POA_ControlProcess_i
+    {
+        ...
+    }
+\endcode
 */

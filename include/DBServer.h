@@ -29,59 +29,53 @@
 //------------------------------------------------------------------------------------------
 namespace uniset
 {
-	/*!
-	     \page ServicesPage
-	     \section secDBServer Сервис ведения БД
-	     \subsection subDBS_common Общие сведения
-	         Предназначен для работы с БД.
-	        Основная задача это - сохранение информации о датчиках, ведение журнала сообщений.
+    /*! Прототип реализации сервиса ведения БД
+        Предназначен для работы с БД.
+        Основная задача это - сохранение информации о датчиках, ведение журнала сообщений.
+        \par Сценарий работы
+             На узле, где ведётся БД запускается один экземпляр сервиса. Клиенты могут получить доступ, несколькими способами:
+            - через NameService
+            - при помощи UInterface::send()
 
-	     \subsection subDBS_idea Сценарий работы
-	         На узле, где ведётся БД запускается один экземпляр сервиса. Клиенты могут получить доступ, несколькими способами:
-	        - через NameService
-	        - при помощи UInterface::send()
+            Сервис является системным, поэтому его идентификатор можно получить при помощи
+        uniset::Configuration::getDBServer() объекта uniset::conf.
+    */
+    class DBServer:
+        public UniSetObject
+    {
+        public:
+            DBServer( uniset::ObjectId id, const std::string& prefix = "db" );
+            DBServer( const std::string& prefix = "db" );
+            ~DBServer();
 
-	        Сервис является системным, поэтому его идентификатор можно получить при помощи
-	    uniset::Configuration::getDBServer() объекта uniset::conf.
+            static std::string help_print();
 
-	    Реализацию см. \ref page_DBServer_MySQL и \ref page_DBServer_SQLite
-	*/
+            virtual uniset::SimpleInfo* getInfo( const char* userparam = "" ) override;
 
-	/*! Прототип реализации сервиса ведения БД */
-	class DBServer:
-		public UniSetObject
-	{
-		public:
-			DBServer( uniset::ObjectId id, const std::string& prefix = "db" );
-			DBServer( const std::string& prefix = "db" );
-			~DBServer();
+        protected:
 
-			static std::string help_print();
+            virtual void processingMessage( const uniset::VoidMessage* msg ) override;
+            virtual void sysCommand( const uniset::SystemMessage* sm ) override;
+            virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) {}
 
-			virtual uniset::SimpleInfo* getInfo( const char* userparam = "" ) override;
-
-		protected:
-
-			virtual void processingMessage( const uniset::VoidMessage* msg ) override;
-			virtual void sysCommand( const uniset::SystemMessage* sm ) override;
-			virtual void confirmInfo( const uniset::ConfirmMessage* cmsg ) {}
-
-			virtual bool activateObject() override;
-			virtual void initDBServer() {}
-			virtual std::string getMonitInfo( const std::string& params ){ return ""; }
+            virtual bool activateObject() override;
+            virtual void initDBServer() {}
+            virtual std::string getMonitInfo( const std::string& params )
+            {
+                return "";
+            }
 
 
-			std::shared_ptr<LogAgregator> loga;
-			std::shared_ptr<DebugStream> dblog;
-			std::shared_ptr<LogServer> logserv;
-			std::string logserv_host = {""};
-			int logserv_port = {0};
+            std::shared_ptr<LogAgregator> loga;
+            std::shared_ptr<DebugStream> dblog;
+            std::shared_ptr<LogServer> logserv;
+            std::string logserv_host = {""};
+            int logserv_port = {0};
+            const std::string prefix = { "db" };
 
-			const std::string prefix = { "db" };
-
-		private:
-	};
-	// -------------------------------------------------------------------------
+        private:
+    };
+    // -------------------------------------------------------------------------
 } // end of uniset namespace
 //------------------------------------------------------------------------------------------
 #endif

@@ -25,30 +25,30 @@
 // -------------------------------------------------------------------------
 namespace uniset
 {
-	//--------------------------------------------------------------------------
-	namespace extensions
-	{
-		/*! Получение идентификатора объекта(процесса) разделяемой памяти */
-		uniset::ObjectId getSharedMemoryID();
+    //--------------------------------------------------------------------------
+    namespace extensions
+    {
+        /*! Получение идентификатора объекта(процесса) разделяемой памяти */
+        uniset::ObjectId getSharedMemoryID();
 
-		xmlNode* findNode( xmlNode* node, const std::string& snode, const std::string& field );
+        xmlNode* findNode( xmlNode* node, const std::string& snode, const std::string& field );
 
-		xmlNode* getCalibrationsSection();
+        xmlNode* getCalibrationsSection();
 
-		/*! замена служебных символов в строке
-		 * '\\' -> '\n'
-		*/
-		void escape_string( std::string& s );
+        /*! замена служебных символов в строке
+         * '\\' -> '\n'
+        */
+        void escape_string( std::string& s );
 
-		/*! Загрузка калибровочной диаграммы */
-		Calibration* buildCalibrationDiagram( const std::string& dname );
+        /*! Загрузка калибровочной диаграммы */
+        Calibration* buildCalibrationDiagram( const std::string& dname );
 
-		void on_sigchild( int sig );
+        void on_sigchild( int sig );
 
-		std::shared_ptr<DebugStream> dlog();
-	}
-	// -------------------------------------------------------------------------
-	// "синтаксический сахар"..для логов
+        std::shared_ptr<DebugStream> dlog();
+    }
+    // -------------------------------------------------------------------------
+    // "синтаксический сахар"..для логов
 #define dinfo if( uniset::extensions::dlog()->debugging(Debug::INFO) ) uniset::extensions::dlog()->info()
 #define dwarn if( uniset::extensions::dlog()->debugging(Debug::WARN) ) uniset::extensions::dlog()->warn()
 #define dcrit if( uniset::extensions::dlog()->debugging(Debug::CRIT) ) uniset::extensions::dlog()->crit()
@@ -64,7 +64,7 @@ namespace uniset
 #define dlogsys if( uniset::extensions::dlog()->debugging(Debug::SYSTEM) ) uniset::extensions::dlog()->system()
 #define dlogrep if( uniset::extensions::dlog()->debugging(Debug::REPOSITORY) ) uniset::extensions::dlog()->repository()
 #define dlogany uniset::extensions::dlog()->any()
-	// --------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
 } // end of namespace uniset
 // -------------------------------------------------------------------------
 

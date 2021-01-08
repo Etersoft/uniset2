@@ -69,6 +69,9 @@ interface IOController_i : UniSetManager_i
     void setUndefinedState(in uniset::ObjectId sid, in boolean undefined, in uniset::ObjectId sup_id )
                             raises(NameNotFound);
 
+    // "заморозка"/"разморозка" значения. set=true - выставить value и не менять, пока не будет вызван set=false
+    void freezeValue(in uniset::ObjectId sid, in boolean set, in long value, in uniset::ObjectId sup_id ) raises(NameNotFound);
+
     UniversalIO::IOType getIOType(in uniset::ObjectId sid) raises(NameNotFound);
 
     // --- Интерфейс для конфигурирования ---
@@ -95,7 +98,8 @@ interface IOController_i : UniSetManager_i
         long value;                   /*!< значение */
         boolean undefined;            /*!< признак неопределённости значения */
         boolean blocked;              /*!< данное значение блокировано другим */
-        long real_value;              /*!< запомненное состояние, до блокировки */
+        boolean frozen;               /*!< данное значение "заморожено" */
+        long real_value;              /*!< запомненное состояние, до блокировки или заморозки */
         UniversalIO::IOType type;     /*!< тип */
         long priority;                /*!< приоритет уведомления */
         IOController_i::SensorInfo si;

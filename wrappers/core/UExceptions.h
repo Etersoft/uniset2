@@ -21,41 +21,41 @@
 // --------------------------------------------------------------------------
 struct UException
 {
-	UException(): err("UException") {}
-	explicit UException( const std::string& e ): err(e) {}
-	explicit UException( const char* e ): err( std::string(e)) {}
-	~UException() {}
+    UException(): err("UException") {}
+    explicit UException( const std::string& e ): err(e) {}
+    explicit UException( const char* e ): err( std::string(e)) {}
+    ~UException() {}
 
-	const std::string getError()
-	{
-		return err;
-	}
+    const std::string getError()
+    {
+        return err;
+    }
 
-	std::string err;
+    std::string err;
 };
 //---------------------------------------------------------------------------
 struct UTimeOut:
-	public UException
+    public UException
 {
-	UTimeOut(): UException("UTimeOut") {}
-	explicit UTimeOut( const std::string& e ): UException(e) {}
-	~UTimeOut() {}
+    UTimeOut(): UException("UTimeOut") {}
+    explicit UTimeOut( const std::string& e ): UException(e) {}
+    ~UTimeOut() {}
 };
 //---------------------------------------------------------------------------
 struct USysError:
-	public UException
+    public UException
 {
-	USysError(): UException("USysError") {}
-	explicit USysError( const std::string& e ): UException(e) {}
-	~USysError() {}
+    USysError(): UException("USysError") {}
+    explicit USysError( const std::string& e ): UException(e) {}
+    ~USysError() {}
 };
 //---------------------------------------------------------------------------
 struct UValidateError:
-	public UException
+    public UException
 {
-	UValidateError(): UException("UValidateError") {}
-	explicit UValidateError( const std::string& e ): UException(e) {}
-	~UValidateError() {}
+    UValidateError(): UException("UValidateError") {}
+    explicit UValidateError( const std::string& e ): UException(e) {}
+    ~UValidateError() {}
 };
 //---------------------------------------------------------------------------
 #endif

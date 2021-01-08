@@ -23,8 +23,8 @@ using namespace uniset;
 using namespace uniset::extensions;
 //--------------------------------------------------------------------------------
 SMViewer::SMViewer( uniset::ObjectId shmID ):
-	SViewer(uniset_conf()->getControllersSection(), true),
-	shm(make_shared<SMInterface>(shmID, ui, DefaultObjectId))
+    SViewer(uniset_conf()->getControllersSection(), true),
+    shm(make_shared<SMInterface>(shmID, ui, DefaultObjectId))
 {
 
 }
@@ -35,19 +35,19 @@ SMViewer::~SMViewer()
 // --------------------------------------------------------------------------
 void SMViewer::run()
 {
-	IOController_i::SensorInfoSeq_var amap = shm->getSensorsMap();
-	IONotifyController_i::ThresholdsListSeq_var tlst = shm->getThresholdsList();
+    IOController_i::SensorInfoSeq_var amap = shm->getSensorsMap();
+    IONotifyController_i::ThresholdsListSeq_var tlst = shm->getThresholdsList();
 
-	try
-	{
-		updateSensors(amap, getSharedMemoryID());
-	}
-	catch(...) {}
+    try
+    {
+        updateSensors(amap, getSharedMemoryID());
+    }
+    catch(...) {}
 
-	try
-	{
-		updateThresholds(tlst, getSharedMemoryID());
-	}
-	catch(...) {}
+    try
+    {
+        updateThresholds(tlst, getSharedMemoryID());
+    }
+    catch(...) {}
 }
 // --------------------------------------------------------------------------

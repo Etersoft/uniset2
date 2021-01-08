@@ -1,11 +1,10 @@
 /*!
-	\mainpage 
+\mainpage 
 
-	\image html uniset.png
+\image html uniset.png
 
-    \section MainSection Оглавление
+\section MainSection Оглавление
  
-	- \ref page_Concept
-	- \ref page_Uniset
-	- \ref UniSetLibStylePage
-*/  
+- \ref page_Concept
+- \ref page_Uniset
+*/

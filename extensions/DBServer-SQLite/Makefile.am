@@ -1,7 +1,4 @@
-if DISABLE_SQLITE
-
-else
-
+if ENABLE_SQLITE
 USQLITE_VER=@LIBVER@
 
 lib_LTLIBRARIES = libUniSet2-sqlite.la
@@ -28,4 +25,3 @@ pkgconfig_DATA  = libUniSet2SQLite.pc
 include $(top_builddir)/include.mk
 
 endif
-								

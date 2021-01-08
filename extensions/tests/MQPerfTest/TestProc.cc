@@ -6,7 +6,7 @@ using namespace std;
 using namespace uniset;
 // -----------------------------------------------------------------------------
 TestProc::TestProc( uniset::ObjectId id, xmlNode* confnode ):
-	TestProc_SK( id, confnode )
+    TestProc_SK( id, confnode )
 {
 }
 // -----------------------------------------------------------------------------
@@ -16,12 +16,12 @@ TestProc::~TestProc()
 // -----------------------------------------------------------------------------
 bool TestProc::isFullQueue()
 {
-	return ( getCountOfLostMessages() > 0 );
+    return ( getCountOfLostMessages() > 0 );
 }
 // -----------------------------------------------------------------------------
 TestProc::TestProc()
 {
-	cerr << ": init failed!!!!!!!!!!!!!!!" << endl;
-	throw Exception();
+    cerr << ": init failed!!!!!!!!!!!!!!!" << endl;
+    throw Exception();
 }
 // -----------------------------------------------------------------------------

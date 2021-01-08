@@ -15,6 +15,7 @@
 %def_enable api
 %def_enable logdb
 %def_enable opentsdb
+%def_enable uresolver
 
 %ifarch %ix86
 %def_enable com485f
@@ -25,11 +26,11 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.9.0
+Version: 2.9.1
 Release: alt0.M90P.1
 Summary: UniSet - library for building distributed industrial control systems
 
-License: LGPL
+License: LGPL-2.1
 Group: Development/C++
 Url: http://wiki.etersoft.ru/UniSet
 
@@ -184,6 +185,14 @@ Obsoletes: %name-extentions-devel
 %description extension-common-devel
 Libraries needed to develop for uniset extensions
 
+%if_enabled uresolver
+%package extension-uresolver
+Group: Development/Tools
+Summary: CORBA object reference resolver based on http
+
+%description extension-uresolver
+CORBA object reference resolver based on http
+%endif
 
 %if_enabled mysql
 %package extension-mysql
@@ -523,6 +532,11 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %_includedir/%oname/extensions/mqtt/
 %endif
 
+%if_enabled uresolver
+%files extension-uresolver
+%_bindir/%oname-httpresolver*
+%endif
+
 %files extension-common-devel
 %dir %_includedir/%oname/extensions
 %_includedir/%oname/extensions/*.*
@@ -546,14 +560,28 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
-* Sun Dec 13 2020 Pavel Vainerman <pv@altlinux.ru> 2.9.0-alt0.M90P.1
+* Fri Jan 08 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.1-alt0.M90P.1
 - backport to ALTLinux p9 (by rpmbph script)
 
-* Sun Dec 13 2020 Pavel Vainerman <pv@altlinux.ru> 2.9.0-alt1
-- (unet): message processing (zeop-copy optimization)
+* Fri Jan 08 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.1-alt1
+- supported http-resolver (when localIOR=1)
 
-* Sat Dec 05 2020 Pavel Vainerman <pv@altlinux.ru> 2.8.1-alt1
-- (unet): unet recevier refactoring (optimization)
+* Thu Jan 07 2021 Pavel Vainerman <pv@altlinux.ru> 2.8.2-alt1
+- supported "freeze vaule"
+- modbus master: runtime reload config
+- update docs
+
+* Sat Jan 02 2021 Pavel Vainerman <pv@altlinux.ru> 2.8.1-alt3
+- make style
+- fixed docs
+
+* Sun Dec 27 2020 Pavel Vainerman <pv@altlinux.ru> 2.8.1-alt2
+- ALT spec: some fixes
+
+* Fri Dec 25 2020 Pavel Vainerman <pv@altlinux.ru> 2.8.1-alt1
+- logserver/logreader refactoring
+- update docs
+- some python-module refactoring
 
 * Sun Oct 25 2020 Pavel Vainerman <pv@altlinux.ru> 2.8-alt15
 - minor fixes

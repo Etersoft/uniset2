@@ -6,18 +6,18 @@
 #include "IONotifyController.h"
 // --------------------------------------------------------------------------
 class NullSM:
-	public uniset::IONotifyController
+    public uniset::IONotifyController
 {
-	public:
-		NullSM( uniset::ObjectId id, const std::string& datfile );
+    public:
+        NullSM( uniset::ObjectId id, const std::string& datfile );
 
-		virtual ~NullSM();
+        virtual ~NullSM();
 
-	protected:
+    protected:
 
-		virtual void logging( uniset::SensorMessage& sm ) override {};
+        virtual void logging( uniset::SensorMessage& sm ) override {};
 
-	private:
+    private:
 
 };
 // --------------------------------------------------------------------------

@@ -277,6 +277,81 @@ namespace uniset
 		uwarn << set_err("UI(setUndefinedState): Timeout", si.id, si.node) << endl;
 	}
 	// ------------------------------------------------------------------------------------------------------------
+	void UInterface::freezeValue( const IOController_i::SensorInfo& si, bool set, long value, uniset::ObjectId sup_id )
+	{
+		if( si.id == uniset::DefaultObjectId )
+		{
+			uwarn << "UI(freezeValue): ID=uniset::DefaultObjectId" << endl;
+			return;
+		}
+
+		if( sup_id == uniset::DefaultObjectId )
+			sup_id = myid;
+
+		try
+		{
+			CORBA::Object_var oref;
+
+			try
+			{
+				oref = rcache.resolve(si.id, si.node);
+			}
+			catch( const uniset::NameNotFound&  ) {}
+
+			for (size_t i = 0; i < uconf->getRepeatCount(); i++)
+			{
+				try
+				{
+					if( CORBA::is_nil(oref) )
+						oref = resolve( si.id, si.node );
+
+					IOController_i_var iom = IOController_i::_narrow(oref);
+					iom->freezeValue(si.id, set, value, sup_id );
+					return;
+				}
+				catch( const CORBA::TRANSIENT& ) {}
+				catch( const CORBA::OBJECT_NOT_EXIST& ) {}
+				catch( const CORBA::SystemException& ex ) {}
+
+				msleep(uconf->getRepeatTimeout());
+				oref = CORBA::Object::_nil();
+			}
+		}
+		catch( const uniset::TimeOut& ) {}
+		catch(const IOController_i::NameNotFound&  ex)
+		{
+			rcache.erase(si.id, si.node);
+			uwarn << set_err("UI(freezeValue):" + string(ex.err), si.id, si.node) << endl;
+		}
+		catch(const IOController_i::IOBadParam& ex)
+		{
+			rcache.erase(si.id, si.node);
+			throw uniset::IOBadParam("UI(freezeValue): " + string(ex.err));
+		}
+		catch(const uniset::ORepFailed& )
+		{
+			rcache.erase(si.id, si.node);
+			// не смогли получить ссылку на объект
+			uwarn << set_err("UI(freezeValue): resolve failed", si.id, si.node) << endl;
+		}
+		catch(const CORBA::NO_IMPLEMENT& )
+		{
+			rcache.erase(si.id, si.node);
+			uwarn << set_err("UI(freezeValue): method no implement", si.id, si.node) << endl;
+		}
+		catch( const CORBA::OBJECT_NOT_EXIST& )
+		{
+			rcache.erase(si.id, si.node);
+			uwarn << set_err("UI(freezeValue): object not exist", si.id, si.node) << endl;
+		}
+		catch( const CORBA::COMM_FAILURE& ) {}
+		catch( const CORBA::SystemException& ex ) {}
+		catch(...) {}
+
+		rcache.erase(si.id, si.node);
+		uwarn << set_err("UI(freezeValue): Timeout", si.id, si.node) << endl;
+	}
+	// ------------------------------------------------------------------------------------------------------------
 	/*!
 	 * \param id - идентификатор датчика
 	 * \param value - значение, которое необходимо установить
@@ -799,9 +874,9 @@ namespace uniset
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
-	uniset::ObjectPtr UInterface::resolve( const uniset::ObjectId rid , const uniset::ObjectId node ) const
+	uniset::ObjectPtr UInterface::resolve( const uniset::ObjectId rid, const uniset::ObjectId node ) const
 	{
-		if ( rid == uniset::DefaultObjectId )
+		if( rid == uniset::DefaultObjectId )
 			throw uniset::ResolveNameError("UI(resolve): ID=uniset::DefaultObjectId");
 
 		if( node == uniset::DefaultObjectId )
@@ -821,7 +896,12 @@ namespace uniset
 				if( CORBA::is_nil(orb) )
 					orb = uconf->getORB();
 
-				string sior(uconf->iorfile->getIOR(rid));
+				string sior;
+
+				if( node == uconf->getLocalNode() )
+					sior = uconf->iorfile->getIOR(rid);
+				else
+					sior = httpResolve(rid, node);
 
 				if( !sior.empty() )
 				{
@@ -829,13 +909,11 @@ namespace uniset
 					rcache.cache(rid, node, nso); // заносим в кэш
 					return nso._retn();
 				}
-				else
-				{
-					// если NameService недоступен то,
-					// сразу выдаём ошибку
-					uwarn << "not found IOR-file for " << uconf->oind->getNameById(rid) << endl;
-					throw uniset::ResolveNameError();
-				}
+
+				uwarn << "not found IOR-file for " << uconf->oind->getNameById(rid)
+					  << " node=" << uconf->oind->getNameById(node)
+					  << endl;
+				throw uniset::ResolveNameError();
 			}
 
 			if( node != uconf->getLocalNode() )
@@ -844,7 +922,7 @@ namespace uniset
 				ostringstream s;
 				s << uconf << oind->getNodeName(node);
 				string nodeName(s.str());
-				string bname(nodeName); // сохраняем базовое название
+				const string bname(nodeName); // сохраняем базовое название
 
 				for( size_t curNet = 1; curNet <= uconf->getCountOfNet(); curNet++)
 				{
@@ -943,6 +1021,36 @@ namespace uniset
 		throw uniset::ResolveNameError();
 	}
 
+	// -------------------------------------------------------------------------------------------
+	std::string UInterface::httpResolve( const uniset::ObjectId id, const uniset::ObjectId node ) const
+	{
+#ifndef DISABLE_REST_API
+		size_t port = uconf->getHttpResovlerPort();
+
+		if( port == 0 )
+			return "";
+
+		const std::string host = uconf->getNodeIp(node);
+
+		if( host.empty() )
+			return "";
+
+		string ret;
+		const string query = "api/v01/resolve/text?" + std::to_string(id);
+
+		for( size_t i = 0; i < uconf->getRepeatCount(); i++ )
+		{
+			ret = resolver.get(host, port, query);
+
+			if( !ret.empty() )
+				return ret;
+
+			msleep(uconf->getRepeatTimeout());
+		}
+
+#endif
+		return "";
+	}
 	// -------------------------------------------------------------------------------------------
 	void UInterface::send( const uniset::ObjectId name, const uniset::TransportMessage& msg, const uniset::ObjectId node )
 	{
@@ -1404,6 +1512,36 @@ namespace uniset
 		throw uniset::TimeOut(set_err("UI(apiRequest): Timeout", id, node));
 	}
 	// ------------------------------------------------------------------------------------------------------------
+	uniset::ObjectPtr UInterface::resolve( const std::string& name ) const
+	{
+		if( uconf->isLocalIOR() )
+		{
+			if( CORBA::is_nil(orb) )
+				orb = uconf->getORB();
+
+			const string sior( uconf->iorfile->getIOR(oind->getIdByName(name)) );
+			if( !sior.empty() )
+				return orb->string_to_object(sior.c_str());
+		}
+
+		return rep.resolve( name );
+	}
+	// ------------------------------------------------------------------------------------------------------------
+	uniset::ObjectPtr UInterface::resolve( const uniset::ObjectId id ) const
+	{
+		if( uconf->isLocalIOR() )
+		{
+			if( CORBA::is_nil(orb) )
+				orb = uconf->getORB();
+
+			const string sior( uconf->iorfile->getIOR(id) );
+			if( !sior.empty() )
+				return orb->string_to_object(sior.c_str());
+		}
+
+		return rep.resolve( oind->getNameById(id) );
+	}
+	// ------------------------------------------------------------------------------------------------------------
 	uniset::ObjectPtr UInterface::CacheOfResolve::resolve( const uniset::ObjectId id, const uniset::ObjectId node ) const
 	{
 		try
@@ -1510,7 +1648,7 @@ namespace uniset
 				if( CORBA::is_nil(orb) )
 					orb = uconf->getORB();
 
-				string sior( uconf->iorfile->getIOR(id) );
+				const string sior( uconf->iorfile->getIOR(id) );
 
 				if( !sior.empty() )
 				{
@@ -1562,13 +1700,10 @@ namespace uniset
 		if( id == uniset::DefaultObjectId )
 			return string(pre + " uniset::DefaultObjectId");
 
-		string nm( oind->getNameById(node) );
-
-		if( nm.empty() )
-			nm = "UnknownName";
+		const string nm = oind->getNameById(id);
 
 		ostringstream s;
-		s << pre << " (" << id << ":" << node << ")" << nm;
+		s << pre << " (" << id << ":" << node << ")" << (nm.empty() ? "UnknownName" : nm);
 		return s.str();
 	}
 	// --------------------------------------------------------------------------------------------

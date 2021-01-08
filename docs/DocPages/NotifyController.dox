@@ -1,226 +1,226 @@
 /* OBSOLETE DOC!!!
-	\page IONotifyControllerPage Как писать IONotifyController (процесс ввода/вывода)
+\page IONotifyControllerPage Как писать IONotifyController (процесс ввода/вывода)
 
-	- \ref pgIONC_secDeclareIDL
-	- \ref pgIONC_secImplementation
-	- \ref pgIONC_secMain
-	- \ref pgIONC_secLT_Object
-	- \ref pgIONC_secRecomendation
+- \ref pgIONC_secDeclareIDL
+- \ref pgIONC_secImplementation
+- \ref pgIONC_secMain
+- \ref pgIONC_secLT_Object
+- \ref pgIONC_secRecomendation
 
-	Все i/o процессы должны наследоваться от класса IOController. Если вам необходимо написать i/o процесс, который
-	помимо операций i/o еще и уведомляет об изменении состояния входов(выходов), то наследуйтесь от класса IONotifyController.
-	Эти классы объявляют минимальный(базовый) интерфейс для IOController-ов, который вы можете расширять.
+Все i/o процессы должны наследоваться от класса IOController. Если вам необходимо написать i/o процесс, который
+помимо операций i/o еще и уведомляет об изменении состояния входов(выходов), то наследуйтесь от класса IONotifyController.
+Эти классы объявляют минимальный(базовый) интерфейс для IOController-ов, который вы можете расширять.
 
-	\par
-	Рассмотрим написание на примере простого процесса ввода/вывода, позволяющего заказывать у себя уведомления, а
-	так же обладающего дополнительной функцией CardIOTypes getCardIOType();
+\par
+Рассмотрим написание на примере простого процесса ввода/вывода, позволяющего заказывать у себя уведомления, а
+так же обладающего дополнительной функцией CardIOTypes getCardIOType();
 
-	\section pgIONC_secDeclareIDL Объявление интерфейса на IDL
-		\note Написание интерфейса на IDL требуется, только если вам необходимо расширить базовый набор
-		IDL-функций. Все функции объявленные здесь станут доступны внешним объекта (локальным и удалённым).
+\section pgIONC_secDeclareIDL Объявление интерфейса на IDL
+    \note Написание интерфейса на IDL требуется, только если вам необходимо расширить базовый набор
+    IDL-функций. Все функции объявленные здесь станут доступны внешним объекта (локальным и удалённым).
 
-		При написании интерфейса на IDL действуют те же правила, а именно наследование от соответствующего интерфейса.
-		Пример объявления:
-		\code
-		#ifndef MyNotifyController_i_IDL_
-		#define MyNotifyController_i_IDL_
-		// ------------------------------------------------------------------------------------------
-		#include "../../../IDL/Processes/BaseIOController_i.idl"
-		// ------------------------------------------------------------------------------------------
-		interface MyNotifyController_i: IONotifyController_i
-		{
-			enum CardIOTypes
-			{
-				DIO5600,
-				AIO5720
-			};
+    При написании интерфейса на IDL действуют те же правила, а именно наследование от соответствующего интерфейса.
+    Пример объявления:
+    \code
+    #ifndef MyNotifyController_i_IDL_
+    #define MyNotifyController_i_IDL_
+    // ------------------------------------------------------------------------------------------
+    #include "../../../IDL/Processes/BaseIOController_i.idl"
+    // ------------------------------------------------------------------------------------------
+    interface MyNotifyController_i: IONotifyController_i
+    {
+        enum CardIOTypes
+        {
+            DIO5600,
+            AIO5720
+        };
 
-			CardIOTypes getCardIOType();
-		};
-		#endif
-		\endcode
+        CardIOTypes getCardIOType();
+    };
+    #endif
+    \endcode
 
-		\par
-		После компиляции (компилятором для idl) автоматически генерируются следующие файлы:
-		- MyNotifyController_iSK.cc
-		- MyNotifyController_iSK.hh
+    \par
+    После компиляции (компилятором для idl) автоматически генерируются следующие файлы:
+    - MyNotifyController_iSK.cc
+    - MyNotifyController_iSK.hh
 
-		На основе этих файлов вы реализуете свой интерфейс на С++.
+    На основе этих файлов вы реализуете свой интерфейс на С++.
 
-	\section pgIONC_secImplementation Реализация интерфейса на C++
-		Необходимо создать класс реализующий объявленый интерфейс. Формирование названия класса и правила наследования
-		см. \ref UniSetLibStylePage.
-		\par
-		Базовые функции интерфейса IONotifyController_i уже реализованы в классе IONotifyController. Поэтому остается только
-		наследоваться от него и реализовать недостающие функции. В итоге получаем
+\section pgIONC_secImplementation Реализация интерфейса на C++
+    Необходимо создать класс реализующий объявленый интерфейс. Формирование названия класса и правила наследования
+    см. \ref UniSetLibStylePage.
+    \par
+    Базовые функции интерфейса IONotifyController_i уже реализованы в классе IONotifyController. Поэтому остается только
+    наследоваться от него и реализовать недостающие функции. В итоге получаем
 
-		\code
-		#ifndef MyNotifyController_H_
-		#define MyNotifyController_H_
-		// ------------------------------------------------------------------------------------------
-		// ------------------------------------------------------------------------------------------
-		#include "NotifyController.h"
-		#include "TestActiveProcess_i.hh"
-		// ------------------------------------------------------------------------------------------
-		class MyNotifyController:
-				public POA_MyNotifyController_i, // <--- этого наследования не будет, если вы не писали интерфейс на IDL
-				public IONotifyController
-		{
-			public:
+    \code
+    #ifndef MyNotifyController_H_
+    #define MyNotifyController_H_
+    // ------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------
+    #include "NotifyController.h"
+    #include "TestActiveProcess_i.hh"
+    // ------------------------------------------------------------------------------------------
+    class MyNotifyController:
+            public POA_MyNotifyController_i, // <--- этого наследования не будет, если вы не писали интерфейс на IDL
+            public IONotifyController
+    {
+        public:
 
-				// -------  Конструктор с заданием обязательных параметров ---------------
-				MyNotifyController( ObjectId id );
-			~MyNotifyController();
+            // -------  Конструктор с заданием обязательных параметров ---------------
+            MyNotifyController( ObjectId id );
+        ~MyNotifyController();
 
-				// -------  функции объявленые в IDL(интерфейс данного объекта) ---------
-				virtual MyNotifyController_i::CardIOTypes getCardIOType();
+            // -------  функции объявленые в IDL(интерфейс данного объекта) ---------
+            virtual MyNotifyController_i::CardIOTypes getCardIOType();
 
-				// -------  обязательные для реализации функции -------------------------
-				// т.к. они объявлены в базовых классах как чисто виртуальные
+            // -------  обязательные для реализации функции -------------------------
+            // т.к. они объявлены в базовых классах как чисто виртуальные
 
-				virtual void processingMessage( UniSetTypes::VoidMessage *msg);
-				virtual void setState( ObjectId id, CORBA::Boolean state);
-				virtual void setValue( ObjectId id, CORBA::Long value);
+            virtual void processingMessage( UniSetTypes::VoidMessage *msg);
+            virtual void setState( ObjectId id, CORBA::Boolean state);
+            virtual void setValue( ObjectId id, CORBA::Long value);
 
-				// просто главная функция (не обязательная)
-				virtual void execute();
+            // просто главная функция (не обязательная)
+            virtual void execute();
 
-			protected:
-				// Сделан protected чтобы нельзя было создать объект класса
-				// не задав обязательных параметров
-				MyNotifyController();
+        protected:
+            // Сделан protected чтобы нельзя было создать объект класса
+            // не задав обязательных параметров
+            MyNotifyController();
 
-				// -------  обязательные для реализации функции -------------------------
-				virtual void sensorsRegister();	 	// регистрация датчиков за которые отвечает данный контроллер
+            // -------  обязательные для реализации функции -------------------------
+            virtual void sensorsRegister();         // регистрация датчиков за которые отвечает данный контроллер
 
-				// если требуются специальные действия при РАЗрегистрации
-				// то можно переопределить эту функцию примерно так
-				//	virtual void sensorsUnregistration();
-				//	{
-				//		IONotifyController::sensorsUnRegister();
-				//		// свои действия
-				//		// ...
-				//	}
-		};
-		\endcode
+            // если требуются специальные действия при РАЗрегистрации
+            // то можно переопределить эту функцию примерно так
+            //    virtual void sensorsUnregistration();
+            //    {
+            //        IONotifyController::sensorsUnRegister();
+            //        // свои действия
+            //        // ...
+            //    }
+    };
+    \endcode
 
-		Теперь реализация...
-		\par
-		-# Не забывайте в конструкторе вызывать конструктор базового класса и передавать ему ObjectId.
-		\code
-				MyNotifyController::MyNotifyController( ObjectId id ):
-					IONotifyController(id)
-				{
-					...
-				};
-		\endcode
-		-# В конструкторе регистрировать датчики \b ЗАПРЕЩЕНО, для этого есть функция sensorsRegister().
-		\code
-				MyNotifyController::sensorsRegistration()
-				{
-					// Затем зарегистрировать их на свое имя (после этого их смогут заказывать и обращаться к ним)
-					...
-					dsRegistration(SensotInfo(Sens1));	// дискретный датчик
-					asRegistration(SensotInfo(Sens2));	// аналоговый датчик
-					...
-				};
-		\endcode
+    Теперь реализация...
+    \par
+    -# Не забывайте в конструкторе вызывать конструктор базового класса и передавать ему ObjectId.
+    \code
+            MyNotifyController::MyNotifyController( ObjectId id ):
+                IONotifyController(id)
+            {
+                ...
+            };
+    \endcode
+    -# В конструкторе регистрировать датчики \b ЗАПРЕЩЕНО, для этого есть функция sensorsRegister().
+    \code
+            MyNotifyController::sensorsRegistration()
+            {
+                // Затем зарегистрировать их на свое имя (после этого их смогут заказывать и обращаться к ним)
+                ...
+                dsRegistration(SensotInfo(Sens1));    // дискретный датчик
+                asRegistration(SensotInfo(Sens2));    // аналоговый датчик
+                ...
+            };
+    \endcode
 
-		\note Функции sensorsRegistration() и sensorsUnregistration() будут вызваны автоматически (при активизации и завершении работы)
-		поэтому отдельно(самостоятельно) их вызывать \b НЕ \b НАДО.
-		\par
-		Функция execute() может выглядеть \b примерно следующим образом:
-		\code
-		void MyNotifyController::execute()
-		{
-			while(!terminate)
-			{
-				// Здесь происходит фактический опрос датчиков
-				....
+    \note Функции sensorsRegistration() и sensorsUnregistration() будут вызваны автоматически (при активизации и завершении работы)
+    поэтому отдельно(самостоятельно) их вызывать \b НЕ \b НАДО.
+    \par
+    Функция execute() может выглядеть \b примерно следующим образом:
+    \code
+    void MyNotifyController::execute()
+    {
+        while(!terminate)
+        {
+            // Здесь происходит фактический опрос датчиков
+            ....
 
-				// далее сохранение нового состояния
-				saveState(SensotInfo(Sens1), state,  UniversalIO::DigitalInput);
-				saveValue(SensotInfo(Sens2), value,  UniversalIO::AnalogInput);
-			}
-		}
-		\endcode
+            // далее сохранение нового состояния
+            saveState(SensotInfo(Sens1), state,  UniversalIO::DigitalInput);
+            saveValue(SensotInfo(Sens2), value,  UniversalIO::AnalogInput);
+        }
+    }
+    \endcode
 
-		\par
-			В завершение реализация запуска
+    \par
+        В завершение реализация запуска
 
-	\section pgIONC_secMain Написание функции main() для подключения процесса
+\section pgIONC_secMain Написание функции main() для подключения процесса
 
-		 \code
-	#include "ObjectsMap.h"
-	#include "MyNotifyController.h"
-	#include "ObjectsActivator.h"
-	#include "Configuration.h"
-	// ------------------------------------------------------------------------------------------
-	using namespace UniSetTypes;
-	using namespace std;
+     \code
+#include "ObjectsMap.h"
+#include "MyNotifyController.h"
+#include "ObjectsActivator.h"
+#include "Configuration.h"
+// ------------------------------------------------------------------------------------------
+using namespace UniSetTypes;
+using namespace std;
 
-	int main( int argc, char **argv )
-	{
-		conf = new Configuration(argc, (const char**)argv, "configure.xml", (ObjectInfo*)ObjectsMap);
+int main( int argc, char **argv )
+{
+    conf = new Configuration(argc, (const char**)argv, "configure.xml", (ObjectInfo*)ObjectsMap);
 
-		MyNotifyController nc( idMyNotifyController ); // idMyNotifyController - уникальный идентификатор объекта
-		ObjectsActivator activator;
-		activator.addObject(static_cast<class UniSetObject*>(&tnc));
-		try
-		{
-			activator.activate(true);
-			nc.execute();
-		}
-		catch(...)
-		{
-		}
-	}
-	\endcode
+    MyNotifyController nc( idMyNotifyController ); // idMyNotifyController - уникальный идентификатор объекта
+    ObjectsActivator activator;
+    activator.addObject(static_cast<class UniSetObject*>(&tnc));
+    try
+    {
+        activator.activate(true);
+        nc.execute();
+    }
+    catch(...)
+    {
+    }
+}
+\endcode
 
 
-		\section pgIONC_secLT_Object Создание автономного процесса, не зависящего от TimerService-а
-			Для повышения автономности работы, можно создать процесс, который сам будет реализовывать таймеры.
-		Для этого достаточно при создании своего процесса наследоваться не от IONotifyController, а от IONotifyController_LT.
-		Т.е. код будет выглядеть так:
+    \section pgIONC_secLT_Object Создание автономного процесса, не зависящего от TimerService-а
+        Для повышения автономности работы, можно создать процесс, который сам будет реализовывать таймеры.
+    Для этого достаточно при создании своего процесса наследоваться не от IONotifyController, а от IONotifyController_LT.
+    Т.е. код будет выглядеть так:
 \code
-		...
-		class MyNotifyController:
-				public POA_MyNotifyController_i, // <--- этого наследования не будет, если вы не писали интерфейс на IDL
-				public IONotifyController_LT
-		{
-			public:
-			...
-		}
+    ...
+    class MyNotifyController:
+            public POA_MyNotifyController_i, // <--- этого наследования не будет, если вы не писали интерфейс на IDL
+            public IONotifyController_LT
+    {
+        public:
+        ...
+    }
 
 \endcode
 
-		И при заказе таймеров надо использовать не \a ui.askTimer(...), а просто \a askTimer(...).
+    И при заказе таймеров надо использовать не \a ui.askTimer(...), а просто \a askTimer(...).
 
 \code
-		function my_func()
-		{
-			// ui.askTimer(TimerId1, Time)
-			askTimer(TimerId1, Time);
-			...
-		}
+    function my_func()
+    {
+        // ui.askTimer(TimerId1, Time)
+        askTimer(TimerId1, Time);
+        ...
+    }
 \endcode
-			Функция IONotifyController_LT::askTimer() повторяет интерфейс UniversalInterface::askTimer().
-		Реализация построена, на переопределении функции UniSetObject::callback(), поэтому если поток
-	не будет создан, таймеры работать не будут.
-	\sa LT_Object
+        Функция IONotifyController_LT::askTimer() повторяет интерфейс UniversalInterface::askTimer().
+    Реализация построена, на переопределении функции UniSetObject::callback(), поэтому если поток
+не будет создан, таймеры работать не будут.
+\sa LT_Object
 
 
-	\section pgIONC_secRecomendation Некоторые общие рекомендации
+\section pgIONC_secRecomendation Некоторые общие рекомендации
 
-		-# Все функции и параметры должны быть откоментированы.
-		-# Заказ датчиков, таймеров, работа с информацией в основном происходит при помощи UniversalInterface. В каждом
-			классе имеется объект этого интерфейса (UniSetObject::ui), поэтому необходимости в отдельном его создании нет.
-		-# Не регистрируйте датчики в конструкторе.
-		-# Не вызывайте разрегистрацию в деструкторе.
+    -# Все функции и параметры должны быть откоментированы.
+    -# Заказ датчиков, таймеров, работа с информацией в основном происходит при помощи UniversalInterface. В каждом
+        классе имеется объект этого интерфейса (UniSetObject::ui), поэтому необходимости в отдельном его создании нет.
+    -# Не регистрируйте датчики в конструкторе.
+    -# Не вызывайте разрегистрацию в деструкторе.
 
-	\par
-		Вот	вроде и все пока...
+\par
+    Вот    вроде и все пока...
 
-	\sa	\ref ControlProcessPage
+\sa    \ref ControlProcessPage
 
 */

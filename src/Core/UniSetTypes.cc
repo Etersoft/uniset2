@@ -61,7 +61,7 @@ float uniset::fcalibrate( float raw, float rawMin, float rawMax,
 }
 // -----------------------------------------------------------------------------
 double uniset::dcalibrate( double raw, double rawMin, double rawMax,
-						  double calMin, double calMax, bool limit )
+						   double calMin, double calMax, bool limit )
 {
 	if( rawMax == rawMin ) return 0; // деление на 0!!!
 
@@ -503,21 +503,23 @@ bool uniset::check_filter( UniXML::iterator& it, const std::string& f_prop, cons
 // ------------------------------------------------------------------------------------------
 string uniset::timeToString(time_t tm, const std::string& brk ) noexcept
 {
-	struct tm* tms = localtime(&tm);
+	std::tm tms;
+	gmtime_r(&tm, &tms);
 	ostringstream time;
-	time << std::setw(2) << std::setfill('0') << tms->tm_hour << brk;
-	time << std::setw(2) << std::setfill('0') << tms->tm_min << brk;
-	time << std::setw(2) << std::setfill('0') << tms->tm_sec;
+	time << std::setw(2) << std::setfill('0') << tms.tm_hour << brk;
+	time << std::setw(2) << std::setfill('0') << tms.tm_min << brk;
+	time << std::setw(2) << std::setfill('0') << tms.tm_sec;
 	return time.str();
 }
 
 string uniset::dateToString(time_t tm, const std::string& brk ) noexcept
 {
-	struct tm* tms = localtime(&tm);
+	std::tm tms;
+	gmtime_r(&tm, &tms);
 	ostringstream date;
-	date << std::setw(4) << std::setfill('0') << tms->tm_year + 1900 << brk;
-	date << std::setw(2) << std::setfill('0') << tms->tm_mon + 1 << brk;
-	date << std::setw(2) << std::setfill('0') << tms->tm_mday;
+	date << std::setw(4) << std::setfill('0') << tms.tm_year + 1900 << brk;
+	date << std::setw(2) << std::setfill('0') << tms.tm_mon + 1 << brk;
+	date << std::setw(2) << std::setfill('0') << tms.tm_mday;
 	return date.str();
 }
 

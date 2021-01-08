@@ -432,7 +432,7 @@ namespace uniset
 			else
 				lst = alog->getLogList(logname);
 
-			for( auto && l : lst )
+			for( auto&& l : lst )
 				defaultLogLevels[l.log.get()] = l.log->level();
 		}
 		else if( elog )
@@ -455,7 +455,7 @@ namespace uniset
 			else
 				lst = alog->getLogList(logname);
 
-			for( auto && l : lst )
+			for( auto&& l : lst )
 			{
 				auto d = defaultLogLevels.find(l.log.get());
 

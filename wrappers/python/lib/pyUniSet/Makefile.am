@@ -1,5 +1,4 @@
-if DISABLE_PYTHON
-else
+if ENABLE_PYTHON
 
 SWIG=swig
 
@@ -12,12 +11,9 @@ BUILD_SRC=UModbus.cc UConnector.cc UProxyObject.cc
 
 pyUniSet.py: UInterface_wrap.cxx _pyUniSet.la
 
-
 pyUConnector.py: UConnector_wrap.cxx _pyUConnector.la
 
-
 pyUModbus.py: _pyUModbus.la UModbus_wrap.cxx
-
 
 pyUExceptions.py: _pyUExceptions.la
 

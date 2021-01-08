@@ -1,5 +1,4 @@
-if DISABLE_PYTHON
-else
+if ENABLE_PYTHON
 SUBDIRS=pyUniSet
 
 #lib_LTLIBRARIES = libUniSet2Python.la

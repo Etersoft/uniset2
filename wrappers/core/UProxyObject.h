@@ -43,41 +43,44 @@ class UProxyObject_impl; // PIMPL
  */
 class UProxyObject
 {
-	public:
-		UProxyObject( const std::string& name ) throw(UException);
-		UProxyObject( long id ) throw(UException);
-		~UProxyObject();
+    public:
+        UProxyObject( const std::string& name ) throw(UException);
+        UProxyObject( long id ) throw(UException);
+        ~UProxyObject();
 
-		//!  \note Вызывать надо до активации объекта
-		void addToAsk( long id ) throw(UException);
+        //! \note Вызывать надо до активации объекта
+        void addToAsk( long id ) throw(UException);
 
-		long getValue( long id ) throw(UException);
-		float getFloatValue( long id ) throw(UException);
+        //! можно вызывать в процессе работы
+        void askSensor( long id ) throw(UException);
 
-		/*! Сохраняемые датчики не требуют добавления при помощи addToAsk ! */
-		void setValue( long id, long val ) throw(UException);
+        long getValue( long id ) throw(UException);
+        float getFloatValue( long id ) throw(UException);
 
-		/*! \return true если заказ датчиков прошёл успешно */
-		bool askIsOK();
+        /*! Сохраняемые датчики не требуют добавления при помощи addToAsk ! */
+        void setValue( long id, long val ) throw(UException);
 
-		/*! перезаказ датчиков */
-		bool reaskSensors();
+        /*! \return true если заказ датчиков прошёл успешно */
+        bool askIsOK();
 
-		/*! принудительное обновление значений.
-		 * В случае если не используется заказ датчиков
-		 */
-		bool updateValues();
+        /*! перезаказ датчиков */
+        bool reaskSensors();
 
-		/*! Проверка работы SM */
-		bool smIsOK();
+        /*! принудительное обновление значений.
+         * В случае если не используется заказ датчиков
+         */
+        bool updateValues();
 
-	protected:
-		void init( long id ) throw( UException );
+        /*! Проверка работы SM */
+        bool smIsOK();
 
-	private:
-		UProxyObject()throw(UException);
+    protected:
+        void init( long id ) throw( UException );
 
-		std::shared_ptr<UProxyObject_impl> uobj;
+    private:
+        UProxyObject()throw(UException);
+
+        std::shared_ptr<UProxyObject_impl> uobj;
 };
 //---------------------------------------------------------------------------
 #endif

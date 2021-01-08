@@ -401,6 +401,8 @@ namespace uniset
 		if( ret == 0  || cancelled )
 			return;
 
+		msg.convertFromNet();
+
 		if( ret != sizeof(msg) || msg.magic != LogServerTypes::MAGICNUM )
 		{
 			if( mylog.is_warn() )
@@ -421,7 +423,7 @@ namespace uniset
 		}
 
 		if( mylog.is_info() )
-			mylog.info() << peername << "(LogSession::readEvent): receive command: '" << msg.cmd << "'" << endl;
+			mylog.info() << peername << "(LogSession::readEvent): receive command: '" << (LogServerTypes::Command)msg.cmd << "'" << endl;
 
 		string cmdLogName(msg.logname);
 
@@ -483,14 +485,14 @@ namespace uniset
 
 		if( alog ) // если у нас "агрегатор", то работаем с его списком потоков
 		{
-			if( cmdLogName.empty() || cmdLogName == "ALL" )
+			if( cmdLogName.empty() || cmdLogName == "ALL" || cmdLogName == alog->getLogName())
 				loglist = alog->getLogList();
 			else
 				loglist = alog->getLogList(cmdLogName);
 		}
 		else
 		{
-			if( cmdLogName.empty() || cmdLogName == "ALL" || log->getLogFile() == cmdLogName )
+			if( cmdLogName.empty() || cmdLogName == "ALL" || log->getLogName() == cmdLogName )
 				loglist.emplace_back(log, log->getLogName());
 		}
 
@@ -502,7 +504,7 @@ namespace uniset
 		}
 
 		// обрабатываем команды только если нашли подходящие логи
-		for( auto && l : loglist )
+		for( auto&& l : loglist )
 		{
 			// Обработка команд..
 			// \warning Работа с логом ведётся без mutex-а, хотя он разделяется отдельными потоками
@@ -568,7 +570,7 @@ namespace uniset
 
 		try
 		{
-			std::string ret( m_command_sig.emit(this, msg.cmd, cmdLogName) );
+			std::string ret( m_command_sig.emit(this, LogServerTypes::Command(msg.cmd), cmdLogName) );
 
 			if( !ret.empty() )
 			{

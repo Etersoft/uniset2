@@ -29,57 +29,57 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-	// -------------------------------------------------------------------------
-	/*! Реализация LogicProccessor основанная на заказе датчиков */
-	class PassiveLProcessor:
-		public UniSetObject,
-		protected LProcessor
-	{
-		public:
+    // -------------------------------------------------------------------------
+    /*! Реализация LogicProccessor основанная на заказе датчиков */
+    class PassiveLProcessor:
+        public UniSetObject,
+        protected LProcessor
+    {
+        public:
 
-			PassiveLProcessor(uniset::ObjectId objId,
-							  uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "lproc" );
-			virtual ~PassiveLProcessor();
+            PassiveLProcessor(uniset::ObjectId objId,
+                              uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "lproc" );
+            virtual ~PassiveLProcessor();
 
-			enum Timers
-			{
-				tidStep
-			};
+            enum Timers
+            {
+                tidStep
+            };
 
-			static void help_print( int argc, const char* const* argv );
+            static void help_print( int argc, const char* const* argv );
 
-			static std::shared_ptr<PassiveLProcessor> init_plproc( int argc, const char* const* argv,
-					uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
-					const std::string& prefix = "plproc" );
+            static std::shared_ptr<PassiveLProcessor> init_plproc( int argc, const char* const* argv,
+                    uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+                    const std::string& prefix = "plproc" );
 
-		protected:
-			PassiveLProcessor(): shm(0), maxHeartBeat(0) {};
+        protected:
+            PassiveLProcessor(): shm(0), maxHeartBeat(0) {};
 
-			virtual void step() override;
-			virtual void getInputs() override;
-			virtual void setOuts() override;
+            virtual void step() override;
+            virtual void getInputs() override;
+            virtual void setOuts() override;
 
-			void sysCommand( const uniset::SystemMessage* msg ) override;
-			void sensorInfo( const uniset::SensorMessage* sm ) override;
-			void timerInfo( const uniset::TimerMessage* tm ) override;
-			void askSensors( const UniversalIO::UIOCommand cmd );
-			//        void initOutput();
+            void sysCommand( const uniset::SystemMessage* msg ) override;
+            void sensorInfo( const uniset::SensorMessage* sm ) override;
+            void timerInfo( const uniset::TimerMessage* tm ) override;
+            void askSensors( const UniversalIO::UIOCommand cmd );
+            //        void initOutput();
 
-			void initIterators();
-			virtual bool activateObject() override;
-			virtual bool deactivateObject() override;
+            void initIterators();
+            virtual bool activateObject() override;
+            virtual bool deactivateObject() override;
 
-			std::shared_ptr<SMInterface> shm;
+            std::shared_ptr<SMInterface> shm;
 
-		private:
-			PassiveTimer ptHeartBeat;
-			uniset::ObjectId sidHeartBeat = { uniset::DefaultObjectId };
-			int maxHeartBeat = { 10 };
-			IOController::IOStateList::iterator itHeartBeat;
-			std::mutex mutex_start;
-			std::atomic_bool cannceled = { false };
-	};
-	// --------------------------------------------------------------------------
+        private:
+            PassiveTimer ptHeartBeat;
+            uniset::ObjectId sidHeartBeat = { uniset::DefaultObjectId };
+            int maxHeartBeat = { 10 };
+            IOController::IOStateList::iterator itHeartBeat;
+            std::mutex mutex_start;
+            std::atomic_bool cannceled = { false };
+    };
+    // --------------------------------------------------------------------------
 } // end of namespace uniset
 // ---------------------------------------------------------------------------
 #endif

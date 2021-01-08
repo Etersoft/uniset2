@@ -68,7 +68,6 @@ ostream& uniset::Configuration::help(ostream& os)
 	print_help(os, 25, "--uniport num", "использовать заданный порт (переопределяет 'defaultport', заданный в конф. файле в разделе <nodes>)\n");
 	print_help(os, 25, "--localIOR {1,0}", "использовать локальные файлы для получения IOR (т.е. не использовать omniNames). Переопределяет параметр в конфигурационном файле.\n");
 	print_help(os, 25, "--transientIOR {1,0}", "использовать генерируемые IOR(не постоянные). Переопределяет параметр в конфигурационном файле. Default=1\n");
-
 	return os << "\nПример использования:\t myUniSetProgram "
 		   << "--ulog-add-levels level1,info,system,warn --ulog-logfile myprogrpam.log\n\n";
 }
@@ -195,8 +194,6 @@ namespace uniset
 		for( int i = 0; i < argc; i++ )
 			_argv[i] = uniset::uni_strdup(argv[i]);
 
-		iorfile = make_shared<IORFile>();
-
 		// инициализировать надо после argc,argv
 		if( fileConfName.empty() )
 			setConfFileName();
@@ -287,7 +284,7 @@ namespace uniset
 			initLogStream(ulog(), "ulog");
 
 			// default init...
-			transientIOR     = false;
+			transientIOR = false;
 			localIOR     = false;
 
 			string lnode( getArgParam("--localNode") );
@@ -297,6 +294,8 @@ namespace uniset
 
 			initParameters();
 			initRepSections();
+
+			iorfile = make_shared<IORFile>(getLockDir());
 
 			// localIOR
 			int lior = getArgInt("--localIOR");
@@ -558,6 +557,8 @@ namespace uniset
 			throw uniset::SystemError("Configuration: INIT PARAM`s FAILED!!!!");
 		}
 
+		httpResolverPort = 8008;
+
 		for( ; it.getCurrent(); it.goNext() )
 		{
 			string name( it.getName() );
@@ -600,6 +601,10 @@ namespace uniset
 			else if( name == "ImagesPath" )
 			{
 				imagesDir = dataDir + it.getProp("name") + "/"; // ????????
+			}
+			else if( name == "HttpResolver" )
+			{
+				httpResolverPort = it.getPIntProp("port", httpResolverPort);
 			}
 			else if( name == "LocalIOR" )
 			{
@@ -1115,7 +1120,7 @@ namespace uniset
 	}
 	// -------------------------------------------------------------------------
 
-	std::pair<string,xmlNode*> Configuration::getRepSectionName( const string& sec )
+	std::pair<string, xmlNode*> Configuration::getRepSectionName( const string& sec )
 	{
 		xmlNode* secnode = unixml->findNode(unixml->getFirstNode(), sec);
 
@@ -1325,6 +1330,20 @@ namespace uniset
 		return transientIOR;
 	}
 
+	size_t Configuration::getHttpResovlerPort() const noexcept
+	{
+		return httpResolverPort;
+	}
+
+	std::string Configuration::getNodeIp( uniset::ObjectId node )
+	{
+		UniXML::iterator nIt = getXMLObjectNode(node);
+
+		if( !nIt )
+			return "";
+
+		return nIt.getProp("ip");
+	}
 	// -------------------------------------------------------------------------
 	xmlNode* Configuration::getXMLSensorsSection() noexcept
 	{

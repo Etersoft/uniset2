@@ -8,7 +8,7 @@ using namespace std;
 // --------------------------------------------------------------------------------
 
 NullSM::NullSM( ObjectId id, const std::string& datfile ):
-	IONotifyController(id, static_pointer_cast<IOConfig>(make_shared<IOConfig_XML>(datfile, uniset_conf())) )
+    IONotifyController(id, static_pointer_cast<IOConfig>(make_shared<IOConfig_XML>(datfile, uniset_conf())) )
 {
 }
 // --------------------------------------------------------------------------------

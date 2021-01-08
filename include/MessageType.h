@@ -32,272 +32,272 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-	class Message
-	{
-		public:
-			enum TypeOfMessage
-			{
-				Unused,        // Сообщение не содержит информации
-				SensorInfo,
-				SysCommand, // Сообщение содержит системную команду
-				Confirm,    // Сообщение содержит подтверждение
-				Timer,        // Сообщения о срабатывании таймера
-				TextMessage,  // текстовое сообщение
-				TheLastFieldOfTypeOfMessage // Обязательно оставьте последним
-			};
+    class Message
+    {
+        public:
+            enum TypeOfMessage
+            {
+                Unused,        // Сообщение не содержит информации
+                SensorInfo,
+                SysCommand, // Сообщение содержит системную команду
+                Confirm,    // Сообщение содержит подтверждение
+                Timer,        // Сообщения о срабатывании таймера
+                TextMessage,  // текстовое сообщение
+                TheLastFieldOfTypeOfMessage // Обязательно оставьте последним
+            };
 
-			int type = { Unused };    // Содержание сообщения (тип)
+            int type = { Unused };    // Содержание сообщения (тип)
 
-			enum Priority
-			{
-				Low,
-				Medium,
-				High
-			};
+            enum Priority
+            {
+                Low,
+                Medium,
+                High
+            };
 
-			Priority priority = { Medium };
-			ObjectId node = { uniset::DefaultObjectId };      // откуда
-			ObjectId supplier = { uniset::DefaultObjectId };  // от кого
-			ObjectId consumer = { uniset::DefaultObjectId };  // кому
-			struct timespec tm = { 0, 0 };
+            Priority priority = { Medium };
+            ObjectId node = { uniset::DefaultObjectId };      // откуда
+            ObjectId supplier = { uniset::DefaultObjectId };  // от кого
+            ObjectId consumer = { uniset::DefaultObjectId };  // кому
+            struct timespec tm = { 0, 0 };
 
-			Message( Message&& ) noexcept = default;
-			Message& operator=(Message&& ) noexcept = default;
-			Message( const Message& ) noexcept = default;
-			Message& operator=(const Message& ) noexcept = default;
+            Message( Message&& ) noexcept = default;
+            Message& operator=(Message&& ) noexcept = default;
+            Message( const Message& ) noexcept = default;
+            Message& operator=(const Message& ) noexcept = default;
 
-			Message() noexcept;
+            Message() noexcept;
 
-			// для оптимизации, делаем конструктор, который не будет инициализировать свойства класса
-			// это необходимо для VoidMessage, который конструируется при помощи memcpy
-			explicit Message( int dummy_init ) noexcept {}
+            // для оптимизации, делаем конструктор, который не будет инициализировать свойства класса
+            // это необходимо для VoidMessage, который конструируется при помощи memcpy
+            explicit Message( int dummy_init ) noexcept {}
 
-			template<class In>
-			static const TransportMessage transport(const In& msg) noexcept
-			{
-				TransportMessage tmsg;
-				assert(sizeof(uniset::RawDataOfTransportMessage) >= sizeof(msg));
-				std::memcpy(&tmsg.data, &msg, sizeof(msg));
-				tmsg.consumer = msg.consumer;
-				return tmsg;
-			}
-	};
+            template<class In>
+            static const TransportMessage transport(const In& msg) noexcept
+            {
+                TransportMessage tmsg;
+                assert(sizeof(uniset::RawDataOfTransportMessage) >= sizeof(msg));
+                std::memcpy(&tmsg.data, &msg, sizeof(msg));
+                tmsg.consumer = msg.consumer;
+                return tmsg;
+            }
+    };
 
-	std::string strTypeOfMessage( int type );
-	std::ostream& operator<<( std::ostream& os, const Message::TypeOfMessage& t );
+    std::string strTypeOfMessage( int type );
+    std::ostream& operator<<( std::ostream& os, const Message::TypeOfMessage& t );
 
-	// ------------------------------------------------------------------------
-	class VoidMessage : public Message
-	{
-		public:
+    // ------------------------------------------------------------------------
+    class VoidMessage : public Message
+    {
+        public:
 
-			VoidMessage( VoidMessage&& ) noexcept = default;
-			VoidMessage& operator=(VoidMessage&& ) noexcept = default;
-			VoidMessage( const VoidMessage& ) noexcept = default;
-			VoidMessage& operator=( const VoidMessage& ) noexcept = default;
+            VoidMessage( VoidMessage&& ) noexcept = default;
+            VoidMessage& operator=(VoidMessage&& ) noexcept = default;
+            VoidMessage( const VoidMessage& ) noexcept = default;
+            VoidMessage& operator=( const VoidMessage& ) noexcept = default;
 
-			// для оптимизации, делаем конструктор, который не будет инициализировать свойства класса
-			// это необходимо для VoidMessage, который конструируется при помощи memcpy
-			VoidMessage( int dummy ) noexcept : Message(dummy) {} // -V730
+            // для оптимизации, делаем конструктор, который не будет инициализировать свойства класса
+            // это необходимо для VoidMessage, который конструируется при помощи memcpy
+            VoidMessage( int dummy ) noexcept : Message(dummy) {} // -V730
 
-			VoidMessage( const TransportMessage& tm ) noexcept;
-			VoidMessage() noexcept;
-			inline bool operator < ( const VoidMessage& msg ) const
-			{
-				if( priority != msg.priority )
-					return priority < msg.priority;
+            VoidMessage( const TransportMessage& tm ) noexcept;
+            VoidMessage() noexcept;
+            inline bool operator < ( const VoidMessage& msg ) const
+            {
+                if( priority != msg.priority )
+                    return priority < msg.priority;
 
-				if( tm.tv_sec != msg.tm.tv_sec )
-					return tm.tv_sec >= msg.tm.tv_sec;
+                if( tm.tv_sec != msg.tm.tv_sec )
+                    return tm.tv_sec >= msg.tm.tv_sec;
 
-				return tm.tv_nsec >= msg.tm.tv_nsec;
-			}
+                return tm.tv_nsec >= msg.tm.tv_nsec;
+            }
 
-			inline TransportMessage transport_msg() const noexcept
-			{
-				return transport(*this);
-			}
+            inline TransportMessage transport_msg() const noexcept
+            {
+                return transport(*this);
+            }
 
-			uniset::ByteOfMessage data[sizeof(uniset::RawDataOfTransportMessage) - sizeof(Message)];
-	};
+            uniset::ByteOfMessage data[sizeof(uniset::RawDataOfTransportMessage) - sizeof(Message)];
+    };
 
-	// ------------------------------------------------------------------------
-	/*! Сообщение об изменении состояния датчика */
-	class SensorMessage : public Message
-	{
-		public:
+    // ------------------------------------------------------------------------
+    /*! Сообщение об изменении состояния датчика */
+    class SensorMessage : public Message
+    {
+        public:
 
-			ObjectId id = { uniset::DefaultObjectId };
-			long value = { 0 };
-			bool undefined = { false };
+            ObjectId id = { uniset::DefaultObjectId };
+            long value = { 0 };
+            bool undefined = { false };
 
-			// время изменения состояния датчика
-			struct timespec sm_tv = { 0, 0 };
+            // время изменения состояния датчика
+            struct timespec sm_tv = { 0, 0 };
 
-			UniversalIO::IOType sensor_type = { UniversalIO::DI };
-			IOController_i::CalibrateInfo ci;
+            UniversalIO::IOType sensor_type = { UniversalIO::DI };
+            IOController_i::CalibrateInfo ci;
 
-			// для пороговых датчиков
-			bool threshold = { false };  /*!< TRUE - сработал порог, FALSE - порог отключился */
-			uniset::ThresholdId tid = { uniset::DefaultThresholdId };
+            // для пороговых датчиков
+            bool threshold = { false };  /*!< TRUE - сработал порог, FALSE - порог отключился */
+            uniset::ThresholdId tid = { uniset::DefaultThresholdId };
 
-			SensorMessage( SensorMessage&& m) noexcept = default;
-			SensorMessage& operator=(SensorMessage&& m) noexcept = default;
-			SensorMessage( const SensorMessage& ) noexcept = default;
-			SensorMessage& operator=( const SensorMessage& ) noexcept = default;
+            SensorMessage( SensorMessage&& m) noexcept = default;
+            SensorMessage& operator=(SensorMessage&& m) noexcept = default;
+            SensorMessage( const SensorMessage& ) noexcept = default;
+            SensorMessage& operator=( const SensorMessage& ) noexcept = default;
 
-			SensorMessage() noexcept;
-			SensorMessage(ObjectId id, long value, const IOController_i::CalibrateInfo& ci = IOController_i::CalibrateInfo(),
-						  Priority priority = Message::Medium,
-						  UniversalIO::IOType st = UniversalIO::AI,
-						  ObjectId consumer = uniset::DefaultObjectId) noexcept;
+            SensorMessage() noexcept;
+            SensorMessage(ObjectId id, long value, const IOController_i::CalibrateInfo& ci = IOController_i::CalibrateInfo(),
+                          Priority priority = Message::Medium,
+                          UniversalIO::IOType st = UniversalIO::AI,
+                          ObjectId consumer = uniset::DefaultObjectId) noexcept;
 
-			// специальный конструктор, для оптимизации
-			// он не инициализирует поля по умолчанию
-			// и за инициализацию значений отвечает "пользователь"
-			// например см. IONotifyController::localSetValue()
-			explicit SensorMessage( int dummy ) noexcept;
+            // специальный конструктор, для оптимизации
+            // он не инициализирует поля по умолчанию
+            // и за инициализацию значений отвечает "пользователь"
+            // например см. IONotifyController::localSetValue()
+            explicit SensorMessage( int dummy ) noexcept;
 
-			SensorMessage(const VoidMessage* msg) noexcept;
-			inline TransportMessage transport_msg() const noexcept
-			{
-				return transport(*this);
-			}
-	};
+            SensorMessage(const VoidMessage* msg) noexcept;
+            inline TransportMessage transport_msg() const noexcept
+            {
+                return transport(*this);
+            }
+    };
 
-	// ------------------------------------------------------------------------
-	/*! Системное сообщение */
-	class SystemMessage : public Message
-	{
-		public:
-			enum Command
-			{
-				Unknown,
-				StartUp,    /*! начать работу */
-				FoldUp,     /*! нет связи с главной станцией */
-				Finish,     /*! завершить работу */
-				WatchDog,   /*! контроль состояния */
-				ReConfiguration,        /*! обновились параметры конфигурации */
-				NetworkInfo,            /*! обновилась информация о состоянии узлов в сети
+    // ------------------------------------------------------------------------
+    /*! Системное сообщение */
+    class SystemMessage : public Message
+    {
+        public:
+            enum Command
+            {
+                Unknown,
+                StartUp,    /*! начать работу */
+                FoldUp,     /*! нет связи с главной станцией */
+                Finish,     /*! завершить работу */
+                WatchDog,   /*! контроль состояния */
+                ReConfiguration,        /*! обновились параметры конфигурации */
+                NetworkInfo,            /*! обновилась информация о состоянии узлов в сети
                                             поля
-											data[0] - кто
+                                            data[0] - кто
                                             data[1] - новое состояние(true - connect,  false - disconnect)
                                          */
-				LogRotate,    /*! переоткрыть файлы логов */
-				TheLastFieldOfCommand
-			};
+                LogRotate,    /*! переоткрыть файлы логов */
+                TheLastFieldOfCommand
+            };
 
-			SystemMessage( SystemMessage&& ) noexcept = default;
-			SystemMessage& operator=(SystemMessage&& ) noexcept = default;
-			SystemMessage( const SystemMessage& ) noexcept = default;
-			SystemMessage& operator=( const SystemMessage& ) noexcept = default;
+            SystemMessage( SystemMessage&& ) noexcept = default;
+            SystemMessage& operator=(SystemMessage&& ) noexcept = default;
+            SystemMessage( const SystemMessage& ) noexcept = default;
+            SystemMessage& operator=( const SystemMessage& ) noexcept = default;
 
-			SystemMessage() noexcept;
-			SystemMessage(Command command, Priority priority = Message::High,
-						  ObjectId consumer = uniset::DefaultObjectId) noexcept;
-			SystemMessage(const VoidMessage* msg) noexcept;
+            SystemMessage() noexcept;
+            SystemMessage(Command command, Priority priority = Message::High,
+                          ObjectId consumer = uniset::DefaultObjectId) noexcept;
+            SystemMessage(const VoidMessage* msg) noexcept;
 
-			inline TransportMessage transport_msg() const noexcept
-			{
-				return transport(*this);
-			}
+            inline TransportMessage transport_msg() const noexcept
+            {
+                return transport(*this);
+            }
 
-			int command = { 0 };
-			long data[2];
-	};
-	std::ostream& operator<<( std::ostream& os, const SystemMessage::Command& c );
+            int command = { 0 };
+            long data[2];
+    };
+    std::ostream& operator<<( std::ostream& os, const SystemMessage::Command& c );
 
-	// ------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
 
-	/*! Сообщение о срабатывании таймера */
-	class TimerMessage : public Message
-	{
-		public:
-			TimerMessage( TimerMessage&& ) noexcept = default;
-			TimerMessage& operator=(TimerMessage&& ) noexcept = default;
-			TimerMessage( const TimerMessage& ) noexcept = default;
-			TimerMessage& operator=( const TimerMessage& ) noexcept = default;
+    /*! Сообщение о срабатывании таймера */
+    class TimerMessage : public Message
+    {
+        public:
+            TimerMessage( TimerMessage&& ) noexcept = default;
+            TimerMessage& operator=(TimerMessage&& ) noexcept = default;
+            TimerMessage( const TimerMessage& ) noexcept = default;
+            TimerMessage& operator=( const TimerMessage& ) noexcept = default;
 
-			TimerMessage();
-			TimerMessage(uniset::TimerId id, Priority prior = Message::High,
-						 ObjectId cons = uniset::DefaultObjectId);
-			TimerMessage(const VoidMessage* msg) noexcept ;
-			inline TransportMessage transport_msg() const noexcept
-			{
-				return transport(*this);
-			}
+            TimerMessage();
+            TimerMessage(uniset::TimerId id, Priority prior = Message::High,
+                         ObjectId cons = uniset::DefaultObjectId);
+            TimerMessage(const VoidMessage* msg) noexcept ;
+            inline TransportMessage transport_msg() const noexcept
+            {
+                return transport(*this);
+            }
 
-			uniset::TimerId id; /*!< id сработавшего таймера */
-	};
+            uniset::TimerId id; /*!< id сработавшего таймера */
+    };
 
-	// ------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
 
-	/*! Подтверждение(квитирование) сообщения */
-	class ConfirmMessage: public Message
-	{
-		public:
+    /*! Подтверждение(квитирование) сообщения */
+    class ConfirmMessage: public Message
+    {
+        public:
 
-			inline TransportMessage transport_msg() const noexcept
-			{
-				return transport(*this);
-			}
+            inline TransportMessage transport_msg() const noexcept
+            {
+                return transport(*this);
+            }
 
-			ConfirmMessage( const VoidMessage* msg ) noexcept;
+            ConfirmMessage( const VoidMessage* msg ) noexcept;
 
-			ConfirmMessage(ObjectId in_sensor_id,
-						   const double& in_sensor_value,
-						   const timespec& in_sensor_time,
-						   const timespec& in_confirm_time,
-						   Priority in_priority = Message::Medium) noexcept;
+            ConfirmMessage(ObjectId in_sensor_id,
+                           const double& in_sensor_value,
+                           const timespec& in_sensor_time,
+                           const timespec& in_confirm_time,
+                           Priority in_priority = Message::Medium) noexcept;
 
-			ConfirmMessage( ConfirmMessage&& ) noexcept = default;
-			ConfirmMessage& operator=(ConfirmMessage&& ) noexcept = default;
-			ConfirmMessage( const ConfirmMessage& ) noexcept = default;
-			ConfirmMessage& operator=( const ConfirmMessage& ) noexcept = default;
+            ConfirmMessage( ConfirmMessage&& ) noexcept = default;
+            ConfirmMessage& operator=(ConfirmMessage&& ) noexcept = default;
+            ConfirmMessage( const ConfirmMessage& ) noexcept = default;
+            ConfirmMessage& operator=( const ConfirmMessage& ) noexcept = default;
 
-			ObjectId sensor_id = { uniset::DefaultObjectId };   /* ID датчика (события) */
-			double sensor_value = { 0.0 };  /* значение датчика (события) */
-			struct timespec sensor_time = { 0, 0 }; /* время срабатывания датчика (события), который квитируем */
-			struct timespec confirm_time = { 0, 0 }; /* * время прошедшее до момента квитирования */
+            ObjectId sensor_id = { uniset::DefaultObjectId };   /* ID датчика (события) */
+            double sensor_value = { 0.0 };  /* значение датчика (события) */
+            struct timespec sensor_time = { 0, 0 }; /* время срабатывания датчика (события), который квитируем */
+            struct timespec confirm_time = { 0, 0 }; /* * время прошедшее до момента квитирования */
 
-			bool broadcast = { false };
+            bool broadcast = { false };
 
-			/*!
-			    признак, что сообщение является пересланным.
-			    (т.е. в БД второй раз сохранять не надо, пересылать
-			     второй раз тоже не надо).
-			*/
-			bool forward = { false };
+            /*!
+                признак, что сообщение является пересланным.
+                (т.е. в БД второй раз сохранять не надо, пересылать
+                 второй раз тоже не надо).
+            */
+            bool forward = { false };
 
-		protected:
-			ConfirmMessage() noexcept;
-	};
+        protected:
+            ConfirmMessage() noexcept;
+    };
 
-	// ------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
 
-	/*! текстовое сообщение */
-	class TextMessage : public VoidMessage
-	{
-		public:
-			TextMessage( TextMessage&& ) noexcept = default;
-			TextMessage& operator=(TextMessage&& ) = default;
-			TextMessage( const TextMessage& ) = default;
-			TextMessage& operator=( const TextMessage& ) = default;
+    /*! текстовое сообщение */
+    class TextMessage : public VoidMessage
+    {
+        public:
+            TextMessage( TextMessage&& ) noexcept = default;
+            TextMessage& operator=(TextMessage&& ) = default;
+            TextMessage( const TextMessage& ) = default;
+            TextMessage& operator=( const TextMessage& ) = default;
 
-			TextMessage() noexcept;
-			TextMessage( const VoidMessage* msg ) noexcept;
-			TextMessage( const char* msg,
-						 int mtype,
-						 const ::uniset::Timespec& tm,
-						 const ::uniset::ProducerInfo& pi,
-						 Priority prior = Message::Medium,
-						 ObjectId cons = uniset::DefaultObjectId ) noexcept;
+            TextMessage() noexcept;
+            TextMessage( const VoidMessage* msg ) noexcept;
+            TextMessage( const char* msg,
+                         int mtype,
+                         const ::uniset::Timespec& tm,
+                         const ::uniset::ProducerInfo& pi,
+                         Priority prior = Message::Medium,
+                         ObjectId cons = uniset::DefaultObjectId ) noexcept;
 
-			std::shared_ptr<VoidMessage> toLocalVoidMessage() const;
+            std::shared_ptr<VoidMessage> toLocalVoidMessage() const;
 
-			std::string txt;
-			int mtype;
-	};
+            std::string txt;
+            int mtype;
+    };
 
 }
 // --------------------------------------------------------------------------

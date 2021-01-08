@@ -3,10 +3,15 @@
 # See doc: http://www.gnu.org/software/hello/manual/autoconf/Generic-Programs.html
 
 # AC_PREREQ(2.59)
+<<<<<<< HEAD
 AC_INIT([uniset2], [2.8.1], pv@etersoft.ru)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME,AC_PACKAGE_VERSION)
+=======
+AC_INIT([uniset2], [2.9.1], pv@etersoft.ru)
+AM_INIT_AUTOMAKE
+>>>>>>> 2.9.1-alt1
 
-LIBVER=2:8:0
+LIBVER=11:1:9
 AC_SUBST(LIBVER)
 
 # AC_CONFIG_MACRO_DIR([m4])
@@ -32,8 +37,9 @@ AC_ENABLE_SHARED(yes)
 AC_ENABLE_STATIC(no)
 AM_PROG_LIBTOOL
 
-ASTYLE_OPT="-A1 -T -C -S -N -L -w -Y -M -f -p --mode=c --lineend=linux --align-reference=type --align-pointer=type --suffix=none --style=ansi"
+ASTYLE_OPT="-A1 -T -C -S -L -w -N -Y -M -f -p --mode=c --lineend=linux --align-reference=type --align-pointer=type --suffix=none --style=ansi --convert-tabs -s4"
 AC_SUBST(ASTYLE_OPT)
+
 
 # Checks for libraries.
 PKG_CHECK_MODULES(XML, libxml-2.0)
@@ -50,7 +56,7 @@ if test $checklibev = true; then
 	EV_CFLAGS=
 	AC_SUBST(EV_LIBS)
 	AC_SUBST(EV_CFLAGS)
-    AC_MSG_RESULT([ok])
+	AC_MSG_RESULT([ok])
 fi
 
 #check rest api support
@@ -64,15 +70,16 @@ REST_API_CLIBS=
 DISABLE_REST_API=
 
 if test ${buildapi} = true; then
-    AC_MSG_RESULT([enabled])
+	AC_MSG_RESULT([enabled])
 	REST_API_CLIBS="-lPocoJSON"
 else
-    AC_MSG_RESULT([disabled])
+	AC_MSG_RESULT([disabled])
 	REST_API_CFLAGS="-DDISABLE_REST_API"
-    DISABLE_REST_API=1
+	DISABLE_REST_API=1
 fi
 
 AM_CONDITIONAL(DISABLE_REST_API, test ${buildapi} = false)
+AM_CONDITIONAL(ENABLE_REST_API, test ${buildapi} = true)
 AC_SUBST(DISABLE_REST_API)
 AC_SUBST(REST_API_CFLAGS)
 AC_SUBST(REST_API_CLIBS)
@@ -117,6 +124,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_SQLITE, test ${buildsqlite} = false)
+AM_CONDITIONAL(ENABLE_SQLITE, test ${buildsqlite} = true)
 
 # check xsltproc
 AC_CHECK_PROG([XSLTPROC],[xsltproc],[yes])
@@ -143,6 +151,8 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_MYSQL, test ${buildmysql} = false)
+AM_CONDITIONAL(ENABLE_MYSQL, test ${buildmysql} = true)
+
 
 #check pgsql support
 AC_MSG_CHECKING([postgresql support])
@@ -160,6 +170,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_PGSQL, test ${buildpgsql} = false)
+AM_CONDITIONAL(ENABLE_PGSQL, test ${buildpgsql} = true)
 
 
 #check rrd support
@@ -178,6 +189,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_RRD, test ${buildrrd} = false)
+AM_CONDITIONAL(ENABLE_RRD, test ${buildrrd} = true)
 
 #check opentsdb support
 AC_MSG_CHECKING([OpenTSDB backend])
@@ -192,6 +204,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_OPENTSDB, test ${buildtsdb} = false)
+AM_CONDITIONAL(ENABLE_OPENTSDB, test ${buildtsdb} = true)
 
 #check io support
 AC_MSG_CHECKING([io support])
@@ -241,7 +254,7 @@ AC_SUBST(COMPORT_485F_CFLAGS)
 #check logicproc build
 AC_MSG_CHECKING([build logic processor extension])
 buildlproc=true
-AC_ARG_ENABLE(rrd, AC_HELP_STRING([--disable-logicproc], [disable build LogicProcessor extension]),
+AC_ARG_ENABLE(logicproc, AC_HELP_STRING([--disable-logicproc], [disable build LogicProcessor extension]),
 [ if test $enableval = yes; then buildlproc=true; else buildlproc=false; fi],[ buildlproc=true; ])
 if test ${buildlproc} = true; then
 	AC_MSG_RESULT([enabled])
@@ -250,6 +263,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_LOGICPROC, test ${buildlproc} = false)
+AM_CONDITIONAL(ENABLE_LOGICPROC, test ${buildlproc} = true)
 
 #check build extensions
 ext=true
@@ -297,6 +311,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_PYTHON, test ${buildpython} = false)
+AM_CONDITIONAL(ENABLE_PYTHON, test ${buildpython} = true)
 
 #check mqtt support
 AC_MSG_CHECKING([mqtt support])
@@ -316,6 +331,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_MQTT, test ${buildmqtt} = false)
+AM_CONDITIONAL(ENABLE_MQTT, test ${buildmqtt} = true)
 
 
 # check Doxygen
@@ -388,6 +404,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_LOGDB, test ${buildlogdb} = false)
+AM_CONDITIONAL(ENABLE_LOGDB, test ${buildlogdb} = true)
 
 COV_LIBS=
 COV_CFLAGS=
@@ -579,6 +596,8 @@ AC_CONFIG_FILES([Makefile
 				 extensions/tests/MQPerfTest/Makefile
 				 extensions/LogDB/Makefile
 				 extensions/LogDB/tests/Makefile
+				 extensions/HttpResolver/Makefile
+				 extensions/HttpResolver/tests/Makefile
 				 testsuite/Makefile
 				 wrappers/Makefile
 				 wrappers/python/lib/Makefile

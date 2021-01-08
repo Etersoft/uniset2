@@ -27,42 +27,40 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-	// -----------------------------------------------------------------------------
-	class RTUExchange:
-		public MBExchange
-	{
-		public:
-			RTUExchange( uniset::ObjectId objId, uniset::ObjectId shmID,
-						 const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "rs" );
-			virtual ~RTUExchange();
+    // -----------------------------------------------------------------------------
+    class RTUExchange:
+        public MBExchange
+    {
+        public:
+            RTUExchange( uniset::ObjectId objId, uniset::ObjectId shmID,
+                         const std::shared_ptr<SharedMemory>& ic = nullptr, const std::string& prefix = "rs" );
+            virtual ~RTUExchange();
 
-			/*! глобальная функция для инициализации объекта */
-			static std::shared_ptr<RTUExchange> init_rtuexchange( int argc, const char* const* argv,
-					uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
-					const std::string& prefix = "rs" );
+            /*! глобальная функция для инициализации объекта */
+            static std::shared_ptr<RTUExchange> init_rtuexchange( int argc, const char* const* argv,
+                    uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
+                    const std::string& prefix = "rs" );
 
-			static void help_print( int argc, const char* const* argv );
+            static void help_print( int argc, const char* const* argv );
 
-		protected:
-			std::shared_ptr<ModbusRTUMaster> mbrtu;
-			std::mutex mbMutex;
-			std::string devname;
-			ComPort::Speed defSpeed;
-			bool use485F;
-			bool transmitCtl;
+        protected:
+            std::shared_ptr<ModbusRTUMaster> mbrtu;
+            std::mutex mbMutex;
+            std::string devname;
+            ComPort::Speed defSpeed;
+            bool use485F;
+            bool transmitCtl;
 
-			virtual void step() override;
-			virtual bool poll() override;
+            virtual void step() override;
+            virtual bool poll() override;
+            virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;
 
-			virtual std::shared_ptr<ModbusClient> initMB( bool reopen = false ) override;
-			virtual bool initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML::iterator& it ) override;
+        private:
+            RTUExchange();
 
-		private:
-			RTUExchange();
-
-			bool rs_pre_clean;
-	};
-	// --------------------------------------------------------------------------
+            bool rs_pre_clean;
+    };
+    // --------------------------------------------------------------------------
 } // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // _RS_EXCHANGE_H_

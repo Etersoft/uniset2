@@ -12,32 +12,32 @@
  * Заодно если инициализирован child то проверяем что у него тоже все входы совпадают со значениями в SM.
  */
 class LostTestProc:
-	public LostPassiveTestProc
+    public LostPassiveTestProc
 {
-	public:
-		LostTestProc( uniset::ObjectId id, xmlNode* confnode = uniset::uniset_conf()->getNode("LostTestProc") );
-		virtual ~LostTestProc();
+    public:
+        LostTestProc( uniset::ObjectId id, xmlNode* confnode = uniset::uniset_conf()->getNode("LostTestProc") );
+        virtual ~LostTestProc();
 
-		void setChildPassiveProc( const std::shared_ptr<LostPassiveTestProc>& lp );
+        void setChildPassiveProc( const std::shared_ptr<LostPassiveTestProc>& lp );
 
-	protected:
-		LostTestProc();
+    protected:
+        LostTestProc();
 
-		enum Timers
-		{
-			tmCheck
-		};
+        enum Timers
+        {
+            tmCheck
+        };
 
-		virtual void timerInfo( const uniset::TimerMessage* tm ) override;
-		virtual void sysCommand( const uniset::SystemMessage* sm ) override;
-		virtual std::string getMonitInfo() const override;
+        virtual void timerInfo( const uniset::TimerMessage* tm ) override;
+        virtual void sysCommand( const uniset::SystemMessage* sm ) override;
+        virtual std::string getMonitInfo() const override;
 
-		size_t ncycle = { 0 };
-		bool waitEmpty = { false };
+        size_t ncycle = { 0 };
+        bool waitEmpty = { false };
 
-		std::shared_ptr<LostPassiveTestProc> child;
+        std::shared_ptr<LostPassiveTestProc> child;
 
-	private:
+    private:
 };
 // -----------------------------------------------------------------------------
 #endif // LostTestProc_H_

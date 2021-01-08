@@ -26,20 +26,20 @@ using namespace uniset;
 using namespace uniset::extensions;
 // -------------------------------------------------------------------------
 LProcessor::LProcessor( const std::string& name ):
-	logname(name)
+    logname(name)
 {
-	auto conf = uniset_conf();
-	sleepTime = conf->getArgPInt("--sleepTime", 200);
-	int tout = conf->getArgInt("--sm-ready-timeout", "120000");
+    auto conf = uniset_conf();
+    sleepTime = conf->getArgPInt("--sleepTime", 200);
+    int tout = conf->getArgInt("--sm-ready-timeout", "120000");
 
-	if( tout == 0 )
-		smReadyTimeout = conf->getNCReadyTimeout();
-	else if( tout < 0 )
-		smReadyTimeout = UniSetTimer::WaitUpTime;
-	else
-		smReadyTimeout = tout;
+    if( tout == 0 )
+        smReadyTimeout = conf->getNCReadyTimeout();
+    else if( tout < 0 )
+        smReadyTimeout = UniSetTimer::WaitUpTime;
+    else
+        smReadyTimeout = tout;
 
-	sch = make_shared<SchemaXML>();
+    sch = make_shared<SchemaXML>();
 }
 
 LProcessor::~LProcessor()
@@ -48,121 +48,121 @@ LProcessor::~LProcessor()
 // -------------------------------------------------------------------------
 void LProcessor::open( const string& lfile )
 {
-	if( isOpen() )
-	{
-		ostringstream err;
-		err << logname << "(execute): already opened from '" << fSchema << "'" << endl;
-		throw SystemError(err.str());
-	}
+    if( isOpen() )
+    {
+        ostringstream err;
+        err << logname << "(execute): already opened from '" << fSchema << "'" << endl;
+        throw SystemError(err.str());
+    }
 
-	fSchema = lfile;
-	build(lfile);
+    fSchema = lfile;
+    build(lfile);
 }
 // -------------------------------------------------------------------------
 bool LProcessor::isOpen() const
 {
-	return !fSchema.empty();
+    return !fSchema.empty();
 }
 // -------------------------------------------------------------------------
 void LProcessor::execute( const std::string& lfile )
 {
-	if( !lfile.empty() )
-		open(lfile);
+    if( !lfile.empty() )
+        open(lfile);
 
-	while( !canceled )
-	{
-		try
-		{
-			step();
-		}
-		catch( LogicException& ex )
-		{
-			dcrit << logname << "(execute): " << ex << endl;
-		}
-		catch( const uniset::Exception& ex )
-		{
-			dcrit << logname << "(execute): " << ex << endl;
-		}
-		catch( const std::exception& ex )
-		{
-			dcrit << logname << "(execute): " << ex.what() << endl;
-		}
+    while( !canceled )
+    {
+        try
+        {
+            step();
+        }
+        catch( LogicException& ex )
+        {
+            dcrit << logname << "(execute): " << ex << endl;
+        }
+        catch( const uniset::Exception& ex )
+        {
+            dcrit << logname << "(execute): " << ex << endl;
+        }
+        catch( const std::exception& ex )
+        {
+            dcrit << logname << "(execute): " << ex.what() << endl;
+        }
 
-		msleep(sleepTime);
-	}
+        msleep(sleepTime);
+    }
 }
 // -------------------------------------------------------------------------
 void LProcessor::terminate()
 {
-	canceled = true;
+    canceled = true;
 }
 // -------------------------------------------------------------------------
 std::shared_ptr<SchemaXML> LProcessor::getSchema()
 {
-	return sch;
+    return sch;
 }
 // -------------------------------------------------------------------------
 timeout_t LProcessor::getSleepTime() const noexcept
 {
-	return sleepTime;
+    return sleepTime;
 }
 // -------------------------------------------------------------------------
 void LProcessor::step()
 {
-	getInputs();
-	processing();
-	setOuts();
+    getInputs();
+    processing();
+    setOuts();
 }
 // -------------------------------------------------------------------------
 void LProcessor::build( const string& lfile )
 {
-	auto conf = uniset_conf();
+    auto conf = uniset_conf();
 
-	sch->read(lfile);
+    sch->read(lfile);
 
-	// составляем карту внешних входов
-	// считая, что в поле name записано название датчика
-	for( auto it = sch->extBegin(); it != sch->extEnd(); ++it )
-	{
-		uniset::ObjectId sid = conf->getSensorID(it->name);
+    // составляем карту внешних входов
+    // считая, что в поле name записано название датчика
+    for( auto it = sch->extBegin(); it != sch->extEnd(); ++it )
+    {
+        uniset::ObjectId sid = conf->getSensorID(it->name);
 
-		if( sid == DefaultObjectId )
-		{
-			ostringstream err;
-			err << "Unknown sensor ID for " << it->name;
+        if( sid == DefaultObjectId )
+        {
+            ostringstream err;
+            err << "Unknown sensor ID for " << it->name;
 
-			dcrit << err.str() << endl;
-			throw SystemError(err.str());
-		}
+            dcrit << err.str() << endl;
+            throw SystemError(err.str());
+        }
 
-		EXTInfo ei;
-		ei.sid = sid;
-		ei.value = false;
-		ei.el = it->to;
-		ei.numInput = it->numInput;
+        EXTInfo ei;
+        ei.sid = sid;
+        ei.value = false;
+        ei.el = it->to;
+        ei.numInput = it->numInput;
 
-		extInputs.emplace_front( std::move(ei) );
-	}
+        extInputs.emplace_front( std::move(ei) );
+    }
 
-	for( auto it = sch->outBegin(); it != sch->outEnd(); ++it )
-	{
-		uniset::ObjectId sid = conf->getSensorID(it->name);
+    for( auto it = sch->outBegin(); it != sch->outEnd(); ++it )
+    {
+        uniset::ObjectId sid = conf->getSensorID(it->name);
 
-		if( sid == DefaultObjectId )
-		{
-			ostringstream err;
-			err << "Unknown sensor ID for " << it->name;
+        if( sid == DefaultObjectId )
+        {
+            ostringstream err;
+            err << "Unknown sensor ID for " << it->name;
 
-			dcrit << err.str() << endl;
-			throw SystemError(err.str());
-		}
+            dcrit << err.str() << endl;
+            throw SystemError(err.str());
+        }
 
-		EXTOutInfo ei;
-		ei.sid = sid;
-		ei.el = it->from;
+        EXTOutInfo ei;
+        ei.sid = sid;
+        ei.el = it->from;
 
-		extOuts.emplace_front(std::move(ei));
-	}
+        extOuts.emplace_front(std::move(ei));
+    }
 }
 // -------------------------------------------------------------------------
 /*!
@@ -173,45 +173,45 @@ void LProcessor::build( const string& lfile )
 */
 void LProcessor::getInputs()
 {
-	for( auto && it : extInputs )
-	{
-		//        try
-		//        {
-		it.value = ui.getValue(it.sid);
-		//        }
-	}
+    for( auto&& it : extInputs )
+    {
+        //        try
+        //        {
+        it.value = ui.getValue(it.sid);
+        //        }
+    }
 }
 // -------------------------------------------------------------------------
 void LProcessor::processing()
 {
-	// выcтавляем все внешние входы
-	for( const auto& it : extInputs )
-		it.el->setIn(it.numInput, it.value);
+    // выcтавляем все внешние входы
+    for( const auto& it : extInputs )
+        it.el->setIn(it.numInput, it.value);
 
-	// проходим по всем элементам
-	for_each( sch->begin(), sch->end(), [](Schema::ElementMap::value_type it)
-	{
-		it.second->tick();
-	} );
+    // проходим по всем элементам
+    for_each( sch->begin(), sch->end(), [](Schema::ElementMap::value_type it)
+    {
+        it.second->tick();
+    } );
 }
 // -------------------------------------------------------------------------
 void LProcessor::setOuts()
 {
-	// выcтавляем выходы
-	for( const auto& it : extOuts )
-	{
-		try
-		{
-			ui.setValue(it.sid, it.el->getOut());
-		}
-		catch( const uniset::Exception& ex )
-		{
-			dcrit << "(LProcessor::setOuts): " << ex << endl;
-		}
-		catch( const std::exception& ex )
-		{
-			dcrit << "(LProcessor::setOuts): catch: " << ex.what() << endl;
-		}
-	}
+    // выcтавляем выходы
+    for( const auto& it : extOuts )
+    {
+        try
+        {
+            ui.setValue(it.sid, it.el->getOut());
+        }
+        catch( const uniset::Exception& ex )
+        {
+            dcrit << "(LProcessor::setOuts): " << ex << endl;
+        }
+        catch( const std::exception& ex )
+        {
+            dcrit << "(LProcessor::setOuts): catch: " << ex.what() << endl;
+        }
+    }
 }
 // -------------------------------------------------------------------------

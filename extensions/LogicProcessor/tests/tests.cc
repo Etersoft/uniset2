@@ -12,72 +12,72 @@ using namespace uniset;
 // --------------------------------------------------------------------------
 int main(int argc, const char* argv[] )
 {
-	try
-	{
-		Catch::Session session;
+    try
+    {
+        Catch::Session session;
 
-		if( argc > 1 && ( strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0 ) )
-		{
-			cout << "--confile    - Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
-			cout << endl << endl << "--------------- CATCH HELP --------------" << endl;
-			session.showHelp("tests");
-			return 0;
-		}
+        if( argc > 1 && ( strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0 ) )
+        {
+            cout << "--confile    - Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
+            cout << endl << endl << "--------------- CATCH HELP --------------" << endl;
+            session.showHelp("tests");
+            return 0;
+        }
 
-		int returnCode = session.applyCommandLine( argc, argv, Catch::Session::OnUnusedOptions::Ignore );
+        int returnCode = session.applyCommandLine( argc, argv, Catch::Session::OnUnusedOptions::Ignore );
 
-		if( returnCode != 0 ) // Indicates a command line error
-			return returnCode;
+        if( returnCode != 0 ) // Indicates a command line error
+            return returnCode;
 
-		auto conf = uniset_init(argc, argv, "lp-configure.xml");
+        auto conf = uniset_init(argc, argv, "lp-configure.xml");
 
-		auto act = UniSetActivator::Instance();
+        auto act = UniSetActivator::Instance();
 
-		ObjectId ns_id = conf->getControllerID("SharedMemory");
+        ObjectId ns_id = conf->getControllerID("SharedMemory");
 
-		if( ns_id == DefaultObjectId )
-		{
-			cerr << "Not found ID for 'SharedMemory'" << endl;
-			return 1;
-		}
+        if( ns_id == DefaultObjectId )
+        {
+            cerr << "Not found ID for 'SharedMemory'" << endl;
+            return 1;
+        }
 
-		auto nullsm = make_shared<NullSM>(ns_id, "lp-configure.xml");
-		act->add(nullsm);
+        auto nullsm = make_shared<NullSM>(ns_id, "lp-configure.xml");
+        act->add(nullsm);
 
-		SystemMessage sm(SystemMessage::StartUp);
-		act->broadcast( sm.transport_msg() );
-		act->run(true);
+        SystemMessage sm(SystemMessage::StartUp);
+        act->broadcast( sm.transport_msg() );
+        act->run(true);
 
-		int tout = 6000;
-		PassiveTimer pt(tout);
+        int tout = 6000;
+        PassiveTimer pt(tout);
 
-		while( !pt.checkTime() && !act->exist() )
-			msleep(100);
+        while( !pt.checkTime() && !act->exist() )
+            msleep(100);
 
-		if( !act->exist() )
-		{
-			cerr << "(tests): UActivator not exist! (timeout=" << tout << ")" << endl;
-			return 1;
-		}
+        if( !act->exist() )
+        {
+            cerr << "(tests): UActivator not exist! (timeout=" << tout << ")" << endl;
+            return 1;
+        }
 
-		return session.run();
-	}
-	catch( const SystemError& err )
-	{
-		cerr << "(tests): " << err << endl;
-	}
-	catch( const uniset::Exception& ex )
-	{
-		cerr << "(tests): " << ex << endl;
-	}
-	catch( const std::exception& e )
-	{
-		cerr << "(tests): " << e.what() << endl;
-	}
-	catch(...)
-	{
-		cerr << "(tests): catch(...)" << endl;
-	}
+        return session.run();
+    }
+    catch( const SystemError& err )
+    {
+        cerr << "(tests): " << err << endl;
+    }
+    catch( const uniset::Exception& ex )
+    {
+        cerr << "(tests): " << ex << endl;
+    }
+    catch( const std::exception& e )
+    {
+        cerr << "(tests): " << e.what() << endl;
+    }
+    catch(...)
+    {
+        cerr << "(tests): catch(...)" << endl;
+    }
 
-	return 1;
+    return 1;
 }

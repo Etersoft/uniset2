@@ -5,7 +5,7 @@ using namespace std;
 using namespace uniset;
 // -----------------------------------------------------------------------------
 Skel::Skel( uniset::ObjectId id, xmlNode* confnode ):
-	Skel_SK( id, confnode )
+    Skel_SK( id, confnode )
 {
 }
 // -----------------------------------------------------------------------------
@@ -15,8 +15,8 @@ Skel::~Skel()
 // -----------------------------------------------------------------------------
 Skel::Skel()
 {
-	cerr << "(Skel): init failed!!!!!!!!!!!!!!!" << endl;
-	throw Exception();
+    cerr << "(Skel): init failed!!!!!!!!!!!!!!!" << endl;
+    throw Exception();
 }
 // -----------------------------------------------------------------------------
 void Skel::step()

@@ -16,43 +16,44 @@
 // -------------------------------------------------------------------------
 #include "UConnector.h"
 #include "ORepHelpers.h"
+#include "MessageType.h"
 // --------------------------------------------------------------------------
 using namespace std;
 // --------------------------------------------------------------------------
 UConnector::UConnector( UTypes::Params* p, const std::string& xfile )throw(UException):
-	xmlfile(xfile)
+    xmlfile(xfile)
 {
-	try
-	{
-		conf = uniset::uniset_init(p->argc, p->argv, xmlfile);
-		ui = make_shared<uniset::UInterface>(conf);
-	}
-	catch( std::exception& ex )
-	{
-		throw UException(ex.what());
-	}
-	catch( ... )
-	{
-		throw UException("(UConnector): Unknown exception");
-	}
+    try
+    {
+        conf = uniset::uniset_init(p->argc, p->argv, xmlfile);
+        ui = make_shared<uniset::UInterface>(conf);
+    }
+    catch( std::exception& ex )
+    {
+        throw UException(ex.what());
+    }
+    catch( ... )
+    {
+        throw UException("(UConnector): Unknown exception");
+    }
 }
 //---------------------------------------------------------------------------
 UConnector::UConnector(int argc, char** argv, const string& xfile )throw(UException):
-	xmlfile(xfile)
+    xmlfile(xfile)
 {
-	try
-	{
-		conf = uniset::uniset_init(argc, argv, xmlfile);
-		ui = make_shared<uniset::UInterface>(conf);
-	}
-	catch( std::exception& ex )
-	{
-		throw UException(ex.what());
-	}
-	catch( ... )
-	{
-		throw UException("(UConnector): Unknown exception");
-	}
+    try
+    {
+        conf = uniset::uniset_init(argc, argv, xmlfile);
+        ui = make_shared<uniset::UInterface>(conf);
+    }
+    catch( std::exception& ex )
+    {
+        throw UException(ex.what());
+    }
+    catch( ... )
+    {
+        throw UException("(UConnector): Unknown exception");
+    }
 }
 // --------------------------------------------------------------------------
 UConnector::~UConnector()
@@ -61,201 +62,203 @@ UConnector::~UConnector()
 // --------------------------------------------------------------------------
 string UConnector::getConfFileName()
 {
-	//    return xmlfile;
-	if( conf )
-		return conf->getConfFileName();
+    //    return xmlfile;
+    if( conf )
+        return conf->getConfFileName();
 
-	return "";
+    return "";
 
 }
 // --------------------------------------------------------------------------
 long UConnector::getValue( long id, long node )throw(UException)
 {
-	if( !conf || !ui )
-		throw USysError();
+    if( !conf || !ui )
+        throw USysError();
 
-	if( node == UTypes::DefaultID )
-		node = conf->getLocalNode();
+    if( node == UTypes::DefaultID )
+        node = conf->getLocalNode();
 
-	try
-	{
-		return ui->getValue(id, node);
-	}
-	catch( uniset::Exception& ex )
-	{
-		throw UException(ex.what());
-	}
-	catch( std::exception& ex )
-	{
-		throw UException(ex.what());
-	}
+    try
+    {
+        return ui->getValue(id, node);
+    }
+    catch( uniset::Exception& ex )
+    {
+        throw UException(ex.what());
+    }
+    catch( std::exception& ex )
+    {
+        throw UException(ex.what());
+    }
 }
 //---------------------------------------------------------------------------
 void UConnector::setValue( long id, long val, long node, long supplier )throw(UException)
 {
-	if( !conf || !ui )
-		throw USysError();
+    if( !conf || !ui )
+        throw USysError();
 
 
-	if( node == UTypes::DefaultID )
-		node = conf->getLocalNode();
+    if( node == UTypes::DefaultID )
+        node = conf->getLocalNode();
 
-	try
-	{
-		ui->setValue(id, val, node, supplier);
-	}
-	catch( uniset::Exception& ex )
-	{
-		throw UException(ex.what());
-	}
-	catch( std::exception& ex )
-	{
-		throw UException(ex.what());
-	}
+    try
+    {
+        ui->setValue(id, val, node, supplier);
+    }
+    catch( uniset::Exception& ex )
+    {
+        throw UException(ex.what());
+    }
+    catch( std::exception& ex )
+    {
+        throw UException(ex.what());
+    }
 }
 //---------------------------------------------------------------------------
 static UTypes::ShortIOInfo toUTypes( IOController_i::ShortIOInfo i )
 {
-	UTypes::ShortIOInfo ret;
-	ret.value = i.value;
-	ret.tv_sec = i.tv_sec;
-	ret.tv_nsec = i.tv_nsec;
-	ret.supplier = i.supplier;
-	ret.supplier_node = UTypes::DefaultID;
+    UTypes::ShortIOInfo ret;
+    ret.value = i.value;
+    ret.tv_sec = i.tv_sec;
+    ret.tv_nsec = i.tv_nsec;
+    ret.supplier = i.supplier;
+    ret.supplier_node = UTypes::DefaultID;
 
-	return ret;
+    return ret;
 }
 //---------------------------------------------------------------------------
 UTypes::ShortIOInfo UConnector::getTimeChange( long id, long node )
 {
-	if( !conf || !ui )
-		throw USysError();
+    if( !conf || !ui )
+        throw USysError();
 
-	if( node == UTypes::DefaultID )
-		node = conf->getLocalNode();
+    if( node == UTypes::DefaultID )
+        node = conf->getLocalNode();
 
-	try
-	{
-		IOController_i::ShortIOInfo i = ui->getTimeChange(id, node);
-		return toUTypes(i);
-	}
-	catch( const std::exception& ex )
-	{
-		throw UException("(getChangedTime): catch " + std::string(ex.what()) );
-	}
+    try
+    {
+        IOController_i::ShortIOInfo i = ui->getTimeChange(id, node);
+        return toUTypes(i);
+    }
+    catch( const std::exception& ex )
+    {
+        throw UException("(getChangedTime): catch " + std::string(ex.what()) );
+    }
 }
 //---------------------------------------------------------------------------
 long UConnector::getSensorID( const string& name )
 {
-	if( conf )
-		return conf->getSensorID(name);
+    if( conf )
+        return conf->getSensorID(name);
 
-	return UTypes::DefaultID;
+    return UTypes::DefaultID;
 }
 //---------------------------------------------------------------------------
 long UConnector::getNodeID(const string& name )
 {
-	if( conf )
-		return conf->getNodeID(name);
+    if( conf )
+        return conf->getNodeID(name);
 
-	return UTypes::DefaultID;
+    return UTypes::DefaultID;
 }
 //---------------------------------------------------------------------------
 string UConnector::getName( long id )
 {
-	if( conf )
-		return conf->oind->getMapName(id);
+    if( conf )
+        return conf->oind->getMapName(id);
 
-	return "";
+    return "";
 }
 //---------------------------------------------------------------------------
 string UConnector::getShortName( long id )
 {
-	if( conf )
-		return uniset::ORepHelpers::getShortName(conf->oind->getMapName(id));
+    if( conf )
+        return uniset::ORepHelpers::getShortName(conf->oind->getMapName(id));
 
-	return "";
+    return "";
 }
 //---------------------------------------------------------------------------
 string UConnector::getTextName( long id )
 {
-	if( conf )
-		return conf->oind->getTextName(id);
+    if( conf )
+        return conf->oind->getTextName(id);
 
-	return "";
+    return "";
 }
 //---------------------------------------------------------------------------
 string UConnector::getObjectInfo( long id, const std::string& params, long node )
 throw(UException)
 {
-	if( !conf || !ui )
-		throw USysError();
+    if( !conf || !ui )
+        throw USysError();
 
-	if( id == UTypes::DefaultID )
-		throw UException("(getObjectInfo): Unknown ID..");
+    if( id == UTypes::DefaultID )
+        throw UException("(getObjectInfo): Unknown ID..");
 
-	if( node == UTypes::DefaultID )
-		node = conf->getLocalNode();
+    if( node == UTypes::DefaultID )
+        node = conf->getLocalNode();
 
-	try
-	{
-		return ui->getObjectInfo(id, params, node);
-	}
-	catch( std::exception& ex )
-	{
-		throw UException("(getObjectInfo): error: " + std::string(ex.what()) );
-	}
+    try
+    {
+        return ui->getObjectInfo(id, params, node);
+    }
+    catch( std::exception& ex )
+    {
+        throw UException("(getObjectInfo): error: " + std::string(ex.what()) );
+    }
 }
 //---------------------------------------------------------------------------
 string UConnector::apiRequest( long id, const string& query, long node ) throw(UException)
 {
-	if( !conf || !ui )
-		throw USysError();
+    if( !conf || !ui )
+        throw USysError();
 
-	if( id == UTypes::DefaultID )
-		throw UException("(apiRequest): Unknown ID..");
+    if( id == UTypes::DefaultID )
+        throw UException("(apiRequest): Unknown ID..");
 
-	if( node == UTypes::DefaultID )
-		node = conf->getLocalNode();
+    if( node == UTypes::DefaultID )
+        node = conf->getLocalNode();
 
-	try
-	{
-		return ui->apiRequest(id, query, node);
-	}
-	catch( std::exception& ex )
-	{
-		throw UException("(apiRequest): error: " + std::string(ex.what()) );
-	}
+    try
+    {
+        return ui->apiRequest(id, query, node);
+    }
+    catch( std::exception& ex )
+    {
+        throw UException("(apiRequest): error: " + std::string(ex.what()) );
+    }
 }
 //---------------------------------------------------------------------------
 void UConnector::activate_objects() throw(UException)
 {
-	try
-	{
-		auto act = uniset::UniSetActivator::Instance();
-		act->run(true);
-	}
-	catch( const std::exception& ex )
-	{
-		throw UException("(activate_objects): catch " + std::string(ex.what()) );
-	}
+    try
+    {
+        auto act = uniset::UniSetActivator::Instance();
+        uniset::SystemMessage sm(uniset::SystemMessage::StartUp);
+        act->broadcast( sm.transport_msg() );
+        act->run(true);
+    }
+    catch( const std::exception& ex )
+    {
+        throw UException("(activate_objects): catch " + std::string(ex.what()) );
+    }
 }
 //---------------------------------------------------------------------------
 long UConnector::getObjectID( const string& name )
 {
-	if( conf )
-	{
-		long id = conf->getObjectID(name);
+    if( conf )
+    {
+        long id = conf->getObjectID(name);
 
-		if( id == UTypes::DefaultID )
-			id = conf->getControllerID(name);
+        if( id == UTypes::DefaultID )
+            id = conf->getControllerID(name);
 
-		if( id == UTypes::DefaultID )
-			id = conf->getServiceID(name);
+        if( id == UTypes::DefaultID )
+            id = conf->getServiceID(name);
 
-		return id;
-	}
+        return id;
+    }
 
-	return UTypes::DefaultID;
+    return UTypes::DefaultID;
 }
 //---------------------------------------------------------------------------

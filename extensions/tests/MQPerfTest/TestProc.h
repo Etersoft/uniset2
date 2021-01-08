@@ -5,18 +5,18 @@
 #include "TestProc_SK.h"
 // -----------------------------------------------------------------------------
 class TestProc:
-	public TestProc_SK
+    public TestProc_SK
 {
-	public:
-		TestProc( uniset::ObjectId id, xmlNode* confnode );
-		virtual ~TestProc();
+    public:
+        TestProc( uniset::ObjectId id, xmlNode* confnode );
+        virtual ~TestProc();
 
-		bool isFullQueue();
+        bool isFullQueue();
 
-	protected:
-		TestProc();
+    protected:
+        TestProc();
 
-	private:
+    private:
 };
 // -----------------------------------------------------------------------------
 #endif // TestProc_H_

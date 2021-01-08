@@ -7,28 +7,28 @@
  * Для наглядности и простоты все функции объявлены здесь же в h-файле
 */
 class TestUObject:
-	public uniset::UniSetObject
+    public uniset::UniSetObject
 {
-	public:
+    public:
 
-		TestUObject( uniset::ObjectId id, xmlNode* cnode ):
-			uniset::UniSetObject(id) {}
+        TestUObject( uniset::ObjectId id, xmlNode* cnode ):
+            uniset::UniSetObject(id) {}
 
-		virtual ~TestUObject() {};
+        virtual ~TestUObject() {};
 
-		// специальные функции для проведения тестирования
-		inline uniset::VoidMessagePtr getOneMessage()
-		{
-			return receiveMessage();
-		}
+        // специальные функции для проведения тестирования
+        inline uniset::VoidMessagePtr getOneMessage()
+        {
+            return receiveMessage();
+        }
 
-		inline bool mqEmpty()
-		{
-			return (countMessages() == 0);
-		}
+        inline bool mqEmpty()
+        {
+            return (countMessages() == 0);
+        }
 
-	protected:
-		TestUObject() {};
+    protected:
+        TestUObject() {};
 };
 // -------------------------------------------------------------------------
 #endif // TestUObject_H_

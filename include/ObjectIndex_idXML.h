@@ -24,37 +24,37 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-	/*! реализация интерфейса ObjectIndex на основе xml-файла, в котором прописаны id объектов  */
-	class ObjectIndex_idXML:
-		public uniset::ObjectIndex
-	{
-		public:
-			ObjectIndex_idXML( const std::string& xmlfile );
-			ObjectIndex_idXML( const std::shared_ptr<UniXML>& xml );
-			virtual ~ObjectIndex_idXML();
+    /*! реализация интерфейса ObjectIndex на основе xml-файла, в котором прописаны id объектов  */
+    class ObjectIndex_idXML:
+        public uniset::ObjectIndex
+    {
+        public:
+            ObjectIndex_idXML( const std::string& xmlfile );
+            ObjectIndex_idXML( const std::shared_ptr<UniXML>& xml );
+            virtual ~ObjectIndex_idXML();
 
-			virtual const uniset::ObjectInfo* getObjectInfo( const uniset::ObjectId ) const noexcept override;
-			virtual const uniset::ObjectInfo* getObjectInfo( const std::string& name ) const noexcept override;
-			virtual uniset::ObjectId getIdByName( const std::string& name ) const noexcept override;
-			virtual std::string getMapName( const uniset::ObjectId id ) const noexcept override;
-			virtual std::string getTextName( const uniset::ObjectId id ) const noexcept override;
+            virtual const uniset::ObjectInfo* getObjectInfo( const uniset::ObjectId ) const noexcept override;
+            virtual const uniset::ObjectInfo* getObjectInfo( const std::string& name ) const noexcept override;
+            virtual uniset::ObjectId getIdByName( const std::string& name ) const noexcept override;
+            virtual std::string getMapName( const uniset::ObjectId id ) const noexcept override;
+            virtual std::string getTextName( const uniset::ObjectId id ) const noexcept override;
 
-			virtual std::ostream& printMap( std::ostream& os ) const noexcept override;
-			friend std::ostream& operator<<(std::ostream& os, ObjectIndex_idXML& oi );
+            virtual std::ostream& printMap( std::ostream& os ) const noexcept override;
+            friend std::ostream& operator<<(std::ostream& os, ObjectIndex_idXML& oi );
 
-		protected:
-			void build( const std::shared_ptr<UniXML>& xml );
-			void read_section( const std::shared_ptr<UniXML>& xml, const std::string& sec );
-			void read_nodes( const std::shared_ptr<UniXML>& xml, const std::string& sec );
+        protected:
+            void build( const std::shared_ptr<UniXML>& xml );
+            void read_section( const std::shared_ptr<UniXML>& xml, const std::string& sec );
+            void read_nodes( const std::shared_ptr<UniXML>& xml, const std::string& sec );
 
-		private:
-			typedef std::unordered_map<uniset::ObjectId, uniset::ObjectInfo> MapObjects;
-			MapObjects omap;
+        private:
+            typedef std::unordered_map<uniset::ObjectId, uniset::ObjectInfo> MapObjects;
+            MapObjects omap;
 
-			typedef std::unordered_map<std::string, uniset::ObjectId> MapObjectKey;
-			MapObjectKey mok; // для обратного писка
-	};
-	// -------------------------------------------------------------------------
+            typedef std::unordered_map<std::string, uniset::ObjectId> MapObjectKey;
+            MapObjectKey mok; // для обратного писка
+    };
+    // -------------------------------------------------------------------------
 } // end of uniset namespace
 // -----------------------------------------------------------------------------------------
 #endif

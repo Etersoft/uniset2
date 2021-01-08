@@ -24,50 +24,50 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-	/*!
-	    Класс для обмена через 485 интерфейс СПЕЦИАЛЬНО
-	    для контроллеров фирмы Fastwel.
-	    Управляет приёмо/передатчиком. Удаляет "эхо"
-	    посылок переданных в канал.
+    /*!
+        Класс для обмена через 485 интерфейс СПЕЦИАЛЬНО
+        для контроллеров фирмы Fastwel.
+        Управляет приёмо/передатчиком. Удаляет "эхо"
+        посылок переданных в канал.
 
-	    kernel 2.6.12:
-	        module 8250_pnp
-	        gpio_num=5 dev: /dev/ttyS2
-	        gpio_num=6 dev: /dev/ttyS3
-	*/
-	class ComPort485F:
-		public ComPort
-	{
-		public:
+        kernel 2.6.12:
+            module 8250_pnp
+            gpio_num=5 dev: /dev/ttyS2
+            gpio_num=6 dev: /dev/ttyS3
+    */
+    class ComPort485F:
+        public ComPort
+    {
+        public:
 
-			ComPort485F( const std::string& comDevice, char gpio_num, bool tmit_ctrl = false );
+            ComPort485F( const std::string& comDevice, char gpio_num, bool tmit_ctrl = false );
 
-			virtual void sendByte( unsigned char x ) override;
-			virtual void setTimeout( timeout_t timeout ) override;
-			virtual ssize_t sendBlock( unsigned char* msg, size_t len ) override;
+            virtual void sendByte( unsigned char x ) override;
+            virtual void setTimeout( timeout_t timeout ) override;
+            virtual ssize_t sendBlock( unsigned char* msg, size_t len ) override;
 
-			virtual void cleanupChannel() override;
-			virtual void reopen() override;
+            virtual void cleanupChannel() override;
+            virtual void reopen() override;
 
-		protected:
+        protected:
 
-			virtual unsigned char m_receiveByte( bool wait ) override;
-			void save2queue( unsigned char* msg, size_t len, size_t bnum );
-			bool remove_echo( unsigned char tb[], ssize_t len );
-			void m_read( timeout_t tmsec );
+            virtual unsigned char m_receiveByte( bool wait ) override;
+            void save2queue( unsigned char* msg, size_t len, size_t bnum );
+            bool remove_echo( unsigned char tb[], ssize_t len );
+            void m_read( timeout_t tmsec );
 
-			/*! просто временный буфер для считывания данных */
-			unsigned char tbuf[ComPort::BufSize];
+            /*! просто временный буфер для считывания данных */
+            unsigned char tbuf[ComPort::BufSize];
 
-			std::queue<unsigned char> wq; /*!< хранилище байтов записанных в канал */
-			std::queue<unsigned char> rq; /*!< очередь для чтения */
+            std::queue<unsigned char> wq; /*!< хранилище байтов записанных в канал */
+            std::queue<unsigned char> rq; /*!< очередь для чтения */
 
-			char gpio_num;
-			bool tmit_ctrl_on;
-			PassiveTimer ptRecv;
-			timeout_t tout_msec = { 2000 };
-	};
-	// -------------------------------------------------------------------------
+            char gpio_num;
+            bool tmit_ctrl_on;
+            PassiveTimer ptRecv;
+            timeout_t tout_msec = { 2000 };
+    };
+    // -------------------------------------------------------------------------
 } // end of uniset namespace
 // --------------------------------------------------------------------------
 #endif // COMPORT_485F_H_

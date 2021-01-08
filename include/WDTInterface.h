@@ -27,19 +27,19 @@
 namespace uniset
 {
 
-	class WDTInterface
-	{
-		public:
-			WDTInterface( const std::string& dev );
-			~WDTInterface();
+    class WDTInterface
+    {
+        public:
+            WDTInterface( const std::string& dev );
+            ~WDTInterface();
 
-			bool ping();
-			bool stop();
+            bool ping();
+            bool stop();
 
-		protected:
-			const std::string dev;
-	};
-	// -------------------------------------------------------------------------
+        protected:
+            const std::string dev;
+    };
+    // -------------------------------------------------------------------------
 } // end of uniset namespace
 //--------------------------------------------------------------------------
 #endif

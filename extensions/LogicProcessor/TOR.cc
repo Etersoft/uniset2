@@ -21,69 +21,68 @@
 // -----------------------------------------------------------------------------
 namespace uniset
 {
-	// -------------------------------------------------------------------------
-	using namespace std;
-	using namespace uniset::extensions;
-	// -------------------------------------------------------------------------
-	TOR::TOR(ElementID id, size_t num, bool st):
-		Element(id),
-		myout(false)
-	{
-		if( num != 0 )
-		{
-			// создаём заданное количество входов
-			for( size_t i = 1; i <= num; i++ )
-			{
-				ins.emplace_front(i, st); // addInput(i,st);
+    // -------------------------------------------------------------------------
+    using namespace std;
+    using namespace uniset::extensions;
+    // -------------------------------------------------------------------------
+    TOR::TOR(ElementID id, size_t num, bool st):
+        Element(id),
+        myout(false)
+    {
+        if( num != 0 )
+        {
+            // создаём заданное количество входов
+            for( size_t i = 1; i <= num; i++ )
+            {
+                ins.emplace_front(i, st); // addInput(i,st);
 
-				if( st == true )
-					myout = true;
-			}
-		}
-	}
+                if( st == true )
+                    myout = true;
+            }
+        }
+    }
 
-	TOR::~TOR()
-	{
-	}
-	// -------------------------------------------------------------------------
-	void TOR::setIn( size_t num, long value )
-	{
-		//    cout << getType() << "(" << myid << "):  input " << num << " set " << state << endl;
+    TOR::~TOR()
+    {
+    }
+    // -------------------------------------------------------------------------
+    void TOR::setIn( size_t num, long value )
+    {
+        //    cout << getType() << "(" << myid << "):  input " << num << " set " << state << endl;
+        for( auto&& it : ins )
+        {
+            if( it.num == num )
+            {
+                if( it.value == value )
+                    return; // вход не менялся можно вообще прервать проверку
 
-		for( auto && it : ins )
-		{
-			if( it.num == num )
-			{
-				if( it.value == value )
-					return; // вход не менялся можно вообще прервать проверку
+                it.value = value;
+                break;
+            }
+        }
 
-				it.value = value;
-				break;
-			}
-		}
+        bool prev = myout;
+        bool brk = false; // признак досрочного завершения проверки
 
-		bool prev = myout;
-		bool brk = false; // признак досрочного завершения проверки
+        // проверяем изменился ли выход
+        // для тригера 'OR' проверка до первой единицы
+        for( auto&& it : ins )
+        {
+            if( it.value )
+            {
+                myout = true;
+                brk = true;
+                break;
+            }
+        }
 
-		// проверяем изменился ли выход
-		// для тригера 'OR' проверка до первой единицы
-		for( auto && it : ins )
-		{
-			if( it.value )
-			{
-				myout = true;
-				brk = true;
-				break;
-			}
-		}
+        if( !brk )
+            myout = false;
 
-		if( !brk )
-			myout = false;
+        dinfo << this << ": myout " << myout << endl;
 
-		dinfo << this << ": myout " << myout << endl;
-
-		if( prev != myout )
-			Element::setChildOut();
-	}
-	// -------------------------------------------------------------------------
+        if( prev != myout )
+            Element::setChildOut();
+    }
+    // -------------------------------------------------------------------------
 } // end of namespace uniset

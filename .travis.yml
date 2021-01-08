@@ -10,31 +10,12 @@ env:
 branches:
   only:
     - master
-    
+
 cache:
   apt: true
 
 matrix:
   include:
-    - os: linux
-      # dist: precise
-      compiler: gcc
-      addons:
-        apt:
-          sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-4.8']
-      env:
-        - MATRIX_EVAL="CXX=g++-4.8 CC=gcc-4.8"
-
-    - os: linux
-      compiler: gcc
-      addons:
-        apt:
-          sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-4.9']
-      env:
-        - MATRIX_EVAL="CXX=g++-4.9 CC=gcc-4.9"
-
     - os: linux
       compiler: gcc
       addons:
@@ -75,29 +56,11 @@ matrix:
       compiler: clang
       addons:
         apt:
-          sources: ['llvm-toolchain-trusty-5.0']
-          packages: ['clang-5.0']
-      env: 
-        - MATRIX_EVAL="CXX=clang++-5.0 CC=clang-5.0 COMPILER_NAME=clang"
-
-    - os: linux
-      compiler: clang
-      addons:
-        apt:
-          sources: ['llvm-toolchain-trusty-6.0', 'ubuntu-toolchain-r-test']
-          packages: ['clang-6.0']
-      env: 
-        - MATRIX_EVAL="CXX=clang++-6.0 CC=clang-6.0 COMPILER_NAME=clang"
-
-    - os: linux
-      compiler: clang
-      addons:
-        apt:
           sources: ['llvm-toolchain-trusty-7', 'ubuntu-toolchain-r-test']
           packages: ['clang-7']
       env: 
         - MATRIX_EVAL="CXX=clang++-7 CC=clang-7 COMPILER_NAME=clang"
-      
+
 # Disallowing packages: libcomedi-dev, libpoco-dev, libomniorb4-dev, libpqxx-dev, libev-dev
 # If you require these packages, please review the package approval process at: https://github.com/travis-ci/apt-package-whitelist#package-approval-process
 #sudo: false
@@ -154,4 +117,4 @@ addons:
     notification_email: lav@etersoft.ru
     build_command_prepend: "make clean"
     build_command: make -j4
-    branch_pattern: coverity_scan
+    branch_pattern: master

@@ -20,56 +20,56 @@
 // -----------------------------------------------------------------------------
 namespace uniset
 {
-	// -------------------------------------------------------------------------
-	using namespace std;
-	using namespace uniset::extensions;
-	// -------------------------------------------------------------------------
-	TAND::TAND(ElementID id, size_t num, bool st):
-		TOR(id, num, st)
-	{
-	}
+    // -------------------------------------------------------------------------
+    using namespace std;
+    using namespace uniset::extensions;
+    // -------------------------------------------------------------------------
+    TAND::TAND(ElementID id, size_t num, bool st):
+        TOR(id, num, st)
+    {
+    }
 
-	TAND::~TAND()
-	{
-	}
-	// -------------------------------------------------------------------------
-	void TAND::setIn( size_t num, long value )
-	{
-		//    cout << this << ": input " << num << " set " << state << endl;
-		for( auto && it : ins )
-		{
-			if( it.num == num )
-			{
-				if( it.value == value )
-					return; // вход не менялся можно вообще прервать проверку
+    TAND::~TAND()
+    {
+    }
+    // -------------------------------------------------------------------------
+    void TAND::setIn( size_t num, long value )
+    {
+        //    cout << this << ": input " << num << " set " << state << endl;
+        for( auto&& it : ins )
+        {
+            if( it.num == num )
+            {
+                if( it.value == value )
+                    return; // вход не менялся можно вообще прервать проверку
 
-				it.value = value;
-				break;
-			}
-		}
+                it.value = value;
+                break;
+            }
+        }
 
-		bool prev = myout;
-		bool brk = false; // признак досрочного завершения проверки
+        bool prev = myout;
+        bool brk = false; // признак досрочного завершения проверки
 
-		// проверяем изменился ли выход
-		// для тригера 'AND' проверка до первого 0
-		for( auto && it : ins )
-		{
-			if( !it.value )
-			{
-				myout = false;
-				brk = true;
-				break;
-			}
-		}
+        // проверяем изменился ли выход
+        // для тригера 'AND' проверка до первого 0
+        for( auto&& it : ins )
+        {
+            if( !it.value )
+            {
+                myout = false;
+                brk = true;
+                break;
+            }
+        }
 
-		if( !brk )
-			myout = true;
+        if( !brk )
+            myout = true;
 
-		dinfo << this << ": myout " << myout << endl;
+        dinfo << this << ": myout " << myout << endl;
 
-		if( prev != myout )
-			Element::setChildOut();
-	}
-	// -------------------------------------------------------------------------
+        if( prev != myout )
+            Element::setChildOut();
+    }
+    // -------------------------------------------------------------------------
 } // end of namespace uniset

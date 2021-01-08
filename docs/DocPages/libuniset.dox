@@ -1,9 +1,9 @@
 /*! \page page_Uniset Краткое описание библиотеки libuniset
 
-	- \ref pg_UniSet_Common
-	- \ref pg_Uniset_Processes
-	- \ref pg_UniSet_Network
-	- \ref pg_UniSet_Utilities
+- \ref pg_UniSet_Common
+- \ref pg_Uniset_Processes
+- \ref pg_UniSet_Network
+- \ref pg_UniSet_Utilities
 
 \section pg_UniSet_Common Общее описание libuniset
 

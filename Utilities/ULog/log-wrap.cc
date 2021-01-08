@@ -16,106 +16,106 @@ using namespace std;
 // -------------------------------------------------------------------------
 static void print_help()
 {
-	printf("\n");
-	printf("Usage: uniset2-logserver-wrap listen-addr listen-port PROGRAMM ARGS..\n");
-	printf("\n");
+    printf("\n");
+    printf("Usage: uniset2-logserver-wrap listen-addr listen-port PROGRAMM ARGS..\n");
+    printf("\n");
 }
 // --------------------------------------------------------------------------
 int main( int argc, char* argv[], char* envp[] )
 {
-	if( argc < 4 )
-	{
-		print_help();
-		return 1;
-	}
+    if( argc < 4 )
+    {
+        print_help();
+        return 1;
+    }
 
-	string addr(argv[1]);
-	int port = atoi(argv[2]);
+    string addr(argv[1]);
+    int port = atoi(argv[2]);
 
-	int pid;
-	int cp[2]; /* Child to parent pipe */
+    int pid;
+    int cp[2]; /* Child to parent pipe */
 
-	if( pipe(cp) < 0)
-	{
-		perror("Can't make pipe");
-		exit(1);
-	}
+    if( pipe(cp) < 0)
+    {
+        perror("Can't make pipe");
+        exit(1);
+    }
 
-	try
-	{
-		switch( pid = fork() )
-		{
-			case -1:
-			{
-				perror("Can't fork");
-				exit(1);
-			}
+    try
+    {
+        switch( pid = fork() )
+        {
+            case -1:
+            {
+                perror("Can't fork");
+                exit(1);
+            }
 
-			case 0:
-			{
-				/* Child. */
-				close(cp[0]);
+            case 0:
+            {
+                /* Child. */
+                close(cp[0]);
 
-				close( fileno(stdout) );
-				dup2(cp[1], fileno(stdout));
+                close( fileno(stdout) );
+                dup2(cp[1], fileno(stdout));
 
-				close( fileno(stderr) );
-				dup2(fileno(stdout), fileno(stderr));
+                close( fileno(stderr) );
+                dup2(fileno(stdout), fileno(stderr));
 
-				execvpe(argv[3], argv + 3, envp);
-				perror("No exec");
-				kill(getppid(), SIGQUIT);
-				exit(1);
-			}
-			break;
+                execvpe(argv[3], argv + 3, envp);
+                perror("No exec");
+                kill(getppid(), SIGQUIT);
+                exit(1);
+            }
+            break;
 
-			default:
-			{
-				/* Parent. */
-				close(cp[1]);
+            default:
+            {
+                /* Parent. */
+                close(cp[1]);
 
-				auto zlog = make_shared<DebugStream>();
-				zlog->addLevel(Debug::ANY);
+                auto zlog = make_shared<DebugStream>();
+                zlog->addLevel(Debug::ANY);
 
-				LogServer ls(zlog);
+                LogServer ls(zlog);
 
-				cout << "wrap: server " << addr << ":" << port << endl;
-				ls.async_run( addr, port );
+                cout << "wrap: server " << addr << ":" << port << endl;
+                ls.async_run( addr, port );
 
-				char buf[5000];
+                char buf[5000];
 
-				while( true )
-				{
-					ssize_t r = read(cp[0], &buf, sizeof(buf) - 1 );
+                while( true )
+                {
+                    ssize_t r = read(cp[0], &buf, sizeof(buf) - 1 );
 
-					if( r > 0 )
-					{
-						buf[r] = '\0';
-						zlog->any() << buf;
-					}
-				}
+                    if( r > 0 )
+                    {
+                        buf[r] = '\0';
+                        zlog->any() << buf;
+                    }
+                }
 
-				exit(0);
-			}
-			break;
-		}
-	}
-	catch( const SystemError& err )
-	{
-		cerr << "(logserver-wrap): " << err << endl;
-		return 1;
-	}
-	catch( const uniset::Exception& ex )
-	{
-		cerr << "(logserver-wrap): " << ex << endl;
-		return 1;
-	}
-	catch(...)
-	{
-		cerr << "(logserver-wrap): catch(...)" << endl;
-		return 1;
-	}
+                exit(0);
+            }
+            break;
+        }
+    }
+    catch( const SystemError& err )
+    {
+        cerr << "(logserver-wrap): " << err << endl;
+        return 1;
+    }
+    catch( const uniset::Exception& ex )
+    {
+        cerr << "(logserver-wrap): " << ex << endl;
+        return 1;
+    }
+    catch(...)
+    {
+        cerr << "(logserver-wrap): catch(...)" << endl;
+        return 1;
+    }
 
-	return 0;
+    return 0;
 }
 // --------------------------------------------------------------------------

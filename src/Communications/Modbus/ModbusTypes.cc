@@ -3167,14 +3167,15 @@ namespace uniset
 		func = fnSetDateTime;
 
 		time_t tm = time(0);
-		struct tm* tms = localtime(&tm);
-		hour     = tms->tm_hour;
-		min     = tms->tm_min;
-		sec     = tms->tm_sec;
-		day     = tms->tm_mday;
-		mon        = tms->tm_mon + 1;
-		year    = tms->tm_year;
-		century = ( tms->tm_year + 1900 >= 2000 ) ? 20 : 19;
+		std::tm tms;
+		gmtime_r(&tm, &tms);
+		hour     = tms.tm_hour;
+		min     = tms.tm_min;
+		sec     = tms.tm_sec;
+		day     = tms.tm_mday;
+		mon     = tms.tm_mon + 1;
+		year    = tms.tm_year;
+		century = ( tms.tm_year + 1900 >= 2000 ) ? 20 : 19;
 	}
 	// -------------------------------------------------------------------------
 	SetDateTimeRetMessage::SetDateTimeRetMessage( const SetDateTimeMessage& query )

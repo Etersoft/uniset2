@@ -29,214 +29,214 @@
 //----------------------------------------------------------------------------------------
 namespace uniset
 {
-	/*! \class ThreadCreator
-	 *    Шаблон для создания потоков с указанием функции вызова.
-	 * Пример использования:
-	 *
-	    \code
-	        class MyClass
-	        {
-	            public:
-	                MyClass();
-	                ~MyClass();
+    /*! \class ThreadCreator
+     *    Шаблон для создания потоков с указанием функции вызова.
+     * Пример использования:
+     *
+        \code
+            class MyClass
+            {
+                public:
+                    MyClass();
+                    ~MyClass();
 
-	                execute();
+                    execute();
 
-	            protected:
-	                void thread();
+                protected:
+                    void thread();
 
-	            private:
-	                ThreadCreator<MyClass>* thr;
-	        };
+                private:
+                    ThreadCreator<MyClass>* thr;
+            };
 
-	        MyClass::MyClass()
-	        {
-	            thr = new ThreadCreator<MyClass>(this, &MyClass::thread);
-	        }
-	        MyClass::~MyClass()
-	        {
-	            delete thr;
-	        }
+            MyClass::MyClass()
+            {
+                thr = new ThreadCreator<MyClass>(this, &MyClass::thread);
+            }
+            MyClass::~MyClass()
+            {
+                delete thr;
+            }
 
-	        void MyClass::thread()
-	        {
-	            while(active)
-	            {
-	                //что-то делать
-	            }
-	        }
+            void MyClass::thread()
+            {
+                while(active)
+                {
+                    //что-то делать
+                }
+            }
 
-	        void MyClass::execute()
-	        {
-	            // создаем поток
-	            thr->start();
+            void MyClass::execute()
+            {
+                // создаем поток
+                thr->start();
 
-	            // делаем что-то еще
-	        }
+                // делаем что-то еще
+            }
 
-	        main()
-	        {
-	            MyClass* mc = new MyClass();
-	            mc->execute();
-	        }
-	    \endcode
-	 *
-	*/
-	//----------------------------------------------------------------------------------------
-	template<class ThreadMaster>
-	class ThreadCreator:
-		public Poco::Runnable
-	{
-		public:
+            main()
+            {
+                MyClass* mc = new MyClass();
+                mc->execute();
+            }
+        \endcode
+     *
+    */
+    //----------------------------------------------------------------------------------------
+    template<class ThreadMaster>
+    class ThreadCreator:
+        public Poco::Runnable
+    {
+        public:
 
-			/*! прототип функции вызова
-			 * \todo use std::function ?
-			 */
-			typedef void(ThreadMaster::* Action)(void);
+            /*! прототип функции вызова
+             * \todo use std::function ?
+             */
+            typedef void(ThreadMaster::* Action)(void);
 
-			ThreadCreator( ThreadMaster* m, Action a );
-			virtual ~ThreadCreator();
+            ThreadCreator( ThreadMaster* m, Action a );
+            virtual ~ThreadCreator();
 
-			inline Poco::Thread::TID getTID() const
-			{
-				return thr.tid();
-			}
+            inline Poco::Thread::TID getTID() const
+            {
+                return thr.tid();
+            }
 
-			/*! \return 0 - sucess */
-			void setPriority( Poco::Thread::Priority prior );
+            /*! \return 0 - sucess */
+            void setPriority( Poco::Thread::Priority prior );
 
-			/*! \return < 0 - fail */
-			Poco::Thread::Priority getPriority() const;
+            /*! \return < 0 - fail */
+            Poco::Thread::Priority getPriority() const;
 
-			void stop();
-			void start();
+            void stop();
+            void start();
 
-			void sleep( long milliseconds );
+            void sleep( long milliseconds );
 
-			inline bool isRunning() const
-			{
-				return thr.isRunning();
-			}
+            inline bool isRunning() const
+            {
+                return thr.isRunning();
+            }
 
-			inline void join()
-			{
-				thr.join();
-			}
+            inline void join()
+            {
+                thr.join();
+            }
 
-			inline void setFinalAction( ThreadMaster* m, Action a )
-			{
-				finm = m;
-				finact = a;
-			}
+            inline void setFinalAction( ThreadMaster* m, Action a )
+            {
+                finm = m;
+                finact = a;
+            }
 
-			inline void setInitialAction( ThreadMaster* m, Action a )
-			{
-				initm = m;
-				initact = a;
-			}
+            inline void setInitialAction( ThreadMaster* m, Action a )
+            {
+                initm = m;
+                initact = a;
+            }
 
-		protected:
-			virtual void run();
-			virtual void final()
-			{
-				if( finm )
-					(finm->*finact)();
+        protected:
+            virtual void run();
+            virtual void final()
+            {
+                if( finm )
+                    (finm->*finact)();
 
-				//delete this;
-			}
+                //delete this;
+            }
 
-			virtual void initial()
-			{
-				if( initm )
-					(initm->*initact)();
-			}
+            virtual void initial()
+            {
+                if( initm )
+                    (initm->*initact)();
+            }
 
-			virtual void terminate() {}
+            virtual void terminate() {}
 
-		private:
-			ThreadCreator();
+        private:
+            ThreadCreator();
 
-			ThreadMaster* m = { nullptr };
-			Action act;
+            ThreadMaster* m = { nullptr };
+            Action act;
 
-			ThreadMaster* finm = { nullptr };
-			Action finact;
+            ThreadMaster* finm = { nullptr };
+            Action finact;
 
-			ThreadMaster* initm = { nullptr };
-			Action initact;
+            ThreadMaster* initm = { nullptr };
+            Action initact;
 
-			Poco::Thread thr;
-	};
+            Poco::Thread thr;
+    };
 
-	//----------------------------------------------------------------------------------------
-	template <class ThreadMaster>
-	ThreadCreator<ThreadMaster>::ThreadCreator( ThreadMaster* m, Action a ):
-		m(m),
-		act(a),
-		finm(nullptr),
-		finact(nullptr),
-		initm(nullptr),
-		initact(nullptr)
-	{
-	}
-	//----------------------------------------------------------------------------------------
-	template <class ThreadMaster>
-	void ThreadCreator<ThreadMaster>::run()
-	{
-		initial();
+    //----------------------------------------------------------------------------------------
+    template <class ThreadMaster>
+    ThreadCreator<ThreadMaster>::ThreadCreator( ThreadMaster* m, Action a ):
+        m(m),
+        act(a),
+        finm(nullptr),
+        finact(nullptr),
+        initm(nullptr),
+        initact(nullptr)
+    {
+    }
+    //----------------------------------------------------------------------------------------
+    template <class ThreadMaster>
+    void ThreadCreator<ThreadMaster>::run()
+    {
+        initial();
 
-		if( m )
-			(m->*act)();
+        if( m )
+            (m->*act)();
 
-		final();
-	}
-	//----------------------------------------------------------------------------------------
-	template <class ThreadMaster>
-	void ThreadCreator<ThreadMaster>::stop()
-	{
-		terminate();
-	}
-	//----------------------------------------------------------------------------------------
-	template <class ThreadMaster>
-	void ThreadCreator<ThreadMaster>::start()
-	{
-		thr.start( *this );
-	}
-	//----------------------------------------------------------------------------------------
-	template <class ThreadMaster>
-	void ThreadCreator<ThreadMaster>::sleep( long milliseconds )
-	{
-		thr.sleep(milliseconds);
-	}
-	//----------------------------------------------------------------------------------------
-	template <class ThreadMaster>
-	ThreadCreator<ThreadMaster>::ThreadCreator():
-		m(0),
-		act(0),
-		finm(0),
-		finact(0),
-		initm(0),
-		initact(0)
-	{
-	}
-	//----------------------------------------------------------------------------------------
-	template <class ThreadMaster>
-	ThreadCreator<ThreadMaster>::~ThreadCreator()
-	{
-	}
-	//----------------------------------------------------------------------------------------
-	template <class ThreadMaster>
-	void ThreadCreator<ThreadMaster>::setPriority( Poco::Thread::Priority prior )
-	{
-		return thr.setPriority(prior);
-	}
-	//----------------------------------------------------------------------------------------
-	template <class ThreadMaster>
-	Poco::Thread::Priority ThreadCreator<ThreadMaster>::getPriority() const
-	{
-		return thr.getPriority();
-	}
-	// -------------------------------------------------------------------------
+        final();
+    }
+    //----------------------------------------------------------------------------------------
+    template <class ThreadMaster>
+    void ThreadCreator<ThreadMaster>::stop()
+    {
+        terminate();
+    }
+    //----------------------------------------------------------------------------------------
+    template <class ThreadMaster>
+    void ThreadCreator<ThreadMaster>::start()
+    {
+        thr.start( *this );
+    }
+    //----------------------------------------------------------------------------------------
+    template <class ThreadMaster>
+    void ThreadCreator<ThreadMaster>::sleep( long milliseconds )
+    {
+        thr.sleep(milliseconds);
+    }
+    //----------------------------------------------------------------------------------------
+    template <class ThreadMaster>
+    ThreadCreator<ThreadMaster>::ThreadCreator():
+        m(0),
+        act(0),
+        finm(0),
+        finact(0),
+        initm(0),
+        initact(0)
+    {
+    }
+    //----------------------------------------------------------------------------------------
+    template <class ThreadMaster>
+    ThreadCreator<ThreadMaster>::~ThreadCreator()
+    {
+    }
+    //----------------------------------------------------------------------------------------
+    template <class ThreadMaster>
+    void ThreadCreator<ThreadMaster>::setPriority( Poco::Thread::Priority prior )
+    {
+        return thr.setPriority(prior);
+    }
+    //----------------------------------------------------------------------------------------
+    template <class ThreadMaster>
+    Poco::Thread::Priority ThreadCreator<ThreadMaster>::getPriority() const
+    {
+        return thr.getPriority();
+    }
+    // -------------------------------------------------------------------------
 } // end of uniset namespace
 //----------------------------------------------------------------------------------------
 #endif // ThreadCreator_h_

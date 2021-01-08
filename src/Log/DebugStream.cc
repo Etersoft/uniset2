@@ -7,30 +7,17 @@
 
 // (c) 2002 adapted for UniSet by Lav, GNU LGPL license
 
-//#define TEST_DEBUGSTREAM
-
-
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
 //#include "DebugStream.h"
 #include "Debug.h"
 #include "Mutex.h"
 
-//�Since the current C++ lib in egcs does not have a standard implementation
-// of basic_streambuf and basic_filebuf we don't have to include this
-// header.
-//#define MODERN_STL_STREAMS
-#ifdef MODERN_STL_STREAMS
-#include <fstream>
-#endif
 #include <iostream>
 #include <sstream>
 #include <iomanip>
 #include <time.h>
 #include <iomanip>
 #include <ctime>
+#include <algorithm>
 #include "DebugExtBuf.h"
 #include "UniSetTypes.h"
 
@@ -44,12 +31,13 @@ using std::cerr;
 using std::ios;
 //--------------------------------------------------------------------------
 /// Constructor, sets the debug level to t.
-DebugStream::DebugStream(Debug::type t)
+DebugStream::DebugStream(Debug::type t, Debug::verbosity v)
 	: /* ostream(new debugbuf(cerr.rdbuf())),*/
 	  dt(t), nullstream(new nullbuf), internal(new debugstream_internal),
 	  show_datetime(true), show_logtype(true),
 	  fname(""),
-	  logname("")
+	  logname(""),
+	  verb(v)
 {
 	delete rdbuf(new teebuf(cerr.rdbuf(), &internal->sbuf));
 	internal->sbuf.signal_overflow().connect(sigc::mem_fun(*this, &DebugStream::sbuf_overflow));
@@ -98,6 +86,7 @@ const DebugStream& DebugStream::operator=( const DebugStream& r )
 		return *this;
 
 	dt = r.dt;
+	verb = r.verb;
 	show_datetime = r.show_datetime;
 	show_logtype = r.show_logtype;
 	show_msec = r.show_msec;
@@ -138,7 +127,7 @@ void DebugStream::logFile( const std::string& f, bool truncate )
 		if( onScreen )
 		{
 			delete rdbuf(new threebuf(cerr.rdbuf(),
-							  &internal->fbuf, &internal->sbuf));
+									  &internal->fbuf, &internal->sbuf));
 		}
 		else
 		{
@@ -159,19 +148,19 @@ void DebugStream::enableOnScreen()
 {
 	onScreen = true;
 	// reopen streams
-	logFile(fname,false);
+	logFile(fname, false);
 }
 //--------------------------------------------------------------------------
 void DebugStream::disableOnScreen()
 {
 	onScreen = false;
 	// reopen streams
-	logFile(fname,false);
+	logFile(fname, false);
 }
 //--------------------------------------------------------------------------
 std::ostream& DebugStream::debug(Debug::type t) noexcept
 {
-	if(dt & t)
+	if( (dt & t) && (vv <= verb) )
 	{
 		uniset::ios_fmt_restorer ifs(*this);
 
@@ -181,6 +170,19 @@ std::ostream& DebugStream::debug(Debug::type t) noexcept
 		if( show_logtype )
 			*this << "(" << std::setfill(' ') << std::setw(6) << t << "):  "; // "):\t";
 
+		if( show_labels )
+		{
+			for( const auto& l : labels )
+			{
+				*this << "[";
+
+				if( !hide_label_key )
+					*this << l.first << "=";
+
+				*this << l.second << "]";
+			}
+		}
+
 		return *this;
 	}
 
@@ -189,20 +191,27 @@ std::ostream& DebugStream::debug(Debug::type t) noexcept
 //--------------------------------------------------------------------------
 std::ostream& DebugStream::operator()(Debug::type t) noexcept
 {
-	if(dt & t)
+	if( (dt & t) && (vv <= verb) )
 		return *this;
 
 	return nullstream;
 }
 //--------------------------------------------------------------------------
+DebugStream& DebugStream::V( Debug::verbosity v ) noexcept
+{
+	vv = v;
+	return *this;
+}
+//--------------------------------------------------------------------------
 std::ostream& DebugStream::printDate(Debug::type t, char brk) noexcept
 {
-	if(dt && t)
+	if( (dt & t) && (vv <= verb) )
 	{
 		uniset::ios_fmt_restorer ifs(*this);
 
 		std::time_t tv = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-		std::tm tms = *std::localtime(&tv);
+		std::tm tms;
+		gmtime_r(&tv, &tms);
 
 #if __GNUC__ >= 5
 		std::ostringstream fmt;
@@ -220,12 +229,13 @@ std::ostream& DebugStream::printDate(Debug::type t, char brk) noexcept
 //--------------------------------------------------------------------------
 std::ostream& DebugStream::printTime(Debug::type t, char brk) noexcept
 {
-	if(dt && t)
+	if( (dt & t) && (vv <= verb) )
 	{
 		uniset::ios_fmt_restorer ifs(*this);
 
 		timespec tv = uniset::now_to_timespec(); // gettimeofday(tv,0);
-		std::tm tms = *std::localtime(&tv.tv_sec);
+		std::tm tms;
+		gmtime_r(&tv.tv_sec, &tms);
 
 #if __GNUC__ >= 5
 		std::ostringstream fmt;
@@ -250,12 +260,13 @@ std::ostream& DebugStream::printTime(Debug::type t, char brk) noexcept
 //--------------------------------------------------------------------------
 std::ostream& DebugStream::printDateTime(Debug::type t) noexcept
 {
-	if(dt & t)
+	if( (dt & t) && (vv <= verb) )
 	{
 		uniset::ios_fmt_restorer ifs(*this);
 
 		timespec tv = uniset::now_to_timespec(); // gettimeofday(tv,0);
-		std::tm tms = *std::localtime(&tv.tv_sec);
+		std::tm tms;
+		gmtime_r(&tv.tv_sec, &tms);
 
 #if __GNUC__ >= 5
 		*this << std::put_time(&tms, "%Od/%Om/%Y %OH:%OM:%OS");
@@ -293,100 +304,35 @@ DebugStream::StreamEvent_Signal DebugStream::signal_stream_event()
 	return s_stream;
 }
 //--------------------------------------------------------------------------
-//--------------------------------------------------------------------------
-//--------------------------------------------------------------------------
-#ifdef TEST_DEBUGSTREAM
-
-// Example debug stream
-DebugStream debugstream;
-
-int main(int, char**)
+void DebugStream::addLabel( const std::string& key, const std::string& value ) noexcept
 {
-	/**
-	   I have been running some tests on this to see how much overhead
-	   this kind of permanent debug code has. My conclusion is: not
-	   much. In all, but the most time critical code, this will have
-	   close to no impact at all.
-
-	   In the tests that I have run the use of
-	   if (debugstream.debugging(DebugStream::INFO))
-	   debugstream << "some debug\n";
-	   has close to no overhead when the debug level is not
-	   DebugStream::INFO.
-
-	   The overhead for
-	   debugstream.debug(DebugStream::INFO) << "some debug\n";
-	   is also very small when the debug level is not
-	   DebugStream::INFO. However the overhead for this will increase
-	   if complex debugging information is output.
-
-	   The overhead when the debug level is DebugStream::INFO can be
-	   significant, but since we then are running in debug mode it is
-	   of no concern.
-
-	   Why should we use this instead of the class Error that we already
-	   have? First of all it uses C++ iostream and constructs, secondly
-	   it will be a lot easier to output the debug info that we need
-	   without a lot of manual conversions, thirdly we can now use
-	   iomanipulators and the complete iostream formatting functions.
-	   pluss it will work for all types that have a operator<<
-	   defined, and can be used in functors that take a ostream & as
-	   parameter. And there should be less need for temporary objects.
-	   And one nice bonus is that we get a log file almost for
-	   free.
-
-	   Some of the names are of course open to modifications. I will try
-	   to use the names we already use in LyX.
-	*/
-	// Just a few simple debugs to show how it can work.
-	debugstream << "Debug level set to Debug::NONE\n";
-
-	if (debugstream.debugging())
+	auto it = std::find_if(labels.begin(), labels.end(), [key] (const Label & l)
 	{
-		debugstream << "Something must be debugged\n";
-	}
+		return l.first == key;
+	} );
 
-	debugstream.debug(Debug::WARN) << "more debug(WARN)\n";
-	debugstream.debug(Debug::INFO) << "even more debug(INFO)\n";
-	debugstream.debug(Debug::CRIT) << "even more debug(CRIT)\n";
-	debugstream.level(Debug::value("INFO"));
-	debugstream << "Setting debug level to Debug::INFO\n";
-
-	if (debugstream.debugging())
-	{
-		debugstream << "Something must be debugged\n";
-	}
-
-	debugstream.debug(Debug::WARN) << "more debug(WARN)\n";
-	debugstream.debug(Debug::INFO) << "even more debug(INFO)\n";
-	debugstream.debug(Debug::CRIT) << "even more debug(CRIT)\n";
-	debugstream.addLevel(Debug::type(Debug::CRIT |
-									 Debug::WARN));
-	debugstream << "Adding Debug::CRIT and Debug::WARN\n";
-	debugstream[Debug::WARN] << "more debug(WARN)\n";
-	debugstream[Debug::INFO] << "even more debug(INFO)\n";
-	debugstream[Debug::CRIT] << "even more debug(CRIT)\n";
-	debugstream.delLevel(Debug::INFO);
-	debugstream << "Removing Debug::INFO\n";
-	debugstream[Debug::WARN] << "more debug(WARN)\n";
-	debugstream[Debug::INFO] << "even more debug(INFO)\n";
-	debugstream[Debug::CRIT] << "even more debug(CRIT)\n";
-	debugstream.logFile("logfile");
-	debugstream << "Setting logfile to \"logfile\"\n";
-	debugstream << "Value: " << 123 << " " << "12\n";
-	int i = 0;
-	int* p = new int;
-	// note: the (void*) is needed on g++ 2.7.x since it does not
-	// support partial specialization. In egcs this should not be
-	// needed.
-	debugstream << "automatic " << &i
-				<< ", free store " << p << endl;
-	delete p;
-	/*
-	for (int j = 0; j < 200000; ++j) {
-	    DebugStream tmp;
-	    tmp << "Test" << endl;
-	}
-	*/
+	if( it == labels.end() )
+		labels.emplace_back(key, value);
 }
-#endif
+//--------------------------------------------------------------------------
+void DebugStream::delLabel( const std::string& key ) noexcept
+{
+	auto it = std::find_if(labels.begin(), labels.end(), [key] (const Label & l)
+	{
+		return l.first == key;
+	} );
+
+	if( it != labels.end() )
+		labels.erase(it);
+}
+//--------------------------------------------------------------------------
+void DebugStream::cleanupLabels() noexcept
+{
+	labels.clear();
+}
+//--------------------------------------------------------------------------
+std::vector<DebugStream::Label> DebugStream::getLabels() noexcept
+{
+	return labels;
+}
+//--------------------------------------------------------------------------

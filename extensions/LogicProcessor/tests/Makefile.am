@@ -1,3 +1,4 @@
+if ENABLE_LOGICPROC
 if HAVE_TESTS
 
 #check_PROGRAMS = tests
@@ -26,4 +27,5 @@ clean-local:
 
 include $(top_builddir)/include.mk
 
+endif
 endif

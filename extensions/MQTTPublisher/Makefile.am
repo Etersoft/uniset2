@@ -1,7 +1,4 @@
-if DISABLE_MQTT
-
-else
-
+if ENABLE_MQTT
 bin_PROGRAMS = @PACKAGE@-mqttpublisher
 
 MQTT_VER=@LIBVER@

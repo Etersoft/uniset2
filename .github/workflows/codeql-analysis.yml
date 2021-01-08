@@ -14,10 +14,10 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ master, github-actions ]
+    branches: [ master ]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ master ]
+    branches: [ "*" ]
   schedule:
     - cron: '44 6 * * 4'
 
@@ -46,7 +46,9 @@ jobs:
 
       - name: install packages
         run: |
-          sudo apt-get install libcomedi-dev libpoco-dev libmysqlclient-dev libomniorb4-dev libev-dev omniidl xsltproc libpqxx3-dev librrd-dev libsigc++-2.0-dev libsqlite3-dev python-dev libmosquittopp-dev
+          sudo apt-get install libcomedi-dev libpoco-dev libmysqlclient-dev libomniorb4-dev \
+          libev-dev omniidl xsltproc libpqxx3-dev librrd-dev libsigc++-2.0-dev \
+          libsqlite3-dev python-dev libmosquittopp-dev libpoco-dev swig
           wget https://github.com/catchorg/Catch2/releases/download/v1.11.0/catch.hpp -O include/catch.hpp
 
       - name: build
@@ -55,7 +57,7 @@ jobs:
          # due broken comedi
          export CXXFLAGS="$CXXFLAGS -Wl,--unresolved-symbols=ignore-in-shared-libs"
          autoreconf -fiv
-         ./configure --enable-mysql --enable-sqlite --enable-rrd --enable-io --disable-python --disable-mqtt --disable-pgsql --disable-api --disable-netdata --disable-logdb
+         ./configure --disable-python --disable-netdata
          make
 
       - name: Perform CodeQL Analysis

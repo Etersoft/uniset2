@@ -37,7 +37,7 @@ using namespace uniset;
 using namespace std;
 // ------------------------------------------------------------------------------------------
 // объект-функция для посылки сообщения менеджеру
-class MPush: public unary_function< const std::shared_ptr<uniset::UniSetManager>& , bool>
+class MPush: public unary_function< const std::shared_ptr<uniset::UniSetManager>&, bool>
 {
 	public:
 		explicit MPush(const uniset::TransportMessage& msg): msg(msg) {}
@@ -63,7 +63,7 @@ class MPush: public unary_function< const std::shared_ptr<uniset::UniSetManager>
 };
 
 // объект-функция для посылки сообщения объекту
-class OPush: public unary_function< const std::shared_ptr<uniset::UniSetObject>& , bool>
+class OPush: public unary_function< const std::shared_ptr<uniset::UniSetObject>&, bool>
 {
 	public:
 		explicit OPush(const uniset::TransportMessage& msg): msg(msg) {}
@@ -464,7 +464,7 @@ const std::shared_ptr<UniSetObject> UniSetManager::findObject( const string& nam
 {
 	uniset_rwmutex_rlock lock(olistMutex);
 
-	for( auto && o : olist )
+	for( auto&& o : olist )
 	{
 		if( o->getName() == name )
 			return o;
@@ -477,7 +477,7 @@ const std::shared_ptr<UniSetManager> UniSetManager::findManager( const string& n
 {
 	uniset_rwmutex_rlock lock(mlistMutex);
 
-	for( auto && m : mlist )
+	for( auto&& m : mlist )
 	{
 		if( m->getName() == name )
 			return m;
