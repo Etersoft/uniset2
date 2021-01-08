@@ -40,7 +40,7 @@ HttpResolver::HttpResolver( const string& name, int argc, const char* const* arg
 {
     rlog = make_shared<DebugStream>();
 
-    auto logLevels = uniset::getArgParam("--" + prefix + "log-add-levels", argc, argv, "");
+    auto logLevels = uniset::getArgParam("--" + prefix + "log-add-levels", argc, argv, "crit,warn");
 
     if( !logLevels.empty() )
         rlog->addLevel( Debug::value(logLevels) );
@@ -86,11 +86,11 @@ HttpResolver::HttpResolver( const string& name, int argc, const char* const* arg
 
 
     iorfile = make_shared<IORFile>(dirIt.getProp("name"));
-    rinfo << myname << "(init): iot directory: " << dirIt.getProp("name") << endl;
+    rinfo << myname << "(init): IOR directory: " << dirIt.getProp("name") << endl;
 
-    httpHost = uniset::getArgParam("--" + prefix + "http-host", argc, argv, it.getProp2("host", "localhost"));
-    httpPort = uniset::getArgInt("--" + prefix + "http-port", argc, argv, it.getProp2("port", "8008"));
-    httpCORS_allow = uniset::getArgParam("--" + prefix + "httpresolver-cors-allow", argc, argv, it.getProp2("cors", httpCORS_allow));
+    httpHost = uniset::getArgParam("--" + prefix + "host", argc, argv, it.getProp2("host", "0.0.0.0"));
+    httpPort = uniset::getArgInt("--" + prefix + "port", argc, argv, it.getProp2("port", "8008"));
+    httpCORS_allow = uniset::getArgParam("--" + prefix + "cors-allow", argc, argv, it.getProp2("cors", httpCORS_allow));
 
     rinfo << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
     Poco::Net::SocketAddress sa(httpHost, httpPort);
@@ -99,8 +99,8 @@ HttpResolver::HttpResolver( const string& name, int argc, const char* const* arg
     {
         Poco::Net::HTTPServerParams* httpParams = new Poco::Net::HTTPServerParams;
 
-        int maxQ = uniset::getArgPInt("--" + prefix + "http-max-queued", argc, argv, it.getProp("httpMaxQueued"), 100);
-        int maxT = uniset::getArgPInt("--" + prefix + "http-max-threads", argc, argv, it.getProp("httpMaxThreads"), 3);
+        int maxQ = uniset::getArgPInt("--" + prefix + "max-queued", argc, argv, it.getProp("maxQueued"), 100);
+        int maxT = uniset::getArgPInt("--" + prefix + "max-threads", argc, argv, it.getProp("maxThreads"), 3);
 
         httpParams->setMaxQueued(maxQ);
         httpParams->setMaxThreads(maxT);
@@ -135,15 +135,12 @@ std::shared_ptr<HttpResolver> HttpResolver::init_resolver( int argc, const char*
 // -----------------------------------------------------------------------------
 void HttpResolver::help_print()
 {
-    cout << "Default: prefix='logdb'" << endl;
-    cout << "--prefix-single-confile conf.xml     - Отдельный конфигурационный файл (не требующий структуры uniset)" << endl;
-    cout << "--prefix-name name                   - Имя. Для поиска настроечной секции в configure.xml" << endl;
-    cout << "http: " << endl;
-    cout << "--prefix-http-host ip                - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
-    cout << "--prefix-http-port num               - Порт на котором принимать запросы. По умолчанию: 8008" << endl;
-    cout << "--prefix-http-max-queued num         - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
-    cout << "--prefix-http-max-threads num        - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
-    cout << "--prefix-http-cors-allow addr        - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
+    cout << "Default: prefix='httpresolver'" << endl;
+    cout << "--prefix-host ip          - IP на котором слушает http сервер. По умолчанию: 0.0.0.0" << endl;
+    cout << "--prefix-port num         - Порт на котором принимать запросы. По умолчанию: 8008" << endl;
+    cout << "--prefix-max-queued num   - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
+    cout << "--prefix-max-threads num  - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
+    cout << "--prefix-cors-allow addr  - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
 }
 // -----------------------------------------------------------------------------
 void HttpResolver::run()
