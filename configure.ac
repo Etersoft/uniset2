@@ -3,10 +3,10 @@
 # See doc: http://www.gnu.org/software/hello/manual/autoconf/Generic-Programs.html
 
 # AC_PREREQ(2.59)
-AC_INIT([uniset2], [2.8.2], pv@etersoft.ru)
+AC_INIT([uniset2], [2.9.1], pv@etersoft.ru)
 AM_INIT_AUTOMAKE
 
-LIBVER=10:2:8
+LIBVER=11:1:9
 AC_SUBST(LIBVER)
 
 # AC_CONFIG_MACRO_DIR([m4])
