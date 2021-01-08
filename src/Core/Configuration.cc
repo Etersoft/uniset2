@@ -53,23 +53,21 @@ static ostream& print_help( ostream& os, int width, const string& cmd,
 	return os << info.str();
 }
 
-ostream& uniset::Configuration::help(ostream& os)
+std::string uniset::Configuration::help()
 {
-	os << "\n UniSet Configure command: " << endl;
-	print_help(os, 20, "--confile", "полный путь до файла конфигурации\n");
-	os << "\n Debug command:\n";
-	print_help(os, 25, "  [debname]", "имя DebugStream указанное в конфигурационном файле\n");
-	print_help(os, 25, "--[debname]-no-debug", "отключение логов\n");
-	print_help(os, 25, "--[debname]-logfile", "перенаправление лога в файл\n");
-	print_help(os, 25, "--[debname]-add-levels", "добавить уровень вывода логов\n");
-	print_help(os, 25, "--[debname]-del-levels", "удалить уровень вывода логов\n");
-	print_help(os, 25, "--[debname]-show-microseconds", "Выводить время с микросекундами\n");
-	print_help(os, 25, "--[debname]-show-milliseconds", "Выводить время с миллисекундами\n");
-	print_help(os, 25, "--uniport num", "использовать заданный порт (переопределяет 'defaultport', заданный в конф. файле в разделе <nodes>)\n");
+	ostringstream os;
+	print_help(os, 25, "--confile", "полный путь до файла конфигурации\n");
+	print_help(os, 25, "--uniport num", "использовать заданный порт (переопределяет 'port заданный в конф. файле в разделе <nodes><node.. port=''>)\n");
 	print_help(os, 25, "--localIOR {1,0}", "использовать локальные файлы для получения IOR (т.е. не использовать omniNames). Переопределяет параметр в конфигурационном файле.\n");
-	print_help(os, 25, "--transientIOR {1,0}", "использовать генерируемые IOR(не постоянные). Переопределяет параметр в конфигурационном файле. Default=1\n");
-	return os << "\nПример использования:\t myUniSetProgram "
-		   << "--ulog-add-levels level1,info,system,warn --ulog-logfile myprogrpam.log\n\n";
+	print_help(os, 25, "--transientIOR {1,0}", "использовать генерируемые IOR(не постоянные). Переопределяет параметр в конфигурационном файле. Default=0\n");
+	os << "\ndebug logs:\n";
+	print_help(os, 25, "--ulog-add-levels", "добавить уровень вывода логов\n");
+	print_help(os, 25, "--ulog-del-levels", "удалить уровень вывода логов\n");
+	print_help(os, 25, "--ulog-show-microseconds", "Выводить время с микросекундами\n");
+	print_help(os, 25, "--ulog-show-milliseconds", "Выводить время с миллисекундами\n");
+	print_help(os, 25, "--ulog-no-debug", "отключение логов\n");
+	print_help(os, 25, "--ulog-logfile", "перенаправление лога в файл\n");
+	return os.str();
 }
 // -------------------------------------------------------------------------
 namespace uniset

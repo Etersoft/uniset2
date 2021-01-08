@@ -47,7 +47,7 @@ namespace uniset
         public:
             virtual ~Configuration();
 
-            static std::ostream& help(std::ostream& os);
+            static std::string help();
 
             /*! конфигурирование xml-файлом ( предпочтительный способ )    */
             Configuration( int argc, const char* const* argv, const std::string& xmlfile = "" );

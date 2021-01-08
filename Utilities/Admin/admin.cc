@@ -54,9 +54,10 @@ static struct option longopts[] =
     { "apiRequest", required_argument, 0, 'a' },
     { "verbose", no_argument, 0, 'v' },
     { "quiet", no_argument, 0, 'q' },
-    { "csv", required_argument, 0, 'z' },
+    { "csv", required_argument, 0, 'k' },
     { "sendText", required_argument, 0, 'm' },
-    { "freezeValue", required_argument, 0, 'n' },
+    { "freeze", required_argument, 0, 'z' },
+    { "unfreeze", required_argument, 0, 'n' },
     { NULL, 0, 0, 0 }
 };
 
@@ -98,6 +99,7 @@ static void short_usage()
 static void usage()
 {
     cout << "\nUsage: \n\tuniset-admin [--confile configure.xml] --command [arg]\n";
+	cout << endl;
     cout << "commands list:\n";
     cout << "-----------------------------------------\n";
     print_help(24, "-с|--confile file.xml ", "Используемый конфигурационный файл\n");
@@ -112,7 +114,7 @@ static void usage()
     cout << endl;
     print_help(36, "-r|--configure [FullObjName] ", "Посылка SystemMessage::ReConfiguration всем объектам (процессам) или заданному по имени (FullObjName).\n");
     print_help(36, "-l|--logrotate [FullObjName] ", "Посылка SystemMessage::LogRotate всем объектам (процессам) или заданному по имени (FullObjName).\n");
-    print_help(36, "-p|--oinfo id1@node1,id2@node2,id3,... [userparam]", "Получить информацию об объектах (SimpleInfo). \n userparam - необязательный параметр передаваемый в getInfo() каждому объекту\n");
+    print_help(36, "-p|--oinfo id1@node1,id2@node2,id3,... [userparam]", "Получить информацию об объектах (SimpleInfo). \n");
     print_help(36, "", "userparam - необязательный параметр передаваемый в getInfo() каждому объекту\n");
     cout << endl;
     print_help(36, "-a|--apiRequest id1@node1,id2@node2,id3,... query", "Вызов REST API для каждого объекта\n");
@@ -126,9 +128,15 @@ static void usage()
     print_help(36, "-t|--getTimeChange id1@node1,id2@node2,id3,.. ", "Получить время последнего изменения.\n");
     print_help(36, "-v|--verbose", "Подробный вывод логов.\n");
     print_help(36, "-q|--quiet", "Выводит только результат.\n");
-    print_help(36, "-z|--csv", "Вывести результат (getValue) в виде val1,val2,val3...\n");
+    print_help(36, "-k|--csv", "Вывести результат (getValue) в виде val1,val2,val3...\n");
     print_help(36, "-m|--sendText id1@node1,id2@node2,id3,.. mtype text", "Послать объектам текстовое сообщение text типа mtype\n");
-    print_help(36, "-n|--freezeValue id1@node1=val1,id2@node2=val2,id3=val3,.. [0|1]", "Выставить указанным датчикам соответствующие значения и заморозить(1) или разморозить(0).\n");
+    print_help(36, "-z|--freeze id1@node1=val1,id2@node2=val2,id3=val3,...", "Заморозить указанные датчики и выставить соответствующие значения.\n");
+    print_help(36, "-n|--unfreeze id1@node1,id2@node2,id3,...", "Разаморозить указанные датчики.\n");
+    cout << endl;
+    cout << "Глобальные параметры, которые необходимо передавать через '--'" << endl;
+    cout << "-----------------------------------------\n";
+    cout << uniset::Configuration::help() << endl;
+    cout << "Example: uniset2-admin arg1 arg2 arg3 -- global_arg1 global_arg2 ..." << endl;
     cout << endl;
 }
 
@@ -154,7 +162,7 @@ int main(int argc, char** argv)
 
         while(1)
         {
-            opt = getopt_long(argc, argv, "hc:beosfur:l:i::x:g:w:y:p:vqz:a:m:n:", longopts, &optindex);
+            opt = getopt_long(argc, argv, "hk:beosfur:l:i::x:g:w:y:p:vqz:a:m:n:z:", longopts, &optindex);
 
             if( opt == -1 )
                 break;
@@ -202,30 +210,30 @@ int main(int argc, char** argv)
                 }
                 break;
 
-                case 'n':    //--freezeValue
+                case 'z':    //--freeze
                 {
-                    // смотрим второй параметр
-                    if( checkArg(optind, argc, argv) == 0 )
-                    {
-                        if( !quiet )
-							cerr << "admin(freezeValue): Unknown 'set'. Use: id=v1,name=v2,name2@nodeX=v3 [1|0]" << endl;
-
-                        return 1;
-                    }
-
                     std::string sensors(optarg);
-                    bool set = uni_atoi(argv[optind]);
                     auto conf = uniset_init(argc, argv, conffile);
                     UInterface ui(conf);
                     ui.initBackId(uniset::AdminID);
-                    return freezeValue(sensors, set, ui);
+                    return freezeValue(sensors, true, ui);
+                }
+                break;
+
+                case 'n':    //--unfreeze
+                {
+                    std::string sensors(optarg);
+                    auto conf = uniset_init(argc, argv, conffile);
+                    UInterface ui(conf);
+                    ui.initBackId(uniset::AdminID);
+                    return freezeValue(sensors, false, ui);
                 }
                 break;
 
                 case 'g':    //--getValue
-                case 'z':    //--csv
+                case 'k':    //--csv
                 {
-                    if( opt == 'z' )
+                    if( opt == 'k' )
                         csv = true;
 
                     //                    cout<<"(main):received option --getValue='"<<optarg<<"'"<<endl;
@@ -840,7 +848,7 @@ int freezeValue( const string& args, bool set, UInterface& ui )
     auto sl = uniset::getSInfoList(args, conf);
 
     if( verb )
-        cout << "====== freezeValue ======" << endl;
+        cout << "====== " << (set ? "freeze" : "unfreeze") << " ======" << endl;
 
     for( auto&& it : sl )
     {
@@ -850,7 +858,6 @@ int freezeValue( const string& args, bool set, UInterface& ui )
 
             if( verb )
             {
-                cout << "    set: " << set << endl;
                 cout << "  value: " << it.val << endl;
                 cout << "   name: (" << it.si.id << ") " << it.fname << endl;
                 cout << " iotype: " << t << endl;
@@ -880,14 +887,14 @@ int freezeValue( const string& args, bool set, UInterface& ui )
         catch( const uniset::Exception& ex )
         {
             if( !quiet )
-                cerr << "(setValue): " << ex << endl;;
+                cerr << (set ? "freeze: " : "unfreeze: ") << ex << endl;;
 
             err = 1;
         }
         catch( const std::exception& ex )
         {
             if( !quiet )
-                cerr << "std::exception: " << ex.what() << endl;
+                cerr << (set ? "freeze: " : "unfreeze: ") << "std::exception: " << ex.what() << endl;
 
             err = 1;
         }
