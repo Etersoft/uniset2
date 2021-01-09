@@ -1,28 +1,3 @@
-<<<<<<< HEAD
-./cov-int/emit/pvbook.localdomain/config/130ac2dc34760443befdd3f2a25f8d40/g++cc-config-0/coverity-compiler-compat.h
-./cov-int/emit/pvbook.localdomain/config/130ac2dc34760443befdd3f2a25f8d40/gcc-config-0/coverity-compiler-compat.h
-./cov-int/emit/pvbook.localdomain/config/130ac2dc34760443befdd3f2a25f8d40/g++cc-config-0/coverity-macro-compat.h
-./cov-int/emit/pvbook.localdomain/config/130ac2dc34760443befdd3f2a25f8d40/gcc-config-0/coverity-macro-compat.h
-./cov-int/emit/pvbook.localdomain/config/130ac2dc34760443befdd3f2a25f8d40/g++cc-config-1/coverity-compiler-compat.h
-./cov-int/emit/pvbook.localdomain/config/130ac2dc34760443befdd3f2a25f8d40/g++cc-config-1/coverity-macro-compat.h
-./cov-int/emit/pvbook.localdomain/config/130ac2dc34760443befdd3f2a25f8d40/g++-config-0/coverity-compiler-compat.h
-./cov-int/emit/pvbook.localdomain/config/130ac2dc34760443befdd3f2a25f8d40/g++-config-0/coverity-macro-compat.h
-./cov-int/emit/pvbook.localdomain/config/130ac2dc34760443befdd3f2a25f8d40/g++-config-1/coverity-compiler-compat.h
-./cov-int/emit/pvbook.localdomain/config/130ac2dc34760443befdd3f2a25f8d40/g++-config-1/coverity-macro-compat.h
-./cov-int/emit/pvbook.localdomain/config/30c6834cc1e9802742e33de4efa3917c/g++cc-config-0/coverity-compiler-compat.h
-./cov-int/emit/pvbook.localdomain/config/30c6834cc1e9802742e33de4efa3917c/g++cc-config-0/coverity-macro-compat.h
-./cov-int/emit/pvbook.localdomain/config/30c6834cc1e9802742e33de4efa3917c/g++-config-0/coverity-compiler-compat.h
-./cov-int/emit/pvbook.localdomain/config/30c6834cc1e9802742e33de4efa3917c/g++-config-0/coverity-macro-compat.h
-./cov-int/emit/pvbook.localdomain/config/4d02eb73c555e8f07e4124fe33c80de2/g++cc-config-0/coverity-compiler-compat.h
-./cov-int/emit/pvbook.localdomain/config/4d02eb73c555e8f07e4124fe33c80de2/g++cc-config-0/coverity-macro-compat.h
-./cov-int/emit/pvbook.localdomain/config/4d02eb73c555e8f07e4124fe33c80de2/g++-config-0/coverity-compiler-compat.h
-./cov-int/emit/pvbook.localdomain/config/4d02eb73c555e8f07e4124fe33c80de2/g++-config-0/coverity-macro-compat.h
-./cov-int/emit/pvbook.localdomain/config/4db70a7a9c958929fa315f4c9243d800/g++cc-config-0/coverity-compiler-compat.h
-./cov-int/emit/pvbook.localdomain/config/4db70a7a9c958929fa315f4c9243d800/g++cc-config-0/coverity-macro-compat.h
-./cov-int/emit/pvbook.localdomain/config/4db70a7a9c958929fa315f4c9243d800/g++-config-0/coverity-compiler-compat.h
-./cov-int/emit/pvbook.localdomain/config/4db70a7a9c958929fa315f4c9243d800/g++-config-0/coverity-macro-compat.h
-=======
->>>>>>> 2.9.1-alt1
 ./docs/Makefile.am
 ./extensions/Backend-OpenTSDB/BackendOpenTSDB.cc
 ./extensions/Backend-OpenTSDB/BackendOpenTSDB.h
@@ -49,8 +24,6 @@
 ./extensions/DBServer-SQLite/SQLiteInterface.cc
 ./extensions/DBServer-SQLite/SQLiteInterface.h
 ./extensions/DBServer-SQLite/test.cc
-<<<<<<< HEAD
-=======
 ./extensions/HttpResolver/HttpResolver.cc
 ./extensions/HttpResolver/HttpResolver.h
 ./extensions/HttpResolver/HttpResolverSugar.h
@@ -61,7 +34,6 @@
 ./extensions/HttpResolver/tests/TestObject.cc
 ./extensions/HttpResolver/tests/TestObject.h
 ./extensions/HttpResolver/tests/test_uresolver.cc
->>>>>>> 2.9.1-alt1
 ./extensions/include/Calibration.h
 ./extensions/include/ComediInterface.h
 ./extensions/include/DigitalFilter.h
@@ -148,11 +120,8 @@
 ./extensions/Makefile.am
 ./extensions/ModbusMaster/main.cc
 ./extensions/ModbusMaster/Makefile.am
-<<<<<<< HEAD
-=======
 ./extensions/ModbusMaster/MBConfig.cc
 ./extensions/ModbusMaster/MBConfig.h
->>>>>>> 2.9.1-alt1
 ./extensions/ModbusMaster/MBExchange.cc
 ./extensions/ModbusMaster/MBExchange.h
 ./extensions/ModbusMaster/mb-perf-test.cc
@@ -226,8 +195,6 @@
 ./extensions/SMViewer/Makefile.am
 ./extensions/SMViewer/SMViewer.cc
 ./extensions/SMViewer/SMViewer.h
-<<<<<<< HEAD
-=======
 ./extensions/tests1/Makefile.am
 ./extensions/tests1/MBSlaveTest/Makefile.am
 ./extensions/tests1/MBSlaveTest/mbslave-test.cc
@@ -265,7 +232,6 @@
 ./extensions/tests1/tests_with_sm.h
 ./extensions/tests1/test_ui.cc
 ./extensions/tests1/test_vtypes.cc
->>>>>>> 2.9.1-alt1
 ./extensions/tests/Makefile.am
 ./extensions/tests/MBSlaveTest/Makefile.am
 ./extensions/tests/MBSlaveTest/mbslave-test.cc
@@ -313,10 +279,6 @@
 ./extensions/UNetUDP/tests/u.cc
 ./extensions/UNetUDP/tests/urecv_perf_test.cc
 ./extensions/UNetUDP/UDPPacket.cc
-<<<<<<< HEAD
-./extensions/UNetUDP/UDPPacketE.h
-=======
->>>>>>> 2.9.1-alt1
 ./extensions/UNetUDP/UDPPacket.h
 ./extensions/UNetUDP/unetexchange.cc
 ./extensions/UNetUDP/UNetExchange.cc
@@ -406,10 +368,7 @@
 ./include/UA.h
 ./include/UDPCore.h
 ./include/UHelpers.h
-<<<<<<< HEAD
-=======
 ./include/UHttpClient.h
->>>>>>> 2.9.1-alt1
 ./include/UHttpRequestHandler.h
 ./include/UHttpServer.h
 ./include/UInterface.h
@@ -432,10 +391,7 @@
 ./src/Communications/ComPort485F.cc
 ./src/Communications/ComPort.cc
 ./src/Communications/Http/Makefile.am
-<<<<<<< HEAD
-=======
 ./src/Communications/Http/UHttpClient.cc
->>>>>>> 2.9.1-alt1
 ./src/Communications/Http/UHttpRequestHandler.cc
 ./src/Communications/Http/UHttpServer.cc
 ./src/Communications/Makefile.am
@@ -594,10 +550,6 @@
 ./tests/umutex.cc
 ./tests/UniXmlTest/Makefile.am
 ./tests/UniXmlTest/XmlTest.cc
-<<<<<<< HEAD
-./tt.cc
-=======
->>>>>>> 2.9.1-alt1
 ./uniset-config.h
 ./Utilities/Admin/admin.cc
 ./Utilities/Admin/c.cc

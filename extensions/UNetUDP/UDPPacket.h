@@ -24,15 +24,6 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-<<<<<<< HEAD
-	// -----------------------------------------------------------------------------
-	namespace UniSetUDP
-	{
-		/*! С учётом того, что ID могут идти не подряд. Сделан следующий формат:
-			Для аналоговых величин передаётся массив пар "id-value"(UDPAData).
-			Для булевых величин - отдельно массив ID и отдельно битовый массив со значениями,
-			(по количеству битов такого же размера).
-=======
     // -----------------------------------------------------------------------------
     namespace UniSetUDP
     {
@@ -44,7 +35,6 @@ namespace uniset
 
             \todo Подумать на тему сделать два отдельных вида пакетов для булевых значений и для аналоговых,
                   чтобы уйти от преобразования UDPMessage --> UDPPacket --> UDPMessage.
->>>>>>> 2.9.1-alt1
 
             \warning ТЕКУЩАЯ ВЕРСИЯ ПРОТОКОЛА НЕ БУДЕТ РАБОТАТЬ МЕЖДУ 32-битными и 64-битными системами (из-за отличия в типе long).
             т.к. это не сильно актуально, пока не переделываю.
@@ -59,21 +49,6 @@ namespace uniset
             Т.е. если все узлы будут иметь одинаковый порядок байт, фактического перекодирования не будет.
         */
 
-<<<<<<< HEAD
-		const uint32_t UNETUDP_MAGICNUM = 0x1343EFD; // идентификатор протокола
-
-		struct UDPHeader
-		{
-			UDPHeader() noexcept;
-			uint32_t magic;
-			uint8_t _be_order; // 1 - BE byte order, 0 - LE byte order
-			size_t num;
-			long nodeID;
-			long procID;
-			size_t dcount; /*!< количество булевых величин */
-			size_t acount; /*!< количество аналоговых величин */
-		} __attribute__((packed));
-=======
         const uint32_t UNETUDP_MAGICNUM = 0x133EF54; // идентификатор протокола
 
         struct UDPHeader
@@ -89,7 +64,6 @@ namespace uniset
             size_t acount; /*!< количество аналоговых величин */
 
         } __attribute__((packed));
->>>>>>> 2.9.1-alt1
 
         std::ostream& operator<<( std::ostream& os, UDPHeader& p );
         std::ostream& operator<<( std::ostream& os, UDPHeader* p );
@@ -108,21 +82,6 @@ namespace uniset
 
         std::ostream& operator<<( std::ostream& os, UDPAData& p );
 
-<<<<<<< HEAD
-		// Теоретический размер данных в UDP пакете (исключая заголовки) 65507
-		// Фактически желательно не вылезать за размер MTU (обычно 1500) - заголовки = 1432 байта
-		// т.е. надо чтобы sizeof(UDPPacket) < 1432
-		// При текущих настройках sizeof(UDPPacket) = 56421 (!)
-		static const size_t MaxACount = 2000;
-		static const size_t MaxDCount = 3000;
-		static const size_t MaxDDataCount = 1 + MaxDCount / 8 * sizeof(uint8_t);
-
-		struct UDPMessage
-		{
-			// net to host
-			void ntoh() noexcept;
-			bool isOk() noexcept;
-=======
         // Теоретический размер данных в UDP пакете (исключая заголовки) 65507
         // Фактически желательно не вылезать за размер MTU (обычно 1500) - заголовки = 1432 байта
         // т.е. надо чтобы sizeof(UDPPacket) < 1432
@@ -159,7 +118,6 @@ namespace uniset
             size_t transport_msg( UDPPacket& p ) const noexcept;
 
             static size_t getMessage( UDPMessage& m, UDPPacket& p ) noexcept;
->>>>>>> 2.9.1-alt1
 
             // \warning в случае переполнения возвращается MaxDCount
             size_t addDData( long id, bool val ) noexcept;
@@ -183,39 +141,6 @@ namespace uniset
 
             long getDataID( ) const noexcept; /*!< получение "уникального" идентификатора данных этого пакета */
 
-<<<<<<< HEAD
-			inline bool isAFull() const noexcept
-			{
-				return (header.acount >= MaxACount);
-			}
-			inline bool isDFull() const noexcept
-			{
-				return (header.dcount >= MaxDCount);
-			}
-
-			inline bool isFull() const noexcept
-			{
-				return !((header.dcount < MaxDCount) && (header.acount < MaxACount));
-			}
-
-			inline size_t dsize() const noexcept
-			{
-				return header.dcount;
-			}
-
-			inline size_t asize() const noexcept
-			{
-				return header.acount;
-			}
-
-			uint16_t getDataCRC() const noexcept;
-
-			UDPHeader header;
-			UDPAData a_dat[MaxACount]; /*!< аналоговые величины */
-			long d_id[MaxDCount];      /*!< список дискретных ID */
-			uint8_t d_dat[MaxDDataCount];  /*!< битовые значения */
-		} __attribute__((packed));
-=======
             inline bool isAFull() const noexcept
             {
                 return (acount >= MaxACount);
@@ -255,7 +180,6 @@ namespace uniset
             long d_id[MaxDCount];      /*!< список дискретных ID */
             uint8_t d_dat[MaxDDataCount];  /*!< битовые значения */
         };
->>>>>>> 2.9.1-alt1
 
         std::ostream& operator<<( std::ostream& os, UDPMessage& p );
 

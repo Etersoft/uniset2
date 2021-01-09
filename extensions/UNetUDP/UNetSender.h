@@ -33,154 +33,6 @@
 // --------------------------------------------------------------------------
 namespace uniset
 {
-<<<<<<< HEAD
-	// -----------------------------------------------------------------------------
-	/*
-	 *    Распределение датчиков по пакетам
-	 *    =========================================================================
-	 *	  Все пересылаемые данные разбиваются на группы по частоте посылки("sendfactor").
-	 *    Частота посылки кратна sendpause, задаётся для каждого датчика, при помощи свойства prefix_sendfactor.
-	 *    Внутри каждой группы пакеты набираются по мере "заполнения".
-	 *
-	 *    Добавление датчика в пакет и создание нового пакета при переполнении происходит в функции initItem().
-	 *    Причем так как дискретные и аналоговые датчики обрабатываются отдельно (но пересылаются в одном пакете),
-	 *    то датчики, которые первые переполнятся приводят к тому, что создаётся новый пакет и они добавляются в него,
-	 *    в свою очередь остальные продолжают "добивать" предыдущий пакет.
-	 *    В initItem() каждому UItem в dlist кроме pack_ind присваивается еще и номер пакета pack_num, который гарантировано соответствует
-	 *    существующему пакету, поэтому в дальнейшем при использовании pack_num в качестве ключа в mypacks мы не проверяем пакет на существование.
-	 *
-	 *    ОПТИМИЗАЦИЯ N1: Для оптимизации обработки посылаемых пакетов (на стороне UNetSender) сделана следующая логика:
-	 *                  Номер очередного посылаемого пакета меняется (увеличивается) только, если изменились данные с момента
-						последней посылки. Для этого по данным каждый раз производится расчёт UNetUDP::makeCRC() и сравнивается с последним.
-						На стороне UNetReceiver пакеты с повторными номерами (т.е. уже обработанные) - откидываются.
-	 *
-	 *
-	 * Создание соединения
-	 * ======================================
-	 * Попытка создать соединение производиться сразу в конструкторе, если это не получается,
-	 * то в потоке "посылки", с заданным периодом (checkConnectionTime) идёт попытка создать соединение..
-	 * и так бесконечно, пока не получиться. Это важно для систем, где в момент загрузки программы
-	 * (в момент создания объекта UNetSender) ещё может быть не поднята сеть или какой-то сбой с сетью и требуется
-	 * ожидание (без вылета программы) пока "внешняя система мониторинга" не поднимет сеть).
-	 * Если такая логика не требуется, то можно задать в конструкторе флаг nocheckconnection=true,
-	 * тогда при создании объекта UNetSender, в конструкторе будет
-	 * выкинуто исключение при неудачной попытке создания соединения.
-	 * \warning setCheckConnectionPause(msec) должно быть кратно sendpause!
-	 */
-	class UNetSender
-	{
-		public:
-			UNetSender( const std::string& host, const int port, const std::shared_ptr<SMInterface>& smi
-						, bool nocheckConnection = false
-						, const std::string& s_field = ""
-						, const std::string& s_fvalue = ""
-						, const std::string& prop_prefix = "unet"
-						, const std::string& prefix = "unet"
-						, size_t maxDCount = UniSetUDP::MaxDCount
-						, size_t maxACount = UniSetUDP::MaxACount );
-
-			virtual ~UNetSender();
-
-			typedef size_t sendfactor_t;
-
-			static const long not_specified_value = { std::numeric_limits<long>::max() };
-
-			struct UItem
-			{
-				UItem():
-					iotype(UniversalIO::UnknownIOType),
-					id(uniset::DefaultObjectId),
-					pack_num(0),
-					pack_ind(0),
-					pack_sendfactor(0) {}
-
-				UniversalIO::IOType iotype;
-				uniset::ObjectId id;
-				IOController::IOStateList::iterator ioit;
-				size_t pack_num;
-				size_t pack_ind;
-				sendfactor_t pack_sendfactor = { 0 };
-				long undefined_value = { not_specified_value };
-				friend std::ostream& operator<<( std::ostream& os, UItem& p );
-			};
-
-			typedef std::unordered_map<uniset::ObjectId, UItem> UItemMap;
-
-			size_t getDataPackCount() const;
-
-			void start();
-			void stop();
-
-			void send() noexcept;
-
-			struct PackMessage
-			{
-				PackMessage( uniset::UniSetUDP::UDPMessage&& m ) noexcept: msg(std::move(m)) {}
-				PackMessage( const uniset::UniSetUDP::UDPMessage& m ) = delete;
-
-				PackMessage() noexcept {}
-
-				uniset::UniSetUDP::UDPMessage msg;
-				uniset::uniset_rwmutex mut;
-			};
-
-			void real_send( PackMessage& mypack ) noexcept;
-
-			/*! (принудительно) обновить все данные (из SM) */
-			void updateFromSM();
-
-			/*! Обновить значение по ID датчика */
-			void updateSensor( uniset::ObjectId id, long value );
-
-			/*! Обновить значение по итератору */
-			void updateItem( UItem& it, long value );
-
-			inline void setSendPause( int msec )
-			{
-				sendpause = msec;
-			}
-			inline void setPackSendPause( int msec )
-			{
-				packsendpause = msec;
-			}
-			inline void setPackSendPauseFactor( int factor )
-			{
-				packsendpauseFactor = factor;
-			}
-
-			void setCheckConnectionPause( int msec );
-
-			/*! заказать датчики */
-			void askSensors( UniversalIO::UIOCommand cmd );
-
-			/*! инициализация  итераторов */
-			void initIterators();
-
-			inline std::shared_ptr<DebugStream> getLog()
-			{
-				return unetlog;
-			}
-
-			virtual const std::string getShortInfo() const;
-
-			inline std::string getAddress() const
-			{
-				return addr;
-			}
-			inline int getPort() const
-			{
-				return port;
-			}
-
-			inline size_t getADataSize() const
-			{
-				return maxAData;
-			}
-			inline size_t getDDataSize() const
-			{
-				return maxDData;
-			}
-=======
     // -----------------------------------------------------------------------------
     /*
      *    Распределение датчиков по пакетам
@@ -327,7 +179,6 @@ namespace uniset
             {
                 return maxDData;
             }
->>>>>>> 2.9.1-alt1
 
         protected:
 
@@ -354,36 +205,6 @@ namespace uniset
             std::string s_host = { "" };
             Poco::Net::SocketAddress saddr;
 
-<<<<<<< HEAD
-			std::string myname = { "" };
-			timeout_t sendpause = { 150 };
-			timeout_t packsendpause = { 5 };
-			int packsendpauseFactor = { 1 };
-			timeout_t writeTimeout = { 1000 }; // msec
-			std::atomic_bool activated = { false };
-			PassiveTimer ptCheckConnection;
-
-			typedef std::unordered_map<sendfactor_t, std::vector<PackMessage>> Packs;
-
-			// mypacks заполняется в начале и дальше с ним происходит только чтение
-			// поэтому mutex-ом его не защищаем
-			Packs mypacks;
-			std::unordered_map<sendfactor_t, size_t> packs_anum;
-			std::unordered_map<sendfactor_t, size_t> packs_dnum;
-			UItemMap items;
-			size_t packetnum = { 1 }; /*!< номер очередного посылаемого пакета */
-			uint16_t lastcrc = { 0 };
-
-			size_t maxAData = { UniSetUDP::MaxACount };
-			size_t maxDData = { UniSetUDP::MaxDCount };
-
-			std::unique_ptr< ThreadCreator<UNetSender> > s_thr;    // send thread
-
-			size_t ncycle = { 0 }; /*!< номер цикла посылки */
-
-	};
-	// --------------------------------------------------------------------------
-=======
             std::string myname = { "" };
             timeout_t sendpause = { 150 };
             timeout_t packsendpause = { 5 };
@@ -413,7 +234,6 @@ namespace uniset
 
     };
     // --------------------------------------------------------------------------
->>>>>>> 2.9.1-alt1
 } // end of namespace uniset
 // -----------------------------------------------------------------------------
 #endif // UNetSender_H_
