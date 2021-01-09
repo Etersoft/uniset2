@@ -29,11 +29,16 @@ int main(int argc, const char** argv)
 {
     //  std::ios::sync_with_stdio(false);
 
-    if( argc > 1 && strcmp(argv[1], "--help") == 0 )
+    if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
     {
-        cout << "--io-confile    - Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
-        cout << "--io-logfile fname    - выводить логи в файл fname. По умолчанию iocontrol.log" << endl;
+        cout << endl;
+        cout << "Usage: uniset2-iocontrol args1 args2" << endl;
+        cout << endl;
+        cout << "--io-confile       - Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
+        cout << "--io-logfile fname - выводить логи в файл fname. По умолчанию iocontrol.log" << endl;
         IOControl::help_print(argc, argv);
+        cout << "Global options:" << endl;
+        cout << uniset::Configuration::help() << endl;
         return 0;
     }
 

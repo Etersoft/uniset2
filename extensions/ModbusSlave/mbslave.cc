@@ -33,10 +33,15 @@ int main(int argc, const char** argv)
 
     if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
     {
+        cout << endl;
+        cout << "Usage: uniset2-mbslave args1 args2" << endl;
+        cout << endl;
         cout << "--smemory-id objectName  - SharedMemory objectID. Default: autodetect" << endl;
         cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
         cout << endl;
         MBSlave::help_print(argc, argv);
+        cout << " Global options:" << endl;
+        cout << uniset::Configuration::help() << endl;
         return 0;
     }
 

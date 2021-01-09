@@ -56,7 +56,7 @@ static ostream& print_help( ostream& os, int width, const string& cmd,
 std::string uniset::Configuration::help()
 {
 	ostringstream os;
-	print_help(os, 25, "--confile", "полный путь до файла конфигурации\n");
+	print_help(os, 25, "--confile", "Файл конфигурации. По умолчанию: configure.xml\n");
 	print_help(os, 25, "--uniport num", "использовать заданный порт (переопределяет 'port заданный в конф. файле в разделе <nodes><node.. port=''>)\n");
 	print_help(os, 25, "--localIOR {1,0}", "использовать локальные файлы для получения IOR (т.е. не использовать omniNames). Переопределяет параметр в конфигурационном файле.\n");
 	print_help(os, 25, "--transientIOR {1,0}", "использовать генерируемые IOR(не постоянные). Переопределяет параметр в конфигурационном файле. Default=0\n");

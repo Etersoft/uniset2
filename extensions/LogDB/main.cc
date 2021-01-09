@@ -12,7 +12,7 @@ int main(int argc, char** argv)
     {
         if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
         {
-            cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
+            cout << "--confile filename - configuration file. Default: configure.xml" << endl;
             LogDB::help_print();
             return 0;
         }

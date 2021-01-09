@@ -437,6 +437,7 @@ void DBServer_SQLite::help_print( int argc, const char* const* argv )
 {
     cout << "Default: prefix='sqlite'" << endl;
     cout << "--prefix-name objectID     - ObjectID. Default: 'conf->getDBServer()'" << endl;
+    cout << endl;
     cout << DBServer::help_print() << endl;
 }
 // -----------------------------------------------------------------------------

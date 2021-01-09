@@ -9,6 +9,8 @@ using namespace std;
 static void short_usage()
 {
     cout << "Usage: uniset-sviewer-text [--fullname] [--polltime msec] [--confile uniset-confile]\n";
+    cout << endl;
+    cout << uniset::Configuration::help() << endl;
 }
 // --------------------------------------------------------------------------
 int main(int argc, const char** argv)
@@ -17,7 +19,7 @@ int main(int argc, const char** argv)
 
     try
     {
-        if( argc > 1 && !strcmp(argv[1], "--help") )
+        if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
         {
             short_usage();
             return 0;
