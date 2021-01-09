@@ -299,6 +299,7 @@ TEST_CASE("UInterface::getSensorIOInfo", "[UInterface][getSensorIOInfo]")
     REQUIRE( inf->undefined == false );
     REQUIRE( inf->tv_sec > 0 );
     REQUIRE( inf->dbignore == false );
+    REQUIRE( inf->depend_sid == DefaultObjectId );
 
     // freeze/unfreeze
     REQUIRE_NOTHROW( ui->freezeValue(si, true, 10, testOID) );
@@ -321,4 +322,22 @@ TEST_CASE("UInterface::getSensorIOInfo", "[UInterface][getSensorIOInfo]")
     inf = ui->getSensorIOInfo(si);
     REQUIRE( inf->undefined == false );
     REQUIRE( inf->supplier == testOID );
+
+    // depend
+    si.id = 100;
+    REQUIRE_NOTHROW( ui->setValue(si, 0, testOID) );
+
+    si.id = 101;
+    inf = ui->getSensorIOInfo(si);
+
+    REQUIRE( inf->blocked == true );
+    REQUIRE( inf->depend_sid == 100 );
+
+    si.id = 100;
+    REQUIRE_NOTHROW( ui->setValue(si, 10, testOID) );
+
+    si.id = 101;
+    inf = ui->getSensorIOInfo(si);
+    REQUIRE( inf->blocked == false );
+    REQUIRE( inf->depend_sid == 100 );
 }

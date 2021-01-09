@@ -220,9 +220,9 @@ namespace uniset
 
 		if( !d_txt.empty() )
 		{
-			inf->d_si.id = conf->getSensorID(d_txt);
+			inf->depend_sid = conf->getSensorID(d_txt);
 
-			if( inf->d_si.id == uniset::DefaultObjectId )
+			if( inf->depend_sid == uniset::DefaultObjectId )
 			{
 				ostringstream err;
 				err << "(IOConfig_XML::getSensorInfo): sensor='"
@@ -232,8 +232,6 @@ namespace uniset
 				ucrit << err.str() << endl;
 				throw SystemError(err.str());
 			}
-
-			inf->d_si.node = conf->getLocalNode();
 
 			// по умолчанию срабатывание на "1"
 			inf->d_value = it.getProp("depend_value").empty() ? 1 : it.getIntProp("depend_value");
@@ -250,15 +248,15 @@ namespace uniset
 			// обновляем итераторы...
 			it.second->d_usi = it.second;
 
-			if( it.second->d_si.id == DefaultObjectId )
+			if( it.second->depend_sid == DefaultObjectId )
 				continue;
 
 			uinfo << "(IOConfig_XML::init_depends_signals): "
 				  << " init depend: '" << conf->oind->getMapName(it.second->si.id) << "'"
-				  << " dep_name=(" << it.second->d_si.id << ")'" << conf->oind->getMapName(it.second->d_si.id) << "'"
+				  << " depend_sensor=(" << it.second->depend_sid << ")'" << conf->oind->getMapName(it.second->depend_sid) << "'"
 				  << endl;
 
-			auto dit = lst.find(it.second->d_si.id);
+			auto dit = lst.find(it.second->depend_sid);
 
 			if( dit != lst.end() )
 			{
