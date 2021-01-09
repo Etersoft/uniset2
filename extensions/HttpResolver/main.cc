@@ -12,7 +12,11 @@ int main(int argc, char** argv)
     {
         if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
         {
+            cout << endl;
+            cout << "Usage: uniset2-httpresolver args1 args2" << endl;
+            cout << endl;
             cout << "--confile filename - configuration file. Default: configure.xml" << endl;
+            cout << endl;
             HttpResolver::help_print();
             return 0;
         }

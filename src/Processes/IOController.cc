@@ -113,9 +113,9 @@ void IOController::activateInit()
 			auto s = io.second;
 
 			// Проверка зависимостей
-			if( s->d_si.id != DefaultObjectId )
+			if( s->depend_sid != DefaultObjectId )
 			{
-				auto d_it = myiofind(s->d_si.id);
+				auto d_it = myiofind(s->depend_sid);
 
 				if( d_it != myioEnd() )
 					s->checkDepend( d_it->second, this);
@@ -675,8 +675,7 @@ IOController::USensorInfo::operator=(IOController_i::SensorIOInfo& r)
 // ----------------------------------------------------------------------------------------
 IOController::USensorInfo::USensorInfo(): d_value(1), d_off_value(0)
 {
-	d_si.id = uniset::DefaultObjectId;
-	d_si.node = uniset::DefaultObjectId;
+	depend_sid = uniset::DefaultObjectId;
 	default_val = 0;
 	value = default_val;
 	real_value = default_val;
@@ -1083,6 +1082,16 @@ void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr
 	jsens->set("default_val", s->default_val);
 	jsens->set("dbignore", s->dbignore);
 	jsens->set("nchanges", s->nchanges);
+	jsens->set("undefined", s->undefined);
+	jsens->set("frozen", s->frozen);
+	jsens->set("blocked", s->blocked);
+	if( s->depend_sid != DefaultObjectId )
+	{
+		jsens->set("depend_sensor", ORepHelpers::getShortName(uniset_conf()->oind->getMapName(s->depend_sid)));
+		jsens->set("depend_sensor_id", s->depend_sid);
+		jsens->set("depend_value", s->d_value);
+		jsens->set("depend_off_value", s->d_off_value);
+	}
 
 	Poco::JSON::Object::Ptr calibr = uniset::json::make_child(jsens, "calibration");
 	calibr->set("cmin", s->ci.minCal);
@@ -1094,7 +1103,6 @@ void IOController::getSensorInfo( Poco::JSON::Array::Ptr& jdata, std::shared_ptr
 	//	::CORBA::Boolean undefined;
 	//	::CORBA::Boolean blocked;
 	//	::CORBA::Long priority;
-	//	IOController_i::SensorInfo d_si = { uniset::DefaultObjectId, uniset::DefaultObjectId };  /*!< идентификатор датчика, от которого зависит данный */
 	//	long d_value = { 1 }; /*!< разрешающее работу значение датчика от которого зависит данный */
 	//	long d_off_value = { 0 }; /*!< блокирующее значение */
 }

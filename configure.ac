@@ -4,14 +4,18 @@
 
 # AC_PREREQ(2.59)
 <<<<<<< HEAD
+<<<<<<< HEAD
 AC_INIT([uniset2], [2.8.1], pv@etersoft.ru)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME,AC_PACKAGE_VERSION)
 =======
 AC_INIT([uniset2], [2.9.1], pv@etersoft.ru)
+=======
+AC_INIT([uniset2], [2.9.2], pv@etersoft.ru)
+>>>>>>> 2.9.2-alt1
 AM_INIT_AUTOMAKE
 >>>>>>> 2.9.1-alt1
 
-LIBVER=11:1:9
+LIBVER=11:2:9
 AC_SUBST(LIBVER)
 
 # AC_CONFIG_MACRO_DIR([m4])

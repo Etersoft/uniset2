@@ -230,7 +230,8 @@ namespace uniset
             SensorIOInfo(long v, UniversalIO::IOType t, const IOController_i::SensorInfo& si,
                          uniset::Message::Priority p = uniset::Message::Medium,
                          long defval = 0, IOController_i::CalibrateInfo* ci = 0,
-                         uniset::ObjectId sup_id = uniset::DefaultObjectId )
+                         uniset::ObjectId sup_id = uniset::DefaultObjectId,
+                         uniset::ObjectId depend_sid = uniset::DefaultObjectId )
             {
                 IOController_i::SensorIOInfo ai;
                 ai.si = si;
@@ -241,6 +242,7 @@ namespace uniset
                 ai.real_value = v;
                 ai.blocked = false;
                 ai.supplier = sup_id;
+                ai.depend_sid = depend_sid;
 
                 if( ci != 0 )
                     ai.ci = *ci;
@@ -337,7 +339,6 @@ namespace uniset
                 uniset::uniset_rwmutex undefMutex;
                 ChangeUndefinedStateSignal sigUndefChange;
 
-                IOController_i::SensorInfo d_si = { uniset::DefaultObjectId, uniset::DefaultObjectId };  /*!< идентификатор датчика, от которого зависит данный */
                 long d_value = { 1 }; /*!< разрешающее работу значение датчика от которого зависит данный */
                 long d_off_value = { 0 }; /*!< блокирующее значение */
                 std::shared_ptr<USensorInfo> d_usi; // shared_ptr на датчик от которого зависит этот.

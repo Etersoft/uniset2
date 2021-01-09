@@ -105,10 +105,11 @@ interface IOController_i : UniSetManager_i
         IOController_i::SensorInfo si;
         long default_val;             /*!< значение по умолчанию */
         CalibrateInfo ci;             /*!< калибровочные параметры */
-        unsigned long tv_sec;    /*!< время последнего изменения датчика, секунды (clock_gettime(CLOCK_REALTIME) */
-        unsigned long tv_nsec;   /*!< время последнего изменения датчика, nanosec (clock_gettime(CLOCK_REALTIME) */
-        uniset::ObjectId supplier;  /*!< идентификатор объекта изменившего состояние датчика */
+        unsigned long tv_sec;         /*!< время последнего изменения датчика, секунды (clock_gettime(CLOCK_REALTIME) */
+        unsigned long tv_nsec;        /*!< время последнего изменения датчика, nanosec (clock_gettime(CLOCK_REALTIME) */
+        uniset::ObjectId supplier;    /*!< идентификатор объекта изменившего состояние датчика */
         boolean dbignore;             /*!< не сохранять изменения в БД */
+        uniset::ObjectId depend_sid;  /*!< датчик от которого зависит данный (при blocked=true). DefaultObjectId если не зависит */
     };
 
     typedef sequence<SensorIOInfo> SensorInfoSeq;

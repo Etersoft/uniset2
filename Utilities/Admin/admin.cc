@@ -51,12 +51,14 @@ static struct option longopts[] =
     { "getCalibrate", required_argument, 0, 'y' },
     { "getTimeChange", required_argument, 0, 't' },
     { "oinfo", required_argument, 0, 'p' },
+    { "sinfo", required_argument, 0, 'j' },
     { "apiRequest", required_argument, 0, 'a' },
     { "verbose", no_argument, 0, 'v' },
     { "quiet", no_argument, 0, 'q' },
-    { "csv", required_argument, 0, 'z' },
+    { "csv", required_argument, 0, 'k' },
     { "sendText", required_argument, 0, 'm' },
-    { "freezeValue", required_argument, 0, 'n' },
+    { "freeze", required_argument, 0, 'z' },
+    { "unfreeze", required_argument, 0, 'n' },
     { NULL, 0, 0, 0 }
 };
 
@@ -78,15 +80,16 @@ int getTimeChange( const string& args, UInterface& ui );
 int getState( const string& args, UInterface& ui );
 int getCalibrate( const string& args, UInterface& ui );
 int oinfo(const string& args, UInterface& ui, const string&  userparam );
+int sinfo(const string& args, UInterface& ui);
 int apiRequest( const string& args, UInterface& ui, const string& query );
 void sendText( const string& args, UInterface& ui, const string& txt, int mtype );
 int freezeValue( const string& args, bool set, UInterface& ui );
 // --------------------------------------------------------------------------
-static void print_help(int width, const string& cmd, const string& help, const string& tab = " " )
+static void print_help(int width, const string& cmd, const string& help, const string& tab = " ", const string& sep = " - " )
 {
     uniset::ios_fmt_restorer ifs(cout);
     cout.setf(ios::left, ios::adjustfield);
-    cout << tab << setw(width) << cmd << " - " << help;
+    cout << tab << setw(width) << cmd << sep << help;
 }
 // --------------------------------------------------------------------------
 static void short_usage()
@@ -98,6 +101,7 @@ static void short_usage()
 static void usage()
 {
     cout << "\nUsage: \n\tuniset-admin [--confile configure.xml] --command [arg]\n";
+    cout << endl;
     cout << "commands list:\n";
     cout << "-----------------------------------------\n";
     print_help(24, "-с|--confile file.xml ", "Используемый конфигурационный файл\n");
@@ -112,8 +116,9 @@ static void usage()
     cout << endl;
     print_help(36, "-r|--configure [FullObjName] ", "Посылка SystemMessage::ReConfiguration всем объектам (процессам) или заданному по имени (FullObjName).\n");
     print_help(36, "-l|--logrotate [FullObjName] ", "Посылка SystemMessage::LogRotate всем объектам (процессам) или заданному по имени (FullObjName).\n");
-    print_help(36, "-p|--oinfo id1@node1,id2@node2,id3,... [userparam]", "Получить информацию об объектах (SimpleInfo). \n userparam - необязательный параметр передаваемый в getInfo() каждому объекту\n");
+    print_help(36, "-p|--oinfo id1@node1,id2@node2,id3,... [userparam]", "Получить информацию об объектах (SimpleInfo). \n");
     print_help(36, "", "userparam - необязательный параметр передаваемый в getInfo() каждому объекту\n");
+    print_help(36, "-j|--sinfo id1@node1,id2@node2,id3,...", "Получить информацию о датчиках.\n");
     cout << endl;
     print_help(36, "-a|--apiRequest id1@node1,id2@node2,id3,... query", "Вызов REST API для каждого объекта\n");
     print_help(36, "", "query - Запрос вида: /api/VERSION/query[?param1&param2...]\n");
@@ -126,9 +131,15 @@ static void usage()
     print_help(36, "-t|--getTimeChange id1@node1,id2@node2,id3,.. ", "Получить время последнего изменения.\n");
     print_help(36, "-v|--verbose", "Подробный вывод логов.\n");
     print_help(36, "-q|--quiet", "Выводит только результат.\n");
-    print_help(36, "-z|--csv", "Вывести результат (getValue) в виде val1,val2,val3...\n");
+    print_help(36, "-k|--csv", "Вывести результат (getValue) в виде val1,val2,val3...\n");
     print_help(36, "-m|--sendText id1@node1,id2@node2,id3,.. mtype text", "Послать объектам текстовое сообщение text типа mtype\n");
-    print_help(36, "-n|--freezeValue id1@node1=val1,id2@node2=val2,id3=val3,.. set", "Выставить указанным датчикам соответствующие значения и заморозить их (set=true) или разморозить (set=false).\n");
+    print_help(36, "-z|--freeze id1@node1=val1,id2@node2=val2,id3=val3,...", "Заморозить указанные датчики и выставить соответствующие значения.\n");
+    print_help(36, "-n|--unfreeze id1@node1,id2@node2,id3,...", "Разаморозить указанные датчики.\n");
+    cout << endl;
+    cout << "Глобальные параметры, которые необходимо передавать через '--'" << endl;
+    cout << "-----------------------------------------\n";
+    cout << uniset::Configuration::help() << endl;
+    cout << "Example: uniset2-admin arg1 arg2 arg3 -- global_arg1 global_arg2 ..." << endl;
     cout << endl;
 }
 
@@ -154,7 +165,7 @@ int main(int argc, char** argv)
 
         while(1)
         {
-            opt = getopt_long(argc, argv, "hc:beosfur:l:i::x:g:w:y:p:vqz:a:m:", longopts, &optindex);
+            opt = getopt_long(argc, argv, "hk:beosfur:l:i::x:g:w:y:p:vqz:a:m:n:z:j:", longopts, &optindex);
 
             if( opt == -1 )
                 break;
@@ -202,30 +213,30 @@ int main(int argc, char** argv)
                 }
                 break;
 
-                case 'n':    //--freezeValue
+                case 'z':    //--freeze
                 {
-                    // смотрим второй параметр
-                    if( checkArg(optind, argc, argv) == 0 )
-                    {
-                        if( !quiet )
-                            cerr << "admin(freezeValue): Unknown 'set'. Use: id=v1,name=v2,name2@nodeX=v3 set" << endl;
-
-                        return 1;
-                    }
-
                     std::string sensors(optarg);
-                    bool set = uni_atoi(argv[optind]);
                     auto conf = uniset_init(argc, argv, conffile);
                     UInterface ui(conf);
                     ui.initBackId(uniset::AdminID);
-                    return freezeValue(sensors, set, ui);
+                    return freezeValue(sensors, true, ui);
+                }
+                break;
+
+                case 'n':    //--unfreeze
+                {
+                    std::string sensors(optarg);
+                    auto conf = uniset_init(argc, argv, conffile);
+                    UInterface ui(conf);
+                    ui.initBackId(uniset::AdminID);
+                    return freezeValue(sensors, false, ui);
                 }
                 break;
 
                 case 'g':    //--getValue
-                case 'z':    //--csv
+                case 'k':    //--csv
                 {
-                    if( opt == 'z' )
+                    if( opt == 'k' )
                         csv = true;
 
                     //                    cout<<"(main):received option --getValue='"<<optarg<<"'"<<endl;
@@ -272,6 +283,15 @@ int main(int argc, char** argv)
                         userparam = string(argv[optind]);
 
                     return oinfo(optarg, ui, userparam);
+                }
+                break;
+
+                case 'j':  //--sinfo
+                {
+                    auto conf = uniset_init(argc, argv, conffile);
+                    UInterface ui(conf);
+                    ui.initBackId(uniset::AdminID);
+                    return sinfo(optarg, ui);
                 }
                 break;
 
@@ -840,7 +860,7 @@ int freezeValue( const string& args, bool set, UInterface& ui )
     auto sl = uniset::getSInfoList(args, conf);
 
     if( verb )
-        cout << "====== freezeValue ======" << endl;
+        cout << "====== " << (set ? "freeze" : "unfreeze") << " ======" << endl;
 
     for( auto&& it : sl )
     {
@@ -850,7 +870,6 @@ int freezeValue( const string& args, bool set, UInterface& ui )
 
             if( verb )
             {
-                cout << "    set: " << set << endl;
                 cout << "  value: " << it.val << endl;
                 cout << "   name: (" << it.si.id << ") " << it.fname << endl;
                 cout << " iotype: " << t << endl;
@@ -880,14 +899,14 @@ int freezeValue( const string& args, bool set, UInterface& ui )
         catch( const uniset::Exception& ex )
         {
             if( !quiet )
-                cerr << "(setValue): " << ex << endl;;
+                cerr << (set ? "freeze: " : "unfreeze: ") << ex << endl;;
 
             err = 1;
         }
         catch( const std::exception& ex )
         {
             if( !quiet )
-                cerr << "std::exception: " << ex.what() << endl;
+                cerr << (set ? "freeze: " : "unfreeze: ") << "std::exception: " << ex.what() << endl;
 
             err = 1;
         }
@@ -1181,6 +1200,70 @@ int oinfo(const string& args, UInterface& ui, const string& userparam )
     }
 
     return 0;
+}
+// --------------------------------------------------------------------------------------
+int sinfo(const string& args, UInterface& ui )
+{
+    int err = 0;
+    auto conf = uniset_conf();
+    auto sl = uniset::getSInfoList(args, conf);
+
+    for( auto&& it : sl )
+    {
+        try
+        {
+            // проверка есть ли такой датчик, т.к. тут будет выкинуто исключение
+            // если его нет
+            UniversalIO::IOType t = conf->getIOType(it.si.id);
+
+            if( it.si.node == DefaultObjectId )
+                it.si.node = conf->getLocalNode();
+
+            IOController_i::SensorIOInfo_var sinf = ui.getSensorIOInfo(it.si);
+#if 0
+            UniversalIO::IOType type;     /*!< тип */
+            long priority;                /*!< приоритет уведомления */
+            long default_val;             /*!< значение по умолчанию */
+            CalibrateInfo ci;             /*!< калибровочные параметры */
+#endif
+            const int w = 14;
+            print_help(w, "id", std::to_string(it.si.id) + "\n", " ", " : ");
+            print_help(w, "node", std::to_string(it.si.node) + "\n", " ", " : ");
+            print_help(w, "value", std::to_string(sinf->value) + "\n", " ", " : ");
+            print_help(w, "real_value", std::to_string(sinf->real_value) + "\n", " ", " : ");
+            print_help(w, "frozen", std::to_string(sinf->frozen) + "\n", " ", " : ");
+            print_help(w, "undefined", std::to_string(sinf->undefined) + "\n", " ", " : ");
+            print_help(w, "blocked", std::to_string(sinf->blocked) + "\n", " ", " : ");
+
+            if( sinf->depend_sid != DefaultObjectId )
+                print_help(w, "depend_sensor", "(" + to_string(sinf->depend_sid) + ")" + ORepHelpers::getShortName(conf->oind->getMapName(sinf->depend_sid)) + "\n", " ", " : ");
+
+            if( sinf->supplier == uniset::AdminID )
+                print_help(w, "supplier", "admin\n", " ", " : ");
+            else
+                print_help(w, "supplier", ORepHelpers::getShortName(conf->oind->getMapName(sinf->supplier)) + "\n", " ", " : ");
+
+            ostringstream ts;
+            ts << dateToString(sinf->tv_sec) << " " << timeToString(sinf->tv_sec) << "." << sinf->tv_nsec << "\n";
+            print_help(w, "changed", ts.str(), " ", " : ");
+        }
+        catch( const uniset::Exception& ex )
+        {
+            if( !quiet )
+                cerr << "(sinfo): " << ex << endl;;
+
+            err = 1;
+        }
+        catch( const std::exception& ex )
+        {
+            if( !quiet )
+                cerr << "(sinfo): std::exception: " << ex.what() << endl;
+
+            err = 1;
+        }
+    }
+
+    return err;
 }
 // --------------------------------------------------------------------------------------
 int apiRequest( const string& args, UInterface& ui, const string& query )

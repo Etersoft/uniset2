@@ -14,8 +14,12 @@ int main(int argc, char** argv)
     {
         if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
         {
-            cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
+            cout << endl;
+            cout << "Usage: uniset2-pgsql-dbserver --confile configure.xml args1 args2" << endl;
+            cout << endl;
             DBServer_PostgreSQL::help_print(argc, argv);
+            cout << " Global options:" << endl;
+            cout << uniset::Configuration::help() << endl;
             return 0;
         }
 

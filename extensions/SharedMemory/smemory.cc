@@ -30,8 +30,11 @@ int main(int argc, const char** argv)
 
     if( argc > 1 && ( strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0 ) )
     {
-        cout << "--confile    - Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
+        cout << endl;
+        cout << "Usage: uniset2-smemory args1 args2" << endl;
+        cout << endl;
         SharedMemory::help_print(argc, argv);
+        cout << uniset::Configuration::help() << endl;
         return 0;
     }
 
