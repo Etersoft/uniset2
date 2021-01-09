@@ -17,9 +17,9 @@ int main( int argc, const char** argv )
         {
             cout << "Usage: uniset-smonit [ args ] --sid id1@node1,Sensor2@node2,id2,sensorname3,... " << endl
                  << "Args: " << endl
-                 << " --confile confilename - Default: configure.xml" << endl
-                 << " --name XXX - name for smonit. Default: TestProc" << endl;
+                 << "--name XXX - name for smonit. Default: TestProc" << endl;
             //                 << " --script scriptname \n"
+            cout << uniset::Configuration::help() << endl;
             return 0;
         }
 

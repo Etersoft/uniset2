@@ -8,13 +8,13 @@ using namespace uniset;
 void help_print()
 {
     cout << endl;
-    cout << "--confile configure.xml. По умолчанию: configure.xml." << endl;
     cout << "--sid id1@Node1,id2,..,idXX@NodeXX  - Аналоговые датчики (AI,AO)" << endl;
     cout << endl;
     cout << "--min val       - Нижняя граница датчика. По умолчанию 0" << endl;
     cout << "--max val       - Верхняя граница датчика. По умолчанию 100 " << endl;
     cout << "--step val      - Шаг датчика. По умолчанию 1" << endl;
     cout << "--pause msec    - Пауза. По умолчанию 200 мсек" << endl << endl;
+    cout << uniset::Configuration::help() << endl;
 }
 // -----------------------------------------------------------------------------
 struct ExtInfo:
