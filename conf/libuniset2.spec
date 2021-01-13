@@ -27,7 +27,7 @@
 
 Name: libuniset2
 Version: 2.9.3
-Release: alt0.M90P.0.1
+Release: alt0.M90P.0.2
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL-2.1
@@ -193,6 +193,13 @@ Summary: CORBA object reference resolver based on http
 %description extension-uresolver
 CORBA object reference resolver based on http
 %endif
+
+%package extension-wsgate
+Group: Development/Tools
+Summary: Websocket gate for uniset
+
+%description extension-wsgate
+Websocket gate for uniset
 
 %if_enabled mysql
 %package extension-mysql
@@ -537,6 +544,9 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %_bindir/%oname-httpresolver*
 %endif
 
+%files extension-wsgate
+%_bindir/%oname-wsgate*
+
 %files extension-common-devel
 %dir %_includedir/%oname/extensions
 %_includedir/%oname/extensions/*.*
@@ -560,7 +570,7 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
-* Wed Jan 13 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.3-alt0.M90P.0.1
+* Wed Jan 13 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.3-alt0.M90P.0.2
 - backport to ALTLinux p9 (by rpmbph script)
 
 * Wed Jan 13 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.3-alt0.1
