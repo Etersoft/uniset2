@@ -24,8 +24,8 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.9.3
-Release: alt2
+Version: 2.9.4
+Release: alt0.2
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL-2.1
@@ -563,6 +563,9 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 
 * Thu Jan 14 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.3-alt1
 - minor fixes (supported old omniORB)
+
+* Wed Jan 13 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.3-alt0.1
+- test build for websocketgate
 
 * Sat Jan 09 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.2-alt1
 - admin: added 'sinfo' function
