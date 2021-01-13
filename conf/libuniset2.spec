@@ -183,6 +183,7 @@ Obsoletes: %name-extentions-devel
 %description extension-common-devel
 Libraries needed to develop for uniset extensions
 
+%if_enabled api
 %if_enabled uresolver
 %package extension-uresolver
 Group: Development/Tools
@@ -191,13 +192,16 @@ Summary: CORBA object reference resolver based on http
 %description extension-uresolver
 CORBA object reference resolver based on http
 %endif
+%endif
 
+%if_enabled api
 %package extension-wsgate
 Group: Development/Tools
 Summary: Websocket gate for uniset
 
 %description extension-wsgate
 Websocket gate for uniset
+%endif
 
 %if_enabled mysql
 %package extension-mysql
@@ -542,8 +546,10 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %_bindir/%oname-httpresolver*
 %endif
 
+%if_enabled api
 %files extension-wsgate
 %_bindir/%oname-wsgate*
+%endif
 
 %files extension-common-devel
 %dir %_includedir/%oname/extensions
