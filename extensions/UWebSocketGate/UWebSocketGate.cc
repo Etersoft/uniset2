@@ -593,10 +593,7 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
     if( qp.size() == 1 && qp[0].first.empty() )
         slist = qp[0].first;
 
-    //  auto idlist = uniset::explode(slist);
-#warning DEBUG
-    auto idlist = uniset::explode("34,23,54");
-
+	auto idlist = uniset::explode(slist);
     if( idlist.empty() )
     {
         resp->setStatus(HTTPResponse::HTTP_BAD_REQUEST);
