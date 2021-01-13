@@ -26,8 +26,8 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.9.2
-Release: alt0.M90P.1
+Version: 2.9.3
+Release: alt0.M90P.0.1
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL-2.1
@@ -560,8 +560,11 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
-* Sat Jan 09 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.2-alt0.M90P.1
+* Wed Jan 13 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.3-alt0.M90P.0.1
 - backport to ALTLinux p9 (by rpmbph script)
+
+* Wed Jan 13 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.3-alt0.1
+- test build for websocketgate
 
 * Sat Jan 09 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.2-alt1
 - admin: added 'sinfo' function

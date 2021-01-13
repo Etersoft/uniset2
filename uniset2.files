@@ -295,6 +295,11 @@
 ./extensions/UniNetwork/UniExchange.cc
 ./extensions/UniNetwork/UniExchange.h
 ./extensions/UniNetwork/uninet.cc
+./extensions/UWebSocketGate/main.cc
+./extensions/UWebSocketGate/Makefile.am
+./extensions/UWebSocketGate/UWebSocketGate.cc
+./extensions/UWebSocketGate/UWebSocketGate.h
+./extensions/UWebSocketGate/UWebSocketGateSugar.h
 ./IDL/Makefile.am
 ./IDL/Processes/Makefile.am
 ./IDL/UniSetTypes/Makefile.am
