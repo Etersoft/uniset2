@@ -192,6 +192,7 @@ UTCPCore::Buffer* UWebSocketGate::to_json( const SensorMessage* sm, const std::s
 {
     Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
 
+    json->set("type", "SensorInfo");
     json->set("error", err);
     json->set("id", sm->id);
     json->set("value", sm->value);
@@ -593,7 +594,8 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
     if( qp.size() == 1 && qp[0].first.empty() )
         slist = qp[0].first;
 
-	auto idlist = uniset::explode(slist);
+    auto idlist = uniset::explode(slist);
+
     if( idlist.empty() )
     {
         resp->setStatus(HTTPResponse::HTTP_BAD_REQUEST);
