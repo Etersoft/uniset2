@@ -1219,7 +1219,7 @@ int sinfo(const string& args, UInterface& ui )
             if( it.si.node == DefaultObjectId )
                 it.si.node = conf->getLocalNode();
 
-            IOController_i::SensorIOInfo_var sinf = ui.getSensorIOInfo(it.si);
+            auto sinf = ui.getSensorIOInfo(it.si);
 #if 0
             UniversalIO::IOType type;     /*!< тип */
             long priority;                /*!< приоритет уведомления */
@@ -1229,22 +1229,22 @@ int sinfo(const string& args, UInterface& ui )
             const int w = 14;
             print_help(w, "id", std::to_string(it.si.id) + "\n", " ", " : ");
             print_help(w, "node", std::to_string(it.si.node) + "\n", " ", " : ");
-            print_help(w, "value", std::to_string(sinf->value) + "\n", " ", " : ");
-            print_help(w, "real_value", std::to_string(sinf->real_value) + "\n", " ", " : ");
-            print_help(w, "frozen", std::to_string(sinf->frozen) + "\n", " ", " : ");
-            print_help(w, "undefined", std::to_string(sinf->undefined) + "\n", " ", " : ");
-            print_help(w, "blocked", std::to_string(sinf->blocked) + "\n", " ", " : ");
+            print_help(w, "value", std::to_string(sinf.value) + "\n", " ", " : ");
+            print_help(w, "real_value", std::to_string(sinf.real_value) + "\n", " ", " : ");
+            print_help(w, "frozen", std::to_string(sinf.frozen) + "\n", " ", " : ");
+            print_help(w, "undefined", std::to_string(sinf.undefined) + "\n", " ", " : ");
+            print_help(w, "blocked", std::to_string(sinf.blocked) + "\n", " ", " : ");
 
-            if( sinf->depend_sid != DefaultObjectId )
-                print_help(w, "depend_sensor", "(" + to_string(sinf->depend_sid) + ")" + ORepHelpers::getShortName(conf->oind->getMapName(sinf->depend_sid)) + "\n", " ", " : ");
+            if( sinf.depend_sid != DefaultObjectId )
+                print_help(w, "depend_sensor", "(" + to_string(sinf.depend_sid) + ")" + ORepHelpers::getShortName(conf->oind->getMapName(sinf.depend_sid)) + "\n", " ", " : ");
 
-            if( sinf->supplier == uniset::AdminID )
+            if( sinf.supplier == uniset::AdminID )
                 print_help(w, "supplier", "admin\n", " ", " : ");
             else
-                print_help(w, "supplier", ORepHelpers::getShortName(conf->oind->getMapName(sinf->supplier)) + "\n", " ", " : ");
+                print_help(w, "supplier", ORepHelpers::getShortName(conf->oind->getMapName(sinf.supplier)) + "\n", " ", " : ");
 
             ostringstream ts;
-            ts << dateToString(sinf->tv_sec) << " " << timeToString(sinf->tv_sec) << "." << sinf->tv_nsec << "\n";
+            ts << dateToString(sinf.tv_sec) << " " << timeToString(sinf.tv_sec) << "." << sinf.tv_nsec << "\n";
             print_help(w, "changed", ts.str(), " ", " : ");
         }
         catch( const uniset::Exception& ex )

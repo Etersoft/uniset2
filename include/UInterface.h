@@ -80,7 +80,7 @@ namespace uniset
             IOController_i::SensorInfoSeq_var getSensorSeq( const uniset::IDList& lst );
 
             //! Получение состояния информации о датчике
-            IOController_i::SensorIOInfo_var getSensorIOInfo( const IOController_i::SensorInfo& si );
+            IOController_i::SensorIOInfo getSensorIOInfo( const IOController_i::SensorInfo& si );
 
             /*! Изменения состояния списка входов/выходов
                 \return Возвращает список не найденных идентификаторов */
