@@ -20,8 +20,9 @@
 #include "Configuration.h"
 #include "ObjectIndex_idXML.h"
 // -----------------------------------------------------------------------------------------
-using namespace uniset;
 using namespace std;
+// -----------------------------------------------------------------------------------------
+namespace uniset {
 // -----------------------------------------------------------------------------------------
 ObjectIndex_idXML::ObjectIndex_idXML( const string& xmlfile )
 {
@@ -274,4 +275,6 @@ const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const std::string& name ) co
 
 	return nullptr;
 }
+// ------------------------------------------------------------------------------------------
+} // end of namespace uniset
 // ------------------------------------------------------------------------------------------

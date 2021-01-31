@@ -3,7 +3,7 @@
 ############################################################################
 
 FIRSTSUBDIRS=IDL
-SUBDIRS=. src lib include Utilities tests extensions wrappers docs
+SUBDIRS=. contrib src lib include Utilities tests extensions wrappers docs
 # testsuite
 
 pkgconfigdir 	= $(libdir)/pkgconfig

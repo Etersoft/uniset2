@@ -82,6 +82,11 @@ namespace uniset
     KeyType key( const uniset::ObjectId id, const uniset::ObjectId node );
     KeyType key( const IOController_i::SensorInfo& si );
 
+    uint64_t hash64( const std::string& str ) noexcept;
+    uint64_t hash64( const char* buf, size_t sz ) noexcept;
+    uint32_t hash32( const std::string& str ) noexcept;
+    uint32_t hash32( const char* buf, size_t sz ) noexcept;
+
     typedef std::list<std::string> ListObjectName;    /*!< Список объектов типа ObjectName */
 
     typedef CORBA::Object_ptr ObjectPtr;    /*!< Ссылка на объект, регистрируемый в ObjectRepository */

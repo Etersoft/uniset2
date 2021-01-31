@@ -29,12 +29,13 @@ test_logserver.cc \
 test_tcpcheck.cc \
 test_utcpsocket.cc \
 test_iocontroller_types.cc \
-test_debugstream.cc
+test_debugstream.cc \
+test_oindex_hash.cc
 
 #test_uhttp.cc
 
-tests_with_conf_LDADD   = $(top_builddir)/lib/libUniSet2.la
-tests_with_conf_CPPFLAGS = -I$(top_builddir)/include
+tests_with_conf_LDADD   = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/contrib/cityhash102/libCityHash102.la $(top_builddir)/contrib/libfarmhash/libFarmHash.la
+tests_with_conf_CPPFLAGS = -I$(top_builddir)/include -I$(top_builddir)/contrib/cityhash102/include -I$(top_builddir)/contrib/libfarmhash
 tests_with_conf_SOURCES = tests_with_conf.cc \
 test_conftest.cc \
 test_ui.cc \
