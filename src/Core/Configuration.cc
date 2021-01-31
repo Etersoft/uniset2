@@ -276,7 +276,7 @@ namespace uniset
                     {
                         if( it.getIntProp("idfromfile") == 0 )
                         {
-                            shared_ptr<ObjectIndex_XML> oi = make_shared<ObjectIndex_XML>(unixml); //(fileConfName);
+                            shared_ptr<ObjectIndex_hashXML> oi = make_shared<ObjectIndex_hashXML>(unixml); //(fileConfName);
                             oind = static_pointer_cast<ObjectIndex>(oi);
                         }
                         else
