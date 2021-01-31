@@ -732,10 +732,20 @@ string uniset::BadSymbolsToStr()
     return bad;
 }
 // ---------------------------------------------------------------------------------------------------------------
+struct keys_t {
+	uniset::ObjectId id;
+	uniset::ObjectId node;
+
+	keys_t( const uniset::ObjectId& _id, const uniset::ObjectId& _node ):
+		id(_id),
+		node(_node)
+	{}
+};
+
 uniset::KeyType uniset::key( const uniset::ObjectId id, const uniset::ObjectId node )
 {
-    //! \warning что тут у нас с переполнением..
-    return KeyType( (id * node) + (id + 2 * node) );
+	keys_t k(id,node);
+	return uniset::hash64( reinterpret_cast<char*>(&k), sizeof(k) );
 }
 // ---------------------------------------------------------------------------------------------------------------
 uniset::KeyType uniset::key( const IOController_i::SensorInfo& si )

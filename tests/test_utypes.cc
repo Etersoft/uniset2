@@ -423,3 +423,11 @@ TEST_CASE("UniSetTypes: hash32", "[utypes][hash32]" )
 	REQUIRE( uniset::hash32("ta") != uniset::hash32("at") );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: key", "[utypes][key]" )
+{
+	REQUIRE( uniset::key(100,100) == uint64_t(12423972911335977860) );
+	REQUIRE( uniset::key(100,100) == uint64_t(12423972911335977860) );
+	REQUIRE( uniset::key(1e14,1e16) == uint64_t(13802851885616383566) );
+	REQUIRE( uniset::key(101,100) == uint64_t(793928870581810946) );
+}
+// -----------------------------------------------------------------------------
