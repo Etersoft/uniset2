@@ -400,3 +400,32 @@ TEST_CASE("UniSetTypes: ios_fmt_restorer", "[utypes][ios_fmt_restorer]" )
     REQUIRE( s.str() == " 5" );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: hash64", "[utypes][hash64]" )
+{
+	REQUIRE( uniset::hash64("test") == uint64_t(17703940110308125106) );
+	REQUIRE( uniset::hash64("test2") == uint64_t(11165864767333097451) );
+	REQUIRE( uniset::hash64("2tset") == uint64_t(15246161741804761271) );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: hash32", "[utypes][hash32]" )
+{
+	REQUIRE( sizeof(uniset::ObjectId) == sizeof(uint32_t) );
+	REQUIRE( uniset::hash32("test") == uint32_t(168770635) );
+	REQUIRE( uniset::hash32("test2") == uint32_t(4018550908) );
+	REQUIRE( uniset::hash32("2tset") == uint32_t(1660083104) );
+	REQUIRE( uniset::hash32("ttt1") != uniset::hash32("1ttt") );
+	REQUIRE( uniset::hash32("ta") != uniset::hash32("at") );
+	REQUIRE( uniset::hash32("DefaultObjectId") == 122387491 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: key", "[utypes][key]" )
+{
+	REQUIRE( uniset::key(100, 100) == uint64_t(12423972911335977860) );
+	REQUIRE( uniset::key(101, 100) == uint64_t(793928870581810946) );
+	REQUIRE( uniset::key(100, 101) == uint64_t(2907929044583608809) );
+	// max int
+	REQUIRE( uniset::key(2147483647, 2147483647) == uint64_t(13802851885616383566) );
+	REQUIRE( uniset::key(2147483647, 2147483646) == uint64_t(826978890373207942) );
+	REQUIRE( uniset::key(2147483646, 2147483647) == uint64_t(18348137753129063869) );
+}
+// -----------------------------------------------------------------------------

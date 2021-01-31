@@ -32,6 +32,7 @@ namespace uniset
 {
 
     /*! реализация интерфейса ObjectIndex на основе xml-файла, с автоматическим назначением id объектам
+     * DEPRECATED! Use ObjectIndex_hashXML!
      *
      * \todo Проверить функции этого класса на повторную входимость
     */

@@ -24,6 +24,8 @@
 #include <fstream>
 #include "UniSetTypes.h"
 #include "Configuration.h"
+#include "city.h"
+#include "farmhash.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -717,10 +719,20 @@ string uniset::BadSymbolsToStr()
 	return bad;
 }
 // ---------------------------------------------------------------------------------------------------------------
+struct keys_t {
+	uniset::ObjectId id;
+	uniset::ObjectId node;
+
+	keys_t( const uniset::ObjectId& _id, const uniset::ObjectId& _node ):
+		id(_id),
+		node(_node)
+	{}
+} __attribute__((packed));
+
 uniset::KeyType uniset::key( const uniset::ObjectId id, const uniset::ObjectId node )
 {
-	//! \warning что тут у нас с переполнением..
-	return KeyType( (id * node) + (id + 2 * node) );
+	keys_t k(id,node);
+	return uniset::hash64( reinterpret_cast<char*>(&k), sizeof(k) );
 }
 // ---------------------------------------------------------------------------------------------------------------
 uniset::KeyType uniset::key( const IOController_i::SensorInfo& si )
@@ -728,3 +740,22 @@ uniset::KeyType uniset::key( const IOController_i::SensorInfo& si )
 	return key(si.id, si.node);
 }
 // ---------------------------------------------------------------------------------------------------------------
+uint64_t uniset::hash64( const std::string& str ) noexcept
+{
+	return CityHash_v1_0_2::CityHash64(str.data(), str.size());
+}
+
+uint64_t uniset::hash64( const char* buf, size_t sz ) noexcept
+{
+	return CityHash_v1_0_2::CityHash64(buf, sz);
+}
+// ---------------------------------------------------------------------------------------------------------------
+uint32_t uniset::hash32( const std::string& str ) noexcept
+{
+	return NAMESPACE_FOR_HASH_FUNCTIONS::Hash32(str.data(), str.size());
+}
+
+uint32_t uniset::hash32( const char* buf, size_t sz ) noexcept
+{
+	return NAMESPACE_FOR_HASH_FUNCTIONS::Hash32(buf, sz);
+}
