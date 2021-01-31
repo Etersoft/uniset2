@@ -66,6 +66,7 @@ namespace uniset
     std::string BadSymbolsToStr();
 
 
+    /* hash32("DefaultObjectId") = 122387491 */
     const ObjectId DefaultObjectId = -1;    /*!< Идентификатор объекта по умолчанию */
     const ThresholdId DefaultThresholdId = -1;      /*!< идентификатор порогов по умолчанию */
     const ThresholdId DefaultTimerId = -1;      /*!< идентификатор таймера по умолчанию */
