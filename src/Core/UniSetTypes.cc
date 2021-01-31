@@ -25,6 +25,8 @@
 #include <Poco/File.h>
 #include "UniSetTypes.h"
 #include "Configuration.h"
+#include "city.h"
+#include "farmhash.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -741,3 +743,22 @@ uniset::KeyType uniset::key( const IOController_i::SensorInfo& si )
     return key(si.id, si.node);
 }
 // ---------------------------------------------------------------------------------------------------------------
+uint64_t uniset::hash64( const std::string& str ) noexcept
+{
+	return CityHash_v1_0_2::CityHash64(str.data(), str.size());
+}
+
+uint64_t uniset::hash64( const char* buf, size_t sz ) noexcept
+{
+	return CityHash_v1_0_2::CityHash64(buf, sz);
+}
+// ---------------------------------------------------------------------------------------------------------------
+uint32_t uniset::hash32( const std::string& str ) noexcept
+{
+	return NAMESPACE_FOR_HASH_FUNCTIONS::Hash32(str.data(), str.size());
+}
+
+uint32_t uniset::hash32( const char* buf, size_t sz ) noexcept
+{
+	return NAMESPACE_FOR_HASH_FUNCTIONS::Hash32(buf, sz);
+}
