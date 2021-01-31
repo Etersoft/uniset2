@@ -274,7 +274,6 @@ fi
 
 AM_CONDITIONAL(HAVE_EXTENTIONS, test ${ext} = true)
 
-
 #check python support
 AC_MSG_CHECKING([python support])
 buildpython=true
@@ -376,7 +375,7 @@ fi
 AC_MSG_CHECKING([catch version in $CATCH_FILE])
 CATCH_RESULT=
 if cat ${CATCH_FILE} | grep -q "Catch v2."; then 
-	CATCH_VERSION_MAJOR=2; 
+	CATCH_VERSION_MAJOR=2;
 fi
 AC_MSG_RESULT([$CATCH_VERSION_MAJOR])
 
@@ -531,6 +530,9 @@ AC_CONFIG_FILES([Makefile
 				 IDL/UniSetTypes/Makefile
 				 IDL/UniSetTypes/UniSetBaseConstants.idl
 				 IDL/Processes/Makefile
+				 contrib/Makefile
+				 contrib/cityhash102/Makefile
+				 contrib/libfarmhash/Makefile
 				 src/Core/Makefile
 				 src/Communications/Makefile
 				 src/Communications/Modbus/Makefile

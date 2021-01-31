@@ -34,8 +34,8 @@
 #include "Exceptions.h"
 #include "MessageType.h"
 #include "ObjectIndex_Array.h"
-#include "ObjectIndex_XML.h"
 #include "ObjectIndex_idXML.h"
+#include "ObjectIndex_hashXML.h"
 #include "UniSetActivator.h"
 // -------------------------------------------------------------------------
 using namespace std;
@@ -1537,7 +1537,5 @@ namespace uniset
 
         return uniset::uconf;
     }
-    // -------------------------------------------------------------------------
-
     // -------------------------------------------------------------------------
 } // end of UniSetTypes namespace

@@ -406,3 +406,18 @@ TEST_CASE("UniSetTypes: ios_fmt_restorer", "[utypes][ios_fmt_restorer]" )
     REQUIRE( s.str() == " 5" );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: hash64", "[utypes][hash64]" )
+{
+	REQUIRE( uniset::hash64("test") == uint64_t(17703940110308125106) );
+	REQUIRE( uniset::hash64("test2") == uint64_t(11165864767333097451) );
+	REQUIRE( uniset::hash64("2tset") == uint64_t(15246161741804761271) );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: hash32", "[utypes][hash32]" )
+{
+	REQUIRE( sizeof(uniset::ObjectId) == sizeof(uint32_t) );
+	REQUIRE( uniset::hash32("test") == uint32_t(168770635) );
+	REQUIRE( uniset::hash32("test2") == uint32_t(4018550908) );
+	REQUIRE( uniset::hash32("2tset") == uint32_t(1660083104) );
+}
+// -----------------------------------------------------------------------------
