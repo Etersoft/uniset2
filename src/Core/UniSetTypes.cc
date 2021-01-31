@@ -727,7 +727,7 @@ struct keys_t {
 		id(_id),
 		node(_node)
 	{}
-};
+} __attribute__((packed));
 
 uniset::KeyType uniset::key( const uniset::ObjectId id, const uniset::ObjectId node )
 {
