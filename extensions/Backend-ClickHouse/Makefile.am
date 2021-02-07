@@ -1,7 +1,4 @@
-if DISABLE_CLICKHOUSE
-
-else
-
+if ENABLE_CLICKHOUSE
 bin_PROGRAMS = @PACKAGE@-backend-clickhouse
 
 CLICKHOUSE_VER=@LIBVER@

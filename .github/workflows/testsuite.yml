@@ -20,8 +20,7 @@ jobs:
             libcomedi-devel libmariadb-devel libpqxx-devel librrd-devel libsqlite3-devel \
             libxml2-devel libsigc++2-devel libpoco-devel libev-devel libomniORB-devel libmosquitto-devel \
             xsltproc python-base python3-dev libomniORB-names libomniORB-idl libomniORB-utils swig python-devel \
-            python-module-distribute iputils
-
+            python-module-distribute iputils libclickhouse-cpp-devel
       - uses: actions/checkout@v2
       - name: configure
         run: |
