@@ -1,3 +1,4 @@
+if ENABLE_CLICKHOUSE
 if HAVE_TESTS
 
 noinst_PROGRAMS = tests
@@ -20,4 +21,5 @@ clean-local:
 
 include $(top_builddir)/include.mk
 
+endif
 endif

@@ -219,6 +219,7 @@ else
 fi
 
 AM_CONDITIONAL(DISABLE_CLICKHOUSE, test ${buildclickhouse} = false)
+AM_CONDITIONAL(ENABLE_CLICKHOUSE, test ${buildclickhouse} = true)
 AC_SUBST(CLICKHOUSE_LIBS)
 AC_SUBST(CLICKHOUSE_CFLAGS)
 
