@@ -25,7 +25,7 @@ void uniset::ClickHouseTagsConfig::load( const std::shared_ptr<uniset::Configura
 	auto xml = conf->getConfXML();
 
 	// init tags map
-	UniXML::iterator tit = xml->findNode(xml->getFirstNode(),"clickhouse_tags");
+	UniXML::iterator tit = xml->findNode(xml->getFirstNode(),"clickhouse");
 	if( !tit )
 	{
 		ostringstream err;
