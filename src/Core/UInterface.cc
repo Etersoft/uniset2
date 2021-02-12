@@ -2236,7 +2236,7 @@ namespace uniset
 
 	}
 	// --------------------------------------------------------------------------------------------
-	IOController_i::SensorIOInfo_var UInterface::getSensorIOInfo( const IOController_i::SensorInfo& si )
+	IOController_i::SensorIOInfo UInterface::getSensorIOInfo( const IOController_i::SensorInfo& si )
 	{
 		if ( si.id == uniset::DefaultObjectId )
 			throw uniset::ORepFailed("UI(getSensorIOInfo): error node=uniset::DefaultObjectId");
