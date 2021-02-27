@@ -95,7 +95,7 @@ std::ostream& ObjectIndex_Array::printMap( std::ostream& os ) const noexcept
 		assert (i == objectInfo[i].id);
 
 		os  << setw(5) << objectInfo[i].id << "  "
-			<< setw(45) << oind->getBaseName(objectInfo[i].repName)
+			<< setw(45) << objectInfo[i].name
 			<< "  " << objectInfo[i].textName << endl;
 	}
 
