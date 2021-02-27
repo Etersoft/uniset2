@@ -152,6 +152,7 @@ namespace uniset
         ObjectId id = { DefaultObjectId };    /*!< идентификатор */
         std::string repName = { "" };      /*!< текстовое имя для регистрации в репозитории */
         std::string textName = { "" };     /*!< текстовое имя */
+        std::string name = { "" };     /*!< имя */
         xmlNode* xmlnode = { nullptr };
 
         inline bool operator < ( const ObjectInfo& o ) const

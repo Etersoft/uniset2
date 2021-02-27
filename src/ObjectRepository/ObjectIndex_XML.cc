@@ -93,8 +93,7 @@ std::ostream& ObjectIndex_XML::printMap( std::ostream& os ) const noexcept
 			continue;
 
 		os  << setw(5) << it->id << "  "
-			//            << setw(45) << ORepHelpers::getShortName(it->repName,'/')
-			<< setw(45) << it->repName
+			<< setw(45) << it->name
 			<< "  " << it->textName << endl;
 	}
 
@@ -182,25 +181,19 @@ size_t ObjectIndex_XML::read_section( const std::shared_ptr<UniXML>& xml, const 
 		omap[ind].id = ind;
 
 		// name
+		omap[ind].name = xml->getProp(it, "name");
+
 		ostringstream n;
-		n << secname << xml->getProp(it, "name");
-		const string name(n.str());
-		omap[ind].repName = name;
+		n << secname << omap[ind].name;
+		omap[ind].repName = n.str();
 
 		// mok
-		mok[name] = ind; // mok[omap[ind].repName] = ind;
+		mok[omap[ind].repName] = ind;
 
 		// textname
-		string textname(xml->getProp(it, "textname"));
-
-		if( textname.empty() )
-			textname = xml->getProp(it, "name");
-
-		omap[ind].textName = textname;
-
+		omap[ind].textName = xml->getProp(it, "textname");
 		omap[ind].xmlnode = it;
 
-		//        cout << "read: " << "(" << ind << ") " << omap[ind].repName << "\t" << omap[ind].textName << endl;
 		ind++;
 
 		if( ind >= omap.size() )
@@ -248,17 +241,9 @@ size_t ObjectIndex_XML::read_nodes(const std::shared_ptr<UniXML>& xml, const std
 	for( ; it.getCurrent(); it.goNext() )
 	{
 		omap[ind].id = ind;
-		string nodename(xml->getProp(it, "name"));
-
-		omap[ind].repName = nodename;
-
-		// textname
-		string textname(xml->getProp(it, "textname"));
-
-		if( textname.empty() )
-			textname = nodename;
-
-		omap[ind].textName = textname;
+		omap[ind].name = xml->getProp(it, "name");
+		omap[ind].repName = omap[ind].name;
+		omap[ind].textName = xml->getProp(it, "textname");
 		omap[ind].xmlnode = it;
 		//
 		mok[omap[ind].repName] = ind;

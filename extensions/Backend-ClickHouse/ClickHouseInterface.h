@@ -26,56 +26,62 @@
 // -------------------------------------------------------------------------
 namespace uniset
 {
-	// ----------------------------------------------------------------------------
-	class ClickHouseInterface:
-		public DBNetInterface
-	{
-		public:
+    // ----------------------------------------------------------------------------
+    class ClickHouseInterface:
+        public DBNetInterface
+    {
+        public:
 
-			ClickHouseInterface();
-			~ClickHouseInterface();
+            ClickHouseInterface();
+            ~ClickHouseInterface();
 
-			virtual bool nconnect( const std::string& host, const std::string& user,
-								   const std::string& pswd, const std::string& dbname,
-								   unsigned int port = 9000) override;
-			virtual bool close() override;
-			virtual bool isConnection() const override;
-			virtual bool ping() const override;
-
-
-			virtual const std::string lastQuery() override;
-
-			// Unsupport types: Array,Nullable,Tuple, idx
-			virtual DBResult query( const std::string& q ) override;
-
-			// supported all types
-			const std::vector<clickhouse::Block> bquery( const std::string& q );
-
-			bool execute( const std::string& q );
-			bool insert( const std::string& tblname, const clickhouse::Block& data );
-
-			virtual const std::string error() override;
-
-			bool reconnect(const std::string& host, const std::string& user,
-						   const std::string& pswd, const std::string& dbname,
-						   unsigned int port = 9000);
+            virtual bool nconnect( const std::string& host, const std::string& user,
+                                   const std::string& pswd, const std::string& dbname,
+                                   unsigned int port = 9000) override;
+            virtual bool close() override;
+            virtual bool isConnection() const override;
+            virtual bool ping() const override;
 
 
-			// unsupported
-			virtual bool insert( const std::string& q ) override { return false; }
-			virtual double insert_id() override { return -1; }
+            virtual const std::string lastQuery() override;
 
-		protected:
+            // Unsupport types: Array,Nullable,Tuple, idx
+            virtual DBResult query( const std::string& q ) override;
 
-		private:
-			DBResult makeResult( const clickhouse::Block& res );
-			void appendResult( DBResult& ret, const clickhouse::Block& block );
+            // supported all types
+            const std::vector<clickhouse::Block> bquery( const std::string& q );
 
-			std::unique_ptr<clickhouse::Client> db;
-			std::string lastQ;
-			std::string lastE;
-	};
-	// ----------------------------------------------------------------------------------
+            bool execute( const std::string& q );
+            bool insert( const std::string& tblname, const clickhouse::Block& data );
+
+            virtual const std::string error() override;
+
+            bool reconnect(const std::string& host, const std::string& user,
+                           const std::string& pswd, const std::string& dbname,
+                           unsigned int port = 9000);
+
+
+            // unsupported
+            virtual bool insert( const std::string& q ) override
+            {
+                return false;
+            }
+            virtual double insert_id() override
+            {
+                return -1;
+            }
+
+        protected:
+
+        private:
+            DBResult makeResult( const clickhouse::Block& res );
+            void appendResult( DBResult& ret, const clickhouse::Block& block );
+
+            std::unique_ptr<clickhouse::Client> db;
+            std::string lastQ;
+            std::string lastE;
+    };
+    // ----------------------------------------------------------------------------------
 } // end of namespace uniset
 // ----------------------------------------------------------------------------
 #endif

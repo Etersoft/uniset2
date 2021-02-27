@@ -50,7 +50,7 @@
 	<BackendOpenTSDB name="BackendOpenTSDB" host="localhost" filter_field="tsdb" filter_value="1" tags="host=localhost uniset=1" prefix="uniset"/>
 	<UWebSocketGate name="UWebSocketGate1"/>
 	<UWebSocketGate name="UWebSocketGate2" port="8082"/>
-	<BackendClickHouse name="ClickHouse" dbname="UNISET_PLC" dbuser="" dbhost="localhost" dbport="9000" filter_field="clickhouse" filter_value="1" tags="host=localhost uniset=1" prefix="uniset">
+	<BackendClickHouse name="ClickHouse" dbname="uniset" dbuser="" dbhost="localhost" dbport="9000" filter_field="clickhouse" filter_value="1" tags="host=localhost uniset=1" prefix="uniset">
 	    <clickhouse_tags>
             <tag name="tags1">
                 <item value="1" tags="tag11=key11"/>
