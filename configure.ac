@@ -3,6 +3,7 @@
 # See doc: http://www.gnu.org/software/hello/manual/autoconf/Generic-Programs.html
 
 # AC_PREREQ(2.59)
+<<<<<<< HEAD
 AC_INIT([uniset2], [2.11.1], pv@etersoft.ru)
 AM_INIT_AUTOMAKE([subdir-objects])
 

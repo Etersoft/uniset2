@@ -27,48 +27,50 @@ using namespace uniset::extensions;
 // -----------------------------------------------------------------------------
 BackendClickHouse::TagList BackendClickHouse::parseTags( const std::string& tags )
 {
-	BackendClickHouse::TagList ret;
+    BackendClickHouse::TagList ret;
 
-	auto taglist = uniset::explode_str(tags, ' ');
-	if( taglist.empty() )
-		return ret;
+    auto taglist = uniset::explode_str(tags, ' ');
 
-	for( const auto& t: taglist )
-	{
-		auto tag = uniset::explode_str(t, '=');
-		if( tag.size() < 2 )
-			throw uniset::SystemError("Bad format for tag '" + t + "'. Must be 'tag=val'");
+    if( taglist.empty() )
+        return ret;
 
-		ret.emplace_back(std::make_pair(tag[0], tag[1]));
-	}
+    for( const auto& t : taglist )
+    {
+        auto tag = uniset::explode_str(t, '=');
 
-	return ret;
+        if( tag.size() < 2 )
+            throw uniset::SystemError("Bad format for tag '" + t + "'. Must be 'tag=val'");
+
+        ret.emplace_back(std::make_pair(tag[0], tag[1]));
+    }
+
+    return ret;
 }
 //--------------------------------------------------------------------------------
 BackendClickHouse::BackendClickHouse( uniset::ObjectId objId, xmlNode* cnode,
-								  uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
-								  const string& prefix ):
-	UObject_SK(objId, cnode, string(prefix + "-")),
-	prefix(prefix)
+                                      uniset::ObjectId shmId, const std::shared_ptr<SharedMemory>& ic,
+                                      const string& prefix ):
+    UObject_SK(objId, cnode, string(prefix + "-")),
+    prefix(prefix)
 {
-	auto conf = uniset_conf();
+    auto conf = uniset_conf();
 
-	if( ic )
-		ic->logAgregator()->add(logAgregator());
+    if( ic )
+        ic->logAgregator()->add(logAgregator());
 
-	shm = make_shared<SMInterface>(shmId, ui, objId, ic);
-	db = unisetstd::make_unique<ClickHouseInterface>();
-	dyntags = unisetstd::make_unique<uniset::ClickHouseTagsConfig>();
+    shm = make_shared<SMInterface>(shmId, ui, objId, ic);
+    db = unisetstd::make_unique<ClickHouseInterface>();
+    dyntags = unisetstd::make_unique<uniset::ClickHouseTagsConfig>();
 
-	createColumns();
+    createColumns();
 
-	init(cnode);
+    init(cnode);
 
-	if( smTestID == DefaultObjectId && !clickhouseParams.empty() )
-	{
-		// берём первый датчик из списка
-		smTestID = clickhouseParams.begin()->first;
-	}
+    if( smTestID == DefaultObjectId && !clickhouseParams.empty() )
+    {
+        // берём первый датчик из списка
+        smTestID = clickhouseParams.begin()->first;
+    }
 }
 // -----------------------------------------------------------------------------
 BackendClickHouse::~BackendClickHouse()
@@ -77,409 +79,435 @@ BackendClickHouse::~BackendClickHouse()
 // -----------------------------------------------------------------------------
 void BackendClickHouse::init( xmlNode* cnode )
 {
-	UniXML::iterator it(cnode);
+    UniXML::iterator it(cnode);
 
-	auto conf = uniset_conf();
+    auto conf = uniset_conf();
 
-	dbhost = conf->getArg2Param("--" + prefix + "-dbhost", it.getProp("dbhost"), "localhost");
-	dbport = conf->getArgPInt("--" + prefix + "-dbport", it.getProp("dbport"), 9000);
-	dbuser = conf->getArg2Param("--" + prefix + "-dbuser", it.getProp("dbuser"), "");
-	dbpass = conf->getArg2Param("--" + prefix + "-dbpass", it.getProp("dbpass"), "");
-	dbname = conf->getArg2Param("--" + prefix + "-dbname", it.getProp("dbname"), "");
-	reconnectTime = conf->getArgPInt("--" + prefix + "-reconnect-time", it.getProp("reconnectTime"), reconnectTime);
-	bufMaxSize = conf->getArgPInt("--" + prefix + "-buf-maxsize", it.getProp("bufMaxSize"), bufMaxSize);
-	bufSize = conf->getArgPInt("--" + prefix + "-buf-size", it.getProp("bufMaxSize"), bufSize);
-	bufSyncTime = conf->getArgPInt("--" + prefix + "-buf-sync-time", it.getProp("bufSyncTimeout"), bufSyncTime);
+    dbhost = conf->getArg2Param("--" + prefix + "-dbhost", it.getProp("dbhost"), "localhost");
+    dbport = conf->getArgPInt("--" + prefix + "-dbport", it.getProp("dbport"), 9000);
+    dbuser = conf->getArg2Param("--" + prefix + "-dbuser", it.getProp("dbuser"), "");
+    dbpass = conf->getArg2Param("--" + prefix + "-dbpass", it.getProp("dbpass"), "");
+    dbname = conf->getArg2Param("--" + prefix + "-dbname", it.getProp("dbname"), "");
+    reconnectTime = conf->getArgPInt("--" + prefix + "-reconnect-time", it.getProp("reconnectTime"), reconnectTime);
+    bufMaxSize = conf->getArgPInt("--" + prefix + "-buf-maxsize", it.getProp("bufMaxSize"), bufMaxSize);
+    bufSize = conf->getArgPInt("--" + prefix + "-buf-size", it.getProp("bufMaxSize"), bufSize);
+    bufSyncTime = conf->getArgPInt("--" + prefix + "-buf-sync-time", it.getProp("bufSyncTimeout"), bufSyncTime);
 
-	const string tblname = conf->getArg2Param("--" + prefix + "-dbtablename", it.getProp("dtablebname"), "main_history");
-	fullTableName = dbname.empty() ? tblname : dbname + "." + tblname;
+    const string tblname = conf->getArg2Param("--" + prefix + "-dbtablename", it.getProp("dtablebname"), "main_history");
+    fullTableName = dbname.empty() ? tblname : dbname + "." + tblname;
 
-	int sz = conf->getArgPInt("--" + prefix + "-uniset-object-size-message-queue", it.getProp("sizeOfMessageQueue"), 10000);
-	if( sz > 0 )
-		setMaxSizeOfMessageQueue(sz);
+    int sz = conf->getArgPInt("--" + prefix + "-uniset-object-size-message-queue", it.getProp("sizeOfMessageQueue"), 10000);
 
-	const string ff = conf->getArg2Param("--" + prefix + "-filter-field", it.getProp("filter_field"), "" );
-	const string fv = conf->getArg2Param("--" + prefix + "-filter-value", it.getProp("filter_value"), "" );
+    if( sz > 0 )
+        setMaxSizeOfMessageQueue(sz);
 
-	const string gtags = conf->getArg2Param("--" + prefix + "-tags", it.getProp("tags"), "");
-	globalTags = parseTags(gtags);
+    const string ff = conf->getArg2Param("--" + prefix + "-filter-field", it.getProp("filter_field"), "" );
+    const string fv = conf->getArg2Param("--" + prefix + "-filter-value", it.getProp("filter_value"), "" );
 
-	myinfo << myname << "(init): clickhouse host=" << dbhost << ":" << dbport << " user=" << dbuser
-		   << " " << ff << "='" << fv << "'"
-		   << " tags='" << gtags << "'"
-		   << endl;
+    const string gtags = conf->getArg2Param("--" + prefix + "-tags", it.getProp("tags"), "");
+    globalTags = parseTags(gtags);
 
-	UniXML::iterator tit = it;
-	if( tit.goChildren() )
-	{
-		if( tit.find("clickhouse_tags", false) )
-			dyntags->loadTagsMap(tit);
-	}
+    myinfo << myname << "(init): clickhouse host=" << dbhost << ":" << dbport << " user=" << dbuser
+           << " " << ff << "='" << fv << "'"
+           << " tags='" << gtags << "'"
+           << endl;
 
-	// try
-	{
-		xmlNode* snode = conf->getXMLSensorsSection();
+    UniXML::iterator tit = it;
 
-		if( !snode )
-		{
-			ostringstream err;
-			err << myname << "(init): Not found section <sensors>";
-			mycrit << err.str() << endl;
-			throw SystemError(err.str());
-		}
+    if( tit.goChildren() )
+    {
+        if( tit.find("clickhouse_tags", false) )
+            dyntags->loadTagsMap(tit);
+    }
 
-		UniXML::iterator it1(snode);
+    // try
+    {
+        xmlNode* snode = conf->getXMLSensorsSection();
 
-		if( !it1.goChildren() )
-		{
-			ostringstream err;
-			err << myname << "(init): section <sensors> empty?!";
-			mycrit << err.str() << endl;
-			throw SystemError(err.str());
-		}
+        if( !snode )
+        {
+            ostringstream err;
+            err << myname << "(init): Not found section <sensors>";
+            mycrit << err.str() << endl;
+            throw SystemError(err.str());
+        }
 
-		for(; it1.getCurrent(); it1.goNext() )
-		{
-			if( !uniset::check_filter(it1, ff, fv) )
-				continue;
+        UniXML::iterator it1(snode);
 
-			const std::string name = it1.getProp("name");
-			ObjectId sid = conf->getSensorID( name );
+        if( !it1.goChildren() )
+        {
+            ostringstream err;
+            err << myname << "(init): section <sensors> empty?!";
+            mycrit << err.str() << endl;
+            throw SystemError(err.str());
+        }
 
-			if( sid == DefaultObjectId )
-			{
-				ostringstream err;
-				err << myname << "(init): Unknown SensorID for '" << name << "'";
-				mycrit << err.str();
-				throw SystemError(err.str());
-			}
+        for(; it1.getCurrent(); it1.goNext() )
+        {
+            if( !uniset::check_filter(it1, ff, fv) )
+                continue;
 
-			auto tags = parseTags(it1.getProp("clickhouse_tags"));
+            const std::string name = it1.getProp("name");
+            ObjectId sid = conf->getSensorID( name );
 
-			clickhouseParams.emplace( sid, ParamInfo(name, tags) );
-			dyntags->initFromItem(conf, it1);
-		}
+            if( sid == DefaultObjectId )
+            {
+                ostringstream err;
+                err << myname << "(init): Unknown SensorID for '" << name << "'";
+                mycrit << err.str();
+                throw SystemError(err.str());
+            }
 
-		if( clickhouseParams.empty() )
-		{
-			ostringstream err;
-			err << myname << "(init): Not found items for send to ClickHouse..";
-			mycrit << err.str() << endl;
-			throw SystemError(err.str());
-		}
+            auto tags = parseTags(it1.getProp("clickhouse_tags"));
 
-	}
+            clickhouseParams.emplace( sid, ParamInfo(name, tags) );
+            dyntags->initFromItem(conf, it1);
+        }
 
-	myinfo << myname << "(init): " << clickhouseParams.size() << " sensors.." << endl;
+        if( clickhouseParams.empty() )
+        {
+            ostringstream err;
+            err << myname << "(init): Not found items for send to ClickHouse..";
+            mycrit << err.str() << endl;
+            throw SystemError(err.str());
+        }
+
+    }
+
+    myinfo << myname << "(init): " << clickhouseParams.size() << " sensors.." << endl;
 }
 //--------------------------------------------------------------------------------
 void BackendClickHouse::createColumns()
 {
-	colTimeStamp = std::make_shared<clickhouse::ColumnDateTime>();
-	colTimeUsec = std::make_shared<clickhouse::ColumnUInt64>();
-	colSensorID = std::make_shared<clickhouse::ColumnUInt64>();
-	colValue = std::make_shared<clickhouse::ColumnFloat64>();
-	colNode = std::make_shared<clickhouse::ColumnUInt64>();
-	arrTagKeys = std::make_shared<clickhouse::ColumnArray>(std::make_shared<clickhouse::ColumnString>());
-	arrTagValues = std::make_shared<clickhouse::ColumnArray>(std::make_shared<clickhouse::ColumnString>());
+    colTimeStamp = std::make_shared<clickhouse::ColumnDateTime>();
+    colTimeUsec = std::make_shared<clickhouse::ColumnUInt64>();
+    colValue = std::make_shared<clickhouse::ColumnFloat64>();
+    colName = std::make_shared<clickhouse::ColumnString>();
+    colNodeName = std::make_shared<clickhouse::ColumnString>();
+    colTextName = std::make_shared<clickhouse::ColumnString>();
+    colProducer = std::make_shared<clickhouse::ColumnString>();
+    arrTagKeys = std::make_shared<clickhouse::ColumnArray>(std::make_shared<clickhouse::ColumnString>());
+    arrTagValues = std::make_shared<clickhouse::ColumnArray>(std::make_shared<clickhouse::ColumnString>());
 }
 //--------------------------------------------------------------------------------------------
 void BackendClickHouse::clearData()
 {
-	colTimeStamp->Clear();
-	colTimeUsec->Clear();
-	colSensorID->Clear();
-	colValue->Clear();
-	colNode->Clear();
-	arrTagKeys->Clear();
-	arrTagValues->Clear();
+    colTimeStamp->Clear();
+    colTimeUsec->Clear();
+    colValue->Clear();
+    colName->Clear();
+    colNodeName->Clear();
+    colTextName->Clear();
+    colProducer->Clear();
+    arrTagKeys->Clear();
+    arrTagValues->Clear();
 }
 //--------------------------------------------------------------------------------
 void BackendClickHouse::help_print( int argc, const char* const* argv )
 {
-	cout << " Default prefix='clickhouse'" << endl;
-	cout << "--prefix-name                - ID. Default: BackendClickHouse." << endl;
-	cout << "--prefix-confnode            - configuration section name. Default: <NAME name='NAME'...> " << endl;
-	cout << endl;
-	cout << " OpenTSDB: " << endl;
-	cout << "--prefix-host  ip                         - OpenTSDB: host. Default: localhost" << endl;
-	cout << "--prefix-port  num                        - OpenTSDB: port. Default: 4242" << endl;
-	cout << "--prefix-prefix name                      - OpenTSDB: prefix for data" << endl;
-	cout << "--prefix-tags  'TAG1=VAL1 TAG2=VAL2...'   - OpenTSDB: tags for data" << endl;
-	cout << "--prefix-reconnect-time msec              - Time for attempts to connect to DB. Default: 5 sec" << endl;
-	cout << endl;
-	cout << "--prefix-buf-size  sz        - Buffer before save to DB. Default: 500" << endl;
-	cout << "--prefix-buf-maxsize  sz     - Maximum size for buffer (drop messages). Default: 5000" << endl;
-	cout << "--prefix-buf-sync-time msec  - Time period for forced data writing to DB. Default: 5 sec" << endl;
-	cout << endl;
-	cout << "--prefix-heartbeat-id name   - ID for heartbeat sensor." << endl;
-	cout << "--prefix-heartbeat-max val   - max value for heartbeat sensor." << endl;
-	cout << endl;
-	cout << " Logs: " << endl;
-	cout << "--prefix-log-...            - log control" << endl;
-	cout << "             add-levels ...  " << endl;
-	cout << "             del-levels ...  " << endl;
-	cout << "             set-levels ...  " << endl;
-	cout << "             logfile filanme " << endl;
-	cout << "             no-debug " << endl;
-	cout << endl;
-	cout << " LogServer: " << endl;
-	cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;
-	cout << "--prefix-logserver-host ip  - listen ip. Default: localhost" << endl;
-	cout << "--prefix-logserver-port num - listen port. Default: ID" << endl;
-	cout << LogServer::help_print("prefix-logserver") << endl;
+    cout << " Default prefix='clickhouse'" << endl;
+    cout << "--prefix-name                - ID. Default: BackendClickHouse." << endl;
+    cout << "--prefix-confnode            - configuration section name. Default: <NAME name='NAME'...> " << endl;
+    cout << endl;
+    cout << " OpenTSDB: " << endl;
+    cout << "--prefix-host  ip                         - OpenTSDB: host. Default: localhost" << endl;
+    cout << "--prefix-port  num                        - OpenTSDB: port. Default: 4242" << endl;
+    cout << "--prefix-prefix name                      - OpenTSDB: prefix for data" << endl;
+    cout << "--prefix-tags  'TAG1=VAL1 TAG2=VAL2...'   - OpenTSDB: tags for data" << endl;
+    cout << "--prefix-reconnect-time msec              - Time for attempts to connect to DB. Default: 5 sec" << endl;
+    cout << endl;
+    cout << "--prefix-buf-size  sz        - Buffer before save to DB. Default: 500" << endl;
+    cout << "--prefix-buf-maxsize  sz     - Maximum size for buffer (drop messages). Default: 5000" << endl;
+    cout << "--prefix-buf-sync-time msec  - Time period for forced data writing to DB. Default: 5 sec" << endl;
+    cout << endl;
+    cout << "--prefix-heartbeat-id name   - ID for heartbeat sensor." << endl;
+    cout << "--prefix-heartbeat-max val   - max value for heartbeat sensor." << endl;
+    cout << endl;
+    cout << " Logs: " << endl;
+    cout << "--prefix-log-...            - log control" << endl;
+    cout << "             add-levels ...  " << endl;
+    cout << "             del-levels ...  " << endl;
+    cout << "             set-levels ...  " << endl;
+    cout << "             logfile filanme " << endl;
+    cout << "             no-debug " << endl;
+    cout << endl;
+    cout << " LogServer: " << endl;
+    cout << "--prefix-run-logserver      - run logserver. Default: localhost:id" << endl;
+    cout << "--prefix-logserver-host ip  - listen ip. Default: localhost" << endl;
+    cout << "--prefix-logserver-port num - listen port. Default: ID" << endl;
+    cout << LogServer::help_print("prefix-logserver") << endl;
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<BackendClickHouse> BackendClickHouse::init_clickhouse( int argc,
-		const char* const* argv,
-		uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
-		const std::string& prefix )
+        const char* const* argv,
+        uniset::ObjectId icID, const std::shared_ptr<SharedMemory>& ic,
+        const std::string& prefix )
 {
-	auto conf = uniset_conf();
+    auto conf = uniset_conf();
 
-	string name = conf->getArgParam("--" + prefix + "-name", "BackendClickHouse");
+    string name = conf->getArgParam("--" + prefix + "-name", "BackendClickHouse");
 
-	if( name.empty() )
-	{
-		dcrit << "(BackendClickHouse): Unknown name. Usage: --" <<  prefix << "-name" << endl;
-		return 0;
-	}
+    if( name.empty() )
+    {
+        dcrit << "(BackendClickHouse): Unknown name. Usage: --" <<  prefix << "-name" << endl;
+        return 0;
+    }
 
-	ObjectId ID = conf->getObjectID(name);
+    ObjectId ID = conf->getObjectID(name);
 
-	if( ID == uniset::DefaultObjectId )
-	{
-		dcrit << "(BackendClickHouse): Not found ID for '" << name
-			  << " in '" << conf->getObjectsSection() << "' section" << endl;
-		return 0;
-	}
+    if( ID == uniset::DefaultObjectId )
+    {
+        dcrit << "(BackendClickHouse): Not found ID for '" << name
+              << " in '" << conf->getObjectsSection() << "' section" << endl;
+        return 0;
+    }
 
-	string confname = conf->getArgParam("--" + prefix + "-confnode", name);
-	xmlNode* cnode = conf->getNode(confname);
+    string confname = conf->getArgParam("--" + prefix + "-confnode", name);
+    xmlNode* cnode = conf->getNode(confname);
 
-	if( !cnode )
-	{
-		dcrit << "(BackendClickHouse): " << name << "(init): Not found <" + confname + ">" << endl;
-		return 0;
-	}
+    if( !cnode )
+    {
+        dcrit << "(BackendClickHouse): " << name << "(init): Not found <" + confname + ">" << endl;
+        return 0;
+    }
 
-	dinfo << "(BackendClickHouse): name = " << name << "(" << ID << ")" << endl;
-	return make_shared<BackendClickHouse>(ID, cnode, icID, ic, prefix);
+    dinfo << "(BackendClickHouse): name = " << name << "(" << ID << ")" << endl;
+    return make_shared<BackendClickHouse>(ID, cnode, icID, ic, prefix);
 }
 // -----------------------------------------------------------------------------
 void BackendClickHouse::callback() noexcept
 {
-	// используем стандартную "низкоуровневую" реализацию
-	// т.к. она нас устраивает (обработка очереди сообщений и таймеров)
-	UniSetObject::callback();
+    // используем стандартную "низкоуровневую" реализацию
+    // т.к. она нас устраивает (обработка очереди сообщений и таймеров)
+    UniSetObject::callback();
 }
 // -----------------------------------------------------------------------------
 void BackendClickHouse::askSensors( UniversalIO::UIOCommand cmd )
 {
-	UObject_SK::askSensors(cmd);
+    UObject_SK::askSensors(cmd);
 
-	// прежде чем заказывать датчики, надо убедиться что SM доступна
-	if( !waitSM(smReadyTimeout) )
-	{
-		uterminate();
-		return;
-	}
+    // прежде чем заказывать датчики, надо убедиться что SM доступна
+    if( !waitSM(smReadyTimeout) )
+    {
+        uterminate();
+        return;
+    }
 
-	myinfo << myname << ": ask " << clickhouseParams.size() << " sensors" << endl;
+    myinfo << myname << ": ask " << clickhouseParams.size() << " sensors" << endl;
 
-	for( const auto& s : clickhouseParams )
-	{
-		try
-		{
-			shm->askSensor(s.first, cmd);
-		}
-		catch( const std::exception& ex )
-		{
-			mycrit << myname << "(askSensors): " << ex.what() << endl;
-		}
-	}
+    for( const auto& s : clickhouseParams )
+    {
+        try
+        {
+            shm->askSensor(s.first, cmd);
+        }
+        catch( const std::exception& ex )
+        {
+            mycrit << myname << "(askSensors): " << ex.what() << endl;
+        }
+    }
 
-	myinfo << myname << ": ask " << clickhouseParams.size() << " sensors [OK]" << endl;
+    myinfo << myname << ": ask " << clickhouseParams.size() << " sensors [OK]" << endl;
 
 }
 // -----------------------------------------------------------------------------
 void BackendClickHouse::sensorInfo( const uniset::SensorMessage* sm )
 {
-	auto it = clickhouseParams.find(sm->id);
+    auto it = clickhouseParams.find(sm->id);
 
-	if( it == clickhouseParams.end() )
-		return;
+    if( it == clickhouseParams.end() )
+        return;
 
-	try
-	{
-		if( !sm->tm.tv_sec )
-		{
-			// Выдаём CRIT, но тем не менее сохраняем в БД
-			mycrit << myname << "(insert_main_history): UNKNOWN TIMESTAMP! (tm.tv_sec=0)"
-				   << " for sid=" << sm->id
-				   << " supplier=" << uniset_conf()->oind->getMapName(sm->supplier)
-				   << endl;
-		}
+    auto oinf = uniset_conf()->oind->getObjectInfo(sm->id);
 
-		colTimeStamp->Append(sm->sm_tv.tv_sec);
-		colTimeUsec->Append(sm->sm_tv.tv_nsec);
-		colSensorID->Append(sm->id);
-		colValue->Append(sm->value);
-		colNode->Append(sm->node);
+    if( !oinf )
+    {
+        mycrit << myname << "(sensorInfo): unknown object info for sensor_id=" << sm->id << endl;
+        return;
+    }
 
-		// TAGS
-		auto key = std::make_shared<clickhouse::ColumnString>();
-		auto val = std::make_shared<clickhouse::ColumnString>();
-		for( const auto& t: it->second.tags )
-		{
-			key->Append(t.first);
-			val->Append(t.second);
-		}
+    auto suppinf = uniset_conf()->oind->getObjectInfo(sm->supplier);
+    auto nodeinf = uniset_conf()->oind->getObjectInfo(sm->node);
 
-		// GLOBAL TAGS
-		for( const auto& t: globalTags )
-		{
-			key->Append(t.first);
-			val->Append(t.second);
-		}
+    try
+    {
+        colTimeStamp->Append(sm->sm_tv.tv_sec);
+        colTimeUsec->Append(sm->sm_tv.tv_nsec);
+        colValue->Append(sm->value);
+        colName->Append(oinf->name);
+        colTextName->Append(oinf->textName);
 
-		// dyn tags
-		// обновляем значения в динамических тегах
-		dyntags->updateTags(sm->id, sm->value);
-		auto dtags = dyntags->getTags(sm->id);
-		for( const auto& t: dtags )
-		{
-			key->Append(t.key);
-			val->Append(t.value);
-		}
+        if( nodeinf )
+            colNodeName->Append(nodeinf->name);
+        else
+            colNodeName->Append("");
 
-		// save tags
-		arrTagKeys->AppendAsColumn(key);
-		arrTagValues->AppendAsColumn(val);
+        if( suppinf )
+            colProducer->Append(suppinf->name);
+        else if( sm->supplier == uniset::AdminID )
+            colProducer->Append("uniset-admin");
+        else
+            colProducer->Append("");
 
-		if( colTimeStamp->Size() >= bufSize )
-		{
-			if( flushBuffer() )
-				return;
+        // TAGS
+        auto key = std::make_shared<clickhouse::ColumnString>();
+        auto val = std::make_shared<clickhouse::ColumnString>();
 
-			if( colTimeStamp->Size() >= bufMaxSize )
-			{
-				mycrit << "BUFFER OVERFLOW! MaxBufSize=" << bufMaxSize
-					   << ". ALL DATA LOST!" << endl;
-				clearData();
-			}
-		}
+        for( const auto& t : it->second.tags )
+        {
+            key->Append(t.first);
+            val->Append(t.second);
+        }
 
-		if( !timerIsOn )
-		{
-			timerIsOn = true;
-			askTimer(tmFlushBuffer, bufSyncTime, 1);
-			return;
-		}
-	}
-	catch( const uniset::Exception& ex )
-	{
-		mycrit << myname << "(insert_main_history): " << ex << endl;
-	}
-	catch( const std::exception& ex )
-	{
-		mycrit << myname << "(insert_main_history): " << ex.what() << endl;
-	}
-	catch( ... )
-	{
-		mycrit << myname << "(insert_main_history): catch ..." << endl;
-	}
+        // GLOBAL TAGS
+        for( const auto& t : globalTags )
+        {
+            key->Append(t.first);
+            val->Append(t.second);
+        }
+
+        // dyn tags
+        // обновляем значения в динамических тегах
+        dyntags->updateTags(sm->id, sm->value);
+        auto dtags = dyntags->getTags(sm->id);
+
+        for( const auto& t : dtags )
+        {
+            key->Append(t.key);
+            val->Append(t.value);
+        }
+
+        // save tags
+        arrTagKeys->AppendAsColumn(key);
+        arrTagValues->AppendAsColumn(val);
+
+        if( colTimeStamp->Size() >= bufSize )
+        {
+            if( flushBuffer() )
+                return;
+
+            if( colTimeStamp->Size() >= bufMaxSize )
+            {
+                mycrit << "BUFFER OVERFLOW! MaxBufSize=" << bufMaxSize
+                       << ". ALL DATA LOST!" << endl;
+                clearData();
+            }
+        }
+
+        if( !timerIsOn )
+        {
+            timerIsOn = true;
+            askTimer(tmFlushBuffer, bufSyncTime, 1);
+            return;
+        }
+    }
+    catch( const uniset::Exception& ex )
+    {
+        mycrit << myname << "(insert_main_history): " << ex << endl;
+    }
+    catch( const std::exception& ex )
+    {
+        mycrit << myname << "(insert_main_history): " << ex.what() << endl;
+    }
+    catch( ... )
+    {
+        mycrit << myname << "(insert_main_history): catch ..." << endl;
+    }
 }
 // -----------------------------------------------------------------------------
 void BackendClickHouse::timerInfo( const uniset::TimerMessage* tm )
 {
-	if( tm->id == tmFlushBuffer )
-	{
-		if( flushBuffer() )
-			timerIsOn = false;
-		else if( !db->ping() )
-		{
-			askTimer(tmFlushBuffer, 0);
-			timerIsOn = false;
-			askTimer(tmReconnect, reconnectTime);
-		}
-	}
-	else if( tm->id == tmReconnect )
-	{
-		myinfo << myname << " try reconnect.." << endl;
-		if( reconnect() )
-		{
-			myinfo << myname << " reconnect [OK]" << endl;
-			askTimer(tmReconnect, 0);
-			flushBuffer();
-			askTimer(tmFlushBuffer, bufSyncTime, 1);
-			timerIsOn = true;
-		}
-	}
+    if( tm->id == tmFlushBuffer )
+    {
+        if( flushBuffer() )
+            timerIsOn = false;
+        else if( !db->ping() )
+        {
+            askTimer(tmFlushBuffer, 0);
+            timerIsOn = false;
+            askTimer(tmReconnect, reconnectTime);
+        }
+    }
+    else if( tm->id == tmReconnect )
+    {
+        myinfo << myname << " try reconnect.." << endl;
+
+        if( reconnect() )
+        {
+            myinfo << myname << " reconnect [OK]" << endl;
+            askTimer(tmReconnect, 0);
+            flushBuffer();
+            askTimer(tmFlushBuffer, bufSyncTime, 1);
+            timerIsOn = true;
+        }
+    }
 }
 // -----------------------------------------------------------------------------
 void BackendClickHouse::sysCommand(const SystemMessage* sm)
 {
-	if( sm->command == SystemMessage::StartUp )
-	{
-		if( !reconnect() )
-			askTimer(tmReconnect, reconnectTime);
-	}
+    if( sm->command == SystemMessage::StartUp )
+    {
+        if( !reconnect() )
+            askTimer(tmReconnect, reconnectTime);
+    }
 }
 // -----------------------------------------------------------------------------
 bool BackendClickHouse::flushBuffer()
 {
-	if( colTimeStamp->Size() == 0 )
-		return false;
+    if( colTimeStamp->Size() == 0 )
+        return false;
 
-	if( !db || !connect_ok )
-		return false;
+    if( !db || !connect_ok )
+        return false;
 
-	myinfo << myname << "(flushBuffer): write insert buffer[" << colTimeStamp->Size() << "] to DB.." << endl;
+    myinfo << myname << "(flushBuffer): write insert buffer[" << colTimeStamp->Size() << "] to DB.." << endl;
 
-	clickhouse::Block blk(7,colTimeStamp->Size());
-	blk.AppendColumn("timestamp", colTimeStamp);
-	blk.AppendColumn("time_usec", colTimeUsec);
-	blk.AppendColumn("sensor_id", colSensorID);
-	blk.AppendColumn("value", colValue);
-	blk.AppendColumn("node", colNode);
-	blk.AppendColumn("tags.name", arrTagKeys);
-	blk.AppendColumn("tags.value", arrTagValues);
+    clickhouse::Block blk(9, colTimeStamp->Size());
+    blk.AppendColumn("timestamp", colTimeStamp);
+    blk.AppendColumn("time_usec", colTimeUsec);
+    blk.AppendColumn("value", colValue);
+    blk.AppendColumn("name", colName);
+    blk.AppendColumn("nodename", colNodeName);
+    blk.AppendColumn("textname", colTextName);
+    blk.AppendColumn("producer", colProducer);
+    blk.AppendColumn("tags.name", arrTagKeys);
+    blk.AppendColumn("tags.value", arrTagValues);
 
-	if( !db->insert(fullTableName, blk) )
-	{
-		mycrit << myname << "(flushBuffer): error: " << db->error() << endl;
-		return false;
-	}
+    if( !db->insert(fullTableName, blk) )
+    {
+        mycrit << myname << "(flushBuffer): error: " << db->error() << endl;
+        return false;
+    }
 
-	clearData();
-	return true;
+    clearData();
+    return true;
 }
 //------------------------------------------------------------------------------
 bool BackendClickHouse::reconnect()
 {
-	connect_ok = db->reconnect(dbhost, dbuser, dbpass, dbname, dbport);
-	return connect_ok;
+    connect_ok = db->reconnect(dbhost, dbuser, dbpass, dbname, dbport);
+    return connect_ok;
 }
 //------------------------------------------------------------------------------
 std::string BackendClickHouse::getMonitInfo() const
 {
-	ostringstream inf;
+    ostringstream inf;
 
-	inf << "Database: " << dbhost << ":" << dbport << " user=" << dbuser
-		<< " ["
-		<< " reconnect=" << reconnectTime
-		<< " bufSyncTime=" << bufSyncTime
-		<< " bufSize=" << bufSize
-		<< " tsdbTags: ";
-		for( const auto& t: globalTags )
-			inf << t.first << "=" << t.second << " ";
+    inf << "Database: " << dbhost << ":" << dbport << " user=" << dbuser
+        << " ["
+        << " reconnect=" << reconnectTime
+        << " bufSyncTime=" << bufSyncTime
+        << " bufSize=" << bufSize
+        << " tsdbTags: ";
 
-		inf << " ]" << endl
-		<< "  connection: " << ( connect_ok ? "OK" : "FAILED") << endl
-		<< " buffer size: " << colTimeStamp->Size() << endl
-		<< "   lastError: " << lastError << endl;
+    for( const auto& t : globalTags )
+        inf << t.first << "=" << t.second << " ";
 
-	return inf.str();
+    inf << " ]" << endl
+        << "  connection: " << ( connect_ok ? "OK" : "FAILED") << endl
+        << " buffer size: " << colTimeStamp->Size() << endl
+        << "   lastError: " << lastError << endl;
+
+    return inf.str();
 }
 // -----------------------------------------------------------------------------
