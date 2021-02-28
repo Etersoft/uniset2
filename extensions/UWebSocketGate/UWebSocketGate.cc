@@ -66,9 +66,15 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id, xmlNode* cnode, const strin
     sigINT.set<UWebSocketGate, &UWebSocketGate::onTerminate>(this);
     iocheck.set<UWebSocketGate, &UWebSocketGate::checkMessages>(this);
 
+    check_sec = (float)conf->getArgPInt("--" + prefix + "msg-check-time", it.getProp("msgCheckTime"), int(check_sec * 1000.0)) / 1000.0;
+    int sz = conf->getArgPInt("--uniset-object-size-message-queue", conf->getField("SizeOfMessageQueue"), 10000);
+
+    if( sz > 0 )
+        setMaxSizeOfMessageQueue(sz);
+
 #ifndef DISABLE_REST_API
-    wsHeartbeatTime_sec = (float)conf->getArgPInt("--" + prefix + "ws-heartbeat-time", it.getProp("wsPingTime"), wsHeartbeatTime_sec) / 1000.0;
-    wsSendTime_sec = (float)conf->getArgPInt("--" + prefix + "ws-send-time", it.getProp("wsSendTime"), wsSendTime_sec) / 1000.0;
+    wsHeartbeatTime_sec = (float)conf->getArgPInt("--" + prefix + "ws-heartbeat-time", it.getProp("wsPingTime"), int(wsHeartbeatTime_sec * 1000)) / 1000.0;
+    wsSendTime_sec = (float)conf->getArgPInt("--" + prefix + "ws-send-time", it.getProp("wsSendTime"), int(wsSendTime_sec * 1000.0)) / 1000.0;
     wsMaxSend = conf->getArgPInt("--" + prefix + "ws-max-send", it.getProp("wsMaxSend"), wsMaxSend);
 
     httpHost = conf->getArgParam("--" + prefix + "httpserver-host", "localhost");
@@ -257,7 +263,9 @@ std::shared_ptr<UWebSocketGate> UWebSocketGate::init_wsgate( int argc, const cha
 void UWebSocketGate::help_print()
 {
     cout << "Default: prefix='ws'" << endl;
-    cout << "--prefix-name name                   - Имя. Для поиска настроечной секции в configure.xml" << endl;
+    cout << "--prefix-name name                     - Имя. Для поиска настроечной секции в configure.xml" << endl;
+    cout << "--uniset-object-size-message-queue num - Размер uniset-очереди сообщений" << endl;
+    cout << "--prefix-msg-check-time msec           - Период опроса uniset-очреди сообщений, для обработки новых сообщений. По умолчанию: 10 мсек" << endl;
 
     cout << "websockets: " << endl;
     cout << "--prefix-ws-max num                  - Максимальное количество websocket-ов" << endl;
