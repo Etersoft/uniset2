@@ -190,7 +190,7 @@ Poco::JSON::Object::Ptr UWebSocketGate::to_json( const SensorMessage* sm, const 
     json->set("name", uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(sm->id)));
     json->set("sm_tv_sec", sm->sm_tv.tv_sec);
     json->set("sm_tv_nsec", sm->sm_tv.tv_nsec);
-    json->set("sm_type", uniset::iotype2str(sm->sensor_type));
+    json->set("iotype", uniset::iotype2str(sm->sensor_type));
     json->set("undefined", sm->undefined );
     json->set("supplier", sm->supplier );
     json->set("tv_sec", sm->tm.tv_sec);
@@ -537,20 +537,20 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
 
     auto idlist = uniset::explode(slist);
 
-    if( idlist.empty() )
-    {
-        resp->setStatus(HTTPResponse::HTTP_BAD_REQUEST);
-        resp->setContentType("text/html");
-        resp->setStatusAndReason(HTTPResponse::HTTP_BAD_REQUEST);
-        resp->setContentLength(0);
-        std::ostream& err = resp->send();
-        err << "Error: no list of sensors for '" << slist << "'. Use:  http://host:port/wsgate/?s1,s2,s3";
-        err.flush();
+    //    if( idlist.empty() )
+    //    {
+    //        resp->setStatus(HTTPResponse::HTTP_BAD_REQUEST);
+    //        resp->setContentType("text/html");
+    //        resp->setStatusAndReason(HTTPResponse::HTTP_BAD_REQUEST);
+    //        resp->setContentLength(0);
+    //        std::ostream& err = resp->send();
+    //        err << "Error: no list of sensors for '" << slist << "'. Use:  http://host:port/wsgate/?s1,s2,s3";
+    //        err.flush();
 
-        mywarn << myname << "(newWebSocket): error: no list of sensors for '" << slist << "'" << endl;
+    //        mywarn << myname << "(newWebSocket): error: no list of sensors for '" << slist << "'" << endl;
 
-        return nullptr;
-    }
+    //        return nullptr;
+    //    }
 
     {
         uniset_rwmutex_wrlock lock(wsocksMutex);
@@ -799,7 +799,14 @@ void UWebSocketGate::UWebSocket::set( uniset::ObjectId id, long value )
     {
         s->second.value = value;
         s->second.cmd = "set";
+        return;
     }
+
+    sinfo si;
+    si.id = id;
+    si.value = value;
+    si.cmd = "set";
+    smap.emplace(id, si);
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )

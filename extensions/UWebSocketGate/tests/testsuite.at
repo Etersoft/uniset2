@@ -1,0 +1,7 @@
+m4_include(package.m4)
+
+AT_COLOR_TESTS
+
+AT_INIT([UWebSocketGate tests])
+
+m4_include(uwebsocketgate-tests.at)
