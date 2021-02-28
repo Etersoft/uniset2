@@ -213,7 +213,8 @@ namespace uniset
             void checkMessages( ev::timer& t, int revents );
             virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
             ev::timer iocheck;
-            double check_sec = { 0.01 };
+            double check_sec = { 0.05 };
+            int maxMessagesProcessing  = { 100 };
 
             std::shared_ptr<DebugStream> mylog;
 
