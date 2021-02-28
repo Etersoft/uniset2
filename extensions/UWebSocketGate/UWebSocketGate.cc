@@ -66,6 +66,12 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id, xmlNode* cnode, const strin
     sigINT.set<UWebSocketGate, &UWebSocketGate::onTerminate>(this);
     iocheck.set<UWebSocketGate, &UWebSocketGate::checkMessages>(this);
 
+
+    maxMessagesProcessing = conf->getArgPInt("--" + prefix + "max-messages-processing", conf->getField("maxMessagesProcessing"), maxMessagesProcessing);
+
+    if( maxMessagesProcessing < 0 )
+        maxMessagesProcessing = 100;
+
     check_sec = (float)conf->getArgPInt("--" + prefix + "msg-check-time", it.getProp("msgCheckTime"), int(check_sec * 1000.0)) / 1000.0;
     int sz = conf->getArgPInt("--uniset-object-size-message-queue", conf->getField("SizeOfMessageQueue"), 10000);
 
@@ -152,10 +158,15 @@ void UWebSocketGate::checkMessages( ev::timer& t, int revents )
     if( EV_ERROR & revents )
         return;
 
-    auto m = receiveMessage();
+    for( int i = 0; i < maxMessagesProcessing; i++ )
+    {
+        auto m = receiveMessage();
 
-    if( m )
+        if( !m )
+            break;
+
         processingMessage(m.get());
+    }
 }
 //--------------------------------------------------------------------------------------------
 void UWebSocketGate::sensorInfo( const SensorMessage* sm )
@@ -214,7 +225,8 @@ void UWebSocketGate::help_print()
     cout << "Default: prefix='ws'" << endl;
     cout << "--prefix-name name                     - Имя. Для поиска настроечной секции в configure.xml" << endl;
     cout << "--uniset-object-size-message-queue num - Размер uniset-очереди сообщений" << endl;
-    cout << "--prefix-msg-check-time msec           - Период опроса uniset-очреди сообщений, для обработки новых сообщений. По умолчанию: 10 мсек" << endl;
+    cout << "--prefix-msg-check-time msec           - Период опроса uniset-очереди сообщений, для обработки новых сообщений. По умолчанию: 10 мсек" << endl;
+    cout << "--prefix-max-messages-processing num    - Количество uniset-сообщений обрабатывамых за один раз. По умолчанию 50. По умолчанию: 100" << endl;
 
     cout << "websockets: " << endl;
     cout << "--prefix-ws-max num                  - Максимальное количество websocket-ов" << endl;
