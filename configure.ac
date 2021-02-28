@@ -594,6 +594,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/HttpResolver/Makefile
 				 extensions/HttpResolver/tests/Makefile
 				 extensions/UWebSocketGate/Makefile
+				 extensions/UWebSocketGate/tests/Makefile
 				 testsuite/Makefile
 				 wrappers/Makefile
 				 wrappers/python/lib/Makefile
