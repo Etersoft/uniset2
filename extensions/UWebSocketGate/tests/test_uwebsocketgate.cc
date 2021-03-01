@@ -22,7 +22,7 @@ using namespace std;
 using namespace uniset;
 // -----------------------------------------------------------------------------
 static int port = 8081;
-static string addr("127.0.0.1"); // conf->getArgParam("--mbs-inet-addr");
+static string addr("127.0.0.1");
 static std::shared_ptr<UInterface> ui;
 // -----------------------------------------------------------------------------
 static void InitTest()
@@ -179,5 +179,69 @@ TEST_CASE("[UWebSocketGate]: del", "[uwebsocketgate]")
 
     string str(buffer);
     REQUIRE( str.find("Ping") != string::npos );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UWebSocketGate]: get", "[uwebsocketgate]")
+{
+    InitTest();
+
+    HTTPClientSession cs(addr, port);
+    HTTPRequest request(HTTPRequest::HTTP_GET, "/wsgate", HTTPRequest::HTTP_1_1);
+    HTTPResponse response;
+    WebSocket ws(cs, request, response);
+
+    ui->setValue(1, 111);
+    ui->setValue(2, 222);
+    ui->setValue(3, 333);
+
+    std::string cmd("get:1,2,3");
+    ws.sendFrame(cmd.data(), (int)cmd.size());
+
+    char buffer[1024] = {};
+    int flags;
+    memset(buffer, 0, sizeof(buffer));
+    ws.receiveFrame(buffer, sizeof(buffer), flags);
+    REQUIRE(flags == WebSocket::FRAME_TEXT);
+
+    Poco::JSON::Parser parser;
+    auto result = parser.parse(buffer);
+    Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+    REQUIRE(json);
+
+    //  {
+    //     "data": [
+    //      {"type": "ShortSensorInfo"...},
+    //      {"type": "ShortSensorInfo"...},
+    //      {"type": "ShortSensorInfo"...},
+    //      ...
+    //     ]
+    //  }
+
+    auto jdata = json->get("data").extract<Poco::JSON::Array::Ptr>();
+    REQUIRE(jdata);
+
+    REQUIRE(jdata->size() == 3);
+
+    for( int i = 0; i < 3; i++ )
+    {
+        auto j = jdata->getObject(i);
+        REQUIRE(j);
+        REQUIRE( j->get("type").convert<std::string>() == "ShortSensorInfo" );
+
+        long id  = j->get("id").convert<long>();
+
+        if( id == 1 )
+        {
+            REQUIRE( j->get("value").convert<long>() == 111 );
+        }
+        else if( id == 2 )
+        {
+            REQUIRE( j->get("value").convert<long>() == 222 );
+        }
+        else if( id == 3 )
+        {
+            REQUIRE( j->get("value").convert<long>() == 333 );
+        }
+    }
 }
 // -----------------------------------------------------------------------------

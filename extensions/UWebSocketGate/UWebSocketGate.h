@@ -128,6 +128,21 @@ namespace uniset
          }
        \endcode
 
+       \section sec_UWebSocketGate_Get Get
+       Функция get возвращает результат в укороченном формате
+        \code
+         {
+            "data": [
+            {
+              "type": "ShortSensorInfo",
+              "value": 63
+              "error": "",
+              "id": 10,
+              },
+            }]
+         }
+       \endcode
+
        \section sec_UWebSocketGate_Ping Ping
         Для того, чтобы соединение не закрывалось при отсутствии данных, каждые ping_sec посылается
         специальное сообщение
@@ -151,6 +166,7 @@ namespace uniset
         - "set:id1=val1,id2=val2,name3=val4,..." - выставить значение датчиков
         - "ask:id1,id2,name3,..." - подписаться на уведомления об изменении датчиков (sensorInfo)
         - "del:id1,id2,name3,..." - отказаться от уведомления об изменении датчиков
+		- "get:id1,id2,name3,..." - получить текущее значение датчиков (разовое сообщение ShortSensorInfo)
     */
     class UWebSocketGate:
         public UniSetObject,
@@ -262,11 +278,14 @@ namespace uniset
                         long value = { 0 }; // set value
                     };
 
+
                     void ask( uniset::ObjectId id );
                     void del( uniset::ObjectId id );
+                    void get( uniset::ObjectId id );
                     void set( uniset::ObjectId id, long value );
                     void sensorInfo( const uniset::SensorMessage* sm );
                     void doCommand( const std::shared_ptr<UInterface>& ui );
+                    static Poco::JSON::Object::Ptr to_short_json( sinfo* si );
 
                     void term();
 
@@ -283,7 +302,8 @@ namespace uniset
                 protected:
 
                     void write();
-                    void sendError( sinfo& si, const std::string& err );
+                    void sendResponse( sinfo& si );
+                    void sendShortResponse( sinfo& si );
                     void onCommand( const std::string& cmd );
 
                     ev::timer iosend;
