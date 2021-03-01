@@ -179,6 +179,16 @@ void UWebSocketGate::sensorInfo( const SensorMessage* sm )
         s->sensorInfo(sm);
 }
 //--------------------------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UWebSocketGate::UWebSocket::to_short_json( sinfo* si )
+{
+    Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+    json->set("type", "ShortSensorInfo");
+    json->set("error", si->err);
+    json->set("id", si->id);
+    json->set("value", si->value);
+    return json;
+}
+//--------------------------------------------------------------------------------------------
 Poco::JSON::Object::Ptr UWebSocketGate::to_json( const SensorMessage* sm, const std::string& err )
 {
     Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
@@ -802,6 +812,14 @@ void UWebSocketGate::UWebSocket::set( uniset::ObjectId id, long value )
     qcmd.push(s);
 }
 // -----------------------------------------------------------------------------
+void UWebSocketGate::UWebSocket::get( uniset::ObjectId id )
+{
+    sinfo s;
+    s.id = id;
+    s.cmd = "get";
+    qcmd.push(s);
+}
+// -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
 {
     if( cancelled )
@@ -855,7 +873,15 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<UInterface>& u
                     smap.erase(it);
             }
             else if( s.cmd == "set" )
+            {
                 ui->setValue(s.id, s.value);
+            }
+            else if( s.cmd == "get" )
+            {
+                s.value = ui->getValue(s.id);
+                s.err = "";
+                sendShortResponse(s);
+            }
 
             s.err = "";
             s.cmd = "";
@@ -863,15 +889,29 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<UInterface>& u
         catch( std::exception& ex )
         {
             mycrit << "(UWebSocket::doCommand): " << ex.what() << endl;
-            sendError(s, ex.what());
+            s.err = ex.what();
+            sendResponse(s);
         }
     }
 }
 // -----------------------------------------------------------------------------
-void UWebSocketGate::UWebSocket::sendError( sinfo& si, const std::string& err )
+void UWebSocketGate::UWebSocket::sendShortResponse( sinfo& si )
 {
-    uniset::SensorMessage sm(si.id, 0);
-    si.err = err;
+    if( jbuf.size() > maxsize )
+    {
+        mywarn << req->clientAddress().toString() << " lost messages..." << endl;
+        return;
+    }
+
+    jbuf.emplace(to_short_json(&si));
+
+    if( ioping.is_active() )
+        ioping.stop();
+}
+// -----------------------------------------------------------------------------
+void UWebSocketGate::UWebSocket::sendResponse( sinfo& si )
+{
+    uniset::SensorMessage sm(si.id, si.value);
 
     if( jbuf.size() > maxsize )
     {
@@ -879,7 +919,7 @@ void UWebSocketGate::UWebSocket::sendError( sinfo& si, const std::string& err )
         return;
     }
 
-    jbuf.emplace(UWebSocketGate::to_json(&sm, err));
+    jbuf.emplace(UWebSocketGate::to_json(&sm, si.err));
 
     if( ioping.is_active() )
         ioping.stop();
@@ -928,6 +968,19 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
 
         for( const auto& id : idlist.getList() )
             del(id);
+
+        // уведомление о новой команде
+        cmdsignal->send();
+    }
+    else if( cmd == "get" )
+    {
+        myinfo << "(websocket): " << req->clientAddress().toString()
+               << "(get): " << params << endl;
+
+        auto idlist = uniset::explode(params);
+
+        for( const auto& id : idlist.getList() )
+            get(id);
 
         // уведомление о новой команде
         cmdsignal->send();
