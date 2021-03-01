@@ -57,11 +57,14 @@ TEST_CASE("[UWebSocketGate]: set", "[uwebsocketgate]")
     REQUIRE( ui->getValue(2) == 20 );
     REQUIRE( ui->getValue(3) == 30 );
 
-    //  char buffer[1024] = {};
-    //  int flags;
-    //  ws.receiveFrame(buffer, sizeof(buffer), flags);
-    //  REQUIRE(flags == WebSocket::FRAME_TEXT);
+    cmd = "set:1=11,2=21,3=31";
+    ws.sendFrame(cmd.data(), (int)cmd.size());
 
+    msleep(50);
+
+    REQUIRE( ui->getValue(1) == 11 );
+    REQUIRE( ui->getValue(2) == 21 );
+    REQUIRE( ui->getValue(3) == 31 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[UWebSocketGate]: ask", "[uwebsocketgate]")

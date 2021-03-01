@@ -227,6 +227,7 @@ namespace uniset
             double wsHeartbeatTime_sec = { 3.0 };
             double wsSendTime_sec = { 0.5 };
             size_t wsMaxSend = { 200 };
+            size_t wsMaxCmd = { 100 };
 
             static Poco::JSON::Object::Ptr to_json( const uniset::SensorMessage* sm, const std::string& err );
 
@@ -261,7 +262,7 @@ namespace uniset
                         long value = { 0 }; // set value
                     };
 
-                    void add( const sinfo& si );
+                    void ask( uniset::ObjectId id );
                     void del( uniset::ObjectId id );
                     void set( uniset::ObjectId id, long value );
                     void sensorInfo( const uniset::SensorMessage* sm );
@@ -275,6 +276,7 @@ namespace uniset
                     void setHearbeatTime( const double& sec );
                     void setSendPeriod( const double& sec );
                     void setMaxSendCount( size_t val );
+                    void setMaxCmdCount( size_t val );
 
                     std::shared_ptr<DebugStream> mylog;
 
@@ -287,6 +289,7 @@ namespace uniset
                     ev::timer iosend;
                     double send_sec = { 0.5 };
                     size_t maxsend = { 200 };
+                    size_t maxcmd = { 100 };
 
                     ev::timer ioping;
                     double ping_sec = { 3.0 };
@@ -303,6 +306,7 @@ namespace uniset
                     std::atomic_bool cancelled = { false };
 
                     std::unordered_map<uniset::ObjectId, sinfo> smap;
+                    std::queue<sinfo> qcmd; // очередь команд
 
                     Poco::Net::HTTPServerRequest* req;
                     Poco::Net::HTTPServerResponse* resp;

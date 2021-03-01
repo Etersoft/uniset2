@@ -66,7 +66,6 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id, xmlNode* cnode, const strin
     sigINT.set<UWebSocketGate, &UWebSocketGate::onTerminate>(this);
     iocheck.set<UWebSocketGate, &UWebSocketGate::checkMessages>(this);
 
-
     maxMessagesProcessing = conf->getArgPInt("--" + prefix + "max-messages-processing", conf->getField("maxMessagesProcessing"), maxMessagesProcessing);
 
     if( maxMessagesProcessing < 0 )
@@ -82,6 +81,7 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id, xmlNode* cnode, const strin
     wsHeartbeatTime_sec = (float)conf->getArgPInt("--" + prefix + "ws-heartbeat-time", it.getProp("wsHeartbeatTimeTime"), int(wsHeartbeatTime_sec * 1000)) / 1000.0;
     wsSendTime_sec = (float)conf->getArgPInt("--" + prefix + "ws-send-time", it.getProp("wsSendTime"), int(wsSendTime_sec * 1000.0)) / 1000.0;
     wsMaxSend = conf->getArgPInt("--" + prefix + "ws-max-send", it.getProp("wsMaxSend"), wsMaxSend);
+    wsMaxCmd = conf->getArgPInt("--" + prefix + "ws-max-cmd", it.getProp("wsMaxCmd"), wsMaxCmd);
 
     httpHost = conf->getArgParam("--" + prefix + "httpserver-host", "localhost");
     httpPort = conf->getArgPInt("--" + prefix + "httpserver-port", 8081);
@@ -223,9 +223,9 @@ std::shared_ptr<UWebSocketGate> UWebSocketGate::init_wsgate( int argc, const cha
 void UWebSocketGate::help_print()
 {
     cout << "Default: prefix='ws'" << endl;
-    cout << "--prefix-name name                     - Имя. Для поиска настроечной секции в configure.xml" << endl;
-    cout << "--uniset-object-size-message-queue num - Размер uniset-очереди сообщений" << endl;
-    cout << "--prefix-msg-check-time msec           - Период опроса uniset-очереди сообщений, для обработки новых сообщений. По умолчанию: 10 мсек" << endl;
+    cout << "--prefix-name name                      - Имя. Для поиска настроечной секции в configure.xml" << endl;
+    cout << "--uniset-object-size-message-queue num  - Размер uniset-очереди сообщений" << endl;
+    cout << "--prefix-msg-check-time msec            - Период опроса uniset-очереди сообщений, для обработки новых сообщений. По умолчанию: 10 мсек" << endl;
     cout << "--prefix-max-messages-processing num    - Количество uniset-сообщений обрабатывамых за один раз. По умолчанию 50. По умолчанию: 100" << endl;
 
     cout << "websockets: " << endl;
@@ -233,13 +233,14 @@ void UWebSocketGate::help_print()
     cout << "--prefix-ws-heartbeat-time msec      - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
     cout << "--prefix-ws-send-time msec           - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
     cout << "--prefix-ws-max num                  - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
+    cout << "--prefix-ws-cmd num                  - Максимальное число команд обрабатываемых за один раз. По умолчанию: 100" << endl;
 
     cout << "http: " << endl;
-    cout << "--prefix-httpserver-host ip             - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
-    cout << "--prefix-httpserver-port num            - Порт на котором принимать запросы. По умолчанию: 8080" << endl;
-    cout << "--prefix-httpserver-max-queued num      - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
-    cout << "--prefix-httpserver-max-threads num     - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
-    cout << "--prefix-httpserver-cors-allow addr     - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
+    cout << "--prefix-httpserver-host ip          - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
+    cout << "--prefix-httpserver-port num         - Порт на котором принимать запросы. По умолчанию: 8080" << endl;
+    cout << "--prefix-httpserver-max-queued num   - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
+    cout << "--prefix-httpserver-max-threads num  - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
+    cout << "--prefix-httpserver-cors-allow addr  - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::run( bool async )
@@ -558,15 +559,13 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
         ws->setHearbeatTime(wsHeartbeatTime_sec);
         ws->setSendPeriod(wsSendTime_sec);
         ws->setMaxSendCount(wsMaxSend);
+        ws->setMaxCmdCount(wsMaxCmd);
         ws->mylog = mylog;
 
         for( const auto& i : idlist.getList() )
         {
-            mylog3 << myname << ": ask add " << i << endl;
-            UWebSocket::sinfo si;
-            si.id = i;
-            si.cmd = "ask";
-            ws->add(si);
+            mylog3 << myname << ": ask sid=" << i << endl;
+            ws->ask(i);
         }
 
         wsocks.emplace_back(ws);
@@ -778,35 +777,29 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
     }
 }
 // -----------------------------------------------------------------------------
-void UWebSocketGate::UWebSocket::add( const sinfo& si )
+void UWebSocketGate::UWebSocket::ask( uniset::ObjectId id )
 {
-    smap[si.id] = si;
+    sinfo s;
+    s.id = id;
+    s.cmd = "ask";
+    qcmd.push(s);
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::del( uniset::ObjectId id )
 {
-    auto s = smap.find(id);
-
-    if( s != smap.end() )
-        s->second.cmd = "del";
+    sinfo s;
+    s.id = id;
+    s.cmd = "del";
+    qcmd.push(s);
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::set( uniset::ObjectId id, long value )
 {
-    auto s = smap.find(id);
-
-    if( s != smap.end() )
-    {
-        s->second.value = value;
-        s->second.cmd = "set";
-        return;
-    }
-
-    sinfo si;
-    si.id = id;
-    si.value = value;
-    si.cmd = "set";
-    smap.emplace(id, si);
+    sinfo s;
+    s.id = id;
+    s.value = value;
+    s.cmd = "set";
+    qcmd.push(s);
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
@@ -833,9 +826,10 @@ void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<UInterface>& ui )
 {
-    for( auto&& io : smap )
+    for( size_t i = 0; i < maxcmd && !qcmd.empty(); i++ )
     {
-        auto& s = io.second;
+        auto s = qcmd.front();
+        qcmd.pop();
 
         try
         {
@@ -848,9 +842,18 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<UInterface>& u
                    << endl;
 
             if( s.cmd == "ask" )
+            {
                 ui->askSensor(s.id, UniversalIO::UIONotify);
+                smap[s.id] = s;
+            }
             else if( s.cmd == "del" )
+            {
                 ui->askSensor(s.id, UniversalIO::UIODontNotify);
+                auto it = smap.find(s.id);
+
+                if( it != smap.end() )
+                    smap.erase(it);
+            }
             else if( s.cmd == "set" )
                 ui->setValue(s.id, s.value);
 
@@ -868,9 +871,18 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<UInterface>& u
 void UWebSocketGate::UWebSocket::sendError( sinfo& si, const std::string& err )
 {
     uniset::SensorMessage sm(si.id, 0);
-    //  sm.undefined = true;
     si.err = err;
-    sensorInfo(&sm);
+
+    if( jbuf.size() > maxsize )
+    {
+        mywarn << req->clientAddress().toString() << " lost messages..." << endl;
+        return;
+    }
+
+    jbuf.emplace(UWebSocketGate::to_json(&sm, err));
+
+    if( ioping.is_active() )
+        ioping.stop();
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
@@ -902,12 +914,7 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
         auto idlist = uniset::explode(params);
 
         for( const auto& id : idlist.getList() )
-        {
-            sinfo s;
-            s.id = id;
-            s.cmd = "ask";
-            add(s);
-        }
+            ask(id);
 
         // уведомление о новой команде
         cmdsignal->send();
@@ -1068,6 +1075,12 @@ void UWebSocketGate::UWebSocket::setMaxSendCount( size_t val )
 {
     if( val > 0 )
         maxsend = val;
+}
+// -----------------------------------------------------------------------------
+void UWebSocketGate::UWebSocket::setMaxCmdCount( size_t val )
+{
+    if( val > 0 )
+        maxcmd = val;
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp )
