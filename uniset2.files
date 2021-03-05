@@ -297,6 +297,17 @@
 ./extensions/UniNetwork/uninet.cc
 ./extensions/UWebSocketGate/main.cc
 ./extensions/UWebSocketGate/Makefile.am
+<<<<<<< HEAD
+=======
+./extensions/UWebSocketGate.old/main.cc
+./extensions/UWebSocketGate.old/Makefile.am
+./extensions/UWebSocketGate.old/UWebSocketGate.cc
+./extensions/UWebSocketGate.old/UWebSocketGate.h
+./extensions/UWebSocketGate.old/UWebSocketGateSugar.h
+./extensions/UWebSocketGate/tests/Makefile.am
+./extensions/UWebSocketGate/tests/tests_with_sm.cc
+./extensions/UWebSocketGate/tests/test_uwebsocketgate.cc
+>>>>>>> 2.9.4-alt0.1
 ./extensions/UWebSocketGate/UWebSocketGate.cc
 ./extensions/UWebSocketGate/UWebSocketGate.h
 ./extensions/UWebSocketGate/UWebSocketGateSugar.h
@@ -390,7 +401,6 @@
 ./include/UTCPStream.h
 ./include/VMonitor.h
 ./include/WDTInterface.h
-./lib/dummy.cc
 ./lib/Makefile.am
 ./Makefile.am
 ./src/Communications/ComPort485F.cc
@@ -555,6 +565,8 @@
 ./tests/umutex.cc
 ./tests/UniXmlTest/Makefile.am
 ./tests/UniXmlTest/XmlTest.cc
+./tests/wasm-test/main.cc
+./tests/wasm-test/Makefile.am
 ./uniset-config.h
 ./Utilities/Admin/admin.cc
 ./Utilities/Admin/c.cc

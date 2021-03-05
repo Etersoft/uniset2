@@ -55,13 +55,21 @@ namespace uniset
         об изменнии датчиков, а так же изменять состояние (см. \ref sec_UWebSocketGate_Command).
         Подключение к websocket-у доступно по адресу:
          \code
+<<<<<<< HEAD
          ws://host:port/wsgate/?s1,s2,s3,s4&format=[json,txt,raw]
+=======
+         ws://host:port/wsgate/
+>>>>>>> 2.9.4-alt0.1
          \endcode
 
          Помимо этого UWebSocketGate работает в режиме мониторинга изменений датчиков.
          Для этого достаточно зайти на страничку по адресу:
          \code
+<<<<<<< HEAD
          http://host:port/wsgate/?s1,s2,s3,s4&format=[json,txt,raw]
+=======
+         http://host:port/wsgate/?s1,s2,s3,s4
+>>>>>>> 2.9.4-alt0.1
          \endcode
 
         \section sec_UWebSocketGate_Conf Конфигурирование UWebSocketGate
@@ -75,7 +83,93 @@ namespace uniset
         \section sec_UWebSocketGate_DETAIL UWebSocketGate: Технические детали
            Вся релизация построена на "однопоточном" eventloop. Если датчики долго не меняются, то периодически посылается "ping" сообщение.
 
+<<<<<<< HEAD
         \section sec_UWebSocketGate_Command Команды
+=======
+        \section sec_UWebSocketGate_Messages Сообщения
+          Общий формат сообщений
+         \code
+         {
+            "data": [
+            {
+                "type": "SensorInfo",
+                ...
+            },
+            {
+                "type": "SensorInfo",
+                ...
+            },
+            {
+                "type": "OtherType",
+                ...
+            },
+            {
+               "type": "YetAnotherType",
+               ...
+            },
+         ]}
+         \endcode
+
+        Example
+        \code
+         {
+            "data": [
+            {
+              "type": "SensorInfo",
+              "tv_nsec": 343079769,
+              "tv_sec": 1614521238,
+              "value": 63
+              "sm_tv_nsec": 976745544,
+              "sm_tv_sec": 1614520060,
+              "sm_type": "AI",
+              "error": "",
+              "id": 10,
+              "name": "AI_AS",
+              "node": 3000,
+              "supplier": 5003,
+              "undefined": false,
+              "calibration": {
+                 "cmax": 0,
+                 "cmin": 0,
+                 "precision": 3,
+                 "rmax": 0,
+                 "rmin": 0
+              },
+            }]
+         }
+       \endcode
+
+       \section sec_UWebSocketGate_Get Get
+       Функция get возвращает результат в укороченном формате
+        \code
+         {
+            "data": [
+            {
+              "type": "ShortSensorInfo",
+              "value": 63
+              "error": "",
+              "id": 10,
+              },
+            }]
+         }
+       \endcode
+
+       \section sec_UWebSocketGate_Ping Ping
+        Для того, чтобы соединение не закрывалось при отсутствии данных, каждые ping_sec посылается
+        специальное сообщение
+        \code
+         {
+            "data": [
+             {"type": "Ping"}
+            ]
+         }
+        \endcode
+        По умолчанию каждый 3 секунды, но время можно задавать параметром "wsHeartbeatTime" (msec)
+        или аргументом командной строки
+        --prefix-ws-heartbeat-time msec
+
+       \section sec_UWebSocketGate_Command Команды
+>>>>>>> 2.9.4-alt0.1
         Через websocket можно посылать команды.
         На текущий момент формат команды строковый.
         Т.е. для подачи команды, необходимо послать просто строку.
@@ -84,9 +178,13 @@ namespace uniset
         - "set:id1=val1,id2=val2,name3=val4,..." - выставить значение датчиков
         - "ask:id1,id2,name3,..." - подписаться на уведомления об изменении датчиков (sensorInfo)
         - "del:id1,id2,name3,..." - отказаться от уведомления об изменении датчиков
+<<<<<<< HEAD
 
         \todo Разобраться с "ping" сообщением для формата json..
         \todo Настройка check_sec из командной строки и configure.xml
+=======
+		- "get:id1,id2,name3,..." - получить текущее значение датчиков (разовое сообщение ShortSensorInfo)
+>>>>>>> 2.9.4-alt0.1
     */
     class UWebSocketGate:
         public UniSetObject,
@@ -149,7 +247,12 @@ namespace uniset
             void checkMessages( ev::timer& t, int revents );
             virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
             ev::timer iocheck;
+<<<<<<< HEAD
             double check_sec = { 0.3 };
+=======
+            double check_sec = { 0.05 };
+            int maxMessagesProcessing  = { 100 };
+>>>>>>> 2.9.4-alt0.1
 
             std::shared_ptr<DebugStream> mylog;
 
@@ -162,6 +265,7 @@ namespace uniset
             double wsHeartbeatTime_sec = { 3.0 };
             double wsSendTime_sec = { 0.5 };
             size_t wsMaxSend = { 200 };
+<<<<<<< HEAD
 
             enum class RespondFormat
             {
@@ -177,6 +281,11 @@ namespace uniset
             static UTCPCore::Buffer* to_json( const uniset::SensorMessage* sm, const std::string& err );
             static UTCPCore::Buffer* to_txt( const uniset::SensorMessage* sm, const std::string& err );
             static UTCPCore::Buffer* to_raw( const uniset::SensorMessage* sm, const std::string& err );
+=======
+            size_t wsMaxCmd = { 100 };
+
+            static Poco::JSON::Object::Ptr to_json( const uniset::SensorMessage* sm, const std::string& err );
+>>>>>>> 2.9.4-alt0.1
 
             /*! класс реализует работу с websocket через eventloop
              * Из-за того, что поступление логов может быть достаточно быстрым
@@ -209,11 +318,22 @@ namespace uniset
                         long value = { 0 }; // set value
                     };
 
+<<<<<<< HEAD
                     void add( const sinfo& si );
                     void del( uniset::ObjectId id );
                     void set( uniset::ObjectId id, long value );
                     void sensorInfo( const uniset::SensorMessage* sm );
                     void doCommand( const std::shared_ptr<UInterface>& ui );
+=======
+
+                    void ask( uniset::ObjectId id );
+                    void del( uniset::ObjectId id );
+                    void get( uniset::ObjectId id );
+                    void set( uniset::ObjectId id, long value );
+                    void sensorInfo( const uniset::SensorMessage* sm );
+                    void doCommand( const std::shared_ptr<UInterface>& ui );
+                    static Poco::JSON::Object::Ptr to_short_json( sinfo* si );
+>>>>>>> 2.9.4-alt0.1
 
                     void term();
 
@@ -223,19 +343,32 @@ namespace uniset
                     void setHearbeatTime( const double& sec );
                     void setSendPeriod( const double& sec );
                     void setMaxSendCount( size_t val );
+<<<<<<< HEAD
                     void setRespondFormat( RespondFormat f );
+=======
+                    void setMaxCmdCount( size_t val );
+>>>>>>> 2.9.4-alt0.1
 
                     std::shared_ptr<DebugStream> mylog;
 
                 protected:
 
                     void write();
+<<<<<<< HEAD
                     void sendError( sinfo& si, const std::string& err );
+=======
+                    void sendResponse( sinfo& si );
+                    void sendShortResponse( sinfo& si );
+>>>>>>> 2.9.4-alt0.1
                     void onCommand( const std::string& cmd );
 
                     ev::timer iosend;
                     double send_sec = { 0.5 };
                     size_t maxsend = { 200 };
+<<<<<<< HEAD
+=======
+                    size_t maxcmd = { 100 };
+>>>>>>> 2.9.4-alt0.1
 
                     ev::timer ioping;
                     double ping_sec = { 3.0 };
@@ -252,13 +385,25 @@ namespace uniset
                     std::atomic_bool cancelled = { false };
 
                     std::unordered_map<uniset::ObjectId, sinfo> smap;
+<<<<<<< HEAD
                     RespondFormat fmt = { RespondFormat::JSON };
+=======
+                    std::queue<sinfo> qcmd; // очередь команд
+>>>>>>> 2.9.4-alt0.1
 
                     Poco::Net::HTTPServerRequest* req;
                     Poco::Net::HTTPServerResponse* resp;
 
+<<<<<<< HEAD
                     // очередь данных на посылку..
                     std::queue<UTCPCore::Buffer*> wbuf;
+=======
+                    // очередь json-на отправку
+                    std::queue<Poco::JSON::Object::Ptr> jbuf;
+
+                    // очередь данных на посылку..
+                    std::queue<uniset::UTCPCore::Buffer*> wbuf;
+>>>>>>> 2.9.4-alt0.1
                     size_t maxsize; // рассчитывается сходя из max_send (см. конструктор)
             };
 

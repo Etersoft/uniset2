@@ -26,8 +26,8 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.9.3
-Release: alt1.M90P.2
+Version: 2.9.4
+Release: alt0.M90P.0.1
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL-2.1
@@ -185,6 +185,7 @@ Obsoletes: %name-extentions-devel
 %description extension-common-devel
 Libraries needed to develop for uniset extensions
 
+%if_enabled api
 %if_enabled uresolver
 %package extension-uresolver
 Group: Development/Tools
@@ -192,6 +193,16 @@ Summary: CORBA object reference resolver based on http
 
 %description extension-uresolver
 CORBA object reference resolver based on http
+%endif
+%endif
+
+%if_enabled api
+%package extension-wsgate
+Group: Development/Tools
+Summary: Websocket gate for uniset
+
+%description extension-wsgate
+Websocket gate for uniset
 %endif
 
 %if_enabled mysql
@@ -537,6 +548,11 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %_bindir/%oname-httpresolver*
 %endif
 
+%if_enabled api
+%files extension-wsgate
+%_bindir/%oname-wsgate*
+%endif
+
 %files extension-common-devel
 %dir %_includedir/%oname/extensions
 %_includedir/%oname/extensions/*.*
@@ -560,7 +576,7 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
-* Fri Feb 12 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.3-alt1.M90P.2
+* Fri Mar 05 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.4-alt0.M90P.0.1
 - backport to ALTLinux p9 (by rpmbph script)
 
 * Sun Jan 31 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.3-alt2
@@ -568,6 +584,9 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 
 * Thu Jan 14 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.3-alt1
 - minor fixes (supported old omniORB)
+
+* Wed Jan 13 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.3-alt0.1
+- test build for websocketgate
 
 * Sat Jan 09 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.2-alt1
 - admin: added 'sinfo' function
