@@ -66,15 +66,6 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id, xmlNode* cnode, const strin
     sigINT.set<UWebSocketGate, &UWebSocketGate::onTerminate>(this);
     iocheck.set<UWebSocketGate, &UWebSocketGate::checkMessages>(this);
 
-<<<<<<< HEAD
-#ifndef DISABLE_REST_API
-    wsHeartbeatTime_sec = (float)conf->getArgPInt("--" + prefix + "ws-heartbeat-time", it.getProp("wsPingTime"), wsHeartbeatTime_sec) / 1000.0;
-    wsSendTime_sec = (float)conf->getArgPInt("--" + prefix + "ws-send-time", it.getProp("wsSendTime"), wsSendTime_sec) / 1000.0;
-    wsMaxSend = conf->getArgPInt("--" + prefix + "ws-max-send", it.getProp("wsMaxSend"), wsMaxSend);
-
-    httpHost = conf->getArgParam("--" + prefix + "httpserver-host", "localhost");
-    httpPort = conf->getArgPInt("--" + prefix + "httpserver-port", 8080);
-=======
     maxMessagesProcessing = conf->getArgPInt("--" + prefix + "max-messages-processing", conf->getField("maxMessagesProcessing"), maxMessagesProcessing);
 
     if( maxMessagesProcessing < 0 )
@@ -94,7 +85,6 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id, xmlNode* cnode, const strin
 
     httpHost = conf->getArgParam("--" + prefix + "httpserver-host", "localhost");
     httpPort = conf->getArgPInt("--" + prefix + "httpserver-port", 8081);
->>>>>>> 2.9.4-alt0.1
     httpCORS_allow = conf->getArgParam("--" + prefix + "httpserver-cors-allow", "*");
 
     mylog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
@@ -168,12 +158,6 @@ void UWebSocketGate::checkMessages( ev::timer& t, int revents )
     if( EV_ERROR & revents )
         return;
 
-<<<<<<< HEAD
-    auto m = receiveMessage();
-
-    if( m )
-        processingMessage(m.get());
-=======
     for( int i = 0; i < maxMessagesProcessing; i++ )
     {
         auto m = receiveMessage();
@@ -183,56 +167,18 @@ void UWebSocketGate::checkMessages( ev::timer& t, int revents )
 
         processingMessage(m.get());
     }
->>>>>>> 2.9.4-alt0.1
 }
 //--------------------------------------------------------------------------------------------
 void UWebSocketGate::sensorInfo( const SensorMessage* sm )
 {
     uniset_rwmutex_wrlock lock(wsocksMutex);
 
-<<<<<<< HEAD
-=======
     mylog5 << myname << "(sensorInfo): sid=" << sm->id << " val=" << sm->value << endl;
 
->>>>>>> 2.9.4-alt0.1
     for( auto&& s : wsocks )
         s->sensorInfo(sm);
 }
 //--------------------------------------------------------------------------------------------
-<<<<<<< HEAD
-UWebSocketGate::RespondFormat UWebSocketGate::from_string(const string& str)
-{
-    if( str == "json" )
-        return RespondFormat::JSON;
-
-    if( str == "txt" )
-        return RespondFormat::TXT;
-
-    if( str == "raw" )
-        return RespondFormat::RAW;
-
-    return RespondFormat::UNKNOWN;
-}
-//--------------------------------------------------------------------------------------------
-UTCPCore::Buffer* UWebSocketGate::format( const SensorMessage* sm, const std::string& err, const RespondFormat fmt )
-{
-    if( fmt == RespondFormat::JSON )
-        return to_json(sm, err);
-
-    if( fmt == RespondFormat::TXT )
-        return to_txt(sm, err);
-
-    if( fmt == RespondFormat::RAW )
-        return to_json(sm, err);
-
-    return to_json(sm, err);
-}
-//--------------------------------------------------------------------------------------------
-UTCPCore::Buffer* UWebSocketGate::to_json( const SensorMessage* sm, const std::string& err )
-{
-    Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
-
-=======
 Poco::JSON::Object::Ptr UWebSocketGate::UWebSocket::to_short_json( sinfo* si )
 {
     Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
@@ -248,18 +194,13 @@ Poco::JSON::Object::Ptr UWebSocketGate::to_json( const SensorMessage* sm, const 
     Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
 
     json->set("type", "SensorInfo");
->>>>>>> 2.9.4-alt0.1
     json->set("error", err);
     json->set("id", sm->id);
     json->set("value", sm->value);
     json->set("name", uniset::ORepHelpers::getShortName(uniset_conf()->oind->getMapName(sm->id)));
     json->set("sm_tv_sec", sm->sm_tv.tv_sec);
     json->set("sm_tv_nsec", sm->sm_tv.tv_nsec);
-<<<<<<< HEAD
-    json->set("type", uniset::iotype2str(sm->sensor_type));
-=======
     json->set("iotype", uniset::iotype2str(sm->sensor_type));
->>>>>>> 2.9.4-alt0.1
     json->set("undefined", sm->undefined );
     json->set("supplier", sm->supplier );
     json->set("tv_sec", sm->tm.tv_sec);
@@ -273,36 +214,7 @@ Poco::JSON::Object::Ptr UWebSocketGate::to_json( const SensorMessage* sm, const 
     calibr->set("rmax", sm->ci.maxRaw);
     calibr->set("precision", sm->ci.precision);
 
-<<<<<<< HEAD
-    ostringstream out;
-    json->stringify(out);
-    return new UTCPCore::Buffer(out.str());
-}
-//--------------------------------------------------------------------------------------------
-UTCPCore::Buffer* UWebSocketGate::to_txt( const SensorMessage* sm, const std::string& err )
-{
-    ostringstream out;
-
-    if( err.empty() )
-        out << SMonitor::printEvent(sm) << endl;
-    else
-    {
-        out << uniset::timeToString(sm->sm_tv.tv_sec)
-            << "(" << setw(9) << sm->sm_tv.tv_nsec << ")"
-            << " id=" << sm->id
-            << " error=" << err
-            << endl;
-    }
-
-    return new UTCPCore::Buffer(out.str());
-}
-//--------------------------------------------------------------------------------------------
-UTCPCore::Buffer* UWebSocketGate::to_raw( const SensorMessage* sm, const std::string& err )
-{
-    return new UTCPCore::Buffer( (const unsigned char*)(sm), sizeof(*sm) );
-=======
     return json;
->>>>>>> 2.9.4-alt0.1
 }
 //--------------------------------------------------------------------------------------------
 std::shared_ptr<UWebSocketGate> UWebSocketGate::init_wsgate( int argc, const char* const* argv, const std::string& prefix )
@@ -321,29 +233,16 @@ std::shared_ptr<UWebSocketGate> UWebSocketGate::init_wsgate( int argc, const cha
 void UWebSocketGate::help_print()
 {
     cout << "Default: prefix='ws'" << endl;
-<<<<<<< HEAD
-    cout << "--prefix-name name                   - Имя. Для поиска настроечной секции в configure.xml" << endl;
-=======
     cout << "--prefix-name name                      - Имя. Для поиска настроечной секции в configure.xml" << endl;
     cout << "--uniset-object-size-message-queue num  - Размер uniset-очереди сообщений" << endl;
     cout << "--prefix-msg-check-time msec            - Период опроса uniset-очереди сообщений, для обработки новых сообщений. По умолчанию: 10 мсек" << endl;
     cout << "--prefix-max-messages-processing num    - Количество uniset-сообщений обрабатывамых за один раз. По умолчанию 50. По умолчанию: 100" << endl;
->>>>>>> 2.9.4-alt0.1
 
     cout << "websockets: " << endl;
     cout << "--prefix-ws-max num                  - Максимальное количество websocket-ов" << endl;
     cout << "--prefix-ws-heartbeat-time msec      - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
     cout << "--prefix-ws-send-time msec           - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
     cout << "--prefix-ws-max num                  - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
-<<<<<<< HEAD
-
-    cout << "http: " << endl;
-    cout << "--prefix-httpserver-host ip             - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
-    cout << "--prefix-httpserver-port num            - Порт на котором принимать запросы. По умолчанию: 8080" << endl;
-    cout << "--prefix-httpserver-max-queued num      - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
-    cout << "--prefix-httpserver-max-threads num     - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
-    cout << "--prefix-httpserver-cors-allow addr     - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
-=======
     cout << "--prefix-ws-cmd num                  - Максимальное число команд обрабатываемых за один раз. По умолчанию: 100" << endl;
 
     cout << "http: " << endl;
@@ -352,7 +251,6 @@ void UWebSocketGate::help_print()
     cout << "--prefix-httpserver-max-queued num   - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
     cout << "--prefix-httpserver-max-threads num  - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
     cout << "--prefix-httpserver-cors-allow addr  - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
->>>>>>> 2.9.4-alt0.1
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::run( bool async )
@@ -509,51 +407,6 @@ void UWebSocketGate::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net
     // проверка подключения к страничке со списком websocket-ов
     if( !seg.empty() && seg[0] == "wsgate" )
     {
-<<<<<<< HEAD
-        if( seg.size() > 2 )
-        {
-            if( seg[1] == "json" || seg[1] == "txt" || seg[1] == "raw" )
-            {
-                ostringstream params;
-                params << seg[2] << "&format=" << seg[1];
-                httpWebSocketConnectPage(out, req, resp, params.str());
-            }
-            else
-            {
-                auto jdata = respError(resp, HTTPResponse::HTTP_BAD_REQUEST, "Unknown format. Must be [json,txt,raw]");
-                jdata->stringify(out);
-                out.flush();
-            }
-
-            return;
-        }
-
-        if( seg.size() > 1 )
-        {
-            if( seg[1] == "json" || seg[1] == "txt" || seg[1] == "raw" )
-            {
-                ostringstream params;
-                auto qp = uri.getQueryParameters();
-
-                for( const auto& p : qp )
-                {
-                    params << p.first;
-
-                    if( !p.second.empty() )
-                        params << "=" << p.second;
-
-                    params << "&";
-                }
-
-                params << "format=" << seg[1];
-                httpWebSocketConnectPage(out, req, resp, params.str());
-            }
-            else
-                httpWebSocketConnectPage(out, req, resp, seg[1]);
-
-            return;
-        }
-=======
         ostringstream params;
         auto qp = uri.getQueryParameters();
 
@@ -575,15 +428,10 @@ void UWebSocketGate::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net
         httpWebSocketConnectPage(out, req, resp, params.str());
         out.flush();
         return;
->>>>>>> 2.9.4-alt0.1
     }
 
     // default page
     httpWebSocketPage(out, req, resp);
-<<<<<<< HEAD
-
-=======
->>>>>>> 2.9.4-alt0.1
     out.flush();
 }
 // -----------------------------------------------------------------------------
@@ -618,11 +466,7 @@ void UWebSocketGate::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco:
 
     mylog3 << req.getHost() << ": WSOCKET: " << uri.getQuery() << endl;
 
-<<<<<<< HEAD
-    // example: ws://host:port/wsgate/?s1,s2,s3,s4&format=[json,txt,raw]
-=======
     // example: ws://host:port/wsgate/?s1,s2,s3,s4
->>>>>>> 2.9.4-alt0.1
     if( seg.empty() || seg[0] != "wsgate" )
     {
         resp.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
@@ -630,11 +474,7 @@ void UWebSocketGate::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco:
         resp.setStatusAndReason(HTTPResponse::HTTP_BAD_REQUEST);
         resp.setContentLength(0);
         std::ostream& err = resp.send();
-<<<<<<< HEAD
-        err << "Bad request. Must be:  ws://host:port/wsgate/?s1,s2,s3,s4&format=[json,txt,raw]";
-=======
         err << "Bad request. Must be:  ws://host:port/wsgate/?s1,s2,s3,s4";
->>>>>>> 2.9.4-alt0.1
         err.flush();
         return;
     }
@@ -695,49 +535,17 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
 
     std::shared_ptr<UWebSocket> ws;
 
-<<<<<<< HEAD
-    RespondFormat fmt = RespondFormat::JSON;
-
-=======
->>>>>>> 2.9.4-alt0.1
     std::string slist("");
 
     for( const auto& p : qp )
     {
-<<<<<<< HEAD
-        // обрабатываем только первый встреченный параметр
-        if( p.first == "format" )
-            fmt = from_string(p.second);
-        else if( p.second.empty() && !p.first.empty() )
-=======
         if( p.second.empty() && !p.first.empty() )
->>>>>>> 2.9.4-alt0.1
             slist += ("," + p.first);
     }
 
     if( qp.size() == 1 && qp[0].first.empty() )
         slist = qp[0].first;
 
-<<<<<<< HEAD
-    //  auto idlist = uniset::explode(slist);
-#warning DEBUG
-    auto idlist = uniset::explode("34,23,54");
-
-    if( idlist.empty() )
-    {
-        resp->setStatus(HTTPResponse::HTTP_BAD_REQUEST);
-        resp->setContentType("text/html");
-        resp->setStatusAndReason(HTTPResponse::HTTP_BAD_REQUEST);
-        resp->setContentLength(0);
-        std::ostream& err = resp->send();
-        err << "Error: no list of sensors for '" << slist << "'. Use:  http://host:port/wsgate/?s1,s2,s3";
-        err.flush();
-
-        mywarn << myname << "(newWebSocket): error: no list of sensors for '" << slist << "'" << endl;
-
-        return nullptr;
-    }
-=======
     auto idlist = uniset::explode(slist);
 
     //    if( idlist.empty() )
@@ -754,7 +562,6 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
 
     //        return nullptr;
     //    }
->>>>>>> 2.9.4-alt0.1
 
     {
         uniset_rwmutex_wrlock lock(wsocksMutex);
@@ -762,19 +569,6 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
         ws->setHearbeatTime(wsHeartbeatTime_sec);
         ws->setSendPeriod(wsSendTime_sec);
         ws->setMaxSendCount(wsMaxSend);
-<<<<<<< HEAD
-        ws->mylog = mylog;
-
-        ws->setRespondFormat(fmt);
-
-        for( const auto& i : idlist.getList() )
-        {
-            mylog3 << myname << ": add " << i << endl;
-            UWebSocket::sinfo si;
-            si.id = i;
-            si.cmd = "ask";
-            ws->add(si);
-=======
         ws->setMaxCmdCount(wsMaxCmd);
         ws->mylog = mylog;
 
@@ -782,7 +576,6 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
         {
             mylog3 << myname << ": ask sid=" << i << endl;
             ws->ask(i);
->>>>>>> 2.9.4-alt0.1
         }
 
         wsocks.emplace_back(ws);
@@ -809,11 +602,7 @@ void UWebSocketGate::delWebSocket(std::shared_ptr<UWebSocket>& ws )
     }
 }
 // -----------------------------------------------------------------------------
-<<<<<<< HEAD
-const std::string UWebSocketGate::UWebSocket::ping_str = { "." };
-=======
 const std::string UWebSocketGate::UWebSocket::ping_str = { "{\"data\": [{\"type\": \"Ping\"}]}" };
->>>>>>> 2.9.4-alt0.1
 
 UWebSocketGate::UWebSocket::UWebSocket(Poco::Net::HTTPServerRequest* _req,
                                        Poco::Net::HTTPServerResponse* _resp):
@@ -874,12 +663,6 @@ void UWebSocketGate::UWebSocket::send( ev::timer& t, int revents )
     if( EV_ERROR & revents )
         return;
 
-<<<<<<< HEAD
-    for( size_t i = 0; !wbuf.empty() && i < maxsend && !cancelled; i++ )
-        write();
-
-    //  read(iorecv,revents);
-=======
     if( !jbuf.empty() )
     {
         // сперва формируем очередной пакет(поток байт) из накопившихся данных для отправки
@@ -914,7 +697,6 @@ void UWebSocketGate::UWebSocket::send( ev::timer& t, int revents )
     {
         write();
     }
->>>>>>> 2.9.4-alt0.1
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::ping( ev::timer& t, int revents )
@@ -1005,46 +787,24 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
     }
 }
 // -----------------------------------------------------------------------------
-<<<<<<< HEAD
-void UWebSocketGate::UWebSocket::add( const sinfo& si )
-{
-    smap[si.id] = si;
-=======
 void UWebSocketGate::UWebSocket::ask( uniset::ObjectId id )
 {
     sinfo s;
     s.id = id;
     s.cmd = "ask";
     qcmd.push(s);
->>>>>>> 2.9.4-alt0.1
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::del( uniset::ObjectId id )
 {
-<<<<<<< HEAD
-    auto s = smap.find(id);
-
-    if( s != smap.end() )
-        s->second.cmd = "del";
-=======
     sinfo s;
     s.id = id;
     s.cmd = "del";
     qcmd.push(s);
->>>>>>> 2.9.4-alt0.1
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::set( uniset::ObjectId id, long value )
 {
-<<<<<<< HEAD
-    auto s = smap.find(id);
-
-    if( s != smap.end() )
-    {
-        s->second.value = value;
-        s->second.cmd = "set";
-    }
-=======
     sinfo s;
     s.id = id;
     s.value = value;
@@ -1058,7 +818,6 @@ void UWebSocketGate::UWebSocket::get( uniset::ObjectId id )
     s.id = id;
     s.cmd = "get";
     qcmd.push(s);
->>>>>>> 2.9.4-alt0.1
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
@@ -1071,21 +830,13 @@ void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
     if( s == smap.end() )
         return;
 
-<<<<<<< HEAD
-    if( wbuf.size() > maxsize )
-=======
     if( jbuf.size() > maxsize )
->>>>>>> 2.9.4-alt0.1
     {
         mywarn << req->clientAddress().toString() << " lost messages..." << endl;
         return;
     }
 
-<<<<<<< HEAD
-    wbuf.emplace(UWebSocketGate::format(sm, s->second.err, fmt));
-=======
     jbuf.emplace(UWebSocketGate::to_json(sm, s->second.err));
->>>>>>> 2.9.4-alt0.1
 
     if( ioping.is_active() )
         ioping.stop();
@@ -1093,30 +844,16 @@ void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<UInterface>& ui )
 {
-<<<<<<< HEAD
-    for( auto&& io : smap )
-    {
-        auto& s = io.second;
-=======
     for( size_t i = 0; i < maxcmd && !qcmd.empty(); i++ )
     {
         auto s = qcmd.front();
         qcmd.pop();
->>>>>>> 2.9.4-alt0.1
 
         try
         {
             if( s.cmd == "" )
                 continue;
 
-<<<<<<< HEAD
-            if( s.cmd == "ask" )
-                ui->askSensor(s.id, UniversalIO::UIONotify);
-            else if( s.cmd == "del" )
-                ui->askSensor(s.id, UniversalIO::UIODontNotify);
-            else if( s.cmd == "set" )
-                ui->setValue(s.id, s.value);
-=======
             mylog3 << req->clientAddress().toString() << "(doCommand): "
                    << s.cmd << " sid=" << s.id
                    << " value=" << s.value
@@ -1145,7 +882,6 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<UInterface>& u
                 s.err = "";
                 sendShortResponse(s);
             }
->>>>>>> 2.9.4-alt0.1
 
             s.err = "";
             s.cmd = "";
@@ -1153,24 +889,12 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<UInterface>& u
         catch( std::exception& ex )
         {
             mycrit << "(UWebSocket::doCommand): " << ex.what() << endl;
-<<<<<<< HEAD
-            sendError(s, ex.what());
-=======
             s.err = ex.what();
             sendResponse(s);
->>>>>>> 2.9.4-alt0.1
         }
     }
 }
 // -----------------------------------------------------------------------------
-<<<<<<< HEAD
-void UWebSocketGate::UWebSocket::sendError( sinfo& si, const std::string& err )
-{
-    uniset::SensorMessage sm(si.id, 0);
-    //  sm.undefined = true;
-    si.err = err;
-    sensorInfo(&sm);
-=======
 void UWebSocketGate::UWebSocket::sendShortResponse( sinfo& si )
 {
     if( jbuf.size() > maxsize )
@@ -1199,7 +923,6 @@ void UWebSocketGate::UWebSocket::sendResponse( sinfo& si )
 
     if( ioping.is_active() )
         ioping.stop();
->>>>>>> 2.9.4-alt0.1
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
@@ -1220,10 +943,7 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
         for( const auto& i : idlist )
             set(i.si.id, i.val);
 
-<<<<<<< HEAD
-=======
         // уведомление о новой команде
->>>>>>> 2.9.4-alt0.1
         cmdsignal->send();
     }
     else if( cmd == "ask" )
@@ -1234,20 +954,9 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
         auto idlist = uniset::explode(params);
 
         for( const auto& id : idlist.getList() )
-<<<<<<< HEAD
-        {
-            sinfo s;
-            s.id = id;
-            s.cmd = "ask";
-            add(s);
-        }
-
-        // даём команду на перезаказ датчиков
-=======
             ask(id);
 
         // уведомление о новой команде
->>>>>>> 2.9.4-alt0.1
         cmdsignal->send();
     }
     else if( cmd == "del" )
@@ -1260,9 +969,6 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
         for( const auto& id : idlist.getList() )
             del(id);
 
-<<<<<<< HEAD
-        // даём команду на перезаказ датчиков
-=======
         // уведомление о новой команде
         cmdsignal->send();
     }
@@ -1277,7 +983,6 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
             get(id);
 
         // уведомление о новой команде
->>>>>>> 2.9.4-alt0.1
         cmdsignal->send();
     }
 }
@@ -1306,11 +1011,7 @@ void UWebSocketGate::UWebSocket::write()
 
     int flags = WebSocket::FRAME_TEXT;
 
-<<<<<<< HEAD
-    if( msg->len == 1 ) // это пинг состоящий из "."
-=======
     if( msg->len == ping_str.size() )
->>>>>>> 2.9.4-alt0.1
         flags = WebSocket::FRAME_FLAG_FIN | WebSocket::FRAME_OP_PING;
 
     try
@@ -1429,16 +1130,10 @@ void UWebSocketGate::UWebSocket::setMaxSendCount( size_t val )
         maxsend = val;
 }
 // -----------------------------------------------------------------------------
-<<<<<<< HEAD
-void UWebSocketGate::UWebSocket::setRespondFormat( UWebSocketGate::RespondFormat f )
-{
-    fmt = f;
-=======
 void UWebSocketGate::UWebSocket::setMaxCmdCount( size_t val )
 {
     if( val > 0 )
         maxcmd = val;
->>>>>>> 2.9.4-alt0.1
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp )
@@ -1460,16 +1155,7 @@ void UWebSocketGate::httpWebSocketPage( std::ostream& ostr, Poco::Net::HTTPServe
 
     ostr << "  <li><a target='_blank' href=\"http://"
          << req.serverAddress().toString()
-<<<<<<< HEAD
-         << "/wsgate/json\">42,30,1042 [json]</a></li>"
-         << endl;
-
-    ostr << "  <li><a target='_blank' href=\"http://"
-         << req.serverAddress().toString()
-         << "/wsgate/txt\">42,30,1042 [txt]</a></li>"
-=======
          << "/wsgate/?42,30,1042\">42,30,1042</a></li>"
->>>>>>> 2.9.4-alt0.1
          << endl;
 
     ostr << "</ul>" << endl;
@@ -1513,11 +1199,7 @@ void UWebSocketGate::httpWebSocketConnectPage( ostream& ostr,
     ostr << "{" << endl;
     ostr << "  if (\"WebSocket\" in window)" << endl;
     ostr << "  {" << endl;
-<<<<<<< HEAD
-    ostr << "    var ws = new WebSocket(\"ws://" << req.serverAddress().toString() << "/wsgate/\");" << endl;
-=======
     ostr << "    var ws = new WebSocket(\"ws://" << req.serverAddress().toString() << "/wsgate/?" << params << "\");" << endl;
->>>>>>> 2.9.4-alt0.1
     ostr << "setInterval(send_cmd, 1000);" << endl;
     ostr << "    var l = document.getElementById('logname');" << endl;
     ostr << "    l.innerHTML = '*'" << endl;
@@ -1544,11 +1226,7 @@ void UWebSocketGate::httpWebSocketConnectPage( ostream& ostr,
     ostr << "  }" << endl;
 
     ostr << "function send_cmd() {" << endl;
-<<<<<<< HEAD
-    ostr << "  ws.send( 'set:12,32,34' );" << endl;
-=======
     //    ostr << "  ws.send( 'set:12,32,34' );" << endl;
->>>>>>> 2.9.4-alt0.1
     ostr << "}" << endl;
 
     ostr << "}" << endl;
