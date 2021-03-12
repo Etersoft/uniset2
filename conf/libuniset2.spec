@@ -25,7 +25,7 @@
 
 Name: libuniset2
 Version: 2.9.4
-Release: alt0.1
+Release: alt0.2
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL-2.1
@@ -574,6 +574,9 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
+* Fri Mar 12 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.4-alt0.2
+- test build for websocketgate
+
 * Sun Jan 31 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.3-alt2
 - fixed lib version
 
