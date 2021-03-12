@@ -129,7 +129,6 @@ TEST_CASE("[UWebSocketGate]: ask", "[uwebsocketgate]")
 
 
     // sensorInfo
-
     ui->setValue(2, 84);
     memset(buffer, 0, sizeof(buffer));
     ws.receiveFrame(buffer, sizeof(buffer), flags);
@@ -146,7 +145,95 @@ TEST_CASE("[UWebSocketGate]: ask", "[uwebsocketgate]")
     REQUIRE( j->get("type").convert<std::string>() == "SensorInfo" );
     REQUIRE( j->get("iotype").convert<std::string>() == "AI" );
     REQUIRE( j->get("value").convert<long>() == 84 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UWebSocketGate]: ask max", "[uwebsocketgate][cmdmax]")
+{
+    try
+    {
+        InitTest();
 
+        HTTPClientSession cs(addr, port);
+        HTTPRequest request(HTTPRequest::HTTP_GET, "/wsgate", HTTPRequest::HTTP_1_1);
+        HTTPResponse response;
+        WebSocket ws(cs, request, response);
+
+        ui->setValue(1, 1);
+        ui->setValue(2, 42);
+        ui->setValue(3, 42);
+        ui->setValue(4, 1);
+        ui->setValue(5, 42);
+        ui->setValue(6, 42);
+
+        std::string cmd("ask:1,2,3,4,5,6");
+        ws.sendFrame(cmd.data(), (int)cmd.size());
+
+        char buffer[1024] = {};
+        int flags;
+        ws.receiveFrame(buffer, sizeof(buffer), flags);
+        REQUIRE(flags == WebSocket::FRAME_TEXT);
+
+        Poco::JSON::Parser parser;
+        auto result = parser.parse(buffer);
+        Poco::JSON::Object::Ptr json = result.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(json);
+
+        //  {
+        //     "data": [
+        //      {"type": "SensorInfo"...},
+        //      {"type": "SensorInfo"...},
+        //      {"type": "SensorInfo"...}
+        //      ...
+        //     ]
+        //  }
+
+        auto jdata = json->get("data").extract<Poco::JSON::Array::Ptr>();
+        REQUIRE(jdata);
+
+        REQUIRE(jdata->size() == 6);
+
+        for( int i = 0; i < 6; i++ )
+        {
+            auto j = jdata->getObject(i);
+            REQUIRE(j);
+            REQUIRE( j->get("type").convert<std::string>() == "SensorInfo" );
+
+            long id  = j->get("id").convert<long>();
+
+            if( id == 1 || id == 3 )
+            {
+                REQUIRE( j->get("iotype").convert<std::string>() == "DI" );
+                REQUIRE( j->get("value").convert<long>() == 1 );
+            }
+            else
+            {
+                REQUIRE( j->get("iotype").convert<std::string>() == "AI" );
+                REQUIRE( j->get("value").convert<long>() == 42 );
+            }
+        }
+
+
+        // sensorInfo
+
+        ui->setValue(2, 84);
+        memset(buffer, 0, sizeof(buffer));
+        ws.receiveFrame(buffer, sizeof(buffer), flags);
+        REQUIRE(flags == WebSocket::FRAME_TEXT);
+
+        result = parser.parse(buffer);
+        json = result.extract<Poco::JSON::Object::Ptr>();
+        REQUIRE(json);
+        jdata = json->get("data").extract<Poco::JSON::Array::Ptr>();
+        REQUIRE(jdata);
+        REQUIRE(jdata->size() == 1);
+        auto j = jdata->getObject(0);
+        REQUIRE(j);
+        REQUIRE( j->get("type").convert<std::string>() == "SensorInfo" );
+        REQUIRE( j->get("iotype").convert<std::string>() == "AI" );
+        REQUIRE( j->get("value").convert<long>() == 84 );
+
+    } // TODO: WTF?
+    catch( std::exception& ex ) {}
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[UWebSocketGate]: del", "[uwebsocketgate]")

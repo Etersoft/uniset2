@@ -9,7 +9,8 @@ cd ../../../Utilities/Admin/
 cd -
 
 ./uniset2-start.sh -f ./tests-with-sm $* -- --confile uwebsocketgate-test-configure.xml --e-startup-pause 10 \
---ws-name UWebSocketGate1 --ws-httpserverhost-addr 127.0.0.1 --ws-httpserver-port 8081
-#--ws-log-add-levels any
+--ws-name UWebSocketGate1 --ws-httpserverhost-addr 127.0.0.1 --ws-httpserver-port 8081 --ws-max-cmd 3
+
+# --ws-log-add-levels any
 
 

@@ -166,7 +166,7 @@ namespace uniset
         - "set:id1=val1,id2=val2,name3=val4,..." - выставить значение датчиков
         - "ask:id1,id2,name3,..." - подписаться на уведомления об изменении датчиков (sensorInfo)
         - "del:id1,id2,name3,..." - отказаться от уведомления об изменении датчиков
-		- "get:id1,id2,name3,..." - получить текущее значение датчиков (разовое сообщение ShortSensorInfo)
+        - "get:id1,id2,name3,..." - получить текущее значение датчиков (разовое сообщение ShortSensorInfo)
     */
     class UWebSocketGate:
         public UniSetObject,

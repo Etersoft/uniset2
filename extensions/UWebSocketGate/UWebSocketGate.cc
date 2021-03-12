@@ -78,10 +78,10 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id, xmlNode* cnode, const strin
         setMaxSizeOfMessageQueue(sz);
 
 #ifndef DISABLE_REST_API
-    wsHeartbeatTime_sec = (float)conf->getArgPInt("--" + prefix + "ws-heartbeat-time", it.getProp("wsHeartbeatTimeTime"), int(wsHeartbeatTime_sec * 1000)) / 1000.0;
-    wsSendTime_sec = (float)conf->getArgPInt("--" + prefix + "ws-send-time", it.getProp("wsSendTime"), int(wsSendTime_sec * 1000.0)) / 1000.0;
-    wsMaxSend = conf->getArgPInt("--" + prefix + "ws-max-send", it.getProp("wsMaxSend"), wsMaxSend);
-    wsMaxCmd = conf->getArgPInt("--" + prefix + "ws-max-cmd", it.getProp("wsMaxCmd"), wsMaxCmd);
+    wsHeartbeatTime_sec = (float)conf->getArgPInt("--" + prefix + "heartbeat-time", it.getProp("wsHeartbeatTimeTime"), int(wsHeartbeatTime_sec * 1000)) / 1000.0;
+    wsSendTime_sec = (float)conf->getArgPInt("--" + prefix + "send-time", it.getProp("wsSendTime"), int(wsSendTime_sec * 1000.0)) / 1000.0;
+    wsMaxSend = conf->getArgPInt("--" + prefix + "max-send", it.getProp("wsMaxSend"), wsMaxSend);
+    wsMaxCmd = conf->getArgPInt("--" + prefix + "max-cmd", it.getProp("wsMaxCmd"), wsMaxCmd);
 
     httpHost = conf->getArgParam("--" + prefix + "httpserver-host", "localhost");
     httpPort = conf->getArgPInt("--" + prefix + "httpserver-port", 8081);
@@ -239,11 +239,11 @@ void UWebSocketGate::help_print()
     cout << "--prefix-max-messages-processing num    - Количество uniset-сообщений обрабатывамых за один раз. По умолчанию 50. По умолчанию: 100" << endl;
 
     cout << "websockets: " << endl;
-    cout << "--prefix-ws-max num                  - Максимальное количество websocket-ов" << endl;
-    cout << "--prefix-ws-heartbeat-time msec      - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
-    cout << "--prefix-ws-send-time msec           - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
-    cout << "--prefix-ws-max num                  - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
-    cout << "--prefix-ws-cmd num                  - Максимальное число команд обрабатываемых за один раз. По умолчанию: 100" << endl;
+    cout << "--prefix-max num                  - Максимальное количество websocket-ов" << endl;
+    cout << "--prefix-heartbeat-time msec      - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
+    cout << "--prefix-send-time msec           - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
+    cout << "--prefix-max-send num             - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
+    cout << "--prefix-max-cmd num              - Максимальное число команд обрабатываемых за один раз. По умолчанию: 200" << endl;
 
     cout << "http: " << endl;
     cout << "--prefix-httpserver-host ip          - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
@@ -304,8 +304,8 @@ void UWebSocketGate::onActivate( ev::async& watcher, int revents )
     {
         if( !s->isActive() )
         {
-            s->doCommand(ui);
             s->set(loop, wscmd);
+            s->doCommand(ui);
         }
     }
 }
@@ -844,6 +844,9 @@ void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<UInterface>& ui )
 {
+    if( qcmd.empty() )
+        return;
+
     for( size_t i = 0; i < maxcmd && !qcmd.empty(); i++ )
     {
         auto s = qcmd.front();
@@ -893,6 +896,9 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<UInterface>& u
             sendResponse(s);
         }
     }
+
+    if( !qcmd.empty() && cmdsignal )
+        cmdsignal->send();
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::sendShortResponse( sinfo& si )
