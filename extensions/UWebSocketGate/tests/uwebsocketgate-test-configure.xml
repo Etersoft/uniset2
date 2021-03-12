@@ -46,6 +46,9 @@
 			<item id="1" iotype="DI" name="DI1_S" textname="DI sensor 1"/>
 			<item id="2" iotype="AI" name="AI1_S" textname="AI sensor 1" default="2" undefined_value="65635"/>
 			<item id="3" iotype="AI" name="AI2_S" textname="AI sensor 2" default="3"/>
+			<item id="4" iotype="DI" name="DI2_S" textname="DI sensor 2"/>
+			<item id="5" iotype="AI" name="AI3_S" textname="AI sensor 3" default="2" undefined_value="65635"/>
+			<item id="6" iotype="AI" name="AI4_S" textname="AI sensor 4" default="3"/>
 		</sensors>
 		<thresholds/>
 		<controllers name="Controllers">
