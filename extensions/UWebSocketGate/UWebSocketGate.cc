@@ -933,6 +933,22 @@ void UWebSocketGate::UWebSocket::sendResponse( sinfo& si )
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
 {
+    if( cmdtxt.size() < 5 )
+    {
+        mylog3 << "(websocket): " << req->clientAddress().toString()
+               << " error: bad command format '" << cmdtxt << "'. Len must be > 4" << endl;
+
+        using Poco::Net::WebSocket;
+        using Poco::Net::WebSocketException;
+        using Poco::Net::HTTPResponse;
+        using Poco::Net::HTTPServerRequest;
+
+        resp->setStatusAndReason(HTTPResponse::HTTP_BAD_REQUEST);
+        resp->setContentLength(0);
+        resp->send();
+        return;
+    }
+
     const string cmd = cmdtxt.substr(0, 3);
     const string params = cmdtxt.substr(4, cmdtxt.size());
 
