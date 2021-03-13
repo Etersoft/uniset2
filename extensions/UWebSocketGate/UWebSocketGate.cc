@@ -83,6 +83,8 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id, xmlNode* cnode, const strin
     wsMaxSend = conf->getArgPInt("--" + prefix + "max-send", it.getProp("wsMaxSend"), wsMaxSend);
     wsMaxCmd = conf->getArgPInt("--" + prefix + "max-cmd", it.getProp("wsMaxCmd"), wsMaxCmd);
 
+    mylog1 << myname << "maxSend=" << wsMaxSend << " maxCmd=" << wsMaxCmd << endl;
+
     httpHost = conf->getArgParam("--" + prefix + "httpserver-host", "localhost");
     httpPort = conf->getArgPInt("--" + prefix + "httpserver-port", 8081);
     httpCORS_allow = conf->getArgParam("--" + prefix + "httpserver-cors-allow", "*");
@@ -252,7 +254,7 @@ void UWebSocketGate::help_print()
     cout << "--prefix-max num                  - Максимальное количество websocket-ов" << endl;
     cout << "--prefix-heartbeat-time msec      - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
     cout << "--prefix-send-time msec           - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
-    cout << "--prefix-max-send num             - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
+    cout << "--prefix-max-send num             - Максимальное число сообщений посылаемых за один раз. По умолчанию: 5000" << endl;
     cout << "--prefix-max-cmd num              - Максимальное число команд обрабатываемых за один раз. По умолчанию: 200" << endl;
 
     cout << "http: " << endl;
@@ -617,7 +619,7 @@ UWebSocketGate::UWebSocket::UWebSocket(Poco::Net::HTTPServerRequest* _req,
     iosend.set<UWebSocketGate::UWebSocket, &UWebSocketGate::UWebSocket::send>(this);
     iorecv.set<UWebSocketGate::UWebSocket, &UWebSocketGate::UWebSocket::read>(this);
 
-    maxsize = maxsend * 10; // пока так
+    maxsize = maxsend * Kbuf;
 
     setReceiveTimeout(uniset::PassiveTimer::millisecToPoco(recvTimeout));
     setMaxPayloadSize(sizeof(rbuf));
@@ -748,7 +750,10 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
         }
 
         if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_CLOSE )
+        {
+            term();
             return;
+        }
 
         if( n == sizeof(rbuf) )
         {
@@ -853,7 +858,7 @@ void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
 
     if( jbuf.size() > maxsize )
     {
-        mywarn << req->clientAddress().toString() << " lost messages..." << endl;
+        mywarn << req->clientAddress().toString() << " lost messages...(maxsize=" << maxsize << ")" << endl;
         return;
     }
 
@@ -926,7 +931,7 @@ void UWebSocketGate::UWebSocket::sendShortResponse( sinfo& si )
 {
     if( jbuf.size() > maxsize )
     {
-        mywarn << req->clientAddress().toString() << " lost messages..." << endl;
+        mywarn << req->clientAddress().toString() << "(sendShortResponse): lost messages (maxsize=" << maxsize << ")" << endl;
         return;
     }
 
@@ -942,7 +947,7 @@ void UWebSocketGate::UWebSocket::sendResponse( sinfo& si )
 
     if( jbuf.size() > maxsize )
     {
-        mywarn << req->clientAddress().toString() << " lost messages..." << endl;
+        mywarn << req->clientAddress().toString() << "(sendResponse): lost messages (maxsize=" << maxsize << ")"  << endl;
         return;
     }
 
@@ -956,7 +961,7 @@ void UWebSocketGate::UWebSocket::sendError( const std::string& msg )
 {
     if( jbuf.size() > maxsize )
     {
-        mywarn << req->clientAddress().toString() << " lost messages..." << endl;
+        mywarn << req->clientAddress().toString() << "(sendError): lost messages (maxsize=" << maxsize << ")"  << endl;
         return;
     }
 
@@ -1191,7 +1196,10 @@ void UWebSocketGate::UWebSocket::setSendPeriod ( const double& sec )
 void UWebSocketGate::UWebSocket::setMaxSendCount( size_t val )
 {
     if( val > 0 )
+    {
         maxsend = val;
+        maxsize = maxsend * Kbuf;
+    }
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::setMaxCmdCount( size_t val )
