@@ -726,6 +726,9 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
     if( !(revents & EV_READ) )
         return;
 
+    if( cancelled )
+        return;
+
     using Poco::Net::WebSocket;
     using Poco::Net::WebSocketException;
     using Poco::Net::HTTPResponse;
@@ -748,6 +751,10 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
             sendFrame(rbuf, n, WebSocket::FRAME_OP_PONG);
             return;
         }
+
+        if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_PONG)
+            return;
+
 
         if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_CLOSE )
         {
@@ -978,21 +985,14 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
         mylog3 << "(websocket): " << req->clientAddress().toString()
                << " error: bad command format '" << cmdtxt << "'. Len must be > 4" << endl;
 
-        using Poco::Net::WebSocket;
-        using Poco::Net::WebSocketException;
-        using Poco::Net::HTTPResponse;
-        using Poco::Net::HTTPServerRequest;
-
-        resp->setStatusAndReason(HTTPResponse::HTTP_BAD_REQUEST);
-        resp->setContentLength(0);
-        resp->send();
+        sendError("Unknown command. Command must be > 4 bytes");
         return;
     }
 
     const string cmd = cmdtxt.substr(0, 3);
-    const string params = cmdtxt.substr(4, cmdtxt.size());
+    const string params = cmdtxt.substr(4);
 
-    myinfo << "(websocket): " << req->clientAddress().toString()
+    myinfo << "(websocket)(command): " << req->clientAddress().toString()
            << "(" << cmd << "): " << params << endl;
 
     if( cmd == "set" )
