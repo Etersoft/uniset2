@@ -167,6 +167,16 @@ namespace uniset
         - "ask:id1,id2,name3,..." - подписаться на уведомления об изменении датчиков (sensorInfo)
         - "del:id1,id2,name3,..." - отказаться от уведомления об изменении датчиков
         - "get:id1,id2,name3,..." - получить текущее значение датчиков (разовое сообщение ShortSensorInfo)
+
+
+        Если длинна команды превышает допустимое значение, то возвращается ошибка
+        \code
+        {
+           "data": [
+               {"type": "Error",  "message": "Payload to big"}
+           ]
+        }
+        \endcode
     */
     class UWebSocketGate:
         public UniSetObject,
@@ -246,6 +256,7 @@ namespace uniset
             size_t wsMaxCmd = { 100 };
 
             static Poco::JSON::Object::Ptr to_json( const uniset::SensorMessage* sm, const std::string& err );
+            static Poco::JSON::Object::Ptr error_to_json( const std::string& err );
 
             /*! класс реализует работу с websocket через eventloop
              * Из-за того, что поступление логов может быть достаточно быстрым
@@ -305,6 +316,7 @@ namespace uniset
                     void sendResponse( sinfo& si );
                     void sendShortResponse( sinfo& si );
                     void onCommand( const std::string& cmd );
+                    void sendError( const std::string& message );
 
                     ev::timer iosend;
                     double send_sec = { 0.5 };
@@ -316,7 +328,7 @@ namespace uniset
                     static const std::string ping_str;
 
                     ev::io iorecv;
-                    char rbuf[512]; //! \todo сделать настраиваемым или применить Poco::FIFOBuffer
+                    char rbuf[32 * 1024]; //! \todo сделать настраиваемым или применить Poco::FIFOBuffer
                     timeout_t recvTimeout = { 200 }; // msec
                     std::shared_ptr<ev::async> cmdsignal;
 
