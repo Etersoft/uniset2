@@ -325,7 +325,7 @@ namespace uniset
                     double send_sec = { 0.5 };
                     size_t maxsend = { 5000 };
                     size_t maxcmd = { 200 };
-                    static int Kbuf = { 10 }; // коэффициент для буфера сообщений (maxsend умножается на Kbuf)
+                    const int Kbuf = { 10 }; // коэффициент для буфера сообщений (maxsend умножается на Kbuf)
 
                     ev::timer ioping;
                     double ping_sec = { 3.0 };
