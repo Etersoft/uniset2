@@ -181,6 +181,30 @@ void UWebSocketGate::sensorInfo( const SensorMessage* sm )
         s->sensorInfo(sm);
 }
 //--------------------------------------------------------------------------------------------
+uniset::SimpleInfo* UWebSocketGate::getInfo( const char* userparam )
+{
+    uniset::SimpleInfo_var i = UniSetObject::getInfo(userparam);
+
+    ostringstream inf;
+
+    inf << i->info << endl;
+    //  inf << vmon.pretty_str() << endl;
+    inf << endl;
+
+    {
+        uniset_rwmutex_wrlock lock(wsocksMutex);
+        inf << "websockets[" << wsocks.size() << "]: " << endl;
+
+        for( auto&& s : wsocks )
+        {
+            inf << "  " << s->getInfo() << endl;
+        }
+    }
+
+    i->info = inf.str().c_str();
+    return i._retn();
+}
+//--------------------------------------------------------------------------------------------
 Poco::JSON::Object::Ptr UWebSocketGate::UWebSocket::to_short_json( sinfo* si )
 {
     Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
@@ -636,6 +660,21 @@ UWebSocketGate::UWebSocket::~UWebSocket()
         delete wbuf.front();
         wbuf.pop();
     }
+}
+// -----------------------------------------------------------------------------
+std::string UWebSocketGate::UWebSocket::getInfo() const noexcept
+{
+    ostringstream inf;
+
+    inf << req->clientAddress().toString()
+        << ": jbuf=" << jbuf.size()
+        << " wbuf=" << wbuf.size()
+        << " ping_sec=" << ping_sec
+        << " maxsend=" << maxsend
+        << " send_sec=" << send_sec
+        << " maxcmd=" << maxcmd;
+
+    return inf.str();
 }
 // -----------------------------------------------------------------------------
 bool UWebSocketGate::UWebSocket::isActive()

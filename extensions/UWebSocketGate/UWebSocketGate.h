@@ -241,6 +241,7 @@ namespace uniset
 
             void checkMessages( ev::timer& t, int revents );
             virtual void sensorInfo( const uniset::SensorMessage* sm ) override;
+            virtual uniset::SimpleInfo* getInfo( const char* userparam = 0 ) override;
             ev::timer iocheck;
             double check_sec = { 0.05 };
             int maxMessagesProcessing  = { 100 };
@@ -276,6 +277,8 @@ namespace uniset
                                 Poco::Net::HTTPServerResponse* resp);
 
                     virtual ~UWebSocket();
+
+                    std::string getInfo() const noexcept;
 
                     bool isActive();
                     void set( ev::dynamic_loop& loop, std::shared_ptr<ev::async> a );
