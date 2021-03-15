@@ -83,6 +83,8 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id, xmlNode* cnode, const strin
     wsMaxSend = conf->getArgPInt("--" + prefix + "max-send", it.getProp("wsMaxSend"), wsMaxSend);
     wsMaxCmd = conf->getArgPInt("--" + prefix + "max-cmd", it.getProp("wsMaxCmd"), wsMaxCmd);
 
+    mylog1 << myname << "maxSend=" << wsMaxSend << " maxCmd=" << wsMaxCmd << endl;
+
     httpHost = conf->getArgParam("--" + prefix + "httpserver-host", "localhost");
     httpPort = conf->getArgPInt("--" + prefix + "httpserver-port", 8081);
     httpCORS_allow = conf->getArgParam("--" + prefix + "httpserver-cors-allow", "*");
@@ -179,6 +181,30 @@ void UWebSocketGate::sensorInfo( const SensorMessage* sm )
         s->sensorInfo(sm);
 }
 //--------------------------------------------------------------------------------------------
+uniset::SimpleInfo* UWebSocketGate::getInfo( const char* userparam )
+{
+    uniset::SimpleInfo_var i = UniSetObject::getInfo(userparam);
+
+    ostringstream inf;
+
+    inf << i->info << endl;
+    //  inf << vmon.pretty_str() << endl;
+    inf << endl;
+
+    {
+        uniset_rwmutex_wrlock lock(wsocksMutex);
+        inf << "websockets[" << wsocks.size() << "]: " << endl;
+
+        for( auto&& s : wsocks )
+        {
+            inf << "  " << s->getInfo() << endl;
+        }
+    }
+
+    i->info = inf.str().c_str();
+    return i._retn();
+}
+//--------------------------------------------------------------------------------------------
 Poco::JSON::Object::Ptr UWebSocketGate::UWebSocket::to_short_json( sinfo* si )
 {
     Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
@@ -217,6 +243,16 @@ Poco::JSON::Object::Ptr UWebSocketGate::to_json( const SensorMessage* sm, const 
     return json;
 }
 //--------------------------------------------------------------------------------------------
+Poco::JSON::Object::Ptr UWebSocketGate::error_to_json( const std::string& err )
+{
+    Poco::JSON::Object::Ptr json = new Poco::JSON::Object();
+
+    json->set("type", "Error");
+    json->set("message", err);
+
+    return json;
+}
+//--------------------------------------------------------------------------------------------
 std::shared_ptr<UWebSocketGate> UWebSocketGate::init_wsgate( int argc, const char* const* argv, const std::string& prefix )
 {
     string name = uniset::getArgParam("--" + prefix + "name", argc, argv, "UWebSocketGate");
@@ -242,7 +278,7 @@ void UWebSocketGate::help_print()
     cout << "--prefix-max num                  - Максимальное количество websocket-ов" << endl;
     cout << "--prefix-heartbeat-time msec      - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
     cout << "--prefix-send-time msec           - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
-    cout << "--prefix-max-send num             - Максимальное число сообщений посылаемых за один раз. По умолчанию: 200" << endl;
+    cout << "--prefix-max-send num             - Максимальное число сообщений посылаемых за один раз. По умолчанию: 5000" << endl;
     cout << "--prefix-max-cmd num              - Максимальное число команд обрабатываемых за один раз. По умолчанию: 200" << endl;
 
     cout << "http: " << endl;
@@ -548,21 +584,6 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
 
     auto idlist = uniset::explode(slist);
 
-    //    if( idlist.empty() )
-    //    {
-    //        resp->setStatus(HTTPResponse::HTTP_BAD_REQUEST);
-    //        resp->setContentType("text/html");
-    //        resp->setStatusAndReason(HTTPResponse::HTTP_BAD_REQUEST);
-    //        resp->setContentLength(0);
-    //        std::ostream& err = resp->send();
-    //        err << "Error: no list of sensors for '" << slist << "'. Use:  http://host:port/wsgate/?s1,s2,s3";
-    //        err.flush();
-
-    //        mywarn << myname << "(newWebSocket): error: no list of sensors for '" << slist << "'" << endl;
-
-    //        return nullptr;
-    //    }
-
     {
         uniset_rwmutex_wrlock lock(wsocksMutex);
         ws = make_shared<UWebSocket>(req, resp);
@@ -602,7 +623,7 @@ void UWebSocketGate::delWebSocket(std::shared_ptr<UWebSocket>& ws )
     }
 }
 // -----------------------------------------------------------------------------
-const std::string UWebSocketGate::UWebSocket::ping_str = { "{\"data\": [{\"type\": \"Ping\"}]}" };
+const std::string UWebSocketGate::UWebSocket::ping_str = "{\"data\": [{\"type\": \"Ping\"}]}";
 
 UWebSocketGate::UWebSocket::UWebSocket(Poco::Net::HTTPServerRequest* _req,
                                        Poco::Net::HTTPServerResponse* _resp):
@@ -610,6 +631,7 @@ UWebSocketGate::UWebSocket::UWebSocket(Poco::Net::HTTPServerRequest* _req,
     req(_req),
     resp(_resp)
 {
+    memset(rbuf, 0, sizeof(rbuf));
     setBlocking(false);
 
     cancelled = false;
@@ -621,9 +643,10 @@ UWebSocketGate::UWebSocket::UWebSocket(Poco::Net::HTTPServerRequest* _req,
     iosend.set<UWebSocketGate::UWebSocket, &UWebSocketGate::UWebSocket::send>(this);
     iorecv.set<UWebSocketGate::UWebSocket, &UWebSocketGate::UWebSocket::read>(this);
 
-    maxsize = maxsend * 10; // пока так
+    maxsize = maxsend * Kbuf;
 
-    setReceiveTimeout( uniset::PassiveTimer::millisecToPoco(recvTimeout));
+    setReceiveTimeout(uniset::PassiveTimer::millisecToPoco(recvTimeout));
+    setMaxPayloadSize(sizeof(rbuf));
 }
 // -----------------------------------------------------------------------------
 UWebSocketGate::UWebSocket::~UWebSocket()
@@ -637,6 +660,21 @@ UWebSocketGate::UWebSocket::~UWebSocket()
         delete wbuf.front();
         wbuf.pop();
     }
+}
+// -----------------------------------------------------------------------------
+std::string UWebSocketGate::UWebSocket::getInfo() const noexcept
+{
+    ostringstream inf;
+
+    inf << req->clientAddress().toString()
+        << ": jbuf=" << jbuf.size()
+        << " wbuf=" << wbuf.size()
+        << " ping_sec=" << ping_sec
+        << " maxsend=" << maxsend
+        << " send_sec=" << send_sec
+        << " maxcmd=" << maxcmd;
+
+    return inf.str();
 }
 // -----------------------------------------------------------------------------
 bool UWebSocketGate::UWebSocket::isActive()
@@ -727,6 +765,9 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
     if( !(revents & EV_READ) )
         return;
 
+    if( cancelled )
+        return;
+
     using Poco::Net::WebSocket;
     using Poco::Net::WebSocketException;
     using Poco::Net::HTTPResponse;
@@ -740,15 +781,35 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
             return;
 
         int n = receiveFrame(rbuf, sizeof(rbuf), flags);
-        //      int n = receiveBytes(rbuf, sizeof(rbuf));
 
         if( n <= 0 )
             return;
 
-        const std::string cmd(rbuf, n);
-
-        if( cmd == ping_str )
+        if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_PING)
+        {
+            sendFrame(rbuf, n, WebSocket::FRAME_OP_PONG);
             return;
+        }
+
+        if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_PONG)
+            return;
+
+
+        if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_CLOSE )
+        {
+            term();
+            return;
+        }
+
+        if( n == sizeof(rbuf) )
+        {
+            ostringstream err;
+            err << "Payload too big. Must be < " << sizeof(rbuf) << " bytes";
+            sendError(err.str());
+            return;
+        }
+
+        const std::string cmd(rbuf, n);
 
         onCommand(cmd);
 
@@ -783,6 +844,17 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
         mylog3 << "(websocket): IOException: "
                << req->clientAddress().toString()
                << " error: " << ex.displayText()
+               << endl;
+    }
+    catch( Poco::TimeoutException& ex )
+    {
+        // it is ok
+    }
+    catch( std::exception& ex )
+    {
+        mylog3 << "(websocket): std::exception: "
+               << req->clientAddress().toString()
+               << " error: " << ex.what()
                << endl;
     }
 }
@@ -832,7 +904,7 @@ void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
 
     if( jbuf.size() > maxsize )
     {
-        mywarn << req->clientAddress().toString() << " lost messages..." << endl;
+        mywarn << req->clientAddress().toString() << " lost messages...(maxsize=" << maxsize << ")" << endl;
         return;
     }
 
@@ -905,7 +977,7 @@ void UWebSocketGate::UWebSocket::sendShortResponse( sinfo& si )
 {
     if( jbuf.size() > maxsize )
     {
-        mywarn << req->clientAddress().toString() << " lost messages..." << endl;
+        mywarn << req->clientAddress().toString() << "(sendShortResponse): lost messages (maxsize=" << maxsize << ")" << endl;
         return;
     }
 
@@ -921,7 +993,7 @@ void UWebSocketGate::UWebSocket::sendResponse( sinfo& si )
 
     if( jbuf.size() > maxsize )
     {
-        mywarn << req->clientAddress().toString() << " lost messages..." << endl;
+        mywarn << req->clientAddress().toString() << "(sendResponse): lost messages (maxsize=" << maxsize << ")"  << endl;
         return;
     }
 
@@ -931,12 +1003,35 @@ void UWebSocketGate::UWebSocket::sendResponse( sinfo& si )
         ioping.stop();
 }
 // -----------------------------------------------------------------------------
+void UWebSocketGate::UWebSocket::sendError( const std::string& msg )
+{
+    if( jbuf.size() > maxsize )
+    {
+        mywarn << req->clientAddress().toString() << "(sendError): lost messages (maxsize=" << maxsize << ")"  << endl;
+        return;
+    }
+
+    jbuf.emplace(UWebSocketGate::error_to_json(msg));
+
+    if( ioping.is_active() )
+        ioping.stop();
+}
+// -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
 {
-    const string cmd = cmdtxt.substr(0, 3);
-    const string params = cmdtxt.substr(4, cmdtxt.size());
+    if( cmdtxt.size() < 5 )
+    {
+        mylog3 << "(websocket): " << req->clientAddress().toString()
+               << " error: bad command format '" << cmdtxt << "'. Len must be > 4" << endl;
 
-    myinfo << "(websocket): " << req->clientAddress().toString()
+        sendError("Unknown command. Command must be > 4 bytes");
+        return;
+    }
+
+    const string cmd = cmdtxt.substr(0, 3);
+    const string params = cmdtxt.substr(4);
+
+    myinfo << "(websocket)(command): " << req->clientAddress().toString()
            << "(" << cmd << "): " << params << endl;
 
     if( cmd == "set" )
@@ -1094,6 +1189,13 @@ void UWebSocketGate::UWebSocket::write()
                << " error: " << ex.displayText()
                << endl;
     }
+    catch( std::exception& ex )
+    {
+        mylog3 << "(websocket): std::exception: "
+               << req->clientAddress().toString()
+               << " error: " << ex.what()
+               << endl;
+    }
 
     term();
 }
@@ -1133,7 +1235,10 @@ void UWebSocketGate::UWebSocket::setSendPeriod ( const double& sec )
 void UWebSocketGate::UWebSocket::setMaxSendCount( size_t val )
 {
     if( val > 0 )
+    {
         maxsend = val;
+        maxsize = maxsend * Kbuf;
+    }
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::UWebSocket::setMaxCmdCount( size_t val )

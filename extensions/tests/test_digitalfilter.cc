@@ -48,8 +48,8 @@ TEST_CASE("[DigitalFilter]: median", "[DigitalFilter][median]")
 
     REQUIRE( df.currentMedian() == 50 );
 
-    DigitalFilter df1;
-    DigitalFilter df10;
+    DigitalFilter df1(1);
+    DigitalFilter df10(10);
     vector<long> dat = {0, 234, 356, 344, 234, 320, 250, 250, 250, 250, 250, 250, 250, 251, 252, 251, 252, 252, 250};
 
     for( auto v : dat )
@@ -58,8 +58,14 @@ TEST_CASE("[DigitalFilter]: median", "[DigitalFilter][median]")
         df10.median(v);
     }
 
-    REQUIRE( df1.currentMedian() == 252 );
-    REQUIRE( df10.currentMedian() == 252 );
+    REQUIRE( df1.currentMedian() == 250 );
+    REQUIRE( df10.currentMedian() == 251 );
+    
+    DigitalFilter d(1);
+    d.median(1);
+    d.median(2);
+    d.median(3);
+    REQUIRE( d.currentMedian() == 3 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[DigitalFilter]: filter1", "[DigitalFilter][filter1]")
