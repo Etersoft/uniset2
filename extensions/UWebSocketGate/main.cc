@@ -1,4 +1,5 @@
 #include "Configuration.h"
+#include "Extensions.h"
 #include "UWebSocketGate.h"
 #include "Configuration.h"
 #include "UniSetActivator.h"
@@ -21,7 +22,21 @@ int main(int argc, char** argv)
 
         auto conf = uniset_init(argc, argv);
 
-        auto ws = UWebSocketGate::init_wsgate(argc, argv, "ws-");
+        ObjectId shmID = DefaultObjectId;
+        string sID = conf->getArgParam("--smemory-id");
+
+        if( !sID.empty() )
+            shmID = conf->getControllerID(sID);
+        else
+            shmID = uniset::extensions::getSharedMemoryID();
+
+        if( shmID == DefaultObjectId )
+        {
+            cerr << sID << "? SharedMemoryID not found in " << conf->getControllersSection() << " section" << endl;
+            return 1;
+        }
+
+        auto ws = UWebSocketGate::init_wsgate(argc, argv, shmID, nullptr, "ws-");
 
         if( !ws )
             return 1;

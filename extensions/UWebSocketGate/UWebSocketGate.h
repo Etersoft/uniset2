@@ -34,6 +34,8 @@
 #include "LogAgregator.h"
 #include "UniSetObject.h"
 #include "DebugStream.h"
+#include "SharedMemory.h"
+#include "SMInterface.h"
 #include "EventLoopServer.h"
 #include "UTCPStream.h"
 #include "UHttpRequestHandler.h"
@@ -189,11 +191,18 @@ namespace uniset
 #endif
     {
         public:
-            UWebSocketGate( uniset::ObjectId id, xmlNode* cnode, const std::string& prefix );
+            UWebSocketGate( uniset::ObjectId id, xmlNode* cnode
+                            , uniset::ObjectId shmID
+                            , const std::shared_ptr<SharedMemory>& ic = nullptr
+                            , const std::string& prefix = "-ws" );
+
             virtual ~UWebSocketGate();
 
             /*! глобальная функция для инициализации объекта */
-            static std::shared_ptr<UWebSocketGate> init_wsgate( int argc, const char* const* argv, const std::string& prefix = "logdb-" );
+            static std::shared_ptr<UWebSocketGate> init_wsgate( int argc, const char* const* argv
+                    , uniset::ObjectId shmID
+                    , const std::shared_ptr<SharedMemory>& ic = nullptr
+                    , const std::string& prefix = "ws-" );
 
             /*! глобальная функция для вывода help-а */
             static void help_print();
@@ -247,6 +256,7 @@ namespace uniset
             int maxMessagesProcessing  = { 100 };
 
             std::shared_ptr<DebugStream> mylog;
+            std::shared_ptr<SMInterface> shm;
 
 #ifndef DISABLE_REST_API
             std::shared_ptr<Poco::Net::HTTPServer> httpserv;
@@ -301,7 +311,7 @@ namespace uniset
                     void get( uniset::ObjectId id );
                     void set( uniset::ObjectId id, long value );
                     void sensorInfo( const uniset::SensorMessage* sm );
-                    void doCommand( const std::shared_ptr<UInterface>& ui );
+                    void doCommand( const std::shared_ptr<SMInterface>& ui );
                     static Poco::JSON::Object::Ptr to_short_json( sinfo* si );
 
                     void term();
