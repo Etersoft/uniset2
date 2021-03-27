@@ -42,7 +42,7 @@ int main(int argc, const char* argv[] )
         if( !shm )
             return 1;
 
-        auto ws = UWebSocketGate::init_wsgate(argc, argv, "ws-");
+        auto ws = UWebSocketGate::init_wsgate(argc, argv, shm->getId(), shm, "ws-");
 
         if( !ws )
             return 1;

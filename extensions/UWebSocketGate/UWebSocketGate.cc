@@ -39,7 +39,11 @@
 using namespace uniset;
 using namespace std;
 // --------------------------------------------------------------------------
-UWebSocketGate::UWebSocketGate( uniset::ObjectId id, xmlNode* cnode, const string& prefix ):
+UWebSocketGate::UWebSocketGate( uniset::ObjectId id
+                                , xmlNode* cnode
+                                , uniset::ObjectId shmID
+                                , const std::shared_ptr<SharedMemory>& ic
+                                , const string& prefix ):
     UniSetObject(id)
 {
     offThread(); // отключаем поток обработки, потому-что будем обрабатывать сами
@@ -55,6 +59,11 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id, xmlNode* cnode, const strin
     }
 
     UniXML::iterator it(cnode);
+
+    int maxCacheSize = conf->getArgPInt("--" + prefix + "max-ui-cache-size", it.getProp("msgUIChacheSize"), 5000);
+    ui->setCacheMaxSize(maxCacheSize);
+
+    shm = make_shared<SMInterface>(shmID, ui, getId(), ic);
 
     maxwsocks = conf->getArgPInt("--" + prefix + "ws-max", it.getProp("wsMax"), maxwsocks);
 
@@ -253,7 +262,10 @@ Poco::JSON::Object::Ptr UWebSocketGate::error_to_json( const std::string& err )
     return json;
 }
 //--------------------------------------------------------------------------------------------
-std::shared_ptr<UWebSocketGate> UWebSocketGate::init_wsgate( int argc, const char* const* argv, const std::string& prefix )
+std::shared_ptr<UWebSocketGate> UWebSocketGate::init_wsgate( int argc, const char* const* argv
+        , uniset::ObjectId shmID
+        , const std::shared_ptr<SharedMemory>& ic
+        , const std::string& prefix )
 {
     string name = uniset::getArgParam("--" + prefix + "name", argc, argv, "UWebSocketGate");
 
@@ -263,7 +275,7 @@ std::shared_ptr<UWebSocketGate> UWebSocketGate::init_wsgate( int argc, const cha
         return nullptr;
     }
 
-    return uniset::make_object<UWebSocketGate>(name, "UWebSocketGate", prefix);
+    return uniset::make_object<UWebSocketGate>(name, "UWebSocketGate", shmID, ic, prefix);
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::help_print()
@@ -341,7 +353,7 @@ void UWebSocketGate::onActivate( ev::async& watcher, int revents )
         if( !s->isActive() )
         {
             s->set(loop, wscmd);
-            s->doCommand(ui);
+            s->doCommand(shm);
         }
     }
 }
@@ -357,7 +369,7 @@ void UWebSocketGate::onCommand( ev::async& watcher, int revents )
     uniset_rwmutex_rlock lk(wsocksMutex);
 
     for( const auto& s : wsocks )
-        s->doCommand(ui);
+        s->doCommand(shm);
 }
 // -----------------------------------------------------------------------------
 #ifndef DISABLE_REST_API
@@ -914,7 +926,7 @@ void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
         ioping.stop();
 }
 // -----------------------------------------------------------------------------
-void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<UInterface>& ui )
+void UWebSocketGate::UWebSocket::doCommand(const std::shared_ptr<SMInterface>& ui )
 {
     if( qcmd.empty() )
         return;
