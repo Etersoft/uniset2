@@ -297,11 +297,6 @@
 ./extensions/UniNetwork/uninet.cc
 ./extensions/UWebSocketGate/main.cc
 ./extensions/UWebSocketGate/Makefile.am
-./extensions/UWebSocketGate.old/main.cc
-./extensions/UWebSocketGate.old/Makefile.am
-./extensions/UWebSocketGate.old/UWebSocketGate.cc
-./extensions/UWebSocketGate.old/UWebSocketGate.h
-./extensions/UWebSocketGate.old/UWebSocketGateSugar.h
 ./extensions/UWebSocketGate/tests/Makefile.am
 ./extensions/UWebSocketGate/tests/tests_with_sm.cc
 ./extensions/UWebSocketGate/tests/test_uwebsocketgate.cc

@@ -497,7 +497,7 @@ Poco::JSON::Object::Ptr UWebSocketGate::respError( Poco::Net::HTTPServerResponse
     return jdata;
 }
 // -----------------------------------------------------------------------------
-void UWebSocketGate::onWebSocketSession(Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp)
+void UWebSocketGate::onWebSocketSession( Poco::Net::HTTPServerRequest& req, Poco::Net::HTTPServerResponse& resp)
 {
     using Poco::Net::WebSocket;
     using Poco::Net::WebSocketException;
@@ -597,7 +597,6 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
     auto idlist = uniset::explode(slist);
 
     {
-        uniset_rwmutex_wrlock lock(wsocksMutex);
         ws = make_shared<UWebSocket>(req, resp);
         ws->setHearbeatTime(wsHeartbeatTime_sec);
         ws->setSendPeriod(wsSendTime_sec);
@@ -611,6 +610,7 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
             ws->ask(i);
         }
 
+        uniset_rwmutex_wrlock lock(wsocksMutex);
         wsocks.emplace_back(ws);
     }
 
@@ -620,7 +620,7 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
     return ws;
 }
 // -----------------------------------------------------------------------------
-void UWebSocketGate::delWebSocket(std::shared_ptr<UWebSocket>& ws )
+void UWebSocketGate::delWebSocket( std::shared_ptr<UWebSocket>& ws )
 {
     uniset_rwmutex_wrlock lock(wsocksMutex);
 
@@ -635,10 +635,9 @@ void UWebSocketGate::delWebSocket(std::shared_ptr<UWebSocket>& ws )
     }
 }
 // -----------------------------------------------------------------------------
-const std::string UWebSocketGate::UWebSocket::ping_str = "{\"data\": [{\"type\": \"Ping\"}]}";
 
-UWebSocketGate::UWebSocket::UWebSocket(Poco::Net::HTTPServerRequest* _req,
-                                       Poco::Net::HTTPServerResponse* _resp):
+UWebSocketGate::UWebSocket::UWebSocket( Poco::Net::HTTPServerRequest* _req,
+                                        Poco::Net::HTTPServerResponse* _resp):
     Poco::Net::WebSocket(*_req, *_resp),
     req(_req),
     resp(_resp)
@@ -694,7 +693,7 @@ bool UWebSocketGate::UWebSocket::isActive()
     return iosend.is_active();
 }
 // -----------------------------------------------------------------------------
-void UWebSocketGate::UWebSocket::set(ev::dynamic_loop& loop, std::shared_ptr<ev::async> a )
+void UWebSocketGate::UWebSocket::set( ev::dynamic_loop& loop, std::shared_ptr<ev::async> a )
 {
     iosend.set(loop);
     ioping.set(loop);
@@ -749,6 +748,8 @@ void UWebSocketGate::UWebSocket::send( ev::timer& t, int revents )
     }
 }
 // -----------------------------------------------------------------------------
+const std::string UWebSocketGate::UWebSocket::ping_str = "."; // "{\"data\": [{\"type\": \"Ping\"}]}";
+
 void UWebSocketGate::UWebSocket::ping( ev::timer& t, int revents )
 {
     if( EV_ERROR & revents )
@@ -799,11 +800,11 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
 
         if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_PING)
         {
-            sendFrame(rbuf, n, WebSocket::FRAME_OP_PONG);
+            sendFrame(rbuf, n, WebSocket::FRAME_FLAG_FIN | WebSocket::FRAME_OP_PONG);
             return;
         }
 
-        if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_PONG)
+        if( (flags & WebSocket::FRAME_OP_BITMASK) & WebSocket::FRAME_OP_PONG )
             return;
 
 
@@ -926,7 +927,7 @@ void UWebSocketGate::UWebSocket::sensorInfo( const uniset::SensorMessage* sm )
         ioping.stop();
 }
 // -----------------------------------------------------------------------------
-void UWebSocketGate::UWebSocket::doCommand(const std::shared_ptr<SMInterface>& ui )
+void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& ui )
 {
     if( qcmd.empty() )
         return;
@@ -1171,7 +1172,7 @@ void UWebSocketGate::UWebSocket::write()
     }
     catch( WebSocketException& exc )
     {
-        cerr << "(sendFrame): ERROR: " << exc.displayText() << endl;
+        mylog3 << "(sendFrame): ERROR: " << exc.displayText() << endl;
 
         switch( exc.code() )
         {
