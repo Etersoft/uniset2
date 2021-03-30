@@ -27,7 +27,7 @@
 
 Name: libuniset2
 Version: 2.9.4
-Release: alt0.M90P.0.4
+Release: alt0.M90P.0.5
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL-2.1
@@ -576,8 +576,11 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
-* Sun Mar 28 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.4-alt0.M90P.0.4
+* Wed Mar 31 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.4-alt0.M90P.0.5
 - backport to ALTLinux p9 (by rpmbph script)
+
+* Wed Mar 31 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.4-alt0.5
+- test build for websocketgate
 
 * Sun Mar 28 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.4-alt0.4
 - [uwebsocket]: sm2 mode
