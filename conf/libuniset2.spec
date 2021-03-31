@@ -201,6 +201,13 @@ Summary: Websocket gate for uniset
 
 %description extension-wsgate
 Websocket gate for uniset
+
+%package extension-wsgate-devel
+Group: Development/Tools
+Summary: Websocket gate develop libraries
+
+%description extension-wsgate-devel
+Websocket gate develop libraries
 %endif
 
 %if_enabled mysql
@@ -549,6 +556,11 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %if_enabled api
 %files extension-wsgate
 %_bindir/%oname-wsgate*
+
+%files extension-wsgate-devel
+%_pkgconfigdir/libUniSet2UWebSocketGate*.pc
+%_libdir/libUniSet2UWebsocketGate*.so
+%_includedir/%oname/extensions/wsgate/
 %endif
 
 %files extension-common-devel
