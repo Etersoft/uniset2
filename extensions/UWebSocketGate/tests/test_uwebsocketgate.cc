@@ -265,7 +265,7 @@ TEST_CASE("[UWebSocketGate]: del", "[uwebsocketgate]")
     ws.receiveFrame(buffer, sizeof(buffer), flags);
 
     string str(buffer);
-    REQUIRE( str.find("Ping") != string::npos );
+    REQUIRE( str == "." );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[UWebSocketGate]: get", "[uwebsocketgate]")
