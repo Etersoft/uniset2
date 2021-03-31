@@ -27,7 +27,7 @@
 
 Name: libuniset2
 Version: 2.9.4
-Release: alt0.M90P.0.5
+Release: alt0.M90P.0.6
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL-2.1
@@ -203,6 +203,13 @@ Summary: Websocket gate for uniset
 
 %description extension-wsgate
 Websocket gate for uniset
+
+%package extension-wsgate-devel
+Group: Development/Tools
+Summary: Websocket gate develop libraries
+
+%description extension-wsgate-devel
+Websocket gate develop libraries
 %endif
 
 %if_enabled mysql
@@ -551,6 +558,11 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %if_enabled api
 %files extension-wsgate
 %_bindir/%oname-wsgate*
+
+%files extension-wsgate-devel
+%_pkgconfigdir/libUniSet2UWebSocketGate*.pc
+%_libdir/libUniSet2UWebSocketGate*.so
+%_includedir/%oname/extensions/wsgate/
 %endif
 
 %files extension-common-devel
@@ -576,8 +588,11 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
-* Wed Mar 31 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.4-alt0.M90P.0.5
+* Wed Mar 31 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.4-alt0.M90P.0.6
 - backport to ALTLinux p9 (by rpmbph script)
+
+* Wed Mar 31 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.4-alt0.6
+- test build for websocketgate (wsgate-devel package)
 
 * Wed Mar 31 2021 Pavel Vainerman <pv@altlinux.ru> 2.9.4-alt0.5
 - test build for websocketgate
