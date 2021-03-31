@@ -805,7 +805,10 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
         }
 
         if( (flags & WebSocket::FRAME_OP_BITMASK) & WebSocket::FRAME_OP_PONG )
+		{
+			mylog4 << req->clientAddress().toString() << "(read): pong.." << endl;
             return;
+		}
 
 
         if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_CLOSE )
@@ -932,7 +935,7 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
     if( qcmd.empty() )
         return;
 
-    for( size_t i = 0; i < maxcmd && !qcmd.empty(); i++ )
+	for( size_t i = 0; i < maxcmd && !qcmd.empty(); i++ )
     {
         auto s = qcmd.front();
         qcmd.pop();
@@ -950,7 +953,7 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
             if( s.cmd == "ask" )
             {
                 ui->askSensor(s.id, UniversalIO::UIONotify);
-                smap[s.id] = s;
+				smap[s.id] = s;
             }
             else if( s.cmd == "del" )
             {
@@ -958,17 +961,17 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
                 auto it = smap.find(s.id);
 
                 if( it != smap.end() )
-                    smap.erase(it);
+					smap.erase(it);
             }
             else if( s.cmd == "set" )
             {
-                ui->setValue(s.id, s.value);
-            }
+				ui->setValue(s.id, s.value);
+			}
             else if( s.cmd == "get" )
             {
                 s.value = ui->getValue(s.id);
                 s.err = "";
-                sendShortResponse(s);
+				sendShortResponse(s);
             }
 
             s.err = "";
@@ -978,11 +981,11 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
         {
             mycrit << "(UWebSocket::doCommand): " << ex.what() << endl;
             s.err = ex.what();
-            sendResponse(s);
+			sendResponse(s);
         }
     }
 
-    if( !qcmd.empty() && cmdsignal )
+	if( !qcmd.empty() && cmdsignal )
         cmdsignal->send();
 }
 // -----------------------------------------------------------------------------
@@ -1126,7 +1129,10 @@ void UWebSocketGate::UWebSocket::write()
     int flags = WebSocket::FRAME_TEXT;
 
     if( msg->len == ping_str.size() )
+	{
         flags = WebSocket::FRAME_FLAG_FIN | WebSocket::FRAME_OP_PING;
+		mylog4 << req->clientAddress().toString() << "(write): ping.." << endl;
+	}
 
     try
     {
