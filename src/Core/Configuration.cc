@@ -67,6 +67,7 @@ std::string uniset::Configuration::help()
 	print_help(os, 25, "--ulog-show-milliseconds", "Выводить время с миллисекундами\n");
 	print_help(os, 25, "--ulog-no-debug", "отключение логов\n");
 	print_help(os, 25, "--ulog-logfile", "перенаправление лога в файл\n");
+	print_help(os, 25, "--ulog-levels N", "уровень 'говорливости' логов");
 	return os.str();
 }
 // -------------------------------------------------------------------------
@@ -1025,6 +1026,7 @@ namespace uniset
 		string del_level("--" + debname + "-del-levels");
 		string show_msec("--" + debname + "-show-milliseconds");
 		string show_usec("--" + debname + "-show-microseconds");
+		string verb_level("--" + debname + "-verbosity");
 
 		// смотрим командную строку
 		for (int i = 1; i < (_argc - 1); i++)
@@ -1048,6 +1050,10 @@ namespace uniset
 			else if( show_msec == _argv[i] )
 			{
 				deb->showMilliseconds(true);
+			}
+			else if( verb_level == _argv[i] )
+			{
+				deb->verbose(uniset::uni_atoi(_argv[i+1]));
 			}
 		}
 

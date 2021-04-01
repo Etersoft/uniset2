@@ -4,6 +4,9 @@
 #ifndef myinfo
 #define myinfo if( mylog->debugging(Debug::INFO) ) mylog->info()
 #endif
+#ifndef myinfoV
+#define myinfoV(N) if( mylog->debugging(Debug::INFO) ) mylog->V(N)[Debug::INFO]
+#endif
 #ifndef mywarn
 #define mywarn if( mylog->debugging(Debug::WARN) ) mylog->warn()
 #endif
