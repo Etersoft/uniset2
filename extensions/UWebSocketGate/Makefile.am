@@ -17,9 +17,9 @@ libUniSet2UWebSocketGate_la_CXXFLAGS = -I$(top_builddir)/extensions/include \
 @PACKAGE@_wsgate_SOURCES = main.cc
 @PACKAGE@_wsgate_CXXFLAGS = -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(POCO_CFLAGS)
 @PACKAGE@_wsgate_LDADD = libUniSet2UWebSocketGate.la $(top_builddir)/lib/libUniSet2.la \
-    $(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
-    $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
-    $(SIGC_LIBS) $(POCO_LIBS)
+	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
+	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
+	$(SIGC_LIBS) $(POCO_LIBS)
 
 
 # install

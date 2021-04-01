@@ -805,11 +805,10 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
         }
 
         if( (flags & WebSocket::FRAME_OP_BITMASK) & WebSocket::FRAME_OP_PONG )
-		{
-			mylog4 << req->clientAddress().toString() << "(read): pong.." << endl;
+        {
+            mylog4 << req->clientAddress().toString() << "(read): pong.." << endl;
             return;
-		}
-
+        }
 
         if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_CLOSE )
         {
@@ -1129,10 +1128,10 @@ void UWebSocketGate::UWebSocket::write()
     int flags = WebSocket::FRAME_TEXT;
 
     if( msg->len == ping_str.size() )
-	{
+    {
         flags = WebSocket::FRAME_FLAG_FIN | WebSocket::FRAME_OP_PING;
-		mylog4 << req->clientAddress().toString() << "(write): ping.." << endl;
-	}
+        mylog4 << req->clientAddress().toString() << "(write): ping.." << endl;
+    }
 
     try
     {
