@@ -92,21 +92,13 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id
     wsMaxSend = conf->getArgPInt("--" + prefix + "max-send", it.getProp("wsMaxSend"), wsMaxSend);
     wsMaxCmd = conf->getArgPInt("--" + prefix + "max-cmd", it.getProp("wsMaxCmd"), wsMaxCmd);
 
-<<<<<<< HEAD
-    mylog1 << myname << "maxSend=" << wsMaxSend << " maxCmd=" << wsMaxCmd << endl;
-=======
     myinfoV(1) << myname << "maxSend=" << wsMaxSend << " maxCmd=" << wsMaxCmd << endl;
->>>>>>> 2.10.1-alt1
 
     httpHost = conf->getArgParam("--" + prefix + "httpserver-host", "localhost");
     httpPort = conf->getArgPInt("--" + prefix + "httpserver-port", 8081);
     httpCORS_allow = conf->getArgParam("--" + prefix + "httpserver-cors-allow", "*");
 
-<<<<<<< HEAD
-    mylog1 << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
-=======
     myinfoV(1) << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
->>>>>>> 2.10.1-alt1
     Poco::Net::SocketAddress sa(httpHost, httpPort);
 
     try
@@ -192,11 +184,7 @@ void UWebSocketGate::sensorInfo( const SensorMessage* sm )
 {
     uniset_rwmutex_wrlock lock(wsocksMutex);
 
-<<<<<<< HEAD
-    mylog5 << myname << "(sensorInfo): sid=" << sm->id << " val=" << sm->value << endl;
-=======
     myinfoV(5) << myname << "(sensorInfo): sid=" << sm->id << " val=" << sm->value << endl;
->>>>>>> 2.10.1-alt1
 
     for( auto&& s : wsocks )
         s->sensorInfo(sm);
@@ -459,11 +447,7 @@ void UWebSocketGate::handleRequest( Poco::Net::HTTPServerRequest& req, Poco::Net
 
     Poco::URI uri(req.getURI());
 
-<<<<<<< HEAD
-    mylog3 << req.getHost() << ": query: " << uri.getQuery() << endl;
-=======
     myinfoV(3) << req.getHost() << ": query: " << uri.getQuery() << endl;
->>>>>>> 2.10.1-alt1
 
     std::vector<std::string> seg;
     uri.getPathSegments(seg);
@@ -528,11 +512,7 @@ void UWebSocketGate::onWebSocketSession( Poco::Net::HTTPServerRequest& req, Poco
 
     uri.getPathSegments(seg);
 
-<<<<<<< HEAD
-    mylog3 << req.getHost() << ": WSOCKET: " << uri.getQuery() << endl;
-=======
     myinfoV(3) << req.getHost() << ": WSOCKET: " << uri.getQuery() << endl;
->>>>>>> 2.10.1-alt1
 
     // example: ws://host:port/wsgate/?s1,s2,s3,s4
     if( seg.empty() || seg[0] != "wsgate" )
@@ -574,21 +554,13 @@ void UWebSocketGate::onWebSocketSession( Poco::Net::HTTPServerRequest& req, Poco
 
     UWebSocketGuard lk(ws, this);
 
-<<<<<<< HEAD
-    mylog3 << myname << "(onWebSocketSession): start session for " << req.clientAddress().toString() << endl;
-=======
     myinfoV(3) << myname << "(onWebSocketSession): start session for " << req.clientAddress().toString() << endl;
->>>>>>> 2.10.1-alt1
 
     // т.к. вся работа происходит в eventloop
     // то здесь просто ждём..
     ws->waitCompletion();
 
-<<<<<<< HEAD
-    mylog3 << myname << "(onWebSocketSession): finish session for " << req.clientAddress().toString() << endl;
-=======
     myinfoV(3) << myname << "(onWebSocketSession): finish session for " << req.clientAddress().toString() << endl;
->>>>>>> 2.10.1-alt1
 }
 // -----------------------------------------------------------------------------
 bool UWebSocketGate::activateObject()
@@ -634,11 +606,7 @@ std::shared_ptr<UWebSocketGate::UWebSocket> UWebSocketGate::newWebSocket( Poco::
 
         for( const auto& i : idlist.getList() )
         {
-<<<<<<< HEAD
-            mylog3 << myname << ": ask sid=" << i << endl;
-=======
             myinfoV(3) << myname << ": ask sid=" << i << endl;
->>>>>>> 2.10.1-alt1
             ws->ask(i);
         }
 
@@ -660,11 +628,7 @@ void UWebSocketGate::delWebSocket( std::shared_ptr<UWebSocket>& ws )
     {
         if( (*it).get() == ws.get() )
         {
-<<<<<<< HEAD
-            mylog3 << myname << ": delete websocket " << endl;
-=======
             myinfoV(3) << myname << ": delete websocket " << endl;
->>>>>>> 2.10.1-alt1
             wsocks.erase(it);
             return;
         }
@@ -774,11 +738,7 @@ void UWebSocketGate::UWebSocket::send( ev::timer& t, int revents )
 
         wbuf.emplace( new UTCPCore::Buffer(std::move(out.str())) );
 
-<<<<<<< HEAD
-        mylog4 << req->clientAddress().toString() << "(write): batch " << i << " objects" << endl;
-=======
         myinfoV(4) << req->clientAddress().toString() << "(write): batch " << i << " objects" << endl;
->>>>>>> 2.10.1-alt1
     }
 
     // реальная посылка данных
@@ -846,18 +806,11 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
 
         if( (flags & WebSocket::FRAME_OP_BITMASK) & WebSocket::FRAME_OP_PONG )
         {
-<<<<<<< HEAD
-            mylog4 << req->clientAddress().toString() << "(read): pong.." << endl;
-            return;
-        }
-
-=======
             myinfoV(4) << req->clientAddress().toString() << "(read): pong.." << endl;
             return;
         }
 
 
->>>>>>> 2.10.1-alt1
         if( (flags & WebSocket::FRAME_OP_BITMASK) == WebSocket::FRAME_OP_CLOSE )
         {
             term();
@@ -897,19 +850,6 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
     }
     catch( const Poco::Net::NetException& e )
     {
-<<<<<<< HEAD
-        mylog3 << "(websocket):NetException: "
-               << req->clientAddress().toString()
-               << " error: " << e.displayText()
-               << endl;
-    }
-    catch( Poco::IOException& ex )
-    {
-        mylog3 << "(websocket): IOException: "
-               << req->clientAddress().toString()
-               << " error: " << ex.displayText()
-               << endl;
-=======
         myinfoV(3) << "(websocket):NetException: "
                    << req->clientAddress().toString()
                    << " error: " << e.displayText()
@@ -921,7 +861,6 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
                    << req->clientAddress().toString()
                    << " error: " << ex.displayText()
                    << endl;
->>>>>>> 2.10.1-alt1
     }
     catch( Poco::TimeoutException& ex )
     {
@@ -929,17 +868,10 @@ void UWebSocketGate::UWebSocket::read( ev::io& io, int revents )
     }
     catch( std::exception& ex )
     {
-<<<<<<< HEAD
-        mylog3 << "(websocket): std::exception: "
-               << req->clientAddress().toString()
-               << " error: " << ex.what()
-               << endl;
-=======
         myinfoV(3) << "(websocket): std::exception: "
                    << req->clientAddress().toString()
                    << " error: " << ex.what()
                    << endl;
->>>>>>> 2.10.1-alt1
     }
 }
 // -----------------------------------------------------------------------------
@@ -1003,11 +935,7 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
     if( qcmd.empty() )
         return;
 
-<<<<<<< HEAD
-	for( size_t i = 0; i < maxcmd && !qcmd.empty(); i++ )
-=======
     for( size_t i = 0; i < maxcmd && !qcmd.empty(); i++ )
->>>>>>> 2.10.1-alt1
     {
         auto s = qcmd.front();
         qcmd.pop();
@@ -1017,26 +945,15 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
             if( s.cmd == "" )
                 continue;
 
-<<<<<<< HEAD
-            mylog3 << req->clientAddress().toString() << "(doCommand): "
-                   << s.cmd << " sid=" << s.id
-                   << " value=" << s.value
-                   << endl;
-=======
             myinfoV(3) << req->clientAddress().toString() << "(doCommand): "
                        << s.cmd << " sid=" << s.id
                        << " value=" << s.value
                        << endl;
->>>>>>> 2.10.1-alt1
 
             if( s.cmd == "ask" )
             {
                 ui->askSensor(s.id, UniversalIO::UIONotify);
-<<<<<<< HEAD
-				smap[s.id] = s;
-=======
                 smap[s.id] = s;
->>>>>>> 2.10.1-alt1
             }
             else if( s.cmd == "del" )
             {
@@ -1044,30 +961,17 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
                 auto it = smap.find(s.id);
 
                 if( it != smap.end() )
-<<<<<<< HEAD
-					smap.erase(it);
-            }
-            else if( s.cmd == "set" )
-            {
-				ui->setValue(s.id, s.value);
-			}
-=======
                     smap.erase(it);
             }
             else if( s.cmd == "set" )
             {
                 ui->setValue(s.id, s.value);
             }
->>>>>>> 2.10.1-alt1
             else if( s.cmd == "get" )
             {
                 s.value = ui->getValue(s.id);
                 s.err = "";
-<<<<<<< HEAD
-				sendShortResponse(s);
-=======
                 sendShortResponse(s);
->>>>>>> 2.10.1-alt1
             }
 
             s.err = "";
@@ -1077,19 +981,11 @@ void UWebSocketGate::UWebSocket::doCommand( const std::shared_ptr<SMInterface>& 
         {
             mycrit << "(UWebSocket::doCommand): " << ex.what() << endl;
             s.err = ex.what();
-<<<<<<< HEAD
-			sendResponse(s);
-        }
-    }
-
-	if( !qcmd.empty() && cmdsignal )
-=======
             sendResponse(s);
         }
     }
 
     if( !qcmd.empty() && cmdsignal )
->>>>>>> 2.10.1-alt1
         cmdsignal->send();
 }
 // -----------------------------------------------------------------------------
@@ -1141,13 +1037,8 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
 {
     if( cmdtxt.size() < 5 )
     {
-<<<<<<< HEAD
-        mylog3 << "(websocket): " << req->clientAddress().toString()
-               << " error: bad command format '" << cmdtxt << "'. Len must be > 4" << endl;
-=======
         myinfoV(3) << "(websocket): " << req->clientAddress().toString()
                    << " error: bad command format '" << cmdtxt << "'. Len must be > 4" << endl;
->>>>>>> 2.10.1-alt1
 
         sendError("Unknown command. Command must be > 4 bytes");
         return;
@@ -1156,15 +1047,6 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
     const string cmd = cmdtxt.substr(0, 3);
     const string params = cmdtxt.substr(4);
 
-<<<<<<< HEAD
-    myinfo << "(websocket)(command): " << req->clientAddress().toString()
-           << "(" << cmd << "): " << params << endl;
-
-    if( cmd == "set" )
-    {
-        myinfo << "(websocket): " << req->clientAddress().toString()
-               << "(set): " << params << endl;
-=======
     myinfoV(3) << "(websocket)(command): " << req->clientAddress().toString()
                << "(" << cmd << "): " << params << endl;
 
@@ -1172,7 +1054,6 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
     {
         myinfoV(3) << "(websocket): " << req->clientAddress().toString()
                    << "(set): " << params << endl;
->>>>>>> 2.10.1-alt1
 
         auto idlist = uniset::getSInfoList(params, uniset_conf());
 
@@ -1184,13 +1065,8 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
     }
     else if( cmd == "ask" )
     {
-<<<<<<< HEAD
-        myinfo << "(websocket): " << req->clientAddress().toString()
-               << "(ask): " << params << endl;
-=======
         myinfoV(3) << "(websocket): " << req->clientAddress().toString()
                    << "(ask): " << params << endl;
->>>>>>> 2.10.1-alt1
 
         auto idlist = uniset::explode(params);
 
@@ -1202,13 +1078,8 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
     }
     else if( cmd == "del" )
     {
-<<<<<<< HEAD
-        myinfo << "(websocket): " << req->clientAddress().toString()
-               << "(del): " << params << endl;
-=======
         myinfoV(3) << "(websocket): " << req->clientAddress().toString()
                    << "(del): " << params << endl;
->>>>>>> 2.10.1-alt1
 
         auto idlist = uniset::explode(params);
 
@@ -1220,13 +1091,8 @@ void UWebSocketGate::UWebSocket::onCommand( const string& cmdtxt )
     }
     else if( cmd == "get" )
     {
-<<<<<<< HEAD
-        myinfo << "(websocket): " << req->clientAddress().toString()
-               << "(get): " << params << endl;
-=======
         myinfoV(3) << "(websocket): " << req->clientAddress().toString()
                    << "(get): " << params << endl;
->>>>>>> 2.10.1-alt1
 
         auto idlist = uniset::explode(params);
 
@@ -1265,11 +1131,7 @@ void UWebSocketGate::UWebSocket::write()
     if( msg->len == ping_str.size() )
     {
         flags = WebSocket::FRAME_FLAG_FIN | WebSocket::FRAME_OP_PING;
-<<<<<<< HEAD
-        mylog4 << req->clientAddress().toString() << "(write): ping.." << endl;
-=======
         myinfoV(4) << req->clientAddress().toString() << "(write): ping.." << endl;
->>>>>>> 2.10.1-alt1
     }
 
     try
@@ -1278,16 +1140,6 @@ void UWebSocketGate::UWebSocket::write()
 
         if( ret < 0 )
         {
-<<<<<<< HEAD
-            mylog3 << "(websocket): " << req->clientAddress().toString()
-                   << "  write to socket error(" << errno << "): " << strerror(errno) << endl;
-
-            if( errno == EPIPE || errno == EBADF )
-            {
-                mylog3 << "(websocket): "
-                       << req->clientAddress().toString()
-                       << " write error.. terminate session.." << endl;
-=======
             myinfoV(3) << "(websocket): " << req->clientAddress().toString()
                        << "  write to socket error(" << errno << "): " << strerror(errno) << endl;
 
@@ -1296,7 +1148,6 @@ void UWebSocketGate::UWebSocket::write()
                 myinfoV(3) << "(websocket): "
                            << req->clientAddress().toString()
                            << " write error.. terminate session.." << endl;
->>>>>>> 2.10.1-alt1
 
                 term();
             }
@@ -1327,11 +1178,7 @@ void UWebSocketGate::UWebSocket::write()
     }
     catch( WebSocketException& exc )
     {
-<<<<<<< HEAD
-        mylog3 << "(sendFrame): ERROR: " << exc.displayText() << endl;
-=======
         myinfoV(3) << "(sendFrame): ERROR: " << exc.displayText() << endl;
->>>>>>> 2.10.1-alt1
 
         switch( exc.code() )
         {
@@ -1349,26 +1196,6 @@ void UWebSocketGate::UWebSocket::write()
     }
     catch( const Poco::Net::NetException& e )
     {
-<<<<<<< HEAD
-        mylog3 << "(websocket):NetException: "
-               << req->clientAddress().toString()
-               << " error: " << e.displayText()
-               << endl;
-    }
-    catch( Poco::IOException& ex )
-    {
-        mylog3 << "(websocket): IOException: "
-               << req->clientAddress().toString()
-               << " error: " << ex.displayText()
-               << endl;
-    }
-    catch( std::exception& ex )
-    {
-        mylog3 << "(websocket): std::exception: "
-               << req->clientAddress().toString()
-               << " error: " << ex.what()
-               << endl;
-=======
         myinfoV(3) << "(websocket):NetException: "
                    << req->clientAddress().toString()
                    << " error: " << e.displayText()
@@ -1387,7 +1214,6 @@ void UWebSocketGate::UWebSocket::write()
                    << req->clientAddress().toString()
                    << " error: " << ex.what()
                    << endl;
->>>>>>> 2.10.1-alt1
     }
 
     term();
