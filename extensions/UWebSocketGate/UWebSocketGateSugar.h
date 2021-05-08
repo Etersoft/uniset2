@@ -4,6 +4,12 @@
 #ifndef myinfo
 #define myinfo if( mylog->debugging(Debug::INFO) ) mylog->info()
 #endif
+<<<<<<< HEAD
+=======
+#ifndef myinfoV
+#define myinfoV(N) if( mylog->debugging(Debug::INFO) ) mylog->V(N)[Debug::INFO]
+#endif
+>>>>>>> 2.10.1-alt1
 #ifndef mywarn
 #define mywarn if( mylog->debugging(Debug::WARN) ) mylog->warn()
 #endif
