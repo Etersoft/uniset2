@@ -159,7 +159,7 @@ namespace uniset
             /*! глобальная функция для вывода help-а */
             static void help_print( int argc, const char* argv[] ) noexcept;
 
-            bool checkExistUNetHost( const std::string& host, int port ) noexcept;
+            bool checkExistTransport( const std::string& transportID ) noexcept;
 
             inline std::shared_ptr<LogAgregator> getLogAggregator() noexcept
             {

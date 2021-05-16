@@ -3,6 +3,9 @@
 #include <string>
 #include <Poco/Net/NetException.h>
 #include "Debug.h"
+#include "UDPCore.h"
+#include "unisetstd.h"
+#include "UDPTransport.h"
 #include "UNetReceiver.h"
 #include "SMInterface.h"
 #include "Extensions.h"
@@ -139,7 +142,8 @@ static void run_test( size_t max, const std::string& host )
     // make receivers..
     for( size_t i = 0; i < max; i++ )
     {
-        auto r = make_shared<UNetReceiver>(host, begPort + i, smiInstance());
+        auto t = unisetstd::make_unique<uniset::UDPReceiveTransport>(host, begPort + i);
+        auto r = make_shared<UNetReceiver>(std::move(t), smiInstance());
         r->setLockUpdate(true);
         vrecv.emplace_back(r);
     }
