@@ -55,21 +55,21 @@ std::unique_ptr<MulticastReceiveTransport> MulticastReceiveTransport::createFrom
     }
 
     ostringstream fieldPort;
-    fieldPort << "unet_port";
+    fieldPort << "unet_multicast_port";
 
     if( numChan > 0 )
         fieldPort << numChan;
 
     int p = it.getPIntProp(fieldPort.str(), it.getIntProp("id"));
 
-    if( it.find("multicast") )
+    if( !it.find("multicast") )
         throw SystemError("(MulticastReceiveTransport): not found <multicast> node");
 
     if( !it.goChildren() )
         throw SystemError("(MulticastReceiveTransport): empty <multicast> node");
 
-    if( it.find("receive") )
-        throw SystemError("(MulticastReceiveTransport): not found <receive> node");
+    if( !it.find("receive") )
+        throw SystemError("(MulticastReceiveTransport): not found <receive> in <multicast>");
 
     if( !it.goChildren() )
         throw SystemError("(MulticastReceiveTransport): empty <receive> groups");
@@ -230,20 +230,20 @@ std::unique_ptr<MulticastSendTransport> MulticastSendTransport::createFromXml( U
     }
 
     ostringstream fieldPort;
-    fieldPort << "unet_port";
+    fieldPort << "unet_multicast_port";
 
     if( numChan > 0 )
         fieldPort << numChan;
 
     int p = it.getPIntProp(fieldPort.str(), it.getIntProp("id"));
 
-    if( it.find("multicast") )
+    if( !it.find("multicast") )
         throw SystemError("(MulticastSendTransport): not found <multicast> node");
 
     if( !it.goChildren() )
         throw SystemError("(MulticastSendTransport): empty <multicast> node");
 
-    if( it.find("send") )
+    if( !it.find("send") )
         throw SystemError("(MulticastSendTransport): not found <send> node");
 
     if( !it.goChildren() )

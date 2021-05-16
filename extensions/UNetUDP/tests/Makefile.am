@@ -2,7 +2,7 @@ if HAVE_TESTS
 
 noinst_PROGRAMS = tests-with-sm urecv-perf-test
 
-tests_with_sm_SOURCES   = tests_with_sm.cc test_unetudp.cc
+tests_with_sm_SOURCES   = tests_with_sm.cc test_unetudp.cc test_unetmulticast.cc
 tests_with_sm_LDADD     = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/extensions/UNetUDP/libUniSet2UNetUDP.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
