@@ -28,8 +28,8 @@
 #include "SMInterface.h"
 #include "SharedMemory.h"
 #include "ThreadCreator.h"
-#include "UDPCore.h"
 #include "UDPPacket.h"
+#include "UNetTransport.h"
 // --------------------------------------------------------------------------
 namespace uniset
 {
@@ -69,7 +69,7 @@ namespace uniset
     class UNetSender
     {
         public:
-            UNetSender( const std::string& host, const int port, const std::shared_ptr<SMInterface>& smi
+            UNetSender( std::unique_ptr<UNetSendTransport>&& transport, const std::shared_ptr<SMInterface>& smi
                         , bool nocheckConnection = false
                         , const std::string& s_field = ""
                         , const std::string& s_fvalue = ""
@@ -162,15 +162,6 @@ namespace uniset
 
             virtual const std::string getShortInfo() const;
 
-            inline std::string getAddress() const
-            {
-                return addr;
-            }
-            inline int getPort() const
-            {
-                return port;
-            }
-
             inline size_t getADataSize() const
             {
                 return maxAData;
@@ -199,11 +190,7 @@ namespace uniset
         private:
             UNetSender();
 
-            std::unique_ptr<UDPSocketU> udp;
-            std::string addr;
-            int port = { 0 };
-            std::string s_host = { "" };
-            Poco::Net::SocketAddress saddr;
+            std::unique_ptr<UNetSendTransport> transport;
 
             std::string myname = { "" };
             timeout_t sendpause = { 150 };

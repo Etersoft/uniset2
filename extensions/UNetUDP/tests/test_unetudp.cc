@@ -4,6 +4,7 @@
 #include "UniSetTypes.h"
 #include "UInterface.h"
 #include "UDPPacket.h"
+#include "UDPCore.h"
 // -----------------------------------------------------------------------------
 // include-ы искплючительно для того, чтобы их обработал gcov (покрытие кода)
 #include "UNetReceiver.h"

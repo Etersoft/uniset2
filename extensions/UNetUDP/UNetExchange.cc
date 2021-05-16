@@ -16,10 +16,12 @@
 // -------------------------------------------------------------------------
 #include <sstream>
 #include <iomanip>
+#include "unisetstd.h"
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UNetExchange.h"
 #include "UNetLogSugar.h"
+#include "UDPTransport.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -166,7 +168,8 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
             }
 
             unetinfo << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
-            sender = make_shared<UNetSender>(h, p, shm, false, s_field, s_fvalue, "unet", prefix);
+            auto s1 = unisetstd::make_unique<uniset::UDPSendTransport>(h, p);
+            sender = make_shared<UNetSender>(std::move(s1), shm, false, s_field, s_fvalue, "unet", prefix);
             sender->setSendPause(sendpause);
             sender->setPackSendPause(packsendpause);
             sender->setPackSendPauseFactor(packsendpauseFactor);
@@ -179,7 +182,9 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
                 if( !h2.empty() )
                 {
                     unetinfo << myname << "(init): init sender2.. my node " << n_it.getProp("name") << endl;
-                    sender2 = make_shared<UNetSender>(h2, p2, shm, false, s_field, s_fvalue, prefix);
+
+                    auto s2 = unisetstd::make_unique<uniset::UDPSendTransport>(h2, p2);
+                    sender2 = make_shared<UNetSender>(std::move(s2), shm, false, s_field, s_fvalue, prefix);
                     sender2->setSendPause(sendpause);
                     sender2->setCheckConnectionPause(checkConnectionPause);
                     loga->add(sender2->getLog());
@@ -197,8 +202,9 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
         }
 
         unetinfo << myname << "(init): add UNetReceiver for " << h << ":" << p << endl;
+        auto transport = unisetstd::make_unique<uniset::UDPReceiveTransport>(h, p);
 
-        if( checkExistUNetHost(h, p) )
+        if( checkExistTransport(transport->ID()) )
         {
             unetinfo << myname << "(init): " << h << ":" << p << " already added! Ignore.." << endl;
             continue;
@@ -346,7 +352,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 
         unetinfo << myname << "(init): (node='" << n << "') add  basic receiver "
                  << h << ":" << p << endl;
-        auto r = make_shared<UNetReceiver>(h, p, shm, false, prefix);
+        auto r = make_shared<UNetReceiver>(std::move(transport), shm, false, prefix);
 
         loga->add(r->getLog());
 
@@ -378,7 +384,9 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
                 unetinfo << myname << "(init): (node='" << n << "') add reserv receiver "
                          << h2 << ":" << p2 << endl;
 
-                r2 = make_shared<UNetReceiver>(h2, p2, shm, false, prefix);
+                auto transport2 = unisetstd::make_unique<UDPReceiveTransport>(h2, p2);
+
+                r2 = make_shared<UNetReceiver>(std::move(transport2), shm, false, prefix);
 
                 loga->add(r2->getLog());
 
@@ -473,11 +481,11 @@ UNetExchange::~UNetExchange()
 {
 }
 // -----------------------------------------------------------------------------
-bool UNetExchange::checkExistUNetHost(const std::string& addr, int port ) noexcept
+bool UNetExchange::checkExistTransport( const std::string& transportID ) noexcept
 {
     for( const auto& it : recvlist )
     {
-        if( it.r1->getAddress() == addr && it.r1->getPort() == port )
+        if( it.r1->getTransportID() == transportID )
             return true;
     }
 

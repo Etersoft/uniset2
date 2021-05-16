@@ -40,15 +40,13 @@ bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
 }
 */
 // ------------------------------------------------------------------------------------------
-UNetReceiver::UNetReceiver(const std::string& s_host, int _port
-                           , const std::shared_ptr<SMInterface>& smi
-                           , bool nocheckConnection
-                           , const std::string& prefix ):
+UNetReceiver::UNetReceiver( std::unique_ptr<UNetReceiveTransport>&& _transport, const std::shared_ptr<SMInterface>& smi
+                            , bool nocheckConnection
+                            , const std::string& prefix ):
     shm(smi),
     recvpause(10),
     updatepause(100),
-    port(_port),
-    saddr(s_host, _port),
+    transport(std::move(_transport)),
     recvTimeout(5000),
     prepareTime(2000),
     lostTimeout(200), /* 2*updatepause */
@@ -68,14 +66,14 @@ UNetReceiver::UNetReceiver(const std::string& s_host, int _port
 {
     {
         ostringstream s;
-        s << "R(" << setw(15) << s_host << ":" << setw(4) << port << ")";
+        s << "R(" << transport->toString() << ")";
         myname = s.str();
     }
 
-    addr = s_host.c_str();
+    addr = transport->toString();
 
     ostringstream logname;
-    logname << prefix << "-R-" << s_host << ":" << setw(4) << port;
+    logname << prefix << "-R-" << transport->toString();
 
     unetlog = make_shared<DebugStream>();
     unetlog->setLogName(logname.str());
@@ -213,8 +211,10 @@ bool UNetReceiver::createConnection( bool throwEx )
 
     try
     {
-        udp = unisetstd::make_unique<UDPReceiveU>(addr, port);
-        udp->setBlocking(false); // делаем неблокирующее чтение (нужно для libev)
+        // делаем неблокирующее чтение (нужно для libev)
+        if( !transport->createConnection(throwEx, recvTimeout, true) )
+            return false;
+
         evReceive.set<UNetReceiver, &UNetReceiver::callback>(this);
 
         if( upStrategy == useUpdateEventLoop )
@@ -228,31 +228,18 @@ bool UNetReceiver::createConnection( bool throwEx )
 
         if( activated )
             evprepare(loop.evloop());
+
+        return true;
     }
-    catch( const std::exception& e )
+    catch( const std::exception& ex )
     {
-        ostringstream s;
-        s << myname << "(createConnection): " << e.what();
-        unetcrit << s.str() << std::endl;
+        unetcrit << ex.what() << std::endl;
 
         if( throwEx )
-            throw SystemError(s.str());
-
-        udp = nullptr;
-    }
-    catch( ... )
-    {
-        ostringstream s;
-        s << myname << "(createConnection): catch...";
-        unetcrit << s.str() << std::endl;
-
-        if( throwEx )
-            throw SystemError(s.str());
-
-        udp = nullptr;
+            throw ex;
     }
 
-    return ( udp != nullptr );
+    return false;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::start()
@@ -290,7 +277,7 @@ void UNetReceiver::evprepare( const ev::loop_ref& eloop ) noexcept
         evUpdate.start( 0, ((float)updatepause / 1000.) );
     }
 
-    if( !udp )
+    if( !transport->isConnected() )
     {
         evCheckConnection.set(eloop);
         evCheckConnection.start(0, checkConnectionTime);
@@ -299,7 +286,7 @@ void UNetReceiver::evprepare( const ev::loop_ref& eloop ) noexcept
     else
     {
         evReceive.set(eloop);
-        evReceive.start(udp->getSocket(), ev::READ);
+        evReceive.start(transport->getSocket(), ev::READ);
         evInitPause.start(0);
     }
 }
@@ -324,8 +311,7 @@ void UNetReceiver::evfinish( const ev::loop_ref& eloop ) noexcept
     if( evUpdate.is_active() )
         evUpdate.stop();
 
-    //udp->disconnect();
-    udp = nullptr;
+    transport->disconnect();
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::forceUpdate() noexcept
@@ -721,9 +707,8 @@ bool UNetReceiver::receive() noexcept
 {
     try
     {
-        ssize_t ret = udp->receiveBytes(r_buf.data, sizeof(r_buf.data));
+        ssize_t ret = transport->receive(r_buf.data, sizeof(r_buf.data));
         recvCount++;
-        //ssize_t ret = udp->receiveFrom(r_buf.data, sizeof(r_buf.data),saddr);
 
         if( ret < 0 )
         {
@@ -993,7 +978,7 @@ const std::string UNetReceiver::getShortInfo() const noexcept
 
     ostringstream s;
 
-    s << setw(15) << std::right << getAddress() << ":" << std::left << setw(6) << getPort()
+    s << setw(15) << std::right << transport->toString()
       << "[ " << setw(7) << ( isLockUpdate() ? "PASSIVE" : "ACTIVE" ) << " ]"
       << "    recvOK=" << isRecvOK()
       << " receivepack=" << rnum
