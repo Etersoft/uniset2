@@ -68,7 +68,7 @@ namespace uniset
 
             // write
             virtual bool isReadyForSend( timeout_t tout ) override;
-            virtual ssize_t send( void* buf, size_t sz ) override;
+            virtual ssize_t send( const void* buf, size_t sz ) override;
 
         protected:
             std::unique_ptr<UDPSocketU> udp;
