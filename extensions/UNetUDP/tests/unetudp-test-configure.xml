@@ -36,10 +36,10 @@
 			<item id="3000" ip="127.0.0.1" name="localhost" textname="Локальный узел" unet_ignore="0" unet_port="3000" unet_multicast_ip2="127.0.1.1" unet_multicast_port2="2999">
 			<multicast>
 				<receive>
-					<group addr="224.0.0.1" addr2="224.0.1.1"/>
+					<group addr="239.255.1.1" addr2="239.255.2.1"/>
 				</receive>
 				<send>
-					<group addr="224.0.0.1" addr2="224.0.1.1"/>
+					<group addr="239.255.1.1" addr2="239.255.2.1"/>
 				</send>
 			</multicast>
 			</item>

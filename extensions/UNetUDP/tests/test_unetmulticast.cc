@@ -34,6 +34,41 @@ TEST_CASE("[UNetUDP]: multicast setup", "[unetudp][multicast][config]")
 
     auto t2 = MulticastSendTransport::createFromXml(it, "192.168.1.1", 2 );
     REQUIRE( t2->toString() == "127.0.1.1:2999" );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: multicast receive", "[unetudp][multicast][exchange]")
+{
+    UniXML xml("unetudp-test-configure.xml");
+    UniXML::iterator it = xml.findNode(xml.getFirstNode(), "nodes");
+    REQUIRE( it.getCurrent() );
+    REQUIRE( it.goChildren() );
+    REQUIRE( it.findName("item", "localhost", false) );
 
+    REQUIRE( it.getName() == "item" );
+    REQUIRE( it.getProp("name") == "localhost" );
+
+    auto t1 = MulticastReceiveTransport::createFromXml(it, "127.0.0.1", 0 );
+    REQUIRE( t1->toString() == "127.0.0.1:3000" );
+    REQUIRE( t1->createConnection(false, 5000, true) );
+
+    auto t2 = MulticastSendTransport::createFromXml(it, "127.0.0.1", 0 );
+    REQUIRE( t2->toString() == "127.0.0.1:3000" );
+    REQUIRE( t2->createConnection(false, 5000) );
+
+    string msg = "hello world";
+    REQUIRE( t2->send(msg.data(), msg.size()) == msg.size() );
+
+    unsigned char buf[64];
+    REQUIRE( t1->receive(&buf, sizeof(buf)) == msg.size() );
+    REQUIRE( string((const char*)buf) == msg );
+
+    REQUIRE( t1->receive(&buf, sizeof(buf)) == -1 );
+
+    msg = "hello world, again";
+    REQUIRE( t2->send(msg.data(), msg.size()) == msg.size() );
+
+    memset(buf,0,sizeof(buf));
+    REQUIRE( t1->receive(&buf, sizeof(buf)) == msg.size() );
+    REQUIRE( string((const char*)buf) == msg );
 }
 // -----------------------------------------------------------------------------

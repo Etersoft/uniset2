@@ -213,7 +213,7 @@ bool UDPSendTransport::isReadyForSend( timeout_t tout )
     return udp && udp->poll( UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_WRITE );
 }
 // -------------------------------------------------------------------------
-ssize_t UDPSendTransport::send( void* buf, size_t sz )
+ssize_t UDPSendTransport::send( const void* buf, size_t sz )
 {
     return udp->sendTo(buf, sz, saddr);
 }

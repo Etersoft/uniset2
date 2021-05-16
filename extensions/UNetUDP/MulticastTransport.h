@@ -60,7 +60,7 @@ namespace uniset
 
             static std::unique_ptr<MulticastSendTransport> createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan );
 
-            MulticastSendTransport(const std::string& host, int port, const std::vector<Poco::Net::IPAddress>& sendGroups );
+            MulticastSendTransport(const std::string& host, int port, const std::vector<Poco::Net::IPAddress>& sendGroups, int ttl = 1 );
             virtual ~MulticastSendTransport();
 
             virtual bool isConnected() const override;
@@ -71,13 +71,15 @@ namespace uniset
 
             // write
             virtual bool isReadyForSend(timeout_t tout) override;
+            virtual ssize_t send(const void* buf, size_t sz) override;
 
-            virtual ssize_t send(void* buf, size_t sz) override;
+            void setTimeToLive( int ttl );
 
         protected:
             std::unique_ptr <MulticastSocketU> udp;
             const Poco::Net::SocketAddress saddr;
             const std::vector<Poco::Net::IPAddress> groups;
+            int ttl; // ttl for packets
     };
 
 } // end of uniset namespace

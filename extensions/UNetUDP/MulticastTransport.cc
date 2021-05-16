@@ -246,6 +246,8 @@ std::unique_ptr<MulticastSendTransport> MulticastSendTransport::createFromXml( U
     if( !it.find("send") )
         throw SystemError("(MulticastSendTransport): not found <send> node");
 
+    int ttl = it.getPIntProp("ttl", 1);
+
     if( !it.goChildren() )
         throw SystemError("(MulticastSendTransport): empty <send> groups");
 
@@ -271,12 +273,13 @@ std::unique_ptr<MulticastSendTransport> MulticastSendTransport::createFromXml( U
         groups.push_back(a);
     }
 
-    return unisetstd::make_unique<MulticastSendTransport>(h, p, std::move(groups));
+    return unisetstd::make_unique<MulticastSendTransport>(h, p, std::move(groups), ttl);
 }
 // -------------------------------------------------------------------------
-MulticastSendTransport::MulticastSendTransport( const std::string& _host, int _port, const std::vector<Poco::Net::IPAddress>& _sendGroups ):
+MulticastSendTransport::MulticastSendTransport( const std::string& _host, int _port, const std::vector<Poco::Net::IPAddress>& _sendGroups, int _ttl ):
     saddr(_host, _port),
-    groups(_sendGroups)
+    groups(_sendGroups),
+    ttl(_ttl)
 {
 
 }
@@ -306,6 +309,13 @@ bool MulticastSendTransport::isConnected() const
     return udp != nullptr;
 }
 // -------------------------------------------------------------------------
+void MulticastSendTransport::setTimeToLive( int _ttl )
+{
+    ttl = ttl;
+    if( udp )
+        udp->setTimeToLive(_ttl);
+}
+// -------------------------------------------------------------------------
 bool MulticastSendTransport::createConnection( bool throwEx, timeout_t sendTimeout )
 {
     try
@@ -316,6 +326,7 @@ bool MulticastSendTransport::createConnection( bool throwEx, timeout_t sendTimeo
             udp->joinGroup(s);
 
         udp->setSendTimeout( UniSetTimer::millisecToPoco(sendTimeout) );
+        udp->setTimeToLive(ttl);
     }
     catch( const std::exception& e )
     {
@@ -349,7 +360,7 @@ bool MulticastSendTransport::isReadyForSend( timeout_t tout )
     return udp && udp->poll( UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_WRITE );
 }
 // -------------------------------------------------------------------------
-ssize_t MulticastSendTransport::send( void* buf, size_t sz )
+ssize_t MulticastSendTransport::send( const void* buf, size_t sz )
 {
     return udp->sendTo(buf, sz, saddr);
 }
