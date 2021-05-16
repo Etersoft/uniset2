@@ -21,6 +21,7 @@
 #include <memory>
 #include "UNetTransport.h"
 #include "UDPCore.h"
+#include "UniXML.h"
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -28,6 +29,8 @@ namespace uniset
         public UNetReceiveTransport
     {
         public:
+
+            static std::unique_ptr<UDPReceiveTransport> createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan );
 
             UDPReceiveTransport( const std::string& bind, int port );
             virtual ~UDPReceiveTransport();
@@ -51,6 +54,8 @@ namespace uniset
         public UNetSendTransport
     {
         public:
+
+            static std::unique_ptr<UDPSendTransport> createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan );
 
             UDPSendTransport( const std::string& host, int port );
             virtual ~UDPSendTransport();

@@ -181,7 +181,7 @@
 		</RTUExchange>
 		<UDPExchange name="UDPExchange"/>
 		<UDPExchange2 name="UDPExchange2"/>
-		<UNetExchange name="UNetExchange"/>
+		<UNetExchange name="UNetExchange" transport="multicast"/>
 		<HeartBeatTime msec="5000"/>
 		<NCReadyTimeout msec="120000"/>
 		<TestGen input1_s="Input1_S" input2_s="DumpSensor1_S" name="TestGen" output1_c="DO_C" output2_c="DO1_C"/>
@@ -214,13 +214,21 @@
 	priority 	- приоритет сообщения об изменении данного датчика
 	textname 	- текстовое имя датчика
 -->
-		<nodes port="2809" unet_broadcast_ip="127.255.255.255" unet_broadcast_ip2="192.168.56.255">
+		<nodes port="2809" unet_broadcast_ip="127.255.255.255" unet_broadcast_ip2="192.168.56.255" unet_transport="multicast">
 			<item id="3000" dbserver="DBServer1" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="0" unet_port="2048">
 				<iocards>
 					<item card="1" name="DI32"/>
 					<item card="2" name="DO32"/>
 					<item baddr="0x110" card="3" dev="/dev/null" name="UNIO48" subdev1="TBI24_0" subdev2="TBI16_8"/>
 				</iocards>
+				<multicast>
+					<receive>
+						<group addr="224.0.0.1"/>
+					</receive>
+					<send>
+						<group addr="224.0.0.1"/>
+					</send>
+				</multicast>
 			</item>
 			<item id="3001" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode1" textname="Локальный узел" unet_ignore="0" unet_port="2049"/>
 			<item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="0" unet_port="3001" unet_respond_id="Input1_S" unet_respond_invert="1"/>

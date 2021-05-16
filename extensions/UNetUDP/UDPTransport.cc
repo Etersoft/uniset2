@@ -25,6 +25,33 @@
 using namespace std;
 using namespace uniset;
 // -------------------------------------------------------------------------
+std::unique_ptr<UDPReceiveTransport> UDPReceiveTransport::createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan )
+{
+    ostringstream fieldIp;
+    fieldIp << "unet_broadcast_ip";
+
+    if( numChan > 0 )
+        fieldIp << numChan;
+
+    const string h = it.getProp2(fieldIp.str(), defaultIP);
+
+    if( h.empty() )
+    {
+        ostringstream err;
+        err << "(UDPReceiveTransport): Unknown broadcast IP for " << it.getProp("name");
+        throw uniset::SystemError(err.str());
+    }
+
+    ostringstream fieldPort;
+    fieldPort << "unet_port";
+
+    if( numChan > 0 )
+        fieldPort << numChan;
+
+    int p = it.getPIntProp(fieldPort.str(), it.getIntProp("id"));
+    return unisetstd::make_unique<UDPReceiveTransport>(h, p);
+}
+// -------------------------------------------------------------------------
 UDPReceiveTransport::UDPReceiveTransport( const std::string& _bind, int _port ):
     host(_bind),
     port(_port)
@@ -95,6 +122,34 @@ int UDPReceiveTransport::getSocket() const
 ssize_t UDPReceiveTransport::receive( void* r_buf, size_t sz )
 {
     return udp->receiveBytes(r_buf, sz);
+}
+// -------------------------------------------------------------------------
+std::unique_ptr<UDPSendTransport> UDPSendTransport::createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan )
+{
+    ostringstream fieldIp;
+    fieldIp << "unet_broadcast_ip";
+
+    if( numChan > 0 )
+        fieldIp << numChan;
+
+    const string h = it.getProp2(fieldIp.str(), defaultIP);
+
+    if( h.empty() )
+    {
+        ostringstream err;
+        err << "(UDPReceiveTransport): Unknown broadcast IP for " << it.getProp("name");
+        throw uniset::SystemError(err.str());
+    }
+
+    ostringstream fieldPort;
+    fieldPort << "unet_port";
+
+    if( numChan > 0 )
+        fieldPort << numChan;
+
+    int p = it.getPIntProp(fieldPort.str(), it.getIntProp("id"));
+
+    return unisetstd::make_unique<UDPSendTransport>(h, p);
 }
 // -------------------------------------------------------------------------
 UDPSendTransport::UDPSendTransport( const std::string& _host, int _port ):
