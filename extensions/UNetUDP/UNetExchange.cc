@@ -22,6 +22,7 @@
 #include "UNetExchange.h"
 #include "UNetLogSugar.h"
 #include "UDPTransport.h"
+#include "MulticastTransport.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -114,8 +115,15 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 
     UniXML::iterator n_it(nodes);
 
+    const string unet_transport(n_it.getProp2("unet_transport", "udp"));
     string default_ip(n_it.getProp("unet_broadcast_ip"));
     string default_ip2(n_it.getProp("unet_broadcast_ip2"));
+
+    if( unet_transport == "multicast" )
+    {
+        default_ip = n_it.getProp("unet_multicast_ip");
+        default_ip2 = n_it.getProp("unet_multicast_ip2");
+    }
 
     if( !n_it.goChildren() )
         throw uniset::SystemError("(UNetExchange): Items not found for <nodes>");
@@ -132,30 +140,6 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
         if( !uniset::check_filter(n_it, n_field, n_fvalue) )
             continue;
 
-        // Если указано поле unet_broadcast_ip непосредственно у узла - берём его
-        // если не указано берём общий broadcast_ip
-
-        string h = { n_it.getProp2("unet_broadcast_ip", default_ip) };
-        string h2 = { n_it.getProp2("unet_broadcast_ip2", default_ip2) };
-
-        if( h.empty() )
-        {
-            ostringstream err;
-            err << myname << "(init): Unknown broadcast IP for " << n_it.getProp("name");
-            unetcrit << err.str() << endl;
-            throw uniset::SystemError(err.str());
-        }
-
-        if( h2.empty() )
-            unetinfo << myname << "(init): ip2 not used..." << endl;
-
-        // Если указано поле unet_port - используем его
-        // Иначе port = идентификатору узла
-        int p = n_it.getPIntProp("unet_port", n_it.getIntProp("id"));
-
-        // по умолчанию порт на втором канале такой же как на первом (если не задан отдельно)
-        int p2 = n_it.getPIntProp("unet_port2", p);
-
         string n(n_it.getProp("name"));
 
         if( n == conf->getLocalNodeName() )
@@ -168,8 +152,18 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
             }
 
             unetinfo << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
-            auto s1 = unisetstd::make_unique<uniset::UDPSendTransport>(h, p);
-            sender = make_shared<UNetSender>(std::move(s1), shm, false, s_field, s_fvalue, "unet", prefix);
+
+            if( unet_transport == "multicast" )
+            {
+                auto s1 = MulticastSendTransport::createFromXml(n_it, default_ip, 0);
+                sender = make_shared<UNetSender>(std::move(s1), shm, false, s_field, s_fvalue, "unet", prefix);
+            }
+            else // default
+            {
+                auto s1 = UDPSendTransport::createFromXml(n_it, default_ip, 0);
+                sender = make_shared<UNetSender>(std::move(s1), shm, false, s_field, s_fvalue, "unet", prefix);
+            }
+
             sender->setSendPause(sendpause);
             sender->setPackSendPause(packsendpause);
             sender->setPackSendPauseFactor(packsendpauseFactor);
@@ -178,35 +172,57 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 
             try
             {
-                // создаём "писателя" для второго канала если задан
-                if( !h2.empty() )
-                {
-                    unetinfo << myname << "(init): init sender2.. my node " << n_it.getProp("name") << endl;
+                sender2 = nullptr;
 
-                    auto s2 = unisetstd::make_unique<uniset::UDPSendTransport>(h2, p2);
-                    sender2 = make_shared<UNetSender>(std::move(s2), shm, false, s_field, s_fvalue, prefix);
+                // создаём "писателя" для второго канала если задан
+                if( unet_transport == "multicast" )
+                {
+                    if( n_it.getProp("unet_multicast_ip2").empty() || !default_ip2.empty() )
+                    {
+                        auto s2 = MulticastSendTransport::createFromXml(n_it, default_ip2, 2);
+                        sender2 = make_shared<UNetSender>(std::move(s2), shm, false, s_field, s_fvalue, "unet", prefix);
+                    }
+                }
+                else // default
+                {
+                    if( n_it.getProp("unet_broadcast_ip2").empty() || !default_ip2.empty() )
+                    {
+                        auto s2 = UDPSendTransport::createFromXml(n_it, default_ip2, 2);
+                        sender2 = make_shared<UNetSender>(std::move(s2), shm, false, s_field, s_fvalue, "unet", prefix);
+                    }
+                }
+
+                if( sender2 )
+                {
                     sender2->setSendPause(sendpause);
                     sender2->setCheckConnectionPause(checkConnectionPause);
                     loga->add(sender2->getLog());
                 }
+                else
+                    unetwarn << myname << "(ignore): sender for Channel2 disabled " << endl;
             }
-            catch(...)
+            catch( std::exception& ex )
             {
                 // т.е. это "резервный канал", то игнорируем ошибку его создания
                 // при запуске "интерфейс" может быть и не доступен...
-                sender2 = 0;
-                unetcrit << myname << "(ignore): DON`T CREATE 'UNetSender' for " << h2 << ":" << p2 << endl;
+                sender2 = nullptr;
+                unetcrit << myname <<  "IGNORE! reserv channel create error:" << ex.what() << endl;
             }
 
             continue;
         }
 
-        unetinfo << myname << "(init): add UNetReceiver for " << h << ":" << p << endl;
-        auto transport = unisetstd::make_unique<uniset::UDPReceiveTransport>(h, p);
+        unetinfo << myname << "(init): add UNetReceiver.." << endl;
+        std::unique_ptr<UNetReceiveTransport> transport1;
 
-        if( checkExistTransport(transport->ID()) )
+        if( unet_transport == "multicast" )
+            transport1 = MulticastReceiveTransport::createFromXml(n_it, default_ip, 0);
+        else // default
+            transport1 = UDPReceiveTransport::createFromXml(n_it, default_ip, 0);
+
+        if( checkExistTransport(transport1->ID()) )
         {
-            unetinfo << myname << "(init): " << h << ":" << p << " already added! Ignore.." << endl;
+            unetinfo << myname << "(init): " << transport1->ID() << " already added! Ignore.." << endl;
             continue;
         }
 
@@ -350,9 +366,8 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
             throw SystemError(err.str());
         }
 
-        unetinfo << myname << "(init): (node='" << n << "') add  basic receiver "
-                 << h << ":" << p << endl;
-        auto r = make_shared<UNetReceiver>(std::move(transport), shm, false, prefix);
+        unetinfo << myname << "(init): (node='" << n << "') add basic receiver " << transport1->ID() << endl;
+        auto r = make_shared<UNetReceiver>(std::move(transport1), shm, false, prefix);
 
         loga->add(r->getLog());
 
@@ -379,13 +394,22 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 
         try
         {
-            if( !h2.empty() ) // создаём читателя впо второму каналу
+            std::unique_ptr<UNetReceiveTransport> transport2 = nullptr;
+
+            if( unet_transport == "multicast" )
             {
-                unetinfo << myname << "(init): (node='" << n << "') add reserv receiver "
-                         << h2 << ":" << p2 << endl;
+                if (!n_it.getProp("unet_multicast_ip2").empty() || !default_ip2.empty())
+                    transport2 = MulticastReceiveTransport::createFromXml(n_it, default_ip2, 2);
+            }
+            else // default
+            {
+                if( !n_it.getProp("unet_broadcast_ip2").empty() || !default_ip2.empty() )
+                    transport2 = UDPReceiveTransport::createFromXml(n_it, default_ip2, 2);
+            }
 
-                auto transport2 = unisetstd::make_unique<UDPReceiveTransport>(h2, p2);
-
+            if( transport2 ) // создаём читателя по второму каналу
+            {
+                unetinfo << myname << "(init): (node='" << n << "') add reserv receiver " << transport2->ID() << endl;
                 r2 = make_shared<UNetReceiver>(std::move(transport2), shm, false, prefix);
 
                 loga->add(r2->getLog());
@@ -409,12 +433,12 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
                 r2->setUpdateStrategy(r_upStrategy);
             }
         }
-        catch(...)
+        catch( std::exception& ex )
         {
             // т.е. это "резервный канал", то игнорируем ошибку его создания
             // при запуске "интерфейс" может быть и не доступен...
-            r2 = 0;
-            unetcrit << myname << "(ignore): DON`T CREATE 'UNetReceiver' for " << h2 << ":" << p2 << endl;
+            r2 = nullptr;
+            unetcrit << myname << "(ignore): DON`T CREATE reserve 'UNetReceiver'.  error: " << ex.what() << endl;
         }
 
         ReceiverInfo ri(r, r2);

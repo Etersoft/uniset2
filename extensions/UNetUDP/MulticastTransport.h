@@ -22,28 +22,26 @@
 #include <vector>
 #include "UNetTransport.h"
 #include "UDPCore.h"
+#include "UniXML.h"
 // -------------------------------------------------------------------------
 namespace uniset
 {
-    class MulticastReceiveTransport :
+    class MulticastReceiveTransport:
         public UNetReceiveTransport
     {
         public:
 
-            MulticastReceiveTransport( const std::string& bind, int port, const std::vector<Poco::Net::IPAddress> joinGroups );
+            static std::unique_ptr<MulticastReceiveTransport> createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan );
 
+            MulticastReceiveTransport( const std::string& bind, int port, const std::vector<Poco::Net::IPAddress>& joinGroups );
             virtual ~MulticastReceiveTransport();
 
             virtual bool isConnected() const override;
-
             virtual std::string toString() const override;
-
             virtual std::string ID() const noexcept override;
 
             virtual bool createConnection(bool throwEx, timeout_t readTimeout, bool noblock) override;
-
             virtual void disconnect() override;
-
             virtual int getSocket() const override;
 
             virtual ssize_t receive(void* r_buf, size_t sz) override;
@@ -55,21 +53,20 @@ namespace uniset
             const std::vector<Poco::Net::IPAddress> groups;
     };
 
-    class MulticastSendTransport :
+    class MulticastSendTransport:
         public UNetSendTransport
     {
         public:
 
-            MulticastSendTransport(const std::string& host, int port, const std::vector<Poco::Net::IPAddress> sendGroups );
+            static std::unique_ptr<MulticastSendTransport> createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan );
 
+            MulticastSendTransport(const std::string& host, int port, const std::vector<Poco::Net::IPAddress>& sendGroups );
             virtual ~MulticastSendTransport();
 
             virtual bool isConnected() const override;
-
             virtual std::string toString() const override;
 
             virtual bool createConnection(bool throwEx, timeout_t sendTimeout) override;
-
             virtual int getSocket() const override;
 
             // write
