@@ -47,6 +47,7 @@ namespace uniset
 
     - \ref pgUNetUDP_Common
     - \ref pgUNetUDP_Conf
+    - \ref pgUNetUDP_ConfMulticast
     - \ref pgUNetUDP_Reserv
     - \ref pgUNetUDP_SendFactor
     - \ref pgUNetUDP_Stat
@@ -60,13 +61,21 @@ namespace uniset
     При этом "получатели" работают на одном(!) потоке с использованием событий libev (см. UNetReceiver).
     или каждый на своём потоке. Это определяется параметром \b unet_update_strategy.
 
+    В текущей версии поддерживается два протокола для обмена udp и multicast. Какой использовать протокол
+    определяется в настроечной секции параметром \b unet_transport="udp" или \b unet_transport="multicast".
+    По умолчанию "udp".
+    \code
+            <UNetExchange name=".."  unet_transport="udp" />
+    \endcode
+    В зависимости от заданного протокола, будут использованы те или иные настройки.
+
     \par
     При своём старте процесс считывает из секции \<nodes> список узлов которые необходимо "слушать",
     а также параметры своего узла. Открывает по потоку приёма на каждый узел и поток
     передачи для своих данных. Помимо этого такие же потоки для резервных каналов, если они включены
     (см. \ref pgUNetUDP_Reserv ).
 
-    \section pgUNetUDP_Conf Пример конфигурирования
+    \section pgUNetUDP_Conf Пример конфигурирования (UDP)
     По умолчанию при считывании используется \b unet_broadcast_ip (указанный в секции \<nodes>)
     и \b id узла - в качестве порта.
     Но можно переопределять эти параметры, при помощи указания \b unet_port и/или \b unet_broadcast_ip,
@@ -91,6 +100,43 @@ namespace uniset
     \note Имеется возможность задавать отдельную настроечную секцию для "списка узлов" при помощи параметра
      --prefix-nodes-confnode name. По умолчанию настройка ведётся по секции <nodes>
 
+    \section pgUNetUDP_ConfMulticast Пример конфигурирования (Multicast)
+    По умолчанию при считывании используется \b unet_multicast_ip (указанный в секции \<nodes>)
+    и \b id узла - в качестве порта.
+    Но можно переопределять эти параметры, при помощи указания \b unet_mulsicast_port и/или \b unet_multicast_ip,
+    для конкретного узла (\<item>).
+    Группы для подписки описываются в специальной секции \b <mulitcast>. Секция <recevive> описывает группы на которые
+    подписывается данные узел. Секция <send> описывает в какие группы данный узел будет посылать сообщения.
+    \code
+    <nodes port="2809" unet_broadcast_ip="192.168.56.255">
+      <item ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="1" unet_multicast_port="3000" unet_multicast_ip="192.168.57.255">
+        <iocards>
+          ...
+        </iocards>
+      </item>
+      <item ip="192.168.56.10" name="Node1" textname="Node1" unet_multicast_port="3001" unet_update_strategy="evloop">
+            <multicast>
+                <receive>
+                    <group addr="239.255.1.1" addr2="239.255.2.1"/>
+                </receive>
+                <send>
+                    <group addr="239.255.1.1" addr2="239.255.2.1"/>
+                </send>
+            </multicast>
+      </item>
+      <item ip="192.168.56.11" name="Node2" textname="Node2" unet_multicast_port="3002">
+            <multicast>
+                <receive>
+                    <group addr="239.255.1.1" addr2="239.255.2.1"/>
+                </receive>
+                <send>
+                    <group addr="239.255.1.1" addr2="239.255.2.1"/>
+                </send>
+            </multicast>
+      </item>
+    </nodes>
+    \endcode
+
     \section pgUNetUDP_Reserv Настройка резервного канала связи
     В текущей реализации поддерживается возможность обмена по двум подсетям (Ethernet-каналам).
     Она основана на том, что, для каждого узла помимо основного "читателя",
@@ -100,6 +146,7 @@ namespace uniset
     второй канал, достаточно объявить в настройках переменные
     \b unet_broadcast_ip2. А также в случае необходимости для конкретного узла
     можно указать \b unet_broadcast_ip2 и \b unet_port2.
+    Или в случае multicast \b unet_multicast_ip2 и \b unet_multicast_port2.
 
     Переключение между "каналами" происходит по следующей логике:
 
