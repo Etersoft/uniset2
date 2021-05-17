@@ -312,6 +312,7 @@ bool MulticastSendTransport::isConnected() const
 void MulticastSendTransport::setTimeToLive( int _ttl )
 {
     ttl = ttl;
+
     if( udp )
         udp->setTimeToLive(_ttl);
 }

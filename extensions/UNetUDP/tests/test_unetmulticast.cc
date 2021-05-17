@@ -36,7 +36,7 @@ TEST_CASE("[UNetUDP]: multicast setup", "[unetudp][multicast][config]")
     REQUIRE( t2->toString() == "127.0.1.1:2999" );
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: multicast receive", "[unetudp][multicast][exchange]")
+TEST_CASE("[UNetUDP]: multicast transport", "[unetudp][multicast][transport]")
 {
     UniXML xml("unetudp-test-configure.xml");
     UniXML::iterator it = xml.findNode(xml.getFirstNode(), "nodes");
@@ -67,7 +67,7 @@ TEST_CASE("[UNetUDP]: multicast receive", "[unetudp][multicast][exchange]")
     msg = "hello world, again";
     REQUIRE( t2->send(msg.data(), msg.size()) == msg.size() );
 
-    memset(buf,0,sizeof(buf));
+    memset(buf, 0, sizeof(buf));
     REQUIRE( t1->receive(&buf, sizeof(buf)) == msg.size() );
     REQUIRE( string((const char*)buf) == msg );
 }
