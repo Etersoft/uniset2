@@ -4,7 +4,7 @@
 
 # AC_PREREQ(2.59)
 AC_INIT([uniset2], [2.10.1], pv@etersoft.ru)
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([subdir-objects])
 
 LIBVER=12:1:10
 AC_SUBST(LIBVER)
@@ -400,6 +400,26 @@ fi
 
 AM_CONDITIONAL(DISABLE_LOGDB, test ${buildlogdb} = false)
 AM_CONDITIONAL(ENABLE_LOGDB, test ${buildlogdb} = true)
+
+#check uwebsocket
+AC_MSG_CHECKING([uwebsocket build])
+uwebsocket=true
+AC_ARG_ENABLE(uwebsocket, AC_HELP_STRING([--disable-uwebsocket], [disable UWebSocketGate build]),
+[ if test $enableval = yes; then uwebsocket=true; else uwebsocket=false; fi],[ uwebsocket=true; ])
+
+if test ${buildapi} = true; then
+  if test ${uwebsocket} = true; then
+	AC_MSG_RESULT([enabled])
+  else
+	AC_MSG_RESULT([disabled])
+  fi
+else
+    uwebsocket=false
+    AC_MSG_RESULT([disabled (uwebsocketgate disabled)])
+fi
+
+AM_CONDITIONAL(DISABLE_UWEBSOCKETGATE, test ${uwebsocket} = false)
+AM_CONDITIONAL(ENABLE_UWEBSOCKETGATE, test ${uwebsocket} = true)
 
 COV_LIBS=
 COV_CFLAGS=
