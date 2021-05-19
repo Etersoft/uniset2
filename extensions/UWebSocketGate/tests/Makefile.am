@@ -1,4 +1,5 @@
 if HAVE_TESTS
+if ENABLE_UWEBSOCKETGATE
 
 noinst_PROGRAMS = tests-with-sm
 
@@ -22,4 +23,5 @@ clean-local:
 
 include $(top_builddir)/include.mk
 
+endif
 endif
