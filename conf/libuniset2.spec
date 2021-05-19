@@ -14,7 +14,7 @@
 %def_enable logdb
 %def_enable opentsdb
 %def_enable uresolver
-%def_disable uwebsocket
+%def_enable uwebsocket
 
 %ifarch %ix86
 %def_enable com485f
@@ -592,6 +592,9 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
+* Wed May 19 2021 Pavel Vainerman <pv@altlinux.ru> 2.10.1-alt2
+- added new build flags
+
 * Sat May 08 2021 Pavel Vainerman <pv@altlinux.ru> 2.10.1-alt1
 - new release
 
