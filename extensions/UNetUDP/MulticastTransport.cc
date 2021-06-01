@@ -25,11 +25,30 @@
 using namespace std;
 using namespace uniset;
 // -------------------------------------------------------------------------
+xmlNode* MulticastReceiveTransport::getReceiveListNode( UniXML::iterator root )
+{
+    UniXML::iterator it = root;
+
+    if( !it.find("multicast") )
+        return nullptr;
+
+    if( !it.goChildren() )
+        return nullptr;
+
+    if( !it.find("receive") )
+        return nullptr;
+
+    if( !it.goChildren() )
+        return nullptr;
+
+    return it.getCurrent();
+}
+// -------------------------------------------------------------------------
 /*
  *          <item id="3000" unet_port="2048" unet_multicast_ip="192.168.0.255" unet_port2="2048" unet_multicast_ip2="192.169.0.255">
                 <multicast>
                     <receive>
-                        1<group addr="224.0.0.1" addr2="224.0.0.1"/>
+                        <group addr="224.0.0.1" addr2="224.0.0.1"/>
                     </receive>
                     <send>
                         <group addr="224.0.0.1"/>
@@ -37,7 +56,7 @@ using namespace uniset;
                 </multicast>
             </item>
  */
-std::unique_ptr<MulticastReceiveTransport> MulticastReceiveTransport::createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan )
+std::unique_ptr<MulticastReceiveTransport> MulticastReceiveTransport::createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan, const std::string& section )
 {
     ostringstream fieldIp;
     fieldIp << "unet_multicast_ip";
@@ -68,11 +87,11 @@ std::unique_ptr<MulticastReceiveTransport> MulticastReceiveTransport::createFrom
     if( !it.goChildren() )
         throw SystemError("(MulticastReceiveTransport): empty <multicast> node");
 
-    if( !it.find("receive") )
-        throw SystemError("(MulticastReceiveTransport): not found <receive> in <multicast>");
+    if( !it.find(section) )
+        throw SystemError("(MulticastReceiveTransport): not found <" + section + "> in <multicast>");
 
     if( !it.goChildren() )
-        throw SystemError("(MulticastReceiveTransport): empty <receive> groups");
+        throw SystemError("(MulticastReceiveTransport): empty <" + section + "> groups");
 
     std::vector<Poco::Net::IPAddress> groups;
 
@@ -199,12 +218,22 @@ ssize_t MulticastReceiveTransport::receive( void* r_buf, size_t sz )
     return udp->receiveBytes(r_buf, sz);
 }
 // -------------------------------------------------------------------------
+bool MulticastReceiveTransport::isReadyForReceive( timeout_t tout )
+{
+    return udp->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_READ);
+}
+// -------------------------------------------------------------------------
+std::vector<Poco::Net::IPAddress> MulticastReceiveTransport::getGroups()
+{
+    return groups;
+}
+
 // -------------------------------------------------------------------------
 /*
  *          <item id="3000" unet_port="2048" unet_multicast_ip="192.168.0.255" unet_port2="2048" unet_multicast_ip2="192.169.0.255">
                 <multicast>
                     <receive>
-                        1<group addr="224.0.0.1" addr2="224.0.0.1"/>
+                        <group addr="224.0.0.1" addr2="224.0.0.1"/>
                     </receive>
                     <send>
                         <group addr="224.0.0.1"/>
@@ -366,3 +395,7 @@ ssize_t MulticastSendTransport::send( const void* buf, size_t sz )
     return udp->sendTo(buf, sz, saddr);
 }
 // -------------------------------------------------------------------------
+std::vector<Poco::Net::IPAddress> MulticastSendTransport::getGroups()
+{
+    return groups;
+}

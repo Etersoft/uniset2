@@ -43,6 +43,7 @@ namespace uniset
             virtual void disconnect() override;
             virtual int getSocket() const override;
             virtual ssize_t receive( void* r_buf, size_t sz ) override;
+            virtual bool isReadyForReceive(timeout_t tout) override;
 
         protected:
             std::unique_ptr<UDPReceiveU> udp;

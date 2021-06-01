@@ -242,6 +242,9 @@ namespace uniset
             void termSenders();
             void termReceivers();
 
+            void initMulticastTransport( UniXML::iterator nodes, const std::string& n_field, const std::string& n_fvalue, const std::string& prefix );
+            void initMulticastReceiverForNode( UniXML::iterator n_it, const std::string& default_ip1, const std::string& default_ip2, const std::string& section, const std::string& prefix);
+            void initUDPTransport(UniXML::iterator nodes, const std::string& n_field, const std::string& n_fvalue, const std::string& prefix);
             void initIterators() noexcept;
             void startReceivers();
 

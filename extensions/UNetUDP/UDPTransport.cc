@@ -124,6 +124,11 @@ ssize_t UDPReceiveTransport::receive( void* r_buf, size_t sz )
     return udp->receiveBytes(r_buf, sz);
 }
 // -------------------------------------------------------------------------
+bool UDPReceiveTransport::isReadyForReceive( timeout_t tout )
+{
+    return udp->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_READ);
+}
+// -------------------------------------------------------------------------
 std::unique_ptr<UDPSendTransport> UDPSendTransport::createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan )
 {
     ostringstream fieldIp;
