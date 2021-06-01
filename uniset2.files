@@ -270,12 +270,17 @@
 ./extensions/tests/test_ui.cc
 ./extensions/tests/test_vtypes.cc
 ./extensions/UNetUDP/Makefile.am
+./extensions/UNetUDP/MulticastTransport.cc
+./extensions/UNetUDP/MulticastTransport.h
 ./extensions/UNetUDP/tests/a.cc
 ./extensions/UNetUDP/tests/Makefile.am
 ./extensions/UNetUDP/tests/tests_individual_process.cc
+./extensions/UNetUDP/tests/tests_multicast_with_sm.cc
 ./extensions/UNetUDP/tests/tests_with_sm.cc
+./extensions/UNetUDP/tests/test_unetmulticast.cc
 ./extensions/UNetUDP/tests/test_unetudp1.cc
 ./extensions/UNetUDP/tests/test_unetudp.cc
+./extensions/UNetUDP/tests/test_unetudp_multicast.cc
 ./extensions/UNetUDP/tests/u.cc
 ./extensions/UNetUDP/tests/urecv_perf_test.cc
 ./extensions/UNetUDP/UDPPacket.cc
@@ -286,6 +291,7 @@
 ./extensions/UNetUDP/UNetExchange.cc
 ./extensions/UNetUDP/UNetExchange.h
 ./extensions/UNetUDP/UNetLogSugar.h
+./extensions/UNetUDP/unet-multicast-tester.cc
 ./extensions/UNetUDP/UNetReceiver.cc
 ./extensions/UNetUDP/UNetReceiver.h
 ./extensions/UNetUDP/UNetSender.cc

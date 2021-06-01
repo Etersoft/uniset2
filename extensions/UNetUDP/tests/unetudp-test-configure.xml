@@ -33,19 +33,40 @@
 
 	<ObjectsMap idfromfile="1">
 		<nodes port="2809" unet_broadcast_ip="127.255.255.255" unet_broadcast_ip2="badip" unet_multicast_ip="127.0.0.1">
-			<item id="3000" ip="127.0.0.1" name="localhost" textname="Локальный узел" unet_ignore="0" unet_port="3000" unet_multicast_ip2="127.0.1.1" unet_multicast_port2="2999">
-			<multicast>
-				<receive>
-					<group addr="239.255.1.1" addr2="239.255.2.1"/>
-				</receive>
-				<send>
-					<group addr="239.255.1.1" addr2="239.255.2.1"/>
-				</send>
-			</multicast>
+			<item id="3000" ip="127.0.0.1" name="localhost" textname="Локальный узел" unet_ignore="0" unet_port="3000" unet_multicast_ip2="127.0.1.1" unet_multicast_port2="2999" unet_multicast_receive_from_all_nodes="1">
+                <multicast>
+                    <receive>
+                        <group addr="238.255.1.2" addr2="239.255.1.2"/>
+                        <group addr="238.255.1.3" addr2="239.255.1.3"/>
+                    </receive>
+                    <send>
+                        <group addr="238.255.1.1" addr2="239.255.1.1"/>
+                    </send>
+                </multicast>
 			</item>
 			<item id="3001" ip="127.0.0.1" name="localhost1" textname="Локальный узел" unet_ignore="1" unet_port="3001"/>
-			<item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="0" unet_respond_id="Node1_Not_Respond_S" unet_respond_invert="1" unet_channelswitchcount_id="Node1_ChannelSwitchCount_AS"/>
-			<item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_ignore="0" unet_respond_id="Node2_Respond_S" unet_lostpackets_id="Node2_LostPackets_AS" unet_numchannel_id="Node2_NumChannel_AS"/>
+			<item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="0" unet_respond_id="Node1_Not_Respond_S" unet_respond_invert="1" unet_channelswitchcount_id="Node1_ChannelSwitchCount_AS" unet_multicast_receive_from_all_nodes="1">
+                <multicast>
+                    <receive>
+                        <group addr="238.255.1.1" addr2="239.255.1.1"/>
+                        <group addr="238.255.1.3" addr2="239.255.1.3"/>
+                    </receive>
+                    <send>
+                        <group addr="238.255.1.2" addr2="239.255.1.2"/>
+                    </send>
+                </multicast>
+            </item>
+			<item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_ignore="0" unet_respond_id="Node2_Respond_S" unet_lostpackets_id="Node2_LostPackets_AS" unet_numchannel_id="Node2_NumChannel_AS" unet_multicast_receive_from_all_nodes="1">
+                <multicast>
+                    <receive>
+                        <group addr="238.255.1.1" addr2="239.255.1.1"/>
+                        <group addr="238.255.1.2" addr2="239.255.1.2"/>
+                    </receive>
+                    <send>
+                        <group addr="238.255.1.3" addr2="239.255.1.3"/>
+                    </send>
+                </multicast>
+            </item>
 		</nodes>
 		<!-- ************************ Датчики ********************** -->
 		<sensors name="Sensors">

@@ -31,7 +31,8 @@ namespace uniset
     {
         public:
 
-            static std::unique_ptr<MulticastReceiveTransport> createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan );
+            static std::unique_ptr<MulticastReceiveTransport> createFromXml(UniXML::iterator it, const std::string& defaultIP, int numChan, const std::string& section = "receive");
+            static xmlNode* getReceiveListNode( UniXML::iterator root );
 
             MulticastReceiveTransport( const std::string& bind, int port, const std::vector<Poco::Net::IPAddress>& joinGroups );
             virtual ~MulticastReceiveTransport();
@@ -43,7 +44,9 @@ namespace uniset
             virtual bool createConnection(bool throwEx, timeout_t readTimeout, bool noblock) override;
             virtual void disconnect() override;
             virtual int getSocket() const override;
+            std::vector<Poco::Net::IPAddress> getGroups();
 
+            bool isReadyForReceive( timeout_t tout ) override;
             virtual ssize_t receive(void* r_buf, size_t sz) override;
 
         protected:
@@ -68,6 +71,7 @@ namespace uniset
 
             virtual bool createConnection(bool throwEx, timeout_t sendTimeout) override;
             virtual int getSocket() const override;
+            std::vector<Poco::Net::IPAddress> getGroups();
 
             // write
             virtual bool isReadyForSend(timeout_t tout) override;

@@ -1,4 +1,4 @@
-bin_PROGRAMS = @PACKAGE@-unetexchange @PACKAGE@-unet-udp-tester
+bin_PROGRAMS = @PACKAGE@-unetexchange @PACKAGE@-unet-udp-tester @PACKAGE@-unet-multicast-tester
 
 # не забывайте править версию в2.pc-файле
 UNETUDP_VER=@LIBVER@
@@ -23,6 +23,10 @@ libUniSet2UNetUDP_la_SOURCES 	= UDPPacket.cc UDPTransport.cc MulticastTransport.
 @PACKAGE@_unet_udp_tester_SOURCES	= UDPPacket.cc unet-udp-tester.cc
 @PACKAGE@_unet_udp_tester_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(POCO_LIBS)
 @PACKAGE@_unet_udp_tester_CXXFLAGS	= $(POCO_CFLAGS)
+
+@PACKAGE@_unet_multicast_tester_SOURCES	 = UDPPacket.cc MulticastTransport.cc unet-multicast-tester.cc
+@PACKAGE@_unet_multicast_tester_LDADD 	 = $(top_builddir)/lib/libUniSet2.la $(POCO_LIBS)
+@PACKAGE@_unet_multicast_tester_CXXFLAGS = $(POCO_CFLAGS)
 
 # install
 devel_include_HEADERS = *.h

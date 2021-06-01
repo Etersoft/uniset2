@@ -5,6 +5,7 @@
 #include "UInterface.h"
 #include "UDPPacket.h"
 #include "UDPCore.h"
+#include "MulticastTransport.h"
 // -----------------------------------------------------------------------------
 // include-ы искплючительно для того, чтобы их обработал gcov (покрытие кода)
 #include "UNetReceiver.h"
@@ -14,17 +15,14 @@
 using namespace std;
 using namespace uniset;
 // -----------------------------------------------------------------------------
-static int port = 3000;
-static const std::string host("127.255.255.255");
 static shared_ptr<UInterface> ui = nullptr;
 static ObjectId aid = 2;
-static std::shared_ptr<UDPReceiveU> udp_r = nullptr;
-static shared_ptr<UDPSocketU> udp_s = nullptr;
+static std::unique_ptr<MulticastReceiveTransport> udp_r = nullptr;
+static std::unique_ptr<MulticastSendTransport> udp_s = nullptr;
 static int s_port = 3003; // Node2
 static int s_nodeID = 3003;
 static int s_procID = 123;
 static int s_numpack = 1;
-static Poco::Net::SocketAddress s_addr(host, s_port);
 static ObjectId node2_respond_s = 12;
 static ObjectId node2_lostpackets_as = 13;
 static int maxDifferense = 5; // см. unetudp-test-configure.xml --unet-maxdifferense
@@ -32,7 +30,43 @@ static int recvTimeout = 1000; // --unet-recv-timeout
 static ObjectId node1_numchannel_as = 14;
 static ObjectId node1_channelSwitchCount_as = 15;
 // -----------------------------------------------------------------------------
-void InitTest()
+static void initHelpers()
+{
+    if( udp_r && udp_s )
+        return;
+
+    UniXML xml("unetudp-test-configure.xml");
+    UniXML::iterator it = xml.findNode(xml.getFirstNode(), "nodes");
+    REQUIRE( it.getCurrent() );
+    REQUIRE( it.goChildren() );
+    REQUIRE( it.findName("item", "localhost", false) );
+
+    REQUIRE( it.getName() == "item" );
+    REQUIRE( it.getProp("name") == "localhost" );
+
+
+    if( !udp_r )
+    {
+        //      udp_r = MulticastReceiveTransport::createFromXml(it, "127.0.0.1", 0, "send");
+        std::vector<Poco::Net::IPAddress> groups;
+        groups.emplace_back("238.255.1.1");
+        udp_r = make_unique<MulticastReceiveTransport>("127.0.0.1", 3000, groups);
+        REQUIRE( udp_r->toString() == "127.0.0.1:3000" );
+        REQUIRE( udp_r->createConnection(false, 5000, true) );
+    }
+
+    if( !udp_s )
+    {
+        //      udp_s = MulticastSendTransport::createFromXml(it, "127.0.0.1", 0);
+        std::vector<Poco::Net::IPAddress> groups;
+        groups.emplace_back("238.255.1.2");
+        udp_s = make_unique<MulticastSendTransport>("127.0.0.1", 3002, groups);
+        REQUIRE( udp_s->toString() == "127.0.0.1:3002" );
+        REQUIRE( udp_s->createConnection(false, 5000) );
+    }
+}
+// -----------------------------------------------------------------------------
+void InitMulticastTest()
 {
     auto conf = uniset_conf();
     CHECK( conf != nullptr );
@@ -47,28 +81,25 @@ void InitTest()
     }
 
     if( udp_r == nullptr )
-        udp_r = make_shared<UDPReceiveU>(host, port);
+        initHelpers();
 
     if( udp_s == nullptr )
-    {
-        udp_s = make_shared<UDPSocketU>(); //(host, s_port);
-        udp_s->setBroadcast(true);
-    }
+        initHelpers();
 }
 // -----------------------------------------------------------------------------
 // pnum - минималный номер ожидаемого пакета ( 0 - любой пришедщий )
 // ncycle - сколько пакетов разрешено "пропустить" прежде чем дождёмся нужного.. (чтобы не ждать бесконечно)
-static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 2000, int ncycle = 20 )
+static UniSetUDP::UDPMessage mreceive( unsigned int pnum = 0, timeout_t tout = 2000, int ncycle = 20 )
 {
     UniSetUDP::UDPMessage pack;
     UniSetUDP::UDPPacket buf;
 
     while( ncycle > 0 )
     {
-        if( !udp_r->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_READ) )
+        if( !udp_r->isReadyForReceive(tout) )
             break;
 
-        size_t ret = udp_r->receiveBytes(&(buf.data), sizeof(buf.data) );
+        size_t ret = udp_r->receive(&(buf.data), sizeof(buf.data) );
         size_t sz = UniSetUDP::UDPMessage::getMessage(pack, buf);
 
         if( sz == 0 || pnum == 0 || ( pnum > 0 && pack.num >= pnum ) ) // -V560
@@ -84,9 +115,9 @@ static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 20
     return pack;
 }
 // -----------------------------------------------------------------------------
-void send( UniSetUDP::UDPMessage& pack, int tout = 2000 )
+void msend( UniSetUDP::UDPMessage& pack, int tout = 2000 )
 {
-    CHECK( udp_s->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_WRITE) );
+    CHECK( udp_s->isReadyForSend(tout) );
 
     pack.nodeID = s_nodeID;
     pack.procID = s_procID;
@@ -94,133 +125,17 @@ void send( UniSetUDP::UDPMessage& pack, int tout = 2000 )
 
     UniSetUDP::UDPPacket s_buf;
     pack.transport_msg(s_buf);
-    size_t ret = udp_s->sendTo(&s_buf.data, s_buf.len, s_addr);
+    size_t ret = udp_s->send(&s_buf.data, s_buf.len);
     REQUIRE( ret == s_buf.len );
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: queue sort", "[unetudp][udp][packetqueue]")
+TEST_CASE("[UNetUDP]: check multicast sender", "[unetudp][multicast][sender]")
 {
-    UNetReceiver::PacketQueue q;
-
-    UniSetUDP::UDPMessage m1;
-    m1.num = 10;
-    UniSetUDP::UDPMessage m2;
-    m2.num = 11;
-    UniSetUDP::UDPMessage m3;
-    m3.num = 13;
-
-    UniSetUDP::UDPMessage m4;
-    m4.num = 100;
-
-    // специально складываем в обратном порядке
-    // чтобы проверить "сортировку"
-    q.push(m1);
-    q.push(m3);
-    q.push(m2);
-    q.push(m4);
-
-    UniSetUDP::UDPMessage t = q.top();
-    REQUIRE( t.num == 10 );
-    q.pop();
-
-    t = q.top();
-    REQUIRE( t.num == 11 );
-    q.pop();
-
-    t = q.top();
-    REQUIRE( t.num == 13 );
-    q.pop();
-
-    t = q.top();
-    REQUIRE( t.num == 100 );
-    q.pop();
-}
-// -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: UDPMessage", "[unetudp][udp][udpmessage]")
-{
-    SECTION("UDPMessage::isFull()")
-    {
-        UniSetUDP::UDPMessage u;
-
-        for( unsigned int i = 0; i < UniSetUDP::MaxACount - 1; i++ )
-            u.addAData( i, i );
-
-        REQUIRE( u.asize() == (UniSetUDP::MaxACount - 1) );
-
-        CHECK_FALSE( u.isAFull() );
-        u.addAData( 1, 1 );
-        CHECK( u.isAFull() );
-
-        for( unsigned int i = 0; i < UniSetUDP::MaxDCount - 1; i++ )
-            u.addDData( i, true );
-
-        REQUIRE( u.dsize() == (UniSetUDP::MaxDCount - 1) );
-
-        CHECK_FALSE( u.isDFull() );
-        u.addDData( 1, true );
-        CHECK( u.isDFull() );
-
-        CHECK( u.isFull() );
-    }
-
-    SECTION("UDPMessage transport..")
-    {
-        // создаём сообщение, преобразуем к Package.. потом обратно.. проверяём, что информация не исказилась
-        UniSetUDP::UDPMessage u;
-        size_t a = u.addAData(100, 100);
-        size_t d = u.addDData(110, true);
-
-        UniSetUDP::UDPPacket p;
-        size_t len = u.transport_msg(p);
-        CHECK( len != 0 );
-        REQUIRE( a < UniSetUDP::MaxACount );
-        REQUIRE( d < UniSetUDP::MaxDCount );
-
-        UniSetUDP::UDPMessage u2(p);
-        REQUIRE( u2.a_dat[a].id == 100 );
-        REQUIRE( u2.a_dat[a].val == 100 );
-        REQUIRE( u2.dID(d) == 110 );
-        REQUIRE( u2.dValue(d) == true );
-    }
-}
-// -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: sizeOf", "[unetudp][udp][sizeof]")
-{
-    UniSetUDP::UDPMessage m;
-
-    REQUIRE( m.sizeOf() == sizeof(UniSetUDP::UDPHeader) );
-
-    m.addAData(8, 70);
-
-    REQUIRE( m.sizeOf() == sizeof(UniSetUDP::UDPHeader) + sizeof(UniSetUDP::UDPAData) );
-
-    UniSetUDP::UDPPacket p;
-    size_t len = m.transport_msg(p);
-    REQUIRE( len == m.sizeOf() );
-}
-// -----------------------------------------------------------------------------
-#if 0
-TEST_CASE("[UNetUDP]: respond sensor", "[unetudp][udp]")
-{
-    InitTest();
-
-    ObjectId node1_not_respond_s = 1;
-    CHECK( ui->getValue(node1_not_respond_s) == 0 );
-
-    // в запускающем файле стоит --unet-recv-timeout 1000
-    // ждём больше, чтобы сработал timeout
-    msleep(5000);
-    REQUIRE( ui->getValue(node1_not_respond_s) == 1 );
-}
-#endif
-// -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: check sender", "[unetudp][udp][sender]")
-{
-    InitTest();
+    InitMulticastTest();
 
     SECTION("Test: read default pack...")
     {
-        UniSetUDP::UDPMessage pack = receive();
+        UniSetUDP::UDPMessage pack = mreceive();
         REQUIRE( pack.num != 0 );
         REQUIRE( pack.asize() == 4 );
         REQUIRE( pack.dsize() == 2 );
@@ -234,17 +149,17 @@ TEST_CASE("[UNetUDP]: check sender", "[unetudp][udp][sender]")
         REQUIRE( pack.dValue(1) == 0 );
 
         // т.к. данные в SM не менялись, то должен придти пакет с тем же номером что и был..
-        UniSetUDP::UDPMessage pack2 = receive();
+        UniSetUDP::UDPMessage pack2 = mreceive();
         REQUIRE( pack2.num == pack.num );
     }
 
     SECTION("Test: change AI data...")
     {
-        UniSetUDP::UDPMessage pack0 = receive();
+        UniSetUDP::UDPMessage pack0 = mreceive();
         ui->setValue(2, 100);
         REQUIRE( ui->getValue(2) == 100 );
         msleep(120);
-        UniSetUDP::UDPMessage pack = receive( pack0.num + 1 );
+        UniSetUDP::UDPMessage pack = mreceive( pack0.num + 1 );
         REQUIRE( pack.num != 0 );
         REQUIRE( pack.asize() == 4 );
         REQUIRE( pack.dsize() == 2 );
@@ -253,7 +168,7 @@ TEST_CASE("[UNetUDP]: check sender", "[unetudp][udp][sender]")
         ui->setValue(2, 250);
         REQUIRE( ui->getValue(2) == 250 );
         msleep(120);
-        UniSetUDP::UDPMessage pack2 = receive( pack.num + 1 );
+        UniSetUDP::UDPMessage pack2 = mreceive( pack.num + 1 );
         REQUIRE( pack2.num != 0 );
         REQUIRE( pack2.num > pack.num );
         REQUIRE( pack2.asize() == 4 );
@@ -263,11 +178,11 @@ TEST_CASE("[UNetUDP]: check sender", "[unetudp][udp][sender]")
 
     SECTION("Test: change DI data...")
     {
-        UniSetUDP::UDPMessage pack0 = receive();
+        UniSetUDP::UDPMessage pack0 = mreceive();
         ui->setValue(6, 1);
         REQUIRE( ui->getValue(6) == 1 );
         msleep(120);
-        UniSetUDP::UDPMessage pack = receive( pack0.num + 1 );
+        UniSetUDP::UDPMessage pack = mreceive( pack0.num + 1 );
         REQUIRE( pack.num != 0 );
         REQUIRE( pack.asize() == 4 );
         REQUIRE( pack.dsize() == 2 );
@@ -276,7 +191,7 @@ TEST_CASE("[UNetUDP]: check sender", "[unetudp][udp][sender]")
         ui->setValue(6, 0);
         REQUIRE( ui->getValue(6) == 0 );
         msleep(120);
-        UniSetUDP::UDPMessage pack2 = receive( pack.num + 1 );
+        UniSetUDP::UDPMessage pack2 = mreceive( pack.num + 1 );
         REQUIRE( pack2.num != 0 );
         REQUIRE( pack2.num > pack.num );
         REQUIRE( pack2.asize() == 4 );
@@ -285,9 +200,9 @@ TEST_CASE("[UNetUDP]: check sender", "[unetudp][udp][sender]")
     }
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: check receiver", "[unetudp][udp][receiver]")
+TEST_CASE("[UNetUDP]: check multicast receiver", "[unetudp][multicast][receiver]")
 {
-    InitTest();
+    InitMulticastTest();
 
     SECTION("Test: send data pack...")
     {
@@ -304,16 +219,12 @@ TEST_CASE("[UNetUDP]: check receiver", "[unetudp][udp][receiver]")
         REQUIRE( ui->getValue(10) == 0 );
         REQUIRE( ui->getValue(11) == 0 );
 
-        send(pack);
+        msend(pack);
         msleep(600);
         REQUIRE( ui->getValue(8) == 100 );
         REQUIRE( ui->getValue(9) == -100 );
         REQUIRE( ui->getValue(10) == 1 );
         REQUIRE( ui->getValue(11) == 0 );
-
-        WARN("check respond sensor DISABLED!");
-        //        msleep(1500);
-        //        REQUIRE( ui->getValue(node2_respond_s) == 1 );
     }
     SECTION("Test: send data pack2..")
     {
@@ -322,27 +233,23 @@ TEST_CASE("[UNetUDP]: check receiver", "[unetudp][udp][receiver]")
         pack.addAData(9, -10);
         pack.addDData(10, false);
         pack.addDData(11, true);
-        send(pack);
-        msleep(600);
+        msend(pack);
+        msleep(900);
         REQUIRE( ui->getValue(8) == 10 );
         REQUIRE( ui->getValue(9) == -10 );
         REQUIRE( ui->getValue(10) == 0 );
         REQUIRE( ui->getValue(11) == 1 );
-        WARN("check respond sensor DISABLED!");
-        //REQUIRE( ui->getValue(node2_respond_s) == 1 );
-        //msleep(2000); // в запускающем файле стоит --unet-recv-timeout 2000
-        //REQUIRE( ui->getValue(node2_respond_s) == 0 );
     }
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: check packets 'hole'", "[unetudp][udp][udphole]")
+TEST_CASE("[UNetUDP]: check multicast packets 'hole'", "[unetudp][multicast][udphole]")
 {
-    InitTest();
+    InitMulticastTest();
 
     // проверяем обработку "дырок" в пакетах..
     UniSetUDP::UDPMessage pack;
     pack.addAData(8, 15);
-    send(pack);
+    msend(pack);
     msleep(120);
     REQUIRE( ui->getValue(8) == 15 );
 
@@ -354,46 +261,46 @@ TEST_CASE("[UNetUDP]: check packets 'hole'", "[unetudp][udp][udphole]")
     s_numpack = lastnum + 3;
     UniSetUDP::UDPMessage pack_hole;
     pack_hole.addAData(8, 30);
-    send(pack_hole); // пакет с дыркой
+    msend(pack_hole); // пакет с дыркой
 
     msleep(80);
     REQUIRE( ui->getValue(8) == 15 );
-    REQUIRE( ui->getValue(node2_lostpackets_as) == nlost );
+    //    REQUIRE( ui->getValue(node2_lostpackets_as) == nlost );
 
     s_numpack = lastnum + 1;
     UniSetUDP::UDPMessage pack1;
     pack1.addAData(8, 21);
-    send(pack1); // заполняем первую дырку..// дырка закроется.. пакет тут же обработается
+    msend(pack1); // заполняем первую дырку..// дырка закроется.. пакет тут же обработается
     msleep(100);
     REQUIRE( ui->getValue(8) == 21 );
-    REQUIRE( ui->getValue(node2_lostpackets_as) == nlost );
+    //    REQUIRE( ui->getValue(node2_lostpackets_as) == nlost );
 
     s_numpack = lastnum + 2;
     UniSetUDP::UDPMessage pack2;
     pack2.addAData(8, 25);
-    send(pack2); // заполняем следующую дырку
+    msend(pack2); // заполняем следующую дырку
     msleep(120);
 
     // тут обработка дойдёт уже до "первого" пакета..
     REQUIRE( ui->getValue(8) == 30 );
-    REQUIRE( ui->getValue(node2_lostpackets_as) == nlost );
+    //    REQUIRE( ui->getValue(node2_lostpackets_as) == nlost );
 
     // возвращаем к нормальному..чтобы следующие тесты не поломались..
     for( int i = 0; i < 10; i++ )
     {
-        send(pack2);
+        msend(pack2);
         msleep(100);
     }
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: check packets 'MaxDifferens'", "[unetudp][udp][maxdifferens]")
+TEST_CASE("[UNetUDP]: check multicast packets 'MaxDifferens'", "[unetudp][multicast][maxdifferens]")
 {
-    InitTest();
+    InitMulticastTest();
 
     // проверяем обработку "дырок" в пакетах..
     UniSetUDP::UDPMessage pack;
     pack.addAData(8, 50);
-    send(pack);
+    msend(pack);
 
     msleep(1000);
     REQUIRE( ui->getValue(8) == 50 );
@@ -406,22 +313,22 @@ TEST_CASE("[UNetUDP]: check packets 'MaxDifferens'", "[unetudp][udp][maxdifferen
 
     UniSetUDP::UDPMessage pack_hole;
     pack_hole.addAData(8, 150);
-    send(pack_hole); // пакет с дыркой > maxDifference (должен обработаться)
+    msend(pack_hole); // пакет с дыркой > maxDifference (должен обработаться)
 
     msleep(120);
     REQUIRE( ui->getValue(8) == 150 );
-    msleep(2000);
-    REQUIRE( ui->getValue(node2_lostpackets_as) > nlost );
+    //    msleep(2000);
+    //    REQUIRE( ui->getValue(node2_lostpackets_as) > nlost );
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: bad packet number", "[unetudp][udp][badnumber]")
+TEST_CASE("[UNetUDP]: multicast bad packet number", "[unetudp][multicast][badnumber]")
 {
-    InitTest();
+    InitMulticastTest();
 
     // посылаем нормальный пакет
     UniSetUDP::UDPMessage pack;
     pack.addAData(8, 60);
-    send(pack);
+    msend(pack);
     msleep(150);
     REQUIRE( ui->getValue(8) == 60 );
 
@@ -431,7 +338,7 @@ TEST_CASE("[UNetUDP]: bad packet number", "[unetudp][udp][badnumber]")
     s_numpack = lastpack;
     UniSetUDP::UDPMessage pack1;
     pack1.addAData(8, 150);
-    send(pack1); // должен быть "откинут"
+    msend(pack1); // должен быть "откинут"
 
     msleep(120);
     REQUIRE( ui->getValue(8) == 60 );
@@ -440,7 +347,7 @@ TEST_CASE("[UNetUDP]: bad packet number", "[unetudp][udp][badnumber]")
     s_numpack = lastpack - 2;
     UniSetUDP::UDPMessage pack2;
     pack2.addAData(8, 155);
-    send(pack2); // должен быть "откинут"
+    msend(pack2); // должен быть "откинут"
 
     msleep(120);
     REQUIRE( ui->getValue(8) == 60 );
@@ -449,18 +356,18 @@ TEST_CASE("[UNetUDP]: bad packet number", "[unetudp][udp][badnumber]")
     s_numpack = lastpack + 1;
     UniSetUDP::UDPMessage pack3;
     pack3.addAData(8, 160);
-    send(pack3); // должен быть "обработан"
+    msend(pack3); // должен быть "обработан"
 
     msleep(120);
     REQUIRE( ui->getValue(8) == 160 );
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: switching channels", "[unetudp][udp][chswitch]")
+TEST_CASE("[UNetUDP]: [multicast] switching channels", "[unetudp][multicast][chswitch]")
 {
-    InitTest();
+    InitMulticastTest();
     UniSetUDP::UDPMessage pack;
     pack.addAData(8, 70);
-    send(pack);
+    msend(pack);
     msleep(120);
     REQUIRE( ui->getValue(8) == 70 );
 
@@ -479,17 +386,17 @@ TEST_CASE("[UNetUDP]: switching channels", "[unetudp][udp][chswitch]")
     REQUIRE( ui->getValue(node1_channelSwitchCount_as) == 0 );
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: check undefined value", "[unetudp][udp][sender]")
+TEST_CASE("[UNetUDP]: mulsicat check undefined value", "[unetudp][multicast][undefvalue]")
 {
-    InitTest();
+    InitMulticastTest();
 
-    UniSetUDP::UDPMessage pack0 = receive();
+    UniSetUDP::UDPMessage pack0 = mreceive();
 
     ui->setValue(2, 110);
     REQUIRE( ui->getValue(2) == 110 );
     msleep(600);
 
-    UniSetUDP::UDPMessage pack = receive( pack0.num + 1, 2000, 40 );
+    UniSetUDP::UDPMessage pack = mreceive( pack0.num + 1, 2000, 40 );
 
     REQUIRE( pack.num != 0 );
     REQUIRE( pack.asize() == 4 );
@@ -501,7 +408,7 @@ TEST_CASE("[UNetUDP]: check undefined value", "[unetudp][udp][sender]")
     si.node = uniset_conf()->getLocalNode();
     ui->setUndefinedState(si, true, 6000 /* TestProc */ );
     msleep(600);
-    pack = receive(pack.num + 1);
+    pack = mreceive(pack.num + 1);
 
     REQUIRE( pack.num != 0 );
     REQUIRE( pack.asize() == 4 );
@@ -510,7 +417,7 @@ TEST_CASE("[UNetUDP]: check undefined value", "[unetudp][udp][sender]")
 
     ui->setUndefinedState(si, false, 6000 /* TestProc */ );
     msleep(600);
-    pack = receive(pack.num + 1);
+    pack = mreceive(pack.num + 1);
 
     REQUIRE( pack.num != 0 );
     REQUIRE( pack.asize() == 4 );
