@@ -103,10 +103,17 @@ namespace uniset
     \section pgUNetUDP_ConfMulticast Пример конфигурирования (Multicast)
     По умолчанию при считывании используется \b unet_multicast_ip (указанный в секции \<nodes>)
     и \b id узла - в качестве порта.
-    Но можно переопределять эти параметры, при помощи указания \b unet_mulsicast_port и/или \b unet_multicast_ip,
-    для конкретного узла (\<item>).
-    Группы для подписки описываются в специальной секции \b <mulitcast>. Секция <recevive> описывает группы на которые
-    подписывается данные узел. Секция <send> описывает в какие группы данный узел будет посылать сообщения.
+    Но можно переопределиять эти параметры, при помощи указания \b unet_multicast_port и/или \b unet_multicast_ip,
+    у конкретного узла (\<item>).
+    Группы для подписки описываются в специальной секции \b \<mulitcast>. Секция \b \<recevive> описывает группы на которые
+    подписывается узел. Секция \b \<send> описывает в какие группы данный узел будет посылать сообщения.
+
+    Секция \b \<receive> не является обязательной и если узел должен слушать все другие узлы, то достаточно у узла
+    прописать свойство \b unet_multicast_receive_from_all_nodes="1". При этом узел подпишется
+    на все группы указанные в секции \b \<send>(!) других узлов, секция \<receive> при этом игнорируется.
+    Если свойство \b unet_multicast_receive_from_all_nodes="0" или не указано и создана пустая секция \b \<receive/>,
+    то узел \b не будет слушать и получать сообщения.
+
     \code
     <nodes port="2809" unet_broadcast_ip="192.168.56.255">
       <item ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="1" unet_multicast_port="3000" unet_multicast_ip="192.168.57.255">
@@ -114,11 +121,9 @@ namespace uniset
           ...
         </iocards>
       </item>
-      <item ip="192.168.56.10" name="Node1" textname="Node1" unet_multicast_port="3001" unet_update_strategy="evloop">
+      <item ip="192.168.56.10" name="Node1" textname="Node1" unet_multicast_port="3001" unet_update_strategy="evloop"
+            unet_multicast_receive_from_all_nodes="1">
             <multicast>
-                <receive>
-                    <group addr="239.255.1.1" addr2="239.255.2.1"/>
-                </receive>
                 <send>
                     <group addr="239.255.1.1" addr2="239.255.2.1"/>
                 </send>
