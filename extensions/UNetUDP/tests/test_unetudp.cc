@@ -472,7 +472,7 @@ TEST_CASE("[UNetUDP]: switching channels", "[unetudp][udp][chswitch]")
     // поэтому проверить переключение нет возможности
     // остаётся только проверить, что мы не "ушли" с первого канала
     // т.к. на втором нет связи и мы не должны на него переключаться
-    msleep(recvTimeout * 2);
+    msleep(recvTimeout * 3);
     REQUIRE( ui->getValue(node1_numchannel_as) == 1 );
 
     // и счётчик переключений каналов остался в нуле
