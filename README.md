@@ -1,4 +1,4 @@
-UniSet [![Build Status](https://travis-ci.org/Etersoft/uniset2.svg?branch=master)](https://travis-ci.org/Etersoft/uniset2) [![Coverity Scan Build Status](https://scan.coverity.com/projects/etersoft-uniset2/badge.svg)](https://scan.coverity.com/projects/etersoft-uniset2)
+UniSet ![Gihub testsuite Status](https://github.com/Etersoft/uniset2/actions/workflows/testsuite.yml/badge.svg) [![Build Status](https://travis-ci.org/Etersoft/uniset2.svg?branch=master)](https://travis-ci.org/Etersoft/uniset2) [![Coverity Scan Build Status](https://scan.coverity.com/projects/etersoft-uniset2/badge.svg)](https://scan.coverity.com/projects/etersoft-uniset2)
 ======
 
 UniSet is a library for distributed control systems development.
