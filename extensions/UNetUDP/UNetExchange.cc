@@ -880,7 +880,7 @@ void UNetExchange::initUDPTransport( UniXML::iterator n_it,
                 // т.е. это "резервный канал", то игнорируем ошибку его создания
                 // при запуске "интерфейс" может быть и не доступен...
                 sender2 = nullptr;
-                unetcrit << myname <<  "IGNORE! reserv channel create error:" << ex.what() << endl;
+                unetcrit << myname <<  "(init): IGNORE! channel2 create error: " << ex.what() << endl;
             }
 
             continue;
@@ -1027,16 +1027,16 @@ void UNetExchange::initUDPTransport( UniXML::iterator n_it,
         }
 
         unetinfo << myname << "(init): (node='" << n << "') add basic receiver " << transport1->ID() << endl;
-        auto r = make_shared<UNetReceiver>(std::move(transport1), shm, false, prefix);
+        auto r1 = make_shared<UNetReceiver>(std::move(transport1), shm, false, prefix);
 
-        loga->add(r->getLog());
+        loga->add(r1->getLog());
 
         // на всякий принудительно разблокируем,
         // чтобы не зависеть от значения по умолчанию
-        r->setLockUpdate(false);
-        r->setRespondID(resp_id, resp_invert);
-        r->setLostPacketsID(lp_id);
-        r->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
+        r1->setLockUpdate(false);
+        r1->setRespondID(resp_id, resp_invert);
+        r1->setLostPacketsID(lp_id);
+        r1->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
 
         shared_ptr<UNetReceiver> r2(nullptr);
 
@@ -1069,7 +1069,7 @@ void UNetExchange::initUDPTransport( UniXML::iterator n_it,
             unetcrit << myname << "(ignore): DON`T CREATE reserve 'UNetReceiver'.  error: " << ex.what() << endl;
         }
 
-        ReceiverInfo ri(r, r2);
+        ReceiverInfo ri(r1, r2);
         ri.setRespondID(resp_comm_id, resp_invert);
         ri.setLostPacketsID(lp_comm_id);
         ri.setChannelNumID(numchannel_id);
@@ -1172,7 +1172,7 @@ void UNetExchange::initMulticastTransport( UniXML::iterator n_it,
                 // т.е. это "резервный канал", то игнорируем ошибку его создания
                 // при запуске "интерфейс" может быть и не доступен...
                 sender2 = nullptr;
-                unetcrit << myname <<  "IGNORE! reserv channel create error:" << ex.what() << endl;
+                unetcrit << myname <<  "(init): IGNORE! channel2 create error: " << ex.what() << endl;
             }
 
             break;
@@ -1182,7 +1182,7 @@ void UNetExchange::initMulticastTransport( UniXML::iterator n_it,
     // INIT RECEIVERS
     if( selfNode == nullptr )
     {
-        unetwarn << myname <<  "IGNORE! RECEIVE DISABLED.." << endl;
+        unetwarn << myname <<  "(init): IGNORE! RECEIVE DISABLED.." << endl;
         return;
     }
 
@@ -1369,16 +1369,16 @@ void UNetExchange::initMulticastReceiverForNode(UniXML::iterator n_it,
     for( const auto& gr : transport1->getGroups() )
         unetinfo << myname << "(init):    " << gr.toString() << endl;
 
-    auto r = make_shared<UNetReceiver>(std::move(transport1), shm, false, prefix);
+    auto r1 = make_shared<UNetReceiver>(std::move(transport1), shm, false, prefix);
 
-    loga->add(r->getLog());
+    loga->add(r1->getLog());
 
     // на всякий принудительно разблокируем,
     // чтобы не зависеть от значения по умолчанию
-    r->setLockUpdate(false);
-    r->setRespondID(resp_id, resp_invert);
-    r->setLostPacketsID(lp_id);
-    r->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
+    r1->setLockUpdate(false);
+    r1->setRespondID(resp_id, resp_invert);
+    r1->setLostPacketsID(lp_id);
+    r1->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
 
     shared_ptr<UNetReceiver> r2(nullptr);
 
@@ -1416,7 +1416,7 @@ void UNetExchange::initMulticastReceiverForNode(UniXML::iterator n_it,
         unetcrit << myname << "(ignore): DON`T CREATE reserve 'UNetReceiver'.  error: " << ex.what() << endl;
     }
 
-    ReceiverInfo ri(r, r2);
+    ReceiverInfo ri(r1, r2);
     ri.setRespondID(resp_comm_id, resp_invert);
     ri.setLostPacketsID(lp_comm_id);
     ri.setChannelNumID(numchannel_id);
