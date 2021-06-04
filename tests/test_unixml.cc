@@ -210,3 +210,30 @@ TEST_CASE("UniXML::iterator::getPropList", "[unixml][iterator-proplist][basic]" 
     }
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("UniXML createFromText", "[unixml][createFromText]" )
+{
+    UniXML uxml;
+    CHECK_FALSE( uxml.isOpen() );
+
+    const string text = \
+                        "<?xml version=\"1.0\" encoding=\"utf-8\"?> \
+	<TestConf xmlns:xi=\"http://www.w3.org/2001/XInclude\"> \
+	<UserData/> \
+	<UniSet> \
+	</UniSet> \
+	</TestConf>";
+
+    REQUIRE_NOTHROW(uxml.createFromText(text));
+    CHECK( uxml.isOpen() );
+
+    xmlNode* cnode = uxml.findNode(uxml.getFirstNode(), "UniSet");
+    CHECK( cnode != NULL );
+
+
+    uxml.close();
+    CHECK_FALSE( uxml.isOpen() );
+
+    const string badtext = "<?xml version=";
+    REQUIRE_THROWS_AS(uxml.createFromText(badtext), uniset::SystemError& );
+}
+// -----------------------------------------------------------------------------

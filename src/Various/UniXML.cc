@@ -49,7 +49,7 @@ UniXML::UniXML(const string& fname):
 {
 	open(filename);
 }
-
+// -----------------------------------------------------------------------------
 UniXML::UniXML()
 {
 }
@@ -64,7 +64,7 @@ string UniXML::getFileName() const noexcept
 	return filename;
 }
 // -----------------------------------------------------------------------------
-void UniXML::newDoc(const string& root_node, const string& xml_ver)
+void UniXML::newDoc( const string& root_node, const string& xml_ver )
 {
 	assert(doc == nullptr);  // предыдущий doc не удален из памяти
 
@@ -105,6 +105,33 @@ UniXML::iterator UniXML::begin() noexcept
 UniXML::iterator UniXML::end() noexcept
 {
 	return  iterator(NULL);
+}
+// -----------------------------------------------------------------------------
+static void suppress(void *ctx, const char *msg, ...)
+{
+
+}
+// -----------------------------------------------------------------------------
+void UniXML::createFromText( const std::string& text )
+{
+	assert(doc == nullptr);  // предыдущий doc не удален из памяти
+
+	// hide console errors
+//	xmlSetGenericErrorFunc(NULL,suppress);
+
+	xmlKeepBlanksDefault(0);
+	// Can read files in any encoding, recode to UTF-8 internally
+	xmlDoc* d = xmlParseDoc((const xmlChar*)text.c_str());
+
+	if( d == NULL )
+		throw SystemError("UniXML(createFromText): parse error");
+
+	doc = std::unique_ptr<xmlDoc, UniXMLDocDeleter>(d);
+
+	// Support for XInclude (see eterbug #6304)
+	// main tag must to have follow property: xmlns:xi="http://www.w3.org/2001/XInclude"
+	//For include: <xi:include href="test2.xml"/>
+	xmlXIncludeProcess(doc.get());
 }
 // -----------------------------------------------------------------------------
 void UniXML::open( const string& _filename )
