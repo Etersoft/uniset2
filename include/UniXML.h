@@ -139,6 +139,9 @@ namespace uniset
 
             std::string getFileName() const noexcept;
 
+            void createFromText( const std::string& text );
+
+
             // Создать новый XML-документ
             void newDoc( const std::string& root_node, const std::string& xml_ver = "1.0");
 
