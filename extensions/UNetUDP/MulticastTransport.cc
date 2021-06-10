@@ -227,6 +227,12 @@ std::vector<Poco::Net::IPAddress> MulticastReceiveTransport::getGroups()
 {
     return groups;
 }
+// -------------------------------------------------------------------------
+void MulticastReceiveTransport::setLoopBack( bool state )
+{
+    if( udp )
+        udp->setLoopback(state);
+}
 
 // -------------------------------------------------------------------------
 /*
@@ -344,6 +350,12 @@ void MulticastSendTransport::setTimeToLive( int _ttl )
 
     if( udp )
         udp->setTimeToLive(_ttl);
+}
+// -------------------------------------------------------------------------
+void MulticastSendTransport::setLoopBack( bool state )
+{
+    if( udp )
+        udp->setLoopback(state);
 }
 // -------------------------------------------------------------------------
 bool MulticastSendTransport::createConnection( bool throwEx, timeout_t sendTimeout )
