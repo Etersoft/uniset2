@@ -62,6 +62,10 @@ namespace uniset
                 Poco::Net::MulticastSocket(Poco::Net::IPAddress::IPv4)
         {}
 
+        MulticastSocketU( int port ):
+               Poco::Net::MulticastSocket(Poco::Net::SocketAddress(Poco::Net::IPAddress(), port), true)
+        {}
+
         MulticastSocketU( const std::string& bind, int port ):
                 Poco::Net::MulticastSocket(Poco::Net::SocketAddress(bind, port), true)
         {}

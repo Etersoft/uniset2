@@ -30,6 +30,7 @@ static struct option longopts[] =
     { "a-data", required_argument, 0, 'a' },
     { "d-data", required_argument, 0, 'i' },
     { "group", required_argument, 0, 'g' },
+    { "loopback", no_argument, 0, 'b' },
     { NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -80,10 +81,11 @@ int main(int argc, char* argv[])
     std::string d_data = "";
     std::string a_data = "";
     std::vector<Poco::Net::IPAddress> groups;
+    bool loopback = false;
 
     while(1)
     {
-        opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blvdz:y:a:i:g:", longopts, &optindex);
+        opt = getopt_long(argc, argv, "hbs:c:r:p:n:t:x:blvdz:y:a:i:g:", longopts, &optindex);
 
         if( opt == -1 )
             break;
@@ -96,6 +98,7 @@ int main(int argc, char* argv[])
                 cout << "[-c|--data-count] num     - Send num count of value. Default: 50." << endl;
                 cout << "[-r|--receive] host:port  - Receive message." << endl;
                 cout << "[-g|--group] ip           - Multicast group address (can be specified many times)" << endl;
+                cout << "[-b|--loopback]           - Enable multicast loopback." << endl;
                 cout << "[-p|--proc-id] id         - Set packet header. From 'procID'. Default: 1" << endl;
                 cout << "[-n|--node-id] id         - Set packet header. From 'nodeID'. Default: 1" << endl;
                 cout << "[-t|--timeout] msec       - timeout for receive. Default: 0 msec (waitup)." << endl;
@@ -130,6 +133,10 @@ int main(int argc, char* argv[])
 
             case 't':
                 tout = atoi(optarg);
+                break;
+
+            case 'b':
+                loopback = true;
                 break;
 
             case 'x':
@@ -229,6 +236,14 @@ int main(int argc, char* argv[])
                 MulticastReceiveTransport udp(s_host, port, groups);
 
                 udp.createConnection(true, 500, true);
+
+                if( loopback )
+                    udp.setLoopBack(true);
+
+                msleep(5000);
+                udp.disconnect();
+                return 0;
+
 
                 UniSetUDP::UDPMessage pack;
                 UniSetUDP::UDPPacket buf;

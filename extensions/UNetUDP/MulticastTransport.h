@@ -45,6 +45,7 @@ namespace uniset
             virtual void disconnect() override;
             virtual int getSocket() const override;
             std::vector<Poco::Net::IPAddress> getGroups();
+            void setLoopBack( bool state );
 
             bool isReadyForReceive( timeout_t tout ) override;
             virtual ssize_t receive(void* r_buf, size_t sz) override;
@@ -78,6 +79,7 @@ namespace uniset
             virtual ssize_t send(const void* buf, size_t sz) override;
 
             void setTimeToLive( int ttl );
+            void setLoopBack( bool state );
 
         protected:
             std::unique_ptr <MulticastSocketU> udp;
