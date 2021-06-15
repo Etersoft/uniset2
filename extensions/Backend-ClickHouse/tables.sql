@@ -1,0 +1,1 @@
+testsuite/docker-entrypoint-initdb.d/tables.sql
