@@ -31,6 +31,7 @@ static struct option longopts[] =
     { "d-data", required_argument, 0, 'i' },
     { "group", required_argument, 0, 'g' },
     { "loopback", no_argument, 0, 'b' },
+    { "iface", required_argument, 0, 'f' },
     { NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -82,10 +83,11 @@ int main(int argc, char* argv[])
     std::string a_data = "";
     std::vector<Poco::Net::IPAddress> groups;
     bool loopback = false;
+    std::string iface = "";
 
     while(1)
     {
-        opt = getopt_long(argc, argv, "hbs:c:r:p:n:t:x:blvdz:y:a:i:g:", longopts, &optindex);
+        opt = getopt_long(argc, argv, "hbs:c:r:p:n:t:x:blvdz:y:a:i:g:f:", longopts, &optindex);
 
         if( opt == -1 )
             break;
@@ -98,6 +100,7 @@ int main(int argc, char* argv[])
                 cout << "[-c|--data-count] num     - Send num count of value. Default: 50." << endl;
                 cout << "[-r|--receive] host:port  - Receive message." << endl;
                 cout << "[-g|--group] ip           - Multicast group address (can be specified many times)" << endl;
+                cout << "[-f|--iface] ip           - Multicast interface" << endl;
                 cout << "[-b|--loopback]           - Enable multicast loopback." << endl;
                 cout << "[-p|--proc-id] id         - Set packet header. From 'procID'. Default: 1" << endl;
                 cout << "[-n|--node-id] id         - Set packet header. From 'nodeID'. Default: 1" << endl;
@@ -159,9 +162,23 @@ int main(int argc, char* argv[])
                 nodeID = atoi(optarg);
                 break;
 
-            case 'g':
-                groups.emplace_back(Poco::Net::IPAddress(optarg));
+            case 'f':
+                iface = string(optarg);
                 break;
+
+            case 'g':
+            {
+                Poco::Net::IPAddress a(optarg);
+
+                if( !a.isMulticast() )
+                {
+                    cerr << "Group address " << optarg << " is not multicast!" << endl;
+                    return 1;
+                }
+
+                groups.emplace_back(a);
+            }
+            break;
 
             case 'd':
                 show = true;
@@ -211,8 +228,12 @@ int main(int argc, char* argv[])
         if( verb )
         {
             cout << " host=" << s_host
-                 << " port=" << port
-                 << " timeout=";
+                 << " port=" << port;
+
+            if( !iface.empty() )
+                cout << " iface=" << iface << endl;
+
+            cout << " timeout=";
 
             if( tout == UniSetTimer::WaitUpTime )
                 cout << "Waitup";
@@ -233,17 +254,12 @@ int main(int argc, char* argv[])
         {
             case cmdReceive:
             {
-                MulticastReceiveTransport udp(s_host, port, groups);
+                MulticastReceiveTransport udp(s_host, port, groups, iface);
 
                 udp.createConnection(true, 500, true);
 
                 if( loopback )
                     udp.setLoopBack(true);
-
-                msleep(5000);
-                udp.disconnect();
-                return 0;
-
 
                 UniSetUDP::UDPMessage pack;
                 UniSetUDP::UDPPacket buf;
@@ -332,7 +348,14 @@ int main(int argc, char* argv[])
 
             case cmdSend:
             {
-                auto udp = std::make_shared<MulticastSendTransport>(s_host, port, groups);
+                if( groups.empty() )
+                {
+                    cerr << "(send): Unknown multicast group address for send ..." << endl;
+                    return 1;
+                }
+
+                // supporte only first group address
+                auto udp = std::make_shared<MulticastSendTransport>(s_host, port, groups[0].toString(), port);
 
                 UniSetUDP::UDPMessage mypack;
                 mypack.nodeID = nodeID;
