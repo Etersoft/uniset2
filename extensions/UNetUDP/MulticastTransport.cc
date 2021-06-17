@@ -50,13 +50,10 @@ xmlNode* MulticastReceiveTransport::getReceiveListNode( UniXML::iterator root )
                     <receive>
                         <group addr="224.0.0.1" addr2="224.0.0.1"/>
                     </receive>
-                    <send>
-                        <group addr="224.0.0.1"/>
-                    </send>
                 </multicast>
             </item>
  */
-std::unique_ptr<MulticastReceiveTransport> MulticastReceiveTransport::createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan, const std::string& section )
+std::unique_ptr<MulticastReceiveTransport> MulticastReceiveTransport::createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan, const std::string& defIface, const std::string& section )
 {
     ostringstream fieldIp;
     fieldIp << "unet_multicast_ip";
@@ -115,13 +112,16 @@ std::unique_ptr<MulticastReceiveTransport> MulticastReceiveTransport::createFrom
         groups.push_back(a);
     }
 
-    return unisetstd::make_unique<MulticastReceiveTransport>(h, p, std::move(groups));
+    return unisetstd::make_unique<MulticastReceiveTransport>(h, p, std::move(groups), defIface);
 }
 // -------------------------------------------------------------------------
-MulticastReceiveTransport::MulticastReceiveTransport( const std::string& _bind, int _port, const std::vector<Poco::Net::IPAddress>& _joinGroups ):
+MulticastReceiveTransport::MulticastReceiveTransport( const std::string& _bind, int _port,
+        const std::vector<Poco::Net::IPAddress>& _joinGroups,
+        const std::string& _iface ):
     host(_bind),
     port(_port),
-    groups(_joinGroups)
+    groups(_joinGroups),
+    ifaceaddr(_iface)
 {
 
 }
@@ -180,11 +180,23 @@ bool MulticastReceiveTransport::createConnection( bool throwEx, timeout_t readTi
 {
     try
     {
+        Poco::Net::NetworkInterface iface;
+        iface.addAddress(Poco::Net::IPAddress()); // INADDR_ANY
+
+        if( !ifaceaddr.empty() )
+            iface = Poco::Net::NetworkInterface::forAddress(Poco::Net::IPAddress(ifaceaddr));
+
         udp = unisetstd::make_unique<MulticastSocketU>(host, port);
         udp->setBlocking(!noblock);
 
         for( const auto& s : groups )
-            udp->joinGroup(s);
+            udp->joinGroup(s, iface);
+    }
+    catch( const Poco::Net::InterfaceNotFoundException& ex )
+    {
+        ostringstream err;
+        err << "(MulticastReceiveTransport): Not found interface for address " << ifaceaddr;
+        throw uniset::SystemError(err.str());
     }
     catch( const std::exception& e )
     {
@@ -292,28 +304,41 @@ std::unique_ptr<MulticastSendTransport> MulticastSendTransport::createFromXml( U
     if( numChan > 0 )
         fieldAddr << numChan;
 
-    std::vector<Poco::Net::IPAddress> groups;
+    ostringstream fieldGroupPort;
+    fieldGroupPort << "port";
+
+    if( numChan > 0 )
+        fieldGroupPort << numChan;
+
+    string groupAddr;
+    int groupPort = p;
+
+    int gnum = 0;
 
     for( ; it; it++ )
     {
-        Poco::Net::IPAddress a(it.getProp(fieldAddr.str()), Poco::Net::IPAddress::IPv4);
+        groupAddr = it.getProp(fieldAddr.str());
 
-        if( !a.isMulticast() )
-        {
-            ostringstream err;
-            err << "(MulticastSendTransport): " << it.getProp(fieldAddr.str()) << " is not multicast address";
-            throw SystemError(err.str());
-        }
+        if( groupAddr.empty() )
+            throw SystemError("(MulticastSendTransport): unknown group address for send");
 
-        groups.push_back(a);
+        groupPort = it.getPIntProp(fieldGroupPort.str(), p);
+
+        if( groupPort <= 0 )
+            throw SystemError("(MulticastSendTransport): unknown group port for send");
+
+        gnum++;
     }
 
-    return unisetstd::make_unique<MulticastSendTransport>(h, p, std::move(groups), ttl);
+    if( gnum > 1)
+        throw SystemError("(MulticastSendTransport): size list <groups> " + std::to_string(gnum) + " > 1. Currently only ONE multicast group is supported to send");
+
+    return unisetstd::make_unique<MulticastSendTransport>(h, p, groupAddr, groupPort, ttl);
 }
 // -------------------------------------------------------------------------
-MulticastSendTransport::MulticastSendTransport( const std::string& _host, int _port, const std::vector<Poco::Net::IPAddress>& _sendGroups, int _ttl ):
-    saddr(_host, _port),
-    groups(_sendGroups),
+MulticastSendTransport::MulticastSendTransport( const std::string& _host, int _port, const std::string& grHost, int grPort, int _ttl ):
+    sockAddr(_host, _port),
+    toAddr(grHost, grPort),
     ttl(_ttl)
 {
 
@@ -323,20 +348,17 @@ MulticastSendTransport::~MulticastSendTransport()
 {
     if( udp )
     {
-        for (const auto& s : groups)
+        try
         {
-            try
-            {
-                udp->leaveGroup(s);
-            }
-            catch (...) {}
+            udp->close();
         }
+        catch (...) {}
     }
 }
 // -------------------------------------------------------------------------
 std::string MulticastSendTransport::toString() const
 {
-    return saddr.toString();
+    return sockAddr.toString();
 }
 // -------------------------------------------------------------------------
 bool MulticastSendTransport::isConnected() const
@@ -362,11 +384,7 @@ bool MulticastSendTransport::createConnection( bool throwEx, timeout_t sendTimeo
 {
     try
     {
-        udp = unisetstd::make_unique<MulticastSocketU>();
-
-        for( const auto& s : groups )
-            udp->joinGroup(s);
-
+        udp = unisetstd::make_unique<MulticastSocketU>(sockAddr);
         udp->setSendTimeout( UniSetTimer::millisecToPoco(sendTimeout) );
         udp->setTimeToLive(ttl);
     }
@@ -374,7 +392,7 @@ bool MulticastSendTransport::createConnection( bool throwEx, timeout_t sendTimeo
     {
         udp = nullptr;
         ostringstream s;
-        s << saddr.toString() << "(createConnection): " << e.what();
+        s << sockAddr.toString() << "(createConnection): " << e.what();
 
         if( throwEx )
             throw uniset::SystemError(s.str());
@@ -383,7 +401,7 @@ bool MulticastSendTransport::createConnection( bool throwEx, timeout_t sendTimeo
     {
         udp = nullptr;
         ostringstream s;
-        s << saddr.toString() << "(createConnection): catch...";
+        s << sockAddr.toString() << "(createConnection): catch...";
 
         if( throwEx )
             throw uniset::SystemError(s.str());
@@ -404,10 +422,12 @@ bool MulticastSendTransport::isReadyForSend( timeout_t tout )
 // -------------------------------------------------------------------------
 ssize_t MulticastSendTransport::send( const void* buf, size_t sz )
 {
-    return udp->sendTo(buf, sz, saddr);
+    return udp->sendTo(buf, sz, toAddr);
 }
 // -------------------------------------------------------------------------
-std::vector<Poco::Net::IPAddress> MulticastSendTransport::getGroups()
+Poco::Net::SocketAddress MulticastSendTransport::getGroupAddress()
 {
-    return groups;
+    return toAddr;
 }
+// -------------------------------------------------------------------------
+

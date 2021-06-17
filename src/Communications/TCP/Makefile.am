@@ -1,5 +1,5 @@
 ############################################################################
-# This file is part of the UniSet library								  #
+# This file is part of the UniSet library                                  #
 ############################################################################
 noinst_LTLIBRARIES 	= libTCP.la
 libTCP_la_SOURCES	= UTCPCore.cc UTCPStream.cc USocket.cc UTCPSocket.cc TCPCheck.cc

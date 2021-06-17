@@ -214,7 +214,7 @@
 	priority 	- приоритет сообщения об изменении данного датчика
 	textname 	- текстовое имя датчика
 -->
-		<nodes port="2809" unet_broadcast_ip="127.255.255.255" unet_broadcast_ip2="192.168.56.255" unet_transport="multicast">
+		<nodes port="2809" unet_broadcast_ip="127.255.255.255" unet_broadcast_ip2="192.168.56.255" unet_transport="multicast" unet_multicast_ip="0.0.0.0">
 			<item id="3000" dbserver="DBServer1" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="0" unet_port="2048">
 				<iocards>
 					<item card="1" name="DI32"/>

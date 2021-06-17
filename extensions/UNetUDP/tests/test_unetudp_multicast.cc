@@ -47,22 +47,22 @@ static void initHelpers()
 
     if( !udp_r )
     {
-        //      udp_r = MulticastReceiveTransport::createFromXml(it, "127.0.0.1", 0, "send");
         std::vector<Poco::Net::IPAddress> groups;
-        groups.emplace_back("238.255.1.1");
-        udp_r = make_unique<MulticastReceiveTransport>("127.0.0.1", 3000, groups);
-        REQUIRE( udp_r->toString() == "127.0.0.1:3000" );
+        groups.emplace_back("224.0.0.1");
+        udp_r = make_unique<MulticastReceiveTransport>("0.0.0.0", 3000, groups, "127.0.0.1");
+        REQUIRE( udp_r->toString() == "0.0.0.0:3000" );
         REQUIRE( udp_r->createConnection(false, 5000, true) );
+        // pause for igmp message
+        msleep(3000);
     }
 
     if( !udp_s )
     {
-        //      udp_s = MulticastSendTransport::createFromXml(it, "127.0.0.1", 0);
-        std::vector<Poco::Net::IPAddress> groups;
-        groups.emplace_back("238.255.1.2");
-        udp_s = make_unique<MulticastSendTransport>("127.0.0.1", 3002, groups);
+        udp_s = make_unique<MulticastSendTransport>("127.0.0.1", 3002, "224.0.0.1", 3002);
         REQUIRE( udp_s->toString() == "127.0.0.1:3002" );
         REQUIRE( udp_s->createConnection(false, 5000) );
+        // pause for igmp message
+        msleep(3000);
     }
 }
 // -----------------------------------------------------------------------------

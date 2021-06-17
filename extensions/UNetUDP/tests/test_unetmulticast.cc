@@ -47,12 +47,13 @@ TEST_CASE("[UNetUDP]: multicast transport", "[unetudp][multicast][transport]")
     REQUIRE( it.getName() == "item" );
     REQUIRE( it.getProp("name") == "localhost" );
 
-    auto t1 = MulticastReceiveTransport::createFromXml(it, "127.0.0.1", 0 );
-    REQUIRE( t1->toString() == "127.0.0.1:3000" );
+    auto t1 = MulticastReceiveTransport::createFromXml(it, "0.0.0.0", 0 );
+    REQUIRE( t1->toString() == "0.0.0.0:3000" );
     REQUIRE( t1->createConnection(false, 5000, true) );
 
     auto t2 = MulticastSendTransport::createFromXml(it, "127.0.0.1", 0 );
     REQUIRE( t2->toString() == "127.0.0.1:3000" );
+    REQUIRE( t2->getGroupAddress() == Poco::Net::SocketAddress("224.0.0.1", 3000) );
     REQUIRE( t2->createConnection(false, 5000) );
 
     string msg = "hello world";

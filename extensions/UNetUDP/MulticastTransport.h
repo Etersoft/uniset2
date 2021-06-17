@@ -31,10 +31,10 @@ namespace uniset
     {
         public:
 
-            static std::unique_ptr<MulticastReceiveTransport> createFromXml(UniXML::iterator it, const std::string& defaultIP, int numChan, const std::string& section = "receive");
+            static std::unique_ptr<MulticastReceiveTransport> createFromXml(UniXML::iterator it, const std::string& defaultIP, int numChan, const std::string& defIface = "", const std::string& section = "receive");
             static xmlNode* getReceiveListNode( UniXML::iterator root );
 
-            MulticastReceiveTransport( const std::string& bind, int port, const std::vector<Poco::Net::IPAddress>& joinGroups );
+            MulticastReceiveTransport( const std::string& bind, int port, const std::vector<Poco::Net::IPAddress>& joinGroups, const std::string& iface = "" );
             virtual ~MulticastReceiveTransport();
 
             virtual bool isConnected() const override;
@@ -55,6 +55,7 @@ namespace uniset
             const std::string host;
             const int port;
             const std::vector<Poco::Net::IPAddress> groups;
+            const std::string ifaceaddr;
     };
 
     class MulticastSendTransport:
@@ -64,7 +65,7 @@ namespace uniset
 
             static std::unique_ptr<MulticastSendTransport> createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan );
 
-            MulticastSendTransport(const std::string& host, int port, const std::vector<Poco::Net::IPAddress>& sendGroups, int ttl = 1 );
+            MulticastSendTransport(const std::string& sockHost, int sockPort, const std::string& groupHost, int groupPort, int ttl = 1 );
             virtual ~MulticastSendTransport();
 
             virtual bool isConnected() const override;
@@ -72,7 +73,7 @@ namespace uniset
 
             virtual bool createConnection(bool throwEx, timeout_t sendTimeout) override;
             virtual int getSocket() const override;
-            std::vector<Poco::Net::IPAddress> getGroups();
+            Poco::Net::SocketAddress getGroupAddress();
 
             // write
             virtual bool isReadyForSend(timeout_t tout) override;
@@ -83,8 +84,8 @@ namespace uniset
 
         protected:
             std::unique_ptr <MulticastSocketU> udp;
-            const Poco::Net::SocketAddress saddr;
-            const std::vector<Poco::Net::IPAddress> groups;
+            const Poco::Net::SocketAddress sockAddr;
+            const Poco::Net::SocketAddress toAddr;
             int ttl; // ttl for packets
     };
 
