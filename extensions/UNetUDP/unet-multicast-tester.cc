@@ -354,6 +354,13 @@ int main(int argc, char* argv[])
                     return 1;
                 }
 
+                if( verb )
+                {
+                    cout << "(send): ip=" << s_host << ":" << port
+                         << " group=" <<  groups[0].toString() << ":" << port
+                         << endl;
+                }
+
                 // supporte only first group address
                 auto udp = std::make_shared<MulticastSendTransport>(s_host, port, groups[0].toString(), port);
 

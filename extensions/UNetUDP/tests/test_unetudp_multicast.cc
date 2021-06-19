@@ -49,8 +49,8 @@ static void initHelpers()
     {
         std::vector<Poco::Net::IPAddress> groups;
         groups.emplace_back("224.0.0.1");
-        udp_r = make_unique<MulticastReceiveTransport>("0.0.0.0", 3000, groups, "127.0.0.1");
-        REQUIRE( udp_r->toString() == "0.0.0.0:3000" );
+        udp_r = make_unique<MulticastReceiveTransport>("224.0.0.1", 3000, groups, "");
+        REQUIRE( udp_r->toString() == "224.0.0.1:3000" );
         REQUIRE( udp_r->createConnection(false, 5000, true) );
         // pause for igmp message
         msleep(3000);
@@ -58,8 +58,8 @@ static void initHelpers()
 
     if( !udp_s )
     {
-        udp_s = make_unique<MulticastSendTransport>("127.0.0.1", 3002, "224.0.0.1", 3002);
-        REQUIRE( udp_s->toString() == "127.0.0.1:3002" );
+        udp_s = make_unique<MulticastSendTransport>("0.0.0.0", 3002, "224.0.0.2", 3002);
+        REQUIRE( udp_s->toString() == "0.0.0.0:3002" );
         REQUIRE( udp_s->createConnection(false, 5000) );
         // pause for igmp message
         msleep(3000);

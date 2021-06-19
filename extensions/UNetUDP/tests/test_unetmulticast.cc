@@ -24,16 +24,16 @@ TEST_CASE("[UNetUDP]: multicast setup", "[unetudp][multicast][config]")
     REQUIRE( it.getName() == "item" );
     REQUIRE( it.getProp("name") == "localhost" );
 
-    REQUIRE_NOTHROW( MulticastReceiveTransport::createFromXml(it, "192.168.0.1", 0 ) );
-    REQUIRE_NOTHROW( MulticastReceiveTransport::createFromXml(it, "192.168.1.1", 2 ) );
-    REQUIRE_NOTHROW( MulticastSendTransport::createFromXml(it, "192.168.0.1", 0 ) );
-    REQUIRE_NOTHROW( MulticastSendTransport::createFromXml(it, "192.168.1.1", 2 ) );
+    REQUIRE_NOTHROW( MulticastReceiveTransport::createFromXml(it, 0 ) );
+    REQUIRE_NOTHROW( MulticastReceiveTransport::createFromXml(it, 2 ) );
+    REQUIRE_NOTHROW( MulticastSendTransport::createFromXml(it, 0 ) );
+    REQUIRE_NOTHROW( MulticastSendTransport::createFromXml(it, 2 ) );
 
-    auto t1 = MulticastReceiveTransport::createFromXml(it, "192.168.1.1", 2 );
-    REQUIRE( t1->toString() == "127.0.1.1:2999" );
+    auto t1 = MulticastReceiveTransport::createFromXml(it, 2);
+    REQUIRE( t1->toString() == "225.0.0.1:3030" );
 
-    auto t2 = MulticastSendTransport::createFromXml(it, "192.168.1.1", 2 );
-    REQUIRE( t2->toString() == "127.0.1.1:2999" );
+    auto t2 = MulticastSendTransport::createFromXml(it, 2);
+    REQUIRE( t2->toString() == "0.0.0.0:3030" );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[UNetUDP]: multicast transport", "[unetudp][multicast][transport]")
@@ -47,12 +47,12 @@ TEST_CASE("[UNetUDP]: multicast transport", "[unetudp][multicast][transport]")
     REQUIRE( it.getName() == "item" );
     REQUIRE( it.getProp("name") == "localhost" );
 
-    auto t1 = MulticastReceiveTransport::createFromXml(it, "0.0.0.0", 0 );
-    REQUIRE( t1->toString() == "0.0.0.0:3000" );
+    auto t1 = MulticastReceiveTransport::createFromXml(it, 0 );
+    REQUIRE( t1->toString() == "224.0.0.1:3000" );
     REQUIRE( t1->createConnection(false, 5000, true) );
 
-    auto t2 = MulticastSendTransport::createFromXml(it, "127.0.0.1", 0 );
-    REQUIRE( t2->toString() == "127.0.0.1:3000" );
+    auto t2 = MulticastSendTransport::createFromXml(it, 0 );
+    REQUIRE( t2->toString() == "0.0.0.0:3000" );
     REQUIRE( t2->getGroupAddress() == Poco::Net::SocketAddress("224.0.0.1", 3000) );
     REQUIRE( t2->createConnection(false, 5000) );
 

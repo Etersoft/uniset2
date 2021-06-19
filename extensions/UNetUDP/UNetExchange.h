@@ -101,50 +101,38 @@ namespace uniset
      --prefix-nodes-confnode name. По умолчанию настройка ведётся по секции <nodes>
 
     \section pgUNetUDP_ConfMulticast Пример конфигурирования (Multicast)
-    По умолчанию при считывании используется \b unet_multicast_ip (указанный в секции \<nodes>)
-    и \b id узла - в качестве порта.
+    По умолчанию при считывании используется \b unet_multicast_ip и \b id узла - в качестве порта.
     Но можно переопределиять эти параметры, при помощи указания \b unet_multicast_port и/или \b unet_multicast_ip,
     у конкретного узла (\<item>).
-    Группы для подписки описываются в специальной секции \b \<multicast>. Секция \b \<recevive> описывает группы на которые
-    подписывается узел. Секция \b \<send> описывает в какие группы данный узел будет посылать сообщения.
+    При этом в параметре unet_multicast_ip должен быть задан адрес multicast-групы на которую будет
+    подписываться каждый receiver и в которую будет писать соответствующий sender.
+    По умолчанию для подключения к группе используется интерфейс ANY, но параметром
+    unet_multicast_iface="192.168.1.1" можно задать интерфейс через который ожидаются multicast-пакеты.
 
-    Секция \b \<receive> не является обязательной и если узел должен слушать все другие узлы, то достаточно у узла
-    прописать свойство \b unet_multicast_receive_from_all_nodes="1". При этом узел подпишется
-    на все группы указанные в секции \b \<send>(!) других узлов, секция \<receive> при этом игнорируется.
-    Если свойство \b unet_multicast_receive_from_all_nodes="0" или не указано и создана пустая секция \b \<receive/>,
-    то узел \b не будет слушать и получать сообщения.
+    Для посылающего процесса можно определить параметр \b unet_multicast_ttl задающий время жизни multicast пакетов.
+    По умолчанию ttl=1. А так же определить ip для сокета параметром \b unet_multicast_sender_ip. По умолчанию "0.0.0.0".
 
-    В секции \b \<nodes param1 param2 ...> можно задавать умолчательный адрес \b unet_multicast_default_ip1=".." и \b unet_multicast_default_ip2="..".
-    Помимо этого можно определить умолчательный интерфейс на котором происходит подключение к группам
-    \b unet_multicast_default_iface1=".." и \b unet_multicast_default_iface2="..".
-
-    \warning В текущей реализации поддерживается только одна <send><group .../></send>!
-
+    В данной реализации поддерживается работа в два канала. Соответствующие настройки для второго канала имеют индекс "2".
+    unet_multicast_ip2, unet_multicast_port2, unet_multicast_iface2
 
     \code
     <nodes port="2809" unet_broadcast_ip="192.168.56.255">
-      <item ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="1" unet_multicast_port="3000" unet_multicast_ip="192.168.57.255">
+      <item ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="10">
         <iocards>
           ...
         </iocards>
       </item>
-      <item ip="192.168.56.10" name="Node1" textname="Node1" unet_multicast_port="3001" unet_update_strategy="evloop"
-            unet_multicast_receive_from_all_nodes="1">
-            <multicast>
-                <send>
-                    <group addr="239.255.1.1" addr2="239.255.2.1"/>
-                </send>
-            </multicast>
+      <item id="3001" ip="192.168.56.10" name="Node1" textname="Node1" unet_update_strategy="evloop"
+            unet_multicast_ip="224.0.0.1"
+            unet_multicast_port2="3031"
+            unet_multicast_ip2="225.0.0.1">
+        ...
       </item>
-      <item ip="192.168.56.11" name="Node2" textname="Node2" unet_multicast_port="3002">
-            <multicast>
-                <receive>
-                    <group addr="239.255.1.1" addr2="239.255.2.1"/>
-                </receive>
-                <send>
-                    <group addr="239.255.1.1" addr2="239.255.2.1"/>
-                </send>
-            </multicast>
+      <item id="3002" ip="192.168.56.11" name="Node2" textname="Node2">
+            unet_multicast_ip="224.0.0.2"
+            unet_multicast_port2="3032"
+            unet_multicast_ip2="225.0.0.2">
+        ...
       </item>
     </nodes>
     \endcode
@@ -255,13 +243,7 @@ namespace uniset
             void termReceivers();
 
             void initMulticastTransport( UniXML::iterator nodes, const std::string& n_field, const std::string& n_fvalue, const std::string& prefix );
-            void initMulticastReceiverForNode( UniXML::iterator n_it,
-                                               const std::string& default_ip1,
-                                               const std::string& default_ip2,
-                                               const std::string& default_iface1,
-                                               const std::string& default_iface2,
-                                               const std::string& section,
-                                               const std::string& prefix);
+            void initMulticastReceiverForNode( UniXML::iterator n_it, const std::string& prefix );
 
             void initUDPTransport(UniXML::iterator nodes, const std::string& n_field, const std::string& n_fvalue, const std::string& prefix);
             void initIterators() noexcept;

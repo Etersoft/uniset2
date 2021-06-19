@@ -45,15 +45,17 @@ xmlNode* MulticastReceiveTransport::getReceiveListNode( UniXML::iterator root )
 }
 // -------------------------------------------------------------------------
 /*
- *          <item id="3000" unet_port="2048" unet_multicast_ip="192.168.0.255" unet_port2="2048" unet_multicast_ip2="192.169.0.255">
-                <multicast>
-                    <receive>
-                        <group addr="224.0.0.1" addr2="224.0.0.1"/>
-                    </receive>
-                </multicast>
-            </item>
+ * <item id="3000"
+ *    unet_multicast_port="2048"
+ *    unet_multicast_ip="224.0.0.1"
+ *    unet_multicast_iface="192.168.1.1"
+ *    unet_multicast_port2="2049"
+ *    unet_multicast_ip2="225.0.0.1"
+ *    unet_multicast_iface2="192.169.1.1"
+ *    >
+ *    </item>
  */
-std::unique_ptr<MulticastReceiveTransport> MulticastReceiveTransport::createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan, const std::string& defIface, const std::string& section )
+std::unique_ptr<MulticastReceiveTransport> MulticastReceiveTransport::createFromXml( UniXML::iterator it, int numChan )
 {
     ostringstream fieldIp;
     fieldIp << "unet_multicast_ip";
@@ -61,7 +63,7 @@ std::unique_ptr<MulticastReceiveTransport> MulticastReceiveTransport::createFrom
     if( numChan > 0 )
         fieldIp << numChan;
 
-    const string h = it.getProp2(fieldIp.str(), defaultIP);
+    const string h = it.getProp(fieldIp.str());
 
     if( h.empty() )
     {
@@ -78,41 +80,25 @@ std::unique_ptr<MulticastReceiveTransport> MulticastReceiveTransport::createFrom
 
     int p = it.getPIntProp(fieldPort.str(), it.getIntProp("id"));
 
-    if( !it.find("multicast") )
-        throw SystemError("(MulticastReceiveTransport): not found <multicast> node");
-
-    if( !it.goChildren() )
-        throw SystemError("(MulticastReceiveTransport): empty <multicast> node");
-
-    if( !it.find(section) )
-        throw SystemError("(MulticastReceiveTransport): not found <" + section + "> in <multicast>");
-
-    if( !it.goChildren() )
-        throw SystemError("(MulticastReceiveTransport): empty <" + section + "> groups");
-
-    std::vector<Poco::Net::IPAddress> groups;
-
-    ostringstream fieldAddr;
-    fieldAddr << "addr";
+    ostringstream ifaceField;
+    ifaceField << "unet_multicast_iface";
 
     if( numChan > 0 )
-        fieldAddr << numChan;
+        ifaceField << numChan;
 
-    for( ; it; it++ )
+    const string iface = it.getProp(ifaceField.str());
+
+    Poco::Net::IPAddress a(h);
+
+    if( !a.isMulticast() && !a.isWildcard() )
     {
-        Poco::Net::IPAddress a(it.getProp(fieldAddr.str()), Poco::Net::IPAddress::IPv4);
-
-        if( !a.isMulticast() )
-        {
-            ostringstream err;
-            err << "(MulticastReceiveTransport): " << it.getProp(fieldAddr.str()) << " is not multicast address";
-            throw SystemError(err.str());
-        }
-
-        groups.push_back(a);
+        ostringstream err;
+        err << "(MulticastReceiveTransport): " << h << " is not multicast address or 0.0.0.0";
+        throw SystemError(err.str());
     }
 
-    return unisetstd::make_unique<MulticastReceiveTransport>(h, p, std::move(groups), defIface);
+    std::vector<Poco::Net::IPAddress> groups{a};
+    return unisetstd::make_unique<MulticastReceiveTransport>(h, p, std::move(groups), iface);
 }
 // -------------------------------------------------------------------------
 MulticastReceiveTransport::MulticastReceiveTransport( const std::string& _bind, int _port,
@@ -194,27 +180,34 @@ bool MulticastReceiveTransport::createConnection( bool throwEx, timeout_t readTi
     }
     catch( const Poco::Net::InterfaceNotFoundException& ex )
     {
-        ostringstream err;
-        err << "(MulticastReceiveTransport): Not found interface for address " << ifaceaddr;
-        throw uniset::SystemError(err.str());
+        if( throwEx )
+        {
+            ostringstream err;
+            err << "(MulticastReceiveTransport): Not found interface for address " << ifaceaddr;
+            throw uniset::SystemError(err.str());
+        }
     }
     catch( const std::exception& e )
     {
         udp = nullptr;
-        ostringstream s;
-        s << host << ":" << port << "(createConnection): " << e.what();
 
         if( throwEx )
+        {
+            ostringstream s;
+            s << host << ":" << port << "(createConnection): " << e.what();
             throw uniset::SystemError(s.str());
+        }
     }
     catch( ... )
     {
         udp = nullptr;
-        ostringstream s;
-        s << host << ":" << port << "(createConnection): catch...";
 
         if( throwEx )
+        {
+            ostringstream s;
+            s << host << ":" << port << "(createConnection): catch...";
             throw uniset::SystemError(s.str());
+        }
     }
 
     return ( udp != nullptr );
@@ -245,21 +238,21 @@ void MulticastReceiveTransport::setLoopBack( bool state )
     if( udp )
         udp->setLoopback(state);
 }
-
+// -------------------------------------------------------------------------
+std::string MulticastReceiveTransport::iface() const
+{
+    return ifaceaddr;
+}
 // -------------------------------------------------------------------------
 /*
- *          <item id="3000" unet_port="2048" unet_multicast_ip="192.168.0.255" unet_port2="2048" unet_multicast_ip2="192.169.0.255">
-                <multicast>
-                    <receive>
-                        <group addr="224.0.0.1" addr2="224.0.0.1"/>
-                    </receive>
-                    <send>
-                        <group addr="224.0.0.1"/>
-                    </send>
-                </multicast>
-            </item>
+ * <item id="3000"
+ *    unet_multicast_port="2048"
+ *    unet_multicast_ip="224.0.0.1"
+ *    unet_multicast_port2="2049"
+ *    unet_multicast_ip2="225.0.0.1"
+ *    unet_multicast_ttl="3"/>
  */
-std::unique_ptr<MulticastSendTransport> MulticastSendTransport::createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan )
+std::unique_ptr<MulticastSendTransport> MulticastSendTransport::createFromXml( UniXML::iterator it, int numChan )
 {
     ostringstream fieldIp;
     fieldIp << "unet_multicast_ip";
@@ -267,13 +260,22 @@ std::unique_ptr<MulticastSendTransport> MulticastSendTransport::createFromXml( U
     if( numChan > 0 )
         fieldIp << numChan;
 
-    const string h = it.getProp2(fieldIp.str(), defaultIP);
+    const string h = it.getProp(fieldIp.str());
 
     if( h.empty() )
     {
         ostringstream err;
-        err << "(MulticastSendTransport): Unknown multicast IP for " << it.getProp("name");
+        err << "(MulticastSendTransport): Undefined " << fieldIp.str() << " for " << it.getProp("name");
         throw uniset::SystemError(err.str());
+    }
+
+    Poco::Net::IPAddress a(h);
+
+    if( !a.isMulticast() )
+    {
+        ostringstream err;
+        err << "(MulticastSendTransport): " << h << " is not multicast";
+        throw SystemError(err.str());
     }
 
     ostringstream fieldPort;
@@ -284,56 +286,23 @@ std::unique_ptr<MulticastSendTransport> MulticastSendTransport::createFromXml( U
 
     int p = it.getPIntProp(fieldPort.str(), it.getIntProp("id"));
 
-    if( !it.find("multicast") )
-        throw SystemError("(MulticastSendTransport): not found <multicast> node");
-
-    if( !it.goChildren() )
-        throw SystemError("(MulticastSendTransport): empty <multicast> node");
-
-    if( !it.find("send") )
-        throw SystemError("(MulticastSendTransport): not found <send> node");
-
-    int ttl = it.getPIntProp("ttl", 1);
-
-    if( !it.goChildren() )
-        throw SystemError("(MulticastSendTransport): empty <send> groups");
-
-    ostringstream fieldAddr;
-    fieldAddr << "addr";
-
-    if( numChan > 0 )
-        fieldAddr << numChan;
-
-    ostringstream fieldGroupPort;
-    fieldGroupPort << "port";
-
-    if( numChan > 0 )
-        fieldGroupPort << numChan;
-
-    string groupAddr;
-    int groupPort = p;
-
-    int gnum = 0;
-
-    for( ; it; it++ )
+    if( p <= 0 )
     {
-        groupAddr = it.getProp(fieldAddr.str());
-
-        if( groupAddr.empty() )
-            throw SystemError("(MulticastSendTransport): unknown group address for send");
-
-        groupPort = it.getPIntProp(fieldGroupPort.str(), p);
-
-        if( groupPort <= 0 )
-            throw SystemError("(MulticastSendTransport): unknown group port for send");
-
-        gnum++;
+        ostringstream err;
+        err << "(MulticastSendTransport): Undefined " << fieldPort.str() << " for " << it.getProp("name");
+        throw SystemError(err.str());
     }
 
-    if( gnum > 1)
-        throw SystemError("(MulticastSendTransport): size list <groups> " + std::to_string(gnum) + " > 1. Currently only ONE multicast group is supported to send");
+    ostringstream ipField;
+    ipField << "unet_multicast_sender_ip";
 
-    return unisetstd::make_unique<MulticastSendTransport>(h, p, groupAddr, groupPort, ttl);
+    if( numChan > 0 )
+        ipField << numChan;
+
+    const string ip = it.getProp2(ipField.str(), "0.0.0.0");
+
+    int ttl = it.getPIntProp("unet_multicast_ttl", 1);
+    return unisetstd::make_unique<MulticastSendTransport>(ip, p, h, p, ttl);
 }
 // -------------------------------------------------------------------------
 MulticastSendTransport::MulticastSendTransport( const std::string& _host, int _port, const std::string& grHost, int grPort, int _ttl ):
@@ -391,20 +360,24 @@ bool MulticastSendTransport::createConnection( bool throwEx, timeout_t sendTimeo
     catch( const std::exception& e )
     {
         udp = nullptr;
-        ostringstream s;
-        s << sockAddr.toString() << "(createConnection): " << e.what();
 
         if( throwEx )
+        {
+            ostringstream s;
+            s << sockAddr.toString() << "(createConnection): " << e.what();
             throw uniset::SystemError(s.str());
+        }
     }
     catch( ... )
     {
         udp = nullptr;
-        ostringstream s;
-        s << sockAddr.toString() << "(createConnection): catch...";
 
         if( throwEx )
+        {
+            ostringstream s;
+            s << sockAddr.toString() << "(createConnection): catch...";
             throw uniset::SystemError(s.str());
+        }
     }
 
     return (udp != nullptr);
