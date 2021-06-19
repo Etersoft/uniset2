@@ -1095,18 +1095,10 @@ void UNetExchange::initMulticastTransport( UniXML::iterator n_it,
         const std::string& n_fvalue,
         const std::string& prefix )
 {
-
-
     auto conf = uniset_conf();
-    const string default_ip = n_it.getProp("unet_multicast_ip");
-    const string default_ip2 = n_it.getProp("unet_multicast_ip2");
-    const string default_iface1 = n_it.getProp("unet_multicast_iface1");
-    const string default_iface2 = n_it.getProp("unet_multicast_iface2");
 
     if( !n_it.goChildren() )
         throw uniset::SystemError("(UNetExchange): Items not found for <nodes>");
-
-    xmlNode* selfNode = nullptr;
 
     // init senders
     for( ; n_it.getCurrent(); n_it.goNext() )
@@ -1123,106 +1115,62 @@ void UNetExchange::initMulticastTransport( UniXML::iterator n_it,
 
         string n = n_it.getProp("name");
 
-        if( n == conf->getLocalNodeName() )
+        if( n != conf->getLocalNodeName() )
         {
-            selfNode = n_it.getCurrent();
+            initMulticastReceiverForNode(n_it, prefix);
+            continue;
+        }
 
-            if( no_sender )
-            {
-                unetinfo << myname << "(init): " << n_it.getProp("name") << " sender DISABLED." << endl;
-                break;
-            }
-
-            unetinfo << myname << "(init): " << n_it.getProp("name") << " init sender.." << endl;
-
-            auto s1 = MulticastSendTransport::createFromXml(n_it, default_ip, 0);
-            unetinfo << myname << "(init): " << n_it.getProp("name") << " send (channel1) to multicast group: " << s1->getGroupAddress().toString() << endl;
-
-            sender = make_shared<UNetSender>(std::move(s1), shm, false, s_field, s_fvalue, "unet", prefix);
-            loga->add(sender->getLog());
-
-            try
-            {
-                sender2 = nullptr;
-
-                if( n_it.getProp("unet_multicast_ip2").empty() || !default_ip2.empty() )
-                {
-                    auto s2 = MulticastSendTransport::createFromXml(n_it, default_ip2, 2);
-
-                    if( s2 )
-                        unetinfo << myname << "(init): " << n_it.getProp("name") << " send (channel2) to multicast group: " << s2->getGroupAddress().toString() << endl;
-
-                    sender2 = make_shared<UNetSender>(std::move(s2), shm, false, s_field, s_fvalue, "unet", prefix);
-                }
-
-                if( sender2 )
-                    loga->add(sender2->getLog());
-                else
-                    unetwarn << myname << "(ignore): " << n_it.getProp("name") << " sender for Channel2 disabled " << endl;
-            }
-            catch( std::exception& ex )
-            {
-                // т.е. это "резервный канал", то игнорируем ошибку его создания
-                // при запуске "интерфейс" может быть и не доступен...
-                sender2 = nullptr;
-                unetcrit << myname <<  "(init): IGNORE! channel2 create error: " << ex.what() << endl;
-            }
-
+        if( no_sender )
+        {
+            unetinfo << myname << "(init): " << n_it.getProp("name") << " sender DISABLED." << endl;
             break;
         }
-    }
 
-    // INIT RECEIVERS
-    if( selfNode == nullptr )
-    {
-        unetwarn << myname <<  "(init): IGNORE! RECEIVE DISABLED.." << endl;
-        return;
-    }
+        // INIT SENDER
+        unetinfo << myname << "(init): " << n_it.getProp("name") << " init sender.." << endl;
 
-    UniXML::iterator it(selfNode);
+        auto s1 = MulticastSendTransport::createFromXml(n_it, 0);
+        unetinfo << myname << "(init): " << n_it.getProp("name") << " send (channel1) to multicast group: " << s1->getGroupAddress().toString() << endl;
 
-    if( !it.getIntProp("unet_multicast_receive_from_all_nodes") )
-    {
-        initMulticastReceiverForNode(n_it, default_ip, default_ip2, default_iface1, default_iface2, "receive", prefix);
-        return;
-    }
+        sender = make_shared<UNetSender>(std::move(s1), shm, false, s_field, s_fvalue, "unet", prefix);
+        loga->add(sender->getLog());
 
-    unetwarn << myname <<  "(init): init multicast group from nodes.." << endl;
-
-    // init receivers (by nodes)
-    for( ; n_it.getCurrent(); n_it.goNext() )
-    {
-        if( n_it.getIntProp("unet_ignore") )
+        try
         {
-            unetinfo << myname << "(init): " << n_it.getProp("name") << " unet_ignore.." << endl;
-            continue;
+            sender2 = nullptr;
+
+            if( n_it.getProp("unet_multicast_ip2").empty() )
+            {
+                auto s2 = MulticastSendTransport::createFromXml(n_it, 2);
+
+                if( s2 )
+                    unetinfo << myname << "(init): " << n_it.getProp("name") << " send (channel2) to multicast group: " << s2->getGroupAddress().toString() << endl;
+
+                sender2 = make_shared<UNetSender>(std::move(s2), shm, false, s_field, s_fvalue, "unet", prefix);
+            }
+
+            if( sender2 )
+                loga->add(sender2->getLog());
+            else
+                unetwarn << myname << "(ignore): " << n_it.getProp("name") << " sender for Channel2 disabled " << endl;
         }
-
-        // проверяем фильтры для подсетей
-        if( !uniset::check_filter(n_it, n_field, n_fvalue) )
-            continue;
-
-        string n = n_it.getProp("name");
-
-        if( n == conf->getLocalNodeName() )
-            continue;
-
-        initMulticastReceiverForNode(n_it, default_ip, default_ip2, default_iface1, default_iface2, "send", prefix);
+        catch( std::exception& ex )
+        {
+            // т.е. это "резервный канал", то игнорируем ошибку его создания
+            // при запуске "интерфейс" может быть и не доступен...
+            sender2 = nullptr;
+            unetcrit << myname <<  "(init): IGNORE! channel2 create error: " << ex.what() << endl;
+        }
     }
 }
 // ----------------------------------------------------------------------------
-void UNetExchange::initMulticastReceiverForNode(UniXML::iterator n_it,
-        const std::string& default_ip,
-        const std::string& default_ip2,
-        const std::string& default_iface1,
-        const std::string& default_iface2,
-        const std::string& section,
-        const std::string& prefix )
+void UNetExchange::initMulticastReceiverForNode( UniXML::iterator n_it, const std::string& prefix )
 {
     auto conf = uniset_conf();
 
     unetinfo << myname << "(init): " << n_it.getProp("name") << " init receivers:" <<  endl;
-    auto transport1 = MulticastReceiveTransport::createFromXml(n_it, default_ip, 0, default_iface1, section);
+    auto transport1 = MulticastReceiveTransport::createFromXml(n_it, 0);
 
     if( checkExistTransport(transport1->ID()) )
     {
@@ -1355,12 +1303,12 @@ void UNetExchange::initMulticastReceiverForNode(UniXML::iterator n_it,
         {
             ostringstream err;
             err << myname << ": " << n_it.getProp("name") << " : Unknown ChannelSwitchCountID.. Not found id for '" << channelswitchcount_id << "'" << endl;
-            unetcrit << myname << "(init): " << err.str() << endl;
+            unetcrit << myname << "(init):  " << err.str() << endl;
             throw SystemError(err.str());
         }
     }
 
-    unetinfo << myname << "(init): (node='" << n_it.getProp("name") << "') add channel1 receiver " << transport1->ID() << " iface: " << default_iface1 << endl;
+    unetinfo << myname << "(init): (node='" << n_it.getProp("name") << "') add channel1 receiver " << transport1->ID() << " iface: " << transport1->iface() << endl;
     unetinfo << myname << "(init): receive (channel1) from multicast groups: " << endl;
 
     for( const auto& gr : transport1->getGroups() )
@@ -1383,16 +1331,16 @@ void UNetExchange::initMulticastReceiverForNode(UniXML::iterator n_it,
     {
         std::unique_ptr<MulticastReceiveTransport> transport2 = nullptr;
 
-        if (!n_it.getProp("unet_multicast_ip2").empty() || !default_ip2.empty())
-            transport2 = MulticastReceiveTransport::createFromXml(n_it, default_ip2, 2, default_iface2, section);
+        if (!n_it.getProp("unet_multicast_ip2").empty() )
+            transport2 = MulticastReceiveTransport::createFromXml(n_it, 2);
 
         if( transport2 ) // создаём читателя по второму каналу
         {
-            unetinfo << myname << "(init): (node='" << n_it.getProp("name") << "') add channel2 receiver " << transport2->ID() << " iface: " << default_iface2 << endl;
+            unetinfo << myname << "(init): (node='" << n_it.getProp("name") << "') add channel2 receiver " << transport2->ID() << " iface: " << transport2->iface() << endl;
             unetinfo << myname << "(init): receive(channel2) from multicast groups: " << endl;
 
             for( const auto& gr : transport2->getGroups() )
-                unetinfo << myname << "(init):    " << gr.toString() << endl;
+                unetinfo << myname << "(init):  " << gr.toString() << endl;
 
             r2 = make_shared<UNetReceiver>(std::move(transport2), shm, false, prefix);
 

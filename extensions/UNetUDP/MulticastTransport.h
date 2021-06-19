@@ -31,7 +31,7 @@ namespace uniset
     {
         public:
 
-            static std::unique_ptr<MulticastReceiveTransport> createFromXml(UniXML::iterator it, const std::string& defaultIP, int numChan, const std::string& defIface = "", const std::string& section = "receive");
+            static std::unique_ptr<MulticastReceiveTransport> createFromXml(UniXML::iterator it, int numChan);
             static xmlNode* getReceiveListNode( UniXML::iterator root );
 
             MulticastReceiveTransport( const std::string& bind, int port, const std::vector<Poco::Net::IPAddress>& joinGroups, const std::string& iface = "" );
@@ -49,6 +49,7 @@ namespace uniset
 
             bool isReadyForReceive( timeout_t tout ) override;
             virtual ssize_t receive(void* r_buf, size_t sz) override;
+            std::string iface() const;
 
         protected:
             std::unique_ptr <MulticastSocketU> udp;
@@ -63,7 +64,7 @@ namespace uniset
     {
         public:
 
-            static std::unique_ptr<MulticastSendTransport> createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan );
+            static std::unique_ptr<MulticastSendTransport> createFromXml(  UniXML::iterator it, int numChan );
 
             MulticastSendTransport(const std::string& sockHost, int sockPort, const std::string& groupHost, int groupPort, int ttl = 1 );
             virtual ~MulticastSendTransport();
