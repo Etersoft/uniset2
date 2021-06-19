@@ -209,12 +209,6 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    if( groups.empty() )
-    {
-        cerr << "Multicast group address must be define. Use -g or -h for help" << endl;
-        return -1;
-    }
-
     try
     {
         string s_host;
@@ -242,11 +236,6 @@ int main(int argc, char* argv[])
 
             cout << " msecpause=" << usecpause / 1000
                  << endl;
-
-            cout << " Groups: " << endl;
-
-            for( const auto& g : groups )
-                cout << "   " << g << endl;
         }
 
 
@@ -254,6 +243,26 @@ int main(int argc, char* argv[])
         {
             case cmdReceive:
             {
+                Poco::Net::IPAddress addr(s_host);
+
+                if( addr.isMulticast() && groups.empty() )
+                    groups.push_back(addr);
+
+                if( groups.empty() )
+                {
+                    cerr << "Multicast group address must be define. Use -g or -h for help" << endl;
+                    return -1;
+                }
+
+                if( verb )
+                {
+                    cout << " Groups: " << endl;
+
+                    for( const auto& g : groups )
+                        cout << "   " << g << endl;
+                }
+
+
                 MulticastReceiveTransport udp(s_host, port, groups, iface);
 
                 udp.createConnection(true, 500, true);
@@ -348,6 +357,12 @@ int main(int argc, char* argv[])
 
             case cmdSend:
             {
+                Poco::Net::IPAddress addr(s_host);
+
+                if( addr.isMulticast() && groups.empty() )
+                    groups.push_back(addr);
+
+
                 if( groups.empty() )
                 {
                     cerr << "(send): Unknown multicast group address for send ..." << endl;
