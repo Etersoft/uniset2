@@ -66,17 +66,6 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
         logserv_port = conf->getArgPInt("--" + prefix + "-logserver-port", it.getProp("logserverPort"), getId());
     }
 
-    // определяем фильтр
-    s_field = conf->getArgParam("--" + prefix + "-filter-field");
-    s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
-    unetinfo << myname << "(init): read filter-field='" << s_field
-             << "' filter-value='" << s_fvalue << "'" << endl;
-
-    const string n_field(conf->getArgParam("--" + prefix + "-nodes-filter-field"));
-    const string n_fvalue(conf->getArgParam("--" + prefix + "-nodes-filter-value"));
-    unetinfo << myname << "(init): read nodes-filter-field='" << n_field
-             << "' nodes-filter-value='" << n_fvalue << "'" << endl;
-
     int recvTimeout = conf->getArgPInt("--" + prefix + "-recv-timeout", it.getProp("recvTimeout"), 5000);
     int prepareTime = conf->getArgPInt("--" + prefix + "-prepare-time", it.getProp("prepareTime"), 2000);
     int evrunTimeout = conf->getArgPInt("--" + prefix + "-evrun-timeout", it.getProp("evrunTimeout"), 60000);
@@ -124,7 +113,18 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 
     UniXML::iterator n_it(nodes);
 
-    const string unet_transport = conf->getArg2Param("--" + prefix + "-transport", n_it.getProp("unet_transport"), "udp");
+    // определяем фильтр
+    s_field = conf->getArg2Param("--" + prefix + "-filter-field", n_it.getProp("filter_field"));
+    s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", n_it.getProp("filter_value"));
+    unetinfo << myname << "(init): read filter-field='" << s_field
+             << "' filter-value='" << s_fvalue << "'" << endl;
+
+    const string n_field = conf->getArg2Param("--" + prefix + "-nodes-filter-field", n_it.getProp("nodes_filter_field"));
+    const string n_fvalue = conf->getArg2Param("--" + prefix + "-nodes-filter-value", n_it.getProp("nodes_filter_value"));
+    unetinfo << myname << "(init): read nodes-filter-field='" << n_field
+             << "' nodes-filter-value='" << n_fvalue << "'" << endl;
+
+    const string unet_transport = conf->getArg2Param("--" + prefix + "-transport", n_it.getProp("unet_transport"), "broadcast");
 
     if( unet_transport == "multicast" )
         initMulticastTransport(n_it, n_field, n_fvalue, prefix);
@@ -847,7 +847,7 @@ void UNetExchange::initUDPTransport( UniXML::iterator n_it,
 
         if( n == conf->getLocalNodeName() )
         {
-            if( no_sender )
+            if( no_sender || n_it.getIntProp("nosedner") > 0 )
             {
                 unetinfo << myname << "(init): sender OFF for this node...("
                          << n_it.getProp("name") << ")" << endl;
@@ -1121,7 +1121,7 @@ void UNetExchange::initMulticastTransport( UniXML::iterator n_it,
             continue;
         }
 
-        if( no_sender )
+        if( no_sender || n_it.getIntProp("nosedner") > 0 )
         {
             unetinfo << myname << "(init): " << n_it.getProp("name") << " sender DISABLED." << endl;
             break;

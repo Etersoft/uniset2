@@ -362,7 +362,6 @@ int main(int argc, char* argv[])
                 if( addr.isMulticast() && groups.empty() )
                     groups.push_back(addr);
 
-
                 if( groups.empty() )
                 {
                     cerr << "(send): Unknown multicast group address for send ..." << endl;

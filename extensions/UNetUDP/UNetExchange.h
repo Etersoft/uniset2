@@ -62,10 +62,10 @@ namespace uniset
     или каждый на своём потоке. Это определяется параметром \b unet_update_strategy.
 
     В текущей версии поддерживается два протокола для обмена udp и multicast. Какой использовать протокол
-    определяется в настроечной секции параметром \b unet_transport="udp" или \b unet_transport="multicast".
-    По умолчанию "udp".
+    определяется в настроечной секции параметром \b unet_transport="broadcast" или \b unet_transport="multicast".
+    По умолчанию "broadcast".
     \code
-            <UNetExchange name=".."  unet_transport="udp" />
+            <UNetExchange name=".."  unet_transport="broadcast" />
     \endcode
     В зависимости от заданного протокола, будут использованы те или иные настройки.
 
@@ -100,6 +100,10 @@ namespace uniset
     \note Имеется возможность задавать отдельную настроечную секцию для "списка узлов" при помощи параметра
      --prefix-nodes-confnode name. По умолчанию настройка ведётся по секции <nodes>
 
+    Чтобы отключить запуск "sender", можно указать \b nosender="1" в \b <item> конкретного узла
+    или непосредственно в настройках \b <UNetExchange  nosender="1"...>
+
+
     \section pgUNetUDP_ConfMulticast Пример конфигурирования (Multicast)
     По умолчанию при считывании используется \b unet_multicast_ip и \b id узла - в качестве порта.
     Но можно переопределиять эти параметры, при помощи указания \b unet_multicast_port и/или \b unet_multicast_ip,
@@ -115,6 +119,9 @@ namespace uniset
     В данной реализации поддерживается работа в два канала. Соответствующие настройки для второго канала имеют индекс "2".
     unet_multicast_ip2, unet_multicast_port2, unet_multicast_iface2
 
+    Чтобы отключить запуск "sender", можно указать \b nosender="1" в \b <item> конкретного узла
+    или непосредственно в настройках \b <UNetExchange  nosender="1"...>
+
     \code
     <nodes port="2809" unet_broadcast_ip="192.168.56.255">
       <item ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="10">
@@ -124,14 +131,18 @@ namespace uniset
       </item>
       <item id="3001" ip="192.168.56.10" name="Node1" textname="Node1" unet_update_strategy="evloop"
             unet_multicast_ip="224.0.0.1"
+            unet_multicast_sender_ip="192.168.1.1"
             unet_multicast_port2="3031"
-            unet_multicast_ip2="225.0.0.1">
+            unet_multicast_ip2="225.0.0.1"
+            unet_multicast_sender_ip2="192.168.2.1">
         ...
       </item>
       <item id="3002" ip="192.168.56.11" name="Node2" textname="Node2">
             unet_multicast_ip="224.0.0.2"
+            unet_multicast_sender_ip="192.168.1.2"
             unet_multicast_port2="3032"
-            unet_multicast_ip2="225.0.0.2">
+            unet_multicast_ip2="225.0.0.2"
+            unet_multicast_sender_ip2="192.168.2.2">
         ...
       </item>
     </nodes>
