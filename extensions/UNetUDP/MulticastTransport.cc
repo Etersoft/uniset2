@@ -299,7 +299,14 @@ std::unique_ptr<MulticastSendTransport> MulticastSendTransport::createFromXml( U
     if( numChan > 0 )
         ipField << numChan;
 
-    const string ip = it.getProp2(ipField.str(), "0.0.0.0");
+    const string ip = it.getProp(ipField.str());
+
+    if( ip.empty() )
+    {
+        ostringstream err;
+        err << "(MulticastSendTransport): Undefined " << ipField.str() << " for " << it.getProp("name");
+        throw SystemError(err.str());
+    }
 
     int ttl = it.getPIntProp("unet_multicast_ttl", 1);
     return unisetstd::make_unique<MulticastSendTransport>(ip, p, h, p, ttl);
