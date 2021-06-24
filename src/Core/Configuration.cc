@@ -611,7 +611,7 @@ namespace uniset
             {
                 repeatCount = it.getPIntProp("name", 1);
             }
-            else if( name == "ImagesPath" )
+            else if( name == "ImagesPath" ) // DEPRECATED
             {
                 imagesDir = dataDir + it.getProp("name") + "/"; // ????????
             }
@@ -633,6 +633,13 @@ namespace uniset
 
                 if( dataDir.empty() )
                     dataDir = getRootDir();
+
+                if( !directory_exist(dataDir) )
+                {
+                    ostringstream err;
+                    err << "Configuration: DataDir=" << dataDir << " NOT EXISTS";
+                    throw uniset::SystemError(err.str());
+                }
             }
             else if( name == "BinDir" )
             {
@@ -640,6 +647,13 @@ namespace uniset
 
                 if( binDir.empty() )
                     binDir = getRootDir();
+
+                if( !directory_exist(binDir) )
+                {
+                    ostringstream err;
+                    err << "Configuration: BinDir=" << binDir << " NOT EXISTS";
+                    throw uniset::SystemError(err.str());
+                }
             }
             else if( name == "LogDir" )
             {
@@ -647,6 +661,13 @@ namespace uniset
 
                 if( logDir.empty() )
                     logDir = getRootDir();
+
+                if( !directory_exist(logDir) )
+                {
+                    ostringstream err;
+                    err << "Configuration: LogDir=" << logDir << " NOT EXISTS";
+                    throw uniset::SystemError(err.str());
+                }
             }
             else if( name == "LockDir" )
             {
@@ -654,6 +675,13 @@ namespace uniset
 
                 if( lockDir.empty() )
                     lockDir = getRootDir();
+
+                if( !directory_exist(lockDir) )
+                {
+                    ostringstream err;
+                    err << "Configuration: LockDir=" << lockDir << " NOT EXISTS";
+                    throw uniset::SystemError(err.str());
+                }
             }
             else if( name == "ConfDir" )
             {
@@ -661,6 +689,13 @@ namespace uniset
 
                 if( confDir.empty() )
                     confDir = getRootDir();
+
+                if( !directory_exist(confDir) )
+                {
+                    ostringstream err;
+                    err << "Configuration: ConfDir=" << confDir << " NOT EXISTS";
+                    throw uniset::SystemError(err.str());
+                }
             }
         }
 
