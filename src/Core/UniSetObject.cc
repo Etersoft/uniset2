@@ -267,7 +267,8 @@ namespace uniset
             }
             catch( const uniset::ORepFailed& ex )
             {
-                uwarn << myname << "(registration): don`t registration in object reposotory " << endl;
+                uwarn << myname << "(registration): don`t registration in object reposotory "
+                      << " err: " << ex << endl;
             }
             catch( const uniset::Exception& ex )
             {
