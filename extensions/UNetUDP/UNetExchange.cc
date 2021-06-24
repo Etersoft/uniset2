@@ -80,6 +80,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
     int maxProcessingCount = conf->getArgPInt("--" + prefix + "-maxprocessingcount", it.getProp("maxProcessingCount"), 100);
     int checkConnectionPause = conf->getArgPInt("--" + prefix + "-checkconnection-pause", it.getProp("checkConnectionPause"), 10000);
     int initpause = conf->getArgPInt("--" + prefix + "-initpause", it.getProp("initpause"), 5000);
+    const string unet_transport = conf->getArg2Param("--" + prefix + "-transport", it.getProp("transport"), "broadcast");
 
     const std::string updateStrategy = conf->getArg2Param("--" + prefix + "-update-strategy", it.getProp("updateStrategy"), "evloop");
     UNetReceiver::UpdateStrategy r_upStrategy = UNetReceiver::strToUpdateStrategy(updateStrategy);
@@ -123,8 +124,6 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
     const string n_fvalue = conf->getArg2Param("--" + prefix + "-nodes-filter-value", n_it.getProp("nodes_filter_value"));
     unetinfo << myname << "(init): read nodes-filter-field='" << n_field
              << "' nodes-filter-value='" << n_fvalue << "'" << endl;
-
-    const string unet_transport = conf->getArg2Param("--" + prefix + "-transport", n_it.getProp("unet_transport"), "broadcast");
 
     if( unet_transport == "multicast" )
         initMulticastTransport(n_it, n_field, n_fvalue, prefix);
