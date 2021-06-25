@@ -1139,7 +1139,7 @@ void UNetExchange::initMulticastTransport( UniXML::iterator n_it,
         {
             sender2 = nullptr;
 
-            if( n_it.getProp("unet_multicast_ip2").empty() )
+            if( !n_it.getProp("unet_multicast_ip2").empty() )
             {
                 auto s2 = MulticastSendTransport::createFromXml(n_it, 2);
 
