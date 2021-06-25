@@ -109,8 +109,44 @@ MulticastReceiveTransport::MulticastReceiveTransport( const std::string& _bind, 
     groups(_joinGroups),
     ifaceaddr(_iface)
 {
+    if( !ifaceaddr.empty() )
+    {
+        try
+        {
+            Poco::Net::NetworkInterface iface;
 
+            try
+            {
+                iface = Poco::Net::NetworkInterface::forName(ifaceaddr);
+            }
+            catch(...) {}
+
+            if( iface.name().empty() )
+                iface = Poco::Net::NetworkInterface::forAddress(Poco::Net::IPAddress(ifaceaddr));
+
+            if( iface.name().empty() )
+            {
+                ostringstream err;
+                err << "(MulticastReceiveTransport): Not found interface for '" << ifaceaddr << "'";
+                throw uniset::SystemError(err.str());
+            }
+        }
+        catch( const Poco::Net::InterfaceNotFoundException& ex )
+        {
+            ostringstream err;
+            err << "(MulticastReceiveTransport): Not found interface for '" << ifaceaddr << "'";
+            throw uniset::SystemError(err.str());
+        }
+        catch( const std::exception& ex )
+        {
+            ostringstream err;
+            err << "(MulticastReceiveTransport): Not found interface for '" << ifaceaddr
+                << "' err: " << ex.what();
+            throw uniset::SystemError(err.str());
+        }
+    }
 }
+
 // -------------------------------------------------------------------------
 MulticastReceiveTransport::~MulticastReceiveTransport()
 {
@@ -167,10 +203,32 @@ bool MulticastReceiveTransport::createConnection( bool throwEx, timeout_t readTi
     try
     {
         Poco::Net::NetworkInterface iface;
-        iface.addAddress(Poco::Net::IPAddress()); // INADDR_ANY
 
-        if( !ifaceaddr.empty() )
-            iface = Poco::Net::NetworkInterface::forAddress(Poco::Net::IPAddress(ifaceaddr));
+        if( ifaceaddr.empty() )
+            iface.addAddress(Poco::Net::IPAddress()); // INADDR_ANY
+        else
+        {
+            try
+            {
+                iface = Poco::Net::NetworkInterface::forName(ifaceaddr);
+            }
+            catch(...) {}
+
+            if( iface.name().empty() )
+                iface = Poco::Net::NetworkInterface::forAddress(Poco::Net::IPAddress(ifaceaddr));
+
+            if( iface.name().empty() )
+            {
+                if( throwEx )
+                {
+                    ostringstream err;
+                    err << "(MulticastReceiveTransport): Not found interface or address " << ifaceaddr;
+                    throw uniset::SystemError(err.str());
+                }
+
+                return false;
+            }
+        }
 
         udp = unisetstd::make_unique<MulticastSocketU>(host, port);
         udp->setBlocking(!noblock);
@@ -299,13 +357,37 @@ std::unique_ptr<MulticastSendTransport> MulticastSendTransport::createFromXml( U
     if( numChan > 0 )
         ipField << numChan;
 
-    const string ip = it.getProp(ipField.str());
+    string ip = it.getProp(ipField.str());
 
     if( ip.empty() )
     {
         ostringstream err;
         err << "(MulticastSendTransport): Undefined " << ipField.str() << " for " << it.getProp("name");
         throw SystemError(err.str());
+    }
+
+    Poco::Net::NetworkInterface iface;
+
+    try
+    {
+        // check if ip is iface
+        iface = Poco::Net::NetworkInterface::forName(ip);
+    }
+    catch( const std::exception& ex ) {}
+
+    if( !iface.name().empty() )
+    {
+        auto al = iface.addressList();
+
+        if( al.empty() )
+        {
+            ostringstream err;
+            err << "(MulticastSendTransport): Unknown ip for interface " << ip;
+            throw SystemError(err.str());
+        }
+
+        // get first IP
+        ip = al[0].get<0>().toString();
     }
 
     int ttl = it.getPIntProp("unet_multicast_ttl", 1);
