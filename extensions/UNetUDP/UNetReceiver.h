@@ -256,6 +256,7 @@ namespace uniset
             std::vector<UniSetUDP::UDPMessage> cbuf; // circular buffer
             size_t wnum = { 1 }; /*!< номер следующего ожидаемого пакета */
             size_t rnum = { 0 }; /*!< номер последнего обработанного пакета */
+            uint8_t rbuf[uniset::UniSetUDP::MessageBufSize]; // буфер для очередных данных
             UniSetUDP::UDPMessage* pack; // текущий обрабатываемый пакет
 
             /*! максимальная разница между номерами пакетов, при которой считается, что счётчик пакетов

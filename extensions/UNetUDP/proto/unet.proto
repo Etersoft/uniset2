@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package uniset.unet;
+
+option optimize_for = LITE_RUNTIME;
+option cc_enable_arenas = true;
+
+message UNetA {
+  uint64 id = 1;
+  uint64 value = 2;
+};
+
+message UNetD {
+  uint64 id = 1;
+  bool value= 2;
+};
+
+message UNetData {
+    repeated UNetA adata = 1;
+    repeated UNetD ddata = 2;
+};
+
+
+message UNetPacket {
+    uint32 magic = 1;
+    uint64 num = 2;
+    uint64 nodeID = 3;
+    uint64 procID = 4;
+    UNetData data = 5;
+};

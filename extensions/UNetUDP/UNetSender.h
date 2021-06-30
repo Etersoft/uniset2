@@ -121,6 +121,7 @@ namespace uniset
 
                 uniset::UniSetUDP::UDPMessage msg;
                 uniset::uniset_rwmutex mut;
+                uint16_t lastCRC = { 0 };
             };
 
             void real_send( PackMessage& mypack ) noexcept;
