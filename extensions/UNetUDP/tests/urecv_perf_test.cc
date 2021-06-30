@@ -62,18 +62,24 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
         }
     }
 
-    UniSetUDP::UDPMessage mypack;
-    mypack.header.nodeID = 100;
-    mypack.header.procID = 100;
+    unet::UNetPacket mypack;
+    mypack.set_magic(UniSetUDP::UNETUDP_MAGICNUM);
+    mypack.set_nodeid(100);
+    mypack.set_procid(100);
 
     for( size_t i = 0; i < count; i++ )
     {
-        UniSetUDP::UDPAData d(i, i);
-        mypack.addAData(d);
+        auto a = mypack.mutable_data()->add_adata();
+        a->set_id(i);
+        a->set_value(i);
     }
 
     for( size_t i = 0; i < count; i++ )
-        mypack.addDData(i, i);
+    {
+        auto d = mypack.mutable_data()->add_ddata();
+        d->set_id(i);
+        d->set_value(i);
+    }
 
     for( size_t i = 0; i < max; i++ )
     {
@@ -99,12 +105,14 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 
     while( nc ) // -V654
     {
-        mypack.header.num = packetnum++;
+        mypack.set_num(packetnum++);
 
         // при переходе черех максимум (UniSetUDP::MaxPacketNum)
         // пакет опять должен иметь номер "1"
         if( packetnum == 0 )
             packetnum = 1;
+
+        std::string s;
 
         for( auto&& udp : vsend )
         {
@@ -112,10 +120,11 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
             {
                 if( udp->poll(100000, Poco::Net::Socket::SELECT_WRITE) )
                 {
-                    size_t ret = udp->sendBytes(&mypack, sizeof(mypack));
+                    s = mypack.SerializeAsString();
+                    size_t ret = udp->sendBytes(s.data(), s.size());
 
-                    if( ret < sizeof(mypack) )
-                        cerr << "(send): FAILED ret=" << ret << " < sizeof=" << sizeof(mypack) << endl;
+                    if( ret < s.size() )
+                        cerr << "(send): FAILED ret=" << ret << " < sizeof=" << s.size() << endl;
                 }
             }
             catch( Poco::Net::NetException& e )
@@ -141,9 +150,9 @@ static void run_test( size_t max, const std::string& host )
     // make receivers..
     for( size_t i = 0; i < max; i++ )
     {
+        auto transport = unisetstd::make_unique<UDPReceiveTransport>(host, begPort + i);
         cout << "create receiver: " << host << ":" << begPort + i << endl;
-        auto t = unisetstd::make_unique<uniset::UDPReceiveTransport>(host, begPort + i);
-        auto r = make_shared<UNetReceiver>(std::move(t), smiInstance());
+        auto r = make_shared<UNetReceiver>(std::move(transport), smiInstance());
         r->setLockUpdate(true);
         vrecv.emplace_back(r);
     }

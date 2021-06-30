@@ -15,34 +15,7 @@
  */
 // -------------------------------------------------------------------------
 #include <cstdint>
-#include <endian.h>
 #include "UDPPacket.h"
-// -------------------------------------------------------------------------
-// сделано так, чтобы макросы раскрывались в "пустоту" если не требуется преобразование
-// поэтому использование выглядит как LE_TO_H( myvar ), а не
-// myvar = LE_TO_H(myvar)
-// -------------------------------------------------------------------------
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-static bool HostIsBigEndian = false;
-#define LE_TO_H(x) {}
-#elif INTPTR_MAX == INT64_MAX
-#define LE_TO_H(x) x = le64toh(x)
-#elif INTPTR_MAX == INT32_MAX
-#define LE_TO_H(x) x = le32toh(x)
-#else
-#error UNET(LE_TO_H): Unknown byte order or size of pointer
-#endif
-
-#if __BYTE_ORDER == __BIG_ENDIAN
-static bool HostIsBigEndian = true;
-#define BE_TO_H(x) {}
-#elif INTPTR_MAX == INT64_MAX
-#define BE_TO_H(x) x = be64toh(x)
-#elif INTPTR_MAX == INT32_MAX
-#define BE_TO_H(x) x = be32toh(x)
-#else
-#error UNET(BE_TO_H): Unknown byte order or size of pointer
-#endif
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -127,63 +100,94 @@ namespace uniset
         return crc;
     }
     // -----------------------------------------------------------------------------
-    std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPHeader& p )
-    {
-        return os << "nodeID=" << p.nodeID
-               << " procID=" << p.procID
-               << " dcount=" << p.dcount
-               << " acount=" << p.acount
-               << " pnum=" << p.num;
-    }
-    // -----------------------------------------------------------------------------
-    std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPHeader* p )
-    {
-        return os << (*p);
-    }
-    // -----------------------------------------------------------------------------
-    std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPAData& p )
-    {
-        return os << "id=" << p.id << " val=" << p.val;
-    }
-    // -----------------------------------------------------------------------------
     std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPMessage& p )
     {
-        os << (UDPHeader*)(&p) << endl;
+        os << "nodeID=" << p.pb.nodeid()
+           << " procID=" << p.pb.procid()
+           << " dcount=" << p.pb.data().ddata_size()
+           << " acount=" << p.pb.data().adata_size()
+           << " pnum=" << p.pb.num()
+           << endl;
 
         os << "DIGITAL:" << endl;
 
-        for( size_t i = 0; i < p.header.dcount; i++ )
-            os << "[" << i << "]={" << p.dID(i) << "," << p.dValue(i) << "}" << endl;
+        for( size_t i = 0; i < (size_t)p.pb.data().ddata_size(); i++ )
+            os << "[" << i << "]={" << p.pb.data().ddata(i).id() << "," << p.pb.data().ddata(i).value() << "}" << endl;
 
         os << "ANALOG:" << endl;
 
-        for( size_t i = 0; i < p.header.acount; i++ )
-            os << "[" << i << "]={" << p.a_dat[i].id << "," << p.a_dat[i].val << "}" << endl;
+        for( size_t i = 0; i < (size_t)p.pb.data().adata_size(); i++ )
+            os << "[" << i << "]={" << p.pb.data().adata(i).id() << "," << p.pb.data().adata(i).value() << "}" << endl;
 
         return os;
     }
     // -----------------------------------------------------------------------------
-    size_t UDPMessage::addAData( const UniSetUDP::UDPAData& dat ) noexcept
+    UDPMessage::UDPMessage()
     {
-        if( header.acount >= MaxACount )
-            return MaxACount;
-
-        a_dat[header.acount] = dat;
-        header.acount++;
-        return header.acount - 1;
+        pb.set_magic(UniSetUDP::UNETUDP_MAGICNUM);
+    }
+    // -----------------------------------------------------------------------------
+    bool UDPMessage::initFromBuffer( uint8_t* rbuf, size_t sz )
+    {
+        return pb.ParseFromArray(rbuf, sz);
+    }
+    // -----------------------------------------------------------------------------
+    std::string UDPMessage::getDataAsString() const noexcept
+    {
+        return pb.SerializeAsString();
+    }
+    // -----------------------------------------------------------------------------
+    uint32_t UDPMessage::magic() const noexcept
+    {
+        return pb.magic();
+    }
+    // -----------------------------------------------------------------------------
+    void UDPMessage::setNum( long num ) noexcept
+    {
+        pb.set_num(num);
+    }
+    // -----------------------------------------------------------------------------
+    long UDPMessage::num() const noexcept
+    {
+        return pb.num();
+    }
+    // -----------------------------------------------------------------------------
+    void UDPMessage::setNodeID( long num ) noexcept
+    {
+        pb.set_nodeid(num);
+    }
+    // -----------------------------------------------------------------------------
+    long UDPMessage::nodeID() const noexcept
+    {
+        return pb.nodeid();
+    }
+    // -----------------------------------------------------------------------------
+    void UDPMessage::setProcID( long num ) noexcept
+    {
+        pb.set_procid(num);
+    }
+    // -----------------------------------------------------------------------------
+    long UDPMessage::procID() const noexcept
+    {
+        return pb.procid();
     }
     // -----------------------------------------------------------------------------
     size_t UDPMessage::addAData( long id, long val) noexcept
     {
-        UDPAData d(id, val);
-        return addAData(d);
+        if( (size_t)pb.data().adata_size() >= MaxACount )
+            return MaxACount;
+
+        auto a = pb.mutable_data()->add_adata();
+        a->set_id(id);
+        a->set_value(val);
+        return pb.data().adata_size() - 1;
     }
     // -----------------------------------------------------------------------------
     bool UDPMessage::setAData( size_t index, long val ) noexcept
     {
-        if( index < MaxACount )
+        if( index < (size_t)pb.data().adata_size() )
         {
-            a_dat[index].val = val;
+            pb.mutable_data()->mutable_adata(index)->set_value(val);
             return true;
         }
 
@@ -192,171 +196,99 @@ namespace uniset
     // -----------------------------------------------------------------------------
     size_t UDPMessage::addDData( long id, bool val ) noexcept
     {
-        if( header.dcount >= MaxDCount )
+        if( (size_t)pb.data().ddata_size()  >= MaxDCount )
             return MaxDCount;
 
-        // сохраняем ID
-        d_id[header.dcount] = id;
-
-        bool res = setDData( header.dcount, val );
-
-        if( res )
-        {
-            header.dcount++;
-            return header.dcount - 1;
-        }
-
-        return MaxDCount;
+        auto d = pb.mutable_data()->add_ddata();
+        d->set_id(id);
+        d->set_value(val);
+        return pb.data().ddata_size() - 1;
     }
     // -----------------------------------------------------------------------------
     bool UDPMessage::setDData( size_t index, bool val ) noexcept
     {
-        if( index >= MaxDCount )
-            return false;
+        if( index < (size_t)pb.data().ddata_size() )
+        {
+            pb.mutable_data()->mutable_ddata(index)->set_value(val);
+            return true;
+        }
 
-        size_t nbyte = index / 8 * sizeof(uint8_t);
-        size_t nbit =  index % 8 * sizeof(uint8_t);
-
-        // выставляем бит
-        unsigned char d = d_dat[nbyte];
-
-        if( val )
-            d |= (1 << nbit);
-        else
-            d &= ~(1 << nbit);
-
-        d_dat[nbyte] = d;
-        return true;
+        return false;
     }
     // -----------------------------------------------------------------------------
     long UDPMessage::dID( size_t index ) const noexcept
     {
-        if( index >= MaxDCount )
+        if( index >= (size_t)pb.data().ddata_size() )
             return uniset::DefaultObjectId;
 
-        return d_id[index];
+        return pb.data().ddata(index).id();
     }
     // -----------------------------------------------------------------------------
     bool UDPMessage::dValue( size_t index ) const noexcept
     {
-        if( index >= MaxDCount )
+        return pb.data().ddata(index).value();
+    }
+    // -----------------------------------------------------------------------------
+    long UDPMessage::aValue(size_t index) const noexcept
+    {
+        return pb.data().adata(index).value();
+    }
+    // -----------------------------------------------------------------------------
+    long UDPMessage::aID(size_t index) const noexcept
+    {
+        if( index >= (size_t)pb.data().adata_size() )
             return uniset::DefaultObjectId;
 
-        size_t nbyte = index / 8 * sizeof(uint8_t);
-        size_t nbit =  index % 8 * sizeof(uint8_t);
-
-        return ( d_dat[nbyte] & (1 << nbit) );
+        return pb.data().adata(index).id();
+    }
+    // -----------------------------------------------------------------------------
+    uint16_t UDPMessage::dataCRC() const noexcept
+    {
+        return makeCRC((unsigned char*) & (pb.data()), sizeof(pb.data()));
     }
     // -----------------------------------------------------------------------------
     long UDPMessage::getDataID() const noexcept
     {
         // в качестве идентификатора берётся ID первого датчика в данных
         // приоритет имеет аналоговые датчики
+        if( pb.data().adata_size() > 0 )
+            return pb.data().adata(0).id();
 
-        if( header.acount > 0 )
-            return a_dat[0].id;
-
-        if( header.dcount > 0 )
-            return d_id[0];
+        if( pb.data().ddata_size() > 0 )
+            return pb.data().ddata(0).id();
 
         // если нет данных(?) просто возвращаем номер пакета
-        return header.num;
+        return pb.num();
     }
     // -----------------------------------------------------------------------------
-    bool UDPMessage::isOk() noexcept
+    bool UDPMessage::isOk() const noexcept
     {
-        return ( header.magic == UniSetUDP::UNETUDP_MAGICNUM );
+        return ( pb.IsInitialized() && pb.magic() == UniSetUDP::UNETUDP_MAGICNUM );
     }
     // -----------------------------------------------------------------------------
-    void UDPMessage::ntoh() noexcept
+    bool UDPMessage::isAFull() const noexcept
     {
-        // byte order from packet
-        uint8_t be_order = header._be_order;
-
-        if( be_order && !HostIsBigEndian )
-        {
-            BE_TO_H(header.magic);
-            BE_TO_H(header.num);
-            BE_TO_H(header.procID);
-            BE_TO_H(header.nodeID);
-            BE_TO_H(header.dcount);
-            BE_TO_H(header.acount);
-        }
-        else if( !be_order && HostIsBigEndian )
-        {
-            LE_TO_H(header.magic);
-            LE_TO_H(header.num);
-            LE_TO_H(header.procID);
-            LE_TO_H(header.nodeID);
-            LE_TO_H(header.dcount);
-            LE_TO_H(header.acount);
-        }
-
-        // set host byte order
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-        header._be_order = 0;
-#elif __BYTE_ORDER == __BIG_ENDIAN
-        header._be_order = 1;
-#else
-#error UNET(getMessage): Unknown byte order!
-#endif
-
-        // CONVERT DATA TO HOST BYTE ORDER
-        // -------------------------------
-        if( (be_order && !HostIsBigEndian) || (!be_order && HostIsBigEndian) )
-        {
-            for( size_t n = 0; n < header.acount; n++ )
-            {
-                if( be_order )
-                {
-                    BE_TO_H(a_dat[n].id);
-                    BE_TO_H(a_dat[n].val);
-                }
-                else
-                {
-                    LE_TO_H(a_dat[n].id);
-                    LE_TO_H(a_dat[n].val);
-                }
-            }
-
-            for( size_t n = 0; n < header.dcount; n++ )
-            {
-                if( be_order )
-                {
-                    BE_TO_H(d_id[n]);
-                }
-                else
-                {
-                    LE_TO_H(d_id[n]);
-                }
-            }
-        }
+        return ((size_t)pb.data().adata_size() >= MaxACount);
     }
     // -----------------------------------------------------------------------------
-    uint16_t UDPMessage::getDataCRC() const noexcept
+    bool UDPMessage::isDFull() const noexcept
     {
-        uint16_t crc[3];
-        crc[0] = makeCRC( (unsigned char*)(a_dat), sizeof(a_dat) );
-        crc[1] = makeCRC( (unsigned char*)(d_id), sizeof(d_id) );
-        crc[2] = makeCRC( (unsigned char*)(d_dat), sizeof(d_dat) );
-        return makeCRC( (unsigned char*)(&crc), sizeof(crc) );
+        return ((size_t)pb.data().ddata_size() >= MaxDCount);
     }
-
-    UDPHeader::UDPHeader() noexcept
-        : magic(UNETUDP_MAGICNUM)
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-        , _be_order(0)
-#elif __BYTE_ORDER == __BIG_ENDIAN
-        , _be_order(1)
-#else
-#error UNET: Unknown byte order!
-#endif
-        , num(0)
-        , nodeID(0)
-        , procID(0)
-        , dcount(0)
-        , acount(0)
-    {}
-
+    // -----------------------------------------------------------------------------
+    bool UDPMessage::isFull() const noexcept
+    {
+        return !(((size_t)pb.data().ddata_size() < MaxDCount) && ((size_t)pb.data().adata_size() < MaxACount));
+    }
+    // -----------------------------------------------------------------------------
+    size_t UDPMessage::UDPMessage::dsize() const noexcept
+    {
+        return pb.data().ddata_size();
+    }
+    // -----------------------------------------------------------------------------
+    size_t UDPMessage::asize() const noexcept
+    {
+        return pb.data().adata_size();
+    }
     // -----------------------------------------------------------------------------
 } // end of namespace uniset

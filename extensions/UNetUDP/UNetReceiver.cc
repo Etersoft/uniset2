@@ -331,7 +331,7 @@ size_t UNetReceiver::rnext( size_t num )
     {
         p = &cbuf[i % cbufSize];
 
-        if( p->header.num > num )
+        if( p->num() > num )
             return i;
 
         i++;
@@ -348,8 +348,6 @@ void UNetReceiver::update() noexcept
 
     UniSetUDP::UDPMessage* p;
     CacheItem* c_it = nullptr;
-    UniSetUDP::UDPAData* dat = nullptr;
-    long s_id;
 
     // обрабатываем, пока очередь либо не опустеет,
     // либо обнаружится "дырка" в последовательности,
@@ -359,17 +357,21 @@ void UNetReceiver::update() noexcept
 
         // если номер пакета не равен ожидаемому, ждём считая что это "дырка"
         // т.к. разрывы и другие случаи обрабатываются при приёме пакетов
-        if( p->header.num != rnum )
+        if( p->num() != rnum )
         {
             if( !ptLostTimeout.checkTime() )
                 return;
 
             size_t sub = 1;
 
-            if( p->header.num > rnum )
-                sub = (p->header.num - rnum);
+            if( p->num() > rnum )
+                sub = (p->num() - rnum);
 
-            unetwarn << myname << "(update): lostTimeout(" << ptLostTimeout.getInterval() << ")! pnum=" << p->header.num << " lost " << sub << " packets " << endl;
+            unetwarn << myname << "(update): lostTimeout(" << ptLostTimeout.getInterval() << ")! pnum="
+                     << p->num() << " lost "
+                     << sub << " packets "
+                     << endl;
+
             lostPackets += sub;
 
             // ищем следующий пакет для обработки
@@ -388,26 +390,25 @@ void UNetReceiver::update() noexcept
         // Обработка дискретных
         auto d_iv = getDCache(p);
 
-        for( size_t i = 0; i < p->header.dcount; i++ )
+        for( size_t i = 0; i < p->dsize(); i++ )
         {
             try
             {
-                s_id = p->dID(i);
                 c_it = &(*d_iv)[i];
 
-                if( c_it->id != s_id )
+                if( c_it->id != p->dID(i) )
                 {
-                    unetwarn << myname << "(update): reinit dcache for sid=" << s_id << endl;
-                    c_it->id = s_id;
+                    unetwarn << myname << "(update): reinit dcache for sid=" << p->dID(i) << endl;
+                    c_it->id = p->dID(i);
                     shm->initIterator(c_it->ioit);
                 }
 
-                shm->localSetValue(c_it->ioit, s_id, p->dValue(i), shm->ID());
+                shm->localSetValue(c_it->ioit, p->dID(i), p->dValue(i), shm->ID());
             }
             catch( const uniset::Exception& ex)
             {
                 unetcrit << myname << "(update): D:"
-                         << " id=" << s_id
+                         << " id=" << p->dID(i)
                          << " val=" << p->dValue(i)
                          << " error: " << ex
                          << std::endl;
@@ -415,7 +416,7 @@ void UNetReceiver::update() noexcept
             catch(...)
             {
                 unetcrit << myname << "(update): D:"
-                         << " id=" << s_id
+                         << " id=" << p->dID(i)
                          << " val=" << p->dValue(i)
                          << " error: catch..."
                          << std::endl;
@@ -425,35 +426,34 @@ void UNetReceiver::update() noexcept
         // Обработка аналоговых
         auto a_iv = getACache(p);
 
-        for( size_t i = 0; i < p->header.acount; i++ )
+        for( size_t i = 0; i < p->asize(); i++ )
         {
             try
             {
-                dat = &p->a_dat[i];
                 c_it = &(*a_iv)[i];
 
-                if( c_it->id != dat->id )
+                if( c_it->id != p->aID(i) )
                 {
-                    unetwarn << myname << "(update): reinit acache for sid=" << dat->id << endl;
-                    c_it->id = dat->id;
+                    unetwarn << myname << "(update): reinit acache for sid=" << p->aID(i) << endl;
+                    c_it->id = p->aID(i);
                     shm->initIterator(c_it->ioit);
                 }
 
-                shm->localSetValue(c_it->ioit, dat->id, dat->val, shm->ID());
+                shm->localSetValue(c_it->ioit, p->aID(i), p->aValue(i), shm->ID());
             }
             catch( const uniset::Exception& ex)
             {
                 unetcrit << myname << "(update): A:"
-                         << " id=" << dat->id
-                         << " val=" << dat->val
+                         << " id=" << p->aID(i)
+                         << " val=" << p->aValue(i)
                          << " error: " << ex
                          << std::endl;
             }
             catch(...)
             {
                 unetcrit << myname << "(update): A:"
-                         << " id=" << dat->id
-                         << " val=" << dat->val
+                         << " id=" << p->aID(i)
+                         << " val=" << p->aValue(i)
                          << " error: catch..."
                          << std::endl;
             }
@@ -610,7 +610,7 @@ bool UNetReceiver::receive() noexcept
     {
         // сперва пробуем сохранить пакет в том месте, где должен быть очередной пакет
         pack = &(cbuf[wnum % cbufSize]);
-        ssize_t ret = transport->receive(pack, sizeof(UniSetUDP::UDPMessage));
+        ssize_t ret = transport->receive(rbuf, sizeof(rbuf));
 
         if( ret < 0 )
         {
@@ -624,18 +624,21 @@ bool UNetReceiver::receive() noexcept
             return false;
         }
 
-        recvCount++;
+        if( !pack->initFromBuffer(rbuf, ret) )
+        {
+            unetwarn << myname << "(receive): parse message error.." << endl;
+            return false;
+        }
 
-        // конвертируем byte order
-        pack->ntoh();
+        recvCount++;
 
         if( !pack->isOk() )
             return false;
 
-        if( size_t(abs(long(pack->header.num - wnum))) > maxDifferens || size_t(abs( long(wnum - rnum) )) >= (cbufSize - 2) )
+        if( size_t(abs(long(pack->num() - wnum))) > maxDifferens || size_t(abs( long(wnum - rnum) )) >= (cbufSize - 2) )
         {
             unetcrit << myname << "(receive): DISAGREE "
-                     << " packnum=" << pack->header.num
+                     << " packnum=" << pack->num()
                      << " wnum=" << wnum
                      << " rnum=" << rnum
                      << " (maxDiff=" << maxDifferens
@@ -643,39 +646,39 @@ bool UNetReceiver::receive() noexcept
                      << ")"
                      << endl;
 
-            lostPackets = pack->header.num > wnum ? (pack->header.num - wnum - 1) : lostPackets + 1;
+            lostPackets = pack->num() > wnum ? (pack->num() - wnum - 1) : lostPackets + 1;
             // реинициализируем позицию для чтения
-            rnum = pack->header.num;
-            wnum = pack->header.num + 1;
+            rnum = pack->num();
+            wnum = pack->num() + 1;
 
             // перемещаем пакет в нужное место (если требуется)
-            if( wnum != pack->header.num )
+            if( wnum != pack->num() )
             {
-                cbuf[pack->header.num % cbufSize] = (*pack);
-                pack->header.num = 0;
+                cbuf[pack->num() % cbufSize] = (*pack);
+                pack->setNum(0);
             }
 
             return true;
         }
 
-        if( pack->header.num != wnum )
+        if( pack->num() != wnum )
         {
             // перемещаем пакет в правильное место
             // в соответствии с его номером
-            cbuf[pack->header.num % cbufSize] = (*pack);
+            cbuf[pack->num() % cbufSize] = (*pack);
 
-            if( pack->header.num >= wnum )
-                wnum = pack->header.num + 1;
+            if( pack->num() >= wnum )
+                wnum = pack->num() + 1;
 
             // обнуляем номер в том месте где записали, чтобы его не обрабатывал update
-            pack->header.num = 0;
+            pack->setNum(0);
         }
-        else if( pack->header.num >= wnum )
-            wnum = pack->header.num + 1;
+        else if( pack->num() >= wnum )
+            wnum = pack->num() + 1;
 
         // начальная инициализация для чтения
         if( rnum == 0 )
-            rnum = pack->header.num;
+            rnum = pack->num();
 
         return true;
     }
@@ -712,30 +715,31 @@ void UNetReceiver::initIterators() noexcept
 // -----------------------------------------------------------------------------
 UNetReceiver::CacheVec* UNetReceiver::getDCache( UniSetUDP::UDPMessage* pack ) noexcept
 {
-    auto dit = d_icache_map.find(pack->getDataID());
+    auto id = pack->getDataID();
+    auto dit = d_icache_map.find(id);
 
     if( dit == d_icache_map.end() )
     {
-        auto p = d_icache_map.emplace(pack->getDataID(), UNetReceiver::CacheVec());
+        auto p = d_icache_map.emplace(id, UNetReceiver::CacheVec());
         dit = p.first;
     }
 
     CacheVec* d_info = &dit->second;
 
-    if( pack->header.dcount == d_info->size() )
+    if( pack->dsize() == d_info->size() )
         return d_info;
 
-    unetinfo << myname << ": init dcache[" << pack->header.dcount << "] for " << pack->getDataID() << endl;
+    unetinfo << myname << ": init dcache[" << pack->dsize() << "] for " << id << endl;
 
-    d_info->resize(pack->header.dcount);
+    d_info->resize(pack->dsize());
 
-    for( size_t i = 0; i < pack->header.dcount; i++ )
+    for( size_t i = 0; i < pack->dsize(); i++ )
     {
         CacheItem& d = (*d_info)[i];
 
-        if( d.id != pack->d_id[i] )
+        if( d.id != pack->dID(i) )
         {
-            d.id = pack->d_id[i];
+            d.id = pack->dID(i);
             shm->initIterator(d.ioit);
         }
     }
@@ -745,30 +749,31 @@ UNetReceiver::CacheVec* UNetReceiver::getDCache( UniSetUDP::UDPMessage* pack ) n
 // -----------------------------------------------------------------------------
 UNetReceiver::CacheVec* UNetReceiver::getACache( UniSetUDP::UDPMessage* pack ) noexcept
 {
-    auto ait = a_icache_map.find(pack->getDataID());
+    auto id = pack->getDataID();
+    auto ait = a_icache_map.find(id);
 
     if( ait == a_icache_map.end() )
     {
-        auto p = a_icache_map.emplace(pack->getDataID(), UNetReceiver::CacheVec());
+        auto p = a_icache_map.emplace(id, UNetReceiver::CacheVec());
         ait = p.first;
     }
 
     CacheVec* a_info = &ait->second;
 
-    if( pack->header.acount == a_info->size() )
+    if( pack->asize() == a_info->size() )
         return a_info;
 
-    unetinfo << myname << ": init acache[" << pack->header.acount << "] for " << pack->getDataID() << endl;
+    unetinfo << myname << ": init acache[" << pack->asize() << "] for " << id << endl;
 
-    a_info->resize(pack->header.acount);
+    a_info->resize(pack->asize());
 
-    for( size_t i = 0; i < pack->header.acount; i++ )
+    for( size_t i = 0; i < pack->asize(); i++ )
     {
         CacheItem& d = (*a_info)[i];
 
-        if( d.id != pack->a_dat[i].id )
+        if( d.id != pack->aID(i) )
         {
-            d.id = pack->a_dat[i].id;
+            d.id = pack->aID(i);
             shm->initIterator(d.ioit);
         }
     }
