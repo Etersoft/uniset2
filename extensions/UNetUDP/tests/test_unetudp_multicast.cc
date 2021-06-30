@@ -92,18 +92,24 @@ void InitMulticastTest()
 static UniSetUDP::UDPMessage mreceive( unsigned int pnum = 0, timeout_t tout = 2000, int ncycle = 20 )
 {
     UniSetUDP::UDPMessage pack;
+    uint8_t rbuf[uniset::UniSetUDP::MessageBufSize];
 
     while( ncycle > 0 )
     {
         if( !udp_r->isReadyForReceive(tout) )
             break;
 
-        size_t ret = udp_r->receive(&pack, sizeof(pack) );
+        size_t ret = udp_r->receive(rbuf, sizeof(rbuf) );
 
-        if( ret == 0 || pnum == 0 || ( pnum > 0 && pack.header.num >= pnum ) ) // -V560
+        if( ret <= 0 )
             break;
 
-        REQUIRE( pack.header.magic == UniSetUDP::UNETUDP_MAGICNUM );
+        REQUIRE( pack.initFromBuffer(rbuf, ret) );
+        REQUIRE( pack.isOk() );
+
+        if( pnum > 0 && pack.num() >= pnum )
+            break;
+
         ncycle--;
     }
 
@@ -117,12 +123,13 @@ void msend( UniSetUDP::UDPMessage& pack, int tout = 2000 )
 {
     CHECK( udp_s->isReadyForSend(tout) );
 
-    pack.header.nodeID = s_nodeID;
-    pack.header.procID = s_procID;
-    pack.header.num = s_numpack++;
+    pack.setNodeID(s_nodeID);
+    pack.setProcID(s_procID);
+    pack.setNum(s_numpack++);
 
-    size_t ret = udp_s->send(&pack, sizeof(pack));
-    REQUIRE( ret == sizeof(pack) );
+    const std::string s = pack.getDataAsString();
+    size_t ret = udp_s->send(s.data(), s.size());
+    REQUIRE( ret == s.size() );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[UNetUDP]: check multicast sender", "[unetudp][multicast][sender]")
@@ -132,13 +139,13 @@ TEST_CASE("[UNetUDP]: check multicast sender", "[unetudp][multicast][sender]")
     SECTION("Test: read default pack...")
     {
         UniSetUDP::UDPMessage pack = mreceive();
-        REQUIRE( pack.header.num != 0 );
+        REQUIRE( pack.num() != 0 );
         REQUIRE( pack.asize() == 4 );
         REQUIRE( pack.dsize() == 2 );
 
         for( size_t i = 0; i < pack.asize(); i++ )
         {
-            REQUIRE( pack.a_dat[i].val == i + 1 );
+            REQUIRE( pack.aValue(i) == i + 1 );
         }
 
         REQUIRE( pack.dValue(0) == 1 );
@@ -146,7 +153,7 @@ TEST_CASE("[UNetUDP]: check multicast sender", "[unetudp][multicast][sender]")
 
         // т.к. данные в SM не менялись, то должен придти пакет с тем же номером что и был..
         UniSetUDP::UDPMessage pack2 = mreceive();
-        REQUIRE( pack2.header.num == pack.header.num );
+        REQUIRE( pack2.num() == pack.num() );
     }
 
     SECTION("Test: change AI data...")
@@ -155,21 +162,21 @@ TEST_CASE("[UNetUDP]: check multicast sender", "[unetudp][multicast][sender]")
         ui->setValue(2, 100);
         REQUIRE( ui->getValue(2) == 100 );
         msleep(120);
-        UniSetUDP::UDPMessage pack = mreceive( pack0.header.num + 1 );
-        REQUIRE( pack.header.num != 0 );
+        UniSetUDP::UDPMessage pack = mreceive( pack0.num() + 1 );
+        REQUIRE( pack.num() != 0 );
         REQUIRE( pack.asize() == 4 );
         REQUIRE( pack.dsize() == 2 );
-        REQUIRE( pack.a_dat[0].val == 100 );
+        REQUIRE( pack.aValue(0) == 100 );
 
         ui->setValue(2, 250);
         REQUIRE( ui->getValue(2) == 250 );
         msleep(120);
-        UniSetUDP::UDPMessage pack2 = mreceive( pack.header.num + 1 );
-        REQUIRE( pack2.header.num != 0 );
-        REQUIRE( pack2.header.num > pack.header.num );
+        UniSetUDP::UDPMessage pack2 = mreceive( pack.num() + 1 );
+        REQUIRE( pack2.num() != 0 );
+        REQUIRE( pack2.num() > pack.num() );
         REQUIRE( pack2.asize() == 4 );
         REQUIRE( pack2.dsize() == 2 );
-        REQUIRE( pack2.a_dat[0].val == 250 );
+        REQUIRE( pack2.aValue(0) == 250 );
     }
 
     SECTION("Test: change DI data...")
@@ -178,21 +185,21 @@ TEST_CASE("[UNetUDP]: check multicast sender", "[unetudp][multicast][sender]")
         ui->setValue(6, 1);
         REQUIRE( ui->getValue(6) == 1 );
         msleep(120);
-        UniSetUDP::UDPMessage pack = mreceive( pack0.header.num + 1 );
-        REQUIRE( pack.header.num != 0 );
+        UniSetUDP::UDPMessage pack = mreceive( pack0.num() + 1 );
+        REQUIRE( pack.num() != 0 );
         REQUIRE( pack.asize() == 4 );
         REQUIRE( pack.dsize() == 2 );
-        REQUIRE( pack.dValue(0) == 1 );
+        REQUIRE( pack.dValue(0) == true );
 
         ui->setValue(6, 0);
         REQUIRE( ui->getValue(6) == 0 );
         msleep(120);
-        UniSetUDP::UDPMessage pack2 = mreceive( pack.header.num + 1 );
-        REQUIRE( pack2.header.num != 0 );
-        REQUIRE( pack2.header.num > pack.header.num );
+        UniSetUDP::UDPMessage pack2 = mreceive( pack.num() + 1 );
+        REQUIRE( pack2.num() != 0 );
+        REQUIRE( pack2.num() > pack.num() );
         REQUIRE( pack2.asize() == 4 );
         REQUIRE( pack2.dsize() == 2 );
-        REQUIRE( pack2.dValue(0) == 0 );
+        REQUIRE( pack2.dValue(0) == false );
     }
 }
 // -----------------------------------------------------------------------------
@@ -392,32 +399,32 @@ TEST_CASE("[UNetUDP]: mulsicat check undefined value", "[unetudp][multicast][und
     REQUIRE( ui->getValue(2) == 110 );
     msleep(600);
 
-    UniSetUDP::UDPMessage pack = mreceive( pack0.header.num + 1, 2000, 40 );
+    UniSetUDP::UDPMessage pack = mreceive( pack0.num() + 1, 2000, 40 );
 
-    REQUIRE( pack.header.num != 0 );
+    REQUIRE( pack.num() != 0 );
     REQUIRE( pack.asize() == 4 );
     REQUIRE( pack.dsize() == 2 );
-    REQUIRE( pack.a_dat[0].val == 110 );
+    REQUIRE( pack.aValue(0) == 110 );
 
     IOController_i::SensorInfo si;
     si.id = 2;
     si.node = uniset_conf()->getLocalNode();
     ui->setUndefinedState(si, true, 6000 /* TestProc */ );
     msleep(600);
-    pack = mreceive(pack.header.num + 1);
+    pack = mreceive(pack.num() + 1);
 
-    REQUIRE( pack.header.num != 0 );
+    REQUIRE( pack.num() != 0 );
     REQUIRE( pack.asize() == 4 );
     REQUIRE( pack.dsize() == 2 );
-    REQUIRE( pack.a_dat[0].val == 65635 );
+    REQUIRE( pack.aValue(0) == 65635 );
 
     ui->setUndefinedState(si, false, 6000 /* TestProc */ );
     msleep(600);
-    pack = mreceive(pack.header.num + 1);
+    pack = mreceive(pack.num() + 1);
 
-    REQUIRE( pack.header.num != 0 );
+    REQUIRE( pack.num() != 0 );
     REQUIRE( pack.asize() == 4 );
     REQUIRE( pack.dsize() == 2 );
-    REQUIRE( pack.a_dat[0].val == 110 );
+    REQUIRE( pack.aValue(0) == 110 );
 }
 // -----------------------------------------------------------------------------
