@@ -1,8 +1,9 @@
 // -------------------------------------------------------------------------
-#ifndef UDPReceiveU_H_
-#define UDPReceiveU_H_
+#ifndef UDPCore_H_
+#define UDPCore_H_
 // -------------------------------------------------------------------------
 #include <Poco/Net/DatagramSocket.h>
+#include <Poco/Net/MulticastSocket.h>
 // -------------------------------------------------------------------------
 // Классы-обёртки, чтобы достучаться до "сырого сокета" и других функций
 // необходимых при использовании с libev..
@@ -52,7 +53,36 @@ namespace uniset
             }
     };
     // -------------------------------------------------------------------------
+    class MulticastSocketU:
+            public Poco::Net::MulticastSocket
+    {
+    public:
+
+        MulticastSocketU():
+                Poco::Net::MulticastSocket(Poco::Net::IPAddress::IPv4)
+        {}
+
+        MulticastSocketU( int port ):
+               Poco::Net::MulticastSocket(Poco::Net::SocketAddress(Poco::Net::IPAddress(), port), true)
+        {}
+
+        MulticastSocketU( const std::string& bind, int port ):
+                Poco::Net::MulticastSocket(Poco::Net::SocketAddress(bind, port), true)
+        {}
+
+        MulticastSocketU( const Poco::Net::SocketAddress& addr ):
+                Poco::Net::MulticastSocket(addr, true)
+        {}
+
+        virtual ~MulticastSocketU() {}
+
+        inline int getSocket() const
+        {
+            return Poco::Net::MulticastSocket::sockfd();
+        }
+    };
+    // -------------------------------------------------------------------------
 } // end of uniset namespace
 // -------------------------------------------------------------------------
-#endif // UDPReceiveU_H_
+#endif // UDPCore_H_
 // -------------------------------------------------------------------------

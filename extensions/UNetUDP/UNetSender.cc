@@ -29,18 +29,16 @@ namespace uniset
     using namespace std;
     using namespace uniset::extensions;
     // -----------------------------------------------------------------------------
-    UNetSender::UNetSender(const std::string& _host, const int _port, const std::shared_ptr<SMInterface>& smi,
-                           bool nocheckConnection, const std::string& s_f, const std::string& s_val,
-                           const std::string& s_prefix,
-                           const std::string& prefix,
-                           size_t maxDCount, size_t maxACount ):
+    UNetSender::UNetSender( std::unique_ptr<UNetSendTransport>&& _transport, const std::shared_ptr<SMInterface>& smi,
+                            bool nocheckConnection, const std::string& s_f, const std::string& s_val,
+                            const std::string& s_prefix,
+                            const std::string& prefix,
+                            size_t maxDCount, size_t maxACount ):
         s_field(s_f),
         s_fvalue(s_val),
         prop_prefix(s_prefix),
         shm(smi),
-        port(_port),
-        s_host(_host),
-        saddr(_host, _port),
+        transport(std::move(_transport)),
         sendpause(150),
         packsendpause(5),
         packsendpauseFactor(1),
@@ -54,12 +52,12 @@ namespace uniset
 
         {
             ostringstream s;
-            s << "S(" << setw(15) << s_host << ":" << setw(4) << port << ")";
+            s << "S(" << setw(15) << transport->toString() << ")";
             myname = s.str();
         }
 
         ostringstream logname;
-        logname << prefix << "-S-" << s_host << "-" << port;
+        logname << prefix << "-S-" << transport->toString();
 
         unetlog = make_shared<DebugStream>();
         unetlog->setLogName(logname.str());
@@ -70,9 +68,7 @@ namespace uniset
         unetinfo << myname << "(init): read filter-field='" << s_field
                  << "' filter-value='" << s_fvalue << "'" << endl;
 
-        unetinfo << "(UNetSender): UDP set to " << s_host << ":" << port << endl;
-
-        addr = s_host.c_str();
+        unetinfo << "(UNetSender): UDP set to " << transport->toString() << endl;
 
         ptCheckConnection.setTiming(10000); // default 10 сек
         createConnection(nocheckConnection);
@@ -122,36 +118,17 @@ namespace uniset
 
         try
         {
-            //udp = make_shared<UDPSocketU>(addr, port);
-            udp = unisetstd::make_unique<UDPSocketU>();
-            udp->setBroadcast(true);
-            udp->setSendTimeout( UniSetTimer::millisecToPoco(writeTimeout) );
-            //      udp->setNoDelay(true);
+            return transport->createConnection(throwEx, writeTimeout);
         }
-        catch( const std::exception& e )
+        catch( const std::exception& ex )
         {
-            ostringstream s;
-            s << myname << "(createConnection): " << e.what();
-            unetcrit << s.str() << std::endl;
+            unetcrit << ex.what() << std::endl;
 
             if( throwEx )
-                throw SystemError(s.str());
-
-            udp = nullptr;
-        }
-        catch( ... )
-        {
-            ostringstream s;
-            s << myname << "(createConnection): catch...";
-            unetcrit << s.str() << std::endl;
-
-            if( throwEx )
-                throw SystemError(s.str());
-
-            udp = nullptr;
+                throw ex;
         }
 
-        return (udp != nullptr);
+        return false;
     }
     // -----------------------------------------------------------------------------
     void UNetSender::updateFromSM()
@@ -220,7 +197,7 @@ namespace uniset
 
         while( activated )
         {
-            if( !udp )
+            if( !transport->isConnected() )
             {
                 if( !ptCheckConnection.checkTime() )
                 {
@@ -328,12 +305,12 @@ namespace uniset
             if( packetnum == 0 )
                 packetnum = 1;
 
-            if( !udp || !udp->poll( UniSetTimer::millisecToPoco(writeTimeout), Poco::Net::Socket::SELECT_WRITE) )
+            if( !transport->isReadyForSend(writeTimeout) )
                 return;
 
             mypack.msg.transport_msg(s_msg);
 
-            size_t ret = udp->sendTo(&s_msg.data, s_msg.len, saddr);
+            size_t ret = transport->send(&s_msg.data, s_msg.len);
 
             if( ret < s_msg.len )
                 unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;
@@ -574,7 +551,7 @@ namespace uniset
 
         ostringstream s;
 
-        s << setw(15) << std::right << getAddress() << ":" << std::left << setw(6) << getPort()
+        s << setw(15) << std::right << transport->toString()
           << " lastpacknum=" << packetnum
           << " lastcrc=" << setw(6) << lastcrc
           << " items=" << items.size() << " maxAData=" << getADataSize() << " maxDData=" << getDDataSize()

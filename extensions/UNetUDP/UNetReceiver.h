@@ -31,7 +31,7 @@
 #include "SharedMemory.h"
 #include "UDPPacket.h"
 #include "CommonEventLoop.h"
-#include "UDPCore.h"
+#include "UNetTransport.h"
 // --------------------------------------------------------------------------
 namespace uniset
 {
@@ -101,7 +101,7 @@ namespace uniset
         public std::enable_shared_from_this<UNetReceiver>
     {
         public:
-            UNetReceiver( const std::string& host, int port, const std::shared_ptr<SMInterface>& smi
+            UNetReceiver( std::unique_ptr<UNetReceiveTransport>&& transport, const std::shared_ptr<SMInterface>& smi
                           , bool nocheckConnection = false
                           , const std::string& prefix = "unet" );
             virtual ~UNetReceiver();
@@ -141,13 +141,9 @@ namespace uniset
 
             void forceUpdate() noexcept; // пересохранить очередной пакет в SM даже если данные не менялись
 
-            inline std::string getAddress() const noexcept
+            inline std::string getTransportID() const noexcept
             {
-                return addr;
-            }
-            inline int getPort() const noexcept
-            {
-                return port;
+                return transport->ID();
             }
 
             /*! Коды событий */
@@ -244,10 +240,8 @@ namespace uniset
             timeout_t recvpause = { 10 };      /*!< пауза между приёмами пакетов, [мсек] */
             timeout_t updatepause = { 100 };   /*!< периодичность обновления данных в SM, [мсек] */
 
-            std::unique_ptr<UDPReceiveU> udp;
+            std::unique_ptr<UNetReceiveTransport> transport;
             std::string addr;
-            int port = { 0 };
-            Poco::Net::SocketAddress saddr;
             std::string myname;
             ev::io evReceive;
             ev::periodic evCheckConnection;

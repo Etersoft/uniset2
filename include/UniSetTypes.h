@@ -323,6 +323,7 @@ namespace uniset
     // Всякие helper-ы
 
     bool file_exist( const std::string& filename );
+    bool directory_exist( const std::string& path );
 
     // Проверка xml-узла на соответствие <...f_prop="f_val">,
     // если не задано f_val, то проверяется, что просто f_prop!=""

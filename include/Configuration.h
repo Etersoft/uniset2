@@ -52,6 +52,9 @@ namespace uniset
             /*! конфигурирование xml-файлом ( предпочтительный способ )    */
             Configuration( int argc, const char* const* argv, const std::string& xmlfile = "" );
 
+            /*! конфигурирование внешним xml */
+            Configuration( int argc, const char* const* argv, std::shared_ptr<UniXML> xml );
+
             /*! конфигурирование xml-файлом    */
             Configuration( int argc, const char* const* argv, std::shared_ptr<ObjectIndex> oind, const std::string& xmlfile = "" );
 
@@ -251,6 +254,7 @@ namespace uniset
 
     /*! инициализация "глобальной" конфигурации */
     std::shared_ptr<Configuration> uniset_init( int argc, const char* const* argv, const std::string& xmlfile = "configure.xml" );
+    std::shared_ptr<Configuration> uniset_init( int argc, const char* const* argv, std::shared_ptr<UniXML> xml );
     // --------------------------------------------------------------------------
 }    // end of uniset namespace
 // --------------------------------------------------------------------------

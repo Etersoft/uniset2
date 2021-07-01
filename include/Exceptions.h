@@ -46,7 +46,7 @@ namespace uniset
     {
         public:
 
-            Exception(const std::string& txt) noexcept: text(txt.c_str()) {}
+            Exception(const std::string& txt) noexcept: text(txt) {}
             Exception() noexcept: text("Exception") {}
             virtual ~Exception() noexcept(true) {}
 

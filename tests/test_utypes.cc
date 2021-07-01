@@ -252,6 +252,12 @@ TEST_CASE("UniSetTypes: file_exist", "[utypes][file_exist]" )
     CHECK( file_exist(conf->getConfFileName()) );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: directory_exist", "[utypes][directory_exist]" )
+{
+    CHECK_FALSE( directory_exist("uknown_dir") );
+    CHECK( directory_exist("/") ); // linux only
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: check_filter", "[utypes][check_filter]" )
 {
     // bool check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val = "" ) noexcept;

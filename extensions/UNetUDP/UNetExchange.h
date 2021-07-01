@@ -47,6 +47,7 @@ namespace uniset
 
     - \ref pgUNetUDP_Common
     - \ref pgUNetUDP_Conf
+    - \ref pgUNetUDP_ConfMulticast
     - \ref pgUNetUDP_Reserv
     - \ref pgUNetUDP_SendFactor
     - \ref pgUNetUDP_Stat
@@ -57,16 +58,24 @@ namespace uniset
     посылает в сеть UDP-пакеты содержащие данные считанные из локальной SM. Формат данных - это набор
     пар [id,value]. Другие узлы принимают их. Помимо этого данный процесс запускает
     "получателей" по одному на каждый (другой) узел и ловит пакеты от них, сохраняя данные в SM.
-    При этом "получатели" работают на одном(!) потоке с использованием событий libev (см. UNetReceiver).
+    При этом "получатели" работают на одном потоке с использованием libev (см. UNetReceiver)
     или каждый на своём потоке. Это определяется параметром \b unet_update_strategy.
+
+    В текущей версии поддерживается два протокола для обмена broadcast udp и multicast. Какой использовать протокол
+    определяется в настроечной секции параметром \b unet_transport="broadcast" или \b unet_transport="multicast".
+    По умолчанию "broadcast".
+    \code
+            <UNetExchange name=".."  unet_transport="broadcast" />
+    \endcode
+    В зависимости от заданного протокола, будут использованы те или иные настройки.
 
     \par
     При своём старте процесс считывает из секции \<nodes> список узлов которые необходимо "слушать",
     а также параметры своего узла. Открывает по потоку приёма на каждый узел и поток
-    передачи для своих данных. Помимо этого такие же потоки для резервных каналов, если они включены
+    передачи данных от своего узла. Помимо этого такие же потоки для резервных каналов, если они включены
     (см. \ref pgUNetUDP_Reserv ).
 
-    \section pgUNetUDP_Conf Пример конфигурирования
+    \section pgUNetUDP_Conf Пример конфигурирования (UDP)
     По умолчанию при считывании используется \b unet_broadcast_ip (указанный в секции \<nodes>)
     и \b id узла - в качестве порта.
     Но можно переопределять эти параметры, при помощи указания \b unet_port и/или \b unet_broadcast_ip,
@@ -85,21 +94,73 @@ namespace uniset
 
     * \b unet_update_strategy - задаёт стратегию обновления данных в SM.
        Поддерживается два варианта:
-    - 'thread' - отдельный поток обновления
-    - 'evloop' - использование общего с приёмом event loop (libev)
+    - 'thread' - отдельный поток приёма обновлений для каждого узла
+    - 'evloop' - использование общего потока c event loop (libev)
 
     \note Имеется возможность задавать отдельную настроечную секцию для "списка узлов" при помощи параметра
      --prefix-nodes-confnode name. По умолчанию настройка ведётся по секции <nodes>
 
+    Чтобы отключить запуск "sender", можно указать \b nosender="1" в \b <item> конкретного узла
+    или непосредственно в настройках \b <UNetExchange  nosender="1"...>
+
+
+    \section pgUNetUDP_ConfMulticast Пример конфигурирования (Multicast)
+    По умолчанию при считывании используется \b unet_multicast_ip и \b id узла - в качестве порта.
+    Но можно переопределиять эти параметры, при помощи указания \b unet_multicast_port и/или \b unet_multicast_ip,
+    у конкретного узла (\<item>).
+    При этом в параметре unet_multicast_ip должен быть задан адрес multicast-групы на которую будет
+    подписываться каждый receiver и в которую будет писать соответствующий sender.
+    По умолчанию для подключения к группе используется интерфейс ANY, но параметром
+    unet_multicast_iface="192.168.1.1" можно задать интерфейс через который ожидаются multicast-пакеты.
+    Поддерживается текстовое задание интерфейса в виде unet_multicast_iface="eth0"
+
+    Для посылающего процесса можно определить параметр \b unet_multicast_ttl задающий время жизни multicast пакетов.
+    По умолчанию ttl=1. А так же определить ip для сокета параметром \b unet_multicast_sender_ip. По умолчанию "0.0.0.0".
+    Можно задавать текстовое название интерфейса unet_multicast_sender_ip="eth0", при этом
+    в качестве ip будет взят \b первый ip-адрес из привязанных к указанному интерфейсу.
+
+    В данной реализации поддерживается работа в два канала. Соответствующие настройки для второго канала имеют индекс "2":
+    \a unet_multicast_ip2, \a unet_multicast_port2, \a unet_multicast_iface2
+
+    Чтобы отключить запуск "sender", можно указать \b nosender="1" в \b <item> конкретного узла
+    или непосредственно в настройках \b <UNetExchange  nosender="1"...>
+
+    \code
+    <nodes port="2809" unet_broadcast_ip="192.168.56.255">
+      <item ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="1">
+        <iocards>
+          ...
+        </iocards>
+      </item>
+      <item id="3001" ip="192.168.56.10" name="Node1" textname="Node1" unet_update_strategy="evloop"
+            unet_multicast_ip="224.0.0.1"
+            unet_multicast_sender_ip="192.168.1.1"
+            unet_multicast_port2="3031"
+            unet_multicast_ip2="225.0.0.1"
+            unet_multicast_sender_ip2="192.168.2.1">
+        ...
+      </item>
+      <item id="3002" ip="192.168.56.11" name="Node2" textname="Node2">
+            unet_multicast_ip="224.0.0.2"
+            unet_multicast_sender_ip="192.168.1.2"
+            unet_multicast_port2="3032"
+            unet_multicast_ip2="225.0.0.2"
+            unet_multicast_sender_ip2="eth0">
+        ...
+      </item>
+    </nodes>
+    \endcode
+
     \section pgUNetUDP_Reserv Настройка резервного канала связи
     В текущей реализации поддерживается возможность обмена по двум подсетям (Ethernet-каналам).
     Она основана на том, что, для каждого узла помимо основного "читателя",
-    создаётся дополнительный "читатель"(поток) слушающий другой ip-адрес и порт.
-    А так же, для локального узла создаётся дополнительный "писатель"(поток),
+    создаётся дополнительный "читатель" слушающий другой ip-адрес и порт.
+    А так же, для локального узла создаётся дополнительный "писатель",
     который посылает данные в (указанную) вторую подсеть. Для того, чтобы задействовать
     второй канал, достаточно объявить в настройках переменные
     \b unet_broadcast_ip2. А также в случае необходимости для конкретного узла
     можно указать \b unet_broadcast_ip2 и \b unet_port2.
+    Или в случае multicast \b unet_multicast_ip2 и \b unet_multicast_port2.
 
     Переключение между "каналами" происходит по следующей логике:
 
@@ -115,7 +176,7 @@ namespace uniset
     В свою очередь "писатели"(если они не отключены) всегда посылают данные в оба канала.
 
     \section pgUNetUDP_SendFactor Регулирование частоты посылки
-    В текущей реализации поддерживается механизм, позволяющий регулировать частоту посылки данных
+    Данный механизм, позволяет регулировать частоту посылки данных
     для каждого датчика. Суть механизма заключается в том, что для каждого датчика можно задать свойство
     - \b prefix_sendfactor="N" Где N>1 - задаёт "делитель" относительно \b sendpause определяющий с какой частотой
     информация о данном датчике будет посылаться. Например N=2 - каждый второй цикл, N=3 - каждый третий и т.п.
@@ -159,7 +220,7 @@ namespace uniset
             /*! глобальная функция для вывода help-а */
             static void help_print( int argc, const char* argv[] ) noexcept;
 
-            bool checkExistUNetHost( const std::string& host, int port ) noexcept;
+            bool checkExistTransport( const std::string& transportID ) noexcept;
 
             inline std::shared_ptr<LogAgregator> getLogAggregator() noexcept
             {
@@ -195,6 +256,10 @@ namespace uniset
             void termSenders();
             void termReceivers();
 
+            void initMulticastTransport( UniXML::iterator nodes, const std::string& n_field, const std::string& n_fvalue, const std::string& prefix );
+            void initMulticastReceiverForNode( UniXML::iterator n_it, const std::string& prefix );
+
+            void initUDPTransport(UniXML::iterator nodes, const std::string& n_field, const std::string& n_fvalue, const std::string& prefix);
             void initIterators() noexcept;
             void startReceivers();
 

@@ -16,10 +16,13 @@
 // -------------------------------------------------------------------------
 #include <sstream>
 #include <iomanip>
+#include "unisetstd.h"
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UNetExchange.h"
 #include "UNetLogSugar.h"
+#include "UDPTransport.h"
+#include "MulticastTransport.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
@@ -63,17 +66,6 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
         logserv_port = conf->getArgPInt("--" + prefix + "-logserver-port", it.getProp("logserverPort"), getId());
     }
 
-    // определяем фильтр
-    s_field = conf->getArgParam("--" + prefix + "-filter-field");
-    s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
-    unetinfo << myname << "(init): read filter-field='" << s_field
-             << "' filter-value='" << s_fvalue << "'" << endl;
-
-    const string n_field(conf->getArgParam("--" + prefix + "-nodes-filter-field"));
-    const string n_fvalue(conf->getArgParam("--" + prefix + "-nodes-filter-value"));
-    unetinfo << myname << "(init): read nodes-filter-field='" << n_field
-             << "' nodes-filter-value='" << n_fvalue << "'" << endl;
-
     int recvTimeout = conf->getArgPInt("--" + prefix + "-recv-timeout", it.getProp("recvTimeout"), 5000);
     int prepareTime = conf->getArgPInt("--" + prefix + "-prepare-time", it.getProp("prepareTime"), 2000);
     int evrunTimeout = conf->getArgPInt("--" + prefix + "-evrun-timeout", it.getProp("evrunTimeout"), 60000);
@@ -88,8 +80,18 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
     int maxProcessingCount = conf->getArgPInt("--" + prefix + "-maxprocessingcount", it.getProp("maxProcessingCount"), 100);
     int checkConnectionPause = conf->getArgPInt("--" + prefix + "-checkconnection-pause", it.getProp("checkConnectionPause"), 10000);
     int initpause = conf->getArgPInt("--" + prefix + "-initpause", it.getProp("initpause"), 5000);
+    const string unet_transport = conf->getArg2Param("--" + prefix + "-transport", it.getProp("transport"), "broadcast");
 
-    std::string updateStrategy = conf->getArg2Param("--" + prefix + "-update-strategy", it.getProp("updateStrategy"), "evloop");
+    const std::string updateStrategy = conf->getArg2Param("--" + prefix + "-update-strategy", it.getProp("updateStrategy"), "evloop");
+    UNetReceiver::UpdateStrategy r_upStrategy = UNetReceiver::strToUpdateStrategy(updateStrategy);
+
+    if( r_upStrategy == UNetReceiver::useUpdateUnknown )
+    {
+        ostringstream err;
+        err << myname << ": Unknown update strategy!!! '" << updateStrategy << "'" << endl;
+        unetcrit << myname << "(init): " << err.str() << endl;
+        throw SystemError(err.str());
+    }
 
     no_sender = conf->getArgInt("--" + prefix + "-nosender", it.getProp("nosender"));
 
@@ -112,309 +114,69 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
 
     UniXML::iterator n_it(nodes);
 
-    string default_ip(n_it.getProp("unet_broadcast_ip"));
-    string default_ip2(n_it.getProp("unet_broadcast_ip2"));
+    // определяем фильтр
+    s_field = conf->getArg2Param("--" + prefix + "-filter-field", n_it.getProp("filter_field"));
+    s_fvalue = conf->getArg2Param("--" + prefix + "-filter-value", n_it.getProp("filter_value"));
+    unetinfo << myname << "(init): read filter-field='" << s_field
+             << "' filter-value='" << s_fvalue << "'" << endl;
 
-    if( !n_it.goChildren() )
-        throw uniset::SystemError("(UNetExchange): Items not found for <nodes>");
+    const string n_field = conf->getArg2Param("--" + prefix + "-nodes-filter-field", n_it.getProp("nodes_filter_field"));
+    const string n_fvalue = conf->getArg2Param("--" + prefix + "-nodes-filter-value", n_it.getProp("nodes_filter_value"));
+    unetinfo << myname << "(init): read nodes-filter-field='" << n_field
+             << "' nodes-filter-value='" << n_fvalue << "'" << endl;
 
-    for( ; n_it.getCurrent(); n_it.goNext() )
+    if( unet_transport == "multicast" )
+        initMulticastTransport(n_it, n_field, n_fvalue, prefix);
+    else
+        initUDPTransport(n_it, n_field, n_fvalue, prefix);
+
+    for( auto&& r : recvlist )
     {
-        if( n_it.getIntProp("unet_ignore") )
+        if( r.r1 )
         {
-            unetinfo << myname << "(init): unet_ignore.. for " << n_it.getProp("name") << endl;
-            continue;
+            r.r1->setReceiveTimeout(recvTimeout);
+            r.r1->setPrepareTime(prepareTime);
+            r.r1->setEvrunTimeout(evrunTimeout);
+            r.r1->setLostTimeout(lostTimeout);
+            r.r1->setReceivePause(recvpause);
+            r.r1->setUpdatePause(updatepause);
+            r.r1->setCheckConnectionPause(checkConnectionPause);
+            r.r1->setInitPause(initpause);
+            r.r1->setMaxDifferens(maxDiff);
+            r.r1->setMaxProcessingCount(maxProcessingCount);
+            r.r1->setUpdateStrategy(r_upStrategy);
         }
 
-        // проверяем фильтры для подсетей
-        if( !uniset::check_filter(n_it, n_field, n_fvalue) )
-            continue;
-
-        // Если указано поле unet_broadcast_ip непосредственно у узла - берём его
-        // если не указано берём общий broadcast_ip
-
-        string h = { n_it.getProp2("unet_broadcast_ip", default_ip) };
-        string h2 = { n_it.getProp2("unet_broadcast_ip2", default_ip2) };
-
-        if( h.empty() )
+        if( r.r2 )
         {
-            ostringstream err;
-            err << myname << "(init): Unknown broadcast IP for " << n_it.getProp("name");
-            unetcrit << err.str() << endl;
-            throw uniset::SystemError(err.str());
+            r.r2->setReceiveTimeout(recvTimeout);
+            r.r2->setPrepareTime(prepareTime);
+            r.r2->setEvrunTimeout(evrunTimeout);
+            r.r2->setLostTimeout(lostTimeout);
+            r.r2->setReceivePause(recvpause);
+            r.r2->setUpdatePause(updatepause);
+            r.r2->setCheckConnectionPause(checkConnectionPause);
+            r.r2->setInitPause(initpause);
+            r.r2->setMaxDifferens(maxDiff);
+            r.r2->setMaxProcessingCount(maxProcessingCount);
+            r.r2->setUpdateStrategy(r_upStrategy);
         }
+    }
 
-        if( h2.empty() )
-            unetinfo << myname << "(init): ip2 not used..." << endl;
+    if( sender )
+    {
+        sender->setSendPause(sendpause);
+        sender->setPackSendPause(packsendpause);
+        sender->setPackSendPauseFactor(packsendpauseFactor);
+        sender->setCheckConnectionPause(checkConnectionPause);
+    }
 
-        // Если указано поле unet_port - используем его
-        // Иначе port = идентификатору узла
-        int p = n_it.getPIntProp("unet_port", n_it.getIntProp("id"));
-
-        // по умолчанию порт на втором канале такой же как на первом (если не задан отдельно)
-        int p2 = n_it.getPIntProp("unet_port2", p);
-
-        string n(n_it.getProp("name"));
-
-        if( n == conf->getLocalNodeName() )
-        {
-            if( no_sender )
-            {
-                unetinfo << myname << "(init): sender OFF for this node...("
-                         << n_it.getProp("name") << ")" << endl;
-                continue;
-            }
-
-            unetinfo << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
-            sender = make_shared<UNetSender>(h, p, shm, false, s_field, s_fvalue, "unet", prefix);
-            sender->setSendPause(sendpause);
-            sender->setPackSendPause(packsendpause);
-            sender->setPackSendPauseFactor(packsendpauseFactor);
-            sender->setCheckConnectionPause(checkConnectionPause);
-            loga->add(sender->getLog());
-
-            try
-            {
-                // создаём "писателя" для второго канала если задан
-                if( !h2.empty() )
-                {
-                    unetinfo << myname << "(init): init sender2.. my node " << n_it.getProp("name") << endl;
-                    sender2 = make_shared<UNetSender>(h2, p2, shm, false, s_field, s_fvalue, prefix);
-                    sender2->setSendPause(sendpause);
-                    sender2->setCheckConnectionPause(checkConnectionPause);
-                    loga->add(sender2->getLog());
-                }
-            }
-            catch(...)
-            {
-                // т.е. это "резервный канал", то игнорируем ошибку его создания
-                // при запуске "интерфейс" может быть и не доступен...
-                sender2 = 0;
-                unetcrit << myname << "(ignore): DON`T CREATE 'UNetSender' for " << h2 << ":" << p2 << endl;
-            }
-
-            continue;
-        }
-
-        unetinfo << myname << "(init): add UNetReceiver for " << h << ":" << p << endl;
-
-        if( checkExistUNetHost(h, p) )
-        {
-            unetinfo << myname << "(init): " << h << ":" << p << " already added! Ignore.." << endl;
-            continue;
-        }
-
-        bool resp_invert = n_it.getIntProp("unet_respond_invert");
-
-        string s_resp_id(n_it.getProp("unet_respond1_id"));
-        uniset::ObjectId resp_id = uniset::DefaultObjectId;
-
-        if( !s_resp_id.empty() )
-        {
-            resp_id = conf->getSensorID(s_resp_id);
-
-            if( resp_id == uniset::DefaultObjectId )
-            {
-                ostringstream err;
-                err << myname << ": " << n_it.getProp("name") << " : Unknown RespondID.. Not found id for '" << s_resp_id << "'" << endl;
-                unetcrit << myname << "(init): " << err.str() << endl;
-                throw SystemError(err.str());
-            }
-        }
-
-        string s_resp2_id(n_it.getProp("unet_respond2_id"));
-        uniset::ObjectId resp2_id = uniset::DefaultObjectId;
-
-        if( !s_resp2_id.empty() )
-        {
-            resp2_id = conf->getSensorID(s_resp2_id);
-
-            if( resp2_id == uniset::DefaultObjectId )
-            {
-                ostringstream err;
-                err << myname << ": " << n_it.getProp("name") << " : Unknown RespondID(2).. Not found id for '" << s_resp2_id << "'" << endl;
-                unetcrit << myname << "(init): " << err.str() << endl;
-                throw SystemError(err.str());
-            }
-        }
-
-        string s_lp_id(n_it.getProp("unet_lostpackets1_id"));
-        uniset::ObjectId lp_id = uniset::DefaultObjectId;
-
-        if( !s_lp_id.empty() )
-        {
-            lp_id = conf->getSensorID(s_lp_id);
-
-            if( lp_id == uniset::DefaultObjectId )
-            {
-                ostringstream err;
-                err << myname << ": " << n_it.getProp("name") << " : Unknown LostPacketsID.. Not found id for '" << s_lp_id << "'" << endl;
-                unetcrit << myname << "(init): " << err.str() << endl;
-                throw SystemError(err.str());
-            }
-        }
-
-        string s_lp2_id(n_it.getProp("unet_lostpackets2_id"));
-        uniset::ObjectId lp2_id = uniset::DefaultObjectId;
-
-        if( !s_lp2_id.empty() )
-        {
-            lp2_id = conf->getSensorID(s_lp2_id);
-
-            if( lp2_id == uniset::DefaultObjectId )
-            {
-                ostringstream err;
-                err << myname << ": " << n_it.getProp("name") << " : Unknown LostPacketsID(2).. Not found id for '" << s_lp2_id << "'" << endl;
-                unetcrit << myname << "(init): " << err.str() << endl;
-                throw SystemError(err.str());
-            }
-        }
-
-        string s_lp_comm_id(n_it.getProp("unet_lostpackets_id"));
-        uniset::ObjectId lp_comm_id = uniset::DefaultObjectId;
-
-        if( !s_lp_comm_id.empty() )
-        {
-            lp_comm_id = conf->getSensorID(s_lp_comm_id);
-
-            if( lp_comm_id == uniset::DefaultObjectId )
-            {
-                ostringstream err;
-                err << myname << ": " << n_it.getProp("name") << " : Unknown LostPacketsID(comm).. Not found id for '" << s_lp_comm_id << "'" << endl;
-                unetcrit << myname << "(init): " << err.str() << endl;
-                throw SystemError(err.str());
-            }
-        }
-
-        string s_resp_comm_id(n_it.getProp("unet_respond_id"));
-        uniset::ObjectId resp_comm_id = uniset::DefaultObjectId;
-
-        if( !s_resp_comm_id.empty() )
-        {
-            resp_comm_id = conf->getSensorID(s_resp_comm_id);
-
-            if( resp_comm_id == uniset::DefaultObjectId )
-            {
-                ostringstream err;
-                err << myname << ": " << n_it.getProp("name") << " : Unknown RespondID(comm).. Not found id for '" << s_resp_comm_id << "'" << endl;
-                unetcrit << myname << "(init): " << err.str() << endl;
-                throw SystemError(err.str());
-            }
-        }
-
-        string s_numchannel_id(n_it.getProp("unet_numchannel_id"));
-        uniset::ObjectId numchannel_id = uniset::DefaultObjectId;
-
-        if( !s_numchannel_id.empty() )
-        {
-            numchannel_id = conf->getSensorID(s_numchannel_id);
-
-            if( numchannel_id == uniset::DefaultObjectId )
-            {
-                ostringstream err;
-                err << myname << ": " << n_it.getProp("name") << " : Unknown NumChannelID.. Not found id for '" << s_numchannel_id << "'" << endl;
-                unetcrit << myname << "(init): " << err.str() << endl;
-                throw SystemError(err.str());
-            }
-        }
-
-        string s_channelSwitchCount_id(n_it.getProp("unet_channelswitchcount_id"));
-        uniset::ObjectId channelswitchcount_id = uniset::DefaultObjectId;
-
-        if( !s_channelSwitchCount_id.empty() )
-        {
-            channelswitchcount_id = conf->getSensorID(s_channelSwitchCount_id);
-
-            if( channelswitchcount_id == uniset::DefaultObjectId )
-            {
-                ostringstream err;
-                err << myname << ": " << n_it.getProp("name") << " : Unknown ChannelSwitchCountID.. Not found id for '" << channelswitchcount_id << "'" << endl;
-                unetcrit << myname << "(init): " << err.str() << endl;
-                throw SystemError(err.str());
-            }
-        }
-
-        UNetReceiver::UpdateStrategy r_upStrategy = UNetReceiver::strToUpdateStrategy( n_it.getProp2("unet_update_strategy", updateStrategy) );
-
-        if( r_upStrategy == UNetReceiver::useUpdateUnknown )
-        {
-            ostringstream err;
-            err << myname << ": Unknown update strategy!!! '" << n_it.getProp2("unet_update_strategy", updateStrategy) << "'" << endl;
-            unetcrit << myname << "(init): " << err.str() << endl;
-            throw SystemError(err.str());
-        }
-
-        unetinfo << myname << "(init): (node='" << n << "') add  basic receiver "
-                 << h << ":" << p << endl;
-        auto r = make_shared<UNetReceiver>(h, p, shm, false, prefix);
-
-        loga->add(r->getLog());
-
-        // на всякий принудительно разблокируем,
-        // чтобы не зависеть от значения по умолчанию
-        r->setLockUpdate(false);
-
-        r->setReceiveTimeout(recvTimeout);
-        r->setPrepareTime(prepareTime);
-        r->setEvrunTimeout(evrunTimeout);
-        r->setLostTimeout(lostTimeout);
-        r->setReceivePause(recvpause);
-        r->setUpdatePause(updatepause);
-        r->setCheckConnectionPause(checkConnectionPause);
-        r->setInitPause(initpause);
-        r->setMaxDifferens(maxDiff);
-        r->setMaxProcessingCount(maxProcessingCount);
-        r->setRespondID(resp_id, resp_invert);
-        r->setLostPacketsID(lp_id);
-        r->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
-        r->setUpdateStrategy(r_upStrategy);
-
-        shared_ptr<UNetReceiver> r2(nullptr);
-
-        try
-        {
-            if( !h2.empty() ) // создаём читателя впо второму каналу
-            {
-                unetinfo << myname << "(init): (node='" << n << "') add reserv receiver "
-                         << h2 << ":" << p2 << endl;
-
-                r2 = make_shared<UNetReceiver>(h2, p2, shm, false, prefix);
-
-                loga->add(r2->getLog());
-
-                // т.к. это резервный канал (по началу блокируем его)
-                r2->setLockUpdate(true);
-
-                r2->setReceiveTimeout(recvTimeout);
-                r2->setPrepareTime(prepareTime);
-                r2->setEvrunTimeout(evrunTimeout);
-                r2->setLostTimeout(lostTimeout);
-                r2->setReceivePause(recvpause);
-                r2->setUpdatePause(updatepause);
-                r2->setCheckConnectionPause(checkConnectionPause);
-                r2->setInitPause(initpause);
-                r2->setMaxDifferens(maxDiff);
-                r2->setMaxProcessingCount(maxProcessingCount);
-                r2->setRespondID(resp2_id, resp_invert);
-                r2->setLostPacketsID(lp2_id);
-                r2->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
-                r2->setUpdateStrategy(r_upStrategy);
-            }
-        }
-        catch(...)
-        {
-            // т.е. это "резервный канал", то игнорируем ошибку его создания
-            // при запуске "интерфейс" может быть и не доступен...
-            r2 = 0;
-            unetcrit << myname << "(ignore): DON`T CREATE 'UNetReceiver' for " << h2 << ":" << p2 << endl;
-        }
-
-        ReceiverInfo ri(r, r2);
-        ri.setRespondID(resp_comm_id, resp_invert);
-        ri.setLostPacketsID(lp_comm_id);
-        ri.setChannelNumID(numchannel_id);
-        ri.setChannelSwitchCountID(channelswitchcount_id);
-        recvlist.emplace_back( std::move(ri) );
+    if( sender2 )
+    {
+        sender2->setSendPause(sendpause);
+        sender2->setPackSendPause(packsendpause);
+        sender2->setPackSendPauseFactor(packsendpauseFactor);
+        sender2->setCheckConnectionPause(checkConnectionPause);
     }
 
     // -------------------------------
@@ -473,11 +235,11 @@ UNetExchange::~UNetExchange()
 {
 }
 // -----------------------------------------------------------------------------
-bool UNetExchange::checkExistUNetHost(const std::string& addr, int port ) noexcept
+bool UNetExchange::checkExistTransport( const std::string& transportID ) noexcept
 {
     for( const auto& it : recvlist )
     {
-        if( it.r1->getAddress() == addr && it.r1->getPort() == port )
+        if( it.r1->getTransportID() == transportID )
             return true;
     }
 
@@ -1056,4 +818,552 @@ uniset::SimpleInfo* UNetExchange::getInfo( const char* userparam )
     return i._retn();
 }
 // ----------------------------------------------------------------------------
+void UNetExchange::initUDPTransport( UniXML::iterator n_it,
+                                     const std::string& n_field,
+                                     const std::string& n_fvalue,
+                                     const std::string& prefix )
+{
+    auto conf = uniset_conf();
+    const string default_ip = n_it.getProp("unet_broadcast_ip");
+    const string default_ip2 = n_it.getProp("unet_broadcast_ip2");
 
+    if( !n_it.goChildren() )
+        throw uniset::SystemError("(UNetExchange): Items not found for <nodes>");
+
+    for( ; n_it.getCurrent(); n_it.goNext() )
+    {
+        if( n_it.getIntProp("unet_ignore") )
+        {
+            unetinfo << myname << "(init): unet_ignore.. for " << n_it.getProp("name") << endl;
+            continue;
+        }
+
+        // проверяем фильтры для подсетей
+        if( !uniset::check_filter(n_it, n_field, n_fvalue) )
+            continue;
+
+        string n = n_it.getProp("name");
+
+        if( n == conf->getLocalNodeName() )
+        {
+            if( no_sender || n_it.getIntProp("nosedner") > 0 )
+            {
+                unetinfo << myname << "(init): sender OFF for this node...("
+                         << n_it.getProp("name") << ")" << endl;
+                continue;
+            }
+
+            unetinfo << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
+            auto s1 = UDPSendTransport::createFromXml(n_it, default_ip, 0);
+            sender = make_shared<UNetSender>(std::move(s1), shm, false, s_field, s_fvalue, "unet", prefix);
+            loga->add(sender->getLog());
+
+            try
+            {
+                sender2 = nullptr;
+
+                // создаём "писателя" для второго канала если задан
+                if( n_it.getProp("unet_broadcast_ip2").empty() || !default_ip2.empty() )
+                {
+                    auto s2 = UDPSendTransport::createFromXml(n_it, default_ip2, 2);
+                    sender2 = make_shared<UNetSender>(std::move(s2), shm, false, s_field, s_fvalue, "unet", prefix);
+                }
+
+                if( sender2 )
+                    loga->add(sender2->getLog());
+                else
+                    unetwarn << myname << "(ignore): sender for Channel2 disabled " << endl;
+            }
+            catch( std::exception& ex )
+            {
+                // т.е. это "резервный канал", то игнорируем ошибку его создания
+                // при запуске "интерфейс" может быть и не доступен...
+                sender2 = nullptr;
+                unetcrit << myname <<  "(init): IGNORE! channel2 create error: " << ex.what() << endl;
+            }
+
+            continue;
+        }
+
+        unetinfo << myname << "(init): add UNetReceiver for node " << n_it.getProp("name") << endl;
+        std::unique_ptr<UNetReceiveTransport> transport1;
+        transport1 = UDPReceiveTransport::createFromXml(n_it, default_ip, 0);
+
+        if( checkExistTransport(transport1->ID()) )
+        {
+            unetinfo << myname << "(init): " << transport1->ID() << " already added! Ignore.." << endl;
+            continue;
+        }
+
+        bool resp_invert = n_it.getIntProp("unet_respond_invert");
+
+        string s_resp_id(n_it.getProp("unet_respond1_id"));
+        uniset::ObjectId resp_id = uniset::DefaultObjectId;
+
+        if( !s_resp_id.empty() )
+        {
+            resp_id = conf->getSensorID(s_resp_id);
+
+            if( resp_id == uniset::DefaultObjectId )
+            {
+                ostringstream err;
+                err << myname << ": " << n_it.getProp("name") << " : Unknown RespondID.. Not found id for '" << s_resp_id << "'" << endl;
+                unetcrit << myname << "(init): " << err.str() << endl;
+                throw SystemError(err.str());
+            }
+        }
+
+        string s_resp2_id(n_it.getProp("unet_respond2_id"));
+        uniset::ObjectId resp2_id = uniset::DefaultObjectId;
+
+        if( !s_resp2_id.empty() )
+        {
+            resp2_id = conf->getSensorID(s_resp2_id);
+
+            if( resp2_id == uniset::DefaultObjectId )
+            {
+                ostringstream err;
+                err << myname << ": " << n_it.getProp("name") << " : Unknown RespondID(2).. Not found id for '" << s_resp2_id << "'" << endl;
+                unetcrit << myname << "(init): " << err.str() << endl;
+                throw SystemError(err.str());
+            }
+        }
+
+        string s_lp_id(n_it.getProp("unet_lostpackets1_id"));
+        uniset::ObjectId lp_id = uniset::DefaultObjectId;
+
+        if( !s_lp_id.empty() )
+        {
+            lp_id = conf->getSensorID(s_lp_id);
+
+            if( lp_id == uniset::DefaultObjectId )
+            {
+                ostringstream err;
+                err << myname << ": " << n_it.getProp("name") << " : Unknown LostPacketsID.. Not found id for '" << s_lp_id << "'" << endl;
+                unetcrit << myname << "(init): " << err.str() << endl;
+                throw SystemError(err.str());
+            }
+        }
+
+        string s_lp2_id(n_it.getProp("unet_lostpackets2_id"));
+        uniset::ObjectId lp2_id = uniset::DefaultObjectId;
+
+        if( !s_lp2_id.empty() )
+        {
+            lp2_id = conf->getSensorID(s_lp2_id);
+
+            if( lp2_id == uniset::DefaultObjectId )
+            {
+                ostringstream err;
+                err << myname << ": " << n_it.getProp("name") << " : Unknown LostPacketsID(2).. Not found id for '" << s_lp2_id << "'" << endl;
+                unetcrit << myname << "(init): " << err.str() << endl;
+                throw SystemError(err.str());
+            }
+        }
+
+        string s_lp_comm_id(n_it.getProp("unet_lostpackets_id"));
+        uniset::ObjectId lp_comm_id = uniset::DefaultObjectId;
+
+        if( !s_lp_comm_id.empty() )
+        {
+            lp_comm_id = conf->getSensorID(s_lp_comm_id);
+
+            if( lp_comm_id == uniset::DefaultObjectId )
+            {
+                ostringstream err;
+                err << myname << ": " << n_it.getProp("name") << " : Unknown LostPacketsID(comm).. Not found id for '" << s_lp_comm_id << "'" << endl;
+                unetcrit << myname << "(init): " << err.str() << endl;
+                throw SystemError(err.str());
+            }
+        }
+
+        string s_resp_comm_id(n_it.getProp("unet_respond_id"));
+        uniset::ObjectId resp_comm_id = uniset::DefaultObjectId;
+
+        if( !s_resp_comm_id.empty() )
+        {
+            resp_comm_id = conf->getSensorID(s_resp_comm_id);
+
+            if( resp_comm_id == uniset::DefaultObjectId )
+            {
+                ostringstream err;
+                err << myname << ": " << n_it.getProp("name") << " : Unknown RespondID(comm).. Not found id for '" << s_resp_comm_id << "'" << endl;
+                unetcrit << myname << "(init): " << err.str() << endl;
+                throw SystemError(err.str());
+            }
+        }
+
+        string s_numchannel_id(n_it.getProp("unet_numchannel_id"));
+        uniset::ObjectId numchannel_id = uniset::DefaultObjectId;
+
+        if( !s_numchannel_id.empty() )
+        {
+            numchannel_id = conf->getSensorID(s_numchannel_id);
+
+            if( numchannel_id == uniset::DefaultObjectId )
+            {
+                ostringstream err;
+                err << myname << ": " << n_it.getProp("name") << " : Unknown NumChannelID.. Not found id for '" << s_numchannel_id << "'" << endl;
+                unetcrit << myname << "(init): " << err.str() << endl;
+                throw SystemError(err.str());
+            }
+        }
+
+        string s_channelSwitchCount_id(n_it.getProp("unet_channelswitchcount_id"));
+        uniset::ObjectId channelswitchcount_id = uniset::DefaultObjectId;
+
+        if( !s_channelSwitchCount_id.empty() )
+        {
+            channelswitchcount_id = conf->getSensorID(s_channelSwitchCount_id);
+
+            if( channelswitchcount_id == uniset::DefaultObjectId )
+            {
+                ostringstream err;
+                err << myname << ": " << n_it.getProp("name") << " : Unknown ChannelSwitchCountID.. Not found id for '" << channelswitchcount_id << "'" << endl;
+                unetcrit << myname << "(init): " << err.str() << endl;
+                throw SystemError(err.str());
+            }
+        }
+
+        unetinfo << myname << "(init): (node='" << n << "') add basic receiver " << transport1->ID() << endl;
+        auto r1 = make_shared<UNetReceiver>(std::move(transport1), shm, false, prefix);
+
+        loga->add(r1->getLog());
+
+        // на всякий принудительно разблокируем,
+        // чтобы не зависеть от значения по умолчанию
+        r1->setLockUpdate(false);
+        r1->setRespondID(resp_id, resp_invert);
+        r1->setLostPacketsID(lp_id);
+        r1->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
+
+        shared_ptr<UNetReceiver> r2(nullptr);
+
+        try
+        {
+            std::unique_ptr<UNetReceiveTransport> transport2 = nullptr;
+
+            if( !n_it.getProp("unet_broadcast_ip2").empty() || !default_ip2.empty() )
+                transport2 = UDPReceiveTransport::createFromXml(n_it, default_ip2, 2);
+
+            if( transport2 ) // создаём читателя по второму каналу
+            {
+                unetinfo << myname << "(init): (node='" << n << "') add reserv receiver " << transport2->ID() << endl;
+                r2 = make_shared<UNetReceiver>(std::move(transport2), shm, false, prefix);
+
+                loga->add(r2->getLog());
+
+                // т.к. это резервный канал (по началу блокируем его)
+                r2->setLockUpdate(true);
+                r2->setRespondID(resp2_id, resp_invert);
+                r2->setLostPacketsID(lp2_id);
+                r2->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
+            }
+        }
+        catch( std::exception& ex )
+        {
+            // т.е. это "резервный канал", то игнорируем ошибку его создания
+            // при запуске "интерфейс" может быть и не доступен...
+            r2 = nullptr;
+            unetcrit << myname << "(ignore): DON`T CREATE reserve 'UNetReceiver'.  error: " << ex.what() << endl;
+        }
+
+        ReceiverInfo ri(r1, r2);
+        ri.setRespondID(resp_comm_id, resp_invert);
+        ri.setLostPacketsID(lp_comm_id);
+        ri.setChannelNumID(numchannel_id);
+        ri.setChannelSwitchCountID(channelswitchcount_id);
+        recvlist.emplace_back( std::move(ri) );
+    }
+}
+// ----------------------------------------------------------------------------
+/*
+ <nodes ...>
+ <item id="3000" unet_multicast_receive_from_all_nodes="1" unet_multicast_ip="192.168.0.255" unet_multicast_ip2="192.169.0.255">
+   <multicast>
+     <send>
+        <group addr="224.0.0.1"/>
+     </send>
+   </multicast>
+  </item>
+  ...
+  </nodes>
+*/
+void UNetExchange::initMulticastTransport( UniXML::iterator n_it,
+        const std::string& n_field,
+        const std::string& n_fvalue,
+        const std::string& prefix )
+{
+    auto conf = uniset_conf();
+
+    if( !n_it.goChildren() )
+        throw uniset::SystemError("(UNetExchange): Items not found for <nodes>");
+
+    // init senders
+    for( ; n_it.getCurrent(); n_it.goNext() )
+    {
+        if( n_it.getIntProp("unet_ignore") )
+        {
+            unetinfo << myname << "(init): " << n_it.getProp("name") << " unet_ignore.." << endl;
+            continue;
+        }
+
+        // проверяем фильтры для подсетей
+        if( !uniset::check_filter(n_it, n_field, n_fvalue) )
+            continue;
+
+        string n = n_it.getProp("name");
+
+        if( n != conf->getLocalNodeName() )
+        {
+            initMulticastReceiverForNode(n_it, prefix);
+            continue;
+        }
+
+        if( no_sender || n_it.getIntProp("nosedner") > 0 )
+        {
+            unetinfo << myname << "(init): " << n_it.getProp("name") << " sender DISABLED." << endl;
+            break;
+        }
+
+        // INIT SENDER
+        unetinfo << myname << "(init): " << n_it.getProp("name") << " init sender.." << endl;
+
+        auto s1 = MulticastSendTransport::createFromXml(n_it, 0);
+        unetinfo << myname << "(init): " << n_it.getProp("name") << " send (channel1) to multicast group: " << s1->getGroupAddress().toString() << endl;
+
+        sender = make_shared<UNetSender>(std::move(s1), shm, false, s_field, s_fvalue, "unet", prefix);
+        loga->add(sender->getLog());
+
+        try
+        {
+            sender2 = nullptr;
+
+            if( !n_it.getProp("unet_multicast_ip2").empty() )
+            {
+                auto s2 = MulticastSendTransport::createFromXml(n_it, 2);
+
+                if( s2 )
+                    unetinfo << myname << "(init): " << n_it.getProp("name") << " send (channel2) to multicast group: " << s2->getGroupAddress().toString() << endl;
+
+                sender2 = make_shared<UNetSender>(std::move(s2), shm, false, s_field, s_fvalue, "unet", prefix);
+            }
+
+            if( sender2 )
+                loga->add(sender2->getLog());
+            else
+                unetwarn << myname << "(ignore): " << n_it.getProp("name") << " sender for Channel2 disabled " << endl;
+        }
+        catch( std::exception& ex )
+        {
+            // т.е. это "резервный канал", то игнорируем ошибку его создания
+            // при запуске "интерфейс" может быть и не доступен...
+            sender2 = nullptr;
+            unetcrit << myname <<  "(init): IGNORE! channel2 create error: " << ex.what() << endl;
+        }
+    }
+}
+// ----------------------------------------------------------------------------
+void UNetExchange::initMulticastReceiverForNode( UniXML::iterator n_it, const std::string& prefix )
+{
+    auto conf = uniset_conf();
+
+    unetinfo << myname << "(init): " << n_it.getProp("name") << " init receivers:" <<  endl;
+    auto transport1 = MulticastReceiveTransport::createFromXml(n_it, 0);
+
+    if( checkExistTransport(transport1->ID()) )
+    {
+        unetinfo << myname << "(init): " << transport1->ID() << " already added! Ignore.." << endl;
+        return;
+    }
+
+    bool resp_invert = n_it.getIntProp("unet_respond_invert");
+
+    string s_resp_id(n_it.getProp("unet_respond1_id"));
+    uniset::ObjectId resp_id = uniset::DefaultObjectId;
+
+    if( !s_resp_id.empty() )
+    {
+        resp_id = conf->getSensorID(s_resp_id);
+
+        if( resp_id == uniset::DefaultObjectId )
+        {
+            ostringstream err;
+            err << myname << ": " << n_it.getProp("name") << " : Unknown RespondID.. Not found id for '" << s_resp_id << "'" << endl;
+            unetcrit << myname << "(init): " << err.str() << endl;
+            throw SystemError(err.str());
+        }
+    }
+
+    string s_resp2_id(n_it.getProp("unet_respond2_id"));
+    uniset::ObjectId resp2_id = uniset::DefaultObjectId;
+
+    if( !s_resp2_id.empty() )
+    {
+        resp2_id = conf->getSensorID(s_resp2_id);
+
+        if( resp2_id == uniset::DefaultObjectId )
+        {
+            ostringstream err;
+            err << myname << ": " << n_it.getProp("name") << " : Unknown RespondID(2).. Not found id for '" << s_resp2_id << "'" << endl;
+            unetcrit << myname << "(init): " << err.str() << endl;
+            throw SystemError(err.str());
+        }
+    }
+
+    string s_lp_id(n_it.getProp("unet_lostpackets1_id"));
+    uniset::ObjectId lp_id = uniset::DefaultObjectId;
+
+    if( !s_lp_id.empty() )
+    {
+        lp_id = conf->getSensorID(s_lp_id);
+
+        if( lp_id == uniset::DefaultObjectId )
+        {
+            ostringstream err;
+            err << myname << ": " << n_it.getProp("name") << " : Unknown LostPacketsID.. Not found id for '" << s_lp_id << "'" << endl;
+            unetcrit << myname << "(init): " << err.str() << endl;
+            throw SystemError(err.str());
+        }
+    }
+
+    string s_lp2_id(n_it.getProp("unet_lostpackets2_id"));
+    uniset::ObjectId lp2_id = uniset::DefaultObjectId;
+
+    if( !s_lp2_id.empty() )
+    {
+        lp2_id = conf->getSensorID(s_lp2_id);
+
+        if( lp2_id == uniset::DefaultObjectId )
+        {
+            ostringstream err;
+            err << myname << ": " << n_it.getProp("name") << " : Unknown LostPacketsID(2).. Not found id for '" << s_lp2_id << "'" << endl;
+            unetcrit << myname << "(init): " << err.str() << endl;
+            throw SystemError(err.str());
+        }
+    }
+
+    string s_lp_comm_id(n_it.getProp("unet_lostpackets_id"));
+    uniset::ObjectId lp_comm_id = uniset::DefaultObjectId;
+
+    if( !s_lp_comm_id.empty() )
+    {
+        lp_comm_id = conf->getSensorID(s_lp_comm_id);
+
+        if( lp_comm_id == uniset::DefaultObjectId )
+        {
+            ostringstream err;
+            err << myname << ": " << n_it.getProp("name") << " : Unknown LostPacketsID(comm).. Not found id for '" << s_lp_comm_id << "'" << endl;
+            unetcrit << myname << "(init): " << err.str() << endl;
+            throw SystemError(err.str());
+        }
+    }
+
+    string s_resp_comm_id(n_it.getProp("unet_respond_id"));
+    uniset::ObjectId resp_comm_id = uniset::DefaultObjectId;
+
+    if( !s_resp_comm_id.empty() )
+    {
+        resp_comm_id = conf->getSensorID(s_resp_comm_id);
+
+        if( resp_comm_id == uniset::DefaultObjectId )
+        {
+            ostringstream err;
+            err << myname << ": " << n_it.getProp("name") << " : Unknown RespondID(comm).. Not found id for '" << s_resp_comm_id << "'" << endl;
+            unetcrit << myname << "(init): " << err.str() << endl;
+            throw SystemError(err.str());
+        }
+    }
+
+    string s_numchannel_id(n_it.getProp("unet_numchannel_id"));
+    uniset::ObjectId numchannel_id = uniset::DefaultObjectId;
+
+    if( !s_numchannel_id.empty() )
+    {
+        numchannel_id = conf->getSensorID(s_numchannel_id);
+
+        if( numchannel_id == uniset::DefaultObjectId )
+        {
+            ostringstream err;
+            err << myname << ": " << n_it.getProp("name") << " : Unknown NumChannelID.. Not found id for '" << s_numchannel_id << "'" << endl;
+            unetcrit << myname << "(init): " << err.str() << endl;
+            throw SystemError(err.str());
+        }
+    }
+
+    string s_channelSwitchCount_id(n_it.getProp("unet_channelswitchcount_id"));
+    uniset::ObjectId channelswitchcount_id = uniset::DefaultObjectId;
+
+    if( !s_channelSwitchCount_id.empty() )
+    {
+        channelswitchcount_id = conf->getSensorID(s_channelSwitchCount_id);
+
+        if( channelswitchcount_id == uniset::DefaultObjectId )
+        {
+            ostringstream err;
+            err << myname << ": " << n_it.getProp("name") << " : Unknown ChannelSwitchCountID.. Not found id for '" << channelswitchcount_id << "'" << endl;
+            unetcrit << myname << "(init):  " << err.str() << endl;
+            throw SystemError(err.str());
+        }
+    }
+
+    unetinfo << myname << "(init): (node='" << n_it.getProp("name") << "') add channel1 receiver " << transport1->ID() << " iface: " << transport1->iface() << endl;
+    unetinfo << myname << "(init): receive (channel1) from multicast groups: " << endl;
+
+    for( const auto& gr : transport1->getGroups() )
+        unetinfo << myname << "(init):  " << gr.toString() << endl;
+
+    auto r1 = make_shared<UNetReceiver>(std::move(transport1), shm, false, prefix);
+
+    loga->add(r1->getLog());
+
+    // на всякий принудительно разблокируем,
+    // чтобы не зависеть от значения по умолчанию
+    r1->setLockUpdate(false);
+    r1->setRespondID(resp_id, resp_invert);
+    r1->setLostPacketsID(lp_id);
+    r1->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
+
+    shared_ptr<UNetReceiver> r2(nullptr);
+
+    try
+    {
+        std::unique_ptr<MulticastReceiveTransport> transport2 = nullptr;
+
+        if (!n_it.getProp("unet_multicast_ip2").empty() )
+            transport2 = MulticastReceiveTransport::createFromXml(n_it, 2);
+
+        if( transport2 ) // создаём читателя по второму каналу
+        {
+            unetinfo << myname << "(init): (node='" << n_it.getProp("name") << "') add channel2 receiver " << transport2->ID() << " iface: " << transport2->iface() << endl;
+            unetinfo << myname << "(init): receive(channel2) from multicast groups: " << endl;
+
+            for( const auto& gr : transport2->getGroups() )
+                unetinfo << myname << "(init):  " << gr.toString() << endl;
+
+            r2 = make_shared<UNetReceiver>(std::move(transport2), shm, false, prefix);
+
+            loga->add(r2->getLog());
+
+            // т.к. это резервный канал (по началу блокируем его)
+            r2->setLockUpdate(true);
+            r2->setRespondID(resp2_id, resp_invert);
+            r2->setLostPacketsID(lp2_id);
+            r2->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
+        }
+    }
+    catch( std::exception& ex )
+    {
+        // т.е. это "резервный канал", то игнорируем ошибку его создания
+        // при запуске "интерфейс" может быть и не доступен...
+        r2 = nullptr;
+        unetcrit << myname << "(ignore): DON`T CREATE reserve 'UNetReceiver'.  error: " << ex.what() << endl;
+    }
+
+    ReceiverInfo ri(r1, r2);
+    ri.setRespondID(resp_comm_id, resp_invert);
+    ri.setLostPacketsID(lp_comm_id);
+    ri.setChannelNumID(numchannel_id);
+    ri.setChannelSwitchCountID(channelswitchcount_id);
+    recvlist.emplace_back( std::move(ri) );
+}

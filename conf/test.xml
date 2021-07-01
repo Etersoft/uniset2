@@ -8,7 +8,7 @@
 	<!-- Общие(стартовые) параметры по UniSet -->
 	<UniSet>
 		<NameService host="localhost" port="2809"/>
-		<LocalNode name="LocalhostNode"/>
+		<LocalNode name="localhost"/>
 		<RootSection name="UNISET_PLC"/>
 		<CountOfNet name="1"/>
 		<RepeatCount name="3"/>
@@ -81,7 +81,7 @@
 				<item filter="a2" fuse_id="AlarmFuse2_AS" fuse_value="2" id="2" size="30"/>
 			</History>
             <ReservList>
-                <item node="LocalhostNode" name="ReservSharedMemory"/>
+                <item node="localhost" name="ReservSharedMemory"/>
             </ReservList>			
 		</SharedMemory>
 		<UniExchange name="UniExchange">
@@ -181,7 +181,7 @@
 		</RTUExchange>
 		<UDPExchange name="UDPExchange"/>
 		<UDPExchange2 name="UDPExchange2"/>
-		<UNetExchange name="UNetExchange"/>
+		<UNetExchange name="UNetExchange" transport="multicast"/>
 		<HeartBeatTime msec="5000"/>
 		<NCReadyTimeout msec="120000"/>
 		<TestGen input1_s="Input1_S" input2_s="DumpSensor1_S" name="TestGen" output1_c="DO_C" output2_c="DO1_C"/>
@@ -197,8 +197,8 @@
 		</RRDServer1>
 
 		<specnet unet_broadcast_ip="192.168.1.255" unet_broadcast_ip2="192.168.122.255">
-			<item id="3100" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="0" unet_port="2048"/>
-			<item id="3101" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="0" unet_port="2048"/>
+			<item id="3100" ip="127.0.0.1" name="localhost" textname="Локальный узел" unet_ignore="0" unet_port="2048"/>
+			<item id="3101" ip="127.0.0.1" name="localhost" textname="Локальный узел" unet_ignore="0" unet_port="2048"/>
 		</specnet>
 
 		<GroupAnalogSensors name="TestGroup" ok_c="D106_S"/>
@@ -215,22 +215,41 @@
 	textname 	- текстовое имя датчика
 -->
 		<nodes port="2809" unet_broadcast_ip="127.255.255.255" unet_broadcast_ip2="192.168.56.255">
-			<item id="3000" dbserver="DBServer1" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="0" unet_port="2048">
+			<item id="3000" dbserver="DBServer1" infserver="InfoServer" ip="127.0.0.1" name="localhost" textname="Локальный узел"
+                unet_ignore="0" unet_port="2048"
+                unet_multicast_ip="226.0.31.1"
+                unet_multicast_iface="lo"
+                unet_multicast_port="3110"
+                unet_multicast_sender_ip="192.168.0.4"
+
+                unet_multicast_ip2="227.0.31.1"
+                unet_multicast_port2="3120"
+                unet_multicast_sender_ip2="192.168.0.47">
 				<iocards>
 					<item card="1" name="DI32"/>
 					<item card="2" name="DO32"/>
 					<item baddr="0x110" card="3" dev="/dev/null" name="UNIO48" subdev1="TBI24_0" subdev2="TBI16_8"/>
 				</iocards>
 			</item>
-			<item id="3001" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode1" textname="Локальный узел" unet_ignore="0" unet_port="2049"/>
-			<item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="0" unet_port="3001" unet_respond_id="Input1_S" unet_respond_invert="1"/>
-			<item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_ignore="0" unet_port="3002"/>
-			<item id="3004" ip="192.168.56.12" name="Node3" textname="Node3"/>
-			<item id="3005" ip="192.168.56.13" name="Node4" textname="Node4"/>
-			<item id="3006" ip="192.168.56.14" name="Node5" textname="Node5"/>
-			<item id="3007" ip="192.168.56.15" name="Node6" textname="Node6"/>
-			<item id="3008" ip="192.168.56.16" name="Node7" textname="Node7"/>
-			<item id="3009" ip="192.168.56.17" name="Node8" textname="Node8"/>
+			<item id="3001" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode1" textname="Локальный узел"
+                unet_port="2049"
+                unet_multicast_ip="226.0.31.2"
+                unet_multicast_iface="lo"
+                unet_multicast_port="3112"
+                unet_multicast_sender_ip="192.168.3.75"
+
+                unet_multicast_ip2="227.0.31.2"
+                unet_multicast_port2="3122"
+                unet_multicast_sender_ip2="192.168.0.48"/>
+         
+            <item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="1" unet_port="3001" unet_respond_id="Input1_S" unet_respond_invert="1"/>
+			<item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_ignore="1" unet_port="3002"/>
+			<item id="3004" ip="192.168.56.12" name="Node3" textname="Node3" unet_ignore="1"/>
+			<item id="3005" ip="192.168.56.13" name="Node4" textname="Node4" unet_ignore="1"/>
+			<item id="3006" ip="192.168.56.14" name="Node5" textname="Node5" unet_ignore="1"/>
+			<item id="3007" ip="192.168.56.15" name="Node6" textname="Node6" unet_ignore="1"/>
+			<item id="3008" ip="192.168.56.16" name="Node7" textname="Node7" unet_ignore="1"/>
+			<item id="3009" ip="192.168.56.17" name="Node8" textname="Node8" unet_ignore="1"/>
 		</nodes>
 		<!-- ************************ Датчики ********************** -->
 		<sensors name="Sensors">
