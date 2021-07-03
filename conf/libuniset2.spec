@@ -40,7 +40,7 @@ Source: %name-%version.tar
 
 # Automatically added by buildreq on Sun Aug 15 2021
 # optimized out: fontconfig fonts-ttf-liberation-narrow glibc-kernheaders-generic glibc-kernheaders-x86 libcrypt-devel libgpg-error libpoco-net libsasl2-3 libsqlite3-devel libstdc++-devel perl pkg-config python-modules python2-base python3 python3-base python3-module-omniidl python3-module-paste sh4 tzdata
-BuildRequires: catch-devel gcc-c++ libev-devel libomniORB-devel libpoco-devel libsigc++2-devel libxml2-devel xsltproc
+BuildRequires: catch-devel gcc-c++ libev-devel libomniORB-devel libpoco-devel libsigc++2-devel libxml2-devel xsltproc libprotobuf-devel
 
 # for uniset2-codegen
 BuildPreReq: xsltproc
