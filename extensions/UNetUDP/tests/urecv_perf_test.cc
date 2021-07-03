@@ -33,7 +33,7 @@ shared_ptr<SMInterface> smiInstance()
     return smi;
 }
 // --------------------------------------------------------------------------
-static void run_senders( size_t max, const std::string& s_host, size_t count = 2000, timeout_t usecpause = 50 )
+static void run_senders( size_t max, const std::string& s_host, size_t count = 3000, timeout_t usecpause = 50 )
 {
     std::vector< std::shared_ptr<UDPSocketU> > vsend;
     vsend.reserve(max);
@@ -145,6 +145,8 @@ static void run_test( size_t max, const std::string& host )
         auto t = unisetstd::make_unique<uniset::UDPReceiveTransport>(host, begPort + i);
         auto r = make_shared<UNetReceiver>(std::move(t), smiInstance());
         r->setLockUpdate(true);
+        r->setReceiveTimeout(5);
+        r->setBufferSize(1000);
         vrecv.emplace_back(r);
     }
 
