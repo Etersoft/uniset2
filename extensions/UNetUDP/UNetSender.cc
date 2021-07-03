@@ -308,7 +308,7 @@ namespace uniset
             if( !transport->isReadyForSend(writeTimeout) )
                 return;
 
-            size_t sz = mypack.msg.getDataAsArray(sbuf, sizeof(sbuf));
+            size_t sz = mypack.msg.serializeToArray(sbuf, sizeof(sbuf));
 
             if( sz == 0 )
             {
