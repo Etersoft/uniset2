@@ -78,6 +78,12 @@ void UNetReceiver::setBufferSize( size_t sz ) noexcept
     }
 }
 // -----------------------------------------------------------------------------
+void UNetReceiver::setMaxReceiveAtTime( size_t sz ) noexcept
+{
+    if( sz > 0 )
+        maxReceiveCount = sz;
+}
+// -----------------------------------------------------------------------------
 void UNetReceiver::setReceiveTimeout( timeout_t msec ) noexcept
 {
     std::lock_guard<std::mutex> l(tmMutex);
@@ -478,21 +484,31 @@ void UNetReceiver::readEvent( ev::io& watcher ) noexcept
     if( !activated )
         return;
 
+    bool ok = false;
+
     try
     {
-        if( receive() )
+        for( size_t i = 0; transport->available() > 0 && i < maxReceiveCount; i++ )
         {
-            std::lock_guard<std::mutex> l(tmMutex);
-            ptRecvTimeout.reset();
+            if( receive() != retOK )
+                break;
+
+            ok = true;
         }
     }
-    catch( uniset::Exception& ex)
+    catch( uniset::Exception& ex )
     {
         unetwarn << myname << "(receive): " << ex << std::endl;
     }
     catch( const std::exception& e )
     {
         unetwarn << myname << "(receive): " << e.what() << std::endl;
+    }
+
+    if( ok )
+    {
+        std::lock_guard<std::mutex> l(tmMutex);
+        ptRecvTimeout.reset();
     }
 }
 // -----------------------------------------------------------------------------
@@ -604,7 +620,7 @@ void UNetReceiver::stop()
     loop.evstop(this);
 }
 // -----------------------------------------------------------------------------
-bool UNetReceiver::receive() noexcept
+UNetReceiver::ReceiveRetCode UNetReceiver::receive() noexcept
 {
     try
     {
@@ -615,25 +631,25 @@ bool UNetReceiver::receive() noexcept
         if( ret < 0 )
         {
             unetcrit << myname << "(receive): recv err(" << errno << "): " << strerror(errno) << endl;
-            return false;
+            return retError;
         }
 
         if( ret == 0 )
         {
             unetwarn << myname << "(receive): disconnected?!... recv 0 bytes.." << endl;
-            return false;
+            return retNoData;
         }
 
         if( !pack->initFromBuffer(rbuf, ret) )
         {
             unetwarn << myname << "(receive): parse message error.." << endl;
-            return false;
+            return retError;
         }
 
         recvCount++;
 
         if( !pack->isOk() )
-            return false;
+            return retError;
 
         if( size_t(abs(long(pack->num() - wnum))) > maxDifferens || size_t(abs( long(wnum - rnum) )) >= (cbufSize - 2) )
         {
@@ -658,7 +674,7 @@ bool UNetReceiver::receive() noexcept
                 pack->setNum(0);
             }
 
-            return true;
+            return retOK;
         }
 
         if( pack->num() != wnum )
@@ -680,7 +696,7 @@ bool UNetReceiver::receive() noexcept
         if( rnum == 0 )
             rnum = pack->num();
 
-        return true;
+        return retOK;
     }
     catch( Poco::Net::NetException& ex )
     {
@@ -691,7 +707,7 @@ bool UNetReceiver::receive() noexcept
         unetcrit << myname << "(receive): recv err: " << ex.what() << endl;
     }
 
-    return false;
+    return retError;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::initIterators() noexcept

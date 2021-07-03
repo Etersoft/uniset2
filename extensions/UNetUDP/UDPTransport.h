@@ -44,6 +44,7 @@ namespace uniset
             virtual int getSocket() const override;
             virtual ssize_t receive( void* r_buf, size_t sz ) override;
             virtual bool isReadyForReceive(timeout_t tout) override;
+            virtual int available() override;
 
         protected:
             std::unique_ptr<UDPReceiveU> udp;

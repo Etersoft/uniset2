@@ -129,6 +129,11 @@ bool UDPReceiveTransport::isReadyForReceive( timeout_t tout )
     return udp->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_READ);
 }
 // -------------------------------------------------------------------------
+int UDPReceiveTransport::available()
+{
+    return udp->available();
+}
+// -------------------------------------------------------------------------
 std::unique_ptr<UDPSendTransport> UDPSendTransport::createFromXml( UniXML::iterator it, const std::string& defaultIP, int numChan )
 {
     ostringstream fieldIp;

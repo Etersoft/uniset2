@@ -49,6 +49,7 @@ namespace uniset
 
             bool isReadyForReceive( timeout_t tout ) override;
             virtual ssize_t receive(void* r_buf, size_t sz) override;
+            virtual int available() override;
             std::string iface() const;
 
         protected:

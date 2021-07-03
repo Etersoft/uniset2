@@ -288,6 +288,11 @@ bool MulticastReceiveTransport::isReadyForReceive( timeout_t tout )
     return udp->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_READ);
 }
 // -------------------------------------------------------------------------
+int MulticastReceiveTransport::available()
+{
+    return udp->available();
+}
+// -------------------------------------------------------------------------
 std::vector<Poco::Net::IPAddress> MulticastReceiveTransport::getGroups()
 {
     return groups;

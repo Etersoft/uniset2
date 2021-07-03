@@ -39,6 +39,7 @@ namespace uniset
             virtual bool isReadyForReceive(timeout_t tout) = 0;
             virtual ssize_t receive( void* r_buf, size_t sz ) = 0;
             virtual void disconnect() = 0;
+            virtual int available() = 0;
     };
 
     // Интерфейс для посылки данных в сеть
