@@ -125,6 +125,9 @@ namespace uniset
     UDPMessage::UDPMessage()
     {
         pb.set_magic(UniSetUDP::UNETUDP_MAGICNUM);
+        pb.set_num(0);
+        pb.set_procid(0);
+        pb.set_nodeid(0);
     }
     // -----------------------------------------------------------------------------
     bool UDPMessage::initFromBuffer( uint8_t* rbuf, size_t sz )
@@ -135,6 +138,14 @@ namespace uniset
     std::string UDPMessage::getDataAsString() const noexcept
     {
         return pb.SerializeAsString();
+    }
+    // -----------------------------------------------------------------------------
+    size_t UDPMessage::getDataAsArray( uint8_t* buf, int sz ) const noexcept
+    {
+        if( !pb.SerializeToArray(buf, sz) )
+            return 0;
+
+        return pb.ByteSizeLong();
     }
     // -----------------------------------------------------------------------------
     uint32_t UDPMessage::magic() const noexcept
@@ -172,7 +183,7 @@ namespace uniset
         return pb.procid();
     }
     // -----------------------------------------------------------------------------
-    size_t UDPMessage::addAData( long id, long val) noexcept
+    size_t UDPMessage::addAData( long id, long val ) noexcept
     {
         if( (size_t)pb.data().aid_size() >= MaxACount )
             return MaxACount;
@@ -242,7 +253,16 @@ namespace uniset
     // -----------------------------------------------------------------------------
     uint16_t UDPMessage::dataCRC() const noexcept
     {
-        return makeCRC((unsigned char*) & (pb.data()), sizeof(pb.data()));
+        const std::string s = pb.data().SerializeAsString();
+        return makeCRC((unsigned char*)s.data(), s.size());
+    }
+    // -----------------------------------------------------------------------------
+    uint16_t UDPMessage::dataCRCWithBuf( uint8_t* buf, size_t sz ) const noexcept
+    {
+        if( !pb.data().SerializeToArray(buf, sz) )
+            return 0;
+
+        return makeCRC((unsigned char*)buf, pb.data().ByteSizeLong());
     }
     // -----------------------------------------------------------------------------
     long UDPMessage::getDataID() const noexcept
