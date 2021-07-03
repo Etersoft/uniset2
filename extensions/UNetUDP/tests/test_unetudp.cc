@@ -160,6 +160,12 @@ TEST_CASE("[UNetUDP]: UDPMessage", "[unetudp][udpmessage]")
 
         const string s = u.serializeAsString();
         REQUIRE( s.size() <= UniSetUDP::MessageBufSize );
+        cerr << "UDPMessage max size is " << s.size()
+             << " bytes"
+             << " [MaxACount=" << UniSetUDP::MaxACount
+             << " MaxDCount=" << UniSetUDP::MaxDCount
+             << "]"
+             << endl;
     }
 }
 // -----------------------------------------------------------------------------
