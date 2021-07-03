@@ -104,20 +104,20 @@ namespace uniset
     {
         os << "nodeID=" << p.pb.nodeid()
            << " procID=" << p.pb.procid()
-           << " dcount=" << p.pb.data().ddata_size()
-           << " acount=" << p.pb.data().adata_size()
+           << " dcount=" << p.pb.data().did_size()
+           << " acount=" << p.pb.data().aid_size()
            << " pnum=" << p.pb.num()
            << endl;
 
         os << "DIGITAL:" << endl;
 
-        for( size_t i = 0; i < (size_t)p.pb.data().ddata_size(); i++ )
-            os << "[" << i << "]={" << p.pb.data().ddata(i).id() << "," << p.pb.data().ddata(i).value() << "}" << endl;
+        for( size_t i = 0; i < (size_t)p.pb.data().did_size(); i++ )
+            os << "[" << i << "]={" << p.pb.data().did(i) << "," << p.pb.data().dvalue(i) << "}" << endl;
 
         os << "ANALOG:" << endl;
 
-        for( size_t i = 0; i < (size_t)p.pb.data().adata_size(); i++ )
-            os << "[" << i << "]={" << p.pb.data().adata(i).id() << "," << p.pb.data().adata(i).value() << "}" << endl;
+        for( size_t i = 0; i < (size_t)p.pb.data().aid_size(); i++ )
+            os << "[" << i << "]={" << p.pb.data().aid(i) << "," << p.pb.data().avalue(i) << "}" << endl;
 
         return os;
     }
@@ -174,20 +174,19 @@ namespace uniset
     // -----------------------------------------------------------------------------
     size_t UDPMessage::addAData( int64_t id, int64_t val) noexcept
     {
-        if( (size_t)pb.data().adata_size() >= MaxACount )
+        if( (size_t)pb.data().aid_size() >= MaxACount )
             return MaxACount;
 
-        auto a = pb.mutable_data()->add_adata();
-        a->set_id(id);
-        a->set_value(val);
-        return pb.data().adata_size() - 1;
+        pb.mutable_data()->add_aid(id);
+        pb.mutable_data()->add_avalue(val);
+        return pb.data().aid_size() - 1;
     }
     // -----------------------------------------------------------------------------
     bool UDPMessage::setAData( size_t index, int64_t val ) noexcept
     {
-        if( index < (size_t)pb.data().adata_size() )
+        if( index < (size_t)pb.data().aid_size() )
         {
-            pb.mutable_data()->mutable_adata(index)->set_value(val);
+            pb.mutable_data()->set_avalue(index, val);
             return true;
         }
 
@@ -196,20 +195,19 @@ namespace uniset
     // -----------------------------------------------------------------------------
     size_t UDPMessage::addDData( int64_t id, bool val ) noexcept
     {
-        if( (size_t)pb.data().ddata_size()  >= MaxDCount )
+        if( (size_t)pb.data().did_size()  >= MaxDCount )
             return MaxDCount;
 
-        auto d = pb.mutable_data()->add_ddata();
-        d->set_id(id);
-        d->set_value(val);
-        return pb.data().ddata_size() - 1;
+        pb.mutable_data()->add_did(id);
+        pb.mutable_data()->add_dvalue(val);
+        return pb.data().did_size() - 1;
     }
     // -----------------------------------------------------------------------------
     bool UDPMessage::setDData( size_t index, bool val ) noexcept
     {
-        if( index < (size_t)pb.data().ddata_size() )
+        if( index < (size_t)pb.data().did_size() )
         {
-            pb.mutable_data()->mutable_ddata(index)->set_value(val);
+            pb.mutable_data()->set_dvalue(index, val);
             return true;
         }
 
@@ -218,30 +216,31 @@ namespace uniset
     // -----------------------------------------------------------------------------
     long UDPMessage::dID( size_t index ) const noexcept
     {
-        if( index >= (size_t)pb.data().ddata_size() )
+        if( index >= (size_t)pb.data().did_size() )
             return uniset::DefaultObjectId;
 
-        return pb.data().ddata(index).id();
+        return pb.data().did(index);
     }
     // -----------------------------------------------------------------------------
     bool UDPMessage::dValue( size_t index ) const noexcept
     {
         if( index >= MaxDCount )
             return false;
-        return pb.data().ddata(index).value();
+
+        return pb.data().dvalue(index);
     }
     // -----------------------------------------------------------------------------
     long UDPMessage::aValue(size_t index) const noexcept
     {
-        return pb.data().adata(index).value();
+        return pb.data().avalue(index);
     }
     // -----------------------------------------------------------------------------
     long UDPMessage::aID(size_t index) const noexcept
     {
-        if( index >= (size_t)pb.data().adata_size() )
+        if( index >= (size_t)pb.data().aid_size() )
             return uniset::DefaultObjectId;
 
-        return pb.data().adata(index).id();
+        return pb.data().aid(index);
     }
     // -----------------------------------------------------------------------------
     uint16_t UDPMessage::dataCRC() const noexcept
@@ -253,11 +252,11 @@ namespace uniset
     {
         // в качестве идентификатора берётся ID первого датчика в данных
         // приоритет имеет аналоговые датчики
-        if( pb.data().adata_size() > 0 )
-            return pb.data().adata(0).id();
+        if( pb.data().aid_size() > 0 )
+            return pb.data().aid(0);
 
-        if( pb.data().ddata_size() > 0 )
-            return pb.data().ddata(0).id();
+        if( pb.data().did_size() > 0 )
+            return pb.data().did(0);
 
         // если нет данных(?) просто возвращаем номер пакета
         return pb.num();
@@ -270,27 +269,27 @@ namespace uniset
     // -----------------------------------------------------------------------------
     bool UDPMessage::isAFull() const noexcept
     {
-        return ((size_t)pb.data().adata_size() >= MaxACount);
+        return ((size_t)pb.data().aid_size() >= MaxACount);
     }
     // -----------------------------------------------------------------------------
     bool UDPMessage::isDFull() const noexcept
     {
-        return ((size_t)pb.data().ddata_size() >= MaxDCount);
+        return ((size_t)pb.data().did_size() >= MaxDCount);
     }
     // -----------------------------------------------------------------------------
     bool UDPMessage::isFull() const noexcept
     {
-        return !(((size_t)pb.data().ddata_size() < MaxDCount) && ((size_t)pb.data().adata_size() < MaxACount));
+        return !(((size_t)pb.data().did_size() < MaxDCount) && ((size_t)pb.data().aid_size() < MaxACount));
     }
     // -----------------------------------------------------------------------------
     size_t UDPMessage::UDPMessage::dsize() const noexcept
     {
-        return pb.data().ddata_size();
+        return pb.data().did_size();
     }
     // -----------------------------------------------------------------------------
     size_t UDPMessage::asize() const noexcept
     {
-        return pb.data().adata_size();
+        return pb.data().aid_size();
     }
     // -----------------------------------------------------------------------------
 } // end of namespace uniset
