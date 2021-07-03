@@ -38,7 +38,7 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 3
     std::vector< std::shared_ptr<UDPSocketU> > vsend;
     vsend.reserve(max);
 
-    cout << "Run " << max << " senders (" << s_host << ")" << endl;
+    cout << "Run " << max << " senders[" << max << "](" << s_host << ")[data=" << count << ", pause=" << usecpause << " usec]" << endl;
 
     // make sendesrs..
     for( size_t i = 0; i < max; i++ )
@@ -102,6 +102,7 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 3
 
     size_t packetnum = 0;
     size_t nc = 1;
+    std::string s;
 
     while( nc ) // -V654
     {
@@ -112,7 +113,7 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 3
         if( packetnum == 0 )
             packetnum = 1;
 
-        std::string s;
+        s = mypack.SerializeAsString();
 
         for( auto&& udp : vsend )
         {
@@ -120,7 +121,6 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 3
             {
                 if( udp->poll(100000, Poco::Net::Socket::SELECT_WRITE) )
                 {
-                    s = mypack.SerializeAsString();
                     size_t ret = udp->sendBytes(s.data(), s.size());
 
                     if( ret < s.size() )
@@ -155,7 +155,8 @@ static void run_test( size_t max, const std::string& host )
         auto r = make_shared<UNetReceiver>(std::move(transport), smiInstance());
         r->setLockUpdate(true);
         r->setReceiveTimeout(5);
-        r->setBufferSize(1000);
+//        r->setBufferSize(1000);
+        r->setUpdatePause(5);
         vrecv.emplace_back(r);
     }
 
@@ -191,10 +192,24 @@ int main(int argc, char* argv[] )
     {
         auto conf = uniset_init(argc, argv);
 
+        int n = uniset::getArgInt("--num",argc, argv, "1");
+        int dataCount = uniset::getArgInt("--count",argc, argv, "1000");
+
+        if( n <= 0 ){
+           cerr << "Process number must be > 0" << endl;
+           return 1;
+        }
+
+
+        if( dataCount <= 0 ){
+           cerr << "data count must be > 0" << endl;
+           return 1;
+        }
+
         if( argc > 1 && !strcmp(argv[1], "s") )
-            run_senders(1, host);
+            run_senders(n, host, dataCount);
         else
-            run_test(1, host);
+            run_test(n, host);
 
         return 0;
     }

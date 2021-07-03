@@ -3,7 +3,8 @@ syntax = "proto3";
 package uniset.unet;
 
 option optimize_for = LITE_RUNTIME;
-option cc_enable_arenas = true;
+//option cc_enable_arenas = true;
+
 
 message UNetA {
   uint64 id = 1;

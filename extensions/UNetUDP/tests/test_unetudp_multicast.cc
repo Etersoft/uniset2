@@ -389,7 +389,7 @@ TEST_CASE("[UNetUDP]: [multicast] switching channels", "[unetudp][multicast][chs
     REQUIRE( ui->getValue(node1_channelSwitchCount_as) == 0 );
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: mulsicat check undefined value", "[unetudp][multicast][undefvalue]")
+TEST_CASE("[UNetUDP]: multicast check undefined value", "[unetudp][multicast][undefvalue]")
 {
     InitMulticastTest();
 
