@@ -33,7 +33,7 @@ shared_ptr<SMInterface> smiInstance()
     return smi;
 }
 // --------------------------------------------------------------------------
-static void run_senders( size_t max, const std::string& s_host, size_t count = 50, timeout_t usecpause = 50 )
+static void run_senders( size_t max, const std::string& s_host, size_t count = 2000, timeout_t usecpause = 50 )
 {
     std::vector< std::shared_ptr<UDPSocketU> > vsend;
     vsend.reserve(max);
