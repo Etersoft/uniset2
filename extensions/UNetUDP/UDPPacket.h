@@ -30,9 +30,13 @@ namespace uniset
     {
         const uint32_t UNETUDP_MAGICNUM = 0x1343EFD; // идентификатор протокола
 
-        static const size_t MaxACount = 2000;
-        static const size_t MaxDCount = 3000;
-        static const size_t MessageBufSize = 36630;
+        const size_t MaxPacketNum = std::numeric_limits<size_t>::max();
+        // Теоретический размер данных в UDP пакете (исключая заголовки) 65507
+        // Желательно не вылезать за размер MTU (обычно 1500) - заголовки = 1432 байта
+        // т.е. надо чтобы sizeof(UDPPacket) < 1432
+        static const size_t MaxACount = 5000;
+        static const size_t MaxDCount = 5000;
+        static const size_t MessageBufSize = 34700;
 
         struct UDPMessage
         {
