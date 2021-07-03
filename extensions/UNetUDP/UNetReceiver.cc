@@ -495,7 +495,7 @@ void UNetReceiver::readEvent( ev::io& watcher ) noexcept
             ok = true;
         }
     }
-    catch( uniset::Exception& ex)
+    catch( uniset::Exception& ex )
     {
         unetwarn << myname << "(receive): " << ex << std::endl;
     }
