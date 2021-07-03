@@ -69,16 +69,14 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 3
 
     for( size_t i = 0; i < count; i++ )
     {
-        auto a = mypack.mutable_data()->add_adata();
-        a->set_id(i);
-        a->set_value(i);
+        mypack.mutable_data()->add_aid(i);
+        mypack.mutable_data()->add_avalue(i);
     }
 
     for( size_t i = 0; i < count; i++ )
     {
-        auto d = mypack.mutable_data()->add_ddata();
-        d->set_id(i);
-        d->set_value(i);
+        mypack.mutable_data()->add_did(i);
+        mypack.mutable_data()->add_dvalue(i);
     }
 
     for( size_t i = 0; i < max; i++ )
@@ -192,18 +190,20 @@ int main(int argc, char* argv[] )
     {
         auto conf = uniset_init(argc, argv);
 
-        int n = uniset::getArgInt("--num",argc, argv, "1");
-        int dataCount = uniset::getArgInt("--count",argc, argv, "1000");
+        int n = uniset::getArgInt("--num", argc, argv, "1");
+        int dataCount = uniset::getArgInt("--count", argc, argv, "1000");
 
-        if( n <= 0 ){
-           cerr << "Process number must be > 0" << endl;
-           return 1;
+        if( n <= 0 )
+        {
+            cerr << "Process number must be > 0" << endl;
+            return 1;
         }
 
 
-        if( dataCount <= 0 ){
-           cerr << "data count must be > 0" << endl;
-           return 1;
+        if( dataCount <= 0 )
+        {
+            cerr << "data count must be > 0" << endl;
+            return 1;
         }
 
         if( argc > 1 && !strcmp(argv[1], "s") )

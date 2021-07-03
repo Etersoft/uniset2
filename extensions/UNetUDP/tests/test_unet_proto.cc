@@ -23,12 +23,11 @@ TEST_CASE("[UNetUDP]: protobuf UNetPacket", "[unetudp][protobuf][packet]")
 
     for (int i = 0; i < 1000; i++ )
     {
-        auto a1 = pack.mutable_data()->add_adata();
-        a1->set_id(1);
-        a1->set_value(i);
+        pack.mutable_data()->add_aid(1);
+        pack.mutable_data()->add_avalue(i);
     }
 
-    REQUIRE( pack.data().adata_size() == 1000 );
+    REQUIRE( pack.data().aid_size() == 1000 );
 
     //    cerr << pack.ByteSizeLong() << endl;
 
