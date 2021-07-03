@@ -52,12 +52,12 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 3
         }
         catch( Poco::Net::NetException& e )
         {
-            cerr << "(run_senders): " << e.displayText() << " (" << s_host << ")" << endl;
+            cerr << "(run_senders)(create): " << e.displayText() << " (" << s_host << ")" << endl;
             throw;
         }
         catch( std::exception& ex)
         {
-            cerr << "(run_senders): " << ex.what() << endl;
+            cerr << "(run_senders)(create): " << ex.what() << endl;
             throw;
         }
     }
@@ -88,12 +88,12 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 3
         }
         catch( Poco::Net::NetException& e )
         {
-            cerr << "(run_senders): " << e.message() << " (" << s_host << ")" << endl;
+            cerr << "(run_senders)(connect): " << e.message() << " (" << s_host << ")" << endl;
             throw;
         }
         catch( std::exception& ex)
         {
-            cerr << "(run_senders): " << ex.what() << endl;
+            cerr << "(run_senders)(connect): " << ex.what() << endl;
             throw;
         }
     }
@@ -153,8 +153,8 @@ static void run_test( size_t max, const std::string& host )
         auto r = make_shared<UNetReceiver>(std::move(transport), smiInstance());
         r->setLockUpdate(true);
         r->setReceiveTimeout(5);
-//        r->setBufferSize(1000);
         r->setUpdatePause(5);
+        r->setBufferSize(10000);
         vrecv.emplace_back(r);
     }
 
@@ -195,7 +195,7 @@ int main(int argc, char* argv[] )
 
         if( n <= 0 )
         {
-            cerr << "Process number must be > 0" << endl;
+            cerr << "Process count must be > 0" << endl;
             return 1;
         }
 
@@ -223,7 +223,7 @@ int main(int argc, char* argv[] )
     }
     catch( const std::exception& e )
     {
-        cerr << "(tests_with_sm): " << e.what() << endl;
+        cerr << "(urecv-perf-test): " << e.what() << endl;
     }
     catch(...)
     {
