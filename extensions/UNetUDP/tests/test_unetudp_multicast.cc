@@ -127,7 +127,7 @@ void msend( UniSetUDP::UDPMessage& pack, int tout = 2000 )
     pack.setProcID(s_procID);
     pack.setNum(s_numpack++);
 
-    const std::string s = pack.getDataAsString();
+    const std::string s = pack.serializeAsString();
     size_t ret = udp_s->send(s.data(), s.size());
     REQUIRE( ret == s.size() );
 }

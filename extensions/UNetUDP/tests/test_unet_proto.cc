@@ -41,7 +41,7 @@ TEST_CASE("[UNetUDP]: protobuf UNetPacket", "[unetudp][protobuf][packet]")
 
     //    cerr << sizeof(p1) << endl;
 
-    std::string s = pack.SerializeAsString();
+    const std::string s = pack.SerializeAsString();
     unet::UNetPacket pack2;
     pack2.ParseFromArray(s.data(), s.size());
     REQUIRE(pack2.magic() == pack.magic() );
@@ -61,7 +61,7 @@ TEST_CASE("[UNetUDP]: protobuf UDPMessage", "[unetudp][protobuf][message]")
     REQUIRE( pack.asize() == 1000 );
     REQUIRE(pack.isOk());
 
-    const std::string s = pack.getDataAsString();
+    const std::string s = pack.serializeAsString();
 
     UniSetUDP::UDPMessage pack2;
     pack2.initFromBuffer((uint8_t*)s.data(), s.size());

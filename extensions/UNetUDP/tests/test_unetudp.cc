@@ -96,7 +96,7 @@ void send( UniSetUDP::UDPMessage& pack, int tout = 2000 )
     pack.setProcID(s_procID);
     pack.setNum(s_numpack++);
 
-    const std::string s = pack.getDataAsString();
+    const std::string s = pack.serializeAsString();
 
     size_t ret = udp_s->sendTo(s.data(), s.size(), s_addr);
     REQUIRE( ret == s.size() );
@@ -157,7 +157,7 @@ TEST_CASE("[UNetUDP]: UDPMessage", "[unetudp][udpmessage]")
         CHECK( u.isDFull() );
         CHECK( u.isFull() );
 
-        string s = u.getDataAsString();
+        const string s = u.serializeAsString();
         REQUIRE( s.size() <= UniSetUDP::MessageBufSize );
     }
 }

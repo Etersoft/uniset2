@@ -135,12 +135,12 @@ namespace uniset
         return pb.ParseFromArray(rbuf, sz);
     }
     // -----------------------------------------------------------------------------
-    std::string UDPMessage::getDataAsString() const noexcept
+    std::string UDPMessage::serializeAsString() const noexcept
     {
         return pb.SerializeAsString();
     }
     // -----------------------------------------------------------------------------
-    size_t UDPMessage::getDataAsArray( uint8_t* buf, int sz ) const noexcept
+    size_t UDPMessage::serializeToArray( uint8_t* buf, int sz ) const noexcept
     {
         if( !pb.SerializeToArray(buf, sz) )
             return 0;
