@@ -121,7 +121,6 @@ namespace uniset
 
                 uniset::UniSetUDP::UDPMessage msg;
                 uniset::uniset_rwmutex mut;
-                uint16_t lastCRC = { 0 };
             };
 
             void real_send( PackMessage& mypack ) noexcept;
@@ -211,6 +210,7 @@ namespace uniset
             UItemMap items;
             size_t packetnum = { 1 }; /*!< номер очередного посылаемого пакета */
             uint16_t lastcrc = { 0 };
+            uint8_t sbuf[uniset::UniSetUDP::MessageBufSize];
 
             size_t maxAData = { UniSetUDP::MaxACount };
             size_t maxDData = { UniSetUDP::MaxDCount };

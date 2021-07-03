@@ -39,6 +39,7 @@ namespace uniset
             UDPMessage();
             bool initFromBuffer( uint8_t* buf, size_t sz );
             std::string getDataAsString() const noexcept;
+            size_t getDataAsArray( uint8_t* buf, int sz ) const noexcept;
 
             bool isOk() const noexcept;
             uint32_t magic() const noexcept;
@@ -84,6 +85,7 @@ namespace uniset
             size_t asize() const noexcept;
 
             uint16_t dataCRC() const noexcept;
+            uint16_t dataCRCWithBuf( uint8_t* buf, size_t sz) const noexcept;
 
             unet::UNetPacket pb;
         };

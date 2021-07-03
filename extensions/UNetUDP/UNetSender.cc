@@ -290,12 +290,12 @@ namespace uniset
 #ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
             mypack.msg.setNum(packetnum++);
 #else
-            uint16_t crc = mypack.msg.dataCRC();
+            uint16_t crc = mypack.msg.dataCRCWithBuf(sbuf, sizeof(sbuf));
 
-            if( crc != mypack.lastCRC )
+            if( crc != lastcrc )
             {
                 mypack.msg.setNum(packetnum++);
-                mypack.lastCRC = crc;
+                lastcrc = crc;
             }
 
 #endif
@@ -308,11 +308,18 @@ namespace uniset
             if( !transport->isReadyForSend(writeTimeout) )
                 return;
 
-            const std::string s = mypack.msg.getDataAsString();
-            size_t ret = transport->send(s.data(), s.size());
+            size_t sz = mypack.msg.getDataAsArray(sbuf, sizeof(sbuf));
 
-            if( ret < s.size() )
-                unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s.size() << endl;
+            if( sz == 0 )
+            {
+                unetcrit << myname << "(real_send): serialize error." << endl;
+                return;
+            }
+
+            size_t ret = transport->send(sbuf, sz);
+
+            if( ret < sz )
+                unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << sz << endl;
         }
         catch( Poco::Net::NetException& ex )
         {
