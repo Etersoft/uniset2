@@ -380,7 +380,7 @@ int main(int argc, char* argv[])
                                 cout << "(send): to addr=" << addr << " d_count=" << mypack.dsize()
                                      << " a_count=" << mypack.asize() << endl;
 
-                            const std::string s = mypack.getDataAsString();
+                            const std::string s = mypack.serializeAsString();
                             size_t ret = udp->sendBytes(s.data(), s.size());
 
                             if( ret < sizeof(mypack) )
