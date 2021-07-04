@@ -453,7 +453,7 @@ bool MulticastSendTransport::isConnected() const noexcept
 // -------------------------------------------------------------------------
 void MulticastSendTransport::setTimeToLive( int _ttl )
 {
-    ttl = ttl;
+    ttl = _ttl;
 
     if( udp )
         udp->setTimeToLive(_ttl);
