@@ -63,7 +63,7 @@ UDPReceiveTransport::~UDPReceiveTransport()
 {
 }
 // -------------------------------------------------------------------------
-bool UDPReceiveTransport::isConnected() const
+bool UDPReceiveTransport::isConnected() const noexcept
 {
     return udp != nullptr;
 }
@@ -73,7 +73,7 @@ std::string UDPReceiveTransport::ID() const noexcept
     return toString();
 }
 // -------------------------------------------------------------------------
-std::string UDPReceiveTransport::toString() const
+std::string UDPReceiveTransport::toString() const noexcept
 {
     ostringstream s;
     s << host << ":" << port;
@@ -95,20 +95,24 @@ bool UDPReceiveTransport::createConnection( bool throwEx, timeout_t readTimeout,
     catch( const std::exception& e )
     {
         udp = nullptr;
-        ostringstream s;
-        s << host << ":" << port << "(createConnection): " << e.what();
 
         if( throwEx )
+        {
+            ostringstream s;
+            s << host << ":" << port << "(createConnection): " << e.what();
             throw uniset::SystemError(s.str());
+        }
     }
     catch( ... )
     {
         udp = nullptr;
-        ostringstream s;
-        s << host << ":" << port << "(createConnection): catch...";
 
         if( throwEx )
+        {
+            ostringstream s;
+            s << host << ":" << port << "(createConnection): catch...";
             throw uniset::SystemError(s.str());
+        }
     }
 
     return ( udp != nullptr );
@@ -124,9 +128,15 @@ ssize_t UDPReceiveTransport::receive( void* r_buf, size_t sz )
     return udp->receiveBytes(r_buf, sz);
 }
 // -------------------------------------------------------------------------
-bool UDPReceiveTransport::isReadyForReceive( timeout_t tout )
+bool UDPReceiveTransport::isReadyForReceive( timeout_t tout ) noexcept
 {
-    return udp->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_READ);
+    try
+    {
+        return udp->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_READ);
+    }
+    catch(...) {}
+
+    return false;
 }
 // -------------------------------------------------------------------------
 int UDPReceiveTransport::available()
@@ -172,12 +182,12 @@ UDPSendTransport::~UDPSendTransport()
 {
 }
 // -------------------------------------------------------------------------
-std::string UDPSendTransport::toString() const
+std::string UDPSendTransport::toString() const noexcept
 {
     return saddr.toString();
 }
 // -------------------------------------------------------------------------
-bool UDPSendTransport::isConnected() const
+bool UDPSendTransport::isConnected() const noexcept
 {
     return udp != nullptr;
 }
@@ -194,20 +204,24 @@ bool UDPSendTransport::createConnection( bool throwEx, timeout_t sendTimeout )
     catch( const std::exception& e )
     {
         udp = nullptr;
-        ostringstream s;
-        s << saddr.toString() << "(createConnection): " << e.what();
 
         if( throwEx )
+        {
+            ostringstream s;
+            s << saddr.toString() << "(createConnection): " << e.what();
             throw uniset::SystemError(s.str());
+        }
     }
     catch( ... )
     {
         udp = nullptr;
-        ostringstream s;
-        s << saddr.toString() << "(createConnection): catch...";
 
         if( throwEx )
+        {
+            ostringstream s;
+            s << saddr.toString() << "(createConnection): catch...";
             throw uniset::SystemError(s.str());
+        }
     }
 
     return (udp != nullptr);
@@ -218,9 +232,15 @@ int UDPSendTransport::getSocket() const
     return udp->getSocket();
 }
 // -------------------------------------------------------------------------
-bool UDPSendTransport::isReadyForSend( timeout_t tout )
+bool UDPSendTransport::isReadyForSend( timeout_t tout ) noexcept
 {
-    return udp && udp->poll( UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_WRITE );
+    try
+    {
+        return udp && udp->poll( UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_WRITE );
+    }
+    catch(...) {}
+
+    return false;
 }
 // -------------------------------------------------------------------------
 ssize_t UDPSendTransport::send( const void* buf, size_t sz )
