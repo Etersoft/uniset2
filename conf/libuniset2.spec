@@ -369,6 +369,7 @@ Libraries needed to develop for uniset MQTT extension
 %setup
 
 %build
+cd extensions/UNetUDP/proto && make && cd -;
 %autoreconf
 %configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api} %{subst_enable netdata} %{subst_enable logdb} %{subst_enable com485f} %{subst_enable opentsdb} %{subst_enable uwebsocket}
 %make_build
@@ -572,6 +573,8 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %files extension-common-devel
 %dir %_includedir/%oname/extensions
 %_includedir/%oname/extensions/*.*
+%_includedir/%oname/extensions/proto/*.*
+
 %if_enabled opentsdb
 %exclude %_includedir/%oname/extensions/BackendOpenTSDB.h
 %endif
