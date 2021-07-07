@@ -1096,8 +1096,12 @@ void UNetExchange::initMulticastTransport( UniXML::iterator n_it,
 {
     auto conf = uniset_conf();
 
+    auto root = n_it;
+
     if( !n_it.goChildren() )
         throw uniset::SystemError("(UNetExchange): Items not found for <nodes>");
+
+    const string defaultIP2 = root.getProp("unet_multicast_ip2");
 
     // init senders
     for( ; n_it.getCurrent(); n_it.goNext() )
@@ -1116,7 +1120,7 @@ void UNetExchange::initMulticastTransport( UniXML::iterator n_it,
 
         if( n != conf->getLocalNodeName() )
         {
-            initMulticastReceiverForNode(n_it, prefix);
+            initMulticastReceiverForNode(root, n_it, prefix);
             continue;
         }
 
@@ -1129,7 +1133,7 @@ void UNetExchange::initMulticastTransport( UniXML::iterator n_it,
         // INIT SENDER
         unetinfo << myname << "(init): " << n_it.getProp("name") << " init sender.." << endl;
 
-        auto s1 = MulticastSendTransport::createFromXml(n_it, 0);
+        auto s1 = MulticastSendTransport::createFromXml(root, n_it, 0);
         unetinfo << myname << "(init): " << n_it.getProp("name") << " send (channel1) to multicast group: " << s1->getGroupAddress().toString() << endl;
 
         sender = make_shared<UNetSender>(std::move(s1), shm, false, s_field, s_fvalue, "unet", prefix);
@@ -1139,9 +1143,9 @@ void UNetExchange::initMulticastTransport( UniXML::iterator n_it,
         {
             sender2 = nullptr;
 
-            if( !n_it.getProp("unet_multicast_ip2").empty() )
+            if( !n_it.getProp2("unet_multicast_ip2", defaultIP2).empty() )
             {
-                auto s2 = MulticastSendTransport::createFromXml(n_it, 2);
+                auto s2 = MulticastSendTransport::createFromXml(root, n_it, 2);
 
                 if( s2 )
                     unetinfo << myname << "(init): " << n_it.getProp("name") << " send (channel2) to multicast group: " << s2->getGroupAddress().toString() << endl;
@@ -1164,12 +1168,12 @@ void UNetExchange::initMulticastTransport( UniXML::iterator n_it,
     }
 }
 // ----------------------------------------------------------------------------
-void UNetExchange::initMulticastReceiverForNode( UniXML::iterator n_it, const std::string& prefix )
+void UNetExchange::initMulticastReceiverForNode( UniXML::iterator root, UniXML::iterator n_it, const std::string& prefix )
 {
     auto conf = uniset_conf();
 
     unetinfo << myname << "(init): " << n_it.getProp("name") << " init receivers:" <<  endl;
-    auto transport1 = MulticastReceiveTransport::createFromXml(n_it, 0);
+    auto transport1 = MulticastReceiveTransport::createFromXml(root, n_it, 0);
 
     if( checkExistTransport(transport1->ID()) )
     {
@@ -1181,6 +1185,7 @@ void UNetExchange::initMulticastReceiverForNode( UniXML::iterator n_it, const st
 
     string s_resp_id(n_it.getProp("unet_respond1_id"));
     uniset::ObjectId resp_id = uniset::DefaultObjectId;
+    const string defaultIP2 = root.getProp("unet_multicast_ip2");
 
     if( !s_resp_id.empty() )
     {
@@ -1330,8 +1335,8 @@ void UNetExchange::initMulticastReceiverForNode( UniXML::iterator n_it, const st
     {
         std::unique_ptr<MulticastReceiveTransport> transport2 = nullptr;
 
-        if (!n_it.getProp("unet_multicast_ip2").empty() )
-            transport2 = MulticastReceiveTransport::createFromXml(n_it, 2);
+        if (!n_it.getProp2("unet_multicast_ip2", defaultIP2).empty() )
+            transport2 = MulticastReceiveTransport::createFromXml(root, n_it, 2);
 
         if( transport2 ) // создаём читателя по второму каналу
         {

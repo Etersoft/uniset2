@@ -58,8 +58,8 @@ static void initHelpers()
 
     if( !udp_s )
     {
-        udp_s = make_unique<MulticastSendTransport>("0.0.0.0", 3002, "224.0.0.2", 3002);
-        REQUIRE( udp_s->toString() == "0.0.0.0:3002" );
+        udp_s = make_unique<MulticastSendTransport>("127.0.0.1", 3002, "224.0.0.2", 3002);
+        REQUIRE( udp_s->toString() == "127.0.0.1:3002" );
         REQUIRE( udp_s->createConnection(false, 5000) );
         // pause for igmp message
         msleep(3000);
