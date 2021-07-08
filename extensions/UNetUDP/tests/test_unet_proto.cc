@@ -3,6 +3,7 @@
 #include <memory>
 #include "UniSetTypes.h"
 #include "UDPPacket.h"
+#include "PassiveTimer.h"
 // -----------------------------------------------------------------------------
 #include "proto/unet.pb.h"
 // -----------------------------------------------------------------------------
@@ -112,4 +113,36 @@ TEST_CASE("[UNetUDP]: crc", "[unetudp][protobuf][crc]")
     pack.setDData(d, 0);
     REQUIRE( pack.dataCRC() != crc );
     REQUIRE( pack.dataCRCWithBuf(buf, sizeof(buf)) != crc_b );
+}
+
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: perf test", "[unetudp][protobuf][perf]")
+{
+    uint8_t buf[uniset::UniSetUDP::MessageBufSize];
+
+    UniSetUDP::UDPMessage pack;
+    REQUIRE(pack.isOk());
+    pack.setNodeID(100);
+    pack.setProcID(100);
+    pack.setNum(1);
+
+    for( size_t i=0; i<uniset::UniSetUDP::MaxACount; i++ ) {
+        pack.addAData(i,i);
+        pack.addDData(i,true);
+    }
+
+    UniSetUDP::UDPMessage pack2;
+
+    PassiveTimer pt;
+
+    for( int i=0; i<100000; i++ ) {
+       // pack
+//       uint16_t crc = pasck.dataCRC();
+       auto ret = pack.serializeToArray(buf, sizeof(buf));
+
+       // unpack
+       pack2.initFromBuffer(buf, ret);
+    }
+
+    cerr << "perf: " << pt.getCurrent() << " msec" << endl;
 }
