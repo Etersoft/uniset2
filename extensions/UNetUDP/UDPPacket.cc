@@ -102,102 +102,157 @@ namespace uniset
     // -----------------------------------------------------------------------------
     std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPMessage& p )
     {
-        os << "nodeID=" << p.pb.nodeid()
-           << " procID=" << p.pb.procid()
-           << " dcount=" << p.pb.data().did_size()
-           << " acount=" << p.pb.data().aid_size()
-           << " pnum=" << p.pb.num()
+        os << "nodeID=" << p.pack.getNodeID()
+           << " procID=" << p.pack.getProcID()
+           << " dcount=" << p.pack.getAdata().size()
+           << " acount=" << p.pack.getDdata().size()
+           << " pnum=" << p.pack.getNum()
            << endl;
 
         os << "DIGITAL:" << endl;
 
-        for( size_t i = 0; i < (size_t)p.pb.data().did_size(); i++ )
-            os << "[" << i << "]={" << p.pb.data().did(i) << "," << p.pb.data().dvalue(i) << "}" << endl;
+        int i = 0;
+
+        for( auto&& d : p.pack.getDdata() )
+            os << "[" << i++ << "]={" << d.getId() << "," << d.getValue() << "}" << endl;
 
         os << "ANALOG:" << endl;
 
-        for( size_t i = 0; i < (size_t)p.pb.data().aid_size(); i++ )
-            os << "[" << i << "]={" << p.pb.data().aid(i) << "," << p.pb.data().avalue(i) << "}" << endl;
+        i = 0;
+
+        for( auto&& a : p.pack.getAdata() )
+            os << "[" << i++ << "]={" << a.getId() << "," << a.getValue() << "}" << endl;
 
         return os;
     }
     // -----------------------------------------------------------------------------
-    UDPMessage::UDPMessage()
+    const UDPMessage& UDPMessage::operator=(const UDPMessage& m)
     {
-        pb.set_magic(UniSetUDP::UNETUDP_MAGICNUM);
-        pb.set_num(0);
-        pb.set_procid(0);
-        pb.set_nodeid(0);
+        if( &m == this )
+            return *this;
+
+        msg.setRoot(m.pack.asReader());
+        pack = msg.getRoot<uniset::UNetPacket>();
+        return *this;
+    }
+    // -----------------------------------------------------------------------------
+    UDPMessage::UDPMessage(const UDPMessage& m):
+        pack(msg.initRoot<uniset::UNetPacket>())
+    {
+        msg.setRoot(m.pack.asReader()); // copy
+        pack = msg.getRoot<uniset::UNetPacket>();
+    }
+    // -----------------------------------------------------------------------------
+    UDPMessage::UDPMessage():
+        pack(msg.initRoot<uniset::UNetPacket>())
+    {
+        pack.setMagic(UniSetUDP::UNETUDP_MAGICNUM);
+        pack.setNum(0);
+        pack.setProcID(0);
+        pack.setNodeID(0);
+        pack.initAdata(MaxACount);
+        pack.initDdata(MaxDCount);
+        pack.setAnum(0);
+        pack.setDnum(0);
     }
     // -----------------------------------------------------------------------------
     bool UDPMessage::initFromBuffer( uint8_t* rbuf, size_t sz )
     {
-        return pb.ParseFromArray(rbuf, sz);
+        if(reinterpret_cast<uintptr_t>(rbuf) % sizeof(void*) == 0)
+        {
+            const kj::ArrayPtr<const capnp::word> view(
+                reinterpret_cast<const capnp::word*>(&(rbuf[0])),
+                reinterpret_cast<const capnp::word*>(&(rbuf[sz])));
+            capnp::FlatArrayMessageReader r(view);
+            auto m = r.getRoot<uniset::UNetPacket>();
+            msg.setRoot(m); // copy
+            pack = msg.getRoot<uniset::UNetPacket>();
+        }
+        else
+        {
+            auto arr = kj::ArrayPtr<capnp::word>(reinterpret_cast<capnp::word*>(rbuf), sz / sizeof(capnp::word));
+            ::capnp::FlatArrayMessageReader r(arr);
+            auto m = r.getRoot<uniset::UNetPacket>();
+            msg.setRoot(m); // copy
+            pack = msg.getRoot<uniset::UNetPacket>();
+        }
+
+        return magic() == UNETUDP_MAGICNUM;
     }
     // -----------------------------------------------------------------------------
-    std::string UDPMessage::serializeAsString() const noexcept
+    std::string UDPMessage::serializeAsString()
     {
-        return pb.SerializeAsString();
+        auto a = capnp::messageToFlatArray(msg);
+        auto b = a.asBytes();
+        return std::string(b.begin(), b.end());
     }
     // -----------------------------------------------------------------------------
-    size_t UDPMessage::serializeToArray( uint8_t* buf, int sz ) const noexcept
+    size_t UDPMessage::serializeToArray( uint8_t* buf, int sz ) noexcept
     {
-        if( !pb.SerializeToArray(buf, sz) )
+        auto a = capnp::messageToFlatArray(msg);
+        auto b = a.asBytes();
+
+        if( sz < b.size())
             return 0;
 
-        return pb.ByteSizeLong();
+        memcpy(buf, b.begin(), b.size());
+        return b.size();
     }
     // -----------------------------------------------------------------------------
     uint32_t UDPMessage::magic() const noexcept
     {
-        return pb.magic();
+        return pack.getMagic();
     }
     // -----------------------------------------------------------------------------
     void UDPMessage::setNum( long num ) noexcept
     {
-        pb.set_num(num);
+        pack.setNum(num);
     }
     // -----------------------------------------------------------------------------
     long UDPMessage::num() const noexcept
     {
-        return pb.num();
+        return pack.getNum();
     }
     // -----------------------------------------------------------------------------
     void UDPMessage::setNodeID( long num ) noexcept
     {
-        pb.set_nodeid(num);
+        pack.setNodeID(num);
     }
     // -----------------------------------------------------------------------------
     long UDPMessage::nodeID() const noexcept
     {
-        return pb.nodeid();
+        return pack.getNodeID();
     }
     // -----------------------------------------------------------------------------
     void UDPMessage::setProcID( long num ) noexcept
     {
-        pb.set_procid(num);
+        pack.setProcID(num);
     }
     // -----------------------------------------------------------------------------
     long UDPMessage::procID() const noexcept
     {
-        return pb.procid();
+        return pack.getProcID();
     }
     // -----------------------------------------------------------------------------
     size_t UDPMessage::addAData( long id, long val ) noexcept
     {
-        if( (size_t)pb.data().aid_size() >= MaxACount )
+        auto anum = pack.getAnum();
+
+        if( (size_t)anum >= MaxACount )
             return MaxACount;
 
-        pb.mutable_data()->add_aid(id);
-        pb.mutable_data()->add_avalue(val);
-        return pb.data().aid_size() - 1;
+        auto d = pack.getAdata()[anum];
+        d.setId(id);
+        d.setValue(val);
+        pack.setAnum(anum + 1);
+        return anum;
     }
     // -----------------------------------------------------------------------------
     bool UDPMessage::setAData( size_t index, long val ) noexcept
     {
-        if( index < (size_t)pb.data().aid_size() )
+        if( index < (size_t)pack.getAdata().size() )
         {
-            pb.mutable_data()->set_avalue(index, val);
+            pack.getAdata()[index].setValue(val);
             return true;
         }
 
@@ -206,107 +261,116 @@ namespace uniset
     // -----------------------------------------------------------------------------
     size_t UDPMessage::addDData( long id, bool val ) noexcept
     {
-        if( (size_t)pb.data().did_size()  >= MaxDCount )
+        auto dnum = pack.getDnum();
+
+        if( (size_t)dnum >= MaxDCount )
             return MaxDCount;
 
-        pb.mutable_data()->add_did(id);
-        pb.mutable_data()->add_dvalue(val);
-        return pb.data().did_size() - 1;
+        auto d = pack.getDdata()[dnum];
+        d.setId(id);
+        d.setValue(val);
+        pack.setDnum(dnum + 1);
+        return dnum;
     }
     // -----------------------------------------------------------------------------
     bool UDPMessage::setDData( size_t index, bool val ) noexcept
     {
-        if( index < (size_t)pb.data().did_size() )
+        if( index < (size_t)pack.getDdata().size() )
         {
-            pb.mutable_data()->set_dvalue(index, val);
+            pack.getDdata()[index].setValue(val);
             return true;
         }
 
         return false;
     }
     // -----------------------------------------------------------------------------
-    long UDPMessage::dID( size_t index ) const noexcept
+    long UDPMessage::dID( size_t index ) noexcept
     {
-        if( index >= (size_t)pb.data().did_size() )
+        if( index >= (size_t)pack.getDdata().size() )
             return uniset::DefaultObjectId;
 
-        return pb.data().did(index);
+        return pack.getDdata()[index].getId();
     }
     // -----------------------------------------------------------------------------
-    bool UDPMessage::dValue( size_t index ) const noexcept
+    bool UDPMessage::dValue( size_t index ) noexcept
     {
-        return pb.data().dvalue(index);
+        return pack.getDdata()[index].getValue();
     }
     // -----------------------------------------------------------------------------
-    long UDPMessage::aValue(size_t index) const noexcept
+    long UDPMessage::aValue(size_t index) noexcept
     {
-        return pb.data().avalue(index);
+        return pack.getAdata()[index].getValue();
     }
     // -----------------------------------------------------------------------------
-    long UDPMessage::aID(size_t index) const noexcept
+    long UDPMessage::aID(size_t index) noexcept
     {
-        if( index >= (size_t)pb.data().aid_size() )
+        if( index >= (size_t)pack.getAdata().size() )
             return uniset::DefaultObjectId;
 
-        return pb.data().aid(index);
+        return pack.getAdata()[index].getId();
     }
     // -----------------------------------------------------------------------------
     uint16_t UDPMessage::dataCRC() const noexcept
     {
-        const std::string s = pb.data().SerializeAsString();
-        return makeCRC((unsigned char*)s.data(), s.size());
-    }
-    // -----------------------------------------------------------------------------
-    uint16_t UDPMessage::dataCRCWithBuf( uint8_t* buf, size_t sz ) const noexcept
-    {
-        if( !pb.data().SerializeToArray(buf, sz) )
-            return 0;
+        uint16_t crc = 0;
 
-        return makeCRC((unsigned char*)buf, pb.data().ByteSizeLong());
+        for( const auto& a : pack.getAdata() )
+        {
+            auto b = capnp::writeDataStruct(a).asBytes();
+            crc += makeCRC((unsigned char*)b.begin(), b.size());
+        }
+
+        for( const auto& a : pack.getDdata() )
+        {
+            auto b = capnp::writeDataStruct(a).asBytes();
+            crc += makeCRC((unsigned char*)b.begin(), b.size());
+        }
+
+        return crc;
     }
     // -----------------------------------------------------------------------------
     long UDPMessage::getDataID() const noexcept
     {
         // в качестве идентификатора берётся ID первого датчика в данных
         // приоритет имеет аналоговые датчики
-        if( pb.data().aid_size() > 0 )
-            return pb.data().aid(0);
+        if( (size_t)pack.getAnum() > 0 )
+            return pack.getAdata()[0].getId();
 
-        if( pb.data().did_size() > 0 )
-            return pb.data().did(0);
+        if( (size_t)pack.getDnum() > 0 )
+            return pack.getDdata()[0].getId();
 
         // если нет данных(?) просто возвращаем номер пакета
-        return pb.num();
+        return pack.getNum();
     }
     // -----------------------------------------------------------------------------
     bool UDPMessage::isOk() const noexcept
     {
-        return ( pb.IsInitialized() && pb.magic() == UniSetUDP::UNETUDP_MAGICNUM );
+        return ( magic() == UniSetUDP::UNETUDP_MAGICNUM );
     }
     // -----------------------------------------------------------------------------
     bool UDPMessage::isAFull() const noexcept
     {
-        return ((size_t)pb.data().aid_size() >= MaxACount);
+        return ((size_t)pack.getAnum() >= MaxACount);
     }
     // -----------------------------------------------------------------------------
     bool UDPMessage::isDFull() const noexcept
     {
-        return ((size_t)pb.data().did_size() >= MaxDCount);
+        return ((size_t)pack.getDnum() >= MaxDCount);
     }
     // -----------------------------------------------------------------------------
     bool UDPMessage::isFull() const noexcept
     {
-        return !(((size_t)pb.data().did_size() < MaxDCount) && ((size_t)pb.data().aid_size() < MaxACount));
+        return isAFull() && isDFull();
     }
     // -----------------------------------------------------------------------------
     size_t UDPMessage::UDPMessage::dsize() const noexcept
     {
-        return pb.data().did_size();
+        return (size_t)pack.getDnum();
     }
     // -----------------------------------------------------------------------------
     size_t UDPMessage::asize() const noexcept
     {
-        return pb.data().aid_size();
+        return (size_t)pack.getAnum();
     }
     // -----------------------------------------------------------------------------
 } // end of namespace uniset

@@ -290,7 +290,7 @@ namespace uniset
 #ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
             mypack.msg.setNum(packetnum++);
 #else
-            uint16_t crc = mypack.msg.dataCRCWithBuf(sbuf, sizeof(sbuf));
+            uint16_t crc = mypack.msg.dataCRC();
 
             if( crc != lastcrc )
             {

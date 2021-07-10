@@ -62,22 +62,15 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
         }
     }
 
-    unet::UNetPacket mypack;
-    mypack.set_magic(UniSetUDP::UNETUDP_MAGICNUM);
-    mypack.set_nodeid(100);
-    mypack.set_procid(100);
+    uniset::UniSetUDP::UDPMessage mypack;
+    mypack.setNodeID(100);
+    mypack.setProcID(100);
 
     for( size_t i = 0; i < count; i++ )
-    {
-        mypack.mutable_data()->add_aid(i);
-        mypack.mutable_data()->add_avalue(i);
-    }
+        mypack.addAData(i, i);
 
     for( size_t i = 0; i < count; i++ )
-    {
-        mypack.mutable_data()->add_did(i);
-        mypack.mutable_data()->add_dvalue(i);
-    }
+        mypack.addDData(i, true);
 
     for( size_t i = 0; i < max; i++ )
     {
@@ -104,14 +97,14 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 5
 
     while( nc ) // -V654
     {
-        mypack.set_num(packetnum++);
+        mypack.setNum(packetnum++);
 
         // при переходе черех максимум (UniSetUDP::MaxPacketNum)
         // пакет опять должен иметь номер "1"
         if( packetnum == 0 )
             packetnum = 1;
 
-        s = mypack.SerializeAsString();
+        s = mypack.serializeAsString();
 
         for( auto&& udp : vsend )
         {

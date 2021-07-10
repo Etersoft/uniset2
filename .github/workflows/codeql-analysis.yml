@@ -46,7 +46,7 @@ jobs:
 
       - name: install packages
         run: |
-          sudo apt-get install libcomedi-dev libpoco-dev libmysqlclient-dev libomniorb4-dev libprotobuf-dev protobuf-compiler \
+          sudo apt-get install libcomedi-dev libpoco-dev libmysqlclient-dev libomniorb4-dev libcapnp-dev capnproto \
           libev-dev omniidl xsltproc librrd-dev libsigc++-2.0-dev \
           libsqlite3-dev python-dev libmosquittopp-dev libpoco-dev swig
           wget https://github.com/catchorg/Catch2/releases/download/v1.11.0/catch.hpp -O include/catch.hpp
@@ -57,7 +57,7 @@ jobs:
          # due broken comedi
          export CXXFLAGS="$CXXFLAGS -Wl,--unresolved-symbols=ignore-in-shared-libs"
          # regenerate proto files
-         cd extensions/UNetUDP/proto && make && cd -;
+         cd extensions/UNetUDP/capnp && make && cd -;
          autoreconf -fiv
          ./configure --disable-python --disable-netdata --disable-pgsql
          make

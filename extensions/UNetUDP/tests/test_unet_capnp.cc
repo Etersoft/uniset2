@@ -1,54 +1,15 @@
 #include <catch.hpp>
 // -----------------------------------------------------------------------------
 #include <memory>
+#include <iostream>
 #include "UniSetTypes.h"
 #include "UDPPacket.h"
 #include "PassiveTimer.h"
 // -----------------------------------------------------------------------------
-#include "proto/unet.pb.h"
-// -----------------------------------------------------------------------------
 using namespace std;
 using namespace uniset;
 // -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: protobuf UNetPacket", "[unetudp][protobuf][packet]")
-{
-    GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-    unet::UNetPacket pack;
-    pack.set_magic(0x13463C4);
-    REQUIRE(pack.magic() == 0x13463C4 );
-
-    pack.set_nodeid(100);
-    pack.set_procid(100);
-    pack.set_num(1);
-
-    for (int i = 0; i < 1000; i++ )
-    {
-        pack.mutable_data()->add_aid(1);
-        pack.mutable_data()->add_avalue(i);
-    }
-
-    REQUIRE( pack.data().aid_size() == 1000 );
-
-    //    cerr << pack.ByteSizeLong() << endl;
-
-    //    uniset::UniSetUDP::UDPMessage p1;
-    //    p1.procID = 100;
-    //    p1.nodeID = 100;
-    //    p1.num = 1;
-    //    for (int i=0; i< 1000; i++ ) {
-    //        p1.addDData(i,1);
-    //    }
-
-    //    cerr << sizeof(p1) << endl;
-
-    const std::string s = pack.SerializeAsString();
-    unet::UNetPacket pack2;
-    pack2.ParseFromArray(s.data(), s.size());
-    REQUIRE(pack2.magic() == pack.magic() );
-}
-// -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: protobuf UDPMessage", "[unetudp][protobuf][message]")
+TEST_CASE("[UNetUDP]: capnp UDPMessage", "[unetudp][capnp][message]")
 {
     UniSetUDP::UDPMessage pack;
     REQUIRE(pack.isOk());
@@ -56,26 +17,39 @@ TEST_CASE("[UNetUDP]: protobuf UDPMessage", "[unetudp][protobuf][message]")
     pack.setProcID(100);
     pack.setNum(1);
 
-    for( int i = 0; i < 1000; i++ )
+    for( int i = 0; i < UniSetUDP::MaxACount; i++ )
         pack.addAData(i, i);
 
-    REQUIRE( pack.asize() == 1000 );
-    REQUIRE(pack.isOk());
+    for( int i = 0; i < UniSetUDP::MaxDCount; i++ )
+        pack.addDData(i, true);
 
-    const std::string s = pack.serializeAsString();
+
+    REQUIRE(pack.asize() == UniSetUDP::MaxACount);
+    REQUIRE(pack.dsize() == UniSetUDP::MaxDCount);
+    REQUIRE(pack.isOk());
+    REQUIRE(pack.procID() == 100);
+    REQUIRE(pack.nodeID() == 99);
+    REQUIRE(pack.aValue(1) == 1);
+
+    uint8_t buf[UniSetUDP::MessageBufSize];
+    size_t ret = pack.serializeToArray(buf, sizeof(buf));
+    REQUIRE( ret <= UniSetUDP::MessageBufSize );
 
     UniSetUDP::UDPMessage pack2;
-    pack2.initFromBuffer((uint8_t*)s.data(), s.size());
+    REQUIRE(pack2.initFromBuffer(buf, ret));
     REQUIRE(pack2.isOk());
-    REQUIRE(pack2.asize() == 1000);
-    REQUIRE(pack2.aValue(1) == 1);
     REQUIRE(pack2.procID() == 100);
     REQUIRE(pack2.nodeID() == 99);
+    REQUIRE(pack2.asize() == UniSetUDP::MaxACount);
+    REQUIRE(pack2.dsize() == UniSetUDP::MaxDCount);
+    REQUIRE(pack2.aValue(1) == 1);
+    REQUIRE(pack2.aValue(999) == 999);
+    REQUIRE(pack2.dID(1) == 1);
+    REQUIRE(pack2.dID(999) == 999);
 }
 
-
 // -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: crc", "[unetudp][protobuf][crc]")
+TEST_CASE("[UNetUDP]: crc", "[unetudp][capnp][crc]")
 {
     uint8_t buf[uniset::UniSetUDP::MessageBufSize];
 
@@ -86,8 +60,6 @@ TEST_CASE("[UNetUDP]: crc", "[unetudp][protobuf][crc]")
     pack.setNum(1);
 
     uint16_t crc = pack.dataCRC();
-    uint16_t crc_b = pack.dataCRCWithBuf(buf, sizeof(buf));
-    REQUIRE( crc == crc_b );
 
     UniSetUDP::UDPMessage pack2; // the same data
     REQUIRE(pack2.isOk());
@@ -95,8 +67,6 @@ TEST_CASE("[UNetUDP]: crc", "[unetudp][protobuf][crc]")
     pack2.setProcID(100);
     pack2.setNum(1);
     uint16_t crc2 = pack2.dataCRC();
-    uint16_t crc2_b = pack.dataCRCWithBuf(buf, sizeof(buf));
-    REQUIRE( crc2 == crc2_b );
     REQUIRE( crc == crc2 );
 
     //
@@ -106,17 +76,14 @@ TEST_CASE("[UNetUDP]: crc", "[unetudp][protobuf][crc]")
 
     pack.setAData(a, 0);
     REQUIRE( pack.dataCRC() != crc );
-    REQUIRE( pack.dataCRCWithBuf(buf, sizeof(buf)) != crc );
     crc = pack.dataCRC();
-    crc_b = pack.dataCRCWithBuf(buf, sizeof(buf));
 
     pack.setDData(d, 0);
     REQUIRE( pack.dataCRC() != crc );
-    REQUIRE( pack.dataCRCWithBuf(buf, sizeof(buf)) != crc_b );
 }
 
 // -----------------------------------------------------------------------------
-TEST_CASE("[UNetUDP]: perf test", "[unetudp][protobuf][perf]")
+TEST_CASE("[UNetUDP]: perf test", "[unetudp][capnp][perf]")
 {
     uint8_t buf[uniset::UniSetUDP::MessageBufSize];
 

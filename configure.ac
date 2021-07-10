@@ -40,7 +40,7 @@ AC_SUBST(ASTYLE_OPT)
 PKG_CHECK_MODULES(XML, libxml-2.0)
 PKG_CHECK_MODULES(OMNI, omniORB4)
 PKG_CHECK_MODULES(SIGC, sigc++-2.0)
-PKG_CHECK_MODULES(PROTOBUF, protobuf)
+PKG_CHECK_MODULES(CAPNP, capnp)
 
 checklibev=true
 PKG_CHECK_MODULES(EV, libev, [ checklibev=false; ], [ checklibev=true; ])
