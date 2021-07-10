@@ -472,3 +472,27 @@ TEST_CASE("[UNetUDP]: check undefined value", "[unetudp][udp][sender]")
     REQUIRE( pack.a_dat[0].val == 110 );
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: perf test", "[unetudp][zero][perf]")
+{
+    UniSetUDP::UDPMessage pack;
+    REQUIRE(pack.isOk());
+    pack.header.nodeID = 100;
+    pack.header.procID = 100;
+    pack.header.num = 1;
+
+    for( size_t i = 0; i < uniset::UniSetUDP::MaxACount; i++ ) {
+        pack.addAData(i, i);
+        pack.addDData(i, true);
+    }
+
+    UniSetUDP::UDPMessage pack2;
+
+    PassiveTimer pt;
+
+    for( int i = 0; i < 100000; i++ ) {
+        memcpy(&pack2, &pack, sizeof(UniSetUDP::UDPMessage));
+        pack2.ntoh();
+    }
+
+    cerr << "perf: " << pt.getCurrent() << " msec" << endl;
+}

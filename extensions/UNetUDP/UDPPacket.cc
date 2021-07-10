@@ -173,13 +173,13 @@ namespace uniset
         return header.acount - 1;
     }
     // -----------------------------------------------------------------------------
-    size_t UDPMessage::addAData( long id, long val) noexcept
+    size_t UDPMessage::addAData( int64_t id, int64_t val) noexcept
     {
         UDPAData d(id, val);
         return addAData(d);
     }
     // -----------------------------------------------------------------------------
-    bool UDPMessage::setAData( size_t index, long val ) noexcept
+    bool UDPMessage::setAData( size_t index, int64_t val ) noexcept
     {
         if( index < MaxACount )
         {
