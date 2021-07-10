@@ -53,8 +53,8 @@ namespace uniset
             uint32_t magic;
             uint8_t _be_order; // 1 - BE byte order, 0 - LE byte order
             size_t num;
-            long nodeID;
-            long procID;
+            int64_t nodeID;
+            int64_t procID;
             size_t dcount; /*!< количество булевых величин */
             size_t acount; /*!< количество аналоговых величин */
         } __attribute__((packed));
@@ -67,10 +67,10 @@ namespace uniset
         struct UDPAData
         {
             UDPAData() noexcept: id(uniset::DefaultObjectId), val(0) {}
-            UDPAData(long id, long val) noexcept: id(id), val(val) {}
+            UDPAData(int64_t id, int64_t val) noexcept: id(id), val(val) {}
 
-            long id;
-            long val;
+            int64_t id;
+            int64_t val;
 
         } __attribute__((packed));
 
@@ -91,7 +91,7 @@ namespace uniset
             bool isOk() noexcept;
 
             // \warning в случае переполнения возвращается MaxDCount
-            size_t addDData( long id, bool val ) noexcept;
+            size_t addDData( int64_t id, bool val ) noexcept;
 
             //!\return true - successful
             bool setDData( size_t index, bool val ) noexcept;
@@ -105,10 +105,10 @@ namespace uniset
             // функции addAData возвращают индекс, по которому потом можно напрямую писать при помощи setAData(index)
             // \warning в случае переполнения возвращается MaxACount
             size_t addAData( const UDPAData& dat ) noexcept;
-            size_t addAData( long id, long val ) noexcept;
+            size_t addAData( int64_t id, int64_t val ) noexcept;
 
             //!\return true - successful
-            bool setAData( size_t index, long val ) noexcept;
+            bool setAData( size_t index, int64_t val ) noexcept;
 
             long getDataID( ) const noexcept; /*!< получение "уникального" идентификатора данных этого пакета */
 
@@ -140,7 +140,7 @@ namespace uniset
 
             UDPHeader header;
             UDPAData a_dat[MaxACount]; /*!< аналоговые величины */
-            long d_id[MaxDCount];      /*!< список дискретных ID */
+            int64_t d_id[MaxDCount];      /*!< список дискретных ID */
             uint8_t d_dat[MaxDDataCount];  /*!< битовые значения */
         } __attribute__((packed));
 

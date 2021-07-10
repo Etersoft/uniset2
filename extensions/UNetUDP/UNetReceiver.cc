@@ -207,13 +207,6 @@ bool UNetReceiver::createConnection( bool throwEx )
         if( throwEx )
             throw SystemError(s.str());
     }
-    catch( const std::exception& ex )
-    {
-        unetcrit << ex.what() << std::endl;
-
-        if( throwEx )
-            throw ex;
-    }
 
     return false;
 }
