@@ -190,7 +190,7 @@ namespace uniset
         return false;
     }
     // -----------------------------------------------------------------------------
-    size_t UDPMessage::addDData( long id, bool val ) noexcept
+    size_t UDPMessage::addDData( int64_t id, bool val ) noexcept
     {
         if( header.dcount >= MaxDCount )
             return MaxDCount;

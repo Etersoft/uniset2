@@ -480,7 +480,8 @@ TEST_CASE("[UNetUDP]: perf test", "[unetudp][zero][perf]")
     pack.header.procID = 100;
     pack.header.num = 1;
 
-    for( size_t i = 0; i < uniset::UniSetUDP::MaxACount; i++ ) {
+    for( size_t i = 0; i < uniset::UniSetUDP::MaxACount; i++ )
+    {
         pack.addAData(i, i);
         pack.addDData(i, true);
     }
@@ -489,7 +490,8 @@ TEST_CASE("[UNetUDP]: perf test", "[unetudp][zero][perf]")
 
     PassiveTimer pt;
 
-    for( int i = 0; i < 100000; i++ ) {
+    for( int i = 0; i < 100000; i++ )
+    {
         memcpy(&pack2, &pack, sizeof(UniSetUDP::UDPMessage));
         pack2.ntoh();
     }

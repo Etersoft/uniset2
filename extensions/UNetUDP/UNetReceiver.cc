@@ -78,6 +78,12 @@ void UNetReceiver::setBufferSize( size_t sz ) noexcept
     }
 }
 // -----------------------------------------------------------------------------
+void UNetReceiver::setMaxReceiveAtTime( size_t sz ) noexcept
+{
+    if( sz > 0 )
+        maxReceiveCount = sz;
+}
+// -----------------------------------------------------------------------------
 void UNetReceiver::setReceiveTimeout( timeout_t msec ) noexcept
 {
     std::lock_guard<std::mutex> l(tmMutex);
@@ -206,6 +212,13 @@ bool UNetReceiver::createConnection( bool throwEx )
 
         if( throwEx )
             throw SystemError(s.str());
+    }
+    catch( ... )
+    {
+        unetcrit << "(createConnection): catch ..." << std::endl;
+
+        if( throwEx )
+            throw;
     }
 
     return false;
@@ -471,12 +484,16 @@ void UNetReceiver::readEvent( ev::io& watcher ) noexcept
     if( !activated )
         return;
 
+    bool ok = false;
+
     try
     {
-        if( receive() )
+        for( size_t i = 0; transport->available() > 0 && i < maxReceiveCount; i++ )
         {
-            std::lock_guard<std::mutex> l(tmMutex);
-            ptRecvTimeout.reset();
+            if( receive() != retOK )
+                break;
+
+            ok = true;
         }
     }
     catch( uniset::Exception& ex)
@@ -486,6 +503,12 @@ void UNetReceiver::readEvent( ev::io& watcher ) noexcept
     catch( const std::exception& e )
     {
         unetwarn << myname << "(receive): " << e.what() << std::endl;
+    }
+
+    if( ok )
+    {
+        std::lock_guard<std::mutex> l(tmMutex);
+        ptRecvTimeout.reset();
     }
 }
 // -----------------------------------------------------------------------------
@@ -597,7 +620,7 @@ void UNetReceiver::stop()
     loop.evstop(this);
 }
 // -----------------------------------------------------------------------------
-bool UNetReceiver::receive() noexcept
+UNetReceiver::ReceiveRetCode UNetReceiver::receive() noexcept
 {
     try
     {
@@ -608,13 +631,13 @@ bool UNetReceiver::receive() noexcept
         if( ret < 0 )
         {
             unetcrit << myname << "(receive): recv err(" << errno << "): " << strerror(errno) << endl;
-            return false;
+            return retError;
         }
 
         if( ret == 0 )
         {
             unetwarn << myname << "(receive): disconnected?!... recv 0 bytes.." << endl;
-            return false;
+            return retNoData;
         }
 
         recvCount++;
@@ -623,7 +646,7 @@ bool UNetReceiver::receive() noexcept
         pack->ntoh();
 
         if( !pack->isOk() )
-            return false;
+            return retError;
 
         if( size_t(abs(long(pack->header.num - wnum))) > maxDifferens || size_t(abs( long(wnum - rnum) )) >= (cbufSize - 2) )
         {
@@ -648,7 +671,7 @@ bool UNetReceiver::receive() noexcept
                 pack->header.num = 0;
             }
 
-            return true;
+            return retOK;
         }
 
         if( pack->header.num != wnum )
@@ -670,7 +693,7 @@ bool UNetReceiver::receive() noexcept
         if( rnum == 0 )
             rnum = pack->header.num;
 
-        return true;
+        return retOK;
     }
     catch( Poco::Net::NetException& ex )
     {
@@ -681,7 +704,7 @@ bool UNetReceiver::receive() noexcept
         unetcrit << myname << "(receive): recv err: " << ex.what() << endl;
     }
 
-    return false;
+    return retError;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::initIterators() noexcept
@@ -705,11 +728,12 @@ void UNetReceiver::initIterators() noexcept
 // -----------------------------------------------------------------------------
 UNetReceiver::CacheVec* UNetReceiver::getDCache( UniSetUDP::UDPMessage* pack ) noexcept
 {
-    auto dit = d_icache_map.find(pack->getDataID());
+    auto dID = pack->getDataID();
+    auto dit = d_icache_map.find(dID);
 
     if( dit == d_icache_map.end() )
     {
-        auto p = d_icache_map.emplace(pack->getDataID(), UNetReceiver::CacheVec());
+        auto p = d_icache_map.emplace(dID, UNetReceiver::CacheVec());
         dit = p.first;
     }
 
@@ -718,7 +742,7 @@ UNetReceiver::CacheVec* UNetReceiver::getDCache( UniSetUDP::UDPMessage* pack ) n
     if( pack->header.dcount == d_info->size() )
         return d_info;
 
-    unetinfo << myname << ": init dcache[" << pack->header.dcount << "] for " << pack->getDataID() << endl;
+    unetinfo << myname << ": init dcache[" << pack->header.dcount << "] for " << dID << endl;
 
     d_info->resize(pack->header.dcount);
 
@@ -738,11 +762,12 @@ UNetReceiver::CacheVec* UNetReceiver::getDCache( UniSetUDP::UDPMessage* pack ) n
 // -----------------------------------------------------------------------------
 UNetReceiver::CacheVec* UNetReceiver::getACache( UniSetUDP::UDPMessage* pack ) noexcept
 {
-    auto ait = a_icache_map.find(pack->getDataID());
+    auto dID = pack->getDataID();
+    auto ait = a_icache_map.find(dID);
 
     if( ait == a_icache_map.end() )
     {
-        auto p = a_icache_map.emplace(pack->getDataID(), UNetReceiver::CacheVec());
+        auto p = a_icache_map.emplace(dID, UNetReceiver::CacheVec());
         ait = p.first;
     }
 
@@ -751,7 +776,7 @@ UNetReceiver::CacheVec* UNetReceiver::getACache( UniSetUDP::UDPMessage* pack ) n
     if( pack->header.acount == a_info->size() )
         return a_info;
 
-    unetinfo << myname << ": init acache[" << pack->header.acount << "] for " << pack->getDataID() << endl;
+    unetinfo << myname << ": init acache[" << pack->header.acount << "] for " << dID << endl;
 
     a_info->resize(pack->header.acount);
 
