@@ -165,7 +165,7 @@ MulticastReceiveTransport::~MulticastReceiveTransport()
     }
 }
 // -------------------------------------------------------------------------
-bool MulticastReceiveTransport::isConnected() const
+bool MulticastReceiveTransport::isConnected() const noexcept
 {
     return udp != nullptr;
 }
@@ -175,7 +175,7 @@ std::string MulticastReceiveTransport::ID() const noexcept
     return toString();
 }
 // -------------------------------------------------------------------------
-std::string MulticastReceiveTransport::toString() const
+std::string MulticastReceiveTransport::toString() const noexcept
 {
     ostringstream s;
     s << host << ":" << port;
@@ -283,9 +283,20 @@ ssize_t MulticastReceiveTransport::receive( void* r_buf, size_t sz )
     return udp->receiveBytes(r_buf, sz);
 }
 // -------------------------------------------------------------------------
-bool MulticastReceiveTransport::isReadyForReceive( timeout_t tout )
+bool MulticastReceiveTransport::isReadyForReceive( timeout_t tout ) noexcept
 {
-    return udp->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_READ);
+    try
+    {
+        return udp->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_READ);
+    }
+    catch(...) {}
+
+    return false;
+}
+// -------------------------------------------------------------------------
+int MulticastReceiveTransport::available()
+{
+    return udp->available();
 }
 // -------------------------------------------------------------------------
 std::vector<Poco::Net::IPAddress> MulticastReceiveTransport::getGroups()
@@ -430,19 +441,19 @@ MulticastSendTransport::~MulticastSendTransport()
     }
 }
 // -------------------------------------------------------------------------
-std::string MulticastSendTransport::toString() const
+std::string MulticastSendTransport::toString() const noexcept
 {
     return sockAddr.toString();
 }
 // -------------------------------------------------------------------------
-bool MulticastSendTransport::isConnected() const
+bool MulticastSendTransport::isConnected() const noexcept
 {
     return udp != nullptr;
 }
 // -------------------------------------------------------------------------
 void MulticastSendTransport::setTimeToLive( int _ttl )
 {
-    ttl = ttl;
+    ttl = _ttl;
 
     if( udp )
         udp->setTimeToLive(_ttl);
@@ -493,9 +504,15 @@ int MulticastSendTransport::getSocket() const
     return udp->getSocket();
 }
 // -------------------------------------------------------------------------
-bool MulticastSendTransport::isReadyForSend( timeout_t tout )
+bool MulticastSendTransport::isReadyForSend( timeout_t tout ) noexcept
 {
-    return udp && udp->poll( UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_WRITE );
+    try
+    {
+        return udp && udp->poll( UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_WRITE );
+    }
+    catch(...) {}
+
+    return false;
 }
 // -------------------------------------------------------------------------
 ssize_t MulticastSendTransport::send( const void* buf, size_t sz )

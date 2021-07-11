@@ -129,6 +129,7 @@ namespace uniset
             void setEvrunTimeout(timeout_t msec ) noexcept;
             void setInitPause( timeout_t msec ) noexcept;
             void setBufferSize( size_t sz ) noexcept;
+            void setMaxReceiveAtTime( size_t sz ) noexcept;
 
             void setRespondID( uniset::ObjectId id, bool invert = false ) noexcept;
             void setLostPacketsID( uniset::ObjectId id ) noexcept;
@@ -163,7 +164,14 @@ namespace uniset
             const std::shared_ptr<SMInterface> shm;
             std::shared_ptr<DebugStream> unetlog;
 
-            bool receive() noexcept;
+            enum ReceiveRetCode
+            {
+                retOK = 0,
+                retError = 1,
+                retNoData = 2
+            };
+
+            ReceiveRetCode receive() noexcept;
             void step() noexcept;
             void update() noexcept;
             void callback( ev::io& watcher, int revents ) noexcept;
@@ -218,6 +226,7 @@ namespace uniset
             timeout_t prepareTime = { 2000 };
             timeout_t evrunTimeout = { 15000 };
             timeout_t lostTimeout = { 200 };
+            size_t maxReceiveCount = { 5 }; // количество читаемых за один раз
 
             double initPause = { 5.0 }; // пауза на начальную инициализацию (сек)
             std::atomic_bool initOK = { false };
