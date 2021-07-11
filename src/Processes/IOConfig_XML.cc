@@ -115,7 +115,7 @@ namespace uniset
 	bool IOConfig_XML::getBaseInfo( xmlNode* node, IOController_i::SensorInfo& si ) const
 	{
 		UniXML::iterator it(node);
-		string sname( it.getProp("name"));
+		const string sname( it.getProp("name"));
 
 		if( sname.empty() )
 		{
@@ -126,7 +126,7 @@ namespace uniset
 		// преобразуем в полное имя
 		ObjectId sid = uniset::DefaultObjectId;
 
-		string id(it.getProp("id"));
+		const string id(it.getProp("id"));
 
 		if( !id.empty() )
 			sid = uni_atoi( id );
@@ -142,7 +142,7 @@ namespace uniset
 		}
 
 		ObjectId snode = conf->getLocalNode();
-		string snodename(it.getProp("node"));
+		const string snodename(it.getProp("node"));
 
 		if( !snodename.empty() )
 			snode = conf->getNodeID(snodename);
@@ -167,7 +167,7 @@ namespace uniset
 		UniXML::iterator it(node);
 
 		inf->priority = Message::Medium;
-		string prior(it.getProp("priority"));
+		const string prior(it.getProp("priority"));
 
 		if( prior == "Low" )
 			inf->priority = Message::Low;
@@ -216,7 +216,7 @@ namespace uniset
 		if( !it.getProp("undefined_value").empty() )
 			inf->undef_value = it.getIntProp("undefined_value");
 
-		string d_txt( it.getProp("depend") );
+		const string d_txt( it.getProp("depend") );
 
 		if( !d_txt.empty() )
 		{
@@ -392,7 +392,7 @@ namespace uniset
 	{
 		UniXML::iterator uit(node);
 
-		string sid_name = uit.getProp("sid");
+		const string sid_name = uit.getProp("sid");
 
 		if( !sid_name.empty() )
 		{
@@ -480,7 +480,7 @@ namespace uniset
 			return false;
 		}
 
-		string otype(it.getProp("type"));
+		const string otype(it.getProp("type"));
 
 		if( otype == "controllers" )
 			cname = uniset_conf()->getControllersSection() + "/" + cname;
@@ -504,7 +504,7 @@ namespace uniset
 			return false;
 		}
 
-		string cnodename(it.getProp("node"));
+		const string cnodename(it.getProp("node"));
 
 		if( !cnodename.empty() )
 			cnode = uniset_conf()->oind->getIdByName(cnodename);

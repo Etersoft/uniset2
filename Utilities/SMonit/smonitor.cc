@@ -26,7 +26,7 @@ int main( int argc, const char** argv )
         auto conf = uniset_init(argc, argv, "configure.xml");
 
         ObjectId ID(DefaultObjectId);
-        string name = conf->getArgParam("--name", "TestProc");
+        const string name = conf->getArgParam("--name", "TestProc");
 
         ID = conf->getObjectID(name);
 

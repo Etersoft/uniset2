@@ -45,6 +45,7 @@ xmlNode* MulticastReceiveTransport::getReceiveListNode( UniXML::iterator root )
 }
 // -------------------------------------------------------------------------
 /*
+ * <nodes unet_multicast_ip=".." unet_multicast_iface=".." >
  * <item id="3000"
  *    unet_multicast_port="2048"
  *    unet_multicast_ip="224.0.0.1"
@@ -52,10 +53,11 @@ xmlNode* MulticastReceiveTransport::getReceiveListNode( UniXML::iterator root )
  *    unet_multicast_port2="2049"
  *    unet_multicast_ip2="225.0.0.1"
  *    unet_multicast_iface2="192.169.1.1"
- *    >
- *    </item>
+ *    />
+  * ...
+ * </nodes>
  */
-std::unique_ptr<MulticastReceiveTransport> MulticastReceiveTransport::createFromXml( UniXML::iterator it, int numChan )
+std::unique_ptr<MulticastReceiveTransport> MulticastReceiveTransport::createFromXml( UniXML::iterator root, UniXML::iterator it, int numChan )
 {
     ostringstream fieldIp;
     fieldIp << "unet_multicast_ip";
@@ -63,13 +65,22 @@ std::unique_ptr<MulticastReceiveTransport> MulticastReceiveTransport::createFrom
     if( numChan > 0 )
         fieldIp << numChan;
 
-    const string h = it.getProp(fieldIp.str());
+    const string h = it.getProp2(fieldIp.str(), root.getProp(fieldIp.str()));
 
     if( h.empty() )
     {
         ostringstream err;
         err << "(MulticastReceiveTransport): Unknown multicast IP for " << it.getProp("name");
         throw uniset::SystemError(err.str());
+    }
+
+    Poco::Net::IPAddress a(h);
+
+    if( !a.isMulticast() && !a.isWildcard() )
+    {
+        ostringstream err;
+        err << "(MulticastReceiveTransport): " << h << " is not multicast address or 0.0.0.0";
+        throw SystemError(err.str());
     }
 
     ostringstream fieldPort;
@@ -86,16 +97,7 @@ std::unique_ptr<MulticastReceiveTransport> MulticastReceiveTransport::createFrom
     if( numChan > 0 )
         ifaceField << numChan;
 
-    const string iface = it.getProp(ifaceField.str());
-
-    Poco::Net::IPAddress a(h);
-
-    if( !a.isMulticast() && !a.isWildcard() )
-    {
-        ostringstream err;
-        err << "(MulticastReceiveTransport): " << h << " is not multicast address or 0.0.0.0";
-        throw SystemError(err.str());
-    }
+    const string iface = it.getProp2(ifaceField.str(), root.getProp(ifaceField.str()) );
 
     std::vector<Poco::Net::IPAddress> groups{a};
     return unisetstd::make_unique<MulticastReceiveTransport>(h, p, std::move(groups), iface);
@@ -163,7 +165,7 @@ MulticastReceiveTransport::~MulticastReceiveTransport()
     }
 }
 // -------------------------------------------------------------------------
-bool MulticastReceiveTransport::isConnected() const
+bool MulticastReceiveTransport::isConnected() const noexcept
 {
     return udp != nullptr;
 }
@@ -173,7 +175,7 @@ std::string MulticastReceiveTransport::ID() const noexcept
     return toString();
 }
 // -------------------------------------------------------------------------
-std::string MulticastReceiveTransport::toString() const
+std::string MulticastReceiveTransport::toString() const noexcept
 {
     ostringstream s;
     s << host << ":" << port;
@@ -281,9 +283,20 @@ ssize_t MulticastReceiveTransport::receive( void* r_buf, size_t sz )
     return udp->receiveBytes(r_buf, sz);
 }
 // -------------------------------------------------------------------------
-bool MulticastReceiveTransport::isReadyForReceive( timeout_t tout )
+bool MulticastReceiveTransport::isReadyForReceive( timeout_t tout ) noexcept
 {
-    return udp->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_READ);
+    try
+    {
+        return udp->poll(UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_READ);
+    }
+    catch(...) {}
+
+    return false;
+}
+// -------------------------------------------------------------------------
+int MulticastReceiveTransport::available()
+{
+    return udp->available();
 }
 // -------------------------------------------------------------------------
 std::vector<Poco::Net::IPAddress> MulticastReceiveTransport::getGroups()
@@ -303,14 +316,19 @@ std::string MulticastReceiveTransport::iface() const
 }
 // -------------------------------------------------------------------------
 /*
+ * <nodes unet_multicast_ip=".." unet_multicast_iface=".." >
  * <item id="3000"
  *    unet_multicast_port="2048"
  *    unet_multicast_ip="224.0.0.1"
+ *    unet_multicast_iface="192.168.1.1"
  *    unet_multicast_port2="2049"
  *    unet_multicast_ip2="225.0.0.1"
+ *    unet_multicast_iface="eth2"
  *    unet_multicast_ttl="3"/>
+ *    ...
+ *  </nodes>
  */
-std::unique_ptr<MulticastSendTransport> MulticastSendTransport::createFromXml( UniXML::iterator it, int numChan )
+std::unique_ptr<MulticastSendTransport> MulticastSendTransport::createFromXml( UniXML::iterator root, UniXML::iterator it, int numChan )
 {
     ostringstream fieldIp;
     fieldIp << "unet_multicast_ip";
@@ -318,7 +336,7 @@ std::unique_ptr<MulticastSendTransport> MulticastSendTransport::createFromXml( U
     if( numChan > 0 )
         fieldIp << numChan;
 
-    const string h = it.getProp(fieldIp.str());
+    const string h = it.getProp2(fieldIp.str(), root.getProp(fieldIp.str()));
 
     if( h.empty() )
     {
@@ -351,18 +369,27 @@ std::unique_ptr<MulticastSendTransport> MulticastSendTransport::createFromXml( U
         throw SystemError(err.str());
     }
 
+    ostringstream ipIface;
+    ipIface << "unet_multicast_iface";
+
     ostringstream ipField;
     ipField << "unet_multicast_sender_ip";
 
     if( numChan > 0 )
+    {
         ipField << numChan;
+        ipIface << numChan;
+    }
 
-    string ip = it.getProp(ipField.str());
+    string ip = it.getProp2(ipField.str(), it.getProp(ipIface.str()));
+
+    if( ip.empty() )
+        ip = root.getProp2(ipField.str(), root.getProp(ipIface.str()));
 
     if( ip.empty() )
     {
         ostringstream err;
-        err << "(MulticastSendTransport): Undefined " << ipField.str() << " for " << it.getProp("name");
+        err << "(MulticastSendTransport): Undefined sender ip " << ipField.str() << " for " << it.getProp("name");
         throw SystemError(err.str());
     }
 
@@ -390,7 +417,7 @@ std::unique_ptr<MulticastSendTransport> MulticastSendTransport::createFromXml( U
         ip = al[0].get<0>().toString();
     }
 
-    int ttl = it.getPIntProp("unet_multicast_ttl", 1);
+    int ttl = it.getPIntProp("unet_multicast_ttl", root.getPIntProp("unet_multicast_ttl", 1));
     return unisetstd::make_unique<MulticastSendTransport>(ip, p, h, p, ttl);
 }
 // -------------------------------------------------------------------------
@@ -414,19 +441,19 @@ MulticastSendTransport::~MulticastSendTransport()
     }
 }
 // -------------------------------------------------------------------------
-std::string MulticastSendTransport::toString() const
+std::string MulticastSendTransport::toString() const noexcept
 {
     return sockAddr.toString();
 }
 // -------------------------------------------------------------------------
-bool MulticastSendTransport::isConnected() const
+bool MulticastSendTransport::isConnected() const noexcept
 {
     return udp != nullptr;
 }
 // -------------------------------------------------------------------------
 void MulticastSendTransport::setTimeToLive( int _ttl )
 {
-    ttl = ttl;
+    ttl = _ttl;
 
     if( udp )
         udp->setTimeToLive(_ttl);
@@ -477,9 +504,15 @@ int MulticastSendTransport::getSocket() const
     return udp->getSocket();
 }
 // -------------------------------------------------------------------------
-bool MulticastSendTransport::isReadyForSend( timeout_t tout )
+bool MulticastSendTransport::isReadyForSend( timeout_t tout ) noexcept
 {
-    return udp && udp->poll( UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_WRITE );
+    try
+    {
+        return udp && udp->poll( UniSetTimer::millisecToPoco(tout), Poco::Net::Socket::SELECT_WRITE );
+    }
+    catch(...) {}
+
+    return false;
 }
 // -------------------------------------------------------------------------
 ssize_t MulticastSendTransport::send( const void* buf, size_t sz )

@@ -3,10 +3,10 @@
 # See doc: http://www.gnu.org/software/hello/manual/autoconf/Generic-Programs.html
 
 # AC_PREREQ(2.59)
-AC_INIT([uniset2], [2.12.1], pv@etersoft.ru)
+AC_INIT([uniset2], [2.13.1], pv@etersoft.ru)
 AM_INIT_AUTOMAKE([subdir-objects])
 
-LIBVER=14:1:12
+LIBVER=15:1:13
 AC_SUBST(LIBVER)
 
 # AC_CONFIG_MACRO_DIR([m4])
@@ -40,6 +40,7 @@ AC_SUBST(ASTYLE_OPT)
 PKG_CHECK_MODULES(XML, libxml-2.0)
 PKG_CHECK_MODULES(OMNI, omniORB4)
 PKG_CHECK_MODULES(SIGC, sigc++-2.0)
+PKG_CHECK_MODULES(CAPNP, capnp)
 
 checklibev=true
 PKG_CHECK_MODULES(EV, libev, [ checklibev=false; ], [ checklibev=true; ])

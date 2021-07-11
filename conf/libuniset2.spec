@@ -25,8 +25,8 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.12.1
-Release: alt2
+Version: 2.13.1
+Release: alt1
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL-2.1
@@ -40,10 +40,13 @@ Source: %name-%version.tar
 
 # Automatically added by buildreq on Fri Aug 26 2016
 # optimized out: fontconfig libgpg-error libsasl2-3 libsqlite3-devel libstdc++-devel libwayland-client libwayland-server perl pkg-config python-base python-devel python-module-omniidl python-modules python3
-BuildRequires: gcc-c++ libev-devel libomniORB-devel libpoco-devel libsigc++2-devel libxml2-devel xsltproc
+BuildRequires: gcc-c++ libev-devel libomniORB-devel libpoco-devel libsigc++2-devel libxml2-devel xsltproc capnproto-devel
 
 # for uniset2-codegen
 BuildPreReq: xsltproc
+
+# for capnp
+BuildPreReq: capnproto
 
 # due -std=c++11 using
 # BuildPreReq: gcc5 >= 4.8
@@ -369,6 +372,7 @@ Libraries needed to develop for uniset MQTT extension
 %setup
 
 %build
+cd extensions/UNetUDP/capnp && make && cd -;
 %autoreconf
 %configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api} %{subst_enable netdata} %{subst_enable logdb} %{subst_enable com485f} %{subst_enable opentsdb} %{subst_enable uwebsocket}
 %make_build
@@ -572,6 +576,8 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %files extension-common-devel
 %dir %_includedir/%oname/extensions
 %_includedir/%oname/extensions/*.*
+%_includedir/%oname/extensions/proto/*.*
+
 %if_enabled opentsdb
 %exclude %_includedir/%oname/extensions/BackendOpenTSDB.h
 %endif
@@ -594,6 +600,9 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
+* Sun Jul 04 2021 Pavel Vainerman <pv@altlinux.ru> 2.13.1-alt1
+- [unet]: used protobuf
+
 * Thu Jul 01 2021 Pavel Vainerman <pv@altlinux.ru> 2.12.1-alt2
 - fixed lib version
 

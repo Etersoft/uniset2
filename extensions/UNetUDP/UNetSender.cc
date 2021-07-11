@@ -83,8 +83,8 @@ namespace uniset
         // выставляем поля, которые не меняются
         {
             uniset_rwmutex_wrlock l(mypack.mut);
-            mypack.msg.nodeID = uniset_conf()->getLocalNode();
-            mypack.msg.procID = shm->ID();
+            mypack.msg.setNodeID(uniset_conf()->getLocalNode());
+            mypack.msg.setProcID(shm->ID());
         }
 
         // -------------------------------
@@ -288,13 +288,13 @@ namespace uniset
         {
             uniset::uniset_rwmutex_rlock l(mypack.mut);
 #ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
-            mypack.msg.num = packetnum++;
+            mypack.msg.setNum(packetnum++);
 #else
-            uint16_t crc = mypack.msg.getDataCRC();
+            uint16_t crc = mypack.msg.dataCRC();
 
             if( crc != lastcrc )
             {
-                mypack.msg.num = packetnum++;
+                mypack.msg.setNum(packetnum++);
                 lastcrc = crc;
             }
 
@@ -308,12 +308,18 @@ namespace uniset
             if( !transport->isReadyForSend(writeTimeout) )
                 return;
 
-            mypack.msg.transport_msg(s_msg);
+            size_t sz = mypack.msg.serializeToArray(sbuf, sizeof(sbuf));
 
-            size_t ret = transport->send(&s_msg.data, s_msg.len);
+            if( sz == 0 )
+            {
+                unetcrit << myname << "(real_send): serialize error." << endl;
+                return;
+            }
 
-            if( ret < s_msg.len )
-                unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;
+            size_t ret = transport->send(sbuf, sz);
+
+            if( ret < sz )
+                unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << sz << endl;
         }
         catch( Poco::Net::NetException& ex )
         {
@@ -447,8 +453,8 @@ namespace uniset
                 auto& mypack2 = pk[dnum];
                 uniset_rwmutex_wrlock l2(mypack2.mut);
                 p.pack_ind = mypack2.msg.addDData(sid, defval);
-                mypack2.msg.nodeID = uniset_conf()->getLocalNode();
-                mypack2.msg.procID = shm->ID();
+                mypack2.msg.setNodeID(uniset_conf()->getLocalNode());
+                mypack2.msg.setProcID(shm->ID());
             }
 
             p.pack_num = dnum;
@@ -488,8 +494,8 @@ namespace uniset
                 auto& mypack2 = pk[anum];
                 uniset_rwmutex_wrlock l2(mypack2.mut);
                 p.pack_ind = mypack2.msg.addAData(sid, defval);
-                mypack2.msg.nodeID = uniset_conf()->getLocalNode();
-                mypack2.msg.procID = shm->ID();
+                mypack2.msg.setNodeID(uniset_conf()->getLocalNode());
+                mypack2.msg.setProcID(shm->ID());
             }
 
             p.pack_num = anum;
@@ -566,11 +572,11 @@ namespace uniset
             s << "        \t[" << i->first << "]=" << i->second.size() << endl;
             size_t n = 0;
 
-            for( const auto& p : i->second )
+            for( const auto& pack : i->second )
             {
                 //uniset_rwmutex_rlock l(p->mut);
-                s << "        \t\t[" << (n++) << "]=" << p.msg.sizeOf() << " bytes"
-                  << " ( numA=" << setw(5) << p.msg.asize() << " numD=" << setw(5) << p.msg.dsize() << ")"
+                s << "        \t\t[" << (n++) << "]=" << sizeof(pack.msg) << " bytes"
+                  << " ( numA=" << setw(5) << pack.msg.asize() << " numD=" << setw(5) << pack.msg.dsize() << ")"
                   << endl;
             }
         }

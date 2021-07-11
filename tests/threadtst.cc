@@ -94,7 +94,7 @@ class MyClass2
         }
 
     protected:
-        std::string nm;
+        const std::string nm;
         TCPCheck tcp;
 
         void thread()

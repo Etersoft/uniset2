@@ -35,15 +35,16 @@ namespace uniset
             UDPReceiveTransport( const std::string& bind, int port );
             virtual ~UDPReceiveTransport();
 
-            virtual bool isConnected() const override;
-            virtual std::string toString() const override;
+            virtual bool isConnected() const noexcept override;
+            virtual std::string toString() const noexcept override;
             virtual std::string ID() const noexcept override;
 
             virtual bool createConnection( bool throwEx, timeout_t readTimeout, bool noblock ) override;
             virtual void disconnect() override;
             virtual int getSocket() const override;
             virtual ssize_t receive( void* r_buf, size_t sz ) override;
-            virtual bool isReadyForReceive(timeout_t tout) override;
+            virtual bool isReadyForReceive(timeout_t tout) noexcept override;
+            virtual int available() override;
 
         protected:
             std::unique_ptr<UDPReceiveU> udp;
@@ -61,14 +62,14 @@ namespace uniset
             UDPSendTransport( const std::string& host, int port );
             virtual ~UDPSendTransport();
 
-            virtual bool isConnected() const override;
-            virtual std::string toString() const override;
+            virtual bool isConnected() const noexcept override;
+            virtual std::string toString() const noexcept override;
 
             virtual bool createConnection( bool throwEx, timeout_t sendTimeout ) override;
             virtual int getSocket() const override;
 
             // write
-            virtual bool isReadyForSend( timeout_t tout ) override;
+            virtual bool isReadyForSend( timeout_t tout ) noexcept override;
             virtual ssize_t send( const void* buf, size_t sz ) override;
 
         protected:
