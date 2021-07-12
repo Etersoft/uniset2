@@ -98,6 +98,15 @@ TEST_CASE("[UNetUDP]: repack", "[unetudp][udp][repack]")
 {
     UniSetUDP::UDPMessage pack;
 
+    cerr << "UniSetUDP::UDPMessage size: "
+         << sizeof(UniSetUDP::UDPMessage)
+         << " [MaxACount=" << UniSetUDP::MaxACount
+         << " MaxDCount=" << UniSetUDP::MaxDCount
+         << "]"
+         << endl;
+
+    REQUIRE( sizeof(UniSetUDP::UDPMessage) < 65507 ); // UDP packet
+
     pack.header.nodeID = 100;
     pack.header.procID = 100;
     pack.header.num = 1;

@@ -315,11 +315,11 @@ namespace uniset
         }
         catch( Poco::Net::NetException& ex )
         {
-            unetcrit << myname << "(real_send): error: " << ex.displayText() << endl;
+            unetcrit << myname << "(real_send): sz=" << sizeof(mypack.msg) << " error: " << ex.displayText() << endl;
         }
         catch( std::exception& ex )
         {
-            unetcrit << myname << "(real_send): error: " << ex.what() << endl;
+            unetcrit << myname << "(real_send): sz=" << sizeof(mypack.msg) << " error: " << ex.what() << endl;
         }
     }
     // -----------------------------------------------------------------------------
