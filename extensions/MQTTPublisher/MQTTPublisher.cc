@@ -225,7 +225,7 @@ std::shared_ptr<MQTTPublisher> MQTTPublisher::init_mqttpublisher(int argc, const
 
     if( name.empty() )
     {
-        dcrit << "(MQTTPublisher): Unknown name. Usage: --" <<  prefix << "-name" << endl;
+        cerr << "(MQTTPublisher): Unknown name. Usage: --" <<  prefix << "-name" << endl;
         return 0;
     }
 
@@ -233,7 +233,7 @@ std::shared_ptr<MQTTPublisher> MQTTPublisher::init_mqttpublisher(int argc, const
 
     if( ID == uniset::DefaultObjectId )
     {
-        dcrit << "(MQTTPublisher): Not found ID for '" << name
+        cerr << "(MQTTPublisher): Not found ID for '" << name
               << " in '" << conf->getObjectsSection() << "' section" << endl;
         return 0;
     }
@@ -243,7 +243,7 @@ std::shared_ptr<MQTTPublisher> MQTTPublisher::init_mqttpublisher(int argc, const
 
     if( !cnode )
     {
-        dcrit << "(MQTTPublisher): " << name << "(init): Not found <" + confname + ">" << endl;
+        cerr << "(MQTTPublisher): " << name << "(init): Not found <" + confname + ">" << endl;
         return 0;
     }
 
