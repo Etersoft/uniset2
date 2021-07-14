@@ -216,7 +216,7 @@ std::shared_ptr<MBTCPMaster> MBTCPMaster::init_mbmaster(int argc, const char* co
 
     if( name.empty() )
     {
-        dcrit << "(MBTCPMaster): Не задан name'" << endl;
+        cerr << "(MBTCPMaster): Не задан name'" << endl;
         return 0;
     }
 
@@ -224,7 +224,7 @@ std::shared_ptr<MBTCPMaster> MBTCPMaster::init_mbmaster(int argc, const char* co
 
     if( ID == uniset::DefaultObjectId )
     {
-        dcrit << "(MBTCPMaster): идентификатор '" << name
+        cerr << "(MBTCPMaster): идентификатор '" << name
               << "' не найден в конф. файле!"
               << " в секции " << conf->getObjectsSection() << endl;
         return 0;

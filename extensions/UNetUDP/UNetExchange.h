@@ -92,10 +92,11 @@ namespace uniset
     </nodes>
     \endcode
 
-    * \b unet_update_strategy - задаёт стратегию обновления данных в SM.
-       Поддерживается два варианта:
-    - 'thread' - отдельный поток приёма обновлений для каждого узла
-    - 'evloop' - использование общего потока c event loop (libev)
+        Буфер для приёма сообщений можно настроить параметром \b recvBufferSize="1000" в конфигурационной секции
+        или аргументом командной строки \b --prefix-recv-buffer-size sz
+
+    Максимальное число сообщений вычитываемых из ести за один раз настраивается параметром
+    \b recvMaxAtTime="5" или \b --prefix-recv-max-at-time num
 
     \note Имеется возможность задавать отдельную настроечную секцию для "списка узлов" при помощи параметра
      --prefix-nodes-confnode name. По умолчанию настройка ведётся по секции <nodes>
@@ -114,9 +115,12 @@ namespace uniset
     unet_multicast_iface="192.168.1.1" можно задать интерфейс через который ожидаются multicast-пакеты.
     Поддерживается текстовое задание интерфейса в виде unet_multicast_iface="eth0"
 
+    Для указания ip для sender используется параметр unet_multicast_sender_ip="..", если он не задан,
+    будет использован unet_multicast_iface="..".
+
     Для посылающего процесса можно определить параметр \b unet_multicast_ttl задающий время жизни multicast пакетов.
-    По умолчанию ttl=1. А так же определить ip для сокета параметром \b unet_multicast_sender_ip. По умолчанию "0.0.0.0".
-    Можно задавать текстовое название интерфейса unet_multicast_sender_ip="eth0", при этом
+    По умолчанию ttl=1. А так же определить ip для сокета параметром \b unet_multicast_iface.
+    Можно задавать текстовое название интерфейса unet_multicast_iface="eth0", при этом
     в качестве ip будет взят \b первый ip-адрес из привязанных к указанному интерфейсу.
 
     В данной реализации поддерживается работа в два канала. Соответствующие настройки для второго канала имеют индекс "2":
@@ -125,8 +129,11 @@ namespace uniset
     Чтобы отключить запуск "sender", можно указать \b nosender="1" в \b <item> конкретного узла
     или непосредственно в настройках \b <UNetExchange  nosender="1"...>
 
+    В корневой секции \b <nodes..>  можно задавать значения по умолчанию используемые для всех улов
+    \b  unet_multicast_ip, \b unet_multicast_iface, \b unet_multicast_sender_ip.
+
     \code
-    <nodes port="2809" unet_broadcast_ip="192.168.56.255">
+    <nodes port="2809" unet_broadcast_ip="192.168.56.255" unet_multicast_ip="224.0.0.1 unet_multicast_iface="net1">
       <item ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="1">
         <iocards>
           ...
@@ -134,18 +141,18 @@ namespace uniset
       </item>
       <item id="3001" ip="192.168.56.10" name="Node1" textname="Node1" unet_update_strategy="evloop"
             unet_multicast_ip="224.0.0.1"
-            unet_multicast_sender_ip="192.168.1.1"
+            unet_multicast_iface="192.168.1.1"
             unet_multicast_port2="3031"
             unet_multicast_ip2="225.0.0.1"
-            unet_multicast_sender_ip2="192.168.2.1">
+            unet_multicast_iface2="192.168.2.1">
         ...
       </item>
       <item id="3002" ip="192.168.56.11" name="Node2" textname="Node2">
             unet_multicast_ip="224.0.0.2"
-            unet_multicast_sender_ip="192.168.1.2"
+            unet_multicast_iface="192.168.1.2"
             unet_multicast_port2="3032"
             unet_multicast_ip2="225.0.0.2"
-            unet_multicast_sender_ip2="eth0">
+            unet_multicast_iface2="eth0">
         ...
       </item>
     </nodes>
@@ -205,7 +212,7 @@ namespace uniset
      - unet_channelswitchcount_id="" - количество переключений с канала на канал
     */
     // -----------------------------------------------------------------------------
-    /*! Реализация процесса обмена по протоколу UNet */
+    /*! Реализация обмена по протоколу UNet */
     class UNetExchange:
         public UniSetObject
     {
@@ -257,7 +264,7 @@ namespace uniset
             void termReceivers();
 
             void initMulticastTransport( UniXML::iterator nodes, const std::string& n_field, const std::string& n_fvalue, const std::string& prefix );
-            void initMulticastReceiverForNode( UniXML::iterator n_it, const std::string& prefix );
+            void initMulticastReceiverForNode( UniXML::iterator root, UniXML::iterator n_it, const std::string& prefix );
 
             void initUDPTransport(UniXML::iterator nodes, const std::string& n_field, const std::string& n_fvalue, const std::string& prefix);
             void initIterators() noexcept;

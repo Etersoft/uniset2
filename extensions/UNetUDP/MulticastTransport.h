@@ -31,14 +31,14 @@ namespace uniset
     {
         public:
 
-            static std::unique_ptr<MulticastReceiveTransport> createFromXml(UniXML::iterator it, int numChan);
+            static std::unique_ptr<MulticastReceiveTransport> createFromXml( UniXML::iterator root, UniXML::iterator it, int numChan);
             static xmlNode* getReceiveListNode( UniXML::iterator root );
 
             MulticastReceiveTransport( const std::string& bind, int port, const std::vector<Poco::Net::IPAddress>& joinGroups, const std::string& iface = "" );
             virtual ~MulticastReceiveTransport();
 
-            virtual bool isConnected() const override;
-            virtual std::string toString() const override;
+            virtual bool isConnected() const noexcept override;
+            virtual std::string toString() const noexcept override;
             virtual std::string ID() const noexcept override;
 
             virtual bool createConnection(bool throwEx, timeout_t readTimeout, bool noblock) override;
@@ -47,8 +47,9 @@ namespace uniset
             std::vector<Poco::Net::IPAddress> getGroups();
             void setLoopBack( bool state );
 
-            bool isReadyForReceive( timeout_t tout ) override;
+            bool isReadyForReceive( timeout_t tout ) noexcept override;
             virtual ssize_t receive(void* r_buf, size_t sz) override;
+            virtual int available() override;
             std::string iface() const;
 
         protected:
@@ -64,20 +65,20 @@ namespace uniset
     {
         public:
 
-            static std::unique_ptr<MulticastSendTransport> createFromXml(  UniXML::iterator it, int numChan );
+            static std::unique_ptr<MulticastSendTransport> createFromXml( UniXML::iterator root, UniXML::iterator it, int numChan );
 
             MulticastSendTransport(const std::string& sockHost, int sockPort, const std::string& groupHost, int groupPort, int ttl = 1 );
             virtual ~MulticastSendTransport();
 
-            virtual bool isConnected() const override;
-            virtual std::string toString() const override;
+            virtual bool isConnected() const noexcept override;
+            virtual std::string toString() const noexcept override;
 
             virtual bool createConnection(bool throwEx, timeout_t sendTimeout) override;
             virtual int getSocket() const override;
             Poco::Net::SocketAddress getGroupAddress();
 
             // write
-            virtual bool isReadyForSend(timeout_t tout) override;
+            virtual bool isReadyForSend(timeout_t tout) noexcept override;
             virtual ssize_t send(const void* buf, size_t sz) override;
 
             void setTimeToLive( int ttl );

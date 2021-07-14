@@ -29,16 +29,17 @@ namespace uniset
 
             virtual ~UNetReceiveTransport() {}
 
-            virtual bool isConnected() const = 0;
-            virtual std::string toString() const = 0;
+            virtual bool isConnected() const noexcept = 0;
+            virtual std::string toString() const noexcept = 0;
             virtual std::string ID() const noexcept = 0;
 
             virtual bool createConnection( bool throwEx, timeout_t recvTimeout, bool noblock ) = 0;
             virtual int getSocket() const = 0;
 
-            virtual bool isReadyForReceive(timeout_t tout) = 0;
+            virtual bool isReadyForReceive(timeout_t tout) noexcept = 0;
             virtual ssize_t receive( void* r_buf, size_t sz ) = 0;
             virtual void disconnect() = 0;
+            virtual int available() = 0;
     };
 
     // Интерфейс для посылки данных в сеть

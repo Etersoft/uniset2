@@ -705,7 +705,7 @@ std::shared_ptr<MBTCPMultiMaster> MBTCPMultiMaster::init_mbmaster( int argc, con
 
     if( name.empty() )
     {
-        dcrit << "(MBTCPMultiMaster): Не задан name'" << endl;
+        cerr << "(MBTCPMultiMaster): Не задан name'" << endl;
         return 0;
     }
 
@@ -713,7 +713,7 @@ std::shared_ptr<MBTCPMultiMaster> MBTCPMultiMaster::init_mbmaster( int argc, con
 
     if( ID == uniset::DefaultObjectId )
     {
-        dcrit << "(MBTCPMultiMaster): идентификатор '" << name
+        cerr << "(MBTCPMultiMaster): идентификатор '" << name
               << "' не найден в конф. файле!"
               << " в секции " << conf->getObjectsSection() << endl;
         return 0;

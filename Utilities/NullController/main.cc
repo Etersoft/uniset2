@@ -67,10 +67,10 @@ int main(int argc, char** argv)
             askfile = conf->getConfFileName();
 
         // определяем фильтр
-        string s_field = conf->getArgParam("--s-filter-field");
-        string s_fvalue = conf->getArgParam("--s-filter-value");
-        string c_field = conf->getArgParam("--c-filter-field");
-        string c_fvalue = conf->getArgParam("--c-filter-value");
+        const string s_field = conf->getArgParam("--s-filter-field");
+        const string s_fvalue = conf->getArgParam("--s-filter-value");
+        const string c_field = conf->getArgParam("--c-filter-field");
+        const string c_fvalue = conf->getArgParam("--c-filter-value");
 
         // надо ли писать изменения в БД
         bool dbDumping = conf->getArgInt("--dbDumping");

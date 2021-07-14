@@ -253,23 +253,23 @@ int main( int argc, char** argv )
                         if( arg[0] == 'b' )
                         {
                             dval.type = 'i';
-                            string v(arg);
-                            string sb(v, 1);
+                            const string v(arg);
+                            const string sb(v, 1);
                             ModbusRTU::DataBits d(sb);
                             dval.d.v = d.mbyte();
                         }
                         else if( arg[0] == 'm' )
                         {
                             dval.type = 'i';
-                            string v(arg);
-                            string sb(v, 1);
+                            const string v(arg);
+                            const string sb(v, 1);
                             dval.d.v = -1 * ModbusRTU::str2mbData(sb);
                         }
                         else if( arg[0] == 'f' || arg[0] == 'r' )
                         {
                             dval.type = arg[0];
-                            string v(arg);
-                            string sb(v, 1);
+                            const string v(arg);
+                            const string sb(v, 1);
                             dval.d.f = atof(sb.c_str());
                         }
                         else

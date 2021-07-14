@@ -205,7 +205,7 @@ namespace uniset
 		ostringstream s;
 		s << setw(tab_width) << "." << g_tab;
 
-		string s_tab(s.str());
+		const string s_tab(s.str());
 
 		uniset::ios_fmt_restorer ifs(os);
 

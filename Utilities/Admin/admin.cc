@@ -208,7 +208,7 @@ int main(int argc, char** argv)
                     auto conf = uniset_init(argc, argv, conffile);
                     UInterface ui(conf);
                     ui.initBackId(uniset::AdminID);
-                    string name = ( optarg ) ? optarg : "";
+                    const string name = ( optarg ) ? optarg : "";
                     return setValue(name, ui);
                 }
                 break;
@@ -243,7 +243,7 @@ int main(int argc, char** argv)
                     auto conf = uniset_init(argc, argv, conffile);
                     UInterface ui(conf);
                     ui.initBackId(uniset::AdminID);
-                    string name = ( optarg ) ? optarg : "";
+                    const string name = ( optarg ) ? optarg : "";
                     return getValue(name, ui);
                 }
                 break;
@@ -254,7 +254,7 @@ int main(int argc, char** argv)
                     auto conf = uniset_init(argc, argv, conffile);
                     UInterface ui(conf);
                     ui.initBackId(uniset::AdminID);
-                    string name = ( optarg ) ? optarg : "";
+                    const string name = ( optarg ) ? optarg : "";
                     return getRawValue(name, ui);
                 }
                 break;
@@ -264,7 +264,7 @@ int main(int argc, char** argv)
                     auto conf = uniset_init(argc, argv, conffile);
                     UInterface ui(conf);
                     ui.initBackId(uniset::AdminID);
-                    string name = ( optarg ) ? optarg : "";
+                    const string name = ( optarg ) ? optarg : "";
                     return getTimeChange(name, ui);
                 }
                 break;
@@ -310,7 +310,7 @@ int main(int argc, char** argv)
                     UInterface ui(conf);
                     ui.initBackId(uniset::AdminID);
 
-                    std::string query = string(argv[optind]);
+                    const std::string query = string(argv[optind]);
 
                     return apiRequest(optarg, ui, query);
                 }
@@ -354,7 +354,7 @@ int main(int argc, char** argv)
                     auto conf = uniset_init(argc, argv, conffile);
                     UInterface ui(conf);
                     ui.initBackId(uniset::AdminID);
-                    string name = ( optarg ) ? optarg : "";
+                    const string name = ( optarg ) ? optarg : "";
                     return configure(name, ui);
                 }
                 break;
@@ -384,7 +384,7 @@ int main(int argc, char** argv)
                     UInterface ui(conf);
                     ui.initBackId(uniset::AdminID);
 
-                    string name = ( optarg ) ? optarg : "";
+                    const string name = ( optarg ) ? optarg : "";
                     return logRotate(name, ui);
                 }
                 break;
@@ -395,7 +395,7 @@ int main(int argc, char** argv)
                     auto conf = uniset_init(argc, argv, conffile);
                     UInterface ui(conf);
                     ui.initBackId(uniset::AdminID);
-                    string name = ( optarg ) ? optarg : "";
+                    const string name = ( optarg ) ? optarg : "";
                     return getCalibrate(name, ui);
                 }
                 break;
@@ -428,7 +428,7 @@ int main(int argc, char** argv)
                     }
 
                     int mtype = uni_atoi(argv[optind]);
-                    std::string consumers(optarg);
+                    const std::string consumers(optarg);
                     ostringstream txt;
 
                     if( checkArg(optind + 1, argc, argv) == 0 )

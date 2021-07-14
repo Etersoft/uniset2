@@ -58,8 +58,8 @@ static void initHelpers()
 
     if( !udp_s )
     {
-        udp_s = make_unique<MulticastSendTransport>("0.0.0.0", 3002, "224.0.0.2", 3002);
-        REQUIRE( udp_s->toString() == "0.0.0.0:3002" );
+        udp_s = make_unique<MulticastSendTransport>("127.0.0.1", 3002, "224.0.0.2", 3002);
+        REQUIRE( udp_s->toString() == "127.0.0.1:3002" );
         REQUIRE( udp_s->createConnection(false, 5000) );
         // pause for igmp message
         msleep(3000);
@@ -92,20 +92,18 @@ void InitMulticastTest()
 static UniSetUDP::UDPMessage mreceive( unsigned int pnum = 0, timeout_t tout = 2000, int ncycle = 20 )
 {
     UniSetUDP::UDPMessage pack;
-    UniSetUDP::UDPPacket buf;
 
     while( ncycle > 0 )
     {
         if( !udp_r->isReadyForReceive(tout) )
             break;
 
-        size_t ret = udp_r->receive(&(buf.data), sizeof(buf.data) );
-        size_t sz = UniSetUDP::UDPMessage::getMessage(pack, buf);
+        size_t ret = udp_r->receive(&pack, sizeof(pack) );
 
-        if( sz == 0 || pnum == 0 || ( pnum > 0 && pack.num >= pnum ) ) // -V560
+        if( ret == 0 || pnum == 0 || ( pnum > 0 && pack.header.num >= pnum ) ) // -V560
             break;
 
-        REQUIRE( pack.magic == UniSetUDP::UNETUDP_MAGICNUM );
+        REQUIRE( pack.header.magic == UniSetUDP::UNETUDP_MAGICNUM );
         ncycle--;
     }
 
@@ -119,14 +117,12 @@ void msend( UniSetUDP::UDPMessage& pack, int tout = 2000 )
 {
     CHECK( udp_s->isReadyForSend(tout) );
 
-    pack.nodeID = s_nodeID;
-    pack.procID = s_procID;
-    pack.num = s_numpack++;
+    pack.header.nodeID = s_nodeID;
+    pack.header.procID = s_procID;
+    pack.header.num = s_numpack++;
 
-    UniSetUDP::UDPPacket s_buf;
-    pack.transport_msg(s_buf);
-    size_t ret = udp_s->send(&s_buf.data, s_buf.len);
-    REQUIRE( ret == s_buf.len );
+    size_t ret = udp_s->send(&pack, sizeof(pack));
+    REQUIRE( ret == sizeof(pack) );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[UNetUDP]: check multicast sender", "[unetudp][multicast][sender]")
@@ -136,7 +132,7 @@ TEST_CASE("[UNetUDP]: check multicast sender", "[unetudp][multicast][sender]")
     SECTION("Test: read default pack...")
     {
         UniSetUDP::UDPMessage pack = mreceive();
-        REQUIRE( pack.num != 0 );
+        REQUIRE( pack.header.num != 0 );
         REQUIRE( pack.asize() == 4 );
         REQUIRE( pack.dsize() == 2 );
 
@@ -150,7 +146,7 @@ TEST_CASE("[UNetUDP]: check multicast sender", "[unetudp][multicast][sender]")
 
         // т.к. данные в SM не менялись, то должен придти пакет с тем же номером что и был..
         UniSetUDP::UDPMessage pack2 = mreceive();
-        REQUIRE( pack2.num == pack.num );
+        REQUIRE( pack2.header.num == pack.header.num );
     }
 
     SECTION("Test: change AI data...")
@@ -159,8 +155,8 @@ TEST_CASE("[UNetUDP]: check multicast sender", "[unetudp][multicast][sender]")
         ui->setValue(2, 100);
         REQUIRE( ui->getValue(2) == 100 );
         msleep(120);
-        UniSetUDP::UDPMessage pack = mreceive( pack0.num + 1 );
-        REQUIRE( pack.num != 0 );
+        UniSetUDP::UDPMessage pack = mreceive( pack0.header.num + 1 );
+        REQUIRE( pack.header.num != 0 );
         REQUIRE( pack.asize() == 4 );
         REQUIRE( pack.dsize() == 2 );
         REQUIRE( pack.a_dat[0].val == 100 );
@@ -168,9 +164,9 @@ TEST_CASE("[UNetUDP]: check multicast sender", "[unetudp][multicast][sender]")
         ui->setValue(2, 250);
         REQUIRE( ui->getValue(2) == 250 );
         msleep(120);
-        UniSetUDP::UDPMessage pack2 = mreceive( pack.num + 1 );
-        REQUIRE( pack2.num != 0 );
-        REQUIRE( pack2.num > pack.num );
+        UniSetUDP::UDPMessage pack2 = mreceive( pack.header.num + 1 );
+        REQUIRE( pack2.header.num != 0 );
+        REQUIRE( pack2.header.num > pack.header.num );
         REQUIRE( pack2.asize() == 4 );
         REQUIRE( pack2.dsize() == 2 );
         REQUIRE( pack2.a_dat[0].val == 250 );
@@ -182,8 +178,8 @@ TEST_CASE("[UNetUDP]: check multicast sender", "[unetudp][multicast][sender]")
         ui->setValue(6, 1);
         REQUIRE( ui->getValue(6) == 1 );
         msleep(120);
-        UniSetUDP::UDPMessage pack = mreceive( pack0.num + 1 );
-        REQUIRE( pack.num != 0 );
+        UniSetUDP::UDPMessage pack = mreceive( pack0.header.num + 1 );
+        REQUIRE( pack.header.num != 0 );
         REQUIRE( pack.asize() == 4 );
         REQUIRE( pack.dsize() == 2 );
         REQUIRE( pack.dValue(0) == 1 );
@@ -191,9 +187,9 @@ TEST_CASE("[UNetUDP]: check multicast sender", "[unetudp][multicast][sender]")
         ui->setValue(6, 0);
         REQUIRE( ui->getValue(6) == 0 );
         msleep(120);
-        UniSetUDP::UDPMessage pack2 = mreceive( pack.num + 1 );
-        REQUIRE( pack2.num != 0 );
-        REQUIRE( pack2.num > pack.num );
+        UniSetUDP::UDPMessage pack2 = mreceive( pack.header.num + 1 );
+        REQUIRE( pack2.header.num != 0 );
+        REQUIRE( pack2.header.num > pack.header.num );
         REQUIRE( pack2.asize() == 4 );
         REQUIRE( pack2.dsize() == 2 );
         REQUIRE( pack2.dValue(0) == 0 );
@@ -396,9 +392,9 @@ TEST_CASE("[UNetUDP]: mulsicat check undefined value", "[unetudp][multicast][und
     REQUIRE( ui->getValue(2) == 110 );
     msleep(600);
 
-    UniSetUDP::UDPMessage pack = mreceive( pack0.num + 1, 2000, 40 );
+    UniSetUDP::UDPMessage pack = mreceive( pack0.header.num + 1, 2000, 40 );
 
-    REQUIRE( pack.num != 0 );
+    REQUIRE( pack.header.num != 0 );
     REQUIRE( pack.asize() == 4 );
     REQUIRE( pack.dsize() == 2 );
     REQUIRE( pack.a_dat[0].val == 110 );
@@ -408,18 +404,18 @@ TEST_CASE("[UNetUDP]: mulsicat check undefined value", "[unetudp][multicast][und
     si.node = uniset_conf()->getLocalNode();
     ui->setUndefinedState(si, true, 6000 /* TestProc */ );
     msleep(600);
-    pack = mreceive(pack.num + 1);
+    pack = mreceive(pack.header.num + 1);
 
-    REQUIRE( pack.num != 0 );
+    REQUIRE( pack.header.num != 0 );
     REQUIRE( pack.asize() == 4 );
     REQUIRE( pack.dsize() == 2 );
     REQUIRE( pack.a_dat[0].val == 65635 );
 
     ui->setUndefinedState(si, false, 6000 /* TestProc */ );
     msleep(600);
-    pack = mreceive(pack.num + 1);
+    pack = mreceive(pack.header.num + 1);
 
-    REQUIRE( pack.num != 0 );
+    REQUIRE( pack.header.num != 0 );
     REQUIRE( pack.asize() == 4 );
     REQUIRE( pack.dsize() == 2 );
     REQUIRE( pack.a_dat[0].val == 110 );

@@ -299,7 +299,7 @@ std::shared_ptr<RRDServer> RRDServer::init_rrdstorage(int argc, const char* cons
 
     if( name.empty() )
     {
-        dcrit << "(RRDServer): Unknown name. Usage: --" <<  prefix << "-name" << endl;
+        cerr << "(RRDServer): Unknown name. Usage: --" <<  prefix << "-name" << endl;
         return 0;
     }
 
@@ -307,7 +307,7 @@ std::shared_ptr<RRDServer> RRDServer::init_rrdstorage(int argc, const char* cons
 
     if( ID == uniset::DefaultObjectId )
     {
-        dcrit << "(RRDServer): Not found ID for '" << name
+        cerr << "(RRDServer): Not found ID for '" << name
               << " in '" << conf->getObjectsSection() << "' section" << endl;
         return 0;
     }
@@ -317,7 +317,7 @@ std::shared_ptr<RRDServer> RRDServer::init_rrdstorage(int argc, const char* cons
 
     if( !cnode )
     {
-        dcrit << "(RRDServer): " << name << "(init): Not found <" + confname + ">" << endl;
+        cerr << "(RRDServer): " << name << "(init): Not found <" + confname + ">" << endl;
         return 0;
     }
 

@@ -20,7 +20,7 @@
 #include <ostream>
 #include <memory>
 #include <string>
-#include <queue>
+#include <vector>
 #include <unordered_map>
 #include <sigc++/sigc++.h>
 #include <ev++.h>
@@ -38,13 +38,20 @@ namespace uniset
     // -----------------------------------------------------------------------------
     /*  Основная идея: сделать проверку очерёдности пакетов, но при этом использовать UDP.
      * ===============
-     * Собственно реализация сделана так:
      * В данных передаётся номер пакета. На случай если несколько пакетов придут не в той последовательности
-     * что были посланы, сделана очередь с приоритетом. В качестве приоритета используется номер пакета
-     * (чем меньше тем старше). При этом обработка ведётся только тех пакетов, которые идут "подряд",
+     * что были посланы, сделан циклический буфер (буфер сразу выделяет память при старте).
+     * Т.к. номер получаемых пакетов монотонно растёт на основе него вычисляется индекс
+     * куда поместить пакет в буфере. Есть два индекса
+     * rnum - (read number) номер последнего обработанного пакета + 1
+     * wnum - (write number) номер следующего ожидаемого пакета (номер последнего принятого + 1)
+     * WARNING: Если придёт два пакета с одинаковым номером, то новый пакет перезатрёт прошлый в буфере
+     *
+     * При этом обработка ведётся по порядку (только пакеты идущие подряд)
      * как только встречается "дырка" происходит ожидание её "заполения". Если в течение времени (lostTimeout)
-     * "дырка" не исчезает, увеличивается счётчик потерянных пакетов и обработка продолжается дальше..
-     * Всё это реализовано в функции UNetReceiver::real_update()
+     * "дырка" не исчезает, увеличивается счётчик потерянных пакетов и обработка продолжается с нового места.
+     * Т.к. используется libev и нет многопоточной работы, события обрабатываются последовательно.
+     * Раз в updatetime msec происходит обновление данных в SM, все накопившиеся пакеты обрабатываются
+     * либо пока не встретиться "дырка", либо пока rnum не догонит wnum.
      *
      * КЭШ
      * ===
@@ -63,19 +70,15 @@ namespace uniset
      * В текущей реализации размер map не контролируется (завязан на UDPMessage::getDataID()) и рассчитан на статичность пакетов,
      * т.е. на то что UNetSender не будет с течением времени менять структуру отправляемых пакетов.
      *
-     * Обработка сбоя или переполнения счётчика пакетов(перехода через максимум)
+     * Обработка сбоев в номере пакетов
      * =========================================================================
-     * Для защиты от сбоя счётчика сделана следующая логика:
-     * Если номер очередного пришедшего пакета отличается от последнего обработанного на maxDifferens, то считается,
-     * что произошёл сбой счётчика и происходит ожидание пока функция update, не обработает основную очередь полностью.
-     * При этом принимаемые пакеты складываются во временную очередь qtmp. Как только основная очередь пустеет,
-     * в неё копируется всё накопленное во временной очереди..и опять идёт штатная обработка.
-     * Если во время "ожидания" опять происходит "разрыв" в номерах пакетов, то временная очередь чиститься
-     * и данные которые в ней были теряются! Аналог ограниченного буфера (у любых карт), когда новые данные
-     * затирают старые, если их не успели вынуть и обработать.
-     * \todo Сделать защиту от бесконечного ожидания "очистки" основной очереди.
+     * Если в какой-то момент расстояние между rnum и wnum превышает maxDifferens пакетов
+     * то считается, что произошёл сбой или узел который посылал пакеты перезагрузился
+     * Идёт попытка обработать все текущие пакеты (до первой дырки), а дальше происходит
+     * реинициализация и обработка продолжается с нового номера.
+     *
      * =========================================================================
-     * ОПТИМИЗАЦИЯ N1: см. UNetSender.h. Если номер последнего принятого пакета не менялся.. не обрабатываем..
+     * ОПТИМИЗАЦИЯ N1: см. UNetSender.h. Если номер последнего принятого пакета не менялся.. не обрабатываем.
      *
      * Создание соединения (открытие сокета)
      * ======================================
@@ -87,13 +90,6 @@ namespace uniset
      * Если такая логика не требуется, то можно задать в конструкторе
      * последним аргументом флаг nocheckconnection=true, тогда при создании объекта UNetReceiver, в конструкторе будет
      * выкинуто исключение при неудачной попытке создания соединения.
-     *
-     * Стратегия обновления данных в SM
-     * ==================================
-     * При помощи функции setUpdateStrategy() можно выбрать стратегию обновления данных в SM.
-     * Поддерживается два варианта:
-     * 'thread' - отдельный поток обновления
-     * 'evloop' - использование общего с приёмом event loop (libev)
     */
     // -----------------------------------------------------------------------------
     class UNetReceiver:
@@ -125,7 +121,6 @@ namespace uniset
             size_t getLostPacketsNum() const noexcept;
 
             void setReceiveTimeout( timeout_t msec ) noexcept;
-            void setReceivePause( timeout_t msec ) noexcept;
             void setUpdatePause( timeout_t msec ) noexcept;
             void setLostTimeout( timeout_t msec ) noexcept;
             void setPrepareTime( timeout_t msec ) noexcept;
@@ -133,11 +128,11 @@ namespace uniset
             void setMaxDifferens( unsigned long set ) noexcept;
             void setEvrunTimeout(timeout_t msec ) noexcept;
             void setInitPause( timeout_t msec ) noexcept;
+            void setBufferSize( size_t sz ) noexcept;
+            void setMaxReceiveAtTime( size_t sz ) noexcept;
 
             void setRespondID( uniset::ObjectId id, bool invert = false ) noexcept;
             void setLostPacketsID( uniset::ObjectId id ) noexcept;
-
-            void setMaxProcessingCount( int set ) noexcept;
 
             void forceUpdate() noexcept; // пересохранить очередной пакет в SM даже если данные не менялись
 
@@ -157,35 +152,6 @@ namespace uniset
             void connectEvent( EventSlot sl ) noexcept;
 
             // --------------------------------------------------------------------
-            /*! Стратегия обработки сообщений */
-            enum UpdateStrategy
-            {
-                useUpdateUnknown,
-                useUpdateThread,    /*!< использовать отдельный поток */
-                useUpdateEventLoop  /*!< использовать event loop (т.е. совместно с receive) */
-            };
-
-            static UpdateStrategy strToUpdateStrategy( const std::string& s ) noexcept;
-            static std::string to_string( UpdateStrategy s) noexcept;
-
-            //! функция должна вызываться до первого вызова start()
-            void setUpdateStrategy( UpdateStrategy set );
-
-            // специальная обёртка, захватывающая или нет mutex в зависимости от стратегии
-            // (т.к. при evloop mutex захватывать не нужно)
-            class pack_guard
-            {
-                public:
-                    pack_guard( std::mutex& m, UpdateStrategy s );
-                    ~pack_guard();
-
-                protected:
-                    std::mutex& m;
-                    UpdateStrategy s;
-            };
-
-            // --------------------------------------------------------------------
-
             inline std::shared_ptr<DebugStream> getLog()
             {
                 return unetlog;
@@ -198,10 +164,16 @@ namespace uniset
             const std::shared_ptr<SMInterface> shm;
             std::shared_ptr<DebugStream> unetlog;
 
-            bool receive() noexcept;
+            enum ReceiveRetCode
+            {
+                retOK = 0,
+                retError = 1,
+                retNoData = 2
+            };
+
+            ReceiveRetCode receive() noexcept;
             void step() noexcept;
             void update() noexcept;
-            void updateThread() noexcept;
             void callback( ev::io& watcher, int revents ) noexcept;
             void readEvent( ev::io& watcher ) noexcept;
             void updateEvent( ev::periodic& watcher, int revents ) noexcept;
@@ -218,26 +190,11 @@ namespace uniset
             void initIterators() noexcept;
             bool createConnection( bool throwEx = false );
             void checkConnection();
-
-        public:
-
-            // функция определения приоритетного сообщения для обработки
-            struct PacketCompare:
-                public std::binary_function<UniSetUDP::UDPMessage, UniSetUDP::UDPMessage, bool>
-            {
-                inline bool operator()(const UniSetUDP::UDPMessage& lhs,
-                                       const UniSetUDP::UDPMessage& rhs) const
-                {
-                    return lhs.num > rhs.num;
-                }
-            };
-
-            typedef std::priority_queue<UniSetUDP::UDPMessage, std::vector<UniSetUDP::UDPMessage>, PacketCompare> PacketQueue;
+            size_t rnext( size_t num );
 
         private:
             UNetReceiver();
 
-            timeout_t recvpause = { 10 };      /*!< пауза между приёмами пакетов, [мсек] */
             timeout_t updatepause = { 100 };   /*!< периодичность обновления данных в SM, [мсек] */
 
             std::unique_ptr<UNetReceiveTransport> transport;
@@ -249,17 +206,13 @@ namespace uniset
             ev::periodic evUpdate;
             ev::timer evInitPause;
 
-            UpdateStrategy upStrategy = { useUpdateEventLoop };
-
             // счётчики для подсчёта статистики
             size_t recvCount = { 0 };
             size_t upCount = { 0 };
 
-            // текущая статистик
+            // текущая статистика
             size_t statRecvPerSec = { 0 }; /*!< количество принимаемых пакетов в секунду */
             size_t statUpPerSec = { 0 };    /*!< количество обработанных пакетов в секунду */
-
-            std::unique_ptr< ThreadCreator<UNetReceiver> > upThread;    // update thread
 
             // делаем loop общим.. одним на всех!
             static CommonEventLoop loop;
@@ -273,6 +226,7 @@ namespace uniset
             timeout_t prepareTime = { 2000 };
             timeout_t evrunTimeout = { 15000 };
             timeout_t lostTimeout = { 200 };
+            size_t maxReceiveCount = { 5 }; // количество читаемых за один раз
 
             double initPause = { 5.0 }; // пауза на начальную инициализацию (сек)
             std::atomic_bool initOK = { false };
@@ -283,27 +237,21 @@ namespace uniset
             uniset::ObjectId sidRespond = { uniset::DefaultObjectId };
             IOController::IOStateList::iterator itRespond;
             bool respondInvert = { false };
-            uniset::ObjectId sidLostPackets;
+            uniset::ObjectId sidLostPackets = { uniset::DefaultObjectId };
             IOController::IOStateList::iterator itLostPackets;
 
             std::atomic_bool activated = { false };
 
-            PacketQueue qpack;    /*!< очередь принятых пакетов (отсортированных по возрастанию номера пакета) */
-            UniSetUDP::UDPMessage pack;        /*!< просто буфер для получения очередного сообщения */
-            UniSetUDP::UDPPacket r_buf;
-            std::mutex packMutex; /*!< mutex для работы с очередью */
-            size_t pnum = { 0 };    /*!< текущий номер обработанного сообщения, для проверки непрерывности последовательности пакетов */
+            size_t cbufSize = { 100 }; /*!< размер буфера для сообщений по умолчанию */
+            std::vector<UniSetUDP::UDPMessage> cbuf; // circular buffer
+            size_t wnum = { 1 }; /*!< номер следующего ожидаемого пакета */
+            size_t rnum = { 0 }; /*!< номер последнего обработанного пакета */
+            UniSetUDP::UDPMessage* pack; // текущий обрабатываемый пакет
 
             /*! максимальная разница между номерами пакетов, при которой считается, что счётчик пакетов
              * прошёл через максимум или сбился...
              */
             size_t maxDifferens = { 20 };
-
-            PacketQueue qtmp;    /*!< очередь на время обработки(очистки) основной очереди */
-            bool waitClean = { false };    /*!< флаг означающий, что ждём очистки очереди до конца */
-            size_t rnum = { 0 };    /*!< текущий номер принятого сообщения, для проверки "переполнения" или "сбоя" счётчика */
-
-            size_t maxProcessingCount = { 100 }; /*!< максимальное число обрабатываемых за один раз сообщений */
 
             std::atomic_bool lockUpdate = { false }; /*!< флаг блокировки сохранения принятых данных в SM */
 
@@ -321,25 +269,14 @@ namespace uniset
             };
 
             typedef std::vector<CacheItem> CacheVec;
-            struct CacheInfo
-            {
-                CacheInfo():
-                    cache_init_ok(false) {}
-
-                bool cache_init_ok = { false };
-                CacheVec cache;
-            };
 
             // ключом является UDPMessage::getDataID()
-            typedef std::unordered_map<long, CacheInfo> CacheMap;
+            typedef std::unordered_map<long, CacheVec> CacheMap;
             CacheMap d_icache_map;     /*!< кэш итераторов для булевых */
             CacheMap a_icache_map;     /*!< кэш итераторов для аналоговых */
 
-            bool d_cache_init_ok = { false };
-            bool a_cache_init_ok = { false };
-
-            void initDCache( UniSetUDP::UDPMessage& pack, bool force = false ) noexcept;
-            void initACache( UniSetUDP::UDPMessage& pack, bool force = false ) noexcept;
+            CacheVec* getDCache( UniSetUDP::UDPMessage* pack ) noexcept;
+            CacheVec* getACache( UniSetUDP::UDPMessage* pack ) noexcept;
     };
     // --------------------------------------------------------------------------
 } // end of namespace uniset

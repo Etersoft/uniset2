@@ -143,7 +143,7 @@ namespace uniset
 
 				if (CORBA::is_nil(initServ))
 				{
-					string err("ORepHelpers: fail resolve_initial_references '" + nsName + "'");
+					const string err("ORepHelpers: fail resolve_initial_references '" + nsName + "'");
 					throw ORepFailed(err.c_str());
 				}
 
@@ -151,7 +151,7 @@ namespace uniset
 
 				if (CORBA::is_nil(rootContext))
 				{
-					string err("ORepHelpers: Не удалось преобразовать ссылку к нужному типу.");
+					const string err("ORepHelpers: Не удалось преобразовать ссылку к нужному типу.");
 					throw ORepFailed(err.c_str());
 				}
 
@@ -172,12 +172,12 @@ namespace uniset
 			}
 			catch( const omniORB::fatalException& )
 			{
-				string err("ORepHelpers(getRootNamingContext): Caught Fatal Exception");
+				const string err("ORepHelpers(getRootNamingContext): Caught Fatal Exception");
 				throw ORepFailed(err);
 			}
 			catch (...)
 			{
-				string err("ORepHelpers(getRootNamingContext): Caught a system exception while resolving the naming service.");
+				const string err("ORepHelpers(getRootNamingContext): Caught a system exception while resolving the naming service.");
 				throw ORepFailed(err);
 			}
 
