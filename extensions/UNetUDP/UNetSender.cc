@@ -44,7 +44,7 @@ namespace uniset
         packsendpauseFactor(1),
         activated(false),
         packetnum(1),
-        lastcrc(0),
+        lastChangeCounter(0),
         maxAData(maxACount),
         maxDData(maxDCount)
     {
@@ -290,12 +290,11 @@ namespace uniset
 #ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
             mypack.msg.setNum(packetnum++);
 #else
-            uint16_t crc = mypack.msg.dataCRCWithBuf(sbuf, sizeof(sbuf));
 
-            if( crc != lastcrc )
+            if( lastChangeCounter != mypack.msg.dataChanges() )
             {
                 mypack.msg.setNum(packetnum++);
-                lastcrc = crc;
+                lastChangeCounter = mypack.msg.dataChanges();
             }
 
 #endif
@@ -559,7 +558,7 @@ namespace uniset
 
         s << setw(15) << std::right << transport->toString()
           << " lastpacknum=" << packetnum
-          << " lastcrc=" << setw(6) << lastcrc
+          << " lastChangeCounter=" << setw(6) << lastChangeCounter
           << " items=" << items.size() << " maxAData=" << getADataSize() << " maxDData=" << getDDataSize()
           << " packsendpause[factor=" << packsendpauseFactor << "]=" << packsendpause
           << " sendpause=" << sendpause
