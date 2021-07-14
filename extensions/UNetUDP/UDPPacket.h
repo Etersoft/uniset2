@@ -34,9 +34,9 @@ namespace uniset
         // Теоретический размер данных в UDP пакете (исключая заголовки) 65507
         // Желательно не вылезать за размер MTU (обычно 1500) - заголовки = 1432 байта
         // т.е. надо чтобы sizeof(UDPPacket) < 1432
-        static const size_t MaxACount = 2000;
-        static const size_t MaxDCount = 2000;
-        static const size_t MessageBufSize = 34700;
+        static const size_t MaxACount = 6000;
+        static const size_t MaxDCount = 4000;
+        static const size_t MessageBufSize = 40000;
 
         struct UDPMessage
         {
@@ -87,11 +87,11 @@ namespace uniset
 
             size_t dsize() const noexcept;
             size_t asize() const noexcept;
+            size_t dataChanges() const noexcept;
 
-            uint16_t dataCRC() const noexcept;
-            uint16_t dataCRCWithBuf( uint8_t* buf, size_t sz ) const noexcept;
 
             unet::UNetPacket pb;
+            size_t changeDataCounter = { 0 };
         };
 
         std::ostream& operator<<( std::ostream& os, UDPMessage& p );

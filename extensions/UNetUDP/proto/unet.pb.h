@@ -33,1034 +33,865 @@
 #include <google/protobuf/port_def.inc>
 #define PROTOBUF_INTERNAL_EXPORT_unet_2eproto
 PROTOBUF_NAMESPACE_OPEN
-namespace internal
-{
-    class AnyMetadata;
+namespace internal {
+class AnyMetadata;
 }  // namespace internal
 PROTOBUF_NAMESPACE_CLOSE
 
 // Internal implementation detail -- do not use these members.
-struct TableStruct_unet_2eproto
-{
-    static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTableField entries[]
+struct TableStruct_unet_2eproto {
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTableField entries[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-    static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-    static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[2]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[2]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-    static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
-    static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
-    static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
+  static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
+  static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
+  static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
 };
-namespace uniset
-{
-    namespace unet
-    {
-        class UNetData;
-        class UNetDataDefaultTypeInternal;
-        extern UNetDataDefaultTypeInternal _UNetData_default_instance_;
-        class UNetPacket;
-        class UNetPacketDefaultTypeInternal;
-        extern UNetPacketDefaultTypeInternal _UNetPacket_default_instance_;
-    }  // namespace unet
+namespace uniset {
+namespace unet {
+class UNetData;
+class UNetDataDefaultTypeInternal;
+extern UNetDataDefaultTypeInternal _UNetData_default_instance_;
+class UNetPacket;
+class UNetPacketDefaultTypeInternal;
+extern UNetPacketDefaultTypeInternal _UNetPacket_default_instance_;
+}  // namespace unet
 }  // namespace uniset
 PROTOBUF_NAMESPACE_OPEN
 template<> ::uniset::unet::UNetData* Arena::CreateMaybeMessage<::uniset::unet::UNetData>(Arena*);
 template<> ::uniset::unet::UNetPacket* Arena::CreateMaybeMessage<::uniset::unet::UNetPacket>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
-namespace uniset
-{
-    namespace unet
-    {
+namespace uniset {
+namespace unet {
 
-        // ===================================================================
+// ===================================================================
 
-        class UNetData PROTOBUF_FINAL :
-            public ::PROTOBUF_NAMESPACE_ID::MessageLite /* @@protoc_insertion_point(class_definition:uniset.unet.UNetData) */
-        {
-            public:
-                inline UNetData() : UNetData(nullptr) {}
-                virtual ~UNetData();
+class UNetData PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::MessageLite /* @@protoc_insertion_point(class_definition:uniset.unet.UNetData) */ {
+ public:
+  inline UNetData() : UNetData(nullptr) {}
+  virtual ~UNetData();
 
-                UNetData(const UNetData& from);
-                UNetData(UNetData&& from) noexcept
-                    : UNetData()
-                {
-                    *this = ::std::move(from);
-                }
+  UNetData(const UNetData& from);
+  UNetData(UNetData&& from) noexcept
+    : UNetData() {
+    *this = ::std::move(from);
+  }
 
-                inline UNetData& operator=(const UNetData& from)
-                {
-                    CopyFrom(from);
-                    return *this;
-                }
-                inline UNetData& operator=(UNetData&& from) noexcept
-                {
-                    if (GetArena() == from.GetArena())
-                    {
-                        if (this != &from) InternalSwap(&from);
-                    }
-                    else
-                    {
-                        CopyFrom(from);
-                    }
+  inline UNetData& operator=(const UNetData& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline UNetData& operator=(UNetData&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
 
-                    return *this;
-                }
+  inline const std::string& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<std::string>(::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString);
+  }
+  inline std::string* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<std::string>();
+  }
 
-                inline const std::string& unknown_fields() const
-                {
-                    return _internal_metadata_.unknown_fields<std::string>(::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString);
-                }
-                inline std::string* mutable_unknown_fields()
-                {
-                    return _internal_metadata_.mutable_unknown_fields<std::string>();
-                }
+  static const UNetData& default_instance();
 
-                static const UNetData& default_instance();
+  static inline const UNetData* internal_default_instance() {
+    return reinterpret_cast<const UNetData*>(
+               &_UNetData_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    0;
 
-                static inline const UNetData* internal_default_instance()
-                {
-                    return reinterpret_cast<const UNetData*>(
-                               &_UNetData_default_instance_);
-                }
-                static constexpr int kIndexInFileMessages =
-                    0;
+  friend void swap(UNetData& a, UNetData& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(UNetData* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(UNetData* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
 
-                friend void swap(UNetData& a, UNetData& b)
-                {
-                    a.Swap(&b);
-                }
-                inline void Swap(UNetData* other)
-                {
-                    if (other == this) return;
+  // implements Message ----------------------------------------------
 
-                    if (GetArena() == other->GetArena())
-                    {
-                        InternalSwap(other);
-                    }
-                    else
-                    {
-                        ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
-                    }
-                }
-                void UnsafeArenaSwap(UNetData* other)
-                {
-                    if (other == this) return;
+  inline UNetData* New() const final {
+    return CreateMaybeMessage<UNetData>(nullptr);
+  }
 
-                    GOOGLE_DCHECK(GetArena() == other->GetArena());
-                    InternalSwap(other);
-                }
+  UNetData* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<UNetData>(arena);
+  }
+  void CheckTypeAndMergeFrom(const ::PROTOBUF_NAMESPACE_ID::MessageLite& from)
+    final;
+  void CopyFrom(const UNetData& from);
+  void MergeFrom(const UNetData& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
 
-                // implements Message ----------------------------------------------
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  void DiscardUnknownFields();
+  int GetCachedSize() const final { return _cached_size_.Get(); }
 
-                inline UNetData* New() const final
-                {
-                    return CreateMaybeMessage<UNetData>(nullptr);
-                }
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(UNetData* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "uniset.unet.UNetData";
+  }
+  protected:
+  explicit UNetData(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
 
-                UNetData* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final
-                {
-                    return CreateMaybeMessage<UNetData>(arena);
-                }
-                void CheckTypeAndMergeFrom(const ::PROTOBUF_NAMESPACE_ID::MessageLite& from)
-                final;
-                void CopyFrom(const UNetData& from);
-                void MergeFrom(const UNetData& from);
-                PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-                bool IsInitialized() const final;
+  std::string GetTypeName() const final;
 
-                size_t ByteSizeLong() const final;
-                const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-                ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-                    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-                void DiscardUnknownFields();
-                int GetCachedSize() const final
-                {
-                    return _cached_size_.Get();
-                }
+  // nested types ----------------------------------------------------
 
-            private:
-                inline void SharedCtor();
-                inline void SharedDtor();
-                void SetCachedSize(int size) const;
-                void InternalSwap(UNetData* other);
-                friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-                static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName()
-                {
-                    return "uniset.unet.UNetData";
-                }
-            protected:
-                explicit UNetData(::PROTOBUF_NAMESPACE_ID::Arena* arena);
-            private:
-                static void ArenaDtor(void* object);
-                inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
-            public:
+  // accessors -------------------------------------------------------
 
-                std::string GetTypeName() const final;
+  enum : int {
+    kDIDFieldNumber = 1,
+    kDValueFieldNumber = 2,
+    kAIDFieldNumber = 3,
+    kAValueFieldNumber = 4,
+  };
+  // repeated uint64 dID = 1 [packed = true];
+  int did_size() const;
+  private:
+  int _internal_did_size() const;
+  public:
+  void clear_did();
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_did(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+      _internal_did() const;
+  void _internal_add_did(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+      _internal_mutable_did();
+  public:
+  ::PROTOBUF_NAMESPACE_ID::uint64 did(int index) const;
+  void set_did(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value);
+  void add_did(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+      did() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+      mutable_did();
 
-                // nested types ----------------------------------------------------
+  // repeated bool dValue = 2 [packed = true];
+  int dvalue_size() const;
+  private:
+  int _internal_dvalue_size() const;
+  public:
+  void clear_dvalue();
+  private:
+  bool _internal_dvalue(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool >&
+      _internal_dvalue() const;
+  void _internal_add_dvalue(bool value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool >*
+      _internal_mutable_dvalue();
+  public:
+  bool dvalue(int index) const;
+  void set_dvalue(int index, bool value);
+  void add_dvalue(bool value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool >&
+      dvalue() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool >*
+      mutable_dvalue();
 
-                // accessors -------------------------------------------------------
+  // repeated uint64 aID = 3 [packed = true];
+  int aid_size() const;
+  private:
+  int _internal_aid_size() const;
+  public:
+  void clear_aid();
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_aid(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+      _internal_aid() const;
+  void _internal_add_aid(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+      _internal_mutable_aid();
+  public:
+  ::PROTOBUF_NAMESPACE_ID::uint64 aid(int index) const;
+  void set_aid(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value);
+  void add_aid(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+      aid() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+      mutable_aid();
 
-                enum : int
-                {
-                    kDIDFieldNumber = 1,
-                    kDValueFieldNumber = 2,
-                    kAIDFieldNumber = 3,
-                    kAValueFieldNumber = 4,
-                };
-                // repeated uint64 dID = 1 [packed = true];
-                int did_size() const;
-            private:
-                int _internal_did_size() const;
-            public:
-                void clear_did();
-            private:
-                ::PROTOBUF_NAMESPACE_ID::uint64 _internal_did(int index) const;
-                const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
-                _internal_did() const;
-                void _internal_add_did(::PROTOBUF_NAMESPACE_ID::uint64 value);
-                ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
-                _internal_mutable_did();
-            public:
-                ::PROTOBUF_NAMESPACE_ID::uint64 did(int index) const;
-                void set_did(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value);
-                void add_did(::PROTOBUF_NAMESPACE_ID::uint64 value);
-                const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
-                did() const;
-                ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
-                mutable_did();
+  // repeated uint64 aValue = 4 [packed = true];
+  int avalue_size() const;
+  private:
+  int _internal_avalue_size() const;
+  public:
+  void clear_avalue();
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_avalue(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+      _internal_avalue() const;
+  void _internal_add_avalue(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+      _internal_mutable_avalue();
+  public:
+  ::PROTOBUF_NAMESPACE_ID::uint64 avalue(int index) const;
+  void set_avalue(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value);
+  void add_avalue(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+      avalue() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+      mutable_avalue();
 
-                // repeated bool dValue = 2 [packed = true];
-                int dvalue_size() const;
-            private:
-                int _internal_dvalue_size() const;
-            public:
-                void clear_dvalue();
-            private:
-                bool _internal_dvalue(int index) const;
-                const ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool >&
-                _internal_dvalue() const;
-                void _internal_add_dvalue(bool value);
-                ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool >*
-                _internal_mutable_dvalue();
-            public:
-                bool dvalue(int index) const;
-                void set_dvalue(int index, bool value);
-                void add_dvalue(bool value);
-                const ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool >&
-                dvalue() const;
-                ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool >*
-                mutable_dvalue();
+  // @@protoc_insertion_point(class_scope:uniset.unet.UNetData)
+ private:
+  class _Internal;
 
-                // repeated uint64 aID = 3 [packed = true];
-                int aid_size() const;
-            private:
-                int _internal_aid_size() const;
-            public:
-                void clear_aid();
-            private:
-                ::PROTOBUF_NAMESPACE_ID::uint64 _internal_aid(int index) const;
-                const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
-                _internal_aid() const;
-                void _internal_add_aid(::PROTOBUF_NAMESPACE_ID::uint64 value);
-                ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
-                _internal_mutable_aid();
-            public:
-                ::PROTOBUF_NAMESPACE_ID::uint64 aid(int index) const;
-                void set_aid(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value);
-                void add_aid(::PROTOBUF_NAMESPACE_ID::uint64 value);
-                const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
-                aid() const;
-                ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
-                mutable_aid();
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 > did_;
+  mutable std::atomic<int> _did_cached_byte_size_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool > dvalue_;
+  mutable std::atomic<int> _dvalue_cached_byte_size_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 > aid_;
+  mutable std::atomic<int> _aid_cached_byte_size_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 > avalue_;
+  mutable std::atomic<int> _avalue_cached_byte_size_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_unet_2eproto;
+};
+// -------------------------------------------------------------------
 
-                // repeated uint64 aValue = 4 [packed = true];
-                int avalue_size() const;
-            private:
-                int _internal_avalue_size() const;
-            public:
-                void clear_avalue();
-            private:
-                ::PROTOBUF_NAMESPACE_ID::uint64 _internal_avalue(int index) const;
-                const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
-                _internal_avalue() const;
-                void _internal_add_avalue(::PROTOBUF_NAMESPACE_ID::uint64 value);
-                ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
-                _internal_mutable_avalue();
-            public:
-                ::PROTOBUF_NAMESPACE_ID::uint64 avalue(int index) const;
-                void set_avalue(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value);
-                void add_avalue(::PROTOBUF_NAMESPACE_ID::uint64 value);
-                const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
-                avalue() const;
-                ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
-                mutable_avalue();
+class UNetPacket PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::MessageLite /* @@protoc_insertion_point(class_definition:uniset.unet.UNetPacket) */ {
+ public:
+  inline UNetPacket() : UNetPacket(nullptr) {}
+  virtual ~UNetPacket();
 
-                // @@protoc_insertion_point(class_scope:uniset.unet.UNetData)
-            private:
-                class _Internal;
+  UNetPacket(const UNetPacket& from);
+  UNetPacket(UNetPacket&& from) noexcept
+    : UNetPacket() {
+    *this = ::std::move(from);
+  }
 
-                template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
-                typedef void InternalArenaConstructable_;
-                typedef void DestructorSkippable_;
-                ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 > did_;
-                mutable std::atomic<int> _did_cached_byte_size_;
-                ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool > dvalue_;
-                mutable std::atomic<int> _dvalue_cached_byte_size_;
-                ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 > aid_;
-                mutable std::atomic<int> _aid_cached_byte_size_;
-                ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 > avalue_;
-                mutable std::atomic<int> _avalue_cached_byte_size_;
-                mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-                friend struct ::TableStruct_unet_2eproto;
-        };
-        // -------------------------------------------------------------------
+  inline UNetPacket& operator=(const UNetPacket& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline UNetPacket& operator=(UNetPacket&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
 
-        class UNetPacket PROTOBUF_FINAL :
-            public ::PROTOBUF_NAMESPACE_ID::MessageLite /* @@protoc_insertion_point(class_definition:uniset.unet.UNetPacket) */
-        {
-            public:
-                inline UNetPacket() : UNetPacket(nullptr) {}
-                virtual ~UNetPacket();
+  inline const std::string& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<std::string>(::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString);
+  }
+  inline std::string* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<std::string>();
+  }
 
-                UNetPacket(const UNetPacket& from);
-                UNetPacket(UNetPacket&& from) noexcept
-                    : UNetPacket()
-                {
-                    *this = ::std::move(from);
-                }
+  static const UNetPacket& default_instance();
 
-                inline UNetPacket& operator=(const UNetPacket& from)
-                {
-                    CopyFrom(from);
-                    return *this;
-                }
-                inline UNetPacket& operator=(UNetPacket&& from) noexcept
-                {
-                    if (GetArena() == from.GetArena())
-                    {
-                        if (this != &from) InternalSwap(&from);
-                    }
-                    else
-                    {
-                        CopyFrom(from);
-                    }
+  static inline const UNetPacket* internal_default_instance() {
+    return reinterpret_cast<const UNetPacket*>(
+               &_UNetPacket_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    1;
 
-                    return *this;
-                }
+  friend void swap(UNetPacket& a, UNetPacket& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(UNetPacket* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(UNetPacket* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
 
-                inline const std::string& unknown_fields() const
-                {
-                    return _internal_metadata_.unknown_fields<std::string>(::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString);
-                }
-                inline std::string* mutable_unknown_fields()
-                {
-                    return _internal_metadata_.mutable_unknown_fields<std::string>();
-                }
+  // implements Message ----------------------------------------------
 
-                static const UNetPacket& default_instance();
+  inline UNetPacket* New() const final {
+    return CreateMaybeMessage<UNetPacket>(nullptr);
+  }
 
-                static inline const UNetPacket* internal_default_instance()
-                {
-                    return reinterpret_cast<const UNetPacket*>(
-                               &_UNetPacket_default_instance_);
-                }
-                static constexpr int kIndexInFileMessages =
-                    1;
+  UNetPacket* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<UNetPacket>(arena);
+  }
+  void CheckTypeAndMergeFrom(const ::PROTOBUF_NAMESPACE_ID::MessageLite& from)
+    final;
+  void CopyFrom(const UNetPacket& from);
+  void MergeFrom(const UNetPacket& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
 
-                friend void swap(UNetPacket& a, UNetPacket& b)
-                {
-                    a.Swap(&b);
-                }
-                inline void Swap(UNetPacket* other)
-                {
-                    if (other == this) return;
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  void DiscardUnknownFields();
+  int GetCachedSize() const final { return _cached_size_.Get(); }
 
-                    if (GetArena() == other->GetArena())
-                    {
-                        InternalSwap(other);
-                    }
-                    else
-                    {
-                        ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
-                    }
-                }
-                void UnsafeArenaSwap(UNetPacket* other)
-                {
-                    if (other == this) return;
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(UNetPacket* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "uniset.unet.UNetPacket";
+  }
+  protected:
+  explicit UNetPacket(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
 
-                    GOOGLE_DCHECK(GetArena() == other->GetArena());
-                    InternalSwap(other);
-                }
+  std::string GetTypeName() const final;
 
-                // implements Message ----------------------------------------------
+  // nested types ----------------------------------------------------
 
-                inline UNetPacket* New() const final
-                {
-                    return CreateMaybeMessage<UNetPacket>(nullptr);
-                }
+  // accessors -------------------------------------------------------
 
-                UNetPacket* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final
-                {
-                    return CreateMaybeMessage<UNetPacket>(arena);
-                }
-                void CheckTypeAndMergeFrom(const ::PROTOBUF_NAMESPACE_ID::MessageLite& from)
-                final;
-                void CopyFrom(const UNetPacket& from);
-                void MergeFrom(const UNetPacket& from);
-                PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-                bool IsInitialized() const final;
+  enum : int {
+    kDataFieldNumber = 5,
+    kNumFieldNumber = 2,
+    kNodeIDFieldNumber = 3,
+    kProcIDFieldNumber = 4,
+    kMagicFieldNumber = 1,
+  };
+  // optional .uniset.unet.UNetData data = 5;
+  bool has_data() const;
+  private:
+  bool _internal_has_data() const;
+  public:
+  void clear_data();
+  const ::uniset::unet::UNetData& data() const;
+  ::uniset::unet::UNetData* release_data();
+  ::uniset::unet::UNetData* mutable_data();
+  void set_allocated_data(::uniset::unet::UNetData* data);
+  private:
+  const ::uniset::unet::UNetData& _internal_data() const;
+  ::uniset::unet::UNetData* _internal_mutable_data();
+  public:
+  void unsafe_arena_set_allocated_data(
+      ::uniset::unet::UNetData* data);
+  ::uniset::unet::UNetData* unsafe_arena_release_data();
 
-                size_t ByteSizeLong() const final;
-                const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-                ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-                    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-                void DiscardUnknownFields();
-                int GetCachedSize() const final
-                {
-                    return _cached_size_.Get();
-                }
+  // required uint64 num = 2;
+  bool has_num() const;
+  private:
+  bool _internal_has_num() const;
+  public:
+  void clear_num();
+  ::PROTOBUF_NAMESPACE_ID::uint64 num() const;
+  void set_num(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_num() const;
+  void _internal_set_num(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
 
-            private:
-                inline void SharedCtor();
-                inline void SharedDtor();
-                void SetCachedSize(int size) const;
-                void InternalSwap(UNetPacket* other);
-                friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-                static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName()
-                {
-                    return "uniset.unet.UNetPacket";
-                }
-            protected:
-                explicit UNetPacket(::PROTOBUF_NAMESPACE_ID::Arena* arena);
-            private:
-                static void ArenaDtor(void* object);
-                inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
-            public:
+  // optional uint64 nodeID = 3;
+  bool has_nodeid() const;
+  private:
+  bool _internal_has_nodeid() const;
+  public:
+  void clear_nodeid();
+  ::PROTOBUF_NAMESPACE_ID::uint64 nodeid() const;
+  void set_nodeid(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_nodeid() const;
+  void _internal_set_nodeid(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
 
-                std::string GetTypeName() const final;
+  // optional uint64 procID = 4;
+  bool has_procid() const;
+  private:
+  bool _internal_has_procid() const;
+  public:
+  void clear_procid();
+  ::PROTOBUF_NAMESPACE_ID::uint64 procid() const;
+  void set_procid(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_procid() const;
+  void _internal_set_procid(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
 
-                // nested types ----------------------------------------------------
+  // required uint32 magic = 1;
+  bool has_magic() const;
+  private:
+  bool _internal_has_magic() const;
+  public:
+  void clear_magic();
+  ::PROTOBUF_NAMESPACE_ID::uint32 magic() const;
+  void set_magic(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_magic() const;
+  void _internal_set_magic(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
 
-                // accessors -------------------------------------------------------
+  // @@protoc_insertion_point(class_scope:uniset.unet.UNetPacket)
+ private:
+  class _Internal;
 
-                enum : int
-                {
-                    kDataFieldNumber = 5,
-                    kNumFieldNumber = 2,
-                    kNodeIDFieldNumber = 3,
-                    kProcIDFieldNumber = 4,
-                    kMagicFieldNumber = 1,
-                };
-                // optional .uniset.unet.UNetData data = 5;
-                bool has_data() const;
-            private:
-                bool _internal_has_data() const;
-            public:
-                void clear_data();
-                const ::uniset::unet::UNetData& data() const;
-                ::uniset::unet::UNetData* release_data();
-                ::uniset::unet::UNetData* mutable_data();
-                void set_allocated_data(::uniset::unet::UNetData* data);
-            private:
-                const ::uniset::unet::UNetData& _internal_data() const;
-                ::uniset::unet::UNetData* _internal_mutable_data();
-            public:
-                void unsafe_arena_set_allocated_data(
-                    ::uniset::unet::UNetData* data);
-                ::uniset::unet::UNetData* unsafe_arena_release_data();
+  // helper for ByteSizeLong()
+  size_t RequiredFieldsByteSizeFallback() const;
 
-                // required uint64 num = 2;
-                bool has_num() const;
-            private:
-                bool _internal_has_num() const;
-            public:
-                void clear_num();
-                ::PROTOBUF_NAMESPACE_ID::uint64 num() const;
-                void set_num(::PROTOBUF_NAMESPACE_ID::uint64 value);
-            private:
-                ::PROTOBUF_NAMESPACE_ID::uint64 _internal_num() const;
-                void _internal_set_num(::PROTOBUF_NAMESPACE_ID::uint64 value);
-            public:
-
-                // optional uint64 nodeID = 3;
-                bool has_nodeid() const;
-            private:
-                bool _internal_has_nodeid() const;
-            public:
-                void clear_nodeid();
-                ::PROTOBUF_NAMESPACE_ID::uint64 nodeid() const;
-                void set_nodeid(::PROTOBUF_NAMESPACE_ID::uint64 value);
-            private:
-                ::PROTOBUF_NAMESPACE_ID::uint64 _internal_nodeid() const;
-                void _internal_set_nodeid(::PROTOBUF_NAMESPACE_ID::uint64 value);
-            public:
-
-                // optional uint64 procID = 4;
-                bool has_procid() const;
-            private:
-                bool _internal_has_procid() const;
-            public:
-                void clear_procid();
-                ::PROTOBUF_NAMESPACE_ID::uint64 procid() const;
-                void set_procid(::PROTOBUF_NAMESPACE_ID::uint64 value);
-            private:
-                ::PROTOBUF_NAMESPACE_ID::uint64 _internal_procid() const;
-                void _internal_set_procid(::PROTOBUF_NAMESPACE_ID::uint64 value);
-            public:
-
-                // required uint32 magic = 1;
-                bool has_magic() const;
-            private:
-                bool _internal_has_magic() const;
-            public:
-                void clear_magic();
-                ::PROTOBUF_NAMESPACE_ID::uint32 magic() const;
-                void set_magic(::PROTOBUF_NAMESPACE_ID::uint32 value);
-            private:
-                ::PROTOBUF_NAMESPACE_ID::uint32 _internal_magic() const;
-                void _internal_set_magic(::PROTOBUF_NAMESPACE_ID::uint32 value);
-            public:
-
-                // @@protoc_insertion_point(class_scope:uniset.unet.UNetPacket)
-            private:
-                class _Internal;
-
-                // helper for ByteSizeLong()
-                size_t RequiredFieldsByteSizeFallback() const;
-
-                template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
-                typedef void InternalArenaConstructable_;
-                typedef void DestructorSkippable_;
-                ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
-                mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-                ::uniset::unet::UNetData* data_;
-                ::PROTOBUF_NAMESPACE_ID::uint64 num_;
-                ::PROTOBUF_NAMESPACE_ID::uint64 nodeid_;
-                ::PROTOBUF_NAMESPACE_ID::uint64 procid_;
-                ::PROTOBUF_NAMESPACE_ID::uint32 magic_;
-                friend struct ::TableStruct_unet_2eproto;
-        };
-        // ===================================================================
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::uniset::unet::UNetData* data_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 num_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 nodeid_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 procid_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 magic_;
+  friend struct ::TableStruct_unet_2eproto;
+};
+// ===================================================================
 
 
-        // ===================================================================
+// ===================================================================
 
 #ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
-        // UNetData
+// UNetData
 
-        // repeated uint64 dID = 1 [packed = true];
-        inline int UNetData::_internal_did_size() const
-        {
-            return did_.size();
-        }
-        inline int UNetData::did_size() const
-        {
-            return _internal_did_size();
-        }
-        inline void UNetData::clear_did()
-        {
-            did_.Clear();
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetData::_internal_did(int index) const
-        {
-            return did_.Get(index);
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetData::did(int index) const
-        {
-            // @@protoc_insertion_point(field_get:uniset.unet.UNetData.dID)
-            return _internal_did(index);
-        }
-        inline void UNetData::set_did(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value)
-        {
-            did_.Set(index, value);
-            // @@protoc_insertion_point(field_set:uniset.unet.UNetData.dID)
-        }
-        inline void UNetData::_internal_add_did(::PROTOBUF_NAMESPACE_ID::uint64 value)
-        {
-            did_.Add(value);
-        }
-        inline void UNetData::add_did(::PROTOBUF_NAMESPACE_ID::uint64 value)
-        {
-            _internal_add_did(value);
-            // @@protoc_insertion_point(field_add:uniset.unet.UNetData.dID)
-        }
-        inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
-        UNetData::_internal_did() const
-        {
-            return did_;
-        }
-        inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
-        UNetData::did() const
-        {
-            // @@protoc_insertion_point(field_list:uniset.unet.UNetData.dID)
-            return _internal_did();
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
-        UNetData::_internal_mutable_did()
-        {
-            return &did_;
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
-        UNetData::mutable_did()
-        {
-            // @@protoc_insertion_point(field_mutable_list:uniset.unet.UNetData.dID)
-            return _internal_mutable_did();
-        }
+// repeated uint64 dID = 1 [packed = true];
+inline int UNetData::_internal_did_size() const {
+  return did_.size();
+}
+inline int UNetData::did_size() const {
+  return _internal_did_size();
+}
+inline void UNetData::clear_did() {
+  did_.Clear();
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetData::_internal_did(int index) const {
+  return did_.Get(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetData::did(int index) const {
+  // @@protoc_insertion_point(field_get:uniset.unet.UNetData.dID)
+  return _internal_did(index);
+}
+inline void UNetData::set_did(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  did_.Set(index, value);
+  // @@protoc_insertion_point(field_set:uniset.unet.UNetData.dID)
+}
+inline void UNetData::_internal_add_did(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  did_.Add(value);
+}
+inline void UNetData::add_did(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_add_did(value);
+  // @@protoc_insertion_point(field_add:uniset.unet.UNetData.dID)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+UNetData::_internal_did() const {
+  return did_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+UNetData::did() const {
+  // @@protoc_insertion_point(field_list:uniset.unet.UNetData.dID)
+  return _internal_did();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+UNetData::_internal_mutable_did() {
+  return &did_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+UNetData::mutable_did() {
+  // @@protoc_insertion_point(field_mutable_list:uniset.unet.UNetData.dID)
+  return _internal_mutable_did();
+}
 
-        // repeated bool dValue = 2 [packed = true];
-        inline int UNetData::_internal_dvalue_size() const
-        {
-            return dvalue_.size();
-        }
-        inline int UNetData::dvalue_size() const
-        {
-            return _internal_dvalue_size();
-        }
-        inline void UNetData::clear_dvalue()
-        {
-            dvalue_.Clear();
-        }
-        inline bool UNetData::_internal_dvalue(int index) const
-        {
-            return dvalue_.Get(index);
-        }
-        inline bool UNetData::dvalue(int index) const
-        {
-            // @@protoc_insertion_point(field_get:uniset.unet.UNetData.dValue)
-            return _internal_dvalue(index);
-        }
-        inline void UNetData::set_dvalue(int index, bool value)
-        {
-            dvalue_.Set(index, value);
-            // @@protoc_insertion_point(field_set:uniset.unet.UNetData.dValue)
-        }
-        inline void UNetData::_internal_add_dvalue(bool value)
-        {
-            dvalue_.Add(value);
-        }
-        inline void UNetData::add_dvalue(bool value)
-        {
-            _internal_add_dvalue(value);
-            // @@protoc_insertion_point(field_add:uniset.unet.UNetData.dValue)
-        }
-        inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool >&
-        UNetData::_internal_dvalue() const
-        {
-            return dvalue_;
-        }
-        inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool >&
-        UNetData::dvalue() const
-        {
-            // @@protoc_insertion_point(field_list:uniset.unet.UNetData.dValue)
-            return _internal_dvalue();
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool >*
-        UNetData::_internal_mutable_dvalue()
-        {
-            return &dvalue_;
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool >*
-        UNetData::mutable_dvalue()
-        {
-            // @@protoc_insertion_point(field_mutable_list:uniset.unet.UNetData.dValue)
-            return _internal_mutable_dvalue();
-        }
+// repeated bool dValue = 2 [packed = true];
+inline int UNetData::_internal_dvalue_size() const {
+  return dvalue_.size();
+}
+inline int UNetData::dvalue_size() const {
+  return _internal_dvalue_size();
+}
+inline void UNetData::clear_dvalue() {
+  dvalue_.Clear();
+}
+inline bool UNetData::_internal_dvalue(int index) const {
+  return dvalue_.Get(index);
+}
+inline bool UNetData::dvalue(int index) const {
+  // @@protoc_insertion_point(field_get:uniset.unet.UNetData.dValue)
+  return _internal_dvalue(index);
+}
+inline void UNetData::set_dvalue(int index, bool value) {
+  dvalue_.Set(index, value);
+  // @@protoc_insertion_point(field_set:uniset.unet.UNetData.dValue)
+}
+inline void UNetData::_internal_add_dvalue(bool value) {
+  dvalue_.Add(value);
+}
+inline void UNetData::add_dvalue(bool value) {
+  _internal_add_dvalue(value);
+  // @@protoc_insertion_point(field_add:uniset.unet.UNetData.dValue)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool >&
+UNetData::_internal_dvalue() const {
+  return dvalue_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool >&
+UNetData::dvalue() const {
+  // @@protoc_insertion_point(field_list:uniset.unet.UNetData.dValue)
+  return _internal_dvalue();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool >*
+UNetData::_internal_mutable_dvalue() {
+  return &dvalue_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< bool >*
+UNetData::mutable_dvalue() {
+  // @@protoc_insertion_point(field_mutable_list:uniset.unet.UNetData.dValue)
+  return _internal_mutable_dvalue();
+}
 
-        // repeated uint64 aID = 3 [packed = true];
-        inline int UNetData::_internal_aid_size() const
-        {
-            return aid_.size();
-        }
-        inline int UNetData::aid_size() const
-        {
-            return _internal_aid_size();
-        }
-        inline void UNetData::clear_aid()
-        {
-            aid_.Clear();
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetData::_internal_aid(int index) const
-        {
-            return aid_.Get(index);
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetData::aid(int index) const
-        {
-            // @@protoc_insertion_point(field_get:uniset.unet.UNetData.aID)
-            return _internal_aid(index);
-        }
-        inline void UNetData::set_aid(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value)
-        {
-            aid_.Set(index, value);
-            // @@protoc_insertion_point(field_set:uniset.unet.UNetData.aID)
-        }
-        inline void UNetData::_internal_add_aid(::PROTOBUF_NAMESPACE_ID::uint64 value)
-        {
-            aid_.Add(value);
-        }
-        inline void UNetData::add_aid(::PROTOBUF_NAMESPACE_ID::uint64 value)
-        {
-            _internal_add_aid(value);
-            // @@protoc_insertion_point(field_add:uniset.unet.UNetData.aID)
-        }
-        inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
-        UNetData::_internal_aid() const
-        {
-            return aid_;
-        }
-        inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
-        UNetData::aid() const
-        {
-            // @@protoc_insertion_point(field_list:uniset.unet.UNetData.aID)
-            return _internal_aid();
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
-        UNetData::_internal_mutable_aid()
-        {
-            return &aid_;
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
-        UNetData::mutable_aid()
-        {
-            // @@protoc_insertion_point(field_mutable_list:uniset.unet.UNetData.aID)
-            return _internal_mutable_aid();
-        }
+// repeated uint64 aID = 3 [packed = true];
+inline int UNetData::_internal_aid_size() const {
+  return aid_.size();
+}
+inline int UNetData::aid_size() const {
+  return _internal_aid_size();
+}
+inline void UNetData::clear_aid() {
+  aid_.Clear();
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetData::_internal_aid(int index) const {
+  return aid_.Get(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetData::aid(int index) const {
+  // @@protoc_insertion_point(field_get:uniset.unet.UNetData.aID)
+  return _internal_aid(index);
+}
+inline void UNetData::set_aid(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  aid_.Set(index, value);
+  // @@protoc_insertion_point(field_set:uniset.unet.UNetData.aID)
+}
+inline void UNetData::_internal_add_aid(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  aid_.Add(value);
+}
+inline void UNetData::add_aid(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_add_aid(value);
+  // @@protoc_insertion_point(field_add:uniset.unet.UNetData.aID)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+UNetData::_internal_aid() const {
+  return aid_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+UNetData::aid() const {
+  // @@protoc_insertion_point(field_list:uniset.unet.UNetData.aID)
+  return _internal_aid();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+UNetData::_internal_mutable_aid() {
+  return &aid_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+UNetData::mutable_aid() {
+  // @@protoc_insertion_point(field_mutable_list:uniset.unet.UNetData.aID)
+  return _internal_mutable_aid();
+}
 
-        // repeated uint64 aValue = 4 [packed = true];
-        inline int UNetData::_internal_avalue_size() const
-        {
-            return avalue_.size();
-        }
-        inline int UNetData::avalue_size() const
-        {
-            return _internal_avalue_size();
-        }
-        inline void UNetData::clear_avalue()
-        {
-            avalue_.Clear();
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetData::_internal_avalue(int index) const
-        {
-            return avalue_.Get(index);
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetData::avalue(int index) const
-        {
-            // @@protoc_insertion_point(field_get:uniset.unet.UNetData.aValue)
-            return _internal_avalue(index);
-        }
-        inline void UNetData::set_avalue(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value)
-        {
-            avalue_.Set(index, value);
-            // @@protoc_insertion_point(field_set:uniset.unet.UNetData.aValue)
-        }
-        inline void UNetData::_internal_add_avalue(::PROTOBUF_NAMESPACE_ID::uint64 value)
-        {
-            avalue_.Add(value);
-        }
-        inline void UNetData::add_avalue(::PROTOBUF_NAMESPACE_ID::uint64 value)
-        {
-            _internal_add_avalue(value);
-            // @@protoc_insertion_point(field_add:uniset.unet.UNetData.aValue)
-        }
-        inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
-        UNetData::_internal_avalue() const
-        {
-            return avalue_;
-        }
-        inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
-        UNetData::avalue() const
-        {
-            // @@protoc_insertion_point(field_list:uniset.unet.UNetData.aValue)
-            return _internal_avalue();
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
-        UNetData::_internal_mutable_avalue()
-        {
-            return &avalue_;
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
-        UNetData::mutable_avalue()
-        {
-            // @@protoc_insertion_point(field_mutable_list:uniset.unet.UNetData.aValue)
-            return _internal_mutable_avalue();
-        }
+// repeated uint64 aValue = 4 [packed = true];
+inline int UNetData::_internal_avalue_size() const {
+  return avalue_.size();
+}
+inline int UNetData::avalue_size() const {
+  return _internal_avalue_size();
+}
+inline void UNetData::clear_avalue() {
+  avalue_.Clear();
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetData::_internal_avalue(int index) const {
+  return avalue_.Get(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetData::avalue(int index) const {
+  // @@protoc_insertion_point(field_get:uniset.unet.UNetData.aValue)
+  return _internal_avalue(index);
+}
+inline void UNetData::set_avalue(int index, ::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  avalue_.Set(index, value);
+  // @@protoc_insertion_point(field_set:uniset.unet.UNetData.aValue)
+}
+inline void UNetData::_internal_add_avalue(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  avalue_.Add(value);
+}
+inline void UNetData::add_avalue(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_add_avalue(value);
+  // @@protoc_insertion_point(field_add:uniset.unet.UNetData.aValue)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+UNetData::_internal_avalue() const {
+  return avalue_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >&
+UNetData::avalue() const {
+  // @@protoc_insertion_point(field_list:uniset.unet.UNetData.aValue)
+  return _internal_avalue();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+UNetData::_internal_mutable_avalue() {
+  return &avalue_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::uint64 >*
+UNetData::mutable_avalue() {
+  // @@protoc_insertion_point(field_mutable_list:uniset.unet.UNetData.aValue)
+  return _internal_mutable_avalue();
+}
 
-        // -------------------------------------------------------------------
+// -------------------------------------------------------------------
 
-        // UNetPacket
+// UNetPacket
 
-        // required uint32 magic = 1;
-        inline bool UNetPacket::_internal_has_magic() const
-        {
-            bool value = (_has_bits_[0] & 0x00000010u) != 0;
-            return value;
-        }
-        inline bool UNetPacket::has_magic() const
-        {
-            return _internal_has_magic();
-        }
-        inline void UNetPacket::clear_magic()
-        {
-            magic_ = 0u;
-            _has_bits_[0] &= ~0x00000010u;
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::uint32 UNetPacket::_internal_magic() const
-        {
-            return magic_;
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::uint32 UNetPacket::magic() const
-        {
-            // @@protoc_insertion_point(field_get:uniset.unet.UNetPacket.magic)
-            return _internal_magic();
-        }
-        inline void UNetPacket::_internal_set_magic(::PROTOBUF_NAMESPACE_ID::uint32 value)
-        {
-            _has_bits_[0] |= 0x00000010u;
-            magic_ = value;
-        }
-        inline void UNetPacket::set_magic(::PROTOBUF_NAMESPACE_ID::uint32 value)
-        {
-            _internal_set_magic(value);
-            // @@protoc_insertion_point(field_set:uniset.unet.UNetPacket.magic)
-        }
+// required uint32 magic = 1;
+inline bool UNetPacket::_internal_has_magic() const {
+  bool value = (_has_bits_[0] & 0x00000010u) != 0;
+  return value;
+}
+inline bool UNetPacket::has_magic() const {
+  return _internal_has_magic();
+}
+inline void UNetPacket::clear_magic() {
+  magic_ = 0u;
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 UNetPacket::_internal_magic() const {
+  return magic_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 UNetPacket::magic() const {
+  // @@protoc_insertion_point(field_get:uniset.unet.UNetPacket.magic)
+  return _internal_magic();
+}
+inline void UNetPacket::_internal_set_magic(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _has_bits_[0] |= 0x00000010u;
+  magic_ = value;
+}
+inline void UNetPacket::set_magic(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_magic(value);
+  // @@protoc_insertion_point(field_set:uniset.unet.UNetPacket.magic)
+}
 
-        // required uint64 num = 2;
-        inline bool UNetPacket::_internal_has_num() const
-        {
-            bool value = (_has_bits_[0] & 0x00000002u) != 0;
-            return value;
-        }
-        inline bool UNetPacket::has_num() const
-        {
-            return _internal_has_num();
-        }
-        inline void UNetPacket::clear_num()
-        {
-            num_ = PROTOBUF_ULONGLONG(0);
-            _has_bits_[0] &= ~0x00000002u;
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetPacket::_internal_num() const
-        {
-            return num_;
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetPacket::num() const
-        {
-            // @@protoc_insertion_point(field_get:uniset.unet.UNetPacket.num)
-            return _internal_num();
-        }
-        inline void UNetPacket::_internal_set_num(::PROTOBUF_NAMESPACE_ID::uint64 value)
-        {
-            _has_bits_[0] |= 0x00000002u;
-            num_ = value;
-        }
-        inline void UNetPacket::set_num(::PROTOBUF_NAMESPACE_ID::uint64 value)
-        {
-            _internal_set_num(value);
-            // @@protoc_insertion_point(field_set:uniset.unet.UNetPacket.num)
-        }
+// required uint64 num = 2;
+inline bool UNetPacket::_internal_has_num() const {
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline bool UNetPacket::has_num() const {
+  return _internal_has_num();
+}
+inline void UNetPacket::clear_num() {
+  num_ = PROTOBUF_ULONGLONG(0);
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetPacket::_internal_num() const {
+  return num_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetPacket::num() const {
+  // @@protoc_insertion_point(field_get:uniset.unet.UNetPacket.num)
+  return _internal_num();
+}
+inline void UNetPacket::_internal_set_num(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _has_bits_[0] |= 0x00000002u;
+  num_ = value;
+}
+inline void UNetPacket::set_num(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_num(value);
+  // @@protoc_insertion_point(field_set:uniset.unet.UNetPacket.num)
+}
 
-        // optional uint64 nodeID = 3;
-        inline bool UNetPacket::_internal_has_nodeid() const
-        {
-            bool value = (_has_bits_[0] & 0x00000004u) != 0;
-            return value;
-        }
-        inline bool UNetPacket::has_nodeid() const
-        {
-            return _internal_has_nodeid();
-        }
-        inline void UNetPacket::clear_nodeid()
-        {
-            nodeid_ = PROTOBUF_ULONGLONG(0);
-            _has_bits_[0] &= ~0x00000004u;
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetPacket::_internal_nodeid() const
-        {
-            return nodeid_;
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetPacket::nodeid() const
-        {
-            // @@protoc_insertion_point(field_get:uniset.unet.UNetPacket.nodeID)
-            return _internal_nodeid();
-        }
-        inline void UNetPacket::_internal_set_nodeid(::PROTOBUF_NAMESPACE_ID::uint64 value)
-        {
-            _has_bits_[0] |= 0x00000004u;
-            nodeid_ = value;
-        }
-        inline void UNetPacket::set_nodeid(::PROTOBUF_NAMESPACE_ID::uint64 value)
-        {
-            _internal_set_nodeid(value);
-            // @@protoc_insertion_point(field_set:uniset.unet.UNetPacket.nodeID)
-        }
+// optional uint64 nodeID = 3;
+inline bool UNetPacket::_internal_has_nodeid() const {
+  bool value = (_has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline bool UNetPacket::has_nodeid() const {
+  return _internal_has_nodeid();
+}
+inline void UNetPacket::clear_nodeid() {
+  nodeid_ = PROTOBUF_ULONGLONG(0);
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetPacket::_internal_nodeid() const {
+  return nodeid_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetPacket::nodeid() const {
+  // @@protoc_insertion_point(field_get:uniset.unet.UNetPacket.nodeID)
+  return _internal_nodeid();
+}
+inline void UNetPacket::_internal_set_nodeid(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _has_bits_[0] |= 0x00000004u;
+  nodeid_ = value;
+}
+inline void UNetPacket::set_nodeid(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_nodeid(value);
+  // @@protoc_insertion_point(field_set:uniset.unet.UNetPacket.nodeID)
+}
 
-        // optional uint64 procID = 4;
-        inline bool UNetPacket::_internal_has_procid() const
-        {
-            bool value = (_has_bits_[0] & 0x00000008u) != 0;
-            return value;
-        }
-        inline bool UNetPacket::has_procid() const
-        {
-            return _internal_has_procid();
-        }
-        inline void UNetPacket::clear_procid()
-        {
-            procid_ = PROTOBUF_ULONGLONG(0);
-            _has_bits_[0] &= ~0x00000008u;
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetPacket::_internal_procid() const
-        {
-            return procid_;
-        }
-        inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetPacket::procid() const
-        {
-            // @@protoc_insertion_point(field_get:uniset.unet.UNetPacket.procID)
-            return _internal_procid();
-        }
-        inline void UNetPacket::_internal_set_procid(::PROTOBUF_NAMESPACE_ID::uint64 value)
-        {
-            _has_bits_[0] |= 0x00000008u;
-            procid_ = value;
-        }
-        inline void UNetPacket::set_procid(::PROTOBUF_NAMESPACE_ID::uint64 value)
-        {
-            _internal_set_procid(value);
-            // @@protoc_insertion_point(field_set:uniset.unet.UNetPacket.procID)
-        }
+// optional uint64 procID = 4;
+inline bool UNetPacket::_internal_has_procid() const {
+  bool value = (_has_bits_[0] & 0x00000008u) != 0;
+  return value;
+}
+inline bool UNetPacket::has_procid() const {
+  return _internal_has_procid();
+}
+inline void UNetPacket::clear_procid() {
+  procid_ = PROTOBUF_ULONGLONG(0);
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetPacket::_internal_procid() const {
+  return procid_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 UNetPacket::procid() const {
+  // @@protoc_insertion_point(field_get:uniset.unet.UNetPacket.procID)
+  return _internal_procid();
+}
+inline void UNetPacket::_internal_set_procid(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _has_bits_[0] |= 0x00000008u;
+  procid_ = value;
+}
+inline void UNetPacket::set_procid(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_procid(value);
+  // @@protoc_insertion_point(field_set:uniset.unet.UNetPacket.procID)
+}
 
-        // optional .uniset.unet.UNetData data = 5;
-        inline bool UNetPacket::_internal_has_data() const
-        {
-            bool value = (_has_bits_[0] & 0x00000001u) != 0;
-            PROTOBUF_ASSUME(!value || data_ != nullptr);
-            return value;
-        }
-        inline bool UNetPacket::has_data() const
-        {
-            return _internal_has_data();
-        }
-        inline void UNetPacket::clear_data()
-        {
-            if (data_ != nullptr) data_->Clear();
-
-            _has_bits_[0] &= ~0x00000001u;
-        }
-        inline const ::uniset::unet::UNetData& UNetPacket::_internal_data() const
-        {
-            const ::uniset::unet::UNetData* p = data_;
-            return p != nullptr ? *p : reinterpret_cast<const ::uniset::unet::UNetData&>(
-                       ::uniset::unet::_UNetData_default_instance_);
-        }
-        inline const ::uniset::unet::UNetData& UNetPacket::data() const
-        {
-            // @@protoc_insertion_point(field_get:uniset.unet.UNetPacket.data)
-            return _internal_data();
-        }
-        inline void UNetPacket::unsafe_arena_set_allocated_data(
-            ::uniset::unet::UNetData* data)
-        {
-            if (GetArena() == nullptr)
-            {
-                delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(data_);
-            }
-
-            data_ = data;
-
-            if (data)
-            {
-                _has_bits_[0] |= 0x00000001u;
-            }
-            else
-            {
-                _has_bits_[0] &= ~0x00000001u;
-            }
-
-            // @@protoc_insertion_point(field_unsafe_arena_set_allocated:uniset.unet.UNetPacket.data)
-        }
-        inline ::uniset::unet::UNetData* UNetPacket::release_data()
-        {
-            _has_bits_[0] &= ~0x00000001u;
-            ::uniset::unet::UNetData* temp = data_;
-            data_ = nullptr;
-
-            if (GetArena() != nullptr)
-            {
-                temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
-            }
-
-            return temp;
-        }
-        inline ::uniset::unet::UNetData* UNetPacket::unsafe_arena_release_data()
-        {
-            // @@protoc_insertion_point(field_release:uniset.unet.UNetPacket.data)
-            _has_bits_[0] &= ~0x00000001u;
-            ::uniset::unet::UNetData* temp = data_;
-            data_ = nullptr;
-            return temp;
-        }
-        inline ::uniset::unet::UNetData* UNetPacket::_internal_mutable_data()
-        {
-            _has_bits_[0] |= 0x00000001u;
-
-            if (data_ == nullptr)
-            {
-                auto* p = CreateMaybeMessage<::uniset::unet::UNetData>(GetArena());
-                data_ = p;
-            }
-
-            return data_;
-        }
-        inline ::uniset::unet::UNetData* UNetPacket::mutable_data()
-        {
-            // @@protoc_insertion_point(field_mutable:uniset.unet.UNetPacket.data)
-            return _internal_mutable_data();
-        }
-        inline void UNetPacket::set_allocated_data(::uniset::unet::UNetData* data)
-        {
-            ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
-
-            if (message_arena == nullptr)
-            {
-                delete data_;
-            }
-
-            if (data)
-            {
-                ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-                    ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(data);
-
-                if (message_arena != submessage_arena)
-                {
-                    data = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
-                               message_arena, data, submessage_arena);
-                }
-
-                _has_bits_[0] |= 0x00000001u;
-            }
-            else
-            {
-                _has_bits_[0] &= ~0x00000001u;
-            }
-
-            data_ = data;
-            // @@protoc_insertion_point(field_set_allocated:uniset.unet.UNetPacket.data)
-        }
+// optional .uniset.unet.UNetData data = 5;
+inline bool UNetPacket::_internal_has_data() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  PROTOBUF_ASSUME(!value || data_ != nullptr);
+  return value;
+}
+inline bool UNetPacket::has_data() const {
+  return _internal_has_data();
+}
+inline void UNetPacket::clear_data() {
+  if (data_ != nullptr) data_->Clear();
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline const ::uniset::unet::UNetData& UNetPacket::_internal_data() const {
+  const ::uniset::unet::UNetData* p = data_;
+  return p != nullptr ? *p : reinterpret_cast<const ::uniset::unet::UNetData&>(
+      ::uniset::unet::_UNetData_default_instance_);
+}
+inline const ::uniset::unet::UNetData& UNetPacket::data() const {
+  // @@protoc_insertion_point(field_get:uniset.unet.UNetPacket.data)
+  return _internal_data();
+}
+inline void UNetPacket::unsafe_arena_set_allocated_data(
+    ::uniset::unet::UNetData* data) {
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(data_);
+  }
+  data_ = data;
+  if (data) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:uniset.unet.UNetPacket.data)
+}
+inline ::uniset::unet::UNetData* UNetPacket::release_data() {
+  _has_bits_[0] &= ~0x00000001u;
+  ::uniset::unet::UNetData* temp = data_;
+  data_ = nullptr;
+  if (GetArena() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+  return temp;
+}
+inline ::uniset::unet::UNetData* UNetPacket::unsafe_arena_release_data() {
+  // @@protoc_insertion_point(field_release:uniset.unet.UNetPacket.data)
+  _has_bits_[0] &= ~0x00000001u;
+  ::uniset::unet::UNetData* temp = data_;
+  data_ = nullptr;
+  return temp;
+}
+inline ::uniset::unet::UNetData* UNetPacket::_internal_mutable_data() {
+  _has_bits_[0] |= 0x00000001u;
+  if (data_ == nullptr) {
+    auto* p = CreateMaybeMessage<::uniset::unet::UNetData>(GetArena());
+    data_ = p;
+  }
+  return data_;
+}
+inline ::uniset::unet::UNetData* UNetPacket::mutable_data() {
+  // @@protoc_insertion_point(field_mutable:uniset.unet.UNetPacket.data)
+  return _internal_mutable_data();
+}
+inline void UNetPacket::set_allocated_data(::uniset::unet::UNetData* data) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  if (message_arena == nullptr) {
+    delete data_;
+  }
+  if (data) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(data);
+    if (message_arena != submessage_arena) {
+      data = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, data, submessage_arena);
+    }
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  data_ = data;
+  // @@protoc_insertion_point(field_set_allocated:uniset.unet.UNetPacket.data)
+}
 
 #ifdef __GNUC__
-#pragma GCC diagnostic pop
+  #pragma GCC diagnostic pop
 #endif  // __GNUC__
-        // -------------------------------------------------------------------
+// -------------------------------------------------------------------
 
 
-        // @@protoc_insertion_point(namespace_scope)
+// @@protoc_insertion_point(namespace_scope)
 
-    }  // namespace unet
+}  // namespace unet
 }  // namespace uniset
 
 // @@protoc_insertion_point(global_scope)

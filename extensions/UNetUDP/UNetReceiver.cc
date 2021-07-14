@@ -352,6 +352,7 @@ void UNetReceiver::update() noexcept
 
     UniSetUDP::UDPMessage* p;
     CacheItem* c_it = nullptr;
+    long s_id;
 
     // обрабатываем, пока очередь либо не опустеет,
     // либо обнаружится "дырка" в последовательности,
@@ -398,21 +399,22 @@ void UNetReceiver::update() noexcept
         {
             try
             {
+                s_id = p->dID(i);
                 c_it = &(*d_iv)[i];
 
-                if( c_it->id != p->dID(i) )
+                if( c_it->id != s_id )
                 {
-                    unetwarn << myname << "(update): reinit dcache for sid=" << p->dID(i) << endl;
-                    c_it->id = p->dID(i);
+                    unetwarn << myname << "(update): reinit dcache for sid=" << s_id << endl;
+                    c_it->id = s_id;
                     shm->initIterator(c_it->ioit);
                 }
 
-                shm->localSetValue(c_it->ioit, p->dID(i), p->dValue(i), shm->ID());
+                shm->localSetValue(c_it->ioit, s_id, p->dValue(i), shm->ID());
             }
             catch( const uniset::Exception& ex)
             {
                 unetcrit << myname << "(update): D:"
-                         << " id=" << p->dID(i)
+                         << " id=" << s_id
                          << " val=" << p->dValue(i)
                          << " error: " << ex
                          << std::endl;
@@ -420,7 +422,7 @@ void UNetReceiver::update() noexcept
             catch(...)
             {
                 unetcrit << myname << "(update): D:"
-                         << " id=" << p->dID(i)
+                         << " id=" << s_id
                          << " val=" << p->dValue(i)
                          << " error: catch..."
                          << std::endl;
@@ -434,21 +436,22 @@ void UNetReceiver::update() noexcept
         {
             try
             {
+                s_id = p->aID(i);
                 c_it = &(*a_iv)[i];
 
-                if( c_it->id != p->aID(i) )
+                if( c_it->id != s_id )
                 {
-                    unetwarn << myname << "(update): reinit acache for sid=" << p->aID(i) << endl;
-                    c_it->id = p->aID(i);
+                    unetwarn << myname << "(update): reinit acache for sid=" << s_id << endl;
+                    c_it->id = s_id;
                     shm->initIterator(c_it->ioit);
                 }
 
-                shm->localSetValue(c_it->ioit, p->aID(i), p->aValue(i), shm->ID());
+                shm->localSetValue(c_it->ioit, s_id, p->aValue(i), shm->ID());
             }
             catch( const uniset::Exception& ex)
             {
                 unetcrit << myname << "(update): A:"
-                         << " id=" << p->aID(i)
+                         << " id=" << s_id
                          << " val=" << p->aValue(i)
                          << " error: " << ex
                          << std::endl;

@@ -209,7 +209,7 @@ namespace uniset
             std::unordered_map<sendfactor_t, size_t> packs_dnum;
             UItemMap items;
             size_t packetnum = { 1 }; /*!< номер очередного посылаемого пакета */
-            uint16_t lastcrc = { 0 };
+            size_t lastChangeCounter = { 0 };
             uint8_t sbuf[uniset::UniSetUDP::MessageBufSize];
 
             size_t maxAData = { UniSetUDP::MaxACount };

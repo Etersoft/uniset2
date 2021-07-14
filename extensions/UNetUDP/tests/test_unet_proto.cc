@@ -22,30 +22,36 @@ TEST_CASE("[UNetUDP]: protobuf UNetPacket", "[unetudp][protobuf][packet]")
     pack.set_procid(100);
     pack.set_num(1);
 
-    for (int i = 0; i < 1000; i++ )
+    for( size_t i = 0; i < UniSetUDP::MaxACount; i++ )
     {
         pack.mutable_data()->add_aid(1);
         pack.mutable_data()->add_avalue(i);
     }
+    REQUIRE( pack.data().aid_size() == UniSetUDP::MaxACount );
 
-    REQUIRE( pack.data().aid_size() == 1000 );
-
-    //    cerr << pack.ByteSizeLong() << endl;
-
-    //    uniset::UniSetUDP::UDPMessage p1;
-    //    p1.procID = 100;
-    //    p1.nodeID = 100;
-    //    p1.num = 1;
-    //    for (int i=0; i< 1000; i++ ) {
-    //        p1.addDData(i,1);
-    //    }
-
-    //    cerr << sizeof(p1) << endl;
+    for( size_t i = 0; i < UniSetUDP::MaxDCount; i++ )
+    {
+        pack.mutable_data()->add_did(1);
+        pack.mutable_data()->add_dvalue(i);
+    }
+    REQUIRE( pack.data().did_size() == UniSetUDP::MaxDCount );
 
     const std::string s = pack.SerializeAsString();
     unet::UNetPacket pack2;
     pack2.ParseFromArray(s.data(), s.size());
     REQUIRE(pack2.magic() == pack.magic() );
+    REQUIRE( pack2.data().aid_size() == UniSetUDP::MaxACount );
+    REQUIRE( pack2.data().did_size() == UniSetUDP::MaxDCount );
+    REQUIRE( pack2.data().avalue(100) == 100 );
+
+    cerr << "UniSetUDP::UDPMessage size: "
+         << s.size()
+         << " [MaxACount=" << UniSetUDP::MaxACount
+         << " MaxDCount=" << UniSetUDP::MaxDCount
+         << "]"
+         << endl;
+
+    REQUIRE( s.size() < 65507 ); // UDP packet
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[UNetUDP]: protobuf UDPMessage", "[unetudp][protobuf][message]")
@@ -85,63 +91,55 @@ TEST_CASE("[UNetUDP]: crc", "[unetudp][protobuf][crc]")
     pack.setProcID(100);
     pack.setNum(1);
 
-    uint16_t crc = pack.dataCRC();
-    uint16_t crc_b = pack.dataCRCWithBuf(buf, sizeof(buf));
-    REQUIRE( crc == crc_b );
-
     UniSetUDP::UDPMessage pack2; // the same data
     REQUIRE(pack2.isOk());
     pack2.setNodeID(100);
     pack2.setProcID(100);
     pack2.setNum(1);
-    uint16_t crc2 = pack2.dataCRC();
-    uint16_t crc2_b = pack.dataCRCWithBuf(buf, sizeof(buf));
-    REQUIRE( crc2 == crc2_b );
-    REQUIRE( crc == crc2 );
+    auto changes = pack.dataChanges();
 
-    //
     auto d = pack.addDData(1, 1);
     auto a = pack.addAData(2, 100);
-    crc = pack.dataCRC();
+    REQUIRE( pack.dataChanges() != changes );
+    changes = pack.dataChanges();
 
     pack.setAData(a, 0);
-    REQUIRE( pack.dataCRC() != crc );
-    REQUIRE( pack.dataCRCWithBuf(buf, sizeof(buf)) != crc );
-    crc = pack.dataCRC();
-    crc_b = pack.dataCRCWithBuf(buf, sizeof(buf));
+    REQUIRE( pack.dataChanges() != changes );
+    changes = pack.dataChanges();
 
     pack.setDData(d, 0);
-    REQUIRE( pack.dataCRC() != crc );
-    REQUIRE( pack.dataCRCWithBuf(buf, sizeof(buf)) != crc_b );
+    REQUIRE( pack.dataChanges() != changes );
 }
 
 // -----------------------------------------------------------------------------
 TEST_CASE("[UNetUDP]: perf test", "[unetudp][protobuf][perf]")
 {
-    uint8_t buf[uniset::UniSetUDP::MessageBufSize];
-
     UniSetUDP::UDPMessage pack;
     REQUIRE(pack.isOk());
     pack.setNodeID(100);
     pack.setProcID(100);
     pack.setNum(1);
 
-    for( size_t i=0; i<uniset::UniSetUDP::MaxACount; i++ ) {
-        pack.addAData(i,i);
-        pack.addDData(i,true);
-    }
+    for( size_t i = 0; i < uniset::UniSetUDP::MaxACount; i++ )
+        pack.addAData(i, i);
+
+    for( size_t i = 0; i < uniset::UniSetUDP::MaxDCount; i++ )
+        pack.addDData(i, true);
+
+    REQUIRE( pack.isOk() );
 
     UniSetUDP::UDPMessage pack2;
 
     PassiveTimer pt;
+    uint8_t buf[uniset::UniSetUDP::MessageBufSize];
 
-    for( int i=0; i<100000; i++ ) {
-       // pack
-//       uint16_t crc = pasck.dataCRC();
-       auto ret = pack.serializeToArray(buf, sizeof(buf));
+    for( int i = 0; i < 100000; i++ )
+    {
+        // pack
+        auto ret = pack.serializeToArray(buf, sizeof(buf));
 
-       // unpack
-       pack2.initFromBuffer(buf, ret);
+        // unpack
+        pack2.initFromBuffer(buf, ret);
     }
 
     cerr << "perf: " << pt.getCurrent() << " msec" << endl;
