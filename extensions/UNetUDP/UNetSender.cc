@@ -44,7 +44,6 @@ namespace uniset
         packsendpauseFactor(1),
         activated(false),
         packetnum(1),
-        lastChangeCounter(0),
         maxAData(maxACount),
         maxDData(maxDCount)
     {
@@ -280,26 +279,14 @@ namespace uniset
         unetinfo << "************* execute FINISH **********" << endl;
     }
     // -----------------------------------------------------------------------------
-    // #define UNETUDP_DISABLE_OPTIMIZATION_N1
-
     void UNetSender::real_send( PackMessage& mypack ) noexcept
     {
         try
         {
             uniset::uniset_rwmutex_rlock l(mypack.mut);
-#ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
             mypack.msg.setNum(packetnum++);
-#else
 
-            if( lastChangeCounter != mypack.msg.dataChanges() )
-            {
-                mypack.msg.setNum(packetnum++);
-                lastChangeCounter = mypack.msg.dataChanges();
-            }
-
-#endif
-
-            // при переходе через ноль (когда счётчик перевалит через UniSetUDP::MaxPacketNum..
+            // при переходе через ноль, когда счётчик перевалит через UniSetUDP::MaxPacketNum..
             // делаем номер пакета "1"
             if( packetnum == 0 )
                 packetnum = 1;
@@ -558,7 +545,6 @@ namespace uniset
 
         s << setw(15) << std::right << transport->toString()
           << " lastpacknum=" << packetnum
-          << " lastChangeCounter=" << setw(6) << lastChangeCounter
           << " items=" << items.size() << " maxAData=" << getADataSize() << " maxDData=" << getDDataSize()
           << " packsendpause[factor=" << packsendpauseFactor << "]=" << packsendpause
           << " sendpause=" << sendpause
