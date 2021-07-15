@@ -44,7 +44,7 @@ namespace uniset
         packsendpauseFactor(1),
         activated(false),
         packetnum(1),
-        lastcrc(0),
+        lastChangeCounter(0),
         maxAData(maxACount),
         maxDData(maxDCount)
     {
@@ -83,8 +83,8 @@ namespace uniset
         // выставляем поля, которые не меняются
         {
             uniset_rwmutex_wrlock l(mypack.mut);
-            mypack.msg.header.nodeID = uniset_conf()->getLocalNode();
-            mypack.msg.header.procID = shm->ID();
+            mypack.msg.setNodeID(uniset_conf()->getLocalNode());
+            mypack.msg.setProcID(shm->ID());
         }
 
         // -------------------------------
@@ -288,14 +288,13 @@ namespace uniset
         {
             uniset::uniset_rwmutex_rlock l(mypack.mut);
 #ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
-            mypack.msg.num = packetnum++;
+            mypack.msg.setNum(packetnum++);
 #else
-            uint16_t crc = mypack.msg.getDataCRC();
 
-            if( crc != lastcrc )
+            if( lastChangeCounter != mypack.msg.dataChanges() )
             {
-                mypack.msg.header.num = packetnum++;
-                lastcrc = crc;
+                mypack.msg.setNum(packetnum++);
+                lastChangeCounter = mypack.msg.dataChanges();
             }
 
 #endif
@@ -308,10 +307,18 @@ namespace uniset
             if( !transport->isReadyForSend(writeTimeout) )
                 return;
 
-            size_t ret = transport->send(&mypack.msg, sizeof(mypack.msg));
+            size_t sz = mypack.msg.serializeToArray(sbuf, sizeof(sbuf));
 
-            if( ret < sizeof(mypack.msg) )
-                unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << sizeof(mypack.msg) << endl;
+            if( sz == 0 )
+            {
+                unetcrit << myname << "(real_send): serialize error." << endl;
+                return;
+            }
+
+            size_t ret = transport->send(sbuf, sz);
+
+            if( ret < sz )
+                unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << sz << endl;
         }
         catch( Poco::Net::NetException& ex )
         {
@@ -445,8 +452,8 @@ namespace uniset
                 auto& mypack2 = pk[dnum];
                 uniset_rwmutex_wrlock l2(mypack2.mut);
                 p.pack_ind = mypack2.msg.addDData(sid, defval);
-                mypack2.msg.header.nodeID = uniset_conf()->getLocalNode();
-                mypack2.msg.header.procID = shm->ID();
+                mypack2.msg.setNodeID(uniset_conf()->getLocalNode());
+                mypack2.msg.setProcID(shm->ID());
             }
 
             p.pack_num = dnum;
@@ -486,8 +493,8 @@ namespace uniset
                 auto& mypack2 = pk[anum];
                 uniset_rwmutex_wrlock l2(mypack2.mut);
                 p.pack_ind = mypack2.msg.addAData(sid, defval);
-                mypack2.msg.header.nodeID = uniset_conf()->getLocalNode();
-                mypack2.msg.header.procID = shm->ID();
+                mypack2.msg.setNodeID(uniset_conf()->getLocalNode());
+                mypack2.msg.setProcID(shm->ID());
             }
 
             p.pack_num = anum;
@@ -551,7 +558,7 @@ namespace uniset
 
         s << setw(15) << std::right << transport->toString()
           << " lastpacknum=" << packetnum
-          << " lastcrc=" << setw(6) << lastcrc
+          << " lastChangeCounter=" << setw(6) << lastChangeCounter
           << " items=" << items.size() << " maxAData=" << getADataSize() << " maxDData=" << getDDataSize()
           << " packsendpause[factor=" << packsendpauseFactor << "]=" << packsendpause
           << " sendpause=" << sendpause

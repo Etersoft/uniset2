@@ -40,7 +40,7 @@ Source: %name-%version.tar
 
 # Automatically added by buildreq on Fri Aug 26 2016
 # optimized out: fontconfig libgpg-error libsasl2-3 libsqlite3-devel libstdc++-devel libwayland-client libwayland-server perl pkg-config python-base python-devel python-module-omniidl python-modules python3
-BuildRequires: gcc-c++ libev-devel libomniORB-devel libpoco-devel libsigc++2-devel libxml2-devel xsltproc
+BuildRequires: gcc-c++ libev-devel libomniORB-devel libpoco-devel libsigc++2-devel libxml2-devel xsltproc libprotobuf-devel
 
 # for uniset2-codegen
 BuildPreReq: xsltproc
@@ -369,6 +369,7 @@ Libraries needed to develop for uniset MQTT extension
 %setup
 
 %build
+cd extensions/UNetUDP/proto && make && cd -;
 %autoreconf
 %configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api} %{subst_enable netdata} %{subst_enable logdb} %{subst_enable com485f} %{subst_enable opentsdb} %{subst_enable uwebsocket}
 %make_build
@@ -572,6 +573,8 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %files extension-common-devel
 %dir %_includedir/%oname/extensions
 %_includedir/%oname/extensions/*.*
+%_includedir/%oname/extensions/proto/*.*
+
 %if_enabled opentsdb
 %exclude %_includedir/%oname/extensions/BackendOpenTSDB.h
 %endif

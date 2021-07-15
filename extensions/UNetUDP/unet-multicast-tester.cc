@@ -272,6 +272,7 @@ int main(int argc, char* argv[])
 
                 UniSetUDP::UDPMessage pack;
                 unsigned long prev_num = 1;
+                uint8_t rbuf[uniset::UniSetUDP::MessageBufSize];
 
                 int nc = 1;
 
@@ -302,7 +303,7 @@ int main(int argc, char* argv[])
                             continue;
                         }
 
-                        size_t ret = udp.receive(&pack, sizeof(UniSetUDP::UDPMessage));
+                        size_t ret = udp.receive(rbuf, sizeof(rbuf));
 
                         if( ret < 0 )
                         {
@@ -316,9 +317,13 @@ int main(int argc, char* argv[])
                             continue;
                         }
 
-                        pack.ntoh();
+                        if( !pack.initFromBuffer(rbuf, ret) )
+                        {
+                            cerr << "(recv): parse message error" << endl;
+                            continue;
+                        }
 
-                        if( pack.header.magic != UniSetUDP::UNETUDP_MAGICNUM )
+                        if( !pack.isOk() )
                         {
                             cerr << "(recv): BAD PROTOCOL VERSION! [ need version '" << UniSetUDP::UNETUDP_MAGICNUM << "']" << endl;
                             continue;
@@ -326,11 +331,11 @@ int main(int argc, char* argv[])
 
                         if( lost )
                         {
-                            if( prev_num != (pack.header.num - 1) )
-                                cerr << "WARNING! Incorrect sequence of packets! current=" << pack.header.num
+                            if( prev_num != (pack.num() - 1) )
+                                cerr << "WARNING! Incorrect sequence of packets! current=" << pack.num()
                                      << " prev=" << prev_num << endl;
 
-                            prev_num = pack.header.num;
+                            prev_num = pack.num();
                         }
 
                         npack++;
@@ -386,26 +391,20 @@ int main(int argc, char* argv[])
                 auto udp = std::make_shared<MulticastSendTransport>(s_host, port, groups[0].toString(), port);
 
                 UniSetUDP::UDPMessage mypack;
-                mypack.header.nodeID = nodeID;
-                mypack.header.procID = procID;
+                mypack.setNodeID(nodeID);
+                mypack.setProcID(procID);
 
                 if( !a_data.empty() )
                 {
                     auto vlist = uniset::getSInfoList(a_data, nullptr);
 
                     for( const auto& v : vlist )
-                    {
-                        UDPAData d(v.si.id, v.val);
-                        mypack.addAData(d);
-                    }
+                        mypack.addAData(v.si.id, v.val);
                 }
                 else
                 {
                     for( size_t i = 0; i < count; i++ )
-                    {
-                        UDPAData d(i, i);
-                        mypack.addAData(d);
-                    }
+                        mypack.addAData(i, i);
                 }
 
                 if( !d_data.empty() )
@@ -430,7 +429,7 @@ int main(int argc, char* argv[])
 
                 while( nc )
                 {
-                    mypack.header.num = packetnum++;
+                    mypack.setNum(packetnum++);
 
                     // при переходе черех максимум (UniSetUDP::MaxPacketNum)
                     // пакет опять должен иметь номер "1"
@@ -442,10 +441,11 @@ int main(int argc, char* argv[])
                         if( udp->isReadyForSend(tout) )
                         {
                             if( verb )
-                                cout << "(send): to addr=" << addr << " d_count=" << mypack.header.dcount
-                                     << " a_count=" << mypack.header.acount << endl;
+                                cout << "(send): to addr=" << addr << " d_count=" << mypack.dsize()
+                                     << " a_count=" << mypack.asize() << endl;
 
-                            size_t ret = udp->send(&mypack, sizeof(mypack) );
+                            const std::string s = mypack.serializeAsString();
+                            size_t ret = udp->send(s.data(), s.size());
 
                             if( ret < sizeof(mypack) )
                                 cerr << "(send): FAILED ret=" << ret << " < sizeof=" << sizeof(mypack) << endl;
