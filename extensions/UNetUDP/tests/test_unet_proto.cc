@@ -27,6 +27,7 @@ TEST_CASE("[UNetUDP]: protobuf UNetPacket", "[unetudp][protobuf][packet]")
         pack.mutable_data()->add_aid(1);
         pack.mutable_data()->add_avalue(i);
     }
+
     REQUIRE( pack.data().aid_size() == UniSetUDP::MaxACount );
 
     for( size_t i = 0; i < UniSetUDP::MaxDCount; i++ )
@@ -34,6 +35,7 @@ TEST_CASE("[UNetUDP]: protobuf UNetPacket", "[unetudp][protobuf][packet]")
         pack.mutable_data()->add_did(1);
         pack.mutable_data()->add_dvalue(i);
     }
+
     REQUIRE( pack.data().did_size() == UniSetUDP::MaxDCount );
 
     const std::string s = pack.SerializeAsString();

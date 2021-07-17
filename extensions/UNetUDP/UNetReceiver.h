@@ -129,7 +129,6 @@ namespace uniset
             void setEvrunTimeout(timeout_t msec ) noexcept;
             void setInitPause( timeout_t msec ) noexcept;
             void setBufferSize( size_t sz ) noexcept;
-            void setMaxReceiveAtTime( size_t sz ) noexcept;
 
             void setRespondID( uniset::ObjectId id, bool invert = false ) noexcept;
             void setLostPacketsID( uniset::ObjectId id ) noexcept;

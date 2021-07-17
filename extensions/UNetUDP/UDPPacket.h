@@ -28,7 +28,7 @@ namespace uniset
     // -----------------------------------------------------------------------------
     namespace UniSetUDP
     {
-        const uint32_t UNETUDP_MAGICNUM = 0x1343EFD; // идентификатор протокола
+        const uint32_t UNETUDP_MAGICNUM = 0x1343EFD; // версия протокола
 
         const size_t MaxPacketNum = std::numeric_limits<size_t>::max();
         // Теоретический размер данных в UDP пакете (исключая заголовки) 65507

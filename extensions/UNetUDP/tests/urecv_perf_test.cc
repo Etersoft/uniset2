@@ -154,7 +154,7 @@ static void run_test( size_t max, const std::string& host )
         r->setLockUpdate(true);
         r->setReceiveTimeout(5);
         r->setUpdatePause(5);
-        r->setBufferSize(10000);
+        r->setBufferSize(5000);
         vrecv.emplace_back(r);
     }
 

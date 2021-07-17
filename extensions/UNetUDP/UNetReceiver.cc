@@ -78,12 +78,6 @@ void UNetReceiver::setBufferSize( size_t sz ) noexcept
     }
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setMaxReceiveAtTime( size_t sz ) noexcept
-{
-    if( sz > 0 )
-        maxReceiveCount = sz;
-}
-// -----------------------------------------------------------------------------
 void UNetReceiver::setReceiveTimeout( timeout_t msec ) noexcept
 {
     std::lock_guard<std::mutex> l(tmMutex);
@@ -490,12 +484,10 @@ void UNetReceiver::readEvent( ev::io& watcher ) noexcept
 
     try
     {
-        for( size_t i = 0; transport->available() > 0 && i < maxReceiveCount; i++ )
+        if( receive() == retOK )
         {
-            if( receive() != retOK )
-                break;
-
-            ok = true;
+            std::lock_guard<std::mutex> l(tmMutex);
+            ptRecvTimeout.reset();
         }
     }
     catch( uniset::Exception& ex )
@@ -505,12 +497,6 @@ void UNetReceiver::readEvent( ev::io& watcher ) noexcept
     catch( const std::exception& e )
     {
         unetwarn << myname << "(receive): " << e.what() << std::endl;
-    }
-
-    if( ok )
-    {
-        std::lock_guard<std::mutex> l(tmMutex);
-        ptRecvTimeout.reset();
     }
 
     t_end = chrono::high_resolution_clock::now();
@@ -643,8 +629,6 @@ UNetReceiver::ReceiveRetCode UNetReceiver::receive() noexcept
 {
     try
     {
-        // сперва пробуем сохранить пакет в том месте, где должен быть очередной пакет
-        pack = &(cbuf[wnum % cbufSize]);
         ssize_t ret = transport->receive(rbuf, sizeof(rbuf));
 
         if( ret < 0 )
@@ -658,6 +642,9 @@ UNetReceiver::ReceiveRetCode UNetReceiver::receive() noexcept
             unetwarn << myname << "(receive): disconnected?!... recv 0 bytes.." << endl;
             return retNoData;
         }
+
+        // сперва пробуем сохранить пакет в том месте, где должен быть очередной пакет
+        pack = &(cbuf[wnum % cbufSize]);
 
         if( !pack->initFromBuffer(rbuf, ret) )
         {
