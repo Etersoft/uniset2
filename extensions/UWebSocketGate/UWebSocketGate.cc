@@ -25,6 +25,7 @@
 #include "unisetstd.h"
 #include <Poco/Net/NetException.h>
 #include <Poco/Net/WebSocket.h>
+#include <Poco/Net/ServerSocket.h>
 #include "ujson.h"
 #include "UWebSocketGate.h"
 #include "Configuration.h"
@@ -35,6 +36,7 @@
 #include "ORepHelpers.h"
 #include "UWebSocketGateSugar.h"
 #include "SMonitor.h"
+#include "UTCPSocket.h"
 // --------------------------------------------------------------------------
 using namespace uniset;
 using namespace std;
@@ -58,6 +60,9 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id
         conf->initLogStream(mylog, s.str());
     }
 
+    if( mylog->verbose() == 0 )
+        mylog->verbose(1);
+
     UniXML::iterator it(cnode);
 
     int maxCacheSize = conf->getArgPInt("--" + prefix + "max-ui-cache-size", it.getProp("msgUIChacheSize"), 5000);
@@ -65,7 +70,7 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id
 
     shm = make_shared<SMInterface>(shmID, ui, getId(), ic);
 
-    maxwsocks = conf->getArgPInt("--" + prefix + "ws-max", it.getProp("wsMax"), maxwsocks);
+    maxwsocks = conf->getArgPInt("--" + prefix + "max-conn", it.getProp("wsMaxConnection"), maxwsocks);
 
     wscmd = make_shared<ev::async>();
     wsactivate.set<UWebSocketGate, &UWebSocketGate::onActivate>(this);
@@ -92,21 +97,62 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id
     wsMaxSend = conf->getArgPInt("--" + prefix + "max-send", it.getProp("wsMaxSend"), wsMaxSend);
     wsMaxCmd = conf->getArgPInt("--" + prefix + "max-cmd", it.getProp("wsMaxCmd"), wsMaxCmd);
 
-    myinfoV(1) << myname << "maxSend=" << wsMaxSend << " maxCmd=" << wsMaxCmd << endl;
+    myinfoV(1) << myname << "(init): maxSend=" << wsMaxSend
+               << " maxCmd=" << wsMaxCmd
+               << " maxConnections=" << maxwsocks
+               << endl;
 
-    httpHost = conf->getArgParam("--" + prefix + "httpserver-host", "localhost");
-    httpPort = conf->getArgPInt("--" + prefix + "httpserver-port", 8081);
-    httpCORS_allow = conf->getArgParam("--" + prefix + "httpserver-cors-allow", "*");
+    httpHost = conf->getArgParam("--" + prefix + "host", it.getProp2("host", "localhost"));
+    httpPort = conf->getArgPInt("--" + prefix + "port", it.getPIntProp("port", 8081));
+    httpCORS_allow = conf->getArgParam("--" + prefix + "cors-allow", "*");
 
     myinfoV(1) << myname << "(init): http server parameters " << httpHost << ":" << httpPort << endl;
     Poco::Net::SocketAddress sa(httpHost, httpPort);
+
+    ostringstream lockfile;
+    lockfile << conf->getLockDir() << "ws" << id;
+
+    myinfoV(1) << myname << "(init): lockfile " << lockfile.str() << endl;
+
+    runlock = unisetstd::make_unique<uniset::RunLock>(lockfile.str());
+
+    if( runlock->isLocked() )
+    {
+        ostringstream err;
+        err << myname << "(init): lock failed! UWebSocketGate id=" << id
+            << " Already running!" << endl
+            << " ..or delete the lockfile " << lockfile.str() << " to run..";
+        throw uniset::SystemError(err.str());
+    }
+
+    if( !runlock->lock() )
+    {
+        ostringstream err;
+        err << myname << "(init): failed create lockfile " << lockfile.str();
+        throw uniset::SystemError(err.str());
+    }
+
+    // check create socket
+    try
+    {
+        myinfoV(4) << myname << "(init): check socket create " << httpHost << ":" << httpPort << endl;
+        Poco::Net::ServerSocket ss;
+        ss.bind(sa);
+        ss.close();
+    }
+    catch( std::exception& ex )
+    {
+        ostringstream err;
+        err << myname << "(init): create socket " << httpHost << ":" << httpPort << " error or already use..";
+        throw uniset::SystemError(err.str());
+    }
 
     try
     {
         Poco::Net::HTTPServerParams* httpParams = new Poco::Net::HTTPServerParams;
 
-        int maxQ = conf->getArgPInt("--" + prefix + "httpserver-max-queued", it.getProp("httpMaxQueued"), 100);
-        int maxT = conf->getArgPInt("--" + prefix + "httpserver-max-threads", it.getProp("httpMaxThreads"), 3);
+        int maxQ = conf->getArgPInt("--" + prefix + "max-queued", it.getProp("maxQueued"), 100);
+        int maxT = conf->getArgPInt("--" + prefix + "max-threads", it.getProp("maxThreads"), 3);
 
         httpParams->setMaxQueued(maxQ);
         httpParams->setMaxThreads(maxT);
@@ -129,6 +175,9 @@ UWebSocketGate::~UWebSocketGate()
 
     if( httpserv )
         httpserv->stop();
+
+    if( runlock )
+        runlock->unlock();
 }
 //--------------------------------------------------------------------------------------------
 void UWebSocketGate::onTerminate( ev::sig& evsig, int revents )
@@ -282,23 +331,29 @@ void UWebSocketGate::help_print()
 {
     cout << "Default: prefix='ws'" << endl;
     cout << "--prefix-name name                      - Имя. Для поиска настроечной секции в configure.xml" << endl;
-    cout << "--uniset-object-size-message-queue num  - Размер uniset-очереди сообщений" << endl;
+    cout << "--uniset-object-size-message-queue num  - Размер uniset-очереди сообщений. По умолчанию: 10000" << endl;
     cout << "--prefix-msg-check-time msec            - Период опроса uniset-очереди сообщений, для обработки новых сообщений. По умолчанию: 10 мсек" << endl;
-    cout << "--prefix-max-messages-processing num    - Количество uniset-сообщений обрабатывамых за один раз. По умолчанию 50. По умолчанию: 100" << endl;
+    cout << "--prefix-max-messages-processing num    - Количество uniset-сообщений обрабатывамых за один раз. По умолчанию: 100" << endl;
 
     cout << "websockets: " << endl;
-    cout << "--prefix-max num                  - Максимальное количество websocket-ов" << endl;
+    cout << "--prefix-max-conn num             - Максимальное количество одновременных подключений (клиентов). По усмолчанию: 50" << endl;
     cout << "--prefix-heartbeat-time msec      - Период сердцебиения в соединении. По умолчанию: 3000 мсек" << endl;
     cout << "--prefix-send-time msec           - Период посылки сообщений. По умолчанию: 500 мсек" << endl;
     cout << "--prefix-max-send num             - Максимальное число сообщений посылаемых за один раз. По умолчанию: 5000" << endl;
     cout << "--prefix-max-cmd num              - Максимальное число команд обрабатываемых за один раз. По умолчанию: 200" << endl;
 
     cout << "http: " << endl;
-    cout << "--prefix-httpserver-host ip          - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
-    cout << "--prefix-httpserver-port num         - Порт на котором принимать запросы. По умолчанию: 8080" << endl;
-    cout << "--prefix-httpserver-max-queued num   - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
-    cout << "--prefix-httpserver-max-threads num  - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
-    cout << "--prefix-httpserver-cors-allow addr  - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
+    cout << "--prefix-host ip                  - IP на котором слушает http сервер. По умолчанию: localhost" << endl;
+    cout << "--prefix-port num                 - Порт на котором принимать запросы. По умолчанию: 8081" << endl;
+    cout << "--prefix-max-queued num           - Размер очереди запросов к http серверу. По умолчанию: 100" << endl;
+    cout << "--prefix-max-threads num          - Разрешённое количество потоков для http-сервера. По умолчанию: 3" << endl;
+    cout << "--prefix-cors-allow addr          - (CORS): Access-Control-Allow-Origin. Default: *" << endl;
+
+    cout << "logs: " << endl;
+    cout << "--prefix-log-add-levels [crit,warn,info..]   - Уровень логов" << endl;
+    cout << "--prefix-log-verbosity N                     - Уровень подробностей [1...5]" << endl;
+    cout << "  Пример параметров для запуска с подробными логами: " << endl;
+    cout << "  --ws-log-add-levels any --ws-log-verbosity 5" << endl;
 }
 // -----------------------------------------------------------------------------
 void UWebSocketGate::run( bool async )

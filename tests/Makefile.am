@@ -40,6 +40,7 @@ tests_with_conf_SOURCES = tests_with_conf.cc \
 test_conftest.cc \
 test_ui.cc \
 test_iorfile.cc \
+test_runlock.cc \
 test_messagetype.cc \
 test_utypes.cc \
 test_mqueue.cc \
