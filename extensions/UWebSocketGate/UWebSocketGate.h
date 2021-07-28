@@ -41,6 +41,7 @@
 #include "UHttpRequestHandler.h"
 #include "UHttpServer.h"
 #include "UTCPCore.h"
+#include "RunLock.h"
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -72,7 +73,7 @@ namespace uniset
         <UWebSocketGate name="UWebSocketGate" .../>
         \endcode
 
-        Количество создаваемых websocket-ов можно ограничить при помощи параметра maxWebsockets (--prefix-ws-max).
+        Количество создаваемых websocket-ов можно ограничить при помощи параметра maxWebsockets (--prefix-max-conn).
 
         \section sec_UWebSocketGate_DETAIL UWebSocketGate: Технические детали
            Вся релизация построена на "однопоточном" eventloop. Если датчики долго не меняются, то периодически посылается "ping" сообщение.
@@ -257,6 +258,7 @@ namespace uniset
 
             std::shared_ptr<DebugStream> mylog;
             std::shared_ptr<SMInterface> shm;
+            std::unique_ptr<uniset::RunLock> runlock;
 
 #ifndef DISABLE_REST_API
             std::shared_ptr<Poco::Net::HTTPServer> httpserv;
