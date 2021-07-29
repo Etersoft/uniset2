@@ -76,8 +76,6 @@ UWebSocketGate::UWebSocketGate( uniset::ObjectId id
     wsactivate.set<UWebSocketGate, &UWebSocketGate::onActivate>(this);
     wscmd->set<UWebSocketGate, &UWebSocketGate::onCommand>(this);
     sigTERM.set<UWebSocketGate, &UWebSocketGate::onTerminate>(this);
-    sigQUIT.set<UWebSocketGate, &UWebSocketGate::onTerminate>(this);
-    sigINT.set<UWebSocketGate, &UWebSocketGate::onTerminate>(this);
     iocheck.set<UWebSocketGate, &UWebSocketGate::checkMessages>(this);
 
     maxMessagesProcessing = conf->getArgPInt("--" + prefix + "max-messages-processing", conf->getField("maxMessagesProcessing"), maxMessagesProcessing);
@@ -180,7 +178,7 @@ UWebSocketGate::~UWebSocketGate()
         runlock->unlock();
 }
 //--------------------------------------------------------------------------------------------
-void UWebSocketGate::onTerminate( ev::sig& evsig, int revents )
+void UWebSocketGate::onTerminate( ev::async& watcher, int revents )
 {
     if( EV_ERROR & revents )
     {
@@ -190,7 +188,7 @@ void UWebSocketGate::onTerminate( ev::sig& evsig, int revents )
 
     myinfo << myname << "(onTerminate): terminate..." << endl;
 
-    evsig.stop();
+    watcher.stop();
 
     //evsig.loop.break_loop();
     try
@@ -383,11 +381,7 @@ void UWebSocketGate::evprepare()
     wscmd->start();
 
     sigTERM.set(loop);
-    sigTERM.start(SIGTERM);
-    sigQUIT.set(loop);
-    sigQUIT.start(SIGQUIT);
-    sigINT.set(loop);
-    sigINT.start(SIGINT);
+    sigTERM.start();
 
     iocheck.set(loop);
     iocheck.start(0, check_sec);
@@ -616,6 +610,12 @@ void UWebSocketGate::onWebSocketSession( Poco::Net::HTTPServerRequest& req, Poco
     ws->waitCompletion();
 
     myinfoV(3) << myname << "(onWebSocketSession): finish session for " << req.clientAddress().toString() << endl;
+}
+// -----------------------------------------------------------------------------
+bool UWebSocketGate::deactivateObject()
+{
+    sigTERM.send();
+    return UniSetObject::deactivateObject();
 }
 // -----------------------------------------------------------------------------
 bool UWebSocketGate::activateObject()

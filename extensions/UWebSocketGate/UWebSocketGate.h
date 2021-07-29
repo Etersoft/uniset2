@@ -223,6 +223,7 @@ namespace uniset
             class UWebSocket;
 
             virtual bool activateObject() override;
+            virtual bool deactivateObject() override;
             void run( bool async );
             virtual void evfinish() override;
             virtual void evprepare() override;
@@ -241,10 +242,8 @@ namespace uniset
             Poco::JSON::Object::Ptr respError( Poco::Net::HTTPServerResponse& resp, Poco::Net::HTTPResponse::HTTPStatus s, const std::string& message );
             void makeResponseAccessHeader( Poco::Net::HTTPServerResponse& resp );
 #endif
-            ev::sig sigTERM;
-            ev::sig sigQUIT;
-            ev::sig sigINT;
-            void onTerminate( ev::sig& evsig, int revents );
+            ev::async sigTERM;
+            void onTerminate( ev::async& watcher, int revents );
 
             ev::async wsactivate; // активация WebSocket-ов
             std::shared_ptr<ev::async> wscmd;
