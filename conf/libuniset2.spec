@@ -38,9 +38,9 @@ Packager: Pavel Vainerman <pv@altlinux.ru>
 # Git: http://git.etersoft.ru/projects/asu/uniset.git
 Source: %name-%version.tar
 
-# Automatically added by buildreq on Fri Aug 26 2016
-# optimized out: fontconfig libgpg-error libsasl2-3 libsqlite3-devel libstdc++-devel libwayland-client libwayland-server perl pkg-config python-base python-devel python-module-omniidl python-modules python3
-BuildRequires: gcc-c++ libev-devel libomniORB-devel libpoco-devel libsigc++2-devel libxml2-devel xsltproc
+# Automatically added by buildreq on Sun Aug 15 2021
+# optimized out: fontconfig fonts-ttf-liberation-narrow glibc-kernheaders-generic glibc-kernheaders-x86 libcrypt-devel libgpg-error libpoco-net libsasl2-3 libsqlite3-devel libstdc++-devel perl pkg-config python-modules python2-base python3 python3-base python3-module-omniidl python3-module-paste sh4 tzdata
+BuildRequires: catch-devel gcc-c++ libev-devel libomniORB-devel libpoco-devel libsigc++2-devel libxml2-devel xsltproc
 
 # for uniset2-codegen
 BuildPreReq: xsltproc
@@ -79,7 +79,7 @@ BuildRequires: netdata
 %endif
 
 %if_enabled python
-BuildRequires: python-devel python-module-distribute
+BuildRequires: python-base python3-dev
 BuildRequires(pre): rpm-build-python
 
 # swig
