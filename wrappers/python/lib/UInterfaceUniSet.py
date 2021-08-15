@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 from UInterface import *
@@ -26,7 +26,7 @@ class UInterfaceUniSet(UInterface):
 
             return [True, ""]
 
-        except UException, e:
+        except UException as e:
             return [False, "%s" % e.getError()]
 
     def getValue(self, s_id):
@@ -38,7 +38,7 @@ class UInterfaceUniSet(UInterface):
 
             return self.i.getValue(s[0], s[1])
 
-        except UException, e:
+        except UException as e:
             raise e
 
     def setValue(self, s_id, s_val, supplier=DefaultSupplerID):
@@ -50,7 +50,7 @@ class UInterfaceUniSet(UInterface):
             self.i.setValue(s[0], s_val, s[1], supplier)
             return
 
-        except UException, e:
+        except UException as e:
             raise e
 
     def getConfFileName(self):

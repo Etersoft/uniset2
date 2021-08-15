@@ -55,7 +55,10 @@ def _swig_setattr_nondynamic(self, class_type, name, value, static=1):
     if method:
         return method(self, value)
     if (not static):
-        self.__dict__[name] = value
+        if _newclass:
+            object.__setattr__(self, name, value)
+        else:
+            self.__dict__[name] = value
     else:
         raise AttributeError("You cannot add attributes to %s" % self)
 
@@ -80,7 +83,15 @@ def _swig_repr(self):
         strthis = ""
     return "<%s.%s; %s >" % (self.__class__.__module__, self.__class__.__name__, strthis,)
 
-class UException:
+try:
+    _object = object
+    _newclass = 1
+except __builtin__.Exception:
+    class _object:
+        pass
+    _newclass = 0
+
+class UException(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, UException, name, value)
     __swig_getmethods__ = {}
@@ -96,10 +107,12 @@ class UException:
     __swig_destroy__ = _pyUExceptions.delete_UException
     __del__ = lambda self: None
 
-    def getError(self):
+    def getError(self) -> "std::string const":
         return _pyUExceptions.UException_getError(self)
     __swig_setmethods__["err"] = _pyUExceptions.UException_err_set
     __swig_getmethods__["err"] = _pyUExceptions.UException_err_get
+    if _newclass:
+        err = property(_pyUExceptions.UException_err_get, _pyUExceptions.UException_err_set)
 UException_swigregister = _pyUExceptions.UException_swigregister
 UException_swigregister(UException)
 
@@ -169,5 +182,6 @@ class UValidateError(UException):
 UValidateError_swigregister = _pyUExceptions.UValidateError_swigregister
 UValidateError_swigregister(UValidateError)
 
+# This file is compatible with both classic and new-style classes.
 
 

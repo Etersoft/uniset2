@@ -25,7 +25,7 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.13.1
+Version: 2.14.1
 Release: alt1
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -467,9 +467,9 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 
 %if_enabled python
 %files -n python-module-%oname
-%python_sitelibdir/*
-%python_sitelibdir_noarch/%oname/*
-%dir %python_sitelibdir_noarch/%oname
+%python3_sitelibdir/*
+%python3_sitelibdir_noarch/%oname/*
+%dir %python3_sitelibdir_noarch/%oname
 %endif
 
 %if_enabled netdata
@@ -594,6 +594,9 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
+* Sun Aug 15 2021 Pavel Vainerman <pv@altlinux.ru> 2.14.1-alt1
+- python2 -> python3
+
 * Mon Jul 12 2021 Pavel Vainerman <pv@altlinux.ru> 2.13.1-alt1
 - [unet]: zero-copy optimization
 

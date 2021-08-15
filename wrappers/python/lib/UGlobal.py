@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 from pyUConnector import *
@@ -7,7 +7,7 @@ import sys
 
 
 def is_id(str_id):
-    if isinstance(str_id, int) or isinstance(str_id, long):
+    if isinstance(str_id, int) or isinstance(str_id, int):
         return True
 
     if str_id.strip().isdigit():
@@ -20,7 +20,7 @@ def to_int(s):
     if s == None or s == "":
         return 0
 
-    if isinstance(s, int) or isinstance(s, long):
+    if isinstance(s, int) or isinstance(s, int):
         return s
 
     if isinstance(s, float):
@@ -109,7 +109,7 @@ def get_int_list(raw_str, sep='='):
         if len(v) > 1:
             slist.append([v[0], to_int(v[1])])
         else:
-            print "(get_list:WARNING): (v=x) undefined value for " + str(s)
+            print("(get_list:WARNING): (v=x) undefined value for " + str(s))
             slist.append([v[0], 0])
     return slist
 
@@ -137,7 +137,7 @@ def get_str_list(raw_str, sep='='):
         if len(v) > 1:
             slist.append([v[0], v[1]])
         else:
-            print "(get_str_list:WARNING): (v=x) undefined value for " + str(s)
+            print("(get_str_list:WARNING): (v=x) undefined value for " + str(s))
             slist.append([v[0], ""])
     return slist
 
@@ -155,7 +155,7 @@ def get_replace_list(raw_str):
             val = to_str(v[1]).strip().strip("\n")
             slist.append([key, val])
         else:
-            print "(get_replace_list:WARNING): (v:x) undefined value for " + str(s)
+            print("(get_replace_list:WARNING): (v:x) undefined value for " + str(s))
             key = to_str(v[0]).strip().strip("\n")
             slist.append([key, 0])
 
@@ -169,7 +169,7 @@ def get_mbslave_param(raw_str, sep=':'):
 
     l = raw_str.split(sep)
     if len(l) > 2:
-        print "(get_mbslave_param:WARNING): BAD FORMAT! string='%s'. Must be 'hostname:port'" % (raw_str)
+        print("(get_mbslave_param:WARNING): BAD FORMAT! string='%s'. Must be 'hostname:port'" % (raw_str))
         return [None, None]
 
     if len(l) == 2:

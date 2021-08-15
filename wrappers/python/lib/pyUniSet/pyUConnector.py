@@ -55,7 +55,10 @@ def _swig_setattr_nondynamic(self, class_type, name, value, static=1):
     if method:
         return method(self, value)
     if (not static):
-        self.__dict__[name] = value
+        if _newclass:
+            object.__setattr__(self, name, value)
+        else:
+            self.__dict__[name] = value
     else:
         raise AttributeError("You cannot add attributes to %s" % self)
 
@@ -80,7 +83,15 @@ def _swig_repr(self):
         strthis = ""
     return "<%s.%s; %s >" % (self.__class__.__module__, self.__class__.__name__, strthis,)
 
-class Params:
+try:
+    _object = object
+    _newclass = 1
+except __builtin__.Exception:
+    class _object:
+        pass
+    _newclass = 0
+
+class Params(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, Params, name, value)
     __swig_getmethods__ = {}
@@ -95,16 +106,23 @@ class Params:
         except __builtin__.Exception:
             self.this = this
 
-    def add(self, s):
+    def add(self, s: 'char *') -> "bool":
         return _pyUConnector.Params_add(self, s)
 
-    def add_str(self, s):
+    def add_str(self, s: 'std::string const') -> "bool":
         return _pyUConnector.Params_add_str(self, s)
     __swig_setmethods__["argc"] = _pyUConnector.Params_argc_set
     __swig_getmethods__["argc"] = _pyUConnector.Params_argc_get
+    if _newclass:
+        argc = property(_pyUConnector.Params_argc_get, _pyUConnector.Params_argc_set)
     __swig_setmethods__["argv"] = _pyUConnector.Params_argv_set
     __swig_getmethods__["argv"] = _pyUConnector.Params_argv_get
-    inst = _pyUConnector.Params_inst
+    if _newclass:
+        argv = property(_pyUConnector.Params_argv_get, _pyUConnector.Params_argv_set)
+    if _newclass:
+        inst = staticmethod(_pyUConnector.Params_inst)
+    else:
+        inst = _pyUConnector.Params_inst
     __swig_destroy__ = _pyUConnector.delete_Params
     __del__ = lambda self: None
 Params_swigregister = _pyUConnector.Params_swigregister
@@ -113,11 +131,11 @@ cvar = _pyUConnector.cvar
 DefaultID = cvar.DefaultID
 DefaultSupplerID = cvar.DefaultSupplerID
 
-def Params_inst():
+def Params_inst() -> "UTypes::Params":
     return _pyUConnector.Params_inst()
 Params_inst = _pyUConnector.Params_inst
 
-class ShortIOInfo:
+class ShortIOInfo(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, ShortIOInfo, name, value)
     __swig_getmethods__ = {}
@@ -125,14 +143,24 @@ class ShortIOInfo:
     __repr__ = _swig_repr
     __swig_setmethods__["value"] = _pyUConnector.ShortIOInfo_value_set
     __swig_getmethods__["value"] = _pyUConnector.ShortIOInfo_value_get
+    if _newclass:
+        value = property(_pyUConnector.ShortIOInfo_value_get, _pyUConnector.ShortIOInfo_value_set)
     __swig_setmethods__["tv_sec"] = _pyUConnector.ShortIOInfo_tv_sec_set
     __swig_getmethods__["tv_sec"] = _pyUConnector.ShortIOInfo_tv_sec_get
+    if _newclass:
+        tv_sec = property(_pyUConnector.ShortIOInfo_tv_sec_get, _pyUConnector.ShortIOInfo_tv_sec_set)
     __swig_setmethods__["tv_nsec"] = _pyUConnector.ShortIOInfo_tv_nsec_set
     __swig_getmethods__["tv_nsec"] = _pyUConnector.ShortIOInfo_tv_nsec_get
+    if _newclass:
+        tv_nsec = property(_pyUConnector.ShortIOInfo_tv_nsec_get, _pyUConnector.ShortIOInfo_tv_nsec_set)
     __swig_setmethods__["supplier"] = _pyUConnector.ShortIOInfo_supplier_set
     __swig_getmethods__["supplier"] = _pyUConnector.ShortIOInfo_supplier_get
+    if _newclass:
+        supplier = property(_pyUConnector.ShortIOInfo_supplier_get, _pyUConnector.ShortIOInfo_supplier_set)
     __swig_setmethods__["supplier_node"] = _pyUConnector.ShortIOInfo_supplier_node_set
     __swig_getmethods__["supplier_node"] = _pyUConnector.ShortIOInfo_supplier_node_get
+    if _newclass:
+        supplier_node = property(_pyUConnector.ShortIOInfo_supplier_node_get, _pyUConnector.ShortIOInfo_supplier_node_set)
 
     def __init__(self):
         this = _pyUConnector.new_ShortIOInfo()
@@ -145,7 +173,7 @@ class ShortIOInfo:
 ShortIOInfo_swigregister = _pyUConnector.ShortIOInfo_swigregister
 ShortIOInfo_swigregister(ShortIOInfo)
 
-class UConnector:
+class UConnector(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, UConnector, name, value)
     __swig_getmethods__ = {}
@@ -161,49 +189,50 @@ class UConnector:
     __swig_destroy__ = _pyUConnector.delete_UConnector
     __del__ = lambda self: None
 
-    def getUIType(self):
+    def getUIType(self) -> "std::string":
         return _pyUConnector.UConnector_getUIType(self)
 
-    def getConfFileName(self):
+    def getConfFileName(self) -> "std::string":
         return _pyUConnector.UConnector_getConfFileName(self)
 
-    def getValue(self, id, node):
+    def getValue(self, id: 'long', node: 'long') -> "long":
         return _pyUConnector.UConnector_getValue(self, id, node)
 
-    def setValue(self, *args):
+    def setValue(self, *args) -> "void":
         return _pyUConnector.UConnector_setValue(self, *args)
 
-    def getTimeChange(self, *args):
+    def getTimeChange(self, *args) -> "UTypes::ShortIOInfo":
         return _pyUConnector.UConnector_getTimeChange(self, *args)
 
-    def getSensorID(self, name):
+    def getSensorID(self, name: 'std::string const &') -> "long":
         return _pyUConnector.UConnector_getSensorID(self, name)
 
-    def getNodeID(self, name):
+    def getNodeID(self, name: 'std::string const &') -> "long":
         return _pyUConnector.UConnector_getNodeID(self, name)
 
-    def getObjectID(self, name):
+    def getObjectID(self, name: 'std::string const &') -> "long":
         return _pyUConnector.UConnector_getObjectID(self, name)
 
-    def getShortName(self, id):
+    def getShortName(self, id: 'long') -> "std::string":
         return _pyUConnector.UConnector_getShortName(self, id)
 
-    def getName(self, id):
+    def getName(self, id: 'long') -> "std::string":
         return _pyUConnector.UConnector_getName(self, id)
 
-    def getTextName(self, id):
+    def getTextName(self, id: 'long') -> "std::string":
         return _pyUConnector.UConnector_getTextName(self, id)
 
-    def getObjectInfo(self, *args):
+    def getObjectInfo(self, *args) -> "std::string":
         return _pyUConnector.UConnector_getObjectInfo(self, *args)
 
-    def apiRequest(self, *args):
+    def apiRequest(self, *args) -> "std::string":
         return _pyUConnector.UConnector_apiRequest(self, *args)
 
-    def activate_objects(self):
+    def activate_objects(self) -> "void":
         return _pyUConnector.UConnector_activate_objects(self)
 UConnector_swigregister = _pyUConnector.UConnector_swigregister
 UConnector_swigregister(UConnector)
 
+# This file is compatible with both classic and new-style classes.
 
 
