@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import sys
@@ -41,7 +41,7 @@ class UInterfaceModbus(UInterface):
 
                 return [True, ""]
 
-        except UException, e:
+        except UException as e:
             return [False, "%s" % e.getError()]
 
     def getValue(self, s_id):
@@ -58,7 +58,7 @@ class UInterfaceModbus(UInterface):
 
             return self.i.mbread(mbaddr, mbreg, mbfunc, vtype, nbit)
 
-        except UException, e:
+        except UException as e:
             raise e
 
     def setValue(self, s_id, s_val, supplier=DefaultSupplerID):
@@ -77,7 +77,7 @@ class UInterfaceModbus(UInterface):
             self.i.mbwrite(mbaddr, mbreg, to_int(s_val), mbfunc)
             return
 
-        except UException, e:
+        except UException as e:
             raise e
 
     def getConfFileName(self):
