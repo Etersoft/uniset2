@@ -8,4 +8,4 @@ Description: Support library for libUniSet2PostgreSQL
 Requires: libUniSet2 libpqxx
 Version: @VERSION@
 Libs: -L${libdir} -lUniSet2-pgsql
-Cflags: -I${includedir}/@PACKAGE@ -I${includedir}/@PACKAGE@/extensions/pgsql
+Cflags: -std=c++11 -I${includedir}/@PACKAGE@ -I${includedir}/@PACKAGE@/extensions/pgsql
