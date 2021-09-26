@@ -2740,11 +2740,10 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 
 /* -------- TYPES TABLE (BEGIN) -------- */
 
-#define SWIGTYPE_p_UException swig_types[0]
-#define SWIGTYPE_p_UModbus swig_types[1]
-#define SWIGTYPE_p_char swig_types[2]
-static swig_type_info *swig_types[4];
-static swig_module_info swig_module = {swig_types, 3, 0, 0, 0, 0};
+#define SWIGTYPE_p_UModbus swig_types[0]
+#define SWIGTYPE_p_char swig_types[1]
+static swig_type_info *swig_types[3];
+static swig_module_info swig_module = {swig_types, 2, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3336,13 +3335,7 @@ SWIGINTERN PyObject *_wrap_UModbus_prepare(PyObject *SWIGUNUSEDPARM(self), PyObj
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "UModbus_prepare" "', argument " "3"" of type '" "int""'");
   } 
   arg3 = static_cast< int >(val3);
-  try {
-    (arg1)->prepare((std::string const &)*arg2,arg3);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  (arg1)->prepare((std::string const &)*arg2,arg3);
   resultobj = SWIG_Py_Void();
   if (SWIG_IsNewObj(res2)) delete arg2;
   return resultobj;
@@ -3388,13 +3381,7 @@ SWIGINTERN PyObject *_wrap_UModbus_connect(PyObject *SWIGUNUSEDPARM(self), PyObj
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "UModbus_connect" "', argument " "3"" of type '" "int""'");
   } 
   arg3 = static_cast< int >(val3);
-  try {
-    (arg1)->connect((std::string const &)*arg2,arg3);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  (arg1)->connect((std::string const &)*arg2,arg3);
   resultobj = SWIG_Py_Void();
   if (SWIG_IsNewObj(res2)) delete arg2;
   return resultobj;
@@ -3587,13 +3574,7 @@ SWIGINTERN PyObject *_wrap_UModbus_mbread__SWIG_0(PyObject *SWIGUNUSEDPARM(self)
     SWIG_exception_fail(SWIG_ArgError(ecode8), "in method '" "UModbus_mbread" "', argument " "8"" of type '" "int""'");
   } 
   arg8 = static_cast< int >(val8);
-  try {
-    result = (long)(arg1)->mbread(arg2,arg3,arg4,(std::string const &)*arg5,arg6,(std::string const &)*arg7,arg8);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (long)(arg1)->mbread(arg2,arg3,arg4,(std::string const &)*arg5,arg6,(std::string const &)*arg7,arg8);
   resultobj = SWIG_From_long(static_cast< long >(result));
   if (SWIG_IsNewObj(res5)) delete arg5;
   if (SWIG_IsNewObj(res7)) delete arg7;
@@ -3683,13 +3664,7 @@ SWIGINTERN PyObject *_wrap_UModbus_mbread__SWIG_1(PyObject *SWIGUNUSEDPARM(self)
     }
     arg7 = ptr;
   }
-  try {
-    result = (long)(arg1)->mbread(arg2,arg3,arg4,(std::string const &)*arg5,arg6,(std::string const &)*arg7);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (long)(arg1)->mbread(arg2,arg3,arg4,(std::string const &)*arg5,arg6,(std::string const &)*arg7);
   resultobj = SWIG_From_long(static_cast< long >(result));
   if (SWIG_IsNewObj(res5)) delete arg5;
   if (SWIG_IsNewObj(res7)) delete arg7;
@@ -3765,13 +3740,7 @@ SWIGINTERN PyObject *_wrap_UModbus_mbread__SWIG_2(PyObject *SWIGUNUSEDPARM(self)
     SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "UModbus_mbread" "', argument " "6"" of type '" "int""'");
   } 
   arg6 = static_cast< int >(val6);
-  try {
-    result = (long)(arg1)->mbread(arg2,arg3,arg4,(std::string const &)*arg5,arg6);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (long)(arg1)->mbread(arg2,arg3,arg4,(std::string const &)*arg5,arg6);
   resultobj = SWIG_From_long(static_cast< long >(result));
   if (SWIG_IsNewObj(res5)) delete arg5;
   return resultobj;
@@ -3836,13 +3805,7 @@ SWIGINTERN PyObject *_wrap_UModbus_mbread__SWIG_3(PyObject *SWIGUNUSEDPARM(self)
     }
     arg5 = ptr;
   }
-  try {
-    result = (long)(arg1)->mbread(arg2,arg3,arg4,(std::string const &)*arg5);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (long)(arg1)->mbread(arg2,arg3,arg4,(std::string const &)*arg5);
   resultobj = SWIG_From_long(static_cast< long >(result));
   if (SWIG_IsNewObj(res5)) delete arg5;
   return resultobj;
@@ -4073,13 +4036,7 @@ SWIGINTERN PyObject *_wrap_UModbus_getWord__SWIG_0(PyObject *SWIGUNUSEDPARM(self
     SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "UModbus_getWord" "', argument " "4"" of type '" "int""'");
   } 
   arg4 = static_cast< int >(val4);
-  try {
-    result = (long)(arg1)->getWord(arg2,arg3,arg4);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (long)(arg1)->getWord(arg2,arg3,arg4);
   resultobj = SWIG_From_long(static_cast< long >(result));
   return resultobj;
 fail:
@@ -4119,13 +4076,7 @@ SWIGINTERN PyObject *_wrap_UModbus_getWord__SWIG_1(PyObject *SWIGUNUSEDPARM(self
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "UModbus_getWord" "', argument " "3"" of type '" "int""'");
   } 
   arg3 = static_cast< int >(val3);
-  try {
-    result = (long)(arg1)->getWord(arg2,arg3);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (long)(arg1)->getWord(arg2,arg3);
   resultobj = SWIG_From_long(static_cast< long >(result));
   return resultobj;
 fail:
@@ -4244,13 +4195,7 @@ SWIGINTERN PyObject *_wrap_UModbus_getByte__SWIG_0(PyObject *SWIGUNUSEDPARM(self
     SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "UModbus_getByte" "', argument " "4"" of type '" "int""'");
   } 
   arg4 = static_cast< int >(val4);
-  try {
-    result = (long)(arg1)->getByte(arg2,arg3,arg4);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (long)(arg1)->getByte(arg2,arg3,arg4);
   resultobj = SWIG_From_long(static_cast< long >(result));
   return resultobj;
 fail:
@@ -4290,13 +4235,7 @@ SWIGINTERN PyObject *_wrap_UModbus_getByte__SWIG_1(PyObject *SWIGUNUSEDPARM(self
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "UModbus_getByte" "', argument " "3"" of type '" "int""'");
   } 
   arg3 = static_cast< int >(val3);
-  try {
-    result = (long)(arg1)->getByte(arg2,arg3);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (long)(arg1)->getByte(arg2,arg3);
   resultobj = SWIG_From_long(static_cast< long >(result));
   return resultobj;
 fail:
@@ -4415,13 +4354,7 @@ SWIGINTERN PyObject *_wrap_UModbus_getBit__SWIG_0(PyObject *SWIGUNUSEDPARM(self)
     SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "UModbus_getBit" "', argument " "4"" of type '" "int""'");
   } 
   arg4 = static_cast< int >(val4);
-  try {
-    result = (bool)(arg1)->getBit(arg2,arg3,arg4);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (bool)(arg1)->getBit(arg2,arg3,arg4);
   resultobj = SWIG_From_bool(static_cast< bool >(result));
   return resultobj;
 fail:
@@ -4461,13 +4394,7 @@ SWIGINTERN PyObject *_wrap_UModbus_getBit__SWIG_1(PyObject *SWIGUNUSEDPARM(self)
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "UModbus_getBit" "', argument " "3"" of type '" "int""'");
   } 
   arg3 = static_cast< int >(val3);
-  try {
-    result = (bool)(arg1)->getBit(arg2,arg3);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (bool)(arg1)->getBit(arg2,arg3);
   resultobj = SWIG_From_bool(static_cast< bool >(result));
   return resultobj;
 fail:
@@ -4617,13 +4544,7 @@ SWIGINTERN PyObject *_wrap_UModbus_mbwrite__SWIG_0(PyObject *SWIGUNUSEDPARM(self
     SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "UModbus_mbwrite" "', argument " "7"" of type '" "int""'");
   } 
   arg7 = static_cast< int >(val7);
-  try {
-    (arg1)->mbwrite(arg2,arg3,arg4,arg5,(std::string const &)*arg6,arg7);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  (arg1)->mbwrite(arg2,arg3,arg4,arg5,(std::string const &)*arg6,arg7);
   resultobj = SWIG_Py_Void();
   if (SWIG_IsNewObj(res6)) delete arg6;
   return resultobj;
@@ -4696,13 +4617,7 @@ SWIGINTERN PyObject *_wrap_UModbus_mbwrite__SWIG_1(PyObject *SWIGUNUSEDPARM(self
     }
     arg6 = ptr;
   }
-  try {
-    (arg1)->mbwrite(arg2,arg3,arg4,arg5,(std::string const &)*arg6);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  (arg1)->mbwrite(arg2,arg3,arg4,arg5,(std::string const &)*arg6);
   resultobj = SWIG_Py_Void();
   if (SWIG_IsNewObj(res6)) delete arg6;
   return resultobj;
@@ -4761,13 +4676,7 @@ SWIGINTERN PyObject *_wrap_UModbus_mbwrite__SWIG_2(PyObject *SWIGUNUSEDPARM(self
     SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "UModbus_mbwrite" "', argument " "5"" of type '" "int""'");
   } 
   arg5 = static_cast< int >(val5);
-  try {
-    (arg1)->mbwrite(arg2,arg3,arg4,arg5);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  (arg1)->mbwrite(arg2,arg3,arg4,arg5);
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4942,22 +4851,18 @@ static PyMethodDef SwigMethods[] = {
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
-static swig_type_info _swigt__p_UException = {"_p_UException", "UException *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UModbus = {"_p_UModbus", "UModbus *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
-  &_swigt__p_UException,
   &_swigt__p_UModbus,
   &_swigt__p_char,
 };
 
-static swig_cast_info _swigc__p_UException[] = {  {&_swigt__p_UException, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UModbus[] = {  {&_swigt__p_UModbus, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
-  _swigc__p_UException,
   _swigc__p_UModbus,
   _swigc__p_char,
 };

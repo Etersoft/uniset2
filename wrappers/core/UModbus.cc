@@ -21,7 +21,7 @@
 using namespace std;
 // --------------------------------------------------------------------------
 #if 0
-UModbus::UModbus( UTypes::Params* p )throw(UException):
+UModbus::UModbus( UTypes::Params* p ):
     mb(0),
     port(502),
     ip(""),
@@ -37,7 +37,7 @@ UModbus::UModbus( UTypes::Params* p )throw(UException):
     }
 }
 //---------------------------------------------------------------------------
-UModbus::UModbus( int argc, char** argv )throw(UException):
+UModbus::UModbus( int argc, char** argv ):
     mb(0),
     port(502),
     ip(""),
@@ -68,7 +68,7 @@ UModbus::~UModbus()
     delete mb;
 }
 // --------------------------------------------------------------------------
-void UModbus::prepare( const std::string& _ip, int _port )throw(UException)
+void UModbus::prepare( const std::string& _ip, int _port )
 {
     if( !mb )
         throw UException("(connect): mb=NULL?!");
@@ -87,7 +87,7 @@ void UModbus::prepare( const std::string& _ip, int _port )throw(UException)
     port = _port;
 }
 // --------------------------------------------------------------------------
-void UModbus::connect( const std::string& _ip, int _port )throw(UException)
+void UModbus::connect( const std::string& _ip, int _port )
 {
     if( !mb )
         throw UException("(connect): mb=NULL?!");
@@ -111,23 +111,23 @@ void UModbus::connect( const std::string& _ip, int _port )throw(UException)
     }
 }
 // --------------------------------------------------------------------------
-long UModbus::getWord( int addr, int mbreg, int mbfunc )throw(UException)
+long UModbus::getWord( int addr, int mbreg, int mbfunc )
 {
     return mbread(addr, mbreg, mbfunc, "signed");
 }
 // --------------------------------------------------------------------------
-long UModbus::getByte( int addr, int mbreg, int mbfunc )throw(UException)
+long UModbus::getByte( int addr, int mbreg, int mbfunc )
 {
     return mbread(addr, mbreg, mbfunc, "byte");
 }
 // --------------------------------------------------------------------------
-bool UModbus::getBit( int addr, int mbreg, int mbfunc )throw(UException)
+bool UModbus::getBit( int addr, int mbreg, int mbfunc )
 {
     return mbread(addr, mbreg, mbfunc, "unsigned");
 }
 // --------------------------------------------------------------------------
 long UModbus::mbread(int mbaddr, int mbreg, int mbfunc, const string& s_vtype, int nbit,
-                     const string& new_ip, int new_port )throw(UException)
+                     const string& new_ip, int new_port )
 {
     using namespace uniset;
     using namespace uniset::VTypes;
@@ -291,7 +291,7 @@ long UModbus::data2value( uniset::VTypes::VType vtype, uniset::ModbusRTU::Modbus
     return 0;
 }
 //---------------------------------------------------------------------------
-void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const std::string& new_ip, int new_port )throw(UException)
+void UModbus::mbwrite( int mbaddr, int mbreg, int val, int mbfunc, const std::string& new_ip, int new_port )
 {
     const std::string n_ip( ( new_ip.empty() ? ip : new_ip ) );
     int n_port = ( new_port > 0 ) ? new_port : port;

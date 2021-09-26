@@ -27,13 +27,13 @@ using namespace std;
 //---------------------------------------------------------------------------
 static std::shared_ptr<uniset::UInterface> uInterface;
 //---------------------------------------------------------------------------
-void pyUInterface::uniset_init_params( UTypes::Params* p, const std::string& xmlfile )throw(UException)
+void pyUInterface::uniset_init_params( UTypes::Params* p, const std::string& xmlfile )
 {
 	pyUInterface::uniset_init(p->argc, p->argv, xmlfile);
 }
 //---------------------------------------------------------------------------
 
-void pyUInterface::uniset_init( int argc, char* argv[], const std::string& xmlfile )throw(UException)
+void pyUInterface::uniset_init( int argc, char* argv[], const std::string& xmlfile )
 {
 	if( uInterface )
 		return;
@@ -54,7 +54,7 @@ void pyUInterface::uniset_init( int argc, char* argv[], const std::string& xmlfi
 	}
 }
 //---------------------------------------------------------------------------
-long pyUInterface::getValue( long id )throw(UException)
+long pyUInterface::getValue( long id )
 {
 	auto conf = uniset::uniset_conf();
 
@@ -90,7 +90,7 @@ long pyUInterface::getValue( long id )throw(UException)
 	}
 }
 //---------------------------------------------------------------------------
-void pyUInterface::setValue( long id, long val, long supplier )throw(UException)
+void pyUInterface::setValue( long id, long val, long supplier )
 {
 	auto conf = uniset::uniset_conf();
 
@@ -187,7 +187,7 @@ string pyUInterface::getConfFileName()
 
 }
 //---------------------------------------------------------------------------
-void pyUInterface::uniset_activate_objects()throw(UException)
+void pyUInterface::uniset_activate_objects()
 {
 	try
 	{

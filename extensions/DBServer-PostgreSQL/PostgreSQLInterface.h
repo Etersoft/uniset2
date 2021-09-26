@@ -18,6 +18,7 @@
 #define PostgreSQLInterface_H_
 // ---------------------------------------------------------------------------
 #include <string>
+#include <string_view>
 #include <list>
 #include <vector>
 #include <queue>
@@ -58,7 +59,7 @@ namespace uniset
             typedef std::vector<Record> Data;
 
             // fast insert: Use COPY..from SDTIN..
-            bool copy( const std::string& tblname, const std::vector<std::string>& cols, const Data& data );
+            bool copy( const std::string& tblname, const std::initializer_list<std::string_view>& cols, const Data& data );
 
             virtual const std::string error() override;
 

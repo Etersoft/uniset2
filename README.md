@@ -23,7 +23,8 @@ with open source third-party libraries. UniSet provides the consistent interface
 add-on components and third-party libraries. Python wrapper helps in using the library
 in python scripts.
 
-libuniset requires minimum C++11
+libuniset requires minimum C++11 (without pqxx support)
+libuniset requires C++17 for pqxx support
 
 More information:
 * [RU] https://habr.com/post/278535/

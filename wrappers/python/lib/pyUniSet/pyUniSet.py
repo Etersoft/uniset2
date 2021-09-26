@@ -217,7 +217,7 @@ class ShortIOInfo(_object):
 ShortIOInfo_swigregister = _pyUniSet.ShortIOInfo_swigregister
 ShortIOInfo_swigregister(ShortIOInfo)
 
-class UException(Exception):
+class UException(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, UException, name, value)
     __swig_getmethods__ = {}
@@ -237,6 +237,8 @@ class UException(Exception):
         return _pyUniSet.UException_getError(self)
     __swig_setmethods__["err"] = _pyUniSet.UException_err_set
     __swig_getmethods__["err"] = _pyUniSet.UException_err_get
+    if _newclass:
+        err = property(_pyUniSet.UException_err_get, _pyUniSet.UException_err_set)
 UException_swigregister = _pyUniSet.UException_swigregister
 UException_swigregister(UException)
 
