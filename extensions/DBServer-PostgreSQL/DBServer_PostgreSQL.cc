@@ -271,7 +271,7 @@ void DBServer_PostgreSQL::addRecord( const PostgreSQLInterface::Record&& rec )
 }
 //--------------------------------------------------------------------------------------------
 bool DBServer_PostgreSQL::writeInsertBufferToDB( const std::string& tableName
-        , const std::vector<std::string>& colNames
+        , const std::initializer_list<std::string_view> colNames
         , const InsertBuffer& wbuf )
 {
     return db->copy(tableName, colNames, wbuf);

@@ -63,7 +63,7 @@ BuildRequires: libsqlite3-devel
 %endif
 
 %if_enabled pgsql
-BuildRequires: libpqxx-devel
+BuildRequires: libpqxx-devel >= 7.6.0
 %endif
 
 %if_enabled rrd

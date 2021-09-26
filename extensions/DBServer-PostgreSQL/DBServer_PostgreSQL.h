@@ -17,6 +17,7 @@
 #ifndef DBServer_PostgreSQL_H_
 #define DBServer_PostgreSQL_H_
 // --------------------------------------------------------------------------
+#include <string_view>
 #include <unordered_map>
 #include <queue>
 #include "UniSetTypes.h"
@@ -113,13 +114,13 @@ namespace uniset
             void flushBuffer();
 
             // writeBuffer
-            const std::vector<std::string> tblcols = { "date", "time", "time_usec", "sensor_id", "value", "node" };
+            const std::initializer_list<std::string_view> tblcols = { "date", "time", "time_usec", "sensor_id", "value", "node" };
 
             typedef std::vector<PostgreSQLInterface::Record> InsertBuffer;
             void flushInsertBuffer();
             virtual void addRecord( const PostgreSQLInterface::Record&& rec );
             virtual bool writeInsertBufferToDB( const std::string& table
-                                                , const std::vector<std::string>& colname
+                                                , const std::initializer_list<std::string_view> colname
                                                 , const InsertBuffer& ibuf );
 
         private:

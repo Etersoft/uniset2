@@ -54,7 +54,7 @@ bool PostgreSQLInterface::ping() const
     try
     {
         // pqxx doesn't work with unique_ptr (
-        nontransaction n(*(db.get()));
+        nontransaction n{*(db.get())};
         n.exec("select 1;");
         return true;
     }
@@ -105,14 +105,14 @@ bool PostgreSQLInterface::close()
 {
     if( db )
     {
-        db->disconnect();
+        db->close();
         db.reset();
     }
 
     return true;
 }
 // -----------------------------------------------------------------------------------------
-bool PostgreSQLInterface::copy( const std::string& tblname, const std::vector<std::string>& cols,
+bool PostgreSQLInterface::copy( const std::string& tblname, const  std::initializer_list<std::string_view>& cols,
                                 const PostgreSQLInterface::Data& data )
 {
     if( !db )
@@ -123,17 +123,14 @@ bool PostgreSQLInterface::copy( const std::string& tblname, const std::vector<st
 
     try
     {
-        // pqxx doesn't work with unique_ptr
-        work w( *(db.get()) );
-        tablewriter t(w, tblname, cols.begin(), cols.end());
-
-        t.reserve(data.size());
+        pqxx::work tx{ *(db.get()) };
+        auto t{pqxx::stream_to::table(tx, {tblname}, cols)};
 
         for( const auto& d : data )
-            t.push_back(d.begin(), d.end());
+            t << d;
 
         t.complete();
-        w.commit();
+        tx.commit();
         return true;
     }
     catch( const std::exception& e )
@@ -208,7 +205,7 @@ DBResult PostgreSQLInterface::query( const string& q )
     try
     {
         // pqxx doesn't work with unique_ptr
-        nontransaction n(*(db.get()));
+        nontransaction n{*(db.get())};
         lastQ = q;
         /* Execute SQL query */
         result res( n.exec(q) );
@@ -261,11 +258,11 @@ DBResult PostgreSQLInterface::makeResult( const pqxx::result& res )
 {
     DBResult result;
 
-    for( result::const_iterator c = res.begin(); c != res.end(); ++c )
+    for( const auto& c : res )
     {
         DBResult::COL col;
 
-        for( pqxx::result::tuple::const_iterator i = c.begin(); i != c.end(); i++ )
+        for( const auto& i : c )
         {
             if( i.is_null() )
                 col.push_back("");

@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 
         if( ver == 3 )
         {
-            std::vector<std::string> cols = { "date", "time", "time_usec", "sensor_id", "value", "node" };
+            std::initializer_list<std::string_view> cols{ "date", "time", "time_usec", "sensor_id", "value", "node" };
             PostgreSQLInterface::Data data;
 
             for( size_t i = 0; i < num; i++ )

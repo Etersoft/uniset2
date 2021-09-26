@@ -1,0 +1,17 @@
+version: '3.2'
+services:
+  pghost:
+    image: postgres:12.0-alpine
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data/pg_data
+      - ./entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    cap_add:
+      - ALL
+    environment:
+      - "PGDATA=/var/lib/postgresql/data/pg_data"
+      - "POSTGRES_PASSWORD=dbadmin"
+      - "POSTGRES_USER=dbadmin"
+      - "POSTGRES_DB=test-db"
+    ports:
+      - 5432:5432
+    tty: true
