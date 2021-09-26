@@ -26,7 +26,7 @@
 
 Name: libuniset2
 Version: 2.14.1
-Release: alt2
+Release: alt3
 Summary: UniSet - library for building distributed industrial control systems
 
 License: LGPL-2.1
@@ -594,6 +594,9 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
+* Mon Sep 27 2021 Pavel Vainerman <pv@altlinux.ru> 2.14.1-alt3
+- fixed build with c++17 (gcc-11)
+
 * Mon Aug 16 2021 Pavel Vainerman <pv@altlinux.ru> 2.14.1-alt2
 - remove python-base require
 
