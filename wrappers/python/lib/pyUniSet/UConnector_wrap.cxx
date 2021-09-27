@@ -2741,13 +2741,12 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 /* -------- TYPES TABLE (BEGIN) -------- */
 
 #define SWIGTYPE_p_UConnector swig_types[0]
-#define SWIGTYPE_p_UException swig_types[1]
-#define SWIGTYPE_p_UTypes__Params swig_types[2]
-#define SWIGTYPE_p_UTypes__ShortIOInfo swig_types[3]
-#define SWIGTYPE_p_char swig_types[4]
-#define SWIGTYPE_p_p_char swig_types[5]
-static swig_type_info *swig_types[7];
-static swig_module_info swig_module = {swig_types, 6, 0, 0, 0, 0};
+#define SWIGTYPE_p_UTypes__Params swig_types[1]
+#define SWIGTYPE_p_UTypes__ShortIOInfo swig_types[2]
+#define SWIGTYPE_p_char swig_types[3]
+#define SWIGTYPE_p_p_char swig_types[4]
+static swig_type_info *swig_types[6];
+static swig_module_info swig_module = {swig_types, 5, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3873,13 +3872,7 @@ SWIGINTERN PyObject *_wrap_new_UConnector__SWIG_0(PyObject *SWIGUNUSEDPARM(self)
     }
     arg3 = ptr;
   }
-  try {
-    result = (UConnector *)new UConnector(arg1,arg2,(std::string const &)*arg3);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (UConnector *)new UConnector(arg1,arg2,(std::string const &)*arg3);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UConnector, SWIG_POINTER_NEW |  0 );
   if (SWIG_IsNewObj(res3)) delete arg3;
   return resultobj;
@@ -3917,13 +3910,7 @@ SWIGINTERN PyObject *_wrap_new_UConnector__SWIG_1(PyObject *SWIGUNUSEDPARM(self)
     }
     arg2 = ptr;
   }
-  try {
-    result = (UConnector *)new UConnector(arg1,(std::string const &)*arg2);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (UConnector *)new UConnector(arg1,(std::string const &)*arg2);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UConnector, SWIG_POINTER_NEW |  0 );
   if (SWIG_IsNewObj(res2)) delete arg2;
   return resultobj;
@@ -4084,13 +4071,7 @@ SWIGINTERN PyObject *_wrap_UConnector_getValue(PyObject *SWIGUNUSEDPARM(self), P
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "UConnector_getValue" "', argument " "3"" of type '" "long""'");
   } 
   arg3 = static_cast< long >(val3);
-  try {
-    result = (long)(arg1)->getValue(arg2,arg3);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (long)(arg1)->getValue(arg2,arg3);
   resultobj = SWIG_From_long(static_cast< long >(result));
   return resultobj;
 fail:
@@ -4147,13 +4128,7 @@ SWIGINTERN PyObject *_wrap_UConnector_setValue__SWIG_0(PyObject *SWIGUNUSEDPARM(
     SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "UConnector_setValue" "', argument " "5"" of type '" "long""'");
   } 
   arg5 = static_cast< long >(val5);
-  try {
-    (arg1)->setValue(arg2,arg3,arg4,arg5);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  (arg1)->setValue(arg2,arg3,arg4,arg5);
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4201,13 +4176,7 @@ SWIGINTERN PyObject *_wrap_UConnector_setValue__SWIG_1(PyObject *SWIGUNUSEDPARM(
     SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "UConnector_setValue" "', argument " "4"" of type '" "long""'");
   } 
   arg4 = static_cast< long >(val4);
-  try {
-    (arg1)->setValue(arg2,arg3,arg4);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  (arg1)->setValue(arg2,arg3,arg4);
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4679,13 +4648,7 @@ SWIGINTERN PyObject *_wrap_UConnector_getObjectInfo__SWIG_0(PyObject *SWIGUNUSED
     SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "UConnector_getObjectInfo" "', argument " "4"" of type '" "long""'");
   } 
   arg4 = static_cast< long >(val4);
-  try {
-    result = (arg1)->getObjectInfo(arg2,(std::string const &)*arg3,arg4);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (arg1)->getObjectInfo(arg2,(std::string const &)*arg3,arg4);
   resultobj = SWIG_From_std_string(static_cast< std::string >(result));
   if (SWIG_IsNewObj(res3)) delete arg3;
   return resultobj;
@@ -4732,13 +4695,7 @@ SWIGINTERN PyObject *_wrap_UConnector_getObjectInfo__SWIG_1(PyObject *SWIGUNUSED
     }
     arg3 = ptr;
   }
-  try {
-    result = (arg1)->getObjectInfo(arg2,(std::string const &)*arg3);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (arg1)->getObjectInfo(arg2,(std::string const &)*arg3);
   resultobj = SWIG_From_std_string(static_cast< std::string >(result));
   if (SWIG_IsNewObj(res3)) delete arg3;
   return resultobj;
@@ -4860,13 +4817,7 @@ SWIGINTERN PyObject *_wrap_UConnector_apiRequest__SWIG_0(PyObject *SWIGUNUSEDPAR
     SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "UConnector_apiRequest" "', argument " "4"" of type '" "long""'");
   } 
   arg4 = static_cast< long >(val4);
-  try {
-    result = (arg1)->apiRequest(arg2,(std::string const &)*arg3,arg4);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (arg1)->apiRequest(arg2,(std::string const &)*arg3,arg4);
   resultobj = SWIG_From_std_string(static_cast< std::string >(result));
   if (SWIG_IsNewObj(res3)) delete arg3;
   return resultobj;
@@ -4913,13 +4864,7 @@ SWIGINTERN PyObject *_wrap_UConnector_apiRequest__SWIG_1(PyObject *SWIGUNUSEDPAR
     }
     arg3 = ptr;
   }
-  try {
-    result = (arg1)->apiRequest(arg2,(std::string const &)*arg3);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (arg1)->apiRequest(arg2,(std::string const &)*arg3);
   resultobj = SWIG_From_std_string(static_cast< std::string >(result));
   if (SWIG_IsNewObj(res3)) delete arg3;
   return resultobj;
@@ -5008,13 +4953,7 @@ SWIGINTERN PyObject *_wrap_UConnector_activate_objects(PyObject *SWIGUNUSEDPARM(
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UConnector_activate_objects" "', argument " "1"" of type '" "UConnector *""'"); 
   }
   arg1 = reinterpret_cast< UConnector * >(argp1);
-  try {
-    (arg1)->activate_objects();
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  (arg1)->activate_objects();
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -5078,7 +5017,6 @@ static PyMethodDef SwigMethods[] = {
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
 static swig_type_info _swigt__p_UConnector = {"_p_UConnector", "UConnector *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_UException = {"_p_UException", "UException *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UTypes__Params = {"_p_UTypes__Params", "UTypes::Params *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UTypes__ShortIOInfo = {"_p_UTypes__ShortIOInfo", "UTypes::ShortIOInfo *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
@@ -5086,7 +5024,6 @@ static swig_type_info _swigt__p_p_char = {"_p_p_char", "char **", 0, 0, (void*)0
 
 static swig_type_info *swig_type_initial[] = {
   &_swigt__p_UConnector,
-  &_swigt__p_UException,
   &_swigt__p_UTypes__Params,
   &_swigt__p_UTypes__ShortIOInfo,
   &_swigt__p_char,
@@ -5094,7 +5031,6 @@ static swig_type_info *swig_type_initial[] = {
 };
 
 static swig_cast_info _swigc__p_UConnector[] = {  {&_swigt__p_UConnector, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_UException[] = {  {&_swigt__p_UException, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UTypes__Params[] = {  {&_swigt__p_UTypes__Params, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UTypes__ShortIOInfo[] = {  {&_swigt__p_UTypes__ShortIOInfo, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
@@ -5102,7 +5038,6 @@ static swig_cast_info _swigc__p_p_char[] = {  {&_swigt__p_p_char, 0, 0, 0},{0, 0
 
 static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_UConnector,
-  _swigc__p_UException,
   _swigc__p_UTypes__Params,
   _swigc__p_UTypes__ShortIOInfo,
   _swigc__p_char,

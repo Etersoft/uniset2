@@ -44,21 +44,21 @@ class UProxyObject_impl; // PIMPL
 class UProxyObject
 {
     public:
-        UProxyObject( const std::string& name ) throw(UException);
-        UProxyObject( long id ) throw(UException);
+        UProxyObject( const std::string& name ); // throw(UException);
+        UProxyObject( long id ); // throw(UException);
         ~UProxyObject();
 
         //! \note Вызывать надо до активации объекта
-        void addToAsk( long id ) throw(UException);
+        void addToAsk( long id ); // throw(UException);
 
         //! можно вызывать в процессе работы
-        void askSensor( long id ) throw(UException);
+        void askSensor( long id ); // throw(UException);
 
-        long getValue( long id ) throw(UException);
-        float getFloatValue( long id ) throw(UException);
+        long getValue( long id ); // throw(UException);
+        float getFloatValue( long id ); // throw(UException);
 
         /*! Сохраняемые датчики не требуют добавления при помощи addToAsk ! */
-        void setValue( long id, long val ) throw(UException);
+        void setValue( long id, long val ); // throw(UException);
 
         /*! \return true если заказ датчиков прошёл успешно */
         bool askIsOK();
@@ -75,10 +75,10 @@ class UProxyObject
         bool smIsOK();
 
     protected:
-        void init( long id ) throw( UException );
+        void init( long id ); // throw( UException );
 
     private:
-        UProxyObject()throw(UException);
+        UProxyObject(); // throw(UException);
 
         std::shared_ptr<UProxyObject_impl> uobj;
 };
