@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2016 Pavel Vainerman <pv@etersoft.ru>
@@ -16,8 +16,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import json
-import urllib2
-import urllib
+import urllib.request, urllib.error, urllib.parse
+import urllib.request, urllib.parse, urllib.error
 
 UHTTP_API_VERSION = 'v0'
 
@@ -50,14 +50,14 @@ class UniSetHTTPService:
         url = self.settings.get('url') + "/api/" + self.apiver + query
         headers = {}
         if data is not None:
-            data = urllib.urlencode(data)
+            data = urllib.parse.urlencode(data)
 
         try:
-            request = urllib2.Request(url, data, headers)
+            request = urllib.request.Request(url, data, headers)
             request.get_method = lambda: method
-            resp = urllib2.urlopen(request)
+            resp = urllib.request.urlopen(request)
             return json.loads(resp.read())
-        except urllib2.URLError, e:
+        except urllib.error.URLError as e:
             if hasattr(e, 'reason'):
                 err = 'We failed to reach a server. Reason: %s' % e.reason
                 raise UHTTPError(err)

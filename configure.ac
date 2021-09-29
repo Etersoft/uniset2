@@ -3,10 +3,10 @@
 # See doc: http://www.gnu.org/software/hello/manual/autoconf/Generic-Programs.html
 
 # AC_PREREQ(2.59)
-AC_INIT([uniset2], [2.13.1], pv@etersoft.ru)
+AC_INIT([uniset2], [2.14.1], pv@etersoft.ru)
 AM_INIT_AUTOMAKE([subdir-objects])
 
-LIBVER=15:1:13
+LIBVER=16:1:14
 AC_SUBST(LIBVER)
 
 # AC_CONFIG_MACRO_DIR([m4])
@@ -283,9 +283,9 @@ AC_ARG_ENABLE(python, AC_HELP_STRING([--disable-python], [disable Python support
 
 if test ${buildpython} = true; then
 	AC_MSG_RESULT([enabled])
+	AM_PATH_PYTHON(3.0)
 	dnl Python
-	AM_PATH_PYTHON(,,)
-	PKG_CHECK_MODULES(PYTHON,python-2.7,,exit)
+	PKG_CHECK_MODULES(PYTHON,python3,,exit)
 #	AC_CHECK_PROG(SWIG, swig, yes, exit)
 
 	AC_MSG_CHECKING([netdata python plugin])

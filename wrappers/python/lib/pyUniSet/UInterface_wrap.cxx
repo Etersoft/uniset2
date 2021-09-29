@@ -14,7 +14,6 @@
 #endif
 
 #define SWIG_PYTHON_DIRECTOR_NO_VTABLE
-#define SWIG_PYTHON_CLASSIC
 
 
 #ifdef __cplusplus
@@ -3317,13 +3316,7 @@ SWIGINTERN PyObject *_wrap_uniset_init_params(PyObject *SWIGUNUSEDPARM(self), Py
     }
     arg2 = ptr;
   }
-  try {
-    pyUInterface::uniset_init_params(arg1,(std::string const &)*arg2);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  pyUInterface::uniset_init_params(arg1,(std::string const &)*arg2);
   resultobj = SWIG_Py_Void();
   if (SWIG_IsNewObj(res2)) delete arg2;
   return resultobj;
@@ -3369,13 +3362,7 @@ SWIGINTERN PyObject *_wrap_uniset_init(PyObject *SWIGUNUSEDPARM(self), PyObject 
     }
     arg3 = ptr;
   }
-  try {
-    pyUInterface::uniset_init(arg1,arg2,(std::string const &)*arg3);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  pyUInterface::uniset_init(arg1,arg2,(std::string const &)*arg3);
   resultobj = SWIG_Py_Void();
   if (SWIG_IsNewObj(res3)) delete arg3;
   return resultobj;
@@ -3389,13 +3376,7 @@ SWIGINTERN PyObject *_wrap_uniset_activate_objects(PyObject *SWIGUNUSEDPARM(self
   PyObject *resultobj = 0;
   
   if (!PyArg_ParseTuple(args,(char *)":uniset_activate_objects")) SWIG_fail;
-  try {
-    pyUInterface::uniset_activate_objects();
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  pyUInterface::uniset_activate_objects();
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3417,13 +3398,7 @@ SWIGINTERN PyObject *_wrap_getValue(PyObject *SWIGUNUSEDPARM(self), PyObject *ar
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "getValue" "', argument " "1"" of type '" "long""'");
   } 
   arg1 = static_cast< long >(val1);
-  try {
-    result = (long)pyUInterface::getValue(arg1);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (long)pyUInterface::getValue(arg1);
   resultobj = SWIG_From_long(static_cast< long >(result));
   return resultobj;
 fail:
@@ -3462,13 +3437,7 @@ SWIGINTERN PyObject *_wrap_setValue__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyOb
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "setValue" "', argument " "3"" of type '" "long""'");
   } 
   arg3 = static_cast< long >(val3);
-  try {
-    pyUInterface::setValue(arg1,arg2,arg3);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  pyUInterface::setValue(arg1,arg2,arg3);
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3498,13 +3467,7 @@ SWIGINTERN PyObject *_wrap_setValue__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyOb
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "setValue" "', argument " "2"" of type '" "long""'");
   } 
   arg2 = static_cast< long >(val2);
-  try {
-    pyUInterface::setValue(arg1,arg2);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  pyUInterface::setValue(arg1,arg2);
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4816,13 +4779,7 @@ SWIGINTERN PyObject *_wrap_new_UProxyObject__SWIG_0(PyObject *SWIGUNUSEDPARM(sel
     }
     arg1 = ptr;
   }
-  try {
-    result = (UProxyObject *)new UProxyObject((std::string const &)*arg1);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (UProxyObject *)new UProxyObject((std::string const &)*arg1);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UProxyObject, SWIG_POINTER_NEW |  0 );
   if (SWIG_IsNewObj(res1)) delete arg1;
   return resultobj;
@@ -4846,13 +4803,7 @@ SWIGINTERN PyObject *_wrap_new_UProxyObject__SWIG_1(PyObject *SWIGUNUSEDPARM(sel
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_UProxyObject" "', argument " "1"" of type '" "long""'");
   } 
   arg1 = static_cast< long >(val1);
-  try {
-    result = (UProxyObject *)new UProxyObject(arg1);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (UProxyObject *)new UProxyObject(arg1);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UProxyObject, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -4943,13 +4894,7 @@ SWIGINTERN PyObject *_wrap_UProxyObject_addToAsk(PyObject *SWIGUNUSEDPARM(self),
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "UProxyObject_addToAsk" "', argument " "2"" of type '" "long""'");
   } 
   arg2 = static_cast< long >(val2);
-  try {
-    (arg1)->addToAsk(arg2);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  (arg1)->addToAsk(arg2);
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4979,13 +4924,7 @@ SWIGINTERN PyObject *_wrap_UProxyObject_askSensor(PyObject *SWIGUNUSEDPARM(self)
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "UProxyObject_askSensor" "', argument " "2"" of type '" "long""'");
   } 
   arg2 = static_cast< long >(val2);
-  try {
-    (arg1)->askSensor(arg2);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  (arg1)->askSensor(arg2);
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -5016,13 +4955,7 @@ SWIGINTERN PyObject *_wrap_UProxyObject_getValue(PyObject *SWIGUNUSEDPARM(self),
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "UProxyObject_getValue" "', argument " "2"" of type '" "long""'");
   } 
   arg2 = static_cast< long >(val2);
-  try {
-    result = (long)(arg1)->getValue(arg2);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (long)(arg1)->getValue(arg2);
   resultobj = SWIG_From_long(static_cast< long >(result));
   return resultobj;
 fail:
@@ -5053,13 +4986,7 @@ SWIGINTERN PyObject *_wrap_UProxyObject_getFloatValue(PyObject *SWIGUNUSEDPARM(s
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "UProxyObject_getFloatValue" "', argument " "2"" of type '" "long""'");
   } 
   arg2 = static_cast< long >(val2);
-  try {
-    result = (float)(arg1)->getFloatValue(arg2);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  result = (float)(arg1)->getFloatValue(arg2);
   resultobj = SWIG_From_float(static_cast< float >(result));
   return resultobj;
 fail:
@@ -5098,13 +5025,7 @@ SWIGINTERN PyObject *_wrap_UProxyObject_setValue(PyObject *SWIGUNUSEDPARM(self),
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "UProxyObject_setValue" "', argument " "3"" of type '" "long""'");
   } 
   arg3 = static_cast< long >(val3);
-  try {
-    (arg1)->setValue(arg2,arg3);
-  }
-  catch(UException &_e) {
-    SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
-  }
-  
+  (arg1)->setValue(arg2,arg3);
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:

@@ -20,7 +20,7 @@
 // --------------------------------------------------------------------------
 using namespace std;
 // --------------------------------------------------------------------------
-UConnector::UConnector( UTypes::Params* p, const std::string& xfile )throw(UException):
+UConnector::UConnector( UTypes::Params* p, const std::string& xfile ):
     xmlfile(xfile)
 {
     try
@@ -38,7 +38,7 @@ UConnector::UConnector( UTypes::Params* p, const std::string& xfile )throw(UExce
     }
 }
 //---------------------------------------------------------------------------
-UConnector::UConnector(int argc, char** argv, const string& xfile )throw(UException):
+UConnector::UConnector(int argc, char** argv, const string& xfile ):
     xmlfile(xfile)
 {
     try
@@ -70,7 +70,7 @@ string UConnector::getConfFileName()
 
 }
 // --------------------------------------------------------------------------
-long UConnector::getValue( long id, long node )throw(UException)
+long UConnector::getValue( long id, long node )
 {
     if( !conf || !ui )
         throw USysError();
@@ -92,7 +92,7 @@ long UConnector::getValue( long id, long node )throw(UException)
     }
 }
 //---------------------------------------------------------------------------
-void UConnector::setValue( long id, long val, long node, long supplier )throw(UException)
+void UConnector::setValue( long id, long val, long node, long supplier )
 {
     if( !conf || !ui )
         throw USysError();
@@ -187,7 +187,6 @@ string UConnector::getTextName( long id )
 }
 //---------------------------------------------------------------------------
 string UConnector::getObjectInfo( long id, const std::string& params, long node )
-throw(UException)
 {
     if( !conf || !ui )
         throw USysError();
@@ -208,7 +207,7 @@ throw(UException)
     }
 }
 //---------------------------------------------------------------------------
-string UConnector::apiRequest( long id, const string& query, long node ) throw(UException)
+string UConnector::apiRequest( long id, const string& query, long node )
 {
     if( !conf || !ui )
         throw USysError();
@@ -229,7 +228,7 @@ string UConnector::apiRequest( long id, const string& query, long node ) throw(U
     }
 }
 //---------------------------------------------------------------------------
-void UConnector::activate_objects() throw(UException)
+void UConnector::activate_objects()
 {
     try
     {

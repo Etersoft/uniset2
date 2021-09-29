@@ -9,10 +9,10 @@
 # `0:0:0' (CURRENT=0, REVISION-0, AGE=0). Формат версии C:R:A.
 # -release 1
 
-lib_LTLIBRARIES 		= libUniSet2.la
-libUniSet2_la_SOURCES	=
-libUniSet2_la_LDFLAGS	= -version-info @LIBVER@
-libUniSet2_la_LIBADD	= -lm \
+lib_LTLIBRARIES        = libUniSet2.la
+libUniSet2_la_SOURCES  =
+libUniSet2_la_LDFLAGS  = -version-info @LIBVER@
+libUniSet2_la_LIBADD   = -lm -lpthread -lstdc++ \
  $(top_builddir)/src/Core/libUCore.la \
  $(top_builddir)/src/Communications/libCommunications.la \
  $(top_builddir)/src/Communications/Modbus/libModbus.la \
