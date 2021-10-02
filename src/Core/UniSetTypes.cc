@@ -277,9 +277,9 @@ std::vector<std::string> uniset::explode_str( const std::string& str, char sep )
 
         pos = str.find(sep, prev);
 
-		if( pos == string::npos )
-		{
-			const string s(str.substr(prev, sz - prev));
+        if( pos == string::npos )
+        {
+            const string s(str.substr(prev, sz - prev));
 
             if( !s.empty() )
                 v.emplace_back( std::move(s) );
@@ -293,7 +293,7 @@ std::vector<std::string> uniset::explode_str( const std::string& str, char sep )
             continue;
         }
 
-		const string s(str.substr(prev, pos - prev));
+        const string s(str.substr(prev, pos - prev));
 
         if( !s.empty() )
         {
@@ -323,72 +323,72 @@ bool uniset::is_digit( const std::string& s ) noexcept
 // --------------------------------------------------------------------------------------
 std::list<uniset::ParamSInfo> uniset::getSInfoList( const string& str, std::shared_ptr<Configuration> conf )
 {
-	std::list<uniset::ParamSInfo> res;
+    std::list<uniset::ParamSInfo> res;
 
-	auto lst = uniset::explode_str(str, ',');
+    auto lst = uniset::explode_str(str, ',');
 
-	for( const auto& it : lst )
-	{
-		uniset::ParamSInfo item;
+    for( const auto& it : lst )
+    {
+        uniset::ParamSInfo item;
 
-		auto p = uniset::explode_str(it, '=');
-		std::string s = "";
+        auto p = uniset::explode_str(it, '=');
+        std::string s = "";
 
-		if( p.size() == 1 )
-		{
-			s = *(p.begin());
-			item.val = 0;
-		}
-		else if( p.size() == 2 )
-		{
-			s = *(p.begin());
-			item.val = uni_atoi(*(++p.begin()));
-		}
-		else
-		{
-			cerr << "WARNING: parse error for '" << it << "'. IGNORE..." << endl;
-			continue;
-		}
+        if( p.size() == 1 )
+        {
+            s = *(p.begin());
+            item.val = 0;
+        }
+        else if( p.size() == 2 )
+        {
+            s = *(p.begin());
+            item.val = uni_atoi(*(++p.begin()));
+        }
+        else
+        {
+            cerr << "WARNING: parse error for '" << it << "'. IGNORE..." << endl;
+            continue;
+        }
 
-		item.fname = s;
-		auto t = uniset::explode_str(s, '@');
+        item.fname = s;
+        auto t = uniset::explode_str(s, '@');
 
-		if( t.size() == 1 )
-		{
-			const std::string s_id = *(t.begin());
+        if( t.size() == 1 )
+        {
+            const std::string s_id = *(t.begin());
 
-			if( is_digit(s_id) || !conf )
-				item.si.id = uni_atoi(s_id);
-			else
-				item.si.id = conf->getSensorID(s_id);
+            if( is_digit(s_id) || !conf )
+                item.si.id = uni_atoi(s_id);
+            else
+                item.si.id = conf->getSensorID(s_id);
 
-			item.si.node = DefaultObjectId;
-		}
-		else if( t.size() == 2 )
-		{
-			const std::string s_id = *(t.begin());
-			const std::string s_node = *(++t.begin());
+            item.si.node = DefaultObjectId;
+        }
+        else if( t.size() == 2 )
+        {
+            const std::string s_id = *(t.begin());
+            const std::string s_node = *(++t.begin());
 
-			if( is_digit(s_id) || !conf )
-				item.si.id = uni_atoi(s_id);
-			else
-				item.si.id = conf->getSensorID(s_id);
+            if( is_digit(s_id) || !conf )
+                item.si.id = uni_atoi(s_id);
+            else
+                item.si.id = conf->getSensorID(s_id);
 
-			if( is_digit(s_node) || !conf )
-				item.si.node = uni_atoi(s_node);
-			else
-				item.si.node = conf->getNodeID(s_node);
-		}
-		else
-		{
-			cerr << "WARNING: parse error for '" << s << "'. IGNORE..." << endl;
-			continue;
-		}
+            if( is_digit(s_node) || !conf )
+                item.si.node = uni_atoi(s_node);
+            else
+                item.si.node = conf->getNodeID(s_node);
+        }
+        else
+        {
+            cerr << "WARNING: parse error for '" << s << "'. IGNORE..." << endl;
+            continue;
+        }
 
-		res.emplace_back( std::move(item) );
-	}
+        res.emplace_back( std::move(item) );
+    }
 
-	return res;
+    return res;
 }
 // --------------------------------------------------------------------------------------
 std::list<uniset::ConsumerInfo> uniset::getObjectsList( const string& str, std::shared_ptr<Configuration> conf )
@@ -406,9 +406,9 @@ std::list<uniset::ConsumerInfo> uniset::getObjectsList( const string& str, std::
 
         auto t = uniset::explode_str(it, '@');
 
-		if( t.size() == 1 )
-		{
-			const std::string s_id(*(t.begin()));
+        if( t.size() == 1 )
+        {
+            const std::string s_id(*(t.begin()));
 
             if( is_digit(s_id) )
                 item.id = uni_atoi(s_id);
@@ -423,12 +423,12 @@ std::list<uniset::ConsumerInfo> uniset::getObjectsList( const string& str, std::
                     item.id = conf->getServiceID(s_id);
             }
 
-			item.node = DefaultObjectId;
-		}
-		else if( t.size() == 2 )
-		{
-			const std::string s_id = *(t.begin());
-			const std::string s_node = *(++t.begin());
+            item.node = DefaultObjectId;
+        }
+        else if( t.size() == 2 )
+        {
+            const std::string s_id = *(t.begin());
+            const std::string s_node = *(++t.begin());
 
             if( is_digit(s_id) )
                 item.id = uni_atoi(s_id);
@@ -732,20 +732,21 @@ string uniset::BadSymbolsToStr()
     return bad;
 }
 // ---------------------------------------------------------------------------------------------------------------
-struct keys_t {
-	uniset::ObjectId id;
-	uniset::ObjectId node;
+struct keys_t
+{
+    uniset::ObjectId id;
+    uniset::ObjectId node;
 
-	keys_t( const uniset::ObjectId& _id, const uniset::ObjectId& _node ):
-		id(_id),
-		node(_node)
-	{}
-};
+    keys_t( const uniset::ObjectId& _id, const uniset::ObjectId& _node ):
+        id(_id),
+        node(_node)
+    {}
+} __attribute__((packed));
 
 uniset::KeyType uniset::key( const uniset::ObjectId id, const uniset::ObjectId node )
 {
-	keys_t k(id,node);
-	return uniset::hash64( reinterpret_cast<char*>(&k), sizeof(k) );
+    keys_t k(id, node);
+    return uniset::hash64( reinterpret_cast<char*>(&k), sizeof(k) );
 }
 // ---------------------------------------------------------------------------------------------------------------
 uniset::KeyType uniset::key( const IOController_i::SensorInfo& si )
@@ -755,20 +756,20 @@ uniset::KeyType uniset::key( const IOController_i::SensorInfo& si )
 // ---------------------------------------------------------------------------------------------------------------
 uint64_t uniset::hash64( const std::string& str ) noexcept
 {
-	return CityHash_v1_0_2::CityHash64(str.data(), str.size());
+    return CityHash_v1_0_2::CityHash64(str.data(), str.size());
 }
 
 uint64_t uniset::hash64( const char* buf, size_t sz ) noexcept
 {
-	return CityHash_v1_0_2::CityHash64(buf, sz);
+    return CityHash_v1_0_2::CityHash64(buf, sz);
 }
 // ---------------------------------------------------------------------------------------------------------------
 uint32_t uniset::hash32( const std::string& str ) noexcept
 {
-	return NAMESPACE_FOR_HASH_FUNCTIONS::Hash32(str.data(), str.size());
+    return NAMESPACE_FOR_HASH_FUNCTIONS::Hash32(str.data(), str.size());
 }
 
 uint32_t uniset::hash32( const char* buf, size_t sz ) noexcept
 {
-	return NAMESPACE_FOR_HASH_FUNCTIONS::Hash32(buf, sz);
+    return NAMESPACE_FOR_HASH_FUNCTIONS::Hash32(buf, sz);
 }
