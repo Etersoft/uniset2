@@ -35,3 +35,10 @@ jobs:
         run: |
             cd testsuite;
             make check
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: testsuite-artifacts
+          path: testsuite
+          retention-days: 5
