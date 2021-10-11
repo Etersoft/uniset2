@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from pyUConnector import *
-import time
 import sys
+
+from .pyUniSet.pyUConnector import *
 
 
 def is_id(str_id):

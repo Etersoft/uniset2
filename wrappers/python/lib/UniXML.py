@@ -1,36 +1,41 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import re
 import sys
+
 import libxml2
 from lxml import etree
-import re
-import os
+
+
 # -----------------------------
 class EmptyNode():
-     def __init__(self):
-         self.proplist = dict()
+    def __init__(self):
+        self.proplist = dict()
 
-     def prop(self,name):
-         if name in self.proplist:
+    def prop(self, name):
+        if name in self.proplist:
             return self.proplist[name]
 
-         return ""
+        return ""
 
-     def setProp(self,name,val):
-         self.proplist[name] = val
+    def setProp(self, name, val):
+        self.proplist[name] = val
 
-     def reset(self):
-         self.proplist = dict()
+    def reset(self):
+        self.proplist = dict()
+
 
 # -----------------------------
 class UniXMLException(Exception):
 
-    def __init__(self,e=""):
+    def __init__(self, e=""):
         self.err = e
 
     def getError(self):
         return self.err
+
+
 # -----------------------------
 class UniXML():
 
@@ -38,11 +43,11 @@ class UniXML():
         try:
             self.doc = None
             if isDoc:
-               self.fname = ''
-               self.doc = libxml2.parseDoc(xfile)
+                self.fname = ''
+                self.doc = libxml2.parseDoc(xfile)
             else:
-               self.fname = xfile
-               self.doc = libxml2.parseFile(xfile)
+                self.fname = xfile
+                self.doc = libxml2.parseFile(xfile)
         except libxml2.parserError:
             raise UniXMLException("(UniXML): Can`t open file " + xfile)
 
@@ -83,7 +88,7 @@ class UniXML():
         while node != None:
             if node.prop(propstr) == valuestr:
                 return [node, node.name, node.prop(propstr)]
-            ret = self.findNode_byProp (node.children, propstr, valuestr)
+            ret = self.findNode_byProp(node.children, propstr, valuestr)
             if ret[0] != None:
                 return ret
             node = node.__next__
@@ -95,14 +100,14 @@ class UniXML():
             if node == None:
                 return node
             if node.name != "text" and node.name != "comment":
-                  return node
+                return node
         return None
 
     def getNode(self, node):
         if node == None:
-           return None
+            return None
         if node.name != "text" and node.name != "comment":
-           return node
+            return node
         return self.nextNode(node)
 
     def firstNode(self, node):
@@ -117,8 +122,8 @@ class UniXML():
     def lastNode(self, node):
         prev = node
         while node != None:
-           prev = node
-           node = self.nextNode(node)
+            prev = node
+            node = self.nextNode(node)
 
         return prev
 
@@ -131,20 +136,20 @@ class UniXML():
 
     def save(self, filename=None, pretty_format=True, backup=False):
         if filename == None:
-           filename = self.fname
+            filename = self.fname
 
         if backup:
-           # чтобы "ссылки" не бились, делаем копирование не через rename
-           #os.rename(self.fname,str(self.fname+".bak"))
-           f_in = file(self.fname,'rb')
-           f_out = file(str(self.fname+".bak"),'wb')
-           f_in.seek(0)
-           f_out.write(f_in.read())
-           f_in.close()
-           f_out.close()
+            # чтобы "ссылки" не бились, делаем копирование не через rename
+            # os.rename(self.fname,str(self.fname+".bak"))
+            f_in = file(self.fname, 'rb')
+            f_out = file(str(self.fname + ".bak"), 'wb')
+            f_in.seek(0)
+            f_out.write(f_in.read())
+            f_in.close()
+            f_out.close()
 
         if pretty_format == True:
-           return self.pretty_save(filename)
+            return self.pretty_save(filename)
 
         return self.doc.saveFile(filename)
 
@@ -163,12 +168,12 @@ class UniXML():
     def pretty_save(self, filename):
         context = self.doc.serialize(encoding="utf-8")
         mdoc = etree.XML(context)
-        s = etree.tostring(mdoc,pretty_print=True,encoding="UTF-8",method='xml',xml_declaration=True).split("\n")
-        out = open(filename,"w")
+        s = etree.tostring(mdoc, pretty_print=True, encoding="UTF-8", method='xml', xml_declaration=True).split("\n")
+        out = open(filename, "w")
         p = re.compile(r'\ [^\s]{1,}=""')
         for l in s:
             if l.strip():
-               # удаляем пустые свойства prop=""
-               l = p.sub('', l)
-               out.write(l+"\n")
+                # удаляем пустые свойства prop=""
+                l = p.sub('', l)
+                out.write(l + "\n")
         out.close()

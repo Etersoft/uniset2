@@ -3,7 +3,7 @@ if ENABLE_PYTHON
 SWIG=swig
 
 #python_SCRIPTS = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
-pydir=$(pkgpythondir)
+pydir=$(pkgpythondir)/pyUniSet
 py_DATA = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
 
 BUILD_SRCDIR=$(srcdir)/../../../core

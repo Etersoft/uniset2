@@ -25,8 +25,8 @@ if __name__ == "__main__":
         # print shm.get(sensors='10,12')
         # print shm.lost()
         # print shm.help()
-        print shm.sensors(0,10)
+        print(shm.sensors(0,10))
 
 
-    except UHTTPError, e:
-        print e.message
+    except UHTTPError as e:
+        print(e.message)

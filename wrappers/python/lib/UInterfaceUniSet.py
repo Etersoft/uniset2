@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from UInterface import *
-from UGlobal import *
-from pyUConnector import *
+from .UInterface import *
+from .UGlobal import *
+from .pyUniSet.pyUConnector import *
+
 
 class UInterfaceUniSet(UInterface):
     def __init__(self, xmlfile, params):
