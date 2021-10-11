@@ -3,9 +3,9 @@
 
 import sys
 
-from UInterface import *
-from UGlobal import *
-from pyUModbus import *
+from .UInterface import *
+from .UGlobal import *
+from .pyUniSet.pyUModbus import *
 
 
 class UInterfaceModbus(UInterface):
@@ -14,7 +14,7 @@ class UInterfaceModbus(UInterface):
 
         self.itype = "modbus"
         self.i = UModbus()
-        self.i.prepare(ip,port)
+        self.i.prepare(ip, port)
 
     # return [id,node,name]
     def getIDinfo(self, s_id):
