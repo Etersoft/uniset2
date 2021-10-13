@@ -1,15 +1,12 @@
 /***********************************************************
 *           Interface file for wrapping test
 *    to regenerate the wrappers run:
-*    swig -python UInterface.i
+*    swig -python UException.i
 ***********************************************************/
 %include <std_string.i>
 
-%module pyUModbus
+%module UExceptions
 %{
-#include "UModbus.h"
+#include "UExceptions.h"
 %}
-
-/* Для генерации классов и констант в Питоне */
-%include "UModbus.h"
-// %include "UExceptions.h"
+%include "UExceptions.h"

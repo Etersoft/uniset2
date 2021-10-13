@@ -10,12 +10,12 @@ if _swig_python_version_info >= (2, 7, 0):
         import importlib
         pkg_parts = __name__.rpartition('.')
         pkg = pkg_parts[0] if pkg_parts[1] == '.' else pkg_parts[2]
-        mname = '.'.join((pkg, '_pyUniSet')).lstrip('.')
+        mname = '.'.join((pkg, '_UniSet')).lstrip('.')
         try:
             return importlib.import_module(mname)
         except ImportError:
-            return importlib.import_module('_pyUniSet')
-    _pyUniSet = swig_import_helper()
+            return importlib.import_module('_UniSet')
+    _UniSet = swig_import_helper()
     del swig_import_helper
 elif _swig_python_version_info >= (2, 6, 0):
     def swig_import_helper():
@@ -23,17 +23,17 @@ elif _swig_python_version_info >= (2, 6, 0):
         import imp
         fp = None
         try:
-            fp, pathname, description = imp.find_module('_pyUniSet', [dirname(__file__)])
+            fp, pathname, description = imp.find_module('_UniSet', [dirname(__file__)])
         except ImportError:
-            import _pyUniSet
-            return _pyUniSet
+            import _UniSet
+            return _UniSet
         try:
-            _mod = imp.load_module('_pyUniSet', fp, pathname, description)
+            _mod = imp.load_module('_UniSet', fp, pathname, description)
         finally:
             if fp is not None:
                 fp.close()
         return _mod
-    _pyUniSet = swig_import_helper()
+    _UniSet = swig_import_helper()
     del swig_import_helper
 else:
     raise RuntimeError('Python 2.6 or later required')
@@ -93,91 +93,91 @@ except __builtin__.Exception:
 
 
 def uniset_init_params(p: 'Params', xmlfile: 'std::string const &') -> "void":
-    return _pyUniSet.uniset_init_params(p, xmlfile)
-uniset_init_params = _pyUniSet.uniset_init_params
+    return _UniSet.uniset_init_params(p, xmlfile)
+uniset_init_params = _UniSet.uniset_init_params
 
 def uniset_init(argc: 'int', argv: 'char **', xmlfile: 'std::string const &') -> "void":
-    return _pyUniSet.uniset_init(argc, argv, xmlfile)
-uniset_init = _pyUniSet.uniset_init
+    return _UniSet.uniset_init(argc, argv, xmlfile)
+uniset_init = _UniSet.uniset_init
 
 def uniset_activate_objects() -> "void":
-    return _pyUniSet.uniset_activate_objects()
-uniset_activate_objects = _pyUniSet.uniset_activate_objects
+    return _UniSet.uniset_activate_objects()
+uniset_activate_objects = _UniSet.uniset_activate_objects
 
 def getValue(id: 'long') -> "long":
-    return _pyUniSet.getValue(id)
-getValue = _pyUniSet.getValue
+    return _UniSet.getValue(id)
+getValue = _UniSet.getValue
 
 def setValue(*args) -> "void":
-    return _pyUniSet.setValue(*args)
-setValue = _pyUniSet.setValue
+    return _UniSet.setValue(*args)
+setValue = _UniSet.setValue
 
 def getSensorID(name: 'std::string const &') -> "long":
-    return _pyUniSet.getSensorID(name)
-getSensorID = _pyUniSet.getSensorID
+    return _UniSet.getSensorID(name)
+getSensorID = _UniSet.getSensorID
 
 def getObjectID(name: 'std::string const &') -> "long":
-    return _pyUniSet.getObjectID(name)
-getObjectID = _pyUniSet.getObjectID
+    return _UniSet.getObjectID(name)
+getObjectID = _UniSet.getObjectID
 
 def getShortName(id: 'long') -> "std::string":
-    return _pyUniSet.getShortName(id)
-getShortName = _pyUniSet.getShortName
+    return _UniSet.getShortName(id)
+getShortName = _UniSet.getShortName
 
 def getName(id: 'long') -> "std::string":
-    return _pyUniSet.getName(id)
-getName = _pyUniSet.getName
+    return _UniSet.getName(id)
+getName = _UniSet.getName
 
 def getTextName(id: 'long') -> "std::string":
-    return _pyUniSet.getTextName(id)
-getTextName = _pyUniSet.getTextName
+    return _UniSet.getTextName(id)
+getTextName = _UniSet.getTextName
 
 def getConfFileName() -> "std::string":
-    return _pyUniSet.getConfFileName()
-getConfFileName = _pyUniSet.getConfFileName
+    return _UniSet.getConfFileName()
+getConfFileName = _UniSet.getConfFileName
 class Params(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, Params, name, value)
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, Params, name)
     __repr__ = _swig_repr
-    max = _pyUniSet.Params_max
+    max = _UniSet.Params_max
 
     def __init__(self):
-        this = _pyUniSet.new_Params()
+        this = _UniSet.new_Params()
         try:
             self.this.append(this)
         except __builtin__.Exception:
             self.this = this
 
     def add(self, s: 'char *') -> "bool":
-        return _pyUniSet.Params_add(self, s)
+        return _UniSet.Params_add(self, s)
 
     def add_str(self, s: 'std::string const') -> "bool":
-        return _pyUniSet.Params_add_str(self, s)
-    __swig_setmethods__["argc"] = _pyUniSet.Params_argc_set
-    __swig_getmethods__["argc"] = _pyUniSet.Params_argc_get
+        return _UniSet.Params_add_str(self, s)
+    __swig_setmethods__["argc"] = _UniSet.Params_argc_set
+    __swig_getmethods__["argc"] = _UniSet.Params_argc_get
     if _newclass:
-        argc = property(_pyUniSet.Params_argc_get, _pyUniSet.Params_argc_set)
-    __swig_setmethods__["argv"] = _pyUniSet.Params_argv_set
-    __swig_getmethods__["argv"] = _pyUniSet.Params_argv_get
+        argc = property(_UniSet.Params_argc_get, _UniSet.Params_argc_set)
+    __swig_setmethods__["argv"] = _UniSet.Params_argv_set
+    __swig_getmethods__["argv"] = _UniSet.Params_argv_get
     if _newclass:
-        argv = property(_pyUniSet.Params_argv_get, _pyUniSet.Params_argv_set)
+        argv = property(_UniSet.Params_argv_get, _UniSet.Params_argv_set)
     if _newclass:
-        inst = staticmethod(_pyUniSet.Params_inst)
+        inst = staticmethod(_UniSet.Params_inst)
     else:
-        inst = _pyUniSet.Params_inst
-    __swig_destroy__ = _pyUniSet.delete_Params
+        inst = _UniSet.Params_inst
+    __swig_destroy__ = _UniSet.delete_Params
     __del__ = lambda self: None
-Params_swigregister = _pyUniSet.Params_swigregister
+Params_swigregister = _UniSet.Params_swigregister
 Params_swigregister(Params)
-cvar = _pyUniSet.cvar
+cvar = _UniSet.cvar
 DefaultID = cvar.DefaultID
 DefaultSupplerID = cvar.DefaultSupplerID
 
 def Params_inst() -> "UTypes::Params":
-    return _pyUniSet.Params_inst()
-Params_inst = _pyUniSet.Params_inst
+    return _UniSet.Params_inst()
+Params_inst = _UniSet.Params_inst
 
 class ShortIOInfo(_object):
     __swig_setmethods__ = {}
@@ -185,39 +185,39 @@ class ShortIOInfo(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, ShortIOInfo, name)
     __repr__ = _swig_repr
-    __swig_setmethods__["value"] = _pyUniSet.ShortIOInfo_value_set
-    __swig_getmethods__["value"] = _pyUniSet.ShortIOInfo_value_get
+    __swig_setmethods__["value"] = _UniSet.ShortIOInfo_value_set
+    __swig_getmethods__["value"] = _UniSet.ShortIOInfo_value_get
     if _newclass:
-        value = property(_pyUniSet.ShortIOInfo_value_get, _pyUniSet.ShortIOInfo_value_set)
-    __swig_setmethods__["tv_sec"] = _pyUniSet.ShortIOInfo_tv_sec_set
-    __swig_getmethods__["tv_sec"] = _pyUniSet.ShortIOInfo_tv_sec_get
+        value = property(_UniSet.ShortIOInfo_value_get, _UniSet.ShortIOInfo_value_set)
+    __swig_setmethods__["tv_sec"] = _UniSet.ShortIOInfo_tv_sec_set
+    __swig_getmethods__["tv_sec"] = _UniSet.ShortIOInfo_tv_sec_get
     if _newclass:
-        tv_sec = property(_pyUniSet.ShortIOInfo_tv_sec_get, _pyUniSet.ShortIOInfo_tv_sec_set)
-    __swig_setmethods__["tv_nsec"] = _pyUniSet.ShortIOInfo_tv_nsec_set
-    __swig_getmethods__["tv_nsec"] = _pyUniSet.ShortIOInfo_tv_nsec_get
+        tv_sec = property(_UniSet.ShortIOInfo_tv_sec_get, _UniSet.ShortIOInfo_tv_sec_set)
+    __swig_setmethods__["tv_nsec"] = _UniSet.ShortIOInfo_tv_nsec_set
+    __swig_getmethods__["tv_nsec"] = _UniSet.ShortIOInfo_tv_nsec_get
     if _newclass:
-        tv_nsec = property(_pyUniSet.ShortIOInfo_tv_nsec_get, _pyUniSet.ShortIOInfo_tv_nsec_set)
-    __swig_setmethods__["supplier"] = _pyUniSet.ShortIOInfo_supplier_set
-    __swig_getmethods__["supplier"] = _pyUniSet.ShortIOInfo_supplier_get
+        tv_nsec = property(_UniSet.ShortIOInfo_tv_nsec_get, _UniSet.ShortIOInfo_tv_nsec_set)
+    __swig_setmethods__["supplier"] = _UniSet.ShortIOInfo_supplier_set
+    __swig_getmethods__["supplier"] = _UniSet.ShortIOInfo_supplier_get
     if _newclass:
-        supplier = property(_pyUniSet.ShortIOInfo_supplier_get, _pyUniSet.ShortIOInfo_supplier_set)
-    __swig_setmethods__["supplier_node"] = _pyUniSet.ShortIOInfo_supplier_node_set
-    __swig_getmethods__["supplier_node"] = _pyUniSet.ShortIOInfo_supplier_node_get
+        supplier = property(_UniSet.ShortIOInfo_supplier_get, _UniSet.ShortIOInfo_supplier_set)
+    __swig_setmethods__["supplier_node"] = _UniSet.ShortIOInfo_supplier_node_set
+    __swig_getmethods__["supplier_node"] = _UniSet.ShortIOInfo_supplier_node_get
     if _newclass:
-        supplier_node = property(_pyUniSet.ShortIOInfo_supplier_node_get, _pyUniSet.ShortIOInfo_supplier_node_set)
+        supplier_node = property(_UniSet.ShortIOInfo_supplier_node_get, _UniSet.ShortIOInfo_supplier_node_set)
 
     def __init__(self):
-        this = _pyUniSet.new_ShortIOInfo()
+        this = _UniSet.new_ShortIOInfo()
         try:
             self.this.append(this)
         except __builtin__.Exception:
             self.this = this
-    __swig_destroy__ = _pyUniSet.delete_ShortIOInfo
+    __swig_destroy__ = _UniSet.delete_ShortIOInfo
     __del__ = lambda self: None
-ShortIOInfo_swigregister = _pyUniSet.ShortIOInfo_swigregister
+ShortIOInfo_swigregister = _UniSet.ShortIOInfo_swigregister
 ShortIOInfo_swigregister(ShortIOInfo)
 
-class UException(_object):
+class UException(BaseException, _object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, UException, name, value)
     __swig_getmethods__ = {}
@@ -225,21 +225,22 @@ class UException(_object):
     __repr__ = _swig_repr
 
     def __init__(self, *args):
-        this = _pyUniSet.new_UException(*args)
+        BaseException.__init__(self, args)
+        this = _UniSet.new_UException(*args)
         try:
             self.this.append(this)
         except __builtin__.Exception:
             self.this = this
-    __swig_destroy__ = _pyUniSet.delete_UException
+    __swig_destroy__ = _UniSet.delete_UException
     __del__ = lambda self: None
 
     def getError(self) -> "std::string const":
-        return _pyUniSet.UException_getError(self)
-    __swig_setmethods__["err"] = _pyUniSet.UException_err_set
-    __swig_getmethods__["err"] = _pyUniSet.UException_err_get
+        return _UniSet.UException_getError(self)
+    __swig_setmethods__["err"] = _UniSet.UException_err_set
+    __swig_getmethods__["err"] = _UniSet.UException_err_get
     if _newclass:
-        err = property(_pyUniSet.UException_err_get, _pyUniSet.UException_err_set)
-UException_swigregister = _pyUniSet.UException_swigregister
+        err = property(_UniSet.UException_err_get, _UniSet.UException_err_set)
+UException_swigregister = _UniSet.UException_swigregister
 UException_swigregister(UException)
 
 class UTimeOut(UException):
@@ -254,14 +255,14 @@ class UTimeOut(UException):
     __repr__ = _swig_repr
 
     def __init__(self, *args):
-        this = _pyUniSet.new_UTimeOut(*args)
+        this = _UniSet.new_UTimeOut(*args)
         try:
             self.this.append(this)
         except __builtin__.Exception:
             self.this = this
-    __swig_destroy__ = _pyUniSet.delete_UTimeOut
+    __swig_destroy__ = _UniSet.delete_UTimeOut
     __del__ = lambda self: None
-UTimeOut_swigregister = _pyUniSet.UTimeOut_swigregister
+UTimeOut_swigregister = _UniSet.UTimeOut_swigregister
 UTimeOut_swigregister(UTimeOut)
 
 class USysError(UException):
@@ -276,14 +277,14 @@ class USysError(UException):
     __repr__ = _swig_repr
 
     def __init__(self, *args):
-        this = _pyUniSet.new_USysError(*args)
+        this = _UniSet.new_USysError(*args)
         try:
             self.this.append(this)
         except __builtin__.Exception:
             self.this = this
-    __swig_destroy__ = _pyUniSet.delete_USysError
+    __swig_destroy__ = _UniSet.delete_USysError
     __del__ = lambda self: None
-USysError_swigregister = _pyUniSet.USysError_swigregister
+USysError_swigregister = _UniSet.USysError_swigregister
 USysError_swigregister(USysError)
 
 class UValidateError(UException):
@@ -298,14 +299,14 @@ class UValidateError(UException):
     __repr__ = _swig_repr
 
     def __init__(self, *args):
-        this = _pyUniSet.new_UValidateError(*args)
+        this = _UniSet.new_UValidateError(*args)
         try:
             self.this.append(this)
         except __builtin__.Exception:
             self.this = this
-    __swig_destroy__ = _pyUniSet.delete_UValidateError
+    __swig_destroy__ = _UniSet.delete_UValidateError
     __del__ = lambda self: None
-UValidateError_swigregister = _pyUniSet.UValidateError_swigregister
+UValidateError_swigregister = _UniSet.UValidateError_swigregister
 UValidateError_swigregister(UValidateError)
 
 class UProxyObject(_object):
@@ -316,41 +317,41 @@ class UProxyObject(_object):
     __repr__ = _swig_repr
 
     def __init__(self, *args):
-        this = _pyUniSet.new_UProxyObject(*args)
+        this = _UniSet.new_UProxyObject(*args)
         try:
             self.this.append(this)
         except __builtin__.Exception:
             self.this = this
-    __swig_destroy__ = _pyUniSet.delete_UProxyObject
+    __swig_destroy__ = _UniSet.delete_UProxyObject
     __del__ = lambda self: None
 
     def addToAsk(self, id: 'long') -> "void":
-        return _pyUniSet.UProxyObject_addToAsk(self, id)
+        return _UniSet.UProxyObject_addToAsk(self, id)
 
     def askSensor(self, id: 'long') -> "void":
-        return _pyUniSet.UProxyObject_askSensor(self, id)
+        return _UniSet.UProxyObject_askSensor(self, id)
 
     def getValue(self, id: 'long') -> "long":
-        return _pyUniSet.UProxyObject_getValue(self, id)
+        return _UniSet.UProxyObject_getValue(self, id)
 
     def getFloatValue(self, id: 'long') -> "float":
-        return _pyUniSet.UProxyObject_getFloatValue(self, id)
+        return _UniSet.UProxyObject_getFloatValue(self, id)
 
     def setValue(self, id: 'long', val: 'long') -> "void":
-        return _pyUniSet.UProxyObject_setValue(self, id, val)
+        return _UniSet.UProxyObject_setValue(self, id, val)
 
     def askIsOK(self) -> "bool":
-        return _pyUniSet.UProxyObject_askIsOK(self)
+        return _UniSet.UProxyObject_askIsOK(self)
 
     def reaskSensors(self) -> "bool":
-        return _pyUniSet.UProxyObject_reaskSensors(self)
+        return _UniSet.UProxyObject_reaskSensors(self)
 
     def updateValues(self) -> "bool":
-        return _pyUniSet.UProxyObject_updateValues(self)
+        return _UniSet.UProxyObject_updateValues(self)
 
     def smIsOK(self) -> "bool":
-        return _pyUniSet.UProxyObject_smIsOK(self)
-UProxyObject_swigregister = _pyUniSet.UProxyObject_swigregister
+        return _UniSet.UProxyObject_smIsOK(self)
+UProxyObject_swigregister = _UniSet.UProxyObject_swigregister
 UProxyObject_swigregister(UProxyObject)
 
 # This file is compatible with both classic and new-style classes.

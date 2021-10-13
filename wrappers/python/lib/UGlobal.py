@@ -3,7 +3,7 @@
 
 import sys
 
-from .pyUniSet.pyUConnector import *
+from .lib.UConnector import *
 
 
 def is_id(str_id):

@@ -10,12 +10,12 @@ if _swig_python_version_info >= (2, 7, 0):
         import importlib
         pkg_parts = __name__.rpartition('.')
         pkg = pkg_parts[0] if pkg_parts[1] == '.' else pkg_parts[2]
-        mname = '.'.join((pkg, '_pyUExceptions')).lstrip('.')
+        mname = '.'.join((pkg, '_UExceptions')).lstrip('.')
         try:
             return importlib.import_module(mname)
         except ImportError:
-            return importlib.import_module('_pyUExceptions')
-    _pyUExceptions = swig_import_helper()
+            return importlib.import_module('_UExceptions')
+    _UExceptions = swig_import_helper()
     del swig_import_helper
 elif _swig_python_version_info >= (2, 6, 0):
     def swig_import_helper():
@@ -23,17 +23,17 @@ elif _swig_python_version_info >= (2, 6, 0):
         import imp
         fp = None
         try:
-            fp, pathname, description = imp.find_module('_pyUExceptions', [dirname(__file__)])
+            fp, pathname, description = imp.find_module('_UExceptions', [dirname(__file__)])
         except ImportError:
-            import _pyUExceptions
-            return _pyUExceptions
+            import _UExceptions
+            return _UExceptions
         try:
-            _mod = imp.load_module('_pyUExceptions', fp, pathname, description)
+            _mod = imp.load_module('_UExceptions', fp, pathname, description)
         finally:
             if fp is not None:
                 fp.close()
         return _mod
-    _pyUExceptions = swig_import_helper()
+    _UExceptions = swig_import_helper()
     del swig_import_helper
 else:
     raise RuntimeError('Python 2.6 or later required')
@@ -99,22 +99,22 @@ class UException(BaseException, _object):
     __repr__ = _swig_repr
 
     def __init__(self, *args):
-        BaseException.__init__(self, *args)
-        this = _pyUExceptions.new_UException(*args)
+        BaseException.__init__(self, args)
+        this = _UExceptions.new_UException(*args)
         try:
             self.this.append(this)
         except __builtin__.Exception:
             self.this = this
-    __swig_destroy__ = _pyUExceptions.delete_UException
+    __swig_destroy__ = _UExceptions.delete_UException
     __del__ = lambda self: None
 
     def getError(self) -> "std::string const":
-        return _pyUExceptions.UException_getError(self)
-    __swig_setmethods__["err"] = _pyUExceptions.UException_err_set
-    __swig_getmethods__["err"] = _pyUExceptions.UException_err_get
+        return _UExceptions.UException_getError(self)
+    __swig_setmethods__["err"] = _UExceptions.UException_err_set
+    __swig_getmethods__["err"] = _UExceptions.UException_err_get
     if _newclass:
-        err = property(_pyUExceptions.UException_err_get, _pyUExceptions.UException_err_set)
-UException_swigregister = _pyUExceptions.UException_swigregister
+        err = property(_UExceptions.UException_err_get, _UExceptions.UException_err_set)
+UException_swigregister = _UExceptions.UException_swigregister
 UException_swigregister(UException)
 
 class UTimeOut(UException):
@@ -129,14 +129,14 @@ class UTimeOut(UException):
     __repr__ = _swig_repr
 
     def __init__(self, *args):
-        this = _pyUExceptions.new_UTimeOut(*args)
+        this = _UExceptions.new_UTimeOut(*args)
         try:
             self.this.append(this)
         except __builtin__.Exception:
             self.this = this
-    __swig_destroy__ = _pyUExceptions.delete_UTimeOut
+    __swig_destroy__ = _UExceptions.delete_UTimeOut
     __del__ = lambda self: None
-UTimeOut_swigregister = _pyUExceptions.UTimeOut_swigregister
+UTimeOut_swigregister = _UExceptions.UTimeOut_swigregister
 UTimeOut_swigregister(UTimeOut)
 
 class USysError(UException):
@@ -151,14 +151,14 @@ class USysError(UException):
     __repr__ = _swig_repr
 
     def __init__(self, *args):
-        this = _pyUExceptions.new_USysError(*args)
+        this = _UExceptions.new_USysError(*args)
         try:
             self.this.append(this)
         except __builtin__.Exception:
             self.this = this
-    __swig_destroy__ = _pyUExceptions.delete_USysError
+    __swig_destroy__ = _UExceptions.delete_USysError
     __del__ = lambda self: None
-USysError_swigregister = _pyUExceptions.USysError_swigregister
+USysError_swigregister = _UExceptions.USysError_swigregister
 USysError_swigregister(USysError)
 
 class UValidateError(UException):
@@ -173,14 +173,14 @@ class UValidateError(UException):
     __repr__ = _swig_repr
 
     def __init__(self, *args):
-        this = _pyUExceptions.new_UValidateError(*args)
+        this = _UExceptions.new_UValidateError(*args)
         try:
             self.this.append(this)
         except __builtin__.Exception:
             self.this = this
-    __swig_destroy__ = _pyUExceptions.delete_UValidateError
+    __swig_destroy__ = _UExceptions.delete_UValidateError
     __del__ = lambda self: None
-UValidateError_swigregister = _pyUExceptions.UValidateError_swigregister
+UValidateError_swigregister = _UExceptions.UValidateError_swigregister
 UValidateError_swigregister(UValidateError)
 
 # This file is compatible with both classic and new-style classes.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from .pyUniSet.pyUniSet import *
+from .lib.UniSet import *
 
 
 class UInterface():
