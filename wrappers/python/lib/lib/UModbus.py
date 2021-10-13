@@ -10,12 +10,12 @@ if _swig_python_version_info >= (2, 7, 0):
         import importlib
         pkg_parts = __name__.rpartition('.')
         pkg = pkg_parts[0] if pkg_parts[1] == '.' else pkg_parts[2]
-        mname = '.'.join((pkg, '_pyUModbus')).lstrip('.')
+        mname = '.'.join((pkg, '_UModbus')).lstrip('.')
         try:
             return importlib.import_module(mname)
         except ImportError:
-            return importlib.import_module('_pyUModbus')
-    _pyUModbus = swig_import_helper()
+            return importlib.import_module('_UModbus')
+    _UModbus = swig_import_helper()
     del swig_import_helper
 elif _swig_python_version_info >= (2, 6, 0):
     def swig_import_helper():
@@ -23,17 +23,17 @@ elif _swig_python_version_info >= (2, 6, 0):
         import imp
         fp = None
         try:
-            fp, pathname, description = imp.find_module('_pyUModbus', [dirname(__file__)])
+            fp, pathname, description = imp.find_module('_UModbus', [dirname(__file__)])
         except ImportError:
-            import _pyUModbus
-            return _pyUModbus
+            import _UModbus
+            return _UModbus
         try:
-            _mod = imp.load_module('_pyUModbus', fp, pathname, description)
+            _mod = imp.load_module('_UModbus', fp, pathname, description)
         finally:
             if fp is not None:
                 fp.close()
         return _mod
-    _pyUModbus = swig_import_helper()
+    _UModbus = swig_import_helper()
     del swig_import_helper
 else:
     raise RuntimeError('Python 2.6 or later required')
@@ -99,53 +99,53 @@ class UModbus(_object):
     __repr__ = _swig_repr
 
     def __init__(self):
-        this = _pyUModbus.new_UModbus()
+        this = _UModbus.new_UModbus()
         try:
             self.this.append(this)
         except __builtin__.Exception:
             self.this = this
-    __swig_destroy__ = _pyUModbus.delete_UModbus
+    __swig_destroy__ = _UModbus.delete_UModbus
     __del__ = lambda self: None
 
     def getUIType(self) -> "std::string":
-        return _pyUModbus.UModbus_getUIType(self)
+        return _UModbus.UModbus_getUIType(self)
 
     def isWriteFunction(self, mbfunc: 'int') -> "bool":
-        return _pyUModbus.UModbus_isWriteFunction(self, mbfunc)
+        return _UModbus.UModbus_isWriteFunction(self, mbfunc)
 
     def prepare(self, ip: 'std::string const &', port: 'int') -> "void":
-        return _pyUModbus.UModbus_prepare(self, ip, port)
+        return _UModbus.UModbus_prepare(self, ip, port)
 
     def connect(self, ip: 'std::string const &', port: 'int') -> "void":
-        return _pyUModbus.UModbus_connect(self, ip, port)
+        return _UModbus.UModbus_connect(self, ip, port)
 
     def conn_port(self) -> "int":
-        return _pyUModbus.UModbus_conn_port(self)
+        return _UModbus.UModbus_conn_port(self)
 
     def conn_ip(self) -> "std::string":
-        return _pyUModbus.UModbus_conn_ip(self)
+        return _UModbus.UModbus_conn_ip(self)
 
     def isConnection(self) -> "bool":
-        return _pyUModbus.UModbus_isConnection(self)
+        return _UModbus.UModbus_isConnection(self)
 
     def setTimeout(self, msec: 'int') -> "void":
-        return _pyUModbus.UModbus_setTimeout(self, msec)
+        return _UModbus.UModbus_setTimeout(self, msec)
 
     def mbread(self, *args) -> "long":
-        return _pyUModbus.UModbus_mbread(self, *args)
+        return _UModbus.UModbus_mbread(self, *args)
 
     def getWord(self, addr: 'int', mbreg: 'int', mbfunc: 'int'=0x4) -> "long":
-        return _pyUModbus.UModbus_getWord(self, addr, mbreg, mbfunc)
+        return _UModbus.UModbus_getWord(self, addr, mbreg, mbfunc)
 
     def getByte(self, addr: 'int', mbreg: 'int', mbfunc: 'int'=0x4) -> "long":
-        return _pyUModbus.UModbus_getByte(self, addr, mbreg, mbfunc)
+        return _UModbus.UModbus_getByte(self, addr, mbreg, mbfunc)
 
     def getBit(self, addr: 'int', mbreg: 'int', mbfunc: 'int'=0x2) -> "bool":
-        return _pyUModbus.UModbus_getBit(self, addr, mbreg, mbfunc)
+        return _UModbus.UModbus_getBit(self, addr, mbreg, mbfunc)
 
     def mbwrite(self, *args) -> "void":
-        return _pyUModbus.UModbus_mbwrite(self, *args)
-UModbus_swigregister = _pyUModbus.UModbus_swigregister
+        return _UModbus.UModbus_mbwrite(self, *args)
+UModbus_swigregister = _UModbus.UModbus_swigregister
 UModbus_swigregister(UModbus)
 
 # This file is compatible with both classic and new-style classes.

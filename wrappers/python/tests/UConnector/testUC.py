@@ -5,10 +5,11 @@ import sys
 import time
 
 sys.path.append('../../')
-sys.path.append('../../lib/pyUniSet/')
-sys.path.append('../../lib/pyUniSet/.libs')
+sys.path.append('../../lib/lib/')
+sys.path.append('../../lib/lib/.libs')
 
-from lib import *
+from UniSet import *
+from UConnector import *
 
 def myfunc( act ):
 	act['test'] = 'test'

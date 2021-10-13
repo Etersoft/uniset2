@@ -30,7 +30,7 @@ import os
 import sys
 
 import uniset2
-from uniset2 import UniXML
+from uniset2.lib import UniXML
 from subprocess import Popen, PIPE
 
 sys.path.append("./python_modules")

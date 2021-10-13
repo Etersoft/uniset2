@@ -5,7 +5,7 @@ import sys
 
 from .UInterface import *
 from .UGlobal import *
-from .pyUniSet.pyUModbus import *
+from .lib.UModbus import *
 
 
 class UInterfaceModbus(UInterface):

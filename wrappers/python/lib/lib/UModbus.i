@@ -3,18 +3,13 @@
 *    to regenerate the wrappers run:
 *    swig -python UInterface.i
 ***********************************************************/
+%include <std_string.i>
 
-%module pyUniSet
-
-%include "std_string.i"
-
+%module UModbus
 %{
-#include "PyUInterface.h"
-#include "UProxyObject.h"
+#include "UModbus.h"
 %}
 
 /* Для генерации классов и констант в Питоне */
-%include "PyUInterface.h"
-%include "UTypes.h"
-%include "UExceptions.h"
-%include "UProxyObject.h"
+%include "UModbus.h"
+// %include "UExceptions.h"

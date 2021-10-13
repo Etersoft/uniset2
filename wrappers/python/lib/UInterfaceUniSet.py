@@ -3,7 +3,7 @@
 
 from .UInterface import *
 from .UGlobal import *
-from .pyUniSet.pyUConnector import *
+from .lib.UConnector import *
 
 
 class UInterfaceUniSet(UInterface):

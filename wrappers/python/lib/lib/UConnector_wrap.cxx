@@ -2754,16 +2754,16 @@ static swig_module_info swig_module = {swig_types, 5, 0, 0, 0, 0};
 
 
 /*-----------------------------------------------
-              @(target):= _pyUConnector.so
+              @(target):= _UConnector.so
   ------------------------------------------------*/
 #if PY_VERSION_HEX >= 0x03000000
-#  define SWIG_init    PyInit__pyUConnector
+#  define SWIG_init    PyInit__UConnector
 
 #else
-#  define SWIG_init    init_pyUConnector
+#  define SWIG_init    init_UConnector
 
 #endif
-#define SWIG_name    "_pyUConnector"
+#define SWIG_name    "_UConnector"
 
 #define SWIGVERSION 0x030012 
 #define SWIG_VERSION SWIGVERSION

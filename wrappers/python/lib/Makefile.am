@@ -1,5 +1,5 @@
 if ENABLE_PYTHON
-SUBDIRS=pyUniSet
+SUBDIRS=lib
 
 #lib_LTLIBRARIES = libUniSet2Python.la
 #libUniSet2Python_la_SOURCES	=

@@ -3,8 +3,8 @@
 
 __all__ = ["UGlobal", "UInterface", "UInterfaceModbus", "UInterfaceUniSet", "UniSetHTTP", "UniXML"]
 
-from .pyUniSet.pyUniSet import *
-from .pyUniSet.pyUModbus import *
-from .pyUniSet.pyUConnector import *
+from .lib.UniSet import *
+from .lib.UModbus import *
+from .lib.UConnector import *
 
-from .pyUniSet.pyUExceptions import *
+from .lib.UExceptions import *

@@ -2758,16 +2758,16 @@ static swig_module_info swig_module = {swig_types, 9, 0, 0, 0, 0};
 
 
 /*-----------------------------------------------
-              @(target):= _pyUniSet.so
+              @(target):= _UniSet.so
   ------------------------------------------------*/
 #if PY_VERSION_HEX >= 0x03000000
-#  define SWIG_init    PyInit__pyUniSet
+#  define SWIG_init    PyInit__UniSet
 
 #else
-#  define SWIG_init    init_pyUniSet
+#  define SWIG_init    init_UniSet
 
 #endif
-#define SWIG_name    "_pyUniSet"
+#define SWIG_name    "_UniSet"
 
 #define SWIGVERSION 0x030012 
 #define SWIG_VERSION SWIGVERSION

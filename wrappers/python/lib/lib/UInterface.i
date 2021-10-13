@@ -4,15 +4,17 @@
 *    swig -python UInterface.i
 ***********************************************************/
 
-%module pyUniSet
+%module UniSet
 
-%include <std_string.i>
+%include "std_string.i"
 
 %{
-//#include "UProxyObject.h"
+#include "PyUInterface.h"
+#include "UProxyObject.h"
 %}
 
 /* Для генерации классов и констант в Питоне */
-//%include "UProxyObject.h"
-// %include "UTypes.h"
-//%include "UExceptions.h"
+%include "PyUInterface.h"
+%include "UTypes.h"
+%include "UExceptions.h"
+%include "UProxyObject.h"
