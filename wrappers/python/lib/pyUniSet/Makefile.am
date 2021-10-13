@@ -4,7 +4,7 @@ SWIG=swig
 
 #python_SCRIPTS = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
 pydir=$(pkgpythondir)/pyUniSet
-py_DATA = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
+py_DATA = __init__.py pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
 
 BUILD_SRCDIR=$(srcdir)/../../../core
 BUILD_SRC=UModbus.cc UConnector.cc UProxyObject.cc
