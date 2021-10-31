@@ -19,5 +19,5 @@ TEST_CASE("ObjectIndexHash", "[oindex_hash][basic]" )
 // -----------------------------------------------------------------------------
 TEST_CASE("ObjectIndexHash: collision", "[oindex_hash][base][collision]" )
 {
-	REQUIRE_THROWS_AS( ObjectIndex_hashXML("tests_oindex_hash_collision_config.xml"), uniset::SystemError& );
+	REQUIRE_THROWS_AS( ObjectIndex_hashXML("tests_oindex_hash_collision_config.xml"), uniset::SystemError );
 }

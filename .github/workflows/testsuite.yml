@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: alt:sisyphus
+      options: --privileged
     steps:
       - name: install packages
         run: |

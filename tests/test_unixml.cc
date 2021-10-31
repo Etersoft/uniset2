@@ -20,8 +20,8 @@ TEST_CASE("UniXML", "[unixml][basic]" )
 
     SECTION( "Bad file" )
     {
-        REQUIRE_THROWS_AS( UniXML("unknown.xml"), uniset::NameNotFound& );
-        REQUIRE_THROWS_AS( UniXML("tests_unixml_badfile.xml"), uniset::Exception& );
+        REQUIRE_THROWS_AS( UniXML("unknown.xml"), uniset::NameNotFound );
+        REQUIRE_THROWS_AS( UniXML("tests_unixml_badfile.xml"), uniset::Exception );
     }
 
     UniXML uxml("tests_unixml.xml");
@@ -234,6 +234,6 @@ TEST_CASE("UniXML createFromText", "[unixml][createFromText]" )
     CHECK_FALSE( uxml.isOpen() );
 
     const string badtext = "<?xml version=";
-    REQUIRE_THROWS_AS(uxml.createFromText(badtext), uniset::SystemError& );
+    REQUIRE_THROWS_AS(uxml.createFromText(badtext), uniset::SystemError );
 }
 // -----------------------------------------------------------------------------

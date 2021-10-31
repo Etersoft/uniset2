@@ -366,10 +366,13 @@ AC_SUBST(UNISET_EXT_LIBS)
 #AC_LANG_PUSH([C++])
 #AC_CHECK_HEADERS([catch.hpp],,exit)
 #AC_LANG_POP([C++])
+
 CATCH_VERSION_MAJOR=1
+CATCH_CFLAGS=
 CATCH_FILE="include/catch.hpp"
 if test ! -e ${CATCH_FILE}; then 
-	CATCH_FILE="/usr/include/catch.hpp"
+	CATCH_FILE="/usr/include/catch2/catch.hpp"
+	CATCH_CFLAGS="-I/usr/include/catch2"
 fi
 
 AC_MSG_CHECKING([catch version in $CATCH_FILE])
@@ -485,7 +488,7 @@ CXX_EXTRA_FLAGS="-Wnon-virtual-dtor -Woverloaded-virtual -Woverflow -D_GLIBCXX_U
 # export
 LDFLAGS="$LDFLAGS ${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS} ${POCO_LIBS} ${EV_LIBS}"
 # all developer liked options add to autogen.sh, please
-CXXFLAGS="-std=c++17 -I\$(top_builddir)/include $CXXFLAGS -funsigned-char -g -DCATCH_VERSION_MAJOR=${CATCH_VERSION_MAJOR} -D_GNU_SOURCE ${REST_API_CFLAGS} ${COMPORT_485F_CFLAGS} ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${POCO_CFLAGS} ${EV_CFLAGS} $CXX_EXTRA_FLAGS"
+CXXFLAGS="-I\$(top_builddir)/include $CXXFLAGS ${CATCH_CFLAGS} -funsigned-char -g -D_GNU_SOURCE ${REST_API_CFLAGS} ${COMPORT_485F_CFLAGS} ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} ${POCO_CFLAGS} ${EV_CFLAGS} $CXX_EXTRA_FLAGS"
 
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)

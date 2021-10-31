@@ -4,6 +4,7 @@
 #include <atomic>
 #include <future>
 #include <ostream>
+#include <sstream>
 
 #include "UTCPSocket.h"
 #include "TCPCheck.h"
@@ -61,7 +62,7 @@ TEST_CASE("TCPCheck::check", "[tcpcheck][tcpcheck_check]" )
     TCPCheck t;
     TSRunner tserv;
 
-    ostringstream ia;
+    std::ostringstream ia;
     ia << host << ":" << port;
 
     msleep(200);

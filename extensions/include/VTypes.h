@@ -286,6 +286,11 @@ namespace uniset
                 {
                     return raw;
                 }
+                // ------------------------------------------
+                operator int()
+                {
+                    return raw;
+                }
 
                 uint16_t raw;
         };
@@ -322,6 +327,10 @@ namespace uniset
                 }
                 // ------------------------------------------
                 operator long()
+                {
+                    return raw;
+                }
+                operator int()
                 {
                     return raw;
                 }
