@@ -25,7 +25,7 @@
 %define oname uniset2
 
 Name: libuniset2
-Version: 2.17.2
+Version: 2.17.3
 Release: alt1
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -594,6 +594,9 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 # history of current unpublished changes
 
 %changelog
+* Sun Oct 31 2021 Pavel Vainerman <pv@altlinux.ru> 2.17.3-alt1
+- [uwebsocket]: minor refactoring and fixes
+
 * Sun Oct 31 2021 Pavel Vainerman <pv@altlinux.ru> 2.17.2-alt1
 - used catch2 instead catch
 
