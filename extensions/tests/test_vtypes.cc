@@ -319,13 +319,13 @@ TEST_CASE("VTypes: Signed", "[vtypes][signed]")
     {
         long l = -32766;
         Signed v(l);
-        REQUIRE( (int16_t)v == l );
+        REQUIRE( v == l );
     }
     SECTION("Modbus constructor")
     {
         ModbusRTU::ModbusData d = 65535;
         Signed v(d);
-        REQUIRE( (int16_t)v == (int16_t)d );
+        REQUIRE( (int)v == (int)d );
     }
 }
 // -----------------------------------------------------------------------------

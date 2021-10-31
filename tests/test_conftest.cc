@@ -86,7 +86,7 @@ TEST_CASE( "Configuration", "[Configuration]" )
     {
         int t_argc = 0;
         char t_argv[] = {""};
-        REQUIRE_THROWS_AS( Configuration(t_argc, (const char* const*)(t_argv), ""), uniset::SystemError& );
+        REQUIRE_THROWS_AS( Configuration(t_argc, (const char* const*)(t_argv), ""), uniset::SystemError );
     }
 
     // SECTION( "ObjectIndex Constructor" )
@@ -98,7 +98,7 @@ TEST_CASE( "Configuration", "[Configuration]" )
         int t_argc = 0;
         char t_argv[] = {""};
         ulog()->level(Debug::NONE);
-        REQUIRE_THROWS_AS( Configuration(t_argc, (const char* const*)(t_argv), "tests_no_objectsmap.xml"), uniset::SystemError& );
+        REQUIRE_THROWS_AS( Configuration(t_argc, (const char* const*)(t_argv), "tests_no_objectsmap.xml"), uniset::SystemError );
     }
 
     SECTION( "Bad conf: no <UniSet>" )
@@ -106,7 +106,7 @@ TEST_CASE( "Configuration", "[Configuration]" )
         int t_argc = 0;
         char t_argv[] = {""};
         ulog()->level(Debug::NONE);
-        REQUIRE_THROWS_AS( Configuration(t_argc, (const char* const*)(t_argv), "tests_no_uniset_section.xml"), uniset::SystemError& );
+        REQUIRE_THROWS_AS( Configuration(t_argc, (const char* const*)(t_argv), "tests_no_uniset_section.xml"), uniset::SystemError );
     }
 
 }
