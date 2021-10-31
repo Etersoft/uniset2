@@ -12,10 +12,10 @@ int main( int argc, const char* argv[] )
 
         uniset::uniset_init(argc, argv);
 
-        int returnCode = session.applyCommandLine( argc, argv, Catch::Session::OnUnusedOptions::Ignore );
+        int returnCode = session.applyCommandLine( argc, argv );
 
-        if( returnCode != 0 ) // Indicates a command line error
-            return returnCode;
+//        if( returnCode != 0 ) // Indicates a command line error
+//            return returnCode;
 
         return session.run();
     }

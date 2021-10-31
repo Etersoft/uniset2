@@ -325,7 +325,7 @@ TEST_CASE("VTypes: Signed", "[vtypes][signed]")
     {
         ModbusRTU::ModbusData d = 65535;
         Signed v(d);
-        REQUIRE( (int)v == (int)d );
+        REQUIRE( (ModbusRTU::ModbusData)v == d );
     }
 }
 // -----------------------------------------------------------------------------

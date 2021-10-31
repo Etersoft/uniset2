@@ -47,7 +47,7 @@ TEST_CASE("HttpResolver: resolve", "[httpresolver][ui]")
 
     REQUIRE_NOTHROW( ui->resolve(TestProc, Node1) );
     REQUIRE_NOTHROW( ui->resolve("UNISET_PLC/UniObjects/TestProc") );
-    REQUIRE_THROWS_AS( ui->resolve(DefaultObjectId, Node1), uniset::ResolveNameError& );
+    REQUIRE_THROWS_AS( ui->resolve(DefaultObjectId, Node1), uniset::ResolveNameError );
     REQUIRE( ui->isExist(TestProc, Node1) );
 }
 // -----------------------------------------------------------------------------

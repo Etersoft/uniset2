@@ -18,14 +18,14 @@ int main( int argc, const char* argv[] )
 
         if( argc > 1 && ( strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0 ) )
         {
-            session.showHelp("tests_httpresolver");
+            session.showHelp();
             return 0;
         }
 
-        int returnCode = session.applyCommandLine( argc, argv, Catch::Session::OnUnusedOptions::Ignore );
+        int returnCode = session.applyCommandLine( argc, argv );
 
-        if( returnCode != 0 ) // Indicates a command line error
-            return returnCode;
+//        if( returnCode != 0 ) // Indicates a command line error
+//            return returnCode;
 
         auto conf = uniset_init(argc, argv);
 
