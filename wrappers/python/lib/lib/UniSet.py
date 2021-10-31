@@ -217,7 +217,7 @@ class ShortIOInfo(_object):
 ShortIOInfo_swigregister = _UniSet.ShortIOInfo_swigregister
 ShortIOInfo_swigregister(ShortIOInfo)
 
-class UException(BaseException, _object):
+class UException(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, UException, name, value)
     __swig_getmethods__ = {}
@@ -225,7 +225,6 @@ class UException(BaseException, _object):
     __repr__ = _swig_repr
 
     def __init__(self, *args):
-        BaseException.__init__(self, args)
         this = _UniSet.new_UException(*args)
         try:
             self.this.append(this)

@@ -28,14 +28,14 @@ int main( int argc, const char* argv[] )
             cout << "--confile    - Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
             SharedMemory::help_print(argc, argv);
             cout << endl << endl << "--------------- CATCH HELP --------------" << endl;
-            session.showHelp("tests_mbtcpmaster");
+            session.showHelp();
             return 0;
         }
 
-        int returnCode = session.applyCommandLine( argc, argv, Catch::Session::OnUnusedOptions::Ignore );
+        int returnCode = session.applyCommandLine( argc, argv );
 
-        if( returnCode != 0 ) // Indicates a command line error
-            return returnCode;
+//        if( returnCode != 0 ) // Indicates a command line error
+//            return returnCode;
 
         auto conf = uniset_init(argc, argv);
         dlog()->logFile("./smtest.log");

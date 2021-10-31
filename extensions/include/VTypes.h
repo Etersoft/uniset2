@@ -287,9 +287,13 @@ namespace uniset
                     return raw;
                 }
                 // ------------------------------------------
-                operator int()
+                bool operator==(const int& a) const
                 {
-                    return raw;
+                    return (int)raw == a;
+                }
+                bool operator==(const long& a) const
+                {
+                    return (long)raw == a;
                 }
 
                 uint16_t raw;
@@ -330,9 +334,14 @@ namespace uniset
                 {
                     return raw;
                 }
-                operator int()
+                // ------------------------------------------
+                bool operator== (const int& a) const
                 {
-                    return raw;
+                    return (int)raw == a;
+                }
+                bool operator== (const long& a) const
+                {
+                    return (long)raw == a;
                 }
 
                 int16_t raw;

@@ -47,14 +47,14 @@ TEST_CASE("UInterface", "[UInterface]")
 
     SECTION( "GET/SET" )
     {
-        REQUIRE_THROWS_AS( ui->getValue(DefaultObjectId), uniset::ORepFailed& );
+        REQUIRE_THROWS_AS( ui->getValue(DefaultObjectId), uniset::ORepFailed );
         REQUIRE_NOTHROW( ui->setValue(sid, 1) );
         REQUIRE( ui->getValue(sid) == 1 );
         REQUIRE_NOTHROW( ui->setValue(sid, 100) );
         REQUIRE( ui->getValue(sid) == 100 ); // хоть это и дискретный датчик.. функция-то универсальная..
 
-        REQUIRE_THROWS_AS( ui->getValue(sid, DefaultObjectId), uniset::Exception& );
-        REQUIRE_THROWS_AS( ui->getValue(sid, 100), uniset::Exception& );
+        REQUIRE_THROWS_AS( ui->getValue(sid, DefaultObjectId), uniset::Exception );
+        REQUIRE_THROWS_AS( ui->getValue(sid, 100), uniset::Exception );
 
         REQUIRE_NOTHROW( ui->setValue(aid, 10) );
         REQUIRE( ui->getValue(aid) == 10 );
@@ -67,16 +67,16 @@ TEST_CASE("UInterface", "[UInterface]")
 
         REQUIRE_NOTHROW( ui->fastSetValue(si, 20, DefaultObjectId) );
         REQUIRE( ui->getValue(aid) == 20 );
-        REQUIRE_THROWS_AS( ui->getValue(aid, -2), uniset::Exception& );
+        REQUIRE_THROWS_AS( ui->getValue(aid, -2), uniset::Exception );
 
         si.id = sid;
         REQUIRE_NOTHROW( ui->setValue(si, 15, DefaultObjectId) );
         REQUIRE( ui->getValue(sid) == 15 );
 
         si.node = -2;
-        REQUIRE_THROWS_AS( ui->setValue(si, 20, DefaultObjectId), uniset::Exception& );
+        REQUIRE_THROWS_AS( ui->setValue(si, 20, DefaultObjectId), uniset::Exception );
 
-        REQUIRE_THROWS_AS( ui->getTimeChange(sid, DefaultObjectId), uniset::ORepFailed& );
+        REQUIRE_THROWS_AS( ui->getTimeChange(sid, DefaultObjectId), uniset::ORepFailed );
         REQUIRE_NOTHROW( ui->getTimeChange(sid, conf->getLocalNode()) );
 
         si.id = aid;
@@ -96,8 +96,8 @@ TEST_CASE("UInterface", "[UInterface]")
     SECTION( "resolve" )
     {
         REQUIRE_NOTHROW( ui->resolve(sid) );
-        REQUIRE_THROWS_AS( ui->resolve(sid, 10), uniset::ResolveNameError& );
-        REQUIRE_THROWS_AS( ui->resolve(sid, DefaultObjectId), uniset::ResolveNameError& );
+        REQUIRE_THROWS_AS( ui->resolve(sid, 10), uniset::ResolveNameError );
+        REQUIRE_THROWS_AS( ui->resolve(sid, DefaultObjectId), uniset::ResolveNameError );
         REQUIRE_NOTHROW( ui->resolve("UNISET_PLC/Controllers/SharedMemory") );
     }
 
@@ -164,17 +164,17 @@ TEST_CASE("UInterface", "[UInterface]")
 
     SECTION( "ask" )
     {
-        REQUIRE_THROWS_AS( ui->askSensor(sid, UniversalIO::UIONotify), uniset::IOBadParam& );
+        REQUIRE_THROWS_AS( ui->askSensor(sid, UniversalIO::UIONotify), uniset::IOBadParam );
         REQUIRE_NOTHROW( ui->askSensor(sid, UniversalIO::UIONotify, testOID) );
         REQUIRE_NOTHROW( ui->askSensor(aid, UniversalIO::UIONotify, testOID) );
         REQUIRE_NOTHROW( ui->askSensor(aid, UniversalIO::UIODontNotify, testOID) );
         REQUIRE_NOTHROW( ui->askSensor(sid, UniversalIO::UIODontNotify, testOID) );
 
-        REQUIRE_THROWS_AS( ui->askSensor(-20, UniversalIO::UIONotify), uniset::Exception& );
+        REQUIRE_THROWS_AS( ui->askSensor(-20, UniversalIO::UIONotify), uniset::Exception );
 
         REQUIRE_NOTHROW( ui->askRemoteSensor(sid, UniversalIO::UIONotify, conf->getLocalNode(), testOID) );
         REQUIRE_NOTHROW( ui->askRemoteSensor(aid, UniversalIO::UIONotify, conf->getLocalNode(), testOID) );
-        REQUIRE_THROWS_AS( ui->askRemoteSensor(sid, UniversalIO::UIONotify, -3, testOID), uniset::Exception& );
+        REQUIRE_THROWS_AS( ui->askRemoteSensor(sid, UniversalIO::UIONotify, -3, testOID), uniset::Exception );
 
         uniset::IDList lst;
         lst.add(aid);
@@ -190,7 +190,7 @@ TEST_CASE("UInterface", "[UInterface]")
         REQUIRE_NOTHROW( ui->askThreshold(aid, 10, UniversalIO::UIONotify, 90, 100, false, testOID) );
         REQUIRE_NOTHROW( ui->askThreshold(aid, 11, UniversalIO::UIONotify, 50, 70, false, testOID) );
         REQUIRE_NOTHROW( ui->askThreshold(aid, 12, UniversalIO::UIONotify, 20, 40, false, testOID) );
-        REQUIRE_THROWS_AS( ui->askThreshold(aid, 3, UniversalIO::UIONotify, 50, 20, false, testOID), IONotifyController_i::BadRange& );
+        REQUIRE_THROWS_AS( ui->askThreshold(aid, 3, UniversalIO::UIONotify, 50, 20, false, testOID), IONotifyController_i::BadRange );
 
         IONotifyController_i::ThresholdsListSeq_var slist = ui->getThresholdsList(aid);
         REQUIRE( slist->length() == 1 ); // количество датчиков с порогами = 1 (это aid)
@@ -213,7 +213,7 @@ TEST_CASE("UInterface", "[UInterface]")
         REQUIRE( ti3.lowlimit == 20 );
         REQUIRE( ti3.hilimit == 40 );
 
-        REQUIRE_THROWS_AS( ui->getThresholdInfo(sid, 10), uniset::NameNotFound& );
+        REQUIRE_THROWS_AS( ui->getThresholdInfo(sid, 10), uniset::NameNotFound );
 
         // проверяем thresholds который был сформирован из секции <thresholds>
         ui->setValue(10, 378);
