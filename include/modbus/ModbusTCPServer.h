@@ -92,6 +92,12 @@ namespace uniset
             void setTimer( timeout_t msec );
             timeout_t getTimer() const noexcept;
 
+            // Таймаут для переоткрытия сокета.
+            // Если в течение msec миллисекунд нет действующих соединений
+            // сокет переоткрывается
+            void setSocketTimeout( timeout_t msec );
+            timeout_t getSocketTimeout() const noexcept;
+
         protected:
 
             // ожидание (при этом время отдаётся eventloop-у)
@@ -105,6 +111,8 @@ namespace uniset
 
             virtual void ioAccept(ev::io& watcher, int revents);
             void onTimer( ev::timer& t, int revents );
+            void onSocketTimeout( ev::timer& t, int revents );
+            void onSocketResetTimeout( ev::async& watcher, int revents ) noexcept;
 
             void sessionFinished( const ModbusTCPSession* s );
 
@@ -145,6 +153,11 @@ namespace uniset
             ev::timer ioTimer;
             std::shared_ptr<UTCPSocket> sock;
 
+            ev::timer sockTimeout;
+            timeout_t socketTimeout_msec = { UniSetTimer::WaitUpTime };
+            double tmSockTimeout = { 0.0 };
+            ev::async asyncResetSockTimeout;
+
             std::unordered_set<ModbusRTU::ModbusAddr> vmbaddr;
             TimerSignal m_timer_signal;
 
@@ -154,6 +167,8 @@ namespace uniset
             PassiveTimer ptWait;
 
         private:
+            void createSocket();
+
             // транслирование сигналов от Sessions..
             void postReceiveEvent( ModbusRTU::mbErrCode res );
             ModbusRTU::mbErrCode preReceiveEvent( const std::unordered_set<ModbusRTU::ModbusAddr> vaddr, timeout_t tout );

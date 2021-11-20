@@ -46,6 +46,8 @@ namespace uniset
 
 		io.set<ModbusTCPServer, &ModbusTCPServer::ioAccept>(this);
 		ioTimer.set<ModbusTCPServer, &ModbusTCPServer::onTimer>(this);
+		sockTimeout.set<ModbusTCPServer, &ModbusTCPServer::onSocketTimeout>(this);
+		asyncResetSockTimeout.set<ModbusTCPServer, &ModbusTCPServer::onSocketResetTimeout>(this);
 	}
 
 	// -------------------------------------------------------------------------
@@ -108,36 +110,50 @@ namespace uniset
 		return evIsActive() && sock;
 	}
 	// -------------------------------------------------------------------------
-	void ModbusTCPServer::evprepare()
+	void ModbusTCPServer::createSocket()
 	{
 		try
 		{
-			sock = make_shared<UTCPSocket>(iaddr, port);
+            auto tmpSock = make_shared<UTCPSocket>(iaddr, port);
+            if( sock )
+                sock.reset();
+
+	        sock = tmpSock;
 		}
 		catch( const Poco::Net::NetException& ex )
 		{
 			ostringstream err;
-			err << "(ModbusTCPServer::evprepare): connect " << iaddr << ":" << port << " err: " << ex.what();
+			err << "(ModbusTCPServer::createSocket): connect " << iaddr << ":" << port << " err: " << ex.what();
 			dlog->crit() << err.str() << endl;
 			throw uniset::SystemError(err.str());
 		}
 		catch( const std::exception& ex )
 		{
 			ostringstream err;
-			err << "(ModbusTCPServer::evprepare): connect " << iaddr << ":" << port << " err: " << ex.what();
+            err << "(ModbusTCPServer::createSocket): connect " << iaddr << ":" << port << " err: " << ex.what();
 			dlog->crit() << err.str() << endl;
 			throw uniset::SystemError(err.str());
 		}
 
 		sock->setBlocking(false);
-
+	}
+	// -------------------------------------------------------------------------
+	void ModbusTCPServer::evprepare()
+	{
+        createSocket();
 		io.set(loop);
 		io.start(sock->getSocket(), ev::READ);
 
-		ioTimer.set(loop);
+		asyncResetSockTimeout.set(loop);
+		asyncResetSockTimeout.start();
 
+		ioTimer.set(loop);
 		if( tmTime_msec != UniSetTimer::WaitUpTime )
 			ioTimer.start(0, tmTime);
+
+        sockTimeout.set(loop);
+        if( socketTimeout_msec > 0 && socketTimeout_msec != UniSetTimer::WaitUpTime )
+            sockTimeout.start(0, tmSockTimeout);
 	}
 	// -------------------------------------------------------------------------
 	void ModbusTCPServer::terminate()
@@ -155,6 +171,8 @@ namespace uniset
 
 		ioTimer.stop();
 		io.stop();
+		sockTimeout.stop();
+		asyncResetSockTimeout.stop();
 
 		auto lst(slist);
 
@@ -183,6 +201,7 @@ namespace uniset
 			{
 				slist.erase(i);
 				sessCount--;
+				asyncResetSockTimeout.send();
 				return;
 			}
 		}
@@ -238,7 +257,29 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	timeout_t ModbusTCPServer::getTimer() const noexcept
 	{
-		return tmTime;
+		return tmTime_msec;
+	}
+	// -------------------------------------------------------------------------
+	void ModbusTCPServer::setSocketTimeout( timeout_t msec )
+	{
+	    socketTimeout_msec = msec;
+	    if( msec == UniSetTimer::WaitUpTime || msec == 0 )
+	    {
+	        socketTimeout_msec = 0;
+	        if( sockTimeout.is_active() )
+	            sockTimeout.stop();
+	    }
+	    else
+	    {
+	        tmSockTimeout = (double)msec / 1000.;
+	        if( sockTimeout.is_active() )
+	            sockTimeout.start( 0, tmSockTimeout );
+	    }
+	}
+	// ------------------------------------------------------------------------
+	timeout_t ModbusTCPServer::getSocketTimeout() const noexcept
+	{
+	    return socketTimeout_msec;
 	}
 	// -------------------------------------------------------------------------
 	void ModbusTCPServer::iowait( timeout_t msec )
@@ -286,6 +327,9 @@ namespace uniset
 
 			connCount++;
 
+			if( sockTimeout.is_active() )
+			    sockTimeout.again();
+
 			auto s = make_shared<ModbusTCPSession>(ss, vmbaddr, sessTimeout);
 			s->connectReadCoil( sigc::mem_fun(this, &ModbusTCPServer::readCoilStatus) );
 			s->connectReadInputStatus( sigc::mem_fun(this, &ModbusTCPServer::readInputStatus) );
@@ -331,26 +375,83 @@ namespace uniset
 	// -------------------------------------------------------------------------
 	void ModbusTCPServer::onTimer( ev::timer& t, int revents )
 	{
-		if (EV_ERROR & revents)
-		{
-			if( dlog->is_crit() )
-				dlog->crit() << myname << "(ModbusTCPServer::ioTimer): invalid event" << endl;
+	    if (EV_ERROR & revents)
+	    {
+	        if( dlog->is_crit() )
+	            dlog->crit() << myname << "(ModbusTCPServer::ioTimer): invalid event" << endl;
 
-			return;
-		}
+	        return;
+	    }
 
-		try
-		{
-			m_timer_signal.emit();
-		}
-		catch( std::exception& ex )
-		{
-			if( dlog->is_crit() )
-				dlog->crit() << myname << "(onTimer): " << ex.what() << endl;
-		}
+	    try
+	    {
+	        m_timer_signal.emit();
+	    }
+	    catch( std::exception& ex )
+	    {
+	        if( dlog->is_crit() )
+	            dlog->crit() << myname << "(onTimer): " << ex.what() << endl;
+	    }
 	}
 	// -------------------------------------------------------------------------
+	void ModbusTCPServer::onSocketResetTimeout( ev::async& watcher, int revents ) noexcept
+	{
+	    if( EV_ERROR & revents )
+	    {
+	        if( dlog->is_crit() )
+	            dlog->crit() << myname << "(ModbusTCPServer::onSocketResetTimeout): invalid event" << endl;
 
+	        return;
+	    }
+
+	    if( dlog->is_info() )
+	        dlog->info() << myname << "(ModbusTCPServer::onSocketResetTimeout): reset socket timeout.." << endl;
+
+	    if( sockTimeout.is_active() )
+	        sockTimeout.again();
+	}
+	// -------------------------------------------------------------------------
+	void ModbusTCPServer::onSocketTimeout( ev::timer& t, int revents )
+	{
+	    if (EV_ERROR & revents)
+	    {
+	        if( dlog->is_crit() )
+	            dlog->crit() << myname << "(ModbusTCPServer::onSocketTimeout): invalid event" << endl;
+	        return;
+	    }
+
+	    {
+	        std::lock_guard<std::mutex> l(sMutex);
+	        if( !slist.empty())
+	        {
+	            if( dlog->is_info() )
+	                dlog->info() << myname << "(ModbusTCPServer::onSocketTimeout): check socket [OK].." << endl;
+
+	            t.again();
+	            return;
+	        }
+	    }
+
+	    if( dlog->is_warn() )
+	        dlog->warn() << myname << "(ModbusTCPServer::onSocketTimeout): no connections.. recreate socket.." << endl;
+
+	    try
+	    {
+	        createSocket();
+	        if( io.is_active() )
+	            io.stop();
+
+	        io.start(sock->getSocket(), ev::READ);
+	    }
+	    catch( std::exception& ex )
+	    {
+	        if( dlog->is_crit() )
+	            dlog->crit() << myname << "(ModbusTCPServer::onSocketTimeout): recreate socket ERROR: " << ex.what() << endl;
+	    }
+
+	    t.again();
+	}
+	// -------------------------------------------------------------------------
 	mbErrCode  ModbusTCPServer::realReceive( const std::unordered_set<ModbusAddr>& vaddr, timeout_t msecTimeout )
 	{
 		return ModbusRTU::erOperationFailed;
