@@ -1588,6 +1588,7 @@ namespace uniset
         cout << "--prefix-session-timeout msec   - Таймаут на закрытие соединения с 'клиентом', если от него нет запросов. По умолчанию: 10 сек." << endl;
         cout << "--prefix-session-maxnum num     - Маскимальное количество соединений. По умолчанию: 10." << endl;
         cout << "--prefix-session-count-id  id   - Датчик для отслеживания текущего количества соединений." << endl;
+        cout << "--prefix-socket-timeout msec    - Таймаут на переоткрытие сокета если долго нет соединений. По умолчанию: 0 (не переоткрывать)" << endl;
         cout << endl;
         cout << " Logs: " << endl;
         cout << "--prefix-log-...            - log control" << endl;
