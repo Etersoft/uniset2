@@ -248,6 +248,13 @@ namespace uniset
 
             vmonit(sessTimeout);
 
+            tmpval = conf->getArgInt("--" + prefix + "-socket-timeout", it.getProp("socketTimeout"));
+
+            if( tmpval > 0 )
+                sockTimeout = tmpval;
+
+            vmonit(sockTimeout);
+
             tmpval = conf->getArgInt("--" + prefix + "-session-maxnum", it.getProp("sessMaxNum"));
 
             if( tmpval > 0 )
@@ -642,6 +649,8 @@ namespace uniset
             i.second.ptTimeout.reset();
 
         tcpserver->setMaxSessions( sessMaxNum );
+        tcpserver->setSessionTimeout(sessTimeout);
+        tcpserver->setSocketTimeout(sockTimeout);
 
         if( vaddr.empty() )
         {
