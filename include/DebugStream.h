@@ -175,6 +175,12 @@ class DebugStream : public std::ostream
             show_datetime = s;
         }
 
+        // false = UTC (by default)
+        inline void showLocalTime( bool s ) noexcept
+        {
+            show_localtime = s;
+        }
+
         inline void showMilliseconds( bool s ) noexcept
         {
             show_msec = s;
@@ -296,6 +302,7 @@ class DebugStream : public std::ostream
         bool show_logtype = { true };
         bool show_msec = { false };
         bool show_usec = { false };
+        bool show_localtime = { false };
         std::string fname = { "" };
 
         StreamEvent_Signal s_stream;
