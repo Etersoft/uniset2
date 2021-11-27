@@ -65,6 +65,7 @@ std::string uniset::Configuration::help()
     print_help(os, 25, "--ulog-del-levels", "удалить уровень вывода логов\n");
     print_help(os, 25, "--ulog-show-microseconds", "Выводить время с микросекундами\n");
     print_help(os, 25, "--ulog-show-milliseconds", "Выводить время с миллисекундами\n");
+    print_help(os, 25, "--ulog-show-localtime", "Выводить локальное время. По умолчанию UTC.\n");
     print_help(os, 25, "--ulog-no-debug", "отключение логов\n");
     print_help(os, 25, "--ulog-logfile", "перенаправление лога в файл\n");
     print_help(os, 25, "--ulog-levels N", "уровень 'говорливости' логов");
@@ -913,7 +914,7 @@ namespace uniset
         if(!node)
         {
             ucrit << "(Configuration): <nodes> section not found!" << endl;
-            throw uniset::SystemError("(Configiuration): <nodes> section not found");
+            throw uniset::SystemError("(Configuration): <nodes> section not found");
         }
 
         UniXML::iterator it(node);
@@ -1067,6 +1068,9 @@ namespace uniset
                 deb->addLevel(Debug::NONE);
 
             debug_file = getProp(dnode, "file");
+
+            if( getPIntProp(dnode, "showLocalTime", 0) != 0 )
+                deb->showLocalTime(true);
         }
 
         // теперь смотрим командную строку
@@ -1076,6 +1080,7 @@ namespace uniset
         const string show_msec("--" + debname + "-show-milliseconds");
         const string show_usec("--" + debname + "-show-microseconds");
         const string verb_level("--" + debname + "-verbosity");
+        const string show_localtime("--" + debname + "-show-localtime");
 
         // смотрим командную строку
         for (int i = 1; i < (_argc - 1); i++)
@@ -1103,6 +1108,10 @@ namespace uniset
             else if( verb_level == _argv[i] )
             {
                 deb->verbose(uniset::uni_atoi(_argv[i + 1]));
+            }
+            else if( show_localtime == _argv[i] )
+            {
+                deb->showLocalTime(uniset::uni_atoi(_argv[i + 1]));
             }
         }
 
