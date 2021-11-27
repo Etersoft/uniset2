@@ -37,6 +37,7 @@ static struct option longopts[] =
     { "logfile", required_argument, 0, 'w' },
     { "logfile-truncate", required_argument, 0, 'z' },
     { "grep", required_argument, 0, 'g' },
+    { "timezone", required_argument, 0, 'm' },
     { NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -75,6 +76,7 @@ static void print_help()
     printf("[-r | --rotate] [objName]                 - rotate log file.\n");
     printf("[-u | --save-loglevels] [objName]         - save log levels (disable restore after disconnected).\n");
     printf("[-y | --restore-loglevels] [objName]      - restore default log levels.\n");
+    printf("[-m | --timezone] [local|utc]             - set time zone for log, local or UTC.\n");
 
     printf("\n");
     printf("Examples:\n");
@@ -121,7 +123,7 @@ int main( int argc, char** argv )
     {
         while(1)
         {
-            opt = getopt_long(argc, argv, "chvlf:a:p:i:d:s:n:eorbx:w:zt:g:uby:", longopts, &optindex);
+            opt = getopt_long(argc, argv, "chvlf:a:p:i:d:s:n:eorbx:w:zt:g:uby:m:", longopts, &optindex);
 
             if( opt == -1 )
                 break;
@@ -276,6 +278,24 @@ int main( int argc, char** argv )
                         filter = string(arg2);
 
                     vcmd.emplace_back(cmd, 0, filter);
+                }
+                break;
+
+                case 'm':
+                {
+                    LogServerTypes::Command cmd;
+                    std::string tz(optarg);
+                    if( tz == "local" )
+                        cmd = LogServerTypes::cmdShowLocalTime;
+                    else if( tz == "utc" )
+                        cmd = LogServerTypes::cmdShowUTCTime;
+                    else
+                    {
+                        cerr << "Error: Unknown timezone '" << tz << "'. Must be 'local' or 'utc'" << endl;
+                        return 1;
+                    }
+
+                    vcmd.emplace_back(cmd, 0, "");
                 }
                 break;
 

@@ -44,8 +44,12 @@ namespace uniset
             // команды требующие ответа..
             cmdList,        /*!< вывести список контролируемых логов */
             cmdFilterMode,  /*!< включить режим работы "фильтр" - вывод только от интересующих логов, заданных в logname (regexp) */
-            cmdViewDefaultLogLevel  /*!< вывести уровни логов сохранённых как умолчательный (cmdSaveLogLevel) */
+            cmdViewDefaultLogLevel, /*!< вывести уровни логов сохранённых как умолчательный (cmdSaveLogLevel) */
             // cmdSetLogFile
+
+            // другие команды
+            cmdShowLocalTime,    /*!< выводить локальное время */
+            cmdShowUTCTime   /*!< выводить UTC время (по умолчанию) */
         };
 
         std::ostream& operator<<(std::ostream& os, Command c );
