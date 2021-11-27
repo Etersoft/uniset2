@@ -538,6 +538,14 @@ namespace uniset
 					l.log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
 					break;
 
+				case LogServerTypes::cmdShowLocalTime:
+				    l.log->showLocalTime(true);
+				    break;
+
+				case LogServerTypes::cmdShowUTCTime:
+				    l.log->showLocalTime(false);
+				    break;
+
 				case LogServerTypes::cmdList:
 				case LogServerTypes::cmdSaveLogLevel:
 				case LogServerTypes::cmdRestoreLogLevel:
