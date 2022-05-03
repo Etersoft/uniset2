@@ -240,7 +240,7 @@ namespace uniset
     bool UDPMessage::dValue( size_t index ) const noexcept
     {
         if( index >= MaxDCount )
-            return uniset::DefaultObjectId;
+            return false;
 
         size_t nbyte = index / 8 * sizeof(uint8_t);
         size_t nbit =  index % 8 * sizeof(uint8_t);

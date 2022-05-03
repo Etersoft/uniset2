@@ -99,7 +99,7 @@ namespace uniset
             //! \return uniset::DefaultObjectId if not found
             long dID( size_t index ) const noexcept;
 
-            //! \return uniset::DefaultObjectId if not found
+            //! \return false if not found
             bool dValue( size_t index ) const noexcept;
 
             // функции addAData возвращают индекс, по которому потом можно напрямую писать при помощи setAData(index)
