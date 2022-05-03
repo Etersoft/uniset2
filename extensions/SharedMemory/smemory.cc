@@ -57,19 +57,19 @@ int main(int argc, const char** argv)
     }
     catch( const SystemError& err )
     {
-        dcrit << "(smemory): " << err << endl;
+        cerr << "(smemory): " << err << endl;
     }
     catch( const uniset::Exception& ex )
     {
-        dcrit << "(smemory): " << ex << endl;
+        cerr << "(smemory): " << ex << endl;
     }
     catch( const std::exception& e )
     {
-        dcrit << "(smemory): " << e.what() << endl;
+        cerr << "(smemory): " << e.what() << endl;
     }
     catch(...)
     {
-        dcrit << "(smemory): catch(...)" << endl;
+        cerr << "(smemory): catch(...)" << endl;
     }
 
     return 1;
