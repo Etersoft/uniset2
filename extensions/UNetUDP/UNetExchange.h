@@ -58,8 +58,7 @@ namespace uniset
     посылает в сеть UDP-пакеты содержащие данные считанные из локальной SM. Формат данных - это набор
     пар [id,value]. Другие узлы принимают их. Помимо этого данный процесс запускает
     "получателей" по одному на каждый (другой) узел и ловит пакеты от них, сохраняя данные в SM.
-    При этом "получатели" работают на одном потоке с использованием libev (см. UNetReceiver)
-    или каждый на своём потоке. Это определяется параметром \b unet_update_strategy.
+    При этом "получатели" работают на одном потоке с использованием libev (см. UNetReceiver).
 
     В текущей версии поддерживается два протокола для обмена broadcast udp и multicast. Какой использовать протокол
     определяется в настроечной секции параметром \b unet_transport="broadcast" или \b unet_transport="multicast".
@@ -87,7 +86,7 @@ namespace uniset
           ...
         </iocards>
       </item>
-      <item ip="192.168.56.10" name="Node1" textname="Node1" unet_port="3001" unet_update_strategy="evloop"/>
+      <item ip="192.168.56.10" name="Node1" textname="Node1" unet_port="3001"/>
       <item ip="192.168.56.11" name="Node2" textname="Node2" unet_port="3002"/>
     </nodes>
     \endcode
@@ -139,7 +138,7 @@ namespace uniset
           ...
         </iocards>
       </item>
-      <item id="3001" ip="192.168.56.10" name="Node1" textname="Node1" unet_update_strategy="evloop"
+      <item id="3001" ip="192.168.56.10" name="Node1" textname="Node1"
             unet_multicast_ip="224.0.0.1"
             unet_multicast_iface="192.168.1.1"
             unet_multicast_port2="3031"
