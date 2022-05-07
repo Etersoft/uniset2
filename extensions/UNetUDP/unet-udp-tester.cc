@@ -1,5 +1,4 @@
 #include <cstdlib>
-#include <errno.h>
 #include <getopt.h>
 #include <cstring>
 #include <iostream>
@@ -68,7 +67,7 @@ int main(int argc, char* argv[])
     int verb = 0;
     std::string addr = "";
     int port = 0;
-    int usecpause = 2000000;
+    int usecpause = 200000;
     timeout_t tout = UniSetTimer::WaitUpTime;
     bool broadcast = true;
     int procID = 1;
@@ -108,7 +107,7 @@ int main(int argc, char* argv[])
                 cout << "[-y|--prof] num          - Print receive statistics every NUM packets (for -r only)" << endl;
                 cout << "[-a|--a-data] id1=val1,id2=val2,... - Analog data. Send: id1=id1,id2=id2,.. for analog sensors" << endl;
                 cout << "[-i|--d-data] id1=val1,id2=val2,... - Digital data. Send: id1=id1,id2=id2,.. for digital sensors" << endl;
-                cout << "[-u|--pack-num] num      - first packet numbrt (default: 1)" << endl;
+                cout << "[-u|--pack-num] num      - first packet number (default: 1)" << endl;
                 cout << endl;
                 return 0;
 
@@ -255,7 +254,7 @@ int main(int argc, char* argv[])
                             continue;
                         }
 
-                        size_t ret = udp.receiveBytes(&pack, sizeof(pack) );
+                        size_t ret = udp.receiveBytes(&pack, sizeof(pack));
 
                         if( ret < 0 )
                         {
@@ -281,7 +280,9 @@ int main(int argc, char* argv[])
                         {
                             if( prev_num != (pack.header.num - 1) )
                                 cerr << "WARNING! Incorrect sequence of packets! current=" << pack.header.num
-                                     << " prev=" << prev_num << endl;
+                                     << " prev=" << prev_num
+                                     << " lost: " << std::labs(pack.header.num - prev_num)
+                                     << endl;
 
                             prev_num = pack.header.num;
                         }

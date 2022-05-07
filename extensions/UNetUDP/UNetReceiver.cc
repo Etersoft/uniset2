@@ -512,7 +512,7 @@ void UNetReceiver::readEvent( ev::io& watcher ) noexcept
     }
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::checkConnection()
+bool UNetReceiver::checkConnection()
 {
     bool tout = false;
 
@@ -530,12 +530,21 @@ void UNetReceiver::checkConnection()
 
         if( w )
         {
-            if( tout )
-                slEvent(w, evTimeout);
-            else
-                slEvent(w, evOK);
+            try
+            {
+                if (tout)
+                    slEvent(w, evTimeout);
+                else
+                    slEvent(w, evOK);
+            }
+            catch( std::exception& ex )
+            {
+                unetcrit << myname << "(checkConnection): exception: " << ex.what() << endl;
+            }
         }
     }
+
+    return !tout;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::updateEvent( ev::periodic& tm, int revents ) noexcept
@@ -552,7 +561,10 @@ void UNetReceiver::updateEvent( ev::periodic& tm, int revents ) noexcept
     // взводим таймер опять..
     tm.again();
 
-    // собственно обработка события
+    // смотрим есть ли связь..
+    bool recvOk = checkConnection();
+
+    // обновление данных в SM
     try
     {
         update();
@@ -562,16 +574,13 @@ void UNetReceiver::updateEvent( ev::periodic& tm, int revents ) noexcept
         unetcrit << myname << "(updateEvent): " << ex.what() << std::endl;
     }
 
-    // смотрим есть ли связь..
-    checkConnection();
-
     if( sidRespond != DefaultObjectId )
     {
         try
         {
             if( isInitOK() )
             {
-                bool r = respondInvert ? !isRecvOK() : isRecvOK();
+                bool r = respondInvert ? !recvOk : recvOk;
                 shm->localSetValue(itRespond, sidRespond, ( r ? 1 : 0 ), shm->ID());
             }
         }

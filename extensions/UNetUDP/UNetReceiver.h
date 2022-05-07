@@ -189,7 +189,7 @@ namespace uniset
 
             void initIterators() noexcept;
             bool createConnection( bool throwEx = false );
-            void checkConnection();
+            bool checkConnection();
             size_t rnext( size_t num );
 
         private:
