@@ -531,7 +531,7 @@ string DBServer_PostgreSQL::getMonitInfo( const string& params )
 }
 //--------------------------------------------------------------------------------------------
 std::shared_ptr<DBServer_PostgreSQL> DBServer_PostgreSQL::init_dbserver( int argc, const char* const* argv,
-        const std::string& prefix )
+    const std::shared_ptr<uniset::SharedMemory>& shm, const std::string& prefix )
 {
     auto conf = uniset_conf();
 
@@ -551,7 +551,10 @@ std::shared_ptr<DBServer_PostgreSQL> DBServer_PostgreSQL::init_dbserver( int arg
     }
 
     uinfo << "(DBServer_PostgreSQL): name = " << name << "(" << ID << ")" << endl;
-    return make_shared<DBServer_PostgreSQL>(ID, prefix);
+    auto db = make_shared<DBServer_PostgreSQL>(ID, prefix);
+    if( shm )
+        shm->setDBServer(db);
+    return db;
 }
 // -----------------------------------------------------------------------------
 void DBServer_PostgreSQL::help_print( int argc, const char* const* argv )

@@ -5,7 +5,7 @@ includedir=@includedir@
 
 Name: libUniSet2PostgreSQL
 Description: Support library for libUniSet2PostgreSQL
-Requires: libUniSet2 libpqxx
+Requires: libUniSet2 libpqxx libUniSet2SharedMemory
 Version: @VERSION@
 Libs: -L${libdir} -lUniSet2-pgsql
 Cflags: -std=c++17 -I${includedir}/@PACKAGE@ -I${includedir}/@PACKAGE@/extensions/pgsql

@@ -493,12 +493,25 @@ void IOController::ioUnRegistration( const uniset::ObjectId sid )
 	ui->unregister(sid);
 }
 // ---------------------------------------------------------------------------
+void IOController::setDBServer( const std::shared_ptr<DBServer>& db )
+{
+    dbserver = db;
+}
+// ---------------------------------------------------------------------------
 void IOController::logging( uniset::SensorMessage& sm )
 {
-	std::lock_guard<std::mutex> l(loggingMutex);
+    std::lock_guard<std::mutex> l(loggingMutex);
 
-	try
-	{
+    try
+    {
+		if( dbserver )
+		{
+		    sm.consumer = dbserverID;
+		    dbserver->push(sm.transport_msg());
+		    isPingDBServer = true;
+		    return;
+		}
+
 		// значит на этом узле нет DBServer-а
 		if( dbserverID == uniset::DefaultObjectId )
 		{
