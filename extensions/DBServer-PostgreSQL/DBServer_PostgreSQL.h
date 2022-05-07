@@ -23,6 +23,7 @@
 #include "UniSetTypes.h"
 #include "PostgreSQLInterface.h"
 #include "DBServer.h"
+#include "SharedMemory.h"
 // -------------------------------------------------------------------------
 namespace uniset
 {
@@ -61,7 +62,7 @@ namespace uniset
             virtual ~DBServer_PostgreSQL();
 
             /*! глобальная функция для инициализации объекта */
-            static std::shared_ptr<DBServer_PostgreSQL> init_dbserver( int argc, const char* const* argv, const std::string& prefix = "pgsql" );
+            static std::shared_ptr<DBServer_PostgreSQL> init_dbserver( int argc, const char* const* argv, const std::shared_ptr<uniset::SharedMemory>& ic = nullptr, const std::string& prefix = "pgsql" );
 
             /*! глобальная функция для вывода help-а */
             static void help_print( int argc, const char* const* argv );

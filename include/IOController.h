@@ -31,6 +31,7 @@
 #include "UniSetManager.h"
 #include "Configuration.h"
 #include "Mutex.h"
+#include "DBServer.h"
 //---------------------------------------------------------------------------
 namespace uniset
 {
@@ -41,7 +42,7 @@ namespace uniset
      * Поэтому неизменность ioList во время всей жизни объекта должна гарантироваться.
      * В частности, очень важной является структура USensorInfo, а также userdata,
      * которые используются для "кэширования" (сохранения) указателей на специальные данные.
-     * (см. также IONotifyContoller).
+     * (см. также IONotifyController).
     */
     class IOController:
         public UniSetManager,
@@ -52,6 +53,8 @@ namespace uniset
             IOController( const std::string& name, const std::string& section );
             IOController( const uniset::ObjectId id );
             virtual ~IOController();
+
+            void setDBServer( const std::shared_ptr<uniset::DBServer>& dbserver );
 
             virtual uniset::ObjectType getType() override
             {
@@ -293,6 +296,7 @@ namespace uniset
 
             bool isPingDBServer;    // флаг связи с DBServer-ом
             uniset::ObjectId dbserverID = { uniset::DefaultObjectId };
+            std::shared_ptr<uniset::DBServer> dbserver = { nullptr };
 
             std::mutex loggingMutex; /*!< logging info mutex */
 
