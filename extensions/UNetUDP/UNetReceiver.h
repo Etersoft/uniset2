@@ -209,10 +209,20 @@ namespace uniset
             // счётчики для подсчёта статистики
             size_t recvCount = { 0 };
             size_t upCount = { 0 };
+            std::chrono::system_clock::time_point t_start;
+            std::chrono::system_clock::time_point t_end;
+            std::chrono::system_clock::time_point t_stats;
 
             // текущая статистика
-            size_t statRecvPerSec = { 0 }; /*!< количество принимаемых пакетов в секунду */
-            size_t statUpPerSec = { 0 };    /*!< количество обработанных пакетов в секунду */
+            struct Stats
+            {
+                float recvPerSec = {0}; /*!< количество принимаемых пакетов в секунду */
+                float upPerSec = {0};    /*!< количество обработанных пакетов в секунду */
+                size_t upProcessingTime_microsec = {0}; /*!< время обработки данных */
+                size_t recvProcessingTime_microsec = {0}; /*!< время обработки получения данных */
+            };
+
+            Stats stats;
 
             // делаем loop общим.. одним на всех!
             static CommonEventLoop loop;

@@ -30,8 +30,8 @@ int main(int argc, char* argv[] )
 
         int returnCode = session.applyCommandLine( argc, argv, Catch::Session::OnUnusedOptions::Ignore );
 
-//        if( returnCode != 0 ) // Indicates a command line error
-//            return returnCode;
+        //        if( returnCode != 0 ) // Indicates a command line error
+        //            return returnCode;
 
         uniset_init(argc, argv);
 
