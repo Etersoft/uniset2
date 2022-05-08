@@ -37,167 +37,175 @@
 // -------------------------------------------------------------------------
 namespace uniset
 {
-	// -------------------------------------------------------------------------
-	using namespace std;
-	// -------------------------------------------------------------------------
-	LogServerTypes::lsMessage::lsMessage():
-		magic(MAGICNUM),
-		cmd(cmdNOP),
-		data(0)
-	{
-		std::memset(logname, 0, sizeof(logname));
+    // -------------------------------------------------------------------------
+    using namespace std;
+    // -------------------------------------------------------------------------
+    LogServerTypes::lsMessage::lsMessage():
+        magic(MAGICNUM),
+        cmd(cmdNOP),
+        data(0)
+    {
+        std::memset(logname, 0, sizeof(logname));
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		_be_order = 0;
+        _be_order = 0;
 #elif __BYTE_ORDER == __BIG_ENDIAN
-		_be_order = 1;
+        _be_order = 1;
 #endif
-	}
-	// -------------------------------------------------------------------------
-	LogServerTypes::lsMessage::lsMessage( Command c, uint32_t d, const std::string& logname ):
-		magic(MAGICNUM), cmd(c), data(d)
-	{
+    }
+    // -------------------------------------------------------------------------
+    LogServerTypes::lsMessage::lsMessage( Command c, uint32_t d, const std::string& logname ):
+        magic(MAGICNUM), cmd(c), data(d)
+    {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		_be_order = 0;
+        _be_order = 0;
 #elif __BYTE_ORDER == __BIG_ENDIAN
-		_be_order = 1;
+        _be_order = 1;
 #endif
-		setLogName(logname);
-	}
-	// -------------------------------------------------------------------------
-	void LogServerTypes::lsMessage::convertFromNet() noexcept
-	{
-		if( _be_order )
-		{
-			BE32_TO_H(data);
-			BE32_TO_H(magic);
-		}
-		else
-		{
-			LE32_TO_H(data);
-			LE32_TO_H(magic);
-		}
+        setLogName(logname);
+    }
+    // -------------------------------------------------------------------------
+    void LogServerTypes::lsMessage::convertFromNet() noexcept
+    {
+        if( _be_order )
+        {
+            BE32_TO_H(data);
+            BE32_TO_H(magic);
+        }
+        else
+        {
+            LE32_TO_H(data);
+            LE32_TO_H(magic);
+        }
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		_be_order = 0;
+        _be_order = 0;
 #elif __BYTE_ORDER == __BIG_ENDIAN
-		_be_order = 1;
+        _be_order = 1;
 #endif
-	}
-	// -------------------------------------------------------------------------
-	std::ostream& LogServerTypes::operator<<(std::ostream& os, LogServerTypes::Command cmd )
-	{
-		switch( cmd )
-		{
-			case LogServerTypes::cmdSetLevel:
-				return os << "cmdSetLevel";
+    }
+    // -------------------------------------------------------------------------
+    std::ostream& LogServerTypes::operator<<(std::ostream& os, LogServerTypes::Command cmd )
+    {
+        switch( cmd )
+        {
+            case LogServerTypes::cmdSetLevel:
+                return os << "cmdSetLevel";
 
-			case LogServerTypes::cmdAddLevel:
-				return os << "cmdAddLevel";
+            case LogServerTypes::cmdAddLevel:
+                return os << "cmdAddLevel";
 
-			case LogServerTypes::cmdDelLevel:
-				return os << "cmdDelLevel";
+            case LogServerTypes::cmdDelLevel:
+                return os << "cmdDelLevel";
 
-			case LogServerTypes::cmdRotate:
-				return os << "cmdRotate";
+            case LogServerTypes::cmdSetVerbosity:
+                return os << "cmdSetVerbosity";
 
-			case LogServerTypes::cmdOffLogFile:
-				return os << "cmdOffLogFile";
+            case LogServerTypes::cmdRotate:
+                return os << "cmdRotate";
 
-			case LogServerTypes::cmdOnLogFile:
-				return os << "cmdOnLogFile";
+            case LogServerTypes::cmdOffLogFile:
+                return os << "cmdOffLogFile";
 
-			case LogServerTypes::cmdList:
-				return os << "cmdList";
+            case LogServerTypes::cmdOnLogFile:
+                return os << "cmdOnLogFile";
 
-			case LogServerTypes::cmdFilterMode:
-				return os << "cmdFilterMode";
+            case LogServerTypes::cmdList:
+                return os << "cmdList";
 
-			case LogServerTypes::cmdSaveLogLevel:
-				return os << "cmdSaveLogLevel";
+            case LogServerTypes::cmdFilterMode:
+                return os << "cmdFilterMode";
 
-			case LogServerTypes::cmdRestoreLogLevel:
-				return os << "cmdRestoreLogLevel";
+            case LogServerTypes::cmdSaveLogLevel:
+                return os << "cmdSaveLogLevel";
 
-			case LogServerTypes::cmdViewDefaultLogLevel:
-				return os << "cmdViewRestoreLogLevel";
+            case LogServerTypes::cmdRestoreLogLevel:
+                return os << "cmdRestoreLogLevel";
 
-			case LogServerTypes::cmdNOP:
-				return os << "No command(NOP)";
+            case LogServerTypes::cmdViewDefaultLogLevel:
+                return os << "cmdViewRestoreLogLevel";
 
-			default:
-				return os << "Unknown";
-		}
+            case LogServerTypes::cmdNOP:
+                return os << "No command(NOP)";
 
-		return os;
-	}
-	// -------------------------------------------------------------------------
-	std::ostream& LogServerTypes::operator<<(std::ostream& os, const LogServerTypes::lsMessage& m )
-	{
-		return os << " magic=" << m.magic << " cmd=" << m.cmd << " data=" << m.data;
-	}
-	// -------------------------------------------------------------------------
-	void LogServerTypes::lsMessage::setLogName( const std::string& name )
-	{
-		size_t s = name.size() > MAXLOGNAME ? MAXLOGNAME : name.size();
-		memcpy( &logname, name.data(), s );
-		logname[s] = '\0';
-	}
-	// -------------------------------------------------------------------------
-	static const std::string checkArg( size_t i, const std::vector<std::string>& v )
-	{
-		if( i < v.size() && (v[i])[0] != '-' )
-			return v[i];
+            default:
+                return os << "Unknown";
+        }
 
-		return "";
-	}
-	// --------------------------------------------------------------------------
+        return os;
+    }
+    // -------------------------------------------------------------------------
+    std::ostream& LogServerTypes::operator<<(std::ostream& os, const LogServerTypes::lsMessage& m )
+    {
+        return os << " magic=" << m.magic << " cmd=" << m.cmd << " data=" << m.data;
+    }
+    // -------------------------------------------------------------------------
+    void LogServerTypes::lsMessage::setLogName( const std::string& name )
+    {
+        size_t s = name.size() > MAXLOGNAME ? MAXLOGNAME : name.size();
+        memcpy( &logname, name.data(), s );
+        logname[s] = '\0';
+    }
+    // -------------------------------------------------------------------------
+    static const std::string checkArg( size_t i, const std::vector<std::string>& v )
+    {
+        if( i < v.size() && (v[i])[0] != '-' )
+            return v[i];
 
-	std::vector<LogServerTypes::lsMessage> LogServerTypes::getCommands( const std::string& cmd )
-	{
-		vector<lsMessage> vcmd;
+        return "";
+    }
+    // --------------------------------------------------------------------------
 
-		auto v = uniset::explode_str(cmd, ' ');
+    std::vector<LogServerTypes::lsMessage> LogServerTypes::getCommands( const std::string& cmd )
+    {
+        vector<lsMessage> vcmd;
 
-		if( v.empty() )
-			return vcmd;
+        auto v = uniset::explode_str(cmd, ' ');
 
-		for( size_t i = 0; i < v.size(); i++ )
-		{
-			auto c = v[i];
+        if( v.empty() )
+            return vcmd;
 
-			const string arg1 = checkArg(i + 1, v);
+        for( size_t i = 0; i < v.size(); i++ )
+        {
+            auto c = v[i];
 
-			if( arg1.empty() )
-				continue;
+            const string arg1 = checkArg(i + 1, v);
 
-			i++;
+            if( arg1.empty() )
+                continue;
 
-			const std::string filter = checkArg(i + 2, v);
+            i++;
 
-			if( !filter.empty() )
-				i++;
+            const std::string filter = checkArg(i + 2, v);
 
-			if( c == "-s" || c == "--set" )
-			{
-				LogServerTypes::Command cmd = LogServerTypes::cmdSetLevel;
-				vcmd.emplace_back(cmd, (int)Debug::value(arg1), filter);
-			}
-			else if( c == "-a" || c == "--add" )
-			{
-				LogServerTypes::Command cmd = LogServerTypes::cmdAddLevel;
-				vcmd.emplace_back(cmd, (int)Debug::value(arg1), filter);
-			}
-			else if( c == "-d" || c == "--del" )
-			{
-				LogServerTypes::Command cmd = LogServerTypes::cmdDelLevel;
-				vcmd.emplace_back(cmd, (uint32_t)Debug::value(arg1), filter);
-			}
-		}
+            if( !filter.empty() )
+                i++;
 
-		return vcmd;
-	}
-	// -------------------------------------------------------------------------
-	// -------------------------------------------------------------------------
+            if( c == "-s" || c == "--set" )
+            {
+                LogServerTypes::Command cmd = LogServerTypes::cmdSetLevel;
+                vcmd.emplace_back(cmd, (int)Debug::value(arg1), filter);
+            }
+            else if( c == "-a" || c == "--add" )
+            {
+                LogServerTypes::Command cmd = LogServerTypes::cmdAddLevel;
+                vcmd.emplace_back(cmd, (int)Debug::value(arg1), filter);
+            }
+            else if( c == "-d" || c == "--del" )
+            {
+                LogServerTypes::Command cmd = LogServerTypes::cmdDelLevel;
+                vcmd.emplace_back(cmd, (uint32_t)Debug::value(arg1), filter);
+            }
+            else if( c == "-q" || c == "--set-verbosity" )
+            {
+                LogServerTypes::Command cmd = LogServerTypes::cmdSetVerbosity;
+                vcmd.emplace_back(cmd, (uint32_t)Debug::value(arg1), filter);
+            }
+        }
 
-	// -------------------------------------------------------------------------
+        return vcmd;
+    }
+    // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+
+    // -------------------------------------------------------------------------
 } // end of namespace uniset

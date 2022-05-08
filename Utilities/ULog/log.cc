@@ -38,6 +38,7 @@ static struct option longopts[] =
     { "logfile-truncate", required_argument, 0, 'z' },
     { "grep", required_argument, 0, 'g' },
     { "timezone", required_argument, 0, 'm' },
+    { "set-verbosity", required_argument, 0, 'q' },
     { NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -63,6 +64,7 @@ static void print_help()
     printf("[-a | --add] info,warn,crit,... [objName] - Add log levels.\n");
     printf("[-d | --del] info,warn,crit,... [objName] - Delete log levels.\n");
     printf("[-s | --set] info,warn,crit,... [objName] - Set log levels.\n");
+    printf("[-q | --set-verbosity] level [objName]    - Set verbose level.\n");
 
     printf("[-f | --filter] logname                   - ('filter mode'). View log only from 'logname'(regexp)\n");
     printf("[-g | --grep pattern                      - Print lines matching a pattern (c++ regexp)\n");
@@ -123,7 +125,7 @@ int main( int argc, char** argv )
     {
         while(1)
         {
-            opt = getopt_long(argc, argv, "chvlf:a:p:i:d:s:n:eorbx:w:zt:g:uby:m:", longopts, &optindex);
+            opt = getopt_long(argc, argv, "chvlf:a:p:i:d:s:n:eorbx:w:zt:g:uby:m:q:", longopts, &optindex);
 
             if( opt == -1 )
                 break;
@@ -173,6 +175,20 @@ int main( int argc, char** argv )
                         filter = string(arg2);
 
                     vcmd.emplace_back(cmd, (int)Debug::value(d), filter );
+                }
+                break;
+
+                case 'q':
+                {
+                    LogServerTypes::Command cmd = LogServerTypes::cmdSetVerbosity;
+                    std::string filter("");
+                    int d = uni_atoi(optarg);
+                    char* arg2 = checkArg(optind, argc, argv);
+
+                    if( arg2 )
+                        filter = string(arg2);
+
+                    vcmd.emplace_back(cmd, d, filter);
                 }
                 break;
 
@@ -285,6 +301,7 @@ int main( int argc, char** argv )
                 {
                     LogServerTypes::Command cmd;
                     std::string tz(optarg);
+
                     if( tz == "local" )
                         cmd = LogServerTypes::cmdShowLocalTime;
                     else if( tz == "utc" )
