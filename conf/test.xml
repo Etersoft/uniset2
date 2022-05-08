@@ -182,7 +182,7 @@
 		</RTUExchange>
 		<UDPExchange name="UDPExchange"/>
 		<UDPExchange2 name="UDPExchange2"/>
-		<UNetExchange name="UNetExchange" transport="multicast"/>
+		<UNetExchange name="UNetExchange" transport1="multicast"/>
 		<HeartBeatTime msec="5000"/>
 		<NCReadyTimeout msec="120000"/>
 		<TestGen input1_s="Input1_S" input2_s="DumpSensor1_S" name="TestGen" output1_c="DO_C" output2_c="DO1_C"/>
