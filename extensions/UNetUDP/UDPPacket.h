@@ -89,7 +89,6 @@ namespace uniset
             size_t asize() const noexcept;
             size_t dataChanges() const noexcept;
 
-
             unet::UNetPacket pb;
             size_t changeDataCounter = { 0 };
         };

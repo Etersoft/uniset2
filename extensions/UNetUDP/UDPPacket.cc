@@ -239,9 +239,6 @@ namespace uniset
     // -----------------------------------------------------------------------------
     bool UDPMessage::dValue( size_t index ) const noexcept
     {
-        if( index >= MaxDCount )
-            return false;
-
         return pb.data().dvalue(index);
     }
     // -----------------------------------------------------------------------------

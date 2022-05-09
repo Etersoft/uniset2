@@ -11,46 +11,46 @@
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
-extern PROTOBUF_INTERNAL_EXPORT_unet_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_UNetData_unet_2eproto;
+
+PROTOBUF_PRAGMA_INIT_SEG
 namespace uniset {
 namespace unet {
-class UNetDataDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<UNetData> _instance;
-} _UNetData_default_instance_;
-class UNetPacketDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<UNetPacket> _instance;
-} _UNetPacket_default_instance_;
+constexpr UNetData::UNetData(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : did_()
+  , _did_cached_byte_size_()
+  , dvalue_()
+  , aid_()
+  , _aid_cached_byte_size_()
+  , avalue_()
+  , _avalue_cached_byte_size_(){}
+struct UNetDataDefaultTypeInternal {
+  constexpr UNetDataDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~UNetDataDefaultTypeInternal() {}
+  union {
+    UNetData _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT UNetDataDefaultTypeInternal _UNetData_default_instance_;
+constexpr UNetPacket::UNetPacket(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : data_(nullptr)
+  , num_(PROTOBUF_ULONGLONG(0))
+  , nodeid_(PROTOBUF_ULONGLONG(0))
+  , procid_(PROTOBUF_ULONGLONG(0))
+  , magic_(0u){}
+struct UNetPacketDefaultTypeInternal {
+  constexpr UNetPacketDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~UNetPacketDefaultTypeInternal() {}
+  union {
+    UNetPacket _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT UNetPacketDefaultTypeInternal _UNetPacket_default_instance_;
 }  // namespace unet
 }  // namespace uniset
-static void InitDefaultsscc_info_UNetData_unet_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::uniset::unet::_UNetData_default_instance_;
-    new (ptr) ::uniset::unet::UNetData();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-}
-
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_UNetData_unet_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_UNetData_unet_2eproto}, {}};
-
-static void InitDefaultsscc_info_UNetPacket_unet_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::uniset::unet::_UNetPacket_default_instance_;
-    new (ptr) ::uniset::unet::UNetPacket();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-}
-
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_UNetPacket_unet_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_UNetPacket_unet_2eproto}, {
-      &scc_info_UNetData_unet_2eproto.base,}};
-
 namespace uniset {
 namespace unet {
 
@@ -102,11 +102,6 @@ void UNetData::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void UNetData::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const UNetData& UNetData::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_UNetData_unet_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void UNetData::Clear() {
 // @@protoc_insertion_point(message_clear_start:uniset.unet.UNetData)
@@ -126,7 +121,6 @@ const char* UNetData::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::i
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // repeated uint64 dID = 1 [packed = true];
       case 1:
@@ -170,7 +164,8 @@ const char* UNetData::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::i
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -268,9 +263,6 @@ size_t UNetData::ByteSizeLong() const {
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
             static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
     }
-    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
-    _dvalue_cached_byte_size_.store(cached_size,
-                                    std::memory_order_relaxed);
     total_size += data_size;
   }
 
@@ -408,11 +400,10 @@ UNetPacket::UNetPacket(const UNetPacket& from)
 }
 
 void UNetPacket::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_UNetPacket_unet_2eproto.base);
-  ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-      reinterpret_cast<char*>(&data_) - reinterpret_cast<char*>(this)),
-      0, static_cast<size_t>(reinterpret_cast<char*>(&magic_) -
-      reinterpret_cast<char*>(&data_)) + sizeof(magic_));
+::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+    reinterpret_cast<char*>(&data_) - reinterpret_cast<char*>(this)),
+    0, static_cast<size_t>(reinterpret_cast<char*>(&magic_) -
+    reinterpret_cast<char*>(&data_)) + sizeof(magic_));
 }
 
 UNetPacket::~UNetPacket() {
@@ -435,11 +426,6 @@ void UNetPacket::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void UNetPacket::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const UNetPacket& UNetPacket::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_UNetPacket_unet_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void UNetPacket::Clear() {
 // @@protoc_insertion_point(message_clear_start:uniset.unet.UNetPacket)
@@ -467,7 +453,6 @@ const char* UNetPacket::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // required uint32 magic = 1;
       case 1:
@@ -510,7 +495,8 @@ const char* UNetPacket::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
