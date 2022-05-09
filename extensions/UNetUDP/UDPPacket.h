@@ -48,14 +48,14 @@ namespace uniset
             bool isOk() const noexcept;
             uint32_t magic() const noexcept;
 
-            void setNum( long num ) noexcept;
-            long num()  const noexcept;
+            void setNum( size_t num ) noexcept;
+            size_t num()  const noexcept;
 
-            void setNodeID( long num ) noexcept;
-            long nodeID()  const noexcept;
+            void setNodeID( int64_t num ) noexcept;
+            int64_t nodeID()  const noexcept;
 
-            void setProcID( long num ) noexcept;
-            long procID()  const noexcept;
+            void setProcID( int64_t num ) noexcept;
+            int64_t procID()  const noexcept;
 
             // \warning в случае переполнения возвращается MaxDCount
             size_t addDData( int64_t id, bool val ) noexcept;
@@ -64,13 +64,13 @@ namespace uniset
             bool setDData( size_t index, bool val ) noexcept;
 
             //! \return uniset::DefaultObjectId if not found
-            long dID( size_t index ) const noexcept;
+            int64_t dID( size_t index ) const noexcept;
             //! \return false if not found
             bool dValue( size_t index ) const noexcept;
 
             //! \return uniset::DefaultObjectId if not found
-            long aID(size_t i) const noexcept;
-            long aValue(size_t i) const noexcept;
+            int64_t aID(size_t i) const noexcept;
+            int64_t aValue(size_t i) const noexcept;
 
             // функции addAData возвращают индекс, по которому потом можно напрямую писать при помощи setAData(index)
             // \warning в случае переполнения возвращается MaxACount
@@ -79,7 +79,7 @@ namespace uniset
             //!\return true - successful
             bool setAData( size_t index, int64_t val ) noexcept;
 
-            long getDataID( ) const noexcept; /*!< получение "уникального" идентификатора данных этого пакета */
+            int64_t getDataID( ) const noexcept; /*!< получение "уникального" идентификатора данных этого пакета */
 
             bool isAFull() const noexcept;
             bool isDFull() const noexcept;
@@ -87,10 +87,10 @@ namespace uniset
 
             size_t dsize() const noexcept;
             size_t asize() const noexcept;
-            size_t dataChanges() const noexcept;
+            size_t dataRevision() const noexcept;
 
             unet::UNetPacket pb;
-            size_t changeDataCounter = { 0 };
+            size_t rv = { 0 }; // data revision
         };
 
         std::ostream& operator<<( std::ostream& os, UDPMessage& p );

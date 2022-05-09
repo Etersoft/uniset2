@@ -98,19 +98,19 @@ TEST_CASE("[UNetUDP]: crc", "[unetudp][protobuf][crc]")
     pack2.setNodeID(100);
     pack2.setProcID(100);
     pack2.setNum(1);
-    auto changes = pack.dataChanges();
+    auto rv = pack.dataRevision();
 
     auto d = pack.addDData(1, 1);
     auto a = pack.addAData(2, 100);
-    REQUIRE( pack.dataChanges() != changes );
-    changes = pack.dataChanges();
+    REQUIRE(pack.dataRevision() != rv );
+    rv = pack.dataRevision();
 
     pack.setAData(a, 0);
-    REQUIRE( pack.dataChanges() != changes );
-    changes = pack.dataChanges();
+    REQUIRE(pack.dataRevision() != rv );
+    rv = pack.dataRevision();
 
     pack.setDData(d, 0);
-    REQUIRE( pack.dataChanges() != changes );
+    REQUIRE(pack.dataRevision() != rv );
 }
 
 // -----------------------------------------------------------------------------

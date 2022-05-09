@@ -552,12 +552,12 @@ namespace uniset
           << "\t   packs([sendfactor]=num): "
           << endl;
 
-        for( auto i = mypacks.begin(); i != mypacks.end(); ++i )
+        for( const auto&  i: mypacks )
         {
-            s << "        \t[" << i->first << "]=" << i->second.size() << endl;
+            s << "        \t[" << i.first << "]=" << i.second.size() << endl;
             size_t n = 0;
 
-            for( const auto& pack : i->second )
+            for( const auto& pack : i.second )
             {
                 //uniset_rwmutex_rlock l(p->mut);
                 s << "        \t\t[" << (n++) << "]=" << sizeof(pack.msg) << " bytes"

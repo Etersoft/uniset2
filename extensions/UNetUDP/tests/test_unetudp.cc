@@ -201,10 +201,6 @@ TEST_CASE("[UNetUDP]: check sender", "[unetudp][sender]")
 
         REQUIRE( p.dValue(0) == true );
         REQUIRE( p.dValue(1) == false );
-
-        // т.к. данные в SM не менялись, то должен придти пакет с тем же номером что и был.
-        UniSetUDP::UDPMessage p2 = receive();
-        REQUIRE( p2.num() == p.num() );
     }
 
     SECTION("Test: change AI data..")

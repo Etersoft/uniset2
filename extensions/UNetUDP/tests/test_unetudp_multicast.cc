@@ -150,10 +150,6 @@ TEST_CASE("[UNetUDP]: check multicast sender", "[unetudp][multicast][sender]")
 
         REQUIRE( pack.dValue(0) == 1 );
         REQUIRE( pack.dValue(1) == 0 );
-
-        // т.к. данные в SM не менялись, то должен придти пакет с тем же номером что и был..
-        UniSetUDP::UDPMessage pack2 = mreceive();
-        REQUIRE( pack2.num() == pack.num() );
     }
 
     SECTION("Test: change AI data...")
