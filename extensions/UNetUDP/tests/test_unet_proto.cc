@@ -135,14 +135,19 @@ TEST_CASE("[UNetUDP]: perf test", "[unetudp][protobuf][perf]")
     PassiveTimer pt;
     uint8_t buf[uniset::UniSetUDP::MessageBufSize];
 
+    // pack
     for( int i = 0; i < 100000; i++ )
     {
-        // pack
-        auto ret = pack.serializeToArray(buf, sizeof(buf));
+        auto r = pack.serializeToArray(buf, sizeof(buf));
+    }
+    cerr << "send perf[100k msg]: " << pt.getCurrent() << " msec" << endl;
 
+    auto ret = pack.serializeToArray(buf, sizeof(buf));
+    pt.reset();
+    for( int i = 0; i < 100000; i++ )
+    {
         // unpack
         pack2.initFromBuffer(buf, ret);
     }
-
-    cerr << "perf: " << pt.getCurrent() << " msec" << endl;
+    cerr << "recv perf[100k msg]: " << pt.getCurrent() << " msec" << endl;
 }
