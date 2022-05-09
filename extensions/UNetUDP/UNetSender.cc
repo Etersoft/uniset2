@@ -44,7 +44,6 @@ namespace uniset
         packsendpauseFactor(1),
         activated(false),
         packetnum(1),
-        lastcrc(0),
         maxAData(maxACount),
         maxDData(maxDCount)
     {
@@ -83,8 +82,8 @@ namespace uniset
         // выставляем поля, которые не меняются
         {
             uniset_rwmutex_wrlock l(mypack.mut);
-            mypack.msg.header.nodeID = uniset_conf()->getLocalNode();
-            mypack.msg.header.procID = shm->ID();
+            mypack.msg.setNodeID(uniset_conf()->getLocalNode());
+            mypack.msg.setProcID(shm->ID());
         }
 
         // -------------------------------
@@ -280,27 +279,14 @@ namespace uniset
         unetinfo << "************* execute FINISH **********" << endl;
     }
     // -----------------------------------------------------------------------------
-    // #define UNETUDP_DISABLE_OPTIMIZATION_N1
-
     void UNetSender::real_send( PackMessage& mypack ) noexcept
     {
         try
         {
             uniset::uniset_rwmutex_rlock l(mypack.mut);
-#ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
-            mypack.msg.num = packetnum++;
-#else
-            uint16_t crc = mypack.msg.getDataCRC();
+            mypack.msg.setNum(packetnum++);
 
-            if( crc != lastcrc )
-            {
-                mypack.msg.header.num = packetnum++;
-                lastcrc = crc;
-            }
-
-#endif
-
-            // при переходе через ноль (когда счётчик перевалит через UniSetUDP::MaxPacketNum..
+            // при переходе через ноль, когда счётчик перевалит через UniSetUDP::MaxPacketNum..
             // делаем номер пакета "1"
             if( packetnum == 0 )
                 packetnum = 1;
@@ -308,10 +294,18 @@ namespace uniset
             if( !transport->isReadyForSend(writeTimeout) )
                 return;
 
-            size_t ret = transport->send(&mypack.msg, sizeof(mypack.msg));
+            size_t sz = mypack.msg.serializeToArray(sbuf, sizeof(sbuf));
 
-            if( ret < sizeof(mypack.msg) )
-                unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << sizeof(mypack.msg) << endl;
+            if( sz == 0 )
+            {
+                unetcrit << myname << "(real_send): serialize error." << endl;
+                return;
+            }
+
+            size_t ret = transport->send(sbuf, sz);
+
+            if( ret < sz )
+                unetcrit << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << sz << endl;
         }
         catch( Poco::Net::NetException& ex )
         {
@@ -445,8 +439,8 @@ namespace uniset
                 auto& mypack2 = pk[dnum];
                 uniset_rwmutex_wrlock l2(mypack2.mut);
                 p.pack_ind = mypack2.msg.addDData(sid, defval);
-                mypack2.msg.header.nodeID = uniset_conf()->getLocalNode();
-                mypack2.msg.header.procID = shm->ID();
+                mypack2.msg.setNodeID(uniset_conf()->getLocalNode());
+                mypack2.msg.setProcID(shm->ID());
             }
 
             p.pack_num = dnum;
@@ -486,8 +480,8 @@ namespace uniset
                 auto& mypack2 = pk[anum];
                 uniset_rwmutex_wrlock l2(mypack2.mut);
                 p.pack_ind = mypack2.msg.addAData(sid, defval);
-                mypack2.msg.header.nodeID = uniset_conf()->getLocalNode();
-                mypack2.msg.header.procID = shm->ID();
+                mypack2.msg.setNodeID(uniset_conf()->getLocalNode());
+                mypack2.msg.setProcID(shm->ID());
             }
 
             p.pack_num = anum;
@@ -551,7 +545,6 @@ namespace uniset
 
         s << setw(15) << std::right << transport->toString()
           << " lastpacknum=" << packetnum
-          << " lastcrc=" << setw(6) << lastcrc
           << " items=" << items.size() << " maxAData=" << getADataSize() << " maxDData=" << getDDataSize()
           << " packsendpause[factor=" << packsendpauseFactor << "]=" << packsendpause
           << " sendpause=" << sendpause
@@ -559,12 +552,12 @@ namespace uniset
           << "\t   packs([sendfactor]=num): "
           << endl;
 
-        for( auto i = mypacks.begin(); i != mypacks.end(); ++i )
+        for( const auto&  i: mypacks )
         {
-            s << "        \t[" << i->first << "]=" << i->second.size() << endl;
+            s << "        \t[" << i.first << "]=" << i.second.size() << endl;
             size_t n = 0;
 
-            for( const auto& pack : i->second )
+            for( const auto& pack : i.second )
             {
                 //uniset_rwmutex_rlock l(p->mut);
                 s << "        \t\t[" << (n++) << "]=" << sizeof(pack.msg) << " bytes"

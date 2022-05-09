@@ -21,74 +21,41 @@
 #include <limits>
 #include <ostream>
 #include "UniSetTypes.h"
+#include "proto/unet.pb.h"
 // --------------------------------------------------------------------------
 namespace uniset
 {
     // -----------------------------------------------------------------------------
     namespace UniSetUDP
     {
-        /*! С учётом того, что ID могут идти не подряд. Сделан следующий формат:
-            Для аналоговых величин передаётся массив пар "id-value"(UDPAData).
-            Для булевых величин - отдельно массив ID и отдельно битовый массив со значениями,
-            (по количеству битов такого же размера).
-            \warning Пакет UDPMessage передаётся всегда полностью, независимо от того, насколько он наполнен датчиками.
-            \warning ТЕКУЩАЯ ВЕРСИЯ ПРОТОКОЛА НЕ БУДЕТ РАБОТАТЬ МЕЖДУ 32-битными и 64-битными системами (из-за отличия в типе long).
-            т.к. это не сильно актуально, пока не переделываю.
-
-            "ByteOrder"
-            ============
-            В текущей версии протокола. В UDPHeader содержится информации о порядке байт.
-            Поэтому логика следующая:
-            - Узел который посылает, ничего не перекодирует и просто посылает данные так как хранит
-            (информация о порядке байт, если специально не выставить, будет выставлена при компиляции, см. конструктор)
-            - Узел который принимает данные, декодирует их, если на его узле порядок байт не совпадает.
-            Т.е. если все узлы будут иметь одинаковый порядок байт, фактического перекодирования не будет.
-        */
-
-        const uint32_t UNETUDP_MAGICNUM = 0x1343EFD; // идентификатор протокола
-
-        struct UDPHeader
-        {
-            UDPHeader() noexcept;
-            uint32_t magic;
-            uint8_t _be_order; // 1 - BE byte order, 0 - LE byte order
-            size_t num;
-            int64_t nodeID;
-            int64_t procID;
-            size_t dcount; /*!< количество булевых величин */
-            size_t acount; /*!< количество аналоговых величин */
-        } __attribute__((packed));
-
-        std::ostream& operator<<( std::ostream& os, UDPHeader& p );
-        std::ostream& operator<<( std::ostream& os, UDPHeader* p );
+        const uint32_t UNETUDP_MAGICNUM = 0x1343EFD; // версия протокола
 
         const size_t MaxPacketNum = std::numeric_limits<size_t>::max();
-
-        struct UDPAData
-        {
-            UDPAData() noexcept: id(uniset::DefaultObjectId), val(0) {}
-            UDPAData(int64_t id, int64_t val) noexcept: id(id), val(val) {}
-
-            int64_t id;
-            int64_t val;
-
-        } __attribute__((packed));
-
-        std::ostream& operator<<( std::ostream& os, UDPAData& p );
-
         // Теоретический размер данных в UDP пакете (исключая заголовки) 65507
-        // Фактически желательно не вылезать за размер MTU (обычно 1500) - заголовки = 1432 байта
+        // Желательно не вылезать за размер MTU (обычно 1500) - заголовки = 1432 байта
         // т.е. надо чтобы sizeof(UDPPacket) < 1432
-        //
         static const size_t MaxACount = 2000;
         static const size_t MaxDCount = 4000;
-        static const size_t MaxDDataCount = 1 + MaxDCount / (8 * sizeof(uint8_t));
+        static const size_t MessageBufSize = 20000;
 
         struct UDPMessage
         {
-            // net to host
-            void ntoh() noexcept;
-            bool isOk() noexcept;
+            UDPMessage();
+            bool initFromBuffer( uint8_t* buf, size_t sz );
+            std::string serializeAsString() const noexcept;
+            size_t serializeToArray( uint8_t* buf, int sz ) const noexcept;
+
+            bool isOk() const noexcept;
+            uint32_t magic() const noexcept;
+
+            void setNum( size_t num ) noexcept;
+            size_t num()  const noexcept;
+
+            void setNodeID( int64_t num ) noexcept;
+            int64_t nodeID()  const noexcept;
+
+            void setProcID( int64_t num ) noexcept;
+            int64_t procID()  const noexcept;
 
             // \warning в случае переполнения возвращается MaxDCount
             size_t addDData( int64_t id, bool val ) noexcept;
@@ -97,52 +64,34 @@ namespace uniset
             bool setDData( size_t index, bool val ) noexcept;
 
             //! \return uniset::DefaultObjectId if not found
-            long dID( size_t index ) const noexcept;
-
+            int64_t dID( size_t index ) const noexcept;
             //! \return false if not found
             bool dValue( size_t index ) const noexcept;
 
+            //! \return uniset::DefaultObjectId if not found
+            int64_t aID(size_t i) const noexcept;
+            int64_t aValue(size_t i) const noexcept;
+
             // функции addAData возвращают индекс, по которому потом можно напрямую писать при помощи setAData(index)
             // \warning в случае переполнения возвращается MaxACount
-            size_t addAData( const UDPAData& dat ) noexcept;
             size_t addAData( int64_t id, int64_t val ) noexcept;
 
             //!\return true - successful
             bool setAData( size_t index, int64_t val ) noexcept;
 
-            long getDataID( ) const noexcept; /*!< получение "уникального" идентификатора данных этого пакета */
+            int64_t getDataID( ) const noexcept; /*!< получение "уникального" идентификатора данных этого пакета */
 
-            inline bool isAFull() const noexcept
-            {
-                return (header.acount >= MaxACount);
-            }
-            inline bool isDFull() const noexcept
-            {
-                return (header.dcount >= MaxDCount);
-            }
+            bool isAFull() const noexcept;
+            bool isDFull() const noexcept;
+            bool isFull() const noexcept;
 
-            inline bool isFull() const noexcept
-            {
-                return !((header.dcount < MaxDCount) && (header.acount < MaxACount));
-            }
+            size_t dsize() const noexcept;
+            size_t asize() const noexcept;
+            size_t dataRevision() const noexcept;
 
-            inline size_t dsize() const noexcept
-            {
-                return header.dcount;
-            }
-
-            inline size_t asize() const noexcept
-            {
-                return header.acount;
-            }
-
-            uint16_t getDataCRC() const noexcept;
-
-            UDPHeader header;
-            UDPAData a_dat[MaxACount]; /*!< аналоговые величины */
-            int64_t d_id[MaxDCount];      /*!< список дискретных ID */
-            uint8_t d_dat[MaxDDataCount];  /*!< битовые значения */
-        } __attribute__((packed));
+            unet::UNetPacket pb;
+            size_t rv = { 0 }; // data revision
+        };
 
         std::ostream& operator<<( std::ostream& os, UDPMessage& p );
 

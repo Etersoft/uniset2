@@ -18,10 +18,9 @@ jobs:
             apt-get update && apt-get -y install etersoft-build-utils su sudo \
             git-core ccache gcc-c++ etersoft-build-utils catch2-devel \
             libcomedi-devel libmariadb-devel libpqxx-devel librrd-devel libsqlite3-devel \
-            libxml2-devel libsigc++2-devel libpoco-devel libev-devel libomniORB-devel libmosquitto-devel \
+            libxml2-devel libsigc++2-devel libpoco-devel libev-devel libomniORB-devel libmosquitto-devel libprotobuf-devel \
             xsltproc python-base python3-dev libomniORB-names libomniORB-idl libomniORB-utils swig python-devel \
             python-module-distribute
-
       - uses: actions/checkout@v2
       - name: configure
         run: |

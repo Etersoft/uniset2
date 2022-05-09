@@ -49,14 +49,14 @@ namespace uniset
 
             virtual ~UNetSendTransport() {}
 
-            virtual bool isConnected() const = 0;
-            virtual std::string toString() const = 0;
+            virtual bool isConnected() const noexcept = 0;
+            virtual std::string toString() const noexcept = 0;
 
             virtual bool createConnection( bool throwEx, timeout_t sendTimeout ) = 0;
             virtual int getSocket() const = 0;
 
             // write
-            virtual bool isReadyForSend( timeout_t tout ) = 0;
+            virtual bool isReadyForSend( timeout_t tout ) noexcept = 0;
             virtual ssize_t send( const void* r_buf, size_t sz ) = 0;
     };
 } // end of uniset namespace

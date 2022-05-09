@@ -129,7 +129,6 @@ namespace uniset
             void setEvrunTimeout(timeout_t msec ) noexcept;
             void setInitPause( timeout_t msec ) noexcept;
             void setBufferSize( size_t sz ) noexcept;
-            void setMaxReceiveAtTime( size_t sz ) noexcept;
 
             void setRespondID( uniset::ObjectId id, bool invert = false ) noexcept;
             void setLostPacketsID( uniset::ObjectId id ) noexcept;
@@ -256,6 +255,7 @@ namespace uniset
             std::vector<UniSetUDP::UDPMessage> cbuf; // circular buffer
             size_t wnum = { 1 }; /*!< номер следующего ожидаемого пакета */
             size_t rnum = { 0 }; /*!< номер последнего обработанного пакета */
+            uint8_t rbuf[uniset::UniSetUDP::MessageBufSize]; // буфер для очередных данных
             UniSetUDP::UDPMessage* pack; // текущий обрабатываемый пакет
 
             /*! максимальная разница между номерами пакетов, при которой считается, что счётчик пакетов

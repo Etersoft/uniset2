@@ -38,7 +38,7 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 3
     std::vector< std::shared_ptr<UDPSocketU> > vsend;
     vsend.reserve(max);
 
-    cout << "Run " << max << " senders (" << s_host << ")" << endl;
+    cout << "Run " << max << " senders[" << max << "](" << s_host << ")[data=" << count << ", pause=" << usecpause << " usec]" << endl;
 
     // make sendesrs..
     for( size_t i = 0; i < max; i++ )
@@ -52,28 +52,32 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 3
         }
         catch( Poco::Net::NetException& e )
         {
-            cerr << "(run_senders): " << e.displayText() << " (" << s_host << ")" << endl;
+            cerr << "(run_senders)(create): " << e.displayText() << " (" << s_host << ")" << endl;
             throw;
         }
         catch( std::exception& ex)
         {
-            cerr << "(run_senders): " << ex.what() << endl;
+            cerr << "(run_senders)(create): " << ex.what() << endl;
             throw;
         }
     }
 
-    UniSetUDP::UDPMessage mypack;
-    mypack.header.nodeID = 100;
-    mypack.header.procID = 100;
+    unet::UNetPacket mypack;
+    mypack.set_magic(UniSetUDP::UNETUDP_MAGICNUM);
+    mypack.set_nodeid(100);
+    mypack.set_procid(100);
 
     for( size_t i = 0; i < count; i++ )
     {
-        UniSetUDP::UDPAData d(i, i);
-        mypack.addAData(d);
+        mypack.mutable_data()->add_aid(i);
+        mypack.mutable_data()->add_avalue(i);
     }
 
     for( size_t i = 0; i < count; i++ )
-        mypack.addDData(i, i);
+    {
+        mypack.mutable_data()->add_did(i);
+        mypack.mutable_data()->add_dvalue(i);
+    }
 
     for( size_t i = 0; i < max; i++ )
     {
@@ -84,27 +88,30 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 3
         }
         catch( Poco::Net::NetException& e )
         {
-            cerr << "(run_senders): " << e.message() << " (" << s_host << ")" << endl;
+            cerr << "(run_senders)(connect): " << e.message() << " (" << s_host << ")" << endl;
             throw;
         }
         catch( std::exception& ex)
         {
-            cerr << "(run_senders): " << ex.what() << endl;
+            cerr << "(run_senders)(connect): " << ex.what() << endl;
             throw;
         }
     }
 
     size_t packetnum = 0;
     size_t nc = 1;
+    std::string s;
 
     while( nc ) // -V654
     {
-        mypack.header.num = packetnum++;
+        mypack.set_num(packetnum++);
 
         // при переходе черех максимум (UniSetUDP::MaxPacketNum)
         // пакет опять должен иметь номер "1"
         if( packetnum == 0 )
             packetnum = 1;
+
+        s = mypack.SerializeAsString();
 
         for( auto&& udp : vsend )
         {
@@ -112,10 +119,10 @@ static void run_senders( size_t max, const std::string& s_host, size_t count = 3
             {
                 if( udp->poll(100000, Poco::Net::Socket::SELECT_WRITE) )
                 {
-                    size_t ret = udp->sendBytes(&mypack, sizeof(mypack));
+                    size_t ret = udp->sendBytes(s.data(), s.size());
 
-                    if( ret < sizeof(mypack) )
-                        cerr << "(send): FAILED ret=" << ret << " < sizeof=" << sizeof(mypack) << endl;
+                    if( ret < s.size() )
+                        cerr << "(send): FAILED ret=" << ret << " < sizeof=" << s.size() << endl;
                 }
             }
             catch( Poco::Net::NetException& e )
@@ -141,12 +148,13 @@ static void run_test( size_t max, const std::string& host )
     // make receivers..
     for( size_t i = 0; i < max; i++ )
     {
+        auto transport = unisetstd::make_unique<UDPReceiveTransport>(host, begPort + i);
         cout << "create receiver: " << host << ":" << begPort + i << endl;
-        auto t = unisetstd::make_unique<uniset::UDPReceiveTransport>(host, begPort + i);
-        auto r = make_shared<UNetReceiver>(std::move(t), smiInstance());
+        auto r = make_shared<UNetReceiver>(std::move(transport), smiInstance());
         r->setLockUpdate(true);
         r->setReceiveTimeout(5);
-        r->setBufferSize(1000);
+        r->setUpdatePause(5);
+        r->setBufferSize(5000);
         vrecv.emplace_back(r);
     }
 
@@ -182,10 +190,26 @@ int main(int argc, char* argv[] )
     {
         auto conf = uniset_init(argc, argv);
 
+        int n = uniset::getArgInt("--num", argc, argv, "1");
+        int dataCount = uniset::getArgInt("--count", argc, argv, "1000");
+
+        if( n <= 0 )
+        {
+            cerr << "Process count must be > 0" << endl;
+            return 1;
+        }
+
+
+        if( dataCount <= 0 )
+        {
+            cerr << "data count must be > 0" << endl;
+            return 1;
+        }
+
         if( argc > 1 && !strcmp(argv[1], "s") )
-            run_senders(1, host);
+            run_senders(n, host, dataCount);
         else
-            run_test(1, host);
+            run_test(n, host);
 
         return 0;
     }
@@ -199,7 +223,7 @@ int main(int argc, char* argv[] )
     }
     catch( const std::exception& e )
     {
-        cerr << "(tests_with_sm): " << e.what() << endl;
+        cerr << "(urecv-perf-test): " << e.what() << endl;
     }
     catch(...)
     {

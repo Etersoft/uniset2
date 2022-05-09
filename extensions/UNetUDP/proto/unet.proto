@@ -1,0 +1,21 @@
+syntax = "proto2";
+
+package uniset.unet;
+
+option optimize_for = LITE_RUNTIME;
+// option cc_enable_arenas = true;
+
+message UNetData {
+    repeated uint64 dID = 1 [packed=true];
+    repeated bool dValue= 2 [packed=true];
+    repeated uint64 aID = 3 [packed=true];
+    repeated uint64 aValue= 4 [packed=true];
+}
+
+message UNetPacket {
+    required uint32 magic = 1;
+    required uint64 num = 2;
+    optional uint64 nodeID = 3;
+    optional uint64 procID = 4;
+    optional UNetData data = 5;
+};
