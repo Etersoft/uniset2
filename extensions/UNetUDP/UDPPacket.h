@@ -32,8 +32,6 @@ namespace uniset
             Для булевых величин - отдельно массив ID и отдельно битовый массив со значениями,
             (по количеству битов такого же размера).
             \warning Пакет UDPMessage передаётся всегда полностью, независимо от того, насколько он наполнен датчиками.
-            \warning ТЕКУЩАЯ ВЕРСИЯ ПРОТОКОЛА НЕ БУДЕТ РАБОТАТЬ МЕЖДУ 32-битными и 64-битными системами (из-за отличия в типе long).
-            т.к. это не сильно актуально, пока не переделываю.
 
             "ByteOrder"
             ============
@@ -45,7 +43,7 @@ namespace uniset
             Т.е. если все узлы будут иметь одинаковый порядок байт, фактического перекодирования не будет.
         */
 
-        const uint32_t UNETUDP_MAGICNUM = 0x1343EFD; // идентификатор протокола
+        const uint32_t UNETUDP_MAGICNUM = 0x1348A5F; // идентификатор протокола
 
         struct UDPHeader
         {
@@ -67,9 +65,9 @@ namespace uniset
         struct UDPAData
         {
             UDPAData() noexcept: id(uniset::DefaultObjectId), val(0) {}
-            UDPAData(int64_t id, int64_t val) noexcept: id(id), val(val) {}
+            UDPAData(int32_t id, int64_t val) noexcept: id(id), val(val) {}
 
-            int64_t id;
+            int32_t id;
             int64_t val;
 
         } __attribute__((packed));
@@ -91,7 +89,7 @@ namespace uniset
             bool isOk() noexcept;
 
             // \warning в случае переполнения возвращается MaxDCount
-            size_t addDData( int64_t id, bool val ) noexcept;
+            size_t addDData( int32_t id, bool val ) noexcept;
 
             //!\return true - successful
             bool setDData( size_t index, bool val ) noexcept;
@@ -105,7 +103,7 @@ namespace uniset
             // функции addAData возвращают индекс, по которому потом можно напрямую писать при помощи setAData(index)
             // \warning в случае переполнения возвращается MaxACount
             size_t addAData( const UDPAData& dat ) noexcept;
-            size_t addAData( int64_t id, int64_t val ) noexcept;
+            size_t addAData( int32_t id, int64_t val ) noexcept;
 
             //!\return true - successful
             bool setAData( size_t index, int64_t val ) noexcept;
@@ -140,7 +138,7 @@ namespace uniset
 
             UDPHeader header;
             UDPAData a_dat[MaxACount]; /*!< аналоговые величины */
-            int64_t d_id[MaxDCount];      /*!< список дискретных ID */
+            int32_t d_id[MaxDCount];      /*!< список дискретных ID */
             uint8_t d_dat[MaxDDataCount];  /*!< битовые значения */
         } __attribute__((packed));
 
