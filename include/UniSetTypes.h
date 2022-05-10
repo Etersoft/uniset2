@@ -149,7 +149,7 @@ namespace uniset
     /*! Информация об имени объекта */
     struct ObjectInfo
     {
-        ObjectId id = { DefaultObjectId };        /*!< идентификатор */
+        ObjectId id = { DefaultObjectId };    /*!< идентификатор */
         std::string repName = { "" };      /*!< текстовое имя для регистрации в репозитории */
         std::string textName = { "" };     /*!< текстовое имя */
         xmlNode* xmlnode = { nullptr };

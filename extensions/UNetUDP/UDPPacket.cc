@@ -25,10 +25,13 @@
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 static bool HostIsBigEndian = false;
 #define LE_TO_H(x) {}
+#define LE32_TO_H(x) {}
 #elif INTPTR_MAX == INT64_MAX
 #define LE_TO_H(x) x = le64toh(x)
+#define LE32_TO_H(x) x = le32toh(x)
 #elif INTPTR_MAX == INT32_MAX
 #define LE_TO_H(x) x = le32toh(x)
+#define LE32_TO_H(x) x = le32toh(x)
 #else
 #error UNET(LE_TO_H): Unknown byte order or size of pointer
 #endif
@@ -36,10 +39,13 @@ static bool HostIsBigEndian = false;
 #if __BYTE_ORDER == __BIG_ENDIAN
 static bool HostIsBigEndian = true;
 #define BE_TO_H(x) {}
+#define BE32_TO_H(x) {}
 #elif INTPTR_MAX == INT64_MAX
 #define BE_TO_H(x) x = be64toh(x)
+#define BE32_TO_H(x) x = be32toh(x)
 #elif INTPTR_MAX == INT32_MAX
 #define BE_TO_H(x) x = be32toh(x)
+#define BE32_TO_H(x) x = be32toh(x)
 #else
 #error UNET(BE_TO_H): Unknown byte order or size of pointer
 #endif
@@ -173,7 +179,7 @@ namespace uniset
         return header.acount - 1;
     }
     // -----------------------------------------------------------------------------
-    size_t UDPMessage::addAData( int64_t id, int64_t val) noexcept
+    size_t UDPMessage::addAData( int32_t id, int64_t val) noexcept
     {
         UDPAData d(id, val);
         return addAData(d);
@@ -190,7 +196,7 @@ namespace uniset
         return false;
     }
     // -----------------------------------------------------------------------------
-    size_t UDPMessage::addDData( int64_t id, bool val ) noexcept
+    size_t UDPMessage::addDData( int32_t id, bool val ) noexcept
     {
         if( header.dcount >= MaxDCount )
             return MaxDCount;
@@ -275,7 +281,7 @@ namespace uniset
 
         if( be_order && !HostIsBigEndian )
         {
-            BE_TO_H(header.magic);
+            BE32_TO_H(header.magic);
             BE_TO_H(header.num);
             BE_TO_H(header.procID);
             BE_TO_H(header.nodeID);
@@ -284,7 +290,7 @@ namespace uniset
         }
         else if( !be_order && HostIsBigEndian )
         {
-            LE_TO_H(header.magic);
+            LE32_TO_H(header.magic);
             LE_TO_H(header.num);
             LE_TO_H(header.procID);
             LE_TO_H(header.nodeID);
@@ -309,12 +315,12 @@ namespace uniset
             {
                 if( be_order )
                 {
-                    BE_TO_H(a_dat[n].id);
+                    BE32_TO_H(a_dat[n].id);
                     BE_TO_H(a_dat[n].val);
                 }
                 else
                 {
-                    LE_TO_H(a_dat[n].id);
+                    LE32_TO_H(a_dat[n].id);
                     LE_TO_H(a_dat[n].val);
                 }
             }
@@ -323,11 +329,11 @@ namespace uniset
             {
                 if( be_order )
                 {
-                    BE_TO_H(d_id[n]);
+                    BE32_TO_H(d_id[n]);
                 }
                 else
                 {
-                    LE_TO_H(d_id[n]);
+                    LE32_TO_H(d_id[n]);
                 }
             }
         }
