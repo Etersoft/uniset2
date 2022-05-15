@@ -50,11 +50,13 @@ namespace uniset
             UDPHeader() noexcept;
             uint32_t magic;
             uint8_t _be_order; // 1 - BE byte order, 0 - LE byte order
-            size_t num;
+            size_t num; // порядковый номер сообщения
             int64_t nodeID;
             int64_t procID;
             size_t dcount; /*!< количество булевых величин */
             size_t acount; /*!< количество аналоговых величин */
+            uint16_t dcrc; /*!< crc по дискретным датчикам */
+            uint16_t acrc; /*!< crc по аналоговым датчикам */
         } __attribute__((packed));
 
         std::ostream& operator<<( std::ostream& os, UDPHeader& p );
@@ -134,7 +136,9 @@ namespace uniset
                 return header.acount;
             }
 
-            uint16_t getDataCRC() const noexcept;
+            uint16_t calcDcrc() const noexcept;
+            uint16_t calcAcrc() const noexcept;
+            void updatePacketCrc() noexcept;
 
             UDPHeader header;
             UDPAData a_dat[MaxACount]; /*!< аналоговые величины */

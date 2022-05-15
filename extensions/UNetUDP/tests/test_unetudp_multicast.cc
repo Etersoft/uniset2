@@ -100,7 +100,12 @@ static UniSetUDP::UDPMessage mreceive( unsigned int pnum = 0, timeout_t tout = 2
 
         size_t ret = udp_r->receive(&pack, sizeof(pack) );
 
-        if( ret == 0 || pnum == 0 || ( pnum > 0 && pack.header.num >= pnum ) ) // -V560
+        if( ret <= 0 )
+            break;
+
+        pack.ntoh();
+
+        if( pnum > 0 && pack.header.num >= pnum ) // -V560
             break;
 
         REQUIRE( pack.header.magic == UniSetUDP::UNETUDP_MAGICNUM );
@@ -120,6 +125,7 @@ void msend( UniSetUDP::UDPMessage& pack, int tout = 2000 )
     pack.header.nodeID = s_nodeID;
     pack.header.procID = s_procID;
     pack.header.num = s_numpack++;
+    pack.updatePacketCrc();
 
     size_t ret = udp_s->send(&pack, sizeof(pack));
     REQUIRE( ret == sizeof(pack) );
@@ -144,9 +150,10 @@ TEST_CASE("[UNetUDP]: check multicast sender", "[unetudp][multicast][sender]")
         REQUIRE( pack.dValue(0) == 1 );
         REQUIRE( pack.dValue(1) == 0 );
 
-        // т.к. данные в SM не менялись, то должен придти пакет с тем же номером что и был..
+        // т.к. данные в SM не менялись, то должен придти пакет с теми же crc
         UniSetUDP::UDPMessage pack2 = mreceive();
-        REQUIRE( pack2.header.num == pack.header.num );
+        REQUIRE( pack2.header.dcrc == pack.header.dcrc );
+        REQUIRE( pack2.header.acrc == pack.header.acrc );
     }
 
     SECTION("Test: change AI data...")
