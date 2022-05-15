@@ -56,9 +56,9 @@ void InitTest()
     }
 }
 // -----------------------------------------------------------------------------
-// pnum - минималный номер ожидаемого пакета ( 0 - любой пришедщий )
+// pnum - минималный номер ожидаемого пакета (0 - последний пришедщий)
 // ncycle - сколько пакетов разрешено "пропустить" прежде чем дождёмся нужного. (чтобы не ждать бесконечно)
-static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 2000, int ncycle = 20 )
+static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 2000, int ncycle = 30 )
 {
     UniSetUDP::UDPMessage pack;
 
@@ -69,15 +69,17 @@ static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 20
 
         size_t ret = udp_r->receiveBytes(&pack, sizeof(pack) );
 
-        if( ret <= 0 || pnum == 0 || ( pnum > 0 && pack.header.num >= pnum ) ) // -V560
+        if( ret <= 0 )
+            break;
+
+        pack.ntoh();
+
+        if( pnum > 0 && pack.header.num >= pnum ) // -V560
             break;
 
         REQUIRE( pack.header.magic == UniSetUDP::UNETUDP_MAGICNUM );
         ncycle--;
     }
-
-    //  if( pnum > 0 && pack.num < pnum )
-    //      return UniSetUDP::UDPMessage(); // empty message
 
     return pack;
 }
@@ -89,6 +91,7 @@ void send( UniSetUDP::UDPMessage& pack, int tout = 2000 )
     pack.header.nodeID = s_nodeID;
     pack.header.procID = s_procID;
     pack.header.num = s_numpack++;
+    pack.updatePacketCrc();
 
     size_t ret = udp_s->sendTo(&pack, sizeof(pack), s_addr);
     REQUIRE( ret == sizeof(pack) );
@@ -197,9 +200,10 @@ TEST_CASE("[UNetUDP]: check sender", "[unetudp][udp][sender]")
         REQUIRE( p.dValue(0) == true );
         REQUIRE( p.dValue(1) == false );
 
-        // т.к. данные в SM не менялись, то должен придти пакет с тем же номером что и был.
+        // т.к. данные в SM не менялись, то должен придти пакет с теми же crc что и были
         UniSetUDP::UDPMessage p2 = receive();
-        REQUIRE( p2.header.num == p.header.num );
+        REQUIRE( p2.header.dcrc == p.header.dcrc );
+        REQUIRE( p2.header.acrc == p.header.acrc );
     }
 
     SECTION("Test: change AI data..")
@@ -453,7 +457,6 @@ TEST_CASE("[UNetUDP]: check undefined value", "[unetudp][udp][sender]")
     msleep(600);
 
     UniSetUDP::UDPMessage pack = receive( pack0.header.num + 1, 2000, 40 );
-
     REQUIRE( pack.header.num != 0 );
     REQUIRE( pack.asize() == 4 );
     REQUIRE( pack.dsize() == 2 );
@@ -464,7 +467,7 @@ TEST_CASE("[UNetUDP]: check undefined value", "[unetudp][udp][sender]")
     si.node = uniset_conf()->getLocalNode();
     ui->setUndefinedState(si, true, 6000 /* TestProc */ );
     msleep(600);
-    pack = receive(pack.header.num + 1);
+    pack = receive();
 
     REQUIRE( pack.header.num != 0 );
     REQUIRE( pack.asize() == 4 );
@@ -473,7 +476,7 @@ TEST_CASE("[UNetUDP]: check undefined value", "[unetudp][udp][sender]")
 
     ui->setUndefinedState(si, false, 6000 /* TestProc */ );
     msleep(600);
-    pack = receive(pack.header.num + 1);
+    pack = receive(pack0.header.num + 1);
 
     REQUIRE( pack.header.num != 0 );
     REQUIRE( pack.asize() == 4 );

@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
     int verb = 0;
     std::string addr = "";
     int port = 0;
-    int usecpause = 2000000;
+    int msecpause = 200;
     timeout_t tout = UniSetTimer::WaitUpTime;
     int procID = 1;
     int nodeID = 1;
@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
                 break;
 
             case 'x':
-                usecpause = atoi(optarg) * 1000;
+                msecpause = atoi(optarg);
                 break;
 
             case 'y':
@@ -234,8 +234,7 @@ int main(int argc, char* argv[])
             else
                 cout << tout;
 
-            cout << " msecpause=" << usecpause / 1000
-                 << endl;
+            cout << " msecpause=" << msecpause << endl;
         }
 
 
@@ -468,7 +467,7 @@ int main(int argc, char* argv[])
                             break;
                     }
 
-                    std::this_thread::sleep_for(std::chrono::microseconds(usecpause));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(msecpause));
                 }
             }
             break;

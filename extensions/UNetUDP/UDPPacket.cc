@@ -26,12 +26,15 @@
 static bool HostIsBigEndian = false;
 #define LE_TO_H(x) {}
 #define LE32_TO_H(x) {}
+#define LE16_TO_H(x) {}
 #elif INTPTR_MAX == INT64_MAX
 #define LE_TO_H(x) x = le64toh(x)
 #define LE32_TO_H(x) x = le32toh(x)
+#define LE16_TO_H(x) x = le16toh(x)
 #elif INTPTR_MAX == INT32_MAX
 #define LE_TO_H(x) x = le32toh(x)
 #define LE32_TO_H(x) x = le32toh(x)
+#define LE16_TO_H(x) x = le16toh(x)
 #else
 #error UNET(LE_TO_H): Unknown byte order or size of pointer
 #endif
@@ -40,12 +43,15 @@ static bool HostIsBigEndian = false;
 static bool HostIsBigEndian = true;
 #define BE_TO_H(x) {}
 #define BE32_TO_H(x) {}
+#define BE16_TO_H(x) {}
 #elif INTPTR_MAX == INT64_MAX
 #define BE_TO_H(x) x = be64toh(x)
 #define BE32_TO_H(x) x = be32toh(x)
+#define BE16_TO_H(x) x = be16toh(x)
 #elif INTPTR_MAX == INT32_MAX
 #define BE_TO_H(x) x = be32toh(x)
 #define BE32_TO_H(x) x = be32toh(x)
+#define BE16_TO_H(x) x = be16toh(x)
 #else
 #error UNET(BE_TO_H): Unknown byte order or size of pointer
 #endif
@@ -139,7 +145,9 @@ namespace uniset
                << " procID=" << p.procID
                << " dcount=" << p.dcount
                << " acount=" << p.acount
-               << " pnum=" << p.num;
+               << " pnum=" << p.num
+               << " dcrc=" << p.dcrc
+               << " acrc=" << p.acrc;
     }
     // -----------------------------------------------------------------------------
     std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPHeader* p )
@@ -256,9 +264,6 @@ namespace uniset
     // -----------------------------------------------------------------------------
     long UDPMessage::getDataID() const noexcept
     {
-        // в качестве идентификатора берётся ID первого датчика в данных
-        // приоритет имеет аналоговые датчики
-
         if( header.acount > 0 )
             return a_dat[0].id;
 
@@ -287,6 +292,8 @@ namespace uniset
             BE_TO_H(header.nodeID);
             BE_TO_H(header.dcount);
             BE_TO_H(header.acount);
+            BE16_TO_H(header.dcrc);
+            BE16_TO_H(header.acrc);
         }
         else if( !be_order && HostIsBigEndian )
         {
@@ -296,6 +303,8 @@ namespace uniset
             LE_TO_H(header.nodeID);
             LE_TO_H(header.dcount);
             LE_TO_H(header.acount);
+            LE16_TO_H(header.dcrc);
+            LE16_TO_H(header.acrc);
         }
 
         // set host byte order
@@ -339,15 +348,25 @@ namespace uniset
         }
     }
     // -----------------------------------------------------------------------------
-    uint16_t UDPMessage::getDataCRC() const noexcept
+    void UDPMessage::updatePacketCrc() noexcept
     {
-        uint16_t crc[3];
-        crc[0] = makeCRC( (unsigned char*)(a_dat), sizeof(a_dat) );
-        crc[1] = makeCRC( (unsigned char*)(d_id), sizeof(d_id) );
-        crc[2] = makeCRC( (unsigned char*)(d_dat), sizeof(d_dat) );
+        header.dcrc = calcDcrc();
+        header.acrc = calcAcrc();
+    }
+    // -----------------------------------------------------------------------------
+    uint16_t UDPMessage::calcDcrc() const noexcept
+    {
+        uint16_t crc[2];
+        crc[0] = makeCRC( (unsigned char*)(d_id), sizeof(d_id) );
+        crc[1] = makeCRC( (unsigned char*)(d_dat), sizeof(d_dat) );
         return makeCRC( (unsigned char*)(&crc), sizeof(crc) );
     }
-
+    // -----------------------------------------------------------------------------
+    uint16_t UDPMessage::calcAcrc() const noexcept
+    {
+        return makeCRC( (unsigned char*)(&a_dat), sizeof(a_dat) );
+    }
+    // -----------------------------------------------------------------------------
     UDPHeader::UDPHeader() noexcept
         : magic(UNETUDP_MAGICNUM)
 #if __BYTE_ORDER == __LITTLE_ENDIAN
@@ -362,6 +381,8 @@ namespace uniset
         , procID(0)
         , dcount(0)
         , acount(0)
+        , dcrc(0)
+        , acrc(0)
     {}
 
     // -----------------------------------------------------------------------------

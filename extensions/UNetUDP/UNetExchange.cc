@@ -79,6 +79,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
     int checkConnectionPause = conf->getArgPInt("--" + prefix + "-checkconnection-pause", it.getProp("checkConnectionPause"), 10000);
     int initpause = conf->getArgPInt("--" + prefix + "-initpause", it.getProp("initpause"), 5000);
     int recvBufferSize = conf->getArgPInt("--" + prefix + "-recv-buffer-size", it.getProp("recvBufferSize"), 100);
+    bool recvIgnoreCrc = conf->getArgPInt("--" + prefix + "-recv-ignore-crc", it.getProp("recvIgnoreCRC"), 0);
     int recvMaxReceiveCount = conf->getArgPInt("--" + prefix + "-recv-max-at-time", it.getProp("recvMaxAtTime"), 5);
     const string unet_transport = conf->getArg2Param("--" + prefix + "-transport", it.getProp("transport"), "broadcast");
 
@@ -133,6 +134,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
             r.r1->setMaxDifferens(maxDiff);
             r.r1->setBufferSize(recvBufferSize);
             r.r1->setMaxReceiveAtTime(recvMaxReceiveCount);
+            r.r1->setIgnoreCRC(recvIgnoreCrc);
         }
 
         if( r.r2 )
@@ -147,6 +149,7 @@ UNetExchange::UNetExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const
             r.r2->setMaxDifferens(maxDiff);
             r.r2->setBufferSize(recvBufferSize);
             r.r2->setMaxReceiveAtTime(recvMaxReceiveCount);
+            r.r2->setIgnoreCRC(recvIgnoreCrc);
         }
     }
 
@@ -610,6 +613,7 @@ void UNetExchange::help_print( int argc, const char* argv[] ) noexcept
     cout << "--prefix-nosender [0,1]          - Отключить посылку." << endl;
     cout << "--prefix-recv-buffer-size sz     - Размер циклического буфера для приёма сообщений. По умолчанию: 100" << endl;
     cout << "--prefix-recv-max-at-time num    - Максимальное количество сообщений вычитываемых из сети за один раз. По умолчанию: 5" << endl;
+    cout << "--prefix-recv-ignore-crc  [0,1]  - Отключить оптимизацию по проверке crc, обновлять данные в SM всегда. По умолчанию: 0" << endl;
     cout << "--prefix-sm-ready-timeout msec   - Время ожидание я готовности SM к работе. По умолчанию 120000" << endl;
     cout << "--prefix-filter-field name       - Название фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
     cout << "--prefix-filter-value name       - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;

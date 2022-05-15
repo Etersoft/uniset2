@@ -56,29 +56,36 @@ namespace uniset
      * КЭШ
      * ===
      * Для оптимизации работы с SM, т.к. в пакетах приходят только пары [id,value] сделан кэш итераторов.
-     * Идея проста: сделан вектор размером с количество принимаемых данных. В векторе хранятся итераторы (и всё что необходимо).
+     * Идея проста: сделан вектор размером с количеством принимаемых данных. В векторе хранятся итераторы (и всё что необходимо).
      * Порядковый номер данных в пакете является индексом в кэше.
      * Для защиты от изменения последовательности внутри пакета, в кэше хранится ID сохраняемого датчика, и если он не совпадёт с тем,
      * ID который пришёл в пакете - элемент кэша обновляется.
-     * Если количество пришедших данных не совпадают с размером кэша.. кэш обновляется.
+     * Если количество пришедших данных не совпадают с размером кэша - кэш обновляется.
      *
      * КЭШ (ДОПОЛНЕНИЕ)
      * ===
-     * Т.к. в общем случае, данные могут быть разбиты не несколько (много) пакетов, то для каждого из них выделен свой кэш и создан отдельный
+     * Т.к. в общем случае, данные могут быть разбиты на несколько (много) пакетов, то для каждого из них выделен свой кэш и создан отдельный
      * map, ключом в котором является идентификатор данных (см. UDPMessage::getDataID()).
-     * Кэш в map добавляется когда приходит пакет с новым UDPMessage::getDataID() и в дальнейшим используется для этого пакета.
+     * Кэш в map добавляется тогда, когда приходит пакет с новым UDPMessage::getDataID() и в дальнейшим он используется для этого пакета.
      * В текущей реализации размер map не контролируется (завязан на UDPMessage::getDataID()) и рассчитан на статичность пакетов,
-     * т.е. на то что UNetSender не будет с течением времени менять структуру отправляемых пакетов.
+     * т.е. на то что UNetSender не будет с течением времени менять количество отправляемых пакетов
+     * (работать будет, просто в map останутся лежать записи для неиспользуемых пакетов)
+     *
+     * ОПТИМИЗАЦИЯ
+     * ===
+     * В кэше так же хранится crc последних принятых данных. Если crc совпадает с тем, что пришло в пакете, то обработки не происходит.
+     * crc хранится отдельно для дискретных и отдельно для аналоговых датчиков.
+     * Эту оптимизацию можно отключить параметром --prefix-recv-ignore-crc или recvIgnoreCRC="1" в конф. файле.
      *
      * Обработка сбоев в номере пакетов
      * =========================================================================
      * Если в какой-то момент расстояние между rnum и wnum превышает maxDifferens пакетов
-     * то считается, что произошёл сбой или узел который посылал пакеты перезагрузился
+     * то считается, что произошёл сбой или узел который посылал пакеты - перезагрузился
      * Идёт попытка обработать все текущие пакеты (до первой дырки), а дальше происходит
      * реинициализация и обработка продолжается с нового номера.
      *
      * =========================================================================
-     * ОПТИМИЗАЦИЯ N1: см. UNetSender.h. Если номер последнего принятого пакета не менялся.. не обрабатываем.
+     * ОПТИМИЗАЦИЯ N1: см. UNetSender.h. Если номер последнего принятого пакета не менялся, пакет не обрабатываем.
      *
      * Создание соединения (открытие сокета)
      * ======================================
@@ -130,6 +137,7 @@ namespace uniset
             void setInitPause( timeout_t msec ) noexcept;
             void setBufferSize( size_t sz ) noexcept;
             void setMaxReceiveAtTime( size_t sz ) noexcept;
+            void setIgnoreCRC( bool set ) noexcept;
 
             void setRespondID( uniset::ObjectId id, bool invert = false ) noexcept;
             void setLostPacketsID( uniset::ObjectId id ) noexcept;
@@ -179,6 +187,7 @@ namespace uniset
             void updateEvent( ev::periodic& watcher, int revents ) noexcept;
             void checkConnectionEvent( ev::periodic& watcher, int revents ) noexcept;
             void statisticsEvent( ev::periodic& watcher, int revents ) noexcept;
+            void onForceUpdate( ev::async& watcher, int revents ) noexcept;
             void initEvent( ev::timer& watcher, int revents ) noexcept;
             virtual void evprepare( const ev::loop_ref& eloop ) noexcept override;
             virtual void evfinish(const ev::loop_ref& eloop ) noexcept override;
@@ -205,6 +214,7 @@ namespace uniset
             ev::periodic evStatistic;
             ev::periodic evUpdate;
             ev::timer evInitPause;
+            ev::async evForceUpdate;
 
             // счётчики для подсчёта статистики
             size_t recvCount = { 0 };
@@ -277,16 +287,25 @@ namespace uniset
                 CacheItem():
                     id(uniset::DefaultObjectId) {}
             };
-
             typedef std::vector<CacheItem> CacheVec;
 
+            struct CacheInfo
+            {
+                uint16_t crc;
+                CacheVec items;
+
+                CacheInfo(): crc(0) {}
+            };
+
             // ключом является UDPMessage::getDataID()
-            typedef std::unordered_map<long, CacheVec> CacheMap;
+            typedef std::unordered_map<long, CacheInfo> CacheMap;
             CacheMap d_icache_map;     /*!< кэш итераторов для булевых */
             CacheMap a_icache_map;     /*!< кэш итераторов для аналоговых */
+            size_t cacheMissed; // количество промахов
+            bool ignoreCRC = { false }; /*!< отключение проверки crc */
 
-            CacheVec* getDCache( UniSetUDP::UDPMessage* pack ) noexcept;
-            CacheVec* getACache( UniSetUDP::UDPMessage* pack ) noexcept;
+            CacheInfo* getDCache( UniSetUDP::UDPMessage* pack ) noexcept;
+            CacheInfo* getACache( UniSetUDP::UDPMessage* pack ) noexcept;
     };
     // --------------------------------------------------------------------------
 } // end of namespace uniset
