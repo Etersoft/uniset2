@@ -314,7 +314,7 @@ void UNetReceiver::statisticsEvent(ev::periodic& tm, int revents) noexcept
         return;
     }
 
-    auto t_end = chrono::high_resolution_clock::now();
+    t_end = chrono::high_resolution_clock::now();
     float sec = chrono::duration_cast<chrono::duration<float>>(t_end - t_stats).count();
     t_stats = t_end;
     stats.recvPerSec = recvCount / sec;
@@ -796,9 +796,9 @@ void UNetReceiver::initIterators() noexcept
     }
 }
 // -----------------------------------------------------------------------------
-UNetReceiver::CacheInfo* UNetReceiver::getDCache( UniSetUDP::UDPMessage* pack ) noexcept
+UNetReceiver::CacheInfo* UNetReceiver::getDCache( UniSetUDP::UDPMessage* upack ) noexcept
 {
-    auto dID = pack->getDataID();
+    auto dID = upack->getDataID();
     auto dit = d_icache_map.find(dID);
 
     if( dit == d_icache_map.end() )
@@ -809,22 +809,22 @@ UNetReceiver::CacheInfo* UNetReceiver::getDCache( UniSetUDP::UDPMessage* pack ) 
 
     CacheInfo* d_info = &dit->second;
 
-    if( pack->header.dcount == d_info->items.size() )
+    if(upack->header.dcount == d_info->items.size() )
         return &dit->second;
 
-    unetinfo << myname << ": init dcache[" << pack->header.dcount << "] for dataID=" << dID << endl;
+    unetinfo << myname << ": init dcache[" << upack->header.dcount << "] for dataID=" << dID << endl;
 
-    d_info->items.resize(pack->header.dcount);
+    d_info->items.resize(upack->header.dcount);
     d_info->crc = 0;
     cacheMissed++;
 
-    for( size_t i = 0; i < pack->header.dcount; i++ )
+    for(size_t i = 0; i < upack->header.dcount; i++ )
     {
         CacheItem& d = d_info->items[i];
 
-        if( d.id != pack->d_id[i] )
+        if(d.id != upack->d_id[i] )
         {
-            d.id = pack->d_id[i];
+            d.id = upack->d_id[i];
             shm->initIterator(d.ioit);
         }
     }
@@ -832,9 +832,9 @@ UNetReceiver::CacheInfo* UNetReceiver::getDCache( UniSetUDP::UDPMessage* pack ) 
     return d_info;
 }
 // -----------------------------------------------------------------------------
-UNetReceiver::CacheInfo* UNetReceiver::getACache( UniSetUDP::UDPMessage* pack ) noexcept
+UNetReceiver::CacheInfo* UNetReceiver::getACache( UniSetUDP::UDPMessage* upack ) noexcept
 {
-    auto dID = pack->getDataID();
+    auto dID = upack->getDataID();
     auto ait = a_icache_map.find(dID);
 
     if( ait == a_icache_map.end() )
@@ -845,22 +845,22 @@ UNetReceiver::CacheInfo* UNetReceiver::getACache( UniSetUDP::UDPMessage* pack ) 
 
     CacheInfo* a_info = &ait->second;
 
-    if( pack->header.acount == a_info->items.size() )
+    if( upack->header.acount == a_info->items.size() )
         return a_info;
 
-    unetinfo << myname << ": init acache[" << pack->header.acount << "] for dataID=" << dID << endl;
+    unetinfo << myname << ": init acache[" << upack->header.acount << "] for dataID=" << dID << endl;
 
-    a_info->items.resize(pack->header.acount);
+    a_info->items.resize(upack->header.acount);
     a_info->crc = 0;
     cacheMissed++;
 
-    for( size_t i = 0; i < pack->header.acount; i++ )
+    for( size_t i = 0; i < upack->header.acount; i++ )
     {
         CacheItem& d = a_info->items[i];
 
-        if( d.id != pack->a_dat[i].id )
+        if( d.id != upack->a_dat[i].id )
         {
-            d.id = pack->a_dat[i].id;
+            d.id = upack->a_dat[i].id;
             shm->initIterator(d.ioit);
         }
     }
@@ -873,7 +873,7 @@ void UNetReceiver::connectEvent( UNetReceiver::EventSlot sl ) noexcept
     slEvent = sl;
 }
 // -----------------------------------------------------------------------------
-const std::string UNetReceiver::getShortInfo() const noexcept
+std::string UNetReceiver::getShortInfo() const noexcept
 {
     // warning: будет вызываться из другого потока
     // (считаем что чтение безопасно)
