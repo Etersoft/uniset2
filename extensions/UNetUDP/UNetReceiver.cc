@@ -729,7 +729,7 @@ UNetReceiver::ReceiveRetCode UNetReceiver::receive() noexcept
                      << ")"
                      << endl;
 
-            lostPackets = pack->header.num > wnum ? (pack->header.num - wnum - 1) : lostPackets + 1;
+            lostPackets += pack->header.num > wnum ? (pack->header.num - wnum - 1) : 1;
             // реинициализируем позицию для чтения
             rnum = pack->header.num;
             wnum = pack->header.num + 1;
