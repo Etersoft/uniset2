@@ -200,6 +200,7 @@ namespace uniset
                 // специфические поля для RS
                 ComPort::Speed speed = { ComPort::ComSpeed38400 };
                 std::shared_ptr<RTUStorage> rtu188;
+                ComPort::Parity parity = { ComPort::NoParity };
 
                 std::string getShortInfo() const;
             };

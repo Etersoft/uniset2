@@ -94,7 +94,17 @@ namespace uniset
 		return port->getSpeed();
 	}
 	// -------------------------------------------------------------------------
-
+	void ModbusRTUSlave::setParity( ComPort::Parity p )
+	{
+		if( port != NULL )
+			port->setParity(p);
+	}
+	// -------------------------------------------------------------------------
+	void ModbusRTUSlave::setParity( const std::string& p )
+	{
+		setParity(ComPort::getParity(p));
+	}
+    // -------------------------------------------------------------------------
 	void ModbusRTUSlave::setSpeed( ComPort::Speed s )
 	{
 		if( port != NULL )

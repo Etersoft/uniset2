@@ -111,6 +111,14 @@ namespace uniset
 		return port->getSpeed();
 	}
 	// -------------------------------------------------------------------------
+	ComPort::Parity ModbusRTUMaster::getParity()
+	{
+		if( port != NULL)
+			port->getParity();
+
+		return ComPort::NoParity;
+	}
+    // -------------------------------------------------------------------------
 	void ModbusRTUMaster::setParity( ComPort::Parity parity )
 	{
 		if( port != NULL)

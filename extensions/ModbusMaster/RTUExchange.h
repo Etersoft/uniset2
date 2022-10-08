@@ -48,6 +48,7 @@ namespace uniset
             std::mutex mbMutex;
             std::string devname;
             ComPort::Speed defSpeed;
+            ComPort::Parity parity;
             bool use485F;
             bool transmitCtl;
 

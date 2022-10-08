@@ -33,6 +33,7 @@ namespace uniset
             ComPort::Speed getSpeed();
 
             void setParity( ComPort::Parity parity );
+            ComPort::Parity getParity();
             void setCharacterSize( ComPort::CharacterSize csize );
             void setStopBits( ComPort::StopBits sBit );
 

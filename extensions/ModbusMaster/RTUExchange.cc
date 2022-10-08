@@ -76,6 +76,10 @@ RTUExchange::RTUExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const s
     use485F = conf->getArgInt("--" + mbconf->prefix + "-use485F", it.getProp("use485F"));
     transmitCtl = conf->getArgInt("--" + mbconf->prefix + "-transmit-ctl", it.getProp("transmitCtl"));
     defSpeed = ComPort::getSpeed(speed);
+    auto p = conf->getArgParam("--" + mbconf->prefix + "-parity", it.getProp("parity"));
+
+    if( !p.empty() )
+        parity = ComPort::getParity(p);
 
     mbconf->sleepPause_msec = conf->getArgPInt("--" + mbconf->prefix + "-sleepPause-usec", it.getProp("slepePause"), 100);
 
@@ -227,6 +231,7 @@ bool RTUExchange::poll()
     ncycle++;
     bool allNotRespond = true;
     ComPort::Speed s = mbrtu->getSpeed();
+    ComPort::Parity p = mbrtu->getParity();
 
     for( auto it1 : mbconf->devices )
     {
@@ -239,6 +244,12 @@ bool RTUExchange::poll()
         {
             s = d->speed;
             mbrtu->setSpeed(d->speed);
+        }
+
+        if( d->parity != p )
+        {
+            p = d->parity;
+            mbrtu->setParity(p);
         }
 
         d->prev_numreply.store(d->numreply);
