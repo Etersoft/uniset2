@@ -714,8 +714,8 @@ std::shared_ptr<MBTCPMultiMaster> MBTCPMultiMaster::init_mbmaster( int argc, con
     if( ID == uniset::DefaultObjectId )
     {
         cerr << "(MBTCPMultiMaster): идентификатор '" << name
-              << "' не найден в конф. файле!"
-              << " в секции " << conf->getObjectsSection() << endl;
+             << "' не найден в конф. файле!"
+             << " в секции " << conf->getObjectsSection() << endl;
         return 0;
     }
 

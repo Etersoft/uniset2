@@ -128,6 +128,41 @@ void ComPort::setSpeed( Speed s )
 	tcsetattr(fd, TCSADRAIN, &options);
 }
 // --------------------------------------------------------------------------------
+ComPort::Parity ComPort::getParity( const std::string& s )
+{
+    if( s == "odd" )
+        return Odd;
+    if( s == "even" )
+        return Even;
+    if( s == "noparity" )
+        return NoParity;
+    if( s == "space" )
+        return Space;
+    if( s == "mark" )
+        return Mark;
+
+    return NoParity;
+}
+// --------------------------------------------------------------------------------
+ComPort::Parity ComPort::getParity()
+{
+    return parity;
+}
+// --------------------------------------------------------------------------------
+void ComPort::setParity( const std::string& s )
+{
+    if( s == "odd" )
+        setParity(Odd);
+    else if( s == "even" )
+        setParity(Even);
+    else if( s == "noparity" )
+        setParity(NoParity);
+    else if( s == "space" )
+        setParity(Space);
+    else if( s == "mark" )
+        setParity(Mark);
+}
+// --------------------------------------------------------------------------------
 void ComPort::setParity(Parity parity)
 {
 	struct termios options;
@@ -137,28 +172,33 @@ void ComPort::setParity(Parity parity)
 	switch(parity)
 	{
 		case Odd:
+            parity = Odd;
 			options.c_cflag |= PARENB;
 			options.c_cflag &= ~CMSPAR;
 			options.c_cflag |= PARODD;
 			break;
 
 		case Even:
+            parity = Even;
 			options.c_cflag |= PARENB;
 			options.c_cflag &= ~CMSPAR;
 			options.c_cflag &= ~PARODD;
 			break;
 
 		case NoParity:
+            parity = NoParity;
 			options.c_cflag &= ~PARENB;
 			break;
 
 		case Space:
+            parity = Space;
 			options.c_cflag |= PARENB;
 			options.c_cflag |= CMSPAR;
 			options.c_cflag |= PARODD;
 			break;
 
 		case Mark:
+            parity = Mark;
 			options.c_cflag |= PARENB;
 			options.c_cflag |= CMSPAR;
 			options.c_cflag &= ~PARODD;

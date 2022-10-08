@@ -35,6 +35,9 @@ namespace uniset
             void setSpeed( const std::string& s );
             ComPort::Speed getSpeed();
 
+            void setParity( ComPort::Parity p );
+            void setParity( const std::string& p );
+
             virtual void cleanupChannel() override
             {
                 if(port) port->cleanupChannel();

@@ -165,16 +165,19 @@ namespace uniset
             if( dev.empty() )
                 throw uniset::SystemError(myname + "(MBSlave): Unknown device...");
 
-            string speed     = conf->getArgParam("--" + prefix + "-speed", it.getProp("speed"));
+            string speed  = conf->getArgParam("--" + prefix + "-speed", it.getProp("speed"));
 
             if( speed.empty() )
                 speed = "38400";
 
+            string parity  = conf->getArgParam("--" + prefix + "-parity", it.getProp("parity"));
             bool use485F = conf->getArgInt("--" + prefix + "-use485F", it.getProp("use485F"));
             bool transmitCtl = conf->getArgInt("--" + prefix + "-transmit-ctl", it.getProp("transmitCtl"));
 
             auto rs = make_shared<ModbusRTUSlaveSlot>(dev, use485F, transmitCtl);
             rs->setSpeed(speed);
+            if( !parity.empty() )
+                rs->setParity(parity);
             rs->setRecvTimeout(2000);
             rs->setAfterSendPause(aftersend_pause);
             rs->setReplyTimeout(reply_tout);
@@ -1580,6 +1583,7 @@ namespace uniset
         cout << " Настройки протокола RTU: " << endl;
         cout << "--prefix-dev devname  - файл устройства" << endl;
         cout << "--prefix-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
+        cout << "--prefix-parity       - Контроль чётности (odd,even,noparity,space,mark)." << endl;
 
         cout << " Настройки протокола TCP: " << endl;
         cout << "--prefix-inet-addr [xxx.xxx.xxx.xxx | hostname ]  - this modbus server address" << endl;

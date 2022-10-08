@@ -99,8 +99,12 @@ namespace uniset
 
             static Speed getSpeed( const std::string& s );
             static std::string getSpeed( Speed s );
+            static Parity getParity( const std::string& s );
 
             void setParity(Parity);
+            void setParity(const std::string& s);
+            Parity getParity();
+
             void setCharacterSize(CharacterSize);
             void setStopBits(StopBits sBit);
 
@@ -132,6 +136,7 @@ namespace uniset
             bool waiting = { false };
             Speed speed = ComSpeed38400;
             std::string dev = { "" };
+            Parity parity = NoParity;
 
             virtual unsigned char m_receiveByte( bool wait );
 
