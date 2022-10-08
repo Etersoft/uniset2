@@ -91,6 +91,7 @@ namespace uniset
         mbinfo << myname << "(init): read fileter-field='" << mbconf->s_field
                << "' filter-value='" << mbconf->s_fvalue << "'" << endl;
 
+        mbconf->prefix = prefix;
         mbconf->prop_prefix = initPropPrefix(mbconf->s_field, "");
 
         stat_time = conf->getArgPInt("--" + prefix + "-statistic-sec", it.getProp("statistic_sec"), 0);
