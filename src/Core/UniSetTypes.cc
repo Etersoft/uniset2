@@ -773,3 +773,4 @@ uint32_t uniset::hash32( const char* buf, size_t sz ) noexcept
 {
     return NAMESPACE_FOR_HASH_FUNCTIONS::Hash32(buf, sz);
 }
+// -------------------------------------------------------------------------

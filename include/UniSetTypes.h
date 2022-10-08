@@ -184,16 +184,6 @@ namespace uniset
     uniset::Timespec_var to_uniset_timespec( const std::chrono::system_clock::duration& d );
     uniset::Timespec_var now_to_uniset_timespec(); /*!< получение текущего времени */
 
-    inline bool operator==( const struct timespec& r1,  const struct timespec& r2 )
-    {
-        return ( r1.tv_sec == r2.tv_sec && r1.tv_nsec == r2.tv_nsec );
-    }
-
-    inline bool operator!=( const struct timespec& r1,  const struct timespec& r2 )
-    {
-        return !(operator==(r1, r2));
-    }
-
     /*! Разбивка строки по указанному символу */
     IDList explode( const std::string& str, char sep = ',' );
     std::vector<std::string> explode_str( const std::string& str, char sep = ',' );
@@ -361,4 +351,12 @@ namespace uniset
     // -----------------------------------------------------------------------------------------
 } // end of namespace uniset
 // -----------------------------------------------------------------------------------------
+    inline bool operator==(const struct timespec &r1, const struct timespec &r2)
+    {
+        return (r1.tv_sec == r2.tv_sec && r1.tv_nsec == r2.tv_nsec);
+    }
+    inline bool operator!=(const struct timespec &r1, const struct timespec &r2)
+    {
+        return !(operator==(r1, r2));
+    }
 #endif
