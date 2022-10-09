@@ -90,15 +90,15 @@ namespace uniset
             std::unordered_map<std::string, int> colname;
     };
     // ----------------------------------------------------------------------------------
-    class DBRowIterator:
-        public std::iterator<std::bidirectional_iterator_tag,
-        DBResult::ROW::value_type,
-        DBResult::ROW::difference_type,
-        DBResult::ROW::pointer,
-        DBResult::ROW::reference>
+    class DBRowIterator
     {
 
         public:
+            using iterator_category = std::bidirectional_iterator_tag;
+            using value_type = DBResult::ROW::value_type;
+            using difference_type = DBResult::ROW::difference_type;
+            using pointer = DBResult::ROW::pointer;
+            using reference = DBResult::ROW::reference;
 
             std::string as_string( const char* name ) const;
             std::string as_string( const std::string& name ) const;
