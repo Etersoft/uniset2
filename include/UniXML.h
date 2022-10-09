@@ -40,10 +40,15 @@ namespace uniset
 {
     typedef std::vector< std::pair<const std::string, const std::string> > UniXMLPropList;
 
-    class UniXML_iterator:
-        public std::iterator<std::bidirectional_iterator_tag, xmlNode, ptrdiff_t, xmlNode*, xmlNode&>
+    class UniXML_iterator
     {
         public:
+            using iterator_category = std::bidirectional_iterator_tag;
+            using value_type = xmlNode;
+            using difference_type = ptrdiff_t;
+            using pointer = const value_type*;
+            using reference = const value_type&;
+
             UniXML_iterator(xmlNode* node) noexcept:
                 curNode(node)
             {}
