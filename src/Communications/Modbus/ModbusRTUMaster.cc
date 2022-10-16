@@ -131,6 +131,22 @@ namespace uniset
 			port->setCharacterSize(csize);
 	}
 	// -------------------------------------------------------------------------
+    ComPort::CharacterSize ModbusRTUMaster::getCharacterSize()
+    {
+        if( port != NULL)
+            return port->getCharacterSize();
+
+        return ComPort::CSize8;
+    }
+    // -------------------------------------------------------------------------
+    ComPort::StopBits ModbusRTUMaster::getStopBits()
+    {
+        if( port != NULL)
+            port->getStopBits();
+
+        return ComPort::OneBit;
+    }
+    // -------------------------------------------------------------------------
 	void ModbusRTUMaster::setStopBits( ComPort::StopBits sBit )
 	{
 		if( port != NULL)

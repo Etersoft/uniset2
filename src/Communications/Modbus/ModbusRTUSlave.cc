@@ -93,7 +93,19 @@ namespace uniset
 
 		return port->getSpeed();
 	}
+    // -------------------------------------------------------------------------
+    void ModbusRTUSlave::setCharSize( ComPort::CharacterSize s )
+    {
+        if( port != NULL )
+            port->setCharacterSize(s);
+    }
 	// -------------------------------------------------------------------------
+    void ModbusRTUSlave::setStopBits( ComPort::StopBits b )
+    {
+        if( port != NULL )
+            port->setStopBits(b);
+    }
+    // -------------------------------------------------------------------------
 	void ModbusRTUSlave::setParity( ComPort::Parity p )
 	{
 		if( port != NULL )

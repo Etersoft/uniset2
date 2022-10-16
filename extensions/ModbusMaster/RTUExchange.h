@@ -49,6 +49,8 @@ namespace uniset
             std::string devname;
             ComPort::Speed defSpeed;
             ComPort::Parity parity;
+            ComPort::CharacterSize csize;
+            ComPort::StopBits stopBits;
             bool use485F;
             bool transmitCtl;
 
