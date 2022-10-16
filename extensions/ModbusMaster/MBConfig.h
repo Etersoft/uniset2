@@ -201,6 +201,8 @@ namespace uniset
                 ComPort::Speed speed = { ComPort::ComSpeed38400 };
                 std::shared_ptr<RTUStorage> rtu188;
                 ComPort::Parity parity = { ComPort::NoParity };
+                ComPort::CharacterSize csize = { ComPort::CSize8 };
+                ComPort::StopBits stopBits = { ComPort::OneBit };
 
                 std::string getShortInfo() const;
             };

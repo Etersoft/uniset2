@@ -1083,6 +1083,16 @@ namespace uniset
         if( !p.empty() )
             d->second->parity = ComPort::getParity(p);
 
+        auto cs = it.getProp("charSize");
+
+        if( !cs.empty() )
+            d->second->csize = ComPort::getCharacterSize(cs);
+
+        auto sb = it.getIntProp("stopBits");
+
+        if( sb > 0 )
+            d->second->stopBits = (ComPort::StopBits)sb;
+
         return true;
     }
     // -----------------------------------------------------------------------------
@@ -1167,6 +1177,9 @@ namespace uniset
           << " timeout=" << resp_Delay.getOffDelay()
           << " type=" << dtype
           << " ask_every_reg=" << ask_every_reg
+          << " stopBits=" << stopBits
+          << " charSize=" << csize
+          << " parity=" << parity
           << " regs=" << regs
           << ")" << endl;
         return s.str();

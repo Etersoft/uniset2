@@ -87,7 +87,7 @@ void ComPort::openPort()
 	options.c_cc[VMIN] = 0;
 	options.c_cc[VTIME] = 1;
 	options.c_cflag &= ~CSIZE;
-	options.c_cflag |= CS8;
+	options.c_cflag |= charSize;
 	options.c_cflag &= ~PARENB;
 	options.c_iflag &= ~INPCK;
 	options.c_cflag |= (CLOCAL | CREAD);
@@ -126,6 +126,18 @@ void ComPort::setSpeed( Speed s )
 	cfsetospeed(&options, speed);
 
 	tcsetattr(fd, TCSADRAIN, &options);
+}
+// --------------------------------------------------------------------------------
+ComPort::CharacterSize ComPort::getCharacterSize(const std::string& s )
+{
+    if( s == "cs5" )
+        return CSize5;
+    if( s == "cs6" )
+        return CSize6;
+    if( s == "cs7" )
+        return CSize7;
+
+    return CSize8;
 }
 // --------------------------------------------------------------------------------
 ComPort::Parity ComPort::getParity( const std::string& s )
@@ -221,6 +233,16 @@ void ComPort::setCharacterSize(CharacterSize csize)
 	options.c_cflag |= csize;
 
 	tcsetattr(fd, TCSADRAIN, &options);
+}
+// --------------------------------------------------------------------------------
+ComPort::CharacterSize ComPort::getCharacterSize()
+{
+    return charSize;
+}
+// --------------------------------------------------------------------------------
+ComPort::StopBits ComPort::getStopBits()
+{
+    return stopBits;
 }
 // --------------------------------------------------------------------------------
 void ComPort::setStopBits(StopBits sBit)

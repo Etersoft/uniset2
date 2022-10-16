@@ -81,6 +81,16 @@ RTUExchange::RTUExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const s
     if( !p.empty() )
         parity = ComPort::getParity(p);
 
+    auto sb = conf->getArgInt("--" + mbconf->prefix + "-stopbits", it.getProp("stopBits"));
+
+    if( sb > 0 )
+        stopBits = (ComPort::StopBits)sb;
+
+    auto cs = conf->getArgParam("--" + mbconf->prefix + "-charsize", it.getProp("charSize"));
+
+    if( !cs.empty() )
+        csize = ComPort::getCharacterSize(cs);
+
     mbconf->sleepPause_msec = conf->getArgPInt("--" + mbconf->prefix + "-sleepPause-usec", it.getProp("slepePause"), 100);
 
     rs_pre_clean = conf->getArgInt("--" + mbconf->prefix + "-pre-clean", it.getProp("pre_clean"));
@@ -156,6 +166,9 @@ std::shared_ptr<ModbusClient> RTUExchange::initMB( bool reopen )
 
         mbrtu->setSleepPause(mbconf->sleepPause_msec);
         mbrtu->setAfterSendPause(mbconf->aftersend_pause);
+        mbrtu->setCharacterSize(csize);
+        mbrtu->setStopBits(stopBits);
+        mbrtu->setParity(parity);
 
         mbinfo << myname << "(init): dev=" << devname << " speed=" << ComPort::getSpeed( mbrtu->getSpeed() ) << endl;
     }
@@ -232,6 +245,8 @@ bool RTUExchange::poll()
     bool allNotRespond = true;
     ComPort::Speed s = mbrtu->getSpeed();
     ComPort::Parity p = mbrtu->getParity();
+    ComPort::CharacterSize cs = mbrtu->getCharacterSize();
+    ComPort::StopBits sb = mbrtu->getStopBits();
 
     for( auto it1 : mbconf->devices )
     {
@@ -250,6 +265,18 @@ bool RTUExchange::poll()
         {
             p = d->parity;
             mbrtu->setParity(p);
+        }
+
+        if( d->stopBits != sb )
+        {
+            sb = d->stopBits;
+            mbrtu->setStopBits(sb);
+        }
+
+        if( d->csize != cs )
+        {
+            cs = d->csize;
+            mbrtu->setCharacterSize(cs);
         }
 
         d->prev_numreply.store(d->numreply);

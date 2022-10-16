@@ -100,13 +100,17 @@ namespace uniset
             static Speed getSpeed( const std::string& s );
             static std::string getSpeed( Speed s );
             static Parity getParity( const std::string& s );
+            static CharacterSize getCharacterSize(const std::string& s );
 
             void setParity(Parity);
             void setParity(const std::string& s);
             Parity getParity();
 
             void setCharacterSize(CharacterSize);
+            CharacterSize getCharacterSize();
+
             void setStopBits(StopBits sBit);
+            StopBits getStopBits();
 
             virtual void setTimeout( timeout_t msec );
             timeout_t getTimeout() const;
@@ -137,6 +141,8 @@ namespace uniset
             Speed speed = ComSpeed38400;
             std::string dev = { "" };
             Parity parity = NoParity;
+            CharacterSize charSize = CSize8;
+            StopBits stopBits = OneBit;
 
             virtual unsigned char m_receiveByte( bool wait );
 

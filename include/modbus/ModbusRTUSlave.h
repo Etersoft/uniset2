@@ -38,6 +38,9 @@ namespace uniset
             void setParity( ComPort::Parity p );
             void setParity( const std::string& p );
 
+            void setStopBits( ComPort::StopBits b );
+            void setCharSize( ComPort::CharacterSize s );
+
             virtual void cleanupChannel() override
             {
                 if(port) port->cleanupChannel();
