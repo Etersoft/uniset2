@@ -68,11 +68,13 @@ void TestGen::timerInfo( const TimerMessage* tm )
 {
     if( tm->id == 1 )
     {
+	cout << "**** timer 1 ****" << endl;
         askTimer(1, 0);
         askTimer(2, 3000);
     }
     else if( tm->id == 2 )
     {
+    	cout << "**** timer 2 ****" << endl;
         askTimer(1, 2000);
         askTimer(2, 0);
     }
