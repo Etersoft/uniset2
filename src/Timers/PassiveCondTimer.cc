@@ -23,60 +23,63 @@
 #include <sstream>
 #include <time.h>
 #include "PassiveTimer.h"
+#include <iostream>
 // ------------------------------------------------------------------------------------------
 using namespace std;
 // ------------------------------------------------------------------------------------------
 namespace uniset
 {
-	// ------------------------------------------------------------------------------------------
-	PassiveCondTimer::PassiveCondTimer() noexcept:
-		terminated(ATOMIC_VAR_INIT(1))
-	{
-	}
-	// ------------------------------------------------------------------------------------------
-	PassiveCondTimer::~PassiveCondTimer() noexcept
-	{
-		terminate();
-	}
-	// ------------------------------------------------------------------------------------------
-	void PassiveCondTimer::terminate() noexcept
-	{
-		try
-		{
-			std::unique_lock<std::mutex> lk(m_working);
-			terminated = true;
-		}
-		catch(...) {}
+    // ------------------------------------------------------------------------------------------
+    PassiveCondTimer::PassiveCondTimer() noexcept:
+        terminated(ATOMIC_VAR_INIT(1))
+    {
+    }
+    // ------------------------------------------------------------------------------------------
+    PassiveCondTimer::~PassiveCondTimer() noexcept
+    {
+        terminate();
+    }
+    // ------------------------------------------------------------------------------------------
+    void PassiveCondTimer::terminate() noexcept
+    {
+        try
+        {
+            std::unique_lock<std::mutex> lk(m_working);
+            terminated = true;
+        }
+        catch(...) {}
 
-		cv_working.notify_all();
-	}
-	// ------------------------------------------------------------------------------------------
-	bool PassiveCondTimer::wait( timeout_t time_msec ) noexcept
-	{
-		try
-		{
-			std::unique_lock<std::mutex> lk(m_working);
-			terminated = false;
+        cv_working.notify_all();
+    }
+    // ------------------------------------------------------------------------------------------
+    bool PassiveCondTimer::wait( timeout_t time_msec ) noexcept
+    {
+        try
+        {
+            std::unique_lock<std::mutex> lk(m_working);
+            terminated = false;
 
-			timeout_t t_msec = PassiveTimer::setTiming(time_msec); // вызываем для совместимости с обычным PassiveTimer-ом
+            timeout_t t_msec = PassiveTimer::setTiming(time_msec); // вызываем для совместимости с обычным PassiveTimer-ом
 
-			if( time_msec == WaitUpTime )
-			{
-				while( !terminated )
-					cv_working.wait(lk);
-			}
-			else
-				cv_working.wait_for(lk, std::chrono::milliseconds(t_msec), [&]()
-			{
-				return (terminated == true);
-			} );
+            if( time_msec == WaitUpTime )
+            {
+                while( !terminated )
+                    cv_working.wait(lk);
+            }
+            else
+            {
+                cv_working.wait_until(lk, std::chrono::steady_clock::now() + std::chrono::milliseconds(t_msec), [&]()
+                {
+                    return (terminated == true);
+                });
+            }
 
-			terminated = true;
-			return true;
-		}
-		catch(...) {}
+            terminated = true;
+            return true;
+        }
+        catch(...) {}
 
-		return false;
-	}
-	// ------------------------------------------------------------------------------------------
+        return false;
+    }
+    // ------------------------------------------------------------------------------------------
 } // end of namespace uniset

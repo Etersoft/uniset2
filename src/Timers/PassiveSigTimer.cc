@@ -33,25 +33,25 @@ using namespace std;
 // ------------------------------------------------------------------------------------------
 void PassiveSigTimer::call(int signo, siginfo_t* evp, void* ucontext)
 {
-	cout << "PassiveSigTimer: callme time=" << evp->si_value.sival_int << " ms" << endl;
+    cout << "PassiveSigTimer: callme time=" << evp->si_value.sival_int << " ms" << endl;
 }
 
 void PassiveSigTimer::callalrm(int signo)
 {
-	//    cout << "PassiveSigTimer: callme signo "<< signo <<endl;
+    //    cout << "PassiveSigTimer: callme signo "<< signo <<endl;
 }
 // ------------------------------------------------------------------------------------------
 
 PassiveSigTimer::PassiveSigTimer():
-	terminated(1)
+    terminated(1)
 {
-	init();
+    init();
 }
 // ------------------------------------------------------------------------------------------
 
 PassiveSigTimer::~PassiveSigTimer()
 {
-	terminate();
+    terminate();
 }
 // ------------------------------------------------------------------------------------------
 void PassiveSigTimer::init()
@@ -60,79 +60,79 @@ void PassiveSigTimer::init()
 // ------------------------------------------------------------------------------------------
 void PassiveSigTimer::terminate()
 {
-	if (!terminated)
-	{
-		t_msec = 0;
-		terminated = 1;
-		//        cout << "PassiveTimer("<< pid <<"): прерываю работу "<< endl;
-		kill(pid, SIGALRM);
-	}
+    if (!terminated)
+    {
+        t_msec = 0;
+        terminated = 1;
+        //        cout << "PassiveTimer("<< pid <<"): прерываю работу "<< endl;
+        kill(pid, SIGALRM);
+    }
 }
 // ------------------------------------------------------------------------------------------
 bool PassiveSigTimer::wait(timeout_t timeMS)
 {
-	pid = getpid();
+    pid = getpid();
 
-	//    struct itimerval val;
-	struct sigaction action;
-	sigemptyset(&action.sa_mask);
+    //    struct itimerval val;
+    struct sigaction action;
+    sigemptyset(&action.sa_mask);
 
-	action.sa_handler = (void(*)(int))callalrm;
-	action.sa_flags = SA_RESETHAND;//SA_RESTART;
+    action.sa_handler = (void(*)(int))callalrm;
+    action.sa_flags = SA_RESETHAND;//SA_RESTART;
 
-	if( sigaction(SIGALRM, &action, 0) == -1)
-	{
-		cerr << "PassiveSigTimer: error sigaction" << endl;
-		return false;
-	}
+    if( sigaction(SIGALRM, &action, 0) == -1)
+    {
+        cerr << "PassiveSigTimer: error sigaction" << endl;
+        return false;
+    }
 
 
-	//    if ( !terminated )
-	//        terminate();
-	terminated = 0;
+    //    if ( !terminated )
+    //        terminate();
+    terminated = 0;
 
-	timeout_t sec;
-	timeout_t msec;
+    timeout_t sec;
+    timeout_t msec;
 
-	if (timeMS == WaitUpTime)
-	{
-		sec = 15 * 60; // 15min
-		msec = 0;
-	}
-	else
-	{
-		sec = timeMS / 1000;
-		msec = (timeMS % 1000) * 1000;
-	}
+    if (timeMS == WaitUpTime)
+    {
+        sec = 15 * 60; // 15min
+        msec = 0;
+    }
+    else
+    {
+        sec = timeMS / 1000;
+        msec = (timeMS % 1000) * 1000;
+    }
 
-	mtimer.it_value.tv_sec     = sec;
-	mtimer.it_value.tv_usec    = msec;
-	mtimer.it_interval.tv_sec  = 0;
-	mtimer.it_interval.tv_usec = 0;
-	setitimer( ITIMER_REAL, &mtimer, (struct itimerval*)0 );
+    mtimer.it_value.tv_sec     = sec;
+    mtimer.it_value.tv_usec    = msec;
+    mtimer.it_interval.tv_sec  = 0;
+    mtimer.it_interval.tv_usec = 0;
+    setitimer( ITIMER_REAL, &mtimer, (struct itimerval*)0 );
 
-	PassiveTimer::setTiming(timeMS); // вызываем для совместимости с обычным PassiveTimer-ом
+    PassiveTimer::setTiming(timeMS); // вызываем для совместимости с обычным PassiveTimer-ом
 
-	sigset_t mask, oldmask;
+    sigset_t mask, oldmask;
 
-	sigemptyset(&mask);
-	// блокируем все сигналы кроме этих
-	sigaddset( &mask, SIGALRM );
-	sigprocmask( SIG_BLOCK, &mask, &oldmask );
+    sigemptyset(&mask);
+    // блокируем все сигналы кроме этих
+    sigaddset( &mask, SIGALRM );
+    sigprocmask( SIG_BLOCK, &mask, &oldmask );
 
-	if (timeMS == WaitUpTime)
-	{
-		while (!terminated)
-			sigsuspend( &oldmask );
-	}
-	else
-		sigsuspend( &oldmask );
+    if (timeMS == WaitUpTime)
+    {
+        while (!terminated)
+            sigsuspend( &oldmask );
+    }
+    else
+        sigsuspend( &oldmask );
 
-	terminated = 1;
-	sigprocmask( SIG_UNBLOCK, &mask, NULL );
+    terminated = 1;
+    sigprocmask( SIG_UNBLOCK, &mask, NULL );
 
-	//    cout << "PassiveSigTimer: time ok"<< endl;
-	return true;
+    //    cout << "PassiveSigTimer: time ok"<< endl;
+    return true;
 }
 
 // ------------------------------------------------------------------------------------------

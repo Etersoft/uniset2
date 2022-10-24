@@ -277,7 +277,7 @@ int main(int argc, char* argv[])
                 if( ncycles > 0 )
                     nc = ncycles;
 
-                auto t_start = high_resolution_clock::now();
+                auto t_start = steady_clock::now();
 
                 unsigned int npack = 0;
 
@@ -287,7 +287,7 @@ int main(int argc, char* argv[])
                     {
                         if( nprof > 0 && npack >= nprof )
                         {
-                            auto t_end = high_resolution_clock::now();
+                            auto t_end = steady_clock::now();
                             float sec = duration_cast<duration<float>>(t_end - t_start).count();
                             cout << "Receive " << setw(5) << npack << " packets for " << setw(8) << sec << " sec "
                                  << " [ 1 packet per " << setw(10) << ( sec / (float)npack ) << " sec ]" << endl;

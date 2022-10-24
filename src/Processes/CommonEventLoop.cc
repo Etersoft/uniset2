@@ -46,7 +46,7 @@ namespace uniset
 		thr = unisetstd::make_unique<std::thread>( [&] { CommonEventLoop::defaultLoop(); } );
 
 		std::unique_lock<std::mutex> lock2(looprunOK_mutex);
-		looprunOK_event.wait_for(lock2, std::chrono::milliseconds(waitTimeout_msec), [&]()
+		looprunOK_event.wait_until(lock2, std::chrono::steady_clock::now() + std::chrono::milliseconds(waitTimeout_msec), [&]()
 		{
 			return (isrunning == true);
 		} );
@@ -70,7 +70,7 @@ namespace uniset
 		evprep.send(); // будим default loop
 
 		// ожидаем обработки evprepare (которая будет в defaultLoop)
-		prep_event.wait_for(locker, std::chrono::milliseconds(waitTimeout_msec), [ = ]()
+		prep_event.wait_until(locker, std::chrono::steady_clock::now() + std::chrono::milliseconds(waitTimeout_msec), [ = ]()
 		{
 			return ( prep_notify == true );
 		} );

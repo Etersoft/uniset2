@@ -218,9 +218,9 @@ namespace uniset
             // счётчики для подсчёта статистики
             size_t recvCount = { 0 };
             size_t upCount = { 0 };
-            std::chrono::system_clock::time_point t_start;
-            std::chrono::system_clock::time_point t_end;
-            std::chrono::system_clock::time_point t_stats;
+            std::chrono::steady_clock::time_point t_start;
+            std::chrono::steady_clock::time_point t_end;
+            std::chrono::steady_clock::time_point t_stats;
 
             // текущая статистика
             struct Stats
