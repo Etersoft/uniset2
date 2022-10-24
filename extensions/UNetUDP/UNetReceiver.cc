@@ -314,7 +314,7 @@ void UNetReceiver::statisticsEvent(ev::periodic& tm, int revents) noexcept
         return;
     }
 
-    t_end = chrono::high_resolution_clock::now();
+    t_end = chrono::steady_clock::now();
     float sec = chrono::duration_cast<chrono::duration<float>>(t_end - t_stats).count();
     t_stats = t_end;
     stats.recvPerSec = recvCount / sec;
@@ -537,7 +537,7 @@ void UNetReceiver::readEvent( ev::io& watcher ) noexcept
         return;
 
     bool ok = false;
-    t_start = chrono::high_resolution_clock::now();
+    t_start = chrono::steady_clock::now();
 
     try
     {
@@ -564,7 +564,7 @@ void UNetReceiver::readEvent( ev::io& watcher ) noexcept
         ptRecvTimeout.reset();
     }
 
-    t_end = chrono::high_resolution_clock::now();
+    t_end = chrono::steady_clock::now();
     stats.recvProcessingTime_microsec = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start).count();
 }
 // -----------------------------------------------------------------------------
@@ -621,7 +621,7 @@ void UNetReceiver::updateEvent( ev::periodic& tm, int revents ) noexcept
     bool recvOk = checkConnection();
 
     // обновление данных в SM
-    t_start = chrono::high_resolution_clock::now();
+    t_start = chrono::steady_clock::now();
 
     try
     {
@@ -632,7 +632,7 @@ void UNetReceiver::updateEvent( ev::periodic& tm, int revents ) noexcept
         unetcrit << myname << "(updateEvent): " << ex.what() << std::endl;
     }
 
-    t_end = chrono::high_resolution_clock::now();
+    t_end = chrono::steady_clock::now();
     stats.upProcessingTime_microsec = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start).count();
 
     if( sidRespond != DefaultObjectId )

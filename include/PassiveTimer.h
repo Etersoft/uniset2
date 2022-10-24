@@ -118,7 +118,7 @@ namespace uniset
             // отделяем внутреннее (теперь уже стандартное >= c++11)
             // представление для работы со временем (std::chrono)
             // и тип (t_msec) для "пользователей"
-            std::chrono::high_resolution_clock::time_point t_start; /*!< время установки таймера (сброса) */
+            std::chrono::steady_clock::time_point t_start; /*!< время установки таймера (сброса) */
             std::chrono::milliseconds t_inner_msec; /*!< время установки таймера, мсек (в единицах std::chrono) */
 
         private:

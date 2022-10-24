@@ -171,7 +171,7 @@ namespace uniset
 			return true;
 
 		std::unique_lock<std::mutex> lock(looprunOK_mutex);
-		looprunOK_event.wait_for(lock, std::chrono::milliseconds(waitTimeout_msec), [&]()
+		looprunOK_event.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::milliseconds(waitTimeout_msec), [&]()
 		{
 			return (isrunning == true);
 		} );

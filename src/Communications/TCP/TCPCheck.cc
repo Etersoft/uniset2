@@ -63,7 +63,7 @@ namespace uniset
 
             do
             {
-                status = future.wait_for(std::chrono::milliseconds(tout_msec));
+                status = future.wait_until(std::chrono::steady_clock::now() + std::chrono::milliseconds(tout_msec));
 
                 if( status == std::future_status::timeout )
                     return false;
@@ -99,7 +99,7 @@ namespace uniset
 
             do
             {
-                status = future.wait_for(std::chrono::milliseconds(tout_msec));
+                status = future.wait_until(std::chrono::steady_clock::now() + std::chrono::milliseconds(tout_msec));
 
                 if( status == std::future_status::timeout )
                     return false;

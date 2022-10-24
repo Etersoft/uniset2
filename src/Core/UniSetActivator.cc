@@ -297,7 +297,7 @@ namespace uniset
 
         ulogsys << "(FINISH GUARD THREAD): wait " << TERMINATE_TIMEOUT_SEC << " sec.." << endl << flush;
 
-        g_doneevent.wait_for(lk, std::chrono::milliseconds(TERMINATE_TIMEOUT_SEC * 1000), []()
+        g_doneevent.wait_until(lk, std::chrono::steady_clock::now() + std::chrono::milliseconds(TERMINATE_TIMEOUT_SEC * 1000), []()
         {
             return (g_done == true);
         } );
