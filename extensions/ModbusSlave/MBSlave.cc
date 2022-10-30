@@ -1605,7 +1605,7 @@ namespace uniset
         cout << "--prefix-inet-port num - this modbus server port. Default: 502" << endl;
         cout << "--prefix-update-stat-time msec  - Период обновления статистики работы. По умолчанию: 4 сек." << endl;
         cout << "--prefix-session-timeout msec   - Таймаут на закрытие соединения с 'клиентом', если от него нет запросов. По умолчанию: 10 сек." << endl;
-        cout << "--prefix-session-maxnum num     - Маскимальное количество соединений. По умолчанию: 10." << endl;
+        cout << "--prefix-session-maxnum num     - Маскимальное количество соединений. По умолчанию: 5." << endl;
         cout << "--prefix-session-count-id  id   - Датчик для отслеживания текущего количества соединений." << endl;
         cout << "--prefix-socket-timeout msec    - Таймаут на переоткрытие сокета если долго нет соединений. По умолчанию: 0 (не переоткрывать)" << endl;
         cout << endl;
