@@ -73,6 +73,8 @@ RTUExchange::RTUExchange(uniset::ObjectId objId, uniset::ObjectId shmId, const s
     if( speed.empty() )
         speed = "38400";
 
+    mbinfo << myname << "(init): device=" << devname << " speed=" << speed << endl;
+
     use485F = conf->getArgInt("--" + mbconf->prefix + "-use485F", it.getProp("use485F"));
     transmitCtl = conf->getArgInt("--" + mbconf->prefix + "-transmit-ctl", it.getProp("transmitCtl"));
     defSpeed = ComPort::getSpeed(speed);

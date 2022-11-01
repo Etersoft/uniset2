@@ -1974,7 +1974,7 @@ namespace uniset
             uniset::uniset_rwmutex_rlock l(mutex_start);
             UniSetObject::activateObject();
 
-            if( !shm->isLocalwork() )
+            if( !shm->isLocalwork() && !mbconf->noQueryOptimization )
                 MBConfig::rtuQueryOptimization(mbconf->devices, mbconf->maxQueryCount);
 
             initIterators();
@@ -2110,7 +2110,7 @@ namespace uniset
     // ----------------------------------------------------------------------------
     bool MBExchange::reload( const std::string& confile )
     {
-        mbinfo << myname << ": relaod from " << confile << endl;
+        mbinfo << myname << ": reload from " << confile << endl;
 
         uniset::uniset_rwmutex_wrlock lock(mutex_conf);
 
@@ -2136,7 +2136,6 @@ namespace uniset
             newConf = make_shared<MBConfig>(mbconf->conf, newCnode, mbconf->shm);
             newConf->cloneParams(mbconf);
             newConf->loadConfig(xml, nullptr);
-            MBConfig::rtuQueryOptimization(newConf->devices, newConf->maxQueryCount);
 
             if( newConf->devices.empty() )
             {
