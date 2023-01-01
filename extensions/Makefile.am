@@ -8,6 +8,7 @@ SUBDIRS = lib include SharedMemory SharedMemory/tests IOControl IOControl/tests 
 	DBServer-MySQL DBServer-SQLite DBServer-PostgreSQL MQTTPublisher \
 	RRDServer tests ModbusMaster/tests ModbusSlave/tests LogDB LogDB/tests \
 	Backend-OpenTSDB Backend-ClickHouse Backend-ClickHouse/tests HttpResolver HttpResolver/tests UWebSocketGate UWebSocketGate/tests
+	OPCUAGate OPCUAGate/tests
 
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSet2Extensions.pc

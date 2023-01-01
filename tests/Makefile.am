@@ -1,8 +1,8 @@
-SUBDIRS=MQPerfTest PocoTest UHttpTest
+SUBDIRS=MQPerfTest PocoTest UHttpTest Open62541Test
 #TCPSocketTest
 if HAVE_TESTS
 ############################################################################
-# This file is part of the UniSet library								  #
+# This file is part of the UniSet library                                  #
 ############################################################################
 
 #check_PROGRAMS = tests tests_with_conf
