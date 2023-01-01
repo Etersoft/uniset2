@@ -227,6 +227,7 @@
 		<GroupAnalogSensors name="TestGroup" ok_c="D106_S"/>
 
 		<MQTTPublisher1 name="MQTTPublisher" />
+		<OPCUAGate name="OPCUAGate1"/>
 	</settings>
 	<ObjectsMap idfromfile="1">
 		<!--
@@ -5559,6 +5560,7 @@
 			<item id="6091" name="UWebSocketGate1"/>
 			<item id="6092" name="UWebSocketGate2"/>
 			<item id="6093" name="BackendClickHouse"/>
+			<item id="6094" name="OPCUAGate1"/>
 			<item id="6101" name="MBTCP1"/>
 			<item id="6102" name="MBTCP2"/>
 			<item id="6103" name="MBTCP3"/>

@@ -1,6 +1,6 @@
 #include "Configuration.h"
 #include "Extensions.h"
-#include "OPCUAServer.h"
+#include "OPCUAGate.h"
 #include "Configuration.h"
 #include "UniSetActivator.h"
 // --------------------------------------------------------------------------
@@ -16,7 +16,7 @@ int main(int argc, char** argv)
         if( argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")) )
         {
             cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
-            UWebSocketGate::help_print();
+            OPCUAGate::help_print();
             return 0;
         }
 
@@ -36,13 +36,13 @@ int main(int argc, char** argv)
             return 1;
         }
 
-//        auto srv = OPCUAServer::init_wsgate(argc, argv, shmID, nullptr, "ws-");
-//
-//        if( !srv )
-//            return 1;
+        auto srv = OPCUAGate::init_opcuagate(argc, argv, shmID, nullptr, "opcua");
+
+        if( !srv )
+            return 1;
 
         auto act = UniSetActivator::Instance();
-//        act->add(srv);
+        act->add(srv);
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );

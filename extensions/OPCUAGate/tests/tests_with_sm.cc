@@ -6,6 +6,7 @@
 #include "UniSetActivator.h"
 #include "PassiveTimer.h"
 #include "SharedMemory.h"
+#include "OPCUAGate.h"
 #include "Extensions.h"
 // --------------------------------------------------------------------------
 using namespace std;
@@ -36,6 +37,38 @@ int main(int argc, const char* argv[] )
 
         if( !shm )
             return 1;
+
+        auto opc = OPCUAGate::init_opcuagate(argc, argv, shm->getId(), shm, "opcua");
+
+        if( !opc )
+            return 1;
+
+        auto act = UniSetActivator::Instance();
+
+        act->add(shm);
+        act->add(opc);
+
+        SystemMessage sm(SystemMessage::StartUp);
+        act->broadcast( sm.transport_msg() );
+        act->run(true);
+
+        int tout = 6000;
+        PassiveTimer pt(tout);
+
+        while( !pt.checkTime() && !act->exist() && !opc->exist() && !shm->exist() )
+            msleep(100);
+
+        if( !act->exist() )
+        {
+            cerr << "(tests_with_sm): SharedMemory not exist! (timeout=" << tout << ")" << endl;
+            return 1;
+        }
+
+        if( !opc->exist() )
+        {
+            cerr << "(tests_with_sm): OPCUAGate not exist! (timeout=" << tout << ")" << endl;
+            return 1;
+        }
 
         return session.run();
     }
