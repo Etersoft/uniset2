@@ -8,4 +8,4 @@ cd ../../../Utilities/Admin/
 ./uniset2-start.sh -f ./exist | grep -q UNISET_PLC/Controllers || exit 1
 cd -
 
-./uniset2-start.sh -f ./tests-with-sm $* -- --confile opcua-test-configure.xml --e-startup-pause 10
+./uniset2-start.sh -f ./tests-with-sm $* -- --confile opcuagate-test-configure.xml --e-startup-pause 10
