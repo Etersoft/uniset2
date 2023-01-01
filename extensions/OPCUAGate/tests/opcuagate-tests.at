@@ -1,0 +1,3 @@
+AT_SETUP([OPCUAGate tests])
+AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/OPCUAGate/tests tests_with_sm.sh],[0],[ignore],[ignore])
+AT_CLEANUP

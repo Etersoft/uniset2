@@ -16,6 +16,7 @@
 %def_enable uresolver
 %def_enable uwebsocket
 %def_enable clickhouse
+%def_enable opcua
 
 %ifarch %ix86
 %def_enable com485f
@@ -78,6 +79,11 @@ BuildRequires: librrd-devel
 %if_enabled mqtt
 BuildRequires: libmosquitto-devel
 %endif
+
+%if_enabled opcua
+BuildRequires: libopen62541-devel
+%endif
+
 
 %if_enabled netdata
 BuildRequires: netdata

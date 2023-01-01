@@ -146,7 +146,7 @@
 		</MBMultiSlave1>
 
 
-		<MBSlave1 aftersend-pause="0" dev="/dev/ttyS0" levels="info,warn,crit" name="MBSlave1" poll_time="200" reply_timeout="60" speed="9600">
+		<MBSlave1 aftersend-pause="0" dev="/dev/ttyS0" levels="info,warn,crit" name="MBSlave1" poll_time="200" reply_timeout="60" speed="9600" socketTimeout="5000">
 			<filelist>
 				<!-- Список файлов разрешённых для передачи по modbus
 			directory - каталог где лежит файл. Можно не задавать
