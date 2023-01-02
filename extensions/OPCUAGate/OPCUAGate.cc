@@ -46,10 +46,11 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
     opcServer->setApplicationName(it.getProp2("appName", "uniset2 OPC UA gate"));
     opcServer->setApplicationUri(it.getProp2("appUri", "urn:uniset2.server.gate"));
     opcServer->setProductUri(it.getProp2("productUri", "https://github.com/Etersoft/uniset2/"));
+    updatePause_msec = it.getPIntProp("updatePause", updatePause_msec);
 
     opcServer->setLogger([this](auto level, auto category, auto msg)
     {
-        mylog->info()
+        mylog->level5()
                 << "[" << opcua::getLogLevelName(level) << "] "
                 << "[" << opcua::getLogCategoryName(category) << "] "
                 << msg << std::endl;
@@ -59,7 +60,8 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
     opcConfig->shutdownDelay = it.getPIntProp("shutdownDelay", opcConfig->shutdownDelay);
     opcConfig->maxSubscriptions = it.getPIntProp("maxSubscriptions", opcConfig->maxSubscriptions);
     opcConfig->maxSessions = it.getPIntProp("maxSessions", opcConfig->maxSessions);
-    ioNode = unisetstd::make_unique<IONode>(opcServer->getRootNode().addFolder(opcua::NodeId("I/O"), "I/O"));
+    ioNode = unisetstd::make_unique<IONode>(opcServer->getRootNode().addFolder(opcua::NodeId("io"), "I/O"));
+    ioNode->node.setDescription("I/O", "en-US");
 
     auto localNode = conf->getLocalNode();
     auto nodes = conf->getXMLNodesSection();
@@ -81,7 +83,7 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
 
     serverThread = unisetstd::make_unique<ThreadCreator<OPCUAGate>>(this, &OPCUAGate::serverLoop);
     serverThread->setFinalAction(this, &OPCUAGate::serverLoopTerminate);
-
+    updateThread = unisetstd::make_unique<ThreadCreator<OPCUAGate>>(this, &OPCUAGate::updateLoop);
 
     // определяем фильтр
     s_field = conf->getArgParam("--" + prefix + "-s-filter-field");
@@ -94,10 +96,7 @@ OPCUAGate::OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId sh
            << "' s_fvalue='" << s_fvalue << "'" << endl;
 
     if( !shm->isLocalwork() )
-    {
         ic->addReadItem(sigc::mem_fun(this, &OPCUAGate::readItem));
-        updateThread = unisetstd::make_unique<ThreadCreator<OPCUAGate>>(this, &OPCUAGate::updateLoop);
-    }
     else
         readConfiguration();
 }
@@ -142,9 +141,7 @@ bool OPCUAGate::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& 
 //------------------------------------------------------------------------------
 bool OPCUAGate::initVariable( UniXML::iterator& it )
 {
-    // Переопределять ID и name - нельзя..
-    string sname( it.getProp("name") );
-
+    string sname = it.getProp("name");
     ObjectId sid = DefaultObjectId;
 
     if( it.getProp("id").empty() )
@@ -162,24 +159,61 @@ bool OPCUAGate::initVariable( UniXML::iterator& it )
     if( smTestID == DefaultObjectId )
         smTestID = sid;
 
-    auto iotype = uniset::getIOType(it.getProp("iotype"));
+    auto realIOType = uniset::getIOType(it.getProp("iotype"));
 
-    if( iotype == UniversalIO::UnknownIOType )
+    if( realIOType == UniversalIO::UnknownIOType )
     {
         mycrit << "(initVariable): Unknown iotype " << it.getProp("iotype")
                << " for " << sname << endl;
         return false;
     }
 
-    opcua::Type type = opcua::Type::Int64;
+    UniversalIO::IOType iotype = UniversalIO::AO; // by default
+
+    auto rwmode = it.getProp("opcua_rwmode");
+
+    if( rwmode == "none" )
+    {
+        myinfo << "(initVariable): rwmode='none'. Skip sensor " << sname << endl;
+        return false;
+    }
+
+
+    if( rwmode == "w" )
+    {
+        if( realIOType == UniversalIO::DI || realIOType == UniversalIO::DO )
+            iotype = UniversalIO::DI; // write access
+        else
+            iotype = UniversalIO::AI; // write access
+    }
+    else
+    {
+        if( realIOType == UniversalIO::DI || realIOType == UniversalIO::DO )
+            iotype = UniversalIO::DO; // read access
+        else
+            iotype = UniversalIO::AO; // read access
+    }
+
+    opcua::Type opctype = opcua::Type::Int64;
 
     if( iotype == UniversalIO::DI || iotype == UniversalIO::DO )
-        type = opcua::Type::Boolean;
+        opctype = opcua::Type::Boolean;
 
     auto vnode = ioNode->node.addVariable(
                      opcua::NodeId(it.getProp("name")),
                      it.getProp("name"),
-                     type);
+                     opctype);
+
+    // init default value
+    int64_t defVal = (int64_t)it.getPIntProp("default", 0);
+
+    if( iotype == UniversalIO::AI || iotype == UniversalIO::AO )
+        vnode.write(defVal);
+    else
+    {
+        bool set = defVal ? true : false;
+        vnode.write(set);
+    }
 
     vnode.setDescription(it.getProp("textname"), "ru-RU");
     vnode.setDisplayName(it.getProp("name"), "en-US");
@@ -201,9 +235,7 @@ void OPCUAGate::sysCommand( const uniset::SystemMessage* sm )
     if( sm->command == SystemMessage::StartUp )
     {
         serverThread->start();
-
-        if( !shm->isLocalwork() )
-            updateThread->start();
+        updateThread->start();
     }
 }
 // -----------------------------------------------------------------------------
@@ -214,7 +246,7 @@ void OPCUAGate::serverLoopTerminate()
 // -----------------------------------------------------------------------------
 void OPCUAGate::serverLoop()
 {
-    if(opcServer == nullptr )
+    if( opcServer == nullptr )
         return;
 
     opcServer->run();
@@ -223,19 +255,21 @@ void OPCUAGate::serverLoop()
 // -----------------------------------------------------------------------------
 bool OPCUAGate::deactivateObject()
 {
+    active = false;
+
     if( opcServer )
         opcServer->stop();
-
-    if( serverThread )
-    {
-        if( serverThread->isRunning() )
-            serverThread->join();
-    }
 
     if( updateThread )
     {
         if( updateThread->isRunning() )
             updateThread->join();
+    }
+
+    if( serverThread )
+    {
+        if( serverThread->isRunning() )
+            serverThread->join();
     }
 
     return UObject_SK::deactivateObject();
@@ -307,7 +341,8 @@ void OPCUAGate::askSensors( UniversalIO::UIOCommand cmd )
     {
         try
         {
-            shm->askSensor(it->first, cmd, getId());
+            if( it->second.stype == UniversalIO::AO || it->second.stype == UniversalIO::DO )
+                shm->askSensor(it->first, cmd, getId());
         }
         catch( const uniset::Exception& ex )
         {
@@ -326,9 +361,9 @@ void OPCUAGate::sensorInfo( const uniset::SensorMessage* sm )
 
     try
     {
-        if( sm->sensor_type == UniversalIO::DO || sm->sensor_type == UniversalIO::DI )
+        if( sm->sensor_type == UniversalIO::DI )
             it->second.node.write(sm->value ? true : false);
-        else
+        else if( sm->sensor_type == UniversalIO::AI )
             it->second.node.write(sm->value);
     }
     catch( std::exception& ex )
@@ -339,24 +374,51 @@ void OPCUAGate::sensorInfo( const uniset::SensorMessage* sm )
 // -----------------------------------------------------------------------------
 void OPCUAGate::updateLoop()
 {
+    PassiveTimer ptAct(activateTimeout);
+
+    while( !activated && !ptAct.checkTime() )
+    {
+        cout << myname << "(updateLoop): wait activate..." << endl;
+        msleep(300);
+
+        if( activated )
+            break;
+    }
+
     while( active )
     {
         for(  auto it = variables.begin(); it != variables.end(); it++ )
         {
             try
             {
-                if( it->second.stype == UniversalIO::DO || it->second.stype == UniversalIO::DI )
-                    it->second.node.write( shm->localGetValue(it->second.it,it->first) ? true : false );
-                else
-                    it->second.node.write( shm->localGetValue(it->second.it,it->first) );
+                if( !shm->isLocalwork() )
+                {
+                    if( it->second.stype == UniversalIO::DO )
+                        it->second.node.write(shm->localGetValue(it->second.it, it->first) ? true : false);
+                    else if( it->second.stype == UniversalIO::AO )
+                        it->second.node.write(shm->localGetValue(it->second.it, it->first));
+                }
+
+                if( it->second.stype == UniversalIO::DI )
+                {
+                    auto set = it->second.node.read<bool>();
+                    shm->localSetValue(it->second.it, it->first, set ? 1 : 0, getId());
+                }
+                else if( it->second.stype == UniversalIO::AI )
+                {
+                    auto value = it->second.node.read<long>();
+                    shm->localSetValue(it->second.it, it->first, value, getId());
+                }
             }
             catch( const std::exception& ex )
             {
-                mycrit << "(updateLoop): " << ex.what() << endl;
+                mycrit << "(updateLoop): sid=" << it->first
+                       << "[" << it->second.stype
+                       << "] update error: " << ex.what() << endl;
             }
         }
 
-        msleep(updateLoopPause_msec);
+        msleep(updatePause_msec);
     }
 
     myinfo << "(updateLoop): terminated.." << endl;

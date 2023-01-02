@@ -98,7 +98,6 @@ namespace uniset
                 opcua::VariableNode node;
                 IOController::IOStateList::iterator it;
                 UniversalIO::IOType stype = {UniversalIO::AI};
-
                 IOVariable(const opcua::VariableNode& n) : node(n) {};
             };
 
@@ -116,7 +115,7 @@ namespace uniset
             std::string prefix;
             std::string s_field;
             std::string s_fvalue;
-            uniset::timeout_t updateLoopPause_msec = { 100 };
+            uniset::timeout_t updatePause_msec = { 200 };
     };
     // --------------------------------------------------------------------------
 } // end of namespace uniset

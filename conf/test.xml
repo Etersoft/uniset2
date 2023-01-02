@@ -282,7 +282,7 @@
 			<item id="3" iotype="DI" opcua="1" mbtcp="1" mbtcp_mbaddr="0x02" mbtcp_mbfunc="0x03" mbtcp_mbreg="0x02" mbtcp_mbtype="rtu" name="Input3_S" priority="Medium" textname="Команда 3"/>
 			<item id="4" iotype="DI" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input4_S" priority="Medium" rs="2" textname="Команда 4"/>
 			<item id="5" iotype="DI" name="Input5_S" priority="Medium" textname="Команда 5" udp="2" depend="Input4_S"/>
-			<item id="6" iotype="DI" name="Input6_S" priority="Medium" textname="Команда 6" udp="2"/>
+			<item id="6" iotype="DI" name="Input6_S" priority="Medium" textname="Команда 6" udp="2" opcua="1" opcua_rwmode="w"/>
 			<item id="11" iotype="AI" name="AI11_AS" priority="Medium" textname="AI 11" depend="Input4_S" depend_off_value="-50"/>
 			<item id="12" iotype="DI" name="Input12_S" priority="Medium" textname="Команда 12" iofront="01"/>
 			<item id="60" iotype="DI" name="Input60_S" priority="Medium" textname="Команда 61" iofront="10"/>
@@ -311,7 +311,7 @@
 			<item a2="1" id="24" iotype="DI" name="DumpSensor6_S" priority="Medium" textname="alarm dumpm sensor 6"/>
 			<item a2="1" id="25" iotype="DI" name="DumpSensor7_S" priority="Medium" textname="alarm dumpm sensor 7"/>
 			<item a2="1" id="26" iotype="DI" name="DumpSensor8_S" priority="Medium" textname="alarm dumpm sensor 8"/>
-			<item default="-655360" id="27" iotype="AI" mb_vtype="I2" mbaddr="0x01" mbreg="0x12" mbtcp="2" mbtype="rtu" name="MB1_AS" priority="Medium" textname="Analog input"/>
+			<item default="-655360" id="27" iotype="AI" mb_vtype="I2" mbaddr="0x01" mbreg="0x12" mbtcp="2" mbtype="rtu" name="MB1_AS" priority="Medium" textname="Analog input" opcua="1" opcua_rwmode="w"/>
 			<item default="6553604" id="28" iotype="AI" mb_vtype="U2" mbaddr="0x01" mbreg="0x14" mbtcp="2" mbtype="rtu" name="MB2_AS" priority="Medium" textname="Analog input"/>
 			<item default="65536045" id="29" iotype="AI" mb_vtype="F2" mbaddr="0x01" mbreg="0x17" mbtcp="2" mbtype="rtu" name="MB3_AS" priority="Medium" textname="Analog input"/>
 			<item id="30" iotype="AI" name="IOTestMode_AS" priority="Medium" textname="testmode for IOControl"/>
