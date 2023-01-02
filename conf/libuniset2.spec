@@ -81,7 +81,7 @@ BuildRequires: libmosquitto-devel
 %endif
 
 %if_enabled opcua
-BuildRequires: libopen62541-devel
+BuildRequires: libopen62541-devel libopen62541pp-devel
 %endif
 
 
@@ -395,12 +395,30 @@ Requires: %name-extension-common-devel = %version-%release
 Libraries needed to develop for uniset MQTT extension
 %endif
 
+%if_enabled opcua
+%package extension-opcua
+Group: Development/C++
+Summary: OPC UA support for %{name}
+Requires: %name-extension-common = %version-%release
+
+%description extension-opcua
+OPC UA support for %{name}
+
+%package extension-opcua-devel
+Group: Development/C++
+Summary: Libraries needed to develop for uniset OPC UA extension
+Requires: %name-extension-common-devel = %version-%release
+
+%description extension-opcua-devel
+Libraries needed to develop for uniset OPC UA extension
+%endif
+
 %prep
 %setup
 
 %build
 %autoreconf
-%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api} %{subst_enable netdata} %{subst_enable logdb} %{subst_enable com485f} %{subst_enable opentsdb} %{subst_enable uwebsocket} %{subst_enable clickhouse}
+%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests} %{subst_enable mqtt} %{subst_enable api} %{subst_enable netdata} %{subst_enable logdb} %{subst_enable com485f} %{subst_enable opentsdb} %{subst_enable uwebsocket} %{subst_enable clickhouse} %{subst_enable opcua}
 %make_build
 
 %install
@@ -591,6 +609,17 @@ rm -f %buildroot%_docdir/%oname/html/*.md5
 %_pkgconfigdir/libUniSet2MQTTPublisher*.pc
 %_libdir/libUniSet2MQTTPublisher*.so
 %_includedir/%oname/extensions/mqtt/
+%endif
+
+%if_enabled opcua
+%files extension-opcua
+%_bindir/%oname-opcua*
+%_libdir/libUniSet2OPCUAGate*.so.*
+
+%files extension-opcua-devel
+%_pkgconfigdir/libUniSet2OPCUAGate*.pc
+%_libdir/libUniSet2OPCUAGate*.so
+%_includedir/%oname/extensions/opcua/
 %endif
 
 %if_enabled api

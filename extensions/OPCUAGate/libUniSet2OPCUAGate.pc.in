@@ -8,4 +8,4 @@ Description: Support library for UniSet2OPCUAGate
 Requires: libUniSet2Extensions open62541pp
 Version: @VERSION@
 Libs: -L${libdir} -lUniSet2OPCUAGate
-Cflags: -I${includedir}/@PACKAGE@/extensions/opcuagate
+Cflags: -I${includedir}/@PACKAGE@/extensions/opcua
