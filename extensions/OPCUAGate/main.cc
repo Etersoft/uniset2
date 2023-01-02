@@ -51,11 +51,11 @@ int main(int argc, char** argv)
     }
     catch( const std::exception& ex )
     {
-        cerr << "(UWebSocketGate::main): " << ex.what() << endl;
+        cerr << "(OPCUAGate::main): " << ex.what() << endl;
     }
     catch(...)
     {
-        cerr << "(UWebSocketGate::main): catch ..." << endl;
+        cerr << "(OPCUAGate::main): catch ..." << endl;
     }
 
     return 1;

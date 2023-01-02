@@ -227,7 +227,7 @@
 		<GroupAnalogSensors name="TestGroup" ok_c="D106_S"/>
 
 		<MQTTPublisher1 name="MQTTPublisher" />
-		<OPCUAGate name="OPCUAGate1"/>
+		<OPCUAGate name="OPCUAGate1" port="4840" appName="uniset2 OPC UA gate" shutdownDelay="5000" maxSubscriptions="10" maxSessions="10" loglevel="1"/>
 	</settings>
 	<ObjectsMap idfromfile="1">
 		<!--
@@ -278,8 +278,8 @@
 		<!-- ************************ Датчики ********************** -->
 		<sensors name="Sensors">
 			<item dbignore="1" default="1" id="1" iotype="DI" name="Input1_S" priority="Medium" textname="Команда 1"/>
-			<item id="2" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="11" mbtype="rtu" name="Input2_S" priority="Medium" rs="4" textname="Команда 2"/>
-			<item id="3" iotype="DI"  mbtcp="1" mbtcp_mbaddr="0x02" mbtcp_mbfunc="0x03" mbtcp_mbreg="0x02" mbtcp_mbtype="rtu" name="Input3_S" priority="Medium" textname="Команда 3"/>
+			<item id="2" iotype="DI" opcua="1" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="11" mbtype="rtu" name="Input2_S" priority="Medium" rs="4" textname="Команда 2"/>
+			<item id="3" iotype="DI" opcua="1" mbtcp="1" mbtcp_mbaddr="0x02" mbtcp_mbfunc="0x03" mbtcp_mbreg="0x02" mbtcp_mbtype="rtu" name="Input3_S" priority="Medium" textname="Команда 3"/>
 			<item id="4" iotype="DI" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input4_S" priority="Medium" rs="2" textname="Команда 4"/>
 			<item id="5" iotype="DI" name="Input5_S" priority="Medium" textname="Команда 5" udp="2" depend="Input4_S"/>
 			<item id="6" iotype="DI" name="Input6_S" priority="Medium" textname="Команда 6" udp="2"/>
@@ -289,7 +289,7 @@
 			<item id="7" iotype="DO" name="DO_C" priority="Medium" textname="Digital output"/>
 			<item id="8" iotype="DO" name="DO1_C" priority="Medium" textname="Digital output"/>
 			<item default="1000" id="9" iotype="AO" name="AO_AS" precision="2" priority="Medium" unet_sendfactor="2" rs="2" rs_channel="1" rs_jack="j1" rs_mbaddr="0x01" rs_mbfunc="0x06" rs_mbreg="0x02" rs_mbtype="rtu188" textname="Analog output"/>
-			<item default="378" id="10" iotype="AI" mbaddr="0x01" mbfunc="0x04" mbreg="0x01" mbtype="rtu" name="AI_AS" precision="3" priority="Medium" rs="1" textname="Analog input" vtype="F2">
+			<item default="378" id="10" iotype="AI" opcua="1" mbaddr="0x01" mbfunc="0x04" mbreg="0x01" mbtype="rtu" name="AI_AS" precision="3" priority="Medium" rs="1" textname="Analog input" vtype="F2">
 				<consumers>
 					<consumer cfilter="test1" name="TestProc" type="objects"/>
 					<consumer name="PLCProcessor" type="objects"/>
