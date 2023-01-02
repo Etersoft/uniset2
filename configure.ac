@@ -231,6 +231,7 @@ AC_ARG_ENABLE(opcua, AC_HELP_STRING([--disable-opcua], [disable OPC-UA support])
 
 if test ${buildopcua} = true; then
 	AC_MSG_RESULT([enabled])
+	PKG_CHECK_MODULES(OPEN62541PP, open62541pp)
 	PKG_CHECK_MODULES(OPEN62541, open62541)
 else
 	AC_MSG_RESULT([disabled])

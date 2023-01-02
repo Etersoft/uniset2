@@ -17,17 +17,14 @@
 #ifndef _OPCUAGate_H_
 #define _OPCUAGate_H_
 // -----------------------------------------------------------------------------
-extern "C" {
-#include <open62541/types.h>
-}
 #include <memory>
+#include <unordered_map>
+#include "open62541pp/open62541pp.h"
 #include "UObject_SK.h"
 #include "SMInterface.h"
 #include "SharedMemory.h"
 #include "ThreadCreator.h"
 #include "Extensions.h"
-// --------------------------------------------------------------------------
-struct UA_Server;
 // --------------------------------------------------------------------------
 namespace uniset
 {
@@ -49,14 +46,17 @@ namespace uniset
         public UObject_SK
     {
         public:
-            OPCUAGate( uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
-                       const std::string& prefix = "opcua" );
+            OPCUAGate(uniset::ObjectId objId, xmlNode* cnode, uniset::ObjectId shmID,
+                      const std::shared_ptr<SharedMemory>& ic = nullptr,
+                      const std::string& prefix = "opcua");
+
             virtual ~OPCUAGate();
 
             /*! глобальная функция для инициализации объекта */
-            static std::shared_ptr<OPCUAGate> init_opcuagate( int argc, const char* const* argv,
-                    uniset::ObjectId shmID, const std::shared_ptr<SharedMemory>& ic = nullptr,
-                    const std::string& prefix = "opcua" );
+            static std::shared_ptr<OPCUAGate> init_opcuagate(int argc, const char* const* argv,
+                    uniset::ObjectId shmID,
+                    const std::shared_ptr<SharedMemory>& ic = nullptr,
+                    const std::string& prefix = "opcua");
 
             /*! глобальная функция для вывода help-а */
             static void help_print();
@@ -65,6 +65,7 @@ namespace uniset
             {
                 return loga;
             }
+
             inline std::shared_ptr<DebugStream> log()
             {
                 return mylog;
@@ -74,19 +75,48 @@ namespace uniset
             OPCUAGate();
 
             virtual void step() override;
-            virtual void sysCommand( const uniset::SystemMessage* sm ) override;
+            virtual void sysCommand(const uniset::SystemMessage* sm) override;
             virtual bool deactivateObject() override;
-
+            virtual void askSensors(UniversalIO::UIOCommand cmd) override;
+            virtual void sensorInfo(const uniset::SensorMessage* sm) override;
             void serverLoopTerminate();
             void serverLoop();
+            void updateLoop();
+
+            bool initVariable(UniXML::iterator& it);
+
+            bool readItem(const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec);
+
+            void readConfiguration();
 
             std::shared_ptr<SMInterface> shm;
             std::unique_ptr<ThreadCreator<OPCUAGate>> serverThread;
+            std::unique_ptr<ThreadCreator<OPCUAGate>> updateThread;
+
+            struct IOVariable
+            {
+                opcua::VariableNode node;
+                IOController::IOStateList::iterator it;
+                UniversalIO::IOType stype = {UniversalIO::AI};
+
+                IOVariable(const opcua::VariableNode& n) : node(n) {};
+            };
+
+            std::unordered_map<ObjectId, IOVariable> variables;
+
+            struct IONode
+            {
+                opcua::ObjectNode node;
+                IONode( const opcua::ObjectNode& n ):  node(n) {};
+            };
 
         private:
-            UA_Server* uaServer;
-            volatile UA_Boolean running;
+            std::unique_ptr<opcua::Server> opcServer = {nullptr };
+            std::unique_ptr<IONode> ioNode = {nullptr};
             std::string prefix;
+            std::string s_field;
+            std::string s_fvalue;
+            uniset::timeout_t updateLoopPause_msec = { 100 };
     };
     // --------------------------------------------------------------------------
 } // end of namespace uniset
